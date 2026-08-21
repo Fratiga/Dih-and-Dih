@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cronología — Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>Compendio</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+    </div>
+    <div class="header-right">
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip">Compendio</a>
+      <a href="mapa.html" class="nav-chip">Mapa</a>
+      <a href="cronologia.html" class="nav-chip active">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip">Armas</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+    </div>
+  </nav>
+
+  <main class="layout layout-solo">
+    <section class="content">
+      <div id="ladoGate" class="lado-gate hidden">
+        <p class="eyebrow">CONTENIDO DIVIDIDO</p>
+        <h3>Elegí tu versión boludo</h3>
+        <p>La cronología y los pjs tienen dos versiones distintas. Ingresá tu contraseña secreta malvada
+        para continuar (¬`‸´¬).....</p>
+        <form id="ladoForm" class="lado-gate-form">
+          <input type="password" id="ladoPassword" placeholder="No te equivoques..." autocomplete="off" required>
+          <button type="submit">Entrar</button>
+        </form>
+        <p id="ladoError" class="lado-gate-error hidden">TE EQUIVOCASTESSS</p>
+      </div>
+
+      <section id="ladoContent" class="page-section hidden">
+        <div class="lado-badge-row">
+          <span id="ladoBadge" class="lado-badge"></span>
+          <button id="ladoSwitch" class="lado-switch" type="button">Cambiar versión</button>
+        </div>
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">CRÓNICA DEL VIAJE</p>
+            <h2 id="pageTitle">Cronología</h2>
+          </div>
+        </div>
+
+        <div id="cronicaList" class="cronica-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="data/cronologia-a.js"></script>
+  <script src="data/cronologia-b.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="data/jumpscare.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/lado.js"></script>
+  <script src="js/cronologia.js"></script>
+</body>
+</html>

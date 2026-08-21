@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Armas — Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>Compendio</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+    </div>
+    <div class="header-right">
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip">Compendio</a>
+      <a href="mapa.html" class="nav-chip">Mapa</a>
+      <a href="cronologia.html" class="nav-chip">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip active">Armas</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+    </div>
+  </nav>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="search-box">
+        <label for="search">Buscar</label>
+        <input id="search" type="search" placeholder="Espada, arco, propiedad...">
+      </div>
+
+      <div class="filter-group">
+        <h3>Etiquetas</h3>
+        <div id="tagFilters" class="pill-list"></div>
+      </div>
+
+      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
+    </aside>
+
+    <section class="content">
+      <section id="armas-glosario" class="page-section">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">CÓMO LEER UN ARMA</p>
+            <h2>Glosario</h2>
+          </div>
+        </div>
+        <div class="reglas-grid">
+          <article class="reglas-group">
+            <h3>Estadísticas</h3>
+            <p class="reglas-desc">Cada arma posee un daño, un tipo, un peso y, en algunos casos, propiedades especiales que modifican cómo se utiliza.</p>
+            <ul class="reglas-items">
+              <li><span class="reglas-label">Daño</span><span class="reglas-detail">Dados que se lanzan al impactar, sumando modificador y competencia si corresponde.</span></li>
+              <li><span class="reglas-label">Tipo</span><span class="reglas-detail">Contundente, cortante o perforante.</span></li>
+              <li><span class="reglas-label">Alcance</span><span class="reglas-detail">En armas a distancia o arrojadizas, la distancia a la que pueden atacar.</span></li>
+              <li><span class="reglas-label">Peso</span><span class="reglas-detail">Cuánto pesa el arma.</span></li>
+              <li><span class="reglas-label">Coste</span><span class="reglas-detail">Precio habitual del arma.</span></li>
+              <li><span class="reglas-label">Propiedades</span><span class="reglas-detail">Reglas especiales que modifican cómo funciona el arma.</span></li>
+            </ul>
+          </article>
+          <article class="reglas-group">
+            <h3>Propiedades</h3>
+            <p class="reglas-desc">Reglas especiales que pueden aparecer en distintas armas.</p>
+            <ul class="reglas-items">
+              <li><span class="reglas-label">A dos manos</span><span class="reglas-detail">El arma requiere ambas manos para utilizarse.</span></li>
+              <li><span class="reglas-label">Alcance</span><span class="reglas-detail">Los ataques con el arma aumentan su alcance en 5 pies (1,5 m).</span></li>
+              <li><span class="reglas-label">Arrojadiza</span><span class="reglas-detail">Puede lanzarse para atacar a distancia. Alcance normal/máximo entre paréntesis; más allá del normal, desventaja.</span></li>
+              <li><span class="reglas-label">Sutil (Finesse)</span><span class="reglas-detail">Puedes usar Fuerza o Destreza para el ataque y el daño (la misma para ambas tiradas).</span></li>
+              <li><span class="reglas-label">Ligera</span><span class="reglas-detail">Puede usarse como segunda arma al combatir con dos armas.</span></li>
+              <li><span class="reglas-label">Munición</span><span class="reglas-detail">Consume munición por ataque; requiere una mano libre para cargarla.</span></li>
+              <li><span class="reglas-label">Pesada</span><span class="reglas-detail">Las criaturas Pequeñas tienen desventaja al atacar con ella.</span></li>
+              <li><span class="reglas-label">Recarga</span><span class="reglas-detail">Solo un ataque con ella por turno, sin importar cuántos ataques tengas normalmente.</span></li>
+              <li><span class="reglas-label">Versátil</span><span class="reglas-detail">Puede usarse con una o dos manos; el daño entre paréntesis es a dos manos.</span></li>
+              <li><span class="reglas-label">Especial</span><span class="reglas-detail">Reglas particulares explicadas en la propia arma.</span></li>
+            </ul>
+          </article>
+          <article class="reglas-group">
+            <h3>Tipos de daño</h3>
+            <ul class="reglas-items">
+              <li><span class="reglas-label">Contundente</span><span class="reglas-detail">Golpes, impactos o aplastamiento (mazas, martillos, garrotes).</span></li>
+              <li><span class="reglas-label">Cortante</span><span class="reglas-detail">Filos que cortan carne, tejidos o materiales (espadas, hachas, gujas).</span></li>
+              <li><span class="reglas-label">Perforante</span><span class="reglas-detail">Atraviesa con una punta o proyectil (lanzas, dagas, arcos, ballestas).</span></li>
+            </ul>
+          </article>
+          <article class="reglas-group">
+            <h3>Competencia y monedas</h3>
+            <p class="reglas-desc">Ser competente con un arma suma tu bonificador de competencia a la tirada de ataque.</p>
+            <ul class="reglas-items">
+              <li><span class="reglas-label">Armas simples</span><span class="reglas-detail">Relativamente fáciles de utilizar, comunes entre aventureros.</span></li>
+              <li><span class="reglas-label">Armas marciales</span><span class="reglas-detail">Requieren entrenamiento especializado.</span></li>
+              <li><span class="reglas-label">Monedas</span><span class="reglas-detail">PC (cobre), PP (plata), PE (electro), PO (oro), PPt (platino) — 10 PC = 1 PP, 10 PP = 1 PO, 10 PO = 1 PPt.</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="compendio" class="page-section">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">ARSENAL DEL MUNDO</p>
+            <h2 id="pageTitle">Armas</h2>
+          </div>
+          <span id="resultCount" class="result-count"></span>
+        </div>
+
+        <div id="entryGrid" class="entry-grid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <h3>No se encontraron entradas</h3>
+          <p>Prueba con otro término o elimina alguno de los filtros.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="entryModal">
+    <button id="closeModal" class="modal-close">×</button>
+    <article id="modalContent"></article>
+  </dialog>
+
+  <script src="data/entries.js"></script>
+  <script src="data/personajes.js"></script>
+  <script src="data/lugares.js"></script>
+  <script src="data/facciones.js"></script>
+  <script src="data/pergaminos.js"></script>
+  <script src="data/armas.js"></script>
+  <script src="data/bestiario.js"></script>
+  <script src="data/razas.js"></script>
+  <script src="data/religiones.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/player.js"></script>
+  <script>
+    window.PAGE_CATEGORY = "Armas";
+    window.TAG_GROUPS = {
+      otherLabel: "Otras características",
+      groups: {
+        "Categoría": ["simple", "marcial"],
+        "Alcance": ["cuerpo a cuerpo", "a distancia"],
+        "Tipo de daño": ["contundente", "cortante", "perforante", "especial"]
+      }
+    };
+  </script>
+  <script src="js/modal.js"></script>
+  <script src="js/compendio.js"></script>
+</body>
+</html>

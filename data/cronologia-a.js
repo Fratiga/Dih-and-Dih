@@ -1,0 +1,1 @@
+window.CRONOLOGIA_A = [];

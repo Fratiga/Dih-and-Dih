@@ -1,0 +1,422 @@
+Armas — D&D 5e
+
+Las armas permiten a los aventureros enfrentarse a sus enemigos en combate. Cada arma posee un daño, un tipo de daño, un peso y, en algunos casos, propiedades especiales que modifican la forma en que puede utilizarse.
+
+Cómo leer una estadística de arma
+
+Daño: cantidad de dados que se lanzan cuando el ataque impacta. A este daño normalmente se añade el modificador de la característica utilizada para realizar el ataque y tu competencia en caso de tener competencia con el arma.
+
+Tipo: determina si el daño es contundente, cortante o perforante.
+
+Alcance: en armas a distancia o arrojadizas, indica la distancia a la que pueden atacar.
+
+Peso: cuánto pesa el arma.
+
+Coste: precio habitual del arma.
+
+Propiedades: reglas especiales que modifican cómo funciona el arma.
+
+Armas simples cuerpo a cuerpo
+Arma	Daño	Tipo	Coste	Peso	Propiedades
+Garrote	1d4	Contundente	1 PP	2 lb	Ligera
+Daga	1d4	Perforante	2 PO	1 lb	Sutil, ligera, arrojadiza (6/18 m)
+Garrote grande	1d8	Contundente	2 PP	10 lb	A dos manos
+Hacha de mano	1d6	Cortante	5 PO	2 lb	Ligera, arrojadiza (6/18 m)
+Jabalina	1d6	Perforante	5 PP	2 lb	Arrojadiza (9/36 m)
+Martillo ligero	1d4	Contundente	2 PO	2 lb	Ligera, arrojadiza (6/18 m)
+Maza	1d6	Contundente	5 PO	4 lb	—
+Bastón	1d6	Contundente	2 PP	4 lb	Versátil (1d8)
+Hoz	1d4	Cortante	1 PO	2 lb	Ligera
+Lanza	1d6	Perforante	1 PO	3 lb	Arrojadiza (6/18 m), versátil (1d8)
+Armas simples a distancia
+Arma	Daño	Tipo	Coste	Peso	Propiedades
+Ballesta ligera	1d8	Perforante	25 PO	5 lb	Munición (24/96 m), recarga, a dos manos
+Dardo	1d4	Perforante	5 PC	¼ lb	Sutil, arrojadizo (6/18 m)
+Arco corto	1d6	Perforante	25 PO	2 lb	Munición (24/96 m), a dos manos
+Honda	1d4	Contundente	1 PP	—	Munición (9/36 m)
+Armas marciales cuerpo a cuerpo
+Arma	Daño	Tipo	Coste	Peso	Propiedades
+Hacha de batalla	1d8	Cortante	10 PO	4 lb	Versátil (1d10)
+Mayal	1d8	Contundente	10 PO	2 lb	—
+Guja	1d10	Cortante	20 PO	6 lb	Pesada, alcance, a dos manos
+Hacha a dos manos	1d12	Cortante	30 PO	7 lb	Pesada, a dos manos
+Espadón	2d6	Cortante	50 PO	6 lb	Pesada, a dos manos
+Alabarda	1d10	Cortante	20 PO	6 lb	Pesada, alcance, a dos manos
+Lanza de caballería	1d12	Perforante	10 PO	6 lb	Alcance, especial
+Espada larga	1d8	Cortante	15 PO	3 lb	Versátil (1d10)
+Maza de guerra	2d6	Contundente	10 PO	10 lb	Pesada, a dos manos
+Lucero del alba	1d8	Perforante	15 PO	4 lb	—
+Pica	1d10	Perforante	5 PO	18 lb	Pesada, alcance, a dos manos
+Estoque	1d8	Perforante	25 PO	2 lb	Sutil
+Cimitarra	1d6	Cortante	25 PO	3 lb	Sutil, ligera
+Espada corta	1d6	Perforante	10 PO	2 lb	Sutil, ligera
+Tridente	1d6	Perforante	5 PO	4 lb	Arrojadizo (6/18 m), versátil (1d8)
+Pico de guerra	1d8	Perforante	5 PO	2 lb	—
+Martillo de guerra	1d8	Contundente	15 PO	2 lb	Versátil (1d10)
+Látigo	1d4	Cortante	2 PO	3 lb	Sutil, alcance
+Armas marciales a distancia
+Arma	Daño	Tipo	Coste	Peso	Propiedades
+Cerbatana	1	Perforante	10 PO	1 lb	Munición (7,5/30 m), recarga
+Ballesta de mano	1d6	Perforante	75 PO	3 lb	Munición (9/36 m), ligera, recarga
+Ballesta pesada	1d10	Perforante	50 PO	18 lb	Munición (30/120 m), pesada, recarga, a dos manos
+Arco largo	1d8	Perforante	50 PO	2 lb	Munición (45/180 m), pesada, a dos manos
+Red	—	—	1 PO	3 lb	Especial, arrojadiza (1,5/4,5 m)
+Propiedades de las armas
+A dos manos
+
+El arma requiere ambas manos para utilizarse.
+
+Alcance
+
+Los ataques realizados con el arma aumentan su alcance en 5 pies (1,5 m).
+
+Arrojadiza
+
+Puedes lanzar el arma para realizar un ataque a distancia.
+
+El primer número entre paréntesis indica el alcance normal. El segundo indica el alcance máximo. Los ataques realizados más allá del alcance normal tienen desventaja.
+
+Ejemplo: una daga tiene alcance 20/60 pies. Puede atacar normalmente hasta 20 pies y con desventaja hasta 60 pies.
+
+Finesse / Sutil
+
+Al realizar un ataque con esta arma, puedes utilizar Fuerza o Destreza para las tiradas de ataque y daño.
+
+Debes utilizar la misma característica para ambas tiradas.
+
+Ligera
+
+Una segunda arma ligera puede utilizarse para combatir con dos armas, siempre que se cumplan las reglas correspondientes.
+
+Munición
+
+El arma utiliza munición para realizar ataques a distancia.
+
+Cada ataque consume normalmente una pieza de munición. Sacar la munición necesaria forma parte del ataque.
+
+Si utilizas un arma con munición para realizar un ataque a distancia, necesitas tener una mano libre para cargarla.
+
+Pesada
+
+Las criaturas Pequeñas tienen desventaja en las tiradas de ataque realizadas con armas pesadas.
+
+Recarga
+
+Debido al tiempo necesario para cargar el arma, solamente puedes realizar un ataque con ella cuando utilizas una acción, acción adicional o reacción para atacar, independientemente de cuántos ataques puedas realizar normalmente.
+
+Versátil
+
+El arma puede utilizarse con una o dos manos.
+
+El número entre paréntesis indica el daño cuando se utiliza con ambas manos.
+
+Ejemplo: una espada larga inflige 1d8 con una mano y 1d10 con ambas.
+
+Especial
+
+El arma posee reglas particulares que se explican en su descripción.
+
+Armas especiales
+Lanza de caballería
+
+Tienes desventaja cuando utilizas una lanza de caballería para atacar a una criatura que se encuentre a 5 pies de ti.
+
+Además, una lanza de caballería requiere dos manos para utilizarse cuando no estás montado.
+
+Cuando estás montado, puedes utilizarla con una sola mano.
+
+Red
+
+Una criatura Grande o más pequeña que sea impactada por una red queda restringida hasta que sea liberada.
+
+Una criatura puede utilizar su acción para realizar una prueba de Fuerza CD 10 y liberarse.
+
+La red también puede destruirse. Tiene CA 10, 5 puntos de golpe y es inmune al daño contundente, venenoso y psíquico.
+
+Reducir la red a 0 puntos de golpe la destruye.
+
+Cuando utilizas una acción, acción adicional o reacción para atacar con una red, solamente puedes realizar un ataque con ella, independientemente de cuántos ataques puedas realizar normalmente.
+
+Tipos de daño
+Contundente
+
+Daño producido principalmente por golpes, impactos o aplastamiento.
+
+Ejemplos: mazas, martillos y garrotes.
+
+Cortante
+
+Daño producido por filos capaces de cortar carne, tejidos o materiales.
+
+Ejemplos: espadas, hachas y gujas.
+
+Perforante
+
+Daño producido al atravesar el objetivo con una punta o proyectil.
+
+Ejemplos: lanzas, dagas, arcos y ballestas.
+
+Distancias y alcance
+
+Las distancias de las armas se expresan como:
+
+Alcance normal / alcance máximo
+
+Por ejemplo:
+
+Daga — 20/60 pies (6/18 m)
+
+Hasta 20 pies: ataque normal.
+Entre 20 y 60 pies: ataque con desventaja.
+Más allá de 60 pies: el ataque no puede realizarse.
+Competencia con armas
+
+Ser competente con un arma permite añadir tu bonificador de competencia a la tirada de ataque cuando utilizas esa arma.
+
+Las armas se dividen en dos grandes grupos:
+
+Armas simples: armas relativamente fáciles de utilizar y comunes entre aventureros.
+
+Armas marciales: armas que requieren entrenamiento especializado.
+
+Tener competencia con una categoría de armas no significa necesariamente que puedas utilizar todas sus propiedades especiales; algunas reglas, dotes o características pueden modificar la forma en que un personaje utiliza determinadas armas.
+
+Monedas
+
+PC: pieza de cobre
+PP: pieza de plata
+PE: pieza de electro
+PO: pieza de oro
+PPt: pieza de platino
+
+Conversión:
+
+10 PC = 1 PP
+10 PP = 1 PO
+10 PO = 1 PPt
+Nota para la campaña
+
+Esta página utiliza las reglas de armas de D&D 5e (2014). La edición revisada de 2024 modifica algunas armas, propiedades y reglas relacionadas con ellas, por lo que las estadísticas deben mantenerse separadas si la campaña utiliza esas reglas.
+:::
+
+La base de estas estadísticas corresponde a las reglas oficiales de D&D 5e 2014.
+
+Una cosa que te recomendaría para tu wiki: no dejaría esto como una tabla gigante estática. Haría que cada arma sea una tarjeta clickeable, con filtros como:
+
+Todas · Simples · Marciales · Cuerpo a cuerpo · A distancia · Contundente · Cortante · Perforante
+
+y dentro de cada tarjeta algo como Daño → Alcance → Peso → Precio → Propiedades → Descripción. Así queda mucho más parecido a un compendio que los jugadores realmente puedan consultar durante la partida.
+
+Me parece, en ese caso, también dale una descripción pequeña a cada arma con una pizca de Lore, estilo dark souls, a la hora de hacer armas especiales habría que inspirarse más en ese estilo dark souls/elden ring de descripción de objetos
+
+Sí. De hecho, creo que eso le daría mucha más personalidad a tu wiki. Las armas normales pueden tener descripciones muy breves —una o dos frases— que sugieran historia sin convertir cada arma en un párrafo de lore. Las armas especiales, en cambio, pueden tener ese estilo de Dark Souls/Elden Ring: descripción aparentemente objetiva, pero que deja pistas sobre personajes, culturas, guerras o acontecimientos.
+
+Para las armas comunes, mantendría algo así:
+
+:::
+
+Descripciones de armas
+Armas simples
+Garrote
+
+Un trozo de madera endurecida, rudimentario pero eficaz.
+ Dicen que las primeras armas de los hombres no fueron forjadas.
+
+Daga
+
+Una hoja corta diseñada para llevarse oculta y utilizarse a corta distancia o arrojadiza.
+ Una buena daga rara vez se ve antes de ser utilizada. Mientras que una mala, rara vez sobrevive a su dueño.
+
+Garrote grande
+
+Un grueso tronco reforzado, demasiado tosco para llamarlo arma refinada.
+ No necesita filo quien posee la fuerza suficiente para hacer del hueso una astilla.
+
+Hacha de mano
+
+Un hacha pequeña, útil tanto para el combate como para las tareas cotidianas.
+ Muchos leñadores han aprendido que la distancia entre cortar un árbol y cortar una garganta es menor de lo que parece.
+
+Jabalina
+
+Una lanza ligera equilibrada para ser arrojada.
+ La jabalina no mata por su fuerza, mata más por la certeza con la que encuentra su destino.
+
+Martillo ligero
+
+Un martillo pequeño empleado por herreros, artesanos y soldados.
+ Antes de aprender a blandir una espada, todo herrero aprende a golpear.
+
+Maza
+
+Una pesada cabeza de metal montada sobre un asta corta.
+ La armadura protege de los filos. Poco puede hacer contra aquello que pretende aplastarla.
+
+Bastón
+
+Un sencillo bastón de madera utilizado por viajeros, peregrinos y magos.
+ Algunos bastones han acompañado a sus dueños durante más años que cualquier espada.
+
+Hoz
+
+Una hoja curva empleada originalmente para segar cultivos.
+ La cosecha y la muerte comparten una vieja costumbre: ninguna distingue entre lo que está listo y lo que aún no.
+
+Lanza
+
+Una punta de metal fijada a un largo asta de madera.
+ La lanza fue entregada al campesino antes que la espada al caballero. Quizá por eso tantos reinos olvidan de quién nació realmente su ejército.
+
+Armas simples a distancia
+Ballesta ligera
+
+Una ballesta compacta que dispara virotes con considerable fuerza.
+ Donde el entrenamiento de años cabe en un mecanismo de madera, los nobles encontraron una razón más para temer al campesino.
+
+Dardo
+
+Un pequeño proyectil equilibrado para ser lanzado con precisión.
+ Pequeño como una mentira y, en las manos adecuadas, igual de mortal.
+
+Arco corto
+
+Un arco compacto, fácil de transportar y utilizar incluso en terrenos cerrados.
+ Basta con escuchar el silencio que viene después para saber si diste en el blanco.
+
+Honda
+
+Una tira de cuero capaz de convertir una piedra ordinaria en un proyectil mortal.
+ Los ejércitos desprecian las piedras hasta que empiezan a morir por ellas.
+
+Armas marciales
+Hacha de batalla
+
+Un arma de guerra diseñada para cortar con un único golpe pesado.
+ El filo no distingue entre armadura, carne, material o individuo. Solo entre que puede cortar y aquello que todavía no.
+
+Mayal
+
+Una cabeza de metal unida mediante una cadena a su empuñadura.
+ Arma difícil, incluso para quien la empuña. Tal vez por eso sus heridas suelen ser tan impredecibles.
+
+Guja
+
+Una larga asta coronada por una hoja curva.
+ Los soldados que la portan permanecen detrás de la primera línea. La idea es que sus enemigos rara vez lleguen a descubrir por qué.
+
+Hacha a dos manos
+
+Una enorme hacha cuyo peso exige ambas manos para ser manejada correctamente.
+ No fue creada para vencer duelos.
+
+Espadón
+
+Una espada enorme cuyo peso y longitud requieren una fuerza considerable.
+ Muy pocos tienen lo necesario para empuñar este monstruo increíblemente pesado y capaz de infligir un gran daño. Es una de las armas favoritas de los caballeros de Berenike.
+
+Alabarda
+
+Una larga arma de asta que combina una hoja de hacha con una punta de lanza.
+ Tal como los muros tienen puertas. Los hombres también. La alabarda fue hecha para decidir dónde termina una formación.
+
+Lanza de caballería
+
+Una lanza especialmente larga destinada principalmente al combate montado.
+ Cuando el caballo comienza a correr, el caballero deja de ser un hombre y se convierte en la punta de un proyectil.
+
+Espada larga
+
+Una espada equilibrada que puede utilizarse tanto con una como con ambas manos.
+ La espada larga no pide fuerza ni astucia. Necesita ambas, y castiga al que carece de cualquiera de ellas.
+
+Maza de guerra
+
+Una enorme arma de metal diseñada para destruir incluso las protecciones más resistentes.
+ Los herreros que la fabricaron aprendieron una verdad sencilla: todo metal puede doblarse. Solo hace falta suficiente fuerza.
+
+Lucero del alba
+
+Una esfera metálica cubierta de púas montada sobre un asta.
+ Las estrellas que brillan en el cielo son hermosas. Las que descienden a la tierra rara vez comparten esa belleza.
+
+Pica
+
+Una larguísima asta terminada en una punta de metal.
+ Una muralla de lanzas convierte al cobarde en soldado.
+
+Estoque
+
+Una espada estrecha diseñada para realizar estocadas rápidas y precisas.
+ Una hoja fina no necesita atravesar una armadura. Solo necesita encontrar lo que la armadura olvidó proteger.
+
+Cimitarra
+
+Una espada ligera de hoja curva, especialmente eficaz en movimientos rápidos.
+ En las tierras donde nació, las espadas rectas eran consideradas demasiado honestas.
+
+Espada corta
+
+Una espada pequeña y ligera, fácil de portar y manejar en espacios reducidos.
+ Muchos héroes comenzaron con una espada corta. Mientras que muchos otros no vivieron lo suficiente para conseguir una más grande.
+
+Tridente
+
+Un arma de tres puntas empleada tanto en tierra como en el mar.
+ Los pescadores lo utilizan para capturar lo que vive bajo el agua. Los reyes aprendieron a utilizarlo para capturar hombres.
+
+Pica de guerra
+
+Un arma diseñada para concentrar toda su fuerza en una pequeña punta.
+ Allí donde la espada rebota, la pica atraviesa. 
+
+Martillo de guerra
+
+Un martillo equilibrado para el combate, capaz de utilizarse con una o dos manos.
+ Los caballeros llevan espadas para ser recordados. Pero quienes llevan martillos lo hacen para que nadie lo sea.
+
+Látigo
+
+Una larga tira flexible capaz de golpear desde una distancia considerable.
+ Un recordatorio de que el dolor no necesita una hoja.
+
+Armas marciales a distancia
+Cerbatana
+
+Un tubo estrecho utilizado para lanzar pequeños proyectiles.
+ En manos de un guerrero es poco más que una herramienta. Pero en manos de un asesino, puede ser la última cosa que escuches.
+
+Ballesta de mano
+
+Una pequeña ballesta diseñada para ser utilizada con una sola mano.
+ Los asesinos la prefieren por una razón sencilla: no exige que su dueño sea fuerte, solo que esté cerca.
+
+Ballesta pesada
+
+Una gran ballesta capaz de lanzar virotes con una fuerza devastadora.
+ Sus usuarios dicen que cargarla es una molestia. Los muertos suelen opinar que vale la pena.
+
+Arco largo
+
+Un arco de gran tamaño capaz de alcanzar objetivos a distancias extraordinarias.
+ Tiene un alcance mayor que los arcos estándar, pero es más difícil de usar. Sin las habilidades adecuadas, los resultados serán decepcionantes.
+
+Red
+
+Una pesada red preparada para atrapar criaturas y restringir sus movimientos.
+ A las bestias más grandes basta con recordarles que también pueden ser atrapadas.
+
+Filosofía de las armas especiales
+
+Una buena descripción debería poder hacer tres cosas:
+
+1. Explicar qué es el objeto.
+El jugador debe entenderlo aunque no conozca el lore.
+
+2. Sugerir algo que no se explica.
+Un nombre, una contradicción, un antiguo propietario, una costumbre olvidada.
+
+3. Dejar una pregunta.
+El jugador debería pensar: "¿Qué significa eso?"
+Y para las armas realmente importantes de tu campaña, yo iría todavía más lejos: que la descripción no revele directamente todo su trasfondo. Que el jugador pueda encontrar el arma y leer algo como "La espada perteneció al primer rey que murió dos veces" sin saber todavía qué significa. Luego, cuando descubran quién fue ese rey, la descripción de la wiki puede adquirir un significado completamente diferente.
+
+Eso encaja especialmente bien con el tipo de mundo que has estado construyendo: Eternos, alquimia, Arcanomática y toda esa historia de conceptos que tienen una explicación detrás pero que los jugadores descubren gradualmente.

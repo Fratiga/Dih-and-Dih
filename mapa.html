@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa — Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>Compendio</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+    </div>
+    <div class="header-right">
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip">Compendio</a>
+      <a href="mapa.html" class="nav-chip active">Mapa</a>
+      <a href="cronologia.html" class="nav-chip">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip">Armas</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+    </div>
+  </nav>
+
+  <main class="layout layout-solo">
+    <section class="content">
+      <section id="mapa" class="page-section">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">GEOGRAFÍA DEL MUNDO</p>
+            <h2 id="pageTitle">Mapa</h2>
+          </div>
+        </div>
+
+        <div id="mapaBox" class="mapa-box">
+          <div class="search-box mapa-search">
+            <label for="mapaBusqueda">Buscar lugar</label>
+            <input id="mapaBusqueda" type="search" placeholder="Nombre de un reino, ciudad, región...">
+          </div>
+
+          <div id="mapaContainer" class="mapa-container">
+            <img src="assets/mapa/Boes_2026-03-26-23-45.png" alt="Mapa del mundo" class="mapa-image">
+          </div>
+          <p class="mapa-hint">Toca un punto dorado para ver el lugar. Marcá o desmarcá un tipo para mostrarlo u ocultarlo en el mapa.</p>
+
+          <div id="mapaFiltros" class="mapa-legend">
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="region" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--region"></span>
+              <span>Región</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="reino" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--reino"></span>
+              <span>Reino</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="capital" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--capital"></span>
+              <span>Capital</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="ciudad" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--ciudad"></span>
+              <span>Ciudad</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="fortaleza" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--fortaleza"></span>
+              <span>Fortaleza / Torre</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="catedral" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--catedral"></span>
+              <span>Catedral</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="aldea" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--aldea"></span>
+              <span>Pueblo</span>
+            </label>
+            <label class="mapa-legend-item">
+              <input type="checkbox" data-filtro-tipo="naturaleza" checked>
+              <span class="mapa-pin-sample mapa-pin-sample--naturaleza"></span>
+              <span>Naturaleza</span>
+            </label>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="entryModal">
+    <button id="closeModal" class="modal-close">×</button>
+    <article id="modalContent"></article>
+  </dialog>
+
+  <script src="data/entries.js"></script>
+  <script src="data/personajes.js"></script>
+  <script src="data/lugares.js"></script>
+  <script src="data/facciones.js"></script>
+  <script src="data/pergaminos.js"></script>
+  <script src="data/armas.js"></script>
+  <script src="data/bestiario.js"></script>
+  <script src="data/razas.js"></script>
+  <script src="data/religiones.js"></script>
+  <script src="data/mapa.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/mapa.js"></script>
+</body>
+</html>

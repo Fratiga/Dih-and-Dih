@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>hola pijes</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+    </div>
+    <div class="header-right">
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip active">Compendio</a>
+      <a href="mapa.html" class="nav-chip">Mapa</a>
+      <a href="cronologia.html" class="nav-chip">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip">Armas</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+    </div>
+  </nav>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="search-box">
+        <label for="search">Buscar</label>
+        <input id="search" type="search" placeholder="Personaje, lugar, magia...">
+      </div>
+
+      <div class="filter-group">
+        <h3>Etiquetas</h3>
+        <div id="tagFilters" class="pill-list"></div>
+      </div>
+
+      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
+    </aside>
+
+    <section class="content">
+      <section id="compendio" class="page-section">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">CONOCIMIENTO PÚBLICO</p>
+            <h2 id="pageTitle">Entradas del compendio</h2>
+          </div>
+          <span id="resultCount" class="result-count"></span>
+        </div>
+
+        <div id="entryGrid" class="entry-grid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <h3>No se encontraron entradas</h3>
+          <p>Prueba con otro término o elimina alguno de los filtros.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="entryModal">
+    <button id="closeModal" class="modal-close">×</button>
+    <article id="modalContent"></article>
+  </dialog>
+
+  <script src="data/entries.js"></script>
+  <script src="data/personajes.js"></script>
+  <script src="data/lugares.js"></script>
+  <script src="data/facciones.js"></script>
+  <script src="data/pergaminos.js"></script>
+  <script src="data/armas.js"></script>
+  <script src="data/bestiario.js"></script>
+  <script src="data/razas.js"></script>
+  <script src="data/religiones.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/player.js"></script>
+  <script>window.TAG_GROUPS = { groupByCategory: true };</script>
+  <script src="js/modal.js"></script>
+  <script src="js/compendio.js"></script>
+</body>
+</html>

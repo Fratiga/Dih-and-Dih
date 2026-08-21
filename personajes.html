@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personajes — Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>Compendio</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+    </div>
+    <div class="header-right">
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip">Compendio</a>
+      <a href="mapa.html" class="nav-chip">Mapa</a>
+      <a href="cronologia.html" class="nav-chip">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip active">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip">Armas</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+    </div>
+  </nav>
+
+  <div id="ladoGate" class="lado-gate hidden">
+    <p class="eyebrow">CONTENIDO DIVIDIDO</p>
+    <h3>Elegí tu versión boludo</h3>
+    <p>Los personajes tienen dos versiones distintas. Ingresá la contraseña de la tuya
+    para continuar.</p>
+    <form id="ladoForm" class="lado-gate-form">
+      <input type="password" id="ladoPassword" placeholder="Contraseña" autocomplete="off" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <p id="ladoError" class="lado-gate-error hidden">TE EQUIVOCASTESSS</p>
+  </div>
+
+  <main id="ladoContent" class="layout hidden">
+    <aside class="sidebar">
+      <div class="lado-badge-row">
+        <span id="ladoBadge" class="lado-badge"></span>
+        <button id="ladoSwitch" class="lado-switch" type="button">Cambiar versión</button>
+      </div>
+
+      <div class="search-box">
+        <label for="search">Buscar</label>
+        <input id="search" type="search" placeholder="Nombre, raza, facción...">
+      </div>
+
+      <div class="filter-group">
+        <h3>Personajes</h3>
+        <div id="tipoFilters" class="pill-list"></div>
+      </div>
+
+      <div class="filter-group">
+        <h3>Región</h3>
+        <select id="regionFilter" class="filter-select"></select>
+      </div>
+
+      <div class="filter-group">
+        <h3>Facción</h3>
+        <select id="faccionFilter" class="filter-select"></select>
+      </div>
+
+      <div class="filter-group">
+        <h3>Etiquetas</h3>
+        <div id="tagFilters" class="pill-list"></div>
+      </div>
+
+      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
+    </aside>
+
+    <section class="content">
+      <section id="compendio" class="page-section">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">GENTE DEL MUNDO</p>
+            <h2 id="pageTitle">Personajes</h2>
+          </div>
+          <span id="resultCount" class="result-count"></span>
+        </div>
+
+        <div id="entryGrid" class="entry-grid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <h3>No se encontraron entradas</h3>
+          <p>Prueba con otro término o elimina alguno de los filtros.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="entryModal">
+    <button id="closeModal" class="modal-close">×</button>
+    <article id="modalContent"></article>
+  </dialog>
+
+  <script src="data/entries.js"></script>
+  <script src="data/personajes.js"></script>
+  <script src="data/lugares.js"></script>
+  <script src="data/facciones.js"></script>
+  <script src="data/pergaminos.js"></script>
+  <script src="data/armas.js"></script>
+  <script src="data/bestiario.js"></script>
+  <script src="data/razas.js"></script>
+  <script src="data/religiones.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="data/jumpscare.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/player.js"></script>
+  <script>window.PAGE_CATEGORY = "Personajes";</script>
+  <script src="js/modal.js"></script>
+  <script src="js/compendio.js"></script>
+  <script src="js/lado.js"></script>
+  <script>
+    (function () {
+      let ladoPersonajes = null;
+      const tipoFilters = document.getElementById("tipoFilters");
+      const regionFilter = document.getElementById("regionFilter");
+      const faccionFilter = document.getElementById("faccionFilter");
+      const clearBtn = document.getElementById("clearFilters");
+
+      state.tipo = "";
+      state.region = "";
+      state.faccion = "";
+
+      const tipos = [
+        { value: "", label: "Todos" },
+        { value: "Jugador", label: "Jugadores" },
+        { value: "NPC", label: "NPC" },
+        { value: "Histórico", label: "Históricos" }
+      ];
+      tipoFilters.innerHTML = tipos
+        .map(t => `<button class="pill${t.value === "" ? " active" : ""}" data-tipo="${t.value}">${t.label}</button>`)
+        .join("");
+      tipoFilters.addEventListener("click", e => {
+        const btn = e.target.closest("[data-tipo]");
+        if (!btn) return;
+        state.tipo = btn.dataset.tipo;
+        tipoFilters.querySelectorAll(".pill").forEach(b => b.classList.toggle("active", b === btn));
+        renderCompendio();
+      });
+
+      function fillSelect(select, field) {
+        const ids = [...new Set(SCOPE_ENTRIES.map(e => e[field]).filter(Boolean))];
+        const options = ids
+          .map(id => ({ id, title: entryTitleById(id) }))
+          .sort((a, b) => a.title.localeCompare(b.title, "es"));
+        select.innerHTML = `<option value="">Todas</option>` +
+          options.map(o => `<option value="${o.id}">${o.title}</option>`).join("");
+      }
+
+      fillSelect(regionFilter, "lugarOrigen");
+      fillSelect(faccionFilter, "faccion");
+
+      regionFilter.addEventListener("change", () => {
+        state.region = regionFilter.value;
+        renderCompendio();
+      });
+      faccionFilter.addEventListener("change", () => {
+        state.faccion = faccionFilter.value;
+        renderCompendio();
+      });
+
+      clearBtn.addEventListener("click", () => {
+        state.tipo = "";
+        state.region = "";
+        state.faccion = "";
+        tipoFilters.querySelectorAll(".pill").forEach(b => b.classList.toggle("active", b.dataset.tipo === ""));
+        regionFilter.value = "";
+        faccionFilter.value = "";
+      });
+
+      const baseFilteredEntries = filteredEntries;
+      filteredEntries = function () {
+        return baseFilteredEntries().filter(entry => {
+          const matchesLado = !ladoPersonajes || !entry.lado || entry.lado.includes(ladoPersonajes);
+          const matchesTipo = !state.tipo || entry.tipo === state.tipo;
+          const matchesRegion = !state.region || entry.lugarOrigen === state.region;
+          const matchesFaccion = !state.faccion || entry.faccion === state.faccion;
+          return matchesLado && matchesTipo && matchesRegion && matchesFaccion;
+        });
+      };
+
+      initLadoGate(lado => {
+        ladoPersonajes = lado;
+        renderCompendio();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economía — Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>Compendio</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+    </div>
+    <div class="header-right">
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip">Compendio</a>
+      <a href="mapa.html" class="nav-chip">Mapa</a>
+      <a href="cronologia.html" class="nav-chip">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip">Armas</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip active">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+    </div>
+  </nav>
+
+  <main class="layout layout-solo">
+    <section class="content">
+      <section id="economia" class="page-section">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">REFERENCIA RÁPIDA</p>
+            <h2>Economía</h2>
+          </div>
+          <span id="economiaCount" class="result-count"></span>
+        </div>
+        <p class="economia-disclaimer">Los precios de esta tabla son <strong>estimados</strong> y
+        sirven solo como referencia general. El costo real de cualquier objeto puede variar según
+        el vendedor, la región, la disponibilidad y las circunstancias del momento (escasez,
+        urgencia, relación con el comerciante, etc.).</p>
+        <div class="search-box economia-search">
+          <label for="economiaSearch">Buscar</label>
+          <input id="economiaSearch" type="search" placeholder="Nombre, precio o categoría...">
+        </div>
+        <div class="economia-categorias" id="economiaCategorias"></div>
+        <div class="economia-table-wrap">
+          <table class="economia-table">
+            <thead>
+              <tr><th>Objeto</th><th>Categoría</th><th>Precio</th><th>Nota</th></tr>
+            </thead>
+            <tbody id="economiaBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="data/economia.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/economia.js"></script>
+</body>
+</html>
