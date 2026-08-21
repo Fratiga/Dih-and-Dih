@@ -1,5 +1,8 @@
 ﻿# Dih-and-Dih
-Denle ahi donde dice CODE en verde y despues donde dice download ZIP
+
+**Entren acá 👉 https://fratiga.github.io/Dih-and-Dih/**
+
+Ese link los lleva directo al Compendio, sin bajar nada.
 
 ```
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⣤⣤⣤⣤⣶⣦⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀ 
