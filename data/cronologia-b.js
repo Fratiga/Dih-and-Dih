@@ -119,5 +119,82 @@ window.CRONOLOGIA_B = [
       los aldeanos los siguieron repitiendo mucho después de que el sol volviera a salir
       sobre Brurland.</p>
     `
+  },
+  {
+    id: "capitulo-3",
+    orden: 3,
+    numero: "Capítulo III",
+    title: "Los Calabozos de Kigan",
+    fecha: "Los días de espera en Kigan",
+    content: `
+      <p>La masacre del refugio dejó a Brurland con más preguntas que cadáveres para
+      enterrar, y las miradas de la ciudad no tardaron en posarse sobre los forasteros
+      que habían sobrevivido a las tres oleadas. Con la evidencia circunstancial
+      señalándolos como responsables, los protagonistas tomaron una decisión que
+      sorprendió incluso a quienes los acusaban: no huyeron de Brurland. Se entregaron
+      por voluntad propia, decididos a demostrar su inocencia ante el rey y a obligar a
+      la corona a investigar lo que de verdad había ocurrido esa noche.</p>
+
+      <h4>Escena 1: Los calabozos de Kigan</h4>
+
+      <p>Mientras esperaban que se fijara fecha para su audiencia, los encerraron en los
+      calabozos de Kigan, entre piedra húmeda y guardias que evitaban mirarlos a los
+      ojos. Ahí descubrieron que uno de los carceleros les debía un favor antiguo, y el
+      miedo a que el rey ya hubiera decidido su ejecución antes de escucharlos bastó
+      para que empezaran a planear una fuga.</p>
+
+      <p>El plan avanzó lo suficiente como para sumar a otros prisioneros a la causa. La
+      idea era simple sobre el papel: aprovechar el cambio de guardia, abrir varias
+      celdas a la vez y escapar entre la confusión antes de que la fortaleza pudiera
+      organizar una respuesta.</p>
+
+      <h5>La visita de Adam</h5>
+
+      <p>Antes de que la fuga se pusiera en marcha, Adam bajó a los calabozos a hablar
+      con ellos. No prometió clemencia ni fingió estar convencido de su inocencia. Se
+      limitó a recordarles algo mucho más simple, que escapar no los salvaría de nada,
+      solo confirmaría ante todo el reino la versión de sus acusadores. Dejarían de ser
+      sospechosos para convertirse, a ojos de Brurland, en asesinos que habían confesado
+      con los pies.</p>
+
+      <p>Sus palabras alcanzaron para que el grupo reconsiderara el plan. Decidieron
+      permanecer bajo custodia y afrontar el juicio, aun sabiendo que la corona podía
+      condenarlos antes de escuchar una sola palabra en su defensa.</p>
+
+      <h4>Escena 2: La fuga sin ellos</h4>
+
+      <p>La decisión llegó demasiado tarde para detener lo que ya estaba en marcha. El
+      carcelero comprometido y varios reclusos siguieron adelante sin ellos. Cuando el
+      motín estalló, las celdas se abrieron en cadena, los corredores se llenaron de
+      enfrentamientos y una parte de los presos corrió a buscar cualquier salida que la
+      fortaleza todavía no hubiera cerrado.</p>
+
+      <p>Los protagonistas sabían que los fugitivos pasarían frente a su celda, y que
+      podían intentar liberarlos, tomarlos como rehenes o arrastrarlos a la revuelta por
+      la fuerza. Para mantenerse al margen, se encerraron por dentro y atravesaron un
+      camastro contra la puerta.</p>
+
+      <p>Mientras el caos recorría los calabozos, el grupo se quedó adentro. No ayudó a
+      los guardias a sofocar el motín, pero tampoco aprovechó la oportunidad para
+      escapar. Su única acción esa noche fue impedir que la revuelta entrara a la
+      celda.</p>
+
+      <h5>La llegada de los guardias</h5>
+
+      <p>Cuando los refuerzos recuperaron el control del nivel, encontraron a los
+      protagonistas todavía encerrados, con un camastro trabando la puerta desde adentro.
+      La escena bastó para librarlos de la acusación inmediata de haber intentado huir,
+      pero abrió sospechas nuevas y más difíciles de responder.</p>
+
+      <p>Los guardias exigieron saber por qué habían bloqueado la entrada, por qué no se
+      sumaron a la fuga que tenían al alcance de la mano, y sobre todo cómo sabían que
+      debían protegerse antes de que los reclusos llegaran hasta ellos. Nadie descartó la
+      posibilidad de que conocieran el plan de antemano, o de que hubieran participado en
+      organizarlo.</p>
+
+      <p>El desorden general y la cercanía del juicio dejaron el interrogatorio sin
+      resolver esa misma noche. Las preguntas no desaparecieron: pasaron a formar parte
+      del proceso, y esperan ahora una respuesta frente al rey.</p>
+    `
   }
 ];

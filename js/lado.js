@@ -76,7 +76,7 @@ function initLadoGate(onUnlock) {
   function revelar(lado) {
     gate.classList.add("hidden");
     mainContent.classList.remove("hidden");
-    if (badge) badge.textContent = `Versión ${lado}`;
+    if (badge) badge.textContent = `Side ${lado}`;
     onUnlock(lado);
   }
 
