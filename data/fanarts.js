@@ -36,7 +36,6 @@ window.FANARTS = [
   "assets/fanarts/Live action.png",
   "assets/fanarts/Los más buscados.png",
   "assets/fanarts/Ma enojao.png",
-  "assets/fanarts/Mamasote.png",
   "assets/fanarts/Manipulacion.png",
   "assets/fanarts/MATEN_A_LA_NEGRA.gif",
   "assets/fanarts/mattei.png",

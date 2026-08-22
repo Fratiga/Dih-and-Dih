@@ -124,6 +124,55 @@ window.CRONOLOGIA_B = [
     id: "capitulo-3",
     orden: 3,
     numero: "Capítulo III",
+    title: "El Castillo",
+    fecha: "El precio de la victoria",
+    content: `
+      <p>Ocevat y Verdam llegaron cuando el refugio ya daba la última oleada por
+      perdida. Bastaron unos minutos para que ambos derribaran a lo que quedaba de
+      kobolds y dragartos, y se hicieran cargo de una defensa que hasta entonces se
+      sostenía a fuerza de voluntad. Ocevat no perdió tiempo en agradecimientos:
+      ordenó a los protagonistas partir de inmediato hacia el castillo para informar
+      al rey. Verdam no dijo una palabra. Se quedó observando el refugio y a los
+      refugiados con una atención que nadie supo interpretar por completo.</p>
+
+      <p>El castillo seguía bajo asedio cuando llegaron. El dragón se enfrentaba a
+      los caballeros reales en un combate que ya llevaba demasiado tiempo sin un
+      vencedor claro, y los protagonistas se sumaron a la defensa sin más plan que
+      sobrevivir el tiempo suficiente para que sirviera de algo.</p>
+
+      <h4>La herida</h4>
+
+      <p>En medio del combate, el paladín goblin del grupo cayó, sacrificándose para
+      abrir el hueco que los demás necesitaban. Fue ese hueco el que permitió a los
+      protagonistas herir al dragón por primera vez en su vida. El dolor —algo que
+      la criatura no parecía esperar— bastó para espantarla. Se alejó de Brurland
+      dejando atrás una victoria a medias, tan incompleta como cualquier otra esa
+      noche.</p>
+
+      <p>El rey celebró. Por un momento, antes de que nadie tuviera tiempo de pensar
+      en el costo, hubo alivio genuino en el castillo. Los protagonistas informaron
+      que Ocevat y Verdam seguían defendiendo el refugio, y con esa noticia todavía
+      sostenida por la esperanza, emprendieron el regreso.</p>
+
+      <h4>La masacre</h4>
+
+      <p>No había sonidos. No había supervivientes. Solo cuerpos.</p>
+
+      <p>Verdam estaba allí, cubierto de sangre, rodeado de los cadáveres que horas
+      antes habían sido un refugio entero. Los observó en silencio durante unos
+      segundos y, cuando llegaron los soldados, los señaló a ellos.</p>
+
+      <p><em>—Ellos fueron.</em></p>
+
+      <p>Las autoridades no escucharon explicaciones. Los héroes del reino tenían
+      más credibilidad que unos aventureros desconocidos, y esa diferencia bastó
+      para decidir cómo terminaría esa noche.</p>
+    `
+  },
+  {
+    id: "capitulo-4",
+    orden: 4,
+    numero: "Capítulo IV",
     title: "Los Calabozos de Kigan",
     fecha: "Los días de espera en Kigan",
     content: `
