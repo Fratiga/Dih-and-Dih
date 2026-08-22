@@ -101,5 +101,235 @@ window.PERSONAJES = [
       <p>Compañero de banda —y algunos dicen que algo más— de Bull. El cerebro del trío.
       Nunca entra en combate cuerpo a cuerpo y siempre actúa al final.</p>
     `
+  },
+  {
+    id: "ocevat",
+    title: "Ocevat",
+    category: "Personajes",
+    tags: ["histórico", "aarakocra", "refugio", "har"],
+    summary: "Paladín aarakocra que murió defendiendo el refugio y a los protagonistas.",
+    retrato: "",
+    titulo: "Paladín",
+    raza: "Aarakocra",
+    tipo: "Histórico",
+    lugarOrigen: "",
+    ocupacion: "Paladín",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["A", "B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un paladín aarakocra, noble y de trato amable incluso en medio del desastre.
+      Luchó junto a los protagonistas en la defensa del refugio y no sobrevivió a esa
+      noche, pero antes de caer les encomendó una tarea que terminó definiendo el resto
+      de su historia en Brurland: espantar al dragón que había caído sobre la ciudad.</p>
+    `
+  },
+  {
+    id: "verdam",
+    title: "Verdam",
+    category: "Personajes",
+    tags: ["npc", "explorador", "refugio"],
+    summary: "Explorador humano de paradero desconocido, encontrado junto a los cadáveres del refugio.",
+    retrato: "",
+    titulo: "Explorador",
+    raza: "Humano",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Explorador",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["A", "B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un explorador humano, poco hablador y de intenciones difíciles de leer. Cuando
+      los protagonistas llegaron al refugio lo encontraron junto a los cadáveres de los
+      refugiados y de Ocevat, sin tiempo ni ocasión para hacerle una sola pregunta. En
+      cuanto aparecieron los guardias, escapó del lugar sin dar explicaciones. Su
+      paradero actual se desconoce.</p>
+    `
+  },
+  {
+    id: "eklino-a",
+    title: "Eklino",
+    category: "Personajes",
+    tags: ["histórico", "hombre-bestia", "refugio", "side-a"],
+    summary: "Encargado del refugio, hombre bestia foca, murió defendiéndolo junto al resto de los suyos.",
+    retrato: "",
+    titulo: "Encargado del refugio",
+    raza: "Hombre bestia (Foca)",
+    tipo: "Histórico",
+    lugarOrigen: "",
+    ocupacion: "Encargado del refugio",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["A"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un hombre bestia con rasgos de foca, encargado de organizar el refugio
+      improvisado durante el ataque a Brurland. No se apartó de su puesto cuando la
+      situación empeoró, y cayó esa noche junto al resto de quienes se quedaron a
+      defenderlo hasta el final.</p>
+    `
+  },
+  {
+    id: "eklino-b",
+    title: "Eklino",
+    category: "Personajes",
+    tags: ["histórico", "hombre-bestia", "refugio", "side-b"],
+    summary: "Encargado del refugio, hombre bestia foca, murió luchando contra los dragartos que lo asediaron.",
+    retrato: "",
+    titulo: "Encargado del refugio",
+    raza: "Hombre bestia (Foca)",
+    tipo: "Histórico",
+    lugarOrigen: "",
+    ocupacion: "Encargado del refugio",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un hombre bestia con rasgos de foca, encargado de organizar el refugio
+      improvisado durante el ataque a Brurland. Murió luchando contra los dragartos
+      que asediaron el refugio, defendiéndolo hasta el último momento.</p>
+    `
+  },
+  {
+    id: "coach-a",
+    title: "Coach",
+    category: "Personajes",
+    tags: ["histórico", "refugio", "side-a"],
+    summary: "Aldeano del refugio, notablemente más fuerte que el resto, se sacrificó para salvar a Orina del aliento de un protodraco.",
+    retrato: "",
+    titulo: "Aldeano del refugio",
+    raza: "",
+    tipo: "Histórico",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["A"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un aldeano refugiado en Brurland aquella noche, bastante más fuerte que el
+      resto de quienes se resguardaban junto a él. Cuando el aliento de un protodraco
+      barrió la línea de defensa, se interpuso para salvar a Orina, y pagó esa decisión
+      con su vida.</p>
+    `
+  },
+  {
+    id: "coach-b",
+    title: "Coach",
+    category: "Personajes",
+    tags: ["histórico", "refugio", "side-b"],
+    summary: "Enviado por la familia de Ryn para encontrarla en Brurland, se sacrificó para salvar a los protagonistas del aliento del dragón.",
+    retrato: "",
+    titulo: "Enviado de la familia de Ryn",
+    raza: "",
+    tipo: "Histórico",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Enviado por la familia de Ryn con la orden de encontrarla en Brurland, la
+      búsqueda lo llevó directamente al ataque que sacudió la ciudad. Se sacrificó para
+      salvar a los protagonistas del aliento del dragón, sin haber llegado siquiera a
+      completar la misión que lo trajo hasta allí.</p>
+    `
+  },
+  {
+    id: "dagren",
+    title: "Dagren",
+    category: "Personajes",
+    tags: ["npc", "bárbaro"],
+    summary: "Bárbaro de edad avanzada que actualmente da refugio a los protagonistas en su granero.",
+    retrato: "",
+    titulo: "Bárbaro",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "guillotina", nota: "Le arrancó un brazo al atacar su granero" }
+    ],
+    content: `
+      <p>Un bárbaro ya entrado en años que les da refugio a los protagonistas en su
+      granero, en las tierras de la Ley. Perdió un brazo cuando Guillotina, arrastrada
+      hasta allí por accidente por los propios protagonistas, atacó la propiedad.</p>
+    `
+  },
+  {
+    id: "adam-kovacs",
+    title: "Adam Kovacs",
+    category: "Personajes",
+    tags: ["npc", "guardia-real", "kigan"],
+    summary: "Capitán de la Guardia Real, reconocido por su fuerza y agradecido con los protagonistas por su ayuda durante el ataque del dragón.",
+    retrato: "",
+    titulo: "Capitán de la Guardia Real",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Capitán de la Guardia Real",
+    faccion: "",
+    primeraAparicion: "Los Calabozos de Kigan",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Capitán de la Guardia Real, reconocido por su fuerza incluso entre sus propios
+      soldados. Se encontraba en alta mar cuando el dragón atacó Brurland, y desde
+      entonces está agradecido con los protagonistas por la ayuda que prestaron durante
+      el ataque.</p>
+    `
+  },
+  {
+    id: "prisionero-enmascarado",
+    title: "Prisionero Enmascarado",
+    category: "Personajes",
+    tags: ["npc", "prisionero", "kigan"],
+    summary: "Prisionero con una máscara de hierro, encarcelado junto a otra persona por seducir a la reina.",
+    retrato: "",
+    titulo: "Prisionero",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "Los Calabozos de Kigan",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un prisionero que nunca se quita la máscara de hierro que cubre su rostro.
+      Terminó encerrado junto a otra persona por seducir a la reina, un escándalo que
+      terminó en una orden de ejecución para ambos. Nadie parece haberlo visto sin la
+      máscara, aunque se dice que es alguien muy hermoso.</p>
+    `
+  },
+  {
+    id: "sunny-y-hoare",
+    title: "Sunny y Hoare",
+    category: "Personajes",
+    tags: ["npc", "prisioneros", "kigan"],
+    summary: "Prisioneros a quienes los protagonistas ayudaron a escapar, amigos de los padres de Laia.",
+    retrato: "",
+    titulo: "Prisioneros",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "Los Calabozos de Kigan",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Dos prisioneros a los que los protagonistas facilitaron la fuga desde los
+      calabozos de Kigan. Son amigos de los padres de Laia, un vínculo que pesó a la
+      hora de decidir ayudarlos.</p>
+    `
   }
 ];
