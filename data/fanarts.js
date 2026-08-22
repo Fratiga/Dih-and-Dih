@@ -64,6 +64,8 @@ window.FANARTS = [
   "assets/fanarts/we.png",
   "assets/fanarts/When la hornet y la ryn cameo.png",
   "assets/fanarts/Who will know.png",
+  "assets/fanarts/why dis nigga looks so mad.jpg",
+  "assets/fanarts/why dis niggas looks so mad.jpg",
   "assets/fanarts/wow.jpg",
   "assets/fanarts/yo_sin_entender_ni_mierda.JPG",
   "assets/fanarts/zamn.png"

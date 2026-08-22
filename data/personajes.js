@@ -492,7 +492,7 @@ window.PERSONAJES = [
       { id: "enzo", nota: "Lo sigue" }
     ],
     content: `
-      <p>Un mediano pícaro tan pobre como afortunado no lo ha sido nunca. Vivió solo
+      <p>Un mediano pícaro tan pobre como falto de suerte. Vivió solo
       en la calle desde siempre, sobreviviendo de lo que otros descartaban, hasta que
       Enzo lo encontró y se lo llevó consigo. Ahora acompaña al grupo, aunque su
       lealtad, más que a la causa, parece estar puesta sobre todo en Enzo.</p>
@@ -526,7 +526,7 @@ window.PERSONAJES = [
     `
   },
   {
-    id: "eledar",
+    id: "eledar-a",
     title: "Eledar",
     category: "Personajes",
     tags: ["jugador", "semielfo"],
@@ -539,7 +539,31 @@ window.PERSONAJES = [
     ocupacion: "Tarotista",
     faccion: "",
     primeraAparicion: "",
-    lado: ["A", "B"],
+    lado: ["A"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un tarotista semielfo, hijo bastardo de un elfo y una humana, criado por una
+      tarotista que lo adoptó de niño después de que ambos padres lo consideraran una
+      vergüenza compartida. Al llegar a la adultez, partió a buscar su destino y su
+      lugar en el mundo con las únicas herramientas que tenía: las que le enseñó su
+      maestra. Ni sus cartas vieron venir el arpón.</p>
+    `
+  },
+  {
+    id: "eledar-b",
+    title: "Eledar",
+    category: "Personajes",
+    tags: ["jugador", "semielfo"],
+    summary: "Tarotista semielfo, hijo bastardo criado por la tarotista que lo adoptó, en busca de su destino y su lugar en el mundo.",
+    retrato: "",
+    titulo: "Tarotista",
+    raza: "Semielfo",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Tarotista",
+    faccion: "",
+    primeraAparicion: "",
+    lado: ["B"],
     relacionesConocidas: [],
     content: `
       <p>Un tarotista semielfo, hijo bastardo de un elfo y una humana, criado por una

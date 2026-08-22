@@ -895,7 +895,7 @@ window.LUGARES = [
       puerto tan estratégico como ceremonial, aunque los estandartes ondean a media
       asta con más frecuencia de la que cualquier brurlandés recuerda. La frontera
       boscosa de Nobriana al oeste y la sombra de la ocupación de Osses en Broneland
-      al este mantienen al reino en un estado de alerta constante, incluso mientras
+      al Norte mantienen al reino en un estado de alerta constante, incluso mientras
       intenta proyectar hacia fuera una estabilidad que por dentro ya no
       termina de sentir.</p>
     `
@@ -4672,13 +4672,13 @@ window.LUGARES = [
       ceremonial. En los últimos tiempos, las tragedias recientes que sacudieron al
       reino han dejado su huella también aquí, y los estandartes ondean a media asta con
       más frecuencia de la que cualquier brurlandés recuerda.</p>
-      <p>La Corona nunca ha reconocido oficialmente la existencia de una aristocracia
-      vampírica entre sus muros, aunque los rumores llevan generaciones circulando
-      por los salones de Kigan. Familias nobles que no envejecen de forma visible,
-      banquetes que terminan siempre antes del amanecer, decisiones de la corte que
-      nadie logra explicar con claridad. Desde que las tragedias recientes sacudieron
-      la estabilidad del reino, esas sospechas se susurran con menos cautela que
-      antes, aunque ningún vampiro ha confirmado ni desmentido nada.</p>
+      <p>La Corona nunca ha explicado con claridad por qué ciertas familias de su
+      realeza envejecen tan despacio, y los rumores llevan generaciones circulando
+      por los salones de Kigan. Nobles que apenas cambian de rostro entre un
+      retrato y el siguiente, decisiones de la corte que nadie fuera de palacio
+      alcanza a entender. Desde que las tragedias recientes sacudieron la estabilidad del reino,
+      esas sospechas se susurran con menos cautela que antes, aunque nadie de la
+      realeza ha confirmado ni desmentido nada.</p>
     `
   },
   {
