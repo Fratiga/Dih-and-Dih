@@ -208,6 +208,52 @@ h3 { margin-top: 0; }
 
 .mapa-search {
   margin: 0;
+  position: relative;
+}
+
+.mapa-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--shadow);
+  max-height: 260px;
+  overflow-y: auto;
+}
+.mapa-suggestions.hidden { display: none; }
+
+.mapa-suggestion {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: .9rem;
+  cursor: pointer;
+}
+.mapa-suggestion:last-child { border-bottom: none; }
+.mapa-suggestion:hover,
+.mapa-suggestion.active {
+  background: var(--panel-2);
+  color: var(--accent);
+}
+.mapa-suggestion mark {
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+.mapa-suggestion small {
+  display: block;
+  color: var(--muted);
+  font-size: .75rem;
+  margin-top: 2px;
 }
 
 .mapa-legend {

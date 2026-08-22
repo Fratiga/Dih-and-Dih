@@ -139,7 +139,7 @@ window.CRONOLOGIA_B = [
 
       <p>Mientras esperaban que se fijara fecha para su audiencia, los encerraron en los
       calabozos de Kigan, entre piedra húmeda y guardias que evitaban mirarlos a los
-      ojos. Ahí descubrieron que uno de los carceleros les debía un favor antiguo, y el
+      ojos. Ahí descubrieron que uno de los carceleros les debía un favor del escape, y el
       miedo a que el rey ya hubiera decidido su ejecución antes de escucharlos bastó
       para que empezaran a planear una fuga.</p>
 
