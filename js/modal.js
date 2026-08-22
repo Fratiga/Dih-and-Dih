@@ -44,7 +44,9 @@ function cardMeta(entry) {
     return [entry.tipo, entry.region].filter(Boolean).join(" · ");
   }
   if (entry.category === "Armas") {
-    return entry.daño && entry.daño !== "—" ? `${entry.daño} · ${entry.tipoDano}` : "Especial";
+    return entry.daño && entry.daño !== "—"
+      ? [`${entry.daño} · ${entry.tipoDano}`, entry.escala].filter(Boolean).join(" · ")
+      : "Especial";
   }
   if (entry.category === "Bestiario") {
     return [entry.raza, entry.clasificacion].filter(Boolean).join(" · ");
@@ -85,6 +87,7 @@ function modalExtraMeta(entry) {
   } else if (entry.category === "Armas") {
     if (entry.daño && entry.daño !== "—") rows.push(["Daño", entry.daño]);
     if (entry.tipoDano && entry.tipoDano !== "—") rows.push(["Tipo de daño", entry.tipoDano]);
+    if (entry.escala) rows.push(["Escala con", entry.escala]);
     if (entry.alcance) rows.push(["Alcance", entry.alcance]);
     if (entry.peso) rows.push(["Peso", entry.peso]);
     if (entry.coste) rows.push(["Coste", entry.coste]);

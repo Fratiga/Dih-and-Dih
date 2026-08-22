@@ -6,6 +6,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "contundente"],
     summary: "Un trozo de madera endurecida, rudimentario pero eficaz.",
     daño: "1d4", tipoDano: "Contundente", alcance: "", peso: "2 lb", coste: "1 PP",
+    escala: "Fuerza",
     propiedades: ["Ligera"],
     content: `
       <p>Un trozo de madera endurecida, rudimentario pero eficaz.</p>
@@ -19,6 +20,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "perforante"],
     summary: "Una hoja corta diseñada para llevarse oculta y utilizarse a corta distancia o arrojadiza.",
     daño: "1d4", tipoDano: "Perforante", alcance: "6/18 m", peso: "1 lb", coste: "2 PO",
+    escala: "Fuerza o Destreza",
     propiedades: ["Sutil", "Ligera", "Arrojadiza (6/18 m)"],
     content: `
       <p>Una hoja corta diseñada para llevarse oculta y utilizarse a corta distancia o arrojadiza.</p>
@@ -32,6 +34,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "contundente"],
     summary: "Un grueso tronco reforzado, demasiado tosco para llamarlo arma refinada.",
     daño: "1d8", tipoDano: "Contundente", alcance: "", peso: "10 lb", coste: "2 PP",
+    escala: "Fuerza",
     propiedades: ["A dos manos"],
     content: `
       <p>Un grueso tronco reforzado, demasiado tosco para llamarlo arma refinada.</p>
@@ -45,6 +48,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "cortante"],
     summary: "Un hacha pequeña, útil tanto para el combate como para las tareas cotidianas.",
     daño: "1d6", tipoDano: "Cortante", alcance: "6/18 m", peso: "2 lb", coste: "5 PO",
+    escala: "Fuerza",
     propiedades: ["Ligera", "Arrojadiza (6/18 m)"],
     content: `
       <p>Un hacha pequeña, útil tanto para el combate como para las tareas cotidianas.</p>
@@ -58,6 +62,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "perforante"],
     summary: "Una lanza ligera equilibrada para ser arrojada.",
     daño: "1d6", tipoDano: "Perforante", alcance: "9/36 m", peso: "2 lb", coste: "5 PP",
+    escala: "Fuerza",
     propiedades: ["Arrojadiza (9/36 m)"],
     content: `
       <p>Una lanza ligera equilibrada para ser arrojada.</p>
@@ -71,6 +76,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "contundente"],
     summary: "Un martillo pequeño empleado por herreros, artesanos y soldados.",
     daño: "1d4", tipoDano: "Contundente", alcance: "6/18 m", peso: "2 lb", coste: "2 PO",
+    escala: "Fuerza",
     propiedades: ["Ligera", "Arrojadiza (6/18 m)"],
     content: `
       <p>Un martillo pequeño empleado por herreros, artesanos y soldados.</p>
@@ -84,6 +90,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "contundente"],
     summary: "Una pesada cabeza de metal montada sobre un asta corta.",
     daño: "1d6", tipoDano: "Contundente", alcance: "", peso: "4 lb", coste: "5 PO",
+    escala: "Fuerza",
     propiedades: [],
     content: `
       <p>Una pesada cabeza de metal montada sobre un asta corta.</p>
@@ -97,6 +104,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "contundente"],
     summary: "Un sencillo bastón de madera utilizado por viajeros, peregrinos y magos.",
     daño: "1d6", tipoDano: "Contundente", alcance: "", peso: "4 lb", coste: "2 PP",
+    escala: "Fuerza",
     propiedades: ["Versátil (1d8)"],
     content: `
       <p>Un sencillo bastón de madera utilizado por viajeros, peregrinos y magos.</p>
@@ -110,6 +118,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "cortante"],
     summary: "Una hoja curva empleada originalmente para segar cultivos.",
     daño: "1d4", tipoDano: "Cortante", alcance: "", peso: "2 lb", coste: "1 PO",
+    escala: "Fuerza",
     propiedades: ["Ligera"],
     content: `
       <p>Una hoja curva empleada originalmente para segar cultivos.</p>
@@ -123,6 +132,7 @@ window.ARMAS = [
     tags: ["simple", "cuerpo a cuerpo", "perforante"],
     summary: "Una punta de metal fijada a un largo asta de madera.",
     daño: "1d6", tipoDano: "Perforante", alcance: "6/18 m", peso: "3 lb", coste: "1 PO",
+    escala: "Fuerza",
     propiedades: ["Arrojadiza (6/18 m)", "Versátil (1d8)"],
     content: `
       <p>Una punta de metal fijada a un largo asta de madera.</p>
@@ -136,6 +146,7 @@ window.ARMAS = [
     tags: ["simple", "a distancia", "perforante"],
     summary: "Una ballesta compacta que dispara virotes con considerable fuerza.",
     daño: "1d8", tipoDano: "Perforante", alcance: "24/96 m", peso: "5 lb", coste: "25 PO",
+    escala: "Destreza",
     propiedades: ["Munición (24/96 m)", "Recarga", "A dos manos"],
     content: `
       <p>Una ballesta compacta que dispara virotes con considerable fuerza.</p>
@@ -149,6 +160,7 @@ window.ARMAS = [
     tags: ["simple", "a distancia", "perforante"],
     summary: "Un pequeño proyectil equilibrado para ser lanzado con precisión.",
     daño: "1d4", tipoDano: "Perforante", alcance: "6/18 m", peso: "¼ lb", coste: "5 PC",
+    escala: "Destreza",
     propiedades: ["Sutil", "Arrojadizo (6/18 m)"],
     content: `
       <p>Un pequeño proyectil equilibrado para ser lanzado con precisión.</p>
@@ -162,6 +174,7 @@ window.ARMAS = [
     tags: ["simple", "a distancia", "perforante"],
     summary: "Un arco compacto, fácil de transportar y utilizar incluso en terrenos cerrados.",
     daño: "1d6", tipoDano: "Perforante", alcance: "24/96 m", peso: "2 lb", coste: "25 PO",
+    escala: "Destreza",
     propiedades: ["Munición (24/96 m)", "A dos manos"],
     content: `
       <p>Un arco compacto, fácil de transportar y utilizar incluso en terrenos cerrados.</p>
@@ -175,6 +188,7 @@ window.ARMAS = [
     tags: ["simple", "a distancia", "contundente"],
     summary: "Una tira de cuero capaz de convertir una piedra ordinaria en un proyectil mortal.",
     daño: "1d4", tipoDano: "Contundente", alcance: "9/36 m", peso: "—", coste: "1 PP",
+    escala: "Destreza",
     propiedades: ["Munición (9/36 m)"],
     content: `
       <p>Una tira de cuero capaz de convertir una piedra ordinaria en un proyectil mortal.</p>
@@ -188,6 +202,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Un arma de guerra diseñada para cortar con un único golpe pesado.",
     daño: "1d8", tipoDano: "Cortante", alcance: "", peso: "4 lb", coste: "10 PO",
+    escala: "Fuerza",
     propiedades: ["Versátil (1d10)"],
     content: `
       <p>Un arma de guerra diseñada para cortar con un único golpe pesado.</p>
@@ -201,6 +216,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "contundente"],
     summary: "Una cabeza de metal unida mediante una cadena a su empuñadura.",
     daño: "1d8", tipoDano: "Contundente", alcance: "", peso: "2 lb", coste: "10 PO",
+    escala: "Fuerza",
     propiedades: [],
     content: `
       <p>Una cabeza de metal unida mediante una cadena a su empuñadura.</p>
@@ -214,6 +230,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una larga asta coronada por una hoja curva.",
     daño: "1d10", tipoDano: "Cortante", alcance: "", peso: "6 lb", coste: "20 PO",
+    escala: "Fuerza",
     propiedades: ["Pesada", "Alcance", "A dos manos"],
     content: `
       <p>Una larga asta coronada por una hoja curva.</p>
@@ -227,6 +244,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una enorme hacha cuyo peso exige ambas manos para ser manejada correctamente.",
     daño: "1d12", tipoDano: "Cortante", alcance: "", peso: "7 lb", coste: "30 PO",
+    escala: "Fuerza",
     propiedades: ["Pesada", "A dos manos"],
     content: `
       <p>Una enorme hacha cuyo peso exige ambas manos para ser manejada correctamente.</p>
@@ -240,6 +258,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una espada enorme cuyo peso y longitud requieren una fuerza considerable.",
     daño: "2d6", tipoDano: "Cortante", alcance: "", peso: "6 lb", coste: "50 PO",
+    escala: "Fuerza",
     propiedades: ["Pesada", "A dos manos"],
     content: `
       <p>Una espada enorme cuyo peso y longitud requieren una fuerza considerable.</p>
@@ -253,6 +272,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una larga arma de asta que combina una hoja de hacha con una punta de lanza.",
     daño: "1d10", tipoDano: "Cortante", alcance: "", peso: "6 lb", coste: "20 PO",
+    escala: "Fuerza",
     propiedades: ["Pesada", "Alcance", "A dos manos"],
     content: `
       <p>Una larga arma de asta que combina una hoja de hacha con una punta de lanza.</p>
@@ -266,6 +286,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Una lanza especialmente larga destinada principalmente al combate montado.",
     daño: "1d12", tipoDano: "Perforante", alcance: "", peso: "6 lb", coste: "10 PO",
+    escala: "Fuerza",
     propiedades: ["Alcance", "Especial"],
     content: `
       <p>Una lanza especialmente larga destinada principalmente al combate montado.</p>
@@ -283,6 +304,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una espada equilibrada que puede utilizarse tanto con una como con ambas manos.",
     daño: "1d8", tipoDano: "Cortante", alcance: "", peso: "3 lb", coste: "15 PO",
+    escala: "Fuerza",
     propiedades: ["Versátil (1d10)"],
     content: `
       <p>Una espada equilibrada que puede utilizarse tanto con una como con ambas manos.</p>
@@ -296,6 +318,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "contundente"],
     summary: "Una enorme arma de metal diseñada para destruir incluso las protecciones más resistentes.",
     daño: "2d6", tipoDano: "Contundente", alcance: "", peso: "10 lb", coste: "10 PO",
+    escala: "Fuerza",
     propiedades: ["Pesada", "A dos manos"],
     content: `
       <p>Una enorme arma de metal diseñada para destruir incluso las protecciones más resistentes.</p>
@@ -309,6 +332,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Una esfera metálica cubierta de púas montada sobre un asta.",
     daño: "1d8", tipoDano: "Perforante", alcance: "", peso: "4 lb", coste: "15 PO",
+    escala: "Fuerza",
     propiedades: [],
     content: `
       <p>Una esfera metálica cubierta de púas montada sobre un asta.</p>
@@ -322,6 +346,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Una larguísima asta terminada en una punta de metal.",
     daño: "1d10", tipoDano: "Perforante", alcance: "", peso: "18 lb", coste: "5 PO",
+    escala: "Fuerza",
     propiedades: ["Pesada", "Alcance", "A dos manos"],
     content: `
       <p>Una larguísima asta terminada en una punta de metal.</p>
@@ -335,6 +360,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Una espada estrecha diseñada para realizar estocadas rápidas y precisas.",
     daño: "1d8", tipoDano: "Perforante", alcance: "", peso: "2 lb", coste: "25 PO",
+    escala: "Fuerza o Destreza",
     propiedades: ["Sutil"],
     content: `
       <p>Una espada estrecha diseñada para realizar estocadas rápidas y precisas.</p>
@@ -348,6 +374,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una espada ligera de hoja curva, especialmente eficaz en movimientos rápidos.",
     daño: "1d6", tipoDano: "Cortante", alcance: "", peso: "3 lb", coste: "25 PO",
+    escala: "Fuerza o Destreza",
     propiedades: ["Sutil", "Ligera"],
     content: `
       <p>Una espada ligera de hoja curva, especialmente eficaz en movimientos rápidos.</p>
@@ -361,6 +388,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Una espada pequeña y ligera, fácil de portar y manejar en espacios reducidos.",
     daño: "1d6", tipoDano: "Perforante", alcance: "", peso: "2 lb", coste: "10 PO",
+    escala: "Fuerza o Destreza",
     propiedades: ["Sutil", "Ligera"],
     content: `
       <p>Una espada pequeña y ligera, fácil de portar y manejar en espacios reducidos.</p>
@@ -374,6 +402,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Un arma de tres puntas empleada tanto en tierra como en el mar.",
     daño: "1d6", tipoDano: "Perforante", alcance: "6/18 m", peso: "4 lb", coste: "5 PO",
+    escala: "Fuerza",
     propiedades: ["Arrojadizo (6/18 m)", "Versátil (1d8)"],
     content: `
       <p>Un arma de tres puntas empleada tanto en tierra como en el mar.</p>
@@ -387,6 +416,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "perforante"],
     summary: "Un arma diseñada para concentrar toda su fuerza en una pequeña punta.",
     daño: "1d8", tipoDano: "Perforante", alcance: "", peso: "2 lb", coste: "5 PO",
+    escala: "Fuerza",
     propiedades: [],
     content: `
       <p>Un arma diseñada para concentrar toda su fuerza en una pequeña punta.</p>
@@ -400,6 +430,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "contundente"],
     summary: "Un martillo equilibrado para el combate, capaz de utilizarse con una o dos manos.",
     daño: "1d8", tipoDano: "Contundente", alcance: "", peso: "2 lb", coste: "15 PO",
+    escala: "Fuerza",
     propiedades: ["Versátil (1d10)"],
     content: `
       <p>Un martillo equilibrado para el combate, capaz de utilizarse con una o dos manos.</p>
@@ -413,6 +444,7 @@ window.ARMAS = [
     tags: ["marcial", "cuerpo a cuerpo", "cortante"],
     summary: "Una larga tira flexible capaz de golpear desde una distancia considerable.",
     daño: "1d4", tipoDano: "Cortante", alcance: "", peso: "3 lb", coste: "2 PO",
+    escala: "Fuerza o Destreza",
     propiedades: ["Sutil", "Alcance"],
     content: `
       <p>Una larga tira flexible capaz de golpear desde una distancia considerable.</p>
@@ -426,6 +458,7 @@ window.ARMAS = [
     tags: ["marcial", "a distancia", "perforante"],
     summary: "Un tubo estrecho utilizado para lanzar pequeños proyectiles.",
     daño: "1", tipoDano: "Perforante", alcance: "7,5/30 m", peso: "1 lb", coste: "10 PO",
+    escala: "Destreza",
     propiedades: ["Munición (7,5/30 m)", "Recarga"],
     content: `
       <p>Un tubo estrecho utilizado para lanzar pequeños proyectiles.</p>
@@ -439,6 +472,7 @@ window.ARMAS = [
     tags: ["marcial", "a distancia", "perforante"],
     summary: "Una pequeña ballesta diseñada para ser utilizada con una sola mano.",
     daño: "1d6", tipoDano: "Perforante", alcance: "9/36 m", peso: "3 lb", coste: "75 PO",
+    escala: "Destreza",
     propiedades: ["Munición (9/36 m)", "Ligera", "Recarga"],
     content: `
       <p>Una pequeña ballesta diseñada para ser utilizada con una sola mano.</p>
@@ -452,6 +486,7 @@ window.ARMAS = [
     tags: ["marcial", "a distancia", "perforante"],
     summary: "Una gran ballesta capaz de lanzar virotes con una fuerza devastadora.",
     daño: "1d10", tipoDano: "Perforante", alcance: "30/120 m", peso: "18 lb", coste: "50 PO",
+    escala: "Destreza",
     propiedades: ["Munición (30/120 m)", "Pesada", "Recarga", "A dos manos"],
     content: `
       <p>Una gran ballesta capaz de lanzar virotes con una fuerza devastadora.</p>
@@ -465,6 +500,7 @@ window.ARMAS = [
     tags: ["marcial", "a distancia", "perforante"],
     summary: "Un arco de gran tamaño capaz de alcanzar objetivos a distancias extraordinarias.",
     daño: "1d8", tipoDano: "Perforante", alcance: "45/180 m", peso: "2 lb", coste: "50 PO",
+    escala: "Destreza",
     propiedades: ["Munición (45/180 m)", "Pesada", "A dos manos"],
     content: `
       <p>Un arco de gran tamaño capaz de alcanzar objetivos a distancias extraordinarias.</p>
@@ -478,6 +514,7 @@ window.ARMAS = [
     tags: ["marcial", "a distancia", "especial"],
     summary: "Una pesada red preparada para atrapar criaturas y restringir sus movimientos.",
     daño: "—", tipoDano: "—", alcance: "1,5/4,5 m", peso: "3 lb", coste: "1 PO",
+    escala: "Destreza",
     propiedades: ["Especial", "Arrojadiza (1,5/4,5 m)"],
     content: `
       <p>Una pesada red preparada para atrapar criaturas y restringir sus movimientos.</p>
