@@ -142,12 +142,12 @@ window.CRONOLOGIA_A = [
 
       <h4>La herida</h4>
 
-      <p>En medio del combate, el paladín goblin del grupo cayó, sacrificándose para
-      abrir el hueco que los demás necesitaban. Fue ese hueco el que permitió a los
-      protagonistas herir al dragón por primera vez en su vida. El dolor —algo que
-      la criatura no parecía esperar— bastó para espantarla. Se alejó de Brurland
-      dejando atrás una victoria a medias, tan incompleta como cualquier otra esa
-      noche.</p>
+      <p>En medio del combate, alguien decidió usar a Orina, el paladín goblin del
+      grupo, como proyectil contra el dragón. No hacía falta, pero el golpe abrió el
+      hueco que los demás necesitaban para herirlo por primera vez en su vida. El
+      dolor —algo que la criatura no parecía esperar— bastó para espantarla. Se
+      alejó de Brurland dejando atrás una victoria a medias, tan incompleta como
+      cualquier otra esa noche.</p>
 
       <p>El rey celebró. Por un momento, antes de que nadie tuviera tiempo de pensar
       en el costo, hubo alivio genuino en el castillo. Los protagonistas informaron
@@ -231,9 +231,11 @@ window.CRONOLOGIA_A = [
     title: "La Huida y la Separación",
     fecha: "La última noche en El Descanso del Trasgo",
     content: `
-      <p>En medio de esa red de rumores y favores, los protagonistas reclutaron a dos
-      nuevos aliados dispuestos a unirse a su causa: un monje humano y un elfo
-      tarotista. Fue una alianza breve antes de que todo se complicara.</p>
+      <p>En medio de esa red de rumores y favores, se cruzaron en su camino dos
+      nuevas caras: Enzo, un monje humano, y Eledar, un tarotista semielfo. Nadie en
+      el grupo sabía todavía que el verdadero objetivo de Enzo había sido siempre
+      Orina, ni que su muerte durante el ataque del dragón había dejado esa sed de
+      venganza sin dueño a quien cobrársela.</p>
 
       <h4>Pelea en la taberna</h4>
 
@@ -243,12 +245,12 @@ window.CRONOLOGIA_A = [
       generalizada, y los protagonistas aprovecharon el caos para escapar antes de
       que la guardia llegara al lugar.</p>
 
-      <p>De vuelta en el granero, compartieron con sus nuevos compañeros todo lo
-      averiguado esa noche. Con la información sobre la mesa, decidieron dividirse
-      para aumentar sus posibilidades de sobrevivir: el monje y el elfo tarotista
-      regresarían a la ciudad a conseguir provisiones e investigar nuevos rumores,
-      mientras el resto del grupo se internaría en el bosque cercano a cazar
-      alimento y explorar los alrededores.</p>
+      <p>De vuelta en el granero, compartieron con Enzo y Eledar todo lo averiguado
+      esa noche. Con la información sobre la mesa, decidieron dividirse para
+      aumentar sus posibilidades de sobrevivir: Enzo y Eledar regresarían a la
+      ciudad a conseguir provisiones e investigar nuevos rumores, mientras el resto
+      del grupo se internaría en el bosque cercano a cazar alimento y explorar los
+      alrededores.</p>
 
       <p>Ninguno de los dos grupos sabía, al separarse, en qué se estaba metiendo.
       Mientras unos volvían a infiltrarse en una ciudad donde eran los criminales

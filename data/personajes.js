@@ -331,5 +331,272 @@ window.PERSONAJES = [
       calabozos de Kigan. Son amigos de los padres de Laia, un vínculo que pesó a la
       hora de decidir ayudarlos.</p>
     `
+  },
+  {
+    id: "orina",
+    title: "Orina",
+    category: "Personajes",
+    tags: ["jugador", "goblin"],
+    summary: "Paladín goblin fallecido, usado como proyectil para espantar al dragón durante el ataque a la Taberna del Gigante.",
+    retrato: "",
+    titulo: "Paladín",
+    raza: "Goblin",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Paladín",
+    faccion: "",
+    primeraAparicion: "La Taberna del Gigante",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "edge", nota: "Compañero de huida" },
+      { id: "hornet", nota: "Compañera de huida" },
+      { id: "sir-buffolet", nota: "Compañero de huida" }
+    ],
+    content: `
+      <p>Un paladín goblin que llegó a Brurland sin ningún objetivo claro, tan a la
+      deriva como había vivido el resto de su vida, y que murió exactamente de la
+      misma manera. Terminó en La Taberna del Gigante por pura casualidad la noche en
+      que el dragón atacó la ciudad, y durante el caos alguien decidió usarlo como
+      proyectil para intentar espantar a la bestia. No hacía falta, pero nadie se
+      detuvo a pensarlo en ese momento.</p>
+    `
+  },
+  {
+    id: "edge",
+    title: "Edge",
+    category: "Personajes",
+    tags: ["jugador", "humano"],
+    summary: "Pícaro humano, único sobreviviente de la masacre de su banda a manos de un grupo rival.",
+    retrato: "",
+    titulo: "Pícaro",
+    raza: "Humano",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Pícaro",
+    faccion: "",
+    primeraAparicion: "La Taberna del Gigante",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "orina", nota: "Compañero de huida" },
+      { id: "hornet", nota: "Compañera de huida" },
+      { id: "sir-buffolet", nota: "Compañero de huida" }
+    ],
+    content: `
+      <p>Un pícaro humano, único superviviente de la masacre de su banda, Los
+      Skibidi, a manos de un grupo rival. Vive escondido, dividido entre sobrevivir
+      día a día y encontrar a los responsables de esa noche. El ataque del dragón lo
+      arrastró de lleno al caos de Brurland, y fue entonces cuando se unió a Orina,
+      Hornet y Sir Buffolet.</p>
+    `
+  },
+  {
+    id: "hornet",
+    title: "Hornet",
+    category: "Personajes",
+    tags: ["jugador", "semielfo"],
+    summary: "Exploradora semielfa, única sobreviviente de la masacre de su aldea.",
+    retrato: "",
+    titulo: "Exploradora",
+    raza: "Semielfa",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Exploradora",
+    faccion: "",
+    primeraAparicion: "La Taberna del Gigante",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "orina", nota: "Compañero de huida" },
+      { id: "edge", nota: "Compañero de huida" },
+      { id: "sir-buffolet", nota: "Compañero de huida" }
+    ],
+    content: `
+      <p>Una exploradora semielfa, única superviviente de la masacre de su aldea.
+      Huyó hasta Brurland buscando algo parecido a un respiro, y lo encontró,
+      brevemente, en La Taberna del Gigante, hasta que el dragón atacó la ciudad esa
+      misma noche. Escapó junto a Edge, Orina y Sir Buffolet, y sigue con ellos desde
+      entonces porque no tiene ningún otro lugar al que ir.</p>
+    `
+  },
+  {
+    id: "sir-buffolet",
+    title: "Sir Buffolet",
+    category: "Personajes",
+    tags: ["jugador", "aarakocra"],
+    summary: "Bardo aarakocra condenado a muerte por orden real tras ser el peor bufón que la corona haya soportado en siglos.",
+    retrato: "",
+    titulo: "Bardo",
+    raza: "Aarakocra",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Bardo",
+    faccion: "",
+    primeraAparicion: "La Taberna del Gigante",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "orina", nota: "Compañero de huida" },
+      { id: "edge", nota: "Compañero de huida" },
+      { id: "hornet", nota: "Compañera de huida" }
+    ],
+    content: `
+      <p>Un bardo aarakocra condenado a muerte por orden real, tras ganarse la
+      distinción, poco envidiable, de ser el peor bufón que la corona haya soportado
+      en siglos. Huyó de la ejecución y se escondió en los barrios bajos de Brurland,
+      refugiándose finalmente en La Taberna del Gigante la noche en que el dragón
+      atacó. Se unió a Orina, Hornet y Edge durante la huida, y ninguno de los cuatro
+      se ha separado desde entonces.</p>
+    `
+  },
+  {
+    id: "enzo",
+    title: "Enzo",
+    category: "Personajes",
+    tags: ["jugador", "humano"],
+    summary: "Monje humano que perseguía a Orina por venganza; con su objetivo muerto, ahora busca entregar al resto de los fugitivos por su recompensa.",
+    retrato: "",
+    titulo: "Monje",
+    raza: "Humano",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Monje",
+    faccion: "",
+    primeraAparicion: "El Descanso del Trasgo",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "orina", nota: "Objetivo original de venganza, fallecido" },
+      { id: "mattei", nota: "Lo acompaña" }
+    ],
+    content: `
+      <p>Un monje humano que llegó a Brurland persiguiendo a Orina, movido por una
+      sed de venganza personal. La muerte de Orina durante el ataque del dragón le
+      arrebató su objetivo, pero no la sed que lo trajo hasta aquí. Ahora la dirige
+      contra el resto de los fugitivos, a quienes planea entregar a la ley a cambio
+      de la recompensa que pesa sobre sus cabezas.</p>
+    `
+  },
+  {
+    id: "mattei",
+    title: "Mattei",
+    category: "Personajes",
+    tags: ["jugador", "mediano"],
+    summary: "Mediano pícaro que vivía solo en la calle hasta que Enzo lo encontró; ahora acompaña al grupo, sobre todo a él.",
+    retrato: "",
+    titulo: "Pícaro",
+    raza: "Mediano",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Pícaro",
+    faccion: "",
+    primeraAparicion: "El Descanso del Trasgo",
+    lado: ["A"],
+    relacionesConocidas: [
+      { id: "enzo", nota: "Lo sigue" }
+    ],
+    content: `
+      <p>Un mediano pícaro tan pobre como afortunado no lo ha sido nunca. Vivió solo
+      en la calle desde siempre, sobreviviendo de lo que otros descartaban, hasta que
+      Enzo lo encontró y se lo llevó consigo. Ahora acompaña al grupo, aunque su
+      lealtad, más que a la causa, parece estar puesta sobre todo en Enzo.</p>
+    `
+  },
+  {
+    id: "laia",
+    title: "Laia",
+    category: "Personajes",
+    tags: ["jugador", "cambiaformas"],
+    summary: "Cambiaformas pícara, criada en una familia de ladrones, que partió de viaje para entender las emociones propias y ajenas.",
+    retrato: "",
+    titulo: "Pícara",
+    raza: "Cambiaformas",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Pícara",
+    faccion: "",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "sunny-y-hoare", nota: "Amigos de sus padres" }
+    ],
+    content: `
+      <p>Una cambiaformas pícara, criada dentro de una familia de ladrones. Su propia
+      naturaleza cambiante siempre le dificultó entender el porqué de sus propias
+      acciones, y mucho menos las de la gente a su alrededor. Harta de esa
+      incertidumbre, partió de viaje decidida a entender las emociones —las suyas y
+      las ajenas— de una vez por todas. El ataque del dragón no entraba, ni de lejos,
+      en sus planes.</p>
+    `
+  },
+  {
+    id: "eledar",
+    title: "Eledar",
+    category: "Personajes",
+    tags: ["jugador", "semielfo"],
+    summary: "Tarotista semielfo, hijo bastardo criado por la tarotista que lo adoptó, en busca de su destino y su lugar en el mundo.",
+    retrato: "",
+    titulo: "Tarotista",
+    raza: "Semielfo",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Tarotista",
+    faccion: "",
+    primeraAparicion: "",
+    lado: ["A", "B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un tarotista semielfo, hijo bastardo de un elfo y una humana, criado por una
+      tarotista que lo adoptó de niño después de que ambos padres lo consideraran una
+      vergüenza compartida. Al llegar a la adultez, partió a buscar su destino y su
+      lugar en el mundo con las únicas herramientas que tenía: las que le enseñó su
+      maestra. Ni sus cartas, sin embargo, vieron venir al dragón.</p>
+    `
+  },
+  {
+    id: "ryn",
+    title: "Ryn",
+    category: "Personajes",
+    tags: ["jugador", "eladrin"],
+    summary: "Bardo eladrin de familia adinerada de Fel, escapada de más de cien años de encierro para conocer el mundo por su cuenta.",
+    retrato: "",
+    titulo: "Bardo",
+    raza: "Eladrin",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Bardo",
+    faccion: "",
+    primeraAparicion: "El Refugio",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "coach-b", nota: "Se sacrificó para salvarla" }
+    ],
+    content: `
+      <p>Una bardo eladrin, hija de una familia adinerada de Fel que nunca la dejó
+      salir de casa en más de cien años de vida. Harta del encierro y de conocer el
+      mundo solo a través de los libros, se escapó decidida a experimentarlo de
+      primera mano, ganarse un nombre propio y reclamar la autonomía que su familia
+      nunca le concedió. De todo lo que había leído, un dragón no era exactamente lo
+      que esperaba encontrarse primero.</p>
+    `
+  },
+  {
+    id: "hooey-magoo",
+    title: "Hooey Magoo",
+    category: "Personajes",
+    tags: ["jugador", "slimefolk"],
+    summary: "Bárbaro slimefolk que viste ropas de mago sin saber magia, a menudo confundido con un perro.",
+    retrato: "",
+    titulo: "Bárbaro",
+    raza: "Slimefolk",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Bárbaro",
+    faccion: "",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un bárbaro slimefolk que viste ropas de mago sin saber una sola palabra de
+      magia, por razones que nadie —ni él mismo— ha logrado explicar. Su forma y su
+      intelecto más bien limitado hacen que más de uno lo confunda con un perro a
+      primera vista.</p>
+    `
   }
 ];

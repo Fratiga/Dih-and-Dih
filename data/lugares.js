@@ -1370,7 +1370,7 @@ window.LUGARES = [
     religionPredominante: "Edrasismo",
     lugaresDestacados: [],
     content: `
-      <p>Cerca del extremo norte de las Marchas Nobrianas, a apenas un par de días a pie
+      <p>Cerca del extremo Este de las Marchas Nobrianas, a apenas un par de días a pie
       de las murallas de Kigan, los árboles crecen tan juntos que el sol apenas
       atraviesa el dosel. Una niebla espesa y fría cubre el suelo a cualquier hora del
       día, en cualquier estación, y ni brújulas ni estrellas sirven de mucho ahí dentro:
