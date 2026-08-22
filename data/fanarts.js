@@ -1,5 +1,6 @@
 window.FANARTS = [
   "assets/fanarts/100 lucas.png",
+  "assets/fanarts/Aenala.png",
   "assets/fanarts/African squad.png",
   "assets/fanarts/amistad.png",
   "assets/fanarts/amistad.webp",
@@ -58,6 +59,7 @@ window.FANARTS = [
   "assets/fanarts/Soledad.png",
   "assets/fanarts/stupid nig.png",
   "assets/fanarts/teamwork.JPG",
+  "assets/fanarts/Vieja hot.png",
   "assets/fanarts/watejeel.webp",
   "assets/fanarts/we.png",
   "assets/fanarts/When la hornet y la ryn cameo.png",
