@@ -64,6 +64,40 @@ function dispararSusto() {
   sustoTimeout = setTimeout(ocultarSusto, 5000);
 }
 
+let bienvenidaTimeout = null;
+
+function ocultarBienvenida() {
+  const overlay = document.getElementById("ladoBienvenida");
+  if (overlay) overlay.classList.add("hidden");
+  if (bienvenidaTimeout) clearTimeout(bienvenidaTimeout);
+}
+
+function dispararBienvenida() {
+  const imagenes = window.CONTRASENAS_IMAGENES || [];
+  if (!imagenes.length) return;
+
+  let overlay = document.getElementById("ladoBienvenida");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "ladoBienvenida";
+    overlay.className = "lado-susto hidden";
+    overlay.innerHTML = `<div id="ladoBienvenidaBg" class="lado-susto-bg"></div><img id="ladoBienvenidaImg" alt="">`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", ocultarBienvenida);
+  }
+
+  const img = document.getElementById("ladoBienvenidaImg");
+  const bg = document.getElementById("ladoBienvenidaBg");
+  const src = imagenes[Math.floor(Math.random() * imagenes.length)];
+  img.src = src;
+  bg.style.backgroundImage = `url("${src}")`;
+
+  overlay.classList.remove("hidden");
+
+  if (bienvenidaTimeout) clearTimeout(bienvenidaTimeout);
+  bienvenidaTimeout = setTimeout(ocultarBienvenida, 2500);
+}
+
 function initLadoGate(onUnlock) {
   const gate = document.getElementById("ladoGate");
   const mainContent = document.getElementById("ladoContent");
@@ -100,6 +134,7 @@ function initLadoGate(onUnlock) {
     }
     error.classList.add("hidden");
     localStorage.setItem(LADO_KEY, lado);
+    dispararBienvenida();
     revelar(lado);
   });
 

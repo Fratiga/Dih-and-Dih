@@ -795,24 +795,25 @@ window.ENTRIES = [
       la misma estructura. La magia del hechicero no se aprendió en el sentido convencional, sino
       que ya estaba presente, esperando ser reconocida.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Endomancia</strong> — disciplina dedicada al estudio de estructuras arcanas
-      incorporadas de manera estable a una criatura.<br>
-      <strong>Estructura endógena</strong> — disposición arcana cuya continuidad depende de los
-      procesos internos del propio portador.<br>
-      <strong>Origen</strong> — causa heredada, adquirida o transformativa que establece una
-      estructura endógena.<br>
-      <strong>Firma arcana</strong> — conjunto de regularidades mediante las cuales una criatura
-      interactúa de forma característica con la magia.<br>
-      <strong>Reserva interna</strong> — capacidad arcana flexible que el hechicero puede
-      movilizar para adaptar sus manifestaciones.<br>
-      <strong>Metamagia</strong> — intervención sobre las condiciones de una estructura mientras
-      ésta se encuentra en proceso de manifestación.<br>
-      <strong>Afinidad</strong> — tendencia persistente de una estructura endógena hacia
-      determinados fenómenos o propiedades.<br>
-      <strong>Inestabilidad endógena</strong> — variación interna capaz de alterar de forma no
-      prevista la manifestación de una estructura.<br>
-      <strong>Continuidad arcana</strong> — persistencia de una alteración hasta el punto de
-      convertirse en parte estable de la criatura.</p>
+      <p>
+      <strong>Afinidad</strong> — tendencia persistente de una estructura endógena
+      hacia determinados fenómenos o propiedades.<br>
+      <strong>Continuidad arcana</strong> — persistencia de una alteración hasta el
+      punto de convertirse en parte estable de la criatura.<br>
+      <strong>Endomancia</strong> — disciplina dedicada al estudio de estructuras
+      arcanas incorporadas de manera estable a una criatura.<br>
+      <strong>Estructura endógena</strong> — disposición arcana cuya continuidad
+      depende de los procesos internos del propio portador.<br>
+      <strong>Firma arcana</strong> — conjunto de regularidades mediante las cuales
+      una criatura interactúa de forma característica con la magia.<br>
+      <strong>Inestabilidad endógena</strong> — variación interna capaz de alterar de
+      forma no prevista la manifestación de una estructura.<br>
+      <strong>Metamagia</strong> — intervención sobre las condiciones de una
+      estructura mientras ésta se encuentra en proceso de manifestación.<br>
+      <strong>Origen</strong> — causa heredada, adquirida o transformativa que
+      establece una estructura endógena.<br>
+      <strong>Reserva interna</strong> — capacidad arcana flexible que el hechicero
+      puede movilizar para adaptar sus manifestaciones.</p>
     `
   },
   {
@@ -1099,25 +1100,26 @@ window.ENTRIES = [
       sustituir por completo al proceso que utiliza. Allí donde ya no existe una relación que
       conservar, la Naturgia pierde aquello que la distingue.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Naturgia</strong> — disciplina dedicada al estudio de la magia que opera mediante
-      la continuidad de procesos vivos, territoriales y naturales.<br>
-      <strong>Continuidad natural</strong> — conjunto de relaciones que permite que un proceso
-      mantenga identidad a través del cambio.<br>
-      <strong>Patrón vivo</strong> — organización relacional mediante la cual un organismo
-      conserva continuidad mientras crece, se repara y responde al entorno.<br>
+      <p>
+      <strong>Ciclo</strong> — secuencia recurrente de transformaciones cuyas etapas
+      modifican las condiciones de las siguientes.<br>
+      <strong>Continuidad natural</strong> — conjunto de relaciones que permite que un
+      proceso mantenga identidad a través del cambio.<br>
+      <strong>Equilibrio naturgético</strong> — capacidad de un sistema para absorber
+      cambios y reorganizarse sin perder las relaciones que sostienen su continuidad.<br>
       <strong>Forma</strong> — expresión material temporal de un patrón vivo.<br>
-      <strong>Memoria de la forma</strong> — conjunto de correspondencias suficientes para
-      reproducir de manera estable una configuración orgánica conocida.<br>
-      <strong>Territorio</strong> — sistema de relaciones materiales y vivas que puede actuar
-      como soporte de una intervención naturgética.<br>
-      <strong>Ciclo</strong> — secuencia recurrente de transformaciones cuyas etapas modifican las
-      condiciones de las siguientes.<br>
-      <strong>Equilibrio naturgético</strong> — capacidad de un sistema para absorber cambios y
-      reorganizarse sin perder las relaciones que sostienen su continuidad.<br>
-      <strong>Manifestación salvaje</strong> — resultado inestable producido cuando múltiples
-      relaciones activas compiten sin una dirección dominante.<br>
-      <strong>Invocación natural</strong> — establecimiento de una correspondencia con una
-      presencia vinculada a un territorio, ciclo o proceso del mundo vivo.</p>
+      <strong>Invocación natural</strong> — establecimiento de una correspondencia con
+      una presencia vinculada a un territorio, ciclo o proceso del mundo vivo.<br>
+      <strong>Manifestación salvaje</strong> — resultado inestable producido cuando
+      múltiples relaciones activas compiten sin una dirección dominante.<br>
+      <strong>Memoria de la forma</strong> — conjunto de correspondencias suficientes
+      para reproducir de manera estable una configuración orgánica conocida.<br>
+      <strong>Naturgia</strong> — disciplina dedicada al estudio de la magia que opera
+      mediante la continuidad de procesos vivos, territoriales y naturales.<br>
+      <strong>Patrón vivo</strong> — organización relacional mediante la cual un
+      organismo conserva continuidad mientras crece, se repara y responde al entorno.<br>
+      <strong>Territorio</strong> — sistema de relaciones materiales y vivas que puede
+      actuar como soporte de una intervención naturgética.</p>
     `
   },
   {
@@ -1379,26 +1381,27 @@ window.ENTRIES = [
       criatura, y aquello que parecía una deuda puede revelarse como una alteración
       irreversible. Un pacto no entrega solo poder, cambia quién puede llegar hasta él.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Pacturgia</strong> — disciplina dedicada al estudio de vínculos mágicos
+      <p>
+      <strong>Cesión</strong> — acceso temporal o condicionado a una facultad cuya
+      autoridad principal continúa fuera del brujo.<br>
+      <strong>Concesión</strong> — facultad transferida o fijada con suficiente
+      estabilidad como para ser ejercida por el brujo dentro de ciertos límites.<br>
+      <strong>Don del pacto</strong> — manifestación estable mediante la cual el
+      vínculo adquiere una forma concreta en el entorno del brujo.<br>
+      <strong>Invocación</strong> — alteración persistente del acceso del brujo a
+      determinadas estructuras o propiedades.<br>
+      <strong>Marca del vínculo</strong> — regularidad física, mental o arcana
+      producida por la adaptación a una relación pactúrgica.<br>
+      <strong>Pacto</strong> — relación estable que crea correspondencias de acceso,
+      obligación o concesión entre dos partes.<br>
+      <strong>Pacturgia</strong> — disciplina dedicada al estudio de vínculos mágicos
       particulares entre un mortal y una fuente exterior de facultades.<br>
-      <strong>Pacto</strong> — relación estable que crea correspondencias de acceso, obligación o
-      concesión entre dos partes.<br>
-      <strong>Patrono</strong> — entidad, inteligencia o fuente capaz de establecer o sostener una
-      relación pactúrgica.<br>
-      <strong>Cesión</strong> — acceso temporal o condicionado a una facultad cuya autoridad
-      principal continúa fuera del brujo.<br>
-      <strong>Concesión</strong> — facultad transferida o fijada con suficiente estabilidad como
-      para ser ejercida por el brujo dentro de ciertos límites.<br>
-      <strong>Marca del vínculo</strong> — regularidad física, mental o arcana producida por la
-      adaptación a una relación pactúrgica.<br>
-      <strong>Invocación</strong> — alteración persistente del acceso del brujo a determinadas
-      estructuras o propiedades.<br>
-      <strong>Don del pacto</strong> — manifestación estable mediante la cual el vínculo adquiere
-      una forma concreta en el entorno del brujo.<br>
-      <strong>Ruptura</strong> — alteración o terminación parcial de las condiciones que
-      sostenían una relación pactúrgica.<br>
-      <strong>Persistencia</strong> — continuidad de facultades o estructuras concedidas incluso
-      después de modificar o terminar la relación original.</p>
+      <strong>Patrono</strong> — entidad, inteligencia o fuente capaz de establecer o
+      sostener una relación pactúrgica.<br>
+      <strong>Persistencia</strong> — continuidad de facultades o estructuras
+      concedidas incluso después de modificar o terminar la relación original.<br>
+      <strong>Ruptura</strong> — alteración o terminación parcial de las condiciones
+      que sostenían una relación pactúrgica.</p>
     `
   },
   {
@@ -1733,27 +1736,32 @@ window.ENTRIES = [
       espectador y pasa a formar parte de la estructura. Los bardos descubrieron que una
       estructura también puede sobrevivir en aquello que alguien recuerda, espera o reconoce.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Resonántica</strong> — disciplina dedicada al estudio de estructuras expresivas
-      capaces de establecer correspondencias con otros interpretadores y participar de fenómenos
-      mágicos.<br>
-      <strong>Resonancia</strong> — correspondencia establecida entre una estructura expresada y
-      un interpretador capaz de reconocer una parte significativa de sus relaciones.<br>
-      <strong>Estructura expresiva</strong> — organización de sonidos, palabras, movimientos,
-      silencios u otros elementos empleada como soporte de información resonántica.<br>
-      <strong>Correspondencia</strong> — relación mediante la cual un elemento de una estructura
-      expresada encuentra una asociación compatible en el receptor o en otro sistema
-      interpretativo.<br>
-      <strong>Estructura latente</strong> — organización resonántica conservada durante un
-      período sin haber completado todavía el fenómeno para el que fue establecida.<br>
-      <strong>Variación</strong> — modificación de una obra que conserva las relaciones
-      necesarias para mantener su función resonántica.<br>
-      <strong>Deformación</strong> — alteración acumulativa de una estructura transmitida que
-      puede modificar o destruir sus correspondencias originales.<br>
-      <strong>Composición resonántica</strong> — construcción deliberada de una obra destinada a
-      sostener una estructura capaz de participar de una manifestación mágica.<br>
-      <strong>Interpretación compartida</strong> — proceso en el cual una parte de la estructura
-      necesaria para un fenómeno es aportada por el receptor mediante sus propias asociaciones,
-      memoria o percepción.</p>
+      <p>
+      <strong>Composición resonántica</strong> — construcción deliberada de una obra
+      destinada a sostener una estructura capaz de participar de una manifestación
+      mágica.<br>
+      <strong>Correspondencia</strong> — relación mediante la cual un elemento de una
+      estructura expresada encuentra una asociación compatible en el receptor o en
+      otro sistema interpretativo.<br>
+      <strong>Deformación</strong> — alteración acumulativa de una estructura
+      transmitida que puede modificar o destruir sus correspondencias originales.<br>
+      <strong>Estructura expresiva</strong> — organización de sonidos, palabras,
+      movimientos, silencios u otros elementos empleada como soporte de información
+      resonántica.<br>
+      <strong>Estructura latente</strong> — organización resonántica conservada
+      durante un período sin haber completado todavía el fenómeno para el que fue
+      establecida.<br>
+      <strong>Interpretación compartida</strong> — proceso en el cual una parte de la
+      estructura necesaria para un fenómeno es aportada por el receptor mediante sus
+      propias asociaciones, memoria o percepción.<br>
+      <strong>Resonancia</strong> — correspondencia establecida entre una estructura
+      expresada y un interpretador capaz de reconocer una parte significativa de sus
+      relaciones.<br>
+      <strong>Resonántica</strong> — disciplina dedicada al estudio de estructuras
+      expresivas capaces de establecer correspondencias con otros interpretadores y
+      participar de fenómenos mágicos.<br>
+      <strong>Variación</strong> — modificación de una obra que conserva las
+      relaciones necesarias para mantener su función resonántica.</p>
     `
   },
   {
@@ -2072,26 +2080,28 @@ window.ENTRIES = [
       La Teurgia estudia qué ocurre cuando la realidad reconoce que alguien habla con una
       autoridad que no es solo suya.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Teurgia</strong> — disciplina dedicada al estudio de la magia mediada por
-      vínculos con fuentes de autoridad sagrada o superior.<br>
-      <strong>Vínculo</strong> — correspondencia estable que permite a una criatura ser
-      reconocida por una estructura teúrgica y operar a través de ella.<br>
-      <strong>Autoridad teúrgica</strong> — capacidad de observar, modificar o manifestar
-      propiedades mediante una relación cuya fuente no pertenece exclusivamente al oficiante.<br>
-      <strong>Dominio</strong> — familia de correspondencias sobre las que una fuente teúrgica
-      posee una autoridad especialmente estable.<br>
-      <strong>Preparación</strong> — proceso mediante el cual el clérigo reafirma el vínculo y
-      dispone determinadas vías de acceso para su uso posterior.<br>
-      <strong>Canalización</strong> — manifestación directa de una propiedad característica del
-      vínculo o del dominio.<br>
-      <strong>Consagración</strong> — establecimiento duradero de correspondencias teúrgicas
-      sobre un objeto, lugar o práctica.<br>
-      <strong>Reliquia</strong> — objeto que conserva o facilita una relación teúrgica de
-      especial estabilidad.<br>
-      <strong>Milagro</strong> — manifestación en la que una autoridad superior amplía o modifica
-      las condiciones ordinarias disponibles para el oficiante.<br>
-      <strong>Crisis del vínculo</strong> — alteración de la relación que sostiene la autoridad
-      clerical, con consecuencias variables sobre sus manifestaciones.</p>
+      <p>
+      <strong>Autoridad teúrgica</strong> — capacidad de observar, modificar o
+      manifestar propiedades mediante una relación cuya fuente no pertenece
+      exclusivamente al oficiante.<br>
+      <strong>Canalización</strong> — manifestación directa de una propiedad
+      característica del vínculo o del dominio.<br>
+      <strong>Consagración</strong> — establecimiento duradero de correspondencias
+      teúrgicas sobre un objeto, lugar o práctica.<br>
+      <strong>Crisis del vínculo</strong> — alteración de la relación que sostiene la
+      autoridad clerical, con consecuencias variables sobre sus manifestaciones.<br>
+      <strong>Dominio</strong> — familia de correspondencias sobre las que una fuente
+      teúrgica posee una autoridad especialmente estable.<br>
+      <strong>Milagro</strong> — manifestación en la que una autoridad superior amplía
+      o modifica las condiciones ordinarias disponibles para el oficiante.<br>
+      <strong>Preparación</strong> — proceso mediante el cual el clérigo reafirma el
+      vínculo y dispone determinadas vías de acceso para su uso posterior.<br>
+      <strong>Reliquia</strong> — objeto que conserva o facilita una relación teúrgica
+      de especial estabilidad.<br>
+      <strong>Teurgia</strong> — disciplina dedicada al estudio de la magia mediada
+      por vínculos con fuentes de autoridad sagrada o superior.<br>
+      <strong>Vínculo</strong> — correspondencia estable que permite a una criatura
+      ser reconocida por una estructura teúrgica y operar a través de ella.</p>
     `
   },
   {
@@ -2262,22 +2272,43 @@ window.ENTRIES = [
       <p>La petrificación demuestra que una sustancia puede cambiar de manera extrema sin perder necesariamente la referencia necesaria para restaurar un organismo. La polimorfia muestra que una identidad puede persistir a través de anatomías distintas. La fabricación mágica revela que reproducir apariencia no basta para reproducir función, y los artefactos demuestran que materia e historia pueden encontrarse unidas por relaciones que no son visibles.</p>
       <p>La transmutación es poderosa precisamente porque el mundo permite que algunas propiedades cambien sin que todas las demás deban reconstruirse desde cero. Su estudio consiste en aprender cuáles pueden separarse y cuáles no.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Materia y Transmutación</strong> — disciplina dedicada al estudio de identidad material, cambio estructural y conservación de propiedades a través de transformaciones.<br>
-      <strong>Identidad material</strong> — conjunto de relaciones que permiten reconocer una sustancia como perteneciente a una clase determinada pese a cambios compatibles.<br>
-      <strong>Continuidad transmutativa</strong> — cadena de correspondencias que vincula un estado material anterior con otro posterior sin tratar el resultado como mera sustitución.<br>
-      <strong>Sustitución material</strong> — reemplazo de una estructura por otra sin continuidad suficiente entre ambas.<br>
-      <strong>Referencia de retorno</strong> — información conservada que permite reconstruir un estado anterior después de una transformación.<br>
-      <strong>Transformación morfológica</strong> — alteración de forma o disposición sin cambio necesario de composición.<br>
-      <strong>Transformación compositiva</strong> — modificación de la sustancia o de las relaciones que determinan su composición.<br>
-      <strong>Transformación funcional</strong> — alteración de las capacidades o respuestas de un material sin necesidad de cambiar toda su composición.<br>
-      <strong>Transformación fundamental</strong> — intervención sobre relaciones de identidad, pertenencia o persistencia.<br>
-      <strong>Matriz</strong> — patrón que proporciona información sobre la forma o estructura que debe adoptar la materia.<br>
-      <strong>Catalizador</strong> — elemento que facilita una transformación sin constituir necesariamente la materia principal del resultado.<br>
-      <strong>Manifestación material</strong> — estado en el que una sustancia depende todavía de una estructura mágica activa para continuar existiendo.<br>
-      <strong>Producción material persistente</strong> — creación o transformación cuyo resultado continúa estable después de desaparecer el procedimiento que lo produjo.<br>
-      <strong>Transformación permanente</strong> — estado nuevo capaz de sostenerse bajo condiciones ordinarias sin prioridad continua de la técnica original.<br>
-      <strong>Identidad de clase</strong> — pertenencia de un objeto a una categoría material o funcional compartida.<br>
-      <strong>Identidad individual</strong> — continuidad histórica y relacional que permite distinguir un objeto concreto de otros equivalentes.</p>
+      <p>
+      <strong>Catalizador</strong> — elemento que facilita una transformación sin
+      constituir necesariamente la materia principal del resultado.<br>
+      <strong>Continuidad transmutativa</strong> — cadena de correspondencias que
+      vincula un estado material anterior con otro posterior sin tratar el resultado
+      como mera sustitución.<br>
+      <strong>Identidad de clase</strong> — pertenencia de un objeto a una categoría
+      material o funcional compartida.<br>
+      <strong>Identidad individual</strong> — continuidad histórica y relacional que
+      permite distinguir un objeto concreto de otros equivalentes.<br>
+      <strong>Identidad material</strong> — conjunto de relaciones que permiten
+      reconocer una sustancia como perteneciente a una clase determinada pese a
+      cambios compatibles.<br>
+      <strong>Manifestación material</strong> — estado en el que una sustancia depende
+      todavía de una estructura mágica activa para continuar existiendo.<br>
+      <strong>Materia y Transmutación</strong> — disciplina dedicada al estudio de
+      identidad material, cambio estructural y conservación de propiedades a través de
+      transformaciones.<br>
+      <strong>Matriz</strong> — patrón que proporciona información sobre la forma o
+      estructura que debe adoptar la materia.<br>
+      <strong>Producción material persistente</strong> — creación o transformación
+      cuyo resultado continúa estable después de desaparecer el procedimiento que lo
+      produjo.<br>
+      <strong>Referencia de retorno</strong> — información conservada que permite
+      reconstruir un estado anterior después de una transformación.<br>
+      <strong>Sustitución material</strong> — reemplazo de una estructura por otra sin
+      continuidad suficiente entre ambas.<br>
+      <strong>Transformación compositiva</strong> — modificación de la sustancia o de
+      las relaciones que determinan su composición.<br>
+      <strong>Transformación funcional</strong> — alteración de las capacidades o
+      respuestas de un material sin necesidad de cambiar toda su composición.<br>
+      <strong>Transformación fundamental</strong> — intervención sobre relaciones de
+      identidad, pertenencia o persistencia.<br>
+      <strong>Transformación morfológica</strong> — alteración de forma o disposición
+      sin cambio necesario de composición.<br>
+      <strong>Transformación permanente</strong> — estado nuevo capaz de sostenerse
+      bajo condiciones ordinarias sin prioridad continua de la técnica original.</p>
     `
   },
   {
@@ -2715,27 +2746,49 @@ window.ENTRIES = [
       <p>La disciplina distingue información de interpretación, precisión de vaguedad, profecía de pronóstico y acceso sobrenatural de inferencia extraordinariamente buena. También reconoce que conocer un futuro puede modificarlo y que una predicción correcta puede parecer falsa si permitió evitar precisamente aquello que anunciaba.</p>
       <p>Su mayor desafío no consiste en producir visiones, sino en construir métodos para saber cuándo una visión contenía realmente información. Por esa razón, el registro previo, la replicación, el control de sesgos y la comparación con el azar son tan importantes como cualquier técnica ritual.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Adivinación</strong> — disciplina dedicada al estudio de información sobre estados o acontecimientos no observados mediante medios ordinarios.<br>
-      <strong>Predicción</strong> — afirmación sobre un estado futuro derivada de información y un modelo de evolución.<br>
-      <strong>Pronóstico</strong> — estimación estructurada de resultados futuros basada en condiciones conocidas.<br>
-      <strong>Profecía</strong> — información futura que parece exceder lo deducible a partir del presente observable.<br>
-      <strong>Probabilidad prospectiva</strong> — estimación de qué futuros son más compatibles con las condiciones actuales.<br>
-      <strong>Nodo prospectivo</strong> — acontecimiento futuro que aparece repetidamente con alta estabilidad en métodos independientes.<br>
-      <strong>Horizonte adivinatorio</strong> — distancia temporal o relacional dentro de la cual un método mantiene precisión útil.<br>
-      <strong>Resolución</strong> — grado de detalle específico que puede obtenerse en una observación.<br>
-      <strong>Retrocognición</strong> — obtención de información sobre acontecimientos pasados no observados directamente.<br>
-      <strong>Clarividencia</strong> — adquisición de información distante u oculta en formato visual o cuasi-visual.<br>
-      <strong>Psicometría</strong> — obtención de información mediante objetos relacionados con personas o acontecimientos.<br>
-      <strong>Tarotismo</strong> — estudio y práctica de sistemas simbólicos de cartas o elementos equivalentes usados como interfaz adivinatoria.<br>
-      <strong>Tirada</strong> — disposición estructurada que asigna funciones interpretativas a posiciones dentro de una lectura tarotística.<br>
-      <strong>Azar dirigido</strong> — hipótesis según la cual un proceso adivinatorio sesga eventos aleatorios para seleccionar información relevante.<br>
-      <strong>Selección resonante</strong> — hipótesis según la cual el lector reconoce inconscientemente elementos correspondientes con la consulta.<br>
-      <strong>Contradivinación</strong> — conjunto de técnicas destinadas a ocultar, distorsionar o multiplicar información accesible a observación adivinatoria.<br>
-      <strong>Profecía autocumplida</strong> — predicción cuya difusión contribuye causalmente a producir el resultado anunciado.<br>
-      <strong>Autoevitación</strong> — situación en la que conocer una predicción permite impedir su cumplimiento.<br>
-      <strong>Estabilidad prospectiva</strong> — grado en que un acontecimiento permanece presente a través de múltiples futuros posibles.<br>
-      <strong>Registro previo</strong> — documentación realizada antes del evento que fija el contenido exacto de una predicción.<br>
-      <strong>Falsabilidad</strong> — posibilidad de establecer condiciones bajo las cuales una afirmación se consideraría incorrecta.</p>
+      <p>
+      <strong>Adivinación</strong> — disciplina dedicada al estudio de información
+      sobre estados o acontecimientos no observados mediante medios ordinarios.<br>
+      <strong>Autoevitación</strong> — situación en la que conocer una predicción
+      permite impedir su cumplimiento.<br>
+      <strong>Azar dirigido</strong> — hipótesis según la cual un proceso adivinatorio
+      sesga eventos aleatorios para seleccionar información relevante.<br>
+      <strong>Clarividencia</strong> — adquisición de información distante u oculta en
+      formato visual o cuasi-visual.<br>
+      <strong>Contradivinación</strong> — conjunto de técnicas destinadas a ocultar,
+      distorsionar o multiplicar información accesible a observación adivinatoria.<br>
+      <strong>Estabilidad prospectiva</strong> — grado en que un acontecimiento
+      permanece presente a través de múltiples futuros posibles.<br>
+      <strong>Falsabilidad</strong> — posibilidad de establecer condiciones bajo las
+      cuales una afirmación se consideraría incorrecta.<br>
+      <strong>Horizonte adivinatorio</strong> — distancia temporal o relacional dentro
+      de la cual un método mantiene precisión útil.<br>
+      <strong>Nodo prospectivo</strong> — acontecimiento futuro que aparece
+      repetidamente con alta estabilidad en métodos independientes.<br>
+      <strong>Predicción</strong> — afirmación sobre un estado futuro derivada de
+      información y un modelo de evolución.<br>
+      <strong>Probabilidad prospectiva</strong> — estimación de qué futuros son más
+      compatibles con las condiciones actuales.<br>
+      <strong>Profecía</strong> — información futura que parece exceder lo deducible a
+      partir del presente observable.<br>
+      <strong>Profecía autocumplida</strong> — predicción cuya difusión contribuye
+      causalmente a producir el resultado anunciado.<br>
+      <strong>Pronóstico</strong> — estimación estructurada de resultados futuros
+      basada en condiciones conocidas.<br>
+      <strong>Psicometría</strong> — obtención de información mediante objetos
+      relacionados con personas o acontecimientos.<br>
+      <strong>Registro previo</strong> — documentación realizada antes del evento que
+      fija el contenido exacto de una predicción.<br>
+      <strong>Resolución</strong> — grado de detalle específico que puede obtenerse en
+      una observación.<br>
+      <strong>Retrocognición</strong> — obtención de información sobre acontecimientos
+      pasados no observados directamente.<br>
+      <strong>Selección resonante</strong> — hipótesis según la cual el lector
+      reconoce inconscientemente elementos correspondientes con la consulta.<br>
+      <strong>Tarotismo</strong> — estudio y práctica de sistemas simbólicos de cartas
+      o elementos equivalentes usados como interfaz adivinatoria.<br>
+      <strong>Tirada</strong> — disposición estructurada que asigna funciones
+      interpretativas a posiciones dentro de una lectura tarotística.</p>
     `
   },
   {
@@ -2872,21 +2925,43 @@ window.ENTRIES = [
       <p>La teoría de los tres principios continúa siendo una herramienta importante porque describe, con limitaciones conocidas, relaciones entre estabilidad, adaptación y orientación. Su utilidad desaparece cuando se emplea como justificación para asumir que toda criatura puede dividirse limpiamente en cuerpo, mente y alma o que la intensificación de uno de estos aspectos conduce necesariamente a una forma superior.</p>
       <p>Los procedimientos de saturación muestran con especial claridad el riesgo de confundir adaptación con perfeccionamiento. Una estructura viva puede reorganizarse de maneras extraordinarias para sobrevivir a condiciones extremas, pero la supervivencia no garantiza conservación de identidad, función ni bienestar.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Alquimia</strong> — disciplina dedicada al estudio controlado de transformaciones materiales en las que composición, estructura y correspondencia pueden influir simultáneamente en el resultado.<br>
-      <strong>Estado material</strong> — conjunto de propiedades físicas, reactivas y arcanas que describen una sustancia en condiciones determinadas.<br>
-      <strong>Equivalencia funcional</strong> — conservación de las propiedades necesarias para que un material transformado cumpla la misma función relevante que su estado de origen.<br>
-      <strong>Disolución</strong> — operación destinada a separar propiedades o componentes previamente integrados dentro de una estructura.<br>
-      <strong>Fijación</strong> — establecimiento de una relación suficientemente estable para conservar una transformación sin reproducir continuamente las condiciones que la originaron.<br>
-      <strong>Catalizador</strong> — sustancia, estructura o condición que facilita una vía de transformación sin constituir necesariamente el componente principal del producto.<br>
-      <strong>Pureza funcional</strong> — grado en que una muestra conserva las correspondencias necesarias para un procedimiento concreto.<br>
-      <strong>Sal</strong> — principio alquímico asociado con estabilidad, forma, resistencia, fijación y continuidad estructural.<br>
-      <strong>Mercurio</strong> — principio alquímico asociado con transmisión, movilidad, adaptación y reorganización.<br>
-      <strong>Azufre</strong> — principio alquímico asociado con impulso, orientación y persistencia de determinadas tendencias estructurales.<br>
-      <strong>Saturación</strong> — estado en que una estructura se aproxima al límite de una influencia que puede integrar sin reorganización global.<br>
-      <strong>Desviación triprincipial</strong> — alteración persistente asociada con la predominancia extrema de uno de los tres principios.<br>
-      <strong>Transmutación</strong> — reorganización de una sustancia hasta obtener un estado material cualitativamente diferente.<br>
-      <strong>Balance de transformación</strong> — análisis de materia, energía, estabilidad, información y otras contribuciones consumidas, transferidas o conservadas durante una operación.<br>
-      <strong>Reversibilidad</strong> — posibilidad de conducir una estructura transformada hacia un estado anterior o funcionalmente equivalente mediante una trayectoria conocida.</p>
+      <p>
+      <strong>Alquimia</strong> — disciplina dedicada al estudio controlado de
+      transformaciones materiales en las que composición, estructura y correspondencia
+      pueden influir simultáneamente en el resultado.<br>
+      <strong>Azufre</strong> — principio alquímico asociado con impulso, orientación
+      y persistencia de determinadas tendencias estructurales.<br>
+      <strong>Balance de transformación</strong> — análisis de materia, energía,
+      estabilidad, información y otras contribuciones consumidas, transferidas o
+      conservadas durante una operación.<br>
+      <strong>Catalizador</strong> — sustancia, estructura o condición que facilita
+      una vía de transformación sin constituir necesariamente el componente principal
+      del producto.<br>
+      <strong>Desviación triprincipial</strong> — alteración persistente asociada con
+      la predominancia extrema de uno de los tres principios.<br>
+      <strong>Disolución</strong> — operación destinada a separar propiedades o
+      componentes previamente integrados dentro de una estructura.<br>
+      <strong>Equivalencia funcional</strong> — conservación de las propiedades
+      necesarias para que un material transformado cumpla la misma función relevante
+      que su estado de origen.<br>
+      <strong>Estado material</strong> — conjunto de propiedades físicas, reactivas y
+      arcanas que describen una sustancia en condiciones determinadas.<br>
+      <strong>Fijación</strong> — establecimiento de una relación suficientemente
+      estable para conservar una transformación sin reproducir continuamente las
+      condiciones que la originaron.<br>
+      <strong>Mercurio</strong> — principio alquímico asociado con transmisión,
+      movilidad, adaptación y reorganización.<br>
+      <strong>Pureza funcional</strong> — grado en que una muestra conserva las
+      correspondencias necesarias para un procedimiento concreto.<br>
+      <strong>Reversibilidad</strong> — posibilidad de conducir una estructura
+      transformada hacia un estado anterior o funcionalmente equivalente mediante una
+      trayectoria conocida.<br>
+      <strong>Sal</strong> — principio alquímico asociado con estabilidad, forma,
+      resistencia, fijación y continuidad estructural.<br>
+      <strong>Saturación</strong> — estado en que una estructura se aproxima al límite
+      de una influencia que puede integrar sin reorganización global.<br>
+      <strong>Transmutación</strong> — reorganización de una sustancia hasta obtener
+      un estado material cualitativamente diferente.</p>
     `
   },
   {
@@ -3034,19 +3109,37 @@ window.ENTRIES = [
       <p>Los cambiantes y slimefolk muestran extremos útiles de plasticidad y organización amorfa, pero forman parte de un panorama mucho más amplio que incluye fisiologías dracónicas, no-muertos, especies de gran masa, organismos extraplanares y criaturas artificiales.</p>
       <p>Comprender esa diversidad exige abandonar la idea de que el cuerpo es únicamente materia organizada. En muchas criaturas, la forma persiste porque materia, información y continuidad se sostienen mutuamente.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Anatomía Arcana</strong> — disciplina dedicada al estudio de la organización corporal cuando la magia participa de manera estable en forma, función o continuidad.<br>
-      <strong>Integración somática</strong> — conjunto de correspondencias mediante las cuales los componentes de un organismo se mantienen como partes de una unidad coherente.<br>
-      <strong>Continuidad orgánica</strong> — principio según el cual las regiones y cavidades internas de un organismo conservan pertenencia estructural al cuerpo que las contiene.<br>
-      <strong>Firma somática</strong> — conjunto de regularidades arcanas que acompañan de manera estable a la anatomía de un individuo o especie.<br>
-      <strong>Órgano arcano</strong> — estructura corporal cuya función depende de manera significativa de procesos mágicos.<br>
-      <strong>Distribución arcana</strong> — forma en que un organismo desplaza, concentra o estabiliza energía entre regiones de su cuerpo.<br>
-      <strong>Plasticidad anatómica</strong> — capacidad de modificar forma o distribución corporal sin perder continuidad funcional.<br>
-      <strong>Metamorfosis arcana</strong> — reorganización corporal extensa que conserva continuidad personal y operativa a través del cambio.<br>
-      <strong>Anatomía post vital</strong> — estudio de estructuras corporales que continúan operativas después de la terminación vital.<br>
-      <strong>Compatibilidad somática</strong> — grado en que una estructura corporal externa puede ser reconocida e integrada por un organismo receptor.<br>
-      <strong>Corrupción somática</strong> — alteración de las relaciones que sostienen forma, pertenencia o función corporal.<br>
-      <strong>Adaptación inducida</strong> — modificación estable del organismo desarrollada en respuesta a una condición extraordinaria.<br>
-      <strong>Integración arcana</strong> — proceso mediante el cual una modificación mágica deja de depender de soporte externo y pasa a formar parte de la configuración estable del organismo.</p>
+      <p>
+      <strong>Adaptación inducida</strong> — modificación estable del organismo
+      desarrollada en respuesta a una condición extraordinaria.<br>
+      <strong>Anatomía Arcana</strong> — disciplina dedicada al estudio de la
+      organización corporal cuando la magia participa de manera estable en forma,
+      función o continuidad.<br>
+      <strong>Anatomía post vital</strong> — estudio de estructuras corporales que
+      continúan operativas después de la terminación vital.<br>
+      <strong>Compatibilidad somática</strong> — grado en que una estructura corporal
+      externa puede ser reconocida e integrada por un organismo receptor.<br>
+      <strong>Continuidad orgánica</strong> — principio según el cual las regiones y
+      cavidades internas de un organismo conservan pertenencia estructural al cuerpo
+      que las contiene.<br>
+      <strong>Corrupción somática</strong> — alteración de las relaciones que
+      sostienen forma, pertenencia o función corporal.<br>
+      <strong>Distribución arcana</strong> — forma en que un organismo desplaza,
+      concentra o estabiliza energía entre regiones de su cuerpo.<br>
+      <strong>Firma somática</strong> — conjunto de regularidades arcanas que
+      acompañan de manera estable a la anatomía de un individuo o especie.<br>
+      <strong>Integración arcana</strong> — proceso mediante el cual una modificación
+      mágica deja de depender de soporte externo y pasa a formar parte de la
+      configuración estable del organismo.<br>
+      <strong>Integración somática</strong> — conjunto de correspondencias mediante
+      las cuales los componentes de un organismo se mantienen como partes de una
+      unidad coherente.<br>
+      <strong>Metamorfosis arcana</strong> — reorganización corporal extensa que
+      conserva continuidad personal y operativa a través del cambio.<br>
+      <strong>Órgano arcano</strong> — estructura corporal cuya función depende de
+      manera significativa de procesos mágicos.<br>
+      <strong>Plasticidad anatómica</strong> — capacidad de modificar forma o
+      distribución corporal sin perder continuidad funcional.</p>
     `
   },
   {
@@ -3514,26 +3607,47 @@ window.ENTRIES = [
       <p>El principal desafío es que comprender y activar no son sinónimos. Una puerta antigua puede revelar su función al abrirse, pero también puede consumir la evidencia que permitía saber cómo reconocía a sus usuarios. Un artefacto puede volver a funcionar y dejar de ser el artefacto que llegó hasta nosotros. Una red puede despertar cuando sólo pretendíamos reparar uno de sus nodos.</p>
       <p>Por eso, Dolbred trata toda reactivación como experimento y toda excavación de sistemas activos como intervención. La paciencia, la documentación y la cooperación con Seguridad Ritual y Conservación Arcana son parte central del método.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Arqueología Arcana</strong> — disciplina dedicada al estudio histórico y funcional de restos materiales y estructuras mágicas del pasado.<br>
-      <strong>Estructura huérfana</strong> — estructura persistente cuyo creador u operador original ya no existe.<br>
-      <strong>Latencia arqueológica</strong> — estado inactivo de una estructura capaz de reactivarse al cumplirse condiciones específicas.<br>
-      <strong>Función residual</strong> — parte de una función original que continúa operando después del deterioro o abandono.<br>
-      <strong>Estratigrafía arcana</strong> — estudio de capas materiales y mágicas superpuestas a lo largo del tiempo.<br>
-      <strong>Reinterpretación estructural</strong> — adaptación de una estructura antigua a nuevas referencias o contextos.<br>
-      <strong>Artefacto in situ</strong> — objeto estudiado en su posición y relación original dentro de un sitio.<br>
-      <strong>Nodo</strong> — componente que coordina o conecta funciones dentro de una red mayor.<br>
-      <strong>Mantenimiento perdido</strong> — conjunto de prácticas desaparecidas necesarias para conservar funcionamiento estable.<br>
-      <strong>Patrimonio activo</strong> — sitio u objeto histórico que continúa produciendo efectos mágicos.<br>
-      <strong>Reactivación controlada</strong> — experimento destinado a restaurar temporalmente actividad bajo condiciones de seguridad.<br>
-      <strong>Reconstrucción parcial</strong> — restauración limitada de un componente para probar una hipótesis funcional.<br>
-      <strong>Geometría enterrada</strong> — relaciones espaciales rituales ocultas bajo terreno, arquitectura o modificaciones posteriores.<br>
-      <strong>Memoria arquitectónica</strong> — capacidad de una estructura para conservar o reconstruir patrones históricos de uso.<br>
-      <strong>Soberanía residual</strong> — propiedades territoriales persistentes asociadas a una antigua autoridad elemental o equivalente.<br>
-      <strong>Ecosistema de ruina</strong> — comunidad biológica o mágica desarrollada alrededor de condiciones creadas por una estructura abandonada.<br>
-      <strong>Intervención mínima</strong> — principio de conservar información mediante la menor modificación necesaria.<br>
-      <strong>Autenticidad arqueológica</strong> — preservación de materiales, reparaciones, fallos y capas históricas sin reconstrucción engañosa.<br>
-      <strong>Predicción arqueológica</strong> — uso de una hipótesis para anticipar hallazgos todavía no observados.<br>
-      <strong>Archivo de acceso escalonado</strong> — sistema que conserva información peligrosa con distintos niveles de autorización.</p>
+      <p>
+      <strong>Archivo de acceso escalonado</strong> — sistema que conserva información
+      peligrosa con distintos niveles de autorización.<br>
+      <strong>Arqueología Arcana</strong> — disciplina dedicada al estudio histórico y
+      funcional de restos materiales y estructuras mágicas del pasado.<br>
+      <strong>Artefacto in situ</strong> — objeto estudiado en su posición y relación
+      original dentro de un sitio.<br>
+      <strong>Autenticidad arqueológica</strong> — preservación de materiales,
+      reparaciones, fallos y capas históricas sin reconstrucción engañosa.<br>
+      <strong>Ecosistema de ruina</strong> — comunidad biológica o mágica desarrollada
+      alrededor de condiciones creadas por una estructura abandonada.<br>
+      <strong>Estratigrafía arcana</strong> — estudio de capas materiales y mágicas
+      superpuestas a lo largo del tiempo.<br>
+      <strong>Estructura huérfana</strong> — estructura persistente cuyo creador u
+      operador original ya no existe.<br>
+      <strong>Función residual</strong> — parte de una función original que continúa
+      operando después del deterioro o abandono.<br>
+      <strong>Geometría enterrada</strong> — relaciones espaciales rituales ocultas
+      bajo terreno, arquitectura o modificaciones posteriores.<br>
+      <strong>Intervención mínima</strong> — principio de conservar información
+      mediante la menor modificación necesaria.<br>
+      <strong>Latencia arqueológica</strong> — estado inactivo de una estructura capaz
+      de reactivarse al cumplirse condiciones específicas.<br>
+      <strong>Mantenimiento perdido</strong> — conjunto de prácticas desaparecidas
+      necesarias para conservar funcionamiento estable.<br>
+      <strong>Memoria arquitectónica</strong> — capacidad de una estructura para
+      conservar o reconstruir patrones históricos de uso.<br>
+      <strong>Nodo</strong> — componente que coordina o conecta funciones dentro de
+      una red mayor.<br>
+      <strong>Patrimonio activo</strong> — sitio u objeto histórico que continúa
+      produciendo efectos mágicos.<br>
+      <strong>Predicción arqueológica</strong> — uso de una hipótesis para anticipar
+      hallazgos todavía no observados.<br>
+      <strong>Reactivación controlada</strong> — experimento destinado a restaurar
+      temporalmente actividad bajo condiciones de seguridad.<br>
+      <strong>Reconstrucción parcial</strong> — restauración limitada de un componente
+      para probar una hipótesis funcional.<br>
+      <strong>Reinterpretación estructural</strong> — adaptación de una estructura
+      antigua a nuevas referencias o contextos.<br>
+      <strong>Soberanía residual</strong> — propiedades territoriales persistentes
+      asociadas a una antigua autoridad elemental o equivalente.</p>
     `
   },
   {
@@ -3946,39 +4060,44 @@ window.ENTRIES = [
       reconstruir suficiente conocimiento para decidir qué puede tocarse, qué puede estudiarse, qué
       puede restaurarse y qué debería permanecer exactamente donde fue encontrado.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Artefactología</strong> — disciplina dedicada al estudio de objetos mágicos
-      persistentes, especialmente aquellos cuya estructura, origen o función no se comprenden por
-      completo.<br>
-      <strong>Artefacto</strong> — objeto cuya función mágica depende de una estructura persistente
-      incorporada al propio soporte y capaz de operar con independencia parcial de su creador.<br>
-      <strong>Función aparente</strong> — efecto que un artefacto parece producir antes de que su
-      mecanismo haya sido confirmado.<br>
-      <strong>Función confirmada</strong> — comportamiento respaldado por evidencia suficiente y
-      repetible.<br>
-      <strong>Arquitectura estructural</strong> — conjunto de relaciones materiales, arcanas y
-      referenciales que permiten al artefacto operar.<br>
-      <strong>Inspección pasiva</strong> — fase de análisis diseñada para obtener información sin
-      aportar energía ni establecer nuevas relaciones de activación.<br>
-      <strong>Estado latente</strong> — condición en la que una estructura conserva capacidad de
-      funcionamiento sin ejecutar actualmente su efecto.<br>
-      <strong>Estado residual</strong> — condición en la que una estructura incompleta conserva
-      fragmentos funcionales después de haber perdido su organización original.<br>
-      <strong>Condición de activación</strong> — relación o evento que debe cumplirse para que un
-      artefacto comience a operar.<br>
-      <strong>Vínculo de usuario</strong> — relación persistente establecida entre un artefacto y un
-      individuo que influye sobre su funcionamiento.<br>
-      <strong>Red artefactual</strong> — conjunto de objetos cuyas funciones dependen unas de otras
-      dentro de una estructura distribuida.<br>
-      <strong>Contención</strong> — conjunto de medidas destinadas a limitar las relaciones que un
-      artefacto puede establecer con su entorno.<br>
-      <strong>Activación controlada</strong> — prueba deliberada realizada bajo límites, criterios de
-      interrupción y condiciones previamente definidas.<br>
-      <strong>Sistema artefactual</strong> — estructura mágica cuya función depende de múltiples
-      componentes o de una arquitectura demasiado extensa para tratarla como un único objeto.<br>
-      <strong>Autenticidad funcional</strong> — continuidad de las propiedades que hacen que un
-      objeto siga operando como la estructura histórica que pretende ser.<br>
-      <strong>Residuo de uso</strong> — modificación material o mágica que permanece después de una
-      activación y puede revelar qué partes de la estructura participaron.</p>
+      <p>
+      <strong>Activación controlada</strong> — prueba deliberada realizada bajo
+      límites, criterios de interrupción y condiciones previamente definidas.<br>
+      <strong>Arquitectura estructural</strong> — conjunto de relaciones materiales,
+      arcanas y referenciales que permiten al artefacto operar.<br>
+      <strong>Artefacto</strong> — objeto cuya función mágica depende de una
+      estructura persistente incorporada al propio soporte y capaz de operar con
+      independencia parcial de su creador.<br>
+      <strong>Artefactología</strong> — disciplina dedicada al estudio de objetos
+      mágicos persistentes, especialmente aquellos cuya estructura, origen o función
+      no se comprenden por completo.<br>
+      <strong>Autenticidad funcional</strong> — continuidad de las propiedades que
+      hacen que un objeto siga operando como la estructura histórica que pretende ser.<br>
+      <strong>Condición de activación</strong> — relación o evento que debe cumplirse
+      para que un artefacto comience a operar.<br>
+      <strong>Contención</strong> — conjunto de medidas destinadas a limitar las
+      relaciones que un artefacto puede establecer con su entorno.<br>
+      <strong>Estado latente</strong> — condición en la que una estructura conserva
+      capacidad de funcionamiento sin ejecutar actualmente su efecto.<br>
+      <strong>Estado residual</strong> — condición en la que una estructura incompleta
+      conserva fragmentos funcionales después de haber perdido su organización
+      original.<br>
+      <strong>Función aparente</strong> — efecto que un artefacto parece producir
+      antes de que su mecanismo haya sido confirmado.<br>
+      <strong>Función confirmada</strong> — comportamiento respaldado por evidencia
+      suficiente y repetible.<br>
+      <strong>Inspección pasiva</strong> — fase de análisis diseñada para obtener
+      información sin aportar energía ni establecer nuevas relaciones de activación.<br>
+      <strong>Red artefactual</strong> — conjunto de objetos cuyas funciones dependen
+      unas de otras dentro de una estructura distribuida.<br>
+      <strong>Residuo de uso</strong> — modificación material o mágica que permanece
+      después de una activación y puede revelar qué partes de la estructura
+      participaron.<br>
+      <strong>Sistema artefactual</strong> — estructura mágica cuya función depende de
+      múltiples componentes o de una arquitectura demasiado extensa para tratarla como
+      un único objeto.<br>
+      <strong>Vínculo de usuario</strong> — relación persistente establecida entre un
+      artefacto y un individuo que influye sobre su funcionamiento.</p>
     `
   },
   {
@@ -4270,34 +4389,35 @@ window.ENTRIES = [
       mide por cuánto logra ocultar esa intervención, sino por cuánto conocimiento consigue preservar
       después de haberla realizado.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Conservación Arcana</strong> — disciplina dedicada a preservar información, función,
-      materia y contexto de estructuras mágicas históricas.<br>
-      <strong>Estabilización</strong> — intervención destinada a detener o reducir deterioro sin
-      reconstruir todavía un estado anterior.<br>
-      <strong>Restauración</strong> — intervención destinada a recuperar una condición histórica o
-      funcional previa.<br>
-      <strong>Intervención mínima</strong> — principio que limita cada tratamiento a aquello
-      estrictamente necesario para un objetivo definido.<br>
-      <strong>Reversibilidad</strong> — capacidad de retirar una intervención posterior sin destruir
-      el soporte original.<br>
-      <strong>Distinguibilidad</strong> — propiedad mediante la cual una reparación moderna puede
-      identificarse como tal.<br>
-      <strong>Autenticidad material</strong> — continuidad asociada a los componentes físicos
-      originales de una pieza.<br>
-      <strong>Autenticidad estructural</strong> — continuidad de las relaciones que permiten que una
-      estructura siga funcionando o siendo reconocida como la misma.<br>
-      <strong>Autenticidad histórica</strong> — continuidad de las transformaciones y usos que forman
-      parte de la biografía de un objeto.<br>
-      <strong>Reconstrucción hipotética</strong> — propuesta de restitución basada en evidencia
-      incompleta y mantenida explícitamente como interpretación.<br>
-      <strong>Residuo arcano</strong> — huella persistente de usos, energías o estructuras
-      anteriores.<br>
-      <strong>Conservación activa</strong> — mantenimiento de una estructura que debe continuar
-      funcionando para preservar su estado.<br>
-      <strong>Desactivación preventiva</strong> — reducción controlada de actividad para permitir
-      estudio o restauración segura.<br>
-      <strong>Fracaso controlado</strong> — gestión deliberada de una pérdida inevitable para
-      preservar la mayor cantidad posible de información o seguridad.</p>
+      <p>
+      <strong>Autenticidad estructural</strong> — continuidad de las relaciones que
+      permiten que una estructura siga funcionando o siendo reconocida como la misma.<br>
+      <strong>Autenticidad histórica</strong> — continuidad de las transformaciones y
+      usos que forman parte de la biografía de un objeto.<br>
+      <strong>Autenticidad material</strong> — continuidad asociada a los componentes
+      físicos originales de una pieza.<br>
+      <strong>Conservación activa</strong> — mantenimiento de una estructura que debe
+      continuar funcionando para preservar su estado.<br>
+      <strong>Conservación Arcana</strong> — disciplina dedicada a preservar
+      información, función, materia y contexto de estructuras mágicas históricas.<br>
+      <strong>Desactivación preventiva</strong> — reducción controlada de actividad
+      para permitir estudio o restauración segura.<br>
+      <strong>Distinguibilidad</strong> — propiedad mediante la cual una reparación
+      moderna puede identificarse como tal.<br>
+      <strong>Estabilización</strong> — intervención destinada a detener o reducir
+      deterioro sin reconstruir todavía un estado anterior.<br>
+      <strong>Fracaso controlado</strong> — gestión deliberada de una pérdida
+      inevitable para preservar la mayor cantidad posible de información o seguridad.<br>
+      <strong>Intervención mínima</strong> — principio que limita cada tratamiento a
+      aquello estrictamente necesario para un objetivo definido.<br>
+      <strong>Reconstrucción hipotética</strong> — propuesta de restitución basada en
+      evidencia incompleta y mantenida explícitamente como interpretación.<br>
+      <strong>Residuo arcano</strong> — huella persistente de usos, energías o
+      estructuras anteriores.<br>
+      <strong>Restauración</strong> — intervención destinada a recuperar una condición
+      histórica o funcional previa.<br>
+      <strong>Reversibilidad</strong> — capacidad de retirar una intervención
+      posterior sin destruir el soporte original.</p>
     `
   },
   {
@@ -4890,46 +5010,47 @@ window.ENTRIES = [
       otro especialista reconocer exactamente dónde termina la evidencia y dónde comienza la
       inferencia.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Criminalística Arcana</strong> — disciplina forense dedicada al análisis de rastros
-      mágicos con fines de reconstrucción e investigación.<br>
-      <strong>Escena arcana</strong> — lugar, objeto, cuerpo o sistema capaz de conservar información
-      sobre un fenómeno mágico.<br>
-      <strong>Residuo mágico</strong> — alteración persistente que permanece después de terminar la
-      manifestación principal.<br>
-      <strong>Firma mágica</strong> — conjunto de rasgos recurrentes asociados a una persona,
-      tradición, herramienta o método.<br>
-      <strong>Firma de tradición</strong> — patrón producido por convenciones compartidas dentro de
-      una escuela o práctica mágica.<br>
-      <strong>Cadena de custodia mágica</strong> — registro de posesión, traslado, análisis e
-      intervenciones aplicadas a evidencia arcana.<br>
-      <strong>Muestra de control</strong> — muestra tomada de una región o soporte comparable no
-      afectado para estimar condiciones de fondo.<br>
-      <strong>Reconstrucción de hechizo</strong> — inferencia del mecanismo probable a partir de
-      efectos, residuos y secuencia.<br>
-      <strong>Superposición</strong> — presencia de varias estructuras o fenómenos sobre un mismo
-      soporte.<br>
-      <strong>Falsa bandera arcana</strong> — introducción deliberada de rasgos destinados a atribuir
-      un fenómeno a otra fuente.<br>
-      <strong>Contramedida forense</strong> — técnica destinada a ocultar, destruir o distorsionar
-      rastros identificables.<br>
-      <strong>Atribución de tradición</strong> — estimación de qué escuela o conjunto de prácticas
-      explica mejor un fenómeno.<br>
-      <strong>Evidencia negativa</strong> — ausencia significativa de una señal esperada cuando
-      existía capacidad real de detectarla.<br>
-      <strong>Análisis ciego</strong> — procedimiento en el que el analista desconoce datos
-      contextuales innecesarios para reducir sesgo.<br>
-      <strong>Prueba destructiva</strong> — análisis que consume o altera de forma irreversible una
-      muestra.<br>
-      <strong>Grado de conclusión</strong> — nivel explícito de confianza asignado a una inferencia
-      pericial.<br>
-      <strong>Tasa de error</strong> — frecuencia y condiciones conocidas en las que un método
-      produce resultados incorrectos.<br>
-      <strong>Contaminación forense</strong> — introducción de rastros secundarios que alteran o
-      confunden la evidencia original.<br>
-      <strong>Laboratorio autorizado</strong> — instalación certificada para analizar determinadas
-      categorías de riesgo arcano.<br>
-      <strong>Minimización</strong> — principio dolbriano que exige utilizar el método menos invasivo
-      capaz de responder la pregunta forense.</p>
+      <p>
+      <strong>Análisis ciego</strong> — procedimiento en el que el analista desconoce
+      datos contextuales innecesarios para reducir sesgo.<br>
+      <strong>Atribución de tradición</strong> — estimación de qué escuela o conjunto
+      de prácticas explica mejor un fenómeno.<br>
+      <strong>Cadena de custodia mágica</strong> — registro de posesión, traslado,
+      análisis e intervenciones aplicadas a evidencia arcana.<br>
+      <strong>Contaminación forense</strong> — introducción de rastros secundarios que
+      alteran o confunden la evidencia original.<br>
+      <strong>Contramedida forense</strong> — técnica destinada a ocultar, destruir o
+      distorsionar rastros identificables.<br>
+      <strong>Criminalística Arcana</strong> — disciplina forense dedicada al análisis
+      de rastros mágicos con fines de reconstrucción e investigación.<br>
+      <strong>Escena arcana</strong> — lugar, objeto, cuerpo o sistema capaz de
+      conservar información sobre un fenómeno mágico.<br>
+      <strong>Evidencia negativa</strong> — ausencia significativa de una señal
+      esperada cuando existía capacidad real de detectarla.<br>
+      <strong>Falsa bandera arcana</strong> — introducción deliberada de rasgos
+      destinados a atribuir un fenómeno a otra fuente.<br>
+      <strong>Firma de tradición</strong> — patrón producido por convenciones
+      compartidas dentro de una escuela o práctica mágica.<br>
+      <strong>Firma mágica</strong> — conjunto de rasgos recurrentes asociados a una
+      persona, tradición, herramienta o método.<br>
+      <strong>Grado de conclusión</strong> — nivel explícito de confianza asignado a
+      una inferencia pericial.<br>
+      <strong>Laboratorio autorizado</strong> — instalación certificada para analizar
+      determinadas categorías de riesgo arcano.<br>
+      <strong>Minimización</strong> — principio dolbriano que exige utilizar el método
+      menos invasivo capaz de responder la pregunta forense.<br>
+      <strong>Muestra de control</strong> — muestra tomada de una región o soporte
+      comparable no afectado para estimar condiciones de fondo.<br>
+      <strong>Prueba destructiva</strong> — análisis que consume o altera de forma
+      irreversible una muestra.<br>
+      <strong>Reconstrucción de hechizo</strong> — inferencia del mecanismo probable a
+      partir de efectos, residuos y secuencia.<br>
+      <strong>Residuo mágico</strong> — alteración persistente que permanece después
+      de terminar la manifestación principal.<br>
+      <strong>Superposición</strong> — presencia de varias estructuras o fenómenos
+      sobre un mismo soporte.<br>
+      <strong>Tasa de error</strong> — frecuencia y condiciones conocidas en las que
+      un método produce resultados incorrectos.</p>
     `
   },
   {
@@ -5413,41 +5534,46 @@ window.ENTRIES = [
       demostrar que la vida puede incorporar fenómenos mágicos del mismo modo en que incorpora
       temperatura, presión, alimento o luz, como problemas que deben resolverse para sobrevivir.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Criptozoología Académica</strong> — disciplina dedicada al estudio biológico de
-      criaturas cuya fisiología, desarrollo o reproducción depende de procesos mágicos.<br>
-      <strong>Órgano arcano</strong> — estructura biológica especializada en producir, regular,
-      almacenar o interpretar una función mágica.<br>
-      <strong>Metabolismo mágico</strong> — integración de energía o condiciones arcanas dentro de la
-      economía fisiológica de un organismo.<br>
-      <strong>Nicho mágico</strong> — conjunto de condiciones arcanas necesarias o aprovechadas por
-      una especie.<br>
-      <strong>Metamorfosis</strong> — reorganización profunda del organismo durante el desarrollo,
-      generalmente no equivalente a una transformación voluntaria reversible.<br>
-      <strong>Plasticidad corporal</strong> — capacidad de reorganizar morfología sin perder
-      continuidad individual.<br>
-      <strong>Convergencia evolutiva</strong> — aparición independiente de rasgos semejantes en
-      linajes distintos sometidos a presiones comparables.<br>
-      <strong>Radiación adaptativa</strong> — diversificación rápida de un linaje al ocupar múltiples
-      nichos nuevos.<br>
-      <strong>Simbiogénesis</strong> — formación de una unidad biológica estable mediante integración
-      profunda de organismos distintos.<br>
-      <strong>Bioafinidad</strong> — dependencia fisiológica estable respecto de una condición o
-      afinidad mágica específica.<br>
-      <strong>Sensibilidad mágica</strong> — capacidad sensorial de detectar estructuras, firmas o
-      condiciones arcanas.<br>
-      <strong>Criatura biologizada</strong> — organismo cuyo origen pudo ser elemental, extraplanar o
-      artificial pero cuya continuidad actual depende de procesos biológicos estables.<br>
-      <strong>Ingeniero ecosistémico</strong> — organismo cuya actividad modifica de forma importante
-      las condiciones de su hábitat.<br>
-      <strong>Domesticación</strong> — cambio heredable de una población mediante convivencia y
-      selección a lo largo de generaciones.<br>
-      <strong>Linaje</strong> — serie histórica de poblaciones conectadas por descendencia.<br>
-      <strong>Paleocriptozoología</strong> — estudio de criaturas mágicas extintas mediante restos,
-      fósiles y reconstrucción ambiental.<br>
-      <strong>Taxón de riesgo</strong> — categoría operativa para seguridad de campo que no debe
-      confundirse con parentesco biológico.<br>
-      <strong>Mimetismo arcano</strong> — imitación de rasgos físicos, conductuales o mágicos de otro
-      organismo o del entorno.</p>
+      <p>
+      <strong>Bioafinidad</strong> — dependencia fisiológica estable respecto de una
+      condición o afinidad mágica específica.<br>
+      <strong>Convergencia evolutiva</strong> — aparición independiente de rasgos
+      semejantes en linajes distintos sometidos a presiones comparables.<br>
+      <strong>Criatura biologizada</strong> — organismo cuyo origen pudo ser
+      elemental, extraplanar o artificial pero cuya continuidad actual depende de
+      procesos biológicos estables.<br>
+      <strong>Criptozoología Académica</strong> — disciplina dedicada al estudio
+      biológico de criaturas cuya fisiología, desarrollo o reproducción depende de
+      procesos mágicos.<br>
+      <strong>Domesticación</strong> — cambio heredable de una población mediante
+      convivencia y selección a lo largo de generaciones.<br>
+      <strong>Ingeniero ecosistémico</strong> — organismo cuya actividad modifica de
+      forma importante las condiciones de su hábitat.<br>
+      <strong>Linaje</strong> — serie histórica de poblaciones conectadas por
+      descendencia.<br>
+      <strong>Metabolismo mágico</strong> — integración de energía o condiciones
+      arcanas dentro de la economía fisiológica de un organismo.<br>
+      <strong>Metamorfosis</strong> — reorganización profunda del organismo durante el
+      desarrollo, generalmente no equivalente a una transformación voluntaria
+      reversible.<br>
+      <strong>Mimetismo arcano</strong> — imitación de rasgos físicos, conductuales o
+      mágicos de otro organismo o del entorno.<br>
+      <strong>Nicho mágico</strong> — conjunto de condiciones arcanas necesarias o
+      aprovechadas por una especie.<br>
+      <strong>Órgano arcano</strong> — estructura biológica especializada en producir,
+      regular, almacenar o interpretar una función mágica.<br>
+      <strong>Paleocriptozoología</strong> — estudio de criaturas mágicas extintas
+      mediante restos, fósiles y reconstrucción ambiental.<br>
+      <strong>Plasticidad corporal</strong> — capacidad de reorganizar morfología sin
+      perder continuidad individual.<br>
+      <strong>Radiación adaptativa</strong> — diversificación rápida de un linaje al
+      ocupar múltiples nichos nuevos.<br>
+      <strong>Sensibilidad mágica</strong> — capacidad sensorial de detectar
+      estructuras, firmas o condiciones arcanas.<br>
+      <strong>Simbiogénesis</strong> — formación de una unidad biológica estable
+      mediante integración profunda de organismos distintos.<br>
+      <strong>Taxón de riesgo</strong> — categoría operativa para seguridad de campo
+      que no debe confundirse con parentesco biológico.</p>
     `
   },
   {
@@ -5865,42 +5991,46 @@ window.ENTRIES = [
       Por esta razón, Dolbred mantiene una separación estricta entre estudio teórico y práctica
       cronúrgica.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Cronurgia Teórica</strong> — disciplina dedicada al estudio de tiempo, causalidad y
-      anomalías temporales sin implicar necesariamente su manipulación práctica.<br>
-      <strong>Secuencia temporal</strong> — orden de estados y acontecimientos relacionados por
-      precedencia.<br>
-      <strong>Ritmo temporal</strong> — relación entre la duración experimentada en una estructura y
-      la observada desde otra referencia.<br>
-      <strong>Dilatación temporal</strong> — condición en la que una secuencia experimenta menos
-      cambios respecto de otra durante un intervalo comparable.<br>
-      <strong>Compresión temporal</strong> — condición en la que una secuencia experimenta más
-      cambios respecto de otra durante un intervalo comparable.<br>
-      <strong>Previsión cronúrgica</strong> — obtención de información que parece depender de
-      condiciones futuras todavía no disponibles por medios ordinarios.<br>
-      <strong>Recurrencia temporal</strong> — retorno de una secuencia a un estado anterior seguido
-      de una nueva ejecución de sus acontecimientos.<br>
-      <strong>Bucle temporal</strong> — recurrencia autosostenida en la que la secuencia reconstruye
-      las condiciones necesarias para repetirse.<br>
-      <strong>Anclaje cronal</strong> — estructura capaz de conservar continuidad o información a
-      través de una alteración temporal local.<br>
-      <strong>Causalidad cerrada</strong> — relación en la que una cadena de consecuencias vuelve a
-      participar en las condiciones que la originaron.<br>
-      <strong>Información acausal de origen indeterminado</strong> — información contenida en un
-      circuito temporal cuyo punto de creación no puede localizarse dentro de la secuencia
-      observada.<br>
-      <strong>Autoconsistencia</strong> — modelo según el cual una secuencia temporal impide
-      intervenciones capaces de producir contradicciones con su propia historia.<br>
-      <strong>Bifurcación temporal</strong> — modelo en el que una intervención produce una
-      continuidad histórica distinta en lugar de reemplazar la original.<br>
-      <strong>Erosión temporal</strong> — pérdida de coherencia en estructuras sometidas
-      repetidamente a anomalías de secuencia o causalidad.<br>
-      <strong>Edad cronológica</strong> — tiempo transcurrido según una referencia externa.<br>
-      <strong>Edad experimentada</strong> — cantidad de cambio realmente atravesada por un organismo
-      o estructura.<br>
-      <strong>Estasis</strong> — condición en la que determinados procesos quedan suspendidos o
-      reducidos mientras el entorno continúa avanzando.<br>
-      <strong>Interferencia causal</strong> — conflicto entre estructuras temporales que intentan
-      establecer relaciones incompatibles sobre una misma secuencia.</p>
+      <p>
+      <strong>Anclaje cronal</strong> — estructura capaz de conservar continuidad o
+      información a través de una alteración temporal local.<br>
+      <strong>Autoconsistencia</strong> — modelo según el cual una secuencia temporal
+      impide intervenciones capaces de producir contradicciones con su propia
+      historia.<br>
+      <strong>Bifurcación temporal</strong> — modelo en el que una intervención
+      produce una continuidad histórica distinta en lugar de reemplazar la original.<br>
+      <strong>Bucle temporal</strong> — recurrencia autosostenida en la que la
+      secuencia reconstruye las condiciones necesarias para repetirse.<br>
+      <strong>Causalidad cerrada</strong> — relación en la que una cadena de
+      consecuencias vuelve a participar en las condiciones que la originaron.<br>
+      <strong>Compresión temporal</strong> — condición en la que una secuencia
+      experimenta más cambios respecto de otra durante un intervalo comparable.<br>
+      <strong>Cronurgia Teórica</strong> — disciplina dedicada al estudio de tiempo,
+      causalidad y anomalías temporales sin implicar necesariamente su manipulación
+      práctica.<br>
+      <strong>Dilatación temporal</strong> — condición en la que una secuencia
+      experimenta menos cambios respecto de otra durante un intervalo comparable.<br>
+      <strong>Edad cronológica</strong> — tiempo transcurrido según una referencia
+      externa.<br>
+      <strong>Edad experimentada</strong> — cantidad de cambio realmente atravesada
+      por un organismo o estructura.<br>
+      <strong>Erosión temporal</strong> — pérdida de coherencia en estructuras
+      sometidas repetidamente a anomalías de secuencia o causalidad.<br>
+      <strong>Estasis</strong> — condición en la que determinados procesos quedan
+      suspendidos o reducidos mientras el entorno continúa avanzando.<br>
+      <strong>Información acausal de origen indeterminado</strong> — información
+      contenida en un circuito temporal cuyo punto de creación no puede localizarse
+      dentro de la secuencia observada.<br>
+      <strong>Interferencia causal</strong> — conflicto entre estructuras temporales
+      que intentan establecer relaciones incompatibles sobre una misma secuencia.<br>
+      <strong>Previsión cronúrgica</strong> — obtención de información que parece
+      depender de condiciones futuras todavía no disponibles por medios ordinarios.<br>
+      <strong>Recurrencia temporal</strong> — retorno de una secuencia a un estado
+      anterior seguido de una nueva ejecución de sus acontecimientos.<br>
+      <strong>Ritmo temporal</strong> — relación entre la duración experimentada en
+      una estructura y la observada desde otra referencia.<br>
+      <strong>Secuencia temporal</strong> — orden de estados y acontecimientos
+      relacionados por precedencia.</p>
     `
   },
   {
@@ -6252,34 +6382,41 @@ window.ENTRIES = [
       <p>La diversidad obliga a una conclusión metodológica sencilla. El término extraplanar
       describe una relación con el mundo, no una naturaleza única.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Demonología académica</strong> — disciplina dedicada al estudio comparado de
-      entidades cuya existencia depende total o parcialmente de condiciones extraplanares.<br>
-      <strong>Entidad extraplanar</strong> — criatura o inteligencia cuya continuidad principal
-      depende de un marco de existencia distinto del plano material ordinario.<br>
-      <strong>Procedencia extraplanar</strong> — origen histórico de una entidad en un plano
-      distinto.<br>
-      <strong>Dependencia extraplanar</strong> — grado en que una entidad necesita mantener
-      relación con condiciones de otro plano para conservar continuidad.<br>
-      <strong>Anclaje planar</strong> — relación que mantiene correspondencia entre una entidad
-      y el plano o estructura que la sostiene.<br>
-      <strong>Manifestación local</strong> — adaptación mediante la cual una entidad
-      extraplanar adquiere soporte operativo dentro de un entorno distinto al de origen.<br>
-      <strong>Soporte operativo</strong> — estructura corporal, energética o material mediante
-      la cual una entidad puede actuar en un entorno determinado.<br>
-      <strong>Soberanía</strong> — denominación utilizada por ciertos Señores Elementales para
-      formas de autoridad territorial estudiadas también por Taumaturgia Superior.<br>
-      <strong>Patrono</strong> — entidad capaz de sostener relaciones de concesión, acceso o
-      autoridad con uno o más receptores.<br>
-      <strong>Aberración extraplanar</strong> — categoría descriptiva para entidades cuya
-      organización no encaja de forma suficiente en los modelos extraplanares habituales.<br>
-      <strong>Identidad distribuida</strong> — forma de continuidad en la que una entidad
-      mantiene actividad a través de múltiples soportes o manifestaciones.<br>
+      <p>
+      <strong>Aberración extraplanar</strong> — categoría descriptiva para entidades
+      cuya organización no encaja de forma suficiente en los modelos extraplanares
+      habituales.<br>
+      <strong>Agencia restringida</strong> — capacidad de elección ejercida dentro de
+      limitaciones impuestas por la estructura o naturaleza de la entidad.<br>
+      <strong>Anclaje planar</strong> — relación que mantiene correspondencia entre
+      una entidad y el plano o estructura que la sostiene.<br>
       <strong>Contaminación extraplanar</strong> — incorporación desorganizada de
       correspondencias procedentes de una entidad o entorno extraplanar.<br>
-      <strong>Disposición estructural</strong> — tendencia de conducta o respuesta derivada de
-      la organización de una entidad, distinta de un juicio moral sobre sus decisiones.<br>
-      <strong>Agencia restringida</strong> — capacidad de elección ejercida dentro de
-      limitaciones impuestas por la estructura o naturaleza de la entidad.</p>
+      <strong>Demonología académica</strong> — disciplina dedicada al estudio
+      comparado de entidades cuya existencia depende total o parcialmente de
+      condiciones extraplanares.<br>
+      <strong>Dependencia extraplanar</strong> — grado en que una entidad necesita
+      mantener relación con condiciones de otro plano para conservar continuidad.<br>
+      <strong>Disposición estructural</strong> — tendencia de conducta o respuesta
+      derivada de la organización de una entidad, distinta de un juicio moral sobre
+      sus decisiones.<br>
+      <strong>Entidad extraplanar</strong> — criatura o inteligencia cuya continuidad
+      principal depende de un marco de existencia distinto del plano material
+      ordinario.<br>
+      <strong>Identidad distribuida</strong> — forma de continuidad en la que una
+      entidad mantiene actividad a través de múltiples soportes o manifestaciones.<br>
+      <strong>Manifestación local</strong> — adaptación mediante la cual una entidad
+      extraplanar adquiere soporte operativo dentro de un entorno distinto al de
+      origen.<br>
+      <strong>Patrono</strong> — entidad capaz de sostener relaciones de concesión,
+      acceso o autoridad con uno o más receptores.<br>
+      <strong>Procedencia extraplanar</strong> — origen histórico de una entidad en un
+      plano distinto.<br>
+      <strong>Soberanía</strong> — denominación utilizada por ciertos Señores
+      Elementales para formas de autoridad territorial estudiadas también por
+      Taumaturgia Superior.<br>
+      <strong>Soporte operativo</strong> — estructura corporal, energética o material
+      mediante la cual una entidad puede actuar en un entorno determinado.</p>
     `
   },
   {
@@ -6687,44 +6824,47 @@ window.ENTRIES = [
       vuelve cada vez más difícil sostener que todos llegaron al mismo problema por
       casualidad.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Biologización elemental</strong> — transición por la cual una entidad elemental
-      comenzó a sostener continuidad mediante un organismo heredable.<br>
-      <strong>Secuencia de Encarnación</strong> — modelo comparado de cinco grados: Impresión,
-      Consolidación, Especialización, Integración y Plenitud.<br>
-      <strong>Impresión</strong> — grado en que existe cuerpo estable pero la criatura mantiene
-      gran dependencia de condiciones elementales externas.<br>
-      <strong>Consolidación</strong> — grado en que el organismo sostiene autónomamente la
-      mayoría de sus funciones vitales y arcanas.<br>
-      <strong>Especialización</strong> — grado caracterizado por adaptación intensa a un nicho,
-      aunque a costa de versatilidad.<br>
+      <p>
+      <strong>Afinación Profunda</strong> — familia de teorías que atribuye
+      convergencias globales a presiones débiles y persistentes procedentes del propio
+      mundo.<br>
+      <strong>Biologización elemental</strong> — transición por la cual una entidad
+      elemental comenzó a sostener continuidad mediante un organismo heredable.<br>
+      <strong>Consolidación</strong> — grado en que el organismo sostiene
+      autónomamente la mayoría de sus funciones vitales y arcanas.<br>
+      <strong>Especialización</strong> — grado caracterizado por adaptación intensa a
+      un nicho, aunque a costa de versatilidad.<br>
+      <strong>Homología funcional</strong> — equivalencia entre estructuras o formas
+      que resuelven el mismo problema aunque posean anatomías distintas.<br>
+      <strong>Impresión</strong> — grado en que existe cuerpo estable pero la criatura
+      mantiene gran dependencia de condiciones elementales externas.<br>
       <strong>Integración</strong> — grado de alta coordinación entre órganos arcanos,
       fisiología, conducta y autonomía.<br>
-      <strong>Plenitud</strong> — grado en que afinidad elemental y biología forman un sistema
-      inseparable y estable.<br>
-      <strong>Homología funcional</strong> — equivalencia entre estructuras o formas que
-      resuelven el mismo problema aunque posean anatomías distintas.<br>
-      <strong>Rama ígnea</strong> — linaje elemental del fuego, del que proceden protodracos,
-      dracos, guivernos, dragonantes y dragones verdaderos.<br>
-      <strong>Rama acuática</strong> — linaje del agua, representado comparativamente por
-      sálpidos, ormáres, veliscas, nharvales y krakens.<br>
-      <strong>Rama terrestre</strong> — linaje de tierra, representado por gredines, torgales,
-      karstios, dhorum y begimos.<br>
-      <strong>Rama aérea</strong> — linaje de viento, representado por brisales, vaer, alígeres,
-      kairon y ryu.<br>
-      <strong>Rama luminosa</strong> — linaje de luz, representado por alborines, cendales,
-      aristas, elarcas y seraphines.<br>
-      <strong>Rama oscura</strong> — linaje de oscuridad, reconstruido mediante umbrines,
-      drevak, náxides, korvath y vhalgor.<br>
-      <strong>Rama de maná</strong> — linaje ancestral de numerosos feéricos, representado por
-      míriles, tessar, veylas, nymor y faelunes.<br>
-      <strong>Teoría del Mandato Profundo</strong> — hipótesis de que una autoridad de escala
-      planetaria impuso condiciones que obligaron a los elementales a biologizarse.<br>
-      <strong>Teoría del Refugio Corporal</strong> — hipótesis según la cual el cuerpo permitió
-      sobrevivir a una amenaza contra formas elementales puras.<br>
-      <strong>Teoría de la Individuación</strong> — modelo que interpreta la encarnación como
-      fijación de límites personales, memoria y herencia.<br>
-      <strong>Afinación Profunda</strong> — familia de teorías que atribuye convergencias
-      globales a presiones débiles y persistentes procedentes del propio mundo.</p>
+      <strong>Plenitud</strong> — grado en que afinidad elemental y biología forman un
+      sistema inseparable y estable.<br>
+      <strong>Rama acuática</strong> — linaje del agua, representado comparativamente
+      por sálpidos, ormáres, veliscas, nharvales y krakens.<br>
+      <strong>Rama aérea</strong> — linaje de viento, representado por brisales, vaer,
+      alígeres, kairon y ryu.<br>
+      <strong>Rama de maná</strong> — linaje ancestral de numerosos feéricos,
+      representado por míriles, tessar, veylas, nymor y faelunes.<br>
+      <strong>Rama ígnea</strong> — linaje elemental del fuego, del que proceden
+      protodracos, dracos, guivernos, dragonantes y dragones verdaderos.<br>
+      <strong>Rama luminosa</strong> — linaje de luz, representado por alborines,
+      cendales, aristas, elarcas y seraphines.<br>
+      <strong>Rama oscura</strong> — linaje de oscuridad, reconstruido mediante
+      umbrines, drevak, náxides, korvath y vhalgor.<br>
+      <strong>Rama terrestre</strong> — linaje de tierra, representado por gredines,
+      torgales, karstios, dhorum y begimos.<br>
+      <strong>Secuencia de Encarnación</strong> — modelo comparado de cinco grados:
+      Impresión, Consolidación, Especialización, Integración y Plenitud.<br>
+      <strong>Teoría de la Individuación</strong> — modelo que interpreta la
+      encarnación como fijación de límites personales, memoria y herencia.<br>
+      <strong>Teoría del Mandato Profundo</strong> — hipótesis de que una autoridad de
+      escala planetaria impuso condiciones que obligaron a los elementales a
+      biologizarse.<br>
+      <strong>Teoría del Refugio Corporal</strong> — hipótesis según la cual el cuerpo
+      permitió sobrevivir a una amenaza contra formas elementales puras.</p>
     `
   },
   {
@@ -7199,42 +7339,44 @@ window.ENTRIES = [
       organismos empiezan a vivir dentro de una condición mágica, el ecosistema comienza también
       a decidir qué forma puede conservar esa magia.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Ecología Mágica</strong> — disciplina dedicada al estudio de las relaciones
-      recíprocas entre organismos, ecosistemas y condiciones mágicas.<br>
+      <p>
+      <strong>Amortiguador ecológico</strong> — organismo o componente que reduce
+      variaciones o acumulaciones mágicas.<br>
+      <strong>Bioacumulación arcana</strong> — concentración progresiva de sustancias
+      o afinidades dentro de organismos.<br>
+      <strong>Ciclo arcano</strong> — circulación de energía, afinidad o estructura
+      entre componentes vivos y no vivos de un ecosistema.<br>
+      <strong>Contaminación mágica</strong> — influencia que introduce relaciones
+      desorganizadas o excede la capacidad de adaptación del sistema.<br>
+      <strong>Ecología Mágica</strong> — disciplina dedicada al estudio de las
+      relaciones recíprocas entre organismos, ecosistemas y condiciones mágicas.<br>
+      <strong>Ecosistema urbano mágico</strong> — sistema ecológico formado por
+      organismos, infraestructura y actividad arcana en asentamientos densos.<br>
+      <strong>Especie ingeniera</strong> — especie cuya actividad modifica de forma
+      significativa las condiciones del ecosistema.<br>
+      <strong>Estado alternativo</strong> — configuración ecológica estable distinta
+      de otra que puede existir bajo condiciones semejantes.<br>
+      <strong>Gradiente arcano</strong> — variación espacial de intensidad o cualidad
+      mágica dentro de una región.<br>
+      <strong>Indicador mágico</strong> — especie o variable cuya respuesta permite
+      inferir una condición arcana difícil de medir directamente.<br>
+      <strong>Nicho mágico</strong> — conjunto de condiciones arcanas utilizadas,
+      toleradas o requeridas por una especie.<br>
       <strong>Presión arcana</strong> — influencia mágica persistente capaz de afectar
       supervivencia, reproducción o comportamiento.<br>
-      <strong>Gradiente arcano</strong> — variación espacial de intensidad o cualidad mágica
-      dentro de una región.<br>
-      <strong>Nicho mágico</strong> — conjunto de condiciones arcanas utilizadas, toleradas o
-      requeridas por una especie.<br>
       <strong>Productor arcano</strong> — organismo capaz de concentrar o transformar
       condiciones mágicas en formas aprovechables por otros.<br>
-      <strong>Ciclo arcano</strong> — circulación de energía, afinidad o estructura entre
-      componentes vivos y no vivos de un ecosistema.<br>
-      <strong>Retroalimentación</strong> — relación en la que una condición favorece procesos
-      que intensifican o reducen esa misma condición.<br>
-      <strong>Amortiguador ecológico</strong> — organismo o componente que reduce variaciones o
-      acumulaciones mágicas.<br>
-      <strong>Sucesión ecológica arcana</strong> — cambio ordenado de comunidades después de una
-      perturbación que también modifica condiciones mágicas.<br>
-      <strong>Contaminación mágica</strong> — influencia que introduce relaciones desorganizadas
-      o excede la capacidad de adaptación del sistema.<br>
-      <strong>Bioacumulación arcana</strong> — concentración progresiva de sustancias o
-      afinidades dentro de organismos.<br>
-      <strong>Especie ingeniera</strong> — especie cuya actividad modifica de forma significativa
-      las condiciones del ecosistema.<br>
-      <strong>Zona liminal</strong> — región donde se mezclan condiciones pertenecientes a
-      marcos distintos.<br>
-      <strong>Estado alternativo</strong> — configuración ecológica estable distinta de otra que
-      puede existir bajo condiciones semejantes.<br>
-      <strong>Umbral ecológico</strong> — punto a partir del cual una variación relativamente
-      pequeña produce reorganización amplia del sistema.<br>
-      <strong>Indicador mágico</strong> — especie o variable cuya respuesta permite inferir una
-      condición arcana difícil de medir directamente.<br>
-      <strong>Restauración ecológica</strong> — intervención destinada a recuperar funciones y
-      estabilidad sin exigir necesariamente un retorno exacto al estado histórico anterior.<br>
-      <strong>Ecosistema urbano mágico</strong> — sistema ecológico formado por organismos,
-      infraestructura y actividad arcana en asentamientos densos.</p>
+      <strong>Restauración ecológica</strong> — intervención destinada a recuperar
+      funciones y estabilidad sin exigir necesariamente un retorno exacto al estado
+      histórico anterior.<br>
+      <strong>Retroalimentación</strong> — relación en la que una condición favorece
+      procesos que intensifican o reducen esa misma condición.<br>
+      <strong>Sucesión ecológica arcana</strong> — cambio ordenado de comunidades
+      después de una perturbación que también modifica condiciones mágicas.<br>
+      <strong>Umbral ecológico</strong> — punto a partir del cual una variación
+      relativamente pequeña produce reorganización amplia del sistema.<br>
+      <strong>Zona liminal</strong> — región donde se mezclan condiciones
+      pertenecientes a marcos distintos.</p>
     `
   },
   {
@@ -7762,48 +7904,51 @@ window.ENTRIES = [
       ambiental. Destruir un reservorio puede liberar aquello que contenía. Prohibir una práctica
       puede volverla clandestina y más difícil de vigilar.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Epidemiología Taumatológica</strong> — disciplina dedicada al estudio de
-      distribución, transmisión y control poblacional de fenómenos mágicos patológicos.<br>
-      <strong>Caso</strong> — individuo que cumple criterios definidos para una condición.<br>
-      <strong>Brote</strong> — aumento de casos por encima de lo esperado en una población y
-      período concretos.<br>
-      <strong>Endemia</strong> — presencia relativamente estable de una condición dentro de una
-      población o territorio.<br>
-      <strong>Incidencia</strong> — frecuencia de aparición de casos nuevos.<br>
-      <strong>Prevalencia</strong> — proporción de individuos afectados en un momento o
-      período.<br>
-      <strong>Reservorio</strong> — fuente capaz de mantener una condición y permitir nuevas
-      exposiciones.<br>
-      <strong>Vector</strong> — organismo, objeto o mecanismo que transporta una condición entre
-      fuentes y huéspedes.<br>
-      <strong>Portador</strong> — individuo que mantiene o transmite una condición con pocos o
-      ningún síntoma.<br>
-      <strong>Susceptibilidad</strong> — probabilidad individual de adquirir o desarrollar una
-      condición tras exposición.<br>
-      <strong>Resistencia</strong> — capacidad de reducir adquisición, desarrollo o gravedad de
-      una condición.<br>
-      <strong>Transmisión simbólica</strong> — propagación mediada por signos, nombres, relatos
-      o formas de reconocimiento.<br>
-      <strong>Transmisión ritual</strong> — propagación condicionada por participación en una
-      secuencia o función ritual.<br>
-      <strong>Transmisión por vínculo</strong> — propagación a través de relaciones como
-      parentesco, juramento, pertenencia o propiedad.<br>
-      <strong>Superpropagación</strong> — evento, persona o lugar que produce un número
-      desproporcionado de casos secundarios.<br>
-      <strong>Definición de caso</strong> — conjunto de criterios utilizados para decidir qué
-      individuos se cuentan como afectados.<br>
-      <strong>Rastreo de contactos</strong> — reconstrucción de personas, objetos, lugares y
-      relaciones conectados con una exposición.<br>
-      <strong>Cuarentena</strong> — separación temporal de personas expuestas que todavía no
-      presentan enfermedad.<br>
-      <strong>Aislamiento</strong> — separación de casos capaces de transmitir o emitir una
+      <p>
+      <strong>Aislamiento</strong> — separación de casos capaces de transmitir o
+      emitir una condición.<br>
+      <strong>Brote</strong> — aumento de casos por encima de lo esperado en una
+      población y período concretos.<br>
+      <strong>Caso</strong> — individuo que cumple criterios definidos para una
       condición.<br>
-      <strong>Cordón sanitario</strong> — restricción territorial destinada a reducir movimiento
-      de una condición.<br>
-      <strong>Sistema centinela</strong> — grupo o lugar vigilado para detectar tempranamente
-      cambios epidemiológicos.<br>
-      <strong>Inmunidad colectiva</strong> — reducción de transmisión cuando suficientes
-      individuos interrumpen la cadena de propagación.</p>
+      <strong>Cordón sanitario</strong> — restricción territorial destinada a reducir
+      movimiento de una condición.<br>
+      <strong>Cuarentena</strong> — separación temporal de personas expuestas que
+      todavía no presentan enfermedad.<br>
+      <strong>Definición de caso</strong> — conjunto de criterios utilizados para
+      decidir qué individuos se cuentan como afectados.<br>
+      <strong>Endemia</strong> — presencia relativamente estable de una condición
+      dentro de una población o territorio.<br>
+      <strong>Epidemiología Taumatológica</strong> — disciplina dedicada al estudio de
+      distribución, transmisión y control poblacional de fenómenos mágicos
+      patológicos.<br>
+      <strong>Incidencia</strong> — frecuencia de aparición de casos nuevos.<br>
+      <strong>Inmunidad colectiva</strong> — reducción de transmisión cuando
+      suficientes individuos interrumpen la cadena de propagación.<br>
+      <strong>Portador</strong> — individuo que mantiene o transmite una condición con
+      pocos o ningún síntoma.<br>
+      <strong>Prevalencia</strong> — proporción de individuos afectados en un momento
+      o período.<br>
+      <strong>Rastreo de contactos</strong> — reconstrucción de personas, objetos,
+      lugares y relaciones conectados con una exposición.<br>
+      <strong>Reservorio</strong> — fuente capaz de mantener una condición y permitir
+      nuevas exposiciones.<br>
+      <strong>Resistencia</strong> — capacidad de reducir adquisición, desarrollo o
+      gravedad de una condición.<br>
+      <strong>Sistema centinela</strong> — grupo o lugar vigilado para detectar
+      tempranamente cambios epidemiológicos.<br>
+      <strong>Superpropagación</strong> — evento, persona o lugar que produce un
+      número desproporcionado de casos secundarios.<br>
+      <strong>Susceptibilidad</strong> — probabilidad individual de adquirir o
+      desarrollar una condición tras exposición.<br>
+      <strong>Transmisión por vínculo</strong> — propagación a través de relaciones
+      como parentesco, juramento, pertenencia o propiedad.<br>
+      <strong>Transmisión ritual</strong> — propagación condicionada por participación
+      en una secuencia o función ritual.<br>
+      <strong>Transmisión simbólica</strong> — propagación mediada por signos,
+      nombres, relatos o formas de reconocimiento.<br>
+      <strong>Vector</strong> — organismo, objeto o mecanismo que transporta una
+      condición entre fuentes y huéspedes.</p>
     `
   },
   {
@@ -8382,46 +8527,47 @@ window.ENTRIES = [
       <p>La magia amplía aquello que puede ser observado. La epistemología recuerda que observar
       más no significa entender automáticamente mejor.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Epistemología Arcana</strong> — disciplina filosófica y metodológica dedicada a
-      evaluar conocimiento obtenido mediante medios mágicos.<br>
-      <strong>Justificación</strong> — conjunto de razones que hacen racional aceptar una
-      creencia.<br>
-      <strong>Cadena epistémica</strong> — secuencia entre fuente, acceso, interpretación,
-      formulación y conclusión.<br>
-      <strong>Revelación</strong> — información experimentada como procedente de una fuente
-      externa o superior a medios ordinarios.<br>
-      <strong>Corroboración</strong> — apoyo independiente de una afirmación mediante otras
-      fuentes o métodos.<br>
-      <strong>Fiabilidad</strong> — grado en que una fuente o método produce resultados
-      correctos de forma consistente.<br>
-      <strong>Validez</strong> — grado en que un método mide realmente aquello que afirma
-      medir.<br>
-      <strong>Calibración</strong> — conocimiento de la tasa y condiciones de acierto y error de
-      una fuente.<br>
-      <strong>Falsabilidad</strong> — posibilidad de establecer qué evidencia contaría contra
-      una afirmación.<br>
-      <strong>Replicación</strong> — reproducción de un resultado bajo condiciones
-      comparables.<br>
-      <strong>Sesgo de confirmación</strong> — tendencia a favorecer evidencia compatible con
-      creencias previas.<br>
-      <strong>Sesgo de autoridad</strong> — tendencia a aceptar una afirmación por prestigio o
-      poder de la fuente.<br>
-      <strong>Certeza subjetiva</strong> — grado de convicción experimentado por una persona,
-      independiente de verdad objetiva.<br>
-      <strong>Grado de confianza</strong> — estimación explícita de cuán respaldada está una
-      conclusión.<br>
-      <strong>Explicación rival</strong> — hipótesis alternativa capaz de explicar la misma
-      evidencia.<br>
-      <strong>Parsimonia</strong> — preferencia razonada por explicaciones que introducen menos
-      supuestos innecesarios.<br>
-      <strong>Evidencia negativa</strong> — ausencia de una señal esperada cuando el método tenía
-      capacidad real de detectarla.<br>
-      <strong>Registro bruto</strong> — documentación de una experiencia antes de
-      interpretarla.<br>
+      <p>
+      <strong>Cadena epistémica</strong> — secuencia entre fuente, acceso,
+      interpretación, formulación y conclusión.<br>
+      <strong>Calibración</strong> — conocimiento de la tasa y condiciones de acierto
+      y error de una fuente.<br>
+      <strong>Certeza subjetiva</strong> — grado de convicción experimentado por una
+      persona, independiente de verdad objetiva.<br>
       <strong>Conocimiento provisional</strong> — conclusión aceptada por ser la mejor
       explicación disponible, aunque permanezca revisable.<br>
-      <strong>Ignorancia reconocida</strong> — aceptación explícita de que la evidencia
-      disponible no permite decidir entre hipótesis.</p>
+      <strong>Corroboración</strong> — apoyo independiente de una afirmación mediante
+      otras fuentes o métodos.<br>
+      <strong>Epistemología Arcana</strong> — disciplina filosófica y metodológica
+      dedicada a evaluar conocimiento obtenido mediante medios mágicos.<br>
+      <strong>Evidencia negativa</strong> — ausencia de una señal esperada cuando el
+      método tenía capacidad real de detectarla.<br>
+      <strong>Explicación rival</strong> — hipótesis alternativa capaz de explicar la
+      misma evidencia.<br>
+      <strong>Falsabilidad</strong> — posibilidad de establecer qué evidencia contaría
+      contra una afirmación.<br>
+      <strong>Fiabilidad</strong> — grado en que una fuente o método produce
+      resultados correctos de forma consistente.<br>
+      <strong>Grado de confianza</strong> — estimación explícita de cuán respaldada
+      está una conclusión.<br>
+      <strong>Ignorancia reconocida</strong> — aceptación explícita de que la
+      evidencia disponible no permite decidir entre hipótesis.<br>
+      <strong>Justificación</strong> — conjunto de razones que hacen racional aceptar
+      una creencia.<br>
+      <strong>Parsimonia</strong> — preferencia razonada por explicaciones que
+      introducen menos supuestos innecesarios.<br>
+      <strong>Registro bruto</strong> — documentación de una experiencia antes de
+      interpretarla.<br>
+      <strong>Replicación</strong> — reproducción de un resultado bajo condiciones
+      comparables.<br>
+      <strong>Revelación</strong> — información experimentada como procedente de una
+      fuente externa o superior a medios ordinarios.<br>
+      <strong>Sesgo de autoridad</strong> — tendencia a aceptar una afirmación por
+      prestigio o poder de la fuente.<br>
+      <strong>Sesgo de confirmación</strong> — tendencia a favorecer evidencia
+      compatible con creencias previas.<br>
+      <strong>Validez</strong> — grado en que un método mide realmente aquello que
+      afirma medir.</p>
     `
   },
   {
@@ -9046,48 +9192,50 @@ window.ENTRIES = [
       <p>La magia convierte decisiones antes imposibles en decisiones reales. Eso no reduce el
       peso moral de elegir; lo aumenta.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Ética de la Alteración</strong> — disciplina dedicada a evaluar la legitimidad
-      moral de intervenciones mágicas sobre cuerpo, mente, identidad y continuidad.<br>
-      <strong>Autonomía</strong> — autoridad primaria de una persona competente sobre
-      decisiones que afectan su propia vida y cuerpo.<br>
-      <strong>Consentimiento informado</strong> — autorización libre y específica otorgada con
-      comprensión suficiente de riesgos, beneficios y alternativas.<br>
-      <strong>Capacidad</strong> — aptitud para comprender una decisión, valorar consecuencias
-      y expresar una elección.<br>
-      <strong>Alteración Mayor</strong> — categoría dolbriana para intervenciones con potencial
-      de modificar identidad, memoria, continuidad vital, forma permanente, reproducción o
-      alma.<br>
-      <strong>Alteración restringida</strong> — intervención cuyo uso se encuentra limitado por
-      alto riesgo ético o social.<br>
-      <strong>Reversibilidad</strong> — posibilidad fiable de restaurar el estado previo de una
-      intervención.<br>
-      <strong>Proporcionalidad</strong> — exigencia de que riesgo e invasividad guarden
-      relación con el beneficio esperado.<br>
+      <p>
+      <strong>Alteración Mayor</strong> — categoría dolbriana para intervenciones con
+      potencial de modificar identidad, memoria, continuidad vital, forma permanente,
+      reproducción o alma.<br>
+      <strong>Alteración restringida</strong> — intervención cuyo uso se encuentra
+      limitado por alto riesgo ético o social.<br>
       <strong>Alternativa menos invasiva</strong> — principio que obliga a preferir la
       intervención que preserve mayor autonomía e integridad cuando ofrece beneficio
       comparable.<br>
-      <strong>Beneficencia</strong> — obligación de buscar un beneficio real para la persona
-      afectada.<br>
-      <strong>No maleficencia</strong> — obligación de evitar daños físicos, psicológicos,
-      sociales, identitarios o pneumatológicos.<br>
-      <strong>Justicia</strong> — principio relativo a distribución de riesgos, beneficios y
-      acceso.<br>
-      <strong>Consentimiento reforzado</strong> — estándar elevado de información y
-      deliberación exigido para intervenciones de alto riesgo.<br>
-      <strong>Comité de Alteraciones Mayores</strong> — órgano dolbriano encargado de revisar
-      procedimientos con riesgo profundo sobre identidad o continuidad.<br>
-      <strong>Manipulación pneumatológica</strong> — intervención sobre relaciones asociadas
-      con alma, identidad post mortem o continuidad personal.<br>
-      <strong>Privacidad mental</strong> — protección de pensamientos, recuerdos y estados
-      cognitivos frente a acceso no autorizado.<br>
-      <strong>Vida artificial sensible</strong> — ser creado artificialmente con capacidad
-      relevante de experiencia, preferencias o sufrimiento.<br>
-      <strong>Principio de precaución</strong> — criterio que permite limitar una práctica
-      cuando existe riesgo grave e incertidumbre sustancial.<br>
       <strong>Auditoría ética</strong> — revisión institucional de cumplimiento,
       consentimiento, seguridad y resultados adversos.<br>
-      <strong>Responsabilidad institucional</strong> — obligación de una organización de
-      responder por prácticas realizadas bajo su autoridad o infraestructura.</p>
+      <strong>Autonomía</strong> — autoridad primaria de una persona competente sobre
+      decisiones que afectan su propia vida y cuerpo.<br>
+      <strong>Beneficencia</strong> — obligación de buscar un beneficio real para la
+      persona afectada.<br>
+      <strong>Capacidad</strong> — aptitud para comprender una decisión, valorar
+      consecuencias y expresar una elección.<br>
+      <strong>Comité de Alteraciones Mayores</strong> — órgano dolbriano encargado de
+      revisar procedimientos con riesgo profundo sobre identidad o continuidad.<br>
+      <strong>Consentimiento informado</strong> — autorización libre y específica
+      otorgada con comprensión suficiente de riesgos, beneficios y alternativas.<br>
+      <strong>Consentimiento reforzado</strong> — estándar elevado de información y
+      deliberación exigido para intervenciones de alto riesgo.<br>
+      <strong>Ética de la Alteración</strong> — disciplina dedicada a evaluar la
+      legitimidad moral de intervenciones mágicas sobre cuerpo, mente, identidad y
+      continuidad.<br>
+      <strong>Justicia</strong> — principio relativo a distribución de riesgos,
+      beneficios y acceso.<br>
+      <strong>Manipulación pneumatológica</strong> — intervención sobre relaciones
+      asociadas con alma, identidad post mortem o continuidad personal.<br>
+      <strong>No maleficencia</strong> — obligación de evitar daños físicos,
+      psicológicos, sociales, identitarios o pneumatológicos.<br>
+      <strong>Principio de precaución</strong> — criterio que permite limitar una
+      práctica cuando existe riesgo grave e incertidumbre sustancial.<br>
+      <strong>Privacidad mental</strong> — protección de pensamientos, recuerdos y
+      estados cognitivos frente a acceso no autorizado.<br>
+      <strong>Proporcionalidad</strong> — exigencia de que riesgo e invasividad
+      guarden relación con el beneficio esperado.<br>
+      <strong>Responsabilidad institucional</strong> — obligación de una organización
+      de responder por prácticas realizadas bajo su autoridad o infraestructura.<br>
+      <strong>Reversibilidad</strong> — posibilidad fiable de restaurar el estado
+      previo de una intervención.<br>
+      <strong>Vida artificial sensible</strong> — ser creado artificialmente con
+      capacidad relevante de experiencia, preferencias o sufrimiento.</p>
     `
   },
   {
@@ -9509,40 +9657,41 @@ window.ENTRIES = [
       exposición puede evolucionar hasta convertirse en un problema estructural. Comprender
       cuándo ocurre esa transición es una de las funciones más importantes del campo.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Farmacología Arcana</strong> — disciplina dedicada al estudio de sustancias
-      activas y de su interacción material o mágica con organismos vivos.<br>
-      <strong>Sustancia activa</strong> — compuesto capaz de producir un cambio medible mediante
-      interacción química, fisiológica, arcana o combinada.<br>
-      <strong>Umbral farmacológico</strong> — cantidad mínima capaz de producir una respuesta
-      reconocible.<br>
-      <strong>Ventana terapéutica</strong> — intervalo entre dosis eficaz y dosis asociada a
-      toxicidad significativa.<br>
-      <strong>Distribución arcana</strong> — desplazamiento o concentración de una sustancia
-      guiada parcialmente por afinidades o estructuras mágicas.<br>
+      <p>
+      <strong>Antídoto</strong> — intervención destinada a neutralizar, bloquear,
+      eliminar o compensar el efecto de un tóxico.<br>
+      <strong>Dependencia</strong> — reorganización del funcionamiento del organismo
+      alrededor de la presencia recurrente de una sustancia.<br>
+      <strong>Distribución arcana</strong> — desplazamiento o concentración de una
+      sustancia guiada parcialmente por afinidades o estructuras mágicas.<br>
+      <strong>Estimulante</strong> — sustancia que aumenta temporalmente actividad,
+      rendimiento o disponibilidad de determinadas funciones.<br>
+      <strong>Exposición crónica</strong> — contacto repetido o prolongado capaz de
+      producir acumulación o adaptación.<br>
+      <strong>Farmacología Arcana</strong> — disciplina dedicada al estudio de
+      sustancias activas y de su interacción material o mágica con organismos vivos.<br>
+      <strong>Farmacovigilancia</strong> — seguimiento sistemático de efectos adversos
+      e interacciones después de la introducción de un preparado en uso clínico.<br>
       <strong>Poción</strong> — preparado destinado a producir un efecto relativamente
       controlado después de su administración.<br>
-      <strong>Veneno</strong> — sustancia cuya interacción produce daño o pérdida funcional en
-      condiciones relevantes de exposición.<br>
-      <strong>Antídoto</strong> — intervención destinada a neutralizar, bloquear, eliminar o
-      compensar el efecto de un tóxico.<br>
-      <strong>Estimulante</strong> — sustancia que aumenta temporalmente actividad, rendimiento
-      o disponibilidad de determinadas funciones.<br>
-      <strong>Reactivo mágico</strong> — compuesto que modifica su comportamiento en presencia
-      de una condición o estructura arcana.<br>
-      <strong>Potenciador arcano</strong> — sustancia que aumenta temporalmente acceso,
-      concentración o mantenimiento de energía mágica.<br>
-      <strong>Supresor arcano</strong> — sustancia que reduce temporalmente la capacidad de
-      producir o sostener manifestaciones mágicas.<br>
-      <strong>Tolerancia</strong> — reducción progresiva del efecto de una sustancia tras
-      exposiciones repetidas.<br>
-      <strong>Dependencia</strong> — reorganización del funcionamiento del organismo alrededor
-      de la presencia recurrente de una sustancia.<br>
-      <strong>Saturación</strong> — estado en que la acumulación de una sustancia produce
-      respuestas cualitativamente distintas a las de dosis menores.<br>
-      <strong>Exposición crónica</strong> — contacto repetido o prolongado capaz de producir
-      acumulación o adaptación.<br>
-      <strong>Farmacovigilancia</strong> — seguimiento sistemático de efectos adversos e
-      interacciones después de la introducción de un preparado en uso clínico.</p>
+      <strong>Potenciador arcano</strong> — sustancia que aumenta temporalmente
+      acceso, concentración o mantenimiento de energía mágica.<br>
+      <strong>Reactivo mágico</strong> — compuesto que modifica su comportamiento en
+      presencia de una condición o estructura arcana.<br>
+      <strong>Saturación</strong> — estado en que la acumulación de una sustancia
+      produce respuestas cualitativamente distintas a las de dosis menores.<br>
+      <strong>Supresor arcano</strong> — sustancia que reduce temporalmente la
+      capacidad de producir o sostener manifestaciones mágicas.<br>
+      <strong>Sustancia activa</strong> — compuesto capaz de producir un cambio
+      medible mediante interacción química, fisiológica, arcana o combinada.<br>
+      <strong>Tolerancia</strong> — reducción progresiva del efecto de una sustancia
+      tras exposiciones repetidas.<br>
+      <strong>Umbral farmacológico</strong> — cantidad mínima capaz de producir una
+      respuesta reconocible.<br>
+      <strong>Veneno</strong> — sustancia cuya interacción produce daño o pérdida
+      funcional en condiciones relevantes de exposición.<br>
+      <strong>Ventana terapéutica</strong> — intervalo entre dosis eficaz y dosis
+      asociada a toxicidad significativa.</p>
     `
   },
   {
@@ -9995,44 +10144,48 @@ window.ENTRIES = [
       con herramientas y lenguaje, sino también sistemas de comunicación que terminan
       encontrándose a mitad de camino.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Filología Arcana</strong> — disciplina dedicada al estudio histórico y
-      comparativo de lenguas utilizadas para transmitir, describir o ejecutar estructuras
-      mágicas.<br>
-      <strong>Lengua ritual</strong> — sistema lingüístico empleado de manera estable en
-      formulación, registro o ejecución de procedimientos mágicos.<br>
-      <strong>Cambio semántico</strong> — modificación histórica del significado asociado a una
-      palabra o expresión.<br>
-      <strong>Cambio gramatical</strong> — transformación histórica de las relaciones y
-      categorías mediante las cuales una lengua organiza significado.<br>
-      <strong>Fonética histórica</strong> — estudio de cómo cambia la pronunciación de una
-      lengua a través del tiempo.<br>
-      <strong>Palabra fósil</strong> — forma lingüística conservada principalmente dentro de
-      tradiciones fijas pese a haber desaparecido del habla ordinaria.<br>
-      <strong>Préstamo mágico</strong> — incorporación de vocabulario o fórmulas procedentes de
-      otra tradición junto con una técnica o estructura.<br>
-      <strong>Convergencia lingüística</strong> — tendencia de lenguas independientes a
-      desarrollar propiedades compatibles más allá de lo esperado por contacto conocido.<br>
+      <p>
+      <strong>Cambio gramatical</strong> — transformación histórica de las relaciones
+      y categorías mediante las cuales una lengua organiza significado.<br>
+      <strong>Cambio semántico</strong> — modificación histórica del significado
+      asociado a una palabra o expresión.<br>
+      <strong>Convergencia lingüística</strong> — tendencia de lenguas independientes
+      a desarrollar propiedades compatibles más allá de lo esperado por contacto
+      conocido.<br>
+      <strong>Falso equivalente</strong> — palabra de apariencia familiar cuyo
+      significado histórico o estructural difiere del que sugiere una lengua moderna.<br>
+      <strong>Filología Arcana</strong> — disciplina dedicada al estudio histórico y
+      comparativo de lenguas utilizadas para transmitir, describir o ejecutar
+      estructuras mágicas.<br>
+      <strong>Fonética histórica</strong> — estudio de cómo cambia la pronunciación de
+      una lengua a través del tiempo.<br>
+      <strong>Hipótesis cognitiva de convergencia</strong> — teoría según la cual
+      necesidades comunes del razonamiento favorecen estructuras lingüísticas
+      semejantes.<br>
+      <strong>Hipótesis de herencia cultural profunda</strong> — propuesta de que
+      contactos muy antiguos explican parte de las similitudes lingüísticas globales.<br>
+      <strong>Hipótesis de la afinación</strong> — nombre informal para modelos en los
+      que múltiples culturas convergen por desarrollarse bajo una referencia ambiental
+      común casi imperceptible.<br>
       <strong>Hipótesis morfoarticulatoria</strong> — teoría que explica parte de la
-      convergencia lingüística mediante similitudes corporales y manipulativas entre especies
-      inteligentes.<br>
-      <strong>Hipótesis cognitiva de convergencia</strong> — teoría según la cual necesidades
-      comunes del razonamiento favorecen estructuras lingüísticas semejantes.<br>
-      <strong>Hipótesis de herencia cultural profunda</strong> — propuesta de que contactos muy
-      antiguos explican parte de las similitudes lingüísticas globales.<br>
-      <strong>Hipótesis resonántica ambiental</strong> — modelo que propone una influencia
-      mágica débil y persistente capaz de favorecer ciertos patrones lingüísticos durante largos
-      períodos.<br>
-      <strong>Hipótesis telúrica de fondo</strong> — variante que sitúa la posible fuente de
-      dicha influencia en pulsaciones profundas del propio mundo.<br>
-      <strong>Hipótesis de la afinación</strong> — nombre informal para modelos en los que
-      múltiples culturas convergen por desarrollarse bajo una referencia ambiental común casi
-      imperceptible.<br>
-      <strong>Falso equivalente</strong> — palabra de apariencia familiar cuyo significado
-      histórico o estructural difiere del que sugiere una lengua moderna.<br>
-      <strong>Reconstrucción filológica</strong> — proceso de inferir pronunciación, significado
-      y función de formas antiguas mediante evidencia comparada.<br>
-      <strong>Traducción ritual</strong> — reformulación de una estructura lingüística mágica en
-      otro sistema conservando las relaciones necesarias para su interpretación.</p>
+      convergencia lingüística mediante similitudes corporales y manipulativas entre
+      especies inteligentes.<br>
+      <strong>Hipótesis resonántica ambiental</strong> — modelo que propone una
+      influencia mágica débil y persistente capaz de favorecer ciertos patrones
+      lingüísticos durante largos períodos.<br>
+      <strong>Hipótesis telúrica de fondo</strong> — variante que sitúa la posible
+      fuente de dicha influencia en pulsaciones profundas del propio mundo.<br>
+      <strong>Lengua ritual</strong> — sistema lingüístico empleado de manera estable
+      en formulación, registro o ejecución de procedimientos mágicos.<br>
+      <strong>Palabra fósil</strong> — forma lingüística conservada principalmente
+      dentro de tradiciones fijas pese a haber desaparecido del habla ordinaria.<br>
+      <strong>Préstamo mágico</strong> — incorporación de vocabulario o fórmulas
+      procedentes de otra tradición junto con una técnica o estructura.<br>
+      <strong>Reconstrucción filológica</strong> — proceso de inferir pronunciación,
+      significado y función de formas antiguas mediante evidencia comparada.<br>
+      <strong>Traducción ritual</strong> — reformulación de una estructura lingüística
+      mágica en otro sistema conservando las relaciones necesarias para su
+      interpretación.</p>
     `
   },
   {
@@ -10514,43 +10667,46 @@ window.ENTRIES = [
       <p>Por ello, su reputación entre estudiantes es merecida. No porque exija memorizar
       figuras, sino porque obliga a justificar cada línea.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Geometría Ritual</strong> — disciplina dedicada al estudio de posición,
+      <p>
+      <strong>Asimetría funcional</strong> — desigualdad deliberada de disposición
+      utilizada para representar diferencias reales entre componentes.<br>
+      <strong>Calibración</strong> — verificación de que la disposición real
+      corresponde suficientemente con la diseñada.<br>
+      <strong>Centro estructural</strong> — punto que funciona como referencia
+      principal para una estructura, aunque no coincida con el centro geométrico del
+      entorno.<br>
+      <strong>Compensación</strong> — modificación calculada de relaciones espaciales
+      para conservar función cuando no puede reproducirse la disposición ideal.<br>
+      <strong>Densidad geométrica</strong> — cantidad de componentes o relaciones
+      distribuidas dentro de una región.<br>
+      <strong>Eje ritual</strong> — dirección de referencia utilizada para organizar
+      posiciones o relaciones.<br>
+      <strong>Error acumulativo</strong> — desviación resultante de sumar pequeñas
+      imprecisiones a través de una estructura extensa.<br>
+      <strong>Geometría Ritual</strong> — disciplina dedicada al estudio de posición,
       distancia, orientación, simetría y distribución espacial dentro de estructuras
       mágicas.<br>
-      <strong>Punto de referencia</strong> — origen espacial respecto del cual se interpretan
-      posiciones y medidas.<br>
-      <strong>Proporción</strong> — relación entre medidas que puede conservarse aunque cambie
-      la escala total.<br>
-      <strong>Centro estructural</strong> — punto que funciona como referencia principal para
-      una estructura, aunque no coincida con el centro geométrico del entorno.<br>
-      <strong>Simetría funcional</strong> — equivalencia espacial que corresponde también a
-      equivalencia de función.<br>
-      <strong>Asimetría funcional</strong> — desigualdad deliberada de disposición utilizada
-      para representar diferencias reales entre componentes.<br>
-      <strong>Eje ritual</strong> — dirección de referencia utilizada para organizar posiciones
-      o relaciones.<br>
-      <strong>Nodo</strong> — posición donde convergen varias relaciones dentro de una
-      matriz.<br>
-      <strong>Red ritual</strong> — conjunto de nodos y conexiones organizados como sistema de
-      transmisión o distribución.<br>
-      <strong>Redundancia geométrica</strong> — presencia de rutas o componentes espaciales
-      alternativos capaces de mantener continuidad ante una falla.<br>
-      <strong>Densidad geométrica</strong> — cantidad de componentes o relaciones distribuidas
-      dentro de una región.<br>
-      <strong>Trayectoria ritual</strong> — recorrido cuya forma o secuencia participa
-      activamente de una estructura.<br>
-      <strong>Tolerancia geométrica</strong> — margen de variación espacial dentro del cual una
-      estructura conserva función aceptable.<br>
-      <strong>Calibración</strong> — verificación de que la disposición real corresponde
-      suficientemente con la diseñada.<br>
-      <strong>Compensación</strong> — modificación calculada de relaciones espaciales para
-      conservar función cuando no puede reproducirse la disposición ideal.<br>
+      <strong>Geometría territorial</strong> — aplicación de relaciones rituales a
+      escalas donde arquitectura, caminos o accidentes geográficos funcionan como
+      componentes.<br>
       <strong>Matriz tridimensional</strong> — estructura ritual cuyos componentes se
       distribuyen en volumen y no en un único plano.<br>
-      <strong>Geometría territorial</strong> — aplicación de relaciones rituales a escalas donde
-      arquitectura, caminos o accidentes geográficos funcionan como componentes.<br>
-      <strong>Error acumulativo</strong> — desviación resultante de sumar pequeñas imprecisiones
-      a través de una estructura extensa.</p>
+      <strong>Nodo</strong> — posición donde convergen varias relaciones dentro de una
+      matriz.<br>
+      <strong>Proporción</strong> — relación entre medidas que puede conservarse
+      aunque cambie la escala total.<br>
+      <strong>Punto de referencia</strong> — origen espacial respecto del cual se
+      interpretan posiciones y medidas.<br>
+      <strong>Red ritual</strong> — conjunto de nodos y conexiones organizados como
+      sistema de transmisión o distribución.<br>
+      <strong>Redundancia geométrica</strong> — presencia de rutas o componentes
+      espaciales alternativos capaces de mantener continuidad ante una falla.<br>
+      <strong>Simetría funcional</strong> — equivalencia espacial que corresponde
+      también a equivalencia de función.<br>
+      <strong>Tolerancia geométrica</strong> — margen de variación espacial dentro del
+      cual una estructura conserva función aceptable.<br>
+      <strong>Trayectoria ritual</strong> — recorrido cuya forma o secuencia participa
+      activamente de una estructura.</p>
     `
   },
   {
@@ -11164,46 +11320,47 @@ window.ENTRIES = [
       histórica consiste en hacer visible la convergencia sin borrar el camino particular por el
       que cada cultura llegó hasta ella.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Historia de las Ciencias Mágicas</strong> — disciplina dedicada al desarrollo
-      histórico de teorías, prácticas e instituciones mágicas.<br>
-      <strong>Equivalencia funcional</strong> — semejanza entre prácticas que resuelven
-      problemas comparables aunque utilicen conceptos distintos.<br>
-      <strong>Equivalencia conceptual</strong> — semejanza entre categorías teóricas de
-      tradiciones diferentes.<br>
-      <strong>Convergencia independiente</strong> — aparición de soluciones semejantes sin
-      contacto histórico demostrado.<br>
+      <p>
+      <strong>Anacronismo</strong> — atribución indebida de conceptos modernos a
+      contextos históricos que no los poseían.<br>
+      <strong>Apropiación de conocimiento</strong> — incorporación de saberes de otro
+      grupo sin reconocimiento adecuado de su origen.<br>
+      <strong>Categoría analítica</strong> — término moderno utilizado para comparar
+      fenómenos históricos sin afirmar que sus actores lo emplearan.<br>
+      <strong>Conocimiento provisional</strong> — principio según el cual incluso las
+      teorías actuales pertenecen a un momento histórico revisable.<br>
+      <strong>Convergencia independiente</strong> — aparición de soluciones semejantes
+      sin contacto histórico demostrado.<br>
+      <strong>Convergencia metodológica</strong> — aparición de procedimientos
+      semejantes a través de tradiciones distintas.<br>
       <strong>Difusión</strong> — transmisión de conocimientos entre culturas mediante
       contacto.<br>
-      <strong>Redescubrimiento</strong> — aparición posterior de una técnica o principio perdido
-      mediante una nueva ruta intelectual.<br>
-      <strong>Anacronismo</strong> — atribución indebida de conceptos modernos a contextos
-      históricos que no los poseían.<br>
-      <strong>Categoría analítica</strong> — término moderno utilizado para comparar fenómenos
-      históricos sin afirmar que sus actores lo emplearan.<br>
-      <strong>Tradición oral</strong> — sistema de transmisión de conocimiento mediante memoria,
-      canto, gesto, relato o práctica.<br>
-      <strong>Formalización</strong> — proceso de convertir conocimiento práctico en reglas,
-      conceptos o textos explícitos.<br>
-      <strong>Apropiación de conocimiento</strong> — incorporación de saberes de otro grupo sin
-      reconocimiento adecuado de su origen.<br>
-      <strong>Sesgo documental</strong> — distorsión histórica causada por supervivencia
-      desigual de fuentes.<br>
-      <strong>Convergencia metodológica</strong> — aparición de procedimientos semejantes a
-      través de tradiciones distintas.<br>
-      <strong>Historia comparada</strong> — método que estudia similitudes y diferencias entre
-      desarrollos culturales separados.<br>
+      <strong>Equivalencia conceptual</strong> — semejanza entre categorías teóricas
+      de tradiciones diferentes.<br>
+      <strong>Equivalencia funcional</strong> — semejanza entre prácticas que
+      resuelven problemas comparables aunque utilicen conceptos distintos.<br>
+      <strong>Formalización</strong> — proceso de convertir conocimiento práctico en
+      reglas, conceptos o textos explícitos.<br>
+      <strong>Historia comparada</strong> — método que estudia similitudes y
+      diferencias entre desarrollos culturales separados.<br>
+      <strong>Historia de las Ciencias Mágicas</strong> — disciplina dedicada al
+      desarrollo histórico de teorías, prácticas e instituciones mágicas.<br>
+      <strong>Historiografía</strong> — estudio de cómo se construyen y revisan
+      relatos sobre el pasado.<br>
+      <strong>Institucionalización</strong> — proceso por el cual una práctica
+      adquiere escuelas, licencias, archivos y autoridades formales.<br>
       <strong>Precursor</strong> — figura o práctica anterior relacionada con una idea
       posterior, término que debe usarse con cautela.<br>
-      <strong>Red de transmisión</strong> — conjunto de rutas sociales, comerciales, religiosas o
-      políticas por las que circula conocimiento.<br>
-      <strong>Traducción conceptual</strong> — intento de relacionar categorías de tradiciones
-      diferentes sin asumir equivalencia perfecta.<br>
-      <strong>Historiografía</strong> — estudio de cómo se construyen y revisan relatos sobre el
-      pasado.<br>
-      <strong>Institucionalización</strong> — proceso por el cual una práctica adquiere
-      escuelas, licencias, archivos y autoridades formales.<br>
-      <strong>Conocimiento provisional</strong> — principio según el cual incluso las teorías
-      actuales pertenecen a un momento histórico revisable.</p>
+      <strong>Red de transmisión</strong> — conjunto de rutas sociales, comerciales,
+      religiosas o políticas por las que circula conocimiento.<br>
+      <strong>Redescubrimiento</strong> — aparición posterior de una técnica o
+      principio perdido mediante una nueva ruta intelectual.<br>
+      <strong>Sesgo documental</strong> — distorsión histórica causada por
+      supervivencia desigual de fuentes.<br>
+      <strong>Tradición oral</strong> — sistema de transmisión de conocimiento
+      mediante memoria, canto, gesto, relato o práctica.<br>
+      <strong>Traducción conceptual</strong> — intento de relacionar categorías de
+      tradiciones diferentes sin asumir equivalencia perfecta.</p>
     `
   },
   {
@@ -11796,44 +11953,48 @@ window.ENTRIES = [
       reescribir la relación completa. En todos los casos, la manifestación visible es sólo una parte
       del problema.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Maldiología</strong> — disciplina dedicada al estudio sistemático de maldiciones,
-      sus referentes, condiciones, anclajes y mecanismos de persistencia.<br>
-      <strong>Maldición</strong> — estructura persistente que asocia referentes con condiciones,
-      consecuencias o restricciones y conserva capacidad de interpretarlas.<br>
-      <strong>Referente maldiológico</strong> — persona, objeto, lugar, cargo, linaje o relación
-      reconocida por una maldición.<br>
-      <strong>Condición</strong> — relación o acontecimiento que determina activación, modificación,
-      suspensión o terminación.<br>
-      <strong>Consecuencia</strong> — efecto impuesto por la estructura cuando reconoce la condición
-      pertinente.<br>
-      <strong>Anclaje maldiológico</strong> — soporte o relación que permite que una maldición
-      conserve continuidad.<br>
-      <strong>Latencia</strong> — estado en el que la maldición permanece vinculada sin manifestar su
-      consecuencia principal.<br>
-      <strong>Desencadenante</strong> — evento que hace pasar una maldición de latencia a
-      manifestación.<br>
-      <strong>Maldición hereditaria</strong> — estructura que cambia de referente siguiendo una regla
-      de sucesión.<br>
-      <strong>Herencia simbólica</strong> — transmisión mediante objetos, títulos, juramentos o ritos
-      y no sólo descendencia biológica.<br>
-      <strong>Maldición adaptativa</strong> — estructura capaz de modificar su manifestación para
-      conservar una función o consecuencia.<br>
-      <strong>Maldición territorial</strong> — estructura cuyo referente o condición depende de
-      pertenencia o presencia en una región.<br>
-      <strong>Maldición contractual</strong> — estructura vinculada a obligaciones, pactos o
-      juramentos.<br>
-      <strong>Cláusula de terminación</strong> — condición cuya satisfacción permite concluir una
+      <p>
+      <strong>Anclaje maldiológico</strong> — soporte o relación que permite que una
+      maldición conserve continuidad.<br>
+      <strong>Cláusula de terminación</strong> — condición cuya satisfacción permite
+      concluir una maldición.<br>
+      <strong>Condición</strong> — relación o acontecimiento que determina activación,
+      modificación, suspensión o terminación.<br>
+      <strong>Consecuencia</strong> — efecto impuesto por la estructura cuando
+      reconoce la condición pertinente.<br>
+      <strong>Contienda maldiológica</strong> — conflicto entre estructuras
+      persistentes con condiciones incompatibles sobre un mismo referente.<br>
+      <strong>Desencadenante</strong> — evento que hace pasar una maldición de
+      latencia a manifestación.<br>
+      <strong>Herencia simbólica</strong> — transmisión mediante objetos, títulos,
+      juramentos o ritos y no sólo descendencia biológica.<br>
+      <strong>Latencia</strong> — estado en el que la maldición permanece vinculada
+      sin manifestar su consecuencia principal.<br>
+      <strong>Maldición</strong> — estructura persistente que asocia referentes con
+      condiciones, consecuencias o restricciones y conserva capacidad de
+      interpretarlas.<br>
+      <strong>Maldición adaptativa</strong> — estructura capaz de modificar su
+      manifestación para conservar una función o consecuencia.<br>
+      <strong>Maldición contractual</strong> — estructura vinculada a obligaciones,
+      pactos o juramentos.<br>
+      <strong>Maldición espontánea</strong> — estructura maldiológica para la que no
+      se identifica un autor deliberado.<br>
+      <strong>Maldición hereditaria</strong> — estructura que cambia de referente
+      siguiendo una regla de sucesión.<br>
+      <strong>Maldición territorial</strong> — estructura cuyo referente o condición
+      depende de pertenencia o presencia en una región.<br>
+      <strong>Maldiología</strong> — disciplina dedicada al estudio sistemático de
+      maldiciones, sus referentes, condiciones, anclajes y mecanismos de persistencia.<br>
+      <strong>Referente maldiológico</strong> — persona, objeto, lugar, cargo, linaje
+      o relación reconocida por una maldición.<br>
+      <strong>Ruptura</strong> — desorganización de la relación que permite a una
+      maldición continuar reconociendo y actuando.<br>
+      <strong>Sellado</strong> — limitación espacial, temporal o funcional de una
       maldición.<br>
-      <strong>Supresión</strong> — reducción temporal de manifestación sin eliminar la estructura.<br>
-      <strong>Sellado</strong> — limitación espacial, temporal o funcional de una maldición.<br>
-      <strong>Transferencia</strong> — cambio deliberado o estructural del referente principal de una
-      maldición.<br>
-      <strong>Contienda maldiológica</strong> — conflicto entre estructuras persistentes con
-      condiciones incompatibles sobre un mismo referente.<br>
-      <strong>Ruptura</strong> — desorganización de la relación que permite a una maldición continuar
-      reconociendo y actuando.<br>
-      <strong>Maldición espontánea</strong> — estructura maldiológica para la que no se identifica un
-      autor deliberado.</p>
+      <strong>Supresión</strong> — reducción temporal de manifestación sin eliminar la
+      estructura.<br>
+      <strong>Transferencia</strong> — cambio deliberado o estructural del referente
+      principal de una maldición.</p>
     `
   },
   {
@@ -12177,32 +12338,39 @@ window.ENTRIES = [
       fenómenos capaces de modificar materia, mente, espacio, tiempo e identidad, esa diferencia
       resulta esencial.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Metafísica Arcana</strong> — disciplina dedicada al estudio de las condiciones
-      generales que hacen posibles, coherentes y estables los fenómenos mágicos.<br>
-      <strong>Posibilidad</strong> — conjunto de condiciones bajo las cuales una transformación puede
-      ser admitida por la realidad.<br>
-      <strong>Coherencia</strong> — compatibilidad mínima entre una manifestación, el estado previo
-      del mundo y las relaciones que deben conservarse durante el cambio.<br>
-      <strong>Restitución</strong> — tendencia de una estructura alterada a regresar hacia una
-      configuración previa cuando desaparecen las condiciones que sostenían la modificación.<br>
-      <strong>Causa inmediata</strong> — evento que inicia una manifestación observable.<br>
-      <strong>Causa estructural</strong> — conjunto de relaciones que permite que una causa inmediata
-      produzca un resultado determinado.<br>
-      <strong>Compatibilidad</strong> — grado en que una manifestación puede integrarse con
-      regularidades existentes sin introducir contradicciones irresolubles.<br>
-      <strong>Estado imposible</strong> — configuración cuya coherencia no puede ser explicada
-      mediante los modelos disponibles.<br>
-      <strong>Límite estructural</strong> — restricción que procede de información, autoridad,
-      estabilidad o coherencia y no únicamente de la energía disponible.<br>
-      <strong>Pertenencia estructural</strong> — relación por la cual una región, componente o
-      propiedad participa funcionalmente de una entidad mayor y no puede tratarse, para ciertas
-      operaciones, como independiente de ella.<br>
-      <strong>Principio de Continuidad Orgánica</strong> — formulación según la cual las regiones
-      internas de un organismo vivo conservan relaciones de pertenencia que una manifestación debe
-      resolver antes de modificar o introducir materia directamente en ellas.<br>
-      <strong>Hipótesis estructural de la realidad</strong> — propuesta según la cual las
-      regularidades del mundo pueden describirse mediante relaciones susceptibles de interpretación e
-      intervención arcana.</p>
+      <p>
+      <strong>Causa estructural</strong> — conjunto de relaciones que permite que una
+      causa inmediata produzca un resultado determinado.<br>
+      <strong>Causa inmediata</strong> — evento que inicia una manifestación
+      observable.<br>
+      <strong>Coherencia</strong> — compatibilidad mínima entre una manifestación, el
+      estado previo del mundo y las relaciones que deben conservarse durante el
+      cambio.<br>
+      <strong>Compatibilidad</strong> — grado en que una manifestación puede
+      integrarse con regularidades existentes sin introducir contradicciones
+      irresolubles.<br>
+      <strong>Estado imposible</strong> — configuración cuya coherencia no puede ser
+      explicada mediante los modelos disponibles.<br>
+      <strong>Hipótesis estructural de la realidad</strong> — propuesta según la cual
+      las regularidades del mundo pueden describirse mediante relaciones susceptibles
+      de interpretación e intervención arcana.<br>
+      <strong>Límite estructural</strong> — restricción que procede de información,
+      autoridad, estabilidad o coherencia y no únicamente de la energía disponible.<br>
+      <strong>Metafísica Arcana</strong> — disciplina dedicada al estudio de las
+      condiciones generales que hacen posibles, coherentes y estables los fenómenos
+      mágicos.<br>
+      <strong>Pertenencia estructural</strong> — relación por la cual una región,
+      componente o propiedad participa funcionalmente de una entidad mayor y no puede
+      tratarse, para ciertas operaciones, como independiente de ella.<br>
+      <strong>Posibilidad</strong> — conjunto de condiciones bajo las cuales una
+      transformación puede ser admitida por la realidad.<br>
+      <strong>Principio de Continuidad Orgánica</strong> — formulación según la cual
+      las regiones internas de un organismo vivo conservan relaciones de pertenencia
+      que una manifestación debe resolver antes de modificar o introducir materia
+      directamente en ellas.<br>
+      <strong>Restitución</strong> — tendencia de una estructura alterada a regresar
+      hacia una configuración previa cuando desaparecen las condiciones que sostenían
+      la modificación.</p>
     `
   },
   {
@@ -12604,37 +12772,41 @@ window.ENTRIES = [
       <p>Esta comprensión es indispensable para artefactos, rituales y conservación. Toda magia que
       deba sobrevivir a su creador necesita confiar parte de su continuidad a la materia.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Mineralogía Mágica</strong> — disciplina dedicada al estudio de materiales cuya
-      estructura influye de manera repetible en conducción, retención, aislamiento o conservación
-      mágica.<br>
-      <strong>Función estructural</strong> — papel específico que cumple un material dentro de una
-      configuración mágica.<br>
-      <strong>Afinidad material</strong> — tendencia de una sustancia a interactuar preferentemente
-      con determinadas formas de energía o estructura.<br>
-      <strong>Conducción</strong> — capacidad de permitir que una carga o relación mágica se propague
-      a través de un material.<br>
-      <strong>Aislamiento</strong> — resistencia de un material a la propagación de determinadas
-      influencias.<br>
-      <strong>Retención</strong> — capacidad de conservar energía o información después de retirada
-      la fuente original.<br>
-      <strong>Memoria material</strong> — persistencia organizada de estados o configuraciones
-      mágicas previas dentro de un soporte.<br>
-      <strong>Resonancia material</strong> — aumento de facilidad con que un material responde a
-      estructuras semejantes a aquellas que ha sostenido repetidamente.<br>
-      <strong>Fatiga material</strong> — degradación acumulativa causada por ciclos repetidos de
-      carga, descarga o exposición.<br>
-      <strong>Corrosión arcana</strong> — degradación de un material causada o acelerada por
-      interacción mágica.<br>
-      <strong>Material sacrificial</strong> — componente diseñado para degradarse de forma controlada
-      antes de que una sobrecarga alcance estructuras más importantes.<br>
-      <strong>Anclaje mineral</strong> — material cuya estabilidad permite mantener una referencia
-      espacial, planar o estructural.<br>
-      <strong>Cristal de registro</strong> — material cristalino utilizado por su capacidad de
-      conservar información mágica con alta fidelidad.<br>
-      <strong>Material extraplanar</strong> — sustancia formada fuera del plano material y capaz de
-      conservar propiedades derivadas de sus condiciones de origen.<br>
-      <strong>Autenticidad material</strong> — grado en que composición, historia y estructura de un
-      componente participan en la identidad funcional o histórica de un objeto.</p>
+      <p>
+      <strong>Afinidad material</strong> — tendencia de una sustancia a interactuar
+      preferentemente con determinadas formas de energía o estructura.<br>
+      <strong>Aislamiento</strong> — resistencia de un material a la propagación de
+      determinadas influencias.<br>
+      <strong>Anclaje mineral</strong> — material cuya estabilidad permite mantener
+      una referencia espacial, planar o estructural.<br>
+      <strong>Autenticidad material</strong> — grado en que composición, historia y
+      estructura de un componente participan en la identidad funcional o histórica de
+      un objeto.<br>
+      <strong>Conducción</strong> — capacidad de permitir que una carga o relación
+      mágica se propague a través de un material.<br>
+      <strong>Corrosión arcana</strong> — degradación de un material causada o
+      acelerada por interacción mágica.<br>
+      <strong>Cristal de registro</strong> — material cristalino utilizado por su
+      capacidad de conservar información mágica con alta fidelidad.<br>
+      <strong>Fatiga material</strong> — degradación acumulativa causada por ciclos
+      repetidos de carga, descarga o exposición.<br>
+      <strong>Función estructural</strong> — papel específico que cumple un material
+      dentro de una configuración mágica.<br>
+      <strong>Material extraplanar</strong> — sustancia formada fuera del plano
+      material y capaz de conservar propiedades derivadas de sus condiciones de
+      origen.<br>
+      <strong>Material sacrificial</strong> — componente diseñado para degradarse de
+      forma controlada antes de que una sobrecarga alcance estructuras más
+      importantes.<br>
+      <strong>Memoria material</strong> — persistencia organizada de estados o
+      configuraciones mágicas previas dentro de un soporte.<br>
+      <strong>Mineralogía Mágica</strong> — disciplina dedicada al estudio de
+      materiales cuya estructura influye de manera repetible en conducción, retención,
+      aislamiento o conservación mágica.<br>
+      <strong>Resonancia material</strong> — aumento de facilidad con que un material
+      responde a estructuras semejantes a aquellas que ha sostenido repetidamente.<br>
+      <strong>Retención</strong> — capacidad de conservar energía o información
+      después de retirada la fuente original.</p>
     `
   },
   {
@@ -13163,46 +13335,48 @@ window.ENTRIES = [
       o consecuencias de intervención externa. La responsabilidad académica consiste en distinguirlas
       antes de intentar devolver cada cuerpo a una forma que el observador considera normal.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Morfología Anómala</strong> — disciplina dedicada al estudio de cambios corporales
-      que reorganizan forma, función y anatomía sin implicar necesariamente pérdida de identidad.<br>
-      <strong>Continuidad morfológica</strong> — cadena de relaciones que permite reconocer
-      configuraciones sucesivas como estados del mismo organismo.<br>
-      <strong>Memoria somática</strong> — información que permite conservar o reconstruir patrones
-      corporales.<br>
-      <strong>Forma de reposo</strong> — configuración que un organismo puede sostener con mayor
-      estabilidad o menor costo.<br>
-      <strong>Polimorfia estable</strong> — capacidad de alternar entre varias formas funcionales sin
-      deterioro significativo.<br>
-      <strong>Polimorfia inducida</strong> — transformación mantenida o iniciada por una estructura
-      externa al organismo.<br>
-      <strong>Mimetismo anatómico</strong> — reproducción de estructuras internas y externas de otra
-      forma corporal.<br>
-      <strong>Mimetismo de firma</strong> — imitación de rasgos mágicos utilizados para
-      reconocimiento.<br>
-      <strong>Plasticidad somática</strong> — capacidad de reorganizar tejidos y proporciones sin
-      perder continuidad individual.<br>
-      <strong>Anclaje morfológico</strong> — referencia que ayuda a conservar o recuperar una
-      configuración corporal.<br>
-      <strong>Pérdida de referencia</strong> — degradación de información necesaria para regresar a
-      una forma previa.<br>
-      <strong>Deriva morfológica</strong> — acumulación de modificaciones persistentes después de
-      transformaciones repetidas.<br>
-      <strong>Quimerismo</strong> — integración de tejidos o patrones corporales de orígenes
-      distintos dentro de un mismo organismo.<br>
-      <strong>Forma híbrida</strong> — configuración que combina rasgos funcionales de dos o más
-      patrones corporales.<br>
-      <strong>Licuefacción corporal</strong> — transformación hacia un estado fluido conservando
-      suficiente organización para mantener continuidad.<br>
-      <strong>Estado difuso</strong> — configuración en la que el cuerpo se distribuye como niebla,
-      humo, partículas u otra forma de baja cohesión.<br>
-      <strong>Fragmentación</strong> — división corporal capaz de producir regeneración o, en algunas
-      especies, nuevos individuos.<br>
-      <strong>Fusión</strong> — integración de masas corporales previamente separadas dentro de una
-      sola estructura.<br>
-      <strong>Licantropía</strong> — conjunto de condiciones y linajes caracterizados por
-      transformaciones cíclicas o inducidas hacia formas bestiales.<br>
-      <strong>Petrificación</strong> — transformación del organismo en una matriz mineral que puede
-      conservar referencia suficiente para restauración.</p>
+      <p>
+      <strong>Anclaje morfológico</strong> — referencia que ayuda a conservar o
+      recuperar una configuración corporal.<br>
+      <strong>Continuidad morfológica</strong> — cadena de relaciones que permite
+      reconocer configuraciones sucesivas como estados del mismo organismo.<br>
+      <strong>Deriva morfológica</strong> — acumulación de modificaciones persistentes
+      después de transformaciones repetidas.<br>
+      <strong>Estado difuso</strong> — configuración en la que el cuerpo se distribuye
+      como niebla, humo, partículas u otra forma de baja cohesión.<br>
+      <strong>Forma de reposo</strong> — configuración que un organismo puede sostener
+      con mayor estabilidad o menor costo.<br>
+      <strong>Forma híbrida</strong> — configuración que combina rasgos funcionales de
+      dos o más patrones corporales.<br>
+      <strong>Fragmentación</strong> — división corporal capaz de producir
+      regeneración o, en algunas especies, nuevos individuos.<br>
+      <strong>Fusión</strong> — integración de masas corporales previamente separadas
+      dentro de una sola estructura.<br>
+      <strong>Licantropía</strong> — conjunto de condiciones y linajes caracterizados
+      por transformaciones cíclicas o inducidas hacia formas bestiales.<br>
+      <strong>Licuefacción corporal</strong> — transformación hacia un estado fluido
+      conservando suficiente organización para mantener continuidad.<br>
+      <strong>Memoria somática</strong> — información que permite conservar o
+      reconstruir patrones corporales.<br>
+      <strong>Mimetismo anatómico</strong> — reproducción de estructuras internas y
+      externas de otra forma corporal.<br>
+      <strong>Mimetismo de firma</strong> — imitación de rasgos mágicos utilizados
+      para reconocimiento.<br>
+      <strong>Morfología Anómala</strong> — disciplina dedicada al estudio de cambios
+      corporales que reorganizan forma, función y anatomía sin implicar necesariamente
+      pérdida de identidad.<br>
+      <strong>Pérdida de referencia</strong> — degradación de información necesaria
+      para regresar a una forma previa.<br>
+      <strong>Petrificación</strong> — transformación del organismo en una matriz
+      mineral que puede conservar referencia suficiente para restauración.<br>
+      <strong>Plasticidad somática</strong> — capacidad de reorganizar tejidos y
+      proporciones sin perder continuidad individual.<br>
+      <strong>Polimorfia estable</strong> — capacidad de alternar entre varias formas
+      funcionales sin deterioro significativo.<br>
+      <strong>Polimorfia inducida</strong> — transformación mantenida o iniciada por
+      una estructura externa al organismo.<br>
+      <strong>Quimerismo</strong> — integración de tejidos o patrones corporales de
+      orígenes distintos dentro de un mismo organismo.</p>
     `
   },
   {
@@ -13719,45 +13893,47 @@ window.ENTRIES = [
       secuela. Sólo entonces puede decidirse si el tratamiento debe neutralizar, retirar, reparar,
       contener o enseñar al organismo a vivir con una condición que ya forma parte de él.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Patología Arcana</strong> — disciplina dedicada al estudio de enfermedades cuya
-      causa, mantenimiento o progresión involucra procesos mágicos.<br>
-      <strong>Etiología arcana</strong> — estudio de las causas de una patología mágica.<br>
-      <strong>Exposición aguda</strong> — contacto intenso y breve con una influencia capaz de
-      producir daño.<br>
-      <strong>Exposición crónica</strong> — contacto repetido o prolongado cuyos efectos pueden
-      acumularse gradualmente.<br>
-      <strong>Contaminación mágica</strong> — presencia persistente de una influencia que altera
-      regulación normal del organismo.<br>
-      <strong>Reservorio</strong> — organismo, objeto o lugar capaz de mantener una condición
-      patológica y permitir nuevas exposiciones.<br>
-      <strong>Latencia</strong> — estado en que una patología está presente sin producir síntomas
-      manifiestos.<br>
-      <strong>Mutación somática</strong> — modificación estable de tejidos del individuo sin
-      transmisión necesaria a descendencia.<br>
-      <strong>Deriva morfológica</strong> — acumulación progresiva de cambios corporales persistentes
-      tras exposiciones repetidas.<br>
-      <strong>Necrosis arcana</strong> — pérdida de función tisular producida por ruptura de
-      coherencia estructural.<br>
-      <strong>Disociación somática</strong> — pérdida parcial de pertenencia funcional entre una
-      región corporal y el organismo.<br>
-      <strong>Daño resonántico</strong> — alteración persistente de percepción, memoria o cognición
-      producida por estructuras resonantes.<br>
-      <strong>Radiación Sináptica</strong> — síndrome de exposición a actividad mental arcana extrema
-      capaz de degradar funciones cognitivas de individuos próximos.<br>
-      <strong>Síndrome de saturación</strong> — cuadro en el que una exposición deja de comportarse
-      como dosis transitoria y comienza a reorganizar al sujeto.<br>
-      <strong>Maldición transmisible</strong> — estructura maldiológica capaz de propagarse entre
-      individuos mediante condiciones definidas.<br>
-      <strong>Secuela</strong> — alteración persistente después de que la causa principal ha dejado
-      de estar activa.<br>
-      <strong>Recaída</strong> — reaparición de una patología por reactivación, nueva exposición o
-      mantenimiento incompletamente resuelto.<br>
-      <strong>Diagnóstico diferencial</strong> — proceso de distinguir entre mecanismos distintos
-      capaces de producir síntomas semejantes.<br>
-      <strong>Aislamiento resonántico</strong> — medidas destinadas a reducir propagación de
-      influencias psíquicas o interpretativas.<br>
-      <strong>Vigilancia ocupacional</strong> — seguimiento periódico de personas expuestas a riesgos
-      arcanos por actividad profesional.</p>
+      <p>
+      <strong>Aislamiento resonántico</strong> — medidas destinadas a reducir
+      propagación de influencias psíquicas o interpretativas.<br>
+      <strong>Contaminación mágica</strong> — presencia persistente de una influencia
+      que altera regulación normal del organismo.<br>
+      <strong>Daño resonántico</strong> — alteración persistente de percepción,
+      memoria o cognición producida por estructuras resonantes.<br>
+      <strong>Deriva morfológica</strong> — acumulación progresiva de cambios
+      corporales persistentes tras exposiciones repetidas.<br>
+      <strong>Diagnóstico diferencial</strong> — proceso de distinguir entre
+      mecanismos distintos capaces de producir síntomas semejantes.<br>
+      <strong>Disociación somática</strong> — pérdida parcial de pertenencia funcional
+      entre una región corporal y el organismo.<br>
+      <strong>Etiología arcana</strong> — estudio de las causas de una patología
+      mágica.<br>
+      <strong>Exposición aguda</strong> — contacto intenso y breve con una influencia
+      capaz de producir daño.<br>
+      <strong>Exposición crónica</strong> — contacto repetido o prolongado cuyos
+      efectos pueden acumularse gradualmente.<br>
+      <strong>Latencia</strong> — estado en que una patología está presente sin
+      producir síntomas manifiestos.<br>
+      <strong>Maldición transmisible</strong> — estructura maldiológica capaz de
+      propagarse entre individuos mediante condiciones definidas.<br>
+      <strong>Mutación somática</strong> — modificación estable de tejidos del
+      individuo sin transmisión necesaria a descendencia.<br>
+      <strong>Necrosis arcana</strong> — pérdida de función tisular producida por
+      ruptura de coherencia estructural.<br>
+      <strong>Patología Arcana</strong> — disciplina dedicada al estudio de
+      enfermedades cuya causa, mantenimiento o progresión involucra procesos mágicos.<br>
+      <strong>Radiación Sináptica</strong> — síndrome de exposición a actividad mental
+      arcana extrema capaz de degradar funciones cognitivas de individuos próximos.<br>
+      <strong>Recaída</strong> — reaparición de una patología por reactivación, nueva
+      exposición o mantenimiento incompletamente resuelto.<br>
+      <strong>Reservorio</strong> — organismo, objeto o lugar capaz de mantener una
+      condición patológica y permitir nuevas exposiciones.<br>
+      <strong>Secuela</strong> — alteración persistente después de que la causa
+      principal ha dejado de estar activa.<br>
+      <strong>Síndrome de saturación</strong> — cuadro en el que una exposición deja
+      de comportarse como dosis transitoria y comienza a reorganizar al sujeto.<br>
+      <strong>Vigilancia ocupacional</strong> — seguimiento periódico de personas
+      expuestas a riesgos arcanos por actividad profesional.</p>
     `
   },
   {
@@ -14100,38 +14276,39 @@ window.ENTRIES = [
       <p>La navegación planar depende menos de saber cuánto separa dos lugares que de comprender qué
       relaciones permiten atravesar esa separación.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Planología</strong> — disciplina dedicada al estudio de planos, regiones, fronteras
-      y relaciones espaciales no reducibles a geometría ordinaria.<br>
-      <strong>Plano</strong> — marco espacial suficientemente estable para sostener relaciones
-      internas de posición, continuidad y causalidad.<br>
-      <strong>Región</strong> — porción delimitada de un marco espacial, con grado variable de
-      autonomía.<br>
-      <strong>Continuidad espacial</strong> — relación que permite recorrer posiciones dentro de un
-      mismo marco sin abandonar su estructura.<br>
-      <strong>Frontera planar</strong> — relación que separa marcos espaciales o regiones con
-      condiciones de continuidad distintas.<br>
-      <strong>Adyacencia</strong> — condición en la que dos regiones poseen una transición
-      inmediata, independientemente de su distancia métrica.<br>
-      <strong>Portal</strong> — estructura que establece una transición repetible entre regiones que
-      no eran adyacentes bajo condiciones ordinarias.<br>
-      <strong>Boca</strong> — región local donde un entorno entra en correspondencia con una
-      transición portal.<br>
-      <strong>Superposición</strong> — estado en el que varias regiones mantienen correspondencias
-      espaciales semejantes sin compartir la misma pertenencia.<br>
-      <strong>Región liminal</strong> — zona de transición donde propiedades de dos marcos
-      espaciales se mezclan o alternan.<br>
-      <strong>Dislocación</strong> — alteración de relaciones espaciales sin necesidad de trasladar
-      directamente las entidades contenidas.<br>
-      <strong>Distancia de tránsito</strong> — cantidad efectiva de recorrido necesaria para
-      alcanzar una región dentro de una estructura espacial.<br>
-      <strong>Anclaje espacial</strong> — estructura que fija una región, frontera o transición a
-      una referencia estable.<br>
-      <strong>Colapso planar</strong> — pérdida de estabilidad de una región o de las relaciones que
-      la separan de otros marcos.<br>
-      <strong>Contigüidad artificial</strong> — establecimiento deliberado de una frontera funcional
-      entre regiones previamente no adyacentes.<br>
-      <strong>Adyacencia no recíproca</strong> — relación espacial en la que la transición de una
-      región a otra no posee un retorno equivalente.</p>
+      <p>
+      <strong>Adyacencia</strong> — condición en la que dos regiones poseen una
+      transición inmediata, independientemente de su distancia métrica.<br>
+      <strong>Adyacencia no recíproca</strong> — relación espacial en la que la
+      transición de una región a otra no posee un retorno equivalente.<br>
+      <strong>Anclaje espacial</strong> — estructura que fija una región, frontera o
+      transición a una referencia estable.<br>
+      <strong>Boca</strong> — región local donde un entorno entra en correspondencia
+      con una transición portal.<br>
+      <strong>Colapso planar</strong> — pérdida de estabilidad de una región o de las
+      relaciones que la separan de otros marcos.<br>
+      <strong>Contigüidad artificial</strong> — establecimiento deliberado de una
+      frontera funcional entre regiones previamente no adyacentes.<br>
+      <strong>Continuidad espacial</strong> — relación que permite recorrer posiciones
+      dentro de un mismo marco sin abandonar su estructura.<br>
+      <strong>Dislocación</strong> — alteración de relaciones espaciales sin necesidad
+      de trasladar directamente las entidades contenidas.<br>
+      <strong>Distancia de tránsito</strong> — cantidad efectiva de recorrido
+      necesaria para alcanzar una región dentro de una estructura espacial.<br>
+      <strong>Frontera planar</strong> — relación que separa marcos espaciales o
+      regiones con condiciones de continuidad distintas.<br>
+      <strong>Plano</strong> — marco espacial suficientemente estable para sostener
+      relaciones internas de posición, continuidad y causalidad.<br>
+      <strong>Planología</strong> — disciplina dedicada al estudio de planos,
+      regiones, fronteras y relaciones espaciales no reducibles a geometría ordinaria.<br>
+      <strong>Portal</strong> — estructura que establece una transición repetible
+      entre regiones que no eran adyacentes bajo condiciones ordinarias.<br>
+      <strong>Región</strong> — porción delimitada de un marco espacial, con grado
+      variable de autonomía.<br>
+      <strong>Región liminal</strong> — zona de transición donde propiedades de dos
+      marcos espaciales se mezclan o alternan.<br>
+      <strong>Superposición</strong> — estado en el que varias regiones mantienen
+      correspondencias espaciales semejantes sin compartir la misma pertenencia.</p>
     `
   },
   {
@@ -14473,35 +14650,38 @@ window.ENTRIES = [
       <p>Por ahora, Dolbred conserva una conclusión modesta, y es que una persona es más difícil de destruir
       que un cuerpo, pero eso no significa que sepamos todavía qué parte de ella sobrevive.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Pneumatología</strong> — disciplina dedicada al estudio de alma, continuidad
-      personal, separación corporal y persistencia de identidad.<br>
-      <strong>Continuidad personal</strong> — conjunto de relaciones que permiten reconocer a un
-      individuo como persistente a través de cambios de soporte, estado o condición.<br>
-      <strong>Alma</strong> — término técnico provisional para una estructura persistente asociada a
-      la continuidad personal y capaz de mantener relaciones con independencia parcial del
+      <p>
+      <strong>Alma</strong> — término técnico provisional para una estructura
+      persistente asociada a la continuidad personal y capaz de mantener relaciones
+      con independencia parcial del cuerpo.<br>
+      <strong>Anclaje pneumatológico</strong> — relación externa cuya estabilidad
+      contribuye de manera directa a la persistencia de una estructura personal.<br>
+      <strong>Cohesión pneumatológica</strong> — grado en que una identidad conserva
+      organización y reconocimiento pese a separación, daño o pérdida de soporte.<br>
+      <strong>Continuidad personal</strong> — conjunto de relaciones que permiten
+      reconocer a un individuo como persistente a través de cambios de soporte, estado
+      o condición.<br>
+      <strong>Continuidad post mortem</strong> — persistencia de relaciones personales
+      después de la terminación vital.<br>
+      <strong>Daño pneumatológico</strong> — alteración de las relaciones que
+      sostienen identidad, pertenencia, continuidad o capacidad de retorno.<br>
+      <strong>Fragmentación</strong> — separación de componentes pneumatológicos
+      acompañada por pérdida correlativa en la estructura original.<br>
+      <strong>Persistencia residual</strong> — conservación de información o patrones
+      post mortem sin evidencia suficiente de continuidad consciente.<br>
+      <strong>Pneumatología</strong> — disciplina dedicada al estudio de alma,
+      continuidad personal, separación corporal y persistencia de identidad.<br>
+      <strong>Posesión</strong> — conflicto o superposición de estructuras personales
+      que intentan operar mediante un mismo soporte corporal.<br>
+      <strong>Reconocimiento de retorno</strong> — proceso por el cual una estructura
+      personal restablece correspondencia con un cuerpo capaz de sostenerla.<br>
+      <strong>Separación pneumatológica</strong> — estado en el que parte
+      significativa de la continuidad personal deja de depender inmediatamente del
       cuerpo.<br>
-      <strong>Vínculo somático</strong> — conjunto de correspondencias que relacionan una estructura
-      personal con el organismo que la sostiene.<br>
-      <strong>Separación pneumatológica</strong> — estado en el que parte significativa de la
-      continuidad personal deja de depender inmediatamente del cuerpo.<br>
-      <strong>Persistencia residual</strong> — conservación de información o patrones post mortem
-      sin evidencia suficiente de continuidad consciente.<br>
-      <strong>Posesión</strong> — conflicto o superposición de estructuras personales que intentan
-      operar mediante un mismo soporte corporal.<br>
-      <strong>Transferencia pneumatológica</strong> — proceso mediante el cual la continuidad
-      personal establece pertenencia principal con un soporte distinto.<br>
-      <strong>Fragmentación</strong> — separación de componentes pneumatológicos acompañada por
-      pérdida correlativa en la estructura original.<br>
-      <strong>Anclaje pneumatológico</strong> — relación externa cuya estabilidad contribuye de
-      manera directa a la persistencia de una estructura personal.<br>
-      <strong>Cohesión pneumatológica</strong> — grado en que una identidad conserva organización y
-      reconocimiento pese a separación, daño o pérdida de soporte.<br>
-      <strong>Daño pneumatológico</strong> — alteración de las relaciones que sostienen identidad,
-      pertenencia, continuidad o capacidad de retorno.<br>
-      <strong>Continuidad post mortem</strong> — persistencia de relaciones personales después de la
-      terminación vital.<br>
-      <strong>Reconocimiento de retorno</strong> — proceso por el cual una estructura personal
-      restablece correspondencia con un cuerpo capaz de sostenerla.</p>
+      <strong>Transferencia pneumatológica</strong> — proceso mediante el cual la
+      continuidad personal establece pertenencia principal con un soporte distinto.<br>
+      <strong>Vínculo somático</strong> — conjunto de correspondencias que relacionan
+      una estructura personal con el organismo que la sostiene.</p>
     `
   },
   {
@@ -14923,37 +15103,43 @@ window.ENTRIES = [
       <p>Esa dificultad no reduce la utilidad de la disciplina. Constituye precisamente la razón por
       la que existe.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Psicología Resonántica</strong> — disciplina médica y académica dedicada al estudio
-      de cómo una mente interpreta estructuras y cómo esas interpretaciones pueden ser modificadas
-      por fenómenos mágicos.<br>
-      <strong>Marco interpretativo</strong> — conjunto de expectativas, asociaciones y referencias
-      mediante las cuales una mente organiza información y construye experiencia significativa.<br>
-      <strong>Arrastre interpretativo</strong> — tendencia de una interpretación ya establecida a
-      influir sobre la lectura de información posterior.<br>
-      <strong>Prioridad perceptiva</strong> — grado de importancia que una mente concede a una señal
-      dentro de su procesamiento consciente.<br>
-      <strong>Sugestión</strong> — introducción de una proposición o relación para que sea
-      incorporada temporalmente dentro de los procesos de decisión del sujeto.<br>
-      <strong>Ilusión proyectiva</strong> — fenómeno que introduce información perceptible en el
-      entorno y puede ser compartido por varios observadores.<br>
-      <strong>Ilusión interpretativa</strong> — fenómeno que modifica la manera en que señales
-      existentes son comprendidas.<br>
-      <strong>Ilusión intrusiva</strong> — fenómeno que establece experiencia directamente en el
-      sistema perceptivo del sujeto sin requerir una señal ambiental equivalente.<br>
-      <strong>Lesión resonántica</strong> — alteración funcional de procesos mentales de
-      interpretación, percepción, memoria o integración producida por una estructura mágica.<br>
-      <strong>Sobrecarga interpretativa</strong> — estado en el que la cantidad o incompatibilidad
-      de información excede la capacidad temporal de integración de una mente.<br>
-      <strong>Trauma resonántico</strong> — alteración persistente de asociaciones y marcos
-      interpretativos después de una experiencia mágica extrema.<br>
-      <strong>Memoria implantada</strong> — recuerdo construido externamente e integrado en la red
-      de referencias del sujeto.<br>
-      <strong>Memoria suprimida</strong> — recuerdo cuyo acceso ha sido bloqueado, desorganizado o
-      separado de las vías normales de evocación.<br>
-      <strong>Contaminación del observador</strong> — alteración del juicio de quien investiga un
-      fenómeno por exposición a la misma estructura que intenta estudiar.<br>
-      <strong>Resistencia interpretativa</strong> — capacidad de una mente para conservar coherencia
-      propia frente a una estructura que intenta adquirir prioridad sobre su interpretación.</p>
+      <p>
+      <strong>Arrastre interpretativo</strong> — tendencia de una interpretación ya
+      establecida a influir sobre la lectura de información posterior.<br>
+      <strong>Contaminación del observador</strong> — alteración del juicio de quien
+      investiga un fenómeno por exposición a la misma estructura que intenta estudiar.<br>
+      <strong>Ilusión interpretativa</strong> — fenómeno que modifica la manera en que
+      señales existentes son comprendidas.<br>
+      <strong>Ilusión intrusiva</strong> — fenómeno que establece experiencia
+      directamente en el sistema perceptivo del sujeto sin requerir una señal
+      ambiental equivalente.<br>
+      <strong>Ilusión proyectiva</strong> — fenómeno que introduce información
+      perceptible en el entorno y puede ser compartido por varios observadores.<br>
+      <strong>Lesión resonántica</strong> — alteración funcional de procesos mentales
+      de interpretación, percepción, memoria o integración producida por una
+      estructura mágica.<br>
+      <strong>Marco interpretativo</strong> — conjunto de expectativas, asociaciones y
+      referencias mediante las cuales una mente organiza información y construye
+      experiencia significativa.<br>
+      <strong>Memoria implantada</strong> — recuerdo construido externamente e
+      integrado en la red de referencias del sujeto.<br>
+      <strong>Memoria suprimida</strong> — recuerdo cuyo acceso ha sido bloqueado,
+      desorganizado o separado de las vías normales de evocación.<br>
+      <strong>Prioridad perceptiva</strong> — grado de importancia que una mente
+      concede a una señal dentro de su procesamiento consciente.<br>
+      <strong>Psicología Resonántica</strong> — disciplina médica y académica dedicada
+      al estudio de cómo una mente interpreta estructuras y cómo esas interpretaciones
+      pueden ser modificadas por fenómenos mágicos.<br>
+      <strong>Resistencia interpretativa</strong> — capacidad de una mente para
+      conservar coherencia propia frente a una estructura que intenta adquirir
+      prioridad sobre su interpretación.<br>
+      <strong>Sobrecarga interpretativa</strong> — estado en el que la cantidad o
+      incompatibilidad de información excede la capacidad temporal de integración de
+      una mente.<br>
+      <strong>Sugestión</strong> — introducción de una proposición o relación para que
+      sea incorporada temporalmente dentro de los procesos de decisión del sujeto.<br>
+      <strong>Trauma resonántico</strong> — alteración persistente de asociaciones y
+      marcos interpretativos después de una experiencia mágica extrema.</p>
     `
   },
   {
@@ -15437,42 +15623,46 @@ window.ENTRIES = [
       nadie puede explicar con precisión qué ocurrirá si una sola función deja de comportarse como
       fue previsto.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Ritualística</strong> — disciplina dedicada al diseño, análisis y ejecución de
-      estructuras mágicas distribuidas en tiempo, espacio, participantes o soportes.<br>
-      <strong>Dependencia secuencial</strong> — relación por la cual una fase necesita resultados
-      establecidos por otra anterior.<br>
-      <strong>Fase ritual</strong> — conjunto de operaciones orientadas a resolver una función
-      específica dentro de un procedimiento.<br>
-      <strong>Rol ritual</strong> — conjunto de responsabilidades estructurales asignadas a un
-      participante.<br>
-      <strong>Redundancia</strong> — presencia de rutas, soportes o participantes alternativos
-      capaces de conservar una función ante una falla.<br>
-      <strong>Clausura</strong> — frontera que limita la región sobre la que un ritual mantiene
-      influencia.<br>
-      <strong>Carga</strong> — proceso de acumulación de energía, referencias o condiciones
-      necesarias para una fase posterior.<br>
-      <strong>Umbral ritual</strong> — punto a partir del cual una estructura adquiere propiedades
-      nuevas o se vuelve más difícil de detener.<br>
-      <strong>Activación</strong> — transición mediante la cual una estructura preparada comienza a
-      ejecutar su función principal.<br>
-      <strong>Estabilización</strong> — fase en la que relaciones recién establecidas alcanzan
-      comportamiento regular.<br>
-      <strong>Cierre</strong> — proceso mediante el cual las relaciones temporales o auxiliares del
-      ritual son liberadas, fijadas o retiradas de forma controlada.<br>
-      <strong>Interrupción</strong> — detención externa de acciones sin garantía de deshacer
-      relaciones ya establecidas.<br>
-      <strong>Desbordamiento</strong> — condición en la que una estructura recibe más energía,
-      información o influencia de la que puede distribuir de forma estable.<br>
-      <strong>Ritual coral</strong> — estructura distribuida entre participantes que sostienen
-      funciones diferenciadas e interdependientes.<br>
-      <strong>Ritual territorial</strong> — procedimiento cuya región de efecto incorpora una
-      extensión geográfica significativa y múltiples referencias espaciales.<br>
-      <strong>Ritual persistente</strong> — estructura diseñada para continuar funcionando después
-      de la retirada de sus participantes.<br>
-      <strong>Ritual autolimitado</strong> — estructura que contiene condiciones internas capaces de
-      reducir o terminar su propia actividad.<br>
-      <strong>Principio de auditabilidad</strong> — criterio según el cual cada componente de un
-      ritual académico debe poseer una función explicable y documentada.</p>
+      <p>
+      <strong>Activación</strong> — transición mediante la cual una estructura
+      preparada comienza a ejecutar su función principal.<br>
+      <strong>Carga</strong> — proceso de acumulación de energía, referencias o
+      condiciones necesarias para una fase posterior.<br>
+      <strong>Cierre</strong> — proceso mediante el cual las relaciones temporales o
+      auxiliares del ritual son liberadas, fijadas o retiradas de forma controlada.<br>
+      <strong>Clausura</strong> — frontera que limita la región sobre la que un ritual
+      mantiene influencia.<br>
+      <strong>Dependencia secuencial</strong> — relación por la cual una fase necesita
+      resultados establecidos por otra anterior.<br>
+      <strong>Desbordamiento</strong> — condición en la que una estructura recibe más
+      energía, información o influencia de la que puede distribuir de forma estable.<br>
+      <strong>Estabilización</strong> — fase en la que relaciones recién establecidas
+      alcanzan comportamiento regular.<br>
+      <strong>Fase ritual</strong> — conjunto de operaciones orientadas a resolver una
+      función específica dentro de un procedimiento.<br>
+      <strong>Interrupción</strong> — detención externa de acciones sin garantía de
+      deshacer relaciones ya establecidas.<br>
+      <strong>Principio de auditabilidad</strong> — criterio según el cual cada
+      componente de un ritual académico debe poseer una función explicable y
+      documentada.<br>
+      <strong>Redundancia</strong> — presencia de rutas, soportes o participantes
+      alternativos capaces de conservar una función ante una falla.<br>
+      <strong>Ritual autolimitado</strong> — estructura que contiene condiciones
+      internas capaces de reducir o terminar su propia actividad.<br>
+      <strong>Ritual coral</strong> — estructura distribuida entre participantes que
+      sostienen funciones diferenciadas e interdependientes.<br>
+      <strong>Ritual persistente</strong> — estructura diseñada para continuar
+      funcionando después de la retirada de sus participantes.<br>
+      <strong>Ritual territorial</strong> — procedimiento cuya región de efecto
+      incorpora una extensión geográfica significativa y múltiples referencias
+      espaciales.<br>
+      <strong>Ritualística</strong> — disciplina dedicada al diseño, análisis y
+      ejecución de estructuras mágicas distribuidas en tiempo, espacio, participantes
+      o soportes.<br>
+      <strong>Rol ritual</strong> — conjunto de responsabilidades estructurales
+      asignadas a un participante.<br>
+      <strong>Umbral ritual</strong> — punto a partir del cual una estructura adquiere
+      propiedades nuevas o se vuelve más difícil de detener.</p>
     `
   },
   {
@@ -15848,42 +16038,43 @@ window.ENTRIES = [
       escrito primero esos signos, sino de que determinadas culturas aprendieron a utilizarlos para
       que una estructura pudiera sobrevivir a quien la trazó.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Runología</strong> — disciplina dedicada al estudio de sistemas escritos capaces de
-      conservar y transmitir relaciones mágicas.<br>
-      <strong>Runa</strong> — unidad gráfica con función estructural definida dentro de un sistema
-      de representación.<br>
-      <strong>Sistema rúnico</strong> — conjunto de convenciones que determina cómo se escriben,
-      combinan e interpretan las runas.<br>
-      <strong>Forma gráfica</strong> — configuración visible de una inscripción, diferenciada de su
-      función dentro del sistema.<br>
-      <strong>Función rúnica</strong> — relación que una runa establece o conserva dentro de una
-      estructura.<br>
-      <strong>Sintaxis gráfica</strong> — reglas de orden, posición, escala, orientación o enlace
-      que organizan una inscripción.<br>
-      <strong>Ligadura</strong> — combinación de varias unidades rúnicas en una única forma gráfica
-      funcional.<br>
-      <strong>Runa de referencia</strong> — inscripción destinada a identificar el objeto, entidad,
-      lugar o categoría sobre la que opera otra estructura.<br>
-      <strong>Runa de condición</strong> — inscripción que determina cuándo o bajo qué circunstancias
-      otra parte de la estructura adquiere efecto.<br>
-      <strong>Runa de enlace</strong> — unidad que establece dependencia, secuencia o transmisión
-      entre componentes.<br>
-      <strong>Sistema fonográfico</strong> — sistema rúnico que representa sonidos, palabras o
-      elementos de una lengua.<br>
-      <strong>Sistema conceptual</strong> — sistema que representa relaciones o funciones sin
-      depender directamente de una lengua hablada.<br>
-      <strong>Sistema mixto</strong> — sistema que combina elementos lingüísticos, conceptuales y
-      geométricos.<br>
-      <strong>Corrupción rúnica</strong> — pérdida o modificación de información estructural dentro
-      de una inscripción.<br>
-      <strong>Palimpsesto mágico</strong> — soporte que conserva capas sucesivas de inscripciones y
-      residuos de sistemas anteriores.<br>
-      <strong>Inscripción reactiva</strong> — estructura escrita capaz de responder a lectura,
-      reconocimiento, energía u otras condiciones.<br>
-      <strong>Traducción rúnica</strong> — reformulación funcional de una estructura escrita dentro
-      de otro sistema de representación.<br>
-      <strong>Facsímil de seguridad</strong> — copia deliberadamente modificada para preservar
-      información visual sin reproducir una estructura activa completa.</p>
+      <p>
+      <strong>Corrupción rúnica</strong> — pérdida o modificación de información
+      estructural dentro de una inscripción.<br>
+      <strong>Facsímil de seguridad</strong> — copia deliberadamente modificada para
+      preservar información visual sin reproducir una estructura activa completa.<br>
+      <strong>Forma gráfica</strong> — configuración visible de una inscripción,
+      diferenciada de su función dentro del sistema.<br>
+      <strong>Función rúnica</strong> — relación que una runa establece o conserva
+      dentro de una estructura.<br>
+      <strong>Inscripción reactiva</strong> — estructura escrita capaz de responder a
+      lectura, reconocimiento, energía u otras condiciones.<br>
+      <strong>Ligadura</strong> — combinación de varias unidades rúnicas en una única
+      forma gráfica funcional.<br>
+      <strong>Palimpsesto mágico</strong> — soporte que conserva capas sucesivas de
+      inscripciones y residuos de sistemas anteriores.<br>
+      <strong>Runa</strong> — unidad gráfica con función estructural definida dentro
+      de un sistema de representación.<br>
+      <strong>Runa de condición</strong> — inscripción que determina cuándo o bajo qué
+      circunstancias otra parte de la estructura adquiere efecto.<br>
+      <strong>Runa de enlace</strong> — unidad que establece dependencia, secuencia o
+      transmisión entre componentes.<br>
+      <strong>Runa de referencia</strong> — inscripción destinada a identificar el
+      objeto, entidad, lugar o categoría sobre la que opera otra estructura.<br>
+      <strong>Runología</strong> — disciplina dedicada al estudio de sistemas escritos
+      capaces de conservar y transmitir relaciones mágicas.<br>
+      <strong>Sintaxis gráfica</strong> — reglas de orden, posición, escala,
+      orientación o enlace que organizan una inscripción.<br>
+      <strong>Sistema conceptual</strong> — sistema que representa relaciones o
+      funciones sin depender directamente de una lengua hablada.<br>
+      <strong>Sistema fonográfico</strong> — sistema rúnico que representa sonidos,
+      palabras o elementos de una lengua.<br>
+      <strong>Sistema mixto</strong> — sistema que combina elementos lingüísticos,
+      conceptuales y geométricos.<br>
+      <strong>Sistema rúnico</strong> — conjunto de convenciones que determina cómo se
+      escriben, combinan e interpretan las runas.<br>
+      <strong>Traducción rúnica</strong> — reformulación funcional de una estructura
+      escrita dentro de otro sistema de representación.</p>
     `
   },
   {
@@ -16486,45 +16677,47 @@ window.ENTRIES = [
       extraordinarios. Sin embargo, su objetivo es precisamente conseguir que el conocimiento
       sobreviva al error humano que inevitablemente acompaña a toda ciencia.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Seguridad Ritual</strong> — disciplina dedicada a prevenir, contener y
-      responder a fallos en prácticas mágicas complejas.<br>
-      <strong>Fallo controlado</strong> — estado diseñado para que una avería reduzca función
-      antes que producir expansión peligrosa.<br>
-      <strong>Nivel de riesgo</strong> — clasificación dolbriana basada en alcance, autonomía,
-      reversibilidad, propagación y dificultad de interrupción.<br>
-      <strong>Perímetro de seguridad</strong> — zona de separación destinada a limitar
-      exposición y controlar acceso.<br>
-      <strong>Ventana de interrupción</strong> — fase en la que un ritual puede detenerse con
-      menor riesgo.<br>
-      <strong>Cierre seguro</strong> — procedimiento destinado a terminar relaciones activas y
-      liberar cargas de manera controlada.<br>
-      <strong>Cierre de emergencia</strong> — procedimiento abreviado que sacrifica resultado
-      para priorizar seguridad.<br>
+      <p>
+      <strong>Casi accidente</strong> — evento que pudo causar daño pero fue contenido
+      o no llegó a producirlo.<br>
+      <strong>Causa raíz</strong> — condición cuya corrección reduce
+      significativamente la repetición de un incidente.<br>
+      <strong>Cierre de emergencia</strong> — procedimiento abreviado que sacrifica
+      resultado para priorizar seguridad.<br>
+      <strong>Cierre seguro</strong> — procedimiento destinado a terminar relaciones
+      activas y liberar cargas de manera controlada.<br>
+      <strong>Contención primaria</strong> — barrera inmediata alrededor de la fuente.<br>
+      <strong>Contención secundaria</strong> — sistema independiente destinado a
+      detener un fallo de la primera barrera.<br>
+      <strong>Contención terciaria</strong> — perímetro externo utilizado para
+      proteger instalaciones o población.<br>
+      <strong>Cultura de seguridad</strong> — conjunto de prácticas institucionales
+      que favorecen reporte, prevención y detención temprana sin represalias
+      indebidas.<br>
       <strong>Desbordamiento</strong> — situación en la que un fenómeno excede límites
       previstos.<br>
-      <strong>Contención primaria</strong> — barrera inmediata alrededor de la fuente.<br>
-      <strong>Contención secundaria</strong> — sistema independiente destinado a detener un
-      fallo de la primera barrera.<br>
-      <strong>Contención terciaria</strong> — perímetro externo utilizado para proteger
-      instalaciones o población.<br>
-      <strong>Redundancia</strong> — uso de sistemas independientes para reducir fallos por
-      causa común.<br>
-      <strong>Descontaminación</strong> — proceso destinado a retirar o aislar influencias
-      peligrosas después de exposición.<br>
-      <strong>Casi accidente</strong> — evento que pudo causar daño pero fue contenido o no
-      llegó a producirlo.<br>
-      <strong>Causa raíz</strong> — condición cuya corrección reduce significativamente la
-      repetición de un incidente.<br>
-      <strong>Responsable de seguridad</strong> — persona con autoridad independiente para
-      ordenar interrupción o evacuación.<br>
+      <strong>Descontaminación</strong> — proceso destinado a retirar o aislar
+      influencias peligrosas después de exposición.<br>
+      <strong>Fallo controlado</strong> — estado diseñado para que una avería reduzca
+      función antes que producir expansión peligrosa.<br>
       <strong>Instalación certificada</strong> — espacio autorizado para categorías
       específicas de riesgo mágico.<br>
-      <strong>Permiso de ritual</strong> — autorización formal para una práctica de riesgo
-      definido.<br>
-      <strong>Simulacro</strong> — ejercicio controlado de respuesta ante escenarios de
-      emergencia.<br>
-      <strong>Cultura de seguridad</strong> — conjunto de prácticas institucionales que
-      favorecen reporte, prevención y detención temprana sin represalias indebidas.</p>
+      <strong>Nivel de riesgo</strong> — clasificación dolbriana basada en alcance,
+      autonomía, reversibilidad, propagación y dificultad de interrupción.<br>
+      <strong>Perímetro de seguridad</strong> — zona de separación destinada a limitar
+      exposición y controlar acceso.<br>
+      <strong>Permiso de ritual</strong> — autorización formal para una práctica de
+      riesgo definido.<br>
+      <strong>Redundancia</strong> — uso de sistemas independientes para reducir
+      fallos por causa común.<br>
+      <strong>Responsable de seguridad</strong> — persona con autoridad independiente
+      para ordenar interrupción o evacuación.<br>
+      <strong>Seguridad Ritual</strong> — disciplina dedicada a prevenir, contener y
+      responder a fallos en prácticas mágicas complejas.<br>
+      <strong>Simulacro</strong> — ejercicio controlado de respuesta ante escenarios
+      de emergencia.<br>
+      <strong>Ventana de interrupción</strong> — fase en la que un ritual puede
+      detenerse con menor riesgo.</p>
     `
   },
   {
@@ -17010,44 +17203,45 @@ window.ENTRIES = [
       esa eficacia nunca debe confundirse con universalidad, ya que todo símbolo necesita un sistema
       que sepa qué está señalando.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Semiótica Mágica</strong> — disciplina dedicada al estudio de signos,
+      <p>
+      <strong>Capa semiótica</strong> — una de varias relaciones de significado que
+      pueden coexistir sobre un mismo objeto.<br>
+      <strong>Contaminación simbólica</strong> — acumulación de correspondencias
+      múltiples o contradictorias sobre un mismo soporte.<br>
+      <strong>Convención</strong> — regla cultural o diseñada que establece qué debe
+      representar una forma.<br>
+      <strong>Correspondencia</strong> — relación que permite utilizar una cosa para
+      representar, localizar o sustituir parcialmente a otra dentro de una estructura.<br>
+      <strong>Correspondencia por contacto</strong> — relación surgida de una historia
+      material compartida o proximidad prolongada.<br>
+      <strong>Correspondencia por pertenencia</strong> — relación basada en posesión,
+      herencia o integración reconocida.<br>
+      <strong>Correspondencia por semejanza</strong> — relación fundada en similitud
+      entre signo y referente.<br>
+      <strong>Diseño semiótico</strong> — construcción deliberada de convenciones y
+      correspondencias para uso ritual.<br>
+      <strong>Falsa correspondencia</strong> — referencia incorrecta producida por
+      signos ambiguos, falsos o mal atribuidos.<br>
+      <strong>Índice</strong> — signo cuya relación con el referente depende de una
+      conexión concreta, como huella, residuo o consecuencia.<br>
+      <strong>Reconocimiento colectivo</strong> — estabilidad semiótica producida por
+      una interpretación compartida dentro de una comunidad.<br>
+      <strong>Redundancia semiótica</strong> — uso de múltiples referencias
+      independientes para confirmar un mismo referente.<br>
+      <strong>Referente</strong> — entidad, concepto, lugar o relación hacia la que
+      dirige un signo.<br>
+      <strong>Semiótica Mágica</strong> — disciplina dedicada al estudio de signos,
       símbolos, referencias y correspondencias capaces de participar de estructuras
       mágicas.<br>
       <strong>Signo</strong> — forma perceptible utilizada para indicar otra cosa.<br>
-      <strong>Símbolo</strong> — signo cuyo significado depende de convención, tradición o
-      reconocimiento.<br>
-      <strong>Referente</strong> — entidad, concepto, lugar o relación hacia la que dirige un
-      signo.<br>
-      <strong>Correspondencia</strong> — relación que permite utilizar una cosa para
-      representar, localizar o sustituir parcialmente a otra dentro de una estructura.<br>
-      <strong>Correspondencia por semejanza</strong> — relación fundada en similitud entre
-      signo y referente.<br>
-      <strong>Correspondencia por contacto</strong> — relación surgida de una historia
-      material compartida o proximidad prolongada.<br>
-      <strong>Correspondencia por pertenencia</strong> — relación basada en posesión, herencia
-      o integración reconocida.<br>
-      <strong>Reconocimiento colectivo</strong> — estabilidad semiótica producida por una
-      interpretación compartida dentro de una comunidad.<br>
-      <strong>Convención</strong> — regla cultural o diseñada que establece qué debe
-      representar una forma.<br>
-      <strong>Índice</strong> — signo cuya relación con el referente depende de una conexión
-      concreta, como huella, residuo o consecuencia.<br>
-      <strong>Símbolo reactivo</strong> — signo cuya función depende de reconocimiento,
-      comprensión, aceptación u otra respuesta del participante.<br>
-      <strong>Sustitución ritual</strong> — uso de un representante para ocupar funcionalmente
-      el lugar de un referente ausente.<br>
-      <strong>Capa semiótica</strong> — una de varias relaciones de significado que pueden
-      coexistir sobre un mismo objeto.<br>
-      <strong>Falsa correspondencia</strong> — referencia incorrecta producida por signos
-      ambiguos, falsos o mal atribuidos.<br>
-      <strong>Contaminación simbólica</strong> — acumulación de correspondencias múltiples o
-      contradictorias sobre un mismo soporte.<br>
-      <strong>Traducción semiótica</strong> — reformulación de una función simbólica mediante
-      signos diferentes pero equivalentes dentro de otro contexto.<br>
-      <strong>Redundancia semiótica</strong> — uso de múltiples referencias independientes
-      para confirmar un mismo referente.<br>
-      <strong>Diseño semiótico</strong> — construcción deliberada de convenciones y
-      correspondencias para uso ritual.</p>
+      <strong>Símbolo</strong> — signo cuyo significado depende de convención,
+      tradición o reconocimiento.<br>
+      <strong>Símbolo reactivo</strong> — signo cuya función depende de
+      reconocimiento, comprensión, aceptación u otra respuesta del participante.<br>
+      <strong>Sustitución ritual</strong> — uso de un representante para ocupar
+      funcionalmente el lugar de un referente ausente.<br>
+      <strong>Traducción semiótica</strong> — reformulación de una función simbólica
+      mediante signos diferentes pero equivalentes dentro de otro contexto.</p>
     `
   },
   {
@@ -17348,30 +17542,37 @@ window.ENTRIES = [
       termina, por ello, en una frontera deliberada. Allí donde el cuerpo deja de proporcionar
       respuestas suficientes, el estudio de la continuidad debe pasar a la Pneumatología.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Tanatología</strong> — disciplina dedicada al estudio de la terminación vital,
-      sus etapas, sus consecuencias y sus posibles formas de reversión.<br>
-      <strong>Terminación vital</strong> — proceso por el cual un organismo pierde la capacidad
-      de mantener la organización necesaria para continuar existiendo como sistema vivo.<br>
-      <strong>Cese funcional</strong> — pérdida de una o varias funciones vitales sin que
-      necesariamente se haya fijado la muerte.<br>
-      <strong>Terminación fijada</strong> — estado en el que la muerte adquiere suficiente
-      estabilidad como para impedir la recuperación mediante procedimientos ordinarios.<br>
-      <strong>Fijación de la muerte</strong> — proceso mediante el cual se pierden relaciones
-      necesarias para tratar al organismo como una estructura vital recuperable.<br>
-      <strong>Estructura residual</strong> — organización material o arcana que persiste
-      después de la terminación vital sin constituir por sí misma continuidad de la persona.<br>
+      <p>
+      <strong>Cese funcional</strong> — pérdida de una o varias funciones vitales sin
+      que necesariamente se haya fijado la muerte.<br>
+      <strong>Continuidad post mortem</strong> — conjunto de relaciones cuya
+      persistencia permite estudiar qué aspectos de un individuo permanecen después de
+      la muerte.<br>
+      <strong>Estructura residual</strong> — organización material o arcana que
+      persiste después de la terminación vital sin constituir por sí misma continuidad
+      de la persona.<br>
+      <strong>Fijación de la muerte</strong> — proceso mediante el cual se pierden
+      relaciones necesarias para tratar al organismo como una estructura vital
+      recuperable.<br>
+      <strong>Muerte estructural</strong> — terminación caracterizada por daño directo
+      a las relaciones necesarias para recuperar continuidad e identidad.<br>
+      <strong>Persistencia</strong> — continuidad parcial de información, vínculos o
+      patrones después de la muerte.<br>
+      <strong>Retorno</strong> — restablecimiento de la actividad vital junto con
+      suficiente continuidad estructural para reconocer al organismo como recuperado.<br>
+      <strong>Tanatología</strong> — disciplina dedicada al estudio de la terminación
+      vital, sus etapas, sus consecuencias y sus posibles formas de reversión.<br>
+      <strong>Terminación fijada</strong> — estado en el que la muerte adquiere
+      suficiente estabilidad como para impedir la recuperación mediante procedimientos
+      ordinarios.<br>
+      <strong>Terminación no fijada</strong> — categoría descriptiva aplicada a casos
+      en los que una muerte funcional comprobada no adquiere la irreversibilidad
+      esperada.<br>
+      <strong>Terminación vital</strong> — proceso por el cual un organismo pierde la
+      capacidad de mantener la organización necesaria para continuar existiendo como
+      sistema vivo.<br>
       <strong>Ventana de recuperación</strong> — intervalo variable durante el cual un
-      procedimiento de retorno conserva posibilidades razonables de éxito.<br>
-      <strong>Persistencia</strong> — continuidad parcial de información, vínculos o patrones
-      después de la muerte.<br>
-      <strong>Terminación no fijada</strong> — categoría descriptiva aplicada a casos en los que
-      una muerte funcional comprobada no adquiere la irreversibilidad esperada.<br>
-      <strong>Muerte estructural</strong> — terminación caracterizada por daño directo a las
-      relaciones necesarias para recuperar continuidad e identidad.<br>
-      <strong>Retorno</strong> — restablecimiento de la actividad vital junto con suficiente
-      continuidad estructural para reconocer al organismo como recuperado.<br>
-      <strong>Continuidad post mortem</strong> — conjunto de relaciones cuya persistencia
-      permite estudiar qué aspectos de un individuo permanecen después de la muerte.</p>
+      procedimiento de retorno conserva posibilidades razonables de éxito.</p>
     `
   },
   {
@@ -17649,29 +17850,30 @@ window.ENTRIES = [
       respuestas rápidas, sino en impedir que una respuesta prematura destruya la posibilidad de
       comprender algo nuevo.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Taumatología</strong> — disciplina dedicada al estudio comparado, descriptivo y
-      clasificatorio de los fenómenos mágicos.<br>
-      <strong>Fenómeno taumatológico</strong> — manifestación cuya explicación requiere
-      propiedades sobrenaturales o arcanas no cubiertas satisfactoriamente por los procesos
-      naturales ordinarios.<br>
-      <strong>Soporte</strong> — elemento, organismo, lugar o estructura que conserva las
-      condiciones necesarias para la continuidad de una manifestación.<br>
-      <strong>Residuo</strong> — alteración persistente que permanece después de que el fenómeno
-      principal ha cesado.<br>
-      <strong>Persistencia</strong> — capacidad de una manifestación para conservarse a través
-      del tiempo y de cambios en sus condiciones iniciales.<br>
-      <strong>Autonomía</strong> — grado en que un fenómeno puede continuar sin la participación
-      del agente que lo originó.<br>
-      <strong>Anomalía</strong> — manifestación que no puede explicarse mediante las relaciones
-      conocidas del sistema estudiado.<br>
-      <strong>Fenómeno imitativo</strong> — proceso que reproduce efectos propios de otra
-      familia taumatológica sin compartir necesariamente su causa o soporte.<br>
-      <strong>Fenómeno compuesto</strong> — manifestación formada por varias operaciones
-      distinguibles que funcionan como una secuencia coordinada.<br>
-      <strong>Contaminación observacional</strong> — alteración de un fenómeno provocada por las
-      condiciones mismas empleadas para observarlo.<br>
-      <strong>Caso límite</strong> — fenómeno cuya descripción válida puede requerir categorías
-      diferentes o superpuestas.</p>
+      <p>
+      <strong>Anomalía</strong> — manifestación que no puede explicarse mediante las
+      relaciones conocidas del sistema estudiado.<br>
+      <strong>Autonomía</strong> — grado en que un fenómeno puede continuar sin la
+      participación del agente que lo originó.<br>
+      <strong>Caso límite</strong> — fenómeno cuya descripción válida puede requerir
+      categorías diferentes o superpuestas.<br>
+      <strong>Contaminación observacional</strong> — alteración de un fenómeno
+      provocada por las condiciones mismas empleadas para observarlo.<br>
+      <strong>Fenómeno compuesto</strong> — manifestación formada por varias
+      operaciones distinguibles que funcionan como una secuencia coordinada.<br>
+      <strong>Fenómeno imitativo</strong> — proceso que reproduce efectos propios de
+      otra familia taumatológica sin compartir necesariamente su causa o soporte.<br>
+      <strong>Fenómeno taumatológico</strong> — manifestación cuya explicación
+      requiere propiedades sobrenaturales o arcanas no cubiertas satisfactoriamente
+      por los procesos naturales ordinarios.<br>
+      <strong>Persistencia</strong> — capacidad de una manifestación para conservarse
+      a través del tiempo y de cambios en sus condiciones iniciales.<br>
+      <strong>Residuo</strong> — alteración persistente que permanece después de que
+      el fenómeno principal ha cesado.<br>
+      <strong>Soporte</strong> — elemento, organismo, lugar o estructura que conserva
+      las condiciones necesarias para la continuidad de una manifestación.<br>
+      <strong>Taumatología</strong> — disciplina dedicada al estudio comparado,
+      descriptivo y clasificatorio de los fenómenos mágicos.</p>
     `
   },
   {
@@ -18276,48 +18478,49 @@ window.ENTRIES = [
       representar cada sistema con precisión y saber qué tipo de evidencia sería necesaria para
       evaluar cada una de sus afirmaciones.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Teología Comparada</strong> — disciplina que estudia comparativamente
-      doctrinas, prácticas y experiencias religiosas sin adoptar una confesión como criterio
-      académico.<br>
-      <strong>Fenómeno teúrgico</strong> — manifestación asociada a prácticas de culto,
-      autoridad sagrada o intermediación religiosa.<br>
-      <strong>Interpretación religiosa</strong> — significado doctrinal atribuido a una
-      experiencia o fenómeno.<br>
-      <strong>Afirmación metafísica</strong> — proposición sobre realidades últimas cuya
-      evaluación puede exceder la observación empírica disponible.<br>
-      <strong>Milagro</strong> — acontecimiento interpretado por una tradición como
-      intervención sagrada o extraordinaria.<br>
-      <strong>Revelación</strong> — información experimentada como procedente de una fuente
-      sagrada o sobrenatural.<br>
-      <strong>Intercesión</strong> — mediación de una figura entre comunidad y autoridad
-      sagrada.<br>
-      <strong>Consagración</strong> — acto por el que una persona, lugar u objeto es dedicado o
-      reconocido dentro de un orden religioso.<br>
-      <strong>Reliquia</strong> — objeto o resto cuyo valor religioso deriva de su relación con
-      una figura, acontecimiento o tradición.<br>
+      <p>
+      <strong>Afirmación metafísica</strong> — proposición sobre realidades últimas
+      cuya evaluación puede exceder la observación empírica disponible.<br>
       <strong>Canon</strong> — conjunto de textos o tradiciones reconocidos como
       autorizados.<br>
-      <strong>Sincretismo</strong> — formación de nuevas interpretaciones a partir del contacto
-      entre tradiciones religiosas.<br>
-      <strong>Ortodoxia</strong> — conjunto de doctrinas consideradas normativas dentro de una
-      comunidad.<br>
-      <strong>Herejía</strong> — doctrina considerada incompatible con la ortodoxia por una
-      institución religiosa.<br>
-      <strong>Cisma</strong> — ruptura institucional o comunitaria dentro de una tradición
-      religiosa.<br>
-      <strong>Geografía sagrada</strong> — organización religiosa del espacio mediante lugares,
-      rutas y territorios significativos.<br>
-      <strong>Hipótesis de intermediación</strong> — teoría según la cual una respuesta
-      religiosa puede proceder de agentes mediadores distintos de la fuente última nombrada por
-      el culto.<br>
-      <strong>Hipótesis pluralista</strong> — teoría según la cual tradiciones distintas pueden
-      relacionarse con fuentes sobrenaturales diferentes.<br>
-      <strong>Hipótesis convergente</strong> — teoría según la cual métodos rituales semejantes
-      pueden producir fenómenos comparables pese a doctrinas distintas.<br>
-      <strong>Neutralidad académica</strong> — principio de estudiar afirmaciones religiosas
-      sin exigir adhesión ni rechazo confesional previo.<br>
+      <strong>Cisma</strong> — ruptura institucional o comunitaria dentro de una
+      tradición religiosa.<br>
+      <strong>Consagración</strong> — acto por el que una persona, lugar u objeto es
+      dedicado o reconocido dentro de un orden religioso.<br>
       <strong>Equivalencia funcional</strong> — semejanza de función entre prácticas o
-      fenómenos que no implica identidad doctrinal ni causal.</p>
+      fenómenos que no implica identidad doctrinal ni causal.<br>
+      <strong>Fenómeno teúrgico</strong> — manifestación asociada a prácticas de
+      culto, autoridad sagrada o intermediación religiosa.<br>
+      <strong>Geografía sagrada</strong> — organización religiosa del espacio mediante
+      lugares, rutas y territorios significativos.<br>
+      <strong>Herejía</strong> — doctrina considerada incompatible con la ortodoxia
+      por una institución religiosa.<br>
+      <strong>Hipótesis convergente</strong> — teoría según la cual métodos rituales
+      semejantes pueden producir fenómenos comparables pese a doctrinas distintas.<br>
+      <strong>Hipótesis de intermediación</strong> — teoría según la cual una
+      respuesta religiosa puede proceder de agentes mediadores distintos de la fuente
+      última nombrada por el culto.<br>
+      <strong>Hipótesis pluralista</strong> — teoría según la cual tradiciones
+      distintas pueden relacionarse con fuentes sobrenaturales diferentes.<br>
+      <strong>Intercesión</strong> — mediación de una figura entre comunidad y
+      autoridad sagrada.<br>
+      <strong>Interpretación religiosa</strong> — significado doctrinal atribuido a
+      una experiencia o fenómeno.<br>
+      <strong>Milagro</strong> — acontecimiento interpretado por una tradición como
+      intervención sagrada o extraordinaria.<br>
+      <strong>Neutralidad académica</strong> — principio de estudiar afirmaciones
+      religiosas sin exigir adhesión ni rechazo confesional previo.<br>
+      <strong>Ortodoxia</strong> — conjunto de doctrinas consideradas normativas
+      dentro de una comunidad.<br>
+      <strong>Reliquia</strong> — objeto o resto cuyo valor religioso deriva de su
+      relación con una figura, acontecimiento o tradición.<br>
+      <strong>Revelación</strong> — información experimentada como procedente de una
+      fuente sagrada o sobrenatural.<br>
+      <strong>Sincretismo</strong> — formación de nuevas interpretaciones a partir del
+      contacto entre tradiciones religiosas.<br>
+      <strong>Teología Comparada</strong> — disciplina que estudia comparativamente
+      doctrinas, prácticas y experiencias religiosas sin adoptar una confesión como
+      criterio académico.</p>
     `
   },
   {
@@ -18807,45 +19010,49 @@ window.ENTRIES = [
       manifestación que producen que por la ingeniería invisible que les permite producirla después de
       cien, quinientos o mil años.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Teoría de Encantamientos</strong> — disciplina dedicada al estudio de alteraciones
-      mágicas prolongadas y de los mecanismos que permiten su autonomía.<br>
-      <strong>Encantamiento</strong> — estructura persistente capaz de conservar o reactivar una
-      alteración sin intervención continua del creador.<br>
-      <strong>Autonomía estructural</strong> — grado en que una estructura puede continuar funcionando sin
-      apoyo externo directo.<br>
-      <strong>Anclaje</strong> — relación que mantiene el encantamiento asociado a su soporte o
-      referente.<br>
-      <strong>Reserva energética</strong> — fuente almacenada utilizada para compensar pérdidas o
-      alimentar manifestaciones.<br>
-      <strong>Captación ambiental</strong> — obtención de energía o condiciones necesarias desde el
-      entorno.<br>
-      <strong>Mantenimiento pasivo</strong> — persistencia basada en minimizar pérdidas en vez de
-      reponerlas constantemente.<br>
-      <strong>Autorregulación</strong> — capacidad de ajustar funcionamiento para conservar estabilidad.<br>
-      <strong>Umbral</strong> — valor a partir del cual una estructura cambia de estado o activa una
-      función.<br>
-      <strong>Encantamiento latente</strong> — estructura que permanece en reposo hasta reconocer una
-      condición.<br>
-      <strong>Encantamiento adaptativo</strong> — estructura capaz de modificar parámetros para conservar
-      su función.<br>
-      <strong>Saturación del soporte</strong> — estado en el que la complejidad o carga supera la
-      capacidad estable del material o sistema.<br>
-      <strong>Fatiga mágica</strong> — degradación acumulativa producida por activaciones repetidas.<br>
-      <strong>Deriva</strong> — cambio gradual del comportamiento respecto del diseño original.<br>
-      <strong>Autocorrección</strong> — mecanismo que compara un estado actual con una referencia y
-      compensa desviaciones.<br>
-      <strong>Autorreparación</strong> — capacidad de reconstruir daño material mediante una estructura
-      persistente.<br>
-      <strong>Redundancia</strong> — presencia de componentes alternativos capaces de conservar función
-      ante fallos locales.<br>
-      <strong>Modularidad</strong> — separación de funciones en unidades que pueden mantenerse o
-      reemplazarse con menor interferencia.<br>
-      <strong>Desactivación</strong> — suspensión controlada de la manifestación sin destruir
-      necesariamente la estructura.<br>
-      <strong>Desencantamiento</strong> — retirada deliberada de una estructura persistente de su
-      soporte.<br>
-      <strong>Fallo seguro</strong> — estado diseñado para que una avería produzca pérdida controlada de
-      función en vez de comportamiento peligroso.</p>
+      <p>
+      <strong>Anclaje</strong> — relación que mantiene el encantamiento asociado a su
+      soporte o referente.<br>
+      <strong>Autocorrección</strong> — mecanismo que compara un estado actual con una
+      referencia y compensa desviaciones.<br>
+      <strong>Autonomía estructural</strong> — grado en que una estructura puede
+      continuar funcionando sin apoyo externo directo.<br>
+      <strong>Autorregulación</strong> — capacidad de ajustar funcionamiento para
+      conservar estabilidad.<br>
+      <strong>Autorreparación</strong> — capacidad de reconstruir daño material
+      mediante una estructura persistente.<br>
+      <strong>Captación ambiental</strong> — obtención de energía o condiciones
+      necesarias desde el entorno.<br>
+      <strong>Deriva</strong> — cambio gradual del comportamiento respecto del diseño
+      original.<br>
+      <strong>Desactivación</strong> — suspensión controlada de la manifestación sin
+      destruir necesariamente la estructura.<br>
+      <strong>Desencantamiento</strong> — retirada deliberada de una estructura
+      persistente de su soporte.<br>
+      <strong>Encantamiento</strong> — estructura persistente capaz de conservar o
+      reactivar una alteración sin intervención continua del creador.<br>
+      <strong>Encantamiento adaptativo</strong> — estructura capaz de modificar
+      parámetros para conservar su función.<br>
+      <strong>Encantamiento latente</strong> — estructura que permanece en reposo
+      hasta reconocer una condición.<br>
+      <strong>Fallo seguro</strong> — estado diseñado para que una avería produzca
+      pérdida controlada de función en vez de comportamiento peligroso.<br>
+      <strong>Fatiga mágica</strong> — degradación acumulativa producida por
+      activaciones repetidas.<br>
+      <strong>Mantenimiento pasivo</strong> — persistencia basada en minimizar
+      pérdidas en vez de reponerlas constantemente.<br>
+      <strong>Modularidad</strong> — separación de funciones en unidades que pueden
+      mantenerse o reemplazarse con menor interferencia.<br>
+      <strong>Redundancia</strong> — presencia de componentes alternativos capaces de
+      conservar función ante fallos locales.<br>
+      <strong>Reserva energética</strong> — fuente almacenada utilizada para compensar
+      pérdidas o alimentar manifestaciones.<br>
+      <strong>Saturación del soporte</strong> — estado en el que la complejidad o
+      carga supera la capacidad estable del material o sistema.<br>
+      <strong>Teoría de Encantamientos</strong> — disciplina dedicada al estudio de
+      alteraciones mágicas prolongadas y de los mecanismos que permiten su autonomía.<br>
+      <strong>Umbral</strong> — valor a partir del cual una estructura cambia de
+      estado o activa una función.</p>
     `
   },
   {
@@ -19183,34 +19390,39 @@ window.ENTRIES = [
       aprendido a tratar la geometría cotidiana como si fuera la única forma posible de organización
       espacial.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Topología Arcana</strong> — disciplina dedicada al estudio de continuidad, conectividad y
-      tránsito en espacios cuya organización no coincide con la geometría ordinaria.<br>
-      <strong>Interior incompatible</strong> — región interna cuya extensión o conectividad no corresponde
-      de manera métrica con la estructura exterior que permite acceder a ella.<br>
-      <strong>Recurrencia espacial</strong> — relación de tránsito mediante la cual un recorrido conduce
-      nuevamente a una región ya visitada sin trayectoria ordinaria de retorno.<br>
-      <strong>Habitación recurrente</strong> — región que funciona como destino común de múltiples
-      trayectorias o reaparece bajo condiciones determinadas.<br>
-      <strong>Laberinto variable</strong> — estructura cuyas conexiones internas pueden modificarse durante
-      el tránsito.<br>
-      <strong>Distancia variable</strong> — condición en la que la extensión efectiva entre regiones
-      depende de la ruta o de las condiciones de tránsito.<br>
-      <strong>Distancia direccional</strong> — caso en el que el recorrido entre dos regiones posee
-      distinta extensión según la dirección.<br>
-      <strong>Ruta condicionada</strong> — conexión cuyo destino depende de una propiedad del viajero, del
-      recorrido o del estado de la estructura.<br>
-      <strong>Espacio selectivo</strong> — región cuya adyacencia sólo se establece para entidades
-      reconocidas por determinadas condiciones.<br>
-      <strong>Continuidad fragmentada</strong> — estado en el que regiones visualmente contiguas no
-      comparten una ruta de tránsito directa.<br>
-      <strong>Aislamiento topológico</strong> — condición en la que una región continúa existiendo sin
-      poseer conexiones activas hacia las zonas accesibles.<br>
-      <strong>Espacio residual</strong> — fragmento de una estructura topológica que conserva continuidad
-      después de la pérdida del sistema que originalmente lo contenía.<br>
-      <strong>Colapso topológico</strong> — pérdida de coherencia entre las relaciones de tránsito que
-      organizan una estructura espacial.<br>
-      <strong>Mapa topológico</strong> — representación basada en conexiones, condiciones y recurrencias en
-      lugar de limitarse a posiciones métricas.</p>
+      <p>
+      <strong>Aislamiento topológico</strong> — condición en la que una región
+      continúa existiendo sin poseer conexiones activas hacia las zonas accesibles.<br>
+      <strong>Colapso topológico</strong> — pérdida de coherencia entre las relaciones
+      de tránsito que organizan una estructura espacial.<br>
+      <strong>Continuidad fragmentada</strong> — estado en el que regiones visualmente
+      contiguas no comparten una ruta de tránsito directa.<br>
+      <strong>Distancia direccional</strong> — caso en el que el recorrido entre dos
+      regiones posee distinta extensión según la dirección.<br>
+      <strong>Distancia variable</strong> — condición en la que la extensión efectiva
+      entre regiones depende de la ruta o de las condiciones de tránsito.<br>
+      <strong>Espacio residual</strong> — fragmento de una estructura topológica que
+      conserva continuidad después de la pérdida del sistema que originalmente lo
+      contenía.<br>
+      <strong>Espacio selectivo</strong> — región cuya adyacencia sólo se establece
+      para entidades reconocidas por determinadas condiciones.<br>
+      <strong>Habitación recurrente</strong> — región que funciona como destino común
+      de múltiples trayectorias o reaparece bajo condiciones determinadas.<br>
+      <strong>Interior incompatible</strong> — región interna cuya extensión o
+      conectividad no corresponde de manera métrica con la estructura exterior que
+      permite acceder a ella.<br>
+      <strong>Laberinto variable</strong> — estructura cuyas conexiones internas
+      pueden modificarse durante el tránsito.<br>
+      <strong>Mapa topológico</strong> — representación basada en conexiones,
+      condiciones y recurrencias en lugar de limitarse a posiciones métricas.<br>
+      <strong>Recurrencia espacial</strong> — relación de tránsito mediante la cual un
+      recorrido conduce nuevamente a una región ya visitada sin trayectoria ordinaria
+      de retorno.<br>
+      <strong>Ruta condicionada</strong> — conexión cuyo destino depende de una
+      propiedad del viajero, del recorrido o del estado de la estructura.<br>
+      <strong>Topología Arcana</strong> — disciplina dedicada al estudio de
+      continuidad, conectividad y tránsito en espacios cuya organización no coincide
+      con la geometría ordinaria.</p>
     `
   },
   {
@@ -19779,45 +19991,47 @@ window.ENTRIES = [
       <p>La regulación dolbriana parte de que la magia no debe crear espacios sin derecho. Allí donde una
       técnica abre una nueva capacidad, aparecen también nuevas obligaciones sobre su uso.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Derecho Arcano</strong> — disciplina jurídica dedicada a regular prácticas mágicas,
-      responsabilidad, prueba, licencias y riesgos sobrenaturales.<br>
-      <strong>Responsabilidad arcana</strong> — atribución jurídica de consecuencias por daños producidos
-      mediante procesos mágicos.<br>
-      <strong>Control efectivo</strong> — grado real de capacidad para dirigir, detener o limitar un
-      fenómeno o entidad.<br>
-      <strong>Familiar dependiente</strong> — criatura vinculada cuya conducta funciona principalmente como
-      extensión del invocador.<br>
-      <strong>Creación sensible</strong> — ser artificial con capacidad relevante de experiencia o
-      sufrimiento.<br>
-      <strong>Autonomía jurídica</strong> — capacidad suficiente para ser tratado como sujeto y no mero
-      objeto de propiedad.<br>
-      <strong>Artefacto restringido</strong> — objeto cuya posesión o uso exige registro, custodia o
-      licencia.<br>
-      <strong>Artefacto prohibido</strong> — objeto cuya circulación privada se encuentra vedada por nivel
-      de riesgo.<br>
-      <strong>Cadena de custodia mágica</strong> — registro de acceso, manipulación y técnicas aplicadas a
-      evidencia con componentes mágicos.<br>
-      <strong>Prueba mágica</strong> — información obtenida mediante una técnica sobrenatural y presentada
-      para establecer un hecho.<br>
-      <strong>Admisibilidad</strong> — condición jurídica que permite utilizar una prueba ante un
-      tribunal.<br>
-      <strong>Confesión involuntaria</strong> — declaración obtenida mediante coacción o reducción
-      sustancial de autonomía.<br>
-      <strong>Lectura mental</strong> — acceso mágico a contenido cognitivo, sujeto a protección
-      reforzada.<br>
-      <strong>Prueba pericial</strong> — testimonio especializado sobre métodos o fenómenos que requieren
-      conocimiento técnico.<br>
-      <strong>Licencia arcana</strong> — autorización formal para ejercer una práctica mágica regulada.<br>
-      <strong>Negligencia arcana</strong> — incumplimiento de un deber razonable de cuidado en una
-      actividad mágica.<br>
-      <strong>Daño pneumatológico</strong> — perjuicio relevante sobre continuidad anímica o identidad post
-      mortem.<br>
-      <strong>Privacidad arcana</strong> — protección jurídica de espacios, pensamientos, recuerdos, firmas
-      y vínculos frente a acceso no autorizado.<br>
-      <strong>Decomiso</strong> — retención jurídica de un objeto por ilegalidad, riesgo o valor
-      probatorio.<br>
-      <strong>Debido proceso</strong> — garantías de defensa, contradicción y revisión aplicables también a
-      acusaciones de naturaleza mágica.</p>
+      <p>
+      <strong>Admisibilidad</strong> — condición jurídica que permite utilizar una
+      prueba ante un tribunal.<br>
+      <strong>Artefacto prohibido</strong> — objeto cuya circulación privada se
+      encuentra vedada por nivel de riesgo.<br>
+      <strong>Artefacto restringido</strong> — objeto cuya posesión o uso exige
+      registro, custodia o licencia.<br>
+      <strong>Autonomía jurídica</strong> — capacidad suficiente para ser tratado como
+      sujeto y no mero objeto de propiedad.<br>
+      <strong>Cadena de custodia mágica</strong> — registro de acceso, manipulación y
+      técnicas aplicadas a evidencia con componentes mágicos.<br>
+      <strong>Confesión involuntaria</strong> — declaración obtenida mediante coacción
+      o reducción sustancial de autonomía.<br>
+      <strong>Control efectivo</strong> — grado real de capacidad para dirigir,
+      detener o limitar un fenómeno o entidad.<br>
+      <strong>Creación sensible</strong> — ser artificial con capacidad relevante de
+      experiencia o sufrimiento.<br>
+      <strong>Daño pneumatológico</strong> — perjuicio relevante sobre continuidad
+      anímica o identidad post mortem.<br>
+      <strong>Debido proceso</strong> — garantías de defensa, contradicción y revisión
+      aplicables también a acusaciones de naturaleza mágica.<br>
+      <strong>Decomiso</strong> — retención jurídica de un objeto por ilegalidad,
+      riesgo o valor probatorio.<br>
+      <strong>Derecho Arcano</strong> — disciplina jurídica dedicada a regular
+      prácticas mágicas, responsabilidad, prueba, licencias y riesgos sobrenaturales.<br>
+      <strong>Familiar dependiente</strong> — criatura vinculada cuya conducta
+      funciona principalmente como extensión del invocador.<br>
+      <strong>Lectura mental</strong> — acceso mágico a contenido cognitivo, sujeto a
+      protección reforzada.<br>
+      <strong>Licencia arcana</strong> — autorización formal para ejercer una práctica
+      mágica regulada.<br>
+      <strong>Negligencia arcana</strong> — incumplimiento de un deber razonable de
+      cuidado en una actividad mágica.<br>
+      <strong>Privacidad arcana</strong> — protección jurídica de espacios,
+      pensamientos, recuerdos, firmas y vínculos frente a acceso no autorizado.<br>
+      <strong>Prueba mágica</strong> — información obtenida mediante una técnica
+      sobrenatural y presentada para establecer un hecho.<br>
+      <strong>Prueba pericial</strong> — testimonio especializado sobre métodos o
+      fenómenos que requieren conocimiento técnico.<br>
+      <strong>Responsabilidad arcana</strong> — atribución jurídica de consecuencias
+      por daños producidos mediante procesos mágicos.</p>
     `
   },
   {
@@ -20385,44 +20599,47 @@ window.ENTRIES = [
       Las mentes interpretan contradicciones del mismo modo en que interpretan todo lo demás, buscando una
       explicación que preserve suficiente coherencia para continuar actuando.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Ilusionismo Teórico</strong> — disciplina dedicada al estudio de cómo estructuras mágicas
-      modifican percepción, interpretación y criterios de realidad.<br>
+      <p>
+      <strong>Ceguera por inatención</strong> — incapacidad de advertir un estímulo
+      visible cuando la atención se encuentra ocupada en otra tarea.<br>
+      <strong>Coherencia perceptiva</strong> — grado en que las señales de una escena
+      pueden integrarse dentro de una misma explicación.<br>
+      <strong>Confirmación cruzada</strong> — aumento de confianza cuando varias
+      fuentes aparentemente independientes coinciden.<br>
+      <strong>Contradicción sensorial</strong> — incompatibilidad entre señales que
+      sugieren interpretaciones distintas.<br>
+      <strong>Criterio de realidad</strong> — tipo de evidencia utilizado por una
+      mente para decidir si una experiencia corresponde a una causa externa estable.<br>
+      <strong>Dominancia sensorial</strong> — mayor peso asignado a una modalidad en
+      una situación concreta.<br>
       <strong>Estímulo</strong> — señal disponible para un sistema sensorial.<br>
-      <strong>Experiencia perceptiva</strong> — interpretación consciente o funcional construida a partir
-      de señales y procesos internos.<br>
-      <strong>Integración multisensorial</strong> — combinación de varias modalidades sensoriales dentro de
-      una escena coherente.<br>
-      <strong>Dominancia sensorial</strong> — mayor peso asignado a una modalidad en una situación
-      concreta.<br>
-      <strong>Contradicción sensorial</strong> — incompatibilidad entre señales que sugieren
-      interpretaciones distintas.<br>
-      <strong>Coherencia perceptiva</strong> — grado en que las señales de una escena pueden integrarse
-      dentro de una misma explicación.<br>
-      <strong>Expectativa</strong> — predisposición a interpretar señales de acuerdo con aquello que se
-      considera probable.<br>
-      <strong>Prueba de realidad</strong> — acción deliberada destinada a contrastar una percepción mediante
-      otra fuente de evidencia.<br>
-      <strong>Confirmación cruzada</strong> — aumento de confianza cuando varias fuentes aparentemente
-      independientes coinciden.<br>
-      <strong>Ilusión proyectada</strong> — estructura que modifica señales perceptibles en el entorno y
-      puede afectar a varios observadores.<br>
-      <strong>Ilusión mental</strong> — estructura que modifica directamente la experiencia de un sujeto
-      sin necesidad de fabricar todas las señales externas.<br>
-      <strong>Ilusión híbrida</strong> — técnica que combina alteraciones del entorno con intervención
-      interpretativa.<br>
-      <strong>Ceguera por inatención</strong> — incapacidad de advertir un estímulo visible cuando la
-      atención se encuentra ocupada en otra tarea.<br>
-      <strong>Habituación</strong> — reducción de respuesta ante estímulos persistentes o repetidos.<br>
-      <strong>Persistencia perceptiva</strong> — continuación de efectos psicológicos o interpretativos
-      después de terminar la estructura ilusoria.<br>
-      <strong>Criterio de realidad</strong> — tipo de evidencia utilizado por una mente para decidir si una
-      experiencia corresponde a una causa externa estable.<br>
-      <strong>Ilusión compartida</strong> — experiencia ilusoria compatible producida en múltiples
-      observadores.<br>
-      <strong>Ilusión divergente</strong> — estructura que produce experiencias diferentes en observadores
-      distintos.<br>
-      <strong>Mimetismo perceptivo</strong> — reproducción de señales suficientes para que una entidad u
-      objeto sea clasificado como otro referente.</p>
+      <strong>Expectativa</strong> — predisposición a interpretar señales de acuerdo
+      con aquello que se considera probable.<br>
+      <strong>Experiencia perceptiva</strong> — interpretación consciente o funcional
+      construida a partir de señales y procesos internos.<br>
+      <strong>Habituación</strong> — reducción de respuesta ante estímulos
+      persistentes o repetidos.<br>
+      <strong>Ilusión compartida</strong> — experiencia ilusoria compatible producida
+      en múltiples observadores.<br>
+      <strong>Ilusión divergente</strong> — estructura que produce experiencias
+      diferentes en observadores distintos.<br>
+      <strong>Ilusión híbrida</strong> — técnica que combina alteraciones del entorno
+      con intervención interpretativa.<br>
+      <strong>Ilusión mental</strong> — estructura que modifica directamente la
+      experiencia de un sujeto sin necesidad de fabricar todas las señales externas.<br>
+      <strong>Ilusión proyectada</strong> — estructura que modifica señales
+      perceptibles en el entorno y puede afectar a varios observadores.<br>
+      <strong>Ilusionismo Teórico</strong> — disciplina dedicada al estudio de cómo
+      estructuras mágicas modifican percepción, interpretación y criterios de
+      realidad.<br>
+      <strong>Integración multisensorial</strong> — combinación de varias modalidades
+      sensoriales dentro de una escena coherente.<br>
+      <strong>Mimetismo perceptivo</strong> — reproducción de señales suficientes para
+      que una entidad u objeto sea clasificado como otro referente.<br>
+      <strong>Persistencia perceptiva</strong> — continuación de efectos psicológicos
+      o interpretativos después de terminar la estructura ilusoria.<br>
+      <strong>Prueba de realidad</strong> — acción deliberada destinada a contrastar
+      una percepción mediante otra fuente de evidencia.</p>
     `
   },
   {
@@ -20784,36 +21001,41 @@ window.ENTRIES = [
       estudio moderno de estas técnicas insiste tanto en comprensión, delimitación y cierre como en
       potencia.</p>
       <h4 id="cap-glosario">Glosario complementario</h4>
-      <p><strong>Taumaturgia Superior</strong> — campo dedicado al estudio de técnicas que alteran
-      condiciones de marco, relaciones estructurales o regiones completas de manifestación.<br>
-      <strong>Condición de marco</strong> — relación que determina las posibilidades bajo las cuales otros
-      fenómenos pueden manifestarse.<br>
-      <strong>Clausura</strong> — delimitación mediante la cual una técnica superior define la región sobre
-      la que mantendrá sus relaciones.<br>
-      <strong>Predominio</strong> — técnica que establece una región donde la estructura del oficiante
-      adquiere prioridad interpretativa sobre determinadas condiciones ordinarias.<br>
-      <strong>Manifestación libre</strong> — capacidad de producir fenómenos con relaciones de acceso,
-      posición o reconocimiento previamente resueltas por una estructura superior.<br>
-      <strong>Soberanía</strong> — denominación utilizada por ciertos Señores Elementales para fenómenos
-      comparables a un Predominio naturalizado o inherente.<br>
-      <strong>Anclaje Mayor</strong> — técnica destinada a fijar una propiedad con estabilidad suficiente
-      para resistir modificaciones posteriores.<br>
-      <strong>Dislocación</strong> — alteración de las relaciones espaciales entre regiones,
-      independientemente del traslado directo de entidades.<br>
-      <strong>Reescritura</strong> — modificación deliberada de una relación fundamental perteneciente a
-      una estructura ya existente.<br>
-      <strong>Manifestación Coral</strong> — estructura superior distribuida entre múltiples participantes
-      que sostienen componentes diferenciados del fenómeno.<br>
-      <strong>Inversión de Condición</strong> — alteración de cuál de dos relaciones formalmente definidas
-      posee prioridad dentro de un marco determinado.<br>
-      <strong>Contienda</strong> — interacción entre dos o más técnicas superiores que intentan establecer
-      condiciones incompatibles sobre una misma región.<br>
-      <strong>Fatiga interpretativa</strong> — alteración temporal posterior al cierre de una técnica
-      superior, caracterizada por dificultades para reorganizar referencias y relaciones ordinarias.<br>
-      <strong>Cataclismo Taumatúrgico</strong> — acontecimiento en el que una técnica superior produce
-      alteraciones persistentes, extensas o difíciles de revertir.<br>
-      <strong>Convergencia múltiple</strong> — situación en la que varias técnicas superiores interactúan
-      simultáneamente sobre un mismo marco estructural.</p>
+      <p>
+      <strong>Anclaje Mayor</strong> — técnica destinada a fijar una propiedad con
+      estabilidad suficiente para resistir modificaciones posteriores.<br>
+      <strong>Cataclismo Taumatúrgico</strong> — acontecimiento en el que una técnica
+      superior produce alteraciones persistentes, extensas o difíciles de revertir.<br>
+      <strong>Clausura</strong> — delimitación mediante la cual una técnica superior
+      define la región sobre la que mantendrá sus relaciones.<br>
+      <strong>Condición de marco</strong> — relación que determina las posibilidades
+      bajo las cuales otros fenómenos pueden manifestarse.<br>
+      <strong>Contienda</strong> — interacción entre dos o más técnicas superiores que
+      intentan establecer condiciones incompatibles sobre una misma región.<br>
+      <strong>Convergencia múltiple</strong> — situación en la que varias técnicas
+      superiores interactúan simultáneamente sobre un mismo marco estructural.<br>
+      <strong>Dislocación</strong> — alteración de las relaciones espaciales entre
+      regiones, independientemente del traslado directo de entidades.<br>
+      <strong>Fatiga interpretativa</strong> — alteración temporal posterior al cierre
+      de una técnica superior, caracterizada por dificultades para reorganizar
+      referencias y relaciones ordinarias.<br>
+      <strong>Inversión de Condición</strong> — alteración de cuál de dos relaciones
+      formalmente definidas posee prioridad dentro de un marco determinado.<br>
+      <strong>Manifestación Coral</strong> — estructura superior distribuida entre
+      múltiples participantes que sostienen componentes diferenciados del fenómeno.<br>
+      <strong>Manifestación libre</strong> — capacidad de producir fenómenos con
+      relaciones de acceso, posición o reconocimiento previamente resueltas por una
+      estructura superior.<br>
+      <strong>Predominio</strong> — técnica que establece una región donde la
+      estructura del oficiante adquiere prioridad interpretativa sobre determinadas
+      condiciones ordinarias.<br>
+      <strong>Reescritura</strong> — modificación deliberada de una relación
+      fundamental perteneciente a una estructura ya existente.<br>
+      <strong>Soberanía</strong> — denominación utilizada por ciertos Señores
+      Elementales para fenómenos comparables a un Predominio naturalizado o inherente.<br>
+      <strong>Taumaturgia Superior</strong> — campo dedicado al estudio de técnicas
+      que alteran condiciones de marco, relaciones estructurales o regiones completas
+      de manifestación.</p>
     `
   },
 ];
