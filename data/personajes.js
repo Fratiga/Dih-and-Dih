@@ -13,7 +13,7 @@ window.PERSONAJES = [
     ocupacion: "Asesino / Ejecutor",
     faccion: "las-comadrejas",
     primeraAparicion: "La Taberna del Gigante",
-    lado: ["B"],
+    lado: ["A"],
     relacionesConocidas: [
       { id: "bull", nota: "Compañero de banda" },
       { id: "garra", nota: "Compañero de banda" },
