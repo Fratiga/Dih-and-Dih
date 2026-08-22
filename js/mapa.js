@@ -159,7 +159,8 @@ if (mapaBusqueda) {
     if (lugar) mapaBusqueda.value = lugar.title;
     ocultarSugerencias();
     mapaContainer.querySelectorAll(".mapa-pin").forEach(pin => pin.classList.remove("mapa-pin-oculto-busqueda"));
-    focusMapaPin(lugarId);
+    const entry = ALL_ENTRIES.find(e => e.id === lugarId);
+    if (entry) openEntryModal(entry);
   });
 
   document.addEventListener("click", e => {
