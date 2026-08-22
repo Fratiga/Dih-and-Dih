@@ -81,7 +81,13 @@ window.PERGAMINOS = [
       (supervivencia y protección de aliados) y <strong>Liderazgo</strong>
       (coordinación y control del campo de batalla) — y como toda Escuela, solo
       puede elegirse una.</p>
-      <h4>Rama: Dominio Marcial</h4>
+      <nav class="toc">
+        <a href="#rama-dominio-marcial">Dominio Marcial</a>
+        <a href="#rama-defensa">Defensa</a>
+        <a href="#rama-liderazgo">Liderazgo</a>
+      </nav>
+
+      <h4 id="rama-dominio-marcial">Rama: Dominio Marcial</h4>
       <p>El Mariscal comienza perfeccionando su propio cuerpo. Esta rama representa
       entrenamiento técnico: postura, distancia, precisión, manejo del arma y
       lectura del adversario.</p>
@@ -208,7 +214,7 @@ window.PERGAMINOS = [
       las criaturas enemigas a 10 pies hacen salvación de Destreza — si fallan,
       4d8 + tu modificador de Fuerza de daño cortante (mitad si superan). Después
       puedes moverte hasta 10 pies sin provocar ataques de oportunidad.</p>
-      <h4>Rama: Defensa</h4>
+      <h4 id="rama-defensa">Rama: Defensa</h4>
       <p>Mientras Dominio Marcial enseña a ganar una pelea, Defensa enseña a
       sobrevivir a ella.</p>
       <h5>Segundo Aliento</h5>
@@ -231,7 +237,7 @@ window.PERGAMINOS = [
       si estás derribado, levantarte cuesta solo 5 pies de movimiento. Un gigante
       puede hacerte retroceder un poco, pero no lanzarte por los aires: "puedes
       moverme, no puedes hacerme perder mi posición."</p>
-      <h4>Rama: Liderazgo</h4>
+      <h4 id="rama-liderazgo">Rama: Liderazgo</h4>
       <p>El verdadero Mariscal entiende que una batalla no consiste únicamente en lo
       que él puede hacer, sino en conseguir que los demás hagan lo correcto.</p>
       <h5>Orden</h5>
@@ -282,7 +288,13 @@ window.PERGAMINOS = [
       <strong>Estandarte</strong> (fortalecer a otros mediante tu propia convicción)—
       son una elección permanente, y un juramentado no puede aprender habilidades de
       otra rama.</p>
-      <h4>Rama: Bastión</h4>
+      <nav class="toc">
+        <a href="#rama-bastion">Bastión</a>
+        <a href="#rama-retribucion">Retribución</a>
+        <a href="#rama-estandarte">Estandarte</a>
+      </nav>
+
+      <h4 id="rama-bastion">Rama: Bastión</h4>
       <p><em>"Mientras yo permanezca en pie, nadie pasará."</em> Representa al
       paladín protector, y convierte su promesa en una defensa tangible. No busca
       necesariamente derrotar al enemigo rápido — busca convertirse en el obstáculo
@@ -322,7 +334,7 @@ window.PERGAMINOS = [
       puede verse cubierto de luz, runas, energía divina o simplemente una
       determinación sobrenatural, pero la esencia es siempre la misma, y es que el
       juramentado convierte su propio cuerpo en el precio de su promesa.</p>
-      <h4>Rama: Retribución</h4>
+      <h4 id="rama-retribucion">Rama: Retribución</h4>
       <p><em>"Si rompes aquello que juré proteger, yo seré la consecuencia."</em>
       Representa al paladín castigador. Mientras el Bastión intenta impedir el daño,
       la Retribución responde al daño una vez cometido, marcando enemigos,
@@ -360,7 +372,7 @@ window.PERGAMINOS = [
       30 pies que puedas ver. Debería sentirse como una de las habilidades más
       importantes de la Escuela — "Has tenido tu oportunidad." Y entonces comienza
       tu castigo.</p>
-      <h4>Rama: Estandarte</h4>
+      <h4 id="rama-estandarte">Rama: Estandarte</h4>
       <p><em>"Mientras yo recuerde por qué luchamos, ninguno de ustedes caerá."</em>
       Representa al Juramentado que obtiene poder no para proteger físicamente a
       otros ni para destruir a sus enemigos, sino para hacer que quienes lo rodean
@@ -414,7 +426,13 @@ window.PERGAMINOS = [
       entrenan hasta que respirar, moverse, atacar y pensar dejan de ser acciones
       separadas. Un maestro no se limita a usar la fuerza, sino que la recibe, la comprende y
       decide dónde devolverla.</p>
-      <h4>Rama: Puño Vacío</h4>
+      <nav class="toc">
+        <a href="#rama-puno-vacio">Puño Vacío</a>
+        <a href="#rama-paso-silencioso">Paso Silencioso</a>
+        <a href="#rama-espiritu-sereno">Espíritu Sereno</a>
+      </nav>
+
+      <h4 id="rama-puno-vacio">Rama: Puño Vacío</h4>
       <p><em>"Yo soy el arma."</em> Representa al practicante que lleva el
       entrenamiento físico hasta sus límites, y su cuerpo se convierte en una
       herramienta capaz de golpear con precisión, velocidad y potencia
@@ -451,7 +469,7 @@ window.PERGAMINOS = [
       resistencia al daño contundente, cortante y perforante. Además, cuando una
       criatura te golpee con un ataque cuerpo a cuerpo, puedes usar tu reacción para
       realizar un ataque desarmado contra ella.</p>
-      <h4>Rama: Paso Silencioso</h4>
+      <h4 id="rama-paso-silencioso">Rama: Paso Silencioso</h4>
       <p><em>"Raudo como el viento."</em> Transforma al practicante en un maestro
       del movimiento, buscando que sus ataques nunca estén donde el enemigo los
       espera.</p>
@@ -485,7 +503,7 @@ window.PERGAMINOS = [
       personaje puede correr sobre una pared, saltar desde una columna, cruzar un
       charco sin hundirse y aparecer detrás de un enemigo — se mueve de una manera
       que los demás no pueden seguir.</p>
-      <h4>Rama: Espíritu Sereno</h4>
+      <h4 id="rama-espiritu-sereno">Rama: Espíritu Sereno</h4>
       <p><em>"El cuerpo puede caer. Pero no la mente."</em> Abandona el
       perfeccionamiento físico como objetivo principal; su propósito es dominar el
       miedo, el dolor, la confusión y las emociones que normalmente controlan al
@@ -532,7 +550,13 @@ window.PERGAMINOS = [
       rastro entre cientos, encuentra agua donde otros solo ven tierra seca y puede
       convertir cualquier terreno en un campo de batalla. Las tres ramas representan
       formas distintas de serlo y no pueden combinarse.</p>
-      <h4>Rama: Acechador</h4>
+      <nav class="toc">
+        <a href="#rama-acechador">Acechador</a>
+        <a href="#rama-trampero">Trampero</a>
+        <a href="#rama-rastreador">Rastreador</a>
+      </nav>
+
+      <h4 id="rama-acechador">Rama: Acechador</h4>
       <p><em>"La presa no debe saber que está siendo cazada."</em> El Acechador
       estudia a su presa, encuentra el momento adecuado y ataca desde una posición
       en la que el enemigo nunca esperaba encontrarlo.</p>
@@ -570,7 +594,7 @@ window.PERGAMINOS = [
       tu velocidad sin provocar ataques de oportunidad. Es el resultado de haber
       observado, seguido, esperado, elegido el momento y atacado — el enemigo puede
       morir sin haber comprendido siquiera desde dónde llegó el golpe.</p>
-      <h4>Rama: Trampero</h4>
+      <h4 id="rama-trampero">Rama: Trampero</h4>
       <p><em>"Si conoces el terreno, ya has ganado la mitad de la batalla."</em> El
       Trampero no necesita ser más fuerte que su enemigo — solo necesita conseguir
       que pise exactamente donde él quiere.</p>
@@ -608,7 +632,7 @@ window.PERGAMINOS = [
       vez por turno, cuando una criatura falle una salvación contra una trampa,
       puedes activar de inmediato otra preparada a menos de 30 pies de ella. Aquí el
       terreno se convierte en el arma del personaje.</p>
-      <h4>Rama: Rastreador</h4>
+      <h4 id="rama-rastreador">Rama: Rastreador</h4>
       <p><em>"Todo deja una huella."</em> El Rastreador representa la faceta más
       intelectual del Cazador Gris — no se especializa necesariamente en matar. Su
       especialidad es comprender, ya que una criatura, un territorio, una planta o incluso
@@ -670,7 +694,13 @@ window.PERGAMINOS = [
       <strong>Embaucador</strong> (utiliza engaños, distracciones y movimientos
       impredecibles) o <strong>Ladrón</strong> (convierte velocidad, habilidad y
       oportunismo en sus principales armas)— y no puede combinarlas.</p>
-      <h4>Rama: Asesino</h4>
+      <nav class="toc">
+        <a href="#rama-asesino">Asesino</a>
+        <a href="#rama-embaucador">Embaucador</a>
+        <a href="#rama-ladron">Ladrón</a>
+      </nav>
+
+      <h4 id="rama-asesino">Rama: Asesino</h4>
       <p><em>"Un enemigo muerto no puede defenderse."</em> El Asesino estudia a su
       objetivo, espera el momento adecuado y convierte una única oportunidad en un
       todo o nada.</p>
@@ -713,7 +743,7 @@ window.PERGAMINOS = [
       crítico. En rol, no es una técnica pensada para usarse después de diez rondas
       de combate — es la recompensa por haber conseguido que el enemigo nunca
       supiera que estabas allí.</p>
-      <h4>Rama: Embaucador</h4>
+      <h4 id="rama-embaucador">Rama: Embaucador</h4>
       <p>El Embaucador no depende de desaparecer completamente y atacar desde un
       escondite; prefiere que el enemigo mire exactamente hacia el lugar
       equivocado, utilizando fintas, distracciones, engaños y movimientos
@@ -757,7 +787,7 @@ window.PERGAMINOS = [
       extremadamente rápido, o una ilusión si el personaje posee medios para
       producirla — el principio sigue siendo que el enemigo no sabe cuál de las
       cosas que está viendo eres tú.</p>
-      <h4>Rama: Ladrón</h4>
+      <h4 id="rama-ladron">Rama: Ladrón</h4>
       <p>El Ladrón no necesita matar a su enemigo para vencerlo: puede desarmarlo,
       tomar el objeto que necesita, abrir la puerta y subir al lugar que quería
       estar. Y cuando el enemigo finalmente comprende lo ocurrido, el Ladrón ya ha
@@ -817,7 +847,13 @@ window.PERGAMINOS = [
       (comprende la magia y descubre sus secretos), <strong>Tejedor</strong>
       (modifica la estructura de los hechizos) o <strong>Disruptor</strong> (rompe y
       niega la magia de otros)— y no puede combinarlas.</p>
-      <h4>Rama: Erudito</h4>
+      <nav class="toc">
+        <a href="#rama-erudito">Erudito</a>
+        <a href="#rama-tejedor">Tejedor</a>
+        <a href="#rama-disruptor">Disruptor</a>
+      </nav>
+
+      <h4 id="rama-erudito">Rama: Erudito</h4>
       <p>El Erudito busca conocimiento antes que poder. Aprende a identificar
       fenómenos mágicos, reconocer sus estructuras y extraer información que otros
       lanzadores pasarían por alto. Esta rama es especialmente útil para personajes
@@ -876,7 +912,7 @@ window.PERGAMINOS = [
       las siguientes 24 horas. En rol, el Arcanista ha llegado al punto donde puede
       mirar una estructura mágica y reconstruir mentalmente cómo funciona — no sabe
       todo, pero sabe qué preguntas hacer.</p>
-      <h4>Rama: Tejedor</h4>
+      <h4 id="rama-tejedor">Rama: Tejedor</h4>
       <p>El Tejedor estudia la estructura interna de los hechizos para modificar su
       funcionamiento. A diferencia de un hechicero, que altera la magia mediante su
       propia naturaleza, el Tejedor lo hace mediante comprensión técnica.</p>
@@ -922,7 +958,7 @@ window.PERGAMINOS = [
       ignorar un componente que tenga un coste específico. En rol, por unos
       instantes el Arcanista deja de utilizar el hechizo como fue concebido — lo
       reescribe mientras lo hace.</p>
-      <h4>Rama: Disruptor</h4>
+      <h4 id="rama-disruptor">Rama: Disruptor</h4>
       <p>El Disruptor estudia la magia desde su lado más peligroso, cómo impedir
       que funcione. Busca encontrar el punto donde ese poder deja de ser estable.</p>
       <h5>Sensibilidad Arcana</h5>
@@ -990,7 +1026,13 @@ window.PERGAMINOS = [
       fuerzas sobrenaturales mediante poder sagrado) u <strong>Oráculo</strong>
       (interpreta señales divinas y obtiene conocimiento que los mortales
       normalmente no podrían alcanzar)— y no puede combinarlas.</p>
-      <h4>Rama: Milagro</h4>
+      <nav class="toc">
+        <a href="#rama-milagro">Milagro</a>
+        <a href="#rama-exorcista">Exorcista</a>
+        <a href="#rama-oraculo">Oráculo</a>
+      </nav>
+
+      <h4 id="rama-milagro">Rama: Milagro</h4>
       <p>El Hierofante del Milagro utiliza su conexión divina para preservar la
       vida. No necesariamente evita la muerte por siempre, pero sí decide que
       todavía no ha llegado su momento.</p>
@@ -1035,7 +1077,7 @@ window.PERGAMINOS = [
       petición a aquello que venera — puede caer de rodillas, levantar su símbolo
       o pronunciar el nombre de su divinidad. Durante unos segundos, algo
       responde.</p>
-      <h4>Rama: Exorcista</h4>
+      <h4 id="rama-exorcista">Rama: Exorcista</h4>
       <p>El Exorcista considera que no toda presencia sobrenatural debe ser
       tolerada. Demonios, no-muertos, espíritus hostiles y otras criaturas capaces
       de corromper el mundo deben ser expulsadas. El Exorcista caza necesariamente
@@ -1088,7 +1130,7 @@ window.PERGAMINOS = [
       ser una oración, una sentencia religiosa o incluso el verdadero nombre de
       aquello que el personaje considera sagrado. Durante ese minuto, la criatura
       ha sido señalada.</p>
-      <h4>Rama: Oráculo</h4>
+      <h4 id="rama-oraculo">Rama: Oráculo</h4>
       <p>El Oráculo no utiliza la fe principalmente para curar ni destruir. La
       utiliza para preguntar. El mundo está lleno de señales que la mayoría de los
       mortales no puede interpretar: sueños, presagios, coincidencias, voces. El
@@ -1172,7 +1214,13 @@ window.PERGAMINOS = [
       <strong>Usurpador</strong> (aprende a apropiarse del poder recibido y
       utilizarlo contra la voluntad de su propia fuente)— y no puede
       combinarlas.</p>
-      <h4>Rama: Deudor</h4>
+      <nav class="toc">
+        <a href="#rama-deudor">Deudor</a>
+        <a href="#rama-vinculado">Vinculado</a>
+        <a href="#rama-usurpador">Usurpador</a>
+      </nav>
+
+      <h4 id="rama-deudor">Rama: Deudor</h4>
       <p>El Deudor entiende que todo puede comprarse: Fuerza, Conocimiento,
       Tiempo, Vida. La pregunta es cuánto está dispuesto a pagar.</p>
       <h5>Precio de Sangre</h5>
@@ -1219,7 +1267,7 @@ window.PERGAMINOS = [
       acepta y el cuerpo continúa funcionando cuando ya debería haber caído. Las
       heridas dejan de importar y el dolor desaparece. Durante un minuto, la
       deuda deja de existir. Después... se cobra todo.</p>
-      <h4>Rama: Vinculado</h4>
+      <h4 id="rama-vinculado">Rama: Vinculado</h4>
       <p>El Vinculado no considera a su patrón una fuente distante de poder. La
       entidad se encuentra constantemente presente: puede hablarle, observarlo,
       manifestarse. Con el tiempo, ambos dejan de ser completamente
@@ -1274,7 +1322,7 @@ window.PERGAMINOS = [
       voz puede hablar en plural, los movimientos pueden parecer demasiado largos,
       tu sombra puede tener una forma distinta. Ya no es fácil distinguir dónde
       termina uno y comienza el otro.</p>
-      <h4>Rama: Usurpador</h4>
+      <h4 id="rama-usurpador">Rama: Usurpador</h4>
       <p>El Usurpador cometió el peor pecado posible dentro de la filosofía del
       Pacto, y aceptó poder y decidió que ya no necesitaba permiso para utilizarlo.
       Busca sacarle ventaja a su patrón.</p>
@@ -1354,7 +1402,13 @@ window.PERGAMINOS = [
       controlarlo completamente) o <strong>Voluntad</strong> (obliga a la magia
       innata a adoptar nuevas formas mediante puro instinto)— y no puede
       combinarlas.</p>
-      <h4>Rama: Linaje</h4>
+      <nav class="toc">
+        <a href="#rama-linaje">Linaje</a>
+        <a href="#rama-indomita">Indómita</a>
+        <a href="#rama-voluntad">Voluntad</a>
+      </nav>
+
+      <h4 id="rama-linaje">Rama: Linaje</h4>
       <p>El practicante del Linaje acepta que aquello que lleva dentro no es
       simplemente una fuente de poder, sino que también forma parte de lo que es.
       Su ascendencia, mutación o transformación comienza a manifestarse cada vez
@@ -1427,7 +1481,7 @@ window.PERGAMINOS = [
       celestial puede quedar rodeado de una luminosidad imposible de ocultar,
       alguien alterado por Nigredo puede dejar de parecer completamente
       material.</p>
-      <h4>Rama: Indómita</h4>
+      <h4 id="rama-indomita">Rama: Indómita</h4>
       <p>La magia necesita ser liberada. Los practicantes de esta rama aceptan
       que intentar imponer demasiadas reglas sobre una fuerza que nace dentro de
       ellos solo limita su verdadero potencial.</p>
@@ -1481,7 +1535,7 @@ window.PERGAMINOS = [
       utilizarla, y durante un minuto, el personaje deja de contener aquello que
       normalmente mantiene bajo control, y después el cuerpo recuerda por qué
       era necesario contenerlo.</p>
-      <h4>Rama: Voluntad</h4>
+      <h4 id="rama-voluntad">Rama: Voluntad</h4>
       <p>Un hechizo posee una forma, pero el practicante del Manantial no
       necesita comprender esa forma completamente. El usuario obliga a su propia
       magia a comportarse de otra manera.</p>
@@ -1558,7 +1612,13 @@ window.PERGAMINOS = [
       extensión de sus sentidos) o <strong>Ciclo</strong> (manipula el intercambio
       natural entre vida, muerte, crecimiento y descomposición)— y no puede
       combinarlas.</p>
-      <h4>Rama: Simbionte</h4>
+      <nav class="toc">
+        <a href="#rama-simbionte">Simbionte</a>
+        <a href="#rama-territorio">Territorio</a>
+        <a href="#rama-ciclo">Ciclo</a>
+      </nav>
+
+      <h4 id="rama-simbionte">Rama: Simbionte</h4>
       <p>La mayoría de las criaturas considera su cuerpo algo exclusivamente suyo.
       El Simbionte abandona esa idea. Hongos, musgos, raíces, microorganismos,
       pequeños organismos — todos pueden coexistir dentro de un mismo sistema. El
@@ -1624,7 +1684,7 @@ window.PERGAMINOS = [
       alrededor, las raíces buscan materia orgánica, la muerte cercana comienza
       inmediatamente a alimentar nueva vida. El usuario se convierte en un
       ecosistema caminando sobre dos piernas.</p>
-      <h4>Rama: Territorio</h4>
+      <h4 id="rama-territorio">Rama: Territorio</h4>
       <p>Un practicante de esta rama aprende a ser reconocido por el bosque. Cada
       piedra, raíz, corriente y animal forma parte de una red de información que
       normalmente pasa inadvertida.</p>
@@ -1686,7 +1746,7 @@ window.PERGAMINOS = [
       soportará peso, qué rama puede utilizarse como cobertura, dónde
       desaparecerá un enemigo, por dónde escapará un animal. Para un extraño, el
       bosque parece caótico. Para quien ha alcanzado este nivel, es su hogar.</p>
-      <h4>Rama: Ciclo</h4>
+      <h4 id="rama-ciclo">Rama: Ciclo</h4>
       <p>Todo ser vivo intenta evitar la muerte, pero la naturaleza no. Cada vez
       que una criatura muere, otra se alimenta; la tierra se enriquece, algo nuevo
       crece. El practicante del Ciclo aprende a redistribuir aquello que ya existe
@@ -1760,7 +1820,13 @@ window.PERGAMINOS = [
       protagonizan) u <strong>Obra</strong> (crea expresiones artísticas capaces
       de conservar emociones, recuerdos y significados sobrenaturales)— y no puede
       combinarlas.</p>
-      <h4>Rama: Resonancia</h4>
+      <nav class="toc">
+        <a href="#rama-resonancia">Resonancia</a>
+        <a href="#rama-cronica">Crónica</a>
+        <a href="#rama-obra">Obra</a>
+      </nav>
+
+      <h4 id="rama-resonancia">Rama: Resonancia</h4>
       <p>Las emociones parecen pertenecer únicamente a quien las siente. El miedo
       puede extenderse, la ira puede heredarse, la tristeza puede llenar una
       habitación incluso después de que quien lloraba haya desaparecido. El
@@ -1837,7 +1903,7 @@ window.PERGAMINOS = [
       respiración, un grupo completo encuentra valor al mismo tiempo, un campo de
       batalla se llena de una tristeza que nadie sabe explicar. Hace que todos
       escuchen la misma emoción.</p>
-      <h4>Rama: Crónica</h4>
+      <h4 id="rama-cronica">Rama: Crónica</h4>
       <p>Las personas no recuerdan acontecimientos, recuerdan historias sobre
       acontecimientos. Un guerrero puede morir pero su nombre puede sobrevivir mil
       años; una derrota puede convertirse en símbolo de resistencia; una mentira
@@ -1914,7 +1980,7 @@ window.PERGAMINOS = [
       sacrificarse, alguien que debe terminar el trabajo. El Juglar no decide
       cómo termina la historia, pero sí consigue que todos comprendan qué
       significan dentro de ella.</p>
-      <h4>Rama: Obra</h4>
+      <h4 id="rama-obra">Rama: Obra</h4>
       <p>Una interpretación desaparece cuando termina, pero una Obra no. Una
       canción puede sobrevivir a su compositor. Un cuadro puede provocar miedo
       siglos después. Una estatua puede recordar a una persona que nadie vivo
@@ -2008,7 +2074,13 @@ window.PERGAMINOS = [
       reaccione antes de que la mente comprenda el peligro) o
       <strong>Titán</strong> (rompe las limitaciones físicas del cuerpo mediante
       fuerza y esfuerzo extremos)— y no puede combinarlas.</p>
-      <h4>Rama: Umbral</h4>
+      <nav class="toc">
+        <a href="#rama-umbral">Umbral</a>
+        <a href="#rama-instinto">Instinto</a>
+        <a href="#rama-titan">Titán</a>
+      </nav>
+
+      <h4 id="rama-umbral">Rama: Umbral</h4>
       <p>El dolor existe para decirte que te detengas, pero el practicante del
       Umbral aprende a escuchar ese mensaje y continuar de todas formas. Una
       herida además de dolor puede producir adrenalina, urgencia, desesperación.
@@ -2060,7 +2132,7 @@ window.PERGAMINOS = [
       respondiendo y la sangre perdida debería ser más que suficiente. Pero
       todavía queda algo pendiente. Durante unos segundos, el cuerpo recibe una
       última orden. Todavía no.</p>
-      <h4>Rama: Instinto</h4>
+      <h4 id="rama-instinto">Rama: Instinto</h4>
       <p>Pensar requiere tiempo, cosa que el peligro no siempre concede. Los
       animales sobreviven porque una parte de ellos actúa antes de comprender. El
       practicante del Instinto aprende a entregar cada vez más decisiones a esa
@@ -2112,7 +2184,7 @@ window.PERGAMINOS = [
       movimiento o contacto. En rol, durante este estado el personaje deja de
       anticipar, el cuerpo actúa solo, ni siquiera necesitas todos tus sentidos.
       Durante un minuto ha dejado de necesitar pensar siquiera.</p>
-      <h4>Rama: Titán</h4>
+      <h4 id="rama-titan">Rama: Titán</h4>
       <p>El cuerpo posee límites por una razón: los huesos, músculos,
       articulaciones. El practicante del Titán considera esos límites
       recomendaciones. Utiliza una cantidad de fuerza que vuelve innecesarias las
@@ -2190,7 +2262,13 @@ window.PERGAMINOS = [
       <strong>Prototipista</strong> (modifica temporalmente armas, armaduras y
       herramientas mediante mejoras experimentales de gran potencia)— y no puede
       combinarlas.</p>
-      <h4>Rama: Ingeniero de Campo</h4>
+      <nav class="toc">
+        <a href="#rama-ingeniero-de-campo">Ingeniero de Campo</a>
+        <a href="#rama-saboteador">Saboteador</a>
+        <a href="#rama-prototipista">Prototipista</a>
+      </nav>
+
+      <h4 id="rama-ingeniero-de-campo">Rama: Ingeniero de Campo</h4>
       <p>El taller ideal tiene herramientas, pero el Ingeniero de Campo aprende a
       trabajar sin ninguna de esas cosas. Una cuerda, dos tablas, un trozo de
       metal, un carro destruido — eso puede ser suficiente cuando el objetivo no
@@ -2267,7 +2345,7 @@ window.PERGAMINOS = [
       cualidad que hace famosos a los grandes inventores. Parece imposible
       sorprenderlos: ellos llevan años preguntándose "¿qué haría si esto
       ocurriera?", y cuando finalmente ocurre ya habían pensado en algo.</p>
-      <h4>Rama: Saboteador</h4>
+      <h4 id="rama-saboteador">Rama: Saboteador</h4>
       <p>Para construir una máquina debes comprender por qué funciona. Para
       destruirla es lo mismo. El Saboteador estudia armas, armaduras, mecanismos
       y criaturas artificiales buscando aquello que mantiene unido el conjunto.</p>
@@ -2329,7 +2407,7 @@ window.PERGAMINOS = [
       necesario. Una máquina rara vez explota porque solo una parte fue
       destruida — usualmente un fallo provoca el siguiente. El Saboteador
       aprende a iniciar la secuencia.</p>
-      <h4>Rama: Prototipista</h4>
+      <h4 id="rama-prototipista">Rama: Prototipista</h4>
       <p>Un objeto terminado es seguro. Probado. Predecible. Aburrido. El
       Prototipista trabaja modificando herramientas y equipo mediante componentes
       experimentales capaces de superar durante un breve periodo aquello para lo
