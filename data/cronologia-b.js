@@ -74,7 +74,7 @@ window.CRONOLOGIA_B = [
     title: "El Refugio",
     fecha: "La noche que Brurland resistió",
     content: `
-      <p>El refugio no era una fortaleza — era una improvisación desesperada, levantada
+      <p>El refugio era una improvisación desesperada, levantada
       con lo que la ciudad tuvo tiempo de reunir: vigas apiladas, carros volcados, puertas
       arrancadas de sus goznes para tapar cada hueco por el que pudiera colarse el
       desastre. Dentro se apretaban cientos de personas que horas antes dormían
@@ -158,11 +158,14 @@ window.CRONOLOGIA_B = [
 
       <p>No había sonidos. No había supervivientes. Solo cuerpos.</p>
 
-      <p>Verdam estaba allí, cubierto de sangre, rodeado de los cadáveres que horas
-      antes habían sido un refugio entero. Los observó en silencio durante unos
-      segundos y, cuando llegaron los soldados, los señaló a ellos.</p>
+      <p>Verdam estaba allí, arrojando cuerpo tras cuerpo a una pira que ya llevaba un
+      buen rato ardiendo. No dijo una palabra al verlos llegar ni se detuvo un
+      segundo en lo que hacía. En cuanto oyó las botas de los soldados acercándose,
+      desapareció entre las sombras del refugio sin dejar rastro.</p>
 
-      <p><em>—Ellos fueron.</em></p>
+      <p>Los soldados encontraron a los protagonistas de pie junto a la pira,
+      rodeados de cadáveres y sin nadie más a quien señalar salvo ellos mismos. No
+      hizo falta una acusación — bastó con estar ahí.</p>
 
       <p>Las autoridades no escucharon explicaciones. Los héroes del reino tenían
       más credibilidad que unos aventureros desconocidos, y esa diferencia bastó

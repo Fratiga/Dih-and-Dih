@@ -160,11 +160,14 @@ window.CRONOLOGIA_A = [
 
       <p>No había sonidos. No había supervivientes. Solo cuerpos.</p>
 
-      <p>Verdam estaba allí, cubierto de sangre, rodeado de los cadáveres que horas
-      antes habían sido un refugio entero. Los observó en silencio durante unos
-      segundos y, cuando llegaron los soldados, los señaló a ellos.</p>
+      <p>Verdam estaba allí, arrojando cuerpo tras cuerpo a una pira que ya llevaba un
+      buen rato ardiendo. No dijo una palabra al verlos llegar ni se detuvo un
+      segundo en lo que hacía. En cuanto oyó las botas de los soldados acercándose,
+      desapareció entre las sombras del refugio sin dejar rastro.</p>
 
-      <p><em>—Ellos fueron.</em></p>
+      <p>Los soldados encontraron a los protagonistas de pie junto a la pira,
+      rodeados de cadáveres y sin nadie más a quien señalar salvo ellos mismos. No
+      hizo falta una acusación — bastó con estar ahí.</p>
 
       <p>Las autoridades no escucharon explicaciones. Los héroes del reino tenían
       más credibilidad que unos aventureros desconocidos, y esa diferencia bastó
