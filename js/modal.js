@@ -108,6 +108,11 @@ function modalExtraMeta(entry) {
   return `<p class="modal-meta">${rows.map(([k, v]) => `<strong>${k}:</strong> ${v}`).join("<br>")}</p>`;
 }
 
+function datosGMBlock(entry) {
+  if (!entry.datosGM || typeof esAdmin !== "function" || !esAdmin()) return "";
+  return `<div class="modal-gm"><p class="modal-gm-label">🔒 Solo GM</p>${entry.datosGM}</div>`;
+}
+
 function mapaLinkFor(entry) {
   if (entry.category !== "Lugares" || typeof window.mapaTienePin !== "function") return "";
   if (!window.mapaTienePin(entry.id)) return "";
@@ -123,6 +128,7 @@ function openEntryModal(entry) {
     ${modalExtraMeta(entry)}
     ${mapaLinkFor(entry)}
     <div class="modal-body">${entry.content}</div>
+    ${datosGMBlock(entry)}
   `;
   modal.showModal();
 }

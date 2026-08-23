@@ -800,6 +800,21 @@ dialog::backdrop { background: rgba(0,0,0,.72); }
 }
 .mapa-link:hover { border-color: var(--accent-soft); transform: translateY(-1px); }
 
+.modal-gm {
+  margin-top: 26px;
+  padding: 14px 18px;
+  background: rgba(198, 41, 41, .08);
+  border: 1px dashed rgba(198, 41, 41, .5);
+  border-radius: 8px;
+}
+.modal-gm-label {
+  margin: 0 0 8px;
+  font-size: .78rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #d16a6a;
+}
+
 @keyframes mapa-pin-pulse {
   0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 0 4px rgba(198,169,107,.55), 0 2px 8px var(--shadow); }
   50% { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 0 14px rgba(198,169,107,0), 0 2px 8px var(--shadow); }

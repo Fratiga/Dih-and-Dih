@@ -1,8 +1,14 @@
 const LADO_KEY = "compendioLado";
 const LADO_PASSWORDS = { A: "repampanos", B: "cambalache" };
+const ADMIN_KEY = "compendioAdmin";
+const ADMIN_PASSWORD = "teamomivida";
 
 function ladoActual() {
   return localStorage.getItem(LADO_KEY);
+}
+
+function esAdmin() {
+  return localStorage.getItem(ADMIN_KEY) === "1";
 }
 
 let sustoAudio = null;
@@ -121,7 +127,7 @@ function initLadoGate(onUnlock) {
   function revelar(lado) {
     gate.classList.add("hidden");
     mainContent.classList.remove("hidden");
-    if (badge) badge.textContent = `Side ${lado}`;
+    if (badge) badge.textContent = esAdmin() ? `★ Admin — Side ${lado}` : `Side ${lado}`;
     onUnlock(lado);
   }
 
@@ -144,6 +150,16 @@ function initLadoGate(onUnlock) {
       return;
     }
 
+    if (value === ADMIN_PASSWORD) {
+      error.classList.add("hidden");
+      input.value = "";
+      localStorage.setItem(ADMIN_KEY, "1");
+      const ladoInicial = ladoActual() || "A";
+      localStorage.setItem(LADO_KEY, ladoInicial);
+      revelar(ladoInicial);
+      return;
+    }
+
     const lado = Object.entries(LADO_PASSWORDS).find(([, v]) => v === value)?.[0];
     if (!lado) {
       error.classList.remove("hidden");
@@ -159,6 +175,12 @@ function initLadoGate(onUnlock) {
 
   if (switchBtn) {
     switchBtn.addEventListener("click", () => {
+      if (esAdmin()) {
+        const otroLado = ladoActual() === "A" ? "B" : "A";
+        localStorage.setItem(LADO_KEY, otroLado);
+        revelar(otroLado);
+        return;
+      }
       localStorage.removeItem(LADO_KEY);
       mainContent.classList.add("hidden");
       gate.classList.remove("hidden");

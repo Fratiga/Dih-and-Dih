@@ -203,7 +203,7 @@
       const baseFilteredEntries = filteredEntries;
       filteredEntries = function () {
         return baseFilteredEntries().filter(entry => {
-          const matchesLado = !ladoPersonajes || !entry.lado || entry.lado.includes(ladoPersonajes);
+          const matchesLado = esAdmin() || !ladoPersonajes || !entry.lado || entry.lado.includes(ladoPersonajes);
           const matchesTipo = !state.tipo || entry.tipo === state.tipo;
           const matchesRegion = !state.region || entry.lugarOrigen === state.region;
           const matchesFaccion = !state.faccion || entry.faccion === state.faccion;
@@ -213,6 +213,10 @@
 
       initLadoGate(lado => {
         ladoPersonajes = lado;
+        if (esAdmin()) {
+          const badge = document.getElementById("ladoBadge");
+          if (badge) badge.textContent = "★ Admin — viendo ambos lados";
+        }
         renderCompendio();
       });
     })();
