@@ -142,12 +142,17 @@ window.CRONOLOGIA_B = [
 
       <h4>La herida</h4>
 
-      <p>En medio del combate, el paladín goblin del grupo cayó, sacrificándose para
-      abrir el hueco que los demás necesitaban. Fue ese hueco el que permitió a los
-      protagonistas herir al dragón por primera vez en su vida. El dolor —algo que
-      la criatura no parecía esperar— bastó para espantarla. Se alejó de Brurland
-      dejando atrás una victoria a medias, tan incompleta como cualquier otra esa
-      noche.</p>
+      <p>En medio del combate, los protagonistas lograron abrirse paso hasta una
+      atalaya del castillo donde todavía quedaba una vieja balista de asedio,
+      pensada para murallas enemigas y no para algo que volaba. Cargarla a tiempo
+      les llevó todo lo que tenían, pero el impacto bastó para herir al dragón por
+      primera vez en su vida. El dolor —algo que la criatura no parecía esperar—
+      bastó para espantarla. Se alejó de Brurland dejando atrás una victoria a
+      medias, tan incompleta como cualquier otra esa noche.</p>
+
+      <p>Fue en esa misma atalaya donde se les unió Sigismund, un paladín humano y
+      antiguo discípulo de Ocevat, que ayudó a cargar la balista sin que nadie se lo
+      pidiera. No volvió a separarse del grupo desde entonces.</p>
 
       <p>El rey celebró. Por un momento, antes de que nadie tuviera tiempo de pensar
       en el costo, hubo alivio genuino en el castillo. Los protagonistas informaron
@@ -185,7 +190,8 @@ window.CRONOLOGIA_B = [
       señalándolos como responsables, los protagonistas tomaron una decisión que
       sorprendió incluso a quienes los acusaban: no huyeron de Brurland. Se entregaron
       por voluntad propia, decididos a demostrar su inocencia ante el rey y a obligar a
-      la corona a investigar lo que de verdad había ocurrido esa noche.</p>
+      la corona a investigar lo que de verdad había ocurrido esa noche. Sigismund se
+      entregó junto a ellos, sin que nadie se lo pidiera ni se lo discutiera.</p>
 
       <h4>Escena 1: Los calabozos de Kigan</h4>
 

@@ -622,5 +622,32 @@ window.PERSONAJES = [
       intelecto más bien limitado hacen que más de uno lo confunda con un perro a
       primera vista.</p>
     `
+  },
+  {
+    id: "sigismund",
+    title: "Sigismund",
+    category: "Personajes",
+    tags: ["jugador", "humano"],
+    summary: "Paladín humano, antiguo discípulo de Ocevat, que se unió al grupo en la atalaya del castillo y no volvió a separarse de ellos.",
+    retrato: "",
+    titulo: "Paladín",
+    raza: "Humano",
+    tipo: "Jugador",
+    lugarOrigen: "",
+    ocupacion: "Paladín",
+    faccion: "",
+    primeraAparicion: "El Castillo",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "ocevat", nota: "Fue su maestro" }
+    ],
+    content: `
+      <p>Un paladín humano, antiguo discípulo de Ocevat, que se sumó al grupo en la
+      atalaya del castillo mientras cargaban la vieja balista contra el dragón. No
+      volvió a separarse de ellos desde entonces, ni siquiera cuando terminaron
+      encerrados en los calabozos de Kigan junto al resto. Bastante recto para su
+      propio bien, y jamás se lo ve sin la armadura pesada que carga incluso para
+      dormir.</p>
+    `
   }
 ];
