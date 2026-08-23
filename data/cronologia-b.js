@@ -6,24 +6,23 @@ window.CRONOLOGIA_B = [
     title: "La Taberna del Gigante",
     fecha: "Primeros días en Brurland",
     content: `
-      <p>Se dice que las grandes historias rara vez empiezan con un presagio: empiezan
-      con una puerta que se abre y un salón que huele a cerveza rancia y madera húmeda.
-      Así entraron los forasteros a La Taberna del Gigante, uno de esos lugares que
-      Brurland ofrece a quien busca trabajo, rumores o simplemente un techo — frecuentado
-      por igual por aventureros de paso, mercaderes cansados del camino y mercenarios que
-      cobran por no hacer preguntas.</p>
+      <p>Todo empezó con una puerta que se abrió y un salón que olía a cerveza rancia
+      y madera húmeda. Así entraron los forasteros a La Taberna del Gigante, uno de
+      esos lugares que Brurland ofrece a quien busca trabajo, rumores o simplemente
+      un techo, frecuentado por igual por aventureros de paso, mercaderes cansados
+      del camino y mercenarios que cobran por no hacer preguntas.</p>
 
-      <p>La noche transcurría con su ritmo habitual — risas en una mesa, una partida de
-      dados en otra, el tabernero limpiando jarras que ya estaban limpias — cuando la
+      <p>La noche transcurría con su ritmo habitual. Risas en una mesa, una partida de
+      dados en otra, el tabernero limpiando jarras que ya estaban limpias. Entonces la
       puerta volvió a abrirse, esta vez con menos discreción. Las Comadrejas entraron
-      arrastrando una jaula grande, cubierta con una lona que no lograba silenciar del
-      todo lo que había dentro. Bull cerraba la marcha como quien custodia algo que vale
+      arrastrando una jaula grande, cubierta con una lona que apenas lograba silenciar
+      lo que había dentro. Bull cerraba la marcha como quien custodia algo que vale
       más de lo que aparenta; Garra se abrió paso apartando curiosos con la mirada antes
       que con las manos; Baraja, siempre el más hablador de los tres, ya buscaba con
       quién negociar.</p>
 
       <p>Bajo la lona había un grifón, apenas una cría, todavía con las plumas del nido y
-      los ojos demasiado grandes para el miedo que sentía. Contrabando, sin duda — un
+      los ojos demasiado grandes para el miedo que sentía. Contrabando, sin duda. Un
       animal así no se compra en ningún mercado legal, y separado tan joven de los suyos
       no tenía forma de ocultar lo que era: una presa asustada, no una mercancía.</p>
 
@@ -43,7 +42,7 @@ window.CRONOLOGIA_B = [
       <h4>El ataque del dragón</h4>
 
       <p>El rugido llegó antes que la luz del amanecer. No fue un sonido que se
-      escuchara tanto como uno que se sintiera — en los cristales, en los cimientos, en
+      escuchara tanto como uno que se sintiera, en los cristales, en los cimientos, en
       el pecho de cada persona que dormía en Brurland esa noche. Las ventanas temblaron.
       Después llegó el pánico, y después, al alzar la vista, la razón de ambos: una
       sombra descomunal cruzando el cielo sobre la ciudad, con alas que apagaban las
@@ -81,7 +80,7 @@ window.CRONOLOGIA_B = [
       tranquilas, y ahora se preguntaban si volverían a hacerlo.</p>
 
       <p>Al frente de la defensa estaba Eklino. No era un soldado, ni un héroe de los que
-      cantan los juglares — era, simplemente, alguien que no se movió cuando todos los
+      cantan los juglares. Era, simplemente, alguien que no se movió cuando todos los
       demás querían hacerlo. A su lado se reunieron aldeanos armados con lo que
       encontraron: herramientas de labranza, lanzas improvisadas, antorchas que servían
       tanto para ver como para asustar. No era un ejército. Era una ciudad entera
@@ -89,7 +88,7 @@ window.CRONOLOGIA_B = [
 
       <p>La primera oleada llegó como un rumor que se convirtió en certeza: kobolds,
       decenas de ellos, arrojándose contra las barricadas con la insistencia de quien no
-      teme morir porque hay muchos más detrás. La segunda trajo algo peor — un dragarto,
+      teme morir porque hay muchos más detrás. La segunda trajo algo peor. Un dragarto,
       cuya sola presencia bastó para que más de un aldeano soltara el arma y retrocediera.
       La tercera, la que todos temían, llegó con tres dragartos abriéndose paso entre una
       marea de kobolds que no parecía tener fin.</p>
@@ -98,13 +97,13 @@ window.CRONOLOGIA_B = [
       Algunos cayeron en la barricada que juraron no abandonar. Otros, presa del pánico,
       hicieron lo que cualquiera habría hecho frente a algo tan grande como un dragarto, y
       no siempre eso bastó para salvarlos. El objetivo nunca fue exterminar lo que
-      atacaba — nadie en el refugio tenía esa fuerza. El objetivo era, simplemente, seguir
+      atacaba. Nadie en el refugio tenía esa fuerza. El objetivo era, simplemente, seguir
       en pie cuando saliera el sol.</p>
 
       <p>Cuando el último de los tres dragartos cayó y por un instante pareció que el
       refugio había resistido lo peor, el cielo se abrió una vez más. No era un simple
-      centinela: un protodraco descendió sobre las barricadas, y su aliento — una lengua
-      de fuego que no distinguía entre defensor y muro — barrió de golpe una franja
+      centinela: un protodraco descendió sobre las barricadas, y su aliento, una lengua
+      de fuego que no distinguía entre defensor y muro, barrió de golpe una franja
       entera de la línea. Ryn quedó directamente en su camino, sin tiempo ni espacio para
       apartarse.</p>
 
@@ -146,7 +145,7 @@ window.CRONOLOGIA_B = [
       atalaya del castillo donde todavía quedaba una vieja balista de asedio,
       pensada para murallas enemigas y no para algo que volaba. Cargarla a tiempo
       les llevó todo lo que tenían, pero el impacto bastó para herir al dragón por
-      primera vez en su vida. El dolor —algo que la criatura no parecía esperar—
+      primera vez en su vida. El dolor, algo que la criatura no parecía esperar,
       bastó para espantarla. Se alejó de Brurland dejando atrás una victoria a
       medias, tan incompleta como cualquier otra esa noche.</p>
 
@@ -170,7 +169,7 @@ window.CRONOLOGIA_B = [
 
       <p>Los soldados encontraron a los protagonistas de pie junto a la pira,
       rodeados de cadáveres y sin nadie más a quien señalar salvo ellos mismos. No
-      hizo falta una acusación — bastó con estar ahí.</p>
+      hizo falta una acusación. Bastó con estar ahí.</p>
 
       <p>Las autoridades no escucharon explicaciones. Los héroes del reino tenían
       más credibilidad que unos aventureros desconocidos, y esa diferencia bastó
