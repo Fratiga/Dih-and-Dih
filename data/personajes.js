@@ -503,13 +503,13 @@ window.PERSONAJES = [
     title: "Laia",
     category: "Personajes",
     tags: ["jugador", "cambiaformas"],
-    summary: "Cambiaformas pícara, criada en una familia de ladrones, que partió de viaje para entender las emociones propias y ajenas.",
+    summary: "Cambiaformas pícaro, criado en una familia de ladrones, que partió de viaje para entender las emociones propias y ajenas.",
     retrato: "",
-    titulo: "Pícara",
+    titulo: "Pícaro",
     raza: "Cambiaformas",
     tipo: "Jugador",
     lugarOrigen: "",
-    ocupacion: "Pícara",
+    ocupacion: "Pícaro",
     faccion: "",
     primeraAparicion: "",
     lado: ["B"],
@@ -517,10 +517,10 @@ window.PERSONAJES = [
       { id: "sunny-y-hoare", nota: "Amigos de sus padres" }
     ],
     content: `
-      <p>Una cambiaformas pícara, criada dentro de una familia de ladrones. Su propia
+      <p>Un cambiaformas pícaro, criado dentro de una familia de ladrones. Su propia
       naturaleza cambiante siempre le dificultó entender el porqué de sus propias
-      acciones, y mucho menos las de la gente a su alrededor. Harta de esa
-      incertidumbre, partió de viaje decidida a entender las emociones —las suyas y
+      acciones, y mucho menos las de la gente a su alrededor. Harto de esa
+      incertidumbre, partió de viaje decidido a entender las emociones —las suyas y
       las ajenas— de una vez por todas. El ataque del dragón no entraba, ni de lejos,
       en sus planes.</p>
     `
