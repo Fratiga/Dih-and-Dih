@@ -76,7 +76,7 @@ window.CRONOLOGIA_A = [
     title: "El Refugio",
     fecha: "La noche que Brurland resistió",
     content: `
-      <p>El refugio no era una fortaleza — era una improvisación desesperada, levantada
+      <p>El refugio era una improvisación desesperada, levantada
       con lo que la ciudad tuvo tiempo de reunir: vigas apiladas, carros volcados, puertas
       arrancadas de sus goznes para tapar cada hueco por el que pudiera colarse el
       desastre. Dentro se apretaban cientos de personas que horas antes dormían
@@ -107,19 +107,19 @@ window.CRONOLOGIA_A = [
       refugio había resistido lo peor, el cielo se abrió una vez más. No era un simple
       centinela: un protodraco descendió sobre las barricadas, y su aliento — una lengua
       de fuego que no distinguía entre defensor y muro — barrió de golpe una franja
-      entera de la línea. Ryn quedó directamente en su camino, sin tiempo ni espacio para
-      apartarse.</p>
+      entera de la línea. Orina quedó directamente en su camino, sin tiempo ni espacio
+      para apartarse.</p>
 
       <p>Coach sí lo tuvo, y no lo usó para sí mismo. Se interpuso entre el aliento del
-      protodraco y Ryn, y pagó por esa decisión lo único que no se puede recuperar. Ella
-      vivió esa noche gracias a él.</p>
+      protodraco y Orina, y pagó por esa decisión lo único que no se puede recuperar. El
+      goblin vivió esa noche gracias a él.</p>
 
       <p>Lo lograron. A duras penas, con el precio grabado en cada rostro que quedó para
       contarlo: el refugio resistió, pero no sin pérdidas. Entre los que no sobrevivieron
       esa noche estaban Eklino, que no se apartó de la barricada hasta el final, y Coach,
-      que eligió el fuego de un protodraco antes que dejarlo caer sobre Ryn. Sus nombres,
-      los aldeanos los siguieron repitiendo mucho después de que el sol volviera a salir
-      sobre Brurland.</p>
+      que eligió el fuego de un protodraco antes que dejarlo caer sobre Orina. Sus
+      nombres, los aldeanos los siguieron repitiendo mucho después de que el sol volviera
+      a salir sobre Brurland.</p>
     `
   },
   {
