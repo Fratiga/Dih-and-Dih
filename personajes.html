@@ -144,6 +144,7 @@
   <script>
     (function () {
       let ladoPersonajes = null;
+      let filtroAdmin = null;
       const tipoFilters = document.getElementById("tipoFilters");
       const regionFilter = document.getElementById("regionFilter");
       const faccionFilter = document.getElementById("faccionFilter");
@@ -203,7 +204,9 @@
       const baseFilteredEntries = filteredEntries;
       filteredEntries = function () {
         return baseFilteredEntries().filter(entry => {
-          const matchesLado = esAdmin() || !ladoPersonajes || !entry.lado || entry.lado.includes(ladoPersonajes);
+          const matchesLado = esAdmin()
+            ? (!filtroAdmin || !entry.lado || entry.lado.includes(filtroAdmin))
+            : (!ladoPersonajes || !entry.lado || entry.lado.includes(ladoPersonajes));
           const matchesTipo = !state.tipo || entry.tipo === state.tipo;
           const matchesRegion = !state.region || entry.lugarOrigen === state.region;
           const matchesFaccion = !state.faccion || entry.faccion === state.faccion;
@@ -211,12 +214,28 @@
         });
       };
 
+      function actualizarBadgeAdmin() {
+        const badge = document.getElementById("ladoBadge");
+        if (!badge) return;
+        badge.textContent = filtroAdmin
+          ? `★ Admin — Solo Side ${filtroAdmin}`
+          : "★ Admin — viendo ambos lados";
+      }
+
+      const ladoSwitchBtn = document.getElementById("ladoSwitch");
+      if (ladoSwitchBtn) {
+        ladoSwitchBtn.addEventListener("click", e => {
+          if (!esAdmin()) return;
+          e.stopImmediatePropagation();
+          filtroAdmin = filtroAdmin === null ? "A" : filtroAdmin === "A" ? "B" : null;
+          actualizarBadgeAdmin();
+          renderCompendio();
+        });
+      }
+
       initLadoGate(lado => {
         ladoPersonajes = lado;
-        if (esAdmin()) {
-          const badge = document.getElementById("ladoBadge");
-          if (badge) badge.textContent = "★ Admin — viendo ambos lados";
-        }
+        if (esAdmin()) actualizarBadgeAdmin();
         renderCompendio();
       });
     })();
