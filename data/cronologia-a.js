@@ -22,10 +22,12 @@ window.CRONOLOGIA_A = [
       que con las manos; Baraja, siempre el más hablador de los tres, ya buscaba con
       quién negociar.</p>
 
-      <p>Bajo la lona había un grifón, apenas una cría, todavía con las plumas del nido y
-      los ojos demasiado grandes para el miedo que sentía. Contrabando, sin duda — un
-      animal así no se compra en ningún mercado legal, y separado tan joven de los suyos
-      no tenía forma de ocultar lo que era: una presa asustada, no una mercancía.</p>
+      <p>Bajo la lona había un cachorro de Bestia Trémula, apenas más grande que un gato
+      pero ya con las ocho patas y los tentáculos cortos que delatarían a cualquier
+      adulto de su especie, y los ojos demasiado grandes para el miedo que sentía.
+      Contrabando, sin duda — un animal así no se compra en ningún mercado legal, y
+      separado tan joven de los suyos no tenía forma de ocultar lo que era: una presa
+      asustada, no una mercancía.</p>
 
       <p>Lo que ocurrió después dependió, como casi todo en Brurland, de quién estaba
       mirando y qué estaba dispuesto a hacer. Hubo quien prefirió no involucrarse. Hubo
@@ -63,7 +65,7 @@ window.CRONOLOGIA_A = [
       mirar hacia otro lado.</p>
 
       <p>Así se recuerda el primer capítulo de esta historia en Brurland: una jaula
-      robada, un grifón asustado, y una ciudad que ardió antes de que nadie tuviera
+      robada, un cachorro asustado, y una ciudad que ardió antes de que nadie tuviera
       tiempo de preguntar por qué.</p>
     `
   },
