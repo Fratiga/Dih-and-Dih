@@ -113,6 +113,14 @@ function datosGMBlock(entry) {
   return `<div class="modal-gm"><p class="modal-gm-label">🔒 Solo GM</p>${entry.datosGM}</div>`;
 }
 
+function habilidadesBlock(entry) {
+  if (!entry.habilidades || !entry.habilidades.length) return "";
+  const items = entry.habilidades
+    .map(h => `<p><strong>${h.nombre}:</strong> ${h.descripcion}</p>`)
+    .join("");
+  return `<div class="modal-habilidades"><h4>Habilidades</h4>${items}</div>`;
+}
+
 function mapaLinkFor(entry) {
   if (entry.category !== "Lugares" || typeof window.mapaTienePin !== "function") return "";
   if (!window.mapaTienePin(entry.id)) return "";
@@ -128,6 +136,7 @@ function openEntryModal(entry) {
     ${modalExtraMeta(entry)}
     ${mapaLinkFor(entry)}
     <div class="modal-body">${entry.content}</div>
+    ${habilidadesBlock(entry)}
     ${datosGMBlock(entry)}
   `;
   modal.showModal();

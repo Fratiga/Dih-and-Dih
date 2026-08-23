@@ -123,11 +123,18 @@ function initLadoGate(onUnlock) {
   const error = document.getElementById("ladoError");
   const badge = document.getElementById("ladoBadge");
   const switchBtn = document.getElementById("ladoSwitch");
+  const logoutBtn = document.getElementById("ladoAdminLogout");
+
+  function actualizarBotonesAdmin() {
+    const admin = esAdmin();
+    document.querySelectorAll("[data-admin-only]").forEach(el => el.classList.toggle("hidden", !admin));
+  }
 
   function revelar(lado) {
     gate.classList.add("hidden");
     mainContent.classList.remove("hidden");
     if (badge) badge.textContent = esAdmin() ? `★ Admin — Side ${lado}` : `Side ${lado}`;
+    actualizarBotonesAdmin();
     onUnlock(lado);
   }
 
@@ -181,6 +188,17 @@ function initLadoGate(onUnlock) {
         revelar(otroLado);
         return;
       }
+      localStorage.removeItem(LADO_KEY);
+      mainContent.classList.add("hidden");
+      gate.classList.remove("hidden");
+      input.value = "";
+      input.focus();
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem(ADMIN_KEY);
       localStorage.removeItem(LADO_KEY);
       mainContent.classList.add("hidden");
       gate.classList.remove("hidden");

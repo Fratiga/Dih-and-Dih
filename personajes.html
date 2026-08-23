@@ -68,6 +68,8 @@
       <div class="lado-badge-row">
         <span id="ladoBadge" class="lado-badge"></span>
         <button id="ladoSwitch" class="lado-switch" type="button">Cambiar versión</button>
+        <button id="adminAddBtn" class="lado-switch hidden" type="button" data-admin-only>+ Nuevo personaje</button>
+        <button id="ladoAdminLogout" class="lado-switch hidden" type="button" data-admin-only>Salir de admin</button>
       </div>
 
       <div class="search-box">
@@ -122,6 +124,109 @@
     <article id="modalContent"></article>
   </dialog>
 
+  <dialog id="adminFormModal" class="admin-form-modal">
+    <button type="button" id="adminFormClose" class="modal-close">×</button>
+    <h2>Nuevo personaje</h2>
+    <form id="adminCharForm" class="admin-form">
+      <div class="admin-form-row">
+        <label>Nombre
+          <input type="text" id="afNombre" required>
+        </label>
+        <label>ID (para el código)
+          <input type="text" id="afId" placeholder="se genera solo">
+        </label>
+      </div>
+
+      <div class="admin-form-row">
+        <label>Tipo
+          <select id="afTipo" class="filter-select">
+            <option value="Jugador">Jugador</option>
+            <option value="NPC">NPC</option>
+          </select>
+        </label>
+        <label>Lado
+          <span class="admin-form-checks">
+            <label><input type="checkbox" id="afLadoA" checked> Side A</label>
+            <label><input type="checkbox" id="afLadoB"> Side B</label>
+          </span>
+        </label>
+      </div>
+
+      <div class="admin-form-row">
+        <label>Raza
+          <input type="text" id="afRaza">
+        </label>
+        <label>Título / rol
+          <input type="text" id="afTitulo">
+        </label>
+      </div>
+
+      <div class="admin-form-row">
+        <label>Ocupación
+          <input type="text" id="afOcupacion">
+        </label>
+        <label>Primera aparición
+          <input type="text" id="afPrimeraAparicion">
+        </label>
+      </div>
+
+      <div class="admin-form-row">
+        <label>Facción (id)
+          <input type="text" id="afFaccion" placeholder="ej: la-corona">
+        </label>
+        <label>Lugar de origen (id)
+          <input type="text" id="afLugarOrigen">
+        </label>
+      </div>
+
+      <label>Etiquetas (separadas por coma)
+        <input type="text" id="afTags" placeholder="jugador, humano">
+      </label>
+
+      <label>Resumen
+        <textarea id="afSummary" rows="2"></textarea>
+      </label>
+
+      <div class="admin-form-repeat">
+        <div class="admin-form-repeat-header">
+          <span>Relaciones conocidas</span>
+          <button type="button" id="afAddRelacion" class="secondary-button admin-small-btn">+ Añadir relación</button>
+        </div>
+        <div id="afRelacionesList"></div>
+      </div>
+
+      <div class="admin-form-repeat">
+        <div class="admin-form-repeat-header">
+          <span>Habilidades</span>
+          <button type="button" id="afAddHabilidad" class="secondary-button admin-small-btn">+ Añadir habilidad</button>
+        </div>
+        <div id="afHabilidadesList"></div>
+      </div>
+
+      <label>Contenido (un párrafo por línea en blanco)
+        <textarea id="afContent" rows="6" required></textarea>
+      </label>
+
+      <label>Datos GM (opcional, solo visible en modo admin)
+        <textarea id="afDatosGM" rows="4"></textarea>
+      </label>
+
+      <div class="admin-form-actions">
+        <button type="button" id="afGenerar" class="secondary-button">Generar código</button>
+        <button type="button" id="afLimpiar" class="secondary-button">Limpiar formulario</button>
+      </div>
+
+      <div id="afOutputWrap" class="hidden">
+        <label>Código generado
+          <textarea id="afOutput" rows="14" readonly></textarea>
+        </label>
+        <button type="button" id="afCopiar" class="secondary-button">Copiar código</button>
+        <p class="admin-form-hint">Pegá este bloque dentro del array <code>window.PERSONAJES</code> en
+        <code>data/personajes.js</code> y avisale a Claude para que lo suba.</p>
+      </div>
+    </form>
+  </dialog>
+
   <script src="data/entries.js"></script>
   <script src="data/personajes.js"></script>
   <script src="data/lugares.js"></script>
@@ -141,6 +246,7 @@
   <script src="js/modal.js"></script>
   <script src="js/compendio.js"></script>
   <script src="js/lado.js"></script>
+  <script src="js/admin-personajes.js"></script>
   <script>
     (function () {
       let ladoPersonajes = null;
