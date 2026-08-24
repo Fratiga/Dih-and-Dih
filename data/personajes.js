@@ -514,7 +514,8 @@ window.PERSONAJES = [
     primeraAparicion: "",
     lado: ["B"],
     relacionesConocidas: [
-      { id: "sunny-y-hoare", nota: "Amigos de sus padres" }
+      { id: "sunny-y-hoare", nota: "Amigos de sus padres" },
+      { id: "isa", nota: "Se conocieron en los calabozos, quedaron en verse en la taberna" }
     ],
     content: `
       <p>Un cambiaformas pícaro, criado dentro de una familia de ladrones. Su propia
@@ -589,7 +590,8 @@ window.PERSONAJES = [
     primeraAparicion: "El Refugio",
     lado: ["B"],
     relacionesConocidas: [
-      { id: "coach-b", nota: "Se sacrificó para salvarla" }
+      { id: "coach-b", nota: "Se sacrificó para salvarla" },
+      { id: "sett", nota: "Se conocieron en la taberna, quedaron en verse en Wolfmere" }
     ],
     content: `
       <p>Una bardo eladrin, hija de una familia adinerada de Fel que nunca la dejó
@@ -648,6 +650,128 @@ window.PERSONAJES = [
       encerrados en los calabozos de Kigan junto al resto. Bastante recto para su
       propio bien, y jamás se lo ve sin la armadura pesada que carga incluso para
       dormir.</p>
+    `
+  },
+  {
+    id: "sett",
+    title: "Sett",
+    category: "Personajes",
+    tags: ["npc", "hombre-bestia"],
+    summary: "Hombre bestia fornido que Ryn conoció en La Taberna del Gigante; quedaron en verse en Wolfmere.",
+    retrato: "",
+    titulo: "",
+    raza: "Hombre bestia",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "La Sentencia Aplazada",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "ryn", nota: "Se conocieron en la taberna, quedaron en verse en Wolfmere" }
+    ],
+    content: `
+      <p>Un hombre bestia joven y fornido con el que Ryn coincidió en La Taberna
+      del Gigante. Ella se le acercó porque le pareció guapo, y la conversación
+      terminó mejor de lo que ninguno de los dos esperaba. Antes de separarse,
+      quedaron en volver a verse más adelante en Wolfmere.</p>
+    `
+  },
+  {
+    id: "isa",
+    title: "Isa",
+    category: "Personajes",
+    tags: ["npc", "humano", "kigan"],
+    summary: "Prisionero humano extremadamente apuesto, encarcelado por adulterio con la reina; conoció a Laia en los calabozos de Kigan.",
+    retrato: "",
+    titulo: "Prisionero",
+    raza: "Humano",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "Los Calabozos de Kigan",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "laia", nota: "Se conocieron en los calabozos, quedaron en verse en la taberna" }
+    ],
+    content: `
+      <p>Un prisionero humano tan apuesto como él mismo se encargaba de recordarle
+      a cualquiera dispuesto a escucharlo. Terminó en los calabozos de Kigan por
+      cometer adulterio con la reina, cargo que no parecía avergonzarlo en lo más
+      mínimo. Ahí conoció a Laia, y ambos quedaron en volver a verse en La
+      Taberna del Gigante en cuanto tuvieran la oportunidad.</p>
+    `
+  },
+  {
+    id: "principe-leonard-goldenside",
+    title: "Príncipe Leonard Goldenside",
+    category: "Personajes",
+    tags: ["npc", "realeza", "kigan"],
+    summary: "Príncipe humano de Brurland; sugirió al rey enviar a los protagonistas a matar al dragón como condena.",
+    retrato: "",
+    titulo: "Príncipe de Brurland",
+    raza: "Humano",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "La Sentencia Aplazada",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "rey-julius-goldenside", nota: "Su padre" }
+    ],
+    content: `
+      <p>Príncipe humano de Brurland. Fue idea suya sugerirle al rey enviar a los
+      protagonistas al norte a matar al dragón, una salida que le permitió a la
+      corona posponer la sentencia sin parecer débil frente a la corte.</p>
+    `
+  },
+  {
+    id: "rey-julius-goldenside",
+    title: "Rey Julius Goldenside",
+    category: "Personajes",
+    tags: ["npc", "realeza", "kigan"],
+    summary: "Rey humano de Brurland, severo y fácil de estresar; más interesado en terminar el juicio rápido que en impartir justicia real.",
+    retrato: "",
+    titulo: "Rey de Brurland",
+    raza: "Humano",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "La Sentencia Aplazada",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "principe-leonard-goldenside", nota: "Su hijo" }
+    ],
+    content: `
+      <p>Rey humano de Brurland, severo y de paciencia corta. Durante el juicio
+      de los protagonistas dejó bastante claro que le importaba más cerrar el
+      caso rápido que llegar al fondo de lo que en verdad había ocurrido en el
+      refugio.</p>
+    `
+  },
+  {
+    id: "gareth-b",
+    title: "Gareth",
+    category: "Personajes",
+    tags: ["npc", "gigante", "kigan"],
+    summary: "Gigante dueño de La Taberna del Gigante, fuerte y algo malhumorado; su local sobrevivió al ataque del dragón casi de milagro.",
+    retrato: "",
+    titulo: "Dueño de La Taberna del Gigante",
+    raza: "Gigante",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Tabernero",
+    faccion: "",
+    primeraAparicion: "La Taberna del Gigante",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un gigante tan fuerte como de mal humor, dueño de La Taberna del
+      Gigante desde hace años. Su local sobrevivió al ataque del dragón casi de
+      milagro, y desde entonces no le falta clientela.</p>
     `
   }
 ];

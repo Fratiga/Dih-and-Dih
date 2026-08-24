@@ -253,5 +253,45 @@ window.CRONOLOGIA_B = [
       resolver esa misma noche. Las preguntas no desaparecieron: pasaron a formar parte
       del proceso, y esperan ahora una respuesta frente al rey.</p>
     `
+  },
+  {
+    id: "capitulo-5",
+    orden: 5,
+    numero: "Capítulo V",
+    title: "La Sentencia Aplazada",
+    fecha: "El día del juicio",
+    content: `
+      <p>El juicio se extendió mucho más de lo que nadie en la sala esperaba.
+      Los protagonistas pelearon cada acusación con uñas y dientes, sin ceder
+      terreno en nada que pudieran rebatir. El rey Julius Goldenside terminó
+      arrinconado por su propia lógica: condenar a quienes se habían entregado
+      por voluntad propia, y que además habían frenado un motín desde dentro de
+      su propia celda, resultaba mucho más difícil de justificar ante la corte
+      de lo que había previsto. Sentenciar en el acto ya no era una opción
+      viable.</p>
+
+      <p>La salida se la ofreció su propio hijo. El príncipe Leonard Goldenside
+      sugirió postergar la sentencia mediante el derecho de reparación por
+      armas: en lugar de un veredicto, una misión. Los protagonistas partirían
+      al norte a matar al dragón, y solo entonces se decidiría su destino. El
+      rey aceptó la salida sin demasiado disimulo de alivio.</p>
+
+      <h4>La Taberna del Gigante, otra vez</h4>
+
+      <p>Adam se quedó con ellos mientras decidían qué necesitaban para el
+      viaje. Terminaron en La Taberna del Gigante, el mismo lugar donde todo
+      había empezado, conversando y negociando con los clientes mientras Adam
+      compraba raciones para el camino. Detrás de la barra atendía Gareth, el
+      gigante dueño del lugar, tan fuerte como de mal humor. Su taberna había
+      sobrevivido al ataque del dragón casi de milagro, y desde entonces no le
+      faltaba clientela.</p>
+
+      <p>Laia se encontró ahí con el prisionero que había conocido en los
+      calabozos, Isa, con quien había quedado de verse. Era tan apuesto como él
+      mismo se jactaba de ser. Ryn, por su parte, conversó con un muchacho
+      llamado Sett, y quedaron en volver a verse en Wolfmere. Hooey se dedicó a
+      hacer fuerza frente a quien quisiera apostar, y terminó la noche unas
+      cuantas monedas más rico.</p>
+    `
   }
 ];
