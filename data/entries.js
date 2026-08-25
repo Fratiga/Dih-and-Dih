@@ -17691,78 +17691,29 @@ window.ENTRIES = [
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
         <a href="#cap-1">I. Percepción como construcción</a>
-        <a href="#cap-2">II. Estímulo y experiencia</a>
-        <a href="#cap-3">III. Percepción primaria</a>
-        <a href="#cap-4">IV. Percepción secundaria</a>
-        <a href="#cap-5">V. Integración multisensorial</a>
-        <a href="#cap-6">VI. Dominancia sensorial</a>
-        <a href="#cap-7">VII. Contradicción sensorial</a>
-        <a href="#cap-8">VIII. Resolución de contradicciones</a>
-        <a href="#cap-9">IX. Coherencia</a>
-        <a href="#cap-10">X. Expectativa</a>
-        <a href="#cap-11">XI. Contexto</a>
-        <a href="#cap-12">XII. Memoria</a>
-        <a href="#cap-13">XIII. Reconocimiento de rostros</a>
-        <a href="#cap-14">XIV. Voz</a>
-        <a href="#cap-15">XV. Ilusión visual</a>
-        <a href="#cap-16">XVI. Perspectiva</a>
-        <a href="#cap-17">XVII. Oclusión y sombra</a>
-        <a href="#cap-18">XVIII. Movimiento</a>
-        <a href="#cap-19">XIX. Ilusión auditiva</a>
-        <a href="#cap-20">XX. Olfato y gusto</a>
-        <a href="#cap-21">XXI. Tacto</a>
-        <a href="#cap-22">XXII. Propiocepción</a>
-        <a href="#cap-23">XXIII. Equilibrio</a>
-        <a href="#cap-24">XXIV. Temperatura y dolor</a>
-        <a href="#cap-25">XXV. Ilusiones puramente mentales</a>
-        <a href="#cap-26">XXVI. Ilusiones proyectadas</a>
-        <a href="#cap-27">XXVII. Ilusiones híbridas</a>
-        <a href="#cap-28">XXVIII. Atención</a>
-        <a href="#cap-29">XXIX. Ceguera por inatención</a>
-        <a href="#cap-30">XXX. Habituación</a>
-        <a href="#cap-31">XXXI. Sorpresa</a>
-        <a href="#cap-32">XXXII. Miedo</a>
-        <a href="#cap-33">XXXIII. Deseo</a>
-        <a href="#cap-34">XXXIV. Creencia previa</a>
-        <a href="#cap-35">XXXV. Conocimiento experto</a>
-        <a href="#cap-36">XXXVI. Prueba de realidad</a>
-        <a href="#cap-37">XXXVII. Confirmación cruzada</a>
-        <a href="#cap-38">XXXVIII. Contradicción social</a>
-        <a href="#cap-39">XXXIX. Ilusiones compartidas</a>
-        <a href="#cap-40">XL. Ilusiones divergentes</a>
-        <a href="#cap-41">XLI. Persistencia perceptiva</a>
-        <a href="#cap-42">XLII. Falsos recuerdos</a>
-        <a href="#cap-43">XLIII. Ilusión y memoria alterada</a>
-        <a href="#cap-44">XLIV. Ilusión y encantamiento</a>
-        <a href="#cap-45">XLV. Ilusión y maldición</a>
-        <a href="#cap-46">XLVI. Ilusión y transmutación</a>
-        <a href="#cap-47">XLVII. Ilusión e invisibilidad</a>
-        <a href="#cap-48">XLVIII. Ocultación</a>
-        <a href="#cap-49">XLIX. Disfraz</a>
-        <a href="#cap-50">L. Escenarios</a>
-        <a href="#cap-51">LI. Laberintos perceptivos</a>
-        <a href="#cap-52">LII. Escala y distancia</a>
-        <a href="#cap-53">LIII. Tiempo percibido</a>
-        <a href="#cap-54">LIV. Dolor fantasma</a>
-        <a href="#cap-55">LV. Ilusiones sobre criaturas no humanoides</a>
-        <a href="#cap-56">LVI. Ilusiones sobre elementales y entidades extraplanares</a>
-        <a href="#cap-57">LVII. Resistencia</a>
-        <a href="#cap-58">LVIII. Entrenamiento</a>
-        <a href="#cap-59">LIX. Detectar magia</a>
-        <a href="#cap-60">LX. Disipación</a>
-        <a href="#cap-61">LXI. Ilusión y evidencia</a>
-        <a href="#cap-62">LXII. Testimonio</a>
-        <a href="#cap-63">LXIII. Ética</a>
-        <a href="#cap-64">LXIV. Uso clínico</a>
-        <a href="#cap-65">LXV. Educación y simulación</a>
-        <a href="#cap-66">LXVI. Arte</a>
-        <a href="#cap-67">LXVII. El problema de lo real</a>
-        <a href="#cap-68">LXVIII. Criterios de realidad</a>
-        <a href="#cap-69">LXIX. La paradoja de la ilusión perfecta</a>
-        <a href="#cap-70">LXX. Relación con otras disciplinas</a>
-        <a href="#cap-71">LXXI. El error del detalle</a>
-        <a href="#cap-72">LXXII. El error de engañar todos los sentidos</a>
-        <a href="#cap-73">LXXIII. La pregunta central</a>
+        <a href="#cap-2">II. Integración y conflicto sensorial</a>
+        <a href="#cap-3">III. Expectativa, contexto y memoria</a>
+        <a href="#cap-4">IV. Reconocimiento de identidad: rostro y voz</a>
+        <a href="#cap-5">V. Percepción visual y espacial</a>
+        <a href="#cap-6">VI. Percepción auditiva, olfativa y gustativa</a>
+        <a href="#cap-7">VII. Percepción corporal: tacto, propiocepción, equilibrio y dolor</a>
+        <a href="#cap-8">VIII. Mecanismos de la ilusión: mental, proyectada e híbrida</a>
+        <a href="#cap-9">IX. Atención y sus límites</a>
+        <a href="#cap-10">X. Emoción y vulnerabilidad perceptiva</a>
+        <a href="#cap-11">XI. Creencia previa y conocimiento experto</a>
+        <a href="#cap-12">XII. Verificación y confianza</a>
+        <a href="#cap-13">XIII. Ilusiones compartidas y divergentes</a>
+        <a href="#cap-14">XIV. Persistencia, falsos recuerdos y memoria alterada</a>
+        <a href="#cap-15">XV. Ilusión, encantamiento, maldición y transmutación</a>
+        <a href="#cap-16">XVI. Invisibilidad, ocultación y disfraz</a>
+        <a href="#cap-17">XVII. Ilusiones ambientales: escenarios, escala y tiempo</a>
+        <a href="#cap-18">XVIII. Percepción no humana: criaturas y entidades extraplanares</a>
+        <a href="#cap-19">XIX. Resistencia, detección y disipación</a>
+        <a href="#cap-20">XX. Ilusión, evidencia y testimonio</a>
+        <a href="#cap-21">XXI. Ética y aplicaciones: clínica, educación y arte</a>
+        <a href="#cap-22">XXII. El problema de lo real y sus criterios</a>
+        <a href="#cap-23">XXIII. Relación con otras disciplinas</a>
+        <a href="#cap-24">XXIV. Principios de diseño ilusionista</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -17783,430 +17734,335 @@ window.ENTRIES = [
       <h4 id="cap-1">Capítulo I — Percepción como construcción</h4>
       <p>La percepción transforma señales incompletas en una interpretación operativa del entorno. Ningún
       sentido ofrece una descripción total por sí mismo. La mente compara información, corrige ruido y
-      rellena vacíos a partir de experiencia previa.</p>
-      <p>Este carácter constructivo permite la ilusión. Si percibir fuera copiar fielmente estímulos,
-      bastaría con detectar cualquier discrepancia para rechazarla. En cambio, las mentes toleran
-      contradicciones mientras puedan integrarlas en una explicación coherente.</p>
-      <p>El Ilusionismo Teórico estudia qué relaciones facilitan esa integración y cuáles la rompen.</p>
-      <h4 id="cap-2">Capítulo II — Estímulo y experiencia</h4>
-      <p>Un estímulo es una señal que alcanza un sistema sensorial. La experiencia perceptiva es la
-      interpretación resultante.</p>
-      <p>Una ilusión puede alterar el estímulo, intervenir en el procesamiento o modificar directamente la
-      interpretación. Dos técnicas capaces de producir la misma imagen subjetiva pueden actuar sobre
-      niveles completamente distintos.</p>
-      <p>Esta diferencia determina resistencia, alcance y qué métodos pueden revelar el engaño.</p>
-      <h4 id="cap-3">Capítulo III — Percepción primaria</h4>
+      rellena vacíos a partir de experiencia previa. Este carácter constructivo es lo que permite la
+      ilusión: si percibir fuera copiar fielmente los estímulos, bastaría con detectar cualquier
+      discrepancia para rechazarla, pero las mentes conviven con contradicciones siempre que logren
+      integrarlas en una explicación coherente. El Ilusionismo Teórico estudia qué relaciones facilitan
+      esa integración y cuáles la rompen.</p>
+      <p>Conviene distinguir estímulo y experiencia. Un estímulo es la señal que alcanza un sistema
+      sensorial; la experiencia perceptiva es la interpretación resultante. Una ilusión puede alterar el
+      estímulo, intervenir en el procesamiento o modificar directamente la interpretación, y dos técnicas
+      capaces de producir la misma imagen subjetiva pueden actuar sobre niveles completamente distintos.
+      Esta diferencia determina resistencia, alcance y qué métodos pueden revelar el engaño.</p>
       <p>La percepción primaria comprende las señales inmediatas: luz, sonido, presión, temperatura, olor,
-      sabor, equilibrio y otras modalidades propias de distintas especies.</p>
-      <p>Las ilusiones sensoriales clásicas intervienen aquí, generando o modificando patrones que los
-      órganos interpretan como estímulos reales.</p>
-      <p>Una criatura con sentidos diferentes puede ser inmune a un diseño construido exclusivamente para
-      anatomía humanoide.</p>
-      <h4 id="cap-4">Capítulo IV — Percepción secundaria</h4>
-      <p>La mente no sólo detecta señales; las agrupa en objetos, causas y acontecimientos. Reconoce que
-      cierto contorno pertenece a una persona, que un sonido viene de una puerta o que una sombra
-      corresponde a un árbol.</p>
-      <p>El ilusionismo puede explotar esta etapa sin falsificar cada detalle. Una silueta suficiente,
+      sabor, equilibrio y otras modalidades propias de distintas especies. Es aquí donde intervienen las
+      ilusiones sensoriales clásicas, generando o modificando patrones que los órganos interpretan como
+      estímulos reales. Una criatura con sentidos diferentes puede ser inmune a un diseño construido
+      exclusivamente para anatomía humanoide.</p>
+      <p>La percepción secundaria opera un paso más allá. La mente no sólo detecta señales, sino que las
+      agrupa en objetos, causas y acontecimientos, reconociendo que cierto contorno pertenece a una
+      persona, que un sonido proviene de una puerta o que una sombra corresponde a un árbol. El
+      ilusionismo puede explotar esta etapa sin falsificar cada detalle; una silueta suficiente,
       acompañada del movimiento esperado, puede ser interpretada como un individuo conocido incluso si la
-      información visual es incompleta.</p>
-      <p>La fuerza de la técnica proviene de aprovechar procesos que la mente realiza de manera
-      automática.</p>
-      <h4 id="cap-5">Capítulo V — Integración multisensorial</h4>
+      información visual es incompleta. La fuerza de la técnica proviene de aprovechar procesos que la
+      mente realiza de manera automática.</p>
+      <h4 id="cap-2">Capítulo II — Integración y conflicto sensorial</h4>
       <p>Los sentidos no operan como canales aislados. La percepción combina visión, oído, tacto,
-      propiocepción y otras señales para construir una sola escena.</p>
-      <p>Cuando varias modalidades coinciden, cada una refuerza a las demás. Cuando discrepan, la mente debe
-      decidir cuál merece mayor confianza.</p>
-      <p>El ilusionista puede intentar producir coherencia total o diseñar la ilusión para que una
-      modalidad dominante arrastre la interpretación de las restantes.</p>
-      <h4 id="cap-6">Capítulo VI — Dominancia sensorial</h4>
-      <p>La importancia de un sentido depende de especie, contexto y tarea. La visión domina muchas
-      decisiones espaciales humanoides, pero pierde valor en oscuridad, humo o movimiento rápido.</p>
-      <p>Una criatura que caza mediante vibración, olor o sensibilidad mágica priorizará otras señales.</p>
-      <p>No existe una ilusión universal porque no existe una jerarquía universal de sentidos.</p>
-      <h4 id="cap-7">Capítulo VII — Contradicción sensorial</h4>
+      propiocepción y otras señales para construir una sola escena, y la importancia relativa de cada
+      sentido depende de especie, contexto y tarea. La visión domina muchas decisiones espaciales
+      humanoides, pero pierde valor en oscuridad, humo o movimiento rápido, mientras que una criatura que
+      caza mediante vibración, olor o sensibilidad mágica priorizará otras señales. No existe una ilusión
+      universal porque no existe una jerarquía universal de sentidos.</p>
+      <p>Cuando varias modalidades coinciden, cada una refuerza a las demás; cuando discrepan, la mente
+      debe decidir cuál merece mayor confianza. El ilusionista puede intentar producir coherencia total
+      entre todas las señales o, en su lugar, diseñar la ilusión para que una modalidad dominante arrastre
+      la interpretación de las restantes.</p>
       <p>Una contradicción aparece cuando dos fuentes sensoriales ofrecen interpretaciones difíciles de
-      reconciliar.</p>
-      <p>Ver una pared y atravesarla con la mano, escuchar pasos sin detectar movimiento o sentir calor
-      proveniente de una llama visualmente fría obliga a la mente a revisar su modelo.</p>
-      <p>La contradicción no destruye automáticamente una ilusión. Puede ser explicada como transparencia,
-      eco, magia, enfermedad o error propio del observador.</p>
-      <h4 id="cap-8">Capítulo VIII — Resolución de contradicciones</h4>
-      <p>Las mentes prefieren explicaciones que conserven la mayor cantidad de información previa con el
-      menor número de excepciones.</p>
-      <p>Si una discrepancia puede atribuirse a una causa conocida, la escena general puede continuar
-      aceptándose.</p>
-      <p>Un diseño avanzado introduce explicaciones plausibles para sus propios fallos, reduciendo la
-      probabilidad de que una contradicción aislada provoque rechazo total.</p>
-      <h4 id="cap-9">Capítulo IX — Coherencia</h4>
-      <p>La coherencia perceptiva es la compatibilidad entre las señales que forman una escena.</p>
-      <p>No exige perfección. El mundo real contiene reflejos, ecos, sombras ambiguas y objetos
-      parcialmente ocultos. Una ilusión excesivamente perfecta puede resultar más sospechosa que una con
-      pequeñas irregularidades naturales.</p>
-      <p>La calidad ilusionista depende de reproducir relaciones plausibles, no de maximizar detalle
-      indiscriminadamente.</p>
-      <h4 id="cap-10">Capítulo X — Expectativa</h4>
+      reconciliar. Ver una pared y atravesarla con la mano, escuchar pasos sin detectar movimiento, o
+      sentir calor proveniente de una llama visualmente fría, obligan a la mente a revisar su modelo. Esto,
+      sin embargo, no destruye automáticamente una ilusión, porque la contradicción puede explicarse como
+      transparencia, eco, magia, enfermedad o error propio del observador. Las mentes prefieren
+      explicaciones que conserven la mayor cantidad de información previa con el menor número de
+      excepciones, de modo que si una discrepancia puede atribuirse a una causa conocida, la escena general
+      puede continuar aceptándose. Un diseño avanzado introduce explicaciones plausibles para sus propios
+      fallos, reduciendo así la probabilidad de que una contradicción aislada provoque rechazo total.</p>
+      <p>La coherencia perceptiva, en definitiva, es la compatibilidad entre las señales que forman una
+      escena, y no exige perfección. El mundo real contiene reflejos, ecos, sombras ambiguas y objetos
+      parcialmente ocultos, y una ilusión excesivamente perfecta puede resultar más sospechosa que una con
+      pequeñas irregularidades naturales. La calidad ilusionista depende de reproducir relaciones
+      plausibles, no de maximizar detalle indiscriminadamente.</p>
+      <h4 id="cap-3">Capítulo III — Expectativa, contexto y memoria</h4>
       <p>La expectativa modifica qué señales se buscan y cómo se interpretan. Una persona que espera
-      encontrar un guardia reconoce más fácilmente una silueta como guardia.</p>
-      <p>Las ilusiones eficaces suelen apoyarse en aquello que el observador ya considera posible o
-      probable.</p>
-      <p>Crear una escena completamente ajena a las expectativas requiere mayor cantidad de información y
-      coherencia para ser aceptada.</p>
-      <h4 id="cap-11">Capítulo XI — Contexto</h4>
-      <p>El mismo estímulo puede recibir interpretaciones distintas según el entorno.</p>
-      <p>Un rugido en un bosque, en una biblioteca o dentro de una jaula vacía produce hipótesis
-      diferentes.</p>
-      <p>El contexto puede ser manipulado antes de presentar la ilusión, de modo que el observador llegue
-      preparado para interpretar señales ambiguas de una manera concreta.</p>
-      <h4 id="cap-12">Capítulo XII — Memoria</h4>
-      <p>La percepción compara el presente con recuerdos. Rostros, voces, lugares y objetos conocidos son
-      reconocidos mediante patrones almacenados, no por una lista consciente de características.</p>
-      <p>Imitar a una persona exige reproducir los rasgos que la memoria del observador considera
-      distintivos, no necesariamente cada detalle anatómico.</p>
-      <p>Una ilusión puede fallar ante alguien íntimamente familiarizado con el referente y funcionar
-      perfectamente ante un desconocido.</p>
-      <h4 id="cap-13">Capítulo XIII — Reconocimiento de rostros</h4>
+      encontrar un guardia reconoce más fácilmente una silueta como guardia. Las ilusiones eficaces suelen
+      apoyarse en aquello que el observador ya considera posible o probable, mientras que crear una escena
+      completamente ajena a las expectativas requiere mayor cantidad de información y coherencia para ser
+      aceptada.</p>
+      <p>El contexto cumple una función semejante. El mismo estímulo puede recibir interpretaciones
+      distintas según el entorno; un rugido en un bosque, en una biblioteca o dentro de una jaula vacía
+      produce hipótesis diferentes. El contexto puede manipularse antes de presentar la ilusión, de modo
+      que el observador llegue preparado para interpretar señales ambiguas de una manera concreta.</p>
+      <p>La memoria interviene comparando el presente con recuerdos almacenados. Rostros, voces, lugares y
+      objetos conocidos se reconocen mediante patrones, no por una lista consciente de características.
+      Imitar a una persona exige reproducir los rasgos que la memoria del observador considera distintivos,
+      no necesariamente cada detalle anatómico, y por ello una ilusión puede fallar ante alguien
+      íntimamente familiarizado con el referente y funcionar perfectamente ante un desconocido.</p>
+      <h4 id="cap-4">Capítulo IV — Reconocimiento de identidad: rostro y voz</h4>
       <p>El rostro es una configuración especialmente sensible a proporciones, movimiento y expectativa
-      social.</p>
-      <p>Pequeños errores que pasan inadvertidos en objetos pueden resultar inquietantes en una cara. Aun
-      así, iluminación, distancia, emoción y familiaridad modifican tolerancia.</p>
-      <p>Las técnicas de suplantación avanzadas trabajan con expresión y ritmo tanto como con rasgos
+      social. Pequeños errores que pasan inadvertidos en objetos pueden resultar inquietantes en una cara,
+      aunque iluminación, distancia, emoción y familiaridad modifican cuánto margen de error se acepta.
+      Las técnicas de suplantación avanzadas trabajan con expresión y ritmo tanto como con rasgos
       estáticos.</p>
-      <h4 id="cap-14">Capítulo XIV — Voz</h4>
-      <p>Una voz contiene tono, ritmo, respiración, acento, resonancia y hábitos lingüísticos.</p>
-      <p>Reproducir únicamente el timbre suele ser insuficiente ante oyentes conocidos.</p>
-      <p>Filología Arcana y Psicología Resonántica aportan herramientas para estudiar qué componentes
-      permiten reconocer identidad vocal.</p>
-      <h4 id="cap-15">Capítulo XV — Ilusión visual</h4>
+      <p>La voz plantea un desafío comparable. Contiene tono, ritmo, respiración, acento, resonancia y
+      hábitos lingüísticos, y reproducir únicamente el timbre suele ser insuficiente ante oyentes
+      conocidos. Filología Arcana y Psicología Resonántica aportan herramientas para estudiar qué
+      componentes permiten reconocer identidad vocal.</p>
+      <h4 id="cap-5">Capítulo V — Percepción visual y espacial</h4>
       <p>Las ilusiones visuales modifican luz percibida, forma, color, profundidad, movimiento u
-      ocultación.</p>
-      <p>Pueden proyectar una apariencia sobre un objeto existente o construir una escena sin soporte
-      material correspondiente.</p>
-      <p>La segunda opción exige resolver perspectiva para múltiples observadores o aceptar que la ilusión
-      será coherente sólo desde posiciones limitadas.</p>
-      <h4 id="cap-16">Capítulo XVI — Perspectiva</h4>
-      <p>Una escena visual debe cambiar de acuerdo con la posición del observador. Un objeto que conserva el
-      mismo ángulo desde todos los lugares revela rápidamente su naturaleza artificial.</p>
-      <p>Los sistemas sencillos pueden estar vinculados a un único observador. Los avanzados calculan
-      relaciones distintas para cada punto de vista.</p>
-      <p>La dificultad aumenta con cantidad de observadores y amplitud del espacio.</p>
-      <h4 id="cap-17">Capítulo XVII — Oclusión y sombra</h4>
-      <p>Los objetos bloquean otros objetos y proyectan sombras según fuentes de luz. Estas relaciones
-      ofrecen pistas potentes sobre profundidad.</p>
-      <p>Una ilusión que ignora oclusión puede parecer transparente o fuera de escala. Una sombra incorrecta
-      puede revelar una figura que, en sí misma, es perfectamente detallada.</p>
-      <p>Los diseños eficientes priorizan relaciones espaciales antes que decoración superficial.</p>
-      <h4 id="cap-18">Capítulo XVIII — Movimiento</h4>
-      <p>El movimiento contiene información sobre masa, intención, articulación y relación con el suelo.</p>
-      <p>Una criatura ilusoria puede tener anatomía correcta y resultar falsa si acelera sin inercia, gira
-      sin redistribuir peso o mueve extremidades fuera de ritmo.</p>
-      <p>Criptozoología y Morfología Anómala ayudan a construir movimientos plausibles para especies no
-      humanoides.</p>
-      <h4 id="cap-19">Capítulo XIX — Ilusión auditiva</h4>
-      <p>El sonido requiere dirección, distancia, reverberación y relación con el entorno.</p>
-      <p>Una voz emitida dentro de una caverna debe interactuar con su acústica si pretende parecer local.
-      Un sonido sin eco puede percibirse como originado en otro lugar o directamente dentro de la mente.</p>
-      <p>El silencio artificial es también una intervención ilusionista cuando elimina señales
-      esperadas.</p>
-      <h4 id="cap-20">Capítulo XX — Olfato y gusto</h4>
-      <p>Olor y gusto poseen gran relación con memoria y emoción. Son menos utilizados por principiantes
-      porque resultan difíciles de controlar con precisión y pueden persistir más allá del momento
-      deseado.</p>
-      <p>En especies olfativas, omitir estos sentidos hace que una ilusión visual sea casi inútil.</p>
-      <p>La construcción de identidad sensorial exige conocer qué señales el observador considera
-      esenciales.</p>
-      <h4 id="cap-21">Capítulo XXI — Tacto</h4>
-      <p>El tacto es uno de los desafíos más costosos. Una ilusión táctil debe responder a contacto,
-      presión, textura y movimiento del observador.</p>
-      <p>Crear sensación de pared sin resistencia física puede engañar durante un roce y fallar cuando
-      alguien intenta apoyarse.</p>
-      <p>Algunas técnicas combinan ilusión con fuerzas reales o encantamientos para sostener coherencia.</p>
-      <h4 id="cap-22">Capítulo XXII — Propiocepción</h4>
-      <p>La propiocepción informa dónde se encuentra el cuerpo sin necesidad de verlo.</p>
-      <p>Alterarla permite hacer que una extremidad parezca desplazada, pesada, pequeña o ausente aunque
-      permanezca físicamente igual.</p>
-      <p>Las contradicciones entre visión y propiocepción pueden producir desorientación intensa y
-      náuseas.</p>
-      <h4 id="cap-23">Capítulo XXIII — Equilibrio</h4>
-      <p>El sistema de equilibrio aporta referencias sobre aceleración y orientación.</p>
-      <p>Una habitación que parece girar sin que el cuerpo perciba movimiento puede ser rechazada, mientras
-      una intervención multisensorial puede producir una experiencia de rotación convincente.</p>
-      <p>Las ilusiones vestibulares son particularmente incapacitantes y se consideran de alto riesgo
-      clínico.</p>
-      <h4 id="cap-24">Capítulo XXIV — Temperatura y dolor</h4>
-      <p>Calor, frío y dolor pueden ser simulados perceptivamente sin daño equivalente, pero el organismo
-      responde a la experiencia subjetiva.</p>
-      <p>Una sensación intensa puede provocar pánico, retirada refleja o pérdida de concentración.</p>
-      <p>La Ética de la Alteración considera que ausencia de lesión física no convierte estas técnicas en
-      inocuas.</p>
-      <h4 id="cap-25">Capítulo XXV — Ilusiones puramente mentales</h4>
-      <p>Algunas estructuras no fabrican señales externas. Modifican directamente la experiencia del
-      sujeto.</p>
-      <p>Estas ilusiones pueden permanecer coherentes incluso cuando otras personas no perciben nada, pero
-      dependen de acceso a la mente del objetivo.</p>
-      <p>Psicología Resonántica estudia sus consecuencias y resistencias.</p>
-      <h4 id="cap-26">Capítulo XXVI — Ilusiones proyectadas</h4>
-      <p>Una ilusión proyectada modifica el entorno perceptible y puede ser observada por múltiples
-      individuos.</p>
-      <p>Es más fácil de verificar externamente, pero también más difícil de mantener coherente desde
-      perspectivas diferentes.</p>
-      <p>La elección entre proyección e intervención mental depende de alcance, cantidad de observadores y
-      tolerancia al riesgo.</p>
-      <h4 id="cap-27">Capítulo XXVII — Ilusiones híbridas</h4>
-      <p>Las técnicas híbridas modifican parte del ambiente y dejan que la mente complete el resto.</p>
-      <p>Una silueta real, un sonido dirigido y una pequeña alteración de expectativa pueden resultar más
-      eficientes que construir una criatura completa.</p>
-      <p>El diseño avanzado busca qué mínimo conjunto de señales produce la interpretación deseada.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Atención</h4>
-      <p>La atención determina qué señales reciben procesamiento detallado.</p>
-      <p>Una ilusión puede funcionar desviando atención de regiones imperfectas o saturando al observador
-      con estímulos secundarios.</p>
-      <p>La distracción no es un truco separado del ilusionismo; forma parte de cómo la mente distribuye
-      sus recursos perceptivos.</p>
-      <h4 id="cap-29">Capítulo XXIX — Ceguera por inatención</h4>
-      <p>Un objeto visible puede pasar inadvertido si la atención está comprometida con otra tarea.</p>
-      <p>Esto permite ocultar sin volver invisible, siempre que el observador no tenga motivo para buscar
-      activamente el elemento.</p>
-      <p>Las técnicas de ocultación más económicas explotan esta limitación en lugar de borrar todas las
-      señales.</p>
-      <h4 id="cap-30">Capítulo XXX — Habituación</h4>
-      <p>Los estímulos constantes pierden prioridad con el tiempo. El cerebro deja de responder con la
-      misma intensidad a sonidos, olores o patrones repetidos.</p>
-      <p>Una ilusión persistente puede aprovechar habituación para volverse parte del entorno.</p>
-      <p>La estrategia falla si el estímulo cambia bruscamente o adquiere relevancia nueva.</p>
-      <h4 id="cap-31">Capítulo XXXI — Sorpresa</h4>
-      <p>La sorpresa aumenta atención y reduce temporalmente tolerancia a explicaciones complejas.</p>
-      <p>Una ilusión breve y repentina puede ser aceptada antes de que el observador tenga tiempo de
-      comparar señales.</p>
-      <p>Esto explica por qué fenómenos deficientes en examen prolongado pueden ser extraordinariamente
-      eficaces durante combate o pánico.</p>
-      <h4 id="cap-32">Capítulo XXXII — Miedo</h4>
-      <p>El miedo modifica expectativa y prioriza amenazas.</p>
-      <p>Un observador aterrorizado puede interpretar señales ambiguas como peligrosas, pero también
-      examinar con mayor intensidad aquello que teme.</p>
-      <p>El miedo facilita algunas ilusiones y destruye otras. No constituye una mejora universal de
-      credulidad.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Deseo</h4>
-      <p>Las personas también interpretan señales de acuerdo con aquello que esperan encontrar
-      favorablemente.</p>
-      <p>Una ilusión de rescate, alimento, reconocimiento o ser querido puede aprovechar deseo tanto como
-      una amenaza aprovecha miedo.</p>
-      <p>Estas técnicas generan problemas éticos especialmente graves porque utilizan vínculos afectivos
-      como parte de la construcción perceptiva.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Creencia previa</h4>
-      <p>Una creencia previa actúa como marco para interpretar estímulos.</p>
-      <p>Una comunidad convencida de que cierta casa está habitada por espíritus puede interpretar sonidos
-      ordinarios como evidencia sobrenatural; una comunidad que considera imposible tal fenómeno puede
-      buscar explicaciones alternativas.</p>
-      <p>El ilusionismo puede explotar ambos marcos si comprende qué explicación resulta más fácil de
-      aceptar.</p>
-      <h4 id="cap-35">Capítulo XXXV — Conocimiento experto</h4>
-      <p>La experiencia puede hacer a una persona más difícil de engañar en su campo y más vulnerable a
-      errores específicos fuera de él.</p>
-      <p>Un herrero detectará una herramienta cuya masa o desgaste no corresponde a su uso; un botánico
-      reconocerá una planta imposible por disposición de hojas.</p>
-      <p>Las ilusiones dirigidas deben considerar qué detalles el observador sabe evaluar.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Prueba de realidad</h4>
-      <p>Una prueba de realidad es una acción deliberada destinada a contrastar una percepción con otra
-      fuente de evidencia.</p>
-      <p>Tocar, medir, preguntar a otro observador, cambiar iluminación o revisar una señal mágica son
-      ejemplos.</p>
-      <p>Una ilusión robusta no necesita impedir todas las pruebas, pero debe sobrevivir las más
-      previsibles o desviar su interpretación.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Confirmación cruzada</h4>
-      <p>La mente aumenta confianza cuando varias fuentes independientes coinciden.</p>
-      <p>Dos observadores que describen la misma figura se validan mutuamente, incluso si ambos están
-      siendo afectados por una misma estructura.</p>
-      <p>Esto convierte las ilusiones compartidas en fenómenos socialmente más resistentes que las
-      estrictamente individuales.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Contradicción social</h4>
-      <p>Cuando un observador percibe algo que nadie más detecta, puede atribuirlo a ilusión, enfermedad,
-      sensibilidad especial o conspiración.</p>
-      <p>La respuesta depende de contexto y confianza interpersonal.</p>
-      <p>El ilusionismo puede utilizar discrepancia social deliberadamente para aislar o desacreditar a una
-      víctima.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Ilusiones compartidas</h4>
-      <p>Una ilusión compartida construye una escena compatible para varias mentes.</p>
-      <p>La dificultad aumenta porque cada observador posee posición, historia y expectativas distintas.</p>
-      <p>Los sistemas más avanzados producen un modelo común y adaptan detalles a cada sujeto sin alterar
-      relaciones principales.</p>
-      <h4 id="cap-40">Capítulo XL — Ilusiones divergentes</h4>
-      <p>Una misma estructura puede producir experiencias distintas en cada observador.</p>
-      <p>Esto ocurre cuando utiliza recuerdos, miedos, deseos o referencias personales como material.</p>
-      <p>La escena deja de ser una proyección común y se convierte en un conjunto de interpretaciones
-      individualizadas.</p>
-      <h4 id="cap-41">Capítulo XLI — Persistencia perceptiva</h4>
-      <p>Algunas ilusiones continúan influyendo después de que la estructura activa termina.</p>
-      <p>El observador puede conservar expectativas, hábitos y recuerdos formados durante la
-      experiencia.</p>
-      <p>Psicología Resonántica distingue estas secuelas de una ilusión todavía activa.</p>
-      <h4 id="cap-42">Capítulo XLII — Falsos recuerdos</h4>
-      <p>Una experiencia ilusoria puede convertirse en recuerdo verdadero de una experiencia falsa.</p>
-      <p>No es necesario modificar memoria directamente, ya que basta con que la persona haya percibido la escena
-      y luego la recuerde normalmente.</p>
-      <p>Esto complica testimonios y Criminalística Arcana, porque sinceridad no garantiza correspondencia
-      con acontecimientos físicos.</p>
-      <h4 id="cap-43">Capítulo XLIII — Ilusión y memoria alterada</h4>
-      <p>Intervenir memoria es distinto de construir percepción, aunque ambos fenómenos pueden
-      combinarse.</p>
-      <p>Una ilusión hace que algo sea experimentado en el momento. Una alteración mnésica modifica cómo se
-      conserva o recupera esa experiencia.</p>
-      <p>Confundir ambas técnicas produce errores de diagnóstico y de investigación.</p>
-      <h4 id="cap-44">Capítulo XLIV — Ilusión y encantamiento</h4>
-      <p>Una ilusión puede instalarse como encantamiento persistente sobre un objeto, lugar o criatura.</p>
-      <p>En ese caso, Teoría de Encantamientos explica cómo se mantiene; Ilusionismo Teórico, cómo produce
-      una experiencia convincente.</p>
-      <p>Una fachada ilusoria permanente debe resolver desgaste, iluminación, perspectiva y cambios del
-      entorno durante años.</p>
-      <h4 id="cap-45">Capítulo XLV — Ilusión y maldición</h4>
-      <p>Una maldición puede imponer experiencias perceptivas como consecuencia, pero la relación
-      vinculante pertenece a Maldiología.</p>
-      <p>La víctima puede ver una figura cada noche porque está maldita; la imagen misma se analiza
-      mediante teoría ilusionista.</p>
-      <p>Romper la imagen no elimina necesariamente la estructura que obliga a reproducirla.</p>
-      <h4 id="cap-46">Capítulo XLVI — Ilusión y transmutación</h4>
-      <p>Una transmutación cambia el objeto; una ilusión cambia la experiencia del objeto.</p>
-      <p>La distinción puede comprobarse mediante observadores no afectados, interacción material y
-      análisis estructural.</p>
-      <p>Las técnicas híbridas difuminan la frontera al modificar parcialmente materia y completar
-      apariencia mediante ilusión.</p>
-      <h4 id="cap-47">Capítulo XLVII — Ilusión e invisibilidad</h4>
-      <p>La invisibilidad puede lograrse evitando que una señal alcance al observador, desviando luz,
-      suprimiendo atención o sustituyendo la escena por una interpretación sin el objeto.</p>
-      <p>Estas soluciones tienen vulnerabilidades diferentes.</p>
-      <p>El término invisibilidad describe el resultado visual y no el mecanismo.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Ocultación</h4>
-      <p>Ocultar no exige necesariamente volver invisible. Puede bastar con hacer que el observador
-      clasifique el objetivo como irrelevante, ordinario o perteneciente al fondo.</p>
-      <p>Una puerta puede permanecer visible y aun así pasar inadvertida si es interpretada como parte de
-      la pared.</p>
-      <p>Este tipo de ilusión depende profundamente de expectativa y atención.</p>
-      <h4 id="cap-49">Capítulo XLIX — Disfraz</h4>
-      <p>El disfraz ilusorio superpone una interpretación sobre un cuerpo existente.</p>
-      <p>Debe responder a movimiento, iluminación, contacto y voz según profundidad deseada.</p>
-      <p>En especies polimórficas, Morfología Anómala ayuda a distinguir transformación real de apariencia
-      proyectada.</p>
-      <h4 id="cap-50">Capítulo L — Escenarios</h4>
-      <p>Las ilusiones ambientales pueden alterar habitaciones, paisajes o rutas completas.</p>
-      <p>La dificultad aumenta con tamaño, duración y número de interacciones posibles.</p>
-      <p>Los sistemas eficientes modifican elementos decisivos y permiten que arquitectura real sostenga el
-      resto.</p>
-      <h4 id="cap-51">Capítulo LI — Laberintos perceptivos</h4>
-      <p>Un laberinto ilusorio no necesita crear pasillos inexistentes. Puede alterar referencias, señales
-      de orientación y reconocimiento de lugares repetidos.</p>
-      <p>La víctima puede recorrer un espacio simple y percibir una estructura mucho más compleja.</p>
-      <p>Topología Arcana debe distinguir este fenómeno de un espacio realmente alterado.</p>
-      <h4 id="cap-52">Capítulo LII — Escala y distancia</h4>
-      <p>La percepción de tamaño depende de perspectiva, contexto y referencias conocidas.</p>
-      <p>Alterar una sola señal puede hacer que una habitación parezca mayor, una criatura más cercana o un
-      objeto más alto.</p>
-      <p>Las ilusiones de escala fallan cuando el observador interactúa con distancias físicas
-      incompatibles.</p>
-      <h4 id="cap-53">Capítulo LIII — Tiempo percibido</h4>
-      <p>La experiencia subjetiva del tiempo puede acelerarse o ralentizarse sin modificar necesariamente
-      el tiempo físico.</p>
-      <p>Atención, emoción y densidad de eventos influyen en esta percepción incluso sin magia.</p>
-      <p>Cronurgia Teórica distingue manipulación temporal real de distorsión perceptiva.</p>
-      <h4 id="cap-54">Capítulo LIV — Dolor fantasma</h4>
-      <p>Una ilusión puede producir sensación correspondiente a una lesión inexistente o a una parte
-      corporal ausente.</p>
-      <p>El fenómeno demuestra que percepción corporal no necesita una causa externa equivalente para
-      resultar intensa.</p>
-      <p>Anatomía Arcana y Psicología Resonántica participan en tratamiento cuando la experiencia
-      persiste.</p>
-      <h4 id="cap-55">Capítulo LV — Ilusiones sobre criaturas no humanoides</h4>
-      <p>Cada especie organiza percepción de manera diferente. Cantidad de ojos, espectro visual,
-      ecolocalización, percepción mágica, sensibilidad a vibraciones y estructura cognitiva alteran
-      vulnerabilidad.</p>
-      <p>Una técnica diseñada para humanoides puede fracasar por completo ante una criatura que no utiliza
-      la señal manipulada.</p>
-      <p>Criptozoología Académica aporta modelos sensoriales comparados.</p>
-      <h4 id="cap-56">Capítulo LVI — Ilusiones sobre elementales y entidades extraplanares</h4>
-      <p>Entidades cuya percepción no depende de órganos biológicos pueden interpretar relaciones que una
-      ilusión sensorial ordinaria no modifica.</p>
-      <p>Algunas detectan afinidades, autoridad, intención o continuidad material de forma directa.</p>
-      <p>Demonología, Planología y Pneumatología son necesarias para saber qué significa percibir en estos
-      seres.</p>
-      <h4 id="cap-57">Capítulo LVII — Resistencia</h4>
-      <p>Resistir una ilusión no significa poseer voluntad superior en sentido abstracto.</p>
-      <p>La resistencia puede provenir de sentidos alternativos, conocimiento, entrenamiento,
-      incompatibilidad fisiológica o capacidad para detectar contradicciones.</p>
-      <p>Las salvaguardas mentales son sólo una de varias vías.</p>
-      <h4 id="cap-58">Capítulo LVIII — Entrenamiento</h4>
-      <p>El entrenamiento aumenta hábito de realizar pruebas de realidad y reconocer patrones de
-      engaño.</p>
-      <p>No elimina vulnerabilidad. Un observador entrenado puede ser engañado mediante una técnica que
-      anticipe precisamente las pruebas que utiliza.</p>
-      <p>La defensa más fiable combina métodos y evita depender de una sola señal.</p>
-      <h4 id="cap-59">Capítulo LIX — Detectar magia</h4>
-      <p>Detectar actividad mágica puede demostrar que existe una estructura y aun así no revelar qué parte
-      de la experiencia es falsa.</p>
-      <p>En entornos donde la magia es habitual, la presencia de una firma no vuelve sospechoso cada
-      objeto.</p>
-      <p>Los ilusionistas pueden aprovechar esta ambigüedad mezclando estructuras legítimas y
-      engañosas.</p>
-      <h4 id="cap-60">Capítulo LX — Disipación</h4>
-      <p>Disipar una ilusión elimina la estructura si ésta se encuentra dentro del alcance y depende de
-      actividad que puede ser interrumpida.</p>
-      <p>No corrige automáticamente recuerdos, decisiones o consecuencias producidas mientras estuvo
-      activa.</p>
-      <p>Una ilusión incorporada a un encantamiento puede necesitar intervención sobre su anclaje en lugar
-      de una disipación breve.</p>
-      <h4 id="cap-61">Capítulo LXI — Ilusión y evidencia</h4>
-      <p>La Criminalística Arcana debe asumir que percepción y testimonio pueden ser manipulados.</p>
-      <p>Las evidencias materiales independientes adquieren especial importancia, aunque también pueden ser
-      alteradas por otras disciplinas mágicas.</p>
-      <p>Ninguna clase de prueba es infalible; la confianza surge de convergencia entre fuentes cuyo
-      mecanismo de falsificación sea distinto.</p>
-      <h4 id="cap-62">Capítulo LXII — Testimonio</h4>
-      <p>Una persona puede declarar con absoluta sinceridad algo que percibió bajo ilusión.</p>
-      <p>La detección de mentira no resuelve este problema porque no existe intención de engañar.</p>
-      <p>Los interrogatorios deben separar recuerdo subjetivo de afirmaciones sobre el mundo físico.</p>
-      <h4 id="cap-63">Capítulo LXIII — Ética</h4>
-      <p>El ilusionismo puede alterar autonomía sin causar lesión física. Inducir miedo, deseo, dolor o
-      confianza puede modificar decisiones de manera profunda.</p>
-      <p>La Ética de la Alteración considera especialmente graves las técnicas utilizadas para obtener
-      consentimiento, confesiones o relaciones bajo una realidad manipulada.</p>
-      <p>La ausencia de daño material no elimina responsabilidad.</p>
-      <h4 id="cap-64">Capítulo LXIV — Uso clínico</h4>
-      <p>Las mismas herramientas pueden emplearse terapéuticamente para exposición gradual, rehabilitación
-      motora, manejo de dolor o reconstrucción sensorial.</p>
-      <p>El objetivo clínico es permitir que el paciente recupere función, no convencerlo permanentemente
-      de una falsedad.</p>
-      <p>Los tratamientos requieren consentimiento y mecanismos claros de salida.</p>
-      <h4 id="cap-65">Capítulo LXV — Educación y simulación</h4>
-      <p>Las ilusiones permiten entrenar situaciones peligrosas sin reproducir todas sus consecuencias
-      físicas.</p>
-      <p>Pueden simular incendios, criaturas, accidentes y escenarios rituales.</p>
-      <p>Una simulación educativa debe dejar claro qué aspectos son perceptivos y cuáles responden como lo
-      haría el fenómeno real.</p>
-      <h4 id="cap-66">Capítulo LXVI — Arte</h4>
-      <p>El ilusionismo artístico no pretende necesariamente engañar sobre la existencia física de aquello
-      que muestra.</p>
-      <p>Puede crear experiencias sensoriales compartidas, arquitectura imposible o narraciones inmersivas
-      cuya naturaleza artificial es conocida por todos.</p>
-      <p>Este uso demuestra que la ilusión no depende del engaño moral; depende de construcción
+      ocultación. Pueden proyectar una apariencia sobre un objeto existente o construir una escena sin
+      soporte material correspondiente; esta segunda opción exige resolver la perspectiva para múltiples
+      observadores, o bien aceptar que la ilusión será coherente sólo desde posiciones limitadas.</p>
+      <p>La perspectiva es una de las pruebas más exigentes. Una escena visual debe cambiar de acuerdo con
+      la posición del observador, y un objeto que conserva el mismo ángulo desde todos los lugares revela
+      rápidamente su naturaleza artificial. Los sistemas sencillos pueden estar vinculados a un único
+      observador; los avanzados calculan relaciones distintas para cada punto de vista, y la dificultad
+      aumenta con la cantidad de observadores y la amplitud del espacio.</p>
+      <p>Oclusión y sombra ofrecen pistas igualmente potentes sobre profundidad. Los objetos bloquean otros
+      objetos y proyectan sombras según las fuentes de luz; una ilusión que ignora la oclusión puede
+      parecer transparente o fuera de escala, y una sombra incorrecta puede revelar una figura que, en sí
+      misma, es perfectamente detallada. Los diseños eficientes priorizan estas relaciones espaciales antes
+      que la decoración superficial.</p>
+      <p>El movimiento añade una capa adicional de información sobre masa, intención, articulación y
+      relación con el suelo. Una criatura ilusoria puede tener anatomía correcta y resultar falsa si
+      acelera sin inercia, gira sin redistribuir peso o mueve extremidades fuera de ritmo. Criptozoología y
+      Morfología Anómala ayudan a construir movimientos plausibles para especies no humanoides.</p>
+      <h4 id="cap-6">Capítulo VI — Percepción auditiva, olfativa y gustativa</h4>
+      <p>El sonido requiere dirección, distancia, reverberación y relación con el entorno. Una voz emitida
+      dentro de una caverna debe interactuar con su acústica si pretende parecer local, y un sonido sin eco
+      puede percibirse como originado en otro lugar o directamente dentro de la mente. El silencio
+      artificial es también una intervención ilusionista, cuando elimina señales que el observador
+      esperaba encontrar.</p>
+      <p>Olor y gusto poseen una relación estrecha con memoria y emoción. Los principiantes los usan poco
+      porque resultan difíciles de controlar con precisión y pueden persistir más allá del momento deseado,
+      pero en especies olfativas, omitirlos hace que una ilusión visual resulte casi inútil. La
+      construcción de una identidad sensorial completa exige conocer qué señales considera esenciales cada
+      observador.</p>
+      <h4 id="cap-7">Capítulo VII — Percepción corporal: tacto, propiocepción, equilibrio y dolor</h4>
+      <p>El tacto es uno de los desafíos más costosos de reproducir. Una ilusión táctil debe responder a
+      contacto, presión, textura y movimiento del observador; crear la sensación de una pared sin
+      resistencia física puede engañar durante un roce y fallar en cuanto alguien intenta apoyarse. Algunas
+      técnicas combinan la ilusión con fuerzas reales o encantamientos para sostener esa coherencia.</p>
+      <p>La propiocepción, que informa dónde se encuentra el cuerpo sin necesidad de verlo, puede alterarse
+      para hacer que una extremidad parezca desplazada, pesada, pequeña o ausente aunque permanezca
+      físicamente igual. Las contradicciones entre visión y propiocepción pueden producir desorientación
+      intensa y náuseas.</p>
+      <p>El sistema de equilibrio aporta referencias sobre aceleración y orientación. Una habitación que
+      parece girar sin que el cuerpo perciba movimiento suele ser rechazada, mientras que una intervención
+      multisensorial puede producir una experiencia de rotación convincente; por su intensidad, las
+      ilusiones vestibulares se consideran de alto riesgo clínico.</p>
+      <p>Calor, frío y dolor pueden simularse perceptivamente sin daño equivalente, aunque el organismo
+      responde igualmente a la experiencia subjetiva. Una sensación intensa puede provocar pánico, retirada
+      refleja o pérdida de concentración, y la Ética de la Alteración sostiene que la ausencia de lesión
+      física no convierte estas técnicas en inocuas.</p>
+      <p>El caso más extremo es el dolor fantasma, capaz de producir una sensación correspondiente a una
+      lesión inexistente o a una parte corporal ausente. El fenómeno demuestra que la percepción corporal
+      no necesita una causa externa equivalente para resultar intensa. Anatomía Arcana y Psicología
+      Resonántica participan en el tratamiento cuando la experiencia persiste.</p>
+      <h4 id="cap-8">Capítulo VIII — Mecanismos de la ilusión: mental, proyectada e híbrida</h4>
+      <p>El Ilusionismo Teórico distingue tres mecanismos según dónde interviene la estructura. La ilusión
+      mental no fabrica señales externas; modifica directamente la experiencia del sujeto, y puede
+      permanecer coherente incluso cuando otras personas no perciben nada, aunque depende de tener acceso a
+      la mente del objetivo. Psicología Resonántica estudia sus consecuencias y resistencias.</p>
+      <p>La ilusión proyectada, en cambio, modifica el entorno perceptible y puede ser observada por
+      múltiples individuos. Resulta más fácil de verificar externamente, pero también más difícil de
+      mantener coherente desde perspectivas diferentes. La elección entre proyección e intervención mental
+      depende del alcance buscado, de la cantidad de observadores y de cuánto riesgo esté dispuesto a
+      asumir el ilusionista.</p>
+      <p>Las técnicas híbridas combinan ambos enfoques, modificando parte del ambiente y dejando que la
+      mente complete el resto. Una silueta real, un sonido dirigido y una pequeña alteración de expectativa
+      pueden resultar más eficientes que construir una criatura completa. El diseño avanzado busca el
+      mínimo conjunto de señales capaz de producir la interpretación deseada.</p>
+      <h4 id="cap-9">Capítulo IX — Atención y sus límites</h4>
+      <p>La atención determina qué señales reciben procesamiento detallado. Una ilusión puede funcionar
+      desviando la atención de sus regiones imperfectas o saturando al observador con estímulos
+      secundarios; la distracción no es un truco separado del ilusionismo, sino parte de cómo la mente
+      distribuye sus recursos perceptivos.</p>
+      <p>Cuando la atención está comprometida con otra tarea, un objeto visible puede pasar inadvertido por
+      completo. Esto permite ocultar sin volver invisible, siempre que el observador no tenga motivo para
+      buscar activamente el elemento, y las técnicas de ocultación más económicas explotan esta limitación
+      en lugar de borrar todas las señales.</p>
+      <p>Los estímulos constantes, por su parte, pierden prioridad con el tiempo, y el cerebro reduce su
+      respuesta a sonidos, olores o patrones repetidos. Una ilusión persistente puede aprovechar esta
+      habituación para volverse parte del entorno, aunque la estrategia falla si el estímulo cambia
+      bruscamente o adquiere relevancia nueva.</p>
+      <h4 id="cap-10">Capítulo X — Emoción y vulnerabilidad perceptiva</h4>
+      <p>Los estados emocionales modulan qué se percibe y con cuánta facilidad se acepta una interpretación
+      falsa. La sorpresa aumenta la atención y reduce temporalmente la capacidad de evaluar explicaciones
+      complejas, de modo que una ilusión breve y repentina puede ser aceptada antes de que el observador
+      tenga tiempo de comparar señales. Esto explica por qué fenómenos deficientes ante un examen
+      prolongado pueden resultar extraordinariamente eficaces durante un combate o un momento de pánico.</p>
+      <p>El miedo modifica la expectativa y prioriza las amenazas. Un observador aterrorizado puede
+      interpretar señales ambiguas como peligrosas, pero también puede examinar con mayor intensidad
+      aquello que teme, de manera que el miedo facilita algunas ilusiones y destruye otras sin constituir
+      una mejora universal de la credulidad.</p>
+      <p>El deseo opera de forma simétrica. Las personas interpretan señales de acuerdo con aquello que
+      esperan encontrar favorablemente, y una ilusión de rescate, alimento, reconocimiento o un ser querido
+      puede aprovechar el deseo tanto como una amenaza aprovecha el miedo. Estas técnicas generan problemas
+      éticos especialmente graves, porque utilizan vínculos afectivos como parte de la construcción
       perceptiva.</p>
-      <h4 id="cap-67">Capítulo LXVII — El problema de lo real</h4>
+      <h4 id="cap-11">Capítulo XI — Creencia previa y conocimiento experto</h4>
+      <p>Una creencia previa actúa como marco para interpretar estímulos. Una comunidad convencida de que
+      cierta casa está habitada por espíritus puede interpretar sonidos ordinarios como evidencia
+      sobrenatural, mientras que una comunidad que considera imposible tal fenómeno buscará explicaciones
+      alternativas para el mismo sonido. El ilusionismo puede explotar cualquiera de los dos marcos si
+      comprende qué explicación resulta más fácil de aceptar.</p>
+      <p>El conocimiento experto produce un efecto más específico. Puede hacer a una persona más difícil de
+      engañar dentro de su campo y, al mismo tiempo, más vulnerable a errores particulares fuera de él. Un
+      herrero detectará una herramienta cuya masa o desgaste no corresponde a su uso; un botánico
+      reconocerá una planta imposible por la disposición de sus hojas. Las ilusiones dirigidas deben
+      considerar qué detalles sabe evaluar realmente cada observador.</p>
+      <h4 id="cap-12">Capítulo XII — Verificación y confianza</h4>
+      <p>Una prueba de realidad es una acción deliberada destinada a contrastar una percepción con otra
+      fuente de evidencia. Tocar, medir, preguntar a otro observador, cambiar la iluminación o revisar una
+      señal mágica son ejemplos habituales. Una ilusión robusta no necesita impedir todas las pruebas, pero
+      debe sobrevivir a las más previsibles o desviar su interpretación.</p>
+      <p>La confianza en una percepción aumenta cuando varias fuentes independientes coinciden. Dos
+      observadores que describen la misma figura se validan mutuamente, incluso si ambos están siendo
+      afectados por idéntica estructura ilusoria, lo que convierte a las ilusiones compartidas en fenómenos
+      socialmente más resistentes que las estrictamente individuales.</p>
+      <p>La situación inversa también es relevante. Cuando un observador percibe algo que nadie más
+      detecta, puede atribuirlo a ilusión, enfermedad, sensibilidad especial o conspiración, y la respuesta
+      depende del contexto y de la confianza interpersonal. El ilusionismo puede utilizar esta discrepancia
+      social de manera deliberada para aislar o desacreditar a una víctima.</p>
+      <h4 id="cap-13">Capítulo XIII — Ilusiones compartidas y divergentes</h4>
+      <p>Una ilusión compartida construye una escena compatible para varias mentes a la vez. La dificultad
+      aumenta porque cada observador posee posición, historia y expectativas distintas; los sistemas más
+      avanzados resuelven esto produciendo un modelo común y adaptando detalles a cada sujeto sin alterar
+      las relaciones principales de la escena.</p>
+      <p>Existe también la posibilidad opuesta: que una estructura produzca experiencias distintas en cada
+      observador. Esto ocurre cuando utiliza recuerdos, miedos, deseos o referencias personales como
+      material de construcción. En ese caso la escena deja de ser una proyección común y se convierte en un
+      conjunto de interpretaciones individualizadas.</p>
+      <h4 id="cap-14">Capítulo XIV — Persistencia, falsos recuerdos y memoria alterada</h4>
+      <p>Algunas ilusiones continúan influyendo después de que la estructura activa termina. El observador
+      puede conservar expectativas, hábitos y recuerdos formados durante la experiencia. Psicología
+      Resonántica distingue estas secuelas de una ilusión todavía activa.</p>
+      <p>Una de esas secuelas es el falso recuerdo. Una experiencia ilusoria puede convertirse en recuerdo
+      verdadero de una experiencia falsa sin que sea necesario modificar la memoria de forma directa, ya
+      que basta con que la persona haya percibido la escena y luego la recuerde con normalidad. Esto
+      complica los testimonios y la Criminalística Arcana, porque la sinceridad de un declarante no
+      garantiza correspondencia con los acontecimientos físicos.</p>
+      <p>Conviene, sin embargo, distinguir esto de la alteración mnésica propiamente dicha. Intervenir la
+      memoria es distinto de construir percepción, aunque ambos fenómenos pueden combinarse: una ilusión
+      hace que algo sea experimentado en el momento, mientras que una alteración mnésica modifica cómo se
+      conserva o se recupera esa experiencia. Confundir ambas técnicas produce errores de diagnóstico y de
+      investigación.</p>
+      <h4 id="cap-15">Capítulo XV — Ilusión, encantamiento, maldición y transmutación</h4>
+      <p>El Ilusionismo Teórico limita con varias disciplinas vecinas, y conviene precisar dónde termina
+      cada una. Una ilusión puede instalarse como encantamiento persistente sobre un objeto, lugar o
+      criatura; en ese caso, Teoría de Encantamientos explica cómo se mantiene, e Ilusionismo Teórico
+      explica cómo produce una experiencia convincente. Una fachada ilusoria permanente debe resolver
+      desgaste, iluminación, perspectiva y cambios del entorno a lo largo de los años.</p>
+      <p>Una maldición puede imponer experiencias perceptivas como consecuencia, aunque la relación
+      vinculante pertenece a Maldiología. La víctima puede ver una figura cada noche porque está maldita,
+      pero la imagen misma se analiza mediante teoría ilusionista, y romper la imagen no elimina
+      necesariamente la estructura que obliga a reproducirla.</p>
+      <p>Frente a la transmutación, la distinción es de fondo: una transmutación cambia el objeto, mientras
+      que una ilusión cambia la experiencia del objeto. Esta diferencia puede comprobarse mediante
+      observadores no afectados, interacción material y análisis estructural, aunque las técnicas híbridas
+      difuminan la frontera al modificar parcialmente la materia y completar la apariencia mediante
+      ilusión.</p>
+      <h4 id="cap-16">Capítulo XVI — Invisibilidad, ocultación y disfraz</h4>
+      <p>La invisibilidad puede lograrse de varias maneras: evitando que una señal alcance al observador,
+      desviando la luz, suprimiendo la atención o sustituyendo la escena por una interpretación que
+      prescinde del objeto. Estas soluciones tienen vulnerabilidades diferentes entre sí, y conviene
+      recordar que el término invisibilidad describe el resultado visual, no el mecanismo que lo produce.</p>
+      <p>Ocultar no exige necesariamente volver invisible. Puede bastar con hacer que el observador
+      clasifique el objetivo como irrelevante, ordinario o perteneciente al fondo; una puerta puede
+      permanecer completamente visible y aun así pasar inadvertida si se interpreta como parte de la pared.
+      Este tipo de ilusión depende de manera profunda de la expectativa y la atención.</p>
+      <p>El disfraz ilusorio, por su parte, superpone una interpretación sobre un cuerpo existente y debe
+      responder a movimiento, iluminación, contacto y voz según la profundidad deseada. En especies
+      polimórficas, Morfología Anómala ayuda a distinguir una transformación real de una apariencia
+      meramente proyectada.</p>
+      <h4 id="cap-17">Capítulo XVII — Ilusiones ambientales: escenarios, escala y tiempo</h4>
+      <p>Las ilusiones ambientales pueden alterar habitaciones, paisajes o rutas completas, y su dificultad
+      aumenta con el tamaño, la duración y el número de interacciones posibles. Los sistemas eficientes no
+      reconstruyen todo el entorno, sino que modifican los elementos decisivos y permiten que la
+      arquitectura real sostenga el resto.</p>
+      <p>El laberinto perceptivo es un caso particular de esta lógica. No necesita crear pasillos
+      inexistentes; puede alterar referencias, señales de orientación y el reconocimiento de lugares
+      repetidos, de modo que la víctima recorra un espacio simple y perciba una estructura mucho más
+      compleja. Topología Arcana debe distinguir este fenómeno de un espacio realmente alterado.</p>
+      <p>La percepción de tamaño depende de perspectiva, contexto y referencias conocidas, por lo que
+      alterar una sola señal puede hacer que una habitación parezca mayor, una criatura más cercana o un
+      objeto más alto. Estas ilusiones de escala fallan cuando el observador interactúa con distancias
+      físicas incompatibles.</p>
+      <p>Algo semejante ocurre con el tiempo. La experiencia subjetiva puede acelerarse o ralentizarse sin
+      modificar necesariamente el tiempo físico, y atención, emoción y densidad de eventos influyen en esta
+      percepción incluso sin magia de por medio. Cronurgia Teórica distingue la manipulación temporal real
+      de la simple distorsión perceptiva.</p>
+      <h4 id="cap-18">Capítulo XVIII — Percepción no humana: criaturas y entidades extraplanares</h4>
+      <p>Cada especie organiza la percepción de manera diferente. Cantidad de ojos, espectro visual,
+      ecolocalización, percepción mágica, sensibilidad a vibraciones y estructura cognitiva alteran la
+      vulnerabilidad de cada criatura ante una ilusión determinada, y una técnica diseñada para humanoides
+      puede fracasar por completo ante una criatura que no utiliza la señal manipulada. Criptozoología
+      Académica aporta modelos sensoriales comparados para anticipar estas diferencias.</p>
+      <p>El caso más extremo lo ofrecen las entidades cuya percepción no depende de órganos biológicos.
+      Pueden interpretar relaciones que una ilusión sensorial ordinaria no modifica en absoluto, detectando
+      afinidades, autoridad, intención o continuidad material de forma directa. Demonología, Planología y
+      Pneumatología resultan necesarias para comprender qué significa percibir en estos seres.</p>
+      <h4 id="cap-19">Capítulo XIX — Resistencia, detección y disipación</h4>
+      <p>Resistir una ilusión no significa poseer voluntad superior en sentido abstracto. La resistencia
+      puede provenir de sentidos alternativos, conocimiento, entrenamiento, incompatibilidad fisiológica o
+      capacidad para detectar contradicciones; las salvaguardas mentales son sólo una de varias vías
+      posibles.</p>
+      <p>El entrenamiento aumenta el hábito de realizar pruebas de realidad y reconocer patrones de
+      engaño, pero no elimina la vulnerabilidad: un observador entrenado puede ser engañado mediante una
+      técnica que anticipe las pruebas que suele utilizar. Por eso la defensa más fiable combina varios
+      métodos y evita depender de una sola señal.</p>
+      <p>Detectar actividad mágica puede demostrar que existe una estructura y, aun así, no revelar qué
+      parte de la experiencia es falsa. En entornos donde la magia es habitual, la presencia de una firma
+      no vuelve sospechoso a cada objeto, y los ilusionistas pueden aprovechar esta ambigüedad mezclando
+      estructuras legítimas y engañosas.</p>
+      <p>Disipar una ilusión elimina la estructura si ésta se encuentra dentro del alcance y depende de una
+      actividad que puede interrumpirse, pero no corrige automáticamente recuerdos, decisiones o
+      consecuencias producidas mientras estuvo activa. Una ilusión incorporada a un encantamiento puede
+      necesitar intervención directa sobre su anclaje en lugar de una disipación breve.</p>
+      <h4 id="cap-20">Capítulo XX — Ilusión, evidencia y testimonio</h4>
+      <p>La Criminalística Arcana debe partir de la base de que percepción y testimonio pueden ser
+      manipulados. Las evidencias materiales independientes adquieren por ello una importancia especial,
+      aunque también pueden ser alteradas por otras disciplinas mágicas; ningún tipo de prueba resulta
+      infalible por sí solo, y la confianza surge de la convergencia entre fuentes cuyo mecanismo de
+      falsificación sea distinto.</p>
+      <p>Esto se agrava porque una persona puede declarar con absoluta sinceridad algo que percibió bajo
+      ilusión. La detección de mentira no resuelve este problema, ya que no existe intención de engañar por
+      parte del declarante. Los interrogatorios deben separar, en consecuencia, el recuerdo subjetivo de
+      las afirmaciones sobre el mundo físico.</p>
+      <h4 id="cap-21">Capítulo XXI — Ética y aplicaciones: clínica, educación y arte</h4>
+      <p>El ilusionismo puede alterar la autonomía de una persona sin causar lesión física. Inducir miedo,
+      deseo, dolor o confianza puede modificar decisiones de manera profunda, y la Ética de la Alteración
+      considera especialmente graves las técnicas utilizadas para obtener consentimiento, confesiones o
+      relaciones bajo una realidad manipulada. La ausencia de daño material no elimina la responsabilidad
+      de quien la emplea.</p>
+      <p>Las mismas herramientas, sin embargo, pueden emplearse con fines terapéuticos: exposición gradual,
+      rehabilitación motora, manejo de dolor o reconstrucción sensorial. El objetivo clínico es permitir
+      que el paciente recupere función, no convencerlo permanentemente de una falsedad, por lo que estos
+      tratamientos requieren consentimiento y mecanismos claros de salida.</p>
+      <p>En el ámbito educativo, las ilusiones permiten entrenar situaciones peligrosas sin reproducir
+      todas sus consecuencias físicas, simulando incendios, criaturas, accidentes o escenarios rituales.
+      Una simulación educativa debe dejar claro qué aspectos son perceptivos y cuáles responden como lo
+      haría el fenómeno real.</p>
+      <p>El uso artístico, por último, no pretende necesariamente engañar sobre la existencia física de
+      aquello que muestra. Puede crear experiencias sensoriales compartidas, arquitectura imposible o
+      narraciones inmersivas cuya naturaleza artificial es conocida por todos, lo que demuestra que la
+      ilusión no depende del engaño moral, sino de la construcción perceptiva en sí misma.</p>
+      <h4 id="cap-22">Capítulo XXII — El problema de lo real y sus criterios</h4>
       <p>La mente no posee acceso directo a una realidad sin mediación. Decide qué considera real
-      utilizando consistencia, repetición, interacción y acuerdo entre fuentes.</p>
-      <p>El ilusionismo explota esos mismos criterios. Una experiencia suficientemente coherente puede ser
-      aceptada aunque su causa no corresponda a los objetos percibidos.</p>
-      <p>La disciplina no concluye que nada sea real. Concluye que la certeza perceptiva es una inferencia
-      y, por tanto, puede ser manipulada.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Criterios de realidad</h4>
-      <p>Los observadores suelen confiar en estabilidad temporal, confirmación sensorial, posibilidad de
-      interacción, continuidad causal y acuerdo con otras personas.</p>
-      <p>Ningún criterio aislado es infalible. Una ilusión compartida puede superar acuerdo social; una
-      ilusión táctil, interacción; un encantamiento persistente, estabilidad temporal.</p>
-      <p>La mejor defensa es la convergencia entre criterios independientes.</p>
-      <h4 id="cap-69">Capítulo LXIX — La paradoja de la ilusión perfecta</h4>
-      <p>Si una ilusión reprodujera todas las señales relevantes, respondiera a toda interacción y se
-      mantuviera indefinidamente, distinguirla de una alteración real se volvería operacionalmente
-      difícil.</p>
-      <p>La pregunta entonces deja de ser si parece real y pasa a ser qué estructura causal sostiene la
-      experiencia.</p>
-      <p>Esta paradoja conecta Ilusionismo Teórico con Metafísica Arcana y Materia y Transmutación.</p>
-      <h4 id="cap-70">Capítulo LXX — Relación con otras disciplinas</h4>
+      utilizando consistencia, repetición, interacción y acuerdo entre fuentes. El ilusionismo explota esos
+      mismos criterios, ya que una experiencia suficientemente coherente puede ser aceptada aunque su causa
+      no corresponda a los objetos percibidos. La disciplina no concluye que nada sea real, sino que la
+      certeza perceptiva es una inferencia y, por tanto, puede ser manipulada.</p>
+      <p>Los observadores suelen confiar en la estabilidad temporal, la confirmación sensorial, la
+      posibilidad de interacción, la continuidad causal y el acuerdo con otras personas, pero ningún
+      criterio aislado resulta infalible. Una ilusión compartida puede superar el acuerdo social; una
+      ilusión táctil, la interacción; un encantamiento persistente, la estabilidad temporal. La mejor
+      defensa sigue siendo la convergencia entre criterios independientes.</p>
+      <p>Este razonamiento conduce a una paradoja. Si una ilusión reprodujera todas las señales relevantes,
+      respondiera a toda interacción y se mantuviera indefinidamente, distinguirla de una alteración real
+      se volvería operacionalmente difícil. La pregunta entonces deja de ser si algo parece real y pasa a
+      ser qué estructura causal sostiene la experiencia. Esta paradoja conecta al Ilusionismo Teórico con
+      Metafísica Arcana y con Materia y Transmutación.</p>
+      <h4 id="cap-23">Capítulo XXIII — Relación con otras disciplinas</h4>
       <p>Ilusionismo Teórico trabaja con Psicología Resonántica, Semiótica Mágica, Filología Arcana, Teoría
       de Encantamientos, Morfología Anómala y Criminalística Arcana.</p>
       <p>Anatomía Arcana y Criptozoología aportan modelos sensoriales; Topología y Cronurgia ayudan a
@@ -18214,23 +18070,19 @@ window.ENTRIES = [
       <p>La disciplina ocupa una frontera particular, y estudia cómo una estructura mágica modifica aquello
       que una mente cree estar observando sin exigir que el mundo observado haya cambiado de la misma
       manera.</p>
-      <h4 id="cap-71">Capítulo LXXI — El error del detalle</h4>
-      <p>Los estudiantes suelen creer que una ilusión mejora al añadir detalle. En realidad, cada detalle
-      nuevo crea relaciones adicionales que deben mantenerse coherentes.</p>
-      <p>Una textura perfecta con una sombra imposible puede ser peor que una silueta sencilla que el
-      contexto completa correctamente.</p>
-      <p>El diseño avanzado busca el mínimo de información necesario para obtener una interpretación
-      estable.</p>
-      <h4 id="cap-72">Capítulo LXXII — El error de engañar todos los sentidos</h4>
-      <p>Engañar simultáneamente todos los sentidos es costoso y muchas veces innecesario.</p>
-      <p>La estrategia correcta depende de qué señales usará el observador para tomar su decisión.</p>
-      <p>Una ilusión destinada a desviar a un perseguidor durante tres segundos requiere soluciones
+      <h4 id="cap-24">Capítulo XXIV — Principios de diseño ilusionista</h4>
+      <p>Dos errores recurrentes afectan a quienes se inician en el diseño ilusionista. El primero es creer
+      que una ilusión mejora simplemente al añadir detalle. En realidad, cada detalle nuevo crea relaciones
+      adicionales que deben mantenerse coherentes, y una textura perfecta acompañada de una sombra
+      imposible puede resultar peor que una silueta sencilla que el contexto completa correctamente. El
+      diseño avanzado busca el mínimo de información necesario para obtener una interpretación estable.</p>
+      <p>El segundo error es intentar engañar simultáneamente todos los sentidos, algo costoso y muchas
+      veces innecesario. La estrategia correcta depende de qué señales usará el observador para tomar su
+      decisión: una ilusión destinada a desviar a un perseguidor durante tres segundos requiere soluciones
       distintas de una identidad falsa destinada a convivir durante años.</p>
-      <h4 id="cap-73">Capítulo LXXIII — La pregunta central</h4>
-      <p>Todo diseño ilusionista debería comenzar preguntando qué conclusión necesita producir en la mente
-      del observador.</p>
-      <p>Sólo después debe decidir qué señales son necesarias para sostenerla.</p>
-      <p>Este orden evita confundir la fabricación de estímulos con el objetivo real de la disciplina.</p>
+      <p>Por eso todo diseño ilusionista debería comenzar preguntando qué conclusión necesita producir en
+      la mente del observador, y sólo después decidir qué señales son necesarias para sostenerla. Este
+      orden evita confundir la fabricación de estímulos con el objetivo real de la disciplina.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>El Ilusionismo Teórico estudia la relación entre estímulo, interpretación y realidad percibida. Su
       campo abarca sentidos individuales, integración multisensorial, memoria, atención, expectativa,
