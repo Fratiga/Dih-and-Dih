@@ -9652,88 +9652,34 @@ window.ENTRIES = [
       Humanidades Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de la disciplina</a>
-        <a href="#cap-2">II. El problema de traducir el pasado</a>
-        <a href="#cap-3">III. Equivalencia funcional</a>
-        <a href="#cap-4">IV. Equivalencia conceptual</a>
-        <a href="#cap-5">V. Convergencia independiente</a>
-        <a href="#cap-6">VI. Difusión</a>
-        <a href="#cap-7">VII. Redescubrimiento</a>
-        <a href="#cap-8">VIII. Tradición oral</a>
-        <a href="#cap-9">IX. La escritura y la estabilización</a>
-        <a href="#cap-10">X. El vocabulario como teoría</a>
-        <a href="#cap-11">XI. La magia como oficio</a>
-        <a href="#cap-12">XII. La magia como religión</a>
-        <a href="#cap-13">XIII. La magia como filosofía natural</a>
-        <a href="#cap-14">XIV. La magia como derecho y costumbre</a>
-        <a href="#cap-15">XV. Primeros estudios de permanencia</a>
-        <a href="#cap-16">XVI. Los primeros cierres rituales</a>
-        <a href="#cap-17">XVII. Geometría antes de la geometría</a>
-        <a href="#cap-18">XVIII. Nombres y referencias</a>
-        <a href="#cap-19">XIX. El problema del cuerpo</a>
-        <a href="#cap-20">XX. Continuidad Orgánica en perspectiva histórica</a>
-        <a href="#cap-21">XXI. Muerte y continuidad</a>
-        <a href="#cap-22">XXII. Alma, aliento y sombra</a>
-        <a href="#cap-23">XXIII. Enfermedad mágica</a>
-        <a href="#cap-24">XXIV. Cuarentenas preacadémicas</a>
-        <a href="#cap-25">XXV. Maldiciones y obligación</a>
-        <a href="#cap-26">XXVI. La persistencia de los nombres</a>
-        <a href="#cap-27">XXVII. Runas y alfabetos rituales</a>
-        <a href="#cap-28">XXVIII. Música, ritmo y resonancia</a>
-        <a href="#cap-29">XXIX. Los bardos antes de la academia</a>
-        <a href="#cap-30">XXX. Naturgia y cosmologías vivas</a>
-        <a href="#cap-31">XXXI. Endomancia antes de su nombre</a>
-        <a href="#cap-32">XXXII. Pactos y diplomacia sobrenatural</a>
-        <a href="#cap-33">XXXIII. Teurgia y autoridad</a>
-        <a href="#cap-34">XXXIV. Elementos y clasificación</a>
-        <a href="#cap-35">XXXV. Los linajes elementales</a>
-        <a href="#cap-36">XXXVI. Biologización y mitología</a>
-        <a href="#cap-37">XXXVII. Alquimia y las tríadas</a>
-        <a href="#cap-38">XXXVIII. Materia y transformación</a>
-        <a href="#cap-39">XXXIX. La observación del cielo</a>
-        <a href="#cap-40">XL. Adivinación y registro</a>
-        <a href="#cap-41">XLI. Tarotismos y sistemas de selección</a>
-        <a href="#cap-42">XLII. Ilusión y teatro</a>
-        <a href="#cap-43">XLIII. Epistemologías antiguas</a>
-        <a href="#cap-44">XLIV. La autoridad del maestro</a>
-        <a href="#cap-45">XLV. Los primeros colegios</a>
-        <a href="#cap-46">XLVI. El nacimiento de la comparación</a>
-        <a href="#cap-47">XLVII. Traducciones imperfectas</a>
-        <a href="#cap-48">XLVIII. El error del precursor</a>
-        <a href="#cap-49">XLIX. El error de la línea recta</a>
-        <a href="#cap-50">L. Tecnologías sin teoría correcta</a>
-        <a href="#cap-51">LI. Teorías correctas sin tecnología</a>
-        <a href="#cap-52">LII. Guerra y aceleración</a>
-        <a href="#cap-53">LIII. Catástrofes como reformas</a>
-        <a href="#cap-54">LIV. La Fractura Continental</a>
-        <a href="#cap-55">LV. Después de la Fractura</a>
-        <a href="#cap-56">LVI. Epidemias y medicina</a>
-        <a href="#cap-57">LVII. La Peste Gris como problema histórico</a>
-        <a href="#cap-58">LVIII. Criminalística y tribunales</a>
-        <a href="#cap-59">LIX. El descubrimiento del error mágico</a>
-        <a href="#cap-60">LX. La profesionalización</a>
-        <a href="#cap-61">LXI. Dolbred y la síntesis</a>
-        <a href="#cap-62">LXII. La clasificación dolbriana</a>
-        <a href="#cap-63">LXIII. Controversias de nomenclatura</a>
-        <a href="#cap-64">LXIV. Quién recibe crédito</a>
-        <a href="#cap-65">LXV. Conocimiento apropiado</a>
-        <a href="#cap-66">LXVI. Pérdida documental</a>
-        <a href="#cap-67">LXVII. Falsificaciones históricas</a>
-        <a href="#cap-68">LXVIII. Anacronismo</a>
-        <a href="#cap-69">LXIX. Comparación controlada</a>
-        <a href="#cap-70">LXX. Casos de traducción exitosa</a>
-        <a href="#cap-71">LXXI. Casos de traducción fallida</a>
-        <a href="#cap-72">LXXII. Instituciones rivales</a>
-        <a href="#cap-73">LXXIII. La historia como laboratorio</a>
-        <a href="#cap-74">LXXIV. La utilidad de los errores</a>
-        <a href="#cap-75">LXXV. La utilidad de los mitos</a>
-        <a href="#cap-76">LXXVI. Historia y Epistemología</a>
-        <a href="#cap-77">LXXVII. Historia y regulación</a>
-        <a href="#cap-78">LXXVIII. Historia y ética</a>
-        <a href="#cap-79">LXXIX. Historia y poder</a>
-        <a href="#cap-80">LXXX. El presente como historia futura</a>
-        <a href="#cap-81">LXXXI. La pregunta comparativa</a>
-        <a href="#cap-82">LXXXII. La pregunta histórica</a>
+        <a href="#cap-1">I. Objeto de la disciplina y el problema de traducir el pasado</a>
+        <a href="#cap-2">II. Formas de semejanza histórica: equivalencia, convergencia, difusión y redescubrimiento</a>
+        <a href="#cap-3">III. Transmisión y fijación del conocimiento: oralidad, escritura y vocabulario</a>
+        <a href="#cap-4">IV. Marcos históricos de la práctica mágica: oficio, religión, filosofía natural y derecho</a>
+        <a href="#cap-5">V. Precursores rituales tempranos: permanencia, clausura y geometría</a>
+        <a href="#cap-6">VI. Cuerpo, nombre y continuidad: antecedentes de la Continuidad Orgánica</a>
+        <a href="#cap-7">VII. Enfermedad, cuarentena y maldición en las sociedades antiguas</a>
+        <a href="#cap-8">VIII. Nombres verdaderos y escrituras rituales</a>
+        <a href="#cap-9">IX. Música, resonancia y la tradición bárdica</a>
+        <a href="#cap-10">X. Naturgia, endomancia, pactos y teurgia: otras genealogías de la práctica</a>
+        <a href="#cap-11">XI. Elementos, linajes dracónicos y mitología biológica</a>
+        <a href="#cap-12">XII. Alquimia, tríadas y teorías de la transmutación</a>
+        <a href="#cap-13">XIII. Astronomía, adivinación y sistemas de selección simbólica</a>
+        <a href="#cap-14">XIV. Ilusión, teatro y los criterios antiguos para distinguir la verdad</a>
+        <a href="#cap-15">XV. La autoridad del maestro, los primeros colegios y el nacimiento de la comparación</a>
+        <a href="#cap-16">XVI. Errores historiográficos: traducciones imperfectas, precursores y progreso lineal</a>
+        <a href="#cap-17">XVII. Tecnología sin teoría y teoría sin tecnología</a>
+        <a href="#cap-18">XVIII. Guerra y catástrofe como motores de reforma</a>
+        <a href="#cap-19">XIX. La Fractura Continental y sus consecuencias</a>
+        <a href="#cap-20">XX. Epidemias, medicina y la Peste Gris</a>
+        <a href="#cap-21">XXI. Tribunales, el error mágico y la profesionalización</a>
+        <a href="#cap-22">XXII. Dolbred: síntesis, clasificación e instituciones rivales</a>
+        <a href="#cap-23">XXIII. Nomenclatura, crédito y apropiación de conocimiento</a>
+        <a href="#cap-24">XXIV. Pérdida documental, falsificación y anacronismo</a>
+        <a href="#cap-25">XXV. Comparación controlada: traducciones exitosas y fallidas</a>
+        <a href="#cap-26">XXVI. La historia como laboratorio: el valor de los errores y los mitos</a>
+        <a href="#cap-27">XXVII. Historia, epistemología, regulación, ética y poder</a>
+        <a href="#cap-28">XXVIII. Las preguntas comparativa e histórica</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -9750,490 +9696,369 @@ window.ENTRIES = [
       continuidad sin borrar diferencia, rastrear cómo una técnica cambia al viajar entre
       culturas y comprender por qué determinados descubrimientos aparecieron repetidamente en
       lugares que nunca compartieron una universidad, una lengua o incluso una cosmología.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de la disciplina</h4>
+      <h4 id="cap-1">Capítulo I — Objeto de la disciplina y el problema de traducir el pasado</h4>
       <p>La Historia de las Ciencias Mágicas estudia el desarrollo de teorías, prácticas,
-      instituciones y lenguajes utilizados para comprender fenómenos mágicos.</p>
-      <p>No busca decidir qué civilización descubrió primero una verdad en sentido absoluto,
-      sino reconstruir qué observó, cómo lo interpretó y qué podía hacer con ese conocimiento.</p>
-      <p>El campo combina historia, filología, arqueología, teoría arcana y estudio comparado de
+      instituciones y lenguajes utilizados para comprender fenómenos mágicos. No busca decidir
+      qué civilización descubrió primero una verdad en sentido absoluto, sino reconstruir qué
+      observó cada tradición, cómo lo interpretó y qué podía hacer con ese conocimiento. El campo
+      combina historia, filología, arqueología, teoría arcana y estudio comparado de
       tradiciones.</p>
-      <h4 id="cap-2">Capítulo II — El problema de traducir el pasado</h4>
-      <p>Las categorías modernas de Dolbred no existían en la mayoría de culturas antiguas.</p>
-      <p>Decir que un templo practicaba Teoría de Encantamientos puede ser útil para comparar,
-      pero también puede imponer una disciplina moderna sobre conceptos que sus constructores
-      nunca utilizaron.</p>
-      <p>Los historiadores distinguen entre términos originales y categorías analíticas
-      posteriores.</p>
-      <h4 id="cap-3">Capítulo III — Equivalencia funcional</h4>
+      <p>Esa reconstrucción exige resolver primero un problema metodológico. Las categorías
+      modernas de Dolbred no existían en la mayoría de culturas antiguas, y decir que un templo
+      practicaba Teoría de Encantamientos puede ser útil para comparar, pero también puede
+      imponer una disciplina moderna sobre conceptos que sus constructores nunca utilizaron. Por
+      eso los historiadores distinguen entre términos originales, propios de cada tradición, y
+      categorías analíticas posteriores, introducidas para facilitar la comparación.</p>
+      <h4 id="cap-2">Capítulo II — Formas de semejanza histórica: equivalencia, convergencia,
+      difusión y redescubrimiento</h4>
       <p>Se habla de equivalencia funcional cuando prácticas diferentes resuelven un problema
-      semejante mediante estructuras comparables.</p>
-      <p>Dos tradiciones pueden mantener un sello durante siglos sin compartir una teoría sobre
-      por qué funciona.</p>
-      <p>La equivalencia permite comparación sin afirmar identidad conceptual.</p>
-      <h4 id="cap-4">Capítulo IV — Equivalencia conceptual</h4>
-      <p>Una equivalencia conceptual es más fuerte, ya que implica que dos culturas organizan un
-      fenómeno mediante categorías realmente semejantes.</p>
-      <p>Es mucho menos frecuente que la equivalencia funcional.</p>
-      <p>Los historiadores evitan deducirla sólo porque las técnicas produzcan resultados
-      parecidos.</p>
-      <h4 id="cap-5">Capítulo V — Convergencia independiente</h4>
-      <p>Cuando culturas sin contacto conocido desarrollan soluciones similares, se habla de
-      convergencia independiente.</p>
-      <p>Las causas pueden incluir límites físicos compartidos, propiedades estables de la magia
-      o problemas sociales equivalentes.</p>
-      <p>La convergencia es una de las principales fuentes históricas para inferir qué aspectos
-      de una teoría dependen menos de una tradición concreta.</p>
-      <h4 id="cap-6">Capítulo VI — Difusión</h4>
-      <p>No todo parecido es descubrimiento independiente.</p>
-      <p>Comercio, guerra, migración, esclavitud, matrimonio, peregrinación y traducción
-      transportan prácticas a enormes distancias.</p>
-      <p>La ausencia de un texto no demuestra ausencia de contacto.</p>
-      <h4 id="cap-7">Capítulo VII — Redescubrimiento</h4>
-      <p>Una técnica puede desaparecer de una región y reaparecer siglos después mediante un
-      camino diferente.</p>
-      <p>El segundo descubrimiento puede producir una explicación completamente nueva.</p>
-      <p>Por ello, una misma práctica puede tener varias genealogías intelectuales legítimas.</p>
-      <h4 id="cap-8">Capítulo VIII — Tradición oral</h4>
-      <p>Muchas ciencias mágicas se transmitieron sin escritura.</p>
-      <p>Cantos, gestos, secuencias, genealogías y relatos podían conservar información técnica
-      con gran precisión.</p>
-      <p>La falta de tratados escritos no debe confundirse con falta de teoría.</p>
-      <h4 id="cap-9">Capítulo IX — La escritura y la estabilización</h4>
-      <p>Escribir permite comparar versiones, conservar errores y estandarizar
-      procedimientos.</p>
-      <p>También puede congelar una forma particular de práctica y desplazar variantes
-      locales.</p>
-      <p>Runología y Filología Arcana muestran que la escritura transforma aquello que pretende
-      preservar.</p>
-      <h4 id="cap-10">Capítulo X — El vocabulario como teoría</h4>
-      <p>Nombrar un fenómeno implica decidir qué relaciones importan.</p>
-      <p>Una cultura que habla de deuda, otra de armonía y otra de estructura puede describir el
-      mismo efecto desde supuestos distintos.</p>
-      <p>Los términos técnicos son parte de la teoría y no simples etiquetas intercambiables.</p>
-      <h4 id="cap-11">Capítulo XI — La magia como oficio</h4>
+      semejante mediante estructuras comparables. Dos tradiciones pueden mantener un sello
+      durante siglos sin compartir una teoría sobre por qué funciona, y esa equivalencia permite
+      compararlas sin afirmar identidad conceptual entre ellas. La equivalencia conceptual es más
+      fuerte, pues implica que dos culturas organizan el fenómeno mediante categorías realmente
+      semejantes; resulta mucho menos frecuente que la funcional, y los historiadores evitan
+      deducirla sólo porque dos técnicas produzcan resultados parecidos.</p>
+      <p>Cuando culturas sin contacto conocido desarrollan soluciones similares, se habla en
+      cambio de convergencia independiente. Sus causas pueden incluir límites físicos
+      compartidos, propiedades estables de la magia o problemas sociales equivalentes, y
+      constituye una de las principales fuentes históricas para inferir qué aspectos de una
+      teoría dependen menos de una tradición concreta. No todo parecido, sin embargo, es
+      descubrimiento independiente. Comercio, guerra, migración, esclavitud, matrimonio,
+      peregrinación y traducción transportan prácticas a enormes distancias, y la ausencia de un
+      texto no demuestra ausencia de contacto.</p>
+      <p>Una técnica puede además desaparecer de una región y reaparecer siglos después por un
+      camino diferente. El segundo descubrimiento puede producir una explicación completamente
+      nueva, de modo que una misma práctica termina teniendo varias genealogías intelectuales
+      legítimas.</p>
+      <h4 id="cap-3">Capítulo III — Transmisión y fijación del conocimiento: oralidad, escritura
+      y vocabulario</h4>
+      <p>Muchas ciencias mágicas se transmitieron sin escritura. Cantos, gestos, secuencias,
+      genealogías y relatos podían conservar información técnica con gran precisión, de modo que
+      la falta de tratados escritos no debe confundirse con falta de teoría.</p>
+      <p>Escribir, cuando aparece, permite comparar versiones, conservar errores y estandarizar
+      procedimientos, pero también puede congelar una forma particular de práctica y desplazar
+      variantes locales. Runología y Filología Arcana muestran que la escritura transforma
+      aquello que pretende preservar.</p>
+      <p>Nombrar un fenómeno implica, además, decidir qué relaciones importan. Una cultura que
+      habla de deuda, otra de armonía y otra de estructura puede describir el mismo efecto desde
+      supuestos distintos, lo que confirma que los términos técnicos son parte de la teoría y no
+      simples etiquetas intercambiables.</p>
+      <h4 id="cap-4">Capítulo IV — Marcos históricos de la práctica mágica: oficio, religión,
+      filosofía natural y derecho</h4>
       <p>En muchas sociedades, el conocimiento mágico surgió primero en oficios: curanderos,
-      navegantes, herreros, sacerdotes, enterradores, cantores o arquitectos.</p>
-      <p>Las categorías universitarias aparecieron mucho después.</p>
-      <p>La separación moderna entre disciplinas puede ocultar que una sola práctica histórica
+      navegantes, herreros, sacerdotes, enterradores, cantores o arquitectos lo ejercían como
+      parte de su trabajo, mucho antes de que existieran las categorías universitarias actuales.
+      La separación moderna entre disciplinas puede ocultar que una sola práctica histórica
       combinaba medicina, religión y técnica material.</p>
-      <h4 id="cap-12">Capítulo XII — La magia como religión</h4>
-      <p>Numerosas culturas interpretaron regularidades mágicas mediante relaciones con dioses,
-      ancestros o espíritus.</p>
-      <p>Esto no vuelve sus observaciones menos rigurosas.</p>
-      <p>Un sistema teológico puede producir protocolos empíricamente refinados aunque explique
-      el mecanismo mediante entidades que Dolbred clasifica de otra manera.</p>
-      <h4 id="cap-13">Capítulo XIII — La magia como filosofía natural</h4>
-      <p>Otras tradiciones buscaron principios impersonales en proporción, materia, ciclos y
-      correspondencias.</p>
-      <p>Estas escuelas suelen parecer más cercanas a la ciencia moderna de Dolbred, pero esa
-      semejanza puede ser superficial.</p>
-      <p>Sus conceptos de causa, elemento o identidad podían diferir profundamente.</p>
-      <h4 id="cap-14">Capítulo XIV — La magia como derecho y costumbre</h4>
-      <p>Algunas estructuras mágicas se desarrollaron dentro de juramentos, sucesiones, tabúes y
-      formas de propiedad.</p>
-      <p>Lo que hoy Maldiología describe como una relación persistente podía entenderse
-      históricamente como obligación ancestral.</p>
-      <p>El derecho y la magia fueron inseparables en numerosos sistemas.</p>
-      <h4 id="cap-15">Capítulo XV — Primeros estudios de permanencia</h4>
+      <p>Numerosas culturas interpretaron esas regularidades mediante relaciones con dioses,
+      ancestros o espíritus, sin que ello volviera sus observaciones menos rigurosas, ya que un
+      sistema teológico puede producir protocolos empíricamente refinados aunque explique el
+      mecanismo mediante entidades que Dolbred clasifica de otra manera. Otras tradiciones, en
+      cambio, buscaron principios impersonales en proporción, materia, ciclos y correspondencias.
+      Estas escuelas suelen parecer más cercanas a la ciencia moderna de Dolbred, pero la
+      semejanza puede ser superficial, pues sus conceptos de causa, elemento o identidad podían
+      diferir profundamente de los actuales.</p>
+      <p>Otras estructuras mágicas, finalmente, se desarrollaron dentro de juramentos,
+      sucesiones, tabúes y formas de propiedad. Lo que hoy Maldiología describe como una relación
+      persistente podía entenderse históricamente como obligación ancestral, y en numerosos
+      sistemas el derecho y la magia fueron inseparables.</p>
+      <h4 id="cap-5">Capítulo V — Precursores rituales tempranos: permanencia, clausura y
+      geometría</h4>
       <p>Las primeras estructuras duraderas conocidas no siempre fueron armas o grandes
-      artefactos.</p>
-      <p>Marcas funerarias, depósitos, sellos de almacenes y límites agrícolas muestran intentos
-      tempranos de mantener efectos sin presencia continua del ejecutor.</p>
-      <p>Estas prácticas anticipan problemas que hoy estudia Teoría de Encantamientos.</p>
-      <h4 id="cap-16">Capítulo XVI — Los primeros cierres rituales</h4>
-      <p>Restos arqueológicos muestran que diversas culturas distinguían entre interrumpir una
-      ceremonia y cerrarla correctamente.</p>
-      <p>Objetos quebrados, rutas de salida y secuencias de dispersión sugieren procedimientos de
-      clausura.</p>
-      <p>Seguridad Ritual puede rastrear algunos de sus principios mucho antes de la existencia
-      de Dolbred.</p>
-      <h4 id="cap-17">Capítulo XVII — Geometría antes de la geometría</h4>
-      <p>Muchos complejos rituales antiguos utilizan círculos, ejes, simetrías y orientaciones
-      sin formular una teoría matemática abstracta.</p>
-      <p>Las proporciones podían transmitirse como medidas corporales, canciones o relaciones
-      arquitectónicas.</p>
-      <p>Geometría Ritual moderna traduce estos procedimientos a categorías comparables sin
-      asumir que los antiguos pensaban en los mismos términos.</p>
-      <h4 id="cap-18">Capítulo XVIII — Nombres y referencias</h4>
+      artefactos. Marcas funerarias, depósitos, sellos de almacenes y límites agrícolas muestran
+      intentos tempranos de mantener efectos sin presencia continua del ejecutor, y anticipan
+      problemas que hoy estudia Teoría de Encantamientos.</p>
+      <p>Restos arqueológicos muestran además que diversas culturas distinguían entre interrumpir
+      una ceremonia y cerrarla correctamente. Objetos quebrados, rutas de salida y secuencias de
+      dispersión sugieren procedimientos de clausura, y Seguridad Ritual puede rastrear algunos
+      de sus principios mucho antes de la existencia de Dolbred.</p>
+      <p>Muchos complejos rituales antiguos utilizan, por su parte, círculos, ejes, simetrías y
+      orientaciones sin formular una teoría matemática abstracta. Las proporciones podían
+      transmitirse como medidas corporales, canciones o relaciones arquitectónicas. Geometría
+      Ritual moderna traduce estos procedimientos a categorías comparables sin asumir que los
+      antiguos pensaban en los mismos términos.</p>
+      <h4 id="cap-6">Capítulo VI — Cuerpo, nombre y continuidad: antecedentes de la Continuidad
+      Orgánica</h4>
       <p>Las tradiciones más antiguas ya muestran conciencia de que nombrar, señalar o poseer
-      podían establecer relaciones mágicas.</p>
-      <p>Los sistemas diferían en qué hacía válido un nombre.</p>
-      <p>Semiótica Mágica reconoce hoy una familia de problemas que aquellas culturas expresaban
-      mediante genealogía, título, secreto o presencia.</p>
-      <h4 id="cap-19">Capítulo XIX — El problema del cuerpo</h4>
+      podían establecer relaciones mágicas, aunque los sistemas diferían en qué hacía válido un
+      nombre. Semiótica Mágica reconoce hoy una familia de problemas que aquellas culturas
+      expresaban mediante genealogía, título, secreto o presencia.</p>
       <p>Curanderos de regiones sin contacto desarrollaron restricciones semejantes sobre
-      manifestaciones dentro de organismos vivos.</p>
-      <p>Algunos hablaban de unidad del aliento, otros de propiedad de la carne y otros de
-      frontera del espíritu.</p>
-      <p>Estas observaciones son antecedentes comparables al moderno Principio de Continuidad
-      Orgánica.</p>
-      <h4 id="cap-20">Capítulo XX — Continuidad Orgánica en perspectiva histórica</h4>
-      <p>Dolbred no atribuye a una sola escuela el descubrimiento del principio.</p>
-      <p>Lo que hoy se formula como continuidad funcional fue reconocido de manera fragmentaria
-      por médicos, transmutadores y exorcistas de distintas épocas.</p>
-      <p>Su formulación moderna surgió al comparar tradiciones que habían llegado a conclusiones
-      prácticas semejantes.</p>
-      <h4 id="cap-21">Capítulo XXI — Muerte y continuidad</h4>
+      manifestaciones dentro de organismos vivos. Algunos hablaban de unidad del aliento, otros
+      de propiedad de la carne y otros de frontera del espíritu; estas observaciones son
+      antecedentes comparables al moderno Principio de Continuidad Orgánica. Dolbred no atribuye
+      a una sola escuela el descubrimiento de ese principio. Lo que hoy se formula como
+      continuidad funcional fue reconocido de manera fragmentaria por médicos, transmutadores y
+      exorcistas de distintas épocas, y su formulación moderna surgió al comparar tradiciones que
+      habían llegado a conclusiones prácticas semejantes.</p>
       <p>Las ciencias funerarias fueron una de las primeras áreas donde distintas culturas
-      encontraron problemas comunes.</p>
-      <p>Cadáver, espíritu, nombre, memoria y propiedad no siempre terminaban al mismo
-      tiempo.</p>
-      <p>Tanatología moderna heredó preguntas que durante milenios pertenecieron a sacerdotes y
-      comunidades funerarias.</p>
-      <h4 id="cap-22">Capítulo XXII — Alma, aliento y sombra</h4>
-      <p>Las palabras antiguas traducidas como alma no siempre designaban la misma cosa.</p>
-      <p>Algunas culturas distinguían varios componentes; otras evitaban separar mente, cuerpo y
-      linaje.</p>
-      <p>Pneumatología moderna utiliza parte de esa evidencia sin asumir que todas las
-      categorías históricas sean equivalentes.</p>
-      <h4 id="cap-23">Capítulo XXIII — Enfermedad mágica</h4>
-      <p>Las sociedades antiguas reconocieron cuadros donde enfermedad, maldición y
-      contaminación se superponían.</p>
-      <p>Los tratamientos podían combinar hierbas, aislamiento, sacrificio y reparación
-      social.</p>
-      <p>Patología Arcana actual separa mecanismos que históricamente podían formar una sola
-      categoría.</p>
-      <h4 id="cap-24">Capítulo XXIV — Cuarentenas preacadémicas</h4>
+      encontraron problemas comunes, pues cadáver, espíritu, nombre, memoria y propiedad no
+      siempre terminaban al mismo tiempo. Tanatología moderna heredó preguntas que durante
+      milenios pertenecieron a sacerdotes y comunidades funerarias. Las palabras antiguas
+      traducidas como alma tampoco designaban siempre la misma cosa. Algunas culturas distinguían
+      varios componentes, otras evitaban separar mente, cuerpo y linaje, y Pneumatología moderna
+      utiliza parte de esa evidencia sin asumir que todas las categorías históricas sean
+      equivalentes.</p>
+      <h4 id="cap-7">Capítulo VII — Enfermedad, cuarentena y maldición en las sociedades
+      antiguas</h4>
+      <p>Las sociedades antiguas reconocieron cuadros donde enfermedad, maldición y contaminación
+      se superponían. Los tratamientos podían combinar hierbas, aislamiento, sacrificio y
+      reparación social, y Patología Arcana actual separa mecanismos que históricamente podían
+      formar una sola categoría.</p>
       <p>Algunas comunidades aislaron personas, objetos o casas ante fenómenos transmisibles
-      antes de poseer teoría epidemiológica.</p>
-      <p>Sus criterios podían basarse en tabú, olor, color o relato.</p>
-      <p>Epidemiología Taumatológica estudia estos casos para distinguir prácticas eficaces de
-      explicaciones erróneas.</p>
-      <h4 id="cap-25">Capítulo XXV — Maldiciones y obligación</h4>
-      <p>Muchas maldiciones antiguas fueron entendidas como deudas o consecuencias jurídicas, no
-      como hechizos.</p>
-      <p>Su lógica de herencia seguía linaje, propiedad o cargo.</p>
-      <p>Maldiología moderna conserva esta diversidad porque ayuda a explicar por qué ciertas
+      antes de poseer teoría epidemiológica, con criterios que podían basarse en tabú, olor,
+      color o relato. Epidemiología Taumatológica estudia estos casos para distinguir prácticas
+      eficaces de explicaciones erróneas.</p>
+      <p>Muchas maldiciones antiguas, por su parte, fueron entendidas como deudas o consecuencias
+      jurídicas, no como hechizos, y su lógica de herencia seguía linaje, propiedad o cargo.
+      Maldiología moderna conserva esta diversidad porque ayuda a explicar por qué ciertas
       estructuras sobreviven generaciones.</p>
-      <h4 id="cap-26">Capítulo XXVI — La persistencia de los nombres</h4>
+      <h4 id="cap-8">Capítulo VIII — Nombres verdaderos y escrituras rituales</h4>
       <p>Los nombres verdaderos aparecen en numerosas culturas, pero no con un significado
-      uniforme.</p>
-      <p>En algunos sistemas identifican esencia, en otros legitimidad y en otros una relación
-      ritual concreta.</p>
-      <p>Filología Arcana advierte contra la idea de una teoría universal del nombre escondida
-      detrás de todas esas tradiciones.</p>
-      <h4 id="cap-27">Capítulo XXVII — Runas y alfabetos rituales</h4>
-      <p>Las escrituras mágicas se desarrollaron muchas veces de forma independiente.</p>
-      <p>Algunas derivaron de alfabetos ordinarios; otras de marcas contables, mapas, tejidos o
-      diagramas religiosos.</p>
-      <p>Runología moderna estudia convenciones sin postular un alfabeto mágico universal.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Música, ritmo y resonancia</h4>
+      uniforme. En algunos sistemas identifican esencia, en otros legitimidad y en otros una
+      relación ritual concreta, y Filología Arcana advierte contra la idea de una teoría
+      universal del nombre escondida detrás de todas esas tradiciones.</p>
+      <p>Las escrituras mágicas se desarrollaron muchas veces de forma independiente. Algunas
+      derivaron de alfabetos ordinarios, otras de marcas contables, mapas, tejidos o diagramas
+      religiosos, y Runología moderna estudia estas convenciones sin postular un alfabeto mágico
+      universal.</p>
+      <h4 id="cap-9">Capítulo IX — Música, resonancia y la tradición bárdica</h4>
       <p>Culturas muy alejadas utilizaron canto, percusión y repetición para estabilizar
-      fenómenos.</p>
-      <p>Los significados atribuidos iban desde invocar ancestros hasta ordenar el pensamiento
-      colectivo.</p>
-      <p>Resonántica moderna reconoce relaciones funcionales compartidas sin reducir esas
-      prácticas a una sola teoría.</p>
-      <h4 id="cap-29">Capítulo XXIX — Los bardos antes de la academia</h4>
-      <p>Poetas, cronistas y músicos conservaron conocimiento mágico en formas que no separaban
-      arte de técnica.</p>
-      <p>Una canción podía ser historia, herramienta mnemónica y estructura resonante al mismo
-      tiempo.</p>
-      <p>La profesionalización posterior creó una frontera que no existía para sus autores.</p>
-      <h4 id="cap-30">Capítulo XXX — Naturgia y cosmologías vivas</h4>
-      <p>Muchas culturas describieron bosques, ríos y montañas como sujetos o comunidades.</p>
-      <p>Sus prácticas podían producir efectos hoy clasificados como naturgicos.</p>
-      <p>La traducción a términos ecológicos modernos es útil, pero no debe borrar la dimensión
-      relacional que organizaba aquellas tradiciones.</p>
-      <h4 id="cap-31">Capítulo XXXI — Endomancia antes de su nombre</h4>
-      <p>Linajes con magia interna fueron interpretados como bendecidos, malditos, tocados por
-      elementos o portadores de sangre extraordinaria.</p>
-      <p>No existía una categoría común.</p>
-      <p>Endomancia moderna surgió al comparar fisiologías y manifestaciones que tradiciones
-      locales explicaban de maneras incompatibles.</p>
-      <h4 id="cap-32">Capítulo XXXII — Pactos y diplomacia sobrenatural</h4>
-      <p>Las relaciones con entidades se documentan en formas de hospitalidad, vasallaje,
-      parentesco, contrato y culto.</p>
-      <p>Pacturgia moderna abstrae reglas de estos sistemas, pero sus conceptos jurídicos no
-      deben proyectarse sin cuidado sobre sociedades que no concebían el pacto como contrato.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Teurgia y autoridad</h4>
-      <p>La eficacia religiosa fue interpretada mediante gracia, pureza, sacrificio, parentesco
-      divino o correcta liturgia.</p>
-      <p>Tradiciones teúrgicas podían producir fenómenos comparables mientras discrepaban sobre
-      la identidad de la fuente.</p>
-      <p>Teología Comparada y Teurgia estudian esa divergencia sin resolverla mediante una sola
-      explicación.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Elementos y clasificación</h4>
-      <p>Las culturas no siempre dividieron el mundo en los mismos elementos.</p>
-      <p>Algunas distinguían fuego y calor; otras agua y profundidad; otras luz y claridad como
-      categorías distintas.</p>
-      <p>La clasificación moderna no debe asumirse como traducción perfecta de sistemas
+      fenómenos. Los significados atribuidos iban desde invocar ancestros hasta ordenar el
+      pensamiento colectivo, y Resonántica moderna reconoce relaciones funcionales compartidas
+      sin reducir esas prácticas a una sola teoría.</p>
+      <p>Poetas, cronistas y músicos conservaron ese conocimiento en formas que no separaban arte
+      de técnica. Una canción podía ser historia, herramienta mnemónica y estructura resonante al
+      mismo tiempo. La profesionalización posterior creó una frontera que no existía para sus
+      autores.</p>
+      <h4 id="cap-10">Capítulo X — Naturgia, endomancia, pactos y teurgia: otras genealogías de
+      la práctica</h4>
+      <p>Muchas culturas describieron bosques, ríos y montañas como sujetos o comunidades. Sus
+      prácticas podían producir efectos hoy clasificados como naturgicos, y aunque la traducción
+      a términos ecológicos modernos resulta útil, no debe borrar la dimensión relacional que
+      organizaba aquellas tradiciones.</p>
+      <p>Los linajes con magia interna fueron interpretados, según la cultura, como bendecidos,
+      malditos, tocados por elementos o portadores de sangre extraordinaria, sin que existiera
+      una categoría común entre ellos. Endomancia moderna surgió al comparar fisiologías y
+      manifestaciones que tradiciones locales explicaban de maneras incompatibles.</p>
+      <p>Las relaciones con entidades se documentan, por su parte, en formas de hospitalidad,
+      vasallaje, parentesco, contrato y culto. Pacturgia moderna abstrae reglas de estos sistemas,
+      pero sus conceptos jurídicos no deben proyectarse sin cuidado sobre sociedades que no
+      concebían el pacto como contrato. La eficacia religiosa, a su vez, fue interpretada
+      mediante gracia, pureza, sacrificio, parentesco divino o correcta liturgia. Las tradiciones
+      teúrgicas podían producir fenómenos comparables mientras discrepaban sobre la identidad de
+      la fuente, y Teología Comparada y Teurgia estudian esa divergencia sin resolverla mediante
+      una sola explicación.</p>
+      <h4 id="cap-11">Capítulo XI — Elementos, linajes dracónicos y mitología biológica</h4>
+      <p>Las culturas no siempre dividieron el mundo en los mismos elementos. Algunas distinguían
+      fuego y calor, otras agua y profundidad, otras luz y claridad como categorías distintas, de
+      modo que la clasificación moderna no debe asumirse como traducción perfecta de sistemas
       antiguos.</p>
-      <h4 id="cap-35">Capítulo XXXV — Los linajes elementales</h4>
       <p>Relatos de dragones, leviatanes, begimos, ryu, seraphines y otras criaturas aparecen en
-      tradiciones separadas por enormes distancias.</p>
-      <p>Las explicaciones sobre su origen varían desde descendencia divina hasta transformación
-      del mundo.</p>
-      <p>Dracología Comparada utiliza estos registros como evidencia histórica, no como
-      confirmación automática de sus mitos.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Biologización y mitología</h4>
-      <p>Algunas narraciones antiguas recuerdan un tránsito desde formas elementales hacia
-      cuerpos limitados.</p>
-      <p>Las semejanzas son sugerentes pero no suficientes para probar una única memoria
-      histórica.</p>
-      <p>Dolbred compara estos relatos con anatomía y fósiles antes de convertir coincidencia
-      mítica en teoría biológica.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Alquimia y las tríadas</h4>
+      tradiciones separadas por enormes distancias, con explicaciones sobre su origen que varían
+      desde la descendencia divina hasta la transformación del mundo. Dracología Comparada
+      utiliza estos registros como evidencia histórica, no como confirmación automática de sus
+      mitos.</p>
+      <p>Algunas narraciones antiguas recuerdan incluso un tránsito desde formas elementales
+      hacia cuerpos limitados. Las semejanzas son sugerentes, pero no suficientes para probar una
+      única memoria histórica, y Dolbred compara estos relatos con anatomía y fósiles antes de
+      convertir una coincidencia mítica en teoría biológica.</p>
+      <h4 id="cap-12">Capítulo XII — Alquimia, tríadas y teorías de la transmutación</h4>
       <p>Sal, Mercurio y Azufre aparecen en corrientes alquímicas con significados de cuerpo,
-      mente y alma.</p>
-      <p>Su uso histórico varió entre metáfora, sustancia y práctica real.</p>
-      <p>La Alquimia académica distingue tradiciones respetables de escuelas extremistas
-      posteriores que llevaron la saturación a niveles patológicos.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Materia y transformación</h4>
-      <p>Las teorías antiguas de transmutación diferían sobre qué debía conservarse al
-      transformar algo.</p>
-      <p>Algunas hablaban de esencia, otras de forma, otras de proporción.</p>
-      <p>Materia y Transmutación moderna puede comparar esos modelos con su noción de identidad
-      material sin declararlos simplemente versiones primitivas.</p>
-      <h4 id="cap-39">Capítulo XXXIX — La observación del cielo</h4>
-      <p>Astronomía, calendario y adivinación estuvieron unidas durante largos periodos.</p>
-      <p>Predecir estaciones, eclipses y augurios podía formar una sola práctica.</p>
-      <p>La separación entre pronóstico físico y profecía sobrenatural es históricamente
-      reciente.</p>
-      <h4 id="cap-40">Capítulo XL — Adivinación y registro</h4>
-      <p>Muchas tradiciones adivinatorias desarrollaron archivos de presagios y resultados.</p>
-      <p>Algunas comparaban patrones durante generaciones.</p>
-      <p>Estos registros muestran intentos tempranos de calibrar predicciones, aunque sus
-      criterios fueran distintos de los actuales.</p>
-      <h4 id="cap-41">Capítulo XLI — Tarotismos y sistemas de selección</h4>
-      <p>Los sistemas de cartas no fueron la única forma de selección simbólica.</p>
-      <p>Conchas, huesos, piedras, varas y tejidos cumplieron funciones equivalentes.</p>
-      <p>El tarotismo moderno pertenece a una familia más amplia de métodos que organizan
-      incertidumbre mediante símbolos.</p>
-      <h4 id="cap-42">Capítulo XLII — Ilusión y teatro</h4>
+      mente y alma. Su uso histórico varió entre metáfora, sustancia y práctica real, y la
+      Alquimia académica distingue tradiciones respetables de escuelas extremistas posteriores
+      que llevaron la saturación a niveles patológicos.</p>
+      <p>Las teorías antiguas de transmutación diferían, además, sobre qué debía conservarse al
+      transformar algo. Unas hablaban de esencia, otras de forma, otras de proporción. Materia y
+      Transmutación moderna puede comparar esos modelos con su noción de identidad material sin
+      declararlos simplemente versiones primitivas.</p>
+      <h4 id="cap-13">Capítulo XIII — Astronomía, adivinación y sistemas de selección
+      simbólica</h4>
+      <p>Astronomía, calendario y adivinación estuvieron unidas durante largos periodos. Predecir
+      estaciones, eclipses y augurios podía formar una sola práctica, y la separación entre
+      pronóstico físico y profecía sobrenatural es históricamente reciente.</p>
+      <p>Muchas tradiciones adivinatorias desarrollaron archivos de presagios y resultados,
+      algunas comparando patrones durante generaciones. Estos registros muestran intentos
+      tempranos de calibrar predicciones, aunque sus criterios fueran distintos de los
+      actuales.</p>
+      <p>Los sistemas de cartas no fueron, por lo demás, la única forma de selección simbólica.
+      Conchas, huesos, piedras, varas y tejidos cumplieron funciones equivalentes, y el tarotismo
+      moderno pertenece a una familia más amplia de métodos que organizan la incertidumbre
+      mediante símbolos.</p>
+      <h4 id="cap-14">Capítulo XIV — Ilusión, teatro y los criterios antiguos para distinguir la
+      verdad</h4>
       <p>Las fronteras entre ilusión mágica, ceremonia y representación escénica fueron
-      históricamente porosas.</p>
-      <p>Algunas culturas utilizaron técnicas perceptivas como parte de enseñanza religiosa o
-      política.</p>
-      <p>Ilusionismo Teórico moderno separa mecanismo perceptivo de función cultural.</p>
-      <h4 id="cap-43">Capítulo XLIII — Epistemologías antiguas</h4>
-      <p>Las sociedades desarrollaron criterios para distinguir visiones legítimas de
-      engaños.</p>
-      <p>Ascetismo, testigos, repetición, autoridad ritual o señales corporales podían funcionar
-      como filtros.</p>
-      <p>Epistemología Arcana moderna hereda el problema sin asumir que sus propios criterios
-      sean la culminación inevitable de la historia.</p>
-      <h4 id="cap-44">Capítulo XLIV — La autoridad del maestro</h4>
-      <p>Durante siglos, gran parte del conocimiento se legitimó por linaje de enseñanza.</p>
-      <p>Esto conservó técnicas valiosas y también errores.</p>
-      <p>El surgimiento de instituciones comparativas permitió enfrentar tradiciones que antes no
-      tenían motivo para cuestionarse entre sí.</p>
-      <h4 id="cap-45">Capítulo XLV — Los primeros colegios</h4>
-      <p>Los colegios mágicos tempranos no eran universidades modernas.</p>
-      <p>Podían pertenecer a templos, cortes, gremios o ejércitos.</p>
-      <p>Su función principal era preservar una tradición, no necesariamente comparar
-      explicaciones rivales.</p>
-      <h4 id="cap-46">Capítulo XLVI — El nacimiento de la comparación</h4>
+      históricamente porosas. Algunas culturas utilizaron técnicas perceptivas como parte de
+      enseñanza religiosa o política, y el Ilusionismo Teórico moderno separa el mecanismo
+      perceptivo de su función cultural.</p>
+      <p>Las sociedades desarrollaron, en paralelo, criterios para distinguir visiones legítimas
+      de engaños. Ascetismo, testigos, repetición, autoridad ritual o señales corporales podían
+      funcionar como filtros, y Epistemología Arcana moderna hereda el problema sin asumir que
+      sus propios criterios sean la culminación inevitable de la historia.</p>
+      <h4 id="cap-15">Capítulo XV — La autoridad del maestro, los primeros colegios y el
+      nacimiento de la comparación</h4>
+      <p>Durante siglos, el conocimiento se legitimó sobre todo por linaje de enseñanza. Esto
+      conservó técnicas valiosas y también errores, hasta que el surgimiento de instituciones
+      comparativas permitió enfrentar tradiciones que antes no tenían motivo para cuestionarse
+      entre sí.</p>
+      <p>Los colegios mágicos tempranos no eran, sin embargo, universidades modernas. Podían
+      pertenecer a templos, cortes, gremios o ejércitos, y su función principal era preservar una
+      tradición, no necesariamente comparar explicaciones rivales.</p>
       <p>La historia cambia cuando instituciones comienzan a reunir practicantes de tradiciones
-      distintas.</p>
-      <p>Los desacuerdos obligan a formular qué parte de una técnica es esencial y qué parte
-      pertenece a una costumbre local.</p>
-      <p>Esta comparación es uno de los antecedentes intelectuales de Dolbred.</p>
-      <h4 id="cap-47">Capítulo XLVII — Traducciones imperfectas</h4>
-      <p>Muchos conflictos académicos nacieron de traducciones deficientes.</p>
-      <p>Una palabra para aliento podía convertirse en alma; una para deber en maldición; una
-      para ritmo en energía.</p>
-      <p>Las correcciones filológicas han reescrito capítulos completos de la historia
-      mágica.</p>
-      <h4 id="cap-48">Capítulo XLVIII — El error del precursor</h4>
+      distintas. Los desacuerdos obligan a formular qué parte de una técnica es esencial y qué
+      parte pertenece a una costumbre local, y esta comparación es uno de los antecedentes
+      intelectuales de Dolbred.</p>
+      <h4 id="cap-16">Capítulo XVI — Errores historiográficos: traducciones imperfectas,
+      precursores y progreso lineal</h4>
+      <p>Muchos conflictos académicos nacieron de traducciones deficientes. Una palabra para
+      aliento podía convertirse en alma, una para deber en maldición y una para ritmo en energía,
+      y las correcciones filológicas han reescrito capítulos completos de la historia mágica.</p>
       <p>Los historiadores suelen llamar precursor a cualquier pensador antiguo que se parezca a
-      una teoría moderna.</p>
-      <p>Esta práctica puede borrar aquello que era realmente distinto.</p>
-      <p>Una idea debe entenderse primero dentro de su propio sistema antes de usarse como
-      antecedente.</p>
-      <h4 id="cap-49">Capítulo XLIX — El error de la línea recta</h4>
-      <p>La ciencia no avanza siempre desde error hacia verdad de manera continua.</p>
-      <p>Conocimientos pueden perderse, recuperarse, prohibirse o desviarse.</p>
-      <p>Una teoría posterior puede ser menos eficaz que una práctica antigua en un contexto
+      una teoría moderna. Esta práctica puede borrar aquello que era realmente distinto. Una idea
+      debe entenderse primero dentro de su propio sistema antes de usarse como antecedente.</p>
+      <p>La ciencia, por lo demás, no avanza siempre desde el error hacia la verdad de manera
+      continua. Los conocimientos pueden perderse, recuperarse, prohibirse o desviarse, y una
+      teoría posterior puede ser menos eficaz que una práctica antigua en un contexto
       concreto.</p>
-      <h4 id="cap-50">Capítulo L — Tecnologías sin teoría correcta</h4>
-      <p>Una técnica puede funcionar aunque su explicación sea incorrecta.</p>
-      <p>Esto ocurrió repetidamente en medicina, encantamiento y ritual.</p>
-      <p>La eficacia histórica no demuestra que los practicantes comprendieran el mecanismo como
-      lo hace Dolbred.</p>
-      <h4 id="cap-51">Capítulo LI — Teorías correctas sin tecnología</h4>
+      <h4 id="cap-17">Capítulo XVII — Tecnología sin teoría y teoría sin tecnología</h4>
+      <p>Una técnica puede funcionar aunque su explicación sea incorrecta. Esto ocurrió
+      repetidamente en medicina, encantamiento y ritual, y la eficacia histórica no demuestra que
+      los practicantes comprendieran el mecanismo como lo hace Dolbred.</p>
       <p>También existen casos donde una explicación prometedora no pudo aplicarse por falta de
-      materiales, instrumentos o estabilidad institucional.</p>
-      <p>La historia de una ciencia depende de recursos además de ideas.</p>
-      <p>Un descubrimiento puede permanecer estéril durante siglos.</p>
-      <h4 id="cap-52">Capítulo LII — Guerra y aceleración</h4>
-      <p>Las guerras impulsaron investigación en protección, comunicación, sanación, invocación
-      y artefactos.</p>
-      <p>También destruyeron archivos y normalizaron prácticas que en tiempos de paz habrían
-      sido rechazadas.</p>
-      <p>Historia y Ética de la Alteración estudian conjuntamente este legado.</p>
-      <h4 id="cap-53">Capítulo LIII — Catástrofes como reformas</h4>
-      <p>Los grandes accidentes mágicos suelen producir cambios institucionales.</p>
-      <p>Después de desbordamientos, epidemias o fallos rituales aparecen nuevas licencias,
-      registros y protocolos.</p>
-      <p>Seguridad Ritual moderna está escrita en parte sobre la memoria de incidentes
-      anteriores.</p>
-      <h4 id="cap-54">Capítulo LIV — La Fractura Continental</h4>
+      materiales, instrumentos o estabilidad institucional. La historia de una ciencia depende de
+      recursos además de ideas, y un descubrimiento puede permanecer estéril durante siglos.</p>
+      <h4 id="cap-18">Capítulo XVIII — Guerra y catástrofe como motores de reforma</h4>
+      <p>Las guerras impulsaron investigación en protección, comunicación, sanación, invocación y
+      artefactos. También destruyeron archivos y normalizaron prácticas que en tiempos de paz
+      habrían sido rechazadas, un legado que Historia y Ética de la Alteración estudian
+      conjuntamente.</p>
+      <p>Los grandes accidentes mágicos suelen producir, del mismo modo, cambios institucionales.
+      Después de desbordamientos, epidemias o fallos rituales aparecen nuevas licencias, registros
+      y protocolos, y Seguridad Ritual moderna está escrita en parte sobre la memoria de
+      incidentes anteriores.</p>
+      <h4 id="cap-19">Capítulo XIX — La Fractura Continental y sus consecuencias</h4>
       <p>La Fractura Continental ocupa un lugar central en la historiografía de la Taumaturgia
-      Superior.</p>
-      <p>Las reconstrucciones modernas la interpretan como convergencia de dos estructuras de
-      escala territorial incompatibles.</p>
-      <p>Las fuentes antiguas, sin embargo, utilizan vocabularios de juicio, ruptura del mundo y
-      soberanía enfrentada que no deben reducirse a terminología moderna.</p>
-      <h4 id="cap-55">Capítulo LV — Después de la Fractura</h4>
+      Superior. Las reconstrucciones modernas la interpretan como convergencia de dos estructuras
+      de escala territorial incompatibles, aunque las fuentes antiguas utilizan vocabularios de
+      juicio, ruptura del mundo y soberanía enfrentada que no deben reducirse a terminología
+      moderna.</p>
       <p>El desastre produjo nuevas preguntas sobre escala, autoridad y contienda entre
-      estructuras.</p>
-      <p>Instituciones posteriores comenzaron a separar prácticas ordinarias de operaciones
-      capaces de afectar territorio.</p>
-      <p>Parte de la regulación moderna de alta taumaturgia se desarrolla a partir de ese
-      cambio.</p>
-      <h4 id="cap-56">Capítulo LVI — Epidemias y medicina</h4>
+      estructuras. Las instituciones posteriores comenzaron a separar prácticas ordinarias de
+      operaciones capaces de afectar territorio, y parte de la regulación moderna de alta
+      taumaturgia se desarrolla a partir de ese cambio.</p>
+      <h4 id="cap-20">Capítulo XX — Epidemias, medicina y la Peste Gris</h4>
       <p>Las grandes epidemias obligaron a comparar explicaciones religiosas, ambientales y
-      biológicas.</p>
-      <p>Cuando una intervención funcionaba en una región y fracasaba en otra, los médicos
-      comenzaron a registrar condiciones con mayor detalle.</p>
-      <p>De esta tradición comparativa surgirían parte de Patología Arcana y Epidemiología
-      Taumatológica.</p>
-      <h4 id="cap-57">Capítulo LVII — La Peste Gris como problema histórico</h4>
-      <p>La Peste Gris no sólo fue una crisis médica.</p>
-      <p>Alteró migraciones, instituciones, prácticas funerarias y teorías sobre
-      contaminación.</p>
-      <p>Las respuestas contradictorias de distintos territorios ofrecen hoy un archivo
-      invaluable sobre cómo sociedades interpretan fenómenos que todavía no comprenden.</p>
-      <h4 id="cap-58">Capítulo LVIII — Criminalística y tribunales</h4>
-      <p>El uso de magia como prueba precede a la Criminalística Arcana moderna.</p>
-      <p>Oráculos, juramentos y pruebas rituales fueron utilizados judicialmente durante
-      siglos.</p>
-      <p>El derecho dolbriano surgió en parte al reconocer que una técnica sobrenatural puede
-      ser poderosa y aun así producir evidencia ambigua.</p>
-      <h4 id="cap-59">Capítulo LIX — El descubrimiento del error mágico</h4>
+      biológicas. Cuando una intervención funcionaba en una región y fracasaba en otra, los
+      médicos comenzaron a registrar condiciones con mayor detalle, y de esta tradición
+      comparativa surgirían parte de Patología Arcana y Epidemiología Taumatológica.</p>
+      <p>La Peste Gris no fue sólo una crisis médica. Alteró migraciones, instituciones,
+      prácticas funerarias y teorías sobre contaminación, y las respuestas contradictorias de
+      distintos territorios ofrecen hoy un archivo invaluable sobre cómo las sociedades
+      interpretan fenómenos que todavía no comprenden.</p>
+      <h4 id="cap-21">Capítulo XXI — Tribunales, el error mágico y la profesionalización</h4>
+      <p>El uso de magia como prueba precede a la Criminalística Arcana moderna. Oráculos,
+      juramentos y pruebas rituales fueron utilizados judicialmente durante siglos, y el derecho
+      dolbriano surgió en parte al reconocer que una técnica sobrenatural puede ser poderosa y
+      aun así producir evidencia ambigua.</p>
       <p>Uno de los cambios intelectuales más importantes fue aceptar que una técnica mágica
-      podía funcionar y aun así ser interpretada mal.</p>
-      <p>Este reconocimiento abrió espacio para Epistemología Arcana.</p>
-      <p>Antes, muchos sistemas atribuían el error únicamente a impureza, engaño o mala
-      ejecución.</p>
-      <h4 id="cap-60">Capítulo LX — La profesionalización</h4>
-      <p>Con la aparición de licencias y facultades, ciertas prácticas dejaron de depender sólo
-      de reputación personal.</p>
-      <p>Se establecieron estándares, registros y responsabilidades.</p>
-      <p>La profesionalización aumentó seguridad, aunque también desplazó tradiciones locales
-      que no encajaban fácilmente en categorías académicas.</p>
-      <h4 id="cap-61">Capítulo LXI — Dolbred y la síntesis</h4>
+      podía funcionar y aun así ser interpretada mal. Este reconocimiento abrió espacio para
+      Epistemología Arcana, frente a los muchos sistemas antiguos que atribuían el error
+      únicamente a impureza, engaño o mala ejecución.</p>
+      <p>Con la aparición de licencias y facultades, ciertas prácticas dejaron por fin de
+      depender sólo de reputación personal. Se establecieron estándares, registros y
+      responsabilidades; la profesionalización aumentó la seguridad, aunque también desplazó
+      tradiciones locales que no encajaban fácilmente en categorías académicas.</p>
+      <h4 id="cap-22">Capítulo XXII — Dolbred: síntesis, clasificación e instituciones
+      rivales</h4>
       <p>Dolbred se distingue por reunir teorías rivales y compararlas en lugar de exigir una
-      única cosmología.</p>
-      <p>Su fortaleza institucional procede de esa capacidad de traducción.</p>
-      <p>Su riesgo es convertir sus propias categorías comparativas en un nuevo lenguaje
+      única cosmología. Su fortaleza institucional procede de esa capacidad de traducción, aunque
+      su riesgo consiste en convertir sus propias categorías comparativas en un nuevo lenguaje
       dominante que haga invisibles conceptos ajenos.</p>
-      <h4 id="cap-62">Capítulo LXII — La clasificación dolbriana</h4>
-      <p>Las disciplinas modernas son herramientas institucionales.</p>
-      <p>Arcanomática, Naturgia, Pacturgia y otras categorías permiten enseñar y comparar.</p>
-      <p>No deben confundirse con divisiones naturales obligatorias del mundo.</p>
-      <h4 id="cap-63">Capítulo LXIII — Controversias de nomenclatura</h4>
+      <p>Las disciplinas modernas son, en ese sentido, herramientas institucionales. Arcanomática,
+      Naturgia, Pacturgia y otras categorías permiten enseñar y comparar, pero no deben
+      confundirse con divisiones naturales obligatorias del mundo.</p>
+      <p>No todas las academias aceptan, de hecho, el modelo dolbriano. Algunas prefieren
+      escuelas religiosas, elementales o artesanales, y ese desacuerdo institucional demuestra
+      que la organización del saber sigue siendo objeto de debate.</p>
+      <h4 id="cap-23">Capítulo XXIII — Nomenclatura, crédito y apropiación de conocimiento</h4>
       <p>Los nombres académicos cambian lentamente, incluso cuando una disciplina amplía su
-      objeto.</p>
-      <p>Dracología Comparada conserva un nombre nacido del estudio temprano de la rama de fuego
-      pese a estudiar hoy múltiples linajes.</p>
-      <p>Estas inercias muestran que las universidades también poseen historia dentro de su
-      vocabulario.</p>
-      <h4 id="cap-64">Capítulo LXIV — Quién recibe crédito</h4>
-      <p>Las historias tradicionales privilegian autores con textos conservados, instituciones
-      poderosas y lenguas prestigiosas.</p>
-      <p>Muchas técnicas atribuidas a un célebre académico existían antes en comunidades sin
-      archivo escrito.</p>
-      <p>La historiografía moderna intenta separar formalización, publicación y descubrimiento
-      práctico.</p>
-      <h4 id="cap-65">Capítulo LXV — Conocimiento apropiado</h4>
-      <p>Imperios, academias y gremios han incorporado conocimientos de pueblos subordinados sin
-      reconocer origen.</p>
-      <p>Estudiar esa apropiación es parte de la historia científica.</p>
-      <p>El valor de una técnica no elimina la obligación de reconstruir cómo llegó a manos de
-      quien la publicó.</p>
-      <h4 id="cap-66">Capítulo LXVI — Pérdida documental</h4>
-      <p>Incendios, guerras, persecuciones y degradación mágica han destruido enormes
-      archivos.</p>
-      <p>La ausencia documental crea sesgos inevitables.</p>
-      <p>Arqueología Arcana ayuda a reconstruir prácticas cuando los textos no sobreviven.</p>
-      <h4 id="cap-67">Capítulo LXVII — Falsificaciones históricas</h4>
-      <p>Textos mágicos falsos pueden tener siglos de antigüedad y enorme influencia.</p>
-      <p>Una falsificación histórica sigue siendo un objeto histórico real aunque sus
-      afirmaciones de autoría sean falsas.</p>
-      <p>Filología y Criminalística Arcana colaboran en su estudio.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Anacronismo</h4>
-      <p>Atribuir conceptos modernos a autores antiguos distorsiona sus preguntas.</p>
-      <p>Un alquimista que habla de alma no estaba necesariamente formulando Pneumatología.</p>
-      <p>El historiador debe resistir la comodidad de traducir todo al lenguaje que ya
-      conoce.</p>
-      <h4 id="cap-69">Capítulo LXIX — Comparación controlada</h4>
-      <p>Una buena comparación declara qué dimensiones está comparando.</p>
-      <p>Dos sistemas pueden ser equivalentes en efecto y opuestos en teoría.</p>
-      <p>El historiador debe evitar convertir una semejanza parcial en identidad total.</p>
-      <h4 id="cap-70">Capítulo LXX — Casos de traducción exitosa</h4>
-      <p>Algunos conceptos sí han encontrado equivalencias robustas entre tradiciones.</p>
-      <p>Proporción ritual, clausura, referencia y agotamiento aparecen con suficiente
-      regularidad como para permitir comparación amplia.</p>
-      <p>Estas convergencias ayudaron a construir lenguajes académicos comunes.</p>
-      <h4 id="cap-71">Capítulo LXXI — Casos de traducción fallida</h4>
-      <p>Otras categorías se resisten a equivalencia.</p>
-      <p>Conceptos de honor, alma colectiva, parentesco con el territorio o identidad ancestral
-      pueden perder demasiado al traducirse.</p>
-      <p>En estos casos, Dolbred mantiene el término original siempre que sea posible.</p>
-      <h4 id="cap-72">Capítulo LXXII — Instituciones rivales</h4>
-      <p>No todas las academias aceptan el modelo dolbriano.</p>
-      <p>Algunas prefieren escuelas religiosas, elementales o artesanales.</p>
-      <p>El desacuerdo institucional demuestra que la organización del saber sigue siendo objeto
-      de debate.</p>
-      <h4 id="cap-73">Capítulo LXXIII — La historia como laboratorio</h4>
+      objeto. Dracología Comparada conserva un nombre nacido del estudio temprano de la rama de
+      fuego pese a estudiar hoy múltiples linajes, lo que muestra que las universidades también
+      poseen historia dentro de su propio vocabulario.</p>
+      <p>Las historias tradicionales privilegian, además, a autores con textos conservados,
+      instituciones poderosas y lenguas prestigiosas. Muchas técnicas atribuidas a un célebre
+      académico existían antes en comunidades sin archivo escrito, y la historiografía moderna
+      intenta separar formalización, publicación y descubrimiento práctico.</p>
+      <p>Imperios, academias y gremios han incorporado, por su parte, conocimientos de pueblos
+      subordinados sin reconocer su origen. Estudiar esa apropiación es parte de la historia
+      científica. El valor de una técnica no elimina la obligación de reconstruir cómo llegó a
+      manos de quien la publicó.</p>
+      <h4 id="cap-24">Capítulo XXIV — Pérdida documental, falsificación y anacronismo</h4>
+      <p>Incendios, guerras, persecuciones y degradación mágica han destruido enormes archivos.
+      La ausencia documental crea sesgos inevitables, y Arqueología Arcana ayuda a reconstruir
+      prácticas cuando los textos no sobreviven.</p>
+      <p>Los textos mágicos falsos, por otra parte, pueden tener siglos de antigüedad y enorme
+      influencia. Una falsificación histórica sigue siendo un objeto histórico real aunque sus
+      afirmaciones de autoría sean falsas, y Filología y Criminalística Arcana colaboran en su
+      estudio.</p>
+      <p>Atribuir conceptos modernos a autores antiguos distorsiona, finalmente, sus preguntas.
+      Un alquimista que habla de alma no estaba necesariamente formulando Pneumatología, y el
+      historiador debe resistir la comodidad de traducir todo al lenguaje que ya conoce.</p>
+      <h4 id="cap-25">Capítulo XXV — Comparación controlada: traducciones exitosas y
+      fallidas</h4>
+      <p>Una buena comparación declara qué dimensiones está comparando. Dos sistemas pueden ser
+      equivalentes en efecto y opuestos en teoría, y el historiador debe evitar convertir una
+      semejanza parcial en identidad total.</p>
+      <p>Algunos conceptos sí han encontrado equivalencias robustas entre tradiciones. Proporción
+      ritual, clausura, referencia y agotamiento aparecen con suficiente regularidad como para
+      permitir una comparación amplia, y estas convergencias ayudaron a construir lenguajes
+      académicos comunes.</p>
+      <p>Otras categorías se resisten, en cambio, a la equivalencia. Conceptos de honor, alma
+      colectiva, parentesco con el territorio o identidad ancestral pueden perder demasiado al
+      traducirse, y en estos casos Dolbred mantiene el término original siempre que sea
+      posible.</p>
+      <h4 id="cap-26">Capítulo XXVI — La historia como laboratorio: el valor de los errores y
+      los mitos</h4>
       <p>Las tradiciones antiguas ofrecen variaciones de larga duración imposibles de reproducir
-      experimentalmente.</p>
-      <p>Comparar siglos de práctica permite observar qué técnicas sobreviven, cambian o
-      fallan.</p>
-      <p>La historia no sustituye al experimento, pero amplía enormemente el conjunto de
-      evidencia.</p>
-      <h4 id="cap-74">Capítulo LXXIV — La utilidad de los errores</h4>
-      <p>Las teorías equivocadas pueden revelar qué observaciones intentaban explicar.</p>
-      <p>Un modelo falso sostenido durante siglos suele contener alguna experiencia real que le
-      permitió persistir.</p>
-      <p>El historiador busca esa experiencia antes de descartarlo como superstición.</p>
-      <h4 id="cap-75">Capítulo LXXV — La utilidad de los mitos</h4>
+      experimentalmente. Comparar siglos de práctica permite observar qué técnicas sobreviven,
+      cambian o fallan; la historia no sustituye al experimento, pero amplía enormemente el
+      conjunto de evidencia disponible.</p>
+      <p>Las teorías equivocadas pueden revelar, en ese sentido, qué observaciones intentaban
+      explicar. Un modelo falso sostenido durante siglos suele contener alguna experiencia real
+      que le permitió persistir, y el historiador busca esa experiencia antes de descartarlo como
+      superstición.</p>
       <p>Los mitos no son tratados científicos, pero pueden conservar memoria de fenómenos,
-      catástrofes y relaciones.</p>
-      <p>Su lenguaje simbólico exige cautela.</p>
-      <p>Dracología, Tanatología y Planología utilizan mitos como indicios que necesitan
-      corroboración independiente.</p>
-      <h4 id="cap-76">Capítulo LXXVI — Historia y Epistemología</h4>
-      <p>La historia muestra cuántas ideas consideradas obvias fueron abandonadas después.</p>
-      <p>Epistemología Arcana utiliza este registro como defensa contra exceso de certeza.</p>
-      <p>Reconocer errores pasados no implica que todo conocimiento presente sea igualmente
+      catástrofes y relaciones, aunque su lenguaje simbólico exige cautela. Dracología,
+      Tanatología y Planología utilizan mitos como indicios que necesitan corroboración
+      independiente.</p>
+      <h4 id="cap-27">Capítulo XXVII — Historia, epistemología, regulación, ética y poder</h4>
+      <p>La historia muestra cuántas ideas consideradas obvias fueron abandonadas después.
+      Epistemología Arcana utiliza este registro como defensa contra el exceso de certeza, aunque
+      reconocer errores pasados no implica que todo conocimiento presente sea igualmente
       incierto.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Historia y regulación</h4>
-      <p>Muchas normas dolbrianas nacieron de incidentes concretos.</p>
-      <p>Comprender su origen ayuda a distinguir principios de seguridad de restricciones
-      heredadas que quizá ya no cumplen su función.</p>
-      <p>El derecho también necesita historiografía para reformarse.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — Historia y ética</h4>
-      <p>Las prácticas aceptadas en una época pueden resultar intolerables después.</p>
-      <p>Experimentación sobre prisioneros, creaciones conscientes sin derechos y modificación de
-      memoria figuran entre los casos estudiados.</p>
-      <p>La historia ética evita presentar el progreso institucional como automático.</p>
-      <h4 id="cap-79">Capítulo LXXIX — Historia y poder</h4>
-      <p>Quién puede nombrar una disciplina influye en qué conocimiento se considera
-      legítimo.</p>
-      <p>Las universidades concentran autoridad, pero no poseen monopolio sobre la
-      observación.</p>
-      <p>La historiografía dolbriana intenta estudiar también saberes que nunca tuvieron
-      facultad propia.</p>
-      <h4 id="cap-80">Capítulo LXXX — El presente como historia futura</h4>
-      <p>Las categorías actuales también serán revisadas.</p>
-      <p>Algunas teorías aceptadas por Dolbred probablemente resultarán incompletas.</p>
-      <p>Enseñar historia implica recordar a los estudiantes que ellos también trabajan dentro de
-      un momento provisional.</p>
-      <h4 id="cap-81">Capítulo LXXXI — La pregunta comparativa</h4>
+      <p>Muchas normas dolbrianas nacieron, además, de incidentes concretos. Comprender su origen
+      ayuda a distinguir principios de seguridad de restricciones heredadas que quizá ya no
+      cumplen su función, porque el derecho también necesita historiografía para reformarse.</p>
+      <p>Las prácticas aceptadas en una época pueden resultar intolerables después.
+      Experimentación sobre prisioneros, creaciones conscientes sin derechos y modificación de
+      memoria figuran entre los casos estudiados, y la historia ética evita presentar el progreso
+      institucional como automático.</p>
+      <p>Quién puede nombrar una disciplina influye, a su vez, en qué conocimiento se considera
+      legítimo. Las universidades concentran autoridad, pero no poseen monopolio sobre la
+      observación, y la historiografía dolbriana intenta estudiar también saberes que nunca
+      tuvieron facultad propia.</p>
+      <p>Las categorías actuales también serán revisadas con el tiempo. Algunas teorías
+      aceptadas hoy por Dolbred probablemente resultarán incompletas, y enseñar historia implica
+      recordar a los estudiantes que ellos también trabajan dentro de un momento provisional.</p>
+      <h4 id="cap-28">Capítulo XXVIII — Las preguntas comparativa e histórica</h4>
       <p>Cuando dos culturas describen un mismo fenómeno de formas incompatibles, la tarea no es
-      decidir inmediatamente cuál estaba equivocada.</p>
-      <p>Primero se pregunta qué observó cada una, qué podía predecir y qué intervención
-      conseguía realizar.</p>
-      <p>Sólo después resulta posible comparar sus explicaciones.</p>
-      <h4 id="cap-82">Capítulo LXXXII — La pregunta histórica</h4>
-      <p>¿Cómo llegaron sociedades distintas a principios semejantes?</p>
-      <p>A veces mediante contacto, otras mediante convergencia y otras porque la propia magia
-      impone límites que cualquier practicante termina encontrando.</p>
-      <p>La Historia de las Ciencias Mágicas estudia esas rutas sin reducirlas a una única
-      genealogía.</p>
+      decidir inmediatamente cuál estaba equivocada. Primero se pregunta qué observó cada una,
+      qué podía predecir y qué intervención conseguía realizar; sólo después resulta posible
+      comparar sus explicaciones.</p>
+      <p>¿Cómo llegaron sociedades distintas a principios semejantes? A veces mediante contacto,
+      otras mediante convergencia y otras porque la propia magia impone límites que cualquier
+      practicante termina encontrando. La Historia de las Ciencias Mágicas estudia esas rutas sin
+      reducirlas a una única genealogía.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Historia de las Ciencias Mágicas demuestra que el conocimiento mágico no posee una
       sola lengua de origen. Diferentes culturas desarrollaron técnicas, teorías y cosmologías
