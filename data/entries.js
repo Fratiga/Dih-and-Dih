@@ -17891,90 +17891,35 @@ window.ENTRIES = [
       Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de la disciplina</a>
-        <a href="#cap-2">II. Neutralidad académica</a>
-        <a href="#cap-3">III. Fenómeno e interpretación</a>
-        <a href="#cap-4">IV. Teurgia</a>
-        <a href="#cap-5">V. Milagro</a>
-        <a href="#cap-6">VI. Revelación</a>
-        <a href="#cap-7">VII. Oración</a>
-        <a href="#cap-8">VIII. Silencio divino</a>
-        <a href="#cap-9">IX. Intercesión</a>
-        <a href="#cap-10">X. Religiones de los Eternos</a>
-        <a href="#cap-11">XI. Kanea</a>
-        <a href="#cap-12">XII. Ausencia de respuesta de Kanea</a>
-        <a href="#cap-13">XIII. Señores Elementales y religión</a>
-        <a href="#cap-14">XIV. Poder y divinidad</a>
-        <a href="#cap-15">XV. Sagrado y poderoso</a>
-        <a href="#cap-16">XVI. Reliquias</a>
-        <a href="#cap-17">XVII. Consagración</a>
-        <a href="#cap-18">XVIII. Sacerdocio</a>
-        <a href="#cap-19">XIX. Autoridad religiosa</a>
-        <a href="#cap-20">XX. Ortodoxia y herejía</a>
-        <a href="#cap-21">XXI. Cisma</a>
-        <a href="#cap-22">XXII. Ritual y culto</a>
-        <a href="#cap-23">XXIII. Sacrificio</a>
-        <a href="#cap-24">XXIV. Ofrenda</a>
-        <a href="#cap-25">XXV. Pacto religioso</a>
-        <a href="#cap-26">XXVI. Pecado, tabú y transgresión</a>
-        <a href="#cap-27">XXVII. Pureza</a>
-        <a href="#cap-28">XXVIII. Exorcismo</a>
-        <a href="#cap-29">XXIX. Espíritus y ancestros</a>
-        <a href="#cap-30">XXX. Culto a los muertos</a>
-        <a href="#cap-31">XXXI. Canon</a>
-        <a href="#cap-32">XXXII. Texto sagrado</a>
-        <a href="#cap-33">XXXIII. Traducción sagrada</a>
-        <a href="#cap-34">XXXIV. Nombre divino</a>
-        <a href="#cap-35">XXXV. Iconos e imágenes</a>
-        <a href="#cap-36">XXXVI. Lugares sagrados</a>
-        <a href="#cap-37">XXXVII. Peregrinación</a>
-        <a href="#cap-38">XXXVIII. Tiempo sagrado</a>
-        <a href="#cap-39">XXXIX. Apocalipsis</a>
-        <a href="#cap-40">XL. Salvación</a>
-        <a href="#cap-41">XLI. Muerte y destino del alma</a>
-        <a href="#cap-42">XLII. Resurrección religiosa</a>
-        <a href="#cap-43">XLIII. Eternos y victoria sobre la muerte</a>
-        <a href="#cap-44">XLIV. Religión y poder político</a>
-        <a href="#cap-45">XLV. Religión estatal</a>
-        <a href="#cap-46">XLVI. Minorías religiosas</a>
-        <a href="#cap-47">XLVII. Conversión</a>
-        <a href="#cap-48">XLVIII. Sincretismo</a>
-        <a href="#cap-49">XLIX. Traducción entre dioses</a>
-        <a href="#cap-50">L. Entidades que aceptan varios cultos</a>
-        <a href="#cap-51">LI. Entidades que niegan divinidad</a>
-        <a href="#cap-52">LII. Entidades silenciosas</a>
-        <a href="#cap-53">LIII. Entidades engañosas</a>
-        <a href="#cap-54">LIV. La experiencia compartida</a>
-        <a href="#cap-55">LV. Éxtasis</a>
-        <a href="#cap-56">LVI. Estigma y marca sagrada</a>
-        <a href="#cap-57">LVII. Reliquia versus artefacto</a>
-        <a href="#cap-58">LVIII. Milagro reproducible</a>
-        <a href="#cap-59">LIX. Milagro irreproducible</a>
-        <a href="#cap-60">LX. Teodicea y sufrimiento</a>
-        <a href="#cap-61">LXI. Providencia</a>
-        <a href="#cap-62">LXII. Libre voluntad</a>
-        <a href="#cap-63">LXIII. El problema de la fuente común</a>
-        <a href="#cap-64">LXIV. Hipótesis de intermediación</a>
-        <a href="#cap-65">LXV. Hipótesis pluralista</a>
-        <a href="#cap-66">LXVI. Hipótesis convergente</a>
-        <a href="#cap-67">LXVII. Hipótesis no resuelta</a>
-        <a href="#cap-68">LXVIII. Comparación responsable</a>
-        <a href="#cap-69">LXIX. El error de la religión primitiva</a>
-        <a href="#cap-70">LXX. El error de la reducción arcana</a>
-        <a href="#cap-71">LXXI. El error confesional</a>
-        <a href="#cap-72">LXXII. El error de la falsa equivalencia</a>
-        <a href="#cap-73">LXXIII. Investigación de campo</a>
-        <a href="#cap-74">LXXIV. Consentimiento y culto</a>
-        <a href="#cap-75">LXXV. Datos teúrgicos</a>
-        <a href="#cap-76">LXXVI. Derecho y religión</a>
-        <a href="#cap-77">LXXVII. Conflictos religiosos</a>
-        <a href="#cap-78">LXXVIII. Diálogo interreligioso</a>
-        <a href="#cap-79">LXXIX. La cuestión de la verdad</a>
-        <a href="#cap-80">LXXX. Relación con Epistemología Arcana</a>
-        <a href="#cap-81">LXXXI. Relación con Historia</a>
-        <a href="#cap-82">LXXXII. Relación con Teurgia</a>
-        <a href="#cap-83">LXXXIII. La pregunta comparativa</a>
-        <a href="#cap-84">LXXXIV. La pregunta dolbriana</a>
+        <a href="#cap-1">I. Objeto, neutralidad y método</a>
+        <a href="#cap-2">II. Teurgia y milagro</a>
+        <a href="#cap-3">III. Revelación y oración</a>
+        <a href="#cap-4">IV. Silencio divino e intercesión</a>
+        <a href="#cap-5">V. Religiones de los Eternos y de Kanea</a>
+        <a href="#cap-6">VI. Señores Elementales, poder y divinidad</a>
+        <a href="#cap-7">VII. Reliquias y consagración</a>
+        <a href="#cap-8">VIII. Sacerdocio y autoridad religiosa</a>
+        <a href="#cap-9">IX. Ortodoxia, herejía y cisma</a>
+        <a href="#cap-10">X. Ritual, sacrificio y ofrenda</a>
+        <a href="#cap-11">XI. Pacto, transgresión y pureza</a>
+        <a href="#cap-12">XII. Espíritus, exorcismo y culto a los muertos</a>
+        <a href="#cap-13">XIII. Canon, texto sagrado y traducción sagrada</a>
+        <a href="#cap-14">XIV. Nombre divino e iconografía</a>
+        <a href="#cap-15">XV. Geografía y tiempo sagrados</a>
+        <a href="#cap-16">XVI. Apocalipsis y salvación</a>
+        <a href="#cap-17">XVII. Muerte, resurrección y los Eternos</a>
+        <a href="#cap-18">XVIII. Religión, poder político y minorías</a>
+        <a href="#cap-19">XIX. Conversión, sincretismo y traducción entre dioses</a>
+        <a href="#cap-20">XX. La naturaleza de las entidades veneradas</a>
+        <a href="#cap-21">XXI. Experiencia religiosa compartida</a>
+        <a href="#cap-22">XXII. Objetos sagrados y milagros</a>
+        <a href="#cap-23">XXIII. Teodicea, providencia y libre voluntad</a>
+        <a href="#cap-24">XXIV. El problema de la fuente común</a>
+        <a href="#cap-25">XXV. Comparación responsable y errores metodológicos</a>
+        <a href="#cap-26">XXVI. Investigación de campo y ética</a>
+        <a href="#cap-27">XXVII. Derecho, conflicto y diálogo interreligioso</a>
+        <a href="#cap-28">XXVIII. La cuestión de la verdad y disciplinas afines</a>
+        <a href="#cap-29">XXIX. La pregunta comparativa y la pregunta dolbriana</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -17993,477 +17938,378 @@ window.ENTRIES = [
       evitar dos reducciones: aceptar sin examen toda afirmación doctrinal o traducir cada
       religión al lenguaje académico como si los creyentes sólo estuvieran describiendo mal una
       teoría dolbriana.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de la disciplina</h4>
+      <h4 id="cap-1">Capítulo I — Objeto, neutralidad y método</h4>
       <p>La Teología Comparada estudia doctrinas, cultos, prácticas y experiencias religiosas en
-      relación con fenómenos mágicos y teúrgicos.</p>
-      <p>Compara cómo distintas culturas explican revelación, milagro, autoridad sagrada,
-      oración, consagración y presencia divina.</p>
-      <p>La disciplina distingue descripción histórica, análisis del fenómeno y afirmación
-      confesional.</p>
-      <h4 id="cap-2">Capítulo II — Neutralidad académica</h4>
-      <p>Dolbred no adopta una religión oficial dentro de esta disciplina.</p>
-      <p>Neutralidad no significa declarar todas las afirmaciones igualmente probables, sino
-      evaluar evidencia sin exigir adhesión doctrinal.</p>
-      <p>Las conclusiones empíricas y las conclusiones teológicas se registran por separado.</p>
-      <h4 id="cap-3">Capítulo III — Fenómeno e interpretación</h4>
-      <p>Una manifestación observada y su interpretación religiosa no son la misma cosa.</p>
-      <p>Dos tradiciones pueden describir correctamente el mismo fenómeno y discrepar sobre su
-      causa última.</p>
-      <p>El análisis comienza separando qué ocurrió de qué significado se le atribuyó.</p>
-      <h4 id="cap-4">Capítulo IV — Teurgia</h4>
-      <p>La Teurgia estudia relaciones mediante las cuales una tradición obtiene efectos
-      asociados a autoridad sagrada, culto o intermediación.</p>
-      <p>Teología Comparada pregunta cómo esas relaciones son comprendidas por las comunidades
-      que las practican.</p>
-      <p>La semejanza funcional no implica identidad de fuente.</p>
-      <h4 id="cap-5">Capítulo V — Milagro</h4>
+      relación con fenómenos mágicos y teúrgicos, comparando cómo distintas culturas explican
+      revelación, milagro, autoridad sagrada, oración, consagración y presencia divina. Para
+      ello distingue tres niveles de análisis que conviene no confundir: la descripción
+      histórica de lo ocurrido, el análisis del fenómeno en sí y la afirmación confesional que
+      una tradición hace sobre su causa.</p>
+      <p>Dolbred no adopta una religión oficial dentro de esta disciplina. Su neutralidad no
+      consiste en declarar todas las afirmaciones igualmente probables, sino en evaluar la
+      evidencia disponible sin exigir adhesión doctrinal previa; las conclusiones empíricas y
+      las conclusiones teológicas se registran por separado, de modo que un hallazgo
+      verificable no se confunda con la interpretación religiosa que una comunidad le
+      atribuye.</p>
+      <p>Esta separación se apoya en una distinción básica entre el fenómeno y su lectura. Una
+      manifestación observada y su interpretación religiosa no son la misma cosa. Dos
+      tradiciones pueden describir correctamente el mismo acontecimiento y discrepar por
+      completo sobre su causa última, de modo que el análisis comparado comienza siempre
+      separando qué ocurrió de qué significado se le atribuyó.</p>
+      <h4 id="cap-2">Capítulo II — Teurgia y milagro</h4>
+      <p>La Teurgia estudia las relaciones mediante las cuales una tradición obtiene efectos
+      asociados a autoridad sagrada, culto o intermediación, mientras que la Teología Comparada
+      pregunta cómo esas relaciones son comprendidas por las comunidades que las practican. La
+      semejanza funcional entre dos prácticas no implica identidad de fuente. Dos tradiciones
+      pueden producir efectos parecidos mediante relaciones de naturaleza distinta.</p>
       <p>El término milagro describe, en muchas religiones, un acontecimiento interpretado como
-      intervención sagrada.</p>
-      <p>Académicamente no constituye una categoría causal única.</p>
-      <p>Un milagro puede coincidir con un fenómeno teúrgico conocido o permanecer sin
-      explicación suficiente.</p>
-      <h4 id="cap-6">Capítulo VI — Revelación</h4>
+      intervención sagrada, pero académicamente no constituye una categoría causal única. Un
+      milagro puede coincidir con un fenómeno teúrgico ya conocido y estudiado, o puede
+      permanecer sin explicación suficiente. Ambos casos reciben el mismo nombre religioso
+      aunque su estatus epistemológico sea distinto.</p>
+      <h4 id="cap-3">Capítulo III — Revelación y oración</h4>
       <p>Las revelaciones pueden aparecer como voces, visiones, sueños, signos, presencias o
-      comprensión súbita.</p>
-      <p>Una tradición puede considerarlas comunicación divina; otra, mediación de ancestros o
-      santos.</p>
-      <p>Epistemología Arcana estudia qué justificación existe para aceptar el contenido como
-      verdadero.</p>
-      <h4 id="cap-7">Capítulo VII — Oración</h4>
-      <p>La oración puede cumplir funciones de petición, contemplación, reconocimiento, pacto,
-      memoria o disciplina comunitaria.</p>
-      <p>El hecho de que un fenómeno siga a una oración no determina por sí solo qué
-      respondió.</p>
-      <p>Las tradiciones difieren en si la eficacia depende de la deidad, del oficiante, de la
-      comunidad o de la forma ritual.</p>
-      <h4 id="cap-8">Capítulo VIII — Silencio divino</h4>
-      <p>La ausencia de respuesta recibe interpretaciones diversas: distancia, juicio, libertad,
-      incomprensibilidad, falta de autoridad o simple inexistencia de una intervención.</p>
-      <p>Teología Comparada registra estas respuestas sin elegir una automáticamente.</p>
-      <p>El silencio es un dato religioso y epistemológico, no una explicación completa.</p>
-      <h4 id="cap-9">Capítulo IX — Intercesión</h4>
-      <p>Muchas religiones distinguen entre una fuente sagrada última y seres que median ante
-      ella.</p>
-      <p>Santos, ancestros, heraldos, espíritus y figuras exaltadas pueden ocupar esta
-      función.</p>
-      <p>La mediación complica la atribución porque una manifestación puede ser interpretada
-      como obra del intermediario o de aquello que representa.</p>
-      <h4 id="cap-10">Capítulo X — Religiones de los Eternos</h4>
+      comprensión súbita. Una tradición puede considerarlas comunicación divina; otra, mediación
+      de ancestros o santos, sin que la forma de la experiencia decida por sí sola cuál lectura
+      corresponde. Epistemología Arcana estudia qué justificación existe para aceptar el
+      contenido de una revelación como verdadero.</p>
+      <p>La oración, por su parte, puede cumplir funciones de petición, contemplación,
+      reconocimiento, pacto, memoria o disciplina comunitaria. El hecho de que un fenómeno siga
+      a una oración no determina por sí solo qué respondió, y las tradiciones difieren en si la
+      eficacia depende de la deidad invocada, del oficiante, de la comunidad reunida o de la
+      forma ritual empleada.</p>
+      <h4 id="cap-4">Capítulo IV — Silencio divino e intercesión</h4>
+      <p>La ausencia de respuesta ante una plegaria recibe interpretaciones diversas, entre ellas
+      distancia, juicio, libertad, incomprensibilidad, falta de autoridad o simple inexistencia
+      de una intervención. Teología Comparada registra estas lecturas sin elegir una
+      automáticamente; el silencio es un dato religioso y epistemológico, no una explicación
+      completa en sí mismo.</p>
+      <p>Parte de la respuesta que las tradiciones dan a ese silencio pasa por la figura del
+      intermediario. Muchas religiones distinguen entre una fuente sagrada última y los seres
+      que median ante ella, entre ellos santos, ancestros, heraldos, espíritus y figuras
+      exaltadas. La mediación complica la atribución de cualquier manifestación, porque esta
+      puede interpretarse como obra del intermediario o de aquello que representa.</p>
+      <h4 id="cap-5">Capítulo V — Religiones de los Eternos y de Kanea</h4>
       <p>En territorios donde los Eternos son venerados, pueden ser comprendidos como dioses,
-      hijos sagrados, heraldos o pruebas vivientes de una autoridad superior.</p>
-      <p>La Teología Comparada estudia estas doctrinas sin asumir que la autointerpretación de
-      los Eternos resuelva su naturaleza metafísica.</p>
-      <p>La distinción entre culto dirigido a una figura y culto dirigido a aquello que esa
-      figura representa es central.</p>
-      <h4 id="cap-11">Capítulo XI — Kanea</h4>
-      <p>Kanea ocupa un lugar especialmente complejo en tradiciones solares y luminosas.</p>
-      <p>Algunas comunidades la describen como deidad; otras como principio, fuente, madre o
-      presencia inaccesible.</p>
-      <p>Dolbred puede estudiar fenómenos de luz asociados a su culto sin afirmar que la
-      categoría teológica utilizada por una tradición agote la naturaleza de Kanea.</p>
-      <h4 id="cap-12">Capítulo XII — Ausencia de respuesta de Kanea</h4>
-      <p>La falta de respuesta directa ha generado doctrinas opuestas.</p>
-      <p>Para algunos confirma trascendencia; para otros exige intermediarios; para otros indica
-      que los fenómenos atribuidos a ella proceden de agentes distintos.</p>
-      <p>La misma ausencia sostiene sistemas religiosos incompatibles.</p>
-      <h4 id="cap-13">Capítulo XIII — Señores Elementales y religión</h4>
-      <p>Grandes entidades elementales pueden recibir culto aunque no se presenten como
-      dioses.</p>
-      <p>Una comunidad puede interpretar Soberanía, longevidad o poder como signos de
-      divinidad.</p>
-      <p>Teología Comparada distingue condición ontológica observada de estatus religioso
-      atribuido.</p>
-      <h4 id="cap-14">Capítulo XIV — Poder y divinidad</h4>
-      <p>La disciplina rechaza identificar poder con divinidad de manera automática.</p>
-      <p>Una entidad capaz de producir prodigios puede seguir siendo finita, engañable o
-      limitada.</p>
-      <p>A la inversa, una religión puede sostener la existencia de una divinidad que no
-      produce manifestaciones detectables.</p>
-      <h4 id="cap-15">Capítulo XV — Sagrado y poderoso</h4>
-      <p>Sagrado es una categoría relacional y cultural además de mágica.</p>
-      <p>Un lugar puede ser sagrado para una comunidad sin poseer una firma excepcional.</p>
-      <p>Otro puede ser extraordinariamente poderoso y carecer por completo de estatus
-      religioso.</p>
-      <h4 id="cap-16">Capítulo XVI — Reliquias</h4>
-      <p>Las reliquias pueden funcionar como símbolos, anclajes, objetos históricos o soportes
-      de actividad teúrgica.</p>
-      <p>Su importancia religiosa no depende únicamente de poder mensurable.</p>
-      <p>Artefactología estudia el objeto; Teología Comparada estudia el significado atribuido a
-      su relación con una figura o tradición.</p>
-      <h4 id="cap-17">Capítulo XVII — Consagración</h4>
-      <p>Consagrar significa separar, dedicar o reconocer algo dentro de un orden religioso.</p>
-      <p>Algunas consagraciones producen cambios mágicos detectables; otras son principalmente
-      jurídicos o comunitarios.</p>
-      <p>La disciplina compara qué hace válida una consagración en cada tradición.</p>
-      <h4 id="cap-18">Capítulo XVIII — Sacerdocio</h4>
+      hijos sagrados, heraldos o pruebas vivientes de una autoridad superior. La Teología
+      Comparada estudia estas doctrinas sin asumir que la autointerpretación de los Eternos
+      resuelva su naturaleza metafísica; la distinción entre el culto dirigido a una figura y el
+      culto dirigido a aquello que esa figura representa resulta central en estos casos.</p>
+      <p>Kanea ocupa un lugar especialmente complejo en tradiciones solares y luminosas. Algunas
+      comunidades la describen como deidad; otras, como principio, fuente, madre o presencia
+      inaccesible. Dolbred puede estudiar los fenómenos de luz asociados a su culto sin afirmar
+      que la categoría teológica que una tradición utiliza agote su naturaleza.</p>
+      <p>La falta de respuesta directa por parte de Kanea ha generado doctrinas opuestas. Para
+      algunas comunidades confirma trascendencia; para otras exige intermediarios; para otras
+      más indica que los fenómenos que se le atribuyen proceden de agentes distintos. Una misma
+      ausencia, así, sostiene sistemas religiosos incompatibles entre sí.</p>
+      <h4 id="cap-6">Capítulo VI — Señores Elementales, poder y divinidad</h4>
+      <p>Grandes entidades elementales pueden recibir culto aunque no se presenten como dioses;
+      una comunidad puede interpretar su soberanía, longevidad o poder como signos de divinidad,
+      y Teología Comparada distingue en cada caso la condición ontológica observada del estatus
+      religioso que se le atribuye.</p>
+      <p>La disciplina rechaza identificar poder con divinidad de manera automática. Una entidad
+      capaz de producir prodigios puede seguir siendo finita, engañable o limitada; a la
+      inversa, una religión puede sostener la existencia de una divinidad que no produce
+      manifestaciones detectables en absoluto.</p>
+      <p>Lo sagrado, en este sentido, es una categoría relacional y cultural además de mágica. Un
+      lugar puede ser sagrado para una comunidad sin poseer una firma excepcional, y otro puede
+      ser extraordinariamente poderoso y carecer, sin embargo, de todo estatus religioso.</p>
+      <h4 id="cap-7">Capítulo VII — Reliquias y consagración</h4>
+      <p>Las reliquias pueden funcionar como símbolos, anclajes, objetos históricos o soportes de
+      actividad teúrgica, y su importancia religiosa no depende únicamente de un poder
+      mensurable. Artefactología estudia el objeto en sí; Teología Comparada estudia el
+      significado atribuido a su relación con una figura o tradición.</p>
+      <p>Consagrar significa separar, dedicar o reconocer algo dentro de un orden religioso.
+      Algunas consagraciones producen cambios mágicos detectables; otras son principalmente
+      jurídicas o comunitarias, y la disciplina compara qué es lo que hace válida una
+      consagración dentro de cada tradición.</p>
+      <h4 id="cap-8">Capítulo VIII — Sacerdocio y autoridad religiosa</h4>
       <p>El sacerdocio puede fundamentarse en ordenación, linaje, elección, conocimiento,
-      servicio o reconocimiento comunitario.</p>
-      <p>La capacidad teúrgica no siempre coincide con el cargo religioso.</p>
-      <p>Existen sacerdotes sin manifestaciones y practicantes con manifestaciones sin
-      reconocimiento institucional.</p>
-      <h4 id="cap-19">Capítulo XIX — Autoridad religiosa</h4>
-      <p>La autoridad puede provenir de revelación, tradición, cargo, genealogía, elección o
-      eficacia ritual.</p>
-      <p>Dos comunidades pueden reconocer fuentes distintas de legitimidad.</p>
-      <p>Derecho Arcano interviene cuando esa autoridad pretende producir efectos civiles.</p>
-      <h4 id="cap-20">Capítulo XX — Ortodoxia y herejía</h4>
-      <p>Ortodoxia y herejía son categorías internas de las religiones.</p>
-      <p>La academia puede describir qué doctrinas una institución acepta o condena sin declarar
-      verdadera a una parte.</p>
-      <p>Las herejías históricas son especialmente valiosas para mostrar alternativas
-      interpretativas dentro de una misma tradición.</p>
-      <h4 id="cap-21">Capítulo XXI — Cisma</h4>
-      <p>Los cismas pueden surgir por doctrina, autoridad, ritual o política.</p>
-      <p>Una diferencia mínima en interpretación teúrgica puede convertirse en división
-      institucional duradera.</p>
-      <p>Historia de las Ciencias Mágicas ayuda a reconstruir cuándo un desacuerdo técnico
-      adquirió significado religioso.</p>
-      <h4 id="cap-22">Capítulo XXII — Ritual y culto</h4>
-      <p>No todo ritual es religioso y no todo culto depende de rituales formalizados.</p>
-      <p>Una misma estructura ritual puede ser empleada con significados teológicos
-      diferentes.</p>
-      <p>Ritualística describe organización; Teología Comparada estudia significado y
+      servicio o reconocimiento comunitario. La capacidad teúrgica no siempre coincide con el
+      cargo religioso, pues existen sacerdotes sin manifestaciones y practicantes con
+      manifestaciones que carecen de reconocimiento institucional.</p>
+      <p>La autoridad religiosa, de modo semejante, puede provenir de revelación, tradición,
+      cargo, genealogía, elección o eficacia ritual. Dos comunidades pueden reconocer fuentes
+      distintas de legitimidad, y Derecho Arcano interviene cuando esa autoridad pretende
+      producir efectos civiles.</p>
+      <h4 id="cap-9">Capítulo IX — Ortodoxia, herejía y cisma</h4>
+      <p>Ortodoxia y herejía son categorías internas de las religiones. La academia puede
+      describir qué doctrinas acepta o condena una institución sin declarar verdadera a ninguna
+      de las partes, y las herejías históricas resultan especialmente valiosas porque muestran
+      alternativas interpretativas dentro de una misma tradición.</p>
+      <p>Los cismas, a su vez, pueden surgir por doctrina, autoridad, ritual o política. Una
+      diferencia mínima en interpretación teúrgica puede convertirse en una división
+      institucional duradera; Historia de las Ciencias Mágicas ayuda a reconstruir el momento en
+      que un desacuerdo técnico adquirió significado religioso.</p>
+      <h4 id="cap-10">Capítulo X — Ritual, sacrificio y ofrenda</h4>
+      <p>No todo ritual es religioso y no todo culto depende de rituales formalizados; una misma
+      estructura ritual puede emplearse con significados teológicos muy diferentes. Ritualística
+      describe su organización, mientras que Teología Comparada estudia su significado y su
       autoridad.</p>
-      <h4 id="cap-23">Capítulo XXIII — Sacrificio</h4>
-      <p>El sacrificio puede entenderse como intercambio, entrega, recuerdo, purificación,
-      hospitalidad o transformación.</p>
-      <p>Reducirlo a pago mágico suele perder su significado interno.</p>
-      <p>La disciplina distingue función observada de interpretación teológica.</p>
-      <h4 id="cap-24">Capítulo XXIV — Ofrenda</h4>
-      <p>Una ofrenda puede no buscar producir un efecto.</p>
-      <p>En muchas tradiciones expresa relación, gratitud o pertenencia.</p>
-      <p>La ausencia de resultado mensurable no la convierte en práctica fallida.</p>
-      <h4 id="cap-25">Capítulo XXV — Pacto religioso</h4>
-      <p>Algunas religiones utilizan lenguaje de pacto entre comunidad y divinidad.</p>
-      <p>No todos esos pactos funcionan como estructuras pactúrgicas técnicamente
-      ejecutables.</p>
-      <p>Pacturgia y Teología Comparada deben evitar confundir metáfora teológica con contrato
-      mágico.</p>
-      <h4 id="cap-26">Capítulo XXVI — Pecado, tabú y transgresión</h4>
-      <p>Las religiones definen conductas que rompen relaciones sagradas.</p>
-      <p>Algunas transgresiones poseen consecuencias mágicas observables y otras únicamente
-      morales o sociales.</p>
-      <p>La presencia de una maldición no demuestra que la categoría moral que la originó sea
-      universal.</p>
-      <h4 id="cap-27">Capítulo XXVII — Pureza</h4>
-      <p>Pureza puede referirse a estado moral, ritual, corporal, genealógico o material.</p>
-      <p>Las prácticas de purificación varían enormemente.</p>
-      <p>Patología Arcana debe evitar confundir categorías religiosas de impureza con
+      <p>Dentro del ritual, el sacrificio puede entenderse como intercambio, entrega, recuerdo,
+      purificación, hospitalidad o transformación; reducirlo a un simple pago mágico suele hacer
+      perder su significado interno, de modo que la disciplina distingue siempre la función
+      observada de la interpretación teológica.</p>
+      <p>Una ofrenda, por su parte, puede no buscar producir efecto alguno. En muchas tradiciones
+      expresa relación, gratitud o pertenencia, y la ausencia de un resultado mensurable no la
+      convierte en una práctica fallida.</p>
+      <h4 id="cap-11">Capítulo XI — Pacto, transgresión y pureza</h4>
+      <p>Algunas religiones utilizan un lenguaje de pacto entre comunidad y divinidad, pero no
+      todos esos pactos funcionan como estructuras pactúrgicas técnicamente ejecutables.
+      Pacturgia y Teología Comparada deben evitar confundir la metáfora teológica con el
+      contrato mágico propiamente dicho.</p>
+      <p>Las religiones también definen conductas que rompen relaciones sagradas. Algunas
+      transgresiones poseen consecuencias mágicas observables y otras son únicamente morales o
+      sociales; la presencia de una maldición no demuestra que la categoría moral que la
+      originó sea universal.</p>
+      <p>La pureza, finalmente, puede referirse a un estado moral, ritual, corporal, genealógico
+      o material, y las prácticas de purificación varían enormemente entre tradiciones.
+      Patología Arcana debe evitar confundir las categorías religiosas de impureza con la
       enfermedad.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Exorcismo</h4>
+      <h4 id="cap-12">Capítulo XII — Espíritus, exorcismo y culto a los muertos</h4>
       <p>Las tradiciones de expulsión de entidades utilizan nombres, autoridad, objetos,
-      plegarias y límites.</p>
-      <p>Técnicas funcionalmente semejantes pueden basarse en cosmologías opuestas.</p>
-      <p>Demonología y Pneumatología estudian mecanismo; Teología Comparada, autoridad
-      percibida.</p>
-      <h4 id="cap-29">Capítulo XXIX — Espíritus y ancestros</h4>
-      <p>Algunas religiones veneran muertos sin considerarlos dioses.</p>
-      <p>Otras entienden ancestros como intermediarios o componentes activos de la
-      comunidad.</p>
-      <p>Tanatología ayuda a separar continuidad post mortem de categoría religiosa.</p>
-      <h4 id="cap-30">Capítulo XXX — Culto a los muertos</h4>
-      <p>El culto funerario puede preservar memoria, identidad familiar y legitimidad
-      política.</p>
-      <p>La presencia real de un espíritu no es requisito para que la práctica tenga
-      significado religioso.</p>
-      <p>La academia estudia ambos niveles por separado.</p>
-      <h4 id="cap-31">Capítulo XXXI — Canon</h4>
-      <p>Los cánones reúnen textos o tradiciones considerados autorizados.</p>
-      <p>La formación del canon es histórica y suele incluir disputas sobre autenticidad y
-      autoridad.</p>
-      <p>Filología Arcana examina transmisión; Teología Comparada estudia por qué ciertos
-      textos adquieren estatus sagrado.</p>
-      <h4 id="cap-32">Capítulo XXXII — Texto sagrado</h4>
-      <p>Un texto puede ser sagrado por autoría atribuida, uso litúrgico, revelación o
-      tradición.</p>
-      <p>Su eficacia ritual no demuestra automáticamente sus afirmaciones históricas.</p>
-      <p>La lectura académica distingue función, doctrina y evidencia.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Traducción sagrada</h4>
-      <p>Traducir un texto religioso puede alterar doctrina y práctica.</p>
-      <p>Algunas tradiciones consideran una lengua indispensable; otras aceptan
-      equivalencias.</p>
-      <p>La historia de traducciones permite rastrear cómo cambia una teología al cambiar de
-      idioma.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Nombre divino</h4>
+      plegarias y límites; técnicas funcionalmente semejantes pueden basarse en cosmologías
+      opuestas. Demonología y Pneumatología estudian el mecanismo del exorcismo, mientras que
+      Teología Comparada estudia la autoridad que se le percibe.</p>
+      <p>Ese trato con lo espiritual se extiende al culto a los muertos. Algunas religiones
+      veneran a sus muertos sin considerarlos dioses; otras entienden a los ancestros como
+      intermediarios o componentes activos de la comunidad, y Tanatología ayuda a separar la
+      continuidad post mortem de la categoría religiosa que se le asigna.</p>
+      <p>El culto funerario, en cualquiera de sus formas, puede preservar memoria, identidad
+      familiar y legitimidad política. La presencia real de un espíritu no es requisito para que
+      la práctica tenga significado religioso, y la academia estudia ambos niveles por
+      separado.</p>
+      <h4 id="cap-13">Capítulo XIII — Canon, texto sagrado y traducción sagrada</h4>
+      <p>Los cánones reúnen textos o tradiciones considerados autorizados, y su formación es
+      histórica, pues suele incluir disputas sobre autenticidad y autoridad. Filología Arcana
+      examina la transmisión de esos textos; Teología Comparada estudia por qué ciertos de ellos
+      adquieren estatus sagrado.</p>
+      <p>Dentro de ese canon, un texto puede ser sagrado por autoría atribuida, uso litúrgico,
+      revelación o tradición. Su eficacia ritual no demuestra automáticamente sus afirmaciones
+      históricas, y la lectura académica distingue función, doctrina y evidencia como planos
+      separados.</p>
+      <p>Traducir un texto religioso puede alterar doctrina y práctica. Algunas tradiciones
+      consideran una lengua indispensable; otras aceptan equivalencias, y la historia de las
+      traducciones permite rastrear cómo cambia una teología al cambiar de idioma.</p>
+      <h4 id="cap-14">Capítulo XIV — Nombre divino e iconografía</h4>
       <p>Los nombres sagrados pueden funcionar como referencias, títulos o fórmulas de
-      autoridad.</p>
-      <p>No todas las tradiciones creen que el nombre capture esencia.</p>
-      <p>Semiótica Mágica ayuda a distinguir uso funcional de doctrina sobre nombres.</p>
-      <h4 id="cap-35">Capítulo XXXV — Iconos e imágenes</h4>
-      <p>Una imagen puede ser representación, presencia, recuerdo o punto de relación.</p>
-      <p>Las controversias iconográficas muestran que distintas religiones discrepan incluso
-      sobre qué significa representar lo sagrado.</p>
-      <p>La aparición de efectos alrededor de una imagen no resuelve por sí sola la
-      controversia.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Lugares sagrados</h4>
-      <p>Montañas, templos, fuentes, tumbas y ciudades pueden adquirir estatus sagrado.</p>
-      <p>A veces existe una anomalía mágica observable; otras veces la importancia deriva de
-      historia y comunidad.</p>
-      <p>Ecología Mágica y Arqueología Arcana estudian el lugar desde ángulos
+      autoridad, y no todas las tradiciones creen que el nombre capture la esencia de aquello
+      que designa. Semiótica Mágica ayuda a distinguir el uso funcional de un nombre de la
+      doctrina que se construye sobre él.</p>
+      <p>Algo semejante ocurre con las imágenes. Una imagen puede ser representación, presencia,
+      recuerdo o punto de relación. Las controversias iconográficas muestran que distintas
+      religiones discrepan incluso sobre qué significa representar lo sagrado, y la aparición de
+      efectos alrededor de una imagen no resuelve por sí sola esa controversia.</p>
+      <h4 id="cap-15">Capítulo XV — Geografía y tiempo sagrados</h4>
+      <p>Montañas, templos, fuentes, tumbas y ciudades pueden adquirir estatus sagrado. A veces
+      existe una anomalía mágica observable; otras veces la importancia deriva de la historia y
+      la comunidad, y Ecología Mágica y Arqueología Arcana estudian el lugar desde ángulos
       complementarios.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Peregrinación</h4>
-      <p>La peregrinación relaciona movimiento físico con transformación religiosa.</p>
-      <p>La eficacia puede atribuirse al destino, al trayecto o a la intención.</p>
-      <p>Comparar peregrinaciones revela cómo distintas culturas construyen geografía
+      <p>La peregrinación relaciona el movimiento físico con la transformación religiosa; su
+      eficacia puede atribuirse al destino, al trayecto o a la intención, y comparar
+      peregrinaciones entre culturas revela cómo cada una construye su propia geografía
       sagrada.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Tiempo sagrado</h4>
-      <p>Calendarios religiosos distinguen días, estaciones y aniversarios.</p>
-      <p>Algunos coinciden con ciclos mágicos reales; otros dependen de memoria histórica.</p>
-      <p>Cronurgia Teórica puede estudiar periodicidad sin decidir significado teológico.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Apocalipsis</h4>
-      <p>Las doctrinas de fin del mundo combinan cosmología, moral y expectativa histórica.</p>
-      <p>Algunas se apoyan en profecías o fenómenos adivinatorios.</p>
-      <p>Adivinación evalúa la información; Teología Comparada estudia cómo la comunidad la
-      integra en su visión del mundo.</p>
-      <h4 id="cap-40">Capítulo XL — Salvación</h4>
-      <p>Salvación puede significar supervivencia, liberación, unión, purificación, victoria
-      sobre la muerte o transformación moral.</p>
-      <p>No existe una equivalencia universal entre doctrinas.</p>
-      <p>La traducción debe conservar diferencias aunque los términos parezcan similares.</p>
-      <h4 id="cap-41">Capítulo XLI — Muerte y destino del alma</h4>
-      <p>Las religiones ofrecen modelos diversos sobre qué ocurre después de morir.</p>
-      <p>Tanatología puede observar algunos fenómenos post mortem sin decidir cuestiones
-      últimas.</p>
-      <p>La existencia de espíritus no valida automáticamente una doctrina completa sobre el más
-      allá.</p>
-      <h4 id="cap-42">Capítulo XLII — Resurrección religiosa</h4>
-      <p>La resurrección puede ser milagro, promesa, técnica o signo escatológico según la
-      tradición.</p>
-      <p>La medicina mágica puede reproducir ciertos retornos sin resolver su significado
-      religioso.</p>
-      <p>Teología Comparada estudia cómo cambia la doctrina cuando una práctica antes
-      excepcional se vuelve técnicamente posible.</p>
-      <h4 id="cap-43">Capítulo XLIII — Eternos y victoria sobre la muerte</h4>
-      <p>La existencia de seres que parecen escapar de la muerte genera interpretaciones
-      teológicas intensas.</p>
-      <p>Algunas comunidades los consideran santos, dioses o demostraciones de una promesa
-      religiosa.</p>
-      <p>Dolbred estudia el fenómeno de persistencia sin asumir que su significado confesional
-      quede resuelto por su existencia.</p>
-      <h4 id="cap-44">Capítulo XLIV — Religión y poder político</h4>
-      <p>Las doctrinas sagradas pueden legitimar reyes, leyes, guerras y fronteras.</p>
-      <p>La manifestación teúrgica puede reforzar esa autoridad.</p>
-      <p>Derecho Arcano distingue reconocimiento religioso de potestad civil.</p>
-      <h4 id="cap-45">Capítulo XLV — Religión estatal</h4>
-      <p>Un estado puede favorecer una religión por historia, legitimidad o cohesión.</p>
-      <p>La disciplina compara cómo esa posición afecta interpretación de milagros y
-      herejías.</p>
-      <p>La cercanía al poder puede influir en qué fenómenos reciben reconocimiento oficial.</p>
-      <h4 id="cap-46">Capítulo XLVI — Minorías religiosas</h4>
-      <p>Las tradiciones minoritarias suelen interpretar fenómenos desde marcos que la mayoría
-      considera extraños.</p>
-      <p>La diferencia doctrinal no debe tratarse como evidencia de peligro.</p>
-      <p>Dolbred procura separar riesgo mágico real de estigma religioso.</p>
-      <h4 id="cap-47">Capítulo XLVII — Conversión</h4>
+      <p>Los calendarios religiosos, por su parte, distinguen días, estaciones y aniversarios.
+      Algunos coinciden con ciclos mágicos reales; otros dependen de la memoria histórica, y
+      Cronurgia Teórica puede estudiar su periodicidad sin decidir su significado teológico.</p>
+      <h4 id="cap-16">Capítulo XVI — Apocalipsis y salvación</h4>
+      <p>Las doctrinas de fin del mundo combinan cosmología, moral y expectativa histórica, y
+      algunas se apoyan en profecías o fenómenos adivinatorios. Adivinación evalúa la
+      información disponible; Teología Comparada estudia cómo la comunidad la integra en su
+      visión del mundo.</p>
+      <p>La salvación que esas doctrinas prometen puede significar supervivencia, liberación,
+      unión, purificación, victoria sobre la muerte o transformación moral, según la tradición.
+      No existe una equivalencia universal entre estas nociones, y la traducción entre idiomas
+      debe conservar sus diferencias aunque los términos empleados parezcan similares.</p>
+      <h4 id="cap-17">Capítulo XVII — Muerte, resurrección y los Eternos</h4>
+      <p>Las religiones ofrecen modelos diversos sobre qué ocurre después de morir. Tanatología
+      puede observar algunos fenómenos post mortem sin decidir las cuestiones últimas que
+      plantean, y la existencia de espíritus no valida automáticamente una doctrina completa
+      sobre el más allá.</p>
+      <p>La resurrección, dentro de esos modelos, puede ser milagro, promesa, técnica o signo
+      escatológico según la tradición. La medicina mágica puede reproducir ciertos retornos sin
+      resolver su significado religioso, y Teología Comparada estudia cómo cambia una doctrina
+      cuando una práctica antes excepcional se vuelve técnicamente posible.</p>
+      <p>La existencia de seres como los Eternos, que parecen escapar de la muerte, genera
+      interpretaciones teológicas intensas. Algunas comunidades los consideran santos, dioses o
+      demostraciones de una promesa religiosa, y Dolbred estudia este fenómeno de persistencia
+      sin asumir que su significado confesional quede resuelto por su sola existencia.</p>
+      <h4 id="cap-18">Capítulo XVIII — Religión, poder político y minorías</h4>
+      <p>Las doctrinas sagradas pueden legitimar reyes, leyes, guerras y fronteras, y la
+      manifestación teúrgica puede reforzar esa autoridad. Derecho Arcano distingue el
+      reconocimiento religioso de la potestad civil propiamente dicha.</p>
+      <p>Un estado puede favorecer una religión por historia, legitimidad o cohesión; la
+      disciplina compara cómo esa posición afecta la interpretación de milagros y herejías, ya
+      que la cercanía al poder puede influir en qué fenómenos reciben reconocimiento oficial.</p>
+      <p>Las tradiciones minoritarias, en ese contexto, suelen interpretar los fenómenos desde
+      marcos que la mayoría considera extraños. La diferencia doctrinal no debe tratarse como
+      evidencia de peligro, y Dolbred procura separar el riesgo mágico real del estigma
+      puramente religioso.</p>
+      <h4 id="cap-19">Capítulo XIX — Conversión, sincretismo y traducción entre dioses</h4>
       <p>La conversión puede surgir de experiencia, comunidad, matrimonio, política o
-      revelación.</p>
-      <p>Una experiencia mágica intensa puede ser interpretada como prueba personal sin ser
-      demostración universal.</p>
-      <p>Epistemología Arcana ayuda a distinguir fuerza subjetiva de evidencia pública.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Sincretismo</h4>
-      <p>Cuando religiones conviven, pueden combinar figuras, ritos y doctrinas.</p>
-      <p>El sincretismo no es simple mezcla; produce nuevas interpretaciones.</p>
-      <p>Los fenómenos teúrgicos pueden ser reatribuidos a nuevas figuras sin cambiar
-      necesariamente su manifestación.</p>
-      <h4 id="cap-49">Capítulo XLIX — Traducción entre dioses</h4>
-      <p>Culturas en contacto suelen identificar deidades ajenas con figuras propias.</p>
-      <p>Estas equivalencias pueden facilitar diplomacia y borrar diferencias importantes.</p>
-      <p>La Teología Comparada registra la equivalencia como hecho histórico, no como identidad
-      metafísica demostrada.</p>
-      <h4 id="cap-50">Capítulo L — Entidades que aceptan varios cultos</h4>
-      <p>Una misma entidad puede ser venerada bajo títulos diferentes.</p>
-      <p>Eso no significa que todas las doctrinas sobre ella sean compatibles.</p>
-      <p>El comportamiento observable de la entidad puede ser más limitado que las teologías
-      desarrolladas alrededor de ella.</p>
-      <h4 id="cap-51">Capítulo LI — Entidades que niegan divinidad</h4>
-      <p>Una entidad adorada puede rechazar ser llamada dios.</p>
-      <p>La negativa es relevante pero no resuelve por sí sola qué entiende la comunidad por
-      divinidad.</p>
-      <p>La categoría religiosa pertenece tanto a la relación de culto como a la
-      autodescripción del objeto venerado.</p>
-      <h4 id="cap-52">Capítulo LII — Entidades silenciosas</h4>
-      <p>El culto puede persistir sin respuestas directas durante siglos.</p>
-      <p>Las comunidades desarrollan teologías del silencio, intermediación o ausencia.</p>
-      <p>La falta de manifestación no basta para clasificar una tradición como falsa.</p>
-      <h4 id="cap-53">Capítulo LIII — Entidades engañosas</h4>
-      <p>Algunas entidades aceptan culto o se presentan como dioses sin que pueda verificarse la
-      afirmación.</p>
-      <p>Demonología y Epistemología Arcana ayudan a evaluar fuente y capacidad de engaño.</p>
-      <p>Teología Comparada estudia qué ocurre cuando una religión descubre o disputa la
-      identidad de su objeto de culto.</p>
-      <h4 id="cap-54">Capítulo LIV — La experiencia compartida</h4>
-      <p>Varias personas pueden experimentar simultáneamente un fenómeno religioso.</p>
-      <p>La experiencia colectiva reduce algunas explicaciones individuales pero no determina su
-      interpretación.</p>
-      <p>Resonántica e Ilusionismo Teórico estudian mecanismos alternativos cuando
-      corresponde.</p>
-      <h4 id="cap-55">Capítulo LV — Éxtasis</h4>
-      <p>Estados extáticos aparecen en tradiciones muy diferentes.</p>
-      <p>Pueden producir visiones, analgesia, memoria alterada o sensación de presencia.</p>
-      <p>La semejanza fisiológica no vuelve idénticas las interpretaciones religiosas.</p>
-      <h4 id="cap-56">Capítulo LVI — Estigma y marca sagrada</h4>
-      <p>Marcas corporales pueden ser entendidas como bendición, señal de elección, maldición o
-      enfermedad.</p>
-      <p>Patología Arcana estudia daño y mecanismo; Teología Comparada, significado y
-      reconocimiento comunitario.</p>
-      <p>Las dos descripciones pueden coexistir.</p>
-      <h4 id="cap-57">Capítulo LVII — Reliquia versus artefacto</h4>
-      <p>Un objeto puede ser simultáneamente reliquia y artefacto.</p>
-      <p>Artefactología analiza funcionamiento; Teología Comparada estudia autoridad, memoria y
-      culto.</p>
-      <p>Reducir una reliquia a dispositivo funcional puede perder aquello que explica por qué
-      una comunidad la protege.</p>
-      <h4 id="cap-58">Capítulo LVIII — Milagro reproducible</h4>
-      <p>Si un fenómeno antes llamado milagro puede reproducirse técnicamente, su significado
-      religioso puede cambiar o permanecer.</p>
-      <p>Algunas tradiciones consideran que la técnica imita una obra sagrada; otras revisan la
-      doctrina.</p>
-      <p>La reproducibilidad no decide por sí sola la cuestión teológica.</p>
-      <h4 id="cap-59">Capítulo LIX — Milagro irreproducible</h4>
-      <p>Un acontecimiento único puede ser central para una religión y difícil de estudiar
-      científicamente.</p>
-      <p>La academia puede analizar testimonios, efectos y contexto sin prometer reconstrucción
-      total.</p>
-      <p>La falta de replicación limita afirmaciones empíricas, no el significado histórico.</p>
-      <h4 id="cap-60">Capítulo LX — Teodicea y sufrimiento</h4>
-      <p>Las religiones explican de maneras distintas por qué existen sufrimiento y mal.</p>
-      <p>La presencia observable de magia, dioses aparentes o entidades poderosas intensifica
-      estas preguntas sin resolverlas.</p>
-      <p>Teología Comparada estudia respuestas sin convertirlas en experimento.</p>
-      <h4 id="cap-61">Capítulo LXI — Providencia</h4>
-      <p>Providencia describe la idea de orientación o cuidado del mundo por una autoridad
-      superior.</p>
-      <p>Fenómenos improbables pueden interpretarse como señales.</p>
-      <p>Adivinación y Epistemología ayudan a evaluar el acontecimiento; la conclusión
-      providencial sigue siendo teológica.</p>
-      <h4 id="cap-62">Capítulo LXII — Libre voluntad</h4>
-      <p>Las religiones discrepan sobre destino, elección y responsabilidad.</p>
-      <p>Las profecías y pactos añaden problemas especiales.</p>
-      <p>Teología Comparada registra cómo cada sistema reconcilia previsión, autoridad y
-      agencia.</p>
-      <h4 id="cap-63">Capítulo LXIII — El problema de la fuente común</h4>
-      <p>Cuando religiones distintas producen fenómenos teúrgicos semejantes surge la hipótesis
-      de una fuente común.</p>
-      <p>Otras teorías proponen fuentes diferentes que responden a estructuras funcionalmente
-      parecidas.</p>
-      <p>Dolbred considera ambas posibilidades abiertas cuando la evidencia no permite
-      distinguirlas.</p>
-      <h4 id="cap-64">Capítulo LXIV — Hipótesis de intermediación</h4>
-      <p>Una escuela propone que muchas respuestas religiosas proceden de intermediarios y no de
-      la autoridad última nombrada por el culto.</p>
-      <p>La teoría explica algunas divergencias pero puede volverse demasiado flexible si se
-      usa para cualquier caso.</p>
-      <p>La disciplina exige criterios de prueba antes de adoptarla.</p>
-      <h4 id="cap-65">Capítulo LXV — Hipótesis pluralista</h4>
-      <p>Otra posición sostiene que distintas religiones contactan entidades o principios
-      diferentes y que la semejanza proviene de problemas rituales comunes.</p>
-      <p>Este modelo preserva diversidad de fuentes.</p>
-      <p>Tampoco puede asumirse universalmente sin evidencia.</p>
-      <h4 id="cap-66">Capítulo LXVI — Hipótesis convergente</h4>
-      <p>Una tercera propuesta afirma que estructuras rituales semejantes tienden a producir
-      fenómenos parecidos aunque las teologías sean distintas.</p>
-      <p>En este caso, parte del resultado dependería del método y no de identidad de la
-      fuente.</p>
-      <p>Teurgia investiga experimentalmente qué componentes apoyan esta teoría.</p>
-      <h4 id="cap-67">Capítulo LXVII — Hipótesis no resuelta</h4>
-      <p>Algunos fenómenos no permiten decidir entre entidad, tradición, resonancia o estructura
-      ritual.</p>
-      <p>Dolbred mantiene categorías provisionales en vez de imponer una conclusión.</p>
-      <p>La ignorancia documentada es preferible a una certeza fabricada.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Comparación responsable</h4>
-      <p>Una comparación debe declarar qué aspecto compara: doctrina, ritual, experiencia,
-      institución o resultado.</p>
-      <p>Decir dos religiones son iguales porque ambas utilizan luz es metodológicamente
-      pobre.</p>
-      <p>La semejanza parcial no debe borrar diferencias estructurales.</p>
-      <h4 id="cap-69">Capítulo LXIX — El error de la religión primitiva</h4>
-      <p>Las religiones antiguas no son versiones inmaduras de sistemas modernos.</p>
-      <p>Pueden contener teologías complejas y observaciones precisas.</p>
-      <p>Historia de las Ciencias Mágicas ayuda a reconstruirlas dentro de su propio
+      revelación. Una experiencia mágica intensa puede interpretarse como prueba personal sin
+      constituir una demostración universal, y Epistemología Arcana ayuda a distinguir la
+      fuerza subjetiva de una vivencia de la evidencia pública.</p>
+      <p>Cuando religiones conviven, pueden combinar figuras, ritos y doctrinas. El sincretismo
+      no es una simple mezcla, sino que produce nuevas interpretaciones, y los fenómenos
+      teúrgicos pueden ser reatribuidos a figuras distintas sin que cambie necesariamente su
+      manifestación.</p>
+      <p>Las culturas en contacto, además, suelen identificar deidades ajenas con figuras
+      propias. Estas equivalencias pueden facilitar la diplomacia y, al mismo tiempo, borrar
+      diferencias importantes; la Teología Comparada registra la equivalencia como hecho
+      histórico y no como identidad metafísica demostrada.</p>
+      <h4 id="cap-20">Capítulo XX — La naturaleza de las entidades veneradas</h4>
+      <p>Una misma entidad puede ser venerada bajo títulos diferentes, sin que eso signifique
+      que todas las doctrinas sobre ella sean compatibles; el comportamiento observable de la
+      entidad puede ser más limitado que las teologías desarrolladas a su alrededor.</p>
+      <p>Una entidad adorada puede incluso rechazar ser llamada dios. Esa negativa es relevante,
+      pero no resuelve por sí sola qué entiende la comunidad por divinidad, ya que la categoría
+      religiosa pertenece tanto a la relación de culto como a la autodescripción del objeto
+      venerado.</p>
+      <p>Otras entidades sostienen el culto sin ofrecer nunca respuestas directas, a veces
+      durante siglos. Las comunidades desarrollan entonces teologías del silencio, de la
+      intermediación o de la ausencia, y la falta de manifestación no basta para clasificar una
+      tradición como falsa.</p>
+      <p>Existe además el caso de entidades que aceptan culto o se presentan como dioses sin que
+      pueda verificarse la afirmación. Demonología y Epistemología Arcana ayudan a evaluar la
+      fuente y la capacidad de engaño, y Teología Comparada estudia qué ocurre cuando una
+      religión descubre o disputa la identidad de aquello que venera.</p>
+      <h4 id="cap-21">Capítulo XXI — Experiencia religiosa compartida</h4>
+      <p>Varias personas pueden experimentar simultáneamente un fenómeno religioso. La
+      experiencia colectiva reduce algunas explicaciones individuales, pero no determina por sí
+      sola su interpretación; Resonántica e Ilusionismo Teórico estudian mecanismos
+      alternativos cuando corresponde.</p>
+      <p>Los estados extáticos, en particular, aparecen en tradiciones muy diferentes y pueden
+      producir visiones, analgesia, memoria alterada o sensación de presencia. La semejanza
+      fisiológica entre ellos no vuelve idénticas las interpretaciones religiosas que cada
+      tradición ofrece.</p>
+      <p>Algo similar sucede con las marcas corporales, que pueden entenderse como bendición,
+      señal de elección, maldición o enfermedad. Patología Arcana estudia el daño y el
+      mecanismo; Teología Comparada, el significado y el reconocimiento comunitario, y ambas
+      descripciones pueden coexistir sin contradecirse.</p>
+      <h4 id="cap-22">Capítulo XXII — Objetos sagrados y milagros</h4>
+      <p>Un objeto puede ser simultáneamente reliquia y artefacto. Artefactología analiza su
+      funcionamiento; Teología Comparada estudia la autoridad, la memoria y el culto que se le
+      asocian, y reducir una reliquia a mero dispositivo funcional puede hacer perder aquello
+      que explica por qué una comunidad la protege.</p>
+      <p>Una tensión semejante aparece con los milagros. Si un fenómeno antes llamado milagro
+      puede reproducirse técnicamente, su significado religioso puede cambiar o permanecer
+      intacto. Algunas tradiciones consideran que la técnica imita una obra sagrada, mientras
+      que otras revisan directamente su doctrina, y la reproducibilidad no decide por sí sola
+      la cuestión teológica.</p>
+      <p>Un acontecimiento único, en cambio, puede ser central para una religión y resultar
+      difícil de estudiar científicamente. La academia puede analizar testimonios, efectos y
+      contexto sin prometer una reconstrucción total; la falta de replicación limita las
+      afirmaciones empíricas que pueden hacerse, no el significado histórico del
+      acontecimiento.</p>
+      <h4 id="cap-23">Capítulo XXIII — Teodicea, providencia y libre voluntad</h4>
+      <p>Las religiones explican de maneras distintas por qué existen el sufrimiento y el mal.
+      La presencia observable de magia, dioses aparentes o entidades poderosas intensifica
+      estas preguntas sin resolverlas, y Teología Comparada estudia las respuestas que cada
+      tradición ofrece sin convertirlas en experimento.</p>
+      <p>La providencia describe la idea de una orientación o cuidado del mundo por parte de una
+      autoridad superior; fenómenos improbables pueden interpretarse entonces como señales.
+      Adivinación y Epistemología ayudan a evaluar el acontecimiento en sí, aunque la conclusión
+      providencial que se extraiga de él sigue siendo teológica.</p>
+      <p>Las religiones discrepan también sobre destino, elección y responsabilidad, y las
+      profecías y los pactos añaden problemas especiales a esta discusión. Teología Comparada
+      registra cómo cada sistema reconcilia previsión, autoridad y agencia individual.</p>
+      <h4 id="cap-24">Capítulo XXIV — El problema de la fuente común</h4>
+      <p>Cuando religiones distintas producen fenómenos teúrgicos semejantes, surge la hipótesis
+      de una fuente común. Otras teorías proponen en cambio fuentes diferentes que responden a
+      estructuras funcionalmente parecidas, y Dolbred considera ambas posibilidades abiertas
+      mientras la evidencia no permita distinguirlas. La disciplina reconoce, en concreto,
+      cuatro hipótesis rivales.</p>
+      <p>La primera, la hipótesis de intermediación, propone que muchas respuestas religiosas
+      proceden de intermediarios y no de la autoridad última nombrada por el culto. Explica
+      algunas divergencias, pero puede volverse demasiado flexible si se usa para cualquier
+      caso, por lo que la disciplina exige criterios de prueba antes de adoptarla.</p>
+      <p>La segunda, la hipótesis pluralista, sostiene que distintas religiones contactan
+      entidades o principios diferentes y que la semejanza entre ellas proviene de problemas
+      rituales comunes. Este modelo preserva la diversidad de fuentes, aunque tampoco puede
+      asumirse universalmente sin evidencia.</p>
+      <p>La tercera, la hipótesis convergente, afirma que estructuras rituales semejantes
+      tienden a producir fenómenos parecidos aunque las teologías sean distintas; parte del
+      resultado dependería entonces del método empleado y no de la identidad de la fuente.
+      Teurgia investiga experimentalmente qué componentes apoyan esta teoría.</p>
+      <p>Algunos fenómenos, sin embargo, no permiten decidir entre entidad, tradición,
+      resonancia o estructura ritual, y constituyen la hipótesis no resuelta. Dolbred mantiene
+      en esos casos categorías provisionales en vez de imponer una conclusión, pues la
+      ignorancia documentada es preferible a una certeza fabricada.</p>
+      <h4 id="cap-25">Capítulo XXV — Comparación responsable y errores metodológicos</h4>
+      <p>Una comparación responsable debe declarar qué aspecto compara, ya sea doctrina, ritual,
+      experiencia, institución o resultado. Afirmar que dos religiones son iguales porque ambas
+      utilizan luz es metodológicamente pobre, pues la semejanza parcial no debe borrar
+      diferencias estructurales.</p>
+      <p>Esta exigencia metodológica se traduce en varios errores que la disciplina procura
+      evitar. El primero trata a las religiones antiguas como versiones inmaduras de sistemas
+      modernos, cuando en realidad pueden contener teologías complejas y observaciones
+      precisas; Historia de las Ciencias Mágicas ayuda a reconstruirlas dentro de su propio
       contexto.</p>
-      <h4 id="cap-70">Capítulo LXX — El error de la reducción arcana</h4>
-      <p>Explicar un fenómeno mediante teoría mágica no elimina su significado religioso.</p>
-      <p>Decir que una reliquia utiliza un anclaje no responde por qué una comunidad la
-      considera sagrada.</p>
-      <p>Mecanismo y significado pertenecen a preguntas distintas.</p>
-      <h4 id="cap-71">Capítulo LXXI — El error confesional</h4>
-      <p>El investigador tampoco puede convertir su propia fe en criterio académico
-      automático.</p>
-      <p>La experiencia personal puede orientar preguntas, no decidir conclusiones
-      comparativas.</p>
-      <p>Los trabajos deben distinguir testimonio de argumento.</p>
-      <h4 id="cap-72">Capítulo LXXII — El error de la falsa equivalencia</h4>
-      <p>Tratar todas las doctrinas como intercambiables por cortesía destruye la
-      comparación.</p>
-      <p>Dos religiones pueden ser genuinamente incompatibles en afirmaciones centrales.</p>
-      <p>La neutralidad académica permite describir el conflicto con precisión.</p>
-      <h4 id="cap-73">Capítulo LXXIII — Investigación de campo</h4>
-      <p>El estudio incluye entrevistas, observación ritual, textos, arquitectura y registro de
-      manifestaciones.</p>
-      <p>Los investigadores deben respetar límites de acceso y secreto religioso.</p>
-      <p>La autorización académica no da derecho automático a presenciar ceremonias
-      privadas.</p>
-      <h4 id="cap-74">Capítulo LXXIV — Consentimiento y culto</h4>
-      <p>Las comunidades religiosas mantienen derecho a decidir qué prácticas pueden
-      documentarse.</p>
-      <p>La investigación no debe provocar manifestaciones sagradas sólo para comprobar una
-      teoría.</p>
-      <p>Ética de la Alteración interviene cuando un procedimiento afecta participantes.</p>
-      <h4 id="cap-75">Capítulo LXXV — Datos teúrgicos</h4>
-      <p>Las mediciones de fenómenos religiosos pueden ser científicamente útiles y socialmente
-      sensibles.</p>
-      <p>Publicar una firma o debilidad ritual puede poner en riesgo una comunidad.</p>
-      <p>Dolbred utiliza acceso restringido cuando la transparencia completa produciría daño
-      previsible.</p>
-      <h4 id="cap-76">Capítulo LXXVI — Derecho y religión</h4>
-      <p>Derecho Arcano regula consecuencias civiles sin decidir verdad doctrinal.</p>
-      <p>Puede reconocer matrimonios, cargos, templos y objeciones religiosas mientras mantiene
-      neutralidad respecto de la metafísica.</p>
-      <p>La Teología Comparada ofrece contexto cuando una norma afecta prácticas
-      específicas.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Conflictos religiosos</h4>
-      <p>Las disputas pueden surgir por lugares, reliquias, interpretaciones o acusaciones de
-      falsedad.</p>
-      <p>La academia no actúa como árbitro teológico salvo que se le pida evaluar una
-      afirmación empírica concreta.</p>
-      <p>Su función principal es clarificar qué sostiene realmente cada parte.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — Diálogo interreligioso</h4>
-      <p>La comparación académica puede facilitar diálogo al identificar diferencias reales y
-      equivalencias parciales.</p>
-      <p>No busca fusionar doctrinas.</p>
-      <p>Comprender por qué dos tradiciones interpretan distinto un mismo fenómeno puede
-      reducir conflictos basados en caricaturas.</p>
-      <h4 id="cap-79">Capítulo LXXIX — La cuestión de la verdad</h4>
-      <p>La Teología Comparada no sostiene que la verdad religiosa sea irrelevante.</p>
-      <p>Sostiene que su método no puede resolver todas las afirmaciones últimas.</p>
-      <p>Cuando una afirmación produce consecuencias observables, puede estudiarse
-      empíricamente; cuando excede ese ámbito, se registra como doctrina.</p>
-      <h4 id="cap-80">Capítulo LXXX — Relación con Epistemología Arcana</h4>
-      <p>Epistemología pregunta qué justificación tiene una revelación.</p>
-      <p>Teología Comparada pregunta qué significa esa revelación dentro de una tradición.</p>
-      <p>Una fuente puede ser históricamente central aunque su verdad empírica permanezca
-      incierta.</p>
-      <h4 id="cap-81">Capítulo LXXXI — Relación con Historia</h4>
-      <p>Las doctrinas cambian con traducciones, cismas, política y nuevas experiencias.</p>
-      <p>Historia de las Ciencias Mágicas ayuda a mostrar que una religión no es una estructura
-      inmóvil.</p>
-      <p>La comparación debe especificar época y comunidad.</p>
-      <h4 id="cap-82">Capítulo LXXXII — Relación con Teurgia</h4>
-      <p>Teurgia estudia funcionamiento de prácticas religiosas capaces de producir
-      fenómenos.</p>
-      <p>Teología Comparada estudia cómo esas prácticas son comprendidas y legitimadas.</p>
-      <p>Ambas disciplinas se necesitan y no deben confundirse.</p>
-      <h4 id="cap-83">Capítulo LXXXIII — La pregunta comparativa</h4>
-      <p>Ante dos fenómenos semejantes, la pregunta académica no es cuál religión ganó.</p>
-      <p>Se pregunta qué ocurrió, qué interpretación ofreció cada tradición, qué evidencia
-      utiliza y qué consecuencias doctrinales extrajo.</p>
-      <p>Esa separación permite comparar sin despojar a ninguna tradición de su propia voz.</p>
-      <h4 id="cap-84">Capítulo LXXXIV — La pregunta dolbriana</h4>
-      <p>Dolbred enseña a formular cuatro niveles: fenómeno observado, mecanismo propuesto,
-      interpretación religiosa y afirmación metafísica.</p>
-      <p>Mezclarlos produce discusiones en las que las partes parecen contradecirse cuando en
-      realidad responden preguntas distintas.</p>
-      <p>La Teología Comparada existe para mantener esos niveles visibles.</p>
+      <p>El segundo, el error de la reducción arcana, explica un fenómeno mediante teoría mágica
+      y da por eliminado su significado religioso. Decir que una reliquia utiliza un anclaje no
+      responde por qué una comunidad la considera sagrada, porque mecanismo y significado
+      pertenecen a preguntas distintas.</p>
+      <p>El tercero es el error confesional. El investigador convierte su propia fe en criterio
+      académico automático, cuando la experiencia personal puede orientar preguntas, pero no
+      decidir conclusiones comparativas; los trabajos deben distinguir siempre testimonio de
+      argumento.</p>
+      <p>El cuarto es el error de la falsa equivalencia, que trata todas las doctrinas como
+      intercambiables por cortesía y con ello destruye la comparación. Dos religiones pueden ser
+      genuinamente incompatibles en sus afirmaciones centrales, y la neutralidad académica
+      permite describir ese conflicto con exactitud en vez de disolverlo.</p>
+      <h4 id="cap-26">Capítulo XXVI — Investigación de campo y ética</h4>
+      <p>El estudio de campo incluye entrevistas, observación ritual, textos, arquitectura y
+      registro de manifestaciones. Los investigadores deben respetar los límites de acceso y el
+      secreto religioso, ya que la autorización académica no da derecho automático a presenciar
+      ceremonias privadas.</p>
+      <p>Las comunidades religiosas mantienen el derecho a decidir qué prácticas pueden
+      documentarse, y la investigación no debe provocar manifestaciones sagradas solo para
+      comprobar una teoría. Ética de la Alteración interviene cuando un procedimiento de este
+      tipo afecta a los participantes.</p>
+      <p>Las mediciones de fenómenos religiosos, además, pueden ser científicamente útiles y al
+      mismo tiempo socialmente sensibles. Publicar una firma o una debilidad ritual puede poner
+      en riesgo a una comunidad entera, y Dolbred utiliza acceso restringido cuando la
+      transparencia completa produciría un daño previsible.</p>
+      <h4 id="cap-27">Capítulo XXVII — Derecho, conflicto y diálogo interreligioso</h4>
+      <p>Derecho Arcano regula consecuencias civiles sin decidir verdad doctrinal. Puede
+      reconocer matrimonios, cargos, templos y objeciones religiosas mientras mantiene
+      neutralidad respecto de la metafísica, y Teología Comparada ofrece contexto cuando una
+      norma afecta a prácticas específicas.</p>
+      <p>Las disputas religiosas pueden surgir por lugares, reliquias, interpretaciones o
+      acusaciones de falsedad. La academia no actúa como árbitro teológico salvo que se le pida
+      evaluar una afirmación empírica concreta; su función principal es clarificar qué sostiene
+      realmente cada parte en conflicto.</p>
+      <p>La comparación académica, en ese sentido, puede facilitar el diálogo al identificar
+      diferencias reales y equivalencias parciales, sin buscar fusionar doctrinas. Comprender
+      por qué dos tradiciones interpretan de forma distinta un mismo fenómeno puede reducir
+      conflictos basados en caricaturas mutuas.</p>
+      <h4 id="cap-28">Capítulo XXVIII — La cuestión de la verdad y disciplinas afines</h4>
+      <p>La Teología Comparada no sostiene que la verdad religiosa sea irrelevante, sino que su
+      método no puede resolver todas las afirmaciones últimas. Cuando una afirmación produce
+      consecuencias observables, puede estudiarse empíricamente; cuando excede ese ámbito, se
+      registra simplemente como doctrina.</p>
+      <p>Esta postura la acerca a varias disciplinas afines sin confundirse con ellas.
+      Epistemología pregunta qué justificación tiene una revelación; Teología Comparada pregunta
+      qué significa esa revelación dentro de una tradición, de modo que una fuente puede ser
+      históricamente central aunque su verdad empírica permanezca incierta.</p>
+      <p>Historia de las Ciencias Mágicas, por su parte, muestra que las doctrinas cambian con
+      traducciones, cismas, política y nuevas experiencias, y que ninguna religión constituye
+      una estructura inmóvil; toda comparación debe especificar época y comunidad.</p>
+      <p>Teurgia, finalmente, estudia el funcionamiento de las prácticas religiosas capaces de
+      producir fenómenos, mientras que Teología Comparada estudia cómo esas prácticas son
+      comprendidas y legitimadas. Ambas disciplinas se necesitan mutuamente y no deben
+      confundirse.</p>
+      <h4 id="cap-29">Capítulo XXIX — La pregunta comparativa y la pregunta dolbriana</h4>
+      <p>Ante dos fenómenos semejantes, la pregunta académica no es cuál religión tuvo razón. Se
+      pregunta qué ocurrió, qué interpretación ofreció cada tradición, qué evidencia utiliza y
+      qué consecuencias doctrinales extrajo de ella; esa separación permite comparar sin
+      despojar a ninguna tradición de su propia voz.</p>
+      <p>Dolbred enseña a formular cuatro niveles distintos: el fenómeno observado, el mecanismo
+      propuesto, la interpretación religiosa y la afirmación metafísica. Mezclarlos produce
+      discusiones en las que las partes parecen contradecirse cuando en realidad responden a
+      preguntas distintas, y la Teología Comparada existe para mantener esos niveles visibles.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Teología Comparada estudia cómo distintas culturas construyen significado religioso
       alrededor de fenómenos que pueden ser semejantes en manifestación y radicalmente distintos
