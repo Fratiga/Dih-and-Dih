@@ -2453,6 +2453,10 @@ window.ENTRIES = [
       <p>Toda afirmación adivinatoria académicamente útil debe, finalmente, poder fracasar. Si toda consecuencia posible puede reinterpretarse como confirmación, el método no permite aprender de sus propios errores; definir condiciones de refutación protege a la disciplina de convertirse en doctrina inmune a la evidencia.</p>
       <h4 id="cap-23">Capítulo XXIII — La pregunta que queda abierta</h4>
       <p>La Adivinación todavía no sabe si el futuro existe de alguna manera antes de ocurrir o si solo existen relaciones capaces de anticiparlo. Los datos apoyan modelos distintos en contextos diferentes, y la disciplina mantiene esta incertidumbre como problema de investigación, no como un defecto que deba ocultarse.</p>
+      <p>Dos posiciones dividen a los adivinos teóricos desde hace generaciones. El existencialismo temporal sostiene que el futuro posee alguna forma de determinación previa, aunque inaccesible a la observación ordinaria. El relacionalismo informativo sostiene en cambio que solo existen patrones causales capaces de proyectarse hacia adelante, sin que haya un futuro único esperando ser descubierto. Ambas posiciones explican igual de bien la mayoría de los registros adivinatorios documentados, lo que dificulta cualquier experimento capaz de decidir entre ellas.</p>
+      <p>El caso del Cerco de Vaudmark, conservado en los archivos del Colegio, ilustra la dificultad. Tres adivinos consultados antes del asedio describieron desenlaces incompatibles entre sí: caída de la ciudad, retirada del ejército sitiador y una tregua negociada. Los tres desenlaces ocurrieron, en momentos distintos, durante los meses siguientes. Un modelo existencialista debe explicar por qué el futuro correcto cambió de identidad tres veces; un modelo relacional simplemente registra tres bifurcaciones estables observadas desde tres puntos distintos de la cadena causal. El episodio no cierra el debate, pero muestra por qué el relacionalismo resulta más económico cuando la ramificación es alta.</p>
+      <p>La dificultad de fondo resulta metodológica antes que filosófica. Los canales adivinatorios conocidos no transportan metadatos sobre su propia naturaleza, de modo que una visión no llega acompañada de una señal que indique si describe un hecho ya fijado o una tendencia todavía revisable. Dos adivinos pueden así recibir la misma imagen y discrepar honestamente sobre su estatus ontológico sin que ninguno haya cometido un error técnico.</p>
+      <p>Cronurgia Teórica enfrenta una versión paralela del mismo problema al preguntarse si el tiempo constituye una estructura fija que la magia puede recorrer o una sucesión de estados generados según se accede a ellos. Los cronurgos que defienden la primera postura tienden a colaborar con adivinos existencialistas, y quienes defienden la segunda encuentran mayor afinidad con el relacionalismo informativo. La convergencia no ha producido todavía un experimento capaz de zanjar ninguna de las dos disciplinas, pero sí ha dejado un vocabulario compartido que permite formular la pregunta con más rigor de una generación a la siguiente.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Adivinación estudia información que llega antes, después o fuera de los canales ordinarios de observación. Su ámbito incluye predicción, probabilidad, profecía, percepción remota, retrocognición, tarotismo, augurios, oráculos y conocimiento directo.</p>
       <p>La disciplina distingue información de interpretación, precisión de vaguedad, profecía de pronóstico y acceso sobrenatural de inferencia extraordinariamente buena. También reconoce que conocer un futuro puede modificarlo y que una predicción correcta puede parecer falsa si permitió evitar precisamente aquello que anunciaba.</p>
@@ -8207,8 +8211,28 @@ window.ENTRIES = [
       <p>Antes de autorizar una alteración, Dolbred exige responder cinco preguntas: quién la
       desea, quién asume el riesgo, qué cambia, qué puede recuperarse y quién responderá si el
       resultado es distinto del esperado.</p>
-      <p>Estas preguntas no sustituyen el juicio profesional.</p>
-      <p>Sirven para impedir que la posibilidad técnica sea confundida con permiso moral.</p>
+      <p>Cada pregunta apunta a un tipo distinto de fallo ético documentado en casos anteriores.
+      Quién la desea separa el deseo del propio paciente del deseo de un tutor, un empleador o
+      una institución que se beneficia del cambio. Quién asume el riesgo obliga a declarar si el
+      sujeto tratado es también quien soporta las consecuencias, algo que no siempre coincide en
+      alteraciones aplicadas a soldados, sirvientes o criaturas vinculadas por pacto. Qué cambia
+      exige una descripción concreta del efecto, no una promesa general de mejora; qué puede
+      recuperarse distingue lo reversible de lo permanente incluso cuando el procedimiento se
+      presenta como ajustable; y quién responderá asigna con anticipación la responsabilidad
+      institucional en caso de error, en lugar de dejarla para negociarse después del daño.</p>
+      <p>Un caso citado con frecuencia en los archivos de revisión ética involucró la
+      restauración de una extremidad perdida mediante regeneración forzada. El procedimiento
+      parecía trivialmente reversible porque devolvía al paciente a su estado previo, hasta que
+      la cuarta pregunta reveló que el tejido regenerado carecía de la memoria sensorial
+      original y solo podía distinguirse del miembro perdido mediante examen arcano detallado.
+      La alteración se autorizó, pero solo después de documentar esa diferencia como parte del
+      consentimiento informado.</p>
+      <p>Estas preguntas no sustituyen el juicio profesional; Dolbred insiste en que ningún
+      formulario puede reemplazar la evaluación caso por caso que exige la práctica clínica.
+      Sirven, en cambio, para impedir que la posibilidad técnica se confunda con permiso moral.
+      Un procedimiento puede ser factible, seguro y solicitado, y aun así carecer de una
+      respuesta satisfactoria a alguna de las cinco preguntas; en ese caso la autorización debe
+      negarse o postergarse hasta resolver esa laguna.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Ética de la Alteración parte de una idea simple, y es que cuanto más profundamente puede una
       técnica modificar a una persona, mayor debe ser la justificación para utilizarla.</p>
@@ -9557,6 +9581,26 @@ window.ENTRIES = [
       inmediato. La realidad es menos teatral y más peligrosa.</p>
       <p>Muchos sistemas toleran irregularidades considerables. Otros dependen de una sola
       relación geométrica crítica y son casi indiferentes al resto del dibujo.</p>
+      <p>La diferencia depende de cómo la disposición reparte sus relaciones internas. Una
+      estructura sobredeterminada distribuye la misma función entre varios nodos redundantes, de
+      modo que el fallo de una línea se compensa con las demás, igual que un puente con múltiples
+      vigas de carga. Una estructura críticamente determinada concentra esa función en una sola
+      relación, como un arco que depende de una única piedra clave; ahí no existe margen que
+      compensar, y el error se propaga directamente al resultado.</p>
+      <p>Un caso discutido en las clases de calibración del segundo año compara dos incidentes
+      documentados. En el primero, un aprendiz trazó un círculo de adivinación visiblemente
+      ovalado durante una demostración pública; la matriz redundante del ritual absorbió la
+      irregularidad sin consecuencias perceptibles. En el segundo, un círculo de contención
+      presentaba un error de apenas unos grados en la proporción entre su radio exterior y un
+      heptágono interior que actuaba como relación crítica; el error bastó para que la barrera
+      cediera durante la primera carga, con resultados que la Facultad todavía cita como
+      advertencia.</p>
+      <p>El error opuesto resulta igual de instructivo. Algunas disposiciones incorporan
+      asimetría funcional de manera deliberada, para representar una diferencia real entre
+      componentes del sistema; un aprendiz que "corrige" esa asimetría buscando mayor regularidad
+      visual puede destruir la relación misma que sostenía el ritual. Reconocer qué irregularidad
+      es decorativa, cuál resulta aceptable y cuál es estructural exige comprender la red de
+      relaciones completa, no solo medir ángulos.</p>
       <p>El problema no es alcanzar perfección estética. Es saber qué error importa.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Geometría Ritual estudia cómo el espacio se convierte en parte de una estructura
@@ -10489,7 +10533,27 @@ window.ENTRIES = [
       <h4 id="cap-21">Capítulo XXI — La pregunta por el reconocimiento</h4>
       <p>La pregunta central de la Maldiología no es cuánto poder contiene una maldición, sino cómo
       sabe que determinada persona, objeto o acto pertenece a su estructura.</p>
-      <p>Responderla exige reconstruir referencias y condiciones.</p>
+      <p>Responderla exige reconstruir referencias y condiciones. Toda maldición codifica, en el
+      momento de su formación, un criterio de comparación contra el cual mide cada candidato
+      posible: puede tratarse de un nombre pronunciado en el ritual original, un vínculo de
+      sangre, la posesión de un objeto, la ocupación de un cargo o la comisión de un acto
+      específico. La maldición no percibe a la persona directamente; percibe si el candidato
+      satisface ese criterio almacenado, y de ahí que dos individuos exteriormente similares
+      puedan recibir tratamientos completamente distintos.</p>
+      <p>El caso de la sucesión de Casa Hendrik ilustra el problema. Una maldición impuesta sobre
+      "quien ocupe el título" recayó sobre un administrador nombrado regente durante una minoría
+      de edad, porque el criterio codificado reconocía la función y no la sangre; el heredero
+      legítimo, todavía sin investidura formal, permaneció libre de la condición durante años.
+      Cuando finalmente asumió el título, la maldición lo reconoció de inmediato, sin cambio
+      corporal ni mágico visible alguno. Solo había cambiado su relación con el criterio
+      original.</p>
+      <p>El reconocimiento también puede fallar de maneras instructivas. Una transformación
+      corporal profunda puede bastar para que una maldición atada a rasgos físicos deje de
+      identificar a su objetivo, mientras que una maldición atada a la firma anímica sigue
+      reconociendo a la misma persona incluso bajo polimorfia completa. Esta distinción explica
+      por qué Pneumatología colabora con Maldiología en casos donde se sospecha manipulación
+      deliberada del criterio de reconocimiento, como cuando alguien busca escapar de una condena
+      mediante cambio de forma en lugar de cumplimiento o negociación.</p>
       <p>Una vez comprendido el reconocimiento, la consecuencia deja de parecer arbitraria y comienza
       a mostrar la arquitectura que la sostiene.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
@@ -16916,9 +16980,34 @@ window.ENTRIES = [
       <h4 id="cap-19">Capítulo XIX — Relación con otras disciplinas</h4>
       <p>Teoría de Encantamientos trabaja con Artefactología, Mineralogía Mágica, Runología, Semiótica,
       Ritualística, Conservación Arcana y Materia y Transmutación.</p>
-      <p>Anatomía Arcana y Morfología Anómala son esenciales para encantamientos sobre criaturas.</p>
-      <p>Maldiología ayuda a estudiar estructuras condicionales que desarrollan vínculos más profundos con
-      sus referentes.</p>
+      <p>La frontera con Artefactología es la más discutida. Un artefacto suele combinar varias
+      estructuras persistentes bajo un mismo soporte, mientras que un encantamiento aislado
+      sostiene una sola función; distinguirlos depende menos del poder del objeto que de si sus
+      componentes pueden analizarse y repararse por separado. Un colgante que cura heridas
+      menores es un encantamiento; el mismo colgante, si además detecta mentiras, modifica el
+      clima local a su alrededor y solo responde a un linaje específico, exige el régimen de
+      estudio y custodia propio de un artefacto.</p>
+      <p>Con Runología la relación es de dependencia técnica directa, porque la mayoría de las
+      lógicas de activación se codifican mediante sistemas rúnicos. Un encantamiento diagnosticado
+      como defectuoso resulta, con frecuencia, una runa corrupta o mal transcrita en su base;
+      separar el fallo de diseño del fallo de inscripción exige que ambas disciplinas examinen la
+      misma pieza antes de proponer una reparación, porque corregir la runa sin revisar la
+      estructura puede estabilizar un error en lugar de eliminarlo.</p>
+      <p>Semiótica y Conservación Arcana se vuelven decisivas con el paso de los siglos, cuando los
+      símbolos grabados en un encantamiento antiguo cambian de significado en la lengua viva
+      mientras la estructura mágica sigue interpretándolos según su valor original. Un símbolo que
+      hoy denota protección pudo haber denotado propiedad hace tres siglos, y activar un objeto
+      asumiendo el significado moderno puede invocar una condición completamente distinta de la
+      esperada.</p>
+      <p>Anatomía Arcana y Morfología Anómala son esenciales para encantamientos sobre criaturas,
+      porque un mismo diseño puede comportarse de forma distinta según la anatomía del portador;
+      una estructura calibrada para un cuerpo humanoide puede fallar, sobrecargarse o interpretar
+      mal sus referencias en un cuerpo con anatomía radicalmente distinta.</p>
+      <p>Maldiología ayuda a estudiar estructuras condicionales que desarrollan vínculos más
+      profundos con sus referentes, un fenómeno que comparte mecanismos de reconocimiento con los
+      encantamientos de vínculo prolongado. En ambos casos, la disciplina relevante pregunta
+      primero qué criterio usa la estructura para identificar a su objetivo antes de intentar
+      modificar el efecto.</p>
       <h4 id="cap-20">Capítulo XX — El problema de mantener</h4>
       <p>El desafío fundamental de un encantamiento no es producir el efecto inicial. Es mantener
       suficiente organización para que siga siendo el mismo efecto después de desgaste, cambios de
