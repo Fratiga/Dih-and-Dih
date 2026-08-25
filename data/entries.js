@@ -16092,93 +16092,34 @@ window.ENTRIES = [
       Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de la Seguridad Ritual</a>
-        <a href="#cap-2">II. Principio de fallo controlado</a>
-        <a href="#cap-3">III. Clasificación dolbriana de riesgo</a>
-        <a href="#cap-4">IV. Riesgo Bajo</a>
-        <a href="#cap-5">V. Riesgo Moderado</a>
-        <a href="#cap-6">VI. Riesgo Alto</a>
-        <a href="#cap-7">VII. Riesgo Crítico</a>
-        <a href="#cap-8">VIII. El peor caso razonable</a>
-        <a href="#cap-9">IX. Evaluación previa</a>
-        <a href="#cap-10">X. Lista de verificación</a>
-        <a href="#cap-11">XI. Roles</a>
-        <a href="#cap-12">XII. Autoridad de seguridad</a>
-        <a href="#cap-13">XIII. Señales de interrupción</a>
-        <a href="#cap-14">XIV. Perímetros</a>
-        <a href="#cap-15">XV. Control de acceso</a>
-        <a href="#cap-16">XVI. Evacuación</a>
-        <a href="#cap-17">XVII. Puntos de reunión</a>
-        <a href="#cap-18">XVIII. Recuento</a>
-        <a href="#cap-19">XIX. Evacuación de personas dependientes de magia</a>
-        <a href="#cap-20">XX. Interrupción no es cierre</a>
-        <a href="#cap-21">XXI. Cierre seguro</a>
-        <a href="#cap-22">XXII. Cierre de emergencia</a>
-        <a href="#cap-23">XXIII. Interrupción por fases</a>
-        <a href="#cap-24">XXIV. Interrupción inmediata</a>
-        <a href="#cap-25">XXV. Desbordamiento</a>
-        <a href="#cap-26">XXVI. Desbordamiento energético</a>
-        <a href="#cap-27">XXVII. Desbordamiento material</a>
-        <a href="#cap-28">XXVIII. Desbordamiento elemental</a>
-        <a href="#cap-29">XXIX. Desbordamiento resonántico</a>
-        <a href="#cap-30">XXX. Desbordamiento pneumatológico</a>
-        <a href="#cap-31">XXXI. Desbordamiento planar</a>
-        <a href="#cap-32">XXXII. Invocaciones fuera de control</a>
-        <a href="#cap-33">XXXIII. Entidades inteligentes</a>
-        <a href="#cap-34">XXXIV. Artefactos inestables</a>
-        <a href="#cap-35">XXXV. Aislamiento de artefactos</a>
-        <a href="#cap-36">XXXVI. Artefactos que reconocen usuarios</a>
-        <a href="#cap-37">XXXVII. Artefactos conscientes</a>
-        <a href="#cap-38">XXXVIII. Contención</a>
-        <a href="#cap-39">XXXIX. Contención primaria</a>
-        <a href="#cap-40">XL. Contención secundaria</a>
-        <a href="#cap-41">XLI. Contención terciaria</a>
-        <a href="#cap-42">XLII. Redundancia</a>
-        <a href="#cap-43">XLIII. Sistemas manuales</a>
-        <a href="#cap-44">XLIV. Sistemas automáticos</a>
-        <a href="#cap-45">XLV. Monitoreo</a>
-        <a href="#cap-46">XLVI. Indicadores tempranos</a>
-        <a href="#cap-47">XLVII. Fatiga de participantes</a>
-        <a href="#cap-48">XLVIII. Fatiga de cierre</a>
-        <a href="#cap-49">XLIX. Sustituciones</a>
-        <a href="#cap-50">L. Participantes incapacitados</a>
-        <a href="#cap-51">LI. Primeros auxilios arcanos</a>
-        <a href="#cap-52">LII. Descontaminación</a>
-        <a href="#cap-53">LIII. Cuarentena</a>
-        <a href="#cap-54">LIV. Evacuación versus confinamiento</a>
-        <a href="#cap-55">LV. Comunicación de emergencia</a>
-        <a href="#cap-56">LVI. Rumor durante incidentes</a>
-        <a href="#cap-57">LVII. Documentación de incidentes</a>
-        <a href="#cap-58">LVIII. Preservación forense</a>
-        <a href="#cap-59">LIX. Casi accidentes</a>
-        <a href="#cap-60">LX. Cultura de seguridad</a>
-        <a href="#cap-61">LXI. Licencias</a>
-        <a href="#cap-62">LXII. Certificación de instalaciones</a>
-        <a href="#cap-63">LXIII. Permisos de ritual</a>
-        <a href="#cap-64">LXIV. Prohibición de trabajo solitario</a>
-        <a href="#cap-65">LXV. Horarios</a>
-        <a href="#cap-66">LXVI. Almacenamiento</a>
-        <a href="#cap-67">LXVII. Inventario</a>
-        <a href="#cap-68">LXVIII. Residuos peligrosos</a>
-        <a href="#cap-69">LXIX. Mantenimiento</a>
-        <a href="#cap-70">LXX. Simulacros</a>
-        <a href="#cap-71">LXXI. Entrenamiento</a>
-        <a href="#cap-72">LXXII. Supervisión estudiantil</a>
-        <a href="#cap-73">LXXIII. Sanciones</a>
-        <a href="#cap-74">LXXIV. Negligencia</a>
-        <a href="#cap-75">LXXV. Excepciones de emergencia</a>
-        <a href="#cap-76">LXXVI. Responsabilidad institucional</a>
-        <a href="#cap-77">LXXVII. Investigación de incidentes</a>
-        <a href="#cap-78">LXXVIII. Causa raíz</a>
-        <a href="#cap-79">LXXIX. Lecciones compartidas</a>
-        <a href="#cap-80">LXXX. Seguridad y Criminalística</a>
-        <a href="#cap-81">LXXXI. Seguridad y Derecho Arcano</a>
-        <a href="#cap-82">LXXXII. Seguridad y Ética de la Alteración</a>
-        <a href="#cap-83">LXXXIII. El error de confiar en experiencia</a>
-        <a href="#cap-84">LXXXIV. El error de improvisar el cierre</a>
-        <a href="#cap-85">LXXXV. El error de salvar el experimento</a>
-        <a href="#cap-86">LXXXVI. La materia aburrida</a>
-        <a href="#cap-87">LXXXVII. La pregunta dolbriana</a>
+        <a href="#cap-1">I. Objeto y principio de fallo controlado</a>
+        <a href="#cap-2">II. Clasificación dolbriana de riesgo</a>
+        <a href="#cap-3">III. Evaluación previa y el peor caso razonable</a>
+        <a href="#cap-4">IV. Roles, autoridad y señales de interrupción</a>
+        <a href="#cap-5">V. Perímetros y control de acceso</a>
+        <a href="#cap-6">VI. Evacuación, puntos de reunión y recuento</a>
+        <a href="#cap-7">VII. Interrupción y cierre</a>
+        <a href="#cap-8">VIII. Desbordamiento energético, material y elemental</a>
+        <a href="#cap-9">IX. Desbordamiento resonántico, pneumatológico y planar</a>
+        <a href="#cap-10">X. Invocaciones fuera de control y entidades inteligentes</a>
+        <a href="#cap-11">XI. Artefactos inestables y su aislamiento</a>
+        <a href="#cap-12">XII. Niveles de contención</a>
+        <a href="#cap-13">XIII. Redundancia y sistemas de control</a>
+        <a href="#cap-14">XIV. Monitoreo e indicadores tempranos</a>
+        <a href="#cap-15">XV. Fatiga, sustituciones e incapacidad de participantes</a>
+        <a href="#cap-16">XVI. Primeros auxilios, descontaminación y cuarentena</a>
+        <a href="#cap-17">XVII. Confinamiento y comunicación de emergencia</a>
+        <a href="#cap-18">XVIII. Documentación de incidentes y preservación forense</a>
+        <a href="#cap-19">XIX. Casi accidentes y cultura de seguridad</a>
+        <a href="#cap-20">XX. Licencias, certificación y permisos</a>
+        <a href="#cap-21">XXI. Trabajo solitario y horarios</a>
+        <a href="#cap-22">XXII. Almacenamiento, inventario y residuos peligrosos</a>
+        <a href="#cap-23">XXIII. Mantenimiento, simulacros, entrenamiento y supervisión estudiantil</a>
+        <a href="#cap-24">XXIV. Sanciones, negligencia y excepciones de emergencia</a>
+        <a href="#cap-25">XXV. Responsabilidad institucional e investigación de incidentes</a>
+        <a href="#cap-26">XXVI. Seguridad Ritual y otras disciplinas</a>
+        <a href="#cap-27">XXVII. Tres errores recurrentes</a>
+        <a href="#cap-28">XXVIII. La materia aburrida y la pregunta dolbriana</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -16195,475 +16136,350 @@ window.ENTRIES = [
       perímetros, roles de emergencia, planes de evacuación y registros obligatorios. La
       institución parte de un principio simple, y es que ningún ritual autorizado debe depender de que
       todo salga bien para seguir siendo seguro.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de la Seguridad Ritual</h4>
+      <h4 id="cap-1">Capítulo I — Objeto y principio de fallo controlado</h4>
       <p>La Seguridad Ritual estudia prevención, preparación y respuesta ante fallos en
-      rituales, artefactos, invocaciones y estructuras mágicas complejas.</p>
-      <p>Su interés no se limita a accidentes ya ocurridos. Busca diseñar procedimientos en
-      los que los errores previsibles tengan consecuencias controladas.</p>
-      <p>En Dolbred, la seguridad forma parte obligatoria de la autorización ritual y no puede
-      delegarse como tarea secundaria.</p>
-      <h4 id="cap-2">Capítulo II — Principio de fallo controlado</h4>
-      <p>Todo ritual autorizado debe poseer un estado de fallo preferible al desbordamiento.</p>
-      <p>Cuando una función deja de sostenerse, el sistema debe tender hacia cierre, pérdida
-      de potencia o aislamiento antes que hacia expansión.</p>
-      <p>Un ritual que sólo es seguro mientras todos sus componentes funcionen perfectamente
-      se considera mal diseñado.</p>
-      <h4 id="cap-3">Capítulo III — Clasificación dolbriana de riesgo</h4>
+      rituales, artefactos, invocaciones y estructuras mágicas complejas. Su interés no se
+      limita a accidentes ya ocurridos. Busca diseñar procedimientos en los que los errores
+      previsibles tengan consecuencias controladas. En Dolbred, la seguridad forma parte
+      obligatoria de la autorización ritual y no puede delegarse como tarea secundaria.</p>
+      <p>Ese propósito descansa en un principio central. Todo ritual autorizado debe poseer un
+      estado de fallo preferible al desbordamiento, de modo que, cuando una función deja de
+      sostenerse, el sistema tienda hacia cierre, pérdida de potencia o aislamiento antes que
+      hacia expansión. Un ritual que sólo es seguro mientras todos sus componentes funcionan
+      perfectamente se considera mal diseñado.</p>
+      <h4 id="cap-2">Capítulo II — Clasificación dolbriana de riesgo</h4>
       <p>Dolbred clasifica rituales según alcance, autonomía, reversibilidad, posibilidad de
-      propagación y dificultad de interrupción.</p>
-      <p>El nivel de riesgo determina quién puede autorizar la práctica, qué instalaciones
-      exige y cuántos responsables de seguridad deben estar presentes.</p>
-      <p>La clasificación se aplica al peor resultado razonablemente previsible, no al efecto
-      deseado.</p>
-      <h4 id="cap-4">Capítulo IV — Riesgo Bajo</h4>
+      propagación y dificultad de interrupción. El nivel de riesgo determina quién puede
+      autorizar la práctica, qué instalaciones exige y cuántos responsables de seguridad deben
+      estar presentes. La clasificación se aplica al peor resultado razonablemente previsible,
+      no al efecto deseado.</p>
       <p>Los rituales de Riesgo Bajo producen efectos locales, reversibles y fácilmente
-      interrumpibles.</p>
-      <p>Pueden realizarse en aulas autorizadas bajo supervisión ordinaria.</p>
-      <p>Aun así requieren registro básico, material de cierre y una ruta despejada de
-      salida.</p>
-      <h4 id="cap-5">Capítulo V — Riesgo Moderado</h4>
+      interrumpibles, y pueden realizarse en aulas autorizadas bajo supervisión ordinaria. Aun
+      así requieren registro básico, material de cierre y una ruta despejada de salida.</p>
       <p>Los rituales Moderados pueden producir daño significativo si fallan, pero permanecen
-      limitados a una sala o grupo pequeño.</p>
-      <p>Exigen supervisor acreditado y protocolo escrito de interrupción.</p>
-      <p>Los participantes deben conocer señal de evacuación antes de iniciar.</p>
-      <h4 id="cap-6">Capítulo VI — Riesgo Alto</h4>
+      limitados a una sala o grupo pequeño. Exigen supervisor acreditado y protocolo escrito de
+      interrupción, y los participantes deben conocer la señal de evacuación antes de
+      iniciar.</p>
       <p>Los rituales de Riesgo Alto pueden afectar varias salas, producir entidades hostiles,
-      contaminación o alteraciones persistentes.</p>
-      <p>Requieren instalaciones certificadas, equipo de seguridad independiente y
-      autorización de facultad.</p>
-      <p>El ejecutor principal no puede ser simultáneamente la única persona responsable de
-      decidir una evacuación.</p>
-      <h4 id="cap-7">Capítulo VII — Riesgo Crítico</h4>
-      <p>Los rituales Críticos poseen capacidad territorial, contagiosa, planar,
-      pneumatológica o difícilmente reversible.</p>
-      <p>Su autorización pertenece a comités superiores y puede exigir presencia de
-      autoridades civiles.</p>
-      <p>Los estudiantes no participan como ejecutores salvo programas excepcionales y
-      estrictamente supervisados.</p>
-      <h4 id="cap-8">Capítulo VIII — El peor caso razonable</h4>
-      <p>Planificar seguridad no significa imaginar cualquier catástrofe concebible.</p>
-      <p>El equipo identifica fallos plausibles según método, materiales, precedentes y
-      entorno.</p>
-      <p>Los recursos se dimensionan para esos escenarios sin confundir prudencia con
-      fantasía ilimitada.</p>
-      <h4 id="cap-9">Capítulo IX — Evaluación previa</h4>
+      contaminación o alteraciones persistentes. Requieren instalaciones certificadas, equipo
+      de seguridad independiente y autorización de facultad; el ejecutor principal no puede ser
+      simultáneamente la única persona responsable de decidir una evacuación.</p>
+      <p>Los rituales Críticos poseen capacidad territorial, contagiosa, planar, pneumatológica
+      o difícilmente reversible. Su autorización pertenece a comités superiores y puede exigir
+      presencia de autoridades civiles; los estudiantes no participan como ejecutores salvo
+      programas excepcionales y estrictamente supervisados.</p>
+      <h4 id="cap-3">Capítulo III — Evaluación previa y el peor caso razonable</h4>
+      <p>Planificar seguridad no significa imaginar cualquier catástrofe concebible. El equipo
+      identifica fallos plausibles según método, materiales, precedentes y entorno, y dimensiona
+      los recursos para esos escenarios sin confundir prudencia con fantasía ilimitada.</p>
       <p>Antes de cada ritual se revisan objetivo, participantes, materiales, geometría,
-      energía, referencias y condiciones ambientales.</p>
-      <p>Los cambios de última hora deben volver a evaluarse.</p>
-      <p>Substituir un material por otro similar sin revisar compatibilidad constituye una de
-      las causas más comunes de incidentes evitables.</p>
-      <h4 id="cap-10">Capítulo X — Lista de verificación</h4>
+      energía, referencias y condiciones ambientales, y los cambios de última hora deben volver
+      a evaluarse. Sustituir un material por otro similar sin revisar compatibilidad constituye
+      una de las causas más comunes de incidentes evitables.</p>
       <p>Las listas de verificación existen porque la memoria empeora bajo presión y
-      familiaridad.</p>
-      <p>Su uso no indica incompetencia.</p>
-      <p>Dolbred exige listas firmadas en rituales de Riesgo Alto o superior.</p>
-      <h4 id="cap-11">Capítulo XI — Roles</h4>
-      <p>Todo ritual complejo debe asignar responsabilidades antes de comenzar.</p>
-      <p>Se distinguen ejecutor principal, supervisor, responsable de cierre, observador de
-      seguridad, encargado de evacuación y registro.</p>
-      <p>Una persona puede cumplir varias funciones sólo cuando el nivel de riesgo lo
-      permite.</p>
-      <h4 id="cap-12">Capítulo XII — Autoridad de seguridad</h4>
+      familiaridad; su uso no indica incompetencia. Dolbred exige listas firmadas en rituales de
+      Riesgo Alto o superior.</p>
+      <h4 id="cap-4">Capítulo IV — Roles, autoridad y señales de interrupción</h4>
+      <p>Todo ritual complejo debe asignar responsabilidades antes de comenzar. Se distinguen
+      ejecutor principal, supervisor, responsable de cierre, observador de seguridad, encargado
+      de evacuación y registro; una persona puede cumplir varias funciones sólo cuando el nivel
+      de riesgo lo permite.</p>
       <p>El responsable de seguridad posee autoridad para detener un ritual aunque el ejecutor
-      principal considere que todavía puede recuperarlo.</p>
-      <p>Esta independencia es deliberada.</p>
-      <p>Un investigador con años de preparación puede tener incentivos emocionales para
+      principal considere que todavía puede recuperarlo. Esta independencia es deliberada, ya
+      que un investigador con años de preparación puede tener incentivos emocionales para
       continuar más allá de lo prudente.</p>
-      <h4 id="cap-13">Capítulo XIII — Señales de interrupción</h4>
-      <p>Las señales deben ser simples, inequívocas y conocidas por todos.</p>
-      <p>Pueden ser verbales, luminosas, sonoras o estructurales.</p>
-      <p>Los sistemas mágicos de alarma necesitan una señal no mágica redundante cuando el
-      fallo pueda afectar la propia magia.</p>
-      <h4 id="cap-14">Capítulo XIV — Perímetros</h4>
-      <p>El perímetro separa zona operativa, zona de seguridad y área pública.</p>
-      <p>Su tamaño depende del alcance posible del desbordamiento.</p>
-      <p>Una línea ceremonial no es automáticamente un perímetro de seguridad.</p>
-      <h4 id="cap-15">Capítulo XV — Control de acceso</h4>
-      <p>Las personas ajenas al procedimiento no deben permanecer en la zona operativa.</p>
-      <p>El control incluye familiares, constructos, mascotas y artefactos autónomos.</p>
-      <p>Cada presencia adicional introduce variables y responsabilidades.</p>
-      <h4 id="cap-16">Capítulo XVI — Evacuación</h4>
-      <p>Todo ritual de Riesgo Moderado o superior necesita una ruta de evacuación.</p>
-      <p>La ruta no puede cruzar el área donde se espera que se concentre el fallo.</p>
-      <p>Las puertas deben permanecer funcionales aunque se pierda energía mágica.</p>
-      <h4 id="cap-17">Capítulo XVII — Puntos de reunión</h4>
+      <p>Las señales de interrupción deben ser simples, inequívocas y conocidas por todos, ya
+      sean verbales, luminosas, sonoras o estructurales. Los sistemas mágicos de alarma
+      necesitan una señal no mágica redundante cuando el fallo pueda afectar la propia
+      magia.</p>
+      <h4 id="cap-5">Capítulo V — Perímetros y control de acceso</h4>
+      <p>El perímetro separa zona operativa, zona de seguridad y área pública, y su tamaño
+      depende del alcance posible del desbordamiento. Una línea ceremonial no es
+      automáticamente un perímetro de seguridad.</p>
+      <p>Las personas ajenas al procedimiento no deben permanecer en la zona operativa. El
+      control incluye familiares, constructos, mascotas y artefactos autónomos, pues cada
+      presencia adicional introduce variables y responsabilidades.</p>
+      <h4 id="cap-6">Capítulo VI — Evacuación, puntos de reunión y recuento</h4>
+      <p>Todo ritual de Riesgo Moderado o superior necesita una ruta de evacuación que no cruce
+      el área donde se espera que se concentre el fallo. Las puertas deben permanecer
+      funcionales aunque se pierda energía mágica.</p>
       <p>Los evacuados deben dirigirse a zonas previamente definidas para facilitar recuento y
-      evaluación.</p>
-      <p>Abandonar el edificio sin control puede dispersar personas contaminadas o
-      lesionadas.</p>
-      <p>El punto de reunión forma parte del protocolo, no es un detalle logístico.</p>
-      <h4 id="cap-18">Capítulo XVIII — Recuento</h4>
-      <p>Después de una evacuación se verifica quién salió y quién puede seguir dentro.</p>
-      <p>Las listas de participantes deben existir antes del ritual.</p>
-      <p>Entrar a buscar a una persona sin evaluar el fenómeno puede multiplicar víctimas.</p>
-      <h4 id="cap-19">Capítulo XIX — Evacuación de personas dependientes de magia</h4>
-      <p>Algunas especies o pacientes dependen de campos, artefactos o condiciones mágicas.</p>
-      <p>Una evacuación hacia una zona antimágica puede resultar peligrosa para ellos.</p>
-      <p>Los planes deben prever rutas y refugios alternativos.</p>
-      <h4 id="cap-20">Capítulo XX — Interrupción no es cierre</h4>
-      <p>Detener la ejecución de un ritual no equivale a cerrarlo.</p>
-      <p>Una estructura interrumpida puede conservar reservas, entidades, referencias o
-      tensión acumulada.</p>
-      <p>El protocolo debe indicar qué ocurre después de cortar la secuencia.</p>
-      <h4 id="cap-21">Capítulo XXI — Cierre seguro</h4>
+      evaluación, ya que abandonar el edificio sin control puede dispersar personas
+      contaminadas o lesionadas. El punto de reunión forma parte del protocolo, no es un
+      detalle logístico.</p>
+      <p>Después de una evacuación se verifica quién salió y quién puede seguir dentro, para lo
+      cual las listas de participantes deben existir antes del ritual. Entrar a buscar a una
+      persona sin evaluar el fenómeno puede multiplicar víctimas.</p>
+      <p>Algunas especies o pacientes dependen de campos, artefactos o condiciones mágicas, de
+      modo que una evacuación hacia una zona antimágica puede resultar peligrosa para ellos. Los
+      planes deben prever rutas y refugios alternativos para estos casos.</p>
+      <h4 id="cap-7">Capítulo VII — Interrupción y cierre</h4>
+      <p>Detener la ejecución de un ritual no equivale a cerrarlo. Una estructura interrumpida
+      puede conservar reservas, entidades, referencias o tensión acumulada, por lo que el
+      protocolo debe indicar qué ocurre después de cortar la secuencia.</p>
       <p>El cierre restablece límites, libera cargas de forma controlada y termina relaciones
-      activas.</p>
-      <p>Debe diseñarse antes del ritual, no improvisarse durante el incidente.</p>
-      <p>Los rituales sin cierre verificable reciben clasificación de riesgo superior.</p>
-      <h4 id="cap-22">Capítulo XXII — Cierre de emergencia</h4>
-      <p>Un cierre de emergencia sacrifica precisión o resultado para priorizar seguridad.</p>
-      <p>Puede destruir materiales, cancelar objetivos o dejar componentes inutilizables.</p>
-      <p>Su existencia es obligatoria cuando el cierre normal depende de demasiadas
-      condiciones.</p>
-      <h4 id="cap-23">Capítulo XXIII — Interrupción por fases</h4>
-      <p>Algunos rituales permiten detenerse con seguridad sólo en ciertos momentos.</p>
-      <p>Estos puntos se marcan como ventanas de interrupción.</p>
-      <p>Abandonar una fase fuera de ventana puede ser más peligroso que continuar hasta el
-      siguiente punto estable.</p>
-      <h4 id="cap-24">Capítulo XXIV — Interrupción inmediata</h4>
-      <p>Existen condiciones que justifican detener sin esperar una ventana: pérdida de
-      clausura, participante inconsciente, aparición de una entidad no prevista, inversión de
-      flujo o propagación fuera del perímetro.</p>
-      <p>Las reglas deben definirse antes para evitar discusiones durante el incidente.</p>
-      <p>La seguridad prevalece sobre la conservación del experimento.</p>
-      <h4 id="cap-25">Capítulo XXV — Desbordamiento</h4>
+      activas. Debe diseñarse antes del ritual, no improvisarse durante el incidente, y los
+      rituales sin cierre verificable reciben clasificación de riesgo superior.</p>
+      <p>Un cierre de emergencia sacrifica precisión o resultado para priorizar seguridad, y
+      puede destruir materiales, cancelar objetivos o dejar componentes inutilizables. Su
+      existencia es obligatoria cuando el cierre normal depende de demasiadas condiciones.</p>
+      <p>Algunos rituales permiten detenerse con seguridad sólo en ciertos momentos, marcados
+      como ventanas de interrupción. Abandonar una fase fuera de ventana puede ser más
+      peligroso que continuar hasta el siguiente punto estable.</p>
+      <p>Existen, sin embargo, condiciones que justifican detener sin esperar una ventana:
+      pérdida de clausura, participante inconsciente, aparición de una entidad no prevista,
+      inversión de flujo o propagación fuera del perímetro. Las reglas deben definirse antes
+      para evitar discusiones durante el incidente, porque la seguridad prevalece sobre la
+      conservación del experimento.</p>
+      <h4 id="cap-8">Capítulo VIII — Desbordamiento energético, material y elemental</h4>
       <p>Un desbordamiento ocurre cuando energía, materia, entidad o estructura excede los
-      límites previstos.</p>
-      <p>Puede ser súbito o progresivo.</p>
-      <p>La respuesta depende de qué está desbordando y qué fronteras siguen intactas.</p>
-      <h4 id="cap-26">Capítulo XXVI — Desbordamiento energético</h4>
-      <p>La prioridad es reducir alimentación y ofrecer rutas de disipación seguras.</p>
-      <p>Bloquear una descarga sin capacidad suficiente puede aumentar presión.</p>
-      <p>Las cámaras dolbrianas incluyen superficies sacrificiales diseñadas para recibir
-      exceso.</p>
-      <h4 id="cap-27">Capítulo XXVII — Desbordamiento material</h4>
+      límites previstos. Puede ser súbito o progresivo, y la respuesta depende de qué está
+      desbordando y qué fronteras siguen intactas.</p>
+      <p>Ante un desbordamiento energético, la prioridad es reducir alimentación y ofrecer
+      rutas de disipación seguras, ya que bloquear una descarga sin capacidad suficiente puede
+      aumentar la presión. Las cámaras dolbrianas incluyen superficies sacrificiales diseñadas
+      para recibir el exceso.</p>
       <p>Conjuraciones, transmutaciones y crecimiento descontrolado pueden llenar espacio o
-      bloquear salidas.</p>
-      <p>El protocolo mantiene rutas físicas independientes del centro de manifestación.</p>
-      <p>La retirada debe anticipar pérdida de visibilidad y movilidad.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Desbordamiento elemental</h4>
-      <p>Fuego, agua, viento, tierra, luz, oscuridad o maná requieren respuestas distintas.</p>
-      <p>No existe un neutralizador elemental universal.</p>
-      <p>Los equipos consultan matrices de incompatibilidad antes de elegir contramedidas.</p>
-      <h4 id="cap-29">Capítulo XXIX — Desbordamiento resonántico</h4>
-      <p>Los efectos mentales pueden incapacitar al propio equipo de respuesta.</p>
-      <p>Se utilizan rotaciones, observadores externos y señales automáticas.</p>
-      <p>Si varias personas comienzan a describir el mismo pensamiento no previsto, el
-      protocolo exige retirada.</p>
-      <h4 id="cap-30">Capítulo XXX — Desbordamiento pneumatológico</h4>
-      <p>Fenómenos sobre almas, posesión o identidad requieren aislamiento especializado.</p>
-      <p>Los respondedores no deben improvisar exorcismos o anclajes.</p>
-      <p>Pneumatología y Teurgia mantienen equipos acreditados para estos incidentes.</p>
-      <h4 id="cap-31">Capítulo XXXI — Desbordamiento planar</h4>
-      <p>Una brecha planar puede cambiar condiciones ambientales y permitir tránsito de
-      materia o entidades.</p>
-      <p>El primer objetivo es estabilizar perímetro, no explorar el otro lado.</p>
-      <p>Planología determina si el cierre debe hacerse desde el borde, el anclaje o la
+      bloquear salidas en un desbordamiento material. El protocolo mantiene rutas físicas
+      independientes del centro de manifestación, y la retirada debe anticipar pérdida de
+      visibilidad y movilidad.</p>
+      <p>Fuego, agua, viento, tierra, luz, oscuridad o maná requieren respuestas distintas
+      frente a un desbordamiento elemental, pues no existe un neutralizador universal para
+      todos ellos. Los equipos consultan matrices de incompatibilidad antes de elegir
+      contramedidas.</p>
+      <h4 id="cap-9">Capítulo IX — Desbordamiento resonántico, pneumatológico y planar</h4>
+      <p>En un desbordamiento resonántico, los efectos mentales pueden incapacitar al propio
+      equipo de respuesta. Se utilizan rotaciones, observadores externos y señales automáticas;
+      si varias personas comienzan a describir el mismo pensamiento no previsto, el protocolo
+      exige retirada.</p>
+      <p>Los fenómenos sobre almas, posesión o identidad requieren aislamiento especializado, y
+      los respondedores no deben improvisar exorcismos o anclajes. Pneumatología y Teurgia
+      mantienen equipos acreditados para estos incidentes.</p>
+      <p>Una brecha planar puede cambiar condiciones ambientales y permitir tránsito de materia
+      o entidades. El primer objetivo es estabilizar el perímetro, no explorar el otro lado;
+      Planología determina si el cierre debe hacerse desde el borde, el anclaje o la
       fuente.</p>
-      <h4 id="cap-32">Capítulo XXXII — Invocaciones fuera de control</h4>
-      <p>Una entidad invocada que deja de obedecer transforma el incidente en problema de
-      contención y derecho.</p>
-      <p>No todas las entidades pueden ser simplemente destruidas.</p>
-      <p>Se debe conocer de antemano qué condiciones permiten retorno, negociación o
+      <h4 id="cap-10">Capítulo X — Invocaciones fuera de control y entidades inteligentes</h4>
+      <p>Una entidad invocada que deja de obedecer transforma el incidente en un problema de
+      contención y de derecho. No todas las entidades pueden ser simplemente destruidas, por lo
+      que se debe conocer de antemano qué condiciones permiten retorno, negociación o
       cierre.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Entidades inteligentes</h4>
-      <p>Si la entidad posee inteligencia y lenguaje, la respuesta puede incluir
-      comunicación.</p>
-      <p>Negociar no sustituye seguridad, pero puede ser menos riesgoso que una
-      confrontación.</p>
-      <p>Demonología y Derecho Arcano establecen límites sobre detención y expulsión.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Artefactos inestables</h4>
-      <p>Un artefacto peligroso debe aislarse sin activarlo innecesariamente.</p>
-      <p>El contenedor se elige según emisión, autonomía y mecanismo.</p>
-      <p>Una caja metálica no sirve frente a todos los objetos y puede empeorar algunos.</p>
-      <h4 id="cap-35">Capítulo XXXV — Aislamiento de artefactos</h4>
-      <p>El aislamiento puede ser físico, mágico, semiótico, resonántico o planar.</p>
-      <p>El objetivo es reducir interacciones con entorno y usuarios.</p>
-      <p>Artefactología debe determinar si el objeto necesita ventilación, alimentación o
-      condiciones específicas para no degradarse.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Artefactos que reconocen usuarios</h4>
-      <p>Los objetos ligados a propietarios pueden reaccionar a intentos de traslado.</p>
-      <p>El equipo no debe asumir que guantes o pinzas eliminan la relación.</p>
-      <p>Semiótica Mágica ayuda a identificar criterios de pertenencia.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Artefactos conscientes</h4>
-      <p>Un objeto consciente no se trata exclusivamente como residuo peligroso.</p>
-      <p>Puede colaborar, engañar o resistirse.</p>
-      <p>La respuesta debe integrar seguridad con las obligaciones jurídicas aplicables a una
-      entidad capaz de agencia.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Contención</h4>
-      <p>Contener significa limitar alcance y nuevas interacciones, no necesariamente
-      neutralizar.</p>
-      <p>Una buena contención compra tiempo para comprender el fenómeno.</p>
-      <p>Intentar resolver de inmediato aquello que ya está contenido suele causar incidentes
+      <p>Si la entidad posee inteligencia y lenguaje, la respuesta puede incluir comunicación.
+      Negociar no sustituye a la seguridad, pero puede ser menos riesgoso que una confrontación
+      directa; Demonología y Derecho Arcano establecen límites sobre detención y expulsión.</p>
+      <h4 id="cap-11">Capítulo XI — Artefactos inestables y su aislamiento</h4>
+      <p>Un artefacto peligroso debe aislarse sin activarlo innecesariamente. El contenedor se
+      elige según emisión, autonomía y mecanismo, ya que una caja metálica no sirve frente a
+      todos los objetos y puede incluso empeorar algunos.</p>
+      <p>El aislamiento puede ser físico, mágico, semiótico, resonántico o planar, y su
+      objetivo es reducir interacciones con el entorno y los usuarios. Artefactología debe
+      determinar si el objeto necesita ventilación, alimentación o condiciones específicas para
+      no degradarse.</p>
+      <p>Los objetos ligados a propietarios pueden reaccionar a intentos de traslado, y el
+      equipo no debe asumir que guantes o pinzas eliminan esa relación. Semiótica Mágica ayuda a
+      identificar los criterios de pertenencia.</p>
+      <p>Un objeto consciente no se trata exclusivamente como residuo peligroso, pues puede
+      colaborar, engañar o resistirse. La respuesta debe integrar seguridad con las
+      obligaciones jurídicas aplicables a una entidad capaz de agencia.</p>
+      <h4 id="cap-12">Capítulo XII — Niveles de contención</h4>
+      <p>Contener significa limitar el alcance y las nuevas interacciones, no necesariamente
+      neutralizar. Una buena contención compra tiempo para comprender el fenómeno; intentar
+      resolver de inmediato aquello que ya está contenido suele causar incidentes
       secundarios.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Contención primaria</h4>
-      <p>La primera barrera se encuentra cerca de la fuente.</p>
-      <p>Debe soportar el comportamiento esperado y permitir monitorización.</p>
-      <p>Si falla, la contención secundaria debe impedir expansión al resto de la
-      instalación.</p>
-      <h4 id="cap-40">Capítulo XL — Contención secundaria</h4>
+      <p>La contención primaria, la primera barrera, se encuentra cerca de la fuente. Debe
+      soportar el comportamiento esperado y permitir monitorización; si falla, la contención
+      secundaria debe impedir la expansión al resto de la instalación.</p>
       <p>Las instalaciones dolbrianas de alto riesgo poseen zonas capaces de aislar una sala
-      completa.</p>
-      <p>Estas barreras se diseñan independientes de la estructura ritual interna.</p>
-      <p>Compartir el mismo sistema de energía con el experimento reduce redundancia y está
-      desaconsejado.</p>
-      <h4 id="cap-41">Capítulo XLI — Contención terciaria</h4>
-      <p>Para riesgos críticos puede existir un perímetro externo destinado a proteger
-      población y ambiente.</p>
-      <p>Su activación puede implicar evacuación de edificios o barrios.</p>
-      <p>Las autoridades civiles participan cuando el alcance supera jurisdicción
-      universitaria.</p>
-      <h4 id="cap-42">Capítulo XLII — Redundancia</h4>
-      <p>Los sistemas de seguridad no deben depender de un único sello, operador o fuente.</p>
-      <p>Se combinan barreras de principios distintos para reducir fallos comunes.</p>
-      <p>La redundancia útil es aquella cuyos componentes no colapsan por la misma causa.</p>
-      <h4 id="cap-43">Capítulo XLIII — Sistemas manuales</h4>
+      completa como contención secundaria. Estas barreras se diseñan independientes de la
+      estructura ritual interna, y compartir el mismo sistema de energía con el experimento
+      reduce la redundancia y está desaconsejado.</p>
+      <p>Para riesgos críticos puede existir además un perímetro externo, la contención
+      terciaria, destinado a proteger población y ambiente. Su activación puede implicar
+      evacuación de edificios o barrios, y las autoridades civiles participan cuando el alcance
+      supera la jurisdicción universitaria.</p>
+      <h4 id="cap-13">Capítulo XIII — Redundancia y sistemas de control</h4>
+      <p>Los sistemas de seguridad no deben depender de un único sello, operador o fuente. Se
+      combinan barreras de principios distintos para reducir fallos comunes, ya que la
+      redundancia útil es aquella cuyos componentes no colapsan por la misma causa.</p>
       <p>Los controles manuales permanecen esenciales cuando un fallo mágico puede inutilizar
-      automatización.</p>
-      <p>Palancas, cerraduras mecánicas y señales físicas siguen presentes en laboratorios
-      avanzados.</p>
-      <p>Su aparente simplicidad es una ventaja de seguridad.</p>
-      <h4 id="cap-44">Capítulo XLIV — Sistemas automáticos</h4>
-      <p>La automatización puede detectar variables más rápido que una persona.</p>
-      <p>Debe estar configurada para estados seguros y poseer límites claros.</p>
-      <p>Un sistema automático que intenta corregir indefinidamente un ritual inestable puede
-      alimentar el problema.</p>
-      <h4 id="cap-45">Capítulo XLV — Monitoreo</h4>
-      <p>Las variables relevantes se registran durante toda la práctica.</p>
-      <p>Temperatura, presión, intensidad, coherencia, estado de clausura y respuestas de
-      participantes pueden servir como indicadores.</p>
-      <p>Los límites de alarma se fijan antes de comenzar.</p>
-      <h4 id="cap-46">Capítulo XLVI — Indicadores tempranos</h4>
-      <p>Muchos accidentes presentan señales antes del fallo grave.</p>
-      <p>Oscilaciones crecientes, cambios de color, retrasos de respuesta, vibraciones o
-      pérdida de sincronía pueden justificar cierre preventivo.</p>
-      <p>Esperar al síntoma espectacular suele ser demasiado tarde.</p>
-      <h4 id="cap-47">Capítulo XLVII — Fatiga de participantes</h4>
-      <p>La capacidad de mantener precisión disminuye con cansancio, hambre, dolor y
-      estrés.</p>
-      <p>Los rituales largos incluyen turnos, pausas y criterios de relevo.</p>
-      <p>El heroísmo improvisado no sustituye un plan de descanso.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Fatiga de cierre</h4>
-      <p>Las prácticas territoriales o de alta complejidad pueden dejar desorientación
-      espacial y errores de referencia después de finalizar.</p>
-      <p>Los ejecutores no deben asumir inmediatamente nuevas tareas críticas.</p>
-      <p>Dolbred exige observación posterior en ciertos niveles de Predominio y operaciones
-      equivalentes.</p>
-      <h4 id="cap-49">Capítulo XLIX — Sustituciones</h4>
-      <p>Cambiar un participante, material o símbolo durante un ritual requiere un
-      procedimiento previsto.</p>
-      <p>Una sustitución improvisada puede romper correspondencias sin producir fallo
-      inmediato.</p>
-      <p>Los manuales deben indicar qué componentes son reemplazables y cuáles no.</p>
-      <h4 id="cap-50">Capítulo L — Participantes incapacitados</h4>
-      <p>Si una función depende de una sola persona, debe existir plan ante pérdida de
-      conciencia o capacidad.</p>
-      <p>Los roles críticos se duplican en rituales de alto riesgo.</p>
-      <p>La continuidad del experimento nunca tiene prioridad sobre la vida del
-      participante.</p>
-      <h4 id="cap-51">Capítulo LI — Primeros auxilios arcanos</h4>
+      la automatización. Palancas, cerraduras mecánicas y señales físicas siguen presentes en
+      laboratorios avanzados, y su aparente simplicidad es una ventaja de seguridad.</p>
+      <p>La automatización, por su parte, puede detectar variables más rápido que una persona,
+      pero debe estar configurada para estados seguros y poseer límites claros. Un sistema
+      automático que intenta corregir indefinidamente un ritual inestable puede terminar
+      alimentando el problema.</p>
+      <h4 id="cap-14">Capítulo XIV — Monitoreo e indicadores tempranos</h4>
+      <p>Las variables relevantes se registran durante toda la práctica. Temperatura, presión,
+      intensidad, coherencia, estado de clausura y respuestas de participantes pueden servir
+      como indicadores, y los límites de alarma se fijan antes de comenzar.</p>
+      <p>Muchos accidentes presentan señales antes del fallo grave. Oscilaciones crecientes,
+      cambios de color, retrasos de respuesta, vibraciones o pérdida de sincronía pueden
+      justificar un cierre preventivo. Esperar al síntoma espectacular suele llegar demasiado
+      tarde.</p>
+      <h4 id="cap-15">Capítulo XV — Fatiga, sustituciones e incapacidad de participantes</h4>
+      <p>La capacidad de mantener precisión disminuye con cansancio, hambre, dolor y estrés.
+      Los rituales largos incluyen turnos, pausas y criterios de relevo, porque el heroísmo
+      improvisado no sustituye un plan de descanso.</p>
+      <p>Las prácticas territoriales o de alta complejidad pueden dejar desorientación espacial
+      y errores de referencia después de finalizar. Los ejecutores no deben asumir
+      inmediatamente nuevas tareas críticas, y Dolbred exige observación posterior en ciertos
+      niveles de Predominio y operaciones equivalentes.</p>
+      <p>Cambiar un participante, material o símbolo durante un ritual requiere además un
+      procedimiento previsto, ya que una sustitución improvisada puede romper correspondencias
+      sin producir un fallo inmediato. Los manuales deben indicar qué componentes son
+      reemplazables y cuáles no.</p>
+      <p>Si una función depende de una sola persona, debe existir un plan ante pérdida de
+      conciencia o capacidad, y los roles críticos se duplican en rituales de alto riesgo. La
+      continuidad del experimento nunca tiene prioridad sobre la vida del participante.</p>
+      <h4 id="cap-16">Capítulo XVI — Primeros auxilios, descontaminación y cuarentena</h4>
       <p>El personal de respuesta debe reconocer lesiones mágicas básicas y evitar
-      intervenciones que agraven exposición.</p>
-      <p>No todo daño se trata disipando magia.</p>
-      <p>Patología Arcana establece protocolos de estabilización antes de diagnóstico
+      intervenciones que agraven la exposición, ya que no todo daño se trata disipando magia.
+      Patología Arcana establece protocolos de estabilización antes de un diagnóstico
       definitivo.</p>
-      <h4 id="cap-52">Capítulo LII — Descontaminación</h4>
       <p>Las zonas de salida pueden incluir descontaminación de ropa, objetos, residuos y
-      firmas.</p>
-      <p>El procedimiento depende del agente.</p>
-      <p>Una descontaminación agresiva aplicada al fenómeno equivocado puede fijarlo con mayor
-      fuerza.</p>
-      <h4 id="cap-53">Capítulo LIII — Cuarentena</h4>
-      <p>Se utiliza cuando existe posibilidad de transmisión o contaminación no
-      caracterizada.</p>
-      <p>Las personas se separan por exposición, no por sospecha moral.</p>
-      <p>Epidemiología Taumatológica define duración y criterios de liberación.</p>
-      <h4 id="cap-54">Capítulo LIV — Evacuación versus confinamiento</h4>
-      <p>No siempre salir es más seguro.</p>
-      <p>Si el riesgo está fuera de la sala o la estructura protege de una contaminación
-      externa, puede ordenarse confinamiento temporal.</p>
-      <p>Los protocolos deben decidir entre ambas opciones según dirección del peligro.</p>
-      <h4 id="cap-55">Capítulo LV — Comunicación de emergencia</h4>
-      <p>Las instrucciones deben ser breves, consistentes y emitidas por una autoridad
-      identificable.</p>
-      <p>Mensajes contradictorios producen retraso y movimiento hacia zonas inseguras.</p>
-      <p>Las instalaciones mantienen canales redundantes mágicos y no mágicos.</p>
-      <h4 id="cap-56">Capítulo LVI — Rumor durante incidentes</h4>
-      <p>Los rumores pueden atraer curiosos, provocar pánico o interferir con
-      evacuaciones.</p>
-      <p>La institución debe comunicar lo suficiente para orientar conducta sin divulgar
-      información que aumente riesgo.</p>
-      <p>El silencio total suele ser menos seguro que una explicación limitada y
-      verificable.</p>
-      <h4 id="cap-57">Capítulo LVII — Documentación de incidentes</h4>
-      <p>Todo incidente relevante se documenta después de estabilizar la situación.</p>
-      <p>El registro incluye condiciones iniciales, decisiones, tiempos, daños y cambios
-      aplicados.</p>
-      <p>La finalidad es aprender y asignar responsabilidad, no producir una narrativa
-      heroica.</p>
-      <h4 id="cap-58">Capítulo LVIII — Preservación forense</h4>
+      firmas, y el procedimiento depende del agente implicado. Una descontaminación agresiva
+      aplicada al fenómeno equivocado puede fijarlo con mayor fuerza.</p>
+      <p>La cuarentena se utiliza cuando existe posibilidad de transmisión o contaminación no
+      caracterizada. Las personas se separan por exposición, no por sospecha moral, y
+      Epidemiología Taumatológica define duración y criterios de liberación.</p>
+      <h4 id="cap-17">Capítulo XVII — Confinamiento y comunicación de emergencia</h4>
+      <p>No siempre salir es la opción más segura. Si el riesgo está fuera de la sala, o si la
+      estructura protege de una contaminación externa, puede ordenarse confinamiento temporal;
+      los protocolos deben decidir entre evacuación y confinamiento según la dirección del
+      peligro.</p>
+      <p>Cualquiera sea la decisión, las instrucciones deben ser breves, consistentes y
+      emitidas por una autoridad identificable. Mensajes contradictorios producen retraso y
+      movimiento hacia zonas inseguras, por lo que las instalaciones mantienen canales
+      redundantes, mágicos y no mágicos.</p>
+      <p>Los rumores durante un incidente pueden atraer curiosos, provocar pánico o interferir
+      con evacuaciones. La institución debe comunicar lo suficiente para orientar la conducta
+      sin divulgar información que aumente el riesgo; el silencio total suele ser menos seguro
+      que una explicación limitada y verificable.</p>
+      <h4 id="cap-18">Capítulo XVIII — Documentación de incidentes y preservación forense</h4>
+      <p>Todo incidente relevante se documenta después de estabilizar la situación. El registro
+      incluye condiciones iniciales, decisiones, tiempos, daños y cambios aplicados; su
+      finalidad es aprender y asignar responsabilidad, no producir una narrativa heroica.</p>
       <p>Cuando existe posible delito o negligencia, Seguridad Ritual coordina con
-      Criminalística Arcana.</p>
-      <p>Se preserva evidencia siempre que no comprometa contención.</p>
-      <p>Las intervenciones necesarias se registran para que el equipo forense pueda
+      Criminalística Arcana. Se preserva evidencia siempre que no comprometa la contención, y
+      las intervenciones necesarias se registran para que el equipo forense pueda
       reconstruirlas.</p>
-      <h4 id="cap-59">Capítulo LIX — Casi accidentes</h4>
-      <p>Un casi accidente es un evento que pudo producir daño pero no lo hizo por margen,
-      azar o intervención.</p>
-      <p>Dolbred exige reportarlos porque revelan fallos antes de una tragedia.</p>
-      <p>No sancionar automáticamente cada reporte ayuda a evitar que se oculten.</p>
-      <h4 id="cap-60">Capítulo LX — Cultura de seguridad</h4>
-      <p>Una organización segura permite detener procedimientos sin humillación ni
-      represalia.</p>
-      <p>Los estudiantes deben poder señalar una anomalía aunque se equivoquen.</p>
-      <p>Penalizar toda interrupción prudente enseña a callar hasta que sea tarde.</p>
-      <h4 id="cap-61">Capítulo LXI — Licencias</h4>
-      <p>Los rituales de determinado nivel sólo pueden ser dirigidos por personal
-      licenciado.</p>
-      <p>La licencia incluye entrenamiento de seguridad, no sólo competencia mágica.</p>
-      <p>Una persona técnicamente capaz puede perder autorización por incumplimientos
-      repetidos de protocolo.</p>
-      <h4 id="cap-62">Capítulo LXII — Certificación de instalaciones</h4>
-      <p>Los laboratorios reciben autorización para categorías concretas de riesgo.</p>
-      <p>No toda sala con espacio suficiente es apta para invocación, transmutación mayor o
-      manipulación pneumatológica.</p>
-      <p>Las inspecciones revisan contención, salidas, mantenimiento y registros.</p>
-      <h4 id="cap-63">Capítulo LXIII — Permisos de ritual</h4>
-      <p>Los rituales de Riesgo Alto o Crítico requieren permiso específico.</p>
-      <p>La solicitud describe objetivo, materiales, participantes, riesgos, cierre y
-      respuesta de emergencia.</p>
-      <p>Cambiar elementos sustanciales puede invalidar la autorización.</p>
-      <h4 id="cap-64">Capítulo LXIV — Prohibición de trabajo solitario</h4>
-      <p>Las prácticas de alto riesgo no pueden ejecutarse en solitario.</p>
-      <p>Debe existir al menos una persona capaz de activar cierre o pedir ayuda sin depender
-      del ejecutor.</p>
-      <p>Las excepciones son extremadamente limitadas.</p>
-      <h4 id="cap-65">Capítulo LXV — Horarios</h4>
-      <p>Algunos laboratorios restringen rituales peligrosos a periodos con personal médico y
-      de respuesta disponible.</p>
-      <p>Realizar una práctica de madrugada para evitar supervisión constituye agravante
-      administrativo.</p>
-      <p>La comodidad del investigador no justifica reducir capacidad de respuesta.</p>
-      <h4 id="cap-66">Capítulo LXVI — Almacenamiento</h4>
+      <h4 id="cap-19">Capítulo XIX — Casi accidentes y cultura de seguridad</h4>
+      <p>Un casi accidente es un evento que pudo producir daño pero no lo hizo, por margen,
+      azar o intervención oportuna. Dolbred exige reportarlos porque revelan fallos antes de
+      una tragedia, y no sancionar automáticamente cada reporte ayuda a evitar que se
+      oculten.</p>
+      <p>Esa disposición a reportar depende de la cultura de la institución. Una organización
+      segura permite detener procedimientos sin humillación ni represalia, y los estudiantes
+      deben poder señalar una anomalía aunque se equivoquen. Penalizar toda interrupción
+      prudente enseña a callar hasta que sea demasiado tarde.</p>
+      <h4 id="cap-20">Capítulo XX — Licencias, certificación y permisos</h4>
+      <p>Los rituales de determinado nivel sólo pueden ser dirigidos por personal licenciado.
+      La licencia incluye entrenamiento de seguridad, no sólo competencia mágica, y una persona
+      técnicamente capaz puede perder autorización por incumplimientos repetidos de
+      protocolo.</p>
+      <p>Los laboratorios, a su vez, reciben autorización para categorías concretas de riesgo.
+      No toda sala con espacio suficiente es apta para invocación, transmutación mayor o
+      manipulación pneumatológica, y las inspecciones revisan contención, salidas,
+      mantenimiento y registros.</p>
+      <p>Los rituales de Riesgo Alto o Crítico requieren además un permiso específico. La
+      solicitud describe objetivo, materiales, participantes, riesgos, cierre y respuesta de
+      emergencia, y cambiar elementos sustanciales puede invalidar la autorización
+      concedida.</p>
+      <h4 id="cap-21">Capítulo XXI — Trabajo solitario y horarios</h4>
+      <p>Las prácticas de alto riesgo no pueden ejecutarse en solitario. Debe existir al menos
+      una persona capaz de activar el cierre o pedir ayuda sin depender del ejecutor, y las
+      excepciones a esta regla son extremadamente limitadas.</p>
+      <p>Por razones similares, algunos laboratorios restringen los rituales peligrosos a
+      periodos con personal médico y de respuesta disponible. Realizar una práctica de
+      madrugada para evitar supervisión constituye agravante administrativo, pues la comodidad
+      del investigador no justifica reducir la capacidad de respuesta.</p>
+      <h4 id="cap-22">Capítulo XXII — Almacenamiento, inventario y residuos peligrosos</h4>
       <p>Materiales reactivos, objetos malditos y catalizadores se almacenan según
-      compatibilidad.</p>
-      <p>Separar sustancias que interactúan es tan importante como asegurar cada una.</p>
-      <p>Los inventarios deben mantenerse actualizados.</p>
-      <h4 id="cap-67">Capítulo LXVII — Inventario</h4>
-      <p>Todo material restringido debe poder localizarse.</p>
-      <p>Las discrepancias se investigan inmediatamente.</p>
-      <p>Un frasco perdido puede ser un error administrativo o el inicio de un incidente.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Residuos peligrosos</h4>
-      <p>Los restos de un ritual pueden conservar actividad.</p>
-      <p>No se desechan como basura ordinaria hasta confirmar su estado.</p>
-      <p>Conservación Arcana y Patología ayudan a decidir neutralización o
-      almacenamiento.</p>
-      <h4 id="cap-69">Capítulo LXIX — Mantenimiento</h4>
-      <p>Barreras, sensores, sellos y artefactos de emergencia necesitan pruebas
-      periódicas.</p>
-      <p>Un sistema que nunca se activa puede fallar precisamente cuando se necesita.</p>
-      <p>Los registros de mantenimiento son parte de la responsabilidad institucional.</p>
-      <h4 id="cap-70">Capítulo LXX — Simulacros</h4>
-      <p>Los simulacros entrenan evacuación, cierre y coordinación.</p>
-      <p>Deben incluir fallos inesperados para evitar respuestas memorizadas demasiado
-      rígidas.</p>
-      <p>Después de cada ejercicio se revisan tiempos y decisiones.</p>
-      <h4 id="cap-71">Capítulo LXXI — Entrenamiento</h4>
-      <p>El entrenamiento de seguridad no se completa con una sola asignatura.</p>
-      <p>Las licencias avanzadas exigen renovación y práctica periódica.</p>
-      <p>Los procedimientos cambian cuando nuevos incidentes revelan riesgos antes
-      desconocidos.</p>
-      <h4 id="cap-72">Capítulo LXXII — Supervisión estudiantil</h4>
+      compatibilidad. Separar sustancias que interactúan es tan importante como asegurar cada
+      una por separado, y los inventarios deben mantenerse actualizados.</p>
+      <p>Todo material restringido debe poder localizarse en todo momento, y las discrepancias
+      se investigan de inmediato. Un frasco perdido puede ser un simple error administrativo o
+      el inicio de un incidente.</p>
+      <p>Los restos de un ritual pueden conservar actividad y no se desechan como basura
+      ordinaria hasta confirmar su estado. Conservación Arcana y Patología ayudan a decidir
+      entre neutralización o almacenamiento.</p>
+      <h4 id="cap-23">Capítulo XXIII — Mantenimiento, simulacros, entrenamiento y supervisión
+      estudiantil</h4>
+      <p>Barreras, sensores, sellos y artefactos de emergencia necesitan pruebas periódicas, ya
+      que un sistema que nunca se activa puede fallar justo cuando se necesita. Los registros
+      de mantenimiento son parte de la responsabilidad institucional.</p>
+      <p>Los simulacros entrenan evacuación, cierre y coordinación, y deben incluir fallos
+      inesperados para evitar respuestas memorizadas de forma demasiado rígida. Después de cada
+      ejercicio se revisan tiempos y decisiones.</p>
+      <p>El entrenamiento de seguridad no se completa con una sola asignatura. Las licencias
+      avanzadas exigen renovación y práctica periódica, y los procedimientos cambian cuando
+      nuevos incidentes revelan riesgos antes desconocidos.</p>
       <p>Los estudiantes no pueden quedar a cargo de la única barrera de seguridad de un
-      experimento docente.</p>
-      <p>El supervisor conserva responsabilidad efectiva.</p>
-      <p>La autonomía educativa aumenta gradualmente con competencia y nivel de riesgo.</p>
-      <h4 id="cap-73">Capítulo LXXIII — Sanciones</h4>
-      <p>Incumplir protocolos puede producir advertencia, suspensión de laboratorio, pérdida
-      de licencia o remisión a Derecho Arcano.</p>
-      <p>La gravedad depende de riesgo creado, ocultamiento y reincidencia.</p>
-      <p>No es necesario que ocurra daño para sancionar una conducta extremadamente
-      peligrosa.</p>
-      <h4 id="cap-74">Capítulo LXXIV — Negligencia</h4>
-      <p>Una violación deliberada de una norma conocida puede constituir negligencia
-      grave.</p>
-      <p>Improvisar sobre una situación no prevista se evalúa de forma distinta.</p>
-      <p>Los informes distinguen error razonable de desprecio consciente por seguridad.</p>
-      <h4 id="cap-75">Capítulo LXXV — Excepciones de emergencia</h4>
-      <p>Durante una emergencia puede ser necesario violar un procedimiento para evitar un
-      daño mayor.</p>
-      <p>La excepción debe ser proporcional y documentada.</p>
-      <p>Invocar emergencia después de los hechos no protege decisiones tomadas por
-      conveniencia.</p>
-      <h4 id="cap-76">Capítulo LXXVI — Responsabilidad institucional</h4>
-      <p>Dolbred responde por instalaciones, entrenamiento, supervisión y mantenimiento bajo
-      su control.</p>
-      <p>No puede trasladar todo riesgo al estudiante mediante formularios.</p>
-      <p>La institución tiene deber activo de prevención.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Investigación de incidentes</h4>
+      experimento docente, pues el supervisor conserva siempre responsabilidad efectiva. La
+      autonomía educativa aumenta gradualmente con la competencia y el nivel de riesgo
+      asumido.</p>
+      <h4 id="cap-24">Capítulo XXIV — Sanciones, negligencia y excepciones de emergencia</h4>
+      <p>Incumplir protocolos puede producir advertencia, suspensión de laboratorio, pérdida de
+      licencia o remisión a Derecho Arcano. La gravedad depende del riesgo creado, el
+      ocultamiento y la reincidencia; no es necesario que ocurra daño para sancionar una
+      conducta extremadamente peligrosa.</p>
+      <p>Una violación deliberada de una norma conocida puede constituir negligencia grave,
+      mientras que improvisar sobre una situación no prevista se evalúa de forma distinta. Los
+      informes distinguen entre error razonable y desprecio consciente por la seguridad.</p>
+      <p>Durante una emergencia puede ser necesario violar un procedimiento para evitar un daño
+      mayor, pero esa excepción debe ser proporcional y quedar documentada. Invocar la
+      emergencia después de los hechos no protege decisiones tomadas por conveniencia.</p>
+      <h4 id="cap-25">Capítulo XXV — Responsabilidad institucional e investigación de
+      incidentes</h4>
+      <p>Dolbred responde por instalaciones, entrenamiento, supervisión y mantenimiento bajo su
+      control, y no puede trasladar todo el riesgo al estudiante mediante formularios. La
+      institución tiene un deber activo de prevención.</p>
       <p>Los accidentes graves son revisados por un equipo distinto al grupo que ejecutó el
-      ritual.</p>
-      <p>Se buscan causas inmediatas y causas sistémicas.</p>
-      <p>Culpar al último participante que tocó un componente puede ocultar fallos de diseño,
-      supervisión o cultura.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — Causa raíz</h4>
+      ritual, y se buscan tanto causas inmediatas como causas sistémicas. Culpar al último
+      participante que tocó un componente puede ocultar fallos de diseño, supervisión o
+      cultura.</p>
       <p>La causa raíz es la condición cuya corrección reduce la probabilidad de repetir el
-      incidente.</p>
-      <p>Puede ser técnica, organizativa o normativa.</p>
-      <p>Un error humano frecuente suele indicar que el sistema depende demasiado de que nadie
-      se equivoque.</p>
-      <h4 id="cap-79">Capítulo LXXIX — Lecciones compartidas</h4>
+      incidente, y puede ser técnica, organizativa o normativa. Un error humano frecuente suele
+      indicar que el sistema depende demasiado de que nadie se equivoque.</p>
       <p>Los hallazgos de seguridad se distribuyen entre facultades cuando el riesgo puede
-      repetirse.</p>
-      <p>Los nombres personales pueden restringirse, pero el mecanismo no debe ocultarse por
-      reputación.</p>
-      <p>Una institución aprende sólo si convierte incidentes en cambios.</p>
-      <h4 id="cap-80">Capítulo LXXX — Seguridad y Criminalística</h4>
+      repetirse. Los nombres personales pueden restringirse, pero el mecanismo no debe
+      ocultarse por reputación, ya que una institución aprende sólo si convierte los incidentes
+      en cambios.</p>
+      <h4 id="cap-26">Capítulo XXVI — Seguridad Ritual y otras disciplinas</h4>
       <p>Seguridad Ritual preserva vidas y estabiliza; Criminalística preserva evidencia y
-      reconstruye.</p>
-      <p>Cuando ambas prioridades entran en conflicto, la protección inmediata prevalece.</p>
-      <p>Después, la documentación permite explicar por qué la escena fue modificada.</p>
-      <h4 id="cap-81">Capítulo LXXXI — Seguridad y Derecho Arcano</h4>
-      <p>Las normas de seguridad crean deberes jurídicos concretos.</p>
-      <p>Violar un protocolo no demuestra automáticamente delito, pero puede servir como
-      evidencia de negligencia.</p>
-      <p>Derecho Arcano determina responsabilidad final.</p>
-      <h4 id="cap-82">Capítulo LXXXII — Seguridad y Ética de la Alteración</h4>
-      <p>La seguridad protege principalmente frente a daño; la ética también considera
-      autonomía y consentimiento.</p>
-      <p>Un procedimiento puede ser seguro y aun así ilegítimo.</p>
-      <p>Ambas evaluaciones son necesarias antes de autorizar una alteración sobre
-      personas.</p>
-      <h4 id="cap-83">Capítulo LXXXIII — El error de confiar en experiencia</h4>
-      <p>La experiencia reduce algunos errores y puede aumentar exceso de confianza.</p>
-      <p>Los practicantes expertos también siguen listas, perímetros y protocolos.</p>
-      <p>La frase lo he hecho cien veces no constituye una medida de seguridad.</p>
-      <h4 id="cap-84">Capítulo LXXXIV — El error de improvisar el cierre</h4>
-      <p>El momento del fallo es el peor instante para diseñar una salida.</p>
-      <p>Un ritual sin cierre previsto está incompleto aunque su manifestación principal
-      funcione.</p>
-      <p>Dolbred rechaza permisos cuando la respuesta de emergencia depende de
-      inspiración.</p>
-      <h4 id="cap-85">Capítulo LXXXV — El error de salvar el experimento</h4>
-      <p>Materiales, datos y artefactos pueden reemplazarse; vidas y continuidades personales
-      no siempre.</p>
-      <p>Los protocolos establecen con claridad cuándo abandonar el objetivo.</p>
-      <p>Intentar rescatar resultados durante una evacuación ha causado más de un segundo
-      incidente.</p>
-      <h4 id="cap-86">Capítulo LXXXVI — La materia aburrida</h4>
-      <p>Buena parte de Seguridad Ritual consiste en comprobar puertas, listas, inventarios,
-      tiempos y señales.</p>
-      <p>Precisamente por eso resulta fácil subestimarla.</p>
-      <p>Las catástrofes suelen construirse a partir de detalles considerados demasiado
-      pequeños para merecer atención.</p>
-      <h4 id="cap-87">Capítulo LXXXVII — La pregunta dolbriana</h4>
-      <p>Antes de iniciar un ritual, Dolbred exige responder: qué puede fallar, cómo lo
-      detectaremos, quién puede detenerlo, dónde irán los presentes y qué barrera queda si la
-      primera falla.</p>
-      <p>Si alguna de esas respuestas depende de improvisación, el ritual todavía no está
-      listo.</p>
-      <p>La regulación trata la capacidad de fallar con seguridad como parte del
-      procedimiento, no como un añadido.</p>
+      reconstruye. Cuando ambas prioridades entran en conflicto, la protección inmediata
+      prevalece, y la documentación posterior permite explicar por qué la escena fue
+      modificada.</p>
+      <p>Las normas de seguridad crean además deberes jurídicos concretos. Violar un protocolo
+      no demuestra automáticamente un delito, pero puede servir como evidencia de negligencia;
+      Derecho Arcano determina la responsabilidad final.</p>
+      <p>La seguridad protege principalmente frente al daño, mientras que la ética también
+      considera autonomía y consentimiento. Un procedimiento puede ser seguro y aun así
+      ilegítimo, de modo que ambas evaluaciones resultan necesarias antes de autorizar una
+      alteración sobre personas.</p>
+      <h4 id="cap-27">Capítulo XXVII — Tres errores recurrentes</h4>
+      <p>El primero es confiar en la experiencia como sustituto de la seguridad. La experiencia
+      reduce algunos errores, pero puede aumentar el exceso de confianza; los practicantes
+      expertos también siguen listas, perímetros y protocolos, porque la frase «lo he hecho
+      cien veces» no constituye una medida de seguridad.</p>
+      <p>El segundo es improvisar el cierre. El momento del fallo es el peor instante para
+      diseñar una salida, y un ritual sin cierre previsto está incompleto aunque su
+      manifestación principal funcione. Dolbred rechaza permisos cuando la respuesta de
+      emergencia depende de la inspiración del momento.</p>
+      <p>El tercero es intentar salvar el experimento. Materiales, datos y artefactos pueden
+      reemplazarse, pero las vidas y las continuidades personales no siempre. Los protocolos
+      establecen con claridad cuándo abandonar el objetivo, y tratar de rescatar resultados
+      durante una evacuación ha causado más de un segundo incidente.</p>
+      <h4 id="cap-28">Capítulo XXVIII — La materia aburrida y la pregunta dolbriana</h4>
+      <p>Gran parte de Seguridad Ritual consiste en comprobar puertas, listas, inventarios,
+      tiempos y señales. Esa aparente monotonía hace que resulte fácil subestimarla, aunque las
+      catástrofes suelen construirse a partir de detalles considerados demasiado pequeños para
+      merecer atención.</p>
+      <p>Por eso, antes de iniciar un ritual, Dolbred exige responder qué puede fallar, cómo se
+      detectará, quién puede detenerlo, dónde irán los presentes y qué barrera queda si la
+      primera falla. Si alguna de esas respuestas depende de improvisación, el ritual todavía
+      no está listo. La regulación trata la capacidad de fallar con seguridad como parte del
+      procedimiento, no como un añadido posterior.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Seguridad Ritual convierte prevención y respuesta en parte inseparable de la
       práctica mágica. Su trabajo abarca clasificación de riesgo, roles, perímetros,
