@@ -5097,28 +5097,23 @@ window.ENTRIES = [
         <a href="#cap-28">XXVIII. Simbiogénesis</a>
         <a href="#cap-29">XXIX. Parasitismo</a>
         <a href="#cap-30">XXX. Depredadores ápice</a>
-        <a href="#cap-31">XXXI. Criaturas elementales biologizadas</a>
-        <a href="#cap-32">XXXII. Criaturas extraplanares biologizadas</a>
-        <a href="#cap-33">XXXIII. Sensibilidad mágica</a>
-        <a href="#cap-34">XXXIV. Camuflaje arcano</a>
-        <a href="#cap-35">XXXV. Defensas</a>
-        <a href="#cap-36">XXXVI. Veneno y toxicidad</a>
-        <a href="#cap-37">XXXVII. Ciclo vital</a>
-        <a href="#cap-38">XXXVIII. Longevidad</a>
-        <a href="#cap-39">XXXIX. Senescencia</a>
-        <a href="#cap-40">XL. Muerte y persistencia</a>
-        <a href="#cap-41">XLI. Clasificación por peligro</a>
-        <a href="#cap-42">XLII. Domesticación</a>
-        <a href="#cap-43">XLIII. Cría</a>
-        <a href="#cap-44">XLIV. Conservación de especies</a>
-        <a href="#cap-45">XLV. Extinción y pérdida de conocimiento</a>
-        <a href="#cap-46">XLVI. Fósiles y restos</a>
-        <a href="#cap-47">XLVII. Linajes dudosos</a>
-        <a href="#cap-48">XLVIII. Trabajo de campo</a>
-        <a href="#cap-49">XLIX. Métodos no invasivos</a>
-        <a href="#cap-50">L. Criaturas inteligentes</a>
-        <a href="#cap-51">LI. El error del bestiario</a>
-        <a href="#cap-52">LII. Relación con otras disciplinas</a>
+        <a href="#cap-31">XXXI. Criaturas biologizadas de origen elemental y extraplanar</a>
+        <a href="#cap-32">XXXII. Sensibilidad mágica</a>
+        <a href="#cap-33">XXXIII. Camuflaje arcano</a>
+        <a href="#cap-34">XXXIV. Defensas</a>
+        <a href="#cap-35">XXXV. Veneno y toxicidad</a>
+        <a href="#cap-36">XXXVI. Ciclo vital</a>
+        <a href="#cap-37">XXXVII. Longevidad, senescencia y muerte</a>
+        <a href="#cap-38">XXXVIII. Clasificación por peligro</a>
+        <a href="#cap-39">XXXIX. Domesticación y cría</a>
+        <a href="#cap-40">XL. Conservación de especies</a>
+        <a href="#cap-41">XLI. Extinción y pérdida de conocimiento</a>
+        <a href="#cap-42">XLII. Fósiles y restos</a>
+        <a href="#cap-43">XLIII. Linajes dudosos</a>
+        <a href="#cap-44">XLIV. Trabajo de campo y métodos no invasivos</a>
+        <a href="#cap-45">XLV. Criaturas inteligentes</a>
+        <a href="#cap-46">XLVI. El error del bestiario</a>
+        <a href="#cap-47">XLVII. Relación con otras disciplinas</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -5358,50 +5353,49 @@ window.ENTRIES = [
       capacidades.</p>
       <p>Su eliminación puede parecer una mejora inmediata para asentamientos cercanos y producir
       sobrepoblación, migraciones o expansión de especies que antes permanecían controladas.</p>
-      <h4 id="cap-31">Capítulo XXXI — Criaturas elementales biologizadas</h4>
-      <p>Existen linajes cuya anatomía parece conservar rastros de un origen elemental. Tejidos con
+      <h4 id="cap-31">Capítulo XXXI — Criaturas biologizadas de origen elemental y extraplanar</h4>
+      <p>Dos categorías de linajes plantean un problema semejante, el de organismos cuyo origen
+      aparente no fue material pero cuya continuidad actual depende de procesos biológicos estables.
+      Existen linajes cuya anatomía parece conservar rastros de un origen elemental. Tejidos con
       afinidades extraordinariamente puras, metabolismo dependiente de una sustancia elemental y
       órganos cuya función carece de análogo en fauna ordinaria apoyan esta interpretación.</p>
       <p>No todos los investigadores aceptan un origen elemental literal para cada caso. Algunos
       proponen que la vida material desarrolló convergentemente mecanismos capaces de imitar
-      propiedades elementales.</p>
-      <p>La discusión es especialmente relevante para linajes dracónicos y será desarrollada por
-      Dracología.</p>
-      <h4 id="cap-32">Capítulo XXXII — Criaturas extraplanares biologizadas</h4>
-      <p>Algunas especies de origen extraplanar pueden reproducirse y desarrollarse de manera
-      estable en el plano material.</p>
-      <p>Con generaciones suficientes, rasgos que inicialmente dependían de condiciones externas
-      pueden integrarse a la fisiología.</p>
-      <p>Demonología y Planología estudian su origen; Criptozoología analiza qué ocurre cuando dejan
-      de ser visitantes y se convierten en poblaciones.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Sensibilidad mágica</h4>
+      propiedades elementales. La discusión es especialmente relevante para linajes dracónicos y será
+      desarrollada por Dracología.</p>
+      <p>Algunas especies de origen extraplanar, por su parte, pueden reproducirse y desarrollarse de
+      manera estable en el plano material. Con generaciones suficientes, rasgos que inicialmente
+      dependían de condiciones externas pueden integrarse a la fisiología. Demonología y Planología
+      estudian su origen; Criptozoología analiza qué ocurre cuando dejan de ser visitantes y se
+      convierten en poblaciones.</p>
+      <h4 id="cap-32">Capítulo XXXII — Sensibilidad mágica</h4>
       <p>Muchos organismos perciben aspectos del entorno inaccesibles a sentidos humanos ordinarios.
       Pueden detectar afinidades, portales, firmas, actividad ritual o campos elementales.</p>
       <p>Un sentido mágico necesita receptor, procesamiento y comportamiento asociado, aunque el
       receptor no siempre sea un órgano visible.</p>
       <p>La existencia de percepción explica conductas que durante siglos fueron atribuidas a
       presciencia.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Camuflaje arcano</h4>
+      <h4 id="cap-33">Capítulo XXXIII — Camuflaje arcano</h4>
       <p>Ocultarse de sentidos mágicos requiere más que cambiar apariencia. Algunas especies reducen
       su firma, imitan el entorno o dispersan señales.</p>
       <p>Este camuflaje puede evolucionar como respuesta a depredadores capaces de detectar energía o
       a presas que utilizan percepción arcana.</p>
       <p>La carrera entre detección y ocultamiento produce adaptaciones comparables a camuflaje
       visual y ecolocalización.</p>
-      <h4 id="cap-35">Capítulo XXXV — Defensas</h4>
+      <h4 id="cap-34">Capítulo XXXIV — Defensas</h4>
       <p>Caparazones, toxinas, espinas, regeneración, ilusiones, teletransporte breve y descarga
       elemental pueden cumplir funciones defensivas.</p>
       <p>La espectacularidad de una defensa no indica que sea su función principal. Una descarga
       puede haber evolucionado primero para caza y ser reutilizada defensivamente.</p>
       <p>Reconstruir función evolutiva exige comparar especies cercanas y etapas de desarrollo.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Veneno y toxicidad</h4>
+      <h4 id="cap-35">Capítulo XXXV — Veneno y toxicidad</h4>
       <p>Los venenos de criaturas mágicas pueden contener sustancias químicas, componentes arcanos o
       ambos.</p>
       <p>Farmacología Arcana estudia dosis y tratamiento; Criptozoología examina cómo se produce, qué
       costo impone al animal y en qué contexto se utiliza.</p>
       <p>No toda secreción peligrosa es veneno defensivo; puede ser digestiva, comunicativa o
       reproductiva.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Ciclo vital</h4>
+      <h4 id="cap-36">Capítulo XXXVI — Ciclo vital</h4>
       <p>Comprender una especie exige estudiar todas sus etapas. Adultos espectaculares suelen
       recibir atención desproporcionada mientras huevos, larvas, juveniles y formas senescentes
       permanecen mal documentados.</p>
@@ -5409,29 +5403,23 @@ window.ENTRIES = [
       ciclo.</p>
       <p>La investigación de campo intenta seguir generaciones completas siempre que la longevidad lo
       permite.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Longevidad</h4>
+      <h4 id="cap-37">Capítulo XXXVII — Longevidad, senescencia y muerte</h4>
       <p>La longevidad extrema altera reproducción, comportamiento y evolución cultural. Una especie
-      que vive siglos puede reproducirse con poca frecuencia y acumular aprendizaje individual
-      enorme.</p>
-      <p>Esto la vuelve vulnerable a pérdidas demográficas que parecerían pequeñas en especies de
-      vida corta.</p>
-      <p>También dificulta estudiar cambios evolutivos mediante observación directa.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Senescencia</h4>
-      <p>No todas las criaturas envejecen del mismo modo. Algunas acumulan daño, otras cambian de
-      forma, entran en etapas de baja actividad o regeneran suficientemente como para retrasar
-      senescencia.</p>
-      <p>Ausencia visible de envejecimiento no demuestra inmortalidad.</p>
-      <p>Tanatología interviene cuando una especie parece escapar de los procesos ordinarios de
-      terminación.</p>
-      <h4 id="cap-40">Capítulo XL — Muerte y persistencia</h4>
-      <p>En ciertos organismos, la muerte corporal no termina inmediatamente todas las funciones.
-      Esporas, segmentos, huevos internos, colonias asociadas o estructuras pneumatológicas pueden
-      persistir.</p>
-      <p>La disciplina debe distinguir reproducción post mortem, regeneración, parasitismo y
-      verdadera continuidad del individuo.</p>
-      <p>Tanatología y Pneumatología resultan indispensables cuando identidad y organismo dejan de
-      coincidir con claridad.</p>
-      <h4 id="cap-41">Capítulo XLI — Clasificación por peligro</h4>
+      que vive siglos puede reproducirse con poca frecuencia y acumular aprendizaje individual enorme,
+      lo cual la vuelve vulnerable a pérdidas demográficas que parecerían pequeñas en especies de vida
+      corta y dificulta estudiar cambios evolutivos mediante observación directa.</p>
+      <p>El envejecimiento tampoco sigue un patrón único entre estos linajes longevos. Algunas
+      criaturas acumulan daño de forma gradual, otras cambian de forma, entran en etapas de baja
+      actividad o regeneran lo suficiente como para retrasar la senescencia. Ausencia visible de
+      envejecimiento no demuestra inmortalidad; Tanatología interviene cuando una especie parece
+      escapar de los procesos ordinarios de terminación.</p>
+      <p>En ciertos organismos, además, la muerte corporal no termina inmediatamente todas las
+      funciones. Esporas, segmentos, huevos internos, colonias asociadas o estructuras pneumatológicas
+      pueden persistir tras el deceso del individuo. La disciplina debe distinguir reproducción post
+      mortem, regeneración, parasitismo y verdadera continuidad del individuo; Tanatología y
+      Pneumatología resultan indispensables cuando identidad y organismo dejan de coincidir con
+      claridad.</p>
+      <h4 id="cap-38">Capítulo XXXVIII — Clasificación por peligro</h4>
       <p>El riesgo para personas no constituye taxonomía. Dos especies igualmente peligrosas pueden
       pertenecer a linajes completamente distintos, y una misma especie puede ser inofensiva fuera de
       época reproductiva.</p>
@@ -5439,28 +5427,26 @@ window.ENTRIES = [
       clasificación biológica.</p>
       <p>Esta distinción reduce el hábito histórico de agrupar todo organismo peligroso bajo
       categorías como bestia, monstruo o aberración.</p>
-      <h4 id="cap-42">Capítulo XLII — Domesticación</h4>
+      <h4 id="cap-39">Capítulo XXXIX — Domesticación y cría</h4>
       <p>Domesticar no equivale a amansar. La domesticación implica cambios heredables producidos por
-      convivencia y selección a través de generaciones.</p>
-      <p>Criaturas mágicas domesticadas pueden desarrollar tolerancia a entornos urbanos, menor
-      agresividad o dependencia de fuentes arcanas proporcionadas por humanos.</p>
-      <p>También pueden conservar capacidades que vuelven peligrosa una selección irresponsable.</p>
-      <h4 id="cap-43">Capítulo XLIII — Cría</h4>
-      <p>La cría académica exige comprender parentesco, desarrollo y necesidades ambientales.
-      Seleccionar únicamente rasgos vistosos puede introducir enfermedades, inestabilidad mágica o
-      pérdida de funciones esenciales.</p>
-      <p>Los programas responsables registran genealogías y condiciones de incubación además de
-      apariencia.</p>
-      <p>La Ética de la Alteración interviene cuando la selección produce sufrimiento deliberado o
-      modifica especies inteligentes.</p>
-      <h4 id="cap-44">Capítulo XLIV — Conservación de especies</h4>
+      convivencia y selección a través de generaciones. Criaturas mágicas domesticadas pueden
+      desarrollar tolerancia a entornos urbanos, menor agresividad o dependencia de fuentes arcanas
+      proporcionadas por humanos, aunque también pueden conservar capacidades que vuelven peligrosa
+      una selección irresponsable.</p>
+      <p>La cría académica que sostiene estos programas exige comprender parentesco, desarrollo y
+      necesidades ambientales. Seleccionar únicamente rasgos vistosos puede introducir enfermedades,
+      inestabilidad mágica o pérdida de funciones esenciales, por lo que los programas responsables
+      registran genealogías y condiciones de incubación además de apariencia. La Ética de la
+      Alteración interviene cuando la selección produce sufrimiento deliberado o modifica especies
+      inteligentes.</p>
+      <h4 id="cap-40">Capítulo XL — Conservación de especies</h4>
       <p>Las criaturas mágicas pueden depender de recursos extremadamente específicos. Destruir un
       portal estacional, una veta mineral o un árbol simbiótico puede equivaler a eliminar su hábitat
       completo.</p>
       <p>La conservación necesita proteger procesos además de lugares.</p>
       <p>Ecología Mágica y Criptozoología trabajan juntas para identificar qué relaciones son
       indispensables antes de declarar un territorio protegido.</p>
-      <h4 id="cap-45">Capítulo XLV — Extinción y pérdida de conocimiento</h4>
+      <h4 id="cap-41">Capítulo XLI — Extinción y pérdida de conocimiento</h4>
       <p>La extinción elimina más que una forma de vida. Puede borrar mecanismos biológicos que no
       existen en ningún otro linaje.</p>
       <p>Algunas técnicas médicas y materiales fueron descubiertos estudiando especies hoy
@@ -5468,7 +5454,7 @@ window.ENTRIES = [
       <p>La conservación científica no justifica explotación, pero demuestra que perder
       biodiversidad también reduce la capacidad de comprender qué soluciones puede adoptar la
       vida.</p>
-      <h4 id="cap-46">Capítulo XLVI — Fósiles y restos</h4>
+      <h4 id="cap-42">Capítulo XLII — Fósiles y restos</h4>
       <p>Los restos de criaturas mágicas presentan dificultades especiales. Órganos arcanos pueden
       degradarse sin dejar estructuras mineralizadas claras, y afinidades residuales pueden alterar
       fosilización.</p>
@@ -5476,7 +5462,7 @@ window.ENTRIES = [
       linajes extintos.</p>
       <p>Algunos fósiles conservan patrones suficientes para demostrar capacidades que no pueden
       observarse directamente.</p>
-      <h4 id="cap-47">Capítulo XLVII — Linajes dudosos</h4>
+      <h4 id="cap-43">Capítulo XLIII — Linajes dudosos</h4>
       <p>No toda criatura descrita en fuentes antiguas existió como especie independiente. Relatos
       pueden mezclar etapas juveniles, individuos deformes, ilusiones, enfermedades y animales
       reales.</p>
@@ -5484,20 +5470,17 @@ window.ENTRIES = [
       Criptozoología compara esa descripción con evidencia material.</p>
       <p>La ausencia de restos no demuestra inexistencia, pero tampoco autoriza a convertir cualquier
       leyenda en taxón.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Trabajo de campo</h4>
+      <h4 id="cap-44">Capítulo XLIV — Trabajo de campo y métodos no invasivos</h4>
       <p>El estudio de criaturas vivas requiere observación prolongada y protocolos que reduzcan
-      alteración del comportamiento.</p>
-      <p>Capturar un individuo puede ser necesario para anatomía o tratamiento, pero no reemplaza
-      comprenderlo dentro de su hábitat.</p>
-      <p>Los equipos registran dieta, rutas, marcas, señales, reproducción, interacciones y
-      condiciones mágicas además de medidas corporales.</p>
-      <h4 id="cap-49">Capítulo XLIX — Métodos no invasivos</h4>
-      <p>Huellas, mudas, plumas, residuos, excrementos, sonidos, imágenes y lecturas ambientales
-      permiten obtener gran cantidad de información sin manipular al organismo.</p>
-      <p>Estos métodos son especialmente valiosos en especies peligrosas, raras o inteligentes.</p>
-      <p>La disciplina moderna intenta reservar disección y captura para preguntas que no pueden
-      resolverse de otra forma.</p>
-      <h4 id="cap-50">Capítulo L — Criaturas inteligentes</h4>
+      alteración del comportamiento. Capturar un individuo puede ser necesario para anatomía o
+      tratamiento, pero no reemplaza comprenderlo dentro de su hábitat, y los equipos registran dieta,
+      rutas, marcas, señales, reproducción, interacciones y condiciones mágicas además de medidas
+      corporales.</p>
+      <p>Mucha de esa información puede reunirse sin manipular al organismo. Huellas, mudas, plumas,
+      residuos, excrementos, sonidos, imágenes y lecturas ambientales aportan datos valiosos,
+      especialmente en especies peligrosas, raras o inteligentes. La disciplina moderna intenta
+      reservar disección y captura para preguntas que no pueden resolverse de otra forma.</p>
+      <h4 id="cap-45">Capítulo XLV — Criaturas inteligentes</h4>
       <p>Cuando una especie posee lenguaje, cultura o capacidad suficiente de autodeterminación, deja
       de ser aceptable tratarla únicamente como objeto zoológico.</p>
       <p>Puede estudiarse su biología, pero procedimientos invasivos requieren consentimiento y
@@ -5505,22 +5488,22 @@ window.ENTRIES = [
       <p>La frontera entre zoología, antropología y medicina no depende de apariencia.</p>
       <p>Dolbred considera este principio uno de los cambios más importantes de la disciplina
       moderna.</p>
-      <h4 id="cap-51">Capítulo LI — El error del bestiario</h4>
+      <h4 id="cap-46">Capítulo XLVI — El error del bestiario</h4>
       <p>Los bestiarios históricos organizaron criaturas por utilidad para cazadores: dónde
       encontrarlas, qué peligros presentan y qué partes pueden venderse.</p>
       <p>Estos textos son fuentes valiosas, pero su estructura responde a necesidades prácticas, no a
       biología.</p>
       <p>La Criptozoología Académica los utiliza con cautela y evita reproducir categorías creadas
       únicamente alrededor de combate.</p>
-      <h4 id="cap-52">Capítulo LII — Relación con otras disciplinas</h4>
+      <h4 id="cap-47">Capítulo XLVII — Relación con otras disciplinas</h4>
       <p>La Criptozoología Académica trabaja junto a Anatomía Arcana, Ecología Mágica, Morfología
       Anómala, Patología Arcana, Farmacología Arcana y Mineralogía Mágica.</p>
       <p>Planología y Demonología resultan esenciales para linajes extraplanares. Tanatología y
       Pneumatología intervienen cuando la continuidad del organismo resulta anómala. Dracología
       constituye una especialización independiente debido a la complejidad histórica y biológica de
       los linajes dracónicos.</p>
-      <p>La disciplina existe precisamente porque ninguna de estas áreas, por sí sola, puede explicar
-      toda la vida que aprendió a utilizar magia como parte de su biología.</p>
+      <p>La disciplina existe porque ninguna de estas áreas, por sí sola, puede explicar toda la vida
+      que aprendió a utilizar magia como parte de su biología.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Criptozoología Académica estudia criaturas cuya existencia depende de procesos mágicos
       sin convertir esa dependencia en una categoría vaga de monstruosidad. Anatomía, fisiología,
@@ -7101,101 +7084,83 @@ window.ENTRIES = [
       <p>La Taumaturgia Superior estudia la autoridad de la entidad. La Ecología Mágica observa
       qué ecosistemas emergen cuando esa autoridad deja de ser un evento y se convierte en
       ambiente.</p>
-      <h4 id="cap-21">Capítulo XXI — Bosques arcanos</h4>
+      <h4 id="cap-21">Capítulo XXI — Biomas y ambientes mágicos</h4>
       <p>Los llamados bosques encantados no constituyen una categoría única. Algunos dependen de
       concentración de maná, otros de presencia feérica, redes fúngicas, antiguas estructuras
-      rituales o especies vegetales capaces de sostener afinidades.</p>
-      <p>Clasificarlos únicamente por apariencia produce errores. Dos bosques visualmente
-      semejantes pueden tener dinámicas mágicas completamente diferentes.</p>
-      <p>La Naturgia aporta conocimiento de procesos vivos; la Ecología Mágica analiza las
-      relaciones entre todos los componentes.</p>
-      <h4 id="cap-22">Capítulo XXII — Humedales, costas y ríos</h4>
+      rituales o especies vegetales capaces de sostener afinidades. Clasificarlos únicamente por
+      apariencia produce errores, ya que dos bosques visualmente semejantes pueden tener dinámicas
+      mágicas completamente diferentes; la Naturgia aporta conocimiento de procesos vivos, mientras
+      la Ecología Mágica analiza las relaciones entre todos los componentes.</p>
       <p>El agua transporta materiales, organismos y estructuras a través de grandes distancias,
-      por lo que ambientes acuáticos son especialmente importantes para propagación mágica.</p>
-      <p>Un residuo depositado aguas arriba puede modificar comunidades enteras. Una especie
-      migratoria puede trasladar afinidades entre cuencas.</p>
-      <p>Las corrientes funcionan también como fronteras o corredores en sistemas rituales
-      antiguos.</p>
-      <h4 id="cap-23">Capítulo XXIII — Desiertos y regiones pobres en vida</h4>
-      <p>La baja densidad biológica no implica ausencia de ecología mágica. En regiones áridas,
-      minerales, ciclos térmicos, vientos y organismos extremadamente especializados pueden
-      concentrar funciones que en otros ambientes están distribuidas entre muchas especies.</p>
-      <p>Estos ecosistemas suelen ser más sensibles a perturbaciones porque la pérdida de un
-      componente puede tardar décadas en compensarse.</p>
-      <h4 id="cap-24">Capítulo XXIV — Cuevas y sistemas subterráneos</h4>
-      <p>Las regiones subterráneas mantienen condiciones estables de luz, temperatura y
-      aislamiento que favorecen comunidades muy especializadas.</p>
-      <p>Minerales reactivos, pulsaciones telúricas, aguas profundas y organismos adaptados
-      pueden producir ecosistemas difíciles de comparar con la superficie.</p>
-      <p>La Mineralogía Mágica y los estudios telúricos son especialmente importantes en estos
-      ambientes.</p>
-      <h4 id="cap-25">Capítulo XXV — Regiones extraplanares</h4>
-      <p>Un ecosistema extraplanar puede haberse desarrollado bajo condiciones de tiempo,
-      materia o afinidad distintas de las materiales ordinarias.</p>
-      <p>Trasladar especies entre planos puede producir invasiones, colapsos fisiológicos o
-      transformaciones impredecibles.</p>
-      <p>Planología y Demonología ayudan a establecer qué condiciones del entorno original son
-      indispensables para la supervivencia.</p>
-      <h4 id="cap-26">Capítulo XXVI — Zonas liminales</h4>
-      <p>Las zonas liminales mezclan propiedades de dos marcos y producen presiones ecológicas
-      únicas.</p>
-      <p>Las especies que sobreviven en ellas pueden depender precisamente de la inestabilidad
-      que otros organismos consideran hostil.</p>
-      <p>Sellar una frontera planar puede, por tanto, destruir un ecosistema que surgió alrededor
-      de ella. La intervención debe considerar conservación además de seguridad.</p>
-      <h4 id="cap-27">Capítulo XXVII — Invasiones mágicas</h4>
+      por lo que humedales, costas y ríos son especialmente importantes para la propagación
+      mágica. Un residuo depositado aguas arriba puede modificar comunidades enteras y una especie
+      migratoria puede trasladar afinidades entre cuencas; las corrientes funcionan también como
+      fronteras o corredores en sistemas rituales antiguos.</p>
+      <p>La baja densidad biológica de desiertos y otras regiones pobres en vida no implica
+      ausencia de ecología mágica. En regiones áridas, minerales, ciclos térmicos, vientos y
+      organismos extremadamente especializados pueden concentrar funciones que en otros ambientes
+      están distribuidas entre muchas especies, y estos ecosistemas suelen ser más sensibles a
+      perturbaciones porque la pérdida de un componente puede tardar décadas en compensarse.</p>
+      <p>Las regiones subterráneas, por su parte, mantienen condiciones estables de luz,
+      temperatura y aislamiento que favorecen comunidades muy especializadas. Minerales reactivos,
+      pulsaciones telúricas, aguas profundas y organismos adaptados pueden producir ecosistemas
+      difíciles de comparar con la superficie, y la Mineralogía Mágica junto con los estudios
+      telúricos resultan especialmente importantes en estos ambientes.</p>
+      <p>Un ecosistema extraplanar puede haberse desarrollado bajo condiciones de tiempo, materia
+      o afinidad distintas de las materiales ordinarias. Trasladar especies entre planos puede
+      producir invasiones, colapsos fisiológicos o transformaciones impredecibles; Planología y
+      Demonología ayudan a establecer qué condiciones del entorno original son indispensables para
+      la supervivencia.</p>
+      <p>Las zonas liminales, finalmente, mezclan propiedades de dos marcos y producen presiones
+      ecológicas únicas. Las especies que allí sobreviven suelen depender de la inestabilidad que
+      otros organismos consideran hostil, así que sellar una frontera planar puede destruir un
+      ecosistema que surgió alrededor de ella; la intervención debe considerar conservación además
+      de seguridad.</p>
+      <h4 id="cap-22">Capítulo XXII — Invasiones mágicas</h4>
       <p>Una especie invasora puede transformar un ecosistema al explotar una afinidad que los
       organismos locales no utilizan o al introducir una nueva condición.</p>
       <p>El problema puede agravarse si la especie modifica el ambiente para hacerlo más
       parecido al de origen.</p>
       <p>Las invasiones extraplanares no siempre son militares. Muchas comienzan con semillas,
       parásitos o microorganismos transportados accidentalmente.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Coexistencia y competencia</h4>
+      <h4 id="cap-23">Capítulo XXIII — Competencia, mutualismo y parasitismo</h4>
       <p>Las especies compiten por recursos materiales y mágicos. Dos poblaciones pueden
       alimentarse de sustancias distintas y aun así entrar en conflicto por una misma fuente
-      arcana.</p>
-      <p>También existen formas de partición, donde cada especie utiliza una frecuencia,
-      horario, región o estado diferente de una misma condición.</p>
-      <p>La coexistencia puede ser invisible si el investigador sólo registra alimento y
-      territorio.</p>
-      <h4 id="cap-29">Capítulo XXIX — Mutualismo mágico</h4>
-      <p>Dos especies pueden sostener relaciones en las que cada una proporciona una condición
-      necesaria para la otra.</p>
-      <p>Una planta puede concentrar energía que un insecto utiliza, mientras el insecto dispersa
-      estructuras reproductivas o protege la planta de depredadores.</p>
-      <p>Estos mutualismos pueden involucrar organismos, elementales menores, hongos, espíritus y
-      comunidades enteras.</p>
-      <h4 id="cap-30">Capítulo XXX — Parasitismo mágico</h4>
-      <p>Los parásitos mágicos explotan estructuras de otros organismos: firmas somáticas,
-      vínculos pneumatológicos, capacidades de regeneración o reservas energéticas.</p>
-      <p>El efecto puede ser leve y crónico o producir reorganización profunda.</p>
-      <p>Patología Arcana estudia el daño individual. La Ecología Mágica examina transmisión,
-      reservorios y equilibrio poblacional.</p>
-      <h4 id="cap-31">Capítulo XXXI — Enfermedad como fuerza ecológica</h4>
-      <p>Las enfermedades alteran densidad, competencia y selección. Cuando además poseen
-      componentes mágicos, pueden transformar la condición del ambiente.</p>
-      <p>Una epidemia puede liberar residuos, modificar comportamiento o favorecer especies
-      resistentes que antes eran minoritarias.</p>
-      <p>Epidemiología Taumatológica se ocupa de la propagación; Ecología Mágica estudia cómo el
-      sistema cambia antes, durante y después del brote.</p>
-      <h4 id="cap-32">Capítulo XXXII — Peste Gris como perturbación</h4>
+      arcana, aunque también existen formas de partición donde cada especie utiliza una
+      frecuencia, horario, región o estado diferente de una misma condición. La coexistencia puede
+      resultar invisible si el investigador sólo registra alimento y territorio.</p>
+      <p>En el extremo opuesto de la competencia se encuentra el mutualismo, donde dos especies
+      sostienen relaciones en las que cada una proporciona una condición necesaria para la otra.
+      Una planta puede concentrar energía que un insecto utiliza, mientras el insecto dispersa
+      estructuras reproductivas o protege la planta de depredadores; estos mutualismos pueden
+      involucrar organismos, elementales menores, hongos, espíritus y comunidades enteras.</p>
+      <p>El parasitismo mágico, en cambio, explota estructuras de otros organismos, como firmas
+      somáticas, vínculos pneumatológicos, capacidades de regeneración o reservas energéticas. El
+      efecto puede ser leve y crónico o producir reorganización profunda. Patología Arcana estudia
+      el daño individual mientras la Ecología Mágica examina transmisión, reservorios y equilibrio
+      poblacional.</p>
+      <h4 id="cap-24">Capítulo XXIV — Enfermedad como fuerza ecológica</h4>
+      <p>Las enfermedades alteran densidad, competencia y selección, y cuando además poseen
+      componentes mágicos pueden transformar la condición del ambiente. Una epidemia puede liberar
+      residuos, modificar comportamiento o favorecer especies resistentes que antes eran
+      minoritarias. Epidemiología Taumatológica se ocupa de la propagación; Ecología Mágica
+      estudia cómo el sistema cambia antes, durante y después del brote.</p>
       <p>La llamada Peste Gris ofrece un ejemplo de enfermedad que no debe estudiarse únicamente
-      como problema médico. En regiones afectadas, la pérdida rápida de población altera redes
-      de cultivo, carroñeros, depredación, residuos funerarios y manejo de asentamientos.</p>
-      <p>Si el fenómeno posee además componentes mágicos persistentes, la recuperación del
-      ecosistema puede no coincidir con la recuperación demográfica.</p>
-      <p>La utilidad académica del caso reside en observar cómo una enfermedad puede convertirse
-      en perturbación ecológica de gran escala.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Actividad urbana</h4>
+      como problema médico. En regiones afectadas, la pérdida rápida de población altera redes de
+      cultivo, carroñeros, depredación, residuos funerarios y manejo de asentamientos, y si el
+      fenómeno posee además componentes mágicos persistentes, la recuperación del ecosistema puede
+      no coincidir con la recuperación demográfica. La utilidad académica del caso reside en
+      observar cómo una enfermedad puede convertirse en perturbación ecológica de gran escala.</p>
+      <h4 id="cap-25">Capítulo XXV — Actividad urbana</h4>
       <p>Las ciudades también son ecosistemas. Alta densidad de población, artefactos, residuos
       rituales, sistemas de alcantarillado y uso constante de magia generan condiciones
       propias.</p>
-      <p>Ciertas especies prosperan precisamente en estos ambientes y pueden evolucionar
-      alrededor de fuentes creadas por actividad urbana.</p>
+      <p>Ciertas especies prosperan en estos ambientes y pueden evolucionar alrededor de fuentes
+      creadas por actividad urbana.</p>
       <p>La Ecología Mágica urbana estudia problemas que no aparecen en bosques o regiones
       rurales, como concentración de residuos en infraestructura o corredores de magia asociados
       a transporte.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Agricultura</h4>
+      <h4 id="cap-26">Capítulo XXVI — Agricultura</h4>
       <p>La magia aplicada a cultivos puede aumentar rendimiento, resistencia o velocidad de
       crecimiento. A largo plazo, también puede modificar suelo, plagas y dependencia de los
       cultivos respecto de una intervención constante.</p>
@@ -7203,14 +7168,14 @@ window.ENTRIES = [
       como terreno ordinario.</p>
       <p>La Naturgia aplicada y la Ecología Mágica colaboran para evitar sistemas productivos que
       sólo funcionan mientras se mantiene una presión artificial creciente.</p>
-      <h4 id="cap-35">Capítulo XXXV — Sobreexplotación</h4>
+      <h4 id="cap-27">Capítulo XXVII — Sobreexplotación</h4>
       <p>Extraer cristales, fluidos, órganos o energía de un ecosistema puede reducir una función
       que no era evidente hasta que desaparece.</p>
       <p>Un mineral puede estar actuando como amortiguador; una criatura cazada por su componente
       arcano puede regular otra población; una planta medicinal puede ser el principal sumidero
       de una toxina ambiental.</p>
       <p>El valor económico de un recurso no describe su función ecológica.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Restauración ecológica</h4>
+      <h4 id="cap-28">Capítulo XXVIII — Restauración ecológica</h4>
       <p>Restaurar un ecosistema mágico no significa devolverlo a una imagen histórica exacta. El
       objetivo es recuperar relaciones capaces de sostener estabilidad, diversidad y funciones
       esenciales.</p>
@@ -7219,28 +7184,24 @@ window.ENTRIES = [
       alcance un nuevo equilibrio.</p>
       <p>La restauración exige décadas en algunos casos y no siempre produce el estado que
       existía antes de la perturbación.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Indicadores de estabilidad</h4>
-      <p>Un ambiente estable no es aquel que permanece inmóvil. Es aquel capaz de absorber
-      variaciones sin perder sus funciones principales.</p>
-      <p>Diversidad, redundancia ecológica, capacidad de recuperación y ausencia de acumulaciones
-      crecientes son indicadores utilizados por la disciplina.</p>
-      <p>La simple presencia de magia intensa no constituye inestabilidad si el ecosistema ha
-      desarrollado mecanismos para manejarla.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Umbrales ecológicos</h4>
-      <p>Los sistemas pueden soportar cambios graduales hasta alcanzar un punto a partir del cual
-      reorganizan su funcionamiento de manera brusca.</p>
-      <p>Estos umbrales son difíciles de detectar antes de cruzarlos. Una población amortiguadora
+      <h4 id="cap-29">Capítulo XXIX — Estabilidad, umbrales y estados alternativos</h4>
+      <p>Un ambiente estable no es aquel que permanece inmóvil, sino aquel capaz de absorber
+      variaciones sin perder sus funciones principales. Diversidad, redundancia ecológica,
+      capacidad de recuperación y ausencia de acumulaciones crecientes son los indicadores que
+      utiliza la disciplina para reconocerlo; la simple presencia de magia intensa no constituye
+      inestabilidad si el ecosistema ha desarrollado mecanismos para manejarla.</p>
+      <p>Esa capacidad tiene límites. Los sistemas pueden soportar cambios graduales hasta
+      alcanzar un punto a partir del cual reorganizan su funcionamiento de manera brusca. Estos
+      umbrales son difíciles de detectar antes de cruzarlos, ya que una población amortiguadora
       puede disminuir lentamente y, al desaparecer, permitir un aumento repentino de
-      contaminación.</p>
-      <p>La prevención depende de comprender relaciones, no sólo de medir concentraciones.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Estados alternativos</h4>
-      <p>Después de una perturbación, un ecosistema puede estabilizarse en una configuración
-      distinta de la original.</p>
-      <p>Ambos estados pueden ser funcionales y, sin embargo, sostener especies, afinidades y
-      ciclos diferentes.</p>
-      <p>Esto complica la idea de restauración porque regresar al estado anterior puede requerir
-      más intervención que mantener el nuevo.</p>
-      <h4 id="cap-40">Capítulo XL — Naturgia y ecología</h4>
+      contaminación. La prevención depende de comprender relaciones, no sólo de medir
+      concentraciones.</p>
+      <p>Cuando un umbral se cruza, además, el ecosistema no siempre regresa a su punto de
+      partida. Después de una perturbación puede estabilizarse en una configuración distinta de la
+      original, y ambos estados pueden ser funcionales aunque sostengan especies, afinidades y
+      ciclos diferentes. Esto complica la idea de restauración porque regresar al estado anterior
+      puede requerir más intervención que mantener el nuevo.</p>
+      <h4 id="cap-30">Capítulo XXX — Naturgia y ecología</h4>
       <p>La Naturgia trabaja con procesos vivos y patrones naturales; la Ecología Mágica estudia
       cómo esos procesos interactúan a escala de comunidades y ambientes.</p>
       <p>Un naturgo puede favorecer crecimiento de una especie. El ecólogo pregunta qué ocurre
