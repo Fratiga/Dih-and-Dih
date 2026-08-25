@@ -6335,83 +6335,101 @@ window.ENTRIES = [
       <p>La Taumaturgia Superior estudia la autoridad de la entidad. La Ecología Mágica observa
       qué ecosistemas emergen cuando esa autoridad deja de ser un evento y se convierte en
       ambiente.</p>
-      <h4 id="cap-21">Capítulo XXI — Biomas y ambientes mágicos</h4>
+      <h4 id="cap-21">Capítulo XXI — Bosques arcanos</h4>
       <p>Los llamados bosques encantados no constituyen una categoría única. Algunos dependen de
       concentración de maná, otros de presencia feérica, redes fúngicas, antiguas estructuras
-      rituales o especies vegetales capaces de sostener afinidades. Clasificarlos únicamente por
-      apariencia produce errores, ya que dos bosques visualmente semejantes pueden tener dinámicas
-      mágicas completamente diferentes; la Naturgia aporta conocimiento de procesos vivos, mientras
-      la Ecología Mágica analiza las relaciones entre todos los componentes.</p>
+      rituales o especies vegetales capaces de sostener afinidades.</p>
+      <p>Clasificarlos únicamente por apariencia produce errores. Dos bosques visualmente
+      semejantes pueden tener dinámicas mágicas completamente diferentes.</p>
+      <p>La Naturgia aporta conocimiento de procesos vivos; la Ecología Mágica analiza las
+      relaciones entre todos los componentes.</p>
+      <h4 id="cap-22">Capítulo XXII — Humedales, costas y ríos</h4>
       <p>El agua transporta materiales, organismos y estructuras a través de grandes distancias,
-      por lo que humedales, costas y ríos son especialmente importantes para la propagación
-      mágica. Un residuo depositado aguas arriba puede modificar comunidades enteras y una especie
-      migratoria puede trasladar afinidades entre cuencas; las corrientes funcionan también como
-      fronteras o corredores en sistemas rituales antiguos.</p>
-      <p>La baja densidad biológica de desiertos y otras regiones pobres en vida no implica
-      ausencia de ecología mágica. En regiones áridas, minerales, ciclos térmicos, vientos y
-      organismos extremadamente especializados pueden concentrar funciones que en otros ambientes
-      están distribuidas entre muchas especies, y estos ecosistemas suelen ser más sensibles a
-      perturbaciones porque la pérdida de un componente puede tardar décadas en compensarse.</p>
-      <p>Las regiones subterráneas, por su parte, mantienen condiciones estables de luz,
-      temperatura y aislamiento que favorecen comunidades muy especializadas. Minerales reactivos,
-      pulsaciones telúricas, aguas profundas y organismos adaptados pueden producir ecosistemas
-      difíciles de comparar con la superficie, y la Mineralogía Mágica junto con los estudios
-      telúricos resultan especialmente importantes en estos ambientes.</p>
-      <p>Un ecosistema extraplanar puede haberse desarrollado bajo condiciones de tiempo, materia
-      o afinidad distintas de las materiales ordinarias. Trasladar especies entre planos puede
-      producir invasiones, colapsos fisiológicos o transformaciones impredecibles; Planología y
-      Demonología ayudan a establecer qué condiciones del entorno original son indispensables para
-      la supervivencia.</p>
-      <p>Las zonas liminales, finalmente, mezclan propiedades de dos marcos y producen presiones
-      ecológicas únicas. Las especies que allí sobreviven suelen depender de la inestabilidad que
-      otros organismos consideran hostil, así que sellar una frontera planar puede destruir un
-      ecosistema que surgió alrededor de ella; la intervención debe considerar conservación además
-      de seguridad.</p>
-      <h4 id="cap-22">Capítulo XXII — Invasiones mágicas</h4>
+      por lo que ambientes acuáticos son especialmente importantes para propagación mágica.</p>
+      <p>Un residuo depositado aguas arriba puede modificar comunidades enteras. Una especie
+      migratoria puede trasladar afinidades entre cuencas.</p>
+      <p>Las corrientes funcionan también como fronteras o corredores en sistemas rituales
+      antiguos.</p>
+      <h4 id="cap-23">Capítulo XXIII — Desiertos y regiones pobres en vida</h4>
+      <p>La baja densidad biológica no implica ausencia de ecología mágica. En regiones áridas,
+      minerales, ciclos térmicos, vientos y organismos extremadamente especializados pueden
+      concentrar funciones que en otros ambientes están distribuidas entre muchas especies.</p>
+      <p>Estos ecosistemas suelen ser más sensibles a perturbaciones porque la pérdida de un
+      componente puede tardar décadas en compensarse.</p>
+      <h4 id="cap-24">Capítulo XXIV — Cuevas y sistemas subterráneos</h4>
+      <p>Las regiones subterráneas mantienen condiciones estables de luz, temperatura y
+      aislamiento que favorecen comunidades muy especializadas.</p>
+      <p>Minerales reactivos, pulsaciones telúricas, aguas profundas y organismos adaptados
+      pueden producir ecosistemas difíciles de comparar con la superficie.</p>
+      <p>La Mineralogía Mágica y los estudios telúricos son especialmente importantes en estos
+      ambientes.</p>
+      <h4 id="cap-25">Capítulo XXV — Regiones extraplanares</h4>
+      <p>Un ecosistema extraplanar puede haberse desarrollado bajo condiciones de tiempo,
+      materia o afinidad distintas de las materiales ordinarias.</p>
+      <p>Trasladar especies entre planos puede producir invasiones, colapsos fisiológicos o
+      transformaciones impredecibles.</p>
+      <p>Planología y Demonología ayudan a establecer qué condiciones del entorno original son
+      indispensables para la supervivencia.</p>
+      <h4 id="cap-26">Capítulo XXVI — Zonas liminales</h4>
+      <p>Las zonas liminales mezclan propiedades de dos marcos y producen presiones ecológicas
+      únicas.</p>
+      <p>Las especies que sobreviven en ellas pueden depender precisamente de la inestabilidad
+      que otros organismos consideran hostil.</p>
+      <p>Sellar una frontera planar puede, por tanto, destruir un ecosistema que surgió alrededor
+      de ella. La intervención debe considerar conservación además de seguridad.</p>
+      <h4 id="cap-27">Capítulo XXVII — Invasiones mágicas</h4>
       <p>Una especie invasora puede transformar un ecosistema al explotar una afinidad que los
       organismos locales no utilizan o al introducir una nueva condición.</p>
       <p>El problema puede agravarse si la especie modifica el ambiente para hacerlo más
       parecido al de origen.</p>
       <p>Las invasiones extraplanares no siempre son militares. Muchas comienzan con semillas,
       parásitos o microorganismos transportados accidentalmente.</p>
-      <h4 id="cap-23">Capítulo XXIII — Competencia, mutualismo y parasitismo</h4>
+      <h4 id="cap-28">Capítulo XXVIII — Coexistencia y competencia</h4>
       <p>Las especies compiten por recursos materiales y mágicos. Dos poblaciones pueden
       alimentarse de sustancias distintas y aun así entrar en conflicto por una misma fuente
-      arcana, aunque también existen formas de partición donde cada especie utiliza una
-      frecuencia, horario, región o estado diferente de una misma condición. La coexistencia puede
-      resultar invisible si el investigador sólo registra alimento y territorio.</p>
-      <p>En el extremo opuesto de la competencia se encuentra el mutualismo, donde dos especies
-      sostienen relaciones en las que cada una proporciona una condición necesaria para la otra.
-      Una planta puede concentrar energía que un insecto utiliza, mientras el insecto dispersa
-      estructuras reproductivas o protege la planta de depredadores; estos mutualismos pueden
-      involucrar organismos, elementales menores, hongos, espíritus y comunidades enteras.</p>
-      <p>El parasitismo mágico, en cambio, explota estructuras de otros organismos, como firmas
-      somáticas, vínculos pneumatológicos, capacidades de regeneración o reservas energéticas. El
-      efecto puede ser leve y crónico o producir reorganización profunda. Patología Arcana estudia
-      el daño individual mientras la Ecología Mágica examina transmisión, reservorios y equilibrio
-      poblacional.</p>
-      <h4 id="cap-24">Capítulo XXIV — Enfermedad como fuerza ecológica</h4>
-      <p>Las enfermedades alteran densidad, competencia y selección, y cuando además poseen
-      componentes mágicos pueden transformar la condición del ambiente. Una epidemia puede liberar
-      residuos, modificar comportamiento o favorecer especies resistentes que antes eran
-      minoritarias. Epidemiología Taumatológica se ocupa de la propagación; Ecología Mágica
-      estudia cómo el sistema cambia antes, durante y después del brote.</p>
+      arcana.</p>
+      <p>También existen formas de partición, donde cada especie utiliza una frecuencia,
+      horario, región o estado diferente de una misma condición.</p>
+      <p>La coexistencia puede ser invisible si el investigador sólo registra alimento y
+      territorio.</p>
+      <h4 id="cap-29">Capítulo XXIX — Mutualismo mágico</h4>
+      <p>Dos especies pueden sostener relaciones en las que cada una proporciona una condición
+      necesaria para la otra.</p>
+      <p>Una planta puede concentrar energía que un insecto utiliza, mientras el insecto dispersa
+      estructuras reproductivas o protege la planta de depredadores.</p>
+      <p>Estos mutualismos pueden involucrar organismos, elementales menores, hongos, espíritus y
+      comunidades enteras.</p>
+      <h4 id="cap-30">Capítulo XXX — Parasitismo mágico</h4>
+      <p>Los parásitos mágicos explotan estructuras de otros organismos: firmas somáticas,
+      vínculos pneumatológicos, capacidades de regeneración o reservas energéticas.</p>
+      <p>El efecto puede ser leve y crónico o producir reorganización profunda.</p>
+      <p>Patología Arcana estudia el daño individual. La Ecología Mágica examina transmisión,
+      reservorios y equilibrio poblacional.</p>
+      <h4 id="cap-31">Capítulo XXXI — Enfermedad como fuerza ecológica</h4>
+      <p>Las enfermedades alteran densidad, competencia y selección. Cuando además poseen
+      componentes mágicos, pueden transformar la condición del ambiente.</p>
+      <p>Una epidemia puede liberar residuos, modificar comportamiento o favorecer especies
+      resistentes que antes eran minoritarias.</p>
+      <p>Epidemiología Taumatológica se ocupa de la propagación; Ecología Mágica estudia cómo el
+      sistema cambia antes, durante y después del brote.</p>
+      <h4 id="cap-32">Capítulo XXXII — Peste Gris como perturbación</h4>
       <p>La llamada Peste Gris ofrece un ejemplo de enfermedad que no debe estudiarse únicamente
-      como problema médico. En regiones afectadas, la pérdida rápida de población altera redes de
-      cultivo, carroñeros, depredación, residuos funerarios y manejo de asentamientos, y si el
-      fenómeno posee además componentes mágicos persistentes, la recuperación del ecosistema puede
-      no coincidir con la recuperación demográfica. La utilidad académica del caso reside en
-      observar cómo una enfermedad puede convertirse en perturbación ecológica de gran escala.</p>
-      <h4 id="cap-25">Capítulo XXV — Actividad urbana</h4>
+      como problema médico. En regiones afectadas, la pérdida rápida de población altera redes
+      de cultivo, carroñeros, depredación, residuos funerarios y manejo de asentamientos.</p>
+      <p>Si el fenómeno posee además componentes mágicos persistentes, la recuperación del
+      ecosistema puede no coincidir con la recuperación demográfica.</p>
+      <p>La utilidad académica del caso reside en observar cómo una enfermedad puede convertirse
+      en perturbación ecológica de gran escala.</p>
+      <h4 id="cap-33">Capítulo XXXIII — Actividad urbana</h4>
       <p>Las ciudades también son ecosistemas. Alta densidad de población, artefactos, residuos
       rituales, sistemas de alcantarillado y uso constante de magia generan condiciones
       propias.</p>
-      <p>Ciertas especies prosperan en estos ambientes y pueden evolucionar alrededor de fuentes
-      creadas por actividad urbana.</p>
+      <p>Ciertas especies prosperan precisamente en estos ambientes y pueden evolucionar
+      alrededor de fuentes creadas por actividad urbana.</p>
       <p>La Ecología Mágica urbana estudia problemas que no aparecen en bosques o regiones
       rurales, como concentración de residuos en infraestructura o corredores de magia asociados
       a transporte.</p>
-      <h4 id="cap-26">Capítulo XXVI — Agricultura</h4>
+      <h4 id="cap-34">Capítulo XXXIV — Agricultura</h4>
       <p>La magia aplicada a cultivos puede aumentar rendimiento, resistencia o velocidad de
       crecimiento. A largo plazo, también puede modificar suelo, plagas y dependencia de los
       cultivos respecto de una intervención constante.</p>
@@ -6419,14 +6437,14 @@ window.ENTRIES = [
       como terreno ordinario.</p>
       <p>La Naturgia aplicada y la Ecología Mágica colaboran para evitar sistemas productivos que
       sólo funcionan mientras se mantiene una presión artificial creciente.</p>
-      <h4 id="cap-27">Capítulo XXVII — Sobreexplotación</h4>
+      <h4 id="cap-35">Capítulo XXXV — Sobreexplotación</h4>
       <p>Extraer cristales, fluidos, órganos o energía de un ecosistema puede reducir una función
       que no era evidente hasta que desaparece.</p>
       <p>Un mineral puede estar actuando como amortiguador; una criatura cazada por su componente
       arcano puede regular otra población; una planta medicinal puede ser el principal sumidero
       de una toxina ambiental.</p>
       <p>El valor económico de un recurso no describe su función ecológica.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Restauración ecológica</h4>
+      <h4 id="cap-36">Capítulo XXXVI — Restauración ecológica</h4>
       <p>Restaurar un ecosistema mágico no significa devolverlo a una imagen histórica exacta. El
       objetivo es recuperar relaciones capaces de sostener estabilidad, diversidad y funciones
       esenciales.</p>
@@ -6435,24 +6453,28 @@ window.ENTRIES = [
       alcance un nuevo equilibrio.</p>
       <p>La restauración exige décadas en algunos casos y no siempre produce el estado que
       existía antes de la perturbación.</p>
-      <h4 id="cap-29">Capítulo XXIX — Estabilidad, umbrales y estados alternativos</h4>
-      <p>Un ambiente estable no es aquel que permanece inmóvil, sino aquel capaz de absorber
-      variaciones sin perder sus funciones principales. Diversidad, redundancia ecológica,
-      capacidad de recuperación y ausencia de acumulaciones crecientes son los indicadores que
-      utiliza la disciplina para reconocerlo; la simple presencia de magia intensa no constituye
-      inestabilidad si el ecosistema ha desarrollado mecanismos para manejarla.</p>
-      <p>Esa capacidad tiene límites. Los sistemas pueden soportar cambios graduales hasta
-      alcanzar un punto a partir del cual reorganizan su funcionamiento de manera brusca. Estos
-      umbrales son difíciles de detectar antes de cruzarlos, ya que una población amortiguadora
+      <h4 id="cap-37">Capítulo XXXVII — Indicadores de estabilidad</h4>
+      <p>Un ambiente estable no es aquel que permanece inmóvil. Es aquel capaz de absorber
+      variaciones sin perder sus funciones principales.</p>
+      <p>Diversidad, redundancia ecológica, capacidad de recuperación y ausencia de acumulaciones
+      crecientes son indicadores utilizados por la disciplina.</p>
+      <p>La simple presencia de magia intensa no constituye inestabilidad si el ecosistema ha
+      desarrollado mecanismos para manejarla.</p>
+      <h4 id="cap-38">Capítulo XXXVIII — Umbrales ecológicos</h4>
+      <p>Los sistemas pueden soportar cambios graduales hasta alcanzar un punto a partir del cual
+      reorganizan su funcionamiento de manera brusca.</p>
+      <p>Estos umbrales son difíciles de detectar antes de cruzarlos. Una población amortiguadora
       puede disminuir lentamente y, al desaparecer, permitir un aumento repentino de
-      contaminación. La prevención depende de comprender relaciones, no sólo de medir
-      concentraciones.</p>
-      <p>Cuando un umbral se cruza, además, el ecosistema no siempre regresa a su punto de
-      partida. Después de una perturbación puede estabilizarse en una configuración distinta de la
-      original, y ambos estados pueden ser funcionales aunque sostengan especies, afinidades y
-      ciclos diferentes. Esto complica la idea de restauración porque regresar al estado anterior
-      puede requerir más intervención que mantener el nuevo.</p>
-      <h4 id="cap-30">Capítulo XXX — Naturgia y ecología</h4>
+      contaminación.</p>
+      <p>La prevención depende de comprender relaciones, no sólo de medir concentraciones.</p>
+      <h4 id="cap-39">Capítulo XXXIX — Estados alternativos</h4>
+      <p>Después de una perturbación, un ecosistema puede estabilizarse en una configuración
+      distinta de la original.</p>
+      <p>Ambos estados pueden ser funcionales y, sin embargo, sostener especies, afinidades y
+      ciclos diferentes.</p>
+      <p>Esto complica la idea de restauración porque regresar al estado anterior puede requerir
+      más intervención que mantener el nuevo.</p>
+      <h4 id="cap-40">Capítulo XL — Naturgia y ecología</h4>
       <p>La Naturgia trabaja con procesos vivos y patrones naturales; la Ecología Mágica estudia
       cómo esos procesos interactúan a escala de comunidades y ambientes.</p>
       <p>Un naturgo puede favorecer crecimiento de una especie. El ecólogo pregunta qué ocurre
