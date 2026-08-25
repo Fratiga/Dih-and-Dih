@@ -283,10 +283,10 @@ window.RELIGIONES = [
       perfeccionar mediante cooperación. Las extremistas consideran cualquier límite
       impuesto al progreso una forma de cobardía.</p>
       <p>Nació en Nernib, la ciudad-estado de inventores donde una oligarquía de
-      artificieros, ingenieros y científicos gobierna precisamente porque allí la
+      artificieros, ingenieros y científicos gobierna porque allí la
       innovación vale más que la nobleza. Para un heliurgista de Nernib, cada
-      autómata, cada prótesis mecánica y cada motor de vapor no es solo tecnología, es
-      la creación continuando aquello que todavía no ha terminado.</p>
+      autómata, cada prótesis mecánica y cada motor de vapor representa la creación
+      continuando aquello que todavía no ha terminado.</p>
       <h4>Costumbres</h4>
       <ul>
         <li>Todo creyente debe aprender al menos un oficio.</li>
@@ -424,10 +424,10 @@ window.RELIGIONES = [
     title: "Edrasismo",
     category: "Religión",
     tags: ["misterio", "profecías", "nobriana"],
-    summary: "No todo aquello verdadero puede ser conocido.",
+    summary: "Hay verdades que nunca podrán conocerse.",
     region: "Nobriana",
     simbolo: "Un ojo cerrado rodeado por siete puntos.",
-    principio: "No todo aquello verdadero puede ser conocido.",
+    principio: "Hay verdades que nunca podrán conocerse.",
     muerte: "El mayor de los misterios compartidos por todas las criaturas conscientes.",
     eternos: "Haber sobrevivido a la muerte no significa necesariamente haberla comprendido.",
     content: `

@@ -1052,7 +1052,7 @@ window.FACCIONES = [
     summary: "Sacerdotes itinerantes de Nobriana que registran cada profecía antes de que se cumpla, nunca después.",
     tipo: "Orden Religiosa",
     region: "Nobriana, Derrovia, Gylas",
-    ideologia: "No todo aquello verdadero puede ser conocido, pero toda profecía debe registrarse antes de cumplirse.",
+    ideologia: "Hay verdades que nunca podrán conocerse, pero toda profecía debe registrarse antes de cumplirse.",
     miembrosConocidos: [],
     relaciones: [
       { id: "edrasismo", signo: "Orden religiosa oficial de" },
@@ -1111,7 +1111,7 @@ window.FACCIONES = [
     summary: "Guerreros honorables que dominan técnicas de caza de dragones casi perdidas, llamados allí donde un dragón, joven o adulto, debe morir por verdadera necesidad.",
     tipo: "Orden Marcial",
     region: "Internacional",
-    ideologia: "Matar a un dragón no es una hazaña que perseguir, es una carga que se acepta cuando de verdad no queda otra opción.",
+    ideologia: "Matar a un dragón es una carga que se acepta cuando de verdad no queda otra opción, nunca una hazaña que perseguir.",
     miembrosConocidos: [],
     relaciones: [
       { id: "pergaminos-legendarios", signo: "Origen de sus técnicas ancestrales" },

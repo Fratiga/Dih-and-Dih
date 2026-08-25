@@ -807,8 +807,8 @@ window.LUGARES = [
     religionPredominante: "",
     lugaresDestacados: [],
     content: `
-      <p>No todos los que llegan a Miraveil soñando con una torre y una toga
-      terminan graduándose, y La Toga Rota existe para quienes prefirieron
+      <p>Muchos llegan a Miraveil soñando con una torre y una toga sin terminar
+      graduándose, y La Toga Rota existe para quienes prefirieron
       quedarse en Dolbred de todos modos antes que regresar a sus reinos de origen
       cargando el peso de un fracaso académico. Sus habitantes conocen lo
       suficiente de magia para ser peligrosos y lo suficiente sobre sus propios
@@ -4189,8 +4189,8 @@ window.LUGARES = [
       Borde patrulla su perímetro exterior, pero dentro del propio cráter no
       hay guardias, solo el acuerdo tácito de que nadie profana lo que tantos
       dragones eligieron como último destino.</p>
-      <p>No toda la magia residual del cráter terminó impregnando carne y sangre. En
-      ciertos puntos del perímetro, donde la concentración es más alta, cristalizó
+      <p>Parte de la magia residual del cráter terminó impregnando carne y sangre, pero
+      en ciertos puntos del perímetro, donde la concentración es más alta, cristalizó
       directamente sobre la roca hasta que algunas de esas formaciones despertaron.
       Los cristalinos que nacen así no comparten la devoción de Escamargo hacia el
       lugar; para ellos su propia existencia es un hecho simple, no una prueba del
@@ -4897,7 +4897,7 @@ window.LUGARES = [
       siendo una forma habitual de resolver disputas entre estudiantes de distintas
       escuelas. Visitantes extranjeros describen la ciudad como serena en apariencia,
       pero cargada de una disciplina casi palpable.</p>
-      <p>No todos los estudiantes de Kaishoto nacieron en Seosan. Los githzerai que
+      <p>Kaishoto también recibe estudiantes de fuera de Seosan. Los githzerai que
       llegan a la ciudad buscan silencio antes que conflicto, y algunos maestros
       locales han incorporado su filosofía de control mental a la propia enseñanza
       marcial, generando estilos híbridos que ni puristas ni tradicionalistas
@@ -5952,9 +5952,8 @@ window.LUGARES = [
     religionPredominante: "",
     lugaresDestacados: [],
     content: `
-      <p>No todo desacuerdo comercial en Pelgiria necesita llegar hasta el
-      consejo portuario de Thalassar. Puerto Franco se ocupa de resolver la
-      mayoría de ellos antes de que escalen tanto. Su tribunal de
+      <p>Puerto Franco se ocupa de resolver la mayoría de los desacuerdos comerciales
+      de Pelgiria antes de que escalen hasta el consejo portuario de Thalassar. Su tribunal de
       comercio interinsular, compuesto por mercaderes retirados de distintas
       islas, arbitra disputas sobre rutas, precios y territorios de pesca con una
       rapidez que la burocracia de la capital pocas veces iguala.</p>

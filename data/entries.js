@@ -306,9 +306,10 @@ window.ENTRIES = [
       La corrupción puede afectar un único mit, un myte completo, una referencia, una condición,
       una secuencia de instrucciones, o las relaciones entre diferentes partes de la
       estructura.</p>
-      <p>No todas las corrupciones producen efectos visibles. Una estructura puede contener
-      información incorrecta durante años antes de que dicha información sea utilizada. Esto
-      convierte a la corrupción silenciosa en una de las formas más peligrosas de anomalía.</p>
+      <p>Muchas corrupciones no producen efectos visibles de inmediato. Una estructura puede
+      contener información incorrecta durante años antes de que dicha información sea
+      utilizada, lo que convierte a la corrupción silenciosa en una de las formas más
+      peligrosas de anomalía.</p>
       <h5>Detección</h5>
       <p>Las estructuras complejas suelen contener información destinada no a producir un
       fenómeno, sino a comprobar la integridad de otra información. Si una estructura esperaba
@@ -381,7 +382,7 @@ window.ENTRIES = [
       arcanas</em>. En ocasiones, ninguna estructura prevalece; en otras, una domina a la otra; y
       en las más desafortunadas, ambas alteran repetidamente el mismo estado.</p>
       <h4 id="cap-18">Capítulo XVIII — Autoridad y transgresión arcana</h4>
-      <p>No toda estructura puede modificar cualquier fenómeno, ya que existen límites. Una estructura
+      <p>Toda estructura tiene límites sobre qué fenómenos puede modificar. Una estructura
       destinada a observar una propiedad no necesariamente puede modificarla, una estructura
       capaz de alterar materia puede no tener autoridad sobre un alma, una estructura capaz de
       modificar un cuerpo puede no tener autoridad sobre el tiempo.</p>
@@ -4622,10 +4623,10 @@ window.ENTRIES = [
       del observador y no en la anatomía del imitador, el fenómeno pertenece al dominio de la
       Psicología Resonántica antes que al de la biología comparada.</p>
       <h4 id="cap-26">Capítulo XXVI — Licantropía y ciclos adquiridos</h4>
-      <p>No todas las formas animales cíclicas constituyen especies independientes. Algunas son
-      enfermedades, maldiciones, estados heredables o modificaciones adquiridas que imponen una
-      alternancia de forma sin que el individuo afectado pertenezca a un linaje separado del resto de
-      su población de origen.</p>
+      <p>Las formas animales cíclicas incluyen tanto especies independientes como enfermedades,
+      maldiciones, estados heredables o modificaciones adquiridas que imponen una alternancia de
+      forma sin que el individuo afectado pertenezca a un linaje separado del resto de su
+      población de origen.</p>
       <p>La licantropía constituye el ejemplo mejor documentado de esta categoría. Quienes la padecen
       conservan su identidad genealógica original, pero adquieren, mediante contagio, maldición o
       predisposición latente activada por exposición, un ciclo de transformación corporal
@@ -5083,10 +5084,10 @@ window.ENTRIES = [
       <p>La predicción temporal abarca fenómenos en los que información relevante para un estado
       futuro aparece antes de que dicho estado sea observable por medios ordinarios. Esto incluye
       profecías, visiones, cálculos arcanos y ciertas formas de adivinación.</p>
-      <p>No todas las predicciones implican acceso directo al futuro. Una estructura puede extrapolar
-      tendencias presentes con precisión extraordinaria sin recibir información desde un evento
-      posterior. La dificultad académica consiste en distinguir inferencia, probabilidad y verdadera
-      anterioridad informacional.</p>
+      <p>Sin embargo, una estructura puede extrapolar tendencias presentes con precisión
+      extraordinaria sin recibir información desde un evento posterior, así que no toda
+      predicción implica acceso directo al futuro. La dificultad académica consiste en
+      distinguir inferencia, probabilidad y verdadera anterioridad informacional.</p>
       <p>La Cronurgia reserva el término previsión cronúrgica para aquellos casos en los que la
       información parece depender de condiciones que todavía no estaban disponibles en el momento de
       la observación.</p>
@@ -6456,9 +6457,9 @@ window.ENTRIES = [
       <h4 id="cap-15">Capítulo XV — Mutación y adaptación</h4>
       <p>La exposición prolongada puede favorecer cambios heredables, inducir modificaciones
       somáticas o activar capacidades latentes.</p>
-      <p>No toda diferencia producida por magia constituye mutación. Algunas son respuestas
-      reversibles; otras modificaciones de desarrollo; otras, cambios verdaderamente
-      heredables.</p>
+      <p>Las diferencias producidas por magia se dividen en respuestas reversibles, modificaciones
+      de desarrollo y cambios verdaderamente heredables; solo esta última categoría constituye
+      mutación propiamente dicha.</p>
       <p>Anatomía Arcana y Endomancia ayudan a distinguir estos mecanismos. La Ecología Mágica se
       interesa por sus consecuencias poblacionales.</p>
       <h4 id="cap-16">Capítulo XVI — Especies indicadoras y bioacumulación arcana</h4>
@@ -9295,9 +9296,9 @@ window.ENTRIES = [
       participa de una relación que la estructura utiliza para distribuir, contener o dirigir una
       función.</p>
       <p>La Geometría Ritual intenta identificar qué propiedades espaciales son funcionales antes
-      de establecer medidas. No toda distancia importa y no toda alineación constituye una
-      relación. Establecer esto exige, antes que nada, fijar un origen, ya que toda medición
-      necesita un punto de referencia. En ritualística, ese origen puede ser un punto físico, un
+      de establecer medidas, ya que solo una parte de las distancias y alineaciones posibles
+      resulta relevante para una relación dada. Establecer esto exige, antes que nada, fijar un
+      origen, ya que toda medición necesita un punto de referencia. En ritualística, ese origen puede ser un punto físico, un
       objeto, un participante, una frontera o incluso una referencia fuera del espacio
       inmediato.</p>
       <p>El error aparece cuando el diseñador utiliza un centro geométrico como si fuera
@@ -15706,10 +15707,10 @@ window.ENTRIES = [
       posteriormente intervenidos mediante procedimientos incompatibles con su condición
       real.</p>
       <h4 id="cap-9">Capítulo IX — Persistencias</h4>
-      <p>No toda continuidad posterior a la muerte adopta la forma de un retorno completo.
-      Algunas estructuras persisten de manera parcial: impresiones emocionales, residuos de
-      memoria, patrones de comportamiento, vínculos con lugares o reacciones repetitivas
-      asociadas a circunstancias concretas.</p>
+      <p>La continuidad posterior a la muerte con frecuencia adopta formas parciales en lugar de
+      un retorno completo: impresiones emocionales, residuos de memoria, patrones de
+      comportamiento, vínculos con lugares o reacciones repetitivas asociadas a circunstancias
+      concretas.</p>
       <p>Estos fenómenos suelen ser interpretados popularmente como presencia del difunto, pero
       la Tanatología evita esa conclusión cuando no existen pruebas suficientes. Una estructura
       residual puede conservar información sin conservar necesariamente al individuo.</p>

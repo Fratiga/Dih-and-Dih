@@ -93,8 +93,8 @@ window.CRONOLOGIA_B = [
       La tercera, la que todos temían, llegó con tres dragartos abriéndose paso entre una
       marea de kobolds que no parecía tener fin.</p>
 
-      <p>No todos los que defendieron el refugio esa noche volvieron a ver el amanecer.
-      Algunos cayeron en la barricada que juraron no abandonar. Otros, presa del pánico,
+      <p>Algunos de los que defendieron el refugio esa noche cayeron en la barricada que
+      juraron no abandonar, sin llegar a ver el amanecer. Otros, presa del pánico,
       hicieron lo que cualquiera habría hecho frente a algo tan grande como un dragarto, y
       no siempre eso bastó para salvarlos. El objetivo nunca fue exterminar lo que
       atacaba. Nadie en el refugio tenía esa fuerza. El objetivo era, simplemente, seguir
