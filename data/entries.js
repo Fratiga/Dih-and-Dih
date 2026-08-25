@@ -6629,69 +6629,32 @@ window.ENTRIES = [
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
         <a href="#cap-1">I. Objeto de estudio</a>
-        <a href="#cap-2">II. Caso, brote y endemia</a>
-        <a href="#cap-3">III. Incidencia y prevalencia</a>
-        <a href="#cap-4">IV. La cadena de transmisión</a>
-        <a href="#cap-5">V. Reservorios</a>
-        <a href="#cap-6">VI. Vectores</a>
-        <a href="#cap-7">VII. Transmisión directa</a>
-        <a href="#cap-8">VIII. Transmisión indirecta</a>
-        <a href="#cap-9">IX. Transmisión ambiental</a>
-        <a href="#cap-10">X. Transmisión simbólica</a>
-        <a href="#cap-11">XI. Transmisión ritual</a>
-        <a href="#cap-12">XII. Transmisión por vínculo</a>
-        <a href="#cap-13">XIII. Transmisión resonántica</a>
-        <a href="#cap-14">XIV. Número reproductivo</a>
-        <a href="#cap-15">XV. Susceptibilidad</a>
-        <a href="#cap-16">XVI. Resistencia</a>
-        <a href="#cap-17">XVII. Inmunidad</a>
-        <a href="#cap-18">XVIII. Portadores</a>
-        <a href="#cap-19">XIX. Superpropagación</a>
-        <a href="#cap-20">XX. Redes sociales</a>
-        <a href="#cap-21">XXI. Redes rituales</a>
-        <a href="#cap-22">XXII. Brotes por copia</a>
-        <a href="#cap-23">XXIII. Brotes por artefactos</a>
-        <a href="#cap-24">XXIV. Brotes elementales</a>
-        <a href="#cap-25">XXV. Brotes extraplanares</a>
-        <a href="#cap-26">XXVI. Maldiciones familiares</a>
-        <a href="#cap-27">XXVII. Maldiciones territoriales</a>
-        <a href="#cap-28">XXVIII. Maldiciones conductuales</a>
-        <a href="#cap-29">XXIX. Radiación Sináptica a escala poblacional</a>
-        <a href="#cap-30">XXX. Exposición acumulativa</a>
-        <a href="#cap-31">XXXI. Mutaciones poblacionales</a>
-        <a href="#cap-32">XXXII. La Peste Gris</a>
-        <a href="#cap-33">XXXIII. Mapas</a>
-        <a href="#cap-34">XXXIV. Curvas epidémicas</a>
-        <a href="#cap-35">XXXV. Rastreo de contactos</a>
-        <a href="#cap-36">XXXVI. Definición de caso</a>
-        <a href="#cap-37">XXXVII. Falsos positivos</a>
-        <a href="#cap-38">XXXVIII. Falsos negativos</a>
-        <a href="#cap-39">XXXIX. Sesgo</a>
-        <a href="#cap-40">XL. Cuarentena</a>
-        <a href="#cap-41">XLI. Aislamiento</a>
-        <a href="#cap-42">XLII. Cordones sanitarios</a>
-        <a href="#cap-43">XLIII. Control de reservorios</a>
-        <a href="#cap-44">XLIV. Intervenciones sobre conducta</a>
-        <a href="#cap-45">XLV. Protección colectiva</a>
-        <a href="#cap-46">XLVI. Vacunación y preparación</a>
-        <a href="#cap-47">XLVII. Inmunidad colectiva</a>
-        <a href="#cap-48">XLVIII. Brotes en poblaciones mixtas</a>
-        <a href="#cap-49">XLIX. Movilidad y comercio</a>
-        <a href="#cap-50">L. Migración</a>
-        <a href="#cap-51">LI. Pánico y rumor</a>
-        <a href="#cap-52">LII. Estigma</a>
-        <a href="#cap-53">LIII. Ética</a>
-        <a href="#cap-54">LIV. Derecho Arcano</a>
-        <a href="#cap-55">LV. Vigilancia</a>
-        <a href="#cap-56">LVI. Sistemas centinela</a>
-        <a href="#cap-57">LVII. Investigación de brotes</a>
-        <a href="#cap-58">LVIII. Experimentos naturales</a>
-        <a href="#cap-59">LIX. Modelos</a>
-        <a href="#cap-60">LX. Escenarios</a>
-        <a href="#cap-61">LXI. Fin de un brote</a>
-        <a href="#cap-62">LXII. Secuelas poblacionales</a>
-        <a href="#cap-63">LXIII. Relación con otras disciplinas</a>
-        <a href="#cap-64">LXIV. El error del contagio</a>
+        <a href="#cap-2">II. Conceptos fundamentales: caso, brote, endemia, incidencia y prevalencia</a>
+        <a href="#cap-3">III. La cadena de transmisión</a>
+        <a href="#cap-4">IV. Reservorios</a>
+        <a href="#cap-5">V. Vectores</a>
+        <a href="#cap-6">VI. Vías y modalidades de transmisión</a>
+        <a href="#cap-7">VII. Número reproductivo</a>
+        <a href="#cap-8">VIII. Susceptibilidad, resistencia, inmunidad y portadores</a>
+        <a href="#cap-9">IX. Superpropagación</a>
+        <a href="#cap-10">X. Redes sociales y rituales</a>
+        <a href="#cap-11">XI. Tipos de brotes</a>
+        <a href="#cap-12">XII. Tipos de maldiciones transmisibles</a>
+        <a href="#cap-13">XIII. Radiación Sináptica a escala poblacional</a>
+        <a href="#cap-14">XIV. Exposición acumulativa y mutaciones poblacionales</a>
+        <a href="#cap-15">XV. La Peste Gris</a>
+        <a href="#cap-16">XVI. Herramientas descriptivas: mapas, curvas epidémicas y rastreo de contactos</a>
+        <a href="#cap-17">XVII. Definición de caso, error diagnóstico y sesgo</a>
+        <a href="#cap-18">XVIII. Medidas de contención: cuarentena, aislamiento, cordones sanitarios y control de reservorios</a>
+        <a href="#cap-19">XIX. Prevención poblacional: conducta, protección colectiva, vacunación e inmunidad colectiva</a>
+        <a href="#cap-20">XX. Movilidad, comercio y migración</a>
+        <a href="#cap-21">XXI. Pánico, rumor y estigma</a>
+        <a href="#cap-22">XXII. Ética y Derecho Arcano</a>
+        <a href="#cap-23">XXIII. Vigilancia y sistemas centinela</a>
+        <a href="#cap-24">XXIV. Investigación de brotes: experimentos naturales, modelos y escenarios</a>
+        <a href="#cap-25">XXV. Fin de un brote y secuelas poblacionales</a>
+        <a href="#cap-26">XXVI. Relación con otras disciplinas</a>
+        <a href="#cap-27">XXVII. El error del contagio</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -6716,23 +6679,23 @@ window.ENTRIES = [
       propagables y alteraciones que utilizan redes sociales o rituales como rutas.</p>
       <p>Su unidad de análisis puede ser una familia, una aldea, una ciudad, una especie o una
       región completa.</p>
-      <h4 id="cap-2">Capítulo II — Caso, brote y endemia</h4>
+      <h4 id="cap-2">Capítulo II — Conceptos fundamentales: caso, brote, endemia, incidencia y
+      prevalencia</h4>
       <p>Un caso es un individuo que cumple criterios definidos para una condición. Un brote es
-      un aumento de casos por encima de lo esperado dentro de una población y período
-      concretos.</p>
-      <p>Una endemia describe una condición que permanece de forma relativamente estable dentro
-      de una población o territorio.</p>
-      <p>La magia complica estas definiciones porque una condición puede persistir sin producir
-      síntomas visibles y reactivarse sólo bajo circunstancias específicas.</p>
-      <h4 id="cap-3">Capítulo III — Incidencia y prevalencia</h4>
-      <p>La incidencia mide aparición de casos nuevos; la prevalencia, cuántos individuos
-      presentan la condición en un momento o período.</p>
-      <p>Ambas medidas pueden divergir de manera importante. Una maldición incurable puede tener
-      baja incidencia y alta prevalencia si quienes la adquieren permanecen afectados durante
-      años.</p>
-      <p>Un fenómeno agudo y mortal puede mostrar incidencia alta y prevalencia baja porque los
-      casos abandonan rápidamente la categoría por recuperación o muerte.</p>
-      <h4 id="cap-4">Capítulo IV — La cadena de transmisión</h4>
+      un aumento de casos por encima de lo esperado dentro de una población y período concretos,
+      mientras que una endemia describe una condición que permanece de forma relativamente
+      estable dentro de una población o territorio. La magia complica estas categorías porque una
+      condición puede persistir sin producir síntomas visibles y reactivarse sólo bajo
+      circunstancias específicas, de modo que un mismo fenómeno puede desplazarse entre las tres
+      definiciones según el momento en que se lo observe.</p>
+      <p>Contar casos exige además distinguir dos medidas complementarias. La incidencia mide la
+      aparición de casos nuevos; la prevalencia, cuántos individuos presentan la condición en un
+      momento o período determinado. Ambas pueden divergir de manera importante: una maldición
+      incurable puede tener baja incidencia y alta prevalencia si quienes la adquieren permanecen
+      afectados durante años, mientras que un fenómeno agudo y mortal puede mostrar incidencia
+      alta y prevalencia baja, porque los casos abandonan con rapidez la categoría por
+      recuperación o muerte.</p>
+      <h4 id="cap-3">Capítulo III — La cadena de transmisión</h4>
       <p>Toda propagación necesita una secuencia de relaciones suficientes para permitir que la
       condición pase de una fuente a un nuevo huésped o entorno.</p>
       <p>La cadena puede incluir reservorio, vía de salida, medio de transporte, puerta de
@@ -6740,69 +6703,58 @@ window.ENTRIES = [
       <p>En fenómenos mágicos, algunos eslabones son simbólicos o sociales. Una maldición puede
       no salir del cuerpo mediante fluidos, sino mediante aceptación de un objeto o repetición de
       un nombre.</p>
-      <h4 id="cap-5">Capítulo V — Reservorios</h4>
+      <h4 id="cap-4">Capítulo IV — Reservorios</h4>
       <p>Un reservorio mantiene la condición entre brotes o exposiciones. Puede ser una persona,
       animal, objeto, edificio, territorio, comunidad o estructura ritual.</p>
       <p>Identificarlo es esencial porque tratar casos individuales no elimina el fenómeno si el
       reservorio continúa activo.</p>
       <p>Los reservorios pueden ser asintomáticos, especialmente cuando una especie tolera una
       condición que resulta patológica para otra.</p>
-      <h4 id="cap-6">Capítulo VI — Vectores</h4>
+      <h4 id="cap-5">Capítulo V — Vectores</h4>
       <p>Un vector transporta una condición entre huéspedes sin ser necesariamente la causa
       original.</p>
       <p>Insectos, animales, objetos rituales, mensajeros, reliquias y artefactos pueden
       desempeñar este papel.</p>
       <p>En algunos brotes, el vector es una conducta: compartir una fórmula, completar una
       ceremonia o visitar un lugar específico.</p>
-      <h4 id="cap-7">Capítulo VII — Transmisión directa</h4>
-      <p>La transmisión directa ocurre cuando la condición pasa entre individuos sin
-      intermediario prolongado.</p>
-      <p>Contacto físico, mordeduras, intercambio de fluidos, proximidad psíquica o
-      reconocimiento mutuo pueden servir como mecanismos.</p>
-      <p>El tiempo de contacto necesario puede variar desde segundos hasta convivencia
-      prolongada.</p>
-      <h4 id="cap-8">Capítulo VIII — Transmisión indirecta</h4>
-      <p>La transmisión indirecta utiliza un medio persistente: agua, alimentos, superficies,
-      objetos, documentos, residuos o espacios contaminados.</p>
-      <p>La condición puede sobrevivir fuera de un huésped durante períodos variables.</p>
-      <p>La Conservación Arcana y Artefactología son relevantes cuando un objeto histórico
-      funciona simultáneamente como patrimonio y reservorio.</p>
-      <h4 id="cap-9">Capítulo IX — Transmisión ambiental</h4>
-      <p>Algunos fenómenos no necesitan contacto entre enfermos. Una región completa puede
-      exponer a quienes ingresan.</p>
-      <p>Campos resonánticos, contaminación elemental, fugas rituales y anomalías planares
-      producen patrones donde los casos parecen desconectados hasta que se considera el espacio
-      compartido.</p>
-      <p>Ecología Mágica ayuda a identificar si el ambiente sólo transporta la condición o la
-      genera activamente.</p>
-      <h4 id="cap-10">Capítulo X — Transmisión simbólica</h4>
-      <p>Una condición puede propagarse mediante símbolos, palabras, relatos, nombres o actos
-      reconocidos.</p>
-      <p>Esto no significa que la información sea por sí sola patológica. La estructura debe
-      interpretar la exposición como una relación válida.</p>
-      <p>Semiótica Mágica y Filología Arcana son esenciales para distinguir una inscripción
-      peligrosa de una mera descripción de ella.</p>
-      <h4 id="cap-11">Capítulo XI — Transmisión ritual</h4>
-      <p>Algunos fenómenos requieren participación en una secuencia específica. El sujeto no se
-      infecta por observar un ritual, sino por ocupar una posición, aceptar una función o
-      completar una condición.</p>
-      <p>Estos brotes suelen parecer selectivos y pueden confundirse con predisposición
-      biológica.</p>
-      <p>Ritualística reconstruye qué acciones forman parte de la vía de transmisión.</p>
-      <h4 id="cap-12">Capítulo XII — Transmisión por vínculo</h4>
-      <p>Parentesco, juramento, pacto, pertenencia institucional o relación de propiedad pueden
-      convertirse en rutas.</p>
-      <p>Una condición puede afectar a descendientes, herederos, miembros de una orden o
-      poseedores sucesivos de un objeto.</p>
-      <p>La epidemiología debe modelar entonces redes de relaciones además de proximidad
-      física.</p>
-      <h4 id="cap-13">Capítulo XIII — Transmisión resonántica</h4>
-      <p>Los fenómenos resonánticos pueden propagarse por exposición prolongada a patrones
-      mentales o emocionales.</p>
-      <p>La Radiación Sináptica constituye un ejemplo donde una persona puede convertirse en
-      fuente sin transmitir un agente biológico.</p>
-      <p>La distancia, duración, aislamiento y sensibilidad de terceros modifican riesgo.</p>
-      <h4 id="cap-14">Capítulo XIV — Número reproductivo</h4>
+      <h4 id="cap-6">Capítulo VI — Vías y modalidades de transmisión</h4>
+      <p>La vía de transmisión determina cómo una condición pasa de una fuente a un nuevo
+      huésped, y los fenómenos mágicos emplean un repertorio más amplio que el de la patología
+      ordinaria. La transmisión directa ocurre cuando la condición pasa entre individuos sin
+      intermediario prolongado: contacto físico, mordeduras, intercambio de fluidos, proximidad
+      psíquica o reconocimiento mutuo pueden servir como mecanismos, y el tiempo de contacto
+      necesario puede variar desde segundos hasta convivencia prolongada. La transmisión
+      indirecta, en cambio, utiliza un medio persistente (agua, alimentos, superficies, objetos,
+      documentos, residuos o espacios contaminados) capaz de conservar la condición fuera de un
+      huésped durante períodos variables; Conservación Arcana y Artefactología resultan
+      relevantes cuando un objeto histórico funciona simultáneamente como patrimonio y
+      reservorio.</p>
+      <p>La transmisión ambiental prescinde por completo del contacto entre enfermos: una región
+      completa puede exponer a quienes ingresan en ella. Campos resonánticos, contaminación
+      elemental, fugas rituales y anomalías planares producen patrones donde los casos parecen
+      desconectados hasta que se considera el espacio compartido, y Ecología Mágica ayuda a
+      identificar si el ambiente sólo transporta la condición o la genera activamente.</p>
+      <p>Otras vías dependen de estructuras de significado antes que de sustancia. La transmisión
+      simbólica propaga una condición mediante símbolos, palabras, relatos, nombres o actos
+      reconocidos; la información no es por sí sola patológica, sino que la estructura debe
+      interpretar la exposición como una relación válida, y Semiótica Mágica y Filología Arcana
+      son esenciales para distinguir una inscripción peligrosa de una mera descripción de ella.
+      La transmisión ritual, por su parte, requiere participación en una secuencia específica: el
+      sujeto no se infecta por observar un ritual, sino por ocupar una posición, aceptar una
+      función o completar una condición, lo que produce brotes que parecen selectivos y pueden
+      confundirse con predisposición biológica; Ritualística reconstruye qué acciones forman
+      parte de la vía de transmisión.</p>
+      <p>Finalmente, algunas vías siguen relaciones en lugar de objetos o espacios. La
+      transmisión por vínculo convierte parentesco, juramento, pacto, pertenencia institucional o
+      relación de propiedad en rutas de contagio, de modo que una condición puede afectar a
+      descendientes, herederos, miembros de una orden o poseedores sucesivos de un objeto; esto
+      obliga a la epidemiología a modelar redes de relaciones además de proximidad física. La
+      transmisión resonántica, en cambio, se propaga por exposición prolongada a patrones
+      mentales o emocionales; la Radiación Sináptica constituye un ejemplo donde una persona
+      puede convertirse en fuente sin transmitir un agente biológico, y en estos casos la
+      distancia, la duración, el aislamiento y la sensibilidad de terceros modifican el
+      riesgo.</p>
+      <h4 id="cap-7">Capítulo VII — Número reproductivo</h4>
       <p>La disciplina utiliza estimaciones para describir cuántos casos secundarios puede
       producir un caso bajo condiciones determinadas.</p>
       <p>En magia, esta medida depende de reglas de transmisión. Una maldición que sólo pasa al
@@ -6810,93 +6762,84 @@ window.ENTRIES = [
       cientos de personas sin que ninguna transmita nada.</p>
       <p>El número debe interpretarse como propiedad de una situación, no como constante
       metafísica de la enfermedad.</p>
-      <h4 id="cap-15">Capítulo XV — Susceptibilidad</h4>
-      <p>La exposición no produce enfermedad en todos los individuos.</p>
-      <p>Especie, edad, afinidad, estado inmunológico, historia mágica, protección ritual y
-      condiciones pneumatológicas pueden modificar susceptibilidad.</p>
-      <p>Los mapas de riesgo deben evitar convertir una asociación en una sentencia individual.</p>
-      <h4 id="cap-16">Capítulo XVI — Resistencia</h4>
-      <p>La resistencia reduce probabilidad de adquirir o desarrollar una condición.</p>
-      <p>Puede ser biológica, adquirida, ambiental, ritual o estructural.</p>
-      <p>Un individuo puede resistir entrada del fenómeno y seguir actuando como portador
-      superficial, lo que obliga a separar resistencia clínica de capacidad de transmisión.</p>
-      <h4 id="cap-17">Capítulo XVII — Inmunidad</h4>
-      <p>Algunas patologías dejan protección después de la recuperación. Otras no.</p>
-      <p>La inmunidad puede depender de anticuerpos, adaptación de órganos arcanos, memoria
-      somática o modificaciones de referencia.</p>
-      <p>En maldiciones y fenómenos simbólicos, el término inmunidad se utiliza con cautela
-      porque la protección puede depender de una condición que también puede perderse.</p>
-      <h4 id="cap-18">Capítulo XVIII — Portadores</h4>
-      <p>Un portador mantiene o transmite una condición sin presentar síntomas significativos.</p>
-      <p>Los portadores son especialmente importantes en brotes donde la detección depende de
-      enfermedad visible.</p>
-      <p>El estigma contra individuos asintomáticos puede dificultar vigilancia y cooperación si
-      se los trata automáticamente como culpables.</p>
-      <h4 id="cap-19">Capítulo XIX — Superpropagación</h4>
+      <h4 id="cap-8">Capítulo VIII — Susceptibilidad, resistencia, inmunidad y portadores</h4>
+      <p>La exposición no produce enfermedad en todos los individuos. Especie, edad, afinidad,
+      estado inmunológico, historia mágica, protección ritual y condiciones pneumatológicas
+      pueden modificar la susceptibilidad, y los mapas de riesgo deben evitar convertir una
+      asociación estadística en una sentencia individual.</p>
+      <p>La resistencia opera en sentido inverso: reduce la probabilidad de adquirir o
+      desarrollar una condición, y puede ser biológica, adquirida, ambiental, ritual o
+      estructural. Un individuo puede resistir la entrada del fenómeno y seguir actuando como
+      portador superficial, lo que obliga a separar la resistencia clínica de la capacidad de
+      transmisión.</p>
+      <p>La inmunidad, cuando existe, es la protección que queda tras la recuperación; algunas
+      patologías la dejan y otras no. Puede depender de anticuerpos, adaptación de órganos
+      arcanos, memoria somática o modificaciones de referencia. En maldiciones y fenómenos
+      simbólicos el término se emplea con cautela, porque la protección puede depender de una
+      condición que a su vez puede perderse.</p>
+      <p>Un portador mantiene o transmite una condición sin presentar síntomas significativos, y
+      resulta especialmente relevante en brotes donde la detección depende de enfermedad visible.
+      Tratar automáticamente a los individuos asintomáticos como culpables produce estigma, y ese
+      estigma dificulta la vigilancia y la cooperación que la investigación necesita.</p>
+      <h4 id="cap-9">Capítulo IX — Superpropagación</h4>
       <p>Algunos individuos, lugares o eventos generan una cantidad desproporcionada de nuevos
       casos.</p>
       <p>La causa puede ser biológica, social o estructural: una persona con emisión intensa, un
       templo concurrido, un festival, una fuente de agua o un artefacto de uso compartido.</p>
       <p>La intervención dirigida a estos puntos puede controlar un brote con menos restricciones
       generales.</p>
-      <h4 id="cap-20">Capítulo XX — Redes sociales</h4>
+      <h4 id="cap-10">Capítulo X — Redes sociales y rituales</h4>
       <p>Las poblaciones no interactúan al azar. Familias, gremios, rutas comerciales, cultos,
-      escuelas y barrios crean redes que organizan transmisión.</p>
-      <p>Una maldición vinculada a juramentos puede propagarse dentro de una institución y no
-      entre vecinos geográficos.</p>
-      <p>El análisis de redes permite descubrir rutas que un mapa físico no muestra.</p>
-      <h4 id="cap-21">Capítulo XXI — Redes rituales</h4>
-      <p>Las organizaciones mágicas poseen conexiones propias: maestros y aprendices, círculos de
-      invocación compartidos, laboratorios, bibliotecas y artefactos comunes.</p>
-      <p>Un error estructural puede repetirse en varios lugares porque todos utilizan la misma
-      copia de un procedimiento.</p>
-      <p>La propagación del riesgo puede seguir la transmisión del conocimiento en lugar del
-      movimiento de un agente.</p>
-      <h4 id="cap-22">Capítulo XXII — Brotes por copia</h4>
-      <p>Una fórmula defectuosa, una runa mal transcrita o un manual incompleto pueden originar
-      múltiples incidentes independientes con una misma causa.</p>
-      <p>Estos brotes no son contagiosos en sentido clásico, pero muestran agrupamiento temporal
-      y doctrinal.</p>
-      <p>Filología Arcana, Runología y Conservación ayudan a rastrear la fuente documental.</p>
-      <h4 id="cap-23">Capítulo XXIII — Brotes por artefactos</h4>
-      <p>Un objeto contaminado o maldito puede cambiar de dueño y producir casos sucesivos.</p>
-      <p>Otros artefactos afectan a todos quienes viven cerca, generando un patrón espacial
-      alrededor de una fuente fija.</p>
-      <p>Artefactología permite distinguir transmisión por uso de exposición ambiental.</p>
-      <h4 id="cap-24">Capítulo XXIV — Brotes elementales</h4>
-      <p>Una liberación elemental sostenida puede producir enfermedad en una población sin
-      transmisión entre personas.</p>
-      <p>El patrón puede confundirse con epidemia infecciosa porque numerosos casos aparecen a la
-      vez.</p>
-      <p>La clave es demostrar que el riesgo depende de exposición a la región y no de contacto
-      con enfermos.</p>
-      <h4 id="cap-25">Capítulo XXV — Brotes extraplanares</h4>
-      <p>La apertura de una frontera planar puede introducir organismos, sustancias o
-      condiciones incompatibles.</p>
-      <p>Los primeros casos pueden ser importados y después generar transmisión local si el
-      agente encuentra huéspedes adecuados.</p>
-      <p>Planología es necesaria para determinar si cerrar la frontera elimina la fuente o sólo
-      una de las rutas.</p>
-      <h4 id="cap-26">Capítulo XXVI — Maldiciones familiares</h4>
+      escuelas y barrios crean redes que organizan la transmisión, de modo que una maldición
+      vinculada a juramentos puede propagarse dentro de una institución y no entre vecinos
+      geográficos. El análisis de redes permite descubrir rutas que un mapa físico no
+      muestra.</p>
+      <p>Las organizaciones mágicas poseen conexiones propias, como maestros y aprendices,
+      círculos de invocación compartidos, laboratorios, bibliotecas y artefactos comunes. Un
+      error estructural puede repetirse en varios lugares porque todos utilizan una copia
+      idéntica de un procedimiento, de forma que la propagación del riesgo sigue entonces la
+      transmisión del conocimiento en lugar del movimiento de un agente.</p>
+      <h4 id="cap-11">Capítulo XI — Tipos de brotes</h4>
+      <p>No todos los brotes se originan por contagio entre personas. Una fórmula defectuosa, una
+      runa mal transcrita o un manual incompleto pueden producir múltiples incidentes
+      independientes a partir de una única causa documental: estos brotes por copia no son
+      contagiosos en sentido clásico, pero muestran agrupamiento temporal y doctrinal, y
+      Filología Arcana, Runología y Conservación ayudan a rastrear la fuente.</p>
+      <p>Los objetos también generan brotes propios. Un artefacto contaminado o maldito puede
+      cambiar de dueño y producir casos sucesivos a medida que pasa de mano en mano; otros
+      afectan a todos quienes viven cerca, generando un patrón espacial alrededor de una fuente
+      fija. Artefactología permite distinguir en cada caso si la transmisión ocurre por uso o por
+      exposición ambiental.</p>
+      <p>Otros brotes carecen por completo de un agente que pase entre personas. Una liberación
+      elemental sostenida puede producir enfermedad en una población sin transmisión entre
+      individuos, y el patrón resultante puede confundirse con una epidemia infecciosa porque
+      numerosos casos aparecen a la vez; la clave para distinguirlos es demostrar que el riesgo
+      depende de la exposición a la región y no del contacto con enfermos. Un mecanismo
+      emparentado ocurre cuando se abre una frontera planar: pueden introducirse organismos,
+      sustancias o condiciones incompatibles con el entorno, los primeros casos suelen ser
+      importados, y sólo después aparece transmisión local si el agente encuentra huéspedes
+      adecuados. Planología resulta necesaria para determinar si cerrar la frontera elimina la
+      fuente o sólo una de las rutas.</p>
+      <p>Un último tipo surge no de la fuente sino de la composición de la población afectada.
+      Las ciudades con múltiples especies presentan diferencias de susceptibilidad, síntomas y
+      capacidad de transmisión, y una especie puede actuar como portadora mientras otra sufre
+      enfermedad grave. Los protocolos de respuesta deben evitar asumir que el patrón humanoide
+      es universal.</p>
+      <h4 id="cap-12">Capítulo XII — Tipos de maldiciones transmisibles</h4>
       <p>Las maldiciones heredables producen patrones generacionales que pueden parecer
-      genéticos.</p>
-      <p>El análisis debe comparar parentesco biológico con reglas de sucesión, nombres, títulos
-      y posesión.</p>
-      <p>Una condición puede seguir la línea del heredero legal en lugar de la descendencia
-      sanguínea.</p>
-      <h4 id="cap-27">Capítulo XXVII — Maldiciones territoriales</h4>
-      <p>Algunas maldiciones se adquieren por vivir, nacer o morir dentro de una región.</p>
-      <p>El territorio funciona como reservorio y condición de exposición.</p>
-      <p>La migración puede reducir nuevos casos y no curar a quienes ya cumplen la relación
-      definida por la maldición.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Maldiciones conductuales</h4>
-      <p>Una condición puede propagarse cuando alguien repite una acción: abrir una puerta,
-      aceptar un desafío, pronunciar un juramento o participar en una costumbre.</p>
-      <p>El control exige comprender la conducta exacta y ofrecer alternativas culturalmente
-      viables.</p>
-      <p>Prohibiciones vagas suelen desplazar la práctica hacia formas clandestinas sin eliminar
-      el mecanismo.</p>
-      <h4 id="cap-29">Capítulo XXIX — Radiación Sináptica a escala poblacional</h4>
+      genéticos, pero el análisis debe comparar el parentesco biológico con las reglas de
+      sucesión, nombres, títulos y posesión: una condición puede seguir la línea del heredero
+      legal en lugar de la descendencia sanguínea.</p>
+      <p>Otras maldiciones son territoriales y se adquieren por vivir, nacer o morir dentro de
+      una región determinada. El territorio funciona entonces como reservorio y como condición de
+      exposición a la vez, de modo que la migración puede reducir la aparición de nuevos casos
+      sin curar a quienes ya cumplen la relación definida por la maldición.</p>
+      <p>Un tercer tipo depende de la conducta: la condición se propaga cuando alguien repite una
+      acción concreta, como abrir una puerta, aceptar un desafío, pronunciar un juramento o
+      participar en una costumbre. Controlarla exige comprender la conducta exacta y ofrecer
+      alternativas culturalmente viables, porque las prohibiciones vagas suelen desplazar la
+      práctica hacia formas clandestinas sin eliminar el mecanismo.</p>
+      <h4 id="cap-13">Capítulo XIII — Radiación Sináptica a escala poblacional</h4>
       <p>La Radiación Sináptica presenta un patrón epidemiológico peculiar. La fuente primaria
       puede ser un único individuo mientras los afectados secundarios no se convierten
       necesariamente en emisores equivalentes.</p>
@@ -6904,20 +6847,18 @@ window.ENTRIES = [
       cuidadores, familiares y personal de contención.</p>
       <p>Si varios emisores aparecen en un mismo programa alquímico, taller o institución, el
       brote puede expandirse mediante multiplicación de fuentes.</p>
-      <h4 id="cap-30">Capítulo XXX — Exposición acumulativa</h4>
-      <p>Algunos fenómenos no producen enfermedad tras un solo contacto. El riesgo aumenta con la
-      suma de exposiciones.</p>
-      <p>Trabajadores de laboratorios, mineros, restauradores, sanadores y personal ritual pueden
-      acumular dosis durante meses.</p>
-      <p>La epidemiología ocupacional intenta identificar qué tareas y turnos concentran el
-      riesgo.</p>
-      <h4 id="cap-31">Capítulo XXXI — Mutaciones poblacionales</h4>
-      <p>Una exposición puede producir cambios heredables en una proporción de individuos.</p>
-      <p>Si esos cambios mejoran supervivencia dentro del nuevo ambiente, pueden aumentar en
-      generaciones posteriores.</p>
-      <p>En ese punto, el fenómeno deja de ser únicamente enfermedad y comienza a convertirse en
-      proceso evolutivo. Criptozoología y Ecología Mágica toman entonces un papel creciente.</p>
-      <h4 id="cap-32">Capítulo XXXII — La Peste Gris</h4>
+      <h4 id="cap-14">Capítulo XIV — Exposición acumulativa y mutaciones poblacionales</h4>
+      <p>Algunos fenómenos no producen enfermedad tras un solo contacto: el riesgo aumenta con la
+      suma de exposiciones. Trabajadores de laboratorios, mineros, restauradores, sanadores y
+      personal ritual pueden acumular dosis durante meses, y la epidemiología ocupacional intenta
+      identificar qué tareas y turnos concentran ese riesgo.</p>
+      <p>Cuando la exposición es suficientemente intensa o prolongada, puede además producir
+      cambios heredables en una proporción de los individuos afectados. Si esos cambios mejoran
+      la supervivencia dentro del nuevo ambiente, pueden aumentar en generaciones posteriores, y
+      en ese punto el fenómeno deja de ser únicamente enfermedad para convertirse en proceso
+      evolutivo. Criptozoología y Ecología Mágica toman entonces un papel creciente en su
+      estudio.</p>
+      <h4 id="cap-15">Capítulo XV — La Peste Gris</h4>
       <p>La Peste Gris es un ejemplo útil para enseñanza porque combina preguntas clínicas y
       poblacionales.</p>
       <p>El análisis epidemiológico no se limita a síntomas. Examina qué comunidades resultan más
@@ -6927,190 +6868,151 @@ window.ENTRIES = [
       posibles reservorios además del agente biológico.</p>
       <p>La historia del brote demuestra que una enfermedad puede continuar transformando una
       región incluso después de reducirse el número de enfermos.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Mapas</h4>
-      <p>Los mapas epidemiológicos representan casos, exposiciones, reservorios y rutas.</p>
-      <p>En fenómenos mágicos, deben incluir variables que un mapa ordinario omite: fronteras
-      rituales, líneas de afinidad, portales, territorios de entidades y redes institucionales.</p>
-      <p>Un mapa físico y un mapa de relaciones pueden señalar focos completamente distintos.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Curvas epidémicas</h4>
-      <p>La distribución de casos a lo largo del tiempo ayuda a inferir mecanismo.</p>
-      <p>Muchos casos simultáneos sugieren fuente común; oleadas sucesivas pueden indicar
-      transmisión entre personas; recurrencias periódicas pueden señalar un desencadenante
-      cíclico.</p>
-      <p>Las interpretaciones deben confirmarse con evidencia adicional porque fenómenos
-      rituales pueden imitar cualquiera de estos patrones.</p>
-      <h4 id="cap-35">Capítulo XXXV — Rastreo de contactos</h4>
-      <p>El rastreo identifica personas, objetos, lugares y relaciones que conectan un caso con
-      posibles exposiciones.</p>
-      <p>En magia, la palabra contacto se utiliza en sentido amplio. Puede incluir compartir un
-      sueño, firmar el mismo pacto o manipular una copia del mismo texto.</p>
-      <p>La investigación debe adaptarse al mecanismo sospechado en lugar de limitarse a
-      proximidad física.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Definición de caso</h4>
-      <p>Antes de contar enfermos es necesario definir qué cuenta como caso.</p>
-      <p>Una definición demasiado amplia mezcla patologías diferentes. Una demasiado estrecha
-      omite fases tempranas y portadores.</p>
-      <p>Los criterios pueden incluir síntomas, exposición, pruebas arcanas y pertenencia a una
-      cadena de transmisión.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Falsos positivos</h4>
-      <p>La presencia de una firma, afinidad o residuo no demuestra enfermedad.</p>
-      <p>En brotes con miedo elevado, individuos sanos pueden ser clasificados erróneamente como
-      afectados por compartir características culturales o biológicas con los casos.</p>
-      <p>La epidemiología debe diseñar criterios que reduzcan daño producido por el propio
-      sistema de vigilancia.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Falsos negativos</h4>
-      <p>Las fases latentes, los portadores y las especies con síntomas distintos pueden escapar
-      a definiciones demasiado rígidas.</p>
-      <p>Un brote puede parecer controlado mientras continúa en un grupo que no está siendo
-      examinado correctamente.</p>
-      <p>La revisión constante de criterios forma parte de la respuesta.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Sesgo</h4>
-      <p>Los datos poblacionales reflejan quién tiene acceso a diagnóstico, quién teme
-      reportarse y qué regiones pueden ser estudiadas.</p>
-      <p>Un mapa lleno de casos alrededor de Dolbred puede indicar mejor vigilancia y no mayor
-      riesgo real.</p>
-      <p>La disciplina enseña a desconfiar de la ausencia de datos tanto como de su abundancia.</p>
-      <h4 id="cap-40">Capítulo XL — Cuarentena</h4>
+      <h4 id="cap-16">Capítulo XVI — Herramientas descriptivas: mapas, curvas epidémicas y
+      rastreo de contactos</h4>
+      <p>Los mapas epidemiológicos representan casos, exposiciones, reservorios y rutas. En
+      fenómenos mágicos deben incluir variables que un mapa ordinario omite, como fronteras
+      rituales, líneas de afinidad, portales, territorios de entidades y redes institucionales,
+      porque un mapa físico y un mapa de relaciones pueden señalar focos completamente
+      distintos.</p>
+      <p>La distribución de casos a lo largo del tiempo, representada en curvas epidémicas, ayuda
+      a inferir el mecanismo: muchos casos simultáneos sugieren una fuente común, oleadas
+      sucesivas pueden indicar transmisión entre personas y recurrencias periódicas pueden
+      señalar un desencadenante cíclico. Estas interpretaciones deben confirmarse con evidencia
+      adicional, ya que los fenómenos rituales pueden imitar cualquiera de estos patrones.</p>
+      <p>El rastreo de contactos, por último, identifica personas, objetos, lugares y relaciones
+      que conectan un caso con posibles exposiciones. En magia, la palabra contacto se utiliza en
+      sentido amplio y puede incluir compartir un sueño, firmar un mismo pacto o manipular una
+      copia de un mismo texto, de modo que la investigación debe adaptarse al mecanismo
+      sospechado en lugar de limitarse a la proximidad física.</p>
+      <h4 id="cap-17">Capítulo XVII — Definición de caso, error diagnóstico y sesgo</h4>
+      <p>Antes de contar enfermos es necesario definir qué cuenta como caso. Una definición
+      demasiado amplia mezcla patologías diferentes; una demasiado estrecha omite fases tempranas
+      y portadores. Los criterios pueden incluir síntomas, exposición, pruebas arcanas y
+      pertenencia a una cadena de transmisión.</p>
+      <p>Una definición imperfecta produce dos tipos de error opuestos. La presencia de una
+      firma, afinidad o residuo no demuestra enfermedad, y en brotes con miedo elevado,
+      individuos sanos pueden ser clasificados erróneamente como afectados por compartir
+      características culturales o biológicas con los casos: son los falsos positivos, y la
+      epidemiología debe diseñar criterios que reduzcan el daño producido por el propio sistema
+      de vigilancia. En sentido contrario, las fases latentes, los portadores y las especies con
+      síntomas distintos pueden escapar a definiciones demasiado rígidas, de modo que un brote
+      puede parecer controlado mientras continúa en un grupo que no está siendo examinado
+      correctamente; la revisión constante de los criterios forma parte de la respuesta ante
+      estos falsos negativos.</p>
+      <p>Los datos poblacionales, además, reflejan quién tiene acceso a diagnóstico, quién teme
+      reportarse y qué regiones pueden ser estudiadas. Un mapa lleno de casos alrededor de
+      Dolbred puede indicar mejor vigilancia y no mayor riesgo real. La disciplina enseña a
+      desconfiar de la ausencia de datos tanto como de su abundancia.</p>
+      <h4 id="cap-18">Capítulo XVIII — Medidas de contención: cuarentena, aislamiento, cordones
+      sanitarios y control de reservorios</h4>
       <p>La cuarentena separa temporalmente a personas expuestas que todavía no presentan
-      enfermedad.</p>
-      <p>Es útil cuando existe una ventana de latencia y posibilidad real de transmisión.</p>
-      <p>Aplicarla a fenómenos ambientales o maldiciones no contagiosas puede ser inútil y
-      perjudicial. Toda cuarentena debe justificar mecanismo, duración y criterio de
+      enfermedad, y resulta útil cuando existe una ventana de latencia y posibilidad real de
+      transmisión. Aplicarla a fenómenos ambientales o a maldiciones no contagiosas puede ser
+      inútil y perjudicial; toda cuarentena debe justificar su mecanismo, duración y criterio de
       liberación.</p>
-      <h4 id="cap-41">Capítulo XLI — Aislamiento</h4>
-      <p>El aislamiento se aplica a casos capaces de transmitir o emitir una condición.</p>
-      <p>Puede necesitar barreras físicas, materiales, resonánticas, simbólicas o planares.</p>
-      <p>El diseño debe proteger a terceros sin impedir tratamientos indispensables.</p>
-      <h4 id="cap-42">Capítulo XLII — Cordones sanitarios</h4>
-      <p>Cerrar una región puede reducir movilidad del fenómeno cuando la transmisión depende de
-      desplazamiento de personas, animales u objetos.</p>
-      <p>También puede concentrar exposición si la fuente se encuentra dentro y la población no
-      puede salir.</p>
-      <p>El cordón sanitario sólo es sensato después de comprender en qué dirección se mueve el
-      riesgo.</p>
-      <h4 id="cap-43">Capítulo XLIII — Control de reservorios</h4>
+      <p>El aislamiento, en cambio, se aplica a casos ya capaces de transmitir o emitir una
+      condición, y puede requerir barreras físicas, materiales, resonánticas, simbólicas o
+      planares según el mecanismo implicado. Su diseño debe proteger a terceros sin impedir los
+      tratamientos indispensables.</p>
+      <p>A escala territorial, cerrar una región mediante un cordón sanitario puede reducir la
+      movilidad del fenómeno cuando la transmisión depende del desplazamiento de personas,
+      animales u objetos, pero también puede concentrar la exposición si la fuente se encuentra
+      dentro y la población no puede salir. Un cordón sanitario sólo resulta sensato después de
+      comprender en qué dirección se mueve el riesgo.</p>
       <p>Eliminar o neutralizar un reservorio puede detener un brote con mayor eficacia que
-      tratar cada caso por separado.</p>
-      <p>Sin embargo, destruir fauna, edificios o artefactos sin análisis puede producir daño
-      ecológico, cultural o ritual.</p>
-      <p>La intervención debe equilibrar control, conservación y seguridad.</p>
-      <h4 id="cap-44">Capítulo XLIV — Intervenciones sobre conducta</h4>
-      <p>Cuando la transmisión depende de una práctica, modificar conducta puede reducir
-      riesgo.</p>
-      <p>Las instrucciones deben ser específicas y comprensibles. Decir no practiquen magia rara
-      vez ayuda si la condición depende sólo de compartir cierto componente ritual.</p>
-      <p>La confianza pública es parte del control epidemiológico.</p>
-      <h4 id="cap-45">Capítulo XLV — Protección colectiva</h4>
-      <p>Algunas poblaciones pueden recibir protección mediante sellos, barreras, vacunación,
-      antídotos, filtros o cambios ambientales.</p>
-      <p>La eficacia debe evaluarse a escala poblacional, porque una medida útil para individuos
-      puede desplazar riesgo hacia otros grupos.</p>
-      <p>Las barreras que protegen una ciudad pueden concentrar contaminación fuera de sus
-      límites.</p>
-      <h4 id="cap-46">Capítulo XLVI — Vacunación y preparación</h4>
+      tratar cada caso por separado, pero destruir fauna, edificios o artefactos sin análisis
+      previo puede producir daño ecológico, cultural o ritual. La intervención debe equilibrar
+      control, conservación y seguridad.</p>
+      <h4 id="cap-19">Capítulo XIX — Prevención poblacional: conducta, protección colectiva,
+      vacunación e inmunidad colectiva</h4>
+      <p>Cuando la transmisión depende de una práctica concreta, modificar la conducta puede
+      reducir el riesgo, pero las instrucciones deben ser específicas y comprensibles: pedir que
+      se abandone la magia en términos generales sirve de poco si la condición depende sólo de
+      compartir cierto componente ritual. La confianza pública forma parte del control
+      epidemiológico tanto como cualquier medida técnica.</p>
+      <p>Algunas poblaciones pueden recibir protección colectiva mediante sellos, barreras,
+      vacunación, antídotos, filtros o cambios ambientales. Su eficacia debe evaluarse a escala
+      poblacional, porque una medida útil para individuos puede desplazar el riesgo hacia otros
+      grupos: las barreras que protegen una ciudad pueden concentrar la contaminación fuera de
+      sus límites.</p>
       <p>Cuando existe una respuesta adquirida predecible, puede desarrollarse una intervención
-      preventiva que prepare al organismo antes de exposición.</p>
-      <p>No toda patología mágica admite este enfoque.</p>
-      <p>Farmacología y Patología Arcana determinan seguridad; Epidemiología evalúa cobertura y
-      efecto poblacional.</p>
-      <h4 id="cap-47">Capítulo XLVII — Inmunidad colectiva</h4>
+      preventiva que prepare al organismo antes de la exposición, aunque no toda patología mágica
+      admite este enfoque. Farmacología y Patología Arcana determinan su seguridad, mientras que
+      Epidemiología evalúa cobertura y efecto poblacional.</p>
       <p>Si suficientes individuos dejan de participar en la transmisión, una condición puede
-      encontrar menos rutas disponibles.</p>
-      <p>Este principio funciona sólo cuando los protegidos realmente interrumpen la cadena.</p>
-      <p>No aplica de la misma manera a fuentes ambientales, maldiciones hereditarias o
-      exposición proveniente de un único emisor.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Brotes en poblaciones mixtas</h4>
-      <p>Ciudades con múltiples especies presentan diferencias de susceptibilidad, síntomas y
-      capacidad de transmisión.</p>
-      <p>Una especie puede actuar como portadora y otra sufrir enfermedad grave.</p>
-      <p>Los protocolos deben evitar asumir que el patrón humanoide es universal.</p>
-      <h4 id="cap-49">Capítulo XLIX — Movilidad y comercio</h4>
-      <p>Rutas comerciales pueden transportar animales, alimentos, minerales, artefactos y
-      manuscritos contaminados.</p>
-      <p>El control fronterizo necesita conocer qué bienes pueden actuar como reservorios.</p>
-      <p>Inspecciones indiscriminadas consumen recursos y pueden incentivar rutas
-      clandestinas.</p>
-      <h4 id="cap-50">Capítulo L — Migración</h4>
-      <p>Los brotes producen desplazamiento y el desplazamiento modifica los brotes.</p>
-      <p>Refugiados pueden huir de una fuente ambiental sin estar infectados, mientras una
-      población portadora puede trasladar la condición a nuevos lugares.</p>
-      <p>La epidemiología debe distinguir ambos escenarios para evitar respuestas injustas y
-      técnicamente inútiles.</p>
-      <h4 id="cap-51">Capítulo LI — Pánico y rumor</h4>
-      <p>La información también se propaga durante una epidemia.</p>
-      <p>Rumores pueden alterar conducta, provocar abandono de tratamientos, violencia contra
-      grupos y concentración en lugares supuestamente seguros.</p>
-      <p>Cuando el fenómeno real posee componente semiótico, el desafío es aún mayor porque
-      comunicar detalles puede modificar exposición. Los informes públicos deben equilibrar
-      precisión y seguridad.</p>
-      <h4 id="cap-52">Capítulo LII — Estigma</h4>
-      <p>Asociar una enfermedad con especie, profesión, religión o región puede producir
-      discriminación sin mejorar control.</p>
-      <p>El estigma reduce cooperación y hace que los casos eviten vigilancia.</p>
-      <p>La disciplina considera la confianza un recurso epidemiológico, no sólo una
-      preocupación moral.</p>
-      <h4 id="cap-53">Capítulo LIII — Ética</h4>
-      <p>Las medidas poblacionales restringen movimiento, privacidad y autonomía.</p>
-      <p>Su justificación depende de evidencia de riesgo, proporcionalidad y duración
-      limitada.</p>
-      <p>La incertidumbre no autoriza cualquier intervención; obliga a revisar decisiones con
-      mayor frecuencia.</p>
-      <h4 id="cap-54">Capítulo LIV — Derecho Arcano</h4>
-      <p>Los brotes plantean preguntas sobre cuarentena, propiedad de artefactos contaminados,
-      responsabilidad por exposición y autoridad para cerrar rituales o espacios.</p>
-      <p>Derecho Arcano define competencias institucionales.</p>
-      <p>Epidemiología aporta la evidencia necesaria para que esas decisiones no se basen
-      únicamente en temor.</p>
-      <h4 id="cap-55">Capítulo LV — Vigilancia</h4>
-      <p>La vigilancia reúne datos de manera continua para detectar cambios antes de que un
-      brote sea evidente.</p>
-      <p>Hospitales, laboratorios, gremios y puestos fronterizos pueden actuar como sitios
-      centinela.</p>
-      <p>Las señales tempranas incluyen síntomas inusuales, cambios ambientales y aumentos de
-      incidentes rituales.</p>
-      <h4 id="cap-56">Capítulo LVI — Sistemas centinela</h4>
-      <p>Una población pequeña y bien observada puede advertir de un fenómeno más amplio.</p>
-      <p>Mineros, restauradores, navegantes planares y personal ritual son grupos útiles cuando
-      su exposición precede a la población general.</p>
-      <p>La vigilancia debe acompañarse de protección para evitar convertir a los grupos
+      encontrar menos rutas disponibles: es el principio de inmunidad colectiva, que funciona
+      sólo cuando los protegidos interrumpen realmente la cadena. No opera igual frente a fuentes
+      ambientales, maldiciones hereditarias o exposición proveniente de un único emisor, donde
+      reducir el número de susceptibles no cierra las rutas que mantienen el fenómeno.</p>
+      <h4 id="cap-20">Capítulo XX — Movilidad, comercio y migración</h4>
+      <p>Las rutas comerciales pueden transportar animales, alimentos, minerales, artefactos y
+      manuscritos contaminados, y el control fronterizo necesita conocer qué bienes pueden actuar
+      como reservorios. Las inspecciones indiscriminadas consumen recursos y pueden incentivar
+      rutas clandestinas en lugar de reducir el riesgo.</p>
+      <p>Los brotes producen desplazamiento y el desplazamiento, a su vez, modifica los brotes.
+      Los refugiados pueden huir de una fuente ambiental sin estar infectados, mientras que una
+      población portadora puede trasladar la condición a nuevos lugares; la epidemiología debe
+      distinguir ambos escenarios para evitar respuestas injustas y técnicamente inútiles.</p>
+      <h4 id="cap-21">Capítulo XXI — Pánico, rumor y estigma</h4>
+      <p>La información también se propaga durante una epidemia. Los rumores pueden alterar la
+      conducta, provocar abandono de tratamientos, violencia contra grupos y concentración en
+      lugares supuestamente seguros. Cuando el fenómeno real posee un componente semiótico, el
+      desafío es aún mayor, porque comunicar los detalles puede modificar la propia exposición;
+      los informes públicos deben equilibrar precisión y seguridad.</p>
+      <p>Asociar una enfermedad con una especie, profesión, religión o región puede producir
+      discriminación sin mejorar el control. El estigma reduce la cooperación y hace que los
+      casos eviten la vigilancia, por lo que la disciplina considera la confianza un recurso
+      epidemiológico y no sólo una preocupación moral.</p>
+      <h4 id="cap-22">Capítulo XXII — Ética y Derecho Arcano</h4>
+      <p>Las medidas poblacionales restringen movimiento, privacidad y autonomía, de modo que su
+      justificación depende de evidencia de riesgo, proporcionalidad y duración limitada. La
+      incertidumbre no autoriza cualquier intervención; obliga, más bien, a revisar las
+      decisiones con mayor frecuencia.</p>
+      <p>Los brotes plantean además preguntas sobre cuarentena, propiedad de artefactos
+      contaminados, responsabilidad por exposición y autoridad para cerrar rituales o espacios.
+      Derecho Arcano define las competencias institucionales para resolverlas, mientras que
+      Epidemiología aporta la evidencia necesaria para que esas decisiones no se basen únicamente
+      en el temor.</p>
+      <h4 id="cap-23">Capítulo XXIII — Vigilancia y sistemas centinela</h4>
+      <p>La vigilancia reúne datos de manera continua para detectar cambios antes de que un brote
+      sea evidente. Hospitales, laboratorios, gremios y puestos fronterizos pueden actuar como
+      sitios centinela, y las señales tempranas incluyen síntomas inusuales, cambios ambientales
+      y aumentos de incidentes rituales.</p>
+      <p>Una población pequeña y bien observada puede advertir de un fenómeno más amplio antes de
+      que alcance a la población general. Mineros, restauradores, navegantes planares y personal
+      ritual son grupos útiles para este fin cuando su exposición precede a la del resto, pero la
+      vigilancia debe acompañarse de protección efectiva para evitar convertir a estos grupos
       centinela en sacrificios involuntarios.</p>
-      <h4 id="cap-57">Capítulo LVII — Investigación de brotes</h4>
+      <h4 id="cap-24">Capítulo XXIV — Investigación de brotes: experimentos naturales, modelos y
+      escenarios</h4>
       <p>Una investigación comienza confirmando que existe un exceso real de casos y que éstos
-      pertenecen al mismo fenómeno.</p>
-      <p>Después se construye definición de caso, se describe distribución en tiempo y espacio,
-      se buscan exposiciones comunes y se prueban hipótesis.</p>
-      <p>La intervención puede comenzar antes de resolver toda la etiología si existe evidencia
+      pertenecen al mismo fenómeno. Después se construye una definición de caso, se describe la
+      distribución en tiempo y espacio, se buscan exposiciones comunes y se prueban hipótesis. La
+      intervención puede comenzar antes de resolver toda la etiología si existe evidencia
       suficiente de una ruta prevenible.</p>
-      <h4 id="cap-58">Capítulo LVIII — Experimentos naturales</h4>
       <p>A veces una frontera, evacuación o cierre ritual divide inadvertidamente una población
-      en grupos con distinta exposición.</p>
-      <p>Compararlos puede revelar el efecto de una condición sin diseñar un experimento
-      deliberado.</p>
-      <p>La interpretación debe considerar diferencias previas entre grupos.</p>
-      <h4 id="cap-59">Capítulo LIX — Modelos</h4>
+      en grupos con distinta exposición. Compararlos puede revelar el efecto de una condición sin
+      necesidad de diseñar un experimento deliberado, siempre que la interpretación considere las
+      diferencias previas entre esos grupos.</p>
       <p>Los modelos ayudan a explorar cómo podría evolucionar un brote bajo diferentes
-      supuestos.</p>
-      <p>En epidemiología mágica, las reglas de transmisión deben definirse con cuidado:
-      proximidad, parentesco, símbolos, objetos y ambiente producen dinámicas distintas.</p>
-      <p>Un modelo elegante basado en el mecanismo equivocado puede ser menos útil que una
+      supuestos. En epidemiología mágica las reglas de transmisión deben definirse con cuidado,
+      ya que proximidad, parentesco, símbolos, objetos y ambiente producen dinámicas distintas;
+      un modelo elegante basado en el mecanismo equivocado puede ser menos útil que una
       estimación sencilla bien fundada.</p>
-      <h4 id="cap-60">Capítulo LX — Escenarios</h4>
       <p>La planificación utiliza escenarios para decidir qué recursos serían necesarios si
-      cambian velocidad, alcance o vía de transmisión.</p>
-      <p>No son profecías.</p>
-      <p>Su valor reside en revelar qué decisiones son robustas incluso cuando parte de la
-      información permanece incierta.</p>
-      <h4 id="cap-61">Capítulo LXI — Fin de un brote</h4>
-      <p>Un brote no termina simplemente porque dejan de aparecer casos visibles.</p>
-      <p>Debe considerarse latencia, reservorios, exposición ambiental y posibilidad de
-      reactivación.</p>
-      <p>Algunas condiciones pasan de brote a endemia en lugar de desaparecer.</p>
-      <h4 id="cap-62">Capítulo LXII — Secuelas poblacionales</h4>
+      cambian la velocidad, el alcance o la vía de transmisión. No son profecías: su valor reside
+      en revelar qué decisiones son robustas incluso cuando parte de la información permanece
+      incierta.</p>
+      <h4 id="cap-25">Capítulo XXV — Fin de un brote y secuelas poblacionales</h4>
+      <p>Un brote no termina simplemente porque dejan de aparecer casos visibles. Debe
+      considerarse la latencia, los reservorios, la exposición ambiental y la posibilidad de
+      reactivación; algunas condiciones pasan de brote a endemia en lugar de desaparecer.</p>
       <p>Después del control pueden persistir discapacidad, cambios demográficos, pérdida de
-      oficios, abandono territorial y alteraciones ecológicas.</p>
-      <p>La recuperación necesita más que ausencia de transmisión.</p>
-      <p>Patología, Ecología Mágica y políticas públicas participan en esta fase.</p>
-      <h4 id="cap-63">Capítulo LXIII — Relación con otras disciplinas</h4>
+      oficios, abandono territorial y alteraciones ecológicas, de modo que la recuperación
+      necesita más que la simple ausencia de transmisión. Patología, Ecología Mágica y políticas
+      públicas participan en esta fase final.</p>
+      <h4 id="cap-26">Capítulo XXVI — Relación con otras disciplinas</h4>
       <p>Epidemiología Taumatológica trabaja de forma inseparable con Patología Arcana,
       Farmacología, Ecología Mágica, Maldiología y Seguridad Ritual.</p>
       <p>Semiótica, Filología y Runología intervienen en fenómenos transmitidos por
@@ -7118,7 +7020,7 @@ window.ENTRIES = [
       regula medidas colectivas.</p>
       <p>La disciplina existe porque los patrones poblacionales revelan relaciones que ningún
       caso clínico puede mostrar por sí solo.</p>
-      <h4 id="cap-64">Capítulo LXIV — El error del contagio</h4>
+      <h4 id="cap-27">Capítulo XXVII — El error del contagio</h4>
       <p>Uno de los errores más comunes consiste en llamar contagioso a todo fenómeno que aparece
       en varias personas.</p>
       <p>Un mismo artefacto puede enfermar a cien individuos sin que ninguno transmita nada. Una
