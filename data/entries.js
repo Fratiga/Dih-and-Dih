@@ -19439,93 +19439,37 @@ window.ENTRIES = [
       Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto del Derecho Arcano</a>
-        <a href="#cap-2">II. Principio de continuidad jurídica</a>
-        <a href="#cap-3">III. Identidad y forma</a>
-        <a href="#cap-4">IV. Responsabilidad por magia</a>
-        <a href="#cap-5">V. Intención</a>
-        <a href="#cap-6">VI. Causalidad</a>
-        <a href="#cap-7">VII. Responsabilidad por familiares</a>
-        <a href="#cap-8">VIII. Control efectivo</a>
-        <a href="#cap-9">IX. Familiares inteligentes</a>
-        <a href="#cap-10">X. Invocaciones temporales</a>
-        <a href="#cap-11">XI. Entidades extraplanares</a>
-        <a href="#cap-12">XII. Invocación hostil</a>
-        <a href="#cap-13">XIII. Creación de criaturas</a>
-        <a href="#cap-14">XIV. Constructos no sensibles</a>
-        <a href="#cap-15">XV. Criaturas sensibles</a>
-        <a href="#cap-16">XVI. Criaturas inteligentes</a>
-        <a href="#cap-17">XVII. Derechos de las creaciones</a>
-        <a href="#cap-18">XVIII. Responsabilidad del creador</a>
-        <a href="#cap-19">XIX. Propiedad de partes biológicas</a>
-        <a href="#cap-20">XX. Artefactos y propiedad</a>
-        <a href="#cap-21">XXI. Clasificación de artefactos</a>
-        <a href="#cap-22">XXII. Artefactos de Clase Restringida</a>
-        <a href="#cap-23">XXIII. Artefactos de Clase Prohibida</a>
-        <a href="#cap-24">XXIV. Custodia</a>
-        <a href="#cap-25">XXV. Transporte</a>
-        <a href="#cap-26">XXVI. Pérdida de artefactos</a>
-        <a href="#cap-27">XXVII. Investigación criminal mágica</a>
-        <a href="#cap-28">XXVIII. Registro de lugares</a>
-        <a href="#cap-29">XXIX. Detección</a>
-        <a href="#cap-30">XXX. Lectura mental</a>
-        <a href="#cap-31">XXXI. Memoria como evidencia</a>
-        <a href="#cap-32">XXXII. Extracción de recuerdos</a>
-        <a href="#cap-33">XXXIII. Espíritus como testigos</a>
-        <a href="#cap-34">XXXIV. Testimonio de entidades</a>
-        <a href="#cap-35">XXXV. Adivinación en investigación</a>
-        <a href="#cap-36">XXXVI. Tarotismo y prueba</a>
-        <a href="#cap-37">XXXVII. Psicometría</a>
-        <a href="#cap-38">XXXVIII. Cadena de custodia mágica</a>
-        <a href="#cap-39">XXXIX. Contaminación de evidencia</a>
-        <a href="#cap-40">XL. Admisibilidad</a>
-        <a href="#cap-41">XLI. Prueba ilícita</a>
-        <a href="#cap-42">XLII. Confesiones</a>
-        <a href="#cap-43">XLIII. Confesiones bajo zona de verdad</a>
-        <a href="#cap-44">XLIV. Voluntariedad</a>
-        <a href="#cap-45">XLV. Silencio</a>
-        <a href="#cap-46">XLVI. Autoincriminación</a>
-        <a href="#cap-47">XLVII. Encantamientos de veracidad</a>
-        <a href="#cap-48">XLVIII. Prueba pericial</a>
-        <a href="#cap-49">XLIX. Neutralidad del perito</a>
-        <a href="#cap-50">L. Licencias</a>
-        <a href="#cap-51">LI. Ejercicio profesional</a>
-        <a href="#cap-52">LII. Negligencia arcana</a>
-        <a href="#cap-53">LIII. Responsabilidad institucional</a>
-        <a href="#cap-54">LIV. Seguro y fondos de reparación</a>
-        <a href="#cap-55">LV. Daño mágico</a>
-        <a href="#cap-56">LVI. Daño futuro</a>
-        <a href="#cap-57">LVII. Daño a la identidad</a>
-        <a href="#cap-58">LVIII. Daño pneumatológico</a>
-        <a href="#cap-59">LIX. Responsabilidad por maldiciones</a>
-        <a href="#cap-60">LX. Maldiciones preexistentes</a>
-        <a href="#cap-61">LXI. Pactos</a>
-        <a href="#cap-62">LXII. Cláusulas abusivas</a>
-        <a href="#cap-63">LXIII. Consentimiento defectuoso</a>
-        <a href="#cap-64">LXIV. Jurisdicción</a>
-        <a href="#cap-65">LXV. Extraterritorialidad</a>
-        <a href="#cap-66">LXVI. Prueba obtenida en otra jurisdicción</a>
-        <a href="#cap-67">LXVII. Privacidad</a>
-        <a href="#cap-68">LXVIII. Vigilancia</a>
-        <a href="#cap-69">LXIX. Datos arcanos</a>
-        <a href="#cap-70">LXX. Artefactos de vigilancia</a>
-        <a href="#cap-71">LXXI. Prisión y contención mágica</a>
-        <a href="#cap-72">LXXII. Supresión de magia</a>
-        <a href="#cap-73">LXXIII. Fuerza pública</a>
-        <a href="#cap-74">LXXIV. Detención</a>
-        <a href="#cap-75">LXXV. Artefactos encontrados</a>
-        <a href="#cap-76">LXXVI. Decomiso</a>
-        <a href="#cap-77">LXXVII. Destrucción judicial</a>
-        <a href="#cap-78">LXXVIII. Patrimonio peligroso</a>
-        <a href="#cap-79">LXXIX. Investigación académica de objetos prohibidos</a>
-        <a href="#cap-80">LXXX. Transparencia</a>
-        <a href="#cap-81">LXXXI. Debido proceso</a>
-        <a href="#cap-82">LXXXII. Presunción y estigma</a>
-        <a href="#cap-83">LXXXIII. Conflictos entre ética y legalidad</a>
-        <a href="#cap-84">LXXXIV. Precedente</a>
-        <a href="#cap-85">LXXXV. La pregunta por el control</a>
-        <a href="#cap-86">LXXXVI. La pregunta por la prueba</a>
-        <a href="#cap-87">LXXXVII. La pregunta dolbriana</a>
+        <a href="#cap-1">I. Objeto del Derecho Arcano y continuidad de la identidad jurídica</a>
+        <a href="#cap-2">II. Responsabilidad, intención y causalidad mágica</a>
+        <a href="#cap-3">III. Responsabilidad por familiares invocados</a>
+        <a href="#cap-4">IV. Invocación de entidades: temporalidad, extraplanares y uso hostil</a>
+        <a href="#cap-5">V. Creación de criaturas: de constructo a sujeto de derecho</a>
+        <a href="#cap-6">VI. Propiedad de partes biológicas y artefactos</a>
+        <a href="#cap-7">VII. Artefactos de Clase Restringida y Prohibida</a>
+        <a href="#cap-8">VIII. Custodia, transporte y pérdida de artefactos</a>
+        <a href="#cap-9">IX. Investigación criminal mágica: registro y detección</a>
+        <a href="#cap-10">X. Mente y memoria como evidencia</a>
+        <a href="#cap-11">XI. Testimonio de espíritus y entidades no humanas</a>
+        <a href="#cap-12">XII. Adivinación, tarotismo y psicometría en la investigación</a>
+        <a href="#cap-13">XIII. Cadena de custodia y contaminación de evidencia</a>
+        <a href="#cap-14">XIV. Admisibilidad y prueba ilícita</a>
+        <a href="#cap-15">XV. Confesiones y voluntariedad</a>
+        <a href="#cap-16">XVI. Silencio y autoincriminación</a>
+        <a href="#cap-17">XVII. Dispositivos de veracidad y prueba pericial</a>
+        <a href="#cap-18">XVIII. Licencias, ejercicio profesional y negligencia arcana</a>
+        <a href="#cap-19">XIX. Responsabilidad institucional y fondos de reparación</a>
+        <a href="#cap-20">XX. Tipos de daño mágico</a>
+        <a href="#cap-21">XXI. Maldiciones: responsabilidad y posesión</a>
+        <a href="#cap-22">XXII. Pactos, cláusulas abusivas y consentimiento defectuoso</a>
+        <a href="#cap-23">XXIII. Jurisdicción, extraterritorialidad y prueba extranjera</a>
+        <a href="#cap-24">XXIV. Privacidad, vigilancia y datos arcanos</a>
+        <a href="#cap-25">XXV. Contención y supresión de magia</a>
+        <a href="#cap-26">XXVI. Fuerza pública y detención</a>
+        <a href="#cap-27">XXVII. Artefactos encontrados, decomiso y destrucción judicial</a>
+        <a href="#cap-28">XXVIII. Patrimonio peligroso e investigación académica</a>
+        <a href="#cap-29">XXIX. Transparencia, debido proceso y presunción</a>
+        <a href="#cap-30">XXX. Ética, legalidad y precedente</a>
+        <a href="#cap-31">XXXI. Las tres preguntas del Derecho Arcano</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -19543,441 +19487,336 @@ window.ENTRIES = [
       de investigación y sus sistemas de licencias. Su propósito no es ofrecer una lista exhaustiva de
       delitos, sino mostrar cómo se razona jurídicamente cuando la causalidad, la identidad o la evidencia
       pueden ser mágicas.</p>
-      <h4 id="cap-1">Capítulo I — Objeto del Derecho Arcano</h4>
+      <h4 id="cap-1">Capítulo I — Objeto del Derecho Arcano y continuidad de la identidad jurídica</h4>
       <p>El Derecho Arcano estudia las normas que regulan prácticas mágicas, sus consecuencias, la
-      responsabilidad por daños y la admisibilidad de información obtenida por medios sobrenaturales.</p>
-      <p>En Dolbred se considera una disciplina jurídica especializada, no una colección de excepciones
-      dispersas.</p>
-      <p>Su campo abarca responsabilidad civil y penal, licencias, investigación criminal, custodia de
+      responsabilidad por daños y la admisibilidad de información obtenida por medios sobrenaturales. En
+      Dolbred se considera una disciplina jurídica especializada, no una colección de excepciones dispersas,
+      y su campo abarca responsabilidad civil y penal, licencias, investigación criminal, custodia de
       objetos peligrosos, derechos de entidades inteligentes y regulación profesional.</p>
-      <h4 id="cap-2">Capítulo II — Principio de continuidad jurídica</h4>
-      <p>Una persona no pierde su identidad jurídica por cambiar de forma, especie aparente, estado
-      corporal o configuración mágica.</p>
-      <p>La continuidad jurídica sigue a la persona salvo que exista evidencia suficiente de sustitución o
-      discontinuidad.</p>
-      <p>Este principio protege especialmente a changelings, polimorfos, resucitados y pacientes
-      reconstruidos.</p>
-      <h4 id="cap-3">Capítulo III — Identidad y forma</h4>
-      <p>Rostro, voz, sexo aparente o anatomía no constituyen por sí solos identidad legal.</p>
-      <p>Los sistemas oficiales utilizan múltiples criterios y evitan depender de rasgos fáciles de
-      transformar.</p>
-      <p>Criminalística Arcana mantiene protocolos específicos para suplantación morfológica.</p>
-      <h4 id="cap-4">Capítulo IV — Responsabilidad por magia</h4>
-      <p>La responsabilidad no depende únicamente de quién pronunció el hechizo.</p>
-      <p>Debe analizarse quién inició la cadena causal, quién tenía control, quién asumió un deber de
-      cuidado y quién pudo prever razonablemente el daño.</p>
-      <p>Una misma manifestación puede generar responsabilidad compartida entre ejecutor, propietario,
-      supervisor e institución.</p>
-      <h4 id="cap-5">Capítulo V — Intención</h4>
-      <p>El Derecho Arcano distingue intención, conocimiento, imprudencia y accidente.</p>
-      <p>Un hechizo que produce un resultado inesperado no es automáticamente delito doloso.</p>
-      <p>Sin embargo, utilizar una técnica conocida por ser inestable puede constituir negligencia
-      grave.</p>
-      <h4 id="cap-6">Capítulo VI — Causalidad</h4>
-      <p>La magia puede introducir cadenas causales largas o mediadas por entidades.</p>
-      <p>Un daño sigue siendo atribuible si la conducta inicial creó un riesgo previsible que después se
-      realizó.</p>
-      <p>La intervención autónoma de una criatura inteligente puede romper o modificar la atribución según
-      su grado de independencia.</p>
-      <h4 id="cap-7">Capítulo VII — Responsabilidad por familiares</h4>
-      <p>Los familiares invocados o vinculados no se tratan todos del mismo modo.</p>
-      <p>Si el familiar funciona como extensión dependiente de la voluntad del invocador, sus actos suelen
-      atribuirse directamente al invocador.</p>
-      <p>Si posee autonomía significativa, puede surgir responsabilidad propia sin eliminar necesariamente
-      la del practicante que lo introdujo en la situación.</p>
-      <h4 id="cap-8">Capítulo VIII — Control efectivo</h4>
-      <p>El criterio central para familiares es cuánto control efectivo conserva el invocador.</p>
-      <p>Una orden específica que causa daño genera atribución fuerte. Una criatura que actúa fuera de
-      instrucciones puede reducirla.</p>
-      <p>Quien sabe que su familiar es peligroso y lo deja actuar sin supervisión puede responder por
-      negligencia.</p>
-      <h4 id="cap-9">Capítulo IX — Familiares inteligentes</h4>
+      <p>Uno de sus principios más básicos es que una persona no pierde su identidad jurídica por cambiar de
+      forma, especie aparente, estado corporal o configuración mágica. La continuidad jurídica sigue a la
+      persona salvo que exista evidencia suficiente de sustitución o discontinuidad, y este principio
+      protege especialmente a changelings, polimorfos, resucitados y pacientes reconstruidos.</p>
+      <p>De él se desprende que rostro, voz, sexo aparente o anatomía no constituyen por sí solos identidad
+      legal. Los sistemas oficiales utilizan múltiples criterios y evitan depender de rasgos fáciles de
+      transformar, mientras que Criminalística Arcana mantiene protocolos específicos para casos de
+      suplantación morfológica.</p>
+      <h4 id="cap-2">Capítulo II — Responsabilidad, intención y causalidad mágica</h4>
+      <p>La responsabilidad no depende únicamente de quién pronunció el hechizo. Debe analizarse quién
+      inició la cadena causal, quién tenía control, quién asumió un deber de cuidado y quién pudo prever
+      razonablemente el daño; una misma manifestación puede generar responsabilidad compartida entre
+      ejecutor, propietario, supervisor e institución.</p>
+      <p>Para repartir esa responsabilidad, el Derecho Arcano distingue intención, conocimiento, imprudencia
+      y accidente. Un hechizo que produce un resultado inesperado no es automáticamente delito doloso, pero
+      utilizar una técnica conocida por ser inestable puede constituir negligencia grave.</p>
+      <p>La causalidad añade una dificultad propia: la magia puede introducir cadenas largas o mediadas por
+      entidades. Un daño sigue siendo atribuible si la conducta inicial creó un riesgo previsible que
+      después se realizó, aunque la intervención autónoma de una criatura inteligente puede romper o
+      modificar esa atribución según su grado de independencia.</p>
+      <h4 id="cap-3">Capítulo III — Responsabilidad por familiares invocados</h4>
+      <p>Los familiares invocados o vinculados no se tratan todos del mismo modo. Si el familiar funciona
+      como extensión dependiente de la voluntad del invocador, sus actos suelen atribuirse directamente a
+      este; si posee autonomía significativa, puede surgir responsabilidad propia sin eliminar
+      necesariamente la del practicante que lo introdujo en la situación.</p>
+      <p>El criterio central para distinguir un caso de otro es cuánto control efectivo conserva el
+      invocador. Una orden específica que causa daño genera atribución fuerte, mientras que una criatura
+      que actúa fuera de instrucciones puede reducirla; quien sabe que su familiar es peligroso y lo deja
+      actuar sin supervisión puede responder igualmente por negligencia.</p>
       <p>Cuando un familiar posee lenguaje, intereses y capacidad suficiente para comprender normas, Dolbred
-      evita tratarlo como simple herramienta.</p>
-      <p>Puede adquirir responsabilidades propias y ciertas protecciones.</p>
-      <p>El vínculo mágico no elimina su agencia si la criatura demuestra autonomía real.</p>
-      <h4 id="cap-10">Capítulo X — Invocaciones temporales</h4>
-      <p>Invocar una criatura a territorio dolbriano crea un deber de custodia proporcional al riesgo.</p>
-      <p>El invocador debe conocer condiciones de permanencia, obediencia y retorno.</p>
-      <p>Abandonar una invocación activa sin procedimiento de cierre puede constituir delito incluso antes
-      de que ocurra un daño.</p>
-      <h4 id="cap-11">Capítulo XI — Entidades extraplanares</h4>
-      <p>Las entidades extraplanares no se consideran automáticamente propiedad ni enemigas.</p>
-      <p>Su situación depende de inteligencia, voluntad, pacto, peligro y condiciones de ingreso.</p>
-      <p>Planología y Demonología pueden actuar como peritos para determinar naturaleza y capacidad de la
-      entidad.</p>
-      <h4 id="cap-12">Capítulo XII — Invocación hostil</h4>
+      evita tratarlo como simple herramienta. Puede adquirir responsabilidades propias y ciertas
+      protecciones, pues el vínculo mágico no elimina su agencia si la criatura demuestra autonomía
+      real.</p>
+      <h4 id="cap-4">Capítulo IV — Invocación de entidades: temporalidad, extraplanares y uso hostil</h4>
+      <p>Invocar una criatura a territorio dolbriano crea un deber de custodia proporcional al riesgo. El
+      invocador debe conocer las condiciones de permanencia, obediencia y retorno de la entidad, y
+      abandonar una invocación activa sin procedimiento de cierre puede constituir delito incluso antes de
+      que ocurra un daño.</p>
+      <p>Cuando la entidad procede de otro plano, las reglas ordinarias de propiedad no bastan. Las
+      entidades extraplanares no se consideran automáticamente propiedad ni enemigas, y su situación
+      depende de inteligencia, voluntad, pacto, peligro y condiciones de ingreso. Planología y Demonología
+      pueden actuar como peritos para determinar naturaleza y capacidad de la entidad.</p>
       <p>Invocar deliberadamente una entidad con intención de causar daño puede atribuir al invocador los
-      actos previsibles realizados dentro de ese propósito.</p>
-      <p>La defensa de no haber ejecutado personalmente el ataque suele fracasar cuando la criatura fue
-      utilizada como medio.</p>
-      <p>La imprevisibilidad genuina puede reducir, pero no necesariamente eliminar, responsabilidad.</p>
-      <h4 id="cap-13">Capítulo XIII — Creación de criaturas</h4>
-      <p>Crear una criatura no concede automáticamente propiedad absoluta sobre ella.</p>
-      <p>La situación jurídica depende de sensibilidad, autonomía, capacidad cognitiva y dependencia
-      material.</p>
-      <p>El Derecho Arcano adopta aquí los principios desarrollados por la Ética de la Alteración.</p>
-      <h4 id="cap-14">Capítulo XIV — Constructos no sensibles</h4>
-      <p>Un constructo sin experiencia subjetiva ni autonomía relevante puede ser tratado jurídicamente como
-      objeto.</p>
-      <p>Su creador o propietario responde por mantenimiento y riesgos previsibles.</p>
-      <p>Si adquiere capacidades nuevas, su clasificación debe revisarse.</p>
-      <h4 id="cap-15">Capítulo XV — Criaturas sensibles</h4>
-      <p>Una criatura capaz de sufrir, formar preferencias o mantener intereses recibe protección frente a
-      abuso.</p>
-      <p>El creador puede tener deberes de cuidado especiales durante etapas de dependencia.</p>
-      <p>La sensibilidad reduce progresivamente la legitimidad de tratar al ser como propiedad.</p>
-      <h4 id="cap-16">Capítulo XVI — Criaturas inteligentes</h4>
+      actos previsibles realizados dentro de ese propósito. La defensa de no haber ejecutado personalmente
+      el ataque suele fracasar cuando la criatura fue utilizada como medio, aunque la imprevisibilidad
+      genuina puede reducir, sin eliminar necesariamente, la responsabilidad.</p>
+      <h4 id="cap-5">Capítulo V — Creación de criaturas: de constructo a sujeto de derecho</h4>
+      <p>Crear una criatura no concede automáticamente propiedad absoluta sobre ella. La situación jurídica
+      depende de sensibilidad, autonomía, capacidad cognitiva y dependencia material, y el Derecho Arcano
+      adopta aquí los principios desarrollados por la Ética de la Alteración.</p>
+      <p>En el extremo más simple, un constructo sin experiencia subjetiva ni autonomía relevante puede ser
+      tratado jurídicamente como objeto. Su creador o propietario responde por mantenimiento y riesgos
+      previsibles, y si el constructo adquiere capacidades nuevas, su clasificación debe revisarse.</p>
+      <p>La situación cambia cuando la criatura es capaz de sufrir, formar preferencias o mantener intereses
+      propios, lo que le otorga protección frente a abuso. El creador puede tener entonces deberes de
+      cuidado especiales durante las etapas de dependencia, ya que la sensibilidad reduce progresivamente
+      la legitimidad de tratar al ser como propiedad.</p>
       <p>Una creación con lenguaje, autoconsciencia y capacidad de decisión no puede ser propiedad plena en
-      Dolbred.</p>
-      <p>Puede existir tutela temporal, contrato o dependencia económica, pero no dominio absoluto sobre su
-      persona.</p>
-      <p>Los diseños creados para obediencia involuntaria son tratados como problema jurídico además de
-      ético.</p>
-      <h4 id="cap-17">Capítulo XVII — Derechos de las creaciones</h4>
-      <p>Las protecciones se determinan por capacidades reales y no por origen natural o artificial.</p>
-      <p>Un ser creado en laboratorio puede poseer más derechos que un animal natural si demuestra mayor
-      autonomía.</p>
-      <p>El estatuto jurídico debe actualizarse cuando el desarrollo cambia esas capacidades.</p>
-      <h4 id="cap-18">Capítulo XVIII — Responsabilidad del creador</h4>
-      <p>El creador responde por defectos previsibles, instrucciones peligrosas y falta de contención
-      durante períodos de dependencia.</p>
-      <p>No responde automáticamente por toda decisión futura de una criatura autónoma.</p>
-      <p>El derecho busca evitar tanto impunidad del creador como negación de agencia de la creación.</p>
-      <h4 id="cap-19">Capítulo XIX — Propiedad de partes biológicas</h4>
-      <p>Tejidos, escamas, sangre y restos pueden ser objetos de propiedad bajo ciertas condiciones.</p>
-      <p>Las partes obtenidas de criaturas inteligentes requieren consentimiento o una base jurídica
-      equivalente.</p>
-      <p>El comercio de restos de origen dudoso puede activar reglas de custodia y trazabilidad.</p>
-      <h4 id="cap-20">Capítulo XX — Artefactos y propiedad</h4>
-      <p>La propiedad de un artefacto no concede derecho ilimitado a activarlo.</p>
-      <p>El uso puede estar restringido por peligrosidad, ubicación, licencia o efectos sobre terceros.</p>
-      <p>Un propietario puede tener derecho a poseer y obligación simultánea de mantener desactivado.</p>
-      <h4 id="cap-21">Capítulo XXI — Clasificación de artefactos</h4>
-      <p>Dolbred clasifica artefactos por capacidad de daño, autonomía, facilidad de activación,
-      propagación y reversibilidad.</p>
-      <p>Las categorías administrativas no describen valor histórico ni poder simbólico.</p>
-      <p>Un objeto de efecto modesto pero autónomo y contagioso puede recibir una clasificación más severa
-      que un arma poderosa bajo control estricto.</p>
-      <h4 id="cap-22">Capítulo XXII — Artefactos de Clase Restringida</h4>
-      <p>Los artefactos restringidos requieren registro, custodia y condiciones definidas de transporte.</p>
-      <p>Su uso puede limitarse a titulares de licencia.</p>
-      <p>Las transferencias deben documentarse para mantener una cadena de responsabilidad.</p>
-      <h4 id="cap-23">Capítulo XXIII — Artefactos de Clase Prohibida</h4>
+      Dolbred. Puede existir tutela temporal, contrato o dependencia económica, pero no dominio absoluto
+      sobre su persona, y los diseños creados deliberadamente para obediencia involuntaria son tratados
+      como problema jurídico además de ético.</p>
+      <p>Estas protecciones se determinan por capacidades reales y no por origen natural o artificial. Un
+      ser creado en laboratorio puede poseer más derechos que un animal natural si demuestra mayor
+      autonomía, y el estatuto jurídico debe actualizarse cuando el desarrollo posterior cambia esas
+      capacidades.</p>
+      <p>En consecuencia, el creador responde por defectos previsibles, instrucciones peligrosas y falta de
+      contención durante los períodos de dependencia, pero no responde automáticamente por toda decisión
+      futura de una criatura ya autónoma. El derecho busca así evitar tanto la impunidad del creador como
+      la negación de agencia de la creación.</p>
+      <h4 id="cap-6">Capítulo VI — Propiedad de partes biológicas y artefactos</h4>
+      <p>Tejidos, escamas, sangre y restos pueden ser objetos de propiedad bajo ciertas condiciones. Las
+      partes obtenidas de criaturas inteligentes requieren consentimiento o una base jurídica equivalente,
+      y el comercio de restos de origen dudoso puede activar reglas de custodia y trazabilidad.</p>
+      <p>La propiedad sobre un artefacto plantea un problema similar. No concede derecho ilimitado a
+      activarlo. El uso puede estar restringido por peligrosidad, ubicación, licencia o efectos sobre
+      terceros, de modo que un propietario puede tener derecho a poseer y obligación simultánea de mantener
+      desactivado.</p>
+      <p>Para ordenar estas restricciones, Dolbred clasifica los artefactos por capacidad de daño, autonomía,
+      facilidad de activación, propagación y reversibilidad. Las categorías administrativas no describen
+      valor histórico ni poder simbólico, por lo que un objeto de efecto modesto pero autónomo y contagioso
+      puede recibir una clasificación más severa que un arma poderosa bajo control estricto.</p>
+      <h4 id="cap-7">Capítulo VII — Artefactos de Clase Restringida y Prohibida</h4>
+      <p>Los artefactos restringidos requieren registro, custodia y condiciones definidas de transporte. Su
+      uso puede limitarse a titulares de licencia, y las transferencias deben documentarse para mantener
+      una cadena de responsabilidad.</p>
       <p>Los objetos capaces de producir daño masivo difícilmente reversible, propagación autónoma o
-      manipulación profunda de identidad pueden quedar fuera de circulación privada.</p>
-      <p>La posesión no autorizada constituye infracción independiente del uso.</p>
-      <p>Las excepciones académicas exigen instalaciones certificadas y autorización superior.</p>
-      <h4 id="cap-24">Capítulo XXIV — Custodia</h4>
-      <p>Custodiar significa impedir acceso, activación y deterioro previsiblemente peligroso.</p>
-      <p>Una caja fuerte ordinaria puede ser insuficiente frente a un objeto que responde a pensamientos o
-      atraviesa materia.</p>
-      <p>La obligación se define según las propiedades reales del artefacto.</p>
-      <h4 id="cap-25">Capítulo XXV — Transporte</h4>
-      <p>El transporte de artefactos peligrosos requiere embalaje, rutas y personal apropiados.</p>
-      <p>Algunos objetos no pueden cruzar determinadas fronteras rituales o zonas densamente pobladas.</p>
-      <p>La documentación debe acompañar siempre al objeto.</p>
-      <h4 id="cap-26">Capítulo XXVI — Pérdida de artefactos</h4>
-      <p>La pérdida o robo de un artefacto restringido debe notificarse de inmediato.</p>
-      <p>Ocultar el incidente para evitar sanciones puede agravar responsabilidad.</p>
-      <p>Las instituciones deben mantener protocolos de recuperación y advertencia pública cuando sea
-      necesario.</p>
-      <h4 id="cap-27">Capítulo XXVII — Investigación criminal mágica</h4>
+      manipulación profunda de identidad reciben un tratamiento más severo y pueden quedar fuera de
+      circulación privada por completo. La posesión no autorizada constituye infracción independiente del
+      uso, y las excepciones académicas exigen instalaciones certificadas y autorización superior.</p>
+      <h4 id="cap-8">Capítulo VIII — Custodia, transporte y pérdida de artefactos</h4>
+      <p>Custodiar significa impedir acceso, activación y deterioro previsiblemente peligroso. Una caja
+      fuerte ordinaria puede ser insuficiente frente a un objeto que responde a pensamientos o atraviesa
+      materia, por lo que la obligación se define según las propiedades reales del artefacto.</p>
+      <p>El transporte de artefactos peligrosos requiere embalaje, rutas y personal apropiados. Algunos
+      objetos no pueden cruzar determinadas fronteras rituales o zonas densamente pobladas, y la
+      documentación debe acompañar siempre al objeto.</p>
+      <p>La pérdida o robo de un artefacto restringido debe notificarse de inmediato; ocultar el incidente
+      para evitar sanciones puede agravar la responsabilidad. Las instituciones deben mantener protocolos
+      de recuperación y advertencia pública cuando sea necesario.</p>
+      <h4 id="cap-9">Capítulo IX — Investigación criminal mágica: registro y detección</h4>
       <p>El uso de magia en investigaciones criminales está permitido bajo criterios de necesidad,
-      proporcionalidad y legalidad.</p>
-      <p>No toda técnica útil puede emplearse libremente.</p>
-      <p>Los métodos que penetran mente, domicilio, recuerdos o alma requieren autorización reforzada.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Registro de lugares</h4>
+      proporcionalidad y legalidad, pero no toda técnica útil puede emplearse libremente. Los métodos que
+      penetran mente, domicilio, recuerdos o alma requieren autorización reforzada.</p>
       <p>Un registro mágico de una vivienda o espacio privado se considera registro aunque no exista entrada
-      física.</p>
-      <p>Clarividencia, visión remota y detección a través de muros están sujetas a garantías
-      equivalentes.</p>
-      <p>La ausencia de contacto material no elimina expectativa de privacidad.</p>
-      <h4 id="cap-29">Capítulo XXIX — Detección</h4>
-      <p>Las técnicas de detección general pueden utilizarse con menores restricciones en espacios públicos
-      cuando no revelan información íntima.</p>
-      <p>Detectar presencia de fuego o contaminación no equivale a leer pensamientos.</p>
-      <p>El nivel de intrusión determina el estándar jurídico.</p>
-      <h4 id="cap-30">Capítulo XXX — Lectura mental</h4>
-      <p>La lectura de pensamientos se considera una intrusión de alta intensidad.</p>
-      <p>Requiere orden específica salvo consentimiento válido o emergencia excepcional.</p>
-      <p>El alcance debe limitarse a lo autorizado y no convertirse en exploración indiscriminada.</p>
-      <h4 id="cap-31">Capítulo XXXI — Memoria como evidencia</h4>
-      <p>Los recuerdos obtenidos mágicamente no se consideran registro objetivo del pasado.</p>
-      <p>Pueden ser sinceros y falsos, incompletos o manipulados.</p>
-      <p>Son evidencia testimonial asistida y requieren corroboración.</p>
-      <h4 id="cap-32">Capítulo XXXII — Extracción de recuerdos</h4>
-      <p>Extraer un recuerdo sin consentimiento exige autorización judicial reforzada.</p>
-      <p>El procedimiento debe minimizar acceso a información no relacionada.</p>
-      <p>Los registros derivados reciben protección especial por contener vida privada.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Espíritus como testigos</h4>
+      física. Clarividencia, visión remota y detección a través de muros están sujetas a garantías
+      equivalentes, ya que la ausencia de contacto material no elimina la expectativa de privacidad.</p>
+      <p>Las técnicas de detección general, en cambio, pueden utilizarse con menores restricciones en
+      espacios públicos cuando no revelan información íntima. Detectar presencia de fuego o contaminación
+      no equivale a leer pensamientos. El nivel de intrusión, no el uso de magia en sí, determina el
+      estándar jurídico aplicable.</p>
+      <h4 id="cap-10">Capítulo X — Mente y memoria como evidencia</h4>
+      <p>La lectura de pensamientos se considera una intrusión de alta intensidad. Requiere orden específica
+      salvo consentimiento válido o emergencia excepcional, y su alcance debe limitarse a lo autorizado sin
+      convertirse en exploración indiscriminada.</p>
+      <p>Los recuerdos obtenidos mágicamente, por su parte, no se consideran registro objetivo del pasado.
+      Pueden ser sinceros y falsos, incompletos o manipulados a la vez, de modo que se tratan como evidencia
+      testimonial asistida y requieren corroboración.</p>
+      <p>Extraer un recuerdo sin consentimiento exige autorización judicial reforzada. El procedimiento debe
+      minimizar el acceso a información no relacionada, y los registros derivados reciben protección
+      especial por contener vida privada.</p>
+      <h4 id="cap-11">Capítulo XI — Testimonio de espíritus y entidades no humanas</h4>
       <p>Un espíritu puede declarar si se demuestra suficientemente su identidad y capacidad para comprender
-      la pregunta.</p>
-      <p>El testimonio post mortem no recibe privilegio automático.</p>
-      <p>Debe evaluarse memoria, continuidad, interés y posibilidad de suplantación.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Testimonio de entidades</h4>
-      <p>Entidades no humanas pueden testificar si poseen competencia comunicativa y comprenden obligación
-      de responder.</p>
-      <p>Los tribunales pueden exigir peritos para interpretar lenguaje, cosmología o limitaciones
-      perceptivas.</p>
-      <p>Una entidad poderosa no es presumida infalible.</p>
-      <h4 id="cap-35">Capítulo XXXV — Adivinación en investigación</h4>
-      <p>La adivinación puede orientar líneas de investigación.</p>
-      <p>Por sí sola rara vez basta para condenar, especialmente cuando el método no es reproducible.</p>
-      <p>Una visión puede justificar buscar una prueba; no necesariamente reemplazarla.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Tarotismo y prueba</h4>
-      <p>Las lecturas tarotísticas pueden aportar hipótesis bajo condiciones controladas.</p>
-      <p>Su simbolismo e interpretación dificultan el uso directo como evidencia.</p>
-      <p>El tribunal distingue valor investigativo de valor probatorio.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Psicometría</h4>
-      <p>La psicometría sobre un objeto puede revelar asociaciones relevantes.</p>
-      <p>Debe documentarse qué observó el practicante antes de conocer información del caso.</p>
-      <p>El riesgo de contaminación interpretativa exige protocolos ciegos cuando sea posible.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Cadena de custodia mágica</h4>
+      la pregunta. El testimonio post mortem no recibe privilegio automático. Debe evaluarse memoria,
+      continuidad, interés y posibilidad de suplantación.</p>
+      <p>De forma más amplia, entidades no humanas pueden testificar si poseen competencia comunicativa y
+      comprenden la obligación de responder. Los tribunales pueden exigir peritos para interpretar
+      lenguaje, cosmología o limitaciones perceptivas, ya que una entidad poderosa no es presumida
+      infalible.</p>
+      <h4 id="cap-12">Capítulo XII — Adivinación, tarotismo y psicometría en la investigación</h4>
+      <p>La adivinación puede orientar líneas de investigación, pero por sí sola casi nunca basta para
+      condenar, sobre todo cuando el método no es reproducible. Una visión puede justificar buscar una
+      prueba, sin llegar a reemplazarla.</p>
+      <p>Las lecturas tarotísticas ofrecen un caso similar. Pueden aportar hipótesis bajo condiciones
+      controladas, aunque su simbolismo e interpretación dificultan su uso directo como evidencia. El
+      tribunal distingue el valor investigativo del valor probatorio.</p>
+      <p>La psicometría sobre un objeto puede revelar asociaciones relevantes, y debe documentarse qué
+      observó el practicante antes de conocer información del caso. El riesgo de contaminación
+      interpretativa exige protocolos ciegos cuando sea posible.</p>
+      <h4 id="cap-13">Capítulo XIII — Cadena de custodia y contaminación de evidencia</h4>
       <p>La evidencia mágica requiere documentar quién tuvo acceso, qué técnicas se aplicaron y qué cambios
-      pudo sufrir.</p>
-      <p>Un objeto alterado durante el análisis puede perder valor probatorio.</p>
-      <p>Criminalística Arcana mantiene protocolos específicos para residuos, recuerdos, firmas y
+      pudo sufrir. Un objeto alterado durante el análisis puede perder valor probatorio, por lo que
+      Criminalística Arcana mantiene protocolos específicos para residuos, recuerdos, firmas y
       artefactos.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Contaminación de evidencia</h4>
-      <p>El uso de magia puede modificar aquello que pretende observar.</p>
-      <p>Un hechizo de revelación puede activar una defensa, borrar residuos o alterar memoria.</p>
-      <p>Los investigadores deben preferir técnicas no destructivas antes de intervenciones
-      irreversibles.</p>
-      <h4 id="cap-40">Capítulo XL — Admisibilidad</h4>
-      <p>Una prueba es admisible cuando fue obtenida legalmente y posee suficiente relevancia y
-      fiabilidad.</p>
-      <p>El origen mágico no la vuelve automáticamente admisible ni inadmisible.</p>
-      <p>El tribunal evalúa método, error conocido, posibilidad de réplica y cadena de custodia.</p>
-      <h4 id="cap-41">Capítulo XLI — Prueba ilícita</h4>
-      <p>La evidencia obtenida mediante violación grave de derechos puede excluirse.</p>
-      <p>Esto incluye lecturas mentales no autorizadas y registros adivinatorios de espacios privados sin
-      base legal.</p>
-      <p>Las excepciones se interpretan de forma restrictiva.</p>
-      <h4 id="cap-42">Capítulo XLII — Confesiones</h4>
-      <p>Una confesión debe ser voluntaria para poseer pleno valor probatorio.</p>
-      <p>Coacción física, amenaza, encantamiento de obediencia o manipulación mental pueden invalidarla.</p>
-      <p>El hecho de que la confesión sea verdadera no repara automáticamente el método ilícito.</p>
-      <h4 id="cap-43">Capítulo XLIII — Confesiones bajo zona de verdad</h4>
-      <p>Las zonas o efectos que impiden mentir plantean un problema particular.</p>
-      <p>Una persona puede responder con errores sinceros, omisiones, recuerdos falsos o interpretaciones
-      equivocadas.</p>
-      <p>Por ello, estos efectos no transforman una confesión en prueba infalible.</p>
-      <h4 id="cap-44">Capítulo XLIV — Voluntariedad</h4>
+      <p>Esta exigencia responde a un riesgo particular de la magia. El uso de una técnica puede modificar
+      aquello que pretende observar. Un hechizo de revelación puede activar una defensa, borrar residuos o
+      alterar memoria, de modo que los investigadores deben preferir técnicas no destructivas antes de
+      intervenciones irreversibles.</p>
+      <h4 id="cap-14">Capítulo XIV — Admisibilidad y prueba ilícita</h4>
+      <p>Una prueba es admisible cuando fue obtenida legalmente y posee suficiente relevancia y fiabilidad.
+      El origen mágico no la vuelve automáticamente admisible ni inadmisible. El tribunal evalúa método,
+      error conocido, posibilidad de réplica y cadena de custodia.</p>
+      <p>La evidencia obtenida mediante violación grave de derechos puede excluirse por esta misma razón, lo
+      que incluye lecturas mentales no autorizadas y registros adivinatorios de espacios privados sin base
+      legal. Las excepciones a esta regla se interpretan de forma restrictiva.</p>
+      <h4 id="cap-15">Capítulo XV — Confesiones y voluntariedad</h4>
+      <p>Una confesión debe ser voluntaria para poseer pleno valor probatorio. Coacción física, amenaza,
+      encantamiento de obediencia o manipulación mental pueden invalidarla, y el hecho de que la confesión
+      sea verdadera no repara automáticamente el método ilícito empleado para obtenerla.</p>
+      <p>Las zonas o efectos que impiden mentir plantean un problema particular. Una persona puede responder
+      con errores sinceros, omisiones, recuerdos falsos o interpretaciones equivocadas. Por ello, estos
+      efectos no transforman una confesión en prueba infalible.</p>
       <p>Una confesión obtenida mientras la capacidad de decisión está mágicamente reducida se presume
-      involuntaria.</p>
-      <p>Los fiscales deben demostrar que el método utilizado no anuló autonomía relevante.</p>
-      <p>El consentimiento previo a una entrevista no autoriza cualquier técnica posterior.</p>
-      <h4 id="cap-45">Capítulo XLV — Silencio</h4>
-      <p>El derecho a no declarar no desaparece porque exista una técnica capaz de detectar pensamientos.</p>
-      <p>Invadir la mente para eludir el silencio se considera una violación grave.</p>
-      <p>La protección cubre tanto palabras como contenido mental obtenido coercitivamente.</p>
-      <h4 id="cap-46">Capítulo XLVI — Autoincriminación</h4>
-      <p>Dolbred distingue evidencia física de contenido testimonial.</p>
-      <p>Una firma corporal puede tratarse como evidencia física; una memoria o pensamiento suele
-      considerarse testimonial.</p>
-      <p>Las fronteras son discutidas y dependen del grado de interpretación requerido.</p>
-      <h4 id="cap-47">Capítulo XLVII — Encantamientos de veracidad</h4>
-      <p>Los dispositivos de veracidad sólo son admisibles si se conoce qué propiedad detectan.</p>
-      <p>Una reacción fisiológica o resonántica ante estrés no equivale necesariamente a mentira.</p>
-      <p>Teoría de Encantamientos y Epistemología Arcana ayudan a validar estos sistemas.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Prueba pericial</h4>
-      <p>Las cuestiones mágicas complejas requieren peritos.</p>
-      <p>El perito debe explicar método, límites e incertidumbre, no limitarse a declarar una
-      conclusión.</p>
-      <p>Los tribunales pueden rechazar técnicas incapaces de describir su tasa de error.</p>
-      <h4 id="cap-49">Capítulo XLIX — Neutralidad del perito</h4>
-      <p>Un experto contratado por una parte sigue obligado a honestidad profesional.</p>
-      <p>Ocultar resultados desfavorables puede constituir falta.</p>
-      <p>Dolbred mantiene registros disciplinarios para peritos recurrentes.</p>
-      <h4 id="cap-50">Capítulo L — Licencias</h4>
-      <p>Las prácticas de alto riesgo requieren licencia independiente de capacidad técnica.</p>
-      <p>Las licencias pueden limitarse por especialidad, intensidad o tipo de sujeto.</p>
-      <p>Ejecutar una técnica sin licencia puede generar responsabilidad aunque no produzca daño.</p>
-      <h4 id="cap-51">Capítulo LI — Ejercicio profesional</h4>
-      <p>Sanadores, invocadores, encantadores y artificieros poseen deberes específicos de cuidado.</p>
-      <p>La competencia se evalúa según estándares de la profesión, no según habilidades personales del
-      acusado.</p>
-      <p>Una práctica habitual puede seguir siendo negligente si viola protocolos mínimos.</p>
-      <h4 id="cap-52">Capítulo LII — Negligencia arcana</h4>
-      <p>Existe negligencia cuando una persona incumple un deber razonable de cuidado y causa daño
-      previsible.</p>
-      <p>Ejemplos incluyen omitir clausuras, no revisar un encantamiento antiguo o transportar un artefacto
-      sin aislamiento adecuado.</p>
-      <p>La magia extraordinaria no excusa precauciones ordinarias.</p>
-      <h4 id="cap-53">Capítulo LIII — Responsabilidad institucional</h4>
+      involuntaria, y los fiscales deben demostrar que el método utilizado no anuló autonomía relevante. El
+      consentimiento previo a una entrevista tampoco autoriza cualquier técnica posterior.</p>
+      <h4 id="cap-16">Capítulo XVI — Silencio y autoincriminación</h4>
+      <p>El derecho a no declarar no desaparece porque exista una técnica capaz de detectar pensamientos.
+      Invadir la mente para eludir el silencio se considera una violación grave, y la protección cubre
+      tanto palabras como contenido mental obtenido coercitivamente.</p>
+      <p>Para aplicar esta protección, Dolbred distingue evidencia física de contenido testimonial. Una
+      firma corporal puede tratarse como evidencia física, mientras que una memoria o pensamiento suele
+      considerarse testimonial, aunque las fronteras entre ambas categorías son discutidas y dependen del
+      grado de interpretación requerido.</p>
+      <h4 id="cap-17">Capítulo XVII — Dispositivos de veracidad y prueba pericial</h4>
+      <p>Los dispositivos de veracidad sólo son admisibles si se conoce qué propiedad detectan. Una reacción
+      fisiológica o resonántica ante estrés no equivale necesariamente a mentira, y Teoría de Encantamientos
+      y Epistemología Arcana ayudan a validar estos sistemas antes de que un tribunal los acepte.</p>
+      <p>Esa misma exigencia de validación se extiende a la prueba pericial en general. Las cuestiones
+      mágicas complejas requieren peritos, y el perito debe explicar método, límites e incertidumbre, no
+      limitarse a declarar una conclusión. Los tribunales pueden rechazar técnicas incapaces de describir
+      su tasa de error.</p>
+      <p>Un experto contratado por una parte sigue obligado a honestidad profesional. Ocultar resultados
+      desfavorables puede constituir falta, y Dolbred mantiene registros disciplinarios para peritos
+      recurrentes.</p>
+      <h4 id="cap-18">Capítulo XVIII — Licencias, ejercicio profesional y negligencia arcana</h4>
+      <p>Las prácticas de alto riesgo requieren licencia independiente de la capacidad técnica del
+      practicante. Las licencias pueden limitarse por especialidad, intensidad o tipo de sujeto, y ejecutar
+      una técnica sin licencia puede generar responsabilidad aunque no produzca daño.</p>
+      <p>Sanadores, invocadores, encantadores y artificieros poseen deberes específicos de cuidado. La
+      competencia se evalúa según estándares de la profesión y no según las habilidades personales del
+      acusado, de modo que una práctica habitual puede seguir siendo negligente si viola protocolos
+      mínimos.</p>
+      <p>Existe negligencia, en general, cuando una persona incumple un deber razonable de cuidado y causa
+      daño previsible. Ejemplos incluyen omitir clausuras, no revisar un encantamiento antiguo o transportar
+      un artefacto sin aislamiento adecuado. La magia extraordinaria no excusa precauciones ordinarias.</p>
+      <h4 id="cap-19">Capítulo XIX — Responsabilidad institucional y fondos de reparación</h4>
       <p>Universidades, gremios y laboratorios pueden responder por fallos de supervisión, mantenimiento o
-      selección de personal.</p>
-      <p>Una institución no puede atribuir todo daño al estudiante si autorizó una práctica insegura.</p>
-      <p>Las auditorías internas forman parte del deber de cuidado.</p>
-      <h4 id="cap-54">Capítulo LIV — Seguro y fondos de reparación</h4>
-      <p>Dolbred exige cobertura o fondos de reparación para ciertas actividades de alto riesgo.</p>
-      <p>El objetivo es asegurar compensación incluso cuando el responsable individual carece de
-      recursos.</p>
-      <p>Esto es común en artefactología, invocación mayor y experimentación ritual.</p>
-      <h4 id="cap-55">Capítulo LV — Daño mágico</h4>
+      selección de personal. Una institución no puede atribuir todo daño al estudiante si autorizó una
+      práctica insegura, y las auditorías internas forman parte de su deber de cuidado.</p>
+      <p>Como complemento de esa responsabilidad, Dolbred exige cobertura o fondos de reparación para
+      ciertas actividades de alto riesgo. El objetivo es asegurar compensación incluso cuando el
+      responsable individual carece de recursos, algo común en artefactología, invocación mayor y
+      experimentación ritual.</p>
+      <h4 id="cap-20">Capítulo XX — Tipos de daño mágico</h4>
       <p>El daño jurídicamente relevante incluye lesión corporal, daño mental, pérdida de memoria,
-      alteración de identidad, contaminación, pérdida de propiedad y perjuicios colectivos.</p>
-      <p>Las secuelas mágicas pueden requerir compensaciones prolongadas.</p>
-      <p>Patología Arcana participa en la evaluación de incapacidad y tratamiento.</p>
-      <h4 id="cap-56">Capítulo LVI — Daño futuro</h4>
-      <p>Algunas alteraciones aumentan riesgos sin producir síntomas inmediatos.</p>
-      <p>Los tribunales pueden reconocer costos de vigilancia y prevención cuando la exposición está
-      suficientemente demostrada.</p>
-      <p>Epidemiología Taumatológica aporta modelos poblacionales cuando el riesgo excede al individuo.</p>
-      <h4 id="cap-57">Capítulo LVII — Daño a la identidad</h4>
-      <p>Modificar recuerdos, nombre funcional, firma o forma de manera que afecte vida social puede
-      constituir daño independiente de la lesión física.</p>
-      <p>El derecho reconoce que la continuidad personal tiene valor propio.</p>
-      <p>Esto es especialmente relevante en transformaciones forzadas.</p>
-      <h4 id="cap-58">Capítulo LVIII — Daño pneumatológico</h4>
-      <p>Las alteraciones sobre alma o continuidad post mortem se consideran de máxima gravedad.</p>
-      <p>La compensación ordinaria puede resultar insuficiente cuando el daño no es completamente
-      reversible.</p>
-      <p>Los procedimientos penales reciben agravantes específicas.</p>
-      <h4 id="cap-59">Capítulo LIX — Responsabilidad por maldiciones</h4>
-      <p>Crear o transmitir deliberadamente una maldición genera responsabilidad según intención y
-      riesgo.</p>
-      <p>Las maldiciones heredables o adaptativas pueden elevar la gravedad por afectar a terceros
-      futuros.</p>
-      <p>Maldiología ayuda a demostrar vínculo causal y mecanismo.</p>
-      <h4 id="cap-60">Capítulo LX — Maldiciones preexistentes</h4>
-      <p>Poseer una propiedad u objeto maldito no convierte automáticamente al propietario en culpable.</p>
-      <p>Sí puede generar deber de advertir, contener o reparar cuando conoce el riesgo.</p>
-      <p>Ocultar una maldición relevante en una venta puede constituir fraude.</p>
-      <h4 id="cap-61">Capítulo LXI — Pactos</h4>
+      alteración de identidad, contaminación, pérdida de propiedad y perjuicios colectivos. Las secuelas
+      mágicas pueden requerir compensaciones prolongadas, y Patología Arcana participa en la evaluación de
+      incapacidad y tratamiento.</p>
+      <p>Algunas alteraciones aumentan riesgos futuros sin producir síntomas inmediatos. Los tribunales
+      pueden reconocer costos de vigilancia y prevención cuando la exposición está suficientemente
+      demostrada, y Epidemiología Taumatológica aporta modelos poblacionales cuando el riesgo excede al
+      individuo.</p>
+      <p>Modificar recuerdos, nombre funcional, firma o forma de manera que afecte la vida social puede
+      constituir daño independiente de la lesión física, pues el derecho reconoce que la continuidad
+      personal tiene valor propio. Esto resulta especialmente relevante en casos de transformación
+      forzada.</p>
+      <p>Las alteraciones sobre el alma o la continuidad post mortem se consideran de máxima gravedad. La
+      compensación ordinaria puede resultar insuficiente cuando el daño no es completamente reversible, y
+      los procedimientos penales correspondientes reciben agravantes específicas.</p>
+      <h4 id="cap-21">Capítulo XXI — Maldiciones: responsabilidad y posesión</h4>
+      <p>Crear o transmitir deliberadamente una maldición genera responsabilidad según intención y riesgo.
+      Las maldiciones heredables o adaptativas pueden elevar la gravedad del caso por afectar a terceros
+      futuros, y Maldiología ayuda a demostrar vínculo causal y mecanismo.</p>
+      <p>Poseer una propiedad u objeto maldito, en cambio, no convierte automáticamente al propietario en
+      culpable. Sí puede generar deber de advertir, contener o reparar cuando conoce el riesgo, y ocultar
+      una maldición relevante al vender el objeto puede constituir fraude.</p>
+      <h4 id="cap-22">Capítulo XXII — Pactos, cláusulas abusivas y consentimiento defectuoso</h4>
       <p>Los pactos son contratos sólo cuando las partes poseen capacidad, consentimiento y términos
-      jurídicamente reconocibles.</p>
-      <p>Una estructura mágicamente ejecutable puede ser jurídicamente inválida.</p>
-      <p>Pacturgia describe el vínculo; Derecho Arcano decide si el ordenamiento lo reconoce.</p>
-      <h4 id="cap-62">Capítulo LXII — Cláusulas abusivas</h4>
-      <p>Una cláusula que permite esclavitud permanente, pérdida total de memoria o cesión de alma puede
-      ser inválida aunque haya sido aceptada formalmente.</p>
-      <p>La libertad contractual tiene límites.</p>
-      <p>Las partes no pueden convertir mediante contrato toda práctica prohibida en legítima.</p>
-      <h4 id="cap-63">Capítulo LXIII — Consentimiento defectuoso</h4>
-      <p>Engaño material, amenaza, compulsión o incapacidad pueden invalidar un acuerdo.</p>
-      <p>Las entidades extraplanares no quedan exentas de estas reglas cuando contratan bajo jurisdicción
-      dolbriana.</p>
-      <p>Las dificultades de ejecución internacional o planar no cambian el principio.</p>
-      <h4 id="cap-64">Capítulo LXIV — Jurisdicción</h4>
+      jurídicamente reconocibles. Una estructura mágicamente ejecutable puede ser jurídicamente inválida.
+      Pacturgia describe el vínculo; el Derecho Arcano decide si el ordenamiento lo reconoce.</p>
+      <p>Incluso un pacto formalmente válido puede contener límites. Una cláusula que permite esclavitud
+      permanente, pérdida total de memoria o cesión de alma puede ser inválida aunque haya sido aceptada
+      formalmente, porque la libertad contractual tiene límites y las partes no pueden convertir mediante
+      contrato toda práctica prohibida en legítima.</p>
+      <p>Engaño material, amenaza, compulsión o incapacidad pueden invalidar un acuerdo. Las entidades
+      extraplanares no quedan exentas de estas reglas cuando contratan bajo jurisdicción dolbriana, y las
+      dificultades de ejecución internacional o planar no cambian el principio.</p>
+      <h4 id="cap-23">Capítulo XXIII — Jurisdicción, extraterritorialidad y prueba extranjera</h4>
       <p>El Derecho Arcano debe determinar dónde ocurre una conducta cuando sus efectos cruzan fronteras o
-      planos.</p>
-      <p>Una invocación ejecutada fuera de Dolbred puede producir daños dentro de su territorio.</p>
-      <p>La jurisdicción puede basarse en lugar del acto, del daño, del sujeto o del artefacto.</p>
-      <h4 id="cap-65">Capítulo LXV — Extraterritorialidad</h4>
-      <p>Dolbred puede imponer restricciones a sus licenciados incluso fuera de su territorio.</p>
-      <p>Un investigador no puede evitar normas universitarias trasladando un experimento a una región
-      menos regulada.</p>
-      <p>Las sanciones profesionales siguen a la licencia.</p>
-      <h4 id="cap-66">Capítulo LXVI — Prueba obtenida en otra jurisdicción</h4>
+      planos. Una invocación ejecutada fuera de Dolbred puede producir daños dentro de su territorio, y la
+      jurisdicción puede basarse en el lugar del acto, del daño, del sujeto o del artefacto.</p>
+      <p>Dolbred puede además imponer restricciones a sus licenciados incluso fuera de su territorio. Un
+      investigador no puede evitar normas universitarias trasladando un experimento a una región menos
+      regulada, ya que las sanciones profesionales siguen a la licencia.</p>
       <p>La evidencia conseguida legalmente en otro territorio puede enfrentar límites si el método vulnera
-      derechos fundamentales reconocidos por Dolbred.</p>
-      <p>Los tribunales evalúan compatibilidad y fiabilidad.</p>
-      <p>No toda prueba extranjera recibe admisión automática.</p>
-      <h4 id="cap-67">Capítulo LXVII — Privacidad</h4>
+      derechos fundamentales reconocidos por Dolbred. Los tribunales evalúan compatibilidad y fiabilidad, y
+      no toda prueba extranjera recibe admisión automática.</p>
+      <h4 id="cap-24">Capítulo XXIV — Privacidad, vigilancia y datos arcanos</h4>
       <p>La privacidad arcana incluye domicilio, comunicaciones, pensamientos, recuerdos, firmas y ciertos
-      vínculos.</p>
-      <p>El grado de protección depende de la intimidad de la información y del método de acceso.</p>
-      <p>Las capacidades mágicas no reducen expectativas legítimas de privacidad.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Vigilancia</h4>
+      vínculos. El grado de protección depende de la intimidad de la información y del método de acceso, y
+      las capacidades mágicas no reducen las expectativas legítimas de privacidad.</p>
       <p>La vigilancia prolongada mediante familiares, espíritus, espejos o sensores mágicos requiere base
-      legal.</p>
-      <p>El seguimiento masivo recibe estándares más altos que una observación puntual.</p>
-      <p>Los sistemas institucionales deben registrar consultas y accesos.</p>
-      <h4 id="cap-69">Capítulo LXIX — Datos arcanos</h4>
-      <p>Registros de firma mágica, afinidad, memoria o información pneumatológica se consideran datos
-      sensibles.</p>
-      <p>Su almacenamiento requiere seguridad y límites de finalidad.</p>
-      <p>Utilizar datos clínicos para vigilancia sin autorización puede generar responsabilidad
-      institucional.</p>
-      <h4 id="cap-70">Capítulo LXX — Artefactos de vigilancia</h4>
+      legal. El seguimiento masivo recibe estándares más altos que una observación puntual, y los sistemas
+      institucionales deben registrar consultas y accesos.</p>
+      <p>Los registros de firma mágica, afinidad, memoria o información pneumatológica se consideran datos
+      sensibles. Su almacenamiento requiere seguridad y límites de finalidad, y utilizar datos clínicos
+      para vigilancia sin autorización puede generar responsabilidad institucional.</p>
       <p>Los artefactos capaces de observar automáticamente a personas deben indicar alcance, retención y
-      condiciones de acceso.</p>
-      <p>El propietario de un edificio no obtiene derecho ilimitado a registrar pensamientos de quienes
-      entran.</p>
-      <p>Las zonas especialmente protegidas exigen consentimiento o mandato legal.</p>
-      <h4 id="cap-71">Capítulo LXXI — Prisión y contención mágica</h4>
-      <p>Las cárceles pueden utilizar barreras y supresores de magia bajo regulación.</p>
-      <p>Las medidas deben impedir fuga y daño sin producir alteraciones permanentes innecesarias.</p>
-      <p>La contención no autoriza experimentación ni modificación de memoria.</p>
-      <h4 id="cap-72">Capítulo LXXII — Supresión de magia</h4>
+      condiciones de acceso. El propietario de un edificio no obtiene derecho ilimitado a registrar
+      pensamientos de quienes entran, y las zonas especialmente protegidas exigen consentimiento o mandato
+      legal.</p>
+      <h4 id="cap-25">Capítulo XXV — Contención y supresión de magia</h4>
+      <p>Las cárceles pueden utilizar barreras y supresores de magia bajo regulación. Las medidas deben
+      impedir fuga y daño sin producir alteraciones permanentes innecesarias, y la contención no autoriza
+      experimentación ni modificación de memoria.</p>
       <p>Los campos antimágicos o equivalentes son legales en instalaciones autorizadas cuando existe
-      necesidad de seguridad.</p>
-      <p>Su intensidad y duración deben ser proporcionales.</p>
-      <p>Los efectos médicos sobre especies dependientes de magia obligan a crear excepciones y protocolos
-      alternativos.</p>
-      <h4 id="cap-73">Capítulo LXXIII — Fuerza pública</h4>
-      <p>Los agentes pueden emplear magia coercitiva bajo reglas equivalentes al uso de fuerza.</p>
-      <p>Debe existir amenaza, necesidad y proporcionalidad.</p>
-      <p>Una técnica no letal puede ser ilícita si produce sufrimiento extremo o daño duradero.</p>
-      <h4 id="cap-74">Capítulo LXXIV — Detención</h4>
-      <p>La detención de un mago no permite asumir peligrosidad ilimitada.</p>
-      <p>Las medidas de seguridad deben basarse en capacidades conocidas y riesgo concreto.</p>
-      <p>El uso automático de restricciones máximas puede violar derechos y producir daño médico.</p>
-      <h4 id="cap-75">Capítulo LXXV — Artefactos encontrados</h4>
-      <p>Quien encuentra un artefacto peligroso adquiere un deber mínimo de no activarlo y notificar.</p>
-      <p>Intentar probarlo por curiosidad puede generar responsabilidad por daños.</p>
-      <p>Las autoridades deben ofrecer canales seguros de entrega sin exigir manipulación innecesaria.</p>
-      <h4 id="cap-76">Capítulo LXXVI — Decomiso</h4>
-      <p>Los artefactos pueden ser decomisados cuando su posesión es ilegal o constituyen evidencia.</p>
-      <p>El decomiso requiere documentación y custodia especializada.</p>
-      <p>Destruirlos antes del juicio sólo se permite cuando conservarlos crea un riesgo inmediato
-      imposible de contener.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Destrucción judicial</h4>
-      <p>Algunos objetos no pueden devolverse a circulación.</p>
-      <p>El tribunal puede ordenar destrucción, sellado permanente o conservación institucional.</p>
-      <p>Artefactología debe asesorar sobre si destruir libera riesgos mayores.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — Patrimonio peligroso</h4>
-      <p>Un artefacto puede ser históricamente invaluable y peligrosísimo.</p>
-      <p>El valor cultural no elimina requisitos de seguridad.</p>
-      <p>Conservación Arcana busca preservar información sin exponer a la población.</p>
-      <h4 id="cap-79">Capítulo LXXIX — Investigación académica de objetos prohibidos</h4>
-      <p>Dolbred puede autorizar estudio de artefactos cuya posesión privada está prohibida.</p>
-      <p>Las instalaciones, personal y protocolos deben corresponder al nivel de riesgo.</p>
-      <p>La autorización pertenece a la institución, no al investigador individual.</p>
-      <h4 id="cap-80">Capítulo LXXX — Transparencia</h4>
-      <p>Las regulaciones dolbrianas exigen que los criterios de licencias y sanciones sean públicos salvo
-      información cuya difusión aumente riesgo.</p>
-      <p>El secreto regulatorio dificulta cumplimiento y favorece abuso.</p>
-      <p>Las excepciones deben quedar registradas.</p>
-      <h4 id="cap-81">Capítulo LXXXI — Debido proceso</h4>
-      <p>Una acusación de uso ilícito de magia no reduce garantías procesales.</p>
-      <p>El acusado tiene derecho a conocer la evidencia, cuestionar peritos y presentar explicaciones
-      alternativas.</p>
-      <p>La complejidad técnica aumenta la necesidad de revisión, no la disminuye.</p>
-      <h4 id="cap-82">Capítulo LXXXII — Presunción y estigma</h4>
-      <p>Ser pacturgo, nigromante, changeling o invocador no constituye evidencia de delito.</p>
-      <p>Las investigaciones deben basarse en conductas y riesgos concretos.</p>
-      <p>El derecho dolbriano intenta impedir que categorías mágicas se conviertan en sospecha
-      automática.</p>
-      <h4 id="cap-83">Capítulo LXXXIII — Conflictos entre ética y legalidad</h4>
-      <p>Una práctica puede ser legal y éticamente cuestionable o éticamente defendible y todavía
-      prohibida.</p>
-      <p>La Ética de la Alteración orienta reforma; el Derecho Arcano define obligaciones vigentes.</p>
-      <p>Los profesionales deben conocer ambas dimensiones.</p>
-      <h4 id="cap-84">Capítulo LXXXIV — Precedente</h4>
-      <p>Los casos difíciles generan criterios que orientan decisiones futuras.</p>
-      <p>El precedente no reemplaza análisis del mecanismo mágico concreto.</p>
-      <p>Una regla creada para familiares dependientes puede no servir para entidades plenamente
-      autónomas.</p>
-      <h4 id="cap-85">Capítulo LXXXV — La pregunta por el control</h4>
-      <p>Buena parte del Derecho Arcano puede resumirse en una pregunta, sobre quién tenía control suficiente
-      sobre el fenómeno para asumir responsabilidad.</p>
-      <p>El control puede ser directo, institucional, material o jurídico.</p>
-      <p>Cuando nadie controla una fuerza peligrosa, el problema se desplaza hacia deberes de prevención,
-      contención y advertencia.</p>
-      <h4 id="cap-86">Capítulo LXXXVI — La pregunta por la prueba</h4>
-      <p>Una segunda pregunta atraviesa toda investigación, sobre qué demuestra realmente una técnica.</p>
-      <p>Leer una mente demuestra contenido mental; una zona de verdad limita mentiras; una visión sugiere
-      un acontecimiento; ninguna de ellas convierte automáticamente interpretación en hecho.</p>
-      <p>El derecho exige conocer el alcance real del método.</p>
-      <h4 id="cap-87">Capítulo LXXXVII — La pregunta dolbriana</h4>
-      <p>Antes de autorizar una práctica, Dolbred pregunta quién puede resultar afectado, quién controla el
-      fenómeno, qué evidencia quedará y cómo puede detenerse si sale mal.</p>
-      <p>Estas preguntas forman la base de licencias, peritajes y protocolos de custodia.</p>
-      <p>El sistema no pretende eliminar riesgo, sino asignar responsabilidad antes de que el riesgo se
-      convierta en daño.</p>
+      necesidad de seguridad, siempre que su intensidad y duración sean proporcionales. Los efectos médicos
+      sobre especies dependientes de magia obligan a crear excepciones y protocolos alternativos.</p>
+      <h4 id="cap-26">Capítulo XXVI — Fuerza pública y detención</h4>
+      <p>Los agentes pueden emplear magia coercitiva bajo reglas equivalentes al uso de fuerza. Debe existir
+      amenaza, necesidad y proporcionalidad, y una técnica no letal puede ser ilícita si produce sufrimiento
+      extremo o daño duradero.</p>
+      <p>La detención de un mago no permite asumir peligrosidad ilimitada. Las medidas de seguridad deben
+      basarse en capacidades conocidas y riesgo concreto, ya que el uso automático de restricciones máximas
+      puede violar derechos y producir daño médico.</p>
+      <h4 id="cap-27">Capítulo XXVII — Artefactos encontrados, decomiso y destrucción judicial</h4>
+      <p>Quien encuentra un artefacto peligroso adquiere un deber mínimo de no activarlo y notificarlo.
+      Intentar probarlo por curiosidad puede generar responsabilidad por daños, y las autoridades deben
+      ofrecer canales seguros de entrega sin exigir manipulación innecesaria.</p>
+      <p>Los artefactos pueden ser decomisados cuando su posesión es ilegal o constituyen evidencia. El
+      decomiso requiere documentación y custodia especializada; destruirlos antes del juicio sólo se
+      permite cuando conservarlos crea un riesgo inmediato imposible de contener.</p>
+      <p>Algunos objetos, en definitiva, no pueden devolverse a circulación. El tribunal puede ordenar
+      destrucción, sellado permanente o conservación institucional, y Artefactología debe asesorar sobre si
+      destruirlos libera riesgos mayores que conservarlos.</p>
+      <h4 id="cap-28">Capítulo XXVIII — Patrimonio peligroso e investigación académica</h4>
+      <p>Un artefacto puede ser históricamente invaluable y peligrosísimo a la vez. El valor cultural no
+      elimina los requisitos de seguridad, y Conservación Arcana busca preservar información sin exponer a
+      la población.</p>
+      <p>Con ese mismo espíritu, Dolbred puede autorizar el estudio de artefactos cuya posesión privada está
+      prohibida. Las instalaciones, personal y protocolos deben corresponder al nivel de riesgo, y la
+      autorización pertenece a la institución, no al investigador individual.</p>
+      <h4 id="cap-29">Capítulo XXIX — Transparencia, debido proceso y presunción</h4>
+      <p>Las regulaciones dolbrianas exigen que los criterios de licencias y sanciones sean públicos, salvo
+      información cuya difusión aumente el riesgo. El secreto regulatorio dificulta el cumplimiento y
+      favorece el abuso, por lo que las excepciones deben quedar registradas.</p>
+      <p>Esa misma exigencia de transparencia se traslada al proceso. Una acusación de uso ilícito de magia
+      no reduce garantías procesales. El acusado tiene derecho a conocer la evidencia, cuestionar peritos y
+      presentar explicaciones alternativas, y la complejidad técnica aumenta la necesidad de revisión en
+      vez de disminuirla.</p>
+      <p>Ser pacturgo, nigromante, changeling o invocador no constituye evidencia de delito. Las
+      investigaciones deben basarse en conductas y riesgos concretos, ya que el derecho dolbriano intenta
+      impedir que las categorías mágicas se conviertan en sospecha automática.</p>
+      <h4 id="cap-30">Capítulo XXX — Ética, legalidad y precedente</h4>
+      <p>Una práctica puede ser legal y éticamente cuestionable, o éticamente defendible y todavía
+      prohibida. La Ética de la Alteración orienta la reforma; el Derecho Arcano define las obligaciones
+      vigentes, y los profesionales deben conocer ambas dimensiones.</p>
+      <p>Los casos difíciles generan criterios que orientan decisiones futuras, pero el precedente no
+      reemplaza el análisis del mecanismo mágico concreto de cada caso. Una regla creada para familiares
+      dependientes puede no servir para entidades plenamente autónomas.</p>
+      <h4 id="cap-31">Capítulo XXXI — Las tres preguntas del Derecho Arcano</h4>
+      <p>El razonamiento desarrollado a lo largo de este tratado puede resumirse en tres preguntas
+      recurrentes. La primera es quién tenía control suficiente sobre el fenómeno para asumir
+      responsabilidad. Ese control puede ser directo, institucional, material o jurídico, y cuando nadie
+      controla una fuerza peligrosa, el problema se desplaza hacia deberes de prevención, contención y
+      advertencia.</p>
+      <p>La segunda pregunta atraviesa toda investigación y se refiere a qué demuestra realmente una
+      técnica. Leer una mente demuestra contenido mental, una zona de verdad limita mentiras y una visión
+      sugiere un acontecimiento, pero ninguna de ellas convierte automáticamente interpretación en hecho. El
+      derecho exige conocer el alcance real del método antes de dejarlo pesar en un juicio.</p>
+      <p>La tercera es la que Dolbred formula antes de autorizar cualquier práctica nueva: quién puede
+      resultar afectado, quién controla el fenómeno, qué evidencia quedará y cómo puede detenerse si sale
+      mal. Estas tres preguntas forman la base de licencias, peritajes y protocolos de custodia. El sistema
+      no pretende eliminar el riesgo, sino asignar responsabilidad antes de que el riesgo se convierta en
+      daño.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>El Derecho Arcano dolbriano intenta someter la magia a principios jurídicos sin fingir que todos
       los fenómenos se comportan como herramientas ordinarias. La responsabilidad depende de control,
