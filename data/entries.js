@@ -9130,57 +9130,22 @@ window.ENTRIES = [
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Espacio como componente ritual</a>
-        <a href="#cap-2">II. Punto de referencia</a>
-        <a href="#cap-3">III. Distancia</a>
-        <a href="#cap-4">IV. Proporción</a>
-        <a href="#cap-5">V. Círculos</a>
-        <a href="#cap-6">VI. Circunferencia y frontera</a>
-        <a href="#cap-7">VII. Centros</a>
-        <a href="#cap-8">VIII. Radios</a>
-        <a href="#cap-9">IX. Polígonos</a>
-        <a href="#cap-10">X. Vértices</a>
-        <a href="#cap-11">XI. Ángulos</a>
-        <a href="#cap-12">XII. Simetría</a>
-        <a href="#cap-13">XIII. Simetría radial</a>
-        <a href="#cap-14">XIV. Simetría bilateral</a>
-        <a href="#cap-15">XV. Asimetría funcional</a>
-        <a href="#cap-16">XVI. Orientación</a>
-        <a href="#cap-17">XVII. Ejes</a>
-        <a href="#cap-18">XVIII. Altura</a>
-        <a href="#cap-19">XIX. Matrices tridimensionales</a>
-        <a href="#cap-20">XX. Densidad</a>
-        <a href="#cap-21">XXI. Separación de funciones</a>
-        <a href="#cap-22">XXII. Nodos</a>
-        <a href="#cap-23">XXIII. Redes</a>
-        <a href="#cap-24">XXIV. Redundancia geométrica</a>
-        <a href="#cap-25">XXV. Intersecciones</a>
-        <a href="#cap-26">XXVI. Anillos concéntricos</a>
-        <a href="#cap-27">XXVII. Sectores</a>
-        <a href="#cap-28">XXVIII. Trayectorias</a>
-        <a href="#cap-29">XXIX. Rotación</a>
-        <a href="#cap-30">XXX. Escala</a>
-        <a href="#cap-31">XXXI. Curvatura del terreno</a>
-        <a href="#cap-32">XXXII. Arquitectura</a>
-        <a href="#cap-33">XXXIII. Topología y geometría</a>
-        <a href="#cap-34">XXXIV. Planología</a>
-        <a href="#cap-35">XXXV. Simetría y estabilidad</a>
-        <a href="#cap-36">XXXVI. Error acumulativo</a>
-        <a href="#cap-37">XXXVII. Tolerancia</a>
-        <a href="#cap-38">XXXVIII. Calibración</a>
-        <a href="#cap-39">XXXIX. Compensación</a>
-        <a href="#cap-40">XL. Geometría simbólica</a>
-        <a href="#cap-41">XLI. Geometría de contención</a>
-        <a href="#cap-42">XLII. Geometría de transferencia</a>
-        <a href="#cap-43">XLIII. Geometría de invocación</a>
-        <a href="#cap-44">XLIV. Geometría territorial</a>
-        <a href="#cap-45">XLV. Errores de campo</a>
-        <a href="#cap-46">XLVI. Geometría y participantes vivos</a>
-        <a href="#cap-47">XLVII. El problema del cuerpo</a>
-        <a href="#cap-48">XLVIII. Cálculo y demostración</a>
-        <a href="#cap-49">XLIX. Modelos</a>
-        <a href="#cap-50">L. Relación con otras disciplinas</a>
-        <a href="#cap-51">LI. El mito del círculo perfecto</a>
+        <a href="#cap-1">I. Espacio y punto de referencia</a>
+        <a href="#cap-2">II. Distancia y proporción</a>
+        <a href="#cap-3">III. Círculos: circunferencia, centro y radios</a>
+        <a href="#cap-4">IV. Polígonos, vértices y ángulos</a>
+        <a href="#cap-5">V. Tipos de simetría</a>
+        <a href="#cap-6">VI. Orientación, ejes y altura</a>
+        <a href="#cap-7">VII. Matrices tridimensionales, densidad y separación de funciones</a>
+        <a href="#cap-8">VIII. Nodos, redes e intersecciones</a>
+        <a href="#cap-9">IX. Anillos concéntricos y sectores</a>
+        <a href="#cap-10">X. Trayectorias, rotación y escala</a>
+        <a href="#cap-11">XI. Geometría del terreno, la arquitectura y otros planos</a>
+        <a href="#cap-12">XII. Estabilidad, error y calibración</a>
+        <a href="#cap-13">XIII. Geometría simbólica y geometrías aplicadas</a>
+        <a href="#cap-14">XIV. Errores de campo y participantes vivos</a>
+        <a href="#cap-15">XV. Cálculo, modelos y relación con otras disciplinas</a>
+        <a href="#cap-16">XVI. El mito del círculo perfecto</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -9200,384 +9165,295 @@ window.ENTRIES = [
       toleran variaciones amplias. Otros, en cambio, utilizan el espacio como parte directa de
       su organización. La dificultad del curso consiste en aprender a distinguir ambos casos
       antes de asumir que una figura es decorativa o indispensable.</p>
-      <h4 id="cap-1">Capítulo I — Espacio como componente ritual</h4>
+      <h4 id="cap-1">Capítulo I — Espacio y punto de referencia</h4>
       <p>En una estructura ritual, el espacio puede ser escenario o componente. La diferencia
-      parece sutil, pero determina casi toda la disciplina.</p>
-      <p>Cuando el espacio es sólo escenario, mover un participante unos pasos puede no tener
-      efecto. Cuando es componente, cada posición participa de una relación que la estructura
-      utiliza para distribuir, contener o dirigir una función.</p>
-      <p>La Geometría Ritual intenta identificar qué propiedades espaciales son funcionales
-      antes de establecer medidas. No toda distancia importa y no toda alineación constituye una
-      relación.</p>
-      <h4 id="cap-2">Capítulo II — Punto de referencia</h4>
-      <p>Toda medición necesita un origen. En ritualística, ese origen puede ser un punto
-      físico, un objeto, un participante, una frontera o incluso una referencia fuera del
-      espacio inmediato.</p>
+      parece sutil, pero determina casi toda la disciplina. Cuando el espacio es sólo escenario,
+      mover un participante unos pasos puede no tener efecto. Cuando es componente, cada posición
+      participa de una relación que la estructura utiliza para distribuir, contener o dirigir una
+      función.</p>
+      <p>La Geometría Ritual intenta identificar qué propiedades espaciales son funcionales antes
+      de establecer medidas. No toda distancia importa y no toda alineación constituye una
+      relación. Establecer esto exige, antes que nada, fijar un origen, ya que toda medición
+      necesita un punto de referencia. En ritualística, ese origen puede ser un punto físico, un
+      objeto, un participante, una frontera o incluso una referencia fuera del espacio
+      inmediato.</p>
       <p>El error aparece cuando el diseñador utiliza un centro geométrico como si fuera
       automáticamente el centro estructural. Una matriz puede estar perfectamente centrada
-      respecto de la habitación y mal centrada respecto del objetivo.</p>
-      <p>La primera tarea geométrica consiste, por tanto, en decidir desde dónde deben
-      interpretarse las demás posiciones.</p>
-      <h4 id="cap-3">Capítulo III — Distancia</h4>
+      respecto de la habitación y mal centrada respecto del objetivo. La primera tarea geométrica
+      consiste, por tanto, en decidir desde dónde deben interpretarse las demás posiciones.</p>
+      <h4 id="cap-2">Capítulo II — Distancia y proporción</h4>
       <p>La distancia ritual puede cumplir varias funciones: separar influencias, graduar
       intensidad, establecer jerarquía o controlar cuánto tarda una propagación en alcanzar otro
-      componente.</p>
-      <p>No siempre importa la unidad absoluta. Algunos sistemas dependen de proporciones, donde un
-      punto debe hallarse al doble de distancia que otro, independientemente del tamaño
-      total.</p>
-      <p>En otros casos, la distancia física exacta participa de una correspondencia material y
-      no puede escalarse libremente.</p>
-      <p>Distinguir medida absoluta de relación proporcional es una de las primeras dificultades
-      matemáticas del curso.</p>
-      <h4 id="cap-4">Capítulo IV — Proporción</h4>
-      <p>Una estructura puede conservar función después de ampliarse si mantiene relaciones
-      proporcionales entre sus partes. Este principio permite construir modelos reducidos y
-      versiones territoriales de una misma disposición.</p>
-      <p>Sin embargo, el escalamiento no siempre es lineal. Materiales, tiempos de propagación y
-      capacidad de participantes pueden dejar de comportarse de forma proporcional al aumentar
-      la estructura.</p>
+      componente. No siempre importa la unidad absoluta. Algunos sistemas dependen de
+      proporciones, donde un punto debe hallarse al doble de distancia que otro,
+      independientemente del tamaño total. En otros casos, la distancia física exacta participa de
+      una correspondencia material y no puede escalarse libremente. Distinguir medida absoluta de
+      relación proporcional es una de las primeras dificultades matemáticas del curso.</p>
+      <p>Esa distinción se vuelve especialmente relevante al cambiar de escala. Una estructura
+      puede conservar función después de ampliarse si mantiene relaciones proporcionales entre sus
+      partes, principio que permite construir modelos reducidos y versiones territoriales de una
+      misma disposición. Sin embargo, el escalamiento no siempre es lineal: materiales, tiempos de
+      propagación y capacidad de participantes pueden dejar de comportarse de forma proporcional
+      al aumentar la estructura.</p>
       <p>La geometría puede conservarse mientras la ritualística completa falla por razones no
-      geométricas.</p>
-      <p>Por ello, la similitud de figuras no garantiza equivalencia funcional.</p>
-      <h4 id="cap-5">Capítulo V — Círculos</h4>
+      geométricas. Por ello, la similitud de figuras no garantiza equivalencia funcional.</p>
+      <h4 id="cap-3">Capítulo III — Círculos: circunferencia, centro y radios</h4>
       <p>El círculo aparece con frecuencia porque ofrece una frontera continua y distribuye
-      posiciones alrededor de un centro sin privilegiar una dirección particular.</p>
-      <p>Esta propiedad lo vuelve útil para contención, distribución radial y organización de
-      participantes. No lo convierte en una forma universal.</p>
-      <p>Una clausura circular puede ser excelente cuando la estructura necesita continuidad
-      homogénea y deficiente cuando requiere entradas, jerarquías o direcciones preferentes.</p>
-      <p>La popularidad del círculo procede tanto de su utilidad matemática como de su larga
-      historia cultural.</p>
-      <h4 id="cap-6">Capítulo VI — Circunferencia y frontera</h4>
-      <p>Una línea cerrada define un interior y un exterior dentro de un plano. En ritualística,
-      esta distinción puede convertirse en una regla de pertenencia.</p>
-      <p>La eficacia de la frontera depende de que la estructura reconozca la continuidad
-      completa. Una interrupción mínima puede ser irrelevante si el sistema tolera
-      discontinuidades o crítica si la línea misma transporta una función.</p>
-      <p>Por ello, afirmar que un círculo está roto no describe todavía qué parte del ritual ha
-      fallado.</p>
-      <p>La Seguridad Ritual exige identificar si una discontinuidad libera, desvía o
-      simplemente interrumpe.</p>
-      <h4 id="cap-7">Capítulo VII — Centros</h4>
-      <p>El centro de un círculo es equidistante de todos sus puntos. Esta propiedad permite
-      distribuir carga o atención de forma uniforme cuando los componentes periféricos poseen
-      funciones equivalentes.</p>
-      <p>Pero el centro también concentra relaciones. Colocar allí una fuente puede simplificar
-      conducción y aumentar el riesgo de sobrecarga.</p>
-      <p>Algunos diseños utilizan centros vacíos precisamente para evitar esa concentración y
-      reservan la posición sólo como referencia matemática.</p>
-      <h4 id="cap-8">Capítulo VIII — Radios</h4>
-      <p>Los radios conectan un centro con una frontera y pueden organizar rutas de transmisión.
-      Una matriz radial permite separar funciones en sectores mientras conserva una referencia
-      común.</p>
-      <p>La igualdad de radios produce simetría; su variación puede expresar jerarquías o
-      compensar diferencias entre componentes.</p>
-      <p>La forma visible de un radio puede ser una línea, una fila de objetos o simplemente una
-      alineación entre dos puntos.</p>
-      <h4 id="cap-9">Capítulo IX — Polígonos</h4>
+      posiciones alrededor de un centro sin privilegiar una dirección particular. Esta propiedad
+      lo vuelve útil para contención, distribución radial y organización de participantes, aunque
+      no lo convierte en una forma universal: una clausura circular puede ser excelente cuando la
+      estructura necesita continuidad homogénea y deficiente cuando requiere entradas, jerarquías
+      o direcciones preferentes. Su popularidad procede tanto de su utilidad matemática como de su
+      larga historia cultural.</p>
+      <p>Esa frontera continua, la circunferencia, define un interior y un exterior dentro de un
+      plano; en ritualística, esta distinción puede convertirse en una regla de pertenencia. Su
+      eficacia depende de que la estructura reconozca la continuidad completa: una interrupción
+      mínima puede ser irrelevante si el sistema tolera discontinuidades, o crítica si la línea
+      misma transporta una función. Afirmar que un círculo está roto no describe todavía qué parte
+      del ritual ha fallado; la Seguridad Ritual exige identificar si una discontinuidad libera,
+      desvía o simplemente interrumpe.</p>
+      <p>Dentro de esa frontera, el centro es equidistante de todos sus puntos, propiedad que
+      permite distribuir carga o atención de forma uniforme cuando los componentes periféricos
+      poseen funciones equivalentes. Pero el centro también concentra relaciones: colocar allí una
+      fuente puede simplificar conducción y aumentar el riesgo de sobrecarga. Algunos diseños
+      utilizan centros vacíos para evitar esa concentración y reservan la posición sólo como
+      referencia matemática.</p>
+      <p>Los radios conectan ese centro con la frontera y pueden organizar rutas de transmisión;
+      una matriz radial permite separar funciones en sectores mientras conserva una referencia
+      común. La igualdad de radios produce simetría, y su variación puede expresar jerarquías o
+      compensar diferencias entre componentes. La forma visible de un radio puede ser una línea,
+      una fila de objetos o simplemente una alineación entre dos puntos.</p>
+      <h4 id="cap-4">Capítulo IV — Polígonos, vértices y ángulos</h4>
       <p>Los polígonos permiten introducir direcciones y vértices definidos. Un triángulo posee
-      tres relaciones principales; un cuadrado organiza ejes opuestos; figuras de mayor número
-      de lados aproximan continuidad circular sin eliminar puntos privilegiados.</p>
-      <p>La elección de una figura debe responder a la cantidad de funciones, simetrías y
-      enlaces necesarios.</p>
-      <p>El simbolismo cultural puede acompañar estas formas, pero no sustituye su análisis
+      tres relaciones principales; un cuadrado organiza ejes opuestos; figuras de mayor número de
+      lados aproximan continuidad circular sin eliminar puntos privilegiados. La elección de una
+      figura debe responder a la cantidad de funciones, simetrías y enlaces necesarios, y el
+      simbolismo cultural puede acompañar estas formas, pero no sustituye su análisis
       geométrico.</p>
-      <h4 id="cap-10">Capítulo X — Vértices</h4>
-      <p>Los vértices concentran cambios de dirección y suelen convertirse en puntos naturales
-      para ubicar participantes, anclajes o materiales específicos.</p>
-      <p>Una estructura puede utilizar un vértice como nodo de redistribución. En ese caso,
-      pequeños errores de posición alteran simultáneamente varias relaciones.</p>
-      <p>Los diseños con muchos vértices ganan flexibilidad y aumentan también la cantidad de
-      puntos capaces de fallar.</p>
-      <h4 id="cap-11">Capítulo XI — Ángulos</h4>
-      <p>Los ángulos determinan orientación relativa entre trayectorias, líneas de transmisión y
-      sectores.</p>
-      <p>En matrices sencillas, pequeñas variaciones pueden ser toleradas. En otras, una
-      diferencia angular cambia qué componentes se alinean o qué región queda incluida.</p>
-      <p>La trigonometría ritual se utiliza principalmente para calcular estas relaciones antes
-      del montaje, no para realizar cálculos durante la ejecución.</p>
-      <p>Los estudiantes suelen descubrir aquí por qué la Facultad exige matemáticas previas
-      antes de autorizar prácticas.</p>
-      <h4 id="cap-12">Capítulo XII — Simetría</h4>
-      <p>La simetría permite distribuir funciones equivalentes con relaciones equivalentes. Esto
-      reduce diferencias locales y facilita compensación entre componentes.</p>
-      <p>Una matriz perfectamente simétrica no es siempre la mejor opción. Si los participantes
-      o materiales no son equivalentes, imponer igualdad geométrica puede producir desigualdad
-      funcional.</p>
-      <p>La buena geometría compensa la estructura real en lugar de idealizarla.</p>
-      <h4 id="cap-13">Capítulo XIII — Simetría radial</h4>
+      <p>Los vértices que definen esas figuras concentran cambios de dirección y suelen
+      convertirse en puntos naturales para ubicar participantes, anclajes o materiales
+      específicos. Una estructura puede utilizar un vértice como nodo de redistribución, y en ese
+      caso pequeños errores de posición alteran simultáneamente varias relaciones. Los diseños con
+      muchos vértices ganan flexibilidad y aumentan también la cantidad de puntos capaces de
+      fallar.</p>
+      <p>Entre los vértices, los ángulos determinan orientación relativa entre trayectorias,
+      líneas de transmisión y sectores. En matrices sencillas, pequeñas variaciones pueden
+      tolerarse; en otras, una diferencia angular cambia qué componentes se alinean o qué región
+      queda incluida. La trigonometría ritual se utiliza principalmente para calcular estas
+      relaciones antes del montaje, no para realizar cálculos durante la ejecución, y es aquí
+      donde los estudiantes suelen descubrir por qué la Facultad exige matemáticas previas antes
+      de autorizar prácticas.</p>
+      <h4 id="cap-5">Capítulo V — Tipos de simetría</h4>
+      <p>La simetría permite distribuir funciones equivalentes con relaciones equivalentes, lo que
+      reduce diferencias locales y facilita compensación entre componentes. Sin embargo, una
+      matriz perfectamente simétrica no es siempre la mejor opción: si los participantes o
+      materiales no son equivalentes, imponer igualdad geométrica puede producir desigualdad
+      funcional. La buena geometría compensa la estructura real en lugar de idealizarla.</p>
       <p>La simetría radial resulta útil cuando múltiples componentes deben relacionarse con un
-      mismo centro bajo condiciones semejantes.</p>
-      <p>Rituales corales utilizan esta disposición para reducir jerarquías espaciales entre
-      participantes.</p>
-      <p>Si uno de los componentes posee una función distinta, la simetría puede romperse
-      deliberadamente o mantenerse mediante compensaciones materiales.</p>
-      <h4 id="cap-14">Capítulo XIV — Simetría bilateral</h4>
-      <p>La simetría bilateral organiza una estructura alrededor de un eje. Es adecuada para
-      sistemas de oposición, intercambio, espejo o transferencia entre dos regiones.</p>
-      <p>El eje puede actuar como frontera, canal o referencia neutral.</p>
-      <p>Los rituales de comparación, balance o sustitución utilizan con frecuencia esta
-      disposición porque hace visible qué componentes deben corresponderse.</p>
-      <h4 id="cap-15">Capítulo XV — Asimetría funcional</h4>
-      <p>La asimetría no equivale a error. Muchas estructuras necesitan privilegiar una
-      dirección, participante o salida.</p>
-      <p>Un ritual de transferencia puede tener un lado receptor y otro emisor; un sistema de
-      evacuación necesita una salida preferente; una contención puede incorporar una
-      válvula.</p>
-      <p>La geometría correcta es aquella que representa las diferencias reales de función.</p>
-      <h4 id="cap-16">Capítulo XVI — Orientación</h4>
+      mismo centro bajo condiciones semejantes, y por ello rituales corales utilizan esta
+      disposición para reducir jerarquías espaciales entre participantes. Si uno de los
+      componentes posee una función distinta, la simetría puede romperse deliberadamente o
+      mantenerse mediante compensaciones materiales.</p>
+      <p>La simetría bilateral, en cambio, organiza una estructura alrededor de un eje, y resulta
+      adecuada para sistemas de oposición, intercambio, espejo o transferencia entre dos regiones.
+      Ese eje puede actuar como frontera, canal o referencia neutral. Los rituales de comparación,
+      balance o sustitución utilizan con frecuencia esta disposición porque hace visible qué
+      componentes deben corresponderse.</p>
+      <p>Finalmente, la asimetría no equivale a error. Muchas estructuras necesitan privilegiar
+      una dirección, participante o salida: un ritual de transferencia puede tener un lado
+      receptor y otro emisor, un sistema de evacuación necesita una salida preferente, una
+      contención puede incorporar una válvula. La geometría correcta es aquella que representa las
+      diferencias reales de función.</p>
+      <h4 id="cap-6">Capítulo VI — Orientación, ejes y altura</h4>
       <p>Una figura puede conservar forma y cambiar función al rotarse si el ritual utiliza
-      referencias externas.</p>
-      <p>Norte, posición solar, flujo de agua, dirección de un plano o ubicación de una fuente
-      pueden definir orientaciones relevantes.</p>
-      <p>Cuando no existe una referencia externa, rotar toda la matriz puede ser irrelevante.</p>
-      <p>La orientación debe justificarse mediante relaciones observables y no por tradición sin
-      examen.</p>
-      <h4 id="cap-17">Capítulo XVII — Ejes</h4>
-      <p>Los ejes organizan direcciones preferentes y permiten describir posiciones relativas de
-      forma más eficiente.</p>
-      <p>Un eje puede dividir funciones, alinear entradas y salidas o coordinar varias matrices
-      conectadas.</p>
-      <p>En rituales territoriales, los ejes suelen corresponder a rutas, ríos, murallas o
-      líneas astronómicas.</p>
-      <p>La elección de un eje incorrecto puede mantener la figura y perder la relación que
-      pretendía representar.</p>
-      <h4 id="cap-18">Capítulo XVIII — Altura</h4>
-      <p>La mayoría de los diagramas rituales se dibujan en dos dimensiones, pero las
-      estructuras reales ocupan volumen.</p>
-      <p>Altura, profundidad y superposición vertical pueden ser tan importantes como posición
-      sobre el suelo. Participantes en balcones, cámaras inferiores o torres pueden formar parte
-      de la misma matriz.</p>
-      <p>Ignorar la tercera dimensión produce errores especialmente graves en edificios antiguos
-      donde varias plantas comparten alineaciones.</p>
-      <h4 id="cap-19">Capítulo XIX — Matrices tridimensionales</h4>
-      <p>Una matriz tridimensional distribuye componentes en volumen. Puede utilizar esferas,
-      capas, columnas o redes espaciales.</p>
-      <p>Estas configuraciones permiten envolver completamente un objetivo o separar funciones
-      que interferirían si ocuparan el mismo plano.</p>
-      <p>Su análisis requiere coordenadas, proyecciones y modelos físicos antes del montaje.</p>
-      <p>La visualización incorrecta es una fuente frecuente de fallos incluso entre
-      practicantes experimentados.</p>
-      <h4 id="cap-20">Capítulo XX — Densidad</h4>
-      <p>Se denomina densidad geométrica a la cantidad de componentes o relaciones distribuidas
-      dentro de una región.</p>
-      <p>Aumentar densidad puede fortalecer control local y también incrementar interferencia.</p>
-      <p>Los diseños de gran precisión suelen utilizar regiones densas cerca de funciones
-      críticas y zonas más abiertas donde sólo se necesita transmisión.</p>
-      <p>La distribución uniforme es una elección, no una obligación.</p>
-      <h4 id="cap-21">Capítulo XXI — Separación de funciones</h4>
-      <p>Dos componentes demasiado próximos pueden interferir si utilizan materiales,
-      referencias o campos incompatibles.</p>
-      <p>La geometría ritual emplea separación física como herramienta de aislamiento cuando
-      otros métodos resultarían costosos.</p>
-      <p>La distancia necesaria depende del tipo de influencia y no puede establecerse mediante
-      una regla única.</p>
-      <h4 id="cap-22">Capítulo XXII — Nodos</h4>
-      <p>Los nodos son posiciones donde varias relaciones se encuentran. Pueden recibir,
-      redistribuir o verificar información dentro del ritual.</p>
-      <p>Un nodo eficiente reduce recorridos; uno sobrecargado se convierte en punto único de
-      fallo.</p>
-      <p>Los diseños modernos prefieren distribuir funciones críticas entre varios nodos cuando
-      la escala lo permite.</p>
-      <h4 id="cap-23">Capítulo XXIII — Redes</h4>
-      <p>Las redes rituales conectan nodos mediante rutas definidas. Su estructura puede ser
-      radial, anular, ramificada o mallada.</p>
-      <p>Una red ramificada es eficiente pero vulnerable a la pérdida de un enlace central. Una
-      red mallada ofrece rutas alternativas a costa de mayor complejidad.</p>
-      <p>La elección reproduce un problema conocido en ingeniería y logística, ya que eficiencia y
-      redundancia rara vez aumentan juntas sin costo.</p>
-      <h4 id="cap-24">Capítulo XXIV — Redundancia geométrica</h4>
-      <p>Una estructura puede incluir rutas alternativas capaces de conservar continuidad si una
-      sección falla.</p>
-      <p>Dos líneas paralelas, anillos concéntricos o nodos duplicados son ejemplos simples.</p>
-      <p>La redundancia debe diseñarse para evitar que ambas rutas fallen por la misma causa.
-      Dos líneas trazadas sobre el mismo material frágil ofrecen menos seguridad de la que su
-      apariencia sugiere.</p>
-      <h4 id="cap-25">Capítulo XXV — Intersecciones</h4>
+      referencias externas. Norte, posición solar, flujo de agua, dirección de un plano o
+      ubicación de una fuente pueden definir orientaciones relevantes; cuando no existe una
+      referencia externa, rotar toda la matriz puede ser irrelevante. La orientación debe
+      justificarse mediante relaciones observables y no por tradición sin examen.</p>
+      <p>Los ejes organizan esas direcciones preferentes y permiten describir posiciones
+      relativas de forma más eficiente. Un eje puede dividir funciones, alinear entradas y salidas
+      o coordinar varias matrices conectadas; en rituales territoriales, suelen corresponder a
+      rutas, ríos, murallas o líneas astronómicas. La elección de un eje incorrecto puede mantener
+      la figura y perder la relación que pretendía representar.</p>
+      <p>La mayoría de los diagramas rituales se dibujan en dos dimensiones, pero las estructuras
+      reales ocupan volumen. Altura, profundidad y superposición vertical pueden ser tan
+      importantes como la posición sobre el suelo: participantes en balcones, cámaras inferiores o
+      torres pueden formar parte de la misma matriz. Ignorar la tercera dimensión produce errores
+      especialmente graves en edificios antiguos donde varias plantas comparten alineaciones.</p>
+      <h4 id="cap-7">Capítulo VII — Matrices tridimensionales, densidad y separación de funciones</h4>
+      <p>Una matriz tridimensional distribuye componentes en volumen y puede utilizar esferas,
+      capas, columnas o redes espaciales. Estas configuraciones permiten envolver completamente un
+      objetivo o separar funciones que interferirían si ocuparan el mismo plano, pero su análisis
+      requiere coordenadas, proyecciones y modelos físicos antes del montaje. La visualización
+      incorrecta es una fuente frecuente de fallos incluso entre practicantes experimentados.</p>
+      <p>Dentro de ese volumen, se denomina densidad geométrica a la cantidad de componentes o
+      relaciones distribuidas en una región. Aumentar densidad puede fortalecer control local y
+      también incrementar interferencia, por lo que los diseños de gran precisión suelen reservar
+      regiones densas cerca de funciones críticas y dejar zonas más abiertas donde sólo se
+      necesita transmisión. La distribución uniforme es una elección, no una obligación.</p>
+      <p>Esa gestión de la densidad se relaciona directamente con la separación de funciones: dos
+      componentes demasiado próximos pueden interferir si utilizan materiales, referencias o
+      campos incompatibles. La geometría ritual emplea separación física como herramienta de
+      aislamiento cuando otros métodos resultarían costosos, aunque la distancia necesaria depende
+      del tipo de influencia y no puede establecerse mediante una regla única.</p>
+      <h4 id="cap-8">Capítulo VIII — Nodos, redes e intersecciones</h4>
+      <p>Los nodos son posiciones donde varias relaciones se encuentran, y pueden recibir,
+      redistribuir o verificar información dentro del ritual. Un nodo eficiente reduce recorridos;
+      uno sobrecargado se convierte en punto único de fallo. Por ello los diseños modernos
+      prefieren distribuir funciones críticas entre varios nodos cuando la escala lo permite.</p>
+      <p>Esos nodos se conectan mediante redes rituales, cuya estructura puede ser radial, anular,
+      ramificada o mallada. Una red ramificada es eficiente pero vulnerable a la pérdida de un
+      enlace central; una red mallada ofrece rutas alternativas a costa de mayor complejidad. La
+      elección reproduce un problema conocido en ingeniería y logística: eficiencia y redundancia
+      no suelen crecer juntas sin costo.</p>
+      <p>La redundancia geométrica añade justamente esas rutas alternativas, capaces de conservar
+      continuidad si una sección falla. Dos líneas paralelas, anillos concéntricos o nodos
+      duplicados son ejemplos simples, pero deben diseñarse para evitar que ambas rutas fallen por
+      la misma causa: dos líneas trazadas sobre el mismo material frágil ofrecen menos seguridad
+      de la que su apariencia sugiere.</p>
       <p>Cuando dos rutas se cruzan, la intersección puede ser contacto, superposición sin
-      interacción o nodo deliberado.</p>
-      <p>La diferencia depende del sistema. Asumir que toda línea cruzada se conecta es tan
-      incorrecto como asumir que nunca lo hace.</p>
-      <p>Runología y Mineralogía Mágica ayudan a determinar cómo el soporte representa estos
-      cruces.</p>
-      <h4 id="cap-26">Capítulo XXVI — Anillos concéntricos</h4>
-      <p>Los anillos concéntricos permiten separar funciones por capas. Una región puede
-      contener, otra aislar y una tercera actuar como zona de seguridad.</p>
-      <p>Esta arquitectura facilita cierres progresivos y reduce la probabilidad de que una
-      única falla comprometa todo el sistema.</p>
-      <p>También consume espacio y materiales, por lo que no resulta apropiada para todas las
+      interacción o nodo deliberado, y la diferencia depende del sistema. Asumir que toda línea
+      cruzada se conecta es tan incorrecto como asumir que nunca lo hace; Runología y Mineralogía
+      Mágica ayudan a determinar cómo el soporte representa estos cruces.</p>
+      <h4 id="cap-9">Capítulo IX — Anillos concéntricos y sectores</h4>
+      <p>Los anillos concéntricos permiten separar funciones por capas: una región puede contener,
+      otra aislar y una tercera actuar como zona de seguridad. Esta arquitectura facilita cierres
+      progresivos y reduce la probabilidad de que una única falla comprometa todo el sistema,
+      aunque también consume espacio y materiales, por lo que no resulta apropiada para todas las
       aplicaciones.</p>
-      <h4 id="cap-27">Capítulo XXVII — Sectores</h4>
-      <p>Dividir un círculo o polígono en sectores permite asignar regiones a participantes,
-      materiales o funciones específicas.</p>
-      <p>Los sectores pueden ser iguales o ponderados según la carga esperada.</p>
-      <p>Una distribución desigual no constituye defecto si responde a diferencias funcionales
-      reales.</p>
-      <p>El cálculo debe realizarse antes de asignar participantes, no adaptarse después para
-      justificar posiciones ya elegidas.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Trayectorias</h4>
-      <p>Algunos rituales incluyen movimiento. En ellos, la geometría no describe sólo
-      posiciones estáticas, sino trayectorias.</p>
-      <p>El recorrido puede construir una frontera, activar nodos en secuencia o trasladar una
-      referencia entre regiones.</p>
-      <p>La velocidad puede importar si el tiempo de tránsito participa de la estructura.</p>
-      <p>La coreografía ritual sólo es geométrica cuando el movimiento modifica relaciones
-      espaciales reales.</p>
-      <h4 id="cap-29">Capítulo XXIX — Rotación</h4>
-      <p>La rotación puede distribuir exposición, transferir prioridad entre sectores o generar
-      secuencias periódicas.</p>
-      <p>No debe atribuirse significado universal a girar en una dirección u otra. La
-      importancia depende de orientación, orden y sistema.</p>
-      <p>En matrices mecánicas o artefactos, la rotación puede ser una forma eficiente de
-      recorrer varias configuraciones con un mismo conjunto de componentes.</p>
-      <h4 id="cap-30">Capítulo XXX — Escala</h4>
-      <p>Ampliar una figura conserva ángulos y proporciones, pero cambia distancias absolutas,
-      tiempos de transmisión y cantidad de material.</p>
-      <p>Por ello, un diseño correcto sobre una mesa puede fracasar al ocupar una plaza.</p>
-      <p>La Geometría Ritual puede demostrar equivalencia formal; la Ritualística debe
-      determinar si la estructura completa soporta el cambio.</p>
-      <h4 id="cap-31">Capítulo XXXI — Curvatura del terreno</h4>
-      <p>Los rituales grandes rara vez se ejecutan sobre superficies perfectamente planas.
-      Pendientes, desniveles y curvatura territorial alteran distancias y orientaciones.</p>
-      <p>Proyectar una figura plana sobre terreno irregular introduce deformaciones.</p>
-      <p>Los diseños territoriales utilizan levantamientos topográficos y referencias
-      tridimensionales para evitar que una clausura aparentemente cerrada contenga
-      discontinuidades reales.</p>
-      <h4 id="cap-32">Capítulo XXXII — Arquitectura</h4>
-      <p>Edificios pueden diseñarse como geometrías rituales permanentes. Pasillos, columnas,
-      patios y torres actúan como componentes de una matriz distribuida.</p>
-      <p>En estos casos, restaurar o remodelar arquitectura puede modificar función mágica sin
-      tocar ninguna inscripción visible.</p>
-      <p>Conservación Arcana y Arqueología Arcana consideran la geometría del edificio parte de
-      la evidencia.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Topología y geometría</h4>
-      <p>La Geometría Ritual estudia medidas y disposición. La Topología Arcana estudia
-      conectividad cuando esas medidas dejan de describir adecuadamente el espacio.</p>
-      <p>Una matriz puede ser geométricamente correcta y topológicamente alterada por un
-      portal, una dislocación o un interior incompatible.</p>
-      <p>En entornos anómalos, medir distancias no basta. Debe confirmarse que las regiones que
-      parecen adyacentes mantienen realmente la continuidad esperada.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Planología</h4>
-      <p>Los rituales interplanares necesitan referencias espaciales capaces de atravesar
-      fronteras. Una figura dibujada sobre el suelo puede representar sólo la proyección local
-      de una estructura que continúa en otro plano.</p>
-      <p>Orientación y posición deben entonces definirse respecto de relaciones planares y no
-      únicamente geográficas.</p>
-      <p>Planología proporciona el marco para estas transiciones; Geometría Ritual organiza cómo
-      se distribuyen dentro del ritual.</p>
-      <h4 id="cap-35">Capítulo XXXV — Simetría y estabilidad</h4>
-      <p>La simetría puede reducir diferencias internas y facilitar que una estructura
-      distribuya carga de manera predecible.</p>
-      <p>No existe, sin embargo, una ley que haga más estable toda figura simétrica.</p>
-      <p>La estabilidad depende de que la simetría geométrica coincida con simetría funcional.
-      Si un componente recibe el doble de carga, tratarlo como equivalente a los demás puede
-      ocultar precisamente la región que necesita refuerzo.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Error acumulativo</h4>
-      <p>Una desviación pequeña repetida muchas veces puede producir un error significativo.
-      Este problema aparece en polígonos extensos, cadenas de nodos y rituales territoriales.</p>
-      <p>Cada segmento puede parecer correcto de manera local y cerrar mal al final.</p>
-      <p>Los procedimientos modernos distribuyen mediciones desde referencias comunes en lugar
-      de construir toda la matriz sumando errores sucesivos.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Tolerancia</h4>
-      <p>Toda estructura posee un margen dentro del cual variaciones geométricas no alteran
-      significativamente su función.</p>
-      <p>Diseñar sin conocer esa tolerancia obliga a precisión innecesaria o, peor, asume
-      seguridad donde no existe.</p>
-      <p>La experimentación académica intenta medir rangos de error antes de autorizar una
-      estructura para uso de campo.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Calibración</h4>
-      <p>La calibración compara la disposición real con la diseñada antes de activar el
-      ritual.</p>
-      <p>Incluye medidas, niveles, orientación, continuidad de líneas y posición de
+      <p>Dividir un círculo o polígono en sectores, en cambio, permite asignar regiones a
+      participantes, materiales o funciones específicas. Los sectores pueden ser iguales o
+      ponderados según la carga esperada, y una distribución desigual no constituye defecto si
+      responde a diferencias funcionales reales. El cálculo debe realizarse antes de asignar
+      participantes, no adaptarse después para justificar posiciones ya elegidas.</p>
+      <h4 id="cap-10">Capítulo X — Trayectorias, rotación y escala</h4>
+      <p>Algunos rituales incluyen movimiento. En ellos, la geometría no describe sólo posiciones
+      estáticas, sino trayectorias: el recorrido puede construir una frontera, activar nodos en
+      secuencia o trasladar una referencia entre regiones. La velocidad puede importar si el
+      tiempo de tránsito participa de la estructura, pero la coreografía ritual sólo es geométrica
+      cuando el movimiento modifica relaciones espaciales reales.</p>
+      <p>Un caso particular de movimiento es la rotación, que puede distribuir exposición,
+      transferir prioridad entre sectores o generar secuencias periódicas. No debe atribuirse
+      significado universal a girar en una dirección u otra, pues la importancia depende de
+      orientación, orden y sistema. En matrices mecánicas o artefactos, la rotación puede ser una
+      forma eficiente de recorrer varias configuraciones con un mismo conjunto de
       componentes.</p>
-      <p>En matrices grandes se utilizan instrumentos redundantes y observadores
-      independientes.</p>
-      <p>Una figura hermosa no constituye evidencia de precisión.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Compensación</h4>
-      <p>Cuando un terreno, edificio o participante impide reproducir la disposición ideal,
-      puede diseñarse una compensación.</p>
-      <p>Compensar no significa mover algo hasta que parezca correcto. Significa modificar otras
-      relaciones para que la estructura mantenga equivalencia funcional.</p>
-      <p>Este trabajo exige modelado matemático y suele ser una de las partes más difíciles de
-      la asignatura avanzada.</p>
-      <h4 id="cap-40">Capítulo XL — Geometría simbólica</h4>
-      <p>Las formas pueden poseer significado cultural además de función espacial. Un círculo
-      puede representar totalidad mientras también actúa como frontera.</p>
-      <p>Semiótica Mágica estudia la primera relación y Geometría Ritual la segunda.</p>
-      <p>Ambas pueden reforzarse, pero deben analizarse por separado para evitar atribuir
-      función geométrica a un símbolo o significado simbólico a una necesidad matemática.</p>
-      <h4 id="cap-41">Capítulo XLI — Geometría de contención</h4>
-      <p>Las estructuras de contención intentan mantener una influencia dentro de una región
-      definida.</p>
-      <p>Su geometría favorece continuidad de frontera, redundancia y rutas de descarga
-      controladas.</p>
-      <p>Un diseño completamente cerrado sin válvula puede resultar menos seguro que otro con
-      una salida prevista y contenida.</p>
-      <p>Seguridad Ritual participa en la definición de esas rutas.</p>
-      <h4 id="cap-42">Capítulo XLII — Geometría de transferencia</h4>
-      <p>Los rituales de transferencia necesitan representar origen, destino y camino de
-      relación entre ambos.</p>
-      <p>La disposición puede ser lineal, bilateral o mediante nodos intermedios.</p>
-      <p>Una geometría equilibrada no implica necesariamente transferencia bidireccional; la
-      dirección puede estar definida por materiales, secuencia o autoridad.</p>
-      <h4 id="cap-43">Capítulo XLIII — Geometría de invocación</h4>
-      <p>Las estructuras de invocación separan con frecuencia la región de manifestación de las
-      posiciones ocupadas por los participantes.</p>
-      <p>La distancia actúa como medida de seguridad y como forma de impedir que referencias del
-      oficiante se confundan con el objetivo invocado.</p>
-      <p>En entidades extraplanares, la disposición también puede incluir anclajes hacia la
-      frontera planar correspondiente.</p>
-      <h4 id="cap-44">Capítulo XLIV — Geometría territorial</h4>
-      <p>A escala territorial, el ritual deja de parecer un dibujo y comienza a confundirse con
-      infraestructura.</p>
-      <p>Torres, caminos, templos, mojones y accidentes geográficos pueden funcionar como
-      vértices y enlaces.</p>
-      <p>La cartografía se convierte entonces en parte del cálculo ritual.</p>
-      <p>Estas estructuras son difíciles de ocultar y todavía más difíciles de modificar sin
-      consecuencias políticas.</p>
-      <h4 id="cap-45">Capítulo XLV — Errores de campo</h4>
-      <p>Viento, lluvia, suelo inestable, multitudes y daños inesperados convierten una
-      geometría correcta sobre papel en una estructura imperfecta.</p>
-      <p>Los diseños de campo necesitan tolerancias mayores y componentes fáciles de
-      verificar.</p>
-      <p>La precisión absoluta es menos valiosa que la capacidad de detectar rápidamente cuándo
-      una relación ha salido del rango seguro.</p>
-      <h4 id="cap-46">Capítulo XLVI — Geometría y participantes vivos</h4>
-      <p>Los participantes no son puntos matemáticos. Se mueven, respiran, se cansan y ocupan
-      volumen.</p>
-      <p>Una estructura que exige inmovilidad perfecta durante horas está mal adaptada a seres
-      vivos salvo que proporcione soporte específico.</p>
-      <p>La geometría académica incorpora zonas de tolerancia y posiciones funcionales, no
-      marcas imposibles de respetar.</p>
-      <h4 id="cap-47">Capítulo XLVII — El problema del cuerpo</h4>
-      <p>Cuando una criatura ocupa una frontera ritual, su continuidad orgánica puede complicar
-      la interpretación de dentro y fuera.</p>
-      <p>Los diseños seguros evitan utilizar cuerpos vivos como segmentos de cierre salvo que la
-      estructura haya sido concebida explícitamente para reconocerlos como unidades.</p>
-      <p>Anatomía Arcana aporta aquí principios indispensables sobre pertenencia corporal.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Cálculo y demostración</h4>
-      <p>La Geometría Ritual es una de las asignaturas más matemáticas de Dolbred porque muchas
-      de sus afirmaciones pueden demostrarse antes de ejecutar magia.</p>
-      <p>Si una matriz no cierra geométricamente, no es necesario activarla para descubrirlo. Si
-      dos sectores no poseen el área prevista, puede calcularse la diferencia. Si una red
-      depende de un único nodo, su vulnerabilidad puede identificarse sobre el plano.</p>
-      <p>La matemática no reemplaza la experimentación. Reduce la cantidad de errores que sería
-      absurdo descubrir mediante una explosión.</p>
-      <h4 id="cap-49">Capítulo XLIX — Modelos</h4>
-      <p>Los estudiantes trabajan primero con modelos inertes. Hilos, placas, pesos y redes
-      permiten estudiar distribución, simetría y redundancia sin utilizar energía mágica.</p>
-      <p>Después se emplean cargas mínimas y matrices simplificadas.</p>
-      <p>La Facultad considera que quien no puede demostrar una estructura con objetos
-      ordinarios todavía no está preparado para confiarle un fenómeno real.</p>
-      <h4 id="cap-50">Capítulo L — Relación con otras disciplinas</h4>
+      <p>La escala, por su parte, plantea un problema distinto: ampliar una figura conserva
+      ángulos y proporciones, pero cambia distancias absolutas, tiempos de transmisión y cantidad
+      de material. Por ello, un diseño correcto sobre una mesa puede fracasar al ocupar una plaza.
+      La Geometría Ritual puede demostrar equivalencia formal; la Ritualística debe determinar si
+      la estructura completa soporta el cambio.</p>
+      <h4 id="cap-11">Capítulo XI — Geometría del terreno, la arquitectura y otros planos</h4>
+      <p>Los rituales grandes pocas veces se ejecutan sobre superficies perfectamente planas:
+      pendientes, desniveles y curvatura territorial alteran distancias y orientaciones, y
+      proyectar una figura plana sobre terreno irregular introduce deformaciones. Los diseños
+      territoriales utilizan levantamientos topográficos y referencias tridimensionales para
+      evitar que una clausura aparentemente cerrada contenga discontinuidades reales.</p>
+      <p>Los edificios plantean un problema semejante y a la vez pueden ser la solución: pueden
+      diseñarse como geometrías rituales permanentes, donde pasillos, columnas, patios y torres
+      actúan como componentes de una matriz distribuida. En estos casos, restaurar o remodelar
+      arquitectura puede modificar función mágica sin tocar ninguna inscripción visible, razón por
+      la cual Conservación Arcana y Arqueología Arcana consideran la geometría del edificio parte
+      de la evidencia.</p>
+      <p>La Geometría Ritual estudia medidas y disposición; la Topología Arcana estudia
+      conectividad cuando esas medidas dejan de describir adecuadamente el espacio. Una matriz
+      puede ser geométricamente correcta y topológicamente alterada por un portal, una dislocación
+      o un interior incompatible. En entornos anómalos, medir distancias no basta: debe
+      confirmarse que las regiones que parecen adyacentes mantienen realmente la continuidad
+      esperada.</p>
+      <p>Los rituales interplanares llevan este problema más lejos aún, pues necesitan referencias
+      espaciales capaces de atravesar fronteras. Una figura dibujada sobre el suelo puede
+      representar sólo la proyección local de una estructura que continúa en otro plano, de modo
+      que orientación y posición deben definirse respecto de relaciones planares y no únicamente
+      geográficas. Planología proporciona el marco para estas transiciones; Geometría Ritual
+      organiza cómo se distribuyen dentro del ritual.</p>
+      <h4 id="cap-12">Capítulo XII — Estabilidad, error y calibración</h4>
+      <p>La simetría puede reducir diferencias internas y facilitar que una estructura distribuya
+      carga de manera predecible, pero no existe una ley que haga más estable toda figura
+      simétrica. La estabilidad depende de que la simetría geométrica coincida con simetría
+      funcional: si un componente recibe el doble de carga, tratarlo como equivalente a los demás
+      puede ocultar justo la región que necesita refuerzo.</p>
+      <p>Un problema relacionado es el error acumulativo: una desviación pequeña repetida muchas
+      veces puede producir un error significativo, algo que aparece en polígonos extensos, cadenas
+      de nodos y rituales territoriales. Cada segmento puede parecer correcto de manera local y
+      cerrar mal al final. Por ello, los procedimientos modernos distribuyen mediciones desde
+      referencias comunes en lugar de construir toda la matriz sumando errores sucesivos.</p>
+      <p>Evaluar cuánto error resulta aceptable exige conocer la tolerancia de la estructura, el
+      margen dentro del cual variaciones geométricas no alteran significativamente su función.
+      Diseñar sin conocer esa tolerancia obliga a precisión innecesaria o, peor, asume seguridad
+      donde no existe, razón por la cual la experimentación académica intenta medir rangos de
+      error antes de autorizar una estructura para uso de campo.</p>
+      <p>La calibración compara la disposición real con la diseñada antes de activar el ritual, e
+      incluye medidas, niveles, orientación, continuidad de líneas y posición de componentes. En
+      matrices grandes se utilizan instrumentos redundantes y observadores independientes, porque
+      una figura hermosa no constituye evidencia de precisión.</p>
+      <p>Cuando un terreno, edificio o participante impide reproducir la disposición ideal, puede
+      diseñarse una compensación. Compensar no significa mover algo hasta que parezca correcto,
+      sino modificar otras relaciones para que la estructura mantenga equivalencia funcional. Este
+      trabajo exige modelado matemático y suele ser una de las partes más difíciles de la
+      asignatura avanzada.</p>
+      <h4 id="cap-13">Capítulo XIII — Geometría simbólica y geometrías aplicadas</h4>
+      <p>Las formas pueden poseer significado cultural además de función espacial: un círculo
+      puede representar totalidad mientras también actúa como frontera. Semiótica Mágica estudia
+      la primera relación y Geometría Ritual la segunda; ambas pueden reforzarse, pero deben
+      analizarse por separado para evitar atribuir función geométrica a un símbolo o significado
+      simbólico a una necesidad matemática. Esta distinción resulta clave al examinar las
+      geometrías propias de cada tipo de ritual.</p>
+      <p>Las estructuras de contención, por ejemplo, intentan mantener una influencia dentro de
+      una región definida. Su geometría favorece continuidad de frontera, redundancia y rutas de
+      descarga controladas, ya que un diseño completamente cerrado sin válvula puede resultar
+      menos seguro que otro con una salida prevista y contenida. Seguridad Ritual participa en la
+      definición de esas rutas.</p>
+      <p>Los rituales de transferencia, en cambio, necesitan representar origen, destino y camino
+      de relación entre ambos. La disposición puede ser lineal, bilateral o mediante nodos
+      intermedios, y una geometría equilibrada no implica necesariamente transferencia
+      bidireccional: la dirección puede estar definida por materiales, secuencia o autoridad.</p>
+      <p>Las estructuras de invocación, a su vez, separan con frecuencia la región de
+      manifestación de las posiciones ocupadas por los participantes. La distancia actúa como
+      medida de seguridad y como forma de impedir que referencias del oficiante se confundan con
+      el objetivo invocado; en entidades extraplanares, la disposición también puede incluir
+      anclajes hacia la frontera planar correspondiente.</p>
+      <p>A escala territorial, finalmente, el ritual deja de parecer un dibujo y comienza a
+      confundirse con infraestructura. Torres, caminos, templos, mojones y accidentes geográficos
+      pueden funcionar como vértices y enlaces, y la cartografía se convierte entonces en parte
+      del cálculo ritual. Estas estructuras son difíciles de ocultar y todavía más difíciles de
+      modificar sin consecuencias políticas.</p>
+      <h4 id="cap-14">Capítulo XIV — Errores de campo y participantes vivos</h4>
+      <p>Viento, lluvia, suelo inestable, multitudes y daños inesperados convierten una geometría
+      correcta sobre papel en una estructura imperfecta. Los diseños de campo necesitan
+      tolerancias mayores y componentes fáciles de verificar, porque la precisión absoluta es
+      menos valiosa que la capacidad de detectar rápidamente cuándo una relación ha salido del
+      rango seguro.</p>
+      <p>Parte de esa imprecisión de campo proviene de los propios participantes, que no son
+      puntos matemáticos: se mueven, respiran, se cansan y ocupan volumen. Una estructura que
+      exige inmovilidad perfecta durante horas está mal adaptada a seres vivos salvo que
+      proporcione soporte específico, por lo que la geometría académica incorpora zonas de
+      tolerancia y posiciones funcionales, no marcas imposibles de respetar.</p>
+      <p>El caso más delicado ocurre cuando una criatura ocupa una frontera ritual, ya que su
+      continuidad orgánica puede complicar la interpretación de dentro y fuera. Los diseños
+      seguros evitan utilizar cuerpos vivos como segmentos de cierre salvo que la estructura haya
+      sido concebida explícitamente para reconocerlos como unidades. Anatomía Arcana aporta aquí
+      principios indispensables sobre pertenencia corporal.</p>
+      <h4 id="cap-15">Capítulo XV — Cálculo, modelos y relación con otras disciplinas</h4>
+      <p>La Geometría Ritual es una de las asignaturas más matemáticas de Dolbred porque muchas de
+      sus afirmaciones pueden demostrarse antes de ejecutar magia. Si una matriz no cierra
+      geométricamente, no es necesario activarla para descubrirlo; si dos sectores no poseen el
+      área prevista, puede calcularse la diferencia; si una red depende de un único nodo, su
+      vulnerabilidad puede identificarse sobre el plano. La matemática no reemplaza la
+      experimentación, pero reduce la cantidad de errores que sería absurdo descubrir mediante una
+      explosión.</p>
+      <p>Antes de llegar a esa etapa, los estudiantes trabajan con modelos inertes. Hilos, placas,
+      pesos y redes permiten estudiar distribución, simetría y redundancia sin utilizar energía
+      mágica, y sólo después se emplean cargas mínimas y matrices simplificadas. La Facultad
+      considera que quien no puede demostrar una estructura con objetos ordinarios todavía no está
+      preparado para confiarle un fenómeno real.</p>
       <p>La Geometría Ritual trabaja directamente con Ritualística, Runología, Semiótica Mágica,
-      Mineralogía Mágica, Planología y Topología Arcana.</p>
-      <p>Taumaturgia Superior interviene cuando una disposición sostiene alteraciones
-      territoriales o marcos de gran escala. Seguridad Ritual define tolerancias, vías de escape
-      y procedimientos de interrupción.</p>
-      <p>La disciplina proporciona a todas ellas un principio común, y es que si la posición participa de
-      una estructura, debe poder describirse con más precisión que "aproximadamente aquí".</p>
-      <h4 id="cap-51">Capítulo LI — El mito del círculo perfecto</h4>
+      Mineralogía Mágica, Planología y Topología Arcana. Taumaturgia Superior interviene cuando
+      una disposición sostiene alteraciones territoriales o marcos de gran escala, y Seguridad
+      Ritual define tolerancias, vías de escape y procedimientos de interrupción. A todas ellas, la
+      disciplina aporta un principio común: si la posición participa de una estructura, debe poder
+      describirse con más precisión que "aproximadamente aquí".</p>
+      <h4 id="cap-16">Capítulo XVI — El mito del círculo perfecto</h4>
       <p>La cultura popular imagina que un círculo ritual debe ser perfecto o fallará de
       inmediato. La realidad es menos teatral y más peligrosa.</p>
       <p>Muchos sistemas toleran irregularidades considerables. Otros dependen de una sola
