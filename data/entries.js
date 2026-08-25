@@ -293,7 +293,7 @@ window.ENTRIES = [
       cuando la ejecución prolongada de una estructura consume los recursos necesarios para
       mantenerla. Ambos fenómenos pueden presentarse simultáneamente.</p>
       <h4 id="cap-14">Capítulo XIV — Anomalías arcanas</h4>
-      <p>No todos los errores mágicos son causados por una cantidad insuficiente de energía. En
+      <p>Solo una parte de los errores mágicos se debe a una cantidad insuficiente de energía. En
       ocasiones, el problema se encuentra en la información, y una alteración mínima puede
       modificar completamente una estructura.</p>
       <p>Recordemos: 01000001. Una sola modificación produce: 01000000. La cantidad de energía
@@ -359,8 +359,8 @@ window.ENTRIES = [
       precaución. Cuando una estructura superior falla, el arcanista puede no comprender
       inmediatamente qué parte de sus componentes produjo el error.</p>
       <h4 id="cap-17">Capítulo XVII — Interacción entre estructuras</h4>
-      <p>Hasta ahora hemos considerado las estructuras como entidades independientes. Pero es
-      cierto que, en la práctica, rara vez lo son.</p>
+      <p>Hasta ahora hemos considerado las estructuras como entidades independientes. En la
+      práctica, sin embargo, casi siempre están conectadas entre sí.</p>
       <p>Dos estructuras pueden compartir información. Una puede modificar aquello que otra está
       utilizando, una tercera puede observar el resultado. Considérese un círculo de protección:
       una estructura mantiene la barrera, mientras que otra detecta intrusiones. Una tercera
@@ -700,7 +700,7 @@ window.ENTRIES = [
       manifestar otras, dependiendo de qué partes de la estructura original hayan quedado
       integradas.</p>
       <h4 id="cap-11">Capítulo XI — Orígenes extraplanares y alteraciones profundas</h4>
-      <p>No todos los hechiceros deben su condición a una ascendencia reconocible. La exposición
+      <p>La ascendencia reconocible no explica el origen de todos los hechiceros. La exposición
       prolongada a determinados planos, la proximidad a entidades extraordinarias o la
       supervivencia a fenómenos arcanos de gran intensidad pueden dejar correspondencias
       duraderas.</p>
@@ -1201,7 +1201,7 @@ window.ENTRIES = [
       facultades incluso cuando el patrono no parece encontrarse presente. La relación ha dejado
       una vía establecida.</p>
       <h4 id="cap-3">Capítulo III — Cesión y concesión</h4>
-      <p>No toda facultad pactúrgica permanece del mismo modo en el brujo. Algunas parecen
+      <p>La permanencia de la facultad pactúrgica en el brujo varía. Algunas parecen
       concedidas para cada uso, mientras que otras quedan incorporadas con suficiente estabilidad
       como para funcionar sin una intervención perceptible del patrono.</p>
       <p>La Pacturgia distingue de manera general entre cesión y concesión. En una cesión, el
@@ -1287,7 +1287,7 @@ window.ENTRIES = [
       nombre posee importancia. También puede interpretar como recuerdo propio una estructura
       cuyo origen se encuentra enteramente fuera de su vida.</p>
       <h4 id="cap-10">Capítulo X — Patronos ausentes</h4>
-      <p>No todos los patronos mantienen una comunicación continua con sus brujos. Algunos rara
+      <p>Pocos patronos mantienen una comunicación continua con sus brujos. Algunos rara
       vez responden. Otros parecen ignorar por completo las actividades de quienes utilizan su
       poder. Existen incluso casos documentados en los que la entidad originaria ha desaparecido
       y el vínculo continúa produciendo efectos.</p>
@@ -1726,7 +1726,7 @@ window.ENTRIES = [
       un tratado intentando demostrarla.</em></p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>El estudio de los bardos obliga a ampliar la manera en que entendemos una estructura
-      mágica. No toda información necesita permanecer encerrada en un círculo, una fórmula o una
+      mágica. La información no siempre necesita permanecer encerrada en un círculo, una fórmula o una
       secuencia fija. Algunas formas pueden distribuirse entre quien expresa y quien recibe,
       aprovechar recuerdos ya existentes, conservarse en tradiciones y adaptarse sin perder por
       ello su función.</p>
@@ -2356,7 +2356,7 @@ window.ENTRIES = [
       <p>La Adivinación estudia cómo puede obtenerse información sobre acontecimientos, estados o relaciones que no han sido observados por los medios disponibles al investigador. Su objeto incluye el futuro, pero también el presente remoto, el pasado incompleto, probabilidades, decisiones posibles y estados ocultos.</p>
       <p>La disciplina es especialmente rigurosa porque sus errores son fáciles de racionalizar después de ocurridos. Una predicción vaga puede parecer precisa cuando se reinterpreta tras el evento. Una coincidencia puede recordarse y cien fallos olvidarse. Por ello, Dolbred exige registro previo, criterios verificables y separación estricta entre observación, interpretación y resultado.</p>
       <h4 id="cap-1">Capítulo I — Objeto de estudio de la Adivinación</h4>
-      <p>La Adivinación estudia la obtención y evaluación de información no disponible mediante observación ordinaria en el momento de la consulta. Su campo incluye predicción, percepción remota, reconstrucción de hechos no observados, probabilidad sobrenatural, profecía, tarotismo y métodos simbólicos. No toda información correcta obtenida de forma inusual es adivinatoria. La disciplina exige identificar el mecanismo o, cuando eso no es posible, describir con exactitud las condiciones bajo las que el fenómeno se repite.</p>
+      <p>La Adivinación estudia la obtención y evaluación de información no disponible mediante observación ordinaria en el momento de la consulta. Su campo incluye predicción, percepción remota, reconstrucción de hechos no observados, probabilidad sobrenatural, profecía, tarotismo y métodos simbólicos. Obtener información correcta de forma inusual no basta para calificarla de adivinatoria. La disciplina exige identificar el mecanismo o, cuando eso no es posible, describir con exactitud las condiciones bajo las que el fenómeno se repite.</p>
       <p>El problema central que enfrenta esta disciplina no es el tiempo en sí, sino la observación. Una persona puede conocer un hecho presente ocurrido a mil kilómetros, un acontecimiento pasado del que no existen registros accesibles o una consecuencia futura aún no realizada; estos casos se agrupan bajo un mismo objeto de estudio porque todos implican información que no debería estar disponible a través de los canales ordinarios del sujeto. La primera tarea académica, en cualquiera de ellos, consiste en determinar qué información previa sí estaba disponible antes de atribuir el resultado a un fenómeno sobrenatural.</p>
       <p>Dentro de este campo amplio, la predicción ocupa un lugar particular. Una predicción es una afirmación sobre un estado futuro construida a partir de condiciones conocidas o inferidas, y no requiere por sí misma acceso al futuro: un astrónomo, un médico o un estratega pueden predecir acontecimientos utilizando regularidades presentes sin recurrir a magia alguna. La Adivinación estudia la predicción cuando intervienen fuentes de información mágicas o cuando resulta necesario distinguir una inferencia extraordinariamente buena de un acceso genuinamente no ordinario.</p>
       <h4 id="cap-2">Capítulo II — Modalidades de conocimiento prospectivo</h4>
@@ -2739,7 +2739,7 @@ window.ENTRIES = [
       <p>La investigación comparada evita tratar estas diferencias como escalas de superioridad. Constituyen adaptaciones distintas a condiciones biológicas, históricas y mágicas también distintas.</p>
       <h4 id="cap-4">Capítulo IV — Órganos arcanos</h4>
       <p>Se denomina órgano arcano a toda estructura corporal cuya función depende de manera significativa de procesos mágicos y cuya actividad puede distinguirse anatómicamente de las funciones ordinarias.</p>
-      <p>No todos los órganos arcanos poseen una forma evidente. Algunos corresponden a tejidos especializados; otros parecen distribuidos a través de redes que acompañan sistemas ya conocidos. También existen especies en las que la función arcana depende de una estructura temporal que sólo aparece durante determinados estados.</p>
+      <p>La evidencia formal de un órgano arcano varía. Algunos corresponden a tejidos especializados; otros parecen distribuidos a través de redes que acompañan sistemas ya conocidos. También existen especies en las que la función arcana depende de una estructura temporal que sólo aparece durante determinados estados.</p>
       <p>Un órgano arcano puede regular energía, conservar una afinidad, estabilizar una transformación o permitir la producción de un fenómeno que sería imposible para el organismo de otra manera. Su extracción o daño puede tener consecuencias que no se corresponden con la lesión física visible, pues la pérdida afecta también las relaciones que el órgano sostenía.</p>
       <p>La cirugía arcana exige por ello técnicas distintas de la cirugía convencional. Reparar la materia sin restaurar la función de correspondencia puede dejar un órgano anatómicamente completo y funcionalmente inútil.</p>
       <h4 id="cap-5">Capítulo V — Circulación y distribución mágica</h4>
@@ -3011,7 +3011,7 @@ window.ENTRIES = [
       <p>Los nombres inscritos pueden señalar patrocinador, propietario, sacerdote o restaurador, y no necesariamente al diseñador original. El crédito histórico requiere distinguir la autoría técnica de la autoridad social; Filología y Derecho ayudan a interpretar estas relaciones.</p>
       <p>Una estructura, además, puede haber tenido varias funciones a lo largo del tiempo, y buscar una finalidad única puede simplificar demasiado su historia. El arqueólogo debe reconstruir, en cambio, las distintas etapas de uso.</p>
       <h4 id="cap-27">Capítulo XXVII — Errores comunes de interpretación</h4>
-      <p>No toda técnica antigua superior fue olvidada por simple decadencia. Algunas dependían de materiales agotados, instituciones desaparecidas o condiciones ambientales irrepetibles, y recrear el objeto sin recrear su contexto puede resultar imposible.</p>
+      <p>La simple decadencia no explica el olvido de toda técnica antigua superior. Algunas dependían de materiales agotados, instituciones desaparecidas o condiciones ambientales irrepetibles, y recrear el objeto sin recrear su contexto puede resultar imposible.</p>
       <p>Los objetos antiguos también fallaban, eran reparados y contenían defectos; la antigüedad no convierte cada irregularidad en una intención profunda, y las huellas de improvisación son parte legítima de la historia tecnológica.</p>
       <p>Completar una estructura puede imponer al sitio la interpretación del propio investigador, y una restauración convincente puede ocultar qué partes eran realmente conocidas. Dolbred exige que las reconstrucciones modernas sean identificables y estén documentadas.</p>
       <p>Ver una máquina funcionar parece la forma más directa de comprenderla, pero en estructuras mágicas antiguas activarlas puede cambiar el propio fenómeno que se intenta estudiar. Por eso la observación pasiva tiene prioridad siempre que pueda responder la pregunta planteada.</p>
@@ -3416,7 +3416,7 @@ window.ENTRIES = [
       <p>La Criminalística Arcana aporta técnicas para detectar capas de ocultamiento, modificaciones
       y residuos que no coinciden con la historia aparente del objeto.</p>
       <h4 id="cap-27">Capítulo XXVII — Activación remota</h4>
-      <p>No todos los artefactos necesitan un usuario presente. Algunos responden a señales, eventos,
+      <p>Un usuario presente no es requisito para todo artefacto. Algunos responden a señales, eventos,
       alineaciones o condiciones que pueden producirse a gran distancia.</p>
       <p>Un objeto aparentemente estable en almacenamiento puede activarse porque otro componente de
       su red cambió de estado o porque una fecha específica cumplió una condición inscrita siglos
