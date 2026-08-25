@@ -18537,71 +18537,26 @@ window.ENTRIES = [
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Qué es un encantamiento</a>
-        <a href="#cap-2">II. Persistencia y autonomía</a>
-        <a href="#cap-3">III. Estado sostenido y efecto recurrente</a>
-        <a href="#cap-4">IV. Anclaje</a>
-        <a href="#cap-5">V. Anclaje material</a>
-        <a href="#cap-6">VI. Anclaje geométrico</a>
-        <a href="#cap-7">VII. Anclaje semiótico</a>
-        <a href="#cap-8">VIII. Anclaje somático</a>
-        <a href="#cap-9">IX. Reserva energética</a>
-        <a href="#cap-10">X. Captación ambiental</a>
-        <a href="#cap-11">XI. Recarga</a>
-        <a href="#cap-12">XII. Mantenimiento pasivo</a>
-        <a href="#cap-13">XIII. Autorregulación</a>
-        <a href="#cap-14">XIV. Umbrales</a>
-        <a href="#cap-15">XV. Condiciones de activación</a>
-        <a href="#cap-16">XVI. Reconocimiento de usuario</a>
-        <a href="#cap-17">XVII. Encantamientos constantes</a>
-        <a href="#cap-18">XVIII. Encantamientos latentes</a>
-        <a href="#cap-19">XIX. Encantamientos periódicos</a>
-        <a href="#cap-20">XX. Encantamientos adaptativos</a>
-        <a href="#cap-21">XXI. Encantamientos responsivos</a>
-        <a href="#cap-22">XXII. Memoria de uso</a>
-        <a href="#cap-23">XXIII. Capas</a>
-        <a href="#cap-24">XXIV. Interferencia</a>
-        <a href="#cap-25">XXV. Compatibilidad</a>
-        <a href="#cap-26">XXVI. Saturación del soporte</a>
-        <a href="#cap-27">XXVII. Desgaste</a>
-        <a href="#cap-28">XXVIII. Fatiga mágica</a>
-        <a href="#cap-29">XXIX. Deriva</a>
-        <a href="#cap-30">XXX. Degradación de referencias</a>
-        <a href="#cap-31">XXXI. Reparación</a>
-        <a href="#cap-32">XXXII. Restauración</a>
-        <a href="#cap-33">XXXIII. Reencantamiento</a>
-        <a href="#cap-34">XXXIV. Encantamientos sobre armas</a>
-        <a href="#cap-35">XXXV. Encantamientos defensivos</a>
-        <a href="#cap-36">XXXVI. Herramientas</a>
-        <a href="#cap-37">XXXVII. Arquitectura encantada</a>
-        <a href="#cap-38">XXXVIII. Ciudades encantadas</a>
-        <a href="#cap-39">XXXIX. Encantamientos sobre criaturas</a>
-        <a href="#cap-40">XL. Integración biológica</a>
-        <a href="#cap-41">XLI. Crecimiento</a>
-        <a href="#cap-42">XLII. Encantamientos temporales de larga duración</a>
-        <a href="#cap-43">XLIII. Permanencia</a>
-        <a href="#cap-44">XLIV. Persistencia aparente</a>
-        <a href="#cap-45">XLV. Autocorrección</a>
-        <a href="#cap-46">XLVI. Autorreparación</a>
-        <a href="#cap-47">XLVII. Límites de autonomía</a>
-        <a href="#cap-48">XLVIII. Encantamiento y maldición</a>
-        <a href="#cap-49">XLIX. Encantamiento y artefacto</a>
-        <a href="#cap-50">L. Encantamiento y transmutación</a>
-        <a href="#cap-51">LI. Encantamiento y ritual</a>
-        <a href="#cap-52">LII. Encantamientos colectivos</a>
-        <a href="#cap-53">LIII. Redundancia</a>
-        <a href="#cap-54">LIV. Modularidad</a>
-        <a href="#cap-55">LV. Seguridad</a>
-        <a href="#cap-56">LVI. Desactivación</a>
-        <a href="#cap-57">LVII. Desencantamiento</a>
-        <a href="#cap-58">LVIII. Fallo seguro</a>
-        <a href="#cap-59">LIX. Diagnóstico</a>
-        <a href="#cap-60">LX. Pruebas de carga</a>
-        <a href="#cap-61">LXI. Pruebas de envejecimiento</a>
-        <a href="#cap-62">LXII. Encantamientos históricos</a>
-        <a href="#cap-63">LXIII. Encantamientos conscientes</a>
-        <a href="#cap-64">LXIV. Relación con otras disciplinas</a>
-        <a href="#cap-65">LXV. El problema de mantener</a>
+        <a href="#cap-1">I. Definición, persistencia y autonomía</a>
+        <a href="#cap-2">II. El anclaje y sus variantes</a>
+        <a href="#cap-3">III. Reserva energética y suministro</a>
+        <a href="#cap-4">IV. Autorregulación y condiciones de activación</a>
+        <a href="#cap-5">V. Tipos de manifestación temporal</a>
+        <a href="#cap-6">VI. Capas, interferencia y compatibilidad</a>
+        <a href="#cap-7">VII. Desgaste, fatiga y deriva</a>
+        <a href="#cap-8">VIII. Reparación, restauración y reencantamiento</a>
+        <a href="#cap-9">IX. Aplicaciones sobre armas, defensa y herramientas</a>
+        <a href="#cap-10">X. Arquitectura y ciudades encantadas</a>
+        <a href="#cap-11">XI. Encantamientos sobre criaturas</a>
+        <a href="#cap-12">XII. Duración, permanencia y persistencia aparente</a>
+        <a href="#cap-13">XIII. Autocorrección, autorreparación y límites de autonomía</a>
+        <a href="#cap-14">XIV. Encantamiento frente a maldición, artefacto, transmutación y ritual</a>
+        <a href="#cap-15">XV. Sistemas colectivos, redundancia y modularidad</a>
+        <a href="#cap-16">XVI. Seguridad, desactivación y fallo seguro</a>
+        <a href="#cap-17">XVII. Diagnóstico y pruebas</a>
+        <a href="#cap-18">XVIII. Encantamientos históricos y conscientes</a>
+        <a href="#cap-19">XIX. Relación con otras disciplinas</a>
+        <a href="#cap-20">XX. El problema de mantener</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -18618,380 +18573,278 @@ window.ENTRIES = [
       <p>La Teoría de Encantamientos estudia estas soluciones. Su problema central es la autonomía, sobre cómo
       una alteración deja de depender de atención constante y pasa a sostenerse mediante anclajes,
       reservas, ciclos, condiciones o integración material.</p>
-      <h4 id="cap-1">Capítulo I — Qué es un encantamiento</h4>
+      <h4 id="cap-1">Capítulo I — Definición, persistencia y autonomía</h4>
       <p>En sentido técnico, un encantamiento es una alteración mágica suficientemente estable como para
-      persistir o reactivarse sin intervención continua del ejecutor original.</p>
-      <p>Puede afectar objetos, criaturas, lugares o sistemas completos. La persistencia puede ser
-      constante, condicional o periódica.</p>
-      <p>La disciplina distingue encantamiento de simple residuo, maldición, artefacto y transformación
-      permanente según cómo se mantiene la alteración.</p>
-      <h4 id="cap-2">Capítulo II — Persistencia y autonomía</h4>
+      persistir o reactivarse sin intervención continua del ejecutor original. Puede afectar objetos,
+      criaturas, lugares o sistemas completos, y su persistencia puede ser constante, condicional o
+      periódica. La disciplina distingue el encantamiento de un simple residuo, una maldición, un artefacto
+      y una transformación permanente según cómo se mantiene la alteración a lo largo del tiempo.</p>
       <p>Persistir significa seguir produciendo o conservando una relación después del acto inicial. Ser
-      autónomo significa hacerlo sin depender de atención externa continua.</p>
-      <p>Una estructura puede ser persistente y poco autónoma si necesita recargas frecuentes. Otra puede
-      ser casi autónoma aunque sólo se active unos segundos al año.</p>
-      <p>La autonomía se mide por dependencia, no por duración visible.</p>
-      <h4 id="cap-3">Capítulo III — Estado sostenido y efecto recurrente</h4>
-      <p>Algunos encantamientos mantienen un estado constante, como dureza aumentada o invisibilidad. Otros
-      permanecen latentes y sólo actúan cuando ocurre una condición.</p>
-      <p>El segundo tipo suele ser más eficiente porque no necesita mantener toda la manifestación activa
-      en todo momento.</p>
-      <p>Esta diferencia es central para diseño, diagnóstico y conservación.</p>
-      <h4 id="cap-4">Capítulo IV — Anclaje</h4>
-      <p>El anclaje es aquello que permite que la estructura continúe asociada a su soporte o referente.</p>
-      <p>Puede residir en materia, runas, geometría, un núcleo arcano, un juramento, una firma somática o
-      una relación entre varios componentes.</p>
-      <p>Un encantamiento con anclaje débil puede funcionar durante años y colapsar de inmediato cuando el
-      objeto es reparado o transformado.</p>
-      <h4 id="cap-5">Capítulo V — Anclaje material</h4>
-      <p>Los materiales pueden retener configuraciones, conducirlas o distribuirlas. Metales, cristales,
-      huesos, madera y tejidos vivos ofrecen propiedades diferentes.</p>
-      <p>Mineralogía Mágica estudia por qué ciertos soportes son adecuados para almacenamiento o
-      conducción.</p>
-      <p>El material no es necesariamente la fuente del efecto. Puede actuar sólo como soporte de memoria y
-      continuidad.</p>
-      <h4 id="cap-6">Capítulo VI — Anclaje geométrico</h4>
-      <p>Algunas estructuras dependen de relaciones espaciales entre componentes. La pérdida de una
-      distancia, eje o frontera puede deteriorar el encantamiento aunque todos los objetos individuales
-      permanezcan intactos.</p>
-      <p>Estos sistemas son comunes en arquitectura, cámaras selladas y redes de defensa.</p>
-      <p>Geometría Ritual analiza qué relaciones deben conservarse para mantenerlos.</p>
-      <h4 id="cap-7">Capítulo VII — Anclaje semiótico</h4>
-      <p>Un símbolo, título, inscripción o función puede servir como referencia estable para un
-      encantamiento.</p>
-      <p>Una puerta puede abrirse al portador legítimo de una insignia sin que la insignia contenga toda la
-      estructura.</p>
-      <p>Semiótica Mágica distingue cuándo el símbolo representa la relación y cuándo participa activamente
-      de ella.</p>
-      <h4 id="cap-8">Capítulo VIII — Anclaje somático</h4>
-      <p>Encantamientos sobre criaturas pueden integrarse a memoria corporal, órganos arcanos o patrones de
-      desarrollo.</p>
-      <p>Cuanto más integrada esté la alteración, menos se comporta como capa externa y más como una
-      función del organismo.</p>
-      <p>Esto complica la retirada, porque eliminar el efecto puede significar alterar una fisiología que
-      ya se reorganizó a su alrededor.</p>
-      <h4 id="cap-9">Capítulo IX — Reserva energética</h4>
-      <p>Muchas estructuras persistentes necesitan energía para compensar pérdidas.</p>
-      <p>La reserva puede ser interna, ambiental, periódicamente recargada o obtenida de la función misma
-      del objeto.</p>
-      <p>Una reserva grande no garantiza longevidad si el encantamiento desperdicia energía de manera
-      constante.</p>
-      <h4 id="cap-10">Capítulo X — Captación ambiental</h4>
-      <p>Algunos encantamientos obtienen energía del entorno: calor, luz, movimiento, maná difuso,
-      corrientes elementales o actividad de seres vivos.</p>
-      <p>El diseño debe distinguir disponibilidad media de disponibilidad mínima. Una estructura que
-      funciona en una ciudad puede agotarse durante meses de aislamiento.</p>
-      <p>Los sistemas dependientes del ambiente son autónomos sólo mientras el entorno siga ofreciendo la
-      condición necesaria.</p>
-      <h4 id="cap-11">Capítulo XI — Recarga</h4>
-      <p>Un encantamiento recargable separa persistencia estructural de reserva energética.</p>
-      <p>La estructura puede permanecer intacta aunque la manifestación quede inactiva por falta de
-      energía.</p>
-      <p>Artefactología utiliza esta distinción para evitar declarar destruido un objeto que sólo se
-      encuentra descargado.</p>
-      <h4 id="cap-12">Capítulo XII — Mantenimiento pasivo</h4>
-      <p>El mantenimiento pasivo consiste en reducir pérdidas hasta que la estructura requiera muy poca
-      energía para continuar.</p>
-      <p>Materiales adecuados, aislamiento, simetría y baja complejidad favorecen este modelo.</p>
-      <p>Muchos objetos antiguos han sobrevivido no por reservas enormes, sino porque apenas consumen
-      cuando están en reposo.</p>
-      <h4 id="cap-13">Capítulo XIII — Autorregulación</h4>
-      <p>Una estructura autorregulada detecta desviaciones y compensa dentro de ciertos márgenes.</p>
-      <p>Puede ajustar intensidad, redistribuir carga o suspender funciones secundarias cuando la reserva
-      disminuye.</p>
-      <p>La autorregulación no implica consciencia. Puede ser una respuesta definida por relaciones
-      simples.</p>
-      <h4 id="cap-14">Capítulo XIV — Umbrales</h4>
+      autónomo significa hacerlo sin depender de atención externa continua. Estas dos cualidades no siempre
+      coinciden. Una estructura puede ser persistente y poco autónoma si necesita recargas frecuentes, y
+      otra puede resultar casi autónoma aunque sólo se active unos segundos al año. La autonomía, así, se
+      mide por el grado de dependencia externa, no por la duración visible del efecto.</p>
+      <p>Dentro de esa persistencia caben dos comportamientos distintos. Algunos encantamientos mantienen un
+      estado constante, como dureza aumentada o invisibilidad, mientras otros permanecen latentes y sólo
+      actúan cuando ocurre una condición determinada. Este segundo tipo suele ser más eficiente, porque no
+      necesita sostener toda la manifestación activa en todo momento, y la diferencia entre estado sostenido
+      y efecto recurrente resulta central para el diseño, el diagnóstico y la conservación de cualquier
+      estructura persistente.</p>
+      <h4 id="cap-2">Capítulo II — El anclaje y sus variantes</h4>
+      <p>El anclaje es aquello que permite que la estructura continúe asociada a su soporte o referente.
+      Puede residir en materia, runas, geometría, un núcleo arcano, un juramento, una firma somática o una
+      relación entre varios componentes. Un encantamiento con anclaje débil puede funcionar durante años y
+      colapsar de inmediato cuando el objeto es reparado o transformado, lo que convierte la elección del
+      anclaje en una de las decisiones más determinantes del diseño.</p>
+      <p>El anclaje material se apoya en la capacidad de ciertos soportes para retener configuraciones,
+      conducirlas o distribuirlas. Metales, cristales, huesos, madera y tejidos vivos ofrecen propiedades
+      diferentes, y Mineralogía Mágica estudia por qué unos soportes resultan adecuados para el
+      almacenamiento y otros para la conducción. El material no es necesariamente la fuente del efecto.
+      Puede actuar sólo como soporte de memoria y continuidad.</p>
+      <p>El anclaje geométrico depende, en cambio, de relaciones espaciales entre componentes. La pérdida de
+      una distancia, un eje o una frontera puede deteriorar el encantamiento aunque todos los objetos
+      individuales permanezcan intactos, algo habitual en arquitectura, cámaras selladas y redes de defensa.
+      Geometría Ritual analiza qué relaciones deben conservarse para mantener estos sistemas en
+      funcionamiento.</p>
+      <p>El anclaje semiótico utiliza un símbolo, un título, una inscripción o una función como referencia
+      estable. Una puerta puede abrirse al portador legítimo de una insignia sin que la insignia contenga
+      toda la estructura, y Semiótica Mágica distingue los casos en que el símbolo simplemente representa la
+      relación de aquellos en que participa activamente de ella.</p>
+      <p>El anclaje somático, finalmente, integra el encantamiento a memoria corporal, órganos arcanos o
+      patrones de desarrollo en criaturas. Cuanto más integrada está la alteración, menos se comporta como
+      una capa externa y más como una función del propio organismo, lo que complica su retirada, ya que
+      eliminar el efecto puede significar alterar una fisiología que ya se reorganizó a su alrededor.</p>
+      <h4 id="cap-3">Capítulo III — Reserva energética y suministro</h4>
+      <p>Muchas estructuras persistentes necesitan energía para compensar las pérdidas que sufren con el
+      tiempo. Esa reserva puede ser interna, ambiental, recargada periódicamente u obtenida de la propia
+      función del objeto, y una reserva grande no garantiza longevidad si el encantamiento desperdicia
+      energía de manera constante.</p>
+      <p>Algunos encantamientos obtienen esa energía del entorno, como calor, luz, movimiento, maná difuso,
+      corrientes elementales o actividad de seres vivos. El diseño debe distinguir la disponibilidad media
+      de la disponibilidad mínima, porque una estructura que funciona sin dificultad en una ciudad puede
+      agotarse durante meses de aislamiento. Los sistemas que dependen del ambiente sólo son autónomos
+      mientras el entorno siga ofreciendo la condición necesaria.</p>
+      <p>Un encantamiento recargable separa la persistencia estructural de la reserva energética. Gracias a
+      esa separación, la estructura puede permanecer intacta aunque la manifestación quede inactiva por
+      falta de energía. Artefactología recurre a esta distinción para evitar declarar destruido un objeto
+      que sólo se encuentra descargado.</p>
+      <p>El mantenimiento pasivo, por su parte, consiste en reducir pérdidas hasta que la estructura requiera
+      muy poca energía para continuar. Materiales adecuados, aislamiento, simetría y baja complejidad
+      favorecen este modelo, y muchos objetos antiguos han sobrevivido no por reservas enormes sino porque
+      apenas consumen cuando están en reposo.</p>
+      <h4 id="cap-4">Capítulo IV — Autorregulación y condiciones de activación</h4>
+      <p>Una estructura autorregulada detecta desviaciones y compensa dentro de ciertos márgenes. Puede
+      ajustar intensidad, redistribuir carga o suspender funciones secundarias cuando la reserva disminuye.
+      La autorregulación no implica consciencia, pues puede tratarse de una respuesta definida por
+      relaciones simples.</p>
       <p>Los umbrales permiten que un encantamiento cambie de estado sólo cuando una variable supera cierto
-      valor.</p>
-      <p>Una armadura puede endurecerse al recibir impacto; una lámpara encenderse al caer la oscuridad;
-      una barrera activarse cuando alguien cruza una línea.</p>
-      <p>Esto reduce consumo y hace que la estructura responda al contexto.</p>
-      <h4 id="cap-15">Capítulo XV — Condiciones de activación</h4>
-      <p>Las condiciones pueden ser físicas, temporales, simbólicas, espaciales o relacionadas con una
-      persona.</p>
-      <p>El problema no es sólo definir la condición, sino asegurar que la estructura pueda reconocerla con
-      suficiente precisión.</p>
-      <p>Teoría de Encantamientos comparte aquí herramientas con Maldiología, aunque el propósito y
-      comportamiento de ambas estructuras suelen ser distintos.</p>
-      <h4 id="cap-16">Capítulo XVI — Reconocimiento de usuario</h4>
-      <p>Un objeto encantado puede limitarse a usuarios específicos mediante firma, contacto, juramento,
-      sangre, título o relación de pertenencia.</p>
-      <p>La referencia debe sobrevivir a cambios normales del usuario sin volverse tan amplia que acepte a
-      cualquiera.</p>
-      <p>Los sistemas más seguros combinan varios criterios.</p>
-      <h4 id="cap-17">Capítulo XVII — Encantamientos constantes</h4>
-      <p>Los encantamientos constantes mantienen una alteración sin interrupción perceptible.</p>
-      <p>Son apropiados para resistencia, conservación, climatización o modificación permanente de
-      propiedades.</p>
-      <p>Su principal desafío es el desgaste continuo, incluso cuando nadie utiliza activamente el
+      valor. Una armadura puede endurecerse al recibir un impacto, una lámpara encenderse al caer la
+      oscuridad o una barrera activarse cuando alguien cruza una línea. Este mecanismo reduce el consumo y
+      hace que la estructura responda al contexto en lugar de mantenerse siempre activa.</p>
+      <p>Las condiciones que reconoce un umbral pueden ser físicas, temporales, simbólicas, espaciales o
+      estar relacionadas con una persona concreta. El problema no es sólo definir la condición, sino
+      asegurar que la estructura pueda reconocerla con suficiente precisión. Teoría de Encantamientos
+      comparte aquí herramientas con Maldiología, aunque el propósito y el comportamiento de ambas
+      estructuras suelen ser distintos.</p>
+      <p>Un caso particular de condición es el reconocimiento de usuario. Un objeto encantado puede
+      limitarse a usuarios específicos mediante firma, contacto, juramento, sangre, título o relación de
+      pertenencia. La referencia debe sobrevivir a los cambios normales del usuario sin volverse tan amplia
+      que acepte a cualquiera, y los sistemas más seguros combinan varios criterios a la vez.</p>
+      <h4 id="cap-5">Capítulo V — Tipos de manifestación temporal</h4>
+      <p>Los encantamientos constantes mantienen una alteración sin interrupción perceptible. Son apropiados
+      para resistencia, conservación, climatización o modificación permanente de propiedades, y su
+      principal desafío es el desgaste continuo, que ocurre incluso cuando nadie utiliza activamente el
       objeto.</p>
-      <h4 id="cap-18">Capítulo XVIII — Encantamientos latentes</h4>
-      <p>Una estructura latente conserva sólo lo necesario para reconocer condiciones y reconstruir la
-      manifestación cuando se requiere.</p>
-      <p>El consumo durante reposo puede ser mínimo.</p>
-      <p>Este diseño es especialmente común en trampas, protecciones, herramientas y sistemas
+      <p>Una estructura latente, en cambio, conserva sólo lo necesario para reconocer condiciones y
+      reconstruir la manifestación cuando se requiere, de modo que el consumo durante el reposo puede ser
+      mínimo. Este diseño es especialmente común en trampas, protecciones, herramientas y sistemas
       defensivos.</p>
-      <h4 id="cap-19">Capítulo XIX — Encantamientos periódicos</h4>
       <p>Algunos sistemas se activan en ciclos definidos por tiempo, astronomía, estaciones o procesos
-      internos.</p>
-      <p>El período puede funcionar como mecanismo de descanso, recarga o sincronización con el
-      ambiente.</p>
-      <p>Una periodicidad aparente debe distinguirse de una condición externa que simplemente ocurre con
-      frecuencia regular.</p>
-      <h4 id="cap-20">Capítulo XX — Encantamientos adaptativos</h4>
+      internos. El período puede funcionar como mecanismo de descanso, recarga o sincronización con el
+      ambiente, aunque conviene distinguir una periodicidad genuina de una condición externa que simplemente
+      ocurre con frecuencia regular.</p>
       <p>Un encantamiento adaptativo modifica parámetros para conservar su función bajo condiciones
-      cambiantes.</p>
-      <p>Una prenda térmica puede compensar frío y calor; una herramienta puede ajustar fuerza según
-      material.</p>
-      <p>La adaptación aumenta complejidad y crea nuevos modos de fallo.</p>
-      <h4 id="cap-21">Capítulo XXI — Encantamientos responsivos</h4>
-      <p>Los sistemas responsivos reaccionan a estímulos sin modificar su objetivo general.</p>
-      <p>La diferencia con una estructura adaptativa está en la memoria, ya que una respuesta puede ser
-      instantánea, mientras la adaptación altera comportamiento futuro.</p>
-      <p>Esta frontera no siempre es nítida.</p>
-      <h4 id="cap-22">Capítulo XXII — Memoria de uso</h4>
-      <p>Algunos encantamientos conservan información sobre utilización pasada.</p>
-      <p>Puede emplearse para ajustar funcionamiento, identificar propietarios o limitar desgaste.</p>
-      <p>Cuando la memoria se vuelve suficientemente compleja, surge la discusión sobre artefactos
-      conscientes.</p>
-      <h4 id="cap-23">Capítulo XXIII — Capas</h4>
-      <p>Un objeto puede contener varios encantamientos independientes o interdependientes.</p>
-      <p>Capas mal diseñadas pueden competir por energía, referencias o prioridad.</p>
-      <p>La reparación de una capa debe considerar qué otras estructuras utilizan el mismo soporte.</p>
-      <h4 id="cap-24">Capítulo XXIV — Interferencia</h4>
-      <p>Dos encantamientos pueden interferir incluso cuando cada uno funciona correctamente por
-      separado.</p>
-      <p>Las causas incluyen afinidades incompatibles, rutas compartidas, condiciones contradictorias y
-      saturación del soporte.</p>
-      <p>La solución no siempre consiste en aumentar potencia; a menudo requiere separar funciones.</p>
-      <h4 id="cap-25">Capítulo XXV — Compatibilidad</h4>
-      <p>La compatibilidad describe si varias estructuras pueden coexistir sin degradarse mutuamente.</p>
-      <p>Materiales, geometría, afinidad y lógica condicional influyen en ella.</p>
-      <p>Los talleres profesionales realizan pruebas de compatibilidad antes de añadir nuevas funciones a
-      objetos antiguos.</p>
-      <h4 id="cap-26">Capítulo XXVI — Saturación del soporte</h4>
-      <p>Todo soporte tiene límites prácticos sobre cuánta complejidad puede sostener de manera
-      estable.</p>
-      <p>Superar esos límites produce pérdida de precisión, calentamiento, interferencia o fallos
-      impredecibles.</p>
-      <p>Un objeto con demasiadas funciones puede ser menos fiable que varios objetos especializados.</p>
-      <h4 id="cap-27">Capítulo XXVII — Desgaste</h4>
-      <p>El desgaste encantado puede ser energético, material o estructural.</p>
-      <p>Un objeto puede conservar energía y perder precisión porque las inscripciones se deformaron; otro
-      puede estar físicamente intacto y haber agotado su reserva.</p>
-      <p>Diagnosticar la clase de desgaste determina el mantenimiento adecuado.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Fatiga mágica</h4>
+      cambiantes. Una prenda térmica puede compensar frío y calor; una herramienta puede ajustar su fuerza
+      según el material que trabaja. La adaptación aumenta la complejidad del sistema y, con ella, crea
+      nuevos modos de fallo.</p>
+      <p>Los sistemas responsivos, por último, reaccionan a estímulos sin modificar su objetivo general. La
+      diferencia con una estructura adaptativa está en la memoria. Una respuesta puede ser instantánea,
+      mientras que la adaptación altera el comportamiento futuro, y esta frontera no siempre resulta
+      nítida.</p>
+      <h4 id="cap-6">Capítulo VI — Capas, interferencia y compatibilidad</h4>
+      <p>Algunos encantamientos conservan información sobre su utilización pasada. Esa memoria puede
+      emplearse para ajustar el funcionamiento, identificar propietarios o limitar el desgaste, y cuando se
+      vuelve suficientemente compleja da lugar a la discusión sobre artefactos conscientes.</p>
+      <p>Un objeto puede contener además varios encantamientos independientes o interdependientes,
+      organizados en capas. Capas mal diseñadas pueden competir por energía, referencias o prioridad, y la
+      reparación de una de ellas debe considerar qué otras estructuras utilizan el mismo soporte.</p>
+      <p>Dos encantamientos pueden interferir incluso cuando cada uno funciona correctamente por separado.
+      Las causas incluyen afinidades incompatibles, rutas compartidas, condiciones contradictorias y
+      saturación del soporte, y la solución no siempre consiste en aumentar la potencia, sino que a menudo
+      requiere separar funciones.</p>
+      <p>La compatibilidad describe si varias estructuras pueden coexistir sin degradarse mutuamente.
+      Materiales, geometría, afinidad y lógica condicional influyen en ella, por lo que los talleres
+      profesionales realizan pruebas de compatibilidad antes de añadir nuevas funciones a objetos
+      antiguos.</p>
+      <p>Todo soporte tiene además límites prácticos sobre cuánta complejidad puede sostener de manera
+      estable. Superar esos límites produce pérdida de precisión, calentamiento, interferencia o fallos
+      impredecibles, y un objeto con demasiadas funciones puede terminar siendo menos fiable que varios
+      objetos especializados.</p>
+      <h4 id="cap-7">Capítulo VII — Desgaste, fatiga y deriva</h4>
+      <p>El desgaste encantado puede ser energético, material o estructural. Un objeto puede conservar
+      energía y perder precisión porque sus inscripciones se deformaron, mientras que otro puede estar
+      físicamente intacto y haber agotado ya su reserva. Diagnosticar la clase de desgaste determina el
+      mantenimiento adecuado en cada caso.</p>
       <p>Las estructuras sometidas a activaciones repetidas pueden desarrollar fatiga aunque no exista daño
-      visible.</p>
-      <p>Pequeñas desviaciones se acumulan y alteran tiempos, intensidades o condiciones de
-      reconocimiento.</p>
-      <p>La fatiga explica por qué algunos objetos fallan después de décadas de uso aunque hayan sido
-      recargados correctamente.</p>
-      <h4 id="cap-29">Capítulo XXIX — Deriva</h4>
-      <p>La deriva es el cambio gradual de comportamiento respecto del diseño original.</p>
-      <p>Puede aparecer por reparaciones, exposición, cambios de usuario, sustitución de materiales o
-      acumulación de residuos.</p>
-      <p>Una puerta que exige cada vez una señal más precisa puede estar derivando sin haber perdido su
+      visible. Pequeñas desviaciones se acumulan y alteran tiempos, intensidades o condiciones de
+      reconocimiento, lo que explica por qué algunos objetos fallan después de décadas de uso aunque hayan
+      sido recargados correctamente.</p>
+      <p>La deriva es el cambio gradual de comportamiento respecto del diseño original. Puede aparecer por
+      reparaciones, exposición, cambios de usuario, sustitución de materiales o acumulación de residuos. Una
+      puerta que exige cada vez una señal más precisa puede estar derivando sin haber perdido su
       encantamiento.</p>
-      <h4 id="cap-30">Capítulo XXX — Degradación de referencias</h4>
       <p>Los encantamientos que reconocen personas, lugares o símbolos pueden perder precisión si esas
-      referencias cambian.</p>
-      <p>Un título desaparecido, una frontera movida o un idioma transformado pueden volver ambigua una
-      condición.</p>
-      <p>Semiótica y Filología Arcana ayudan a conservar sistemas históricos.</p>
-      <h4 id="cap-31">Capítulo XXXI — Reparación</h4>
-      <p>Reparar un soporte encantado exige conservar las relaciones que el encantamiento utiliza.</p>
-      <p>Sustituir una pieza por material físicamente superior puede destruir una continuidad esencial.</p>
-      <p>Conservación Arcana prioriza documentación y mínima intervención antes de reemplazar
+      referencias cambian. Un título desaparecido, una frontera movida o un idioma transformado pueden
+      volver ambigua una condición, y Semiótica y Filología Arcana ayudan a conservar estos sistemas
+      históricos.</p>
+      <h4 id="cap-8">Capítulo VIII — Reparación, restauración y reencantamiento</h4>
+      <p>Reparar un soporte encantado exige conservar las relaciones que el encantamiento utiliza. Sustituir
+      una pieza por material físicamente superior puede destruir una continuidad esencial, por lo que
+      Conservación Arcana prioriza la documentación y la mínima intervención antes de reemplazar
       componentes.</p>
-      <h4 id="cap-32">Capítulo XXXII — Restauración</h4>
-      <p>Restaurar intenta recuperar una función perdida o degradada.</p>
-      <p>No debe confundirse con reconstruir según lo que el restaurador cree que el objeto debería
-      hacer.</p>
-      <p>Los encantamientos antiguos pueden contener funciones desconocidas cuya eliminación accidental
-      resultaría irreversible.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Reencantamiento</h4>
-      <p>Reencantar significa establecer una nueva estructura sobre un soporte que ya tuvo otra.</p>
-      <p>Los residuos anteriores pueden facilitar, distorsionar o interferir con el nuevo diseño.</p>
-      <p>La limpieza total no siempre es posible ni deseable.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Encantamientos sobre armas</h4>
-      <p>Armas encantadas suelen combinar refuerzo material, modificación de impacto, afinidades y
-      condiciones de activación.</p>
-      <p>Los diseños eficientes reservan funciones costosas para el momento de contacto o intención de
-      ataque.</p>
-      <p>Un arma que mantiene constantemente toda su potencia desperdicia recursos y aumenta riesgo.</p>
-      <h4 id="cap-35">Capítulo XXXV — Encantamientos defensivos</h4>
+      <p>Restaurar, en cambio, intenta recuperar una función perdida o degradada, y no debe confundirse con
+      reconstruir según lo que el restaurador cree que el objeto debería hacer. Los encantamientos antiguos
+      pueden contener funciones desconocidas cuya eliminación accidental resultaría irreversible.</p>
+      <p>Reencantar significa establecer una nueva estructura sobre un soporte que ya tuvo otra. Los residuos
+      anteriores pueden facilitar, distorsionar o interferir con el nuevo diseño, y la limpieza total no
+      siempre es posible ni deseable.</p>
+      <h4 id="cap-9">Capítulo IX — Aplicaciones sobre armas, defensa y herramientas</h4>
+      <p>Las armas encantadas suelen combinar refuerzo material, modificación de impacto, afinidades y
+      condiciones de activación. Los diseños eficientes reservan las funciones costosas para el momento de
+      contacto o intención de ataque, porque un arma que mantiene constantemente toda su potencia
+      desperdicia recursos y aumenta el riesgo.</p>
       <p>Armaduras, escudos y barreras personales pueden responder a impacto, dirección, afinidad o
-      identidad del agresor.</p>
-      <p>La defensa absoluta es rara; la mayoría redistribuye daño o mejora resistencia dentro de
-      límites.</p>
-      <p>Los sistemas adaptativos pueden aprender patrones de uso, pero también crear dependencia de
-      condiciones previsibles.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Herramientas</h4>
-      <p>Los encantamientos utilitarios suelen ser menos espectaculares y más duraderos.</p>
-      <p>Autocorrección, estabilidad, precisión, conservación, medición y reducción de esfuerzo transforman
-      oficios completos.</p>
-      <p>Su estudio es importante porque millones de horas de uso revelan problemas de desgaste que armas
-      excepcionales nunca alcanzan.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Arquitectura encantada</h4>
-      <p>Edificios pueden contener climatización, iluminación, control de acceso, conservación y sistemas
-      defensivos integrados.</p>
-      <p>En estos casos, la estructura no pertenece a un objeto aislado sino a una red distribuida por
-      materiales y espacios.</p>
-      <p>Modificar muros, puertas o conducciones puede alterar funciones aparentemente no relacionadas.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Ciudades encantadas</h4>
+      identidad del agresor. La defensa absoluta es poco común; la mayoría de estos sistemas redistribuye
+      daño o mejora resistencia dentro de límites definidos. Los sistemas adaptativos pueden aprender
+      patrones de uso, aunque eso también crea dependencia de condiciones previsibles.</p>
+      <p>Los encantamientos utilitarios suelen ser menos espectaculares y más duraderos. Autocorrección,
+      estabilidad, precisión, conservación, medición y reducción de esfuerzo transforman oficios completos,
+      y su estudio importa porque millones de horas de uso revelan problemas de desgaste que armas
+      excepcionales nunca alcanzan a mostrar.</p>
+      <h4 id="cap-10">Capítulo X — Arquitectura y ciudades encantadas</h4>
+      <p>Los edificios pueden contener climatización, iluminación, control de acceso, conservación y
+      sistemas defensivos integrados. En estos casos la estructura no pertenece a un objeto aislado sino a
+      una red distribuida por materiales y espacios, de modo que modificar muros, puertas o conducciones
+      puede alterar funciones aparentemente no relacionadas.</p>
       <p>Cuando múltiples edificios y sistemas comparten fuentes, referencias o redes, el encantamiento se
-      vuelve infraestructura urbana.</p>
-      <p>El mantenimiento deja de ser responsabilidad de un artesano y pasa a requerir instituciones.</p>
-      <p>Los fallos pueden afectar barrios enteros aun cuando ningún componente individual parezca
-      destruido.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Encantamientos sobre criaturas</h4>
-      <p>Los encantamientos corporales pueden mejorar resistencia, percepción, movilidad o regulación.</p>
-      <p>El principal problema es que el organismo cambia con crecimiento, enfermedad, lesión y
-      envejecimiento.</p>
-      <p>Una estructura rígida diseñada para un cuerpo joven puede volverse incompatible décadas
-      después.</p>
-      <h4 id="cap-40">Capítulo XL — Integración biológica</h4>
+      vuelve infraestructura urbana. El mantenimiento deja de ser responsabilidad de un artesano individual
+      y pasa a requerir instituciones, y los fallos pueden afectar barrios enteros aun cuando ningún
+      componente individual parezca destruido.</p>
+      <h4 id="cap-11">Capítulo XI — Encantamientos sobre criaturas</h4>
+      <p>Los encantamientos corporales pueden mejorar resistencia, percepción, movilidad o regulación. El
+      principal problema es que el organismo cambia con el crecimiento, la enfermedad, la lesión y el
+      envejecimiento, de modo que una estructura rígida diseñada para un cuerpo joven puede volverse
+      incompatible décadas después.</p>
       <p>Cuando el organismo incorpora la alteración a su fisiología, la frontera entre encantamiento y
-      modificación permanente se vuelve difusa.</p>
-      <p>El cuerpo puede comenzar a mantener parte de la función por sí mismo.</p>
-      <p>Anatomía Arcana y Morfología Anómala ayudan a determinar cuándo retirar el encantamiento causaría
-      más daño que conservarlo.</p>
-      <h4 id="cap-41">Capítulo XLI — Crecimiento</h4>
-      <p>Los encantamientos sobre niños, juveniles o criaturas en desarrollo necesitan adaptarse a cambios
-      de tamaño y proporción.</p>
-      <p>Una referencia basada en medidas fijas puede deformar el cuerpo o perder alineación.</p>
-      <p>Los diseños clínicos responsables utilizan relaciones proporcionales y puntos de revisión.</p>
-      <h4 id="cap-42">Capítulo XLII — Encantamientos temporales de larga duración</h4>
-      <p>Un efecto puede durar meses sin ser permanente.</p>
-      <p>El diseño puede incluir una reserva calculada para agotarse, una cláusula temporal o degradación
-      controlada.</p>
-      <p>Esta categoría es útil cuando la reversibilidad forma parte del objetivo.</p>
-      <h4 id="cap-43">Capítulo XLIII — Permanencia</h4>
+      modificación permanente se vuelve difusa, y el cuerpo puede comenzar a mantener parte de la función
+      por sí mismo. Anatomía Arcana y Morfología Anómala ayudan a determinar cuándo retirar el encantamiento
+      causaría más daño que conservarlo.</p>
+      <p>Los encantamientos sobre niños, juveniles o criaturas en desarrollo necesitan adaptarse además a
+      cambios de tamaño y proporción. Una referencia basada en medidas fijas puede deformar el cuerpo o
+      perder alineación, por lo que los diseños clínicos responsables utilizan relaciones proporcionales y
+      puntos de revisión periódicos.</p>
+      <h4 id="cap-12">Capítulo XII — Duración, permanencia y persistencia aparente</h4>
+      <p>Un efecto puede durar meses sin ser permanente. El diseño puede incluir una reserva calculada para
+      agotarse, una cláusula temporal o una degradación controlada, y esta categoría resulta útil cuando la
+      reversibilidad forma parte del objetivo original.</p>
       <p>Un encantamiento se considera permanente cuando puede continuar indefinidamente bajo condiciones
-      normales sin depender de una cuenta regresiva interna.</p>
-      <p>Permanente no significa indestructible.</p>
-      <p>Daño, pérdida de soporte, cambio ambiental o interferencia pueden terminarlo.</p>
-      <h4 id="cap-44">Capítulo XLIV — Persistencia aparente</h4>
-      <p>Algunos efectos parecen permanentes porque su ritmo de degradación es extremadamente lento.</p>
-      <p>Otros se renuevan periódicamente mediante fuentes que pasan inadvertidas.</p>
-      <p>Distinguir permanencia estructural de persistencia aparente es una tarea básica de
-      diagnóstico.</p>
-      <h4 id="cap-45">Capítulo XLV — Autocorrección</h4>
-      <p>Los encantamientos autocorrectivos comparan estado actual con una referencia y reducen
-      desviaciones.</p>
-      <p>Son comunes en herramientas de precisión y sistemas de conservación.</p>
-      <p>Una referencia dañada puede hacer que la estructura corrija hacia un estado incorrecto de manera
-      muy eficiente.</p>
-      <h4 id="cap-46">Capítulo XLVI — Autorreparación</h4>
-      <p>Algunos objetos encantados pueden reconstruir daño físico usando material disponible.</p>
-      <p>La estructura necesita distinguir desgaste de modificación deliberada.</p>
-      <p>Sin esa distinción, una reparación legítima puede ser interpretada como lesión y deshecha.</p>
-      <h4 id="cap-47">Capítulo XLVII — Límites de autonomía</h4>
-      <p>Ningún encantamiento es completamente independiente de todo entorno.</p>
-      <p>Incluso una estructura sin consumo perceptible necesita un soporte que continúe existiendo y
-      relaciones que sigan siendo interpretables.</p>
-      <p>La autonomía es siempre autonomía respecto de ciertas dependencias, no ausencia absoluta de
-      ellas.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Encantamiento y maldición</h4>
-      <p>Ambas disciplinas estudian estructuras persistentes y condicionales, pero su comportamiento típico
-      difiere.</p>
-      <p>El encantamiento suele conservar una función definida sobre un soporte o usuario. La maldición
-      tiende a mantener una relación vinculante con un referente y a reinterpretar circunstancias para
-      continuarla.</p>
-      <p>Existen casos fronterizos, especialmente en objetos que castigan usos no autorizados.</p>
-      <h4 id="cap-49">Capítulo XLIX — Encantamiento y artefacto</h4>
-      <p>Un artefacto es un objeto o sistema con suficiente complejidad histórica y funcional para requerir
-      estudio propio.</p>
-      <p>Puede contener uno o muchos encantamientos, pero no todo objeto encantado es un artefacto.</p>
-      <p>Artefactología estudia el sistema completo; Teoría de Encantamientos analiza las estructuras
-      persistentes que lo componen.</p>
-      <h4 id="cap-50">Capítulo L — Encantamiento y transmutación</h4>
-      <p>Una transmutación permanente puede dejar de necesitar estructura activa una vez establecida la
-      nueva materia.</p>
-      <p>Un encantamiento persistente continúa manteniendo una relación o función.</p>
-      <p>La diferencia se observa preguntando qué ocurriría si toda actividad mágica residual
-      desapareciera.</p>
-      <h4 id="cap-51">Capítulo LI — Encantamiento y ritual</h4>
-      <p>Un ritual puede crear, renovar o modificar encantamientos.</p>
-      <p>Ritualística organiza el proceso de construcción; Teoría de Encantamientos estudia lo que debe
-      seguir funcionando después de que los participantes se retiran.</p>
-      <p>Muchos encantamientos mayores sólo pueden instalarse mediante rituales prolongados.</p>
-      <h4 id="cap-52">Capítulo LII — Encantamientos colectivos</h4>
-      <p>Una estructura puede depender de varios usuarios, objetos o instituciones.</p>
-      <p>Bibliotecas que preservan documentos, murallas que comparten energía y redes de transporte son
-      ejemplos.</p>
-      <p>La pérdida de un componente puede reducir capacidad sin destruir todo el sistema.</p>
-      <h4 id="cap-53">Capítulo LIII — Redundancia</h4>
-      <p>La redundancia permite que una función persista aunque un componente falle.</p>
-      <p>Duplicar anclajes, rutas y reservas mejora resiliencia, pero aumenta complejidad.</p>
-      <p>Los diseños maduros buscan que un fallo local degrade el servicio en vez de producir colapso
-      total.</p>
-      <h4 id="cap-54">Capítulo LIV — Modularidad</h4>
-      <p>Dividir funciones en módulos facilita reparación y actualización.</p>
-      <p>Un módulo puede retirarse sin alterar los demás si las interfaces están bien definidas.</p>
-      <p>Los encantamientos antiguos suelen carecer de esta separación, lo que vuelve peligrosa cualquier
-      intervención.</p>
-      <h4 id="cap-55">Capítulo LV — Seguridad</h4>
-      <p>Un sistema persistente debe incluir estados seguros ante falta de energía, daño o
-      contradicción.</p>
-      <p>Las estructuras sin estado de fallo definido pueden mantener media función en condiciones
-      peligrosas.</p>
-      <p>Seguridad Ritual y Teoría de Encantamientos comparten el principio de que el cierre debe diseñarse
-      antes de la activación.</p>
-      <h4 id="cap-56">Capítulo LVI — Desactivación</h4>
-      <p>Desactivar un encantamiento no equivale necesariamente a destruirlo.</p>
-      <p>Puede suspenderse la manifestación mientras se conserva la estructura para reparación o
-      transporte.</p>
-      <p>Los métodos de desactivación deben formar parte del diseño original siempre que sea posible.</p>
-      <h4 id="cap-57">Capítulo LVII — Desencantamiento</h4>
-      <p>Desencantar significa retirar una estructura persistente del soporte.</p>
-      <p>El procedimiento debe considerar si el soporte se adaptó a ella o si otras funciones dependen de
-      los mismos anclajes.</p>
-      <p>Un desencantamiento exitoso puede dañar el objeto si se ejecuta sin comprender su integración.</p>
-      <h4 id="cap-58">Capítulo LVIII — Fallo seguro</h4>
-      <p>Un encantamiento bien diseñado debería preferir pérdida de función antes que una manifestación
-      descontrolada.</p>
-      <p>Una lámpara sin energía debe apagarse; una barrera no debería invertir su dirección; una
-      herramienta de precisión no debería compensar con fuerza creciente.</p>
-      <p>Este principio distingue ingeniería mágica responsable de improvisación peligrosa.</p>
-      <h4 id="cap-59">Capítulo LIX — Diagnóstico</h4>
-      <p>El diagnóstico separa soporte, anclaje, reserva, lógica de activación y manifestación.</p>
-      <p>Una misma falla visible puede proceder de cualquiera de estas capas.</p>
-      <p>Medir energía sin reconstruir relaciones ofrece una visión incompleta.</p>
-      <h4 id="cap-60">Capítulo LX — Pruebas de carga</h4>
-      <p>Las pruebas de carga observan cómo responde una estructura cerca de sus límites.</p>
-      <p>Se utilizan para detectar saturación, calentamiento, pérdida de precisión y degradación de
-      reconocimiento.</p>
-      <p>Las pruebas deben realizarse con márgenes controlados para no convertir diagnóstico en causa de
-      fallo.</p>
-      <h4 id="cap-61">Capítulo LXI — Pruebas de envejecimiento</h4>
-      <p>Algunos problemas sólo aparecen después de miles de ciclos.</p>
-      <p>Los laboratorios utilizan activación repetida, exposición ambiental y modelos acelerados para
-      estimar desgaste.</p>
-      <p>Los resultados siguen siendo aproximaciones porque décadas de historia real pueden introducir
-      variables imposibles de reproducir.</p>
-      <h4 id="cap-62">Capítulo LXII — Encantamientos históricos</h4>
+      normales sin depender de una cuenta regresiva interna. Permanente no significa indestructible. Daño,
+      pérdida de soporte, cambio ambiental o interferencia pueden terminarlo igualmente.</p>
+      <p>Algunos efectos parecen permanentes porque su ritmo de degradación es extremadamente lento; otros se
+      renuevan periódicamente mediante fuentes que pasan inadvertidas. Distinguir la permanencia estructural
+      de la persistencia aparente es una tarea básica de diagnóstico.</p>
+      <h4 id="cap-13">Capítulo XIII — Autocorrección, autorreparación y límites de autonomía</h4>
+      <p>Los encantamientos autocorrectivos comparan el estado actual con una referencia y reducen las
+      desviaciones que encuentran. Son comunes en herramientas de precisión y sistemas de conservación,
+      aunque una referencia dañada puede hacer que la estructura corrija hacia un estado incorrecto de
+      manera muy eficiente.</p>
+      <p>Algunos objetos encantados pueden además reconstruir daño físico usando material disponible. La
+      estructura necesita distinguir el desgaste de una modificación deliberada, porque sin esa distinción
+      una reparación legítima puede ser interpretada como lesión y deshecha.</p>
+      <p>Estas capacidades tienen límites. Un encantamiento nunca es completamente independiente de su
+      entorno. Incluso una estructura sin consumo perceptible necesita un soporte que continúe existiendo y
+      relaciones que sigan siendo interpretables, de modo que la autonomía es siempre autonomía respecto de
+      ciertas dependencias, nunca ausencia absoluta de ellas.</p>
+      <h4 id="cap-14">Capítulo XIV — Encantamiento frente a maldición, artefacto, transmutación y ritual</h4>
+      <p>Encantamiento y maldición estudian ambas estructuras persistentes y condicionales, pero su
+      comportamiento típico difiere. El encantamiento suele conservar una función definida sobre un soporte
+      o usuario, mientras que la maldición tiende a mantener un vínculo con un referente y a reinterpretar
+      circunstancias para continuarlo. Existen casos fronterizos, especialmente en objetos que castigan usos
+      no autorizados.</p>
+      <p>Un artefacto, por su parte, es un objeto o sistema con suficiente complejidad histórica y funcional
+      para requerir estudio propio. Puede contener uno o muchos encantamientos, pero no todo objeto
+      encantado es un artefacto. Artefactología estudia el sistema completo, mientras que Teoría de
+      Encantamientos analiza las estructuras persistentes que lo componen.</p>
+      <p>Frente a la transmutación, la diferencia es de otra naturaleza. Una transmutación permanente puede
+      dejar de necesitar estructura activa una vez establecida la nueva materia, mientras que un
+      encantamiento persistente continúa manteniendo una relación o función. La distinción se observa
+      preguntando qué ocurriría si toda actividad mágica residual desapareciera.</p>
+      <p>El ritual, finalmente, puede crear, renovar o modificar encantamientos. Ritualística organiza el
+      proceso de construcción, mientras que Teoría de Encantamientos estudia lo que debe seguir funcionando
+      después de que los participantes se retiran. Muchos encantamientos mayores sólo pueden instalarse
+      mediante rituales prolongados.</p>
+      <h4 id="cap-15">Capítulo XV — Sistemas colectivos, redundancia y modularidad</h4>
+      <p>Una estructura puede depender de varios usuarios, objetos o instituciones a la vez. Bibliotecas que
+      preservan documentos, murallas que comparten energía y redes de transporte son ejemplos habituales, y
+      la pérdida de un componente puede reducir su capacidad sin destruir todo el sistema.</p>
+      <p>La redundancia permite que una función persista aunque un componente falle. Duplicar anclajes,
+      rutas y reservas mejora la resiliencia, aunque también aumenta la complejidad. Los diseños maduros
+      buscan que un fallo local degrade el servicio en vez de producir un colapso total.</p>
+      <p>Dividir funciones en módulos facilita además la reparación y la actualización. Un módulo puede
+      retirarse sin alterar los demás si las interfaces están bien definidas, y los encantamientos antiguos
+      suelen carecer de esta separación, lo que vuelve peligrosa cualquier intervención sobre ellos.</p>
+      <h4 id="cap-16">Capítulo XVI — Seguridad, desactivación y fallo seguro</h4>
+      <p>Un sistema persistente debe incluir estados seguros ante la falta de energía, el daño o la
+      contradicción interna. Las estructuras sin un estado de fallo definido pueden mantener media función
+      en condiciones peligrosas, y Seguridad Ritual comparte con Teoría de Encantamientos el principio de
+      que el cierre debe diseñarse antes de la activación.</p>
+      <p>Desactivar un encantamiento no equivale necesariamente a destruirlo. Puede suspenderse la
+      manifestación mientras se conserva la estructura para reparación o transporte, y los métodos de
+      desactivación deben formar parte del diseño original siempre que sea posible.</p>
+      <p>Desencantar significa retirar una estructura persistente de su soporte. El procedimiento debe
+      considerar si el soporte se adaptó a ella o si otras funciones dependen de los mismos anclajes, porque
+      un desencantamiento exitoso puede dañar el objeto si se ejecuta sin comprender su integración.</p>
+      <p>Un encantamiento bien diseñado debería preferir la pérdida de función antes que una manifestación
+      descontrolada. Una lámpara sin energía debe apagarse, una barrera no debería invertir su dirección y
+      una herramienta de precisión no debería compensar con fuerza creciente. Este principio distingue la
+      ingeniería mágica responsable de la improvisación peligrosa.</p>
+      <h4 id="cap-17">Capítulo XVII — Diagnóstico y pruebas</h4>
+      <p>El diagnóstico separa soporte, anclaje, reserva, lógica de activación y manifestación. Una misma
+      falla visible puede proceder de cualquiera de estas capas, y medir sólo la energía sin reconstruir las
+      relaciones ofrece una visión incompleta del problema.</p>
+      <p>Las pruebas de carga observan cómo responde una estructura cerca de sus límites. Se utilizan para
+      detectar saturación, calentamiento, pérdida de precisión y degradación de reconocimiento, y deben
+      realizarse con márgenes controlados para no convertir el diagnóstico en causa de fallo.</p>
+      <p>Algunos problemas sólo aparecen después de miles de ciclos. Los laboratorios utilizan activación
+      repetida, exposición ambiental y modelos acelerados para estimar el desgaste, aunque los resultados
+      siguen siendo aproximaciones porque décadas de historia real pueden introducir variables imposibles de
+      reproducir.</p>
+      <h4 id="cap-18">Capítulo XVIII — Encantamientos históricos y conscientes</h4>
       <p>Los objetos antiguos pueden sobrevivir a culturas, lenguas y sistemas políticos que les daban
-      contexto.</p>
-      <p>Una condición de uso puede volverse ambigua cuando desaparece la institución que definía al
-      usuario legítimo.</p>
-      <p>Conservación, Filología y Semiótica son indispensables para interpretar estos sistemas.</p>
-      <h4 id="cap-63">Capítulo LXIII — Encantamientos conscientes</h4>
-      <p>Cuando una estructura acumula memoria, preferencias, aprendizaje y capacidad de decidir entre
-      varias respuestas, surge la pregunta de si sigue siendo un encantamiento o se ha convertido en una
-      mente.</p>
-      <p>No existe un umbral universal aceptado.</p>
-      <p>Pneumatología y Ética de la Alteración intervienen cuando desconectar el sistema podría equivaler
-      a terminar una forma de conciencia.</p>
-      <h4 id="cap-64">Capítulo LXIV — Relación con otras disciplinas</h4>
+      contexto. Una condición de uso puede volverse ambigua cuando desaparece la institución que definía al
+      usuario legítimo, por lo que Conservación, Filología y Semiótica resultan indispensables para
+      interpretar estos sistemas.</p>
+      <p>Cuando una estructura acumula memoria, preferencias, aprendizaje y capacidad de decidir entre varias
+      respuestas, surge la pregunta de si sigue siendo un encantamiento o se ha convertido en una mente. No
+      existe un umbral universal aceptado, y Pneumatología junto con Ética de la Alteración intervienen
+      cuando desconectar el sistema podría equivaler a terminar una forma de conciencia.</p>
+      <h4 id="cap-19">Capítulo XIX — Relación con otras disciplinas</h4>
       <p>Teoría de Encantamientos trabaja con Artefactología, Mineralogía Mágica, Runología, Semiótica,
       Ritualística, Conservación Arcana y Materia y Transmutación.</p>
       <p>Anatomía Arcana y Morfología Anómala son esenciales para encantamientos sobre criaturas.</p>
       <p>Maldiología ayuda a estudiar estructuras condicionales que desarrollan vínculos más profundos con
       sus referentes.</p>
-      <h4 id="cap-65">Capítulo LXV — El problema de mantener</h4>
+      <h4 id="cap-20">Capítulo XX — El problema de mantener</h4>
       <p>El desafío fundamental de un encantamiento no es producir el efecto inicial. Es mantener
       suficiente organización para que siga siendo el mismo efecto después de desgaste, cambios de
       usuario, reparaciones y pérdida parcial de recursos.</p>
