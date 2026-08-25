@@ -502,11 +502,11 @@ window.PERSONAJES = [
     id: "laia",
     title: "Laia",
     category: "Personajes",
-    tags: ["jugador", "cambiaformas"],
-    summary: "Cambiaformas pícaro, criado en una familia de ladrones, que partió de viaje para entender las emociones propias y ajenas.",
+    tags: ["jugador", "cambiantes"],
+    summary: "Cambiante pícaro, criado en una familia de ladrones, que partió de viaje para entender las emociones propias y ajenas.",
     retrato: "",
     titulo: "Pícaro",
-    raza: "Cambiaformas",
+    raza: "Cambiantes",
     tipo: "Jugador",
     lugarOrigen: "",
     ocupacion: "Pícaro",
@@ -518,7 +518,7 @@ window.PERSONAJES = [
       { id: "isa", nota: "Se conocieron en los calabozos, quedaron en verse en la taberna" }
     ],
     content: `
-      <p>Un cambiaformas pícaro, criado dentro de una familia de ladrones. Su propia
+      <p>Un cambiante pícaro, criado dentro de una familia de ladrones. Su propia
       naturaleza cambiante siempre le dificultó entender el porqué de sus propias
       acciones, y mucho menos las de la gente a su alrededor. Harto de esa
       incertidumbre, partió de viaje decidido a entender las emociones —las suyas y

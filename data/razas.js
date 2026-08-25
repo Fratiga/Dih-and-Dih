@@ -1020,6 +1020,44 @@ window.RAZAS = [
     `
   },
   {
+    id: "shifters",
+    title: "Shifters",
+    category: "Razas",
+    tags: ["shifters", "licantropía", "maldición ancestral"],
+    summary: "Estirpe descendiente de antiguos druidas élficos que adoptaron un aspecto lupino, hoy extendida a otros animales; puede surgir de forma natural o por maldición.",
+    region: "",
+    gobierno: "",
+    religionPredominante: "",
+    lugaresDestacados: [],
+    content: `
+      <p>Los primeros shifters no nacieron de una maldición, sino de un rito. Un
+      círculo de druidas élficos, buscando entender a los lobos que protegían sus
+      bosques mejor de lo que cualquier hechizo se lo permitía, terminaron por adoptar
+      algo del animal en su propio cuerpo. Lo que empezó como una comunión ritual se
+      volvió permanente, y luego hereditario: sus descendientes nacieron ya con esa
+      naturaleza dividida, humanoides de aspecto casi corriente —salvo por un detalle
+      persistente, unas orejas demasiado móviles, una dentadura ligeramente
+      pronunciada, una forma de moverse que delata al animal del que heredaron el
+      don— capaces de virar por voluntad propia hacia un estado más bestial.</p>
+      <p>Con el tiempo, otros linajes de shifters surgieron por caminos menos
+      voluntarios: descendientes estabilizados de licántropos cuya maldición dejó de
+      manifestarse por completo y se quedó a mitad de camino, sin la pérdida de
+      control que sufrían sus antepasados. Sea cual sea su origen, druídico o
+      licantrópico, el resultado es el mismo, y hoy la estirpe se ha extendido mucho
+      más allá de los lobos originales, con linajes ligados a osos, felinos, aves de
+      presa y otros animales.</p>
+      <p>Esa forma virada es siempre la misma para cada shifter, fija según el linaje
+      del que provenga: uno de sangre lupina viraría siempre hacia rasgos de lobo, uno
+      de sangre úrsida hacia rasgos de oso, y así con cada estirpe. En esto se
+      diferencian con claridad de los cambiantes, cuya transformación es libre y puede
+      adoptar cualquier apariencia; un shifter nunca elige la forma, solo el momento en
+      que su cuerpo se acerca a ella. Los eruditos de la Criptozoología Académica
+      todavía discuten si esa fijeza convierte a los shifters en una raza propia o si
+      son, en el fondo, herederos de un don y una maldición que terminaron por
+      converger en la misma condición.</p>
+    `
+  },
+  {
     id: "silvanos",
     title: "Silvanos",
     category: "Razas",
