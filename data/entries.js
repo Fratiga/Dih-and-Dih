@@ -11376,79 +11376,27 @@ window.ENTRIES = [
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Qué es una maldición</a>
-        <a href="#cap-2">II. Persistencia no es maldición</a>
-        <a href="#cap-3">III. Condición</a>
-        <a href="#cap-4">IV. Consecuencia</a>
-        <a href="#cap-5">V. Reconocimiento de la víctima</a>
-        <a href="#cap-6">VI. Nombre</a>
-        <a href="#cap-7">VII. Cuerpo</a>
-        <a href="#cap-8">VIII. Identidad</a>
-        <a href="#cap-9">IX. Pertenencia</a>
-        <a href="#cap-10">X. Título y función</a>
-        <a href="#cap-11">XI. Linaje</a>
-        <a href="#cap-12">XII. Sangre</a>
-        <a href="#cap-13">XIII. Herencia legal</a>
-        <a href="#cap-14">XIV. Herencia simbólica</a>
-        <a href="#cap-15">XV. Maldiciones territoriales</a>
-        <a href="#cap-16">XVI. Maldiciones de objeto</a>
-        <a href="#cap-17">XVII. Maldiciones contractuales</a>
-        <a href="#cap-18">XVIII. Maldiciones punitivas</a>
-        <a href="#cap-19">XIX. Maldiciones protectoras</a>
-        <a href="#cap-20">XX. Maldiciones autodefensivas</a>
-        <a href="#cap-21">XXI. Maldiciones adaptativas</a>
-        <a href="#cap-22">XXII. Latencia</a>
-        <a href="#cap-23">XXIII. Desencadenantes</a>
-        <a href="#cap-24">XXIV. Periodicidad</a>
-        <a href="#cap-25">XXV. Reconocimiento de conducta</a>
-        <a href="#cap-26">XXVI. Intención</a>
-        <a href="#cap-27">XXVII. Culpa y juicio</a>
-        <a href="#cap-28">XXVIII. Maldición y hechizo persistente</a>
-        <a href="#cap-29">XXIX. Maldición y encantamiento</a>
-        <a href="#cap-30">XXX. Maldición y patología</a>
-        <a href="#cap-31">XXXI. Maldición y posesión</a>
-        <a href="#cap-32">XXXII. Maldición y destino</a>
-        <a href="#cap-33">XXXIII. Maldición y muerte</a>
-        <a href="#cap-34">XXXIV. Maldiciones post mortem</a>
-        <a href="#cap-35">XXXV. Resurrección</a>
-        <a href="#cap-36">XXXVI. Cambio de cuerpo</a>
-        <a href="#cap-37">XXXVII. Herencia a través de transformación</a>
-        <a href="#cap-38">XXXVIII. Transmisión</a>
-        <a href="#cap-39">XXXIX. Transferencia</a>
-        <a href="#cap-40">XL. División</a>
-        <a href="#cap-41">XLI. Acumulación</a>
-        <a href="#cap-42">XLII. Contienda maldiológica</a>
-        <a href="#cap-43">XLIII. Autoridad</a>
-        <a href="#cap-44">XLIV. Anclajes</a>
-        <a href="#cap-45">XLV. Anclajes múltiples</a>
-        <a href="#cap-46">XLVI. Cláusulas de terminación</a>
-        <a href="#cap-47">XLVII. Cláusulas imposibles</a>
-        <a href="#cap-48">XLVIII. Ruptura</a>
-        <a href="#cap-49">XLIX. Supresión</a>
-        <a href="#cap-50">L. Sellado</a>
-        <a href="#cap-51">LI. Desplazamiento</a>
-        <a href="#cap-52">LII. Contradicción</a>
-        <a href="#cap-53">LIII. Reescritura</a>
-        <a href="#cap-54">LIV. Maldiciones antiguas</a>
-        <a href="#cap-55">LV. Lenguaje</a>
-        <a href="#cap-56">LVI. Runas</a>
-        <a href="#cap-57">LVII. Símbolos</a>
-        <a href="#cap-58">LVIII. Maldiciones feéricas</a>
-        <a href="#cap-59">LIX. Maldiciones infernales</a>
-        <a href="#cap-60">LX. Maldiciones teúrgicas</a>
-        <a href="#cap-61">LXI. Maldiciones espontáneas</a>
-        <a href="#cap-62">LXII. Maldiciones autoformadas</a>
-        <a href="#cap-63">LXIII. Diagnóstico</a>
-        <a href="#cap-64">LXIV. Pruebas controladas</a>
-        <a href="#cap-65">LXV. Epidemiología maldiológica</a>
-        <a href="#cap-66">LXVI. Pronóstico</a>
-        <a href="#cap-67">LXVII. Ética</a>
-        <a href="#cap-68">LXVIII. Derecho</a>
-        <a href="#cap-69">LXIX. El error de buscar al culpable</a>
-        <a href="#cap-70">LXX. El error de romper el objeto</a>
-        <a href="#cap-71">LXXI. El error de la fórmula opuesta</a>
-        <a href="#cap-72">LXXII. Relación con otras disciplinas</a>
-        <a href="#cap-73">LXXIII. La pregunta por el reconocimiento</a>
+        <a href="#cap-1">I. Definición y estructura básica</a>
+        <a href="#cap-2">II. Reconocimiento de la víctima</a>
+        <a href="#cap-3">III. Herencia: linaje, sangre y sucesión</a>
+        <a href="#cap-4">IV. Maldiciones según su anclaje</a>
+        <a href="#cap-5">V. Maldiciones según su función</a>
+        <a href="#cap-6">VI. Latencia, desencadenantes y periodicidad</a>
+        <a href="#cap-7">VII. Conducta, intención y culpa</a>
+        <a href="#cap-8">VIII. Maldición y fenómenos afines</a>
+        <a href="#cap-9">IX. Muerte, resurrección y cambio de cuerpo</a>
+        <a href="#cap-10">X. Transmisión y transferencia</a>
+        <a href="#cap-11">XI. División, acumulación y contienda</a>
+        <a href="#cap-12">XII. Autoridad y anclajes</a>
+        <a href="#cap-13">XIII. Cláusulas de terminación</a>
+        <a href="#cap-14">XIV. Métodos de intervención</a>
+        <a href="#cap-15">XV. Maldiciones antiguas: lenguaje, runas y símbolos</a>
+        <a href="#cap-16">XVI. Maldiciones según su origen</a>
+        <a href="#cap-17">XVII. Diagnóstico, pruebas y pronóstico</a>
+        <a href="#cap-18">XVIII. Ética y derecho</a>
+        <a href="#cap-19">XIX. Errores frecuentes en la ruptura</a>
+        <a href="#cap-20">XX. Relación con otras disciplinas</a>
+        <a href="#cap-21">XXI. La pregunta por el reconocimiento</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -11467,464 +11415,341 @@ window.ENTRIES = [
       Pneumatología, Derecho Arcano y Ritualística. Ninguna de estas áreas, por sí sola, explica por
       qué una prohibición pronunciada ante un altar puede convertirse en una condición capaz de
       perseguir una familia durante cinco generaciones.</p>
-      <h4 id="cap-1">Capítulo I — Qué es una maldición</h4>
+      <h4 id="cap-1">Capítulo I — Definición y estructura básica</h4>
       <p>En sentido técnico, una maldición es una estructura persistente que asocia uno o más
       referentes con una condición, consecuencia o restricción y conserva capacidad de interpretar
-      cuándo esa relación debe aplicarse.</p>
-      <p>Esta definición excluye muchos efectos duraderos. Una pared encantada que permanece fría
-      durante cien años puede ser persistente sin ser una maldición. Una herida que no cicatriza
-      porque un residuo necrótico sigue dañando tejido tampoco es necesariamente maldiológica.</p>
-      <p>La diferencia aparece cuando la estructura no sólo permanece activa, sino que evalúa
-      relaciones: quién es la víctima, qué conducta cumple una condición, qué objeto cuenta como
-      heredado o cuándo una obligación ha sido satisfecha.</p>
-      <h4 id="cap-2">Capítulo II — Persistencia no es maldición</h4>
+      cuándo esa relación debe aplicarse. Esta definición excluye muchos efectos duraderos: una
+      pared encantada que permanece fría durante cien años puede ser persistente sin ser una
+      maldición, y una herida que no cicatriza porque un residuo necrótico sigue dañando tejido
+      tampoco es necesariamente maldiológica. La diferencia aparece cuando la estructura no sólo
+      permanece activa, sino que evalúa relaciones: quién es la víctima, qué conducta cumple una
+      condición, qué objeto cuenta como heredado o cuándo una obligación ha sido satisfecha.</p>
       <p>Un hechizo persistente puede sostener un estado mientras conserve energía, anclaje o
-      prioridad. Su comportamiento suele ser estable: mantiene una barrera, una temperatura, una
-      transformación o una zona de influencia.</p>
-      <p>La maldición añade una capa interpretativa. Puede permanecer latente, reaccionar a eventos
-      futuros y modificar su manifestación sin necesidad de que un oficiante vuelva a intervenir.</p>
-      <p>Por ello, la duración por sí sola no permite distinguir ambos fenómenos. Existen maldiciones
-      de minutos y encantamientos de siglos.</p>
-      <h4 id="cap-3">Capítulo III — Condición</h4>
+      prioridad; su comportamiento suele ser estable, pues mantiene una barrera, una temperatura,
+      una transformación o una zona de influencia. La maldición añade una capa interpretativa: puede
+      permanecer latente, reaccionar a eventos futuros y modificar su manifestación sin que un
+      oficiante vuelva a intervenir. La duración por sí sola no permite distinguir ambos fenómenos,
+      ya que existen maldiciones de minutos y encantamientos de siglos.</p>
       <p>Toda maldición conocida contiene alguna forma de condición, aunque no siempre esté expresada
-      como una frase.</p>
-      <p>La condición establece qué relación debe cumplirse para iniciar, modificar, suspender o
-      terminar la consecuencia. Puede ser temporal, conductual, genealógica, espacial, contractual,
-      simbólica o corporal.</p>
-      <p>Una maldición que actúa sólo cuando la víctima cruza una frontera posee una lógica distinta
-      de otra que responde al nacimiento del primer heredero, aunque ambas produzcan el mismo
-      síntoma.</p>
-      <h4 id="cap-4">Capítulo IV — Consecuencia</h4>
-      <p>La consecuencia es aquello que la estructura impone cuando reconoce la condición pertinente.
-      Puede afectar cuerpo, percepción, suerte, memoria, identidad social, fertilidad, territorio,
-      relaciones o acceso a determinadas capacidades.</p>
-      <p>La consecuencia no necesita ser constante. Algunas maldiciones alternan entre latencia y
-      manifestación según circunstancias.</p>
-      <p>La Maldiología evita clasificar una maldición únicamente por su efecto visible porque dos
+      como una frase. La condición establece qué relación debe cumplirse para iniciar, modificar,
+      suspender o terminar la consecuencia, y puede ser temporal, conductual, genealógica, espacial,
+      contractual, simbólica o corporal. Una maldición que actúa sólo cuando la víctima cruza una
+      frontera posee una lógica distinta de otra que responde al nacimiento del primer heredero,
+      aunque ambas produzcan el mismo síntoma.</p>
+      <p>La consecuencia, por último, es aquello que la estructura impone cuando reconoce la
+      condición pertinente, y puede afectar cuerpo, percepción, suerte, memoria, identidad social,
+      fertilidad, territorio, relaciones o acceso a determinadas capacidades. No necesita ser
+      constante: algunas maldiciones alternan entre latencia y manifestación según circunstancias.
+      La Maldiología evita clasificar una maldición únicamente por su efecto visible, porque dos
       estructuras con resultados idénticos pueden poseer mecanismos completamente distintos.</p>
-      <h4 id="cap-5">Capítulo V — Reconocimiento de la víctima</h4>
-      <p>Una maldición necesita algún criterio para decidir a quién afecta. Este criterio puede
+      <h4 id="cap-2">Capítulo II — Reconocimiento de la víctima</h4>
+      <p>Toda maldición necesita algún criterio para decidir a quién afecta. Ese criterio puede
       basarse en nombre, firma, sangre, parentesco, posesión, cargo, presencia, conducta o relación
-      con un objeto.</p>
-      <p>No debe imaginarse necesariamente una consciencia. La estructura puede reconocer mediante
-      correspondencias estables sin comprender a la víctima como persona.</p>
-      <p>Semiótica Mágica resulta esencial porque el problema de la víctima es, en gran medida, un
-      problema de referencia.</p>
-      <h4 id="cap-6">Capítulo VI — Nombre</h4>
-      <p>El nombre es una forma eficiente de referencia, pero rara vez constituye el único criterio.</p>
-      <p>Nombres cambian, se traducen, se abandonan y pueden ser compartidos por varias personas. Las
-      maldiciones robustas suelen combinar nombre con otras relaciones.</p>
-      <p>Una estructura antigua puede seguir una forma histórica del nombre incluso después de que
-      nadie la utilice, especialmente si esa forma fue la que estableció el vínculo original.</p>
-      <h4 id="cap-7">Capítulo VII — Cuerpo</h4>
-      <p>Algunas maldiciones se fijan al cuerpo. Pueden localizarse en una cicatriz, órgano, sangre o
-      patrón somático.</p>
-      <p>Estas estructuras suelen ser sensibles a transformaciones, injertos y sustituciones de
-      tejido.</p>
-      <p>Sin embargo, una maldición capaz de reconocer continuidad orgánica puede seguir al individuo
-      a través de cambios físicos profundos, incluida polimorfia estable.</p>
-      <h4 id="cap-8">Capítulo VIII — Identidad</h4>
-      <p>Las maldiciones más persistentes no parecen depender de una forma corporal concreta, sino de
-      continuidad individual.</p>
-      <p>Pneumatología propone que ciertas estructuras se vinculan a referencias personales más
-      profundas que materia o apariencia.</p>
-      <p>Esto explicaría por qué algunas sobreviven a cambios de cuerpo, resurrección o
-      transformaciones extremas. La evidencia es incompleta y no todas las maldiciones muestran este
-      comportamiento.</p>
-      <h4 id="cap-9">Capítulo IX — Pertenencia</h4>
+      con un objeto, sin que deba imaginarse necesariamente una consciencia detrás de la selección:
+      la estructura puede reconocer mediante correspondencias estables sin comprender a la víctima
+      como persona. Semiótica Mágica resulta esencial en este punto porque el problema de la víctima
+      es, en gran medida, un problema de referencia.</p>
+      <p>El nombre es una forma eficiente de referencia, pero pocas veces constituye el único
+      criterio: los nombres cambian, se traducen, se abandonan y pueden ser compartidos por varias
+      personas, de modo que las maldiciones robustas suelen combinarlo con otras relaciones. Una
+      estructura antigua puede seguir una forma histórica del nombre incluso después de que nadie la
+      utilice, sobre todo si esa forma fue la que estableció el vínculo original.</p>
+      <p>Algunas maldiciones se fijan al cuerpo y pueden localizarse en una cicatriz, un órgano, la
+      sangre o un patrón somático; estas estructuras suelen ser sensibles a transformaciones,
+      injertos y sustituciones de tejido. Sin embargo, una maldición capaz de reconocer continuidad
+      orgánica puede seguir al individuo a través de cambios físicos profundos, incluida una
+      polimorfia estable. Las maldiciones más persistentes no parecen depender de una forma corporal
+      concreta sino de continuidad individual: Pneumatología propone que ciertas estructuras se
+      vinculan a referencias personales más profundas que la materia o la apariencia, lo que
+      explicaría por qué algunas sobreviven a cambios de cuerpo, resurrección o transformaciones
+      extremas. La evidencia es incompleta y no todas las maldiciones muestran este comportamiento.</p>
       <p>Un objeto puede convertirse en referencia cuando pertenece de manera estable a una persona o
-      linaje.</p>
-      <p>Una corona, una casa, una espada o una parcela pueden actuar como nodos de una maldición.</p>
-      <p>En estos casos, la condición puede seguir a quien sea reconocido como legítimo poseedor y no
-      necesariamente a quien tenga contacto físico con el objeto. Derecho Arcano se interesa
-      especialmente por estas estructuras porque posesión legal y posesión maldiológica pueden no
-      coincidir.</p>
-      <h4 id="cap-10">Capítulo X — Título y función</h4>
-      <p>Algunas maldiciones afectan a un cargo: rey, guardián, heredero, juez o custodio.</p>
-      <p>La estructura no necesita conocer de antemano quién ocupará la función. Reconoce a la
-      persona cuando entra en la relación prevista. Estas maldiciones pueden sobrevivir siglos y
-      cambiar de víctima sin transmisión física.</p>
-      <p>Semiótica Mágica estudia cómo un título puede funcionar como referente estable.</p>
-      <h4 id="cap-11">Capítulo XI — Linaje</h4>
-      <p>Las maldiciones hereditarias plantean uno de los problemas más conocidos del campo.</p>
-      <p>La herencia puede seguir descendencia biológica, nombre familiar, posesión, primogenitura,
-      legitimidad o reglas propias. Por ello, no toda maldición familiar es genética ni toda mutación
-      heredable es maldiológica.</p>
-      <p>El primer paso consiste en reconstruir qué relación pasa realmente de una generación a
-      otra.</p>
-      <h4 id="cap-12">Capítulo XII — Sangre</h4>
+      linaje: una corona, una casa, una espada o una parcela pueden actuar como nodos de una
+      maldición. En estos casos la condición puede seguir a quien sea reconocido como legítimo
+      poseedor, no necesariamente a quien tenga contacto físico con el objeto, y Derecho Arcano se
+      interesa especialmente por estas estructuras porque posesión legal y posesión maldiológica
+      pueden no coincidir.</p>
+      <p>Otras maldiciones afectan a un cargo antes que a una persona: rey, guardián, heredero, juez
+      o custodio. La estructura no necesita conocer de antemano quién ocupará la función, sino que
+      reconoce a la persona cuando entra en la relación prevista, de modo que estas maldiciones
+      pueden sobrevivir siglos y cambiar de víctima sin transmisión física. Semiótica Mágica estudia
+      cómo un título puede funcionar como referente estable.</p>
+      <h4 id="cap-3">Capítulo III — Herencia: linaje, sangre y sucesión</h4>
+      <p>Las maldiciones hereditarias plantean uno de los problemas más conocidos del campo. La
+      herencia puede seguir descendencia biológica, nombre familiar, posesión, primogenitura,
+      legitimidad o reglas propias, de modo que no toda maldición familiar es genética ni toda
+      mutación heredable es maldiológica; el primer paso consiste en reconstruir qué relación pasa
+      realmente de una generación a otra.</p>
       <p>La sangre aparece con frecuencia en maldiciones hereditarias porque combina material
-      biológico, parentesco y simbolismo.</p>
-      <p>Sin embargo, atribuir toda transmisión familiar a la sangre suele ser un error. Una
-      maldición puede ignorar descendientes biológicos y seguir sólo a quienes reciben un nombre o
-      título.</p>
-      <p>La sangre es una referencia posible, no una ley universal de herencia.</p>
-      <h4 id="cap-13">Capítulo XIII — Herencia legal</h4>
-      <p>Existen estructuras que siguen herencia institucional antes que biológica.</p>
-      <p>Una propiedad maldita puede afectar a quien la recibe legalmente, incluso si no pertenece al
-      linaje del propietario anterior.</p>
-      <p>Estos casos demuestran que la maldición puede utilizar convenciones sociales como parte de
-      su reconocimiento. El problema se vuelve especialmente complejo cuando dos sistemas jurídicos
-      reconocen herederos distintos.</p>
-      <h4 id="cap-14">Capítulo XIV — Herencia simbólica</h4>
-      <p>Una maldición puede transmitirse mediante objetos, insignias, juramentos o ritos de
-      sucesión.</p>
-      <p>La persona adquiere la condición cuando acepta un símbolo que representa continuidad con el
-      portador anterior.</p>
-      <p>Retirar el objeto después no siempre rompe el vínculo, porque el acto de aceptación puede
-      haber sido la verdadera condición.</p>
-      <h4 id="cap-15">Capítulo XV — Maldiciones territoriales</h4>
-      <p>Algunas maldiciones se vinculan a lugares en vez de individuos.</p>
-      <p>Quien habita, gobierna, cultiva, cruza o muere dentro de una región puede quedar incluido si
-      cumple la relación definida. La frontera puede ser geográfica, histórica, ritual o simbólica.</p>
-      <p>Planología y Geometría Ritual ayudan a determinar qué espacio reconoce realmente la
-      estructura.</p>
-      <h4 id="cap-16">Capítulo XVI — Maldiciones de objeto</h4>
-      <p>Un objeto maldito puede imponer consecuencias a quien lo posea, use, acepte, robe o
-      destruya.</p>
-      <p>La condición debe reconstruirse con precisión. Tocar un objeto y poseerlo son relaciones
-      distintas.</p>
-      <p>Artefactología analiza la pieza física; Maldiología estudia el vínculo que utiliza para
-      seleccionar víctimas.</p>
-      <h4 id="cap-17">Capítulo XVII — Maldiciones contractuales</h4>
-      <p>Los pactos y juramentos pueden contener consecuencias maldiológicas destinadas a garantizar
-      cumplimiento.</p>
-      <p>La maldición puede activarse al romper una promesa o al reinterpretar una obligación de
-      manera incompatible con la relación original.</p>
-      <p>Pacturgia analiza la fuente de autoridad; Maldiología estudia la condición y la
-      consecuencia.</p>
-      <h4 id="cap-18">Capítulo XVIII — Maldiciones punitivas</h4>
-      <p>Las maldiciones punitivas se diseñan como respuesta a una transgresión.</p>
-      <p>Su estructura suele incluir un criterio de culpa, conducta o prohibición. El problema es que
-      esos conceptos pueden depender de sistemas culturales específicos.</p>
-      <p>Una maldición antigua puede seguir aplicando una norma después de que la sociedad haya
-      dejado de reconocerla.</p>
-      <h4 id="cap-19">Capítulo XIX — Maldiciones protectoras</h4>
-      <p>No toda maldición fue creada para infligir daño indiscriminado.</p>
-      <p>Algunas funcionan como protección: afectan a quien profana una tumba, rompe un sello o roba
-      un objeto.</p>
-      <p>Desde la perspectiva de la víctima siguen siendo maldiciones, pero su función original pudo
-      ser defensiva. Esta distinción es importante en Arqueología Arcana y Derecho Arcano.</p>
-      <h4 id="cap-20">Capítulo XX — Maldiciones autodefensivas</h4>
-      <p>Existen estructuras capaces de modificar su manifestación cuando alguien intenta romperlas.</p>
-      <p>Pueden transferirse, ocultar síntomas, desplazar la consecuencia o añadir nuevas
-      condiciones. Esto no demuestra inteligencia. Puede tratarse de respuestas previamente
-      inscritas.</p>
-      <p>Los intentos de eliminación deben observar cómo reacciona la estructura antes de asumir que
-      cada cambio es improvisación.</p>
-      <h4 id="cap-21">Capítulo XXI — Maldiciones adaptativas</h4>
-      <p>Una maldición adaptativa conserva su objetivo mientras cambia el medio por el cual lo
-      alcanza.</p>
-      <p>Si una consecuencia era impedir descanso y la víctima deja de dormir por medios mágicos, la
-      estructura puede comenzar a producir agotamiento directamente.</p>
-      <p>Estos casos sugieren que la maldición representa una función abstracta más que un síntoma
-      específico. Son especialmente difíciles de romper porque atacar una manifestación no altera
-      necesariamente la condición central.</p>
-      <h4 id="cap-22">Capítulo XXII — Latencia</h4>
-      <p>Muchas maldiciones permanecen inactivas hasta que se cumple una condición.</p>
-      <p>Durante la latencia pueden no producir ningún efecto detectable, aunque el vínculo siga
-      presente. La ausencia de síntomas no equivale a ausencia de estructura.</p>
-      <p>Patología Arcana y Maldiología utilizan métodos distintos para investigar estos casos.</p>
-      <h4 id="cap-23">Capítulo XXIII — Desencadenantes</h4>
-      <p>Un desencadenante puede ser una edad, fecha, lugar, palabra, acción, presencia de un objeto
-      o aparición de otra persona.</p>
-      <p>El desencadenante no siempre contiene la causa moral del castigo. Puede ser simplemente el
-      momento elegido para ejecutar una consecuencia.</p>
-      <p>Confundirlo con el núcleo de la maldición lleva a tratamientos incompletos.</p>
-      <h4 id="cap-24">Capítulo XXIV — Periodicidad</h4>
-      <p>Algunas maldiciones se manifiestan en ciclos: noches concretas, estaciones, aniversarios o
-      fases astrales.</p>
-      <p>La periodicidad puede utilizar un fenómeno externo como reloj.</p>
-      <p>Romper el calendario visible no necesariamente altera la estructura si ésta reconoce una
+      biológico, parentesco y simbolismo, pero atribuir toda transmisión familiar a la sangre suele
+      ser un error: una maldición puede ignorar descendientes biológicos y seguir sólo a quienes
+      reciben un nombre o título. La sangre es una referencia posible, no una ley universal de
+      herencia.</p>
+      <p>Existen estructuras que siguen herencia institucional antes que biológica. Una propiedad
+      maldita puede afectar a quien la recibe legalmente, incluso si no pertenece al linaje del
+      propietario anterior, lo que demuestra que la maldición puede utilizar convenciones sociales
+      como parte de su reconocimiento. El problema se vuelve especialmente complejo cuando dos
+      sistemas jurídicos reconocen herederos distintos.</p>
+      <p>Una maldición puede transmitirse también mediante objetos, insignias, juramentos o ritos de
+      sucesión: la persona adquiere la condición cuando acepta un símbolo que representa continuidad
+      con el portador anterior. Retirar el objeto después no siempre rompe el vínculo, porque el
+      acto de aceptación puede haber sido la verdadera condición.</p>
+      <h4 id="cap-4">Capítulo IV — Maldiciones según su anclaje</h4>
+      <p>Algunas maldiciones se vinculan a lugares en vez de a individuos: quien habita, gobierna,
+      cultiva, cruza o muere dentro de una región puede quedar incluido si cumple la relación
+      definida, y la frontera puede ser geográfica, histórica, ritual o simbólica. Planología y
+      Geometría Ritual ayudan a determinar qué espacio reconoce realmente la estructura.</p>
+      <p>Un objeto maldito, por su parte, puede imponer consecuencias a quien lo posea, use, acepte,
+      robe o destruya. La condición debe reconstruirse con precisión, porque tocar un objeto y
+      poseerlo son relaciones distintas: Artefactología analiza la pieza física, mientras Maldiología
+      estudia el vínculo que utiliza para seleccionar víctimas.</p>
+      <p>Los pactos y juramentos pueden contener, además, consecuencias maldiológicas destinadas a
+      garantizar su cumplimiento. La maldición puede activarse al romper una promesa o al
+      reinterpretar una obligación de manera incompatible con la relación original; Pacturgia
+      analiza la fuente de autoridad, y Maldiología estudia la condición y la consecuencia.</p>
+      <h4 id="cap-5">Capítulo V — Maldiciones según su función</h4>
+      <p>Las maldiciones punitivas se diseñan como respuesta a una transgresión y su estructura suele
+      incluir un criterio de culpa, conducta o prohibición. El problema es que esos conceptos pueden
+      depender de sistemas culturales específicos, y una maldición antigua puede seguir aplicando
+      una norma después de que la sociedad haya dejado de reconocerla.</p>
+      <p>No toda maldición fue creada para infligir daño indiscriminado: algunas funcionan como
+      protección y afectan a quien profana una tumba, rompe un sello o roba un objeto. Desde la
+      perspectiva de la víctima siguen siendo maldiciones, pero su función original pudo ser
+      defensiva, distinción importante en Arqueología Arcana y Derecho Arcano.</p>
+      <p>Existen además estructuras autodefensivas, capaces de modificar su manifestación cuando
+      alguien intenta romperlas: pueden transferirse, ocultar síntomas, desplazar la consecuencia o
+      añadir nuevas condiciones. Esto no demuestra inteligencia, pues puede tratarse de respuestas
+      previamente inscritas, y los intentos de eliminación deben observar cómo reacciona la
+      estructura antes de asumir que cada cambio es improvisación.</p>
+      <p>Una maldición adaptativa, en cambio, conserva su objetivo mientras cambia el medio por el
+      cual lo alcanza: si una consecuencia era impedir el descanso y la víctima deja de dormir por
+      medios mágicos, la estructura puede comenzar a producir agotamiento directamente. Estos casos
+      sugieren que la maldición representa una función abstracta más que un síntoma específico, y
+      son especialmente difíciles de romper porque atacar una manifestación no altera necesariamente
+      la condición central.</p>
+      <h4 id="cap-6">Capítulo VI — Latencia, desencadenantes y periodicidad</h4>
+      <p>Muchas maldiciones permanecen inactivas hasta que se cumple una condición. Durante la
+      latencia pueden no producir ningún efecto detectable, aunque el vínculo siga presente, y la
+      ausencia de síntomas no equivale a ausencia de estructura; Patología Arcana y Maldiología
+      utilizan métodos distintos para investigar estos casos.</p>
+      <p>Lo que pone fin a la latencia es un desencadenante, que puede ser una edad, una fecha, un
+      lugar, una palabra, una acción, la presencia de un objeto o la aparición de otra persona. El
+      desencadenante no siempre contiene la causa moral del castigo: puede ser simplemente el
+      momento elegido para ejecutar una consecuencia, y confundirlo con el núcleo de la maldición
+      lleva a tratamientos incompletos.</p>
+      <p>Algunas maldiciones, además, se manifiestan en ciclos: noches concretas, estaciones,
+      aniversarios o fases astrales. La periodicidad puede utilizar un fenómeno externo como reloj,
+      y romper el calendario visible no altera necesariamente la estructura si ésta reconoce una
       relación más profunda, como una posición astronómica o un intervalo desde el acto original.</p>
-      <h4 id="cap-25">Capítulo XXV — Reconocimiento de conducta</h4>
-      <p>Las maldiciones conductuales reaccionan a acciones, no a estados.</p>
-      <p>Pueden prohibir mentir, abandonar un lugar, derramar sangre o revelar un secreto.</p>
-      <p>La dificultad está en definir qué cuenta como la conducta relevante. Una estructura puede
-      reconocer intención, resultado, acción física o una combinación de ellos, y cada posibilidad
-      produce casos límite distintos.</p>
-      <h4 id="cap-26">Capítulo XXVI — Intención</h4>
-      <p>Algunas maldiciones parecen distinguir actos deliberados de accidentes.</p>
-      <p>Esto ha llevado a proponer que utilizan la intención como parte de la condición. Psicología
-      Resonántica y Pneumatología discrepan sobre qué parte de la mente puede servir como referente
-      fiable.</p>
-      <p>La evidencia demuestra que ciertas estructuras reconocen estados mentales, pero no que
-      comprendan moralidad de forma universal.</p>
-      <h4 id="cap-27">Capítulo XXVII — Culpa y juicio</h4>
-      <p>Las maldiciones de culpa son especialmente peligrosas porque parecen emitir juicios.</p>
-      <p>En realidad, pueden estar aplicando criterios inscritos por su creador o por la autoridad
-      que las sostiene. Una maldición puede considerar culpable a alguien que una corte moderna
-      declararía inocente, o lo contrario.</p>
-      <p>La estructura no debe confundirse con una verdad moral objetiva.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Maldición y hechizo persistente</h4>
-      <p>La diferencia práctica puede resumirse en tres preguntas: ¿la estructura selecciona un
-      referente?, ¿evalúa una condición?, ¿puede mantener o modificar la consecuencia cuando cambia
-      el contexto?</p>
-      <p>Cuanto más claramente responda sí, más útil resulta el marco maldiológico.</p>
-      <p>Existen fenómenos fronterizos donde ambas categorías son defendibles. Dolbred conserva esta
-      ambigüedad en vez de forzar una clasificación artificial.</p>
-      <h4 id="cap-29">Capítulo XXIX — Maldición y encantamiento</h4>
-      <p>Un encantamiento prolongado puede alterar un objeto o criatura de forma estable, pero no
-      necesariamente contiene lógica condicional.</p>
-      <p>Una espada que siempre arde está encantada. Una espada que quema sólo a quien la robe puede
-      estar maldita.</p>
-      <p>Ambas estructuras pueden coexistir sobre el mismo objeto.</p>
-      <h4 id="cap-30">Capítulo XXX — Maldición y patología</h4>
-      <p>Una maldición puede producir enfermedad, pero no toda enfermedad mágica es una maldición.</p>
-      <p>Patología Arcana estudia daño, síntomas y tratamiento clínico. Maldiología estudia la
-      estructura que mantiene la relación.</p>
-      <p>Un paciente puede necesitar atención médica antes de que sea posible romper la maldición.</p>
-      <h4 id="cap-31">Capítulo XXXI — Maldición y posesión</h4>
-      <p>Una entidad puede producir síntomas semejantes a una maldición al permanecer vinculada a una
-      víctima.</p>
-      <p>La diferencia es que la posesión implica agencia externa continua, mientras una maldición
-      puede funcionar sin un agente presente.</p>
-      <p>Demonología y Pneumatología ayudan a separar ambos casos.</p>
-      <h4 id="cap-32">Capítulo XXXII — Maldición y destino</h4>
-      <p>Algunas maldiciones parecen alterar probabilidad de acontecimientos futuros.</p>
-      <p>Estos fenómenos se describen popularmente como destino, pero la evidencia no demuestra que
-      la estructura controle todo el futuro.</p>
-      <p>Puede sesgar condiciones, repetir oportunidades o modificar referencias hasta favorecer
-      ciertos resultados. Adivinación y Cronurgia Teórica examinan los límites de esta
-      interpretación.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Maldición y muerte</h4>
-      <p>La muerte puede terminar algunas maldiciones y dejar otras intactas.</p>
-      <p>Todo depende del referente. Si la estructura está fijada al cuerpo, la terminación biológica
-      puede destruir su anclaje. Si sigue identidad, linaje, título u objeto, puede continuar.</p>
-      <p>Tanatología resulta esencial para determinar qué relaciones sobreviven después del
-      fallecimiento.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Maldiciones post mortem</h4>
-      <p>Algunas maldiciones se activan precisamente con la muerte del portador.</p>
-      <p>Pueden transferirse al heredero, despertar un objeto, alterar restos o afectar a quienes
-      participan del funeral.</p>
-      <p>El acto de morir funciona entonces como condición, no como interrupción.</p>
-      <h4 id="cap-35">Capítulo XXXV — Resurrección</h4>
+      <h4 id="cap-7">Capítulo VII — Conducta, intención y culpa</h4>
+      <p>Las maldiciones conductuales reaccionan a acciones, no a estados, y pueden prohibir mentir,
+      abandonar un lugar, derramar sangre o revelar un secreto. La dificultad está en definir qué
+      cuenta como la conducta relevante: una estructura puede reconocer intención, resultado, acción
+      física o una combinación de ellos, y cada posibilidad produce casos límite distintos.</p>
+      <p>Algunas maldiciones parecen distinguir actos deliberados de accidentes, lo que ha llevado a
+      proponer que utilizan la intención como parte de la condición. Psicología Resonántica y
+      Pneumatología discrepan sobre qué parte de la mente puede servir como referente fiable, y la
+      evidencia demuestra que ciertas estructuras reconocen estados mentales, aunque no que
+      comprendan la moralidad de forma universal.</p>
+      <p>Las maldiciones de culpa son especialmente peligrosas porque parecen emitir juicios. En
+      realidad pueden estar aplicando criterios inscritos por su creador o por la autoridad que las
+      sostiene: una maldición puede considerar culpable a alguien que una corte moderna declararía
+      inocente, o lo contrario, y la estructura no debe confundirse con una verdad moral objetiva.</p>
+      <h4 id="cap-8">Capítulo VIII — Maldición y fenómenos afines</h4>
+      <p>Distinguir una maldición de un hechizo persistente en la práctica puede resumirse en tres
+      preguntas: ¿la estructura selecciona un referente?, ¿evalúa una condición?, ¿puede mantener o
+      modificar la consecuencia cuando cambia el contexto? Cuanto más claramente responda sí, más
+      útil resulta el marco maldiológico, aunque existen fenómenos fronterizos donde ambas
+      categorías son defendibles; Dolbred conserva esta ambigüedad en vez de forzar una
+      clasificación artificial.</p>
+      <p>Frente al encantamiento, la diferencia es de lógica más que de duración: un encantamiento
+      prolongado puede alterar un objeto o criatura de forma estable sin contener lógica condicional
+      alguna. Una espada que siempre arde está encantada; una espada que quema sólo a quien la robe
+      puede estar maldita, y ambas estructuras pueden coexistir sobre el mismo objeto.</p>
+      <p>Frente a la patología, conviene recordar que una maldición puede producir enfermedad, pero
+      no toda enfermedad mágica es una maldición: Patología Arcana estudia el daño, los síntomas y
+      el tratamiento clínico, mientras Maldiología estudia la estructura que mantiene la relación, y
+      un paciente puede necesitar atención médica antes de que sea posible romper la maldición.</p>
+      <p>Frente a la posesión, la diferencia es que una entidad poseedora implica agencia externa
+      continua, mientras una maldición puede funcionar sin un agente presente, aunque ambas puedan
+      producir síntomas semejantes al permanecer vinculadas a una víctima; Demonología y
+      Pneumatología ayudan a separar ambos casos.</p>
+      <p>Frente al destino, por último, algunas maldiciones parecen alterar la probabilidad de
+      acontecimientos futuros, fenómeno que la tradición popular llama simplemente destino. La
+      evidencia disponible no muestra que la estructura controle el futuro en su totalidad: puede
+      sesgar condiciones, repetir oportunidades o modificar referencias hasta favorecer ciertos
+      resultados, y Adivinación y Cronurgia Teórica examinan los límites de esta interpretación.</p>
+      <h4 id="cap-9">Capítulo IX — Muerte, resurrección y cambio de cuerpo</h4>
+      <p>La muerte puede terminar algunas maldiciones y dejar otras intactas, y todo depende del
+      referente: si la estructura está fijada al cuerpo, la terminación biológica puede destruir su
+      anclaje, pero si sigue identidad, linaje, título u objeto, puede continuar. Tanatología resulta
+      esencial para determinar qué relaciones sobreviven después del fallecimiento.</p>
+      <p>Algunas maldiciones, de hecho, se activan con la muerte del portador: pueden transferirse al
+      heredero, despertar un objeto, alterar los restos o afectar a quienes participan del funeral.
+      El acto de morir funciona entonces como condición, no como interrupción.</p>
       <p>Cuando una persona regresa después de morir, una maldición puede reaparecer si reconoce
-      continuidad individual.</p>
-      <p>Otras permanecen asociadas al cadáver original y no siguen al sujeto restaurado.</p>
-      <p>Estos casos proporcionan evidencia valiosa sobre qué tipo de referencia utiliza la
-      estructura.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Cambio de cuerpo</h4>
-      <p>Polimorfia, posesión corporal, trasplantes y reconstrucciones permiten probar la robustez de
-      una referencia maldiológica.</p>
-      <p>Una maldición superficial puede perderse al abandonar la forma. Otra puede traducirse a la
-      nueva anatomía.</p>
-      <p>Morfología Anómala ayuda a distinguir qué cambió en el cuerpo y qué relación continuó.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Herencia a través de transformación</h4>
-      <p>Una maldición hereditaria puede continuar aunque el linaje cambie de especie visible o
-      morfología.</p>
-      <p>Esto demuestra que algunas estructuras no siguen apariencia, sino una continuidad
-      genealógica más abstracta.</p>
-      <p>Los casos de changelings y linajes polimórficos son especialmente útiles para estudiar este
-      problema.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Transmisión</h4>
+      continuidad individual, mientras otras permanecen asociadas al cadáver original y no siguen al
+      sujeto restaurado. Estos casos proporcionan evidencia valiosa sobre qué tipo de referencia
+      utiliza la estructura.</p>
+      <p>Polimorfia, posesión corporal, trasplantes y reconstrucciones permiten probar esa robustez
+      desde otro ángulo: una maldición superficial puede perderse al abandonar la forma, mientras
+      otra puede traducirse a la nueva anatomía, y Morfología Anómala ayuda a distinguir qué cambió
+      en el cuerpo y qué relación continuó. Incluso una maldición hereditaria puede continuar aunque
+      el linaje cambie de especie visible o morfología, lo que demuestra que algunas estructuras no
+      siguen la apariencia sino una continuidad genealógica más abstracta; los casos de changelings
+      y linajes polimórficos son especialmente útiles para estudiar este problema.</p>
+      <h4 id="cap-10">Capítulo X — Transmisión y transferencia</h4>
       <p>Una maldición puede pasar de una víctima a otra por herencia, contacto, objeto, acto, pacto
-      o transferencia deliberada.</p>
-      <p>La transmisión no debe asumirse sólo porque aparezcan casos relacionados.</p>
-      <p>Epidemiología Taumatológica ayuda a distinguir propagación real de exposición común a una
-      misma fuente.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Transferencia</h4>
-      <p>Transferir una maldición implica conservar la estructura y cambiar el referente principal.</p>
-      <p>Algunas prácticas desplazan la condición hacia un animal, objeto o voluntario. Otras sólo
-      añaden una nueva víctima sin liberar a la anterior.</p>
-      <p>La verificación debe demostrar que la relación original terminó y no simplemente dejó de
-      manifestarse.</p>
-      <h4 id="cap-40">Capítulo XL — División</h4>
+      o transferencia deliberada, pero la transmisión no debe asumirse sólo porque aparezcan casos
+      relacionados: Epidemiología Taumatológica ayuda a distinguir propagación real de exposición
+      común a una misma fuente.</p>
+      <p>Transferir una maldición, en sentido estricto, implica conservar la estructura y cambiar el
+      referente principal. Algunas prácticas desplazan la condición hacia un animal, un objeto o un
+      voluntario; otras sólo añaden una nueva víctima sin liberar a la anterior. La verificación debe
+      demostrar que la relación original terminó y no que simplemente dejó de manifestarse.</p>
+      <h4 id="cap-11">Capítulo XI — División, acumulación y contienda</h4>
       <p>Una maldición puede fragmentarse si su estructura permite distribuir condiciones entre
-      varios referentes.</p>
-      <p>Esto aparece en herencias donde distintos descendientes reciben aspectos diferentes del
-      efecto.</p>
-      <p>La división no reduce necesariamente intensidad total; puede multiplicar la cantidad de
-      relaciones activas.</p>
-      <h4 id="cap-41">Capítulo XLI — Acumulación</h4>
-      <p>Un individuo puede estar sujeto a varias maldiciones simultáneamente.</p>
-      <p>Las estructuras pueden coexistir, interferir o reinterpretarse mutuamente.</p>
-      <p>Una maldición que impide abandonar una ciudad y otra que obliga a cruzar una frontera crean
-      un conflicto estructural cuya resolución no puede predecirse sólo por potencia.</p>
-      <h4 id="cap-42">Capítulo XLII — Contienda maldiológica</h4>
+      varios referentes, lo que aparece en herencias donde distintos descendientes reciben aspectos
+      diferentes del efecto. La división no reduce necesariamente la intensidad total, pues puede
+      multiplicar la cantidad de relaciones activas.</p>
+      <p>Un mismo individuo puede además estar sujeto a varias maldiciones simultáneamente. Las
+      estructuras pueden coexistir, interferir o reinterpretarse mutuamente: una maldición que
+      impide abandonar una ciudad y otra que obliga a cruzar una frontera crean un conflicto
+      estructural cuya resolución no puede predecirse sólo por potencia.</p>
       <p>Cuando dos maldiciones intentan imponer condiciones incompatibles sobre el mismo referente,
-      puede producirse contienda.</p>
-      <p>El resultado depende de autoridad, antigüedad, precisión, anclaje y compatibilidad.</p>
-      <p>No siempre una elimina a la otra. Pueden alternarse, deformar consecuencias o crear estados
-      de bloqueo.</p>
-      <h4 id="cap-43">Capítulo XLIII — Autoridad</h4>
-      <p>Algunas maldiciones derivan estabilidad de una autoridad externa: una deidad, un pacto, una
-      institución, un linaje o una entidad.</p>
-      <p>Romper la forma visible sin alterar esa autoridad puede permitir que la estructura se
-      reconstruya.</p>
-      <p>Teurgia y Pacturgia son fundamentales para identificar estas fuentes.</p>
-      <h4 id="cap-44">Capítulo XLIV — Anclajes</h4>
-      <p>Un anclaje maldiológico es aquello que permite a la estructura persistir cuando otras partes
-      cambian.</p>
-      <p>Puede ser un objeto, nombre, lugar, vínculo, cicatriz, juramento o referencia
-      pneumatológica.</p>
-      <p>Localizar el anclaje es más importante que identificar el síntoma más evidente.</p>
-      <h4 id="cap-45">Capítulo XLV — Anclajes múltiples</h4>
-      <p>Las maldiciones resistentes suelen utilizar varios anclajes.</p>
-      <p>Una puede estar vinculada simultáneamente a un apellido, una propiedad y una reliquia.</p>
-      <p>Romper uno reduce estabilidad sin necesariamente terminar el sistema. El análisis debe
-      determinar si los anclajes son redundantes o si cada uno sostiene una función distinta.</p>
-      <h4 id="cap-46">Capítulo XLVI — Cláusulas de terminación</h4>
-      <p>Muchas maldiciones incluyen una condición de salida.</p>
-      <p>Puede exigir reparación, restitución, muerte, cumplimiento de una tarea, perdón, destrucción
-      de un objeto o reconocimiento de una verdad.</p>
-      <p>La presencia de una cláusula no garantiza que pueda cumplirse en el presente. Algunas
-      dependen de instituciones o lugares desaparecidos.</p>
-      <h4 id="cap-47">Capítulo XLVII — Cláusulas imposibles</h4>
-      <p>Una maldición puede diseñarse con una salida deliberadamente imposible o volverse imposible
-      con el tiempo.</p>
-      <p>Esto produce estructuras que técnicamente tienen condición de terminación y prácticamente
-      son permanentes.</p>
-      <p>La Maldiología distingue entre incumplida e inalcanzable porque las estrategias de ruptura
-      son diferentes.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Ruptura</h4>
-      <p>Romper una maldición significa desorganizar la relación que permite que siga reconociendo
-      condición y referente.</p>
-      <p>No existe un único procedimiento.</p>
-      <p>Puede ser necesario eliminar un anclaje, satisfacer la cláusula, sustituir una referencia,
-      retirar autoridad o forzar a la estructura a aceptar una contradicción. La destrucción bruta
-      funciona sólo cuando alcanza la parte que mantiene continuidad.</p>
-      <h4 id="cap-49">Capítulo XLIX — Supresión</h4>
-      <p>Suprimir una maldición reduce o bloquea manifestación sin eliminar la estructura.</p>
-      <p>Puede ser útil clínicamente y extremadamente peligrosa si se confunde con curación.</p>
-      <p>Una supresión prolongada puede permitir vida normal mientras se investiga una ruptura
-      definitiva.</p>
-      <h4 id="cap-50">Capítulo L — Sellado</h4>
-      <p>El sellado limita dónde o cuándo puede actuar una maldición.</p>
-      <p>Una estructura vinculada a un objeto puede encerrarse en una clausura; una maldición
-      territorial puede delimitarse; una condición cíclica puede amortiguarse.</p>
-      <p>El sello debe vigilarse porque la maldición puede seguir acumulando relaciones bajo
-      contención.</p>
-      <h4 id="cap-51">Capítulo LI — Desplazamiento</h4>
+      puede producirse una contienda propiamente maldiológica. El resultado depende de autoridad,
+      antigüedad, precisión, anclaje y compatibilidad, y no siempre una elimina a la otra: pueden
+      alternarse, deformar consecuencias o crear estados de bloqueo.</p>
+      <h4 id="cap-12">Capítulo XII — Autoridad y anclajes</h4>
+      <p>Algunas maldiciones derivan su estabilidad de una autoridad externa: una deidad, un pacto,
+      una institución, un linaje o una entidad. Romper la forma visible sin alterar esa autoridad
+      puede permitir que la estructura se reconstruya, por lo que Teurgia y Pacturgia son
+      fundamentales para identificar estas fuentes.</p>
+      <p>Distinta de la autoridad es la noción de anclaje: aquello que permite a la estructura
+      persistir cuando otras partes cambian. Puede ser un objeto, un nombre, un lugar, un vínculo,
+      una cicatriz, un juramento o una referencia pneumatológica, y localizarlo resulta más
+      importante que identificar el síntoma más evidente.</p>
+      <p>Las maldiciones resistentes suelen utilizar varios anclajes a la vez: una puede estar
+      vinculada simultáneamente a un apellido, una propiedad y una reliquia. Romper uno reduce la
+      estabilidad sin necesariamente terminar el sistema, y el análisis debe determinar si los
+      anclajes son redundantes o si cada uno sostiene una función distinta.</p>
+      <h4 id="cap-13">Capítulo XIII — Cláusulas de terminación</h4>
+      <p>Muchas maldiciones incluyen una condición de salida, que puede exigir reparación,
+      restitución, muerte, cumplimiento de una tarea, perdón, destrucción de un objeto o
+      reconocimiento de una verdad. La presencia de una cláusula no garantiza que pueda cumplirse en
+      el presente, pues algunas dependen de instituciones o lugares desaparecidos.</p>
+      <p>Una maldición puede además diseñarse con una salida deliberadamente imposible, o volverse
+      imposible con el tiempo, lo que produce estructuras que técnicamente tienen condición de
+      terminación y que en la práctica resultan permanentes. La Maldiología distingue entre una
+      cláusula incumplida y una inalcanzable porque las estrategias de ruptura son diferentes en
+      cada caso.</p>
+      <h4 id="cap-14">Capítulo XIV — Métodos de intervención</h4>
+      <p>Romper una maldición significa desorganizar la relación que le permite seguir reconociendo
+      condición y referente, y no existe un único procedimiento para lograrlo. Puede ser necesario
+      eliminar un anclaje, satisfacer la cláusula, sustituir una referencia, retirar autoridad o
+      forzar a la estructura a aceptar una contradicción; la destrucción bruta funciona sólo cuando
+      alcanza la parte que mantiene la continuidad.</p>
+      <p>Cuando la ruptura definitiva no es posible de inmediato, cabe recurrir a la supresión, que
+      reduce o bloquea la manifestación sin eliminar la estructura. Puede ser útil clínicamente y
+      extremadamente peligrosa si se confunde con curación; una supresión prolongada puede permitir
+      una vida normal mientras se investiga una ruptura definitiva.</p>
+      <p>El sellado, por su parte, limita dónde o cuándo puede actuar una maldición: una estructura
+      vinculada a un objeto puede encerrarse en una clausura, una maldición territorial puede
+      delimitarse, una condición cíclica puede amortiguarse. El sello debe vigilarse porque la
+      maldición puede seguir acumulando relaciones bajo contención.</p>
       <p>Desplazar una maldición hacia otro referente es una práctica histórica y éticamente
-      controvertida.</p>
-      <p>No constituye curación si el daño simplemente se transfiere a otra víctima.</p>
-      <p>Derecho Arcano y Ética de la Alteración restringen severamente estas intervenciones.</p>
-      <h4 id="cap-52">Capítulo LII — Contradicción</h4>
-      <p>Algunas técnicas intentan introducir una relación que la maldición no puede resolver de
-      forma coherente.</p>
-      <p>Por ejemplo, una estructura que afecta al único heredero puede fallar si su sistema enfrenta
-      dos herederos igualmente legítimos.</p>
-      <p>La estrategia es peligrosa porque una maldición adaptativa puede reinterpretar la
-      contradicción en vez de colapsar.</p>
-      <h4 id="cap-53">Capítulo LIII — Reescritura</h4>
-      <p>Modificar directamente una maldición exige comprender su estructura con precisión
-      excepcional.</p>
-      <p>Una pequeña alteración puede cambiar víctima, condición o consecuencia.</p>
-      <p>La reescritura es comparable a cirugía estructural y se considera una práctica avanzada, no
-      un método de primera elección.</p>
-      <h4 id="cap-54">Capítulo LIV — Maldiciones antiguas</h4>
+      controvertida, que no constituye curación si el daño simplemente se transfiere a otra víctima;
+      Derecho Arcano y Ética de la Alteración restringen severamente estas intervenciones.</p>
+      <p>Otras técnicas intentan introducir una relación que la maldición no puede resolver de forma
+      coherente: por ejemplo, una estructura que afecta al único heredero puede fallar si su sistema
+      enfrenta dos herederos igualmente legítimos. La estrategia de la contradicción es peligrosa
+      porque una maldición adaptativa puede reinterpretarla en vez de colapsar.</p>
+      <p>Modificar directamente una maldición, por último, exige comprender su estructura con
+      precisión excepcional, porque una pequeña alteración puede cambiar víctima, condición o
+      consecuencia. La reescritura es comparable a cirugía estructural y se considera una práctica
+      avanzada, no un método de primera elección.</p>
+      <h4 id="cap-15">Capítulo XV — Maldiciones antiguas: lenguaje, runas y símbolos</h4>
       <p>Las maldiciones antiguas acumulan capas de interpretación, reparaciones y cambios
-      culturales.</p>
-      <p>Una condición que originalmente dependía de una institución puede haber sido reinterpretada
-      por siglos de práctica.</p>
-      <p>Filología Arcana y Semiótica Mágica ayudan a reconstruir qué relaciones pertenecen al diseño
-      original y cuáles aparecieron después.</p>
-      <h4 id="cap-55">Capítulo LV — Lenguaje</h4>
-      <p>Las maldiciones expresadas mediante fórmulas pueden depender de significados históricos.</p>
-      <p>Una traducción moderna puede describir bien el efecto y perder una condición gramatical
-      esencial.</p>
-      <p>Por ello, reproducir o romper una maldición antigua a partir de una versión traducida exige
-      extremo cuidado.</p>
-      <h4 id="cap-56">Capítulo LVI — Runas</h4>
-      <p>Los sistemas rúnicos pueden almacenar condiciones, referencias y cláusulas maldiológicas.</p>
-      <p>Una inscripción incompleta puede mantener la relación principal y perder únicamente el
-      mecanismo de terminación.</p>
-      <p>Runología y Conservación Arcana son esenciales cuando el soporte físico está deteriorado.</p>
-      <h4 id="cap-57">Capítulo LVII — Símbolos</h4>
-      <p>Un símbolo puede funcionar como marcador de pertenencia o autoridad dentro de una
-      maldición.</p>
-      <p>Una corona puede identificar al soberano, un blasón al linaje y una marca al condenado.</p>
-      <p>El objeto no necesita contener la maldición; puede ser parte del sistema mediante el cual
-      ésta reconoce una relación.</p>
-      <h4 id="cap-58">Capítulo LVIII — Maldiciones feéricas</h4>
-      <p>Las maldiciones feéricas suelen estar profundamente vinculadas a promesa, hospitalidad,
-      nombre, regalo y reciprocidad.</p>
-      <p>Su aparente arbitrariedad disminuye cuando se reconstruye el sistema de correspondencias que
-      la entidad considera válido.</p>
-      <p>No debe asumirse que todas comparten una misma lógica moral.</p>
-      <h4 id="cap-59">Capítulo LIX — Maldiciones infernales</h4>
-      <p>Las estructuras infernales tienden a presentar condiciones contractuales precisas, aunque la
-      precisión puede ocultarse mediante lenguaje deliberadamente ambiguo.</p>
-      <p>La fuerza de la maldición suele depender de la relación pactada y de la autoridad que
-      reconoce el acuerdo.</p>
-      <p>Pacturgia y Derecho Arcano participan frecuentemente en su análisis.</p>
-      <h4 id="cap-60">Capítulo LX — Maldiciones teúrgicas</h4>
+      culturales: una condición que originalmente dependía de una institución puede haber sido
+      reinterpretada por siglos de práctica, y Filología Arcana y Semiótica Mágica ayudan a
+      reconstruir qué relaciones pertenecen al diseño original y cuáles aparecieron después.</p>
+      <p>Las expresadas mediante fórmulas pueden depender además de significados históricos: una
+      traducción moderna puede describir bien el efecto y perder una condición gramatical esencial,
+      por lo que reproducir o romper una maldición antigua a partir de una versión traducida exige
+      un cuidado extremo.</p>
+      <p>Los sistemas rúnicos pueden almacenar condiciones, referencias y cláusulas maldiológicas, y
+      una inscripción incompleta puede conservar la relación principal mientras pierde únicamente el
+      mecanismo de terminación; Runología y Conservación Arcana son esenciales cuando el soporte
+      físico está deteriorado.</p>
+      <p>Un símbolo, finalmente, puede funcionar como marcador de pertenencia o autoridad dentro de
+      una maldición: una corona puede identificar al soberano, un blasón al linaje y una marca al
+      condenado. El objeto no necesita contener la maldición, pues puede ser sólo parte del sistema
+      mediante el cual ésta reconoce una relación.</p>
+      <h4 id="cap-16">Capítulo XVI — Maldiciones según su origen</h4>
+      <p>Las maldiciones feéricas suelen estar profundamente vinculadas a la promesa, la
+      hospitalidad, el nombre, el regalo y la reciprocidad; su aparente arbitrariedad disminuye
+      cuando se reconstruye el sistema de correspondencias que la entidad considera válido, y no
+      debe asumirse que todas comparten una misma lógica moral.</p>
+      <p>Las estructuras infernales, por su parte, tienden a presentar condiciones contractuales
+      precisas, aunque esa precisión puede ocultarse mediante lenguaje deliberadamente ambiguo. La
+      fuerza de la maldición suele depender de la relación pactada y de la autoridad que reconoce el
+      acuerdo, y Pacturgia y Derecho Arcano participan frecuentemente en su análisis.</p>
       <p>Las maldiciones teúrgicas pueden derivar de autoridad sagrada, transgresión o relación con
-      un culto.</p>
-      <p>Su ruptura no siempre depende de disipar energía, sino de modificar la relación religiosa o
-      institucional que la sostiene.</p>
-      <p>Teurgia determina qué autoridad está involucrada; Maldiología reconstruye la condición
-      concreta.</p>
-      <h4 id="cap-61">Capítulo LXI — Maldiciones espontáneas</h4>
-      <p>No todas las maldiciones parecen haber sido diseñadas.</p>
-      <p>Traumas colectivos, muertes violentas, lugares saturados de intención y objetos asociados a
-      eventos extremos pueden desarrollar estructuras condicionales sin un autor identificable.</p>
-      <p>La existencia de estas maldiciones espontáneas sigue siendo debatida, porque siempre es
-      posible que la estructura proceda de una intervención perdida.</p>
-      <h4 id="cap-62">Capítulo LXII — Maldiciones autoformadas</h4>
-      <p>Una escuela reciente propone que algunas relaciones repetidas pueden volverse suficientemente
-      estables como para comportarse maldiológicamente.</p>
-      <p>Un lugar donde una misma traición se repite durante generaciones podría, bajo condiciones
-      extremas, comenzar a asociar determinada conducta con una consecuencia.</p>
-      <p>La teoría es controvertida porque implica que la estructura puede emerger de historia y
-      repetición sin diseño explícito.</p>
-      <h4 id="cap-63">Capítulo LXIII — Diagnóstico</h4>
+      un culto. Su ruptura no siempre depende de disipar energía sino de modificar la relación
+      religiosa o institucional que la sostiene: Teurgia determina qué autoridad está involucrada, y
+      Maldiología reconstruye la condición concreta.</p>
+      <p>No todas las maldiciones parecen haber sido diseñadas. Traumas colectivos, muertes
+      violentas, lugares saturados de intención y objetos asociados a eventos extremos pueden
+      desarrollar estructuras condicionales sin un autor identificable, aunque la existencia de
+      estas maldiciones espontáneas sigue siendo debatida porque siempre es posible que la
+      estructura proceda de una intervención perdida.</p>
+      <p>Una escuela reciente propone, en la misma línea, que algunas relaciones repetidas pueden
+      volverse suficientemente estables como para comportarse maldiológicamente: un lugar donde una
+      misma traición se repite durante generaciones podría, bajo condiciones extremas, comenzar a
+      asociar determinada conducta con una consecuencia. La teoría es controvertida porque implica
+      que la estructura puede emerger de la historia y la repetición sin diseño explícito.</p>
+      <h4 id="cap-17">Capítulo XVII — Diagnóstico, pruebas y pronóstico</h4>
       <p>El diagnóstico maldiológico comienza reconstruyendo patrón, referentes, condiciones,
-      anclajes y manifestaciones.</p>
-      <p>La pregunta no es sólo qué le ocurre a la víctima, sino cuándo, dónde, respecto de quién y
-      después de qué acciones cambia el fenómeno.</p>
-      <p>Los diarios de síntomas y mapas de relaciones suelen ser más útiles que una lectura única de
-      energía.</p>
-      <h4 id="cap-64">Capítulo LXIV — Pruebas controladas</h4>
-      <p>Cuando es seguro, los investigadores modifican una sola relación para observar respuesta.</p>
-      <p>Pueden cambiar ubicación, retirar un objeto, alterar una firma simbólica o reproducir
-      parcialmente una condición.</p>
-      <p>Estas pruebas nunca deben realizarse si existe riesgo de ampliar víctimas o activar
-      consecuencias desconocidas.</p>
-      <h4 id="cap-65">Capítulo LXV — Epidemiología maldiológica</h4>
+      anclajes y manifestaciones. La pregunta no es sólo qué le ocurre a la víctima, sino cuándo,
+      dónde, respecto de quién y después de qué acciones cambia el fenómeno, y los diarios de
+      síntomas y los mapas de relaciones suelen ser más útiles que una lectura única de energía.</p>
+      <p>Cuando es seguro, los investigadores modifican una sola relación para observar la respuesta:
+      pueden cambiar la ubicación, retirar un objeto, alterar una firma simbólica o reproducir
+      parcialmente una condición. Estas pruebas controladas nunca deben realizarse si existe riesgo
+      de ampliar las víctimas o activar consecuencias desconocidas.</p>
       <p>Cuando varias personas resultan afectadas, Epidemiología Taumatológica ayuda a reconstruir
-      si existe transmisión, exposición común o herencia.</p>
-      <p>El patrón poblacional puede revelar que una supuesta maldición familiar sigue en realidad un
-      oficio, una propiedad o una ceremonia.</p>
-      <p>La genealogía sin análisis relacional puede resultar engañosa.</p>
-      <h4 id="cap-66">Capítulo LXVI — Pronóstico</h4>
-      <p>El pronóstico depende de cuánto se comprende la estructura y cuántas relaciones la
-      sostienen.</p>
-      <p>Una maldición grave con una cláusula clara puede ser más tratable que una consecuencia leve
-      sostenida por múltiples anclajes desconocidos.</p>
-      <p>La intensidad del síntoma no predice por sí sola dificultad de ruptura.</p>
-      <h4 id="cap-67">Capítulo LXVII — Ética</h4>
-      <p>Estudiar una maldición implica a menudo provocar condiciones que afectan a una persona.</p>
-      <p>La investigación no puede justificar daño deliberado simplemente porque una reacción
-      aportaría información.</p>
-      <p>La Ética de la Alteración exige consentimiento, proporcionalidad y alternativas no invasivas
-      siempre que existan.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Derecho</h4>
-      <p>Las maldiciones plantean problemas de responsabilidad cuando se heredan, transmiten o
-      permanecen en propiedades.</p>
-      <p>¿Puede venderse un objeto cuya condición no fue revelada? ¿Quién responde por una maldición
-      ligada a un título? ¿Puede una persona transferir voluntariamente una maldición a otra?</p>
-      <p>Derecho Arcano desarrolla estas preguntas, pero necesita de Maldiología para determinar qué
-      relación existe realmente.</p>
-      <h4 id="cap-69">Capítulo LXIX — El error de buscar al culpable</h4>
-      <p>La presencia de una maldición no demuestra que exista un maldecidor vivo, ni siquiera que
-      haya existido un autor individual.</p>
-      <p>Buscar una persona responsable puede retrasar el análisis de anclajes y condiciones que
-      continúan operando independientemente.</p>
-      <p>La historia importa, pero el tratamiento depende de la estructura actual.</p>
-      <h4 id="cap-70">Capítulo LXX — El error de romper el objeto</h4>
-      <p>Destruir el objeto más visible asociado a una maldición puede terminarla, liberarla,
-      transferirla o no producir ningún cambio.</p>
-      <p>El objeto puede ser anclaje, símbolo, recipiente, condición o simple evidencia.</p>
-      <p>Artefactología y Maldiología deben determinar su función antes de intervenir.</p>
-      <h4 id="cap-71">Capítulo LXXI — El error de la fórmula opuesta</h4>
-      <p>Las maldiciones no suelen funcionar como frases que pueden negarse pronunciando lo
-      contrario.</p>
-      <p>Una condición estructural no desaparece porque un ritual exprese una idea semánticamente
-      inversa.</p>
-      <p>La ruptura necesita actuar sobre relaciones reales, no sobre simetría verbal.</p>
-      <h4 id="cap-72">Capítulo LXXII — Relación con otras disciplinas</h4>
+      si existe transmisión, exposición común o herencia. El patrón poblacional puede revelar que
+      una supuesta maldición familiar sigue en realidad un oficio, una propiedad o una ceremonia, y
+      la genealogía sin análisis relacional puede resultar engañosa.</p>
+      <p>El pronóstico, finalmente, depende de cuánto se comprende la estructura y cuántas relaciones
+      la sostienen. Una maldición grave con una cláusula clara puede ser más tratable que una
+      consecuencia leve sostenida por múltiples anclajes desconocidos, pues la intensidad del
+      síntoma no predice por sí sola la dificultad de la ruptura.</p>
+      <h4 id="cap-18">Capítulo XVIII — Ética y derecho</h4>
+      <p>Estudiar una maldición implica a menudo provocar condiciones que afectan a una persona, y la
+      investigación no puede justificar un daño deliberado simplemente porque una reacción aportaría
+      información. La Ética de la Alteración exige consentimiento, proporcionalidad y alternativas
+      no invasivas siempre que existan.</p>
+      <p>Las maldiciones plantean además problemas de responsabilidad cuando se heredan, transmiten o
+      permanecen en propiedades. ¿Puede venderse un objeto cuya condición no fue revelada? ¿Quién
+      responde por una maldición ligada a un título? ¿Puede una persona transferir voluntariamente
+      una maldición a otra? Derecho Arcano desarrolla estas preguntas, pero necesita de Maldiología
+      para determinar qué relación existe realmente.</p>
+      <h4 id="cap-19">Capítulo XIX — Errores frecuentes en la ruptura</h4>
+      <p>Un primer error frecuente consiste en buscar al culpable: la presencia de una maldición no
+      demuestra que exista un maldecidor vivo, ni siquiera que haya existido un autor individual.
+      Buscar una persona responsable puede retrasar el análisis de anclajes y condiciones que
+      continúan operando de forma independiente; la historia importa, pero el tratamiento depende de
+      la estructura actual.</p>
+      <p>Un segundo error es asumir que basta con romper el objeto más visible asociado a la
+      maldición. Hacerlo puede terminarla, liberarla, transferirla o no producir ningún cambio,
+      porque el objeto puede ser anclaje, símbolo, recipiente, condición o simple evidencia;
+      Artefactología y Maldiología deben determinar su función antes de intervenir.</p>
+      <p>Un tercer error es confiar en la fórmula opuesta: las maldiciones no suelen funcionar como
+      frases que puedan negarse pronunciando lo contrario, y una condición estructural no desaparece
+      porque un ritual exprese una idea semánticamente inversa. La ruptura necesita actuar sobre
+      relaciones reales, no sobre simetría verbal.</p>
+      <h4 id="cap-20">Capítulo XX — Relación con otras disciplinas</h4>
       <p>Maldiología trabaja con Semiótica Mágica para referencias, Filología y Runología para
       estructuras históricas, Patología Arcana para daño, Pneumatología para continuidad personal y
       Epidemiología Taumatológica para propagación.</p>
@@ -11933,7 +11758,7 @@ window.ENTRIES = [
       institucionales.</p>
       <p>La disciplina se encuentra en el centro de estas áreas porque una maldición es, ante todo,
       una relación persistente que sigue siendo capaz de decidir cuándo importa.</p>
-      <h4 id="cap-73">Capítulo LXXIII — La pregunta por el reconocimiento</h4>
+      <h4 id="cap-21">Capítulo XXI — La pregunta por el reconocimiento</h4>
       <p>La pregunta central de la Maldiología no es cuánto poder contiene una maldición, sino cómo
       sabe que determinada persona, objeto o acto pertenece a su estructura.</p>
       <p>Responderla exige reconstruir referencias y condiciones.</p>
