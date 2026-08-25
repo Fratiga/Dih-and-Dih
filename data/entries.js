@@ -3155,94 +3155,36 @@ window.ENTRIES = [
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de la Arqueología Arcana</a>
-        <a href="#cap-2">II. Ruina y sistema</a>
-        <a href="#cap-3">III. Persistencia</a>
-        <a href="#cap-4">IV. Latencia arqueológica</a>
-        <a href="#cap-5">V. Estructuras huérfanas</a>
-        <a href="#cap-6">VI. Función original</a>
-        <a href="#cap-7">VII. Función residual</a>
-        <a href="#cap-8">VIII. Reinterpretación</a>
-        <a href="#cap-9">IX. Excavación no invasiva</a>
-        <a href="#cap-10">X. Estratigrafía arcana</a>
-        <a href="#cap-11">XI. Datación</a>
-        <a href="#cap-12">XII. Materiales</a>
-        <a href="#cap-13">XIII. Inscripciones</a>
-        <a href="#cap-14">XIV. Lenguas muertas</a>
-        <a href="#cap-15">XV. Errores de traducción</a>
-        <a href="#cap-16">XVI. Geometría enterrada</a>
-        <a href="#cap-17">XVII. Arquitectura funcional</a>
-        <a href="#cap-18">XVIII. Ruinas tridimensionales</a>
-        <a href="#cap-19">XIX. Redes enterradas</a>
-        <a href="#cap-20">XX. Encantamientos persistentes</a>
-        <a href="#cap-21">XXI. Artefactos in situ</a>
-        <a href="#cap-22">XXII. Artefactos como nodos</a>
-        <a href="#cap-23">XXIII. Objetos de mantenimiento</a>
-        <a href="#cap-24">XXIV. Mantenimiento perdido</a>
-        <a href="#cap-25">XXV. Rituales periódicos</a>
-        <a href="#cap-26">XXVI. Instituciones como componentes</a>
-        <a href="#cap-27">XXVII. Usuarios desaparecidos</a>
-        <a href="#cap-28">XXVIII. Herederos</a>
-        <a href="#cap-29">XXIX. Maldiciones antiguas</a>
-        <a href="#cap-30">XXX. Maldiciones territoriales</a>
-        <a href="#cap-31">XXXI. Maldiciones funerarias</a>
-        <a href="#cap-32">XXXII. Muertos y testigos</a>
-        <a href="#cap-33">XXXIII. Restos humanos</a>
-        <a href="#cap-34">XXXIV. Restos transformados</a>
-        <a href="#cap-35">XXXV. Espacios funerarios activos</a>
-        <a href="#cap-36">XXXVI. Ruinas planares</a>
-        <a href="#cap-37">XXXVII. Espacios mayores por dentro</a>
-        <a href="#cap-38">XXXVIII. Espacios desplazados</a>
-        <a href="#cap-39">XXXIX. Ruinas temporales</a>
-        <a href="#cap-40">XL. Ciclos de activación</a>
-        <a href="#cap-41">XLI. Ecos históricos</a>
-        <a href="#cap-42">XLII. Memoria arquitectónica</a>
-        <a href="#cap-43">XLIII. Ruinas elementales</a>
-        <a href="#cap-44">XLIV. Soberanía residual</a>
-        <a href="#cap-45">XLV. Ruinas vivas</a>
-        <a href="#cap-46">XLVI. Colonización posterior</a>
-        <a href="#cap-47">XLVII. Ecosistemas de ruina</a>
-        <a href="#cap-48">XLVIII. Peligro biológico</a>
-        <a href="#cap-49">XLIX. Contaminación mágica</a>
-        <a href="#cap-50">L. Seguridad de excavación</a>
-        <a href="#cap-51">LI. Activación accidental</a>
-        <a href="#cap-52">LII. No tocar</a>
-        <a href="#cap-53">LIII. No completar</a>
-        <a href="#cap-54">LIV. No alimentar</a>
-        <a href="#cap-55">LV. Reconstrucción virtual</a>
-        <a href="#cap-56">LVI. Reconstrucción parcial</a>
-        <a href="#cap-57">LVII. Reactivación controlada</a>
-        <a href="#cap-58">LVIII. Reactivación de redes</a>
-        <a href="#cap-59">LIX. Evidencia destruida por éxito</a>
-        <a href="#cap-60">LX. Conservación</a>
-        <a href="#cap-61">LXI. Autenticidad</a>
-        <a href="#cap-62">LXII. Intervención mínima</a>
-        <a href="#cap-63">LXIII. Patrimonio activo</a>
-        <a href="#cap-64">LXIV. Derechos sobre el sitio</a>
-        <a href="#cap-65">LXV. Saqueo</a>
-        <a href="#cap-66">LXVI. Mercado de antigüedades</a>
-        <a href="#cap-67">LXVII. Excavaciones clandestinas</a>
-        <a href="#cap-68">LXVIII. Comunidades descendientes</a>
-        <a href="#cap-69">LXIX. Conocimiento restringido</a>
-        <a href="#cap-70">LXX. Secreto versus preservación</a>
-        <a href="#cap-71">LXXI. Comparación entre sitios</a>
-        <a href="#cap-72">LXXII. Series tipológicas</a>
-        <a href="#cap-73">LXXIII. El problema de la tradición</a>
-        <a href="#cap-74">LXXIV. El problema del creador</a>
-        <a href="#cap-75">LXXV. El problema de la finalidad</a>
-        <a href="#cap-76">LXXVI. El error de la tecnología perdida</a>
-        <a href="#cap-77">LXXVII. El error del artefacto perfecto</a>
-        <a href="#cap-78">LXXVIII. El error de restaurar demasiado</a>
-        <a href="#cap-79">LXXIX. El error de activar para entender</a>
-        <a href="#cap-80">LXXX. Excavación y Criminalística</a>
-        <a href="#cap-81">LXXXI. Excavación y Seguridad Ritual</a>
-        <a href="#cap-82">LXXXII. Excavación y Conservación Arcana</a>
-        <a href="#cap-83">LXXXIII. Excavación y Epistemología</a>
-        <a href="#cap-84">LXXXIV. El sitio como argumento</a>
-        <a href="#cap-85">LXXXV. Predicción arqueológica</a>
-        <a href="#cap-86">LXXXVI. El valor del fallo</a>
-        <a href="#cap-87">LXXXVII. El abandono</a>
-        <a href="#cap-88">LXXXVIII. La pregunta arqueológica</a>
+        <a href="#cap-1">I. Objeto de estudio: la ruina como sistema</a>
+        <a href="#cap-2">II. Persistencia, latencia y estructuras huérfanas</a>
+        <a href="#cap-3">III. Función original, residual y reinterpretación</a>
+        <a href="#cap-4">IV. Excavación, estratigrafía, datación y materiales</a>
+        <a href="#cap-5">V. Inscripciones, lenguas muertas y traducción</a>
+        <a href="#cap-6">VI. Geometría, arquitectura funcional y redes espaciales</a>
+        <a href="#cap-7">VII. Encantamientos persistentes y artefactos en contexto</a>
+        <a href="#cap-8">VIII. Mantenimiento y rituales periódicos</a>
+        <a href="#cap-9">IX. Instituciones, usuarios desaparecidos y herederos</a>
+        <a href="#cap-10">X. Tipos de maldiciones</a>
+        <a href="#cap-11">XI. Los muertos, sus restos y los espacios funerarios activos</a>
+        <a href="#cap-12">XII. Ruinas planares, topológicas y temporales</a>
+        <a href="#cap-13">XIII. Ciclos, ecos y memoria arquitectónica</a>
+        <a href="#cap-14">XIV. Ruinas elementales, soberanía residual y ruinas vivas</a>
+        <a href="#cap-15">XV. Colonización posterior y ecosistemas de ruina</a>
+        <a href="#cap-16">XVI. Peligro biológico y contaminación mágica</a>
+        <a href="#cap-17">XVII. Seguridad de excavación y activación accidental</a>
+        <a href="#cap-18">XVIII. No tocar, no completar y no alimentar</a>
+        <a href="#cap-19">XIX. Reconstrucción virtual y parcial</a>
+        <a href="#cap-20">XX. Reactivación controlada y sus costos</a>
+        <a href="#cap-21">XXI. Conservación, autenticidad e intervención mínima</a>
+        <a href="#cap-22">XXII. Patrimonio activo y derechos sobre el sitio</a>
+        <a href="#cap-23">XXIII. Saqueo, mercado clandestino y excavaciones ilegales</a>
+        <a href="#cap-24">XXIV. Comunidades descendientes y conocimiento restringido</a>
+        <a href="#cap-25">XXV. Comparación entre sitios y series tipológicas</a>
+        <a href="#cap-26">XXVI. Los problemas de la tradición, el creador y la finalidad</a>
+        <a href="#cap-27">XXVII. Errores comunes de interpretación</a>
+        <a href="#cap-28">XXVIII. Arqueología y disciplinas afines</a>
+        <a href="#cap-29">XXIX. El sitio como argumento, la predicción y el valor del fallo</a>
+        <a href="#cap-30">XXX. El abandono y la pregunta arqueológica</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -3250,358 +3192,125 @@ window.ENTRIES = [
       <p>Una ruina mágica rara vez está completamente muerta. Puede haber perdido a sus constructores, su idioma, su función social y hasta el paisaje para el que fue diseñada, pero algunas de sus estructuras siguen reaccionando. Una puerta todavía distingue visitantes; un corredor altera distancias; una cámara conserva temperatura imposible; un altar sigue esperando una condición que nadie recuerda.</p>
       <p>La Arqueología Arcana estudia estos lugares no sólo como testimonio histórico, sino como sistemas parcialmente activos. El objetivo no consiste en hacer funcionar una ruina por curiosidad, sino en reconstruir qué relaciones sostenía, qué partes dejaron de operar, cuáles se adaptaron y qué riesgos aparecen cuando una estructura antigua intenta interpretar un mundo distinto del que conoció.</p>
       <p>La disciplina trabaja junto a Conservación Arcana, Historia de las Ciencias Mágicas, Artefactología, Runología, Geometría Ritual, Seguridad Ritual y Criminalística Arcana. Su principal virtud metodológica es la paciencia, ya que cada activación innecesaria puede destruir información que llevaba siglos esperando ser comprendida.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de la Arqueología Arcana</h4>
-      <p>La Arqueología Arcana estudia restos materiales y estructurales de prácticas mágicas del pasado.</p>
-      <p>Su atención se concentra en edificios, artefactos, redes, cementerios, laboratorios, santuarios, campos rituales y territorios alterados.</p>
-      <p>La arqueología arcana debe asumir que parte del sitio puede continuar actuando sobre observadores y materiales, a diferencia de la arqueología histórica ordinaria.</p>
-      <h4 id="cap-2">Capítulo II — Ruina y sistema</h4>
-      <p>Una ruina no es sólo un conjunto de piedras antiguas.</p>
-      <p>Puede haber sido un sistema compuesto por arquitectura, encantamientos, usuarios, rituales periódicos y relaciones territoriales.</p>
-      <p>Reconstruir el sistema exige distinguir componentes físicos de funciones que dependían de prácticas humanas hoy desaparecidas.</p>
-      <h4 id="cap-3">Capítulo III — Persistencia</h4>
-      <p>Las estructuras antiguas sobreviven de maneras distintas.</p>
-      <p>Algunas siguen activas; otras permanecen latentes; otras conservan sólo residuos; algunas se reactivan al recibir energía, visitantes o símbolos adecuados.</p>
-      <p>La clasificación inicial debe hacerse antes de intervenir.</p>
-      <h4 id="cap-4">Capítulo IV — Latencia arqueológica</h4>
-      <p>Una estructura latente puede parecer inerte durante décadas.</p>
-      <p>El cambio de una puerta, la llegada de un descendiente o la restauración de una inscripción puede satisfacer una condición olvidada.</p>
-      <p>Por ello, ausencia de actividad observada no equivale a ausencia de función.</p>
-      <h4 id="cap-5">Capítulo V — Estructuras huérfanas</h4>
-      <p>Se denomina estructura huérfana a aquella cuyo creador, operador o institución ya no existe pero que conserva actividad.</p>
-      <p>Puede seguir ejecutando instrucciones sin comprender que el contexto original desapareció.</p>
-      <p>Estos sistemas son especialmente peligrosos cuando reconocen cargos, linajes o permisos que ya no tienen equivalente claro.</p>
-      <h4 id="cap-6">Capítulo VI — Función original</h4>
-      <p>Determinar qué hacía una estructura exige separar uso original de usos posteriores.</p>
-      <p>Un templo puede haberse convertido en fortaleza, almacén o tumba mucho después de su construcción.</p>
-      <p>Las modificaciones sucesivas deben registrarse como capas históricas, no como un único diseño.</p>
-      <h4 id="cap-7">Capítulo VII — Función residual</h4>
-      <p>Una estructura puede conservar sólo parte de su función.</p>
-      <p>Una red defensiva puede haber perdido detección y conservar descarga; un sistema funerario puede mantener cierre pero no apertura.</p>
-      <p>El comportamiento actual no debe asumirse idéntico al funcionamiento original.</p>
-      <h4 id="cap-8">Capítulo VIII — Reinterpretación</h4>
-      <p>Algunas estructuras parecen adaptarse a cambios de contexto.</p>
-      <p>Un encantamiento de acceso puede comenzar a reconocer símbolos posteriores como equivalentes aproximados.</p>
-      <p>Esta plasticidad complica la reconstrucción porque el comportamiento actual puede ser producto de siglos de reinterpretación.</p>
-      <h4 id="cap-9">Capítulo IX — Excavación no invasiva</h4>
-      <p>La primera fase de estudio prioriza observación, mapeo y registro sin remover materiales.</p>
-      <p>Lecturas remotas, fotografías, mediciones ambientales y comparación de superficies ayudan a identificar riesgos.</p>
-      <p>Excavar antes de comprender relaciones puede cortar conexiones que todavía contienen información.</p>
-      <h4 id="cap-10">Capítulo X — Estratigrafía arcana</h4>
-      <p>Las capas arqueológicas incluyen no sólo sedimentos, sino también superposiciones mágicas.</p>
-      <p>Un sello posterior puede cubrir un ritual más antiguo; una reparación puede alterar la geometría original.</p>
-      <p>La estratigrafía arcana busca ordenar esas intervenciones en el tiempo.</p>
-      <h4 id="cap-11">Capítulo XI — Datación</h4>
-      <p>Las fechas se estiman mediante materiales, estilos, inscripciones, degradación y registros históricos.</p>
-      <p>Los residuos mágicos pueden aportar información, pero su decaimiento depende del entorno.</p>
-      <p>Las fechas deben expresarse como rangos cuando la evidencia no permite mayor precisión.</p>
-      <h4 id="cap-12">Capítulo XII — Materiales</h4>
-      <p>Piedra, metal, madera, hueso, vidrio y minerales reactivos envejecen de forma distinta.</p>
-      <p>El desgaste puede revelar qué partes estuvieron activas o fueron manipuladas.</p>
-      <p>Mineralogía Mágica ayuda a distinguir deterioro natural de fatiga producida por uso.</p>
-      <h4 id="cap-13">Capítulo XIII — Inscripciones</h4>
-      <p>Las inscripciones pueden ser decorativas, explicativas, operativas o una mezcla.</p>
-      <p>No todo texto sobre un ritual forma parte del ritual.</p>
-      <p>Runología y Filología Arcana ayudan a diferenciar instrucciones de comentarios, advertencias y añadidos posteriores.</p>
-      <h4 id="cap-14">Capítulo XIV — Lenguas muertas</h4>
-      <p>Una estructura puede depender de palabras cuyo significado moderno cambió.</p>
-      <p>Pronunciar una traducción correcta semánticamente puede no reproducir la función original.</p>
-      <p>Los arqueólogos registran fonética, grafía y contexto antes de intentar cualquier lectura activa.</p>
-      <h4 id="cap-15">Capítulo XV — Errores de traducción</h4>
-      <p>Muchas activaciones accidentales históricas nacieron de traducciones tratadas como instrucciones.</p>
-      <p>Una frase funeraria pudo ser confundida con una fórmula de apertura.</p>
-      <p>El protocolo dolbriano exige revisión filológica independiente antes de recitar textos funcionalmente sospechosos.</p>
-      <h4 id="cap-16">Capítulo XVI — Geometría enterrada</h4>
-      <p>Muros, zanjas, columnas y alineaciones pueden formar parte de una estructura mayor.</p>
-      <p>Excavar un solo edificio sin mapear su entorno puede destruir el patrón.</p>
-      <p>Geometría Ritual se utiliza para identificar ejes y clausuras antes de retirar terreno.</p>
-      <h4 id="cap-17">Capítulo XVII — Arquitectura funcional</h4>
-      <p>En algunas ruinas, la arquitectura era parte del encantamiento.</p>
-      <p>El ancho de un corredor, la orientación de una puerta o la relación entre cámaras podían sostener funciones.</p>
-      <p>Restaurar un muro en una posición ligeramente distinta puede cambiar el sistema.</p>
-      <h4 id="cap-18">Capítulo XVIII — Ruinas tridimensionales</h4>
-      <p>Torres, cavernas, pozos y complejos subterráneos requieren estudiar relaciones verticales.</p>
-      <p>Una cámara superior puede actuar como anclaje de otra inferior.</p>
-      <p>La excavación por niveles debe conservar referencias espaciales precisas.</p>
-      <h4 id="cap-19">Capítulo XIX — Redes enterradas</h4>
-      <p>Algunas civilizaciones construyeron sistemas distribuidos por barrios o territorios.</p>
-      <p>Una única estructura puede parecer incomprensible fuera de la red a la que pertenecía.</p>
-      <p>El análisis regional es indispensable antes de atribuir función local.</p>
-      <h4 id="cap-20">Capítulo XX — Encantamientos persistentes</h4>
-      <p>Los encantamientos antiguos pueden mantenerse por reservas, captación ambiental o integración material.</p>
-      <p>Teoría de Encantamientos ayuda a identificar qué mecanismo sostiene la persistencia.</p>
-      <p>Comprender la fuente es esencial antes de mover o aislar el componente.</p>
-      <h4 id="cap-21">Capítulo XXI — Artefactos in situ</h4>
-      <p>Un artefacto debe estudiarse dentro de su contexto antes de retirarlo.</p>
-      <p>Su posición puede ser parte de la función, no simple ubicación histórica.</p>
-      <p>Extraer una pieza de una matriz puede apagar, activar o desestabilizar toda la estructura.</p>
-      <h4 id="cap-22">Capítulo XXII — Artefactos como nodos</h4>
-      <p>Algunos objetos coordinan funciones de una red mayor.</p>
-      <p>Una estatua, corona o cristal puede actuar como nodo de referencia.</p>
-      <p>Su aparente valor artístico puede ocultar un papel estructural.</p>
-      <h4 id="cap-23">Capítulo XXIII — Objetos de mantenimiento</h4>
-      <p>Las herramientas encontradas en una ruina pueden haber servido para calibrar o reparar sistemas.</p>
-      <p>Su estudio revela cómo los antiguos mantenían aquello que hoy parece permanente.</p>
-      <p>Con frecuencia, la ausencia de estos objetos explica por qué una estructura empezó a degradarse después del abandono.</p>
-      <h4 id="cap-24">Capítulo XXIV — Mantenimiento perdido</h4>
-      <p>Muchas ruinas no fallaron de inmediato cuando desaparecieron sus usuarios.</p>
-      <p>Continuaron durante años o siglos mientras reservas y ajustes se agotaban.</p>
-      <p>Reconstruir calendarios de mantenimiento ayuda a explicar cuándo comenzó la decadencia funcional.</p>
-      <h4 id="cap-25">Capítulo XXV — Rituales periódicos</h4>
-      <p>Algunas estructuras necesitaban ceremonias regulares para seguir estables.</p>
-      <p>Las comunidades podían interpretar esas ceremonias como religión, deber cívico o tradición.</p>
-      <p>Su desaparición puede producir fallos graduales difíciles de distinguir del envejecimiento.</p>
-      <h4 id="cap-26">Capítulo XXVI — Instituciones como componentes</h4>
-      <p>Una ciudad, sacerdocio, gremio o linaje podía ser parte funcional de un sistema mágico.</p>
-      <p>Cuando la institución desaparece, la estructura pierde algo más que operadores.</p>
-      <p>Puede perder el referente mediante el cual reconocía autoridad o legitimidad.</p>
-      <h4 id="cap-27">Capítulo XXVII — Usuarios desaparecidos</h4>
-      <p>Una ruina puede seguir esperando a usuarios que ya no existen.</p>
-      <p>Los intentos modernos de sustituirlos deben considerarse experimentos, no restauración.</p>
-      <p>Imitar un uniforme o título puede satisfacer sólo parte de la relación.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Herederos</h4>
-      <p>Algunas estructuras reconocen linajes o sucesores.</p>
-      <p>Encontrar un descendiente puede reactivar funciones dormidas.</p>
-      <p>El uso de personas como llave arqueológica exige consentimiento y revisión ética.</p>
-      <h4 id="cap-29">Capítulo XXIX — Maldiciones antiguas</h4>
-      <p>Las ruinas contienen con frecuencia maldiciones protectoras o punitivas.</p>
-      <p>Romperlas antes de documentarlas puede destruir información sobre normas, propiedad y autoridad.</p>
-      <p>Maldiología ayuda a reconstruir referente, condición y cláusula de terminación.</p>
-      <h4 id="cap-30">Capítulo XXX — Maldiciones territoriales</h4>
-      <p>Una maldición puede pertenecer al sitio y no a un objeto concreto.</p>
-      <p>Los límites modernos pueden no coincidir con la frontera histórica.</p>
-      <p>El mapeo debe incluir antiguos caminos, ríos y divisiones políticas cuando se sospechan relaciones territoriales.</p>
-      <h4 id="cap-31">Capítulo XXXI — Maldiciones funerarias</h4>
-      <p>Las tumbas pueden contener estructuras destinadas a proteger restos, nombres o memoria.</p>
-      <p>Su función no siempre era castigo; algunas buscaban impedir profanación o asegurar reposo.</p>
-      <p>El arqueólogo debe distinguir defensa legítima del sitio de peligro indiscriminado.</p>
-      <h4 id="cap-32">Capítulo XXXII — Muertos y testigos</h4>
-      <p>En ciertos sitios persisten espíritus o identidades vinculadas al lugar.</p>
-      <p>Pueden aportar información, pero no son automáticamente fuentes imparciales.</p>
-      <p>Tanatología y Epistemología Arcana regulan su consulta.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Restos humanos</h4>
-      <p>Los restos de personas inteligentes reciben protección jurídica y ética.</p>
-      <p>El interés científico no autoriza excavación indiscriminada.</p>
-      <p>Las comunidades descendientes o instituciones legítimas pueden poseer derechos sobre tratamiento y reinhumación.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Restos transformados</h4>
-      <p>Petrificación, momificación mágica, cristalización y otras transformaciones pueden conservar información extraordinaria.</p>
-      <p>Estas formas pueden seguir conteniendo continuidad o actividad.</p>
-      <p>Patología, Tanatología y Morfología Anómala participan antes de tratarlas como objetos inertes.</p>
-      <h4 id="cap-35">Capítulo XXXV — Espacios funerarios activos</h4>
-      <p>Un mausoleo puede mantener clima, orientación, memoria o vínculos con los muertos.</p>
-      <p>Desactivar estas funciones puede destruir el propósito mismo del sitio.</p>
-      <p>La conservación debe decidir qué significa preservar una estructura cuya función todavía continúa.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Ruinas planares</h4>
-      <p>Algunos complejos dependen de relaciones con otros planos.</p>
-      <p>Una puerta sellada puede ser parte de un sistema mayor que atraviesa fronteras espaciales.</p>
-      <p>Planología evalúa continuidad antes de abrir o aislar.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Espacios mayores por dentro</h4>
-      <p>Las ruinas con topología anómala desafían métodos ordinarios de mapeo.</p>
-      <p>Una cámara puede contener más volumen del que permite su exterior.</p>
-      <p>Topología Arcana debe determinar qué relaciones se mantienen antes de mover muros o derrumbes.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Espacios desplazados</h4>
-      <p>Partes de un complejo pueden no ocupar ya su ubicación original.</p>
-      <p>Una escalera puede conectar con una cámara desplazada o una puerta abrirse a un lugar diferente según hora.</p>
-      <p>Los mapas deben registrar relaciones funcionales además de coordenadas.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Ruinas temporales</h4>
-      <p>Algunos sitios muestran ritmos o estados desfasados respecto del entorno.</p>
-      <p>Objetos pueden envejecer a distinta velocidad o repetir una configuración.</p>
-      <p>Cronurgia Teórica ayuda a distinguir alteración temporal de simple conservación excepcional.</p>
-      <h4 id="cap-40">Capítulo XL — Ciclos de activación</h4>
-      <p>Una estructura puede despertar con estación, eclipse, aniversario o condición ambiental.</p>
-      <p>Los arqueólogos deben revisar calendarios históricos antes de asumir estabilidad.</p>
-      <p>Los periodos de observación insuficientes pueden dar falsa seguridad.</p>
-      <h4 id="cap-41">Capítulo XLI — Ecos históricos</h4>
-      <p>Algunos sitios reproducen imágenes, voces o secuencias del pasado.</p>
-      <p>Estos ecos pueden ser residuos, registros o fenómenos temporales.</p>
-      <p>No deben confundirse automáticamente con espíritus conscientes.</p>
-      <h4 id="cap-42">Capítulo XLII — Memoria arquitectónica</h4>
-      <p>Un edificio puede conservar patrones de uso mediante encantamientos.</p>
-      <p>Puertas que recuerdan recorridos o salas que reconstruyen disposición previa son ejemplos.</p>
-      <p>Estas funciones permiten estudiar historia, pero también pueden reescribir el sitio durante la excavación.</p>
-      <h4 id="cap-43">Capítulo XLIII — Ruinas elementales</h4>
-      <p>Las construcciones asociadas a linajes o Señores Elementales pueden depender de propiedades ambientales específicas.</p>
-      <p>Retirar calor, humedad, presión o radiancia puede dañar la estructura.</p>
-      <p>Dracología, Ecología Mágica y Mineralogía ayudan a interpretar estos entornos.</p>
-      <h4 id="cap-44">Capítulo XLIV — Soberanía residual</h4>
-      <p>Algunos territorios conservan propiedades semejantes a una antigua Soberanía aunque la entidad original haya desaparecido.</p>
-      <p>Se debate si se trata de persistencia, modificación ambiental o presencia continua no detectada.</p>
-      <p>Los arqueólogos registran el fenómeno sin asumir una explicación única.</p>
-      <h4 id="cap-45">Capítulo XLV — Ruinas vivas</h4>
-      <p>Algunos complejos fueron construidos con organismos, tejidos o simbiosis.</p>
-      <p>El sitio puede crecer, cicatrizar o responder a daño.</p>
-      <p>Criptozoología y Ecología Mágica determinan si excavar equivale a operar sobre un ser vivo.</p>
-      <h4 id="cap-46">Capítulo XLVI — Colonización posterior</h4>
-      <p>Animales, plantas, pueblos y espíritus pueden ocupar una ruina durante siglos.</p>
-      <p>Sus modificaciones forman parte de la historia del sitio.</p>
-      <p>Retirar toda ocupación posterior para recuperar un supuesto estado original puede destruir capas igualmente valiosas.</p>
-      <h4 id="cap-47">Capítulo XLVII — Ecosistemas de ruina</h4>
-      <p>Una estructura mágica abandonada puede crear un ecosistema propio.</p>
-      <p>Temperatura, maná, sombra o residuos pueden seleccionar especies particulares.</p>
-      <p>Ecología Mágica estudia estos sistemas antes de una intervención que podría colapsarlos.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Peligro biológico</h4>
-      <p>Ruinas cerradas pueden contener patógenos, esporas o mutaciones aisladas durante siglos.</p>
-      <p>El acceso requiere evaluación epidemiológica.</p>
-      <p>Romper un sello antiguo puede ser una excavación y una liberación simultáneamente.</p>
-      <h4 id="cap-49">Capítulo XLIX — Contaminación mágica</h4>
-      <p>Los depósitos de energía o residuos pueden haberse incorporado a suelo, agua y organismos.</p>
-      <p>Patología Arcana y Epidemiología Taumatológica determinan riesgos para equipos y comunidades cercanas.</p>
-      <p>El sitio puede necesitar cuarentena antes de estudio histórico.</p>
-      <h4 id="cap-50">Capítulo L — Seguridad de excavación</h4>
-      <p>Todo proyecto requiere clasificación de riesgo antes de retirar material.</p>
-      <p>Se identifican rutas de evacuación, barreras, responsables de seguridad y procedimientos de cierre.</p>
-      <p>Seguridad Ritual considera una excavación activa equivalente a una intervención sobre un sistema.</p>
-      <h4 id="cap-51">Capítulo LI — Activación accidental</h4>
-      <p>Las causas frecuentes incluyen mover objetos, completar geometrías, pronunciar textos, introducir energía o satisfacer criterios de presencia.</p>
-      <p>El equipo registra cada cambio para reconstruir qué acción precedió a la activación.</p>
-      <p>Después de un incidente se detiene la excavación hasta revisar el modelo.</p>
-      <h4 id="cap-52">Capítulo LII — No tocar</h4>
-      <p>El principio más simple de campo sigue siendo uno de los más eficaces.</p>
-      <p>Los objetos se observan, fotografían y mapean antes de moverlos.</p>
-      <p>Un artefacto sin función aparente puede sostener una relación que sólo se vuelve visible cuando desaparece.</p>
-      <h4 id="cap-53">Capítulo LIII — No completar</h4>
-      <p>Una runa rota, círculo incompleto o puerta bloqueada puede ser daño histórico o mecanismo de seguridad.</p>
-      <p>Restaurar simetría por razones estéticas está prohibido antes de comprender la función.</p>
-      <p>Conservación Arcana prioriza estabilidad sobre apariencia.</p>
-      <h4 id="cap-54">Capítulo LIV — No alimentar</h4>
-      <p>Proporcionar energía a una estructura antigua para ver qué hace es un experimento de alto riesgo.</p>
-      <p>Debe realizarse sólo con autorización, contención y modelo previo.</p>
-      <p>La curiosidad no es criterio suficiente de activación.</p>
-      <h4 id="cap-55">Capítulo LV — Reconstrucción virtual</h4>
-      <p>Los equipos crean modelos geométricos y estructurales antes de intervenir físicamente.</p>
-      <p>Esto permite probar hipótesis sin completar el sistema real.</p>
-      <p>Las reconstrucciones deben registrar qué partes son evidencias y cuáles inferencias.</p>
-      <h4 id="cap-56">Capítulo LVI — Reconstrucción parcial</h4>
-      <p>Puede ser útil restaurar un componente aislado para comprenderlo.</p>
-      <p>Debe separarse del sistema principal cuando sea posible.</p>
-      <p>Una reconstrucción parcial que modifica el original requiere justificación de conservación.</p>
-      <h4 id="cap-57">Capítulo LVII — Reactivación controlada</h4>
-      <p>Una reactivación arqueológica es un experimento, no una mera observación.</p>
-      <p>Exige permiso, seguridad, criterios de interrupción y registro independiente.</p>
-      <p>El objetivo debe ser responder una pregunta definida, no explorar posibilidades.</p>
-      <h4 id="cap-58">Capítulo LVIII — Reactivación de redes</h4>
-      <p>Encender un nodo puede despertar otros.</p>
-      <p>Los proyectos deben mapear conexiones antes de restaurar energía.</p>
-      <p>Una red territorial nunca se prueba como si fuera un único artefacto de laboratorio.</p>
-      <h4 id="cap-59">Capítulo LIX — Evidencia destruida por éxito</h4>
-      <p>Una activación exitosa puede consumir materiales, borrar residuos o reorganizar la estructura.</p>
-      <p>Por ello, hacer funcionar un sitio puede reducir lo que sabemos sobre su estado previo.</p>
-      <p>El valor científico de la activación debe superar la pérdida documental.</p>
-      <h4 id="cap-60">Capítulo LX — Conservación</h4>
-      <p>Conservar no significa devolver la ruina a un aspecto nuevo.</p>
-      <p>Se busca mantener materiales, relaciones y capacidad de estudio.</p>
-      <p>Una estructura activa puede requerir estabilización sin restaurar su función completa.</p>
-      <h4 id="cap-61">Capítulo LXI — Autenticidad</h4>
-      <p>Reemplazar partes perdidas puede producir un sistema funcional que ya no sea el sistema histórico.</p>
-      <p>La autenticidad arqueológica incluye huellas de reparación, abandono y fallo.</p>
-      <p>El éxito técnico no justifica reconstrucciones que borren historia.</p>
-      <h4 id="cap-62">Capítulo LXII — Intervención mínima</h4>
-      <p>Se prefiere la menor modificación capaz de preservar información y seguridad.</p>
-      <p>Las intervenciones deben ser reversibles cuando sea posible.</p>
-      <p>Los cambios irreversibles necesitan documentación y autorización superior.</p>
-      <h4 id="cap-63">Capítulo LXIII — Patrimonio activo</h4>
-      <p>Una estructura todavía funcional puede ser patrimonio y riesgo al mismo tiempo.</p>
-      <p>El valor cultural no obliga a mantenerla operativa.</p>
-      <p>Las decisiones de conservación equilibran historia, seguridad y posibles comunidades vinculadas al sitio.</p>
-      <h4 id="cap-64">Capítulo LXIV — Derechos sobre el sitio</h4>
-      <p>Ruinas pueden pertenecer a comunidades, estados, linajes, instituciones religiosas o nadie claramente identificable.</p>
-      <p>El interés académico no elimina esos derechos.</p>
-      <p>Derecho Arcano participa en permisos, custodia y repatriación.</p>
-      <h4 id="cap-65">Capítulo LXV — Saqueo</h4>
-      <p>Retirar objetos sin registro destruye contexto aunque el artefacto sobreviva intacto.</p>
-      <p>El saqueo de componentes activos puede además desestabilizar el sitio.</p>
-      <p>Dolbred sanciona severamente la adquisición de piezas sin procedencia verificable.</p>
-      <h4 id="cap-66">Capítulo LXVI — Mercado de antigüedades</h4>
-      <p>Los objetos arqueológicos peligrosos no deben circular como curiosidades privadas.</p>
-      <p>Artefactos restringidos requieren registro y custodia.</p>
-      <p>El valor comercial crea incentivos para ocultar procedencia y riesgo.</p>
-      <h4 id="cap-67">Capítulo LXVII — Excavaciones clandestinas</h4>
-      <p>Las excavaciones no autorizadas suelen carecer de seguridad y documentación.</p>
-      <p>Sus hallazgos pueden perder contexto irreparablemente.</p>
-      <p>Criminalística Arcana colabora cuando existe tráfico o manipulación de sitios protegidos.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Comunidades descendientes</h4>
-      <p>Una ruina puede seguir teniendo significado para pueblos actuales.</p>
-      <p>Los proyectos deben consultar a comunidades con vínculos históricos o rituales relevantes.</p>
-      <p>La universidad no presume que antigüedad convierta un sitio en propiedad académica.</p>
-      <h4 id="cap-69">Capítulo LXIX — Conocimiento restringido</h4>
-      <p>Algunas estructuras contienen técnicas cuyo funcionamiento completo no debe divulgarse por riesgo.</p>
-      <p>Los informes pueden separar descripción histórica de instrucciones operativas.</p>
-      <p>El acceso restringido debe justificarse y revisarse periódicamente.</p>
-      <h4 id="cap-70">Capítulo LXX — Secreto versus preservación</h4>
-      <p>Ocultar demasiado puede impedir que futuros investigadores comprendan el sitio.</p>
-      <p>Divulgar demasiado puede facilitar reproducción peligrosa.</p>
-      <p>Dolbred utiliza archivos de acceso escalonado para conservar información sin hacerla universalmente operativa.</p>
-      <h4 id="cap-71">Capítulo LXXI — Comparación entre sitios</h4>
-      <p>Una función dudosa puede entenderse mejor comparando complejos relacionados.</p>
-      <p>Variaciones regionales revelan qué componentes eran esenciales y cuáles decorativos.</p>
-      <p>Historia de las Ciencias Mágicas ayuda a evitar asumir una única tradición homogénea.</p>
-      <h4 id="cap-72">Capítulo LXXII — Series tipológicas</h4>
-      <p>Los arqueólogos agrupan objetos y estructuras por forma, material y función probable.</p>
-      <p>Las tipologías son herramientas, no verdades naturales.</p>
-      <p>Un ejemplar extraño puede obligar a revisar toda una clasificación.</p>
-      <h4 id="cap-73">Capítulo LXXIII — El problema de la tradición</h4>
-      <p>Identificar rasgos culturales no significa que una estructura perteneciera a una sola escuela.</p>
-      <p>Sitios fronterizos pueden combinar técnicas.</p>
-      <p>Las atribuciones deben expresar incertidumbre y posibilidad de hibridación.</p>
-      <h4 id="cap-74">Capítulo LXXIV — El problema del creador</h4>
-      <p>Los nombres inscritos pueden señalar patrocinador, propietario, sacerdote o restaurador y no necesariamente diseñador.</p>
-      <p>El crédito histórico requiere distinguir autoría técnica de autoridad social.</p>
-      <p>Filología y Derecho ayudan a interpretar estas relaciones.</p>
-      <h4 id="cap-75">Capítulo LXXV — El problema de la finalidad</h4>
-      <p>Una estructura puede haber tenido varias funciones a lo largo del tiempo.</p>
-      <p>Buscar una finalidad única puede simplificar demasiado.</p>
-      <p>El arqueólogo debe reconstruir etapas de uso.</p>
-      <h4 id="cap-76">Capítulo LXXVI — El error de la tecnología perdida</h4>
-      <p>No toda técnica antigua superior fue olvidada por decadencia.</p>
-      <p>Algunas dependían de materiales agotados, instituciones desaparecidas o condiciones ambientales irrepetibles.</p>
-      <p>Recrear el objeto sin recrear su contexto puede ser imposible.</p>
-      <h4 id="cap-77">Capítulo LXXVII — El error del artefacto perfecto</h4>
-      <p>Los objetos antiguos también fallaban, eran reparados y contenían defectos.</p>
-      <p>La antigüedad no convierte cada irregularidad en intención profunda.</p>
-      <p>Las huellas de improvisación son parte de la historia tecnológica.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — El error de restaurar demasiado</h4>
-      <p>Completar una estructura puede imponer al sitio la interpretación del investigador.</p>
-      <p>Una restauración convincente puede ocultar qué partes eran realmente conocidas.</p>
-      <p>Dolbred exige que las reconstrucciones modernas sean identificables y documentadas.</p>
-      <h4 id="cap-79">Capítulo LXXIX — El error de activar para entender</h4>
-      <p>Ver una máquina funcionar parece una forma directa de comprenderla.</p>
-      <p>En estructuras mágicas antiguas, la activación puede cambiar precisamente las relaciones que se intenta estudiar.</p>
-      <p>La observación pasiva tiene prioridad siempre que pueda responder la pregunta.</p>
-      <h4 id="cap-80">Capítulo LXXX — Excavación y Criminalística</h4>
-      <p>Un sitio arqueológico puede convertirse en escena criminal por saqueo, sabotaje o muerte reciente.</p>
-      <p>Las prioridades de preservación histórica y evidencia judicial deben coordinarse.</p>
-      <p>Criminalística Arcana documenta intervenciones contemporáneas sin borrar capas antiguas.</p>
-      <h4 id="cap-81">Capítulo LXXXI — Excavación y Seguridad Ritual</h4>
-      <p>Seguridad Ritual trata las estructuras activas como sistemas capaces de fallar.</p>
-      <p>Arqueología aporta contexto histórico para entender qué puede ocurrir.</p>
-      <p>Ninguna activación de alto riesgo se autoriza sin ambos equipos.</p>
-      <h4 id="cap-82">Capítulo LXXXII — Excavación y Conservación Arcana</h4>
-      <p>Conservación determina cómo estabilizar materiales y funciones sin borrar historia.</p>
-      <p>Arqueología determina qué relaciones poseen valor documental.</p>
-      <p>La colaboración evita restauraciones técnicamente elegantes y arqueológicamente destructivas.</p>
-      <h4 id="cap-83">Capítulo LXXXIII — Excavación y Epistemología</h4>
-      <p>Las ruinas invitan a contar historias completas con evidencia incompleta.</p>
-      <p>Epistemología Arcana obliga a distinguir observación, inferencia y especulación.</p>
-      <p>Los informes dolbrianos marcan explícitamente cada nivel.</p>
-      <h4 id="cap-84">Capítulo LXXXIV — El sitio como argumento</h4>
-      <p>Una ruina no demuestra una teoría sólo porque pueda interpretarse de acuerdo con ella.</p>
-      <p>Las estructuras deben compararse con explicaciones rivales.</p>
-      <p>Una buena hipótesis explica más evidencia con menos supuestos y predice qué debería encontrarse en áreas aún no excavadas.</p>
-      <h4 id="cap-85">Capítulo LXXXV — Predicción arqueológica</h4>
-      <p>Las hipótesis pueden probarse anticipando hallazgos.</p>
-      <p>Si una cámara era parte de una red de mantenimiento, deberían existir rutas, herramientas o nodos asociados.</p>
-      <p>Encontrarlos fortalece la reconstrucción; su ausencia obliga a revisarla.</p>
-      <h4 id="cap-86">Capítulo LXXXVI — El valor del fallo</h4>
-      <p>Las ruinas conservan información sobre cómo una civilización resolvía errores.</p>
-      <p>Reparaciones, cierres improvisados y componentes sacrificados muestran conocimiento práctico.</p>
-      <p>El fracaso histórico puede enseñar tanto como la construcción original.</p>
-      <h4 id="cap-87">Capítulo LXXXVII — El abandono</h4>
-      <p>Abandonar un sitio fue a veces una decisión técnica.</p>
-      <p>Sellos, derrumbes deliberados y evacuaciones pueden indicar que los antiguos también consideraron imposible mantenerlo seguro.</p>
-      <p>Reabrirlo sin comprender por qué fue cerrado repite un experimento cuyos resultados quizá ya conocemos.</p>
-      <h4 id="cap-88">Capítulo LXXXVIII — La pregunta arqueológica</h4>
-      <p>Ante una estructura antigua, Dolbred formula tres preguntas: qué relación sostenía, qué parte de esa relación sigue activa y qué perderemos si intentamos hacerla funcionar de nuevo.</p>
-      <p>Estas preguntas convierten la ruina en algo más que un objeto del pasado.</p>
-      <p>La Arqueología Arcana estudia el punto donde historia y sistema activo continúan ocupando el mismo lugar.</p>
+      <h4 id="cap-1">Capítulo I — Objeto de estudio: la ruina como sistema</h4>
+      <p>La Arqueología Arcana estudia restos materiales y estructurales de prácticas mágicas del pasado. Su atención se concentra en edificios, artefactos, redes, cementerios, laboratorios, santuarios, campos rituales y territorios alterados. A diferencia de la arqueología histórica ordinaria, debe asumir que parte del sitio puede continuar actuando sobre observadores y materiales.</p>
+      <p>Esa continuidad obliga a tratar cada ruina no como un conjunto de piedras antiguas, sino como un posible sistema compuesto por arquitectura, encantamientos, usuarios, rituales periódicos y relaciones territoriales. Reconstruir ese sistema exige distinguir los componentes físicos que perduran de las funciones que dependían de prácticas humanas hoy desaparecidas.</p>
+      <h4 id="cap-2">Capítulo II — Persistencia, latencia y estructuras huérfanas</h4>
+      <p>Las estructuras antiguas sobreviven de maneras distintas. Algunas siguen activas, otras permanecen latentes, otras conservan sólo residuos, y algunas se reactivan al recibir energía, visitantes o símbolos adecuados. Esta clasificación inicial debe establecerse antes de intervenir sobre el sitio.</p>
+      <p>Una estructura latente puede parecer inerte durante décadas, hasta que el cambio de una puerta, la llegada de un descendiente o la restauración de una inscripción satisface una condición olvidada. La ausencia de actividad observada, por tanto, no equivale a ausencia de función.</p>
+      <p>Se denomina estructura huérfana a aquella cuyo creador, operador o institución ya no existe pero que conserva actividad, ejecutando instrucciones sin comprender que el contexto original desapareció. Estos sistemas resultan especialmente peligrosos cuando reconocen cargos, linajes o permisos que ya no tienen equivalente claro.</p>
+      <h4 id="cap-3">Capítulo III — Función original, residual y reinterpretación</h4>
+      <p>Determinar qué hacía una estructura exige separar el uso original de los usos posteriores. Un templo puede haberse convertido en fortaleza, almacén o tumba mucho después de su construcción, de modo que las modificaciones sucesivas deben registrarse como capas históricas y no como un diseño único.</p>
+      <p>Una estructura también puede conservar sólo parte de su función original. Una red defensiva puede haber perdido la detección y conservar la descarga; un sistema funerario puede mantener el cierre pero no la apertura. El comportamiento actual, por eso, no debe asumirse idéntico al funcionamiento original.</p>
+      <p>Algunas estructuras, además, parecen adaptarse a cambios de contexto. Un encantamiento de acceso puede llegar a reconocer símbolos posteriores como equivalentes aproximados de los originales. Esta plasticidad complica la reconstrucción, porque el comportamiento observado hoy puede ser producto de siglos de reinterpretación acumulada.</p>
+      <h4 id="cap-4">Capítulo IV — Excavación, estratigrafía, datación y materiales</h4>
+      <p>La primera fase de estudio prioriza observación, mapeo y registro sin remover materiales. Lecturas remotas, fotografías, mediciones ambientales y comparación de superficies ayudan a identificar riesgos antes de tocar nada; excavar sin haber comprendido las relaciones del sitio puede cortar conexiones que todavía conservan información.</p>
+      <p>Las capas arqueológicas incluyen no sólo sedimentos, sino también superposiciones mágicas. Un sello posterior puede cubrir un ritual más antiguo, y una reparación puede alterar la geometría original; la estratigrafía arcana busca ordenar esas intervenciones en el tiempo.</p>
+      <p>Las fechas se estiman mediante materiales, estilos, inscripciones, degradación y registros históricos. Los residuos mágicos pueden aportar información adicional, aunque su decaimiento depende del entorno, por lo que conviene expresarlas como rangos cuando la evidencia no permite mayor precisión.</p>
+      <p>Piedra, metal, madera, hueso, vidrio y minerales reactivos envejecen de forma distinta, y su desgaste puede revelar qué partes de una estructura estuvieron activas o fueron manipuladas. Mineralogía Mágica ayuda a distinguir el deterioro natural de la fatiga producida por el uso.</p>
+      <h4 id="cap-5">Capítulo V — Inscripciones, lenguas muertas y traducción</h4>
+      <p>Las inscripciones pueden ser decorativas, explicativas, operativas o una mezcla de las tres, y no todo texto escrito sobre un ritual forma parte del ritual. Runología y Filología Arcana ayudan a diferenciar instrucciones de comentarios, advertencias y añadidos posteriores.</p>
+      <p>Una estructura puede depender de palabras cuyo significado moderno ha cambiado, de modo que pronunciar una traducción correcta en sentido semántico puede no reproducir la función original. Por ello los arqueólogos registran fonética, grafía y contexto antes de intentar cualquier lectura activa.</p>
+      <p>Muchas activaciones accidentales históricas nacieron de traducciones tratadas como instrucciones, como una frase funeraria confundida con una fórmula de apertura. El protocolo dolbriano exige revisión filológica independiente antes de recitar textos funcionalmente sospechosos.</p>
+      <h4 id="cap-6">Capítulo VI — Geometría, arquitectura funcional y redes espaciales</h4>
+      <p>Muros, zanjas, columnas y alineaciones pueden formar parte de una estructura mayor, y excavar un solo edificio sin mapear su entorno puede destruir el patrón del que formaba parte. Geometría Ritual se utiliza para identificar ejes y clausuras antes de retirar terreno.</p>
+      <p>En algunas ruinas la arquitectura misma era parte del encantamiento. El ancho de un corredor, la orientación de una puerta o la relación entre cámaras podían sostener funciones activas, y restaurar un muro en una posición ligeramente distinta podía cambiar el sistema completo.</p>
+      <p>Torres, cavernas, pozos y complejos subterráneos exigen además estudiar relaciones verticales, ya que una cámara superior puede actuar como anclaje de otra inferior; la excavación por niveles debe conservar referencias espaciales precisas.</p>
+      <p>Algunas civilizaciones construyeron sistemas distribuidos por barrios o territorios enteros, y una única estructura puede resultar incomprensible fuera de la red a la que pertenecía. El análisis regional es indispensable antes de atribuir una función puramente local.</p>
+      <h4 id="cap-7">Capítulo VII — Encantamientos persistentes y artefactos en contexto</h4>
+      <p>Los encantamientos antiguos pueden mantenerse activos por reservas propias, captación ambiental o integración con el material que los sostiene. Teoría de Encantamientos ayuda a identificar qué mecanismo sostiene esa persistencia, algo esencial antes de mover o aislar el componente.</p>
+      <p>Un artefacto debe estudiarse dentro de su contexto antes de retirarlo, porque su posición puede ser parte de la función y no una simple ubicación histórica. Extraer una pieza de su matriz puede apagar, activar o desestabilizar toda la estructura circundante.</p>
+      <p>Algunos objetos, además, coordinan funciones de una red mayor. Una estatua, una corona o un cristal pueden actuar como nodo de referencia, y su aparente valor artístico puede ocultar un papel estructural.</p>
+      <h4 id="cap-8">Capítulo VIII — Mantenimiento y rituales periódicos</h4>
+      <p>Las herramientas encontradas en una ruina pueden haber servido para calibrar o reparar sus sistemas, y su estudio revela cómo los antiguos mantenían aquello que hoy parece permanente. La ausencia de estos objetos suele explicar por qué una estructura empezó a degradarse después del abandono.</p>
+      <p>Muchas ruinas no fallaron de inmediato cuando desaparecieron sus usuarios, sino que continuaron funcionando durante años o siglos mientras sus reservas y ajustes se agotaban. Reconstruir calendarios de mantenimiento ayuda a explicar cuándo comenzó la decadencia funcional real.</p>
+      <p>Algunas estructuras necesitaban además ceremonias regulares para seguir estables, ceremonias que las comunidades podían interpretar como religión, deber cívico o tradición. Su desaparición puede producir fallos graduales, difíciles de distinguir del simple envejecimiento.</p>
+      <h4 id="cap-9">Capítulo IX — Instituciones, usuarios desaparecidos y herederos</h4>
+      <p>Una ciudad, un sacerdocio, un gremio o un linaje podía ser parte funcional de un sistema mágico. Cuando la institución desaparece, la estructura pierde algo más que a sus operadores, ya que también puede perder el referente mediante el cual reconocía autoridad o legitimidad.</p>
+      <p>Una ruina puede seguir esperando a usuarios que ya no existen, y los intentos modernos de sustituirlos deben considerarse experimentos, no restauración. Imitar un uniforme o un título puede satisfacer sólo una parte de esa relación perdida.</p>
+      <p>Algunas estructuras, en cambio, reconocen linajes o sucesores concretos, y encontrar un descendiente puede reactivar funciones dormidas. El uso de personas como llave arqueológica exige, en todo caso, consentimiento y revisión ética.</p>
+      <h4 id="cap-10">Capítulo X — Tipos de maldiciones</h4>
+      <p>Las ruinas contienen con frecuencia maldiciones protectoras o punitivas. Romperlas antes de documentarlas puede destruir información sobre normas, propiedad y autoridad; Maldiología ayuda a reconstruir su referente, condición y cláusula de terminación.</p>
+      <p>Algunas maldiciones pertenecen al sitio entero y no a un objeto concreto. Los límites modernos pueden no coincidir con la frontera histórica, por lo que el mapeo debe incluir antiguos caminos, ríos y divisiones políticas cuando se sospechan relaciones territoriales.</p>
+      <p>Las tumbas, por su parte, pueden contener estructuras destinadas a proteger restos, nombres o memoria. Su función no siempre fue el castigo, sino que algunas buscaban impedir la profanación o asegurar el reposo; el arqueólogo debe distinguir esa defensa legítima del peligro indiscriminado.</p>
+      <h4 id="cap-11">Capítulo XI — Los muertos, sus restos y los espacios funerarios activos</h4>
+      <p>En ciertos sitios persisten espíritus o identidades vinculadas al lugar. Pueden aportar información valiosa, pero no son automáticamente fuentes imparciales; Tanatología y Epistemología Arcana regulan su consulta.</p>
+      <p>Los restos de personas inteligentes reciben protección jurídica y ética, y el interés científico no autoriza excavación indiscriminada. Las comunidades descendientes o las instituciones legítimas pueden poseer derechos sobre su tratamiento y reinhumación.</p>
+      <p>Petrificación, momificación mágica, cristalización y otras transformaciones pueden conservar información extraordinaria, y estas formas siguen a veces conteniendo continuidad o actividad propia. Patología, Tanatología y Morfología Anómala participan antes de tratarlas como simples objetos inertes.</p>
+      <p>Un mausoleo, finalmente, puede mantener clima, orientación, memoria o vínculos activos con sus muertos, y desactivar estas funciones puede destruir el propósito mismo del sitio. La conservación debe decidir entonces qué significa preservar una estructura cuya función todavía continúa.</p>
+      <h4 id="cap-12">Capítulo XII — Ruinas planares, topológicas y temporales</h4>
+      <p>Algunos complejos dependen de relaciones con otros planos. Una puerta sellada puede formar parte de un sistema mayor que atraviesa fronteras espaciales, y Planología evalúa esa continuidad antes de abrir o aislar cualquier acceso.</p>
+      <p>Las ruinas con topología anómala desafían los métodos ordinarios de mapeo, ya que una cámara puede contener más volumen del que permite su exterior. Topología Arcana determina qué relaciones se mantienen antes de mover muros o retirar derrumbes.</p>
+      <p>Partes de un complejo pueden además no ocupar ya su ubicación original. Una escalera puede conectar con una cámara desplazada, o una puerta abrirse a un lugar diferente según la hora. Los mapas, por eso, deben registrar relaciones funcionales además de coordenadas fijas.</p>
+      <p>Algunos sitios, por último, muestran ritmos o estados desfasados respecto del entorno, con objetos que envejecen a distinta velocidad o repiten una misma configuración. Cronurgia Teórica ayuda a distinguir la alteración temporal de la simple conservación excepcional.</p>
+      <h4 id="cap-13">Capítulo XIII — Ciclos, ecos y memoria arquitectónica</h4>
+      <p>Una estructura puede despertar con la estación, un eclipse, un aniversario o una condición ambiental concreta. Los arqueólogos deben revisar calendarios históricos antes de asumir estabilidad, ya que periodos de observación insuficientes pueden dar una falsa sensación de seguridad.</p>
+      <p>Algunos sitios reproducen imágenes, voces o secuencias del pasado. Estos ecos pueden ser residuos, registros o fenómenos temporales, y no deben confundirse automáticamente con espíritus conscientes.</p>
+      <p>Un edificio puede además conservar patrones de uso mediante encantamientos, como puertas que recuerdan recorridos o salas que reconstruyen su disposición previa. Estas funciones permiten estudiar la historia del sitio, pero también pueden reescribirlo durante la propia excavación.</p>
+      <h4 id="cap-14">Capítulo XIV — Ruinas elementales, soberanía residual y ruinas vivas</h4>
+      <p>Las construcciones asociadas a linajes o Señores Elementales pueden depender de propiedades ambientales específicas, y retirar calor, humedad, presión o radiancia puede dañar la estructura entera. Dracología, Ecología Mágica y Mineralogía ayudan a interpretar estos entornos particulares.</p>
+      <p>Algunos territorios conservan propiedades semejantes a una antigua Soberanía aunque la entidad original haya desaparecido. Se debate si se trata de persistencia, modificación ambiental o presencia continua no detectada, y los arqueólogos registran el fenómeno sin asumir una explicación única.</p>
+      <p>Algunos complejos, por último, fueron construidos con organismos, tejidos o simbiosis, y el sitio puede crecer, cicatrizar o responder a un daño como un ser vivo. Criptozoología y Ecología Mágica determinan si excavar equivale entonces a operar sobre un organismo.</p>
+      <h4 id="cap-15">Capítulo XV — Colonización posterior y ecosistemas de ruina</h4>
+      <p>Animales, plantas, pueblos y espíritus pueden ocupar una ruina durante siglos, y sus modificaciones forman parte de la historia del sitio. Retirar toda ocupación posterior para recuperar un supuesto estado original puede destruir capas igualmente valiosas.</p>
+      <p>Una estructura mágica abandonada puede además crear un ecosistema propio. Temperatura, maná, sombra o residuos pueden seleccionar especies particulares. Ecología Mágica estudia estos sistemas antes de cualquier intervención que pudiera colapsarlos.</p>
+      <h4 id="cap-16">Capítulo XVI — Peligro biológico y contaminación mágica</h4>
+      <p>Las ruinas cerradas pueden contener patógenos, esporas o mutaciones aisladas durante siglos, y su acceso requiere evaluación epidemiológica previa. Romper un sello antiguo puede ser una excavación y una liberación al mismo tiempo.</p>
+      <p>Los depósitos de energía o residuos pueden haberse incorporado al suelo, al agua y a los organismos del entorno. Patología Arcana y Epidemiología Taumatológica determinan los riesgos para los equipos y las comunidades cercanas, y el sitio puede necesitar cuarentena antes de cualquier estudio histórico.</p>
+      <h4 id="cap-17">Capítulo XVII — Seguridad de excavación y activación accidental</h4>
+      <p>Todo proyecto requiere una clasificación de riesgo antes de retirar material. Se identifican rutas de evacuación, barreras, responsables de seguridad y procedimientos de cierre, ya que Seguridad Ritual considera una excavación activa equivalente a una intervención sobre un sistema.</p>
+      <p>Entre las causas frecuentes de activación accidental figuran mover objetos, completar geometrías, pronunciar textos, introducir energía o satisfacer criterios de presencia. El equipo registra cada cambio para reconstruir qué acción precedió a la activación, y tras un incidente se detiene la excavación hasta revisar el modelo completo.</p>
+      <h4 id="cap-18">Capítulo XVIII — No tocar, no completar y no alimentar</h4>
+      <p>El principio más simple de campo sigue siendo uno de los más eficaces. Los objetos se observan, fotografían y mapean antes de moverlos, porque un artefacto sin función aparente puede sostener una relación que sólo se vuelve visible cuando desaparece.</p>
+      <p>Una runa rota, un círculo incompleto o una puerta bloqueada puede ser daño histórico o un mecanismo de seguridad deliberado, así que restaurar la simetría por razones estéticas está prohibido antes de comprender la función real. Conservación Arcana prioriza la estabilidad sobre la apariencia.</p>
+      <p>Proporcionar energía a una estructura antigua sólo para ver qué hace es un experimento de alto riesgo que debe realizarse con autorización, contención y un modelo previo. La curiosidad, por sí sola, no es criterio suficiente de activación.</p>
+      <h4 id="cap-19">Capítulo XIX — Reconstrucción virtual y parcial</h4>
+      <p>Los equipos crean modelos geométricos y estructurales antes de intervenir físicamente, lo que permite probar hipótesis sin completar el sistema real. Estas reconstrucciones deben registrar con claridad qué partes son evidencias y cuáles son inferencias.</p>
+      <p>Puede ser útil, además, restaurar un componente aislado para comprenderlo, separándolo del sistema principal cuando sea posible. Una reconstrucción parcial que modifica el original requiere siempre justificación de conservación.</p>
+      <h4 id="cap-20">Capítulo XX — Reactivación controlada y sus costos</h4>
+      <p>Una reactivación arqueológica es un experimento, no una mera observación. Exige permiso, seguridad, criterios de interrupción y registro independiente, y su objetivo debe ser responder una pregunta definida, no explorar posibilidades abiertas.</p>
+      <p>Encender un nodo puede despertar otros. Los proyectos deben mapear las conexiones antes de restaurar energía, porque una red territorial nunca se prueba como si fuera un único artefacto de laboratorio.</p>
+      <p>Una activación exitosa, además, puede consumir materiales, borrar residuos o reorganizar la estructura, de modo que hacer funcionar un sitio puede reducir lo que sabemos sobre su estado previo. El valor científico de la activación debe superar siempre la pérdida documental que provoca.</p>
+      <h4 id="cap-21">Capítulo XXI — Conservación, autenticidad e intervención mínima</h4>
+      <p>Conservar no significa devolver la ruina a un aspecto nuevo, sino mantener sus materiales, sus relaciones y su capacidad de estudio. Una estructura activa puede requerir estabilización sin que eso implique restaurar su función completa.</p>
+      <p>Reemplazar partes perdidas puede producir un sistema funcional que ya no sea el sistema histórico. La autenticidad arqueológica incluye las huellas de reparación, abandono y fallo, y el éxito técnico no justifica reconstrucciones que borren esa historia.</p>
+      <p>Se prefiere, en general, la menor modificación capaz de preservar información y seguridad, y las intervenciones deben ser reversibles cuando sea posible. Los cambios irreversibles necesitan documentación y autorización superior.</p>
+      <h4 id="cap-22">Capítulo XXII — Patrimonio activo y derechos sobre el sitio</h4>
+      <p>Una estructura todavía funcional puede ser patrimonio y riesgo al mismo tiempo, y su valor cultural no obliga a mantenerla operativa. Las decisiones de conservación equilibran historia, seguridad y las comunidades que puedan seguir vinculadas al sitio.</p>
+      <p>Las ruinas pueden pertenecer a comunidades, estados, linajes, instituciones religiosas o a nadie claramente identificable, y el interés académico no elimina esos derechos. Derecho Arcano participa en permisos, custodia y repatriación.</p>
+      <h4 id="cap-23">Capítulo XXIII — Saqueo, mercado clandestino y excavaciones ilegales</h4>
+      <p>Retirar objetos sin registro destruye el contexto del hallazgo aunque el artefacto sobreviva intacto, y el saqueo de componentes activos puede además desestabilizar el sitio entero. Dolbred sanciona severamente la adquisición de piezas sin procedencia verificable.</p>
+      <p>Los objetos arqueológicos peligrosos no deben circular como curiosidades privadas. Los artefactos restringidos requieren registro y custodia, y su valor comercial crea incentivos constantes para ocultar procedencia y riesgo.</p>
+      <p>Las excavaciones no autorizadas suelen carecer de seguridad y documentación, y sus hallazgos pueden perder contexto de forma irreparable. Criminalística Arcana colabora cuando existe tráfico o manipulación de sitios protegidos.</p>
+      <h4 id="cap-24">Capítulo XXIV — Comunidades descendientes y conocimiento restringido</h4>
+      <p>Una ruina puede seguir teniendo significado para pueblos actuales, y los proyectos deben consultar a las comunidades con vínculos históricos o rituales relevantes. La universidad no presume que la antigüedad de un sitio lo convierta en propiedad académica.</p>
+      <p>Algunas estructuras contienen además técnicas cuyo funcionamiento completo no debe divulgarse por el riesgo que implica. Los informes pueden separar la descripción histórica de las instrucciones operativas, y el acceso restringido debe justificarse y revisarse periódicamente.</p>
+      <p>Ocultar demasiado puede impedir que futuros investigadores comprendan el sitio, mientras que divulgar demasiado puede facilitar una reproducción peligrosa. Dolbred utiliza archivos de acceso escalonado para conservar información sin hacerla universalmente operativa.</p>
+      <h4 id="cap-25">Capítulo XXV — Comparación entre sitios y series tipológicas</h4>
+      <p>Una función dudosa puede entenderse mejor comparando complejos relacionados, ya que las variaciones regionales revelan qué componentes eran esenciales y cuáles meramente decorativos. Historia de las Ciencias Mágicas ayuda a evitar la suposición de una tradición única y homogénea.</p>
+      <p>Los arqueólogos agrupan objetos y estructuras por forma, material y función probable, pero estas tipologías son herramientas de trabajo, no verdades naturales. Un ejemplar extraño puede obligar a revisar toda una clasificación establecida.</p>
+      <h4 id="cap-26">Capítulo XXVI — Los problemas de la tradición, el creador y la finalidad</h4>
+      <p>Identificar rasgos culturales en una estructura no significa que perteneciera a una sola escuela. Los sitios fronterizos pueden combinar técnicas de varias tradiciones, y las atribuciones deben expresar incertidumbre y posibilidad de hibridación.</p>
+      <p>Los nombres inscritos pueden señalar patrocinador, propietario, sacerdote o restaurador, y no necesariamente al diseñador original. El crédito histórico requiere distinguir la autoría técnica de la autoridad social; Filología y Derecho ayudan a interpretar estas relaciones.</p>
+      <p>Una estructura, además, puede haber tenido varias funciones a lo largo del tiempo, y buscar una finalidad única puede simplificar demasiado su historia. El arqueólogo debe reconstruir, en cambio, las distintas etapas de uso.</p>
+      <h4 id="cap-27">Capítulo XXVII — Errores comunes de interpretación</h4>
+      <p>No toda técnica antigua superior fue olvidada por simple decadencia. Algunas dependían de materiales agotados, instituciones desaparecidas o condiciones ambientales irrepetibles, y recrear el objeto sin recrear su contexto puede resultar imposible.</p>
+      <p>Los objetos antiguos también fallaban, eran reparados y contenían defectos; la antigüedad no convierte cada irregularidad en una intención profunda, y las huellas de improvisación son parte legítima de la historia tecnológica.</p>
+      <p>Completar una estructura puede imponer al sitio la interpretación del propio investigador, y una restauración convincente puede ocultar qué partes eran realmente conocidas. Dolbred exige que las reconstrucciones modernas sean identificables y estén documentadas.</p>
+      <p>Ver una máquina funcionar parece la forma más directa de comprenderla, pero en estructuras mágicas antiguas activarlas puede cambiar el propio fenómeno que se intenta estudiar. Por eso la observación pasiva tiene prioridad siempre que pueda responder la pregunta planteada.</p>
+      <h4 id="cap-28">Capítulo XXVIII — Arqueología y disciplinas afines</h4>
+      <p>Un sitio arqueológico puede convertirse en escena criminal por saqueo, sabotaje o una muerte reciente, y las prioridades de preservación histórica y evidencia judicial deben coordinarse. Criminalística Arcana documenta las intervenciones contemporáneas sin borrar las capas antiguas.</p>
+      <p>Seguridad Ritual trata las estructuras activas como sistemas capaces de fallar, mientras que Arqueología aporta el contexto histórico necesario para entender qué puede ocurrir. Ambos equipos deben autorizar conjuntamente cualquier activación de alto riesgo.</p>
+      <p>Conservación determina cómo estabilizar materiales y funciones sin borrar historia, y Arqueología determina qué relaciones poseen valor documental. Esta colaboración evita restauraciones técnicamente elegantes pero arqueológicamente destructivas.</p>
+      <p>Las ruinas, por último, invitan a contar historias completas con evidencia incompleta. Epistemología Arcana obliga a distinguir observación, inferencia y especulación, y los informes dolbrianos marcan explícitamente cada nivel.</p>
+      <h4 id="cap-29">Capítulo XXIX — El sitio como argumento, la predicción y el valor del fallo</h4>
+      <p>Una ruina no demuestra una teoría sólo porque pueda interpretarse de acuerdo con ella; las estructuras deben compararse siempre con explicaciones rivales. Una buena hipótesis explica más evidencia con menos supuestos y predice qué debería encontrarse en áreas aún no excavadas.</p>
+      <p>Las hipótesis, de hecho, pueden probarse anticipando hallazgos. Si una cámara era parte de una red de mantenimiento, deberían existir rutas, herramientas o nodos asociados. Encontrarlos fortalece la reconstrucción, y su ausencia obliga a revisarla.</p>
+      <p>Las ruinas conservan también información sobre cómo una civilización resolvía sus errores. Reparaciones, cierres improvisados y componentes sacrificados muestran conocimiento práctico, y el fracaso histórico puede enseñar tanto como la construcción original.</p>
+      <h4 id="cap-30">Capítulo XXX — El abandono y la pregunta arqueológica</h4>
+      <p>Abandonar un sitio fue a veces una decisión técnica. Sellos, derrumbes deliberados y evacuaciones pueden indicar que los propios antiguos consideraron imposible mantenerlo seguro; reabrirlo sin comprender por qué fue cerrado repite un experimento cuyos resultados quizá ya conocemos.</p>
+      <p>Ante una estructura antigua, Dolbred formula tres preguntas: qué relación sostenía, qué parte de esa relación sigue activa y qué perderemos si intentamos hacerla funcionar de nuevo. Estas preguntas convierten la ruina en algo más que un objeto del pasado.</p>
+      <p>La Arqueología Arcana estudia, en definitiva, el punto donde la historia y el sistema activo continúan ocupando el mismo lugar.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Arqueología Arcana investiga ruinas como sistemas históricos parcialmente activos. Su trabajo combina excavación, lectura de capas, análisis de materiales, reconstrucción funcional y evaluación de estructuras que pueden haber sobrevivido a sus creadores.</p>
       <p>El principal desafío es que comprender y activar no son sinónimos. Una puerta antigua puede revelar su función al abrirse, pero también puede consumir la evidencia que permitía saber cómo reconocía a sus usuarios. Un artefacto puede volver a funcionar y dejar de ser el artefacto que llegó hasta nosotros. Una red puede despertar cuando sólo pretendíamos reparar uno de sus nodos.</p>
