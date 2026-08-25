@@ -3638,7 +3638,7 @@ window.ENTRIES = [
       <p>Siempre que sea posible, una intervención debería poder retirarse sin destruir el material
       original ni borrar información adquirida posteriormente. A esta propiedad se la denomina
       reversibilidad.</p>
-      <p>No todos los tratamientos pueden cumplirla por completo. Consolidar un papel desintegrado,
+      <p>Algunos tratamientos no pueden cumplirla por completo. Consolidar un papel desintegrado,
       soldar una fractura o estabilizar una matriz puede exigir cambios permanentes.</p>
       <p>En esos casos se busca una segunda condición: distinguibilidad. La intervención debe poder
       identificarse como moderna para evitar que futuros investigadores la confundan con parte de la
@@ -3774,8 +3774,9 @@ window.ENTRIES = [
       <p>Eliminar todo lo posterior al supuesto original puede producir una versión del artefacto que
       jamás existió realmente.</p>
       <h4 id="cap-23">Capítulo XXIII — Fracaso controlado</h4>
-      <p>No toda estructura puede salvarse por completo. Cuando el deterioro es irreversible, la
-      disciplina intenta controlar qué se pierde y qué puede documentarse antes de la pérdida.</p>
+      <p>Una estructura con deterioro irreversible no siempre puede salvarse por completo. La
+      disciplina intenta entonces controlar qué se pierde y qué puede documentarse antes de la
+      pérdida.</p>
       <p>Un soporte puede sacrificarse para conservar una inscripción; una matriz puede copiarse
       antes de colapsar; una estructura activa puede cerrarse de manera permanente para impedir un
       accidente.</p>
@@ -3938,8 +3939,8 @@ window.ENTRIES = [
       <h4 id="cap-3">Capítulo III — El residuo mágico: naturaleza, persistencia y decaimiento</h4>
       <p>Se denomina residuo a una alteración persistente que permanece después de que la
       manifestación principal terminó. Puede consistir en energía, material modificado, orientación,
-      información estructural, afinidad o relación simbólica. No todos los hechizos producen residuos
-      detectables, ni todos los residuos permiten identificar el hechizo con precisión.</p>
+      información estructural, afinidad o relación simbólica. Algunos hechizos no producen residuos
+      detectables, y algunos residuos no permiten identificar el hechizo con precisión.</p>
       <p>La duración de un residuo depende de intensidad, soporte, ambiente y tipo de fenómeno.
       Algunos desaparecen en minutos, otros se fijan durante siglos, y el tiempo transcurrido debe
       estimarse con intervalos en vez de falsas precisiones.</p>
@@ -4390,7 +4391,7 @@ window.ENTRIES = [
       <p>La Criptozoología Académica estudia organismos cuya biología depende de mecanismos mágicos
       de manera estable y reproducible. La dependencia puede aparecer en una sola función, como
       respiración o reproducción, o atravesar casi toda la fisiología.</p>
-      <p>No toda criatura expuesta a magia pertenece al campo. Un lobo herido por un hechizo sigue
+      <p>La mera exposición a magia no basta para que una criatura pertenezca al campo. Un lobo herido por un hechizo sigue
       siendo un lobo. Una población que necesita una afinidad ambiental para completar su desarrollo
       plantea un problema diferente.</p>
       <p>La disciplina estudia especies, poblaciones y linajes, no anécdotas aisladas.</p>
@@ -4699,7 +4700,7 @@ window.ENTRIES = [
       Existen linajes cuya anatomía parece conservar rastros de un origen elemental. Tejidos con
       afinidades extraordinariamente puras, metabolismo dependiente de una sustancia elemental y
       órganos cuya función carece de análogo en fauna ordinaria apoyan esta interpretación.</p>
-      <p>No todos los investigadores aceptan un origen elemental literal para cada caso. Algunos
+      <p>Un origen elemental literal para cada caso no goza de aceptación unánime. Algunos
       proponen que la vida material desarrolló convergentemente mecanismos capaces de imitar
       propiedades elementales. La discusión es especialmente relevante para linajes dracónicos y será
       desarrollada por Dracología.</p>
@@ -4763,7 +4764,7 @@ window.ENTRIES = [
       reservas consume energía que compite directamente con crecimiento o reproducción, razón por la
       cual muchas especies regulan cuidadosamente cuánto veneno inyectan según el tamaño percibido de
       la amenaza o la presa.</p>
-      <p>No toda secreción peligrosa es veneno defensivo. Puede ser digestiva, como ocurre en
+      <p>Una secreción peligrosa no siempre es veneno defensivo. Puede ser digestiva, como ocurre en
       depredadores que licuan tejido antes de ingerirlo; comunicativa, cuando marca territorio o
       transmite información reproductiva a otros individuos de la especie; o directamente
       reproductiva, en linajes donde la sustancia facilita la fijación de huevos o la supervivencia de
@@ -4858,7 +4859,7 @@ window.ENTRIES = [
       <p>Algunos fósiles conservan patrones suficientes para demostrar capacidades que no pueden
       observarse directamente.</p>
       <h4 id="cap-43">Capítulo XLIII — Linajes dudosos</h4>
-      <p>No toda criatura descrita en fuentes antiguas existió como especie independiente. Relatos
+      <p>Una criatura descrita en fuentes antiguas no siempre existió como especie independiente. Relatos
       pueden mezclar etapas juveniles, individuos deformes, ilusiones, enfermedades y animales
       reales.</p>
       <p>La Filología Arcana ayuda a reconstruir qué describían originalmente los textos, mientras la
@@ -5041,7 +5042,7 @@ window.ENTRIES = [
       <p>Las anomalías temporales comienzan cuando una de estas relaciones deja de comportarse de
       manera uniforme.</p>
       <h4 id="cap-2">Capítulo II — Ritmo temporal</h4>
-      <p>No todas las regiones parecen experimentar la sucesión al mismo ritmo. Una criatura puede
+      <p>Algunas regiones parecen experimentar la sucesión a un ritmo distinto del resto. Una criatura puede
       permanecer durante horas en un espacio mientras en el exterior transcurren días, o atravesar
       una región donde procesos internos ocurren con mayor lentitud que los del entorno.</p>
       <p>La Cronurgia denomina ritmo temporal a la relación entre la duración experimentada dentro de
@@ -5136,7 +5137,7 @@ window.ENTRIES = [
       <p>Un bucle temporal cerrado es una recurrencia cuya secuencia regresa a un estado suficiente
       para producir nuevamente las condiciones que originaron el ciclo. La estructura puede
       mantenerse mientras ninguna intervención rompa esa correspondencia.</p>
-      <p>No todos los bucles necesitan repetir cada detalle. Puede bastar con que determinadas
+      <p>Repetir cada detalle no siempre es necesario. Puede bastar con que determinadas
       relaciones fundamentales vuelvan a establecerse.</p>
       <p>La duración aparente de un bucle depende de la perspectiva. Para un observador externo puede
       ser un fenómeno breve y contenido, mientras que quienes se encuentran dentro experimentan la
@@ -5513,8 +5514,8 @@ window.ENTRIES = [
       <p>Un anclaje puede adoptar formas muy diferentes. En ciertos seres parece inherente y no
       requiere objetos ni rituales visibles. En otros, depende de lugares, nombres, pactos,
       reliquias o configuraciones espaciales específicas.</p>
-      <p>La pérdida del anclaje puede producir desde debilitamiento hasta dispersión completa.
-      No todas las entidades reaccionan de la misma forma, y una parte importante de la
+      <p>La pérdida del anclaje puede producir desde debilitamiento hasta dispersión completa,
+      y la reacción varía de una entidad a otra. Una parte importante de la
       investigación consiste en identificar si el vínculo es esencial, auxiliar o simplemente
       histórico.</p>
       <p>La manipulación de anclajes constituye una práctica de alto riesgo. Alterar una
@@ -5607,7 +5608,7 @@ window.ENTRIES = [
       concesión.</p>
       <p>La capacidad de servir como patrono suele indicar que la entidad posee suficiente
       estabilidad, autoridad o reserva estructural para sostener relaciones externas sin perder
-      continuidad. No todas las criaturas poderosas cumplen esa condición.</p>
+      continuidad, una condición que solo algunas criaturas poderosas cumplen.</p>
       <p>La existencia de un pacto demuestra una relación funcional. No demuestra por sí sola
       que el patrono posea intenciones compatibles con la interpretación que el brujo hace de
       ella.</p>
@@ -5711,7 +5712,7 @@ window.ENTRIES = [
       formar parte de su estructura. La Ecología Mágica observa regiones transformadas por
       presencia planar. La demonología se ocupa de identificar qué propiedades de la entidad
       original están siendo reproducidas o transmitidas.</p>
-      <p>No toda influencia constituye corrupción. Algunas adaptaciones son estables y
+      <p>Una influencia no siempre constituye corrupción. Algunas adaptaciones son estables y
       compatibles con la vida del sujeto. El término contaminación se reserva para exposiciones
       que introducen relaciones desorganizadas o incompatibles con la estructura receptora.</p>
       <p>La diferencia entre adaptación y patología debe establecerse mediante consecuencias
@@ -6127,7 +6128,7 @@ window.ENTRIES = [
       convertirse en nharval. Son soluciones evolutivas distintas que conservan grados
       diferentes de integración con la herencia elemental.</p>
       <h4 id="cap-24">Capítulo XXIV — Excepciones y linajes incompletos</h4>
-      <p>No todas las ramas conservan representantes vivos de los cinco grados. Algunos parecen
+      <p>Algunas ramas carecen de representantes vivos de los cinco grados. Algunos parecen
       extintos, otros sólo se conocen por restos y ciertos grupos pudieron saltar o fusionar
       soluciones durante evolución posterior.</p>
       <p>La tabla comparada es un modelo de trabajo, no una afirmación de que el mundo produzca
@@ -6403,7 +6404,7 @@ window.ENTRIES = [
       <p>La retroalimentación puede estabilizar un ecosistema o empujarlo hacia estados extremos
       si no existen mecanismos compensatorios.</p>
       <h4 id="cap-10">Capítulo X — Amortiguación</h4>
-      <p>No todos los organismos amplifican la magia. Algunos dispersan, neutralizan o almacenan
+      <p>Amplificar la magia es solo una de las respuestas posibles de un organismo. Algunos dispersan, neutralizan o almacenan
       influencias y actúan como amortiguadores ecológicos, y el mecanismo mediante el cual lo
       hacen varía tanto como los propios ecosistemas. Un liquen puede fijar afinidad elemental
       dentro de su estructura mineral y liberarla sólo cuando se descompone; una especie
@@ -6443,7 +6444,7 @@ window.ENTRIES = [
       <h4 id="cap-13">Capítulo XIII — Residuos mágicos</h4>
       <p>Los residuos pueden permanecer en suelo, agua, cuerpos, artefactos y estructuras
       arquitectónicas. Su presencia modifica exposición y selección.</p>
-      <p>No todo residuo es contaminación. Algunas comunidades dependen de concentraciones
+      <p>Un residuo no equivale automáticamente a contaminación. Algunas comunidades dependen de concentraciones
       históricas y colapsarían si fueran eliminadas por completo.</p>
       <p>La Conservación Arcana protege residuos cuando poseen valor estructural; la Ecología
       Mágica determina qué papel cumplen en el ambiente.</p>
@@ -7006,7 +7007,7 @@ window.ENTRIES = [
       idéntica de un procedimiento, de forma que la propagación del riesgo sigue entonces la
       transmisión del conocimiento en lugar del movimiento de un agente.</p>
       <h4 id="cap-11">Capítulo XI — Tipos de brotes</h4>
-      <p>No todos los brotes se originan por contagio entre personas. Una fórmula defectuosa, una
+      <p>El contagio entre personas no es el único origen posible de un brote. Una fórmula defectuosa, una
       runa mal transcrita o un manual incompleto pueden producir múltiples incidentes
       independientes a partir de una única causa documental: estos brotes por copia no son
       contagiosos en sentido clásico, pero muestran agrupamiento temporal y doctrinal, y
@@ -7514,8 +7515,8 @@ window.ENTRIES = [
       resonancia pueden aumentar la convicción sin aumentar la exactitud. El método académico
       registra la certeza como dato psicológico, no como medida directa de precisión.</p>
       <h4 id="cap-13">Capítulo XIII — Grados de confianza, supuestos y carga de prueba</h4>
-      <p>No todas las conclusiones deben clasificarse de inmediato como verdaderas o falsas.
-      Dolbred utiliza grados de confianza que van de posible a plausible, probable, fuertemente
+      <p>Clasificar de inmediato una conclusión como verdadera o falsa no siempre es posible ni
+      deseable. Dolbred utiliza grados de confianza que van de posible a plausible, probable, fuertemente
       respaldado y excepcionalmente bien establecido, de modo que el lenguaje probabilístico
       permite representar la incertidumbre sin convertirla en ignorancia total.</p>
       <p>Toda interpretación depende además de supuestos, muchos de ellos implícitos. Una visión
@@ -7651,7 +7652,7 @@ window.ENTRIES = [
       evaluación debe considerar implicaturas, omisiones y contexto, no sólo la verdad
       proposicional del enunciado.</p>
       <h4 id="cap-25">Capítulo XXV — Información peligrosa y secreto</h4>
-      <p>No toda verdad debe revelarse de inmediato. El conocimiento sobre rituales, profecías o
+      <p>Revelar una verdad de inmediato no siempre es lo correcto. El conocimiento sobre rituales, profecías o
       entidades puede producir riesgos si se difunde sin contexto, de modo que la epistemología
       estudia la verdad mientras que la ética determina cuándo y cómo comunicarla.</p>
       <p>Las afirmaciones secretas resultan, además, difíciles de evaluar porque impiden la
@@ -7997,8 +7998,8 @@ window.ENTRIES = [
       especialistas médicos, juristas, filósofos, taumaturgos y representantes no académicos, y
       un investigador no puede aprobar por sí solo un procedimiento del que depende su propio
       proyecto.</p>
-      <p>Esta supervisión se complementa con un sistema de licencias. No toda persona capaz de
-      ejecutar una técnica está autorizada para aplicarla sobre terceros; Dolbred distingue
+      <p>Esta supervisión se complementa con un sistema de licencias. La capacidad de ejecutar una
+      técnica no basta por sí sola para autorizar su aplicación sobre terceros; Dolbred distingue
       competencia técnica de licencia profesional, y las áreas de memoria, resurrección,
       coerción y alma requieren acreditaciones específicas.</p>
       <p>Finalmente, las alteraciones mayores deben documentarse con fecha, método,
@@ -9742,8 +9743,9 @@ window.ENTRIES = [
       cambio de convergencia independiente. Sus causas pueden incluir límites físicos
       compartidos, propiedades estables de la magia o problemas sociales equivalentes, y
       constituye una de las principales fuentes históricas para inferir qué aspectos de una
-      teoría dependen menos de una tradición concreta. No todo parecido, sin embargo, es
-      descubrimiento independiente. Comercio, guerra, migración, esclavitud, matrimonio,
+      teoría dependen menos de una tradición concreta. Un parecido, sin embargo, puede señalar
+      contacto en lugar de descubrimiento independiente, ya que comercio, guerra, migración,
+      esclavitud, matrimonio,
       peregrinación y traducción transportan prácticas a enormes distancias, y la ausencia de un
       texto no demuestra ausencia de contacto.</p>
       <p>Una técnica puede además desaparecer de una región y reaparecer siglos después por un
@@ -9997,7 +9999,7 @@ window.ENTRIES = [
       <p>Las disciplinas modernas son, en ese sentido, herramientas institucionales. Arcanomática,
       Naturgia, Pacturgia y otras categorías permiten enseñar y comparar, pero no deben
       confundirse con divisiones naturales obligatorias del mundo.</p>
-      <p>No todas las academias aceptan, de hecho, el modelo dolbriano. Algunas prefieren
+      <p>El modelo dolbriano, de hecho, no goza de aceptación en todas las academias. Algunas prefieren
       escuelas religiosas, elementales o artesanales, y ese desacuerdo institucional demuestra
       que la organización del saber sigue siendo objeto de debate.</p>
       <h4 id="cap-23">Capítulo XXIII — Nomenclatura, crédito y apropiación de conocimiento</h4>
@@ -10285,8 +10287,8 @@ window.ENTRIES = [
       incluir un criterio de culpa, conducta o prohibición. El problema es que esos conceptos pueden
       depender de sistemas culturales específicos, y una maldición antigua puede seguir aplicando
       una norma después de que la sociedad haya dejado de reconocerla.</p>
-      <p>No toda maldición fue creada para infligir daño indiscriminado: algunas funcionan como
-      protección y afectan a quien profana una tumba, rompe un sello o roba un objeto. Desde la
+      <p>Algunas maldiciones no fueron creadas para infligir daño indiscriminado, sino que funcionan
+      como protección y afectan a quien profana una tumba, rompe un sello o roba un objeto. Desde la
       perspectiva de la víctima siguen siendo maldiciones, pero su función original pudo ser
       defensiva, distinción importante en Arqueología Arcana y Derecho Arcano.</p>
       <p>Existen además estructuras autodefensivas, capaces de modificar su manifestación cuando
@@ -10471,7 +10473,7 @@ window.ENTRIES = [
       un culto. Su ruptura no siempre depende de disipar energía sino de modificar la relación
       religiosa o institucional que la sostiene: Teurgia determina qué autoridad está involucrada, y
       Maldiología reconstruye la condición concreta.</p>
-      <p>No todas las maldiciones parecen haber sido diseñadas. Traumas colectivos, muertes
+      <p>Algunas maldiciones no parecen haber sido diseñadas en absoluto. Traumas colectivos, muertes
       violentas, lugares saturados de intención y objetos asociados a eventos extremos pueden
       desarrollar estructuras condicionales sin un autor identificable, aunque la existencia de
       estas maldiciones espontáneas sigue siendo debatida porque siempre es posible que la
@@ -11096,7 +11098,7 @@ window.ENTRIES = [
       de un objeto, una red o una superficie amplia. Su principal ventaja es la continuidad
       material, ya que una relación aplicada en un punto puede propagarse con menor pérdida hacia regiones
       conectadas.</p>
-      <p>No todos los metales conducen magia de la misma manera. Algunos favorecen transferencia
+      <p>La conducción mágica varía enormemente entre metales. Algunos favorecen transferencia
       rápida pero almacenan mal. Otros retienen configuraciones locales y dificultan la
       redistribución. Las aleaciones permiten modificar estas propiedades, a menudo a costa de
       introducir respuestas más complejas.</p>
@@ -11201,7 +11203,7 @@ window.ENTRIES = [
       <p>Los minerales formados fuera del plano material pueden haber cristalizado bajo condiciones
       distintas de presión, energía, causalidad o afinidad. Al trasladarse, algunas de esas
       propiedades se conservan de forma parcial.</p>
-      <p>No todo material extraplanar es extraordinario. Muchos se comportan de manera comparable a
+      <p>Un material extraplanar no siempre resulta extraordinario. Muchos se comportan de manera comparable a
       minerales ordinarios una vez separados de su entorno. Otros mantienen dependencias que sólo
       aparecen al recibir energía o al entrar en contacto con determinadas estructuras.</p>
       <p>La Planología resulta indispensable para comprender estos casos, pues un mineral puede
@@ -11324,7 +11326,7 @@ window.ENTRIES = [
       <p>El objetivo no siempre es mantener cada átomo original, sino preservar las relaciones que
       hacen que el objeto siga siendo el mismo artefacto en un sentido funcional e histórico.</p>
       <h4 id="cap-25">Capítulo XXV — Sustancias peligrosas</h4>
-      <p>No todo mineral valioso es seguro de manipular. Algunos emiten energía, reaccionan con
+      <p>El valor de un mineral no garantiza que sea seguro de manipular. Algunos emiten energía, reaccionan con
       tejidos, interfieren con funciones mentales o conservan residuos capaces de activarse bajo
       condiciones comunes.</p>
       <p>La peligrosidad puede depender de polvo, fragmentación, humedad o temperatura. Un cristal
@@ -11578,7 +11580,7 @@ window.ENTRIES = [
       ajenas. Algunos copian sólo silueta, otros reproducen textura, olor, voz, firma mágica o
       anatomía funcional, y la imitación puede basarse en observación, contacto o absorción de
       información estructural.</p>
-      <p>No todos los imitadores comprenden aquello que copian. Una forma visualmente perfecta puede
+      <p>Comprender aquello que se copia no es requisito para imitarlo. Una forma visualmente perfecta puede
       contener órganos incompatibles o funciones aproximadas, lo que distingue una copia superficial
       de una reproducción funcional.</p>
       <p>El mimetismo anatómico lleva esta capacidad más lejos, reproduciendo estructuras internas
@@ -11651,9 +11653,9 @@ window.ENTRIES = [
       necesaria.</p>
       <h4 id="cap-17">Capítulo XVII — Formas híbridas y quimerismo</h4>
       <p>Las formas híbridas combinan rasgos pertenecientes a configuraciones distintas. Pueden ser
-      estados transitorios, fenotipos estables o resultado de una transformación incompleta. No toda
-      mezcla es defectuosa, y algunas especies utilizan formas híbridas deliberadamente porque ofrecen
-      combinaciones funcionales útiles. El error clínico consiste en asumir que toda forma intermedia
+      estados transitorios, fenotipos estables o resultado de una transformación incompleta. Algunas
+      especies, de hecho, utilizan formas híbridas deliberadamente porque ofrecen
+      combinaciones funcionales útiles, sin que la mezcla sea defectuosa. El error clínico consiste en asumir que toda forma intermedia
       desea o necesita regresar a uno de los extremos.</p>
       <p>El quimerismo puede surgir cuando tejidos de orígenes distintos se integran en un solo
       cuerpo. La compatibilidad depende de que el organismo construya una referencia común que permita
@@ -11737,7 +11739,7 @@ window.ENTRIES = [
       participa en cómo se recupera y organiza la experiencia. En polimorfos de larga duración,
       distintas configuraciones pueden acumular asociaciones conductuales particulares.</p>
       <h4 id="cap-23">Capítulo XXIII — Dolor y errores de transformación</h4>
-      <p>No toda transformación está diseñada para ser confortable. Reorganizar hueso, musculatura y
+      <p>La comodidad no es una prioridad de diseño en toda transformación. Reorganizar hueso, musculatura y
       órganos puede producir dolor incluso cuando el proceso es estructuralmente correcto. Las
       especies naturalmente transformables suelen poseer mecanismos de analgesia, flexibilidad o
       transición gradual que las formas inducidas no tienen.</p>
@@ -11943,9 +11945,9 @@ window.ENTRIES = [
       continuidad de un organismo en cuya causa, mantenimiento o progresión participa un proceso
       mágico. La definición incluye enfermedades producidas enteramente por magia, enfermedades
       ordinarias modificadas por exposición arcana y procesos en los que el organismo desarrolla
-      respuestas patológicas frente a condiciones mágicas ambientales. No toda transformación,
-      afinidad o mutación es patológica: la disciplina exige daño, pérdida funcional, deterioro de
-      autonomía o riesgo significativo para considerar un fenómeno enfermedad.</p>
+      respuestas patológicas frente a condiciones mágicas ambientales. Una transformación, afinidad
+      o mutación no siempre es patológica, ya que la disciplina exige daño, pérdida funcional,
+      deterioro de autonomía o riesgo significativo para considerar un fenómeno enfermedad.</p>
       <p>La etiología arcana estudia las causas de estos procesos. Pueden encontrarse en agentes
       biológicos, residuos, sustancias, maldiciones, artefactos, campos elementales, entidades,
       rituales o respuestas internas del propio organismo. Un mismo cuadro clínico puede tener causas
@@ -12012,7 +12014,7 @@ window.ENTRIES = [
       multiplicarse y además establecer relaciones arcanas: la incubación combina así procesos
       biológicos y estructurales. Un tratamiento antimicrobiano puede eliminar el agente y dejar una
       alteración ya fijada.</p>
-      <p>No todos los individuos responden igual a la misma influencia. Anatomía, linaje, afinidad,
+      <p>La respuesta individual frente a una misma influencia varía. Anatomía, linaje, afinidad,
       antecedentes de exposición y estado pneumatológico pueden modificar susceptibilidad, aunque la
       predisposición no equivale a destino. La identificación de factores de riesgo permite vigilancia
       y prevención sin asumir que todo portador desarrollará enfermedad.</p>
@@ -12183,9 +12185,9 @@ window.ENTRIES = [
       manejable; la medicina distingue recuperación funcional, eliminación de causa y retorno completo
       al estado anterior.</p>
       <p>Los tratamientos pueden retirar causa, bloquear mantenimiento, reparar daño, restaurar
-      referencia o ayudar al organismo a adaptarse. No todas las patologías requieren anular toda
-      magia presente: en algunos casos el objetivo es reconstruir equilibrio alrededor de una
-      condición que ya no puede eliminarse.</p>
+      referencia o ayudar al organismo a adaptarse. Anular toda magia presente no siempre es el
+      objetivo; en algunos casos se busca reconstruir equilibrio alrededor de una condición que
+      ya no puede eliminarse.</p>
       <p>Un antídoto arcano funciona cuando interfiere con el mecanismo concreto de una sustancia o
       estructura, aunque no existe un neutralizador universal de magia patológica. Farmacología
       Arcana desarrolla compuestos; Patología determina cuándo resultan indicados y qué efectos
@@ -12380,7 +12382,7 @@ window.ENTRIES = [
       condiciones de continuidad distintas. Puede manifestarse como una superficie visible, una zona
       de transición, una condición ritual o una discontinuidad que sólo aparece cuando algo intenta
       atravesarla.</p>
-      <p>No todas las fronteras son barreras. Algunas permiten el paso de materia, luz o energía sin
+      <p>Ser frontera no implica actuar como barrera. Algunas permiten el paso de materia, luz o energía sin
       resistencia apreciable y sólo se vuelven perceptibles cuando cambian las condiciones del
       viajero. Otras son selectivas y reconocen determinadas estructuras antes de permitir la
       transición.</p>
@@ -12577,7 +12579,7 @@ window.ENTRIES = [
       <p>Los intentos militares de aplicar esta técnica han producido algunos de los accidentes
       espaciales más graves registrados por Dolbred.</p>
       <h4 id="cap-19">Capítulo XIX — Adyacencia no recíproca</h4>
-      <p>No toda relación de acceso funciona en ambos sentidos. Existen regiones a las que puede
+      <p>Una relación de acceso no siempre funciona en ambos sentidos. Existen regiones a las que puede
       entrarse desde un lugar sin que el retorno conduzca al punto de origen.</p>
       <p>La adyacencia no recíproca aparece cuando cada dirección de tránsito utiliza una relación
       diferente. Un camino puede desembocar en un dominio feérico mientras la salida correspondiente
@@ -12925,7 +12927,7 @@ window.ENTRIES = [
       <p>De ahí que la inmortalidad incorpórea, aun cuando sea posible, no deba confundirse con
       permanencia inalterada. Persistir y permanecer idéntico son problemas distintos.</p>
       <h4 id="cap-14">Capítulo XIV — Entidades nacidas sin cuerpo</h4>
-      <p>No todas las estructuras pneumatológicas proceden de criaturas que alguna vez poseyeron
+      <p>Algunas estructuras pneumatológicas no proceden de criaturas que alguna vez poseyeron
       organismo material. Existen entidades cuya continuidad parece haberse formado directamente en
       condiciones no somáticas.</p>
       <p>Espíritus elementales, ciertas inteligencias extraplanares y fenómenos nacidos de
@@ -13277,7 +13279,7 @@ window.ENTRIES = [
       ausencia de una herida visible no reduce la realidad del daño. Las víctimas pueden presentar
       pérdida de orientación, incapacidad para mantener pensamiento coherente, alteraciones
       sensoriales, lagunas de memoria o dolor sin correlato anatómico inmediato.</p>
-      <p>No todos los efectos clasificados como daño psíquico utilizan el mismo mecanismo. Algunos
+      <p>El mecanismo detrás de los efectos clasificados como daño psíquico varía. Algunos
       saturan la capacidad interpretativa con información contradictoria; otros fuerzan asociaciones
       incompatibles, introducen estímulos imposibles de integrar o atacan directamente estructuras
       relacionadas con la continuidad personal.</p>
@@ -13318,7 +13320,7 @@ window.ENTRIES = [
       mucho después de que la estructura mágica original haya desaparecido. La intervención puede
       haber terminado, pero la mente conserva asociaciones capaces de reactivar parte de la
       respuesta.</p>
-      <p>No toda recurrencia posterior constituye magia residual. En muchos casos, la estructura
+      <p>Una recurrencia posterior no siempre constituye magia residual. En muchos casos, la estructura
       externa sólo estableció una asociación que después continúa mediante procesos psicológicos
       ordinarios. Distinguir ambas posibilidades es esencial para evitar tratamientos arcanos
       innecesarios.</p>
@@ -13979,7 +13981,8 @@ window.ENTRIES = [
       disolver la relación sin cumplir las condiciones de salida previstas en el diseño original.</p>
       <h4 id="cap-41">Capítulo XLI — Rituales funerarios</h4>
       <p>Los ritos funerarios pueden cumplir funciones sociales, tanatológicas, pneumatológicas o
-      teúrgicas. No todos poseen efecto mágico y no toda práctica simbólica necesita producirlo.</p>
+      teúrgicas, aunque el efecto mágico no siempre está presente ni es necesario para que la
+      práctica simbólica cumpla su función.</p>
       <p>Cuando existe función arcana, suele consistir en estabilizar referencias, facilitar
       separación, proteger restos o establecer reconocimiento comunitario.</p>
       <p>Tanatología y Pneumatología determinan qué parte del procedimiento afecta cuerpo o
@@ -14256,7 +14259,7 @@ window.ENTRIES = [
       si el signo original terminaba donde acaba la pigmentación o donde termina la incisión.</p>
       <p>La Conservación Arcana documenta ambas capas antes de cualquier intervención.</p>
       <h4 id="cap-9">Capítulo IX — Runas activas y pasivas</h4>
-      <p>No toda runa ejecuta una función de manera constante. Algunas permanecen pasivas hasta
+      <p>Ejecutar su función de manera constante no es propio de toda runa. Algunas permanecen pasivas hasta
       recibir energía, contacto, una palabra, una condición espacial o la presencia de un sujeto
       reconocido.</p>
       <p>Las inscripciones activas pueden mantener estructuras de forma continua, pero exigen una
@@ -14463,7 +14466,7 @@ window.ENTRIES = [
       <p>Dos sistemas rúnicos pueden representar relaciones semejantes mediante convenciones
       diferentes. Traducir entre ellos exige identificar función antes de buscar equivalencias
       gráficas.</p>
-      <p>No toda relación posee representación directa. Una tradición puede distinguir categorías
+      <p>Una relación no siempre posee representación directa. Una tradición puede distinguir categorías
       que otra combina, obligando a reformular la estructura.</p>
       <p>La traducción correcta puede producir una inscripción visualmente muy distinta del original
       y conservar, aun así, mayor fidelidad funcional.</p>
@@ -14739,8 +14742,8 @@ window.ENTRIES = [
       fuente.</p>
       <h4 id="cap-10">Capítulo X — Invocaciones fuera de control y entidades inteligentes</h4>
       <p>Una entidad invocada que deja de obedecer transforma el incidente en un problema de
-      contención y de derecho. No todas las entidades pueden ser simplemente destruidas, por lo
-      que se debe conocer de antemano qué condiciones permiten retorno, negociación o
+      contención y de derecho. Algunas entidades no pueden ser simplemente destruidas, así que
+      conviene conocer de antemano qué condiciones permiten retorno, negociación o
       cierre.</p>
       <p>Si la entidad posee inteligencia y lenguaje, la respuesta puede incluir comunicación.
       Negociar no sustituye a la seguridad, pero puede ser menos riesgoso que una confrontación
@@ -14856,7 +14859,7 @@ window.ENTRIES = [
       técnicamente capaz puede perder autorización por incumplimientos repetidos de
       protocolo.</p>
       <p>Los laboratorios, a su vez, reciben autorización para categorías concretas de riesgo.
-      No toda sala con espacio suficiente es apta para invocación, transmutación mayor o
+      Tener espacio suficiente no vuelve a una sala apta para invocación, transmutación mayor o
       manipulación pneumatológica, y las inspecciones revisan contención, salidas,
       mantenimiento y registros.</p>
       <p>Los rituales de Riesgo Alto o Crítico requieren además un permiso específico. La
@@ -15201,7 +15204,7 @@ window.ENTRIES = [
       <p>Los símbolos heredados deben estudiarse como capas históricas. Su función actual puede
       derivar de una explicación diferente de aquella que les dio origen.</p>
       <h4 id="cap-11">Capítulo XI — Símbolos personales</h4>
-      <p>No todas las correspondencias necesitan reconocimiento colectivo. Una persona puede
+      <p>El reconocimiento colectivo no es requisito para toda correspondencia. Una persona puede
       construir asociaciones extraordinariamente fuertes con objetos, canciones, palabras o
       lugares que carecen de significado para otros.</p>
       <p>Estas relaciones pueden utilizarse en psicología, pneumatología y ciertos rituales de
@@ -16015,7 +16018,7 @@ window.ENTRIES = [
       perdida. Por esta razón, los protocolos de intervención exigen registrar el sistema
       completo antes de modificarlo.</p>
       <h4 id="cap-8">Capítulo VIII — Anomalía y desviación</h4>
-      <p>No toda variación constituye una anomalía. Muchas tradiciones producen resultados
+      <p>Una variación no constituye automáticamente una anomalía. Muchas tradiciones producen resultados
       diferentes dentro de un rango perfectamente compatible con su funcionamiento ordinario. La
       Taumatología reserva el término anomalía para aquellos casos cuya manifestación no puede
       explicarse mediante las relaciones conocidas del sistema estudiado.</p>
@@ -16337,8 +16340,9 @@ window.ENTRIES = [
       institucional duradera; Historia de las Ciencias Mágicas ayuda a reconstruir el momento en
       que un desacuerdo técnico adquirió significado religioso.</p>
       <h4 id="cap-10">Capítulo X — Ritual, sacrificio y ofrenda</h4>
-      <p>No todo ritual es religioso y no todo culto depende de rituales formalizados; una misma
-      estructura ritual puede emplearse con significados teológicos muy diferentes. Ritualística
+      <p>Lo religioso y lo ritual no coinciden siempre: hay rituales sin religión y cultos sin
+      rituales formalizados. Una misma estructura ritual puede emplearse con significados
+      teológicos muy diferentes. Ritualística
       describe su organización, mientras que Teología Comparada estudia su significado y su
       autoridad.</p>
       <p>Dentro del ritual, el sacrificio puede entenderse como intercambio, entrega, recuerdo,
@@ -17367,8 +17371,8 @@ window.ENTRIES = [
       <p>Esta posibilidad explica algunos relatos de campos de batalla donde perseguir a un adversario sólo
       aumentaba la distancia, puertas conducían repetidamente al mismo lugar o una región parecía carecer
       de salida mientras el Predominio permanecía activo.</p>
-      <p>No todo Predominio posee capacidades topológicas. La propiedad depende de la estructura que el
-      taumaturgo pueda imponer.</p>
+      <p>Las capacidades topológicas de un Predominio dependen de la estructura que el taumaturgo
+      pueda imponer, y no todos las poseen.</p>
       <p>Las Soberanías de ciertas entidades extraplanares muestran fenómenos comparables a una escala que
       los practicantes mortales rara vez sostienen.</p>
       <h4 id="cap-22">Capítulo XXII — El problema de la posición</h4>
@@ -18550,7 +18554,7 @@ window.ENTRIES = [
       <p>Los protocolos actuales de Dolbred prohíben la experimentación abierta con Reescrituras de
       identidad, continuidad vital y pertenencia planar fuera de instalaciones especializadas.</p>
       <h4 id="cap-9">Capítulo IX — Manifestación Coral</h4>
-      <p>No todas las técnicas superiores pueden ser sostenidas por un solo individuo. La Manifestación
+      <p>Sostener una técnica superior en solitario no siempre es posible. La Manifestación
       Coral distribuye una estructura entre múltiples participantes, de modo que cada uno conserva una
       parte de las relaciones necesarias para el fenómeno completo.</p>
       <p>Este principio no debe confundirse con la simple aportación conjunta de energía. En una estructura
