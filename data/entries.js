@@ -12146,69 +12146,29 @@ window.ENTRIES = [
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Definición</a>
-        <a href="#cap-2">II. Etiología</a>
-        <a href="#cap-3">III. Causa y mantenimiento</a>
-        <a href="#cap-4">IV. Patología primaria y secundaria</a>
-        <a href="#cap-5">V. Exposición aguda</a>
-        <a href="#cap-6">VI. Exposición crónica</a>
-        <a href="#cap-7">VII. Dosis y umbral</a>
-        <a href="#cap-8">VIII. Contaminación mágica</a>
-        <a href="#cap-9">IX. Contaminación ambiental</a>
-        <a href="#cap-10">X. Reservorios</a>
-        <a href="#cap-11">XI. Transmisión</a>
-        <a href="#cap-12">XII. Maldiciones transmisibles</a>
-        <a href="#cap-13">XIII. Latencia</a>
-        <a href="#cap-14">XIV. Incubación</a>
-        <a href="#cap-15">XV. Predisposición</a>
-        <a href="#cap-16">XVI. Mutación</a>
-        <a href="#cap-17">XVII. Mutación somática</a>
-        <a href="#cap-18">XVIII. Mutación heredable</a>
-        <a href="#cap-19">XIX. Deriva morfológica</a>
-        <a href="#cap-20">XX. Proliferación anómala</a>
-        <a href="#cap-21">XXI. Necrosis arcana</a>
-        <a href="#cap-22">XXII. Disociación somática</a>
-        <a href="#cap-23">XXIII. Daño pneumatológico secundario</a>
-        <a href="#cap-24">XXIV. Daño resonántico</a>
-        <a href="#cap-25">XXV. Radiación Sináptica</a>
-        <a href="#cap-26">XXVI. Origen de la Radiación Sináptica</a>
-        <a href="#cap-27">XXVII. Saturación de Mercurio</a>
-        <a href="#cap-28">XXVIII. Efecto sobre terceros</a>
-        <a href="#cap-29">XXIX. Diagnóstico de Radiación Sináptica</a>
-        <a href="#cap-30">XXX. Tratamiento de Radiación Sináptica</a>
-        <a href="#cap-31">XXXI. Saturación de Sal</a>
-        <a href="#cap-32">XXXII. Saturación de Azufre</a>
-        <a href="#cap-33">XXXIII. Síndromes de saturación</a>
-        <a href="#cap-34">XXXIV. Maldiciones como patología</a>
-        <a href="#cap-35">XXXV. Patologías por artefactos</a>
-        <a href="#cap-36">XXXVI. Patologías rituales</a>
-        <a href="#cap-37">XXXVII. Patologías elementales</a>
-        <a href="#cap-38">XXXVIII. Patologías extraplanares</a>
-        <a href="#cap-39">XXXIX. Patologías temporales</a>
-        <a href="#cap-40">XL. Patologías topológicas</a>
-        <a href="#cap-41">XLI. Patologías de transformación</a>
-        <a href="#cap-42">XLII. Patologías regenerativas</a>
-        <a href="#cap-43">XLIII. Patologías de identidad corporal</a>
-        <a href="#cap-44">XLIV. Patologías en cuerpos amorfos</a>
-        <a href="#cap-45">XLV. Patologías en criaturas elementales biologizadas</a>
-        <a href="#cap-46">XLVI. Patología pediátrica arcana</a>
-        <a href="#cap-47">XLVII. Patología prenatal</a>
-        <a href="#cap-48">XLVIII. Diagnóstico</a>
-        <a href="#cap-49">XLIX. Diagnóstico diferencial</a>
-        <a href="#cap-50">L. Pronóstico</a>
-        <a href="#cap-51">LI. Tratamiento</a>
-        <a href="#cap-52">LII. Antídotos y contramedidas</a>
-        <a href="#cap-53">LIII. Aislamiento</a>
-        <a href="#cap-54">LIV. Cuarentena</a>
-        <a href="#cap-55">LV. Secuelas</a>
-        <a href="#cap-56">LVI. Recaída</a>
-        <a href="#cap-57">LVII. Criminalidad y exposición deliberada</a>
-        <a href="#cap-58">LVIII. Vigilancia ocupacional</a>
-        <a href="#cap-59">LIX. Patología y población</a>
-        <a href="#cap-60">LX. El problema de la normalidad</a>
-        <a href="#cap-61">LXI. Relación con otras disciplinas</a>
-        <a href="#cap-62">LXII. Lo que no debe llamarse enfermedad</a>
-        <a href="#cap-63">LXIII. La pregunta clínica</a>
+        <a href="#cap-1">I. Definición, etiología y estructura causal</a>
+        <a href="#cap-2">II. Exposición aguda, crónica y umbral de dosis</a>
+        <a href="#cap-3">III. Contaminación y reservorios</a>
+        <a href="#cap-4">IV. Transmisión y maldiciones transmisibles</a>
+        <a href="#cap-5">V. Latencia, incubación y predisposición</a>
+        <a href="#cap-6">VI. Mutación: somática, heredable y deriva morfológica</a>
+        <a href="#cap-7">VII. Proliferación anómala, necrosis y disociación somática</a>
+        <a href="#cap-8">VIII. Daño pneumatológico y resonántico</a>
+        <a href="#cap-9">IX. Radiación Sináptica: cuadro clínico y origen</a>
+        <a href="#cap-10">X. Diagnóstico y tratamiento de la Radiación Sináptica</a>
+        <a href="#cap-11">XI. Síndromes de saturación: Sal, Mercurio y Azufre</a>
+        <a href="#cap-12">XII. Patologías por causas mágicas directas: maldiciones, artefactos y rituales</a>
+        <a href="#cap-13">XIII. Patologías por entorno: elementales, extraplanares, temporales y topológicas</a>
+        <a href="#cap-14">XIV. Patologías de transformación y regeneración</a>
+        <a href="#cap-15">XV. Patologías en cuerpos no convencionales</a>
+        <a href="#cap-16">XVI. Patología del desarrollo: pediátrica y prenatal</a>
+        <a href="#cap-17">XVII. Diagnóstico y diagnóstico diferencial</a>
+        <a href="#cap-18">XVIII. Pronóstico, tratamiento y contramedidas</a>
+        <a href="#cap-19">XIX. Aislamiento y cuarentena</a>
+        <a href="#cap-20">XX. Secuelas y recaída</a>
+        <a href="#cap-21">XXI. Exposición deliberada y vigilancia ocupacional</a>
+        <a href="#cap-22">XXII. Patología, población y normalidad</a>
+        <a href="#cap-23">XXIII. Alcance, límites y la pregunta clínica</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -12227,413 +12187,305 @@ window.ENTRIES = [
       Tanatología y estudios de contaminación. Hoy constituye uno de los campos más transversales de
       Dolbred, porque una patología puede comenzar en el cuerpo y terminar afectando memoria, forma,
       alma, entorno o población.</p>
-      <h4 id="cap-1">Capítulo I — Definición</h4>
+      <h4 id="cap-1">Capítulo I — Definición, etiología y estructura causal</h4>
       <p>Se denomina patología arcana a toda alteración nociva de la función, estructura o
       continuidad de un organismo en cuya causa, mantenimiento o progresión participa un proceso
-      mágico.</p>
-      <p>La definición incluye enfermedades producidas enteramente por magia, enfermedades ordinarias
-      modificadas por exposición arcana y procesos en los que el organismo desarrolla respuestas
-      patológicas frente a condiciones mágicas ambientales.</p>
-      <p>No toda transformación, afinidad o mutación es patológica. La disciplina exige daño, pérdida
-      funcional, deterioro de autonomía o riesgo significativo para considerar un fenómeno
-      enfermedad.</p>
-      <h4 id="cap-2">Capítulo II — Etiología</h4>
-      <p>La etiología arcana estudia las causas. Pueden encontrarse en agentes biológicos, residuos,
-      sustancias, maldiciones, artefactos, campos elementales, entidades, rituales o respuestas
-      internas del propio organismo.</p>
-      <p>Un mismo cuadro clínico puede tener causas distintas. Fiebre, cambios de pigmentación o
-      alteraciones sensoriales aparecen en enfermedades infecciosas, intoxicaciones, exposición
-      elemental y procesos de transmutación inestable.</p>
-      <p>El diagnóstico debe reconstruir mecanismo antes de elegir tratamiento.</p>
-      <h4 id="cap-3">Capítulo III — Causa y mantenimiento</h4>
+      mágico. La definición incluye enfermedades producidas enteramente por magia, enfermedades
+      ordinarias modificadas por exposición arcana y procesos en los que el organismo desarrolla
+      respuestas patológicas frente a condiciones mágicas ambientales. No toda transformación,
+      afinidad o mutación es patológica: la disciplina exige daño, pérdida funcional, deterioro de
+      autonomía o riesgo significativo para considerar un fenómeno enfermedad.</p>
+      <p>La etiología arcana estudia las causas de estos procesos. Pueden encontrarse en agentes
+      biológicos, residuos, sustancias, maldiciones, artefactos, campos elementales, entidades,
+      rituales o respuestas internas del propio organismo. Un mismo cuadro clínico puede tener causas
+      distintas: fiebre, cambios de pigmentación o alteraciones sensoriales aparecen tanto en
+      enfermedades infecciosas como en intoxicaciones, exposición elemental y procesos de
+      transmutación inestable. El diagnóstico debe reconstruir el mecanismo antes de elegir
+      tratamiento.</p>
       <p>En numerosas patologías, la causa inicial desaparece mientras la enfermedad continúa. Una
-      exposición puede iniciar una modificación que después se vuelve autosostenida.</p>
-      <p>Esta distinción es crucial. Retirar al paciente de una zona contaminada puede impedir nueva
-      exposición y no revertir el daño ya estabilizado.</p>
-      <p>La medicina debe preguntar qué originó el proceso y qué lo mantiene ahora.</p>
-      <h4 id="cap-4">Capítulo IV — Patología primaria y secundaria</h4>
-      <p>Una patología primaria surge directamente de un proceso mágico. Una secundaria aparece como
-      consecuencia de otra alteración.</p>
-      <p>Una maldición que impide sueño puede ser primaria; el deterioro inmunológico, las lesiones y
-      la desorientación producidas por semanas sin descanso son secundarias.</p>
-      <p>Tratar sólo una capa puede dejar intacta la otra.</p>
-      <h4 id="cap-5">Capítulo V — Exposición aguda</h4>
+      exposición puede iniciar una modificación que después se vuelve autosostenida, y esta
+      distinción es crucial: retirar al paciente de una zona contaminada puede impedir nueva
+      exposición sin revertir el daño ya estabilizado. La medicina debe preguntar qué originó el
+      proceso y qué lo mantiene ahora.</p>
+      <p>Sobre esa distinción se apoya otra: la de patología primaria y secundaria. Una patología
+      primaria surge directamente de un proceso mágico; una secundaria aparece como consecuencia de
+      otra alteración. Una maldición que impide dormir puede ser primaria, mientras que el deterioro
+      inmunológico, las lesiones y la desorientación producidas por semanas sin descanso son
+      secundarias. Tratar sólo una capa puede dejar intacta la otra.</p>
+      <h4 id="cap-2">Capítulo II — Exposición aguda, crónica y umbral de dosis</h4>
       <p>La exposición aguda ocurre cuando el organismo recibe una influencia intensa durante un
       período breve. Quemaduras elementales, saturación de maná, contacto con residuos extraplanares
-      y descargas psíquicas son ejemplos frecuentes.</p>
-      <p>Los síntomas aparecen rápido y pueden progresar incluso después de finalizar el contacto.</p>
-      <p>El tratamiento prioriza estabilización, descontaminación y prevención de daño secundario.</p>
-      <h4 id="cap-6">Capítulo VI — Exposición crónica</h4>
+      y descargas psíquicas son ejemplos frecuentes. Los síntomas aparecen rápido y pueden progresar
+      incluso después de finalizar el contacto, por lo que el tratamiento prioriza estabilización,
+      descontaminación y prevención de daño secundario.</p>
       <p>La exposición crónica produce cambios graduales que a menudo pasan inadvertidos hasta que el
-      organismo ha reorganizado funciones alrededor de la influencia.</p>
-      <p>Puede generar tolerancia aparente mientras acumula daño.</p>
-      <p>Los trabajadores expuestos a artefactos, minerales reactivos, campos rituales o sustancias
-      alquímicas requieren vigilancia incluso en ausencia de síntomas inmediatos.</p>
-      <h4 id="cap-7">Capítulo VII — Dosis y umbral</h4>
-      <p>Muchas patologías dependen de dosis acumulada. Otras poseen umbrales, donde por debajo de cierta
-      exposición el organismo compensa; por encima, cambia de estado.</p>
-      <p>El umbral no es idéntico entre individuos y puede variar por especie, edad, predisposición,
-      afinidad y exposición previa.</p>
-      <p>Farmacología Arcana contribuye a modelar estas diferencias.</p>
-      <h4 id="cap-8">Capítulo VIII — Contaminación mágica</h4>
+      organismo ha reorganizado funciones alrededor de la influencia, y puede generar tolerancia
+      aparente mientras acumula daño. Los trabajadores expuestos a artefactos, minerales reactivos,
+      campos rituales o sustancias alquímicas requieren vigilancia incluso en ausencia de síntomas
+      inmediatos.</p>
+      <p>Ambas formas de exposición dependen de dosis y umbral. Muchas patologías dependen de dosis
+      acumulada; otras poseen umbrales, donde por debajo de cierta exposición el organismo compensa y
+      por encima cambia de estado. El umbral no es idéntico entre individuos: puede variar por
+      especie, edad, predisposición, afinidad y exposición previa. Farmacología Arcana contribuye a
+      modelar estas diferencias.</p>
+      <h4 id="cap-3">Capítulo III — Contaminación y reservorios</h4>
       <p>La contaminación describe la incorporación o presencia persistente de una influencia que
-      altera la regulación normal del organismo.</p>
-      <p>Puede localizarse en tejido, fluidos, órganos arcanos, memoria somática o vínculos
-      pneumatológicos.</p>
-      <p>La descontaminación física es insuficiente cuando la influencia ha pasado a formar parte de
-      la estructura funcional del paciente.</p>
-      <h4 id="cap-9">Capítulo IX — Contaminación ambiental</h4>
+      altera la regulación normal del organismo. Puede localizarse en tejido, fluidos, órganos
+      arcanos, memoria somática o vínculos pneumatológicos. La descontaminación física es insuficiente
+      cuando la influencia ha pasado a formar parte de la estructura funcional del paciente.</p>
       <p>Una región puede actuar como fuente constante de enfermedad. Suelos, agua, arquitectura,
-      cadáveres, artefactos y anomalías pueden mantener exposición colectiva.</p>
-      <p>En estos casos, tratar individuos sin intervenir el ambiente produce recaídas.</p>
-      <p>Ecología Mágica y Seguridad Ritual resultan indispensables para identificar reservorios.</p>
-      <h4 id="cap-10">Capítulo X — Reservorios</h4>
+      cadáveres, artefactos y anomalías pueden mantener exposición colectiva, y tratar individuos sin
+      intervenir el ambiente produce recaídas. Ecología Mágica y Seguridad Ritual resultan
+      indispensables para identificar reservorios.</p>
       <p>Un reservorio es cualquier organismo, objeto o lugar capaz de mantener una condición
-      patológica y permitir nuevas exposiciones.</p>
-      <p>Una criatura asintomática puede transportar una maldición; un pozo puede concentrar
-      residuos; una herramienta puede conservar una estructura activa.</p>
-      <p>La eliminación del reservorio puede ser más importante que tratar al primer paciente
+      patológica y permitir nuevas exposiciones. Una criatura asintomática puede transportar una
+      maldición, un pozo puede concentrar residuos y una herramienta puede conservar una estructura
+      activa. La eliminación del reservorio puede ser más importante que tratar al primer paciente
       detectado.</p>
-      <h4 id="cap-11">Capítulo XI — Transmisión</h4>
+      <h4 id="cap-4">Capítulo IV — Transmisión y maldiciones transmisibles</h4>
       <p>Las patologías arcanas pueden transmitirse por contacto, fluidos, aire, objetos, símbolos,
-      reconocimiento, sueño compartido, vínculos o proximidad.</p>
-      <p>La forma de transmisión depende del mecanismo y no de la apariencia del síntoma.</p>
-      <p>Aislar físicamente a un paciente no siempre basta cuando la estructura utiliza referencias
-      capaces de atravesar distancia.</p>
-      <h4 id="cap-12">Capítulo XII — Maldiciones transmisibles</h4>
+      reconocimiento, sueño compartido, vínculos o proximidad. La forma de transmisión depende del
+      mecanismo y no de la apariencia del síntoma, de modo que aislar físicamente a un paciente no
+      siempre basta cuando la estructura utiliza referencias capaces de atravesar distancia.</p>
       <p>Algunas maldiciones poseen reglas de propagación comparables a contagio. Pueden transferirse
       por herencia, contacto, imitación de una acción, aceptación de un objeto o cumplimiento de una
-      condición.</p>
-      <p>No son infecciones en sentido biológico, aunque pueden producir brotes poblacionales.</p>
-      <p>Maldiología estudia la estructura de la maldición; Patología Arcana estudia el daño y la
+      condición. No son infecciones en sentido biológico, aunque pueden producir brotes poblacionales.
+      Maldiología estudia la estructura de la maldición; Patología Arcana estudia el daño y la
       respuesta clínica.</p>
-      <h4 id="cap-13">Capítulo XIII — Latencia</h4>
+      <h4 id="cap-5">Capítulo V — Latencia, incubación y predisposición</h4>
       <p>Una patología puede permanecer latente después de exposición. Durante este período no
-      existen síntomas o son mínimos, pero la estructura ya se encuentra presente.</p>
-      <p>La latencia puede terminar por estrés, cambio hormonal, nueva exposición, ubicación o
-      activación de una condición.</p>
-      <p>Los periodos largos dificultan reconstruir la fuente original.</p>
-      <h4 id="cap-14">Capítulo XIV — Incubación</h4>
+      existen síntomas o son mínimos, pero la estructura ya se encuentra presente. La latencia puede
+      terminar por estrés, cambio hormonal, nueva exposición, ubicación o activación de una condición,
+      y los periodos largos dificultan reconstruir la fuente original.</p>
       <p>En patologías infecciosas modificadas por magia, el agente puede necesitar tiempo para
-      multiplicarse y además establecer relaciones arcanas.</p>
-      <p>La incubación combina entonces procesos biológicos y estructurales.</p>
-      <p>Un tratamiento antimicrobiano puede eliminar el agente y dejar una alteración ya fijada.</p>
-      <h4 id="cap-15">Capítulo XV — Predisposición</h4>
+      multiplicarse y además establecer relaciones arcanas: la incubación combina así procesos
+      biológicos y estructurales. Un tratamiento antimicrobiano puede eliminar el agente y dejar una
+      alteración ya fijada.</p>
       <p>No todos los individuos responden igual a la misma influencia. Anatomía, linaje, afinidad,
-      antecedentes de exposición y estado pneumatológico pueden modificar susceptibilidad.</p>
-      <p>La predisposición no equivale a destino.</p>
-      <p>La identificación de factores de riesgo permite vigilancia y prevención sin asumir que todo
-      portador desarrollará enfermedad.</p>
-      <h4 id="cap-16">Capítulo XVI — Mutación</h4>
+      antecedentes de exposición y estado pneumatológico pueden modificar susceptibilidad, aunque la
+      predisposición no equivale a destino. La identificación de factores de riesgo permite vigilancia
+      y prevención sin asumir que todo portador desarrollará enfermedad.</p>
+      <h4 id="cap-6">Capítulo VI — Mutación: somática, heredable y deriva morfológica</h4>
       <p>La magia puede aumentar variación, alterar desarrollo o fijar cambios somáticos. La palabra
       mutación se utiliza únicamente cuando existe modificación suficientemente estable de la
-      estructura biológica.</p>
-      <p>Un cambio reversible producido por un hechizo no constituye necesariamente mutación.</p>
-      <p>La Morfología Anómala estudia la nueva forma; Patología Arcana determina si el proceso
-      produce deterioro.</p>
-      <h4 id="cap-17">Capítulo XVII — Mutación somática</h4>
+      estructura biológica; un cambio reversible producido por un hechizo no constituye
+      necesariamente mutación. La Morfología Anómala estudia la nueva forma, mientras que Patología
+      Arcana determina si el proceso produce deterioro.</p>
       <p>Las mutaciones somáticas afectan tejidos del individuo sin necesidad de transmitirse a
-      descendencia.</p>
-      <p>Pueden producir crecimientos, órganos ectópicos, endurecimiento, pérdida de regulación o
-      cambios de afinidad.</p>
-      <p>Cuando varias regiones del cuerpo evolucionan de forma independiente, el paciente puede
-      desarrollar mosaicos funcionales difíciles de tratar.</p>
-      <h4 id="cap-18">Capítulo XVIII — Mutación heredable</h4>
+      descendencia. Pueden producir crecimientos, órganos ectópicos, endurecimiento, pérdida de
+      regulación o cambios de afinidad. Cuando varias regiones del cuerpo evolucionan de forma
+      independiente, el paciente puede desarrollar mosaicos funcionales difíciles de tratar.</p>
       <p>Si una alteración alcanza células reproductivas o mecanismos equivalentes de herencia, puede
-      aparecer en descendencia.</p>
-      <p>Una patología individual puede convertirse entonces en problema poblacional.</p>
-      <p>Criptozoología Académica y Ecología Mágica intervienen cuando la modificación deja de ser un
+      aparecer en descendencia y una patología individual se convierte en problema poblacional.
+      Criptozoología Académica y Ecología Mágica intervienen cuando la modificación deja de ser un
       caso clínico aislado y comienza a formar linaje.</p>
-      <h4 id="cap-19">Capítulo XIX — Deriva morfológica</h4>
-      <p>Exposiciones repetidas pueden producir cambios pequeños que se acumulan durante meses o
-      años.</p>
-      <p>El organismo se aleja progresivamente de su patrón previo sin un único evento
-      transformativo.</p>
-      <p>Este proceso, llamado deriva morfológica, aparece en intoxicaciones alquímicas, maldiciones
-      crónicas y entornos saturados.</p>
-      <h4 id="cap-20">Capítulo XX — Proliferación anómala</h4>
-      <p>Algunas influencias mágicas alteran señales que controlan crecimiento y regeneración.</p>
-      <p>El resultado puede ser tejido que continúa reparándose después de haber recuperado función,
-      órganos que aumentan de tamaño o estructuras nuevas sin integración adecuada.</p>
-      <p>La regeneración excesiva puede ser tan peligrosa como la incapacidad de regenerar.</p>
-      <h4 id="cap-21">Capítulo XXI — Necrosis arcana</h4>
+      <p>Existe además un cambio más lento: la deriva morfológica. Exposiciones repetidas pueden
+      producir cambios pequeños que se acumulan durante meses o años, de modo que el organismo se
+      aleja progresivamente de su patrón previo sin un único evento transformativo. Aparece en
+      intoxicaciones alquímicas, maldiciones crónicas y entornos saturados.</p>
+      <h4 id="cap-7">Capítulo VII — Proliferación anómala, necrosis y disociación somática</h4>
+      <p>Algunas influencias mágicas alteran señales que controlan crecimiento y regeneración. El
+      resultado puede ser tejido que continúa reparándose después de haber recuperado función, órganos
+      que aumentan de tamaño o estructuras nuevas sin integración adecuada. La regeneración excesiva
+      puede ser tan peligrosa como la incapacidad de regenerar.</p>
       <p>La necrosis arcana describe muerte tisular producida por pérdida de coherencia estructural
-      más que por falta de sangre, toxinas o trauma mecánico.</p>
-      <p>El tejido puede conservar apariencia durante un tiempo y dejar de participar correctamente
-      del organismo.</p>
-      <p>Anatomía Arcana permite identificar cuándo una región continúa físicamente presente pero ha
-      perdido pertenencia funcional.</p>
-      <h4 id="cap-22">Capítulo XXII — Disociación somática</h4>
+      más que por falta de sangre, toxinas o trauma mecánico. El tejido puede conservar apariencia
+      durante un tiempo y dejar de participar correctamente del organismo. Anatomía Arcana permite
+      identificar cuándo una región continúa físicamente presente pero ha perdido pertenencia
+      funcional.</p>
       <p>En la disociación somática, partes del cuerpo empiezan a responder como si pertenecieran de
-      manera incompleta al organismo.</p>
-      <p>Puede producir pérdida sensorial, movimientos involuntarios, rechazo interno o
-      transformaciones localizadas.</p>
-      <p>Los casos graves plantean riesgo de que órganos enteros desarrollen patrones incompatibles
-      con el resto del cuerpo.</p>
-      <h4 id="cap-23">Capítulo XXIII — Daño pneumatológico secundario</h4>
-      <p>Una enfermedad corporal prolongada puede alterar relación entre cuerpo e identidad.</p>
-      <p>Dolor extremo, transformaciones forzadas, pérdida de memoria corporal y experiencias de
-      muerte repetida pueden producir daño pneumatológico secundario.</p>
-      <p>Pneumatología debe intervenir cuando la recuperación física no restaura continuidad
-      subjetiva.</p>
-      <h4 id="cap-24">Capítulo XXIV — Daño resonántico</h4>
+      manera incompleta al organismo. Puede producir pérdida sensorial, movimientos involuntarios,
+      rechazo interno o transformaciones localizadas. Los casos graves plantean riesgo de que órganos
+      enteros desarrollen patrones incompatibles con el resto del cuerpo.</p>
+      <h4 id="cap-8">Capítulo VIII — Daño pneumatológico y resonántico</h4>
+      <p>Una enfermedad corporal prolongada puede alterar la relación entre cuerpo e identidad. Dolor
+      extremo, transformaciones forzadas, pérdida de memoria corporal y experiencias de muerte repetida
+      pueden producir daño pneumatológico secundario. Pneumatología debe intervenir cuando la
+      recuperación física no restaura continuidad subjetiva.</p>
       <p>Ciertas patologías afectan percepción, memoria, emoción o interpretación mediante patrones
-      resonánticos persistentes.</p>
-      <p>El daño puede manifestarse como hipersensibilidad, compulsiones, falsas percepciones o
-      incapacidad para filtrar estímulos.</p>
-      <p>Psicología Resonántica diferencia enfermedad mental ordinaria de lesión producida por
-      exposición mágica.</p>
-      <h4 id="cap-25">Capítulo XXV — Radiación Sináptica</h4>
+      resonánticos persistentes. El daño puede manifestarse como hipersensibilidad, compulsiones,
+      falsas percepciones o incapacidad para filtrar estímulos. Psicología Resonántica diferencia
+      enfermedad mental ordinaria de lesión producida por exposición mágica.</p>
+      <h4 id="cap-9">Capítulo IX — Radiación Sináptica: cuadro clínico y origen</h4>
       <p>La Radiación Sináptica es una patología de exposición producida por actividad mental arcana
-      extraordinariamente intensa y sostenida.</p>
-      <p>El término radiación es histórico y no implica necesariamente emisión física comparable a
-      luz o calor. Describe la propagación de una presión psíquica capaz de alterar la organización
-      cognitiva de individuos cercanos.</p>
-      <p>Los casos documentados muestran deterioro de atención, memoria de trabajo, sueño, regulación
-      emocional y capacidad para separar pensamientos propios de estímulos externos.</p>
-      <p>En exposiciones severas aparecen confusión, pérdida de lenguaje, respuestas automáticas,
-      despersonalización y daño persistente.</p>
-      <h4 id="cap-26">Capítulo XXVI — Origen de la Radiación Sináptica</h4>
-      <p>El cuadro se asocia a individuos cuya capacidad mental ha sido amplificada de manera
-      extrema, especialmente cuando sostienen actividad continua sin mecanismos de aislamiento.</p>
-      <p>La hipótesis clínica dominante sostiene que la mente del emisor impone patrones de
-      organización sobre sistemas nerviosos próximos de forma involuntaria.</p>
-      <p>La exposición breve puede producir cefalea y desorientación. La prolongada parece inducir
-      reorganización más profunda.</p>
-      <p>La investigación evita asumir que todo sujeto con capacidades psíquicas intensas produce el
-      fenómeno.</p>
-      <h4 id="cap-27">Capítulo XXVII — Saturación de Mercurio</h4>
-      <p>Las prácticas alquímicas que utilizan exposición extrema a Mercurio han producido algunos de
-      los casos más graves de Radiación Sináptica descritos por Dolbred.</p>
-      <p>El proceso parece aumentar capacidad cognitiva y sensibilidad a costa de regulación. Con
-      suficiente saturación, el individuo deja de contener completamente la actividad de su propia
-      mente.</p>
-      <p>La patología resultante afecta tanto al usuario como al entorno.</p>
-      <p>Alquimia Académica considera estas prácticas experimentación heterodoxa y médicamente
-      inaceptable.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Efecto sobre terceros</h4>
+      extraordinariamente intensa y sostenida. El término radiación es histórico y no implica
+      necesariamente emisión física comparable a luz o calor: describe la propagación de una presión
+      psíquica capaz de alterar la organización cognitiva de individuos cercanos. Los casos
+      documentados muestran deterioro de atención, memoria de trabajo, sueño, regulación emocional y
+      capacidad para separar pensamientos propios de estímulos externos; en exposiciones severas
+      aparecen confusión, pérdida de lenguaje, respuestas automáticas, despersonalización y daño
+      persistente.</p>
+      <p>El cuadro se asocia a individuos cuya capacidad mental ha sido amplificada de manera extrema,
+      especialmente cuando sostienen actividad continua sin mecanismos de aislamiento. La hipótesis
+      clínica dominante sostiene que la mente del emisor impone patrones de organización sobre
+      sistemas nerviosos próximos de forma involuntaria. La exposición breve puede producir cefalea y
+      desorientación; la prolongada parece inducir una reorganización más profunda. La investigación
+      evita asumir que todo sujeto con capacidades psíquicas intensas produce el fenómeno.</p>
+      <h4 id="cap-10">Capítulo X — Diagnóstico y tratamiento de la Radiación Sináptica</h4>
       <p>La Radiación Sináptica es especialmente peligrosa porque el paciente puede convertirse
-      simultáneamente en enfermo y fuente de exposición.</p>
-      <p>Personal médico debe utilizar aislamiento resonántico, turnos breves y evaluación cognitiva
-      periódica.</p>
-      <p>La distancia reduce riesgo en muchos casos, pero no existe una medida universal porque la
-      intensidad depende del emisor y del ambiente.</p>
-      <h4 id="cap-29">Capítulo XXIX — Diagnóstico de Radiación Sináptica</h4>
+      simultáneamente en enfermo y fuente de exposición. Personal médico debe utilizar aislamiento
+      resonántico, turnos breves y evaluación cognitiva periódica. La distancia reduce riesgo en
+      muchos casos, pero no existe una medida universal porque la intensidad depende del emisor y del
+      ambiente.</p>
       <p>El diagnóstico combina historia de exposición, evaluación cognitiva y observación de
-      patrones compartidos entre personas cercanas.</p>
-      <p>Cuando varios individuos presentan alteraciones semejantes alrededor de una misma fuente,
-      aumenta la probabilidad de un fenómeno ambiental.</p>
-      <p>Debe descartarse infección, intoxicación, sugestión colectiva y maldición transmisible.</p>
-      <h4 id="cap-30">Capítulo XXX — Tratamiento de Radiación Sináptica</h4>
-      <p>La primera medida consiste en detener o reducir exposición.</p>
-      <p>Después se estabilizan sueño, atención y percepción antes de intentar intervenciones
-      cognitivas complejas.</p>
-      <p>En el emisor, el tratamiento busca reducir sobrecarga y reconstruir límites de regulación,
-      no simplemente suprimir capacidad mental.</p>
-      <p>Los casos avanzados requieren coordinación entre Patología Arcana, Psicología Resonántica y
-      Farmacología.</p>
-      <h4 id="cap-31">Capítulo XXXI — Saturación de Sal</h4>
+      patrones compartidos entre personas cercanas. Cuando varios individuos presentan alteraciones
+      semejantes alrededor de una misma fuente, aumenta la probabilidad de un fenómeno ambiental, y
+      debe descartarse infección, intoxicación, sugestión colectiva y maldición transmisible.</p>
+      <p>La primera medida de tratamiento consiste en detener o reducir la exposición. Después se
+      estabilizan sueño, atención y percepción antes de intentar intervenciones cognitivas complejas.
+      En el emisor, el tratamiento busca reducir sobrecarga y reconstruir límites de regulación, no
+      simplemente suprimir capacidad mental. Los casos avanzados requieren coordinación entre
+      Patología Arcana, Psicología Resonántica y Farmacología.</p>
+      <h4 id="cap-11">Capítulo XI — Síndromes de saturación: Sal, Mercurio y Azufre</h4>
+      <p>Las prácticas alquímicas que utilizan exposición extrema a Mercurio han producido algunos de
+      los casos más graves de Radiación Sináptica descritos por Dolbred. El proceso parece aumentar
+      capacidad cognitiva y sensibilidad a costa de regulación: con suficiente saturación, el
+      individuo deja de contener completamente la actividad de su propia mente, y la patología
+      resultante afecta tanto al usuario como al entorno. Alquimia Académica considera estas prácticas
+      experimentación heterodoxa y médicamente inaceptable.</p>
       <p>La saturación corporal por Sal produce un cuadro diferente. Exposiciones extremas asociadas
       a ciertas escuelas alquímicas inducen crecimiento desorganizado, endurecimiento, proliferación
-      tisular y deformación.</p>
-      <p>La carne puede desarrollar pliegues, masas y estructuras nuevas mientras pierde proporciones
-      previas.</p>
-      <p>En casos avanzados se han descrito lesiones cutáneas transmisibles y secreciones capaces de
-      contaminar a terceros.</p>
-      <p>Morfología Anómala estudia la reorganización; Patología Arcana, su progresión y daño.</p>
-      <h4 id="cap-32">Capítulo XXXII — Saturación de Azufre</h4>
+      tisular y deformación; la carne puede desarrollar pliegues, masas y estructuras nuevas mientras
+      pierde proporciones previas. En casos avanzados se han descrito lesiones cutáneas transmisibles
+      y secreciones capaces de contaminar a terceros. Morfología Anómala estudia la reorganización;
+      Patología Arcana, su progresión y daño.</p>
       <p>Las prácticas de saturación con Azufre afectan de manera especialmente compleja al estado
-      general del individuo.</p>
-      <p>Los casos históricos describen deterioro pneumatológico, alteraciones de presencia y
-      emanaciones extremadamente nocivas para quienes permanecen cerca.</p>
-      <p>El olor característico es un signo material, pero no explica por sí mismo la toxicidad.</p>
-      <p>Pneumatología investiga si parte del efecto corresponde a una alteración del vínculo entre
-      cuerpo y alma.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Síndromes de saturación</h4>
+      general del individuo. Los casos históricos describen deterioro pneumatológico, alteraciones de
+      presencia y emanaciones extremadamente nocivas para quienes permanecen cerca. El olor
+      característico es un signo material, pero no explica por sí mismo la toxicidad; Pneumatología
+      investiga si parte del efecto corresponde a una alteración del vínculo entre cuerpo y alma.</p>
       <p>Sal, Mercurio y Azufre se agrupan a veces bajo el término síndromes de saturación por su
-      historia alquímica común.</p>
-      <p>La medicina moderna evita asumir que los tres comparten un único mecanismo.</p>
-      <p>Su semejanza más importante es que la exposición deja de producir un efecto farmacológico
-      transitorio y comienza a reorganizar la estructura que recibe la sustancia.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Maldiciones como patología</h4>
-      <p>Una maldición puede producir enfermedad sin comportarse como agente biológico.</p>
-      <p>Puede mantener dolor, modificar cuerpo, alterar fortuna, impedir funciones o responder a
-      condiciones específicas.</p>
-      <p>La medicina debe tratar síntomas mientras Maldiología identifica la estructura causal.
-      Eliminar una lesión sin romper la maldición suele producir recaída.</p>
-      <h4 id="cap-35">Capítulo XXXV — Patologías por artefactos</h4>
-      <p>Artefactos deteriorados pueden liberar energía, residuos o instrucciones incompletas.</p>
-      <p>La exposición repetida puede producir cuadros localizados en quienes trabajan cerca de
-      ellos.</p>
-      <p>Artefactología determina la fuente; Patología Arcana caracteriza efectos y establece
+      historia alquímica común, aunque la medicina moderna evita asumir que los tres comparten un
+      único mecanismo. Su semejanza más importante es que la exposición deja de producir un efecto
+      farmacológico transitorio y comienza a reorganizar la estructura que recibe la sustancia.</p>
+      <h4 id="cap-12">Capítulo XII — Patologías por causas mágicas directas: maldiciones, artefactos y rituales</h4>
+      <p>Una maldición puede producir enfermedad sin comportarse como agente biológico. Puede
+      mantener dolor, modificar el cuerpo, alterar fortuna, impedir funciones o responder a
+      condiciones específicas. La medicina debe tratar síntomas mientras Maldiología identifica la
+      estructura causal, ya que eliminar una lesión sin romper la maldición suele producir recaída.</p>
+      <p>Artefactos deteriorados pueden liberar energía, residuos o instrucciones incompletas, y la
+      exposición repetida puede producir cuadros localizados en quienes trabajan cerca de ellos.
+      Artefactología determina la fuente; Patología Arcana caracteriza efectos y establece
       vigilancia.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Patologías rituales</h4>
-      <p>Los fallos rituales pueden producir lesiones que no corresponden a una sola descarga.</p>
-      <p>Una clausura defectuosa puede exponer durante horas; una referencia incorrecta puede
-      mantener alteración sobre un participante; un cierre incompleto puede dejar una estructura
-      residual.</p>
-      <p>Seguridad Ritual analiza el accidente y la Patología trata sus consecuencias.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Patologías elementales</h4>
+      <p>Los fallos rituales pueden producir lesiones que no corresponden a una sola descarga. Una
+      clausura defectuosa puede exponer durante horas, una referencia incorrecta puede mantener
+      alteración sobre un participante y un cierre incompleto puede dejar una estructura residual.
+      Seguridad Ritual analiza el accidente y la Patología trata sus consecuencias.</p>
+      <h4 id="cap-13">Capítulo XIII — Patologías por entorno: elementales, extraplanares, temporales y topológicas</h4>
       <p>Exposiciones elementales prolongadas pueden alterar fisiología incluso cuando no producen
-      lesión aguda.</p>
-      <p>Calor, frío, presión, radiancia, oscuridad o afinidades de maná pueden modificar metabolismo
-      y crecimiento.</p>
-      <p>Algunas poblaciones desarrollan adaptación; otras acumulan daño.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Patologías extraplanares</h4>
-      <p>Un organismo trasladado a un plano distinto puede enfermar porque sus procesos dependen de
-      condiciones ausentes o porque el nuevo entorno impone relaciones incompatibles.</p>
-      <p>Planología distingue enfermedad por ambiente de contaminación transportada por entidades o
-      materiales.</p>
-      <p>Los síntomas pueden desaparecer al regresar o persistir si la exposición produjo cambios
-      estables.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Patologías temporales</h4>
-      <p>Interferencias cronúrgicas pueden producir alteraciones de edad, memoria secuencial,
-      sincronización fisiológica y recuperación.</p>
-      <p>Un tejido puede mostrar una edad funcional distinta del resto del cuerpo.</p>
-      <p>Cronurgia Teórica participa porque el tratamiento puede empeorar el cuadro si intenta
-      corregir sólo apariencia.</p>
-      <h4 id="cap-40">Capítulo XL — Patologías topológicas</h4>
-      <p>Cuerpos expuestos a espacios anómalos pueden desarrollar errores de orientación interna,
-      sensación de miembros desplazados o relaciones anatómicas imposibles.</p>
-      <p>Algunos casos son perceptivos y otros presentan alteraciones reales de conectividad.</p>
-      <p>Topología Arcana y Anatomía Arcana deben diferenciar ambos mecanismos.</p>
-      <h4 id="cap-41">Capítulo XLI — Patologías de transformación</h4>
-      <p>Transformaciones incompletas pueden dejar tejidos incompatibles, órganos duplicados o
-      pérdida de referencias de retorno.</p>
-      <p>La reversión automática no siempre corrige el daño.</p>
-      <p>Morfología Anómala ayuda a determinar si el cuerpo puede recuperar una configuración
-      estable.</p>
-      <h4 id="cap-42">Capítulo XLII — Patologías regenerativas</h4>
-      <p>Regenerar demasiado rápido puede fijar errores antes de que el organismo los detecte.</p>
-      <p>Tejidos mal alineados, cicatrices repetitivas o proliferación de patrones defectuosos
-      aparecen en especies con regeneración extrema.</p>
-      <p>El tratamiento puede requerir reducir temporalmente la capacidad regenerativa.</p>
-      <h4 id="cap-43">Capítulo XLIII — Patologías de identidad corporal</h4>
-      <p>Después de cambios severos, algunos pacientes dejan de reconocer partes del cuerpo como
-      propias o sienten pertenencia hacia estructuras que ya no existen.</p>
-      <p>El fenómeno puede tener componentes neurológicos, resonánticos o pneumatológicos.</p>
-      <p>La atención interdisciplinaria es esencial porque corregir anatomía no resuelve
-      necesariamente la experiencia corporal.</p>
-      <h4 id="cap-44">Capítulo XLIV — Patologías en cuerpos amorfos</h4>
-      <p>Los organismos amorfos no presentan enfermedad de la misma manera que cuerpos con órganos
-      fijos.</p>
-      <p>La pérdida de viscosidad, cohesión, distribución funcional o núcleos de información puede
-      ser equivalente a falla orgánica.</p>
-      <p>Los protocolos deben adaptarse a la biología real y no imponer categorías anatómicas
-      rígidas.</p>
-      <h4 id="cap-45">Capítulo XLV — Patologías en criaturas elementales biologizadas</h4>
-      <p>Los descendientes de antiguos linajes elementales pueden sufrir descompensaciones entre
-      afinidad y cuerpo.</p>
-      <p>Cuando órganos reguladores fallan, la propiedad elemental puede comenzar a dañar los tejidos
-      que debía sostener.</p>
-      <p>Dracología estudia estos procesos en linajes mayores; Patología Arcana aporta modelos
-      generales de desregulación.</p>
-      <h4 id="cap-46">Capítulo XLVI — Patología pediátrica arcana</h4>
-      <p>El desarrollo convierte a niños y juveniles en pacientes particularmente sensibles.</p>
-      <p>Una exposición que un adulto compensa puede alterar crecimiento, maduración de órganos
-      arcanos o establecimiento de memoria somática.</p>
-      <p>Los efectos pueden aparecer años después de la exposición inicial.</p>
-      <h4 id="cap-47">Capítulo XLVII — Patología prenatal</h4>
-      <p>La magia puede afectar desarrollo antes del nacimiento, incubación o eclosión.</p>
-      <p>Algunas alteraciones producen pérdida; otras generan cambios estables que sólo se vuelven
-      visibles en etapas posteriores.</p>
-      <p>La evaluación debe distinguir enfermedad de variación no nociva.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Diagnóstico</h4>
-      <p>El diagnóstico combina examen físico, historia de exposición, análisis material, lectura de
-      firmas, evaluación cognitiva y comparación temporal.</p>
-      <p>Ninguna lectura mágica reemplaza una anamnesis adecuada.</p>
-      <p>Los errores más graves aparecen cuando una prueba detecta una afinidad y el clínico confunde
-      presencia con causa.</p>
-      <h4 id="cap-49">Capítulo XLIX — Diagnóstico diferencial</h4>
-      <p>Síntomas semejantes pueden provenir de mecanismos distintos. Confusión puede ser tóxica,
-      infecciosa, resonántica, maldiológica o pneumatológica.</p>
-      <p>El diagnóstico diferencial ordena posibilidades y busca evidencia que las separe.</p>
-      <p>La disciplina considera esta práctica más importante que memorizar catálogos de
-      enfermedades.</p>
-      <h4 id="cap-50">Capítulo L — Pronóstico</h4>
-      <p>El pronóstico depende de reversibilidad, duración, extensión y capacidad del organismo para
-      recuperar referencia.</p>
-      <p>Una patología estable no siempre es curable, pero puede volverse manejable.</p>
-      <p>La medicina distingue recuperación funcional, eliminación de causa y retorno completo al
-      estado anterior.</p>
-      <h4 id="cap-51">Capítulo LI — Tratamiento</h4>
-      <p>Los tratamientos pueden retirar causa, bloquear mantenimiento, reparar daño, restaurar
-      referencia o ayudar al organismo a adaptarse.</p>
-      <p>No todas las patologías requieren anular toda magia presente.</p>
-      <p>En algunos casos, el objetivo es reconstruir equilibrio alrededor de una condición que ya no
-      puede eliminarse.</p>
-      <h4 id="cap-52">Capítulo LII — Antídotos y contramedidas</h4>
-      <p>Un antídoto arcano funciona cuando interfiere con el mecanismo concreto de una sustancia o
-      estructura.</p>
-      <p>No existe un neutralizador universal de magia patológica.</p>
-      <p>Farmacología Arcana desarrolla compuestos; Patología determina cuándo resultan indicados y
-      qué efectos secundarios pueden producir.</p>
-      <h4 id="cap-53">Capítulo LIII — Aislamiento</h4>
-      <p>El aislamiento busca impedir nuevas exposiciones y proteger a terceros.</p>
-      <p>Puede ser físico, material, resonántico, ritual o planar según mecanismo.</p>
-      <p>Aislar de forma incorrecta puede agravar cuadros cuando el paciente depende de una condición
-      ambiental específica.</p>
-      <h4 id="cap-54">Capítulo LIV — Cuarentena</h4>
-      <p>La cuarentena se utiliza cuando existe riesgo de transmisión y el mecanismo todavía no está
-      completamente caracterizado.</p>
-      <p>Debe revisarse a medida que aparece evidencia; mantenerla por costumbre puede producir daño
-      social y médico.</p>
-      <p>Epidemiología Taumatológica estudia criterios poblacionales.</p>
-      <h4 id="cap-55">Capítulo LV — Secuelas</h4>
-      <p>Una enfermedad puede terminar y dejar alteraciones persistentes.</p>
-      <p>Cambios de forma, sensibilidad, memoria, afinidad o capacidad mágica pueden permanecer
-      después de eliminar la causa.</p>
-      <p>Las secuelas forman parte del tratamiento a largo plazo y no deben confundirse con infección
-      o contaminación activa.</p>
-      <h4 id="cap-56">Capítulo LVI — Recaída</h4>
-      <p>La recaída puede producirse por reactivación de una estructura latente, nueva exposición o
-      porque el tratamiento suprimió síntomas sin resolver mantenimiento.</p>
-      <p>Los patrones de recaída ofrecen información etiológica importante.</p>
-      <p>Un cuadro que reaparece siempre en un lugar específico obliga a investigar ambiente además
-      de paciente.</p>
-      <h4 id="cap-57">Capítulo LVII — Criminalidad y exposición deliberada</h4>
-      <p>La magia patológica puede utilizarse deliberadamente para dañar, contaminar o transmitir
-      condiciones.</p>
-      <p>La medicina documenta mecanismo y lesiones sin asumir intención.</p>
-      <p>Criminalística Arcana determina procedencia y Derecho Arcano establece responsabilidad.</p>
-      <h4 id="cap-58">Capítulo LVIII — Vigilancia ocupacional</h4>
-      <p>Profesiones con exposición a artefactos, sustancias, rituales o entidades requieren
-      controles periódicos.</p>
-      <p>El objetivo es detectar cambios antes de que se vuelvan clínicamente graves.</p>
-      <p>La ausencia de síntomas no basta cuando existe evidencia de acumulación.</p>
-      <h4 id="cap-59">Capítulo LIX — Patología y población</h4>
-      <p>Cuando una enfermedad afecta grupos, patrones de distribución revelan información que el
-      caso individual oculta.</p>
-      <p>Edad, oficio, barrio, afinidad, especie y exposición compartida pueden indicar reservorios o
-      rutas de transmisión.</p>
-      <p>Epidemiología Taumatológica se especializa en esta escala.</p>
-      <h4 id="cap-60">Capítulo LX — El problema de la normalidad</h4>
-      <p>Una población expuesta durante generaciones puede estabilizar cambios que inicialmente
-      fueron patológicos.</p>
-      <p>Con el tiempo, una adaptación puede convertirse en rasgo heredable y dejar de producir
+      lesión aguda. Calor, frío, presión, radiancia, oscuridad o afinidades de maná pueden modificar
+      metabolismo y crecimiento; algunas poblaciones desarrollan adaptación mientras otras acumulan
       daño.</p>
-      <p>La medicina no debe etiquetar automáticamente como enfermedad toda diferencia originada en
-      un episodio mágico histórico.</p>
-      <h4 id="cap-61">Capítulo LXI — Relación con otras disciplinas</h4>
+      <p>Un organismo trasladado a un plano distinto puede enfermar porque sus procesos dependen de
+      condiciones ausentes o porque el nuevo entorno impone relaciones incompatibles. Planología
+      distingue enfermedad por ambiente de contaminación transportada por entidades o materiales. Los
+      síntomas pueden desaparecer al regresar o persistir si la exposición produjo cambios estables.</p>
+      <p>Interferencias cronúrgicas pueden producir alteraciones de edad, memoria secuencial,
+      sincronización fisiológica y recuperación, y un tejido puede mostrar una edad funcional distinta
+      del resto del cuerpo. Cronurgia Teórica participa porque el tratamiento puede empeorar el cuadro
+      si intenta corregir sólo apariencia.</p>
+      <p>Cuerpos expuestos a espacios anómalos pueden desarrollar errores de orientación interna,
+      sensación de miembros desplazados o relaciones anatómicas imposibles. Algunos casos son
+      perceptivos y otros presentan alteraciones reales de conectividad; Topología Arcana y Anatomía
+      Arcana deben diferenciar ambos mecanismos.</p>
+      <h4 id="cap-14">Capítulo XIV — Patologías de transformación y regeneración</h4>
+      <p>Transformaciones incompletas pueden dejar tejidos incompatibles, órganos duplicados o
+      pérdida de referencias de retorno, y la reversión automática no siempre corrige el daño.
+      Morfología Anómala ayuda a determinar si el cuerpo puede recuperar una configuración estable.</p>
+      <p>Regenerar demasiado rápido puede fijar errores antes de que el organismo los detecte.
+      Tejidos mal alineados, cicatrices repetitivas o proliferación de patrones defectuosos aparecen
+      en especies con regeneración extrema, y el tratamiento puede requerir reducir temporalmente la
+      capacidad regenerativa.</p>
+      <h4 id="cap-15">Capítulo XV — Patologías en cuerpos no convencionales</h4>
+      <p>Después de cambios severos, algunos pacientes dejan de reconocer partes del cuerpo como
+      propias o sienten pertenencia hacia estructuras que ya no existen. El fenómeno puede tener
+      componentes neurológicos, resonánticos o pneumatológicos; la atención interdisciplinaria es
+      esencial porque corregir anatomía no resuelve necesariamente la experiencia corporal.</p>
+      <p>Los organismos amorfos no presentan enfermedad de la misma manera que cuerpos con órganos
+      fijos. La pérdida de viscosidad, cohesión, distribución funcional o núcleos de información puede
+      ser equivalente a falla orgánica, por lo que los protocolos deben adaptarse a la biología real y
+      no imponer categorías anatómicas rígidas.</p>
+      <p>Los descendientes de antiguos linajes elementales pueden sufrir descompensaciones entre
+      afinidad y cuerpo. Cuando órganos reguladores fallan, la propiedad elemental puede comenzar a
+      dañar los tejidos que debía sostener. Dracología estudia estos procesos en linajes mayores;
+      Patología Arcana aporta modelos generales de desregulación.</p>
+      <h4 id="cap-16">Capítulo XVI — Patología del desarrollo: pediátrica y prenatal</h4>
+      <p>El desarrollo convierte a niños y juveniles en pacientes particularmente sensibles. Una
+      exposición que un adulto compensa puede alterar crecimiento, maduración de órganos arcanos o
+      establecimiento de memoria somática, y los efectos pueden aparecer años después de la exposición
+      inicial.</p>
+      <p>La magia puede afectar el desarrollo antes del nacimiento, incubación o eclosión. Algunas
+      alteraciones producen pérdida; otras generan cambios estables que sólo se vuelven visibles en
+      etapas posteriores. La evaluación debe distinguir enfermedad de variación no nociva.</p>
+      <h4 id="cap-17">Capítulo XVII — Diagnóstico y diagnóstico diferencial</h4>
+      <p>El diagnóstico combina examen físico, historia de exposición, análisis material, lectura de
+      firmas, evaluación cognitiva y comparación temporal. Ninguna lectura mágica reemplaza una
+      anamnesis adecuada; los errores más graves aparecen cuando una prueba detecta una afinidad y el
+      clínico confunde presencia con causa.</p>
+      <p>Síntomas semejantes pueden provenir de mecanismos distintos: una confusión puede ser tóxica,
+      infecciosa, resonántica, maldiológica o pneumatológica. El diagnóstico diferencial ordena
+      posibilidades y busca evidencia que las separe. La disciplina considera esta práctica más
+      importante que memorizar catálogos de enfermedades.</p>
+      <h4 id="cap-18">Capítulo XVIII — Pronóstico, tratamiento y contramedidas</h4>
+      <p>El pronóstico depende de reversibilidad, duración, extensión y capacidad del organismo para
+      recuperar referencia. Una patología estable no siempre es curable, pero puede volverse
+      manejable; la medicina distingue recuperación funcional, eliminación de causa y retorno completo
+      al estado anterior.</p>
+      <p>Los tratamientos pueden retirar causa, bloquear mantenimiento, reparar daño, restaurar
+      referencia o ayudar al organismo a adaptarse. No todas las patologías requieren anular toda
+      magia presente: en algunos casos el objetivo es reconstruir equilibrio alrededor de una
+      condición que ya no puede eliminarse.</p>
+      <p>Un antídoto arcano funciona cuando interfiere con el mecanismo concreto de una sustancia o
+      estructura, aunque no existe un neutralizador universal de magia patológica. Farmacología
+      Arcana desarrolla compuestos; Patología determina cuándo resultan indicados y qué efectos
+      secundarios pueden producir.</p>
+      <h4 id="cap-19">Capítulo XIX — Aislamiento y cuarentena</h4>
+      <p>El aislamiento busca impedir nuevas exposiciones y proteger a terceros. Puede ser físico,
+      material, resonántico, ritual o planar según mecanismo. Aislar de forma incorrecta puede agravar
+      cuadros cuando el paciente depende de una condición ambiental específica.</p>
+      <p>La cuarentena se utiliza cuando existe riesgo de transmisión y el mecanismo todavía no está
+      completamente caracterizado. Debe revisarse a medida que aparece evidencia, ya que mantenerla
+      por costumbre puede producir daño social y médico. Epidemiología Taumatológica estudia criterios
+      poblacionales.</p>
+      <h4 id="cap-20">Capítulo XX — Secuelas y recaída</h4>
+      <p>Una enfermedad puede terminar y dejar alteraciones persistentes. Cambios de forma,
+      sensibilidad, memoria, afinidad o capacidad mágica pueden permanecer después de eliminar la
+      causa. Las secuelas forman parte del tratamiento a largo plazo y no deben confundirse con
+      infección o contaminación activa.</p>
+      <p>La recaída puede producirse por reactivación de una estructura latente, nueva exposición o
+      porque el tratamiento suprimió síntomas sin resolver mantenimiento. Los patrones de recaída
+      ofrecen información etiológica importante: un cuadro que reaparece siempre en un lugar
+      específico obliga a investigar ambiente además de paciente.</p>
+      <h4 id="cap-21">Capítulo XXI — Exposición deliberada y vigilancia ocupacional</h4>
+      <p>La magia patológica puede utilizarse deliberadamente para dañar, contaminar o transmitir
+      condiciones. La medicina documenta mecanismo y lesiones sin asumir intención; Criminalística
+      Arcana determina procedencia y Derecho Arcano establece responsabilidad.</p>
+      <p>Profesiones con exposición a artefactos, sustancias, rituales o entidades requieren controles
+      periódicos. El objetivo es detectar cambios antes de que se vuelvan clínicamente graves: la
+      ausencia de síntomas no basta cuando existe evidencia de acumulación.</p>
+      <h4 id="cap-22">Capítulo XXII — Patología, población y normalidad</h4>
+      <p>Cuando una enfermedad afecta grupos, patrones de distribución revelan información que el
+      caso individual oculta. Edad, oficio, barrio, afinidad, especie y exposición compartida pueden
+      indicar reservorios o rutas de transmisión. Epidemiología Taumatológica se especializa en esta
+      escala.</p>
+      <p>Una población expuesta durante generaciones puede estabilizar cambios que inicialmente
+      fueron patológicos. Con el tiempo, una adaptación puede convertirse en rasgo heredable y dejar
+      de producir daño, y la medicina no debe etiquetar automáticamente como enfermedad toda
+      diferencia originada en un episodio mágico histórico.</p>
+      <h4 id="cap-23">Capítulo XXIII — Alcance, límites y la pregunta clínica</h4>
       <p>Patología Arcana trabaja con Anatomía Arcana, Farmacología, Morfología Anómala, Psicología
-      Resonántica, Pneumatología, Maldiología y Epidemiología Taumatológica.</p>
-      <p>Ecología Mágica estudia reservorios ambientales; Artefactología y Seguridad Ritual
-      identifican fuentes; Criminalística Arcana interviene cuando la exposición puede haber sido
-      deliberada.</p>
-      <p>La disciplina existe en la intersección porque las enfermedades mágicas rara vez respetan
-      límites académicos.</p>
-      <h4 id="cap-62">Capítulo LXII — Lo que no debe llamarse enfermedad</h4>
+      Resonántica, Pneumatología, Maldiología y Epidemiología Taumatológica. Ecología Mágica estudia
+      reservorios ambientales; Artefactología y Seguridad Ritual identifican fuentes; Criminalística
+      Arcana interviene cuando la exposición puede haber sido deliberada. La disciplina existe en la
+      intersección porque las enfermedades mágicas no suelen detenerse ante los límites entre
+      cátedras.</p>
       <p>Una forma corporal inusual, una afinidad intensa, una capacidad psíquica o una herencia
-      extraplanar no constituyen enfermedad por sí mismas.</p>
-      <p>La Patología Arcana exige evidencia de daño, deterioro, pérdida de función o riesgo
-      clínico.</p>
-      <p>Esta distinción protege a la disciplina de convertir diferencias biológicas o culturales en
-      diagnósticos.</p>
-      <h4 id="cap-63">Capítulo LXIII — La pregunta clínica</h4>
-      <p>Frente a una anomalía, la primera pregunta no debería ser qué hechizo la produjo. Debería
-      ser qué función se ha perdido, qué relación mantiene el daño y qué necesita el organismo para
-      recuperar estabilidad.</p>
-      <p>La magia puede explicar el mecanismo sin definir por sí sola el tratamiento.</p>
+      extraplanar no constituyen enfermedad por sí mismas. La Patología Arcana exige evidencia de
+      daño, deterioro, pérdida de función o riesgo clínico. Esta distinción protege a la disciplina de
+      convertir diferencias biológicas o culturales en diagnósticos.</p>
+      <p>Frente a una anomalía, la primera pregunta no debería ser qué hechizo la produjo, sino qué
+      función se ha perdido, qué relación mantiene el daño y qué necesita el organismo para recuperar
+      estabilidad. La magia puede explicar el mecanismo sin definir por sí sola el tratamiento.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Patología Arcana estudia enfermedades producidas, sostenidas o modificadas por magia. Su
       campo incluye contaminación, mutación, maldiciones transmisibles, exposición elemental, daño
