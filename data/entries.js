@@ -2324,88 +2324,29 @@ window.ENTRIES = [
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de estudio</a>
-        <a href="#cap-2">II. Información no observada</a>
-        <a href="#cap-3">III. Predicción</a>
-        <a href="#cap-4">IV. Probabilidad</a>
-        <a href="#cap-5">V. Pronóstico</a>
-        <a href="#cap-6">VI. Profecía</a>
-        <a href="#cap-7">VII. Predicción y profecía</a>
-        <a href="#cap-8">VIII. Futuro fijo</a>
-        <a href="#cap-9">IX. Futuros ramificados</a>
-        <a href="#cap-10">X. Atracción causal</a>
-        <a href="#cap-11">XI. Información retrospectiva</a>
-        <a href="#cap-12">XII. Observación remota</a>
-        <a href="#cap-13">XIII. Retrocognición</a>
-        <a href="#cap-14">XIV. Psicometría</a>
-        <a href="#cap-15">XV. Clarividencia</a>
-        <a href="#cap-16">XVI. Clariaudiencia y modalidades equivalentes</a>
-        <a href="#cap-17">XVII. Conocimiento directo</a>
-        <a href="#cap-18">XVIII. Señal y ruido</a>
-        <a href="#cap-19">XIX. Sesgo del intérprete</a>
-        <a href="#cap-20">XX. Registro previo</a>
-        <a href="#cap-21">XXI. Vaguedad</a>
-        <a href="#cap-22">XXII. Ambigüedad</a>
-        <a href="#cap-23">XXIII. Autocumplimiento</a>
-        <a href="#cap-24">XXIV. Autoevitación</a>
-        <a href="#cap-25">XXV. Paradoja de información</a>
-        <a href="#cap-26">XXVI. Profecías resistentes</a>
-        <a href="#cap-27">XXVII. Nodos de alta estabilidad</a>
-        <a href="#cap-28">XXVIII. Horizonte adivinatorio</a>
-        <a href="#cap-29">XXIX. Resolución</a>
-        <a href="#cap-30">XXX. Costo informativo</a>
-        <a href="#cap-31">XXXI. Interferencia</a>
-        <a href="#cap-32">XXXII. Bloqueo adivinatorio</a>
-        <a href="#cap-33">XXXIII. Contradivinación</a>
-        <a href="#cap-34">XXXIV. Tarotismo</a>
-        <a href="#cap-35">XXXV. Arcano y correspondencia</a>
-        <a href="#cap-36">XXXVI. Tirada</a>
-        <a href="#cap-37">XXXVII. Azar dirigido</a>
-        <a href="#cap-38">XXXVIII. Selección resonante</a>
-        <a href="#cap-39">XXXIX. Tarotismo sin magia</a>
-        <a href="#cap-40">XL. Oráculos</a>
-        <a href="#cap-41">XLI. Entidades como fuente</a>
-        <a href="#cap-42">XLII. Conocimiento divino</a>
-        <a href="#cap-43">XLIII. Profetas</a>
-        <a href="#cap-44">XLIV. Sueños</a>
-        <a href="#cap-45">XLV. Trance</a>
-        <a href="#cap-46">XLVI. Augurios</a>
-        <a href="#cap-47">XLVII. Geomancia y sistemas materiales</a>
-        <a href="#cap-48">XLVIII. Astromancia</a>
-        <a href="#cap-49">XLIX. Probabilidad condicional</a>
-        <a href="#cap-50">L. Decisión</a>
-        <a href="#cap-51">LI. Libertad y determinismo</a>
-        <a href="#cap-52">LII. Observador</a>
-        <a href="#cap-53">LIII. Preguntas</a>
-        <a href="#cap-54">LIV. Preguntas imposibles</a>
-        <a href="#cap-55">LV. Referentes</a>
-        <a href="#cap-56">LVI. Error de confirmación</a>
-        <a href="#cap-57">LVII. Base de comparación</a>
-        <a href="#cap-58">LVIII. Ceguera experimental</a>
-        <a href="#cap-59">LIX. Replicación</a>
-        <a href="#cap-60">LX. Contradicción entre videntes</a>
-        <a href="#cap-61">LXI. Consenso adivinatorio</a>
-        <a href="#cap-62">LXII. Profecía política</a>
-        <a href="#cap-63">LXIII. Mercados y ventaja informativa</a>
-        <a href="#cap-64">LXIV. Medicina</a>
-        <a href="#cap-65">LXV. Criminalística</a>
-        <a href="#cap-66">LXVI. Guerra</a>
-        <a href="#cap-67">LXVII. Privacidad</a>
-        <a href="#cap-68">LXVIII. Consentimiento</a>
-        <a href="#cap-69">LXIX. El futuro como información sensible</a>
-        <a href="#cap-70">LXX. Profecías de muerte</a>
-        <a href="#cap-71">LXXI. Acontecimientos inevitables</a>
-        <a href="#cap-72">LXXII. Acontecimientos imposibles de observar</a>
-        <a href="#cap-73">LXXIII. El problema del conocimiento sobrenatural</a>
-        <a href="#cap-74">LXXIV. Relación con Cronurgia</a>
-        <a href="#cap-75">LXXV. Relación con Semiótica</a>
-        <a href="#cap-76">LXXVI. Relación con Psicología Resonántica</a>
-        <a href="#cap-77">LXXVII. Relación con Teurgia y Pacturgia</a>
-        <a href="#cap-78">LXXVIII. El error del oráculo infalible</a>
-        <a href="#cap-79">LXXIX. El error de la metáfora posterior</a>
-        <a href="#cap-80">LXXX. El error de confundir posibilidad con destino</a>
-        <a href="#cap-81">LXXXI. El criterio de falsabilidad</a>
-        <a href="#cap-82">LXXXII. La pregunta que queda abierta</a>
+        <a href="#cap-1">I. Objeto de estudio de la Adivinación</a>
+        <a href="#cap-2">II. Modalidades de conocimiento prospectivo</a>
+        <a href="#cap-3">III. Teorías del tiempo y la causalidad adivinatoria</a>
+        <a href="#cap-4">IV. Modalidades de percepción extraordinaria</a>
+        <a href="#cap-5">V. Señal, ruido e interpretación</a>
+        <a href="#cap-6">VI. Precisión y ambigüedad del mensaje</a>
+        <a href="#cap-7">VII. Autocumplimiento y autoevitación</a>
+        <a href="#cap-8">VIII. Estabilidad y resolución prospectiva</a>
+        <a href="#cap-9">IX. Interferencia y bloqueo adivinatorio</a>
+        <a href="#cap-10">X. Tarotismo y sistemas simbólicos</a>
+        <a href="#cap-11">XI. Oráculos y fuentes de conocimiento revelado</a>
+        <a href="#cap-12">XII. Sueños, trance y augurios</a>
+        <a href="#cap-13">XIII. Sistemas materiales y astrales</a>
+        <a href="#cap-14">XIV. Probabilidad condicional, decisión y libre albedrío</a>
+        <a href="#cap-15">XV. El observador y la formulación de preguntas</a>
+        <a href="#cap-16">XVI. Sesgos y control experimental</a>
+        <a href="#cap-17">XVII. Contradicción y consenso entre videntes</a>
+        <a href="#cap-18">XVIII. Aplicaciones prácticas de la adivinación</a>
+        <a href="#cap-19">XIX. Privacidad, consentimiento y ética de la consulta</a>
+        <a href="#cap-20">XX. Los límites del conocimiento adivinatorio</a>
+        <a href="#cap-21">XXI. Relación con otras disciplinas</a>
+        <a href="#cap-22">XXII. Errores metodológicos comunes</a>
+        <a href="#cap-23">XXIII. La pregunta que queda abierta</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -2413,334 +2354,105 @@ window.ENTRIES = [
       <p>La adivinación suele describirse con una expresión demasiado simple. Ver el futuro. Esa formulación mezcla fenómenos que, desde una perspectiva académica, pueden no tener casi nada en común. Predecir una tormenta a partir de señales presentes, recibir una imagen de un acontecimiento futuro, reconocer una posibilidad entre varias, consultar un sistema simbólico o conocer un hecho distante sin observación ordinaria son problemas diferentes.</p>
       <p>La Adivinación estudia cómo puede obtenerse información sobre acontecimientos, estados o relaciones que no han sido observados por los medios disponibles al investigador. Su objeto incluye el futuro, pero también el presente remoto, el pasado incompleto, probabilidades, decisiones posibles y estados ocultos.</p>
       <p>La disciplina es especialmente rigurosa porque sus errores son fáciles de racionalizar después de ocurridos. Una predicción vaga puede parecer precisa cuando se reinterpreta tras el evento. Una coincidencia puede recordarse y cien fallos olvidarse. Por ello, Dolbred exige registro previo, criterios verificables y separación estricta entre observación, interpretación y resultado.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de estudio</h4>
-      <p>La Adivinación estudia la obtención y evaluación de información no disponible mediante observación ordinaria en el momento de la consulta.</p>
-      <p>El campo incluye predicción, percepción remota, reconstrucción de hechos no observados, probabilidad sobrenatural, profecía, tarotismo y métodos simbólicos.</p>
-      <p>No toda información correcta obtenida de forma inusual es adivinatoria. La disciplina exige identificar el mecanismo o, al menos, describir con precisión las condiciones bajo las que el fenómeno se repite.</p>
-      <h4 id="cap-2">Capítulo II — Información no observada</h4>
-      <p>El problema central no es el tiempo, sino la observación. Una persona puede conocer un hecho presente ocurrido a mil kilómetros, un acontecimiento pasado del que no existen registros accesibles o una consecuencia futura aún no realizada.</p>
-      <p>Estos casos se agrupan porque todos implican información que no debería estar disponible a través de los canales ordinarios del sujeto.</p>
-      <p>La primera tarea académica consiste en determinar qué información previa sí estaba disponible antes de atribuir el resultado a un fenómeno sobrenatural.</p>
-      <h4 id="cap-3">Capítulo III — Predicción</h4>
-      <p>Una predicción es una afirmación sobre un estado futuro construida a partir de condiciones conocidas o inferidas.</p>
-      <p>No requiere acceso al futuro. Un astrónomo, un médico o un estratega pueden predecir acontecimientos utilizando regularidades presentes.</p>
-      <p>La Adivinación estudia predicción cuando intervienen fuentes de información mágicas o cuando se necesita distinguir inferencia extraordinariamente buena de acceso no ordinario.</p>
-      <h4 id="cap-4">Capítulo IV — Probabilidad</h4>
-      <p>El futuro no siempre aparece como una secuencia única. Muchos métodos adivinatorios producen distribuciones de posibilidades, no acontecimientos fijos.</p>
-      <p>La probabilidad adivinatoria describe qué futuros parecen más compatibles con las condiciones actuales.</p>
-      <p>Estas estimaciones pueden cambiar cuando cambian decisiones, información o relaciones relevantes.</p>
-      <h4 id="cap-5">Capítulo V — Pronóstico</h4>
-      <p>Un pronóstico combina información presente con un modelo de evolución futura.</p>
-      <p>Su calidad depende tanto de los datos como de la teoría utilizada para interpretarlos.</p>
-      <p>Un oráculo puede aportar datos extraordinarios y aun así producir un mal pronóstico si el intérprete utiliza un modelo incorrecto.</p>
-      <h4 id="cap-6">Capítulo VI — Profecía</h4>
-      <p>La profecía se reserva para información futura presentada como acontecimiento, condición o relación de especial estabilidad.</p>
-      <p>No toda profecía es inevitable. Algunas parecen describir futuros que conservan alta persistencia bajo muchas decisiones posibles.</p>
-      <p>Otras funcionan como advertencias condicionales y cambian precisamente porque fueron conocidas.</p>
-      <h4 id="cap-7">Capítulo VII — Predicción y profecía</h4>
-      <p>La diferencia principal no es el tono solemne. Una predicción suele derivarse de estados actuales; una profecía parece incluir información que no puede reconstruirse sólo desde el presente observable.</p>
-      <p>El lenguaje religioso ha confundido ambas categorías durante siglos.</p>
-      <p>Dolbred clasifica el fenómeno por evidencia y comportamiento, no por la autoridad de quien lo pronuncia.</p>
-      <h4 id="cap-8">Capítulo VIII — Futuro fijo</h4>
-      <p>La hipótesis del futuro fijo sostiene que ciertos acontecimientos existen como una única secuencia y pueden ser conocidos antes de su realización.</p>
-      <p>Su principal dificultad es explicar decisiones aparentemente capaces de evitar lo observado.</p>
-      <p>Algunos defensores responden que todo intento de evitarlo ya formaba parte de la secuencia conocida.</p>
-      <h4 id="cap-9">Capítulo IX — Futuros ramificados</h4>
-      <p>La teoría ramificada propone que desde un presente pueden desarrollarse múltiples continuaciones.</p>
-      <p>La adivinación detectaría una o varias ramas con distinta estabilidad o probabilidad.</p>
-      <p>Este modelo explica por qué una visión puede ser correcta en el momento de producirse y dejar de cumplirse después de una intervención.</p>
-      <h4 id="cap-10">Capítulo X — Atracción causal</h4>
-      <p>Una tercera teoría sostiene que algunos acontecimientos futuros ejercen una forma de atracción informativa sobre estados anteriores.</p>
-      <p>Cuanto más estable y significativo es un evento, más señales retrospectivas produciría.</p>
-      <p>El modelo es controvertido porque describe bien ciertos patrones proféticos sin explicar de qué manera una causa futura puede influir sobre información presente.</p>
-      <h4 id="cap-11">Capítulo XI — Información retrospectiva</h4>
-      <p>Algunos investigadores evitan hablar de causalidad y proponen que la información puede establecer relaciones a través del tiempo sin necesidad de transferir energía en sentido inverso.</p>
-      <p>En este marco, la adivinación sería acceso a una relación ya definida entre observador y acontecimiento.</p>
-      <p>Cronurgia Teórica debate activamente esta interpretación.</p>
-      <h4 id="cap-12">Capítulo XII — Observación remota</h4>
-      <p>La adivinación no se limita al futuro. Algunos métodos permiten obtener información sobre lugares o acontecimientos presentes fuera del alcance sensorial.</p>
-      <p>Esto incluye visión remota, escucha distante, localización de personas y reconocimiento de condiciones ocultas.</p>
-      <p>Planología interviene cuando la distancia incluye fronteras entre planos.</p>
-      <h4 id="cap-13">Capítulo XIII — Retrocognición</h4>
-      <p>La retrocognición busca información sobre acontecimientos pasados no observados por el sujeto.</p>
-      <p>Puede apoyarse en residuos, memoria material, vínculos o acceso directo a una relación temporal.</p>
-      <p>Distinguir reconstrucción forense de percepción temporal exige comprobar qué huellas estaban realmente disponibles.</p>
-      <h4 id="cap-14">Capítulo XIV — Psicometría</h4>
-      <p>La psicometría obtiene información a partir de objetos asociados a personas, lugares o eventos.</p>
-      <p>El objeto puede conservar residuos, correspondencias o historia material que el practicante interpreta.</p>
-      <p>No está demostrado que toda psicometría implique acceso al pasado. Parte puede ser lectura extremadamente sensible de información presente en el soporte.</p>
-      <h4 id="cap-15">Capítulo XV — Clarividencia</h4>
-      <p>Clarividencia es un término amplio para adquisición visual o cuasi-visual de información distante u oculta.</p>
-      <p>La experiencia subjetiva puede adoptar forma de imagen aunque la información original no sea óptica.</p>
-      <p>El investigador debe separar el formato mental en que aparece la información del mecanismo que la produjo.</p>
-      <h4 id="cap-16">Capítulo XVI — Clariaudiencia y modalidades equivalentes</h4>
-      <p>Algunos sujetos reciben información como sonidos, palabras, sensaciones corporales, olores o intuiciones organizadas.</p>
-      <p>La modalidad no determina necesariamente el tipo de fuente.</p>
-      <p>Psicología Resonántica estudia cómo la mente traduce información no sensorial a formatos perceptivos familiares.</p>
-      <h4 id="cap-17">Capítulo XVII — Conocimiento directo</h4>
-      <p>En ciertos casos, el sujeto afirma simplemente saber una respuesta sin imagen, voz o símbolo intermedio.</p>
-      <p>Este fenómeno es difícil de estudiar porque ofrece pocos elementos para separar percepción de inferencia inconsciente.</p>
-      <p>Las pruebas controladas son esenciales para medir si la precisión supera lo esperable por azar o conocimiento previo.</p>
-      <h4 id="cap-18">Capítulo XVIII — Señal y ruido</h4>
-      <p>Todo método adivinatorio produce resultados mezclados con incertidumbre, interpretación y error.</p>
-      <p>Se denomina señal a la información que corresponde de manera reproducible con el fenómeno estudiado y ruido a las variaciones que no aportan relación fiable.</p>
-      <p>La disciplina intenta mejorar señal sin fingir que el ruido puede eliminarse por completo.</p>
-      <h4 id="cap-19">Capítulo XIX — Sesgo del intérprete</h4>
-      <p>Quien interpreta una visión puede añadir expectativas, temores y conocimientos propios.</p>
-      <p>Un símbolo ambiguo tiende a resolverse hacia aquello que el intérprete considera plausible.</p>
-      <p>Por ello, Dolbred separa siempre registro bruto de interpretación posterior.</p>
-      <h4 id="cap-20">Capítulo XX — Registro previo</h4>
-      <p>Las predicciones deben registrarse antes del acontecimiento.</p>
-      <p>El documento debe conservar fecha, formulación exacta, alcance, nivel de confianza y criterios mediante los cuales se considerará confirmada o refutada.</p>
-      <p>Sin registro previo, la memoria humana tiende a reconstruir el mensaje para adaptarlo a lo ocurrido.</p>
-      <h4 id="cap-21">Capítulo XXI — Vaguedad</h4>
-      <p>Una afirmación demasiado amplia puede parecer correcta en casi cualquier futuro.</p>
-      <p>Frases como habrá pérdida o una figura poderosa caerá ofrecen escasa capacidad de verificación.</p>
-      <p>La precisión académica exige suficiente especificidad para que el resultado pueda también considerarse falso.</p>
-      <h4 id="cap-22">Capítulo XXII — Ambigüedad</h4>
-      <p>Una profecía puede contener términos con varios significados legítimos.</p>
-      <p>Esto no la vuelve automáticamente inútil, pero obliga a registrar interpretaciones posibles antes del evento.</p>
-      <p>La reinterpretación posterior debe distinguirse de la lectura inicial.</p>
-      <h4 id="cap-23">Capítulo XXIII — Autocumplimiento</h4>
-      <p>Una predicción puede modificar comportamiento de quienes la conocen y contribuir a producir el resultado.</p>
-      <p>Esto se denomina profecía autocumplida en sentido social, aunque no requiera magia.</p>
-      <p>El fenómeno complica experimentos porque revelar una visión puede alterar precisamente el futuro que se pretende estudiar.</p>
-      <h4 id="cap-24">Capítulo XXIV — Autoevitación</h4>
-      <p>El efecto inverso ocurre cuando conocer una predicción permite evitarla.</p>
-      <p>Un oráculo que advierte de un derrumbe y provoca evacuación puede parecer haber fallado precisamente porque funcionó.</p>
-      <p>Los diseños de evaluación deben considerar predicciones condicionales y consecuencias de la intervención.</p>
-      <h4 id="cap-25">Capítulo XXV — Paradoja de información</h4>
-      <p>Si una persona conoce un futuro y actúa para cambiarlo, surge la pregunta de qué información fue observada originalmente.</p>
-      <p>Los modelos ramificados responden que se observó una rama previa a la intervención.</p>
-      <p>Los modelos fijos sostienen que la intervención siempre estuvo incluida.</p>
-      <h4 id="cap-26">Capítulo XXVI — Profecías resistentes</h4>
-      <p>Algunas visiones continúan cumpliéndose pese a intentos razonables de evitarlas.</p>
-      <p>Esto puede indicar alta estabilidad causal, interpretación incorrecta de qué debía evitarse o una estructura que incorpora las respuestas de quienes conocen la profecía.</p>
-      <p>No debe concluirse inevitabilidad a partir de un solo caso.</p>
-      <h4 id="cap-27">Capítulo XXVII — Nodos de alta estabilidad</h4>
-      <p>Se denomina nodo prospectivo a un acontecimiento que aparece repetidamente en métodos independientes.</p>
-      <p>Los nodos parecen conservarse a través de múltiples variaciones menores del futuro.</p>
-      <p>La existencia de nodos fuertes es uno de los principales argumentos contra una visión completamente indeterminada de la temporalidad.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Horizonte adivinatorio</h4>
-      <p>La precisión suele disminuir al aumentar distancia temporal.</p>
-      <p>Eventos próximos dependen de menos decisiones todavía no realizadas; eventos lejanos acumulan bifurcaciones.</p>
-      <p>Algunos métodos, sin embargo, detectan mejor acontecimientos lejanos de gran estabilidad que detalles cercanos triviales.</p>
-      <h4 id="cap-29">Capítulo XXIX — Resolución</h4>
-      <p>La resolución describe cuánta información específica puede obtenerse.</p>
-      <p>Un método puede detectar que ocurrirá una batalla sin identificar día, lugar o participantes.</p>
-      <p>Aumentar resolución suele reducir estabilidad y elevar riesgo de interpretación errónea.</p>
-      <h4 id="cap-30">Capítulo XXX — Costo informativo</h4>
-      <p>Obtener más detalle parece exigir mayor esfuerzo, preparación o exposición en numerosos métodos.</p>
-      <p>Esto sugiere que información adivinatoria no llega sin límite.</p>
-      <p>Las teorías difieren sobre si el costo depende de complejidad del futuro, resistencia temporal o capacidad cognitiva del observador.</p>
-      <h4 id="cap-31">Capítulo XXXI — Interferencia</h4>
-      <p>Múltiples intentos de observar el mismo acontecimiento pueden producir resultados distintos.</p>
-      <p>Parte de la divergencia puede ser estadística; parte puede deberse a que la propia observación modifica decisiones.</p>
-      <p>En otros casos, diferentes métodos parecen acceder a aspectos distintos de una misma situación.</p>
-      <h4 id="cap-32">Capítulo XXXII — Bloqueo adivinatorio</h4>
-      <p>Algunas personas, lugares u objetos son difíciles de observar mediante métodos adivinatorios.</p>
-      <p>El bloqueo puede ser natural, deliberado, planar, semiótico o resultado de interferencia.</p>
-      <p>Seguridad Ritual y Teoría de Encantamientos estudian técnicas para reducir observabilidad.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Contradivinación</h4>
-      <p>La contradivinación reúne prácticas destinadas a ocultar, distorsionar o multiplicar información disponible para observadores.</p>
-      <p>Puede generar falsos futuros, ruido, referencias sustitutas o condiciones que cambian al ser observadas.</p>
-      <p>Su existencia obliga a tratar toda visión sobre objetivos protegidos como evidencia potencialmente adversarial.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Tarotismo</h4>
-      <p>El tarotismo estudia sistemas de cartas, láminas u objetos simbólicos cuya disposición sirve como interfaz interpretativa.</p>
-      <p>No se presupone que las cartas contengan el futuro. Pueden organizar relaciones, seleccionar símbolos relevantes o actuar como medio mediante el cual una estructura adivinatoria reduce posibilidades.</p>
-      <p>La disciplina distingue cuidadosamente tarotismo ritual, lectura psicológica y simple azar.</p>
-      <h4 id="cap-35">Capítulo XXXV — Arcano y correspondencia</h4>
-      <p>Cada elemento de un sistema tarotístico posee un campo de correspondencias construido histórica y culturalmente.</p>
-      <p>Su valor puede depender de posición, orientación, relación con otras cartas y pregunta formulada.</p>
-      <p>Semiótica Mágica estudia por qué un símbolo puede representar una relación; Adivinación estudia si esa relación aporta información no observada.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Tirada</h4>
-      <p>Una tirada define posiciones con funciones distintas: causa, obstáculo, consecuencia, posibilidad, ocultamiento u otras.</p>
-      <p>La geometría de la tirada organiza la interpretación antes de revelar las cartas.</p>
-      <p>Esto reduce el riesgo de asignar significado sólo después de conocer el resultado.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Azar dirigido</h4>
-      <p>Una de las teorías del tarotismo sostiene que la magia no transmite una visión completa, sino que sesga eventos aleatorios para seleccionar símbolos relevantes.</p>
-      <p>El movimiento de cartas sería entonces un mecanismo de reducción informativa.</p>
-      <p>Esta teoría puede probarse estadísticamente mejor que muchas experiencias visionarias.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Selección resonante</h4>
-      <p>Una teoría alternativa propone que el lector identifica de forma inconsciente qué elementos del conjunto corresponden con la consulta.</p>
-      <p>El acto de elegir no sería azar alterado, sino percepción resonante traducida a selección manual.</p>
-      <p>Los experimentos que separan lector y manipulación física intentan distinguir ambos modelos.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Tarotismo sin magia</h4>
-      <p>Los sistemas simbólicos pueden producir interpretaciones útiles incluso sin información sobrenatural.</p>
-      <p>Una carta obliga al consultante a considerar relaciones que quizá no había formulado.</p>
-      <p>Esta utilidad psicológica no demuestra ni refuta una capacidad adivinatoria adicional.</p>
-      <h4 id="cap-40">Capítulo XL — Oráculos</h4>
-      <p>Un oráculo es un medio, individuo o institución que produce respuestas interpretadas como acceso a conocimiento extraordinario.</p>
-      <p>Puede utilizar trance, entidad, sistema simbólico, ambiente sagrado o técnica prospectiva.</p>
-      <p>El término describe función social y no un mecanismo único.</p>
-      <h4 id="cap-41">Capítulo XLI — Entidades como fuente</h4>
-      <p>Una respuesta sobrenatural puede provenir de una entidad que posee información ordinariamente inaccesible.</p>
-      <p>En ese caso, el fenómeno no demuestra que el consultante haya observado el futuro; puede estar recibiendo conocimiento de otro agente.</p>
-      <p>Demonología, Teurgia y Pacturgia son esenciales para evaluar competencia, motivos y capacidad de engaño de la fuente.</p>
-      <h4 id="cap-42">Capítulo XLII — Conocimiento divino</h4>
-      <p>Las tradiciones religiosas atribuyen a ciertas entidades conocimiento superior o atemporal.</p>
-      <p>La Adivinación no decide la naturaleza teológica de esas entidades. Examina qué información proporcionan, con qué precisión y bajo qué condiciones.</p>
-      <p>Una autoridad sagrada no elimina la necesidad de distinguir revelación, interpretación y doctrina.</p>
-      <h4 id="cap-43">Capítulo XLIII — Profetas</h4>
-      <p>Un profeta es una persona cuya función social incluye recibir o transmitir conocimiento considerado revelado.</p>
-      <p>La existencia de una institución profética no garantiza exactitud de cada mensaje.</p>
-      <p>Los estudios académicos separan fenómeno adivinatorio de legitimidad religiosa o política.</p>
-      <h4 id="cap-44">Capítulo XLIV — Sueños</h4>
-      <p>Los sueños pueden servir como formato para información adivinatoria porque la mente se encuentra menos limitada por percepción externa.</p>
-      <p>Sin embargo, también producen gran cantidad de material endógeno.</p>
-      <p>Un sueño sólo adquiere valor prospectivo cuando existe correspondencia verificable más allá de la interpretación posterior.</p>
-      <h4 id="cap-45">Capítulo XLV — Trance</h4>
-      <p>El trance modifica atención, integración sensorial y acceso a asociaciones.</p>
-      <p>Puede facilitar percepción extraordinaria o simplemente reducir filtros cognitivos.</p>
-      <p>Psicología Resonántica estudia los riesgos de confundir intensidad subjetiva con precisión informativa.</p>
-      <h4 id="cap-46">Capítulo XLVI — Augurios</h4>
-      <p>Los augurios interpretan acontecimientos naturales o casuales como indicadores.</p>
-      <p>Un patrón de aves, una llama, el movimiento de agua o una fractura pueden funcionar como señal dentro de una tradición.</p>
-      <p>El desafío académico consiste en demostrar que la correlación supera selección retrospectiva.</p>
-      <h4 id="cap-47">Capítulo XLVII — Geomancia y sistemas materiales</h4>
-      <p>Algunos métodos utilizan arena, piedras, huesos, líquidos o cristales para producir configuraciones interpretables.</p>
-      <p>El soporte puede actuar como sistema aleatorio, medio resonante o registro de influencias ambientales.</p>
-      <p>Mineralogía Mágica participa cuando el material posee propiedades propias de retención o sensibilidad.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Astromancia</h4>
-      <p>La astromancia estudia relaciones entre configuraciones celestes y acontecimientos.</p>
-      <p>Puede basarse en ciclos físicos, correspondencias simbólicas o influencias mágicas reales.</p>
-      <p>El campo exige distinguir correlaciones astronómicas medibles de tradiciones que sólo utilizan el cielo como sistema de referencia.</p>
-      <h4 id="cap-49">Capítulo XLIX — Probabilidad condicional</h4>
-      <p>Una buena lectura prospectiva formula futuros en términos de condiciones.</p>
-      <p>Si determinada decisión se mantiene, aumenta la probabilidad de un resultado; si cambia, la distribución puede modificarse.</p>
-      <p>Este enfoque permite convertir adivinación en herramienta de decisión en vez de sentencia.</p>
-      <h4 id="cap-50">Capítulo L — Decisión</h4>
-      <p>El valor práctico de conocer posibilidades futuras reside en comparar consecuencias.</p>
-      <p>Una predicción que no puede influir en ninguna decisión tiene utilidad informativa distinta de otra que permite elegir entre alternativas.</p>
-      <p>La ética de la consulta depende en parte de qué opciones reales conserva el sujeto.</p>
-      <h4 id="cap-51">Capítulo LI — Libertad y determinismo</h4>
-      <p>La Adivinación no ha resuelto si el libre albedrío existe en sentido metafísico.</p>
-      <p>Los datos muestran que algunas decisiones alteran futuros observados y otras parecen converger hacia los mismos resultados.</p>
-      <p>La disciplina trabaja con comportamiento de posibilidades sin afirmar una teoría final de la voluntad.</p>
-      <h4 id="cap-52">Capítulo LII — Observador</h4>
-      <p>El observador puede formar parte del sistema que intenta conocer.</p>
-      <p>Su personalidad, relación con el objetivo y conocimiento previo pueden cambiar qué información recibe.</p>
-      <p>Los protocolos utilizan lectores ciegos, preguntas ocultas y repetición independiente para separar estos efectos.</p>
-      <h4 id="cap-53">Capítulo LIII — Preguntas</h4>
-      <p>La formulación de una pregunta delimita el espacio de respuestas.</p>
-      <p>Preguntas vagas producen información difícil de evaluar; preguntas excesivamente estrechas pueden exigir una resolución que el método no puede sostener.</p>
-      <p>La buena práctica define tiempo, referente y criterio de respuesta.</p>
-      <h4 id="cap-54">Capítulo LIV — Preguntas imposibles</h4>
-      <p>Algunos métodos fallan sistemáticamente ante preguntas sin referente estable.</p>
-      <p>Preguntar quién ganará una guerra que todavía no existe o dónde está un objeto destruido puede producir respuestas simbólicas sin correspondencia literal.</p>
-      <p>El fracaso puede provenir de la pregunta y no del instrumento.</p>
-      <h4 id="cap-55">Capítulo LV — Referentes</h4>
-      <p>Una consulta debe establecer qué persona, lugar, acontecimiento o relación intenta observar.</p>
-      <p>Nombres, objetos, imágenes, vínculos y coordenadas pueden servir como referentes.</p>
-      <p>Semiótica Mágica ayuda a explicar por qué algunos referentes siguen siendo válidos aunque cambie la apariencia del objetivo.</p>
-      <h4 id="cap-56">Capítulo LVI — Error de confirmación</h4>
-      <p>Las personas recuerdan con facilidad aciertos extraordinarios y olvidan fallos cotidianos.</p>
-      <p>El sesgo de confirmación es especialmente peligroso en tradiciones adivinatorias con lenguaje flexible.</p>
-      <p>Los registros completos permiten calcular precisión sobre todas las consultas, no sólo sobre las memorables.</p>
-      <h4 id="cap-57">Capítulo LVII — Base de comparación</h4>
-      <p>Para afirmar que un método funciona debe superar lo que podría obtenerse por azar, inferencia ordinaria o información previa.</p>
-      <p>Predecir que mañana amanecerá no demuestra adivinación.</p>
-      <p>El desafío experimental consiste en construir preguntas suficientemente inciertas y verificables.</p>
-      <h4 id="cap-58">Capítulo LVIII — Ceguera experimental</h4>
-      <p>Quien interpreta una lectura no debería conocer información capaz de guiar inconscientemente la respuesta cuando el experimento busca medir acceso sobrenatural.</p>
-      <p>Los diseños ciegos y doblemente ciegos reducen filtraciones de información.</p>
-      <p>Estas técnicas son particularmente importantes en tarotismo y psicometría.</p>
-      <h4 id="cap-59">Capítulo LIX — Replicación</h4>
-      <p>Un resultado extraordinario necesita repetirse bajo condiciones comparables.</p>
-      <p>Una profecía única puede ser históricamente importante y científicamente difícil de generalizar.</p>
-      <p>La replicación permite distinguir capacidad estable de coincidencia irrepetible.</p>
-      <h4 id="cap-60">Capítulo LX — Contradicción entre videntes</h4>
-      <p>Dos observadores pueden producir visiones incompatibles.</p>
-      <p>La discrepancia puede indicar error, ramas diferentes, horizontes temporales distintos o interferencia.</p>
-      <p>La disciplina evita resolver automáticamente el conflicto eligiendo al vidente de mayor prestigio.</p>
-      <h4 id="cap-61">Capítulo LXI — Consenso adivinatorio</h4>
-      <p>Cuando métodos independientes convergen en un mismo resultado, aumenta la confianza, aunque no garantiza certeza.</p>
-      <p>La independencia es crucial, ya que diez lectores formados por el mismo maestro pueden compartir el mismo sesgo.</p>
-      <p>Los estudios comparan técnicas, tradiciones y fuentes diferentes.</p>
-      <h4 id="cap-62">Capítulo LXII — Profecía política</h4>
-      <p>Las profecías pueden alterar sucesiones, guerras, mercados y legitimidad.</p>
-      <p>Una predicción sobre un gobernante puede producir conspiraciones que aumenten precisamente la probabilidad del resultado.</p>
-      <p>Derecho Arcano estudia responsabilidad por manipulación, fraude y uso institucional de información prospectiva.</p>
-      <h4 id="cap-63">Capítulo LXIII — Mercados y ventaja informativa</h4>
-      <p>El uso comercial de adivinación plantea problemas cuando una persona obtiene información futura no disponible para otros.</p>
-      <p>Algunas jurisdicciones restringen consultas sobre precios, subastas o apuestas.</p>
-      <p>La dificultad es demostrar cuándo hubo información sobrenatural real y cuándo simplemente mejor análisis.</p>
-      <h4 id="cap-64">Capítulo LXIV — Medicina</h4>
-      <p>La adivinación médica puede sugerir progresión de una enfermedad, riesgo de recaída o respuesta a tratamiento.</p>
-      <p>Debe complementar y no sustituir diagnóstico clínico.</p>
-      <p>Una visión futura de deterioro puede cambiar precisamente si el médico interviene a tiempo.</p>
-      <h4 id="cap-65">Capítulo LXV — Criminalística</h4>
-      <p>Las técnicas adivinatorias pueden orientar búsquedas, reconstruir rutas o señalar lugares.</p>
-      <p>Su información rara vez se considera prueba suficiente por sí sola porque interpretación y mecanismo pueden ser difíciles de auditar.</p>
-      <p>Criminalística Arcana utiliza la adivinación como fuente de hipótesis que luego deben corroborarse.</p>
-      <h4 id="cap-66">Capítulo LXVI — Guerra</h4>
-      <p>El uso militar de información futura produce una carrera entre observación, ocultación y desinformación.</p>
-      <p>Los ejércitos pueden intentar generar múltiples planes para reducir estabilidad prospectiva o alimentar falsas referencias.</p>
-      <p>La contradivinación se vuelve tan importante como la propia observación.</p>
-      <h4 id="cap-67">Capítulo LXVII — Privacidad</h4>
-      <p>Observar un lugar distante o conocer información privada mediante magia plantea problemas similares a vigilancia ordinaria y algunos adicionales.</p>
-      <p>El hecho de que un dato pueda conocerse no implica derecho a conocerlo.</p>
-      <p>Derecho Arcano establece límites sobre observación de personas, domicilios, conversaciones y futuros personales.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Consentimiento</h4>
-      <p>Las consultas sobre terceros sin consentimiento son éticamente problemáticas, especialmente cuando afectan decisiones íntimas.</p>
-      <p>El tarotismo popular ha normalizado preguntas sobre pensamientos y relaciones de otras personas.</p>
-      <p>La práctica académica exige justificar por qué esa información debe buscarse y qué daño puede producir.</p>
-      <h4 id="cap-69">Capítulo LXIX — El futuro como información sensible</h4>
-      <p>Conocer una posibilidad puede alterar profundamente conducta, ansiedad y autonomía.</p>
-      <p>Una predicción de muerte, fracaso o traición puede causar daño incluso si es incierta.</p>
-      <p>Los profesionales deben comunicar grados de confianza y alternativas, no presentar posibilidades como sentencias.</p>
-      <h4 id="cap-70">Capítulo LXX — Profecías de muerte</h4>
-      <p>Las predicciones de muerte reciben tratamiento especial por su impacto psicológico y por la posibilidad de autocumplimiento.</p>
-      <p>Una fecha precisa debe considerarse de alta gravedad clínica y ética.</p>
-      <p>Tanatología puede participar cuando la visión parece referirse a una terminación no ordinaria.</p>
-      <h4 id="cap-71">Capítulo LXXI — Acontecimientos inevitables</h4>
-      <p>El término inevitable se reserva para casos extraordinarios donde múltiples métodos, intervenciones y bifurcaciones conocidas convergen en el mismo evento.</p>
-      <p>Incluso entonces, Dolbred prefiere hablar de estabilidad prospectiva extrema.</p>
-      <p>La certeza absoluta es una afirmación demasiado fuerte para la evidencia disponible.</p>
-      <h4 id="cap-72">Capítulo LXXII — Acontecimientos imposibles de observar</h4>
-      <p>Existen regiones de futuro que parecen resistir observación.</p>
-      <p>Puede deberse a interferencia, ausencia de referencia, alta ramificación o mecanismos deliberados de ocultación.</p>
-      <p>Algunos investigadores proponen que ciertos eventos no producen información retrospectiva hasta que una condición específica se aproxima.</p>
-      <h4 id="cap-73">Capítulo LXXIII — El problema del conocimiento sobrenatural</h4>
-      <p>Recibir una respuesta correcta no demuestra de dónde procede.</p>
-      <p>Puede haber inferencia inconsciente, acceso remoto, entidad informante, resonancia temporal o manipulación del azar.</p>
-      <p>La Adivinación clasifica primero la conducta del fenómeno y sólo después propone mecanismo.</p>
-      <h4 id="cap-74">Capítulo LXXIV — Relación con Cronurgia</h4>
-      <p>Cronurgia Teórica estudia la estructura del tiempo y alteraciones temporales. Adivinación estudia información relacionada con estados no observados, incluidos futuros.</p>
-      <p>Una visión futura no implica viaje temporal.</p>
-      <p>Ambas disciplinas se encuentran cuando debe explicarse cómo una relación informativa atraviesa orden temporal.</p>
-      <h4 id="cap-75">Capítulo LXXV — Relación con Semiótica</h4>
-      <p>Muchos métodos adivinatorios utilizan símbolos porque permiten condensar relaciones complejas en formas interpretables.</p>
-      <p>Semiótica estudia cómo esos símbolos significan; Adivinación pregunta si su selección contiene información extraordinaria.</p>
-      <p>Confundir ambas cosas convierte cualquier interpretación simbólica en supuesta profecía.</p>
-      <h4 id="cap-76">Capítulo LXXVI — Relación con Psicología Resonántica</h4>
-      <p>Percepción, expectativa, memoria y trance influyen directamente en la experiencia adivinatoria.</p>
-      <p>Psicología Resonántica estudia cómo la mente construye y distorsiona estas experiencias.</p>
-      <p>La colaboración entre ambas disciplinas es esencial para distinguir señal de elaboración subjetiva.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Relación con Teurgia y Pacturgia</h4>
-      <p>Cuando la información procede de una entidad, el problema cambia de acceso temporal a comunicación y autoridad.</p>
-      <p>Teurgia y Pacturgia investigan quién responde, por qué y bajo qué obligaciones.</p>
-      <p>La Adivinación evalúa la información resultante sin asumir sinceridad de la fuente.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — El error del oráculo infalible</h4>
-      <p>Un oráculo que ha acertado muchas veces puede equivocarse.</p>
-      <p>La confianza aumenta con evidencia, pero no transforma una fuente finita en autoridad absoluta.</p>
-      <p>Las decisiones críticas deben registrar incertidumbre incluso cuando la tradición considera sagrado al intérprete.</p>
-      <h4 id="cap-79">Capítulo LXXIX — El error de la metáfora posterior</h4>
-      <p>Una profecía incomprensible puede ser reinterpretada después del evento hasta parecer perfecta.</p>
-      <p>Esto no demuestra que la lectura previa contuviera realmente la misma información.</p>
-      <p>Las interpretaciones prospectivas deben archivarse antes de que el acontecimiento revele qué metáforas resultan convenientes.</p>
-      <h4 id="cap-80">Capítulo LXXX — El error de confundir posibilidad con destino</h4>
-      <p>Una visión clara puede representar el futuro más probable y no el único.</p>
-      <p>Tratarla como inevitable puede eliminar precisamente las decisiones capaces de cambiarla.</p>
-      <p>La práctica responsable comunica qué parte del mensaje parece fija, qué parte condicional y qué parte incierta.</p>
-      <h4 id="cap-81">Capítulo LXXXI — El criterio de falsabilidad</h4>
-      <p>Una afirmación adivinatoria académicamente útil debe poder fracasar.</p>
-      <p>Si toda posible consecuencia puede reinterpretarse como confirmación, el método no permite aprender de sus errores.</p>
-      <p>Definir condiciones de refutación protege a la disciplina de convertirse en doctrina inmune a evidencia.</p>
-      <h4 id="cap-82">Capítulo LXXXII — La pregunta que queda abierta</h4>
-      <p>La Adivinación todavía no sabe si el futuro existe de alguna manera antes de ocurrir o si sólo existen relaciones capaces de anticiparlo.</p>
-      <p>Los datos apoyan modelos distintos en contextos diferentes.</p>
-      <p>La disciplina mantiene esta incertidumbre como problema de investigación y no como defecto que deba ocultarse.</p>
+      <h4 id="cap-1">Capítulo I — Objeto de estudio de la Adivinación</h4>
+      <p>La Adivinación estudia la obtención y evaluación de información no disponible mediante observación ordinaria en el momento de la consulta. Su campo incluye predicción, percepción remota, reconstrucción de hechos no observados, probabilidad sobrenatural, profecía, tarotismo y métodos simbólicos. No toda información correcta obtenida de forma inusual es adivinatoria. La disciplina exige identificar el mecanismo o, cuando eso no es posible, describir con exactitud las condiciones bajo las que el fenómeno se repite.</p>
+      <p>El problema central que enfrenta esta disciplina no es el tiempo en sí, sino la observación. Una persona puede conocer un hecho presente ocurrido a mil kilómetros, un acontecimiento pasado del que no existen registros accesibles o una consecuencia futura aún no realizada; estos casos se agrupan bajo un mismo objeto de estudio porque todos implican información que no debería estar disponible a través de los canales ordinarios del sujeto. La primera tarea académica, en cualquiera de ellos, consiste en determinar qué información previa sí estaba disponible antes de atribuir el resultado a un fenómeno sobrenatural.</p>
+      <p>Dentro de este campo amplio, la predicción ocupa un lugar particular. Una predicción es una afirmación sobre un estado futuro construida a partir de condiciones conocidas o inferidas, y no requiere por sí misma acceso al futuro: un astrónomo, un médico o un estratega pueden predecir acontecimientos utilizando regularidades presentes sin recurrir a magia alguna. La Adivinación estudia la predicción cuando intervienen fuentes de información mágicas o cuando resulta necesario distinguir una inferencia extraordinariamente buena de un acceso genuinamente no ordinario.</p>
+      <h4 id="cap-2">Capítulo II — Modalidades de conocimiento prospectivo</h4>
+      <p>El futuro no siempre se presenta como una secuencia única. Muchos métodos adivinatorios producen distribuciones de posibilidades en lugar de acontecimientos fijos. La probabilidad adivinatoria describe qué futuros parecen más compatibles con las condiciones actuales, y estas estimaciones cambian a medida que cambian las decisiones, la información disponible o las relaciones relevantes.</p>
+      <p>Un pronóstico, en cambio, combina información presente con un modelo de evolución futura. Su calidad depende tanto de los datos obtenidos como de la teoría utilizada para interpretarlos, de modo que un oráculo puede aportar datos extraordinarios y aun así producir un mal pronóstico si el intérprete aplica un modelo incorrecto.</p>
+      <p>La profecía ocupa un lugar distinto entre estas modalidades. El término se reserva para información futura presentada como acontecimiento, condición o relación de especial estabilidad, aunque no toda profecía sea inevitable: algunas parecen describir futuros que conservan alta persistencia bajo muchas decisiones posibles, mientras que otras funcionan como advertencias condicionales y cambian justamente porque fueron conocidas.</p>
+      <p>La diferencia entre predicción y profecía no reside en el tono solemne del segundo término. Una predicción suele derivarse de estados actuales, mientras que una profecía parece incluir información que no puede reconstruirse solo desde el presente observable. El lenguaje religioso ha confundido ambas categorías durante siglos; Dolbred, en cambio, clasifica el fenómeno por evidencia y comportamiento, no por la autoridad de quien lo pronuncia.</p>
+      <h4 id="cap-3">Capítulo III — Teorías del tiempo y la causalidad adivinatoria</h4>
+      <p>Explicar cómo es posible conocer un acontecimiento que todavía no ha ocurrido exige adoptar alguna teoría sobre la naturaleza del tiempo. La hipótesis del futuro fijo sostiene que ciertos acontecimientos existen como una única secuencia y pueden conocerse antes de su realización. Su principal dificultad consiste en explicar decisiones aparentemente capaces de evitar lo observado; algunos de sus defensores responden que todo intento de evitarlo ya formaba parte de la secuencia conocida.</p>
+      <p>La teoría ramificada propone, en cambio, que desde un presente pueden desarrollarse múltiples continuaciones, y que la adivinación detectaría una o varias de esas ramas con distinta estabilidad o probabilidad. Este modelo explica por qué una visión puede ser correcta en el momento de producirse y dejar de cumplirse después de una intervención.</p>
+      <p>Una tercera teoría, la de la atracción causal, sostiene que algunos acontecimientos futuros ejercen una forma de atracción informativa sobre estados anteriores. Cuanto más estable y significativo es un evento, sostiene esta teoría, más señales retrospectivas produciría. El modelo resulta controvertido porque describe bien ciertos patrones proféticos sin explicar de qué manera una causa futura puede influir sobre información presente.</p>
+      <p>Otros investigadores evitan hablar de causalidad y proponen en su lugar que la información puede establecer relaciones a través del tiempo sin necesidad de transferir energía en sentido inverso. En este marco, la adivinación sería acceso a una relación ya definida entre observador y acontecimiento, interpretación que Cronurgia Teórica debate activamente.</p>
+      <h4 id="cap-4">Capítulo IV — Modalidades de percepción extraordinaria</h4>
+      <p>La adivinación no se limita al futuro. Algunos métodos permiten obtener información sobre lugares o acontecimientos presentes fuera del alcance sensorial, lo que incluye visión remota, escucha distante, localización de personas y reconocimiento de condiciones ocultas; Planología interviene cuando la distancia incluye fronteras entre planos.</p>
+      <p>La retrocognición, por su parte, busca información sobre acontecimientos pasados no observados por el sujeto. Puede apoyarse en residuos, memoria material, vínculos o acceso directo a una relación temporal, y distinguir reconstrucción forense de percepción temporal exige comprobar qué huellas estaban realmente disponibles. La psicometría es una variante que obtiene información a partir de objetos asociados a personas, lugares o eventos. El objeto puede conservar residuos, correspondencias o historia material que el practicante interpreta. No está demostrado, sin embargo, que toda psicometría implique acceso al pasado, pues parte puede ser lectura extremadamente sensible de información presente en el soporte mismo.</p>
+      <p>Clarividencia es un término amplio para la adquisición visual o cuasi-visual de información distante u oculta; la experiencia subjetiva puede adoptar forma de imagen aunque la información original no sea óptica, por lo que el investigador debe separar el formato mental en que aparece la información del mecanismo que la produjo. Algunos sujetos reciben en cambio esa información como sonidos, palabras, sensaciones corporales, olores o intuiciones organizadas, fenómeno agrupado bajo clariaudiencia y modalidades equivalentes; la modalidad no determina necesariamente el tipo de fuente, y Psicología Resonántica estudia cómo la mente traduce información no sensorial a formatos perceptivos familiares.</p>
+      <p>En ciertos casos, finalmente, el sujeto afirma simplemente saber una respuesta sin imagen, voz o símbolo intermedio. Este conocimiento directo es difícil de estudiar porque ofrece pocos elementos para separar percepción de inferencia inconsciente, de modo que las pruebas controladas resultan esenciales para medir si la precisión obtenida supera lo esperable por azar o por conocimiento previo.</p>
+      <h4 id="cap-5">Capítulo V — Señal, ruido e interpretación</h4>
+      <p>Todo método adivinatorio produce resultados mezclados con incertidumbre, interpretación y error. Se denomina señal a la información que corresponde de manera reproducible con el fenómeno estudiado, y ruido a las variaciones que no aportan relación fiable. La disciplina intenta mejorar la señal sin fingir que el ruido puede eliminarse por completo.</p>
+      <p>Separar una de otra se complica porque quien interpreta una visión puede añadir expectativas, temores y conocimientos propios. Un símbolo ambiguo tiende a resolverse hacia aquello que el intérprete considera plausible, y por esta razón Dolbred separa siempre el registro bruto de la interpretación posterior.</p>
+      <p>Esa separación exige, además, que las predicciones se registren antes del acontecimiento. El documento debe conservar fecha, formulación exacta, alcance, nivel de confianza y los criterios mediante los cuales se considerará confirmada o refutada, porque sin registro previo la memoria humana tiende a reconstruir el mensaje para adaptarlo a lo ocurrido.</p>
+      <h4 id="cap-6">Capítulo VI — Precisión y ambigüedad del mensaje</h4>
+      <p>Una afirmación demasiado amplia puede parecer correcta en casi cualquier futuro. Frases como habrá pérdida o una figura poderosa caerá ofrecen escasa capacidad de verificación, y la precisión académica exige suficiente especificidad para que el resultado pueda también considerarse falso.</p>
+      <p>La ambigüedad plantea un problema relacionado pero distinto: una profecía puede contener términos con varios significados legítimos sin volverse por ello automáticamente inútil, aunque obliga a registrar las interpretaciones posibles antes del evento, de forma que la reinterpretación posterior pueda distinguirse siempre de la lectura inicial.</p>
+      <h4 id="cap-7">Capítulo VII — Autocumplimiento y autoevitación</h4>
+      <p>Una predicción puede modificar el comportamiento de quienes la conocen y contribuir así a producir el resultado anunciado. Esto se denomina profecía autocumplida en sentido social, aunque no requiera magia alguna; el fenómeno complica los experimentos porque revelar una visión puede alterar el futuro mismo que se pretende estudiar.</p>
+      <p>El efecto inverso ocurre cuando conocer una predicción permite evitarla. Un oráculo que advierte de un derrumbe y provoca una evacuación puede parecer haber fallado justamente porque funcionó, de modo que los diseños de evaluación deben considerar predicciones condicionales y las consecuencias de la propia intervención.</p>
+      <p>Ambos efectos conducen a una paradoja de información: si una persona conoce un futuro y actúa para cambiarlo, surge la pregunta de qué información fue observada originalmente. Los modelos ramificados responden que se observó una rama previa a la intervención; los modelos fijos sostienen, en cambio, que la intervención siempre estuvo incluida.</p>
+      <h4 id="cap-8">Capítulo VIII — Estabilidad y resolución prospectiva</h4>
+      <p>Algunas visiones continúan cumpliéndose pese a intentos razonables de evitarlas. Estas profecías resistentes pueden indicar alta estabilidad causal, interpretación incorrecta de qué debía evitarse, o una estructura que incorpora de antemano las respuestas de quienes conocen la profecía; no debe concluirse inevitabilidad, en cualquier caso, a partir de un solo episodio.</p>
+      <p>Se denomina nodo prospectivo a un acontecimiento que aparece repetidamente en métodos independientes y que parece conservarse a través de múltiples variaciones menores del futuro. La existencia de nodos fuertes es uno de los principales argumentos contra una visión completamente indeterminada de la temporalidad.</p>
+      <p>La precisión suele disminuir al aumentar la distancia temporal, fenómeno descrito como horizonte adivinatorio. Los eventos próximos dependen de menos decisiones todavía no realizadas, mientras que los lejanos acumulan bifurcaciones. Algunos métodos, sin embargo, detectan mejor acontecimientos lejanos de gran estabilidad que detalles cercanos triviales.</p>
+      <p>A esta cuestión se suma la de resolución, que describe cuánta información específica puede obtenerse. Un método puede detectar que ocurrirá una batalla sin identificar día, lugar o participantes, y aumentar la resolución suele reducir la estabilidad de la lectura y elevar el riesgo de interpretación errónea. Obtener más detalle exige, además, mayor esfuerzo, preparación o exposición en numerosos métodos, lo que constituye su costo informativo. Las teorías difieren sobre si ese costo depende de la complejidad del futuro, de la resistencia temporal o de la capacidad cognitiva del observador.</p>
+      <h4 id="cap-9">Capítulo IX — Interferencia y bloqueo adivinatorio</h4>
+      <p>Múltiples intentos de observar el mismo acontecimiento pueden producir resultados distintos. Parte de la divergencia puede ser estadística, y parte puede deberse a que la propia observación modifica decisiones; en otros casos, diferentes métodos parecen acceder a aspectos distintos de una misma situación.</p>
+      <p>Algunas personas, lugares u objetos son además difíciles de observar mediante métodos adivinatorios. El bloqueo puede ser natural, deliberado, planar, semiótico o resultado de interferencia, y Seguridad Ritual junto con Teoría de Encantamientos estudian técnicas para reducir la observabilidad de un objetivo.</p>
+      <p>Cuando ese bloqueo se vuelve deliberado y sistemático se habla de contradivinación, un conjunto de prácticas destinadas a ocultar, distorsionar o multiplicar la información disponible para observadores. Puede generar falsos futuros, ruido, referencias sustitutas o condiciones que cambian al ser observadas, y su existencia obliga a tratar toda visión sobre objetivos protegidos como evidencia potencialmente adversarial.</p>
+      <h4 id="cap-10">Capítulo X — Tarotismo y sistemas simbólicos</h4>
+      <p>El tarotismo estudia sistemas de cartas, láminas u objetos simbólicos cuya disposición sirve como interfaz interpretativa. No se presupone que las cartas contengan el futuro. Pueden organizar relaciones, seleccionar símbolos relevantes o actuar como medio mediante el cual una estructura adivinatoria reduce posibilidades, y la disciplina distingue cuidadosamente tarotismo ritual, lectura psicológica y simple azar.</p>
+      <p>Cada elemento de un sistema tarotístico posee un campo de correspondencias construido histórica y culturalmente, cuyo valor puede depender de posición, orientación, relación con otras cartas y pregunta formulada. Semiótica Mágica estudia por qué un símbolo puede representar una relación; Adivinación estudia, en cambio, si esa relación aporta información no observada. Una tirada define además posiciones con funciones distintas, como causa, obstáculo, consecuencia, posibilidad u ocultamiento; su geometría organiza la interpretación antes de revelar las cartas y reduce el riesgo de asignar significado solo después de conocer el resultado.</p>
+      <p>Sobre el mecanismo mismo del tarotismo existen teorías distintas. Una sostiene que la magia no transmite una visión completa, sino que sesga eventos aleatorios para seleccionar símbolos relevantes, de modo que el movimiento de las cartas sería un mecanismo de reducción informativa comprobable estadísticamente mejor que muchas experiencias visionarias. Otra propone en cambio que el lector identifica de forma inconsciente qué elementos del conjunto corresponden con la consulta, de manera que el acto de elegir no sería azar alterado sino percepción resonante traducida a selección manual; los experimentos que separan lector y manipulación física intentan distinguir ambos modelos.</p>
+      <p>Los sistemas simbólicos pueden, finalmente, producir interpretaciones útiles incluso sin información sobrenatural alguna. Una carta obliga al consultante a considerar relaciones que quizá no había formulado, y esta utilidad psicológica no demuestra ni refuta una capacidad adivinatoria adicional.</p>
+      <h4 id="cap-11">Capítulo XI — Oráculos y fuentes de conocimiento revelado</h4>
+      <p>Un oráculo es un medio, individuo o institución que produce respuestas interpretadas como acceso a conocimiento extraordinario. Puede utilizar trance, entidad, sistema simbólico, ambiente sagrado o técnica prospectiva; el término describe una función social y no un mecanismo único.</p>
+      <p>Una respuesta sobrenatural puede en particular provenir de una entidad que posee información ordinariamente inaccesible. En ese caso, el fenómeno no demuestra que el consultante haya observado el futuro, sino que puede estar recibiendo conocimiento de otro agente; Demonología, Teurgia y Pacturgia resultan esenciales para evaluar la competencia, los motivos y la capacidad de engaño de esa fuente.</p>
+      <p>Las tradiciones religiosas atribuyen además a ciertas entidades un conocimiento superior o atemporal. La Adivinación no decide la naturaleza teológica de esas entidades. Examina qué información proporcionan, con qué precisión y bajo qué condiciones, ya que una autoridad sagrada no elimina la necesidad de distinguir revelación, interpretación y doctrina.</p>
+      <p>El profeta, por último, es una persona cuya función social incluye recibir o transmitir conocimiento considerado revelado. La existencia de una institución profética no garantiza la exactitud de cada mensaje, y los estudios académicos separan el fenómeno adivinatorio de la legitimidad religiosa o política de quien lo transmite.</p>
+      <h4 id="cap-12">Capítulo XII — Sueños, trance y augurios</h4>
+      <p>Los sueños pueden servir como formato para información adivinatoria porque la mente se encuentra menos limitada por la percepción externa, aunque también producen una gran cantidad de material endógeno. Un sueño solo adquiere valor prospectivo cuando existe una correspondencia verificable más allá de la interpretación posterior.</p>
+      <p>El trance, por su parte, modifica la atención, la integración sensorial y el acceso a asociaciones. Puede facilitar una percepción extraordinaria o simplemente reducir los filtros cognitivos habituales, y Psicología Resonántica estudia los riesgos de confundir la intensidad subjetiva de la experiencia con precisión informativa real.</p>
+      <p>Los augurios, finalmente, interpretan acontecimientos naturales o casuales como indicadores. Un patrón de aves, una llama, el movimiento de agua o una fractura pueden funcionar como señal dentro de una tradición determinada; el desafío académico consiste en demostrar que esa correlación supera la selección retrospectiva.</p>
+      <h4 id="cap-13">Capítulo XIII — Sistemas materiales y astrales</h4>
+      <p>Algunos métodos utilizan arena, piedras, huesos, líquidos o cristales para producir configuraciones interpretables. El soporte puede actuar como sistema aleatorio, medio resonante o registro de influencias ambientales, y Mineralogía Mágica participa cuando el material posee propiedades propias de retención o sensibilidad.</p>
+      <p>La astromancia estudia, de manera comparable, las relaciones entre configuraciones celestes y acontecimientos. Puede basarse en ciclos físicos, correspondencias simbólicas o influencias mágicas reales, por lo que el campo exige distinguir correlaciones astronómicas medibles de tradiciones que solo utilizan el cielo como sistema de referencia.</p>
+      <h4 id="cap-14">Capítulo XIV — Probabilidad condicional, decisión y libre albedrío</h4>
+      <p>Una buena lectura prospectiva formula los futuros en términos de condiciones. Si determinada decisión se mantiene, aumenta la probabilidad de un resultado; si cambia, la distribución puede modificarse por completo. Este enfoque permite convertir la adivinación en una herramienta de decisión en vez de una sentencia.</p>
+      <p>El valor práctico de conocer posibilidades futuras reside, en efecto, en comparar consecuencias. Una predicción que no puede influir en ninguna decisión tiene una utilidad informativa distinta de otra que permite elegir entre alternativas, y la ética de la consulta depende en parte de qué opciones reales conserva el sujeto.</p>
+      <p>La Adivinación no ha resuelto si el libre albedrío existe en sentido metafísico. Los datos muestran que algunas decisiones alteran los futuros observados y otras parecen converger hacia los mismos resultados; la disciplina trabaja con el comportamiento de las posibilidades sin afirmar una teoría final de la voluntad.</p>
+      <h4 id="cap-15">Capítulo XV — El observador y la formulación de preguntas</h4>
+      <p>El observador puede formar parte del sistema que intenta conocer. Su personalidad, su relación con el objetivo y su conocimiento previo pueden cambiar qué información recibe, y los protocolos utilizan lectores ciegos, preguntas ocultas y repetición independiente para separar estos efectos.</p>
+      <p>La formulación de una pregunta delimita, además, el espacio de respuestas posibles. Las preguntas vagas producen información difícil de evaluar, mientras que las excesivamente estrechas pueden exigir una resolución que el método no puede sostener; la buena práctica define tiempo, referente y criterio de respuesta antes de la consulta.</p>
+      <p>Algunos métodos fallan sistemáticamente ante preguntas sin referente estable. Preguntar quién ganará una guerra que todavía no existe, o dónde está un objeto ya destruido, puede producir respuestas simbólicas sin correspondencia literal, de modo que el fracaso puede provenir de la pregunta y no del instrumento. Toda consulta debe establecer, en consecuencia, qué persona, lugar, acontecimiento o relación intenta observar. Nombres, objetos, imágenes, vínculos y coordenadas pueden servir como referentes, y Semiótica Mágica ayuda a explicar por qué algunos de ellos siguen siendo válidos aunque cambie la apariencia del objetivo.</p>
+      <h4 id="cap-16">Capítulo XVI — Sesgos y control experimental</h4>
+      <p>Las personas recuerdan con facilidad los aciertos extraordinarios y olvidan los fallos cotidianos. Este error de confirmación resulta especialmente peligroso en tradiciones adivinatorias con lenguaje flexible, y solo los registros completos permiten calcular la precisión sobre todas las consultas, no únicamente sobre las memorables.</p>
+      <p>Afirmar que un método funciona exige además superar una base de comparación, es decir, lo que podría obtenerse por azar, por inferencia ordinaria o por información previa. Predecir que mañana amanecerá no demuestra adivinación alguna; el desafío experimental consiste en construir preguntas suficientemente inciertas y a la vez verificables.</p>
+      <p>Quien interpreta una lectura no debería conocer información capaz de guiar inconscientemente la respuesta cuando el experimento busca medir un acceso sobrenatural genuino. Los diseños ciegos y doblemente ciegos reducen esas filtraciones, y resultan particularmente importantes en tarotismo y psicometría.</p>
+      <p>Un resultado extraordinario necesita, finalmente, repetirse bajo condiciones comparables. Una profecía única puede ser históricamente importante y al mismo tiempo difícil de generalizar científicamente; la replicación permite distinguir una capacidad estable de una coincidencia irrepetible.</p>
+      <h4 id="cap-17">Capítulo XVII — Contradicción y consenso entre videntes</h4>
+      <p>Dos observadores pueden producir visiones incompatibles entre sí. La discrepancia puede indicar error, ramas diferentes, horizontes temporales distintos o interferencia, y la disciplina evita resolver automáticamente el conflicto eligiendo al vidente de mayor prestigio.</p>
+      <p>Cuando, en cambio, métodos independientes convergen en un mismo resultado, aumenta la confianza sin que ello garantice certeza. La independencia entre observadores es crucial, ya que diez lectores formados por el mismo maestro pueden compartir igualmente el mismo sesgo; los estudios comparan por ello técnicas, tradiciones y fuentes diferentes entre sí.</p>
+      <h4 id="cap-18">Capítulo XVIII — Aplicaciones prácticas de la adivinación</h4>
+      <p>Las profecías pueden alterar sucesiones, guerras, mercados y legitimidad política. Una predicción sobre un gobernante puede producir conspiraciones que aumenten la probabilidad misma del resultado anunciado, y Derecho Arcano estudia la responsabilidad por manipulación, fraude y uso institucional de información prospectiva.</p>
+      <p>El uso comercial de la adivinación plantea problemas similares cuando una persona obtiene información futura no disponible para otros. Algunas jurisdicciones restringen las consultas sobre precios, subastas o apuestas, aunque la dificultad consiste en demostrar cuándo hubo información sobrenatural real y cuándo hubo, simplemente, mejor análisis.</p>
+      <p>En medicina, la adivinación puede sugerir la progresión de una enfermedad, el riesgo de recaída o la respuesta a un tratamiento, aunque debe complementar y nunca sustituir el diagnóstico clínico, dado que una visión de deterioro futuro puede cambiar si el médico interviene a tiempo.</p>
+      <p>Las técnicas adivinatorias pueden también orientar búsquedas, reconstruir rutas o señalar lugares en el ámbito forense. Su información se considera pocas veces prueba suficiente por sí sola, porque interpretación y mecanismo pueden ser difíciles de auditar; Criminalística Arcana la utiliza como fuente de hipótesis que luego deben corroborarse por otros medios.</p>
+      <p>El uso militar de información futura produce, por último, una carrera entre observación, ocultación y desinformación. Los ejércitos pueden intentar generar múltiples planes para reducir la estabilidad prospectiva del enemigo o alimentar falsas referencias, de modo que la contradivinación se vuelve tan importante en la guerra como la propia observación.</p>
+      <h4 id="cap-19">Capítulo XIX — Privacidad, consentimiento y ética de la consulta</h4>
+      <p>Observar un lugar distante o conocer información privada mediante magia plantea problemas similares a la vigilancia ordinaria, y algunos adicionales. El hecho de que un dato pueda conocerse no implica derecho alguno a conocerlo, y Derecho Arcano establece límites sobre la observación de personas, domicilios, conversaciones y futuros personales.</p>
+      <p>Las consultas sobre terceros sin su consentimiento resultan éticamente problemáticas, en especial cuando afectan decisiones íntimas. El tarotismo popular ha normalizado preguntas sobre pensamientos y relaciones de otras personas; la práctica académica, en cambio, exige justificar por qué esa información debe buscarse y qué daño puede producir su obtención.</p>
+      <p>Conocer una posibilidad puede alterar profundamente la conducta, la ansiedad y la autonomía de quien la recibe. Una predicción de muerte, fracaso o traición puede causar daño incluso siendo incierta, de modo que los profesionales deben comunicar grados de confianza y alternativas reales, en lugar de presentar posibilidades como sentencias.</p>
+      <p>Las predicciones de muerte reciben, dentro de este marco, un tratamiento especial por su impacto psicológico y por la posibilidad de autocumplimiento. Una fecha precisa debe considerarse de alta gravedad clínica y ética, y Tanatología puede participar cuando la visión parece referirse a una terminación no ordinaria.</p>
+      <h4 id="cap-20">Capítulo XX — Los límites del conocimiento adivinatorio</h4>
+      <p>El término inevitable se reserva para casos extraordinarios donde múltiples métodos, intervenciones y bifurcaciones conocidas convergen en el mismo evento. Incluso entonces, Dolbred prefiere hablar de estabilidad prospectiva extrema, porque la certeza absoluta es una afirmación demasiado fuerte para la evidencia disponible.</p>
+      <p>Existen además regiones de futuro que parecen resistir toda observación. Puede deberse a interferencia, ausencia de referencia, alta ramificación o mecanismos deliberados de ocultación; algunos investigadores proponen que ciertos eventos no producen información retrospectiva hasta que una condición específica se aproxima.</p>
+      <p>Recibir una respuesta correcta, en cualquier caso, no demuestra de dónde procede. Puede haber inferencia inconsciente, acceso remoto, entidad informante, resonancia temporal o manipulación del azar, y la Adivinación clasifica primero la conducta del fenómeno y solo después propone un mecanismo.</p>
+      <h4 id="cap-21">Capítulo XXI — Relación con otras disciplinas</h4>
+      <p>Cronurgia Teórica estudia la estructura del tiempo y sus alteraciones; Adivinación estudia la información relacionada con estados no observados, incluidos los futuros. Una visión futura no implica viaje temporal, aunque ambas disciplinas se encuentran cuando debe explicarse cómo una relación informativa atraviesa el orden temporal.</p>
+      <p>Muchos métodos adivinatorios utilizan símbolos porque permiten condensar relaciones complejas en formas interpretables. Semiótica estudia cómo esos símbolos significan; Adivinación pregunta, en cambio, si su selección contiene información extraordinaria. Confundir ambas cosas convierte cualquier interpretación simbólica en supuesta profecía.</p>
+      <p>Percepción, expectativa, memoria y trance influyen además directamente en la experiencia adivinatoria. Psicología Resonántica estudia cómo la mente construye y distorsiona estas experiencias, y la colaboración entre ambas disciplinas resulta esencial para distinguir señal de elaboración subjetiva.</p>
+      <p>Cuando la información procede de una entidad, el problema cambia de acceso temporal a comunicación y autoridad. Teurgia y Pacturgia investigan quién responde, por qué y bajo qué obligaciones, mientras que la Adivinación evalúa la información resultante sin asumir la sinceridad de la fuente.</p>
+      <h4 id="cap-22">Capítulo XXII — Errores metodológicos comunes</h4>
+      <p>Un oráculo que ha acertado muchas veces puede, aun así, equivocarse. La confianza aumenta con la evidencia acumulada, pero no transforma una fuente finita en una autoridad absoluta; las decisiones críticas deben registrar incertidumbre incluso cuando la tradición considera sagrado al intérprete.</p>
+      <p>Una profecía incomprensible puede reinterpretarse después del evento hasta parecer perfecta, sin que ello demuestre que la lectura previa contuviera realmente la misma información. Las interpretaciones prospectivas deben archivarse, por ello, antes de que el acontecimiento revele qué metáforas resultan convenientes.</p>
+      <p>Una visión clara puede representar además el futuro más probable y no el único posible. Tratarla como inevitable puede eliminar las decisiones capaces de cambiarla; la práctica responsable comunica qué parte del mensaje parece fija, qué parte condicional y qué parte incierta.</p>
+      <p>Toda afirmación adivinatoria académicamente útil debe, finalmente, poder fracasar. Si toda consecuencia posible puede reinterpretarse como confirmación, el método no permite aprender de sus propios errores; definir condiciones de refutación protege a la disciplina de convertirse en doctrina inmune a la evidencia.</p>
+      <h4 id="cap-23">Capítulo XXIII — La pregunta que queda abierta</h4>
+      <p>La Adivinación todavía no sabe si el futuro existe de alguna manera antes de ocurrir o si solo existen relaciones capaces de anticiparlo. Los datos apoyan modelos distintos en contextos diferentes, y la disciplina mantiene esta incertidumbre como problema de investigación, no como un defecto que deba ocultarse.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Adivinación estudia información que llega antes, después o fuera de los canales ordinarios de observación. Su ámbito incluye predicción, probabilidad, profecía, percepción remota, retrocognición, tarotismo, augurios, oráculos y conocimiento directo.</p>
       <p>La disciplina distingue información de interpretación, precisión de vaguedad, profecía de pronóstico y acceso sobrenatural de inferencia extraordinariamente buena. También reconoce que conocer un futuro puede modificarlo y que una predicción correcta puede parecer falsa si permitió evitar precisamente aquello que anunciaba.</p>
