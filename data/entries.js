@@ -4435,94 +4435,30 @@ window.ENTRIES = [
       Criminalística Arcana — Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de la Criminalística Arcana</a>
-        <a href="#cap-2">II. Escena arcana</a>
-        <a href="#cap-3">III. Control de escena</a>
-        <a href="#cap-4">IV. Riesgo antes que evidencia</a>
-        <a href="#cap-5">V. Cadena de custodia</a>
-        <a href="#cap-6">VI. Contaminación</a>
-        <a href="#cap-7">VII. Muestras de control</a>
-        <a href="#cap-8">VIII. Residuo mágico</a>
-        <a href="#cap-9">IX. Persistencia del residuo</a>
-        <a href="#cap-10">X. Decaimiento</a>
-        <a href="#cap-11">XI. Firma mágica</a>
-        <a href="#cap-12">XII. Firma individual</a>
-        <a href="#cap-13">XIII. Firma de tradición</a>
-        <a href="#cap-14">XIV. Firma de instrumento</a>
-        <a href="#cap-15">XV. Firma de material</a>
-        <a href="#cap-16">XVI. Firma ambiental</a>
-        <a href="#cap-17">XVII. Reconstrucción de hechizos</a>
-        <a href="#cap-18">XVIII. Resultado y mecanismo</a>
-        <a href="#cap-19">XIX. Secuencia</a>
-        <a href="#cap-20">XX. Superposición de estructuras</a>
-        <a href="#cap-21">XXI. Hechizos parciales</a>
-        <a href="#cap-22">XXII. Fallo y accidente</a>
-        <a href="#cap-23">XXIII. Sabotaje</a>
-        <a href="#cap-24">XXIV. Residuos rúnicos</a>
-        <a href="#cap-25">XXV. Trazado ritual</a>
-        <a href="#cap-26">XXVI. Residuos semióticos</a>
-        <a href="#cap-27">XXVII. Lenguaje</a>
-        <a href="#cap-28">XXVIII. Residuos resonánticos</a>
-        <a href="#cap-29">XXIX. Residuos pneumatológicos</a>
-        <a href="#cap-30">XXX. Maldiciones en escena</a>
-        <a href="#cap-31">XXXI. Referente maldiológico</a>
-        <a href="#cap-32">XXXII. Condiciones maldiológicas</a>
-        <a href="#cap-33">XXXIII. Herencia y transmisión</a>
-        <a href="#cap-34">XXXIV. Atribución de tradición</a>
-        <a href="#cap-35">XXXV. Arcanomática</a>
-        <a href="#cap-36">XXXVI. Resonántica</a>
-        <a href="#cap-37">XXXVII. Teurgia</a>
-        <a href="#cap-38">XXXVIII. Naturgia</a>
-        <a href="#cap-39">XXXIX. Endomancia</a>
-        <a href="#cap-40">XL. Pacturgia</a>
-        <a href="#cap-41">XLI. Hibridación de tradiciones</a>
-        <a href="#cap-42">XLII. Imitación deliberada</a>
-        <a href="#cap-43">XLIII. Falsa bandera arcana</a>
-        <a href="#cap-44">XLIV. Evidencia negativa</a>
-        <a href="#cap-45">XLV. Limpieza de escena</a>
-        <a href="#cap-46">XLVI. Contramedidas forenses</a>
-        <a href="#cap-47">XLVII. Tiempo desde el fenómeno</a>
-        <a href="#cap-48">XLVIII. Origen espacial</a>
-        <a href="#cap-49">XLIX. Origen planar</a>
-        <a href="#cap-50">L. Reconstrucción de invocaciones</a>
-        <a href="#cap-51">LI. Familiares como evidencia</a>
-        <a href="#cap-52">LII. Artefactos en escena</a>
-        <a href="#cap-53">LIII. Artefactos con memoria</a>
-        <a href="#cap-54">LIV. Encantamientos como registradores</a>
-        <a href="#cap-55">LV. Cuerpos</a>
-        <a href="#cap-56">LVI. Lesiones mágicas</a>
-        <a href="#cap-57">LVII. Transformación post mortem</a>
-        <a href="#cap-58">LVIII. Resurrección y evidencia</a>
-        <a href="#cap-59">LIX. Testimonio mágico</a>
-        <a href="#cap-60">LX. Confesión y corroboración</a>
-        <a href="#cap-61">LXI. Escena y privacidad</a>
-        <a href="#cap-62">LXII. Minimización</a>
-        <a href="#cap-63">LXIII. Órdenes judiciales</a>
-        <a href="#cap-64">LXIV. Laboratorios autorizados</a>
-        <a href="#cap-65">LXV. Niveles de riesgo forense</a>
-        <a href="#cap-66">LXVI. Escenas maldiológicas</a>
-        <a href="#cap-67">LXVII. Escenas resonánticas</a>
-        <a href="#cap-68">LXVIII. Escenas pneumatológicas</a>
-        <a href="#cap-69">LXIX. Peritos</a>
-        <a href="#cap-70">LXX. Grados de conclusión</a>
-        <a href="#cap-71">LXXI. Tasa de error</a>
-        <a href="#cap-72">LXXII. Replicación pericial</a>
-        <a href="#cap-73">LXXIII. Pruebas destructivas</a>
-        <a href="#cap-74">LXXIV. Análisis ciego</a>
-        <a href="#cap-75">LXXV. Comparación con muestras conocidas</a>
-        <a href="#cap-76">LXXVI. Bases de datos</a>
-        <a href="#cap-77">LXXVII. Privacidad de firmas</a>
-        <a href="#cap-78">LXXVIII. Fraude forense</a>
-        <a href="#cap-79">LXXIX. Error honesto</a>
-        <a href="#cap-80">LXXX. Revisión de condenas</a>
-        <a href="#cap-81">LXXXI. Criminalística y tradición</a>
-        <a href="#cap-82">LXXXII. Criminalística y regulación profesional</a>
-        <a href="#cap-83">LXXXIII. Criminalística y universidad</a>
-        <a href="#cap-84">LXXXIV. Casos de interés público</a>
-        <a href="#cap-85">LXXXV. El error de la firma perfecta</a>
-        <a href="#cap-86">LXXXVI. El error de la escuela culpable</a>
-        <a href="#cap-87">LXXXVII. El error de reconstruir demasiado</a>
-        <a href="#cap-88">LXXXVIII. La pregunta forense</a>
+        <a href="#cap-1">I. Objeto de la Criminalística Arcana y control de la escena</a>
+        <a href="#cap-2">II. Integridad de la evidencia: cadena de custodia, contaminación y muestras de control</a>
+        <a href="#cap-3">III. El residuo mágico: naturaleza, persistencia y decaimiento</a>
+        <a href="#cap-4">IV. La firma mágica y sus variantes</a>
+        <a href="#cap-5">V. Reconstrucción de hechizos: mecanismo, secuencia y superposición</a>
+        <a href="#cap-6">VI. Fallo, accidente y sabotaje</a>
+        <a href="#cap-7">VII. Residuos especializados por disciplina</a>
+        <a href="#cap-8">VIII. Maldiciones en la escena forense</a>
+        <a href="#cap-9">IX. Atribución de tradición por escuela mágica</a>
+        <a href="#cap-10">X. Engaño, ocultamiento y evidencia negativa</a>
+        <a href="#cap-11">XI. Estimación temporal, espacial y planar</a>
+        <a href="#cap-12">XII. Invocaciones y familiares como evidencia</a>
+        <a href="#cap-13">XIII. Artefactos y encantamientos como registradores</a>
+        <a href="#cap-14">XIV. Cuerpos, lesiones y transformación post mortem</a>
+        <a href="#cap-15">XV. Testimonio mágico y confesión</a>
+        <a href="#cap-16">XVI. Privacidad, minimización y órdenes judiciales</a>
+        <a href="#cap-17">XVII. Laboratorios autorizados y niveles de riesgo forense</a>
+        <a href="#cap-18">XVIII. Escenas especializadas de alto riesgo</a>
+        <a href="#cap-19">XIX. Peritos, conclusiones y control de calidad pericial</a>
+        <a href="#cap-20">XX. Pruebas destructivas y análisis ciego</a>
+        <a href="#cap-21">XXI. Comparación de firmas y bases de datos</a>
+        <a href="#cap-22">XXII. Fraude forense, error honesto y revisión de condenas</a>
+        <a href="#cap-23">XXIII. Criminalística arcana e instituciones</a>
+        <a href="#cap-24">XXIV. Errores comunes de interpretación forense</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -4541,461 +4477,355 @@ window.ENTRIES = [
       investigación pueden alterar aquello que observan. Un hechizo de revelación puede activar una
       defensa; una lectura de residuos puede consumir la señal; un intento de romper una maldición
       puede borrar precisamente la estructura necesaria para demostrar cómo funcionaba.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de la Criminalística Arcana</h4>
+      <h4 id="cap-1">Capítulo I — Objeto de la Criminalística Arcana y control de la escena</h4>
       <p>La Criminalística Arcana aplica métodos de observación, análisis y reconstrucción a escenas
-      donde intervino magia.</p>
-      <p>Su finalidad es producir hipótesis verificables sobre origen, mecanismo, secuencia y autoría
-      probable de un fenómeno.</p>
-      <p>No determina culpabilidad por sí sola. Aporta evidencia técnica que debe integrarse con
-      testimonios, documentos y otras pruebas.</p>
-      <h4 id="cap-2">Capítulo II — Escena arcana</h4>
-      <p>Una escena arcana es cualquier lugar, objeto, cuerpo o sistema donde puede conservarse
-      información sobre un fenómeno mágico relevante para una investigación.</p>
-      <p>Puede incluir el punto de manifestación, lugares de preparación, rutas de escape, objetos
-      utilizados y zonas donde se depositaron residuos.</p>
-      <p>El perímetro inicial debe ser amplio porque muchos efectos se extienden más allá de la
-      región visible.</p>
-      <h4 id="cap-3">Capítulo III — Control de escena</h4>
-      <p>El primer equipo debe impedir activaciones, manipulaciones y contaminación innecesarias.</p>
-      <p>Personas no autorizadas, familiares, sensores automáticos y hechizos de seguridad pueden
-      modificar la escena después del hecho original.</p>
-      <p>En Dolbred, toda intervención posterior al aseguramiento debe quedar registrada.</p>
-      <h4 id="cap-4">Capítulo IV — Riesgo antes que evidencia</h4>
-      <p>La preservación de evidencia no exige sacrificar seguridad.</p>
-      <p>Una maldición activa, una fuga planar o un artefacto inestable puede requerir contención
-      inmediata.</p>
-      <p>Cuando una intervención altera la escena por necesidad, debe documentarse qué se cambió, por
-      qué y con qué método.</p>
-      <h4 id="cap-5">Capítulo V — Cadena de custodia</h4>
+      donde intervino magia. Su finalidad es producir hipótesis verificables sobre origen, mecanismo,
+      secuencia y autoría probable de un fenómeno. No determina culpabilidad por sí sola, sino que
+      aporta evidencia técnica que debe integrarse con testimonios, documentos y otras pruebas.</p>
+      <p>El objeto de estudio de la disciplina es la escena arcana, entendida como cualquier lugar,
+      objeto, cuerpo o sistema donde puede conservarse información sobre un fenómeno mágico relevante
+      para una investigación. Puede incluir el punto de manifestación, lugares de preparación, rutas
+      de escape, objetos utilizados y zonas donde se depositaron residuos. El perímetro inicial debe
+      ser amplio, porque muchos efectos se extienden más allá de la región visible.</p>
+      <p>El primer equipo en llegar debe impedir activaciones, manipulaciones y contaminación
+      innecesarias. Personas no autorizadas, familiares, sensores automáticos y hechizos de seguridad
+      pueden modificar la escena después del hecho original, por lo que en Dolbred toda intervención
+      posterior al aseguramiento debe quedar registrada.</p>
+      <p>La preservación de evidencia no exige sacrificar seguridad. Una maldición activa, una fuga
+      planar o un artefacto inestable puede requerir contención inmediata, y cuando una intervención
+      altera la escena por necesidad debe documentarse qué se cambió, por qué y con qué método.</p>
+      <h4 id="cap-2">Capítulo II — Integridad de la evidencia: cadena de custodia, contaminación y muestras de control</h4>
       <p>Toda evidencia debe conservar una historia verificable desde su levantamiento hasta su
-      presentación.</p>
-      <p>La cadena registra ubicación, hora, responsable, embalaje, análisis y transferencias.</p>
-      <p>En evidencia mágica debe añadirse qué campos, barreras, sellos o lecturas se aplicaron,
-      porque pueden modificar firmas.</p>
-      <h4 id="cap-6">Capítulo VI — Contaminación</h4>
-      <p>Un investigador puede introducir residuos propios mediante hechizos, instrumentos, contacto
-      o incluso afinidades ambientales.</p>
-      <p>Por ello, los equipos registran firmas de referencia del personal antes de ingresar.</p>
-      <p>La contaminación conocida no vuelve inútil una muestra si puede separarse
-      analíticamente.</p>
-      <h4 id="cap-7">Capítulo VII — Muestras de control</h4>
-      <p>Las muestras de control permiten comparar el material de la escena con zonas o objetos no
-      afectados.</p>
-      <p>Un residuo aparentemente extraño puede ser una propiedad normal del edificio, suelo o
-      especie.</p>
-      <p>Sin control, la diferencia entre fondo y evidencia se vuelve especulativa.</p>
-      <h4 id="cap-8">Capítulo VIII — Residuo mágico</h4>
+      presentación. La cadena de custodia registra ubicación, hora, responsable, embalaje, análisis y
+      transferencias, y en evidencia mágica debe añadirse además qué campos, barreras, sellos o
+      lecturas se aplicaron sobre ella, porque estas intervenciones pueden modificar las firmas que se
+      buscan preservar.</p>
+      <p>Esa cadena también debe dar cuenta de la contaminación. Un investigador puede introducir
+      residuos propios mediante hechizos, instrumentos, contacto o incluso afinidades ambientales, por
+      lo que los equipos registran firmas de referencia del personal antes de ingresar a la escena. La
+      contaminación conocida no vuelve inútil una muestra si puede separarse analíticamente del resto
+      del material.</p>
+      <p>Las muestras de control completan este marco, pues permiten comparar el material de la escena
+      con zonas u objetos no afectados. Un residuo aparentemente extraño puede ser una propiedad
+      normal del edificio, el suelo o la especie involucrada, y sin muestras de control la diferencia
+      entre fondo ambiental y evidencia genuina se vuelve especulativa.</p>
+      <h4 id="cap-3">Capítulo III — El residuo mágico: naturaleza, persistencia y decaimiento</h4>
       <p>Se denomina residuo a una alteración persistente que permanece después de que la
-      manifestación principal terminó.</p>
-      <p>Puede consistir en energía, material modificado, orientación, información estructural,
-      afinidad o relación simbólica.</p>
-      <p>No todos los hechizos producen residuos detectables ni todos los residuos permiten
-      identificar el hechizo con precisión.</p>
-      <h4 id="cap-9">Capítulo IX — Persistencia del residuo</h4>
-      <p>La duración depende de intensidad, soporte, ambiente y tipo de fenómeno.</p>
-      <p>Algunos residuos desaparecen en minutos; otros se fijan durante siglos.</p>
-      <p>El tiempo transcurrido debe estimarse con intervalos y no con falsas precisiones.</p>
-      <h4 id="cap-10">Capítulo X — Decaimiento</h4>
-      <p>Muchos residuos pierden intensidad de manera gradual.</p>
-      <p>El patrón de decaimiento puede ayudar a estimar antigüedad si existen modelos de
-      referencia.</p>
-      <p>Temperatura, humedad, minerales, actividad ritual y contaminación secundaria pueden alterar
-      la curva esperada.</p>
-      <h4 id="cap-11">Capítulo XI — Firma mágica</h4>
-      <p>Una firma es un conjunto de rasgos recurrentes asociados a un practicante, tradición, objeto
-      o método.</p>
-      <p>No equivale a una huella dactilar perfecta.</p>
-      <p>Las firmas pueden cambiar, imitarse, ocultarse o compartirse entre estudiantes de una misma
-      escuela.</p>
-      <h4 id="cap-12">Capítulo XII — Firma individual</h4>
-      <p>Algunos practicantes repiten proporciones, ritmos, afinidades o modos de cerrar
-      estructuras.</p>
-      <p>Con suficientes muestras conocidas puede establecerse una comparación.</p>
-      <p>La atribución individual requiere mucha más evidencia que la atribución de tradición.</p>
-      <h4 id="cap-13">Capítulo XIII — Firma de tradición</h4>
-      <p>Las tradiciones enseñan convenciones sobre gestos, runas, geometría, materiales y
-      secuencias.</p>
-      <p>Estos rasgos pueden sobrevivir incluso cuando el ejecutor intenta ocultar su identidad.</p>
-      <p>Sin embargo, aprender una técnica ajena puede producir una firma híbrida.</p>
-      <h4 id="cap-14">Capítulo XIV — Firma de instrumento</h4>
-      <p>Bastones, focos, catalizadores y artefactos pueden dejar rasgos propios repetibles.</p>
-      <p>Una misma persona usando herramientas distintas puede producir escenas diferentes.</p>
-      <p>El laboratorio debe separar firma del ejecutor y firma del instrumento cuando sea
-      posible.</p>
-      <h4 id="cap-15">Capítulo XV — Firma de material</h4>
-      <p>Reactivos, minerales, tintas, sangre, metales y componentes orgánicos pueden aportar
-      trazabilidad.</p>
-      <p>Mineralogía Mágica y Alquimia ayudan a identificar procedencia, pureza y tratamientos
-      previos.</p>
-      <p>La composición material rara vez demuestra por sí sola quién utilizó el componente.</p>
-      <h4 id="cap-16">Capítulo XVI — Firma ambiental</h4>
-      <p>El entorno modifica el fenómeno.</p>
-      <p>Una misma estructura ejecutada sobre granito, madera o dentro de una Soberanía elemental
-      puede dejar residuos distintos.</p>
-      <p>Las comparaciones deben controlar condiciones ambientales antes de concluir que existen dos
-      autores.</p>
-      <h4 id="cap-17">Capítulo XVII — Reconstrucción de hechizos</h4>
+      manifestación principal terminó. Puede consistir en energía, material modificado, orientación,
+      información estructural, afinidad o relación simbólica. No todos los hechizos producen residuos
+      detectables, ni todos los residuos permiten identificar el hechizo con precisión.</p>
+      <p>La duración de un residuo depende de intensidad, soporte, ambiente y tipo de fenómeno.
+      Algunos desaparecen en minutos, otros se fijan durante siglos, y el tiempo transcurrido debe
+      estimarse con intervalos en vez de falsas precisiones.</p>
+      <p>Además, muchos residuos pierden intensidad de manera gradual. El patrón de decaimiento puede
+      ayudar a estimar antigüedad cuando existen modelos de referencia, aunque temperatura, humedad,
+      minerales, actividad ritual y contaminación secundaria pueden alterar la curva esperada.</p>
+      <h4 id="cap-4">Capítulo IV — La firma mágica y sus variantes</h4>
+      <p>Una firma mágica es un conjunto de rasgos recurrentes asociados a un practicante, tradición,
+      objeto o método. No equivale a una huella dactilar perfecta, ya que puede cambiar, imitarse,
+      ocultarse o compartirse entre estudiantes de una misma escuela; su valor probatorio depende, por
+      tanto, del tipo de firma que se esté comparando.</p>
+      <p>La firma individual surge cuando un practicante repite proporciones, ritmos, afinidades o
+      modos de cerrar estructuras. Con suficientes muestras conocidas puede establecerse una
+      comparación, aunque la atribución individual requiere mucha más evidencia que la atribución de
+      tradición.</p>
+      <p>La firma de tradición, en cambio, proviene de las convenciones que cada escuela enseña sobre
+      gestos, runas, geometría, materiales y secuencias. Estos rasgos pueden sobrevivir incluso cuando
+      el ejecutor intenta ocultar su identidad, aunque aprender una técnica ajena puede producir una
+      firma híbrida.</p>
+      <p>Bastones, focos, catalizadores y otros artefactos añaden, además, una firma de instrumento,
+      rasgos propios y repetibles que pueden aparecer aunque cambie la persona que los empuña. Una
+      misma persona usando herramientas distintas puede producir escenas diferentes, así que el
+      laboratorio debe separar la firma del ejecutor de la firma del instrumento cuando sea posible.</p>
+      <p>Reactivos, minerales, tintas, sangre, metales y componentes orgánicos aportan una firma de
+      material que ayuda a trazar procedencia. Mineralogía Mágica y Alquimia colaboran en identificar
+      origen, pureza y tratamientos previos, aunque la composición material por sí sola casi nunca
+      demuestra quién utilizó el componente.</p>
+      <p>Por último, el entorno también deja su marca. Una misma estructura ejecutada sobre granito,
+      madera o dentro de una Soberanía elemental puede dejar residuos distintos, y las comparaciones
+      deben controlar estas condiciones ambientales antes de concluir que existen dos autores
+      diferentes.</p>
+      <h4 id="cap-5">Capítulo V — Reconstrucción de hechizos: mecanismo, secuencia y superposición</h4>
       <p>Reconstruir un hechizo consiste en inferir la estructura probable a partir de efectos,
-      residuos, materiales y secuencia.</p>
-      <p>No implica reproducirlo por completo.</p>
-      <p>La práctica dolbriana favorece modelos parciales que expliquen la evidencia sin reactivar
-      peligros.</p>
-      <h4 id="cap-18">Capítulo XVIII — Resultado y mecanismo</h4>
-      <p>El mismo resultado puede obtenerse mediante mecanismos diferentes.</p>
-      <p>Una puerta destruida pudo abrirse por fuerza, transmutación, corrosión, dislocación o fallo
-      de un encantamiento previo.</p>
-      <p>La reconstrucción comienza por efectos observables y evita saltar inmediatamente a una
-      escuela concreta.</p>
-      <h4 id="cap-19">Capítulo XIX — Secuencia</h4>
-      <p>El orden de acontecimientos modifica los residuos.</p>
-      <p>Un incendio después de una maldición puede destruir evidencias, mientras una congelación
-      anterior puede alterar cómo se fractura un objeto.</p>
-      <p>Las relaciones de superposición permiten reconstruir qué ocurrió primero.</p>
-      <h4 id="cap-20">Capítulo XX — Superposición de estructuras</h4>
-      <p>Varias magias pueden coexistir sobre el mismo soporte.</p>
-      <p>El análisis busca capas, cruces, cancelaciones y residuos incompatibles.</p>
-      <p>Una capa reciente puede ocultar otra sin eliminarla.</p>
-      <h4 id="cap-21">Capítulo XXI — Hechizos parciales</h4>
-      <p>Un hechizo interrumpido puede dejar más información estructural que uno completado.</p>
-      <p>Las instrucciones o fases no ejecutadas pueden permanecer reconocibles.</p>
-      <p>Ritualística y Arcanomática ayudan a identificar qué función faltó.</p>
-      <h4 id="cap-22">Capítulo XXII — Fallo y accidente</h4>
-      <p>Un fallo no debe confundirse con sabotaje.</p>
-      <p>Errores de proporción, incompatibilidad de materiales o agotamiento pueden producir
-      resultados violentos.</p>
-      <p>La investigación debe comparar el accidente con estándares técnicos y mantenimiento
-      previo.</p>
-      <h4 id="cap-23">Capítulo XXIII — Sabotaje</h4>
-      <p>El sabotaje puede alterar una parte pequeña de una estructura para producir un fallo
-      posterior.</p>
-      <p>Estos casos exigen examinar componentes que aparentan estar intactos.</p>
-      <p>Una modificación mínima en una referencia o cláusula puede ser más significativa que daños
+      residuos, materiales y secuencia. No implica reproducirlo por completo, ya que la práctica
+      dolbriana favorece modelos parciales que expliquen la evidencia sin reactivar peligros.</p>
+      <p>El punto de partida es siempre el resultado observable, no el mecanismo supuesto. El mismo
+      resultado puede obtenerse mediante mecanismos diferentes, pues una puerta destruida pudo abrirse
+      por fuerza, transmutación, corrosión, dislocación o fallo de un encantamiento previo. La
+      reconstrucción comienza por los efectos observables y evita saltar de inmediato a una escuela
+      concreta.</p>
+      <p>El orden de los acontecimientos también modifica los residuos. Un incendio posterior a una
+      maldición puede destruir evidencias, mientras que una congelación anterior puede alterar cómo se
+      fractura un objeto; las relaciones de superposición permiten reconstruir qué ocurrió primero.</p>
+      <p>Cuando varias magias coexisten sobre el mismo soporte, el análisis busca capas, cruces,
+      cancelaciones y residuos incompatibles, porque una capa reciente puede ocultar otra sin
+      borrarla por completo.</p>
+      <p>Un hechizo interrumpido puede dejar más información estructural que uno completado, ya que
+      las instrucciones o fases no ejecutadas pueden permanecer reconocibles. Ritualística y
+      Arcanomática ayudan a identificar qué función faltó.</p>
+      <h4 id="cap-6">Capítulo VI — Fallo, accidente y sabotaje</h4>
+      <p>Un fallo no debe confundirse con sabotaje. Errores de proporción, incompatibilidad de
+      materiales o agotamiento pueden producir resultados violentos por sí solos, así que la
+      investigación debe comparar el accidente con los estándares técnicos y el mantenimiento previo
+      de la estructura implicada.</p>
+      <p>El sabotaje, en cambio, puede alterar una parte pequeña de una estructura para producir un
+      fallo posterior, lo que exige examinar componentes que aparentan estar intactos. Una
+      modificación mínima en una referencia o cláusula puede resultar más significativa que los daños
       visibles.</p>
-      <h4 id="cap-24">Capítulo XXIV — Residuos rúnicos</h4>
-      <p>Las runas deterioradas pueden conservar orden de trazado, presión, profundidad y
-      correcciones.</p>
-      <p>Estos detalles permiten distinguir copia apresurada, ejecución experta y modificación
-      posterior.</p>
-      <p>Runología participa en la interpretación y Conservación Arcana en el levantamiento.</p>
-      <h4 id="cap-25">Capítulo XXV — Trazado ritual</h4>
-      <p>Polvo, cera, sangre, pigmentos y desgaste del suelo pueden revelar posiciones y
-      trayectorias.</p>
-      <p>Geometría Ritual permite reconstruir centros, ejes y clausuras incluso cuando parte del
-      diseño fue borrado.</p>
-      <p>Las fotografías y levantamientos deben preceder a cualquier limpieza.</p>
-      <h4 id="cap-26">Capítulo XXVI — Residuos semióticos</h4>
-      <p>Una escena puede contener símbolos funcionales aunque no estén encantados por sí mismos.</p>
-      <p>Un blasón, nombre o reliquia puede haber servido para identificar víctima, autoridad o
-      propiedad.</p>
-      <p>Semiótica Mágica ayuda a determinar qué relaciones pudieron ser activadas.</p>
-      <h4 id="cap-27">Capítulo XXVII — Lenguaje</h4>
-      <p>Palabras, fórmulas y errores ortográficos pueden vincular una estructura con una tradición,
-      época o formación.</p>
-      <p>Filología Arcana estudia vocabulario, sintaxis y pronunciación cuando existe registro.</p>
-      <p>Una traducción moderna puede dejar rasgos diferentes del texto original.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Residuos resonánticos</h4>
-      <p>Algunas alteraciones dejan patrones en percepción, memoria o comportamiento de personas
-      expuestas.</p>
-      <p>El testimonio debe recogerse antes de que los afectados compartan versiones entre sí.</p>
-      <p>Psicología Resonántica ayuda a separar efectos comunes de sugestión colectiva.</p>
-      <h4 id="cap-29">Capítulo XXIX — Residuos pneumatológicos</h4>
-      <p>Fenómenos sobre almas, muerte o posesión pueden dejar vínculos y ausencias difíciles de
-      interpretar.</p>
-      <p>Pneumatología y Tanatología actúan como especialidades periciales.</p>
-      <p>El criminalista general no debe presentar una lectura pneumatológica compleja fuera de su
-      competencia.</p>
-      <h4 id="cap-30">Capítulo XXX — Maldiciones en escena</h4>
-      <p>Una maldición puede ser evidencia y amenaza simultáneamente.</p>
-      <p>Romperla de inmediato puede destruir información sobre referente, condición y anclaje.</p>
-      <p>Cuando la seguridad lo permite, se documenta primero su comportamiento y se construye un
-      modelo antes de intervenir.</p>
-      <h4 id="cap-31">Capítulo XXXI — Referente maldiológico</h4>
-      <p>Identificar a quién o qué reconoce una maldición puede revelar motivo y diseño.</p>
-      <p>Una estructura ligada a título, sangre, propiedad o nombre conduce a hipótesis distintas.</p>
-      <p>Maldiología participa para evitar confundir la víctima actual con el referente original.</p>
-      <h4 id="cap-32">Capítulo XXXII — Condiciones maldiológicas</h4>
-      <p>Las condiciones pueden reconstruirse mediante registros de activación, relatos y pruebas
-      controladas.</p>
-      <p>En investigación criminal, no se provocan deliberadamente condiciones peligrosas sobre
-      personas.</p>
-      <p>Los experimentos se realizan con sustitutos o modelos cuando sea posible.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Herencia y transmisión</h4>
-      <p>Una maldición heredable puede producir víctimas sin contacto con el autor.</p>
-      <p>El análisis genealógico debe distinguir sangre, título, sucesión, rito y posesión.</p>
-      <p>Epidemiología Taumatológica aporta métodos cuando existen múltiples afectados.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Atribución de tradición</h4>
+      <h4 id="cap-7">Capítulo VII — Residuos especializados por disciplina</h4>
+      <p>Además de los residuos generales, cada disciplina mágica deja marcas propias que requieren
+      peritaje especializado. Las runas deterioradas, por ejemplo, pueden conservar orden de trazado,
+      presión, profundidad y correcciones, detalles que permiten distinguir una copia apresurada de
+      una ejecución experta o de una modificación posterior; Runología participa en la interpretación
+      y Conservación Arcana en el levantamiento.</p>
+      <p>El trazado ritual deja otro tipo de huella. Polvo, cera, sangre, pigmentos y desgaste del
+      suelo pueden revelar posiciones y trayectorias. Geometría Ritual permite reconstruir centros,
+      ejes y clausuras incluso cuando parte del diseño fue borrado, razón por la cual las fotografías
+      y levantamientos deben preceder a cualquier limpieza.</p>
+      <p>Una escena también puede contener símbolos funcionales aunque no estén encantados por sí
+      mismos. Un blasón, nombre o reliquia puede haber servido para identificar víctima, autoridad o
+      propiedad, y Semiótica Mágica ayuda a determinar qué relaciones pudieron activarse.</p>
+      <p>El lenguaje aporta pistas semejantes. Palabras, fórmulas y errores ortográficos pueden
+      vincular una estructura con una tradición, época o formación, y Filología Arcana estudia
+      vocabulario, sintaxis y pronunciación cuando existe registro. Conviene recordar que una
+      traducción moderna puede dejar rasgos diferentes de los del texto original.</p>
+      <p>Cuando el fenómeno afecta a la mente, los residuos resonánticos dejan patrones en percepción,
+      memoria o comportamiento de las personas expuestas. El testimonio debe recogerse antes de que
+      los afectados compartan versiones entre sí, y Psicología Resonántica ayuda a separar efectos
+      comunes de sugestión colectiva.</p>
+      <p>Finalmente, los fenómenos sobre almas, muerte o posesión dejan residuos pneumatológicos,
+      vínculos y ausencias difíciles de interpretar sin formación específica. Pneumatología y
+      Tanatología actúan como especialidades periciales, y el criminalista general no debe presentar
+      una lectura pneumatológica compleja fuera de su competencia.</p>
+      <h4 id="cap-8">Capítulo VIII — Maldiciones en la escena forense</h4>
+      <p>Una maldición puede ser evidencia y amenaza simultáneamente. Romperla de inmediato puede
+      destruir información sobre referente, condición y anclaje, por lo que, cuando la seguridad lo
+      permite, se documenta primero su comportamiento y se construye un modelo antes de intervenir.</p>
+      <p>Identificar a quién o qué reconoce una maldición, su referente maldiológico, puede revelar
+      motivo y diseño. Una estructura ligada a título, sangre, propiedad o nombre conduce a hipótesis
+      distintas, y Maldiología participa para evitar confundir a la víctima actual con el referente
+      original.</p>
+      <p>Las condiciones que activan una maldición pueden reconstruirse mediante registros de
+      activación, relatos y pruebas controladas. En investigación criminal no se provocan
+      deliberadamente condiciones peligrosas sobre personas, sino que los experimentos se realizan con
+      sustitutos o modelos cuando sea posible.</p>
+      <p>Cuando una maldición es heredable, puede producir víctimas sin contacto directo con el autor.
+      El análisis genealógico debe distinguir sangre, título, sucesión, rito y posesión, y
+      Epidemiología Taumatológica aporta métodos adicionales cuando existen múltiples afectados.</p>
+      <h4 id="cap-9">Capítulo IX — Atribución de tradición por escuela mágica</h4>
       <p>Determinar qué tradición produjo un fenómeno significa estimar qué conjunto de prácticas
-      explica mejor la evidencia.</p>
-      <p>Una atribución puede ser fuerte sin identificar al ejecutor.</p>
-      <p>El informe debe expresar grado de confianza y alternativas compatibles.</p>
-      <h4 id="cap-35">Capítulo XXXV — Arcanomática</h4>
-      <p>Las estructuras arcanomáticas suelen dejar patrones de organización relativamente
-      explícitos, especialmente cuando utilizan soportes, runas o matrices.</p>
-      <p>Sin embargo, la formación académica compartida produce similitudes entre muchos
-      practicantes.</p>
-      <p>No debe confundirse estilo universitario con autoría individual.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Resonántica</h4>
-      <p>Los fenómenos resonánticos pueden dejar rastros en comportamiento colectivo, acústica,
-      memoria o emociones.</p>
-      <p>Su evidencia material puede ser escasa.</p>
-      <p>El análisis se apoya más en patrones de exposición y grabaciones tempranas.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Teurgia</h4>
+      explica mejor la evidencia disponible. Una atribución puede ser fuerte sin llegar a identificar
+      al ejecutor, y el informe debe expresar siempre el grado de confianza junto con las alternativas
+      compatibles. Cada escuela deja, sin embargo, un perfil distinto de rastros.</p>
+      <p>Las estructuras arcanomáticas suelen dejar patrones de organización relativamente explícitos,
+      en especial cuando utilizan soportes, runas o matrices. La formación académica compartida
+      produce, no obstante, similitudes entre muchos practicantes, y el estilo universitario no debe
+      confundirse con autoría individual.</p>
+      <p>Los fenómenos resonánticos, en cambio, pueden dejar rastros en el comportamiento colectivo,
+      la acústica, la memoria o las emociones, mientras que su evidencia material suele ser escasa. El
+      análisis se apoya más en patrones de exposición y en grabaciones tempranas que en residuos
+      físicos.</p>
       <p>Las prácticas teúrgicas pueden incorporar símbolos, reliquias, liturgia y relaciones de
-      autoridad.</p>
-      <p>Identificar una tradición religiosa no demuestra que la institución autorizara el acto.</p>
-      <p>Teología Comparada y Derecho Arcano ayudan a separar uso legítimo, imitación y
+      autoridad. Identificar una tradición religiosa no demuestra que la institución la autorizara, y
+      Teología Comparada junto con Derecho Arcano ayudan a separar uso legítimo, imitación y
       profanación.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Naturgia</h4>
       <p>Las intervenciones naturgicas pueden confundirse con procesos ecológicos o fisiológicos
-      ordinarios.</p>
-      <p>El criminalista debe demostrar que el patrón excede variación natural.</p>
-      <p>Ecología Mágica aporta muestras de fondo y modelos de sucesión.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Endomancia</h4>
-      <p>Las manifestaciones endománticas pueden depender fuertemente del individuo y dejar poca
-      estructura externa.</p>
-      <p>El análisis se centra en afinidad corporal, respuestas espontáneas y patrones
-      fisiológicos.</p>
-      <p>Las firmas personales pueden ser más útiles que las convenciones de escuela.</p>
-      <h4 id="cap-40">Capítulo XL — Pacturgia</h4>
-      <p>Las prácticas pactúrgicas pueden dejar rastros del acuerdo, la entidad o la autoridad que
-      sostiene el fenómeno.</p>
-      <p>El ejecutor visible puede no ser la única fuente causal.</p>
-      <p>Pacturgia y Derecho Arcano ayudan a distribuir responsabilidad entre sujeto y entidad.</p>
-      <h4 id="cap-41">Capítulo XLI — Hibridación de tradiciones</h4>
-      <p>Muchos practicantes combinan técnicas de varias escuelas.</p>
-      <p>Una escena híbrida no debe forzarse a una categoría única.</p>
-      <p>Las combinaciones pueden revelar formación, improvisación o colaboración entre varios
-      ejecutores.</p>
-      <h4 id="cap-42">Capítulo XLII — Imitación deliberada</h4>
-      <p>Un autor puede copiar rasgos de otra tradición para desviar la investigación.</p>
-      <p>Las imitaciones suelen reproducir aspectos visibles y fallar en detalles de ejecución.</p>
-      <p>Comparar residuos profundos con elementos ceremoniales ayuda a detectar falsificación.</p>
-      <h4 id="cap-43">Capítulo XLIII — Falsa bandera arcana</h4>
-      <p>Una falsa bandera busca atribuir un fenómeno a una escuela, culto o persona distinta.</p>
-      <p>Puede incluir runas plantadas, materiales escogidos o firmas artificiales.</p>
-      <p>El análisis debe preguntar si cada elemento era funcional o sólo estaba presente para ser
-      encontrado.</p>
-      <h4 id="cap-44">Capítulo XLIV — Evidencia negativa</h4>
-      <p>La ausencia de un residuo esperado puede debilitar una hipótesis.</p>
-      <p>Debe demostrarse que el método habría detectado ese residuo de existir.</p>
-      <p>La falta de evidencia nunca debe presentarse como ausencia absoluta sin considerar
-      decaimiento y limpieza.</p>
-      <h4 id="cap-45">Capítulo XLV — Limpieza de escena</h4>
-      <p>Eliminar residuos puede dejar residuos de la propia limpieza.</p>
-      <p>Disipación, fuego, lavado alquímico o transmutación producen patrones secundarios.</p>
-      <p>Una escena demasiado limpia puede ser informativa si la técnica de limpieza es
+      ordinarios, así que el criminalista debe demostrar que el patrón observado excede la variación
+      natural. Ecología Mágica aporta muestras de fondo y modelos de sucesión para esa comparación.</p>
+      <p>Las manifestaciones endománticas dependen fuertemente del individuo y suelen dejar poca
+      estructura externa. El análisis se centra entonces en afinidad corporal, respuestas espontáneas
+      y patrones fisiológicos, donde las firmas personales pueden resultar más útiles que las
+      convenciones de escuela.</p>
+      <p>Las prácticas pactúrgicas pueden dejar rastros del acuerdo, de la entidad o de la autoridad
+      que sostiene el fenómeno. El ejecutor visible puede no ser la única fuente causal, y Pacturgia
+      junto con Derecho Arcano ayudan a distribuir responsabilidad entre sujeto y entidad.</p>
+      <p>Por último, muchos practicantes combinan técnicas de varias escuelas. Una escena híbrida no
+      debe forzarse a una categoría única, porque estas combinaciones pueden revelar formación,
+      improvisación o colaboración entre varios ejecutores.</p>
+      <h4 id="cap-10">Capítulo X — Engaño, ocultamiento y evidencia negativa</h4>
+      <p>Un autor puede copiar rasgos de otra tradición para desviar la investigación. Estas
+      imitaciones suelen reproducir los aspectos visibles de la técnica original y fallar en los
+      detalles de ejecución, así que comparar los residuos profundos con los elementos ceremoniales
+      ayuda a detectar la falsificación.</p>
+      <p>La falsa bandera arcana lleva esta táctica más lejos, buscando atribuir un fenómeno a una
+      escuela, culto o persona distinta mediante runas plantadas, materiales escogidos o firmas
+      artificiales. El análisis debe preguntar, ante cada elemento, si cumplía una función real o si
+      sólo estaba presente para ser encontrado.</p>
+      <p>La ausencia de un residuo esperado puede debilitar una hipótesis, pero sólo si se demuestra
+      que el método utilizado habría detectado ese residuo de existir. La falta de evidencia nunca
+      debe presentarse como ausencia absoluta sin considerar decaimiento y limpieza previa.</p>
+      <p>Eliminar residuos, de hecho, puede dejar residuos de la propia limpieza. Disipación, fuego,
+      lavado alquímico o transmutación producen patrones secundarios reconocibles. Una escena
+      demasiado limpia puede resultar informativa si la técnica empleada para limpiarla es
       identificable.</p>
-      <h4 id="cap-46">Capítulo XLVI — Contramedidas forenses</h4>
-      <p>Existen técnicas diseñadas para ocultar autoría o destruir trazabilidad.</p>
-      <p>El uso de estas técnicas no demuestra culpabilidad, pero puede constituir evidencia
-      contextual.</p>
-      <p>Los laboratorios mantienen catálogos de interferencias conocidas.</p>
-      <h4 id="cap-47">Capítulo XLVII — Tiempo desde el fenómeno</h4>
+      <p>Existen además técnicas diseñadas específicamente para ocultar autoría o destruir
+      trazabilidad. Su uso no demuestra culpabilidad por sí solo, pero puede constituir evidencia
+      contextual, y los laboratorios mantienen catálogos de interferencias conocidas para
+      reconocerlas.</p>
+      <h4 id="cap-11">Capítulo XI — Estimación temporal, espacial y planar</h4>
       <p>Estimar cuándo ocurrió una manifestación utiliza decaimiento, temperatura, degradación de
-      materiales y estados de encantamientos.</p>
-      <p>Los resultados se expresan como rangos.</p>
-      <p>Las estimaciones exactas sin margen suelen indicar exceso de confianza.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Origen espacial</h4>
-      <p>Los patrones de daño pueden revelar punto de origen, dirección o trayectoria.</p>
-      <p>Geometría Ritual y Topología Arcana participan cuando el espacio fue alterado.</p>
-      <p>Un proyectil planar puede parecer originarse dentro de una habitación aunque haya cruzado
-      desde otra región.</p>
-      <h4 id="cap-49">Capítulo XLIX — Origen planar</h4>
-      <p>Residuos extraplanares pueden persistir en materiales o cuerpos.</p>
-      <p>Planología ayuda a determinar compatibilidad con planos conocidos.</p>
-      <p>Identificar origen planar no identifica automáticamente la entidad responsable.</p>
-      <h4 id="cap-50">Capítulo L — Reconstrucción de invocaciones</h4>
-      <p>Una invocación deja información sobre punto de anclaje, duración, clausura y posible
-      entidad.</p>
-      <p>Restos materiales, olores, presión, símbolos y cambios ambientales pueden combinarse.</p>
-      <p>El criminalista debe diferenciar invocación de manifestación espontánea o intrusión
-      planar.</p>
-      <h4 id="cap-51">Capítulo LI — Familiares como evidencia</h4>
-      <p>Un familiar puede ser testigo, instrumento o participante.</p>
-      <p>Su vínculo con una persona puede ser relevante, pero no basta para atribuir cada acto al
-      invocador.</p>
-      <p>Derecho Arcano determina valor testimonial y responsabilidad.</p>
-      <h4 id="cap-52">Capítulo LII — Artefactos en escena</h4>
-      <p>Un artefacto puede actuar como arma, fuente, registrador o señuelo.</p>
-      <p>Antes de activarlo debe determinarse si la activación consume o reescribe evidencia.</p>
-      <p>Artefactología toma prioridad sobre curiosidad investigativa.</p>
-      <h4 id="cap-53">Capítulo LIII — Artefactos con memoria</h4>
-      <p>Algunos objetos almacenan uso, propietarios o eventos.</p>
-      <p>Esta memoria puede ser evidencia si se valida el mecanismo y se demuestra ausencia de
-      manipulación.</p>
-      <p>Un registro interno no se presume infalible.</p>
-      <h4 id="cap-54">Capítulo LIV — Encantamientos como registradores</h4>
-      <p>Puertas, barreras y sistemas urbanos pueden conservar logs de activación equivalentes a
-      registros funcionales.</p>
-      <p>La autenticidad depende de conocer cómo almacenan y modifican información.</p>
-      <p>Teoría de Encantamientos ayuda a evaluar integridad.</p>
-      <h4 id="cap-55">Capítulo LV — Cuerpos</h4>
-      <p>Los cadáveres pueden conservar residuos de hechizos, transformaciones, toxinas y
-      maldiciones.</p>
-      <p>La autopsia arcana debe coordinarse con anatomía ordinaria.</p>
-      <p>Un efecto mágico no excluye trauma físico ni enfermedad concurrente.</p>
-      <h4 id="cap-56">Capítulo LVI — Lesiones mágicas</h4>
-      <p>Las lesiones se describen por mecanismo probable, no por apariencia espectacular.</p>
-      <p>Quemaduras, necrosis, cristalización, desplazamientos y cambios de afinidad pueden producir
-      patrones característicos.</p>
-      <p>Patología Arcana aporta diagnósticos diferenciales.</p>
-      <h4 id="cap-57">Capítulo LVII — Transformación post mortem</h4>
-      <p>Un cuerpo puede cambiar después de la muerte por maldición, residuo o proceso propio de la
-      especie.</p>
-      <p>El estado encontrado no debe asumirse como estado en el momento del fallecimiento.</p>
-      <p>Morfología Anómala ayuda a reconstruir secuencias posibles.</p>
-      <h4 id="cap-58">Capítulo LVIII — Resurrección y evidencia</h4>
-      <p>Una persona resucitada puede declarar, pero su memoria y continuidad deben evaluarse.</p>
-      <p>El procedimiento de resurrección puede alterar lesiones o residuos.</p>
-      <p>Los registros pre-resurrección tienen especial valor.</p>
-      <h4 id="cap-59">Capítulo LIX — Testimonio mágico</h4>
-      <p>Visiones, lecturas mentales y consultas espirituales pueden orientar hipótesis.</p>
-      <p>Su valor probatorio depende de fiabilidad, legalidad y corroboración.</p>
-      <p>Epistemología Arcana proporciona el marco para separar experiencia, interpretación y
-      conclusión.</p>
-      <h4 id="cap-60">Capítulo LX — Confesión y corroboración</h4>
-      <p>Una confesión obtenida bajo magia de veracidad no sustituye evidencia física.</p>
-      <p>El interrogado puede estar equivocado, incompleto o responder desde una memoria alterada.</p>
-      <p>Los criminalistas buscan hechos independientes que confirmen aspectos materiales.</p>
-      <h4 id="cap-61">Capítulo LXI — Escena y privacidad</h4>
-      <p>Investigar no autoriza revisar toda información mágica disponible.</p>
-      <p>Lecturas de memoria, pensamiento o vínculos requieren base legal específica.</p>
-      <p>El equipo forense debe limitar su análisis al objeto de la orden.</p>
-      <h4 id="cap-62">Capítulo LXII — Minimización</h4>
-      <p>La regulación dolbriana exige utilizar el método menos invasivo capaz de responder la
-      pregunta forense.</p>
-      <p>Si un residuo material basta, no se justifica leer recuerdos de una persona.</p>
-      <p>Este principio protege derechos y reduce contaminación.</p>
-      <h4 id="cap-63">Capítulo LXIII — Órdenes judiciales</h4>
-      <p>Las técnicas intrusivas necesitan autorización que describa objetivo, alcance y método.</p>
-      <p>Una orden para localizar un arma no permite explorar memorias familiares ajenas al caso.</p>
-      <p>Los excesos pueden volver inadmisible parte de la evidencia.</p>
-      <h4 id="cap-64">Capítulo LXIV — Laboratorios autorizados</h4>
-      <p>Las muestras de alto riesgo sólo pueden analizarse en instalaciones certificadas.</p>
-      <p>Los laboratorios se clasifican según capacidad de contención, personal y métodos
-      disponibles.</p>
-      <p>El traslado a un laboratorio inadecuado puede constituir negligencia.</p>
-      <h4 id="cap-65">Capítulo LXV — Niveles de riesgo forense</h4>
-      <p>Dolbred clasifica escenas y muestras según posibilidad de activación, contagio, daño,
-      autonomía y pérdida de evidencia.</p>
-      <p>El nivel determina equipo, perímetro y autoridad necesaria.</p>
-      <p>Una muestra pequeña puede recibir nivel alto si es transmisible o cognitivamente
+      materiales y estados de encantamientos. Los resultados se expresan siempre como rangos, ya que
+      las estimaciones exactas sin margen suelen indicar exceso de confianza más que precisión real.</p>
+      <p>Determinar dónde ocurrió sigue una lógica semejante. Los patrones de daño pueden revelar
+      punto de origen, dirección o trayectoria, y Geometría Ritual junto con Topología Arcana
+      participan cuando el espacio mismo fue alterado, pues un proyectil planar puede parecer
+      originarse dentro de una habitación aunque en realidad haya cruzado desde otra región.</p>
+      <p>Cuando además persisten residuos extraplanares en materiales o cuerpos, Planología ayuda a
+      determinar su compatibilidad con planos conocidos. Identificar el origen planar de un fenómeno
+      no identifica automáticamente a la entidad responsable.</p>
+      <h4 id="cap-12">Capítulo XII — Invocaciones y familiares como evidencia</h4>
+      <p>Una invocación deja información sobre punto de anclaje, duración, clausura y posible entidad
+      implicada. Restos materiales, olores, presión, símbolos y cambios ambientales pueden combinarse
+      para reconstruirla, y el criminalista debe diferenciar una invocación deliberada de una
+      manifestación espontánea o de una intrusión planar.</p>
+      <p>Un familiar vinculado a esa invocación puede ser testigo, instrumento o participante del
+      fenómeno. Su vínculo con una persona puede ser relevante, pero no basta por sí solo para
+      atribuirle cada acto al invocador; Derecho Arcano determina el valor testimonial y la
+      responsabilidad correspondiente en cada caso.</p>
+      <h4 id="cap-13">Capítulo XIII — Artefactos y encantamientos como registradores</h4>
+      <p>Un artefacto hallado en escena puede actuar como arma, fuente, registrador o señuelo. Antes
+      de activarlo debe determinarse si esa activación consume o reescribe evidencia, y el criterio de
+      Artefactología debe tomar prioridad sobre la simple curiosidad investigativa.</p>
+      <p>Algunos objetos, además, almacenan uso, propietarios o eventos. Esta memoria puede constituir
+      evidencia si se valida el mecanismo de almacenamiento y se demuestra ausencia de manipulación,
+      aunque un registro interno nunca se presume infalible.</p>
+      <p>Puertas, barreras y sistemas urbanos encantados pueden conservar registros de activación
+      equivalentes a bitácoras funcionales. Su autenticidad depende de conocer cómo almacenan y
+      modifican la información, y Teoría de Encantamientos ayuda a evaluar esa integridad.</p>
+      <h4 id="cap-14">Capítulo XIV — Cuerpos, lesiones y transformación post mortem</h4>
+      <p>Los cadáveres pueden conservar residuos de hechizos, transformaciones, toxinas y maldiciones,
+      por lo que la autopsia arcana debe coordinarse siempre con la anatomía ordinaria. Un efecto
+      mágico no excluye trauma físico ni enfermedad concurrente.</p>
+      <p>Las lesiones mágicas se describen por su mecanismo probable, no por su apariencia
+      espectacular. Quemaduras, necrosis, cristalización, desplazamientos y cambios de afinidad pueden
+      producir patrones característicos, y Patología Arcana aporta los diagnósticos diferenciales
+      necesarios para distinguirlos.</p>
+      <p>Un cuerpo puede además cambiar después de la muerte por maldición, residuo o proceso propio
+      de la especie, así que el estado en que se encuentra no debe asumirse como el estado en el
+      momento del fallecimiento. Morfología Anómala ayuda a reconstruir las secuencias posibles.</p>
+      <p>Cuando la víctima ha sido resucitada, puede declarar, pero su memoria y continuidad deben
+      evaluarse con cuidado, porque el propio procedimiento de resurrección puede alterar lesiones o
+      residuos. Los registros levantados antes de la resurrección conservan, por ello, un valor
+      especial.</p>
+      <h4 id="cap-15">Capítulo XV — Testimonio mágico y confesión</h4>
+      <p>Visiones, lecturas mentales y consultas espirituales pueden orientar una hipótesis, pero su
+      valor probatorio depende de fiabilidad, legalidad y corroboración. Epistemología Arcana
+      proporciona el marco para separar experiencia, interpretación y conclusión en cada uno de estos
+      testimonios.</p>
+      <p>Una confesión obtenida bajo magia de veracidad tampoco sustituye la evidencia física, porque
+      el interrogado puede estar equivocado, incompleto o responder desde una memoria alterada. Por
+      eso los criminalistas buscan siempre hechos independientes que confirmen los aspectos materiales
+      de lo declarado.</p>
+      <h4 id="cap-16">Capítulo XVI — Privacidad, minimización y órdenes judiciales</h4>
+      <p>Investigar no autoriza revisar toda la información mágica disponible. Lecturas de memoria,
+      pensamiento o vínculos requieren base legal específica, y el equipo forense debe limitar su
+      análisis al objeto exacto de la orden.</p>
+      <p>Ese límite responde al principio de minimización, según el cual la regulación dolbriana
+      exige utilizar el método menos invasivo capaz de responder la pregunta forense. Si un residuo
+      material basta, no se justifica leer los recuerdos de una persona, y este principio protege
+      derechos además de reducir la contaminación de la escena.</p>
+      <p>Las técnicas intrusivas necesitan además una autorización que describa objetivo, alcance y
+      método. Una orden para localizar un arma no permite explorar memorias familiares ajenas al caso,
+      y los excesos pueden volver inadmisible parte de la evidencia obtenida.</p>
+      <h4 id="cap-17">Capítulo XVII — Laboratorios autorizados y niveles de riesgo forense</h4>
+      <p>Las muestras de alto riesgo sólo pueden analizarse en instalaciones certificadas. Los
+      laboratorios se clasifican según su capacidad de contención, personal y métodos disponibles, y
+      el traslado de una muestra a un laboratorio inadecuado puede constituir negligencia.</p>
+      <p>Esa clasificación responde a un sistema más amplio de niveles de riesgo. Dolbred clasifica
+      escenas y muestras según posibilidad de activación, contagio, daño, autonomía y pérdida de
+      evidencia, y el nivel asignado determina el equipo, el perímetro y la autoridad necesaria para
+      intervenir. Una muestra pequeña puede recibir un nivel alto si es transmisible o cognitivamente
       peligrosa.</p>
-      <h4 id="cap-66">Capítulo LXVI — Escenas maldiológicas</h4>
-      <p>Las escenas con maldiciones activas requieren un especialista antes de pruebas
-      invasivas.</p>
-      <p>El objetivo es preservar patrón sin ampliar la lista de víctimas.</p>
-      <p>Las sustituciones experimentales sobre personas están prohibidas.</p>
-      <h4 id="cap-67">Capítulo LXVII — Escenas resonánticas</h4>
-      <p>Los investigadores pueden convertirse en parte del fenómeno si permanecen demasiado
-      tiempo.</p>
-      <p>Se utilizan rotaciones, registros externos y evaluaciones cognitivas.</p>
-      <p>El informe debe indicar cualquier exposición que pueda haber afectado al observador.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Escenas pneumatológicas</h4>
-      <p>Los vínculos anímicos requieren protección especial por riesgo de contaminación, posesión o
-      daño a identidades persistentes.</p>
-      <p>El acceso queda limitado a personal acreditado.</p>
-      <p>La mera presencia de un espíritu no autoriza su interrogatorio coercitivo.</p>
-      <h4 id="cap-69">Capítulo LXIX — Peritos</h4>
-      <p>El perito criminalístico debe distinguir observación, interpretación y conclusión.</p>
-      <p>Los informes dolbrianos separan hechos medidos de inferencias.</p>
-      <p>El tribunal debe poder identificar qué parte de una afirmación depende de experiencia
-      profesional.</p>
-      <h4 id="cap-70">Capítulo LXX — Grados de conclusión</h4>
-      <p>Dolbred evita expresiones absolutas cuando la evidencia no las sostiene.</p>
-      <p>Los informes pueden indicar compatible, probable, fuertemente compatible o no distinguible
-      entre varias alternativas.</p>
-      <p>Identificar una tradición con alta confianza no equivale a identificar al autor.</p>
-      <h4 id="cap-71">Capítulo LXXI — Tasa de error</h4>
-      <p>Los métodos forenses deben estudiar cuándo fallan.</p>
-      <p>Una técnica sin historial de error conocido recibe menor peso probatorio.</p>
-      <p>Los laboratorios registran falsos positivos, falsos negativos y condiciones de
-      interferencia.</p>
-      <h4 id="cap-72">Capítulo LXXII — Replicación pericial</h4>
+      <h4 id="cap-18">Capítulo XVIII — Escenas especializadas de alto riesgo</h4>
+      <p>Las escenas con maldiciones activas requieren la intervención de un especialista antes de
+      realizar pruebas invasivas. El objetivo es preservar el patrón sin ampliar la lista de víctimas,
+      y las sustituciones experimentales sobre personas están prohibidas.</p>
+      <p>Las escenas resonánticas plantean un riesgo distinto, ya que los propios investigadores
+      pueden convertirse en parte del fenómeno si permanecen demasiado tiempo expuestos. Por eso se
+      utilizan rotaciones, registros externos y evaluaciones cognitivas, y el informe debe indicar
+      cualquier exposición que pueda haber afectado al observador.</p>
+      <p>Las escenas pneumatológicas exigen protección especial porque los vínculos anímicos implican
+      riesgo de contaminación, posesión o daño a identidades persistentes. El acceso queda limitado a
+      personal acreditado, y la mera presencia de un espíritu no autoriza su interrogatorio
+      coercitivo.</p>
+      <h4 id="cap-19">Capítulo XIX — Peritos, conclusiones y control de calidad pericial</h4>
+      <p>El perito criminalístico debe distinguir observación, interpretación y conclusión. Los
+      informes dolbrianos separan los hechos medidos de las inferencias, de modo que el tribunal pueda
+      identificar qué parte de una afirmación depende de experiencia profesional.</p>
+      <p>Esa separación se refleja en los grados de conclusión. Dolbred evita expresiones absolutas
+      cuando la evidencia no las sostiene, y los informes pueden indicar compatible, probable,
+      fuertemente compatible o no distinguible entre varias alternativas. Identificar una tradición
+      con alta confianza no equivale a identificar al autor.</p>
+      <p>Los métodos forenses deben además estudiar cuándo fallan. Una técnica sin historial de error
+      conocido recibe menor peso probatorio, y los laboratorios registran falsos positivos, falsos
+      negativos y condiciones de interferencia.</p>
       <p>Los análisis importantes deberían poder ser revisados por otro laboratorio cuando la muestra
-      lo permita.</p>
-      <p>Los métodos destructivos deben reservar parte del material.</p>
-      <p>Si la muestra es única, el proceso completo se documenta con mayor detalle.</p>
-      <h4 id="cap-73">Capítulo LXXIII — Pruebas destructivas</h4>
-      <p>Una técnica que consume evidencia requiere justificar por qué no existe alternativa.</p>
-      <p>La autorización puede exigir presencia de ambas partes o registro independiente.</p>
-      <p>El valor potencial del resultado debe superar la pérdida de la muestra.</p>
-      <h4 id="cap-74">Capítulo LXXIV — Análisis ciego</h4>
-      <p>Cuando sea posible, el analista no recibe información innecesaria sobre sospechosos.</p>
-      <p>Esto reduce sesgo de confirmación.</p>
-      <p>Los datos contextuales se incorporan después de la evaluación inicial.</p>
-      <h4 id="cap-75">Capítulo LXXV — Comparación con muestras conocidas</h4>
-      <p>Las firmas sospechosas pueden compararse con muestras tomadas legalmente.</p>
-      <p>Las condiciones de obtención deben ser semejantes para evitar atribuir diferencias
-      ambientales al autor.</p>
-      <p>Una coincidencia fuerte puede apoyar inclusión; rara vez basta por sí sola para
-      exclusividad.</p>
-      <h4 id="cap-76">Capítulo LXXVI — Bases de datos</h4>
-      <p>Dolbred mantiene registros limitados de firmas de practicantes licenciados, artefactos
-      restringidos y técnicas peligrosas.</p>
-      <p>El acceso está auditado y sujeto a finalidad investigativa.</p>
-      <p>Las búsquedas indiscriminadas sobre población general están prohibidas.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Privacidad de firmas</h4>
-      <p>Una firma mágica puede revelar salud, afinidad, escuela y otras características
-      sensibles.</p>
-      <p>Su almacenamiento recibe protección comparable a datos biométricos.</p>
-      <p>El uso fuera de la finalidad autorizada puede generar sanciones.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — Fraude forense</h4>
+      lo permita. Los métodos destructivos deben reservar parte del material para esa revisión, y si
+      la muestra es única, el proceso completo se documenta con mayor detalle.</p>
+      <h4 id="cap-20">Capítulo XX — Pruebas destructivas y análisis ciego</h4>
+      <p>Una técnica que consume evidencia requiere justificar por qué no existe alternativa. La
+      autorización puede exigir la presencia de ambas partes o un registro independiente, y el valor
+      potencial del resultado debe superar siempre la pérdida de la muestra.</p>
+      <p>Cuando sea posible, además, el analista no recibe información innecesaria sobre los
+      sospechosos, lo que reduce el sesgo de confirmación. Los datos contextuales se incorporan recién
+      después de completar la evaluación inicial.</p>
+      <h4 id="cap-21">Capítulo XXI — Comparación de firmas y bases de datos</h4>
+      <p>Las firmas sospechosas pueden compararse con muestras tomadas legalmente. Las condiciones de
+      obtención deben ser semejantes para evitar atribuir diferencias ambientales al autor, y una
+      coincidencia fuerte puede apoyar la inclusión de un sospechoso, aunque casi nunca basta por sí
+      sola para establecer exclusividad.</p>
+      <p>Estas comparaciones se apoyan en bases de datos limitadas. Dolbred mantiene registros de
+      firmas de practicantes licenciados, artefactos restringidos y técnicas peligrosas. El acceso
+      está auditado y sujeto a finalidad investigativa, y las búsquedas indiscriminadas sobre la
+      población general están prohibidas.</p>
+      <p>Una firma mágica puede revelar salud, afinidad, escuela y otras características sensibles,
+      por lo que su almacenamiento recibe protección comparable a la de los datos biométricos. Su uso
+      fuera de la finalidad autorizada puede generar sanciones.</p>
+      <h4 id="cap-22">Capítulo XXII — Fraude forense, error honesto y revisión de condenas</h4>
       <p>Fabricar residuos, alterar muestras o presentar una atribución sabidamente falsa constituye
-      falta grave.</p>
-      <p>Los peritos pueden perder licencia además de enfrentar responsabilidad penal.</p>
-      <p>La autoridad académica no protege contra revisión.</p>
-      <h4 id="cap-79">Capítulo LXXIX — Error honesto</h4>
-      <p>Una conclusión puede resultar incorrecta sin existir mala conducta.</p>
-      <p>El problema jurídico surge cuando se ocultaron límites, se ignoraron alternativas o se
-      violaron protocolos.</p>
-      <p>El sistema debe permitir corregir errores sin incentivar su ocultamiento.</p>
-      <h4 id="cap-80">Capítulo LXXX — Revisión de condenas</h4>
-      <p>Nuevos métodos pueden demostrar que una técnica antigua era menos fiable de lo supuesto.</p>
-      <p>Dolbred permite revisar casos donde evidencia mágica desacreditada fue determinante.</p>
-      <p>Historia forense y actualización científica forman parte de la justicia.</p>
-      <h4 id="cap-81">Capítulo LXXXI — Criminalística y tradición</h4>
-      <p>Las tradiciones mágicas no son categorías criminales.</p>
-      <p>Identificar que una técnica es pactúrgica, teúrgica o naturgica no autoriza sospecha contra
-      todos sus practicantes.</p>
-      <p>La atribución debe permanecer ligada a la escena concreta.</p>
-      <h4 id="cap-82">Capítulo LXXXII — Criminalística y regulación profesional</h4>
-      <p>Los criminalistas arcanos requieren licencia específica y formación interdisciplinaria.</p>
-      <p>No basta dominar magia de detección.</p>
-      <p>Se exige conocimiento de Derecho Arcano, cadena de custodia, Epistemología y seguridad de
-      escenas.</p>
-      <h4 id="cap-83">Capítulo LXXXIII — Criminalística y universidad</h4>
-      <p>Dolbred mantiene laboratorios docentes separados de los laboratorios que reciben evidencia
-      judicial.</p>
-      <p>Los estudiantes trabajan con simulaciones o materiales anonimizados.</p>
-      <p>Las muestras reales sólo se utilizan bajo supervisión y cuando su valor formativo justifica
-      el acceso.</p>
-      <h4 id="cap-84">Capítulo LXXXIV — Casos de interés público</h4>
-      <p>Las investigaciones con alto impacto político reciben controles adicionales para reducir
-      presión externa.</p>
-      <p>Los informes deben conservar lenguaje técnico y evitar conclusiones sobre culpabilidad.</p>
-      <p>La institución publica metodología cuando la seguridad y el proceso lo permiten.</p>
-      <h4 id="cap-85">Capítulo LXXXV — El error de la firma perfecta</h4>
-      <p>No existe una firma mágica universalmente única e imposible de falsificar.</p>
-      <p>Los patrones personales pueden ser fuertes, pero dependen de contexto, método y calidad de
-      muestra.</p>
-      <p>Presentar una firma como identidad absoluta es mala práctica.</p>
-      <h4 id="cap-86">Capítulo LXXXVI — El error de la escuela culpable</h4>
-      <p>Una tradición describe cómo se produjo un fenómeno, no por qué ni por quién.</p>
-      <p>Una runa teúrgica robada, una técnica pactúrgica imitada o una estructura arcanomática
-      copiada pueden aparecer fuera de su comunidad de origen.</p>
-      <p>El análisis debe resistir explicaciones basadas en estereotipo.</p>
-      <h4 id="cap-87">Capítulo LXXXVII — El error de reconstruir demasiado</h4>
-      <p>Una escena incompleta no autoriza rellenar cada vacío con una narrativa continua.</p>
-      <p>Los informes deben distinguir lo demostrado, lo probable y lo desconocido.</p>
-      <p>Una reconstrucción más modesta puede ser científicamente superior a una historia elegante
-      sin evidencia.</p>
-      <h4 id="cap-88">Capítulo LXXXVIII — La pregunta forense</h4>
-      <p>Toda investigación arcana debería poder responder tres preguntas separadas: qué ocurrió,
-      cómo pudo ocurrir y qué evidencia conecta ese mecanismo con una persona o fuente concreta.</p>
-      <p>Confundir estas preguntas produce atribuciones excesivas.</p>
-      <p>La Criminalística Arcana existe para mantenerlas separadas hasta que la evidencia permita
-      unirlas.</p>
+      falta grave. Los peritos responsables pueden perder su licencia además de enfrentar
+      responsabilidad penal, y la autoridad académica no protege contra la revisión de su trabajo.</p>
+      <p>Distinto es el error honesto, en el que una conclusión puede resultar incorrecta sin que
+      exista mala conducta alguna. El problema jurídico surge cuando se ocultaron límites, se
+      ignoraron alternativas o se violaron protocolos, y el sistema debe permitir corregir errores sin
+      incentivar su ocultamiento.</p>
+      <p>Por esa misma razón, nuevos métodos pueden demostrar que una técnica antigua era menos fiable
+      de lo que se suponía. Dolbred permite revisar casos donde evidencia mágica hoy desacreditada fue
+      determinante, porque la historia forense y la actualización científica forman parte de la
+      justicia.</p>
+      <h4 id="cap-23">Capítulo XXIII — Criminalística arcana e instituciones</h4>
+      <p>Las tradiciones mágicas no son categorías criminales. Identificar que una técnica es
+      pactúrgica, teúrgica o naturgica no autoriza sospecha contra todos sus practicantes, y la
+      atribución debe permanecer siempre ligada a la escena concreta que se investiga.</p>
+      <p>Ejercer la disciplina exige, además, regulación profesional propia. Los criminalistas arcanos
+      requieren licencia específica y formación interdisciplinaria, porque no basta con dominar magia
+      de detección; se exige también conocimiento de Derecho Arcano, cadena de custodia, Epistemología
+      y seguridad de escenas.</p>
+      <p>Esa formación se organiza dentro de la universidad, donde Dolbred mantiene laboratorios
+      docentes separados de los laboratorios que reciben evidencia judicial. Los estudiantes trabajan
+      con simulaciones o materiales anonimizados, y las muestras reales sólo se utilizan bajo
+      supervisión, cuando su valor formativo justifica el acceso.</p>
+      <p>Las investigaciones con alto impacto político reciben, por su parte, controles adicionales
+      para reducir la presión externa. Los informes deben conservar lenguaje técnico y evitar
+      conclusiones sobre culpabilidad, y la institución publica su metodología cuando la seguridad y
+      el proceso lo permiten.</p>
+      <h4 id="cap-24">Capítulo XXIV — Errores comunes de interpretación forense</h4>
+      <p>No existe una firma mágica universalmente única e imposible de falsificar. Los patrones
+      personales pueden ser fuertes, pero dependen de contexto, método y calidad de muestra, y
+      presentar una firma como identidad absoluta es mala práctica.</p>
+      <p>Tampoco una tradición implica culpa, ya que describe cómo se produjo un fenómeno, no por qué
+      ni por quién. Una runa teúrgica robada, una técnica pactúrgica imitada o una estructura
+      arcanomática copiada pueden aparecer fuera de su comunidad de origen, y el análisis debe
+      resistir explicaciones basadas en estereotipo.</p>
+      <p>Una escena incompleta, por su parte, no autoriza rellenar cada vacío con una narrativa
+      continua. Los informes deben distinguir lo demostrado, lo probable y lo desconocido, porque una
+      reconstrucción más modesta puede ser científicamente superior a una historia elegante sin
+      evidencia.</p>
+      <p>Estos tres errores remiten, en el fondo, a una sola exigencia. Toda investigación arcana
+      debería poder responder tres preguntas separadas, qué ocurrió, cómo pudo ocurrir y qué evidencia
+      conecta ese mecanismo con una persona o fuente concreta. Confundir estas preguntas produce
+      atribuciones excesivas, y la Criminalística Arcana existe para mantenerlas separadas hasta que
+      la evidencia permita unirlas.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Criminalística Arcana transforma rastros mágicos en evidencia mediante preservación,
       comparación y reconstrucción. Su trabajo incluye residuos, firmas, materiales, runas,
