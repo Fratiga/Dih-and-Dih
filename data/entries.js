@@ -11267,62 +11267,31 @@ window.ENTRIES = [
         <a href="#cap-5">V. Forma de reposo</a>
         <a href="#cap-6">VI. Polimorfia estable</a>
         <a href="#cap-7">VII. Polimorfia inducida</a>
-        <a href="#cap-8">VIII. Transformación reversible</a>
-        <a href="#cap-9">IX. Transformación permanente</a>
-        <a href="#cap-10">X. Changelings</a>
-        <a href="#cap-11">XI. Identidad en especies polimórficas</a>
-        <a href="#cap-12">XII. Imitadores</a>
-        <a href="#cap-13">XIII. Mimetismo anatómico</a>
-        <a href="#cap-14">XIV. Mimetismo de firma</a>
-        <a href="#cap-15">XV. Criaturas amorfas</a>
-        <a href="#cap-16">XVI. Slimefolk y organización distribuida</a>
-        <a href="#cap-17">XVII. Fragmentación</a>
-        <a href="#cap-18">XVIII. Fusión</a>
-        <a href="#cap-19">XIX. Licantropía</a>
-        <a href="#cap-20">XX. Ciclos</a>
-        <a href="#cap-21">XXI. Transformación involuntaria</a>
-        <a href="#cap-22">XXII. Transformación y conducta</a>
-        <a href="#cap-23">XXIII. Bestialización</a>
-        <a href="#cap-24">XXIV. Gigantismo transformativo</a>
-        <a href="#cap-25">XXV. Miniaturización</a>
-        <a href="#cap-26">XXVI. Formas híbridas</a>
-        <a href="#cap-27">XXVII. Quimerismo</a>
-        <a href="#cap-28">XXVIII. Reemplazo de tejidos</a>
-        <a href="#cap-29">XXIX. Petrificación</a>
-        <a href="#cap-30">XXX. Cristalización</a>
-        <a href="#cap-31">XXXI. Licuefacción</a>
-        <a href="#cap-32">XXXII. Vaporización y estados difusos</a>
-        <a href="#cap-33">XXXIII. Sombras corporales</a>
-        <a href="#cap-34">XXXIV. Duplicación aparente</a>
-        <a href="#cap-35">XXXV. Mudas de identidad corporal</a>
-        <a href="#cap-36">XXXVI. Reorganización por daño</a>
-        <a href="#cap-37">XXXVII. Mutación acumulativa</a>
-        <a href="#cap-38">XXXVIII. Saturación alquímica</a>
-        <a href="#cap-39">XXXIX. Maldiciones morfológicas</a>
-        <a href="#cap-40">XL. Transformaciones pactadas</a>
-        <a href="#cap-41">XLI. Transformación teúrgica</a>
-        <a href="#cap-42">XLII. Forma y sexo</a>
-        <a href="#cap-43">XLIII. Forma y edad</a>
-        <a href="#cap-44">XLIV. Forma y memoria</a>
-        <a href="#cap-45">XLV. Dolor morfológico</a>
-        <a href="#cap-46">XLVI. Errores de transformación</a>
-        <a href="#cap-47">XLVII. Anclaje morfológico</a>
-        <a href="#cap-48">XLVIII. Pérdida de referencia</a>
-        <a href="#cap-49">XLIX. Sustitución y copia</a>
-        <a href="#cap-50">L. Criaturas de cuerpo prestado</a>
-        <a href="#cap-51">LI. Posesión y morfología</a>
-        <a href="#cap-52">LII. Transformación colectiva</a>
-        <a href="#cap-53">LIII. Formas ambientales</a>
-        <a href="#cap-54">LIV. Transformación defensiva</a>
-        <a href="#cap-55">LV. Transformación ofensiva</a>
-        <a href="#cap-56">LVI. Imitación social</a>
-        <a href="#cap-57">LVII. Criminalística morfológica</a>
-        <a href="#cap-58">LVIII. Medicina de pacientes polimórficos</a>
-        <a href="#cap-59">LIX. Cirugía</a>
-        <a href="#cap-60">LX. Ética de la alteración</a>
-        <a href="#cap-61">LXI. El error de la forma correcta</a>
-        <a href="#cap-62">LXII. Relación con otras disciplinas</a>
-        <a href="#cap-63">LXIII. La pregunta por lo que permanece</a>
+        <a href="#cap-8">VIII. Transformación reversible y permanente</a>
+        <a href="#cap-9">IX. Changelings</a>
+        <a href="#cap-10">X. Identidad en especies polimórficas</a>
+        <a href="#cap-11">XI. Imitadores y mimetismo</a>
+        <a href="#cap-12">XII. Cuerpos amorfos y organización distribuida</a>
+        <a href="#cap-13">XIII. Fragmentación y fusión corporal</a>
+        <a href="#cap-14">XIV. Licantropía</a>
+        <a href="#cap-15">XV. Ciclos, transformación involuntaria y conducta</a>
+        <a href="#cap-16">XVI. Extremos morfológicos: bestialización, gigantismo y miniaturización</a>
+        <a href="#cap-17">XVII. Formas híbridas y quimerismo</a>
+        <a href="#cap-18">XVIII. Transformaciones de estado material</a>
+        <a href="#cap-19">XIX. Formas atípicas de continuidad: sombras, duplicación y mudas</a>
+        <a href="#cap-20">XX. Reorganización por daño y mutación acumulativa</a>
+        <a href="#cap-21">XXI. Causas externas de transformación: alquimia, maldición, pacto y teurgia</a>
+        <a href="#cap-22">XXII. Forma en relación con sexo, edad y memoria</a>
+        <a href="#cap-23">XXIII. Dolor y errores de transformación</a>
+        <a href="#cap-24">XXIV. Anclaje morfológico y pérdida de referencia</a>
+        <a href="#cap-25">XXV. Sustitución, copia, cuerpos prestados y posesión</a>
+        <a href="#cap-26">XXVI. Transformación colectiva y formas ambientales</a>
+        <a href="#cap-27">XXVII. Transformación defensiva y ofensiva</a>
+        <a href="#cap-28">XXVIII. Imitación social y criminalística morfológica</a>
+        <a href="#cap-29">XXIX. Medicina y cirugía de pacientes polimórficos</a>
+        <a href="#cap-30">XXX. Ética de la alteración y el error de la forma correcta</a>
+        <a href="#cap-31">XXXI. Relación con otras disciplinas</a>
+        <a href="#cap-32">XXXII. La pregunta por lo que permanece</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -11393,20 +11362,20 @@ window.ENTRIES = [
       la transformación.</p>
       <p>Materia y Transmutación distingue estas formas de cambios permanentes que pasan a sostenerse
       biológicamente por sí mismos.</p>
-      <h4 id="cap-8">Capítulo VIII — Transformación reversible</h4>
+      <h4 id="cap-8">Capítulo VIII — Transformación reversible y permanente</h4>
       <p>Una transformación reversible conserva información suficiente para reconstruir estados
-      anteriores.</p>
-      <p>La reversibilidad no implica seguridad. Si el cuerpo transformado sufre daño, la estructura
-      debe decidir cómo traducir ese daño al estado previo.</p>
-      <p>Petrificación, formas animales inducidas y cambios de tamaño muestran distintas soluciones a
-      este problema.</p>
-      <h4 id="cap-9">Capítulo IX — Transformación permanente</h4>
-      <p>Una transformación permanente deja de depender de la fuerza que la produjo y pasa a
-      funcionar como nuevo estado estable.</p>
-      <p>El individuo puede conservar identidad aunque su anatomía anterior ya no sea accesible.</p>
+      anteriores. Esta reversibilidad no implica seguridad. Si el cuerpo transformado sufre daño, la
+      estructura debe decidir cómo traducir ese daño al estado previo, y no todas las especies
+      resuelven el problema del mismo modo.</p>
+      <p>Petrificación, formas animales inducidas y cambios de tamaño muestran soluciones distintas a
+      esta cuestión, según cuánta información sobre la configuración original logre conservarse
+      durante el proceso.</p>
+      <p>Una transformación permanente deja de depender de la fuerza que la produjo y pasa a funcionar
+      como un nuevo estado estable. El individuo puede conservar identidad aunque su anatomía anterior
+      ya no sea accesible.</p>
       <p>La distinción entre cura, adaptación y pérdida depende entonces de función, consentimiento y
-      consecuencias, no sólo de permanencia.</p>
-      <h4 id="cap-10">Capítulo X — Changelings</h4>
+      consecuencias, y no simplemente de si el cambio resulta permanente.</p>
+      <h4 id="cap-9">Capítulo IX — Changelings</h4>
       <p>Los changelings representan uno de los modelos más refinados de plasticidad somática
       estable. Su anatomía no mantiene una sola apariencia fija, sino un rango organizado de
       configuraciones compatibles.</p>
@@ -11415,7 +11384,7 @@ window.ENTRIES = [
       regulados por memoria somática.</p>
       <p>Las formas adoptadas pueden adquirir hábitos musculares y expresivos propios con el tiempo,
       lo que vuelve inadecuado describirlas como simples disfraces.</p>
-      <h4 id="cap-11">Capítulo XI — Identidad en especies polimórficas</h4>
+      <h4 id="cap-10">Capítulo X — Identidad en especies polimórficas</h4>
       <p>La existencia de múltiples cuerpos posibles plantea un problema cultural antes que
       biológico. Sociedades acostumbradas a una anatomía estable tienden a buscar una apariencia
       auténtica detrás de las demás.</p>
@@ -11423,54 +11392,46 @@ window.ENTRIES = [
       socialmente durante años sea menos real que una forma de reposo.</p>
       <p>La identidad personal pertenece a dominios más amplios que la morfología. La disciplina sólo
       puede describir continuidad corporal y capacidad de reorganización.</p>
-      <h4 id="cap-12">Capítulo XII — Imitadores</h4>
+      <h4 id="cap-11">Capítulo XI — Imitadores y mimetismo</h4>
       <p>Los imitadores constituyen un conjunto diverso de criaturas capaces de reproducir formas
-      ajenas. Algunos copian sólo silueta; otros reproducen textura, olor, voz, firma mágica o
-      anatomía funcional.</p>
-      <p>La imitación puede basarse en observación, contacto o absorción de información
-      estructural.</p>
+      ajenas. Algunos copian sólo silueta, otros reproducen textura, olor, voz, firma mágica o
+      anatomía funcional, y la imitación puede basarse en observación, contacto o absorción de
+      información estructural.</p>
       <p>No todos los imitadores comprenden aquello que copian. Una forma visualmente perfecta puede
-      contener órganos incompatibles o funciones aproximadas.</p>
-      <h4 id="cap-13">Capítulo XIII — Mimetismo anatómico</h4>
-      <p>El mimetismo anatómico reproduce estructuras internas además de apariencia externa.</p>
-      <p>Es mucho más costoso que el camuflaje superficial porque obliga al organismo a sostener
-      funciones reales: respiración, circulación, locomoción y digestión compatibles con la forma
-      imitada.</p>
-      <p>Las especies capaces de ello suelen poseer tejidos altamente indiferenciados o mecanismos de
-      reorganización extraordinariamente rápidos.</p>
-      <h4 id="cap-14">Capítulo XIV — Mimetismo de firma</h4>
-      <p>Algunas criaturas imitan no sólo cuerpo, sino rasgos mágicos utilizados para reconocer
-      individuos o especies.</p>
-      <p>Esta capacidad puede engañar sistemas de detección, artefactos o rituales que dependen de
-      referencias demasiado simples.</p>
-      <p>Criminalística Arcana estudia estas falsificaciones cuando se utilizan para suplantación.</p>
-      <h4 id="cap-15">Capítulo XV — Criaturas amorfas</h4>
+      contener órganos incompatibles o funciones aproximadas, lo que distingue una copia superficial
+      de una reproducción funcional.</p>
+      <p>El mimetismo anatómico lleva esta capacidad más lejos, reproduciendo estructuras internas
+      además de apariencia externa. Resulta mucho más costoso que el camuflaje superficial porque
+      obliga al organismo a sostener funciones reales, como respiración, circulación, locomoción y
+      digestión compatibles con la forma imitada. Las especies capaces de ello suelen poseer tejidos
+      altamente indiferenciados o mecanismos de reorganización extraordinariamente rápidos.</p>
+      <p>Existe además un mimetismo de firma, en el que algunas criaturas imitan no sólo el cuerpo sino
+      rasgos mágicos utilizados para reconocer individuos o especies. Esta capacidad puede engañar
+      sistemas de detección, artefactos o rituales que dependen de referencias demasiado simples.
+      Criminalística Arcana estudia estas falsificaciones cuando se utilizan para suplantación.</p>
+      <h4 id="cap-12">Capítulo XII — Cuerpos amorfos y organización distribuida</h4>
       <p>Los organismos amorfos no carecen necesariamente de organización. Su organización puede
-      estar distribuida en lugar de concentrada en órganos rígidos.</p>
-      <p>Fluidos, geles, colonias celulares, masas de protoplasma y cuerpos sostenidos por campos
-      arcanos pueden mantener funciones sin una anatomía fija.</p>
-      <p>La lesión debe evaluarse según pérdida funcional, no sólo según deformación.</p>
-      <h4 id="cap-16">Capítulo XVI — Slimefolk y organización distribuida</h4>
+      estar distribuida en lugar de concentrada en órganos rígidos. Fluidos, geles, colonias
+      celulares, masas de protoplasma y cuerpos sostenidos por campos arcanos pueden mantener
+      funciones sin una anatomía fija, y la lesión debe evaluarse según pérdida funcional, no sólo
+      según deformación.</p>
       <p>Los slimefolk ofrecen un ejemplo claro de cuerpo cuya continuidad no depende de un esqueleto
-      ni de órganos en posiciones constantes.</p>
-      <p>Memoria, percepción y función pueden sostenerse mediante redes distribuidas por toda la masa
-      corporal o mediante núcleos cuya posición puede cambiar.</p>
-      <p>Separar físicamente una porción no implica necesariamente crear un segundo individuo. La
-      respuesta depende de cuánto del sistema de continuidad acompaña a cada fragmento.</p>
-      <h4 id="cap-17">Capítulo XVII — Fragmentación</h4>
+      ni de órganos en posiciones constantes. Memoria, percepción y función pueden sostenerse mediante
+      redes distribuidas por toda la masa corporal o mediante núcleos cuya posición puede cambiar.</p>
+      <p>Separar físicamente una porción de estos cuerpos no implica necesariamente crear un segundo
+      individuo. La respuesta depende de cuánto del sistema de continuidad acompaña a cada
+      fragmento.</p>
+      <h4 id="cap-13">Capítulo XIII — Fragmentación y fusión corporal</h4>
       <p>Algunas especies sobreviven a la división corporal y regeneran partes perdidas. Otras pueden
-      producir nuevos individuos mediante fragmentación.</p>
-      <p>La distinción entre lesión y reproducción depende de si los fragmentos adquieren continuidad
-      independiente.</p>
-      <p>Pneumatología interviene cuando la identidad individual parece dividirse o duplicarse.</p>
-      <h4 id="cap-18">Capítulo XVIII — Fusión</h4>
-      <p>La fusión es el proceso inverso: dos masas corporales pueden integrarse en un solo
-      organismo.</p>
-      <p>En especies coloniales, esto puede ser normal. En organismos individualizados, plantea
-      preguntas sobre memoria, voluntad y continuidad.</p>
-      <p>La morfología puede describir el cuerpo resultante, pero no resolver por sí sola si existe
-      una o varias personas dentro de él.</p>
-      <h4 id="cap-19">Capítulo XIX — Licantropía</h4>
+      producir nuevos individuos mediante fragmentación, y la distinción entre lesión y reproducción
+      depende de si los fragmentos adquieren continuidad independiente. Pneumatología interviene
+      cuando la identidad individual parece dividirse o duplicarse.</p>
+      <p>La fusión constituye el proceso inverso. Dos masas corporales pueden integrarse en un solo
+      organismo. En especies coloniales esto puede ser normal, mientras que en organismos
+      individualizados plantea preguntas sobre memoria, voluntad y continuidad.</p>
+      <p>La morfología puede describir el cuerpo resultante de una fusión, pero no resolver por sí
+      sola si existe una o varias personas dentro de él.</p>
+      <h4 id="cap-14">Capítulo XIV — Licantropía</h4>
       <p>La licantropía reúne condiciones muy distintas bajo un mismo nombre cultural. Algunas son
       maldiciones transmisibles, otras linajes heredables, otras estados pactados o enfermedades con
       componente mágico.</p>
@@ -11478,273 +11439,198 @@ window.ENTRIES = [
       metabólicos, sensoriales y conductuales.</p>
       <p>El estudio serio exige identificar mecanismo antes de asumir que todos los licántropos
       pertenecen a una misma categoría.</p>
-      <h4 id="cap-20">Capítulo XX — Ciclos</h4>
+      <h4 id="cap-15">Capítulo XV — Ciclos, transformación involuntaria y conducta</h4>
       <p>Las transformaciones cíclicas pueden depender de luna, estación, hambre, estrés, edad o
-      señales mágicas.</p>
-      <p>La regularidad no implica que el astro o evento sea la fuente directa. Puede actuar como
-      reloj, desencadenante o referencia.</p>
-      <p>Cronurgia Teórica y Ecología Mágica ayudan a distinguir causalidad de sincronización.</p>
-      <h4 id="cap-21">Capítulo XXI — Transformación involuntaria</h4>
+      señales mágicas. La regularidad no implica que el astro o evento sea la fuente directa del
+      cambio, pues puede actuar como reloj, desencadenante o simple referencia. Cronurgia Teórica y
+      Ecología Mágica ayudan a distinguir causalidad de sincronización.</p>
       <p>Cuando el individuo no controla el cambio, la transformación puede producir lesiones,
-      desorientación y pérdida de autonomía.</p>
-      <p>La medicina debe separar efectos morfológicos de efectos psicológicos o maldiológicos.</p>
-      <p>Una persona puede recordar perfectamente la transformación y seguir siendo incapaz de
-      detenerla.</p>
-      <h4 id="cap-22">Capítulo XXII — Transformación y conducta</h4>
-      <p>Cambiar de cuerpo puede modificar percepción, capacidad motora, metabolismo y necesidades
-      fisiológicas, lo que afecta comportamiento sin reemplazar necesariamente personalidad.</p>
-      <p>Atribuir agresividad a pérdida de identidad puede ser un error si el nuevo cuerpo produce
-      dolor, hambre extrema o sentidos abrumadores.</p>
-      <p>Psicología Resonántica estudia la experiencia subjetiva; Morfología Anómala describe las
-      presiones corporales que contribuyen a ella.</p>
-      <h4 id="cap-23">Capítulo XXIII — Bestialización</h4>
-      <p>La bestialización describe transformaciones que acercan anatomía a formas animales o
-      depredadoras.</p>
-      <p>Puede aparecer por maldición, mutación, exposición o adaptación.</p>
-      <p>El término no implica reducción intelectual. Existen individuos con morfología bestial y
-      raciocinio intacto, así como formas humanoides con severa pérdida cognitiva.</p>
-      <h4 id="cap-24">Capítulo XXIV — Gigantismo transformativo</h4>
-      <p>Aumentar tamaño exige resolver masa, soporte, circulación y disipación térmica.</p>
-      <p>Las transformaciones breves pueden sostener diferencias mediante energía externa; las
-      permanentes necesitan reorganizar toda la fisiología.</p>
-      <p>Un cuerpo grande no es simplemente una versión ampliada de uno pequeño.</p>
-      <h4 id="cap-25">Capítulo XXV — Miniaturización</h4>
-      <p>Reducir tamaño presenta problemas inversos. Órganos no pueden disminuir indefinidamente
-      manteniendo la misma organización.</p>
-      <p>Algunas especies compactan funciones, otras desplazan parte de su estructura a soportes
-      extradimensionales o alteran la relación entre masa y volumen.</p>
-      <p>Planología participa cuando el cuerpo visible no parece contener toda la anatomía
+      desorientación y pérdida de autonomía. La medicina debe separar los efectos morfológicos de los
+      efectos psicológicos o maldiológicos, ya que una persona puede recordar perfectamente la
+      transformación y seguir siendo incapaz de detenerla.</p>
+      <p>Cambiar de cuerpo puede modificar además percepción, capacidad motora, metabolismo y
+      necesidades fisiológicas, lo que afecta el comportamiento sin reemplazar necesariamente la
+      personalidad. Atribuir agresividad a pérdida de identidad puede ser un error si el nuevo cuerpo
+      produce dolor, hambre extrema o sentidos abrumadores.</p>
+      <p>Psicología Resonántica estudia la experiencia subjetiva de estos procesos; Morfología Anómala
+      describe las presiones corporales que contribuyen a ella.</p>
+      <h4 id="cap-16">Capítulo XVI — Extremos morfológicos: bestialización, gigantismo y miniaturización</h4>
+      <p>La bestialización describe transformaciones que acercan la anatomía a formas animales o
+      depredadoras. Puede aparecer por maldición, mutación, exposición o adaptación, y el término no
+      implica reducción intelectual. Existen individuos con morfología bestial y raciocinio intacto,
+      así como formas humanoides con severa pérdida cognitiva.</p>
+      <p>Aumentar el tamaño del cuerpo exige resolver masa, soporte, circulación y disipación térmica.
+      Las transformaciones breves pueden sostener diferencias mediante energía externa, mientras que
+      las permanentes necesitan reorganizar toda la fisiología. Un cuerpo grande no es simplemente una
+      versión ampliada de uno pequeño.</p>
+      <p>Reducir el tamaño presenta problemas inversos, pues los órganos no pueden disminuir
+      indefinidamente manteniendo la misma organización. Algunas especies compactan funciones, otras
+      desplazan parte de su estructura a soportes extradimensionales o alteran la relación entre masa
+      y volumen. Planología participa cuando el cuerpo visible no parece contener toda la anatomía
       necesaria.</p>
-      <h4 id="cap-26">Capítulo XXVI — Formas híbridas</h4>
+      <h4 id="cap-17">Capítulo XVII — Formas híbridas y quimerismo</h4>
       <p>Las formas híbridas combinan rasgos pertenecientes a configuraciones distintas. Pueden ser
-      estados transitorios, fenotipos estables o resultado de una transformación incompleta.</p>
-      <p>No toda mezcla es defectuosa. Algunas especies utilizan formas híbridas deliberadamente
-      porque ofrecen combinaciones funcionales útiles.</p>
-      <p>El error clínico consiste en asumir que toda forma intermedia desea o necesita regresar a
-      uno de los extremos.</p>
-      <h4 id="cap-27">Capítulo XXVII — Quimerismo</h4>
+      estados transitorios, fenotipos estables o resultado de una transformación incompleta. No toda
+      mezcla es defectuosa, y algunas especies utilizan formas híbridas deliberadamente porque ofrecen
+      combinaciones funcionales útiles. El error clínico consiste en asumir que toda forma intermedia
+      desea o necesita regresar a uno de los extremos.</p>
       <p>El quimerismo puede surgir cuando tejidos de orígenes distintos se integran en un solo
-      cuerpo.</p>
-      <p>La compatibilidad depende de que el organismo construya una referencia común que permita
-      reconocer todos los componentes como propios.</p>
-      <p>Rechazo, competencia entre patrones y reorganización asimétrica son complicaciones
-      frecuentes.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Reemplazo de tejidos</h4>
+      cuerpo. La compatibilidad depende de que el organismo construya una referencia común que permita
+      reconocer todos los componentes como propios. Rechazo, competencia entre patrones y
+      reorganización asimétrica son complicaciones frecuentes de este proceso.</p>
+      <h4 id="cap-18">Capítulo XVIII — Transformaciones de estado material</h4>
       <p>Algunas transformaciones sustituyen gradualmente carne por mineral, madera, cristal, metal o
-      materia extraplanar.</p>
-      <p>Mientras la continuidad funcional se mantenga, el individuo puede sobrevivir con
-      proporciones crecientes de material no biológico.</p>
-      <p>La frontera entre organismo transformado y constructo vivo es objeto de debate.</p>
-      <h4 id="cap-29">Capítulo XXIX — Petrificación</h4>
-      <p>La petrificación constituye uno de los ejemplos más estudiados de transformación extrema con
-      identidad potencialmente conservada.</p>
-      <p>El cuerpo pierde funciones biológicas ordinarias, pero puede mantener una referencia
-      suficientemente densa como para permitir restauración.</p>
-      <p>El daño sufrido durante el estado pétreo demuestra que la estatua no es una copia externa:
-      continúa participando de la continuidad del sujeto.</p>
-      <h4 id="cap-30">Capítulo XXX — Cristalización</h4>
-      <p>La cristalización transforma tejidos en estructuras ordenadas capaces de conservar
-      información con gran precisión.</p>
-      <p>Puede ser reversible, degenerativa o adaptativa dependiendo del mecanismo.</p>
-      <p>Mineralogía Mágica ayuda a estudiar cómo el patrón corporal queda registrado dentro de la
-      nueva matriz.</p>
-      <h4 id="cap-31">Capítulo XXXI — Licuefacción</h4>
-      <p>La licuefacción corporal reduce o elimina estructuras rígidas sin destruir necesariamente
-      continuidad.</p>
-      <p>Algunas criaturas adoptan estados líquidos para atravesar espacios, evitar daño o
-      distribuirse.</p>
-      <p>El principal problema consiste en conservar orientación interna y evitar que partes
-      funcionales se dispersen más allá de la capacidad de reintegración.</p>
-      <h4 id="cap-32">Capítulo XXXII — Vaporización y estados difusos</h4>
-      <p>Existen formas capaces de transformarse parcialmente en niebla, humo o materia suspendida.</p>
-      <p>Estas configuraciones dificultan definir frontera corporal y vuelven especialmente
-      importante la existencia de un anclaje que mantenga qué partículas pertenecen al individuo.</p>
-      <p>Sin ese anclaje, dispersión suficiente puede convertirse en muerte o pérdida irreversible de
+      materia extraplanar. Mientras la continuidad funcional se mantenga, el individuo puede sobrevivir
+      con proporciones crecientes de material no biológico, y la frontera entre organismo transformado
+      y constructo vivo sigue siendo objeto de debate.</p>
+      <p>La petrificación constituye uno de los ejemplos más estudiados de esta clase de transformación
+      extrema con identidad potencialmente conservada. El cuerpo pierde funciones biológicas
+      ordinarias, pero puede mantener una referencia suficientemente densa como para permitir
+      restauración. El daño sufrido durante el estado pétreo demuestra que la estatua no es una copia
+      externa, sino que continúa participando de la continuidad del sujeto.</p>
+      <p>La cristalización, por su parte, transforma tejidos en estructuras ordenadas capaces de
+      conservar información con gran precisión. Puede ser reversible, degenerativa o adaptativa
+      dependiendo del mecanismo, y Mineralogía Mágica ayuda a estudiar cómo el patrón corporal queda
+      registrado dentro de la nueva matriz.</p>
+      <p>En el extremo opuesto, la licuefacción corporal reduce o elimina estructuras rígidas sin
+      destruir necesariamente continuidad. Algunas criaturas adoptan estados líquidos para atravesar
+      espacios, evitar daño o distribuirse, y el principal problema consiste en conservar orientación
+      interna y evitar que partes funcionales se dispersen más allá de la capacidad de
+      reintegración.</p>
+      <p>Existen además formas capaces de transformarse parcialmente en niebla, humo o materia
+      suspendida. Estas configuraciones dificultan definir la frontera corporal y vuelven especialmente
+      importante la existencia de un anclaje que mantenga qué partículas pertenecen al individuo. Sin
+      ese anclaje, la dispersión suficiente puede convertirse en muerte o pérdida irreversible de
       masa.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Sombras corporales</h4>
-      <p>Algunas entidades y maldiciones permiten reducir el cuerpo a una forma bidimensional, oscura
-      o dependiente de superficies.</p>
-      <p>Estos estados desafían anatomía ordinaria porque posición y volumen dejan de corresponderse
-      de manera convencional.</p>
-      <p>Topología Arcana y Planología resultan necesarias para comprender si se trata de
-      transformación material o desplazamiento parcial.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Duplicación aparente</h4>
-      <p>Ciertas transformaciones producen múltiples cuerpos coordinados o extensiones separadas.</p>
-      <p>La cuestión central es si comparten una sola continuidad de identidad o si cada cuerpo
-      adquiere autonomía.</p>
-      <p>La sincronía de movimiento no prueba unidad; puede existir coordinación entre individuos
-      distintos.</p>
-      <h4 id="cap-35">Capítulo XXXV — Mudas de identidad corporal</h4>
-      <p>Algunas especies abandonan cuerpos completos del mismo modo que otras mudan piel.</p>
-      <p>El organismo puede transferir continuidad a una nueva estructura mientras la anterior queda
-      como envoltura vacía o residuo parcialmente funcional.</p>
-      <p>Estos casos son especialmente importantes para Tanatología porque un cuerpo aparentemente
-      muerto puede no corresponder ya al individuo.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Reorganización por daño</h4>
+      <h4 id="cap-19">Capítulo XIX — Formas atípicas de continuidad: sombras, duplicación y mudas</h4>
+      <p>Algunas entidades y maldiciones permiten reducir el cuerpo a una forma bidimensional, oscura o
+      dependiente de superficies. Estos estados desafían la anatomía ordinaria porque posición y
+      volumen dejan de corresponderse de manera convencional, y Topología Arcana y Planología resultan
+      necesarias para comprender si se trata de transformación material o desplazamiento parcial.</p>
+      <p>Ciertas transformaciones producen, en cambio, múltiples cuerpos coordinados o extensiones
+      separadas. La cuestión central es si comparten una sola continuidad de identidad o si cada
+      cuerpo adquiere autonomía. La sincronía de movimiento no prueba unidad, pues puede existir
+      coordinación entre individuos distintos.</p>
+      <p>Algunas especies abandonan cuerpos completos del mismo modo que otras mudan piel. El organismo
+      puede transferir continuidad a una nueva estructura mientras la anterior queda como envoltura
+      vacía o residuo parcialmente funcional. Estos casos son especialmente importantes para
+      Tanatología, porque un cuerpo aparentemente muerto puede no corresponder ya al individuo.</p>
+      <h4 id="cap-20">Capítulo XX — Reorganización por daño y mutación acumulativa</h4>
       <p>En organismos altamente plásticos, una lesión puede desencadenar una forma alternativa
-      adaptada a sobrevivir.</p>
-      <p>El cuerpo no restaura exactamente lo perdido, sino que redistribuye funciones para
-      compensarlo.</p>
-      <p>Esta adaptación puede volverse permanente si regresar al patrón anterior resulta menos
-      estable.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Mutación acumulativa</h4>
-      <p>Transformaciones repetidas pueden dejar pequeñas modificaciones persistentes.</p>
-      <p>Con el tiempo, el individuo puede alejarse de su forma inicial incluso cuando cada cambio
-      aislado parecía reversible.</p>
-      <p>La exposición a transmutaciones, maldiciones o sustancias puede producir esta deriva
-      morfológica.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Saturación alquímica</h4>
+      adaptada a sobrevivir. El cuerpo no restaura exactamente lo perdido, sino que redistribuye
+      funciones para compensarlo, y esta adaptación puede volverse permanente si regresar al patrón
+      anterior resulta menos estable.</p>
+      <p>Transformaciones repetidas pueden dejar además pequeñas modificaciones persistentes. Con el
+      tiempo, el individuo puede alejarse de su forma inicial incluso cuando cada cambio aislado
+      parecía reversible. La exposición a transmutaciones, maldiciones o sustancias puede producir esta
+      deriva morfológica.</p>
+      <h4 id="cap-21">Capítulo XXI — Causas externas de transformación: alquimia, maldición, pacto y teurgia</h4>
       <p>Algunas prácticas alquímicas intentan modificar cuerpo, mente o alma mediante exposición
-      acumulativa a sustancias simbólicamente asociadas con esos dominios.</p>
-      <p>Desde la Morfología Anómala, los casos ligados a saturación corporal muestran cómo una
-      sustancia puede dejar de producir un efecto transitorio y comenzar a reorganizar crecimiento,
-      regeneración y arquitectura tisular.</p>
-      <p>Estos procesos se estudian junto a Farmacología y Patología Arcana y no se consideran
-      métodos seguros de transformación.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Maldiciones morfológicas</h4>
-      <p>Una maldición puede mantener un cuerpo en una configuración que no sería estable por sí
-      misma.</p>
-      <p>Eliminar únicamente la forma visible suele producir recaída si la estructura maldiológica
-      continúa activa.</p>
-      <p>Maldiología identifica la condición que dirige el cambio; Morfología Anómala estudia cómo el
-      cuerpo responde a ella.</p>
-      <h4 id="cap-40">Capítulo XL — Transformaciones pactadas</h4>
-      <p>Algunos pactos conceden formas, órganos o capacidades que dependen de una relación
-      externa.</p>
-      <p>El cuerpo puede adaptarse gradualmente hasta volver permanentes ciertas modificaciones.</p>
-      <p>Pacturgia estudia la concesión; Morfología Anómala analiza la anatomía que resulta de
-      ella.</p>
-      <h4 id="cap-41">Capítulo XLI — Transformación teúrgica</h4>
-      <p>Las tradiciones teúrgicas pueden producir estigmas, halos, alas, marcas y formas alteradas
-      asociadas a autoridad o consagración.</p>
-      <p>La apariencia no permite determinar si el cambio es simbólico, anatómico o una manifestación
-      mantenida externamente.</p>
-      <p>La evaluación requiere colaboración entre Teurgia, Anatomía Arcana y Semiótica Mágica.</p>
-      <h4 id="cap-42">Capítulo XLII — Forma y sexo</h4>
-      <p>En especies polimórficas, caracteres sexuales pueden ser estables, variables o
-      funcionalmente desacoplados de reproducción.</p>
-      <p>La morfología visible no siempre permite inferir anatomía reproductiva, capacidad fértil ni
-      identidad social.</p>
-      <p>La disciplina describe mecanismos biológicos y evita convertir categorías culturales en
-      reglas anatómicas universales.</p>
-      <h4 id="cap-43">Capítulo XLIII — Forma y edad</h4>
+      acumulativa a sustancias simbólicamente asociadas con esos dominios. Los casos ligados a
+      saturación corporal muestran cómo una sustancia puede dejar de producir un efecto transitorio y
+      comenzar a reorganizar crecimiento, regeneración y arquitectura tisular. Estos procesos se
+      estudian junto a Farmacología y Patología Arcana, y no se consideran métodos seguros de
+      transformación.</p>
+      <p>Una maldición, por su parte, puede mantener un cuerpo en una configuración que no sería
+      estable por sí misma. Eliminar únicamente la forma visible suele producir recaída si la
+      estructura maldiológica continúa activa. Maldiología identifica la condición que dirige el
+      cambio; Morfología Anómala estudia cómo el cuerpo responde a ella.</p>
+      <p>Algunos pactos conceden formas, órganos o capacidades que dependen de una relación externa, y
+      el cuerpo puede adaptarse gradualmente hasta volver permanentes ciertas modificaciones. Pacturgia
+      estudia la concesión; Morfología Anómala analiza la anatomía que resulta de ella.</p>
+      <p>Las tradiciones teúrgicas, finalmente, pueden producir estigmas, halos, alas, marcas y formas
+      alteradas asociadas a autoridad o consagración. La apariencia no permite determinar si el cambio
+      es simbólico, anatómico o una manifestación mantenida externamente, y su evaluación requiere
+      colaboración entre Teurgia, Anatomía Arcana y Semiótica Mágica.</p>
+      <h4 id="cap-22">Capítulo XXII — Forma en relación con sexo, edad y memoria</h4>
+      <p>En especies polimórficas, los caracteres sexuales pueden ser estables, variables o
+      funcionalmente desacoplados de la reproducción. La morfología visible no siempre permite inferir
+      anatomía reproductiva, capacidad fértil ni identidad social, y la disciplina describe mecanismos
+      biológicos evitando convertir categorías culturales en reglas anatómicas universales.</p>
       <p>Algunas criaturas pueden adoptar apariencias juveniles o envejecidas sin modificar su edad
-      biológica real.</p>
-      <p>Otras transformaciones afectan ritmo de desarrollo y producen cambios verdaderos en
-      tejidos.</p>
-      <p>Cronurgia Teórica y Anatomía Arcana ayudan a distinguir apariencia etaria de modificación
-      temporal o fisiológica.</p>
-      <h4 id="cap-44">Capítulo XLIV — Forma y memoria</h4>
-      <p>Cambiar de cuerpo puede alterar acceso a recuerdos asociados con posturas, sentidos o
-      estados fisiológicos.</p>
-      <p>Esto no significa que la memoria resida en la forma, pero el cuerpo participa en cómo se
-      recupera y organiza experiencia.</p>
-      <p>En polimorfos de larga duración, distintas configuraciones pueden acumular asociaciones
-      conductuales particulares.</p>
-      <h4 id="cap-45">Capítulo XLV — Dolor morfológico</h4>
-      <p>No toda transformación está diseñada para ser confortable.</p>
-      <p>Reorganizar hueso, musculatura y órganos puede producir dolor incluso cuando el proceso es
-      estructuralmente correcto.</p>
-      <p>Las especies naturalmente transformables suelen poseer mecanismos de analgesia, flexibilidad
-      o transición gradual que las formas inducidas no tienen.</p>
-      <h4 id="cap-46">Capítulo XLVI — Errores de transformación</h4>
-      <p>Los fallos pueden manifestarse como órganos duplicados, vías incompletas, asimetrías,
-      pérdida sensorial o incompatibilidad entre patrones.</p>
-      <p>Una transformación puede parecer exitosa externamente y contener errores internos graves.</p>
-      <p>La evaluación clínica nunca debe limitarse a apariencia.</p>
-      <h4 id="cap-47">Capítulo XLVII — Anclaje morfológico</h4>
-      <p>Un anclaje morfológico es cualquier referencia que ayuda al organismo a conservar o
-      recuperar una configuración.</p>
-      <p>Puede ser biológica, material, pneumatológica o ritual.</p>
-      <p>Algunas terapias utilizan anclajes para estabilizar pacientes cuya forma cambia de manera
-      involuntaria.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Pérdida de referencia</h4>
-      <p>Cuando un organismo pierde suficiente información sobre una forma previa, regresar puede
-      volverse imposible.</p>
-      <p>La persona puede seguir siendo la misma aunque el cuerpo ya no conserve un camino de
-      retorno.</p>
-      <p>Esta distinción es importante para evitar confundir irreversibilidad morfológica con pérdida
-      de identidad.</p>
-      <h4 id="cap-49">Capítulo XLIX — Sustitución y copia</h4>
+      biológica real, mientras que otras transformaciones afectan el ritmo de desarrollo y producen
+      cambios verdaderos en los tejidos. Cronurgia Teórica y Anatomía Arcana ayudan a distinguir
+      apariencia etaria de modificación temporal o fisiológica.</p>
+      <p>Cambiar de cuerpo puede además alterar el acceso a recuerdos asociados con posturas, sentidos
+      o estados fisiológicos. Esto no significa que la memoria resida en la forma, pero el cuerpo
+      participa en cómo se recupera y organiza la experiencia. En polimorfos de larga duración,
+      distintas configuraciones pueden acumular asociaciones conductuales particulares.</p>
+      <h4 id="cap-23">Capítulo XXIII — Dolor y errores de transformación</h4>
+      <p>No toda transformación está diseñada para ser confortable. Reorganizar hueso, musculatura y
+      órganos puede producir dolor incluso cuando el proceso es estructuralmente correcto. Las
+      especies naturalmente transformables suelen poseer mecanismos de analgesia, flexibilidad o
+      transición gradual que las formas inducidas no tienen.</p>
+      <p>Los fallos, por otra parte, pueden manifestarse como órganos duplicados, vías incompletas,
+      asimetrías, pérdida sensorial o incompatibilidad entre patrones. Una transformación puede parecer
+      exitosa externamente y contener errores internos graves, de modo que la evaluación clínica nunca
+      debe limitarse a la apariencia.</p>
+      <h4 id="cap-24">Capítulo XXIV — Anclaje morfológico y pérdida de referencia</h4>
+      <p>Un anclaje morfológico es cualquier referencia que ayuda al organismo a conservar o recuperar
+      una configuración. Puede ser biológica, material, pneumatológica o ritual, y algunas terapias
+      utilizan anclajes para estabilizar pacientes cuya forma cambia de manera involuntaria.</p>
+      <p>Cuando un organismo pierde suficiente información sobre una forma previa, regresar a ella
+      puede volverse imposible. La persona puede seguir siendo la misma aunque el cuerpo ya no
+      conserve un camino de retorno, distinción importante para evitar confundir irreversibilidad
+      morfológica con pérdida de identidad.</p>
+      <h4 id="cap-25">Capítulo XXV — Sustitución, copia, cuerpos prestados y posesión</h4>
       <p>Una transformación auténtica mantiene continuidad entre estados. Crear un segundo cuerpo
-      idéntico y trasladar información hacia él plantea un problema diferente.</p>
-      <p>La Morfología Anómala no considera suficiente la semejanza para afirmar continuidad.</p>
-      <p>Materia y Transmutación y Pneumatología examinan los casos donde copia corporal e identidad
-      individual entran en conflicto.</p>
-      <h4 id="cap-50">Capítulo L — Criaturas de cuerpo prestado</h4>
-      <p>Algunas entidades utilizan cuerpos temporales, caparazones, huéspedes o formas
-      construidas.</p>
-      <p>Su anatomía visible puede ser una interfaz y no el organismo completo.</p>
-      <p>Demonología y Pneumatología son esenciales para determinar dónde reside la continuidad
-      real.</p>
-      <h4 id="cap-51">Capítulo LI — Posesión y morfología</h4>
-      <p>La posesión puede modificar postura, voz, expresión e incluso anatomía si la entidad
-      ocupante ejerce suficiente influencia.</p>
-      <p>Estos cambios no deben confundirse con capacidad polimórfica del huésped.</p>
-      <p>El tratamiento exige separar causa pneumatológica de daño corporal secundario.</p>
-      <h4 id="cap-52">Capítulo LII — Transformación colectiva</h4>
-      <p>Existen organismos coloniales capaces de reorganizarse como grupo, formando cuerpos mayores
-      o unidades funcionales temporales.</p>
-      <p>Cada componente puede conservar cierta autonomía mientras participa de una morfología
-      común.</p>
-      <p>Estos sistemas desafían la noción de individuo y conectan la disciplina con Ecología
-      Mágica.</p>
-      <h4 id="cap-53">Capítulo LIII — Formas ambientales</h4>
-      <p>Algunas criaturas ajustan cuerpo a condiciones del entorno de manera rápida: branquias,
-      membranas, pigmentación, aislamiento, estructuras sensoriales o afinidades específicas.</p>
-      <p>La adaptación puede ser reversible y no depender de evolución entre generaciones.</p>
-      <p>En especies muy plásticas, ambiente y anatomía se encuentran en negociación constante.</p>
-      <h4 id="cap-54">Capítulo LIV — Transformación defensiva</h4>
+      idéntico y trasladar información hacia él plantea un problema diferente, pues la Morfología
+      Anómala no considera suficiente la semejanza para afirmar continuidad. Materia y Transmutación y
+      Pneumatología examinan los casos donde copia corporal e identidad individual entran en
+      conflicto.</p>
+      <p>Algunas entidades utilizan cuerpos temporales, caparazones, huéspedes o formas construidas,
+      cuya anatomía visible puede ser una interfaz y no el organismo completo. Demonología y
+      Pneumatología son esenciales para determinar dónde reside la continuidad real.</p>
+      <p>La posesión, a su vez, puede modificar postura, voz, expresión e incluso anatomía si la
+      entidad ocupante ejerce suficiente influencia. Estos cambios no deben confundirse con capacidad
+      polimórfica del huésped, y el tratamiento exige separar causa pneumatológica de daño corporal
+      secundario.</p>
+      <h4 id="cap-26">Capítulo XXVI — Transformación colectiva y formas ambientales</h4>
+      <p>Existen organismos coloniales capaces de reorganizarse como grupo, formando cuerpos mayores o
+      unidades funcionales temporales. Cada componente puede conservar cierta autonomía mientras
+      participa de una morfología común, y estos sistemas desafían la noción de individuo y conectan la
+      disciplina con Ecología Mágica.</p>
+      <p>Otras criaturas ajustan el cuerpo a las condiciones del entorno de manera rápida, mediante
+      branquias, membranas, pigmentación, aislamiento, estructuras sensoriales o afinidades
+      específicas. Esta adaptación puede ser reversible y no depender de evolución entre generaciones.
+      En especies muy plásticas, ambiente y anatomía se encuentran en negociación constante.</p>
+      <h4 id="cap-27">Capítulo XXVII — Transformación defensiva y ofensiva</h4>
       <p>Espinas, placas, aumento de masa, endurecimiento y formas evasivas pueden aparecer como
-      respuesta a amenaza.</p>
-      <p>Estas configuraciones suelen priorizar supervivencia inmediata sobre eficiencia
-      metabólica.</p>
-      <p>Permanecer demasiado tiempo en ellas puede causar agotamiento o daño.</p>
-      <h4 id="cap-55">Capítulo LV — Transformación ofensiva</h4>
+      respuesta a una amenaza. Estas configuraciones suelen priorizar la supervivencia inmediata sobre
+      la eficiencia metabólica, y permanecer demasiado tiempo en ellas puede causar agotamiento o
+      daño.</p>
       <p>Mandíbulas, extremidades adicionales, órganos de descarga y tejidos especializados pueden
-      desarrollarse temporalmente para caza o combate.</p>
-      <p>El cuerpo necesita luego reabsorber o reorganizar la masa utilizada.</p>
-      <p>Los costos posteriores permiten distinguir una verdadera transformación biológica de una
-      mera proyección mágica externa.</p>
-      <h4 id="cap-56">Capítulo LVI — Imitación social</h4>
+      desarrollarse también de manera temporal para la caza o el combate. El cuerpo necesita luego
+      reabsorber o reorganizar la masa utilizada, y los costos posteriores permiten distinguir una
+      verdadera transformación biológica de una mera proyección mágica externa.</p>
+      <h4 id="cap-28">Capítulo XXVIII — Imitación social y criminalística morfológica</h4>
       <p>Las especies capaces de adoptar formas humanoides pueden utilizarlas para comunicación,
-      comercio, infiltración o convivencia.</p>
-      <p>No debe suponerse intención hostil por el simple hecho de que una criatura modifique su
-      apariencia.</p>
-      <p>La interpretación ética depende de engaño, consentimiento y contexto, no de plasticidad
-      corporal.</p>
-      <h4 id="cap-57">Capítulo LVII — Criminalística morfológica</h4>
-      <p>La transformación complica identificación de sospechosos, cadáveres y evidencias.</p>
-      <p>Cabello, sangre, huellas y rasgos faciales pueden cambiar o ser falsificados.</p>
-      <p>Criminalística Arcana busca referencias menos dependientes de morfología superficial, como
-      firmas persistentes, historia material y residuos de transformación.</p>
-      <h4 id="cap-58">Capítulo LVIII — Medicina de pacientes polimórficos</h4>
+      comercio, infiltración o convivencia. No debe suponerse intención hostil por el simple hecho de
+      que una criatura modifique su apariencia, ya que la interpretación ética depende de engaño,
+      consentimiento y contexto, no de plasticidad corporal.</p>
+      <p>Esta misma capacidad complica, sin embargo, la identificación de sospechosos, cadáveres y
+      evidencias, pues cabello, sangre, huellas y rasgos faciales pueden cambiar o ser falsificados.
+      Criminalística Arcana busca referencias menos dependientes de morfología superficial, como firmas
+      persistentes, historia material y residuos de transformación.</p>
+      <h4 id="cap-29">Capítulo XXIX — Medicina y cirugía de pacientes polimórficos</h4>
       <p>El tratamiento médico debe preguntar en qué forma se produjo la lesión, qué configuraciones
-      son accesibles y cómo se traduce daño entre ellas.</p>
-      <p>Una fractura puede desplazarse de posición al cambiar de cuerpo sin dejar de existir.</p>
-      <p>Los protocolos clínicos registran múltiples mapas anatómicos cuando el paciente posee más de
-      una configuración habitual.</p>
-      <h4 id="cap-59">Capítulo LIX — Cirugía</h4>
-      <p>La cirugía sobre organismos polimórficos exige estabilizar temporalmente la forma o trabajar
-      con tejidos capaces de reorganizarse durante la intervención.</p>
-      <p>Cerrar una herida en una configuración puede generar tensión al adoptar otra.</p>
-      <p>La planificación debe considerar el rango completo de morfologías funcionales del
-      paciente.</p>
-      <h4 id="cap-60">Capítulo LX — Ética de la alteración</h4>
-      <p>Modificar un cuerpo sin consentimiento puede afectar movilidad, identidad social,
-      reproducción y autonomía incluso cuando no produce dolor.</p>
-      <p>La reversibilidad no elimina el problema ético.</p>
-      <p>La Ética de la Alteración desarrolla criterios específicos para transformación forzada,
-      corrección morfológica y tratamientos sobre especies cuya diversidad corporal no debe
-      patologizarse.</p>
-      <h4 id="cap-61">Capítulo LXI — El error de la forma correcta</h4>
-      <p>La medicina ha cometido repetidamente el error de asumir que existe una única anatomía
-      correcta para cada criatura.</p>
-      <p>En especies polimórficas, amorfas o híbridas, variación puede ser parte normal de su
-      biología.</p>
-      <p>La función clínica consiste en identificar estabilidad, dolor, autonomía y capacidad
-      funcional antes de declarar anomalía.</p>
-      <h4 id="cap-62">Capítulo LXII — Relación con otras disciplinas</h4>
+      son accesibles y cómo se traduce el daño entre ellas. Una fractura puede desplazarse de posición
+      al cambiar de cuerpo sin dejar de existir, por lo que los protocolos clínicos registran múltiples
+      mapas anatómicos cuando el paciente posee más de una configuración habitual.</p>
+      <p>La cirugía sobre estos organismos exige además estabilizar temporalmente la forma o trabajar
+      con tejidos capaces de reorganizarse durante la intervención. Cerrar una herida en una
+      configuración puede generar tensión al adoptar otra, y la planificación debe considerar el rango
+      completo de morfologías funcionales del paciente.</p>
+      <h4 id="cap-30">Capítulo XXX — Ética de la alteración y el error de la forma correcta</h4>
+      <p>Modificar un cuerpo sin consentimiento puede afectar movilidad, identidad social, reproducción
+      y autonomía incluso cuando no produce dolor, y la reversibilidad no elimina el problema ético. La
+      Ética de la Alteración desarrolla criterios específicos para transformación forzada, corrección
+      morfológica y tratamientos sobre especies cuya diversidad corporal no debe patologizarse.</p>
+      <p>La medicina ha cometido, en este sentido, el error repetido de asumir que existe una única
+      anatomía correcta para cada criatura. En especies polimórficas, amorfas o híbridas, la variación
+      puede ser parte normal de su biología, y la función clínica consiste en identificar estabilidad,
+      dolor, autonomía y capacidad funcional antes de declarar anomalía.</p>
+      <h4 id="cap-31">Capítulo XXXI — Relación con otras disciplinas</h4>
       <p>Morfología Anómala trabaja directamente con Anatomía Arcana, Materia y Transmutación,
       Criptozoología Académica, Patología Arcana, Maldiología y Pneumatología.</p>
       <p>Farmacología interviene en sustancias transformativas; Planología cuando el cuerpo utiliza
@@ -11752,7 +11638,7 @@ window.ENTRIES = [
       identidad experimentada.</p>
       <p>La disciplina se encuentra en el punto donde el cuerpo deja de poder describirse como una
       sola figura estable.</p>
-      <h4 id="cap-63">Capítulo LXIII — La pregunta por lo que permanece</h4>
+      <h4 id="cap-32">Capítulo XXXII — La pregunta por lo que permanece</h4>
       <p>Todo caso complejo termina regresando a la misma cuestión, sobre qué parte del organismo debe
       conservarse para que el cambio siga siendo una transformación del mismo individuo.</p>
       <p>No existe una respuesta única. En algunos organismos basta la continuidad de un núcleo; en
