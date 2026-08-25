@@ -7682,91 +7682,35 @@ window.ENTRIES = [
       Facultad de Humanidades Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. Objeto de la disciplina</a>
-        <a href="#cap-2">II. El principio de autonomía</a>
-        <a href="#cap-3">III. Consentimiento</a>
-        <a href="#cap-4">IV. Consentimiento informado</a>
-        <a href="#cap-5">V. Capacidad para consentir</a>
-        <a href="#cap-6">VI. Consentimiento bajo riesgo</a>
-        <a href="#cap-7">VII. Consentimiento revocable</a>
-        <a href="#cap-8">VIII. Consentimiento de terceros</a>
-        <a href="#cap-9">IX. Menores y dependientes</a>
-        <a href="#cap-10">X. Encantamientos sobre personas</a>
-        <a href="#cap-11">XI. Encantamientos de obediencia</a>
-        <a href="#cap-12">XII. Encantamientos emocionales</a>
-        <a href="#cap-13">XIII. Modificación de recuerdos</a>
-        <a href="#cap-14">XIV. Supresión de memoria</a>
-        <a href="#cap-15">XV. Implantación de recuerdos</a>
-        <a href="#cap-16">XVI. Memoria y prueba legal</a>
-        <a href="#cap-17">XVII. Transformación corporal</a>
-        <a href="#cap-18">XVIII. Transformación voluntaria</a>
-        <a href="#cap-19">XIX. Transformación forzada</a>
-        <a href="#cap-20">XX. Identidad y forma</a>
-        <a href="#cap-21">XXI. Resurrección</a>
-        <a href="#cap-22">XXII. Consentimiento para resucitar</a>
-        <a href="#cap-23">XXIII. Continuidad de la persona resucitada</a>
-        <a href="#cap-24">XXIV. Resurrección incompleta</a>
-        <a href="#cap-25">XXV. Derecho a permanecer muerto</a>
-        <a href="#cap-26">XXVI. Manipulación de almas</a>
-        <a href="#cap-27">XXVII. Anclaje de almas</a>
-        <a href="#cap-28">XXVIII. División y fusión</a>
-        <a href="#cap-29">XXIX. Extracción de recuerdos del alma</a>
-        <a href="#cap-30">XXX. Vida artificial</a>
-        <a href="#cap-31">XXXI. Constructos sensibles</a>
-        <a href="#cap-32">XXXII. Conciencia emergente</a>
-        <a href="#cap-33">XXXIII. Creaciones para servidumbre</a>
-        <a href="#cap-34">XXXIV. Creación de especies</a>
-        <a href="#cap-35">XXXV. Investigación con seres vivos</a>
-        <a href="#cap-36">XXXVI. Investigación no terapéutica</a>
-        <a href="#cap-37">XXXVII. Comité de Alteraciones Mayores</a>
-        <a href="#cap-38">XXXVIII. Licencias de práctica</a>
-        <a href="#cap-39">XXXIX. Registro de intervenciones</a>
-        <a href="#cap-40">XL. Reversibilidad</a>
-        <a href="#cap-41">XLI. Irreversibilidad</a>
-        <a href="#cap-42">XLII. Proporcionalidad</a>
-        <a href="#cap-43">XLIII. Alternativa menos invasiva</a>
-        <a href="#cap-44">XLIV. Emergencia</a>
-        <a href="#cap-45">XLV. Contención</a>
-        <a href="#cap-46">XLVI. Uso penal</a>
-        <a href="#cap-47">XLVII. Interrogatorio</a>
-        <a href="#cap-48">XLVIII. Consentimiento y autoridad</a>
-        <a href="#cap-49">XLIX. Consentimiento en pactos</a>
-        <a href="#cap-50">L. Consentimiento informado por entidades</a>
-        <a href="#cap-51">LI. Privacidad mental</a>
-        <a href="#cap-52">LII. Privacidad pneumatológica</a>
-        <a href="#cap-53">LIII. Riesgo colectivo</a>
-        <a href="#cap-54">LIV. Creación de patógenos</a>
-        <a href="#cap-55">LV. Maldiciones experimentales</a>
-        <a href="#cap-56">LVI. Encantamientos hereditarios</a>
-        <a href="#cap-57">LVII. Resurrección experimental</a>
-        <a href="#cap-58">LVIII. Creación de copias</a>
-        <a href="#cap-59">LIX. Consentimiento retrospectivo</a>
-        <a href="#cap-60">LX. Beneficencia</a>
-        <a href="#cap-61">LXI. No maleficencia</a>
-        <a href="#cap-62">LXII. Justicia</a>
-        <a href="#cap-63">LXIII. Mejora y tratamiento</a>
-        <a href="#cap-64">LXIV. Mejoras cognitivas</a>
-        <a href="#cap-65">LXV. Mejoras corporales</a>
-        <a href="#cap-66">LXVI. Responsabilidad del creador</a>
-        <a href="#cap-67">LXVII. Responsabilidad institucional</a>
-        <a href="#cap-68">LXVIII. Denuncia y protección</a>
-        <a href="#cap-69">LXIX. Sanciones académicas</a>
-        <a href="#cap-70">LXX. Comité de revisión urgente</a>
-        <a href="#cap-71">LXXI. Principio de precaución</a>
-        <a href="#cap-72">LXXII. Innovación responsable</a>
-        <a href="#cap-73">LXXIII. Casos históricos</a>
-        <a href="#cap-74">LXXIV. La ilusión de reversibilidad total</a>
-        <a href="#cap-75">LXXV. La ilusión del beneficio objetivo</a>
-        <a href="#cap-76">LXXVI. La ilusión del creador propietario</a>
-        <a href="#cap-77">LXXVII. Regulación dolbriana de alteraciones mayores</a>
-        <a href="#cap-78">LXXVIII. Regulación de alteraciones restringidas</a>
-        <a href="#cap-79">LXXIX. Regulación de alteraciones prohibidas</a>
-        <a href="#cap-80">LXXX. Auditoría</a>
-        <a href="#cap-81">LXXXI. Excepciones</a>
-        <a href="#cap-82">LXXXII. Relación con Derecho Arcano</a>
-        <a href="#cap-83">LXXXIII. Relación con Medicina Mágica</a>
-        <a href="#cap-84">LXXXIV. Relación con Pneumatología y Tanatología</a>
-        <a href="#cap-85">LXXXV. La pregunta dolbriana</a>
+        <a href="#cap-1">I. Objeto de la disciplina y principio de autonomía</a>
+        <a href="#cap-2">II. El consentimiento y sus requisitos</a>
+        <a href="#cap-3">III. Consentimiento en circunstancias especiales</a>
+        <a href="#cap-4">IV. Encantamientos sobre personas</a>
+        <a href="#cap-5">V. Memoria: modificación, supresión, implantación y prueba legal</a>
+        <a href="#cap-6">VI. Transformación corporal e identidad</a>
+        <a href="#cap-7">VII. Resurrección: consentimiento, continuidad y límites</a>
+        <a href="#cap-8">VIII. Manipulación pneumatológica: almas, anclaje, división y extracción</a>
+        <a href="#cap-9">IX. Vida artificial y creación de seres</a>
+        <a href="#cap-10">X. Investigación con seres vivos</a>
+        <a href="#cap-11">XI. Supervisión institucional: comité, licencias y registro</a>
+        <a href="#cap-12">XII. Reversibilidad e irreversibilidad</a>
+        <a href="#cap-13">XIII. Proporcionalidad y alternativa menos invasiva</a>
+        <a href="#cap-14">XIV. Emergencia y contención</a>
+        <a href="#cap-15">XV. Uso penal e interrogatorio</a>
+        <a href="#cap-16">XVI. Consentimiento frente a autoridad, pactos y entidades</a>
+        <a href="#cap-17">XVII. Privacidad mental y pneumatológica</a>
+        <a href="#cap-18">XVIII. Riesgo colectivo: patógenos, maldiciones y herencia</a>
+        <a href="#cap-19">XIX. Resurrección experimental, copias y consentimiento retrospectivo</a>
+        <a href="#cap-20">XX. Beneficencia, no maleficencia y justicia</a>
+        <a href="#cap-21">XXI. Mejora y tratamiento: límites cognitivos y corporales</a>
+        <a href="#cap-22">XXII. Responsabilidad del creador y de la institución</a>
+        <a href="#cap-23">XXIII. Denuncia, sanciones y revisión urgente</a>
+        <a href="#cap-24">XXIV. Precaución e innovación responsable</a>
+        <a href="#cap-25">XXV. Lecciones históricas y falacias comunes</a>
+        <a href="#cap-26">XXVI. Clasificación regulatoria: mayores, restringidas y prohibidas</a>
+        <a href="#cap-27">XXVII. Auditoría y excepciones</a>
+        <a href="#cap-28">XXVIII. Relación con otras disciplinas</a>
+        <a href="#cap-29">XXIX. La pregunta dolbriana</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -7783,497 +7727,384 @@ window.ENTRIES = [
       de práctica mágica. Su ámbito incluye medicina, investigación, encantamiento, memoria,
       resurrección, transformación, creación artificial de vida y manipulación
       pneumatológica.</p>
-      <h4 id="cap-1">Capítulo I — Objeto de la disciplina</h4>
+      <h4 id="cap-1">Capítulo I — Objeto de la disciplina y principio de autonomía</h4>
       <p>La Ética de la Alteración estudia intervenciones mágicas capaces de modificar de forma
-      significativa el cuerpo, la mente, la identidad, la autonomía o la continuidad de un
-      ser.</p>
-      <p>Su función es establecer criterios de legitimidad, consentimiento, proporcionalidad,
-      seguridad y responsabilidad.</p>
-      <p>En Dolbred, la disciplina también sirve de fundamento para normas universitarias,
-      licencias de práctica y protocolos de investigación.</p>
-      <h4 id="cap-2">Capítulo II — El principio de autonomía</h4>
-      <p>La autonomía reconoce que las personas poseen autoridad primaria sobre decisiones que
-      afectan su cuerpo, mente y continuidad personal.</p>
-      <p>Una intervención beneficiosa no se vuelve legítima por el solo hecho de ser útil.</p>
-      <p>El practicante debe distinguir ayudar de imponer.</p>
-      <h4 id="cap-3">Capítulo III — Consentimiento</h4>
+      significativa el cuerpo, la mente, la identidad, la autonomía o la continuidad de un ser.
+      Su función es establecer criterios de legitimidad, consentimiento, proporcionalidad,
+      seguridad y responsabilidad; en Dolbred, además, sirve de fundamento para normas
+      universitarias, licencias de práctica y protocolos de investigación.</p>
+      <p>El principio que sostiene esta disciplina es la autonomía: las personas poseen
+      autoridad primaria sobre las decisiones que afectan su cuerpo, su mente y su continuidad
+      personal. Una intervención beneficiosa no se vuelve legítima por el solo hecho de ser
+      útil, y el practicante debe aprender a distinguir entre ayudar a alguien e imponerle un
+      resultado.</p>
+      <h4 id="cap-2">Capítulo II — El consentimiento y sus requisitos</h4>
       <p>El consentimiento válido debe ser informado, libre, específico y revocable dentro de
-      los límites reales del procedimiento.</p>
-      <p>No basta con obtener una firma o una respuesta afirmativa.</p>
-      <p>La persona debe comprender naturaleza, riesgos, alternativas y consecuencias
-      previsibles.</p>
-      <h4 id="cap-4">Capítulo IV — Consentimiento informado</h4>
-      <p>Informar no significa enumerar toda posibilidad imaginable, sino comunicar riesgos
-      materiales y dudas relevantes.</p>
-      <p>En procedimientos experimentales, la incertidumbre debe explicarse como parte del
-      riesgo.</p>
-      <p>Ocultar que una técnica carece de evidencia suficiente invalida el consentimiento
-      aunque el procedimiento resulte exitoso.</p>
-      <h4 id="cap-5">Capítulo V — Capacidad para consentir</h4>
-      <p>Una persona debe comprender la decisión, sus consecuencias y alternativas para que su
-      consentimiento sea válido.</p>
-      <p>Estados de confusión, posesión, intoxicación, daño resonántico o coacción pueden
-      afectar capacidad.</p>
-      <p>La evaluación debe ser proporcional a la gravedad e irreversibilidad de la
-      intervención.</p>
-      <h4 id="cap-6">Capítulo VI — Consentimiento bajo riesgo</h4>
-      <p>El miedo, el dolor y la urgencia no invalidan automáticamente una decisión.</p>
-      <p>Sin embargo, aumentan la obligación del profesional de evitar presión indebida.</p>
-      <p>En emergencias, Dolbred permite intervenciones limitadas cuando retrasar razonablemente
-      produciría daño grave y el paciente no puede decidir.</p>
-      <h4 id="cap-7">Capítulo VII — Consentimiento revocable</h4>
-      <p>Un paciente puede retirar consentimiento mientras la intervención pueda detenerse sin
-      producir un daño mayor inmediato.</p>
-      <p>Los procedimientos rituales complejos deben explicar antes de comenzar qué fases son
-      reversibles y cuáles no.</p>
-      <p>Una vez alcanzado un umbral irreversible, el consentimiento previo adquiere especial
-      importancia.</p>
-      <h4 id="cap-8">Capítulo VIII — Consentimiento de terceros</h4>
-      <p>Nadie puede autorizar libremente daños importantes sobre otra persona competente.</p>
-      <p>Representantes legales sólo pueden decidir cuando el afectado carece de capacidad
-      suficiente.</p>
-      <p>Las decisiones sustitutas deben intentar representar intereses y valores del paciente,
-      no conveniencia del representante.</p>
-      <h4 id="cap-9">Capítulo IX — Menores y dependientes</h4>
-      <p>Las intervenciones sobre menores requieren protección reforzada.</p>
-      <p>Los tutores pueden autorizar tratamientos necesarios, pero las modificaciones
-      electivas, permanentes o experimentales se encuentran sujetas a revisión.</p>
-      <p>Cuando el menor posee suficiente comprensión, su asentimiento es un requisito
-      adicional.</p>
-      <h4 id="cap-10">Capítulo X — Encantamientos sobre personas</h4>
-      <p>Un encantamiento que altera percepción, conducta, resistencia, memoria o emociones es
-      una intervención sobre autonomía.</p>
-      <p>Los encantamientos terapéuticos siguen las mismas exigencias de consentimiento que
-      cualquier procedimiento médico.</p>
-      <p>Los encantamientos coercitivos se encuentran sometidos a regulación mucho más
+      los límites reales del procedimiento. No basta con obtener una firma o una respuesta
+      afirmativa; la persona debe comprender la naturaleza de la intervención, sus riesgos, las
+      alternativas disponibles y las consecuencias previsibles.</p>
+      <p>Informar no significa enumerar toda posibilidad imaginable, sino comunicar los riesgos
+      materiales y las dudas relevantes. En procedimientos experimentales, la incertidumbre
+      misma debe explicarse como parte del riesgo. Ocultar que una técnica carece de evidencia
+      suficiente invalida el consentimiento aunque el procedimiento resulte exitoso.</p>
+      <p>Esa comprensión depende, a su vez, de la capacidad de quien consiente. Estados de
+      confusión, posesión, intoxicación, daño resonántico o coacción pueden afectarla, y la
+      evaluación de capacidad debe ser proporcional a la gravedad e irreversibilidad de la
+      intervención propuesta.</p>
+      <h4 id="cap-3">Capítulo III — Consentimiento en circunstancias especiales</h4>
+      <p>El miedo, el dolor y la urgencia no invalidan automáticamente una decisión, pero sí
+      aumentan la obligación del profesional de evitar presión indebida. En emergencias,
+      Dolbred permite intervenciones limitadas cuando retrasar razonablemente produciría un
+      daño grave y el paciente no puede decidir por sí mismo.</p>
+      <p>El consentimiento, además, es revocable: un paciente puede retirarlo mientras la
+      intervención pueda detenerse sin producir un daño mayor inmediato. Los procedimientos
+      rituales complejos deben explicar, antes de comenzar, qué fases son reversibles y cuáles
+      no, porque una vez alcanzado un umbral irreversible el consentimiento previo adquiere
+      especial importancia.</p>
+      <p>Nadie puede autorizar libremente daños importantes sobre otra persona competente. Los
+      representantes legales sólo pueden decidir cuando el afectado carece de capacidad
+      suficiente, y sus decisiones sustitutas deben intentar representar los intereses y
+      valores del paciente, no la conveniencia propia del representante.</p>
+      <p>Las intervenciones sobre menores requieren protección reforzada. Los tutores pueden
+      autorizar tratamientos necesarios, pero las modificaciones electivas, permanentes o
+      experimentales quedan sujetas a revisión, y cuando el menor posee suficiente comprensión,
+      su asentimiento constituye un requisito adicional.</p>
+      <h4 id="cap-4">Capítulo IV — Encantamientos sobre personas</h4>
+      <p>Un encantamiento que altera percepción, conducta, resistencia, memoria o emociones
+      constituye una intervención sobre la autonomía. Los encantamientos terapéuticos deben
+      cumplir las exigencias de consentimiento propias de cualquier procedimiento médico,
+      mientras que los encantamientos coercitivos están sometidos a una regulación mucho más
       estricta.</p>
-      <h4 id="cap-11">Capítulo XI — Encantamientos de obediencia</h4>
-      <p>Las técnicas destinadas a reducir capacidad de elección se consideran de alto riesgo
-      ético.</p>
-      <p>Su uso ordinario sobre personas está prohibido por regulación dolbriana.</p>
-      <p>Las excepciones se limitan a situaciones de contención inmediata y deben ser
-      temporales, necesarias y revisables.</p>
-      <h4 id="cap-12">Capítulo XII — Encantamientos emocionales</h4>
-      <p>Alterar miedo, afecto, deseo o confianza puede modificar decisiones sin controlar
-      directamente la voluntad.</p>
-      <p>Por ello, la ausencia de coerción visible no elimina el problema ético.</p>
-      <p>En contextos comerciales, sexuales, jurídicos y contractuales, estas técnicas están
-      especialmente restringidas.</p>
-      <h4 id="cap-13">Capítulo XIII — Modificación de recuerdos</h4>
-      <p>Los recuerdos forman parte de identidad, testimonio y continuidad biográfica.</p>
-      <p>Eliminar, añadir o reorganizar recuerdos puede alterar decisiones futuras y relaciones
-      pasadas.</p>
-      <p>Dolbred clasifica la modificación deliberada de memoria como intervención mayor.</p>
-      <h4 id="cap-14">Capítulo XIV — Supresión de memoria</h4>
-      <p>La supresión terapéutica puede considerarse en casos excepcionales de trauma extremo o
-      contaminación cognitiva.</p>
-      <p>No debe utilizarse como sustituto de tratamiento cuando existen alternativas menos
-      invasivas.</p>
-      <p>El objetivo clínico debe ser reducir daño, no borrar experiencias incómodas por
-      conveniencia.</p>
-      <h4 id="cap-15">Capítulo XV — Implantación de recuerdos</h4>
+      <p>Entre estos últimos, las técnicas destinadas a reducir la capacidad de elección se
+      consideran de alto riesgo ético y su uso ordinario sobre personas está prohibido por
+      regulación dolbriana. Las excepciones se limitan a situaciones de contención inmediata y
+      deben ser temporales, necesarias y revisables.</p>
+      <p>El riesgo no se limita a la obediencia directa. Alterar miedo, afecto, deseo o
+      confianza puede modificar decisiones sin controlar la voluntad de forma explícita, y la
+      ausencia de coerción visible no elimina el problema ético. Por esta razón, en contextos
+      comerciales, sexuales, jurídicos y contractuales estas técnicas están especialmente
+      restringidas.</p>
+      <h4 id="cap-5">Capítulo V — Memoria: modificación, supresión, implantación y prueba legal</h4>
+      <p>Los recuerdos forman parte de la identidad, el testimonio y la continuidad biográfica
+      de una persona. Eliminar, añadir o reorganizar recuerdos puede alterar decisiones futuras
+      y relaciones pasadas, por lo que Dolbred clasifica la modificación deliberada de memoria
+      como intervención mayor.</p>
+      <p>Dentro de esta categoría, la supresión terapéutica puede considerarse en casos
+      excepcionales de trauma extremo o contaminación cognitiva, pero no debe utilizarse como
+      sustituto de tratamiento cuando existen alternativas menos invasivas. El objetivo clínico
+      debe ser reducir el daño, no borrar experiencias incómodas por conveniencia.</p>
       <p>Crear recuerdos falsos capaces de ser experimentados como propios se considera una de
-      las intervenciones más invasivas.</p>
-      <p>Su uso no terapéutico está prohibido en Dolbred.</p>
-      <p>Los experimentos requieren autorización extraordinaria y no pueden emplearse para
-      modificar consentimiento, testimonio o identidad jurídica.</p>
-      <h4 id="cap-16">Capítulo XVI — Memoria y prueba legal</h4>
-      <p>Una memoria modificada pierde valor como evidencia directa hasta que pueda determinarse
-      qué partes fueron alteradas.</p>
-      <p>Criminalística Arcana y Derecho Arcano establecen protocolos de preservación y
-      examen.</p>
-      <p>Modificar recuerdos para ocultar un delito constituye agravante independiente.</p>
-      <h4 id="cap-17">Capítulo XVII — Transformación corporal</h4>
+      las intervenciones más invasivas que existen, y su uso no terapéutico está prohibido en
+      Dolbred. Los experimentos en esta área requieren autorización extraordinaria y no pueden
+      emplearse para modificar consentimiento, testimonio o identidad jurídica.</p>
+      <p>Estas alteraciones también afectan el valor probatorio de la memoria. Una vez
+      modificada, pierde valor como evidencia directa hasta que pueda determinarse qué partes
+      fueron alteradas. Criminalística Arcana y Derecho Arcano establecen protocolos de
+      preservación y examen, y modificar recuerdos para ocultar un delito constituye agravante
+      independiente.</p>
+      <h4 id="cap-6">Capítulo VI — Transformación corporal e identidad</h4>
       <p>Modificar forma, órganos, sexo, especie aparente, masa o capacidades corporales exige
-      consentimiento específico.</p>
-      <p>La reversibilidad debe evaluarse con evidencia y no como promesa informal.</p>
-      <p>Morfología Anómala y Anatomía Arcana participan en la evaluación de riesgos.</p>
-      <h4 id="cap-18">Capítulo XVIII — Transformación voluntaria</h4>
+      consentimiento específico. La reversibilidad de estos procedimientos debe evaluarse con
+      evidencia, no como promesa informal, y Morfología Anómala y Anatomía Arcana participan en
+      la evaluación de sus riesgos.</p>
       <p>Una persona competente puede elegir modificar su cuerpo aunque la intervención no sea
-      médicamente necesaria.</p>
-      <p>Dolbred no considera la diferencia corporal un daño por sí misma.</p>
-      <p>El límite aparece cuando la técnica implica riesgo desproporcionado, explotación o
-      consecuencias no comprendidas.</p>
-      <h4 id="cap-19">Capítulo XIX — Transformación forzada</h4>
-      <p>La transformación no consentida se considera agresión grave salvo necesidad inmediata
-      de protección.</p>
-      <p>Convertir a una persona en una forma más fácil de controlar no se vuelve ético por
-      reducir daño físico.</p>
-      <p>Las medidas de contención deben usar la alternativa menos invasiva disponible.</p>
-      <h4 id="cap-20">Capítulo XX — Identidad y forma</h4>
-      <p>La regulación dolbriana evita equiparar forma corporal con identidad jurídica.</p>
-      <p>Un changeling, licántropo estabilizado o paciente transmutado conserva derechos
-      independientemente de apariencia.</p>
-      <p>Los registros administrativos deben distinguir identidad personal de configuración
-      física.</p>
-      <h4 id="cap-21">Capítulo XXI — Resurrección</h4>
-      <p>La resurrección plantea preguntas sobre consentimiento, continuidad y obligaciones del
-      fallecido.</p>
-      <p>El hecho de que una persona pueda ser restaurada no implica que siempre deba serlo.</p>
-      <p>Dolbred reconoce el derecho a rechazar intentos de resurrección mediante declaración
-      previa válida.</p>
-      <h4 id="cap-22">Capítulo XXII — Consentimiento para resucitar</h4>
-      <p>Cuando existe una voluntad documentada, ésta debe respetarse.</p>
-      <p>En ausencia de instrucciones, se considera historia personal, creencias, riesgos y
-      probabilidad de continuidad.</p>
-      <p>Los familiares no adquieren propiedad sobre el fallecido por el hecho de desear su
-      regreso.</p>
-      <h4 id="cap-23">Capítulo XXIII — Continuidad de la persona resucitada</h4>
+      médicamente necesaria. Dolbred no considera la diferencia corporal un daño por sí misma.
+      El límite aparece cuando la técnica implica riesgo desproporcionado, explotación o
+      consecuencias que el paciente no comprende.</p>
+      <p>La transformación no consentida, en cambio, se considera agresión grave salvo
+      necesidad inmediata de protección. Convertir a una persona en una forma más fácil de
+      controlar no se vuelve ético por el solo hecho de reducir daño físico, y las medidas de
+      contención deben recurrir siempre a la alternativa menos invasiva disponible.</p>
+      <p>Por último, la regulación dolbriana evita equiparar forma corporal con identidad
+      jurídica. Un changeling, un licántropo estabilizado o un paciente transmutado conserva
+      sus derechos con independencia de su apariencia, y los registros administrativos deben
+      distinguir identidad personal de configuración física.</p>
+      <h4 id="cap-7">Capítulo VII — Resurrección: consentimiento, continuidad y límites</h4>
+      <p>La resurrección plantea preguntas sobre consentimiento, continuidad y las obligaciones
+      que se tienen hacia el fallecido. El hecho de que una persona pueda ser restaurada no
+      implica que siempre deba serlo, y Dolbred reconoce el derecho a rechazar intentos de
+      resurrección mediante declaración previa válida.</p>
+      <p>Cuando existe una voluntad documentada, ésta debe respetarse. En ausencia de
+      instrucciones explícitas, se considera la historia personal, las creencias, los riesgos y
+      la probabilidad de continuidad del fallecido; los familiares, en cualquier caso, no
+      adquieren propiedad sobre él por el simple hecho de desear su regreso.</p>
       <p>La resurrección sólo es éticamente aceptable si existe evidencia razonable de
-      continuidad con la persona fallecida.</p>
-      <p>Crear una copia conductualmente idéntica no resuelve por sí sola el problema.</p>
-      <p>Tanatología y Pneumatología deben evaluar los casos dudosos.</p>
-      <h4 id="cap-24">Capítulo XXIV — Resurrección incompleta</h4>
-      <p>Si un procedimiento puede restaurar cuerpo sin memoria, memoria sin continuidad o
-      identidad de forma incierta, el riesgo debe comunicarse con claridad.</p>
-      <p>Los procedimientos experimentales de resurrección requieren revisión extraordinaria.</p>
-      <p>Una intervención no puede justificarse simplemente porque el resultado parece
-      vivo.</p>
-      <h4 id="cap-25">Capítulo XXV — Derecho a permanecer muerto</h4>
-      <p>Dolbred reconoce que la muerte puede formar parte de convicciones personales,
-      religiosas o filosóficas.</p>
-      <p>Una sociedad capaz de resucitar no elimina el derecho a rechazar esa posibilidad.</p>
-      <p>Los intentos de resurrección contra una voluntad previa válida se consideran
-      intervención no consentida.</p>
-      <h4 id="cap-26">Capítulo XXVI — Manipulación de almas</h4>
-      <p>Las intervenciones pneumatológicas reciben la categoría de máximo riesgo.</p>
-      <p>Separar, fijar, dividir, fusionar, desplazar o reescribir una continuidad anímica puede
-      afectar identidad de forma irreversible.</p>
-      <p>Su práctica ordinaria requiere licencias especiales y supervisión.</p>
-      <h4 id="cap-27">Capítulo XXVII — Anclaje de almas</h4>
-      <p>Vincular un alma a un objeto, lugar o cuerpo puede utilizarse con fines terapéuticos
-      excepcionales.</p>
-      <p>El procedimiento sólo es legítimo con consentimiento expreso y criterios claros de
-      terminación.</p>
-      <p>El anclaje punitivo está prohibido.</p>
-      <h4 id="cap-28">Capítulo XXVIII — División y fusión</h4>
+      continuidad con la persona fallecida. Crear una copia conductualmente idéntica no
+      resuelve por sí sola ese problema, y corresponde a Tanatología y Pneumatología evaluar
+      los casos dudosos.</p>
+      <p>Cuando un procedimiento puede restaurar el cuerpo sin memoria, la memoria sin
+      continuidad, o la identidad de forma incierta, el riesgo debe comunicarse con claridad.
+      Los procedimientos experimentales de resurrección requieren revisión extraordinaria, y
+      una intervención no puede justificarse simplemente porque el resultado parezca vivo.</p>
+      <p>Dolbred reconoce, además, que la muerte puede formar parte de convicciones personales,
+      religiosas o filosóficas. Una sociedad capaz de resucitar no elimina el derecho a
+      rechazar esa posibilidad, y los intentos de resurrección contra una voluntad previa
+      válida se consideran intervención no consentida.</p>
+      <h4 id="cap-8">Capítulo VIII — Manipulación pneumatológica: almas, anclaje, división y extracción</h4>
+      <p>Las intervenciones pneumatológicas reciben la categoría de máximo riesgo dentro de la
+      disciplina. Separar, fijar, dividir, fusionar, desplazar o reescribir una continuidad
+      anímica puede afectar la identidad de forma irreversible, y su práctica ordinaria
+      requiere licencias especiales y supervisión.</p>
+      <p>Dentro de estas técnicas, vincular un alma a un objeto, lugar o cuerpo puede
+      utilizarse con fines terapéuticos excepcionales, pero sólo es legítimo con consentimiento
+      expreso y criterios claros de terminación. El anclaje punitivo está prohibido.</p>
       <p>Dividir una continuidad personal o fusionar dos sujetos plantea problemas que exceden
-      el consentimiento inicial.</p>
-      <p>No está claro qué persona resultante conserva qué derechos u obligaciones.</p>
-      <p>Dolbred mantiene una prohibición preventiva sobre procedimientos no terapéuticos de
-      este tipo.</p>
-      <h4 id="cap-29">Capítulo XXIX — Extracción de recuerdos del alma</h4>
-      <p>Algunas escuelas sostienen que ciertos recuerdos persisten fuera del cerebro.</p>
-      <p>Extraerlos sin consentimiento se considera equivalente a acceso invasivo de
-      información privada.</p>
-      <p>La incertidumbre sobre el mecanismo no reduce la obligación ética.</p>
-      <h4 id="cap-30">Capítulo XXX — Vida artificial</h4>
-      <p>Crear vida artificial no es éticamente equivalente a fabricar un objeto.</p>
-      <p>Cuando una creación posee sensibilidad, intereses o capacidad de sufrimiento, adquiere
-      consideración moral.</p>
-      <p>La regulación dolbriana exige evaluar capacidades del ser creado y no sólo intención
-      del creador.</p>
-      <h4 id="cap-31">Capítulo XXXI — Constructos sensibles</h4>
+      el consentimiento inicial, porque no siempre está claro qué persona resultante conserva
+      qué derechos u obligaciones. Por ello Dolbred mantiene una prohibición preventiva sobre
+      los procedimientos no terapéuticos de este tipo.</p>
+      <p>Un problema relacionado surge cuando algunas escuelas sostienen que ciertos recuerdos
+      persisten fuera del cerebro, alojados en la continuidad anímica. Extraerlos sin
+      consentimiento se considera equivalente a un acceso invasivo a información privada, y la
+      incertidumbre sobre el mecanismo exacto no reduce la obligación ética de respetarla.</p>
+      <h4 id="cap-9">Capítulo IX — Vida artificial y creación de seres</h4>
+      <p>Crear vida artificial no es éticamente equivalente a fabricar un objeto. Cuando una
+      creación posee sensibilidad, intereses o capacidad de sufrimiento, adquiere consideración
+      moral, y la regulación dolbriana exige evaluar las capacidades reales del ser creado y no
+      sólo la intención de quien lo creó.</p>
       <p>Un constructo capaz de sentir dolor, formar preferencias o desarrollar vínculos no
-      puede tratarse únicamente como propiedad.</p>
-      <p>Dolbred reconoce protecciones crecientes según autonomía y cognición.</p>
-      <p>El origen artificial no disminuye automáticamente el valor moral.</p>
-      <h4 id="cap-32">Capítulo XXXII — Conciencia emergente</h4>
-      <p>Un sistema diseñado sin consciencia puede desarrollarla de forma no prevista.</p>
-      <p>En ese momento cambian las obligaciones del creador.</p>
-      <p>Apagar o modificar la estructura puede requerir evaluación comparable a intervenir
-      sobre una persona.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Creaciones para servidumbre</h4>
-      <p>Crear seres inteligentes con obediencia forzada se considera éticamente incompatible
-      con los principios dolbrianos.</p>
-      <p>Programar incapacidad de desobedecer no convierte la servidumbre en consentimiento.</p>
-      <p>Las licencias de creación excluyen diseños cuyo propósito principal sea producir
-      sujetos sin autonomía.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Creación de especies</h4>
-      <p>Introducir organismos capaces de reproducirse implica responsabilidades ecológicas
-      además de individuales.</p>
-      <p>Los creadores deben evaluar impacto sobre ecosistemas, reproducción y sufrimiento
-      futuro.</p>
-      <p>Ecología Mágica y Criptozoología participan en la revisión.</p>
-      <h4 id="cap-35">Capítulo XXXV — Investigación con seres vivos</h4>
-      <p>Los experimentos deben minimizar daño y utilizar el menor grado de intervención
-      necesario.</p>
-      <p>Cuando existen sujetos inteligentes, el consentimiento es obligatorio salvo
-      excepciones extremadamente limitadas.</p>
-      <p>El valor científico no justifica por sí solo cualquier riesgo.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Investigación no terapéutica</h4>
-      <p>Una persona puede aceptar participar en estudios que no le ofrecen beneficio
-      directo.</p>
-      <p>El riesgo debe mantenerse proporcional al valor esperado del conocimiento y a la
-      capacidad del participante para comprenderlo.</p>
-      <p>Los estudios con posibilidad de daño permanente requieren revisión de nivel
+      puede tratarse únicamente como propiedad. Dolbred reconoce protecciones crecientes según
+      su grado de autonomía y cognición, y el origen artificial de un ser no disminuye
+      automáticamente su valor moral.</p>
+      <p>Esta consideración se complica cuando un sistema diseñado sin consciencia la
+      desarrolla de forma no prevista. En ese momento cambian las obligaciones de su creador, y
+      apagar o modificar la estructura resultante puede requerir una evaluación comparable a la
+      de intervenir sobre una persona.</p>
+      <p>Por esa misma razón, crear seres inteligentes con obediencia forzada se considera
+      incompatible con los principios dolbrianos. Programar la incapacidad de desobedecer no
+      convierte la servidumbre en consentimiento, y las licencias de creación excluyen diseños
+      cuyo propósito principal sea producir sujetos sin autonomía.</p>
+      <p>Cuando la creación implica introducir organismos capaces de reproducirse, surgen
+      además responsabilidades ecológicas que exceden lo individual. Los creadores deben
+      evaluar el impacto sobre ecosistemas, reproducción y sufrimiento futuro, con la
+      participación de Ecología Mágica y Criptozoología en la revisión.</p>
+      <h4 id="cap-10">Capítulo X — Investigación con seres vivos</h4>
+      <p>Los experimentos con seres vivos deben minimizar el daño y utilizar el menor grado de
+      intervención necesario. Cuando existen sujetos inteligentes, el consentimiento es
+      obligatorio salvo excepciones extremadamente limitadas, y el valor científico de un
+      estudio no justifica por sí solo cualquier riesgo.</p>
+      <p>Esto incluye la investigación no terapéutica: una persona puede aceptar participar en
+      estudios que no le ofrecen beneficio directo, siempre que el riesgo se mantenga
+      proporcional al valor esperado del conocimiento y a la capacidad del participante para
+      comprenderlo. Los estudios con posibilidad de daño permanente requieren revisión de nivel
       superior.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Comité de Alteraciones Mayores</h4>
+      <h4 id="cap-11">Capítulo XI — Supervisión institucional: comité, licencias y registro</h4>
       <p>Dolbred mantiene un Comité de Alteraciones Mayores para revisar procedimientos con
-      riesgo de modificar identidad, memoria, continuidad vital o alma.</p>
-      <p>El comité incluye especialistas médicos, juristas, filósofos, taumaturgos y
-      representantes no académicos.</p>
-      <p>Ningún investigador puede aprobar por sí solo un procedimiento del que depende su
-      propio proyecto.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Licencias de práctica</h4>
-      <p>No toda persona capaz de ejecutar una técnica está autorizada para aplicarla sobre
-      terceros.</p>
-      <p>Dolbred distingue competencia técnica de licencia profesional.</p>
-      <p>Las áreas de memoria, resurrección, coerción y alma requieren acreditaciones
-      específicas.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Registro de intervenciones</h4>
-      <p>Las alteraciones mayores deben documentarse con fecha, método, consentimiento, riesgos
-      comunicados y resultado.</p>
-      <p>El registro protege al paciente y permite detectar patrones de daño.</p>
-      <p>Ocultar una intervención constituye falta grave incluso si no produjo lesión
-      visible.</p>
-      <h4 id="cap-40">Capítulo XL — Reversibilidad</h4>
+      riesgo de modificar identidad, memoria, continuidad vital o alma. El comité incluye
+      especialistas médicos, juristas, filósofos, taumaturgos y representantes no académicos, y
+      un investigador no puede aprobar por sí solo un procedimiento del que depende su propio
+      proyecto.</p>
+      <p>Esta supervisión se complementa con un sistema de licencias. No toda persona capaz de
+      ejecutar una técnica está autorizada para aplicarla sobre terceros; Dolbred distingue
+      competencia técnica de licencia profesional, y las áreas de memoria, resurrección,
+      coerción y alma requieren acreditaciones específicas.</p>
+      <p>Finalmente, las alteraciones mayores deben documentarse con fecha, método,
+      consentimiento, riesgos comunicados y resultado. El registro protege al paciente y
+      permite detectar patrones de daño; ocultar una intervención constituye falta grave
+      incluso si no produjo lesión visible.</p>
+      <h4 id="cap-12">Capítulo XII — Reversibilidad e irreversibilidad</h4>
       <p>La reversibilidad reduce algunos riesgos, pero no elimina la necesidad de
-      consentimiento.</p>
-      <p>Una intervención reversible puede producir daño durante el período activo o
-      consecuencias sociales imposibles de deshacer.</p>
-      <p>El término reversible debe usarse sólo cuando existe un método fiable de retorno.</p>
-      <h4 id="cap-41">Capítulo XLI — Irreversibilidad</h4>
-      <p>Las intervenciones irreversibles requieren un estándar de información y deliberación
-      más alto.</p>
-      <p>El paciente debe comprender que el resultado no puede deshacerse con las técnicas
-      disponibles.</p>
-      <p>La incertidumbre sobre reversibilidad debe tratarse como riesgo de irreversibilidad.</p>
-      <h4 id="cap-42">Capítulo XLII — Proporcionalidad</h4>
-      <p>El riesgo debe guardar relación con el beneficio esperado y con la gravedad de la
-      situación.</p>
-      <p>Una técnica extrema puede ser razonable frente a una amenaza mortal y abusiva frente a
-      una molestia menor.</p>
-      <p>La proporcionalidad también considera efectos sobre terceros.</p>
-      <h4 id="cap-43">Capítulo XLIII — Alternativa menos invasiva</h4>
-      <p>Cuando dos técnicas ofrecen beneficios comparables, se prefiere la que altera menos
-      autonomía, identidad o integridad.</p>
-      <p>Este principio limita el uso rutinario de memoria, compulsión y transformación.</p>
-      <p>La conveniencia del practicante no constituye beneficio suficiente.</p>
-      <h4 id="cap-44">Capítulo XLIV — Emergencia</h4>
-      <p>En una emergencia puede ser necesario actuar sin consentimiento completo.</p>
-      <p>La intervención debe limitarse a lo indispensable para evitar daño grave inmediato.</p>
-      <p>Una vez recuperada capacidad, el paciente debe recibir información y decidir sobre
-      cualquier tratamiento adicional.</p>
-      <h4 id="cap-45">Capítulo XLV — Contención</h4>
-      <p>La contención de una persona peligrosa no autoriza modificaciones ilimitadas.</p>
-      <p>Las técnicas deben ser temporales, proporcionales y sujetas a revisión.</p>
-      <p>Alterar recuerdos, personalidad o cuerpo como castigo está prohibido.</p>
-      <h4 id="cap-46">Capítulo XLVI — Uso penal</h4>
-      <p>Dolbred rechaza la transformación corporal, modificación de memoria y manipulación de
-      almas como penas ordinarias.</p>
-      <p>Estas prácticas dificultan distinguir corrección de destrucción de la persona
-      castigada.</p>
-      <p>El Derecho Arcano puede permitir restricciones mágicas temporales bajo supervisión,
-      pero no reescritura de identidad.</p>
-      <h4 id="cap-47">Capítulo XLVII — Interrogatorio</h4>
-      <p>Leer pensamientos o alterar memoria durante interrogatorio requiere orden legal y
-      límites estrictos.</p>
-      <p>El contenido mental no equivale a verdad objetiva.</p>
-      <p>Los métodos coercitivos que impiden resistencia están prohibidos en la práctica
-      académica ordinaria.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Consentimiento y autoridad</h4>
-      <p>Una orden institucional no sustituye consentimiento cuando el procedimiento afecta
-      directamente a una persona.</p>
-      <p>Soldados, presos, aprendices y empleados conservan derechos sobre su cuerpo y
-      mente.</p>
-      <p>Las relaciones jerárquicas aumentan el riesgo de coacción.</p>
-      <h4 id="cap-49">Capítulo XLIX — Consentimiento en pactos</h4>
-      <p>Un pacto puede ser formalmente aceptado y éticamente defectuoso si existe engaño,
-      incapacidad o desigualdad extrema de información.</p>
-      <p>Pacturgia evalúa estructura; Ética de la Alteración evalúa legitimidad.</p>
-      <p>La firma de un contrato no convierte toda consecuencia en moralmente aceptable.</p>
-      <h4 id="cap-50">Capítulo L — Consentimiento informado por entidades</h4>
-      <p>Las entidades que ofrecen poder o transformación deben revelar riesgos materiales
-      cuando existe una relación regulada por Dolbred.</p>
-      <p>Los intermediarios humanos no pueden ocultar cláusulas relevantes.</p>
-      <p>El desconocimiento deliberado se considera negligencia.</p>
-      <h4 id="cap-51">Capítulo LI — Privacidad mental</h4>
-      <p>Los pensamientos y recuerdos se consideran información especialmente protegida.</p>
-      <p>El acceso sin consentimiento requiere justificación legal extraordinaria.</p>
-      <p>La curiosidad académica no basta para invadir una mente.</p>
-      <h4 id="cap-52">Capítulo LII — Privacidad pneumatológica</h4>
-      <p>Firmas anímicas, vínculos y recuerdos post mortem reciben protección equivalente o
-      superior a datos médicos.</p>
-      <p>Registrar esta información exige custodia segura.</p>
-      <p>Las prácticas docentes deben usar datos anonimizados siempre que sea posible.</p>
-      <h4 id="cap-53">Capítulo LIII — Riesgo colectivo</h4>
-      <p>Una intervención individual puede afectar poblaciones cuando crea una condición
-      transmisible o altera un ecosistema.</p>
-      <p>En esos casos, el consentimiento del sujeto no basta para legitimar todo riesgo.</p>
-      <p>Epidemiología Taumatológica y Ecología Mágica participan en la evaluación.</p>
-      <h4 id="cap-54">Capítulo LIV — Creación de patógenos</h4>
-      <p>La producción deliberada de enfermedades o maldiciones transmisibles para
-      investigación está sometida a prohibición casi total.</p>
-      <p>Los estudios permitidos deben utilizar modelos incapaces de propagación autónoma.</p>
-      <p>La capacidad científica no justifica generar riesgos que no pueden contenerse.</p>
-      <h4 id="cap-55">Capítulo LV — Maldiciones experimentales</h4>
-      <p>Aplicar maldiciones sobre sujetos vivos requiere una justificación excepcional.</p>
-      <p>Las estructuras adaptativas o hereditarias están prohibidas en investigación
-      ordinaria.</p>
-      <p>Maldiología puede estudiar casos existentes sin reproducirlos deliberadamente.</p>
-      <h4 id="cap-56">Capítulo LVI — Encantamientos hereditarios</h4>
-      <p>Modificar una persona de manera que el cambio afecte a descendientes implica sujetos
-      futuros incapaces de consentir.</p>
-      <p>Estas intervenciones requieren un estándar mucho mayor que una alteración
-      individual.</p>
-      <p>Dolbred prohíbe la mayoría de modificaciones hereditarias no terapéuticas.</p>
-      <h4 id="cap-57">Capítulo LVII — Resurrección experimental</h4>
+      consentimiento. Una intervención reversible puede producir daño durante el período
+      activo, o consecuencias sociales imposibles de deshacer, por lo que el término
+      «reversible» debe reservarse para los casos en que existe un método fiable de retorno.</p>
+      <p>Las intervenciones irreversibles, en cambio, requieren un estándar de información y
+      deliberación más alto. El paciente debe comprender que el resultado no puede deshacerse
+      con las técnicas disponibles. La incertidumbre sobre la reversibilidad de un
+      procedimiento debe tratarse, a todos los efectos, como riesgo de irreversibilidad.</p>
+      <h4 id="cap-13">Capítulo XIII — Proporcionalidad y alternativa menos invasiva</h4>
+      <p>El riesgo de una intervención debe guardar relación con el beneficio esperado y con la
+      gravedad de la situación. Una técnica extrema puede ser razonable frente a una amenaza
+      mortal y abusiva frente a una molestia menor, y la proporcionalidad debe considerar
+      también los efectos sobre terceros.</p>
+      <p>De este principio se deriva otro: cuando dos técnicas ofrecen beneficios comparables,
+      se prefiere la que altera menos autonomía, identidad o integridad. Esto limita el uso
+      rutinario de memoria, compulsión y transformación, ya que la conveniencia del practicante
+      no constituye beneficio suficiente para justificar la opción más invasiva.</p>
+      <h4 id="cap-14">Capítulo XIV — Emergencia y contención</h4>
+      <p>En una emergencia puede ser necesario actuar sin consentimiento completo. La
+      intervención debe limitarse a lo indispensable para evitar un daño grave inmediato, y una
+      vez recuperada la capacidad, el paciente debe recibir información completa y decidir
+      sobre cualquier tratamiento adicional.</p>
+      <p>La contención de una persona peligrosa sigue una lógica similar: no autoriza
+      modificaciones ilimitadas. Las técnicas empleadas deben ser temporales, proporcionales y
+      sujetas a revisión, y alterar recuerdos, personalidad o cuerpo a modo de castigo está
+      prohibido.</p>
+      <h4 id="cap-15">Capítulo XV — Uso penal e interrogatorio</h4>
+      <p>Dolbred rechaza la transformación corporal, la modificación de memoria y la
+      manipulación de almas como penas ordinarias, porque estas prácticas dificultan distinguir
+      la corrección de la destrucción de la persona castigada. El Derecho Arcano puede permitir
+      restricciones mágicas temporales bajo supervisión, pero no la reescritura de identidad.</p>
+      <p>El mismo cuidado se aplica al interrogatorio. Leer pensamientos o alterar memoria
+      durante un interrogatorio requiere orden legal y límites estrictos, y el contenido mental
+      obtenido no equivale a verdad objetiva. Los métodos coercitivos que impiden resistencia
+      están prohibidos en la práctica académica ordinaria.</p>
+      <h4 id="cap-16">Capítulo XVI — Consentimiento frente a autoridad, pactos y entidades</h4>
+      <p>Una orden institucional no sustituye el consentimiento cuando el procedimiento afecta
+      directamente a una persona. Soldados, presos, aprendices y empleados conservan derechos
+      sobre su cuerpo y mente, y las relaciones jerárquicas aumentan el riesgo de coacción
+      sobre quienes ocupan la posición más débil.</p>
+      <p>Un problema similar aparece en los pactos: un acuerdo puede ser formalmente aceptado y
+      éticamente defectuoso si existe engaño, incapacidad o desigualdad extrema de información.
+      Pacturgia evalúa la estructura del pacto, mientras que la Ética de la Alteración evalúa
+      su legitimidad; la firma de un contrato no convierte toda consecuencia en moralmente
+      aceptable.</p>
+      <p>Cuando la contraparte es una entidad que ofrece poder o transformación, la exigencia
+      se mantiene. Debe revelar los riesgos materiales siempre que exista una relación regulada
+      por Dolbred. Los intermediarios humanos no pueden ocultar cláusulas relevantes, y el
+      desconocimiento deliberado se considera negligencia.</p>
+      <h4 id="cap-17">Capítulo XVII — Privacidad mental y pneumatológica</h4>
+      <p>Los pensamientos y recuerdos se consideran información especialmente protegida. El
+      acceso sin consentimiento requiere justificación legal extraordinaria, y la curiosidad
+      académica no basta para invadir una mente.</p>
+      <p>Esta protección se extiende al ámbito pneumatológico. Firmas anímicas, vínculos y
+      recuerdos post mortem reciben una protección equivalente o superior a la de los datos
+      médicos. Registrar esta información exige custodia segura, y las prácticas docentes deben
+      usar datos anonimizados siempre que sea posible.</p>
+      <h4 id="cap-18">Capítulo XVIII — Riesgo colectivo: patógenos, maldiciones y herencia</h4>
+      <p>Una intervención individual puede afectar a poblaciones enteras cuando crea una
+      condición transmisible o altera un ecosistema. En esos casos, el consentimiento del
+      sujeto original no basta para legitimar todo riesgo, y Epidemiología Taumatológica y
+      Ecología Mágica participan en la evaluación.</p>
+      <p>Por esta razón, la producción deliberada de enfermedades o maldiciones transmisibles
+      para investigación está sometida a una prohibición casi total. Los estudios permitidos
+      deben utilizar modelos incapaces de propagación autónoma, porque la capacidad científica
+      de un equipo no justifica generar riesgos que no pueden contenerse.</p>
+      <p>Aplicar maldiciones sobre sujetos vivos requiere, en cualquier caso, una justificación
+      excepcional. Las estructuras adaptativas o hereditarias están prohibidas en investigación
+      ordinaria, aunque Maldiología puede estudiar casos ya existentes sin reproducirlos
+      deliberadamente.</p>
+      <p>El riesgo hereditario merece atención propia. Modificar a una persona de manera que el
+      cambio afecte a sus descendientes implica sujetos futuros incapaces de consentir. Estas
+      intervenciones requieren un estándar mucho mayor que una alteración individual, y Dolbred
+      prohíbe la mayoría de las modificaciones hereditarias no terapéuticas.</p>
+      <h4 id="cap-19">Capítulo XIX — Resurrección experimental, copias y consentimiento retrospectivo</h4>
       <p>Los procedimientos nuevos de resurrección se revisan como investigaciones de riesgo
-      máximo.</p>
-      <p>El éxito biológico no basta; debe evaluarse continuidad personal, sufrimiento y
-      posibilidad de reversión.</p>
-      <p>Los resultados inciertos no pueden ocultarse bajo la etiqueta de salvamento.</p>
-      <h4 id="cap-58">Capítulo LVIII — Creación de copias</h4>
-      <p>Crear una copia física o mental de una persona plantea derechos propios del nuevo
-      individuo.</p>
-      <p>No puede considerarse automáticamente propiedad ni extensión jurídica del original.</p>
-      <p>Las obligaciones de identidad, herencia y responsabilidad se remiten a Derecho
-      Arcano.</p>
-      <h4 id="cap-59">Capítulo LIX — Consentimiento retrospectivo</h4>
-      <p>No puede asumirse que una persona habría aceptado una intervención sólo porque
-      posteriormente expresa satisfacción.</p>
-      <p>El consentimiento debe existir antes o durante el procedimiento cuando sea posible.</p>
-      <p>El buen resultado no corrige una violación inicial de autonomía.</p>
-      <h4 id="cap-60">Capítulo LX — Beneficencia</h4>
-      <p>El profesional tiene obligación de buscar beneficio real para quien recibe la
-      intervención.</p>
-      <p>Beneficencia no significa decidir paternalmente qué vida debería llevar otra
-      persona.</p>
-      <p>Debe combinarse con autonomía y proporcionalidad.</p>
-      <h4 id="cap-61">Capítulo LXI — No maleficencia</h4>
-      <p>Evitar daño incluye daño físico, psicológico, social, identitario y pneumatológico.</p>
-      <p>Una técnica puede curar una lesión y producir pérdida de memoria o estigma.</p>
-      <p>El balance ético debe considerar el conjunto de consecuencias previsibles.</p>
-      <h4 id="cap-62">Capítulo LXII — Justicia</h4>
-      <p>Las técnicas costosas pueden crear desigualdades profundas si sólo algunos acceden a
-      curación, longevidad o mejora.</p>
-      <p>Dolbred estudia criterios de asignación y acceso.</p>
-      <p>La justicia no exige igualdad absoluta, pero sí justificar por qué unos reciben
-      riesgos o beneficios distintos.</p>
-      <h4 id="cap-63">Capítulo LXIII — Mejora y tratamiento</h4>
-      <p>Tratar una enfermedad y mejorar una capacidad no son lo mismo, aunque la frontera pueda
-      ser difusa.</p>
-      <p>Las mejoras voluntarias son legales en muchos casos, pero requieren regulación cuando
-      alteran identidad, competencia o herencia.</p>
-      <p>La institución evita declarar patología toda diferencia que se aparte de un
-      promedio.</p>
-      <h4 id="cap-64">Capítulo LXIV — Mejoras cognitivas</h4>
-      <p>Aumentar memoria, concentración o velocidad mental puede generar dependencia, daño
-      resonántico o desigualdad.</p>
-      <p>Los procedimientos extremos relacionados con saturación de Mercurio se consideran
-      prohibidos.</p>
-      <p>Las mejoras seguras requieren seguimiento y límites de exposición.</p>
-      <h4 id="cap-65">Capítulo LXV — Mejoras corporales</h4>
-      <p>Fuerza, resistencia y adaptación pueden modificarse mediante encantamiento,
-      transmutación o cirugía arcana.</p>
-      <p>Los riesgos ocupacionales deben evaluarse cuando empleadores exigen mejoras para
-      trabajar.</p>
-      <p>El consentimiento pierde validez si rechazar la modificación implica coerción
-      económica extrema.</p>
-      <h4 id="cap-66">Capítulo LXVI — Responsabilidad del creador</h4>
-      <p>Quien diseña una técnica debe anticipar usos razonablemente previsibles.</p>
-      <p>No toda utilización indebida convierte al creador en culpable, pero ignorar riesgos
-      evidentes puede constituir negligencia.</p>
-      <p>La responsabilidad aumenta cuando la técnica es difícil de revertir o fácil de aplicar
-      sin consentimiento.</p>
-      <h4 id="cap-67">Capítulo LXVII — Responsabilidad institucional</h4>
-      <p>Dolbred asume responsabilidad por prácticas realizadas bajo su nombre, laboratorios y
-      licencias.</p>
-      <p>Los departamentos deben mantener supervisión, canales de denuncia y auditorías.</p>
-      <p>La excelencia académica no exime a una institución de daños causados por sus
-      investigadores.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Denuncia y protección</h4>
-      <p>Estudiantes y personal pueden denunciar prácticas inseguras sin autorización del
-      supervisor.</p>
-      <p>La regulación protege a quienes informan de buena fe.</p>
-      <p>El silencio institucional frente a una alteración abusiva se considera fallo ético
+      máximo. El éxito biológico no basta; debe evaluarse la continuidad personal, el
+      sufrimiento producido y la posibilidad de reversión. Los resultados inciertos no pueden
+      ocultarse bajo la etiqueta de salvamento.</p>
+      <p>Un problema relacionado surge al crear una copia física o mental de una persona, ya
+      que ésta plantea derechos propios como nuevo individuo. No puede considerarse
+      automáticamente propiedad ni extensión jurídica del original, y las obligaciones de
+      identidad, herencia y responsabilidad se remiten a Derecho Arcano.</p>
+      <p>En ambos casos rige el mismo límite temporal. No puede asumirse que una persona habría
+      aceptado una intervención sólo porque posteriormente expresa satisfacción. El
+      consentimiento debe existir antes o durante el procedimiento siempre que sea posible,
+      porque un buen resultado no corrige una violación inicial de autonomía.</p>
+      <h4 id="cap-20">Capítulo XX — Beneficencia, no maleficencia y justicia</h4>
+      <p>El profesional tiene la obligación de buscar un beneficio real para quien recibe la
+      intervención. Beneficencia no significa decidir paternalmente qué vida debería llevar
+      otra persona; debe combinarse siempre con autonomía y proporcionalidad.</p>
+      <p>Junto a ella opera la no maleficencia. Evitar daño incluye daño físico, psicológico,
+      social, identitario y pneumatológico. Una técnica puede curar una lesión y producir, al
+      mismo tiempo, pérdida de memoria o estigma, por lo que el balance ético debe considerar
+      el conjunto de consecuencias previsibles.</p>
+      <p>Finalmente, la justicia atiende a la distribución de estos riesgos y beneficios. Las
+      técnicas costosas pueden crear desigualdades profundas si sólo algunos acceden a
+      curación, longevidad o mejora, y Dolbred estudia criterios de asignación y acceso. La
+      justicia no exige igualdad absoluta, pero sí exige justificar por qué unos reciben
+      riesgos o beneficios distintos de otros.</p>
+      <h4 id="cap-21">Capítulo XXI — Mejora y tratamiento: límites cognitivos y corporales</h4>
+      <p>Tratar una enfermedad y mejorar una capacidad no son lo mismo, aunque la frontera
+      entre ambas pueda ser difusa. Las mejoras voluntarias son legales en muchos casos, pero
+      requieren regulación cuando alteran identidad, competencia o herencia, y la institución
+      evita declarar patología toda diferencia que simplemente se aparte de un promedio.</p>
+      <p>En el ámbito cognitivo, aumentar memoria, concentración o velocidad mental puede
+      generar dependencia, daño resonántico o desigualdad. Los procedimientos extremos
+      relacionados con saturación de Mercurio se consideran prohibidos, y las mejoras seguras
+      requieren seguimiento y límites de exposición.</p>
+      <p>En el ámbito corporal, fuerza, resistencia y adaptación pueden modificarse mediante
+      encantamiento, transmutación o cirugía arcana. Los riesgos ocupacionales deben evaluarse
+      cuando los empleadores exigen mejoras para trabajar, y el consentimiento pierde validez
+      si rechazar la modificación implica una coerción económica extrema.</p>
+      <h4 id="cap-22">Capítulo XXII — Responsabilidad del creador y de la institución</h4>
+      <p>Quien diseña una técnica debe anticipar sus usos razonablemente previsibles. No toda
+      utilización indebida convierte al creador en culpable, pero ignorar riesgos evidentes
+      puede constituir negligencia, y esa responsabilidad aumenta cuando la técnica es difícil
+      de revertir o fácil de aplicar sin consentimiento.</p>
+      <p>La institución comparte esa carga. Dolbred asume responsabilidad por las prácticas
+      realizadas bajo su nombre, sus laboratorios y sus licencias. Los departamentos deben
+      mantener supervisión, canales de denuncia y auditorías, ya que la excelencia académica no
+      exime a una institución de los daños causados por sus investigadores.</p>
+      <h4 id="cap-23">Capítulo XXIII — Denuncia, sanciones y revisión urgente</h4>
+      <p>Estudiantes y personal pueden denunciar prácticas inseguras sin necesidad de
+      autorización del supervisor. La regulación protege a quienes informan de buena fe, y el
+      silencio institucional frente a una alteración abusiva se considera un fallo ético
       propio.</p>
-      <h4 id="cap-69">Capítulo LXIX — Sanciones académicas</h4>
-      <p>Las faltas pueden producir suspensión de laboratorio, pérdida de licencia, expulsión o
-      remisión a autoridades civiles.</p>
-      <p>Las sanciones dependen de daño, intención, ocultamiento y reincidencia.</p>
-      <p>La reputación del investigador no reduce responsabilidad.</p>
-      <h4 id="cap-70">Capítulo LXX — Comité de revisión urgente</h4>
-      <p>Las situaciones nuevas que no encajan en regulaciones existentes pueden ser evaluadas
-      por un comité urgente.</p>
-      <p>Su función es establecer medidas provisionales mientras se reúne evidencia.</p>
-      <p>Esto evita que el vacío normativo sea interpretado como permiso.</p>
-      <h4 id="cap-71">Capítulo LXXI — Principio de precaución</h4>
-      <p>Cuando una intervención puede producir daño irreversible y la evidencia es
-      insuficiente, Dolbred permite imponer límites preventivos.</p>
-      <p>Precaución no significa prohibir toda innovación.</p>
-      <p>Significa que la incertidumbre sobre daños graves cuenta como razón para avanzar más
-      lentamente.</p>
-      <h4 id="cap-72">Capítulo LXXII — Innovación responsable</h4>
-      <p>Una técnica nueva debe desarrollarse por etapas: modelos, pruebas no sensibles,
-      estudios limitados y sólo después aplicación humana o inteligente.</p>
-      <p>Saltarse etapas por entusiasmo constituye mala práctica.</p>
-      <p>La velocidad de descubrimiento no justifica trasladar incertidumbre a sujetos
-      vulnerables.</p>
-      <h4 id="cap-73">Capítulo LXXIII — Casos históricos</h4>
-      <p>Parte de la regulación dolbriana nació de abusos previos: encantamientos coercitivos,
-      experimentos de memoria y creaciones sensibles tratadas como propiedad.</p>
-      <p>Los casos históricos se enseñan no como curiosidades, sino como recordatorio de que
-      muchas normas existen porque alguien sufrió antes de que fueran escritas.</p>
-      <p>Historia de las Ciencias Mágicas conserva estos expedientes.</p>
-      <h4 id="cap-74">Capítulo LXXIV — La ilusión de reversibilidad total</h4>
-      <p>Una transformación puede revertir el cuerpo y no restaurar relaciones, reputación,
-      recuerdos o consecuencias jurídicas.</p>
-      <p>Por ello, reversible no significa sin consecuencias.</p>
-      <p>El consentimiento debe considerar efectos que ningún hechizo puede deshacer.</p>
-      <h4 id="cap-75">Capítulo LXXV — La ilusión del beneficio objetivo</h4>
-      <p>No existe una definición universal de mejora válida para todas las personas.</p>
-      <p>Una intervención que un médico considera deseable puede alterar una característica que
-      el paciente valora.</p>
-      <p>El profesional debe preguntar qué resultado busca la persona antes de decidir qué
-      cuenta como beneficio.</p>
-      <h4 id="cap-76">Capítulo LXXVI — La ilusión del creador propietario</h4>
-      <p>Crear una vida, un constructo consciente o una copia no concede propiedad absoluta
-      sobre ella.</p>
-      <p>La dependencia inicial puede generar deberes especiales, no dominio.</p>
-      <p>Esta posición es una de las bases de la regulación moderna dolbriana.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Regulación dolbriana de alteraciones mayores</h4>
+      <p>Cuando una denuncia prospera, las faltas pueden producir suspensión de laboratorio,
+      pérdida de licencia, expulsión o remisión a autoridades civiles. Las sanciones dependen
+      del daño causado, la intención, el ocultamiento y la reincidencia, y la reputación del
+      investigador no reduce su responsabilidad.</p>
+      <p>Las situaciones nuevas que no encajan en regulaciones existentes pueden ser evaluadas,
+      además, por un comité urgente, cuya función es establecer medidas provisionales mientras
+      se reúne evidencia. Esto evita que el vacío normativo sea interpretado como un permiso.</p>
+      <h4 id="cap-24">Capítulo XXIV — Precaución e innovación responsable</h4>
+      <p>Cuando una intervención puede producir daño irreversible y la evidencia disponible es
+      insuficiente, Dolbred permite imponer límites preventivos. Precaución no significa
+      prohibir toda innovación, sino que la incertidumbre sobre daños graves cuenta como razón
+      para avanzar con más lentitud.</p>
+      <p>Esa lentitud se traduce en un desarrollo por etapas: modelos, pruebas no sensibles,
+      estudios limitados y, sólo después, aplicación sobre sujetos humanos o inteligentes.
+      Saltarse etapas por entusiasmo constituye mala práctica, y la velocidad de un
+      descubrimiento no justifica trasladar su incertidumbre a sujetos vulnerables.</p>
+      <h4 id="cap-25">Capítulo XXV — Lecciones históricas y falacias comunes</h4>
+      <p>Parte de la regulación dolbriana nació de abusos previos, entre ellos encantamientos
+      coercitivos, experimentos de memoria y creaciones sensibles tratadas como propiedad.
+      Estos casos históricos se enseñan no como curiosidades, sino como recordatorio de que
+      muchas normas existen porque alguien sufrió antes de que fueran escritas; Historia de las
+      Ciencias Mágicas conserva estos expedientes.</p>
+      <p>De esa experiencia surgen tres advertencias que la disciplina repite con frecuencia.
+      La primera es la ilusión de la reversibilidad total. Una transformación puede revertir el
+      cuerpo y no restaurar relaciones, reputación, recuerdos o consecuencias jurídicas.
+      Reversible no significa sin consecuencias, y el consentimiento debe considerar efectos
+      que ningún hechizo puede deshacer.</p>
+      <p>La segunda es la ilusión del beneficio objetivo. No existe una definición universal de
+      mejora válida para todas las personas, y una intervención que un médico considera
+      deseable puede alterar una característica que el paciente valora. El profesional debe
+      preguntar qué resultado busca la persona antes de decidir qué cuenta como beneficio.</p>
+      <p>La tercera es la ilusión del creador propietario. Crear una vida, un constructo
+      consciente o una copia no concede propiedad absoluta sobre ella; la dependencia inicial
+      puede generar deberes especiales, pero no dominio. Esta posición es una de las bases de
+      la regulación moderna dolbriana.</p>
+      <h4 id="cap-26">Capítulo XXVI — Clasificación regulatoria: mayores, restringidas y prohibidas</h4>
       <p>Dolbred clasifica como Alteraciones Mayores aquellas capaces de modificar memoria
       autobiográfica, continuidad personal, forma permanente, reproducción, estado vital o
-      alma.</p>
-      <p>Estas intervenciones requieren consentimiento reforzado, documentación, licencia
-      específica y revisión cuando el riesgo supera umbrales establecidos.</p>
-      <p>La categoría se aplica por efecto potencial, no por prestigio de la técnica.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — Regulación de alteraciones restringidas</h4>
-      <p>Se consideran restringidas las técnicas de obediencia, implantación de memoria,
-      manipulación de almas, creación de seres inteligentes subordinados y modificaciones
-      hereditarias no terapéuticas.</p>
-      <p>Su uso académico ordinario está prohibido o limitado a investigación no invasiva.</p>
-      <p>Las excepciones requieren autoridad institucional superior y justificación pública
-      posterior cuando la seguridad lo permita.</p>
-      <h4 id="cap-79">Capítulo LXXIX — Regulación de alteraciones prohibidas</h4>
-      <p>Dolbred prohíbe procedimientos cuyo propósito sea destruir autonomía personal sin
-      necesidad médica, producir sufrimiento como método experimental o crear sujetos
-      conscientes diseñados para incapacidad permanente de consentir.</p>
-      <p>También prohíbe la transferencia involuntaria de almas y la implantación de recuerdos
-      con fines disciplinarios o políticos.</p>
-      <p>Estas prohibiciones no dependen de que el procedimiento sea técnicamente
-      reversible.</p>
-      <h4 id="cap-80">Capítulo LXXX — Auditoría</h4>
+      alma. Estas intervenciones requieren consentimiento reforzado, documentación, licencia
+      específica y revisión cuando el riesgo supera umbrales establecidos; la categoría se
+      aplica por su efecto potencial, no por el prestigio de la técnica empleada.</p>
+      <p>Un escalón por debajo se encuentran las alteraciones restringidas: técnicas de
+      obediencia, implantación de memoria, manipulación de almas, creación de seres
+      inteligentes subordinados y modificaciones hereditarias no terapéuticas. Su uso académico
+      ordinario está prohibido o limitado a investigación no invasiva, y las excepciones
+      requieren autoridad institucional superior y justificación pública posterior cuando la
+      seguridad lo permita.</p>
+      <p>Por último, Dolbred prohíbe por completo los procedimientos cuyo propósito sea
+      destruir la autonomía personal sin necesidad médica, producir sufrimiento como método
+      experimental o crear sujetos conscientes diseñados para la incapacidad permanente de
+      consentir. También prohíbe la transferencia involuntaria de almas y la implantación de
+      recuerdos con fines disciplinarios o políticos; estas prohibiciones no dependen de que el
+      procedimiento sea técnicamente reversible.</p>
+      <h4 id="cap-27">Capítulo XXVII — Auditoría y excepciones</h4>
       <p>Los laboratorios que trabajan con Alteraciones Mayores están sujetos a auditorías
-      periódicas.</p>
-      <p>Se revisan registros, materiales, consentimiento, seguridad y resultados adversos.</p>
-      <p>Las auditorías pueden ordenar suspensión inmediata cuando existe riesgo no
-      declarado.</p>
-      <h4 id="cap-81">Capítulo LXXXI — Excepciones</h4>
-      <p>Las excepciones regulatorias deben ser estrechas, temporales y justificadas por una
-      amenaza concreta.</p>
-      <p>Una emergencia no crea una licencia general para experimentar.</p>
-      <p>Toda excepción debe revisarse después para determinar si la decisión fue
-      proporcional.</p>
-      <h4 id="cap-82">Capítulo LXXXII — Relación con Derecho Arcano</h4>
-      <p>La Ética de la Alteración pregunta qué debería hacerse; Derecho Arcano establece qué
-      está permitido, prohibido o exigido.</p>
-      <p>Ambas áreas se influyen mutuamente, pero no son idénticas.</p>
-      <p>Una práctica puede ser legal y éticamente cuestionable, o éticamente defendible y
-      todavía necesitar reforma normativa.</p>
-      <h4 id="cap-83">Capítulo LXXXIII — Relación con Medicina Mágica</h4>
-      <p>La medicina aporta evaluación de riesgo, beneficio y capacidad.</p>
-      <p>La Ética establece límites sobre consentimiento y justicia.</p>
-      <p>Los conflictos deben resolverse sin reducir al paciente a un problema técnico.</p>
-      <h4 id="cap-84">Capítulo LXXXIV — Relación con Pneumatología y Tanatología</h4>
-      <p>Las intervenciones sobre alma, muerte y resurrección requieren conceptos de
-      continuidad que siguen siendo debatidos.</p>
-      <p>La incertidumbre teórica aumenta, no disminuye, la obligación de prudencia.</p>
-      <p>Cuando no sabemos con claridad qué parte de una persona estamos modificando, el
-      estándar ético debe ser más alto.</p>
-      <h4 id="cap-85">Capítulo LXXXV — La pregunta dolbriana</h4>
+      periódicas, en las que se revisan registros, materiales, consentimiento, seguridad y
+      resultados adversos. Las auditorías pueden ordenar suspensión inmediata cuando existe
+      riesgo no declarado.</p>
+      <p>Las excepciones a este régimen deben ser estrechas, temporales y justificadas por una
+      amenaza concreta. Una emergencia no crea una licencia general para experimentar, y toda
+      excepción debe revisarse después para determinar si la decisión tomada fue proporcional.</p>
+      <h4 id="cap-28">Capítulo XXVIII — Relación con otras disciplinas</h4>
+      <p>La Ética de la Alteración pregunta qué debería hacerse; el Derecho Arcano establece
+      qué está permitido, prohibido o exigido. Ambas áreas se influyen mutuamente, pero no son
+      idénticas, y una práctica puede ser legal y éticamente cuestionable, o éticamente
+      defendible y todavía necesitar reforma normativa.</p>
+      <p>Con la Medicina Mágica la relación es complementaria. Ella aporta evaluación de
+      riesgo, beneficio y capacidad, mientras que la Ética establece los límites sobre
+      consentimiento y justicia. Los conflictos entre ambas deben resolverse sin reducir al
+      paciente a un problema técnico.</p>
+      <p>Con Pneumatología y Tanatología el vínculo es más incierto, porque las intervenciones
+      sobre alma, muerte y resurrección requieren conceptos de continuidad que siguen siendo
+      debatidos. Esa incertidumbre teórica aumenta, no disminuye, la obligación de prudencia.
+      Cuando no se sabe con claridad qué parte de una persona se está modificando, el estándar
+      ético debe ser más alto.</p>
+      <h4 id="cap-29">Capítulo XXIX — La pregunta dolbriana</h4>
       <p>Antes de autorizar una alteración, Dolbred exige responder cinco preguntas: quién la
       desea, quién asume el riesgo, qué cambia, qué puede recuperarse y quién responderá si el
       resultado es distinto del esperado.</p>
