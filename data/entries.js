@@ -4490,11 +4490,23 @@ window.ENTRIES = [
       variaciones heredables.</p>
       <h4 id="cap-15">Capítulo XV — Convergencia</h4>
       <p>Criaturas no emparentadas pueden desarrollar soluciones semejantes frente a problemas
-      semejantes. Alas, caparazones, órganos de descarga y sentidos mágicos aparecen
-      repetidamente.</p>
-      <p>Esta convergencia dificulta la clasificación basada sólo en morfología.</p>
-      <p>La Ecología Mágica ayuda a identificar presiones ambientales capaces de explicar por qué
-      linajes distintos llegaron a formas parecidas.</p>
+      semejantes. Alas membranosas, caparazones reforzados, órganos de descarga y sentidos mágicos
+      aparecen repetidamente en linajes sin ancestro reciente demostrable. El repertorio de
+      estructuras viables frente a un problema dado no es ilimitado, y cuando dos poblaciones
+      enfrentan la misma presión ambiental, ambas terminan explorando el mismo conjunto reducido de
+      soluciones funcionales.</p>
+      <p>Un caso documentado en las cuevas profundas de Kharzul ilustra el fenómeno. Dos linajes de
+      artrópodos gigantes, sin parentesco demostrable entre sí, desarrollaron de forma independiente
+      exoesqueletos parcialmente cristalizados capaces de canalizar corrientes arcanas ambientales
+      hacia órganos sensoriales cefálicos. La semejanza resultante llevó a clasificarlos como especies
+      hermanas durante generaciones, hasta que estudios de desarrollo embrionario revelaron que las
+      estructuras cristalinas se originan en tejidos completamente distintos en cada linaje.</p>
+      <p>Esta convergencia dificulta la clasificación basada sólo en morfología y obliga a distinguir
+      homología de analogía en cada rasgo compartido antes de proponer parentesco. La Ecología Mágica
+      ayuda a identificar presiones ambientales capaces de explicar por qué linajes distintos llegaron
+      a formas parecidas: territorios que comparten concentración de maná ambiental, disponibilidad de
+      presas o depredadores equivalentes tienden a producir resultados morfológicos convergentes, con
+      independencia del linaje de origen.</p>
       <h4 id="cap-16">Capítulo XVI — Radiaciones adaptativas</h4>
       <p>Cuando un linaje accede a una nueva fuente de energía o territorio, puede diversificarse
       rápidamente en especies especializadas.</p>
@@ -4504,16 +4516,40 @@ window.ENTRIES = [
       para compartir ancestro hasta estudiar su desarrollo.</p>
       <h4 id="cap-17">Capítulo XVII — Conducta</h4>
       <p>El comportamiento debe estudiarse antes de atribuir inteligencia, malicia o docilidad. Una
-      criatura territorial puede atacar por defensa de recursos; otra puede responder a movimientos
-      específicos porque forman parte de señales intraespecíficas.</p>
-      <p>Las interpretaciones culturales tienden a moralizar conductas animales.</p>
-      <p>La Criptozoología describe primero estímulo, respuesta, contexto y función.</p>
+      criatura territorial puede atacar por defensa de recursos, otra puede responder a movimientos
+      específicos porque forman parte de señales intraespecíficas que un observador ajeno interpreta
+      como agresión gratuita. Un ejemplo recurrente en los registros de campo de Dolbred son las
+      wyrms de acantilado, cuyos ataques a caravanas fueron durante siglos atribuidos a ferocidad
+      innata, hasta que observación prolongada mostró que ocurrían casi exclusivamente durante las
+      semanas de puesta, cuando cualquier vibración cercana al nido activa una respuesta defensiva
+      estereotipada.</p>
+      <p>Las interpretaciones culturales tienden a moralizar conductas animales, atribuyendo
+      intención vengativa, codicia o crueldad a patrones que responden a estímulos concretos y
+      repetibles. Esta tendencia se agrava cuando la criatura posee capacidades mágicas llamativas,
+      porque el observador confunde el poder del medio con la complejidad de la motivación.</p>
+      <p>La Criptozoología describe primero estímulo, respuesta, contexto y función, construyendo
+      etogramas que catalogan cada conducta observada antes de proponer explicaciones sobre su
+      propósito. Sólo después de documentar el repertorio completo de una especie resulta razonable
+      comparar sus conductas con las de otros linajes. La Psicología Resonántica se vuelve
+      indispensable cuando una señal conductual involucra percepción o alteración emocional directa
+      del receptor.</p>
       <h4 id="cap-18">Capítulo XVIII — Territorialidad</h4>
-      <p>El territorio puede definirse por alimento, reproducción, refugio o condiciones mágicas.</p>
+      <p>El territorio puede definirse por alimento, reproducción, refugio o condiciones mágicas, y
+      una misma especie puede sostener territorios de tamaño y forma muy diferentes según cuál de esos
+      recursos resulte limitante en cada región.</p>
       <p>Una criatura puede defender una región aparentemente pobre porque contiene una corriente
-      arcana, una cámara de incubación o un punto de muda.</p>
+      arcana subterránea, una cámara de incubación o un punto de muda, recursos invisibles para un
+      observador que sólo evalúa vegetación, presas o refugio físico. Los grifos de las Tierras Altas,
+      por ejemplo, ocupan repisas rocosas de escaso alimento local y las defienden porque la corriente
+      de viento cargado de maná que asciende por el acantilado resulta necesaria para completar su
+      muda anual.</p>
       <p>Eliminar al individuo no elimina necesariamente la razón por la que el territorio resulta
-      atractivo, y otro ejemplar puede ocuparlo rápidamente.</p>
+      atractivo, y otro ejemplar puede ocuparlo con rapidez si el recurso subyacente permanece
+      intacto. Los programas de control de fauna que ignoran esta distinción suelen registrar
+      reocupaciones sucesivas del mismo emplazamiento y concluyen erróneamente que la especie posee
+      una densidad poblacional mayor de la real. Comprender qué recurso ancla la territorialidad, y no
+      sólo qué individuo la ejerce, resulta indispensable para cualquier intervención de manejo de
+      fauna.</p>
       <h4 id="cap-19">Capítulo XIX — Migración</h4>
       <p>Las migraciones mágicas pueden seguir rutas invisibles para observadores ordinarios.
       Corrientes elementales, ciclos lunares, aperturas planares y cambios estacionales de afinidad
@@ -4564,19 +4600,46 @@ window.ENTRIES = [
       <p>Los slimefolk y organismos comparables son ejemplos útiles, pero no constituyen una única
       familia ni comparten necesariamente origen.</p>
       <h4 id="cap-25">Capítulo XXV — Mimetismo</h4>
-      <p>El mimetismo puede copiar apariencia, comportamiento, olor, firma mágica o combinación de
-      estos rasgos.</p>
-      <p>Una criatura que imita un cofre y otra que adopta el rostro de un individuo utilizan
-      problemas biológicos muy diferentes.</p>
+      <p>El mimetismo puede copiar apariencia, comportamiento, olor, firma mágica o una combinación
+      de estos rasgos, y el grado de fidelidad necesario depende directamente de la función que
+      cumple: engañar a un depredador ocasional exige mucho menos precisión que sustituir la identidad
+      de un individuo conocido ante quienes conviven con él.</p>
+      <p>Una criatura que imita un cofre y otra que adopta el rostro de un individuo resuelven
+      problemas biológicos completamente distintos. La primera necesita reproducir forma, textura y a
+      veces firma arcana residual de un objeto inerte, un desafío principalmente estructural que puede
+      mantenerse indefinidamente sin gasto activo. La segunda necesita replicar rasgos, voz, gesto y
+      en ocasiones recuerdos superficiales suficientes para sostener una interacción social, lo cual
+      exige capacidades cognitivas y sensoriales muy superiores y un mantenimiento activo del
+      disfraz.</p>
       <p>La clasificación debe distinguir camuflaje, transformación corporal, ilusión, reconstrucción
-      superficial y sustitución de identidad.</p>
+      superficial y sustitución de identidad, categorías que suelen confundirse porque producen
+      resultados exteriores parecidos mediante mecanismos anatómicos distintos. La Morfología Anómala
+      describe cómo el organismo reorganiza su propio cuerpo; cuando el engaño ocurre en la percepción
+      del observador y no en la anatomía del imitador, el fenómeno pertenece al dominio de la
+      Psicología Resonántica antes que al de la biología comparada.</p>
       <h4 id="cap-26">Capítulo XXVI — Licantropía y ciclos adquiridos</h4>
       <p>No todas las formas animales cíclicas constituyen especies independientes. Algunas son
-      enfermedades, maldiciones, estados heredables o modificaciones adquiridas.</p>
+      enfermedades, maldiciones, estados heredables o modificaciones adquiridas que imponen una
+      alternancia de forma sin que el individuo afectado pertenezca a un linaje separado del resto de
+      su población de origen.</p>
+      <p>La licantropía constituye el ejemplo mejor documentado de esta categoría. Quienes la padecen
+      conservan su identidad genealógica original, pero adquieren, mediante contagio, maldición o
+      predisposición latente activada por exposición, un ciclo de transformación corporal
+      generalmente ligado a fases lunares u otras condiciones ambientales recurrentes. El afectado no
+      funda una nueva especie: su descendencia sigue perteneciendo, en la inmensa mayoría de los casos
+      registrados, al linaje original, salvo cuando la condición demuestra un componente hereditario
+      propio que la Endomancia debe caracterizar por separado del contagio directo.</p>
       <p>La Criptozoología colabora con Patología Arcana y Maldiología para distinguir un linaje
-      estable de una condición transmisible.</p>
+      estable de una condición transmisible, comparando patrones de herencia, mecanismos de
+      transmisión y reversibilidad. Una condición adquirida puede en ciertos casos revertirse mediante
+      tratamiento, ritual o interrupción del contacto con la fuente original, mientras que un linaje
+      verdadero no admite reversión porque la forma cíclica forma parte de su desarrollo ordinario, no
+      de una alteración sobrepuesta a él.</p>
       <p>La diferencia importa porque reproducción, tratamiento y ecología responden a mecanismos
-      distintos.</p>
+      distintos. Clasificar erróneamente una condición adquirida como especie propia lleva a buscar
+      poblaciones, territorios de cría o nichos ecológicos donde en realidad existe una red de
+      contagio entre individuos de especies ordinarias, un error que ha distorsionado más de un
+      catálogo criptozoológico histórico.</p>
       <h4 id="cap-27">Capítulo XXVII — Criaturas artificiales</h4>
       <p>Gólems orgánicos, quimeras, constructos vivos y especies producidas por selección o
       experimentación pueden adquirir reproducción autónoma.</p>
@@ -4592,18 +4655,39 @@ window.ENTRIES = [
       <p>Si ambas partes se transmiten juntas y ninguna puede completar el ciclo vital por separado,
       la disciplina puede tratar el conjunto como un sistema biológico integrado.</p>
       <h4 id="cap-29">Capítulo XXIX — Parasitismo</h4>
-      <p>Los parásitos mágicos pueden explotar órganos, energía, memoria, afinidades o vínculos.</p>
-      <p>Algunos apenas dañan al huésped y otros modifican conducta para completar su ciclo
-      reproductivo.</p>
-      <p>Patología Arcana se concentra en enfermedad; Criptozoología estudia la estrategia vital del
-      parásito como especie.</p>
+      <p>Los parásitos mágicos pueden explotar órganos, energía, memoria, afinidades o vínculos
+      afectivos, y la relación puede sostenerse durante toda la vida del huésped o resolverse en un
+      episodio breve seguido de la muerte de una de las partes.</p>
+      <p>Algunos apenas dañan al huésped, limitándose a sustraer un excedente energético que el
+      organismo puede reponer sin dificultad, mientras que otros modifican activamente la conducta del
+      portador para completar su ciclo reproductivo. Un caso bien documentado son las larvas de avispa
+      espectral, que se instalan en el sistema nervioso de pequeños mamíferos y alteran su percepción
+      del peligro, empujando al huésped hacia zonas de mayor exposición donde resulta más probable que
+      un depredador lo capture y disperse así las larvas hacia un nuevo portador.</p>
+      <p>Patología Arcana se concentra en enfermedad, en el daño individual y su tratamiento;
+      Criptozoología estudia la estrategia vital del parásito como especie, su ciclo completo, su
+      relación con huéspedes intermedios y definitivos, y las presiones que mantienen estable esa
+      asociación a través de generaciones. Un parásito demasiado eficaz puede extinguir a su huésped y,
+      con él, a sí mismo, de modo que las asociaciones parasitarias más antiguas suelen mostrar un
+      equilibrio de virulencia moderada.</p>
       <h4 id="cap-30">Capítulo XXX — Depredadores ápice</h4>
-      <p>Las criaturas situadas en la cima de una red trófica pueden regular poblaciones y modificar
-      paisajes completos.</p>
+      <p>Las criaturas situadas en la cima de una red trófica pueden regular poblaciones enteras y
+      modificar paisajes completos, un efecto conocido como cascada trófica: al limitar el número de
+      herbívoros o depredadores intermedios, un depredador ápice determina indirectamente qué
+      vegetación prospera, qué cursos de agua se mantienen estables y qué otras especies encuentran
+      nicho disponible.</p>
       <p>Los grandes depredadores mágicos añaden además efectos territoriales derivados de sus
-      capacidades.</p>
-      <p>Su eliminación puede parecer una mejora inmediata para asentamientos cercanos y producir
-      sobrepoblación, migraciones o expansión de especies que antes permanecían controladas.</p>
+      capacidades. Un dragón adulto que reclama un valle no sólo caza dentro de sus límites: su sola
+      presencia y las corrientes arcanas asociadas a su guarida desplazan o excluyen a especies
+      sensibles a esa firma, generando zonas de baja densidad faunística mucho más extensas que su
+      radio de caza efectivo. Ecología Mágica documenta patrones semejantes en territorios dominados
+      por hidras, wyrms de pantano o aves de tormenta.</p>
+      <p>Su eliminación puede parecer una mejora inmediata para asentamientos cercanos, y sin embargo
+      produce con frecuencia sobrepoblación de presas, migraciones forzadas o expansión descontrolada
+      de especies intermedias que antes permanecían controladas. Los registros de Dolbred incluyen
+      valles donde la muerte de un depredador ápice desencadenó, en menos de una década, plagas de
+      herbívoros mágicos que terminaron devastando la vegetación que el propio depredador había
+      mantenido intacta durante generaciones.</p>
       <h4 id="cap-31">Capítulo XXXI — Criaturas biologizadas de origen elemental y extraplanar</h4>
       <p>Dos categorías de linajes plantean un problema semejante, el de organismos cuyo origen
       aparente no fue material pero cuya continuidad actual depende de procesos biológicos estables.
@@ -4627,33 +4711,78 @@ window.ENTRIES = [
       <p>La existencia de percepción explica conductas que durante siglos fueron atribuidas a
       presciencia.</p>
       <h4 id="cap-33">Capítulo XXXIII — Camuflaje arcano</h4>
-      <p>Ocultarse de sentidos mágicos requiere más que cambiar apariencia. Algunas especies reducen
-      su firma, imitan el entorno o dispersan señales.</p>
-      <p>Este camuflaje puede evolucionar como respuesta a depredadores capaces de detectar energía o
-      a presas que utilizan percepción arcana.</p>
+      <p>Ocultarse de sentidos mágicos requiere más que cambiar apariencia visual. Algunas especies
+      reducen activamente su firma arcana, comprimiendo la energía que normalmente irradian hacia un
+      núcleo interno de difícil detección; otras imitan la firma ambiental circundante, y otras
+      dispersan señales falsas que saturan el órgano detector del observador en lugar de ocultar la
+      propia.</p>
+      <p>Este camuflaje puede evolucionar como respuesta a depredadores capaces de detectar energía a
+      distancia, pero también como respuesta a presas que utilizan percepción arcana para huir antes
+      del contacto. Los linces de niebla, por ejemplo, desarrollaron tejido dérmico capaz de absorber
+      y redistribuir su propia emisión mágica, una adaptación que sólo resulta comprensible al
+      observar que su presa principal, ciertos roedores nocturnos, detecta corrientes arcanas con más
+      precisión que luz o sonido.</p>
       <p>La carrera entre detección y ocultamiento produce adaptaciones comparables a camuflaje
-      visual y ecolocalización.</p>
+      visual y ecolocalización, con la diferencia de que el canal sensorial en disputa es arcano y no
+      físico. Cuando una especie detectora mejora su sensibilidad, la presión selectiva empuja a sus
+      presas a refinar el ocultamiento, y el proceso puede continuar durante suficientes generaciones
+      como para producir órganos especializados en ambos extremos de la relación, un patrón de
+      coevolución que Ecología Mágica documenta también fuera del contexto estrictamente
+      depredador-presa.</p>
       <h4 id="cap-34">Capítulo XXXIV — Defensas</h4>
-      <p>Caparazones, toxinas, espinas, regeneración, ilusiones, teletransporte breve y descarga
-      elemental pueden cumplir funciones defensivas.</p>
+      <p>Caparazones, toxinas, espinas, regeneración acelerada, ilusiones, teletransporte breve y
+      descarga elemental pueden cumplir funciones defensivas, a menudo combinadas en una misma
+      especie según la etapa de vida o el tipo de amenaza enfrentada: una defensa pasiva como el
+      caparazón puede bastar frente a depredadores pequeños, mientras que sólo una respuesta activa
+      resulta útil frente a un ataque coordinado.</p>
       <p>La espectacularidad de una defensa no indica que sea su función principal. Una descarga
-      puede haber evolucionado primero para caza y ser reutilizada defensivamente.</p>
-      <p>Reconstruir función evolutiva exige comparar especies cercanas y etapas de desarrollo.</p>
+      eléctrica puede haber evolucionado primero como herramienta de caza, para aturdir presas antes
+      de someterlas, y haber sido reutilizada después con fines defensivos cuando la misma especie
+      pasó a enfrentar depredadores propios. El basilisco menor ofrece un ejemplo instructivo: su
+      mirada petrificante, hoy interpretada casi universalmente como arma defensiva, muestra en el
+      registro de desarrollo juvenil un patrón de uso casi exclusivamente predatorio, y sólo aparece
+      como defensa reactiva en ejemplares adultos que ya no dependen tanto de la caza activa.</p>
+      <p>Reconstruir función evolutiva exige comparar especies cercanas y etapas de desarrollo, porque
+      una capacidad puede cambiar de propósito sin cambiar de forma. Ignorar este proceso lleva a
+      clasificar erróneamente estructuras homólogas bajo categorías funcionales distintas, y a
+      subestimar el peligro real de una defensa que en apariencia sólo se activa ante amenaza
+      directa.</p>
       <h4 id="cap-35">Capítulo XXXV — Veneno y toxicidad</h4>
-      <p>Los venenos de criaturas mágicas pueden contener sustancias químicas, componentes arcanos o
-      ambos.</p>
-      <p>Farmacología Arcana estudia dosis y tratamiento; Criptozoología examina cómo se produce, qué
-      costo impone al animal y en qué contexto se utiliza.</p>
-      <p>No toda secreción peligrosa es veneno defensivo; puede ser digestiva, comunicativa o
-      reproductiva.</p>
+      <p>Los venenos de criaturas mágicas pueden contener sustancias químicas convencionales,
+      componentes arcanos capaces de interferir directamente con estructuras mágicas del objetivo, o
+      una combinación de ambos que resulta más difícil de tratar porque cada componente responde a un
+      protocolo distinto.</p>
+      <p>Farmacología Arcana estudia dosis, síntomas y tratamiento; Criptozoología examina cómo se
+      produce el veneno, qué costo metabólico impone al animal que lo sintetiza y en qué contexto se
+      utiliza. La producción de veneno no resulta gratuita. Mantener glándulas activas y renovar
+      reservas consume energía que compite directamente con crecimiento o reproducción, razón por la
+      cual muchas especies regulan cuidadosamente cuánto veneno inyectan según el tamaño percibido de
+      la amenaza o la presa.</p>
+      <p>No toda secreción peligrosa es veneno defensivo. Puede ser digestiva, como ocurre en
+      depredadores que licuan tejido antes de ingerirlo; comunicativa, cuando marca territorio o
+      transmite información reproductiva a otros individuos de la especie; o directamente
+      reproductiva, en linajes donde la sustancia facilita la fijación de huevos o la supervivencia de
+      crías en un sustrato hostil. Confundir estas funciones con toxicidad defensiva ha llevado
+      históricamente a sobrestimar el peligro de especies cuya secreción cumple un propósito
+      completamente distinto.</p>
       <h4 id="cap-36">Capítulo XXXVI — Ciclo vital</h4>
       <p>Comprender una especie exige estudiar todas sus etapas. Adultos espectaculares suelen
-      recibir atención desproporcionada mientras huevos, larvas, juveniles y formas senescentes
-      permanecen mal documentados.</p>
-      <p>Sin esas etapas, es fácil clasificar por separado organismos que pertenecen al mismo
-      ciclo.</p>
+      recibir atención desproporcionada, mientras huevos, larvas, juveniles y formas senescentes
+      permanecen mal documentados en la literatura académica pese a resultar igual de necesarios para
+      reconstruir el ciclo completo.</p>
+      <p>Sin esas etapas, es fácil clasificar por separado organismos que pertenecen al mismo ciclo.
+      El caso más citado en los cursos introductorios de Dolbred es el de la wyrm de bruma y su etapa
+      larvaria, conocida durante casi un siglo bajo el nombre separado de serpiente de niebla, hasta
+      que criadores en cautiverio observaron la metamorfosis completa y confirmaron que se trataba de
+      una única especie con una fase juvenil acuática radicalmente distinta de la forma adulta
+      alada.</p>
       <p>La investigación de campo intenta seguir generaciones completas siempre que la longevidad lo
-      permite.</p>
+      permite, combinando observación prolongada de poblaciones silvestres con cría controlada, que
+      sirve para documentar etapas breves, ocultas o peligrosas de observar en libertad. En especies
+      de vida muy larga, donde seguir un ciclo completo puede exceder la carrera de un solo
+      investigador, los programas académicos de Dolbred mantienen registros institucionales
+      transmitidos entre generaciones de criptozoólogos, de modo que la continuidad del dato no
+      dependa de la vida de un único observador.</p>
       <h4 id="cap-37">Capítulo XXXVII — Longevidad, senescencia y muerte</h4>
       <p>La longevidad extrema altera reproducción, comportamiento y evolución cultural. Una especie
       que vive siglos puede reproducirse con poca frecuencia y acumular aprendizaje individual enorme,
@@ -4699,12 +4828,22 @@ window.ENTRIES = [
       indispensables antes de declarar un territorio protegido.</p>
       <h4 id="cap-41">Capítulo XLI — Extinción y pérdida de conocimiento</h4>
       <p>La extinción elimina más que una forma de vida. Puede borrar mecanismos biológicos que no
-      existen en ningún otro linaje.</p>
+      existen en ningún otro linaje conocido, estructuras u órganos que tardaron generaciones
+      incontables en desarrollarse y que ninguna reconstrucción posterior puede recuperar con certeza
+      a partir de restos incompletos.</p>
       <p>Algunas técnicas médicas y materiales fueron descubiertos estudiando especies hoy
-      desaparecidas.</p>
+      desaparecidas. El compuesto regenerativo utilizado en cirugía de campo durante gran parte del
+      siglo pasado deriva de secreciones de la salamandra de forja, extinta desde hace tres
+      generaciones tras la desaparición de las corrientes volcánicas de las que dependía su ciclo
+      reproductivo. Los sanadores actuales sintetizan una versión aproximada del compuesto, pero
+      ningún laboratorio ha logrado igualar su eficacia original, porque la fórmula exacta murió con
+      la última población conocida.</p>
       <p>La conservación científica no justifica explotación, pero demuestra que perder
-      biodiversidad también reduce la capacidad de comprender qué soluciones puede adoptar la
-      vida.</p>
+      biodiversidad también reduce la capacidad de comprender qué soluciones puede adoptar la vida
+      frente a un problema dado. Cada linaje extinto representa además una pérdida de referencia
+      comparativa, porque sin especies emparentadas contra las cuales contrastar sus rasgos, incluso
+      los fósiles mejor conservados de un linaje ya desaparecido resultan mucho más difíciles de
+      interpretar.</p>
       <h4 id="cap-42">Capítulo XLII — Fósiles y restos</h4>
       <p>Los restos de criaturas mágicas presentan dificultades especiales. Órganos arcanos pueden
       degradarse sin dejar estructuras mineralizadas claras, y afinidades residuales pueden alterar
@@ -4740,12 +4879,21 @@ window.ENTRIES = [
       <p>Dolbred considera este principio uno de los cambios más importantes de la disciplina
       moderna.</p>
       <h4 id="cap-46">Capítulo XLVI — El error del bestiario</h4>
-      <p>Los bestiarios históricos organizaron criaturas por utilidad para cazadores: dónde
-      encontrarlas, qué peligros presentan y qué partes pueden venderse.</p>
+      <p>Los bestiarios históricos organizaron criaturas por utilidad para cazadores, indicando dónde
+      encontrarlas, qué peligros presentan y qué partes pueden venderse. Esta lógica organizativa,
+      práctica para quien se dedica a la caza o el comercio, no distingue entre criaturas profundamente
+      emparentadas si sus usos difieren, ni evita agrupar especies sin relación alguna cuando comparten
+      el mismo tipo de peligro o el mismo mercado para sus partes.</p>
       <p>Estos textos son fuentes valiosas, pero su estructura responde a necesidades prácticas, no a
-      biología.</p>
+      biología. Un bestiario típico puede listar consecutivamente a un dragón adulto y a una serpiente
+      venenosa ordinaria bajo el epígrafe compartido de criaturas letales, mientras separa en secciones
+      distintas a un dragón juvenil y su propia forma adulta porque los riesgos y el valor comercial de
+      cada etapa difieren.</p>
       <p>La Criptozoología Académica los utiliza con cautela y evita reproducir categorías creadas
-      únicamente alrededor de combate.</p>
+      únicamente alrededor de combate o comercio. Un investigador que extrae datos de un bestiario debe
+      primero despojar la información de su marco original, identificando qué observaciones describen
+      anatomía o conducta verificable y cuáles reflejan únicamente valor de mercado o percepción de
+      peligro, antes de incorporar cualquier dato a un análisis taxonómico serio.</p>
       <h4 id="cap-47">Capítulo XLVII — Relación con otras disciplinas</h4>
       <p>La Criptozoología Académica trabaja junto a Anatomía Arcana, Ecología Mágica, Morfología
       Anómala, Patología Arcana, Farmacología Arcana y Mineralogía Mágica.</p>
