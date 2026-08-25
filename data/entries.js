@@ -7965,87 +7965,37 @@ window.ENTRIES = [
       Humanidades Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
-        <a href="#cap-1">I. El problema del conocimiento</a>
-        <a href="#cap-2">II. Creencia, verdad y justificación</a>
-        <a href="#cap-3">III. Información y conocimiento</a>
-        <a href="#cap-4">IV. La fuente</a>
-        <a href="#cap-5">V. La cadena epistémica</a>
-        <a href="#cap-6">VI. Revelación</a>
-        <a href="#cap-7">VII. Revelación verdadera y fuente falible</a>
-        <a href="#cap-8">VIII. Fuente veraz y mensaje mal interpretado</a>
-        <a href="#cap-9">IX. Fuente engañosa</a>
-        <a href="#cap-10">X. Verdad parcial</a>
-        <a href="#cap-11">XI. Omisión</a>
-        <a href="#cap-12">XII. Detección de pensamientos</a>
-        <a href="#cap-13">XIII. Pensamiento e intención</a>
-        <a href="#cap-14">XIV. Pensamiento y verdad</a>
-        <a href="#cap-15">XV. Memoria</a>
-        <a href="#cap-16">XVI. Recuerdos alterados</a>
-        <a href="#cap-17">XVII. Consulta a espíritus</a>
-        <a href="#cap-18">XVIII. Identidad del espíritu</a>
-        <a href="#cap-19">XIX. Perspectiva post mortem</a>
-        <a href="#cap-20">XX. Visiones</a>
-        <a href="#cap-21">XXI. Símbolo y referente</a>
-        <a href="#cap-22">XXII. Contradicción entre revelaciones</a>
-        <a href="#cap-23">XXIII. Contradicción real</a>
-        <a href="#cap-24">XXIV. Corroboración</a>
-        <a href="#cap-25">XXV. Convergencia de métodos</a>
-        <a href="#cap-26">XXVI. Evidencia negativa</a>
-        <a href="#cap-27">XXVII. Falsabilidad</a>
-        <a href="#cap-28">XXVIII. Replicación</a>
-        <a href="#cap-29">XXIX. Testimonio</a>
-        <a href="#cap-30">XXX. Autoridad</a>
-        <a href="#cap-31">XXXI. Tradición</a>
-        <a href="#cap-32">XXXII. Consenso</a>
-        <a href="#cap-33">XXXIII. Experiencia personal</a>
-        <a href="#cap-34">XXXIV. Certeza subjetiva</a>
-        <a href="#cap-35">XXXV. Grados de confianza</a>
-        <a href="#cap-36">XXXVI. Supuestos</a>
-        <a href="#cap-37">XXXVII. Carga de prueba</a>
-        <a href="#cap-38">XXXVIII. Explicaciones rivales</a>
-        <a href="#cap-39">XXXIX. Parsimonia</a>
-        <a href="#cap-40">XL. Actualización</a>
-        <a href="#cap-41">XLI. Sesgo de confirmación</a>
-        <a href="#cap-42">XLII. Sesgo de autoridad</a>
-        <a href="#cap-43">XLIII. Sesgo de supervivencia</a>
-        <a href="#cap-44">XLIV. Sesgo cultural</a>
-        <a href="#cap-45">XLV. Lenguaje</a>
-        <a href="#cap-46">XLVI. Semántica de entidades no humanas</a>
-        <a href="#cap-47">XLVII. Preguntas mal formuladas</a>
-        <a href="#cap-48">XLVIII. Preguntas sugestivas</a>
-        <a href="#cap-49">XLIX. Silencio</a>
-        <a href="#cap-50">L. Respuesta incomprensible</a>
-        <a href="#cap-51">LI. Prueba independiente</a>
-        <a href="#cap-52">LII. Calibración</a>
-        <a href="#cap-53">LIII. Fiabilidad</a>
-        <a href="#cap-54">LIV. Validez</a>
-        <a href="#cap-55">LV. Pensamientos como evidencia jurídica</a>
-        <a href="#cap-56">LVI. Revelación religiosa</a>
-        <a href="#cap-57">LVII. Revelación pactúrgica</a>
-        <a href="#cap-58">LVIII. Revelación teúrgica</a>
-        <a href="#cap-59">LIX. Adivinación como evidencia</a>
-        <a href="#cap-60">LX. Ilusión como problema epistemológico</a>
-        <a href="#cap-61">LXI. Encantamientos de detección</a>
-        <a href="#cap-62">LXII. Artefactos oraculares</a>
-        <a href="#cap-63">LXIII. Conocimiento de entidades poderosas</a>
-        <a href="#cap-64">LXIV. Omnisciencia</a>
-        <a href="#cap-65">LXV. Errores honestos</a>
-        <a href="#cap-66">LXVI. Mentira técnicamente verdadera</a>
-        <a href="#cap-67">LXVII. Información peligrosa</a>
-        <a href="#cap-68">LXVIII. Secreto y verificabilidad</a>
-        <a href="#cap-69">LXIX. Archivo</a>
-        <a href="#cap-70">LXX. Revisión por pares</a>
-        <a href="#cap-71">LXXI. Disenso</a>
-        <a href="#cap-72">LXXII. Conocimiento provisional</a>
-        <a href="#cap-73">LXXIII. Ignorancia reconocida</a>
-        <a href="#cap-74">LXXIV. La verdad útil</a>
-        <a href="#cap-75">LXXV. La explicación elegante</a>
-        <a href="#cap-76">LXXVI. La revelación perfecta</a>
-        <a href="#cap-77">LXXVII. Protocolo de evaluación</a>
-        <a href="#cap-78">LXXVIII. El problema de la interpretación correcta</a>
-        <a href="#cap-79">LXXIX. El problema de la certeza</a>
-        <a href="#cap-80">LXXX. Relación con otras disciplinas</a>
-        <a href="#cap-81">LXXXI. La pregunta final</a>
+        <a href="#cap-1">I. Conocimiento, creencia, justificación e información</a>
+        <a href="#cap-2">II. La fuente y la cadena epistémica</a>
+        <a href="#cap-3">III. La revelación y sus fuentes de error</a>
+        <a href="#cap-4">IV. Detección de pensamientos: intención y verdad</a>
+        <a href="#cap-5">V. Memoria y sus alteraciones</a>
+        <a href="#cap-6">VI. Consulta a espíritus: identidad y perspectiva post mortem</a>
+        <a href="#cap-7">VII. Visiones, símbolos y su interpretación</a>
+        <a href="#cap-8">VIII. Contradicción entre revelaciones</a>
+        <a href="#cap-9">IX. Corroboración, convergencia y evidencia negativa</a>
+        <a href="#cap-10">X. Falsabilidad y replicación</a>
+        <a href="#cap-11">XI. Testimonio, autoridad, tradición y consenso</a>
+        <a href="#cap-12">XII. Experiencia personal y certeza subjetiva</a>
+        <a href="#cap-13">XIII. Grados de confianza, supuestos y carga de prueba</a>
+        <a href="#cap-14">XIV. Explicaciones rivales, parsimonia y actualización</a>
+        <a href="#cap-15">XV. Sesgos en la investigación arcana</a>
+        <a href="#cap-16">XVI. Lenguaje y semántica de entidades no humanas</a>
+        <a href="#cap-17">XVII. Diseño de preguntas: formulación y sugestión</a>
+        <a href="#cap-18">XVIII. Silencio y respuestas incomprensibles</a>
+        <a href="#cap-19">XIX. Prueba independiente, calibración, fiabilidad y validez</a>
+        <a href="#cap-20">XX. Revelación religiosa, pactúrgica y teúrgica</a>
+        <a href="#cap-21">XXI. Adivinación e ilusión como problemas epistemológicos</a>
+        <a href="#cap-22">XXII. Encantamientos de detección y artefactos oraculares</a>
+        <a href="#cap-23">XXIII. Entidades poderosas y omnisciencia</a>
+        <a href="#cap-24">XXIV. Errores honestos y mentiras técnicamente verdaderas</a>
+        <a href="#cap-25">XXV. Información peligrosa y secreto</a>
+        <a href="#cap-26">XXVI. Archivo, revisión por pares y disenso</a>
+        <a href="#cap-27">XXVII. Conocimiento provisional e ignorancia reconocida</a>
+        <a href="#cap-28">XXVIII. La verdad útil y la explicación elegante</a>
+        <a href="#cap-29">XXIX. La revelación perfecta y el protocolo de evaluación</a>
+        <a href="#cap-30">XXX. El problema de la interpretación correcta y de la certeza</a>
+        <a href="#cap-31">XXXI. Relación con otras disciplinas y la pregunta final</a>
         <a href="#cap-conclusion">Conclusión</a>
         <a href="#cap-glosario">Glosario complementario</a>
       </nav>
@@ -8064,454 +8014,350 @@ window.ENTRIES = [
       <p>La Epistemología Arcana estudia precisamente ese problema. No pregunta sólo qué
       sabemos, sino por qué creemos saberlo, qué parte procede de la fuente, qué parte de la
       interpretación y qué nivel de confianza merece la conclusión.</p>
-      <h4 id="cap-1">Capítulo I — El problema del conocimiento</h4>
+      <h4 id="cap-1">Capítulo I — Conocimiento, creencia, justificación e información</h4>
       <p>Conocer no equivale simplemente a poseer una creencia correcta. Una afirmación puede
-      resultar verdadera por accidente.</p>
-      <p>La Epistemología Arcana estudia qué justificación existe para aceptar una afirmación
-      obtenida mediante medios mágicos.</p>
-      <p>Su interés recae en la relación entre fuente, método, interpretación, evidencia y
-      conclusión.</p>
-      <h4 id="cap-2">Capítulo II — Creencia, verdad y justificación</h4>
-      <p>Una creencia es una afirmación aceptada por un sujeto. Su verdad depende del mundo y no
-      de cuán convencido esté quien la sostiene.</p>
-      <p>La justificación describe las razones que hacen razonable aceptar una creencia.</p>
-      <p>En contextos mágicos, una fuente impresionante puede aumentar convicción sin aumentar
-      necesariamente justificación.</p>
-      <h4 id="cap-3">Capítulo III — Información y conocimiento</h4>
-      <p>Recibir información no garantiza comprenderla.</p>
-      <p>Una visión puede contener detalles verdaderos y producir una conclusión falsa si se
-      interpreta con categorías equivocadas.</p>
-      <p>El conocimiento exige evaluar contenido e interpretación por separado.</p>
-      <h4 id="cap-4">Capítulo IV — La fuente</h4>
-      <p>Toda revelación tiene una fuente inmediata y, a veces, una fuente última.</p>
-      <p>Una voz en trance puede proceder de una entidad, de memoria inconsciente, de resonancia
-      o de construcción psicológica.</p>
-      <p>Identificar quién o qué produjo el mensaje es parte del análisis, no una conclusión que
-      deba darse por supuesta.</p>
-      <h4 id="cap-5">Capítulo V — La cadena epistémica</h4>
-      <p>Entre el fenómeno y la afirmación final suele existir una cadena: acontecimiento,
-      acceso, traducción perceptiva, interpretación, recuerdo, formulación y transmisión.</p>
-      <p>Cada eslabón puede introducir error.</p>
-      <p>Cuanto más larga sea la cadena, mayor necesidad existe de registrar qué ocurrió en cada
-      etapa.</p>
-      <h4 id="cap-6">Capítulo VI — Revelación</h4>
-      <p>Se denomina revelación a información presentada al sujeto como proveniente de una
-      fuente externa o superior a sus medios ordinarios.</p>
-      <p>La categoría describe experiencia, no veracidad.</p>
-      <p>Una revelación puede ser auténtica respecto de su fuente y falsa respecto de su
-      contenido.</p>
-      <h4 id="cap-7">Capítulo VII — Revelación verdadera y fuente falible</h4>
-      <p>Una entidad puede transmitir exactamente lo que cree y aun así estar equivocada.</p>
-      <p>Espíritus, celestiales, demonios, ancestros y elementales poseen perspectivas limitadas
-      salvo evidencia en contrario.</p>
-      <p>La autoridad ontológica no equivale automáticamente a omnisciencia.</p>
-      <h4 id="cap-8">Capítulo VIII — Fuente veraz y mensaje mal interpretado</h4>
-      <p>Una revelación puede ser verdadera en origen y deformarse durante traducción.</p>
-      <p>Metáforas, símbolos, imágenes y conceptos ajenos a la cultura del receptor pueden
-      producir equivalencias imprecisas.</p>
-      <p>Filología Arcana y Semiótica Mágica son esenciales cuando la revelación no utiliza
-      lenguaje cotidiano.</p>
-      <h4 id="cap-9">Capítulo IX — Fuente engañosa</h4>
-      <p>Una entidad puede mentir deliberadamente, omitir información o responder de manera
-      técnicamente verdadera pero manipuladora.</p>
-      <p>La posibilidad de intención adversarial cambia el estándar de evidencia.</p>
-      <p>Las afirmaciones de una fuente interesada deben corroborarse de manera independiente
-      siempre que sea posible.</p>
-      <h4 id="cap-10">Capítulo X — Verdad parcial</h4>
-      <p>Una respuesta incompleta puede ser verdadera y conducir a una conclusión falsa.</p>
-      <p>Decir que una puerta está protegida sin mencionar que la protección sólo actúa de noche
-      puede inducir una decisión equivocada.</p>
-      <p>La epistemología evalúa relevancia además de literalidad.</p>
-      <h4 id="cap-11">Capítulo XI — Omisión</h4>
-      <p>No toda omisión es engaño. Una fuente puede ignorar qué parte de la información resulta
-      importante para el receptor.</p>
-      <p>Las preguntas condicionan qué información aparece.</p>
-      <p>Una consulta mal formulada puede recibir una respuesta correcta que no resuelva el
-      problema real.</p>
-      <h4 id="cap-12">Capítulo XII — Detección de pensamientos</h4>
-      <p>Detectar pensamientos no concede acceso directo a una mente completa.</p>
-      <p>El contenido accesible puede ser superficial, transitorio, simbólico o incompleto.</p>
-      <p>Pensar una posibilidad no significa creerla, desearla ni tener intención de
-      ejecutarla.</p>
-      <h4 id="cap-13">Capítulo XIII — Pensamiento e intención</h4>
-      <p>Una persona puede imaginar un crimen sin intención de cometerlo o recordar una acción
-      sin aprobarla.</p>
-      <p>Confundir contenido mental con intención produce errores jurídicos y clínicos graves.</p>
-      <p>Psicología Resonántica estudia estas distinciones con especial cuidado.</p>
-      <h4 id="cap-14">Capítulo XIV — Pensamiento y verdad</h4>
-      <p>Una mente puede contener creencias falsas.</p>
-      <p>Leer el pensamiento de un testigo permite conocer qué cree que ocurrió, no
-      necesariamente qué ocurrió.</p>
-      <p>El acceso mental reduce un nivel de incertidumbre y no todos.</p>
-      <h4 id="cap-15">Capítulo XV — Memoria</h4>
-      <p>La memoria reconstruye en vez de reproducir de forma perfecta.</p>
-      <p>Una lectura mágica de recuerdos puede acceder a una reconstrucción sincera y aún así
-      incorrecta.</p>
-      <p>Criminalística Arcana distingue memoria subjetiva de evidencia del acontecimiento.</p>
-      <h4 id="cap-16">Capítulo XVI — Recuerdos alterados</h4>
+      resultar verdadera por accidente, sin que quien la sostiene disponga de razones adecuadas
+      para sostenerla. La Epistemología Arcana estudia qué justificación existe para aceptar una
+      afirmación obtenida mediante medios mágicos; su interés recae en la relación entre fuente,
+      método, interpretación, evidencia y conclusión.</p>
+      <p>Una creencia es una afirmación aceptada por un sujeto, cuya verdad depende del mundo y
+      no de cuán convencido esté quien la sostiene. La justificación describe las razones que
+      hacen razonable aceptar esa creencia, y en contextos mágicos una fuente impresionante puede
+      aumentar la convicción sin aumentar la justificación.</p>
+      <p>Recibir información tampoco garantiza comprenderla. Una visión puede contener detalles
+      verdaderos y producir una conclusión falsa si se interpreta con categorías equivocadas, de
+      modo que el conocimiento exige evaluar contenido e interpretación por separado.</p>
+      <h4 id="cap-2">Capítulo II — La fuente y la cadena epistémica</h4>
+      <p>Toda revelación tiene una fuente inmediata y, en ocasiones, una fuente última. Una voz
+      en trance puede proceder de una entidad, de memoria inconsciente, de resonancia o de
+      construcción psicológica, y determinar quién o qué produjo el mensaje forma parte del
+      análisis en vez de ser una conclusión que se dé por supuesta.</p>
+      <p>Entre el fenómeno y la afirmación final suele existir una cadena compuesta por
+      acontecimiento, acceso, traducción perceptiva, interpretación, recuerdo, formulación y
+      transmisión. Cada eslabón puede introducir un error propio, y cuanto más larga sea la
+      cadena mayor es la necesidad de registrar qué ocurrió en cada etapa.</p>
+      <h4 id="cap-3">Capítulo III — La revelación y sus fuentes de error</h4>
+      <p>Se denomina revelación a la información presentada al sujeto como proveniente de una
+      fuente externa o superior a sus medios ordinarios. La categoría describe una experiencia,
+      no una veracidad garantizada, y una revelación puede ser auténtica respecto de su fuente y
+      falsa respecto de su contenido.</p>
+      <p>Un primer tipo de error surge de la fuente misma. Una entidad puede transmitir
+      exactamente lo que cree y aun así estar equivocada, porque espíritus, celestiales,
+      demonios, ancestros y elementales poseen perspectivas limitadas salvo evidencia en
+      contrario. La autoridad ontológica de una fuente no equivale automáticamente a
+      omnisciencia.</p>
+      <p>Un segundo tipo ocurre cuando la fuente es veraz pero el mensaje se malinterpreta. Una
+      revelación puede ser verdadera en origen y deformarse durante la traducción, ya que
+      metáforas, símbolos, imágenes y conceptos ajenos a la cultura del receptor producen
+      equivalencias imprecisas. Filología Arcana y Semiótica Mágica resultan esenciales cuando la
+      revelación no utiliza lenguaje cotidiano.</p>
+      <p>Un tercer tipo procede de la intención de la fuente. Una entidad puede mentir
+      deliberadamente, omitir información o responder de manera técnicamente verdadera pero
+      manipuladora, y la posibilidad de intención adversarial cambia el estándar de evidencia
+      exigido. Las afirmaciones de una fuente interesada deben corroborarse de manera
+      independiente siempre que sea posible.</p>
+      <p>Un cuarto tipo consiste en la verdad parcial, donde una respuesta incompleta puede ser
+      verdadera y aun así conducir a una conclusión falsa. Decir que una puerta está protegida
+      sin mencionar que la protección sólo actúa de noche puede inducir una decisión equivocada,
+      de modo que la disciplina evalúa relevancia además de literalidad.</p>
+      <p>Un quinto factor es la omisión, que no siempre equivale a engaño. Una fuente puede
+      simplemente ignorar qué parte de la información resulta importante para el receptor, y las
+      preguntas formuladas condicionan qué información llega a aparecer. Una consulta mal
+      planteada puede recibir una respuesta correcta que, aun así, no resuelva el problema
+      real.</p>
+      <h4 id="cap-4">Capítulo IV — Detección de pensamientos: intención y verdad</h4>
+      <p>Detectar pensamientos no concede acceso directo a una mente completa. El contenido
+      accesible puede ser superficial, transitorio, simbólico o incompleto, y pensar una
+      posibilidad no significa creerla, desearla ni tener intención de ejecutarla.</p>
+      <p>Esta distinción resulta crítica al evaluar intención. Una persona puede imaginar un
+      crimen sin intención de cometerlo, o recordar una acción sin aprobarla, y confundir
+      contenido mental con intención produce errores jurídicos y clínicos graves. Psicología
+      Resonántica estudia estas distinciones con especial cuidado.</p>
+      <p>El acceso mental tampoco garantiza verdad, porque una mente puede contener creencias
+      falsas. Leer el pensamiento de un testigo permite conocer qué cree que ocurrió, no
+      necesariamente qué ocurrió en realidad. El acceso mental reduce así un nivel de
+      incertidumbre, pero no todos los niveles posibles.</p>
+      <h4 id="cap-5">Capítulo V — Memoria y sus alteraciones</h4>
+      <p>La memoria reconstruye en vez de reproducir de forma perfecta. Una lectura mágica de
+      recuerdos puede acceder a una reconstrucción sincera y aun así incorrecta, por lo que
+      Criminalística Arcana distingue memoria subjetiva de evidencia del acontecimiento.</p>
       <p>Ilusiones, trauma, encantamientos, maldiciones y manipulación psíquica pueden alterar
-      memoria.</p>
-      <p>Una técnica que extrae recuerdos con precisión puede reproducir también una
-      falsificación ya integrada.</p>
-      <p>La fidelidad del método no garantiza fidelidad histórica del contenido.</p>
-      <h4 id="cap-17">Capítulo XVII — Consulta a espíritus</h4>
-      <p>Los muertos y espíritus pueden aportar información inaccesible a los vivos.</p>
-      <p>Sin embargo, su memoria, perspectiva y capacidad de comunicación pueden estar
-      limitadas.</p>
-      <p>Tanatología y Pneumatología ayudan a determinar si la entidad consultada conserva
-      continuidad con la persona que afirma ser.</p>
-      <h4 id="cap-18">Capítulo XVIII — Identidad del espíritu</h4>
-      <p>Antes de aceptar testimonio de una entidad debe evaluarse si es realmente quien
-      afirma.</p>
-      <p>Nombres, recuerdos privados, firmas y vínculos pueden servir como pruebas, pero algunos
-      pueden ser imitados.</p>
-      <p>La verificación debe combinar varios criterios independientes.</p>
-      <h4 id="cap-19">Capítulo XIX — Perspectiva post mortem</h4>
-      <p>Morir no convierte automáticamente a una persona en observador privilegiado.</p>
-      <p>Un espíritu puede conservar prejuicios, desconocimiento o memoria fragmentaria.</p>
-      <p>La muerte modifica la condición del testigo; no lo transforma en autoridad
-      universal.</p>
-      <h4 id="cap-20">Capítulo XX — Visiones</h4>
+      además esa memoria de partida. Una técnica que extrae recuerdos con precisión puede
+      reproducir también una falsificación ya integrada en la mente del sujeto, de modo que la
+      fidelidad del método no garantiza fidelidad histórica del contenido.</p>
+      <h4 id="cap-6">Capítulo VI — Consulta a espíritus: identidad y perspectiva post mortem</h4>
+      <p>Los muertos y espíritus pueden aportar información inaccesible a los vivos, aunque su
+      memoria, perspectiva y capacidad de comunicación pueden estar limitadas. Tanatología y
+      Pneumatología ayudan a determinar si la entidad consultada conserva continuidad con la
+      persona que afirma ser.</p>
+      <p>Antes de aceptar el testimonio de una entidad debe evaluarse si es realmente quien
+      afirma ser. Nombres, recuerdos privados, firmas y vínculos pueden servir como pruebas, pero
+      algunos de estos elementos pueden ser imitados, y la verificación debe combinar varios
+      criterios independientes.</p>
+      <p>Morir tampoco convierte automáticamente a una persona en observador privilegiado. Un
+      espíritu puede conservar prejuicios, desconocimiento o memoria fragmentaria. La muerte
+      modifica la condición del testigo, pero no lo transforma en autoridad universal.</p>
+      <h4 id="cap-7">Capítulo VII — Visiones, símbolos y su interpretación</h4>
       <p>Las visiones pueden presentar información en formatos simbólicos, sensoriales o
-      narrativos.</p>
-      <p>El contenido bruto debe registrarse antes de interpretarlo.</p>
-      <p>Adivinación y Epistemología Arcana comparten aquí la necesidad de separar percepción de
-      conclusión.</p>
-      <h4 id="cap-21">Capítulo XXI — Símbolo y referente</h4>
-      <p>Un cuervo en una visión puede representar muerte, viaje, una persona concreta o
-      simplemente un cuervo.</p>
-      <p>El símbolo no posee significado universal fuera de contexto.</p>
-      <p>Interpretar requiere conocer el sistema de correspondencias relevante y mantener
-      abiertas varias hipótesis.</p>
-      <h4 id="cap-22">Capítulo XXII — Contradicción entre revelaciones</h4>
-      <p>Dos revelaciones auténticas pueden parecer incompatibles.</p>
-      <p>Pueden referirse a tiempos, escalas, condiciones o perspectivas distintas.</p>
-      <p>El conflicto debe analizarse antes de decidir que una de las fuentes es falsa.</p>
-      <h4 id="cap-23">Capítulo XXIII — Contradicción real</h4>
-      <p>Si dos afirmaciones no pueden ser verdaderas bajo ninguna interpretación razonable, al
-      menos una falla en fuente, transmisión o interpretación.</p>
-      <p>El prestigio de la fuente no resuelve lógicamente la contradicción.</p>
-      <p>La disciplina exige localizar qué cadena epistémica contiene el error.</p>
-      <h4 id="cap-24">Capítulo XXIV — Corroboración</h4>
-      <p>La corroboración aumenta confianza cuando fuentes independientes convergen.</p>
-      <p>La independencia importa más que la cantidad.</p>
-      <p>Diez sacerdotes que repiten la misma revelación transmitida por un único oráculo no
-      constituyen diez fuentes independientes.</p>
-      <h4 id="cap-25">Capítulo XXV — Convergencia de métodos</h4>
+      narrativos. El contenido bruto debe registrarse antes de interpretarlo, y Adivinación y
+      Epistemología Arcana comparten aquí la necesidad de separar percepción de conclusión.</p>
+      <p>Esa separación resulta indispensable al leer símbolos. Un cuervo en una visión puede
+      representar muerte, viaje, una persona concreta o simplemente un cuervo, porque el símbolo
+      no posee significado universal fuera de contexto. Interpretar exige conocer el sistema de
+      correspondencias relevante y mantener abiertas varias hipótesis.</p>
+      <h4 id="cap-8">Capítulo VIII — Contradicción entre revelaciones</h4>
+      <p>Dos revelaciones auténticas pueden parecer incompatibles sin serlo realmente, porque
+      pueden referirse a tiempos, escalas, condiciones o perspectivas distintas. El conflicto
+      debe analizarse antes de decidir que una de las fuentes es falsa.</p>
+      <p>Cuando, en cambio, dos afirmaciones no pueden ser verdaderas bajo ninguna interpretación
+      razonable, al menos una falla en fuente, transmisión o interpretación. El prestigio de la
+      fuente no resuelve lógicamente la contradicción, y la disciplina exige localizar en qué
+      eslabón de la cadena epistémica se encuentra el error.</p>
+      <h4 id="cap-9">Capítulo IX — Corroboración, convergencia y evidencia negativa</h4>
+      <p>La corroboración aumenta la confianza cuando fuentes independientes convergen, y la
+      independencia importa más que la cantidad. Diez sacerdotes que repiten la misma revelación
+      transmitida por un único oráculo no constituyen diez fuentes independientes.</p>
       <p>Una visión, un análisis material y un testimonio espiritual que apuntan al mismo hecho
-      ofrecen evidencia más fuerte si sus mecanismos no dependen entre sí.</p>
-      <p>La convergencia interdisciplinaria es uno de los estándares más altos de Dolbred.</p>
-      <p>Sin embargo, todos los métodos pueden compartir un supuesto falso común.</p>
-      <h4 id="cap-26">Capítulo XXVI — Evidencia negativa</h4>
-      <p>No encontrar una señal esperada puede reducir plausibilidad de una hipótesis.</p>
-      <p>La ausencia sólo es informativa si el método habría detectado la señal de estar
-      presente.</p>
-      <p>No detectar una maldición con una técnica inadecuada no demuestra que no exista.</p>
-      <h4 id="cap-27">Capítulo XXVII — Falsabilidad</h4>
+      ofrecen evidencia más fuerte si sus mecanismos no dependen entre sí, y esta convergencia
+      interdisciplinaria es uno de los estándares más altos de Dolbred. Aun así, todos los
+      métodos involucrados pueden compartir un supuesto falso común.</p>
+      <p>No encontrar una señal esperada puede reducir la plausibilidad de una hipótesis, pero la
+      ausencia sólo resulta informativa si el método habría detectado la señal de estar
+      presente. No detectar una maldición con una técnica inadecuada no demuestra que la
+      maldición no exista.</p>
+      <h4 id="cap-10">Capítulo X — Falsabilidad y replicación</h4>
       <p>Una afirmación científica debe admitir condiciones bajo las cuales podría considerarse
-      incorrecta.</p>
-      <p>Si toda observación se interpreta como confirmación, no existe aprendizaje posible.</p>
-      <p>La magia no exime a una teoría de este criterio.</p>
-      <h4 id="cap-28">Capítulo XXVIII — Replicación</h4>
-      <p>Un fenómeno repetible bajo condiciones comparables ofrece mayor confianza que una
-      experiencia única.</p>
-      <p>Algunas revelaciones no son replicables, pero sus afirmaciones concretas sí pueden
-      contrastarse.</p>
-      <p>La imposibilidad de repetir un método obliga a depender más de corroboración
-      externa.</p>
-      <h4 id="cap-29">Capítulo XXIX — Testimonio</h4>
-      <p>El testimonio sigue siendo evidencia incluso cuando no hay magia.</p>
-      <p>Credibilidad depende de oportunidad de observación, competencia, memoria, incentivos y
-      consistencia.</p>
-      <p>Las fuentes sobrenaturales deben evaluarse con criterios equivalentes, adaptados a sus
-      capacidades.</p>
-      <h4 id="cap-30">Capítulo XXX — Autoridad</h4>
-      <p>Una autoridad puede merecer confianza por experiencia demostrada.</p>
-      <p>Sin embargo, la autoridad no convierte una afirmación en verdadera.</p>
-      <p>El argumento académico debe poder distinguir qué parte depende de evidencia y qué parte
-      de reputación.</p>
-      <h4 id="cap-31">Capítulo XXXI — Tradición</h4>
-      <p>Una práctica antigua puede conservar observaciones valiosas y errores igualmente
-      antiguos.</p>
-      <p>La persistencia cultural demuestra estabilidad social, no necesariamente precisión
-      factual.</p>
-      <p>Historia de las Ciencias Mágicas ayuda a rastrear cómo una idea llegó a considerarse
-      conocimiento.</p>
-      <h4 id="cap-32">Capítulo XXXII — Consenso</h4>
-      <p>El consenso entre especialistas aumenta racionalmente la confianza cuando surge de
-      evaluación independiente de evidencia.</p>
-      <p>Puede fallar por sesgos compartidos, presión institucional o información incompleta.</p>
-      <p>La epistemología estudia cuándo el consenso es evidencia y cuándo sólo describe una
-      comunidad.</p>
-      <h4 id="cap-33">Capítulo XXXIII — Experiencia personal</h4>
+      incorrecta. Si toda observación se interpreta como confirmación, no existe aprendizaje
+      posible, y la magia no exime a ninguna teoría de este criterio.</p>
+      <p>La replicación aporta un estándar complementario. Un fenómeno repetible bajo condiciones
+      comparables ofrece mayor confianza que una experiencia única. Algunas revelaciones no son
+      replicables, pero sus afirmaciones concretas sí pueden contrastarse, y la imposibilidad de
+      repetir un método obliga a depender más de la corroboración externa.</p>
+      <h4 id="cap-11">Capítulo XI — Testimonio, autoridad, tradición y consenso</h4>
+      <p>El testimonio sigue siendo evidencia incluso cuando no hay magia de por medio. Su
+      credibilidad depende de la oportunidad de observación, la competencia, la memoria, los
+      incentivos y la consistencia del testigo, y las fuentes sobrenaturales deben evaluarse con
+      criterios equivalentes, adaptados a sus capacidades.</p>
+      <p>Una autoridad puede merecer confianza por experiencia demostrada, pero la autoridad no
+      convierte por sí sola una afirmación en verdadera. El argumento académico debe poder
+      distinguir qué parte de su fuerza depende de evidencia y qué parte de reputación.</p>
+      <p>Una práctica antigua puede conservar observaciones valiosas junto a errores igualmente
+      antiguos, porque la persistencia cultural demuestra estabilidad social y no necesariamente
+      precisión factual. Historia de las Ciencias Mágicas ayuda a rastrear cómo una idea llegó a
+      considerarse conocimiento.</p>
+      <p>El consenso entre especialistas aumenta racionalmente la confianza cuando surge de una
+      evaluación independiente de la evidencia, aunque puede fallar por sesgos compartidos,
+      presión institucional o información incompleta. La epistemología estudia cuándo el
+      consenso constituye evidencia y cuándo sólo describe una comunidad.</p>
+      <h4 id="cap-12">Capítulo XII — Experiencia personal y certeza subjetiva</h4>
       <p>Una experiencia intensa puede ser evidencia poderosa para quien la vive y débil para
-      terceros.</p>
-      <p>El problema no es negar la experiencia, sino determinar qué conclusiones permite.</p>
-      <p>Ilusionismo Teórico muestra cuán convincente puede ser una percepción construida.</p>
-      <h4 id="cap-34">Capítulo XXXIV — Certeza subjetiva</h4>
-      <p>La sensación de certeza no guarda una relación perfecta con la verdad.</p>
-      <p>Trance, revelación, euforia, miedo o resonancia pueden aumentar convicción.</p>
-      <p>El método académico registra certeza como dato psicológico, no como medida directa de
-      exactitud.</p>
-      <h4 id="cap-35">Capítulo XXXV — Grados de confianza</h4>
-      <p>No todas las conclusiones deben clasificarse como verdaderas o falsas de inmediato.</p>
-      <p>Dolbred utiliza grados de confianza: posible, plausible, probable, fuertemente
-      respaldado y excepcionalmente bien establecido.</p>
-      <p>El lenguaje probabilístico permite representar incertidumbre sin convertirla en
-      ignorancia total.</p>
-      <h4 id="cap-36">Capítulo XXXVI — Supuestos</h4>
-      <p>Toda interpretación depende de supuestos, muchos de ellos implícitos.</p>
-      <p>Una visión de una corona puede interpretarse como monarquía sólo si se asume una
-      convención cultural.</p>
-      <p>Hacer explícitos los supuestos permite comprobar cuáles son responsables de una
-      conclusión.</p>
-      <h4 id="cap-37">Capítulo XXXVII — Carga de prueba</h4>
-      <p>Las afirmaciones extraordinarias no son falsas por ser extraordinarias, pero requieren
-      evidencia proporcional a cuánto contradicen modelos bien respaldados.</p>
-      <p>Una observación única de resurrección exige mayor control que una observación de
-      fiebre.</p>
-      <p>El estándar depende de consecuencias y alternativas plausibles.</p>
-      <h4 id="cap-38">Capítulo XXXVIII — Explicaciones rivales</h4>
-      <p>Un mismo fenómeno puede admitir varias explicaciones.</p>
-      <p>Una voz puede ser espíritu, ilusión, recuerdo o entidad impostora.</p>
-      <p>La práctica correcta compara qué explicación predice mejor la totalidad de la
-      evidencia.</p>
-      <h4 id="cap-39">Capítulo XXXIX — Parsimonia</h4>
-      <p>Cuando dos explicaciones cubren igual evidencia, suele preferirse la que introduce
-      menos supuestos no demostrados.</p>
-      <p>Este principio no significa elegir siempre la explicación menos mágica.</p>
-      <p>En un mundo donde la magia está demostrada, ignorarla por principio sería tan poco
-      parsimonioso como invocarla sin necesidad.</p>
-      <h4 id="cap-40">Capítulo XL — Actualización</h4>
-      <p>Las creencias deben cambiar cuando aparece nueva evidencia.</p>
-      <p>Una teoría inicialmente razonable puede volverse insostenible.</p>
-      <p>La disposición a revisar conclusiones distingue investigación de doctrina.</p>
-      <h4 id="cap-41">Capítulo XLI — Sesgo de confirmación</h4>
-      <p>Los investigadores tienden a buscar y recordar aquello que confirma expectativas.</p>
-      <p>Las revelaciones ambiguas amplifican este problema.</p>
-      <p>Protocolos ciegos y criterios previos ayudan a reducirlo.</p>
-      <h4 id="cap-42">Capítulo XLII — Sesgo de autoridad</h4>
-      <p>Una afirmación atribuida a una entidad poderosa puede aceptarse con menos examen.</p>
-      <p>Esto es especialmente común en contextos religiosos, pactúrgicos y políticos.</p>
-      <p>La Epistemología Arcana insiste en separar poder de competencia epistémica.</p>
-      <h4 id="cap-43">Capítulo XLIII — Sesgo de supervivencia</h4>
-      <p>Los casos exitosos se documentan y los fallos pueden olvidarse.</p>
-      <p>Una escuela de adivinación puede parecer extraordinariamente precisa si sólo conserva
-      profecías cumplidas.</p>
-      <p>El archivo de resultados negativos es fundamental.</p>
-      <h4 id="cap-44">Capítulo XLIV — Sesgo cultural</h4>
-      <p>Las categorías del observador influyen en cómo organiza una revelación.</p>
-      <p>Una sociedad sin concepto de electricidad puede describir una descarga mediante
-      metáforas de fuego o ira.</p>
-      <p>La interpretación histórica debe reconstruir el vocabulario disponible al receptor.</p>
-      <h4 id="cap-45">Capítulo XLV — Lenguaje</h4>
+      terceros. El problema no es negar la experiencia, sino determinar qué conclusiones permite,
+      y Ilusionismo Teórico muestra cuán convincente puede llegar a ser una percepción
+      construida.</p>
+      <p>Esa fuerza subjetiva no debe confundirse con verdad objetiva. La sensación de certeza no
+      guarda una relación perfecta con la verdad, y trance, revelación, euforia, miedo o
+      resonancia pueden aumentar la convicción sin aumentar la exactitud. El método académico
+      registra la certeza como dato psicológico, no como medida directa de precisión.</p>
+      <h4 id="cap-13">Capítulo XIII — Grados de confianza, supuestos y carga de prueba</h4>
+      <p>No todas las conclusiones deben clasificarse de inmediato como verdaderas o falsas.
+      Dolbred utiliza grados de confianza que van de posible a plausible, probable, fuertemente
+      respaldado y excepcionalmente bien establecido, de modo que el lenguaje probabilístico
+      permite representar la incertidumbre sin convertirla en ignorancia total.</p>
+      <p>Toda interpretación depende además de supuestos, muchos de ellos implícitos. Una visión
+      de una corona puede interpretarse como monarquía sólo si se asume una convención cultural
+      determinada, y hacer explícitos los supuestos permite comprobar cuáles de ellos son
+      responsables de una conclusión.</p>
+      <p>Las afirmaciones extraordinarias no son falsas por el mero hecho de ser extraordinarias,
+      pero requieren evidencia proporcional a cuánto contradicen los modelos bien respaldados.
+      Una observación única de resurrección exige mayor control que una observación de fiebre,
+      porque el estándar exigido depende de las consecuencias y de las alternativas plausibles.</p>
+      <h4 id="cap-14">Capítulo XIV — Explicaciones rivales, parsimonia y actualización</h4>
+      <p>Un mismo fenómeno puede admitir varias explicaciones. Una voz puede ser espíritu,
+      ilusión, recuerdo o entidad impostora, y la práctica correcta compara qué explicación
+      predice mejor la totalidad de la evidencia.</p>
+      <p>Cuando dos explicaciones cubren igual cantidad de evidencia, suele preferirse la que
+      introduce menos supuestos no demostrados. Este principio no significa elegir siempre la
+      explicación menos mágica. En un mundo donde la magia está demostrada, ignorarla por
+      principio sería tan poco parsimonioso como invocarla sin necesidad.</p>
+      <p>Las creencias deben cambiar, además, cuando aparece nueva evidencia. Una teoría
+      inicialmente razonable puede volverse insostenible, y la disposición a revisar conclusiones
+      es lo que distingue la investigación de la doctrina.</p>
+      <h4 id="cap-15">Capítulo XV — Sesgos en la investigación arcana</h4>
+      <p>El sesgo de confirmación lleva a los investigadores a buscar y recordar aquello que
+      confirma sus expectativas. Las revelaciones ambiguas amplifican este problema, y protocolos
+      ciegos junto con criterios establecidos de antemano ayudan a reducirlo.</p>
+      <p>El sesgo de autoridad hace que una afirmación atribuida a una entidad poderosa pueda
+      aceptarse con menos examen, algo especialmente común en contextos religiosos, pactúrgicos y
+      políticos. La Epistemología Arcana insiste en separar el poder de una fuente de su
+      competencia epistémica.</p>
+      <p>El sesgo de supervivencia surge porque los casos exitosos se documentan mientras los
+      fallos pueden olvidarse. Una escuela de adivinación puede parecer extraordinariamente
+      precisa si sólo conserva profecías cumplidas, lo que hace fundamental el archivo de
+      resultados negativos.</p>
+      <p>El sesgo cultural, por su parte, hace que las categorías del observador influyan en cómo
+      organiza una revelación. Una sociedad sin concepto de electricidad puede describir una
+      descarga mediante metáforas de fuego o ira, de modo que la interpretación histórica debe
+      reconstruir el vocabulario disponible al receptor.</p>
+      <h4 id="cap-16">Capítulo XVI — Lenguaje y semántica de entidades no humanas</h4>
       <p>Las palabras pueden introducir ambigüedad incluso cuando la experiencia original era
-      precisa.</p>
-      <p>Traducir una revelación entre idiomas añade otra capa interpretativa.</p>
-      <p>Filología Arcana analiza pérdida, cambio y equivalencias semánticas.</p>
-      <h4 id="cap-46">Capítulo XLVI — Semántica de entidades no humanas</h4>
-      <p>Una entidad puede utilizar conceptos que no coinciden exactamente con categorías
-      humanoides.</p>
-      <p>Palabras como vida, muerte, propiedad o tiempo pueden cubrir relaciones distintas.</p>
-      <p>La traducción literal puede ser más engañosa que una paráfrasis cuidadosamente
+      precisa. Traducir una revelación entre idiomas añade otra capa interpretativa, y Filología
+      Arcana analiza la pérdida, el cambio y las equivalencias semánticas resultantes.</p>
+      <p>El problema se agrava cuando la fuente no es humana. Una entidad puede utilizar
+      conceptos que no coinciden exactamente con categorías humanoides, y palabras como vida,
+      muerte, propiedad o tiempo pueden cubrir relaciones distintas de las habituales. La
+      traducción literal puede resultar más engañosa que una paráfrasis cuidadosamente
       documentada.</p>
-      <h4 id="cap-47">Capítulo XLVII — Preguntas mal formuladas</h4>
-      <p>Una respuesta correcta a una pregunta equivocada no resuelve el problema.</p>
-      <p>Preguntas binarias pueden forzar simplificaciones que la fuente no puede expresar
-      adecuadamente.</p>
-      <p>El diseño de consulta forma parte del método epistémico.</p>
-      <h4 id="cap-48">Capítulo XLVIII — Preguntas sugestivas</h4>
-      <p>Una pregunta puede contener una hipótesis y empujar al intérprete hacia ella.</p>
-      <p>Preguntar qué demonio causó el fenómeno presupone ya una causa demoníaca.</p>
-      <p>Las consultas académicas prefieren formulaciones que permitan respuestas incompatibles
-      con la hipótesis inicial.</p>
-      <h4 id="cap-49">Capítulo XLIX — Silencio</h4>
-      <p>La ausencia de respuesta puede tener muchas causas: ignorancia, negativa, bloqueo, falta
-      de referencia o imposibilidad del método.</p>
-      <p>Interpretar silencio como confirmación es un error frecuente.</p>
-      <p>El método debe definir qué resultados cuentan como indeterminados.</p>
-      <h4 id="cap-50">Capítulo L — Respuesta incomprensible</h4>
-      <p>Una respuesta puede exceder capacidad conceptual del receptor.</p>
-      <p>Reducirla a una interpretación familiar puede destruir precisamente la información
-      novedosa.</p>
-      <p>En estos casos conviene preservar el registro bruto aunque no pueda comprenderse
+      <h4 id="cap-17">Capítulo XVII — Diseño de preguntas: formulación y sugestión</h4>
+      <p>Una respuesta correcta a una pregunta equivocada no resuelve el problema real. Preguntas
+      binarias pueden forzar simplificaciones que la fuente no puede expresar adecuadamente, por
+      lo que el diseño de la consulta forma parte del método epistémico.</p>
+      <p>Una pregunta puede además contener una hipótesis y empujar al intérprete hacia ella.
+      Preguntar qué demonio causó el fenómeno presupone ya una causa demoníaca, y por ello las
+      consultas académicas prefieren formulaciones que permitan respuestas incompatibles con la
+      hipótesis inicial.</p>
+      <h4 id="cap-18">Capítulo XVIII — Silencio y respuestas incomprensibles</h4>
+      <p>La ausencia de respuesta puede deberse a muchas causas, entre ellas ignorancia,
+      negativa, bloqueo, falta de referencia o imposibilidad del método. Interpretar el silencio
+      como confirmación es un error frecuente, y el método debe definir de antemano qué
+      resultados cuentan como indeterminados.</p>
+      <p>Una respuesta también puede exceder la capacidad conceptual del receptor. Reducirla a
+      una interpretación familiar puede destruir la información novedosa que contenía, de modo
+      que en estos casos conviene preservar el registro bruto aunque no pueda comprenderse
       todavía.</p>
-      <h4 id="cap-51">Capítulo LI — Prueba independiente</h4>
+      <h4 id="cap-19">Capítulo XIX — Prueba independiente, calibración, fiabilidad y validez</h4>
       <p>Siempre que sea posible, una afirmación revelada debe contrastarse con evidencia
-      obtenida por otro método.</p>
-      <p>Si una entidad afirma que un pozo está contaminado, el agua puede analizarse.</p>
-      <p>El propósito no es desconfiar por principio, sino calibrar la fiabilidad de la
-      fuente.</p>
-      <h4 id="cap-52">Capítulo LII — Calibración</h4>
+      obtenida por otro método. Si una entidad afirma que un pozo está contaminado, el agua puede
+      analizarse directamente; el propósito no es desconfiar por principio, sino calibrar la
+      fiabilidad de la fuente.</p>
       <p>Una fuente calibrada es aquella cuya tasa de aciertos, errores y condiciones de fallo se
-      conoce aproximadamente.</p>
-      <p>Un oráculo que acierta siete de cada diez consultas puede ser útil si sabemos cuándo
-      confiar más o menos.</p>
-      <p>La ilusión de infalibilidad impide una calibración honesta.</p>
-      <h4 id="cap-53">Capítulo LIII — Fiabilidad</h4>
-      <p>La fiabilidad describe cuán consistentemente un método produce información correcta
-      bajo ciertas condiciones.</p>
-      <p>No implica comprensión del mecanismo.</p>
-      <p>Una técnica puede ser fiable antes de que exista una teoría satisfactoria de por qué
-      funciona.</p>
-      <h4 id="cap-54">Capítulo LIV — Validez</h4>
-      <p>Un método puede ser fiable y medir algo distinto de lo que se cree.</p>
-      <p>Una prueba que detecta estrés puede correlacionar con mentira sin detectar mentira
-      directamente.</p>
-      <p>Validar implica demostrar qué propiedad responde realmente al método.</p>
-      <h4 id="cap-55">Capítulo LV — Pensamientos como evidencia jurídica</h4>
-      <p>El acceso mental plantea problemas particulares en Derecho Arcano.</p>
-      <p>Una intención pasajera no equivale a acto, y una memoria no equivale automáticamente a
-      hecho.</p>
-      <p>El uso jurídico exige estándares superiores de interpretación y corroboración.</p>
-      <h4 id="cap-56">Capítulo LVI — Revelación religiosa</h4>
-      <p>Una tradición puede considerar determinadas revelaciones como autoridad doctrinal.</p>
-      <p>La Epistemología Arcana no decide qué debe creer una religión.</p>
-      <p>Estudia qué afirmaciones empíricas pueden contrastarse y qué parte depende de
-      compromisos teológicos.</p>
-      <h4 id="cap-57">Capítulo LVII — Revelación pactúrgica</h4>
-      <p>Una entidad vinculada por pacto puede tener incentivos complejos.</p>
-      <p>El contrato puede obligarla a decir la verdad y permitir omisiones o formulaciones
-      estratégicas.</p>
-      <p>Pacturgia ayuda a interpretar exactamente qué obligación informativa existe.</p>
-      <h4 id="cap-58">Capítulo LVIII — Revelación teúrgica</h4>
-      <p>Una respuesta recibida en contexto sagrado puede estar mediada por liturgia, símbolos,
-      intermediarios o tradición.</p>
-      <p>Debe distinguirse la experiencia original de la interpretación institucional
-      posterior.</p>
-      <p>Teurgia y Epistemología colaboran cuando una afirmación tiene consecuencias prácticas
-      fuera de la doctrina.</p>
-      <h4 id="cap-59">Capítulo LIX — Adivinación como evidencia</h4>
-      <p>Una visión prospectiva puede orientar investigación sin constituir prueba definitiva.</p>
-      <p>Su valor aumenta si contiene detalles específicos registrados con anterioridad y luego
-      corroborados.</p>
-      <p>Adivinación proporciona acceso; Epistemología evalúa qué inferencias permite ese
-      acceso.</p>
-      <h4 id="cap-60">Capítulo LX — Ilusión como problema epistemológico</h4>
-      <p>Ilusionismo Teórico demuestra que la experiencia perceptiva puede ser coherente y
-      falsa.</p>
-      <p>Una percepción multisensorial no garantiza correspondencia externa.</p>
-      <p>Las pruebas de realidad son, por tanto, herramientas epistemológicas además de
-      defensivas.</p>
-      <h4 id="cap-61">Capítulo LXI — Encantamientos de detección</h4>
-      <p>Un encantamiento puede detectar calor, vida, afinidad, intención o pertenencia según
-      diseño.</p>
-      <p>El usuario debe saber qué propiedad mide realmente.</p>
-      <p>Decir que una puerta sabe quién es culpable puede ocultar que sólo reconoce una marca
-      ritual asociada a condena.</p>
-      <h4 id="cap-62">Capítulo LXII — Artefactos oraculares</h4>
-      <p>Un artefacto puede producir respuestas durante siglos y adquirir reputación de
-      autoridad.</p>
-      <p>Su antigüedad no demuestra precisión.</p>
-      <p>Artefactología estudia funcionamiento; Epistemología examina el historial de aciertos,
-      fallos y condiciones de uso.</p>
-      <h4 id="cap-63">Capítulo LXIII — Conocimiento de entidades poderosas</h4>
-      <p>Una entidad antigua puede poseer enorme experiencia sin conocer todo.</p>
-      <p>La longevidad amplía memoria y observación, pero también puede consolidar prejuicios.</p>
-      <p>El respeto racional a una fuente poderosa debe coexistir con evaluación crítica.</p>
-      <h4 id="cap-64">Capítulo LXIV — Omnisciencia</h4>
-      <p>La afirmación de que una entidad es omnisciente exige un estándar extraordinario de
-      justificación.</p>
-      <p>Es imposible demostrar conocimiento de todo mediante una cantidad finita de respuestas
-      correctas.</p>
-      <p>En términos académicos, la omnisciencia suele tratarse como afirmación teológica y no
-      como propiedad empíricamente establecida.</p>
-      <h4 id="cap-65">Capítulo LXV — Errores honestos</h4>
-      <p>Una fuente puede ser sincera y competente y aun así equivocarse por información
-      incompleta.</p>
-      <p>Reconocer esta posibilidad permite corregir modelos sin convertir cada fallo en
-      acusación de engaño.</p>
-      <p>La ciencia funciona mejor cuando el error puede admitirse sin destruir toda
-      autoridad.</p>
-      <h4 id="cap-66">Capítulo LXVI — Mentira técnicamente verdadera</h4>
-      <p>Una afirmación puede ser literalmente correcta y diseñada para producir una inferencia
-      falsa.</p>
-      <p>Este problema es común en pactos y negociaciones con entidades.</p>
-      <p>La evaluación debe considerar implicaturas, omisiones y contexto, no sólo verdad
-      proposicional.</p>
-      <h4 id="cap-67">Capítulo LXVII — Información peligrosa</h4>
-      <p>No toda verdad debe revelarse inmediatamente.</p>
-      <p>Conocimiento sobre rituales, profecías o entidades puede producir riesgos si se difunde
-      sin contexto.</p>
-      <p>La epistemología estudia verdad; la ética determina cuándo y cómo comunicarla.</p>
-      <h4 id="cap-68">Capítulo LXVIII — Secreto y verificabilidad</h4>
-      <p>Las afirmaciones secretas son difíciles de evaluar porque impiden replicación y
+      conoce de manera aproximada. Un oráculo que acierta siete de cada diez consultas puede
+      resultar útil si se sabe cuándo confiar más o menos en él, mientras que la ilusión de
+      infalibilidad impide una calibración honesta.</p>
+      <p>La fiabilidad describe cuán consistentemente un método produce información correcta bajo
+      ciertas condiciones, sin que ello implique comprender su mecanismo. Una técnica puede ser
+      fiable antes de que exista una teoría satisfactoria de por qué funciona.</p>
+      <p>La validez, en cambio, es una propiedad diferente. Un método puede ser fiable y medir
+      algo distinto de lo que se cree que mide. Una prueba que detecta estrés puede correlacionar
+      con la mentira sin detectar la mentira directamente, y validar implica demostrar qué
+      propiedad responde realmente al método.</p>
+      <p>Estos estándares adquieren particular importancia en Derecho Arcano, donde el acceso
+      mental plantea problemas específicos. Una intención pasajera no equivale a un acto, y una
+      memoria no equivale automáticamente a un hecho, de modo que el uso jurídico exige
+      estándares superiores de interpretación y corroboración.</p>
+      <h4 id="cap-20">Capítulo XX — Revelación religiosa, pactúrgica y teúrgica</h4>
+      <p>Una tradición puede considerar determinadas revelaciones como autoridad doctrinal. La
+      Epistemología Arcana no decide qué debe creer una religión, sino que estudia qué
+      afirmaciones empíricas pueden contrastarse y qué parte depende de compromisos
+      teológicos.</p>
+      <p>La revelación obtenida mediante pacto presenta un caso particular, porque una entidad
+      vinculada por contrato puede tener incentivos complejos. El pacto puede obligarla a decir
+      la verdad y aun así permitir omisiones o formulaciones estratégicas, y Pacturgia ayuda a
+      interpretar qué obligación informativa existe realmente.</p>
+      <p>La revelación teúrgica añade otra capa, pues una respuesta recibida en contexto sagrado
+      puede estar mediada por liturgia, símbolos, intermediarios o tradición. Debe distinguirse
+      la experiencia original de la interpretación institucional posterior, y Teurgia y
+      Epistemología colaboran cuando una afirmación tiene consecuencias prácticas fuera de la
+      doctrina.</p>
+      <h4 id="cap-21">Capítulo XXI — Adivinación e ilusión como problemas epistemológicos</h4>
+      <p>Una visión prospectiva puede orientar una investigación sin constituir prueba
+      definitiva. Su valor aumenta si contiene detalles específicos registrados con anterioridad
+      y luego corroborados. La adivinación proporciona acceso, mientras que la Epistemología
+      evalúa qué inferencias permite ese acceso.</p>
+      <p>Ilusionismo Teórico demuestra, por su parte, que la experiencia perceptiva puede ser
+      coherente y aun así falsa, porque una percepción multisensorial no garantiza
+      correspondencia con el mundo externo. Las pruebas de realidad son, por tanto, herramientas
+      epistemológicas además de defensivas.</p>
+      <h4 id="cap-22">Capítulo XXII — Encantamientos de detección y artefactos oraculares</h4>
+      <p>Un encantamiento puede detectar calor, vida, afinidad, intención o pertenencia según su
+      diseño, y el usuario debe saber qué propiedad mide realmente. Decir que una puerta sabe
+      quién es culpable puede ocultar que en realidad sólo reconoce una marca ritual asociada a
+      una condena.</p>
+      <p>Un artefacto oracular puede producir respuestas durante siglos y adquirir con ello
+      reputación de autoridad, pero su antigüedad no demuestra precisión. Artefactología estudia
+      su funcionamiento, mientras que Epistemología examina el historial de aciertos, fallos y
+      condiciones de uso.</p>
+      <h4 id="cap-23">Capítulo XXIII — Entidades poderosas y omnisciencia</h4>
+      <p>Una entidad antigua puede poseer una enorme experiencia sin conocerlo todo. La
+      longevidad amplía memoria y observación, pero también puede consolidar prejuicios, de modo
+      que el respeto racional hacia una fuente poderosa debe coexistir con la evaluación
       crítica.</p>
-      <p>En ocasiones el secreto es necesario por seguridad.</p>
-      <p>Los sistemas académicos deben crear mecanismos de revisión restringida para evitar que
+      <p>La afirmación de que una entidad es omnisciente exige, en consecuencia, un estándar
+      extraordinario de justificación, ya que resulta imposible demostrar conocimiento de todo
+      mediante una cantidad finita de respuestas correctas. En términos académicos, la
+      omnisciencia suele tratarse como afirmación teológica y no como propiedad empíricamente
+      establecida.</p>
+      <h4 id="cap-24">Capítulo XXIV — Errores honestos y mentiras técnicamente verdaderas</h4>
+      <p>Una fuente puede ser sincera y competente y aun así equivocarse por información
+      incompleta. Reconocer esta posibilidad permite corregir los modelos sin convertir cada
+      fallo en una acusación de engaño, porque la investigación funciona mejor cuando el error
+      puede admitirse sin destruir toda la autoridad de la fuente.</p>
+      <p>Distinto es el caso de la afirmación literalmente correcta pero diseñada para producir
+      una inferencia falsa, un problema común en pactos y negociaciones con entidades. Su
+      evaluación debe considerar implicaturas, omisiones y contexto, no sólo la verdad
+      proposicional del enunciado.</p>
+      <h4 id="cap-25">Capítulo XXV — Información peligrosa y secreto</h4>
+      <p>No toda verdad debe revelarse de inmediato. El conocimiento sobre rituales, profecías o
+      entidades puede producir riesgos si se difunde sin contexto, de modo que la epistemología
+      estudia la verdad mientras que la ética determina cuándo y cómo comunicarla.</p>
+      <p>Las afirmaciones secretas resultan, además, difíciles de evaluar porque impiden la
+      replicación y la crítica, aunque en ocasiones el secreto es necesario por seguridad. Los
+      sistemas académicos deben crear mecanismos de revisión restringida para evitar que el
       secreto se convierta en escudo contra toda evaluación.</p>
-      <h4 id="cap-69">Capítulo LXIX — Archivo</h4>
-      <p>El conocimiento mágico depende de registros precisos.</p>
-      <p>Fecha, método, condiciones, interpretación inicial y resultados posteriores deben
-      conservarse.</p>
-      <p>Los archivos permiten detectar patrones de error que ningún investigador individual
-      podría reconocer.</p>
-      <h4 id="cap-70">Capítulo LXX — Revisión por pares</h4>
-      <p>Otros especialistas pueden identificar supuestos invisibles para el autor.</p>
-      <p>La revisión no garantiza verdad, pero aumenta probabilidad de detectar errores
-      metodológicos.</p>
-      <p>Las disciplinas mágicas requieren pares de campos distintos cuando una conclusión
-      depende de varias clases de evidencia.</p>
-      <h4 id="cap-71">Capítulo LXXI — Disenso</h4>
-      <p>El desacuerdo no demuestra que nadie sepa nada.</p>
-      <p>Puede reflejar evidencia ambigua, prioridades distintas o teorías rivales.</p>
-      <p>Un buen informe representa el grado real de consenso en lugar de fingir certeza
-      institucional.</p>
-      <h4 id="cap-72">Capítulo LXXII — Conocimiento provisional</h4>
+      <h4 id="cap-26">Capítulo XXVI — Archivo, revisión por pares y disenso</h4>
+      <p>El conocimiento mágico depende de registros precisos. Fecha, método, condiciones,
+      interpretación inicial y resultados posteriores deben conservarse, porque los archivos
+      permiten detectar patrones de error que ningún investigador individual podría reconocer por
+      su cuenta.</p>
+      <p>Otros especialistas pueden identificar además supuestos que resultan invisibles para el
+      autor original. La revisión no garantiza verdad, pero aumenta la probabilidad de detectar
+      errores metodológicos, y las disciplinas mágicas requieren pares de campos distintos cuando
+      una conclusión depende de varias clases de evidencia.</p>
+      <p>El desacuerdo entre especialistas no demuestra que nadie sepa nada. Puede reflejar
+      evidencia ambigua, prioridades distintas o teorías rivales, y un buen informe representa el
+      grado real de consenso en lugar de fingir una certeza institucional que no existe.</p>
+      <h4 id="cap-27">Capítulo XXVII — Conocimiento provisional e ignorancia reconocida</h4>
       <p>Muchas afirmaciones científicas son aceptadas provisionalmente porque explican mejor la
-      evidencia disponible.</p>
-      <p>Provisional no significa arbitrario.</p>
-      <p>Una teoría puede estar fuertemente respaldada y seguir abierta a revisión.</p>
-      <h4 id="cap-73">Capítulo LXXIII — Ignorancia reconocida</h4>
-      <p>Decir no sabemos es una conclusión legítima cuando la evidencia no permite distinguir
-      hipótesis.</p>
-      <p>La magia produce tentación de llenar vacíos con explicaciones grandiosas.</p>
-      <p>Reconocer límites evita convertir desconocimiento en mito académico.</p>
-      <h4 id="cap-74">Capítulo LXXIV — La verdad útil</h4>
-      <p>Una afirmación puede ser útil sin estar completamente comprendida.</p>
-      <p>Un método clínico puede funcionar antes de conocer su mecanismo.</p>
-      <p>Sin embargo, utilidad práctica no debe confundirse con explicación verdadera.</p>
-      <h4 id="cap-75">Capítulo LXXV — La explicación elegante</h4>
-      <p>Las teorías simples y coherentes son atractivas.</p>
-      <p>La elegancia no compensa evidencia insuficiente.</p>
-      <p>El mundo puede ser más irregular que nuestros modelos.</p>
-      <h4 id="cap-76">Capítulo LXXVI — La revelación perfecta</h4>
-      <p>Supongamos una fuente incapaz de mentir y con acceso perfecto a un hecho.</p>
-      <p>Aun entonces, el receptor puede entender mal, recordar mal o formular mal la
-      respuesta.</p>
-      <p>Por ello, la Epistemología Arcana no desaparece ni siquiera frente a una fuente
-      ideal.</p>
-      <h4 id="cap-77">Capítulo LXXVII — Protocolo de evaluación</h4>
-      <p>Ante una revelación, Dolbred recomienda registrar contenido bruto, identificar fuente,
-      separar interpretación, listar hipótesis rivales, buscar corroboración y asignar un grado
-      de confianza.</p>
-      <p>Después se documenta qué evidencia futura podría aumentar o reducir esa confianza.</p>
-      <p>El protocolo convierte experiencias extraordinarias en objetos discutibles y
-      revisables.</p>
-      <h4 id="cap-78">Capítulo LXXVIII — El problema de la interpretación correcta</h4>
+      evidencia disponible en un momento dado. Provisional no significa arbitrario, y una teoría
+      puede estar fuertemente respaldada y seguir, aun así, abierta a revisión.</p>
+      <p>Decir no sabemos es, del mismo modo, una conclusión legítima cuando la evidencia no
+      permite distinguir entre hipótesis. La magia produce la tentación de llenar los vacíos con
+      explicaciones grandiosas, y reconocer los límites del conocimiento evita convertir el
+      desconocimiento en mito académico.</p>
+      <h4 id="cap-28">Capítulo XXVIII — La verdad útil y la explicación elegante</h4>
+      <p>Una afirmación puede ser útil sin estar completamente comprendida, y un método clínico
+      puede funcionar antes de conocer su mecanismo. La utilidad práctica, sin embargo, no debe
+      confundirse con una explicación verdadera.</p>
+      <p>Las teorías simples y coherentes resultan, además, atractivas, pero la elegancia no
+      compensa una evidencia insuficiente. El mundo puede ser más irregular que los modelos que
+      se construyen para describirlo.</p>
+      <h4 id="cap-29">Capítulo XXIX — La revelación perfecta y el protocolo de evaluación</h4>
+      <p>Supongamos una fuente incapaz de mentir y con acceso perfecto a un hecho. Aun entonces,
+      el receptor puede entender mal, recordar mal o formular mal la respuesta recibida, de modo
+      que la Epistemología Arcana no desaparece ni siquiera frente a una fuente ideal.</p>
+      <p>Frente a ese residuo de incertidumbre, Dolbred recomienda seguir un protocolo concreto
+      ante cualquier revelación, que consiste en registrar el contenido bruto, identificar la
+      fuente, separar la interpretación, listar hipótesis rivales, buscar corroboración y asignar
+      un grado de confianza. Después se documenta qué evidencia futura podría aumentar o reducir
+      esa confianza. El protocolo convierte así experiencias extraordinarias en objetos
+      discutibles y revisables.</p>
+      <h4 id="cap-30">Capítulo XXX — El problema de la interpretación correcta y de la certeza</h4>
       <p>Una interpretación correcta debe explicar el mensaje sin añadir más supuestos de los
-      necesarios y producir expectativas contrastables.</p>
-      <p>Las interpretaciones retrospectivas son débiles si no estaban disponibles antes del
-      resultado.</p>
-      <p>El conocimiento exige algo más que encontrar una lectura compatible después de los
-      hechos.</p>
-      <h4 id="cap-79">Capítulo LXXIX — El problema de la certeza</h4>
-      <p>La certeza absoluta es rara incluso con magia.</p>
-      <p>Las fuentes pueden ser limitadas, los métodos pueden fallar y las interpretaciones
-      pueden deformarse.</p>
-      <p>El objetivo académico no es eliminar toda incertidumbre, sino representarla con
+      necesarios y producir expectativas contrastables. Las interpretaciones retrospectivas son
+      débiles si no estaban disponibles antes del resultado, porque el conocimiento exige algo
+      más que encontrar una lectura compatible después de los hechos.</p>
+      <p>La certeza absoluta resulta poco frecuente incluso con magia de por medio, ya que las
+      fuentes pueden ser limitadas, los métodos pueden fallar y las interpretaciones pueden
+      deformarse. El objetivo académico no es eliminar toda incertidumbre, sino representarla con
       honestidad.</p>
-      <h4 id="cap-80">Capítulo LXXX — Relación con otras disciplinas</h4>
-      <p>Epistemología Arcana trabaja con Adivinación, Ilusionismo Teórico, Psicología
+      <h4 id="cap-31">Capítulo XXXI — Relación con otras disciplinas y la pregunta final</h4>
+      <p>Epistemología Arcana trabaja junto a Adivinación, Ilusionismo Teórico, Psicología
       Resonántica, Filología Arcana, Semiótica Mágica, Teurgia, Pacturgia, Pneumatología y
-      Criminalística Arcana.</p>
-      <p>Su función no es sustituirlas, sino evaluar qué justificación ofrecen sus métodos.</p>
-      <p>Cada disciplina produce información; la Epistemología pregunta qué podemos concluir de
-      ella.</p>
-      <h4 id="cap-81">Capítulo LXXXI — La pregunta final</h4>
-      <p>¿Cómo sabemos que una revelación mágica es verdadera?</p>
-      <p>No existe una prueba universal. Evaluamos fuente, método, interpretación,
-      corroboración, historial de fiabilidad y alternativas.</p>
+      Criminalística Arcana. Su función no es sustituir a estas disciplinas, sino evaluar qué
+      justificación ofrecen sus métodos, ya que cada una produce información y la Epistemología
+      pregunta qué podemos concluir de ella.</p>
+      <p>¿Cómo sabemos, entonces, que una revelación mágica es verdadera? No existe una prueba
+      universal. Se evalúan fuente, método, interpretación, corroboración, historial de
+      fiabilidad y alternativas disponibles.</p>
       <p>Una revelación merece confianza no porque sea mágica, sino porque sobrevive al examen
       mejor que sus explicaciones rivales.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
