@@ -6399,10 +6399,26 @@ window.ENTRIES = [
       si no existen mecanismos compensatorios.</p>
       <h4 id="cap-10">Capítulo X — Amortiguación</h4>
       <p>No todos los organismos amplifican la magia. Algunos dispersan, neutralizan o almacenan
-      influencias y actúan como amortiguadores ecológicos.</p>
-      <p>La pérdida de estas especies puede revelar una presión que llevaba décadas contenida.</p>
-      <p>Esto explica por qué eliminar una criatura aparentemente peligrosa puede producir
-      efectos peores si ocupaba un papel regulador dentro del sistema.</p>
+      influencias y actúan como amortiguadores ecológicos, y el mecanismo mediante el cual lo
+      hacen varía tanto como los propios ecosistemas. Un liquen puede fijar afinidad elemental
+      dentro de su estructura mineral y liberarla sólo cuando se descompone; una especie
+      migratoria puede absorber presión arcana en una región de alta concentración y disiparla
+      gradualmente durante su desplazamiento hacia zonas menos cargadas; un depredador puede
+      simplemente mantener baja la población de organismos amplificadores, evitando que una
+      retroalimentación se acelere. En canteras cercanas a depósitos de cristal resonante,
+      ciertos artrópodos subterráneos cumplen esta función absorbiendo emisiones que, sin ellos,
+      se acumularían en el agua freática hasta niveles peligrosos para el resto de la fauna.</p>
+      <p>La pérdida de estas especies puede revelar una presión que llevaba décadas contenida, y
+      el problema se agrava porque la capacidad de amortiguación no es ilimitada. Una población
+      reducida por caza, enfermedad o pérdida de hábitat puede seguir pareciendo activa mientras
+      se acerca a un umbral de saturación. Superado ese punto, la especie deja de contener la
+      influencia y puede incluso liberarla de forma súbita al morir o migrar en masa. Esto
+      explica por qué eliminar una criatura aparentemente peligrosa puede producir efectos peores
+      si ocupaba un papel regulador dentro del sistema. Una gran criatura territorial cuya sola
+      presencia mantenía dispersa una acumulación arcana puede, al desaparecer, dejar que esa
+      misma acumulación se concentre en su antiguo territorio. Criptozoología Académica colabora
+      con la Ecología Mágica en catalogar qué especies cumplen esta función antes de que su papel
+      amortiguador se reconozca únicamente por su ausencia.</p>
       <h4 id="cap-11">Capítulo XI — Sucesión ecológica arcana</h4>
       <p>Después de una perturbación, los ecosistemas cambian por etapas. En ambientes mágicos,
       cada etapa puede modificar además la condición arcana del territorio.</p>
@@ -6465,11 +6481,22 @@ window.ENTRIES = [
       profunda que la pérdida de su biomasa sugeriría.</p>
       <h4 id="cap-18">Capítulo XVIII — Territorios de grandes criaturas</h4>
       <p>Dragones, leviatanes, gigantes elementales y otras criaturas de gran influencia pueden
-      modificar ecosistemas incluso sin utilizar magia de manera deliberada.</p>
+      modificar ecosistemas incluso sin utilizar magia de manera deliberada. La sola presencia de
+      un depredador de ese tamaño reorganiza la conducta de sus presas, que alteran horarios de
+      alimentación, rutas de desplazamiento y zonas de cría para reducir el riesgo de encuentro,
+      un efecto que puede propagarse hasta especies que el depredador nunca captura directamente.
+      Un dragón que ocupa una cordillera durante siglos puede además impregnar su guarida y los
+      suelos circundantes con la afinidad elemental de su firma somática, favoreciendo minerales,
+      plantas o fauna que sólo se encuentran dentro de ese radio.</p>
       <p>Su presencia altera depredación, migraciones, distribución de recursos y, en algunos
-      casos, afinidades ambientales.</p>
-      <p>El territorio de una criatura poderosa debe estudiarse como sistema completo y no sólo
-      como área de caza.</p>
+      casos, afinidades ambientales, y estos efectos no siempre desaparecen con la criatura. Una
+      guarida abandonada puede conservar concentraciones de afinidad durante generaciones,
+      sosteniendo comunidades adaptadas a una fuente que ya no existe y planteando preguntas de
+      restauración semejantes a las de cualquier extinción local. El territorio de una criatura
+      poderosa debe estudiarse como sistema completo y no sólo como área de caza, y Dracología
+      aporta aquí el conocimiento fisiológico y conductual necesario para interpretar qué parte
+      del paisaje responde a la criatura misma y qué parte responde a condiciones que ella dejó
+      atrás.</p>
       <h4 id="cap-19">Capítulo XIX — Soberanías y ecología</h4>
       <p>Las Soberanías elementales ofrecen el ejemplo extremo de una entidad cuya presencia
       puede convertirse en condición ambiental.</p>
@@ -6610,11 +6637,22 @@ window.ENTRIES = [
       <p>La prevención depende de comprender relaciones, no sólo de medir concentraciones.</p>
       <h4 id="cap-34">Capítulo XXXIV — Estados alternativos</h4>
       <p>Después de una perturbación, un ecosistema puede estabilizarse en una configuración
-      distinta de la original.</p>
+      distinta de la original, y el mecanismo suele ser el mismo tipo de retroalimentación que
+      sostiene cualquier equilibrio autoconsolidado. Un lago que pierde su vegetación sumergida
+      tras una descarga elemental puede quedar dominado por sedimento cargado de afinidad libre,
+      que enturbia el agua, impide el regreso de la vegetación y refuerza así la propia
+      turbidez. El sistema no vuelve atrás simplemente porque la fuente original de la
+      perturbación haya desaparecido, porque ahora es la nueva configuración la que se sostiene a
+      sí misma.</p>
       <p>Ambos estados pueden ser funcionales y, sin embargo, sostener especies, afinidades y
-      ciclos diferentes.</p>
-      <p>Esto complica la idea de restauración porque regresar al estado anterior puede requerir
-      más intervención que mantener el nuevo.</p>
+      ciclos diferentes, lo que obliga a preguntar para quién se define el éxito de una
+      restauración. Esto complica la idea de restauración porque regresar al estado anterior
+      puede requerir más intervención que mantener el nuevo. Cruzar de vuelta el umbral que
+      separó ambos estados exige a menudo un esfuerzo mayor que el que produjo la perturbación
+      original, ya que las relaciones que sostenían el equilibrio previo pueden haberse
+      desmontado por completo. La Restauración ecológica evalúa entonces si conviene invertir
+      esos recursos en revertir el cambio o en estabilizar y comprender el estado alternativo
+      como nuevo objeto de manejo.</p>
       <h4 id="cap-35">Capítulo XXXV — Naturgia y ecología</h4>
       <p>La Naturgia trabaja con procesos vivos y patrones naturales; la Ecología Mágica estudia
       cómo esos procesos interactúan a escala de comunidades y ambientes.</p>
@@ -6850,11 +6888,23 @@ window.ENTRIES = [
       condición que resulta patológica para otra.</p>
       <h4 id="cap-5">Capítulo V — Vectores</h4>
       <p>Un vector transporta una condición entre huéspedes sin ser necesariamente la causa
-      original.</p>
+      original, y la disciplina distingue dos mecanismos posibles según la relación entre el
+      vector y aquello que transporta. Un vector mecánico traslada la condición sin que ésta
+      cambie ni se desarrolle dentro de él, del mismo modo que una carreta puede llevar tierra
+      contaminada de una cantera a un mercado sin que la carreta misma se vea afectada. Un vector
+      biológico, en cambio, alberga una fase necesaria del proceso, como ciertos insectos en cuyo
+      interior una maldición larval debe completar su desarrollo antes de volverse transmisible a
+      un nuevo huésped mediante la picadura; en este segundo caso, el vector no es un simple
+      medio de transporte sino una etapa obligatoria de la cadena.</p>
       <p>Insectos, animales, objetos rituales, mensajeros, reliquias y artefactos pueden
-      desempeñar este papel.</p>
-      <p>En algunos brotes, el vector es una conducta: compartir una fórmula, completar una
-      ceremonia o visitar un lugar específico.</p>
+      desempeñar este papel, y un mismo elemento puede actuar como vector en un brote y como
+      reservorio en otro si además sostiene la condición entre exposiciones. Distinguir ambos
+      papeles importa para la intervención, porque eliminar un vector mecánico corta una ruta sin
+      afectar la fuente, mientras que eliminar un vector que también funciona como reservorio
+      puede detener el brote por completo. En algunos brotes, el vector es una conducta, como
+      compartir una fórmula, completar una ceremonia o visitar un lugar específico, y en esos casos
+      Ritualística y Maldiología ayudan a establecer qué elemento de la conducta cumple la
+      función de transporte y cuál pertenece a la causa misma.</p>
       <h4 id="cap-6">Capítulo VI — Vías y modalidades de transmisión</h4>
       <p>La vía de transmisión determina cómo una condición pasa de una fuente a un nuevo
       huésped, y los fenómenos mágicos emplean un repertorio más amplio que el de la patología
@@ -6921,11 +6971,24 @@ window.ENTRIES = [
       estigma dificulta la vigilancia y la cooperación que la investigación necesita.</p>
       <h4 id="cap-9">Capítulo IX — Superpropagación</h4>
       <p>Algunos individuos, lugares o eventos generan una cantidad desproporcionada de nuevos
-      casos.</p>
-      <p>La causa puede ser biológica, social o estructural: una persona con emisión intensa, un
-      templo concurrido, un festival, una fuente de agua o un artefacto de uso compartido.</p>
+      casos, un patrón conocido como superpropagación que puede coexistir con un número
+      reproductivo promedio relativamente bajo. La capacidad de transmitir un fenómeno no se
+      distribuye de manera uniforme entre los casos. La mayoría puede contagiar a pocas personas
+      o a ninguna, mientras que una minoría, por variación biológica, social o circunstancial,
+      genera la mayor parte de los casos secundarios de todo un brote.</p>
+      <p>La causa puede ser biológica, social o estructural. Una persona con emisión intensa
+      concentra más riesgo por sí misma que el resto de los casos combinados; un templo
+      concurrido, un festival, una fuente de agua o un artefacto de uso compartido multiplican el
+      riesgo al reunir a muchas personas susceptibles alrededor de una misma fuente durante un
+      período prolongado. Una cámara ritual mal ventilada puede convertir una ceremonia habitual
+      en un evento de superpropagación si las condiciones ambientales favorecen la persistencia
+      de un agente que en espacios abiertos se dispersaría antes de alcanzar a un nuevo
+      huésped.</p>
       <p>La intervención dirigida a estos puntos puede controlar un brote con menos restricciones
-      generales.</p>
+      generales, porque cerrar temporalmente una fuente concentrada suele reducir más casos que
+      imponer una restricción amplia sobre toda la población. Maldiología y Seguridad Ritual
+      colaboran con la Epidemiología Taumatológica para identificar qué condiciones estructurales
+      de un espacio favorecen este tipo de evento.</p>
       <h4 id="cap-10">Capítulo X — Redes sociales y rituales</h4>
       <p>Las poblaciones no interactúan al azar. Familias, gremios, rutas comerciales, cultos,
       escuelas y barrios crean redes que organizan la transmisión, de modo que una maldición
@@ -7160,11 +7223,24 @@ window.ENTRIES = [
       caso clínico puede mostrar por sí solo.</p>
       <h4 id="cap-27">Capítulo XXVII — El error del contagio</h4>
       <p>Uno de los errores más comunes consiste en llamar contagioso a todo fenómeno que aparece
-      en varias personas.</p>
-      <p>Un mismo artefacto puede enfermar a cien individuos sin que ninguno transmita nada. Una
-      maldición puede seguir herencia legal. Un campo resonántico puede producir casos sólo por
-      cercanía.</p>
-      <p>La semejanza del patrón no demuestra igualdad de mecanismo.</p>
+      en varias personas. La intuición se apoya en el patrón más familiar de la medicina
+      ordinaria, en el que una enfermedad salta de un enfermo a otro, y por eso cualquier
+      agrupamiento de casos tiende a interpretarse primero como contagio antes de examinar
+      alternativas.</p>
+      <p>Un mismo artefacto puede enfermar a cien individuos sin que ninguno transmita nada, como
+      ocurre cuando una fuente de agua distribuida por una red de pozos comunica una condición a
+      hogares sucesivos según el orden de reparto y no según el contacto entre vecinos, lo que
+      produce un patrón que puede confundirse con una cadena de transmisión persona a persona si
+      no se examina la ruta de distribución. Una maldición puede seguir herencia legal y afectar
+      a un heredero que nunca tuvo contacto físico con el titular anterior. Un campo resonántico
+      puede producir casos sólo por cercanía, sin que exista ningún vínculo entre los afectados
+      salvo haber ocupado el mismo espacio.</p>
+      <p>La semejanza del patrón no demuestra igualdad de mecanismo, y el problema se complica
+      cuando ambos coexisten. Un brote puede comenzar por fuente común y continuar después por
+      transmisión secundaria entre los primeros casos, de modo que la curva epidémica combina dos
+      formas distintas de propagación en una sola secuencia de datos. Distinguir estas
+      posibilidades exige regresar a los tipos de brote descritos en capítulos anteriores y
+      comprobar la ruta específica antes de anunciar que un fenómeno se contagia.</p>
       <h4 id="cap-conclusion">Conclusión</h4>
       <p>La Epidemiología Taumatológica estudia la propagación de fenómenos mágicos a escala de
       poblaciones. Su tarea consiste en identificar casos, reconstruir cadenas, localizar
@@ -14214,11 +14290,25 @@ window.ENTRIES = [
       sigue siendo necesariamente un error.</p>
       <h4 id="cap-21">Capítulo XXI — Runas incompletas</h4>
       <p>Una inscripción incompleta puede estar dañada, inacabada o deliberadamente abierta.
-      Distinguir estas posibilidades es crucial.</p>
-      <p>Algunas estructuras utilizan interrupciones como mecanismos de seguridad. Otras necesitan
-      que el oficiante complete el último trazo durante la activación.</p>
+      Distinguir estas posibilidades es crucial, y el criterio no puede limitarse a la
+      apariencia, porque una fractura accidental y una interrupción intencional pueden producir
+      un vacío visualmente idéntico. Conservación Arcana examina el desgaste del borde, la
+      herramienta empleada y la simetría del resto de la pieza para establecer si la
+      discontinuidad pertenece al diseño original o resulta de un daño posterior.</p>
+      <p>Algunas estructuras utilizan interrupciones como mecanismos de seguridad, de modo que un
+      círculo de contención puede dejar deliberadamente un segmento sin cerrar para que resulte
+      inerte hasta que alguien autorizado complete el trazo en el momento de uso, evitando así
+      que un accidente o un intruso lo activen por error. Otras necesitan que el oficiante
+      complete el último trazo durante la activación, como ocurre con ciertas runas de referencia
+      que se inscriben con un espacio vacío destinado a recibir después el nombre o la firma del
+      objetivo específico, de forma que la misma matriz sirve para operaciones distintas según
+      quién complete el vacío.</p>
       <p>Rellenar una discontinuidad porque parece faltar una línea puede transformar un objeto
-      pasivo en uno operativo.</p>
+      pasivo en uno operativo, y este error es particularmente frecuente entre restauradores sin
+      formación arcana, que tienden a corregir asimetrías por criterio estético sin comprobar
+      antes si el vacío cumplía una función. Arcanomática recomienda documentar y fotografiar
+      cualquier discontinuidad antes de intervenir, ya que una reconstrucción bien intencionada
+      puede completar, sin saberlo, el último paso de una activación.</p>
       <h4 id="cap-22">Capítulo XXII — Palimpsestos mágicos</h4>
       <p>Cuando una inscripción se borra y una nueva ocupa el mismo soporte, pueden persistir trazas
       físicas o arcanas del sistema anterior. A estas superficies se las denomina palimpsestos
@@ -14276,11 +14366,26 @@ window.ENTRIES = [
       <p>La Artefactología prohíbe inferir función completa a partir de una inscripción aislada.</p>
       <h4 id="cap-29">Capítulo XXIX — Lectura segura</h4>
       <p>Leer no siempre es una operación pasiva. Algunos sistemas responden a reconocimiento,
-      atención, pronunciación o comprensión.</p>
+      atención, pronunciación o comprensión, y estos cuatro mecanismos no son intercambiables. Una
+      runa que reacciona al reconocimiento puede activarse por el simple contacto visual con su
+      forma, sin que el observador entienda nada; una que reacciona a la pronunciación exige que
+      alguien emita el sonido correcto, lo que puede ocurrir incluso si quien lo pronuncia
+      desconoce por completo su significado; la variante más peligrosa, y también la menos
+      habitual, responde únicamente a la comprensión genuina del contenido, de modo que un
+      investigador puede transcribir y pronunciar el signo sin riesgo hasta el momento en que
+      realmente entiende lo que dice.</p>
       <p>Por ello, el análisis inicial utiliza copias, reflejos, registros indirectos y observación
-      parcial cuando existen indicios de inscripción reactiva.</p>
-      <p>Una runa que necesita ser comprendida para activarse es rara, pero no lo bastante rara como
-      para justificar descuido.</p>
+      parcial cuando existen indicios de inscripción reactiva. Un espejo o una superficie pulida
+      permite examinar un símbolo sin exponer directamente la mirada del investigador a la forma
+      original, mientras que fotografiar sólo fragmentos sucesivos evita presentar el conjunto
+      completo a nadie hasta que el equipo confirma que ningún componente responde a
+      reconocimiento parcial. Seguridad Ritual establece además el orden en que deben aplicarse
+      estas precauciones, comenzando siempre por el mecanismo más común antes de descartar los
+      menos frecuentes.</p>
+      <p>Una runa que necesita ser comprendida para activarse es poco habitual, pero no lo
+      bastante infrecuente como para justificar descuido. Los casos documentados suelen implicar
+      textos teúrgicos o testamentarios diseñados para que sólo un lector cualificado pudiera
+      desencadenar su efecto.</p>
       <h4 id="cap-30">Capítulo XXX — Copias</h4>
       <p>Copiar una inscripción puede conservar forma y perder función si el soporte, escala,
       orientación o contexto cambian. También puede ocurrir lo contrario, ya que una copia destinada
