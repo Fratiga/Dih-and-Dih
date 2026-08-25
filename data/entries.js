@@ -13417,11 +13417,26 @@ window.ENTRIES = [
       <p>Sustituir un componente por otro visualmente similar puede ser irrelevante o catastrófico
       según su función real.</p>
       <h4 id="cap-16">Capítulo XVI — Consumibles</h4>
-      <p>Algunos rituales utilizan materiales destinados a desaparecer, transformarse o agotarse.
-      Estos consumibles pueden actuar como fuentes, marcadores temporales o mecanismos de cierre.</p>
-      <p>La pérdida del material no constituye desperdicio; forma parte del procedimiento.</p>
+      <p>Algunos rituales utilizan materiales destinados a desaparecer, transformarse o agotarse
+      durante la ejecución. Estos consumibles pueden actuar como fuentes de energía, marcadores
+      temporales que señalan el avance de una fase, o mecanismos de cierre que liberan una relación
+      en el momento de agotarse.</p>
+      <p>El mecanismo depende de qué propiedad del material se explota. Una vela ritual puede fijar
+      la duración de una fase mediante su combustión; una sal puede disolverse para señalar que una
+      barrera ha completado su función de aislamiento; una tinta puede desvanecerse al confirmarse
+      una lectura, impidiendo que la referencia permanezca activa más tiempo del previsto. En los tres
+      casos, el consumible traduce un proceso físico en información estructural que el resto del
+      ritual puede utilizar sin depender de un participante que lo observe constantemente.</p>
+      <p>La pérdida del material no constituye desperdicio; forma parte del procedimiento. Diseñar un
+      ritual sin prever el reemplazo de sus consumibles equivale a diseñar una estructura que sólo
+      puede ejecutarse una vez, aunque su arquitectura sugiera lo contrario.</p>
       <p>Un consumible que no se agota cuando debería hacerlo puede indicar que la estructura no
-      completó correctamente su fase.</p>
+      completó correctamente su fase, que la carga real fue menor a la esperada o que el material fue
+      sustituido por una variante de mayor resistencia sin ajustar el resto del diseño. La Mineralogía
+      Mágica cataloga tasas de agotamiento bajo condiciones estándar; la Ritualística advierte que
+      esas tasas pueden alterarse cuando el material comparte función con una barrera, un umbral o una
+      carga simultánea, de modo que un consumible aparentemente idéntico puede comportarse de forma
+      distinta según qué otras relaciones sostenga.</p>
       <h4 id="cap-17">Capítulo XVII — Símbolos</h4>
       <p>Los rituales emplean símbolos para representar autoridad, participantes, objetivos y
       conceptos abstractos. Su función depende de la correspondencia establecida, no de una
@@ -13441,11 +13456,24 @@ window.ENTRIES = [
       <h4 id="cap-19">Capítulo XIX — Runas</h4>
       <p>Las runas permiten fijar relaciones que de otro modo dependerían de la memoria o
       concentración de los participantes. Pueden conservar límites, condiciones, referencias y
-      secuencias.</p>
-      <p>La Runología estudia su sistema de representación; la Ritualística las integra como
-      componentes dentro de una estructura mayor.</p>
-      <p>Una inscripción correcta colocada en una función incorrecta sigue siendo un error
-      ritual.</p>
+      secuencias durante períodos que ningún oficiante podría sostener mediante atención
+      continua.</p>
+      <p>Una runa grabada en el umbral de una cámara puede mantener una condición de acceso durante
+      décadas sin que nadie repita el conjuro que la originó. Una secuencia inscrita alrededor de un
+      círculo puede conservar el orden de activación de varias fases aunque los participantes
+      originales hayan sido reemplazados varias veces. La estructura no recuerda quién la diseñó;
+      reconoce la inscripción mientras ésta permanezca legible y correctamente posicionada.</p>
+      <p>La Runología estudia su sistema de representación, las reglas que determinan qué
+      combinaciones son válidas y qué degradación material vuelve ilegible una marca. La Ritualística
+      las integra como componentes dentro de una estructura mayor, decidiendo en qué fase intervienen,
+      qué relación fijan y qué ocurre si la runa deja de estar disponible antes de que esa relación
+      haya sido resuelta de otro modo.</p>
+      <p>Una inscripción correcta colocada en una función incorrecta sigue siendo un error ritual.
+      Grabar una runa de contención en el punto donde debería ir una runa de referencia puede producir
+      una estructura que se sostiene indefinidamente sin permitir que el efecto se identifique, o que
+      identifica el efecto pero nunca lo contiene. El error no reside en la runa, que puede estar
+      ejecutada con precisión ejemplar, sino en la decisión de diseño que la ubicó en un lugar
+      equivocado del procedimiento.</p>
       <h4 id="cap-20">Capítulo XX — Carga</h4>
       <p>Se denomina carga al proceso por el cual una estructura acumula la energía, referencias o
       condiciones necesarias para ejecutar una fase posterior.</p>
@@ -13470,17 +13498,44 @@ window.ENTRIES = [
       condiciones observables y deliberadas.</p>
       <h4 id="cap-23">Capítulo XXIII — Estabilización</h4>
       <p>Después de activarse, algunas estructuras necesitan una fase de estabilización antes de
-      alcanzar funcionamiento regular.</p>
+      alcanzar funcionamiento regular. La activación establece las relaciones; la estabilización
+      determina si esas relaciones pueden sostenerse sin supervisión constante.</p>
       <p>Durante este período, relaciones recién establecidas pueden oscilar, competir con
-      condiciones previas o responder con sensibilidad extrema a pequeñas variaciones.</p>
+      condiciones previas o responder con sensibilidad extrema a pequeñas variaciones. Una frontera
+      recién cerrada puede expandirse y contraerse varias veces antes de fijar su radio definitivo;
+      una referencia puede alternar entre dos objetivos posibles si la identificación no quedó
+      completamente resuelta durante la activación; una carga puede seguir buscando un punto de
+      equilibrio incluso después de que la fuente haya dejado de aportar energía.</p>
       <p>Intervenir demasiado pronto puede introducir errores que después quedan fijados como parte
-      del estado estable.</p>
+      del estado estable. Corregir una oscilación antes de que la estructura la resuelva por sí misma
+      puede detener el proceso en un punto intermedio que después se comporta como si fuera el
+      resultado deseado, sin serlo. Por esta razón, los protocolos modernos distinguen entre
+      oscilación normal, que se amortigua sola, y desviación real, que requiere intervención.</p>
+      <p>La duración de esta fase varía según la complejidad de la estructura y no debe confundirse
+      con lentitud de ejecución, un problema que la Cronurgia Teórica ya distingue en el análisis del
+      tiempo ritual. Un ritual puede activarse en segundos y necesitar horas de estabilización antes
+      de que un observador pueda confirmar que las relaciones establecidas son permanentes y no
+      transitorias.</p>
       <h4 id="cap-24">Capítulo XXIV — Cierre</h4>
       <p>El cierre es una parte del ritual, no una actividad posterior. Su objetivo consiste en
-      deshacer, liberar o fijar las relaciones temporales creadas durante la ejecución.</p>
-      <p>Un ritual que sabe comenzar pero no sabe terminar está incompleto por definición.</p>
+      deshacer, liberar o fijar las relaciones temporales creadas durante la ejecución, de modo que
+      ninguna de ellas permanezca activa por inercia una vez cumplido su propósito.</p>
+      <p>Un ritual que sabe comenzar pero no sabe terminar está incompleto por definición, aunque haya
+      producido exactamente el efecto buscado. La estructura que permitió alcanzar ese resultado sigue
+      existiendo mientras nadie la desmantele, y una estructura sin función activa no deja de consumir
+      recursos, mantener referencias o sostener una frontera simplemente porque su propósito ya se
+      cumplió.</p>
       <p>El cierre puede incluir descarga, liberación de participantes, eliminación de referencias,
-      ruptura de clausuras y estabilización del entorno.</p>
+      ruptura de clausuras y estabilización del entorno. El orden de estas operaciones importa tanto
+      como el de la activación. Liberar a un participante antes de descargar la energía que sostenía
+      puede transferirle esa carga sin advertencia; romper una clausura antes de eliminar las
+      referencias internas puede dispersar información o influencia que debía permanecer
+      contenida.</p>
+      <p>La Seguridad Ritual distingue detención, suspensión y cierre porque interrumpir la ejecución
+      no equivale a completar esta fase. Un círculo apagado, un participante retirado o una fuente
+      cortada pueden dejar relaciones intactas que continúan operando sin la estructura visible que las
+      sostenía, un escenario que exige un cierre deliberado y no solamente el fin de la actividad
+      observable.</p>
       <h4 id="cap-25">Capítulo XXV — Interrupción</h4>
       <p>Interrumpir un ritual no equivale a cerrarlo. Una interrupción detiene acciones externas,
       pero las estructuras ya establecidas pueden continuar funcionando.</p>
@@ -13582,11 +13637,24 @@ window.ENTRIES = [
       simplemente su efecto.</p>
       <h4 id="cap-37">Capítulo XXXVII — Rituales y autoridad</h4>
       <p>Algunas estructuras necesitan participantes autorizados. La autoridad puede proceder de
-      institución, pacto, teurgia, posesión o reconocimiento de un sistema.</p>
+      institución, pacto, teurgia, posesión o reconocimiento de un sistema, y en cada caso la
+      estructura verifica una relación distinta antes de aceptar que quien ocupa el puesto tiene
+      derecho a ejercerlo.</p>
       <p>En estos casos, reemplazar a un oficiante por alguien igualmente competente no garantiza
-      funcionamiento.</p>
+      funcionamiento. Un heredero puede dominar cada gesto de una coronación ritual y aun así fallar en
+      producir el efecto si la estructura reconoce linaje y no habilidad; un sacerdote trasladado de un
+      templo a otro puede conservar toda su formación teúrgica y descubrir que el sistema local exige
+      una investidura que nunca recibió. La competencia técnica y la autoridad reconocida son
+      propiedades independientes, aunque suelan coincidir en la práctica cotidiana.</p>
+      <p>El problema se agrava cuando la autoridad es transitoria o disputada. Dos personas pueden
+      reclamar simultáneamente el mismo puesto ritual, y una estructura mal diseñada puede aceptar a
+      ambas, produciendo órdenes contradictorias, o rechazar a las dos, dejando la función vacante en
+      un momento crítico. Los protocolos modernos exigen mecanismos explícitos de sucesión antes de
+      depender de un rol cuya autoridad pueda cuestionarse.</p>
       <p>La Semiótica Mágica ayuda a determinar qué signos o relaciones hacen que una estructura
-      reconozca a una persona como válida.</p>
+      reconozca a una persona como válida, un problema que se vuelve más complejo cuando la autoridad
+      proviene de un pacto, ya que la Pacturgia estudia por separado si ese pacto sigue vigente en el
+      momento de la ejecución.</p>
       <h4 id="cap-38">Capítulo XXXVIII — Rituales y consentimiento</h4>
       <p>Los rituales que afectan directamente a criaturas inteligentes plantean problemas de
       consentimiento cuando utilizan identidad, memoria, cuerpo o alma como componentes.</p>
@@ -13603,11 +13671,23 @@ window.ENTRIES = [
       distintos.</p>
       <h4 id="cap-40">Capítulo XL — Rituales pactúrgicos</h4>
       <p>Los rituales de pacto utilizan participantes, signos y condiciones para establecer
-      relaciones duraderas entre entidades.</p>
+      relaciones duraderas entre entidades. A diferencia de otros procedimientos, su resultado no es
+      un efecto inmediato sino un vínculo que debe permanecer interpretable mucho después de que el
+      ritual haya concluido.</p>
       <p>La precisión resulta esencial porque una ambigüedad puede afectar obligaciones más que
-      fenómenos inmediatos.</p>
+      fenómenos inmediatos. Un ritual de transferencia mal diseñado produce, en el peor caso, un
+      efecto incorrecto que puede corregirse. Un pacto mal diseñado puede generar una obligación que
+      ninguna de las partes reconoce del mismo modo, y que la estructura, sin embargo, considera
+      válida y exigible durante años.</p>
+      <p>Los testigos, tratados en el Capítulo XIV, cumplen aquí una función especialmente relevante.
+      Proporcionan una referencia externa a las condiciones acordadas que impide que una sola parte
+      reinterprete el pacto a su favor una vez cerrado. Un pacto sellado sin testigo independiente
+      depende enteramente de la memoria y la buena fe de quienes lo firmaron, algo que la Pacturgia
+      considera un riesgo estructural y no meramente ético.</p>
       <p>Pacturgia y Derecho Arcano participan de su estudio cuando el acuerdo tiene consecuencias
-      de concesión, propiedad o responsabilidad.</p>
+      de concesión, propiedad o responsabilidad. La Ritualística aporta un problema adicional, el de
+      cómo cerrar un pacto cuando una de las partes deja de existir, cambia de naturaleza o pretende
+      disolver la relación sin cumplir las condiciones de salida previstas en el diseño original.</p>
       <h4 id="cap-41">Capítulo XLI — Rituales funerarios</h4>
       <p>Los ritos funerarios pueden cumplir funciones sociales, tanatológicas, pneumatológicas o
       teúrgicas. No todos poseen efecto mágico y no toda práctica simbólica necesita producirlo.</p>
@@ -13633,11 +13713,24 @@ window.ENTRIES = [
       superior puede ejecutarse sin ritual.</p>
       <h4 id="cap-44">Capítulo XLIV — Protocolos de seguridad</h4>
       <p>Los rituales académicos modernos incluyen criterios explícitos de aborto, evacuación,
-      descarga, relevo y cierre.</p>
+      descarga, relevo y cierre. Cada uno de estos criterios especifica no sólo la acción a tomar,
+      sino el umbral que la dispara y quién tiene autoridad para declararlo.</p>
       <p>Cada participante debe conocer no sólo su función normal, sino qué hacer si la fase
       anterior no se completa, si un compañero falla o si una lectura excede los límites
-      previstos.</p>
-      <p>La seguridad no se añade después de diseñar el ritual. Forma parte de su arquitectura.</p>
+      previstos. Un oficiante que sostiene una frontera necesita saber si debe mantenerla, ampliarla o
+      dejarla colapsar cuando la fase de carga se prolonga más allá de lo previsto; un testigo
+      necesita saber a quién notificar si observa una discrepancia entre lo acordado y lo ejecutado.
+      La ausencia de esta información convierte una desviación menor en una decisión improvisada
+      tomada bajo presión.</p>
+      <p>Los protocolos distinguen además entre incidentes que permiten continuar bajo supervisión
+      adicional y aquellos que exigen detener el procedimiento de inmediato. Una carga ligeramente
+      superior a la calculada puede continuar bajo supervisión si existe margen de descarga
+      suficiente; una referencia que identifica al objetivo equivocado exige aborto inmediato, porque
+      cada segundo adicional de ejecución fija esa relación con mayor firmeza.</p>
+      <p>La seguridad no se añade después de diseñar el ritual. Forma parte de su arquitectura. La
+      Seguridad Ritual estudia la respuesta a fallos ya ocurridos; un protocolo de seguridad eficaz
+      anticipa esas fallas durante el diseño en lugar de improvisar una reacción cuando ya se
+      manifestaron.</p>
       <h4 id="cap-45">Capítulo XLV — Registro</h4>
       <p>Todo ritual de investigación debe producir un registro suficiente para reconstruir qué
       ocurrió sin depender de la memoria de los participantes.</p>
