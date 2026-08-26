@@ -1,3 +1,32 @@
+function renderTimeline() {
+  const track = document.getElementById("timelineTrack");
+  const arcos = [...(window.CRONOLOGIA_ARCOS || [])].sort((a, b) => a.orden - b.orden);
+
+  track.innerHTML = arcos.map(arco => `
+    <button type="button" class="timeline-node" data-arco-id="${arco.id}">
+      <span class="timeline-node-fecha">${arco.fecha}</span>
+      <span class="timeline-node-title">${arco.title}</span>
+      <span class="timeline-node-resumen">${arco.resumen}</span>
+    </button>
+  `).join("");
+}
+
+function abrirArco(arcoId) {
+  if (arcoId === "la-encomienda") {
+    const section = document.getElementById("encomiendaSection");
+    section.classList.remove("hidden");
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+document.getElementById("timelineTrack").addEventListener("click", e => {
+  const btn = e.target.closest("[data-arco-id]");
+  if (!btn) return;
+  abrirArco(btn.dataset.arcoId);
+});
+
+renderTimeline();
+
 const cronicaList = document.getElementById("cronicaList");
 
 function renderCronologia(lado) {

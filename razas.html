@@ -14,7 +14,27 @@
       <h1>Compendio</h1>
       <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
     </div>
+
+    <div class="header-center">
+      <div class="global-search-box">
+        <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio...">
+        <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
+      </div>
+      <button id="globalRandomBtn" class="global-random-btn" type="button">🎲 Entrada aleatoria</button>
+    </div>
+
     <div class="header-right">
+      <div id="globalLadoWidget" class="global-lado-widget">
+        <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+        <div id="globalLadoPopover" class="global-lado-popover hidden">
+          <form id="globalLadoForm">
+            <input type="password" id="globalLadoPassword" placeholder="Contraseña" autocomplete="off" required>
+            <button type="submit">Entrar</button>
+          </form>
+          <p id="globalLadoError" class="global-lado-error hidden">TE EQUIVOCASTESSS</p>
+          <button type="button" id="globalLadoLogout" class="global-lado-logout hidden">Cerrar sesión</button>
+        </div>
+      </div>
       <div id="rotacionBox" class="rotacion-box">
         <div id="rotacionInner" class="rotacion-inner"></div>
         <div id="rotacionEmpty" class="rotacion-empty hidden">
@@ -117,6 +137,7 @@
   </script>
   <script src="js/modal.js"></script>
   <script src="js/lado.js"></script>
+  <script src="js/busqueda-global.js"></script>
   <script src="js/compendio.js"></script>
 </body>
 </html>

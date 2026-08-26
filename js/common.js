@@ -1,3 +1,7 @@
+function normalizarTexto(texto) {
+  return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
 function prettyName(path) {
   const base = path.split("/").pop().split("\\").pop();
   return base.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");

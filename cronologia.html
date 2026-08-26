@@ -14,7 +14,27 @@
       <h1>Compendio</h1>
       <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
     </div>
+
+    <div class="header-center">
+      <div class="global-search-box">
+        <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio...">
+        <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
+      </div>
+      <button id="globalRandomBtn" class="global-random-btn" type="button">🎲 Entrada aleatoria</button>
+    </div>
+
     <div class="header-right">
+      <div id="globalLadoWidget" class="global-lado-widget">
+        <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+        <div id="globalLadoPopover" class="global-lado-popover hidden">
+          <form id="globalLadoForm">
+            <input type="password" id="globalLadoPassword" placeholder="Contraseña" autocomplete="off" required>
+            <button type="submit">Entrar</button>
+          </form>
+          <p id="globalLadoError" class="global-lado-error hidden">TE EQUIVOCASTESSS</p>
+          <button type="button" id="globalLadoLogout" class="global-lado-logout hidden">Cerrar sesión</button>
+        </div>
+      </div>
       <div id="rotacionBox" class="rotacion-box">
         <div id="rotacionInner" class="rotacion-inner"></div>
         <div id="rotacionEmpty" class="rotacion-empty hidden">
@@ -54,45 +74,74 @@
 
   <main class="layout layout-solo">
     <section class="content">
-      <div id="ladoGate" class="lado-gate hidden">
-        <p class="eyebrow">CONTENIDO DIVIDIDO</p>
-        <h3>Elegí tu versión boludo</h3>
-        <p>La cronología y los pjs tienen dos versiones distintas. Ingresá tu contraseña secreta malvada
-        para continuar (¬`‸´¬).....</p>
-        <form id="ladoForm" class="lado-gate-form">
-          <input type="password" id="ladoPassword" placeholder="No te equivoques..." autocomplete="off" required>
-          <button type="submit">Entrar</button>
-        </form>
-        <p id="ladoError" class="lado-gate-error hidden">TE EQUIVOCASTESSS</p>
-      </div>
-
-      <section id="ladoContent" class="page-section hidden">
-        <div class="lado-badge-row">
-          <span id="ladoBadge" class="lado-badge"></span>
-          <button id="ladoSwitch" class="lado-switch" type="button">Cambiar versión</button>
-          <button id="ladoAdminLogout" class="lado-switch hidden" type="button" data-admin-only>Salir de admin</button>
-        </div>
+      <section id="lineaTiempo" class="page-section">
         <div class="content-top">
           <div>
-            <p class="eyebrow">CRÓNICA DEL VIAJE</p>
-            <h2 id="pageTitle">Cronología</h2>
+            <p class="eyebrow">HISTORIA VIVA</p>
+            <h2>Línea de Tiempo</h2>
           </div>
         </div>
-
-        <div id="cronicaList" class="cronica-list"></div>
+        <div id="timelineTrack" class="timeline-track"></div>
       </section>
+
+      <div id="encomiendaSection" class="hidden">
+        <div id="ladoGate" class="lado-gate hidden">
+          <p class="eyebrow">CONTENIDO DIVIDIDO</p>
+          <h3>Elegí tu versión boludo</h3>
+          <p>La cronología y los pjs tienen dos versiones distintas. Ingresá tu contraseña secreta malvada
+          para continuar (¬`‸´¬).....</p>
+          <form id="ladoForm" class="lado-gate-form">
+            <input type="password" id="ladoPassword" placeholder="No te equivoques..." autocomplete="off" required>
+            <button type="submit">Entrar</button>
+          </form>
+          <p id="ladoError" class="lado-gate-error hidden">TE EQUIVOCASTESSS</p>
+        </div>
+
+        <section id="ladoContent" class="page-section hidden">
+          <div class="lado-badge-row">
+            <span id="ladoBadge" class="lado-badge"></span>
+            <button id="ladoSwitch" class="lado-switch" type="button">Cambiar versión</button>
+            <button id="ladoAdminLogout" class="lado-switch hidden" type="button" data-admin-only>Salir de admin</button>
+          </div>
+          <div class="content-top">
+            <div>
+              <p class="eyebrow">CRÓNICA DEL VIAJE</p>
+              <h2 id="pageTitle">La Encomienda</h2>
+            </div>
+          </div>
+
+          <div id="cronicaList" class="cronica-list"></div>
+        </section>
+      </div>
     </section>
   </main>
 
+  <dialog id="entryModal">
+    <button id="closeModal" class="modal-close">×</button>
+    <article id="modalContent"></article>
+  </dialog>
+
+  <script src="data/cronologia-arcos.js"></script>
   <script src="data/cronologia-a.js"></script>
   <script src="data/cronologia-b.js"></script>
+  <script src="data/entries.js"></script>
+  <script src="data/personajes.js"></script>
+  <script src="data/lugares.js"></script>
+  <script src="data/facciones.js"></script>
+  <script src="data/pergaminos.js"></script>
+  <script src="data/armas.js"></script>
+  <script src="data/bestiario.js"></script>
+  <script src="data/razas.js"></script>
+  <script src="data/religiones.js"></script>
   <script src="data/rotacion.js"></script>
   <script src="data/musica.js"></script>
   <script src="data/jumpscare.js"></script>
   <script src="data/contrasenas.js"></script>
   <script src="js/common.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/modal.js"></script>
   <script src="js/lado.js"></script>
+  <script src="js/busqueda-global.js"></script>
   <script src="js/cronologia.js"></script>
 </body>
 </html>

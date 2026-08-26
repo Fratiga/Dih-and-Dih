@@ -121,6 +121,22 @@ function actualizarElementosAdminOnly() {
 }
 actualizarElementosAdminOnly();
 
+function entryEsVisible(entry) {
+  if (esAdmin()) return true;
+  if (!entry.lado) return true;
+  const lado = ladoActual();
+  return !!lado && entry.lado.includes(lado);
+}
+
+function resolverIntentoLogin(value) {
+  const imagenClave = buscarImagenPorPalabraClave(value);
+  if (imagenClave) return { tipo: "imagen", src: imagenClave };
+  if (value === ADMIN_PASSWORD) return { tipo: "admin" };
+  const lado = Object.entries(LADO_PASSWORDS).find(([, v]) => v === value)?.[0];
+  if (lado) return { tipo: "lado", lado };
+  return null;
+}
+
 function initLadoGate(onUnlock) {
   const gate = document.getElementById("ladoGate");
   const mainContent = document.getElementById("ladoContent");
@@ -149,16 +165,16 @@ function initLadoGate(onUnlock) {
   form.addEventListener("submit", e => {
     e.preventDefault();
     const value = input.value.trim();
+    const resultado = resolverIntentoLogin(value);
 
-    const imagenClave = buscarImagenPorPalabraClave(value);
-    if (imagenClave) {
+    if (resultado?.tipo === "imagen") {
       error.classList.add("hidden");
       input.value = "";
-      dispararBienvenida(imagenClave);
+      dispararBienvenida(resultado.src);
       return;
     }
 
-    if (value === ADMIN_PASSWORD) {
+    if (resultado?.tipo === "admin") {
       error.classList.add("hidden");
       input.value = "";
       localStorage.setItem(ADMIN_KEY, "1");
@@ -168,17 +184,17 @@ function initLadoGate(onUnlock) {
       return;
     }
 
-    const lado = Object.entries(LADO_PASSWORDS).find(([, v]) => v === value)?.[0];
-    if (!lado) {
-      error.classList.remove("hidden");
-      input.value = "";
-      input.focus();
-      dispararSusto();
+    if (resultado?.tipo === "lado") {
+      error.classList.add("hidden");
+      localStorage.setItem(LADO_KEY, resultado.lado);
+      revelar(resultado.lado);
       return;
     }
-    error.classList.add("hidden");
-    localStorage.setItem(LADO_KEY, lado);
-    revelar(lado);
+
+    error.classList.remove("hidden");
+    input.value = "";
+    input.focus();
+    dispararSusto();
   });
 
   if (switchBtn) {
@@ -257,3 +273,89 @@ function initAdminGate(onUnlock) {
     });
   }
 }
+
+function initGlobalLadoWidget() {
+  const widget = document.getElementById("globalLadoWidget");
+  if (!widget) return;
+
+  const badge = document.getElementById("globalLadoBadge");
+  const popover = document.getElementById("globalLadoPopover");
+  const form = document.getElementById("globalLadoForm");
+  const input = document.getElementById("globalLadoPassword");
+  const error = document.getElementById("globalLadoError");
+  const logoutBtn = document.getElementById("globalLadoLogout");
+
+  function actualizarBadge() {
+    const lado = ladoActual();
+    const admin = esAdmin();
+    badge.textContent = admin ? `★ Admin${lado ? ` — Side ${lado}` : ""}` : (lado ? `Side ${lado}` : "Iniciar sesión");
+    badge.classList.toggle("is-active", !!lado || admin);
+    if (logoutBtn) logoutBtn.classList.toggle("hidden", !lado && !admin);
+  }
+
+  function cerrarPopover() {
+    popover.classList.add("hidden");
+  }
+
+  badge.addEventListener("click", e => {
+    e.stopPropagation();
+    popover.classList.toggle("hidden");
+    if (!popover.classList.contains("hidden")) input.focus();
+  });
+
+  document.addEventListener("click", e => {
+    if (!widget.contains(e.target)) cerrarPopover();
+  });
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const value = input.value.trim();
+    const resultado = resolverIntentoLogin(value);
+
+    if (resultado?.tipo === "imagen") {
+      input.value = "";
+      error.classList.add("hidden");
+      dispararBienvenida(resultado.src);
+      return;
+    }
+
+    if (resultado?.tipo === "admin") {
+      localStorage.setItem(ADMIN_KEY, "1");
+      if (!ladoActual()) localStorage.setItem(LADO_KEY, "A");
+      input.value = "";
+      error.classList.add("hidden");
+      cerrarPopover();
+      actualizarBadge();
+      actualizarElementosAdminOnly();
+      return;
+    }
+
+    if (resultado?.tipo === "lado") {
+      localStorage.setItem(LADO_KEY, resultado.lado);
+      input.value = "";
+      error.classList.add("hidden");
+      cerrarPopover();
+      actualizarBadge();
+      return;
+    }
+
+    error.classList.remove("hidden");
+    input.value = "";
+    dispararSusto();
+  });
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem(LADO_KEY);
+      actualizarBadge();
+      actualizarElementosAdminOnly();
+      cerrarPopover();
+    });
+  }
+
+  actualizarBadge();
+}
+
+initGlobalLadoWidget();
