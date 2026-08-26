@@ -1417,3 +1417,100 @@ body.has-mini-player { padding-bottom: 74px; }
 .lado-susto-shake img {
   animation: lado-susto-shake .5s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  box-shadow: 0 6px 18px var(--shadow);
+}
+
+.stat-card-header { margin-bottom: 12px; }
+.stat-card-header h3 {
+  margin: 0 0 2px;
+  font-size: 1.15rem;
+}
+.stat-card-role {
+  color: var(--accent);
+  font-size: .8rem;
+  letter-spacing: .02em;
+}
+.stat-card-race {
+  color: var(--muted);
+  font-size: .78rem;
+}
+.stat-card-link {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  font-size: .75rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.stat-card-link:hover { color: var(--accent); }
+
+.stat-vitals {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.stat-vital {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: .8rem;
+  color: var(--text);
+}
+.stat-vital strong { color: var(--accent); display: block; font-size: .68rem; letter-spacing: .04em; text-transform: uppercase; }
+
+.stat-abilities {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin: 14px 0;
+  text-align: center;
+}
+.stat-ability {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 2px;
+}
+.stat-ability-label { font-size: .68rem; color: var(--accent); letter-spacing: .04em; }
+.stat-ability-score { font-size: .95rem; color: var(--text); }
+.stat-ability-mod { font-size: .72rem; color: var(--muted); }
+
+.stat-section-label {
+  font-size: .75rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 0 6px;
+}
+
+.stat-equipo { font-size: .85rem; color: var(--text); margin: 0 0 10px; }
+
+.stat-ability-item { margin-bottom: 8px; }
+.stat-ability-item strong { color: var(--accent); font-size: .85rem; }
+.stat-ability-item p { margin: 2px 0 0; font-size: .85rem; line-height: 1.5; }
+
+.stat-estrategia {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: .82rem;
+  color: var(--muted);
+  font-style: italic;
+}

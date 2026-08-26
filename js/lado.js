@@ -207,3 +207,49 @@ function initLadoGate(onUnlock) {
     });
   }
 }
+
+function initAdminGate(onUnlock) {
+  const gate = document.getElementById("adminGate");
+  const mainContent = document.getElementById("adminContent");
+  const form = document.getElementById("adminGateForm");
+  const input = document.getElementById("adminGatePassword");
+  const error = document.getElementById("adminGateError");
+  const logoutBtn = document.getElementById("adminGateLogout");
+
+  function revelar() {
+    gate.classList.add("hidden");
+    mainContent.classList.remove("hidden");
+    onUnlock();
+  }
+
+  if (esAdmin()) {
+    revelar();
+  } else {
+    gate.classList.remove("hidden");
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    if (input.value.trim() !== ADMIN_PASSWORD) {
+      error.classList.remove("hidden");
+      input.value = "";
+      input.focus();
+      dispararSusto();
+      return;
+    }
+    error.classList.add("hidden");
+    input.value = "";
+    localStorage.setItem(ADMIN_KEY, "1");
+    revelar();
+  });
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem(ADMIN_KEY);
+      mainContent.classList.add("hidden");
+      gate.classList.remove("hidden");
+      input.value = "";
+      input.focus();
+    });
+  }
+}
