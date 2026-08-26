@@ -93,7 +93,7 @@ window.STATS = [
     rol: "Cazador / Francotirador / Asesino",
     tipo: "Humanoide",
     raza: "Humano",
-    nivel: 9,
+    nivel: 20,
     equipo: ["Arco de Caza"],
     pv: 180,
     ca: 19,

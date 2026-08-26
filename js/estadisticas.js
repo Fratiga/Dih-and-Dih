@@ -62,7 +62,7 @@ function statCardHTML(s) {
   `;
 }
 
-const state = { search: "", tipos: new Set() };
+const state = { search: "", tipos: new Set(), nivelMin: null, nivelMax: null };
 
 function renderTipoFilters() {
   const box = document.getElementById("tipoFilters");
@@ -77,7 +77,16 @@ function filteredStats() {
     const searchable = [s.nombre, s.rol, s.raza, s.tipo].filter(Boolean).join(" ").toLowerCase();
     const matchesSearch = !state.search || searchable.includes(state.search);
     const matchesTipo = state.tipos.size === 0 || state.tipos.has(s.tipo);
-    return matchesSearch && matchesTipo;
+
+    let matchesNivel = true;
+    if (state.nivelMin !== null || state.nivelMax !== null) {
+      const n = Number(s.nivel);
+      matchesNivel = Number.isFinite(n)
+        && (state.nivelMin === null || n >= state.nivelMin)
+        && (state.nivelMax === null || n <= state.nivelMax);
+    }
+
+    return matchesSearch && matchesTipo && matchesNivel;
   });
 }
 
@@ -127,13 +136,32 @@ if (tipoFiltersBox) {
   });
 }
 
+const nivelMinInput = document.getElementById("nivelMin");
+const nivelMaxInput = document.getElementById("nivelMax");
+if (nivelMinInput) {
+  nivelMinInput.addEventListener("input", e => {
+    state.nivelMin = e.target.value === "" ? null : Number(e.target.value);
+    renderStats();
+  });
+}
+if (nivelMaxInput) {
+  nivelMaxInput.addEventListener("input", e => {
+    state.nivelMax = e.target.value === "" ? null : Number(e.target.value);
+    renderStats();
+  });
+}
+
 const clearStatFilters = document.getElementById("clearStatFilters");
 if (clearStatFilters) {
   clearStatFilters.addEventListener("click", () => {
     state.search = "";
     state.tipos.clear();
+    state.nivelMin = null;
+    state.nivelMax = null;
     if (statSearch) statSearch.value = "";
     if (tipoFiltersBox) tipoFiltersBox.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
+    if (nivelMinInput) nivelMinInput.value = "";
+    if (nivelMaxInput) nivelMaxInput.value = "";
     renderStats();
   });
 }
