@@ -1442,6 +1442,18 @@ body.has-mini-player { padding-bottom: 74px; }
   gap: 22px;
 }
 
+.stat-group-header {
+  grid-column: 1 / -1;
+  margin: 18px 0 -6px;
+  padding-bottom: 6px;
+  font-size: .95rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+}
+.stat-group-header:first-child { margin-top: 0; }
+
 .stat-card {
   background: var(--panel);
   border: 1px solid var(--border);

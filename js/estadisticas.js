@@ -79,7 +79,7 @@ function openStatModal(s) {
   modal.showModal();
 }
 
-const state = { search: "", tipos: new Set(), nivelMin: null, nivelMax: null };
+const state = { search: "", tipos: new Set(), nivelMin: null, nivelMax: null, orden: "default" };
 
 function renderTipoFilters() {
   const box = document.getElementById("tipoFilters");
@@ -107,10 +107,42 @@ function filteredStats() {
   });
 }
 
+function sortedByNivel(stats) {
+  return [...stats].sort((a, b) => {
+    const na = Number(a.nivel), nb = Number(b.nivel);
+    const fa = Number.isFinite(na), fb = Number.isFinite(nb);
+    if (fa && fb) return nb - na;
+    if (fa) return -1;
+    if (fb) return 1;
+    return 0;
+  });
+}
+
+function groupedByTipo(stats) {
+  const groups = new Map();
+  for (const s of stats) {
+    const key = s.tipo || "Sin tipo";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(s);
+  }
+  return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+}
+
 function renderStats() {
   const grid = document.getElementById("statGrid");
   const stats = filteredStats();
-  grid.innerHTML = stats.map(statCardHTML).join("");
+
+  if (state.orden === "tipo") {
+    grid.innerHTML = groupedByTipo(stats).map(([tipo, list]) => `
+      <h3 class="stat-group-header">${tipo}</h3>
+      ${sortedByNivel(list).map(statCardHTML).join("")}
+    `).join("");
+  } else if (state.orden === "nivel") {
+    grid.innerHTML = sortedByNivel(stats).map(statCardHTML).join("");
+  } else {
+    grid.innerHTML = stats.map(statCardHTML).join("");
+  }
+
   const count = document.getElementById("resultCount");
   if (count) count.textContent = `${stats.length} ${stats.length === 1 ? "ficha" : "fichas"}`;
 }
@@ -128,6 +160,14 @@ modalContent.addEventListener("click", e => {
   const entry = ALL_ENTRIES.find(x => x.id === link.dataset.personajeId);
   if (entry) openEntryModal(entry);
 });
+
+const ordenSelect = document.getElementById("ordenSelect");
+if (ordenSelect) {
+  ordenSelect.addEventListener("change", e => {
+    state.orden = e.target.value;
+    renderStats();
+  });
+}
 
 const statSearch = document.getElementById("statSearch");
 if (statSearch) {
@@ -176,10 +216,12 @@ if (clearStatFilters) {
     state.tipos.clear();
     state.nivelMin = null;
     state.nivelMax = null;
+    state.orden = "default";
     if (statSearch) statSearch.value = "";
     if (tipoFiltersBox) tipoFiltersBox.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
     if (nivelMinInput) nivelMinInput.value = "";
     if (nivelMaxInput) nivelMaxInput.value = "";
+    if (ordenSelect) ordenSelect.value = "default";
     renderStats();
   });
 }
