@@ -4,7 +4,9 @@ window.STATS = [
     personajeId: "rook",
     nombre: "Rook",
     rol: "Asesino / Ejecutor",
+    tipo: "Humanoide",
     raza: "Humano",
+    nivel: 8,
     pv: 145,
     ca: 19,
     velocidad: "40 pies",
@@ -28,7 +30,9 @@ window.STATS = [
     personajeId: "bull",
     nombre: "Bull",
     rol: "Tanque / Control",
+    tipo: "Humanoide",
     raza: "Humano",
+    nivel: 5,
     pv: 95,
     ca: 17,
     velocidad: "30 pies",
@@ -47,7 +51,9 @@ window.STATS = [
     personajeId: "garra",
     nombre: "Garra",
     rol: "Controlador / Cazador",
+    tipo: "Humanoide",
     raza: "Semi Gigante",
+    nivel: 5,
     ca: 16,
     pv: 80,
     stats: { fue: 20, des: 13, con: 17, int: 8, sab: 12, car: 8 },
@@ -65,7 +71,9 @@ window.STATS = [
     personajeId: "baraja",
     nombre: "Baraja",
     rol: "Control / Apoyo",
+    tipo: "Humanoide",
     raza: "Humano",
+    nivel: 4,
     pv: 55,
     ca: 14,
     stats: { fue: 8, des: 18, con: 12, int: 16, sab: 13, car: 17 },
@@ -83,7 +91,9 @@ window.STATS = [
     personajeId: "verdam",
     nombre: "Verdam",
     rol: "Cazador / Francotirador / Asesino",
+    tipo: "Humanoide",
     raza: "Humano",
+    nivel: 9,
     equipo: ["Arco de Caza"],
     pv: 180,
     ca: 19,
@@ -109,6 +119,7 @@ window.STATS = [
     personajeId: "eklino-a",
     nombre: "Eklino",
     rol: "Defensor",
+    tipo: "Humanoide",
     nivel: 3,
     pv: 42,
     ca: 15,
@@ -123,12 +134,147 @@ window.STATS = [
     estrategia: "Jamás abandona la entrada. Su prioridad es salvar civiles."
   },
   {
-    id: "adam-klastron",
+    id: "adam-kovacs",
     personajeId: "adam-kovacs",
-    nombre: "Adam",
+    nombre: "Adam Kovacs",
     rol: "Capitán de los caballeros de Brurland",
+    tipo: "Humanoide",
     nivel: "Desconocido, muy fuerte por lo que se sabe de sus historias, incomparable a casi nadie en poder.",
     habilidades: [],
     estrategia: ""
+  },
+  {
+    id: "aldeano-comun",
+    nombre: "Aldeano Común",
+    rol: "Civil",
+    tipo: "Humanoide",
+    nivel: 0,
+    pv: 8,
+    ca: 10,
+    velocidad: "60 pies",
+    stats: { fue: 10, des: 10, con: 10, int: 10, sab: 10, car: 10 },
+    habilidades: [
+      { nombre: "Improvisar Arma (Acción)", descripcion: "+2 al ataque. Daño: 1d4 contundente." },
+      { nombre: "Pánico (Pasiva)", descripcion: "Cuando un enemigo termina su turno a 10 pies o menos, debe superar una salvación de Sabiduría CD 10 o usa toda su velocidad para huir." }
+    ],
+    estrategia: "No pelea. Solo intenta sobrevivir."
+  },
+  {
+    id: "miliciano-brurland",
+    nombre: "Miliciano de Brurland",
+    rol: "Infantería",
+    tipo: "Humanoide",
+    pv: 28,
+    ca: 17,
+    velocidad: "30 pies",
+    equipo: ["Espada larga", "Escudo", "Armadura de malla"],
+    stats: { fue: 16, des: 11, con: 14, int: 10, sab: 12, car: 10 },
+    habilidades: [
+      { nombre: "Espada Larga (Acción)", descripcion: "Ataque cuerpo a cuerpo. +5 al impacto. Daño: 1d8+3 cortante." },
+      { nombre: "Empuje con Escudo (Acción Bonus)", descripcion: "Una criatura adyacente hace una salvación de Fuerza CD 13 o es empujada 5 pies." },
+      { nombre: "Formación Cerrada (Pasiva)", descripcion: "Mientras esté adyacente a otro Miliciano obtiene +1 CA, hasta un máximo de +2." }
+    ],
+    estrategia: "Nunca combate solo. Siempre intenta formar una línea de escudos. No persigue enemigos aislados."
+  },
+  {
+    id: "arquero-milicia",
+    nombre: "Arquero de la Milicia",
+    rol: "Apoyo",
+    tipo: "Humanoide",
+    pv: 20,
+    ca: 14,
+    stats: { fue: 10, des: 16, con: 12, int: 10, sab: 13, car: 10 },
+    habilidades: [
+      { nombre: "Arco Largo (Acción)", descripcion: "Alcance 45/180 m. +5 al impacto. Daño: 1d8+3 perforante." },
+      { nombre: "Disparo de Cobertura (Pasiva)", descripcion: "Una criatura golpeada reduce su velocidad en 10 pies hasta el final del siguiente turno." },
+      { nombre: "Objetivo Marcado (Bonus)", descripcion: "Marca a un enemigo. El siguiente aliado que lo golpee inflige 1d4 de daño adicional." }
+    ],
+    estrategia: "Siempre permanece detrás de los escuderos. Prioriza enemigos rápidos."
+  },
+  {
+    id: "sargento-milicia",
+    nombre: "Sargento de la Milicia",
+    rol: "Líder",
+    tipo: "Humanoide",
+    pv: 45,
+    ca: 18,
+    stats: { fue: 17, des: 12, con: 16, int: 12, sab: 14, car: 15 },
+    equipo: ["Espada bastarda"],
+    habilidades: [
+      { nombre: "Espada Bastarda (Acción)", descripcion: "+6 al impacto. Daño: 1d10+4." },
+      { nombre: "Orden (Bonus)", descripcion: "Un Miliciano puede moverse hasta la mitad de su velocidad sin provocar ataques de oportunidad." },
+      { nombre: "Mantener la Formación (Reacción)", descripcion: "Cuando un aliado a 5 pies recibe daño, lo reduce en 1d8+2." },
+      { nombre: "¡Adelante! (Recarga 5-6)", descripcion: "Todos los Milicianos cercanos pueden moverse 10 pies y realizar un ataque." }
+    ],
+    estrategia: "Nunca lidera desde delante. Mantiene unida la formación. Es el objetivo prioritario si los jugadores quieren romper la disciplina enemiga."
+  },
+  {
+    id: "caballero-brurland",
+    nombre: "Caballero de Brurland",
+    rol: "Caballería Pesada",
+    tipo: "Humanoide",
+    pv: 75,
+    ca: 19,
+    stats: { fue: 19, des: 12, con: 18, int: 11, sab: 14, car: 15 },
+    equipo: ["Espada de caballero"],
+    habilidades: [
+      { nombre: "Espada de Caballero (Acción)", descripcion: "+7 al impacto. Daño: 2d6+4." },
+      { nombre: "Embestida (Acción)", descripcion: "Si se mueve al menos 20 pies en línea recta antes de atacar, añade 2d6 de daño; el objetivo hace una salvación de Fuerza CD 15 o cae Derribado." },
+      { nombre: "Proteger al Rey (Reacción)", descripcion: "Intercepta un ataque dirigido contra un aliado a 10 pies." },
+      { nombre: "Resolución Inquebrantable (Una vez por combate)", descripcion: "La primera vez que llegue a 0 PV, queda en 1 PV en su lugar." }
+    ],
+    estrategia: "Busca enfrentarse al personaje más fuerte. Jamás ataca enemigos indefensos. Si un aliado cae, intenta cubrir la retirada antes que perseguir."
+  },
+  {
+    id: "kobold",
+    nombre: "Kobold",
+    rol: "Infantería Ligera",
+    tipo: "Draconico",
+    nivel: 1,
+    pv: 12,
+    ca: 13,
+    velocidad: "30 pies",
+    stats: { fue: 8, des: 15, con: 10, int: 9, sab: 8, car: 8 },
+    equipo: ["Daga oxidada", "Honda"],
+    habilidades: [
+      { nombre: "Daga (Acción)", descripcion: "+4 al impacto. Daño: 1d4+2 perforante." },
+      { nombre: "Honda (Acción)", descripcion: "Alcance 40 pies. +4 al impacto. Daño: 1d4 contundente." },
+      { nombre: "Instinto de Manada (Pasiva)", descripcion: "Mientras un aliado kobold esté adyacente al objetivo, obtiene ventaja en el ataque." },
+      { nombre: "Cobarde (Pasiva)", descripcion: "Cuando queda por debajo del 50% de vida, hace una salvación de Sabiduría CD 10 o intenta huir." }
+    ],
+    estrategia: "Nunca pelea solo. Busca rodear. Si mueren muchos compañeros, entra en pánico."
+  },
+  {
+    id: "restos-de-ledros",
+    nombre: "Restos de Ledros",
+    rol: "Infantería",
+    tipo: "No-muerto",
+    nivel: 3,
+    pv: 32,
+    ca: 14,
+    velocidad: "30 pies",
+    stats: { fue: 16, des: 8, con: 16, int: 2, sab: 6, car: 1 },
+    habilidades: [
+      { nombre: "Cuerpo Improvisado (Rasgo)", descripcion: "Al aparecer tira 1d4 para determinar su cuerpo, que modifica ligeramente sus estadísticas: Barro (+10 PV, -2 CA, reduce la velocidad del objetivo 10 pies al golpear), Raíces (+10 pies de alcance, puede inmovilizar), Piedra (+2 CA, vulnerable al daño contundente), o Madera (+3 m de movimiento, vulnerable al fuego)." },
+      { nombre: "Golpe Deforme (Acción)", descripcion: "+5 al impacto. Daño: 2d6+3 contundente." },
+      { nombre: "Aferrarse (Bonus)", descripcion: "El objetivo hace una salvación de Fuerza CD 13 o queda Restringido." },
+      { nombre: "Alma Inestable (Pasiva)", descripcion: "Al morir explota: todas las criaturas a 5 pies reciben 1d6 de daño necrótico." }
+    ],
+    estrategia: "No tienen inteligencia. Simplemente avanzan. Si sujetan a alguien, los demás lo rodean."
+  },
+  {
+    id: "alma-errante",
+    nombre: "Alma Errante",
+    rol: "Espíritu",
+    tipo: "No-muerto",
+    nivel: 2,
+    pv: 14,
+    ca: 15,
+    habilidades: [
+      { nombre: "Toque Espectral (Acción)", descripcion: "+5 al impacto. Daño: 1d8 necrótico." },
+      { nombre: "Atravesar (Pasiva)", descripcion: "Ignora terreno difícil y puede atravesar criaturas." },
+      { nombre: "Lamento (Recarga 5-6)", descripcion: "Todas las criaturas a 6 metros hacen una salvación de Sabiduría CD 12 o quedan con desventaja en su siguiente ataque." }
+    ],
+    estrategia: "Pequeños espíritus que todavía no consiguen poseer materia. No son enemigos fuertes, son molestos."
   }
 ];

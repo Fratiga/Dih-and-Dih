@@ -63,7 +63,21 @@
     <p id="adminGateError" class="lado-gate-error hidden">TE EQUIVOCASTESSS</p>
   </div>
 
-  <main id="adminContent" class="layout layout-solo hidden">
+  <main id="adminContent" class="layout hidden">
+    <aside class="sidebar">
+      <div class="search-box">
+        <label for="statSearch">Buscar</label>
+        <input id="statSearch" type="search" placeholder="Nombre, rol, raza...">
+      </div>
+
+      <div class="filter-group">
+        <h3>Tipo</h3>
+        <div id="tipoFilters" class="pill-list"></div>
+      </div>
+
+      <button id="clearStatFilters" class="secondary-button">Limpiar filtros</button>
+    </aside>
+
     <section class="content">
       <div class="lado-badge-row">
         <span class="lado-badge">★ Admin</span>

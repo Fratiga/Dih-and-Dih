@@ -5,10 +5,10 @@ function modAbility(score) {
 
 function statCardHTML(s) {
   const vitals = [];
+  if (s.nivel !== undefined) vitals.push(["Nivel", s.nivel]);
   if (s.pv !== undefined) vitals.push(["PV", s.pv]);
   if (s.ca !== undefined) vitals.push(["CA", s.ca]);
   if (s.velocidad) vitals.push(["Velocidad", s.velocidad]);
-  if (s.nivel !== undefined) vitals.push(["Nivel", s.nivel]);
 
   const vitalsHTML = vitals.length
     ? `<div class="stat-vitals">${vitals.map(([k, v]) => `<div class="stat-vital"><strong>${k}</strong>${v}</div>`).join("")}</div>`
@@ -41,35 +41,104 @@ function statCardHTML(s) {
     : "";
 
   return `
-    <article class="stat-card">
-      <div class="stat-card-header">
-        <h3>${s.nombre}</h3>
-        <p class="stat-card-role">${s.rol || ""}</p>
-        ${s.raza ? `<p class="stat-card-race">${s.raza}</p>` : ""}
+    <article class="stat-card" data-tipo="${s.tipo || ""}">
+      <button type="button" class="stat-card-header">
+        <div class="stat-card-heading">
+          <h3>${s.nombre}</h3>
+          <p class="stat-card-role">${s.rol || ""}</p>
+          ${s.raza ? `<p class="stat-card-race">${s.raza}</p>` : ""}
+        </div>
+        <span class="stat-card-chevron">▾</span>
+      </button>
+      ${vitalsHTML}
+      <div class="stat-card-body">
+        ${abilitiesHTML}
+        ${equipoHTML}
+        ${habilidadesHTML}
+        ${estrategiaHTML}
         ${linkHTML}
       </div>
-      ${vitalsHTML}
-      ${abilitiesHTML}
-      ${equipoHTML}
-      ${habilidadesHTML}
-      ${estrategiaHTML}
     </article>
   `;
 }
 
+const state = { search: "", tipos: new Set() };
+
+function renderTipoFilters() {
+  const box = document.getElementById("tipoFilters");
+  if (!box) return;
+  const tipos = [...new Set((window.STATS || []).map(s => s.tipo).filter(Boolean))].sort();
+  box.innerHTML = tipos.map(t => `<button class="pill" data-tipo="${t}">${t}</button>`).join("");
+}
+
+function filteredStats() {
+  const stats = window.STATS || [];
+  return stats.filter(s => {
+    const searchable = [s.nombre, s.rol, s.raza, s.tipo].filter(Boolean).join(" ").toLowerCase();
+    const matchesSearch = !state.search || searchable.includes(state.search);
+    const matchesTipo = state.tipos.size === 0 || state.tipos.has(s.tipo);
+    return matchesSearch && matchesTipo;
+  });
+}
+
 function renderStats() {
   const grid = document.getElementById("statGrid");
-  const stats = window.STATS || [];
+  const stats = filteredStats();
   grid.innerHTML = stats.map(statCardHTML).join("");
   const count = document.getElementById("resultCount");
-  if (count) count.textContent = `${stats.length} fichas`;
+  if (count) count.textContent = `${stats.length} ${stats.length === 1 ? "ficha" : "fichas"}`;
 }
 
 document.getElementById("statGrid").addEventListener("click", e => {
-  const btn = e.target.closest(".stat-card-link");
-  if (!btn) return;
-  const entry = ALL_ENTRIES.find(x => x.id === btn.dataset.personajeId);
-  if (entry) openEntryModal(entry);
+  const link = e.target.closest(".stat-card-link");
+  if (link) {
+    const entry = ALL_ENTRIES.find(x => x.id === link.dataset.personajeId);
+    if (entry) openEntryModal(entry);
+    return;
+  }
+  const header = e.target.closest(".stat-card-header");
+  if (header) {
+    header.closest(".stat-card").classList.toggle("expanded");
+  }
 });
 
-initAdminGate(renderStats);
+const statSearch = document.getElementById("statSearch");
+if (statSearch) {
+  statSearch.addEventListener("input", e => {
+    state.search = e.target.value.toLowerCase().trim();
+    renderStats();
+  });
+}
+
+const tipoFiltersBox = document.getElementById("tipoFilters");
+if (tipoFiltersBox) {
+  tipoFiltersBox.addEventListener("click", e => {
+    const btn = e.target.closest("[data-tipo]");
+    if (!btn) return;
+    const tipo = btn.dataset.tipo;
+    if (state.tipos.has(tipo)) {
+      state.tipos.delete(tipo);
+      btn.classList.remove("active");
+    } else {
+      state.tipos.add(tipo);
+      btn.classList.add("active");
+    }
+    renderStats();
+  });
+}
+
+const clearStatFilters = document.getElementById("clearStatFilters");
+if (clearStatFilters) {
+  clearStatFilters.addEventListener("click", () => {
+    state.search = "";
+    state.tipos.clear();
+    if (statSearch) statSearch.value = "";
+    if (tipoFiltersBox) tipoFiltersBox.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
+    renderStats();
+  });
+}
+
+initAdminGate(() => {
+  renderTipoFilters();
+  renderStats();
+});

@@ -1430,10 +1430,25 @@ body.has-mini-player { padding-bottom: 74px; }
   border-radius: 10px;
   padding: 20px 22px;
   box-shadow: 0 6px 18px var(--shadow);
+  align-self: start;
 }
 
-.stat-card-header { margin-bottom: 12px; }
-.stat-card-header h3 {
+.stat-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.stat-card-heading h3 {
   margin: 0 0 2px;
   font-size: 1.15rem;
 }
@@ -1441,13 +1456,28 @@ body.has-mini-player { padding-bottom: 74px; }
   color: var(--accent);
   font-size: .8rem;
   letter-spacing: .02em;
+  margin: 0;
 }
 .stat-card-race {
   color: var(--muted);
   font-size: .78rem;
+  margin: 2px 0 0;
 }
+.stat-card-chevron {
+  color: var(--muted);
+  font-size: .85rem;
+  flex-shrink: 0;
+  margin-top: 3px;
+  transition: transform .16s;
+}
+.stat-card.expanded .stat-card-chevron { transform: rotate(180deg); }
+
+.stat-card-body { display: none; }
+.stat-card.expanded .stat-card-body { display: block; }
+
 .stat-card-link {
-  margin-top: 6px;
+  display: block;
+  margin-top: 14px;
   background: none;
   border: none;
   padding: 0;
@@ -1462,7 +1492,7 @@ body.has-mini-player { padding-bottom: 74px; }
 .stat-vitals {
   display: flex;
   gap: 10px;
-  margin: 12px 0;
+  margin: 12px 0 0;
   flex-wrap: wrap;
 }
 .stat-vital {
