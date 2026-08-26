@@ -964,10 +964,10 @@ window.LUGARES = [
       individuo cuyo nombre real la Corona nunca logró confirmar, mucho antes de que
       naciera el bisabuelo del actual rey. La tierra nunca se recuperó. Nada vuelve a
       crecer entre las cenizas, y una fina capa de polvo gris cae de forma constante
-      desde el cielo, como si el incendio, en el fondo, nunca hubiera terminado.</p>
+      desde el cielo, un rastro constante del incendio que nunca terminó de apagarse.</p>
       <p>Los brurlandeses consideran el lugar sagrado a su manera, ya que aquí se
       organizó la primera cacería real contra el responsable, y el nombre que
-      después heredaría Vado Ceniza, mucho más al sur, nació como homenaje directo a
+      después heredaría Vado Ceniza, mucho más al este, nació como homenaje directo a
       este sitio original. La cacería nunca llegó a nada, el incendiario escapó esa
       misma noche y sigue prófugo hasta hoy, un expediente que ningún capitán de
       Brurland ha logrado cerrar. Pocos se aventuran a cruzar el desierto por gusto,
@@ -3638,8 +3638,8 @@ window.LUGARES = [
       Imperio necesita para sus máquinas de asedio, andamios y refuerzos de
       fortaleza, incluidos los que sostienen las murallas del Baluarte Umbrío no
       muy lejos de aquí. Generaciones de leñadores han aprendido a talar sin vaciar
-      el bosque entero, una disciplina que sus propios ancianos enseñan como si
-      fuera un oficio sagrado.</p>
+      el bosque entero, una disciplina que sus propios ancianos tratan como un
+      oficio sagrado.</p>
       <p>Como Tolvera, en las tierras altas de la misma provincia, Quercia conserva
       creencias anteriores a la conquista imperial. Aquí se venera a los árboles
       más viejos del bosque como algo cercano a ancestros, y ningún recaudador
@@ -4214,8 +4214,8 @@ window.LUGARES = [
       <p>Última Posada recibe a dos tipos de viajeros muy distintos, peregrinos
       que llegan desde todo Uldum para presentar sus respetos en el Pozo de la
       Eternidad, y ocasionalmente dragones en las últimas etapas de su viaje
-      final, que sobrevuelan la aldea a baja altura como si reconocieran, incluso
-      en ese estado, que están cerca de casa.</p>
+      final, que sobrevuelan la aldea a baja altura, según cuentan quienes los ven,
+      reconociendo incluso en ese estado que están cerca de casa.</p>
       <p>La Hermandad de posaderos que administra la aldea ha desarrollado un
       protocolo silencioso para esos avistamientos, despejar el cielo, guardar
       silencio y dejar que el dragón continúe sin interrupción. Ningún posadero de
@@ -6961,8 +6961,8 @@ window.LUGARES = [
     lugaresDestacados: [],
     content: `
       <p>El perímetro perfectamente circular de este claro carece por completo de
-      árboles, rodeado por el resto del bosque como si la vegetación misma respetara el
-      espacio. Los ancianos de Vernúmbra lo usan para los ritos de paso de la
+      árboles, y el bosque que lo rodea nunca invade el espacio. Los ancianos de
+      Vernúmbra lo usan para los ritos de paso de la
       comunidad, ceremonias cerradas a cualquiera que no forme parte del pueblo
       Nobriano.</p>
       <p>Quienes han presenciado una de estas ceremonias desde la distancia describen

@@ -794,8 +794,8 @@ window.RAZAS = [
       <p>Viven en colonias pequeñas y ferozmente territoriales, organizadas en torno a
       la ruina o cámara específica que cada grupo considera propia. Rara vez cooperan
       entre colonias distintas, pero dentro de su propio territorio actúan con una
-      coordinación casi militar, defendiendo cada trampa y cada pasadizo como si la
-      propia Uldum dependiera de ello.</p>
+      coordinación casi militar, defendiendo cada trampa y cada pasadizo con una
+      entrega absoluta.</p>
     `
   },
   {

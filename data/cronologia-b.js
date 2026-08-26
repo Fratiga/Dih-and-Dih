@@ -49,9 +49,8 @@ window.CRONOLOGIA_B = [
       estrellas a su paso.</p>
 
       <p>Un dragón había llegado a Brurland. Y no venía solo. Bandas de kobolds y
-      dragartos brotaron por distintos sectores de la ciudad como si hubieran estado
-      esperando la señal, sembrando el caos entre calles que minutos antes dormían en
-      paz.</p>
+      dragartos brotaron por distintos sectores de la ciudad, todos a la vez,
+      sembrando el caos entre calles que minutos antes dormían en paz.</p>
 
       <p>En medio de ese desorden, los forasteros de la noche anterior se encontraron
       cruzando la misma ciudad que apenas conocían, ahora en llamas. El camino hacia el

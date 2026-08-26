@@ -1458,8 +1458,8 @@ window.BESTIARIO = [
       <p>No es una criatura en el sentido tradicional, sino que surge cuando espíritus
       errantes dan consciencia y movilidad a un pozo de ácido abandonado, casi siempre en
       zonas donde ha habido muertes violentas recientes. Cuanto más disuelve, más grande y
-      peligroso se vuelve, absorbiendo la materia descompuesta para expandir su propio volumen
-      como si fuera un charco que nunca deja de crecer.</p>
+      peligroso se vuelve, absorbiendo la materia descompuesta para expandir su propio volumen,
+      un charco que nunca deja de crecer.</p>
       <h4>Comportamiento</h4>
       <p>Su comportamiento y agresividad varían mucho de un ejemplar a otro, lo que lo hace
       impredecible incluso para quienes llevan años estudiando el fenómeno en El Pantano
@@ -1856,7 +1856,7 @@ window.BESTIARIO = [
       <h4>Comportamiento</h4>
       <p>Corre directo hacia el enemigo más cercano, buscando romper líneas defensivas antes de
       que puedan formarse. Persigue con especial ensañamiento a quienes le hayan hecho daño, y
-      cuanto más herido está, más feroces se vuelven sus ataques, como si el dolor alimentara
+      cuanto más herido está, más feroces se vuelven sus ataques; el dolor parece alimentar
       su agresividad en lugar de mermarla.</p>
       <h4>Peligrosidad</h4>
       <p>Alta para su categoría. Golpea con fuerza desproporcionada y es lo bastante veloz para
