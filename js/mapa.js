@@ -25,7 +25,7 @@ function tipoDeLugar(lugar) {
   if (tags.includes("aldea")) return "aldea";
   if (tags.includes("reino") || tags.includes("imperio") || tags.includes("provincia") || tags.includes("ciudad-estado")) return "reino";
   if (tags.includes("región") || tags.includes("continente")) return "region";
-  if (tags.includes("isla") || tags.includes("bosque") || tags.includes("montaña") || tags.includes("volcán") || tags.includes("río") || tags.includes("lago") || tags.includes("naturaleza")) return "naturaleza";
+  if (tags.includes("isla") || tags.includes("bosque") || tags.includes("montaña") || tags.includes("volcán") || tags.includes("río") || tags.includes("lago") || tags.includes("desierto") || tags.includes("naturaleza")) return "naturaleza";
   if (tags.includes("ciudad")) return "ciudad";
   return "region";
 }

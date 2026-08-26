@@ -882,7 +882,7 @@ window.LUGARES = [
     region: "Derrovia, Gylas",
     gobierno: "Corona de Brurland",
     religionPredominante: "Mortismo",
-    lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Bosque de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Capilla de las Astas Caídas", "Los Centinelas Helados"],
+    lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Desierto de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Capilla de las Astas Caídas", "Los Centinelas Helados"],
     content: `
       <p>Un antiguo reino de caballería cuya historia está marcada por el honor, los
       dragones y la expansión militar. Aunque continúa siendo una potencia
@@ -949,27 +949,30 @@ window.LUGARES = [
     `
   },
   {
-    id: "bosque-de-cenizas",
-    title: "Bosque de Cenizas",
+    id: "desierto-de-cenizas",
+    title: "Desierto de Cenizas",
     category: "Lugares",
-    tags: ["bosque", "derrovia", "brurland"],
-    summary: "Un bosque calcinado hace generaciones por la furia de un dragón, donde la ceniza todavía cae como una nevada que nunca termina.",
+    tags: ["desierto", "derrovia", "brurland"],
+    summary: "Un bosque calcinado hasta convertirse en desierto por un incendiario cuya identidad la Corona nunca logró confirmar, donde la ceniza todavía cae como una nevada que nunca termina.",
     region: "Brurland, Derrovia, Gylas",
     gobierno: "",
     religionPredominante: "",
     lugaresDestacados: [],
     content: `
-      <p>Lo que alguna vez fue un bosque denso hoy es un páramo de troncos grises y
-      quebradizos, calcinados por el aliento de un dragón mucho antes de que naciera
-      el bisabuelo del actual rey. La tierra nunca se recuperó. Nada vuelve a crecer
-      entre las cenizas, y una fina capa de polvo gris cae de forma constante desde
-      el cielo, como si el incendio, en el fondo, nunca hubiera terminado.</p>
+      <p>Lo que alguna vez fue un bosque denso hoy es un desierto de troncos grises
+      y quebradizos, calcinados no por el aliento de ningún dragón sino por un solo
+      individuo cuyo nombre real la Corona nunca logró confirmar, mucho antes de que
+      naciera el bisabuelo del actual rey. La tierra nunca se recuperó. Nada vuelve a
+      crecer entre las cenizas, y una fina capa de polvo gris cae de forma constante
+      desde el cielo, como si el incendio, en el fondo, nunca hubiera terminado.</p>
       <p>Los brurlandeses consideran el lugar sagrado a su manera, ya que aquí se
-      libró una de las primeras batallas de la orden de caballería que juró proteger al reino
-      de los dragones, y el nombre que después heredaría Vado Ceniza, mucho más al
-      sur, nació como homenaje directo a este sitio original. Pocos se aventuran
-      a cruzarlo por gusto, pero los caballeros más devotos todavía hacen el
-      peregrinaje una vez en la vida.</p>
+      organizó la primera cacería real contra el responsable, y el nombre que
+      después heredaría Vado Ceniza, mucho más al sur, nació como homenaje directo a
+      este sitio original. La cacería nunca llegó a nada, el incendiario escapó esa
+      misma noche y sigue prófugo hasta hoy, un expediente que ningún capitán de
+      Brurland ha logrado cerrar. Pocos se aventuran a cruzar el desierto por gusto,
+      pero los caballeros más devotos todavía hacen el peregrinaje una vez en la
+      vida.</p>
     `
   },
   {

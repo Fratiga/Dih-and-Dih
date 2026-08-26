@@ -2456,7 +2456,7 @@ window.BESTIARIO = [
       <p>Veloz y capaz de manipular pequeñas llamas con el pelaje de las orejas, el Fenec
       Fulgórico caza sobre todo presas pequeñas combinando velocidad y descargas de fuego a
       corta distancia. Prefiere los terrenos secos y pedregosos cercanos a Vado Ceniza, donde
-      la tierra todavía guarda la aridez que dejó el incendio del Bosque de Cenizas
+      la tierra todavía guarda la aridez que dejó el incendio del Desierto de Cenizas
       generaciones atrás, y pocas veces se aventura hacia los pastizales húmedos del resto de
       Brurland.</p>
       <h4>Comportamiento</h4>
@@ -3583,13 +3583,13 @@ window.BESTIARIO = [
     amenaza: "Baja",
     content: `
       <p>Muy similar al Honghu en apariencia, aunque no genera fuego, solo es inmune a él.
-      Caza exclusivamente lo que necesita, sin excesos, recorriendo los bordes del Bosque de
-      Cenizas donde su inmunidad natural le permite cazar sin miedo entre la ceniza que
+      Caza exclusivamente lo que necesita, sin excesos, recorriendo los bordes del Desierto
+      de Cenizas donde su inmunidad natural le permite cazar sin miedo entre la ceniza que
       todavía cae de forma constante.</p>
       <h4>Comportamiento</h4>
       <p>Vive siempre en manada, cuidándose entre ellos; no suele atacar sin motivo y puede
       volverse compañero de una persona. Algunos caballeros veteranos de Brurland que
-      peregrinan al Bosque de Cenizas cuentan haber sido seguidos a distancia por una manada
+      peregrinan al Desierto de Cenizas cuentan haber sido seguidos a distancia por una manada
       curiosa, sin que esta llegara nunca a acercarse del todo.</p>
       <h4>Peligrosidad</h4>
       <p>Baja — su inmunidad al fuego lo hace inusual, pero su temperamento sigue siendo el
@@ -4248,12 +4248,14 @@ window.BESTIARIO = [
     clasificacion: "Omnívoro",
     amenaza: "Moderada",
     content: `
-      <p>Pasa la mayor parte del día colgado de las ramas más gruesas del Bosque de Cenizas,
-      envuelto en un pelaje grisáceo que a distancia se confunde con la corteza quemada del
-      lugar. Se alimenta sobre todo de hojas, brotes y fruta caída, y solo recurre a la carne
-      cuando encuentra un animal ya herido o muerto, prefiriendo siempre el esfuerzo mínimo
-      antes que perseguir una presa sana. Duerme en huecos naturales del bosque que ocupa
-      durante años, cambiando de refugio solo cuando la comida cercana se agota.</p>
+      <p>Pasa la mayor parte del día colgado de los troncos calcinados que todavía se
+      mantienen en pie en los márgenes del Desierto de Cenizas, envuelto en un pelaje
+      grisáceo que a distancia se confunde con la corteza quemada del lugar. Se alimenta
+      sobre todo de la vegetación resistente que logra sobrevivir en el borde del desierto,
+      hojas, brotes y fruta caída, y solo recurre a la carne cuando encuentra un animal ya
+      herido o muerto, prefiriendo siempre el esfuerzo mínimo antes que perseguir una presa
+      sana. Duerme en huecos naturales de los troncos muertos que ocupa durante años,
+      cambiando de refugio solo cuando la comida cercana se agota.</p>
       <h4>Comportamiento</h4>
       <p>Su lentitud lo vuelve fácil de esquivar mientras no se lo acorrale. Cuando se siente
       amenazado, se defiende con garras capaces de atravesar cráneo o pecho de un solo
