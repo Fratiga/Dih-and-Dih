@@ -115,6 +115,12 @@ function buscarImagenPorPalabraClave(valor) {
   return imagenes.find(src => nombreSinExtension(src) === buscado);
 }
 
+function actualizarElementosAdminOnly() {
+  const admin = esAdmin();
+  document.querySelectorAll("[data-admin-only]").forEach(el => el.classList.toggle("hidden", !admin));
+}
+actualizarElementosAdminOnly();
+
 function initLadoGate(onUnlock) {
   const gate = document.getElementById("ladoGate");
   const mainContent = document.getElementById("ladoContent");
@@ -125,16 +131,11 @@ function initLadoGate(onUnlock) {
   const switchBtn = document.getElementById("ladoSwitch");
   const logoutBtn = document.getElementById("ladoAdminLogout");
 
-  function actualizarBotonesAdmin() {
-    const admin = esAdmin();
-    document.querySelectorAll("[data-admin-only]").forEach(el => el.classList.toggle("hidden", !admin));
-  }
-
   function revelar(lado) {
     gate.classList.add("hidden");
     mainContent.classList.remove("hidden");
     if (badge) badge.textContent = esAdmin() ? `★ Admin — Side ${lado}` : `Side ${lado}`;
-    actualizarBotonesAdmin();
+    actualizarElementosAdminOnly();
     onUnlock(lado);
   }
 
@@ -204,6 +205,7 @@ function initLadoGate(onUnlock) {
       gate.classList.remove("hidden");
       input.value = "";
       input.focus();
+      actualizarElementosAdminOnly();
     });
   }
 }
@@ -219,6 +221,7 @@ function initAdminGate(onUnlock) {
   function revelar() {
     gate.classList.add("hidden");
     mainContent.classList.remove("hidden");
+    actualizarElementosAdminOnly();
     onUnlock();
   }
 
@@ -250,6 +253,7 @@ function initAdminGate(onUnlock) {
       gate.classList.remove("hidden");
       input.value = "";
       input.focus();
+      actualizarElementosAdminOnly();
     });
   }
 }
