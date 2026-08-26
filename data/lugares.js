@@ -882,7 +882,7 @@ window.LUGARES = [
     region: "Derrovia, Gylas",
     gobierno: "Corona de Brurland",
     religionPredominante: "Mortismo",
-    lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Bosque de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Capilla de las Astas Caídas"],
+    lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Bosque de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Capilla de las Astas Caídas", "Los Centinelas Helados"],
     content: `
       <p>Un antiguo reino de caballería cuya historia está marcada por el honor, los
       dragones y la expansión militar. Aunque continúa siendo una potencia
@@ -5461,6 +5461,37 @@ window.LUGARES = [
       que la Corona consulte directamente a los capataces de Stonedelve antes de
       aprobar la construcción de una nueva fortificación en cualquier parte del
       reino.</p>
+    `
+  },
+  {
+    id: "los-centinelas-helados",
+    title: "Los Centinelas Helados",
+    category: "Lugares",
+    tags: ["montaña", "brurland", "derrovia", "gylas", "frontera"],
+    summary: "Cordillera nevada en el extremo norte de Brurland, con vetas de calor volcánico bajo el hielo, donde la Corona apuesta a sus caballeros más jóvenes antes de enviarlos al frente de Broneland.",
+    region: "Brurland, Derrovia, Gylas",
+    gobierno: "Guarnición de la Corona de Brurland",
+    religionPredominante: "Mortismo",
+    lugaresDestacados: [],
+    content: `
+      <p>Al norte de Wolfmere, donde termina la última granja y empieza la roca
+      desnuda, la frontera brurlandesa deja de ser una línea en un mapa y se
+      convierte en una pared de picos nevados que ningún ejército ha intentado
+      cruzar en pleno invierno. La nieve cubre casi todo el año, pero el suelo
+      bajo el hielo se mantiene extrañamente tibio en ciertas grietas, columnas
+      delgadas de vapor pálido que jamás terminan de congelarse. Los mineros de
+      Stonedelve, que conocen la piedra mejor que nadie, aseguran que es el mismo
+      fuego que arde bajo Balutia, apenas un rescoldo aquí, apagándose lento bajo
+      tanto blanco.</p>
+      <p>La Corona mantiene una guarnición permanente en las laderas bajas,
+      construida junto a esas grietas tibias para que los caballeros de guardia
+      sobrevivan el invierno sin perder los dedos. Wolfmere envía aquí a sus
+      reclutas más prometedores antes de considerarlos listos para el frente de
+      Broneland, una tradición no escrita que convierte sobrevivir un invierno
+      completo en los Centinelas en la prueba de disciplina más respetada del
+      reino. En las noches más claras, los centinelas juran ver relámpagos moverse
+      entre las cumbres más altas sin nube alguna que los acompañe, y prefieren no
+      preguntarse demasiado si se trata de Zraith.</p>
     `
   },
   {
