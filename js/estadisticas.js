@@ -27,6 +27,10 @@ function statCardHTML(s) {
     ? `<p class="stat-section-label">Equipo</p><p class="stat-equipo">${s.equipo.join(", ")}</p>`
     : "";
 
+  const notasHTML = s.notas && s.notas.length
+    ? `<p class="stat-section-label">Rasgos de Combate</p><ul class="stat-notas">${s.notas.map(n => `<li>${n}</li>`).join("")}</ul>`
+    : "";
+
   const habilidadesHTML = s.habilidades && s.habilidades.length
     ? `<p class="stat-section-label">Habilidades</p>${s.habilidades.map(h => `
         <div class="stat-ability-item"><strong>${h.nombre}</strong><p>${h.descripcion}</p></div>`).join("")}`
@@ -53,6 +57,7 @@ function statCardHTML(s) {
       ${vitalsHTML}
       <div class="stat-card-body">
         ${abilitiesHTML}
+        ${notasHTML}
         ${equipoHTML}
         ${habilidadesHTML}
         ${estrategiaHTML}
