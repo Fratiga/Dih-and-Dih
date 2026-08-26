@@ -107,11 +107,11 @@ function filteredStats() {
   });
 }
 
-function sortedByNivel(stats) {
+function sortedByNivel(stats, dir = "desc") {
   return [...stats].sort((a, b) => {
     const na = Number(a.nivel), nb = Number(b.nivel);
     const fa = Number.isFinite(na), fb = Number.isFinite(nb);
-    if (fa && fb) return nb - na;
+    if (fa && fb) return dir === "asc" ? na - nb : nb - na;
     if (fa) return -1;
     if (fb) return 1;
     return 0;
@@ -137,8 +137,10 @@ function renderStats() {
       <h3 class="stat-group-header">${tipo}</h3>
       ${sortedByNivel(list).map(statCardHTML).join("")}
     `).join("");
-  } else if (state.orden === "nivel") {
-    grid.innerHTML = sortedByNivel(stats).map(statCardHTML).join("");
+  } else if (state.orden === "nivel-desc") {
+    grid.innerHTML = sortedByNivel(stats, "desc").map(statCardHTML).join("");
+  } else if (state.orden === "nivel-asc") {
+    grid.innerHTML = sortedByNivel(stats, "asc").map(statCardHTML).join("");
   } else {
     grid.innerHTML = stats.map(statCardHTML).join("");
   }
