@@ -278,6 +278,7 @@ window.MAPA_PUNTOS = [
   { lugarId: "claro-sagrado", x: 24.5, y: 76.7 },
   { lugarId: "rio-del-caballero", x: 28.2, y: 73 },
   { lugarId: "colinas-de-wolfmere", x: 33, y: 65.6 },
+  { lugarId: "los-centinelas-helados", x: 31, y: 62 },
   { lugarId: "cascada-de-vinealta", x: 62.5, y: 15 },
   { lugarId: "vado-del-alba", x: 58, y: 15 },
   { lugarId: "atalaya-del-norte", x: 65, y: 15 },
