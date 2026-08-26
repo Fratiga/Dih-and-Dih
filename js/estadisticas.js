@@ -3,17 +3,33 @@ function modAbility(score) {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
 
-function statCardHTML(s) {
+function statVitalsHTML(s) {
   const vitals = [];
   if (s.nivel !== undefined) vitals.push(["Nivel", s.nivel]);
   if (s.pv !== undefined) vitals.push(["PV", s.pv]);
   if (s.ca !== undefined) vitals.push(["CA", s.ca]);
   if (s.velocidad) vitals.push(["Velocidad", s.velocidad]);
 
-  const vitalsHTML = vitals.length
+  return vitals.length
     ? `<div class="stat-vitals">${vitals.map(([k, v]) => `<div class="stat-vital"><strong>${k}</strong>${v}</div>`).join("")}</div>`
     : "";
+}
 
+function statCardHTML(s) {
+  return `
+    <article class="stat-card" data-tipo="${s.tipo || ""}" data-stat-id="${s.id}">
+      <div class="stat-card-heading">
+        <h3>${s.nombre}</h3>
+        <p class="stat-card-role">${s.rol || ""}</p>
+        ${s.raza ? `<p class="stat-card-race">${s.raza}</p>` : ""}
+      </div>
+      ${statVitalsHTML(s)}
+      <p class="stat-card-hint">Ver ficha completa →</p>
+    </article>
+  `;
+}
+
+function statModalHTML(s) {
   const abilitiesHTML = s.stats
     ? `<div class="stat-abilities">${["fue", "des", "con", "int", "sab", "car"].map(k => `
         <div class="stat-ability">
@@ -45,26 +61,22 @@ function statCardHTML(s) {
     : "";
 
   return `
-    <article class="stat-card" data-tipo="${s.tipo || ""}">
-      <button type="button" class="stat-card-header">
-        <div class="stat-card-heading">
-          <h3>${s.nombre}</h3>
-          <p class="stat-card-role">${s.rol || ""}</p>
-          ${s.raza ? `<p class="stat-card-race">${s.raza}</p>` : ""}
-        </div>
-        <span class="stat-card-chevron">▾</span>
-      </button>
-      ${vitalsHTML}
-      <div class="stat-card-body">
-        ${abilitiesHTML}
-        ${notasHTML}
-        ${equipoHTML}
-        ${habilidadesHTML}
-        ${estrategiaHTML}
-        ${linkHTML}
-      </div>
-    </article>
+    <div class="entry-type">Ficha de Combate</div>
+    <h2>${s.nombre}</h2>
+    <p class="modal-meta">${[s.rol, s.raza].filter(Boolean).join(" · ")}</p>
+    ${statVitalsHTML(s)}
+    ${abilitiesHTML}
+    ${notasHTML}
+    ${equipoHTML}
+    ${habilidadesHTML}
+    ${estrategiaHTML}
+    ${linkHTML}
   `;
+}
+
+function openStatModal(s) {
+  modalContent.innerHTML = statModalHTML(s);
+  modal.showModal();
 }
 
 const state = { search: "", tipos: new Set(), nivelMin: null, nivelMax: null };
@@ -104,16 +116,17 @@ function renderStats() {
 }
 
 document.getElementById("statGrid").addEventListener("click", e => {
+  const card = e.target.closest(".stat-card");
+  if (!card) return;
+  const s = (window.STATS || []).find(x => x.id === card.dataset.statId);
+  if (s) openStatModal(s);
+});
+
+modalContent.addEventListener("click", e => {
   const link = e.target.closest(".stat-card-link");
-  if (link) {
-    const entry = ALL_ENTRIES.find(x => x.id === link.dataset.personajeId);
-    if (entry) openEntryModal(entry);
-    return;
-  }
-  const header = e.target.closest(".stat-card-header");
-  if (header) {
-    header.closest(".stat-card").classList.toggle("expanded");
-  }
+  if (!link) return;
+  const entry = ALL_ENTRIES.find(x => x.id === link.dataset.personajeId);
+  if (entry) openEntryModal(entry);
 });
 
 const statSearch = document.getElementById("statSearch");
