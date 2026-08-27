@@ -35,11 +35,19 @@
       return;
     }
 
+    function rango(entry) {
+      const titulo = normalizarTexto(entry.title);
+      if (titulo.startsWith(consultaNormalizada)) return 0;
+      if (titulo.includes(consultaNormalizada)) return 1;
+      return 2;
+    }
+
     const coincidencias = poolVisible()
       .filter(entry => {
         const searchable = normalizarTexto([entry.title, entry.category, entry.summary, ...(entry.tags || [])].join(" "));
         return searchable.includes(consultaNormalizada);
       })
+      .sort((a, b) => rango(a) - rango(b))
       .slice(0, 8);
 
     if (!coincidencias.length) {
