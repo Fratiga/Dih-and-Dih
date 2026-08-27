@@ -8,19 +8,26 @@
 </head>
 <body>
   <header class="site-header">
+   <div class="header-marquee">
+     <div class="marquee-row marquee-row-right">
+       <div class="marquee-track" id="marqueeTrackA"></div>
+     </div>
+     <div class="header-topbar">
+       <div class="global-search-box">
+         <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio...">
+         <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
+       </div>
+       <button id="globalRandomBtn" class="global-random-btn" type="button">🎲 Entrada aleatoria</button>
+     </div>
+     <div class="marquee-row marquee-row-left">
+       <div class="marquee-track" id="marqueeTrackB"></div>
+     </div>
+   </div>
    <div class="site-header-inner">
     <div class="header-left">
       <p class="eyebrow">ARCHIVO DEL MUNDO</p>
       <h1>Compendio</h1>
       <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
-    </div>
-
-    <div class="header-center">
-      <div class="global-search-box">
-        <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio...">
-        <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
-      </div>
-      <button id="globalRandomBtn" class="global-random-btn" type="button">🎲 Entrada aleatoria</button>
     </div>
 
     <div class="header-right">
@@ -163,6 +170,7 @@
   <script src="js/modal.js"></script>
   <script src="js/lado.js"></script>
   <script src="js/busqueda-global.js"></script>
+  <script src="js/header-marquee.js"></script>
   <script src="js/mapa.js"></script>
 </body>
 </html>
