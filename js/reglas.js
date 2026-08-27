@@ -1,7 +1,7 @@
 function renderReglas() {
   const grid = document.getElementById("reglasGrid");
   grid.innerHTML = (window.REGLAS || []).map(grupo => `
-    <article class="reglas-group">
+    <article class="reglas-group${grupo.items.length >= 10 ? " wide" : ""}">
       <h3>${grupo.titulo}</h3>
       <p class="reglas-desc">${grupo.descripcion}</p>
       <ul class="reglas-items">
