@@ -1,4 +1,26 @@
 (function () {
+  const MARQUEE_PAUSE_KEY = "marqueePaused";
+  const marqueeEl = document.querySelector(".header-marquee");
+  const toggleBtn = document.getElementById("marqueeToggle");
+
+  function applyPausedState(paused) {
+    if (marqueeEl) marqueeEl.classList.toggle("paused", paused);
+    if (toggleBtn) {
+      toggleBtn.textContent = paused ? "▶" : "⏸";
+      toggleBtn.title = paused ? "Reanudar franjas" : "Detener franjas";
+    }
+  }
+
+  applyPausedState(localStorage.getItem(MARQUEE_PAUSE_KEY) === "1");
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const next = !marqueeEl.classList.contains("paused");
+      localStorage.setItem(MARQUEE_PAUSE_KEY, next ? "1" : "0");
+      applyPausedState(next);
+    });
+  }
+
   const trackA = document.getElementById("marqueeTrackA");
   const trackB = document.getElementById("marqueeTrackB");
   if (!trackA && !trackB) return;

@@ -64,13 +64,14 @@ body::after {
 
 .header-marquee {
   width: 100%;
-  padding: 16px 0 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 18px 0 20px;
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
 }
+.header-marquee.paused .marquee-track { animation-play-state: paused; }
 
 .header-topbar {
   width: min(1450px, 94%);
@@ -81,6 +82,23 @@ body::after {
 }
 .header-topbar .global-search-box { flex: 1; max-width: 420px; }
 .header-topbar .global-random-btn { flex-shrink: 0; white-space: nowrap; align-self: center; }
+
+.marquee-toggle {
+  flex-shrink: 0;
+  align-self: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 0;
+  font-size: .9rem;
+  font-family: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .16s, border-color .16s;
+}
+.marquee-toggle:hover { color: var(--text); border-color: var(--accent-soft); }
 
 .marquee-row {
   overflow: hidden;
