@@ -789,6 +789,7 @@ input[type="search"]:focus { border-color: var(--accent-soft); }
 .reglas-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-auto-flow: dense;
   gap: 20px;
 }
 
