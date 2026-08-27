@@ -799,6 +799,13 @@ input[type="search"]:focus { border-color: var(--accent-soft); }
   border-left: 3px solid var(--accent-soft);
   border-radius: 0;
   padding: 22px;
+  scroll-margin-top: 80px;
+}
+
+.reglas-chips {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
 }
 
 .reglas-group.wide {
