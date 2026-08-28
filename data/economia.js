@@ -104,5 +104,7 @@ window.ECONOMIA = [
   // Animales y transporte
   { nombre: "Carretilla", categoria: "Animales y transporte", precio: "15 po" },
   { nombre: "Burro", categoria: "Animales y transporte", precio: "25 po" },
-  { nombre: "Caballo de carga", categoria: "Animales y transporte", precio: "75 po" }
+  { nombre: "Caballo de carga", categoria: "Animales y transporte", precio: "75 po" },
+  { nombre: "Caballo de silla", categoria: "Animales y transporte", precio: "75 po" },
+  { nombre: "Caballo de guerra", categoria: "Animales y transporte", precio: "400 po", nota: "El doble o más si lleva el hierro de Marshfield — sus monturas son el estándar con el que se equipa la caballería de Brurland." }
 ];
