@@ -521,7 +521,7 @@ window.STATS = [
     nombre: "Voss",
     rol: "Velocidad / Destreza / Hostigamiento",
     tipo: "Humanoide",
-    raza: "Hombre bestia (Gato)",
+    raza: "Humana",
     nivel: 4,
     pv: 34,
     ca: 16,
@@ -541,11 +541,11 @@ window.STATS = [
       { nombre: "Finta sonriente (Recarga 5-6)", descripcion: "Elige una criatura a 15 pies que pueda verla. El objetivo realiza una salvación de Sabiduría CD 14. Si falla, Voss tiene ventaja en su siguiente ataque contra ella y el objetivo no puede realizar reacciones hasta el comienzo de su próximo turno." },
       { nombre: "Desvío (Reacción)", descripcion: "Cuando recibe un ataque cuerpo a cuerpo que pueda ver, aumenta su CA en 3 contra ese ataque. Debe decidirlo antes de saber si el ataque impacta." }
     ],
-    estrategia: "Hostiga y se reposiciona: nunca se queda al alcance de un solo enemigo por mucho tiempo. Rodea a Bram, golpea al objetivo que marcó Nazario y se retira antes de que puedan responderle."
+    estrategia: "Hostiga y se reposiciona: nunca se queda al alcance de un solo enemigo por mucho tiempo. Rodea a Billy, golpea al objetivo que marcó Victor y se retira antes de que puedan responderle."
   },
   {
-    id: "bram",
-    nombre: "Bram",
+    id: "billy",
+    nombre: "Billy",
     rol: "Constitución / Fuerza / Tanque",
     tipo: "Humanoide",
     raza: "Hombre bestia (Cabra)",
@@ -565,15 +565,15 @@ window.STATS = [
       { nombre: "Hachón pesado (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +7 al ataque. Daño: 1d12+5 cortante." },
       { nombre: "Cornada de embestida (Pasiva)", descripcion: "Si se mueve al menos 15 pies en línea recta antes de golpear con su hachón, el objetivo recibe 1d6 de daño perforante adicional y debe superar una salvación de Fuerza CD 15 o caer Derribado." },
       { nombre: "Golpe contra el suelo (Recarga 5-6)", descripcion: "Golpea el suelo. Todas las criaturas a su elección en un radio de 10 pies deben realizar una salvación de Destreza CD 15. Fallo: 2d6+3 de daño contundente y quedan Derribadas. Éxito: la mitad del daño y no caen." },
-      { nombre: "Muro de carne (Pasiva, 1/ronda)", descripcion: "Los enemigos provocan un ataque de oportunidad de Bram incluso si se mueven usando la acción Destrabarse, siempre que intenten pasar junto a él para acercarse a uno de sus aliados." },
-      { nombre: "Interponerse (Reacción)", descripcion: "Cuando un aliado a 5 pies recibe un ataque, Bram se convierte en el objetivo en su lugar." },
+      { nombre: "Muro de carne (Pasiva, 1/ronda)", descripcion: "Los enemigos provocan un ataque de oportunidad de Billy incluso si se mueven usando la acción Destrabarse, siempre que intenten pasar junto a él para acercarse a uno de sus aliados." },
+      { nombre: "Interponerse (Reacción)", descripcion: "Cuando un aliado a 5 pies recibe un ataque, Billy se convierte en el objetivo en su lugar." },
       { nombre: "Demasiado terco para caer (Rasgo único)", descripcion: "La primera vez que baja a 20 PV o menos, obtiene inmediatamente 10 PV temporales y no puede ser empujado ni derribado hasta el final de su siguiente turno." }
     ],
-    estrategia: "Contiene al grupo: se coloca entre sus compañeros y el peligro, y derriba a cualquiera que intente atravesar su posición. Avanza primero y bloquea el acceso a Nazario; si alguien alcanza a un aliado, usa Interponerse. Si el grupo se agrupa demasiado, es el momento de un Golpe contra el suelo."
+    estrategia: "Contiene al grupo: se coloca entre sus compañeros y el peligro, y derriba a cualquiera que intente atravesar su posición. Avanza primero y bloquea el acceso a Victor; si alguien alcanza a un aliado, usa Interponerse. Si el grupo se agrupa demasiado, es el momento de un Golpe contra el suelo."
   },
   {
-    id: "nazario",
-    nombre: "Nazario",
+    id: "victor",
+    nombre: "Victor",
     rol: "Inteligencia / Carisma / Control",
     tipo: "Humanoide",
     raza: "Hombre bestia (Murciélago)",
@@ -590,19 +590,19 @@ window.STATS = [
     ],
     habilidades: [
       { nombre: "Aguja mental (Acción)", descripcion: "Ataque mágico a distancia, alcance 60 pies. +7 al ataque. Daño: 2d8+3 psíquico." },
-      { nombre: "Exponer debilidad (Acción Adicional)", descripcion: "Marca a una criatura que pueda ver a 60 pies hasta el comienzo de su siguiente turno. La primera vez que un aliado de Nazario golpee al objetivo marcado, el ataque inflige 1d6 de daño adicional." },
+      { nombre: "Exponer debilidad (Acción Adicional)", descripcion: "Marca a una criatura que pueda ver a 60 pies hasta el comienzo de su siguiente turno. La primera vez que un aliado de Victor golpee al objetivo marcado, el ataque inflige 1d6 de daño adicional." },
       { nombre: "Palabras paralizantes (Recarga 5-6)", descripcion: "Una criatura a 30 pies que pueda escucharlo realiza una salvación de Sabiduría CD 15. Si falla, recibe 2d6 de daño psíquico y queda Restringida por pensamientos intrusivos hasta el final de su siguiente turno. Puede repetir la salvación inmediatamente después de recibir daño, terminando el efecto si tiene éxito." },
-      { nombre: "Orden humillante (1/combate)", descripcion: "Hasta dos criaturas a 30 pies deben superar una salvación de Sabiduría CD 15. Quien falle elige de inmediato: alejarse 15 pies de Nazario sin provocar ataques de oportunidad, soltar un objeto que sostenga, o caer Derribada." },
+      { nombre: "Orden humillante (1/combate)", descripcion: "Hasta dos criaturas a 30 pies deben superar una salvación de Sabiduría CD 15. Quien falle elige de inmediato: alejarse 15 pies de Victor sin provocar ataques de oportunidad, soltar un objeto que sostenga, o caer Derribada." },
       { nombre: "Ya lo había previsto (Reacción)", descripcion: "Cuando una criatura marcada por Exponer debilidad lo ataca, impone desventaja a esa tirada. Debe declarar la reacción antes de conocer el resultado." }
     ],
-    estrategia: "Dirige el combate: marca al personaje más vulnerable o peligroso apenas empieza la pelea. Si el grupo intenta rodearlos, usa Orden humillante para romper su formación. Si alguien logra llegar hasta él, confía en que Bram use Interponerse antes de que eso pase."
+    estrategia: "Dirige el combate: marca al personaje más vulnerable o peligroso apenas empieza la pelea. Si el grupo intenta rodearlos, usa Orden humillante para romper su formación. Si alguien logra llegar hasta él, confía en que Billy use Interponerse antes de que eso pase."
   },
   {
-    id: "brenna",
-    nombre: "Brenna",
+    id: "torvrena",
+    nombre: "Torvrena",
     rol: "Fuerza / Constitución / Captura",
     tipo: "Humanoide",
-    raza: "Humana",
+    raza: "Hombre bestia (Gato)",
     nivel: 4,
     pv: 48,
     ca: 16,
@@ -617,13 +617,13 @@ window.STATS = [
     ],
     habilidades: [
       { nombre: "Hachuela de carnicero (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +6 al ataque. Daño: 1d10+4 cortante. Contra una criatura Agarrada, Restringida o Derribada, inflige 1d6 de daño adicional." },
-      { nombre: "Arpón encadenado (Acción)", descripcion: "Ataque a distancia, alcance 30/60 pies. +6 al ataque. Daño: 1d8+4 perforante. Una criatura Grande o menor golpeada queda enganchada: no puede alejarse a más de 30 pies de Brenna, ella puede arrastrarla 10 pies como acción adicional ganando una prueba enfrentada de Atletismo, y una criatura voladora debe superar una salvación de Fuerza CD 14 al empezar su turno o descender 20 pies. La criatura enganchada puede usar su acción para una prueba de Fuerza CD 14 y arrancarse el arpón. Brenna solo lleva tres." },
+      { nombre: "Arpón encadenado (Acción)", descripcion: "Ataque a distancia, alcance 30/60 pies. +6 al ataque. Daño: 1d8+4 perforante. Una criatura Grande o menor golpeada queda enganchada: no puede alejarse a más de 30 pies de Torvrena, que puede arrastrarla 10 pies como acción adicional ganando una prueba enfrentada de Atletismo, y una criatura voladora debe superar una salvación de Fuerza CD 14 al empezar su turno o descender 20 pies. La criatura enganchada puede usar su acción para una prueba de Fuerza CD 14 y arrancarse el arpón. Torvrena solo lleva tres." },
       { nombre: "Trampa de mandíbula (Acción)", descripcion: "Instala una de sus dos trampas en un espacio a 5 pies. La primera criatura que entre debe superar una salvación de Destreza CD 14 o recibir 1d6+3 de daño perforante y quedar Restringida (puede detectarse con Percepción CD 13; liberarse con Fuerza CD 14)." },
-      { nombre: "Estudiar a la presa (Acción Adicional)", descripcion: "Estudia a una criatura visible a 60 pies con una prueba de Supervivencia CD 10 + la mitad del nivel o VD de la criatura. Con éxito, el DM revela una resistencia/inmunidad, su ataque más peligroso, un rasgo de movimiento, una vulnerabilidad, o el estado aproximado de sus PV; además el próximo ataque de Brenna contra ella tiene ventaja. Una vez por criatura por combate." },
+      { nombre: "Estudiar a la presa (Acción Adicional)", descripcion: "Estudia a una criatura visible a 60 pies con una prueba de Supervivencia CD 10 + la mitad del nivel o VD de la criatura. Con éxito, el DM revela una resistencia/inmunidad, su ataque más peligroso, un rasgo de movimiento, una vulnerabilidad, o el estado aproximado de sus PV; además el próximo ataque de Torvrena contra ella tiene ventaja. Una vez por criatura por combate." },
       { nombre: "Aguantar el impacto (Reacción, 2/descanso corto)", descripcion: "Cuando recibe daño, lo reduce en 1d10+4." },
       { nombre: "Presa contra el suelo (Acción Adicional)", descripcion: "Cuando golpea cuerpo a cuerpo a una criatura Grande o menor enganchada por su arpón, intenta Derribarla con una prueba enfrentada de Atletismo. Si gana, la criatura cae Derribada y no puede levantarse hasta liberarse del arpón o superar Fuerza CD 14 al empezar su turno." },
       { nombre: "Rematar a la bestia (1/turno)", descripcion: "Cuando golpea a una criatura a la mitad de sus PV máximos o menos, añade 1d4 al daño (1d6 si es bestia, monstruosidad o dragón)." },
-      { nombre: "Instinto de supervivencia (Pasiva)", descripcion: "Ventaja en salvaciones contra Asustado y en pruebas para rastrear bestias, monstruosidades y dragones. No puede ser sorprendida por criaturas cuyo rastro haya estado siguiendo." }
+      { nombre: "Instinto de supervivencia (Pasiva)", descripcion: "Ventaja en salvaciones contra Asustado y en pruebas para rastrear bestias, monstruosidades y dragones. No puede ser sorprendido por criaturas cuyo rastro haya estado siguiendo." }
     ],
     estrategia: "«Todo monstruo tiene una parte blanda. El problema es sobrevivir hasta encontrarla.» No intenta superar a las bestias en velocidad: las inmoviliza con arpón y trampas, soporta su furia con Aguantar el impacto y espera el momento para rematarlas. No reemplaza a un miembro del grupo — su aporte es retener al objetivo, revelar información con Estudiar a la presa y crear oportunidades de ataque. Solo se compromete a entrar en la guarida si se le garantiza quedarse con una parte valiosa del cadáver."
   }
