@@ -756,11 +756,11 @@ window.PERSONAJES = [
     id: "gareth-b",
     title: "Gareth",
     category: "Personajes",
-    tags: ["npc", "gigante", "kigan"],
-    summary: "Gigante dueño de La Taberna del Gigante, fuerte y algo malhumorado; su local sobrevivió al ataque del dragón casi de milagro.",
+    tags: ["npc", "semigigante", "kigan"],
+    summary: "Semigigante dueño de La Taberna del Gigante, fuerte y algo malhumorado; su local sobrevivió al ataque del dragón casi de milagro.",
     retrato: "",
     titulo: "Dueño de La Taberna del Gigante",
-    raza: "Gigante",
+    raza: "Semigigante",
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Tabernero",
@@ -769,7 +769,7 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [],
     content: `
-      <p>Un gigante tan fuerte como de mal humor, dueño de La Taberna del
+      <p>Un semigigante tan fuerte como de mal humor, dueño de La Taberna del
       Gigante desde hace años. Su local sobrevivió al ataque del dragón casi de
       milagro, y desde entonces no le falta clientela.</p>
     `

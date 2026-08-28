@@ -284,6 +284,10 @@ function initGlobalLadoWidget() {
   const input = document.getElementById("globalLadoPassword");
   const error = document.getElementById("globalLadoError");
   const logoutBtn = document.getElementById("globalLadoLogout");
+  // Opcional: si la página incluye este botón, un Admin puede alternar
+  // Side A/B con un click, sin volver a escribir ninguna contraseña.
+  // Páginas que no lo tengan en su markup simplemente no lo usan.
+  const switchBtn = document.getElementById("globalLadoSwitch");
 
   function actualizarBadge() {
     const lado = ladoActual();
@@ -291,6 +295,7 @@ function initGlobalLadoWidget() {
     badge.textContent = admin ? `★ Admin${lado ? ` — Side ${lado}` : ""}` : (lado ? `Side ${lado}` : "Iniciar sesión");
     badge.classList.toggle("is-active", !!lado || admin);
     if (logoutBtn) logoutBtn.classList.toggle("hidden", !lado && !admin);
+    if (switchBtn) switchBtn.classList.toggle("hidden", !admin);
   }
 
   function cerrarPopover() {
@@ -352,6 +357,16 @@ function initGlobalLadoWidget() {
       actualizarBadge();
       actualizarElementosAdminOnly();
       cerrarPopover();
+    });
+  }
+
+  if (switchBtn) {
+    switchBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      if (!esAdmin()) return;
+      const otroLado = ladoActual() === "A" ? "B" : "A";
+      localStorage.setItem(LADO_KEY, otroLado);
+      actualizarBadge();
     });
   }
 

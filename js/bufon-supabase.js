@@ -37,8 +37,15 @@ function bufonCliente() {
 }
 
 /* Guarda una elección en Supabase. Falla en silencio a propósito: el
-   jugador nunca debe notar que esto se está registrando. */
+   jugador nunca debe notar que esto se está registrando.
+
+   En modo Admin (js/lado.js) no se guarda nada — son pruebas del GM, no
+   partidas reales, y no tiene sentido que le ensucien la tabla al
+   sistema de sideEvidence. El comportamiento local (qué se ve en
+   pantalla) sigue funcionando igual, porque eso lo maneja el historial
+   en localStorage/sessionStorage, no esta llamada. */
 async function bufonRegistrar({ dialogueId, category, choiceId, questionText, choiceText }) {
+  if (typeof esAdmin === "function" && esAdmin()) return;
   try {
     const supabase = await bufonCliente();
     await supabase.from("bufon_elecciones").insert({

@@ -281,7 +281,7 @@ window.CRONOLOGIA_B = [
       viaje. Terminaron en La Taberna del Gigante, el mismo lugar donde todo
       había empezado, conversando y negociando con los clientes mientras Adam
       compraba raciones para el camino. Detrás de la barra atendía Gareth, el
-      gigante dueño del lugar, tan fuerte como de mal humor. Su taberna había
+      semigigante dueño del lugar, tan fuerte como de mal humor. Su taberna había
       sobrevivido al ataque del dragón casi de milagro, y desde entonces no le
       faltaba clientela.</p>
 
