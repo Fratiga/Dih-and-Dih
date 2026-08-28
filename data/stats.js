@@ -515,5 +515,83 @@ window.STATS = [
       { nombre: "Muerte", descripcion: "Al llegar de nuevo a 0 PV, muere definitivamente: su cuerpo colosal cae al suelo provocando un terremoto. Todas las criaturas a 60 pies fallan una salvación de Destreza CD 30 o reciben 10d10 de daño contundente y caen Derribadas." }
     ],
     estrategia: "El jefe final de la campaña. Abre con Presencia Aterradora y castiga a quien se acerque con Multiataque; reserva el Aliento del Dragón para golpear a varios objetivos a la vez y usa sus acciones legendarias entre turnos para no dejar respiro. Su Segunda Fase lo hace notablemente más letal, así que el grupo debe estar preparado para una pelea en dos actos."
+  },
+  {
+    id: "colmillo",
+    nombre: "Colmillo",
+    rol: "Velocidad / Destreza / Hostigamiento",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 34,
+    ca: 16,
+    velocidad: "40 pies",
+    stats: { fue: 8, des: 20, con: 12, int: 11, sab: 14, car: 14 },
+    equipo: ["Estoque"],
+    notas: [
+      "Iniciativa: +5",
+      "Salvaciones: Des +7",
+      "Habilidades: Acrobacias +7, Engaño +4, Percepción +4, Sigilo +7",
+      "Percepción pasiva: 14"
+    ],
+    habilidades: [
+      { nombre: "Estoque veloz (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +7 al ataque. Daño: 1d8+5 perforante. Si recorrió al menos 15 pies antes de atacar, inflige 1d6 de daño adicional." },
+      { nombre: "Paso evasivo (Acción Adicional)", descripcion: "Puede Correr, Destrabarse o Esconderse." },
+      { nombre: "Corte al pasar (Pasiva)", descripcion: "Una vez por turno, después de golpear a una criatura, puede moverse hasta 10 pies sin provocar ataques de oportunidad de ese objetivo." },
+      { nombre: "Finta sonriente (Recarga 5-6)", descripcion: "Elige una criatura a 15 pies que pueda verla. El objetivo realiza una salvación de Sabiduría CD 14. Si falla, Colmillo tiene ventaja en su siguiente ataque contra ella y el objetivo no puede realizar reacciones hasta el comienzo de su próximo turno." },
+      { nombre: "Desvío (Reacción)", descripcion: "Cuando recibe un ataque cuerpo a cuerpo que pueda ver, aumenta su CA en 3 contra ese ataque. Debe decidirlo antes de saber si el ataque impacta." }
+    ],
+    estrategia: "Hostiga y se reposiciona: nunca se queda al alcance de un solo enemigo por mucho tiempo. Rodea a Yunque, golpea al objetivo que marcó Fábula y se retira antes de que puedan responderle."
+  },
+  {
+    id: "yunque",
+    nombre: "Yunque",
+    rol: "Constitución / Fuerza / Tanque",
+    tipo: "Humanoide",
+    nivel: 5,
+    pv: 58,
+    ca: 17,
+    velocidad: "30 pies",
+    stats: { fue: 20, des: 10, con: 20, int: 8, sab: 13, car: 9 },
+    equipo: ["Hachón pesado"],
+    notas: [
+      "Iniciativa: +0",
+      "Salvaciones: Fue +7, Con +7",
+      "Habilidades: Atletismo +7, Intimidación +1, Percepción +3",
+      "Percepción pasiva: 13"
+    ],
+    habilidades: [
+      { nombre: "Hachón pesado (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +7 al ataque. Daño: 1d12+5 cortante." },
+      { nombre: "Cornada de embestida (Pasiva)", descripcion: "Si se mueve al menos 15 pies en línea recta antes de golpear con su hachón, el objetivo recibe 1d6 de daño perforante adicional y debe superar una salvación de Fuerza CD 15 o caer Derribado." },
+      { nombre: "Golpe contra el suelo (Recarga 5-6)", descripcion: "Golpea el suelo. Todas las criaturas a su elección en un radio de 10 pies deben realizar una salvación de Destreza CD 15. Fallo: 2d6+3 de daño contundente y quedan Derribadas. Éxito: la mitad del daño y no caen." },
+      { nombre: "Muro de carne (Pasiva, 1/ronda)", descripcion: "Los enemigos provocan un ataque de oportunidad de Yunque incluso si se mueven usando la acción Destrabarse, siempre que intenten pasar junto a él para acercarse a uno de sus aliados." },
+      { nombre: "Interponerse (Reacción)", descripcion: "Cuando un aliado a 5 pies recibe un ataque, Yunque se convierte en el objetivo en su lugar." },
+      { nombre: "Demasiado terco para caer (Rasgo único)", descripcion: "La primera vez que baja a 20 PV o menos, obtiene inmediatamente 10 PV temporales y no puede ser empujado ni derribado hasta el final de su siguiente turno." }
+    ],
+    estrategia: "Contiene al grupo: se coloca entre sus compañeros y el peligro, y derriba a cualquiera que intente atravesar su posición. Avanza primero y bloquea el acceso a Fábula; si alguien alcanza a un aliado, usa Interponerse. Si el grupo se agrupa demasiado, es el momento de un Golpe contra el suelo."
+  },
+  {
+    id: "fabula",
+    nombre: "Fábula",
+    rol: "Inteligencia / Carisma / Control",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 31,
+    ca: 14,
+    velocidad: "30 pies",
+    stats: { fue: 8, des: 16, con: 13, int: 20, sab: 12, car: 18 },
+    equipo: [],
+    notas: [
+      "Iniciativa: +3",
+      "Salvaciones: Int +7, Car +6",
+      "Habilidades: Arcana +7, Engaño +6, Investigación +7, Persuasión +6"
+    ],
+    habilidades: [
+      { nombre: "Aguja mental (Acción)", descripcion: "Ataque mágico a distancia, alcance 60 pies. +7 al ataque. Daño: 2d8+3 psíquico." },
+      { nombre: "Exponer debilidad (Acción Adicional)", descripcion: "Marca a una criatura que pueda ver a 60 pies hasta el comienzo de su siguiente turno. La primera vez que un aliado de Fábula golpee al objetivo marcado, el ataque inflige 1d6 de daño adicional." },
+      { nombre: "Palabras paralizantes (Recarga 5-6)", descripcion: "Una criatura a 30 pies que pueda escucharlo realiza una salvación de Sabiduría CD 15. Si falla, recibe 2d6 de daño psíquico y queda Restringida por pensamientos intrusivos hasta el final de su siguiente turno. Puede repetir la salvación inmediatamente después de recibir daño, terminando el efecto si tiene éxito." },
+      { nombre: "Orden humillante (1/combate)", descripcion: "Hasta dos criaturas a 30 pies deben superar una salvación de Sabiduría CD 15. Quien falle elige de inmediato: alejarse 15 pies de Fábula sin provocar ataques de oportunidad, soltar un objeto que sostenga, o caer Derribada." },
+      { nombre: "Ya lo había previsto (Reacción)", descripcion: "Cuando una criatura marcada por Exponer debilidad lo ataca, impone desventaja a esa tirada. Debe declarar la reacción antes de conocer el resultado." }
+    ],
+    estrategia: "Dirige el combate: marca al personaje más vulnerable o peligroso apenas empieza la pelea. Si el grupo intenta rodearlos, usa Orden humillante para romper su formación. Si alguien logra llegar hasta él, confía en que Yunque use Interponerse antes de que eso pase."
   }
 ];
