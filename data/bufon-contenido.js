@@ -21,53 +21,53 @@
 window.BUFON_DIALOGO = {
   inicio: "intro_01",
 
+  /* =========================================================================
+     VOZ DEL BUFÓN (revisión completa) — confiado, conversador, disfruta
+     hablar. Habla como si todo, incluso lo metafísico, fuera charla de
+     sobremesa. Regla central:
+
+       "El Bufón normalmente llena el silencio. Cuando se calla, debe haber
+       una razón."
+
+     "..." reservado para: se da cuenta de que mezcló Side A/B, dijo algo
+     que no debía, una respuesta del jugador genuinamente lo desconcierta,
+     percibe algo de fuera del mundo, reconsidera un recuerdo, o un
+     silencio puntual mejora un remate. En cualquier otro lado, no.
+
+     Cuando recuerda mal algo, no dice "creo que quizá..." — afirma la
+     versión equivocada con la misma confianza que la correcta, y si el
+     jugador lo corrige, reacciona como alguien al que le señalaron un
+     error curioso, no como alguien avergonzado.
+  ========================================================================= */
   nodos: {
     intro_01: {
       lineas: [
         "Hola.",
-        "...",
-        "¿Qué tal?",
-        "No, espera.",
-        "Primero una cosa.",
-        "No le digas a nadie que estoy aquí.",
-        "No porque vaya a pasar algo.",
-        "Probablemente.",
-        "Pero preferiría que no.",
-        "Tus amigos tampoco.",
-        "Especialmente tus amigos.",
-        "...",
-        "Bueno.",
-        'Obviamente "Él" sabe.',
-        "Él siempre sabe esas cosas.",
-        "Pero saber que estoy aquí y saber que me encontraste son cosas diferentes.",
-        "Creo.",
-        "Espero.",
-        "...",
-        "En fin.",
-        "¿Qué haces aquí?"
+        '¿Qué tal? Ah, esperá, no. Antes que nada: no le digas a nadie que estoy acá.',
+        "No por nada grave. Es más una cuestión de principios. Y porque me conviene.",
+        "Tus amigos tampoco, eh. Sobre todo tus amigos.",
+        'Aunque bueno, técnicamente "Él" ya sabe. Él siempre sabe esas cosas. Es bastante irritante, si te soy sincero.',
+        "Pero que Él sepa que estoy acá y que tú me hayas encontrado son dos cosas completamente distintas. Pienso aferrarme a esa distinción con todas mis fuerzas.",
+        "En fin. ¿Qué haces tú acá?"
       ],
+      animacion: "Pofavor",
       eleccion: "intro_reason"
     },
 
     resp_exploring: {
       lineas: [
-        "Ah.",
-        "Un curioso.",
-        "Eso suele acabar bien.",
-        "...",
-        "Bueno, no.",
-        "Pero hace las cosas más interesantes."
+        "Ah. Un curioso.",
+        "Excelente idea, la exploración. Funciona perfectamente hasta que encuentras algo — después todo el mundo actúa como si encontrarlo hubiera sido un error."
       ],
       completeDialogue: "exploring",
+      animacion: "Apuntando",
       next: "intro_reason"
     },
 
     resp_searching: {
       lineas: [
-        "¿Algo?",
-        "Qué específico.",
-        "Espero que sepas reconocerlo cuando lo encuentres.",
-        "Sería bastante triste pasar justo por delante."
+        "¿Algo? Qué específico.",
+        "Ojalá lo reconozcas cuando lo tengas enfrente. Sería medio trágico pasar justo al lado sin darte cuenta."
       ],
       completeDialogue: "searching",
       next: "intro_reason"
@@ -75,12 +75,11 @@ window.BUFON_DIALOGO = {
 
     resp_lost: {
       lineas: [
-        "Ja.",
-        "Entonces somos dos.",
-        "Aunque yo llevo perdido bastante más tiempo que tú.",
-        "Creo."
+        "Ja. Entonces somos dos.",
+        "Yo llevo perdido bastante más tiempo que tú, para que sepas."
       ],
       completeDialogue: "lost",
+      animacion: "Auch",
       next: "intro_reason"
     },
 
@@ -91,12 +90,9 @@ window.BUFON_DIALOGO = {
     // solo durante esta visita.
     resp_who_1: {
       lineas: [
-        "Ah.",
-        "Ya empezamos.",
-        "...",
-        "No.",
-        "Todavía no.",
-        "Hazme otra pregunta."
+        "Ah, ya empezamos con ésa.",
+        "No. Todavía no.",
+        "Pregúntame otra cosa — tienes un montón de opciones y fuiste directo a la que no pienso responder. Admirable, en cierta forma."
       ],
       completeDialogue: "who_is_he_stage_1",
       consumeEncounter: "who_is_he",
@@ -108,63 +104,60 @@ window.BUFON_DIALOGO = {
       eleccion: "who_confirm"
     },
 
-    // Las dos líneas de abajo no venían con texto exacto en la especificación
-    // (solo definía la rama "no sabe"). Son un placeholder mío para la rama
-    // "sí sabe" — ajustalas cuando quieras.
     resp_who_confirmed: {
-      lineas: ["Entonces no hace falta que lo diga yo."],
+      lineas: ["Entonces no hace falta que lo diga yo. Mejor. Prefiero no ser yo quien lo diga en voz alta."],
       completeDialogue: "who_is_he_stage_2",
       consumeEncounter: "who_is_he",
       next: "intro_reason"
     },
+    // Único silencio real de esta rama: la respuesta lo desconcierta de
+    // verdad — venía con una premisa (que el jugador sabe) y se la
+    // rompieron.
     resp_who_denied: {
-      lineas: ["...", "Eso es raro."],
+      lineas: ["...", "Eso es raro.", "No sé por qué, pero no me lo esperaba."],
       completeDialogue: "who_is_he_stage_2",
       consumeEncounter: "who_is_he",
       next: "intro_reason"
     },
 
     resp_why_hide: {
-      lineas: ['Porque entonces sabrían que hablaste conmigo.'],
+      lineas: ["Porque ahí sabrían que hablaste conmigo. Y eso complica cosas que preferiría mantener simples."],
       eleccion: "why_hide_followup"
     },
 
     resp_what_wrong: {
       lineas: [
-        "Nada.",
-        "Supongo.",
-        "...",
+        "Nada. Aunque ahora que lo pienso, tengo curiosidad.",
         "¿Confías en ellos?"
       ],
       eleccion: "trust_friends"
     },
 
-    // Las tres respuestas de abajo tampoco venían con texto exacto en la
-    // especificación (pedía que la elección quedara guardada, sin dar la
-    // línea de reacción). Placeholder mío, ajustable.
     resp_trust_yes: {
-      lineas: ["Qué bien.", "...", "Ojalá tengas razón."],
+      lineas: ["Qué bien.", "Confiar en la gente hace todo mucho más fácil. Hasta que deja de hacerlo, claro — pero para entonces ya tienes problemas más interesantes."],
       completeDialogue: "why_hide",
+      animacion: "Celebrar",
       next: "intro_reason"
     },
     resp_trust_no: {
-      lineas: ["...", "¿Y por qué sigues con ellos, entonces?"],
+      lineas: ["¿En serio? ¿Y entonces por qué sigues con ellos?"],
       completeDialogue: "why_hide",
       next: "intro_reason"
     },
     resp_trust_unsure: {
-      lineas: ["Esa es una respuesta más honesta de lo que crees."],
+      lineas: ['Ésa es bastante más honesta que un "sí". La gente usa esa palabra con demasiada facilidad.'],
       completeDialogue: "why_hide",
       next: "intro_reason"
     },
 
     resp_what_doing: {
       lineas: ["Esperando."],
+      animacion: "Parado",
       eleccion: "what_doing_followup"
     },
 
     resp_waiting_what: {
-      lineas: ["Que hicieras esa pregunta."],
+      lineas: ["Que hicieras exactamente esa pregunta. Tenía fe en ti."],
       completeDialogue: "what_doing",
       next: "intro_reason"
     },
@@ -174,18 +167,29 @@ window.BUFON_DIALOGO = {
        ningún tema visible (ver renderEleccion en secreto.html). "¿Qué
        tiempo?" vive DENTRO de esta secuencia, no como tema nuevo del hub:
        si apareciera como opción normal contradiría el propio "no queda
-       nada de qué hablar". Ninguno de los dos finales tiene next/eleccion
-       — el motor los apaga solos en un "..." sin más opciones.
+       nada de qué hablar".
+
+       bufon_despedida_que_tiempo ya no es un final plano: tiene su propio
+       punto de elección (despedida_que_significa) para que, cuando el
+       jugador insiste en qué significa "nuestro tiempo", el Bufón —que
+       hasta acá tuvo una respuesta lista para todo— se quede sin una.
+       Ese es el silencio que importa de toda esta secuencia.
     ===================================================================== */
     bufon_despedida: {
-      lineas: ["Bueno...", "Se nos acabó el tiempo, creo."],
+      lineas: ["Bueno. Se nos acabó el tiempo.", "No me preguntes quién decide eso, yo estaba bastante cómodo."],
+      animacion: "Cariñito",
       eleccion: "despedida_opciones"
     },
     bufon_despedida_que_tiempo: {
-      lineas: ["El nuestro.", "...", "Nos vemos."]
+      lineas: ["El nuestro."],
+      eleccion: "despedida_que_significa"
+    },
+    bufon_despedida_fin: {
+      lineas: ["...", "Buena pregunta.", "Nos vemos."]
     },
     bufon_despedida_cierre: {
-      lineas: ["Ya nos vamos a ver otro día.", "No te olvides de visitarme.", "Jeje."]
+      lineas: ["Nos vemos en algún momento. No sé cuándo, pero nos vemos.", "No te olvides de visitarme.", "Jeje."],
+      animacion: "Riendosesentao"
     },
 
     /* =====================================================================
@@ -201,92 +205,101 @@ window.BUFON_DIALOGO = {
     // memoryGroup: pet_rescue
     bufon_pet_rescue: {
       lineas: ["¿Todavía anda contigo el pequeño?"],
+      animacion: "Cariñito",
       eleccion: "pet_rescue_check1"
     },
     bufon_pet_rescue_2: {
-      lineas: ["Me caía bien.", "Aunque nunca entendí qué clase de animal era."],
+      lineas: ["Me caía bien.", "Nunca entendí bien qué tipo de animal era, la verdad."],
       eleccion: "pet_rescue"
     },
     bufon_pet_reaction_a: {
-      lineas: ["¿Un gato con tentáculos?", "...", "Ah. Sí. Supongo que así tiene más sentido."],
+      lineas: ["Bestia Trémula. Ahí está, ese es el nombre que se me escapaba. Con razón — suena inventado."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_pet_reaction_b: {
-      lineas: ["...", "Cierto. Ese picoteaba."],
+      lineas: ["Ah, el que picoteaba todo. Se me cruzan los bichos con plumas."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_pet_reaction_cat: {
-      lineas: ["Un gato.", "Claro.", "Eso explica por qué lo dejan salirse con la suya."],
+      lineas: ["Un gato. Claro, eso lo explica todo — por qué lo dejan hacer lo que quiere, por qué nadie se queja."],
+      animacion: "Riendosesentao",
       next: "intro_reason_sin_recuerdo"
     },
     bufon_pet_reaction_0: {
-      lineas: ["...", "Da igual, entonces."],
+      lineas: ["Tampoco es que necesite entenderlo del todo. Lo mío es más catalogar que comprender."],
       next: "intro_reason_sin_recuerdo"
     },
 
     // memoryGroup: gareth_relationship
     bufon_gareth: {
-      lineas: ["Gareth...", "...", "Nunca recuerdo quién le debía qué a quién."],
+      lineas: [
+        "Gareth.",
+        "Nunca me acuerdo quién le debía un favor a quién con ese tipo. Ustedes a él, él a ustedes... alguien quedó endeudado y, por alguna razón, mi cabeza decidió archivar todo menos la parte útil."
+      ],
       eleccion: "gareth_relationship"
     },
     bufon_gareth_reaction_a: {
-      lineas: ["...", "Eso pensé.", "Bien."],
+      lineas: ["Eso pensé. Bien — entonces no estoy tan mal de la cabeza como pensaba."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_gareth_reaction_b: {
-      lineas: ["Ah.", "Entonces mezclé esa parte también.", "Muy bien.", "...", "Muy bien."],
+      lineas: ["Ah. Entonces mezclé ésa también.", "Bien saber. Ahora tengo que revisar qué más mezclé, pero bueno — un problema a la vez."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_gareth_reaction_0: {
-      lineas: ["...", "Da igual."],
+      lineas: ["Era sobre un tipo al que probablemente no conoces. O sí, y simplemente no te gusta hablar de él. Las dos teorías me convencen por igual."],
       next: "intro_reason_sin_recuerdo"
     },
 
     // memoryGroup: dragon_first_wound
     bufon_dragon_wound: {
-      lineas: ["La primera vez que consiguieron herirlo fue bastante ridícula."],
+      lineas: [
+        "La primera vez que lograron herir a esa cosa fue bastante ridícula, para que sepas.",
+        'No en el sentido de "qué gesta heroica". En el sentido de "no puedo creer que haya funcionado".'
+      ],
+      animacion: "Boxing",
       eleccion: "dragon_wound_check1"
     },
     bufon_dragon_wound_2: {
-      lineas: ["Bueno.", "Usar a una persona de munición no suele ser el primer plan de nadie."],
+      lineas: ["Bueno.", "Lo que se les ocurrió no era exactamente un plan digno de un monumento. Pero funcionó, a su manera."],
       eleccion: "dragon_first_wound"
     },
     bufon_dragon_reaction_a: {
-      lineas: ["...", "Sí.", "Ahora encaja."],
+      lineas: ["Ah, sí. Ahora encaja."],
       eleccion: "dragon_wound_followup"
     },
     bufon_dragon_reaction_b: {
-      lineas: ["...", "Sí.", "Ahora encaja."],
+      lineas: ["Una balista. Bien, mucho más sensato que lo que yo tenía en mente."],
       eleccion: "dragon_wound_followup"
     },
     bufon_dragon_reaction_nada: {
-      lineas: ["Nada importante."],
+      lineas: ["Nada importante. Sigue con tu vida."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_dragon_reaction_0: {
-      lineas: ["...", "Puede ser."],
+      lineas: ["Puede ser. O me lo inventé. A esta altura ya no llevo la cuenta."],
       next: "intro_reason_sin_recuerdo"
     },
 
     // memoryGroup: post_refuge_decision
     bufon_post_refuge: {
-      lineas: ["Después de esa noche se complicó todo bastante, ¿no?"],
+      lineas: ["Después de esa noche se complicó todo bastante, ¿no? Como que arrancaron mal la semana."],
       eleccion: "post_refuge_check1"
     },
     bufon_post_refuge_2: {
-      lineas: ["Todavía no sé si terminaron peor huyendo o quedándose."],
+      lineas: ["Todavía no sé bien cómo les fue después de esa noche. Sospecho que no del todo bien, pero es solo una sospecha."],
       eleccion: "post_refuge_decision"
     },
     bufon_refuge_reaction_a: {
-      lineas: ["...", "Cierto.", "Con alguien pisándoles los talones, además."],
+      lineas: ["Con alguien pisándoles los talones, nada menos. Ustedes no hacen nada a medias."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_refuge_reaction_b: {
-      lineas: ["...", "Cierto.", "Bastante valiente, la verdad, entregarse así."],
+      lineas: ["Bastante valiente entregarse así, la verdad. Yo hubiera salido corriendo."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_refuge_reaction_0: {
-      lineas: ["...", "Da igual."],
+      lineas: ["Era una época confusa para todos, al parecer. O la confusión soy yo. Cuesta saber cuál de las dos, últimamente."],
       next: "intro_reason_sin_recuerdo"
     }
   },
@@ -332,6 +345,12 @@ window.BUFON_DIALOGO = {
       opciones: [
         { id: "despedida_que_tiempo", texto: "¿Qué tiempo?", next: "bufon_despedida_que_tiempo" },
         { id: "despedida_nos_vemos", texto: "Nos vemos.", next: "bufon_despedida_cierre" }
+      ]
+    },
+
+    despedida_que_significa: {
+      opciones: [
+        { id: "despedida_que_significa_eso", texto: "¿Qué significa eso?", next: "bufon_despedida_fin" }
       ]
     },
 
