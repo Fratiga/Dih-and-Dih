@@ -62,3 +62,23 @@ async function bufonRegistrar({ dialogueId, category, choiceId, questionText, ch
     // confirmarle nada al cliente de todas formas.
   }
 }
+
+/* Guarda el nombre opcional que el jugador le da a Slappy — no es una
+   cuenta, solo una etiqueta atada a jester_player_id (ver
+   scratchpad/bufon_jugadores.sql para la tabla y su RLS). Solo insert:
+   si el mismo player_id ya tiene fila, esto falla en silencio, como
+   bufonRegistrar. No pasa nada — localStorage["jesterPlayerName"] es la
+   fuente de verdad real para "¿ya se ofreció/aceptó registro?", esto es
+   nomás la copia que ve el GM desde el dashboard. */
+async function bufonRegistrarNombre(nombre) {
+  if (typeof esAdmin === "function" && esAdmin()) return;
+  try {
+    const supabase = await bufonCliente();
+    await supabase.from("bufon_jugadores").insert({
+      player_id: bufonPlayerId(),
+      nombre
+    });
+  } catch (err) {
+    // Silencioso a propósito.
+  }
+}

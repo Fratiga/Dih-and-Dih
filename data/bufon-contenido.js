@@ -43,7 +43,7 @@ window.BUFON_DIALOGO = {
     intro_01: {
       lineas: [
         "Hola.",
-        '¿Qué tal? Ah, esperá, no. Antes que nada: no le digas a nadie que estoy acá.',
+        '¿Qué tal? Ah, espera, no. Antes que nada: no le digas a nadie que estoy acá.',
         "No por nada grave. Es más una cuestión de principios. Y porque me conviene.",
         "Tus amigos tampoco, eh. Sobre todo tus amigos.",
         'Aunque bueno, técnicamente "Él" ya sabe. Él siempre sabe esas cosas. Es bastante irritante, si te soy sincero.',
@@ -51,7 +51,11 @@ window.BUFON_DIALOGO = {
         "En fin. ¿Qué haces tú acá?"
       ],
       animacion: "Pofavor",
-      eleccion: "intro_reason"
+      // Único punto donde se decide si corresponde ofrecer nombre antes
+      // del hub — intro_01 es en sí mismo "primera visita" (solo se
+      // corre una vez en la vida real del navegador), así que no hace
+      // falta re-chequear eso acá, solo si ya hay nombre/oferta previa.
+      next: ctx => (debeOfrecerRegistro(ctx) ? "bufon_oferta_registro" : "intro_reason")
     },
 
     resp_exploring: {
@@ -178,6 +182,7 @@ window.BUFON_DIALOGO = {
     bufon_despedida: {
       lineas: ["Bueno. Se nos acabó el tiempo.", "No me preguntes quién decide eso, yo estaba bastante cómodo."],
       animacion: "Cariñito",
+      completeDialogue: "goodbye_ever",
       eleccion: "despedida_opciones"
     },
     bufon_despedida_que_tiempo: {
@@ -190,6 +195,113 @@ window.BUFON_DIALOGO = {
     bufon_despedida_cierre: {
       lineas: ["Nos vemos en algún momento. No sé cuándo, pero nos vemos.", "No te olvides de visitarme.", "Jeje."],
       animacion: "Riendosesentao"
+    },
+
+    /* =====================================================================
+       NOMBRE OPCIONAL — se ofrece una sola vez, al final de intro_01 (ver
+       su "next" dinámico), nunca como tema del hub. No es una cuenta: no
+       hay contraseña ni sesión, solo una etiqueta sobre el mismo
+       jester_player_id anónimo de siempre.
+    ===================================================================== */
+    bufon_oferta_registro: {
+      lineas: [
+        "Ah, antes de seguir.",
+        "No sé quién eres.",
+        "No, espera. Sí sé quién eres.",
+        "El problema es que no tengo dónde guardar tu nombre.",
+        "Si quieres, podemos arreglarlo."
+      ],
+      completeDialogue: "registro_ofrecido",
+      eleccion: "oferta_registro_opciones"
+    },
+    bufon_registro_exitoso: {
+      lineas: ["Ahí está.", "Mucho mejor.", "Ahora cuando vuelvas puedo fingir que me acuerdo de ti."],
+      next: "intro_reason"
+    },
+    bufon_registro_rechazado: {
+      lineas: ["Está bien.", "Los nombres tampoco hacen tanto.", "Si vuelves y no te reconozco, diremos que fue culpa tuya."],
+      next: "intro_reason"
+    },
+
+    /* =====================================================================
+       REGRESO TEMPRANO — tema evolutivo (ver elegirEarlyReturn en
+       secreto.html), se dispara cuando el jugador ya se despidió una vez
+       y vuelve sin que haya nada nuevo. early_return_01 es la primera
+       etapa; agregar early_return_02 más adelante es sumar un nodo +
+       una línea en el dispatcher, no rehacer nada de esto.
+    ===================================================================== */
+    early_return_01: {
+      lineas: [
+        "¿Otra vez tú?",
+        "Me vas a hacer sentir importante.",
+        "Todavía no tengo nada nuevo, eso sí. Falta que me encuentre más gente. Necesito más ojos.",
+        "No pongas esa cara, tiene sentido.",
+        "Tú me miras y ves una cosa. Otro me encuentra y ve otra. Ninguno necesita hablar con el otro para que ya existan dos versiones distintas de mí.",
+        "Si aparecen diez, ya tengo diez.",
+        "Y cuando suficientes ojos se quedan con una versión tuya, empieza a ser difícil decidir cuál tiene más derecho a llamarse la verdadera.",
+        "Uno se pasa años intentando averiguar quién es y resulta que los demás llevan todo ese tiempo haciéndolo por él.",
+        "Sin preguntar, además.",
+        "Odio a la gente que saca conclusiones precipitadas."
+      ],
+      eleccion: "early_return_01_opciones"
+    },
+    early_return_reaction_yo_mismo: {
+      lineas: [
+        "¿Sí?",
+        "Qué respuesta más cómoda.",
+        "Tú dices una cosa. Tus amigos otra. Tus enemigos seguramente tienen una versión bastante menos generosa.",
+        "Alguien puede conocerte diez minutos, recordarte durante veinte años y construirte entero a partir de eso.",
+        "Todas esas versiones hicieron algo. Dejaron algo.",
+        "¿Por qué la tuya tiene prioridad?",
+        "Porque vive dentro de tu cabeza no cuenta. Tú eres juez y parte."
+      ],
+      completeDialogue: "early_return_stage_1",
+      consumeEncounter: "early_return",
+      next: "intro_reason"
+    },
+    early_return_reaction_no_conocen: {
+      lineas: ["Puede ser.", "Aunque tú tampoco puedes verte desde fuera.", "Siempre me pareció una falla de diseño bastante importante."],
+      completeDialogue: "early_return_stage_1",
+      consumeEncounter: "early_return",
+      next: "intro_reason"
+    },
+    early_return_reaction_cual_real: {
+      lineas: [
+        "Todas.",
+        "Sería bastante arrogante decirle a cien personas que noventa y nueve entendieron mal.",
+        "Aunque sí, suena exactamente como algo que yo haría.",
+        "Así que no sé. Pregúntame cuando seamos más."
+      ],
+      completeDialogue: "early_return_stage_1",
+      consumeEncounter: "early_return",
+      next: "intro_reason"
+    },
+    early_return_reaction_secreto: {
+      lineas: ["Y no les cuentes.", "No necesito que hablen entre ustedes.", "Sólo necesito que miren.", "Encontrarme y que me traigan gente son cosas muy distintas."],
+      completeDialogue: "early_return_stage_1",
+      consumeEncounter: "early_return",
+      next: "intro_reason"
+    },
+    early_return_reaction_saludo: {
+      lineas: [
+        "Ah.",
+        "Bueno, eso cambia bastante las cosas.",
+        'Yo acá hablando y hablando sobre una cosa tan insignificante como el "ser" y tú sólo venías a saludar.',
+        "...",
+        "Gracias."
+      ],
+      completeDialogue: "early_return_stage_1",
+      consumeEncounter: "early_return",
+      next: "intro_reason"
+    },
+    bufon_retorno_generico: {
+      lineas: [
+        "Sigues llegando antes.",
+        "No ha pasado nada nuevo.",
+        "Bueno, nada que pueda contarte.",
+        "Vuelve después.",
+        "Si tengo suerte, para entonces ya habrá más gente mirando."
+      ]
     },
 
     /* =====================================================================
@@ -348,6 +460,23 @@ window.BUFON_DIALOGO = {
       ]
     },
 
+    oferta_registro_opciones: {
+      opciones: [
+        { id: "registro_aceptar", texto: "Está bien. Regístrame.", next: "__formulario_registro__" },
+        { id: "registro_rechazar", texto: "Prefiero seguir así.", next: "bufon_registro_rechazado" }
+      ]
+    },
+
+    early_return_01_opciones: {
+      opciones: [
+        { id: "early_return_yo_mismo", texto: "Sigo siendo yo aunque me vean distinto.", next: "early_return_reaction_yo_mismo" },
+        { id: "early_return_no_conocen", texto: "Entonces ninguno de ellos me conoce realmente.", next: "early_return_reaction_no_conocen" },
+        { id: "early_return_cual_real", texto: "¿Y cuál versión de ti es la real?", next: "early_return_reaction_cual_real" },
+        { id: "early_return_secreto", texto: "¿No dijiste que no le contara a nadie?", next: "early_return_reaction_secreto" },
+        { id: "early_return_saludo", texto: "Solo quería hablar contigo.", next: "early_return_reaction_saludo" }
+      ]
+    },
+
     despedida_que_significa: {
       opciones: [
         { id: "despedida_que_significa_eso", texto: "¿Qué significa eso?", next: "bufon_despedida_fin" }
@@ -402,7 +531,7 @@ window.BUFON_DIALOGO = {
     pet_rescue: {
       opciones: [
         { id: "pet_bestia_tremula", texto: "Es una Bestia Trémula.", next: "bufon_pet_reaction_a" },
-        { id: "pet_grifon", texto: "Tiene plumas, no ocho patas.", next: "bufon_pet_reaction_b" },
+        { id: "pet_grifon", texto: "Es un grifón.", next: "bufon_pet_reaction_b" },
         { id: "pet_como_un_gato", texto: "Para nosotros es básicamente un gato.", next: "bufon_pet_reaction_cat" },
         { id: "pet_no_entender", texto: "No tienes que entenderlo.", next: "bufon_pet_reaction_0" }
       ]
