@@ -7649,6 +7649,90 @@ window.BESTIARIO = [
       <p>Moderada por esa misma imprevisibilidad, más una molestia persistente que una
       amenaza real para un adulto sano.</p>
     `
+  },
+  {
+    id: "burro",
+    title: "Burro",
+    category: "Bestiario",
+    tags: ["montura", "doméstico"],
+    region: "",
+    summary: "Animal de carga terco y resistente, mucho más barato que un caballo para quien solo necesita mover peso.",
+    clasificacion: "Herbívoro",
+    amenaza: "Ninguna",
+    content: `
+      <p>Un animal de carga pequeño y de paso corto, criado en casi todas las granjas
+      del reino por lo poco que exige a cambio de lo mucho que carga. Sobrevive con
+      forraje pobre donde un caballo pasaría hambre, y rara vez se enferma.</p>
+      <h4>Comportamiento</h4>
+      <p>Terco cuando decide que algo no vale la pena, y prácticamente imposible de
+      convencer una vez que se planta. Fuera de eso, dócil y fácil de guiar incluso
+      para quien nunca trabajó con animales.</p>
+      <h4>Peligrosidad</h4>
+      <p>Ninguna. Como mucho, una coz si alguien lo sorprende por detrás.</p>
+    `
+  },
+  {
+    id: "caballo-de-carga",
+    title: "Caballo de Carga",
+    category: "Bestiario",
+    tags: ["montura", "doméstico"],
+    region: "",
+    summary: "Criado para tirar y cargar, no para la velocidad ni para el combate.",
+    clasificacion: "Herbívoro",
+    amenaza: "Ninguna",
+    content: `
+      <p>Un caballo grande y de patas gruesas, criado durante generaciones para tirar
+      de carretas y cargar peso durante todo el día sin agotarse. Ni rápido ni ágil,
+      pero incansable.</p>
+      <h4>Comportamiento</h4>
+      <p>Tranquilo casi hasta el aburrimiento, acostumbrado al ruido y al movimiento de
+      un camino cargado de gente. No es la primera opción de nadie para huir de algo.</p>
+      <h4>Peligrosidad</h4>
+      <p>Ninguna, salvo para quien se pare debajo de sus cascos sin avisar.</p>
+    `
+  },
+  {
+    id: "caballo-de-silla",
+    title: "Caballo de Silla",
+    category: "Bestiario",
+    tags: ["montura", "doméstico"],
+    region: "",
+    summary: "Entrenado para montarse, cómodo en el camino pero sin el temple de uno de guerra.",
+    clasificacion: "Herbívoro",
+    amenaza: "Ninguna",
+    content: `
+      <p>Un caballo de complexión más liviana que uno de carga, entrenado desde
+      potrillo para llevar jinete y aguantar jornadas largas de viaje sin quejarse
+      demasiado.</p>
+      <h4>Comportamiento</h4>
+      <p>Responde bien a un jinete con experiencia, aunque un ruido fuerte o algo que
+      se mueva de golpe todavía puede espantarlo, algo de lo que un caballo de guerra
+      ya no sufre.</p>
+      <h4>Peligrosidad</h4>
+      <p>Ninguna en condiciones normales.</p>
+    `
+  },
+  {
+    id: "caballo-de-guerra",
+    title: "Caballo de Guerra",
+    category: "Bestiario",
+    tags: ["montura", "doméstico"],
+    region: "marshfield",
+    summary: "Entrenado para no espantarse en combate; los mejores llevan el hierro de Marshfield.",
+    clasificacion: "Herbívoro",
+    amenaza: "Ninguna",
+    content: `
+      <p>Un caballo más grande y de temple más firme que uno de silla, entrenado
+      específicamente para no espantarse con el ruido y el caos de una batalla. Ningún
+      escuadrón de caballería se considera completo sin varios.</p>
+      <h4>Comportamiento</h4>
+      <p>Obedece órdenes de combate casi tan bien como su jinete, y no rompe formación
+      con facilidad. Los criados en Marshfield tienen fama de ser los más firmes de
+      todo Brurland.</p>
+      <h4>Peligrosidad</h4>
+      <p>Ninguna hacia su propio jinete. Entrenado para cocear y morder a cualquier
+      otra cosa que se acerque demasiado en medio de una pelea.</p>
+    `
   }
 ];
 
