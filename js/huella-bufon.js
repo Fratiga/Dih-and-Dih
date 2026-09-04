@@ -186,6 +186,8 @@
     posicionar(el);
     document.body.appendChild(el);
     el.addEventListener("click", () => onClick(el));
+    // Se ríe apenas aparece en la página, no solo cuando lo encuentran.
+    reproducirRisita();
   }
 
   crearIcono();
