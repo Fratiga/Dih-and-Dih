@@ -10,7 +10,8 @@ const ALL_ENTRIES = [
   ...(window.ARMAS || []),
   ...(window.BESTIARIO || []),
   ...(window.RAZAS || []),
-  ...(window.RELIGIONES || [])
+  ...(window.RELIGIONES || []),
+  ...(window.OBJETOS || [])
 ];
 
 function entryTitleById(id) {
@@ -50,6 +51,9 @@ function cardMeta(entry) {
   }
   if (entry.category === "Bestiario") {
     return [entry.raza, entry.clasificacion].filter(Boolean).join(" · ");
+  }
+  if (entry.category === "Objetos") {
+    return [entry.tipo, entry.precio].filter(Boolean).join(" · ");
   }
   return "";
 }
@@ -97,6 +101,9 @@ function modalExtraMeta(entry) {
     if (entry.clasificacion) rows.push(["Clasificación", entry.clasificacion]);
     if (entry.amenaza) rows.push(["Nivel de amenaza", entry.amenaza]);
     if (entry.region) rows.push(["Región habitual", relationLink(entry.region)]);
+  } else if (entry.category === "Objetos") {
+    if (entry.tipo) rows.push(["Tipo", entry.tipo]);
+    if (entry.precio) rows.push(["Precio", entry.precio + (entry.nota ? ` (${entry.nota})` : "")]);
   } else if (entry.category === "Religión") {
     if (entry.simbolo) rows.push(["Símbolo", entry.simbolo]);
     if (entry.principio) rows.push(["Principio", entry.principio]);

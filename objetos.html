@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Economía — Compendio del Mundo</title>
+  <title>Objetos — Compendio del Mundo</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -70,43 +70,46 @@
       <a href="textos.html" class="nav-chip">Textos</a>
       <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
       <a href="armas.html" class="nav-chip">Armas</a>
-      <a href="objetos.html" class="nav-chip">Objetos</a>
+      <a href="objetos.html" class="nav-chip active">Objetos</a>
       <a href="bestiario.html" class="nav-chip">Bestiario</a>
       <a href="reglas.html" class="nav-chip">Reglas</a>
     </div>
     <div class="nav-group">
-      <a href="economia.html" class="nav-chip active">Economía</a>
+      <a href="economia.html" class="nav-chip">Economía</a>
       <a href="fanarts.html" class="nav-chip">Fanarts</a>
       <a href="estadisticas.html" class="nav-chip hidden" data-admin-only>Estadísticas</a>
     </div>
   </nav>
 
-  <main class="layout layout-solo">
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="search-box">
+        <label for="search">Buscar</label>
+        <input id="search" type="search" placeholder="Poción, cuerda, ganzúa...">
+      </div>
+
+      <div class="filter-group">
+        <h3>Etiquetas</h3>
+        <div id="tagFilters" class="pill-list"></div>
+      </div>
+
+      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
+    </aside>
+
     <section class="content">
-      <section id="economia" class="page-section">
+      <section id="compendio" class="page-section">
         <div class="content-top">
           <div>
-            <p class="eyebrow">REFERENCIA RÁPIDA</p>
-            <h2>Economía</h2>
+            <p class="eyebrow">EQUIPO Y CURIOSIDADES</p>
+            <h2 id="pageTitle">Objetos</h2>
           </div>
-          <span id="economiaCount" class="result-count"></span>
+          <span id="resultCount" class="result-count"></span>
         </div>
-        <p class="economia-disclaimer">Los precios de esta tabla son <strong>estimados</strong> y
-        sirven solo como referencia general. El costo real de cualquier objeto puede variar según
-        el vendedor, la región, la disponibilidad y las circunstancias del momento (escasez,
-        urgencia, relación con el comerciante, etc.).</p>
-        <div class="search-box economia-search">
-          <label for="economiaSearch">Buscar</label>
-          <input id="economiaSearch" type="search" placeholder="Nombre, precio o categoría...">
-        </div>
-        <div class="economia-categorias" id="economiaCategorias"></div>
-        <div class="economia-table-wrap">
-          <table class="economia-table">
-            <thead>
-              <tr><th>Objeto</th><th>Categoría</th><th>Precio</th><th>Nota</th></tr>
-            </thead>
-            <tbody id="economiaBody"></tbody>
-          </table>
+
+        <div id="entryGrid" class="entry-grid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <h3>No se encontraron entradas</h3>
+          <p>Prueba con otro término o elimina alguno de los filtros.</p>
         </div>
       </section>
     </section>
@@ -127,17 +130,25 @@
   <script src="data/bestiario.js"></script>
   <script src="data/razas.js"></script>
   <script src="data/religiones.js"></script>
-  <script src="data/economia.js"></script>
   <script src="data/rotacion.js"></script>
   <script src="data/musica.js"></script>
   <script src="js/common.js"></script>
   <script src="js/player.js"></script>
+  <script>
+    window.PAGE_CATEGORY = "Objetos";
+    window.TAG_GROUPS = {
+      otherLabel: "Otras características",
+      groups: {
+        "Categoría": ["proteccion", "medicina", "viaje", "herramientas", "mercado-negro", "transporte", "reliquia", "misterio"]
+      }
+    };
+  </script>
   <script src="js/modal.js"></script>
   <script src="data/jumpscare.js"></script>
   <script src="data/contrasenas.js"></script>
   <script src="js/lado.js"></script>
   <script src="js/busqueda-global.js"></script>
   <script src="js/header-marquee.js"></script>
-  <script src="js/economia.js"></script>
+  <script src="js/compendio.js"></script>
 </body>
 </html>
