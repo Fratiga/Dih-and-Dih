@@ -800,9 +800,8 @@ window.PERSONAJES = [
       carisma que parece compensarle ambas cosas más de lo que debería. Se
       presentó ante los protagonistas justo cuando terminaban de apalear al
       último de sus hombres, y en vez de buscar venganza vio una oportunidad:
-      entre las deudas que sus criminales de poca monta le habían dejado sin
-      pagar, unirse a un grupo camino al norte le sonó a la salida más rentable
-      disponible. Aceptó acompañarlos hasta el dragón, o hasta que decidiera
+      arrastraba sus propias deudas sin pagar, y unirse a un grupo camino al
+      norte le sonó a la salida más rentable disponible. Aceptó acompañarlos hasta el dragón, o hasta que decidiera
       huir, a cambio de un pago que ya cobró por adelantado.</p>
     `
   },

@@ -353,9 +353,8 @@ window.CRONOLOGIA_B = [
       monta: un charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con
       un carisma que parecía compensarle ambas cosas más de lo necesario. Sus
       razones para presentarse eran menos nobles de lo que sugería su entrada.
-      Entre las deudas que sus hombres le habían dejado sin pagar, unirse a un
-      grupo camino al norte empezaba a sonarle a la salida más rentable
-      disponible. Se presentó como Cassius Coldgrave, y por el módico precio de
+      Cassius arrastraba sus propias deudas sin pagar, y unirse a un grupo
+      camino al norte empezaba a sonarle a la salida más rentable disponible. Se presentó como Cassius Coldgrave, y por el módico precio de
       dos piezas de oro y seis piezas de cobre, que los protagonistas le pagaron
       ahí mismo, el vaquero mercenario se comprometió a acompañarlos hasta el
       dragón. O hasta que decidiera huir, lo que llegara antes.</p>
