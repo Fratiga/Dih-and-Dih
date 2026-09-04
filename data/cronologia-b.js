@@ -319,9 +319,11 @@ window.CRONOLOGIA_B = [
       <h4>La casa de baños</h4>
 
       <p>Terminados los asuntos de la taberna, el grupo se dirigió a una casa de
-      baños antes de partir. Adam se bañó junto a ellos, y entre el vapor y las
-      bromas terminó de ganarse un lugar entre el grupo que ninguna palabra
-      formal hubiera conseguido.</p>
+      baños antes de partir. Adam se bañó junto a ellos, y entre el vapor
+      intentaron convencerlo de sumarse al viaje hacia el norte. Sus
+      obligaciones como capitán se lo impedían, y terminó admitiendo, sin
+      demasiada vergüenza, que la excursión a los baños no había sido más que
+      una excusa suya para escaparse un rato del trabajo.</p>
 
       <p>Mientras el resto seguía adentro, un desconocido se acercó a Hooey y lo
       llamó por un nombre que él nunca había usado: Hubert Magnolia. El extraño
