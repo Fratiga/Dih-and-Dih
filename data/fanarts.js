@@ -75,5 +75,15 @@ window.FANARTS = [
   "assets/fanarts/Yaaay.png",
   "assets/fanarts/Yaaayy.png",
   "assets/fanarts/yo_sin_entender_ni_mierda.JPG",
-  "assets/fanarts/zamn.png"
+  "assets/fanarts/zamn.png",
+  "assets/fanarts/20260831_232756.jpg",
+  "assets/fanarts/Gulp.png",
+  "assets/fanarts/Pequenahornetzapallo.png",
+  "assets/fanarts/Ryn_asustada....webp",
+  "assets/fanarts/WHEN_BAJA_DIOS_Y_SE_UNE.png",
+  "assets/fanarts/Yo si le se.webp",
+  "assets/fanarts/dam.JPG",
+  "assets/fanarts/la_ryn_y_su_nueva_ropita.png",
+  "assets/fanarts/muejeje.png",
+  "assets/fanarts/wtf.png"
 ];
