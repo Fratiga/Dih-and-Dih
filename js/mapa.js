@@ -1,3 +1,4 @@
+const mapaViewport = document.getElementById("mapaViewport");
 const mapaContainer = document.getElementById("mapaContainer");
 const mapaFiltros = document.getElementById("mapaFiltros");
 const mapaBusqueda = document.getElementById("mapaBusqueda");
@@ -167,4 +168,8 @@ if (mapaBusqueda) {
     if (e.target === mapaBusqueda || mapaSugerencias.contains(e.target)) return;
     ocultarSugerencias();
   });
+}
+
+if (mapaViewport && mapaContainer) {
+  initZoomPan(mapaViewport, mapaContainer, { minScale: 1, maxScale: 5 });
 }

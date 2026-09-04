@@ -19,13 +19,16 @@ function renderFanarts() {
 }
 
 const lightboxEl = document.getElementById("lightbox");
+const lbViewport = document.getElementById("lbViewport");
 const lbImage = document.getElementById("lbImage");
 const lbCaption = document.getElementById("lbCaption");
+const lbZoom = initZoomPan(lbViewport, lbImage, { minScale: 1, maxScale: 5 });
 
 function openLightbox(index) {
   if (!fanartState.fanarts.length) return;
   fanartState.lightboxIndex = (index + fanartState.fanarts.length) % fanartState.fanarts.length;
   const src = fanartState.fanarts[fanartState.lightboxIndex];
+  lbZoom.reset();
   lbImage.src = src;
   lbImage.alt = prettyName(src);
   lbCaption.textContent = prettyName(src);
