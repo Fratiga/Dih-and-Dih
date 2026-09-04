@@ -118,7 +118,12 @@
   if (!target || target.page !== paginaActual) return;
 
   function posicionar(el) {
-    const card = document.querySelector(`[data-id="${target.id}"]`);
+    // Ojo: usar solo ".entry-card" — la franja que scrolla arriba del
+    // header (header-marquee.js) también pone data-id en sus botones, y
+    // esos se mueven todo el tiempo con translateX. Sin el ".entry-card"
+    // de adelante, un querySelector genérico puede agarrar esa copia en
+    // pleno movimiento en vez de la card real de la grilla.
+    const card = document.querySelector(`.entry-card[data-id="${target.id}"]`);
     if (card) {
       const rect = card.getBoundingClientRect();
       el.style.position = "absolute";
