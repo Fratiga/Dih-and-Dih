@@ -98,8 +98,9 @@ window.PERSONAJES = [
     ],
     content: `
       <p><em>"Las probabilidades siempre están de mi lado."</em></p>
-      <p>Compañero de banda —y algunos dicen que algo más— de Bull. El cerebro del trío.
-      Nunca entra en combate cuerpo a cuerpo y siempre actúa al final.</p>
+      <p>Compañero de banda de Bull, y algunos dicen que algo más. El cerebro
+      del trío. Nunca entra en combate cuerpo a cuerpo y siempre actúa al
+      final.</p>
     `
   },
   {
@@ -620,7 +621,7 @@ window.PERSONAJES = [
     relacionesConocidas: [],
     content: `
       <p>Un bárbaro slimefolk que viste ropas de mago sin saber una sola palabra de
-      magia, por razones que nadie —ni él mismo— ha logrado explicar. Su forma y su
+      magia, por razones que nadie, ni él mismo, ha logrado explicar. Su forma y su
       intelecto más bien limitado hacen que más de uno lo confunda con un perro a
       primera vista.</p>
     `
