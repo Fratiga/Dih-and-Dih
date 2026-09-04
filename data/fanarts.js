@@ -76,7 +76,7 @@ window.FANARTS = [
   "assets/fanarts/Yaaayy.png",
   "assets/fanarts/yo_sin_entender_ni_mierda.JPG",
   "assets/fanarts/zamn.png",
-  "assets/fanarts/20260831_232756.jpg",
+  "assets/fanarts/Ryn nv 16.jpg",
   "assets/fanarts/Gulp.png",
   "assets/fanarts/Pequenahornetzapallo.png",
   "assets/fanarts/Ryn_asustada....webp",
