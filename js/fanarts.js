@@ -1,5 +1,9 @@
 const fanartState = { fanarts: window.FANARTS || [], lightboxIndex: -1 };
 
+// Orden alfabético (insensible a mayúsculas/acentos) por el nombre legible,
+// así no importa el orden en que las imágenes se agreguen a data/fanarts.js.
+fanartState.fanarts.sort((a, b) => prettyName(a).localeCompare(prettyName(b), "es", { sensitivity: "base" }));
+
 function renderFanarts() {
   const grid = document.getElementById("fanartGrid");
   const count = document.getElementById("fanartCount");
