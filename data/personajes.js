@@ -795,14 +795,14 @@ window.PERSONAJES = [
       { id: "victor", nota: "Antiguo hombre a su cargo" }
     ],
     content: `
-      <p><em>"Todo tiene un precio. El mío es dos piezas de oro y seis de cobre."</em></p>
       <p>Un charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con un
       carisma que parece compensarle ambas cosas más de lo que debería. Se
       presentó ante los protagonistas justo cuando terminaban de apalear al
       último de sus hombres, y en vez de buscar venganza vio una oportunidad:
       arrastraba sus propias deudas sin pagar, y unirse a un grupo camino al
-      norte le sonó a la salida más rentable disponible. Aceptó acompañarlos hasta el dragón, o hasta que decidiera
-      huir, a cambio de un pago que ya cobró por adelantado.</p>
+      norte le sonó a la salida más rentable disponible. Aceptó acompañarlos
+      hasta el dragón, o hasta que decidiera huir, a cambio de un pago que ya
+      cobró por adelantado.</p>
     `
   },
   {
