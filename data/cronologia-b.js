@@ -337,7 +337,7 @@ window.CRONOLOGIA_B = [
       <p>Ya afuera de la ciudad, el grupo se encontró con Torvrena, la cazadora
       de monstruos que habían contratado antes de partir. Grande, cubierta de
       cicatrices y de pocas palabras, se sumó a la marcha sin necesitar mucha
-      presentación — para eso ya estaba pagada.</p>
+      presentación. Para eso ya estaba pagada.</p>
 
       <h4>Caras conocidas, por las malas</h4>
 
@@ -352,8 +352,8 @@ window.CRONOLOGIA_B = [
       <p>El recién llegado resultó ser el jefe de esos tres criminales de poca
       monta: un charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con
       un carisma que parecía compensarle ambas cosas más de lo necesario. Sus
-      razones para presentarse eran menos nobles de lo que sugería su entrada —
-      entre las deudas que sus hombres le habían dejado sin pagar, unirse a un
+      razones para presentarse eran menos nobles de lo que sugería su entrada.
+      Entre las deudas que sus hombres le habían dejado sin pagar, unirse a un
       grupo camino al norte empezaba a sonarle a la salida más rentable
       disponible. Se presentó como Cassius Coldgrave, y por el módico precio de
       dos piezas de oro y seis piezas de cobre, que los protagonistas le pagaron
@@ -378,8 +378,8 @@ window.CRONOLOGIA_B = [
       <p>Tirada en el suelo, el grupo encontró una armadura enorme, y antes de
       que nadie pudiera decidir qué hacer con ella, la armadura decidió por su
       cuenta: se levantó, y empezó a caminar y a hablar. Lo que dijo no tenía
-      demasiado sentido — algo sobre una lluvia que no estaba cayendo en ningún
-      lado —, y cuando el grupo le señaló el oeste para sacársela de encima, ni
+      demasiado sentido, algo sobre una lluvia que no estaba cayendo en ningún
+      lado, y cuando el grupo le señaló el oeste para sacársela de encima, ni
       ellos ni la propia armadura tenían del todo claro dónde quedaba eso.</p>
 
       <p>La armadura empezó a caminar de todas formas hacia lo que fuera que
@@ -397,7 +397,7 @@ window.CRONOLOGIA_B = [
       <p>Mientras la noche avanzaba, un par de ojos aparecieron del otro lado
       del fuego. Pertenecían a una criatura tan oscura que ni los ojos élficos
       del grupo lograron distinguir su forma. Sin apuro, les ofreció tres
-      objetos, y se tomó su tiempo para explicar — a su manera — qué era cada
+      objetos, y se tomó su tiempo para explicar, a su manera, qué era cada
       uno. Entre el miedo y lo poco que lograron entender de la oferta, los
       protagonistas terminaron eligiendo una máscara de la que, por ahora, no
       saben mucho más que eso: que la eligieron.</p>

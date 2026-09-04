@@ -826,7 +826,7 @@ window.PERSONAJES = [
       <p>Una cazadora de monstruos hombre bestia gato, cubierta de cicatrices y
       de pocas palabras. Los protagonistas la contrataron antes de partir hacia
       el norte, y se sumó a la marcha apenas salieron de Kigan sin necesitar
-      mucha presentación — para eso ya estaba pagada.</p>
+      mucha presentación. Para eso ya estaba pagada.</p>
     `
   },
   {
@@ -850,10 +850,10 @@ window.PERSONAJES = [
       { id: "victor", nota: "Compañero" }
     ],
     content: `
-      <p>Un hombre bestia cabra al servicio de Cassius Coldgrave. Junto a Voss y
-      Victor, atacó a los protagonistas sin previo aviso en un barrio descuidado
-      de Kigan — un reencuentro con caras ya conocidas de una taberna, que
-      terminó mucho peor de lo que empezó.</p>
+      <p>Un hombre bestia cabra al servicio de Cassius Coldgrave. Atacó a los
+      protagonistas junto a Voss y Victor, sin previo aviso, en un barrio
+      descuidado de Kigan. Ya se habían visto antes, en una taberna, aunque
+      esta vez el reencuentro salió mucho peor.</p>
     `
   },
   {
@@ -877,10 +877,10 @@ window.PERSONAJES = [
       { id: "victor", nota: "Compañero" }
     ],
     content: `
-      <p>Una humana al servicio de Cassius Coldgrave. Junto a Billy y Victor,
-      atacó a los protagonistas sin previo aviso en un barrio descuidado de
-      Kigan — un reencuentro con caras ya conocidas de una taberna, que terminó
-      mucho peor de lo que empezó.</p>
+      <p>Una humana al servicio de Cassius Coldgrave. Se sumó al ataque de
+      Billy y Victor contra los protagonistas en un barrio descuidado de
+      Kigan, la segunda vez que se cruzaban desde aquella noche en la
+      taberna.</p>
     `
   },
   {
@@ -904,10 +904,10 @@ window.PERSONAJES = [
       { id: "voss", nota: "Compañera" }
     ],
     content: `
-      <p>Un hombre bestia murciélago al servicio de Cassius Coldgrave. Junto a
-      Billy y Voss, atacó a los protagonistas sin previo aviso en un barrio
-      descuidado de Kigan — un reencuentro con caras ya conocidas de una
-      taberna, que terminó mucho peor de lo que empezó.</p>
+      <p>Un hombre bestia murciélago al servicio de Cassius Coldgrave. Acompañó
+      a Billy y Voss en el ataque contra los protagonistas en un barrio
+      descuidado de Kigan, sin que el mal recuerdo de la taberna pareciera
+      haberle enseñado nada.</p>
     `
   },
   {
