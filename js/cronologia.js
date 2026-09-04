@@ -48,9 +48,16 @@ function renderCronologia(lado) {
       <p class="cronica-numero">${cap.numero}</p>
       <h3 class="cronica-titulo">${cap.title}</h3>
       <p class="cronica-fecha">${cap.fecha}</p>
-      <div class="modal-body">${cap.content}</div>
+      <div class="modal-body">${autoLinkEntidades(cap.content)}</div>
     </article>
   `).join("");
 }
+
+cronicaList.addEventListener("click", e => {
+  const link = e.target.closest(".relation-link");
+  if (!link) return;
+  const entry = ALL_ENTRIES.find(item => item.id === link.dataset.id);
+  if (entry) openEntryModal(entry);
+});
 
 initLadoGate(renderCronologia);

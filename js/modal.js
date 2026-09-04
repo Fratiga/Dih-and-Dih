@@ -121,6 +121,91 @@ function habilidadesBlock(entry) {
   return `<div class="modal-habilidades"><h4>Habilidades</h4>${items}</div>`;
 }
 
+/* Convierte cada mención de un personaje/lugar/facción/etc. dentro de un
+   bloque de HTML (por ejemplo un capítulo de cronología) en un botón
+   .relation-link que abre esa entrada — igual que los links manuales que
+   ya usa modalExtraMeta(), pero encontrados automáticamente en el texto
+   en vez de tener que marcarlos a mano uno por uno.
+
+   Respeta la visibilidad de lado/admin (entryEsVisible), así que nunca
+   ofrece abrir algo que el visitante actual no debería poder ver. Cuando
+   dos entradas comparten el mismo título (ej. "Eledar" o "Coach" existen
+   una vez por Side), prioriza la que corresponda al lado que se está
+   viendo ahora mismo. */
+function autoLinkEntidades(html) {
+  if (!html) return html;
+  const laActual = typeof ladoActual === "function" ? ladoActual() : null;
+
+  const vistos = new Map();
+  ALL_ENTRIES.forEach(entry => {
+    if (!entry.title || entry.title.length < 3) return;
+    if (typeof entryEsVisible === "function" && !entryEsVisible(entry)) return;
+    const key = entry.title.toLowerCase();
+    const existente = vistos.get(key);
+    if (!existente) { vistos.set(key, entry); return; }
+    const prefiereNuevo = laActual && entry.lado?.includes(laActual) && !existente.lado?.includes(laActual);
+    if (prefiereNuevo) vistos.set(key, entry);
+  });
+  if (!vistos.size) return html;
+
+  const candidatos = [...vistos.values()].sort((a, b) => b.title.length - a.title.length);
+  const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Coincidencia sensible a mayúsculas a propósito (si no, "dragón" o
+  // "custodia" en minúscula terminan enlazando a entradas como "Dragón" o
+  // "Custodia" que no tienen nada que ver con esa mención puntual). La
+  // única excepción es el artículo inicial de un título como "La Espesura":
+  // en prosa corrida es normal escribirlo en minúscula ("se adentraron en
+  // la Espesura") sin que eso deje de ser el mismo lugar.
+  function patronDeTitulo(title) {
+    const m = title.match(/^(El|La|Los|Las)(\s.+)$/);
+    if (!m) return escapeRegExp(title);
+    const inicial = m[1][0];
+    return `[${inicial}${inicial.toLowerCase()}]${escapeRegExp(m[1].slice(1))}${escapeRegExp(m[2])}`;
+  }
+  const patron = candidatos.map(c => patronDeTitulo(c.title)).join("|");
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])(${patron})(?![\\p{L}\\p{N}])`, "gu");
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html;
+
+  const walker = document.createTreeWalker(wrapper, NodeFilter.SHOW_TEXT, null);
+  const nodos = [];
+  let nodo;
+  while ((nodo = walker.nextNode())) {
+    if (nodo.parentElement.closest("a, button, script, style")) continue;
+    nodos.push(nodo);
+  }
+
+  nodos.forEach(textNode => {
+    const texto = textNode.nodeValue;
+    re.lastIndex = 0;
+    if (!re.test(texto)) return;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let ultimo = 0;
+    let m;
+    while ((m = re.exec(texto))) {
+      if (m.index > ultimo) frag.appendChild(document.createTextNode(texto.slice(ultimo, m.index)));
+      const entry = vistos.get(m[0].toLowerCase());
+      if (entry) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "relation-link";
+        btn.dataset.id = entry.id;
+        btn.textContent = m[0];
+        frag.appendChild(btn);
+      } else {
+        frag.appendChild(document.createTextNode(m[0]));
+      }
+      ultimo = m.index + m[0].length;
+    }
+    if (ultimo < texto.length) frag.appendChild(document.createTextNode(texto.slice(ultimo)));
+    textNode.parentNode.replaceChild(frag, textNode);
+  });
+
+  return wrapper.innerHTML;
+}
+
 function mapaLinkFor(entry) {
   if (entry.category !== "Lugares" || typeof window.mapaTienePin !== "function") return "";
   if (!window.mapaTienePin(entry.id)) return "";

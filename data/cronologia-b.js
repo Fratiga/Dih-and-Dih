@@ -292,5 +292,116 @@ window.CRONOLOGIA_B = [
       hacer fuerza frente a quien quisiera apostar, y terminó la noche unas
       cuantas monedas más rico.</p>
     `
+  },
+  {
+    id: "capitulo-6",
+    orden: 6,
+    numero: "Capítulo VI",
+    title: "El Vaquero",
+    fecha: "Antes de partir al norte",
+    content: `
+      <p>Con el juicio resuelto y la ruta hacia el norte decidida, quedaba
+      todavía una ciudad entera de la que despedirse, y no todos en Kigan
+      estaban dispuestos a dejarlos ir sin hablar primero.</p>
+
+      <h4>Los rumores de la taberna</h4>
+
+      <p>Eledar se movió entre las mesas hasta encontrar a un grupo de
+      aventureros que bebían sin demasiado disimulo, y no tardó en sacarles más
+      de lo que ellos mismos pensaban que sabían. Verdam, decían, se había
+      instalado en algún punto de la Espesura, el bosque al norte de la ciudad.
+      También coincidían en algo más incómodo: alguien andaba repartiendo
+      detalles del juicio por Kigan, detalles que ninguno de los presentes
+      debería haber conocido con tanta precisión. Nadie supo decir quién, pero
+      el rumor bastó para que el grupo trazara su ruta con algo más de cuidado
+      del que hubieran usado sin esa advertencia.</p>
+
+      <h4>La casa de baños</h4>
+
+      <p>Terminados los asuntos de la taberna, el grupo se dirigió a una casa de
+      baños antes de partir. Adam se bañó junto a ellos, y entre el vapor y las
+      bromas terminó de ganarse un lugar entre el grupo que ninguna palabra
+      formal hubiera conseguido.</p>
+
+      <p>Mientras el resto seguía adentro, un desconocido se acercó a Hooey y lo
+      llamó por un nombre que él nunca había usado: Hubert Magnolia. El extraño
+      insinuó que ese nombre le pertenecía de verdad, y que una explosión, de la
+      que Hooey tampoco tenía memoria alguna, era la razón de que su cabeza
+      funcionara como funcionaba. No dio más detalles, y desapareció antes de
+      que nadie pudiera pedírselos.</p>
+
+      <h4>Torvrena</h4>
+
+      <p>Ya afuera de la ciudad, el grupo se encontró con Torvrena, la cazadora
+      de monstruos que habían contratado antes de partir. Grande, cubierta de
+      cicatrices y de pocas palabras, se sumó a la marcha sin necesitar mucha
+      presentación — para eso ya estaba pagada.</p>
+
+      <h4>Caras conocidas, por las malas</h4>
+
+      <p>El camino los llevó por un barrio bastante más descuidado que el resto
+      de Kigan, y ahí, sin buscarlo, volvieron a cruzarse con tres caras que ya
+      conocían de la taberna: Billy, Voss y Victor. El reencuentro no fue
+      amistoso. Los tres atacaron sin previo aviso, y el grupo tuvo que
+      defenderse, hasta el punto de estar terminando de apalear al último cuando
+      alguien más apareció en la escena a saludar, como si el resto de la pelea
+      no hubiera pasado.</p>
+
+      <p>El recién llegado resultó ser el jefe de esos tres criminales de poca
+      monta: un charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con
+      un carisma que parecía compensarle ambas cosas más de lo necesario. Sus
+      razones para presentarse eran menos nobles de lo que sugería su entrada —
+      entre las deudas que sus hombres le habían dejado sin pagar, unirse a un
+      grupo camino al norte empezaba a sonarle a la salida más rentable
+      disponible. Se presentó como Cassius Coldgrave, y por el módico precio de
+      dos piezas de oro y seis piezas de cobre, que los protagonistas le pagaron
+      ahí mismo, el vaquero mercenario se comprometió a acompañarlos hasta el
+      dragón. O hasta que decidiera huir, lo que llegara antes.</p>
+    `
+  },
+  {
+    id: "capitulo-7",
+    orden: 7,
+    numero: "Capítulo VII",
+    title: "La Espesura",
+    fecha: "La primera noche en la Espesura",
+    content: `
+      <p>Con Cassius sumado al grupo, se adentraron en la Espesura, el bosque al
+      norte de Kigan que le hacía honor a su nombre desde el primer paso.
+      Después de un encuentro con un par de animales salvajes que no pasó de
+      eso, algo mucho más raro les salió al cruce.</p>
+
+      <h4>La armadura que caminaba</h4>
+
+      <p>Tirada en el suelo, el grupo encontró una armadura enorme, y antes de
+      que nadie pudiera decidir qué hacer con ella, la armadura decidió por su
+      cuenta: se levantó, y empezó a caminar y a hablar. Lo que dijo no tenía
+      demasiado sentido — algo sobre una lluvia que no estaba cayendo en ningún
+      lado —, y cuando el grupo le señaló el oeste para sacársela de encima, ni
+      ellos ni la propia armadura tenían del todo claro dónde quedaba eso.</p>
+
+      <p>La armadura empezó a caminar de todas formas hacia lo que fuera que
+      hubiera entendido por "oeste", y fue entonces cuando de las grietas de su
+      coraza empezaron a caer almas errantes, que se prendieron al barro, a las
+      piedras y a la madera de alrededor y las levantaron convertidas en
+      monstruosidades poseídas. El grupo no se quedó a comprobar cuántas más
+      podían salir de ahí adentro, y huyó bosque adentro.</p>
+
+      <h4>La fogata</h4>
+
+      <p>La huida terminó pasándole factura al tobillo de Eledar, así que el
+      grupo decidió detenerse y armar una fogata para pasar la noche.</p>
+
+      <p>Mientras la noche avanzaba, un par de ojos aparecieron del otro lado
+      del fuego. Pertenecían a una criatura tan oscura que ni los ojos élficos
+      del grupo lograron distinguir su forma. Sin apuro, les ofreció tres
+      objetos, y se tomó su tiempo para explicar — a su manera — qué era cada
+      uno. Entre el miedo y lo poco que lograron entender de la oferta, los
+      protagonistas terminaron eligiendo una máscara de la que, por ahora, no
+      saben mucho más que eso: que la eligieron.</p>
+
+      <p>Ryn no consiguió pegar ojo en toda la noche. El resto, al menos,
+      durmió.</p>
+    `
   }
 ];

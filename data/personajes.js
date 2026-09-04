@@ -773,5 +773,167 @@ window.PERSONAJES = [
       Gigante desde hace años. Su local sobrevivió al ataque del dragón casi de
       milagro, y desde entonces no le falta clientela.</p>
     `
+  },
+  {
+    id: "cassius-coldgrave",
+    title: "Cassius Coldgrave",
+    category: "Personajes",
+    tags: ["jugador", "vaquero", "mercenario"],
+    summary: "Charlatán vaquero mercenario criado en Vado Ceniza, cobarde y codicioso pero extrañamente carismático; se unió al grupo camino al norte a cambio de una paga.",
+    retrato: "",
+    titulo: "Vaquero Mercenario",
+    raza: "",
+    tipo: "Jugador",
+    lugarOrigen: "vado-ceniza",
+    ocupacion: "Mercenario",
+    faccion: "",
+    primeraAparicion: "El Vaquero",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "billy", nota: "Antiguo hombre a su cargo" },
+      { id: "voss", nota: "Antigua mujer a su cargo" },
+      { id: "victor", nota: "Antiguo hombre a su cargo" }
+    ],
+    content: `
+      <p><em>"Todo tiene un precio. El mío es dos piezas de oro y seis de cobre."</em></p>
+      <p>Un charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con un
+      carisma que parece compensarle ambas cosas más de lo que debería. Se
+      presentó ante los protagonistas justo cuando terminaban de apalear al
+      último de sus hombres, y en vez de buscar venganza vio una oportunidad:
+      entre las deudas que sus criminales de poca monta le habían dejado sin
+      pagar, unirse a un grupo camino al norte le sonó a la salida más rentable
+      disponible. Aceptó acompañarlos hasta el dragón, o hasta que decidiera
+      huir, a cambio de un pago que ya cobró por adelantado.</p>
+    `
+  },
+  {
+    id: "torvrena",
+    title: "Torvrena",
+    category: "Personajes",
+    tags: ["npc", "hombre-bestia", "cazadora-de-monstruos"],
+    summary: "Cazadora de monstruos hombre bestia gato, contratada por los protagonistas antes de partir hacia la Espesura.",
+    retrato: "",
+    titulo: "Cazadora de Monstruos",
+    raza: "Hombre bestia (Gato)",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Cazadora de monstruos",
+    faccion: "",
+    primeraAparicion: "El Vaquero",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Una cazadora de monstruos hombre bestia gato, cubierta de cicatrices y
+      de pocas palabras. Los protagonistas la contrataron antes de partir hacia
+      el norte, y se sumó a la marcha apenas salieron de Kigan sin necesitar
+      mucha presentación — para eso ya estaba pagada.</p>
+    `
+  },
+  {
+    id: "billy",
+    title: "Billy",
+    category: "Personajes",
+    tags: ["npc", "hombre-bestia", "kigan"],
+    summary: "Hombre bestia cabra, matón al servicio de Cassius Coldgrave; atacó a los protagonistas en un barrio descuidado de Kigan.",
+    retrato: "",
+    titulo: "Matón",
+    raza: "Hombre bestia (Cabra)",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Matón",
+    faccion: "",
+    primeraAparicion: "El Vaquero",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "cassius-coldgrave", nota: "Trabaja para él" },
+      { id: "voss", nota: "Compañera" },
+      { id: "victor", nota: "Compañero" }
+    ],
+    content: `
+      <p>Un hombre bestia cabra al servicio de Cassius Coldgrave. Junto a Voss y
+      Victor, atacó a los protagonistas sin previo aviso en un barrio descuidado
+      de Kigan — un reencuentro con caras ya conocidas de una taberna, que
+      terminó mucho peor de lo que empezó.</p>
+    `
+  },
+  {
+    id: "voss",
+    title: "Voss",
+    category: "Personajes",
+    tags: ["npc", "humana", "kigan"],
+    summary: "Humana al servicio de Cassius Coldgrave; atacó a los protagonistas en un barrio descuidado de Kigan.",
+    retrato: "",
+    titulo: "Matona",
+    raza: "Humana",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Matona",
+    faccion: "",
+    primeraAparicion: "El Vaquero",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "cassius-coldgrave", nota: "Trabaja para él" },
+      { id: "billy", nota: "Compañero" },
+      { id: "victor", nota: "Compañero" }
+    ],
+    content: `
+      <p>Una humana al servicio de Cassius Coldgrave. Junto a Billy y Victor,
+      atacó a los protagonistas sin previo aviso en un barrio descuidado de
+      Kigan — un reencuentro con caras ya conocidas de una taberna, que terminó
+      mucho peor de lo que empezó.</p>
+    `
+  },
+  {
+    id: "victor",
+    title: "Victor",
+    category: "Personajes",
+    tags: ["npc", "hombre-bestia", "kigan"],
+    summary: "Hombre bestia murciélago, matón al servicio de Cassius Coldgrave; atacó a los protagonistas en un barrio descuidado de Kigan.",
+    retrato: "",
+    titulo: "Matón",
+    raza: "Hombre bestia (Murciélago)",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Matón",
+    faccion: "",
+    primeraAparicion: "El Vaquero",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "cassius-coldgrave", nota: "Trabaja para él" },
+      { id: "billy", nota: "Compañero" },
+      { id: "voss", nota: "Compañera" }
+    ],
+    content: `
+      <p>Un hombre bestia murciélago al servicio de Cassius Coldgrave. Junto a
+      Billy y Voss, atacó a los protagonistas sin previo aviso en un barrio
+      descuidado de Kigan — un reencuentro con caras ya conocidas de una
+      taberna, que terminó mucho peor de lo que empezó.</p>
+    `
+  },
+  {
+    id: "desconocido-banos",
+    title: "Desconocido de los Baños",
+    category: "Personajes",
+    tags: ["npc", "misterio", "kigan"],
+    summary: "Extraño que abordó a Hooey en una casa de baños de Kigan, insistiendo en que su verdadero nombre es Hubert Magnolia.",
+    retrato: "",
+    titulo: "",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "El Vaquero",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Le habló de un nombre y un pasado que Hooey no recuerda" }
+    ],
+    content: `
+      <p>Un desconocido que se acercó a Hooey en una casa de baños de Kigan y lo
+      llamó "Hubert Magnolia", insinuando que ese era su verdadero nombre. Según
+      él, una explosión de la que Hooey tampoco guarda memoria es la razón de
+      que su cabeza funcione como funciona. No dio más detalles, y desapareció
+      antes de que nadie pudiera pedírselos.</p>
+    `
   }
 ];
