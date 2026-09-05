@@ -142,9 +142,17 @@
     el.style.top = `${pos.y}vh`;
   }
 
+  const RISITAS = [
+    "assets/audio/risita-bufon.mp3",
+    "assets/audio/risita-bufon-2.mp3",
+    "assets/audio/risita-bufon-3.mp3",
+    "assets/audio/risita-bufon-4.mp3"
+  ];
+
   function reproducirRisita() {
     try {
-      const audio = new Audio("assets/audio/risita-bufon.mp3");
+      const src = RISITAS[Math.floor(Math.random() * RISITAS.length)];
+      const audio = new Audio(src);
       audio.volume = 0.6;
       audio.play().catch(() => {});
     } catch (e) { /* silencioso si el archivo no existe todavía */ }
