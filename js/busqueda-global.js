@@ -92,6 +92,12 @@
 
   if (randomBtn) {
     randomBtn.addEventListener("click", () => {
+      // 5% de las veces, en vez de una entrada al azar, manda directo a la
+      // puerta del Bufón — un huevo de pascua más dentro de otro.
+      if (Math.random() < 0.05) {
+        window.location.href = "secreto.html";
+        return;
+      }
       const pool = poolVisible();
       if (!pool.length) return;
       const entry = pool[Math.floor(Math.random() * pool.length)];

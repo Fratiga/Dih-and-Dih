@@ -626,5 +626,154 @@ window.STATS = [
       { nombre: "Instinto de supervivencia (Pasiva)", descripcion: "Ventaja en salvaciones contra Asustado y en pruebas para rastrear bestias, monstruosidades y dragones. No puede ser sorprendido por criaturas cuyo rastro haya estado siguiendo." }
     ],
     estrategia: "«Todo monstruo tiene una parte blanda. El problema es sobrevivir hasta encontrarla.» No intenta superar a las bestias en velocidad: las inmoviliza con arpón y trampas, soporta su furia con Aguantar el impacto y espera el momento para rematarlas. No reemplaza a un miembro del grupo — su aporte es retener al objetivo, revelar información con Estudiar a la presa y crear oportunidades de ataque. Solo se compromete a entrar en la guarida si se le garantiza quedarse con una parte valiosa del cadáver."
+  },
+  {
+    id: "rojo-ultimo-apunte",
+    personajeId: "rojo-ultimo-apunte",
+    nombre: "Rojo",
+    rol: "El Bocazas · Daño y liderazgo",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 42,
+    ca: 15,
+    velocidad: "30 pies",
+    iniciativa: "+2",
+    stats: { fue: 10, des: 14, con: 14, int: 16, sab: 10, car: 14 },
+    notas: [
+      "Encuentro difícil para seis personajes de nivel 4 (con los puntos de característica adicionales). Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
+      "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro."
+    ],
+    habilidades: [
+      { nombre: "Proyectil Carmesí (Ataque mágico)", descripcion: "A 60 pies: +5, daño 1d10 + 3 de fuego." },
+      { nombre: "¡Todos contra ese idiota! (Recarga 5–6)", descripcion: "Elige una criatura a 60 pies. Hasta el comienzo del siguiente turno de Rojo, el primer ataque que cada uno de sus compañeros realice contra ella inflige 1d4 de daño adicional." },
+      { nombre: "Salida espectacular (1/combate)", descripcion: "Rojo arroja una carga al suelo. Todas las criaturas a 10 pies hacen una salvación de Destreza CD 13. Fallo: 2d6 de fuego y son empujadas 10 pies. Éxito: mitad del daño y no son empujadas. Rojo puede desplazarse inmediatamente hasta 15 pies sin provocar ataques de oportunidad." }
+    ],
+    estrategia: "«¡Lo teníamos acorralado hasta que ustedes decidieron participar!» Señala a Hooey como objetivo prioritario y da órdenes evidentes que después finge que salieron según su plan."
+  },
+  {
+    id: "verde-ultimo-apunte",
+    personajeId: "verde-ultimo-apunte",
+    nombre: "Verde",
+    rol: "El Rastrero · Hostigador",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 34,
+    ca: 16,
+    velocidad: "35 pies",
+    iniciativa: "+4",
+    stats: { fue: 9, des: 18, con: 12, int: 14, sab: 13, car: 10 },
+    notas: [
+      "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
+      "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro."
+    ],
+    habilidades: [
+      { nombre: "Cuchillada de Tiza (Ataque cuerpo a cuerpo)", descripcion: "+6, daño 1d6 + 4 cortante. Inflige 1d6 adicional si uno de sus aliados está a 5 pies del objetivo." },
+      { nombre: "Paso por la Manga (Acción adicional)", descripcion: "Se teletransporta hasta 20 pies hacia un espacio junto a una criatura. Su siguiente ataque durante ese turno tiene ventaja." },
+      { nombre: "Eso era importante, ¿no? (1/combate)", descripcion: "Una criatura a 5 pies hace una salvación de Destreza CD 13. Si falla, Verde le roba un foco, bolsa de componentes u objeto pequeño que lleve visible. La víctima no puede lanzar conjuros que requieran ese objeto hasta recuperarlo arrebatándoselo con una acción o derribando a Verde." }
+    ],
+    estrategia: "«¿Tu plan necesitaba esto? Qué mala suerte.» Se teletransporta detrás de los lanzadores de conjuros y roba sus focos apenas puede."
+  },
+  {
+    id: "morado-ultimo-apunte",
+    personajeId: "morado-ultimo-apunte",
+    nombre: "Morado",
+    rol: "El Aguafiestas · Control y contramagia",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 36,
+    ca: 14,
+    velocidad: "30 pies",
+    iniciativa: "+2",
+    stats: { fue: 8, des: 14, con: 14, int: 17, sab: 12, car: 13 },
+    notas: [
+      "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
+      "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro.",
+      "Contramagia Callejera (Reacción, 3 usos compartidos entre Azul, Morado y Gris): cuando una criatura que puedan ver a 60 pies lance un conjuro, uno de ellos intenta arruinarlo con 1d20 + 5 contra 10 + nivel del conjuro. Éxito: el conjuro se pierde. Fracaso: el conjuro funciona y su lanzador obtiene ventaja en el siguiente ataque mágico que realice contra quien intentó contrarrestarlo."
+    ],
+    habilidades: [
+      { nombre: "Cadena Violeta (Ataque mágico)", descripcion: "A 60 pies: +5, daño 1d8 + 3 psíquico y la velocidad del objetivo se reduce 10 pies hasta su siguiente turno." },
+      { nombre: "Quédate ahí (Recarga 5–6)", descripcion: "Una criatura a 60 pies hace una salvación de Fuerza CD 13. Fallo: queda Restringida por cadenas mágicas, puede repetir la salvación al final de cada turno. Las cadenas también pueden destruirse: CA 13, 10 PV." },
+      { nombre: "No, no, inténtalo otra vez (Reacción, 1/combate)", descripcion: "Después de que una criatura supere una salvación, Morado la obliga a repetirla. Debe aceptar el segundo resultado." }
+    ],
+    estrategia: "«Casi te sale. Lo cual, sinceramente, lo hace más gracioso.» Inmoviliza a quien esté protegiendo a Hooey."
+  },
+  {
+    id: "amarillo-ultimo-apunte",
+    personajeId: "amarillo-ultimo-apunte",
+    nombre: "Amarillo",
+    rol: "El Matón · Tanque y protección",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 52,
+    ca: 17,
+    velocidad: "30 pies",
+    iniciativa: "+0",
+    stats: { fue: 18, des: 10, con: 17, int: 10, sab: 12, car: 9 },
+    notas: [
+      "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
+      "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro."
+    ],
+    habilidades: [
+      { nombre: "Bastonazo Académico (Ataque cuerpo a cuerpo)", descripcion: "+6, daño 1d10 + 4 contundente." },
+      { nombre: "Aparta, intelectual (Acción adicional)", descripcion: "Después de golpear, el objetivo hace una salvación de Fuerza CD 14. Si falla, Amarillo lo empuja 10 pies o lo derriba." },
+      { nombre: "Le pegabas a otro (Reacción)", descripcion: "Cuando un aliado a 5 pies sea golpeado, Amarillo intercambia posiciones con él y recibe el daño en su lugar. Después puede realizar un Bastonazo Académico contra el atacante." },
+      { nombre: "Cabezazo (Recarga 6)", descripcion: "Ataque cuerpo a cuerpo: +6, daño 2d6 + 4. El objetivo no puede utilizar reacciones hasta el comienzo de su siguiente turno." }
+    ],
+    estrategia: "«No sé qué significa 'profano'. ¿Es un insulto? Porque te rompo la cara.» Bloquea el camino hacia Gris y Azul."
+  },
+  {
+    id: "azul-ultimo-apunte",
+    personajeId: "azul-ultimo-apunte",
+    nombre: "Azul",
+    rol: "El Tramposo · Contramagia y manipulación",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 35,
+    ca: 15,
+    velocidad: "30 pies",
+    iniciativa: "+2",
+    stats: { fue: 8, des: 14, con: 13, int: 18, sab: 12, car: 10 },
+    notas: [
+      "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
+      "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro.",
+      "Contramagia Callejera (Reacción, 3 usos compartidos entre Azul, Morado y Gris): cuando una criatura que puedan ver a 60 pies lance un conjuro, uno de ellos intenta arruinarlo con 1d20 + 5 contra 10 + nivel del conjuro. Éxito: el conjuro se pierde. Fracaso: el conjuro funciona y su lanzador obtiene ventaja en el siguiente ataque mágico que realice contra quien intentó contrarrestarlo."
+    ],
+    habilidades: [
+      { nombre: "Dardo Índigo (Ataque mágico)", descripcion: "A 60 pies: +6, daño 1d8 + 4 de fuerza." },
+      { nombre: "Rebote Impertinente (Reacción, 1/combate)", descripcion: "Cuando sea objetivo de un ataque mágico que falle, puede redirigirlo contra otra criatura situada a 30 pies. Utiliza la tirada original contra la CA del nuevo objetivo." },
+      { nombre: "Silencio Selectivo (Recarga 5–6)", descripcion: "Crea una esfera de 10 pies de radio a 60 pies que dura hasta el comienzo de su siguiente turno. Dentro de ella no pueden emplearse componentes verbales." }
+    ],
+    estrategia: "«¡No se escucha! ¡Habla más fuerte!» (Siempre grita esto desde fuera de su propio Silencio Selectivo.) Nunca ataca cuando puede interrumpir, estorbar o hacer que alguien se golpee solo, y guarda la contramagia para curaciones, huidas o conjuros de control."
+  },
+  {
+    id: "gris-ultimo-apunte",
+    personajeId: "gris-ultimo-apunte",
+    nombre: "Gris",
+    rol: "El Verdadero Discípulo · Apoyo y jefe secundario",
+    tipo: "Humanoide",
+    nivel: 4,
+    pv: 46,
+    ca: 14,
+    velocidad: "30 pies",
+    iniciativa: "+1",
+    stats: { fue: 8, des: 12, con: 16, int: 18, sab: 15, car: 11 },
+    notas: [
+      "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
+      "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro.",
+      "Contramagia Callejera (Reacción, 3 usos compartidos entre Azul, Morado y Gris): cuando una criatura que puedan ver a 60 pies lance un conjuro, uno de ellos intenta arruinarlo con 1d20 + 5 contra 10 + nivel del conjuro. Éxito: el conjuro se pierde. Fracaso: el conjuro funciona y su lanzador obtiene ventaja en el siguiente ataque mágico que realice contra quien intentó contrarrestarlo."
+    ],
+    habilidades: [
+      { nombre: "Fragmento de Lección (Ataque mágico)", descripcion: "A 60 pies: +6, daño 2d6 + 4 psíquico." },
+      { nombre: "Eso no fue lo que nos enseñó (Acción adicional)", descripcion: "Un aliado a 60 pies puede repetir inmediatamente una salvación que haya fallado o desplazarse hasta la mitad de su velocidad sin provocar ataques de oportunidad." },
+      { nombre: "Corrección del Maestro (2/combate)", descripcion: "Cuando un aliado falle un ataque, Gris convierte el fallo en impacto. No puede utilizarse para convertir un ataque en crítico." },
+      { nombre: "Examen Final (1/combate)", descripcion: "Hasta tres criaturas a 60 pies hacen una salvación de Inteligencia CD 14. Fallo: 2d6 psíquico y quedan Aturdidas hasta el final de su siguiente turno. Éxito: mitad del daño y no quedan Aturdidas. Cada objetivo puede obtener ventaja contestando rápidamente una pregunta sobre el maestro, su ropa o los conocimientos que Hooey devoró — una respuesta convincente basta, aunque sea improvisada." }
+    ],
+    estrategia: "«Pueden burlarse de nosotros. Pueden llamarnos ladrones, vándalos o fracasados. Pero él nos enseñó a pensar. Y ahora mismo, una parte de él se pudre dentro de esa cosa.» El más experimentado y el único que entiende por completo el ritual del Ánima; su comportamiento ridículo desaparece cuando habla del maestro. Mantiene unido al grupo y usa Examen Final cuando puede alcanzar a al menos tres personajes. Cuando caen tres de los Seis, la fanfarronería del grupo desaparece: Gris ofrece detener la pelea si les permiten extraer del cuerpo de Hooey los restos del maestro mediante un procedimiento probablemente desagradable, pero no necesariamente mortal."
   }
 ];

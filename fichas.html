@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis personajes — Compendio del Mundo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+   <div class="site-header-inner">
+    <div class="header-left">
+      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
+      <h1>Compendio</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+      <div id="slappyContenedor" class="slappy-contenedor hidden"></div>
+    </div>
+
+    <div class="header-right">
+      <div id="globalLadoWidget" class="global-lado-widget">
+        <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+        <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+      </div>
+      <div id="claveMagicaWidget" class="clave-magica-widget">
+        <button id="claveMagicaBadge" class="clave-magica-badge" type="button" title="¿Sabes la palabra mágica?"><img src="assets/cosas/gatipeps.webp" alt=""></button>
+        <div id="claveMagicaPopover" class="clave-magica-popover hidden">
+          <form id="claveMagicaForm">
+            <input type="text" id="claveMagicaInput" placeholder="..." autocomplete="off">
+          </form>
+        </div>
+      </div>
+      <div id="temaWidget" class="tema-widget">
+        <button id="temaBadge" class="tema-badge" type="button" title="Cambiar tema">Tema</button>
+        <div id="temaPopover" class="tema-popover hidden"></div>
+      </div>
+      <div id="rotacionBox" class="rotacion-box">
+        <div id="rotacionInner" class="rotacion-inner"></div>
+        <div id="rotacionEmpty" class="rotacion-empty hidden">
+          <small>Carpeta rotacion/ vacía</small>
+        </div>
+      </div>
+    </div>
+   </div>
+   <div class="header-marquee">
+     <div class="marquee-row marquee-row-right">
+       <div class="marquee-track" id="marqueeTrackA"></div>
+     </div>
+     <div class="header-topbar">
+       <div class="global-search-box">
+         <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio...">
+         <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
+       </div>
+       <button id="globalRandomBtn" class="global-random-btn" type="button" title="Entrada aleatoria"><img src="assets/cosas/The-D6.png" alt="Entrada aleatoria"></button>
+       <button id="marqueeToggle" class="marquee-toggle" type="button" title="Detener franjas">⏸</button>
+     </div>
+     <div class="marquee-row marquee-row-left">
+       <div class="marquee-track" id="marqueeTrackB"></div>
+     </div>
+   </div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav">
+    <div class="nav-group">
+      <a href="index.html" class="nav-chip">Compendio</a>
+      <a href="mapa.html" class="nav-chip">Mapa</a>
+      <a href="cronologia.html" class="nav-chip">Cronología</a>
+    </div>
+    <div class="nav-group">
+      <a href="lugares.html" class="nav-chip">Lugares</a>
+      <a href="facciones.html" class="nav-chip">Facciones</a>
+      <a href="personajes.html" class="nav-chip">Personajes</a>
+      <a href="razas.html" class="nav-chip">Razas</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
+    </div>
+    <div class="nav-group">
+      <a href="textos.html" class="nav-chip">Textos</a>
+      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+      <a href="armas.html" class="nav-chip">Armas</a>
+      <a href="objetos.html" class="nav-chip">Objetos</a>
+      <a href="bestiario.html" class="nav-chip">Bestiario</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
+    </div>
+    <div class="nav-group">
+      <a href="economia.html" class="nav-chip">Economía</a>
+      <a href="fanarts.html" class="nav-chip">Fanarts</a>
+      <a href="peticiones.html" class="nav-chip">Peticiones</a>
+      <a href="fichas.html" class="nav-chip active">Mis personajes</a>
+      <a href="estadisticas.html" class="nav-chip hidden" data-admin-only>Estadísticas</a>
+      <a href="admin.html" class="nav-chip hidden" data-admin-only>Admin</a>
+    </div>
+  </nav>
+
+  <main class="layout layout-solo">
+    <section class="content">
+
+      <!-- ============================ AUTENTICACIÓN ============================ -->
+      <section id="fichasAuthGate" class="page-section fichas-auth-gate hidden">
+        <div class="content-top">
+          <div>
+            <p class="eyebrow">ÁREA DE JUGADORES</p>
+            <h2>Mis personajes</h2>
+          </div>
+        </div>
+        <p class="fichas-auth-intro">
+          Necesitas una cuenta para guardar tus fichas (así puedes verlas desde cualquier
+          dispositivo). Es de uso privado para el grupo, no hace falta un email real que uses
+          para otra cosa — cualquiera que puedas recordar sirve.
+        </p>
+
+        <div class="fichas-auth-tabs">
+          <button type="button" class="fichas-auth-tab active" data-auth-tab="login">Iniciar sesión</button>
+          <button type="button" class="fichas-auth-tab" data-auth-tab="signup">Crear cuenta</button>
+        </div>
+
+        <form id="fichasLoginForm" class="fichas-auth-form">
+          <label for="fichasLoginEmail">Email</label>
+          <input type="email" id="fichasLoginEmail" required autocomplete="username">
+          <label for="fichasLoginPassword">Contraseña</label>
+          <input type="password" id="fichasLoginPassword" required autocomplete="current-password">
+          <button type="submit" class="secondary-button">Entrar</button>
+          <button type="button" id="fichasOlvideBtn" class="fichas-link-button">¿Olvidaste tu contraseña?</button>
+        </form>
+
+        <form id="fichasSignupForm" class="fichas-auth-form hidden">
+          <label for="fichasSignupEmail">Email</label>
+          <input type="email" id="fichasSignupEmail" required autocomplete="username">
+          <label for="fichasSignupPassword">Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="fichasSignupPassword" required minlength="6" autocomplete="new-password">
+          <button type="submit" class="secondary-button">Crear cuenta</button>
+        </form>
+
+        <p id="fichasAuthStatus" class="fichas-auth-status hidden"></p>
+      </section>
+
+      <!-- ============================ CONTENIDO (logueado) ============================ -->
+      <div id="fichasContent" class="hidden">
+
+        <!-- ---- Lista de personajes ---- -->
+        <section id="fichasListaVista" class="page-section">
+          <div class="content-top">
+            <div>
+              <p class="eyebrow">ÁREA DE JUGADORES</p>
+              <h2>Mis personajes</h2>
+            </div>
+            <button type="button" id="fichasLogoutBtn" class="fichas-link-button">Cerrar sesión (<span id="fichasEmailActual"></span>)</button>
+          </div>
+
+          <div class="fichas-lista-acciones">
+            <button type="button" id="fichasCrearBtn" class="secondary-button">+ Crear personaje</button>
+            <button type="button" id="fichasImportarPdfBtn" class="secondary-button">Importar desde PDF</button>
+            <button type="button" id="fichasImportarJsonBtn" class="secondary-button">Importar respaldo JSON</button>
+            <button type="button" id="fichasExportarTodoBtn" class="secondary-button">Exportar todo (respaldo)</button>
+            <input type="file" id="fichasArchivoPdf" accept="application/pdf" class="hidden">
+            <input type="file" id="fichasArchivoJson" accept="application/json" class="hidden">
+          </div>
+
+          <div id="fichasGrid" class="fichas-grid"></div>
+
+          <div id="fichasVacio" class="fichas-vacio hidden">
+            <h3>Todavía no tienes personajes aquí</h3>
+            <p>Dos formas de empezar: crear una ficha en blanco y completarla tú mismo, o importar
+              un PDF que ya tengas armado y revisar lo que se detectó antes de guardarlo.</p>
+            <div class="fichas-vacio-botones">
+              <button type="button" class="secondary-button" data-vacio-crear>+ Crear personaje</button>
+              <button type="button" class="secondary-button" data-vacio-pdf>Importar desde PDF</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---- Revisión de importación (PDF o JSON) ---- -->
+        <section id="fichasRevisionVista" class="page-section hidden">
+          <div class="content-top">
+            <div>
+              <p class="eyebrow" id="fichasRevisionEyebrow">REVISAR ANTES DE GUARDAR</p>
+              <h2>Confirma los datos importados</h2>
+            </div>
+          </div>
+          <div id="fichasRevisionPendientes" class="fichas-revision-pendientes"></div>
+          <div id="fichasRevisionResumen" class="fichas-revision-resumen"></div>
+          <div class="fichas-revision-acciones">
+            <button type="button" id="fichasRevisionConfirmar" class="secondary-button">Guardar personaje</button>
+            <button type="button" id="fichasRevisionCancelar" class="fichas-link-button">Cancelar</button>
+          </div>
+        </section>
+
+        <!-- ---- Ficha (detalle) ---- -->
+        <section id="fichasFichaVista" class="page-section hidden">
+          <button type="button" id="fichasVolverBtn" class="fichas-link-button">← Volver a mis personajes</button>
+
+          <header class="fichas-encabezado">
+            <div class="fichas-encabezado-retrato">
+              <img id="fichasHRetrato" src="" alt="" class="hidden">
+              <div id="fichasHRetratoVacio" class="fichas-retrato-vacio">?</div>
+            </div>
+            <div class="fichas-encabezado-datos">
+              <h2 id="fichasHNombre">—</h2>
+              <p id="fichasHSub" class="fichas-encabezado-sub">—</p>
+            </div>
+            <div class="fichas-encabezado-stats">
+              <div class="fichas-stat"><span id="fichasHPV">0/0</span><small>PV</small></div>
+              <div class="fichas-stat"><span id="fichasHCA">0</span><small>CA</small></div>
+              <div class="fichas-stat"><span id="fichasHIni">+0</span><small>Iniciativa</small></div>
+              <div class="fichas-stat"><span id="fichasHVel">0</span><small>Velocidad</small></div>
+              <div class="fichas-stat"><span id="fichasHComp">+0</span><small>Competencia</small></div>
+            </div>
+            <p id="fichasGuardadoEstado" class="fichas-guardado-estado">Guardado</p>
+          </header>
+
+          <nav class="fichas-tabs" id="fichasTabsNav">
+            <button type="button" class="fichas-tab active" data-tab="resumen">Resumen</button>
+            <button type="button" class="fichas-tab" data-tab="combate">Combate</button>
+            <button type="button" class="fichas-tab" data-tab="habilidades">Habilidades</button>
+            <button type="button" class="fichas-tab" data-tab="rasgos">Rasgos y recursos</button>
+            <button type="button" class="fichas-tab" data-tab="hechizos">Hechizos</button>
+            <button type="button" class="fichas-tab" data-tab="inventario">Inventario</button>
+            <button type="button" class="fichas-tab" data-tab="roll20">Roll20</button>
+            <button type="button" class="fichas-tab" data-tab="notas">Notas</button>
+          </nav>
+
+          <div id="fichasTabsPaneles" class="fichas-tabs-paneles"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="data/entries.js"></script>
+  <script src="data/personajes.js"></script>
+  <script src="data/lugares.js"></script>
+  <script src="data/facciones.js"></script>
+  <script src="data/pergaminos.js"></script>
+  <script src="data/armas.js"></script>
+  <script src="data/objetos.js"></script>
+  <script src="data/bestiario.js"></script>
+  <script src="data/razas.js"></script>
+  <script src="data/religiones.js"></script>
+  <script src="data/rotacion.js"></script>
+  <script src="data/musica.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/temas.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="data/jumpscare.js"></script>
+  <script src="data/contrasenas.js"></script>
+  <script src="js/fichas-supabase.js"></script>
+  <script src="js/lado.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script src="js/slappy.js"></script>
+  <script src="js/busqueda-global.js"></script>
+  <script src="js/header-marquee.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="js/fichas-modelo.js"></script>
+  <script src="js/fichas-calc.js"></script>
+  <script src="js/fichas-roll20.js"></script>
+  <script src="js/fichas-storage.js"></script>
+  <script src="js/fichas-pdf-laia.js"></script>
+  <script src="js/fichas-auth-ui.js"></script>
+  <script src="js/fichas-ui.js"></script>
+</body>
+</html>
