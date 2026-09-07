@@ -1124,10 +1124,10 @@ window.PERSONAJES = [
       fracasados. Pero él nos enseñó a pensar. Y ahora mismo, una parte de él se
       pudre dentro de esa cosa."</em></p>
       <p>El más experimentado de Los Seis del Último Apunte y el único que entiende
-      por completo el ritual que preparan: no buscan resucitar a su maestro, sino
-      crear un Ánima, una entidad formada con sus recuerdos, conocimientos y
-      últimas impresiones. Mientras parte de él siga mezclada con un ser vivo, el
-      ritual es imposible — y por eso persiguen a Hooey. Su comportamiento
+      por completo el ritual que preparan. No buscan resucitar a su maestro.
+      Buscan crear un Ánima, una entidad formada con sus recuerdos, conocimientos
+      y últimas impresiones. Mientras parte de él siga mezclada con un ser vivo,
+      el ritual es imposible. Por eso persiguen a Hooey. Su comportamiento
       ridículo desaparece por completo cuando habla del maestro.</p>
     `
   }

@@ -2736,3 +2736,19 @@ body.has-mini-player { padding-bottom: 74px; }
 }
 .admin-side-btn:hover { border-color: var(--accent-soft); }
 .admin-side-btn.is-active { color: var(--text); border-color: var(--accent-soft); background: var(--panel-2); }
+
+.admin-cuenta-acciones { display: flex; gap: 8px; }
+.admin-cuenta-accion {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: border-color .16s, color .16s;
+}
+.admin-cuenta-accion:hover { border-color: var(--accent-soft); color: var(--text); }
+.admin-cuenta-accion:disabled { opacity: .5; cursor: default; }
+.admin-cuenta-peligro { color: #c98b8b; border-color: #6b3a3a; }
+.admin-cuenta-peligro:hover { border-color: #a56a6a; color: #e0a0a0; }

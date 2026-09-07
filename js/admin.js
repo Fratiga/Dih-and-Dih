@@ -82,6 +82,10 @@
           <button type="button" class="admin-side-btn ${u.side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
           <button type="button" class="admin-side-btn ${u.side === "B" ? "is-active" : ""}" data-side="B">${LADO_NOMBRES.B}</button>
         </div>
+        <div class="admin-cuenta-acciones">
+          <button type="button" class="admin-cuenta-accion" data-accion="password">Cambiar contraseña</button>
+          <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-accion="eliminar">Eliminar cuenta</button>
+        </div>
       </div>
     `).join("");
 
@@ -94,6 +98,46 @@
           fila.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b.dataset.side === side));
         } catch (err) {
           alert("No se pudo cambiar el Side. Prueba de nuevo.");
+        }
+      });
+    });
+
+    cont.querySelectorAll('[data-accion="password"]').forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const fila = btn.closest("[data-id]");
+        const nueva = prompt("Nueva contraseña para esta cuenta (mínimo 6 caracteres):");
+        if (!nueva) return;
+        if (nueva.length < 6) {
+          alert("La contraseña debe tener al menos 6 caracteres.");
+          return;
+        }
+        btn.disabled = true;
+        try {
+          await adminCambiarPassword(fila.dataset.id, nueva);
+          alert("Contraseña cambiada.");
+        } catch (err) {
+          alert("No se pudo cambiar la contraseña: " + (err.message || "error desconocido"));
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
+    cont.querySelectorAll('[data-accion="eliminar"]').forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const fila = btn.closest("[data-id]");
+        const nombre = fila.querySelector(".admin-cuenta-nombre").textContent.trim();
+        const confirmado = confirm(
+          `¿Eliminar la cuenta de "${nombre}"?\n\nEsto borra su acceso por completo y no se puede deshacer. Sus fichas de personaje no se borran solas con esto.`
+        );
+        if (!confirmado) return;
+        btn.disabled = true;
+        try {
+          await adminEliminarCuenta(fila.dataset.id);
+          fila.remove();
+        } catch (err) {
+          alert("No se pudo eliminar la cuenta: " + (err.message || "error desconocido"));
+          btn.disabled = false;
         }
       });
     });

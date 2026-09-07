@@ -642,7 +642,7 @@ window.STATS = [
     notas: [
       "Encuentro difícil para seis personajes de nivel 4 (con los puntos de característica adicionales). Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
       "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
-      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro."
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo. Primero quieren abrirlo y recuperar lo que quede del maestro."
     ],
     habilidades: [
       { nombre: "Proyectil Carmesí (Ataque mágico)", descripcion: "A 60 pies: +5, daño 1d10 + 3 de fuego." },
@@ -666,7 +666,7 @@ window.STATS = [
     notas: [
       "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
       "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
-      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro."
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo. Primero quieren abrirlo y recuperar lo que quede del maestro."
     ],
     habilidades: [
       { nombre: "Cuchillada de Tiza (Ataque cuerpo a cuerpo)", descripcion: "+6, daño 1d6 + 4 cortante. Inflige 1d6 adicional si uno de sus aliados está a 5 pies del objetivo." },
@@ -690,7 +690,7 @@ window.STATS = [
     notas: [
       "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
       "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
-      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo. Primero quieren abrirlo y recuperar lo que quede del maestro.",
       "Contramagia Callejera (Reacción, 3 usos compartidos entre Azul, Morado y Gris): cuando una criatura que puedan ver a 60 pies lance un conjuro, uno de ellos intenta arruinarlo con 1d20 + 5 contra 10 + nivel del conjuro. Éxito: el conjuro se pierde. Fracaso: el conjuro funciona y su lanzador obtiene ventaja en el siguiente ataque mágico que realice contra quien intentó contrarrestarlo."
     ],
     habilidades: [
@@ -715,7 +715,7 @@ window.STATS = [
     notas: [
       "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
       "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
-      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro."
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo. Primero quieren abrirlo y recuperar lo que quede del maestro."
     ],
     habilidades: [
       { nombre: "Bastonazo Académico (Ataque cuerpo a cuerpo)", descripcion: "+6, daño 1d10 + 4 contundente." },
@@ -740,7 +740,7 @@ window.STATS = [
     notas: [
       "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
       "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
-      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo. Primero quieren abrirlo y recuperar lo que quede del maestro.",
       "Contramagia Callejera (Reacción, 3 usos compartidos entre Azul, Morado y Gris): cuando una criatura que puedan ver a 60 pies lance un conjuro, uno de ellos intenta arruinarlo con 1d20 + 5 contra 10 + nivel del conjuro. Éxito: el conjuro se pierde. Fracaso: el conjuro funciona y su lanzador obtiene ventaja en el siguiente ataque mágico que realice contra quien intentó contrarrestarlo."
     ],
     habilidades: [
@@ -765,14 +765,14 @@ window.STATS = [
     notas: [
       "Rasgos compartidos por Los Seis del Último Apunte: Competencia +2, CD de habilidades de conjuro 13, ataques mágicos +5.",
       "Cobardía organizada: mientras tenga a otro miembro consciente a 10 pies, +1 a la CA. Pierden el beneficio cuando quedan tres o menos con vida.",
-      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo: primero quieren abrirlo y recuperar lo que quede del maestro.",
+      "Objetivo prioritario: siempre conocen la ubicación de Hooey mientras esté a 60 pies y no pueden ser engañados por ilusiones que imiten su aspecto. Intentan derribarlo, pero no rematarlo. Primero quieren abrirlo y recuperar lo que quede del maestro.",
       "Contramagia Callejera (Reacción, 3 usos compartidos entre Azul, Morado y Gris): cuando una criatura que puedan ver a 60 pies lance un conjuro, uno de ellos intenta arruinarlo con 1d20 + 5 contra 10 + nivel del conjuro. Éxito: el conjuro se pierde. Fracaso: el conjuro funciona y su lanzador obtiene ventaja en el siguiente ataque mágico que realice contra quien intentó contrarrestarlo."
     ],
     habilidades: [
       { nombre: "Fragmento de Lección (Ataque mágico)", descripcion: "A 60 pies: +6, daño 2d6 + 4 psíquico." },
       { nombre: "Eso no fue lo que nos enseñó (Acción adicional)", descripcion: "Un aliado a 60 pies puede repetir inmediatamente una salvación que haya fallado o desplazarse hasta la mitad de su velocidad sin provocar ataques de oportunidad." },
       { nombre: "Corrección del Maestro (2/combate)", descripcion: "Cuando un aliado falle un ataque, Gris convierte el fallo en impacto. No puede utilizarse para convertir un ataque en crítico." },
-      { nombre: "Examen Final (1/combate)", descripcion: "Hasta tres criaturas a 60 pies hacen una salvación de Inteligencia CD 14. Fallo: 2d6 psíquico y quedan Aturdidas hasta el final de su siguiente turno. Éxito: mitad del daño y no quedan Aturdidas. Cada objetivo puede obtener ventaja contestando rápidamente una pregunta sobre el maestro, su ropa o los conocimientos que Hooey devoró — una respuesta convincente basta, aunque sea improvisada." }
+      { nombre: "Examen Final (1/combate)", descripcion: "Hasta tres criaturas a 60 pies hacen una salvación de Inteligencia CD 14. Fallo: 2d6 psíquico y quedan Aturdidas hasta el final de su siguiente turno. Éxito: mitad del daño y no quedan Aturdidas. Cada objetivo puede obtener ventaja contestando rápidamente una pregunta sobre el maestro, su ropa o los conocimientos que Hooey devoró. Una respuesta convincente basta, aunque sea improvisada." }
     ],
     estrategia: "«Pueden burlarse de nosotros. Pueden llamarnos ladrones, vándalos o fracasados. Pero él nos enseñó a pensar. Y ahora mismo, una parte de él se pudre dentro de esa cosa.» El más experimentado y el único que entiende por completo el ritual del Ánima; su comportamiento ridículo desaparece cuando habla del maestro. Mantiene unido al grupo y usa Examen Final cuando puede alcanzar a al menos tres personajes. Cuando caen tres de los Seis, la fanfarronería del grupo desaparece: Gris ofrece detener la pelea si les permiten extraer del cuerpo de Hooey los restos del maestro mediante un procedimiento probablemente desagradable, pero no necesariamente mortal."
   }
