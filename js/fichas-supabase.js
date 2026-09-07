@@ -80,3 +80,26 @@ async function adminCambiarSide(idUsuario, nuevoSide) {
   const { error } = await supabase.rpc("fichas_admin_set_side", { target_id: idUsuario, nuevo_side: nuevoSide });
   if (error) throw error;
 }
+
+/* Estas dos pasan por una Edge Function (no una RPC de Postgres): borrar un
+   usuario o cambiarle la contraseña son operaciones de la Admin API de
+   Supabase Auth, que solo funcionan con la service_role key. Esa key nunca
+   puede llegar al navegador, así que la función corre server-side y acá
+   solo se invoca. Ver scratchpad/edge-function-admin-gestionar-cuenta.ts. */
+async function adminEliminarCuenta(idUsuario) {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase.functions.invoke("admin-gestionar-cuenta", {
+    body: { accion: "eliminar", userId: idUsuario }
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+}
+
+async function adminCambiarPassword(idUsuario, nuevaPassword) {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase.functions.invoke("admin-gestionar-cuenta", {
+    body: { accion: "cambiar_password", userId: idUsuario, nuevaPassword }
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+}
