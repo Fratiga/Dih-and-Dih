@@ -1047,8 +1047,8 @@ h3 { margin-top: 0; }
 }
 
 .nav-group + .nav-group {
-  margin-left: 8px;
-  padding-left: 10px;
+  margin-left: 5px;
+  padding-left: 7px;
   border-left: 1px solid var(--border);
 }
 
@@ -1057,10 +1057,10 @@ h3 { margin-top: 0; }
   color: var(--muted);
   font-family: var(--font-heading), sans-serif;
   text-transform: uppercase;
-  font-size: .78rem;
+  font-size: .71rem;
   font-weight: 500;
-  letter-spacing: .05em;
-  padding: 7px 11px;
+  letter-spacing: .04em;
+  padding: 6px 8px;
   border-radius: 0;
   border: 1px solid transparent;
   transition: color .18s, border-color .18s;
@@ -2687,11 +2687,40 @@ body.has-mini-player { padding-bottom: 74px; }
 /* =============================================================================
    PANEL DE ADMIN
 ============================================================================= */
-.admin-accesos { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 30px; }
+.admin-accesos { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 22px; }
 .admin-accesos .secondary-button { width: auto; margin-top: 0; padding: 10px 20px; }
 
-.admin-seccion { margin-top: 36px; }
-.admin-seccion h3 { margin: 0; font-size: 1.15rem; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.admin-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 10px 16px;
+  font-family: var(--font-heading), sans-serif;
+  font-size: .85rem;
+  letter-spacing: .02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-tab:hover { color: var(--text); }
+.admin-tab.active { color: var(--text); border-bottom-color: var(--accent-soft); }
+.admin-tab-badge {
+  font-family: inherit;
+  font-size: .7rem;
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  padding: 1px 7px;
+  min-width: 1.4em;
+  text-align: center;
+}
+.admin-tab-badge:empty { display: none; }
+
+.admin-panel { display: none; }
+.admin-panel.active { display: block; }
 .admin-vacio { color: var(--muted); padding: 20px 0; }
 
 .admin-peticiones-lista { display: flex; flex-direction: column; gap: 12px; }

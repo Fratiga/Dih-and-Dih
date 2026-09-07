@@ -85,7 +85,6 @@
       <a href="fanarts.html" class="nav-chip">Fanarts</a>
       <a href="peticiones.html" class="nav-chip">Peticiones</a>
       <a href="fichas.html" class="nav-chip">Mis personajes</a>
-      <a href="estadisticas.html" class="nav-chip hidden" data-admin-only>Estadísticas</a>
       <a href="admin.html" class="nav-chip active hidden" data-admin-only>Admin</a>
     </div>
   </nav>
@@ -113,31 +112,25 @@
         <a href="fichas.html" class="secondary-button">Ver Mis personajes</a>
       </div>
 
-      <section class="page-section admin-seccion">
-        <div class="content-top">
-          <div><h3>Peticiones</h3></div>
-          <span id="adminPeticionesCount" class="result-count"></span>
-        </div>
+      <div class="admin-tabs" id="adminTabs">
+        <button type="button" class="admin-tab active" data-tab="peticiones">Peticiones <span id="adminPeticionesCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="cuentas">Cuentas <span id="adminCuentasCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="bufon">Progreso del Bufón</button>
+      </div>
+
+      <section id="adminPanelPeticiones" class="admin-panel active">
         <div id="adminPeticionesLista" class="admin-peticiones-lista">
           <p class="admin-vacio">Cargando...</p>
         </div>
       </section>
 
-      <section class="page-section admin-seccion">
-        <div class="content-top">
-          <div><h3>Cuentas</h3></div>
-          <span id="adminCuentasCount" class="result-count"></span>
-        </div>
+      <section id="adminPanelCuentas" class="admin-panel">
         <div id="adminCuentasLista" class="admin-cuentas-lista">
           <p class="admin-vacio">Cargando...</p>
         </div>
       </section>
 
-      <section class="page-section admin-seccion">
-        <div class="content-top">
-          <div><h3>Progreso del Bufón</h3></div>
-          <span id="adminBufonCount" class="result-count"></span>
-        </div>
+      <section id="adminPanelBufon" class="admin-panel">
         <p id="adminBufonBanner" class="admin-bufon-banner"></p>
         <div id="adminBufonLista" class="admin-bufon-lista">
           <p class="admin-vacio">Cargando...</p>

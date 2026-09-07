@@ -196,4 +196,16 @@
       bufonEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin-bufon.sql en Supabase?</p>`;
     }
   });
+
+  const tabs = document.getElementById("adminTabs");
+  if (tabs) {
+    tabs.querySelectorAll("[data-tab]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabs.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("active", b === btn));
+        document.querySelectorAll(".admin-panel").forEach(panel => {
+          panel.classList.toggle("active", panel.id === "adminPanel" + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1));
+        });
+      });
+    });
+  }
 })();
