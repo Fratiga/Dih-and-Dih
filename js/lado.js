@@ -505,6 +505,13 @@ function initClaveMagicaWidget() {
     if (!widget.contains(e.target)) cerrarPopover();
   });
 
+  // Otra entrada escondida: cinco intentos fallidos seguidos (nunca uno
+  // vacío) y el Bufón se apiada — un susto más corto de despedida y te
+  // manda a la puerta, en vez del susto normal. Se reinicia con cualquier
+  // acierto (Slappy, puerta, o una contraseña que sí funcione).
+  let rachaFallos = 0;
+  const RACHA_FALLOS_LIMITE = 5;
+
   form.addEventListener("submit", e => {
     e.preventDefault();
     const valor = input.value.trim();
@@ -514,6 +521,7 @@ function initClaveMagicaWidget() {
     // bailando en el header (ver js/slappy.js) — es un interruptor, no una
     // palabra clave más.
     if (valor.toLowerCase() === "slappy") {
+      rachaFallos = 0;
       cerrarPopover();
       if (typeof toggleSlappy === "function") toggleSlappy();
       return;
@@ -522,6 +530,7 @@ function initClaveMagicaWidget() {
     // Otra entrada escondida más, esta sin ningún dato invisible que
     // encontrar por casualidad: hay que saber la palabra.
     if (valor.toLowerCase() === "puerta") {
+      rachaFallos = 0;
       cerrarPopover();
       window.location.href = "secreto.html";
       return;
@@ -529,10 +538,19 @@ function initClaveMagicaWidget() {
 
     const imagenClave = buscarImagenPorPalabraClave(valor);
     if (imagenClave) {
+      rachaFallos = 0;
       cerrarPopover();
       dispararBienvenida(imagenClave);
     } else if (valor) {
-      dispararSusto();
+      rachaFallos++;
+      if (rachaFallos >= RACHA_FALLOS_LIMITE) {
+        rachaFallos = 0;
+        cerrarPopover();
+        if (typeof dispararSusto === "function") dispararSusto(1100);
+        setTimeout(() => { window.location.href = "secreto.html"; }, 1200);
+      } else {
+        dispararSusto();
+      }
     }
   });
 }
@@ -733,3 +751,59 @@ const ladoSincronizarPromesa = ladoSincronizar();
 
 initGlobalLadoWidget();
 initClaveMagicaWidget();
+
+/* =============================================================================
+   DOS ENTRADAS ESCONDIDAS MÁS, ninguna pedida a propósito: hay que
+   quedarse quieto, o pasar por acá a la hora justa. Ambas usan el mismo
+   truco visual que la puerta de index.html (un punto invisible), pero en
+   lugares y bajo condiciones distintas para no ser la misma cosa repetida.
+============================================================================= */
+function crearPuntoOculto(elemento, id) {
+  if (!elemento || document.getElementById(id)) return;
+  const punto = document.createElement("a");
+  punto.href = "secreto.html";
+  punto.id = id;
+  punto.className = "huella-oculta";
+  punto.textContent = ".";
+  punto.setAttribute("aria-hidden", "true");
+  punto.setAttribute("tabindex", "-1");
+  elemento.appendChild(punto);
+}
+
+/* Silencio prolongado: sin mouse, teclado ni scroll durante varios
+   minutos, aparece un punto invisible pegado al subtítulo, y la pestaña
+   del navegador cambia de título como pista silenciosa. No pasa nada si
+   la pestaña está en segundo plano cuando se cumple el tiempo — se
+   reintenta con la próxima actividad. */
+(function () {
+  const INACTIVIDAD_MS = 4 * 60 * 1000;
+  const tituloOriginal = document.title;
+  let temporizador = null;
+
+  function revelarPorInactividad() {
+    if (document.hidden) return;
+    document.title = "..." + tituloOriginal;
+    crearPuntoOculto(document.querySelector(".subtitle"), "huellaInactividad");
+  }
+
+  function reiniciarTemporizador() {
+    if (document.title !== tituloOriginal) document.title = tituloOriginal;
+    if (temporizador) clearTimeout(temporizador);
+    temporizador = setTimeout(revelarPorInactividad, INACTIVIDAD_MS);
+  }
+
+  ["mousemove", "keydown", "scroll", "click", "touchstart"].forEach(evento => {
+    document.addEventListener(evento, reiniciarTemporizador, { passive: true });
+  });
+  reiniciarTemporizador();
+})();
+
+/* Medianoche: entre las 00:00 y la 01:00 (hora local de quien mira),
+   aparece un punto invisible pegado al título del header. No es la
+   puerta directa, es una pista — igual que las otras, hay que darse
+   cuenta de que está ahí. */
+(function () {
+  const hora = new Date().getHours();
+  if (hora !== 0) return;
+  crearPuntoOculto(document.querySelector(".header-left h1"), "huellaMedianoche");
+})();

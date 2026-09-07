@@ -250,6 +250,7 @@ async function adminListarProgresoBufon() {
   }
 
   (elecciones || []).forEach(e => {
+    if (!e.player_id) return; // filas viejas de pruebas sin player_id, no cuentan
     const acumulado = fila(e.player_id);
     acumulado.elecciones++;
     acumulado.ultimaActividad = e.created_at;
@@ -261,6 +262,7 @@ async function adminListarProgresoBufon() {
   });
 
   (toques || []).forEach(t => {
+    if (!t.player_id) return;
     const acumulado = fila(t.player_id);
     acumulado.toquesPuerta++;
     // Solo actualiza "última actividad" si es más reciente que la última

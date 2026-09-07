@@ -219,8 +219,19 @@ function mapaLinkFor(entry) {
   return `<button type="button" class="mapa-link" data-mapa-id="${entry.id}">📍 Ver en el mapa</button>`;
 }
 
+/* Entrada escondida más: llegar al final de una entrada realmente larga
+   (Textos sobre todo) revela un punto invisible al pie, mismo truco que
+   el resto — nada aparece hasta que de verdad se scrollea hasta el
+   fondo. Umbral en caracteres de contenido crudo, no en píxeles, así no
+   depende del tamaño de pantalla de quien mira. */
+const HUELLA_MODAL_UMBRAL = 4000;
+let huellaModalEsLarga = false;
+let huellaModalInsertada = false;
+
 function openEntryModal(entry) {
   if (!entry) return;
+  huellaModalEsLarga = (entry.content || "").length >= HUELLA_MODAL_UMBRAL;
+  huellaModalInsertada = false;
   modalContent.innerHTML = `
     <div class="entry-type">${entry.category}</div>
     <h2>${entry.title}</h2>
@@ -236,6 +247,19 @@ function openEntryModal(entry) {
 
 document.getElementById("closeModal").addEventListener("click", () => modal.close());
 modal.addEventListener("click", e => { if (e.target === modal) modal.close(); });
+
+modal.addEventListener("scroll", () => {
+  if (!huellaModalEsLarga || huellaModalInsertada) return;
+  if (modal.scrollTop + modal.clientHeight < modal.scrollHeight - 12) return;
+  huellaModalInsertada = true;
+  const punto = document.createElement("a");
+  punto.href = "secreto.html";
+  punto.className = "huella-oculta";
+  punto.textContent = ".";
+  punto.setAttribute("aria-hidden", "true");
+  punto.setAttribute("tabindex", "-1");
+  modalContent.appendChild(punto);
+});
 
 modalContent.addEventListener("click", e => {
   const link = e.target.closest('a[href^="#"]');

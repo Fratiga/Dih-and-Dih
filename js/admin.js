@@ -160,7 +160,7 @@
     cont.innerHTML = jugadores.map(j => `
       <div class="admin-bufon-fila">
         <span class="admin-bufon-nombre">
-          ${j.nombre ? escaparHtml(j.nombre) : `Anónimo (${j.playerId.slice(0, 8)}…)`}
+          ${j.nombre ? escaparHtml(j.nombre) : `Anónimo (${j.playerId ? j.playerId.slice(0, 8) : "?"}…)`}
           ${j.side ? `<span class="admin-bufon-side">Side ${j.side}</span>` : ""}
         </span>
         <span class="admin-bufon-dato"><strong>${j.elecciones}</strong> elecciones</span>

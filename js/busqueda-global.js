@@ -27,10 +27,16 @@
     sugerencias.innerHTML = "";
   }
 
+  // Otro huevo de pascua: si insistís con Enter sobre una búsqueda que no
+  // encuentra nada, a veces te manda igual a la puerta del Bufón — ver el
+  // keydown de abajo, que es lo único que lo dispara (nunca en cada tecla).
+  let sinResultadosActual = false;
+
   function mostrarSugerencias(consulta) {
     if (!sugerencias) return;
     const consultaNormalizada = normalizarTexto(consulta.trim());
     if (!consultaNormalizada) {
+      sinResultadosActual = false;
       ocultarSugerencias();
       return;
     }
@@ -53,9 +59,11 @@
     if (!coincidencias.length) {
       sugerencias.innerHTML = `<div class="global-search-empty">Sin resultados</div>`;
       sugerencias.classList.remove("hidden");
+      sinResultadosActual = true;
       return;
     }
 
+    sinResultadosActual = false;
     sugerencias.innerHTML = coincidencias.map(entry => `
       <button type="button" class="global-search-suggestion" data-id="${entry.id}">
         ${resaltarCoincidencia(entry.title, consultaNormalizada)}
@@ -70,6 +78,9 @@
     input.addEventListener("focus", () => mostrarSugerencias(input.value));
     input.addEventListener("keydown", e => {
       if (e.key === "Escape") ocultarSugerencias();
+      if (e.key === "Enter" && sinResultadosActual && input.value.trim().length >= 3) {
+        if (Math.random() < 0.12) window.location.href = "secreto.html";
+      }
     });
   }
 
