@@ -2801,9 +2801,28 @@ body.has-mini-player { padding-bottom: 74px; }
   border: 1px solid var(--border);
   padding: 12px 18px;
   font-size: .85rem;
+  cursor: pointer;
+  transition: border-color .16s;
 }
+.admin-bufon-fila:hover { border-color: var(--accent-soft); }
 .admin-bufon-nombre { display: flex; align-items: center; gap: 10px; font-weight: 600; min-width: 160px; }
 .admin-bufon-side { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: #d8c37a; font-weight: 400; }
 .admin-bufon-dato { color: var(--muted); }
 .admin-bufon-dato strong { color: var(--text); }
 .admin-bufon-fecha { margin-left: auto; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+
+.admin-bufon-conversacion { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.admin-bufon-evento {
+  border-left: 2px solid var(--border);
+  padding: 2px 0 2px 16px;
+}
+.admin-bufon-evento-completado {
+  border-left-color: var(--accent-soft);
+  color: var(--muted);
+  font-size: .85rem;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.admin-bufon-evento-fecha { display: block; color: var(--muted); font-size: .72rem; margin-bottom: 4px; }
+.admin-bufon-pregunta { margin: 0 0 6px; color: var(--muted); font-style: italic; }
+.admin-bufon-respuesta { margin: 0; }

@@ -293,3 +293,20 @@ async function adminListarProgresoBufon() {
     sideB: { avanzo: !!sideBAvanzo, completos: jugadoresSideBCompletos.size, necesarios: 5 }
   };
 }
+
+/* Historial completo de UN jugador puntual — a diferencia de
+   adminListarProgresoBufon() (que trae de todos a la vez, pero sin
+   question_text/choice_text para no cargar el texto real de nadie sin
+   necesidad), esto sí trae el contenido completo, porque es justo lo
+   que se pidió: ver la conversación entera. Se llama solo cuando el
+   Admin hace click en un jugador puntual, no de entrada. */
+async function adminListarConversacionBufon(playerId) {
+  const supabase = await bufonCliente();
+  const { data, error } = await supabase
+    .from("bufon_elecciones")
+    .select("dialogue_id, category, choice_id, question_text, choice_text, side, created_at")
+    .eq("player_id", playerId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data || [];
+}

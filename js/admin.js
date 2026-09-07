@@ -158,7 +158,7 @@
     }
 
     cont.innerHTML = jugadores.map(j => `
-      <div class="admin-bufon-fila">
+      <div class="admin-bufon-fila" data-player-id="${j.playerId}" data-nombre="${escaparHtml(j.nombre || "")}">
         <span class="admin-bufon-nombre">
           ${j.nombre ? escaparHtml(j.nombre) : `Anónimo (${j.playerId ? j.playerId.slice(0, 8) : "?"}…)`}
           ${j.side ? `<span class="admin-bufon-side">Side ${j.side}</span>` : ""}
@@ -170,6 +170,64 @@
         <span class="admin-bufon-fecha">${formatearFecha(j.ultimaActividad)}</span>
       </div>
     `).join("");
+
+    cont.querySelectorAll("[data-player-id]").forEach(fila => {
+      fila.addEventListener("click", () => mostrarConversacionBufon(fila.dataset.playerId, fila.dataset.nombre));
+    });
+  }
+
+  function formatearFechaHora(iso) {
+    try {
+      return new Date(iso).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      return "";
+    }
+  }
+
+  async function mostrarConversacionBufon(playerId, nombre) {
+    const modal = document.getElementById("entryModal");
+    const contenido = document.getElementById("modalContent");
+    if (!modal || !contenido) return;
+
+    contenido.innerHTML = `
+      <div class="entry-type">Progreso del Bufón</div>
+      <h2>${nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`}</h2>
+      <p class="admin-vacio">Cargando conversación...</p>
+    `;
+    modal.showModal();
+
+    try {
+      const elecciones = await adminListarConversacionBufon(playerId);
+      if (!elecciones.length) {
+        contenido.querySelector(".admin-vacio").textContent = "No hay elecciones registradas para esta identidad.";
+        return;
+      }
+
+      contenido.innerHTML = `
+        <div class="entry-type">Progreso del Bufón</div>
+        <h2>${nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`}</h2>
+        <div class="admin-bufon-conversacion">
+          ${elecciones.map(e => e.category === "completado" ? `
+            <div class="admin-bufon-evento admin-bufon-evento-completado">
+              <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}</span>
+              <span>✓ Completó el nodo <strong>${escaparHtml(e.choice_id || "")}</strong></span>
+            </div>
+          ` : `
+            <div class="admin-bufon-evento">
+              <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}${e.side ? ` · Side ${e.side}` : ""}</span>
+              ${e.question_text ? `<p class="admin-bufon-pregunta">${escaparHtml(e.question_text)}</p>` : ""}
+              <p class="admin-bufon-respuesta">→ ${escaparHtml(e.choice_text || e.choice_id || "")}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    } catch (err) {
+      contenido.innerHTML = `
+        <div class="entry-type">Progreso del Bufón</div>
+        <h2>${nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`}</h2>
+        <p class="admin-vacio">No se pudo cargar la conversación.</p>
+      `;
+    }
   }
 
   initAdminGate(async () => {
