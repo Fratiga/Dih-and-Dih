@@ -31,6 +31,22 @@ function esAdmin() {
   return localStorage.getItem(ADMIN_KEY) === "1";
 }
 
+/* Distinto de esAdmin(): Admin ya no manda nada a Supabase (ver
+   bufonRegistrar en js/bufon-supabase.js), así que sirve para
+   previsualizar contenido pero NO para probar cómo se ve el Bufón para
+   un jugador nuevo de verdad (Admin salta todos los gates). Modo
+   prueba en cambio SÍ respeta los gates reales — juega como cualquier
+   anónimo — pero marca cada fila que genera con es_prueba=true, para
+   que ningún marcador de progreso (bufon_side_b_avanzo, el panel de
+   Admin) la cuente. Se activa con Alt+Shift+P en secreto.html; no
+   depende de esAdmin() a propósito, porque probar "como jugador nuevo"
+   significa justamente NO estar en modo Admin. */
+const MODO_PRUEBA_KEY = "compendioModoPrueba";
+
+function esModoPrueba() {
+  return localStorage.getItem(MODO_PRUEBA_KEY) === "1";
+}
+
 /* A diferencia del Side, el nombre de usuario NO es permanente — se pide
    al crear la cuenta (para no mostrar el email crudo por todos lados) pero
    se puede cambiar después desde el popover. */

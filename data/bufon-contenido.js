@@ -591,7 +591,7 @@ window.BUFON_DIALOGO = {
     bufon_hubert_quien_es: {
       lineas: [
         "Un catedrático de Dolbred. Escribió sobre alquimia. Después escribió sobre qué hacer cuando la alquimia sale mal.",
-        "Ironía de esas que solo el mundo real produce: la segunda vez que salió mal fue con él adentro.",
+        "La segunda vez que salió mal, él seguía adentro. Ironía de esas que solo el mundo real produce.",
         "No sé si el nombre te queda. Pero algo tuyo sabe algo que tú no recuerdas, y eso ya es raro de por sí."
       ],
       completeDialogue: "hubert_quien_es",
@@ -985,7 +985,7 @@ window.BUFON_DIALOGO = {
     },
     bufon_rostro_menciona_identidad: {
       lineas: [
-        { voz: "rostro", texto: "Vuelves seguido a la misma pregunta: quién es quién de verdad." }
+        { voz: "rostro", texto: "Quién es quién de verdad. Ahí vuelves siempre, ¿no?" }
       ],
       completeDialogue: "identidad_notada",
       next: "intro_reason_sin_recuerdo"

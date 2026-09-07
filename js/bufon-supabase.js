@@ -139,7 +139,11 @@ async function bufonRegistrar({ dialogueId, category, choiceId, questionText, ch
       // eventId ?? null en vez de solo eventId: si algún llamador viejo
       // todavía no lo manda, que quede null y no "undefined" (Supabase
       // no acepta esa clave).
-      event_id: eventId ?? null
+      event_id: eventId ?? null,
+      // Ver esModoPrueba() en js/lado.js: jugar como anónimo real para
+      // probar un gate/feature sin que cuente para bufon_side_b_avanzo()
+      // ni para el panel de Admin. false para cualquier jugador real.
+      es_prueba: (typeof esModoPrueba === "function" && esModoPrueba())
     });
   } catch (err) {
     // Silencioso a propósito. Sin RLS de lectura no hay forma de
@@ -231,16 +235,30 @@ async function adminListarProgresoBufon() {
     { data: elecciones, error: errElecciones },
     { data: jugadores, error: errJugadores },
     { data: toques, error: errToques },
-    { data: sideBAvanzo }
+    { data: sideBAvanzo },
+    { data: sideBRealesCount }
   ] = await Promise.all([
-    supabase.from("bufon_elecciones").select("player_id, side, dialogue_id, category, choice_id, created_at").order("created_at", { ascending: true }),
+    supabase.from("bufon_elecciones").select("player_id, side, dialogue_id, category, choice_id, created_at, es_prueba").order("created_at", { ascending: true }),
     supabase.from("bufon_jugadores").select("player_id, nombre"),
     supabase.from("bufon_puerta_denegada").select("player_id, created_at"),
-    supabase.rpc("bufon_side_b_avanzo")
+    supabase.rpc("bufon_side_b_avanzo"),
+    // auth.users no es visible desde el cliente (Supabase no lo expone
+    // vía PostgREST), así que el conteo "real" (solo cuentas
+    // autenticadas y no excluidas, ver
+    // scratchpad/bufon_exigir_cuenta_real.sql) tiene que venir de una
+    // RPC en vez de calcularse acá con las filas de bufon_elecciones
+    // que sí podemos leer.
+    supabase.rpc("bufon_contar_side_b_reales")
   ]);
   if (errElecciones) throw errElecciones;
   if (errJugadores) throw errJugadores;
   if (errToques) throw errToques;
+
+  // Filas de modo prueba (ver esModoPrueba() en js/lado.js) no cuentan
+  // como jugadores en absoluto — ni en la lista, ni en el marcador. Si
+  // todavía no corriste bufon_modo_prueba.sql, e.es_prueba viene
+  // undefined para todas las filas y este filtro no saca a nadie.
+  const eleccionesReales = (elecciones || []).filter(e => !e.es_prueba);
 
   const nombresPorId = new Map((jugadores || []).map(j => [String(j.player_id), j.nombre]));
   const porJugador = new Map();
@@ -252,7 +270,7 @@ async function adminListarProgresoBufon() {
     return porJugador.get(id);
   }
 
-  (elecciones || []).forEach(e => {
+  eleccionesReales.forEach(e => {
     if (!e.player_id) return; // filas viejas de pruebas sin player_id, no cuentan
     const acumulado = fila(e.player_id);
     acumulado.elecciones++;
@@ -276,12 +294,6 @@ async function adminListarProgresoBufon() {
     }
   });
 
-  const jugadoresSideBCompletos = new Set(
-    (elecciones || [])
-      .filter(f => f.side === "B" && f.category === "completado" && f.choice_id === "goodbye_ever")
-      .map(f => f.player_id)
-  );
-
   const lista = Array.from(porJugador.values()).map(f => ({
     ...f,
     nombre: nombresPorId.get(String(f.playerId)) || null
@@ -290,7 +302,12 @@ async function adminListarProgresoBufon() {
 
   return {
     jugadores: lista,
-    sideB: { avanzo: !!sideBAvanzo, completos: jugadoresSideBCompletos.size, necesarios: 5 }
+    // completos viene de bufon_contar_side_b_reales() (ver
+    // scratchpad/bufon_exigir_cuenta_real.sql) — solo cuentas reales de
+    // Supabase Auth, no cualquier player_id anónimo. Si esa función
+    // todavía no existe (no corriste el SQL), Number(undefined) da NaN;
+    // se muestra 0 en vez de romper el panel.
+    sideB: { avanzo: !!sideBAvanzo, completos: Number(sideBRealesCount) || 0, necesarios: 5 }
   };
 }
 
