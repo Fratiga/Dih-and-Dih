@@ -61,7 +61,7 @@ window.BUFON_DIALOGO = {
     resp_exploring: {
       lineas: [
         "Ah. Un curioso.",
-        "Excelente idea, la exploración. Funciona perfectamente hasta que encuentras algo — después todo el mundo actúa como si encontrarlo hubiera sido un error."
+        "Excelente idea, la exploración. Funciona perfectamente hasta que encuentras algo. Después todo el mundo actúa como si encontrarlo hubiera sido un error."
       ],
       completeDialogue: "exploring",
       animacion: "Apuntando",
@@ -96,7 +96,21 @@ window.BUFON_DIALOGO = {
       lineas: [
         "Ah, ya empezamos con ésa.",
         "No. Todavía no.",
-        "Pregúntame otra cosa — tienes un montón de opciones y fuiste directo a la que no pienso responder. Admirable, en cierta forma."
+        "Pregúntame otra cosa. Tienes un montón de opciones y fuiste directo a la que no pienso responder."
+      ],
+      completeDialogue: "who_is_he_stage_1",
+      consumeEncounter: "who_is_he",
+      next: "intro_reason"
+    },
+    // Misma negativa, pero para cuando "who_is_he" es lo único que le
+    // queda al hub: decirle "tienes un montón de opciones" sería mentira,
+    // así que en vez de fingir que las hay, lo reconoce y se lo pasa por
+    // encima con la misma confianza de siempre.
+    resp_who_1_unica: {
+      lineas: [
+        "Ah, se te acabaron las otras preguntas.",
+        "No importa. Sigue sin ser el momento.",
+        "Vuelve cuando tengas algo nuevo que preguntar. Yo, mientras tanto, sigo teniendo cosas que no pienso contarte."
       ],
       completeDialogue: "who_is_he_stage_1",
       consumeEncounter: "who_is_he",
@@ -138,7 +152,7 @@ window.BUFON_DIALOGO = {
     },
 
     resp_trust_yes: {
-      lineas: ["Qué bien.", "Confiar en la gente hace todo mucho más fácil. Hasta que deja de hacerlo, claro — pero para entonces ya tienes problemas más interesantes."],
+      lineas: ["Qué bien.", "Confiar en la gente hace todo mucho más fácil, hasta que deja de hacerlo. Para entonces, claro, ya tienes problemas más interesantes."],
       completeDialogue: "why_hide",
       animacion: "Celebrar",
       next: "intro_reason"
@@ -325,7 +339,7 @@ window.BUFON_DIALOGO = {
       eleccion: "pet_rescue"
     },
     bufon_pet_reaction_a: {
-      lineas: ["Bestia Trémula. Ahí está, ese es el nombre que se me escapaba. Con razón — suena inventado."],
+      lineas: ["Bestia Trémula. Ahí está, ese es el nombre que se me escapaba. Con razón suena inventado."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_pet_reaction_b: {
@@ -333,7 +347,7 @@ window.BUFON_DIALOGO = {
       next: "intro_reason_sin_recuerdo"
     },
     bufon_pet_reaction_cat: {
-      lineas: ["Un gato. Claro, eso lo explica todo — por qué lo dejan hacer lo que quiere, por qué nadie se queja."],
+      lineas: ["Un gato. Claro, eso lo explica todo, por qué lo dejan hacer lo que quiere, por qué nadie se queja."],
       animacion: "Riendosesentao",
       next: "intro_reason_sin_recuerdo"
     },
@@ -351,11 +365,11 @@ window.BUFON_DIALOGO = {
       eleccion: "gareth_relationship"
     },
     bufon_gareth_reaction_a: {
-      lineas: ["Eso pensé. Bien — entonces no estoy tan mal de la cabeza como pensaba."],
+      lineas: ["Eso pensé. Bien, entonces no estoy tan mal de la cabeza como pensaba."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_gareth_reaction_b: {
-      lineas: ["Ah. Entonces mezclé ésa también.", "Bien saber. Ahora tengo que revisar qué más mezclé, pero bueno — un problema a la vez."],
+      lineas: ["Ah. Entonces mezclé ésa también.", "Bien saber. Ahora tengo que revisar qué más mezclé. Pero bueno, un problema a la vez."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_gareth_reaction_0: {
@@ -381,7 +395,10 @@ window.BUFON_DIALOGO = {
       eleccion: "dragon_wound_followup"
     },
     bufon_dragon_reaction_b: {
-      lineas: ["Una balista. Bien, mucho más sensato que lo que yo tenía en mente."],
+      lineas: [
+        "Una balista. Bien, mucho más sensato que lo que yo tenía en mente.",
+        { voz: "testigo", texto: "No fue cualquier balista. Apuntaron al ojo, no al cuello. Eso es lo que hizo que funcionara." }
+      ],
       eleccion: "dragon_wound_followup"
     },
     bufon_dragon_reaction_nada: {
@@ -413,6 +430,559 @@ window.BUFON_DIALOGO = {
     bufon_refuge_reaction_0: {
       lineas: ["Era una época confusa para todos, al parecer. O la confusión soy yo. Cuesta saber cuál de las dos, últimamente."],
       next: "intro_reason_sin_recuerdo"
+    },
+
+    /* =====================================================================
+       CICLO "LO QUE QUEDA" — exclusivo de Side B (BUFON_HECHOS_CONOCIDOS.B
+       en data/bufon-evidencia.js), pensado para vivir detrás de sideBGen2.
+       Temas de menú, no recuerdos espontáneos: cada uno es evolutivo vía
+       completeDialogue por sub-pregunta (permanente, uno por uno) más un
+       submenú que se vuelve a mostrar a sí mismo hasta que solo queda la
+       opción de salir — mismo truco en Ledros, el Comerciante y Hubert.
+    ===================================================================== */
+
+    // --- Ledros ---
+    bufon_ledros_intro: {
+      lineas: [
+        "Ledros.",
+        "Ya se conocieron, entonces.",
+        "Bueno. Conocieron la armadura. Ledros ya no hace mucho ahí adentro.",
+        "Cada caballero de Brurland jura recuperar Broneland el día que lo nombran caballero. Se lo enseñan casi antes que a atarse las botas.",
+        "El problema es que el reino ya no quiere esa guerra de vuelta. Así que la Corona hace como que nunca escuchó el juramento.",
+        "Algunos caballeros igual le mandan cartas a la gente correcta en Piedrablanca, pero nadie lo admite en voz alta."
+      ],
+      animacion: "Parado",
+      completeDialogue: "ledros_intro_seen",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_sigue_siendo: {
+      lineas: [
+        "¿Sí?",
+        "No tiene rostro. No sé cuántos muertos carga ahí adentro.",
+        "Cuando camina se le caen almas por las costuras.",
+        "Pero conserva un nombre. Quizá alcance con eso.",
+        "¿A ti te bastaría?",
+        // Solo se muestra si El Rostro ya está en Murmullo o más — ver
+        // el filtro por voiceStage en renderNodo(). Primera vez que esta
+        // Voz interviene en el ciclo de Ledros; en Influencia (con techo
+        // en 3, ver BUFON_VOCES_TECHO) es lo que destapa la opción
+        // exclusiva nueva en ledros_hub.
+        { voz: "rostro", texto: "Pregúntale por el hombre." }
+      ],
+      completeDialogue: "ledros_sigue_siendo",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_ya_no_persona: {
+      lineas: [
+        "Puede ser.",
+        "Aunque conserva el nombre, la voz, algo del paso. Eso es mucho para ser \"nada\".",
+        "No sé dónde está la línea. Nadie parece tenerla muy clara, la verdad."
+      ],
+      completeDialogue: "ledros_ya_no_persona",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_sonrisa: {
+      lineas: [
+        "Sonreía. No mucho.",
+        "Nunca le duraba demasiado la sonrisa a Ledros.",
+        "No voy a explicarte por qué. No lo sé del todo, y lo poco que sé no es mío para contarlo."
+      ],
+      completeDialogue: "ledros_sonrisa",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_rompio_juramento: {
+      lineas: [
+        "Puede ser.",
+        "Mandó una carta que no debía, o se negó a mandar una que sí. Cualquiera de las dos rompe algo.",
+        "No sé cuál fue con Ledros. Sé que algo se rompió. Ahora es una armadura que no hace buena plática."
+      ],
+      completeDialogue: "ledros_rompio_juramento",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_adam: {
+      lineas: [
+        "Adam también es capitán. Como Ledros.",
+        "Brurland tiene talento para fabricar esa clase de hombre. Le da una espada, un juramento, y un puñado de órdenes que no siempre están de acuerdo entre sí.",
+        "Después mira qué queda."
+      ],
+      completeDialogue: "ledros_adam",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_rostro_hombre: {
+      lineas: [
+        "No sé.",
+        "Nadie estuvo ahí para marcar el momento exacto. No es esa clase de cosa.",
+        "Pero si tuviera que apostar, diría que fue antes de la armadura. Ledros ya se estaba perdiendo de a poco, mucho antes de necesitar meterse dentro de algo para seguir de pie."
+      ],
+      completeDialogue: "ledros_rostro_hombre",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_osses_hooey: {
+      lineas: [
+        "Curioso que preguntes.",
+        "Ledros juró pelear contra Osses. Nunca llegó a hacerlo, al final.",
+        "Y resulta que uno de ustedes viene de ahí, cargando pedazos de otro tipo que tampoco terminó de ser dueño de su historia.",
+        "No sé si eso significa algo. Pero me gusta cuando el mundo rima sin que se lo pida."
+      ],
+      completeDialogue: "ledros_osses_hooey",
+      eleccion: "ledros_hub"
+    },
+
+    // --- El Comerciante de Dávidas ---
+    bufon_comerciante_intro: {
+      lineas: [
+        "Ah. También conocieron al Comerciante de Dávidas.",
+        "Qué carroñero tan mediocre."
+      ],
+      animacion: "Auch",
+      completeDialogue: "comerciante_intro_seen",
+      eleccion: "comerciante_hub"
+    },
+    bufon_comerciante_por_que: {
+      lineas: [
+        "Espera a que alguien termine de vivir algo interesante.",
+        "Junta lo que queda. Una máscara, una espada, un farol.",
+        "Le pone la historia encima y actúa como si fuera suya.",
+        "Es un ladrón. Nada más que eso."
+      ],
+      completeDialogue: "comerciante_por_que",
+      eleccion: "comerciante_hub"
+    },
+    bufon_comerciante_contraste: {
+      lineas: [
+        "Claro que sí. Por eso me cae mal.",
+        "A mí me gustan mientras todavía pueden cambiar de idea. Él llega cuando ya terminaron.",
+        "Es fácil hacerle justicia a un cadáver. Ya no puede corregirte."
+      ],
+      completeDialogue: "comerciante_contraste",
+      eleccion: "comerciante_hub"
+    },
+    bufon_comerciante_mascara: {
+      lineas: [
+        "Una persona vive treinta, cuarenta años. Ama a alguien. Odia a otro. Cambia de idea un montón de veces.",
+        "Y se muere.",
+        "Alguien recoge lo que dejó. Una máscara, en este caso.",
+        "Tres frases después, eso era toda su vida."
+      ],
+      completeDialogue: "comerciante_mascara",
+      eleccion: "comerciante_hub"
+    },
+
+    // --- Hubert Magnolia ---
+    bufon_hubert_intro: {
+      lineas: [
+        "Hubert Magnolia.",
+        "Lindo nombre para alguien que nunca lo usó."
+      ],
+      animacion: "Riendosesentao",
+      completeDialogue: "hubert_intro_seen",
+      eleccion: "hubert_hub"
+    },
+    bufon_hubert_quien: {
+      lineas: ["Exacto. Esa es la parte graciosa."],
+      completeDialogue: "hubert_quien_pregunta",
+      eleccion: "hubert_hub"
+    },
+    bufon_hubert_quien_es: {
+      lineas: [
+        "Un catedrático de Dolbred. Escribió sobre alquimia. Después escribió sobre qué hacer cuando la alquimia sale mal.",
+        "Ironía de esas que solo el mundo real produce: la segunda vez que salió mal fue con él adentro.",
+        "No sé si el nombre te queda. Pero algo tuyo sabe algo que tú no recuerdas, y eso ya es raro de por sí."
+      ],
+      completeDialogue: "hubert_quien_es",
+      eleccion: "hubert_hub"
+    },
+    bufon_hubert_hooey_es_hooey: {
+      lineas: [
+        "Puede ser.",
+        "Pero hay un nombre allá afuera que parece recordarte mejor de lo que tú te recuerdas a ti mismo.",
+        "¿A quién pertenece quién?"
+      ],
+      completeDialogue: "hubert_hooey_es_hooey",
+      eleccion: "hubert_hub"
+    },
+
+    // --- Laia e Isa ---
+    bufon_laia_intro: {
+      lineas: [
+        "Isa.",
+        "Un nombre elegante para alguien que se pasa el día en una celda. Aunque, para ser justos, elegante es como se describe a sí mismo todo el tiempo."
+      ],
+      animacion: "Cariñito",
+      completeDialogue: "laia_intro_seen",
+      eleccion: "laia_hub"
+    },
+    bufon_laia_quien_es: {
+      lineas: [
+        "Un prisionero. Terminó ahí por algo con la reina, y no parecía avergonzado en lo más mínimo.",
+        "Se conocieron en los calabozos de Kigan. Quedaron en volver a verse en la Taberna del Gigante.",
+        "No sé si eso cuenta como una cita o como una situación que se les fue de las manos. Probablemente las dos cosas."
+      ],
+      completeDialogue: "laia_quien_es",
+      eleccion: "laia_hub"
+    },
+    bufon_laia_incomodo: {
+      lineas: [
+        "Te incomodaba, sí. Bastante.",
+        "No fue lo que dijo. Fue lo guapo que es, sin ningún esfuerzo de por medio, y sin dejarte olvidarlo.",
+        "Eso incomoda a cualquiera. Más a alguien que cambia de cara todo el tiempo y nunca termina de decidirse por una."
+      ],
+      animacion: "Riendosesentao",
+      completeDialogue: "laia_incomodo",
+      eleccion: "laia_hub"
+    },
+    bufon_laia_enmascarado: {
+      lineas: [
+        "¿El de la máscara de hierro?",
+        "Sí. Es él.",
+        "Nadie más lo sabe, que yo sepa. Pero tú sí, porque te dejó verlo.",
+        "Eso ya dice bastante. De él, o de ti. Todavía no decido de cuál de los dos."
+      ],
+      completeDialogue: "laia_enmascarado",
+      eleccion: "laia_hub"
+    },
+
+    // --- Respiro: Eledar, Cassius, Torvrena, Ryn, rumores del juicio ---
+    bufon_eledar_tobillo: {
+      lineas: [
+        "Por cierto. Eledar.",
+        "Buen trabajo con el tobillo.",
+        "Toda una expedición al norte. Dragones, muertos caminando, comerciantes espirituales.",
+        "Y el verdadero enemigo era pisar mal."
+      ],
+      animacion: "Riendosesentao",
+      completeDialogue: "eledar_tobillo",
+      eleccion: "eledar_tobillo_followup"
+    },
+    bufon_eledar_niega: {
+      lineas: ["Como digas."],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_eledar_afirma_primero: {
+      lineas: [
+        "Ah. Viniste a asumir la fama en persona.",
+        "Bien por ti."
+      ],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_cassius_opinion: {
+      lineas: ["Me cae bien Cassius."],
+      completeDialogue: "cassius_opinion",
+      eleccion: "cassius_followup"
+    },
+    bufon_cassius_por_que: {
+      lineas: [
+        "Tiene precio. Dos piezas de oro, seis de cobre.",
+        "La mayoría se pasa años fingiendo que sus principios no tienen uno. A él le dio igual e hizo las cuentas."
+      ],
+      animacion: "Cariñito",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_torvrena_opinion: {
+      lineas: [
+        "Torvrena al menos lo hace fácil.",
+        "Le pagas por cazar un monstruo. Caza un monstruo. Refrescante."
+      ],
+      completeDialogue: "torvrena_opinion",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_ryn_intro: {
+      lineas: ["Ryn no durmió."],
+      completeDialogue: "ryn_no_durmio",
+      eleccion: "ryn_followup"
+    },
+    bufon_ryn_como_sabes: {
+      lineas: [
+        "Porque estaba despierta.",
+        "Suele ser una pista bastante buena."
+      ],
+      next: "intro_reason_sin_recuerdo"
+    },
+    // --- "Varios Eledar" — reacción a elegir "Ese fui yo." en
+    // eledar_tobillo_followup (ver esa eleccion más abajo y "asyncNext"
+    // en el manejador de clicks de secreto.html). Cuál de estos nodos se
+    // muestra depende de cuánta gente más ya eligió esa misma opción
+    // antes, chequeado en Supabase en el momento del click, no de un
+    // nombre registrado.
+    bufon_eledar_impostor_gag_2: {
+      lineas: [
+        "Espera.",
+        "Tú también eres Eledar.",
+        "Perfecto. Ya tenemos dos."
+      ],
+      animacion: "Auch",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_eledar_impostor_gag_3: {
+      lineas: [
+        "Tres Eledar.",
+        "Ahora sí tenemos un problema."
+      ],
+      animacion: "Auch",
+      eleccion: "eledar_gag_problema"
+    },
+    bufon_eledar_gag_estadistico: {
+      lineas: [
+        "Estadístico.",
+        "En algún momento uno de ustedes tiene que ser falso.",
+        "Se me ocurre que el primero es el falso. Sería gracioso."
+      ],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_eledar_original_extranado: {
+      lineas: [
+        "Ah. Otra cosa.",
+        "Hay alguien más por ahí diciendo que también es Eledar.",
+        "...",
+        "¿Sabes algo de eso?"
+      ],
+      next: "intro_reason_sin_recuerdo"
+    },
+
+    // --- "Te reconozco" — interrupción espontánea, igual que "varios
+    // Eledar": ver reaccionPorNombreRegistrado() en secreto.html. Dispara
+    // una sola vez (completeDialogue compartido "nombre_reconocido"), la
+    // primera vez que el hub se muestra después de registrarse con uno de
+    // estos nombres. Chistes internos de mesa, no lore de campaña.
+    bufon_reconoce_eledar_solo: {
+      lineas: [
+        "¿Se te olvidó tu apellido, o sigues siendo precavido?",
+        "Un poco supersticioso, si me preguntas."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_eledar_completo: {
+      lineas: [
+        "Wooow. Hace mucho que no dices tu apellido.",
+        "Está bien. Tu secreto está a salvo conmigo."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_edy: {
+      lineas: [
+        "¿Edy? No recuerdo ese nombre.",
+        "...",
+        "¿Estás seguro, pequeño Eduardo Quilodrán?"
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_laia: {
+      lineas: ["Sabía que reconocía esos ojos vacíos y abismales."],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_cami: {
+      lineas: [
+        "Ah, no te reconocí con los lentes, Cami.",
+        "No deberías usar tu nombre real en estas cosas...",
+        "Aunque puedes confiar en mí."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_ryn: {
+      lineas: [
+        "Se acerca tu invierno, ¿sabías?",
+        "Aunque no es que te vaya a hacer volver a casa."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_nacha: {
+      lineas: [
+        "Nachipeps.",
+        "...",
+        "Lo siento, no sé de dónde salió eso."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_cassius: {
+      lineas: [
+        "¿El vaquero?",
+        "¿No habías hecho todo esto antes? Lo de matar al dragón, encomendarte, y esas cosas...",
+        "¿O me estoy confundiendo?",
+        "Bueno. Da igual."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_k4k: {
+      lineas: [
+        "Navarrete, guatón. Danos galletas.",
+        "...",
+        "Lo siento, no sé de dónde salió eso."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+
+    // --- Medidores (Mentirosos/Impostores) — interrupciones espontáneas,
+    // ver RECUERDOS_DISPONIBLES en secreto.html. Despertar: la Voz
+    // principal lo nombra. Influencia: "graduación", ahora es Slappy
+    // mismo el que lo nota. El cruce (ambos medidores altos a la vez)
+    // es el único momento en que aparece El Apetito.
+    bufon_testigo_menciona_mentira: {
+      lineas: [
+        { voz: "testigo", texto: "Eso no pasó así. Ya van dos versiones distintas de la misma historia." }
+      ],
+      completeDialogue: "mentirosos_notado",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_coartada_menciona_impostor: {
+      lineas: [
+        { voz: "coartada", texto: "No está mal. Un nombre nuevo, y a ver quién te sigue el juego." }
+      ],
+      completeDialogue: "impostores_notado",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_mentirosos: {
+      lineas: [
+        "Ya perdí la cuenta de cuántas versiones distintas me diste de lo mismo.",
+        "No es un reproche. Solo digo que ya lo noté."
+      ],
+      completeDialogue: "graduacion_mentirosos",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_impostores: {
+      lineas: [
+        "En algún momento vas a tener que decidir quién eres.",
+        "O no. A mí tampoco me urge, la verdad."
+      ],
+      completeDialogue: "graduacion_impostores",
+      next: "intro_reason_sin_recuerdo"
+    },
+    // Graduación del medidor (Slappy nota el patrón) ≠ evolución de la
+    // Voz (la Voz habla). Antes esto llevaba líneas {voz:"apetito"} —
+    // acoplaba el render a que Apetito estuviera en Despertar o más,
+    // rompiendo si su techo alguna vez bajara. Ahora es Slappy quien
+    // comenta, con un guiño a que "algo" todavía no habla — el mismo
+    // guiño que bufon_graduacion_deseo, a propósito, como un hilo que se
+    // repite antes de que El Apetito tenga permiso de decir algo él
+    // mismo, en un ciclo futuro y aparte de esto.
+    bufon_graduacion_cruce: {
+      lineas: [
+        "Mentiste sobre lo que pasó. Y sobre quién eres.",
+        "Eso ya no es descuido. Es una versión armada a propósito.",
+        "Algo ahí atrás todavía no dice nada. Pero está prestando atención."
+      ],
+      completeDialogue: "medidores_cruce",
+      next: "intro_reason_sin_recuerdo"
+    },
+
+    // --- Los otros cuatro medidores (Insistencia/Reserva/Apego/Identidad/
+    // Curiosidad/Deseo) — un único aviso de Despertar cada uno, ver
+    // RECUERDOS_DISPONIBLES en secreto.html. Sin graduación propia
+    // todavía, a propósito.
+    bufon_grieta_menciona_insistencia: {
+      lineas: [
+        { voz: "grieta", texto: "Volviste a preguntar. No te conformas con la primera respuesta." }
+      ],
+      completeDialogue: "insistencia_notada",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_muralla_menciona_reserva: {
+      lineas: [
+        { voz: "muralla", texto: "Te guardas cosas. No hace falta que las expliques todas." }
+      ],
+      completeDialogue: "reserva_notada",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_herida_menciona_apego: {
+      lineas: [
+        { voz: "herida", texto: "Confías rápido. Eso también dice algo de ti." }
+      ],
+      completeDialogue: "apego_notado",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_rostro_menciona_identidad: {
+      lineas: [
+        { voz: "rostro", texto: "Vuelves seguido a la misma pregunta: quién es quién de verdad." }
+      ],
+      completeDialogue: "identidad_notada",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_hilo_menciona_curiosidad: {
+      lineas: [
+        { voz: "hilo", texto: "Preguntas de todo un poco. Nunca te quedas en un solo hilo." }
+      ],
+      completeDialogue: "curiosidad_notada",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_apetito_menciona_deseo: {
+      lineas: [
+        { voz: "apetito", texto: "Sigues viniendo. Sigues queriendo más de esto." }
+      ],
+      completeDialogue: "deseo_notado",
+      next: "intro_reason_sin_recuerdo"
+    },
+
+    // --- Graduación de los seis medidores restantes (Insistencia,
+    // Reserva, Apego, Identidad, Curiosidad, Deseo) — mismo nivel que ya
+    // tenían Mentirosos/Impostores: acá es Slappy mismo el que lo nota,
+    // no solo la Voz. Ver generarCandidatosGraduacion() en secreto.html.
+    bufon_graduacion_insistencia: {
+      lineas: [
+        "Ya sé que si te digo que no, vuelves a preguntar.",
+        "No es queja. Ya dejé de sorprenderme."
+      ],
+      completeDialogue: "graduacion_insistencia",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_reserva: {
+      lineas: [
+        "Nunca terminas de explicar nada.",
+        "Ya dejé de esperar que lo hagas."
+      ],
+      completeDialogue: "graduacion_reserva",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_apego: {
+      lineas: [
+        "Confías rápido, para alguien que apenas me conoce.",
+        "No sé si eso te sirve allá afuera. Aquí adentro funciona bien."
+      ],
+      completeDialogue: "graduacion_apego",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_identidad: {
+      lineas: [
+        "Siempre terminamos hablando de lo mismo. Quién es quién, qué queda, qué se pierde.",
+        "A este punto casi podría cobrar entrada por el tema."
+      ],
+      completeDialogue: "graduacion_identidad",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_curiosidad: {
+      lineas: [
+        "Preguntaste de todo. En serio, de todo.",
+        "En algún momento vas a tener que quedarte con un solo tema."
+      ],
+      completeDialogue: "graduacion_curiosidad",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_graduacion_deseo: {
+      lineas: [
+        "Últimamente admites rápido lo que quieres.",
+        "Me gusta. Acorta las conversaciones.",
+        "Algo ahí atrás todavía no dice nada. Pero está prestando atención."
+      ],
+      completeDialogue: "graduacion_deseo",
+      next: "intro_reason_sin_recuerdo"
+    },
+
+    bufon_juicio_rumor: {
+      lineas: [
+        "Alguien anda contando su juicio por Kigan. Rápidos, eh.",
+        "Primero pasa. Después alguien que nunca estuvo ahí te corrige la versión.",
+        "En algún momento todos saben qué pasó. Menos tú."
+      ],
+      animacion: "Auch",
+      completeDialogue: "juicio_rumor",
+      next: "intro_reason_sin_recuerdo"
     }
   },
 
@@ -440,7 +1010,14 @@ window.BUFON_DIALOGO = {
           // (hoy hay dos escritas; agregar una tercera es sumar un
           // ternario más acá, no tocar el motor).
           visible: ctx => !ctx.consumedThisEncounter("who_is_he"),
-          next: ctx => (ctx.hasCompletedDialogue("who_is_he_stage_1") ? "resp_who_2" : "resp_who_1")
+          next: ctx => {
+            if (ctx.hasCompletedDialogue("who_is_he_stage_1")) return "resp_who_2";
+            // Si ya completó todos los demás temas del hub, "who_is_he" no
+            // fue una entre muchas: era la única que quedaba.
+            const eraLaUnica = ["exploring", "searching", "lost", "why_hide", "what_doing"]
+              .every(id => ctx.hasCompletedDialogue(id));
+            return eraLaUnica ? "resp_who_1_unica" : "resp_who_1";
+          }
         },
         {
           id: "why_hide", texto: "¿Por qué no quieres que se lo diga a mis amigos?", next: "resp_why_hide",
@@ -449,6 +1026,58 @@ window.BUFON_DIALOGO = {
         {
           id: "what_doing", texto: "¿Qué haces tú aquí?", next: "resp_what_doing",
           visible: ctx => !ctx.hasCompletedDialogue("what_doing")
+        },
+
+        /* =================================================================
+           CICLO "LO QUE QUEDA" (Side B, detrás de sideBGen2). Cada uno
+           evolutivo por sub-pregunta (ver los nodos y elecciones nuevos
+           más arriba/abajo), no de una sola vez como los de arriba.
+        ================================================================= */
+        {
+          id: "side_b2_ledros", texto: "¿Qué es esa armadura?",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("met_ledros"),
+          next: ctx => ctx.hasCompletedDialogue("ledros_intro_seen") ? "ledros_hub" : "bufon_ledros_intro"
+        },
+        {
+          id: "side_b2_comerciante", texto: "¿Conoces al tipo de anoche?",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("chose_mask"),
+          next: ctx => ctx.hasCompletedDialogue("comerciante_intro_seen") ? "comerciante_hub" : "bufon_comerciante_intro"
+        },
+        {
+          id: "side_b2_hubert", texto: "Por cierto. Hubert Magnolia.",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("hubert_magnolia_named")
+            && ctx.playerNameMatches("Hooey Magoo", "Hooey", "Magoo", "Joan", "mahooey"),
+          next: ctx => ctx.hasCompletedDialogue("hubert_intro_seen") ? "hubert_hub" : "bufon_hubert_intro"
+        },
+        {
+          id: "side_b2_laia", texto: "¿Qué fue eso con el prisionero de los calabozos?",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("conocio_isa"),
+          next: ctx => ctx.hasCompletedDialogue("laia_intro_seen") ? "laia_hub" : "bufon_laia_intro"
+        },
+        {
+          id: "side_b2_eledar", texto: "Por cierto, Eledar.", next: "bufon_eledar_tobillo",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("eledar_ankle_hurt")
+            && !ctx.hasCompletedDialogue("eledar_tobillo")
+        },
+        {
+          id: "side_b2_cassius", texto: "¿Qué opinas de Cassius?", next: "bufon_cassius_opinion",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("cassius_joined")
+            && !ctx.hasCompletedDialogue("cassius_opinion")
+        },
+        {
+          id: "side_b2_torvrena", texto: "¿Y Torvrena?", next: "bufon_torvrena_opinion",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("torvrena_hired")
+            && !ctx.hasCompletedDialogue("torvrena_opinion")
+        },
+        {
+          id: "side_b2_ryn", texto: "Algo raro pasó con Ryn anoche.", next: "bufon_ryn_intro",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("chose_mask")
+            && !ctx.hasCompletedDialogue("ryn_no_durmio")
+        },
+        {
+          id: "side_b2_juicio", texto: "Alguien anda hablando del juicio.", next: "bufon_juicio_rumor",
+          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("trial_rumors_heard")
+            && !ctx.hasCompletedDialogue("juicio_rumor")
         }
       ]
     },
@@ -511,6 +1140,149 @@ window.BUFON_DIALOGO = {
     },
 
     /* =====================================================================
+       Submenús del ciclo "Lo que queda" (Side B). Cada opción real es
+       completeDialogue permanente y apunta de vuelta al mismo submenú, así
+       que desaparece sola en cuanto se contesta y deja ver las que faltan.
+       La última opción de cada uno queda siempre visible, sin importar
+       cuánto se haya avanzado, para nunca dejar el menú vacío.
+    ===================================================================== */
+    ledros_hub: {
+      opciones: [
+        {
+          id: "ledros_sigue_siendo", texto: "Sigue siendo Ledros.", next: "bufon_ledros_sigue_siendo",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_sigue_siendo")
+        },
+        {
+          id: "ledros_ya_no_persona", texto: "Eso ya no es una persona.", next: "bufon_ledros_ya_no_persona",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_ya_no_persona")
+        },
+        {
+          id: "ledros_sonrisa", texto: "¿Cómo era Ledros? De antes, digo.", next: "bufon_ledros_sonrisa",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_sonrisa")
+        },
+        {
+          id: "ledros_rompio_juramento", texto: "¿Rompió alguno de sus juramentos?", next: "bufon_ledros_rompio_juramento",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_rompio_juramento")
+        },
+        {
+          id: "ledros_adam", texto: "¿Qué tiene que ver Adam con él?", next: "bufon_ledros_adam",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_adam")
+        },
+        {
+          id: "ledros_osses_hooey", texto: "¿Tiene que ver con Hooey esto?", next: "bufon_ledros_osses_hooey",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_osses_hooey") && ctx.hasCompletedDialogue("hubert_intro_seen")
+        },
+        // Primera opción exclusiva de Voz real del árbol. Solo aparece
+        // con El Rostro en Influencia (etapa 3) — hoy la única Voz con
+        // el techo narrativo así de alto (ver BUFON_VOCES_TECHO en
+        // data/bufon-voces.js), a propósito: es la "gran novedad" de
+        // este ciclo, no una más entre varias.
+        {
+          id: "ledros_rostro_hombre", texto: "¿En qué momento Ledros dejó de ser Ledros?", voz: "rostro",
+          next: "bufon_ledros_rostro_hombre",
+          visible: ctx => ctx.voiceStage("rostro") >= 3 && !ctx.hasCompletedDialogue("ledros_rostro_hombre")
+        },
+        { id: "ledros_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    comerciante_hub: {
+      opciones: [
+        {
+          id: "comerciante_por_que", texto: "¿Por qué te cae tan mal?", next: "bufon_comerciante_por_que",
+          visible: ctx => !ctx.hasCompletedDialogue("comerciante_por_que")
+        },
+        {
+          id: "comerciante_tambien_te_gustan", texto: "Pero a ti también te gustan las historias.", next: "bufon_comerciante_contraste",
+          visible: ctx => ctx.hasCompletedDialogue("comerciante_por_que") && !ctx.hasCompletedDialogue("comerciante_contraste")
+        },
+        {
+          id: "comerciante_mascara", texto: "¿Qué es esa máscara que aceptamos?", next: "bufon_comerciante_mascara",
+          visible: ctx => !ctx.hasCompletedDialogue("comerciante_mascara")
+        },
+        { id: "comerciante_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    hubert_hub: {
+      opciones: [
+        {
+          id: "hubert_quien_pregunta", texto: "¿Quién?", next: "bufon_hubert_quien",
+          visible: ctx => !ctx.hasCompletedDialogue("hubert_quien_pregunta")
+        },
+        {
+          id: "hubert_quien_es", texto: "¿Y quién es Hubert Magnolia?", next: "bufon_hubert_quien_es",
+          visible: ctx => !ctx.hasCompletedDialogue("hubert_quien_es")
+        },
+        {
+          id: "hubert_hooey_es_hooey", texto: "Hooey es Hooey.", next: "bufon_hubert_hooey_es_hooey",
+          visible: ctx => !ctx.hasCompletedDialogue("hubert_hooey_es_hooey")
+        },
+        { id: "hubert_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    laia_hub: {
+      opciones: [
+        {
+          id: "laia_quien_es", texto: "¿Quién es Isa?", next: "bufon_laia_quien_es",
+          visible: ctx => !ctx.hasCompletedDialogue("laia_quien_es")
+        },
+        {
+          id: "laia_incomodo", texto: "¿Por qué me incomodaba tanto?", next: "bufon_laia_incomodo",
+          visible: ctx => !ctx.hasCompletedDialogue("laia_incomodo")
+        },
+        {
+          id: "laia_enmascarado", texto: "¿Tiene que ver con el prisionero de la máscara?", next: "bufon_laia_enmascarado",
+          visible: ctx => !ctx.hasCompletedDialogue("laia_enmascarado")
+        },
+        { id: "laia_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    cassius_followup: {
+      opciones: [
+        { id: "cassius_por_que", texto: "¿Por qué?", next: "bufon_cassius_por_que" }
+      ]
+    },
+
+    ryn_followup: {
+      opciones: [
+        { id: "ryn_como_sabes", texto: "¿Cómo sabes eso?", next: "bufon_ryn_como_sabes" }
+      ]
+    },
+
+    eledar_gag_problema: {
+      opciones: [
+        { id: "eledar_que_problema", texto: "¿Qué problema?", next: "bufon_eledar_gag_estadistico" }
+      ]
+    },
+
+    /* "Ese fui yo." es la única opción de todo el árbol que usa
+       asyncNext en vez de next: necesita ir a Supabase a ver cuánta
+       gente más ya eligió esta misma opción antes de decidir qué
+       contesta el Bufón (ver bufon_estado_eleccion en
+       js/bufon-supabase.js y scratchpad/bufon_estado_eleccion.sql, y el
+       manejo de asyncNext en el click handler de secreto.html). Si la
+       llamada falla, se trata como "sos el primero" — nunca deja al
+       jugador sin respuesta. */
+    eledar_tobillo_followup: {
+      opciones: [
+        {
+          id: "eledar_afirma_ser_el",
+          texto: "Ese fui yo.",
+          asyncNext: async () => {
+            const estado = await bufonEstadoEleccion("eledar_afirma_ser_el");
+            if (!estado || estado.total <= 1) return "bufon_eledar_afirma_primero";
+            if (estado.mi_rango === 1) return "bufon_eledar_original_extranado";
+            return estado.total >= 3 ? "bufon_eledar_impostor_gag_3" : "bufon_eledar_impostor_gag_2";
+          }
+        },
+        { id: "eledar_niega_ser_el", texto: "No, no soy yo.", next: "bufon_eledar_niega" }
+      ]
+    },
+
+    /* =====================================================================
        Puntos de elección de los recuerdos espontáneos. Los "_check1" son
        la primera reacción ambigua (valen 0 siempre, ninguna de sus
        opciones está en data/bufon-evidencia.js). Los que comparten id con
@@ -555,7 +1327,7 @@ window.BUFON_DIALOGO = {
     dragon_first_wound: {
       opciones: [
         { id: "dragon_proyectil", texto: "Fue una persona, no un arma.", next: "bufon_dragon_reaction_a" },
-        { id: "dragon_balista", texto: "Nosotros usamos una balista.", next: "bufon_dragon_reaction_b" },
+        { id: "dragon_balista", texto: "¿Que tiene de raro una balista?", next: "bufon_dragon_reaction_b" },
         { id: "dragon_no_se", texto: "No sé de qué hablas.", next: "bufon_dragon_reaction_0" }
       ]
     },

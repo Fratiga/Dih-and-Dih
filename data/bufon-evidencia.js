@@ -57,5 +57,13 @@ window.BUFON_EVIDENCIA = {
 ============================================================================= */
 window.BUFON_HECHOS_CONOCIDOS = {
   A: ["pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter"],
-  B: ["pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter"]
+  // Los siete nuevos son del ciclo "Lo que queda" (Ledros, el Comerciante de
+  // Dávidas, Hubert Magnolia, etc. — Capítulos VI-VII de cronologia-b.js).
+  // Exclusivos de B a propósito: Side A sigue detenido en su ciclo anterior.
+  B: [
+    "pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter",
+    "met_ledros", "chose_mask", "cassius_joined", "torvrena_hired",
+    "hubert_magnolia_named", "trial_rumors_heard", "eledar_ankle_hurt",
+    "conocio_isa"
+  ]
 };
