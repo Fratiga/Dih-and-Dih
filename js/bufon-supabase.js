@@ -191,11 +191,21 @@ async function bufonRegistrarNombre(nombre) {
 /* Registra un toque a la puerta cuando NO hay acceso (sin Side elegido y
    sin ser Admin, ver secreto.html) — el gesto de "tocar igual aunque el
    texto diga 'no es tu puerta'". Insert-only y en silencio, mismo
-   criterio que bufonRegistrar. Requiere scratchpad/bufon_toques_puerta.sql. */
+   criterio que bufonRegistrar. Requiere scratchpad/bufon_toques_puerta.sql.
+
+   Después de cada toque pregunta el total propio (vía RPC, no se puede
+   leer la tabla) para detectar el toque número 100 exacto y disparar el
+   chiste de bufonCentoToquesPuerta() si secreto.html lo definió — no pasa
+   nada si no existe (ninguna otra página lo necesita). */
 async function bufonRegistrarToquePuerta() {
   try {
     const supabase = await bufonCliente();
-    await supabase.from("bufon_puerta_denegada").insert({ player_id: bufonPlayerId() });
+    const playerId = bufonPlayerId();
+    await supabase.from("bufon_puerta_denegada").insert({ player_id: playerId });
+    const { data: total } = await supabase.rpc("bufon_contar_toques_puerta", { p_player_id: playerId });
+    if (Number(total) === 100 && typeof window.bufonCentoToquesPuerta === "function") {
+      window.bufonCentoToquesPuerta();
+    }
   } catch (err) {
     // Silencioso a propósito.
   }

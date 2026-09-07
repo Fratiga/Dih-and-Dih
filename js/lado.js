@@ -52,7 +52,7 @@ function ocultarSusto() {
   if (sustoTimeout) clearTimeout(sustoTimeout);
 }
 
-function dispararSusto() {
+function dispararSusto(duracionMs = 5000) {
   const imagenes = window.JUMPSCARE_IMAGENES || [];
   const canciones = window.JUMPSCARE_CANCIONES || [];
   if (!imagenes.length && !canciones.length) return;
@@ -95,7 +95,7 @@ function dispararSusto() {
   overlay.classList.add("lado-susto-shake");
 
   if (sustoTimeout) clearTimeout(sustoTimeout);
-  sustoTimeout = setTimeout(ocultarSusto, 5000);
+  sustoTimeout = setTimeout(ocultarSusto, duracionMs);
 }
 
 /* --- "Contraseña mágica" -> imagen grande (sin cambios en la mecánica) --- */
