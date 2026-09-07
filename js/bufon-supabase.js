@@ -304,9 +304,22 @@ async function adminListarConversacionBufon(playerId) {
   const supabase = await bufonCliente();
   const { data, error } = await supabase
     .from("bufon_elecciones")
-    .select("dialogue_id, category, choice_id, question_text, choice_text, side, created_at")
+    .select("dialogue_id, category, choice_id, question_text, choice_text, side, created_at, session_id")
     .eq("player_id", playerId)
     .order("created_at", { ascending: true });
   if (error) throw error;
   return data || [];
+}
+
+/* El momento exacto (timestamp) en que Side B juntó a su quinto jugador
+   distinto y desbloqueó la generación 2 — bufon_side_b_avanzo() solo dice
+   sí/no, esto dice CUÁNDO, que es lo que hace falta para catalogar la
+   conversación de un jugador en "Ciclo 1" (antes) / "Ciclo 2" (después).
+   Devuelve null si Side B todavía no llegó a ese punto. Requiere
+   scratchpad/bufon_momento_generacion.sql. */
+async function adminMomentoGeneracion2B() {
+  const supabase = await bufonCliente();
+  const { data, error } = await supabase.rpc("bufon_momento_generacion2_b");
+  if (error) throw error;
+  return data || null;
 }

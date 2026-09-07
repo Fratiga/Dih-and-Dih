@@ -188,40 +188,72 @@
     return nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`;
   }
 
-  // Vista normal: una tarjeta por evento, con fecha y Side. No omite nada,
-  // los "completado" (avance de nodo, sin pregunta/respuesta real) se
-  // marcan aparte con un check en vez de mostrarse como Q&A vacío.
-  function renderizarComoLista(elecciones) {
-    return elecciones.map(e => e.category === "completado" ? `
-      <div class="admin-bufon-evento admin-bufon-evento-completado">
-        <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}</span>
-        <span>✓ Completó el nodo <strong>${escaparHtml(e.choice_id || "")}</strong></span>
-      </div>
-    ` : `
-      <div class="admin-bufon-evento">
+  // Agrupa por CICLO DE GENERACIÓN real del Bufón, no por sesión de
+  // juego: Ciclo 1 es todo lo que pasó antes de que Side B juntara a su
+  // quinto jugador y desbloqueara la generación 2 (momentoGen2B, ver
+  // adminMomentoGeneracion2B en js/bufon-supabase.js); Ciclo 2 es lo que
+  // pasó después. Side A no tiene generación 2 definida todavía, así que
+  // sus eventos (y los que no tienen side) quedan siempre en Ciclo 1 —
+  // cuando exista ese mecanismo, esto es lo único que hay que tocar.
+  function agruparPorCiclo(elecciones, momentoGen2B) {
+    const grupos = new Map();
+    let contador = 0;
+    elecciones.forEach(e => {
+      const esCiclo2 = e.side === "B" && momentoGen2B && new Date(e.created_at) >= new Date(momentoGen2B);
+      const numero = esCiclo2 ? 2 : 1;
+      if (!grupos.has(numero)) grupos.set(numero, { numero, eventos: [] });
+      grupos.get(numero).eventos.push({ ...e, _idx: contador++ });
+    });
+    return Array.from(grupos.values()).sort((a, b) => a.numero - b.numero);
+  }
+
+  // Una tarjeta por evento, con fecha y Side. No omite nada: "completado"
+  // (avance de nodo, sin pregunta/respuesta real) se marca con un check,
+  // y "saludo"/"conector" (línea narrativa sin elección real, ver
+  // renderNodo en secreto.html) se muestran como una sola línea del
+  // Bufón, sin flecha de respuesta que no existió.
+  function renderEventoLista(e) {
+    if (e.category === "completado") {
+      return `
+        <div class="admin-bufon-evento admin-bufon-evento-completado" id="admin-bufon-evento-${e._idx}">
+          <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}</span>
+          <span>✓ Completó el nodo <strong>${escaparHtml(e.choice_id || "")}</strong></span>
+        </div>
+      `;
+    }
+    if (e.category === "saludo" || e.category === "conector") {
+      return `
+        <div class="admin-bufon-evento" id="admin-bufon-evento-${e._idx}">
+          <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}${e.side ? ` · Side ${e.side}` : ""}</span>
+          <p class="admin-bufon-respuesta">${escaparHtml(e.question_text || "")}</p>
+        </div>
+      `;
+    }
+    return `
+      <div class="admin-bufon-evento" id="admin-bufon-evento-${e._idx}">
         <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}${e.side ? ` · Side ${e.side}` : ""}</span>
         ${e.question_text ? `<p class="admin-bufon-pregunta">${escaparHtml(e.question_text)}</p>` : ""}
         <p class="admin-bufon-respuesta">→ ${escaparHtml(e.choice_text || e.choice_id || "")}</p>
       </div>
-    `).join("");
+    `;
   }
 
-  // Vista guion: todo de corrido, sin fechas ni tarjetas separadas, para
-  // leer la conversación entera como si fuese un diálogo de verdad. Nada
-  // se salta — un "completado" no tiene línea del Bufón/jugador real, así
-  // que se marca como acotación de guion en vez de inventarle una.
-  function renderizarComoGuion(elecciones, nombre) {
-    const nombreJugador = nombre ? escaparHtml(nombre) : "Jugador";
-    return elecciones.map(e => {
-      if (e.category === "completado") {
-        return `<p class="admin-bufon-guion-acotacion">(completa "${escaparHtml(e.choice_id || "")}")</p>`;
-      }
-      const pregunta = e.question_text
-        ? `<p class="admin-bufon-guion-linea"><strong>Bufón:</strong> ${escaparHtml(e.question_text)}</p>`
-        : "";
-      const respuesta = `<p class="admin-bufon-guion-linea admin-bufon-guion-jugador"><strong>${nombreJugador}:</strong> ${escaparHtml(e.choice_text || e.choice_id || "")}</p>`;
-      return pregunta + respuesta;
-    }).join("");
+  // Todo de corrido, sin fechas ni tarjetas separadas, para leer la
+  // conversación como si fuese un diálogo real. Nada se salta: "saludo"/
+  // "conector" son línea del Bufón sola (no hubo elección real que
+  // responder), "completado" es una acotación de guion entre paréntesis.
+  function renderEventoGuion(e, nombreJugador) {
+    if (e.category === "completado") {
+      return `<p class="admin-bufon-guion-acotacion" id="admin-bufon-evento-${e._idx}">(completa "${escaparHtml(e.choice_id || "")}")</p>`;
+    }
+    if (e.category === "saludo" || e.category === "conector") {
+      return `<p class="admin-bufon-guion-linea" id="admin-bufon-evento-${e._idx}"><strong>Bufón:</strong> ${escaparHtml(e.question_text || "")}</p>`;
+    }
+    const pregunta = e.question_text
+      ? `<p class="admin-bufon-guion-linea"><strong>Bufón:</strong> ${escaparHtml(e.question_text)}</p>`
+      : "";
+    const respuesta = `<p class="admin-bufon-guion-linea admin-bufon-guion-jugador" id="admin-bufon-evento-${e._idx}"><strong>${nombreJugador}:</strong> ${escaparHtml(e.choice_text || e.choice_id || "")}</p>`;
+    return pregunta + respuesta;
   }
 
   async function mostrarConversacionBufon(playerId, nombre) {
@@ -229,6 +261,7 @@
     const contenido = document.getElementById("modalContent");
     if (!modal || !contenido) return;
     const titulo = tituloConversacion(playerId, nombre);
+    const nombreJugador = nombre ? escaparHtml(nombre) : "Jugador";
 
     contenido.innerHTML = `
       <div class="entry-type">Progreso del Bufón</div>
@@ -238,27 +271,49 @@
     modal.showModal();
 
     try {
-      const elecciones = await adminListarConversacionBufon(playerId);
+      const [elecciones, momentoGen2B] = await Promise.all([
+        adminListarConversacionBufon(playerId),
+        adminMomentoGeneracion2B().catch(() => null) // si falla, todo queda en Ciclo 1, no rompe la vista
+      ]);
       if (!elecciones.length) {
         contenido.querySelector(".admin-vacio").textContent = "No hay elecciones registradas para esta identidad.";
         return;
       }
 
+      const ciclos = agruparPorCiclo(elecciones, momentoGen2B);
       let modoGuion = false;
+
       function pintar() {
+        const indiceHTML = `
+          <nav class="admin-bufon-indice">
+            ${ciclos.map(c => `<button type="button" class="admin-bufon-indice-link" data-ir-a="admin-bufon-ciclo-${c.numero}">Ciclo ${c.numero} <small>${c.eventos.length} evento${c.eventos.length === 1 ? "" : "s"}</small></button>`).join("")}
+          </nav>
+        `;
+        const cuerpoHTML = ciclos.map(c => `
+          <h3 class="admin-bufon-ciclo-titulo" id="admin-bufon-ciclo-${c.numero}">Ciclo ${c.numero}</h3>
+          ${c.eventos.map(e => modoGuion ? renderEventoGuion(e, nombreJugador) : renderEventoLista(e)).join("")}
+        `).join("");
+
         contenido.innerHTML = `
           <div class="entry-type">Progreso del Bufón</div>
           <h2>${titulo}</h2>
           <button type="button" id="adminBufonModoToggle" class="secondary-button admin-bufon-modo-toggle">
             ${modoGuion ? "Ver como lista" : "Ver como guion"}
           </button>
+          ${indiceHTML}
           <div class="admin-bufon-conversacion${modoGuion ? " admin-bufon-conversacion-guion" : ""}">
-            ${modoGuion ? renderizarComoGuion(elecciones, nombre) : renderizarComoLista(elecciones)}
+            ${cuerpoHTML}
           </div>
         `;
         document.getElementById("adminBufonModoToggle").addEventListener("click", () => {
           modoGuion = !modoGuion;
           pintar();
+        });
+        contenido.querySelectorAll("[data-ir-a]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const destino = document.getElementById(btn.dataset.irA);
+            if (destino) destino.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
         });
       }
       pintar();
