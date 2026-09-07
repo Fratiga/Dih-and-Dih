@@ -193,6 +193,7 @@
       const progreso = await adminListarProgresoBufon();
       pintarBufonProgreso(progreso);
     } catch (e) {
+      console.error("[admin] Progreso del Bufón falló:", e);
       bufonEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin-bufon.sql en Supabase?</p>`;
     }
   });
