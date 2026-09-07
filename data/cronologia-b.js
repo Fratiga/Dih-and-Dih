@@ -404,5 +404,44 @@ window.CRONOLOGIA_B = [
       <p>Ryn no consiguió pegar ojo en toda la noche. El resto, al menos,
       durmió.</p>
     `
+  },
+  {
+    id: "capitulo-8",
+    orden: 8,
+    numero: "Capítulo VIII",
+    title: "La Ermitaña de la Espesura",
+    fecha: "Segundo día en la Espesura",
+    content: `
+      <p>El descanso junto a la fogata no duró demasiado. Uno de los espectros
+      caídos de la armadura los encontró antes de que amaneciera del todo, y
+      el grupo entendió rápido que no tenía sentido quedarse a pelear contra
+      algo que podía seguir sacando refuerzos de sus propias grietas. Decidieron
+      que no podían ganar esa guerra de desgaste, y se internaron todavía más
+      en la Espesura para dejar atrás las oleadas.</p>
+
+      <h4>La choza de la ermitaña</h4>
+
+      <p>La huida los llevó hasta una choza casi abandonada, escondida entre
+      la maleza. Ahí vivía una vieja ermitaña, sola, que no pareció sorprenderse
+      demasiado de tener visitas. Le preguntaron por Verdam y por la armadura
+      que caminaba sola, y ella escuchó todo sin apuro, sopesando cuánto valía
+      la pena contarles.</p>
+
+      <p>Fue Cassius quien terminó de convencerla, a fuerza de coquetearle sin
+      ninguna vergüenza. La vieja soltó lo que sabía: Verdam parecía dirigirse
+      a Marshfield, y la armadura tenía un nombre. Se llamaba Ledros, antiguo
+      capitán de los caballeros de Brurland, aunque la propia ermitaña no supo
+      explicar del todo qué lo había dejado en el estado en que estaba ahora.</p>
+
+      <p>A cambio de la información, pidió que le dieran descanso a Ledros.
+      Los protagonistas aceptaron.</p>
+
+      <h4>Rumbo a la mansión</h4>
+
+      <p>Con el paradero de Ledros como objetivo, el grupo se tomó un breve
+      descanso antes de retomar la marcha. Poco después, la Espesura los llevó
+      hasta una mansión que no debería estar ahí, aislada y silenciosa, en
+      medio del bosque.</p>
+    `
   }
 ];

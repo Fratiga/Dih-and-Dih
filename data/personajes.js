@@ -131,7 +131,7 @@ window.PERSONAJES = [
     title: "Verdam",
     category: "Personajes",
     tags: ["npc", "explorador", "refugio"],
-    summary: "Explorador humano de paradero desconocido, encontrado junto a los cadáveres del refugio.",
+    summary: "Explorador humano de paradero desconocido, encontrado junto a los cadáveres del refugio. Una pista reciente lo sitúa camino a Marshfield.",
     retrato: "",
     titulo: "Explorador",
     raza: "Humano",
@@ -141,13 +141,17 @@ window.PERSONAJES = [
     faccion: "",
     primeraAparicion: "El Refugio",
     lado: ["A", "B"],
-    relacionesConocidas: [],
+    relacionesConocidas: [
+      { id: "vieja-espesura", nota: "Le contó a los protagonistas hacia dónde parecía dirigirse" }
+    ],
     content: `
       <p>Un explorador humano, poco hablador y de intenciones difíciles de leer. Cuando
       los protagonistas llegaron al refugio lo encontraron junto a los cadáveres de los
       refugiados y de Ocevat, sin tiempo ni ocasión para hacerle una sola pregunta. En
       cuanto aparecieron los guardias, escapó del lugar sin dar explicaciones. Su
       paradero actual se desconoce.</p>
+      <p>La ermitaña de la Espesura les dio la primera pista real desde entonces:
+      Verdam parecía dirigirse a Marshfield.</p>
     `
   },
   {
@@ -618,7 +622,9 @@ window.PERSONAJES = [
     faccion: "",
     primeraAparicion: "",
     lado: ["B"],
-    relacionesConocidas: [],
+    relacionesConocidas: [
+      { id: "gris-ultimo-apunte", nota: "Le habló de un nombre y un pasado que Hooey no recuerda, aunque no sabe que es él" }
+    ],
     content: `
       <p>Un bárbaro slimefolk que viste ropas de mago sin saber una sola palabra de
       magia, por razones que nadie, ni él mismo, ha logrado explicar. Su forma y su
@@ -911,38 +917,6 @@ window.PERSONAJES = [
     `
   },
   {
-    id: "desconocido-banos",
-    title: "Desconocido de los Baños",
-    category: "Personajes",
-    tags: ["npc", "misterio", "kigan"],
-    summary: "Extraño que abordó a Hooey en una casa de baños de Kigan, insistiendo en que su verdadero nombre es Hubert Magnolia.",
-    retrato: "",
-    titulo: "",
-    raza: "",
-    tipo: "NPC",
-    lugarOrigen: "",
-    ocupacion: "",
-    faccion: "",
-    primeraAparicion: "El Vaquero",
-    lado: ["B"],
-    relacionesConocidas: [
-      { id: "hooey-magoo", nota: "Le habló de un nombre y un pasado que Hooey no recuerda" },
-      { id: "rojo-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
-      { id: "verde-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
-      { id: "morado-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
-      { id: "amarillo-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
-      { id: "azul-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
-      { id: "gris-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" }
-    ],
-    content: `
-      <p>Un desconocido que se acercó a Hooey en una casa de baños de Kigan y lo
-      llamó "Hubert Magnolia", insinuando que ese era su verdadero nombre. Según
-      él, una explosión de la que Hooey tampoco guarda memoria es la razón de
-      que su cabeza funcione como funciona. No dio más detalles, y desapareció
-      antes de que nadie pudiera pedírselos.</p>
-    `
-  },
-  {
     id: "rojo-ultimo-apunte",
     title: "Rojo",
     category: "Personajes",
@@ -959,7 +933,6 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [
       { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
-      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
       { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
@@ -992,7 +965,6 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [
       { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
-      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
       { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
@@ -1022,7 +994,6 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [
       { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
-      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
       { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
@@ -1052,7 +1023,6 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [
       { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
-      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
       { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
@@ -1082,7 +1052,6 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [
       { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
-      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
       { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
@@ -1099,8 +1068,8 @@ window.PERSONAJES = [
     id: "gris-ultimo-apunte",
     title: "Gris",
     category: "Personajes",
-    tags: ["npc", "ultimo-apunte"],
-    summary: "El más experimentado de Los Seis del Último Apunte y el único que entiende por completo el ritual que preparan para el maestro.",
+    tags: ["npc", "ultimo-apunte", "kigan"],
+    summary: "El más experimentado de Los Seis del Último Apunte, y el mismo desconocido que abordó a Hooey en una casa de baños de Kigan llamándolo 'Hubert Magnolia'.",
     retrato: "",
     titulo: "El Verdadero Discípulo",
     raza: "",
@@ -1108,11 +1077,10 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Discípulo",
     faccion: "los-seis-del-ultimo-apunte",
-    primeraAparicion: "",
+    primeraAparicion: "El Vaquero",
     lado: ["B"],
     relacionesConocidas: [
       { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
-      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
       { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
       { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
@@ -1129,6 +1097,73 @@ window.PERSONAJES = [
       y últimas impresiones. Mientras parte de él siga mezclada con un ser vivo,
       el ritual es imposible. Por eso persiguen a Hooey. Su comportamiento
       ridículo desaparece por completo cuando habla del maestro.</p>
+      <p>Antes de que el resto del grupo diera la cara, Gris ya había ido a buscar
+      a Hooey por su cuenta. Se le acercó sin capucha y sin nombre en una casa de
+      baños de Kigan y lo llamó "Hubert Magnolia", insinuando que ese era su
+      verdadero nombre. Desapareció antes de que Hooey pudiera pedirle
+      explicaciones.</p>
+    `
+  },
+  {
+    id: "ledros",
+    title: "Ledros",
+    category: "Personajes",
+    tags: ["npc", "no-muerto", "espesura", "brurland"],
+    summary: "Antiguo capitán de los caballeros de Brurland, ahora una armadura poseída por almas errantes que vaga por la Espesura.",
+    retrato: "",
+    titulo: "La Armadura Errante",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "la-espesura",
+    ocupacion: "Antiguo capitán de los caballeros de Brurland",
+    faccion: "",
+    primeraAparicion: "La Espesura",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "vieja-espesura", nota: "Conoce su verdadero nombre y su historia; les pidió que le dieran descanso" }
+    ],
+    content: `
+      <p>Antiguo capitán de los caballeros de Brurland, como lo fue Adam Kovacs.
+      Los protagonistas lo encontraron tirado en el suelo de la Espesura. Era
+      una armadura enorme que se levantó por su cuenta y empezó a caminar y a
+      hablar sola, sin mucho sentido en lo que decía.</p>
+      <p>De las grietas de su coraza caen almas errantes capaces de poseer
+      barro, piedra y madera y levantarlas convertidas en monstruosidades. Se
+      desconoce la verdadera naturaleza de su estado actual. Se sabe que tiene
+      que ver con la criatura oscura que se les apareció esa misma noche junto
+      a una fogata, ofreciéndoles objetos.</p>
+      <p>La ermitaña de la Espesura conoce su verdadero nombre. Pidió a los
+      protagonistas que le dieran descanso, y ellos aceptaron.</p>
+    `
+  },
+  {
+    id: "vieja-espesura",
+    title: "La Vieja de la Espesura",
+    category: "Personajes",
+    tags: ["npc", "espesura", "ermitaña"],
+    summary: "Ermitaña que vive sola en una choza casi abandonada en lo profundo de la Espesura; sabe la verdad sobre Ledros y encomendó a los protagonistas darle descanso.",
+    retrato: "",
+    titulo: "Ermitaña",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "la-espesura",
+    ocupacion: "Ermitaña",
+    faccion: "",
+    primeraAparicion: "La Espesura",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "ledros", nota: "Conoce su verdadero nombre y su historia; les pidió que le dieran descanso" },
+      { id: "verdam", nota: "Les dijo hacia dónde parecía dirigirse" }
+    ],
+    content: `
+      <p>Una ermitaña que vive sola en una choza casi abandonada, en lo más
+      profundo de la Espesura. Los protagonistas la encontraron después de
+      huir de una nueva oleada de espectros, decididos a no enfrentarlas.</p>
+      <p>Le preguntaron por Verdam y por la armadura que caminaba sola. Cassius
+      consiguió sacarle información a fuerza de flirtear con ella: Verdam
+      parecía dirigirse a Marshfield, y la armadura era en realidad Ledros, un
+      antiguo capitán de los caballeros de Brurland.</p>
+      <p>Pidió a los protagonistas que le dieran descanso a Ledros. Aceptaron.</p>
     `
   }
 ];

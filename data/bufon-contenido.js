@@ -503,6 +503,11 @@ window.BUFON_DIALOGO = {
       lineas: [
         "Adam también es capitán. Como Ledros.",
         "Brurland tiene talento para fabricar esa clase de hombre. Le da una espada, un juramento, y un puñado de órdenes que no siempre están de acuerdo entre sí.",
+        "Cumple. Aguanta. Protege.",
+        "Cada vez que el mundo le quita algo, se pone otra capa encima.",
+        "Y aun así, lo siguen heriendo justo donde no llega la armadura.",
+        "Hay gente que puede soportar tanto que nadie se acuerda de preguntarle si debería.",
+        "Las cadenas que uno mismo se pone siempre ajustan mejor.",
         "Después mira qué queda."
       ],
       completeDialogue: "ledros_adam",
@@ -686,6 +691,28 @@ window.BUFON_DIALOGO = {
       completeDialogue: "torvrena_opinion",
       next: "intro_reason_sin_recuerdo"
     },
+    // Respiro sin ninguna dependencia de "Lo que queda" — charla normal,
+    // no pensada como metáfora de nada. Disponible bastante antes que el
+    // resto del ciclo (solo necesita un par de elecciones hechas, no
+    // sideBGen2), a propósito: es del tipo de cosa que Slappy comentaría
+    // en cualquier momento, no algo reservado para cuando "empiece" el
+    // ciclo puente que todavía no está escrito.
+    bufon_brurland_lluvia: {
+      lineas: [
+        "Me gusta la lluvia.",
+        "En Brurland la odian, cosa curiosa. Yo la encuentro bastante agradable.",
+        "Hasta el cielo tiene un mal día, a veces."
+      ],
+      completeDialogue: "brurland_lluvia",
+      eleccion: "brurland_lluvia_reaccion"
+    },
+    bufon_brurland_lluvia_normal: {
+      lineas: [
+        "¿Normal? Qué grosero.",
+        "Estaba intentando compartir algo contigo."
+      ],
+      next: "intro_reason_sin_recuerdo"
+    },
     bufon_ryn_intro: {
       lineas: ["Ryn no durmió."],
       completeDialogue: "ryn_no_durmio",
@@ -826,6 +853,55 @@ window.BUFON_DIALOGO = {
         "Lo siento, no sé de dónde salió eso."
       ],
       completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_hooey: {
+      lineas: [
+        "El perro verde.",
+        "Ya veo."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
+
+    // --- Easter egg puntual: Kak/Cassius carga memoria de una vuelta
+    // anterior de esta misma campaña, de antes de que existiera el
+    // Bufón. Anomalía específica de este jugador, no una regla general
+    // — ver la nota sobre El Rostro/El Hilo en el documento de diseño,
+    // ninguna Voz se conecta a esto todavía. Dispara una sola vez.
+    bufon_kak_cassius_revelacion: {
+      lineas: [
+        "Cassius.",
+        "Tú ya estuviste aquí.",
+        "Bueno, tú no. Ese es el problema.",
+        "Conoces lugares que Cassius nunca vio. Gente que él todavía no conocía. Cosas que pasaron de otra manera.",
+        "Qué cosa tan desagradable para llevar dentro de la cabeza.",
+        "Pero no te preocupes. Esa historia ya terminó.",
+        "O eso espero.",
+        '"Él" se pone bastante pesado cuando algo que ya terminó insiste en seguir apareciendo.',
+        "Pero bueno. Ten la historia clara. No querrás que piense que me estás mintiendo, ¿verdad?"
+      ],
+      completeDialogue: "kak_cassius_revelado",
+      eleccion: "kak_cassius_reaccion"
+    },
+    bufon_kak_reaccion_recuerdos: {
+      lineas: ["Curioso.", "Los recuerdos no suelen tener este nivel de detalle."],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_kak_reaccion_estuve_ahi: {
+      lineas: ["Entonces no son recuerdos.", "Son historial."],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_kak_reaccion_cassius_no_sabe: {
+      lineas: ["Sí.", "Tú sí.", "Qué relación tan rara tienen ustedes dos."],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_kak_reaccion_el_sabe: {
+      lineas: ["Sí.", "Él sabe de casi todo.", "Que vaya a hacer algo al respecto es otra historia."],
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_kak_reaccion_no_se: {
+      lineas: ["Puede ser.", "O no quieres saberlo. Las dos cosas se parecen bastante desde afuera."],
       next: "intro_reason_sin_recuerdo"
     },
 
@@ -1062,32 +1138,15 @@ window.BUFON_DIALOGO = {
           id: "side_b2_laia", texto: "¿Qué fue eso con el prisionero de los calabozos?",
           visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("conocio_isa"),
           next: ctx => ctx.hasCompletedDialogue("laia_intro_seen") ? "laia_hub" : "bufon_laia_intro"
-        },
-        {
-          id: "side_b2_eledar", texto: "Por cierto, Eledar.", next: "bufon_eledar_tobillo",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("eledar_ankle_hurt")
-            && !ctx.hasCompletedDialogue("eledar_tobillo")
-        },
-        {
-          id: "side_b2_cassius", texto: "¿Qué opinas de Cassius?", next: "bufon_cassius_opinion",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("cassius_joined")
-            && !ctx.hasCompletedDialogue("cassius_opinion")
-        },
-        {
-          id: "side_b2_torvrena", texto: "¿Y Torvrena?", next: "bufon_torvrena_opinion",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("torvrena_hired")
-            && !ctx.hasCompletedDialogue("torvrena_opinion")
-        },
-        {
-          id: "side_b2_ryn", texto: "Algo raro pasó con Ryn anoche.", next: "bufon_ryn_intro",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("chose_mask")
-            && !ctx.hasCompletedDialogue("ryn_no_durmio")
-        },
-        {
-          id: "side_b2_juicio", texto: "Alguien anda hablando del juicio.", next: "bufon_juicio_rumor",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("trial_rumors_heard")
-            && !ctx.hasCompletedDialogue("juicio_rumor")
         }
+        // Eledar/Cassius/Torvrena/Ryn/rumores del juicio ya NO son botones
+        // del hub — pasaron a ser interrupciones espontáneas (ver
+        // RECUERDOS_DISPONIBLES en secreto.html). Mismos nodos, mismo
+        // completeDialogue, solo cambió cómo se llega a ellos: antes el
+        // jugador tenía que pedirlos, ahora Slappy los trae solo. La idea
+        // es que "Lo que queda" no se sienta como nueve botones nuevos de
+        // golpe, sino como Ledros/Comerciante/Hubert/Laia como temas
+        // reales, y el resto como cosas que se le ocurren mientras tanto.
       ]
     },
 
@@ -1261,9 +1320,25 @@ window.BUFON_DIALOGO = {
       ]
     },
 
+    brurland_lluvia_reaccion: {
+      opciones: [
+        { id: "lluvia_normal", texto: "Eso ha sido sorprendentemente normal.", next: "bufon_brurland_lluvia_normal" }
+      ]
+    },
+
     eledar_gag_problema: {
       opciones: [
         { id: "eledar_que_problema", texto: "¿Qué problema?", next: "bufon_eledar_gag_estadistico" }
+      ]
+    },
+
+    kak_cassius_reaccion: {
+      opciones: [
+        { id: "kak_solo_recuerdos", texto: "Solo son recuerdos.", next: "bufon_kak_reaccion_recuerdos" },
+        { id: "kak_yo_estuve_ahi", texto: "Yo sí estuve ahí.", next: "bufon_kak_reaccion_estuve_ahi" },
+        { id: "kak_cassius_no_sabe", texto: "Cassius no sabe nada de eso.", next: "bufon_kak_reaccion_cassius_no_sabe" },
+        { id: "kak_el_sabe", texto: '¿"Él" sabe de la otra vez?', next: "bufon_kak_reaccion_el_sabe" },
+        { id: "kak_no_se_de_que_hablas", texto: "No sé de qué estás hablando.", next: "bufon_kak_reaccion_no_se" }
       ]
     },
 
@@ -1273,7 +1348,7 @@ window.BUFON_DIALOGO = {
        contesta el Bufón (ver bufon_estado_eleccion en
        js/bufon-supabase.js y scratchpad/bufon_estado_eleccion.sql, y el
        manejo de asyncNext en el click handler de secreto.html). Si la
-       llamada falla, se trata como "sos el primero" — nunca deja al
+       llamada falla, se trata como "eres el primero" — nunca deja al
        jugador sin respuesta. */
     eledar_tobillo_followup: {
       opciones: [
