@@ -143,6 +143,35 @@
     });
   }
 
+  function pintarBufonProgreso({ jugadores, sideB }) {
+    const banner = document.getElementById("adminBufonBanner");
+    banner.textContent = `Side B: ${sideB.completos}/${sideB.necesarios} jugadores completaron el Bufón.` +
+      (sideB.avanzo ? " Generación 2 desbloqueada." : "");
+
+    const cont = document.getElementById("adminBufonLista");
+    const count = document.getElementById("adminBufonCount");
+    count.textContent = `${jugadores.length} jugador${jugadores.length === 1 ? "" : "es"}`;
+
+    if (!jugadores.length) {
+      cont.innerHTML = `<p class="admin-vacio">Todavía nadie interactuó con el Bufón.</p>`;
+      return;
+    }
+
+    cont.innerHTML = jugadores.map(j => `
+      <div class="admin-bufon-fila">
+        <span class="admin-bufon-nombre">
+          ${j.nombre ? escaparHtml(j.nombre) : `Anónimo (${j.playerId.slice(0, 8)}…)`}
+          ${j.side ? `<span class="admin-bufon-side">Side ${j.side}</span>` : ""}
+        </span>
+        <span class="admin-bufon-dato"><strong>${j.elecciones}</strong> elecciones</span>
+        <span class="admin-bufon-dato"><strong>${j.completados}</strong> diálogos completados</span>
+        <span class="admin-bufon-dato">${j.ultimoNodo ? `Último: ${escaparHtml(j.ultimoNodo)}` : "—"}</span>
+        <span class="admin-bufon-dato admin-bufon-toques">${j.toquesPuerta ? `<strong>${j.toquesPuerta}</strong> toques sin acceso` : "Nunca tocó sin acceso"}</span>
+        <span class="admin-bufon-fecha">${formatearFecha(j.ultimaActividad)}</span>
+      </div>
+    `).join("");
+  }
+
   initAdminGate(async () => {
     const peticionesEl = document.getElementById("adminPeticionesLista");
     const cuentasEl = document.getElementById("adminCuentasLista");
@@ -154,6 +183,17 @@
       const mensaje = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin.sql en Supabase?</p>`;
       peticionesEl.innerHTML = mensaje;
       cuentasEl.innerHTML = mensaje;
+    }
+
+    // Sección separada e independiente: usa scratchpad/panel-admin-bufon.sql,
+    // un script aparte del resto del panel, así que su falla no debe tapar
+    // Peticiones/Cuentas si todavía no se corrió.
+    const bufonEl = document.getElementById("adminBufonLista");
+    try {
+      const progreso = await adminListarProgresoBufon();
+      pintarBufonProgreso(progreso);
+    } catch (e) {
+      bufonEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin-bufon.sql en Supabase?</p>`;
     }
   });
 })();

@@ -187,3 +187,94 @@ async function bufonRegistrarNombre(nombre) {
     // Silencioso a propósito.
   }
 }
+
+/* Registra un toque a la puerta cuando NO hay acceso (sin Side elegido y
+   sin ser Admin, ver secreto.html) — el gesto de "tocar igual aunque el
+   texto diga 'no es tu puerta'". Insert-only y en silencio, mismo
+   criterio que bufonRegistrar. Requiere scratchpad/bufon_toques_puerta.sql. */
+async function bufonRegistrarToquePuerta() {
+  try {
+    const supabase = await bufonCliente();
+    await supabase.from("bufon_puerta_denegada").insert({ player_id: bufonPlayerId() });
+  } catch (err) {
+    // Silencioso a propósito.
+  }
+}
+
+/* --- Panel de Admin: progreso del Bufón -------------------------------------
+   Ojo con lo que esto NO muestra: el puntaje/etapa de cada Voz interna
+   (ver data/bufon-voces.js) no vive acá — se calcula entero en el
+   navegador de cada jugador a partir de bufonHistorial (localStorage) y
+   nunca se persiste como número en Supabase. Lo que sí se puede armar con
+   lo que hay en bufon_elecciones/bufon_jugadores/bufon_puerta_denegada:
+   cuántas elecciones hizo cada player_id, cuántos diálogos completó
+   (category "completado"), en qué nodo quedó la última vez, cuántas veces
+   tocó la puerta sin tener acceso todavía, y si Side B ya juntó los 5
+   jugadores que necesita para la generación 2. Requiere las policies de
+   scratchpad/panel-admin-bufon.sql y scratchpad/bufon_toques_puerta.sql. */
+async function adminListarProgresoBufon() {
+  const supabase = await bufonCliente();
+  const [
+    { data: elecciones, error: errElecciones },
+    { data: jugadores, error: errJugadores },
+    { data: toques, error: errToques },
+    { data: sideBAvanzo }
+  ] = await Promise.all([
+    supabase.from("bufon_elecciones").select("player_id, side, dialogue_id, category, choice_id, created_at").order("created_at", { ascending: true }),
+    supabase.from("bufon_jugadores").select("player_id, nombre"),
+    supabase.from("bufon_puerta_denegada").select("player_id, created_at"),
+    supabase.rpc("bufon_side_b_avanzo")
+  ]);
+  if (errElecciones) throw errElecciones;
+  if (errJugadores) throw errJugadores;
+  if (errToques) throw errToques;
+
+  const nombresPorId = new Map((jugadores || []).map(j => [String(j.player_id), j.nombre]));
+  const porJugador = new Map();
+
+  function fila(id) {
+    if (!porJugador.has(id)) {
+      porJugador.set(id, { playerId: id, side: null, elecciones: 0, completados: 0, ultimoNodo: null, toquesPuerta: 0, ultimaActividad: null });
+    }
+    return porJugador.get(id);
+  }
+
+  (elecciones || []).forEach(e => {
+    const acumulado = fila(e.player_id);
+    acumulado.elecciones++;
+    acumulado.ultimaActividad = e.created_at;
+    if (e.side) acumulado.side = e.side;
+    if (e.category === "completado") {
+      acumulado.completados++;
+      acumulado.ultimoNodo = e.choice_id;
+    }
+  });
+
+  (toques || []).forEach(t => {
+    const acumulado = fila(t.player_id);
+    acumulado.toquesPuerta++;
+    // Solo actualiza "última actividad" si es más reciente que la última
+    // elección conocida — alguien puede haber vuelto a tocar la puerta
+    // mucho después de haber jugado, o nunca haber pasado de ahí.
+    if (!acumulado.ultimaActividad || new Date(t.created_at) > new Date(acumulado.ultimaActividad)) {
+      acumulado.ultimaActividad = t.created_at;
+    }
+  });
+
+  const jugadoresSideBCompletos = new Set(
+    (elecciones || [])
+      .filter(f => f.side === "B" && f.category === "completado" && f.choice_id === "goodbye_ever")
+      .map(f => f.player_id)
+  );
+
+  const lista = Array.from(porJugador.values()).map(f => ({
+    ...f,
+    nombre: nombresPorId.get(String(f.playerId)) || null
+  }));
+  lista.sort((a, b) => new Date(b.ultimaActividad) - new Date(a.ultimaActividad));
+
+  return {
+    jugadores: lista,
+    sideB: { avanzo: !!sideBAvanzo, completos: jugadoresSideBCompletos.size, necesarios: 5 }
+  };
+}

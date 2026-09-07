@@ -2752,3 +2752,29 @@ body.has-mini-player { padding-bottom: 74px; }
 .admin-cuenta-accion:disabled { opacity: .5; cursor: default; }
 .admin-cuenta-peligro { color: #c98b8b; border-color: #6b3a3a; }
 .admin-cuenta-peligro:hover { border-color: #a56a6a; color: #e0a0a0; }
+
+.admin-bufon-banner {
+  color: var(--muted);
+  font-size: .85rem;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-soft);
+  background: var(--panel);
+}
+.admin-bufon-lista { display: flex; flex-direction: column; gap: 8px; }
+.admin-bufon-fila {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  font-size: .85rem;
+}
+.admin-bufon-nombre { display: flex; align-items: center; gap: 10px; font-weight: 600; min-width: 160px; }
+.admin-bufon-side { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: #d8c37a; font-weight: 400; }
+.admin-bufon-dato { color: var(--muted); }
+.admin-bufon-dato strong { color: var(--text); }
+.admin-bufon-fecha { margin-left: auto; color: var(--muted); font-size: .78rem; white-space: nowrap; }
