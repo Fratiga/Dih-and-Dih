@@ -2826,3 +2826,11 @@ body.has-mini-player { padding-bottom: 74px; }
 .admin-bufon-evento-fecha { display: block; color: var(--muted); font-size: .72rem; margin-bottom: 4px; }
 .admin-bufon-pregunta { margin: 0 0 6px; color: var(--muted); font-style: italic; }
 .admin-bufon-respuesta { margin: 0; }
+
+.admin-bufon-modo-toggle { width: auto; margin: 10px 0 0; padding: 8px 16px; font-size: .78rem; }
+
+.admin-bufon-conversacion-guion { gap: 4px; }
+.admin-bufon-guion-linea { margin: 0 0 10px; line-height: 1.6; }
+.admin-bufon-guion-linea strong { color: #d8c37a; }
+.admin-bufon-guion-jugador strong { color: var(--text); }
+.admin-bufon-guion-acotacion { margin: 4px 0 14px; color: var(--muted); font-style: italic; font-size: .82rem; }

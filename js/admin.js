@@ -184,14 +184,55 @@
     }
   }
 
+  function tituloConversacion(playerId, nombre) {
+    return nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`;
+  }
+
+  // Vista normal: una tarjeta por evento, con fecha y Side. No omite nada,
+  // los "completado" (avance de nodo, sin pregunta/respuesta real) se
+  // marcan aparte con un check en vez de mostrarse como Q&A vacío.
+  function renderizarComoLista(elecciones) {
+    return elecciones.map(e => e.category === "completado" ? `
+      <div class="admin-bufon-evento admin-bufon-evento-completado">
+        <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}</span>
+        <span>✓ Completó el nodo <strong>${escaparHtml(e.choice_id || "")}</strong></span>
+      </div>
+    ` : `
+      <div class="admin-bufon-evento">
+        <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}${e.side ? ` · Side ${e.side}` : ""}</span>
+        ${e.question_text ? `<p class="admin-bufon-pregunta">${escaparHtml(e.question_text)}</p>` : ""}
+        <p class="admin-bufon-respuesta">→ ${escaparHtml(e.choice_text || e.choice_id || "")}</p>
+      </div>
+    `).join("");
+  }
+
+  // Vista guion: todo de corrido, sin fechas ni tarjetas separadas, para
+  // leer la conversación entera como si fuese un diálogo de verdad. Nada
+  // se salta — un "completado" no tiene línea del Bufón/jugador real, así
+  // que se marca como acotación de guion en vez de inventarle una.
+  function renderizarComoGuion(elecciones, nombre) {
+    const nombreJugador = nombre ? escaparHtml(nombre) : "Jugador";
+    return elecciones.map(e => {
+      if (e.category === "completado") {
+        return `<p class="admin-bufon-guion-acotacion">(completa "${escaparHtml(e.choice_id || "")}")</p>`;
+      }
+      const pregunta = e.question_text
+        ? `<p class="admin-bufon-guion-linea"><strong>Bufón:</strong> ${escaparHtml(e.question_text)}</p>`
+        : "";
+      const respuesta = `<p class="admin-bufon-guion-linea admin-bufon-guion-jugador"><strong>${nombreJugador}:</strong> ${escaparHtml(e.choice_text || e.choice_id || "")}</p>`;
+      return pregunta + respuesta;
+    }).join("");
+  }
+
   async function mostrarConversacionBufon(playerId, nombre) {
     const modal = document.getElementById("entryModal");
     const contenido = document.getElementById("modalContent");
     if (!modal || !contenido) return;
+    const titulo = tituloConversacion(playerId, nombre);
 
     contenido.innerHTML = `
       <div class="entry-type">Progreso del Bufón</div>
-      <h2>${nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`}</h2>
+      <h2>${titulo}</h2>
       <p class="admin-vacio">Cargando conversación...</p>
     `;
     modal.showModal();
@@ -203,28 +244,28 @@
         return;
       }
 
-      contenido.innerHTML = `
-        <div class="entry-type">Progreso del Bufón</div>
-        <h2>${nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`}</h2>
-        <div class="admin-bufon-conversacion">
-          ${elecciones.map(e => e.category === "completado" ? `
-            <div class="admin-bufon-evento admin-bufon-evento-completado">
-              <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}</span>
-              <span>✓ Completó el nodo <strong>${escaparHtml(e.choice_id || "")}</strong></span>
-            </div>
-          ` : `
-            <div class="admin-bufon-evento">
-              <span class="admin-bufon-evento-fecha">${formatearFechaHora(e.created_at)}${e.side ? ` · Side ${e.side}` : ""}</span>
-              ${e.question_text ? `<p class="admin-bufon-pregunta">${escaparHtml(e.question_text)}</p>` : ""}
-              <p class="admin-bufon-respuesta">→ ${escaparHtml(e.choice_text || e.choice_id || "")}</p>
-            </div>
-          `).join("")}
-        </div>
-      `;
+      let modoGuion = false;
+      function pintar() {
+        contenido.innerHTML = `
+          <div class="entry-type">Progreso del Bufón</div>
+          <h2>${titulo}</h2>
+          <button type="button" id="adminBufonModoToggle" class="secondary-button admin-bufon-modo-toggle">
+            ${modoGuion ? "Ver como lista" : "Ver como guion"}
+          </button>
+          <div class="admin-bufon-conversacion${modoGuion ? " admin-bufon-conversacion-guion" : ""}">
+            ${modoGuion ? renderizarComoGuion(elecciones, nombre) : renderizarComoLista(elecciones)}
+          </div>
+        `;
+        document.getElementById("adminBufonModoToggle").addEventListener("click", () => {
+          modoGuion = !modoGuion;
+          pintar();
+        });
+      }
+      pintar();
     } catch (err) {
       contenido.innerHTML = `
         <div class="entry-type">Progreso del Bufón</div>
-        <h2>${nombre ? escaparHtml(nombre) : `Anónimo (${playerId.slice(0, 8)}…)`}</h2>
+        <h2>${titulo}</h2>
         <p class="admin-vacio">No se pudo cargar la conversación.</p>
       `;
     }
