@@ -2517,7 +2517,7 @@ window.ENTRIES = [
     content: `
       <p><em>Tratado introductorio sobre transformación, correspondencia y estabilidad de la materia.</em><br>
       <em>Materia, principios, catalizadores y límites de la transmutación.</em><br>
-      <em>Autora: Dra. Selene Vard, Cátedra de Alquimia Fundamental — Facultad de Ciencias Naturales,
+      <em>Autor: Dr. Hubert Magnolia, Cátedra de Alquimia Fundamental — Facultad de Ciencias Naturales,
       Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
@@ -14569,7 +14569,7 @@ window.ENTRIES = [
       segura de fenómenos mágicos.</em><br>
       <em>Protocolos dolbrianos, niveles de riesgo, artefactos, desbordamientos y respuesta
       institucional.</em><br>
-      <em>Autor: Prof. Jorvan Pell, Cátedra de Seguridad Taumatúrgica — Facultad de Ciencias
+      <em>Autor: Prof. Hubert Magnolia, Cátedra de Seguridad Taumatúrgica — Facultad de Ciencias
       Arcanas, Universidad Axiomática de Dolbred.</em></p>
       <nav class="toc">
         <a href="#cap-prefacio">Prefacio</a>
