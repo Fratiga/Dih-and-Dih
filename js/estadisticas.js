@@ -6,6 +6,7 @@ function modAbility(score) {
 function statVitalsHTML(s) {
   const vitals = [];
   if (s.nivel !== undefined) vitals.push(["Nivel", s.nivel]);
+  if (s.iniciativa) vitals.push(["Iniciativa", s.iniciativa]);
   if (s.pv !== undefined) vitals.push(["PV", s.pv]);
   if (s.ca !== undefined) vitals.push(["CA", s.ca]);
   if (s.velocidad) vitals.push(["Velocidad", s.velocidad]);

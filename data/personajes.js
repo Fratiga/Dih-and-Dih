@@ -926,7 +926,13 @@ window.PERSONAJES = [
     primeraAparicion: "El Vaquero",
     lado: ["B"],
     relacionesConocidas: [
-      { id: "hooey-magoo", nota: "Le habló de un nombre y un pasado que Hooey no recuerda" }
+      { id: "hooey-magoo", nota: "Le habló de un nombre y un pasado que Hooey no recuerda" },
+      { id: "rojo-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
+      { id: "verde-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
+      { id: "morado-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
+      { id: "amarillo-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
+      { id: "azul-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" },
+      { id: "gris-ultimo-apunte", nota: "Antiguo discípulo suyo; lo persigue para recuperar su Ánima" }
     ],
     content: `
       <p>Un desconocido que se acercó a Hooey en una casa de baños de Kigan y lo
@@ -934,6 +940,195 @@ window.PERSONAJES = [
       él, una explosión de la que Hooey tampoco guarda memoria es la razón de
       que su cabeza funcione como funciona. No dio más detalles, y desapareció
       antes de que nadie pudiera pedírselos.</p>
+    `
+  },
+  {
+    id: "rojo-ultimo-apunte",
+    title: "Rojo",
+    category: "Personajes",
+    tags: ["npc", "ultimo-apunte"],
+    summary: "Líder autoproclamado de Los Seis del Último Apunte; da órdenes evidentes y después finge que todo salió según su plan.",
+    retrato: "",
+    titulo: "El Bocazas",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Discípulo",
+    faccion: "los-seis-del-ultimo-apunte",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
+      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
+      { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "azul-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "gris-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" }
+    ],
+    content: `
+      <p><em>"¡Lo teníamos acorralado hasta que ustedes decidieron participar!"</em></p>
+      <p>Líder autoproclamado de Los Seis del Último Apunte, la pandilla de antiguos
+      discípulos del hombre cuyo cadáver devoró Hooey. No es solemne ni honorable:
+      se insulta con sus compañeros, hace trampas y convierte la cacería en una
+      competencia, pero su cariño por el maestro es auténtico. Da órdenes evidentes
+      y después finge que todo salió según su plan.</p>
+    `
+  },
+  {
+    id: "verde-ultimo-apunte",
+    title: "Verde",
+    category: "Personajes",
+    tags: ["npc", "ultimo-apunte"],
+    summary: "Miembro de Los Seis del Último Apunte; se mete detrás de la gente, roba componentes mágicos y acusa a los demás cuando lo descubren.",
+    retrato: "",
+    titulo: "El Rastrero",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Discípulo",
+    faccion: "los-seis-del-ultimo-apunte",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
+      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
+      { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "azul-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "gris-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" }
+    ],
+    content: `
+      <p><em>"¿Tu plan necesitaba esto? Qué mala suerte."</em></p>
+      <p>Miembro de Los Seis del Último Apunte. Se mete detrás de la gente, roba
+      componentes mágicos y acusa a los demás cuando lo descubren.</p>
+    `
+  },
+  {
+    id: "morado-ultimo-apunte",
+    title: "Morado",
+    category: "Personajes",
+    tags: ["npc", "ultimo-apunte"],
+    summary: "Miembro de Los Seis del Último Apunte; especialista en impedir que los demás hagan aquello que claramente estaban a punto de hacer.",
+    retrato: "",
+    titulo: "El Aguafiestas",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Discípulo",
+    faccion: "los-seis-del-ultimo-apunte",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
+      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
+      { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "azul-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "gris-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" }
+    ],
+    content: `
+      <p><em>"Casi te sale. Lo cual, sinceramente, lo hace más gracioso."</em></p>
+      <p>Miembro de Los Seis del Último Apunte. Especialista en impedir que los
+      demás hagan aquello que claramente estaban a punto de hacer.</p>
+    `
+  },
+  {
+    id: "amarillo-ultimo-apunte",
+    title: "Amarillo",
+    category: "Personajes",
+    tags: ["npc", "ultimo-apunte"],
+    summary: "Miembro de Los Seis del Último Apunte; el único que entendió que un bastón mágico también puede usarse para golpear a alguien en la cabeza.",
+    retrato: "",
+    titulo: "El Matón",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Discípulo",
+    faccion: "los-seis-del-ultimo-apunte",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
+      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
+      { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "azul-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "gris-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" }
+    ],
+    content: `
+      <p><em>"No sé qué significa 'profano'. ¿Es un insulto? Porque te rompo la cara."</em></p>
+      <p>Miembro de Los Seis del Último Apunte. El único del grupo que entendió que
+      un bastón mágico también puede usarse para golpear a alguien en la cabeza.</p>
+    `
+  },
+  {
+    id: "azul-ultimo-apunte",
+    title: "Azul",
+    category: "Personajes",
+    tags: ["npc", "ultimo-apunte"],
+    summary: "Miembro de Los Seis del Último Apunte; nunca ataca cuando puede interrumpir, estorbar o hacer que alguien se golpee solo.",
+    retrato: "",
+    titulo: "El Tramposo",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Discípulo",
+    faccion: "los-seis-del-ultimo-apunte",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
+      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
+      { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "gris-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" }
+    ],
+    content: `
+      <p><em>"¡No se escucha! ¡Habla más fuerte!"</em></p>
+      <p>Miembro de Los Seis del Último Apunte. Nunca ataca cuando puede
+      interrumpir, estorbar o hacer que alguien se golpee solo.</p>
+    `
+  },
+  {
+    id: "gris-ultimo-apunte",
+    title: "Gris",
+    category: "Personajes",
+    tags: ["npc", "ultimo-apunte"],
+    summary: "El más experimentado de Los Seis del Último Apunte y el único que entiende por completo el ritual que preparan para el maestro.",
+    retrato: "",
+    titulo: "El Verdadero Discípulo",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Discípulo",
+    faccion: "los-seis-del-ultimo-apunte",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "hooey-magoo", nota: "Objetivo de su cacería; quieren recuperar los restos del maestro que lleva dentro" },
+      { id: "desconocido-banos", nota: "El maestro cuyo cadáver devoró Hooey; buscan recuperar su Ánima" },
+      { id: "rojo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "verde-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "morado-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "amarillo-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" },
+      { id: "azul-ultimo-apunte", nota: "Compañero de Los Seis del Último Apunte" }
+    ],
+    content: `
+      <p><em>"Pueden burlarse de nosotros. Pueden llamarnos ladrones, vándalos o
+      fracasados. Pero él nos enseñó a pensar. Y ahora mismo, una parte de él se
+      pudre dentro de esa cosa."</em></p>
+      <p>El más experimentado de Los Seis del Último Apunte y el único que entiende
+      por completo el ritual que preparan: no buscan resucitar a su maestro, sino
+      crear un Ánima, una entidad formada con sus recuerdos, conocimientos y
+      últimas impresiones. Mientras parte de él siga mezclada con un ser vivo, el
+      ritual es imposible — y por eso persiguen a Hooey. Su comportamiento
+      ridículo desaparece por completo cuando habla del maestro.</p>
     `
   }
 ];
