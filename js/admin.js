@@ -166,7 +166,7 @@
         <span class="admin-bufon-dato"><strong>${j.elecciones}</strong> elecciones</span>
         <span class="admin-bufon-dato"><strong>${j.completados}</strong> diálogos completados</span>
         <span class="admin-bufon-dato">${j.ultimoNodo ? `Último: ${escaparHtml(j.ultimoNodo)}` : "—"}</span>
-        <span class="admin-bufon-dato admin-bufon-toques">${j.toquesPuerta ? `<strong>${j.toquesPuerta}</strong> toques sin acceso` : "Nunca tocó sin acceso"}</span>
+        <span class="admin-bufon-dato admin-bufon-toques">${j.toquesPuerta ? `<strong>${j.toquesPuerta}</strong> veces sin nada nuevo` : "Siempre encontró algo nuevo"}</span>
         <span class="admin-bufon-fecha">${formatearFecha(j.ultimaActividad)}</span>
       </div>
     `).join("");

@@ -188,10 +188,13 @@ async function bufonRegistrarNombre(nombre) {
   }
 }
 
-/* Registra un toque a la puerta cuando NO hay acceso (sin Side elegido y
-   sin ser Admin, ver secreto.html) — el gesto de "tocar igual aunque el
-   texto diga 'no es tu puerta'". Insert-only y en silencio, mismo
-   criterio que bufonRegistrar. Requiere scratchpad/bufon_toques_puerta.sql.
+/* Registra un "toque a la puerta" en el sentido real del término: el
+   jugador ya se despidió del Bufón una vez y volvió, pero de nuevo no
+   hay ningún tema disponible (ver renderEleccion en secreto.html) — tocó
+   y no pasó nada. La tabla se llama bufon_puerta_denegada por cómo se
+   diseñó al principio (entrada denegada), el nombre quedó pero el
+   significado real es este. Insert-only y en silencio, mismo criterio
+   que bufonRegistrar. Requiere scratchpad/bufon_toques_puerta.sql.
 
    Después de cada toque pregunta el total propio (vía RPC, no se puede
    leer la tabla) para detectar el toque número 100 exacto y disparar el
@@ -219,7 +222,7 @@ async function bufonRegistrarToquePuerta() {
    lo que hay en bufon_elecciones/bufon_jugadores/bufon_puerta_denegada:
    cuántas elecciones hizo cada player_id, cuántos diálogos completó
    (category "completado"), en qué nodo quedó la última vez, cuántas veces
-   tocó la puerta sin tener acceso todavía, y si Side B ya juntó los 5
+   volvió y no encontró nada nuevo que hablar, y si Side B ya juntó los 5
    jugadores que necesita para la generación 2. Requiere las policies de
    scratchpad/panel-admin-bufon.sql y scratchpad/bufon_toques_puerta.sql. */
 async function adminListarProgresoBufon() {
