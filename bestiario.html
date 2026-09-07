@@ -13,19 +13,25 @@
       <p class="eyebrow">ARCHIVO DEL MUNDO</p>
       <h1>Compendio</h1>
       <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+      <div id="slappyContenedor" class="slappy-contenedor hidden"></div>
     </div>
 
     <div class="header-right">
       <div id="globalLadoWidget" class="global-lado-widget">
         <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
-        <div id="globalLadoPopover" class="global-lado-popover hidden">
-          <form id="globalLadoForm">
-            <input type="password" id="globalLadoPassword" placeholder="Contraseña" autocomplete="off" required>
-            <button type="submit">Entrar</button>
+        <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+      </div>
+      <div id="claveMagicaWidget" class="clave-magica-widget">
+        <button id="claveMagicaBadge" class="clave-magica-badge" type="button" title="¿Sabes la palabra mágica?"><img src="assets/cosas/gatipeps.webp" alt=""></button>
+        <div id="claveMagicaPopover" class="clave-magica-popover hidden">
+          <form id="claveMagicaForm">
+            <input type="text" id="claveMagicaInput" placeholder="..." autocomplete="off">
           </form>
-          <p id="globalLadoError" class="global-lado-error hidden">TE EQUIVOCASTESSS</p>
-          <button type="button" id="globalLadoLogout" class="global-lado-logout hidden">Cerrar sesión</button>
         </div>
+      </div>
+      <div id="temaWidget" class="tema-widget">
+        <button id="temaBadge" class="tema-badge" type="button" title="Cambiar tema">Tema</button>
+        <div id="temaPopover" class="tema-popover hidden"></div>
       </div>
       <div id="rotacionBox" class="rotacion-box">
         <div id="rotacionInner" class="rotacion-inner"></div>
@@ -44,7 +50,7 @@
          <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio...">
          <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
        </div>
-       <button id="globalRandomBtn" class="global-random-btn" type="button">🎲 Entrada aleatoria</button>
+       <button id="globalRandomBtn" class="global-random-btn" type="button" title="Entrada aleatoria"><img src="assets/cosas/The-D6.png" alt="Entrada aleatoria"></button>
        <button id="marqueeToggle" class="marquee-toggle" type="button" title="Detener franjas">⏸</button>
      </div>
      <div class="marquee-row marquee-row-left">
@@ -77,7 +83,10 @@
     <div class="nav-group">
       <a href="economia.html" class="nav-chip">Economía</a>
       <a href="fanarts.html" class="nav-chip">Fanarts</a>
+      <a href="peticiones.html" class="nav-chip">Peticiones</a>
+      <a href="fichas.html" class="nav-chip">Mis personajes</a>
       <a href="estadisticas.html" class="nav-chip hidden" data-admin-only>Estadísticas</a>
+      <a href="admin.html" class="nav-chip hidden" data-admin-only>Admin</a>
     </div>
   </nav>
 
@@ -133,6 +142,7 @@
   <script src="data/rotacion.js"></script>
   <script src="data/musica.js"></script>
   <script src="js/common.js"></script>
+  <script src="js/temas.js"></script>
   <script src="js/player.js"></script>
   <script>
     window.PAGE_CATEGORY = "Bestiario";
@@ -150,7 +160,18 @@
   <script src="js/modal.js"></script>
   <script src="data/jumpscare.js"></script>
   <script src="data/contrasenas.js"></script>
+  <script src="js/fichas-supabase.js"></script>
   <script src="js/lado.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script src="js/slappy.js"></script>
   <script src="js/busqueda-global.js"></script>
   <script src="js/header-marquee.js"></script>
   <script src="js/compendio.js"></script>
