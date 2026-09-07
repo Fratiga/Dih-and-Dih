@@ -519,6 +519,14 @@ function initClaveMagicaWidget() {
       return;
     }
 
+    // Otra entrada escondida más, esta sin ningún dato invisible que
+    // encontrar por casualidad: hay que saber la palabra.
+    if (valor.toLowerCase() === "puerta") {
+      cerrarPopover();
+      window.location.href = "secreto.html";
+      return;
+    }
+
     const imagenClave = buscarImagenPorPalabraClave(valor);
     if (imagenClave) {
       cerrarPopover();
