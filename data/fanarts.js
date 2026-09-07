@@ -85,5 +85,11 @@ window.FANARTS = [
   "assets/fanarts/dam.JPG",
   "assets/fanarts/la_ryn_y_su_nueva_ropita.png",
   "assets/fanarts/muejeje.png",
-  "assets/fanarts/wtf.png"
+  "assets/fanarts/wtf.png",
+  "assets/fanarts/Au whathehelly.png",
+  "assets/fanarts/Protolaia.jpg",
+  "assets/fanarts/mhh....webp",
+  "assets/fanarts/encadenao.png",
+  "assets/fanarts/evil ryn.jpg",
+  "assets/fanarts/maenojaoquela.png"
 ];
