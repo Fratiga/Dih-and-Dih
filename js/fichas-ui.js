@@ -10,6 +10,7 @@
   let autoguardadoTimeout = null;
   let modoPorItemRoll20 = {}; // { [idSintetico]: { modo, preguntar } } — transitorio, no se persiste
   let miEmail = null; // email de la sesión actual — para saber si una ficha es "de otro" (solo pasa si sos Admin)
+  let decoracionArrastre = null; // estado transitorio del arrastre/redimensión de una pegatina en curso
 
   const NOMBRES_ATRIBUTOS = { fue: "Fuerza", des: "Destreza", con: "Constitución", int: "Inteligencia", sab: "Sabiduría", car: "Carisma" };
 
@@ -274,6 +275,7 @@
     personajeActual = p;
     renderEncabezado();
     renderTabs();
+    renderDecoraciones();
     mostrarVista("ficha");
   }
 
@@ -281,6 +283,94 @@
     personajeActual = null;
     mostrarVista("lista");
     cargarLista();
+  });
+
+  /* ==========================================================================
+     PEGATINAS — decoración libre de la página del personaje. Puramente
+     visual (no entra en ningún cálculo): el jugador sube una imagen, la
+     arrastra donde quiera y la puede achicar/agrandar desde la esquina.
+     Posición y tamaño se guardan como % del contenedor para que se
+     mantengan más o menos en el mismo lugar en cualquier pantalla.
+  ========================================================================== */
+  function renderDecoraciones() {
+    const cont = document.getElementById("fichasDecoraciones");
+    cont.innerHTML = (personajeActual.decoraciones || []).map(d => `
+      <div class="fichas-decoracion" data-decoracion="${d.id}" style="left:${d.xPct}%; top:${d.yPct}%; width:${d.anchoPct}%;">
+        <img src="${esc(d.imagen)}" alt="" draggable="false">
+        <span class="fichas-decoracion-resize" title="Cambiar tamaño"></span>
+        <button type="button" class="fichas-decoracion-borrar" data-borrar-decoracion="${d.id}" title="Quitar pegatina">×</button>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("fichasDecorarBtn").addEventListener("click", () => {
+    document.getElementById("fichasDecoracionArchivo").click();
+  });
+
+  document.getElementById("fichasDecoracionArchivo").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { alert("Eso no es una imagen."); return; }
+    try {
+      const dataUrl = await fichasImagenADataUrl(file, 400, 0.85);
+      personajeActual.decoraciones.push({ id: fichasNuevoId(), imagen: dataUrl, xPct: 70, yPct: 4, anchoPct: 14 });
+      renderDecoraciones();
+      programarAutoguardado();
+    } catch (err) {
+      alert("No se pudo procesar la imagen: " + (err.message || err));
+    }
+  });
+
+  const decoracionesCont = document.getElementById("fichasDecoraciones");
+
+  decoracionesCont.addEventListener("pointerdown", e => {
+    if (e.target.closest("[data-borrar-decoracion]")) return;
+    const el = e.target.closest(".fichas-decoracion");
+    if (!el) return;
+    e.preventDefault();
+    const d = personajeActual.decoraciones.find(x => x.id === el.dataset.decoracion);
+    if (!d) return;
+    decoracionArrastre = {
+      id: d.id,
+      tipo: e.target.closest(".fichas-decoracion-resize") ? "redimensionar" : "mover",
+      inicioClienteX: e.clientX, inicioClienteY: e.clientY,
+      inicioXPct: d.xPct, inicioYPct: d.yPct, inicioAnchoPct: d.anchoPct,
+      contRect: decoracionesCont.getBoundingClientRect()
+    };
+    el.classList.add("fichas-decoracion--arrastrando");
+    el.setPointerCapture(e.pointerId);
+  });
+
+  decoracionesCont.addEventListener("pointermove", e => {
+    if (!decoracionArrastre) return;
+    const d = personajeActual.decoraciones.find(x => x.id === decoracionArrastre.id);
+    if (!d) return;
+    const dxPct = (e.clientX - decoracionArrastre.inicioClienteX) / decoracionArrastre.contRect.width * 100;
+    const dyPct = (e.clientY - decoracionArrastre.inicioClienteY) / decoracionArrastre.contRect.height * 100;
+    if (decoracionArrastre.tipo === "mover") {
+      d.xPct = Math.max(0, Math.min(96, decoracionArrastre.inicioXPct + dxPct));
+      d.yPct = Math.max(0, Math.min(96, decoracionArrastre.inicioYPct + dyPct));
+    } else {
+      d.anchoPct = Math.max(4, Math.min(70, decoracionArrastre.inicioAnchoPct + dxPct));
+    }
+    const el = decoracionesCont.querySelector(`[data-decoracion="${d.id}"]`);
+    if (el) { el.style.left = d.xPct + "%"; el.style.top = d.yPct + "%"; el.style.width = d.anchoPct + "%"; }
+  });
+
+  decoracionesCont.addEventListener("pointerup", () => {
+    if (!decoracionArrastre) return;
+    decoracionArrastre = null;
+    decoracionesCont.querySelectorAll(".fichas-decoracion--arrastrando").forEach(el => el.classList.remove("fichas-decoracion--arrastrando"));
+    programarAutoguardado();
+  });
+
+  decoracionesCont.addEventListener("click", e => {
+    const borrarBtn = e.target.closest("[data-borrar-decoracion]");
+    if (!borrarBtn) return;
+    personajeActual.decoraciones = personajeActual.decoraciones.filter(d => d.id !== borrarBtn.dataset.borrarDecoracion);
+    renderDecoraciones();
+    programarAutoguardado();
   });
 
   function renderEncabezado() {

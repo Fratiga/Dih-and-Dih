@@ -2530,6 +2530,28 @@ body.has-mini-player { padding-bottom: 74px; }
 .fichas-revision-acciones { display: flex; gap: 16px; align-items: center; }
 .fichas-revision-acciones .secondary-button { width: auto; padding: 10px 24px; }
 
+/* --- Pegatinas: decoración libre de la página del personaje --- */
+#fichasFichaVista { position: relative; }
+.fichas-vista-acciones { display: flex; gap: 18px; align-items: center; margin-bottom: 10px; }
+.fichas-decoraciones { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.fichas-decoracion {
+  position: absolute; pointer-events: auto; cursor: grab; touch-action: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .5));
+}
+.fichas-decoracion--arrastrando { cursor: grabbing; opacity: .85; }
+.fichas-decoracion img { width: 100%; height: auto; display: block; pointer-events: none; }
+.fichas-decoracion-resize {
+  position: absolute; right: -5px; bottom: -5px; width: 14px; height: 14px;
+  background: var(--accent-soft); border: 1px solid var(--panel); cursor: nwse-resize;
+}
+.fichas-decoracion-borrar {
+  position: absolute; top: -9px; right: -9px; width: 18px; height: 18px;
+  background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; font-size: .8rem; line-height: 1; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.fichas-decoracion-borrar:hover { color: var(--text); border-color: var(--accent-soft); }
+
 /* --- Encabezado de ficha --- */
 .fichas-encabezado {
   display: grid;

@@ -172,6 +172,11 @@ function fichasPersonajeVacio() {
     macros: [], // { id, nombre, formula, modificadorFijo, narrativa, tipoDano, modoTirada, notas, favorita }
     favoritosRoll20: [], // ids sintéticos de tiradas (ver fichas-roll20.js)
 
+    // Pegatinas/dibujos que el jugador pone sobre su propia página de
+    // personaje, a mano y donde quiera — puramente decorativo, no afecta
+    // ningún cálculo. xPct/yPct/anchoPct son porcentajes del contenedor.
+    decoraciones: [], // { id, imagen, xPct, yPct, anchoPct }
+
     importado: null // { origen: "pdf-laia", pendientesRevision: [campo,...] } o null si se creó a mano
   };
 }
@@ -182,5 +187,6 @@ function fichasMigrar(personaje) {
   if (!personaje.version || personaje.version < 1) personaje.version = 1;
   if (personaje.identidad && personaje.identidad.fichaFoto === undefined) personaje.identidad.fichaFoto = "";
   if (!personaje.atributosRaciales) personaje.atributosRaciales = fichasAtributosRacialesVacios();
+  if (!Array.isArray(personaje.decoraciones)) personaje.decoraciones = [];
   return personaje;
 }
