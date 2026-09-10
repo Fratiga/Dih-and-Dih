@@ -8,21 +8,36 @@ function fichasModificador(puntuacion) {
   return Math.floor((Number(puntuacion) - 10) / 2);
 }
 
-function fichasPuntosPorNivel(nivelTotal) {
-  return 2 * Math.max(0, Number(nivelTotal) - 1);
-}
-
+/* Sin tope de nivel en esta campaña: la progresión estándar de D&D
+   (+2 en 1-4, +3 en 5-8, ...) sigue subiendo de a +1 cada 4 niveles más
+   allá del 20, en vez de quedar fija en +6. */
 function fichasCompetenciaBase(nivelTotal) {
   const n = Number(nivelTotal) || 1;
-  if (n >= 17) return 6;
-  if (n >= 13) return 5;
-  if (n >= 9) return 4;
-  if (n >= 5) return 3;
-  return 2;
+  return 2 + Math.floor(Math.max(0, n - 1) / 4);
 }
 
 function fichasCompetenciaTotal(personaje) {
   return fichasCompetenciaBase(personaje.identidad.nivelTotal) + Number(personaje.competenciaAjusteManual || 0);
+}
+
+/* Puntos de "Aumento de característica" del D&D base: 2 puntos cada 4
+   niveles (4, 8, 12...), sin tope. Las raciales NO salen de esta bolsa,
+   se llevan aparte (ver fichasPuntosRepartidos). */
+function fichasPuntosAsiDisponibles(nivelTotal) {
+  return 2 * Math.floor(Math.max(0, Number(nivelTotal) || 0) / 4);
+}
+
+/* Cuánto de la puntuación actual de cada atributo viene de gastar puntos
+   de mejora (todo lo que quede por encima de la puntuación inicial de
+   creación más la racial). Nunca resta de más: un atributo que bajó por
+   debajo de su base (maldición, penalización) no genera puntos negativos. */
+function fichasPuntosRepartidos(personaje) {
+  return FICHAS_ATRIBUTOS.reduce((total, { id }) => {
+    const actual = Number(personaje.atributos[id]) || 0;
+    const base = Number(personaje.atributosBase?.[id]) || 0;
+    const racial = Number(personaje.atributosRaciales?.[id]) || 0;
+    return total + Math.max(0, actual - base - racial);
+  }, 0);
 }
 
 /* Modificador final de un atributo: el de la puntuación + el ajuste manual

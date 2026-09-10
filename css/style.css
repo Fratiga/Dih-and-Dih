@@ -2633,6 +2633,8 @@ body.has-mini-player { padding-bottom: 74px; }
 .fichas-puntos-info input[type="number"]:focus { border-color: var(--accent-soft); }
 .fichas-atributo-card input[type="number"] { width: 100%; text-align: center; padding: 8px 10px; margin-bottom: 6px; font-size: .95rem; }
 .fichas-atributo-ajuste { width: 100%; padding: 6px 8px; font-size: .75rem; }
+.fichas-atributo-card--mini { display: flex; flex-direction: column; gap: 10px; }
+.fichas-atributo-card--mini .fichas-field { text-align: left; }
 .fichas-puntos-info { color: var(--muted); font-size: .8rem; margin-top: 10px; }
 .fichas-puntos-info input[type="number"] { width: 60px; padding: 3px 6px; font-size: .8rem; }
 

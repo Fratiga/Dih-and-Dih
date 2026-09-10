@@ -334,7 +334,8 @@
       }
       case "lanzAtaque": return fichasSigno(fichasLanzamientoAtaque(p));
       case "lanzCD": return String(fichasLanzamientoCD(p));
-      case "puntosPorNivel": return String(fichasPuntosPorNivel(p.identidad.nivelTotal));
+      case "puntosAsiDisponibles": return String(fichasPuntosAsiDisponibles(p.identidad.nivelTotal));
+      case "puntosAsiRepartidos": return String(fichasPuntosRepartidos(p));
       default: return "";
     }
   }
@@ -417,7 +418,6 @@
           <div class="fichas-field"><label>Trasfondo</label>${campoTexto("identidad.trasfondo", p.identidad.trasfondo)}</div>
           <div class="fichas-field"><label>Alineamiento</label>${campoTexto("identidad.alineamiento", p.identidad.alineamiento)}</div>
           <div class="fichas-field"><label>Campaña / Side</label>${campoTexto("side", p.side)}</div>
-          <div class="fichas-field"><label>Experiencia</label>${campoTexto("identidad.experiencia", p.identidad.experiencia)}</div>
         </div>
       </div>
 
@@ -439,7 +439,21 @@
             </div>
           `).join("")}
         </div>
-        <p class="fichas-puntos-info">Puntos por nivel disponibles en esta campaña (2 × nivel-1): <strong data-calc="puntosPorNivel">${fichasPuntosPorNivel(p.identidad.nivelTotal)}</strong>. Usados hasta ahora (informativo): ${campoNumero("puntosPorNivelUsados", p.puntosPorNivelUsados)}</p>
+        <p class="fichas-puntos-info">Puntos de Aumento de característica disponibles (2 cada 4 niveles, sin tope): <strong data-calc="puntosAsiDisponibles">${fichasPuntosAsiDisponibles(p.identidad.nivelTotal)}</strong>. Repartidos hasta ahora (puntuación actual menos inicial y racial): <strong data-calc="puntosAsiRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+      </div>
+
+      <div class="fichas-fieldset">
+        <h3>Puntuación inicial y raciales</h3>
+        <p class="fichas-imagenes-ayuda">La puntuación inicial es la que tenía el personaje al crearlo, antes de raza y de mejoras por nivel. Los bonos raciales se suman a la puntuación final de arriba, pero no cuentan como puntos de mejora repartidos.</p>
+        <div class="fichas-atributos-grid">
+          ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
+            <div class="fichas-atributo-card fichas-atributo-card--mini">
+              <small>${nombre}</small>
+              <div class="fichas-field"><label>Inicial</label>${campoNumero(`atributosBase.${id}`, p.atributosBase[id])}</div>
+              <div class="fichas-field"><label>Racial</label>${campoNumero(`atributosRaciales.${id}`, p.atributosRaciales[id])}</div>
+            </div>
+          `).join("")}
+        </div>
       </div>
 
       <div class="fichas-fieldset">
