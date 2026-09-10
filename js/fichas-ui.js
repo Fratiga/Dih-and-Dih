@@ -305,6 +305,11 @@
     document.getElementById("fichasHIni").textContent = fichasSigno(fichasIniciativaTotal(p));
     document.getElementById("fichasHVel").textContent = p.combate.velocidad;
     document.getElementById("fichasHComp").textContent = fichasSigno(fichasCompetenciaTotal(p));
+    const repartidos = fichasPuntosRepartidos(p);
+    const disponibles = fichasPuntosDisponiblesTotal(p.identidad.nivelTotal);
+    const puntosEl = document.getElementById("fichasHPuntos");
+    puntosEl.textContent = `${repartidos}/${disponibles}`;
+    puntosEl.classList.toggle("fichas-stat-sobregastado", repartidos > disponibles);
     estadoGuardado("Guardado", "guardado");
   }
 
@@ -813,7 +818,7 @@
     <section class="fichas-panel" data-panel="notas">
       <div class="fichas-fieldset">
         <h3>Notas del jugador</h3>
-        <p class="fichas-puntos-info">Esta sección es tuya, nada de spoilers de GM vive aquí, es solo lo que tú quieres recordar.</p>
+        <p class="fichas-puntos-info">Esta sección es tuya, es solo lo que tú quieres recordar.</p>
         <div class="fichas-field"><label>Notas públicas</label>${campoTextarea("identidad.notasPublicas", p.identidad.notasPublicas, 10)}</div>
       </div>
       <div class="fichas-fieldset">
@@ -865,7 +870,7 @@
     <section class="fichas-panel" data-panel="roll20">
       <div class="fichas-fieldset">
         <h3>Foto de la ficha (Roll20)</h3>
-        <p class="fichas-imagenes-ayuda">Sube una foto de tu ficha de juego para tenerla a mano y llevarla al tablero en Roll20. El avatar está en la pestaña Resumen.</p>
+        <p class="fichas-imagenes-ayuda">Sube una foto de tu ficha de juego para tenerla a mano y llevarla al tablero en Roll20.</p>
         <div class="fichas-imagenes-grid">
           ${slotImagenTablero("ficha")}
         </div>

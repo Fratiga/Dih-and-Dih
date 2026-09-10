@@ -2558,6 +2558,7 @@ body.has-mini-player { padding-bottom: 74px; }
 .fichas-stat { text-align: center; }
 .fichas-stat span { display: block; font-family: var(--font-heading), sans-serif; font-size: 1.2rem; font-weight: 700; }
 .fichas-stat small { color: var(--muted); font-size: .65rem; text-transform: uppercase; letter-spacing: .06em; }
+.fichas-stat-sobregastado { color: #c98b8b; }
 .fichas-guardado-estado { grid-column: 1 / -1; margin: 0; font-size: .75rem; color: var(--muted); text-align: right; }
 .fichas-guardado-estado.guardando { color: var(--muted); }
 .fichas-guardado-estado.guardado { color: #9db98a; }
