@@ -810,6 +810,15 @@ window.BUFON_DIALOGO = {
       completeDialogue: "nombre_reconocido",
       next: "intro_reason_sin_recuerdo"
     },
+    bufon_dia_sin_visita: {
+      lineas: [
+        "No sabes lo horrible que es estar aquí solo, sin que nadie venga a verme.",
+        "Empecé a hablarle a las sombras.",
+        "Son mala compañía. Nunca me interrumpen y encima hay pocas."
+      ],
+      consumeEncounter: "dia_sin_visita",
+      next: "intro_reason_sin_recuerdo"
+    },
     bufon_side_b_falta_uno: {
       lineas: [
         "Aún falta alguien más.",
