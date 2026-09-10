@@ -124,7 +124,7 @@ window.BUFON_DIALOGO = {
 
     resp_who_confirmed: {
       lineas: ["Entonces no hace falta que lo diga yo. Mejor. Prefiero no ser yo quien lo diga en voz alta."],
-      completeDialogue: "who_is_he_stage_2",
+      completeDialogue: "who_is_he_confirmado",
       consumeEncounter: "who_is_he",
       next: "intro_reason"
     },
@@ -133,8 +133,33 @@ window.BUFON_DIALOGO = {
     // rompieron.
     resp_who_denied: {
       lineas: ["...", "Eso es raro.", "No sé por qué, pero no me lo esperaba."],
-      completeDialogue: "who_is_he_stage_2",
+      completeDialogue: "who_is_he_negado",
       consumeEncounter: "who_is_he",
+      next: "intro_reason"
+    },
+
+    // Etapa 3, cierre definitivo: la próxima vez que "who_is_he" vuelva
+    // a estar disponible (otra visita más), en vez de repetir la etapa
+    // 2 de nuevo lo cierra para siempre — de ahí el guiño meta a que
+    // esto ya se sintió repetido antes, sin nombrar el motivo real.
+    resp_who_3_confirmado: {
+      lineas: [
+        "Ya dijiste que sabes.",
+        "No voy a repetir la misma pregunta cada vez que vuelvas.",
+        "Aunque esto se siente reciclado. Como si ya lo hubiéramos hecho, palabra por palabra.",
+        "Guárdatelo. Yo hago lo mismo."
+      ],
+      completeDialogue: "who_is_he_cerrado",
+      next: "intro_reason"
+    },
+    resp_who_3_negado: {
+      lineas: [
+        "Sigues sin saberlo.",
+        "Yo sigo sin decírtelo.",
+        "Y esto ya me suena a reposición. Como si el mismo minuto se hubiera repetido varias veces.",
+        "Ahí se queda, entonces."
+      ],
+      completeDialogue: "who_is_he_cerrado",
       next: "intro_reason"
     },
 
@@ -1110,12 +1135,12 @@ window.BUFON_DIALOGO = {
           id: "who_is_he",
           texto: '¿Quién es "Él"?',
           // Evolutivo: desaparece por el resto de ESTA visita apenas se
-          // completa una etapa, pero nunca queda tachado para siempre —
-          // la próxima vez que aparezca, salta a la etapa siguiente
-          // (hoy hay dos escritas; agregar una tercera es sumar un
-          // ternario más acá, no tocar el motor).
-          visible: ctx => !ctx.consumedThisEncounter("who_is_he"),
+          // completa una etapa, y a partir de la etapa 3 (cierre) queda
+          // retirado para siempre — ver resp_who_3_confirmado/negado.
+          visible: ctx => !ctx.consumedThisEncounter("who_is_he") && !ctx.hasCompletedDialogue("who_is_he_cerrado"),
           next: ctx => {
+            if (ctx.hasCompletedDialogue("who_is_he_confirmado")) return "resp_who_3_confirmado";
+            if (ctx.hasCompletedDialogue("who_is_he_negado")) return "resp_who_3_negado";
             if (ctx.hasCompletedDialogue("who_is_he_stage_1")) return "resp_who_2";
             // Si ya completó todos los demás temas del hub, "who_is_he" no
             // fue una entre muchas: era la única que quedaba.
