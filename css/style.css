@@ -2703,6 +2703,11 @@ body.has-mini-player { padding-bottom: 74px; }
   display: inline-flex; align-items: center; justify-content: center;
 }
 
+/* --- Resumen: avatar de cuerpo entero --- */
+.fichas-avatar-resumen { max-width: 240px; }
+.fichas-avatar-resumen .fichas-imagen-preview { aspect-ratio: 3 / 4; }
+.fichas-avatar-resumen .fichas-imagen-preview img { object-fit: contain; }
+
 /* --- Impresión --- */
 @media print {
   .site-header, .quick-nav, .fichas-tabs, .fichas-link-button,

@@ -408,11 +408,17 @@
     return `
     <section class="fichas-panel" data-panel="resumen">
       <div class="fichas-fieldset">
+        <h3>Avatar</h3>
+        <div class="fichas-avatar-resumen">
+          ${slotImagenTablero("retrato")}
+        </div>
+      </div>
+
+      <div class="fichas-fieldset">
         <h3>Identidad</h3>
         <div class="fichas-field-grid wide">
           <div class="fichas-field"><label>Nombre</label>${campoTexto("identidad.nombre", p.identidad.nombre)}</div>
           <div class="fichas-field"><label>Pronombres</label>${campoTexto("identidad.pronombres", p.identidad.pronombres)}</div>
-          <div class="fichas-field"><label>Retrato (URL de imagen)</label>${campoTexto("identidad.retrato", p.identidad.retrato)}</div>
           <div class="fichas-field"><label>Raza</label>${campoTexto("identidad.raza", p.identidad.raza)}</div>
           <div class="fichas-field"><label>Clase principal</label>${campoTexto("identidad.clase", p.identidad.clase)}</div>
           <div class="fichas-field"><label>Subclase</label>${campoTexto("identidad.subclase", p.identidad.subclase)}</div>
@@ -858,10 +864,9 @@
     return `
     <section class="fichas-panel" data-panel="roll20">
       <div class="fichas-fieldset">
-        <h3>Imágenes para el tablero (Roll20)</h3>
-        <p class="fichas-imagenes-ayuda">Sube el avatar de tu personaje y una foto de su ficha para tenerlos a mano y arrastrarlos a tu token o al tablero en Roll20.</p>
+        <h3>Foto de la ficha (Roll20)</h3>
+        <p class="fichas-imagenes-ayuda">Sube una foto de tu ficha de juego para tenerla a mano y llevarla al tablero en Roll20. El avatar está en la pestaña Resumen.</p>
         <div class="fichas-imagenes-grid">
-          ${slotImagenTablero("retrato")}
           ${slotImagenTablero("ficha")}
         </div>
       </div>
