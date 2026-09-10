@@ -91,6 +91,7 @@ function fichasPersonajeVacio() {
     identidad: {
       nombre: "",
       retrato: "",
+      fichaFoto: "", // foto/escaneo de la ficha de juego, para el tablero de Roll20
       pronombres: "",
       raza: "",
       clase: "",
@@ -170,5 +171,6 @@ function fichasPersonajeVacio() {
    agregan los pasos "de v1 a v2", etc. Por ahora es identidad. */
 function fichasMigrar(personaje) {
   if (!personaje.version || personaje.version < 1) personaje.version = 1;
+  if (personaje.identidad && personaje.identidad.fichaFoto === undefined) personaje.identidad.fichaFoto = "";
   return personaje;
 }

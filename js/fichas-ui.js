@@ -806,9 +806,51 @@
   }
 
   /* ---------------------------------------------------------------------- */
+  const CAMPOS_IMAGEN_TABLERO = {
+    retrato: { path: "identidad.retrato", maxDim: 600, calidad: 0.85, etiqueta: "Avatar / token" },
+    ficha: { path: "identidad.fichaFoto", maxDim: 1600, calidad: 0.82, etiqueta: "Foto de la ficha de juego" }
+  };
+
+  function nombreArchivoImagen(slot) {
+    const base = (personajeActual.identidad.nombre || "personaje").toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "personaje";
+    return `${base}-${slot === "retrato" ? "avatar" : "ficha"}.jpg`;
+  }
+
+  function slotImagenTablero(slot) {
+    const cfg = CAMPOS_IMAGEN_TABLERO[slot];
+    const valor = getPath(personajeActual, cfg.path);
+    return `
+    <div class="fichas-imagen-slot">
+      <div class="fichas-imagen-preview">
+        <img data-imagen-preview="${slot}" src="${esc(valor || "")}" alt="" class="${valor ? "" : "hidden"}">
+        <span data-imagen-vacio="${slot}" class="fichas-imagen-vacio ${valor ? "hidden" : ""}">Sin imagen</span>
+      </div>
+      <div class="fichas-imagen-acciones">
+        <label class="secondary-button fichas-imagen-subir">
+          Subir
+          <input type="file" accept="image/*" data-imagen-input="${slot}" class="hidden">
+        </label>
+        <a data-imagen-descargar="${slot}" class="fichas-link-button ${valor ? "" : "hidden"}" href="${esc(valor || "")}" download="${esc(nombreArchivoImagen(slot))}">Descargar</a>
+        <button type="button" class="fichas-link-button" data-quitar-imagen="${slot}" ${valor ? "" : "disabled"}>Quitar</button>
+      </div>
+      <small>${cfg.etiqueta}</small>
+    </div>`;
+  }
+
   function panelRoll20() {
     return `
     <section class="fichas-panel" data-panel="roll20">
+      <div class="fichas-fieldset">
+        <h3>Imágenes para el tablero (Roll20)</h3>
+        <p class="fichas-imagenes-ayuda">Sube el avatar de tu personaje y una foto de su ficha para tenerlos a mano y arrastrarlos a tu token o al tablero en Roll20.</p>
+        <div class="fichas-imagenes-grid">
+          ${slotImagenTablero("retrato")}
+          ${slotImagenTablero("ficha")}
+        </div>
+      </div>
+
       <div class="fichas-fieldset">
         <h3>Panel de tiradas preparadas</h3>
         <div class="fichas-roll20-controles">
@@ -843,6 +885,76 @@
     </section>`;
   }
 
+  /* Redimensiona en un <canvas> antes de guardar: una foto de celular sin
+     comprimir puede pesar varios MB, y esto viaja entero como jsonb en cada
+     autoguardado. maxDim limita el lado más largo; el resto es cuánto se
+     nota la compresión JPEG. */
+  function fichasImagenADataUrl(file, maxDim, calidad) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const escala = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * escala);
+        const h = Math.round(img.height * escala);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", calidad));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("No se pudo leer la imagen.")); };
+      img.src = url;
+    });
+  }
+
+  function renderImagenSlot(slot) {
+    const cfg = CAMPOS_IMAGEN_TABLERO[slot];
+    const valor = getPath(personajeActual, cfg.path);
+    const img = document.querySelector(`[data-imagen-preview="${slot}"]`);
+    const vacio = document.querySelector(`[data-imagen-vacio="${slot}"]`);
+    const descargarLink = document.querySelector(`[data-imagen-descargar="${slot}"]`);
+    const quitarBtn = document.querySelector(`[data-quitar-imagen="${slot}"]`);
+    if (!img) return; // panel Roll20 no montado todavía
+    img.src = valor || "";
+    img.classList.toggle("hidden", !valor);
+    vacio.classList.toggle("hidden", !!valor);
+    descargarLink.href = valor || "";
+    descargarLink.download = nombreArchivoImagen(slot);
+    descargarLink.classList.toggle("hidden", !valor);
+    quitarBtn.disabled = !valor;
+  }
+
+  async function manejarSubidaImagen(slot, file) {
+    const cfg = CAMPOS_IMAGEN_TABLERO[slot];
+    if (!cfg) return;
+    if (!file.type.startsWith("image/")) { alert("Eso no es una imagen."); return; }
+    const label = document.querySelector(`[data-imagen-input="${slot}"]`)?.closest(".fichas-imagen-subir");
+    const textoOriginal = label ? label.firstChild.textContent : "";
+    if (label) label.firstChild.textContent = "Procesando...";
+    try {
+      const dataUrl = await fichasImagenADataUrl(file, cfg.maxDim, cfg.calidad);
+      setPath(personajeActual, cfg.path, dataUrl);
+      renderImagenSlot(slot);
+      refrescarCalculado();
+      programarAutoguardado();
+    } catch (err) {
+      alert("No se pudo procesar la imagen: " + (err.message || err));
+    } finally {
+      if (label) label.firstChild.textContent = textoOriginal;
+    }
+  }
+
+  function manejarQuitarImagen(slot) {
+    const cfg = CAMPOS_IMAGEN_TABLERO[slot];
+    if (!cfg) return;
+    setPath(personajeActual, cfg.path, "");
+    renderImagenSlot(slot);
+    refrescarCalculado();
+    programarAutoguardado();
+  }
+
   /* ==========================================================================
      REPETIBLES: alta/baja de filas para ataques, hechizos, rasgos,
      objetos, clases extra, espacios de conjuro y macros. Todo pasa por
@@ -863,6 +975,18 @@
 
       const copiarBtn = e.target.closest("[data-copiar]");
       if (copiarBtn) return manejarCopiar(copiarBtn);
+
+      const quitarImgBtn = e.target.closest("[data-quitar-imagen]");
+      if (quitarImgBtn) return manejarQuitarImagen(quitarImgBtn.dataset.quitarImagen);
+    });
+
+    cont.addEventListener("change", e => {
+      const input = e.target.closest("[data-imagen-input]");
+      if (!input || !input.files || !input.files[0]) return;
+      const slot = input.dataset.imagenInput;
+      const file = input.files[0];
+      input.value = "";
+      manejarSubidaImagen(slot, file);
     });
 
     // Los inputs con __ataque__ / __hechizo__ / __rasgo__ / __objeto__ /

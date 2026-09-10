@@ -2670,6 +2670,23 @@ body.has-mini-player { padding-bottom: 74px; }
 }
 .fichas-roll20-fav.activa { color: #d8c37a; }
 
+/* --- Panel Roll20: imágenes para el tablero --- */
+.fichas-imagenes-ayuda { color: var(--muted); font-size: .82rem; margin: -4px 0 14px; }
+.fichas-imagenes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; }
+.fichas-imagen-slot { display: flex; flex-direction: column; gap: 8px; }
+.fichas-imagen-slot small { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+.fichas-imagen-preview {
+  aspect-ratio: 1; background: var(--panel-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.fichas-imagen-preview img { width: 100%; height: 100%; object-fit: cover; }
+.fichas-imagen-vacio { color: var(--muted); font-size: .75rem; }
+.fichas-imagen-acciones { display: flex; align-items: center; gap: 10px; }
+.fichas-imagen-subir {
+  width: auto; margin-top: 0; padding: 8px 14px; font-size: .8rem;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
 /* --- Impresión --- */
 @media print {
   .site-header, .quick-nav, .fichas-tabs, .fichas-link-button,
