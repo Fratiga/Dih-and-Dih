@@ -171,5 +171,5 @@ if (mapaBusqueda) {
 }
 
 if (mapaViewport && mapaContainer) {
-  initZoomPan(mapaViewport, mapaContainer, { minScale: 1, maxScale: 5 });
+  initZoomPan(mapaViewport, mapaContainer, { minScale: 1, maxScale: 3 });
 }
