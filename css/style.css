@@ -2689,8 +2689,12 @@ body.has-mini-player { padding-bottom: 74px; }
 .fichas-modo-tirada label { display: flex; align-items: center; gap: 4px; }
 
 /* --- Combate: controles rápidos --- */
-.fichas-combate-rapido { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-.fichas-combate-rapido input[type="number"] { width: 70px; }
+.fichas-combate-rapido { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; align-items: center; }
+.fichas-combate-rapido input[type="number"] {
+  width: 70px; background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 10px; border-radius: 0; outline: none; font-family: inherit;
+}
+.fichas-combate-rapido input[type="number"]:focus { border-color: var(--accent-soft); }
 .fichas-combate-rapido button { width: auto; margin-top: 0; padding: 8px 14px; }
 
 /* --- Panel Roll20 --- */
