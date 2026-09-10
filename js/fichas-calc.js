@@ -37,16 +37,19 @@ function fichasPuntosDisponiblesTotal(nivelTotal) {
   return fichasPuntosPorNivel(nivelTotal) + fichasPuntosMejoraClase(nivelTotal);
 }
 
+// Todo personaje de esta campaña arranca en 8 en las seis características,
+// sin excepción — no es un dato por personaje, así que no se guarda.
+const FICHAS_PUNTUACION_BASE = 8;
+
 /* Cuánto de la puntuación actual de cada atributo viene de gastar puntos
-   de mejora (todo lo que quede por encima de la puntuación inicial de
-   creación más la racial). Nunca resta de más: un atributo que bajó por
-   debajo de su base (maldición, penalización) no genera puntos negativos. */
+   de mejora (todo lo que quede por encima del 8 inicial más la racial).
+   Nunca resta de más: un atributo que bajó por debajo de su base
+   (maldición, penalización) no genera puntos negativos. */
 function fichasPuntosRepartidos(personaje) {
   return FICHAS_ATRIBUTOS.reduce((total, { id }) => {
     const actual = Number(personaje.atributos[id]) || 0;
-    const base = Number(personaje.atributosBase?.[id]) || 0;
     const racial = Number(personaje.atributosRaciales?.[id]) || 0;
-    return total + Math.max(0, actual - base - racial);
+    return total + Math.max(0, actual - FICHAS_PUNTUACION_BASE - racial);
   }, 0);
 }
 

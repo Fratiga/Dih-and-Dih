@@ -43,9 +43,11 @@ function fichasNuevoId() {
   return (crypto.randomUUID ? crypto.randomUUID() : `f-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 }
 
+// Todo personaje de esta campaña arranca en 8 en las seis características
+// (ver FICHAS_PUNTUACION_BASE en fichas-calc.js).
 function fichasAtributosVacios() {
   const obj = {};
-  FICHAS_ATRIBUTOS.forEach(a => { obj[a.id] = 10; });
+  FICHAS_ATRIBUTOS.forEach(a => { obj[a.id] = 8; });
   return obj;
 }
 
@@ -53,13 +55,6 @@ function fichasAjustesVacios() {
   const obj = {};
   FICHAS_ATRIBUTOS.forEach(a => { obj[a.id] = 0; });
   return obj;
-}
-
-// atributosBase: puntuación de creación, antes de raciales y de mejoras
-// por nivel — nace igual a fichasAtributosVacios() porque en un personaje
-// recién creado todavía no se gastó ningún punto de mejora.
-function fichasAtributosBaseVacios() {
-  return fichasAtributosVacios();
 }
 
 // atributosRaciales: bonos de raza, aparte para que no cuenten como
@@ -122,7 +117,6 @@ function fichasPersonajeVacio() {
     },
 
     atributos: fichasAtributosVacios(),
-    atributosBase: fichasAtributosBaseVacios(), // puntuación de creación, antes de raza y mejoras
     atributosRaciales: fichasAtributosRacialesVacios(), // no cuenta como punto de mejora gastado
     ajustesAtributos: fichasAjustesVacios(), // ajuste manual al MODIFICADOR final
 
@@ -187,10 +181,6 @@ function fichasPersonajeVacio() {
 function fichasMigrar(personaje) {
   if (!personaje.version || personaje.version < 1) personaje.version = 1;
   if (personaje.identidad && personaje.identidad.fichaFoto === undefined) personaje.identidad.fichaFoto = "";
-  // Fichas de antes de esta sección: se asume que toda la puntuación
-  // actual es "de creación" (0 puntos de mejora gastados todavía) en vez
-  // de inventar un reparto — el jugador corrige la base a mano si hace falta.
-  if (!personaje.atributosBase) personaje.atributosBase = { ...personaje.atributos };
   if (!personaje.atributosRaciales) personaje.atributosRaciales = fichasAtributosRacialesVacios();
   return personaje;
 }

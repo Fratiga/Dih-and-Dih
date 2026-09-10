@@ -441,17 +441,16 @@
             </div>
           `).join("")}
         </div>
-        <p class="fichas-puntos-info">Puntos disponibles: 2 por nivel (<span data-calc="puntosPorNivel">${fichasPuntosPorNivel(p.identidad.nivelTotal)}</span>) + 2 extra cada nivel múltiplo de 4 (<span data-calc="puntosMejoraClase">${fichasPuntosMejoraClase(p.identidad.nivelTotal)}</span>) = <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong> en total. Repartidos hasta ahora (puntuación actual menos inicial y racial): <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+        <p class="fichas-puntos-info">Puntos disponibles: 2 por nivel (<span data-calc="puntosPorNivel">${fichasPuntosPorNivel(p.identidad.nivelTotal)}</span>) + 2 extra cada nivel múltiplo de 4 (<span data-calc="puntosMejoraClase">${fichasPuntosMejoraClase(p.identidad.nivelTotal)}</span>) = <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong> en total. Repartidos hasta ahora (puntuación actual menos 8 de base y menos racial): <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
       </div>
 
       <div class="fichas-fieldset">
-        <h3>Puntuación inicial y raciales</h3>
-        <p class="fichas-imagenes-ayuda">La puntuación inicial es la que tenía el personaje al crearlo, antes de raza y de mejoras por nivel. Los bonos raciales se suman a la puntuación final de arriba, pero no cuentan como puntos de mejora repartidos.</p>
+        <h3>Bonificaciones raciales</h3>
+        <p class="fichas-imagenes-ayuda">Todo personaje arranca en 8 en cada característica. Los bonos raciales se suman a la puntuación final de arriba, pero no cuentan como puntos de mejora repartidos.</p>
         <div class="fichas-atributos-grid">
           ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
             <div class="fichas-atributo-card fichas-atributo-card--mini">
               <small>${nombre}</small>
-              <div class="fichas-field"><label>Inicial</label>${campoNumero(`atributosBase.${id}`, p.atributosBase[id])}</div>
               <div class="fichas-field"><label>Racial</label>${campoNumero(`atributosRaciales.${id}`, p.atributosRaciales[id])}</div>
             </div>
           `).join("")}
