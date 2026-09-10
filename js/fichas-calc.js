@@ -20,11 +20,21 @@ function fichasCompetenciaTotal(personaje) {
   return fichasCompetenciaBase(personaje.identidad.nivelTotal) + Number(personaje.competenciaAjusteManual || 0);
 }
 
-/* Puntos de "Aumento de característica" del D&D base: 2 puntos cada 4
-   niveles (4, 8, 12...), sin tope. Las raciales NO salen de esta bolsa,
-   se llevan aparte (ver fichasPuntosRepartidos). */
-function fichasPuntosAsiDisponibles(nivelTotal) {
+/* Regla casera de esta campaña: 2 puntos por cada nivel ganado (empieza a
+   sumar en nivel 2, nadie gasta puntos de mejora todavía en nivel 1). */
+function fichasPuntosPorNivel(nivelTotal) {
+  return 2 * Math.max(0, Number(nivelTotal) - 1);
+}
+
+/* Aparte de la regla casera de arriba, la clase sola ya da 2 puntos extra
+   en cada nivel múltiplo de 4 (Mejora de característica del D&D base:
+   4, 8, 12...), sin tope de nivel. */
+function fichasPuntosMejoraClase(nivelTotal) {
   return 2 * Math.floor(Math.max(0, Number(nivelTotal) || 0) / 4);
+}
+
+function fichasPuntosDisponiblesTotal(nivelTotal) {
+  return fichasPuntosPorNivel(nivelTotal) + fichasPuntosMejoraClase(nivelTotal);
 }
 
 /* Cuánto de la puntuación actual de cada atributo viene de gastar puntos

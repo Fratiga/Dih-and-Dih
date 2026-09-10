@@ -334,8 +334,10 @@
       }
       case "lanzAtaque": return fichasSigno(fichasLanzamientoAtaque(p));
       case "lanzCD": return String(fichasLanzamientoCD(p));
-      case "puntosAsiDisponibles": return String(fichasPuntosAsiDisponibles(p.identidad.nivelTotal));
-      case "puntosAsiRepartidos": return String(fichasPuntosRepartidos(p));
+      case "puntosPorNivel": return String(fichasPuntosPorNivel(p.identidad.nivelTotal));
+      case "puntosMejoraClase": return String(fichasPuntosMejoraClase(p.identidad.nivelTotal));
+      case "puntosDisponibles": return String(fichasPuntosDisponiblesTotal(p.identidad.nivelTotal));
+      case "puntosRepartidos": return String(fichasPuntosRepartidos(p));
       default: return "";
     }
   }
@@ -439,7 +441,7 @@
             </div>
           `).join("")}
         </div>
-        <p class="fichas-puntos-info">Puntos de Aumento de característica disponibles (2 cada 4 niveles, sin tope): <strong data-calc="puntosAsiDisponibles">${fichasPuntosAsiDisponibles(p.identidad.nivelTotal)}</strong>. Repartidos hasta ahora (puntuación actual menos inicial y racial): <strong data-calc="puntosAsiRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+        <p class="fichas-puntos-info">Puntos disponibles: 2 por nivel (<span data-calc="puntosPorNivel">${fichasPuntosPorNivel(p.identidad.nivelTotal)}</span>) + 2 extra cada nivel múltiplo de 4 (<span data-calc="puntosMejoraClase">${fichasPuntosMejoraClase(p.identidad.nivelTotal)}</span>) = <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong> en total. Repartidos hasta ahora (puntuación actual menos inicial y racial): <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
       </div>
 
       <div class="fichas-fieldset">
