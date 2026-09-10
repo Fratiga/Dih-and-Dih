@@ -819,6 +819,17 @@ window.BUFON_DIALOGO = {
       completeDialogue: "side_b_falta_uno",
       next: "intro_reason_sin_recuerdo"
     },
+    bufon_side_b_falta_uno_impaciente: {
+      lineas: [
+        "Sigue faltando esa misma persona.",
+        "¿La escondiste? ¿La perdiste? ¿Nunca existió?",
+        "No me importa cuál. Encuéntrenla ya.",
+        "Me aburro rápido. Y cuando me aburro...",
+        "No pasa nada la verdad, solo me aburro"
+      ],
+      completeDialogue: "side_b_falta_uno_impaciente",
+      next: "intro_reason_sin_recuerdo"
+    },
     bufon_reconoce_ryn: {
       lineas: [
         "Se acerca tu invierno, ¿sabías?",
