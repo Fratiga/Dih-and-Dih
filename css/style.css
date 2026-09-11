@@ -2574,6 +2574,7 @@ body.has-mini-player { padding-bottom: 74px; }
   display: flex; align-items: center; justify-content: center;
   color: var(--muted); font-family: var(--font-heading), sans-serif; font-size: 1.4rem;
 }
+.fichas-retrato-vacio.hidden { display: none; }
 .fichas-encabezado-datos h2 { margin: 0; font-size: 1.3rem; }
 .fichas-encabezado-sub { margin: 2px 0 0; color: var(--muted); font-size: .85rem; }
 .fichas-encabezado-stats { display: flex; gap: 18px; }
