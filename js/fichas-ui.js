@@ -285,6 +285,11 @@
     cargarLista();
   });
 
+  // Una sola vez: #fichasTabsPaneles es fijo en el HTML, renderTabs() solo
+  // le reemplaza el innerHTML, así que la delegación de eventos no necesita
+  // (ni debe) volver a registrarse en cada render.
+  inicializarEventosTabs();
+
   /* ==========================================================================
      PEGATINAS — decoración libre de la página del personaje. Puramente
      visual (no entra en ningún cálculo): el jugador sube una imagen, la
@@ -440,6 +445,14 @@
   /* ==========================================================================
      TABS
   ========================================================================== */
+  // Solo cambia qué tab/panel tiene la clase "active" — a diferencia de
+  // simular un click() real, esto no mueve el foco ni dispara el scroll
+  // automático del navegador hacia el botón de la pestaña.
+  function activarTab(nombre) {
+    document.querySelectorAll(".fichas-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === nombre));
+    document.querySelectorAll(".fichas-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === nombre));
+  }
+
   function renderTabs() {
     document.getElementById("fichasTabsPaneles").innerHTML = [
       panelResumen(), panelCombate(), panelHabilidades(), panelRasgos(),
@@ -447,27 +460,18 @@
     ].join("");
 
     document.querySelectorAll(".fichas-tab").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.tab === "resumen");
       btn.onclick = () => {
-        document.querySelectorAll(".fichas-tab").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        document.querySelectorAll(".fichas-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === btn.dataset.tab));
+        activarTab(btn.dataset.tab);
         if (btn.dataset.tab === "roll20") renderRoll20Lista();
       };
     });
-    document.querySelectorAll(".fichas-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === "resumen"));
+    activarTab("resumen");
 
-    wirirBindingGenerico();
-    wirirRepetibles();
+    renderMacros();
     renderRoll20Lista();
   }
 
   /* --- Binding genérico: cualquier input/select/textarea con data-bind --- */
-  function wirirBindingGenerico() {
-    const cont = document.getElementById("fichasTabsPaneles");
-    cont.addEventListener("input", manejarCambioBinding);
-    cont.addEventListener("change", manejarCambioBinding);
-  }
   function manejarCambioBinding(e) {
     const el = e.target.closest("[data-bind]");
     if (!el) return;
@@ -1074,9 +1078,20 @@
      REPETIBLES: alta/baja de filas para ataques, hechizos, rasgos,
      objetos, clases extra, espacios de conjuro y macros. Todo pasa por
      acá vía delegación (un solo listener de click en el contenedor).
+
+     IMPORTANTE: esta delegación se registra UNA sola vez (ver
+     inicializarEventosTabs, más abajo) — #fichasTabsPaneles nunca se
+     destruye, solo se le reemplaza el innerHTML en cada renderTabs(), así
+     que volver a llamar addEventListener acá en cada render apilaría un
+     listener nuevo encima de los anteriores sin sacar los viejos: un
+     click terminaría disparando manejarAgregar/manejarQuitar tantas
+     veces como renders hubo, duplicando ataques/objetos por cada click.
   ========================================================================== */
-  function wirirRepetibles() {
+  function inicializarEventosTabs() {
     const cont = document.getElementById("fichasTabsPaneles");
+
+    cont.addEventListener("input", manejarCambioBinding);
+    cont.addEventListener("change", manejarCambioBinding);
 
     cont.addEventListener("click", e => {
       const addBtn = e.target.closest("[data-add]");
@@ -1111,8 +1126,6 @@
     // genérico (mismo contenedor, mismo evento, pero atajado antes).
     cont.addEventListener("input", manejarBindingDeArray, true);
     cont.addEventListener("change", manejarBindingDeArray, true);
-
-    renderMacros();
   }
 
   const ARRAYS_POR_PREFIJO = {
@@ -1158,10 +1171,12 @@
     if (tipo === "macro") p.macros.push({ id: fichasNuevoId(), nombre: "Nueva macro", formula: "1d20", modificadorFijo: 0, narrativa: "", tipoDano: "", modoTirada: "normal", notas: "", favorita: false });
 
     programarAutoguardado();
-    renderTabs();
-    // Vuelve al mismo tab en el que estaba, en vez de resetear a Resumen.
+    // Hay que leer la pestaña activa ANTES de renderTabs(): esa función
+    // resetea todo a "resumen" por defecto, así que leerla después
+    // siempre devolvía "resumen" pasara lo que pasara.
     const activo = document.querySelector(".fichas-tab.active")?.dataset.tab || "resumen";
-    document.querySelector(`.fichas-tab[data-tab="${activo}"]`)?.click();
+    renderTabs();
+    activarTab(activo);
   }
 
   function manejarQuitar(tipo, idOIndice) {
@@ -1177,7 +1192,7 @@
     programarAutoguardado();
     const activo = document.querySelector(".fichas-tab.active")?.dataset.tab || "resumen";
     renderTabs();
-    document.querySelector(`.fichas-tab[data-tab="${activo}"]`)?.click();
+    activarTab(activo);
   }
 
   /* ==========================================================================
@@ -1358,17 +1373,17 @@
       const sobra = Math.max(0, v - p.combate.pvTemp);
       p.combate.pvTemp = restante;
       p.combate.pvActual = Math.max(0, p.combate.pvActual - sobra);
-      programarAutoguardado(); renderTabs(); document.querySelector('.fichas-tab[data-tab="combate"]').click();
+      programarAutoguardado(); renderTabs(); activarTab("combate");
     }
     if (e.target.id === "fcBtnRecuperarPV") {
       const v = Number(document.getElementById("fcRecuperarPV").value) || 0;
       p.combate.pvActual = Math.min(p.combate.pvMax, p.combate.pvActual + v);
-      programarAutoguardado(); renderTabs(); document.querySelector('.fichas-tab[data-tab="combate"]').click();
+      programarAutoguardado(); renderTabs(); activarTab("combate");
     }
     if (e.target.id === "fcBtnTempPV") {
       const v = Number(document.getElementById("fcTempPV").value) || 0;
       p.combate.pvTemp = Math.max(0, p.combate.pvTemp + v);
-      programarAutoguardado(); renderTabs(); document.querySelector('.fichas-tab[data-tab="combate"]').click();
+      programarAutoguardado(); renderTabs(); activarTab("combate");
     }
     if (e.target.id === "fcBtnDescansoCorto" || e.target.id === "fcBtnDescansoLargo") {
       const tipo = e.target.id === "fcBtnDescansoCorto" ? "corto" : "largo";
@@ -1378,7 +1393,7 @@
         p.combate.dadosGolpe.actuales = p.combate.dadosGolpe.max;
         p.lanzamiento.espacios.forEach(esp => { esp.usados = 0; });
       }
-      programarAutoguardado(); renderTabs(); document.querySelector('.fichas-tab[data-tab="combate"]').click();
+      programarAutoguardado(); renderTabs(); activarTab("combate");
     }
     if (e.target.id === "fnImprimir") window.print();
     if (e.target.id === "fnExportarJson") {
