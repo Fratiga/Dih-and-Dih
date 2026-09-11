@@ -41,16 +41,24 @@ function fichasPuntosDisponiblesTotal(nivelTotal) {
 // sin excepción — no es un dato por personaje, así que no se guarda.
 const FICHAS_PUNTUACION_BASE = 8;
 
+// Compra por puntos estándar de D&D al crear el personaje: 27 puntos para
+// repartir entre las seis características, aparte de cualquier punto de
+// mejora ganado por nivel. Es una bolsa total (no por atributo), así que
+// se descuenta del bruto entero antes de contar lo repartido por nivel.
+const FICHAS_PUNTOS_CREACION = 27;
+
 /* Cuánto de la puntuación actual de cada atributo viene de gastar puntos
-   de mejora (todo lo que quede por encima del 8 inicial más la racial).
+   de mejora POR NIVEL (todo lo que quede por encima del 8 inicial más la
+   racial, descontando además los 27 de la compra por puntos de creación).
    Nunca resta de más: un atributo que bajó por debajo de su base
    (maldición, penalización) no genera puntos negativos. */
 function fichasPuntosRepartidos(personaje) {
-  return FICHAS_ATRIBUTOS.reduce((total, { id }) => {
+  const bruto = FICHAS_ATRIBUTOS.reduce((total, { id }) => {
     const actual = Number(personaje.atributos[id]) || 0;
     const racial = Number(personaje.atributosRaciales?.[id]) || 0;
     return total + Math.max(0, actual - FICHAS_PUNTUACION_BASE - racial);
   }, 0);
+  return Math.max(0, bruto - FICHAS_PUNTOS_CREACION);
 }
 
 /* Modificador final de un atributo: el de la puntuación + el ajuste manual

@@ -542,7 +542,7 @@
             </div>
           `).join("")}
         </div>
-        <p class="fichas-puntos-info">Puntos disponibles: 2 por nivel (<span data-calc="puntosPorNivel">${fichasPuntosPorNivel(p.identidad.nivelTotal)}</span>) + 2 extra cada nivel múltiplo de 4 (<span data-calc="puntosMejoraClase">${fichasPuntosMejoraClase(p.identidad.nivelTotal)}</span>) = <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong> en total. Repartidos hasta ahora (puntuación actual menos 8 de base y menos racial): <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+        <p class="fichas-puntos-info">Puntos disponibles: 2 por nivel (<span data-calc="puntosPorNivel">${fichasPuntosPorNivel(p.identidad.nivelTotal)}</span>) + 2 extra cada nivel múltiplo de 4 (<span data-calc="puntosMejoraClase">${fichasPuntosMejoraClase(p.identidad.nivelTotal)}</span>) = <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong> en total. Repartidos hasta ahora (puntuación actual menos 8 de base, menos racial y menos los 27 de la compra por puntos de creación): <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
       </div>
 
       <div class="fichas-fieldset">
