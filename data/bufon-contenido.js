@@ -344,32 +344,45 @@ window.BUFON_DIALOGO = {
     },
 
     // Variantes de "se agotó Lo que queda, todavía no hay fase 3" — ver
-    // elegirRetornoTemprano() en secreto.html, elige una al azar cada
-    // vez en vez de repetir siempre la misma. Sin next/eleccion a
-    // propósito, mismo patrón que bufon_retorno_generico.
+    // elegirRetornoTemprano() en secreto.html: las muestra en orden, una
+    // por visita, hasta agotar las 4 (completeDialogue marca cuál ya
+    // vio). Agotadas las 4, ya no repite ninguna — de ahí en más cae en
+    // bufon_fase2_toque_silencioso, para no sonar disco rayado
+    // explicando lo mismo cada vez que solo viene a tocar y nada más.
     bufon_fase2_agotada_1: {
       lineas: [
         "Aún tienen que avanzar un poco más si quieren seguir hablando conmigo.",
         "Lo siento. Son las reglas."
-      ]
+      ],
+      completeDialogue: "fase2_agotada_1"
     },
     bufon_fase2_agotada_2: {
       lineas: [
         "Todavía no.",
         "Esa parte tiene que pasar allá afuera primero. Acá dentro no cuenta."
-      ]
+      ],
+      completeDialogue: "fase2_agotada_2"
     },
     bufon_fase2_agotada_3: {
       lineas: [
         "Esto no lo decido yo.",
         "Vivan un poco más la historia. Después seguimos."
-      ]
+      ],
+      completeDialogue: "fase2_agotada_3"
     },
     bufon_fase2_agotada_4: {
       lineas: [
         "Las reglas piden material nuevo.",
         "Y ustedes todavía no me dieron nada."
-      ]
+      ],
+      completeDialogue: "fase2_agotada_4"
+    },
+    // Ya explicó las reglas las 4 veces que las tenía escritas — de acá
+    // en más, tocar sin nada nuevo no amerita una excusa distinta cada
+    // vez. Silencio real, no relleno: ya dijo todo lo que tenía que
+    // decir sobre esto.
+    bufon_fase2_toque_silencioso: {
+      lineas: ["..."]
     },
 
     /* =====================================================================
