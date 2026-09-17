@@ -116,6 +116,7 @@
         <button type="button" class="admin-tab active" data-tab="peticiones">Peticiones <span id="adminPeticionesCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="cuentas">Cuentas <span id="adminCuentasCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="bufon">Progreso del Bufón <span id="adminBufonCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="fanarts">Fanarts <span id="adminFanartsCount" class="admin-tab-badge"></span></button>
       </div>
 
       <section id="adminPanelPeticiones" class="admin-panel active">
@@ -133,6 +134,13 @@
       <section id="adminPanelBufon" class="admin-panel">
         <p id="adminBufonBanner" class="admin-bufon-banner"></p>
         <div id="adminBufonLista" class="admin-bufon-lista">
+          <p class="admin-vacio">Cargando...</p>
+        </div>
+      </section>
+
+      <section id="adminPanelFanarts" class="admin-panel">
+        <p class="admin-bufon-banner">Sin marcar = compartido, lo ve todo el mundo. Marcado A o B, solo ese Side (Admin siempre ve todo).</p>
+        <div id="adminFanartsLista" class="admin-fanarts-grid">
           <p class="admin-vacio">Cargando...</p>
         </div>
       </section>
@@ -162,9 +170,11 @@
   <script src="js/modal.js?v=20260907zb"></script>
   <script src="data/jumpscare.js?v=20260907zb"></script>
   <script src="data/contrasenas.js?v=20260907zb"></script>
+  <script src="data/fanarts.js?v=20260907zb"></script>
   <script src="js/fichas-supabase.js?v=20260907zb"></script>
   <script src="js/peticiones-supabase.js?v=20260907zb"></script>
   <script src="js/bufon-supabase.js?v=20260907zb"></script>
+  <script src="js/fanarts-supabase.js?v=20260907zb"></script>
   <script src="js/lado.js?v=20260907zb"></script>
   <script type="importmap">
   {

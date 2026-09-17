@@ -2848,6 +2848,37 @@ body.has-mini-player { padding-bottom: 74px; }
 .admin-cuenta-peligro { color: #c98b8b; border-color: #6b3a3a; }
 .admin-cuenta-peligro:hover { border-color: #a56a6a; color: #e0a0a0; }
 
+.admin-fanarts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.admin-fanart-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.admin-fanart-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+.admin-fanart-nombre {
+  font-size: .72rem;
+  color: var(--muted);
+  padding: 6px 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-fanart-side {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px 8px;
+}
+.admin-fanart-side .admin-side-btn { flex: 1; padding: 5px 4px; font-size: .72rem; text-align: center; }
+
 .admin-bufon-banner {
   color: var(--muted);
   font-size: .85rem;

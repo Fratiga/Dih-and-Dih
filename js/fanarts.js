@@ -1,8 +1,33 @@
-const fanartState = { fanarts: window.FANARTS || [], lightboxIndex: -1 };
+const fanartTodos = (window.FANARTS || [])
+  .slice()
+  // Orden alfabético (insensible a mayúsculas/acentos) por el nombre legible,
+  // así no importa el orden en que las imágenes se agreguen a data/fanarts.js.
+  .sort((a, b) => prettyName(a).localeCompare(prettyName(b), "es", { sensitivity: "base" }));
 
-// Orden alfabético (insensible a mayúsculas/acentos) por el nombre legible,
-// así no importa el orden en que las imágenes se agreguen a data/fanarts.js.
-fanartState.fanarts.sort((a, b) => prettyName(a).localeCompare(prettyName(b), "es", { sensitivity: "base" }));
+const fanartState = { fanarts: fanartTodos, lightboxIndex: -1 };
+
+/* Filtra por Side apenas se sabe el reparto real (ver
+   scratchpad/fanarts_side.sql) — sin fila para un src, sigue siendo
+   compartido, visible para todos, igual que antes de que existiera
+   este reparto. Admin ve siempre todo, sin filtrar (esAdmin() en
+   js/lado.js). Arranca mostrando la lista completa sin esperar a la
+   red, y la corrige en cuanto el reparto real llega — así no hay
+   demora en la primera pintada. */
+async function aplicarRepartoFanarts() {
+  if (typeof esAdmin === "function" && esAdmin()) return;
+  try {
+    const reparto = await fanartsCargarSides();
+    const miLado = (typeof ladoActual === "function") ? ladoActual() : null;
+    fanartState.fanarts = fanartTodos.filter(src => {
+      const side = reparto[src];
+      return !side || side === miLado;
+    });
+    renderFanarts();
+  } catch (err) {
+    // Silencioso a propósito, igual que el resto de las llamadas a
+    // Supabase — si falla, todos siguen viendo la lista completa.
+  }
+}
 
 function renderFanarts() {
   const grid = document.getElementById("fanartGrid");
@@ -66,3 +91,4 @@ document.addEventListener("keydown", e => {
 });
 
 renderFanarts();
+aplicarRepartoFanarts();

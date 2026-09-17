@@ -326,6 +326,50 @@
     }
   }
 
+  // Sin fila en el reparto (side === undefined) = "Ambos" = compartido,
+  // lo ve todo el mundo. Mismo criterio que aplicarRepartoFanarts() en
+  // js/fanarts.js.
+  function pintarFanartsAdmin(fanarts, reparto) {
+    const cont = document.getElementById("adminFanartsLista");
+    const count = document.getElementById("adminFanartsCount");
+    count.textContent = `${fanarts.length} imagen${fanarts.length === 1 ? "" : "es"}`;
+
+    if (!fanarts.length) {
+      cont.innerHTML = `<p class="admin-vacio">No hay fanarts todavía.</p>`;
+      return;
+    }
+
+    cont.innerHTML = fanarts.map(src => {
+      const side = reparto[src];
+      return `
+        <div class="admin-fanart-card" data-src="${escaparHtml(src)}">
+          <img src="${src}" alt="${escaparHtml(prettyName(src))}" loading="lazy">
+          <div class="admin-fanart-nombre">${escaparHtml(prettyName(src))}</div>
+          <div class="admin-fanart-side">
+            <button type="button" class="admin-side-btn ${!side ? "is-active" : ""}" data-side="">Ambos</button>
+            <button type="button" class="admin-side-btn ${side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
+            <button type="button" class="admin-side-btn ${side === "B" ? "is-active" : ""}" data-side="B">${LADO_NOMBRES.B}</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    cont.querySelectorAll("[data-side]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const card = btn.closest("[data-src]");
+        const nuevoSide = btn.dataset.side || null;
+        const anterior = Array.from(card.querySelectorAll("[data-side]")).find(b => b.classList.contains("is-active"));
+        card.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b === btn));
+        try {
+          await fanartsAdminSetSide(card.dataset.src, nuevoSide);
+        } catch (err) {
+          card.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b === anterior));
+          alert("No se pudo guardar. Prueba de nuevo.");
+        }
+      });
+    });
+  }
+
   initAdminGate(async () => {
     const peticionesEl = document.getElementById("adminPeticionesLista");
     const cuentasEl = document.getElementById("adminCuentasLista");
@@ -349,6 +393,16 @@
     } catch (e) {
       console.error("[admin] Progreso del Bufón falló:", e);
       bufonEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin-bufon.sql en Supabase?</p>`;
+    }
+
+    // Independiente también: requiere scratchpad/fanarts_side.sql.
+    const fanartsEl = document.getElementById("adminFanartsLista");
+    try {
+      const reparto = await fanartsCargarSides();
+      pintarFanartsAdmin(window.FANARTS || [], reparto);
+    } catch (e) {
+      console.error("[admin] Reparto de fanarts falló:", e);
+      fanartsEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/fanarts_side.sql en Supabase?</p>`;
     }
   });
 
