@@ -1165,23 +1165,53 @@ window.BUFON_DIALOGO = {
         ================================================================= */
         {
           id: "side_b2_ledros", texto: "¿Qué es esa armadura?",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("met_ledros"),
+          // Una vez vista la intro, el botón se esconde de nuevo si ya
+          // no queda ninguna pregunta pendiente en ledros_hub — así no
+          // invita a entrar a un submenú vacío (solo "Ya fue, sigamos
+          // con otra cosa.") una y otra vez. Se recalcula en cada
+          // render, así que si más adelante se desbloquea la pregunta
+          // exclusiva de El Rostro o la de Hooey/Osses, el botón vuelve
+          // a aparecer solo.
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("met_ledros"))) return false;
+            if (!ctx.hasCompletedDialogue("ledros_intro_seen")) return true;
+            const rostroDisponible = ctx.voiceStage("rostro") >= 3 && !ctx.hasCompletedDialogue("ledros_rostro_hombre");
+            const osseshooeyDisponible = ctx.hasCompletedDialogue("hubert_intro_seen") && !ctx.hasCompletedDialogue("ledros_osses_hooey");
+            const preguntasBaseHechas = ["ledros_sigue_siendo", "ledros_ya_no_persona", "ledros_sonrisa", "ledros_rompio_juramento", "ledros_adam"]
+              .every(id => ctx.hasCompletedDialogue(id));
+            return !preguntasBaseHechas || rostroDisponible || osseshooeyDisponible;
+          },
           next: ctx => ctx.hasCompletedDialogue("ledros_intro_seen") ? "ledros_hub" : "bufon_ledros_intro"
         },
         {
           id: "side_b2_comerciante", texto: "¿Conoces al tipo de anoche?",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("chose_mask"),
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("chose_mask"))) return false;
+            if (!ctx.hasCompletedDialogue("comerciante_intro_seen")) return true;
+            return !["comerciante_por_que", "comerciante_contraste", "comerciante_mascara"]
+              .every(id => ctx.hasCompletedDialogue(id));
+          },
           next: ctx => ctx.hasCompletedDialogue("comerciante_intro_seen") ? "comerciante_hub" : "bufon_comerciante_intro"
         },
         {
           id: "side_b2_hubert", texto: "Por cierto. Hubert Magnolia.",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("hubert_magnolia_named")
-            && ctx.playerNameMatches("Hooey Magoo", "Hooey", "Magoo", "Joan", "mahooey"),
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("hubert_magnolia_named")
+              && ctx.playerNameMatches("Hooey Magoo", "Hooey", "Magoo", "Joan", "mahooey"))) return false;
+            if (!ctx.hasCompletedDialogue("hubert_intro_seen")) return true;
+            return !["hubert_quien_pregunta", "hubert_quien_es", "hubert_hooey_es_hooey"]
+              .every(id => ctx.hasCompletedDialogue(id));
+          },
           next: ctx => ctx.hasCompletedDialogue("hubert_intro_seen") ? "hubert_hub" : "bufon_hubert_intro"
         },
         {
           id: "side_b2_laia", texto: "¿Qué fue eso con el prisionero de los calabozos?",
-          visible: ctx => ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("conocio_isa"),
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("conocio_isa"))) return false;
+            if (!ctx.hasCompletedDialogue("laia_intro_seen")) return true;
+            return !["laia_quien_es", "laia_incomodo", "laia_enmascarado"]
+              .every(id => ctx.hasCompletedDialogue(id));
+          },
           next: ctx => ctx.hasCompletedDialogue("laia_intro_seen") ? "laia_hub" : "bufon_laia_intro"
         }
         // Eledar/Cassius/Torvrena/Ryn/rumores del juicio ya NO son botones
