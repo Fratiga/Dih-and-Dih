@@ -343,6 +343,35 @@ window.BUFON_DIALOGO = {
       ]
     },
 
+    // Variantes de "se agotó Lo que queda, todavía no hay fase 3" — ver
+    // elegirRetornoTemprano() en secreto.html, elige una al azar cada
+    // vez en vez de repetir siempre la misma. Sin next/eleccion a
+    // propósito, mismo patrón que bufon_retorno_generico.
+    bufon_fase2_agotada_1: {
+      lineas: [
+        "Aún tienen que avanzar un poco más si quieren seguir hablando conmigo.",
+        "Lo siento. Son las reglas."
+      ]
+    },
+    bufon_fase2_agotada_2: {
+      lineas: [
+        "Todavía no.",
+        "Esa parte tiene que pasar allá afuera primero. Acá dentro no cuenta."
+      ]
+    },
+    bufon_fase2_agotada_3: {
+      lineas: [
+        "Esto no lo decido yo.",
+        "Vivan un poco más la historia. Después seguimos."
+      ]
+    },
+    bufon_fase2_agotada_4: {
+      lineas: [
+        "Las reglas piden material nuevo.",
+        "Y ustedes todavía no me dieron nada."
+      ]
+    },
+
     /* =====================================================================
        RECUERDOS ESPONTÁNEOS — el Bufón los trae él mismo (ver
        RECUERDOS_DISPONIBLES en secreto.html), nunca son preguntas que el
@@ -504,6 +533,15 @@ window.BUFON_DIALOGO = {
         "No sé dónde está la línea. Nadie parece tenerla muy clara, la verdad."
       ],
       completeDialogue: "ledros_ya_no_persona",
+      eleccion: "ledros_hub"
+    },
+    bufon_ledros_no_se: {
+      lineas: [
+        "Tampoco yo, para ser sincero.",
+        "Llevo más tiempo que tú dándole vueltas y no llegué a nada mejor.",
+        "Puedes cambiar de opinión después. Yo sigo aquí."
+      ],
+      completeDialogue: "ledros_no_se",
       eleccion: "ledros_hub"
     },
     bufon_ledros_sonrisa: {
@@ -1177,10 +1215,11 @@ window.BUFON_DIALOGO = {
             if (!ctx.hasCompletedDialogue("ledros_intro_seen")) return true;
             const rostroDisponible = ctx.voiceStage("rostro") >= 3 && !ctx.hasCompletedDialogue("ledros_rostro_hombre");
             const osseshooeyDisponible = ctx.hasCompletedDialogue("hubert_intro_seen") && !ctx.hasCompletedDialogue("ledros_osses_hooey");
-            // "sigue_siendo"/"ya_no_persona" son mutuamente excluyentes
-            // (ver ledros_hub) — alguna de las dos, no las dos, cuenta
-            // como "ya eligió postura".
-            const posturaElegida = ctx.hasCompletedDialogue("ledros_sigue_siendo") || ctx.hasCompletedDialogue("ledros_ya_no_persona");
+            // "sigue_siendo"/"ya_no_persona"/"no_se" son mutuamente
+            // excluyentes entre las dos primeras (ver ledros_hub) — pero
+            // cualquiera de las tres, incluida la neutral, cuenta como
+            // "ya resolvió el tema" para poder cerrar el pilar.
+            const posturaElegida = ctx.hasCompletedDialogue("ledros_sigue_siendo") || ctx.hasCompletedDialogue("ledros_ya_no_persona") || ctx.hasCompletedDialogue("ledros_no_se");
             const preguntasBaseHechas = posturaElegida
               && ["ledros_sonrisa", "ledros_rompio_juramento", "ledros_adam"].every(id => ctx.hasCompletedDialogue(id));
             return !preguntasBaseHechas || rostroDisponible || osseshooeyDisponible;
@@ -1311,6 +1350,15 @@ window.BUFON_DIALOGO = {
         {
           id: "ledros_ya_no_persona", texto: "Eso ya no es una persona.", next: "bufon_ledros_ya_no_persona",
           visible: ctx => !ctx.hasCompletedDialogue("ledros_ya_no_persona") && !ctx.hasCompletedDialogue("ledros_sigue_siendo")
+        },
+        // Escape a propósito: nadie debería tener que fingir una postura
+        // que no tiene solo para poder cerrar el tema. Esta NO es
+        // mutuamente excluyente con las dos de arriba — elegirla no las
+        // esconde, así que siempre se puede volver después y sí tomar
+        // partido si cambia de opinión.
+        {
+          id: "ledros_no_se", texto: "No sé qué pensar, la verdad.", next: "bufon_ledros_no_se",
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_no_se") && !ctx.hasCompletedDialogue("ledros_sigue_siendo") && !ctx.hasCompletedDialogue("ledros_ya_no_persona")
         },
         {
           id: "ledros_sonrisa", texto: "¿Cómo era Ledros? De antes, digo.", next: "bufon_ledros_sonrisa",
