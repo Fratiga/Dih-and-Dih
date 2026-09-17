@@ -31,108 +31,117 @@ window.BUFON_NOMBRES_PERSONAJES = (() => {
   function agregar(alias, lineas) {
     alias.forEach(a => { tabla[a] = lineas; });
   }
+  // Igual criterio que bufonAlias() en secreto.html: no es seguridad
+  // real, solo evita que el roster completo de NPCs (y por qué IDs
+  // quedan afuera) se lea a simple vista con "Ver código fuente".
+  function aliasesDe(b64) {
+    // atob() decodifica a bytes crudos, no a UTF-8 — sin TextDecoder,
+    // las tildes ("máscara", "príncipe", "baños") quedan corruptas.
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes).split(",");
+  }
 
-  agregar(["adam", "adam kovacs", "adam klasrom"], [
+  agregar(aliasesDe("YWRhbSxhZGFtIGtvdmFjcyxhZGFtIGtsYXNyb20="), [
     "No me gustan las mentiras.",
     "Adam no es el tipo de persona que soñaría con payasos.",
     "Ya le gustaría."
   ]);
-  agregar(["bull"], [
+  agregar(aliasesDe("YnVsbA=="), [
     "Bull no habla con nadie que no le deba dinero primero.",
     "Tú no me debes nada. Todavía."
   ]);
-  agregar(["garra"], [
+  agregar(aliasesDe("Z2FycmE="), [
     "Garra no tiene paciencia ni para esto.",
     "Ya te habría echado de la sala."
   ]);
-  agregar(["baraja"], [
+  agregar(aliasesDe("YmFyYWph"), [
     "Baraja nunca entra primero a ningún lado.",
     "Tú sí. Eso ya te delata."
   ]);
-  agregar(["ocevat"], [
+  agregar(aliasesDe("b2NldmF0"), [
     "Ocevat está muerto.",
     "Con todo respeto, se nota bastante que tú no."
   ]);
-  agregar(["verdam"], [
+  agregar(aliasesDe("dmVyZGFt"), [
     "Verdam no habla con nadie. Ni siquiera contigo.",
     "Y menos te diría dónde está."
   ]);
-  agregar(["eklino"], [
+  agregar(aliasesDe("ZWtsaW5v"), [
     "Eklino murió defendiendo un refugio que ya no existe.",
     "Tú, en cambio, estás vivo y mintiéndome."
   ]);
-  agregar(["coach"], [
+  agregar(aliasesDe("Y29hY2g="), [
     "Coach murió antes de terminar su encargo.",
     "Tú ya terminaste el tuyo. Mentirme."
   ]);
-  agregar(["prisionero enmascarado", "el enmascarado", "prisionero de la mascara", "prisionero de la máscara"], [
+  agregar(aliasesDe("cHJpc2lvbmVybyBlbm1hc2NhcmFkbyxlbCBlbm1hc2NhcmFkbyxwcmlzaW9uZXJvIGRlIGxhIG1hc2NhcmEscHJpc2lvbmVybyBkZSBsYSBtw6FzY2FyYQ=="), [
     "Nadie sabe quién hay debajo de esa máscara.",
     "Tú tampoco, por lo visto."
   ]);
-  agregar(["sunny", "hoare", "sunny y hoare"], [
+  agregar(aliasesDe("c3VubnksaG9hcmUsc3VubnkgeSBob2FyZQ=="), [
     "Sunny y Hoare siguen huyendo de Kigan.",
     "No tienen tiempo para esto. Tú, evidentemente, sí."
   ]);
-  agregar(["sett"], [
+  agregar(aliasesDe("c2V0dA=="), [
     "Sett está en Wolfmere, esperando volver a ver a alguien.",
     "No a ti."
   ]);
-  agregar(["isa"], [
+  agregar(aliasesDe("aXNh"), [
     "Isa se pasa el día recordándole a todo el mundo lo guapo que es.",
     "Tú ni siquiera lo intentaste."
   ]);
-  agregar(["leonard", "principe leonard", "príncipe leonard", "leonard goldenside"], [
+  agregar(aliasesDe("bGVvbmFyZCxwcmluY2lwZSBsZW9uYXJkLHByw61uY2lwZSBsZW9uYXJkLGxlb25hcmQgZ29sZGVuc2lkZQ=="), [
     "Un príncipe no necesita registrarse en nada.",
     "Eso ya te delata bastante."
   ]);
-  agregar(["julius", "rey julius", "julius goldenside", "rey julius goldenside"], [
+  agregar(aliasesDe("anVsaXVzLHJleSBqdWxpdXMsanVsaXVzIGdvbGRlbnNpZGUscmV5IGp1bGl1cyBnb2xkZW5zaWRl"), [
     "El rey no tiene paciencia para juicios largos.",
     "Y esto, ya de por sí, se está poniendo largo."
   ]);
-  agregar(["gareth"], [
+  agregar(aliasesDe("Z2FyZXRo"), [
     "Gareth no le debe nada a nadie.",
     "Y definitivamente no te prestaría el nombre."
   ]);
-  agregar(["torvrena"], [
+  agregar(aliasesDe("dG9ydnJlbmE="), [
     "Torvrena cobra por adelantado y no habla de más.",
     "Tú, en cambio, hablaste de más. Ahí está el problema."
   ]);
-  agregar(["billy"], [
+  agregar(aliasesDe("YmlsbHk="), [
     "Billy sigue dolido por cómo terminó esa pelea en Kigan.",
     "No tiene ánimo para prestarle el nombre a nadie."
   ]);
-  agregar(["voss"], [
+  agregar(aliasesDe("dm9zcw=="), [
     "Voss ya perdió una pelea este mes.",
     "No va a perder también el nombre."
   ]);
-  agregar(["victor"], [
+  agregar(aliasesDe("dmljdG9y"), [
     "Victor no aprende. Pero tampoco presta su nombre."
   ]);
-  agregar(["desconocido de los baños", "desconocido de los banos", "el desconocido"], [
+  agregar(aliasesDe("ZGVzY29ub2NpZG8gZGUgbG9zIGJhw7FvcyxkZXNjb25vY2lkbyBkZSBsb3MgYmFub3MsZWwgZGVzY29ub2NpZG8="), [
     "Ni él mismo dice quién es en realidad.",
     "Mal ejemplo para copiar."
   ]);
-  agregar(["rojo"], [
+  agregar(aliasesDe("cm9qbw=="), [
     "Rojo ya se autoproclamó líder de todo lo que se le ocurrió.",
     "El nombre también, seguramente. Pero no es tuyo."
   ]);
-  agregar(["verde"], [
+  agregar(aliasesDe("dmVyZGU="), [
     "Verde roba cosas por la espalda.",
     "El nombre lo intentaste robar de frente. Mal instinto."
   ]);
-  agregar(["morado"], [
+  agregar(aliasesDe("bW9yYWRv"), [
     "Morado se especializa en que nadie termine de hacer lo que estaba haciendo.",
     "Esto tampoco lo vas a terminar."
   ]);
-  agregar(["amarillo"], [
+  agregar(aliasesDe("YW1hcmlsbG8="), [
     "Amarillo no entiende palabras difíciles.",
     "Pero entiende perfecto cuando alguien intenta algo raro. Como esto."
   ]);
-  agregar(["azul"], [
+  agregar(aliasesDe("YXp1bA=="), [
     "Azul nunca ataca directo. Prefiere estorbar.",
     "Esto que intentaste es puro estorbo. Encaja, al menos."
   ]);
-  agregar(["gris"], [
+  agregar(aliasesDe("Z3Jpcw=="), [
     "Gris es el único de esos seis que piensa antes de actuar.",
     "A ti se te ocurrió esto sin pensar nada. No califica."
   ]);

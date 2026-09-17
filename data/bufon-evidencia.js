@@ -15,31 +15,27 @@
    choice_id no está en esta tabla, vale 0 automáticamente — no hace falta
    listarlo con weight 0.
 ============================================================================= */
-window.BUFON_EVIDENCIA = {
-  // memoryGroup: pet_rescue — cría de Bestia Trémula (A) vs. grifón (B),
-  // contrabandeada por Las Comadrejas en la Taberna del Gigante.
-  pet_bestia_tremula: { side: "A", weight: 4, memoryGroup: "pet_rescue" },
-  pet_grifon:         { side: "B", weight: 4, memoryGroup: "pet_rescue" },
-  pet_como_un_gato:   { side: "A", weight: 2, memoryGroup: "pet_rescue" },
-
-  // memoryGroup: gareth_relationship — en A, Gareth les debe un favor por
-  // haberlo ayudado antes contra una Bestia Trémula adulta. En B es solo
-  // el dueño del lugar, sin esa historia en común.
-  gareth_nos_debe:     { side: "A", weight: 4, memoryGroup: "gareth_relationship" },
-  gareth_no_debe_nada: { side: "B", weight: 2, memoryGroup: "gareth_relationship" },
-
-  // memoryGroup: dragon_first_wound — primera herida real al dragón, en el
-  // Castillo: usar a Orina, el paladín goblin, como proyectil (A) vs.
-  // cargar una vieja balista de asedio en la atalaya (B).
-  dragon_proyectil: { side: "A", weight: 4, memoryGroup: "dragon_first_wound" },
-  dragon_balista:    { side: "B", weight: 4, memoryGroup: "dragon_first_wound" },
-
-  // memoryGroup: post_refuge_decision — después de la masacre del refugio,
-  // A queda fugitivo (Verdam pone recompensa por ellos); B se entrega y
-  // termina esperando juicio del rey Julius.
-  refuge_huyeron:    { side: "A", weight: 4, memoryGroup: "post_refuge_decision" },
-  refuge_entregaron: { side: "B", weight: 4, memoryGroup: "post_refuge_decision" }
-};
+// Ofuscado a propósito (no es seguridad real, solo evita que alguien
+// lea de un vistazo con "Ver código fuente" exactamente qué respuesta
+// prueba cada Side — ver el mismo criterio en bufonAlias() de
+// secreto.html). Grupos, para referencia de quien edite esto:
+//   pet_rescue            — cría de Bestia Trémula (A) vs. grifón (B),
+//                           contrabandeada por Las Comadrejas.
+//   gareth_relationship   — en A, Gareth debe un favor por una Bestia
+//                           Trémula adulta; en B es solo el dueño del
+//                           lugar, sin esa historia en común.
+//   dragon_first_wound    — primera herida real al dragón: usar a
+//                           Orina como proyectil (A) vs. cargar una
+//                           vieja balista de asedio (B).
+//   post_refuge_decision  — tras la masacre del refugio, A queda
+//                           fugitivo; B se entrega y espera juicio.
+window.BUFON_EVIDENCIA = JSON.parse(
+  (() => {
+    const b64 = "eyJwZXRfYmVzdGlhX3RyZW11bGEiOnsic2lkZSI6IkEiLCJ3ZWlnaHQiOjQsIm1lbW9yeUdyb3VwIjoicGV0X3Jlc2N1ZSJ9LCJwZXRfZ3JpZm9uIjp7InNpZGUiOiJCIiwid2VpZ2h0Ijo0LCJtZW1vcnlHcm91cCI6InBldF9yZXNjdWUifSwicGV0X2NvbW9fdW5fZ2F0byI6eyJzaWRlIjoiQSIsIndlaWdodCI6MiwibWVtb3J5R3JvdXAiOiJwZXRfcmVzY3VlIn0sImdhcmV0aF9ub3NfZGViZSI6eyJzaWRlIjoiQSIsIndlaWdodCI6NCwibWVtb3J5R3JvdXAiOiJnYXJldGhfcmVsYXRpb25zaGlwIn0sImdhcmV0aF9ub19kZWJlX25hZGEiOnsic2lkZSI6IkIiLCJ3ZWlnaHQiOjIsIm1lbW9yeUdyb3VwIjoiZ2FyZXRoX3JlbGF0aW9uc2hpcCJ9LCJkcmFnb25fcHJveWVjdGlsIjp7InNpZGUiOiJBIiwid2VpZ2h0Ijo0LCJtZW1vcnlHcm91cCI6ImRyYWdvbl9maXJzdF93b3VuZCJ9LCJkcmFnb25fYmFsaXN0YSI6eyJzaWRlIjoiQiIsIndlaWdodCI6NCwibWVtb3J5R3JvdXAiOiJkcmFnb25fZmlyc3Rfd291bmQifSwicmVmdWdlX2h1eWVyb24iOnsic2lkZSI6IkEiLCJ3ZWlnaHQiOjQsIm1lbW9yeUdyb3VwIjoicG9zdF9yZWZ1Z2VfZGVjaXNpb24ifSwicmVmdWdlX2VudHJlZ2Fyb24iOnsic2lkZSI6IkIiLCJ3ZWlnaHQiOjQsIm1lbW9yeUdyb3VwIjoicG9zdF9yZWZ1Z2VfZGVjaXNpb24ifX0=";
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  })()
+);
 
 /* =============================================================================
    HECHOS DE CAMPAÑA YA VIVIDOS EN MESA, por Side.
