@@ -1177,8 +1177,12 @@ window.BUFON_DIALOGO = {
             if (!ctx.hasCompletedDialogue("ledros_intro_seen")) return true;
             const rostroDisponible = ctx.voiceStage("rostro") >= 3 && !ctx.hasCompletedDialogue("ledros_rostro_hombre");
             const osseshooeyDisponible = ctx.hasCompletedDialogue("hubert_intro_seen") && !ctx.hasCompletedDialogue("ledros_osses_hooey");
-            const preguntasBaseHechas = ["ledros_sigue_siendo", "ledros_ya_no_persona", "ledros_sonrisa", "ledros_rompio_juramento", "ledros_adam"]
-              .every(id => ctx.hasCompletedDialogue(id));
+            // "sigue_siendo"/"ya_no_persona" son mutuamente excluyentes
+            // (ver ledros_hub) — alguna de las dos, no las dos, cuenta
+            // como "ya eligió postura".
+            const posturaElegida = ctx.hasCompletedDialogue("ledros_sigue_siendo") || ctx.hasCompletedDialogue("ledros_ya_no_persona");
+            const preguntasBaseHechas = posturaElegida
+              && ["ledros_sonrisa", "ledros_rompio_juramento", "ledros_adam"].every(id => ctx.hasCompletedDialogue(id));
             return !preguntasBaseHechas || rostroDisponible || osseshooeyDisponible;
           },
           next: ctx => ctx.hasCompletedDialogue("ledros_intro_seen") ? "ledros_hub" : "bufon_ledros_intro"
@@ -1207,6 +1211,11 @@ window.BUFON_DIALOGO = {
         {
           id: "side_b2_laia", texto: "¿Qué fue eso con el prisionero de los calabozos?",
           visible: ctx => {
+            // "conocio_isa" es un hecho de MESA (todo Side B), pero
+            // solo la jugadora de Laia habló de verdad con él — el
+            // resto solo lo vio de lejos. Igual que Hubert Magnolia es
+            // exclusivo de Hooey Magoo, este tema es exclusivo de ella.
+            if (!ctx.playerNameMatches("laia", "nuni", "nonie")) return false;
             if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("conocio_isa"))) return false;
             if (!ctx.hasCompletedDialogue("laia_intro_seen")) return true;
             return !["laia_quien_es", "laia_incomodo", "laia_enmascarado"]
@@ -1291,13 +1300,17 @@ window.BUFON_DIALOGO = {
     ===================================================================== */
     ledros_hub: {
       opciones: [
+        // Mutuamente excluyentes: son dos posturas opuestas sobre lo
+        // mismo, no dos preguntas distintas. Elegir una retira la otra
+        // para siempre (ver preguntasBaseHechas en side_b2_ledros, que
+        // cuenta cualquiera de las dos como "la postura ya elegida").
         {
           id: "ledros_sigue_siendo", texto: "Sigue siendo Ledros.", next: "bufon_ledros_sigue_siendo",
-          visible: ctx => !ctx.hasCompletedDialogue("ledros_sigue_siendo")
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_sigue_siendo") && !ctx.hasCompletedDialogue("ledros_ya_no_persona")
         },
         {
           id: "ledros_ya_no_persona", texto: "Eso ya no es una persona.", next: "bufon_ledros_ya_no_persona",
-          visible: ctx => !ctx.hasCompletedDialogue("ledros_ya_no_persona")
+          visible: ctx => !ctx.hasCompletedDialogue("ledros_ya_no_persona") && !ctx.hasCompletedDialogue("ledros_sigue_siendo")
         },
         {
           id: "ledros_sonrisa", texto: "¿Cómo era Ledros? De antes, digo.", next: "bufon_ledros_sonrisa",
