@@ -201,17 +201,27 @@ async function bufonRegistrarNombre(nombre) {
    que bufonRegistrar. Requiere scratchpad/bufon_toques_puerta.sql.
 
    Después de cada toque pregunta el total propio (vía RPC, no se puede
-   leer la tabla) para detectar el toque número UMBRAL_TOQUES_FINAL exacto
-   y disparar el chiste de bufonToquePuertaFinal() si secreto.html lo
-   definió — no pasa nada si no existe (ninguna otra página lo necesita). */
+   leer la tabla) para detectar cuándo se cruza UMBRAL_TOQUES_FINAL y
+   disparar el chiste de bufonToquePuertaFinal() si secreto.html lo
+   definió — no pasa nada si no existe (ninguna otra página lo necesita).
+
+   >= en vez de === a propósito: el modo farmeo (ver estaTotalmenteAgotado
+   en secreto.html) deja clickear muy rápido, y esta función es async y
+   no se espera entre clicks — varios "insert + contar" pueden quedar en
+   vuelo al mismo tiempo, así que el conteo puede saltar de 48 a 52 entre
+   dos respuestas sin que ninguna vea el 50 justo. toqueFinalYaDisparado
+   evita que el chiste se dispare más de una vez si dos respuestas cruzan
+   el umbral casi juntas. */
 const UMBRAL_TOQUES_FINAL = 50;
+let toqueFinalYaDisparado = false;
 async function bufonRegistrarToquePuerta() {
   try {
     const supabase = await bufonCliente();
     const playerId = bufonPlayerId();
     await supabase.from("bufon_puerta_denegada").insert({ player_id: playerId });
     const { data: total } = await supabase.rpc("bufon_contar_toques_puerta", { p_player_id: playerId });
-    if (Number(total) === UMBRAL_TOQUES_FINAL && typeof window.bufonToquePuertaFinal === "function") {
+    if (!toqueFinalYaDisparado && Number(total) >= UMBRAL_TOQUES_FINAL && typeof window.bufonToquePuertaFinal === "function") {
+      toqueFinalYaDisparado = true;
       window.bufonToquePuertaFinal();
     }
   } catch (err) {

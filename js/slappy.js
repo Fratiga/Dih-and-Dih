@@ -66,7 +66,11 @@
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100);
 
-    renderer = new THREE.WebGPURenderer({ antialias: true, alpha: true });
+    // forceWebGL: mismo criterio que secreto.html — WebGPU real no está
+    // en todos lados (Firefox lo tiene inconsistente entre sistemas),
+    // sin esto el renderer tira error al inicializar donde no hay
+    // navigator.gpu y el easter egg no se muestra en absoluto.
+    renderer = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: !navigator.gpu });
     await renderer.init();
     renderer.setPixelRatio(window.devicePixelRatio || 1);
     renderer.setSize(w, h);
