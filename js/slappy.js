@@ -54,7 +54,7 @@
     const cont = contenedor();
     if (!cont) return;
 
-    if (!window.CLOWN_GLB_BASE64) await cargarScriptClasico("assets/clown-model-base64.js");
+    if (!window.CLOWN_GLB_BASE64) await cargarScriptClasico("assets/clown-model-base64.js?v=20260918");
 
     const THREE = await import("three");
     const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
