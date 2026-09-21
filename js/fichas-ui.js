@@ -403,7 +403,7 @@
     document.getElementById("fichasHVel").textContent = p.combate.velocidad;
     document.getElementById("fichasHComp").textContent = fichasSigno(fichasCompetenciaTotal(p));
     const repartidos = fichasPuntosRepartidos(p);
-    const disponibles = fichasPuntosDisponiblesTotal(p.identidad.nivelTotal);
+    const disponibles = fichasPuntosDisponiblesNetos(p);
     const puntosEl = document.getElementById("fichasHPuntos");
     puntosEl.textContent = `${repartidos}/${disponibles}`;
     puntosEl.classList.toggle("fichas-stat-sobregastado", repartidos > disponibles);
@@ -429,7 +429,7 @@
     const aviso = document.getElementById("fichasAvisoPuntos");
     if (!aviso) return; // el panel Resumen no está montado en este momento
     const p = personajeActual;
-    const disponibles = fichasPuntosDisponiblesTotal(p.identidad.nivelTotal);
+    const disponibles = fichasPuntosDisponiblesNetos(p);
     const repartidos = fichasPuntosRepartidos(p);
     if (disponibles <= repartidos) {
       avisoPuntosActivo = false;
@@ -457,7 +457,7 @@
       }
       case "lanzAtaque": return fichasSigno(fichasLanzamientoAtaque(p));
       case "lanzCD": return String(fichasLanzamientoCD(p));
-      case "puntosDisponibles": return String(fichasPuntosDisponiblesTotal(p.identidad.nivelTotal));
+      case "puntosDisponibles": return String(fichasPuntosDisponiblesNetos(p));
       case "puntosRepartidos": return String(fichasPuntosRepartidos(p));
       default: return "";
     }
@@ -510,7 +510,7 @@
 
   function mostrarAvisoPuntos() {
     const p = personajeActual;
-    if (fichasPuntosDisponiblesTotal(p.identidad.nivelTotal) <= fichasPuntosRepartidos(p)) return;
+    if (fichasPuntosDisponiblesNetos(p) <= fichasPuntosRepartidos(p)) return;
     avisoPuntosActivo = true;
     actualizarAvisoPuntos();
   }
@@ -576,8 +576,9 @@
             </div>
           `).join("")}
         </div>
-        <p class="fichas-puntos-info">Puntos disponibles por tu nivel: <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong>. Puntos repartidos: <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
-        <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tenés ${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>
+        <p class="fichas-puntos-info">Puntos disponibles por tu nivel: <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesNetos(p)}</strong>. Puntos repartidos: <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+        <div class="fichas-field fichas-puntos-feats"><label>Puntos cambiados por un feat (en vez de stats)</label>${campoNumero("puntosFeats", p.puntosFeats, 'min="0"')}</div>
+        <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tenés ${fichasPuntosDisponiblesNetos(p) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>
       </div>
 
       <div class="fichas-fieldset">

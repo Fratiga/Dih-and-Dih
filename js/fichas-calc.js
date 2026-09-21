@@ -37,6 +37,13 @@ function fichasPuntosDisponiblesTotal(nivelTotal) {
   return fichasPuntosPorNivel(nivelTotal) + fichasPuntosMejoraClase(nivelTotal);
 }
 
+/* Algunas clases dejan cambiar una Mejora de característica por un feat.
+   Esos puntos nunca estuvieron disponibles para atributos, así que se
+   restan del total antes de comparar contra lo repartido. */
+function fichasPuntosDisponiblesNetos(personaje) {
+  return Math.max(0, fichasPuntosDisponiblesTotal(personaje.identidad.nivelTotal) - Number(personaje.puntosFeats || 0));
+}
+
 // Todo personaje de esta campaña arranca en 8 en las seis características,
 // sin excepción — no es un dato por personaje, así que no se guarda.
 const FICHAS_PUNTUACION_BASE = 8;

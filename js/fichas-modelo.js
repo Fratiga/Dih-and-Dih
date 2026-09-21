@@ -119,6 +119,7 @@ function fichasPersonajeVacio() {
     atributos: fichasAtributosVacios(),
     atributosRaciales: fichasAtributosRacialesVacios(), // no cuenta como punto de mejora gastado
     ajustesAtributos: fichasAjustesVacios(), // ajuste manual al MODIFICADOR final
+    puntosFeats: 0, // puntos de mejora cambiados por un feat en vez de subir stats; restan de los disponibles
 
     competenciaAjusteManual: 0,
 
@@ -188,5 +189,6 @@ function fichasMigrar(personaje) {
   if (personaje.identidad && personaje.identidad.fichaFoto === undefined) personaje.identidad.fichaFoto = "";
   if (!personaje.atributosRaciales) personaje.atributosRaciales = fichasAtributosRacialesVacios();
   if (!Array.isArray(personaje.decoraciones)) personaje.decoraciones = [];
+  if (personaje.puntosFeats === undefined) personaje.puntosFeats = 0;
   return personaje;
 }
