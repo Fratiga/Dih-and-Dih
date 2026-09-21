@@ -10,6 +10,7 @@
   let autoguardadoTimeout = null;
   let modoPorItemRoll20 = {}; // { [idSintetico]: { modo, preguntar } } — transitorio, no se persiste
   let miEmail = null; // email de la sesión actual — para saber si una ficha es "de otro" (solo pasa si sos Admin)
+  let avisoPuntosActivo = false; // se prende al subir de nivel, sobrevive a un renderTabs() y se apaga solo al repartir todo
   let decoracionArrastre = null; // estado transitorio del arrastre/redimensión de una pegatina en curso
 
   const NOMBRES_ATRIBUTOS = { fue: "Fuerza", des: "Destreza", con: "Constitución", int: "Inteligencia", sab: "Sabiduría", car: "Carisma" };
@@ -273,6 +274,7 @@
     const p = await fichasStorage.obtener(id);
     if (!p) { alert("No se encontró ese personaje."); return; }
     personajeActual = p;
+    avisoPuntosActivo = false;
     renderEncabezado();
     renderTabs();
     renderDecoraciones();
@@ -415,6 +417,27 @@
     document.querySelectorAll("[data-calc]").forEach(el => {
       try { el.textContent = fichasFormatearCalc(el.dataset.calc); } catch (e) { /* campo de un tab no activo todavía */ }
     });
+    actualizarAvisoPuntos();
+  }
+
+  /* El aviso de "tenés puntos por repartir" solo aparece cuando el
+     jugador acaba de subir de nivel (ver manejarCambioBinding). Una vez
+     visible, se mantiene actualizado con cada cambio y se esconde solo
+     cuando ya repartió todo lo que tenía disponible. */
+  function actualizarAvisoPuntos() {
+    if (!avisoPuntosActivo) return;
+    const aviso = document.getElementById("fichasAvisoPuntos");
+    if (!aviso) return; // el panel Resumen no está montado en este momento
+    const p = personajeActual;
+    const disponibles = fichasPuntosDisponiblesTotal(p.identidad.nivelTotal);
+    const repartidos = fichasPuntosRepartidos(p);
+    if (disponibles <= repartidos) {
+      avisoPuntosActivo = false;
+      aviso.classList.add("hidden");
+      return;
+    }
+    aviso.textContent = `Subiste de nivel: tenés ${disponibles - repartidos} puntos de mejora por repartir.`;
+    aviso.classList.remove("hidden");
   }
 
   function fichasFormatearCalc(expr) {
@@ -478,9 +501,18 @@
     if (el.type === "checkbox") valor = el.checked;
     else if (el.type === "number") valor = el.value === "" ? 0 : Number(el.value);
     else valor = el.value;
+    const esSubidaDeNivel = path === "identidad.nivelTotal" && Number(valor) > Number(personajeActual.identidad.nivelTotal);
     setPath(personajeActual, path, valor);
+    if (esSubidaDeNivel) mostrarAvisoPuntos();
     refrescarCalculado();
     programarAutoguardado();
+  }
+
+  function mostrarAvisoPuntos() {
+    const p = personajeActual;
+    if (fichasPuntosDisponiblesTotal(p.identidad.nivelTotal) <= fichasPuntosRepartidos(p)) return;
+    avisoPuntosActivo = true;
+    actualizarAvisoPuntos();
   }
 
   function campoNumero(bind, valor, extra = "") {
@@ -545,6 +577,7 @@
           `).join("")}
         </div>
         <p class="fichas-puntos-info">Puntos disponibles por tu nivel: <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal)}</strong>. Puntos repartidos: <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+        <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tenés ${fichasPuntosDisponiblesTotal(p.identidad.nivelTotal) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>
       </div>
 
       <div class="fichas-fieldset">
