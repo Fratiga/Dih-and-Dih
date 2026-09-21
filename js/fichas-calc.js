@@ -43,24 +43,48 @@ const FICHAS_PUNTUACION_BASE = 8;
 
 // Tope real de la compra por puntos de creación de D&D: ninguna
 // característica puede comprarse por encima de 15 antes de la racial, sin
-// importar cuántos de los 27 puntos tenga disponibles. Es un tope por
-// atributo, no una bolsa total — así que no se puede "esconder" un
-// atributo por encima de 15 simplemente teniendo puntos de sobra en otro.
+// importar cuántos de los 27 puntos tenga disponibles.
 const FICHAS_TOPE_COMPRA_CREACION = 15;
 
+// Costo real de la compra por puntos, tabla oficial de D&D: de 8 a 13 cada
+// punto cuesta 1, pero 14 y 15 cuestan 2 cada uno.
+const FICHAS_COSTO_COMPRA_PUNTOS = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
+const FICHAS_PRESUPUESTO_COMPRA_PUNTOS = 27;
+
 /* Cuánto de la puntuación actual de cada atributo viene de gastar puntos
-   de mejora POR NIVEL: todo lo que, antes de la racial, quede por encima
-   del tope de 15 de la compra por puntos — eso no puede venir de la
-   creación del personaje, sí o sí es una mejora ganada después. Nunca
-   resta de más: un atributo que bajó por debajo de su base (maldición,
-   penalización) no genera puntos negativos. */
+   de mejora POR NIVEL, en vez de la compra por puntos de creación.
+
+   Primero cada atributo intenta cubrirse desde la creación hasta su tope
+   de 15 (antes de racial). Pero la compra por puntos no es lineal — 14 y
+   15 cuestan el doble por punto — así que maximizar los seis atributos
+   hasta su tope puede costar más de los 27 reales. Cuando pasa eso, hay
+   que seguir bajando creación (empezando por donde bajar un punto ahorra
+   más costo, o sea los tramos 14→15) y subir nivel en su lugar, hasta que
+   el costo total vuelva a entrar en el presupuesto. */
 function fichasPuntosRepartidos(personaje) {
-  return FICHAS_ATRIBUTOS.reduce((total, { id }) => {
+  const atributos = FICHAS_ATRIBUTOS.map(({ id }) => {
     const actual = Number(personaje.atributos[id]) || 0;
     const racial = Number(personaje.atributosRaciales?.[id]) || 0;
     const antesDeRacial = actual - racial;
-    return total + Math.max(0, antesDeRacial - FICHAS_TOPE_COMPRA_CREACION);
-  }, 0);
+    const creacion = Math.min(FICHAS_TOPE_COMPRA_CREACION, Math.max(FICHAS_PUNTUACION_BASE, antesDeRacial));
+    return { creacion, nivel: Math.max(0, antesDeRacial - creacion) };
+  });
+
+  let costoTotal = atributos.reduce((t, a) => t + FICHAS_COSTO_COMPRA_PUNTOS[a.creacion], 0);
+  while (costoTotal > FICHAS_PRESUPUESTO_COMPRA_PUNTOS) {
+    let mejor = null;
+    atributos.forEach(a => {
+      if (a.creacion <= FICHAS_PUNTUACION_BASE) return;
+      const ahorro = FICHAS_COSTO_COMPRA_PUNTOS[a.creacion] - FICHAS_COSTO_COMPRA_PUNTOS[a.creacion - 1];
+      if (!mejor || ahorro > mejor.ahorro) mejor = { a, ahorro };
+    });
+    if (!mejor) break; // los seis ya están en 8, no hay más para bajar
+    mejor.a.creacion -= 1;
+    mejor.a.nivel += 1;
+    costoTotal -= mejor.ahorro;
+  }
+
+  return atributos.reduce((t, a) => t + a.nivel, 0);
 }
 
 /* Modificador final de un atributo: el de la puntuación + el ajuste manual
