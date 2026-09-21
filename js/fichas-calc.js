@@ -41,24 +41,26 @@ function fichasPuntosDisponiblesTotal(nivelTotal) {
 // sin excepción — no es un dato por personaje, así que no se guarda.
 const FICHAS_PUNTUACION_BASE = 8;
 
-// Compra por puntos estándar de D&D al crear el personaje: 27 puntos para
-// repartir entre las seis características, aparte de cualquier punto de
-// mejora ganado por nivel. Es una bolsa total (no por atributo), así que
-// se descuenta del bruto entero antes de contar lo repartido por nivel.
-const FICHAS_PUNTOS_CREACION = 27;
+// Tope real de la compra por puntos de creación de D&D: ninguna
+// característica puede comprarse por encima de 15 antes de la racial, sin
+// importar cuántos de los 27 puntos tenga disponibles. Es un tope por
+// atributo, no una bolsa total — así que no se puede "esconder" un
+// atributo por encima de 15 simplemente teniendo puntos de sobra en otro.
+const FICHAS_TOPE_COMPRA_CREACION = 15;
 
 /* Cuánto de la puntuación actual de cada atributo viene de gastar puntos
-   de mejora POR NIVEL (todo lo que quede por encima del 8 inicial más la
-   racial, descontando además los 27 de la compra por puntos de creación).
-   Nunca resta de más: un atributo que bajó por debajo de su base
-   (maldición, penalización) no genera puntos negativos. */
+   de mejora POR NIVEL: todo lo que, antes de la racial, quede por encima
+   del tope de 15 de la compra por puntos — eso no puede venir de la
+   creación del personaje, sí o sí es una mejora ganada después. Nunca
+   resta de más: un atributo que bajó por debajo de su base (maldición,
+   penalización) no genera puntos negativos. */
 function fichasPuntosRepartidos(personaje) {
-  const bruto = FICHAS_ATRIBUTOS.reduce((total, { id }) => {
+  return FICHAS_ATRIBUTOS.reduce((total, { id }) => {
     const actual = Number(personaje.atributos[id]) || 0;
     const racial = Number(personaje.atributosRaciales?.[id]) || 0;
-    return total + Math.max(0, actual - FICHAS_PUNTUACION_BASE - racial);
+    const antesDeRacial = actual - racial;
+    return total + Math.max(0, antesDeRacial - FICHAS_TOPE_COMPRA_CREACION);
   }, 0);
-  return Math.max(0, bruto - FICHAS_PUNTOS_CREACION);
 }
 
 /* Modificador final de un atributo: el de la puntuación + el ajuste manual
