@@ -1451,16 +1451,16 @@ window.BUFON_DIALOGO = {
         // reales, y el resto como cosas que se le ocurren mientras tanto.
 
         /* =================================================================
-           CICLO "LO QUE QUEDA" — Side A. A diferencia de los de arriba,
-           no depende de ningún ctx.sideAGen2 (ese mecanismo no existe
-           todavía, ver el debug panel) — solo del hecho de campaña
-           correspondiente. Mismo criterio de "esconderse solo al
-           agotarse" que ya tienen Ledros/Comerciante/Hubert/Laia.
+           CICLO "LO QUE QUEDA" — Side A. Mismo umbral que B: 5 jugadores
+           reales de esta mesa (ctx.sideAGen2, ver
+           scratchpad/bufon_side_a_avanzo.sql). Mismo criterio de
+           "esconderse solo al agotarse" que ya tienen
+           Ledros/Comerciante/Hubert/Laia.
         ================================================================= */
         {
           id: "side_a2_mattei", texto: "¿Qué es esa cosa que se les pegó?",
           visible: ctx => {
-            if (!(ctx.actualCampaign === "A" && ctx.hasFact("mattei_se_unio"))) return false;
+            if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("mattei_se_unio"))) return false;
             if (!ctx.hasCompletedDialogue("mattei_intro_seen")) return true;
             return !["mattei_que_es", "mattei_vio", "mattei_confia"].every(id => ctx.hasCompletedDialogue(id));
           },
@@ -1469,7 +1469,7 @@ window.BUFON_DIALOGO = {
         {
           id: "side_a2_enzo", texto: "Por cierto. La pierna de Enzo.",
           visible: ctx => {
-            if (!(ctx.actualCampaign === "A" && ctx.hasFact("enzo_venganza_revelada"))) return false;
+            if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("enzo_venganza_revelada"))) return false;
             if (!ctx.hasCompletedDialogue("enzo_intro_seen")) return true;
             return !["enzo_pierna", "enzo_venganza", "enzo_amenaza"].every(id => ctx.hasCompletedDialogue(id));
           },
@@ -1478,7 +1478,7 @@ window.BUFON_DIALOGO = {
         {
           id: "side_a2_dagren", texto: "El del granero. Ahora cobra entrada.",
           visible: ctx => {
-            if (!(ctx.actualCampaign === "A" && ctx.hasFact("dagren_cobra_renta"))) return false;
+            if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("dagren_cobra_renta"))) return false;
             if (!ctx.hasCompletedDialogue("dagren_intro_seen")) return true;
             return !["dagren_renta", "dagren_brazo", "dagren_quedo"].every(id => ctx.hasCompletedDialogue(id));
           },
@@ -1487,7 +1487,7 @@ window.BUFON_DIALOGO = {
         {
           id: "side_a2_guillotina", texto: "La gata que casi los mata.",
           visible: ctx => {
-            if (!(ctx.actualCampaign === "A" && ctx.hasFact("guillotina_identificada"))) return false;
+            if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("guillotina_identificada"))) return false;
             if (!ctx.hasCompletedDialogue("guillotina_intro_seen")) return true;
             return !["guillotina_que_es", "guillotina_ataco", "guillotina_vuelve"].every(id => ctx.hasCompletedDialogue(id));
           },

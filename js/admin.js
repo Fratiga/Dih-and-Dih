@@ -143,10 +143,12 @@
     });
   }
 
-  function pintarBufonProgreso({ jugadores, sideB }) {
+  function pintarBufonProgreso({ jugadores, sideA, sideB }) {
     const banner = document.getElementById("adminBufonBanner");
-    banner.textContent = `Side B: ${sideB.completos}/${sideB.necesarios} jugadores completaron el Bufón.` +
-      (sideB.avanzo ? " Generación 2 desbloqueada." : "");
+    banner.innerHTML = `<p>Side A: ${sideA.completos}/${sideA.necesarios} jugadores completaron el Bufón.` +
+      (sideA.avanzo ? " Generación 2 desbloqueada.</p>" : "</p>") +
+      `<p>Side B: ${sideB.completos}/${sideB.necesarios} jugadores completaron el Bufón.` +
+      (sideB.avanzo ? " Generación 2 desbloqueada.</p>" : "</p>");
 
     const cont = document.getElementById("adminBufonLista");
     const count = document.getElementById("adminBufonCount");

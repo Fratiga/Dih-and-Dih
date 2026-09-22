@@ -246,12 +246,19 @@ async function adminListarProgresoBufon() {
     { data: elecciones, error: errElecciones },
     { data: jugadores, error: errJugadores },
     { data: toques, error: errToques },
+    { data: sideAAvanzo },
+    { data: sideARealesCount },
     { data: sideBAvanzo },
     { data: sideBRealesCount }
   ] = await Promise.all([
     supabase.from("bufon_elecciones").select("player_id, side, dialogue_id, category, choice_id, created_at, es_prueba").order("created_at", { ascending: true }),
     supabase.from("bufon_jugadores").select("player_id, nombre"),
     supabase.from("bufon_puerta_denegada").select("player_id, created_at"),
+    // Mismo mecanismo que Side B, ver scratchpad/bufon_side_a_avanzo.sql.
+    // Si todavía no corriste ese SQL, ambas RPC fallan en silencio (el
+    // catch de más abajo) y el banner de Side A muestra 0/5.
+    supabase.rpc("bufon_side_a_avanzo"),
+    supabase.rpc("bufon_contar_side_a_reales"),
     supabase.rpc("bufon_side_b_avanzo"),
     // auth.users no es visible desde el cliente (Supabase no lo expone
     // vía PostgREST), así que el conteo "real" (solo cuentas
@@ -313,11 +320,11 @@ async function adminListarProgresoBufon() {
 
   return {
     jugadores: lista,
-    // completos viene de bufon_contar_side_b_reales() (ver
-    // scratchpad/bufon_exigir_cuenta_real.sql) — solo cuentas reales de
-    // Supabase Auth, no cualquier player_id anónimo. Si esa función
-    // todavía no existe (no corriste el SQL), Number(undefined) da NaN;
-    // se muestra 0 en vez de romper el panel.
+    // completos viene de bufon_contar_side_a/b_reales() — solo cuentas
+    // reales de Supabase Auth, no cualquier player_id anónimo. Si esa
+    // función todavía no existe (no corriste el SQL), Number(undefined)
+    // da NaN; se muestra 0 en vez de romper el panel.
+    sideA: { avanzo: !!sideAAvanzo, completos: Number(sideARealesCount) || 0, necesarios: 5 },
     sideB: { avanzo: !!sideBAvanzo, completos: Number(sideBRealesCount) || 0, necesarios: 5 }
   };
 }
