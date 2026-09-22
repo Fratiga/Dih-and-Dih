@@ -986,10 +986,36 @@ h3 { margin-top: 0; }
   box-shadow: 0 0 0 3px rgba(163,122,79,.3);
 }
 
+.cronica-indice { display: flex; flex-wrap: wrap; gap: 6px; max-width: 820px; }
+.cronica-indice-link {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: .76rem;
+  cursor: pointer;
+  transition: border-color .16s, color .16s;
+}
+.cronica-indice-link:hover { border-color: var(--accent-soft); color: var(--text); }
+
+.cronica-acciones { margin: 12px 0 24px; }
+.cronica-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.cronica-toggle-btn:hover { color: var(--text); }
+
 .cronica-list {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 8px;
   max-width: 820px;
 }
 
@@ -999,6 +1025,30 @@ h3 { margin-top: 0; }
   border-left: 1px solid var(--border);
 }
 
+.cronica-capitulo-header {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 12px 28px 12px 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+}
+.cronica-capitulo-header::after {
+  content: "+";
+  position: absolute;
+  top: 12px;
+  right: 4px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  transition: transform .16s;
+}
+.cronica-abierto > .cronica-capitulo-header::after { content: "−"; }
+.cronica-capitulo-header:hover .cronica-titulo { color: var(--accent-soft); }
+
 .cronica-numero {
   color: var(--muted);
   text-transform: uppercase;
@@ -1007,14 +1057,16 @@ h3 { margin-top: 0; }
   margin: 0 0 4px;
 }
 
-.cronica-titulo { margin: 0 0 2px; }
+.cronica-titulo { margin: 0 0 2px; transition: color .16s; }
 
 .cronica-fecha {
   color: var(--muted);
   font-style: italic;
   font-size: .85rem;
-  margin: 0 0 18px;
+  margin: 0;
 }
+
+.cronica-cuerpo { padding: 4px 0 22px; }
 
 .quick-nav {
   width: min(1450px, 94%);
