@@ -723,6 +723,172 @@ window.BUFON_DIALOGO = {
       eleccion: "laia_hub"
     },
 
+    /* =====================================================================
+       CICLO "LO QUE QUEDA" — Side A (BUFON_HECHOS_CONOCIDOS.A en
+       data/bufon-evidencia.js). Mismo patrón que Side B: 4 pilares con
+       preguntas fijas, gateados por hecho de campaña, sin depender de
+       ningún mecanismo de "generación 2" — a diferencia de B, acá no
+       hace falta esperar a que se junten varios jugadores para
+       destrabar esto, son hechos que ya pasaron en mesa.
+    ===================================================================== */
+    bufon_mattei_intro: {
+      lineas: [
+        "Mattei.",
+        "Algo pequeño se les pegó después de esa noche en la ciudad. No sé bien qué es. Tampoco creo que lo sepa Mattei."
+      ],
+      completeDialogue: "mattei_intro_seen",
+      eleccion: "mattei_hub"
+    },
+    bufon_mattei_que_es: {
+      lineas: [
+        "No tengo idea.",
+        "Pequeño, asustadizo, come cosas que nadie más comería. Eso es todo lo que puedo decirte con seguridad.",
+        "A veces la mejor descripción de algo es admitir que no encaja en ninguna de las que ya tienes."
+      ],
+      completeDialogue: "mattei_que_es",
+      eleccion: "mattei_hub"
+    },
+    bufon_mattei_vio: {
+      lineas: [
+        "Un arpón. Después a Eledar en el suelo, sin moverse.",
+        "El asesino todavía estaba cerca cuando lo contó. No tuvo tiempo de asustarse por partes.",
+        "Corrió con Enzo media ciudad sin soltar esa imagen. Yo tampoco la soltaría."
+      ],
+      completeDialogue: "mattei_vio",
+      eleccion: "mattei_hub"
+    },
+    bufon_mattei_confia: {
+      lineas: [
+        "Eso pregúntenselo entre ustedes, no a mí.",
+        "Aunque comió lo que Edge le ofreció sin dudar un segundo. Eso dice algo.",
+        "No sé si dice que confía en el grupo o que todavía no entiende en qué clase de grupo cayó."
+      ],
+      completeDialogue: "mattei_confia",
+      eleccion: "mattei_hub"
+    },
+
+    bufon_enzo_intro: {
+      lineas: [
+        "Enzo.",
+        "El monje que perdió una pierna contra la gata y volvió con otra que ya no respira."
+      ],
+      completeDialogue: "enzo_intro_seen",
+      eleccion: "enzo_hub"
+    },
+    bufon_enzo_pierna: {
+      lineas: [
+        "Porque funciona.",
+        "Y porque a Enzo no le incomoda tanto la muerte como al resto. Ya lleva un tiempo mirándola de cerca.",
+        "Una pierna que no se cansa, no siente frío y no le debe nada a la carne que perdió. Práctico, si uno no piensa demasiado en el resto."
+      ],
+      completeDialogue: "enzo_pierna",
+      eleccion: "enzo_hub"
+    },
+    bufon_enzo_venganza: {
+      lineas: [
+        "Sí. Desde antes de conocerlos a ustedes, según parece.",
+        "El dragón se le adelantó. Orina murió sin que Enzo llegara a cobrarse nada.",
+        "Así que cobró lo que sí pudo cobrar: la recompensa. No es lo mismo, pero paga las cuentas igual."
+      ],
+      completeDialogue: "enzo_venganza",
+      eleccion: "enzo_hub"
+    },
+    bufon_enzo_amenaza: {
+      lineas: [
+        "Eso dijo.",
+        "Y Mattei ya le prometió ayuda para cuando llegue el día. No parece una broma entre los dos.",
+        "Yo no me pondría cómodo. Enzo ya demostró que puede esperar el tiempo que haga falta."
+      ],
+      completeDialogue: "enzo_amenaza",
+      eleccion: "enzo_hub"
+    },
+
+    bufon_dagren_intro: {
+      lineas: [
+        "Dagren.",
+        "El dueño del granero que ahora es dueño de ustedes también, un poco, mientras paguen."
+      ],
+      completeDialogue: "dagren_intro_seen",
+      eleccion: "dagren_hub"
+    },
+    bufon_dagren_renta: {
+      lineas: [
+        "Porque puede.",
+        "Perdió un brazo peleando por ustedes. Eso, para Dagren, es motivo suficiente para dejar de regalar nada.",
+        "Dagren no lo hace por maldad. Simplemente ya no tiene ganas de que la generosidad le vuelva a costar tan caro."
+      ],
+      completeDialogue: "dagren_renta",
+      eleccion: "dagren_hub"
+    },
+    bufon_dagren_brazo: {
+      lineas: [
+        "El brazo. El de verdad, digo.",
+        "El nuevo es militar, pesado, y por lo visto todavía le duele. Eso no se lo cambia ningún herrero.",
+        "Volvió a Cala Ronca con dos brazos y se fue con uno. Le pareció mal negocio, y tiene razón."
+      ],
+      completeDialogue: "dagren_brazo",
+      eleccion: "dagren_hub"
+    },
+    bufon_dagren_quedo: {
+      lineas: [
+        "Vino a revisar su propiedad. Se quedó a pelear por ella.",
+        "No los conocía. No les debía nada. Pero ya estaban ahí cuando llegó Guillotina, y Dagren no es de los que miran desde la puerta.",
+        "Ahora cobra renta por esa misma decisión. Tiene sentido, si uno lo piensa del lado correcto."
+      ],
+      completeDialogue: "dagren_quedo",
+      eleccion: "dagren_hub"
+    },
+
+    bufon_guillotina_intro: {
+      lineas: [
+        "Guillotina.",
+        "La gata que casi los deja sin grupo, y que ahora tiene nombre en vez de ser solo lo que rugió en el bosque."
+      ],
+      completeDialogue: "guillotina_intro_seen",
+      eleccion: "guillotina_hub"
+    },
+    bufon_guillotina_que_es: {
+      lineas: [
+        "Una gata gigante. De las que viven en la Espesura desde antes de que nadie le pusiera ese nombre al bosque.",
+        "No es rara ahí adentro. Lo raro fue que decidiera salir a buscarlos."
+      ],
+      completeDialogue: "guillotina_que_es",
+      eleccion: "guillotina_hub"
+    },
+    bufon_guillotina_ataco: {
+      lineas: [
+        "El olor de Edge. Viaja lejos, y a Guillotina le llamó la atención.",
+        "Los siguió sin apuro, según cuentan. Como quien sabe que no necesita apurarse para llegar."
+      ],
+      completeDialogue: "guillotina_ataco",
+      eleccion: "guillotina_hub"
+    },
+    bufon_guillotina_vuelve: {
+      lineas: [
+        "No lo sé.",
+        "Se retiró herida de vuelta al bosque, y ahí sigue, por lo que ustedes saben.",
+        "Dagren quiere que averigüen justo eso. Yo no voy a adivinarlo antes que él."
+      ],
+      completeDialogue: "guillotina_vuelve",
+      eleccion: "guillotina_hub"
+    },
+
+    // Interrupción espontánea (Side A) — ver RECUERDOS_DISPONIBLES en
+    // secreto.html. Distinto de cualquier chiste de "Eledar" de Side B
+    // a propósito: es un personaje distinto, y en esta historia ya
+    // está muerto.
+    bufon_side_a_eledar_muerte: {
+      lineas: [
+        "Perdieron a alguien, ¿no?",
+        "Eledar. El tarotista.",
+        "Un arpón y un callejón no le dieron mucho tiempo para leer las cartas de nadie más.",
+        "...",
+        "Lo siento. No conocía ni el nombre hasta ahora."
+      ],
+      completeDialogue: "side_a_eledar_muerte",
+      next: "intro_reason_sin_recuerdo"
+    },
+
     // --- Respiro: Eledar, Cassius, Torvrena, Ryn, rumores del juicio ---
     bufon_eledar_tobillo: {
       lineas: [
@@ -1274,7 +1440,7 @@ window.BUFON_DIALOGO = {
               .every(id => ctx.hasCompletedDialogue(id));
           },
           next: ctx => ctx.hasCompletedDialogue("laia_intro_seen") ? "laia_hub" : "bufon_laia_intro"
-        }
+        },
         // Eledar/Cassius/Torvrena/Ryn/rumores del juicio ya NO son botones
         // del hub — pasaron a ser interrupciones espontáneas (ver
         // RECUERDOS_DISPONIBLES en secreto.html). Mismos nodos, mismo
@@ -1283,6 +1449,50 @@ window.BUFON_DIALOGO = {
         // es que "Lo que queda" no se sienta como nueve botones nuevos de
         // golpe, sino como Ledros/Comerciante/Hubert/Laia como temas
         // reales, y el resto como cosas que se le ocurren mientras tanto.
+
+        /* =================================================================
+           CICLO "LO QUE QUEDA" — Side A. A diferencia de los de arriba,
+           no depende de ningún ctx.sideAGen2 (ese mecanismo no existe
+           todavía, ver el debug panel) — solo del hecho de campaña
+           correspondiente. Mismo criterio de "esconderse solo al
+           agotarse" que ya tienen Ledros/Comerciante/Hubert/Laia.
+        ================================================================= */
+        {
+          id: "side_a2_mattei", texto: "¿Qué es esa cosa que se les pegó?",
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "A" && ctx.hasFact("mattei_se_unio"))) return false;
+            if (!ctx.hasCompletedDialogue("mattei_intro_seen")) return true;
+            return !["mattei_que_es", "mattei_vio", "mattei_confia"].every(id => ctx.hasCompletedDialogue(id));
+          },
+          next: ctx => ctx.hasCompletedDialogue("mattei_intro_seen") ? "mattei_hub" : "bufon_mattei_intro"
+        },
+        {
+          id: "side_a2_enzo", texto: "Por cierto. La pierna de Enzo.",
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "A" && ctx.hasFact("enzo_venganza_revelada"))) return false;
+            if (!ctx.hasCompletedDialogue("enzo_intro_seen")) return true;
+            return !["enzo_pierna", "enzo_venganza", "enzo_amenaza"].every(id => ctx.hasCompletedDialogue(id));
+          },
+          next: ctx => ctx.hasCompletedDialogue("enzo_intro_seen") ? "enzo_hub" : "bufon_enzo_intro"
+        },
+        {
+          id: "side_a2_dagren", texto: "El del granero. Ahora cobra entrada.",
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "A" && ctx.hasFact("dagren_cobra_renta"))) return false;
+            if (!ctx.hasCompletedDialogue("dagren_intro_seen")) return true;
+            return !["dagren_renta", "dagren_brazo", "dagren_quedo"].every(id => ctx.hasCompletedDialogue(id));
+          },
+          next: ctx => ctx.hasCompletedDialogue("dagren_intro_seen") ? "dagren_hub" : "bufon_dagren_intro"
+        },
+        {
+          id: "side_a2_guillotina", texto: "La gata que casi los mata.",
+          visible: ctx => {
+            if (!(ctx.actualCampaign === "A" && ctx.hasFact("guillotina_identificada"))) return false;
+            if (!ctx.hasCompletedDialogue("guillotina_intro_seen")) return true;
+            return !["guillotina_que_es", "guillotina_ataco", "guillotina_vuelve"].every(id => ctx.hasCompletedDialogue(id));
+          },
+          next: ctx => ctx.hasCompletedDialogue("guillotina_intro_seen") ? "guillotina_hub" : "bufon_guillotina_intro"
+        }
       ]
     },
 
@@ -1454,6 +1664,78 @@ window.BUFON_DIALOGO = {
           visible: ctx => !ctx.hasCompletedDialogue("laia_enmascarado")
         },
         { id: "laia_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    mattei_hub: {
+      opciones: [
+        {
+          id: "mattei_que_es", texto: "¿Qué es exactamente?", next: "bufon_mattei_que_es",
+          visible: ctx => !ctx.hasCompletedDialogue("mattei_que_es")
+        },
+        {
+          id: "mattei_vio", texto: "¿Qué vio esa noche?", next: "bufon_mattei_vio",
+          visible: ctx => !ctx.hasCompletedDialogue("mattei_vio")
+        },
+        {
+          id: "mattei_confia", texto: "¿Confían en Mattei?", next: "bufon_mattei_confia",
+          visible: ctx => !ctx.hasCompletedDialogue("mattei_confia")
+        },
+        { id: "mattei_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    enzo_hub: {
+      opciones: [
+        {
+          id: "enzo_pierna", texto: "¿Por qué eligió una pierna de no-muerto?", next: "bufon_enzo_pierna",
+          visible: ctx => !ctx.hasCompletedDialogue("enzo_pierna")
+        },
+        {
+          id: "enzo_venganza", texto: "¿Es cierto que quería vengarse de Orina?", next: "bufon_enzo_venganza",
+          visible: ctx => !ctx.hasCompletedDialogue("enzo_venganza")
+        },
+        {
+          id: "enzo_amenaza", texto: "¿De verdad va a cobrar la recompensa del resto?", next: "bufon_enzo_amenaza",
+          visible: ctx => !ctx.hasCompletedDialogue("enzo_amenaza")
+        },
+        { id: "enzo_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    dagren_hub: {
+      opciones: [
+        {
+          id: "dagren_renta", texto: "¿Por qué le cobra renta a su propia gente?", next: "bufon_dagren_renta",
+          visible: ctx => !ctx.hasCompletedDialogue("dagren_renta")
+        },
+        {
+          id: "dagren_brazo", texto: "¿Qué perdió exactamente contra Guillotina?", next: "bufon_dagren_brazo",
+          visible: ctx => !ctx.hasCompletedDialogue("dagren_brazo")
+        },
+        {
+          id: "dagren_quedo", texto: "¿Por qué se quedó a pelear?", next: "bufon_dagren_quedo",
+          visible: ctx => !ctx.hasCompletedDialogue("dagren_quedo")
+        },
+        { id: "dagren_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
+      ]
+    },
+
+    guillotina_hub: {
+      opciones: [
+        {
+          id: "guillotina_que_es", texto: "¿Qué es Guillotina?", next: "bufon_guillotina_que_es",
+          visible: ctx => !ctx.hasCompletedDialogue("guillotina_que_es")
+        },
+        {
+          id: "guillotina_ataco", texto: "¿Por qué atacó?", next: "bufon_guillotina_ataco",
+          visible: ctx => !ctx.hasCompletedDialogue("guillotina_ataco")
+        },
+        {
+          id: "guillotina_vuelve", texto: "¿Va a volver?", next: "bufon_guillotina_vuelve",
+          visible: ctx => !ctx.hasCompletedDialogue("guillotina_vuelve")
+        },
+        { id: "guillotina_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
       ]
     },
 

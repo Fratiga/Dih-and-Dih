@@ -52,10 +52,18 @@ window.BUFON_EVIDENCIA = JSON.parse(
    viene más atrasada, sacar de acá los hechos que todavía no pasaron.
 ============================================================================= */
 window.BUFON_HECHOS_CONOCIDOS = {
-  A: ["pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter"],
+  // Los cuatro nuevos (mattei_se_unio en adelante) son del ciclo propio
+  // de Side A — Mattei, Enzo, Dagren, Guillotina — Capítulos VI-VII de
+  // cronologia-a.js. A diferencia de B, no depende de ningún mecanismo
+  // de "generación 2": son hechos que ya pasaron en mesa, sin esperar a
+  // que se junten varios jugadores para destrabarlos.
+  A: [
+    "pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter",
+    "eledar_asesinado", "mattei_se_unio", "enzo_venganza_revelada",
+    "dagren_cobra_renta", "guillotina_identificada"
+  ],
   // Los siete nuevos son del ciclo "Lo que queda" (Ledros, el Comerciante de
   // Dávidas, Hubert Magnolia, etc. — Capítulos VI-VII de cronologia-b.js).
-  // Exclusivos de B a propósito: Side A sigue detenido en su ciclo anterior.
   B: [
     "pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter",
     "met_ledros", "chose_mask", "cassius_joined", "torvrena_hired",
