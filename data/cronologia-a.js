@@ -298,8 +298,7 @@ window.CRONOLOGIA_A = [
       salvajes les salieron al cruce, nada que el grupo no pudiera resolver, pero
       el ruido del encuentro y el olor a felino que Edge siempre trae encima
       llegaron más lejos de lo que esperaban. Guillotina encontró el rastro y
-      empezó a seguirlos, sin apuro, con la paciencia de algo que sabe que tarde o
-      temprano va a alcanzar lo que persigue.</p>
+      empezó a seguirlos sin apuro.</p>
 
       <h4>El granero</h4>
 
@@ -319,8 +318,7 @@ window.CRONOLOGIA_A = [
       gigante apareció entre los árboles.</p>
 
       <p>La pelea fue larga y les costó cara a los dos bandos, pero terminó con
-      Guillotina retirándose de vuelta al bosque. Nadie salió del granero esa
-      noche sin que la victoria le hubiera dejado algo grabado encima.</p>
+      Guillotina retirándose de vuelta al bosque.</p>
     `
   },
   {

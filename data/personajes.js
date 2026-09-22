@@ -1201,13 +1201,13 @@ window.PERSONAJES = [
     content: `
       <p>Un caballero que perdió su batallón entero, y la cordura que le
       quedaba, el día que la bestia de la mansión se lo tragó. Lleva doce años
-      viviendo y luchando dentro de ella desde entonces.</p>
+      dentro de ella desde entonces.</p>
       <p>Lo único que le importa ahora es hacer llegar, de alguna forma, la
       lista de los soldados que la bestia se tragó junto a él y que no
       sobrevivieron. A cambio de que los protagonistas la entreguen, aceptó
       guiarlos hacia la salida y explicarles cómo abrirse paso desde adentro,
-      aunque doce años ahí dentro le dejaron la cabeza tan lastimada como el
-      cuerpo, y seguir sus indicaciones no siempre resulta sencillo.</p>
+      aunque a veces repite la misma indicación tres veces seguidas, o se
+      detiene a mitad de una frase sin volver a retomarla.</p>
     `
   }
 ];
