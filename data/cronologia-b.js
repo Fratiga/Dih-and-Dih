@@ -443,5 +443,43 @@ window.CRONOLOGIA_B = [
       hasta una mansión que no debería estar ahí, aislada y silenciosa, en
       medio del bosque.</p>
     `
+  },
+  {
+    id: "capitulo-9",
+    orden: 9,
+    numero: "Capítulo IX",
+    title: "El Vientre de la Bestia",
+    fecha: "La primera noche en la mansión",
+    content: `
+      <p>La mansión se veía tétrica incluso desde lejos, con esa clase de
+      silencio que no invita a acercarse. El grupo se separó para investigar,
+      cada quien por su lado, y no tardó en notar que algo los estaba
+      acorralando. Criaturas horribles fueron cerrando el cerco poco a poco
+      hasta que no quedó ninguna salida.</p>
+
+      <p>El piso cedió antes de que pudieran decidir qué hacer con eso.</p>
+
+      <h4>La cueva de carne</h4>
+
+      <p>Cayeron a una cueva hecha enteramente de carne, tibia y húmeda,
+      probablemente el interior de una de las criaturas de arriba. Ahí dentro
+      los esperaban más monstruos carnosos, y el grupo tuvo que pelear para
+      abrirse camino entre paredes que latían, buscando una salida que no
+      terminaba de aparecer.</p>
+
+      <h4>Darian</h4>
+
+      <p>En algún punto de esa búsqueda apareció Darian, un caballero que
+      perdió su batallón entero, y la cordura que le quedaba, el día que la
+      bestia se lo tragó. Lleva doce años ahí dentro desde entonces, vivo y
+      luchando. Lo único que le importa ahora es hacer llegar, de alguna forma,
+      la lista de los soldados que se tragó la bestia junto a él y que no
+      sobrevivieron. A cambio de sacarlos de ahí, el grupo aceptó llevarla.</p>
+
+      <p>Darian empezó a guiarlos hacia la salida, explicándoles cómo abrirse
+      paso desde adentro. No pareció hacerlo a propósito, pero tampoco resultó
+      fácil de seguir. Doce años dentro de una bestia le habían dejado la
+      cabeza tan lastimada como el cuerpo.</p>
+    `
   }
 ];

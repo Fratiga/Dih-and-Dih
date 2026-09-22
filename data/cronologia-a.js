@@ -259,5 +259,98 @@ window.CRONOLOGIA_A = [
       más buscados del reino, los otros se adentraban en un bosque donde una
       presencia antigua acababa de despertar tras siglos de encierro.</p>
     `
+  },
+  {
+    id: "capitulo-6",
+    orden: 6,
+    numero: "Capítulo VI",
+    title: "La Espesura y el Granero",
+    fecha: "La ciudad y el bosque, la misma noche",
+    content: `
+      <p>Enzo y Eledar entraron juntos a la ciudad y se separaron enseguida para
+      cubrir más terreno. A Enzo el interrogatorio se le fue de las manos rápido:
+      primero un par de tenderos que terminaron cerrando el local con él todavía
+      adentro, después dos guardias que decidieron que la mejor respuesta a sus
+      preguntas era sacarlo del barrio a empujones. Fue mientras se los sacaba de
+      encima que oyó ruido en un callejón cercano.</p>
+
+      <h4>El callejón</h4>
+
+      <p>Ahí encontró a una criatura pequeña, apenas más alta que sus rodillas,
+      temblando contra una pared. Se hacía llamar Mattei. No llegó a explicar qué
+      hacía ahí antes de soltar, entre jadeos, lo que acababa de ver: un arpón, y
+      después a Eledar en el suelo, sin moverse. El asesino todavía andaba cerca.</p>
+
+      <p>Lo confirmaron los dos juntos unos segundos después, cuando el mismo
+      hombre dobló la esquina del callejón. Enzo no se detuvo a preguntar nada.
+      Agarró a Mattei y corrió, y el asesino los siguió por media ciudad sin
+      desviarse una sola vez de su camino, sin que le importara quién se cruzara
+      en él. Un carro volcado, dos puestos de mercado destrozados y varios
+      transeúntes que no llegaron a apartarse a tiempo quedaron atrás en la
+      persecución. El arma, la frialdad, todo encajaba con lo que ya sabían del
+      asesino del refugio. Enzo y Mattei llegaron al granero de milagro, sin
+      aliento y sin saber todavía si los habían seguido hasta ahí.</p>
+
+      <h4>La Espesura</h4>
+
+      <p>Mientras tanto, el resto del grupo se internaba en la Espesura, el
+      bosque que crece denso y oscuro incluso a mediodía. Un par de bestias
+      salvajes les salieron al cruce, nada que el grupo no pudiera resolver, pero
+      el ruido del encuentro y el olor a felino que Edge siempre trae encima
+      llegaron más lejos de lo que esperaban. Guillotina encontró el rastro y
+      empezó a seguirlos, sin apuro, con la paciencia de algo que sabe que tarde o
+      temprano va a alcanzar lo que persigue.</p>
+
+      <h4>El granero</h4>
+
+      <p>Los dos grupos se reencontraron en el granero antes de que Guillotina
+      llegara. Mattei conoció al resto y encajó rápido, sobre todo cuando Edge, en
+      un gesto de bienvenida que nadie más entendió del todo, le ofreció sus
+      propias heces. Mattei, todavía sin conocer las costumbres de este grupo en
+      particular, las comió sin dudarlo.</p>
+
+      <p>La celebración duró poco. Dagren, el dueño del granero, llegó desde Cala
+      Ronca justo entonces, después de oír noticias del ataque del dragón y
+      querer revisar su propiedad con sus propios ojos. Los intentos del grupo por
+      disuadirlo de quedarse, y después por distraerlo antes de que notara algo
+      raro, salieron bastante mal. Tampoco tuvieron tiempo de mejorar la
+      estrategia. Guillotina llegó en medio de la discusión, y Dagren pasó de
+      sospechar del grupo a pelear junto a él en el mismo instante en que la gata
+      gigante apareció entre los árboles.</p>
+
+      <p>La pelea fue larga y les costó cara a los dos bandos, pero terminó con
+      Guillotina retirándose de vuelta al bosque. Nadie salió del granero esa
+      noche sin que la victoria le hubiera dejado algo grabado encima.</p>
+    `
+  },
+  {
+    id: "capitulo-7",
+    orden: 7,
+    numero: "Capítulo VII",
+    title: "El Precio de Quedarse",
+    fecha: "Recuperación en el granero",
+    content: `
+      <p>Dagren perdió un brazo en la pelea contra Guillotina. Enzo perdió una
+      pierna. Ninguno de los dos podía seguir así, y el grupo entero volvió a la
+      ciudad a conseguirles una prótesis a cada uno.</p>
+
+      <p>Dagren terminó con un brazo militar, pesado y funcional. Enzo eligió una
+      pierna de no-muerto. Para pagarla, cobró la recompensa que pesaba sobre
+      Orina, y les avisó a los demás, sobre todo a Mattei, que tarde o temprano
+      iba a cobrar también la del resto del grupo. Mattei aceptó ayudarlo cuando
+      llegara el momento, sin cuestionarlo demasiado.</p>
+
+      <h4>Renta y encargos</h4>
+
+      <p>De vuelta en el granero, comieron y descansaron. Dagren, todavía con el
+      brazo nuevo dolorido, les puso una condición para dejarlos quedarse. Iban a
+      pagar renta, por cabeza, mientras estuvieran ahí. A cambio, les señaló tres
+      cosas que valía la pena revisar: qué había dejado el ataque del dragón
+      dentro del bosque, dónde podía estar la bestia ahora, y qué rastro había
+      dejado el asesino del refugio, el mismo que acababa de matar a Eledar.</p>
+
+      <p>El grupo decidió empezar por el bosque, para confirmar que el dragón no
+      hubiera roto algo ahí adentro que todavía no habían visto.</p>
+    `
   }
 ];

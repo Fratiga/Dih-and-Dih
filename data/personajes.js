@@ -250,12 +250,12 @@ window.PERSONAJES = [
     title: "Dagren",
     category: "Personajes",
     tags: ["npc", "bárbaro"],
-    summary: "Bárbaro de edad avanzada que actualmente da refugio a los protagonistas en su granero.",
+    summary: "Bárbaro de edad avanzada, natural de Cala Ronca, que da refugio a los protagonistas en su granero a cambio de renta.",
     retrato: "",
     titulo: "Bárbaro",
     raza: "",
     tipo: "NPC",
-    lugarOrigen: "",
+    lugarOrigen: "Cala Ronca",
     ocupacion: "",
     faccion: "",
     primeraAparicion: "",
@@ -264,9 +264,14 @@ window.PERSONAJES = [
       { id: "guillotina", nota: "Le arrancó un brazo al atacar su granero" }
     ],
     content: `
-      <p>Un bárbaro ya entrado en años que les da refugio a los protagonistas en su
-      granero, en las tierras de la Ley. Perdió un brazo cuando Guillotina, arrastrada
-      hasta allí por accidente por los propios protagonistas, atacó la propiedad.</p>
+      <p>Un bárbaro ya entrado en años, originario de Cala Ronca, que les da refugio a
+      los protagonistas en su granero, en las tierras de la Ley. Volvió desde su
+      pueblo natal al enterarse del ataque del dragón, para revisar la propiedad con
+      sus propios ojos, y llegó justo a tiempo para encontrarse con Guillotina, que
+      había seguido a los protagonistas hasta ahí. Perdió un brazo en la pelea contra
+      ella y lo reemplazó por uno militar.</p>
+      <p>Ahora deja quedarse a los protagonistas en el granero, pero les cobra renta
+      por cabeza.</p>
     `
   },
   {
@@ -468,7 +473,7 @@ window.PERSONAJES = [
     lado: ["A"],
     relacionesConocidas: [
       { id: "orina", nota: "Objetivo original de venganza, fallecido" },
-      { id: "mattei", nota: "Lo acompaña" }
+      { id: "mattei", nota: "Lo acompaña y lo ayuda a cobrar recompensas" }
     ],
     content: `
       <p>Un monje humano que llegó a Brurland persiguiendo a Orina, movido por una
@@ -476,6 +481,10 @@ window.PERSONAJES = [
       arrebató su objetivo, pero no la sed que lo trajo hasta aquí. Ahora la dirige
       contra el resto de los fugitivos, a quienes planea entregar a la ley a cambio
       de la recompensa que pesa sobre sus cabezas.</p>
+      <p>Perdió una pierna peleando contra Guillotina en el granero de Dagren y la
+      reemplazó por una de no-muerto. Cobró la recompensa que pesaba sobre Orina para
+      pagarla, y ya avisó que tarde o temprano va a cobrar la del resto del grupo
+      también. Mattei aceptó ayudarlo cuando llegue el momento.</p>
     `
   },
   {
@@ -491,16 +500,19 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Pícaro",
     faccion: "",
-    primeraAparicion: "El Descanso del Trasgo",
+    primeraAparicion: "La Espesura y el Granero",
     lado: ["A"],
     relacionesConocidas: [
-      { id: "enzo", nota: "Lo sigue" }
+      { id: "enzo", nota: "Lo sigue y lo ayuda a cobrar recompensas" },
+      { id: "eledar-a", nota: "Presenció su asesinato" }
     ],
     content: `
       <p>Un mediano pícaro tan pobre como falto de suerte. Vivió solo
       en la calle desde siempre, sobreviviendo de lo que otros descartaban, hasta que
-      Enzo lo encontró y se lo llevó consigo. Ahora acompaña al grupo, aunque su
-      lealtad, más que a la causa, parece estar puesta sobre todo en Enzo.</p>
+      Enzo lo encontró en un callejón de Brurland, justo después de que presenciara el
+      asesinato de Eledar. Huyó junto a él por media ciudad con el asesino pisándoles
+      los talones, y desde entonces acompaña al grupo, aunque su lealtad, más que a la
+      causa, parece estar puesta sobre todo en Enzo.</p>
     `
   },
   {
@@ -536,7 +548,7 @@ window.PERSONAJES = [
     title: "Eledar",
     category: "Personajes",
     tags: ["jugador", "semielfo"],
-    summary: "Tarotista semielfo, hijo bastardo criado por la tarotista que lo adoptó, en busca de su destino y su lugar en el mundo.",
+    summary: "Tarotista semielfo fallecido, asesinado en Brurland de un arponazo a manos del mismo asesino del refugio.",
     retrato: "",
     titulo: "Tarotista",
     raza: "Semielfo",
@@ -546,13 +558,17 @@ window.PERSONAJES = [
     faccion: "",
     primeraAparicion: "",
     lado: ["A"],
-    relacionesConocidas: [],
+    relacionesConocidas: [
+      { id: "mattei", nota: "Presenció su asesinato" }
+    ],
     content: `
       <p>Un tarotista semielfo, hijo bastardo de un elfo y una humana, criado por una
       tarotista que lo adoptó de niño después de que ambos padres lo consideraran una
       vergüenza compartida. Al llegar a la adultez, partió a buscar su destino y su
       lugar en el mundo con las únicas herramientas que tenía: las que le enseñó su
       maestra. Ni sus cartas vieron venir el arpón.</p>
+      <p>Murió en un callejón de Brurland, separado del resto del grupo. Mattei fue el
+      único testigo.</p>
     `
   },
   {
@@ -1164,6 +1180,34 @@ window.PERSONAJES = [
       parecía dirigirse a Marshfield, y la armadura era en realidad Ledros, un
       antiguo capitán de los caballeros de Brurland.</p>
       <p>Pidió a los protagonistas que le dieran descanso a Ledros. Aceptaron.</p>
+    `
+  },
+  {
+    id: "darian",
+    title: "Darian",
+    category: "Personajes",
+    tags: ["npc", "caballero"],
+    summary: "Caballero atrapado hace doce años dentro de la bestia de la mansión, junto a su batallón; guía a los protagonistas a cambio de que entreguen la lista de sus soldados caídos.",
+    retrato: "",
+    titulo: "Caballero",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Caballero",
+    faccion: "",
+    primeraAparicion: "El Vientre de la Bestia",
+    lado: ["B"],
+    relacionesConocidas: [],
+    content: `
+      <p>Un caballero que perdió su batallón entero, y la cordura que le
+      quedaba, el día que la bestia de la mansión se lo tragó. Lleva doce años
+      viviendo y luchando dentro de ella desde entonces.</p>
+      <p>Lo único que le importa ahora es hacer llegar, de alguna forma, la
+      lista de los soldados que la bestia se tragó junto a él y que no
+      sobrevivieron. A cambio de que los protagonistas la entreguen, aceptó
+      guiarlos hacia la salida y explicarles cómo abrirse paso desde adentro,
+      aunque doce años ahí dentro le dejaron la cabeza tan lastimada como el
+      cuerpo, y seguir sus indicaciones no siempre resulta sencillo.</p>
     `
   }
 ];
