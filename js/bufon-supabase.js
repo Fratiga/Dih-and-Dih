@@ -246,6 +246,7 @@ async function adminListarProgresoBufon() {
     { data: elecciones, error: errElecciones },
     { data: jugadores, error: errJugadores },
     { data: toques, error: errToques },
+    { data: excluidos, error: errExcluidos },
     { data: sideAAvanzo },
     { data: sideARealesCount },
     { data: sideBAvanzo },
@@ -254,6 +255,7 @@ async function adminListarProgresoBufon() {
     supabase.from("bufon_elecciones").select("player_id, side, dialogue_id, category, choice_id, created_at, es_prueba").order("created_at", { ascending: true }),
     supabase.from("bufon_jugadores").select("player_id, nombre"),
     supabase.from("bufon_puerta_denegada").select("player_id, created_at"),
+    supabase.from("bufon_progreso_excluido").select("player_id, motivo"),
     // Mismo mecanismo que Side B, ver scratchpad/bufon_side_a_avanzo.sql.
     // Si todavía no corriste ese SQL, ambas RPC fallan en silencio (el
     // catch de más abajo) y el banner de Side A muestra 0/5.
@@ -263,7 +265,7 @@ async function adminListarProgresoBufon() {
     // auth.users no es visible desde el cliente (Supabase no lo expone
     // vía PostgREST), así que el conteo "real" (solo cuentas
     // autenticadas y no excluidas, ver
-    // scratchpad/bufon_exigir_cuenta_real.sql) tiene que venir de una
+    // scratchpad/bufon_excluir_conteo_admin.sql) tiene que venir de una
     // RPC en vez de calcularse acá con las filas de bufon_elecciones
     // que sí podemos leer.
     supabase.rpc("bufon_contar_side_b_reales")
@@ -271,6 +273,7 @@ async function adminListarProgresoBufon() {
   if (errElecciones) throw errElecciones;
   if (errJugadores) throw errJugadores;
   if (errToques) throw errToques;
+  if (errExcluidos) throw errExcluidos;
 
   // Filas de modo prueba (ver esModoPrueba() en js/lado.js) no cuentan
   // como jugadores en absoluto — ni en la lista, ni en el marcador. Si
@@ -312,9 +315,13 @@ async function adminListarProgresoBufon() {
     }
   });
 
+  const motivoExcluidoPorId = new Map((excluidos || []).map(x => [String(x.player_id), x.motivo]));
+
   const lista = Array.from(porJugador.values()).map(f => ({
     ...f,
-    nombre: nombresPorId.get(String(f.playerId)) || null
+    nombre: nombresPorId.get(String(f.playerId)) || null,
+    excluido: motivoExcluidoPorId.has(String(f.playerId)),
+    motivoExcluido: motivoExcluidoPorId.get(String(f.playerId)) || null
   }));
   lista.sort((a, b) => new Date(b.ultimaActividad) - new Date(a.ultimaActividad));
 
@@ -327,6 +334,23 @@ async function adminListarProgresoBufon() {
     sideA: { avanzo: !!sideAAvanzo, completos: Number(sideARealesCount) || 0, necesarios: 5 },
     sideB: { avanzo: !!sideBAvanzo, completos: Number(sideBRealesCount) || 0, necesarios: 5 }
   };
+}
+
+/* Sacar/devolver un player_id de bufon_progreso_excluido: quien está ahí
+   no cuenta en bufon_contar_side_a/b_reales(), aunque sí sigue apareciendo
+   en la lista del panel con sus datos normales. Requiere las policies de
+   insert/delete de scratchpad/bufon_excluir_conteo_admin.sql — sin eso,
+   RLS las rechaza (la tabla solo tenía SELECT). */
+async function adminExcluirDelBufon(playerId, motivo) {
+  const supabase = await bufonCliente();
+  const { error } = await supabase.from("bufon_progreso_excluido").insert({ player_id: playerId, motivo: motivo || null });
+  if (error) throw error;
+}
+
+async function adminReincluirEnBufon(playerId) {
+  const supabase = await bufonCliente();
+  const { error } = await supabase.from("bufon_progreso_excluido").delete().eq("player_id", playerId);
+  if (error) throw error;
 }
 
 /* Historial completo de UN jugador puntual — a diferencia de

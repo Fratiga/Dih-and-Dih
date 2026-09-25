@@ -2965,6 +2965,20 @@ body.has-mini-player { padding-bottom: 74px; }
 .admin-bufon-dato { color: var(--muted); }
 .admin-bufon-dato strong { color: var(--text); }
 .admin-bufon-fecha { margin-left: auto; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+.admin-bufon-fila-excluida { opacity: .55; }
+.admin-bufon-excluir-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: .72rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .16s, color .16s;
+}
+.admin-bufon-excluir-btn:hover { border-color: var(--accent-soft); color: var(--text); }
+.admin-bufon-fila-excluida .admin-bufon-excluir-btn { border-color: var(--accent-soft); color: var(--text); }
 
 .admin-bufon-conversacion { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
 .admin-bufon-evento {

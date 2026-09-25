@@ -143,6 +143,17 @@
     });
   }
 
+  async function cargarProgresoBufon() {
+    const bufonEl = document.getElementById("adminBufonLista");
+    try {
+      const progreso = await adminListarProgresoBufon();
+      pintarBufonProgreso(progreso);
+    } catch (e) {
+      console.error("[admin] Progreso del Bufón falló:", e);
+      bufonEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin-bufon.sql y scratchpad/bufon_excluir_conteo_admin.sql en Supabase?</p>`;
+    }
+  }
+
   function pintarBufonProgreso({ jugadores, sideA, sideB }) {
     const banner = document.getElementById("adminBufonBanner");
     banner.innerHTML = `<p>Side A: ${sideA.completos}/${sideA.necesarios} jugadores completaron el Bufón.` +
@@ -160,7 +171,7 @@
     }
 
     cont.innerHTML = jugadores.map(j => `
-      <div class="admin-bufon-fila" data-player-id="${j.playerId}" data-nombre="${escaparHtml(j.nombre || "")}">
+      <div class="admin-bufon-fila ${j.excluido ? "admin-bufon-fila-excluida" : ""}" data-player-id="${j.playerId}" data-nombre="${escaparHtml(j.nombre || "")}">
         <span class="admin-bufon-nombre">
           ${j.nombre ? escaparHtml(j.nombre) : `Anónimo (${j.playerId ? j.playerId.slice(0, 8) : "?"}…)`}
           ${j.side ? `<span class="admin-bufon-side">Side ${j.side}</span>` : ""}
@@ -170,11 +181,35 @@
         <span class="admin-bufon-dato">${j.ultimoNodo ? `Último: ${escaparHtml(j.ultimoNodo)}` : "—"}</span>
         <span class="admin-bufon-dato admin-bufon-toques">${j.toquesPuerta ? `<strong>${j.toquesPuerta}</strong> veces sin nada nuevo` : "Siempre encontró algo nuevo"}</span>
         <span class="admin-bufon-fecha">${formatearFecha(j.ultimaActividad)}</span>
+        <button type="button" class="admin-bufon-excluir-btn" data-toggle-excluido="${j.playerId}" title="${j.excluido ? escaparHtml(j.motivoExcluido || "Excluido del conteo") : "No cuenta para el progreso de Side A/B"}">
+          ${j.excluido ? "Volver a contar" : "No contar para el progreso"}
+        </button>
       </div>
     `).join("");
 
     cont.querySelectorAll("[data-player-id]").forEach(fila => {
       fila.addEventListener("click", () => mostrarConversacionBufon(fila.dataset.playerId, fila.dataset.nombre));
+    });
+
+    cont.querySelectorAll("[data-toggle-excluido]").forEach(btn => {
+      btn.addEventListener("click", async e => {
+        e.stopPropagation(); // no abrir la conversación del jugador al tocar el botón
+        const playerId = btn.dataset.toggleExcluido;
+        const estaExcluido = btn.closest(".admin-bufon-fila").classList.contains("admin-bufon-fila-excluida");
+        btn.disabled = true;
+        try {
+          if (estaExcluido) {
+            await adminReincluirEnBufon(playerId);
+          } else {
+            const motivo = prompt("¿Por qué no debería contar para el progreso? (opcional)") || null;
+            await adminExcluirDelBufon(playerId, motivo);
+          }
+          await cargarProgresoBufon();
+        } catch (err) {
+          alert("No se pudo actualizar: " + (err.message || "error desconocido"));
+          btn.disabled = false;
+        }
+      });
     });
   }
 
@@ -388,14 +423,7 @@
     // Sección separada e independiente: usa scratchpad/panel-admin-bufon.sql,
     // un script aparte del resto del panel, así que su falla no debe tapar
     // Peticiones/Cuentas si todavía no se corrió.
-    const bufonEl = document.getElementById("adminBufonLista");
-    try {
-      const progreso = await adminListarProgresoBufon();
-      pintarBufonProgreso(progreso);
-    } catch (e) {
-      console.error("[admin] Progreso del Bufón falló:", e);
-      bufonEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin-bufon.sql en Supabase?</p>`;
-    }
+    await cargarProgresoBufon();
 
     // Independiente también: requiere scratchpad/fanarts_side.sql.
     const fanartsEl = document.getElementById("adminFanartsLista");
