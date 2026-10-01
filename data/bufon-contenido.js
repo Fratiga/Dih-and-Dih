@@ -1081,6 +1081,23 @@ window.BUFON_DIALOGO = {
       completeDialogue: "side_b_falta_uno_impaciente",
       next: "intro_reason_sin_recuerdo"
     },
+    bufon_side_a_falta_uno: {
+      lineas: [
+        "Aún falta alguien más.",
+        "Aunque no cuento a los anónimos. Muy de mala clase no presentarse...",
+        "Bueno. Yo aún no lo hago. Pero porque no recuerdo mi nombre, la verdad."
+      ],
+      completeDialogue: "side_a_falta_uno",
+      next: "intro_reason_sin_recuerdo"
+    },
+    bufon_reconoce_javier: {
+      lineas: [
+        "Edge, ya te me hacías familiar.",
+        "Lo siento. Mis memorias siguen muy difusas después de todo."
+      ],
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
     bufon_reconoce_ryn: {
       lineas: [
         "Se acerca tu invierno, ¿sabías?",
