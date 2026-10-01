@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20260925">
+  <link rel="stylesheet" href="css/style.css?v=20261001">
 </head>
 <body>
   <header class="site-header">
@@ -101,13 +101,18 @@
 
   <main class="layout layout-solo">
     <section class="content">
-      <section id="fanarts" class="page-section">
+      <section id="fanartSideGate" class="fanart-side-gate hidden"></section>
+
+      <section id="fanarts" class="page-section hidden">
         <div class="content-top">
           <div>
             <p class="eyebrow">GALERÍA COMUNITARIA</p>
             <h2>Fanarts</h2>
           </div>
-          <span id="fanartCount" class="result-count"></span>
+          <div class="fanart-count-row">
+            <span id="fanartCount" class="result-count"></span>
+            <button type="button" id="fanartSideCambiar" class="lado-switch hidden">Cambiar Side</button>
+          </div>
         </div>
         <div id="fanartGrid" class="fanart-grid"></div>
         <div id="fanartEmpty" class="empty-state hidden">
@@ -135,31 +140,31 @@
     </figure>
   </div>
 
-  <script src="data/entries.js?v=20260925"></script>
-  <script src="data/personajes.js?v=20260925"></script>
-  <script src="data/lugares.js?v=20260925"></script>
-  <script src="data/facciones.js?v=20260925"></script>
-  <script src="data/pergaminos.js?v=20260925"></script>
-  <script src="data/armas.js?v=20260925"></script>
-  <script src="data/objetos.js?v=20260925"></script>
-  <script src="data/bestiario.js?v=20260925"></script>
-  <script src="data/razas.js?v=20260925"></script>
-  <script src="data/religiones.js?v=20260925"></script>
-  <script src="data/fanarts.js?v=20260925"></script>
-  <script src="data/rotacion.js?v=20260925"></script>
-  <script src="data/musica.js?v=20260925"></script>
-  <script src="js/common.js?v=20260925"></script>
-  <script src="js/temas.js?v=20260925"></script>
-  <script src="js/player.js?v=20260925"></script>
-  <script src="js/modal.js?v=20260925"></script>
-  <script src="data/jumpscare.js?v=20260925"></script>
-  <script src="data/contrasenas.js?v=20260925"></script>
-  <script src="js/fichas-supabase.js?v=20260925"></script>
-  <script src="js/fanarts-supabase.js?v=20260925"></script>
-  <script src="js/lado.js?v=20260925"></script>
-  <script src="js/slappy.js?v=20260925"></script>
-  <script src="js/busqueda-global.js?v=20260925"></script>
-  <script src="js/header-marquee.js?v=20260925"></script>
-  <script src="js/fanarts.js?v=20260925"></script>
+  <script src="data/entries.js?v=20261001"></script>
+  <script src="data/personajes.js?v=20261001"></script>
+  <script src="data/lugares.js?v=20261001"></script>
+  <script src="data/facciones.js?v=20261001"></script>
+  <script src="data/pergaminos.js?v=20261001"></script>
+  <script src="data/armas.js?v=20261001"></script>
+  <script src="data/objetos.js?v=20261001"></script>
+  <script src="data/bestiario.js?v=20261001"></script>
+  <script src="data/razas.js?v=20261001"></script>
+  <script src="data/religiones.js?v=20261001"></script>
+  <script src="data/fanarts.js?v=20261001"></script>
+  <script src="data/rotacion.js?v=20261001"></script>
+  <script src="data/musica.js?v=20261001"></script>
+  <script src="js/common.js?v=20261001"></script>
+  <script src="js/temas.js?v=20261001"></script>
+  <script src="js/player.js?v=20261001"></script>
+  <script src="js/modal.js?v=20261001"></script>
+  <script src="data/jumpscare.js?v=20261001"></script>
+  <script src="data/contrasenas.js?v=20261001"></script>
+  <script src="js/fichas-supabase.js?v=20261001"></script>
+  <script src="js/fanarts-supabase.js?v=20261001"></script>
+  <script src="js/lado.js?v=20261001"></script>
+  <script src="js/slappy.js?v=20261001"></script>
+  <script src="js/busqueda-global.js?v=20261001"></script>
+  <script src="js/header-marquee.js?v=20261001"></script>
+  <script src="js/fanarts.js?v=20261001"></script>
 </body>
 </html>
