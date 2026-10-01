@@ -824,9 +824,27 @@ window.BUFON_DIALOGO = {
       lineas: [
         "El brazo. El de verdad, digo.",
         "El nuevo es militar, pesado, y por lo visto todavía le duele. Eso no se lo cambia ningún herrero.",
-        "Volvió a Cala Ronca con dos brazos y se fue con uno. Le pareció mal negocio, y tiene razón."
+        "Volvió a Cala Ronca con dos brazos y se fue con uno. Le pareció mal negocio, y tiene razón.",
+        // Solo se muestra con La Herida en Murmullo o más (filtro por
+        // voiceStage en renderNodo). Anuncia la opción exclusiva de
+        // abajo, igual que la línea de El Rostro en ledros_sigue_siendo.
+        { voz: "herida", texto: "Nadie le preguntó si todavía le duele." }
       ],
       completeDialogue: "dagren_brazo",
+      eleccion: "dagren_hub"
+    },
+    // Primera opción exclusiva de La Herida (ver dagren_hub). Nada de lo
+    // que ofrece el hub normal llega hasta acá: lo normal es preguntar
+    // por la renta, el brazo o la pelea, nunca por cómo está él.
+    bufon_dagren_herida: {
+      lineas: [
+        "Esa no la hace nadie.",
+        "Preguntan por la renta. Algunos por el brazo. Por él, nunca.",
+        "No lo va a decir. Cobra, cuenta las monedas y mira hacia el bosque más rato del que miraría alguien que solo piensa en dinero.",
+        "Conozco esa mirada. La tuve mucho tiempo aquí, esperando a que alguien tocara la puerta.",
+        { voz: "herida", texto: "Ve a preguntarle. No lo hagas por la renta." }
+      ],
+      completeDialogue: "dagren_herida",
       eleccion: "dagren_hub"
     },
     bufon_dagren_quedo: {
@@ -1505,7 +1523,10 @@ window.BUFON_DIALOGO = {
           visible: ctx => {
             if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("dagren_cobra_renta"))) return false;
             if (!ctx.hasCompletedDialogue("dagren_intro_seen")) return true;
-            return !["dagren_renta", "dagren_brazo", "dagren_quedo"].every(id => ctx.hasCompletedDialogue(id));
+            // Si todo lo normal ya está visto, el botón vuelve solo cuando
+            // se abre la pregunta exclusiva de La Herida.
+            const heridaDisponible = ctx.voiceStage("herida") >= 3 && ctx.hasCompletedDialogue("dagren_brazo") && !ctx.hasCompletedDialogue("dagren_herida");
+            return !["dagren_renta", "dagren_brazo", "dagren_quedo"].every(id => ctx.hasCompletedDialogue(id)) || heridaDisponible;
           },
           next: ctx => ctx.hasCompletedDialogue("dagren_intro_seen") ? "dagren_hub" : "bufon_dagren_intro"
         },
@@ -1741,6 +1762,14 @@ window.BUFON_DIALOGO = {
         {
           id: "dagren_quedo", texto: "¿Por qué se quedó a pelear?", next: "bufon_dagren_quedo",
           visible: ctx => !ctx.hasCompletedDialogue("dagren_quedo")
+        },
+        // Primera opción exclusiva de La Herida. Necesita su etapa 3
+        // (techo en BUFON_VOCES_TECHO) y haber oído lo del brazo, donde
+        // La Herida deja la pista.
+        {
+          id: "dagren_herida", texto: "¿Y él cómo está, de verdad?", voz: "herida",
+          next: "bufon_dagren_herida",
+          visible: ctx => ctx.voiceStage("herida") >= 3 && ctx.hasCompletedDialogue("dagren_brazo") && !ctx.hasCompletedDialogue("dagren_herida")
         },
         { id: "dagren_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
       ]

@@ -65,16 +65,17 @@ window.BUFON_VOCES_UMBRALES = {
    salto a Influencia (opciones exclusivas) para que no aparezcan todas
    de golpe.
 
-   El Rostro es la única excepción: 3 (Influencia), la "gran novedad" de
-   este ciclo — su primera opción exclusiva real (ver ledros_hub en
-   data/bufon-contenido.js). Subir el techo de otra Voz más adelante es
-   una decisión de contenido, no de código: solo cambiar el número acá. */
+   Excepciones en 3 (Influencia): El Rostro, con su primera opción
+   exclusiva (ver ledros_hub en data/bufon-contenido.js), y La Herida,
+   elegida para avanzar en el ciclo de Side A, con la suya en dagren_hub.
+   Subir el techo de otra Voz más adelante es una decisión de contenido,
+   no de código: solo cambiar el número acá. */
 window.BUFON_VOCES_TECHO = {
   coartada: 2,
   testigo: 2,
   grieta: 2,
   muralla: 2,
-  herida: 2,
+  herida: 3,
   hilo: 2,
   apetito: 2,
   rostro: 3
@@ -105,6 +106,11 @@ window.BUFON_VOCES = {
   // La Herida — apego, conexión genuina.
   yes: { herida: 1 },
   early_return_saludo: { herida: 2 },
+  // Side A, "Lo que queda": preguntar por la confianza y por lo que
+  // alguien se juega por otros. Su opción exclusiva está en dagren_hub.
+  mattei_confia: { herida: 1 },
+  dagren_quedo: { herida: 1 },
+  dagren_brazo: { herida: 1 },
 
   // El Rostro / El Hilo — identidad y curiosidad analítica sobre ella.
   early_return_cual_real: { rostro: 2, hilo: 1 },
