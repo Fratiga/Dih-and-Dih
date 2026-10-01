@@ -1098,6 +1098,14 @@ window.BUFON_DIALOGO = {
       completeDialogue: "nombre_reconocido",
       next: "intro_reason_sin_recuerdo"
     },
+    // Misma cuenta, pero sin haber registrado ningún nombre en el Bufón.
+    // risa: milisegundos de risa del Bufón (ver bufonReirseDurante).
+    bufon_reconoce_javier_sin_nombre: {
+      lineas: ["Claro que serías del tipo precavido, ¿no, Edge?"],
+      risa: 2000,
+      completeDialogue: "nombre_reconocido",
+      next: "intro_reason_sin_recuerdo"
+    },
     bufon_reconoce_ryn: {
       lineas: [
         "Se acerca tu invierno, ¿sabías?",
