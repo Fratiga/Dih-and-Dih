@@ -77,7 +77,7 @@
   // vuelve menos transparente) y un bufón nuevo desde la 29, uno más cada 10.
   const RACHA_FUEGO = 20;
   const PASO_FUEGO = 7;
-  const RACHA_BUFON = 29;
+  const RACHA_BUFON = 31;
   const PASO_BUFON = 10;
   // Dificultad por tramos de racha: encogen, impostores, zigzag, oleadas y
   // blindados, además de algunos Hooeys más rápidos que el resto.
@@ -202,16 +202,21 @@
     };
   }
 
-  // Oleada: 3 o 4 Hooeys a la vez, en abanico (V) o en diagonal escalonada.
+  // Oleada: 3 o 4 Hooeys, en abanico (V) o en escalera. La separación se mide
+  // en tiempo y no en píxeles, para que a cualquier velocidad quede margen
+  // para llegar a cada uno; y todos caen al mismo ritmo para que no se alcancen.
   function generarOleada() {
     const n = 3 + (Math.random() < 0.4 ? 1 : 0);
-    const { w, h } = dimensiones(escalaPorRacha());
+    const { w } = dimensiones(escalaPorRacha());
     const enV = Math.random() < 0.5;
+    const v = velocidadActual();
     const nuevos = [];
     for (let i = 0; i < n; i++) {
       const x = (ancho - w) * (i / (n - 1));
-      const extra = enV ? Math.abs(i - (n - 1) / 2) * h * 0.9 : i * h * 1.1;
-      nuevos.push(nuevoHooey(x, extra));
+      const extra = enV ? Math.abs(i - (n - 1) / 2) * v * 0.4 : i * v * 0.55;
+      const m = nuevoHooey(x, extra);
+      m.variacion = 1;
+      nuevos.push(m);
     }
     if (nuevos.every(m => m.tipo === "decoy")) { nuevos[0].tipo = "normal"; nuevos[0].vidas = 1; }
     hooeys.push(...nuevos);
@@ -425,7 +430,7 @@
       if (temporizadorAparicion <= 0) {
         if (racha >= RACHA_OLEADA && Math.random() < Math.min(0.4, 0.2 + (racha - RACHA_OLEADA) * 0.004)) {
           generarOleada();
-          temporizadorAparicion = intervaloAparicion() * 1.7;
+          temporizadorAparicion = intervaloAparicion() * 1.7 + 1.2;
         } else {
           hooeys.push(nuevoHooey());
           temporizadorAparicion = intervaloAparicion();
