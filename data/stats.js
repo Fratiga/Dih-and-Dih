@@ -775,5 +775,30 @@ window.STATS = [
       { nombre: "Examen Final (1/combate)", descripcion: "Hasta tres criaturas a 60 pies hacen una salvación de Inteligencia CD 14. Fallo: 2d6 psíquico y quedan Aturdidas hasta el final de su siguiente turno. Éxito: mitad del daño y no quedan Aturdidas. Cada objetivo puede obtener ventaja contestando rápidamente una pregunta sobre el maestro, su ropa o los conocimientos que Hooey devoró. Una respuesta convincente basta, aunque sea improvisada." }
     ],
     estrategia: "«Pueden burlarse de nosotros. Pueden llamarnos ladrones, vándalos o fracasados. Pero él nos enseñó a pensar. Y ahora mismo, una parte de él se pudre dentro de esa cosa.» El más experimentado y el único que entiende por completo el ritual del Ánima; su comportamiento ridículo desaparece cuando habla del maestro. Mantiene unido al grupo y usa Examen Final cuando puede alcanzar a al menos tres personajes. Cuando caen tres de los Seis, la fanfarronería del grupo desaparece: Gris ofrece detener la pelea si les permiten extraer del cuerpo de Hooey los restos del maestro mediante un procedimiento probablemente desagradable, pero no necesariamente mortal."
+  },
+  {
+    id: "darian",
+    personajeId: "darian",
+    nombre: "Darian Veyr",
+    rol: "Aliado poderoso / Destructor",
+    tipo: "Humanoide",
+    raza: "Humano",
+    pv: 126,
+    ca: 18,
+    velocidad: "30 pies",
+    stats: { fue: 20, des: 14, con: 19, int: 11, sab: 16, car: 12 },
+    equipo: ["Desgarro (mandoble de costilla)", "Armadura de placas óseas"],
+    notas: [
+      "Salvaciones: FUE +8, CON +7, SAB +6. Habilidades: Atletismo +8, Percepción +6, Supervivencia +9. Resistencia: necrótico. Percepción pasiva 16.",
+      "Ataque múltiple: dos ataques con Desgarro."
+    ],
+    habilidades: [
+      { nombre: "Desgarro (Acción)", descripcion: "+8 al impacto, alcance 5 pies. Daño: 2d6+5 cortante, +1d6 contra criaturas de carne. Al reducir a una criatura a 0 PV, puede moverse hasta 10 pies y hacer un ataque adicional (uno por turno)." },
+      { nombre: "Golpe Cauterizante (Recarga 5–6)", descripcion: "Ataque con Desgarro. Si impacta: 2d6+5 cortante más 3d6 de fuego. El objetivo no recupera PV hasta el final del siguiente turno de Darian y no deja Restos Palpitantes si muere." },
+      { nombre: "Sujétalo, yo lo abro (Reacción, 3/descanso largo)", descripcion: "Cuando una criatura a 5 pies de Darian es golpeada por uno de los personajes, hace un ataque con Desgarro contra ella." },
+      { nombre: "Demasiado Terco (Pasiva)", descripcion: "La primera vez que llega a 0 PV, cae a 1 PV y obtiene 20 PV temporales. Mientras los conserve, no puede retirarse voluntariamente de ningún enemigo." },
+      { nombre: "Injerto del Dominio (Pasiva)", descripcion: "Dentro del dominio recupera 10 PV al inicio de cada uno de sus turnos si tiene menos de la mitad de sus PV, salvo que haya recibido daño de fuego o radiante desde el final de su turno anterior. Fuera del dominio su máximo de PV baja 10 por cada hora hasta que sus órganos sean reemplazados o se encuentre una cura." }
+    ],
+    estrategia: "«Digan algo que este lugar no pueda saber.» Al principio los toma por una imitación del dominio y lanza un cuchillo contra la sombra de quien hable. Para convencerlo hay que enseñarle un objeto posterior a su desaparición o contarle algo que el dominio no pueda conocer. Si se le ayuda a llegar a la Herida Original, necesita que los demás mantengan abiertos varios conductos mientras corta el núcleo. Si cae fuera, pide que tomen el cuaderno antes de curarlo."
   }
 ];

@@ -1184,30 +1184,44 @@ window.PERSONAJES = [
   },
   {
     id: "darian",
-    title: "Darian",
+    title: "Darian Veyr",
     category: "Personajes",
-    tags: ["npc", "caballero"],
-    summary: "Caballero atrapado hace doce años dentro de la bestia de la mansión, junto a su batallón; guía a los protagonistas a cambio de que entreguen la lista de sus soldados caídos.",
+    tags: ["npc", "guerrero"],
+    summary: "El Indigerible. Guerrero de élite, único superviviente de una expedición de treinta y dos soldados tragada por la bestia de la mansión; guía a los protagonistas a cambio de que entreguen su cuaderno a las familias de los caídos.",
     retrato: "",
-    titulo: "Caballero",
-    raza: "",
+    titulo: "El Indigerible",
+    raza: "Humano",
     tipo: "NPC",
     lugarOrigen: "",
-    ocupacion: "Caballero",
+    ocupacion: "Guerrero",
     faccion: "",
     primeraAparicion: "El Vientre de la Bestia",
     lado: ["B"],
     relacionesConocidas: [],
     content: `
-      <p>Un caballero que perdió su batallón entero, y la cordura que le
-      quedaba, el día que la bestia de la mansión se lo tragó. Lleva doce años
-      dentro de ella desde entonces.</p>
-      <p>Lo único que le importa ahora es hacer llegar, de alguna forma, la
-      lista de los soldados que la bestia se tragó junto a él y que no
-      sobrevivieron. A cambio de que los protagonistas la entreguen, aceptó
-      guiarlos hacia la salida y explicarles cómo abrirse paso desde adentro,
-      aunque a veces repite la misma indicación tres veces seguidas, o se
-      detiene a mitad de una frase sin volver a retomarla.</p>
+      <p>Guerrero de élite enviado al dominio de carne con una expedición de
+      treinta y dos soldados. Es el único que sigue vivo. Doce años dentro le
+      enseñaron a reconocer los latidos de las paredes y los corredores que
+      cambian de lugar con cada contracción. El dominio intentó asimilarlo
+      tantas veces que ya no está del todo separado de él. Uno de sus pulmones
+      pertenece a la criatura y una raíz nerviosa le atraviesa la columna.
+      Sigue siendo humano por pura obstinación.</p>
+      <p>Es enorme, de unos cincuenta años, con armadura de placas óseas y
+      cuero de las paredes. Empuña Desgarro, un mandoble tallado de una
+      costilla gigante que intenta regenerarse y que debe afilar arrancándole
+      los dientes nuevos. Práctico, desconfiado y brutalmente competente, cuenta
+      los segundos entre latidos, quema todos los cadáveres y detesta que lo
+      llamen héroe. Al conocer a los protagonistas cree que son otra imitación
+      del dominio. Solo se convence si le muestran algo posterior a su
+      desaparición.</p>
+      <p>Sabe que el dominio es un único organismo y que su salida es la Herida
+      Original, por donde la carne apareció en el mundo, cerrada como una
+      cicatriz. Nunca pudo cruzarla porque abrirla contrae todo el organismo.
+      Necesita que otros mantengan abiertos varios conductos mientras él corta
+      el núcleo. Fuera, su cuerpo rechazará los órganos del dominio y se irá
+      debilitando hora tras hora. Aun así quiere salir para entregar a las
+      familias el cuaderno con los nombres y los últimos mensajes de los treinta
+      y un compañeros que perdió.</p>
     `
   }
 ];

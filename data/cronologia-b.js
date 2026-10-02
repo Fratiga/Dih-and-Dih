@@ -468,16 +468,16 @@ window.CRONOLOGIA_B = [
 
       <h4>Darian</h4>
 
-      <p>En algún punto de esa búsqueda apareció Darian, un caballero que
-      perdió su batallón entero, y la cordura que le quedaba, el día que la
-      bestia se lo tragó. Lleva doce años ahí dentro desde entonces. Lo único
-      que le importa ahora es hacer llegar, de alguna forma, la lista de los
-      soldados que se tragó la bestia junto a él y que no sobrevivieron. A
-      cambio de sacarlos de ahí, el grupo aceptó llevarla.</p>
+      <p>En algún punto de esa búsqueda apareció Darian Veyr, un guerrero de
+      élite que llevaba doce años ahí dentro, el único superviviente de una
+      expedición de treinta y dos soldados. Desconfió de ellos al principio y
+      les pidió una prueba de que no eran otra imitación de la cueva. Lo que
+      le importa ahora es hacer llegar a las familias el cuaderno con los
+      nombres de los compañeros que perdió. A cambio de sacarlos de ahí, el
+      grupo aceptó llevarlo.</p>
 
       <p>Darian empezó a guiarlos hacia la salida, explicándoles cómo abrirse
-      paso desde adentro. A veces repetía la misma indicación tres veces
-      seguidas, o se detenía a mitad de una frase sin volver a retomarla.</p>
+      paso desde adentro.</p>
     `
   }
 ];
