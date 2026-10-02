@@ -1,3 +1,5 @@
+const state = { search: "", tipos: new Set(), nivelMin: null, nivelMax: null, orden: "default", seleccion: new Set() };
+
 function modAbility(score) {
   const mod = Math.floor((score - 10) / 2);
   return mod >= 0 ? `+${mod}` : `${mod}`;
@@ -17,8 +19,10 @@ function statVitalsHTML(s) {
 }
 
 function statCardHTML(s) {
+  const elegida = state.seleccion.has(s.id);
   return `
-    <article class="stat-card" data-tipo="${s.tipo || ""}" data-stat-id="${s.id}">
+    <article class="stat-card ${elegida ? "is-selected" : ""}" data-tipo="${s.tipo || ""}" data-stat-id="${s.id}">
+      <button type="button" class="stat-card-select" data-select-stat title="Ver junto con otras fichas">${elegida ? "✓ Seleccionada" : "+ Comparar"}</button>
       <div class="stat-card-heading">
         <h3>${s.nombre}</h3>
         <p class="stat-card-role">${s.rol || ""}</p>
@@ -80,7 +84,6 @@ function openStatModal(s) {
   modal.showModal();
 }
 
-const state = { search: "", tipos: new Set(), nivelMin: null, nivelMax: null, orden: "default" };
 
 function renderTipoFilters() {
   const box = document.getElementById("tipoFilters");
@@ -150,11 +153,57 @@ function renderStats() {
   if (count) count.textContent = `${stats.length} ${stats.length === 1 ? "ficha" : "fichas"}`;
 }
 
+const compareBar = document.getElementById("statCompareBar");
+const compareModal = document.getElementById("statCompareModal");
+const compareContent = document.getElementById("statCompareContent");
+
+function updateCompareBar() {
+  const n = state.seleccion.size;
+  compareBar.classList.toggle("hidden", n === 0);
+  document.getElementById("statCompareCount").textContent = `${n} ${n === 1 ? "ficha seleccionada" : "fichas seleccionadas"}`;
+  document.getElementById("statCompareOpen").disabled = n < 2;
+}
+
+function openCompareModal() {
+  const elegidas = (window.STATS || []).filter(s => state.seleccion.has(s.id));
+  if (!elegidas.length) return;
+  compareContent.innerHTML = elegidas.map(s => `<section class="stat-compare-col">${statModalHTML(s)}</section>`).join("");
+  compareModal.showModal();
+}
+
 document.getElementById("statGrid").addEventListener("click", e => {
   const card = e.target.closest(".stat-card");
   if (!card) return;
+  if (e.target.closest("[data-select-stat]")) {
+    const id = card.dataset.statId;
+    const ahora = !state.seleccion.has(id);
+    if (ahora) state.seleccion.add(id); else state.seleccion.delete(id);
+    card.classList.toggle("is-selected", ahora);
+    e.target.closest("[data-select-stat]").textContent = ahora ? "✓ Seleccionada" : "+ Comparar";
+    updateCompareBar();
+    return;
+  }
   const s = (window.STATS || []).find(x => x.id === card.dataset.statId);
   if (s) openStatModal(s);
+});
+
+document.getElementById("statCompareOpen").addEventListener("click", openCompareModal);
+document.getElementById("statCompareClear").addEventListener("click", () => {
+  state.seleccion.clear();
+  document.querySelectorAll(".stat-card.is-selected").forEach(c => {
+    c.classList.remove("is-selected");
+    c.querySelector("[data-select-stat]").textContent = "+ Comparar";
+  });
+  updateCompareBar();
+});
+document.getElementById("statCompareClose").addEventListener("click", () => compareModal.close());
+compareContent.addEventListener("click", e => {
+  const link = e.target.closest(".stat-card-link");
+  if (!link) return;
+  const entry = ALL_ENTRIES.find(x => x.id === link.dataset.personajeId);
+  if (!entry) return;
+  compareModal.close();
+  openEntryModal(entry);
 });
 
 modalContent.addEventListener("click", e => {
