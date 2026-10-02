@@ -120,7 +120,7 @@
   }
 
   function textoEstado() {
-    if (fase === "listo") return "Pulsa play. Sacrifica a cada Hooey antes de que toque el piso.";
+    if (fase === "listo") return "Pulsa play. Sacrifica a cada Hooey antes de que toque el piso. Con tableta o ratón puedes apuntar y usar las teclas Z o X.";
     if (fase === "jugando") return `Racha: ${racha} · Velocidad ×${(velocidadActual() / VELOCIDAD_BASE).toFixed(1)}`;
     return `Un Hooey tocó el piso. Tu racha fue de ${racha}.`;
   }
@@ -143,7 +143,7 @@
   function actualizarEfectos() {
     const jugando = fase === "jugando";
     const opacidad = jugando && racha >= RACHA_FUEGO
-      ? Math.min(1, 0.08 + 0.1 * Math.floor((racha - RACHA_FUEGO) / PASO_FUEGO))
+      ? Math.min(1, 0.03 + 0.1 * Math.floor((racha - RACHA_FUEGO) / PASO_FUEGO))
       : 0;
     fuegoEl.style.opacity = String(opacidad);
 
@@ -248,6 +248,22 @@
     if (fase !== "jugando") return;
     const p = posicion(e);
     const i = indiceBajo(p.x, p.y);
+    if (i >= 0) sacrificar(i);
+  });
+
+  // Teclas Z y X: sacrifican al Hooey que esté bajo el cursor, para jugar con
+  // tableta al estilo osu! (el lápiz apunta, las teclas "clickean").
+  let cursor = null;
+  canvas.addEventListener("pointermove", e => { cursor = posicion(e); });
+  canvas.addEventListener("pointerleave", () => { cursor = null; });
+
+  document.addEventListener("keydown", e => {
+    if (e.repeat || fase !== "jugando" || !cursor) return;
+    const tecla = e.key.toLowerCase();
+    if (tecla !== "z" && tecla !== "x") return;
+    const destino = e.target;
+    if (destino && /^(input|textarea|select)$/i.test(destino.tagName)) return;
+    const i = indiceBajo(cursor.x, cursor.y);
     if (i >= 0) sacrificar(i);
   });
 
