@@ -87,6 +87,19 @@
   const RACHA_ZIGZAG = 40;
   const RACHA_OLEADA = 50;
   const RACHA_BLINDADO = 60;
+  // La explicación llega sola, en pantalla, cuando aparece cada novedad
+  const AVISOS = {
+    20: "Se está calentando…",
+    25: "Algunos caen más rápido",
+    29: "Alguien viene a bailar",
+    30: "Se están encogiendo",
+    35: "Las X no se tocan",
+    40: "Zigzag",
+    50: "¡Oleada!",
+    60: "Aura azul: dos golpes"
+  };
+  let avisoTexto = "";
+  let avisoTiempo = 0;
   let bufonesActuales = 0;
   let cierreVisible = true; // tras perder, espera a que el Hooey termine de caer fuera del cuadro
   let tiempoCaida = 0;
@@ -218,17 +231,17 @@
   }
 
   function textoEstado() {
-    if (fase === "listo") return "Pulsa play. Sacrifica a cada Hooey antes de que toque el piso. Con tableta o ratón puedes apuntar y usar las teclas Z o X. Ojo: los marcados con una X son impostores y no se tocan, y los de aura azul aguantan dos golpes.";
-    if (fase === "jugando") return `Racha: ${racha} · Velocidad ×${(velocidadActual() / VELOCIDAD_BASE).toFixed(1)}`;
-    if (motivoFin === "decoy") return `Sacrificaste a un impostor. Tu racha fue de ${racha}.`;
-    return `Un Hooey tocó el piso. Tu racha fue de ${racha}.`;
+    if (fase === "listo") return "Que ninguno toque el piso.";
+    if (fase === "jugando") return `Racha ${racha} · ×${(velocidadActual() / VELOCIDAD_BASE).toFixed(1)}`;
+    if (motivoFin === "decoy") return `Era un impostor. Racha de ${racha}.`;
+    return `Se cayó uno. Racha de ${racha}.`;
   }
 
   function textoCuenta() {
     if (sesion) {
-      return `Cuenta: ${miNombre || "sin nombre"} · Hooeys sacrificados: ${datosCuenta.total} · Mejor racha: ${datosCuenta.mejor}. Tus puntos se guardan en tu cuenta.`;
+      return `${miNombre || "Tu cuenta"} · ${datosCuenta.total} sacrificados · récord ${datosCuenta.mejor}`;
     }
-    return `Sin cuenta: llevas ${totalLocal} sacrificados (mejor racha ${recordLocal}) solo en este navegador. Inicia sesión (arriba a la derecha) para que tus puntos queden en tu cuenta y entren al ranking.`;
+    return `Invitado · ${totalLocal} sacrificados · récord ${recordLocal}. Inicia sesión para entrar al ranking.`;
   }
 
   function pintarMedidor() {
@@ -266,6 +279,7 @@
 
   function empezar() {
     racha = 0;
+    avisoTiempo = 0;
     motivoFin = "piso";
     if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
     if (window.SacrificioBufones) window.SacrificioBufones.precargar();
@@ -303,7 +317,7 @@
       refrescarTextos();
       cargarRankings();
     } catch (e) {
-      cuentaEl.textContent = `${textoCuenta()} No se pudo guardar esta partida en tu cuenta.`;
+      cuentaEl.textContent = `${textoCuenta()} · No se guardó esta partida.`;
     }
   }
 
@@ -324,6 +338,7 @@
     }
     hooeys.splice(indice, 1);
     racha += 1;
+    if (AVISOS[racha]) { avisoTexto = AVISOS[racha]; avisoTiempo = 2.6; }
     if (sesion) {
       datosCuenta.total += 1;
     } else {
@@ -419,6 +434,7 @@
   botonJugar.addEventListener("click", empezar);
 
   function actualizar(dt) {
+    if (avisoTiempo > 0) avisoTiempo -= dt;
     if (fase === "jugando") {
       const v = velocidadActual();
       temporizadorAparicion -= dt;
@@ -535,6 +551,18 @@
     }
     ctx.globalAlpha = 1;
 
+    if (fase === "jugando" && avisoTiempo > 0) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, avisoTiempo * 1.6, (2.6 - avisoTiempo) * 4 + 0.15);
+      ctx.fillStyle = "#e8e4d0";
+      ctx.textAlign = "center";
+      ctx.font = "600 38px sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,.8)";
+      ctx.shadowBlur = 8;
+      ctx.fillText(avisoTexto, ancho / 2, alto * 0.14);
+      ctx.restore();
+    }
+
     if (fase === "listo" || (fase === "fin" && cierreVisible)) {
       ctx.fillStyle = "rgba(0,0,0,.45)";
       ctx.fillRect(0, 0, ancho, alto);
@@ -545,7 +573,7 @@
       if (fase === "fin") {
         ctx.font = "24px sans-serif";
         ctx.fillStyle = "#b9b5a2";
-        ctx.fillText(motivoFin === "decoy" ? "Sacrificaste a un impostor" : "Un Hooey tocó el piso", ancho / 2, alto * 0.34);
+        ctx.fillText(motivoFin === "decoy" ? "Era un impostor" : "Se cayó uno", ancho / 2, alto * 0.34);
       }
     }
   }
@@ -565,7 +593,7 @@
   /* --- Ranking global (Supabase). Requiere scratchpad/hooey_ranking.sql --- */
   function pintarLista(el, filas, campo) {
     if (!filas.length) {
-      el.innerHTML = `<li class="sacrificio-vacio">Todavía no hay nadie en el ranking.</li>`;
+      el.innerHTML = `<li class="sacrificio-vacio">Nadie todavía.</li>`;
       return;
     }
     el.innerHTML = filas.map(f => `
@@ -595,7 +623,7 @@
       pintarLista(rankTotalEl, porTotal.data.filter(f => f.total > 0), "total");
       pintarLista(rankRachaEl, porRacha.data.filter(f => f.mejor_racha > 0), "mejor_racha");
     } catch (e) {
-      const aviso = `<li class="sacrificio-vacio">El ranking no está disponible por ahora.</li>`;
+      const aviso = `<li class="sacrificio-vacio">Ranking no disponible.</li>`;
       rankTotalEl.innerHTML = aviso;
       rankRachaEl.innerHTML = aviso;
     }
