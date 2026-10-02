@@ -299,7 +299,7 @@ window.FACCIONES = [
     tipo: "Investigación",
     region: "Imperio de Balutia, Kretor, Sindra",
     ideologia: "",
-    miembrosConocidos: ["coronel-tobi", "baltasar-sorel", "elias-morcant", "nico"],
+    miembrosConocidos: ["coronel-tobi", "baltasar-sorel", "elias-morcant", "nico", "clef"],
     relaciones: [
       { id: "el-semillero", signo: "Fuente de sujetos de estudio no declarados" },
       { id: "guardia-imperial-balutiana", signo: "Financiamiento indirecto de la Corona" }

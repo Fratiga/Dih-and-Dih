@@ -1324,5 +1324,63 @@ window.PERSONAJES = [
       <p>A simple vista parece un niño con una máscara demasiado grande para su cabeza. Es inquieto, curioso y le fascinan los instrumentos médicos. Trabaja como asistente de laboratorio. No parece entender del todo qué es la muerte y considera que los combates son una forma de practicar.</p>
       <p>Usa como lanza una enorme jeringa reforzada, cargada con un compuesto que altera la musculatura por un rato. Se lanza sobre los enemigos, se ríe cuando consigue inyectarles algo y busca todo el tiempo que Baltasar lo mire.</p>
     `
+  },
+  {
+    id: "clef",
+    title: "Clef",
+    category: "Personajes",
+    tags: ["npc", "científica"],
+    summary: "Científica en pasantía por parte del Instituto Vesalio. Fue la primera persona cuerda que los protagonistas encontraron en las instalaciones y les reveló que allí se investiga y experimenta, con muchos niños involucrados.",
+    retrato: "",
+    titulo: "Científica",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Científica en pasantía",
+    faccion: "fundacion-dexter",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "ulis", nota: "Le da órdenes y ella las sigue" },
+      { id: "darian", nota: "Descubrió que era un sujeto de pruebas" }
+    ],
+    content: `
+      <p>Una científica que hace una pasantía en las instalaciones por parte del
+      Instituto Vesalio. Fue la primera persona cuerda con la que se
+      encontraron los protagonistas dentro del lugar.</p>
+      <p>Les reveló de paso que están en unas instalaciones de investigación y
+      experimentación. No dio detalles de en qué consisten realmente, pero dijo
+      que hay muchos niños involucrados. Al ver a Darian se dio cuenta de que
+      era un sujeto de pruebas que había asimilado parte de La Carne, la
+      criatura de carne gigante, y le ordenó a Ulis que se transformara y
+      atacara.</p>
+    `
+  },
+  {
+    id: "ulis",
+    title: "Ulis",
+    category: "Personajes",
+    tags: ["npc", "ajolote"],
+    summary: "Niña pequeña con pinta de ajolote que sigue las órdenes de Clef, incluida la de transformarse en una bestia gigante para atacar a Darian.",
+    retrato: "",
+    titulo: "",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "",
+    faccion: "",
+    primeraAparicion: "",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "clef", nota: "Sigue sus órdenes" },
+      { id: "darian", nota: "Lo atacó por orden de Clef" }
+    ],
+    content: `
+      <p>Una niña con pinta de ajolote que parece muy pequeña. Habla poco y
+      sigue sobre todo las órdenes de Clef.</p>
+      <p>Cuando Clef descubrió que Darian era un sujeto de pruebas que había
+      asimilado parte de La Carne, la criatura de carne gigante, le ordenó
+      atacar. Ulis se transformó en una bestia gigante para hacerlo.</p>
+    `
   }
 ];
