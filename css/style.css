@@ -3224,11 +3224,11 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 .admin-bufon-conversacion > .admin-bufon-ciclo-titulo:first-child { margin-top: 0; padding-top: 0; border-top: none; }
 
-/* --- Juego: sacrificar al slime brujo --- */
+/* --- Juego: sacrificar a Hooey --- */
 .sacrificio-campo {
   display: block;
   width: 100%;
-  height: 340px;
+  height: 440px;
   background: var(--panel);
   border: 1px solid var(--border);
   touch-action: manipulation;
@@ -3254,3 +3254,28 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .header-juego-link img { height: 34px; width: auto; image-rendering: pixelated; }
 .header-juego-link:hover { color: var(--text); border-color: var(--accent-soft); }
 .header-titulo-fila { display: flex; align-items: center; flex-wrap: wrap; }
+
+.sacrificio-escenario { position: relative; }
+.sacrificio-play {
+  position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%);
+  width: 84px; height: 84px; border-radius: 50%;
+  background: var(--panel); border: 2px solid var(--accent-soft); color: var(--text);
+  font-size: 2rem; padding-left: 6px; cursor: pointer; line-height: 1;
+  transition: border-color .16s, transform .16s;
+}
+.sacrificio-play:hover { border-color: var(--text); transform: translate(-50%, -50%) scale(1.06); }
+.sacrificio-play.hidden { display: none; }
+.sacrificio-rankings { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 28px; }
+.sacrificio-ranking h3 { font-size: .95rem; margin: 0 0 10px; }
+.sacrificio-lista { list-style: none; margin: 0; padding: 0; counter-reset: puesto; }
+.sacrificio-lista li {
+  counter-increment: puesto;
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: .9rem;
+}
+.sacrificio-lista li::before { content: counter(puesto) "."; width: 1.6em; color: var(--muted); }
+.sacrificio-lista li span:first-child { flex: 1; }
+.sacrificio-lista li strong { color: var(--text); font-family: var(--font-heading), sans-serif; }
+.sacrificio-lista li.yo span:first-child { color: var(--text); font-weight: 600; }
+.sacrificio-vacio { color: var(--muted); font-size: .85rem; padding: 7px 0; }
+.sacrificio-lista li.sacrificio-vacio::before { content: none; }

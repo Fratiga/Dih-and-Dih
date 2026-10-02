@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sacrificio — Compendio del Mundo</title>
+  <title>Sacrificar a Hooey — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <script type="importmap">
   {
@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261014">
+  <link rel="stylesheet" href="css/style.css?v=20261015">
 </head>
 <body>
   <header class="site-header">
@@ -105,12 +105,26 @@
         <div class="content-top">
           <div>
             <p class="eyebrow">PASATIEMPOS</p>
-            <h2>Sacrificar al slime brujo</h2>
+            <h2>Sacrificar a Hooey</h2>
           </div>
         </div>
-        <canvas id="sacrificioCampo" class="sacrificio-campo" role="button" tabindex="0" aria-label="Sacrificar a un slime brujo"></canvas>
-        <p id="sacrificioContador" class="sacrificio-contador"></p>
-        <p class="sacrificio-ayuda">Haz clic en un slime brujo para sacrificarlo. Tu cuenta se guarda en este navegador.</p>
+        <div class="sacrificio-escenario">
+          <canvas id="sacrificioCampo" class="sacrificio-campo" role="button" tabindex="0" aria-label="Sacrificar a Hooey"></canvas>
+          <button type="button" id="sacrificioJugar" class="sacrificio-play" aria-label="Jugar">▶</button>
+        </div>
+        <p id="sacrificioEstado" class="sacrificio-contador"></p>
+        <p id="sacrificioCuenta" class="sacrificio-ayuda"></p>
+
+        <div class="sacrificio-rankings">
+          <div class="sacrificio-ranking">
+            <h3>Más Hooeys sacrificados</h3>
+            <ol id="sacrificioRankTotal" class="sacrificio-lista"></ol>
+          </div>
+          <div class="sacrificio-ranking">
+            <h3>Mejor racha sin tocar el piso</h3>
+            <ol id="sacrificioRankRacha" class="sacrificio-lista"></ol>
+          </div>
+        </div>
       </section>
     </section>
   </main>
@@ -120,29 +134,29 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="data/entries.js?v=20261014"></script>
-  <script src="data/personajes.js?v=20261014"></script>
-  <script src="data/lugares.js?v=20261014"></script>
-  <script src="data/facciones.js?v=20261014"></script>
-  <script src="data/pergaminos.js?v=20261014"></script>
-  <script src="data/armas.js?v=20261014"></script>
-  <script src="data/objetos.js?v=20261014"></script>
-  <script src="data/bestiario.js?v=20261014"></script>
-  <script src="data/razas.js?v=20261014"></script>
-  <script src="data/religiones.js?v=20261014"></script>
-  <script src="data/rotacion.js?v=20261014"></script>
-  <script src="data/musica.js?v=20261014"></script>
-  <script src="js/common.js?v=20261014"></script>
-  <script src="js/temas.js?v=20261014"></script>
-  <script src="js/player.js?v=20261014"></script>
-  <script src="js/modal.js?v=20261014"></script>
-  <script src="data/jumpscare.js?v=20261014"></script>
-  <script src="data/contrasenas.js?v=20261014"></script>
-  <script src="js/fichas-supabase.js?v=20261014"></script>
-  <script src="js/lado.js?v=20261014"></script>
-  <script src="js/slappy.js?v=20261014"></script>
-  <script src="js/busqueda-global.js?v=20261014"></script>
-  <script src="js/header-marquee.js?v=20261014"></script>
-  <script src="js/sacrificio.js?v=20261014"></script>
+  <script src="data/entries.js?v=20261015"></script>
+  <script src="data/personajes.js?v=20261015"></script>
+  <script src="data/lugares.js?v=20261015"></script>
+  <script src="data/facciones.js?v=20261015"></script>
+  <script src="data/pergaminos.js?v=20261015"></script>
+  <script src="data/armas.js?v=20261015"></script>
+  <script src="data/objetos.js?v=20261015"></script>
+  <script src="data/bestiario.js?v=20261015"></script>
+  <script src="data/razas.js?v=20261015"></script>
+  <script src="data/religiones.js?v=20261015"></script>
+  <script src="data/rotacion.js?v=20261015"></script>
+  <script src="data/musica.js?v=20261015"></script>
+  <script src="js/common.js?v=20261015"></script>
+  <script src="js/temas.js?v=20261015"></script>
+  <script src="js/player.js?v=20261015"></script>
+  <script src="js/modal.js?v=20261015"></script>
+  <script src="data/jumpscare.js?v=20261015"></script>
+  <script src="data/contrasenas.js?v=20261015"></script>
+  <script src="js/fichas-supabase.js?v=20261015"></script>
+  <script src="js/lado.js?v=20261015"></script>
+  <script src="js/slappy.js?v=20261015"></script>
+  <script src="js/busqueda-global.js?v=20261015"></script>
+  <script src="js/header-marquee.js?v=20261015"></script>
+  <script src="js/sacrificio.js?v=20261015"></script>
 </body>
 </html>

@@ -174,7 +174,7 @@ function initZoomPan(viewportEl, targetEl, opts = {}) {
   };
 }
 
-/* Acceso al juego del slime brujo, en el espacio vacío a la derecha del
+/* Acceso al juego de Hooey, en el espacio vacío a la derecha del
    título. Se inyecta acá para no repetirlo a mano en cada página. */
 (function () {
   const h1 = document.querySelector(".header-left h1");
@@ -186,7 +186,7 @@ function initZoomPan(viewportEl, targetEl, opts = {}) {
   const link = document.createElement("a");
   link.href = "sacrificio.html";
   link.className = "header-juego-link";
-  link.title = "Sacrificar al slime brujo";
-  link.innerHTML = '<img src="assets/cosas/slime-bruja.png" alt=""><span>Sacrificar slime</span>';
+  link.title = "Sacrificar a Hooey";
+  link.innerHTML = '<img src="assets/cosas/slime-bruja.png" alt=""><span>Sacrificar a Hooey</span>';
   fila.appendChild(link);
 })();
