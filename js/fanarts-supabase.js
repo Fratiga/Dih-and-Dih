@@ -16,6 +16,21 @@ async function fanartsCargarSides() {
   return mapa;
 }
 
+/* Fanarts eliminados desde Admin: se ocultan para todos (el archivo
+   sigue en el repo). Requiere scratchpad/fanarts_ocultos.sql. */
+async function fanartsCargarOcultos() {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase.from("fanarts_ocultos").select("src");
+  if (error) throw error;
+  return new Set((data || []).map(f => f.src));
+}
+
+async function fanartsAdminSetOculto(src, oculto) {
+  const supabase = await fichasCliente();
+  const { error } = await supabase.rpc("fanarts_admin_set_oculto", { p_src: src, p_oculto: oculto });
+  if (error) throw error;
+}
+
 /* p_side: "A", "B", o null (para volver a "compartido"). Falla del
    lado del servidor si quien llama no es Admin (fanarts_admin_set_side
    revisa fichas_es_admin() antes de tocar la tabla). */

@@ -2988,6 +2988,23 @@ body.has-mini-player { padding-bottom: 74px; }
   padding: 6px 8px 8px;
 }
 .admin-fanart-side .admin-side-btn { flex: 1; padding: 5px 4px; font-size: .72rem; text-align: center; }
+.admin-fanart-eliminar {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 0 8px 8px;
+  padding: 5px 4px;
+  background: none;
+  border: 1px solid #6b3a3a;
+  color: #c98b8b;
+  font-family: inherit;
+  font-size: .72rem;
+  cursor: pointer;
+}
+.admin-fanart-eliminar:hover { border-color: #a56a6a; color: #e0a0a0; }
+.admin-fanart-eliminar:disabled { opacity: .5; cursor: default; }
+.admin-fanart-card.is-oculto img,
+.admin-fanart-card.is-oculto .admin-fanart-nombre { opacity: .3; }
+.admin-fanart-card.is-oculto .admin-fanart-eliminar { border-color: var(--border); color: var(--text); }
 
 .admin-bufon-banner {
   color: var(--muted);

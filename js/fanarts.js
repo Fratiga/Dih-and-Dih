@@ -11,6 +11,7 @@ const fanartState = {
   porSide: { A: fanartTodos, B: fanartTodos },
 };
 let fanartReparto = {};
+let fanartOcultos = new Set();
 
 const fanartSideGate = document.getElementById("fanartSideGate");
 const fanartSection = document.getElementById("fanarts");
@@ -67,23 +68,27 @@ function elegirFanartSide(side) {
 
 function aplicarFiltroFanarts() {
   const lado = fanartState.sideElegido;
-  fanartState.fanarts = lado
-    ? fanartTodos.filter(src => { const side = fanartReparto[src]; return !side || side === lado; })
-    : fanartTodos;
+  fanartState.fanarts = fanartTodos.filter(src => {
+    if (fanartOcultos.has(src)) return false;
+    const side = fanartReparto[src];
+    return !lado || !side || side === lado;
+  });
   renderFanarts();
 }
 
 async function cargarRepartoFanarts() {
-  try {
-    fanartReparto = await fanartsCargarSides();
-  } catch (err) {
-    fanartReparto = {};
-  }
+  const [reparto, ocultos] = await Promise.all([
+    fanartsCargarSides().catch(() => ({})),
+    fanartsCargarOcultos().catch(() => new Set()),
+  ]);
+  fanartReparto = reparto;
+  fanartOcultos = ocultos;
+  const visibles = fanartTodos.filter(src => !fanartOcultos.has(src));
   fanartState.porSide = {
-    A: fanartTodos.filter(src => !fanartReparto[src] || fanartReparto[src] === "A"),
-    B: fanartTodos.filter(src => !fanartReparto[src] || fanartReparto[src] === "B"),
+    A: visibles.filter(src => !fanartReparto[src] || fanartReparto[src] === "A"),
+    B: visibles.filter(src => !fanartReparto[src] || fanartReparto[src] === "B"),
   };
-  if (fanartState.sideElegido) aplicarFiltroFanarts();
+  if (!fanartSection.classList.contains("hidden")) aplicarFiltroFanarts();
 }
 
 function iniciarFanartsPagina() {
@@ -92,6 +97,7 @@ function iniciarFanartsPagina() {
     fanartSection.classList.remove("hidden");
     fanartState.fanarts = fanartTodos;
     renderFanarts();
+    cargarRepartoFanarts();
     return;
   }
   construirGateFanarts();

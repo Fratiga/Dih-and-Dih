@@ -366,7 +366,7 @@
   // Sin fila en el reparto (side === undefined) = "Ambos" = compartido,
   // lo ve todo el mundo. Mismo criterio que aplicarRepartoFanarts() en
   // js/fanarts.js.
-  function pintarFanartsAdmin(fanarts, reparto) {
+  function pintarFanartsAdmin(fanarts, reparto, ocultos) {
     const cont = document.getElementById("adminFanartsLista");
     const count = document.getElementById("adminFanartsCount");
     count.textContent = `${fanarts.length} imagen${fanarts.length === 1 ? "" : "es"}`;
@@ -378,8 +378,9 @@
 
     cont.innerHTML = fanarts.map(src => {
       const side = reparto[src];
+      const oculto = ocultos.has(src);
       return `
-        <div class="admin-fanart-card" data-src="${escaparHtml(src)}">
+        <div class="admin-fanart-card ${oculto ? "is-oculto" : ""}" data-src="${escaparHtml(src)}">
           <img src="${src}" alt="${escaparHtml(prettyName(src))}" loading="lazy">
           <div class="admin-fanart-nombre">${escaparHtml(prettyName(src))}</div>
           <div class="admin-fanart-side">
@@ -387,6 +388,7 @@
             <button type="button" class="admin-side-btn ${side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
             <button type="button" class="admin-side-btn ${side === "B" ? "is-active" : ""}" data-side="B">${LADO_NOMBRES.B}</button>
           </div>
+          <button type="button" class="admin-fanart-eliminar" data-eliminar>${oculto ? "Restaurar" : "Eliminar"}</button>
         </div>
       `;
     }).join("");
@@ -402,6 +404,24 @@
         } catch (err) {
           card.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b === anterior));
           alert("No se pudo guardar. Prueba de nuevo.");
+        }
+      });
+    });
+
+    cont.querySelectorAll("[data-eliminar]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const card = btn.closest("[data-src]");
+        const ocultar = !card.classList.contains("is-oculto");
+        if (ocultar && !confirm("¿Eliminar este fanart de la galería? Puedes restaurarlo desde aquí cuando quieras.")) return;
+        btn.disabled = true;
+        try {
+          await fanartsAdminSetOculto(card.dataset.src, ocultar);
+          card.classList.toggle("is-oculto", ocultar);
+          btn.textContent = ocultar ? "Restaurar" : "Eliminar";
+        } catch (err) {
+          alert("No se pudo guardar. ¿Corriste scratchpad/fanarts_ocultos.sql en Supabase?");
+        } finally {
+          btn.disabled = false;
         }
       });
     });
@@ -429,7 +449,8 @@
     const fanartsEl = document.getElementById("adminFanartsLista");
     try {
       const reparto = await fanartsCargarSides();
-      pintarFanartsAdmin(window.FANARTS || [], reparto);
+      const ocultos = await fanartsCargarOcultos().catch(() => new Set());
+      pintarFanartsAdmin(window.FANARTS || [], reparto, ocultos);
     } catch (e) {
       console.error("[admin] Reparto de fanarts falló:", e);
       fanartsEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/fanarts_side.sql en Supabase?</p>`;
