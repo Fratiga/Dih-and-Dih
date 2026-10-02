@@ -1239,6 +1239,7 @@ window.PERSONAJES = [
     ocupacion: "Centinela",
     faccion: "fundacion-dexter",
     primeraAparicion: "",
+    lado: ["B"],
     relacionesConocidas: [],
     content: `
       <p>Un niño criado entre experimentos y procedimientos que nunca llegó a
@@ -1253,8 +1254,8 @@ window.PERSONAJES = [
     `
   },
   {
-    id: "baltasar-veyra",
-    title: "Dr. Baltasar Veyra",
+    id: "baltasar-sorel",
+    title: "Dr. Baltasar Sorel",
     category: "Personajes",
     tags: ["npc", "médico"],
     summary: "El veterano. Médico principal del escuadrón del laboratorio, anciano de voz ronca que trata a los sujetos de experimentación como material y es el único de los tres con experiencia real de combate.",
@@ -1266,6 +1267,7 @@ window.PERSONAJES = [
     ocupacion: "Médico",
     faccion: "fundacion-dexter",
     primeraAparicion: "",
+    lado: ["B"],
     relacionesConocidas: [
       { id: "elias-morcant", nota: "Su cirujano" },
       { id: "nico", nota: "Su asistente" }
@@ -1289,8 +1291,9 @@ window.PERSONAJES = [
     ocupacion: "Cirujano",
     faccion: "fundacion-dexter",
     primeraAparicion: "",
+    lado: ["B"],
     relacionesConocidas: [
-      { id: "baltasar-veyra", nota: "Lo ve como una figura de autoridad" },
+      { id: "baltasar-sorel", nota: "Lo ve como una figura de autoridad" },
       { id: "nico", nota: "Lo trata como a un colega" }
     ],
     content: `
@@ -1312,8 +1315,9 @@ window.PERSONAJES = [
     ocupacion: "Asistente de laboratorio",
     faccion: "fundacion-dexter",
     primeraAparicion: "",
+    lado: ["B"],
     relacionesConocidas: [
-      { id: "baltasar-veyra", nota: "Busca constantemente su atención" },
+      { id: "baltasar-sorel", nota: "Busca constantemente su atención" },
       { id: "elias-morcant", nota: "Lo trata como a un compañero" }
     ],
     content: `

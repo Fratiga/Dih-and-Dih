@@ -829,9 +829,9 @@ window.STATS = [
     estrategia: "«¡Alto, intrusos!» Se planta frente a la puerta y no la abandona. Saluda a quien parezca un superior, exige credenciales y se enfurece con quien lo contradice o se burla de su rango. Guarda ¡Fuego de artillería! para grupos amontonados."
   },
   {
-    id: "baltasar-veyra",
-    personajeId: "baltasar-veyra",
-    nombre: "Dr. Baltasar Veyra",
+    id: "baltasar-sorel",
+    personajeId: "baltasar-sorel",
+    nombre: "Dr. Baltasar Sorel",
     rol: "Apoyo / Manipulación biológica",
     tipo: "Humanoide",
     pv: 75,
