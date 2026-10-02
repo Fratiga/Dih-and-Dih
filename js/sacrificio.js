@@ -12,8 +12,8 @@
   const ANCHO_SPRITE = 100;
   const LOGICO_ANCHO = 960;
   const LOGICO_ALTO = 600;
-  const VELOCIDAD_BASE = 118;
-  const VELOCIDAD_POR_RACHA = 7;
+  const VELOCIDAD_BASE = 94;
+  const VELOCIDAD_POR_RACHA = 8;
   const VELOCIDAD_MAX = 560;
 
   const medidorEl = document.getElementById("sacrificioMedidor");
