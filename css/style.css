@@ -3279,3 +3279,11 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .sacrificio-lista li.yo span:first-child { color: var(--text); font-weight: 600; }
 .sacrificio-vacio { color: var(--muted); font-size: .85rem; padding: 7px 0; }
 .sacrificio-lista li.sacrificio-vacio::before { content: none; }
+
+.sacrificio-medidor {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  margin-bottom: 12px; padding: 12px 18px;
+  background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent-soft);
+}
+.sacrificio-medidor-etiqueta { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; }
+.sacrificio-medidor strong { font-family: var(--font-heading), sans-serif; font-size: 1.9rem; color: var(--text); line-height: 1; }

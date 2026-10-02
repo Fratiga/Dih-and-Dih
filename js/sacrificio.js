@@ -10,9 +10,15 @@
   const CLAVE_TOTAL = "compendioHooeyTotal";
   const CLAVE_RECORD = "compendioHooeyRecord";
   const ANCHO_SPRITE = 100;
-  const VELOCIDAD_BASE = 91;
+  const VELOCIDAD_BASE = 118;
   const VELOCIDAD_POR_RACHA = 7;
   const VELOCIDAD_MAX = 560;
+
+  const medidorEl = document.getElementById("sacrificioMedidor");
+
+  const musica = new Audio(encodeURI("assets/cosas/Mata al moco.mp3"));
+  musica.loop = true;
+  musica.volume = 0.6;
 
   const imagen = new Image();
   imagen.src = "assets/cosas/slime-bruja.png";
@@ -40,6 +46,7 @@
   // Con sesión, estos números vienen de la cuenta en Supabase. Sin sesión
   // son los locales de este navegador, que no entran al ranking.
   let datosCuenta = { total: 0, mejor: 0 };
+  let totalGlobal = null; // suma de todas las cuentas en el ranking; null = no disponible
 
   function velocidadActual() {
     return Math.min(VELOCIDAD_MAX, VELOCIDAD_BASE + racha * VELOCIDAD_POR_RACHA);
@@ -88,7 +95,16 @@
     return `Sin cuenta: llevas ${totalLocal} sacrificados (mejor racha ${recordLocal}) solo en este navegador. Inicia sesión (arriba a la derecha) para que tus puntos queden en tu cuenta y entren al ranking.`;
   }
 
+  function pintarMedidor() {
+    if (totalGlobal === null) { medidorEl.textContent = "—"; return; }
+    // Lo de la partida en curso todavía no está en el servidor: con cuenta se
+    // suma al vuelo para que el medidor suba con cada Hooey.
+    const enCurso = sesion && fase === "jugando" ? racha : 0;
+    medidorEl.textContent = (totalGlobal + enCurso).toLocaleString("es");
+  }
+
   function refrescarTextos() {
+    pintarMedidor();
     estadoEl.textContent = textoEstado();
     cuentaEl.textContent = textoCuenta();
     botonJugar.classList.toggle("hidden", fase === "jugando");
@@ -97,6 +113,9 @@
 
   function empezar() {
     racha = 0;
+    if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
+    musica.currentTime = 0;
+    musica.play().catch(() => { /* el navegador bloqueó el audio */ });
     hooeys = [nuevoHooey()];
     particulas = [];
     temporizadorAparicion = intervaloAparicion();
@@ -106,6 +125,7 @@
 
   function terminar() {
     fase = "fin";
+    musica.pause();
     if (!sesion && racha > recordLocal) {
       recordLocal = racha;
       guardarNumero(CLAVE_RECORD, recordLocal);
@@ -121,6 +141,7 @@
       const { error } = await supabase.rpc("hooey_registrar_partida", { p_racha: valor });
       if (error) throw error;
       datosCuenta.mejor = Math.max(datosCuenta.mejor, valor);
+      if (totalGlobal !== null) totalGlobal += valor;
       refrescarTextos();
       cargarRankings();
     } catch (e) {
@@ -261,6 +282,7 @@
   }
 
   window.addEventListener("resize", ajustarTamano);
+  window.addEventListener("pagehide", () => musica.pause());
 
   /* --- Ranking global (Supabase). Requiere scratchpad/hooey_ranking.sql --- */
   function pintarLista(el, filas, campo) {
@@ -287,6 +309,11 @@
       ]);
       if (porTotal.error) throw porTotal.error;
       if (porRacha.error) throw porRacha.error;
+      const todos = await supabase.from("hooey_puntajes").select("total");
+      if (!todos.error) {
+        totalGlobal = (todos.data || []).reduce((suma, f) => suma + Number(f.total || 0), 0);
+        pintarMedidor();
+      }
       pintarLista(rankTotalEl, porTotal.data.filter(f => f.total > 0), "total");
       pintarLista(rankRachaEl, porRacha.data.filter(f => f.mejor_racha > 0), "mejor_racha");
     } catch (e) {
