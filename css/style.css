@@ -2906,6 +2906,71 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fichas-avatar-resumen .fichas-imagen-preview { aspect-ratio: 3 / 4; }
 .fichas-avatar-resumen .fichas-imagen-preview img { object-fit: contain; }
 
+/* --- Ficha compacta: secciones plegables y filas condensadas --- */
+.fichas-seccion { margin-bottom: 12px; border: 1px solid var(--border); background: var(--fondo-tarjeta, var(--panel)); }
+.fichas-seccion > summary {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; cursor: pointer; list-style: none; user-select: none;
+}
+.fichas-seccion > summary::-webkit-details-marker { display: none; }
+.fichas-seccion > summary h3 { margin: 0; font-size: .9rem; }
+.fichas-seccion > summary::after { content: "+"; color: var(--muted); font-size: 1.1rem; line-height: 1; }
+.fichas-seccion[open] > summary::after { content: "−"; }
+.fichas-seccion[open] > summary { border-bottom: 1px solid var(--border); }
+.fichas-seccion-cuerpo { padding: 14px 16px 16px; }
+
+.fichas-mas { margin-top: 10px; }
+.fichas-mas > summary {
+  cursor: pointer; color: var(--muted); font-size: .76rem; letter-spacing: .03em;
+  list-style: none; user-select: none; width: fit-content;
+}
+.fichas-mas > summary::-webkit-details-marker { display: none; }
+.fichas-mas > summary::before { content: "+ "; }
+.fichas-mas[open] > summary::before { content: "− "; }
+.fichas-mas > summary:hover { color: var(--text); }
+.fichas-mas-cuerpo { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; }
+
+.fichas-grid-chico { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.fichas-seccion .fichas-repetible-item { padding: 12px 14px; margin-bottom: 10px; }
+.fichas-seccion .fichas-repetible-header { margin-bottom: 8px; }
+.fichas-seccion .fichas-copiar-fila { margin-top: 8px; }
+.fichas-seccion .fichas-copiar-btn { padding: 5px 10px; font-size: .74rem; }
+.fichas-seccion .fichas-modo-tirada { margin-top: 8px; }
+
+.fichas-identidad-fila { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.fichas-identidad-fila .fichas-avatar-resumen { width: 130px; flex-shrink: 0; }
+.fichas-identidad-campos { flex: 1; min-width: min(260px, 100%); }
+.fichas-atributos-grid--chico { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+.fichas-atributos-grid--chico .fichas-field input { width: 100%; box-sizing: border-box; }
+.fichas-seccion .fichas-atributo-card { padding: 10px; }
+.fichas-seccion .fichas-atributo-card .fichas-field-resultado { font-size: 1.25rem; }
+
+.fichas-compacto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.fichas-compacto-item { border: 1px solid var(--border); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.fichas-compacto-titulo { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; }
+.fichas-compacto-check { display: flex; align-items: center; gap: 6px; font-size: .76rem; color: var(--muted); }
+.fichas-compacto-item .fichas-atributo-ajuste { width: 100%; box-sizing: border-box; }
+
+.fichas-hab-lista { display: flex; flex-direction: column; }
+.fichas-hab-fila {
+  display: grid; grid-template-columns: minmax(130px, 1fr) minmax(120px, 160px) 70px 44px;
+  gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border);
+}
+.fichas-hab-fila:last-child { border-bottom: none; }
+.fichas-hab-nombre { font-size: .85rem; }
+.fichas-hab-nombre small { color: var(--muted); }
+.fichas-hab-fila select {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 5px 8px; font-family: inherit; font-size: .8rem; border-radius: 0; outline: none;
+}
+.fichas-hab-fila .fichas-atributo-ajuste { padding: 5px 8px; box-sizing: border-box; width: 100%; }
+.fichas-hab-fila .fichas-field-resultado { text-align: right; font-size: .95rem; }
+
+@media (max-width: 720px) {
+  .fichas-hab-fila { grid-template-columns: 1fr 1fr; }
+  .fichas-hab-fila .fichas-hab-nombre { grid-column: 1 / -1; }
+}
+
 /* --- Impresión --- */
 @media print {
   .site-header, .quick-nav, .fichas-tabs, .fichas-link-button,
@@ -2915,8 +2980,9 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 
 @media (max-width: 720px) {
+  .content:has(#fichasContent) { min-width: 0; }
   .fichas-encabezado { grid-template-columns: auto 1fr; }
-  .fichas-encabezado-stats { grid-column: 1 / -1; justify-content: space-between; }
+  .fichas-encabezado-stats { grid-column: 1 / -1; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
   .fichas-tabs { overflow-x: auto; flex-wrap: nowrap; }
 }
 

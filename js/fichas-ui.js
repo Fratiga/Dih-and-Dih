@@ -531,21 +531,39 @@
     return `<select data-bind="${bind}">${opciones.map(([v, t]) => `<option value="${esc(v)}" ${v === valor ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
   }
 
+  /* --- Secciones plegables: cada bloque se puede colapsar para que la
+     ficha no se sienta interminable. El estado abierto/cerrado se guarda en
+     memoria porque renderTabs() recrea todo el HTML al agregar o quitar
+     filas, y sin esto las secciones volverían a su estado inicial. --- */
+  const seccionesAbiertas = new Map();
+  let imprimiendo = false;
+  window.addEventListener("beforeprint", () => {
+    imprimiendo = true;
+    document.querySelectorAll("#fichasTabsPaneles details").forEach(d => { d.dataset.eraAbierta = d.open ? "1" : "0"; d.open = true; });
+  });
+  window.addEventListener("afterprint", () => {
+    document.querySelectorAll("#fichasTabsPaneles details").forEach(d => { d.open = d.dataset.eraAbierta === "1"; });
+    setTimeout(() => { imprimiendo = false; }, 200);
+  });
+  function seccion(id, titulo, cuerpo, abiertaPorDefecto = false) {
+    const abierta = seccionesAbiertas.has(id) ? seccionesAbiertas.get(id) : abiertaPorDefecto;
+    return `
+      <details class="fichas-fieldset fichas-seccion" data-seccion="${id}" ${abierta ? "open" : ""}>
+        <summary><h3>${titulo}</h3></summary>
+        <div class="fichas-seccion-cuerpo">${cuerpo}</div>
+      </details>`;
+  }
+  function mas(cuerpo, etiqueta = "Más opciones") {
+    return `<details class="fichas-mas"><summary>${etiqueta}</summary><div class="fichas-mas-cuerpo">${cuerpo}</div></details>`;
+  }
+
   /* ---------------------------------------------------------------------- */
   function panelResumen() {
     const p = personajeActual;
-    return `
-    <section class="fichas-panel" data-panel="resumen">
-      <div class="fichas-fieldset">
-        <h3>Avatar</h3>
-        <div class="fichas-avatar-resumen">
-          ${slotImagenTablero("retrato")}
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Identidad</h3>
-        <div class="fichas-field-grid wide">
+    const identidad = `
+      <div class="fichas-identidad-fila">
+        <div class="fichas-avatar-resumen">${slotImagenTablero("retrato")}</div>
+        <div class="fichas-field-grid fichas-identidad-campos">
           <div class="fichas-field"><label>Nombre</label>${campoTexto("identidad.nombre", p.identidad.nombre)}</div>
           <div class="fichas-field"><label>Pronombres</label>${campoTexto("identidad.pronombres", p.identidad.pronombres)}</div>
           <div class="fichas-field"><label>Raza</label>${campoTexto("identidad.raza", p.identidad.raza)}</div>
@@ -556,60 +574,57 @@
           <div class="fichas-field"><label>Alineamiento</label>${campoTexto("identidad.alineamiento", p.identidad.alineamiento)}</div>
           <div class="fichas-field"><label>Campaña / Side</label>${campoTexto("side", p.side)}</div>
         </div>
-      </div>
+      </div>`;
 
-      <div class="fichas-fieldset">
-        <h3>Clases adicionales</h3>
-        <div data-lista="clasesExtra">${(p.identidad.clasesExtra || []).map((c, i) => filaClaseExtra(c, i)).join("")}</div>
-        <button type="button" class="secondary-button fichas-add-btn" data-add="claseExtra">+ Agregar clase</button>
+    const atributos = `
+      <div class="fichas-atributos-grid">
+        ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
+          <div class="fichas-atributo-card">
+            <small>${nombre}</small>
+            ${campoNumero(`atributos.${id}`, p.atributos[id])}
+            <div class="fichas-field-resultado" data-calc="modAtributo:${id}">${fichasSigno(fichasModificadorFinal(p, id))}</div>
+          </div>
+        `).join("")}
       </div>
+      <p class="fichas-puntos-info">Puntos por tu nivel: <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesNetos(p)}</strong>. Repartidos: <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
+      <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tenés ${fichasPuntosDisponiblesNetos(p) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>`;
 
-      <div class="fichas-fieldset">
-        <h3>Atributos</h3>
-        <div class="fichas-atributos-grid">
-          ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
-            <div class="fichas-atributo-card">
-              <small>${nombre}</small>
-              ${campoNumero(`atributos.${id}`, p.atributos[id])}
-              <div class="fichas-field-resultado" data-calc="modAtributo:${id}">${fichasSigno(fichasModificadorFinal(p, id))}</div>
-              <input type="number" class="fichas-atributo-ajuste" data-bind="ajustesAtributos.${id}" value="${esc(p.ajustesAtributos[id])}" placeholder="ajuste manual" title="Ajuste manual (objetos, maldiciones, reglas caseras)">
-            </div>
-          `).join("")}
-        </div>
-        <p class="fichas-puntos-info">Puntos disponibles por tu nivel: <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesNetos(p)}</strong>. Puntos repartidos: <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
-        <div class="fichas-field fichas-puntos-feats"><label>Puntos cambiados por un feat (en vez de stats)</label>${campoNumero("puntosFeats", p.puntosFeats, 'min="0"')}</div>
-        <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tenés ${fichasPuntosDisponiblesNetos(p) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>
+    const ajustes = `
+      <p class="fichas-imagenes-ayuda">Todo personaje arranca en 8 en cada característica. Los bonos raciales se suman a la puntuación final, pero no cuentan como puntos de mejora repartidos.</p>
+      <div class="fichas-atributos-grid fichas-atributos-grid--chico">
+        ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
+          <div class="fichas-field">
+            <label>${nombre}</label>
+            ${campoNumero(`atributosRaciales.${id}`, p.atributosRaciales[id])}
+            <input type="number" class="fichas-atributo-ajuste" data-bind="ajustesAtributos.${id}" value="${esc(p.ajustesAtributos[id])}" placeholder="ajuste" title="Ajuste manual (objetos, maldiciones, reglas caseras)">
+          </div>
+        `).join("")}
       </div>
+      <p class="fichas-puntos-info">Arriba de cada característica: bono racial. Abajo: ajuste manual.</p>
+      <div class="fichas-field-grid">
+        <div class="fichas-field"><label>Puntos cambiados por un feat</label>${campoNumero("puntosFeats", p.puntosFeats, 'min="0"')}</div>
+        <div class="fichas-field"><label>Competencia base</label><div class="fichas-field-resultado">${fichasSigno(fichasCompetenciaBase(p.identidad.nivelTotal))}</div></div>
+        <div class="fichas-field"><label>Ajuste de competencia</label>${campoNumero("competenciaAjusteManual", p.competenciaAjusteManual)}</div>
+        <div class="fichas-field"><label>Competencia total</label><div class="fichas-field-resultado" data-calc="competenciaTotal">${fichasSigno(fichasCompetenciaTotal(p))}</div></div>
+      </div>`;
 
-      <div class="fichas-fieldset">
-        <h3>Bonificaciones raciales</h3>
-        <p class="fichas-imagenes-ayuda">Todo personaje arranca en 8 en cada característica. Los bonos raciales se suman a la puntuación final de arriba, pero no cuentan como puntos de mejora repartidos.</p>
-        <div class="fichas-atributos-grid">
-          ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
-            <div class="fichas-atributo-card fichas-atributo-card--mini">
-              <small>${nombre}</small>
-              <div class="fichas-field"><label>Racial</label>${campoNumero(`atributosRaciales.${id}`, p.atributosRaciales[id])}</div>
-            </div>
-          `).join("")}
-        </div>
-      </div>
+    const clases = `
+      <div data-lista="clasesExtra">${(p.identidad.clasesExtra || []).map((c, i) => filaClaseExtra(c, i)).join("")}</div>
+      <button type="button" class="secondary-button fichas-add-btn" data-add="claseExtra">+ Agregar clase</button>`;
 
-      <div class="fichas-fieldset">
-        <h3>Bonificador de competencia</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>Base (por nivel)</label><div class="fichas-field-resultado">${fichasSigno(fichasCompetenciaBase(p.identidad.nivelTotal))}</div></div>
-          <div class="fichas-field"><label>Ajuste manual</label>${campoNumero("competenciaAjusteManual", p.competenciaAjusteManual)}</div>
-          <div class="fichas-field"><label>Total</label><div class="fichas-field-resultado" data-calc="competenciaTotal">${fichasSigno(fichasCompetenciaTotal(p))}</div></div>
-        </div>
-      </div>
+    const descripcion = `
+      <div class="fichas-field-grid wide">
+        <div class="fichas-field"><label>Descripción física</label>${campoTextarea("identidad.descripcionFisica", p.identidad.descripcionFisica)}</div>
+        <div class="fichas-field"><label>Historia resumida</label>${campoTextarea("identidad.historia", p.identidad.historia)}</div>
+      </div>`;
 
-      <div class="fichas-fieldset">
-        <h3>Descripción e historia</h3>
-        <div class="fichas-field-grid wide">
-          <div class="fichas-field"><label>Descripción física</label>${campoTextarea("identidad.descripcionFisica", p.identidad.descripcionFisica)}</div>
-          <div class="fichas-field"><label>Historia resumida</label>${campoTextarea("identidad.historia", p.identidad.historia)}</div>
-        </div>
-      </div>
+    return `
+    <section class="fichas-panel" data-panel="resumen">
+      ${seccion("identidad", "Identidad", identidad, true)}
+      ${seccion("atributos", "Atributos", atributos, true)}
+      ${seccion("ajustes", "Bonos, feats y competencia", ajustes)}
+      ${seccion("clases", "Clases adicionales", clases)}
+      ${seccion("descripcion", "Descripción e historia", descripcion)}
     </section>`;
   }
 
@@ -627,79 +642,69 @@
   /* ---------------------------------------------------------------------- */
   function panelCombate() {
     const p = personajeActual;
+    const pv = `
+      <div class="fichas-field-grid fichas-grid-chico">
+        <div class="fichas-field"><label>PV máximos</label>${campoNumero("combate.pvMax", p.combate.pvMax)}</div>
+        <div class="fichas-field"><label>PV actuales</label>${campoNumero("combate.pvActual", p.combate.pvActual)}</div>
+        <div class="fichas-field"><label>PV temporales</label>${campoNumero("combate.pvTemp", p.combate.pvTemp)}</div>
+        <div class="fichas-field"><label>Dados de golpe</label>${campoNumero("combate.dadosGolpe.actuales", p.combate.dadosGolpe.actuales)}</div>
+        <div class="fichas-field"><label>Dados máx.</label>${campoNumero("combate.dadosGolpe.max", p.combate.dadosGolpe.max)}</div>
+        <div class="fichas-field"><label>Tipo de dado</label>${campoTexto("combate.dadosGolpe.dado", p.combate.dadosGolpe.dado)}</div>
+      </div>
+      <div class="fichas-combate-rapido">
+        <input type="number" id="fcRecibirDano" placeholder="daño">
+        <button type="button" class="secondary-button" id="fcBtnRecibirDano">Recibir daño</button>
+        <input type="number" id="fcRecuperarPV" placeholder="PV">
+        <button type="button" class="secondary-button" id="fcBtnRecuperarPV">Recuperar PV</button>
+        <input type="number" id="fcTempPV" placeholder="PV temp.">
+        <button type="button" class="secondary-button" id="fcBtnTempPV">Añadir/retirar PV temp.</button>
+        <button type="button" class="secondary-button" id="fcBtnDescansoCorto">Descanso corto</button>
+        <button type="button" class="secondary-button" id="fcBtnDescansoLargo">Descanso largo</button>
+      </div>`;
+
+    const defensa = `
+      <div class="fichas-field-grid fichas-grid-chico">
+        <div class="fichas-field"><label>Modo de CA</label>${campoSelect("combate.ca.modo", p.combate.ca.modo, [["manual", "Manual"], ["calculada", "Calculada"]])}</div>
+        <div class="fichas-field"><label>CA manual</label>${campoNumero("combate.ca.manual", p.combate.ca.manual)}</div>
+        <div class="fichas-field"><label>Armadura base</label>${campoNumero("combate.ca.armadura", p.combate.ca.armadura)}</div>
+        <div class="fichas-field"><label>Escudo</label>${campoNumero("combate.ca.escudo", p.combate.ca.escudo)}</div>
+        <div class="fichas-field"><label>Otros ajustes</label>${campoNumero("combate.ca.otros", p.combate.ca.otros)}</div>
+        <div class="fichas-field fichas-field-check"><label>¿Suma Destreza?</label>${campoCheck("combate.ca.incluyeDes", p.combate.ca.incluyeDes)}</div>
+        <div class="fichas-field"><label>CA total</label><div class="fichas-field-resultado" data-calc="caTotal">${fichasCATotal(p)}</div></div>
+        <div class="fichas-field"><label>Velocidad</label>${campoNumero("combate.velocidad", p.combate.velocidad)}</div>
+        <div class="fichas-field"><label>Ajuste de iniciativa</label>${campoNumero("combate.iniciativaAjuste", p.combate.iniciativaAjuste)}</div>
+        <div class="fichas-field"><label>Iniciativa total</label><div class="fichas-field-resultado" data-calc="iniciativaTotal">${fichasSigno(fichasIniciativaTotal(p))}</div></div>
+      </div>
+      <div class="fichas-copiar-fila">
+        <button type="button" class="fichas-copiar-btn" data-copiar="iniciativa">Copiar iniciativa para Roll20</button>
+      </div>`;
+
+    const muerte = `
+      <div class="fichas-field-grid fichas-grid-chico">
+        <div class="fichas-field"><label>Éxitos (0-3)</label>${campoNumero("combate.salvMuerte.exitos", p.combate.salvMuerte.exitos, 'min="0" max="3"')}</div>
+        <div class="fichas-field"><label>Fallos (0-3)</label>${campoNumero("combate.salvMuerte.fallos", p.combate.salvMuerte.fallos, 'min="0" max="3"')}</div>
+      </div>`;
+
+    const estados = `
+      <div class="fichas-field-grid wide">
+        <div class="fichas-field"><label>Condiciones activas (separadas por coma)</label>${campoTexto("combate.condiciones", p.combate.condiciones)}</div>
+        <div class="fichas-field"><label>Resistencias</label>${campoTexto("combate.resistencias", p.combate.resistencias)}</div>
+        <div class="fichas-field"><label>Inmunidades</label>${campoTexto("combate.inmunidades", p.combate.inmunidades)}</div>
+        <div class="fichas-field"><label>Vulnerabilidades</label>${campoTexto("combate.vulnerabilidades", p.combate.vulnerabilidades)}</div>
+        <div class="fichas-field"><label>Sentidos especiales</label>${campoTexto("combate.sentidos", p.combate.sentidos)}</div>
+      </div>`;
+
+    const ataques = `
+      <div data-lista="ataques">${p.ataques.map(a => filaAtaque(a)).join("")}</div>
+      <button type="button" class="secondary-button fichas-add-btn" data-add="ataque">+ Agregar ataque</button>`;
+
     return `
     <section class="fichas-panel" data-panel="combate">
-      <div class="fichas-fieldset">
-        <h3>Puntos de golpe</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>PV máximos</label>${campoNumero("combate.pvMax", p.combate.pvMax)}</div>
-          <div class="fichas-field"><label>PV actuales</label>${campoNumero("combate.pvActual", p.combate.pvActual)}</div>
-          <div class="fichas-field"><label>PV temporales</label>${campoNumero("combate.pvTemp", p.combate.pvTemp)}</div>
-          <div class="fichas-field"><label>Dados de golpe actuales</label>${campoNumero("combate.dadosGolpe.actuales", p.combate.dadosGolpe.actuales)}</div>
-          <div class="fichas-field"><label>Dados de golpe máximos</label>${campoNumero("combate.dadosGolpe.max", p.combate.dadosGolpe.max)}</div>
-          <div class="fichas-field"><label>Dado de golpe</label>${campoTexto("combate.dadosGolpe.dado", p.combate.dadosGolpe.dado)}</div>
-        </div>
-        <div class="fichas-combate-rapido">
-          <input type="number" id="fcRecibirDano" placeholder="daño">
-          <button type="button" class="secondary-button" id="fcBtnRecibirDano">Recibir daño</button>
-          <input type="number" id="fcRecuperarPV" placeholder="PV">
-          <button type="button" class="secondary-button" id="fcBtnRecuperarPV">Recuperar PV</button>
-          <input type="number" id="fcTempPV" placeholder="PV temp.">
-          <button type="button" class="secondary-button" id="fcBtnTempPV">Añadir/retirar PV temp.</button>
-          <button type="button" class="secondary-button" id="fcBtnDescansoCorto">Descanso corto</button>
-          <button type="button" class="secondary-button" id="fcBtnDescansoLargo">Descanso largo</button>
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Clase de armadura</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>Modo</label>${campoSelect("combate.ca.modo", p.combate.ca.modo, [["manual", "Manual"], ["calculada", "Calculada"]])}</div>
-          <div class="fichas-field"><label>CA manual</label>${campoNumero("combate.ca.manual", p.combate.ca.manual)}</div>
-          <div class="fichas-field"><label>Armadura base</label>${campoNumero("combate.ca.armadura", p.combate.ca.armadura)}</div>
-          <div class="fichas-field"><label>Escudo</label>${campoNumero("combate.ca.escudo", p.combate.ca.escudo)}</div>
-          <div class="fichas-field"><label>Otros ajustes</label>${campoNumero("combate.ca.otros", p.combate.ca.otros)}</div>
-          <div class="fichas-field fichas-field-check"><label>¿Suma Destreza?</label>${campoCheck("combate.ca.incluyeDes", p.combate.ca.incluyeDes)}</div>
-          <div class="fichas-field"><label>CA total</label><div class="fichas-field-resultado" data-calc="caTotal">${fichasCATotal(p)}</div></div>
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Iniciativa y velocidad</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>Ajuste manual de iniciativa</label>${campoNumero("combate.iniciativaAjuste", p.combate.iniciativaAjuste)}</div>
-          <div class="fichas-field"><label>Iniciativa total</label><div class="fichas-field-resultado" data-calc="iniciativaTotal">${fichasSigno(fichasIniciativaTotal(p))}</div></div>
-          <div class="fichas-field"><label>Velocidad</label>${campoNumero("combate.velocidad", p.combate.velocidad)}</div>
-        </div>
-        <div class="fichas-copiar-fila">
-          <button type="button" class="fichas-copiar-btn" data-copiar="iniciativa">Copiar iniciativa para Roll20</button>
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Salvaciones contra la muerte</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>Éxitos (0-3)</label>${campoNumero("combate.salvMuerte.exitos", p.combate.salvMuerte.exitos, 'min="0" max="3"')}</div>
-          <div class="fichas-field"><label>Fallos (0-3)</label>${campoNumero("combate.salvMuerte.fallos", p.combate.salvMuerte.fallos, 'min="0" max="3"')}</div>
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Condiciones, resistencias y sentidos</h3>
-        <div class="fichas-field-grid wide">
-          <div class="fichas-field"><label>Condiciones activas (separadas por coma)</label>${campoTexto("combate.condiciones", p.combate.condiciones)}</div>
-          <div class="fichas-field"><label>Resistencias</label>${campoTexto("combate.resistencias", p.combate.resistencias)}</div>
-          <div class="fichas-field"><label>Inmunidades</label>${campoTexto("combate.inmunidades", p.combate.inmunidades)}</div>
-          <div class="fichas-field"><label>Vulnerabilidades</label>${campoTexto("combate.vulnerabilidades", p.combate.vulnerabilidades)}</div>
-          <div class="fichas-field"><label>Sentidos especiales</label>${campoTexto("combate.sentidos", p.combate.sentidos)}</div>
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Ataques</h3>
-        <div data-lista="ataques">${p.ataques.map(a => filaAtaque(a)).join("")}</div>
-        <button type="button" class="secondary-button fichas-add-btn" data-add="ataque">+ Agregar ataque</button>
-      </div>
+      ${seccion("pv", "Puntos de golpe", pv, true)}
+      ${seccion("defensa", "Defensa, iniciativa y velocidad", defensa, true)}
+      ${seccion("ataques", "Ataques", ataques, true)}
+      ${seccion("estados", "Condiciones, resistencias y sentidos", estados)}
+      ${seccion("muerte", "Salvaciones contra la muerte", muerte)}
     </section>`;
   }
 
@@ -711,19 +716,14 @@
           <input type="text" data-bind="__ataque__.${a.id}.nombre" value="${esc(a.nombre)}" placeholder="Nombre del ataque">
           <button type="button" class="fichas-repetible-remove" data-remove="ataque:${a.id}">×</button>
         </div>
-        <div class="fichas-field-grid">
+        <div class="fichas-field-grid fichas-grid-chico">
           <div class="fichas-field"><label>Atributo</label>${campoSelect(`__ataque__.${a.id}.atributo`, a.atributo, Object.entries(NOMBRES_ATRIBUTOS).map(([id, n]) => [id, n]))}</div>
           <div class="fichas-field fichas-field-check"><label>¿Competente?</label>${campoCheck(`__ataque__.${a.id}.competente`, a.competente)}</div>
           <div class="fichas-field"><label>Ajuste adicional</label>${campoNumero(`__ataque__.${a.id}.ajusteAtaque`, a.ajusteAtaque)}</div>
           <div class="fichas-field"><label>Bonificador total</label><div class="fichas-field-resultado" data-calc="ataqueTotal:${a.id}">${fichasSigno(fichasAtaqueTotal(p, a))}</div></div>
-          <div class="fichas-field"><label>Fórmula de daño</label>${campoTexto(`__ataque__.${a.id}.dano`, a.dano, 'placeholder="1d8+2"')}</div>
+          <div class="fichas-field"><label>Daño</label>${campoTexto(`__ataque__.${a.id}.dano`, a.dano, 'placeholder="1d8+2"')}</div>
           <div class="fichas-field"><label>Tipo de daño</label>${campoTexto(`__ataque__.${a.id}.tipoDano`, a.tipoDano)}</div>
-          <div class="fichas-field"><label>Alcance</label>${campoTexto(`__ataque__.${a.id}.alcance`, a.alcance)}</div>
-          <div class="fichas-field"><label>Munición actual</label>${campoNumero(`__ataque__.${a.id}.municionActual`, a.municionActual ?? "")}</div>
-          <div class="fichas-field"><label>Munición máxima</label>${campoNumero(`__ataque__.${a.id}.municionMax`, a.municionMax ?? "")}</div>
         </div>
-        <div class="fichas-field"><label>Propiedades</label>${campoTexto(`__ataque__.${a.id}.propiedades`, a.propiedades)}</div>
-        <div class="fichas-field"><label>Notas</label>${campoTextarea(`__ataque__.${a.id}.notas`, a.notas, 2)}</div>
         <div class="fichas-modo-tirada">
           Tirada:
           <label><input type="radio" name="modo-ataque-${a.id}" value="normal" checked> normal</label>
@@ -735,68 +735,71 @@
           <button type="button" class="fichas-copiar-btn" data-copiar="dano" data-id="${a.id}">Copiar daño</button>
           <button type="button" class="fichas-copiar-btn" data-copiar="ataquedano" data-id="${a.id}">Copiar ataque y daño</button>
         </div>
+        ${mas(`
+          <div class="fichas-field-grid fichas-grid-chico">
+            <div class="fichas-field"><label>Alcance</label>${campoTexto(`__ataque__.${a.id}.alcance`, a.alcance)}</div>
+            <div class="fichas-field"><label>Munición actual</label>${campoNumero(`__ataque__.${a.id}.municionActual`, a.municionActual ?? "")}</div>
+            <div class="fichas-field"><label>Munición máxima</label>${campoNumero(`__ataque__.${a.id}.municionMax`, a.municionMax ?? "")}</div>
+          </div>
+          <div class="fichas-field"><label>Propiedades</label>${campoTexto(`__ataque__.${a.id}.propiedades`, a.propiedades)}</div>
+          <div class="fichas-field"><label>Notas</label>${campoTextarea(`__ataque__.${a.id}.notas`, a.notas, 2)}</div>`)}
       </div>`;
   }
 
   /* ---------------------------------------------------------------------- */
   function panelHabilidades() {
     const p = personajeActual;
+    const salvaciones = `
+      <div class="fichas-compacto-grid">
+        ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
+          <div class="fichas-compacto-item">
+            <div class="fichas-compacto-titulo"><strong>${nombre}</strong>
+              <span class="fichas-field-resultado" data-calc="salvTotal:${id}">${fichasSigno(fichasSalvacionTotal(p, id))}</span>
+            </div>
+            <label class="fichas-compacto-check">${campoCheck(`salvaciones.${id}.competente`, p.salvaciones[id].competente)} Competente</label>
+            <input type="number" class="fichas-atributo-ajuste" data-bind="salvaciones.${id}.ajuste" value="${esc(p.salvaciones[id].ajuste)}" placeholder="ajuste" title="Ajuste adicional">
+          </div>
+        `).join("")}
+      </div>`;
+
+    const habilidades = `
+      <p class="fichas-puntos-info">Percepción pasiva: <strong data-calc="percepcionPasiva">${fichasPercepcionPasiva(p)}</strong></p>
+      <div class="fichas-hab-lista">
+        ${FICHAS_HABILIDADES.map(h => `
+          <div class="fichas-hab-fila">
+            <span class="fichas-hab-nombre">${h.nombre} <small>(${NOMBRES_ATRIBUTOS[h.atributo]})</small></span>
+            <select data-bind="habilidades.${h.id}.nivel" title="Nivel de competencia">${[["ninguna", "Sin competencia"], ["competente", "Competente"], ["pericia", "Pericia"]].map(([v, t]) => `<option value="${v}" ${v === p.habilidades[h.id].nivel ? "selected" : ""}>${t}</option>`).join("")}</select>
+            <input type="number" class="fichas-atributo-ajuste" data-bind="habilidades.${h.id}.ajuste" value="${esc(p.habilidades[h.id].ajuste)}" placeholder="ajuste" title="Ajuste adicional">
+            <span class="fichas-field-resultado" data-calc="habTotal:${h.id}">${fichasSigno(fichasHabilidadTotal(p, h.id))}</span>
+          </div>
+        `).join("")}
+      </div>
+      <p class="fichas-puntos-info">Para copiar una tirada a Roll20, usa la pestaña Roll20.</p>`;
+
     return `
     <section class="fichas-panel" data-panel="habilidades">
-      <div class="fichas-fieldset">
-        <h3>Tiradas de salvación</h3>
-        <div class="fichas-field-grid wide">
-          ${Object.entries(NOMBRES_ATRIBUTOS).map(([id, nombre]) => `
-            <div class="fichas-repetible-item">
-              <div class="fichas-repetible-header"><strong>${nombre}</strong>
-                <span class="fichas-field-resultado" data-calc="salvTotal:${id}">${fichasSigno(fichasSalvacionTotal(p, id))}</span>
-              </div>
-              <div class="fichas-field-check"><label>Competente</label>${campoCheck(`salvaciones.${id}.competente`, p.salvaciones[id].competente)}</div>
-              <div class="fichas-field"><label>Ajuste adicional</label>${campoNumero(`salvaciones.${id}.ajuste`, p.salvaciones[id].ajuste)}</div>
-              <button type="button" class="fichas-copiar-btn" data-copiar="salvacion" data-id="${id}">Copiar para Roll20</button>
-            </div>
-          `).join("")}
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Habilidades</h3>
-        <p class="fichas-puntos-info">Percepción pasiva: <strong data-calc="percepcionPasiva">${fichasPercepcionPasiva(p)}</strong></p>
-        <div class="fichas-field-grid wide">
-          ${FICHAS_HABILIDADES.map(h => `
-            <div class="fichas-repetible-item">
-              <div class="fichas-repetible-header"><strong>${h.nombre}</strong> <small>(${NOMBRES_ATRIBUTOS[h.atributo]})</small>
-                <span class="fichas-field-resultado" data-calc="habTotal:${h.id}">${fichasSigno(fichasHabilidadTotal(p, h.id))}</span>
-              </div>
-              <div class="fichas-field"><label>Nivel</label>${campoSelect(`habilidades.${h.id}.nivel`, p.habilidades[h.id].nivel, [["ninguna", "Sin competencia"], ["competente", "Competente"], ["pericia", "Pericia"]])}</div>
-              <div class="fichas-field"><label>Ajuste adicional</label>${campoNumero(`habilidades.${h.id}.ajuste`, p.habilidades[h.id].ajuste)}</div>
-              <button type="button" class="fichas-copiar-btn" data-copiar="habilidad" data-id="${h.id}">Copiar para Roll20</button>
-            </div>
-          `).join("")}
-        </div>
-      </div>
+      ${seccion("salvaciones", "Tiradas de salvación", salvaciones, true)}
+      ${seccion("habilidades", "Habilidades", habilidades, true)}
     </section>`;
   }
 
   /* ---------------------------------------------------------------------- */
   function panelRasgos() {
     const p = personajeActual;
+    const rasgos = `
+      <div data-lista="rasgos">${p.rasgos.map(r => filaRasgo(r)).join("")}</div>
+      <button type="button" class="secondary-button fichas-add-btn" data-add="rasgo">+ Agregar rasgo/recurso</button>`;
+    const competencias = `
+      <div class="fichas-field-grid wide">
+        <div class="fichas-field"><label>Armas</label>${campoTexto("competenciasArmas", p.competenciasArmas || "")}</div>
+        <div class="fichas-field"><label>Armaduras</label>${campoTexto("competenciasArmaduras", p.competenciasArmaduras || "")}</div>
+        <div class="fichas-field"><label>Herramientas</label>${campoTexto("competenciasHerramientas", p.competenciasHerramientas || "")}</div>
+        <div class="fichas-field"><label>Idiomas</label>${campoTexto("idiomas", p.idiomas || "")}</div>
+      </div>`;
     return `
     <section class="fichas-panel" data-panel="rasgos">
-      <div class="fichas-fieldset">
-        <h3>Rasgos, competencias y recursos</h3>
-        <div data-lista="rasgos">${p.rasgos.map(r => filaRasgo(r)).join("")}</div>
-        <button type="button" class="secondary-button fichas-add-btn" data-add="rasgo">+ Agregar rasgo/recurso</button>
-      </div>
-      <div class="fichas-fieldset">
-        <h3>Competencias e idiomas (texto libre)</h3>
-        <div class="fichas-field-grid wide">
-          <div class="fichas-field"><label>Armas</label>${campoTexto("competenciasArmas", p.competenciasArmas || "")}</div>
-          <div class="fichas-field"><label>Armaduras</label>${campoTexto("competenciasArmaduras", p.competenciasArmaduras || "")}</div>
-          <div class="fichas-field"><label>Herramientas</label>${campoTexto("competenciasHerramientas", p.competenciasHerramientas || "")}</div>
-          <div class="fichas-field"><label>Idiomas</label>${campoTexto("idiomas", p.idiomas || "")}</div>
-        </div>
-      </div>
+      ${seccion("rasgos", "Rasgos y recursos", rasgos, true)}
+      ${seccion("competencias", "Competencias e idiomas", competencias)}
     </section>`;
   }
 
@@ -808,14 +811,15 @@
           <button type="button" class="fichas-repetible-remove" data-remove="rasgo:${r.id}">×</button>
         </div>
         <div class="fichas-field"><label>Descripción</label>${campoTextarea(`__rasgo__.${r.id}.descripcion`, r.descripcion, 2)}</div>
-        <div class="fichas-field-grid">
+        <div class="fichas-field-grid fichas-grid-chico">
           <div class="fichas-field"><label>Usos actuales</label>${campoNumero(`__rasgo__.${r.id}.usosActuales`, r.usosActuales ?? "")}</div>
           <div class="fichas-field"><label>Usos máximos</label>${campoNumero(`__rasgo__.${r.id}.usosMax`, r.usosMax ?? "")}</div>
           <div class="fichas-field"><label>Tipo de acción</label>${campoSelect(`__rasgo__.${r.id}.tipoAccion`, r.tipoAccion || "accion", [["accion", "Acción"], ["adicional", "Acción adicional"], ["reaccion", "Reacción"], ["pasiva", "Pasiva"], ["otra", "Otra"]])}</div>
           <div class="fichas-field"><label>Recuperación</label>${campoSelect(`__rasgo__.${r.id}.recuperacion`, r.recuperacion || "manual", [["corto", "Descanso corto"], ["largo", "Descanso largo"], ["manual", "Manual"]])}</div>
         </div>
-        <div class="fichas-field"><label>Fórmula para Roll20 (opcional)</label>${campoTexto(`__rasgo__.${r.id}.formulaRoll20`, r.formulaRoll20)}</div>
-        ${r.formulaRoll20 ? `<div class="fichas-copiar-fila"><button type="button" class="fichas-copiar-btn" data-copiar="rasgo" data-id="${r.id}">Copiar para Roll20</button></div>` : ""}
+        ${mas(`
+          <div class="fichas-field"><label>Fórmula para Roll20 (opcional)</label>${campoTexto(`__rasgo__.${r.id}.formulaRoll20`, r.formulaRoll20)}</div>
+          ${r.formulaRoll20 ? `<div class="fichas-copiar-fila"><button type="button" class="fichas-copiar-btn" data-copiar="rasgo" data-id="${r.id}">Copiar para Roll20</button></div>` : ""}`)}
       </div>`;
   }
 
@@ -823,33 +827,31 @@
   function panelHechizos() {
     const p = personajeActual;
     const l = p.lanzamiento;
-    return `
-    <section class="fichas-panel" data-panel="hechizos">
-      <div class="fichas-fieldset">
-        <h3>Lanzamiento de hechizos</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>Atributo</label>${campoSelect("lanzamiento.atributo", l.atributo, Object.entries(NOMBRES_ATRIBUTOS).map(([id, n]) => [id, n]))}</div>
+    const lanzamiento = `
+      <div class="fichas-field-grid fichas-grid-chico">
+        <div class="fichas-field"><label>Atributo</label>${campoSelect("lanzamiento.atributo", l.atributo, Object.entries(NOMBRES_ATRIBUTOS).map(([id, n]) => [id, n]))}</div>
+        <div class="fichas-field"><label>Ataque mágico total</label><div class="fichas-field-resultado" data-calc="lanzAtaque">${fichasSigno(fichasLanzamientoAtaque(p))}</div></div>
+        <div class="fichas-field"><label>CD total</label><div class="fichas-field-resultado" data-calc="lanzCD">${fichasLanzamientoCD(p)}</div></div>
+      </div>
+      ${mas(`
+        <div class="fichas-field-grid fichas-grid-chico">
           <div class="fichas-field fichas-field-check"><label>Usar valores manuales</label>${campoCheck("lanzamiento.manual", l.manual)}</div>
           <div class="fichas-field"><label>Ajuste ataque mágico</label>${campoNumero("lanzamiento.ajusteAtaque", l.ajusteAtaque)}</div>
           <div class="fichas-field"><label>Ajuste CD</label>${campoNumero("lanzamiento.ajusteCD", l.ajusteCD)}</div>
           <div class="fichas-field"><label>Ataque mágico manual</label>${campoNumero("lanzamiento.ataqueManual", l.ataqueManual)}</div>
           <div class="fichas-field"><label>CD manual</label>${campoNumero("lanzamiento.cdManual", l.cdManual)}</div>
-          <div class="fichas-field"><label>Ataque mágico total</label><div class="fichas-field-resultado" data-calc="lanzAtaque">${fichasSigno(fichasLanzamientoAtaque(p))}</div></div>
-          <div class="fichas-field"><label>CD total</label><div class="fichas-field-resultado" data-calc="lanzCD">${fichasLanzamientoCD(p)}</div></div>
-        </div>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Espacios de conjuro</h3>
-        <div data-lista="espacios">${l.espacios.map((e, i) => filaEspacio(e, i)).join("")}</div>
-        <button type="button" class="secondary-button fichas-add-btn" data-add="espacio">+ Agregar nivel de espacio</button>
-      </div>
-
-      <div class="fichas-fieldset">
-        <h3>Hechizos</h3>
-        <div data-lista="hechizos">${p.hechizos.map(h => filaHechizo(h)).join("")}</div>
-        <button type="button" class="secondary-button fichas-add-btn" data-add="hechizo">+ Agregar hechizo</button>
-      </div>
+        </div>`, "Valores manuales")}`;
+    const espacios = `
+      <div data-lista="espacios">${l.espacios.map((e, i) => filaEspacio(e, i)).join("")}</div>
+      <button type="button" class="secondary-button fichas-add-btn" data-add="espacio">+ Agregar nivel de espacio</button>`;
+    const hechizos = `
+      <div data-lista="hechizos">${p.hechizos.map(h => filaHechizo(h)).join("")}</div>
+      <button type="button" class="secondary-button fichas-add-btn" data-add="hechizo">+ Agregar hechizo</button>`;
+    return `
+    <section class="fichas-panel" data-panel="hechizos">
+      ${seccion("lanzamiento", "Lanzamiento de hechizos", lanzamiento, true)}
+      ${seccion("espacios", "Espacios de conjuro", espacios, true)}
+      ${seccion("hechizos", "Hechizos", hechizos, true)}
     </section>`;
   }
 
@@ -875,46 +877,47 @@
           <input type="text" data-bind="__hechizo__.${h.id}.nombre" value="${esc(h.nombre)}" placeholder="Nombre del hechizo">
           <button type="button" class="fichas-repetible-remove" data-remove="hechizo:${h.id}">×</button>
         </div>
-        <div class="fichas-field-grid">
+        <div class="fichas-field-grid fichas-grid-chico">
           <div class="fichas-field"><label>Nivel</label>${campoNumero(`__hechizo__.${h.id}.nivel`, h.nivel)}</div>
-          <div class="fichas-field"><label>Escuela</label>${campoTexto(`__hechizo__.${h.id}.escuela`, h.escuela)}</div>
-          <div class="fichas-field"><label>Tiempo de lanzamiento</label>${campoTexto(`__hechizo__.${h.id}.tiempo`, h.tiempo)}</div>
-          <div class="fichas-field"><label>Alcance</label>${campoTexto(`__hechizo__.${h.id}.alcance`, h.alcance)}</div>
-          <div class="fichas-field"><label>Duración</label>${campoTexto(`__hechizo__.${h.id}.duracion`, h.duracion)}</div>
-          <div class="fichas-field"><label>Componentes</label>${campoTexto(`__hechizo__.${h.id}.componentes`, h.componentes)}</div>
-          <div class="fichas-field fichas-field-check"><label>Concentración</label>${campoCheck(`__hechizo__.${h.id}.concentracion`, h.concentracion)}</div>
-          <div class="fichas-field fichas-field-check"><label>Ritual</label>${campoCheck(`__hechizo__.${h.id}.ritual`, h.ritual)}</div>
           <div class="fichas-field"><label>Tipo</label>${campoSelect(`__hechizo__.${h.id}.tipo`, h.tipo || "ninguno", [["ataque", "Ataque mágico"], ["salvacion", "Requiere salvación"], ["ninguno", "Ninguno"]])}</div>
-          <div class="fichas-field"><label>Fórmula de daño/curación</label>${campoTexto(`__hechizo__.${h.id}.dano`, h.dano, 'placeholder="8d6 o 1d4+3"')}</div>
+          <div class="fichas-field"><label>Daño/curación</label>${campoTexto(`__hechizo__.${h.id}.dano`, h.dano, 'placeholder="8d6 o 1d4+3"')}</div>
           <div class="fichas-field"><label>Tipo de daño</label>${campoTexto(`__hechizo__.${h.id}.tipoDano`, h.tipoDano)}</div>
         </div>
         <div class="fichas-field"><label>Descripción</label>${campoTextarea(`__hechizo__.${h.id}.descripcion`, h.descripcion, 2)}</div>
-        <div class="fichas-field"><label>Notas</label>${campoTextarea(`__hechizo__.${h.id}.notas`, h.notas, 2)}</div>
         <div class="fichas-copiar-fila">
           <button type="button" class="fichas-copiar-btn" data-copiar="hechizo" data-id="${h.id}">Copiar para Roll20</button>
         </div>
+        ${mas(`
+          <div class="fichas-field-grid fichas-grid-chico">
+            <div class="fichas-field"><label>Escuela</label>${campoTexto(`__hechizo__.${h.id}.escuela`, h.escuela)}</div>
+            <div class="fichas-field"><label>Tiempo de lanzamiento</label>${campoTexto(`__hechizo__.${h.id}.tiempo`, h.tiempo)}</div>
+            <div class="fichas-field"><label>Alcance</label>${campoTexto(`__hechizo__.${h.id}.alcance`, h.alcance)}</div>
+            <div class="fichas-field"><label>Duración</label>${campoTexto(`__hechizo__.${h.id}.duracion`, h.duracion)}</div>
+            <div class="fichas-field"><label>Componentes</label>${campoTexto(`__hechizo__.${h.id}.componentes`, h.componentes)}</div>
+            <div class="fichas-field fichas-field-check"><label>Concentración</label>${campoCheck(`__hechizo__.${h.id}.concentracion`, h.concentracion)}</div>
+            <div class="fichas-field fichas-field-check"><label>Ritual</label>${campoCheck(`__hechizo__.${h.id}.ritual`, h.ritual)}</div>
+          </div>
+          <div class="fichas-field"><label>Notas</label>${campoTextarea(`__hechizo__.${h.id}.notas`, h.notas, 2)}</div>`)}
       </div>`;
   }
 
   /* ---------------------------------------------------------------------- */
   function panelInventario() {
     const p = personajeActual;
+    const monedas = `
+      <div class="fichas-field-grid fichas-grid-chico">
+        <div class="fichas-field"><label>Oro</label>${campoNumero("inventario.monedas.oro", p.inventario.monedas.oro)}</div>
+        <div class="fichas-field"><label>Plata</label>${campoNumero("inventario.monedas.plata", p.inventario.monedas.plata)}</div>
+        <div class="fichas-field"><label>Cobre</label>${campoNumero("inventario.monedas.cobre", p.inventario.monedas.cobre)}</div>
+        <div class="fichas-field fichas-field-check"><label>Usar cálculo de peso</label>${campoCheck("inventario.usarPeso", p.inventario.usarPeso)}</div>
+      </div>`;
+    const objetos = `
+      <div data-lista="objetos">${p.inventario.objetos.map(o => filaObjeto(o, p.inventario.usarPeso)).join("")}</div>
+      <button type="button" class="secondary-button fichas-add-btn" data-add="objeto">+ Agregar objeto</button>`;
     return `
     <section class="fichas-panel" data-panel="inventario">
-      <div class="fichas-fieldset">
-        <h3>Monedas</h3>
-        <div class="fichas-field-grid">
-          <div class="fichas-field"><label>Oro</label>${campoNumero("inventario.monedas.oro", p.inventario.monedas.oro)}</div>
-          <div class="fichas-field"><label>Plata</label>${campoNumero("inventario.monedas.plata", p.inventario.monedas.plata)}</div>
-          <div class="fichas-field"><label>Cobre</label>${campoNumero("inventario.monedas.cobre", p.inventario.monedas.cobre)}</div>
-          <div class="fichas-field fichas-field-check"><label>Usar cálculo de peso</label>${campoCheck("inventario.usarPeso", p.inventario.usarPeso)}</div>
-        </div>
-      </div>
-      <div class="fichas-fieldset">
-        <h3>Objetos</h3>
-        <div data-lista="objetos">${p.inventario.objetos.map(o => filaObjeto(o, p.inventario.usarPeso)).join("")}</div>
-        <button type="button" class="secondary-button fichas-add-btn" data-add="objeto">+ Agregar objeto</button>
-      </div>
+      ${seccion("monedas", "Monedas", monedas, true)}
+      ${seccion("objetos", "Objetos", objetos, true)}
     </section>`;
   }
 
@@ -925,16 +928,19 @@
           <input type="text" data-bind="__objeto__.${o.id}.nombre" value="${esc(o.nombre)}" placeholder="Nombre del objeto">
           <button type="button" class="fichas-repetible-remove" data-remove="objeto:${o.id}">×</button>
         </div>
-        <div class="fichas-field-grid">
+        <div class="fichas-field-grid fichas-grid-chico">
           <div class="fichas-field"><label>Cantidad</label>${campoNumero(`__objeto__.${o.id}.cantidad`, o.cantidad)}</div>
           ${usarPeso ? `<div class="fichas-field"><label>Peso</label>${campoNumero(`__objeto__.${o.id}.peso`, o.peso ?? "")}</div>` : ""}
           <div class="fichas-field"><label>Estado</label>${campoSelect(`__objeto__.${o.id}.estado`, o.estado, [["equipado", "Equipado"], ["guardado", "Guardado"], ["consumido", "Consumido"]])}</div>
-          <div class="fichas-field"><label>Cargas actuales</label>${campoNumero(`__objeto__.${o.id}.cargasActuales`, o.cargasActuales ?? "")}</div>
-          <div class="fichas-field"><label>Cargas máximas</label>${campoNumero(`__objeto__.${o.id}.cargasMax`, o.cargasMax ?? "")}</div>
-          <div class="fichas-field"><label>Valor</label>${campoNumero(`__objeto__.${o.id}.valor`, o.valor ?? "")}</div>
         </div>
-        <div class="fichas-field"><label>Descripción</label>${campoTextarea(`__objeto__.${o.id}.descripcion`, o.descripcion, 2)}</div>
-        <div class="fichas-field"><label>Notas</label>${campoTexto(`__objeto__.${o.id}.notas`, o.notas)}</div>
+        ${mas(`
+          <div class="fichas-field-grid fichas-grid-chico">
+            <div class="fichas-field"><label>Cargas actuales</label>${campoNumero(`__objeto__.${o.id}.cargasActuales`, o.cargasActuales ?? "")}</div>
+            <div class="fichas-field"><label>Cargas máximas</label>${campoNumero(`__objeto__.${o.id}.cargasMax`, o.cargasMax ?? "")}</div>
+            <div class="fichas-field"><label>Valor</label>${campoNumero(`__objeto__.${o.id}.valor`, o.valor ?? "")}</div>
+          </div>
+          <div class="fichas-field"><label>Descripción</label>${campoTextarea(`__objeto__.${o.id}.descripcion`, o.descripcion, 2)}</div>
+          <div class="fichas-field"><label>Notas</label>${campoTexto(`__objeto__.${o.id}.notas`, o.notas)}</div>`)}
       </div>`;
   }
 
@@ -1122,6 +1128,11 @@
   ========================================================================== */
   function inicializarEventosTabs() {
     const cont = document.getElementById("fichasTabsPaneles");
+
+    cont.addEventListener("toggle", e => {
+      const d = e.target;
+      if (!imprimiendo && d.dataset && d.dataset.seccion) seccionesAbiertas.set(d.dataset.seccion, d.open);
+    }, true);
 
     cont.addEventListener("input", manejarCambioBinding);
     cont.addEventListener("change", manejarCambioBinding);
