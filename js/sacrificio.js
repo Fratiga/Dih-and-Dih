@@ -10,7 +10,7 @@
   const CLAVE_TOTAL = "compendioHooeyTotal";
   const CLAVE_RECORD = "compendioHooeyRecord";
   const ANCHO_SPRITE = 100;
-  const VELOCIDAD_BASE = 70;
+  const VELOCIDAD_BASE = 91;
   const VELOCIDAD_POR_RACHA = 7;
   const VELOCIDAD_MAX = 560;
 
