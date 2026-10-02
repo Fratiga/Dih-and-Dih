@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Religión — Compendio del Mundo</title>
+  <title>Sacrificio — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <script type="importmap">
   {
@@ -80,7 +80,7 @@
       <a href="facciones.html" class="nav-chip">Facciones</a>
       <a href="personajes.html" class="nav-chip">Personajes</a>
       <a href="razas.html" class="nav-chip">Razas</a>
-      <a href="religion.html" class="nav-chip active">Religión</a>
+      <a href="religion.html" class="nav-chip">Religión</a>
     </div>
     <div class="nav-group">
       <a href="textos.html" class="nav-chip">Textos</a>
@@ -99,36 +99,18 @@
     </div>
   </nav>
 
-  <main class="layout">
-    <aside class="sidebar">
-      <div class="search-box">
-        <label for="search">Buscar</label>
-        <input id="search" type="search" placeholder="Culto, deidad, creencia...">
-      </div>
-
-      <div class="filter-group">
-        <h3>Etiquetas</h3>
-        <div id="tagFilters" class="pill-list"></div>
-      </div>
-
-      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
-    </aside>
-
+  <main class="layout layout-solo">
     <section class="content">
-      <section id="compendio" class="page-section">
+      <section class="page-section">
         <div class="content-top">
           <div>
-            <p class="eyebrow">FE Y CREENCIAS</p>
-            <h2 id="pageTitle">Religión</h2>
+            <p class="eyebrow">PASATIEMPOS</p>
+            <h2>Sacrificar al slime brujo</h2>
           </div>
-          <span id="resultCount" class="result-count"></span>
         </div>
-
-        <div id="entryGrid" class="entry-grid"></div>
-        <div id="emptyState" class="empty-state hidden">
-          <h3>No se encontraron entradas</h3>
-          <p>Prueba con otro término o elimina alguno de los filtros.</p>
-        </div>
+        <canvas id="sacrificioCampo" class="sacrificio-campo" role="button" tabindex="0" aria-label="Sacrificar a un slime brujo"></canvas>
+        <p id="sacrificioContador" class="sacrificio-contador"></p>
+        <p class="sacrificio-ayuda">Haz clic en un slime brujo para sacrificarlo. Tu cuenta se guarda en este navegador.</p>
       </section>
     </section>
   </main>
@@ -153,15 +135,6 @@
   <script src="js/common.js?v=20261014"></script>
   <script src="js/temas.js?v=20261014"></script>
   <script src="js/player.js?v=20261014"></script>
-  <script>
-    window.PAGE_CATEGORY = "Religión";
-    window.TAG_GROUPS = {
-      otherLabel: "Otras características",
-      groups: {
-        "Cultura de origen": ["roah", "brurland", "ornamen", "nikaalia", "mravec", "chakur", "nernib", "pelgiria", "kalvia", "seosan", "nobriana", "har"]
-      }
-    };
-  </script>
   <script src="js/modal.js?v=20261014"></script>
   <script src="data/jumpscare.js?v=20261014"></script>
   <script src="data/contrasenas.js?v=20261014"></script>
@@ -170,7 +143,6 @@
   <script src="js/slappy.js?v=20261014"></script>
   <script src="js/busqueda-global.js?v=20261014"></script>
   <script src="js/header-marquee.js?v=20261014"></script>
-  <script src="js/compendio.js?v=20261014"></script>
-  <script src="js/huella-bufon.js?v=20261014"></script>
+  <script src="js/sacrificio.js?v=20261014"></script>
 </body>
 </html>

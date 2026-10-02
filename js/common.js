@@ -173,3 +173,20 @@ function initZoomPan(viewportEl, targetEl, opts = {}) {
     reset() { scale = minScale; tx = 0; ty = 0; apply(); }
   };
 }
+
+/* Acceso al juego del slime brujo, en el espacio vacío a la derecha del
+   título. Se inyecta acá para no repetirlo a mano en cada página. */
+(function () {
+  const h1 = document.querySelector(".header-left h1");
+  if (!h1 || document.querySelector(".header-juego-link")) return;
+  const fila = document.createElement("div");
+  fila.className = "header-titulo-fila";
+  h1.parentNode.insertBefore(fila, h1);
+  fila.appendChild(h1);
+  const link = document.createElement("a");
+  link.href = "sacrificio.html";
+  link.className = "header-juego-link";
+  link.title = "Sacrificar al slime brujo";
+  link.innerHTML = '<img src="assets/cosas/slime-bruja.png" alt=""><span>Sacrificar slime</span>';
+  fila.appendChild(link);
+})();
