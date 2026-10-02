@@ -3297,3 +3297,15 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .sacrificio-bufones canvas { display: block; width: 100%; height: 100%; pointer-events: none; }
 .sacrificio-escenario { overflow: hidden; }
 .sacrificio-play { z-index: 3; }
+
+/* --- Página aparte del juego de Hooey (sin cabecera del sitio) --- */
+.sacrificio-pagina { margin: 0; }
+.sacrificio-barra {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+}
+.sacrificio-volver { color: var(--muted); font-size: .85rem; text-decoration: none; }
+.sacrificio-volver:hover { color: var(--text); }
+.sacrificio-contenido { max-width: 1000px; margin: 0 auto; padding: 22px 24px 60px; }
+.sacrificio-titulo { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+.sacrificio-pagina .sacrificio-campo { height: min(66vh, 560px); }

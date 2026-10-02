@@ -27,31 +27,59 @@
     return Math.min(26, 2.5 + Math.max(0, racha - RACHA_FUEGO) * 0.55);
   }
 
+  // Los 54 cuadros se recortan de la hoja y se dejan decodificados antes de
+  // que haga falta: dibujar directo desde la hoja de 3456x1296 obligaba al
+  // navegador a decodificarla en pleno juego, y de ahí venía el tirón.
+  let cuadrosFuego = [];
+  let preparandoFuego = false;
+
+  function pausa() {
+    return new Promise(resolve => setTimeout(resolve, 0));
+  }
+
+  async function prepararFuego() {
+    if (preparandoFuego || cuadrosFuego.length === FUEGO.total) return;
+    preparandoFuego = true;
+    try {
+      prepararFuego();
+      await hojaFuego.decode();
+      const cuadros = [];
+      for (let i = 0; i < FUEGO.total; i++) {
+        cuadros.push(await createImageBitmap(hojaFuego, (i % FUEGO.cols) * FUEGO.w, Math.floor(i / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h));
+        if (i % 6 === 5) await pausa();
+      }
+      cuadrosFuego = cuadros;
+    } catch (e) {
+      preparandoFuego = false;
+    }
+  }
+
   function dibujarFuego(dt) {
-    if (fase !== "jugando" || racha < RACHA_FUEGO || !hojaFuego.complete || !hojaFuego.naturalWidth) {
+    if (fase !== "jugando" || racha < RACHA_FUEGO || cuadrosFuego.length !== FUEGO.total) {
       fuegoCtx.clearRect(0, 0, FUEGO.w, FUEGO.h);
       return;
     }
     fuegoPos = (fuegoPos + velocidadFuego() * dt) % FUEGO.total;
     const i = Math.floor(fuegoPos);
     const frac = fuegoPos - i;
-    const siguiente = (i + 1) % FUEGO.total;
     fuegoCtx.clearRect(0, 0, FUEGO.w, FUEGO.h);
     // Mezcla de dos cuadros vecinos para que la cámara lenta se vea fluida
     fuegoCtx.globalAlpha = 1;
-    fuegoCtx.drawImage(hojaFuego, (i % FUEGO.cols) * FUEGO.w, Math.floor(i / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h, 0, 0, FUEGO.w, FUEGO.h);
+    fuegoCtx.drawImage(cuadrosFuego[i], 0, 0);
     fuegoCtx.globalAlpha = frac;
-    fuegoCtx.drawImage(hojaFuego, (siguiente % FUEGO.cols) * FUEGO.w, Math.floor(siguiente / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h, 0, 0, FUEGO.w, FUEGO.h);
+    fuegoCtx.drawImage(cuadrosFuego[(i + 1) % FUEGO.total], 0, 0);
     fuegoCtx.globalAlpha = 1;
   }
 
   // Efectos que se acumulan con la racha: fuego desde la 20 (cada 7 más se
-  // vuelve menos transparente) y un bufón nuevo desde la 48, uno más cada 10.
+  // vuelve menos transparente) y un bufón nuevo desde la 27, uno más cada 10.
   const RACHA_FUEGO = 20;
   const PASO_FUEGO = 7;
-  const RACHA_BUFON = 48;
+  const RACHA_BUFON = 27;
   const PASO_BUFON = 10;
   let bufonesActuales = 0;
+  let cierreVisible = true; // tras perder, espera a que el Hooey termine de caer fuera del cuadro
+  let tiempoCaida = 0;
 
   const musica = new Audio(encodeURI("assets/cosas/Mata al moco.mp3"));
   musica.loop = true;
@@ -162,7 +190,7 @@
     pintarMedidor();
     estadoEl.textContent = textoEstado();
     cuentaEl.textContent = textoCuenta();
-    botonJugar.classList.toggle("hidden", fase === "jugando");
+    botonJugar.classList.toggle("hidden", !(fase === "listo" || (fase === "fin" && cierreVisible)));
     botonJugar.setAttribute("aria-label", fase === "fin" ? "Jugar de nuevo" : "Jugar");
   }
 
@@ -182,6 +210,8 @@
 
   function terminar() {
     fase = "fin";
+    cierreVisible = false;
+    tiempoCaida = 0;
     musica.pause();
     if (!sesion && racha > recordLocal) {
       recordLocal = racha;
@@ -278,6 +308,7 @@
   canvas.addEventListener("keydown", e => {
     if (e.key !== "Enter" && e.key !== " ") return;
     e.preventDefault();
+    if (fase === "fin" && !cierreVisible) return;
     if (fase !== "jugando") { empezar(); return; }
     if (hooeys.length) sacrificar(0);
   });
@@ -297,10 +328,24 @@
         m.y += v * m.variacion * dt;
         m.fase += dt * 4;
         if (m.y + h >= alto) {
-          m.y = alto - h;
           terminar();
           break;
         }
+      }
+    } else if (fase === "fin" && !cierreVisible) {
+      // El Hooey que tocó el piso sigue de largo y sale del cuadro, y recién
+      // entonces aparece la pantalla de cierre.
+      tiempoCaida += dt;
+      const v = velocidadActual() * 1.4 + tiempoCaida * 320;
+      for (const m of hooeys) {
+        m.y += v * m.variacion * dt;
+        m.fase += dt * 4;
+      }
+      hooeys = hooeys.filter(m => m.y < alto + 10);
+      if (!hooeys.length || tiempoCaida > 2.5) {
+        hooeys = [];
+        cierreVisible = true;
+        refrescarTextos();
       }
     }
     for (const p of particulas) {
@@ -331,7 +376,7 @@
     }
     ctx.globalAlpha = 1;
 
-    if (fase !== "jugando") {
+    if (fase === "listo" || (fase === "fin" && cierreVisible)) {
       ctx.fillStyle = "rgba(0,0,0,.45)";
       ctx.fillRect(0, 0, ancho, alto);
       ctx.fillStyle = "#e8e4d0";
@@ -418,4 +463,10 @@
   refrescarTextos();
   requestAnimationFrame(cuadro);
   iniciarSesion();
+
+  const alOcio = window.requestIdleCallback ? fn => window.requestIdleCallback(fn, { timeout: 4000 }) : fn => setTimeout(fn, 1500);
+  alOcio(() => {
+    prepararFuego();
+    if (window.SacrificioBufones) window.SacrificioBufones.precargar();
+  });
 })();

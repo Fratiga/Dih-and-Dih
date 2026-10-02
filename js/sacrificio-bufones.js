@@ -29,6 +29,10 @@
   let bufones = [];
   let generacion = 0;
 
+  function pausa() {
+    return new Promise(resolve => setTimeout(resolve, 0));
+  }
+
   function cargarScriptClasico(src) {
     return new Promise((resolve, reject) => {
       const s = document.createElement("script");
@@ -73,7 +77,7 @@
 
       renderer = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: !navigator.gpu });
       await renderer.init();
-      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      renderer.setPixelRatio(1);
       renderer.setSize(ancho, alto);
       renderer.setClearColor(0x000000, 0);
       contenedor.appendChild(renderer.domElement);
@@ -85,10 +89,11 @@
       const pmrem = new THREE.PMREMGenerator(renderer);
       scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.35).texture;
 
-      const binario = atob(window.CLOWN_GLB_BASE64);
-      const bytes = new Uint8Array(binario.length);
-      for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
-      const gltf = await new GLTFLoader().parseAsync(bytes.buffer, "");
+      await pausa();
+      const respuesta = await fetch("data:application/octet-stream;base64," + window.CLOWN_GLB_BASE64);
+      const buffer = await respuesta.arrayBuffer();
+      await pausa();
+      const gltf = await new GLTFLoader().parseAsync(buffer, "");
       modelo = gltf.scene;
       modelo.traverse(o => { if (o.isMesh && o.material) o.material.side = THREE.FrontSide; });
 
@@ -101,6 +106,18 @@
       gltf.animations.forEach(c => { clips[c.name] = c; });
       bailes = NOMBRES_BAILE.filter(n => clips[n]);
       reloj = new THREE.Clock();
+
+      // Calentamiento: un bufón diminuto dentro de la vista, dibujado una vez,
+      // para que los shaders se compilen ahora y no cuando aparezca el primero.
+      await pausa();
+      const prueba = crearBufon(0);
+      prueba.grupo.scale.setScalar(0.0001 * prueba.grupo.scale.x);
+      prueba.grupo.position.set(ancho / 2, alto / 2, 0);
+      try {
+        if (renderer.compileAsync) await renderer.compileAsync(scene, camera);
+        if (renderer.renderAsync) await renderer.renderAsync(scene, camera); else renderer.render(scene, camera);
+      } catch (e) { /* si falla, igual se compila al primer uso */ }
+      scene.remove(prueba.grupo);
 
       window.addEventListener("resize", () => {
         ancho = contenedor.clientWidth || ancho;
