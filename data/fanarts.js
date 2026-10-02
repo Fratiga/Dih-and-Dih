@@ -94,12 +94,10 @@ window.FANARTS = [
   "assets/fanarts/maenojaoquela.png",
   "assets/fanarts/Adios amigos.png",
   "assets/fanarts/Alv w.webp",
-  "assets/fanarts/Bloody Laia.jpg",
   "assets/fanarts/Brillo.webp",
   "assets/fanarts/Nonatos.jpg",
   "assets/fanarts/Q void.webp",
   "assets/fanarts/Ryn y couch.webp",
-  "assets/fanarts/apagalalu.webp",
   "assets/fanarts/auverso.jpg",
   "assets/fanarts/roster encomienda.png"
 ];
