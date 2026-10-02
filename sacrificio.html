@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261029">
+  <link rel="stylesheet" href="css/style.css?v=20261030">
 </head>
 <body class="sacrificio-pagina">
   <!-- Página aparte, a propósito: sin cabecera, marquesinas, mini reproductor
@@ -45,7 +45,6 @@
     <div class="sacrificio-escenario">
       <canvas id="sacrificioCampo" class="sacrificio-campo" role="button" tabindex="0" aria-label="Sacrificar a Hooey"></canvas>
       <canvas id="sacrificioFuego" class="sacrificio-fuego" width="384" height="216" aria-hidden="true"></canvas>
-      <div id="sacrificioBufones" class="sacrificio-bufones"></div>
       <button type="button" id="sacrificioJugar" class="sacrificio-play" aria-label="Jugar">▶</button>
     </div>
     <div class="sacrificio-banner sacrificio-banner-der" aria-hidden="true"></div>
@@ -66,10 +65,12 @@
     </div>
   </main>
 
-  <script src="js/temas.js?v=20261029"></script>
-  <script src="js/fichas-supabase.js?v=20261029"></script>
-  <script src="js/lado.js?v=20261029"></script>
-  <script src="js/sacrificio-bufones.js?v=20261029"></script>
-  <script src="js/sacrificio.js?v=20261029"></script>
+  <div id="sacrificioBufones" class="sacrificio-bufones"></div>
+
+  <script src="js/temas.js?v=20261030"></script>
+  <script src="js/fichas-supabase.js?v=20261030"></script>
+  <script src="js/lado.js?v=20261030"></script>
+  <script src="js/sacrificio-bufones.js?v=20261030"></script>
+  <script src="js/sacrificio.js?v=20261030"></script>
 </body>
 </html>

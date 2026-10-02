@@ -10,6 +10,7 @@
     "Twerk", "Twist"
   ];
   const BUFONES_PARA_REBOTAR = 3;
+  const BUFONES_PARA_SALIR = 4; // desde acá rebotan por toda la ventana, no solo dentro del juego
 
   let contenedor = null;
   let cargaPromesa = null;
@@ -43,8 +44,17 @@
     });
   }
 
+  // El lienzo cubre toda la ventana (fijo, sin capturar clics). Los bufones se
+  // mueven dentro de la caja del juego hasta que son 4; entonces se sueltan y
+  // rebotan contra los bordes de la ventana.
+  let escenarioEl = null;
+  function cajaEscenario() {
+    if (!escenarioEl) escenarioEl = document.querySelector(".sacrificio-escenario");
+    return escenarioEl ? escenarioEl.getBoundingClientRect() : { left: 0, top: 0, width: ancho, height: alto };
+  }
+
   function tamanoBufon() {
-    return ancho * 0.17; // proporcional al escenario, que ya tiene proporción fija
+    return cajaEscenario().width * 0.17; // proporcional al escenario, que ya tiene proporción fija
   }
 
   function ajustarCamara() {
@@ -68,8 +78,8 @@
       SkeletonUtils = await import("three/addons/utils/SkeletonUtils.js");
       const { RoomEnvironment } = await import("three/addons/environments/RoomEnvironment.js");
 
-      ancho = contenedor.clientWidth || 600;
-      alto = contenedor.clientHeight || 440;
+      ancho = contenedor.clientWidth || window.innerWidth;
+      alto = contenedor.clientHeight || window.innerHeight;
 
       scene = new THREE.Scene();
       camera = new THREE.OrthographicCamera(0, ancho, alto, 0, 1, 3000);
@@ -120,8 +130,8 @@
       scene.remove(prueba.grupo);
 
       window.addEventListener("resize", () => {
-        ancho = contenedor.clientWidth || ancho;
-        alto = contenedor.clientHeight || alto;
+        ancho = contenedor.clientWidth || window.innerWidth;
+        alto = contenedor.clientHeight || window.innerHeight;
         renderer.setSize(ancho, alto);
         ajustarCamara();
       });
@@ -138,17 +148,21 @@
     return bailes[Math.floor(Math.random() * bailes.length)];
   }
 
-  function crearBufon(indice) {
+  function crearBufon(indice, libre) {
     const lado = tamanoBufon();
+    const caja = cajaEscenario();
     const interior = SkeletonUtils.clone(modelo);
     interior.position.copy(centro).multiplyScalar(-1);
     const grupo = new THREE.Group();
     grupo.add(interior);
     grupo.scale.setScalar(lado / (2 * radio));
 
-    const x = lado / 2 + Math.random() * Math.max(1, ancho - lado);
-    const y = lado / 2 + Math.random() * Math.max(1, alto - lado);
-    grupo.position.set(x, alto - y, 0);
+    // Libre: coordenadas de ventana. Si no: relativas a la caja del juego.
+    const anchoZona = libre ? ancho : caja.width;
+    const altoZona = libre ? alto : caja.height;
+    const x = lado / 2 + Math.random() * Math.max(1, anchoZona - lado);
+    const y = lado / 2 + Math.random() * Math.max(1, altoZona - lado);
+    grupo.position.set(libre ? x : caja.left + x, alto - (libre ? y : caja.top + y), 0);
     scene.add(grupo);
 
     const mixer = new THREE.AnimationMixer(interior);
@@ -163,26 +177,32 @@
     }
 
     const rumbo = Math.random() * Math.PI * 2;
-    const rapidez = (160 + Math.random() * 140) * (ancho / 960);
-    return { grupo, mixer, x, y, lado, vx: Math.cos(rumbo) * rapidez, vy: Math.sin(rumbo) * rapidez, rebota: false };
+    const rapidez = (160 + Math.random() * 140) * (caja.width / 960);
+    return { grupo, mixer, x, y, lado, libre: !!libre, vx: Math.cos(rumbo) * rapidez, vy: Math.sin(rumbo) * rapidez, rebota: false };
   }
 
   function cuadro() {
     const dt = Math.min(0.05, reloj.getDelta());
+    const caja = cajaEscenario();
     for (const b of bufones) {
       b.mixer.update(dt);
+      const m = b.lado / 2;
+      const anchoZona = b.libre ? ancho : caja.width;
+      const altoZona = b.libre ? alto : caja.height;
       if (b.rebota) {
         b.x += b.vx * dt;
         b.y += b.vy * dt;
-        const m = b.lado / 2;
         if (b.x < m) { b.x = m; b.vx = Math.abs(b.vx); }
-        if (b.x > ancho - m) { b.x = ancho - m; b.vx = -Math.abs(b.vx); }
+        if (b.x > anchoZona - m) { b.x = anchoZona - m; b.vx = -Math.abs(b.vx); }
         if (b.y < m) { b.y = m; b.vy = Math.abs(b.vy); }
-        if (b.y > alto - m) { b.y = alto - m; b.vy = -Math.abs(b.vy); }
-        b.grupo.position.set(b.x, alto - b.y, 0);
+        if (b.y > altoZona - m) { b.y = altoZona - m; b.vy = -Math.abs(b.vy); }
         b.grupo.rotation.y += dt * 7;
         b.grupo.rotation.z += dt * 2.5;
       }
+      // Dentro de la caja siguen a la página si se hace scroll; sueltos, no.
+      const px = b.libre ? b.x : caja.left + b.x;
+      const py = b.libre ? b.y : caja.top + b.y;
+      b.grupo.position.set(px, alto - py, 0);
     }
     renderer.render(scene, camera);
   }
@@ -202,8 +222,16 @@
     try { await cargar(); } catch (e) { return; }
     if (miGeneracion !== generacion) return;
 
-    while (bufones.length < cantidad) bufones.push(crearBufon(bufones.length));
+    const suelta = cantidad >= BUFONES_PARA_SALIR;
+    while (bufones.length < cantidad) bufones.push(crearBufon(bufones.length, suelta));
     if (bufones.length >= BUFONES_PARA_REBOTAR) bufones.forEach(b => { b.rebota = true; });
+    if (suelta) {
+      // Con el cuarto, los que seguían dentro de la caja salen a la ventana
+      const caja = cajaEscenario();
+      for (const b of bufones) {
+        if (!b.libre) { b.x += caja.left; b.y += caja.top; b.libre = true; }
+      }
+    }
     reloj.getDelta();
     renderer.setAnimationLoop(cuadro);
   }

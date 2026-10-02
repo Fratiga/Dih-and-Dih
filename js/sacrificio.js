@@ -8,6 +8,7 @@
   const ctx = canvas.getContext("2d");
 
   const CLAVE_TOTAL = "compendioHooeyTotal";
+  const SLAPPY = { username: "Slappy", total: 200, mejor_racha: 200 };
   const CLAVE_RECORD = "compendioHooeyRecord";
   const ANCHO_SPRITE = 100;
   const LOGICO_ANCHO = 960;
@@ -597,8 +598,10 @@
         totalGlobal = (todos.data || []).reduce((suma, f) => suma + Number(f.total || 0), 0);
         pintarMedidor();
       }
-      pintarLista(rankTotalEl, porTotal.data.filter(f => f.total > 0), "total");
-      pintarLista(rankRachaEl, porRacha.data.filter(f => f.mejor_racha > 0), "mejor_racha");
+      // Slappy ya figura en el ranking, siempre, con 200 en ambas listas
+      const conSlappy = (filas, campo) => [...filas, { ...SLAPPY }].sort((a, b) => b[campo] - a[campo]).slice(0, 10);
+      pintarLista(rankTotalEl, conSlappy(porTotal.data.filter(f => f.total > 0), "total"), "total");
+      pintarLista(rankRachaEl, conSlappy(porRacha.data.filter(f => f.mejor_racha > 0), "mejor_racha"), "mejor_racha");
     } catch (e) {
       const aviso = `<li class="sacrificio-vacio">Ranking no disponible.</li>`;
       rankTotalEl.innerHTML = aviso;
