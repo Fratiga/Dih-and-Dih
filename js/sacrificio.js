@@ -87,19 +87,6 @@
   const RACHA_ZIGZAG = 40;
   const RACHA_OLEADA = 50;
   const RACHA_BLINDADO = 60;
-  // La explicación llega sola, en pantalla, cuando aparece cada novedad
-  const AVISOS = {
-    20: "Se está calentando…",
-    25: "Algunos caen más rápido",
-    29: "Alguien viene a bailar",
-    30: "Se están encogiendo",
-    35: "Las X no se tocan",
-    40: "Zigzag",
-    50: "¡Oleada!",
-    60: "Aura azul: dos golpes"
-  };
-  let avisoTexto = "";
-  let avisoTiempo = 0;
   let bufonesActuales = 0;
   let cierreVisible = true; // tras perder, espera a que el Hooey termine de caer fuera del cuadro
   let tiempoCaida = 0;
@@ -279,7 +266,6 @@
 
   function empezar() {
     racha = 0;
-    avisoTiempo = 0;
     motivoFin = "piso";
     if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
     if (window.SacrificioBufones) window.SacrificioBufones.precargar();
@@ -338,7 +324,6 @@
     }
     hooeys.splice(indice, 1);
     racha += 1;
-    if (AVISOS[racha]) { avisoTexto = AVISOS[racha]; avisoTiempo = 2.6; }
     if (sesion) {
       datosCuenta.total += 1;
     } else {
@@ -434,7 +419,6 @@
   botonJugar.addEventListener("click", empezar);
 
   function actualizar(dt) {
-    if (avisoTiempo > 0) avisoTiempo -= dt;
     if (fase === "jugando") {
       const v = velocidadActual();
       temporizadorAparicion -= dt;
@@ -550,18 +534,6 @@
       ctx.fillRect(Math.round(p.x), Math.round(p.y), p.tam, p.tam);
     }
     ctx.globalAlpha = 1;
-
-    if (fase === "jugando" && avisoTiempo > 0) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, avisoTiempo * 1.6, (2.6 - avisoTiempo) * 4 + 0.15);
-      ctx.fillStyle = "#e8e4d0";
-      ctx.textAlign = "center";
-      ctx.font = "600 38px sans-serif";
-      ctx.shadowColor = "rgba(0,0,0,.8)";
-      ctx.shadowBlur = 8;
-      ctx.fillText(avisoTexto, ancho / 2, alto * 0.14);
-      ctx.restore();
-    }
 
     if (fase === "listo" || (fase === "fin" && cierreVisible)) {
       ctx.fillStyle = "rgba(0,0,0,.45)";
