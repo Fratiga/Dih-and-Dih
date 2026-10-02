@@ -15,6 +15,43 @@
   const VELOCIDAD_MAX = 560;
 
   const medidorEl = document.getElementById("sacrificioMedidor");
+  const fuegoEl = document.getElementById("sacrificioFuego");
+  const fuegoCtx = fuegoEl.getContext("2d");
+  const hojaFuego = new Image();
+  const FUEGO = { cols: 9, total: 54, w: 384, h: 216 };
+  let fuegoPos = 0;
+
+  function velocidadFuego() {
+    // Cuadros por segundo del fuego: arranca en cámara muy lenta en la racha
+    // 20 y se acelera con cada punto más, hasta acercarse al ritmo normal.
+    return Math.min(26, 2.5 + Math.max(0, racha - RACHA_FUEGO) * 0.55);
+  }
+
+  function dibujarFuego(dt) {
+    if (fase !== "jugando" || racha < RACHA_FUEGO || !hojaFuego.complete || !hojaFuego.naturalWidth) {
+      fuegoCtx.clearRect(0, 0, FUEGO.w, FUEGO.h);
+      return;
+    }
+    fuegoPos = (fuegoPos + velocidadFuego() * dt) % FUEGO.total;
+    const i = Math.floor(fuegoPos);
+    const frac = fuegoPos - i;
+    const siguiente = (i + 1) % FUEGO.total;
+    fuegoCtx.clearRect(0, 0, FUEGO.w, FUEGO.h);
+    // Mezcla de dos cuadros vecinos para que la cámara lenta se vea fluida
+    fuegoCtx.globalAlpha = 1;
+    fuegoCtx.drawImage(hojaFuego, (i % FUEGO.cols) * FUEGO.w, Math.floor(i / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h, 0, 0, FUEGO.w, FUEGO.h);
+    fuegoCtx.globalAlpha = frac;
+    fuegoCtx.drawImage(hojaFuego, (siguiente % FUEGO.cols) * FUEGO.w, Math.floor(siguiente / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h, 0, 0, FUEGO.w, FUEGO.h);
+    fuegoCtx.globalAlpha = 1;
+  }
+
+  // Efectos que se acumulan con la racha: fuego desde la 20 (cada 7 más se
+  // vuelve menos transparente) y un bufón nuevo desde la 48, uno más cada 10.
+  const RACHA_FUEGO = 20;
+  const PASO_FUEGO = 7;
+  const RACHA_BUFON = 48;
+  const PASO_BUFON = 10;
+  let bufonesActuales = 0;
 
   const musica = new Audio(encodeURI("assets/cosas/Mata al moco.mp3"));
   musica.loop = true;
@@ -103,7 +140,22 @@
     medidorEl.textContent = (totalGlobal + enCurso).toLocaleString("es");
   }
 
+  function actualizarEfectos() {
+    const jugando = fase === "jugando";
+    const opacidad = jugando && racha >= RACHA_FUEGO
+      ? Math.min(1, 0.08 + 0.1 * Math.floor((racha - RACHA_FUEGO) / PASO_FUEGO))
+      : 0;
+    fuegoEl.style.opacity = String(opacidad);
+
+    const bufones = jugando && racha >= RACHA_BUFON ? 1 + Math.floor((racha - RACHA_BUFON) / PASO_BUFON) : 0;
+    if (bufones !== bufonesActuales) {
+      bufonesActuales = bufones;
+      if (window.SacrificioBufones) window.SacrificioBufones.sincronizar(bufones);
+    }
+  }
+
   function refrescarTextos() {
+    actualizarEfectos();
     pintarMedidor();
     estadoEl.textContent = textoEstado();
     cuentaEl.textContent = textoCuenta();
@@ -114,6 +166,8 @@
   function empezar() {
     racha = 0;
     if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
+    if (window.SacrificioBufones) window.SacrificioBufones.precargar();
+    if (!hojaFuego.src) hojaFuego.src = "assets/cosas/fuego-hoja.webp";
     musica.currentTime = 0;
     musica.play().catch(() => { /* el navegador bloqueó el audio */ });
     hooeys = [nuevoHooey()];
@@ -278,6 +332,7 @@
     ultimo = t;
     actualizar(dt);
     dibujar();
+    dibujarFuego(dt);
     requestAnimationFrame(cuadro);
   }
 
