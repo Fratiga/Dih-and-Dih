@@ -3228,7 +3228,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .sacrificio-campo {
   display: block;
   width: 100%;
-  height: 440px;
+  height: 100%;
   background: var(--panel);
   border: 1px solid var(--border);
   touch-action: manipulation;
@@ -3255,10 +3255,10 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .header-juego-link:hover { color: var(--text); border-color: var(--accent-soft); }
 .header-titulo-fila { display: flex; align-items: center; flex-wrap: wrap; }
 
-.sacrificio-escenario { position: relative; }
+.sacrificio-escenario { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 10; margin: 0 auto; }
 .sacrificio-play {
   position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%);
-  width: 84px; height: 84px; border-radius: 50%;
+  width: clamp(56px, 12vw, 84px); aspect-ratio: 1; border-radius: 50%;
   background: var(--panel); border: 2px solid var(--accent-soft); color: var(--text);
   font-size: 2rem; padding-left: 6px; cursor: pointer; line-height: 1;
   transition: border-color .16s, transform .16s;
@@ -3308,4 +3308,3 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .sacrificio-volver:hover { color: var(--text); }
 .sacrificio-contenido { max-width: 1000px; margin: 0 auto; padding: 22px 24px 60px; }
 .sacrificio-titulo { font-size: clamp(1.6rem, 4vw, 2.4rem); }
-.sacrificio-pagina .sacrificio-campo { height: min(66vh, 560px); }

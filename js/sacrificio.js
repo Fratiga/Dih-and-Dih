@@ -10,6 +10,8 @@
   const CLAVE_TOTAL = "compendioHooeyTotal";
   const CLAVE_RECORD = "compendioHooeyRecord";
   const ANCHO_SPRITE = 100;
+  const LOGICO_ANCHO = 960;
+  const LOGICO_ALTO = 600;
   const VELOCIDAD_BASE = 118;
   const VELOCIDAD_POR_RACHA = 7;
   const VELOCIDAD_MAX = 560;
@@ -72,11 +74,19 @@
   }
 
   // Efectos que se acumulan con la racha: fuego desde la 20 (cada 7 más se
-  // vuelve menos transparente) y un bufón nuevo desde la 27, uno más cada 10.
+  // vuelve menos transparente) y un bufón nuevo desde la 29, uno más cada 10.
   const RACHA_FUEGO = 20;
   const PASO_FUEGO = 7;
-  const RACHA_BUFON = 27;
+  const RACHA_BUFON = 29;
   const PASO_BUFON = 10;
+  // Dificultad por tramos de racha: encogen, impostores, zigzag, oleadas y
+  // blindados, además de algunos Hooeys más rápidos que el resto.
+  const RACHA_RAPIDOS = 25;
+  const RACHA_ENCOGE = 30;
+  const RACHA_DECOY = 35;
+  const RACHA_ZIGZAG = 40;
+  const RACHA_OLEADA = 50;
+  const RACHA_BLINDADO = 60;
   let bufonesActuales = 0;
   let cierreVisible = true; // tras perder, espera a que el Hooey termine de caer fuera del cuadro
   let tiempoCaida = 0;
@@ -99,6 +109,7 @@
   let recordLocal = leerNumero(CLAVE_RECORD);
 
   let fase = "listo"; // listo | jugando | fin
+  let motivoFin = "piso"; // piso | decoy
   let racha = 0;
   let hooeys = [];
   let particulas = [];
@@ -121,35 +132,95 @@
     return Math.max(0.4, 1.3 - racha * 0.012);
   }
 
-  function dimensiones() {
-    const w = Math.min(ANCHO_SPRITE, ancho * 0.22);
+  function dimensiones(escala = 1) {
+    const w = ANCHO_SPRITE * escala;
     const ratio = imagen.naturalHeight && imagen.naturalWidth ? imagen.naturalHeight / imagen.naturalWidth : 0.74;
     return { w, h: w * ratio };
   }
 
+  function escalaPorRacha() {
+    return racha < RACHA_ENCOGE ? 1 : Math.max(0.6, 1 - 0.4 * (racha - RACHA_ENCOGE) / 60);
+  }
+
+  function tipoNuevo() {
+    if (racha >= RACHA_BLINDADO && Math.random() < Math.min(0.3, 0.12 + (racha - RACHA_BLINDADO) * 0.005)) return "blindado";
+    if (racha >= RACHA_DECOY && Math.random() < Math.min(0.22, 0.08 + (racha - RACHA_DECOY) * 0.003)) return "decoy";
+    return "normal";
+  }
+
+  // Versión del sprite teñida de rojo para los impostores
+  let imagenDecoy = null;
+  function prepararVariantes() {
+    if (!imagen.naturalWidth || imagenDecoy) return;
+    const c = document.createElement("canvas");
+    c.width = imagen.naturalWidth;
+    c.height = imagen.naturalHeight;
+    const x = c.getContext("2d");
+    x.drawImage(imagen, 0, 0);
+    x.globalCompositeOperation = "source-atop";
+    x.fillStyle = "rgba(225, 45, 45, 0.55)";
+    x.fillRect(0, 0, c.width, c.height);
+    imagenDecoy = c;
+  }
+  if (imagen.complete) prepararVariantes(); else imagen.addEventListener("load", prepararVariantes);
+
+  // El campo tiene un tamaño lógico fijo (LOGICO_ANCHO x LOGICO_ALTO). Todo —
+  // posiciones, tamaños, velocidades, golpes— se calcula en esas unidades y
+  // solo se escala al dibujar, así el zoom del navegador o el tamaño de la
+  // ventana no hacen el juego más fácil ni más difícil.
   function ajustarTamano() {
     const dpr = window.devicePixelRatio || 1;
-    ancho = canvas.clientWidth;
-    alto = canvas.clientHeight;
-    canvas.width = Math.round(ancho * dpr);
-    canvas.height = Math.round(alto * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const caja = canvas.getBoundingClientRect();
+    ancho = LOGICO_ANCHO;
+    alto = LOGICO_ALTO;
+    canvas.width = Math.max(1, Math.round(caja.width * dpr));
+    canvas.height = Math.max(1, Math.round(caja.height * dpr));
+    const escala = canvas.width / LOGICO_ANCHO;
+    ctx.setTransform(escala, 0, 0, escala, 0, 0);
     ctx.imageSmoothingEnabled = false;
   }
 
-  function nuevoHooey() {
-    const { w, h } = dimensiones();
+  function nuevoHooey(xFijo, yExtra) {
+    const escala = escalaPorRacha();
+    const { w, h } = dimensiones(escala);
+    const tipo = tipoNuevo();
+    let variacion = 0.9 + Math.random() * 0.25;
+    if (racha >= RACHA_RAPIDOS && Math.random() < 0.25) variacion *= 1.4;
+    const x0 = xFijo !== undefined ? xFijo : Math.random() * Math.max(1, ancho - w);
+    const zigzag = racha >= RACHA_ZIGZAG;
     return {
-      x: Math.random() * Math.max(1, ancho - w),
-      y: -h,
-      variacion: 0.9 + Math.random() * 0.25,
-      fase: Math.random() * Math.PI * 2
+      x0, x: x0,
+      y: -h - (yExtra || 0),
+      w, h, tipo,
+      vidas: tipo === "blindado" ? 2 : 1,
+      variacion,
+      fase: Math.random() * Math.PI * 2,
+      t: 0,
+      zigAmp: zigzag ? (14 + Math.min(40, (racha - RACHA_ZIGZAG) * 0.6)) * (0.6 + Math.random() * 0.8) : 0,
+      zigFrec: 1.2 + Math.random() * 1.6,
+      destello: 0
     };
   }
 
+  // Oleada: 3 o 4 Hooeys a la vez, en abanico (V) o en diagonal escalonada.
+  function generarOleada() {
+    const n = 3 + (Math.random() < 0.4 ? 1 : 0);
+    const { w, h } = dimensiones(escalaPorRacha());
+    const enV = Math.random() < 0.5;
+    const nuevos = [];
+    for (let i = 0; i < n; i++) {
+      const x = (ancho - w) * (i / (n - 1));
+      const extra = enV ? Math.abs(i - (n - 1) / 2) * h * 0.9 : i * h * 1.1;
+      nuevos.push(nuevoHooey(x, extra));
+    }
+    if (nuevos.every(m => m.tipo === "decoy")) { nuevos[0].tipo = "normal"; nuevos[0].vidas = 1; }
+    hooeys.push(...nuevos);
+  }
+
   function textoEstado() {
-    if (fase === "listo") return "Pulsa play. Sacrifica a cada Hooey antes de que toque el piso. Con tableta o ratón puedes apuntar y usar las teclas Z o X.";
+    if (fase === "listo") return "Pulsa play. Sacrifica a cada Hooey antes de que toque el piso. Con tableta o ratón puedes apuntar y usar las teclas Z o X. Ojo: los marcados con una X son impostores y no se tocan, y los de aura azul aguantan dos golpes.";
     if (fase === "jugando") return `Racha: ${racha} · Velocidad ×${(velocidadActual() / VELOCIDAD_BASE).toFixed(1)}`;
+    if (motivoFin === "decoy") return `Sacrificaste a un impostor. Tu racha fue de ${racha}.`;
     return `Un Hooey tocó el piso. Tu racha fue de ${racha}.`;
   }
 
@@ -170,11 +241,10 @@
 
   function actualizarEfectos() {
     const jugando = fase === "jugando";
-    // Curva cuadrática: los primeros escalones apenas se notan y recién
-    // después sube con fuerza. Llega a opaco al décimo escalón (racha 90).
+    // Curva suave: arranca tenue y llega a opaco al noveno escalón (racha 83).
     const escalones = Math.floor((racha - RACHA_FUEGO) / PASO_FUEGO);
     const opacidad = jugando && racha >= RACHA_FUEGO
-      ? Math.min(1, 0.03 + 0.97 * Math.pow(escalones / 10, 2))
+      ? Math.min(1, 0.04 + 0.96 * Math.pow(Math.min(1, escalones / 9), 1.5))
       : 0;
     fuegoEl.style.opacity = String(opacidad);
 
@@ -196,6 +266,7 @@
 
   function empezar() {
     racha = 0;
+    motivoFin = "piso";
     if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
     if (window.SacrificioBufones) window.SacrificioBufones.precargar();
     if (!hojaFuego.src) hojaFuego.src = "assets/cosas/fuego-hoja.webp";
@@ -237,10 +308,9 @@
   }
 
   function sacrificar(indice) {
-    const { w, h } = dimensiones();
     const m = hooeys[indice];
-    const cx = m.x + w / 2;
-    const cy = m.y + h / 2;
+    const cx = m.x + m.w / 2;
+    const cy = m.y + m.h / 2;
     for (let i = 0; i < 22; i++) {
       const a = Math.random() * Math.PI * 2;
       const v = 60 + Math.random() * 160;
@@ -263,25 +333,57 @@
     refrescarTextos();
   }
 
+  function chispas(m, color, cantidad) {
+    const cx = m.x + m.w / 2;
+    const cy = m.y + m.h / 2;
+    for (let i = 0; i < cantidad; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const v = 80 + Math.random() * 140;
+      particulas.push({
+        x: cx, y: cy,
+        vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40,
+        vida: 0.4 + Math.random() * 0.4, edad: 0,
+        tam: 3 + Math.floor(Math.random() * 3), color
+      });
+    }
+  }
+
+  // Un golpe sobre un Hooey: según su tipo sacrifica, rompe un escudo o pierde.
+  function golpear(indice) {
+    const m = hooeys[indice];
+    if (m.tipo === "decoy") {
+      chispas(m, "#ff4b4b", 26);
+      motivoFin = "decoy";
+      terminar();
+      return;
+    }
+    if (m.tipo === "blindado" && m.vidas > 1) {
+      m.vidas -= 1;
+      m.destello = 0.3;
+      chispas(m, "#8fdcff", 16);
+      return;
+    }
+    sacrificar(indice);
+  }
+
   function indiceBajo(x, y) {
-    const { w, h } = dimensiones();
     for (let i = hooeys.length - 1; i >= 0; i--) {
       const m = hooeys[i];
-      if (x >= m.x && x <= m.x + w && y >= m.y && y <= m.y + h) return i;
+      if (x >= m.x && x <= m.x + m.w && y >= m.y && y <= m.y + m.h) return i;
     }
     return -1;
   }
 
   function posicion(e) {
     const r = canvas.getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
+    return { x: (e.clientX - r.left) * (LOGICO_ANCHO / r.width), y: (e.clientY - r.top) * (LOGICO_ALTO / r.height) };
   }
 
   canvas.addEventListener("pointerdown", e => {
     if (fase !== "jugando") return;
     const p = posicion(e);
     const i = indiceBajo(p.x, p.y);
-    if (i >= 0) sacrificar(i);
+    if (i >= 0) golpear(i);
   });
 
   // Teclas Z y X: sacrifican al Hooey que esté bajo el cursor, para jugar con
@@ -297,7 +399,7 @@
     const destino = e.target;
     if (destino && /^(input|textarea|select)$/i.test(destino.tagName)) return;
     const i = indiceBajo(cursor.x, cursor.y);
-    if (i >= 0) sacrificar(i);
+    if (i >= 0) golpear(i);
   });
 
   canvas.addEventListener("mousemove", e => {
@@ -310,30 +412,43 @@
     e.preventDefault();
     if (fase === "fin" && !cierreVisible) return;
     if (fase !== "jugando") { empezar(); return; }
-    if (hooeys.length) sacrificar(0);
+    const i = hooeys.findIndex(m => m.tipo !== "decoy");
+    if (i >= 0) golpear(i);
   });
 
   botonJugar.addEventListener("click", empezar);
 
   function actualizar(dt) {
-    const { h } = dimensiones();
     if (fase === "jugando") {
       const v = velocidadActual();
       temporizadorAparicion -= dt;
       if (temporizadorAparicion <= 0) {
-        hooeys.push(nuevoHooey());
-        temporizadorAparicion = intervaloAparicion();
+        if (racha >= RACHA_OLEADA && Math.random() < Math.min(0.4, 0.2 + (racha - RACHA_OLEADA) * 0.004)) {
+          generarOleada();
+          temporizadorAparicion = intervaloAparicion() * 1.7;
+        } else {
+          hooeys.push(nuevoHooey());
+          temporizadorAparicion = intervaloAparicion();
+        }
       }
       for (const m of hooeys) {
+        m.t += dt;
         m.y += v * m.variacion * dt;
         m.fase += dt * 4;
-        if (m.y + h >= alto) {
+        if (m.destello > 0) m.destello -= dt;
+        if (m.zigAmp) {
+          m.x = Math.min(Math.max(0, m.x0 + Math.sin(m.t * m.zigFrec * 2) * m.zigAmp), Math.max(0, ancho - m.w));
+        }
+        if (m.tipo !== "decoy" && m.y + m.h >= alto) {
+          motivoFin = "piso";
           terminar();
           break;
         }
       }
+      // Los impostores que llegan al piso simplemente se van
+      hooeys = hooeys.filter(m => !(m.tipo === "decoy" && m.y > alto + 10));
     } else if (fase === "fin" && !cierreVisible) {
-      // El Hooey que tocó el piso sigue de largo y sale del cuadro, y recién
+      // El Hooey que perdió sigue de largo y sale del cuadro, y recién
       // entonces aparece la pantalla de cierre.
       tiempoCaida += dt;
       const v = velocidadActual() * 1.4 + tiempoCaida * 320;
@@ -362,12 +477,56 @@
     ctx.fillStyle = "rgba(255,255,255,.08)";
     ctx.fillRect(0, alto - 3, ancho, 3);
 
-    const { w, h } = dimensiones();
     for (const m of hooeys) {
+      const cx = m.x + m.w / 2;
+      const cy = m.y + m.h / 2;
+      if (m.tipo === "blindado") {
+        // Aura azul pulsante; el aro exterior marca que aún tiene escudo
+        const pulso = 0.6 + 0.25 * Math.sin(m.fase * 1.5);
+        const radio = Math.max(m.w, m.h) * 0.8;
+        const g = ctx.createRadialGradient(cx, cy, radio * 0.25, cx, cy, radio);
+        const fuerza = m.vidas > 1 ? 0.5 : 0.22;
+        g.addColorStop(0, "rgba(120, 210, 255, 0)");
+        g.addColorStop(0.7, `rgba(120, 210, 255, ${fuerza * pulso})`);
+        g.addColorStop(1, "rgba(120, 210, 255, 0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radio, 0, Math.PI * 2);
+        ctx.fill();
+        if (m.vidas > 1) {
+          ctx.strokeStyle = `rgba(190, 235, 255, ${0.75 * pulso})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, radio * 0.78, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
       const gelatina = 1 + Math.sin(m.fase) * 0.035;
-      const dw = w / gelatina;
-      const dh = h * gelatina;
-      ctx.drawImage(imagen, m.x + (w - dw) / 2, m.y + (h - dh), dw, dh);
+      const dw = m.w / gelatina;
+      const dh = m.h * gelatina;
+      ctx.drawImage(m.tipo === "decoy" && imagenDecoy ? imagenDecoy : imagen, m.x + (m.w - dw) / 2, m.y + (m.h - dh), dw, dh);
+
+      if (m.tipo === "decoy") {
+        // Una X grande encima, con borde oscuro para que se lea sobre cualquier fondo
+        const a = m.w * 0.22;
+        const trazo = Math.max(4, m.w * 0.09);
+        ctx.lineCap = "round";
+        for (const [color, grosor] of [["rgba(0,0,0,.65)", trazo + 4], ["#ff3b3b", trazo]]) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = grosor;
+          ctx.beginPath();
+          ctx.moveTo(cx - a, cy - a); ctx.lineTo(cx + a, cy + a);
+          ctx.moveTo(cx + a, cy - a); ctx.lineTo(cx - a, cy + a);
+          ctx.stroke();
+        }
+      }
+      if (m.destello > 0) {
+        ctx.fillStyle = `rgba(200, 240, 255, ${Math.min(0.6, m.destello * 2)})`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(m.w, m.h) * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     for (const p of particulas) {
       ctx.globalAlpha = Math.max(0, 1 - p.edad / p.vida);
@@ -381,12 +540,12 @@
       ctx.fillRect(0, 0, ancho, alto);
       ctx.fillStyle = "#e8e4d0";
       ctx.textAlign = "center";
-      ctx.font = "600 24px sans-serif";
-      ctx.fillText(fase === "fin" ? `Racha: ${racha}` : "Hooey", ancho / 2, alto / 2 - 70);
+      ctx.font = "600 46px sans-serif";
+      ctx.fillText(fase === "fin" ? `Racha: ${racha}` : "Hooey", ancho / 2, alto * 0.27);
       if (fase === "fin") {
-        ctx.font = "14px sans-serif";
+        ctx.font = "24px sans-serif";
         ctx.fillStyle = "#b9b5a2";
-        ctx.fillText("Un Hooey tocó el piso", ancho / 2, alto / 2 - 46);
+        ctx.fillText(motivoFin === "decoy" ? "Sacrificaste a un impostor" : "Un Hooey tocó el piso", ancho / 2, alto * 0.34);
       }
     }
   }

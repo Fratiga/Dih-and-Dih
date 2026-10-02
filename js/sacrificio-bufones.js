@@ -44,7 +44,7 @@
   }
 
   function tamanoBufon() {
-    return Math.max(110, Math.min(190, ancho * 0.3));
+    return ancho * 0.17; // proporcional al escenario, que ya tiene proporción fija
   }
 
   function ajustarCamara() {
@@ -153,6 +153,8 @@
 
     const mixer = new THREE.AnimationMixer(interior);
     const nombre = elegirBaile(indice === 0);
+    // El del twerk aparece de espaldas (180°), para verle la espalda
+    if (nombre === "Twerk") grupo.rotation.y = Math.PI;
     if (nombre) {
       const accion = mixer.clipAction(clips[nombre]);
       accion.setLoop(THREE.LoopRepeat, Infinity);
@@ -161,7 +163,7 @@
     }
 
     const rumbo = Math.random() * Math.PI * 2;
-    const rapidez = 160 + Math.random() * 140;
+    const rapidez = (160 + Math.random() * 140) * (ancho / 960);
     return { grupo, mixer, x, y, lado, vx: Math.cos(rumbo) * rapidez, vy: Math.sin(rumbo) * rapidez, rebota: false };
   }
 
