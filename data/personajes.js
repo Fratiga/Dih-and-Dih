@@ -1187,7 +1187,7 @@ window.PERSONAJES = [
     title: "Darian Veyr",
     category: "Personajes",
     tags: ["npc", "guerrero"],
-    summary: "El Indigerible. Guerrero de élite, único superviviente de una expedición de treinta y dos soldados tragada por la bestia de la mansión; guía a los protagonistas a cambio de que entreguen su cuaderno a las familias de los caídos.",
+    summary: "Apodado el Indigerible. Soldado de élite, único superviviente de una expedición de treinta y dos hombres tragada por la bestia de la mansión. Lleva doce años dentro y guía a los protagonistas a cambio de que entreguen a las familias un cuaderno con los nombres de los caídos.",
     retrato: "",
     titulo: "El Indigerible",
     raza: "Humano",
@@ -1199,29 +1199,30 @@ window.PERSONAJES = [
     lado: ["B"],
     relacionesConocidas: [],
     content: `
-      <p>Guerrero de élite enviado al dominio de carne con una expedición de
-      treinta y dos soldados. Es el único que sigue vivo. Doce años dentro le
-      enseñaron a reconocer los latidos de las paredes y los corredores que
-      cambian de lugar con cada contracción. El dominio intentó asimilarlo
-      tantas veces que ya no está del todo separado de él. Uno de sus pulmones
-      pertenece a la criatura y una raíz nerviosa le atraviesa la columna.
-      Sigue siendo humano por pura obstinación.</p>
-      <p>Es enorme, de unos cincuenta años, con armadura de placas óseas y
-      cuero de las paredes. Empuña Desgarro, un mandoble tallado de una
-      costilla gigante que intenta regenerarse y que debe afilar arrancándole
-      los dientes nuevos. Práctico, desconfiado y brutalmente competente, cuenta
-      los segundos entre latidos, quema todos los cadáveres y detesta que lo
-      llamen héroe. Al conocer a los protagonistas cree que son otra imitación
-      del dominio. Solo se convence si le muestran algo posterior a su
-      desaparición.</p>
-      <p>Sabe que el dominio es un único organismo y que su salida es la Herida
-      Original, por donde la carne apareció en el mundo, cerrada como una
-      cicatriz. Nunca pudo cruzarla porque abrirla contrae todo el organismo.
-      Necesita que otros mantengan abiertos varios conductos mientras él corta
-      el núcleo. Fuera, su cuerpo rechazará los órganos del dominio y se irá
-      debilitando hora tras hora. Aun así quiere salir para entregar a las
-      familias el cuaderno con los nombres y los últimos mensajes de los treinta
-      y un compañeros que perdió.</p>
+      <p>Darian Veyr era un soldado de élite cuando lo mandaron al dominio de
+      carne con una expedición de treinta y dos hombres. Es el único que sigue
+      vivo. Lleva doce años dentro y ya conoce el ritmo de las paredes, cuándo
+      crecen y qué corredores cambian de lugar cada vez que se contraen. El
+      dominio intentó digerirlo tantas veces que le quedó parte de él encima.
+      Tiene carne ajena cosida a las heridas, un pulmón que no es suyo y una
+      raíz nerviosa metida en la columna.</p>
+      <p>Es un hombre enorme de unos cincuenta años que se ve mayor de lo que
+      es. Se armó con placas de hueso, hebillas oxidadas y cuero arrancado de
+      las paredes, y carga un mandoble hecho con una costilla gigante. Se llama
+      Desgarro y sigue intentando crecer, así que Darian tiene que sacarle los
+      dientes nuevos para poder usarlo. Cuenta los segundos entre latido y
+      latido, quema todos los cadáveres que encuentra y nunca duerme con la
+      espalda contra una pared. No le gusta que le digan héroe. Cuando conoce al
+      grupo cree que son otra imitación del dominio, y no baja la guardia hasta
+      que le muestran algo que este no podría saber.</p>
+      <p>Sabe llegar a la salida, un punto cicatrizado por donde la carne entró
+      al mundo por primera vez, pero nunca pudo abrirla solo. Abrirla hace que
+      todo el organismo se contraiga, así que necesita que otros mantengan
+      abiertos varios conductos mientras él corta la cicatriz. Fuera, su cuerpo
+      va a rechazar los órganos que le puso el dominio y se irá debilitando
+      hora tras hora. Lo sabe y quiere salir igual. Tiene un cuaderno con los
+      nombres y los últimos mensajes de los treinta y un compañeros que perdió
+      y quiere entregárselo a sus familias.</p>
     `
   },
   {

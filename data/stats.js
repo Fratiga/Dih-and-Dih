@@ -799,7 +799,7 @@ window.STATS = [
       { nombre: "Demasiado Terco (Pasiva)", descripcion: "La primera vez que llega a 0 PV, cae a 1 PV y obtiene 20 PV temporales. Mientras los conserve, no puede retirarse voluntariamente de ningún enemigo." },
       { nombre: "Injerto del Dominio (Pasiva)", descripcion: "Dentro del dominio recupera 10 PV al inicio de cada uno de sus turnos si tiene menos de la mitad de sus PV, salvo que haya recibido daño de fuego o radiante desde el final de su turno anterior. Fuera del dominio su máximo de PV baja 10 por cada hora hasta que sus órganos sean reemplazados o se encuentre una cura." }
     ],
-    estrategia: "«Digan algo que este lugar no pueda saber.» Al principio los toma por una imitación del dominio y lanza un cuchillo contra la sombra de quien hable. Para convencerlo hay que enseñarle un objeto posterior a su desaparición o contarle algo que el dominio no pueda conocer. Si se le ayuda a llegar a la Herida Original, necesita que los demás mantengan abiertos varios conductos mientras corta el núcleo. Si cae fuera, pide que tomen el cuaderno antes de curarlo."
+    estrategia: "Al principio cree que el grupo es una imitación del dominio y lanza un cuchillo contra la sombra de quien le hable. Para convencerlo hay que mostrarle un objeto posterior a su desaparición o contarle algo reciente que el dominio no pueda conocer. Una vez de su lado pelea en primera línea y pide que le sujeten a los enemigos para abrirlos con Desgarro. Si cae fuera del dominio, pide que tomen el cuaderno antes de curarlo."
   },
   {
     id: "coronel-tobi",
