@@ -3255,7 +3255,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .header-juego-link:hover { color: var(--text); border-color: var(--accent-soft); }
 .header-titulo-fila { display: flex; align-items: center; flex-wrap: wrap; }
 
-.sacrificio-escenario { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 10; margin: 0 auto; }
+.sacrificio-escenario { position: relative; flex: 1 1 0; min-width: 0; max-width: 960px; aspect-ratio: 16 / 10; }
 .sacrificio-play {
   position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%);
   width: clamp(56px, 12vw, 84px); aspect-ratio: 1; border-radius: 50%;
@@ -3306,5 +3306,16 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 .sacrificio-volver { color: var(--muted); font-size: .85rem; text-decoration: none; }
 .sacrificio-volver:hover { color: var(--text); }
-.sacrificio-contenido { max-width: 1000px; margin: 0 auto; padding: 22px 24px 60px; }
+.sacrificio-contenido { max-width: 1400px; margin: 0 auto; padding: 22px 24px 60px; }
 .sacrificio-titulo { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+
+/* Banners laterales: a los costados de la caja del juego, nunca dentro */
+.sacrificio-fila { display: flex; align-items: stretch; justify-content: center; gap: 16px; }
+.sacrificio-banner {
+  width: clamp(110px, 14vw, 200px); flex: 0 0 auto; align-self: stretch;
+  background: var(--panel) url("../assets/cosas/hooey-banner.webp") center top / 100% auto repeat-y;
+  border: 1px solid var(--border);
+  pointer-events: none; user-select: none;
+}
+.sacrificio-banner-der { transform: scaleX(-1); }
+@media (max-width: 900px) { .sacrificio-banner { display: none; } }
