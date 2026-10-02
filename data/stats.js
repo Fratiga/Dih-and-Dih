@@ -800,5 +800,32 @@ window.STATS = [
       { nombre: "Injerto del Dominio (Pasiva)", descripcion: "Dentro del dominio recupera 10 PV al inicio de cada uno de sus turnos si tiene menos de la mitad de sus PV, salvo que haya recibido daño de fuego o radiante desde el final de su turno anterior. Fuera del dominio su máximo de PV baja 10 por cada hora hasta que sus órganos sean reemplazados o se encuentre una cura." }
     ],
     estrategia: "«Digan algo que este lugar no pueda saber.» Al principio los toma por una imitación del dominio y lanza un cuchillo contra la sombra de quien hable. Para convencerlo hay que enseñarle un objeto posterior a su desaparición o contarle algo que el dominio no pueda conocer. Si se le ayuda a llegar a la Herida Original, necesita que los demás mantengan abiertos varios conductos mientras corta el núcleo. Si cae fuera, pide que tomen el cuaderno antes de curarlo."
+  },
+  {
+    id: "coronel-tobi",
+    personajeId: "coronel-tobi",
+    nombre: "Coronel Tobi",
+    rol: "Élite · Guardián de la puerta",
+    tipo: "Humanoide",
+    raza: "Humanoide mutante Grande · Caótico neutral",
+    pv: 115,
+    ca: 16,
+    velocidad: "9 m",
+    stats: { fue: 22, des: 10, con: 20, int: 6, sab: 10, car: 8 },
+    notas: [
+      "Salvaciones: FUE +9, CON +8. Percepción pasiva 10. Competencia +3.",
+      "Resistencias: daño contundente, perforante y cortante de ataques no mágicos. Inmunidad a estados: asustado.",
+      "¡Alto, intrusos! (Pasiva): mientras custodia la puerta tiene ventaja en las pruebas para evitar ser empujado o derribado, y puede usar su reacción para impedir que una criatura que intente atravesar su espacio pase de largo.",
+      "Cuerpo experimental (Pasiva): la primera vez que recibe daño en cada turno, lo reduce en 5.",
+      "¡No me des órdenes! (Reacción): cuando una criatura lo contradice o se burla de su rango, se mueve hasta 3 m hacia ella sin provocar ataques de oportunidad. Si queda a su alcance, puede hacer un ataque de puñetazo."
+    ],
+    habilidades: [
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de puñetazo." },
+      { nombre: "Puñetazo (Acción)", descripcion: "+9 al impacto, alcance 1,5 m, un objetivo. Daño: 15 (2d8+6) contundente." },
+      { nombre: "¡A cubierto! (Recarga 5–6)", descripcion: "Se lanza contra un enemigo recorriendo hasta 6 m en línea recta. Cada criatura en su trayectoria hace una salvación de Fuerza CD 16 o recibe 18 (3d8+5) contundente y cae derribada. Si el objetivo choca contra una pared, recibe 7 (2d6) adicional." },
+      { nombre: "¡Fuego de artillería! (1/día)", descripcion: "Arranca un trozo de mobiliario, tubería o escombro y lo arroja a un punto a 12 m. Las criaturas en un radio de 3 m hacen una salvación de Destreza CD 16 o reciben 22 (4d10) contundente, o la mitad si tienen éxito." },
+      { nombre: "¡La puerta no se toca! (Reacción)", descripcion: "Cuando una criatura a su alcance intenta abrir la puerta que custodia, hace un ataque de puñetazo contra ella. Si impacta, además la empuja 3 m." }
+    ],
+    estrategia: "«¡Alto, intrusos!» Se planta frente a la puerta y no la abandona. Saluda a quien parezca un superior, exige credenciales y se enfurece con quien lo contradice o se burla de su rango. Guarda ¡Fuego de artillería! para grupos amontonados."
   }
 ];

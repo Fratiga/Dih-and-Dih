@@ -1223,5 +1223,32 @@ window.PERSONAJES = [
       familias el cuaderno con los nombres y los últimos mensajes de los treinta
       y un compañeros que perdió.</p>
     `
+  },
+  {
+    id: "coronel-tobi",
+    title: "Coronel Tobi",
+    category: "Personajes",
+    tags: ["npc", "mutante"],
+    summary: "El Soldadito. Niño mutante criado en el laboratorio de Dexter, con el cuerpo de un gigante y la cabeza de un niño que juega a ser militar; custodia una puerta y trata a todo intruso como a un invasor.",
+    retrato: "",
+    titulo: "El Soldadito",
+    raza: "Humano mutante",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Centinela",
+    faccion: "fundacion-dexter",
+    primeraAparicion: "",
+    relacionesConocidas: [],
+    content: `
+      <p>Un niño criado entre experimentos y procedimientos que nunca llegó a
+      comprender. Su cuerpo creció sin proporción, con una musculatura
+      exagerada, huesos densos y una resistencia fuera de lo normal, pero sigue
+      comportándose como un niño pequeño que juega a ser soldado.</p>
+      <p>Está convencido de que es un militar de alto rango y de que su única
+      misión es proteger la puerta que le asignaron. Exige que lo llamen
+      Coronel Tobi, saluda a sus superiores y pide credenciales a quien se
+      acerque. No es listo, pero sí lo bastante violento como para ser un
+      peligro real. Quien intenta pasar le parece una invasión enemiga.</p>
+    `
   }
 ];
