@@ -856,7 +856,8 @@
   function filaEspacio(e, i) {
     return `
       <div class="fichas-repetible-item" data-espacio="${i}">
-        <div class="fichas-repetible-header"><strong>Nivel ${i + 1}</strong>
+        <div class="fichas-repetible-header">
+          <input type="text" data-bind="lanzamiento.espacios.${i}.nombre" value="${esc(e.nombre === undefined ? `Nivel ${i + 1}` : e.nombre)}" placeholder="Nivel ${i + 1}">
           <button type="button" class="fichas-repetible-remove" data-remove="espacio:${i}">×</button>
         </div>
         <div class="fichas-field-grid">

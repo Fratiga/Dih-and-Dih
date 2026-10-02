@@ -154,7 +154,7 @@ function fichasPersonajeVacio() {
       manual: false,
       ataqueManual: 0,
       cdManual: 10,
-      espacios: [] // { nivel, max, usados }
+      espacios: [] // { nombre (título editable, opcional), nivel, max, usados }
     },
     hechizos: [], // { id, nombre, nivel, escuela, tiempo, alcance, duracion, componentes, concentracion, ritual, tipo, dano, tipoDano, descripcion, notas }
 
