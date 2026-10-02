@@ -827,5 +827,61 @@ window.STATS = [
       { nombre: "¡La puerta no se toca! (Reacción)", descripcion: "Cuando una criatura a su alcance intenta abrir la puerta que custodia, hace un ataque de puñetazo contra ella. Si impacta, además la empuja 3 m." }
     ],
     estrategia: "«¡Alto, intrusos!» Se planta frente a la puerta y no la abandona. Saluda a quien parezca un superior, exige credenciales y se enfurece con quien lo contradice o se burla de su rango. Guarda ¡Fuego de artillería! para grupos amontonados."
+  },
+  {
+    id: "baltasar-veyra",
+    personajeId: "baltasar-veyra",
+    nombre: "Dr. Baltasar Veyra",
+    rol: "Apoyo / Manipulación biológica",
+    tipo: "Humanoide",
+    pv: 75,
+    ca: 16,
+    velocidad: "9 m",
+    stats: { fue: 14, des: 18, con: 18, int: 20, sab: 16, car: 12 },
+    equipo: ["Fusil de inoculación (experimental)"],
+    habilidades: [
+      { nombre: "Disparo contaminante (Acción)", descripcion: "+7 al impacto, alcance 24/72 m. Daño: 14 (2d8+5) perforante. El objetivo hace una salvación de Constitución CD 15 o sufre 1d6 de veneno al inicio de su siguiente turno." },
+      { nombre: "Dosis de supresión (Recarga 5–6)", descripcion: "Dispara una ampolla que estalla en un radio de 3 m. Los afectados hacen una salvación de Constitución CD 15 o tienen desventaja en su siguiente tirada de ataque." },
+      { nombre: "Cambio de cargador (Acción adicional)", descripcion: "Recarga su fusil. Si un aliado está a 3 m, puede ordenarle como reacción que se mueva hasta la mitad de su velocidad." }
+    ],
+    estrategia: "«No dañen los instrumentos. Ya hemos perdido suficientes muestras esta semana.» Establece la zona de fuego detrás de una cobertura y dispara a quienes se mantienen a distancia o intentan acercarse, priorizando a los que parecen capaces de curar o apoyar. Si cae Elías, deja de mantener su posición y empieza a retroceder."
+  },
+  {
+    id: "elias-morcant",
+    personajeId: "elias-morcant",
+    nombre: "Dr. Elías Morcant",
+    rol: "Hostigador / Combate cuerpo a cuerpo",
+    tipo: "Humanoide",
+    pv: 58,
+    ca: 14,
+    velocidad: "9 m",
+    stats: { fue: 12, des: 16, con: 16, int: 20, sab: 14, car: 14 },
+    equipo: ["Instrumental quirúrgico"],
+    habilidades: [
+      { nombre: "Bisturí (Acción)", descripcion: "+6 al impacto, alcance 1,5 m. Daño: 10 (2d4+5) cortante." },
+      { nombre: "Inyección paralizante (Recarga 5–6)", descripcion: "+6 al impacto, alcance 1,5 m. Daño: 7 (1d4+5) perforante. El objetivo hace una salvación de Constitución CD 14 o queda con velocidad 0 hasta el final de su siguiente turno." },
+      { nombre: "Sutura de emergencia (Acción, 2/día)", descripcion: "Restaura 18 PG a un aliado a 1,5 m con una mezcla de tejido regenerativo. El objetivo también puede terminar una condición de envenenado." },
+      { nombre: "Incisión exploratoria (Pasiva)", descripcion: "Si impacta con el bisturí a una criatura que haya recibido daño desde el comienzo de su último turno, inflige 5 (1d10) de daño adicional." }
+    ],
+    estrategia: "«¡Doctor, doctor! ¡Esta vez sí que está reaccionando como esperábamos!» Inmoviliza a los jugadores con sus inyecciones y aprovecha las aperturas para curar a Baltasar o a Nico. Intenta mantenerse cerca de sus compañeros, pero se acerca a los jugadores si ve la oportunidad de probar sus instrumentos. Si cae Baltasar, se pone nervioso."
+  },
+  {
+    id: "nico",
+    personajeId: "nico",
+    nombre: "Nicolás «Nico»",
+    rol: "Hostigador / Combate cuerpo a cuerpo",
+    tipo: "Humanoide",
+    pv: 48,
+    ca: 15,
+    velocidad: "10,5 m",
+    stats: { fue: 18, des: 18, con: 16, int: 12, sab: 12, car: 10 },
+    equipo: ["Jeringa de presión (lanza, compuesto que altera la musculatura)"],
+    habilidades: [
+      { nombre: "Pinchazo (Acción)", descripcion: "+7 al impacto, alcance 1,5 m. Daño: 12 (2d6+5) perforante." },
+      { nombre: "Sobredosis (Recarga 5–6)", descripcion: "+7 al impacto, alcance 1,5 m. Daño: 10 (1d10+5) perforante. El objetivo hace una salvación de Constitución CD 14 o tiene desventaja en las pruebas de Fuerza hasta el final de su siguiente turno." },
+      { nombre: "¡A que no me atrapas! (Acción adicional)", descripcion: "Se desplaza hasta 4,5 m sin provocar ataques de oportunidad de las criaturas a las que haya atacado este turno." },
+      { nombre: "Pequeño ayudante (Reacción)", descripcion: "Cuando un aliado a 3 m impacta a un enemigo, se mueve hasta 3 m hacia ese enemigo, siempre que no atraviese espacios ocupados." }
+    ],
+    estrategia: "«¡Mírame! ¡Mírame! ¡Hoy hice tres pinchazos seguidos! ¿Viste, Baltasar?» Se concentra en un jugador debilitado y aprovecha su movilidad para entrar y salir del combate. Se ríe cuando consigue inyectar sus compuestos y busca constantemente la atención de Baltasar. Si cae Baltasar, se enfurece y ataca sin pensar."
   }
 ];

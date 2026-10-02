@@ -1251,5 +1251,74 @@ window.PERSONAJES = [
       acerque. No es listo, pero sí lo bastante violento como para ser un
       peligro real. Quien intenta pasar le parece una invasión enemiga.</p>
     `
+  },
+  {
+    id: "baltasar-veyra",
+    title: "Dr. Baltasar Veyra",
+    category: "Personajes",
+    tags: ["npc", "médico"],
+    summary: "El veterano. Médico principal del escuadrón del laboratorio, anciano de voz ronca que trata a los sujetos de experimentación como material y es el único de los tres con experiencia real de combate.",
+    retrato: "",
+    titulo: "El veterano · Médico principal",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Médico",
+    faccion: "fundacion-dexter",
+    primeraAparicion: "",
+    relacionesConocidas: [
+      { id: "elias-morcant", nota: "Su cirujano" },
+      { id: "nico", nota: "Su asistente" }
+    ],
+    content: `
+      <p>Un hombre de edad avanzada, de movimientos pausados y voz ronca. Es el médico principal del escuadrón. Considera incompetentes a los demás médicos y trata a los sujetos de experimentación como simples materiales. Es el único de los tres con verdadera experiencia de combate.</p>
+      <p>Pelea con un fusil de inoculación, un arma experimental que dispara proyectiles de vidrio llenos de compuestos alquímicos. Se mantiene lejos, usa las coberturas y apunta primero a quienes parecen capaces de curar o apoyar al grupo. Le preocupan más las muestras y los instrumentos que las personas.</p>
+    `
+  },
+  {
+    id: "elias-morcant",
+    title: "Dr. Elías Morcant",
+    category: "Personajes",
+    tags: ["npc", "médico"],
+    summary: "El joven. Cirujano experimental nervioso y entusiasta, fascinado por las reacciones que provoca el dolor; ve a Baltasar como una autoridad y trata a Nico como a un colega.",
+    retrato: "",
+    titulo: "El joven · Cirujano experimental",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Cirujano",
+    faccion: "fundacion-dexter",
+    primeraAparicion: "",
+    relacionesConocidas: [
+      { id: "baltasar-veyra", nota: "Lo ve como una figura de autoridad" },
+      { id: "nico", nota: "Lo trata como a un colega" }
+    ],
+    content: `
+      <p>Un médico joven, nervioso y demasiado entusiasta. Le fascinan las reacciones que provoca el dolor y anota los resultados de sus experimentos incluso en pleno combate. Ve a Baltasar como una figura de autoridad y trata a Nico como a un colega más.</p>
+      <p>Pelea con un bisturí y con inyecciones que paralizan, y también sabe curar a sus compañeros con una mezcla de tejido regenerativo. Intenta mantenerse cerca de los suyos, pero se acerca a los enemigos cuando ve la oportunidad de probar sus instrumentos.</p>
+    `
+  },
+  {
+    id: "nico",
+    title: "Nicolás «Nico»",
+    category: "Personajes",
+    tags: ["npc", "asistente"],
+    summary: "El pequeño. Asistente de laboratorio que parece un niño con una máscara demasiado grande; no entiende del todo qué es la muerte y cree que los combates son práctica.",
+    retrato: "",
+    titulo: "El pequeño · Asistente de laboratorio",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Asistente de laboratorio",
+    faccion: "fundacion-dexter",
+    primeraAparicion: "",
+    relacionesConocidas: [
+      { id: "baltasar-veyra", nota: "Busca constantemente su atención" },
+      { id: "elias-morcant", nota: "Lo trata como a un compañero" }
+    ],
+    content: `
+      <p>A simple vista parece un niño con una máscara demasiado grande para su cabeza. Es inquieto, curioso y le fascinan los instrumentos médicos. Trabaja como asistente de laboratorio. No parece entender del todo qué es la muerte y considera que los combates son una forma de practicar.</p>
+      <p>Usa como lanza una enorme jeringa reforzada, cargada con un compuesto que altera la musculatura por un rato. Se lanza sobre los enemigos, se ríe cuando consigue inyectarles algo y busca todo el tiempo que Baltasar lo mire.</p>
+    `
   }
 ];
