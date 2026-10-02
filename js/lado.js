@@ -307,7 +307,7 @@ function recargarSiHaceFalta() {
 /* Nombres visibles para cada Side — solo cosmético, la lógica interna
    sigue usando "A"/"B" en todos lados (entry.lado, RLS, etc.). */
 const LADO_NOMBRES = {
-  A: 'Side A ("oio sv")',
+  A: 'Side A ("los oio")',
   B: 'Side B ("los dayo")'
 };
 
