@@ -142,8 +142,11 @@
 
   function actualizarEfectos() {
     const jugando = fase === "jugando";
+    // Curva cuadrática: los primeros escalones apenas se notan y recién
+    // después sube con fuerza. Llega a opaco al décimo escalón (racha 90).
+    const escalones = Math.floor((racha - RACHA_FUEGO) / PASO_FUEGO);
     const opacidad = jugando && racha >= RACHA_FUEGO
-      ? Math.min(1, 0.03 + 0.1 * Math.floor((racha - RACHA_FUEGO) / PASO_FUEGO))
+      ? Math.min(1, 0.03 + 0.97 * Math.pow(escalones / 10, 2))
       : 0;
     fuegoEl.style.opacity = String(opacidad);
 
