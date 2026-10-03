@@ -5,11 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Muerte Súbita — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261033">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261033">
+  <link rel="stylesheet" href="css/style.css?v=20261034">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261034">
+  <link rel="stylesheet" href="css/muerte-subita.css?v=20261034">
 </head>
 <body class="mj-pagina ms-pagina">
   <!-- Página aparte y escondida: se abre con una palabra en la clave mágica. -->
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="msGradTent" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#2a0f4d"/>
+        <stop offset="0.6" stop-color="#6b21a8"/>
+        <stop offset="1" stop-color="#c026d3"/>
+      </linearGradient>
+      <!-- Un tentáculo: cuerpo que se afina hacia la punta, con ventosas -->
+      <symbol id="msTentaculo" viewBox="0 0 120 400">
+        <path d="M50 400 C30 340 90 300 60 240 C30 180 80 150 70 90 C66 60 74 30 86 4 C78 34 80 62 86 92 C98 152 52 186 82 246 C112 306 52 346 74 400 Z" fill="url(#msGradTent)"/>
+        <g fill="#e9b8ff" opacity=".55">
+          <circle cx="62" cy="330" r="4"/><circle cx="68" cy="290" r="3.6"/><circle cx="66" cy="250" r="3.4"/>
+          <circle cx="62" cy="210" r="3.2"/><circle cx="70" cy="165" r="3"/><circle cx="73" cy="125" r="2.6"/>
+          <circle cx="76" cy="85" r="2.2"/><circle cx="80" cy="50" r="1.8"/>
+        </g>
+      </symbol>
+      <!-- Ojo que mira: la pupila la mueve el script hacia el cursor -->
+      <symbol id="msOjo" viewBox="0 0 100 60">
+        <path d="M4 30 C22 6 78 6 96 30 C78 54 22 54 4 30 Z" fill="#12061f" stroke="#c084fc" stroke-width="2.5"/>
+        <circle cx="50" cy="30" r="15" fill="#a855f7"/>
+        <g class="ms-pupila"><ellipse cx="50" cy="30" rx="5" ry="12" fill="#06020c"/><circle cx="46" cy="25" r="2.4" fill="#f5d0fe"/></g>
+      </symbol>
+      <symbol id="msDiana" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="#1b0933" stroke="#c084fc" stroke-width="3"/>
+        <circle cx="50" cy="50" r="33" fill="none" stroke="#a855f7" stroke-width="3"/>
+        <circle cx="50" cy="50" r="20" fill="none" stroke="#d946ef" stroke-width="3"/>
+        <circle cx="50" cy="50" r="7" fill="#f0abfc"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <canvas id="msAmbiente" class="ms-ambiente" aria-hidden="true"></canvas>
+  <div class="ms-vineta" aria-hidden="true"></div>
+  <div class="ms-relampago" aria-hidden="true"></div>
+
+  <div class="ms-tentaculos" aria-hidden="true">
+    <svg class="ms-tent ms-t1"><use href="#msTentaculo"/></svg>
+    <svg class="ms-tent ms-t2"><use href="#msTentaculo"/></svg>
+    <svg class="ms-tent ms-t3"><use href="#msTentaculo"/></svg>
+    <svg class="ms-tent ms-t4"><use href="#msTentaculo"/></svg>
+    <svg class="ms-tent ms-t5"><use href="#msTentaculo"/></svg>
+    <svg class="ms-tent ms-t6"><use href="#msTentaculo"/></svg>
+  </div>
+
   <div class="mj-barra">
     <a href="index.html" class="mj-volver">← Despertar</a>
     <div id="globalLadoWidget" class="global-lado-widget">
@@ -19,20 +65,38 @@
   </div>
 
   <section id="msPuerta" class="ms-puerta">
-    <h1>MUERTE SÚBITA</h1>
-    <p>Aquí se apuesta la vida de un personaje. Es voluntario, y solo para quienes ya llegaron al nivel 4.</p>
-    <button type="button" id="msEntrar" class="ms-boton">Entrar al dominio</button>
+    <svg class="ms-runa" viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="100" cy="100" r="94" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3 7"/>
+      <circle cx="100" cy="100" r="78" fill="none" stroke="#c026d3" stroke-width="1"/>
+      <polygon points="100,22 168,140 32,140" fill="none" stroke="#a855f7" stroke-width="1.2"/>
+      <polygon points="100,178 32,60 168,60" fill="none" stroke="#a855f7" stroke-width="1.2"/>
+    </svg>
+    <h1 class="ms-titulo-grande">MUERTE SÚBITA</h1>
+    <p class="ms-heraldo-voz">Pasa, pasa. Qué valiente, o qué mal informado.</p>
+    <p class="ms-heraldo-texto">Soy el Heraldo del Dominio y me toca leerte las reglas. Son pocas, son injustas y yo las disfruto muchísimo.</p>
+    <ol class="ms-reglas">
+      <li>Apuestas a tu personaje. A uno solo, y <strong>de nivel 4 o más</strong>. Los novatos no me divierten.</li>
+      <li>Nadie te obliga a entrar. Es lo único justo que vas a encontrar aquí.</li>
+      <li>Yo elijo al rival. Yo elijo la prueba. Tú eliges cuánto te vas a arrepentir.</li>
+      <li>Solo cuentan los personajes de tu cuenta. Los ajenos quedan fuera de mi alcance, por ahora.</li>
+      <li>Cada personaje intenta cada desafío una sola vez. Me gusta que duela una vez.</li>
+      <li>Si ganas, te llevas algo que nadie más tendrá. Si pierdes, quedas marcado y el DM dicta sentencia.</li>
+    </ol>
+    <p class="ms-heraldo-texto ms-cierre">¿Sigues aquí? Qué encantador.</p>
+    <button type="button" id="msEntrar" class="ms-boton ms-boton-grande" disabled>Entrar al Dominio</button>
+    <p id="msPuertaAviso" class="ms-aviso">Solo con cuenta. Inicia sesión arriba para poder entrar.</p>
   </section>
 
   <main id="msContenido" class="mj-contenido hidden">
-    <p class="eyebrow">SOLO PARA QUIEN SE ATREVE</p>
-    <h1 class="mj-titulo">Muerte Súbita</h1>
+    <p class="eyebrow ms-eyebrow">EL DOMINIO TE ESTÁ MIRANDO</p>
+    <h1 class="mj-titulo ms-titulo-grande ms-titulo-chico">Muerte Súbita</h1>
+    <p class="ms-heraldo-voz ms-linea-heraldo">Elige quién te va a destruir. Solo personajes de nivel 4 o más.</p>
 
-    <div id="msDesafios" class="ms-desafios"></div>
+    <div id="msDesafios" class="ms-cartas"></div>
 
     <section id="msPanel" class="ms-panel hidden">
       <h3 id="msPanelTitulo"></h3>
-      <label for="msPersonaje">Personaje que apuestas</label>
+      <label for="msPersonaje">Personaje que apuestas (nivel 4 o más, de tu cuenta)</label>
       <select id="msPersonaje"></select>
       <label for="msConfirmar">Escribe su nombre para confirmar</label>
       <input id="msConfirmar" type="text" autocomplete="off">
@@ -44,22 +108,24 @@
     </section>
 
     <section id="msJuego" class="hidden">
-      <div class="mj-escenario">
+      <div class="mj-escenario ms-escenario">
         <canvas id="msCampo" class="mj-campo" role="button" tabindex="0" aria-label="Desafío"></canvas>
         <button type="button" id="msJugar" class="mj-play" aria-label="Empezar">▶</button>
       </div>
       <p id="msResultado" class="ms-resultado"></p>
     </section>
+
+    <div id="msIntentos"></div>
   </main>
 
-  <script src="js/temas.js?v=20261033"></script>
-  <script src="js/fichas-supabase.js?v=20261033"></script>
-  <script src="js/fichas-modelo.js?v=20261033"></script>
-  <script src="js/fichas-storage.js?v=20261033"></script>
-  <script src="js/muerte-subita-supabase.js?v=20261033"></script>
-  <script src="js/lado.js?v=20261033"></script>
-  <script src="js/arqueria.js?v=20261033"></script>
-  <script src="data/muerte-subita.js?v=20261033"></script>
-  <script src="js/muerte-subita.js?v=20261033"></script>
+  <script src="js/temas.js?v=20261034"></script>
+  <script src="js/fichas-supabase.js?v=20261034"></script>
+  <script src="js/fichas-modelo.js?v=20261034"></script>
+  <script src="js/fichas-storage.js?v=20261034"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261034"></script>
+  <script src="js/lado.js?v=20261034"></script>
+  <script src="js/arqueria.js?v=20261034"></script>
+  <script src="data/muerte-subita.js?v=20261034"></script>
+  <script src="js/muerte-subita.js?v=20261034"></script>
 </body>
 </html>

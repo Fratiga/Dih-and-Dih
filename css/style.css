@@ -3322,3 +3322,17 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 .sacrificio-banner-der { transform: scaleX(-1); }
 @media (max-width: 900px) { .sacrificio-banner { display: none; } .sacrificio-escenario { width: 100%; } }
+
+/* --- Marca del Dominio (Muerte Súbita) en Mis personajes --- */
+.fichas-marca-dominio {
+  display: inline-block; margin: 6px 0 0; padding: 3px 10px; font-size: .72rem; letter-spacing: .05em;
+  color: #f0d4ff; background: rgba(88, 28, 135, .45); border: 1px solid #a855f7;
+  box-shadow: 0 0 12px rgba(168, 85, 247, .7); text-shadow: 0 0 6px #c026d3;
+}
+.fichas-card-marcada { border-color: #7c3aed; box-shadow: 0 0 22px rgba(124, 58, 237, .55), inset 0 0 18px rgba(88, 28, 135, .35); }
+/* Punto violeta en el chip Admin cuando hay derrotas de Muerte Súbita sin revisar */
+.nav-chip.nav-chip-aviso::after {
+  content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 7px; border-radius: 50%;
+  background: #d946ef; box-shadow: 0 0 8px #d946ef; vertical-align: middle; animation: msPunto 1.6s ease-in-out infinite;
+}
+@keyframes msPunto { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }

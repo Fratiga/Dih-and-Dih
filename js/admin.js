@@ -434,6 +434,34 @@
     return `${estado}${marcador} · ${veredicto}`;
   }
 
+  // Aviso de derrotas nuevas mientras este panel esté abierto: revisa cada 45 s
+  // y, si diste permiso, manda una notificación del navegador.
+  const derrotasVistas = new Set();
+  function vigilarDerrotas(listaInicial) {
+    listaInicial.filter(i => i.estado === "perdido").forEach(i => derrotasVistas.add(i.id));
+    const boton = document.getElementById("adminMuerteNotificar");
+    if (boton) {
+      if (!("Notification" in window)) boton.classList.add("hidden");
+      else if (Notification.permission === "granted") boton.textContent = "Avisos del navegador activados";
+      boton.addEventListener("click", async () => {
+        if ("Notification" in window && Notification.permission !== "granted") await Notification.requestPermission();
+        boton.textContent = Notification.permission === "granted" ? "Avisos del navegador activados" : "El navegador bloqueó los avisos";
+      });
+    }
+    setInterval(async () => {
+      try {
+        const lista = await msListarIntentos();
+        pintarMuerteSubita(lista);
+        lista.filter(i => i.estado === "perdido" && !derrotasVistas.has(i.id)).forEach(i => {
+          derrotasVistas.add(i.id);
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("Muerte Súbita", { body: `${i.personaje_nombre} (${i.username}) perdió el desafío ${i.desafio}.` });
+          }
+        });
+      } catch (e) { /* se reintenta en el siguiente ciclo */ }
+    }, 45000);
+  }
+
   function pintarMuerteSubita(lista) {
     const cont = document.getElementById("adminMuerteLista");
     const count = document.getElementById("adminMuerteCount");
@@ -494,7 +522,9 @@
     // Muerte Súbita (requiere scratchpad/muerte_subita.sql), también por separado.
     const muerteEl = document.getElementById("adminMuerteLista");
     try {
-      pintarMuerteSubita(await msListarIntentos());
+      const lista = await msListarIntentos();
+      pintarMuerteSubita(lista);
+      vigilarDerrotas(lista);
     } catch (e) {
       muerteEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/muerte_subita.sql en Supabase?</p>`;
     }

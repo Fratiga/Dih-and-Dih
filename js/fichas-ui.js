@@ -51,6 +51,7 @@
       return;
     }
     vacio.classList.toggle("hidden", personajes.length > 0);
+    await cargarMarcasDominio();
     grid.innerHTML = personajes.map(p => tarjetaHTML(p)).join("");
 
     grid.querySelectorAll("[data-abrir]").forEach(el => {
@@ -99,11 +100,32 @@
     });
   }
 
+  /* Personajes que perdieron en Muerte Súbita: los ve su dueño y el Admin
+     (la base solo devuelve los intentos propios, o todos si es Admin). */
+  const marcasDominio = new Map(); // id de personaje -> "juicio" | "confirmado"
+  async function cargarMarcasDominio() {
+    marcasDominio.clear();
+    if (typeof msListarIntentos !== "function") return;
+    try {
+      const intentos = await msListarIntentos();
+      intentos.forEach(i => {
+        if (i.estado === "perdido" && i.veredicto !== "anulado") {
+          marcasDominio.set(i.personaje_id, i.veredicto === "confirmado" ? "confirmado" : "juicio");
+        }
+      });
+    } catch (err) { /* sin la tabla de Muerte Súbita no hay marcas */ }
+  }
+
+  function textoMarca(estado) {
+    return estado === "confirmado" ? "☠ Marcado por el Dominio" : "☠ Marca del Dominio, en juicio";
+  }
+
   function tarjetaHTML(p) {
+    const marca = marcasDominio.get(p.id);
     const clases = [p.identidad.clase, ...(p.identidad.clasesExtra || []).map(c => c.nombre)].filter(Boolean).join(" / ");
     const esDeOtro = p.ownerEmail && p.ownerEmail !== miEmail;
     return `
-      <article class="fichas-card">
+      <article class="fichas-card${marca ? " fichas-card-marcada" : ""}">
         <button type="button" class="fichas-card-menu-btn" data-menu-toggle title="Más opciones">⋮</button>
         <div class="fichas-card-menu hidden">
           <button type="button" data-duplicar="${p.id}">Duplicar</button>
@@ -116,6 +138,7 @@
           <div>
             <h3 class="fichas-card-nombre">${esc(p.identidad.nombre || "Sin nombre")}</h3>
             <p class="fichas-card-meta">${esc(p.identidad.raza || "—")} · ${esc(clases || "—")} · Nv. ${esc(p.identidad.nivelTotal)}</p>
+            ${marca ? `<p class="fichas-marca-dominio">${textoMarca(marca)}</p>` : ""}
             ${esDeOtro ? `<p class="fichas-card-dueno">De: ${esc(p.ownerUsername || p.ownerEmail)}</p>` : ""}
           </div>
         </div>
@@ -394,6 +417,16 @@
       retratoVacio.textContent = (p.identidad.nombre || "?")[0].toUpperCase();
     }
     document.getElementById("fichasHNombre").textContent = p.identidad.nombre || "Sin nombre";
+    let marcaEl = document.getElementById("fichasHMarca");
+    if (!marcaEl) {
+      marcaEl = document.createElement("p");
+      marcaEl.id = "fichasHMarca";
+      marcaEl.className = "fichas-marca-dominio";
+      document.getElementById("fichasHSub").insertAdjacentElement("afterend", marcaEl);
+    }
+    const marcaEstado = marcasDominio.get(p.id);
+    marcaEl.textContent = marcaEstado ? textoMarca(marcaEstado) : "";
+    marcaEl.classList.toggle("hidden", !marcaEstado);
     const clases = [p.identidad.clase, ...(p.identidad.clasesExtra || []).map(c => c.nombre)].filter(Boolean).join(" / ");
     const esDeOtro = p.ownerEmail && p.ownerEmail !== miEmail;
     document.getElementById("fichasHSub").textContent = `${p.identidad.raza || "—"} · ${clases || "—"} · Nivel ${p.identidad.nivelTotal}` + (esDeOtro ? ` · De: ${p.ownerUsername || p.ownerEmail}` : "");

@@ -831,3 +831,24 @@ function crearPuntoOculto(elemento, id) {
   if (hora !== 0) return;
   crearPuntoOculto(document.querySelector(".header-left h1"), "huellaMedianoche");
 })();
+
+
+/* Si eres Admin y hay derrotas de Muerte Súbita sin revisar, el chip "Admin"
+   del menú muestra un punto violeta. Una sola consulta liviana, solo para Admin. */
+async function marcarAvisoAdmin() {
+  if (!esAdmin() || typeof fichasCliente !== "function") return;
+  try {
+    const supabase = await fichasCliente();
+    const { count, error } = await supabase
+      .from("muerte_subita_intentos")
+      .select("id", { count: "exact", head: true })
+      .eq("estado", "perdido")
+      .is("veredicto", null);
+    if (error || !count) return;
+    document.querySelectorAll('.nav-chip[href="admin.html"]').forEach(a => {
+      a.classList.add("nav-chip-aviso");
+      a.title = `${count} derrota${count === 1 ? "" : "s"} de Muerte Súbita por revisar`;
+    });
+  } catch (e) { /* sin la tabla de Muerte Súbita no hay aviso */ }
+}
+marcarAvisoAdmin();
