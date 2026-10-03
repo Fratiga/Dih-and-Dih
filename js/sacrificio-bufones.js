@@ -85,8 +85,21 @@
       camera = new THREE.OrthographicCamera(0, ancho, alto, 0, 1, 3000);
       camera.position.z = 1500;
 
-      renderer = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: !navigator.gpu });
-      await renderer.init();
+      // WebGPU real solo donde es confiable; en Firefox, o si WebGPU falla al
+      // arrancar, se usa el modo WebGL, que funciona en todos los navegadores.
+      const prefiereWebGL = !navigator.gpu || /firefox/i.test(navigator.userAgent);
+      async function abrirRenderer(webgl) {
+        const r = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: webgl });
+        await r.init();
+        return r;
+      }
+      try {
+        renderer = await abrirRenderer(prefiereWebGL);
+      } catch (err) {
+        if (prefiereWebGL) throw err;
+        console.warn("WebGPU falló, se usa WebGL:", err);
+        renderer = await abrirRenderer(true);
+      }
       renderer.setPixelRatio(1);
       renderer.setSize(ancho, alto);
       renderer.setClearColor(0x000000, 0);
