@@ -16,6 +16,7 @@
   const VELOCIDAD_BASE = 94;
   const VELOCIDAD_POR_RACHA = 8;
   const VELOCIDAD_MAX = 560;
+  const VELOCIDAD_OLEADA = 220; // las oleadas caen siempre a esta velocidad, sin importar la racha
 
   const medidorEl = document.getElementById("sacrificioMedidor");
   const fuegoEl = document.getElementById("sacrificioFuego");
@@ -121,6 +122,7 @@
   let hooeys = [];
   let particulas = [];
   let temporizadorAparicion = 0;
+  let oleadaPendiente = false;
   let ancho = 0;
   let alto = 0;
   let ultimo = 0;
@@ -209,20 +211,26 @@
     };
   }
 
-  // Oleada: 3 o 4 Hooeys, en abanico (V) o en escalera. La separación se mide
-  // en tiempo y no en píxeles, para que a cualquier velocidad quede margen
-  // para llegar a cada uno; y todos caen al mismo ritmo para que no se alcancen.
+  // Oleada: 3 o 4 Hooeys, en abanico (V) o en escalera. Caen a una velocidad
+  // fija y juntos, en una franja central del campo, para que se pueda llegar a
+  // cada uno con un solo cursor. Mientras la oleada siga en pantalla no cae
+  // ningún otro Hooey.
   function generarOleada() {
     const n = 3 + (Math.random() < 0.4 ? 1 : 0);
     const { w } = dimensiones(escalaPorRacha());
     const enV = Math.random() < 0.5;
-    const v = velocidadActual();
+    const v = VELOCIDAD_OLEADA;
+    const franja = (ancho - w) * 0.55;
+    const inicio = (ancho - w - franja) / 2;
     const nuevos = [];
     for (let i = 0; i < n; i++) {
-      const x = (ancho - w) * (i / (n - 1));
-      const extra = enV ? Math.abs(i - (n - 1) / 2) * v * 0.4 : i * v * 0.55;
+      const x = inicio + franja * (i / (n - 1));
+      const extra = enV ? Math.abs(i - (n - 1) / 2) * v * 0.3 : i * v * 0.35;
       const m = nuevoHooey(x, extra);
       m.variacion = 1;
+      m.velFija = v;
+      m.oleada = true;
+      m.zigAmp = 0;
       nuevos.push(m);
     }
     if (nuevos.every(m => m.tipo === "decoy")) { nuevos[0].tipo = "normal"; nuevos[0].vidas = 1; }
@@ -284,6 +292,7 @@
     prepararFuego();
     musica.currentTime = 0;
     musica.play().catch(() => { /* el navegador bloqueó el audio */ });
+    oleadaPendiente = false;
     hooeys = [nuevoHooey()];
     particulas = [];
     temporizadorAparicion = intervaloAparicion();
@@ -433,11 +442,23 @@
   function actualizar(dt) {
     if (fase === "jugando") {
       const v = velocidadActual();
-      temporizadorAparicion -= dt;
+      const oleadaActiva = hooeys.some(m => m.oleada && m.tipo !== "decoy");
+      if (oleadaActiva) {
+        // No cae nada más hasta eliminar la oleada
+        temporizadorAparicion = 0.9;
+      } else {
+        temporizadorAparicion -= dt;
+      }
       if (temporizadorAparicion <= 0) {
-        if (racha >= RACHA_OLEADA && Math.random() < Math.min(0.4, 0.2 + (racha - RACHA_OLEADA) * 0.004)) {
-          generarOleada();
-          temporizadorAparicion = intervaloAparicion() * 1.7 + 1.2;
+        if (oleadaPendiente || (racha >= RACHA_OLEADA && Math.random() < Math.min(0.4, 0.2 + (racha - RACHA_OLEADA) * 0.004))) {
+          // La oleada sale cuando el campo está libre de Hooeys sueltos
+          if (hooeys.some(m => m.tipo !== "decoy")) {
+            oleadaPendiente = true;
+            temporizadorAparicion = 0.1;
+          } else {
+            oleadaPendiente = false;
+            generarOleada();
+          }
         } else {
           hooeys.push(nuevoHooey());
           temporizadorAparicion = intervaloAparicion();
@@ -445,7 +466,7 @@
       }
       for (const m of hooeys) {
         m.t += dt;
-        m.y += v * m.variacion * dt;
+        m.y += (m.velFija || v * m.variacion) * dt;
         m.fase += dt * 4;
         if (m.destello > 0) m.destello -= dt;
         if (m.zigAmp) {
