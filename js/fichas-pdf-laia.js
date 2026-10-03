@@ -194,5 +194,14 @@ async function fichasImportarPdf(arrayBuffer) {
     return { adaptador: "Ficha D&D (plantilla de referencia)", personaje, pendientesRevision };
   }
 
-  throw new Error("Este PDF no coincide con ninguna plantilla reconocida todavía. Por ahora solo se puede importar la plantilla de referencia (la misma estructura que ficha DND (3).pdf).");
+  // Hoja de personaje D&D 5e de Roll20 impresa a PDF: no tiene campos de formulario, se lee como texto.
+  if (typeof fichasPdfRoll20Extraer === "function") {
+    const paginas = await fichasPdfRoll20Extraer(arrayBuffer);
+    if (fichasPdfRoll20Detectar(paginas)) {
+      const { personaje, pendientesRevision } = fichasPdfRoll20Importar(paginas);
+      return { adaptador: "Hoja D&D 5e de Roll20 (PDF impreso)", personaje, pendientesRevision };
+    }
+  }
+
+  throw new Error("Este PDF no coincide con ninguna plantilla reconocida todavía. Se pueden importar la plantilla de referencia (ficha DND (3).pdf) y la hoja D&D 5e de Roll20 impresa a PDF.");
 }
