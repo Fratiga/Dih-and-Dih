@@ -8,7 +8,7 @@
   const ctx = canvas.getContext("2d");
 
   const CLAVE_TOTAL = "compendioHooeyTotal";
-  const SLAPPY = { username: "Slappy", total: 200, mejor_racha: 200 };
+  const SLAPPY = { username: "Slappy", total: 999, mejor_racha: 200 };
   const CLAVE_RECORD = "compendioHooeyRecord";
   const ANCHO_SPRITE = 100;
   const LOGICO_ANCHO = 960;
