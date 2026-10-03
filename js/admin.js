@@ -427,6 +427,52 @@
     });
   }
 
+  function textoIntentoMuerte(i) {
+    const veredicto = i.veredicto === "confirmado" ? "Confirmado" : i.veredicto === "anulado" ? "Anulado" : "Pendiente";
+    const estado = i.estado === "en_curso" ? "sin terminar" : i.estado;
+    const marcador = i.puntaje === null ? "" : ` · ${i.puntaje} a ${i.puntaje_rival}`;
+    return `${estado}${marcador} · ${veredicto}`;
+  }
+
+  function pintarMuerteSubita(lista) {
+    const cont = document.getElementById("adminMuerteLista");
+    const count = document.getElementById("adminMuerteCount");
+    const pendientes = lista.filter(i => !i.veredicto).length;
+    count.textContent = pendientes ? `${pendientes} pendiente${pendientes === 1 ? "" : "s"}` : "";
+    if (!lista.length) {
+      cont.innerHTML = `<p class="admin-vacio">Nadie ha intentado un desafío todavía.</p>`;
+      return;
+    }
+    cont.innerHTML = lista.map(i => `
+      <div class="admin-cuenta-fila" data-id="${escaparHtml(i.id)}">
+        <span class="admin-cuenta-nombre">
+          ${escaparHtml(i.personaje_nombre)}
+          <span class="admin-cuenta-tag">${escaparHtml(i.username)} · ${escaparHtml(i.desafio)} · ${escaparHtml(textoIntentoMuerte(i))}</span>
+        </span>
+        <div class="admin-cuenta-acciones">
+          ${i.veredicto ? "" : `
+            <button type="button" class="admin-cuenta-accion" data-veredicto="confirmado">Confirmar</button>
+            <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-veredicto="anulado">Anular</button>`}
+        </div>
+      </div>`).join("");
+    cont.querySelectorAll("[data-veredicto]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const fila = btn.closest("[data-id]");
+        const accion = btn.dataset.veredicto;
+        const frase = accion === "confirmado" ? "¿Confirmar este resultado?" : "¿Anular este intento? Ese personaje podrá volver a intentarlo.";
+        if (!confirm(frase)) return;
+        btn.disabled = true;
+        try {
+          await msAdminResolver(fila.dataset.id, accion);
+          pintarMuerteSubita(await msListarIntentos());
+        } catch (err) {
+          alert("No se pudo guardar. Prueba de nuevo.");
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
   initAdminGate(async () => {
     const peticionesEl = document.getElementById("adminPeticionesLista");
     const cuentasEl = document.getElementById("adminCuentasLista");
@@ -444,6 +490,14 @@
     // un script aparte del resto del panel, así que su falla no debe tapar
     // Peticiones/Cuentas si todavía no se corrió.
     await cargarProgresoBufon();
+
+    // Muerte Súbita (requiere scratchpad/muerte_subita.sql), también por separado.
+    const muerteEl = document.getElementById("adminMuerteLista");
+    try {
+      pintarMuerteSubita(await msListarIntentos());
+    } catch (e) {
+      muerteEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/muerte_subita.sql en Supabase?</p>`;
+    }
 
     // Independiente también: requiere scratchpad/fanarts_side.sql.
     const fanartsEl = document.getElementById("adminFanartsLista");

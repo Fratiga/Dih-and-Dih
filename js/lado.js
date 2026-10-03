@@ -552,6 +552,14 @@ function initClaveMagicaWidget() {
       return;
     }
 
+    // Entrada escondida a Muerte Súbita (página aparte): hay que saber la palabra.
+    if (valor.toLowerCase() === "dominio") {
+      rachaFallos = 0;
+      cerrarPopover();
+      window.location.href = "muerte-subita.html";
+      return;
+    }
+
     const imagenClave = buscarImagenPorPalabraClave(valor);
     if (imagenClave) {
       rachaFallos = 0;

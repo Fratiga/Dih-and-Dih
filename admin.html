@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261032">
+  <link rel="stylesheet" href="css/style.css?v=20261033">
 </head>
 <body>
   <header class="site-header">
@@ -127,6 +127,7 @@
         <button type="button" class="admin-tab" data-tab="cuentas">Cuentas <span id="adminCuentasCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="bufon">Progreso del Bufón <span id="adminBufonCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="fanarts">Fanarts <span id="adminFanartsCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="muerte">Muerte Súbita <span id="adminMuerteCount" class="admin-tab-badge"></span></button>
       </div>
 
       <section id="adminPanelPeticiones" class="admin-panel active">
@@ -154,6 +155,13 @@
           <p class="admin-vacio">Cargando...</p>
         </div>
       </section>
+
+      <section id="adminPanelMuerte" class="admin-panel">
+        <p class="admin-bufon-banner">El sitio solo deja el resultado como provisional. Aquí lo confirmas o lo anulas (al anular, ese personaje puede volver a intentarlo). Nada pasa en la campaña hasta que tú lo decidas.</p>
+        <div id="adminMuerteLista" class="admin-cuentas-lista">
+          <p class="admin-vacio">Cargando...</p>
+        </div>
+      </section>
     </section>
   </main>
 
@@ -162,33 +170,34 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="data/entries.js?v=20261032"></script>
-  <script src="data/personajes.js?v=20261032"></script>
-  <script src="data/lugares.js?v=20261032"></script>
-  <script src="data/facciones.js?v=20261032"></script>
-  <script src="data/pergaminos.js?v=20261032"></script>
-  <script src="data/armas.js?v=20261032"></script>
-  <script src="data/objetos.js?v=20261032"></script>
-  <script src="data/bestiario.js?v=20261032"></script>
-  <script src="data/razas.js?v=20261032"></script>
-  <script src="data/religiones.js?v=20261032"></script>
-  <script src="data/rotacion.js?v=20261032"></script>
-  <script src="data/musica.js?v=20261032"></script>
-  <script src="js/common.js?v=20261032"></script>
-  <script src="js/temas.js?v=20261032"></script>
-  <script src="js/player.js?v=20261032"></script>
-  <script src="js/modal.js?v=20261032"></script>
-  <script src="data/jumpscare.js?v=20261032"></script>
-  <script src="data/contrasenas.js?v=20261032"></script>
-  <script src="data/fanarts.js?v=20261032"></script>
-  <script src="js/fichas-supabase.js?v=20261032"></script>
-  <script src="js/peticiones-supabase.js?v=20261032"></script>
-  <script src="js/bufon-supabase.js?v=20261032"></script>
-  <script src="js/fanarts-supabase.js?v=20261032"></script>
-  <script src="js/lado.js?v=20261032"></script>
-  <script src="js/slappy.js?v=20261032"></script>
-  <script src="js/busqueda-global.js?v=20261032"></script>
-  <script src="js/header-marquee.js?v=20261032"></script>
-  <script src="js/admin.js?v=20261032"></script>
+  <script src="data/entries.js?v=20261033"></script>
+  <script src="data/personajes.js?v=20261033"></script>
+  <script src="data/lugares.js?v=20261033"></script>
+  <script src="data/facciones.js?v=20261033"></script>
+  <script src="data/pergaminos.js?v=20261033"></script>
+  <script src="data/armas.js?v=20261033"></script>
+  <script src="data/objetos.js?v=20261033"></script>
+  <script src="data/bestiario.js?v=20261033"></script>
+  <script src="data/razas.js?v=20261033"></script>
+  <script src="data/religiones.js?v=20261033"></script>
+  <script src="data/rotacion.js?v=20261033"></script>
+  <script src="data/musica.js?v=20261033"></script>
+  <script src="js/common.js?v=20261033"></script>
+  <script src="js/temas.js?v=20261033"></script>
+  <script src="js/player.js?v=20261033"></script>
+  <script src="js/modal.js?v=20261033"></script>
+  <script src="data/jumpscare.js?v=20261033"></script>
+  <script src="data/contrasenas.js?v=20261033"></script>
+  <script src="data/fanarts.js?v=20261033"></script>
+  <script src="js/fichas-supabase.js?v=20261033"></script>
+  <script src="js/peticiones-supabase.js?v=20261033"></script>
+  <script src="js/bufon-supabase.js?v=20261033"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261033"></script>
+  <script src="js/fanarts-supabase.js?v=20261033"></script>
+  <script src="js/lado.js?v=20261033"></script>
+  <script src="js/slappy.js?v=20261033"></script>
+  <script src="js/busqueda-global.js?v=20261033"></script>
+  <script src="js/header-marquee.js?v=20261033"></script>
+  <script src="js/admin.js?v=20261033"></script>
 </body>
 </html>

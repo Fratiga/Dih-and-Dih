@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muerte Súbita — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261033">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261033">
+</head>
+<body class="mj-pagina ms-pagina">
+  <!-- Página aparte y escondida: se abre con una palabra en la clave mágica. -->
+  <div class="mj-barra">
+    <a href="index.html" class="mj-volver">← Despertar</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+
+  <section id="msPuerta" class="ms-puerta">
+    <h1>MUERTE SÚBITA</h1>
+    <p>Aquí se apuesta la vida de un personaje. Es voluntario, y solo para quienes ya llegaron al nivel 4.</p>
+    <button type="button" id="msEntrar" class="ms-boton">Entrar al dominio</button>
+  </section>
+
+  <main id="msContenido" class="mj-contenido hidden">
+    <p class="eyebrow">SOLO PARA QUIEN SE ATREVE</p>
+    <h1 class="mj-titulo">Muerte Súbita</h1>
+
+    <div id="msDesafios" class="ms-desafios"></div>
+
+    <section id="msPanel" class="ms-panel hidden">
+      <h3 id="msPanelTitulo"></h3>
+      <label for="msPersonaje">Personaje que apuestas</label>
+      <select id="msPersonaje"></select>
+      <label for="msConfirmar">Escribe su nombre para confirmar</label>
+      <input id="msConfirmar" type="text" autocomplete="off">
+      <p id="msAviso" class="ms-aviso"></p>
+      <div class="ms-acciones">
+        <button type="button" id="msAceptar" class="ms-boton" disabled>Aceptar el desafío</button>
+        <button type="button" id="msCancelar" class="ms-boton">Cancelar</button>
+      </div>
+    </section>
+
+    <section id="msJuego" class="hidden">
+      <div class="mj-escenario">
+        <canvas id="msCampo" class="mj-campo" role="button" tabindex="0" aria-label="Desafío"></canvas>
+        <button type="button" id="msJugar" class="mj-play" aria-label="Empezar">▶</button>
+      </div>
+      <p id="msResultado" class="ms-resultado"></p>
+    </section>
+  </main>
+
+  <script src="js/temas.js?v=20261033"></script>
+  <script src="js/fichas-supabase.js?v=20261033"></script>
+  <script src="js/fichas-modelo.js?v=20261033"></script>
+  <script src="js/fichas-storage.js?v=20261033"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261033"></script>
+  <script src="js/lado.js?v=20261033"></script>
+  <script src="js/arqueria.js?v=20261033"></script>
+  <script src="data/muerte-subita.js?v=20261033"></script>
+  <script src="js/muerte-subita.js?v=20261033"></script>
+</body>
+</html>

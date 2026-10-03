@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquería contra Cassius — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261033">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261033">
+</head>
+<body class="mj-pagina">
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+  </div>
+  <main class="mj-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Arquería contra Cassius</h1>
+    <div class="mj-escenario">
+      <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
+      <button type="button" id="arqueriaJugar" class="mj-play" aria-label="Jugar">▶</button>
+    </div>
+    <p id="arqueriaRecord" class="mj-linea"></p>
+  </main>
+
+  <script src="js/arqueria.js?v=20261033"></script>
+  <script>
+    (function () {
+      const boton = document.getElementById("arqueriaJugar");
+      const recordEl = document.getElementById("arqueriaRecord");
+      const CLAVE = "compendioArqueriaCassius";
+      let record = 0;
+      try { record = parseInt(localStorage.getItem(CLAVE), 10) || 0; } catch (e) { /* sin almacenamiento */ }
+      const pintarRecord = () => { recordEl.textContent = record ? `Tu mejor puntaje: ${record}` : "Clic, o Z / X con el cursor encima."; };
+      pintarRecord();
+
+      const juego = crearArqueria({
+        canvas: document.getElementById("arqueriaCampo"),
+        rival: "cassius",
+        duracion: 60,
+        onEstado: estado => boton.classList.toggle("hidden", estado === "jugando"),
+        onFin: ({ puntaje }) => {
+          if (puntaje > record) {
+            record = puntaje;
+            try { localStorage.setItem(CLAVE, String(record)); } catch (e) { /* sin almacenamiento */ }
+          }
+          pintarRecord();
+        }
+      });
+      boton.addEventListener("click", () => juego.iniciar());
+    })();
+  </script>
+</body>
+</html>

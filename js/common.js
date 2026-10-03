@@ -184,9 +184,9 @@ function initZoomPan(viewportEl, targetEl, opts = {}) {
   h1.parentNode.insertBefore(fila, h1);
   fila.appendChild(h1);
   const link = document.createElement("a");
-  link.href = "sacrificio.html";
+  link.href = "minijuegos.html";
   link.className = "header-juego-link";
-  link.title = "Sacrificar a Hooey";
-  link.innerHTML = '<img src="assets/cosas/slime-bruja.png" alt=""><span>Sacrificar a Hooey</span>';
+  link.title = "Minijuegos";
+  link.innerHTML = '<img src="assets/cosas/slime-bruja.png" alt=""><span>Minijuegos</span>';
   fila.appendChild(link);
 })();
