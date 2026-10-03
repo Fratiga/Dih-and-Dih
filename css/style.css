@@ -3288,7 +3288,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .header-juego-link:hover { color: var(--text); border-color: var(--accent-soft); }
 .header-titulo-fila { display: flex; align-items: center; flex-wrap: wrap; }
 
-.sacrificio-escenario { position: relative; flex: none; width: min(960px, calc((100% - 32px) / 1.625)); aspect-ratio: 16 / 10; }
+.sacrificio-escenario { position: relative; flex: none; width: min(calc(960px * var(--hooey-zoom, 1)), calc((100% - 32px) / 1.625)); aspect-ratio: 16 / 10; }
 .sacrificio-play {
   position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%);
   width: clamp(56px, 12vw, 84px); aspect-ratio: 1; border-radius: 50%;
@@ -3347,7 +3347,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .sacrificio-banner {
   /* Cada banner mide la mitad del alto del escenario de ancho: caben justo dos
      copias enteras de la imagen, sin cortar ninguna. */
-  width: calc(min(960px, calc((100% - 32px) / 1.625)) * 0.3125);
+  width: calc(min(calc(960px * var(--hooey-zoom, 1)), calc((100% - 32px) / 1.625)) * 0.3125);
   flex: none; align-self: stretch;
   background: var(--panel) url("../assets/cosas/hooey-banner.webp") center top / 100% 50% repeat-y;
   border: 1px solid var(--border);

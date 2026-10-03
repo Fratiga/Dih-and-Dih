@@ -10,17 +10,17 @@
     baile: {
       velocidad: 2,
       nombres: ["breakdance", "Breakdance", "Breakdancemedio", "Breakdancerapido", "Rumba", "SillyDance",
-        "Sillydance2", "Sillydance2rapido", "Twerk", "Twist", "Swag"]
+        "Sillydance2", "Sillydance2rapido", "Twerk", "Twist", "Swag", "Gangnam"]
     },
     gesto: {
       velocidad: 1.5,
       nombres: ["Aplaudirnormal", "Aplaudirrapido", "Apuntando", "Auch", "Aymisbolas", "Bateria", "Boxing",
-        "Cantando", "Cariñito", "Celebrar", "Fistifght", "happyidle", "JumpinJacks", "Mma Kick", "Pofavor",
+        "Cantando", "Cariñito", "Celebrar", "Fistifght", "happyidle", "JumpinJacks", "Mma Kick",
         "Pumpin", "Riendosesentao", "Saltito", "Toma pesao"]
     },
     correr: {
       velocidad: 1.6,
-      nombres: ["Run", "Runlookback", "Injuredrun", "Drunkwalk", "Sadwalk", "caminarnormal", "Crawl"]
+      nombres: ["Run", "Runlookback", "Injuredrun", "Crawl"]
     }
   };
   const BUFONES_PARA_REBOTAR = 3;
@@ -31,6 +31,8 @@
   let THREE = null;
   let SkeletonUtils = null;
   let renderer = null;
+  let clasico = false;
+  let ultimoCuadro = 0;
   let scene = null;
   let camera = null;
   let modelo = null;
@@ -99,32 +101,42 @@
       camera = new THREE.OrthographicCamera(0, ancho, alto, 0, 1, 3000);
       camera.position.z = 1500;
 
-      // WebGPU real solo donde es confiable; en Firefox, o si WebGPU falla al
-      // arrancar, se usa el modo WebGL, que funciona en todos los navegadores.
-      const prefiereWebGL = !navigator.gpu || /firefox/i.test(navigator.userAgent);
+      // WebGPU real solo donde es confiable. En Firefox se usa el WebGLRenderer
+      // clásico, mucho más liviano que el modo WebGL de WebGPURenderer.
+      // Si WebGPU falla al arrancar, también se cae a WebGL.
+      clasico = /firefox/i.test(navigator.userAgent) || /[?&]clasico=1/.test(location.search);
+      const prefiereWebGL = !navigator.gpu;
       async function abrirRenderer(webgl) {
         const r = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: webgl });
         await r.init();
         return r;
       }
       try {
-        renderer = await abrirRenderer(prefiereWebGL);
+        if (clasico) {
+          renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
+        } else {
+          renderer = await abrirRenderer(prefiereWebGL);
+        }
       } catch (err) {
         if (prefiereWebGL) throw err;
         console.warn("WebGPU falló, se usa WebGL:", err);
         renderer = await abrirRenderer(true);
       }
-      renderer.setPixelRatio(1);
+      // El lienzo cubre toda la ventana: en el modo clásico se dibuja a menor
+      // resolución (el navegador lo estira) para que Firefox no se arrastre.
+      renderer.setPixelRatio(clasico ? 0.7 : 1);
       renderer.setSize(ancho, alto);
       renderer.setClearColor(0x000000, 0);
       contenedor.appendChild(renderer.domElement);
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-      const dir = new THREE.DirectionalLight(0xffffff, 1.3);
+      scene.add(new THREE.AmbientLight(0xffffff, clasico ? 2 : 0.7));
+      const dir = new THREE.DirectionalLight(0xffffff, clasico ? 2.2 : 1.3);
       dir.position.set(200, 400, 600);
       scene.add(dir);
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.35).texture;
+      if (!clasico) {
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.35).texture;
+      }
 
       await pausa();
       const respuesta = await fetch("data:application/octet-stream;base64," + window.CLOWN_GLB_BASE64);
@@ -132,7 +144,12 @@
       await pausa();
       const gltf = await new GLTFLoader().parseAsync(buffer, "");
       modelo = gltf.scene;
-      modelo.traverse(o => { if (o.isMesh && o.material) o.material.side = THREE.FrontSide; });
+      modelo.traverse(o => {
+        if (!o.isMesh || !o.material) return;
+        o.material.side = THREE.FrontSide;
+        // Sin mapa de entorno, lo metálico se ve negro: se baja el metal
+        if (clasico && o.material.metalness > 0.2) o.material.metalness = 0.2;
+      });
 
       const caja = new THREE.Box3().setFromObject(modelo, true);
       const esfera = new THREE.Sphere();
@@ -141,6 +158,18 @@
       radio = esfera.radius || 1;
 
       gltf.animations.forEach(c => { clips[c.name] = c; });
+      try {
+        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261048");
+        const g = window.GANGNAM_CLIP;
+        // three.js quita los dos puntos de los nombres de nodo al cargar el modelo
+        const pistas = g.pistas.map(p => {
+          const n = p.n.replace(":", "");
+          return n.endsWith(".quaternion")
+            ? new THREE.QuaternionKeyframeTrack(n, p.t, p.v)
+            : new THREE.VectorKeyframeTrack(n, p.t, p.v);
+        });
+        clips.Gangnam = new THREE.AnimationClip("Gangnam", g.duracion, pistas);
+      } catch (e) { console.warn("[bufones] no se cargó el Gangnam:", e); }
       Object.keys(GRUPOS).forEach(g => { disponibles[g] = GRUPOS[g].nombres.filter(n => clips[n]); });
       reloj = new THREE.Clock();
 
@@ -231,6 +260,12 @@
   }
 
   function cuadro() {
+    // En el modo clásico (Firefox) se dibuja a 30 cuadros por segundo como máximo
+    if (clasico) {
+      const ahora = performance.now();
+      if (ahora - ultimoCuadro < 30) return;
+      ultimoCuadro = ahora;
+    }
     const dt = Math.min(0.05, reloj.getDelta());
     const caja = cajaEscenario();
     for (const b of bufones) {

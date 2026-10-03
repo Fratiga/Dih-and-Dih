@@ -571,7 +571,15 @@
     requestAnimationFrame(cuadro);
   }
 
-  window.addEventListener("resize", ajustarTamano);
+  // El zoom del navegador no cambia el tamaño del juego: se compensa para que
+  // la caja mida siempre lo mismo en pantalla (ancho de ventana / ancho útil).
+  function fijarZoom() {
+    const ratio = window.outerWidth && window.innerWidth ? window.outerWidth / window.innerWidth : 1;
+    const z = Math.abs(ratio - 1) > 0.12 ? Math.min(4, Math.max(0.5, ratio)) : 1;
+    document.documentElement.style.setProperty("--hooey-zoom", z.toFixed(3));
+  }
+  window.addEventListener("resize", () => { fijarZoom(); ajustarTamano(); });
+  fijarZoom();
   window.addEventListener("pagehide", () => musica.pause());
 
   /* --- Ranking global (Supabase). Requiere scratchpad/hooey_ranking.sql --- */
