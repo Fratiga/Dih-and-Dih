@@ -2362,6 +2362,7 @@ body.has-mini-player { padding-bottom: 74px; }
   font-size: .85rem;
 }
 .stat-compare-bar span { flex: 1; color: var(--text); }
+.stat-compare-bar.hidden { display: none; }
 .stat-compare-btn {
   background: none;
   border: 1px solid var(--accent-soft);
@@ -3421,9 +3422,11 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fichas-roll20-instalar-enlace { font-weight: 600; }
 
 /* --- Campos numéricos de las fichas: flechas propias en vez de las del navegador --- */
-#fichasContent input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+#fichasContent input[type="number"], .stat-level-range input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 #fichasContent input[type="number"]::-webkit-inner-spin-button,
-#fichasContent input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+#fichasContent input[type="number"]::-webkit-outer-spin-button,
+.stat-level-range input[type="number"]::-webkit-inner-spin-button,
+.stat-level-range input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
 .fichas-num { position: relative; display: flex; width: 100%; }
 .fichas-num > input { flex: 1; min-width: 0; padding-right: 24px; margin: 0; }
 .fichas-puntos-info .fichas-num, .fichas-combate-rapido .fichas-num { display: inline-flex; width: auto; }
@@ -3481,3 +3484,4 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   content: ""; position: absolute; left: 3px; top: 3px; width: 8px; height: 8px; border-radius: 50%; background: var(--text);
 }
 #fichasContent input[type="checkbox"]:focus-visible, #fichasContent input[type="radio"]:focus-visible { outline: 1px solid var(--accent-soft); outline-offset: 2px; }
+.stat-level-range .fichas-num { flex: 1; min-width: 0; width: auto; }

@@ -190,3 +190,27 @@ function initZoomPan(viewportEl, targetEl, opts = {}) {
   link.innerHTML = '<img src="assets/cosas/slime-bruja.png" alt=""><span>Minijuegos</span>';
   fila.appendChild(link);
 })();
+
+/* Flechitas propias para campos numéricos (las del navegador no se pueden
+   estilizar y desentonan con el tema). Usa las clases .fichas-num de style.css.
+   Mis personajes tiene su propia versión con MutationObserver (js/fichas-ui.js). */
+function activarFlechasNumericas(raiz) {
+  if (!raiz) return;
+  raiz.querySelectorAll('input[type="number"]').forEach(inp => {
+    if (inp.closest(".fichas-num")) return;
+    const envoltorio = document.createElement("span");
+    envoltorio.className = "fichas-num";
+    inp.replaceWith(envoltorio);
+    envoltorio.appendChild(inp);
+    envoltorio.insertAdjacentHTML("beforeend", '<span class="fichas-num-botones"><button type="button" tabindex="-1" data-paso="1" aria-label="Subir"></button><button type="button" tabindex="-1" data-paso="-1" aria-label="Bajar"></button></span>');
+  });
+  if (raiz.dataset.flechasListas) return;
+  raiz.dataset.flechasListas = "1";
+  raiz.addEventListener("click", e => {
+    const paso = e.target.closest(".fichas-num-botones button");
+    if (!paso) return;
+    const campo = paso.closest(".fichas-num").querySelector("input");
+    if (Number(paso.dataset.paso) > 0) campo.stepUp(); else campo.stepDown();
+    campo.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}

@@ -282,3 +282,5 @@ initAdminGate(() => {
   renderTipoFilters();
   renderStats();
 });
+
+activarFlechasNumericas(document.querySelector(".stat-level-range"));
