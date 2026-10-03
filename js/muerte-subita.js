@@ -251,7 +251,11 @@
         } catch (err) {
           resultadoEl.innerHTML = `Terminó ${marcador}, pero no se pudo registrar.<small>Avisa al DM: una falla técnica nunca cuenta como derrota.</small>`;
         }
-        try { intentos = await msListarIntentos(); pintarDesafios(); } catch (e) { /* se actualiza al recargar */ }
+        try {
+          const miId = sesion && sesion.user && sesion.user.id;
+          intentos = (await msListarIntentos()).filter(i => i.user_id === miId);
+          pintarDesafios();
+        } catch (e) { /* se actualiza al recargar */ }
       }
     });
     botonJugar.classList.remove("hidden");
@@ -262,25 +266,50 @@
 
   async function cargarDatos() {
     try {
-      if (sesion) [fichas, intentos] = await Promise.all([fichasStorageListar(), msListarIntentos()]);
+      if (sesion) {
+        const [todas, todosIntentos] = await Promise.all([fichasStorageListar(), msListarIntentos()]);
+        // Admin ve las fichas e intentos de todos; acá solo cuentan los propios
+        const miId = sesion.user && sesion.user.id;
+        const miCorreo = sesion.user && sesion.user.email;
+        fichas = todas.filter(f => !f.ownerEmail || f.ownerEmail === miCorreo);
+        intentos = todosIntentos.filter(i => i.user_id === miId);
+      }
     } catch (e) {
       fichas = []; intentos = [];
     }
     pintarDesafios();
   }
 
+  /* --- Música desde la puerta. Los navegadores solo dejan sonar con sonido
+     si hubo una interacción previa; al llegar escribiendo la palabra en la
+     clave mágica casi siempre cuenta, y si no, suena con el primer toque. --- */
+  function arrancarMusica() {
+    const promesa = musica.play();
+    if (promesa && promesa.catch) promesa.catch(() => esperarToque());
+  }
+  function esperarToque() {
+    if (!avisoPuerta.textContent) avisoPuerta.textContent = "Toca cualquier parte para escuchar el Dominio.";
+    const alToque = () => {
+      ["pointerdown", "keydown", "touchstart"].forEach(t => document.removeEventListener(t, alToque, true));
+      const p = musica.play();
+      if (p && p.then) p.then(() => { if (avisoPuerta.textContent.startsWith("Toca cualquier")) avisoPuerta.textContent = ""; }).catch(() => {});
+    };
+    ["pointerdown", "keydown", "touchstart"].forEach(t => document.addEventListener(t, alToque, true));
+  }
+  arrancarMusica();
+
   /* --- Puerta: solo con cuenta --- */
   async function revisarSesion() {
     try { sesion = await fichasSesionActual(); } catch (e) { sesion = null; }
     botonEntrar.disabled = !sesion;
-    avisoPuerta.textContent = sesion ? "" : "Solo con cuenta. Inicia sesión arriba a la derecha para poder entrar.";
+    if (!sesion) avisoPuerta.textContent = "Solo con cuenta. Inicia sesión arriba a la derecha para poder entrar.";
+    else if (avisoPuerta.textContent.startsWith("Solo con cuenta")) avisoPuerta.textContent = "";
   }
   revisarSesion();
 
   botonEntrar.addEventListener("click", () => {
     if (!sesion) return;
-    musica.currentTime = 0;
-    musica.play().catch(() => { /* sin archivo o bloqueado */ });
+    if (musica.paused) musica.play().catch(() => { /* sin archivo o bloqueado */ });
     puerta.classList.add("hidden");
     contenido.classList.remove("hidden");
     pintarDesafios();

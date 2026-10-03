@@ -23,7 +23,7 @@ async function msListarIntentos() {
   const supabase = await fichasCliente();
   const { data, error } = await supabase
     .from("muerte_subita_intentos")
-    .select("id, username, personaje_id, personaje_nombre, desafio, estado, puntaje, puntaje_rival, veredicto, creado_en, cerrado_en")
+    .select("id, user_id, username, personaje_id, personaje_nombre, desafio, estado, puntaje, puntaje_rival, veredicto, creado_en, cerrado_en")
     .order("creado_en", { ascending: false });
   if (error) throw error;
   return data || [];
