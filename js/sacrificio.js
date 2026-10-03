@@ -101,9 +101,29 @@
   let cierreVisible = true; // tras perder, espera a que el Hooey termine de caer fuera del cuadro
   let tiempoCaida = 0;
 
-  const musica = new Audio(encodeURI("assets/cosas/Mata al moco.mp3"));
+  const CANCIONES = {
+    mata: "assets/cosas/Mata al moco.mp3",
+    badapple: "assets/cosas/Bad Apple.mp3"
+  };
+  const CLAVE_CANCION = "hooeyCancion";
+  let cancion = "mata";
+  try { const g = localStorage.getItem(CLAVE_CANCION); if (CANCIONES[g]) cancion = g; } catch (e) { /* sin almacenamiento */ }
+  const musica = new Audio(encodeURI(CANCIONES[cancion]));
   musica.loop = true;
   musica.volume = 0.6;
+  const cancionEl = document.getElementById("sacrificioCancion");
+  if (cancionEl) {
+    cancionEl.value = cancion;
+    cancionEl.addEventListener("change", () => {
+      cancion = CANCIONES[cancionEl.value] ? cancionEl.value : "mata";
+      try { localStorage.setItem(CLAVE_CANCION, cancion); } catch (e) { /* sin almacenamiento */ }
+      const sonaba = !musica.paused;
+      musica.src = encodeURI(CANCIONES[cancion]);
+      musica.currentTime = 0;
+      if (sonaba) musica.play().catch(() => {});
+      cancionEl.blur(); // que Z / X sigan siendo del juego
+    });
+  }
 
   const imagen = new Image();
   imagen.src = "assets/cosas/slime-bruja.png";

@@ -3269,6 +3269,11 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .sacrificio-campo:focus-visible { outline: 1px solid var(--accent-soft); }
 .sacrificio-contador { margin: 14px 0 4px; font-size: 1rem; color: var(--text); }
 .sacrificio-ayuda { margin: 0; font-size: .82rem; color: var(--muted); }
+.sacrificio-cancion { display: block; margin-top: 8px; }
+.sacrificio-cancion select {
+  margin-left: 6px; padding: 3px 8px; font: inherit; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border);
+}
 
 .header-juego-link {
   display: inline-flex;
