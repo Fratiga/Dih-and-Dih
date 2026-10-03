@@ -3485,3 +3485,14 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 #fichasContent input[type="checkbox"]:focus-visible, #fichasContent input[type="radio"]:focus-visible { outline: 1px solid var(--accent-soft); outline-offset: 2px; }
 .stat-level-range .fichas-num { flex: 1; min-width: 0; width: auto; }
+
+/* --- Estadísticas: sección "Para Roll20" de cada ficha --- */
+.stat-r20 { margin-bottom: 10px; }
+.stat-r20-grupo { margin: 10px 0 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.stat-r20-fila { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: .84rem; }
+.stat-r20-botones { display: inline-flex; gap: 4px; flex-shrink: 0; }
+.stat-r20-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted); padding: 3px 9px;
+  font-family: inherit; font-size: .72rem; cursor: pointer;
+}
+.stat-r20-btn:hover { color: var(--text); border-color: var(--accent-soft); }

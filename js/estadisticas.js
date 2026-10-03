@@ -34,6 +34,60 @@ function statCardHTML(s) {
   `;
 }
 
+/* Sección "Para Roll20": cada habilidad convertida en comandos de chat, con
+   botones para copiarlos (js/stats-roll20.js). */
+function statRoll20HTML(s) {
+  if (typeof statsR20Enemigo !== "function") return "";
+  const e = statsR20Enemigo(s);
+  const grupos = ["Acciones", "Rasgos", "Tiradas"].map(cat => {
+    const items = e.items.filter(i => i.categoria === cat);
+    if (!items.length) return "";
+    const filas = items.map(i => {
+      const botones = i.tieneModo
+        ? `<button type="button" class="stat-r20-btn" data-cmd="${escaparAtributo(i.cmd.normal)}">Copiar</button>
+           <button type="button" class="stat-r20-btn" data-cmd="${escaparAtributo(i.cmd.ventaja)}" title="Ventaja">Vent.</button>
+           <button type="button" class="stat-r20-btn" data-cmd="${escaparAtributo(i.cmd.desventaja)}" title="Desventaja">Desv.</button>`
+        : `<button type="button" class="stat-r20-btn" data-cmd="${escaparAtributo(i.cmd.normal)}">Copiar</button>`;
+      return `<div class="stat-r20-fila"><span>${i.texto}</span><span class="stat-r20-botones">${botones}</span></div>`;
+    }).join("");
+    return `<p class="stat-r20-grupo">${cat}${cat === "Rasgos" ? " (se anuncian en el chat)" : ""}</p>${filas}`;
+  }).join("");
+  return `<p class="stat-section-label">Para Roll20</p><div class="stat-r20">${grupos}</div>`;
+}
+
+function escaparAtributo(texto) {
+  return String(texto).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* Copia el comando al portapapeles desde cualquiera de los dos diálogos. */
+document.addEventListener("click", async e => {
+  const boton = e.target.closest(".stat-r20-btn");
+  if (!boton) return;
+  const texto = boton.dataset.cmd;
+  let ok = false;
+  try { await navigator.clipboard.writeText(texto); ok = true; } catch (err) { /* sin permiso */ }
+  if (!ok) { prompt("Copia este comando a mano:", texto); return; }
+  const original = boton.textContent;
+  boton.textContent = "✓";
+  setTimeout(() => { boton.textContent = original; }, 1200);
+});
+
+/* Deja los enemigos (ya convertidos a comandos) y los que tengas marcados
+   "+ Comparar" a la vista del script de Roll20 (roll20/compendio-roll20.user.js). */
+function publicarEnemigosRoll20() {
+  if (typeof statsR20Enemigo !== "function") return;
+  try {
+    const payload = {
+      version: 1,
+      actualizado: Date.now(),
+      enemigos: (window.STATS || []).map(statsR20Enemigo),
+      seleccion: [...state.seleccion]
+    };
+    localStorage.setItem("compendioRoll20Enemigos", JSON.stringify(payload));
+    window.postMessage({ tipo: "compendio-roll20-enemigos", payload }, window.location.origin);
+  } catch (e) { /* publicar es un extra, nunca debe romper la página */ }
+}
+
 function statModalHTML(s) {
   const abilitiesHTML = s.stats
     ? `<div class="stat-abilities">${["fue", "des", "con", "int", "sab", "car"].map(k => `
@@ -61,6 +115,8 @@ function statModalHTML(s) {
     ? `<p class="stat-estrategia">${s.estrategia}</p>`
     : "";
 
+  const roll20HTML = statRoll20HTML(s);
+
   const linkHTML = s.personajeId
     ? `<button type="button" class="stat-card-link" data-personaje-id="${s.personajeId}">Ver personaje →</button>`
     : "";
@@ -75,6 +131,7 @@ function statModalHTML(s) {
     ${equipoHTML}
     ${habilidadesHTML}
     ${estrategiaHTML}
+    ${roll20HTML}
     ${linkHTML}
   `;
 }
@@ -162,6 +219,7 @@ function updateCompareBar() {
   compareBar.classList.toggle("hidden", n === 0);
   document.getElementById("statCompareCount").textContent = `${n} ${n === 1 ? "ficha seleccionada" : "fichas seleccionadas"}`;
   document.getElementById("statCompareOpen").disabled = n < 2;
+  publicarEnemigosRoll20();
 }
 
 function openCompareModal() {
@@ -279,6 +337,7 @@ if (clearStatFilters) {
 }
 
 initAdminGate(() => {
+  publicarEnemigosRoll20();
   renderTipoFilters();
   renderStats();
 });
