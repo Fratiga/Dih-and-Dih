@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verdam — Muerte Súbita</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/encuentro.css?v=20261041">
+  <link rel="stylesheet" href="css/encuentro.css?v=20261042">
 </head>
 <body class="enc-pagina">
   <!-- Página aparte del combate: no carga el resto del sitio. Se llega aquí
@@ -26,36 +26,7 @@
     <p class="enc-apuesta" id="encApuesta"></p>
 
     <div class="enc-arena" id="encArena">
-      <svg class="enc-boss" viewBox="0 0 300 620" aria-hidden="true">
-        <defs>
-          <linearGradient id="encCapa" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#34343a"/>
-            <stop offset="1" stop-color="#08080a"/>
-          </linearGradient>
-          <linearGradient id="encCapucha" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#2a2a30"/>
-            <stop offset="1" stop-color="#0d0d10"/>
-          </linearGradient>
-        </defs>
-        <!-- manto largo con el borde rasgado -->
-        <path d="M150 90 C95 100 70 170 62 260 C52 380 30 500 14 610 L40 588 L62 612 L88 586 L112 614 L140 590 L168 616 L196 588 L224 612 L250 588 L286 610 C270 500 248 380 238 260 C230 170 205 100 150 90 Z" fill="url(#encCapa)"/>
-        <path d="M150 120 C146 260 150 420 138 600" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="3"/>
-        <!-- carcaj con flechas sobre el hombro -->
-        <g stroke="#bda76a" stroke-width="2.2" stroke-linecap="round">
-          <line x1="198" y1="64" x2="214" y2="128"/><line x1="210" y1="60" x2="226" y2="126"/><line x1="222" y1="58" x2="236" y2="124"/>
-        </g>
-        <path d="M194 120 L240 114 L236 190 L198 196 Z" fill="#241d12" stroke="#4a3f22" stroke-width="2"/>
-        <!-- capucha -->
-        <path d="M150 18 C110 20 90 60 90 102 C90 132 104 152 120 164 L180 164 C196 152 210 132 210 102 C210 60 190 20 150 18 Z" fill="url(#encCapucha)" stroke="#43434c" stroke-width="2"/>
-        <ellipse cx="150" cy="108" rx="42" ry="48" fill="#020203"/>
-        <!-- máscara de hierro con una sola ranura que brilla -->
-        <path d="M110 92 L190 92 L186 118 L114 118 Z" fill="#55555e" stroke="#90909a" stroke-width="2"/>
-        <rect class="enc-ojo" x="134" y="101" width="32" height="6" rx="3" fill="#f0c25a"/>
-        <!-- arco -->
-        <path d="M70 140 C16 250 16 410 70 520" fill="none" stroke="#6f5d2e" stroke-width="8" stroke-linecap="round"/>
-        <line x1="70" y1="140" x2="70" y2="520" stroke="#cdb779" stroke-width="1.6"/>
-        <path d="M100 236 C84 262 76 300 72 340" stroke="#1b1b20" stroke-width="24" fill="none" stroke-linecap="round"/>
-      </svg>
+      <div class="enc-boss" aria-hidden="true"></div>
 
       <canvas id="encCampo" class="enc-campo" role="button" tabindex="0" aria-label="Combate"></canvas>
       <button type="button" id="encJugar" class="enc-boton hidden">Enfrentar</button>
@@ -74,10 +45,10 @@
     <p id="encAviso" class="enc-aviso"></p>
   </main>
 
-  <script src="js/ms-musica.js?v=20261041"></script>
-  <script src="js/fichas-supabase.js?v=20261041"></script>
-  <script src="js/muerte-subita-supabase.js?v=20261041"></script>
-  <script src="js/arqueria.js?v=20261041"></script>
-  <script src="js/encuentro-verdam.js?v=20261041"></script>
+  <script src="js/ms-musica.js?v=20261042"></script>
+  <script src="js/fichas-supabase.js?v=20261042"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261042"></script>
+  <script src="js/arqueria.js?v=20261042"></script>
+  <script src="js/encuentro-verdam.js?v=20261042"></script>
 </body>
 </html>
