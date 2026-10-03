@@ -3333,6 +3333,9 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 
 /* --- Página aparte del juego de Hooey (sin cabecera del sitio) --- */
 .sacrificio-pagina { margin: 0; }
+/* El grano de la página (mix-blend-mode sobre toda la ventana) obliga a Firefox a recomponer
+   todo en cada cuadro del juego y de los bufones. Aquí se quita. */
+.sacrificio-pagina::after { display: none; }
 .sacrificio-barra {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 12px 24px; border-bottom: 1px solid var(--border);
