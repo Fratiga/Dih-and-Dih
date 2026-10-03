@@ -3412,3 +3412,9 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   margin: 20px 0 10px; font-family: var(--font-heading), sans-serif;
 }
 .admin-grupo-titulo:first-child { margin-top: 0; }
+
+/* --- Roll20: instalación del script --- */
+.fichas-roll20-instalar { border: 1px solid var(--accent-soft); padding: 14px 16px; background: var(--panel); }
+.fichas-roll20-pasos { margin: 0 0 8px 18px; padding: 0; font-size: .88rem; line-height: 1.7; }
+.fichas-roll20-pasos a { color: var(--text); }
+.fichas-roll20-instalar-enlace { font-weight: 600; }

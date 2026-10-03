@@ -51,6 +51,7 @@
       return;
     }
     vacio.classList.toggle("hidden", personajes.length > 0);
+    publicarParaRoll20(personajes, true);
     await cargarMarcasDominio();
     grid.innerHTML = personajes.map(p => tarjetaHTML(p)).join("");
 
@@ -283,6 +284,7 @@
       estadoGuardado("Guardando…", "guardando");
       try {
         await fichasStorage.guardar(personajeActual);
+        publicarParaRoll20([personajeActual]);
         estadoGuardado("Guardado", "guardado");
       } catch (err) {
         estadoGuardado("Error al guardar: " + (err.message || err), "error");
@@ -1095,6 +1097,17 @@
   function panelRoll20() {
     return `
     <section class="fichas-panel" data-panel="roll20">
+      <div class="fichas-fieldset fichas-roll20-instalar">
+        <h3>Tus tiradas dentro de Roll20, sin copiar y pegar</h3>
+        <p class="fichas-imagenes-ayuda">Con el script del Compendio, Roll20 muestra un panel con tus tiradas (las favoritas primero) y las manda al chat con un clic. Se instala una sola vez y se actualiza solo.</p>
+        <ol class="fichas-roll20-pasos">
+          <li>Instala la extensión <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> en tu navegador.</li>
+          <li><a href="roll20/compendio-roll20.user.js" class="fichas-roll20-instalar-enlace">Instalar el script del Compendio</a> (Tampermonkey te pedirá confirmar).</li>
+          <li>Abre tu partida en Roll20: aparece el botón <strong>Compendio</strong> abajo a la izquierda.</li>
+        </ol>
+        <p class="fichas-puntos-info">Los personajes se cargan solos al abrir esta página con tu cuenta, en el mismo navegador donde usas Roll20.</p>
+      </div>
+
       <div class="fichas-fieldset">
         <h3>Foto de la ficha (Roll20)</h3>
         <p class="fichas-imagenes-ayuda">Sube una foto de tu ficha de juego para tenerla a mano y llevarla al tablero en Roll20.</p>
@@ -1451,8 +1464,7 @@
   /* ==========================================================================
      PANEL ROLL20: lista unificada + búsqueda/filtro + favoritos
   ========================================================================== */
-  function listaCompletaRoll20() {
-    const p = personajeActual;
+  function listaCompletaRoll20(p = personajeActual) {
     const items = [];
 
     Object.entries(NOMBRES_ATRIBUTOS).forEach(([id, nombre]) => {
@@ -1465,7 +1477,7 @@
     p.ataques.forEach(a => {
       items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${a.dano || "—"}`, tipo: "ataquedano", refId: a.id });
     });
-    p.hechizos.forEach(h => {
+    p.hechizos.filter(h => h.disponible !== false).forEach(h => {
       items.push({ id: `hechizo:${h.id}`, categoria: "Hechizos", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
     });
     p.rasgos.filter(r => r.formulaRoll20).forEach(r => {
@@ -1475,6 +1487,61 @@
       items.push({ id: `macro:${m.id}`, categoria: "Macros", texto: m.nombre, tipo: "macro", refId: m.id });
     });
     return items;
+  }
+
+  /* El mismo texto que arman los botones "Copiar", pero para cualquier personaje
+     y modo (normal / ventaja / desventaja). Devuelve null si ese item no tiene
+     variantes de modo. */
+  function comandoDeItemRoll20(p, item, modo) {
+    const opts = { modo };
+    switch (item.tipo) {
+      case "salvacion": return fichasComandoPrueba(`Salvación de ${NOMBRES_ATRIBUTOS[item.refId]}`, fichasSalvacionTotal(p, item.refId), opts);
+      case "habilidad": return fichasComandoPrueba(FICHAS_HABILIDADES.find(h => h.id === item.refId).nombre, fichasHabilidadTotal(p, item.refId), opts);
+      case "iniciativa": return fichasComandoIniciativa(fichasIniciativaTotal(p), opts);
+      case "ataquedano": {
+        const a = p.ataques.find(x => x.id === item.refId);
+        return fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), a.dano, a.tipoDano, opts);
+      }
+      case "hechizo": {
+        const h = p.hechizos.find(x => x.id === item.refId);
+        if (h.tipo === "ataque") return fichasComandoHechizoAtaque(h.nombre, fichasLanzamientoAtaque(p), h.dano, h.tipoDano, opts);
+        if (h.tipo === "salvacion") return fichasComandoHechizoSalvacion(h.nombre, NOMBRES_ATRIBUTOS[p.lanzamiento.atributo], fichasLanzamientoCD(p), h.dano, h.tipoDano);
+        return h.dano ? fichasComandoHechizoCuracion(h.nombre, h.dano) : h.nombre;
+      }
+      case "rasgo": {
+        const r = p.rasgos.find(x => x.id === item.refId);
+        return fichasComandoRasgo(r.nombre, r.formulaRoll20);
+      }
+      case "macro": return comandoDeMacro(p.macros.find(x => x.id === item.refId));
+      default: return null;
+    }
+  }
+
+  function payloadRoll20DePersonaje(p) {
+    const items = listaCompletaRoll20(p).map(i => {
+      const cmd = {
+        normal: comandoDeItemRoll20(p, i, "normal"),
+        ventaja: comandoDeItemRoll20(p, i, "ventaja"),
+        desventaja: comandoDeItemRoll20(p, i, "desventaja")
+      };
+      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd };
+    });
+    items.sort((a, b) => Number(b.favorita) - Number(a.favorita));
+    return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", items };
+  }
+
+  /* Deja los personajes y sus tiradas a la vista del script de Tampermonkey
+     (roll20/compendio-roll20.user.js): en localStorage, y avisando a la
+     página por si el script ya está escuchando. Sin el script no hace nada. */
+  const personajesParaRoll20 = new Map();
+  function publicarParaRoll20(lista, reiniciar) {
+    try {
+      if (reiniciar) personajesParaRoll20.clear();
+      lista.forEach(pj => personajesParaRoll20.set(pj.id, payloadRoll20DePersonaje(pj)));
+      const payload = { version: 1, actualizado: Date.now(), personajes: [...personajesParaRoll20.values()] };
+      localStorage.setItem("compendioRoll20Datos", JSON.stringify(payload));
+      window.postMessage({ tipo: "compendio-roll20-datos", payload }, window.location.origin);
+    } catch (e) { /* publicar es un extra, nunca debe romper la ficha */ }
   }
 
   function renderRoll20Lista() {
