@@ -119,3 +119,12 @@
 @media (prefers-reduced-motion: reduce) {
   .ms-pagina *, .ms-pagina *::before { animation: none !important; transition: none !important; }
 }
+
+/* Control de volumen de la música */
+.ms-volumen {
+  position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; background: rgba(20, 7, 42, .8); border: 1px solid var(--ms-linea); box-shadow: 0 0 14px rgba(124, 58, 237, .5);
+}
+.ms-vol-boton { background: none; border: 0; color: #c084fc; cursor: pointer; padding: 2px; display: flex; }
+.ms-vol-boton:hover { color: #f0abfc; }
+.ms-vol-rango { width: 96px; accent-color: #a855f7; cursor: pointer; }

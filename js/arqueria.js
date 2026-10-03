@@ -24,7 +24,7 @@
   };
   const PUNTOS_ANILLO = [10, 7, 4];
 
-  function crearArqueria({ canvas, rival: claveRival, duracion = 60, onEstado, onFin }) {
+  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, onEstado, onFin }) {
     const cfg = RIVALES[claveRival] || RIVALES.cassius;
     const ctx = canvas.getContext("2d");
     const ancho = LOGICO_ANCHO;
@@ -207,7 +207,7 @@
       }
       ctx.globalAlpha = 1;
       if (estado !== "listo") dibujarMarcador();
-      if (estado !== "jugando") {
+      if (pantallas && estado !== "jugando") {
         ctx.fillStyle = "rgba(0,0,0,.5)";
         ctx.fillRect(0, 0, ancho, alto);
         ctx.textAlign = "center";
@@ -251,7 +251,12 @@
     ajustarTamano();
     requestAnimationFrame(cuadro);
 
-    return { iniciar, estado: () => estado, ajustarTamano };
+    return {
+      iniciar,
+      estado: () => estado,
+      ajustarTamano,
+      marcador: () => ({ puntaje, puntajeRival, tiempo, duracion })
+    };
   }
 
   window.crearArqueria = crearArqueria;

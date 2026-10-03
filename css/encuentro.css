@@ -1,0 +1,92 @@
+/* Combate de Muerte Súbita contra Verdam: ceniza, hierro y oro apagado. */
+:root { --enc-oro: #c9a84c; --enc-oro-claro: #f0d98a; --enc-rojo: #8f1d1d; --enc-borde: #4a3f22; }
+html, body { margin: 0; }
+.enc-pagina {
+  background: #09090b; color: #cfc8b4; min-height: 100vh; overflow-x: hidden;
+  font-family: Georgia, "Times New Roman", serif;
+}
+.hidden { display: none !important; }
+
+.enc-cenizas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.enc-niebla {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 90%, rgba(120, 110, 90, .18), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(120, 110, 90, .16), transparent 50%);
+  animation: encNiebla 14s ease-in-out infinite alternate;
+}
+@keyframes encNiebla { from { transform: translateX(-2%); opacity: .8; } to { transform: translateX(2%); opacity: 1; } }
+.enc-vineta { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(0, 0, 0, .85) 100%); }
+
+/* Introducción: pantalla negra y el nombre del jefe */
+.enc-intro {
+  position: fixed; inset: 0; z-index: 20; background: #000; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; cursor: pointer;
+  animation: encIntroSalida 1.4s ease 3.6s forwards;
+}
+.enc-intro-sub { color: #8f8a78; letter-spacing: .4em; text-transform: uppercase; font-size: .8rem; margin: 0 0 14px; opacity: 0; animation: encAparece 1.6s ease .4s forwards; }
+.enc-intro-nombre {
+  margin: 0; font-size: clamp(3rem, 12vw, 8rem); letter-spacing: .3em; color: var(--enc-oro-claro); font-weight: 400;
+  text-shadow: 0 0 30px rgba(201, 168, 76, .55); opacity: 0; animation: encAparece 2s ease 1s forwards;
+}
+.enc-intro-epiteto { color: #9a937c; font-style: italic; letter-spacing: .15em; margin: 16px 0 0; opacity: 0; animation: encAparece 1.6s ease 2.2s forwards; }
+@keyframes encAparece { to { opacity: 1; } }
+@keyframes encIntroSalida { to { opacity: 0; visibility: hidden; } }
+
+.enc-contenido { position: relative; z-index: 3; max-width: 980px; margin: 0 auto; padding: 22px 18px 50px; }
+.enc-apuesta { text-align: center; margin: 0 0 14px; color: #8f8a78; font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; min-height: 1.2em; }
+
+.enc-arena {
+  position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 10; margin: 0 auto; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 80%, #26211a 0%, #121110 55%, #09090b 100%);
+  border: 1px solid var(--enc-borde); box-shadow: 0 0 50px rgba(201, 168, 76, .12), inset 0 0 60px rgba(0, 0, 0, .8);
+}
+.enc-boss {
+  position: absolute; left: 50%; bottom: -2%; height: 104%; transform: translateX(-50%); opacity: .5;
+  filter: drop-shadow(0 0 22px rgba(0, 0, 0, .9)); animation: encRespira 6s ease-in-out infinite;
+}
+@keyframes encRespira { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.012); } }
+.enc-ojo { filter: drop-shadow(0 0 6px #f0c25a) drop-shadow(0 0 16px #c9a84c); animation: encOjo 3.2s ease-in-out infinite; }
+@keyframes encOjo { 0%, 100% { opacity: .75; } 45% { opacity: 1; } 50% { opacity: .35; } 55% { opacity: 1; } }
+
+.enc-campo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: transparent; touch-action: manipulation; }
+
+.enc-boton {
+  position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%); z-index: 5;
+  background: rgba(0, 0, 0, .6); color: var(--enc-oro-claro); border: 1px solid var(--enc-oro);
+  padding: 14px 44px; font-family: inherit; font-size: 1.1rem; letter-spacing: .3em; text-transform: uppercase; cursor: pointer;
+  box-shadow: 0 0 20px rgba(201, 168, 76, .3); transition: box-shadow .2s, background .2s;
+}
+.enc-boton:hover { background: rgba(60, 48, 16, .7); box-shadow: 0 0 34px rgba(240, 217, 138, .6); }
+
+/* Veredicto */
+.enc-veredicto {
+  position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; background: rgba(0, 0, 0, .78); animation: encAparece 1.4s ease forwards; padding: 0 20px;
+}
+.enc-veredicto h2 { margin: 0; font-weight: 400; font-size: clamp(2rem, 7vw, 4.2rem); letter-spacing: .25em; }
+.enc-veredicto.enc-gana h2 { color: var(--enc-oro-claro); text-shadow: 0 0 30px rgba(240, 217, 138, .7); }
+.enc-veredicto.enc-pierde h2 { color: #b82a2a; text-shadow: 0 0 30px rgba(184, 42, 42, .7); }
+.enc-veredicto p { color: #a59e88; max-width: 460px; line-height: 1.6; margin: 18px 0 22px; }
+.enc-volver { color: var(--enc-oro); border: 1px solid var(--enc-borde); padding: 10px 26px; text-decoration: none; letter-spacing: .2em; text-transform: uppercase; font-size: .8rem; }
+.enc-volver:hover { border-color: var(--enc-oro); color: var(--enc-oro-claro); }
+
+/* Barra del jefe, abajo y al centro */
+.enc-barra-boss { max-width: 760px; margin: 22px auto 0; }
+.enc-barra-nombre { display: block; color: #d8d1bd; letter-spacing: .25em; text-transform: uppercase; font-size: .85rem; margin-bottom: 6px; text-shadow: 0 0 10px #000; }
+.enc-barra { height: 14px; background: #120808; border: 1px solid var(--enc-borde); padding: 2px; box-shadow: 0 0 14px rgba(0, 0, 0, .8); }
+.enc-barra-relleno { height: 100%; width: 50%; background: linear-gradient(90deg, #5c1010, #a32323 55%, #c43a3a); transition: width .25s linear; }
+.enc-aviso { text-align: center; margin: 14px 0 0; color: #9a937c; font-size: .9rem; min-height: 1.2em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .enc-pagina *, .enc-pagina *::before { animation-duration: .01s !important; animation-delay: 0s !important; }
+}
+
+/* Control de volumen de la música */
+.ms-volumen {
+  position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; background: rgba(0, 0, 0, .6); border: 1px solid var(--enc-borde);
+}
+.ms-vol-boton { background: none; border: 0; color: var(--enc-oro); cursor: pointer; padding: 2px; display: flex; }
+.ms-vol-boton:hover { color: var(--enc-oro-claro); }
+.ms-vol-rango { width: 96px; accent-color: var(--enc-oro); cursor: pointer; }

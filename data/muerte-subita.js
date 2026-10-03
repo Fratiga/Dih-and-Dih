@@ -12,6 +12,7 @@ window.MUERTE_SUBITA = [
     motorRival: "verdam",
     duracion: 60,
     arte: "arqueria",
+    pagina: "encuentro-verdam.html",
     gif: "assets/cosas/ms-verdam.gif",
     texto: "Un cazador que no falla. Ya te estaba apuntando antes de que llegaras.",
     recompensa: "Una reliquia de Verdam, a criterio del DM."

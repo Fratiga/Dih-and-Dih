@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Muerte Súbita — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261040">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261040">
-  <link rel="stylesheet" href="css/muerte-subita.css?v=20261040">
+  <link rel="stylesheet" href="css/style.css?v=20261041">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261041">
+  <link rel="stylesheet" href="css/muerte-subita.css?v=20261041">
 </head>
 <body class="mj-pagina ms-pagina">
   <!-- Página aparte y escondida: se abre con una palabra en la clave mágica. -->
@@ -55,6 +55,8 @@
     <svg class="ms-tent ms-t5"><use href="#msTentaculo"/></svg>
     <svg class="ms-tent ms-t6"><use href="#msTentaculo"/></svg>
   </div>
+
+  <div id="msVolumen" class="ms-volumen"></div>
 
   <div class="mj-barra">
     <a href="index.html" class="mj-volver">← Despertar</a>
@@ -105,25 +107,18 @@
       </div>
     </section>
 
-    <section id="msJuego" class="hidden">
-      <div class="mj-escenario ms-escenario">
-        <canvas id="msCampo" class="mj-campo" role="button" tabindex="0" aria-label="Desafío"></canvas>
-        <button type="button" id="msJugar" class="mj-play" aria-label="Empezar">▶</button>
-      </div>
-      <p id="msResultado" class="ms-resultado"></p>
-    </section>
 
     <div id="msIntentos"></div>
   </main>
 
-  <script src="js/temas.js?v=20261040"></script>
-  <script src="js/fichas-supabase.js?v=20261040"></script>
-  <script src="js/fichas-modelo.js?v=20261040"></script>
-  <script src="js/fichas-storage.js?v=20261040"></script>
-  <script src="js/muerte-subita-supabase.js?v=20261040"></script>
-  <script src="js/lado.js?v=20261040"></script>
-  <script src="js/arqueria.js?v=20261040"></script>
-  <script src="data/muerte-subita.js?v=20261040"></script>
-  <script src="js/muerte-subita.js?v=20261040"></script>
+  <script src="js/temas.js?v=20261041"></script>
+  <script src="js/ms-musica.js?v=20261041"></script>
+  <script src="js/fichas-supabase.js?v=20261041"></script>
+  <script src="js/fichas-modelo.js?v=20261041"></script>
+  <script src="js/fichas-storage.js?v=20261041"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261041"></script>
+  <script src="js/lado.js?v=20261041"></script>
+  <script src="data/muerte-subita.js?v=20261041"></script>
+  <script src="js/muerte-subita.js?v=20261041"></script>
 </body>
 </html>

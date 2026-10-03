@@ -12,23 +12,16 @@
   const avisoEl = document.getElementById("msAviso");
   const botonAceptar = document.getElementById("msAceptar");
   const botonCancelar = document.getElementById("msCancelar");
-  const juegoEl = document.getElementById("msJuego");
-  const botonJugar = document.getElementById("msJugar");
-  const resultadoEl = document.getElementById("msResultado");
 
   const NIVEL_MINIMO = 4;
 
   // Si el archivo no está, el navegador simplemente no suena: no rompe nada.
-  const musica = new Audio(encodeURI("assets/cosas/The Crack of Doom.mp3"));
-  musica.loop = true;
-  musica.volume = 0.5;
+  const musica = MsMusica.crear({ contenedor: document.getElementById("msVolumen") });
 
   let sesion = null;
   let fichas = [];
   let intentos = [];
   let desafioActual = null;
-  let intentoActual = null;
-  let juego = null;
 
   function escapar(s) {
     return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -222,43 +215,17 @@
     if (!f || !desafioActual) return;
     botonAceptar.disabled = true;
     avisoEl.textContent = "";
+    let intentoNuevo = null;
     try {
-      intentoActual = await msIniciar(desafioActual.id, f.id, nombreDe(f));
+      intentoNuevo = await msIniciar(desafioActual.id, f.id, nombreDe(f));
     } catch (err) {
       avisoEl.textContent = "El Dominio no te dejó pasar. Si ya tenías un intento, el DM puede anularlo.";
       botonAceptar.disabled = false;
       return;
     }
-    panel.classList.add("hidden");
-    iniciarJuego(desafioActual);
+    // El combate vive en su propia página, con el intento ya abierto
+    location.href = desafioActual.pagina + "?i=" + encodeURIComponent(intentoNuevo);
   });
-
-  function iniciarJuego(desafio) {
-    juegoEl.classList.remove("hidden");
-    resultadoEl.innerHTML = "";
-    juego = crearArqueria({
-      canvas: document.getElementById("msCampo"),
-      rival: desafio.motorRival,
-      duracion: desafio.duracion,
-      onEstado: estado => botonJugar.classList.toggle("hidden", estado !== "listo"),
-      onFin: async ({ puntaje, puntajeRival }) => {
-        const marcador = `${puntaje} a ${puntajeRival}`;
-        try {
-          const veredicto = await msFinalizar(intentoActual, puntaje, puntajeRival);
-          resultadoEl.innerHTML = veredicto === "ganado"
-            ? `Ganaste, ${marcador}.<small>El DM confirma el resultado y entrega la recompensa.</small>`
-            : `Perdiste, ${marcador}.<small>Tu personaje queda marcado por el Dominio. El DM decide qué pasa con él.</small>`;
-        } catch (err) {
-          resultadoEl.innerHTML = `Terminó ${marcador}, pero no se pudo registrar.<small>Avisa al DM: una falla técnica nunca cuenta como derrota.</small>`;
-        }
-        try { intentos = await msListarIntentos(); pintarDesafios(); } catch (e) { /* se actualiza al recargar */ }
-      }
-    });
-    botonJugar.classList.remove("hidden");
-    juegoEl.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  botonJugar.addEventListener("click", () => { if (juego) juego.iniciar(); });
 
   async function cargarDatos() {
     try {
