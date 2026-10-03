@@ -87,6 +87,7 @@
   const PASO_FUEGO = 7;
   const RACHA_BUFON = 31;
   const PASO_BUFON = 6;
+  const RACHA_TPOSE = 100; // Slappy gigante en T-pose sobre los banners
   // Dificultad por tramos de racha: encogen, impostores, zigzag, oleadas y
   // blindados, además de algunos Hooeys más rápidos que el resto.
   const RACHA_RAPIDOS = 25;
@@ -96,6 +97,7 @@
   const RACHA_OLEADA = 50;
   const RACHA_BLINDADO = 60;
   let bufonesActuales = 0;
+  let tposeActual = false;
   let cierreVisible = true; // tras perder, espera a que el Hooey termine de caer fuera del cuadro
   let tiempoCaida = 0;
 
@@ -182,8 +184,10 @@
     const caja = canvas.getBoundingClientRect();
     ancho = LOGICO_ANCHO;
     alto = LOGICO_ALTO;
-    canvas.width = Math.max(1, Math.round(caja.width * dpr));
-    canvas.height = Math.max(1, Math.round(caja.height * dpr));
+    // Tope a la resolución interna: con zoom alto el lienzo sería enorme y daría lag
+    const k = Math.min(dpr, (LOGICO_ANCHO * 2) / Math.max(1, caja.width));
+    canvas.width = Math.max(1, Math.round(caja.width * k));
+    canvas.height = Math.max(1, Math.round(caja.height * k));
     const escala = canvas.width / LOGICO_ANCHO;
     ctx.setTransform(escala, 0, 0, escala, 0, 0);
     ctx.imageSmoothingEnabled = false;
@@ -269,9 +273,11 @@
     fuegoEl.style.opacity = String(opacidad);
 
     const bufones = jugando && racha >= RACHA_BUFON ? 1 + Math.floor((racha - RACHA_BUFON) / PASO_BUFON) : 0;
-    if (bufones !== bufonesActuales) {
+    const tpose = jugando && racha >= RACHA_TPOSE;
+    if (bufones !== bufonesActuales || tpose !== tposeActual) {
       bufonesActuales = bufones;
-      if (window.SacrificioBufones) window.SacrificioBufones.sincronizar(bufones);
+      tposeActual = tpose;
+      if (window.SacrificioBufones) window.SacrificioBufones.sincronizar(bufones, tpose);
     }
   }
 
@@ -583,12 +589,30 @@
     }
   }
 
+  // El juego avanza por pasos fijos de 1/60 s según el tiempo real. Si el
+  // navegador se atrasa (lag, zoom, equipo lento), se recuperan los pasos
+  // perdidos en vez de jugar en cámara lenta, así forzar lag no ayuda.
+  const PASO = 1 / 60;
+  const MAX_PASOS = 120;
+  let acumulado = 0;
+  let relojNuevo = true;
+  document.addEventListener("visibilitychange", () => { relojNuevo = true; });
+
   function cuadro(t) {
-    const dt = Math.min(0.05, (t - ultimo) / 1000 || 0);
+    let real = (t - ultimo) / 1000 || 0;
     ultimo = t;
-    actualizar(dt);
+    // Al volver de otra pestaña no se cobra el tiempo que estuvo oculta
+    if (relojNuevo) { real = PASO; relojNuevo = false; }
+    acumulado += Math.min(real, MAX_PASOS * PASO);
+    let pasos = 0;
+    while (acumulado >= PASO && pasos < MAX_PASOS) {
+      actualizar(PASO);
+      acumulado -= PASO;
+      pasos += 1;
+    }
+    if (pasos >= MAX_PASOS) acumulado = 0;
     dibujar();
-    dibujarFuego(dt);
+    dibujarFuego(Math.min(0.1, real));
     requestAnimationFrame(cuadro);
   }
 

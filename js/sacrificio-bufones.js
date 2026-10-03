@@ -24,6 +24,7 @@
     }
   };
   const BUFONES_PARA_REBOTAR = 3;
+  const VUELTA_TPOSE = 2.6; // segundos por vuelta de los Slappy en T-pose
   const BUFONES_PARA_SALIR = 4; // desde acá rebotan por toda la ventana, no solo dentro del juego
 
   let contenedor = null;
@@ -44,6 +45,7 @@
   let ancho = 0;
   let alto = 0;
   let bufones = [];
+  let tposes = [];
   let generacion = 0;
 
   function pausa() {
@@ -159,7 +161,7 @@
 
       gltf.animations.forEach(c => { clips[c.name] = c; });
       try {
-        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261050");
+        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261052");
         const g = window.GANGNAM_CLIP;
         // three.js quita los dos puntos de los nombres de nodo al cargar el modelo
         const pistas = g.pistas.map(p => {
@@ -259,6 +261,30 @@
     return b;
   }
 
+  // Slappy gigante en T-pose (sin animación, la pose original del modelo),
+  // girando sobre cada banner lateral.
+  function crearTpose(banner) {
+    const interior = SkeletonUtils.clone(modelo);
+    interior.position.copy(centro).multiplyScalar(-1);
+    const grupo = new THREE.Group();
+    grupo.add(interior);
+    scene.add(grupo);
+    return { grupo, banner };
+  }
+
+  function actualizarTposes(dt) {
+    for (const t of tposes) {
+      const r = t.banner.getBoundingClientRect();
+      // En pantallas angostas los banners no se muestran
+      t.grupo.visible = r.width > 0;
+      if (!r.width) continue;
+      const lado = Math.max(r.width * 1.9, 240);
+      t.grupo.scale.setScalar(lado / (2 * radio));
+      t.grupo.position.set(r.left + r.width / 2, alto - (r.top + r.height / 2), 0);
+      t.grupo.rotation.y += dt * (Math.PI * 2 / VUELTA_TPOSE);
+    }
+  }
+
   function cuadro() {
     // En el modo clásico (Firefox) se dibuja a 30 cuadros por segundo como máximo
     if (clasico) {
@@ -290,7 +316,13 @@
       const py = b.libre ? b.y : caja.top + b.y;
       b.grupo.position.set(px, alto - py, 0);
     }
+    actualizarTposes(dt);
     renderer.render(scene, camera);
+  }
+
+  function quitarTposes() {
+    for (const t of tposes) scene.remove(t.grupo);
+    tposes = [];
   }
 
   function limpiar() {
@@ -299,10 +331,11 @@
     renderer.setAnimationLoop(null);
     for (const b of bufones) scene.remove(b.grupo);
     bufones = [];
+    quitarTposes();
     renderer.render(scene, camera); // deja el canvas vacío
   }
 
-  async function sincronizar(cantidad) {
+  async function sincronizar(cantidad, conTpose) {
     if (cantidad <= 0) { limpiar(); return; }
     const miGeneracion = ++generacion;
     try { await cargar(); } catch (e) { return; }
@@ -317,6 +350,11 @@
       for (const b of bufones) {
         if (!b.libre) { b.x += caja.left; b.y += caja.top; b.libre = true; }
       }
+    }
+    if (conTpose && !tposes.length) {
+      document.querySelectorAll(".sacrificio-banner").forEach(el => tposes.push(crearTpose(el)));
+    } else if (!conTpose && tposes.length) {
+      quitarTposes();
     }
     reloj.getDelta();
     renderer.setAnimationLoop(cuadro);
