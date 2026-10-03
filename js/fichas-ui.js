@@ -1290,6 +1290,31 @@
       }
     });
 
+    /* Los campos numéricos se envuelven con flechitas propias (las del
+       navegador no se pueden estilizar y desentonaban con el tema). Un
+       MutationObserver los envuelve también cuando se arman más tarde
+       (hechizos, macros, filas nuevas). */
+    const envolverNumericos = () => {
+      cont.querySelectorAll('input[type="number"]').forEach(inp => {
+        if (inp.closest(".fichas-num")) return;
+        const envoltorio = document.createElement("span");
+        envoltorio.className = "fichas-num";
+        inp.replaceWith(envoltorio);
+        envoltorio.appendChild(inp);
+        envoltorio.insertAdjacentHTML("beforeend", '<span class="fichas-num-botones"><button type="button" tabindex="-1" data-paso="1" aria-label="Subir"></button><button type="button" tabindex="-1" data-paso="-1" aria-label="Bajar"></button></span>');
+      });
+    };
+    new MutationObserver(envolverNumericos).observe(cont, { childList: true, subtree: true });
+    envolverNumericos();
+
+    cont.addEventListener("click", e => {
+      const paso = e.target.closest(".fichas-num-botones button");
+      if (!paso) return;
+      const campo = paso.closest(".fichas-num").querySelector("input");
+      if (Number(paso.dataset.paso) > 0) campo.stepUp(); else campo.stepDown();
+      campo.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
     cont.addEventListener("input", manejarCambioBinding);
     cont.addEventListener("change", manejarCambioBinding);
 

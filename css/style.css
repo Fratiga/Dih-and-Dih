@@ -3419,3 +3419,31 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fichas-roll20-pasos { margin: 0 0 8px 18px; padding: 0; font-size: .88rem; line-height: 1.7; }
 .fichas-roll20-pasos a { color: var(--text); }
 .fichas-roll20-instalar-enlace { font-weight: 600; }
+
+/* --- Campos numéricos de las fichas: flechas propias en vez de las del navegador --- */
+#fichasContent input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+#fichasContent input[type="number"]::-webkit-inner-spin-button,
+#fichasContent input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+.fichas-num { position: relative; display: flex; width: 100%; }
+.fichas-num > input { flex: 1; min-width: 0; padding-right: 24px; margin: 0; }
+.fichas-puntos-info .fichas-num, .fichas-combate-rapido .fichas-num { display: inline-flex; width: auto; }
+.fichas-atributo-card .fichas-num { margin-bottom: 6px; }
+.fichas-atributo-card .fichas-num > input { padding-left: 24px; }
+.fichas-num-botones {
+  position: absolute; right: 1px; top: 1px; bottom: 1px; width: 20px;
+  display: flex; flex-direction: column; opacity: 0; transition: opacity .12s;
+}
+.fichas-num:hover .fichas-num-botones, .fichas-num:focus-within .fichas-num-botones { opacity: 1; }
+@media (hover: none) { .fichas-num-botones { opacity: 1; } }
+.fichas-num-botones button {
+  flex: 1; position: relative; border: 0; padding: 0; cursor: pointer;
+  background: var(--panel); color: var(--muted);
+}
+.fichas-num-botones button + button { border-top: 1px solid var(--border); }
+.fichas-num-botones button:hover { color: var(--text); background: var(--border); }
+.fichas-num-botones button::before {
+  content: ""; position: absolute; left: 50%; top: 50%; margin-left: -4px;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+}
+.fichas-num-botones button[data-paso="1"]::before { margin-top: -3px; border-bottom: 5px solid currentColor; }
+.fichas-num-botones button[data-paso="-1"]::before { margin-top: -2px; border-top: 5px solid currentColor; }
