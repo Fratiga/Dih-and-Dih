@@ -51,7 +51,7 @@
       return;
     }
     vacio.classList.toggle("hidden", personajes.length > 0);
-    publicarParaRoll20(personajes, true);
+    sincronizarRoll20(personajes);
     await cargarMarcasDominio();
     grid.innerHTML = personajes.map(p => tarjetaHTML(p)).join("");
 
@@ -284,7 +284,7 @@
       estadoGuardado("Guardando…", "guardando");
       try {
         await fichasStorage.guardar(personajeActual);
-        publicarParaRoll20([personajeActual]);
+        sincronizarRoll20([personajeActual]);
         estadoGuardado("Guardado", "guardado");
       } catch (err) {
         estadoGuardado("Error al guardar: " + (err.message || err), "error");
@@ -1101,11 +1101,11 @@
         <h3>Tus tiradas dentro de Roll20, sin copiar y pegar</h3>
         <p class="fichas-imagenes-ayuda">Con el script del Compendio, Roll20 muestra un panel con tus tiradas (las favoritas primero) y las manda al chat con un clic. Se instala una sola vez y se actualiza solo.</p>
         <ol class="fichas-roll20-pasos">
-          <li>Instala la extensión <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> en tu navegador.</li>
+          <li>Instala la extensión <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> en el navegador donde usas Roll20.</li>
           <li><a href="roll20/compendio-roll20.user.js" class="fichas-roll20-instalar-enlace">Instalar el script del Compendio</a> (Tampermonkey te pedirá confirmar).</li>
-          <li>Abre tu partida en Roll20: aparece el botón <strong>Compendio</strong> abajo a la izquierda.</li>
+          <li>Abre tu partida en Roll20 y pulsa el botón <strong>Compendio</strong> (abajo a la izquierda). La primera vez entras con el correo y la contraseña de tu cuenta de aquí.</li>
         </ol>
-        <p class="fichas-puntos-info">Los personajes se cargan solos al abrir esta página con tu cuenta, en el mismo navegador donde usas Roll20.</p>
+        <p class="fichas-puntos-info">Tus tiradas se actualizan solas cuando editas tu ficha: no tienes que abrir esta página en el mismo navegador de Roll20.</p>
       </div>
 
       <div class="fichas-fieldset">
@@ -1530,18 +1530,38 @@
     return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", items };
   }
 
-  /* Deja los personajes y sus tiradas a la vista del script de Tampermonkey
-     (roll20/compendio-roll20.user.js): en localStorage, y avisando a la
-     página por si el script ya está escuchando. Sin el script no hace nada. */
-  const personajesParaRoll20 = new Map();
-  function publicarParaRoll20(lista, reiniciar) {
-    try {
-      if (reiniciar) personajesParaRoll20.clear();
-      lista.forEach(pj => personajesParaRoll20.set(pj.id, payloadRoll20DePersonaje(pj)));
-      const payload = { version: 1, actualizado: Date.now(), personajes: [...personajesParaRoll20.values()] };
-      localStorage.setItem("compendioRoll20Datos", JSON.stringify(payload));
-      window.postMessage({ tipo: "compendio-roll20-datos", payload }, window.location.origin);
-    } catch (e) { /* publicar es un extra, nunca debe romper la ficha */ }
+  /* Sube a Supabase (columna fichas_personajes.roll20) el panel de tiradas ya
+     armado, para que el script de Tampermonkey (roll20/compendio-roll20.user.js)
+     lo lea directo desde Roll20, desde cualquier navegador. Solo sube cuando el
+     panel cambió de verdad (se compara un hash por personaje), así que casi
+     ningún guardado genera una petición extra. Si la columna todavía no existe
+     (scratchpad/roll20_panel.sql sin correr) se desactiva en silencio: nunca
+     debe romper el guardado de una ficha. */
+  let sinColumnaRoll20 = false;
+
+  function hashTexto(texto) {
+    let h = 5381;
+    for (let i = 0; i < texto.length; i++) h = ((h << 5) + h + texto.charCodeAt(i)) | 0;
+    return String(h);
+  }
+
+  async function sincronizarRoll20(lista) {
+    if (sinColumnaRoll20) return;
+    for (const pj of lista) {
+      try {
+        const payload = payloadRoll20DePersonaje(pj);
+        const hash = hashTexto(JSON.stringify(payload));
+        const clave = "compendioRoll20Hash:" + pj.id;
+        if (localStorage.getItem(clave) === hash) continue;
+        const supabase = await fichasCliente();
+        const { error } = await supabase.from("fichas_personajes").update({ roll20: payload }).eq("id", pj.id);
+        if (error) {
+          if (/roll20/i.test(error.message || "")) sinColumnaRoll20 = true;
+          continue;
+        }
+        localStorage.setItem(clave, hash);
+      } catch (e) { /* es un extra, nunca debe romper la ficha */ }
+    }
   }
 
   function renderRoll20Lista() {
