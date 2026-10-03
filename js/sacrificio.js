@@ -85,7 +85,7 @@
   const RACHA_FUEGO = 20;
   const PASO_FUEGO = 7;
   const RACHA_BUFON = 31;
-  const PASO_BUFON = 10;
+  const PASO_BUFON = 6;
   // Dificultad por tramos de racha: encogen, impostores, zigzag, oleadas y
   // blindados, además de algunos Hooeys más rápidos que el resto.
   const RACHA_RAPIDOS = 25;

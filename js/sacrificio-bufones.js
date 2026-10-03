@@ -4,11 +4,25 @@
    siguen llegando a los Hooeys de abajo. El modelo (~7 MB) se carga recién
    cuando se pulsa play, no con la página. */
 (function () {
-  const NOMBRES_BAILE = [
-    "breakdance", "Breakdance", "Breakdancemedio", "Breakdancerapido",
-    "Rumba", "SillyDance", "Sillydance2", "Sillydance2rapido",
-    "Twerk", "Twist"
-  ];
+  // Repertorio verificado contra los clips del modelo. Mientras están quietos
+  // alternan bailes y gestos; cuando rebotan por la pantalla, sobre todo corren.
+  const GRUPOS = {
+    baile: {
+      velocidad: 2,
+      nombres: ["breakdance", "Breakdance", "Breakdancemedio", "Breakdancerapido", "Rumba", "SillyDance",
+        "Sillydance2", "Sillydance2rapido", "Twerk", "Twist", "Swag"]
+    },
+    gesto: {
+      velocidad: 1.5,
+      nombres: ["Aplaudirnormal", "Aplaudirrapido", "Apuntando", "Auch", "Aymisbolas", "Bateria", "Boxing",
+        "Cantando", "Cariñito", "Celebrar", "Fistifght", "happyidle", "JumpinJacks", "Mma Kick", "Pofavor",
+        "Pumpin", "Riendosesentao", "Saltito", "Toma pesao"]
+    },
+    correr: {
+      velocidad: 1.6,
+      nombres: ["Run", "Runlookback", "Injuredrun", "Drunkwalk", "Sadwalk", "caminarnormal", "Crawl"]
+    }
+  };
   const BUFONES_PARA_REBOTAR = 3;
   const BUFONES_PARA_SALIR = 4; // desde acá rebotan por toda la ventana, no solo dentro del juego
 
@@ -23,7 +37,7 @@
   let centro = null;
   let radio = 1;
   let clips = {};
-  let bailes = [];
+  const disponibles = { baile: [], gesto: [], correr: [] };
   let reloj = null;
   let ancho = 0;
   let alto = 0;
@@ -127,7 +141,7 @@
       radio = esfera.radius || 1;
 
       gltf.animations.forEach(c => { clips[c.name] = c; });
-      bailes = NOMBRES_BAILE.filter(n => clips[n]);
+      Object.keys(GRUPOS).forEach(g => { disponibles[g] = GRUPOS[g].nombres.filter(n => clips[n]); });
       reloj = new THREE.Clock();
 
       // Calentamiento: un bufón diminuto dentro de la vista, dibujado una vez,
@@ -156,9 +170,36 @@
     return cargaPromesa;
   }
 
-  function elegirBaile(esElPrimero) {
-    if (esElPrimero && clips.Twerk) return "Twerk";
-    return bailes[Math.floor(Math.random() * bailes.length)];
+  function elegirAnimacion(b, esElPrimero) {
+    if (esElPrimero && clips.Twerk) return { nombre: "Twerk", velocidad: GRUPOS.baile.velocidad };
+    const r = Math.random();
+    let grupo;
+    if (b.rebota) grupo = r < 0.65 ? "correr" : r < 0.85 ? "gesto" : "baile";
+    else grupo = r < 0.5 ? "baile" : "gesto";
+    if (!disponibles[grupo].length) grupo = Object.keys(disponibles).find(g => disponibles[g].length);
+    if (!grupo) return null;
+    const lista = disponibles[grupo];
+    return { nombre: lista[Math.floor(Math.random() * lista.length)], velocidad: GRUPOS[grupo].velocidad };
+  }
+
+  function cambiarAnimacion(b, esElPrimero) {
+    const sel = elegirAnimacion(b, esElPrimero);
+    if (!sel) return;
+    const accion = b.mixer.clipAction(clips[sel.nombre]);
+    accion.reset();
+    accion.setLoop(THREE.LoopRepeat, Infinity);
+    accion.timeScale = sel.velocidad;
+    accion.enabled = true;
+    accion.setEffectiveWeight(1);
+    if (b.accion && b.accion !== accion) {
+      accion.play();
+      b.accion.crossFadeTo(accion, 0.3, true);
+    } else {
+      accion.fadeIn(0.2).play();
+    }
+    b.accion = accion;
+    // El del twerk se queda un buen rato; los demás cambian cada pocos segundos
+    b.cambio = esElPrimero && sel.nombre === "Twerk" ? 9 : 3.5 + Math.random() * 4.5;
   }
 
   function crearBufon(indice, libre) {
@@ -179,19 +220,14 @@
     scene.add(grupo);
 
     const mixer = new THREE.AnimationMixer(interior);
-    const nombre = elegirBaile(indice === 0);
-    // El del twerk aparece de espaldas (180°), para verle la espalda
-    if (nombre === "Twerk") grupo.rotation.y = Math.PI;
-    if (nombre) {
-      const accion = mixer.clipAction(clips[nombre]);
-      accion.setLoop(THREE.LoopRepeat, Infinity);
-      accion.timeScale = 2;
-      accion.play();
-    }
-
     const rumbo = Math.random() * Math.PI * 2;
     const rapidez = (160 + Math.random() * 140) * (caja.width / 960);
-    return { grupo, mixer, x, y, lado, libre: !!libre, vx: Math.cos(rumbo) * rapidez, vy: Math.sin(rumbo) * rapidez, rebota: false };
+    const b = { grupo, mixer, x, y, lado, libre: !!libre, vx: Math.cos(rumbo) * rapidez, vy: Math.sin(rumbo) * rapidez, rebota: false, accion: null, cambio: 0 };
+    const primero = indice === 0;
+    cambiarAnimacion(b, primero);
+    // El del twerk aparece de espaldas (180°), para verle la espalda
+    if (primero && b.accion && clips.Twerk && b.accion.getClip() === clips.Twerk) grupo.rotation.y = Math.PI;
+    return b;
   }
 
   function cuadro() {
@@ -199,6 +235,8 @@
     const caja = cajaEscenario();
     for (const b of bufones) {
       b.mixer.update(dt);
+      b.cambio -= dt;
+      if (b.cambio <= 0) cambiarAnimacion(b, false);
       const m = b.lado / 2;
       const anchoZona = b.libre ? ancho : caja.width;
       const altoZona = b.libre ? alto : caja.height;
@@ -237,7 +275,7 @@
 
     const suelta = cantidad >= BUFONES_PARA_SALIR;
     while (bufones.length < cantidad) bufones.push(crearBufon(bufones.length, suelta));
-    if (bufones.length >= BUFONES_PARA_REBOTAR) bufones.forEach(b => { b.rebota = true; });
+    if (bufones.length >= BUFONES_PARA_REBOTAR) bufones.forEach(b => { if (!b.rebota) { b.rebota = true; b.cambio = 0; } });
     if (suelta) {
       // Con el cuarto, los que seguían dentro de la caja salen a la ventana
       const caja = cajaEscenario();
