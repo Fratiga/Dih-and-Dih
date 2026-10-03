@@ -44,11 +44,17 @@
     if (preparandoFuego || cuadrosFuego.length === FUEGO.total) return;
     preparandoFuego = true;
     try {
-      prepararFuego();
+      if (!hojaFuego.src) hojaFuego.src = "assets/cosas/fuego-hoja.webp";
       await hojaFuego.decode();
+      // Cada cuadro va a su propio lienzo chico, copiado de la hoja ya
+      // decodificada: es rápido y después dibujarlo no cuesta casi nada.
       const cuadros = [];
       for (let i = 0; i < FUEGO.total; i++) {
-        cuadros.push(await createImageBitmap(hojaFuego, (i % FUEGO.cols) * FUEGO.w, Math.floor(i / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h));
+        const lienzo = document.createElement("canvas");
+        lienzo.width = FUEGO.w;
+        lienzo.height = FUEGO.h;
+        lienzo.getContext("2d").drawImage(hojaFuego, (i % FUEGO.cols) * FUEGO.w, Math.floor(i / FUEGO.cols) * FUEGO.h, FUEGO.w, FUEGO.h, 0, 0, FUEGO.w, FUEGO.h);
+        cuadros.push(lienzo);
         if (i % 6 === 5) await pausa();
       }
       cuadrosFuego = cuadros;
@@ -275,7 +281,7 @@
     motivoFin = "piso";
     if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
     if (window.SacrificioBufones) window.SacrificioBufones.precargar();
-    if (!hojaFuego.src) hojaFuego.src = "assets/cosas/fuego-hoja.webp";
+    prepararFuego();
     musica.currentTime = 0;
     musica.play().catch(() => { /* el navegador bloqueó el audio */ });
     hooeys = [nuevoHooey()];
