@@ -109,7 +109,7 @@
     try {
       const intentos = await msListarIntentos();
       intentos.forEach(i => {
-        if (i.estado === "perdido" && i.veredicto !== "anulado") {
+        if (i.estado === "perdido" && i.veredicto !== "anulado" && i.veredicto !== "perdonado") {
           marcasDominio.set(i.personaje_id, i.veredicto === "confirmado" ? "confirmado" : "juicio");
         }
       });

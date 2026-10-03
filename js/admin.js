@@ -428,7 +428,8 @@
   }
 
   function textoIntentoMuerte(i) {
-    const veredicto = i.veredicto === "confirmado" ? "Confirmado" : i.veredicto === "anulado" ? "Anulado" : "Pendiente";
+    const veredicto = i.veredicto === "confirmado" ? "Confirmado" : i.veredicto === "anulado" ? "Anulado"
+      : i.veredicto === "perdonado" ? "Marca quitada" : "Pendiente";
     const estado = i.estado === "en_curso" ? "sin terminar" : i.estado;
     const marcador = i.puntaje === null ? "" : ` · ${i.puntaje} a ${i.puntaje_rival}`;
     return `${estado}${marcador} · ${veredicto}`;
@@ -481,13 +482,17 @@
           ${i.veredicto ? "" : `
             <button type="button" class="admin-cuenta-accion" data-veredicto="confirmado">Confirmar</button>
             <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-veredicto="anulado">Anular</button>`}
+          ${i.estado === "perdido" && i.veredicto !== "anulado" && i.veredicto !== "perdonado" ? `
+            <button type="button" class="admin-cuenta-accion" data-veredicto="perdonado">Quitar marca</button>` : ""}
         </div>
       </div>`).join("");
     cont.querySelectorAll("[data-veredicto]").forEach(btn => {
       btn.addEventListener("click", async () => {
         const fila = btn.closest("[data-id]");
         const accion = btn.dataset.veredicto;
-        const frase = accion === "confirmado" ? "¿Confirmar este resultado?" : "¿Anular este intento? Ese personaje podrá volver a intentarlo.";
+        const frase = accion === "confirmado" ? "¿Confirmar este resultado?"
+          : accion === "perdonado" ? "¿Quitar la marca del Dominio a este personaje? El intento sigue contando, no podrá repetirlo."
+          : "¿Anular este intento? Ese personaje podrá volver a intentarlo.";
         if (!confirm(frase)) return;
         btn.disabled = true;
         try {

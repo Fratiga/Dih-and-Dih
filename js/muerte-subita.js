@@ -99,8 +99,8 @@
   function pintarIntentos() {
     if (!intentos.length) { intentosEl.innerHTML = ""; return; }
     const filas = intentos.map(i => {
-      const marcado = i.estado === "perdido" && i.veredicto !== "anulado";
-      return `<li class="${marcado ? "ms-marcado" : ""}">${marcado ? "☠ " : ""}${escapar(i.personaje_nombre)} · ${escapar(i.desafio)} · ${escapar(textoEstado(i))}${i.veredicto === "anulado" ? " (anulado)" : ""}</li>`;
+      const marcado = i.estado === "perdido" && i.veredicto !== "anulado" && i.veredicto !== "perdonado";
+      return `<li class="${marcado ? "ms-marcado" : ""}">${marcado ? "☠ " : ""}${escapar(i.personaje_nombre)} · ${escapar(i.desafio)} · ${escapar(textoEstado(i))}${i.veredicto === "anulado" ? " (anulado)" : i.veredicto === "perdonado" ? " (marca quitada)" : ""}</li>`;
     }).join("");
     intentosEl.innerHTML = `<div class="ms-intentos-lista"><h4>Tus intentos</h4><ul>${filas}</ul></div>`;
   }
