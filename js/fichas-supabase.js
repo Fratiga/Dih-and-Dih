@@ -103,3 +103,16 @@ async function adminCambiarPassword(idUsuario, nuevaPassword) {
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
 }
+
+/* Historial de cambios en las fichas (solo Admin: RLS con fichas_es_admin()).
+   Lo escribe un trigger de la base de datos, ver scratchpad/fichas_historial.sql. */
+async function adminListarHistorialFichas(limite = 300) {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase
+    .from("fichas_historial")
+    .select("id, ficha_id, ficha_nombre, actor_username, owner_id, accion, cambios, creado_en")
+    .order("creado_en", { ascending: false })
+    .limit(limite);
+  if (error) throw error;
+  return data || [];
+}

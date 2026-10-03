@@ -19,20 +19,13 @@
     }
   }
 
-  function pintarPeticiones(lista) {
-    const cont = document.getElementById("adminPeticionesLista");
-    const count = document.getElementById("adminPeticionesCount");
+  // Las pendientes y las atendidas van en vistas separadas. Por defecto solo se
+  // ven las pendientes; "Todas" las muestra en dos grupos, pendientes primero.
+  let peticionesDatos = [];
+  let filtroPeticiones = "pendientes";
 
-    if (!lista.length) {
-      cont.innerHTML = `<p class="admin-vacio">No hay peticiones todavía.</p>`;
-      count.textContent = "";
-      return;
-    }
-
-    const pendientes = lista.filter(p => !p.atendida).length;
-    count.textContent = `${pendientes} pendiente${pendientes === 1 ? "" : "s"} de ${lista.length}`;
-
-    cont.innerHTML = lista.map(p => `
+  function tarjetaPeticion(p) {
+    return `
       <div class="admin-peticion-card ${p.atendida ? "is-atendida" : ""}" data-id="${p.id}">
         <div class="admin-peticion-top">
           <span class="admin-peticion-nombre">${p.nombre ? escaparHtml(p.nombre) : "Anónimo"}</span>
@@ -43,22 +36,69 @@
           <input type="checkbox" data-atendida ${p.atendida ? "checked" : ""}>
           Atendida
         </label>
-      </div>
-    `).join("");
+      </div>`;
+  }
+
+  function repintarPeticiones() {
+    const cont = document.getElementById("adminPeticionesLista");
+    const count = document.getElementById("adminPeticionesCount");
+    const pendientes = peticionesDatos.filter(p => !p.atendida);
+    const atendidas = peticionesDatos.filter(p => p.atendida);
+
+    count.textContent = peticionesDatos.length
+      ? `${pendientes.length} pendiente${pendientes.length === 1 ? "" : "s"} de ${peticionesDatos.length}`
+      : "";
+    const numeros = { pendientes: pendientes.length, atendidas: atendidas.length, todas: peticionesDatos.length };
+    document.querySelectorAll("#adminPeticionesFiltro [data-n]").forEach(el => { el.textContent = `(${numeros[el.dataset.n]})`; });
+    document.querySelectorAll("#adminPeticionesFiltro [data-filtro]").forEach(b => b.classList.toggle("activo", b.dataset.filtro === filtroPeticiones));
+
+    if (!peticionesDatos.length) {
+      cont.innerHTML = `<p class="admin-vacio">No hay peticiones todavía.</p>`;
+      return;
+    }
+
+    if (filtroPeticiones === "pendientes") {
+      cont.innerHTML = pendientes.length ? pendientes.map(tarjetaPeticion).join("") : `<p class="admin-vacio">No queda ninguna pendiente.</p>`;
+    } else if (filtroPeticiones === "atendidas") {
+      cont.innerHTML = atendidas.length ? atendidas.map(tarjetaPeticion).join("") : `<p class="admin-vacio">Todavía no hay ninguna atendida.</p>`;
+    } else {
+      cont.innerHTML = `
+        <h3 class="admin-grupo-titulo">Pendientes (${pendientes.length})</h3>
+        ${pendientes.length ? pendientes.map(tarjetaPeticion).join("") : `<p class="admin-vacio">No queda ninguna pendiente.</p>`}
+        <h3 class="admin-grupo-titulo">Atendidas (${atendidas.length})</h3>
+        ${atendidas.length ? atendidas.map(tarjetaPeticion).join("") : `<p class="admin-vacio">Todavía no hay ninguna atendida.</p>`}`;
+    }
 
     cont.querySelectorAll("[data-atendida]").forEach(chk => {
       chk.addEventListener("change", async e => {
         const card = e.target.closest("[data-id]");
         const nuevoValor = e.target.checked;
-        card.classList.toggle("is-atendida", nuevoValor);
+        const peticion = peticionesDatos.find(x => String(x.id) === card.dataset.id);
+        if (!peticion) return;
         try {
           await adminMarcarPeticion(card.dataset.id, nuevoValor);
+          peticion.atendida = nuevoValor;
+          repintarPeticiones();
         } catch (err) {
           e.target.checked = !nuevoValor;
-          card.classList.toggle("is-atendida", !nuevoValor);
           alert("No se pudo guardar. Prueba de nuevo.");
         }
       });
+    });
+  }
+
+  function pintarPeticiones(lista) {
+    peticionesDatos = lista;
+    repintarPeticiones();
+  }
+
+  const filtroPeticionesEl = document.getElementById("adminPeticionesFiltro");
+  if (filtroPeticionesEl) {
+    filtroPeticionesEl.addEventListener("click", e => {
+      const boton = e.target.closest("[data-filtro]");
+      if (!boton) return;
+      filtroPeticiones = boton.dataset.filtro;
+      repintarPeticiones();
     });
   }
 
@@ -506,6 +546,111 @@
     });
   }
 
+  // --- Historial de fichas (requiere scratchpad/fichas_historial.sql) ---
+  const SEGMENTOS_HISTORIAL = {
+    identidad: "Identidad", combate: "Combate", atributos: "Atributos", ajustesAtributos: "Ajuste de atributo",
+    atributosRaciales: "Bono racial", salvaciones: "Salvación", habilidades: "Habilidad", lanzamiento: "Lanzamiento",
+    inventario: "Inventario", hechizos: "Hechizo", ataques: "Ataque", rasgos: "Rasgo", objetos: "Objeto",
+    espacios: "Espacio de conjuro", monedas: "Monedas", macros: "Macro", dadosGolpe: "Dados de golpe",
+    fue: "Fuerza", des: "Destreza", con: "Constitución", int: "Inteligencia", sab: "Sabiduría", car: "Carisma",
+    nombre: "nombre", nivel: "nivel", nivelTotal: "nivel total", clase: "clase", subclase: "subclase", raza: "raza",
+    trasfondo: "trasfondo", alineamiento: "alineamiento", pronombres: "pronombres", historia: "historia",
+    descripcionFisica: "descripción física", notasPublicas: "notas", retrato: "avatar", fichaFoto: "foto de la ficha",
+    pvMax: "PV máximos", pvActual: "PV actuales", pvTemp: "PV temporales", velocidad: "velocidad",
+    disponible: "disponible", usados: "usados", max: "máximos", actuales: "actuales", dano: "daño",
+    tipoDano: "tipo de daño", descripcion: "descripción", cantidad: "cantidad", estado: "estado",
+    competente: "competente", ajuste: "ajuste", oro: "oro", plata: "plata", cobre: "cobre",
+    archivado: "Archivado", decoraciones: "Pegatinas", puntosFeats: "Puntos de feat", side: "Side"
+  };
+
+  function etiquetaRutaHistorial(ruta) {
+    return String(ruta).split(".").map(seg => {
+      const m = seg.match(/^([^\[]+)(\[(.+)\])?$/);
+      if (!m) return seg;
+      const base = SEGMENTOS_HISTORIAL[m[1]] || m[1];
+      return m[3] ? `${base} «${m[3]}»` : base;
+    }).join(" · ");
+  }
+
+  function valorHistorial(v) {
+    if (v === null || v === undefined || v === "") return "vacío";
+    if (v === true) return "sí";
+    if (v === false) return "no";
+    if (typeof v === "string") return `"${v.length > 80 ? v.slice(0, 80) + "…" : v}"`;
+    if (typeof v === "object") { const t = JSON.stringify(v); return t.length > 80 ? t.slice(0, 80) + "…" : t; }
+    return String(v);
+  }
+
+  function lineaCambioHistorial(c) {
+    const ruta = `<span class="adm-hist-ruta">${escaparHtml(etiquetaRutaHistorial(c.ruta))}</span>`;
+    if (c.imagen) return `<li>${ruta} cambió la imagen</li>`;
+    if (c.accion === "agregado") return `<li>${ruta} agregado</li>`;
+    if (c.accion === "quitado") return `<li>${ruta} quitado</li>`;
+    if (c.nota) return `<li class="adm-hist-nota">${escaparHtml(c.nota)}</li>`;
+    return `<li>${ruta}: <span class="adm-hist-antes">${escaparHtml(valorHistorial(c.antes))}</span> → <span class="adm-hist-despues">${escaparHtml(valorHistorial(c.despues))}</span></li>`;
+  }
+
+  let historialFichas = [];
+
+  function pintarHistorialFichas() {
+    const cont = document.getElementById("adminHistorialLista");
+    const jugador = document.getElementById("adminHistorialJugador").value;
+    const q = document.getElementById("adminHistorialBuscar").value.trim().toLowerCase();
+    const filas = historialFichas.filter(f => {
+      if (jugador && f.actor_username !== jugador) return false;
+      if (!q) return true;
+      const texto = [f.ficha_nombre, f.actor_username, ...(f.cambios || []).map(c => etiquetaRutaHistorial(c.ruta))].join(" ").toLowerCase();
+      return texto.includes(q);
+    });
+    if (!filas.length) {
+      cont.innerHTML = `<p class="admin-vacio">No hay cambios registrados con ese filtro.</p>`;
+      return;
+    }
+    let diaActual = "";
+    cont.innerHTML = filas.map(f => {
+      const fecha = new Date(f.creado_en);
+      const dia = fecha.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
+      const encabezadoDia = dia !== diaActual ? `<h3 class="adm-hist-dia">${escaparHtml(dia)}</h3>` : "";
+      diaActual = dia;
+      const hora = fecha.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+      const quien = escaparHtml(f.actor_username || "alguien");
+      const personaje = escaparHtml(f.ficha_nombre || "Sin nombre");
+      let cuerpo = "";
+      if (f.accion === "creada") cuerpo = `<p class="adm-hist-accion">creó el personaje</p>`;
+      else if (f.accion === "eliminada") cuerpo = `<p class="adm-hist-accion">eliminó el personaje</p>`;
+      else {
+        const lineas = (f.cambios || []).map(lineaCambioHistorial);
+        const visibles = lineas.slice(0, 6).join("");
+        const resto = lineas.slice(6);
+        cuerpo = `<ul class="adm-hist-cambios">${visibles}</ul>` + (resto.length
+          ? `<details class="adm-hist-mas"><summary>…y ${resto.length} cambios más</summary><ul class="adm-hist-cambios">${resto.join("")}</ul></details>`
+          : "");
+      }
+      return `${encabezadoDia}
+        <div class="adm-hist-fila">
+          <div class="adm-hist-cab"><strong>${personaje}</strong> <span>${quien} · ${hora}</span></div>
+          ${cuerpo}
+        </div>`;
+    }).join("");
+  }
+
+  async function cargarHistorialFichas() {
+    const cont = document.getElementById("adminHistorialLista");
+    try {
+      historialFichas = await adminListarHistorialFichas(300);
+      document.getElementById("adminHistorialCount").textContent = String(historialFichas.length);
+      const select = document.getElementById("adminHistorialJugador");
+      const nombres = [...new Set(historialFichas.map(f => f.actor_username).filter(Boolean))].sort();
+      select.innerHTML = `<option value="">Todos los jugadores</option>` + nombres.map(n => `<option value="${escaparHtml(n)}">${escaparHtml(n)}</option>`).join("");
+      select.addEventListener("change", pintarHistorialFichas);
+      document.getElementById("adminHistorialBuscar").addEventListener("input", pintarHistorialFichas);
+      pintarHistorialFichas();
+    } catch (e) {
+      console.error("[admin] Historial de fichas falló:", e);
+      cont.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/fichas_historial.sql en Supabase?</p>`;
+    }
+  }
+
   initAdminGate(async () => {
     const peticionesEl = document.getElementById("adminPeticionesLista");
     const cuentasEl = document.getElementById("adminCuentasLista");
@@ -533,6 +678,8 @@
     } catch (e) {
       muerteEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/muerte_subita.sql en Supabase?</p>`;
     }
+
+    await cargarHistorialFichas();
 
     // Independiente también: requiere scratchpad/fanarts_side.sql.
     const fanartsEl = document.getElementById("adminFanartsLista");

@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261054">
+  <link rel="stylesheet" href="css/style.css?v=20261055">
 </head>
 <body>
   <header class="site-header">
@@ -128,9 +128,15 @@
         <button type="button" class="admin-tab" data-tab="bufon">Progreso del Bufón <span id="adminBufonCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="fanarts">Fanarts <span id="adminFanartsCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="muerte">Muerte Súbita <span id="adminMuerteCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="historial">Historial de fichas <span id="adminHistorialCount" class="admin-tab-badge"></span></button>
       </div>
 
       <section id="adminPanelPeticiones" class="admin-panel active">
+        <div class="admin-segmentos" id="adminPeticionesFiltro">
+          <button type="button" class="activo" data-filtro="pendientes">Pendientes <span data-n="pendientes"></span></button>
+          <button type="button" data-filtro="atendidas">Atendidas <span data-n="atendidas"></span></button>
+          <button type="button" data-filtro="todas">Todas <span data-n="todas"></span></button>
+        </div>
         <div id="adminPeticionesLista" class="admin-peticiones-lista">
           <p class="admin-vacio">Cargando...</p>
         </div>
@@ -163,6 +169,17 @@
           <p class="admin-vacio">Cargando...</p>
         </div>
       </section>
+
+      <section id="adminPanelHistorial" class="admin-panel">
+        <p class="admin-bufon-banner">Cada cambio que los jugadores hacen en sus personajes, con el valor anterior y el nuevo. Muestra los últimos 300 guardados con cambios.</p>
+        <div class="admin-historial-filtros">
+          <select id="adminHistorialJugador"><option value="">Todos los jugadores</option></select>
+          <input type="search" id="adminHistorialBuscar" placeholder="Buscar personaje o campo...">
+        </div>
+        <div id="adminHistorialLista" class="admin-historial-lista">
+          <p class="admin-vacio">Cargando...</p>
+        </div>
+      </section>
     </section>
   </main>
 
@@ -171,34 +188,34 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="data/entries.js?v=20261054"></script>
-  <script src="data/personajes.js?v=20261054"></script>
-  <script src="data/lugares.js?v=20261054"></script>
-  <script src="data/facciones.js?v=20261054"></script>
-  <script src="data/pergaminos.js?v=20261054"></script>
-  <script src="data/armas.js?v=20261054"></script>
-  <script src="data/objetos.js?v=20261054"></script>
-  <script src="data/bestiario.js?v=20261054"></script>
-  <script src="data/razas.js?v=20261054"></script>
-  <script src="data/religiones.js?v=20261054"></script>
-  <script src="data/rotacion.js?v=20261054"></script>
-  <script src="data/musica.js?v=20261054"></script>
-  <script src="js/common.js?v=20261054"></script>
-  <script src="js/temas.js?v=20261054"></script>
-  <script src="js/player.js?v=20261054"></script>
-  <script src="js/modal.js?v=20261054"></script>
-  <script src="data/jumpscare.js?v=20261054"></script>
-  <script src="data/contrasenas.js?v=20261054"></script>
-  <script src="data/fanarts.js?v=20261054"></script>
-  <script src="js/fichas-supabase.js?v=20261054"></script>
-  <script src="js/peticiones-supabase.js?v=20261054"></script>
-  <script src="js/bufon-supabase.js?v=20261054"></script>
-  <script src="js/muerte-subita-supabase.js?v=20261054"></script>
-  <script src="js/fanarts-supabase.js?v=20261054"></script>
-  <script src="js/lado.js?v=20261054"></script>
-  <script src="js/slappy.js?v=20261054"></script>
-  <script src="js/busqueda-global.js?v=20261054"></script>
-  <script src="js/header-marquee.js?v=20261054"></script>
-  <script src="js/admin.js?v=20261054"></script>
+  <script src="data/entries.js?v=20261055"></script>
+  <script src="data/personajes.js?v=20261055"></script>
+  <script src="data/lugares.js?v=20261055"></script>
+  <script src="data/facciones.js?v=20261055"></script>
+  <script src="data/pergaminos.js?v=20261055"></script>
+  <script src="data/armas.js?v=20261055"></script>
+  <script src="data/objetos.js?v=20261055"></script>
+  <script src="data/bestiario.js?v=20261055"></script>
+  <script src="data/razas.js?v=20261055"></script>
+  <script src="data/religiones.js?v=20261055"></script>
+  <script src="data/rotacion.js?v=20261055"></script>
+  <script src="data/musica.js?v=20261055"></script>
+  <script src="js/common.js?v=20261055"></script>
+  <script src="js/temas.js?v=20261055"></script>
+  <script src="js/player.js?v=20261055"></script>
+  <script src="js/modal.js?v=20261055"></script>
+  <script src="data/jumpscare.js?v=20261055"></script>
+  <script src="data/contrasenas.js?v=20261055"></script>
+  <script src="data/fanarts.js?v=20261055"></script>
+  <script src="js/fichas-supabase.js?v=20261055"></script>
+  <script src="js/peticiones-supabase.js?v=20261055"></script>
+  <script src="js/bufon-supabase.js?v=20261055"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261055"></script>
+  <script src="js/fanarts-supabase.js?v=20261055"></script>
+  <script src="js/lado.js?v=20261055"></script>
+  <script src="js/slappy.js?v=20261055"></script>
+  <script src="js/busqueda-global.js?v=20261055"></script>
+  <script src="js/header-marquee.js?v=20261055"></script>
+  <script src="js/admin.js?v=20261055"></script>
 </body>
 </html>

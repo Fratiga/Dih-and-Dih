@@ -3377,3 +3377,38 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   background: #d946ef; box-shadow: 0 0 8px #d946ef; vertical-align: middle; animation: msPunto 1.6s ease-in-out infinite;
 }
 @keyframes msPunto { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* --- Admin: historial de cambios en fichas --- */
+.admin-historial-filtros { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.admin-historial-filtros select, .admin-historial-filtros input {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 10px; font-family: inherit; font-size: .85rem; border-radius: 0; outline: none;
+}
+.admin-historial-filtros input { flex: 1; min-width: 200px; }
+.adm-hist-dia { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; font-family: var(--font-heading), sans-serif; }
+.adm-hist-fila { border: 1px solid var(--border); background: var(--panel); padding: 10px 14px; margin-bottom: 8px; }
+.adm-hist-cab { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.adm-hist-cab span { color: var(--muted); font-size: .8rem; }
+.adm-hist-cambios { margin: 0; padding-left: 18px; font-size: .85rem; }
+.adm-hist-cambios li { margin-bottom: 2px; }
+.adm-hist-ruta { color: var(--muted); }
+.adm-hist-antes { color: #c98b8b; }
+.adm-hist-despues { color: #9db98a; }
+.adm-hist-nota { color: var(--muted); font-style: italic; }
+.adm-hist-accion { margin: 0; font-size: .85rem; color: var(--muted); }
+.adm-hist-mas summary { cursor: pointer; color: var(--muted); font-size: .8rem; margin: 6px 0 4px; }
+
+/* --- Admin: filtro de peticiones --- */
+.admin-segmentos { display: inline-flex; border: 1px solid var(--border); margin-bottom: 16px; }
+.admin-segmentos button {
+  background: none; border: none; color: var(--muted); padding: 8px 16px;
+  font-family: inherit; font-size: .85rem; cursor: pointer;
+}
+.admin-segmentos button + button { border-left: 1px solid var(--border); }
+.admin-segmentos button:hover { color: var(--text); }
+.admin-segmentos button.activo { color: var(--text); background: var(--panel-2); }
+.admin-grupo-titulo {
+  font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  margin: 20px 0 10px; font-family: var(--font-heading), sans-serif;
+}
+.admin-grupo-titulo:first-child { margin-top: 0; }
