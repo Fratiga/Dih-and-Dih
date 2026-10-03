@@ -2971,6 +2971,39 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   .fichas-hab-fila .fichas-hab-nombre { grid-column: 1 / -1; }
 }
 
+/* --- Lista de hechizos plegable (lista o cubos) --- */
+.fichas-hechizos-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+.fichas-hechizos-barra input[type="search"] {
+  flex: 1; min-width: 160px; background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); padding: 7px 10px; font-family: inherit; font-size: .85rem; border-radius: 0; outline: none;
+}
+.fichas-hechizos-barra input[type="search"]:focus { border-color: var(--accent-soft); }
+.fichas-vista-toggle { display: inline-flex; border: 1px solid var(--border); }
+.fichas-vista-toggle button {
+  background: none; border: none; color: var(--muted); padding: 6px 12px;
+  font-family: inherit; font-size: .78rem; cursor: pointer;
+}
+.fichas-vista-toggle button.activo { color: var(--text); background: var(--panel-2); }
+.fichas-hechizos--lista { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.fichas-hechizos--cubos { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.fichas-hechizos--cubos .fichas-hechizo[open] { grid-column: 1 / -1; }
+.fichas-hechizo { border: 1px solid var(--border); background: var(--fondo-tarjeta, var(--panel)); }
+.fichas-hechizo[hidden] { display: none; }
+.fichas-hechizo > summary {
+  display: flex; align-items: center; gap: 10px; padding: 7px 10px; cursor: pointer;
+  list-style: none; user-select: none;
+}
+.fichas-hechizo > summary::-webkit-details-marker { display: none; }
+.fichas-hechizo > summary:hover { background: var(--panel-2); }
+.fh-nombre { flex: 1; min-width: 0; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fh-nivel { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; flex-shrink: 0; }
+.fh-disp { display: inline-flex; align-items: center; flex-shrink: 0; }
+.fh-disp input { margin: 0; cursor: pointer; }
+.fichas-hechizo.no-disponible > summary .fh-nombre { opacity: .45; text-decoration: line-through; }
+.fichas-hechizo.no-disponible > summary .fh-nivel { opacity: .45; }
+.fh-cuerpo { padding: 4px 14px 14px; border-top: 1px solid var(--border); }
+.fh-cuerpo .fichas-repetible-header { margin-top: 10px; }
+
 /* --- Impresión --- */
 @media print {
   .site-header, .quick-nav, .fichas-tabs, .fichas-link-button,

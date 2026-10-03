@@ -520,6 +520,8 @@
       };
     });
     activarTab("resumen");
+    aplicarFiltroHechizos();
+    hechizoParaAbrir = null;
 
     renderMacros();
     renderRoll20Lista();
@@ -569,9 +571,19 @@
      memoria porque renderTabs() recrea todo el HTML al agregar o quitar
      filas, y sin esto las secciones volverían a su estado inicial. --- */
   const seccionesAbiertas = new Map();
+  const CLAVE_VISTA_HECHIZOS = "fichasVistaHechizos";
+  let vistaGuardada = "lista";
+  try { vistaGuardada = localStorage.getItem(CLAVE_VISTA_HECHIZOS) === "cubos" ? "cubos" : "lista"; } catch (e) { /* sin almacenamiento */ }
+  const filtroHechizos = { texto: "", soloDisponibles: false, vista: vistaGuardada };
+  let hechizoParaAbrir = null;
+
+  function normalizarBusqueda(texto) {
+    return String(texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
   let imprimiendo = false;
   window.addEventListener("beforeprint", () => {
     imprimiendo = true;
+    document.querySelectorAll("#fichasTabsPaneles .fichas-hechizo:not([data-listo])").forEach(llenarCuerpoHechizo);
     document.querySelectorAll("#fichasTabsPaneles details").forEach(d => { d.dataset.eraAbierta = d.open ? "1" : "0"; d.open = true; });
   });
   window.addEventListener("afterprint", () => {
@@ -877,8 +889,19 @@
     const espacios = `
       <div data-lista="espacios">${l.espacios.map((e, i) => filaEspacio(e, i)).join("")}</div>
       <button type="button" class="secondary-button fichas-add-btn" data-add="espacio">+ Agregar nivel de espacio</button>`;
+    const vista = filtroHechizos.vista;
     const hechizos = `
-      <div data-lista="hechizos">${p.hechizos.map(h => filaHechizo(h)).join("")}</div>
+      <div class="fichas-hechizos-barra">
+        <input type="search" id="fhBuscar" placeholder="Buscar hechizo..." value="${esc(filtroHechizos.texto)}">
+        <label class="fichas-compacto-check"><input type="checkbox" id="fhSoloDisp" ${filtroHechizos.soloDisponibles ? "checked" : ""}> Solo disponibles</label>
+        <div class="fichas-vista-toggle">
+          <button type="button" data-fh-vista="lista" class="${vista === "lista" ? "activo" : ""}">Lista</button>
+          <button type="button" data-fh-vista="cubos" class="${vista === "cubos" ? "activo" : ""}">Cubos</button>
+        </div>
+        <button type="button" class="fichas-link-button" id="fhColapsar">Colapsar todo</button>
+        <span id="fhConteo" class="fichas-puntos-info"></span>
+      </div>
+      <div data-lista="hechizos" class="fichas-hechizos fichas-hechizos--${vista}">${p.hechizos.map(h => filaHechizo(h, h.id === hechizoParaAbrir)).join("")}</div>
       <button type="button" class="secondary-button fichas-add-btn" data-add="hechizo">+ Agregar hechizo</button>`;
     return `
     <section class="fichas-panel" data-panel="hechizos">
@@ -903,10 +926,26 @@
       </div>`;
   }
 
-  function filaHechizo(h) {
+  function etiquetaNivelHechizo(h) {
+    return Number(h.nivel) > 0 ? `Nv ${h.nivel}` : "Truco";
+  }
+
+  function filaHechizo(h, abierto) {
+    const disponible = h.disponible !== false;
     return `
-      <div class="fichas-repetible-item" data-hechizo="${h.id}">
-        <div class="fichas-repetible-header">
+      <details class="fichas-hechizo ${disponible ? "" : "no-disponible"}" data-hechizo="${h.id}" data-nombre="${esc(normalizarBusqueda(h.nombre))}" ${abierto ? 'open data-listo="1"' : ""}>
+        <summary>
+          <span class="fh-nombre">${esc(h.nombre || "Sin nombre")}</span>
+          <span class="fh-nivel">${etiquetaNivelHechizo(h)}</span>
+          <span class="fh-disp" title="Disponible"><input type="checkbox" data-bind="__hechizo__.${h.id}.disponible" ${disponible ? "checked" : ""}></span>
+        </summary>
+        <div class="fh-cuerpo">${abierto ? cuerpoHechizo(h) : ""}</div>
+      </details>`;
+  }
+
+  function cuerpoHechizo(h) {
+    return `
+      <div class="fichas-repetible-header">
           <input type="text" data-bind="__hechizo__.${h.id}.nombre" value="${esc(h.nombre)}" placeholder="Nombre del hechizo">
           <button type="button" class="fichas-repetible-remove" data-remove="hechizo:${h.id}">×</button>
         </div>
@@ -930,8 +969,30 @@
             <div class="fichas-field fichas-field-check"><label>Concentración</label>${campoCheck(`__hechizo__.${h.id}.concentracion`, h.concentracion)}</div>
             <div class="fichas-field fichas-field-check"><label>Ritual</label>${campoCheck(`__hechizo__.${h.id}.ritual`, h.ritual)}</div>
           </div>
-          <div class="fichas-field"><label>Notas</label>${campoTextarea(`__hechizo__.${h.id}.notas`, h.notas, 2)}</div>`)}
-      </div>`;
+          <div class="fichas-field"><label>Notas</label>${campoTextarea(`__hechizo__.${h.id}.notas`, h.notas, 2)}</div>`)}`;
+  }
+
+  function llenarCuerpoHechizo(detalle) {
+    const h = personajeActual.hechizos.find(x => x.id === detalle.dataset.hechizo);
+    if (!h) return;
+    detalle.querySelector(".fh-cuerpo").innerHTML = cuerpoHechizo(h);
+    detalle.dataset.listo = "1";
+  }
+
+  function aplicarFiltroHechizos() {
+    const lista = document.querySelectorAll("#fichasTabsPaneles .fichas-hechizo");
+    const q = normalizarBusqueda(filtroHechizos.texto.trim());
+    let visibles = 0;
+    let disponibles = 0;
+    lista.forEach(d => {
+      const esDisp = !d.classList.contains("no-disponible");
+      if (esDisp) disponibles += 1;
+      const coincide = (!q || d.dataset.nombre.includes(q)) && (!filtroHechizos.soloDisponibles || esDisp);
+      d.hidden = !coincide;
+      if (coincide) visibles += 1;
+    });
+    const conteo = document.getElementById("fhConteo");
+    if (conteo) conteo.textContent = `${lista.length} hechizos · ${disponibles} disponibles` + (visibles !== lista.length ? ` · ${visibles} a la vista` : "");
   }
 
   /* ---------------------------------------------------------------------- */
@@ -1164,8 +1225,57 @@
 
     cont.addEventListener("toggle", e => {
       const d = e.target;
+      if (d.classList && d.classList.contains("fichas-hechizo") && d.open && !d.dataset.listo) llenarCuerpoHechizo(d);
       if (!imprimiendo && d.dataset && d.dataset.seccion) seccionesAbiertas.set(d.dataset.seccion, d.open);
     }, true);
+
+    // En captura a propósito: el binding de arrays (manejarBindingDeArray)
+    // corta la propagación de los campos __hechizo__.*, y estos oyentes
+    // necesitan ver también esos eventos.
+    cont.addEventListener("input", e => {
+      if (e.target.id === "fhBuscar") {
+        filtroHechizos.texto = e.target.value;
+        aplicarFiltroHechizos();
+        return;
+      }
+      // El nombre y el nivel de un hechizo se reflejan al instante en su fila cerrada
+      const m = (e.target.dataset && e.target.dataset.bind || "").match(/^__hechizo__\.([^.]+)\.(nombre|nivel)$/);
+      if (m) {
+        const d = cont.querySelector(`.fichas-hechizo[data-hechizo="${m[1]}"]`);
+        const h = personajeActual.hechizos.find(x => x.id === m[1]);
+        if (d && h) {
+          const nuevo = m[2] === "nombre" ? e.target.value : h.nombre;
+          d.querySelector(".fh-nombre").textContent = nuevo || "Sin nombre";
+          d.dataset.nombre = normalizarBusqueda(nuevo);
+          if (m[2] === "nivel") d.querySelector(".fh-nivel").textContent = Number(e.target.value) > 0 ? `Nv ${e.target.value}` : "Truco";
+        }
+      }
+    }, true);
+    cont.addEventListener("change", e => {
+      if (e.target.id === "fhSoloDisp") {
+        filtroHechizos.soloDisponibles = e.target.checked;
+        aplicarFiltroHechizos();
+        return;
+      }
+      const marca = e.target.closest && e.target.closest(".fh-disp");
+      if (marca) {
+        marca.closest(".fichas-hechizo").classList.toggle("no-disponible", !e.target.checked);
+        aplicarFiltroHechizos();
+      }
+    }, true);
+    cont.addEventListener("click", e => {
+      const vistaBtn = e.target.closest("[data-fh-vista]");
+      if (vistaBtn) {
+        filtroHechizos.vista = vistaBtn.dataset.fhVista;
+        try { localStorage.setItem(CLAVE_VISTA_HECHIZOS, filtroHechizos.vista); } catch (err) { /* sin almacenamiento */ }
+        const lista = cont.querySelector(".fichas-hechizos");
+        lista.classList.toggle("fichas-hechizos--lista", filtroHechizos.vista === "lista");
+        lista.classList.toggle("fichas-hechizos--cubos", filtroHechizos.vista === "cubos");
+        cont.querySelectorAll("[data-fh-vista]").forEach(b => b.classList.toggle("activo", b === vistaBtn));
+      } else if (e.target.id === "fhColapsar") {
+        cont.querySelectorAll(".fichas-hechizo[open]").forEach(d => { d.open = false; });
+      }
+    });
 
     cont.addEventListener("input", manejarCambioBinding);
     cont.addEventListener("change", manejarCambioBinding);
@@ -1242,7 +1352,13 @@
     if (tipo === "claseExtra") p.identidad.clasesExtra.push({ nombre: "", nivel: 1 });
     if (tipo === "ataque") p.ataques.push({ id: fichasNuevoId(), nombre: "Nuevo ataque", atributo: "fue", competente: true, ajusteAtaque: 0, dano: "1d6", tipoDano: "", alcance: "", municionActual: null, municionMax: null, propiedades: "", notas: "" });
     if (tipo === "rasgo") p.rasgos.push({ id: fichasNuevoId(), nombre: "Nuevo rasgo", descripcion: "", usosActuales: null, usosMax: null, tipoAccion: "accion", recuperacion: "manual", formulaRoll20: "" });
-    if (tipo === "hechizo") p.hechizos.push({ id: fichasNuevoId(), nombre: "Nuevo hechizo", nivel: 0, escuela: "", tiempo: "", alcance: "", duracion: "", componentes: "", concentracion: false, ritual: false, tipo: "ninguno", dano: "", tipoDano: "", descripcion: "", notas: "" });
+    if (tipo === "hechizo") {
+      const nuevoHechizo = { id: fichasNuevoId(), disponible: true, nombre: "Nuevo hechizo", nivel: 0, escuela: "", tiempo: "", alcance: "", duracion: "", componentes: "", concentracion: false, ritual: false, tipo: "ninguno", dano: "", tipoDano: "", descripcion: "", notas: "" };
+      p.hechizos.unshift(nuevoHechizo);
+      hechizoParaAbrir = nuevoHechizo.id;
+      filtroHechizos.texto = "";
+      filtroHechizos.soloDisponibles = false;
+    }
     if (tipo === "espacio") p.lanzamiento.espacios.push({ nivel: p.lanzamiento.espacios.length + 1, max: 1, usados: 0 });
     if (tipo === "objeto") p.inventario.objetos.push({ id: fichasNuevoId(), nombre: "Nuevo objeto", cantidad: 1, peso: null, estado: "guardado", descripcion: "", notas: "", cargasActuales: null, cargasMax: null, valor: null });
     if (tipo === "macro") p.macros.push({ id: fichasNuevoId(), nombre: "Nueva macro", formula: "1d20", modificadorFijo: 0, narrativa: "", tipoDano: "", modoTirada: "normal", notas: "", favorita: false });
