@@ -251,11 +251,7 @@
         } catch (err) {
           resultadoEl.innerHTML = `Terminó ${marcador}, pero no se pudo registrar.<small>Avisa al DM: una falla técnica nunca cuenta como derrota.</small>`;
         }
-        try {
-          const miId = sesion && sesion.user && sesion.user.id;
-          intentos = (await msListarIntentos()).filter(i => i.user_id === miId);
-          pintarDesafios();
-        } catch (e) { /* se actualiza al recargar */ }
+        try { intentos = await msListarIntentos(); pintarDesafios(); } catch (e) { /* se actualiza al recargar */ }
       }
     });
     botonJugar.classList.remove("hidden");
@@ -266,14 +262,7 @@
 
   async function cargarDatos() {
     try {
-      if (sesion) {
-        const [todas, todosIntentos] = await Promise.all([fichasStorageListar(), msListarIntentos()]);
-        // Admin ve las fichas e intentos de todos; acá solo cuentan los propios
-        const miId = sesion.user && sesion.user.id;
-        const miCorreo = sesion.user && sesion.user.email;
-        fichas = todas.filter(f => !f.ownerEmail || f.ownerEmail === miCorreo);
-        intentos = todosIntentos.filter(i => i.user_id === miId);
-      }
+      if (sesion) [fichas, intentos] = await Promise.all([fichasStorageListar(), msListarIntentos()]);
     } catch (e) {
       fichas = []; intentos = [];
     }
