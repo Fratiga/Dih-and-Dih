@@ -98,5 +98,9 @@ window.FANARTS = [
   "assets/fanarts/Q void.webp",
   "assets/fanarts/Ryn y couch.webp",
   "assets/fanarts/auverso.jpg",
-  "assets/fanarts/roster encomienda.png"
+  "assets/fanarts/roster encomienda.png",
+  "assets/fanarts/Edge after.png",
+  "assets/fanarts/Enzo.png",
+  "assets/fanarts/HIJOS DE PUTA.gif",
+  "assets/fanarts/Hornet after....png"
 ];
