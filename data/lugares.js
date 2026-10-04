@@ -1012,10 +1012,11 @@ window.LUGARES = [
     lugaresDestacados: [],
     content: `
       <p>La Catedral del Juramento recibe su nombre del voto que cada clérigo de la
-      Iglesia de Asmodeo pronuncia en público al llegar a Kigan, la promesa de jamás
-      predicar el Kaneísmo por encima del Mortismo que los brurlandeses ya practican.
-      Ningún otro puesto de la Iglesia fuera de Roah opera bajo una condición tan
-      explícita, y la propia Corona insistió en que el juramento se grabara en la
+      Iglesia de Asmodeo pronuncia en público, ante la corona brurlandesa, al llegar a
+      Kigan, la promesa de jamás predicar el Kaneísmo por encima del Mortismo que los
+      brurlandeses ya practican. La Iglesia exige un juramento así en muy pocos lugares
+      del mundo, y ningún otro puesto fuera de Roah opera bajo una condición tan
+      explícita. La propia Corona insistió en que el juramento se grabara en la
       piedra del pórtico para que nadie, dentro o fuera de la catedral, pudiera
       alegar que lo olvidó.</p>
       <p>Dentro de sus muros conviven dos fes que nunca terminan de mezclarse. Los ritos
@@ -1027,7 +1028,8 @@ window.LUGARES = [
       fuera de sus propias fronteras.</p>
       <p>La relación funciona porque ambas partes la necesitan. Brurland gana acceso a
       una red diplomática y comercial que de otro modo le sería hostil, y la Iglesia
-      mantiene un pie firme fuera de Roah.</p>
+      mantiene un pie firme fuera de Roah. Los propios brurlandeses tratan la catedral
+      con la cortesía distante que reservarían para cualquier embajada extranjera.</p>
     `
   },
   {
