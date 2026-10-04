@@ -3,18 +3,23 @@
    zoom o el tamaño de la ventana no cambian la dificultad. Los blancos caen,
    se les dispara con clic (o con las teclas Z / X sobre el cursor) y puntúa lo
    cerca que quede el tiro del centro. A un lado corre el puntaje del rival.
-   Lo usan arqueria.html (Cassius) y Muerte Súbita (Verdam). */
+   Lo usan arqueria.html (Cassius, Garra y Verdam) y Muerte Súbita (Verdam). */
 (function () {
   const LOGICO_ANCHO = 960;
   const LOGICO_ALTO = 600;
 
   // dist = [centro, interior, exterior] de los tiros que aciertan; ritmo
-  // sale de intervalo * precisión * promedio de anillo (Cassius ~300, Verdam ~620 en 60 s)
+  // sale de intervalo * precisión * promedio de anillo (Cassius ~300, Garra ~440, Verdam ~620 en 60 s)
   const RIVALES = {
     cassius: {
       nombre: "Cassius", color: "#d9a441",
       intervalo: 1.0, precision: 0.75, dist: [0.25, 0.40, 0.35],
       radio: 46, velocidadBase: 110, zigzag: false
+    },
+    garra: {
+      nombre: "Garra", color: "#d9794f",
+      intervalo: 0.85, precision: 0.84, dist: [0.38, 0.37, 0.25],
+      radio: 42, velocidadBase: 125, zigzag: false
     },
     verdam: {
       nombre: "Verdam", color: "#8fd06a",
@@ -25,7 +30,7 @@
   const PUNTOS_ANILLO = [10, 7, 4];
 
   function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, onEstado, onFin }) {
-    const cfg = RIVALES[claveRival] || RIVALES.cassius;
+    let cfg = RIVALES[claveRival] || RIVALES.cassius;
     const ctx = canvas.getContext("2d");
     const ancho = LOGICO_ANCHO;
     const alto = LOGICO_ALTO;
@@ -274,8 +279,16 @@
     ajustarTamano();
     requestAnimationFrame(cuadro);
 
+    /* Cambia de rival entre partidas (no mientras se juega). */
+    function cambiarRival(clave) {
+      if (estado === "jugando" || !RIVALES[clave]) return;
+      cfg = RIVALES[clave];
+      cambiarEstado("listo");
+    }
+
     return {
       iniciar,
+      cambiarRival,
       estado: () => estado,
       ajustarTamano,
       marcador: () => ({ puntaje, puntajeRival, tiempo, duracion })
