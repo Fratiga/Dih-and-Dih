@@ -3496,3 +3496,20 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   font-family: inherit; font-size: .72rem; cursor: pointer;
 }
 .stat-r20-btn:hover { color: var(--text); border-color: var(--accent-soft); }
+
+/* --- Inventario funcional --- */
+.fichas-inv-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+.fichas-inv-barra input[type="search"], .fichas-inv-barra select {
+  padding: 6px 10px; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border);
+}
+.fichas-inv-resumen { margin: 0 0 12px; font-size: .85rem; color: var(--muted); }
+.fichas-objeto[hidden] { display: none; }
+.fichas-objeto--consumido { opacity: .55; }
+.fichas-objeto-cant { align-self: center; font-family: var(--font-heading), sans-serif; font-size: 1.05rem; color: var(--text); padding: 0 6px; white-space: nowrap; }
+.fichas-objeto-estado {
+  align-self: center; padding: 3px 10px; font: inherit; font-size: .78rem; color: var(--muted);
+  background: transparent; border: 1px solid var(--border); cursor: pointer;
+}
+.fichas-objeto-estado:hover { color: var(--text); border-color: var(--accent-soft); }
+.fichas-objeto--equipado .fichas-objeto-estado { color: var(--text); border-color: var(--accent-soft); }
+.fichas-objeto-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }

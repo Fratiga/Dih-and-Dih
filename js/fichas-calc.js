@@ -94,6 +94,32 @@ function fichasPuntosRepartidos(personaje) {
   return atributos.reduce((t, a) => t + a.nivel, 0);
 }
 
+/* Inventario: monedas en oro (1 po = 10 pp = 100 pc), peso total (50 monedas
+   pesan 1 lb), valor de lo que se lleva y capacidad de carga (FUE x 15). */
+function fichasMonedasEnOro(personaje) {
+  const m = personaje.inventario.monedas || {};
+  return (Number(m.oro) || 0) + (Number(m.plata) || 0) / 10 + (Number(m.cobre) || 0) / 100;
+}
+
+function fichasObjetosActivos(personaje) {
+  return personaje.inventario.objetos.filter(o => o.estado !== "consumido");
+}
+
+function fichasPesoInventario(personaje) {
+  const m = personaje.inventario.monedas || {};
+  const monedas = ((Number(m.oro) || 0) + (Number(m.plata) || 0) + (Number(m.cobre) || 0)) / 50;
+  const objetos = fichasObjetosActivos(personaje).reduce((t, o) => t + (Number(o.peso) || 0) * (Number(o.cantidad) || 0), 0);
+  return objetos + monedas;
+}
+
+function fichasValorInventario(personaje) {
+  return fichasObjetosActivos(personaje).reduce((t, o) => t + (Number(o.valor) || 0) * (Number(o.cantidad) || 0), 0);
+}
+
+function fichasCapacidadCarga(personaje) {
+  return (Number(personaje.atributos.fue) || 0) * 15;
+}
+
 /* Modificador final de un atributo: el de la puntuación + el ajuste manual
    (objetos, maldiciones, reglas caseras) — el calculado nunca es editable. */
 function fichasModificadorFinal(personaje, attrId) {

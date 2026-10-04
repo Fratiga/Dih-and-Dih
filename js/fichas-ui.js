@@ -496,6 +496,8 @@
       }
       case "lanzAtaque": return fichasSigno(fichasLanzamientoAtaque(p));
       case "lanzCD": return String(fichasLanzamientoCD(p));
+      case "invResumen": return resumenInventario();
+      case "invMonedas": return `≈ ${fmtNum(fichasMonedasEnOro(p))} po en monedas`;
       case "puntosDisponibles": return String(fichasPuntosDisponiblesNetos(p));
       case "puntosRepartidos": return String(fichasPuntosRepartidos(p));
       default: return "";
@@ -1005,6 +1007,71 @@
   }
 
   /* ---------------------------------------------------------------------- */
+  function fmtNum(n) {
+    return (Math.round(n * 100) / 100).toLocaleString("es");
+  }
+
+  function resumenInventario() {
+    const p = personajeActual;
+    const activos = fichasObjetosActivos(p);
+    const equipados = activos.filter(o => o.estado === "equipado").length;
+    const partes = [`${activos.length} ${activos.length === 1 ? "objeto" : "objetos"}`, `${equipados} equipado${equipados === 1 ? "" : "s"}`];
+    if (p.inventario.usarPeso) {
+      const peso = fichasPesoInventario(p);
+      const cap = fichasCapacidadCarga(p);
+      let estado = "";
+      if (cap > 0) {
+        if (peso > cap) estado = " (sobrecargado)";
+        else if (peso > cap * 2 / 3) estado = " (muy cargado)";
+        else if (peso > cap / 3) estado = " (cargado)";
+      }
+      partes.push(`Peso ${fmtNum(peso)} / ${fmtNum(cap)} lb${estado}`);
+    }
+    const valor = fichasValorInventario(p);
+    if (valor > 0) partes.push(`Valor ${fmtNum(valor)} po`);
+    return partes.join(" · ");
+  }
+
+  const filtroInventario = { texto: "", estado: "todos" };
+
+  function reemplazarFilaObjeto(o) {
+    const fila = document.querySelector(`[data-lista='objetos'] [data-objeto="${o.id}"]`);
+    if (fila) fila.outerHTML = filaObjeto(o, personajeActual.inventario.usarPeso);
+    refrescarCalculado();
+    programarAutoguardado();
+    aplicarFiltroInventario();
+  }
+
+  function manejarInventario(accion, id) {
+    const o = personajeActual.inventario.objetos.find(x => x.id === id);
+    if (!o) return;
+    const cant = Number(o.cantidad) || 0;
+    if (accion === "estado") {
+      o.estado = o.estado === "equipado" ? "guardado" : o.estado === "guardado" ? "equipado" : "guardado";
+      if (o.estado !== "consumido" && cant === 0) o.cantidad = 1;
+    } else if (accion === "mas") {
+      o.cantidad = cant + 1;
+      if (o.estado === "consumido") o.estado = "guardado";
+    } else if (accion === "menos" || accion === "consumir") {
+      o.cantidad = Math.max(0, cant - 1);
+      if (o.cantidad === 0) o.estado = "consumido";
+    } else if (accion === "carga") {
+      o.cargasActuales = Math.max(0, (Number(o.cargasActuales) || 0) - 1);
+    } else if (accion === "recargar") {
+      o.cargasActuales = Number(o.cargasMax) || 0;
+    }
+    reemplazarFilaObjeto(o);
+  }
+
+  function aplicarFiltroInventario() {
+    const q = normalizarBusqueda(filtroInventario.texto.trim());
+    document.querySelectorAll("[data-lista='objetos'] .fichas-objeto").forEach(fila => {
+      const okTexto = !q || fila.dataset.nombre.includes(q);
+      const okEstado = filtroInventario.estado === "todos" || fila.dataset.estado === filtroInventario.estado;
+      fila.hidden = !(okTexto && okEstado);
+    });
+  }
+
   function panelInventario() {
     const p = personajeActual;
     const monedas = `
@@ -1013,8 +1080,16 @@
         <div class="fichas-field"><label>Plata</label>${campoNumero("inventario.monedas.plata", p.inventario.monedas.plata)}</div>
         <div class="fichas-field"><label>Cobre</label>${campoNumero("inventario.monedas.cobre", p.inventario.monedas.cobre)}</div>
         <div class="fichas-field fichas-field-check"><label>Usar cálculo de peso</label>${campoCheck("inventario.usarPeso", p.inventario.usarPeso)}</div>
-      </div>`;
+      </div>
+      <p class="fichas-puntos-info" data-calc="invMonedas:x">${esc(fichasFormatearCalc("invMonedas:x"))}</p>`;
     const objetos = `
+      <div class="fichas-inv-barra">
+        <input type="search" id="fiBuscar" placeholder="Buscar objeto..." value="${esc(filtroInventario.texto)}">
+        <select id="fiEstado">
+          ${[["todos", "Todos"], ["equipado", "Equipados"], ["guardado", "Guardados"], ["consumido", "Consumidos"]].map(([v, t]) => `<option value="${v}" ${filtroInventario.estado === v ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+      <p class="fichas-inv-resumen" data-calc="invResumen:x">${esc(resumenInventario())}</p>
       <div data-lista="objetos">${p.inventario.objetos.map(o => filaObjeto(o, p.inventario.usarPeso)).join("")}</div>
       <button type="button" class="secondary-button fichas-add-btn" data-add="objeto">+ Agregar objeto</button>`;
     return `
@@ -1025,12 +1100,25 @@
   }
 
   function filaObjeto(o, usarPeso) {
+    const conCargas = Number(o.cargasMax) > 0;
+    const etiquetaEstado = { equipado: "Equipado", guardado: "Guardado", consumido: "Consumido" }[o.estado] || "Guardado";
     return `
-      <div class="fichas-repetible-item" data-objeto="${o.id}">
+      <div class="fichas-repetible-item fichas-objeto fichas-objeto--${o.estado}" data-objeto="${o.id}" data-estado="${o.estado}" data-nombre="${esc(normalizarBusqueda(o.nombre || ""))}">
         <div class="fichas-repetible-header">
           <input type="text" data-bind="__objeto__.${o.id}.nombre" value="${esc(o.nombre)}" placeholder="Nombre del objeto">
+          <span class="fichas-objeto-cant" title="Cantidad">×${Number(o.cantidad) || 0}</span>
+          <button type="button" class="fichas-objeto-estado" data-inv="estado:${o.id}" title="Cambiar entre equipado y guardado">${etiquetaEstado}</button>
           <button type="button" class="fichas-repetible-remove" data-remove="objeto:${o.id}">×</button>
         </div>
+        ${o.estado === "consumido" ? "" : `<div class="fichas-objeto-acciones">
+          ${conCargas
+            ? `<span class="fichas-puntos-info">Cargas ${Number(o.cargasActuales) || 0} / ${Number(o.cargasMax)}</span>
+               <button type="button" class="fichas-copiar-btn" data-inv="carga:${o.id}">Usar carga</button>
+               <button type="button" class="fichas-copiar-btn" data-inv="recargar:${o.id}">Recargar</button>`
+            : `<button type="button" class="fichas-copiar-btn" data-inv="consumir:${o.id}">Consumir 1</button>`}
+          <button type="button" class="fichas-copiar-btn" data-inv="menos:${o.id}">−1</button>
+          <button type="button" class="fichas-copiar-btn" data-inv="mas:${o.id}">+1</button>
+        </div>`}
         <div class="fichas-field-grid fichas-grid-chico">
           <div class="fichas-field"><label>Cantidad</label>${campoNumero(`__objeto__.${o.id}.cantidad`, o.cantidad)}</div>
           ${usarPeso ? `<div class="fichas-field"><label>Peso</label>${campoNumero(`__objeto__.${o.id}.peso`, o.peso ?? "")}</div>` : ""}
@@ -1258,6 +1346,17 @@
         aplicarFiltroHechizos();
         return;
       }
+      if (e.target.id === "fiBuscar") {
+        filtroInventario.texto = e.target.value;
+        aplicarFiltroInventario();
+        return;
+      }
+      const bindObj = (e.target.dataset && e.target.dataset.bind || "").match(/^__objeto__\.([^.]+)\.(nombre|cantidad)$/);
+      if (bindObj) {
+        const fila = cont.querySelector(`[data-objeto="${bindObj[1]}"]`);
+        if (fila && bindObj[2] === "nombre") fila.dataset.nombre = normalizarBusqueda(e.target.value);
+        if (fila && bindObj[2] === "cantidad") fila.querySelector(".fichas-objeto-cant").textContent = `×${Number(e.target.value) || 0}`;
+      }
       // El nombre y el nivel de un hechizo se reflejan al instante en su fila cerrada
       const m = (e.target.dataset && e.target.dataset.bind || "").match(/^__hechizo__\.([^.]+)\.(nombre|nivel)$/);
       if (m) {
@@ -1272,6 +1371,20 @@
       }
     }, true);
     cont.addEventListener("change", e => {
+      if (e.target.id === "fiEstado") {
+        filtroInventario.estado = e.target.value;
+        aplicarFiltroInventario();
+        return;
+      }
+      const bindObjCambio = (e.target.dataset && e.target.dataset.bind || "").match(/^__objeto__\.([^.]+)\.(estado|cargasActuales|cargasMax)$/);
+      if (bindObjCambio) {
+        // El binding genérico actualiza el objeto primero; después se redibuja la fila
+        const id = bindObjCambio[1];
+        setTimeout(() => {
+          const o = personajeActual.inventario.objetos.find(x => x.id === id);
+          if (o) reemplazarFilaObjeto(o);
+        }, 0);
+      }
       if (e.target.id === "fhSoloDisp") {
         filtroHechizos.soloDisponibles = e.target.checked;
         aplicarFiltroHechizos();
@@ -1326,6 +1439,12 @@
     cont.addEventListener("change", manejarCambioBinding);
 
     cont.addEventListener("click", e => {
+      const invBtn = e.target.closest("[data-inv]");
+      if (invBtn) {
+        const [accion, id] = invBtn.dataset.inv.split(":");
+        return manejarInventario(accion, id);
+      }
+
       const addBtn = e.target.closest("[data-add]");
       if (addBtn) return manejarAgregar(addBtn.dataset.add);
 
