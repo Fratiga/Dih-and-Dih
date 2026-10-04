@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arquería — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261098"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261098">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261098">
+  <script src="js/oculto.js?v=20261099"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261099">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261099">
 </head>
 <body class="mj-pagina">
   <div class="mj-barra">
@@ -20,69 +20,35 @@
   <main class="mj-contenido">
     <p class="eyebrow">PASATIEMPOS</p>
     <h1 class="mj-titulo">Arquería</h1>
-    <div id="arqueriaRivales" class="aj-rivales"></div>
+    <div class="aj-modos">
+      <button type="button" class="aj-modo activo" data-modo="rivales">Contra rivales</button>
+      <button type="button" class="aj-modo" data-modo="jugadores">Contra jugadores</button>
+    </div>
+    <div id="arqueriaModoRivales">
+      <div id="arqueriaRivales" class="aj-rivales"></div>
+    </div>
+    <section id="arqueriaLobby" class="hidden">
+      <p id="arqueriaAviso" class="aj-ayuda"></p>
+      <div id="arqueriaPartidas"></div>
+      <h3 class="aj-pvp-titulo">Jugadores</h3>
+      <div id="arqueriaJugadores" class="aj-pvp-jugadores"></div>
+    </section>
+    <div class="aj-controles hidden" id="arqueriaControles">
+      <button type="button" id="arqueriaCerrar" class="aj-boton">← Mis partidas</button>
+      <button type="button" id="arqueriaRendirse" class="aj-boton">Abandonar</button>
+    </div>
     <div class="mj-escenario">
       <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
       <button type="button" id="arqueriaJugar" class="mj-play" aria-label="Jugar">▶</button>
+      <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
     </div>
     <p id="arqueriaRecord" class="mj-linea"></p>
   </main>
 
-  <script src="js/temas.js?v=20261098"></script>
-  <script src="js/fichas-supabase.js?v=20261098"></script>
-  <script src="js/lado.js?v=20261098"></script>
-  <script src="js/arqueria.js?v=20261098"></script>
-  <script>
-    (function () {
-      const boton = document.getElementById("arqueriaJugar");
-      const recordEl = document.getElementById("arqueriaRecord");
-      const rivalesEl = document.getElementById("arqueriaRivales");
-      const RIVALES = [
-        { id: "cassius", nombre: "Cassius", dificultad: "Fácil" },
-        { id: "garra", nombre: "Garra", dificultad: "Media" },
-        { id: "verdam", nombre: "Verdam", dificultad: "Difícil" }
-      ];
-      // El récord de Cassius se guardaba con la clave de antes de que hubiera más rivales
-      const clave = id => id === "cassius" ? "compendioArqueriaCassius" : `compendioArqueria_${id}`;
-      const leer = id => { try { return parseInt(localStorage.getItem(clave(id)), 10) || 0; } catch (e) { return 0; } };
-      let rival = RIVALES[0];
-      let jugando = false;
-
-      function pintarRivales() {
-        rivalesEl.innerHTML = RIVALES.map(r => `
-          <button type="button" class="aj-rival ${r.id === rival.id ? "activo" : ""}" data-rival="${r.id}">
-            <strong>${r.nombre}</strong>
-            <span>${r.dificultad}</span>
-            <small>${leer(r.id) ? `Mejor puntaje: ${leer(r.id)}` : "Sin jugar"}</small>
-          </button>`).join("");
-      }
-      const pintarRecord = () => { recordEl.textContent = leer(rival.id) ? `Tu mejor puntaje contra ${rival.nombre}: ${leer(rival.id)}` : "Clic, o Z / X con el cursor encima."; };
-      pintarRivales();
-      pintarRecord();
-
-      const juego = crearArqueria({
-        canvas: document.getElementById("arqueriaCampo"),
-        rival: rival.id,
-        duracion: 60,
-        onEstado: estado => { jugando = estado === "jugando"; boton.classList.toggle("hidden", jugando); },
-        onFin: ({ puntaje }) => {
-          if (puntaje > leer(rival.id)) {
-            try { localStorage.setItem(clave(rival.id), String(puntaje)); } catch (e) { /* sin almacenamiento */ }
-          }
-          pintarRivales();
-          pintarRecord();
-        }
-      });
-      boton.addEventListener("click", () => juego.iniciar());
-      rivalesEl.addEventListener("click", e => {
-        const b = e.target.closest("[data-rival]");
-        if (!b || jugando) return;
-        rival = RIVALES.find(r => r.id === b.dataset.rival);
-        juego.cambiarRival(rival.id);
-        pintarRivales();
-        pintarRecord();
-      });
-    })();
-  </script>
+  <script src="js/temas.js?v=20261099"></script>
+  <script src="js/fichas-supabase.js?v=20261099"></script>
+  <script src="js/lado.js?v=20261099"></script>
+  <script src="js/arqueria.js?v=20261099"></script>
+  <script src="js/arqueria-pagina.js?v=20261099"></script>
 </body>
 </html>

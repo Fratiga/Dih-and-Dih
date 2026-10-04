@@ -3,18 +3,24 @@
    zoom o el tamaño de la ventana no cambian la dificultad. Los blancos caen,
    se les dispara con clic (o con las teclas Z / X sobre el cursor) y puntúa lo
    cerca que quede el tiro del centro. A un lado corre el puntaje del rival.
-   Lo usan arqueria.html (Cassius, Garra y Verdam) y Muerte Súbita (Verdam). */
+   Lo usan arqueria.html (Hornet, Garra y Cassius, y partidas contra otros jugadores) y
+   Muerte Súbita (Verdam). */
 (function () {
   const LOGICO_ANCHO = 960;
   const LOGICO_ALTO = 600;
 
   // dist = [centro, interior, exterior] de los tiros que aciertan; ritmo
-  // sale de intervalo * precisión * promedio de anillo (Cassius ~300, Garra ~440, Verdam ~620 en 60 s)
+  // sale de intervalo * precisión * promedio de anillo (Hornet ~300, Garra ~440, Cassius ~540, Verdam ~620 en 60 s)
   const RIVALES = {
-    cassius: {
-      nombre: "Cassius", color: "#d9a441",
+    hornet: {
+      nombre: "Hornet", color: "#b48ad9",
       intervalo: 1.0, precision: 0.75, dist: [0.25, 0.40, 0.35],
       radio: 46, velocidadBase: 110, zigzag: false
+    },
+    cassius: {
+      nombre: "Cassius", color: "#d9a441",
+      intervalo: 0.8, precision: 0.9, dist: [0.48, 0.37, 0.15],
+      radio: 40, velocidadBase: 135, zigzag: true
     },
     garra: {
       nombre: "Garra", color: "#d9794f",
@@ -29,12 +35,27 @@
   };
   const PUNTOS_ANILLO = [10, 7, 4];
 
-  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, onEstado, onFin }) {
-    let cfg = RIVALES[claveRival] || RIVALES.cassius;
+  // Generador con semilla: los dos jugadores de una partida ven los mismos blancos.
+  function generadorConSemilla(semilla) {
+    let a = semilla >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, onEstado, onFin, onPuntaje }) {
+    let cfg = RIVALES[claveRival] || RIVALES.hornet;
     const ctx = canvas.getContext("2d");
     const ancho = LOGICO_ANCHO;
     const alto = LOGICO_ALTO;
 
+    let vs = false; // partida contra otro jugador: el puntaje del rival llega de fuera
+    let textoFin = null;
+    let azar = Math.random; // con semilla en las partidas contra otro jugador
     let estado = "listo"; // listo | jugando | fin
     let tiempo = 0;
     let puntaje = 0;
@@ -72,12 +93,12 @@
 
     function nuevoBlanco() {
       const r = cfg.radio;
-      const x0 = r + Math.random() * (ancho - r * 2);
+      const x0 = r + azar() * (ancho - r * 2);
       return {
         x0, x: x0, y: -r, r, t: 0,
-        amp: cfg.zigzag ? 18 + Math.random() * 40 : 0,
-        frec: 1.2 + Math.random() * 1.6,
-        vel: 0.92 + Math.random() * 0.2
+        amp: cfg.zigzag ? 18 + azar() * 40 : 0,
+        frec: 1.2 + azar() * 1.6,
+        vel: 0.92 + azar() * 0.2
       };
     }
 
@@ -90,6 +111,7 @@
         const anillo = d < 0.25 ? 0 : d < 0.55 ? 1 : 2;
         const pts = PUNTOS_ANILLO[anillo];
         puntaje += pts;
+        if (onPuntaje) onPuntaje(puntaje);
         efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: `+${pts}`, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
         for (let k = 0; k < 10; k++) {
           const a = Math.random() * Math.PI * 2;
@@ -115,15 +137,17 @@
     }
 
     function iniciar() {
+      if (!vs) azar = Math.random;
+      textoFin = null;
       tiempo = 0; puntaje = 0; puntajeRival = 0; blancos = [nuevoBlanco()]; efectos = [];
       temporizadorBlanco = intervaloBlanco(); temporizadorRival = cfg.intervalo; destelloRival = 0; resultado = "";
       cambiarEstado("jugando");
     }
 
     function terminar() {
-      resultado = puntaje > puntajeRival ? "ganado" : puntaje < puntajeRival ? "perdido" : "empate";
+      resultado = vs ? "" : puntaje > puntajeRival ? "ganado" : puntaje < puntajeRival ? "perdido" : "empate";
       cambiarEstado("fin");
-      if (onFin) onFin({ puntaje, puntajeRival, resultado });
+      if (onFin) onFin({ puntaje, puntajeRival, resultado, vs });
     }
 
     function actualizar(dt) {
@@ -132,7 +156,7 @@
         temporizadorBlanco -= dt;
         if (temporizadorBlanco <= 0) { blancos.push(nuevoBlanco()); temporizadorBlanco = intervaloBlanco(); }
         temporizadorRival -= dt;
-        while (temporizadorRival <= 0) { tiroDelRival(); temporizadorRival += cfg.intervalo; }
+        if (!vs) while (temporizadorRival <= 0) { tiroDelRival(); temporizadorRival += cfg.intervalo; }
         if (destelloRival > 0) destelloRival -= dt;
         const v = velocidad();
         for (const b of blancos) {
@@ -241,12 +265,13 @@
         ctx.fillStyle = "#e8e4d0";
         ctx.font = "600 52px sans-serif";
         const titulo = estado === "listo" ? `Tú contra ${cfg.nombre}`
+          : vs ? (textoFin ? textoFin.titulo : "Tiempo")
           : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
         ctx.fillText(titulo, ancho / 2, alto * 0.28);
         if (estado === "fin") {
           ctx.font = "30px sans-serif";
           ctx.fillStyle = "#b9b5a2";
-          ctx.fillText(`${puntaje} a ${puntajeRival}`, ancho / 2, alto * 0.36);
+          ctx.fillText(textoFin && textoFin.sub ? textoFin.sub : `${puntaje} a ${puntajeRival}`, ancho / 2, alto * 0.36);
         }
       }
     }
@@ -283,12 +308,39 @@
     function cambiarRival(clave) {
       if (estado === "jugando" || !RIVALES[clave]) return;
       cfg = RIVALES[clave];
+      vs = false;
+      azar = Math.random;
       cambiarEstado("listo");
+    }
+
+    /* Partida contra otro jugador: se deja el campo listo (con su rival y su
+       semilla) y se arranca con iniciar() cuando termina la cuenta atrás. */
+    function prepararVs({ nombre, color, semilla }) {
+      if (estado === "jugando") return;
+      cfg = { nombre, color, intervalo: 99, precision: 0, dist: [0.3, 0.4, 0.3], radio: 40, velocidadBase: 125, zigzag: true };
+      vs = true;
+      azar = generadorConSemilla(semilla);
+      textoFin = null;
+      puntaje = 0; puntajeRival = 0;
+      cambiarEstado("listo");
+    }
+
+    function setPuntajeRival(n) {
+      if (n > puntajeRival) destelloRival = 0.35;
+      puntajeRival = n;
+    }
+
+    function setFin(texto) {
+      textoFin = texto;
+      if (estado === "listo") cambiarEstado("fin");
     }
 
     return {
       iniciar,
       cambiarRival,
+      prepararVs,
+      setPuntajeRival,
+      setFin,
       estado: () => estado,
       ajustarTamano,
       marcador: () => ({ puntaje, puntajeRival, tiempo, duracion })
