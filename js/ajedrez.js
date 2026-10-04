@@ -45,9 +45,10 @@
      error = probabilidad de elegir una jugada peor; pausa = [min, max] segundos
      que "piensa" antes de mover. tiempoMov = segundos que tienes para cada jugada
      (si se acaban, pierdes la partida; sin valor, no hay reloj). azar = no calcula nada: elige una pieza que pueda
-     moverse al azar y mueve esa pieza a una casilla legal al azar. */
+     moverse al azar y mueve esa pieza a una casilla legal al azar. sinRanking = la
+     partida no suma a récords ni rankings. */
   const RIVALES = [
-    { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", azar: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
+    { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", azar: true, sinRanking: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
       frases: { saludo: "¡Yo juego con las de arriba! ¿Cuáles son las de arriba?", jaque: "¿Eso es jaque? Yo solo quería mover algo.", capturaRival: "¡Me comí una! No sé cuál era.", capturaJugador: "Ah, esa se movía sola, ¿no?", gana: "¿Gané? ¿Eso era ganar?", pierde: "Perdí. ¿Puedo jugar otra? Guau. Digo, sí." } },
     { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", tiempoMov: 60, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
       frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
@@ -233,7 +234,7 @@
       setTimeout(cargarPartidas, 600);
       return;
     }
-    if (resultado === "gana") {
+    if (resultado === "gana" && !rival.sinRanking) {
       record[rival.id] = (record[rival.id] || 0) + 1;
       try { localStorage.setItem(CLAVE_RECORD, JSON.stringify(record)); } catch (err) { /* sin almacenamiento */ }
       comentar("pierde");
@@ -241,7 +242,7 @@
       comentar("gana");
     }
     pintarRivales();
-    anotarPartida(resultado, texto.startsWith("Jaque mate"));
+    if (!rival.sinRanking) anotarPartida(resultado, texto.startsWith("Jaque mate"));
   }
 
   /* Manda la partida al ranking (solo con sesión iniciada). */
@@ -277,7 +278,7 @@
       <button type="button" class="aj-rival ${rival && rival.id === r.id ? "activo" : ""}" data-rival="${r.id}">
         <strong>${r.nombre}</strong>
         <span>${r.dificultad}${r.tiempoMov ? ` · ${r.tiempoMov} s por jugada` : ""}</span>
-        <small>${record[r.id] ? `Victorias: ${record[r.id]}` : "Sin vencer"}</small>
+        <small>${r.sinRanking ? "No cuenta para el ranking" : record[r.id] ? `Victorias: ${record[r.id]}` : "Sin vencer"}</small>
       </button>`).join("");
   }
 
