@@ -255,7 +255,7 @@ window.STATS = [
     velocidad: "30 pies",
     stats: { fue: 16, des: 8, con: 16, int: 2, sab: 6, car: 1 },
     habilidades: [
-      { nombre: "Cuerpo Improvisado (Rasgo)", descripcion: "Al aparecer tira 1d4 para determinar su cuerpo, que modifica ligeramente sus estadísticas: Barro (+10 PV, -2 CA, reduce la velocidad del objetivo 10 pies al golpear), Raíces (+10 pies de alcance, puede inmovilizar), Piedra (+2 CA, vulnerable al daño contundente), o Madera (+3 m de movimiento, vulnerable al fuego)." },
+      { nombre: "Cuerpo Improvisado (Rasgo)", descripcion: "Al aparecer tira 1d4 para determinar su cuerpo, que modifica ligeramente sus estadísticas: Barro (+10 PV, -2 CA, reduce la velocidad del objetivo 10 pies al golpear), Raíces (+10 pies de alcance, puede inmovilizar), Piedra (+2 CA, vulnerable al daño contundente), o Madera (+10 pies de movimiento, vulnerable al fuego)." },
       { nombre: "Golpe Deforme (Acción)", descripcion: "+5 al impacto. Daño: 2d6+3 contundente." },
       { nombre: "Aferrarse (Bonus)", descripcion: "El objetivo hace una salvación de Fuerza CD 13 o queda Restringido." },
       { nombre: "Alma Inestable (Pasiva)", descripcion: "Al morir explota: todas las criaturas a 5 pies reciben 1d6 de daño necrótico." }
@@ -810,21 +810,21 @@ window.STATS = [
     raza: "Humanoide mutante Grande · Caótico neutral",
     pv: 115,
     ca: 16,
-    velocidad: "9 m",
+    velocidad: "30 pies",
     stats: { fue: 22, des: 10, con: 20, int: 6, sab: 10, car: 8 },
     notas: [
       "Salvaciones: FUE +9, CON +8. Percepción pasiva 10. Competencia +3.",
       "Resistencias: daño contundente, perforante y cortante de ataques no mágicos. Inmunidad a estados: asustado.",
       "¡Alto, intrusos! (Pasiva): mientras custodia la puerta tiene ventaja en las pruebas para evitar ser empujado o derribado, y puede usar su reacción para impedir que una criatura que intente atravesar su espacio pase de largo.",
       "Cuerpo experimental (Pasiva): la primera vez que recibe daño en cada turno, lo reduce en 5.",
-      "¡No me des órdenes! (Reacción): cuando una criatura lo contradice o se burla de su rango, se mueve hasta 3 m hacia ella sin provocar ataques de oportunidad. Si queda a su alcance, puede hacer un ataque de puñetazo."
+      "¡No me des órdenes! (Reacción): cuando una criatura lo contradice o se burla de su rango, se mueve hasta 10 pies hacia ella sin provocar ataques de oportunidad. Si queda a su alcance, puede hacer un ataque de puñetazo."
     ],
     habilidades: [
       { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de puñetazo." },
-      { nombre: "Puñetazo (Acción)", descripcion: "+9 al impacto, alcance 1,5 m, un objetivo. Daño: 15 (2d8+6) contundente." },
-      { nombre: "¡A cubierto! (Recarga 5–6)", descripcion: "Se lanza contra un enemigo recorriendo hasta 6 m en línea recta. Cada criatura en su trayectoria hace una salvación de Fuerza CD 16 o recibe 18 (3d8+5) contundente y cae derribada. Si el objetivo choca contra una pared, recibe 7 (2d6) adicional." },
-      { nombre: "¡Fuego de artillería! (1/día)", descripcion: "Arranca un trozo de mobiliario, tubería o escombro y lo arroja a un punto a 12 m. Las criaturas en un radio de 3 m hacen una salvación de Destreza CD 16 o reciben 22 (4d10) contundente, o la mitad si tienen éxito." },
-      { nombre: "¡La puerta no se toca! (Reacción)", descripcion: "Cuando una criatura a su alcance intenta abrir la puerta que custodia, hace un ataque de puñetazo contra ella. Si impacta, además la empuja 3 m." }
+      { nombre: "Puñetazo (Acción)", descripcion: "+9 al impacto, alcance 5 pies, un objetivo. Daño: 15 (2d8+6) contundente." },
+      { nombre: "¡A cubierto! (Recarga 5–6)", descripcion: "Se lanza contra un enemigo recorriendo hasta 20 pies en línea recta. Cada criatura en su trayectoria hace una salvación de Fuerza CD 16 o recibe 18 (3d8+5) contundente y cae derribada. Si el objetivo choca contra una pared, recibe 7 (2d6) adicional." },
+      { nombre: "¡Fuego de artillería! (1/día)", descripcion: "Arranca un trozo de mobiliario, tubería o escombro y lo arroja a un punto a 40 pies. Las criaturas en un radio de 10 pies hacen una salvación de Destreza CD 16 o reciben 22 (4d10) contundente, o la mitad si tienen éxito." },
+      { nombre: "¡La puerta no se toca! (Reacción)", descripcion: "Cuando una criatura a su alcance intenta abrir la puerta que custodia, hace un ataque de puñetazo contra ella. Si impacta, además la empuja 10 pies." }
     ],
     estrategia: "«¡Alto, intrusos!» Se planta frente a la puerta y no la abandona. Saluda a quien parezca un superior, exige credenciales y se enfurece con quien lo contradice o se burla de su rango. Guarda ¡Fuego de artillería! para grupos amontonados."
   },
@@ -836,13 +836,13 @@ window.STATS = [
     tipo: "Humanoide",
     pv: 75,
     ca: 16,
-    velocidad: "9 m",
+    velocidad: "30 pies",
     stats: { fue: 14, des: 18, con: 18, int: 20, sab: 16, car: 12 },
     equipo: ["Fusil de inoculación (experimental)"],
     habilidades: [
-      { nombre: "Disparo contaminante (Acción)", descripcion: "+7 al impacto, alcance 24/72 m. Daño: 14 (2d8+5) perforante. El objetivo hace una salvación de Constitución CD 15 o sufre 1d6 de veneno al inicio de su siguiente turno." },
-      { nombre: "Dosis de supresión (Recarga 5–6)", descripcion: "Dispara una ampolla que estalla en un radio de 3 m. Los afectados hacen una salvación de Constitución CD 15 o tienen desventaja en su siguiente tirada de ataque." },
-      { nombre: "Cambio de cargador (Acción adicional)", descripcion: "Recarga su fusil. Si un aliado está a 3 m, puede ordenarle como reacción que se mueva hasta la mitad de su velocidad." }
+      { nombre: "Disparo contaminante (Acción)", descripcion: "+7 al impacto, alcance 80/240 pies. Daño: 14 (2d8+5) perforante. El objetivo hace una salvación de Constitución CD 15 o sufre 1d6 de veneno al inicio de su siguiente turno." },
+      { nombre: "Dosis de supresión (Recarga 5–6)", descripcion: "Dispara una ampolla que estalla en un radio de 10 pies. Los afectados hacen una salvación de Constitución CD 15 o tienen desventaja en su siguiente tirada de ataque." },
+      { nombre: "Cambio de cargador (Acción adicional)", descripcion: "Recarga su fusil. Si un aliado está a 10 pies, puede ordenarle como reacción que se mueva hasta la mitad de su velocidad." }
     ],
     estrategia: "«No dañen los instrumentos. Ya hemos perdido suficientes muestras esta semana.» Establece la zona de fuego detrás de una cobertura y dispara a quienes se mantienen a distancia o intentan acercarse, priorizando a los que parecen capaces de curar o apoyar. Si cae Elías, deja de mantener su posición y empieza a retroceder."
   },
@@ -854,13 +854,13 @@ window.STATS = [
     tipo: "Humanoide",
     pv: 58,
     ca: 14,
-    velocidad: "9 m",
+    velocidad: "30 pies",
     stats: { fue: 12, des: 16, con: 16, int: 20, sab: 14, car: 14 },
     equipo: ["Instrumental quirúrgico"],
     habilidades: [
-      { nombre: "Bisturí (Acción)", descripcion: "+6 al impacto, alcance 1,5 m. Daño: 10 (2d4+5) cortante." },
-      { nombre: "Inyección paralizante (Recarga 5–6)", descripcion: "+6 al impacto, alcance 1,5 m. Daño: 7 (1d4+5) perforante. El objetivo hace una salvación de Constitución CD 14 o queda con velocidad 0 hasta el final de su siguiente turno." },
-      { nombre: "Sutura de emergencia (Acción, 2/día)", descripcion: "Restaura 18 PG a un aliado a 1,5 m con una mezcla de tejido regenerativo. El objetivo también puede terminar una condición de envenenado." },
+      { nombre: "Bisturí (Acción)", descripcion: "+6 al impacto, alcance 5 pies. Daño: 10 (2d4+5) cortante." },
+      { nombre: "Inyección paralizante (Recarga 5–6)", descripcion: "+6 al impacto, alcance 5 pies. Daño: 7 (1d4+5) perforante. El objetivo hace una salvación de Constitución CD 14 o queda con velocidad 0 hasta el final de su siguiente turno." },
+      { nombre: "Sutura de emergencia (Acción, 2/día)", descripcion: "Restaura 18 PG a un aliado a 5 pies con una mezcla de tejido regenerativo. El objetivo también puede terminar una condición de envenenado." },
       { nombre: "Incisión exploratoria (Pasiva)", descripcion: "Si impacta con el bisturí a una criatura que haya recibido daño desde el comienzo de su último turno, inflige 5 (1d10) de daño adicional." }
     ],
     estrategia: "«¡Doctor, doctor! ¡Esta vez sí que está reaccionando como esperábamos!» Inmoviliza a los jugadores con sus inyecciones y aprovecha las aperturas para curar a Baltasar o a Nico. Intenta mantenerse cerca de sus compañeros, pero se acerca a los jugadores si ve la oportunidad de probar sus instrumentos. Si cae Baltasar, se pone nervioso."
@@ -873,14 +873,14 @@ window.STATS = [
     tipo: "Humanoide",
     pv: 48,
     ca: 15,
-    velocidad: "10,5 m",
+    velocidad: "35 pies",
     stats: { fue: 18, des: 18, con: 16, int: 12, sab: 12, car: 10 },
     equipo: ["Jeringa de presión (lanza, compuesto que altera la musculatura)"],
     habilidades: [
-      { nombre: "Pinchazo (Acción)", descripcion: "+7 al impacto, alcance 1,5 m. Daño: 12 (2d6+5) perforante." },
-      { nombre: "Sobredosis (Recarga 5–6)", descripcion: "+7 al impacto, alcance 1,5 m. Daño: 10 (1d10+5) perforante. El objetivo hace una salvación de Constitución CD 14 o tiene desventaja en las pruebas de Fuerza hasta el final de su siguiente turno." },
-      { nombre: "¡A que no me atrapas! (Acción adicional)", descripcion: "Se desplaza hasta 4,5 m sin provocar ataques de oportunidad de las criaturas a las que haya atacado este turno." },
-      { nombre: "Pequeño ayudante (Reacción)", descripcion: "Cuando un aliado a 3 m impacta a un enemigo, se mueve hasta 3 m hacia ese enemigo, siempre que no atraviese espacios ocupados." }
+      { nombre: "Pinchazo (Acción)", descripcion: "+7 al impacto, alcance 5 pies. Daño: 12 (2d6+5) perforante." },
+      { nombre: "Sobredosis (Recarga 5–6)", descripcion: "+7 al impacto, alcance 5 pies. Daño: 10 (1d10+5) perforante. El objetivo hace una salvación de Constitución CD 14 o tiene desventaja en las pruebas de Fuerza hasta el final de su siguiente turno." },
+      { nombre: "¡A que no me atrapas! (Acción adicional)", descripcion: "Se desplaza hasta 15 pies sin provocar ataques de oportunidad de las criaturas a las que haya atacado este turno." },
+      { nombre: "Pequeño ayudante (Reacción)", descripcion: "Cuando un aliado a 10 pies impacta a un enemigo, se mueve hasta 10 pies hacia ese enemigo, siempre que no atraviese espacios ocupados." }
     ],
     estrategia: "«¡Mírame! ¡Mírame! ¡Hoy hice tres pinchazos seguidos! ¿Viste, Baltasar?» Se concentra en un jugador debilitado y aprovecha su movilidad para entrar y salir del combate. Se ríe cuando consigue inyectar sus compuestos y busca constantemente la atención de Baltasar. Si cae Baltasar, se enfurece y ataca sin pensar."
   },
@@ -918,10 +918,10 @@ window.STATS = [
     velocidad: "40 pies",
     stats: { fue: 16, des: 8, con: 16, int: 2, sab: 6, car: 1 },
     notas: [
-      "Cuerpo de madera: se mueve 3 m más rápido que los restos comunes. Vulnerable al fuego."
+      "Cuerpo de madera: se mueve 10 pies más rápido que los restos comunes. Vulnerable al fuego."
     ],
     habilidades: [
-      { nombre: "Cuerpo de Madera (Pasiva)", descripcion: "Se mueve 3 m más rápido que los restos comunes. Es vulnerable al fuego." },
+      { nombre: "Cuerpo de Madera (Pasiva)", descripcion: "Se mueve 10 pies más rápido que los restos comunes. Es vulnerable al fuego." },
       { nombre: "Golpe Deforme (Acción)", descripcion: "+5 al impacto. Daño: 2d6+3 contundente." },
       { nombre: "Aferrarse (Acción adicional)", descripcion: "El objetivo hace una salvación de Fuerza CD 13 o queda Restringido." },
       { nombre: "Alma Inestable (Al morir)", descripcion: "Al morir explota: todas las criaturas a 5 pies reciben 1d6 de daño necrótico." }
