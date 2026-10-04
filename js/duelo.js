@@ -375,7 +375,6 @@
     }
     const res = await MjStats.registrar("duelo", rival.id, gano ? "gana" : "pierde", { suma, max, min });
     if (res.guardado) cargarRanking();
-    if (window.CartasCliente) CartasCliente.recompensar("duelo", rival.id, gano ? "gana" : "pierde", 0);
   }
 
   /* --- Ranking ----------------------------------------------------------- */

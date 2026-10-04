@@ -1,4 +1,4 @@
-/* Cartas malditas: álbum, cartas y aviso de recompensa. */
+/* Cartas malditas: álbum y cartas. */
 :root {
   --rar-comun: #8d8d7c;
   --rar-infrecuente: #5fa36b;
@@ -102,17 +102,6 @@
 .carta-detalle-cerrar { position: absolute; top: 8px; right: 12px; background: none; border: 0; color: var(--muted); font-size: 1.6rem; cursor: pointer; }
 .carta-detalle .carta-resumen { color: var(--muted); font-size: .9rem; }
 @media (max-width: 560px) { .carta-detalle-fila { grid-template-columns: 1fr; } .carta-detalle .carta { max-width: 200px; } }
-
-/* Aviso al ganar una carta */
-.carta-aviso {
-  position: fixed; right: 18px; bottom: 18px; z-index: 50; display: block; width: 230px; padding: 12px 14px;
-  background: var(--panel); border: 2px solid var(--rar, var(--accent)); color: var(--text); text-decoration: none;
-  box-shadow: 0 8px 24px var(--shadow); opacity: 0; transform: translateY(16px); pointer-events: none; transition: opacity .3s, transform .3s;
-}
-.carta-aviso.visible { opacity: 1; transform: none; pointer-events: auto; }
-.carta-aviso small { display: block; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; }
-.carta-aviso strong { display: block; font-family: var(--font-heading), sans-serif; font-size: 1.15rem; margin: 2px 0; }
-.carta-aviso span { font-size: .75rem; color: var(--rar, var(--accent)); }
 
 /* Panel de admin */
 .admin-cartas-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; align-items: end; margin: 12px 0 18px; }

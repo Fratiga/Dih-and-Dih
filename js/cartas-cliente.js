@@ -1,8 +1,7 @@
 /* =============================================================================
-   CARTAS MALDITAS — lado cliente. Lee la colección del jugador y pide las
-   recompensas de los minijuegos. Quien decide qué carta cae es el servidor
-   (scratchpad/cartas.sql); acá solo se avisa de lo que pasó y se muestra el
-   resultado. Requiere js/cartas-datos.js y js/fichas-supabase.js.
+   CARTAS MALDITAS — lado cliente. Lee la colección del jugador. Las cartas
+   las entrega el servidor (scratchpad/cartas.sql); las recompensas de los
+   minijuegos todavía no existen. Requiere js/cartas-datos.js y js/fichas-supabase.js.
 ============================================================================= */
 window.CartasCliente = (function () {
   /* ¿Puede ver este jugador esta carta? Mismo criterio que las entradas. */
@@ -33,41 +32,5 @@ window.CartasCliente = (function () {
     return { cartas, numeros };
   }
 
-  /* Aviso flotante al ganar una carta. */
-  function avisar(carta, nueva, cantidad) {
-    let caja = document.getElementById("cartaAviso");
-    if (!caja) {
-      caja = document.createElement("a");
-      caja.id = "cartaAviso";
-      caja.href = "cartas.html";
-      document.body.appendChild(caja);
-    }
-    const rareza = window.CARTAS_RAREZAS[carta.rareza];
-    caja.className = `carta-aviso carta-rareza-${carta.rareza}`;
-    caja.innerHTML = `<small>${nueva ? "Carta nueva" : `Repetida (x${cantidad})`}</small><strong></strong><span>${rareza.nombre} · ver en el álbum</span>`;
-    caja.querySelector("strong").textContent = carta.nombre;
-    requestAnimationFrame(() => caja.classList.add("visible"));
-    clearTimeout(avisar.t);
-    avisar.t = setTimeout(() => caja.classList.remove("visible"), 7000);
-  }
-
-  /* Pide una carta por lo ocurrido en un minijuego. Devuelve la carta o null. */
-  async function recompensar(juego, clave, resultado, logro = 0) {
-    if (!(await sesion())) return null;
-    try {
-      const supabase = await fichasCliente();
-      const { data, error } = await supabase.rpc("cartas_recompensa", {
-        p_juego: juego, p_clave: clave, p_resultado: resultado, p_logro: Math.max(0, Math.round(logro))
-      });
-      if (error) throw error;
-      if (!data || !data.carta) return null;
-      const carta = window.cartaPorId(data.carta);
-      if (carta) avisar(carta, data.nueva, data.cantidad);
-      return carta;
-    } catch (e) {
-      return null; // si el servidor no tiene las cartas todavía, el juego sigue sin avisos
-    }
-  }
-
-  return { visible, coleccion, recompensar, sesion };
+  return { visible, coleccion, sesion };
 })();
