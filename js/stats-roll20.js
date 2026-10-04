@@ -151,5 +151,5 @@ function statsR20Enemigo(s) {
 
   const orden = { Acciones: 0, Rasgos: 1, Tiradas: 2 };
   items.sort((a, b) => orden[a.categoria] - orden[b.categoria]);
-  return { id: s.id, nombre: s.nombre, rol: s.rol || "", pv: s.pv !== undefined ? s.pv : null, ca: s.ca !== undefined ? s.ca : null, items };
+  return { id: s.id, nombre: s.nombre, rol: s.rol || "", pv: s.pv !== undefined ? s.pv : null, ca: s.ca !== undefined ? s.ca : null, velocidad: s.velocidad || null, items };
 }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.7.0
+// @version      2.8.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -164,6 +164,7 @@
         id: f.id,
         nombre: f.nombre || (f.roll20 && f.roll20.nombre) || "Sin nombre",
         dueno: f.dueno || "",
+        velocidad: f.roll20 ? f.roll20.velocidad : null,
         items: (f.roll20 && f.roll20.items) || []
       }));
       GM_setValue("compendio_cache", JSON.stringify(estado.personajes));
@@ -393,6 +394,12 @@
     if (panel.style.left) { const r = panel.getBoundingClientRect(); colocar(panel, r.left, r.top); }
   }
 
+  // La velocidad llega como número (la ficha, en pies) o como texto ("30 pies")
+  function textoVelocidad(v) {
+    if (v === null || v === undefined || v === "") return "";
+    return /^\s*\d+(?:[.,]\d+)?\s*$/.test(String(v)) ? `${String(v).trim()} pies` : String(v);
+  }
+
   function pieSesion() {
     return `<div class="cr20-pie"><span>${estado.cargando ? "Actualizando…" : esc(estado.sesion.email)}</span><span><a id="cr20-refrescar">Actualizar</a> · <a id="cr20-salir">Salir</a></span></div>`;
   }
@@ -429,6 +436,7 @@
       <div class="cr20-fila">
         ${lista.length > 1 ? `<select id="cr20-pj">${lista.map(x => `<option value="${esc(x.id)}" ${x.id === p.id ? "selected" : ""}>${esc(etiqueta(x))}</option>`).join("")}</select>` : `<strong style="padding:6px 0">${esc(p.nombre)}</strong>`}
       </div>
+      ${textoVelocidad(p.velocidad) ? `<div class="cr20-ficha">Velocidad ${esc(textoVelocidad(p.velocidad))}</div>` : ""}
       ${controlesComunes()}
       <div class="cr20-fila"><input id="cr20-buscar" type="search" placeholder="Buscar..." value="${esc(estado.busqueda)}"></div>
       <div class="cr20-chips">${chips.map(([v, t]) => `<button type="button" class="cr20-chip ${estado.filtro === v ? "on" : ""}" data-filtro="${esc(v)}">${esc(t)}</button>`).join("")}</div>
@@ -470,7 +478,7 @@
       if (!cats.includes(estado.filtroEnemigo)) estado.filtroEnemigo = cats[0];
       const items = actual.items.filter(i => i.categoria === estado.filtroEnemigo);
       cuerpo = `
-        <div class="cr20-ficha"><strong style="color:#e8e4d0">${esc(actual.nombre)}</strong>${actual.ca !== null ? ` · CA ${esc(actual.ca)}` : ""}${actual.pv !== null ? ` · PV ${esc(actual.pv)}` : ""}<br>${esc(actual.rol)}</div>
+        <div class="cr20-ficha"><strong style="color:#e8e4d0">${esc(actual.nombre)}</strong>${actual.ca !== null ? ` · CA ${esc(actual.ca)}` : ""}${actual.pv !== null ? ` · PV ${esc(actual.pv)}` : ""}${textoVelocidad(actual.velocidad) ? ` · Vel. ${esc(textoVelocidad(actual.velocidad))}` : ""}<br>${esc(actual.rol)}</div>
         <div class="cr20-chips">${cats.map(c => `<button type="button" class="cr20-chip ${estado.filtroEnemigo === c ? "on" : ""}" data-filtro-enemigo="${c}">${c}</button>`).join("")}</div>
         <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-enemigo-item="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}>${esc(i.texto)}</button>`).join("")}</div>`;
     } else {

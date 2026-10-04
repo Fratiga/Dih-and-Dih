@@ -1814,7 +1814,7 @@
       return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}), ...(calc ? { calc } : {}), ...(municion ? { municion } : {}) };
     });
     items.sort((a, b) => Number(b.favorita) - Number(a.favorita));
-    return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", items };
+    return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", velocidad: p.combate.velocidad, items };
   }
 
   /* Sube a Supabase (columna fichas_personajes.roll20) el panel de tiradas ya
