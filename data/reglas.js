@@ -41,7 +41,7 @@ window.REGLAS = [
   },
   {
     titulo: "Acción Adicional",
-    descripcion: "Puedes realizar una acción adicional sólo cuando una habilidad, conjuro o característica especial indica que puedes hacer algo como acción adicional. Máximo 1 por turno.",
+    descripcion: "Puedes realizar una acción adicional solo cuando una habilidad, conjuro o característica especial indica que puedes hacer algo como acción adicional. Máximo 1 por turno.",
     items: [
       { label: "Ataque con dos armas", detalle: "Se usa junto con la acción de Ataque, siempre que ambas armas sean ligeras; no sumas tu modificador de característica al daño salvo que sea negativo." },
       { label: "Lanzar un conjuro", detalle: "Lanzamiento de 1 acción adicional. Si ya lanzaste un conjuro con tu acción este turno, el otro debe ser un truco con tiempo de lanzamiento de 1 acción." },

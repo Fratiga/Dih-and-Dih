@@ -226,10 +226,10 @@ window.RELIGIONES = [
     title: "Neravismo",
     category: "Religión",
     tags: ["memoria", "ancestros", "chakur"],
-    summary: "Sólo desaparece completamente aquel que deja de ser recordado.",
+    summary: "Solo desaparece completamente aquel que deja de ser recordado.",
     region: "Chakur",
     simbolo: "Una vela rodeada por nombres escritos en círculo.",
-    principio: "Sólo desaparece completamente aquel que deja de ser recordado.",
+    principio: "Solo desaparece completamente aquel que deja de ser recordado.",
     muerte: "Paso desde participante activo a miembro recordado de la comunidad.",
     eternos: "Seres que nunca ocuparon el lugar que normalmente les correspondería entre los antepasados.",
     content: `

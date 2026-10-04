@@ -94,7 +94,7 @@ window.BUFON_DIALOGO = {
     // solo durante esta visita.
     resp_who_1: {
       lineas: [
-        "Ah, ya empezamos con ésa.",
+        "Ah, ya empezamos con esa.",
         "No. Todavía no.",
         "Pregúntame otra cosa. Tienes un montón de opciones y fuiste directo a la que no pienso responder."
       ],
@@ -188,7 +188,7 @@ window.BUFON_DIALOGO = {
       next: "intro_reason"
     },
     resp_trust_unsure: {
-      lineas: ['Ésa es bastante más honesta que un "sí". La gente usa esa palabra con demasiada facilidad.'],
+      lineas: ['Esa es bastante más honesta que un "sí". La gente usa esa palabra con demasiada facilidad.'],
       completeDialogue: "why_hide",
       next: "intro_reason"
     },
@@ -316,7 +316,7 @@ window.BUFON_DIALOGO = {
       next: "intro_reason"
     },
     early_return_reaction_secreto: {
-      lineas: ["Y no les cuentes.", "No necesito que hablen entre ustedes.", "Sólo necesito que miren.", "Encontrarme y que me traigan gente son cosas muy distintas."],
+      lineas: ["Y no les cuentes.", "No necesito que hablen entre ustedes.", "Solo necesito que miren.", "Encontrarme y que me traigan gente son cosas muy distintas."],
       completeDialogue: "early_return_stage_1",
       consumeEncounter: "early_return",
       next: "intro_reason"
@@ -325,7 +325,7 @@ window.BUFON_DIALOGO = {
       lineas: [
         "Ah.",
         "Bueno, eso cambia bastante las cosas.",
-        'Yo aquí hablando y hablando sobre una cosa tan insignificante como el "ser" y tú sólo venías a saludar.',
+        'Yo aquí hablando y hablando sobre una cosa tan insignificante como el "ser" y tú solo venías a saludar.',
         "...",
         "Gracias."
       ],
@@ -436,7 +436,7 @@ window.BUFON_DIALOGO = {
       next: "intro_reason_sin_recuerdo"
     },
     bufon_gareth_reaction_b: {
-      lineas: ["Ah. Entonces mezclé ésa también.", "Bien saber. Ahora tengo que revisar qué más mezclé. Pero bueno, un problema a la vez."],
+      lineas: ["Ah. Entonces mezclé esa también.", "Bien saber. Ahora tengo que revisar qué más mezclé. Pero bueno, un problema a la vez."],
       next: "intro_reason_sin_recuerdo"
     },
     bufon_gareth_reaction_0: {
