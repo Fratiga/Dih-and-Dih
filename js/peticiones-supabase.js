@@ -26,7 +26,7 @@ async function enviarPeticion({ texto, nombre }) {
   if (error) throw error;
 }
 
-/* Solo el Admin puede llegar hasta acá de verdad: RLS bloquea el select a
+/* Solo el Admin puede llegar hasta aquí de verdad: RLS bloquea el select a
    cualquier otra cuenta (ver panel-admin.sql). */
 async function adminListarPeticiones() {
   const supabase = await peticionesCliente();

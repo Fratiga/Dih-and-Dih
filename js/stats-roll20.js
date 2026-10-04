@@ -3,7 +3,7 @@
    en comandos de chat de Roll20 listos para usar.
 
    Las habilidades están escritas como texto libre ("+10 al impacto. Daño:
-   2d8+5 perforante..."), así que acá se leen con reglas simples: bonificador
+   2d8+5 perforante..."), así que aquí se leen con reglas simples: bonificador
    de ataque, fórmula de daño, salvaciones con CD y curaciones. Lo que no tiene
    nada tirable (rasgos pasivos, efectos) se manda al chat como anuncio con su
    descripción, para que el máster lo tenga a la vista. Nunca se inventa un

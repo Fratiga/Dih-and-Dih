@@ -1,5 +1,5 @@
 /* =============================================================================
-   ROLL20 — genera texto, nunca tira nada ni toca la API de Roll20. Todo acá
+   ROLL20 — genera texto, nunca tira nada ni toca la API de Roll20. Todo aquí
    son strings a copiar. Ver sección 14 del spec: valores numéricos finales,
    nunca referencias tipo @{selected|...}.
 ============================================================================= */
@@ -84,7 +84,7 @@ function fichasComandoHechizoCuracion(nombreHechizo, curacionFormula) {
 
 /* --- Rasgos con fórmula libre --------------------------------------------
    El jugador escribe su propia expresión (puede ser un d20+X, un dado de
-   daño, un texto con [[...]] ya armado, etc.) — acá solo se envuelve con
+   daño, un texto con [[...]] ya armado, etc.) — aquí solo se envuelve con
    el nombre, no se reinterpreta. */
 function fichasComandoRasgo(nombre, formulaLibre) {
   return `${nombre}: ${formulaLibre}`;

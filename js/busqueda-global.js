@@ -27,7 +27,7 @@
     sugerencias.innerHTML = "";
   }
 
-  // Otro huevo de pascua: si insistís con Enter sobre una búsqueda que no
+  // Otro huevo de pascua: si insistes con Enter sobre una búsqueda que no
   // encuentra nada, a veces te manda igual a la puerta del Bufón — ver el
   // keydown de abajo, que es lo único que lo dispara (nunca en cada tecla).
   let sinResultadosActual = false;

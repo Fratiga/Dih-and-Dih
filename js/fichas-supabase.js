@@ -1,6 +1,6 @@
 /* =============================================================================
    SUPABASE — cliente + autenticación real para "Mis personajes". Mismo
-   proyecto que ya usan el Bufón y Peticiones (misma key pública), pero acá
+   proyecto que ya usan el Bufón y Peticiones (misma key pública), pero aquí
    SÍ hay cuentas de verdad (Supabase Auth con email+contraseña): cada
    jugador inicia sesión y sus fichas quedan aisladas por RLS usando
    auth.uid(), no por un UUID inventado en localStorage. Uso privado, ~10
@@ -67,7 +67,7 @@ async function fichasEnCambioDeSesion(callback) {
 /* --- Panel de Admin: cuentas ------------------------------------------------
    Ambas pasan por funciones de Postgres (security definer) que revisan
    fichas_es_admin() del lado del servidor antes de tocar nada — no alcanza
-   con esconder el botón acá, ver panel-admin.sql. */
+   con esconder el botón aquí, ver panel-admin.sql. */
 async function adminListarPerfiles() {
   const supabase = await fichasCliente();
   const { data, error } = await supabase.rpc("fichas_admin_listar_perfiles");
@@ -84,7 +84,7 @@ async function adminCambiarSide(idUsuario, nuevoSide) {
 /* Estas dos pasan por una Edge Function (no una RPC de Postgres): borrar un
    usuario o cambiarle la contraseña son operaciones de la Admin API de
    Supabase Auth, que solo funcionan con la service_role key. Esa key nunca
-   puede llegar al navegador, así que la función corre server-side y acá
+   puede llegar al navegador, así que la función corre server-side y aquí
    solo se invoca. Ver scratchpad/edge-function-admin-gestionar-cuenta.ts. */
 async function adminEliminarCuenta(idUsuario) {
   const supabase = await fichasCliente();

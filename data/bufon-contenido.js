@@ -43,18 +43,18 @@ window.BUFON_DIALOGO = {
     intro_01: {
       lineas: [
         "Hola.",
-        '¿Qué tal? Ah, espera, no. Antes que nada: no le digas a nadie que estoy acá.',
+        '¿Qué tal? Ah, espera, no. Antes que nada: no le digas a nadie que estoy aquí.',
         "No por nada grave. Es más una cuestión de principios. Y porque me conviene.",
         "Tus amigos tampoco, eh. Sobre todo tus amigos.",
         'Aunque bueno, técnicamente "Él" ya sabe. Él siempre sabe esas cosas. Es bastante irritante, si te soy sincero.',
-        "Pero que Él sepa que estoy acá y que tú me hayas encontrado son dos cosas completamente distintas. Pienso aferrarme a esa distinción con todas mis fuerzas.",
-        "En fin. ¿Qué haces tú acá?"
+        "Pero que Él sepa que estoy aquí y que tú me hayas encontrado son dos cosas completamente distintas. Pienso aferrarme a esa distinción con todas mis fuerzas.",
+        "En fin. ¿Qué haces tú aquí?"
       ],
       animacion: "Pofavor",
       // Único punto donde se decide si corresponde ofrecer nombre antes
       // del hub — intro_01 es en sí mismo "primera visita" (solo se
       // corre una vez en la vida real del navegador), así que no hace
-      // falta re-chequear eso acá, solo si ya hay nombre/oferta previa.
+      // falta re-chequear eso aquí, solo si ya hay nombre/oferta previa.
       next: ctx => (debeOfrecerRegistro(ctx) ? "bufon_oferta_registro" : "intro_reason")
     },
 
@@ -215,7 +215,7 @@ window.BUFON_DIALOGO = {
        bufon_despedida_que_tiempo ya no es un final plano: tiene su propio
        punto de elección (despedida_que_significa) para que, cuando el
        jugador insiste en qué significa "nuestro tiempo", el Bufón —que
-       hasta acá tuvo una respuesta lista para todo— se quede sin una.
+       hasta aquí tuvo una respuesta lista para todo— se quede sin una.
        Ese es el silencio que importa de toda esta secuencia.
     ===================================================================== */
     bufon_despedida: {
@@ -325,7 +325,7 @@ window.BUFON_DIALOGO = {
       lineas: [
         "Ah.",
         "Bueno, eso cambia bastante las cosas.",
-        'Yo acá hablando y hablando sobre una cosa tan insignificante como el "ser" y tú sólo venías a saludar.',
+        'Yo aquí hablando y hablando sobre una cosa tan insignificante como el "ser" y tú sólo venías a saludar.',
         "...",
         "Gracias."
       ],
@@ -359,7 +359,7 @@ window.BUFON_DIALOGO = {
     bufon_fase2_agotada_2: {
       lineas: [
         "Todavía no.",
-        "Esa parte tiene que pasar allá afuera primero. Acá dentro no cuenta."
+        "Esa parte tiene que pasar allá afuera primero. Aquí dentro no cuenta."
       ],
       completeDialogue: "fase2_agotada_2"
     },
@@ -377,7 +377,7 @@ window.BUFON_DIALOGO = {
       ],
       completeDialogue: "fase2_agotada_4"
     },
-    // Ya explicó las reglas las 4 veces que las tenía escritas — de acá
+    // Ya explicó las reglas las 4 veces que las tenía escritas — de aquí
     // en más, tocar sin nada nuevo no amerita una excusa distinta cada
     // vez. Silencio real, no relleno: ya dijo todo lo que tenía que
     // decir sobre esto.
@@ -727,7 +727,7 @@ window.BUFON_DIALOGO = {
        CICLO "LO QUE QUEDA" — Side A (BUFON_HECHOS_CONOCIDOS.A en
        data/bufon-evidencia.js). Mismo patrón que Side B: 4 pilares con
        preguntas fijas, gateados por hecho de campaña, sin depender de
-       ningún mecanismo de "generación 2" — a diferencia de B, acá no
+       ningún mecanismo de "generación 2" — a diferencia de B, aquí no
        hace falta esperar a que se junten varios jugadores para
        destrabar esto, son hechos que ya pasaron en mesa.
     ===================================================================== */
@@ -834,7 +834,7 @@ window.BUFON_DIALOGO = {
       eleccion: "dagren_hub"
     },
     // Primera opción exclusiva de La Herida (ver dagren_hub). Nada de lo
-    // que ofrece el hub normal llega hasta acá: lo normal es preguntar
+    // que ofrece el hub normal llega hasta aquí: lo normal es preguntar
     // por la renta, el brazo o la pelea, nunca por cómo está él.
     bufon_dagren_herida: {
       lineas: [
@@ -1312,7 +1312,7 @@ window.BUFON_DIALOGO = {
 
     // --- Graduación de los seis medidores restantes (Insistencia,
     // Reserva, Apego, Identidad, Curiosidad, Deseo) — mismo nivel que ya
-    // tenían Mentirosos/Impostores: acá es Slappy mismo el que lo nota,
+    // tenían Mentirosos/Impostores: aquí es Slappy mismo el que lo nota,
     // no solo la Voz. Ver generarCandidatosGraduacion() en secreto.html.
     bufon_graduacion_insistencia: {
       lineas: [

@@ -3,7 +3,7 @@
 
    Cada choice_id de una rama de "recuerdo" (mascota, Gareth, dragón, etc.)
    que aporte información realmente diferenciadora entre Side A y Side B se
-   lista acá, con:
+   lista aquí, con:
      side:        a qué lado respalda esta respuesta.
      weight:      1 = débil, 2 = media, 4 = fuerte.
      memoryGroup: familia del recuerdo. Se usa para exigir diversidad antes
@@ -11,7 +11,7 @@
                   secreto.html) — un solo memoryGroup nunca alcanza solo.
 
    Las opciones ambiguas/evasivas (aceptar la premisa del Bufón sin agregar
-   nada, "no sé de qué hablás", etc.) simplemente NO aparecen acá. Si un
+   nada, "no sé de qué hablas", etc.) simplemente NO aparecen aquí. Si un
    choice_id no está en esta tabla, vale 0 automáticamente — no hace falta
    listarlo con weight 0.
 ============================================================================= */
@@ -49,7 +49,7 @@ window.BUFON_EVIDENCIA = JSON.parse(
    Editar esta lista a mano después de cada sesión real. Ahora mismo asume
    que ambas mesas ya vivieron hasta donde hoy llega el texto escrito en
    cronologia-a.js/cronologia-b.js (Capítulo V incluido) — si alguna mesa
-   viene más atrasada, sacar de acá los hechos que todavía no pasaron.
+   viene más atrasada, sacar de aquí los hechos que todavía no pasaron.
 ============================================================================= */
 window.BUFON_HECHOS_CONOCIDOS = {
   // Los cuatro nuevos (mattei_se_unio en adelante) son del ciclo propio

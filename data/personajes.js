@@ -255,7 +255,7 @@ window.PERSONAJES = [
     titulo: "Bárbaro",
     raza: "",
     tipo: "NPC",
-    lugarOrigen: "Cala Ronca",
+    lugarOrigen: "cala-ronca-pelgiria",
     ocupacion: "",
     faccion: "",
     primeraAparicion: "",
@@ -944,7 +944,7 @@ window.PERSONAJES = [
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Discípulo",
-    faccion: "los-seis-del-ultimo-apunte",
+    faccion: "",
     primeraAparicion: "",
     lado: ["B"],
     relacionesConocidas: [
@@ -976,7 +976,7 @@ window.PERSONAJES = [
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Discípulo",
-    faccion: "los-seis-del-ultimo-apunte",
+    faccion: "",
     primeraAparicion: "",
     lado: ["B"],
     relacionesConocidas: [
@@ -1005,7 +1005,7 @@ window.PERSONAJES = [
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Discípulo",
-    faccion: "los-seis-del-ultimo-apunte",
+    faccion: "",
     primeraAparicion: "",
     lado: ["B"],
     relacionesConocidas: [
@@ -1034,7 +1034,7 @@ window.PERSONAJES = [
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Discípulo",
-    faccion: "los-seis-del-ultimo-apunte",
+    faccion: "",
     primeraAparicion: "",
     lado: ["B"],
     relacionesConocidas: [
@@ -1063,7 +1063,7 @@ window.PERSONAJES = [
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Discípulo",
-    faccion: "los-seis-del-ultimo-apunte",
+    faccion: "",
     primeraAparicion: "",
     lado: ["B"],
     relacionesConocidas: [
@@ -1092,7 +1092,7 @@ window.PERSONAJES = [
     tipo: "NPC",
     lugarOrigen: "",
     ocupacion: "Discípulo",
-    faccion: "los-seis-del-ultimo-apunte",
+    faccion: "",
     primeraAparicion: "El Vaquero",
     lado: ["B"],
     relacionesConocidas: [

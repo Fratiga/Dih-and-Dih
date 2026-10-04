@@ -7,7 +7,7 @@
    formulario para que lo intenten de nuevo con su nombre real.
 
    Principio: SOLO personajes NPC. Ningún personaje jugador (tipo
-   "Jugador" en data/personajes.js) va acá, aunque no tenga todavía un
+   "Jugador" en data/personajes.js) va aquí, aunque no tenga todavía un
    chiste propio — siempre puede existir una persona real de mesa que
    legítimamente quiera registrarse con el nombre de su propio
    personaje, y negarle la entrada sería el error contrario al que

@@ -175,7 +175,7 @@ function initZoomPan(viewportEl, targetEl, opts = {}) {
 }
 
 /* Acceso al juego de Hooey, en el espacio vacío a la derecha del
-   título. Se inyecta acá para no repetirlo a mano en cada página. */
+   título. Se inyecta aquí para no repetirlo a mano en cada página. */
 (function () {
   const h1 = document.querySelector(".header-left h1");
   if (!h1 || document.querySelector(".header-juego-link")) return;

@@ -1,9 +1,9 @@
 /* =============================================================================
    SLAPPY BAILANDO — huevo de pascua permanente. Se prende/apaga escribiendo
    "Slappy" en el widget de contraseñas mágicas (ver initClaveMagicaWidget en
-   js/lado.js, que llama a toggleSlappy() acá abajo en vez de mostrar una
+   js/lado.js, que llama a toggleSlappy() aquí abajo en vez de mostrar una
    imagen). Reusa el mismo modelo 3D y el mismo repertorio de bailes que ya
-   existe para el Bufón en secreto.html, pero acá el modelo/Three.js se
+   existe para el Bufón en secreto.html, pero aquí el modelo/Three.js se
    cargan recién cuando hace falta — no tiene sentido sumarle ~7MB a cada
    carga del sitio por un chiste escondido.
 

@@ -1,7 +1,7 @@
 /* =============================================================================
    ALMACENAMIENTO — CRUD de fichas contra la tabla de Supabase
    "fichas_personajes". El aislamiento entre jugadores lo hace RLS del lado
-   del servidor (auth.uid() = owner_id), no código de acá: por eso este
+   del servidor (auth.uid() = owner_id), no código de aquí: por eso este
    archivo no filtra nada por dueño, simplemente pide "mis fichas" y
    Supabase ya devuelve solo las que le corresponden a la sesión actual.
 

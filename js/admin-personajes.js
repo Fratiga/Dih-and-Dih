@@ -104,7 +104,7 @@
     const ladoB = document.getElementById("afLadoB").checked;
     const lado = [...(ladoA ? ["A"] : []), ...(ladoB ? ["B"] : [])];
     if (!lado.length) {
-      alert("Elegí al menos un lado.");
+      alert("Elige al menos un lado.");
       return;
     }
 

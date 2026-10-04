@@ -4,7 +4,7 @@
    contraseña compartida por bando: cada persona inicia sesión con su propia
    cuenta, elige su Side una vez (autoservicio, tabla "perfiles"), y el flag
    de Admin lo sigue controlando solo el dueño del proyecto por SQL (tabla
-   "fichas_admins", ya existente — reusada acá, no es nueva).
+   "fichas_admins", ya existente — reusada aquí, no es nueva).
 
    Diseño clave para no tener que tocar ningún otro archivo del sitio:
    ladoActual()/esAdmin() siguen siendo lecturas SÍNCRONAS de localStorage,
@@ -206,11 +206,11 @@ async function ladoGuardarUsername(username) {
 /* El Side se elige al crear la cuenta y queda permanente: no hay forma de
    volver a elegirlo desde la interfaz (salvo el Admin, que sí puede
    cambiar el suyo para previsualizar ambos lados). El nombre de usuario en
-   cambio NO es permanente, se puede cambiar después desde el popover — acá
+   cambio NO es permanente, se puede cambiar después desde el popover — aquí
    solo se pide una vez para no arrancar mostrando el email crudo. Si el
    proyecto exige confirmar el email, todavía no hay sesión activa en el
    momento del registro (RLS necesita auth.uid()), así que ambos quedan
-   guardados acá nomás como "pendientes" y se aplican en el primer login
+   guardados aquí nomás como "pendientes" y se aplican en el primer login
    exitoso. */
 const LADO_SIDE_PENDIENTE_KEY = "ladoSidePendiente";
 const LADO_USERNAME_PENDIENTE_KEY = "ladoUsernamePendiente";
@@ -368,11 +368,11 @@ function initGlobalLadoWidget() {
 
     const lado = ladoActual();
     // El Side se elige una sola vez, al crear la cuenta, y queda
-    // permanente para cualquier jugador — así que acá solo se muestra un
+    // permanente para cualquier jugador — así que aquí solo se muestra un
     // selector interactivo en dos casos: el Admin (que sí puede
     // previsualizar ambos lados), o una cuenta vieja que quedó sin Side
     // guardado (caso borde, no debería pasar con cuentas nuevas). El
-    // nombre de usuario en cambio SIEMPRE se puede editar acá, no es
+    // nombre de usuario en cambio SIEMPRE se puede editar aquí, no es
     // permanente como el Side.
     const mostrarSelector = esAdmin() || !lado;
     popover.innerHTML = `
@@ -680,7 +680,7 @@ function initLadoGate(onUnlock) {
   })();
 
   // El Side es permanente para cualquier jugador — este botón solo hace
-  // algo si sos Admin (para poder previsualizar los dos lados). El markup
+  // algo si eres Admin (para poder previsualizar los dos lados). El markup
   // ya lo esconde con data-admin-only; esto es además una segunda barrera
   // por si el click llega igual.
   if (switchBtn) {
@@ -726,7 +726,7 @@ function initAdminGate(onUnlock) {
     gate.classList.remove("hidden");
     const loginForm = gate.querySelector("#ladoAuthLogin");
     // No tiene sentido ofrecer "crear cuenta" desde el gate de Admin — el
-    // formulario de registro ya arranca oculto (ver ladoAuthWidgetHTML), acá
+    // formulario de registro ya arranca oculto (ver ladoAuthWidgetHTML), aquí
     // solo hace falta esconder el link que lo mostraría.
     gate.querySelector("#ladoAuthIrSignup").classList.add("hidden");
     const error = gate.querySelector("#ladoAuthError");
@@ -778,7 +778,7 @@ initClaveMagicaWidget();
 
 /* =============================================================================
    DOS ENTRADAS ESCONDIDAS MÁS, ninguna pedida a propósito: hay que
-   quedarse quieto, o pasar por acá a la hora justa. Ambas usan el mismo
+   quedarse quieto, o pasar por aquí a la hora justa. Ambas usan el mismo
    truco visual que la puerta de index.html (un punto invisible), pero en
    lugares y bajo condiciones distintas para no ser la misma cosa repetida.
 ============================================================================= */

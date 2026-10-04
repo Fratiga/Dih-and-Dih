@@ -25,7 +25,7 @@
   };
   const BUFONES_PARA_REBOTAR = 3;
   const VUELTA_TPOSE = 2.6; // segundos por vuelta de los Slappy en T-pose
-  const BUFONES_PARA_SALIR = 4; // desde acá rebotan por toda la ventana, no solo dentro del juego
+  const BUFONES_PARA_SALIR = 4; // desde aquí rebotan por toda la ventana, no solo dentro del juego
 
   let contenedor = null;
   let cargaPromesa = null;

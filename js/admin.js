@@ -1,7 +1,7 @@
 /* =============================================================================
    PANEL DE ADMIN — Peticiones (leer + marcar atendidas) y Cuentas (ver
    Side/username de todos, corregir el Side de cualquiera). El flag de
-   Admin en sí no se toca desde acá a propósito, eso se sigue dando de alta
+   Admin en sí no se toca desde aquí a propósito, eso se sigue dando de alta
    por SQL (ver scratchpad/panel-admin.sql).
 ============================================================================= */
 (function () {

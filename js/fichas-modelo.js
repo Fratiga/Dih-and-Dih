@@ -78,7 +78,7 @@ function fichasHabilidadesVacias() {
 }
 
 /* Personaje nuevo, en blanco. El dueño real (owner_id) lo pone la base de
-   datos sola vía RLS/default auth.uid() — acá "side" es solo un dato
+   datos sola vía RLS/default auth.uid() — aquí "side" es solo un dato
    descriptivo que el jugador elige (a qué campaña/side pertenece este
    personaje), ya no un mecanismo de aislamiento. */
 function fichasPersonajeVacio() {
@@ -182,7 +182,7 @@ function fichasPersonajeVacio() {
   };
 }
 
-/* Migraciones futuras: si algún día FICHAS_VERSION_ACTUAL sube, acá se
+/* Migraciones futuras: si algún día FICHAS_VERSION_ACTUAL sube, aquí se
    agregan los pasos "de v1 a v2", etc. Por ahora es identidad. */
 function fichasMigrar(personaje) {
   if (!personaje.version || personaje.version < 1) personaje.version = 1;

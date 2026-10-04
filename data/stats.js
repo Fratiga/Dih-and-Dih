@@ -14,12 +14,12 @@ window.STATS = [
     equipo: ["Arpón con cadena", "Daga de degüello", "Cuchillo oculto", "Bombas de humo"],
     habilidades: [
       { nombre: "Depredador (Pasiva)", descripcion: "Mientras ningún enemigo esté adyacente a él, obtiene ventaja en todas las tiradas de ataque." },
-      { nombre: "Cazador Solitario (Pasiva)", descripcion: "Mientras solo tenga un enemigo a 9 metros o menos: +2 CA, +3 m de velocidad, +2d6 daño." },
-      { nombre: "Arpón (Acción)", descripcion: "Alcance 18 m. +10 al impacto. Daño: 2d8+5 perforante. El objetivo queda Enganchado." },
+      { nombre: "Cazador Solitario (Pasiva)", descripcion: "Mientras solo tenga un enemigo a 30 pies o menos: +2 CA, +10 pies de velocidad, +2d6 daño." },
+      { nombre: "Arpón (Acción)", descripcion: "Alcance 60 pies. +10 al impacto. Daño: 2d8+5 perforante. El objetivo queda Enganchado." },
       { nombre: "Arrastre (Bonus)", descripcion: "Una criatura Enganchada es arrastrada hasta quedar adyacente. No requiere tirada." },
       { nombre: "Degüello (Acción)", descripcion: "Solo puede usarse sobre criaturas Enganchadas. +10 al impacto. Daño: 3d8+5 cortante. Si el objetivo está por debajo del 40% de su vida, debe superar una salvación de Constitución CD 18 o muere instantáneamente." },
       { nombre: "Paso entre Sombras (Bonus)", descripcion: "Se teletransporta hasta 30 pies entre zonas oscuras." },
-      { nombre: "Bomba de Humo (Recarga 5-6)", descripcion: "Crea una nube de 6 metros. Obtiene Ocultamiento Total." },
+      { nombre: "Bomba de Humo (Recarga 5-6)", descripcion: "Crea una nube de 20 pies. Obtiene Ocultamiento Total." },
       { nombre: "No Escapas (Reacción)", descripcion: "Cuando una criatura abandona su alcance puede realizar inmediatamente un ataque de Arpón." },
       { nombre: "Mirada del Verdugo (Rasgo único)", descripcion: "Al inicio de cada turno elige una criatura que pueda ver. Solo esa criatura puede realizar ataques de oportunidad contra él hasta el inicio de su siguiente turno." }
     ],
@@ -39,7 +39,7 @@ window.STATS = [
     stats: { fue: 18, des: 12, con: 18, int: 9, sab: 14, car: 10 },
     equipo: ["Escopeta de perdigones"],
     habilidades: [
-      { nombre: "Disparo de Perdigones (Acción)", descripcion: "Ataque en cono de 15 pies. Daño: 2d8 + Fuerza. Todas las criaturas golpeadas superan una salvación de Fuerza CD 15 o son empujadas 3 metros." },
+      { nombre: "Disparo de Perdigones (Acción)", descripcion: "Ataque en cono de 15 pies. Daño: 2d8 + Fuerza. Todas las criaturas golpeadas superan una salvación de Fuerza CD 15 o son empujadas 10 pies." },
       { nombre: "Culatazo (Acción)", descripcion: "Ataque cuerpo a cuerpo. Daño: 1d10 + Fuerza. Si impacta puede Derribar." },
       { nombre: "¡Quieto! (Reacción)", descripcion: "Cuando una criatura abandona su alcance, realiza un Disparo de Perdigones." },
       { nombre: "Aguantar Posición (Acción Bonus)", descripcion: "Hasta el inicio de su siguiente turno obtiene resistencia al daño contundente, cortante y perforante." }
@@ -79,7 +79,7 @@ window.STATS = [
     stats: { fue: 8, des: 18, con: 12, int: 16, sab: 13, car: 17 },
     equipo: ["3 Cartas Carmesí", "3 Cartas Azules", "3 Cartas Doradas (se recuperan tras un descanso corto)"],
     habilidades: [
-      { nombre: "Cartas Carmesí (Acción)", descripcion: "Selecciona un punto a 18 metros, radio 9 pies. Todas las criaturas en el área reciben 3d6 de daño de fuerza (mitad con salvación de Destreza)." },
+      { nombre: "Cartas Carmesí (Acción)", descripcion: "Selecciona un punto a 60 pies, radio 9 pies. Todas las criaturas en el área reciben 3d6 de daño de fuerza (mitad con salvación de Destreza)." },
       { nombre: "Cartas Azules (Acción)", descripcion: "Ataque a 60 pies. Daño: 1d6 + Destreza. Hasta el inicio de su siguiente turno, el siguiente ataque de un aliado contra ese objetivo inflige 2d6 de daño adicional." },
       { nombre: "Cartas Doradas (Acción)", descripcion: "A 60 pies, el objetivo hace una salvación de Destreza o queda Inmovilizado hasta el final de su siguiente turno; puede repetir la tirada al final de cada turno." },
       { nombre: "Truco Bajo la Manga (Pasiva)", descripcion: "Una vez por ronda puede robar una carta al azar, recuperando una ya utilizada." }
@@ -128,7 +128,7 @@ window.STATS = [
     habilidades: [
       { nombre: "Ataque", descripcion: "+5 al impacto. Daño: 1d8+3 perforante." },
       { nombre: "Empujar (Bonus)", descripcion: "Una criatura hace una salvación de Fuerza CD 13 o retrocede 5 pies." },
-      { nombre: "Defender Refugio (Pasiva)", descripcion: "Mientras permanezca a menos de 3 metros de un aldeano, obtiene +2 CA y los enemigos tienen desventaja para atacar a los civiles." },
+      { nombre: "Defender Refugio (Pasiva)", descripcion: "Mientras permanezca a menos de 10 pies de un aldeano, obtiene +2 CA y los enemigos tienen desventaja para atacar a los civiles." },
       { nombre: "Aguantar (Una vez por combate)", descripcion: "Recupera 2d8+3 PV." }
     ],
     estrategia: "Jamás abandona la entrada. Su prioridad es salvar civiles."
@@ -185,7 +185,7 @@ window.STATS = [
     ca: 14,
     stats: { fue: 10, des: 16, con: 12, int: 10, sab: 13, car: 10 },
     habilidades: [
-      { nombre: "Arco Largo (Acción)", descripcion: "Alcance 45/180 m. +5 al impacto. Daño: 1d8+3 perforante." },
+      { nombre: "Arco Largo (Acción)", descripcion: "Alcance 150/600 pies. +5 al impacto. Daño: 1d8+3 perforante." },
       { nombre: "Disparo de Cobertura (Pasiva)", descripcion: "Una criatura golpeada reduce su velocidad en 10 pies hasta el final del siguiente turno." },
       { nombre: "Objetivo Marcado (Bonus)", descripcion: "Marca a un enemigo. El siguiente aliado que lo golpee inflige 1d4 de daño adicional." }
     ],
@@ -273,7 +273,7 @@ window.STATS = [
     habilidades: [
       { nombre: "Toque Espectral (Acción)", descripcion: "+5 al impacto. Daño: 1d8 necrótico." },
       { nombre: "Atravesar (Pasiva)", descripcion: "Ignora terreno difícil y puede atravesar criaturas." },
-      { nombre: "Lamento (Recarga 5-6)", descripcion: "Todas las criaturas a 6 metros hacen una salvación de Sabiduría CD 12 o quedan con desventaja en su siguiente ataque." }
+      { nombre: "Lamento (Recarga 5-6)", descripcion: "Todas las criaturas a 20 pies hacen una salvación de Sabiduría CD 12 o quedan con desventaja en su siguiente ataque." }
     ],
     estrategia: "Pequeños espíritus que todavía no consiguen poseer materia. No son enemigos fuertes, son molestos."
   },
@@ -307,9 +307,9 @@ window.STATS = [
     velocidad: "60 pies",
     stats: { fue: 22, des: 18, con: 18, int: 4, sab: 18, car: 6 },
     habilidades: [
-      { nombre: "Depredador Felino (Pasiva)", descripcion: "Conoce la dirección aproximada de cualquier felino en 1 km; ventaja en ataques contra criaturas de tipo Felino." },
+      { nombre: "Depredador Felino (Pasiva)", descripcion: "Conoce la dirección aproximada de cualquier felino en 1 milla; ventaja en ataques contra criaturas de tipo Felino." },
       { nombre: "Instinto Animal (Pasiva)", descripcion: "No provoca ataques de oportunidad al abandonar el alcance de criaturas inferiores a tamaño Grande." },
-      { nombre: "Cazadora Incansable (Pasiva)", descripcion: "Mientras persiga a un objetivo felino, ignora terreno difícil, no puede ser asustada y su velocidad aumenta 3 metros." },
+      { nombre: "Cazadora Incansable (Pasiva)", descripcion: "Mientras persiga a un objetivo felino, ignora terreno difícil, no puede ser asustada y su velocidad aumenta 10 pies." },
       { nombre: "Mordida Guillotina (Acción)", descripcion: "+9 al ataque. Daño: 3d10+6 perforante. Si el objetivo es un Felino añade 2d10 de daño." },
       { nombre: "Zarpazo (Acción)", descripcion: "+9 al ataque. Daño: 2d8+6 cortante. Si impacta puede empujar 10 pies." },
       { nombre: "Salto Depredador (Acción)", descripcion: "Se mueve hasta 40 pies sin provocar ataques de oportunidad y puede atacar de inmediato al terminar." },

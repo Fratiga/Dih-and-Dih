@@ -1,6 +1,6 @@
 /* =============================================================================
    CÁLCULOS — funciones puras, nada de DOM. Todo lo que aparece en la ficha
-   se deriva acá a partir de los datos guardados; no se guarda ningún
+   se deriva aquí a partir de los datos guardados; no se guarda ningún
    resultado ya calculado (sección 14: "no guardes copias desactualizadas").
 ============================================================================= */
 
@@ -180,7 +180,7 @@ function fichasLanzamientoCD(personaje) {
 
 /* Las fórmulas de daño son texto libre del jugador y suelen traer atributos
    escritos a mano ("1d6 + FUE", "1d8 + DES (des)"). Roll20 no sabe qué es
-   "FUE", así que acá se reemplazan por el modificador real del personaje.
+   "FUE", así que aquí se reemplazan por el modificador real del personaje.
    Si el atributo trae una aclaración entre paréntesis ("FUE (des)", la
    forma de decir "FUE, o DES si el arma es sutil"), manda el de los
    paréntesis. Solo se toca un atributo que viene justo después de un

@@ -30,7 +30,7 @@
 
    Si se agrega contenido nuevo para cualquiera de estas ocho, revisar
    esos bloques en secreto.html antes de asumir que el puntaje sale solo
-   de las filas de acá abajo.
+   de las filas de aquí abajo.
 ============================================================================= */
 window.BUFON_VOCES_INFO = {
   coartada: { nombre: "LA COARTADA", color: "#D6B84C" },
@@ -69,7 +69,7 @@ window.BUFON_VOCES_UMBRALES = {
    exclusiva (ver ledros_hub en data/bufon-contenido.js), y La Herida,
    elegida para avanzar en el ciclo de Side A, con la suya en dagren_hub.
    Subir el techo de otra Voz más adelante es una decisión de contenido,
-   no de código: solo cambiar el número acá. */
+   no de código: solo cambiar el número aquí. */
 window.BUFON_VOCES_TECHO = {
   coartada: 2,
   testigo: 2,

@@ -9,7 +9,7 @@
   let importacionPendiente = null; // { personaje, pendientesRevision } antes de confirmar
   let autoguardadoTimeout = null;
   let modoPorItemRoll20 = {}; // { [idSintetico]: { modo, preguntar } } — transitorio, no se persiste
-  let miEmail = null; // email de la sesión actual — para saber si una ficha es "de otro" (solo pasa si sos Admin)
+  let miEmail = null; // email de la sesión actual — para saber si una ficha es "de otro" (solo pasa si eres Admin)
   let avisoPuntosActivo = false; // se prende al subir de nivel, sobrevive a un renderTabs() y se apaga solo al repartir todo
   let decoracionArrastre = null; // estado transitorio del arrastre/redimensión de una pegatina en curso
 
@@ -522,7 +522,7 @@
     actualizarAvisoPuntos();
   }
 
-  /* El aviso de "tenés puntos por repartir" solo aparece cuando el
+  /* El aviso de "tienes puntos por repartir" solo aparece cuando el
      jugador acaba de subir de nivel (ver manejarCambioBinding). Una vez
      visible, se mantiene actualizado con cada cambio y se esconde solo
      cuando ya repartió todo lo que tenía disponible. */
@@ -538,7 +538,7 @@
       aviso.classList.add("hidden");
       return;
     }
-    aviso.textContent = `Subiste de nivel: tenés ${disponibles - repartidos} puntos de mejora por repartir.`;
+    aviso.textContent = `Subiste de nivel: tienes ${disponibles - repartidos} puntos de mejora por repartir.`;
     aviso.classList.remove("hidden");
   }
 
@@ -750,7 +750,7 @@
         `).join("")}
       </div>
       <p class="fichas-puntos-info">Puntos por tu nivel: <strong data-calc="puntosDisponibles">${fichasPuntosDisponiblesNetos(p)}</strong>. Repartidos: <strong data-calc="puntosRepartidos">${fichasPuntosRepartidos(p)}</strong></p>
-      <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tenés ${fichasPuntosDisponiblesNetos(p) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>`;
+      <p id="fichasAvisoPuntos" class="fichas-aviso-puntos ${avisoPuntosActivo ? "" : "hidden"}">Subiste de nivel: tienes ${fichasPuntosDisponiblesNetos(p) - fichasPuntosRepartidos(p)} puntos de mejora por repartir.</p>`;
 
     const ajustes = `
       <p class="fichas-imagenes-ayuda">Todo personaje arranca en 8 en cada característica. Los bonos raciales se suman a la puntuación final, pero no cuentan como puntos de mejora repartidos.</p>
@@ -1495,12 +1495,12 @@
   /* ==========================================================================
      REPETIBLES: alta/baja de filas para ataques, hechizos, rasgos,
      objetos, clases extra, espacios de conjuro y macros. Todo pasa por
-     acá vía delegación (un solo listener de click en el contenedor).
+     aquí vía delegación (un solo listener de click en el contenedor).
 
      IMPORTANTE: esta delegación se registra UNA sola vez (ver
      inicializarEventosTabs, más abajo) — #fichasTabsPaneles nunca se
      destruye, solo se le reemplaza el innerHTML en cada renderTabs(), así
-     que volver a llamar addEventListener acá en cada render apilaría un
+     que volver a llamar addEventListener aquí en cada render apilaría un
      listener nuevo encima de los anteriores sin sacar los viejos: un
      click terminaría disparando manejarAgregar/manejarQuitar tantas
      veces como renders hubo, duplicando ataques/objetos por cada click.
@@ -1685,7 +1685,7 @@
     // Los inputs con __ataque__ / __hechizo__ / __rasgo__ / __objeto__ /
     // __rasgo__ apuntan a un item DENTRO de un array (no una ruta fija de
     // objeto), así que necesitan su propio traductor de binding además del
-    // genérico por path — se resuelve acá antes de que llegue al binding
+    // genérico por path — se resuelve aquí antes de que llegue al binding
     // genérico (mismo contenedor, mismo evento, pero atajado antes).
     cont.addEventListener("input", manejarBindingDeArray, true);
     cont.addEventListener("change", manejarBindingDeArray, true);

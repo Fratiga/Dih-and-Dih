@@ -1,7 +1,7 @@
 /* =============================================================================
    VALHALLA — pantallas. Cuartel (grupo, nivel, equipo), arena (el combate se
    dibuja en un canvas y se maneja con clic) y resultado (XP, niveles, botín).
-   Las reglas viven en valhalla-reglas / datos / combate; acá solo se muestra
+   Las reglas viven en valhalla-reglas / datos / combate; aquí solo se muestra
    y se pasan órdenes al motor.
 ============================================================================= */
 (function () {

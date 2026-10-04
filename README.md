@@ -1,6 +1,6 @@
 ﻿# Dih-and-Dih
 
-**Entren acá 👉 https://fratiga.github.io/Dih-and-Dih/**
+**Entren aquí 👉 https://fratiga.github.io/Dih-and-Dih/**
 
 Ese link los lleva directo al Compendio, sin bajar nada.
 

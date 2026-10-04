@@ -1,5 +1,5 @@
 // Archivos usados por el "susto" al ingresar mal la contraseña en Personajes/Cronología.
-// Poné las imágenes y canciones dentro de la carpeta Jumpscare/ y agregá acá la ruta de
+// Pon las imágenes y canciones dentro de la carpeta Jumpscare/ y agrega aquí la ruta de
 // cada archivo (con el prefijo "assets/Jumpscare/"), por ejemplo:
 //   "assets/Jumpscare/payaso.jpg"
 //   "assets/Jumpscare/grito.mp3"

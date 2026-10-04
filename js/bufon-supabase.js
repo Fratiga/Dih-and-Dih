@@ -1,6 +1,6 @@
 /* Config pública de Supabase. Esta key es la "publicable" (equivalente a
    la vieja "anon"): está pensada para vivir en el navegador. La seguridad
-   real la da RLS del lado de Supabase, no que esto esté escondido acá. */
+   real la da RLS del lado de Supabase, no que esto esté escondido aquí. */
 window.BUFON_SUPABASE_URL = "https://ilicqboqelrjuvtslaxd.supabase.co";
 window.BUFON_SUPABASE_KEY = "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
 
@@ -231,7 +231,7 @@ async function bufonRegistrarToquePuerta() {
 
 /* --- Panel de Admin: progreso del Bufón -------------------------------------
    Ojo con lo que esto NO muestra: el puntaje/etapa de cada Voz interna
-   (ver data/bufon-voces.js) no vive acá — se calcula entero en el
+   (ver data/bufon-voces.js) no vive aquí — se calcula entero en el
    navegador de cada jugador a partir de bufonHistorial (localStorage) y
    nunca se persiste como número en Supabase. Lo que sí se puede armar con
    lo que hay en bufon_elecciones/bufon_jugadores/bufon_puerta_denegada:
@@ -266,7 +266,7 @@ async function adminListarProgresoBufon() {
     // vía PostgREST), así que el conteo "real" (solo cuentas
     // autenticadas y no excluidas, ver
     // scratchpad/bufon_excluir_conteo_admin.sql) tiene que venir de una
-    // RPC en vez de calcularse acá con las filas de bufon_elecciones
+    // RPC en vez de calcularse aquí con las filas de bufon_elecciones
     // que sí podemos leer.
     supabase.rpc("bufon_contar_side_b_reales")
   ]);
