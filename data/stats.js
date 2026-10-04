@@ -883,5 +883,71 @@ window.STATS = [
       { nombre: "Pequeño ayudante (Reacción)", descripcion: "Cuando un aliado a 3 m impacta a un enemigo, se mueve hasta 3 m hacia ese enemigo, siempre que no atraviese espacios ocupados." }
     ],
     estrategia: "«¡Mírame! ¡Mírame! ¡Hoy hice tres pinchazos seguidos! ¿Viste, Baltasar?» Se concentra en un jugador debilitado y aprovecha su movilidad para entrar y salir del combate. Se ríe cuando consigue inyectar sus compuestos y busca constantemente la atención de Baltasar. Si cae Baltasar, se enfurece y ataca sin pensar."
+  },
+  {
+    id: "restos-de-ledros-piedra",
+    personajeId: "ledros",
+    nombre: "Restos de Ledros (Piedra)",
+    rol: "Infantería",
+    tipo: "No-muerto",
+    nivel: 3,
+    pv: 32,
+    ca: 16,
+    velocidad: "30 pies",
+    stats: { fue: 16, des: 8, con: 16, int: 2, sab: 6, car: 1 },
+    notas: [
+      "Cuerpo de piedra: 2 de CA más que los restos comunes. Vulnerable al daño contundente."
+    ],
+    habilidades: [
+      { nombre: "Cuerpo de Piedra (Pasiva)", descripcion: "Tiene 2 de CA más que los restos comunes. Es vulnerable al daño contundente." },
+      { nombre: "Golpe Deforme (Acción)", descripcion: "+5 al impacto. Daño: 2d6+3 contundente." },
+      { nombre: "Aferrarse (Acción adicional)", descripcion: "El objetivo hace una salvación de Fuerza CD 13 o queda Restringido." },
+      { nombre: "Alma Inestable (Al morir)", descripcion: "Al morir explota: todas las criaturas a 5 pies reciben 1d6 de daño necrótico." }
+    ],
+    estrategia: "Avanza sin desviarse y aguanta casi todo. Los golpes pesados (mazas, martillos, empujones) son lo único que lo rompe rápido. Si sujeta a alguien, los demás lo rodean."
+  },
+  {
+    id: "restos-de-ledros-madera",
+    personajeId: "ledros",
+    nombre: "Restos de Ledros (Madera)",
+    rol: "Infantería",
+    tipo: "No-muerto",
+    nivel: 3,
+    pv: 32,
+    ca: 14,
+    velocidad: "40 pies",
+    stats: { fue: 16, des: 8, con: 16, int: 2, sab: 6, car: 1 },
+    notas: [
+      "Cuerpo de madera: se mueve 3 m más rápido que los restos comunes. Vulnerable al fuego."
+    ],
+    habilidades: [
+      { nombre: "Cuerpo de Madera (Pasiva)", descripcion: "Se mueve 3 m más rápido que los restos comunes. Es vulnerable al fuego." },
+      { nombre: "Golpe Deforme (Acción)", descripcion: "+5 al impacto. Daño: 2d6+3 contundente." },
+      { nombre: "Aferrarse (Acción adicional)", descripcion: "El objetivo hace una salvación de Fuerza CD 13 o queda Restringido." },
+      { nombre: "Alma Inestable (Al morir)", descripcion: "Al morir explota: todas las criaturas a 5 pies reciben 1d6 de daño necrótico." }
+    ],
+    estrategia: "Es el más rápido: llega primero y sujeta al que quede más separado del grupo. El fuego lo destruye enseguida."
+  },
+  {
+    id: "restos-de-ledros-barro",
+    personajeId: "ledros",
+    nombre: "Restos de Ledros (Barro)",
+    rol: "Infantería",
+    tipo: "No-muerto",
+    nivel: 3,
+    pv: 42,
+    ca: 12,
+    velocidad: "30 pies",
+    stats: { fue: 16, des: 8, con: 16, int: 2, sab: 6, car: 1 },
+    notas: [
+      "Cuerpo de barro: 10 PV más y 2 de CA menos que los restos comunes. Sus golpes ralentizan al objetivo."
+    ],
+    habilidades: [
+      { nombre: "Cuerpo de Barro (Pasiva)", descripcion: "Tiene 10 PV más y 2 de CA menos que los restos comunes. Cada golpe que impacta reduce 10 pies la velocidad del objetivo hasta el final de su siguiente turno." },
+      { nombre: "Golpe Deforme (Acción)", descripcion: "+5 al impacto. Daño: 2d6+3 contundente. La velocidad del objetivo baja 10 pies hasta el final de su siguiente turno." },
+      { nombre: "Aferrarse (Acción adicional)", descripcion: "El objetivo hace una salvación de Fuerza CD 13 o queda Restringido." },
+      { nombre: "Alma Inestable (Al morir)", descripcion: "Al morir explota: todas las criaturas a 5 pies reciben 1d6 de daño necrótico." }
+    ],
+    estrategia: "Se acerca a quien intenta huir y lo va frenando con cada golpe. Pega poco, pero deja a los blancos en el sitio para que los demás lleguen."
   }
 ];
