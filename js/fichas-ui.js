@@ -1442,17 +1442,17 @@
       const a = p.ataques.find(x => x.id === id);
       const modo = btn.closest(".fichas-repetible-item").querySelector(`input[name="modo-ataque-${id}"]:checked`)?.value || "normal";
       if (tipo === "ataque") texto = fichasComandoAtaque(a.nombre, fichasAtaqueTotal(p, a), { modo });
-      else if (tipo === "dano") texto = fichasComandoDano(a.nombre, a.dano, a.tipoDano);
-      else texto = fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), a.dano, a.tipoDano, { modo });
+      else if (tipo === "dano") texto = fichasComandoDano(a.nombre, fichasResolverFormula(p, a.dano), a.tipoDano);
+      else texto = fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasResolverFormula(p, a.dano), a.tipoDano, { modo });
     } else if (tipo === "hechizo") {
       const h = p.hechizos.find(x => x.id === id);
-      if (h.tipo === "ataque") texto = fichasComandoHechizoAtaque(h.nombre, fichasLanzamientoAtaque(p), h.dano, h.tipoDano);
-      else if (h.tipo === "salvacion") texto = fichasComandoHechizoSalvacion(h.nombre, NOMBRES_ATRIBUTOS[p.lanzamiento.atributo], fichasLanzamientoCD(p), h.dano, h.tipoDano);
-      else if (h.dano) texto = fichasComandoHechizoCuracion(h.nombre, h.dano);
+      if (h.tipo === "ataque") texto = fichasComandoHechizoAtaque(h.nombre, fichasLanzamientoAtaque(p), fichasResolverFormula(p, h.dano), h.tipoDano);
+      else if (h.tipo === "salvacion") texto = fichasComandoHechizoSalvacion(h.nombre, NOMBRES_ATRIBUTOS[p.lanzamiento.atributo], fichasLanzamientoCD(p), fichasResolverFormula(p, h.dano), h.tipoDano);
+      else if (h.dano) texto = fichasComandoHechizoCuracion(h.nombre, fichasResolverFormula(p, h.dano));
       else texto = h.nombre;
     } else if (tipo === "rasgo") {
       const r = p.rasgos.find(x => x.id === id);
-      texto = fichasComandoRasgo(r.nombre, r.formulaRoll20);
+      texto = fichasComandoRasgo(r.nombre, fichasResolverFormula(p, r.formulaRoll20));
     } else if (tipo === "macro") {
       texto = comandoDeMacro(p.macros.find(x => x.id === id));
     } else if (tipo === "roll20item") {
@@ -1481,7 +1481,7 @@
     if (m.narrativa) partes.push(`/em ${m.narrativa}`);
     const formula = m.modoTirada && m.modoTirada !== "normal"
       ? fichasFormulaD20(m.modificadorFijo, m.modoTirada)
-      : `${m.formula}${m.modificadorFijo ? fichasSigno(m.modificadorFijo) : ""}`;
+      : `${fichasResolverFormula(personajeActual, m.formula)}${m.modificadorFijo ? fichasSigno(m.modificadorFijo) : ""}`;
     partes.push(`${m.nombre}: [[${formula}]]${m.tipoDano ? ` ${m.tipoDano}` : ""}`);
     return partes.join("\n");
   }
@@ -1500,7 +1500,7 @@
     });
     items.push({ id: "iniciativa", categoria: "Combate", texto: `Iniciativa: ${fichasSigno(fichasIniciativaTotal(p))}`, tipo: "iniciativa", refId: null });
     p.ataques.forEach(a => {
-      items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${a.dano || "—"}`, tipo: "ataquedano", refId: a.id });
+      items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${fichasResolverFormula(p, a.dano) || "—"}`, tipo: "ataquedano", refId: a.id });
     });
     p.hechizos.filter(h => h.disponible !== false).forEach(h => {
       items.push({ id: `hechizo:${h.id}`, categoria: "Conjuros", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
@@ -1525,17 +1525,17 @@
       case "iniciativa": return fichasComandoIniciativa(fichasIniciativaTotal(p), opts);
       case "ataquedano": {
         const a = p.ataques.find(x => x.id === item.refId);
-        return fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), a.dano, a.tipoDano, opts);
+        return fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasResolverFormula(p, a.dano), a.tipoDano, opts);
       }
       case "hechizo": {
         const h = p.hechizos.find(x => x.id === item.refId);
-        if (h.tipo === "ataque") return fichasComandoHechizoAtaque(h.nombre, fichasLanzamientoAtaque(p), h.dano, h.tipoDano, opts);
-        if (h.tipo === "salvacion") return fichasComandoHechizoSalvacion(h.nombre, NOMBRES_ATRIBUTOS[p.lanzamiento.atributo], fichasLanzamientoCD(p), h.dano, h.tipoDano);
-        return h.dano ? fichasComandoHechizoCuracion(h.nombre, h.dano) : h.nombre;
+        if (h.tipo === "ataque") return fichasComandoHechizoAtaque(h.nombre, fichasLanzamientoAtaque(p), fichasResolverFormula(p, h.dano), h.tipoDano, opts);
+        if (h.tipo === "salvacion") return fichasComandoHechizoSalvacion(h.nombre, NOMBRES_ATRIBUTOS[p.lanzamiento.atributo], fichasLanzamientoCD(p), fichasResolverFormula(p, h.dano), h.tipoDano);
+        return h.dano ? fichasComandoHechizoCuracion(h.nombre, fichasResolverFormula(p, h.dano)) : h.nombre;
       }
       case "rasgo": {
         const r = p.rasgos.find(x => x.id === item.refId);
-        return fichasComandoRasgo(r.nombre, r.formulaRoll20);
+        return fichasComandoRasgo(r.nombre, fichasResolverFormula(p, r.formulaRoll20));
       }
       case "macro": return comandoDeMacro(p.macros.find(x => x.id === item.refId));
       default: return null;

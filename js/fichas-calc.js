@@ -151,3 +151,27 @@ function fichasLanzamientoCD(personaje) {
   if (l.manual) return Number(l.cdManual || 10);
   return 8 + fichasModificadorFinal(personaje, l.atributo) + fichasCompetenciaTotal(personaje) + Number(l.ajusteCD || 0);
 }
+
+/* Las fórmulas de daño son texto libre del jugador y suelen traer atributos
+   escritos a mano ("1d6 + FUE", "1d8 + DES (des)"). Roll20 no sabe qué es
+   "FUE", así que acá se reemplazan por el modificador real del personaje.
+   Si el atributo trae una aclaración entre paréntesis ("FUE (des)", la
+   forma de decir "FUE, o DES si el arma es sutil"), manda el de los
+   paréntesis. Solo se toca un atributo que viene justo después de un
+   operador (+, -, *, /, "(") o al inicio, para no romper palabras sueltas. */
+const FICHAS_ATRIBUTO_POR_NOMBRE = {
+  fue: "fue", fuerza: "fue", des: "des", destreza: "des", con: "con", constitucion: "con",
+  int: "int", inteligencia: "int", sab: "sab", sabiduria: "sab", car: "car", carisma: "car"
+};
+
+function fichasResolverFormula(personaje, texto) {
+  if (!texto) return texto;
+  const sinAcentos = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const nombre = "fuerza|destreza|constituci[oó]n|inteligencia|sabidur[ií]a|carisma|fue|des|con|int|sab|car";
+  const re = new RegExp(`(^|[+\\-*/(]\\s*)(${nombre})(?![A-Za-zÁ-ú])(?:\\s*\\(\\s*(${nombre})\\s*\\))?`, "gi");
+  let r = String(texto).replace(re, (m, antes, a, b) => {
+    const id = FICHAS_ATRIBUTO_POR_NOMBRE[sinAcentos(b || a)];
+    return antes + String(fichasModificadorFinal(personaje, id));
+  });
+  return r.replace(/\+\s*-/g, "-").replace(/-\s*-/g, "+");
+}
