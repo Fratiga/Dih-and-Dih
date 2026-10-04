@@ -30,16 +30,21 @@
      al pensar y unas frases propias para que se sienta que hay alguien enfrente.
      prof = jugadas que mira por adelantado; tiempo = tope de cálculo (ms);
      error = probabilidad de elegir una jugada peor; pausa = [min, max] segundos
-     que "piensa" antes de mover. */
+     que "piensa" antes de mover. azar = no calcula nada: elige una pieza que pueda
+     moverse al azar y mueve esa pieza a una casilla legal al azar. */
   const RIVALES = [
+    { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", azar: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
+      frases: { saludo: "¡Yo juego con las de arriba! ¿Cuáles son las de arriba?", jaque: "¿Eso es jaque? Yo solo quería mover algo.", capturaRival: "¡Me comí una! No sé cuál era.", capturaJugador: "Ah, esa se movía sola, ¿no?", gana: "¿Gané? ¿Eso era ganar?", pierde: "Perdí. ¿Puedo jugar otra? Guau. Digo, sí." } },
     { id: "aldeano", nombre: "Aldeano Común", dificultad: "Muy fácil", prof: 1, tiempo: 250, error: 0.5, pausa: [1.0, 2.6],
       frases: { saludo: "Voy a... intentarlo.", jaque: "¿Eso es jaque? Creo que sí.", capturaRival: "Ay, creo que me comí una pieza.", capturaJugador: "Uy.", gana: "¡Gané! No sé cómo.", pierde: "Sabía que no iba a poder." } },
     { id: "miliciano", nombre: "Miliciano de Brurland", dificultad: "Fácil", prof: 2, tiempo: 500, error: 0.22, pausa: [0.8, 2.0],
       frases: { saludo: "Empieza cuando quieras.", jaque: "Jaque.", capturaRival: "Es mía.", capturaJugador: "Buen golpe.", gana: "Fin de la partida.", pierde: "Bien jugado." } },
+    { id: "ocevat", nombre: "Ocevat", dificultad: "Intermedio", prof: 3, tiempo: 700, error: 0.14, pausa: [1.0, 2.6],
+      frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
     { id: "baraja", nombre: "Baraja", dificultad: "Media", prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
       frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
-    { id: "adam", nombre: "Adam Kovacs", dificultad: "Difícil", prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
-      frases: { saludo: "Que sea una partida digna.", jaque: "Jaque.", capturaRival: "Una pieza menos.", capturaJugador: "Bien tomada.", gana: "Se acabó.", pierde: "Una derrota honorable. Bien hecho." } },
+    { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
+      frases: { saludo: "Siéntate. Veamos cómo mueves tus tropas.", jaque: "Jaque. Tu flanco quedó abierto.", capturaRival: "Una baja. Habrá más.", capturaJugador: "Un sacrificio. Lo anoto.", gana: "Partida cerrada. La frontera sigue en pie.", pierde: "Bien jugado. Pocos llegan hasta aquí." } },
     { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
       frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
   ];
@@ -104,6 +109,13 @@
   function elegirJugada(g, cfg) {
     const movs = ordenar(g.moves({ verbose: true }));
     if (!movs.length) return null;
+    if (cfg.azar) {
+      // Primero una pieza al azar de las que pueden moverse, luego un movimiento suyo al azar
+      const casillas = [...new Set(movs.map(m => m.from))];
+      const origen = casillas[Math.floor(Math.random() * casillas.length)];
+      const suyos = movs.filter(m => m.from === origen);
+      return suyos[Math.floor(Math.random() * suyos.length)];
+    }
     const maximiza = g.turn() === "w";
     limite = performance.now() + cfg.tiempo;
     let mejorGlobal = null;
