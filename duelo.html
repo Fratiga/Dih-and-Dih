@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duelo — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261078">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261078">
+</head>
+<body class="mj-pagina">
+  <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+  </div>
+  <main class="mj-contenido duelo-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Duelo</h1>
+
+    <div class="duelo-escenario">
+      <canvas id="dueloCampo" class="duelo-campo" aria-label="Duelo"></canvas>
+
+      <div id="dueloMenu" class="duelo-capa">
+        <h2>Elige a tu rival</h2>
+        <div id="dueloRivales" class="duelo-rivales"></div>
+        <p class="duelo-ayuda">Atacar con Z (mantén para un golpe pesado) · Bloquear con X (mantén; justo antes del golpe es una parada) · Esquivar con C o Espacio.</p>
+      </div>
+
+      <div id="dueloFin" class="duelo-capa hidden">
+        <h2 id="dueloFinTitulo"></h2>
+        <p id="dueloFinTexto"></p>
+        <div class="duelo-fin-botones">
+          <button type="button" id="dueloReintentar" class="duelo-boton">Otra vez</button>
+          <button type="button" id="dueloMenuBtn" class="duelo-boton">Elegir rival</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="duelo-controles">
+      <button type="button" id="dueloBtnAtacar" class="duelo-control">Atacar<small>Z</small></button>
+      <button type="button" id="dueloBtnBloquear" class="duelo-control">Bloquear<small>X</small></button>
+      <button type="button" id="dueloBtnEsquivar" class="duelo-control">Esquivar<small>C</small></button>
+    </div>
+  </main>
+  <script src="js/duelo.js?v=20261078"></script>
+</body>
+</html>

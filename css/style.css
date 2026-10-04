@@ -3545,3 +3545,34 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fr-mover button + button { border-left: 0; }
 .fr-mover button:hover { color: var(--text); border-color: var(--accent-soft); }
 .fichas-repetible-header .fr-mover { margin: 0 6px 0 auto; }
+
+/* --- Duelo --- */
+.duelo-contenido { max-width: 1000px; }
+.duelo-escenario { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 10; margin: 0 auto; background: var(--panel); border: 1px solid var(--border); overflow: hidden; touch-action: manipulation; }
+.duelo-campo { display: block; width: 100%; height: 100%; }
+.duelo-capa {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: rgba(15, 16, 17, .88); text-align: center; padding: 20px;
+}
+.duelo-capa.hidden { display: none; }
+.duelo-capa h2 { margin: 0; font-size: clamp(1.2rem, 3vw, 1.8rem); }
+.duelo-rivales { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; width: 100%; max-width: 760px; }
+.duelo-rival {
+  display: flex; flex-direction: column; gap: 4px; text-align: left; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; font-family: inherit;
+}
+.duelo-rival:hover { border-color: var(--accent-soft); }
+.duelo-rival strong { font-size: .92rem; }
+.duelo-rival span { font-size: .78rem; color: var(--muted); }
+.duelo-rival small { font-size: .72rem; color: var(--accent-soft); }
+.duelo-ayuda { margin: 0; font-size: .8rem; color: var(--muted); max-width: 640px; }
+.duelo-fin-botones { display: flex; gap: 10px; }
+.duelo-boton { background: none; border: 1px solid var(--accent-soft); color: var(--text); padding: 10px 20px; font-family: inherit; cursor: pointer; }
+.duelo-boton:hover { border-color: var(--text); }
+.duelo-controles { display: flex; gap: 10px; justify-content: center; margin: 14px auto 0; max-width: 960px; }
+.duelo-control {
+  flex: 1; max-width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px; user-select: none; touch-action: none;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 14px 10px; font: 600 1rem var(--font-heading), sans-serif; cursor: pointer;
+}
+.duelo-control small { color: var(--muted); font-size: .7rem; font-family: sans-serif; }
+.duelo-control:active { border-color: var(--accent-soft); background: var(--panel-2); }
