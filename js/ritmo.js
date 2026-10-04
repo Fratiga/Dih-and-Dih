@@ -9,12 +9,9 @@
   const W = 960;
   const H = 540;
   const X_GOLPE = 210;
-  const VENTANA_PERFECTO = 0.05;
-  const VENTANA_BIEN = 0.11;
   const CLAVE_RECORDS = "compendioRitmoRecords";
   const CLAVE_AJUSTES = "compendioRitmoAjustes";
   const HOP = 512;
-  const VIDA_FALLO = 7;
 
   const CARRILES = {
     arriba: { y: 175, color: "#8fdcff", etiqueta: "X · J · K" },
@@ -23,11 +20,16 @@
   const TECLAS = { x: "arriba", j: "arriba", k: "arriba", arrowup: "arriba", z: "abajo", d: "abajo", f: "abajo", arrowdown: "abajo" };
 
   /* nps = notas por segundo que se buscan; hueco = separación mínima entre notas (s);
-     aproximacion = segundos que tarda una nota desde el borde hasta el punto de golpe. */
+     aproximacion = segundos que tarda una nota desde el borde hasta el punto de golpe;
+     umbral = sensibilidad al detectar golpes (menor = más notas); perfecto / bien =
+     ventanas de acierto (s); vidaFallo = vida que quita cada fallo; dobles = hay notas
+     que piden los dos carriles a la vez (huecoDoble = separación mínima entre ellas);
+     largas = fracción de notas que se mantienen pulsadas. */
   const DIFICULTADES = {
-    facil: { nombre: "Fácil", nps: 1.5, hueco: 0.42, aproximacion: 1.6, umbral: 1.6 },
-    normal: { nombre: "Normal", nps: 2.6, hueco: 0.28, aproximacion: 1.3, umbral: 1.4 },
-    dificil: { nombre: "Difícil", nps: 4.0, hueco: 0.19, aproximacion: 1.1, umbral: 1.0 }
+    facil: { nombre: "Fácil", nps: 1.5, hueco: 0.42, aproximacion: 1.6, umbral: 1.6, perfecto: 0.06, bien: 0.12, vidaFallo: 5, dobles: false, largas: 0 },
+    normal: { nombre: "Normal", nps: 2.6, hueco: 0.28, aproximacion: 1.3, umbral: 1.4, perfecto: 0.05, bien: 0.11, vidaFallo: 7, dobles: false, largas: 0 },
+    dificil: { nombre: "Difícil", nps: 4.0, hueco: 0.19, aproximacion: 1.0, umbral: 1.0, perfecto: 0.04, bien: 0.09, vidaFallo: 9, dobles: true, huecoDoble: 0.9, largas: 0.2 },
+    experto: { nombre: "Experto", nps: 5.2, hueco: 0.15, aproximacion: 0.85, umbral: 0.85, perfecto: 0.035, bien: 0.08, vidaFallo: 12, dobles: true, huecoDoble: 0.6, largas: 0.25 }
   };
 
   const canvas = document.getElementById("rtCampo");
@@ -46,6 +48,7 @@
   const cargaTxtEl = document.getElementById("rtCargaTxt");
   const finEl = document.getElementById("rtFin");
   const pausaEl = document.getElementById("rtPausa");
+  const buzonEl = document.getElementById("rtBuzon");
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
@@ -121,6 +124,17 @@
     return lista;
   }
 
+  /* Cuántos tramos se sostiene un sonido tras su ataque: mientras la energía se mantiene
+     por encima de la mitad del pico. Un golpe de batería cae enseguida; una voz o un
+     acorde no. */
+  function sostenido(rms, i) {
+    let ref = 0;
+    for (let j = i; j < Math.min(rms.length, i + 4); j++) ref = Math.max(ref, rms[j]);
+    let j = i + 4;
+    while (j < rms.length && rms[j] >= ref * 0.5 && j - i < 400) j++;
+    return j - i;
+  }
+
   /* Reparte los picos en notas: se quedan los más fuertes sin pasar de la densidad de la
      dificultad y sin dos notas más cerca que "hueco". No hay azar: la misma canción da
      siempre el mismo mapa. */
@@ -130,8 +144,8 @@
     const dur = buffer.duration;
     const tiempo = i => (i * HOP) / sr;
     const candidatos = [
-      ...picos(bajo, cfg.umbral).map(p => ({ t: tiempo(p.i), carril: "abajo", f: p.fuerza })),
-      ...picos(alto, cfg.umbral).map(p => ({ t: tiempo(p.i), carril: "arriba", f: p.fuerza * 0.95 }))
+      ...picos(bajo, cfg.umbral).map(p => ({ t: tiempo(p.i), i: p.i, carril: "abajo", f: p.fuerza })),
+      ...picos(alto, cfg.umbral).map(p => ({ t: tiempo(p.i), i: p.i, carril: "arriba", f: p.fuerza * 0.95 }))
     ].filter(c => c.t > 0.8 && c.t < dur - 0.5);
     candidatos.sort((a, b) => b.f - a.f);
 
@@ -145,9 +159,44 @@
       const k = Math.round(c.t / celda);
       if (bloqueo[k]) continue;
       for (let j = Math.max(0, k - medio); j <= Math.min(bloqueo.length - 1, k + medio); j++) bloqueo[j] = 1;
-      notas.push({ t: c.t, carril: c.carril, estado: null });
+      notas.push({ t: c.t, i: c.i, carril: c.carril, f: c.f, dur: 0 });
     }
     notas.sort((a, b) => a.t - b.t);
+
+    // Dobles: donde un grave y un agudo fuertes suenan juntos, la nota pide los dos carriles
+    if (cfg.dobles) {
+      const porCelda = { abajo: new Map(), arriba: new Map() };
+      candidatos.forEach(c => porCelda[c.carril].set(Math.round(c.t / celda), c));
+      let ultima = -99;
+      for (const n of notas) {
+        if (n.t - ultima < cfg.huecoDoble || n.f < 0.7) continue;
+        const otro = n.carril === "abajo" ? "arriba" : "abajo";
+        const k = Math.round(n.t / celda);
+        let par = null;
+        for (let d = -3; d <= 3; d++) {
+          const c = porCelda[otro].get(k + d);
+          if (c && (!par || c.f > par.f)) par = c;
+        }
+        if (par && par.f >= 0.7) { n.carril = "ambos"; n.t = (n.t + par.t) / 2; ultima = n.t; }
+      }
+      notas.sort((a, b) => a.t - b.t);
+    }
+
+    // Largas: sonidos que se sostienen, siempre que quepan antes de la siguiente nota del carril
+    if (cfg.largas) {
+      const siguiente = { abajo: Infinity, arriba: Infinity };
+      const candidatas = [];
+      for (let k = notas.length - 1; k >= 0; k--) {
+        const n = notas[k];
+        if (n.carril === "ambos") { siguiente.abajo = n.t; siguiente.arriba = n.t; continue; }
+        const rms = n.carril === "abajo" ? bajo : alto;
+        const largo = Math.min(2.5, siguiente[n.carril] - 0.2 - n.t, (sostenido(rms, n.i) * HOP) / sr);
+        if (largo >= 0.6 && n.t + largo < dur - 0.6) candidatas.push({ n, largo });
+        siguiente[n.carril] = n.t;
+      }
+      candidatas.sort((a, b) => b.largo - a.largo);
+      candidatas.slice(0, Math.floor(notas.length * cfg.largas)).forEach(c => { c.n.dur = Math.round(c.largo * 100) / 100; });
+    }
 
     // Pulso de los graves para que el fondo lata con la música
     const orden = Array.from(bajo).sort((x, y) => x - y);
@@ -170,6 +219,9 @@
   let cancionActual = null;
   let notas = [];
   let punteroFallos = 0;
+  let activas = []; // largas que se están manteniendo
+  let entradas = { arriba: new Set(), abajo: new Set() }; // teclas o dedos pulsados por carril
+  let gracia = 0;
   let puntos = 0;
   let combo = 0;
   let comboMax = 0;
@@ -212,7 +264,7 @@
   }
 
   function mostrar(panel) {
-    [menuEl, cargaEl, finEl, pausaEl].forEach(p => p.classList.toggle("hidden", p !== panel));
+    [menuEl, cargaEl, finEl, pausaEl, buzonEl].forEach(p => p.classList.toggle("hidden", p !== panel));
   }
 
   async function empezar() {
@@ -236,7 +288,7 @@
       }
       const base = mapas.get(clave);
       mapa = base;
-      notas = base.notas.map(n => ({ t: n.t, carril: n.carril, estado: null }));
+      notas = base.notas.map(n => ({ t: n.t, carril: n.carril, dur: n.dur, estado: null, mitades: {}, mantiene: null }));
     } catch (err) {
       estado = "menu";
       mostrar(menuEl);
@@ -247,7 +299,7 @@
   }
 
   function arrancar() {
-    punteroFallos = 0; puntos = 0; combo = 0; comboMax = 0;
+    punteroFallos = 0; activas = []; limpiarEntradas(); gracia = 0; puntos = 0; combo = 0; comboMax = 0;
     perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; efectos = [];
     avatar = { y: CARRILES.abajo.y, carril: "abajo", salto: -10, golpe: -10 };
     flash = { arriba: -10, abajo: -10 };
@@ -269,6 +321,7 @@
   function pausar() {
     if (estado !== "jugando") return;
     estado = "pausa";
+    limpiarEntradas();
     audio.suspend();
     mostrar(pausaEl);
   }
@@ -277,6 +330,7 @@
     if (estado !== "pausa") return;
     mostrar(null);
     await audio.resume();
+    gracia = tiempoCancion() + 0.7; // margen para volver a pulsar las largas en curso
     estado = "jugando";
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(bucle);
@@ -294,23 +348,29 @@
   }
 
   /* --- Golpes ------------------------------------------------------------- */
-  function sumar(juicio, carril) {
-    const y = CARRILES[carril].y;
-    avatar.carril = carril;
+  function limpiarEntradas() { entradas.arriba.clear(); entradas.abajo.clear(); }
+
+  function multiplicador() { return 1 + Math.min(combo, 150) / 50; }
+
+  function sumar(juicio, carril, peso = 1) {
+    const doble = carril === "ambos";
+    const y = (doble ? (CARRILES.arriba.y + CARRILES.abajo.y) / 2 : CARRILES[carril].y);
+    avatar.carril = doble ? "abajo" : carril;
     avatar.golpe = ahoraS();
-    flash[carril] = ahoraS();
+    flash[doble ? "arriba" : carril] = ahoraS();
+    if (doble) flash.abajo = ahoraS();
     if (juicio === "perfecto") {
       perfectos++; combo++;
-      puntos += Math.round(300 * (1 + Math.min(combo, 100) / 100));
+      puntos += Math.round(300 * peso * multiplicador());
       vida = Math.min(100, vida + 1);
       efectos.push({ x: X_GOLPE, y: y - 56, texto: "PERFECTO", color: "#f2d46b", t: ahoraS() });
     } else if (juicio === "bien") {
       buenos++; combo++;
-      puntos += Math.round(100 * (1 + Math.min(combo, 100) / 100));
+      puntos += Math.round(100 * peso * multiplicador());
       efectos.push({ x: X_GOLPE, y: y - 56, texto: "BIEN", color: "#e9e6d8", t: ahoraS() });
     } else {
       fallos++; combo = 0;
-      if (!ajustes.practica) vida = Math.max(0, vida - VIDA_FALLO);
+      if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
       efectos.push({ x: X_GOLPE, y: y - 56, texto: "FALLO", color: "#e8837b", t: ahoraS() });
     }
     comboMax = Math.max(comboMax, combo);
@@ -320,24 +380,36 @@
     flash[carril] = ahoraS();
     avatar.carril = carril;
     avatar.salto = ahoraS();
+    // Con una larga en curso en este carril, otra pulsación no cuenta
+    if (activas.some(n => n.carril === carril)) return;
     let mejor = null;
     for (let i = punteroFallos; i < notas.length; i++) {
       const n = notas[i];
-      if (n.t > t + VENTANA_BIEN) break;
-      if (n.carril !== carril || n.estado) continue;
+      if (n.t > t + cfg.bien) break;
+      if (n.estado) continue;
+      if (!(n.carril === carril || (n.carril === "ambos" && !n.mitades[carril]))) continue;
       const dt = Math.abs(n.t - t);
-      if (dt <= VENTANA_BIEN && (!mejor || dt < Math.abs(mejor.t - t))) mejor = n;
+      if (dt <= cfg.bien && (!mejor || dt < Math.abs(mejor.t - t))) mejor = n;
     }
     if (!mejor) {
       // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
       extras++; combo = 0;
-      if (!ajustes.practica) vida = Math.max(0, vida - VIDA_FALLO);
+      if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
       efectos.push({ x: X_GOLPE, y: CARRILES[carril].y - 56, texto: "FALLO", color: "#e8837b", t: ahoraS() });
       return;
     }
-    const dt = Math.abs(mejor.t - t);
-    mejor.estado = dt <= VENTANA_PERFECTO ? "perfecto" : "bien";
-    sumar(mejor.estado, carril);
+    const juicio = Math.abs(mejor.t - t) <= cfg.perfecto ? "perfecto" : "bien";
+    if (mejor.carril === "ambos") {
+      // Una nota doble solo cuenta cuando entran las dos mitades
+      mejor.mitades[carril] = juicio;
+      if (!mejor.mitades.arriba || !mejor.mitades.abajo) return;
+      mejor.estado = mejor.mitades.arriba === "perfecto" && mejor.mitades.abajo === "perfecto" ? "perfecto" : "bien";
+      sumar(mejor.estado, "ambos", 2);
+      return;
+    }
+    mejor.estado = juicio;
+    sumar(juicio, carril);
+    if (mejor.dur > 0) { mejor.mantiene = "activa"; activas.push(mejor); }
   }
 
   function tiempoDeEvento(ev) {
@@ -355,26 +427,55 @@
     if (!carril) return;
     if (estado === "jugando") {
       ev.preventDefault();
-      if (!ev.repeat) golpear(carril, tiempoDeEvento(ev));
+      if (ev.repeat) return;
+      entradas[carril].add("k" + ev.key.toLowerCase());
+      golpear(carril, tiempoDeEvento(ev));
     }
+  });
+
+  window.addEventListener("keyup", ev => {
+    const carril = TECLAS[ev.key.toLowerCase()];
+    if (carril) entradas[carril].delete("k" + ev.key.toLowerCase());
   });
 
   canvas.addEventListener("pointerdown", ev => {
     if (estado !== "jugando") return;
     ev.preventDefault();
     const r = canvas.getBoundingClientRect();
-    golpear((ev.clientY - r.top) / r.height < 0.5 ? "arriba" : "abajo", tiempoDeEvento(ev));
+    const carril = (ev.clientY - r.top) / r.height < 0.5 ? "arriba" : "abajo";
+    try { canvas.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura */ }
+    entradas[carril].add("p" + ev.pointerId);
+    golpear(carril, tiempoDeEvento(ev));
   });
+  const soltarDedo = ev => { entradas.arriba.delete("p" + ev.pointerId); entradas.abajo.delete("p" + ev.pointerId); };
+  canvas.addEventListener("pointerup", soltarDedo);
+  canvas.addEventListener("pointercancel", soltarDedo);
 
   window.addEventListener("blur", () => { if (estado === "jugando") pausar(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden && estado === "jugando") pausar(); });
 
   /* --- Avance y final ------------------------------------------------------ */
   function actualizar(t) {
-    while (punteroFallos < notas.length && notas[punteroFallos].t < t - VENTANA_BIEN) {
+    while (punteroFallos < notas.length && notas[punteroFallos].t < t - cfg.bien) {
       const n = notas[punteroFallos];
       if (!n.estado) { n.estado = "fallo"; sumar("fallo", n.carril); }
       punteroFallos++;
+    }
+    // Largas en curso: se completan al llegar al final y se rompen si sueltas antes
+    for (let k = activas.length - 1; k >= 0; k--) {
+      const n = activas[k];
+      const fin = n.t + n.dur;
+      if (t >= fin - 0.05) {
+        n.mantiene = "hecha";
+        puntos += Math.round(150 * multiplicador());
+        vida = Math.min(100, vida + 2);
+        efectos.push({ x: X_GOLPE, y: CARRILES[n.carril].y - 56, texto: "LARGA", color: "#f2d46b", t: ahoraS() });
+        activas.splice(k, 1);
+      } else if (t > gracia && entradas[n.carril].size === 0 && t < fin - 0.12) {
+        n.mantiene = "rota";
+        sumar("fallo", n.carril);
+        activas.splice(k, 1);
+      }
     }
     if (vida <= 0 && estado === "jugando") terminar(false);
     else if (t > mapa.dur + 0.8 && estado === "jugando") terminar(true);
@@ -428,9 +529,10 @@
     ctxC.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
   }
 
-  function dibujarNota(n, x, y, alfa) {
+  function dibujarForma(carril, x, alfa) {
+    const y = CARRILES[carril].y;
     ctxC.globalAlpha = alfa;
-    if (n.carril === "abajo") {
+    if (carril === "abajo") {
       ctxC.fillStyle = "#e8837b";
       ctxC.strokeStyle = "#7a2e29";
       ctxC.lineWidth = 3;
@@ -454,6 +556,33 @@
       ctxC.stroke();
     }
     ctxC.globalAlpha = 1;
+  }
+
+  /* Una nota: forma de su carril; la doble une las dos con un puente dorado; la larga
+     lleva una barra hasta donde termina. xCola es la posición del final de la barra. */
+  function dibujarNota(n, x, alfa, xCola) {
+    if (n.carril === "ambos") {
+      ctxC.globalAlpha = alfa;
+      ctxC.strokeStyle = "#f2d46b";
+      ctxC.lineWidth = 5;
+      ctxC.beginPath(); ctxC.moveTo(x, CARRILES.arriba.y + 27); ctxC.lineTo(x, CARRILES.abajo.y - 29); ctxC.stroke();
+      ctxC.globalAlpha = 1;
+      dibujarForma("arriba", x, alfa);
+      dibujarForma("abajo", x, alfa);
+      return;
+    }
+    if (xCola !== undefined && xCola > x) {
+      const y = CARRILES[n.carril].y;
+      const fin = Math.min(xCola, W + 40);
+      ctxC.globalAlpha = alfa * 0.55;
+      ctxC.fillStyle = CARRILES[n.carril].color;
+      ctxC.fillRect(x, y - 14, fin - x, 28);
+      ctxC.globalAlpha = alfa;
+      ctxC.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctxC.fillRect(fin - 4, y - 14, 4, 28);
+      ctxC.globalAlpha = 1;
+    }
+    dibujarForma(n.carril, x, alfa);
   }
 
   let ultimoAvatar = 0;
@@ -526,15 +655,25 @@
         const dt = n.t - t;
         if (dt > cfg.aproximacion) break;
         if (n.estado === "perfecto" || n.estado === "bien") continue;
-        dibujarNota(n, X_GOLPE + (dt / cfg.aproximacion) * recorrido, CARRILES[n.carril].y, 1);
+        const x = X_GOLPE + (dt / cfg.aproximacion) * recorrido;
+        dibujarNota(n, x, 1, n.dur > 0 ? X_GOLPE + ((n.t + n.dur - t) / cfg.aproximacion) * recorrido : undefined);
       }
+      // Largas que se están manteniendo: la cabeza se queda en el círculo y la cola se acerca
+      activas.forEach(n => {
+        const y = CARRILES[n.carril].y;
+        const cola = X_GOLPE + ((n.t + n.dur - t) / cfg.aproximacion) * recorrido;
+        ctxC.globalAlpha = 0.85;
+        ctxC.fillStyle = CARRILES[n.carril].color;
+        ctxC.fillRect(X_GOLPE, y - 14, Math.max(0, Math.min(cola, W + 40) - X_GOLPE), 28);
+        ctxC.globalAlpha = 1;
+      });
       // Notas ya falladas que se alejan
       for (let i = Math.max(0, punteroFallos - 12); i < punteroFallos; i++) {
         const n = notas[i];
         if (n.estado !== "fallo") continue;
         const dt = n.t - t;
         if (dt < -0.6) continue;
-        dibujarNota(n, X_GOLPE + (dt / cfg.aproximacion) * recorrido, CARRILES[n.carril].y, 0.3);
+        dibujarNota(n, X_GOLPE + (dt / cfg.aproximacion) * recorrido, 0.3);
       }
     }
 
@@ -627,6 +766,39 @@
   });
   practicaEl.addEventListener("change", () => { ajustes.practica = practicaEl.checked; guardarAjustes(); });
   jugarEl.addEventListener("click", empezar);
+
+  /* Buzón: la petición se guarda en la misma tabla de peticiones del sitio, marcada
+     como canción, y el admin la ve en su pestaña de Peticiones. */
+  const buzonForm = document.getElementById("rtBuzonForm");
+  const buzonEstadoEl = document.getElementById("rtBuzonEstado");
+  const buzonNombreEl = document.getElementById("rtBuzonNombre");
+  try { buzonNombreEl.value = localStorage.getItem("compendioRitmoNombre") || ""; } catch (e) { /* sin almacenamiento */ }
+  document.getElementById("rtAbrirBuzon").addEventListener("click", () => {
+    buzonEstadoEl.textContent = "";
+    mostrar(buzonEl);
+  });
+  document.getElementById("rtBuzonVolver").addEventListener("click", () => mostrar(menuEl));
+  buzonForm.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const cancion = document.getElementById("rtBuzonCancion").value.trim();
+    const enlace = document.getElementById("rtBuzonEnlace").value.trim();
+    const nombre = buzonNombreEl.value.trim();
+    if (!cancion) return;
+    const boton = document.getElementById("rtBuzonEnviar");
+    boton.disabled = true;
+    buzonEstadoEl.textContent = "Enviando...";
+    try {
+      await enviarPeticion({ texto: "[Canción para Ritmo] " + cancion + (enlace ? "\n" + enlace : ""), nombre });
+      try { localStorage.setItem("compendioRitmoNombre", nombre); } catch (e) { /* sin almacenamiento */ }
+      document.getElementById("rtBuzonCancion").value = "";
+      document.getElementById("rtBuzonEnlace").value = "";
+      buzonEstadoEl.textContent = "Enviada. Gracias.";
+    } catch (err) {
+      buzonEstadoEl.textContent = "No se pudo enviar. Prueba de nuevo en un rato.";
+    } finally {
+      boton.disabled = false;
+    }
+  });
   document.getElementById("rtReintentar").addEventListener("click", empezar);
   document.getElementById("rtVolver").addEventListener("click", salir);
   document.getElementById("rtContinuar").addEventListener("click", continuar);
@@ -639,7 +811,8 @@
   if (/[?&]debug\b/.test(location.search)) {
     window.__ritmo = {
       crearMapa, DIFICULTADES,
-      estado: () => ({ estado, puntos, combo, perfectos, buenos, fallos, extras, vida, notas: notas.length }),
+      estado: () => ({ estado, puntos, combo, perfectos, buenos, fallos, extras, vida, notas: notas.length, activas: activas.length }),
+      entradas,
       tick: t => { actualizar(t); dibujar(t); },
       golpear, notas: () => notas, tiempo: tiempoCancion,
       forzarTiempo: f => { tiempoCancion = f; }

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ritmo — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261100">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261100">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261100">
+  <link rel="stylesheet" href="css/style.css?v=20261101">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261101">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261101">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261101">
 </head>
-<body class="mj-pagina">
+<body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
   <div class="mj-barra">
     <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
@@ -31,8 +32,26 @@
           <label class="rt-practica"><input type="checkbox" id="rtPractica"> Práctica (la vida no baja)</label>
         </div>
         <p id="rtRecord" class="rt-record"></p>
-        <button type="button" id="rtJugar" class="rt-jugar">Jugar</button>
-        <p class="rt-ayuda">Abajo: Z D F ↓. Arriba: X J K ↑. En pantalla táctil, toca la mitad de abajo o la de arriba.</p>
+        <div class="rt-fila">
+          <button type="button" id="rtJugar" class="rt-jugar">Jugar</button>
+          <button type="button" id="rtAbrirBuzon" class="rt-secundario">Buzón de canciones</button>
+        </div>
+        <p class="rt-ayuda">Abajo: Z D F ↓. Arriba: X J K ↑. En pantalla táctil, toca la mitad de abajo o la de arriba. Las barras se mantienen pulsadas y las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
+      </div>
+
+      <div id="rtBuzon" class="rt-panel hidden">
+        <h2>Buzón de canciones</h2>
+        <p class="rt-ayuda">Pide una canción para el juego. Le llega al admin.</p>
+        <form id="rtBuzonForm" class="rt-form">
+          <input type="text" id="rtBuzonCancion" required maxlength="140" placeholder="Canción y artista" autocomplete="off">
+          <input type="text" id="rtBuzonEnlace" maxlength="300" placeholder="Enlace (opcional)" autocomplete="off">
+          <input type="text" id="rtBuzonNombre" maxlength="40" placeholder="Tu nombre (opcional)" autocomplete="off">
+          <div class="rt-botones rt-botones-izq">
+            <button type="submit" id="rtBuzonEnviar" class="rt-jugar">Enviar</button>
+            <button type="button" id="rtBuzonVolver" class="rt-secundario">Volver</button>
+          </div>
+        </form>
+        <p id="rtBuzonEstado" class="rt-record"></p>
       </div>
 
       <div id="rtCarga" class="rt-panel rt-centro hidden"><p id="rtCargaTxt">Analizando la canción...</p></div>
@@ -58,8 +77,9 @@
     <p class="mj-linea">Esc pausa.</p>
   </main>
 
-  <script src="js/temas.js?v=20261100"></script>
-  <script src="data/musica.js?v=20261100"></script>
-  <script src="js/ritmo.js?v=20261100"></script>
+  <script src="js/temas.js?v=20261101"></script>
+  <script src="data/musica.js?v=20261101"></script>
+  <script src="js/peticiones-supabase.js?v=20261101"></script>
+  <script src="js/ritmo.js?v=20261101"></script>
 </body>
 </html>

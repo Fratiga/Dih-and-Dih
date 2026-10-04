@@ -46,3 +46,11 @@
   .rt-ayuda { display: none; }
 }
 .rt-brillo { position: absolute; inset: 0; pointer-events: none; opacity: .2; will-change: opacity; background: radial-gradient(circle at 22% 50%, rgba(143, 220, 255, .3), rgba(143, 220, 255, 0) 60%); }
+.rt-fila { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.rt-form { display: flex; flex-direction: column; gap: 10px; max-width: 520px; }
+.rt-form input {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 12px; font: inherit; font-size: .9rem; border-radius: 0;
+}
+.rt-form input:focus { outline: none; border-color: var(--accent-soft); }
+.rt-botones-izq { justify-content: flex-start; }
