@@ -7,6 +7,7 @@ Página: `valhalla.html` (oculta, solo admin, igual que Duelo y Ajedrez; aparece
 ## Decisiones
 
 - **Combate por turnos sobre cuadrícula** (14 x 9), reglas de D&D 5e simplificadas. Inspiración de Mewgenics: tablero chico, terreno que importa (fuego, pinchos, barro, rocas), empujones con daño por choque y fuego amigo.
+- **El mapa depende de cuántas fichas pelean:** 8x6 (hasta 3), 10x7 (hasta 5), 12x8 (hasta 8), 14x9 (hasta 11) y 16x10. Seis temas de terreno: claro, ruinas, pozo de fuego, pantano, puente y salón de pilares. Los flancos de cada bando siempre quedan libres y el mapa siempre es conexo.
 - **Grupo de 1 a 4**, mezclando einherjar y copias de fichas.
 - **Las fichas se copian.** El einherjar de Valhalla sube por su cuenta; la ficha de campaña no se toca.
 - **Todo lo automatizable, desde el principio.** Los conjuros son datos (`VH.CONJUROS`) y el motor solo interpreta campos. Lo que no se puede leer de una ficha (texto libre) aparece como "sin automatizar".
@@ -39,4 +40,4 @@ Página: `valhalla.html` (oculta, solo admin, igual que Duelo y Ajedrez; aparece
 4. **Más conjuros** y objetivos múltiples para dardos y rayos.
 5. **Jugador contra jugador**: asíncrono (el equipo de un jugador defiende) o por turnos en vivo.
 6. **Equilibrio** por encima del nivel 12: hay pocos enemigos de nivel alto; hoy se suben de rango los de nivel bajo.
-7. Mapas con más variedad y enemigos con afijos caóticos.
+7. Más temas de mapa, mapas fijos para jefes y enemigos con afijos caóticos.

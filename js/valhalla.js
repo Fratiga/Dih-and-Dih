@@ -287,13 +287,14 @@
     c.enemigosIniciales = enemigos.slice();
     modo = null; hover = null; flashes = []; ocupado = false; combateId++;
     leerColores();
+    canvas.style.aspectRatio = `${c.ancho} / ${c.alto}`;
     $("vhCuartel").classList.add("hidden");
     $("vhResultado").classList.add("hidden");
     $("vhCombate").classList.remove("hidden");
     ajustarCanvas();
     c.empezar();
     c.log.length = 0;
-    c.log.push({ msg: `Combate: ${enemigos.map(e => e.nombre).join(", ")}.`, tipo: "ronda" });
+    c.log.push({ msg: `${c.mapaNombre}. Combate: ${enemigos.map(e => e.nombre).join(", ")}.`, tipo: "ronda" });
     pintarTodo();
     siguiente();
   }
@@ -355,7 +356,8 @@
       const u = c.unidades.find(x => x.id === id);
       const muerto = u.muerto || u.caido;
       return `<span class="vh-orden-chip ${u === c.activo ? "activo" : ""} ${muerto ? "caido" : ""} ${u.equipo === "enemigos" ? "enemigo" : ""}" style="--c:${u.color}" title="${esc(u.nombre)}"><i></i>${esc(u.nombre.split(" ")[0])}</span>`;
-    }).join("") + `<span class="vh-ronda">Ronda ${c.ronda}</span>`;
+    }).join("") + `<span class="vh-ronda">${esc(c.mapaNombre)} · Ronda ${c.ronda}</span><button type="button" class="vh-mini" id="vhHuir">Abandonar combate</button>`;
+    $("vhHuir").addEventListener("click", abandonar);
   }
 
   function pintarLog() {
@@ -410,11 +412,9 @@
       ${conjuros.length ? `<div class="vh-ops conjuros">${conjuros.map(boton).join("")}</div>` : ""}
       <div class="vh-pie">
         <button type="button" class="vh-boton vh-principal" id="vhFinTurno">Terminar turno</button>
-        <button type="button" class="vh-boton" id="vhHuir">Abandonar combate</button>
       </div>`;
     cont.querySelectorAll("[data-op]").forEach(b => b.addEventListener("click", () => elegirOp(b.dataset.op)));
     $("vhFinTurno").addEventListener("click", finTurno);
-    $("vhHuir").addEventListener("click", abandonar);
     const sel = $("vhNivel");
     if (sel) sel.addEventListener("change", () => { nivelElegido = parseInt(sel.value, 10) || 0; });
     const cast = $("vhCastigo");

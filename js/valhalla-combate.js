@@ -18,36 +18,103 @@
   const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
   const clave = (x, y) => `${x},${y}`;
 
+  /* El tamaño del tablero depende de cuántas fichas pelean: pocas fichas en un
+     ring chico, muchas en un campo grande. */
+  VH.TAMANOS_MAPA = [
+    { hasta: 3, ancho: 8, alto: 6, flanco: 2, nombre: "Reñidero" },
+    { hasta: 5, ancho: 10, alto: 7, flanco: 2, nombre: "Claro" },
+    { hasta: 8, ancho: 12, alto: 8, flanco: 3, nombre: "Plaza" },
+    { hasta: 11, ancho: 14, alto: 9, flanco: 3, nombre: "Campo" },
+    { hasta: 99, ancho: 16, alto: 10, flanco: 3, nombre: "Gran campo" }
+  ];
+  VH.tamanoMapa = n => VH.TAMANOS_MAPA.find(t => n <= t.hasta);
+
+  /* Cada tema coloca terreno en la zona central (entre los dos flancos, que
+     siempre quedan libres). Reciben (t, xMin, xMax, ancho, alto, poner). */
+  VH.TEMAS_MAPA = [
+    {
+      id: "claro", nombre: "Claro abierto",
+      generar(t, x0, x1, W, H, poner) {
+        const area = (x1 - x0 + 1) * H;
+        poner(TERRENO.ROCA, Math.round(area * 0.1));
+        poner(TERRENO.BARRO, Math.round(area * 0.07));
+        poner(TERRENO.FUEGO, Math.max(1, Math.round(area * 0.03)));
+        poner(TERRENO.PINCHOS, Math.max(1, Math.round(area * 0.03)));
+      }
+    },
+    {
+      id: "ruinas", nombre: "Ruinas",
+      generar(t, x0, x1, W, H, poner) {
+        // muros cortos con huecos, como paredes caídas
+        const columnas = [x0 + Math.floor((x1 - x0) / 3), x0 + Math.floor((x1 - x0) * 2 / 3)].filter((v, i, a) => a.indexOf(v) === i);
+        columnas.forEach(x => {
+          const hueco = 1 + Math.floor(Math.random() * (H - 2));
+          for (let y = 0; y < H; y++) if (Math.abs(y - hueco) > 0 && Math.random() < 0.7) t[y][x] = TERRENO.ROCA;
+        });
+        poner(TERRENO.BARRO, Math.max(2, Math.round(H * 0.4)));
+        poner(TERRENO.PINCHOS, 2);
+      }
+    },
+    {
+      id: "pozo", nombre: "Pozo de fuego",
+      generar(t, x0, x1, W, H, poner) {
+        const cx = Math.round((x0 + x1) / 2), cy = Math.floor(H / 2);
+        for (let y = 0; y < H; y++) for (let x = x0; x <= x1; x++) {
+          const d = Math.hypot(x - cx, (y - cy) * 1.2);
+          if (d < 1.2) t[y][x] = TERRENO.FUEGO;
+          else if (d < 2.2) t[y][x] = Math.random() < 0.5 ? TERRENO.PINCHOS : TERRENO.SUELO;
+        }
+        poner(TERRENO.ROCA, Math.max(3, Math.round(H * 0.7)));
+      }
+    },
+    {
+      id: "pantano", nombre: "Pantano",
+      generar(t, x0, x1, W, H, poner) {
+        const area = (x1 - x0 + 1) * H;
+        poner(TERRENO.BARRO, Math.round(area * 0.3));
+        poner(TERRENO.ROCA, Math.round(area * 0.05));
+        poner(TERRENO.PINCHOS, Math.max(1, Math.round(area * 0.04)));
+      }
+    },
+    {
+      id: "puente", nombre: "Puente",
+      generar(t, x0, x1, W, H, poner) {
+        // una franja de pinchos y fuego que parte el campo, con uno o dos pasos
+        const x = Math.round((x0 + x1) / 2);
+        const pasos = new Set([Math.floor(H / 2)]);
+        if (H >= 8) pasos.add(Math.floor(H / 2) + (Math.random() < 0.5 ? -3 : 3));
+        for (let y = 0; y < H; y++) {
+          if (pasos.has(y)) continue;
+          t[y][x] = y % 2 ? TERRENO.FUEGO : TERRENO.PINCHOS;
+        }
+        poner(TERRENO.ROCA, Math.max(2, Math.round(H * 0.5)));
+      }
+    },
+    {
+      id: "pilares", nombre: "Salón de pilares",
+      generar(t, x0, x1, W, H, poner) {
+        for (let x = x0 + 1; x <= x1 - 1; x += 3) for (let y = 1; y < H - 1; y += 3) t[y][x] = TERRENO.ROCA;
+        poner(TERRENO.BARRO, Math.max(2, Math.round(H * 0.5)));
+        poner(TERRENO.FUEGO, 2);
+      }
+    }
+  ];
+
   VH.crearCombate = function (jugadores, enemigos, opciones) {
-    const ANCHO = 14;
-    const ALTO = 9;
+    const tam = VH.tamanoMapa(jugadores.length + enemigos.length);
+    const ANCHO = tam.ancho;
+    const ALTO = tam.alto;
+    const FLANCO = tam.flanco;
     const c = {
       ancho: ANCHO, alto: ALTO, terreno: [], unidades: [], orden: [], indice: 0, ronda: 1, activo: null,
-      log: [], flotantes: [], fin: null, xpGanada: 0, version: 0
+      log: [], flotantes: [], fin: null, xpGanada: 0, version: 0, mapaNombre: "", tema: null
     };
 
     /* --- Mapa ----------------------------------------------------------- */
-    function generarMapa() {
-      for (let intento = 0; intento < 40; intento++) {
-        const t = Array.from({ length: ALTO }, () => Array(ANCHO).fill(TERRENO.SUELO));
-        const colocar = (tipo, n) => {
-          for (let i = 0; i < n; i++) {
-            const x = 3 + Math.floor(Math.random() * (ANCHO - 6));
-            const y = Math.floor(Math.random() * ALTO);
-            t[y][x] = tipo;
-          }
-        };
-        colocar(TERRENO.ROCA, 7 + Math.floor(Math.random() * 5));
-        colocar(TERRENO.FUEGO, 2 + Math.floor(Math.random() * 3));
-        colocar(TERRENO.PINCHOS, 2 + Math.floor(Math.random() * 3));
-        colocar(TERRENO.BARRO, 3 + Math.floor(Math.random() * 4));
-        if (conectado(t)) return t;
-      }
-      return Array.from({ length: ALTO }, () => Array(ANCHO).fill(TERRENO.SUELO));
-    }
     function conectado(t) {
-      const vistos = new Set([clave(0, 4)]);
-      const cola = [[0, 4]];
+      const y0 = Math.floor(ALTO / 2);
+      const vistos = new Set([clave(0, y0)]);
+      const cola = [[0, y0]];
       while (cola.length) {
         const [x, y] = cola.shift();
         DIRS.forEach(([dx, dy]) => {
@@ -59,8 +126,22 @@
       for (let y = 0; y < ALTO; y++) for (let x = 0; x < ANCHO; x++) if (t[y][x] !== TERRENO.ROCA && !vistos.has(clave(x, y))) return false;
       return true;
     }
+    function generarMapa() {
+      const x0 = FLANCO, x1 = ANCHO - 1 - FLANCO;
+      for (let intento = 0; intento < 60; intento++) {
+        const tema = VH.TEMAS_MAPA[Math.floor(Math.random() * VH.TEMAS_MAPA.length)];
+        const t = Array.from({ length: ALTO }, () => Array(ANCHO).fill(TERRENO.SUELO));
+        const poner = (tipo, n) => {
+          for (let i = 0; i < n; i++) t[Math.floor(Math.random() * ALTO)][x0 + Math.floor(Math.random() * (x1 - x0 + 1))] = tipo;
+        };
+        tema.generar(t, x0, x1, ANCHO, ALTO, poner);
+        for (let y = 0; y < ALTO; y++) for (let x = 0; x < FLANCO; x++) { t[y][x] = TERRENO.SUELO; t[y][ANCHO - 1 - x] = TERRENO.SUELO; }
+        if (conectado(t)) { c.tema = tema; return t; }
+      }
+      return Array.from({ length: ALTO }, () => Array(ANCHO).fill(TERRENO.SUELO));
+    }
     c.terreno = generarMapa();
-    for (let y = 0; y < ALTO; y++) for (let x = 0; x < 3; x++) { c.terreno[y][x] = TERRENO.SUELO; c.terreno[y][ANCHO - 1 - x] = TERRENO.SUELO; }
+    c.mapaNombre = `${c.tema ? c.tema.nombre : "Campo"} (${ANCHO}×${ALTO})`;
 
     /* --- Utilidades --------------------------------------------------------- */
     const enMapa = (x, y) => x >= 0 && y >= 0 && x < ANCHO && y < ALTO;
@@ -103,12 +184,15 @@
     c.visible = visible;
 
     /* --- Preparación ----------------------------------------------------- */
-    const pos = (lista, columna) => {
-      const ys = [4, 3, 5, 2, 6, 1, 7, 0, 8];
-      lista.forEach((u, i) => { u.x = columna + (i >= 9 ? 1 : 0) * (columna < 5 ? 1 : -1); u.y = ys[i % 9]; });
+    // las fichas de cada bando se ponen en su flanco, empezando por el centro
+    const pos = (lista, columna, haciaDentro) => {
+      const centro = Math.floor(ALTO / 2);
+      const filas = [centro];
+      for (let k = 1; filas.length < ALTO; k++) { if (centro - k >= 0) filas.push(centro - k); if (centro + k < ALTO) filas.push(centro + k); }
+      lista.forEach((u, i) => { u.x = columna + Math.floor(i / ALTO) * haciaDentro; u.y = filas[i % ALTO]; });
     };
-    pos(jugadores, 1);
-    pos(enemigos, ANCHO - 2);
+    pos(jugadores, 1, 1);
+    pos(enemigos, ANCHO - 2, -1);
     jugadores.forEach(u => { u.equipo = "jugadores"; });
     enemigos.forEach(u => { u.equipo = "enemigos"; });
     c.unidades = jugadores.concat(enemigos);
