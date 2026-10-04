@@ -175,3 +175,23 @@ function fichasResolverFormula(personaje, texto) {
   });
   return r.replace(/\+\s*-/g, "-").replace(/-\s*-/g, "+");
 }
+
+/* Daño final de un ataque: los dados que escribe el jugador + el modificador
+   del atributo del ataque (si la casilla está marcada) + el daño extra manual
+   (p. ej. "+1d4 fuego" o "2"). Todo texto libre pasa por fichasResolverFormula,
+   así que "FUE", "DES (des)" y similares también valen. */
+function fichasDanoAtaque(personaje, ataque) {
+  const partes = [];
+  const base = String(fichasResolverFormula(personaje, ataque.dano || "") || "").trim();
+  if (base) partes.push(base);
+  if (ataque.sumaModDano) {
+    const mod = fichasModificadorFinal(personaje, ataque.atributo);
+    if (mod !== 0) partes.push(mod > 0 ? `+${mod}` : `${mod}`);
+  }
+  // Del daño extra solo se conserva la parte matemática: una palabra suelta
+  // ("fuego") dentro de [[...]] rompería la tirada en Roll20; el tipo de daño
+  // va en su propio campo.
+  const extra = String(fichasResolverFormula(personaje, ataque.danoExtra || "") || "").replace(/[A-Za-zÁ-ú]{2,}/g, "").replace(/\s+/g, " ").trim();
+  if (extra) partes.push(/^[+-]/.test(extra) ? extra : `+${extra}`);
+  return partes.join("").replace(/^\+/, "");
+}

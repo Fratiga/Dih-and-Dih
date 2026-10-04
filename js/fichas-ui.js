@@ -490,6 +490,10 @@
         const a = p.ataques.find(x => x.id === arg);
         return a ? fichasSigno(fichasAtaqueTotal(p, a)) : "";
       }
+      case "danoAtaque": {
+        const a = p.ataques.find(x => x.id === arg);
+        return a ? (fichasDanoAtaque(p, a) || "—") : "";
+      }
       case "lanzAtaque": return fichasSigno(fichasLanzamientoAtaque(p));
       case "lanzCD": return String(fichasLanzamientoCD(p));
       case "puntosDisponibles": return String(fichasPuntosDisponiblesNetos(p));
@@ -770,7 +774,10 @@
           <div class="fichas-field"><label>Bonificador total</label><div class="fichas-field-resultado" data-calc="ataqueTotal:${a.id}">${fichasSigno(fichasAtaqueTotal(p, a))}</div></div>
           <div class="fichas-field"><label>Daño</label>${campoTexto(`__ataque__.${a.id}.dano`, a.dano, 'placeholder="1d8+2"')}</div>
           <div class="fichas-field"><label>Tipo de daño</label>${campoTexto(`__ataque__.${a.id}.tipoDano`, a.tipoDano)}</div>
+          <div class="fichas-field fichas-field-check"><label>Sumar el modificador al daño</label>${campoCheck(`__ataque__.${a.id}.sumaModDano`, a.sumaModDano)}</div>
+          <div class="fichas-field"><label>Daño extra (manual)</label>${campoTexto(`__ataque__.${a.id}.danoExtra`, a.danoExtra || "", 'placeholder="+1d4 o +2"')}</div>
         </div>
+        <p class="fichas-puntos-info">Se tira de daño: <strong data-calc="danoAtaque:${a.id}">${esc(fichasDanoAtaque(p, a) || "—")}</strong></p>
         <div class="fichas-modo-tirada">
           Tirada:
           <label><input type="radio" name="modo-ataque-${a.id}" value="normal" checked> normal</label>
@@ -1388,7 +1395,7 @@
   function manejarAgregar(tipo) {
     const p = personajeActual;
     if (tipo === "claseExtra") p.identidad.clasesExtra.push({ nombre: "", nivel: 1 });
-    if (tipo === "ataque") p.ataques.push({ id: fichasNuevoId(), nombre: "Nuevo ataque", atributo: "fue", competente: true, ajusteAtaque: 0, dano: "1d6", tipoDano: "", alcance: "", municionActual: null, municionMax: null, propiedades: "", notas: "" });
+    if (tipo === "ataque") p.ataques.push({ id: fichasNuevoId(), nombre: "Nuevo ataque", atributo: "fue", competente: true, ajusteAtaque: 0, dano: "1d6", sumaModDano: true, danoExtra: "", tipoDano: "", alcance: "", municionActual: null, municionMax: null, propiedades: "", notas: "" });
     if (tipo === "rasgo") p.rasgos.push({ id: fichasNuevoId(), nombre: "Nuevo rasgo", descripcion: "", usosActuales: null, usosMax: null, tipoAccion: "accion", recuperacion: "manual", formulaRoll20: "" });
     if (tipo === "hechizo") {
       const nuevoHechizo = { id: fichasNuevoId(), disponible: true, nombre: "Nuevo conjuro", nivel: 0, escuela: "", tiempo: "", alcance: "", duracion: "", componentes: "", concentracion: false, ritual: false, tipo: "ninguno", dano: "", tipoDano: "", descripcion: "", notas: "" };
@@ -1442,8 +1449,8 @@
       const a = p.ataques.find(x => x.id === id);
       const modo = btn.closest(".fichas-repetible-item").querySelector(`input[name="modo-ataque-${id}"]:checked`)?.value || "normal";
       if (tipo === "ataque") texto = fichasComandoAtaque(a.nombre, fichasAtaqueTotal(p, a), { modo });
-      else if (tipo === "dano") texto = fichasComandoDano(a.nombre, fichasResolverFormula(p, a.dano), a.tipoDano);
-      else texto = fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasResolverFormula(p, a.dano), a.tipoDano, { modo });
+      else if (tipo === "dano") texto = fichasComandoDano(a.nombre, fichasDanoAtaque(p, a), a.tipoDano);
+      else texto = fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasDanoAtaque(p, a), a.tipoDano, { modo });
     } else if (tipo === "hechizo") {
       const h = p.hechizos.find(x => x.id === id);
       if (h.tipo === "ataque") texto = fichasComandoHechizoAtaque(h.nombre, fichasLanzamientoAtaque(p), fichasResolverFormula(p, h.dano), h.tipoDano);
@@ -1500,7 +1507,7 @@
     });
     items.push({ id: "iniciativa", categoria: "Combate", texto: `Iniciativa: ${fichasSigno(fichasIniciativaTotal(p))}`, tipo: "iniciativa", refId: null });
     p.ataques.forEach(a => {
-      items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${fichasResolverFormula(p, a.dano) || "—"}`, tipo: "ataquedano", refId: a.id });
+      items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${fichasDanoAtaque(p, a) || "—"}`, tipo: "ataquedano", refId: a.id });
     });
     p.hechizos.filter(h => h.disponible !== false).forEach(h => {
       items.push({ id: `hechizo:${h.id}`, categoria: "Conjuros", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
@@ -1525,7 +1532,7 @@
       case "iniciativa": return fichasComandoIniciativa(fichasIniciativaTotal(p), opts);
       case "ataquedano": {
         const a = p.ataques.find(x => x.id === item.refId);
-        return fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasResolverFormula(p, a.dano), a.tipoDano, opts);
+        return fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasDanoAtaque(p, a), a.tipoDano, opts);
       }
       case "hechizo": {
         const h = p.hechizos.find(x => x.id === item.refId);

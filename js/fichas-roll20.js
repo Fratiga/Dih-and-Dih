@@ -56,7 +56,7 @@ function fichasComandoAtaqueYDano(personajeNombre, nombreArma, bonusAtaque, dano
   const lineas = [];
   if (narrativa) lineas.push(`/em ataca con ${nombreArma}`);
   lineas.push(`Ataque: [[${formula}]]`);
-  lineas.push(`Daño: [[${danoFormula}]]${tipo}`);
+  if (danoFormula) lineas.push(`Daño: [[${danoFormula}]]${tipo}`);
   return lineas.join("\n");
 }
 

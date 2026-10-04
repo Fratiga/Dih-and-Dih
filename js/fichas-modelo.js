@@ -190,5 +190,13 @@ function fichasMigrar(personaje) {
   if (!personaje.atributosRaciales) personaje.atributosRaciales = fichasAtributosRacialesVacios();
   if (!Array.isArray(personaje.decoraciones)) personaje.decoraciones = [];
   if (personaje.puntosFeats === undefined) personaje.puntosFeats = 0;
+  // Daño de ataques: casilla "sumar el modificador" y daño extra manual. En los
+  // ataques que ya existían se activa la casilla solo si el daño es únicamente
+  // dados ("1d6"); si ya trae un número o un atributo escrito, se deja apagada
+  // para no sumar el modificador dos veces.
+  (personaje.ataques || []).forEach(a => {
+    if (a.sumaModDano === undefined) a.sumaModDano = /^\s*\d*d\d+\s*$/i.test(a.dano || "");
+    if (a.danoExtra === undefined) a.danoExtra = "";
+  });
   return personaje;
 }
