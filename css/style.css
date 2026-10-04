@@ -3518,3 +3518,12 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fichas-municion { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
 .fichas-municion[hidden] { display: none; }
 .fichas-municion .fichas-puntos-info { margin: 0; }
+
+/* --- Personajes fallecidos: siguen en la lista, apagados y con su sello --- */
+.fichas-card-fallecida { opacity: .62; filter: grayscale(.85); }
+.fichas-card-fallecida:hover { opacity: .85; }
+.fichas-marca-fallecido {
+  margin: 4px 0 0; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: #b9b5a2;
+}
+.fichas-marca-fallecido.hidden { display: none; }
+#fichasHFallecido { margin: 2px 0 0; }

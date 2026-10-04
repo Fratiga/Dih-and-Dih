@@ -560,7 +560,7 @@
     disponible: "disponible", usados: "usados", max: "máximos", actuales: "actuales", dano: "daño",
     tipoDano: "tipo de daño", descripcion: "descripción", cantidad: "cantidad", estado: "estado",
     competente: "competente", ajuste: "ajuste", oro: "oro", plata: "plata", cobre: "cobre",
-    archivado: "Archivado", decoraciones: "Pegatinas", puntosFeats: "Puntos de feat", side: "Side"
+    archivado: "Archivado", fallecido: "Fallecido", fecha: "fecha", decoraciones: "Pegatinas", puntosFeats: "Puntos de feat", side: "Side"
   };
 
   function etiquetaRutaHistorial(ruta) {

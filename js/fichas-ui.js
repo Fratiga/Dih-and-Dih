@@ -40,6 +40,36 @@
   /* ==========================================================================
      LISTA DE PERSONAJES
   ========================================================================== */
+  /* Marca "Fallecido": el personaje sigue en la lista (apagado y con su sello) en
+     vez de desaparecer. La pone y la quita el Admin; se guarda dentro de la
+     ficha como { fecha } o null. */
+  function esAdminLocal() {
+    return typeof esAdmin === "function" && esAdmin();
+  }
+
+  function textoFallecido(p) {
+    if (!p.fallecido) return "";
+    let fecha = "";
+    try { fecha = p.fallecido.fecha ? ` · ${new Date(p.fallecido.fecha).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" })}` : ""; } catch (e) { /* sin fecha */ }
+    return `✝ Fallecido${fecha}`;
+  }
+
+  async function alternarFallecidoGuardado(id) {
+    const p = await fichasStorage.obtener(id);
+    if (!p) return;
+    if (p.fallecido) {
+      p.fallecido = null;
+    } else {
+      if (!confirm(`¿Marcar a "${p.identidad.nombre || "este personaje"}" como fallecido? Seguirá en la lista, con su sello.`)) return;
+      p.fallecido = { fecha: new Date().toISOString() };
+    }
+    try {
+      await fichasStorage.guardar(p);
+    } catch (err) {
+      alert("No se pudo guardar el cambio. Si es la ficha de otro jugador, necesitas el permiso de edición de Admin (scratchpad/admin_editar_fichas.sql).");
+    }
+  }
+
   async function cargarLista() {
     const grid = document.getElementById("fichasGrid");
     const vacio = document.getElementById("fichasVacio");
@@ -50,6 +80,7 @@
       grid.innerHTML = `<p class="fichas-auth-status error">No se pudo cargar la lista: ${esc(err.message || err)}</p>`;
       return;
     }
+    personajes.sort((a, b) => Number(!!a.fallecido) - Number(!!b.fallecido));
     vacio.classList.toggle("hidden", personajes.length > 0);
     sincronizarRoll20(personajes);
     await cargarMarcasDominio();
@@ -78,6 +109,13 @@
         e.stopPropagation();
         const json = await fichasExportarUno(el.dataset.exportar);
         descargarTexto(json, `ficha-${el.dataset.exportar}.json`);
+      });
+    });
+    grid.querySelectorAll("[data-fallecido]").forEach(el => {
+      el.addEventListener("click", async e => {
+        e.stopPropagation();
+        await alternarFallecidoGuardado(el.dataset.fallecido);
+        cargarLista();
       });
     });
     grid.querySelectorAll("[data-archivar]").forEach(el => {
@@ -126,11 +164,12 @@
     const clases = [p.identidad.clase, ...(p.identidad.clasesExtra || []).map(c => c.nombre)].filter(Boolean).join(" / ");
     const esDeOtro = p.ownerEmail && p.ownerEmail !== miEmail;
     return `
-      <article class="fichas-card${marca ? " fichas-card-marcada" : ""}">
+      <article class="fichas-card${marca ? " fichas-card-marcada" : ""}${p.fallecido ? " fichas-card-fallecida" : ""}">
         <button type="button" class="fichas-card-menu-btn" data-menu-toggle title="Más opciones">⋮</button>
         <div class="fichas-card-menu hidden">
           <button type="button" data-duplicar="${p.id}">Duplicar</button>
           <button type="button" data-exportar="${p.id}">Exportar JSON</button>
+          ${esAdminLocal() ? `<button type="button" data-fallecido="${p.id}">${p.fallecido ? "Revivir" : "Marcar como fallecido"}</button>` : ""}
           <button type="button" data-archivar="${p.id}">Archivar</button>
           <button type="button" class="fichas-menu-peligro" data-eliminar="${p.id}" data-nombre="${esc(p.identidad.nombre || "Sin nombre")}">Eliminar</button>
         </div>
@@ -139,6 +178,7 @@
           <div>
             <h3 class="fichas-card-nombre">${esc(p.identidad.nombre || "Sin nombre")}</h3>
             <p class="fichas-card-meta">${esc(p.identidad.raza || "—")} · ${esc(clases || "—")} · Nv. ${esc(p.identidad.nivelTotal)}</p>
+            ${p.fallecido ? `<p class="fichas-marca-fallecido">${esc(textoFallecido(p))}</p>` : ""}
             ${marca ? `<p class="fichas-marca-dominio">${textoMarca(marca)}</p>` : ""}
             ${esDeOtro ? `<p class="fichas-card-dueno">De: ${esc(p.ownerUsername || p.ownerEmail)}</p>` : ""}
           </div>
@@ -429,6 +469,20 @@
     const marcaEstado = marcasDominio.get(p.id);
     marcaEl.textContent = marcaEstado ? textoMarca(marcaEstado) : "";
     marcaEl.classList.toggle("hidden", !marcaEstado);
+    let fallecidoEl = document.getElementById("fichasHFallecido");
+    if (!fallecidoEl) {
+      fallecidoEl = document.createElement("p");
+      fallecidoEl.id = "fichasHFallecido";
+      fallecidoEl.className = "fichas-marca-fallecido";
+      marcaEl.insertAdjacentElement("afterend", fallecidoEl);
+    }
+    fallecidoEl.textContent = textoFallecido(p);
+    fallecidoEl.classList.toggle("hidden", !p.fallecido);
+    const btnFallecido = document.getElementById("fichasFallecidoBtn");
+    if (btnFallecido) {
+      btnFallecido.classList.toggle("hidden", !esAdminLocal());
+      btnFallecido.textContent = p.fallecido ? "Revivir personaje" : "Marcar como fallecido";
+    }
     const clases = [p.identidad.clase, ...(p.identidad.clasesExtra || []).map(c => c.nombre)].filter(Boolean).join(" / ");
     const esDeOtro = p.ownerEmail && p.ownerEmail !== miEmail;
     document.getElementById("fichasHSub").textContent = `${p.identidad.raza || "—"} · ${clases || "—"} · Nivel ${p.identidad.nivelTotal}` + (esDeOtro ? ` · De: ${p.ownerUsername || p.ownerEmail}` : "");
@@ -444,6 +498,19 @@
     puntosEl.classList.toggle("fichas-stat-sobregastado", repartidos > disponibles);
     estadoGuardado("Guardado", "guardado");
   }
+
+  document.getElementById("fichasFallecidoBtn")?.addEventListener("click", () => {
+    const p = personajeActual;
+    if (!p) return;
+    if (p.fallecido) {
+      p.fallecido = null;
+    } else {
+      if (!confirm(`¿Marcar a "${p.identidad.nombre || "este personaje"}" como fallecido?`)) return;
+      p.fallecido = { fecha: new Date().toISOString() };
+    }
+    programarAutoguardado();
+    renderEncabezado();
+  });
 
   /* Se llama después de CUALQUIER cambio de dato: refresca todo lo
      calculado que sea visible ahora mismo, sin releer el DOM entero. */
@@ -1836,7 +1903,7 @@
     if (sinColumnaRoll20) return;
     for (const pj of lista) {
       try {
-        const payload = payloadRoll20DePersonaje(pj);
+        const payload = pj.fallecido ? null : payloadRoll20DePersonaje(pj);
         const hash = hashTexto(JSON.stringify(payload));
         const clave = "compendioRoll20Hash:" + pj.id;
         if (localStorage.getItem(clave) === hash) continue;
