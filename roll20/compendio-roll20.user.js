@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.3.0
+// @version      2.4.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -206,6 +206,9 @@
     .cr20-pie a { color: #a9a58f; cursor: pointer; text-decoration: underline; }
     .cr20-ficha { padding: 8px 10px 0; color: #a9a58f; font-size: 12px; }
     .cr20-susurro { display: flex; align-items: center; gap: 6px; color: #a9a58f; font-size: 12px; padding: 8px 10px 0; }
+    #cr20-tip { position: fixed; z-index: 100001; max-width: 300px; background: #26272a; color: #e8e4d0;
+      border: 1px solid #a9a58f; padding: 8px 10px; font: 12px/1.5 sans-serif; white-space: pre-wrap;
+      box-shadow: 0 6px 20px rgba(0,0,0,.5); pointer-events: none; }
     #cr20-toast { position: fixed; left: 10px; bottom: 56px; z-index: 100000; background: #26272a; color: #e8e4d0;
       border: 1px solid #a9a58f; padding: 8px 12px; font: 13px sans-serif; max-width: 320px; }
   `);
@@ -275,6 +278,7 @@
   }
 
   hacerArrastrable(panel, panel.querySelector("#cr20-asa"), "compendio_pos_panel", null);
+  panel.addEventListener("mouseleave", () => { const t = document.getElementById("cr20-tip"); if (t) t.remove(); });
   hacerArrastrable(boton, boton, "compendio_pos_boton", () => {
     estado.abierto = !estado.abierto;
     GM_setValue("compendio_abierto", estado.abierto);
@@ -406,7 +410,7 @@
       <div class="cr20-fila"><input id="cr20-buscar" type="search" placeholder="Buscar..." value="${esc(estado.busqueda)}"></div>
       <div class="cr20-chips">${chips.map(([v, t]) => `<button type="button" class="cr20-chip ${estado.filtro === v ? "on" : ""}" data-filtro="${esc(v)}">${esc(t)}</button>`).join("")}</div>
       ${estado.error ? `<div class="cr20-error">${esc(estado.error)}</div>` : ""}
-      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
+      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
       ${pieSesion()}`;
   }
 
@@ -429,7 +433,7 @@
       cuerpo = `
         <div class="cr20-ficha"><strong style="color:#e8e4d0">${esc(actual.nombre)}</strong>${actual.ca !== null ? ` · CA ${esc(actual.ca)}` : ""}${actual.pv !== null ? ` · PV ${esc(actual.pv)}` : ""}<br>${esc(actual.rol)}</div>
         <div class="cr20-chips">${cats.map(c => `<button type="button" class="cr20-chip ${estado.filtroEnemigo === c ? "on" : ""}" data-filtro-enemigo="${c}">${c}</button>`).join("")}</div>
-        <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-enemigo-item="${esc(i.id)}">${esc(i.texto)}</button>`).join("")}</div>`;
+        <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-enemigo-item="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}>${esc(i.texto)}</button>`).join("")}</div>`;
     } else {
       cuerpo = `<div class="cr20-vacio">Marca enemigos con "+ Comparar" en Estadísticas para tenerlos aquí, o búscalos por nombre.</div>`;
     }
@@ -441,7 +445,39 @@
       ${cuerpo}`;
   }
 
+  /* --- Descripción al pasar el mouse ------------------------------------- */
+  function ocultarDescripcion() {
+    const t = document.getElementById("cr20-tip");
+    if (t) t.remove();
+  }
+
+  function mostrarDescripcion(boton) {
+    ocultarDescripcion();
+    const texto = boton.dataset.desc;
+    if (!texto) return;
+    const tip = document.createElement("div");
+    tip.id = "cr20-tip";
+    tip.textContent = texto;
+    document.body.appendChild(tip);
+    // Al lado del panel (a la derecha si cabe, si no a la izquierda), a la altura de la tirada
+    const pr = panel.getBoundingClientRect();
+    const br = boton.getBoundingClientRect();
+    const ancho = tip.offsetWidth;
+    let x = pr.right + 8;
+    if (x + ancho > window.innerWidth) x = Math.max(4, pr.left - ancho - 8);
+    let y = br.top;
+    if (y + tip.offsetHeight > window.innerHeight) y = Math.max(4, window.innerHeight - tip.offsetHeight - 4);
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+
   function enlazar() {
+    ocultarDescripcion();
+    panel.querySelectorAll(".cr20-item[data-desc]").forEach(b => {
+      b.addEventListener("mouseenter", () => mostrarDescripcion(b));
+      b.addEventListener("mouseleave", ocultarDescripcion);
+    });
+
     panel.querySelectorAll("[data-vista]").forEach(b => b.addEventListener("click", () => {
       estado.vista = b.dataset.vista;
       estado.busqueda = "";

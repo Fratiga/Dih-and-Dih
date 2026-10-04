@@ -1542,6 +1542,41 @@
     }
   }
 
+  /* Texto que el panel de Roll20 muestra al pasar el mouse sobre una tirada
+     (descripción del rasgo, datos del hechizo, notas del ataque...). */
+  function descripcionItemRoll20(p, item) {
+    const partes = [];
+    if (item.tipo === "rasgo") {
+      const r = p.rasgos.find(x => x.id === item.refId);
+      if (r) {
+        if (r.descripcion) partes.push(r.descripcion);
+        if (r.usosMax) partes.push(`Usos: ${r.usosActuales ?? "?"}/${r.usosMax}`);
+      }
+    } else if (item.tipo === "hechizo") {
+      const h = p.hechizos.find(x => x.id === item.refId);
+      if (h) {
+        const datos = [h.escuela, h.tiempo, h.alcance, h.duracion, h.componentes].filter(Boolean).join(" · ");
+        if (datos) partes.push(datos);
+        if (h.descripcion) partes.push(h.descripcion);
+      }
+    } else if (item.tipo === "ataquedano") {
+      const a = p.ataques.find(x => x.id === item.refId);
+      if (a) {
+        const datos = [a.alcance, a.propiedades].filter(Boolean).join(" · ");
+        if (datos) partes.push(datos);
+        if (a.notas) partes.push(a.notas);
+      }
+    } else if (item.tipo === "macro") {
+      const m = p.macros.find(x => x.id === item.refId);
+      if (m) {
+        if (m.narrativa) partes.push(m.narrativa);
+        if (m.notas) partes.push(m.notas);
+      }
+    }
+    const texto = partes.join("\n").trim();
+    return texto.length > 700 ? texto.slice(0, 700) + "…" : texto;
+  }
+
   function payloadRoll20DePersonaje(p) {
     const items = listaCompletaRoll20(p).map(i => {
       const cmd = {
@@ -1549,7 +1584,8 @@
         ventaja: comandoDeItemRoll20(p, i, "ventaja"),
         desventaja: comandoDeItemRoll20(p, i, "desventaja")
       };
-      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd };
+      const desc = descripcionItemRoll20(p, i);
+      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}) };
     });
     items.sort((a, b) => Number(b.favorita) - Number(a.favorita));
     return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", items };

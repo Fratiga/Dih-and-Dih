@@ -139,6 +139,7 @@ function statsR20Enemigo(s) {
       id: `hab-${i}`,
       categoria: normal.automatizada ? "Acciones" : "Rasgos",
       texto: h.nombre,
+      desc: h.descripcion || "",
       tieneModo: normal.tieneAtaque,
       cmd: {
         normal: normal.texto,
