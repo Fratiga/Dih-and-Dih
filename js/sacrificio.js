@@ -16,7 +16,7 @@
   const VELOCIDAD_BASE = 94;
   const VELOCIDAD_POR_RACHA = 8;
   const VELOCIDAD_MAX = 560;
-  const VELOCIDAD_OLEADA = 220; // las oleadas caen siempre a esta velocidad, sin importar la racha
+  const VELOCIDAD_OLEADA = 264; // las oleadas caen siempre a esta velocidad, sin importar la racha
 
   const medidorEl = document.getElementById("sacrificioMedidor");
   const fuegoEl = document.getElementById("sacrificioFuego");
