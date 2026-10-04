@@ -596,6 +596,7 @@
     });
     activarTab("resumen");
     aplicarFiltroHechizos();
+    aplicarFiltroFilas("rasgo");
     hechizoParaAbrir = null;
 
     renderMacros();
@@ -649,6 +650,48 @@
   const CLAVE_VISTA_HECHIZOS = "fichasVistaHechizos";
   let vistaGuardada = "lista";
   try { vistaGuardada = localStorage.getItem(CLAVE_VISTA_HECHIZOS) === "cubos" ? "cubos" : "lista"; } catch (e) { /* sin almacenamiento */ }
+  // Filas plegables (ataques, rasgos, macros, conjuros): cuáles están abiertas se
+  // recuerda para que subir/bajar o agregar una fila no las vuelva a cerrar.
+  const filasAbiertas = new Set();
+  const filtroFilas = { rasgo: { texto: "", soloDisponibles: false } };
+  const ETIQUETA_ACCION = { accion: "Acción", adicional: "Acción adicional", reaccion: "Reacción", pasiva: "Pasiva", otra: "Otra" };
+
+  function botonesMover(tipo, ref) {
+    return `<span class="fr-mover"><button type="button" data-mover="${tipo}:${ref}:-1" title="Subir" aria-label="Subir">▲</button><button type="button" data-mover="${tipo}:${ref}:1" title="Bajar" aria-label="Bajar">▼</button></span>`;
+  }
+
+  function resumenFila(tipo, item) {
+    const p = personajeActual;
+    if (tipo === "ataque") return `${fichasSigno(fichasAtaqueTotal(p, item))} · ${fichasDanoAtaque(p, item) || "—"}`;
+    if (tipo === "rasgo") return (ETIQUETA_ACCION[item.tipoAccion || "accion"] || "") + (Number(item.usosMax) > 0 ? ` · ${item.usosActuales ?? "?"}/${item.usosMax}` : "");
+    if (tipo === "macro") return item.formula || "";
+    return "";
+  }
+
+  /* Envuelve el formulario de una fila (el mismo de siempre) en un plegable que
+     muestra solo el nombre, un resumen corto y los botones de subir/bajar. */
+  function plegable(tipo, item, cuerpo, conDisponible) {
+    const clave = `${tipo}:${item.id}`;
+    const disponible = item.disponible !== false;
+    return `
+      <details class="fichas-fila${conDisponible && !disponible ? " no-disponible" : ""}" data-fila="${clave}" data-tipo="${tipo}" data-nombre="${esc(normalizarBusqueda(item.nombre || ""))}" ${filasAbiertas.has(clave) ? "open" : ""}>
+        <summary>
+          <span class="fh-nombre fr-nombre">${esc(item.nombre || "Sin nombre")}</span>
+          <span class="fh-nivel fr-extra">${esc(resumenFila(tipo, item))}</span>
+          ${conDisponible ? `<span class="fh-disp" title="Disponible"><input type="checkbox" data-bind="__${tipo}__.${item.id}.disponible" ${disponible ? "checked" : ""}></span>` : ""}
+          ${botonesMover(tipo, item.id)}
+        </summary>
+        <div class="fh-cuerpo">${cuerpo}</div>
+      </details>`;
+  }
+
+  function listaDeTipo(p, tipo) {
+    return ({
+      ataque: p.ataques, hechizo: p.hechizos, rasgo: p.rasgos, objeto: p.inventario.objetos,
+      macro: p.macros, claseExtra: p.identidad.clasesExtra, espacio: p.lanzamiento.espacios
+    })[tipo];
+  }
+
   const filtroHechizos = { texto: "", soloDisponibles: false, vista: vistaGuardada };
   let hechizoParaAbrir = null;
 
@@ -753,6 +796,7 @@
       <div class="fichas-repetible-item" data-clase-extra="${i}">
         <div class="fichas-repetible-header">
           <input type="text" data-bind="identidad.clasesExtra.${i}.nombre" value="${esc(c.nombre)}" placeholder="Nombre de la clase">
+          ${botonesMover("claseExtra", i)}
           <button type="button" class="fichas-repetible-remove" data-remove="claseExtra:${i}">×</button>
         </div>
         <div class="fichas-field"><label>Nivel en esta clase</label>${campoNumero(`identidad.clasesExtra.${i}.nivel`, c.nivel)}</div>
@@ -854,6 +898,10 @@
   }
 
   function filaAtaque(a) {
+    return plegable("ataque", a, cuerpoFilaAtaque(a), false);
+  }
+
+  function cuerpoFilaAtaque(a) {
     const p = personajeActual;
     return `
       <div class="fichas-repetible-item" data-ataque="${a.id}">
@@ -940,6 +988,10 @@
   function panelRasgos() {
     const p = personajeActual;
     const rasgos = `
+      <div class="fichas-hechizos-barra">
+        <input type="search" id="frBuscar" placeholder="Buscar rasgo..." value="${esc(filtroFilas.rasgo.texto)}">
+        <label class="fichas-compacto-check"><input type="checkbox" id="frSoloDisp" ${filtroFilas.rasgo.soloDisponibles ? "checked" : ""}> Solo disponibles</label>
+      </div>
       <div data-lista="rasgos">${p.rasgos.map(r => filaRasgo(r)).join("")}</div>
       <button type="button" class="secondary-button fichas-add-btn" data-add="rasgo">+ Agregar rasgo/recurso</button>`;
     const competencias = `
@@ -957,6 +1009,10 @@
   }
 
   function filaRasgo(r) {
+    return plegable("rasgo", r, cuerpoFilaRasgo(r), true);
+  }
+
+  function cuerpoFilaRasgo(r) {
     return `
       <div class="fichas-repetible-item" data-rasgo="${r.id}">
         <div class="fichas-repetible-header">
@@ -1024,6 +1080,7 @@
       <div class="fichas-repetible-item" data-espacio="${i}">
         <div class="fichas-repetible-header">
           <input type="text" data-bind="lanzamiento.espacios.${i}.nombre" value="${esc(e.nombre === undefined ? `Nivel ${i + 1}` : e.nombre)}" placeholder="Nivel ${i + 1}">
+          ${botonesMover("espacio", i)}
           <button type="button" class="fichas-repetible-remove" data-remove="espacio:${i}">×</button>
         </div>
         <div class="fichas-field-grid">
@@ -1040,12 +1097,14 @@
 
   function filaHechizo(h, abierto) {
     const disponible = h.disponible !== false;
+    abierto = abierto || filasAbiertas.has(`hechizo:${h.id}`);
     return `
       <details class="fichas-hechizo ${disponible ? "" : "no-disponible"}" data-hechizo="${h.id}" data-nombre="${esc(normalizarBusqueda(h.nombre))}" ${abierto ? 'open data-listo="1"' : ""}>
         <summary>
           <span class="fh-nombre">${esc(h.nombre || "Sin nombre")}</span>
           <span class="fh-nivel">${etiquetaNivelHechizo(h)}</span>
           <span class="fh-disp" title="Disponible"><input type="checkbox" data-bind="__hechizo__.${h.id}.disponible" ${disponible ? "checked" : ""}></span>
+          ${botonesMover("hechizo", h.id)}
         </summary>
         <div class="fh-cuerpo">${abierto ? cuerpoHechizo(h) : ""}</div>
       </details>`;
@@ -1085,6 +1144,26 @@
     if (!h) return;
     detalle.querySelector(".fh-cuerpo").innerHTML = cuerpoHechizo(h);
     detalle.dataset.listo = "1";
+  }
+
+  function actualizarFila(tipo, id) {
+    const p = personajeActual;
+    const item = listaDeTipo(p, tipo)?.find(x => x.id === id);
+    const fila = document.querySelector(`.fichas-fila[data-fila="${tipo}:${id}"]`);
+    if (!item || !fila) return;
+    fila.querySelector(".fr-nombre").textContent = item.nombre || "Sin nombre";
+    fila.querySelector(".fr-extra").textContent = resumenFila(tipo, item);
+    fila.dataset.nombre = normalizarBusqueda(item.nombre);
+  }
+
+  function aplicarFiltroFilas(tipo) {
+    const f = filtroFilas[tipo];
+    if (!f) return;
+    const q = normalizarBusqueda((f.texto || "").trim());
+    document.querySelectorAll(`#fichasTabsPaneles .fichas-fila[data-tipo="${tipo}"]`).forEach(d => {
+      const disp = !d.classList.contains("no-disponible");
+      d.hidden = !((!q || d.dataset.nombre.includes(q)) && (!f.soloDisponibles || disp));
+    });
   }
 
   function aplicarFiltroHechizos() {
@@ -1205,6 +1284,7 @@
           <input type="text" data-bind="__objeto__.${o.id}.nombre" value="${esc(o.nombre)}" placeholder="Nombre del objeto">
           <span class="fichas-objeto-cant" title="Cantidad">×${Number(o.cantidad) || 0}</span>
           <button type="button" class="fichas-objeto-estado" data-inv="estado:${o.id}" title="Cambiar entre equipado y guardado">${etiquetaEstado}</button>
+          ${botonesMover("objeto", o.id)}
           <button type="button" class="fichas-repetible-remove" data-remove="objeto:${o.id}">×</button>
         </div>
         ${o.estado === "consumido" ? "" : `<div class="fichas-objeto-acciones">
@@ -1431,6 +1511,10 @@
     cont.addEventListener("toggle", e => {
       const d = e.target;
       if (d.classList && d.classList.contains("fichas-hechizo") && d.open && !d.dataset.listo) llenarCuerpoHechizo(d);
+      if (!imprimiendo && d.classList) {
+        const clave = d.classList.contains("fichas-fila") ? d.dataset.fila : (d.classList.contains("fichas-hechizo") ? `hechizo:${d.dataset.hechizo}` : null);
+        if (clave) { if (d.open) filasAbiertas.add(clave); else filasAbiertas.delete(clave); }
+      }
       if (!imprimiendo && d.dataset && d.dataset.seccion) seccionesAbiertas.set(d.dataset.seccion, d.open);
     }, true);
 
@@ -1443,6 +1527,14 @@
         aplicarFiltroHechizos();
         return;
       }
+      if (e.target.id === "frBuscar") {
+        filtroFilas.rasgo.texto = e.target.value;
+        aplicarFiltroFilas("rasgo");
+        return;
+      }
+      // Nombre y resumen de ataques, rasgos y macros se reflejan al instante en su fila cerrada
+      const mf = (e.target.dataset && e.target.dataset.bind || "").match(/^__(ataque|rasgo|macro)__\.([^.]+)\./);
+      if (mf) setTimeout(() => actualizarFila(mf[1], mf[2]), 0);
       if (e.target.id === "fiBuscar") {
         filtroInventario.texto = e.target.value;
         aplicarFiltroInventario();
@@ -1489,10 +1581,18 @@
         aplicarFiltroHechizos();
         return;
       }
+      if (e.target.id === "frSoloDisp") {
+        filtroFilas.rasgo.soloDisponibles = e.target.checked;
+        aplicarFiltroFilas("rasgo");
+        return;
+      }
+      const mf = (e.target.dataset && e.target.dataset.bind || "").match(/^__(ataque|rasgo|macro)__\.([^.]+)\./);
+      if (mf) setTimeout(() => actualizarFila(mf[1], mf[2]), 0);
       const marca = e.target.closest && e.target.closest(".fh-disp");
       if (marca) {
-        marca.closest(".fichas-hechizo").classList.toggle("no-disponible", !e.target.checked);
-        aplicarFiltroHechizos();
+        const fila = marca.closest(".fichas-hechizo, .fichas-fila");
+        fila.classList.toggle("no-disponible", !e.target.checked);
+        if (fila.classList.contains("fichas-hechizo")) aplicarFiltroHechizos(); else aplicarFiltroFilas(fila.dataset.tipo);
       }
     }, true);
     cont.addEventListener("click", e => {
@@ -1552,6 +1652,13 @@
 
       const addBtn = e.target.closest("[data-add]");
       if (addBtn) return manejarAgregar(addBtn.dataset.add);
+
+      const moverBtn = e.target.closest("[data-mover]");
+      if (moverBtn) {
+        e.preventDefault();
+        const [tipo, ref, delta] = moverBtn.dataset.mover.split(":");
+        return manejarMover(tipo, ref, Number(delta));
+      }
 
       const removeBtn = e.target.closest("[data-remove]");
       if (removeBtn) {
@@ -1619,18 +1726,19 @@
   function manejarAgregar(tipo) {
     const p = personajeActual;
     if (tipo === "claseExtra") p.identidad.clasesExtra.push({ nombre: "", nivel: 1 });
-    if (tipo === "ataque") p.ataques.push({ id: fichasNuevoId(), nombre: "Nuevo ataque", atributo: "fue", competente: true, ajusteAtaque: 0, dano: "1d6", sumaModDano: true, danoExtra: "", tipoDano: "", alcance: "", municionActual: null, municionMax: null, propiedades: "", notas: "" });
-    if (tipo === "rasgo") p.rasgos.push({ id: fichasNuevoId(), nombre: "Nuevo rasgo", descripcion: "", usosActuales: null, usosMax: null, tipoAccion: "accion", recuperacion: "manual", formulaRoll20: "" });
+    if (tipo === "ataque") filasAbiertas.add(`ataque:${p.ataques[p.ataques.push({ id: fichasNuevoId(), nombre: "Nuevo ataque", atributo: "fue", competente: true, ajusteAtaque: 0, dano: "1d6", sumaModDano: true, danoExtra: "", tipoDano: "", alcance: "", municionActual: null, municionMax: null, propiedades: "", notas: "" }) - 1].id}`);
+    if (tipo === "rasgo") filasAbiertas.add(`rasgo:${p.rasgos[p.rasgos.push({ id: fichasNuevoId(), disponible: true, nombre: "Nuevo rasgo", descripcion: "", usosActuales: null, usosMax: null, tipoAccion: "accion", recuperacion: "manual", formulaRoll20: "" }) - 1].id}`);
     if (tipo === "hechizo") {
       const nuevoHechizo = { id: fichasNuevoId(), disponible: true, nombre: "Nuevo conjuro", nivel: 0, escuela: "", tiempo: "", alcance: "", duracion: "", componentes: "", concentracion: false, ritual: false, tipo: "ninguno", dano: "", tipoDano: "", descripcion: "", notas: "" };
       p.hechizos.unshift(nuevoHechizo);
+      filasAbiertas.add(`hechizo:${nuevoHechizo.id}`);
       hechizoParaAbrir = nuevoHechizo.id;
       filtroHechizos.texto = "";
       filtroHechizos.soloDisponibles = false;
     }
     if (tipo === "espacio") p.lanzamiento.espacios.push({ nivel: p.lanzamiento.espacios.length + 1, max: 1, usados: 0 });
     if (tipo === "objeto") p.inventario.objetos.push({ id: fichasNuevoId(), nombre: "Nuevo objeto", cantidad: 1, peso: null, estado: "guardado", descripcion: "", notas: "", cargasActuales: null, cargasMax: null, valor: null });
-    if (tipo === "macro") p.macros.push({ id: fichasNuevoId(), nombre: "Nueva macro", formula: "1d20", modificadorFijo: 0, narrativa: "", tipoDano: "", modoTirada: "normal", notas: "", favorita: false });
+    if (tipo === "macro") filasAbiertas.add(`macro:${p.macros[p.macros.push({ id: fichasNuevoId(), nombre: "Nueva macro", formula: "1d20", modificadorFijo: 0, narrativa: "", tipoDano: "", modoTirada: "normal", notas: "", favorita: false }) - 1].id}`);
 
     programarAutoguardado();
     // Hay que leer la pestaña activa ANTES de renderTabs(): esa función
@@ -1639,6 +1747,29 @@
     const activo = document.querySelector(".fichas-tab.active")?.dataset.tab || "resumen";
     renderTabs();
     activarTab(activo);
+  }
+
+  /* Sube o baja una fila dentro de su lista. El orden se guarda en la ficha y es
+     el mismo que ve el panel de Roll20. */
+  function manejarMover(tipo, ref, delta) {
+    const p = personajeActual;
+    const lista = listaDeTipo(p, tipo);
+    if (!lista) return;
+    const porIndice = tipo === "claseExtra" || tipo === "espacio";
+    const i = porIndice ? Number(ref) : lista.findIndex(x => x.id === ref);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= lista.length) return;
+    [lista[i], lista[j]] = [lista[j], lista[i]];
+
+    programarAutoguardado();
+    const activo = document.querySelector(".fichas-tab.active")?.dataset.tab || "resumen";
+    renderTabs();
+    activarTab(activo);
+    // Deja a la vista la fila que se movió
+    const idNuevo = porIndice ? String(j) : ref;
+    const atributo = { ataque: "data-fila", rasgo: "data-fila", macro: "data-fila", hechizo: "data-hechizo", objeto: "data-objeto", claseExtra: "data-clase-extra", espacio: "data-espacio" }[tipo];
+    const valor = ["ataque", "rasgo", "macro"].includes(tipo) ? `${tipo}:${idNuevo}` : idNuevo;
+    document.querySelector(`[${atributo}="${valor}"]`)?.scrollIntoView({ block: "nearest" });
   }
 
   function manejarQuitar(tipo, idOIndice) {
@@ -1748,7 +1879,7 @@
     p.hechizos.filter(h => h.disponible !== false).forEach(h => {
       items.push({ id: `hechizo:${h.id}`, categoria: "Conjuros", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
     });
-    p.rasgos.filter(r => r.formulaRoll20).forEach(r => {
+    p.rasgos.filter(r => r.formulaRoll20 && r.disponible !== false).forEach(r => {
       items.push({ id: `rasgo:${r.id}`, categoria: "Rasgos", texto: r.nombre, tipo: "rasgo", refId: r.id });
     });
     p.macros.forEach(m => {
@@ -1978,7 +2109,7 @@ ${calc}` : "";
     const p = personajeActual;
     const cont = document.querySelector('[data-lista="macros"]');
     if (!cont) return;
-    cont.innerHTML = p.macros.map(m => `
+    cont.innerHTML = p.macros.map(m => plegable("macro", m, `
       <div class="fichas-repetible-item" data-macro="${m.id}">
         <div class="fichas-repetible-header">
           <input type="text" data-bind="__macro__.${m.id}.nombre" value="${esc(m.nombre)}" placeholder="Nombre de la macro">
@@ -1995,7 +2126,7 @@ ${calc}` : "";
         <div class="fichas-field"><label>Notas</label>${campoTexto(`__macro__.${m.id}.notas`, m.notas)}</div>
         <div class="fichas-copiar-fila"><button type="button" class="fichas-copiar-btn" data-copiar="macro" data-id="${m.id}">Copiar macro</button></div>
       </div>
-    `).join("") || `<p class="fichas-puntos-info">Todavía no hay macros.</p>`;
+    `, false)).join("") || `<p class="fichas-puntos-info">Todavía no hay macros.</p>`;
   }
 
   /* ==========================================================================

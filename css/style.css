@@ -3527,3 +3527,21 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 .fichas-marca-fallecido.hidden { display: none; }
 #fichasHFallecido { margin: 2px 0 0; }
+
+/* --- Filas plegables de ataques, rasgos y macros, y botones de subir/bajar --- */
+.fichas-fila { border: 1px solid var(--border); background: var(--fondo-tarjeta, var(--panel)); margin-bottom: 6px; }
+.fichas-fila[hidden] { display: none; }
+.fichas-fila > summary { display: flex; align-items: center; gap: 10px; padding: 7px 10px; cursor: pointer; list-style: none; user-select: none; }
+.fichas-fila > summary::-webkit-details-marker { display: none; }
+.fichas-fila > summary:hover { background: var(--panel-2); }
+.fichas-fila.no-disponible > summary .fh-nombre { opacity: .45; text-decoration: line-through; }
+.fichas-fila.no-disponible > summary .fh-nivel { opacity: .45; }
+.fichas-fila .fh-cuerpo .fichas-repetible-item { border: 0; padding: 0; margin: 0; background: none; clip-path: none; border-radius: 0; }
+.fr-mover { display: inline-flex; flex-shrink: 0; }
+.fr-mover button {
+  background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+  width: 26px; height: 24px; padding: 0; font-size: .6rem; line-height: 1;
+}
+.fr-mover button + button { border-left: 0; }
+.fr-mover button:hover { color: var(--text); border-color: var(--accent-soft); }
+.fichas-repetible-header .fr-mover { margin: 0 6px 0 auto; }
