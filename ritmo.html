@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ritmo — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20261094"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261094">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261094">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261094">
+</head>
+<body class="mj-pagina">
+  <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+  </div>
+  <main class="mj-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Ritmo</h1>
+
+    <div class="rt-escenario" id="rtEscenario">
+      <canvas id="rtCampo" class="rt-campo" aria-label="Campo de juego de ritmo"></canvas>
+
+      <div id="rtMenu" class="rt-panel">
+        <h2>Elige una canción</h2>
+        <div id="rtCanciones" class="rt-canciones"></div>
+        <div class="rt-opciones">
+          <div class="rt-dificultades" id="rtDificultades"></div>
+          <label class="rt-ajuste">Sincronía <input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0"> <output id="rtDesfaseTxt">0 ms</output></label>
+          <label class="rt-practica"><input type="checkbox" id="rtPractica"> Práctica (la vida no baja)</label>
+        </div>
+        <p id="rtRecord" class="rt-record"></p>
+        <button type="button" id="rtJugar" class="rt-jugar">Jugar</button>
+        <p class="rt-ayuda">Los golpes llegan por dos carriles. <strong>Suelo</strong>: Z, D, F o ↓. <strong>Aire</strong>: X, J, K o ↑. En pantalla táctil, toca la mitad de abajo o la de arriba. Si lo oyes desfasado, mueve la sincronía.</p>
+      </div>
+
+      <div id="rtCarga" class="rt-panel rt-centro hidden"><p id="rtCargaTxt">Analizando la canción...</p></div>
+
+      <div id="rtFin" class="rt-panel rt-centro hidden">
+        <h2 id="rtFinTitulo"></h2>
+        <p id="rtFinRango" class="rt-rango"></p>
+        <p id="rtFinDatos" class="rt-datos"></p>
+        <div class="rt-botones">
+          <button type="button" id="rtReintentar" class="rt-jugar">Otra vez</button>
+          <button type="button" id="rtVolver" class="rt-secundario">Elegir canción</button>
+        </div>
+      </div>
+
+      <div id="rtPausa" class="rt-panel rt-centro hidden">
+        <h2>Pausa</h2>
+        <div class="rt-botones">
+          <button type="button" id="rtContinuar" class="rt-jugar">Continuar</button>
+          <button type="button" id="rtSalir" class="rt-secundario">Salir</button>
+        </div>
+      </div>
+    </div>
+    <p class="mj-linea">Las notas salen de la propia canción: los golpes graves caen al suelo y los agudos van por el aire. Esc pausa.</p>
+  </main>
+
+  <script src="js/temas.js?v=20261094"></script>
+  <script src="data/musica.js?v=20261094"></script>
+  <script src="js/ritmo.js?v=20261094"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+/* Juego de ritmo (ritmo.html). Se apoya en las variables de style.css. */
+.rt-escenario { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 9; margin: 18px auto 0; background: var(--panel); border: 1px solid var(--border); overflow: hidden; }
+.rt-campo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+
+.rt-panel {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; gap: 12px;
+  padding: 18px 22px; background: rgba(18, 19, 21, .93); overflow-y: auto;
+}
+.rt-panel h2 { margin: 0; font-size: 1.15rem; }
+.rt-centro { align-items: center; justify-content: center; text-align: center; }
+
+.rt-canciones { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; max-height: 38%; min-height: 90px; overflow-y: auto; padding-right: 4px; grid-auto-rows: 32px; align-content: start; flex-shrink: 0; }
+.rt-cancion {
+  text-align: left; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 7px 10px;
+  font: inherit; font-size: .8rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rt-cancion:hover { border-color: var(--accent-soft); }
+.rt-cancion.activa { border-color: var(--text); background: var(--panel-2); }
+
+.rt-opciones { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; }
+.rt-dificultades { display: flex; }
+.rt-dif { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; font: inherit; font-size: .82rem; cursor: pointer; }
+.rt-dif + .rt-dif { border-left: 0; }
+.rt-dif.activa { background: var(--panel-2); color: var(--text); border-color: var(--accent-soft); }
+.rt-ajuste, .rt-practica { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--muted); }
+.rt-ajuste output { min-width: 4.5em; color: var(--text); }
+.rt-record { margin: 0; min-height: 1.2em; font-size: .8rem; color: var(--accent-soft); }
+.rt-ayuda { margin: 0; font-size: .74rem; color: var(--muted); line-height: 1.5; }
+
+.rt-jugar {
+  background: none; border: 2px solid var(--accent-soft); color: var(--text); padding: 10px 26px;
+  font: 600 1rem var(--font-heading), sans-serif; letter-spacing: .06em; cursor: pointer; align-self: flex-start;
+}
+.rt-centro .rt-jugar { align-self: center; }
+.rt-jugar:hover { border-color: var(--text); }
+.rt-secundario { background: none; border: 1px solid var(--border); color: var(--muted); padding: 10px 20px; font: inherit; font-size: .88rem; cursor: pointer; }
+.rt-secundario:hover { color: var(--text); border-color: var(--accent-soft); }
+.rt-botones { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.rt-rango { margin: 0; font: 700 4rem var(--font-heading), sans-serif; line-height: 1; }
+.rt-datos { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.7; }
+
+@media (max-width: 640px) {
+  .rt-panel { padding: 12px 14px; gap: 8px; }
+  .rt-canciones { grid-template-columns: 1fr; max-height: 34%; }
+  .rt-rango { font-size: 2.6rem; }
+  .rt-ayuda { display: none; }
+}
