@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arquería contra Cassius — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261085">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261085">
+  <link rel="stylesheet" href="css/style.css?v=20261086">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261086">
+  <link rel="stylesheet" href="css/cartas.css?v=20261086">
 </head>
 <body class="mj-pagina">
   <div class="mj-barra">
     <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
   </div>
   <main class="mj-contenido">
     <p class="eyebrow">PASATIEMPOS</p>
@@ -22,7 +27,12 @@
     <p id="arqueriaRecord" class="mj-linea"></p>
   </main>
 
-  <script src="js/arqueria.js?v=20261085"></script>
+  <script src="js/temas.js?v=20261086"></script>
+  <script src="js/fichas-supabase.js?v=20261086"></script>
+  <script src="js/lado.js?v=20261086"></script>
+  <script src="js/cartas-datos.js?v=20261086"></script>
+  <script src="js/cartas-cliente.js?v=20261086"></script>
+  <script src="js/arqueria.js?v=20261086"></script>
   <script>
     (function () {
       const boton = document.getElementById("arqueriaJugar");
@@ -38,7 +48,8 @@
         rival: "cassius",
         duracion: 60,
         onEstado: estado => boton.classList.toggle("hidden", estado === "jugando"),
-        onFin: ({ puntaje }) => {
+        onFin: ({ puntaje, puntajeRival, resultado }) => {
+          if (resultado === "ganado" && window.CartasCliente) CartasCliente.recompensar("arqueria", "cassius", "gana", puntaje - puntajeRival);
           if (puntaje > record) {
             record = puntaje;
             try { localStorage.setItem(CLAVE, String(record)); } catch (e) { /* sin almacenamiento */ }

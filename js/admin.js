@@ -651,7 +651,67 @@
     }
   }
 
+  // --- Cartas malditas (requiere scratchpad/cartas.sql) ---
+  async function cargarCartasAdmin() {
+    const estadoEl = document.getElementById("adminCartasEstado");
+    const registroEl = document.getElementById("adminCartasRegistro");
+    const jugadorEl = document.getElementById("adminCartasJugador");
+    const cartaEl = document.getElementById("adminCartasCarta");
+    const nombreCarta = id => (window.cartaPorId(id) || { nombre: id }).nombre;
+    let jugadores = [];
+    try {
+      jugadores = await adminListarPerfiles();
+    } catch (e) {
+      registroEl.innerHTML = `<li>No se pudo cargar la lista de jugadores.</li>`;
+      return;
+    }
+    const nombreJugador = id => (jugadores.find(j => j.id === id) || {}).username || "(desconocido)";
+    jugadorEl.innerHTML = jugadores.map(j => `<option value="${j.id}">${escaparHtml(j.username || "(sin nombre)")}${j.side ? ` · ${j.side}` : ""}</option>`).join("");
+    const orden = Object.entries(window.CARTAS_RAREZAS).sort((a, b) => a[1].orden - b[1].orden);
+    cartaEl.innerHTML = orden.map(([clave, r]) => {
+      const cartas = window.CARTAS.filter(c => c.rareza === clave);
+      return cartas.length ? `<optgroup label="${r.nombre}">${cartas.map(c => `<option value="${c.id}">${escaparHtml(c.nombre)}${c.lado ? ` (${c.lado.join("/")})` : ""}${c.limite ? ` · edición de ${c.limite}` : ""}</option>`).join("")}</optgroup>` : "";
+    }).join("");
+
+    async function pintarRegistro() {
+      try {
+        const supabase = await fichasCliente();
+        const { data, error } = await supabase.from("cartas_registro")
+          .select("user_id, carta_id, origen, detalle, creado").order("creado", { ascending: false }).limit(40);
+        if (error) throw error;
+        document.getElementById("adminCartasCount").textContent = String(data.length);
+        const etiqueta = { juego: "minijuego", admin: "regalo", quitada: "quitada" };
+        registroEl.innerHTML = data.length ? data.map(f => `<li><span>${new Date(f.creado).toLocaleString("es")}</span><span>${escaparHtml(nombreJugador(f.user_id))}</span><span>${escaparHtml(nombreCarta(f.carta_id))}</span><span>${etiqueta[f.origen] || f.origen}${f.detalle ? ` · ${escaparHtml(f.detalle)}` : ""}</span></li>`).join("") : `<li>Todavía no hay movimientos.</li>`;
+      } catch (e) {
+        registroEl.innerHTML = `<li>No se pudo cargar. ¿Corriste scratchpad/cartas.sql en Supabase?</li>`;
+      }
+    }
+
+    async function ejecutar(funcion, textoOk) {
+      estadoEl.textContent = "...";
+      try {
+        const supabase = await fichasCliente();
+        const { data, error } = await supabase.rpc(funcion, {
+          p_usuario: jugadorEl.value, p_carta: cartaEl.value, p_nota: document.getElementById("adminCartasNota").value.trim()
+        });
+        if (error) throw error;
+        const numero = data && data.numero ? ` (copia ${data.numero})` : "";
+        estadoEl.textContent = `${textoOk}: ${nombreCarta(cartaEl.value)}${numero} → ${nombreJugador(jugadorEl.value)}.`;
+        document.getElementById("adminCartasNota").value = "";
+        pintarRegistro();
+      } catch (e) {
+        estadoEl.textContent = `No se pudo: ${e.message || e}`;
+      }
+    }
+    document.getElementById("adminCartasRegalar").addEventListener("click", () => ejecutar("cartas_regalar", "Regalada"));
+    document.getElementById("adminCartasQuitar").addEventListener("click", () => {
+      if (confirm(`¿Quitar una copia de ${nombreCarta(cartaEl.value)} a ${nombreJugador(jugadorEl.value)}?`)) ejecutar("cartas_quitar", "Quitada");
+    });
+    pintarRegistro();
+  }
+
   initAdminGate(async () => {
+    cargarCartasAdmin();
     const peticionesEl = document.getElementById("adminPeticionesLista");
     const cuentasEl = document.getElementById("adminCuentasLista");
     try {

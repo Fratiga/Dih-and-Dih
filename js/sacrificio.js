@@ -345,6 +345,7 @@
       const supabase = await fichasCliente();
       const { error } = await supabase.rpc("hooey_registrar_partida", { p_racha: valor });
       if (error) throw error;
+      if (window.CartasCliente) CartasCliente.recompensar("hooey", "racha", "gana", valor);
       datosCuenta.mejor = Math.max(datosCuenta.mejor, valor);
       if (totalGlobal !== null) totalGlobal += valor;
       refrescarTextos();

@@ -221,6 +221,7 @@
     if (resultado === "gana" && esMate) min.mate = Math.max(1, mias);
     const res = await MjStats.registrar("ajedrez", rival.id, resultado, { suma, min });
     if (res.guardado) cargarRanking();
+    if (window.CartasCliente) CartasCliente.recompensar("ajedrez", rival.id, resultado, 0);
   }
 
   /* --- Ranking ----------------------------------------------------------- */

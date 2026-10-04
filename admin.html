@@ -14,7 +14,8 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261085">
+  <link rel="stylesheet" href="css/style.css?v=20261086">
+  <link rel="stylesheet" href="css/cartas.css?v=20261086">
 </head>
 <body>
   <header class="site-header">
@@ -129,6 +130,7 @@
         <button type="button" class="admin-tab" data-tab="fanarts">Fanarts <span id="adminFanartsCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="muerte">Muerte Súbita <span id="adminMuerteCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="historial">Historial de fichas <span id="adminHistorialCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="cartas">Cartas <span id="adminCartasCount" class="admin-tab-badge"></span></button>
       </div>
 
       <section id="adminPanelPeticiones" class="admin-panel active">
@@ -180,6 +182,22 @@
           <p class="admin-vacio">Cargando...</p>
         </div>
       </section>
+
+      <section id="adminPanelCartas" class="admin-panel">
+        <p class="admin-bufon-banner">Regala una carta a un jugador, por ejemplo por algo que pasó en la campaña. Si la carta es limitada, se le asigna el siguiente número de la edición y no se puede pasar del tope.</p>
+        <div class="admin-cartas-form">
+          <label>Jugador <select id="adminCartasJugador"></select></label>
+          <label>Carta <select id="adminCartasCarta"></select></label>
+          <label>Nota (opcional) <input type="text" id="adminCartasNota" maxlength="200" placeholder="Sesión 12: salvó al grupo"></label>
+          <div>
+            <button type="button" id="adminCartasRegalar" class="admin-cuenta-accion">Regalar</button>
+            <button type="button" id="adminCartasQuitar" class="admin-cuenta-accion admin-cuenta-peligro">Quitar una copia</button>
+          </div>
+        </div>
+        <p id="adminCartasEstado" class="admin-cartas-estado"></p>
+        <h3>Últimos movimientos</h3>
+        <ul id="adminCartasRegistro" class="admin-cartas-registro"><li>Cargando...</li></ul>
+      </section>
     </section>
   </main>
 
@@ -188,34 +206,35 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="data/entries.js?v=20261085"></script>
-  <script src="data/personajes.js?v=20261085"></script>
-  <script src="data/lugares.js?v=20261085"></script>
-  <script src="data/facciones.js?v=20261085"></script>
-  <script src="data/pergaminos.js?v=20261085"></script>
-  <script src="data/armas.js?v=20261085"></script>
-  <script src="data/objetos.js?v=20261085"></script>
-  <script src="data/bestiario.js?v=20261085"></script>
-  <script src="data/razas.js?v=20261085"></script>
-  <script src="data/religiones.js?v=20261085"></script>
-  <script src="data/rotacion.js?v=20261085"></script>
-  <script src="data/musica.js?v=20261085"></script>
-  <script src="js/common.js?v=20261085"></script>
-  <script src="js/temas.js?v=20261085"></script>
-  <script src="js/player.js?v=20261085"></script>
-  <script src="js/modal.js?v=20261085"></script>
-  <script src="data/jumpscare.js?v=20261085"></script>
-  <script src="data/contrasenas.js?v=20261085"></script>
-  <script src="data/fanarts.js?v=20261085"></script>
-  <script src="js/fichas-supabase.js?v=20261085"></script>
-  <script src="js/peticiones-supabase.js?v=20261085"></script>
-  <script src="js/bufon-supabase.js?v=20261085"></script>
-  <script src="js/muerte-subita-supabase.js?v=20261085"></script>
-  <script src="js/fanarts-supabase.js?v=20261085"></script>
-  <script src="js/lado.js?v=20261085"></script>
-  <script src="js/slappy.js?v=20261085"></script>
-  <script src="js/busqueda-global.js?v=20261085"></script>
-  <script src="js/header-marquee.js?v=20261085"></script>
-  <script src="js/admin.js?v=20261085"></script>
+  <script src="data/entries.js?v=20261086"></script>
+  <script src="data/personajes.js?v=20261086"></script>
+  <script src="data/lugares.js?v=20261086"></script>
+  <script src="data/facciones.js?v=20261086"></script>
+  <script src="data/pergaminos.js?v=20261086"></script>
+  <script src="data/armas.js?v=20261086"></script>
+  <script src="data/objetos.js?v=20261086"></script>
+  <script src="data/bestiario.js?v=20261086"></script>
+  <script src="data/razas.js?v=20261086"></script>
+  <script src="data/religiones.js?v=20261086"></script>
+  <script src="data/rotacion.js?v=20261086"></script>
+  <script src="data/musica.js?v=20261086"></script>
+  <script src="js/common.js?v=20261086"></script>
+  <script src="js/temas.js?v=20261086"></script>
+  <script src="js/player.js?v=20261086"></script>
+  <script src="js/modal.js?v=20261086"></script>
+  <script src="data/jumpscare.js?v=20261086"></script>
+  <script src="data/contrasenas.js?v=20261086"></script>
+  <script src="data/fanarts.js?v=20261086"></script>
+  <script src="js/cartas-datos.js?v=20261086"></script>
+  <script src="js/fichas-supabase.js?v=20261086"></script>
+  <script src="js/peticiones-supabase.js?v=20261086"></script>
+  <script src="js/bufon-supabase.js?v=20261086"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261086"></script>
+  <script src="js/fanarts-supabase.js?v=20261086"></script>
+  <script src="js/lado.js?v=20261086"></script>
+  <script src="js/slappy.js?v=20261086"></script>
+  <script src="js/busqueda-global.js?v=20261086"></script>
+  <script src="js/header-marquee.js?v=20261086"></script>
+  <script src="js/admin.js?v=20261086"></script>
 </body>
 </html>

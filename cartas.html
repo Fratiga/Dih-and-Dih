@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartas malditas — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261086">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261086">
+  <link rel="stylesheet" href="css/cartas.css?v=20261086">
+</head>
+<body class="mj-pagina">
+  <!-- Página aparte, como los minijuegos: sin cabecera del sitio ni mini reproductor. -->
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido cartas-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Cartas malditas</h1>
+
+    <div class="cartas-resumen">
+      <span><strong id="cartasTengo">0</strong> de <span id="cartasTotal">0</span> descubiertas</span>
+      <span><strong id="cartasCopias">0</strong> cartas en total</span>
+    </div>
+    <div class="cartas-barra-progreso"><i id="cartasProgreso" style="width:0%"></i></div>
+    <p id="cartasSesion" class="cartas-aviso-sesion hidden">Inicia sesión para ver tu colección. Las cartas se consiguen ganando en los minijuegos, en combates de cartas o cuando el máster te las da.</p>
+
+    <div class="cartas-filtros">
+      <select id="filtroRareza"><option value="">Todas las rarezas</option></select>
+      <select id="filtroTipo"><option value="">Todos los tipos</option></select>
+      <select id="filtroAfinidad"><option value="">Todas las afinidades</option></select>
+      <label><input type="checkbox" id="filtroTengo"> Solo las que tengo</label>
+    </div>
+
+    <div id="cartasGrid" class="cartas-grid"></div>
+  </main>
+
+  <dialog id="cartaDetalle" class="carta-detalle">
+    <button type="button" class="carta-detalle-cerrar" id="cartaDetalleCerrar" aria-label="Cerrar">×</button>
+    <div id="cartaDetalleContenido"></div>
+  </dialog>
+
+  <script src="data/personajes.js?v=20261086"></script>
+  <script src="data/objetos.js?v=20261086"></script>
+  <script src="data/bestiario.js?v=20261086"></script>
+  <script src="js/temas.js?v=20261086"></script>
+  <script src="js/fichas-supabase.js?v=20261086"></script>
+  <script src="js/lado.js?v=20261086"></script>
+  <script src="js/cartas-datos.js?v=20261086"></script>
+  <script src="js/cartas-cliente.js?v=20261086"></script>
+  <script src="js/cartas.js?v=20261086"></script>
+</body>
+</html>
