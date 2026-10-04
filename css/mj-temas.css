@@ -1,0 +1,253 @@
+/* Un aspecto propio para cada minijuego. Cada página trae su clase en <body> y
+   reescribe las mismas variables del sitio (fondo, paneles, texto, acento, tipografía),
+   así que todo lo que ya usa esas variables cambia solo; abajo van los detalles que
+   necesitan reglas propias. Fondos estáticos: nada que se anime, para no costar fps.
+   Cargar después de style.css y minijuegos.css. */
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Uncial+Antiqua&display=swap');
+
+/* ======================================================================
+   MINIJUEGOS (centro): la feria ambulante. Toldo a rayas, boletos y oro.
+====================================================================== */
+body.hub-tema {
+  --bg: #1b0e13; --panel: #2a1520; --panel-2: #36202b; --text: #f6e6c6; --muted: #b9917c;
+  --accent: #f2b84b; --accent-soft: #c0792f; --border: #5c2b37; --font-heading: 'Sancreek';
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(90deg, #a3202f 0 54px, #f3e2bd 54px 108px),
+    linear-gradient(180deg, rgba(0,0,0,.35), transparent 120px),
+    radial-gradient(ellipse at 50% 0%, rgba(242, 184, 75, .16), transparent 60%),
+    radial-gradient(circle at 12% 88%, rgba(163, 32, 47, .22), transparent 40%),
+    radial-gradient(circle at 90% 70%, rgba(242, 184, 75, .1), transparent 38%);
+  background-size: 100% 30px, 100% 120px, 100% 100%, 100% 100%, 100% 100%;
+  background-repeat: repeat-x, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-position: 0 0, 0 30px, 0 0, 0 0, 0 0;
+  color: var(--text);
+}
+.hub-tema .mj-barra { border-bottom: 3px double var(--accent-soft); padding-top: 42px; background: rgba(27, 14, 19, .72); }
+.hub-tema .mj-volver { color: var(--accent); }
+.hub-tema .eyebrow { color: var(--accent); letter-spacing: .3em; }
+.hub-tema .mj-titulo { color: var(--accent); text-shadow: 0 3px 0 #6b1d28, 0 0 28px rgba(242, 184, 75, .35); letter-spacing: .04em; }
+.hub-tema .mj-tarjeta {
+  position: relative; padding: 24px 22px 22px 30px; background: linear-gradient(135deg, #3a1f2b, #2a1520);
+  border: 2px dashed #9a5a3a; border-radius: 6px;
+}
+.hub-tema .mj-tarjeta::before, .hub-tema .mj-tarjeta::after {
+  content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border-right: 2px dashed #9a5a3a;
+}
+.hub-tema .mj-tarjeta::before { top: 22%; }
+.hub-tema .mj-tarjeta::after { bottom: 22%; }
+.hub-tema .mj-tarjeta:hover { border-color: var(--accent); transform: translateY(-3px) rotate(-.4deg); box-shadow: 0 10px 26px rgba(0, 0, 0, .5), 0 0 22px rgba(242, 184, 75, .25); }
+.hub-tema .mj-tarjeta h3 { color: var(--accent); font-size: 1.2rem; }
+
+/* ======================================================================
+   AJEDREZ: estudio a la luz de las velas. Nogal, marfil y latón.
+====================================================================== */
+body.aj-tema {
+  --bg: #1b120c; --panel: #2a1b11; --panel-2: #38251a; --text: #f1e4c9; --muted: #b59b78;
+  --accent: #dcb461; --accent-soft: #9a7435; --border: #523720; --font-heading: 'Cormorant Garamond';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(255, 196, 110, .22), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(120, 60, 20, .35), transparent 50%),
+    repeating-linear-gradient(92deg, rgba(255, 220, 160, .025) 0 2px, transparent 2px 7px);
+  color: var(--text);
+}
+.aj-tema .mj-barra { background: rgba(27, 18, 12, .75); border-bottom: 1px solid var(--accent-soft); }
+.aj-tema .mj-volver { color: var(--accent); }
+.aj-tema .eyebrow { color: var(--accent); letter-spacing: .28em; }
+.aj-tema .mj-titulo { font-weight: 700; letter-spacing: .1em; color: #f6e7c4; text-shadow: 0 2px 14px rgba(255, 190, 90, .35); }
+.aj-tema .mj-titulo::after { content: "♞"; margin-left: 14px; color: var(--accent); font-size: .8em; }
+.aj-tema .aj-clara { background: #dcbf8c; }
+.aj-tema .aj-oscura { background: #8c5c36; }
+.aj-tema .aj-tablero {
+  border: 12px solid #4a2c17; border-radius: 3px;
+  box-shadow: 0 0 0 2px #c79a48, 0 0 0 5px #2a170b, 0 22px 46px rgba(0, 0, 0, .65), inset 0 0 0 2px rgba(0, 0, 0, .45);
+}
+.aj-tema .aj-w { color: #fff6e0; text-shadow: 0 0 1px #000, 0 1px 1px #000, 0 2px 4px rgba(0, 0, 0, .55); -webkit-text-stroke: 1px #3b2410; }
+.aj-tema .aj-b { color: #25150a; text-shadow: 0 1px 1px rgba(255, 238, 205, .4), 0 2px 4px rgba(0, 0, 0, .35); }
+.aj-tema .aj-ultima { box-shadow: inset 0 0 0 100px rgba(255, 213, 90, .38); }
+.aj-tema .aj-destino::after { background: rgba(45, 22, 6, .38); }
+.aj-tema .aj-sel { outline-color: #ffe08a; }
+.aj-tema .aj-captura { box-shadow: inset 0 0 0 5px rgba(190, 50, 40, .75); }
+.aj-tema .aj-casilla.aj-sobre { box-shadow: inset 0 0 0 4px rgba(255, 224, 138, .95); }
+.aj-tema .aj-capturas { color: #e9d8b2; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.aj-tema .aj-estado, .aj-tema .aj-reloj, .aj-tema .aj-pvp-fila, .aj-tema .aj-rival {
+  background: linear-gradient(180deg, #33221a, #2a1b11); border-color: var(--border);
+}
+.aj-tema .aj-rival:hover, .aj-tema .aj-modo:hover { border-color: var(--accent); }
+.aj-tema .aj-rival.activo { border-color: var(--accent); box-shadow: 0 0 18px rgba(220, 180, 97, .25); }
+.aj-tema .aj-rival strong { font-family: var(--font-heading), serif; font-size: 1.1rem; letter-spacing: .03em; }
+.aj-tema .aj-boton, .aj-tema .aj-modo { border-color: var(--accent-soft); }
+.aj-tema .aj-modo.activo { background: #4a2f1c; border-color: var(--accent); color: #fff1cf; }
+.aj-tema .aj-comentario { color: #d5bd92; }
+.aj-tema .aj-jugadas li { border-bottom: 1px solid rgba(220, 180, 97, .1); }
+
+/* ======================================================================
+   ARQUERÍA: el bosque al atardecer. Verdes hondos, cuero y oro viejo.
+====================================================================== */
+body.arq-tema {
+  --bg: #0e1812; --panel: #16251b; --panel-2: #1d3023; --text: #e7ead2; --muted: #8aa58f;
+  --accent: #d1ad55; --accent-soft: #5d7d44; --border: #2d4a35; --font-heading: 'IM Fell English SC';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 85% 0%, rgba(240, 160, 70, .2), transparent 45%),
+    radial-gradient(ellipse at 10% 100%, rgba(40, 90, 50, .5), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .0) 0 6px, rgba(0, 0, 0, .06) 6px 7px);
+  color: var(--text);
+}
+.arq-tema .mj-barra { background: rgba(14, 24, 18, .75); border-bottom: 1px solid var(--accent-soft); }
+.arq-tema .mj-volver { color: var(--accent); }
+.arq-tema .eyebrow { color: var(--accent); letter-spacing: .26em; }
+.arq-tema .mj-titulo { color: #f1e4b4; text-shadow: 0 2px 0 #1f3a25, 0 0 22px rgba(209, 173, 85, .3); letter-spacing: .08em; }
+.arq-tema .mj-titulo::after { content: "➳"; margin-left: 14px; color: var(--accent); }
+.arq-tema .mj-campo, .arq-tema .mj-escenario .mj-campo {
+  background:
+    radial-gradient(ellipse at 78% 82%, rgba(255, 190, 90, .5), transparent 34%),
+    linear-gradient(180deg, #14283a 0%, #3b5a56 38%, #c98f55 66%, #e7b574 70%, #36502b 71%, #223a1e 100%);
+  border: 6px solid #3a2a18; box-shadow: 0 0 0 2px var(--accent-soft), 0 20px 44px rgba(0, 0, 0, .6), inset 0 0 60px rgba(0, 0, 0, .35);
+}
+.arq-tema .mj-play { background: #2a3a1e; border-color: var(--accent); color: #f1e4b4; box-shadow: 0 0 22px rgba(209, 173, 85, .4); }
+.arq-tema .mj-linea { color: #b8c7a3; }
+.arq-tema .aj-rival, .arq-tema .aj-pvp-fila { background: linear-gradient(180deg, #1d3023, #16251b); border-color: var(--border); }
+.arq-tema .aj-rival:hover { border-color: var(--accent); }
+.arq-tema .aj-rival.activo { border-color: var(--accent); box-shadow: 0 0 16px rgba(209, 173, 85, .22); }
+.arq-tema .aj-rival strong { font-family: var(--font-heading), serif; letter-spacing: .04em; }
+.arq-tema .aj-modo.activo { background: #2b4430; border-color: var(--accent); color: #f6efcf; }
+.arq-tema .aj-boton, .arq-tema .aj-modo { border-color: var(--accent-soft); }
+.arq-tema .aj-boton:hover, .arq-tema .aj-modo:hover { border-color: var(--accent); }
+
+/* ======================================================================
+   DUELO: la arena al ocaso. Arena, hierro y sangre.
+====================================================================== */
+body.duelo-tema {
+  --bg: #1a0d0a; --panel: #281511; --panel-2: #351c16; --text: #f2dfc9; --muted: #b58d78;
+  --accent: #e2623f; --accent-soft: #8e3a28; --border: #5a2a20; --font-heading: 'Bebas Neue';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(226, 98, 63, .24), transparent 55%),
+    radial-gradient(ellipse at 0% 100%, rgba(150, 60, 30, .3), transparent 45%),
+    radial-gradient(ellipse at 100% 100%, rgba(150, 60, 30, .3), transparent 45%);
+  color: var(--text);
+}
+.duelo-tema .mj-barra { background: rgba(26, 13, 10, .78); border-bottom: 2px solid var(--accent-soft); }
+.duelo-tema .mj-volver { color: #e8a98a; }
+.duelo-tema .eyebrow { color: var(--accent); letter-spacing: .3em; }
+.duelo-tema .mj-titulo { font-size: clamp(2.2rem, 6vw, 3.6rem); letter-spacing: .12em; color: #f5e3cd; text-shadow: 0 3px 0 #7a2b1c, 0 0 26px rgba(226, 98, 63, .45); }
+.duelo-tema .mj-titulo::before, .duelo-tema .mj-titulo::after { content: "⚔"; color: var(--accent); font-size: .6em; margin: 0 14px; vertical-align: .12em; }
+.duelo-tema .duelo-escenario {
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .0) 0 78px, rgba(0, 0, 0, .28) 78px 82px) 0 0 / 100% 38% no-repeat,
+    linear-gradient(180deg, #2a0f12 0%, #6b2a20 40%, #c2623a 64%, #e29a5a 77%, #b98a52 78%, #8f6a3e 88%, #5d4224 100%);
+  border: 8px solid #3a1f16; box-shadow: 0 0 0 2px var(--accent-soft), 0 22px 48px rgba(0, 0, 0, .65), inset 0 0 70px rgba(0, 0, 0, .45);
+}
+.duelo-tema .duelo-capa { background: linear-gradient(180deg, rgba(26, 8, 6, .62), rgba(26, 8, 6, .35)); }
+.duelo-tema .duelo-capa h2 { letter-spacing: .1em; color: #f5e3cd; text-shadow: 0 0 18px rgba(226, 98, 63, .5); }
+.duelo-tema .duelo-rival { background: linear-gradient(180deg, #3a1c15, #281511); border-color: var(--border); }
+.duelo-tema .duelo-rival:hover { border-color: var(--accent); box-shadow: 0 0 18px rgba(226, 98, 63, .3); }
+.duelo-tema .duelo-rival strong { font-family: var(--font-heading), sans-serif; letter-spacing: .08em; font-size: 1.1rem; }
+.duelo-tema .duelo-boton, .duelo-tema .duelo-control { border-color: var(--accent-soft); background: #2f1812; }
+.duelo-tema .duelo-boton:hover, .duelo-tema .duelo-control:hover { border-color: var(--accent); background: #4a2118; }
+.duelo-tema .duelo-control { font-family: var(--font-heading), sans-serif; letter-spacing: .1em; }
+
+/* ======================================================================
+   SACRIFICAR A HOOEY: ritual de brasas y baba verde.
+====================================================================== */
+body.hooey-tema {
+  --bg: #130c09; --panel: #22140e; --panel-2: #2e1b12; --text: #f6e4cf; --muted: #b0907a;
+  --accent: #ff9a3d; --accent-soft: #9a4a1c; --border: #4e2a1a; --font-heading: 'Baloo 2';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% 112%, rgba(255, 110, 30, .45), transparent 55%),
+    radial-gradient(ellipse at 8% 0%, rgba(120, 220, 80, .1), transparent 40%),
+    radial-gradient(ellipse at 92% 0%, rgba(120, 220, 80, .1), transparent 40%);
+  background-repeat: no-repeat; color: var(--text);
+}
+.hooey-tema .sacrificio-barra { background: rgba(19, 12, 9, .75); border-bottom: 2px solid var(--accent-soft); }
+.hooey-tema .sacrificio-volver { color: var(--accent); }
+.hooey-tema .eyebrow { color: #86e05a; letter-spacing: .26em; }
+.hooey-tema .sacrificio-titulo { font-weight: 800; color: #ffd9a8; text-shadow: 0 3px 0 #8a3a14, 0 0 22px rgba(255, 140, 50, .55), 0 0 8px rgba(130, 230, 90, .45); }
+.hooey-tema .sacrificio-medidor { background: linear-gradient(180deg, #2e1b12, #22140e); border-color: var(--accent-soft); box-shadow: 0 0 22px rgba(255, 130, 40, .2); }
+.hooey-tema .sacrificio-medidor strong { color: #ffb86a; text-shadow: 0 0 14px rgba(255, 130, 40, .6); }
+.hooey-tema .sacrificio-medidor-etiqueta { color: #c9a58c; }
+.hooey-tema .sacrificio-escenario { box-shadow: 0 0 0 2px var(--accent-soft), 0 18px 44px rgba(0, 0, 0, .6), 0 0 60px rgba(255, 110, 30, .18); }
+.hooey-tema .sacrificio-play { background: #2e1b12; border-color: var(--accent); color: #ffd9a8; box-shadow: 0 0 24px rgba(255, 140, 50, .45); }
+.hooey-tema .sacrificio-contador { color: #ffd9a8; }
+.hooey-tema .sacrificio-ranking h3 { color: var(--accent); font-weight: 800; }
+.hooey-tema .sacrificio-ranking { background: rgba(34, 20, 14, .6); border: 1px solid var(--border); padding: 14px 16px; }
+
+/* ======================================================================
+   RITMO: la rocola encendida. Neón sobre noche violeta y una pista de rejilla.
+====================================================================== */
+body.ritmo-tema {
+  --bg: #0b0716; --panel: #150d2a; --panel-2: #1e1238; --text: #f2e9ff; --muted: #9c8ac4;
+  --accent: #ff4fd8; --accent-soft: #6f35b8; --border: #35205f; --font-heading: 'Bebas Neue';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% -5%, rgba(255, 79, 216, .28), transparent 50%),
+    radial-gradient(ellipse at 100% 40%, rgba(40, 220, 255, .14), transparent 40%),
+    repeating-linear-gradient(90deg, rgba(255, 79, 216, .1) 0 1px, transparent 1px 70px),
+    repeating-linear-gradient(0deg, rgba(40, 220, 255, .09) 0 1px, transparent 1px 70px);
+  background-size: 100% 100%, 100% 100%, 70px 100%, 100% 70px;
+  background-position: 0 0, 0 0, 0 0, 0 100%;
+  background-repeat: no-repeat, no-repeat, repeat-x, repeat-y;
+  color: var(--text);
+}
+.ritmo-tema .mj-barra { background: rgba(11, 7, 22, .78); border-bottom: 1px solid #ff4fd8; box-shadow: 0 0 18px rgba(255, 79, 216, .35); }
+.ritmo-tema .mj-volver { color: #7ae8ff; }
+.ritmo-tema .eyebrow { color: #7ae8ff; letter-spacing: .32em; }
+.ritmo-tema .mj-titulo { font-size: clamp(2.4rem, 7vw, 4rem); letter-spacing: .14em; color: #fff; text-shadow: 0 0 8px #ff4fd8, 0 0 24px #ff4fd8, 0 0 46px rgba(255, 79, 216, .7); }
+.ritmo-tema .rt-escenario { border: 2px solid #ff4fd8; box-shadow: 0 0 0 1px #0b0716, 0 0 26px rgba(255, 79, 216, .5), 0 0 60px rgba(40, 220, 255, .18); background: linear-gradient(180deg, #120a26, #0b0716); }
+.ritmo-tema .rt-panel { background: rgba(11, 7, 22, .93); }
+.ritmo-tema .rt-panel h2 { letter-spacing: .1em; color: #fff; text-shadow: 0 0 12px rgba(255, 79, 216, .7); }
+.ritmo-tema .rt-cancion { background: var(--panel); border-color: var(--border); }
+.ritmo-tema .rt-cancion:hover { border-color: #7ae8ff; }
+.ritmo-tema .rt-cancion.activa { border-color: #ff4fd8; background: var(--panel-2); box-shadow: 0 0 14px rgba(255, 79, 216, .35); }
+.ritmo-tema .rt-dif.activa { background: #3a1760; border-color: #ff4fd8; color: #fff; }
+.ritmo-tema .rt-jugar { border-color: #ff4fd8; box-shadow: 0 0 20px rgba(255, 79, 216, .5); }
+.ritmo-tema .rt-jugar:hover { border-color: #7ae8ff; box-shadow: 0 0 26px rgba(40, 220, 255, .55); }
+.ritmo-tema .rt-rango { color: #fff; text-shadow: 0 0 10px #ff4fd8, 0 0 30px #ff4fd8; }
+.ritmo-tema .rt-record { color: #7ae8ff; }
+
+/* ======================================================================
+   CARTAS MALDITAS: la mesa de juego. Paño verde, filete de oro y vino.
+====================================================================== */
+body.cartas-tema {
+  --bg: #0d1a14; --panel: #15281f; --panel-2: #1c3428; --text: #efe6cc; --muted: #93aa98;
+  --accent: #d4af58; --accent-soft: #8a6f2c; --border: #2f4d3b; --font-heading: 'Cinzel';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% 35%, rgba(60, 130, 90, .3), transparent 62%),
+    radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0, 0, 0, .55) 100%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 2px, transparent 2px 5px);
+  color: var(--text);
+}
+.cartas-tema .mj-barra { background: rgba(13, 26, 20, .78); border-bottom: 1px solid var(--accent-soft); }
+.cartas-tema .mj-volver { color: var(--accent); }
+.cartas-tema .eyebrow { color: var(--accent); letter-spacing: .3em; }
+.cartas-tema .mj-titulo { color: #f3e2ad; letter-spacing: .1em; text-shadow: 0 2px 0 #3a2a0c, 0 0 22px rgba(212, 175, 88, .35); }
+.cartas-tema .mj-titulo::before, .cartas-tema .mj-titulo::after { content: "♠"; color: #7a1f2b; margin: 0 14px; font-size: .7em; text-shadow: none; }
+.cartas-tema .mj-titulo::after { content: "♥"; }
+
+/* ======================================================================
+   VALHALLA: el salón de los caídos. Acero frío, hielo y oro de runas.
+====================================================================== */
+body.vh-tema {
+  --bg: #0c1118; --panel: #141b25; --panel-2: #1a2330; --text: #e1e8f0; --muted: #8499ad;
+  --accent: #d9b869; --accent-soft: #6a7f96; --border: #2a384a; --font-heading: 'Uncial Antiqua';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% -10%, rgba(80, 200, 180, .18), transparent 45%),
+    radial-gradient(ellipse at 80% -5%, rgba(130, 110, 220, .18), transparent 45%),
+    radial-gradient(ellipse at 50% 120%, rgba(217, 184, 105, .12), transparent 50%);
+  background-repeat: no-repeat; color: var(--text);
+}
+.vh-tema .mj-barra { background: rgba(12, 17, 24, .78); border-bottom: 1px solid var(--accent-soft); }
+.vh-tema .mj-volver { color: var(--accent); }
+.vh-tema .eyebrow { color: #8fc3e6; letter-spacing: .3em; }
+.vh-tema .mj-titulo { letter-spacing: .08em; color: #f1dfae; text-shadow: 0 2px 0 #2a2412, 0 0 22px rgba(217, 184, 105, .35); }
+.vh-tema .mj-titulo::before, .vh-tema .mj-titulo::after { content: "ᛟ"; color: #8fc3e6; margin: 0 14px; font-size: .75em; text-shadow: 0 0 14px rgba(143, 195, 230, .6); }
+.vh-tema .vh-panel, .vh-tema .vh-barra-grupo, .vh-tema .vh-carta { border-color: var(--border); background: linear-gradient(180deg, #19222f, #141b25); }
+.vh-tema .vh-boton, .vh-tema .vh-mini { border-color: var(--accent-soft); }
+.vh-tema .vh-boton:hover, .vh-tema .vh-mini:hover { border-color: var(--accent); color: #f6e7bd; }
+.vh-tema .vh-principal { border-color: var(--accent); background: #26303f; }
+.vh-tema .vh-subtitulo { color: var(--accent); letter-spacing: .05em; }

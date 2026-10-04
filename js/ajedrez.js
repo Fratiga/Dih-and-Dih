@@ -27,6 +27,8 @@
     wk: "♔", wq: "♕", wr: "♖", wb: "♗", wn: "♘", wp: "♙",
     bk: "♚", bq: "♛", br: "♜", bb: "♝", bn: "♞", bp: "♟"
   };
+  // En el tablero las dos bandos usan la silueta rellena y se distinguen por color (♟ con selector de texto: sin emoji)
+  const RELLENO = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟︎" };
   const VALOR = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
   const CLAVE_RECORD = "compendioAjedrezRecord";
   const CLAVE_REGISTRADAS = "compendioAjedrezPvpRegistradas";
@@ -182,7 +184,7 @@
         if (destinos.has(nombre)) clases.push(p ? "aj-captura" : "aj-destino");
         if (ultimaJugada && (ultimaJugada.from === nombre || ultimaJugada.to === nombre)) clases.push("aj-ultima");
         if (enJaque && p && p.type === "k" && p.color === enJaque) clases.push("aj-jaque");
-        html += `<button type="button" class="${clases.join(" ")}" data-casilla="${nombre}" aria-label="${nombre}">${p ? `<span class="aj-pieza aj-${p.color}">${GLIFOS[p.color + p.type]}</span>` : ""}</button>`;
+        html += `<button type="button" class="${clases.join(" ")}" data-casilla="${nombre}" aria-label="${nombre}">${p ? `<span class="aj-pieza aj-${p.color}">${RELLENO[p.type]}</span>` : ""}</button>`;
       });
     });
     tableroEl.innerHTML = html;
