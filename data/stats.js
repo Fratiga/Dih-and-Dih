@@ -246,7 +246,7 @@ window.STATS = [
   },
   {
     id: "restos-de-ledros",
-    nombre: "Restos de Ledros",
+    nombre: "Restos espectrales",
     rol: "Infantería",
     tipo: "No-muerto",
     nivel: 3,
@@ -887,7 +887,7 @@ window.STATS = [
   {
     id: "restos-de-ledros-piedra",
     personajeId: "ledros",
-    nombre: "Restos de Ledros (Piedra)",
+    nombre: "Restos espectrales (Piedra)",
     rol: "Infantería",
     tipo: "No-muerto",
     nivel: 3,
@@ -909,7 +909,7 @@ window.STATS = [
   {
     id: "restos-de-ledros-madera",
     personajeId: "ledros",
-    nombre: "Restos de Ledros (Madera)",
+    nombre: "Restos espectrales (Madera)",
     rol: "Infantería",
     tipo: "No-muerto",
     nivel: 3,
@@ -931,7 +931,7 @@ window.STATS = [
   {
     id: "restos-de-ledros-barro",
     personajeId: "ledros",
-    nombre: "Restos de Ledros (Barro)",
+    nombre: "Restos espectrales (Barro)",
     rol: "Infantería",
     tipo: "No-muerto",
     nivel: 3,
