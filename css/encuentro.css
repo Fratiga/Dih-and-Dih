@@ -87,10 +87,6 @@ html, body { margin: 0; }
 .enc-barra-relleno { height: 100%; width: 50%; background: linear-gradient(90deg, #5c1010, #a32323 55%, #c43a3a); transition: width .25s linear; }
 .enc-aviso { text-align: center; margin: 14px 0 0; color: #9a937c; font-size: .9rem; min-height: 1.2em; }
 
-@media (prefers-reduced-motion: reduce) {
-  .enc-pagina *, .enc-pagina *::before { animation-duration: .01s !important; animation-delay: 0s !important; }
-}
-
 /* Control de volumen de la música */
 .ms-volumen {
   position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 8px;

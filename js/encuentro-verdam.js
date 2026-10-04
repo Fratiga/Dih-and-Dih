@@ -17,7 +17,7 @@
   // Cenizas que suben: muy livianas, a media resolución
   (function cenizas() {
     const canvas = document.getElementById("encCenizas");
-    if (!canvas || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const ESCALA = 0.5;
     let w = 0, h = 0;

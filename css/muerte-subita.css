@@ -13,9 +13,7 @@
   background: radial-gradient(ellipse at 50% 40%, transparent 35%, rgba(60, 10, 110, .45) 75%, rgba(10, 2, 24, .92) 100%);
   animation: msPulso 6s ease-in-out infinite;
 }
-.ms-relampago { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse at 50% 0%, rgba(217, 70, 239, .35), transparent 60%); opacity: 0; animation: msRelampago 9s infinite; }
 @keyframes msPulso { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
-@keyframes msRelampago { 0%, 90%, 94%, 100% { opacity: 0; } 91% { opacity: .9; } 92% { opacity: .1; } 93% { opacity: .7; } }
 
 .ms-tentaculos { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
 .ms-tent { position: absolute; width: 150px; height: 480px; opacity: .8; transform-origin: 50% 100%; filter: drop-shadow(0 0 14px rgba(168, 85, 247, .7)); animation: msOnda 6s ease-in-out infinite alternate; }
@@ -115,12 +113,6 @@
 @media (max-width: 640px) {
   .ms-t2, .ms-t4, .ms-t6 { display: none; }
   .ms-tent { width: 100px; height: 320px; }
-}
-/* La página es su animación: el ajuste "reducir movimiento" del sistema ya no la apaga
-   entera (a quien lo tenía puesto solo le quedaba una imagen quieta). Solo se quita el
-   destello del relámpago, que parpadea fuerte. */
-@media (prefers-reduced-motion: reduce) {
-  .ms-relampago { animation: none !important; }
 }
 
 /* Control de volumen de la música */
