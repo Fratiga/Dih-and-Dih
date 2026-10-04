@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ritmo — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261105">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261105">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261105">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261105">
+  <link rel="stylesheet" href="css/style.css?v=20261106">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261106">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261106">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261106">
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -43,9 +43,9 @@
         <h2>Buzón de canciones</h2>
         <p class="rt-ayuda">Pide una canción para el juego. Le llega al admin.</p>
         <form id="rtBuzonForm" class="rt-form">
-          <input type="text" id="rtBuzonCancion" required maxlength="140" placeholder="Canción y artista" autocomplete="off">
-          <input type="text" id="rtBuzonEnlace" maxlength="300" placeholder="Enlace (opcional)" autocomplete="off">
-          <input type="text" id="rtBuzonNombre" maxlength="40" placeholder="Tu nombre (opcional)" autocomplete="off">
+          <input type="text" id="rtBuzonCancion" required maxlength="140" placeholder="Canción y artista" autocomplete="off" aria-label="Canción y artista">
+          <input type="text" id="rtBuzonEnlace" maxlength="300" placeholder="Enlace (opcional)" autocomplete="off" aria-label="Enlace de la canción (opcional)">
+          <input type="text" id="rtBuzonNombre" maxlength="40" placeholder="Tu nombre (opcional)" autocomplete="off" aria-label="Tu nombre (opcional)">
           <div class="rt-botones rt-botones-izq">
             <button type="submit" id="rtBuzonEnviar" class="rt-jugar">Enviar</button>
             <button type="button" id="rtBuzonVolver" class="rt-secundario">Volver</button>
@@ -77,9 +77,9 @@
     <p class="mj-linea">Esc pausa.</p>
   </main>
 
-  <script src="js/temas.js?v=20261105"></script>
-  <script src="data/musica.js?v=20261105"></script>
-  <script src="js/peticiones-supabase.js?v=20261105"></script>
-  <script src="js/ritmo.js?v=20261105"></script>
+  <script src="js/temas.js?v=20261106"></script>
+  <script src="data/musica.js?v=20261106"></script>
+  <script src="js/peticiones-supabase.js?v=20261106"></script>
+  <script src="js/ritmo.js?v=20261106"></script>
 </body>
 </html>

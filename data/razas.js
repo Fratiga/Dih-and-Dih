@@ -1023,7 +1023,7 @@ window.RAZAS = [
     id: "shifters",
     title: "Shifters",
     category: "Razas",
-    tags: ["shifters", "licantropía", "maldición ancestral"],
+    tags: ["shifters", "licantropía", "maldición-ancestral"],
     summary: "Estirpe descendiente de antiguos druidas élficos que adoptaron un aspecto lupino, hoy extendida a otros animales; puede surgir de forma natural o por maldición.",
     region: "",
     gobierno: "",

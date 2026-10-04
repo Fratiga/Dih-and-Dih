@@ -8,6 +8,7 @@
     if (toggleBtn) {
       toggleBtn.textContent = paused ? "▶" : "⏸";
       toggleBtn.title = paused ? "Reanudar franjas" : "Detener franjas";
+      toggleBtn.setAttribute("aria-label", toggleBtn.title);
     }
   }
 

@@ -45,6 +45,7 @@ if (audio) {
     currentTrackEl.textContent = rocolaCurrentTrackName();
     playBtn.textContent = audio.paused ? "▶" : "❚❚";
     playBtn.title = audio.paused ? "Reproducir" : "Pausar";
+    playBtn.setAttribute("aria-label", playBtn.title);
     document.querySelectorAll("#trackList li").forEach((li, idx) => {
       li.classList.toggle("active", idx === rocola.order[rocola.pos]);
     });

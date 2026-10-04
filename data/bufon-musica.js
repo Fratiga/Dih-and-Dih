@@ -1,5 +1,5 @@
-// Pistas de fondo para la escena del Bufón. Agregá un .mp3 a
-// assets/Bufon/musica/ y sumá acá su nombre de archivo (tal cual, sin
+// Pistas de fondo para la escena del Bufón. Agrega un .mp3 a
+// assets/Bufon/musica/ y suma aquí su nombre de archivo (tal cual, sin
 // codificar — el reproductor se encarga de eso al armar la ruta).
 window.BUFON_MUSICA = [
   "Alicia - Violin - Lorien Testard.mp3",

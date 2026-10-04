@@ -1025,6 +1025,9 @@ window.LUGARES = [
       que por afecto genuino. La Iglesia mantiene la misión abierta principalmente
       porque cerrarla sería, para Asmodeo, admitir que su fe no puede sostenerse
       fuera de sus propias fronteras.</p>
+      <p>La relación funciona porque ambas partes la necesitan. Brurland gana acceso a
+      una red diplomática y comercial que de otro modo le sería hostil, y la Iglesia
+      mantiene un pie firme fuera de Roah.</p>
     `
   },
   {
@@ -4497,30 +4500,6 @@ window.LUGARES = [
       con algo que ocultar, motivo suficiente para no llamar la atención. Los propios
       inquisidores cultivan esa reputación con cuidado, conscientes de que el miedo
       resuelve la mitad de su trabajo antes de que empiece.</p>
-    `
-  },
-  {
-    id: "catedral-del-juramento",
-    title: "Catedral del Juramento",
-    category: "Lugares",
-    tags: ["catedral", "brurland", "derrovia"],
-    summary: "Misión de la Iglesia de Asmodeo autorizada en territorio brurlandés, donde cada clérigo debe jurar públicamente no imponer su fe sobre el Mortismo local.",
-    region: "Brurland, Derrovia, Gylas",
-    gobierno: "Misión de la Iglesia de Asmodeo",
-    religionPredominante: "Mortismo",
-    lugaresDestacados: [],
-    content: `
-      <p>Que la Iglesia de Asmodeo mantenga una catedral funcionando en un reino de
-      mayoría Mortismo dice tanto de la diplomacia de Brurland como de la ambición de
-      la Iglesia. Su nombre no es casual. Cada clérigo destinado aquí debe jurar
-      públicamente, ante la corona brurlandesa, que no buscará convertir por la fuerza
-      ni la coerción a ningún súbdito del reino, un juramento que la Iglesia exige en
-      muy pocos otros lugares del mundo.</p>
-      <p>La relación funciona, a su manera, porque ambas partes la
-      necesitan. Brurland gana acceso a una red diplomática y comercial que de otro modo
-      le sería hostil, y la Iglesia mantiene un pie firme fuera de Roah. Los propios
-      brurlandeses tratan la catedral con la cortesía distante que reservarían
-      para cualquier embajada extranjera, ni más ni menos.</p>
     `
   },
   {

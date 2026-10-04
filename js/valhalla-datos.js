@@ -22,7 +22,7 @@
     if (!a) return null;
     const props = (a.propiedades || []).join(" ").toLowerCase();
     const tags = (a.tags || []).join(" ");
-    const distancia = tags.includes("a distancia");
+    const distancia = tags.includes("a-distancia");
     const dano = /^\d+d\d+$/.test(a["daño"] || "") ? a["daño"] : (/^\d+$/.test(a["daño"] || "") ? a["daño"] : "1d4");
     let alcance = 1;
     if (distancia) alcance = Math.max(2, Math.floor(metros(a.alcance) / 1.5));
