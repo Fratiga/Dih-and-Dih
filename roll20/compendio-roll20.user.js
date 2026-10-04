@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.2.0
+// @version      2.3.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -62,6 +62,7 @@
 
   const estado = {
     sesion: leerJson("compendio_sesion"),
+    esAdmin: leerJson("compendio_admin") === true, // solo el Admin ve la pestaña de Enemigos
     personajes: leerJson("compendio_cache") || [], // lista de { id, nombre, dueno, items }
     enemigos: null,
     cargando: false,
@@ -113,8 +114,11 @@
   function cerrarSesion() {
     estado.sesion = null;
     estado.personajes = [];
+    estado.esAdmin = false;
+    estado.vista = "personaje";
     GM_deleteValue("compendio_sesion");
     GM_deleteValue("compendio_cache");
+    GM_deleteValue("compendio_admin");
   }
 
   async function tokenValido() {
@@ -147,6 +151,13 @@
         ruta: "/rest/v1/fichas_personajes?select=id,roll20,nombre:data->identidad->>nombre,dueno:data->>ownerUsername&archivado=eq.false&roll20=not.is.null&order=updated_at.desc",
         token
       });
+      try {
+        // La misma función que usa el sitio para saber si una cuenta es Admin
+        const admin = await pedir({ metodo: "POST", ruta: "/rest/v1/rpc/fichas_es_admin", cuerpo: {}, token });
+        estado.esAdmin = admin === true;
+      } catch (e) { /* si falla la consulta, se deja como estaba */ }
+      GM_setValue("compendio_admin", JSON.stringify(estado.esAdmin));
+      if (!estado.esAdmin) { estado.vista = "personaje"; estado.susurro = false; }
       estado.personajes = (filas || []).map(f => ({
         id: f.id,
         nombre: f.nombre || (f.roll20 && f.roll20.nombre) || "Sin nombre",
@@ -301,7 +312,7 @@
   function enviarAlChat(texto) {
     let lineas = String(texto).split("\n").filter(Boolean);
     // En susurro (solo para el máster) se omiten las acciones narradas (/em) y el resto va como "/w gm ..."
-    if (estado.susurro) lineas = lineas.filter(l => !l.startsWith("/em")).map(l => `/w gm ${l}`);
+    if (estado.esAdmin && estado.susurro) lineas = lineas.filter(l => !l.startsWith("/em")).map(l => `/w gm ${l}`);
     if (!lineas.length) return;
     const area = document.querySelector("#textchat-input textarea");
     if (!area) {
@@ -340,14 +351,16 @@
           <option value="ventaja" ${estado.modo === "ventaja" ? "selected" : ""}>Ventaja</option>
           <option value="desventaja" ${estado.modo === "desventaja" ? "selected" : ""}>Desventaja</option>
         </select>
-        <label class="cr20-susurro" style="padding:0;flex:1.2"><input type="checkbox" id="cr20-susurro" ${estado.susurro ? "checked" : ""}> Solo yo (susurro)</label>
+        ${estado.esAdmin ? `<label class="cr20-susurro" style="padding:0;flex:1.2"><input type="checkbox" id="cr20-susurro" ${estado.susurro ? "checked" : ""}> Solo yo (susurro)</label>` : ""}
       </div>`;
   }
 
   function pintar() {
     panel.hidden = !estado.abierto;
     if (!estado.abierto) return;
-    cuerpoPanel.innerHTML = cabecera() + (estado.vista === "enemigos" ? cuerpoEnemigos() : cuerpoPersonaje());
+    if (!estado.esAdmin) estado.vista = "personaje";
+    // Sin sesión solo hay login; las pestañas (y los enemigos) son solo para el Admin
+    cuerpoPanel.innerHTML = (estado.sesion && estado.esAdmin ? cabecera() : "") + (estado.vista === "enemigos" && estado.sesion ? cuerpoEnemigos() : cuerpoPersonaje());
     enlazar();
     // Si cambió el alto del panel, que no se salga de la pantalla
     if (panel.style.left) { const r = panel.getBoundingClientRect(); colocar(panel, r.left, r.top); }
