@@ -32,6 +32,7 @@
   const canvas = document.getElementById("rtCampo");
   const ctxC = canvas.getContext("2d");
   const escenarioEl = document.getElementById("rtEscenario");
+  const brilloEl = document.getElementById("rtBrillo");
   const menuEl = document.getElementById("rtMenu");
   const cancionesEl = document.getElementById("rtCanciones");
   const dificultadesEl = document.getElementById("rtDificultades");
@@ -401,11 +402,20 @@
   }
 
   /* --- Dibujo --------------------------------------------------------------- */
+  /* Medir el canvas obliga al navegador a recalcular la página, así que solo se hace al
+     cambiar el tamaño, no en cada fotograma. La resolución interna se limita para no
+     pintar millones de píxeles de más en pantallas muy densas. */
+  let medidaSucia = true;
+  if (window.ResizeObserver) new ResizeObserver(() => { medidaSucia = true; }).observe(canvas);
+  window.addEventListener("resize", () => { medidaSucia = true; });
+
   function ajustarCanvas() {
+    if (!medidaSucia) return;
+    medidaSucia = false;
     const r = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.max(1, Math.round(r.width * dpr));
-    const h = Math.max(1, Math.round(r.height * dpr));
+    const escala = Math.max(1, Math.min(window.devicePixelRatio || 1, 1280 / Math.max(1, r.width)));
+    const w = Math.max(1, Math.round(r.width * escala));
+    const h = Math.max(1, Math.round(r.height * escala));
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
     ctxC.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
   }
@@ -438,9 +448,15 @@
     ctxC.globalAlpha = 1;
   }
 
+  let ultimoAvatar = 0;
+  let brilloPrevio = "";
+  let puntosTexto = "";
+  let puntosPrevio = -1;
   function dibujarAvatar(ahora) {
     const objetivo = CARRILES[avatar.carril].y;
-    avatar.y += (objetivo - avatar.y) * 0.28;
+    const dt = Math.min(0.05, Math.max(0, ahora - ultimoAvatar));
+    ultimoAvatar = ahora;
+    avatar.y += (objetivo - avatar.y) * (1 - Math.exp(-dt * 20));
     const salto = Math.max(0, 1 - (ahora - avatar.salto) / 0.22);
     const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.2);
     const x = 100;
@@ -468,14 +484,12 @@
     const ahora = ahoraS();
     const pulso = mapa && estado !== "menu" ? mapa.pulso[Math.max(0, Math.min(mapa.pulso.length - 1, Math.floor((t * mapa.sr) / HOP)))] || 0 : 0;
 
-    // Fondo: un resplandor que late con los graves
-    ctxC.fillStyle = "#17181a";
-    ctxC.fillRect(0, 0, W, H);
-    const grad = ctxC.createRadialGradient(X_GOLPE, H / 2, 20, X_GOLPE, H / 2, 560);
-    grad.addColorStop(0, `rgba(143, 220, 255, ${0.05 + pulso * 0.2})`);
-    grad.addColorStop(1, "rgba(143, 220, 255, 0)");
-    ctxC.fillStyle = grad;
-    ctxC.fillRect(0, 0, W, H);
+    // El resplandor que late con los graves es un div con degradado detrás del canvas:
+    // cambiar su opacidad no cuesta nada, a diferencia de rellenar un degradado enorme
+    // en cada fotograma.
+    ctxC.clearRect(0, 0, W, H);
+    const brillo = (0.2 + pulso * 0.8).toFixed(2);
+    if (brillo !== brilloPrevio) { brilloPrevio = brillo; brilloEl.style.opacity = brillo; }
 
     // Carriles
     Object.entries(CARRILES).forEach(([nombre, c]) => {
@@ -535,7 +549,8 @@
       ctxC.fillStyle = "#e9e6d8";
       ctxC.textAlign = "left";
       ctxC.font = "700 28px sans-serif";
-      ctxC.fillText(puntos.toLocaleString("es"), 24, 44);
+      if (puntos !== puntosPrevio) { puntosPrevio = puntos; puntosTexto = puntos.toLocaleString("es"); }
+      ctxC.fillText(puntosTexto, 24, 44);
       if (combo >= 2) {
         ctxC.textAlign = "right";
         ctxC.font = "700 34px sans-serif";

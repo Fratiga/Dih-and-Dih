@@ -45,3 +45,4 @@
   .rt-rango { font-size: 2.6rem; }
   .rt-ayuda { display: none; }
 }
+.rt-brillo { position: absolute; inset: 0; pointer-events: none; opacity: .2; will-change: opacity; background: radial-gradient(circle at 22% 50%, rgba(143, 220, 255, .3), rgba(143, 220, 255, 0) 60%); }
