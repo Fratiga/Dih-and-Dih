@@ -894,7 +894,7 @@
     const vista = filtroHechizos.vista;
     const hechizos = `
       <div class="fichas-hechizos-barra">
-        <input type="search" id="fhBuscar" placeholder="Buscar hechizo..." value="${esc(filtroHechizos.texto)}">
+        <input type="search" id="fhBuscar" placeholder="Buscar conjuro..." value="${esc(filtroHechizos.texto)}">
         <label class="fichas-compacto-check"><input type="checkbox" id="fhSoloDisp" ${filtroHechizos.soloDisponibles ? "checked" : ""}> Solo disponibles</label>
         <div class="fichas-vista-toggle">
           <button type="button" data-fh-vista="lista" class="${vista === "lista" ? "activo" : ""}">Lista</button>
@@ -904,12 +904,12 @@
         <span id="fhConteo" class="fichas-puntos-info"></span>
       </div>
       <div data-lista="hechizos" class="fichas-hechizos fichas-hechizos--${vista}">${p.hechizos.map(h => filaHechizo(h, h.id === hechizoParaAbrir)).join("")}</div>
-      <button type="button" class="secondary-button fichas-add-btn" data-add="hechizo">+ Agregar hechizo</button>`;
+      <button type="button" class="secondary-button fichas-add-btn" data-add="hechizo">+ Agregar conjuro</button>`;
     return `
     <section class="fichas-panel" data-panel="hechizos">
-      ${seccion("lanzamiento", "Lanzamiento de hechizos", lanzamiento, true)}
+      ${seccion("lanzamiento", "Lanzamiento de conjuros", lanzamiento, true)}
       ${seccion("espacios", "Espacios de conjuro", espacios, true)}
-      ${seccion("hechizos", "Hechizos", hechizos, true)}
+      ${seccion("hechizos", "Conjuros", hechizos, true)}
     </section>`;
   }
 
@@ -948,7 +948,7 @@
   function cuerpoHechizo(h) {
     return `
       <div class="fichas-repetible-header">
-          <input type="text" data-bind="__hechizo__.${h.id}.nombre" value="${esc(h.nombre)}" placeholder="Nombre del hechizo">
+          <input type="text" data-bind="__hechizo__.${h.id}.nombre" value="${esc(h.nombre)}" placeholder="Nombre del conjuro">
           <button type="button" class="fichas-repetible-remove" data-remove="hechizo:${h.id}">×</button>
         </div>
         <div class="fichas-field-grid fichas-grid-chico">
@@ -994,7 +994,7 @@
       if (coincide) visibles += 1;
     });
     const conteo = document.getElementById("fhConteo");
-    if (conteo) conteo.textContent = `${lista.length} hechizos · ${disponibles} disponibles` + (visibles !== lista.length ? ` · ${visibles} a la vista` : "");
+    if (conteo) conteo.textContent = `${lista.length} ${lista.length === 1 ? "conjuro" : "conjuros"} · ${disponibles} ${disponibles === 1 ? "disponible" : "disponibles"}` + (visibles !== lista.length ? ` · ${visibles} a la vista` : "");
   }
 
   /* ---------------------------------------------------------------------- */
@@ -1127,7 +1127,7 @@
             <option value="Salvaciones">Salvaciones</option>
             <option value="Combate">Iniciativa</option>
             <option value="Ataques">Ataques</option>
-            <option value="Hechizos">Hechizos</option>
+            <option value="Conjuros">Conjuros</option>
             <option value="Rasgos">Rasgos</option>
             <option value="Macros">Macros</option>
           </select>
@@ -1391,7 +1391,7 @@
     if (tipo === "ataque") p.ataques.push({ id: fichasNuevoId(), nombre: "Nuevo ataque", atributo: "fue", competente: true, ajusteAtaque: 0, dano: "1d6", tipoDano: "", alcance: "", municionActual: null, municionMax: null, propiedades: "", notas: "" });
     if (tipo === "rasgo") p.rasgos.push({ id: fichasNuevoId(), nombre: "Nuevo rasgo", descripcion: "", usosActuales: null, usosMax: null, tipoAccion: "accion", recuperacion: "manual", formulaRoll20: "" });
     if (tipo === "hechizo") {
-      const nuevoHechizo = { id: fichasNuevoId(), disponible: true, nombre: "Nuevo hechizo", nivel: 0, escuela: "", tiempo: "", alcance: "", duracion: "", componentes: "", concentracion: false, ritual: false, tipo: "ninguno", dano: "", tipoDano: "", descripcion: "", notas: "" };
+      const nuevoHechizo = { id: fichasNuevoId(), disponible: true, nombre: "Nuevo conjuro", nivel: 0, escuela: "", tiempo: "", alcance: "", duracion: "", componentes: "", concentracion: false, ritual: false, tipo: "ninguno", dano: "", tipoDano: "", descripcion: "", notas: "" };
       p.hechizos.unshift(nuevoHechizo);
       hechizoParaAbrir = nuevoHechizo.id;
       filtroHechizos.texto = "";
@@ -1503,7 +1503,7 @@
       items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${a.dano || "—"}`, tipo: "ataquedano", refId: a.id });
     });
     p.hechizos.filter(h => h.disponible !== false).forEach(h => {
-      items.push({ id: `hechizo:${h.id}`, categoria: "Hechizos", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
+      items.push({ id: `hechizo:${h.id}`, categoria: "Conjuros", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
     });
     p.rasgos.filter(r => r.formulaRoll20).forEach(r => {
       items.push({ id: `rasgo:${r.id}`, categoria: "Rasgos", texto: r.nombre, tipo: "rasgo", refId: r.id });

@@ -550,7 +550,7 @@
   const SEGMENTOS_HISTORIAL = {
     identidad: "Identidad", combate: "Combate", atributos: "Atributos", ajustesAtributos: "Ajuste de atributo",
     atributosRaciales: "Bono racial", salvaciones: "Salvación", habilidades: "Habilidad", lanzamiento: "Lanzamiento",
-    inventario: "Inventario", hechizos: "Hechizo", ataques: "Ataque", rasgos: "Rasgo", objetos: "Objeto",
+    inventario: "Inventario", hechizos: "Conjuro", ataques: "Ataque", rasgos: "Rasgo", objetos: "Objeto",
     espacios: "Espacio de conjuro", monedas: "Monedas", macros: "Macro", dadosGolpe: "Dados de golpe",
     fue: "Fuerza", des: "Destreza", con: "Constitución", int: "Inteligencia", sab: "Sabiduría", car: "Carisma",
     nombre: "nombre", nivel: "nivel", nivelTotal: "nivel total", clase: "clase", subclase: "subclase", raza: "raza",

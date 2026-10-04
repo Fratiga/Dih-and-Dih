@@ -302,7 +302,7 @@ function fichasPdfRoll20Importar(paginas) {
       const cantidad = fichasR20Entero(p3.find(o => Math.abs(o.y - marcador.y) <= 2 && o.x > marcador.x + 20 && o.x < marcador.x + 60).str);
       if (cantidad > 0) personaje.lanzamiento.espacios.push({ nivel, max: cantidad, usados: 0 });
     }
-    pendientes.push("Hechizos: el PDF no trae la lista de hechizos (la página de conjuros estaba vacía). Los espacios de conjuro sí se importaron; agrega los hechizos en la pestaña Hechizos.");
+    pendientes.push("Conjuros: el PDF no trae la lista de conjuros (la página de conjuros estaba vacía). Los espacios de conjuro sí se importaron; agrega los hechizos en la pestaña Hechizos.");
   }
 
   /* Rasgos (página 4): tres columnas de texto. Una línea "nivel nombre" es un
