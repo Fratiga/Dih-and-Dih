@@ -1,16 +1,19 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      1.1.0
+// @version      2.2.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
 // @match        http://localhost:8845/*
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_addStyle
 // @grant        GM_setClipboard
+// @grant        GM_xmlhttpRequest
+// @connect      ilicqboqelrjuvtslaxd.supabase.co
 // @run-at       document-idle
 // @updateURL    https://fratiga.github.io/Dih-and-Dih/roll20/compendio-roll20.user.js
 // @downloadURL  https://fratiga.github.io/Dih-and-Dih/roll20/compendio-roll20.user.js
@@ -19,30 +22,31 @@
 (function () {
   "use strict";
 
-  // Cada fuente: lo que publica la página del Compendio -> dónde lo guarda este script.
-  const FUENTES = [
-    { local: "compendioRoll20Datos", gm: "compendio_roll20_datos", mensaje: "compendio-roll20-datos" },       // Mis personajes
-    { local: "compendioRoll20Enemigos", gm: "compendio_roll20_enemigos", mensaje: "compendio-roll20-enemigos" } // Estadísticas (enemigos)
-  ];
+  // Mismo proyecto de Supabase y misma clave pública que usa el sitio (la clave
+  // "publishable" está pensada para ir en el navegador; los datos los protege RLS).
+  const SUPA = "https://ilicqboqelrjuvtslaxd.supabase.co";
+  const CLAVE = "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
+
+  // Los PERSONAJES se leen directo de Supabase con la sesión del jugador (funciona
+  // desde cualquier navegador). Los ENEMIGOS (solo para el máster) los publica la
+  // página de Estadísticas en este navegador, y se copian al script desde el sitio.
+  const FUENTE_ENEMIGOS = { local: "compendioRoll20Enemigos", gm: "compendio_roll20_enemigos", mensaje: "compendio-roll20-enemigos" };
 
   /* =========================================================================
-     LADO DEL COMPENDIO: copia lo que publica la página al almacenamiento del
-     script, para que Roll20 (otro sitio) pueda leerlo.
+     LADO DEL COMPENDIO: copia lo que publica la página (enemigos) al
+     almacenamiento del script, para que Roll20 (otro sitio) pueda leerlo.
   ========================================================================= */
   if (location.hostname !== "app.roll20.net") {
     const copiar = (clave, texto) => {
       if (texto && texto !== GM_getValue(clave, "")) GM_setValue(clave, texto);
     };
     const leerLocal = () => {
-      FUENTES.forEach(f => {
-        try { copiar(f.gm, localStorage.getItem(f.local)); } catch (e) { /* sin acceso */ }
-      });
+      try { copiar(FUENTE_ENEMIGOS.gm, localStorage.getItem(FUENTE_ENEMIGOS.local)); } catch (e) { /* sin acceso */ }
     };
     leerLocal();
     window.addEventListener("message", e => {
-      if (e.source !== window || !e.data) return;
-      const f = FUENTES.find(x => x.mensaje === e.data.tipo);
-      if (f) { try { copiar(f.gm, JSON.stringify(e.data.payload)); } catch (err) { /* ignorar */ } }
+      if (e.source !== window || !e.data || e.data.tipo !== FUENTE_ENEMIGOS.mensaje) return;
+      try { copiar(FUENTE_ENEMIGOS.gm, JSON.stringify(e.data.payload)); } catch (err) { /* ignorar */ }
     });
     window.addEventListener("storage", leerLocal);
     setInterval(leerLocal, 4000);
@@ -52,9 +56,16 @@
   /* =========================================================================
      LADO DE ROLL20: panel flotante con las tiradas.
   ========================================================================= */
+  function leerJson(clave) {
+    try { return JSON.parse(GM_getValue(clave, "") || "null"); } catch (e) { return null; }
+  }
+
   const estado = {
-    personajes: null,
+    sesion: leerJson("compendio_sesion"),
+    personajes: leerJson("compendio_cache") || [], // lista de { id, nombre, dueno, items }
     enemigos: null,
+    cargando: false,
+    error: "",
     vista: GM_getValue("compendio_vista", "personaje"), // "personaje" | "enemigos"
     personajeId: GM_getValue("compendio_personaje", ""),
     enemigoId: GM_getValue("compendio_enemigo", ""),
@@ -66,6 +77,90 @@
     abierto: GM_getValue("compendio_abierto", true)
   };
 
+  /* --- Supabase por HTTP (GM_xmlhttpRequest evita los bloqueos de CORS/CSP de Roll20) --- */
+  function pedir({ metodo = "GET", ruta, cuerpo, token }) {
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: metodo,
+        url: SUPA + ruta,
+        headers: Object.assign({ apikey: CLAVE, "Content-Type": "application/json" }, token ? { Authorization: "Bearer " + token } : {}),
+        data: cuerpo ? JSON.stringify(cuerpo) : undefined,
+        timeout: 15000,
+        onload: r => {
+          let json = null;
+          try { json = JSON.parse(r.responseText); } catch (e) { /* sin cuerpo */ }
+          if (r.status >= 200 && r.status < 300) resolve(json);
+          else reject({ status: r.status, json });
+        },
+        onerror: () => reject({ status: 0 }),
+        ontimeout: () => reject({ status: 0 })
+      });
+    });
+  }
+
+  function guardarSesion(resp) {
+    const ahora = Math.floor(Date.now() / 1000);
+    estado.sesion = {
+      access_token: resp.access_token,
+      refresh_token: resp.refresh_token,
+      expires_at: resp.expires_at || ahora + (resp.expires_in || 3600),
+      email: (resp.user && resp.user.email) || (estado.sesion && estado.sesion.email) || ""
+    };
+    GM_setValue("compendio_sesion", JSON.stringify(estado.sesion));
+    return estado.sesion;
+  }
+
+  function cerrarSesion() {
+    estado.sesion = null;
+    estado.personajes = [];
+    GM_deleteValue("compendio_sesion");
+    GM_deleteValue("compendio_cache");
+  }
+
+  async function tokenValido() {
+    const s = estado.sesion;
+    if (!s) return null;
+    if (Date.now() / 1000 < s.expires_at - 60) return s.access_token;
+    try {
+      const resp = await pedir({ metodo: "POST", ruta: "/auth/v1/token?grant_type=refresh_token", cuerpo: { refresh_token: s.refresh_token } });
+      return guardarSesion(resp).access_token;
+    } catch (e) {
+      if (e.status === 400 || e.status === 401) cerrarSesion();
+      return null;
+    }
+  }
+
+  async function iniciarSesion(email, password) {
+    const resp = await pedir({ metodo: "POST", ruta: "/auth/v1/token?grant_type=password", cuerpo: { email, password } });
+    guardarSesion(resp);
+  }
+
+  async function cargarPersonajes() {
+    if (!estado.sesion || estado.cargando) return;
+    estado.cargando = true;
+    estado.error = "";
+    pintar();
+    try {
+      const token = await tokenValido();
+      if (!token) throw new Error("La sesión venció. Entra de nuevo.");
+      const filas = await pedir({
+        ruta: "/rest/v1/fichas_personajes?select=id,roll20,nombre:data->identidad->>nombre,dueno:data->>ownerUsername&archivado=eq.false&roll20=not.is.null&order=updated_at.desc",
+        token
+      });
+      estado.personajes = (filas || []).map(f => ({
+        id: f.id,
+        nombre: f.nombre || (f.roll20 && f.roll20.nombre) || "Sin nombre",
+        dueno: f.dueno || "",
+        items: (f.roll20 && f.roll20.items) || []
+      }));
+      GM_setValue("compendio_cache", JSON.stringify(estado.personajes));
+    } catch (e) {
+      estado.error = e && e.message ? e.message : "No pude conectar con el Compendio.";
+    }
+    estado.cargando = false;
+    pintar();
+  }
+
   GM_addStyle(`
     #cr20-boton { position: fixed; left: 10px; bottom: 10px; z-index: 99999; background: #1d1e20; color: #e8e4d0;
       border: 1px solid #5a5a48; padding: 8px 12px; font: 600 13px sans-serif; cursor: pointer; }
@@ -73,8 +168,15 @@
       display: flex; flex-direction: column; background: #1d1e20; color: #e8e4d0; border: 1px solid #5a5a48;
       font: 13px sans-serif; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
     #cr20-panel[hidden] { display: none; }
-    #cr20-panel select, #cr20-panel input[type=search] { background: #26272a; color: #e8e4d0; border: 1px solid #3a3a34;
+    #cr20-asa { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; cursor: grab;
+      background: #26272a; border-bottom: 1px solid #3a3a34; color: #8d8977; font: 600 11px sans-serif;
+      letter-spacing: .06em; text-transform: uppercase; user-select: none; touch-action: none; }
+    #cr20-asa:active, #cr20-boton:active { cursor: grabbing; }
+    #cr20-cuerpo { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    #cr20-boton { touch-action: none; user-select: none; }
+    #cr20-panel select, #cr20-panel input[type=search], #cr20-panel input[type=email], #cr20-panel input[type=password] { background: #26272a; color: #e8e4d0; border: 1px solid #3a3a34;
       padding: 6px 8px; font: 13px sans-serif; box-sizing: border-box; }
+    #cr20-panel button.cr20-accion { background: #26272a; color: #e8e4d0; border: 1px solid #5a5a48; padding: 7px 10px; font: 13px sans-serif; cursor: pointer; }
     .cr20-fila { display: flex; gap: 6px; padding: 8px 10px 0; align-items: center; }
     .cr20-fila > * { flex: 1; min-width: 0; }
     .cr20-tabs { display: flex; border-bottom: 1px solid #3a3a34; }
@@ -88,6 +190,9 @@
     .cr20-item:hover { border-color: #a9a58f; }
     .cr20-item small { display: block; color: #8d8977; font-size: 11px; }
     .cr20-vacio { color: #a9a58f; padding: 12px 10px; line-height: 1.5; }
+    .cr20-error { color: #d99a9a; padding: 8px 10px 0; }
+    .cr20-pie { color: #8d8977; font-size: 11px; padding: 6px 10px 8px; display: flex; justify-content: space-between; }
+    .cr20-pie a { color: #a9a58f; cursor: pointer; text-decoration: underline; }
     .cr20-ficha { padding: 8px 10px 0; color: #a9a58f; font-size: 12px; }
     .cr20-susurro { display: flex; align-items: center; gap: 6px; color: #a9a58f; font-size: 12px; padding: 8px 10px 0; }
     #cr20-toast { position: fixed; left: 10px; bottom: 56px; z-index: 100000; background: #26272a; color: #e8e4d0;
@@ -100,21 +205,74 @@
   boton.textContent = "Compendio";
   const panel = document.createElement("div");
   panel.id = "cr20-panel";
+  panel.innerHTML = `<div id="cr20-asa" title="Arrastra para mover"><span>⋮⋮ Compendio</span><span>arrastra</span></div><div id="cr20-cuerpo"></div>`;
+  const cuerpoPanel = panel.querySelector("#cr20-cuerpo");
   document.body.append(boton, panel);
 
-  boton.addEventListener("click", () => {
+  /* --- Mover el panel y el botón (la posición se recuerda) ----------------- */
+  function dentroDeLaPantalla(x, y, el) {
+    const r = el.getBoundingClientRect();
+    return {
+      x: Math.min(Math.max(0, x), Math.max(0, window.innerWidth - r.width)),
+      y: Math.min(Math.max(0, y), Math.max(0, window.innerHeight - r.height))
+    };
+  }
+
+  function colocar(el, x, y) {
+    const pos = dentroDeLaPantalla(x, y, el);
+    el.style.left = pos.x + "px";
+    el.style.top = pos.y + "px";
+    el.style.bottom = "auto";
+    return pos;
+  }
+
+  function hacerArrastrable(el, asa, clave, alHacerClic) {
+    const guardada = leerJson(clave);
+    if (guardada) colocar(el, guardada.x, guardada.y);
+
+    let inicio = null;
+    asa.addEventListener("pointerdown", e => {
+      if (e.button !== 0) return;
+      const r = el.getBoundingClientRect();
+      inicio = { px: e.clientX, py: e.clientY, x: r.left, y: r.top, movido: false };
+      try { asa.setPointerCapture(e.pointerId); } catch (err) { /* sin captura, sigue funcionando */ }
+    });
+    asa.addEventListener("pointermove", e => {
+      if (!inicio) return;
+      const dx = e.clientX - inicio.px;
+      const dy = e.clientY - inicio.py;
+      if (!inicio.movido && Math.hypot(dx, dy) < 5) return;
+      inicio.movido = true;
+      colocar(el, inicio.x + dx, inicio.y + dy);
+    });
+    const soltar = e => {
+      if (!inicio) return;
+      const { movido } = inicio;
+      inicio = null;
+      if (movido) {
+        const r = el.getBoundingClientRect();
+        GM_setValue(clave, JSON.stringify({ x: r.left, y: r.top }));
+      } else if (alHacerClic) {
+        alHacerClic(e);
+      }
+    };
+    asa.addEventListener("pointerup", soltar);
+    asa.addEventListener("pointercancel", () => { inicio = null; });
+    window.addEventListener("resize", () => {
+      if (el.style.left) { const r = el.getBoundingClientRect(); colocar(el, r.left, r.top); }
+    });
+  }
+
+  hacerArrastrable(panel, panel.querySelector("#cr20-asa"), "compendio_pos_panel", null);
+  hacerArrastrable(boton, boton, "compendio_pos_boton", () => {
     estado.abierto = !estado.abierto;
     GM_setValue("compendio_abierto", estado.abierto);
     pintar();
+    if (estado.abierto && estado.sesion) cargarPersonajes();
   });
 
-  function leerJson(clave) {
-    try { return JSON.parse(GM_getValue(clave, "") || "null"); } catch (e) { return null; }
-  }
-
-  function cargarDatos() {
-    estado.personajes = leerJson(FUENTES[0].gm);
-    estado.enemigos = leerJson(FUENTES[1].gm);
+  function cargarEnemigos() {
+    estado.enemigos = leerJson(FUENTE_ENEMIGOS.gm);
   }
 
   function aviso(texto) {
@@ -189,15 +347,32 @@
   function pintar() {
     panel.hidden = !estado.abierto;
     if (!estado.abierto) return;
-    panel.innerHTML = cabecera() + (estado.vista === "enemigos" ? cuerpoEnemigos() : cuerpoPersonaje());
+    cuerpoPanel.innerHTML = cabecera() + (estado.vista === "enemigos" ? cuerpoEnemigos() : cuerpoPersonaje());
     enlazar();
+    // Si cambió el alto del panel, que no se salga de la pantalla
+    if (panel.style.left) { const r = panel.getBoundingClientRect(); colocar(panel, r.left, r.top); }
+  }
+
+  function pieSesion() {
+    return `<div class="cr20-pie"><span>${estado.cargando ? "Actualizando…" : esc(estado.sesion.email)}</span><span><a id="cr20-refrescar">Actualizar</a> · <a id="cr20-salir">Salir</a></span></div>`;
+  }
+
+  function cuerpoLogin() {
+    return `
+      <div class="cr20-vacio">Entra con tu cuenta del Compendio (la misma de Mis personajes). Solo hace falta una vez; no guardo tu contraseña.</div>
+      <div class="cr20-fila"><input id="cr20-email" type="email" placeholder="Correo" autocomplete="username"></div>
+      <div class="cr20-fila"><input id="cr20-pass" type="password" placeholder="Contraseña" autocomplete="current-password"></div>
+      ${estado.error ? `<div class="cr20-error">${esc(estado.error)}</div>` : ""}
+      <div class="cr20-fila" style="padding-bottom:10px"><button type="button" class="cr20-accion" id="cr20-entrar">Entrar</button></div>`;
   }
 
   function cuerpoPersonaje() {
-    const lista = (estado.personajes && estado.personajes.personajes) || [];
+    if (!estado.sesion) return cuerpoLogin();
+
+    const lista = estado.personajes;
     const p = lista.find(x => x.id === estado.personajeId) || lista[0] || null;
     if (!p) {
-      return `<div class="cr20-vacio">Todavía no tengo tus personajes. Abre el Compendio (Mis personajes) con tu cuenta, en este mismo navegador, y vuelve aquí.</div>`;
+      return `<div class="cr20-vacio">${estado.cargando ? "Cargando tus personajes…" : "Todavía no hay personajes publicados. Abre Mis personajes en el Compendio una vez (se publican solos) y pulsa Actualizar."}</div>${estado.error ? `<div class="cr20-error">${esc(estado.error)}</div>` : ""}${pieSesion()}`;
     }
     const categorias = [...new Set(p.items.map(i => i.categoria))];
     if (estado.filtro === "favoritas" && !p.items.some(i => i.favorita)) estado.filtro = "todas";
@@ -208,14 +383,18 @@
       if (estado.filtro !== "favoritas" && estado.filtro !== "todas" && i.categoria !== estado.filtro) return false;
       return !q || i.texto.toLowerCase().includes(q);
     });
+    const hayVariosDuenos = new Set(lista.map(x => x.dueno)).size > 1;
+    const etiqueta = x => (hayVariosDuenos && x.dueno ? `${x.nombre} (${x.dueno})` : x.nombre);
     return `
       <div class="cr20-fila">
-        ${lista.length > 1 ? `<select id="cr20-pj">${lista.map(x => `<option value="${esc(x.id)}" ${x.id === p.id ? "selected" : ""}>${esc(x.nombre)}</option>`).join("")}</select>` : `<strong style="padding:6px 0">${esc(p.nombre)}</strong>`}
+        ${lista.length > 1 ? `<select id="cr20-pj">${lista.map(x => `<option value="${esc(x.id)}" ${x.id === p.id ? "selected" : ""}>${esc(etiqueta(x))}</option>`).join("")}</select>` : `<strong style="padding:6px 0">${esc(p.nombre)}</strong>`}
       </div>
       ${controlesComunes()}
       <div class="cr20-fila"><input id="cr20-buscar" type="search" placeholder="Buscar..." value="${esc(estado.busqueda)}"></div>
       <div class="cr20-chips">${chips.map(([v, t]) => `<button type="button" class="cr20-chip ${estado.filtro === v ? "on" : ""}" data-filtro="${esc(v)}">${esc(t)}</button>`).join("")}</div>
-      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>`;
+      ${estado.error ? `<div class="cr20-error">${esc(estado.error)}</div>` : ""}
+      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
+      ${pieSesion()}`;
   }
 
   function cuerpoEnemigos() {
@@ -277,10 +456,28 @@
     });
     panel.querySelectorAll("[data-filtro]").forEach(b => b.addEventListener("click", () => { estado.filtro = b.dataset.filtro; pintar(); }));
 
+    // Sesión
+    const entrar = async () => {
+      const email = panel.querySelector("#cr20-email").value.trim();
+      const pass = panel.querySelector("#cr20-pass").value;
+      if (!email || !pass) return;
+      estado.error = "";
+      try {
+        await iniciarSesion(email, pass);
+        await cargarPersonajes();
+      } catch (e) {
+        estado.error = "Correo o contraseña incorrectos.";
+        pintar();
+      }
+    };
+    panel.querySelector("#cr20-entrar")?.addEventListener("click", entrar);
+    panel.querySelector("#cr20-pass")?.addEventListener("keydown", e => { if (e.key === "Enter") entrar(); });
+    panel.querySelector("#cr20-refrescar")?.addEventListener("click", cargarPersonajes);
+    panel.querySelector("#cr20-salir")?.addEventListener("click", () => { cerrarSesion(); pintar(); });
+
     // Personaje: botón de una tirada
     panel.querySelectorAll(".cr20-item[data-id]").forEach(b => b.addEventListener("click", () => {
-      const lista = (estado.personajes && estado.personajes.personajes) || [];
-      const p = lista.find(x => x.id === estado.personajeId) || lista[0];
+      const p = estado.personajes.find(x => x.id === estado.personajeId) || estado.personajes[0];
       const item = p && p.items.find(i => i.id === b.dataset.id);
       if (item) enviarAlChat(item.cmd[estado.modo] || item.cmd.normal);
     }));
@@ -301,9 +498,12 @@
     }));
   }
 
-  cargarDatos();
+  cargarEnemigos();
   pintar();
+  if (estado.sesion) cargarPersonajes();
   if (typeof GM_addValueChangeListener === "function") {
-    FUENTES.forEach(f => GM_addValueChangeListener(f.gm, () => { cargarDatos(); pintar(); }));
+    GM_addValueChangeListener(FUENTE_ENEMIGOS.gm, () => { cargarEnemigos(); pintar(); });
   }
+  // Mientras el panel está abierto, los personajes se refrescan solos cada par de minutos
+  setInterval(() => { if (estado.abierto && estado.sesion && !estado.cargando && estado.vista === "personaje") cargarPersonajes(); }, 120000);
 })();
