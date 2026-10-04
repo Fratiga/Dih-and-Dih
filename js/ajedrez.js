@@ -21,6 +21,7 @@
   const controlesEl = document.getElementById("ajControles");
   const colorLabelEl = document.getElementById("ajColorLabel");
   const cerrarOnlineEl = document.getElementById("ajCerrarOnline");
+  const revanchaEl = document.getElementById("ajRevancha");
   const zonaEl = document.querySelector(".aj-zona");
 
   const GLIFOS = {
@@ -232,6 +233,7 @@
     if (online) {
       // Contra otro jugador: el resultado sale de la partida guardada y se anota solo
       setTimeout(cargarPartidas, 600);
+      revanchaEl.classList.remove("hidden");
       return;
     }
     if (resultado === "gana" && !rival.sinRanking) {
@@ -581,6 +583,7 @@
     controlesEl.classList.toggle("hidden", pvp && !online);
     zonaEl.classList.toggle("hidden", pvp && !online);
     cerrarOnlineEl.classList.toggle("hidden", !online);
+    revanchaEl.classList.toggle("hidden", !online || !terminado);
     document.querySelectorAll(".aj-modo").forEach(b => b.classList.toggle("activo", b.dataset.modo === modo));
   }
 
@@ -603,6 +606,7 @@
     const enviados = abiertas.filter(f => f.estado === "pendiente" && f.retador === miId);
     const enCurso = abiertas.filter(f => f.estado === "en_curso");
     const terminadas = partidas.filter(f => f.estado === "terminada").slice(0, 5);
+    const ocupadosRev = new Set(abiertas.map(idOponente));
     let html = "";
     if (recibidos.length) {
       html += `<h3 class="aj-pvp-titulo">Te retaron</h3>` + recibidos.map(f => `
@@ -629,7 +633,7 @@
       html += `<h3 class="aj-pvp-titulo">Últimas partidas</h3>` + terminadas.map(f => `
         <div class="aj-pvp-fila">
           <span>contra <strong>${esc(nombreOponente(f))}</strong> · ${esc(textoResultado(f))}</span>
-          <button type="button" class="aj-boton" data-abrir="${f.id}">Ver</button>
+          <span><button type="button" class="aj-boton" data-abrir="${f.id}">Ver</button> <button type="button" class="aj-boton" data-revancha="${f.id}" ${ocupadosRev.has(idOponente(f)) ? "disabled" : ""}>Revancha</button></span>
         </div>`).join("");
     }
     pvpPartidasEl.innerHTML = html;
@@ -715,7 +719,7 @@
     refrescarVistas();
     pintarTablero(); pintarLaterales();
     mensaje(colorJugador === "w" ? "Te toca." : `Esperando a ${rival.nombre}...`);
-    if (f.estado === "terminada") { terminado = true; mensaje(`${textoResultado(f)}.`); rendirseEl.disabled = true; }
+    if (f.estado === "terminada") { terminado = true; mensaje(`${textoResultado(f)}.`); rendirseEl.disabled = true; revanchaEl.classList.remove("hidden"); }
     else actualizarEstado();
     document.querySelector(".aj-zona").scrollIntoView({ block: "nearest" });
   }
@@ -792,6 +796,7 @@
       supa = await fichasCliente();
       enLinea = true;
       pvpAvisoEl.textContent = "Reta a alguien de la lista. Cuando acepte, la partida queda abierta aunque cierres la página: las jugadas esperan a su turno.";
+      try { await supa.rpc("ajedrez_caducar"); } catch (err) { /* aún sin el SQL de caducidad */ }
       await Promise.all([cargarJugadores(), cargarPartidas()]);
       suscribir();
     } catch (err) {
@@ -814,6 +819,15 @@
     cargarPartidas();
   });
 
+  revanchaEl.addEventListener("click", async () => {
+    if (!online || !supa) return;
+    const id = online.id;
+    revanchaEl.disabled = true;
+    await accion("ajedrez_revancha", { p_id: id });
+    revanchaEl.disabled = false;
+    cerrarOnlineEl.click();
+  });
+
   modoJugadoresEl.addEventListener("click", async ev => {
     const b = ev.target.closest("button");
     if (!b || !supa) return;
@@ -821,9 +835,19 @@
     if (d.retar) { b.disabled = true; await accion("ajedrez_retar", { p_rival: d.retar }); }
     else if (d.aceptar) { await accion("ajedrez_responder", { p_id: d.aceptar, p_aceptar: true }); const f = partidas.find(x => x.id === d.aceptar); if (f && f.estado === "en_curso") abrirOnline(f); }
     else if (d.rechazar) await accion("ajedrez_responder", { p_id: d.rechazar, p_aceptar: false });
+    else if (d.revancha) await accion("ajedrez_revancha", { p_id: d.revancha });
     else if (d.cancelar) await accion("ajedrez_rendirse", { p_id: d.cancelar });
     else if (d.abrir) { const f = partidas.find(x => x.id === d.abrir); if (f) abrirOnline(f); }
   });
+
+  function irAJugadores() {
+    if (location.hash !== "#jugadores") return;
+    if (modo !== "jugadores") document.querySelector('.aj-modo[data-modo="jugadores"]').click();
+    else if (online && terminado) cerrarOnlineEl.click();
+    else if (supa) cargarPartidas();
+  }
+  window.addEventListener("hashchange", irAJugadores);
+  irAJugadores();
 
   pintarRivales();
   mensaje("Cargando el tablero...");

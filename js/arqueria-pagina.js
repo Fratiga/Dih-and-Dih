@@ -15,6 +15,9 @@
   const cerrarEl = document.getElementById("arqueriaCerrar");
   const rendirseEl = document.getElementById("arqueriaRendirse");
   const cuentaEl = document.getElementById("arqueriaCuenta");
+  const revanchaEl = document.getElementById("arqueriaRevancha");
+  const rankingEl = document.getElementById("arqueriaRankings");
+  const CLAVE_REGISTRADAS = "compendioArqueriaPvpRegistradas";
 
   const RIVALES = [
     { id: "hornet", nombre: "Hornet", dificultad: "Fácil" },
@@ -40,6 +43,41 @@
   let aplazado = null;
   let sondeoVs = null;
   let envioPuntaje = null;
+  let registradas = new Set();
+  try { registradas = new Set(JSON.parse(localStorage.getItem(CLAVE_REGISTRADAS) || "[]")); } catch (e) { registradas = new Set(); }
+
+  /* --- Ranking --------------------------------------------------------------- */
+  function cargarRanking() {
+    if (!rankingEl || !window.MjStats) return;
+    MjStats.cargarYPintar("arqueria", rankingEl, [
+      { titulo: "Mejor puntaje", valor: u => u.maximo.mejor },
+      { titulo: "Más victorias", valor: u => u.victorias },
+      { titulo: "Victorias contra Cassius", valor: u => (u.porClave.cassius ? u.porClave.cassius.victorias : 0) },
+      { titulo: "Victorias contra otros jugadores", valor: u => (u.porClave.jugador ? u.porClave.jugador.victorias : 0) },
+      { titulo: "Mejor puntaje contra otro jugador", valor: u => (u.porClave.jugador && u.porClave.jugador.maximo ? Number(u.porClave.jugador.maximo.mejor) || 0 : 0) }
+    ]);
+  }
+
+  async function anotarPartida(claveRival, resultado, puntaje) {
+    if (!window.MjStats) return { guardado: false };
+    const res = await MjStats.registrar("arqueria", claveRival, resultado, { suma: { puntos: puntaje }, max: { mejor: puntaje } });
+    if (res.guardado) cargarRanking();
+    return res;
+  }
+
+  /* Anota las partidas entre jugadores ya terminadas que aún no se anotaron (una vez por partida). */
+  async function registrarPendientes() {
+    const limite = Date.now() - 3 * 86400000;
+    for (const f of partidas) {
+      if (f.estado !== "terminada" || !f.resultado || registradas.has(f.id)) continue;
+      if (new Date(f.actualizada).getTime() < limite) { registradas.add(f.id); continue; }
+      const resultado = f.resultado === "empate" ? "tablas" : (f.resultado === mi(f) ? "gana" : "pierde");
+      const res = await anotarPartida("jugador", resultado, puntajeMio(f));
+      if (!res.guardado) return; // se reintenta en la siguiente consulta
+      registradas.add(f.id);
+      try { localStorage.setItem(CLAVE_REGISTRADAS, JSON.stringify([...registradas].slice(-200))); } catch (e) { /* sin almacenamiento */ }
+    }
+  }
 
   function esc(t) {
     return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -69,8 +107,9 @@
       if (!vs) boton.classList.toggle("hidden", jugando);
     },
     onPuntaje: puntaje => { if (vs) vs.puntaje = puntaje; },
-    onFin: ({ puntaje, vs: esVs }) => {
+    onFin: ({ puntaje, resultado, vs: esVs }) => {
       if (esVs) { finalizarVs(puntaje); return; }
+      anotarPartida(rival.id, resultado === "ganado" ? "gana" : resultado === "perdido" ? "pierde" : "tablas", puntaje);
       if (puntaje > leer(rival.id)) {
         try { localStorage.setItem(clave(rival.id), String(puntaje)); } catch (e) { /* sin almacenamiento */ }
       }
@@ -139,6 +178,7 @@
     const enviados = abiertas.filter(f => f.estado === "pendiente" && f.a === miId);
     const enCurso = abiertas.filter(f => f.estado === "listos" || f.estado === "jugando");
     const terminadas = partidas.filter(f => f.estado === "terminada").slice(0, 5);
+    const ocupadosRev = new Set(abiertas.map(idOponente));
     let html = "";
     if (recibidos.length) {
       html += `<h3 class="aj-pvp-titulo">Te retaron</h3>` + recibidos.map(f => `
@@ -165,6 +205,7 @@
       html += `<h3 class="aj-pvp-titulo">Últimas partidas</h3>` + terminadas.map(f => `
         <div class="aj-pvp-fila">
           <span>contra <strong>${esc(nombreOponente(f))}</strong> · ${esc(textoResultado(f))}</span>
+          <button type="button" class="aj-boton" data-revancha="${idOponente(f)}" ${ocupadosRev.has(idOponente(f)) ? "disabled" : ""}>Revancha</button>
         </div>`).join("");
     }
     partidasEl.innerHTML = html;
@@ -193,6 +234,7 @@
       if (f) aplicarFila(f);
     }
     pintarLobby();
+    registrarPendientes();
   }
 
   function programarCarga() {
@@ -207,6 +249,7 @@
     cerrarVs();
     modo = "jugadores";
     rendirseEl.classList.remove("hidden");
+    revanchaEl.classList.add("hidden");
     vs = { id: f.id, lado: mi(f), listoEnviado: false, cuenta: false, iniciada: false, terminada: false, puntaje: 0, enviado: 0, reclamo: null };
     juego.prepararVs({ nombre: nombreOponente(f), color: "#8fb4e8", semilla: f.semilla });
     refrescarVistas();
@@ -290,6 +333,7 @@
     estadoTexto(`Partida contra ${nombreOponente(f)} terminada.`);
     rendirseEl.classList.add("hidden");
     boton.classList.add("hidden");
+    revanchaEl.classList.remove("hidden");
   }
 
   /* Pone la partida abierta al día con lo guardado. */
@@ -323,6 +367,7 @@
     if (d.aceptar) await accion("arqueria_responder", { p_id: d.aceptar, p_aceptar: true });
     else if (d.rechazar) await accion("arqueria_responder", { p_id: d.rechazar, p_aceptar: false });
     else if (d.cancelar) await accion("arqueria_rendirse", { p_id: d.cancelar });
+    else if (d.revancha) await accion("arqueria_retar", { p_rival: d.revancha });
     else if (d.abrir) { const f = partidas.find(x => x.id === d.abrir); if (f) abrirVs(f); }
   });
 
@@ -331,6 +376,17 @@
     if (!b || !supa) return;
     b.disabled = true;
     await accion("arqueria_retar", { p_rival: b.dataset.retar });
+  });
+
+  revanchaEl.addEventListener("click", async () => {
+    if (!vs || !supa) return;
+    const f = partidas.find(x => x.id === vs.id);
+    if (!f) return;
+    revanchaEl.disabled = true;
+    await accion("arqueria_retar", { p_rival: idOponente(f) });
+    revanchaEl.disabled = false;
+    cerrarVs();
+    refrescarVistas();
   });
 
   cerrarEl.addEventListener("click", () => {
@@ -373,6 +429,7 @@
       supa = await fichasCliente();
       enLinea = true;
       avisoEl.textContent = "Reta a alguien de la lista. Cuando acepte, abre la partida y pulsen ▶ los dos: juegan el mismo campo a la vez y ven el puntaje del otro subir.";
+      try { await supa.rpc("arqueria_caducar"); } catch (err) { /* aún sin el SQL de caducidad */ }
       await Promise.all([cargarJugadores(), cargarPartidas()]);
       suscribir();
     } catch (err) {
@@ -383,7 +440,17 @@
   // Con sesión iniciada, el marcador y el título usan tu nombre de usuario en vez de "Tú"
   if (window.MjStats) MjStats.cargarSesion().then(({ nombre }) => { if (nombre) juego.setNombreJugador(nombre); });
 
+  function irAJugadores() {
+    if (location.hash !== "#jugadores" || jugando) return;
+    if (modo !== "jugadores") document.querySelector('.aj-modo[data-modo="jugadores"]').click();
+    else if (vs && vs.terminada) cerrarEl.click();
+    else if (supa && !vs) cargarPartidas();
+  }
+  window.addEventListener("hashchange", irAJugadores);
+
   pintarRivales();
   pintarRecord();
   refrescarVistas();
+  if (window.MjStats) MjStats.cargarSesion().then(cargarRanking);
+  irAJugadores();
 })();

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arquería — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261103"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261103">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261103">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261103">
+  <script src="js/oculto.js?v=20261104"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261104">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261104">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261104">
 </head>
 <body class="mj-pagina arq-tema">
   <div class="mj-barra">
@@ -37,6 +37,7 @@
     <div class="aj-controles hidden" id="arqueriaControles">
       <button type="button" id="arqueriaCerrar" class="aj-boton">← Mis partidas</button>
       <button type="button" id="arqueriaRendirse" class="aj-boton">Abandonar</button>
+      <button type="button" id="arqueriaRevancha" class="aj-boton hidden">Revancha</button>
     </div>
     <div class="mj-escenario">
       <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
@@ -44,13 +45,18 @@
       <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
     </div>
     <p id="arqueriaRecord" class="mj-linea"></p>
+
+    <h2 class="mj-subtitulo">Ranking</h2>
+    <p class="mj-nota">Se anotan las partidas de quienes tienen sesión iniciada.</p>
+    <div id="arqueriaRankings" class="sacrificio-rankings"></div>
   </main>
 
-  <script src="js/temas.js?v=20261103"></script>
-  <script src="js/fichas-supabase.js?v=20261103"></script>
-  <script src="js/lado.js?v=20261103"></script>
-  <script src="js/minijuegos-stats.js?v=20261103"></script>
-  <script src="js/arqueria.js?v=20261103"></script>
-  <script src="js/arqueria-pagina.js?v=20261103"></script>
+  <script src="js/temas.js?v=20261104"></script>
+  <script src="js/fichas-supabase.js?v=20261104"></script>
+  <script src="js/lado.js?v=20261104"></script>
+  <script src="js/minijuegos-stats.js?v=20261104"></script>
+  <script src="js/arqueria.js?v=20261104"></script>
+  <script src="js/arqueria-pagina.js?v=20261104"></script>
+  <script src="js/minijuegos-avisos.js?v=20261104"></script>
 </body>
 </html>

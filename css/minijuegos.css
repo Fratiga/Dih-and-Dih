@@ -40,3 +40,13 @@ body.mj-pagina::after { display: none; }
 
 /* Cuenta atrás de la arquería entre jugadores */
 .arqueria-cuenta { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 700 clamp(5rem, 22vw, 11rem) var(--font-heading), sans-serif; color: #e8e4d0; text-shadow: 0 4px 24px rgba(0, 0, 0, .8); pointer-events: none; background: rgba(0, 0, 0, .35); }
+
+/* Aviso de retos entre jugadores */
+.mj-aviso-reto {
+  position: fixed; right: 16px; bottom: 16px; z-index: 900; max-width: min(360px, calc(100vw - 32px));
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--panel); border: 1px solid var(--accent-soft); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); font-size: .88rem;
+}
+.mj-aviso-reto a { color: var(--text); border: 1px solid var(--accent-soft); padding: 4px 12px; text-decoration: none; white-space: nowrap; }
+.mj-aviso-reto a:hover { background: var(--panel-2); }
+.mj-aviso-reto button { background: none; border: 0; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 0 2px; }
