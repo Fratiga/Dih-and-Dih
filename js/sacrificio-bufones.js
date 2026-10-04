@@ -33,6 +33,15 @@
   let SkeletonUtils = null;
   let renderer = null;
   let clasico = false;
+  // Calidad adaptativa: si los cuadros tardan demasiado, se baja la resolución
+  // del lienzo de los bufones y, como último recurso, se limita a 30 cuadros/s.
+  const NIVELES_RESOLUCION = [1, 0.6, 0.45];
+  let resolucionBase = 1;
+  let nivelCalidad = 0;
+  let limite30 = false;
+  let cuadrosMedidos = 0;
+  let tiempoMedido = 0;
+  let marcaMedida = 0;
   let ultimoCuadro = 0;
   let scene = null;
   let camera = null;
@@ -106,7 +115,7 @@
       // WebGPU real solo donde es confiable. En Firefox se usa el WebGLRenderer
       // clásico, mucho más liviano que el modo WebGL de WebGPURenderer.
       // Si WebGPU falla al arrancar, también se cae a WebGL.
-      clasico = /firefox/i.test(navigator.userAgent) || /[?&]clasico=1/.test(location.search);
+      clasico = /firefox|OPR\/|opera/i.test(navigator.userAgent) || /[?&]clasico=1/.test(location.search);
       const prefiereWebGL = !navigator.gpu;
       async function abrirRenderer(webgl) {
         const r = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: webgl });
@@ -126,7 +135,8 @@
       }
       // El lienzo cubre toda la ventana: en el modo clásico se dibuja a menor
       // resolución (el navegador lo estira) para que Firefox no se arrastre.
-      renderer.setPixelRatio(clasico ? 0.7 : 1);
+      resolucionBase = clasico ? 0.7 : 1;
+      renderer.setPixelRatio(resolucionBase);
       renderer.setSize(ancho, alto);
       renderer.setClearColor(0x000000, 0);
       contenedor.appendChild(renderer.domElement);
@@ -161,7 +171,7 @@
 
       gltf.animations.forEach(c => { clips[c.name] = c; });
       try {
-        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261054");
+        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261055");
         const g = window.GANGNAM_CLIP;
         // three.js quita los dos puntos de los nombres de nodo al cargar el modelo
         const pistas = g.pistas.map(p => {
@@ -285,13 +295,34 @@
     }
   }
 
+  function medirRendimiento(ahora) {
+    const intervalo = ahora - marcaMedida;
+    marcaMedida = ahora;
+    if (intervalo > 250) return; // pausa o cambio de pestaña, no cuenta
+    cuadrosMedidos += 1;
+    tiempoMedido += intervalo;
+    if (cuadrosMedidos < 90) return;
+    const promedio = tiempoMedido / cuadrosMedidos;
+    cuadrosMedidos = 0;
+    tiempoMedido = 0;
+    if (promedio < (clasico ? 45 : 26)) return; // fluido (el modo clásico ya va a ~30 cuadros/s)
+    if (nivelCalidad < NIVELES_RESOLUCION.length - 1) {
+      nivelCalidad += 1;
+      renderer.setPixelRatio(Math.min(resolucionBase, NIVELES_RESOLUCION[nivelCalidad]));
+      renderer.setSize(ancho, alto);
+    } else {
+      limite30 = true;
+    }
+  }
+
   function cuadro() {
-    // En el modo clásico (Firefox) se dibuja a 30 cuadros por segundo como máximo
-    if (clasico) {
-      const ahora = performance.now();
+    const ahora = performance.now();
+    // En el modo clásico, o ya con la calidad al mínimo, máximo 30 cuadros por segundo
+    if (clasico || limite30) {
       if (ahora - ultimoCuadro < 30) return;
       ultimoCuadro = ahora;
     }
+    if (!limite30) medirRendimiento(ahora);
     const dt = Math.min(0.05, reloj.getDelta());
     const caja = cajaEscenario();
     for (const b of bufones) {
