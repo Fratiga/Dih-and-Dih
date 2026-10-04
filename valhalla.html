@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valhalla — Compendio del Mundo</title>
+  <script src="js/oculto.js?v=20261089"></script>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261089">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261089">
+  <link rel="stylesheet" href="css/valhalla.css?v=20261089">
+</head>
+<body class="mj-pagina vh-pagina">
+  <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido vh-contenido">
+    <p class="eyebrow">ARENA</p>
+    <h1 class="mj-titulo">Valhalla</h1>
+
+    <section id="vhCuartel"></section>
+
+    <section id="vhCombate" class="hidden">
+      <div id="vhOrden" class="vh-orden"></div>
+      <div class="vh-zona">
+        <div class="vh-lienzo-col">
+          <canvas id="vhCanvas" class="vh-canvas"></canvas>
+          <p id="vhPista" class="vh-pista"></p>
+        </div>
+        <aside class="vh-lateral">
+          <div id="vhFicha" class="vh-ficha"></div>
+          <ol id="vhLog" class="vh-log"></ol>
+        </aside>
+      </div>
+      <div id="vhAcciones" class="vh-acciones"></div>
+    </section>
+
+    <section id="vhResultado" class="hidden"></section>
+  </main>
+
+  <script src="data/armas.js?v=20261089"></script>
+  <script src="data/stats.js?v=20261089"></script>
+  <script src="js/temas.js?v=20261089"></script>
+  <script src="js/fichas-modelo.js?v=20261089"></script>
+  <script src="js/fichas-calc.js?v=20261089"></script>
+  <script src="js/fichas-supabase.js?v=20261089"></script>
+  <script src="js/fichas-storage.js?v=20261089"></script>
+  <script src="js/lado.js?v=20261089"></script>
+  <script src="js/stats-roll20.js?v=20261089"></script>
+  <script src="js/valhalla-reglas.js?v=20261089"></script>
+  <script src="js/valhalla-datos.js?v=20261089"></script>
+  <script src="js/valhalla-combate.js?v=20261089"></script>
+  <script src="js/valhalla.js?v=20261089"></script>
+</body>
+</html>
