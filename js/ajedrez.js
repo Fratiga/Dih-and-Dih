@@ -1,4 +1,4 @@
-/* Ajedrez contra "El perro sabio". Las reglas (movimientos legales, jaque, mate,
+/* Ajedrez contra rivales con su propia forma de jugar. Las reglas (movimientos legales, jaque, mate,
    tablas, enroque, al paso) las da chess.js, que se carga al abrir la página;
    la parte que piensa (evaluación y búsqueda con poda alfa-beta) es propia. */
 (function () {
@@ -7,11 +7,11 @@
   const jugadasEl = document.getElementById("ajJugadas");
   const capturasJ = document.getElementById("ajCapturasJugador");
   const capturasR = document.getElementById("ajCapturasRival");
-  const nivelEl = document.getElementById("ajNivel");
   const colorEl = document.getElementById("ajColor");
-  const nuevaEl = document.getElementById("ajNueva");
-  const deshacerEl = document.getElementById("ajDeshacer");
-  const resultadoEl = document.getElementById("ajResultado");
+  const rendirseEl = document.getElementById("ajRendirse");
+  const rivalesEl = document.getElementById("ajRivales");
+  const rivalActualEl = document.getElementById("ajRivalActual");
+  const comentarioEl = document.getElementById("ajComentario");
 
   const GLIFOS = {
     wk: "♔", wq: "♕", wr: "♖", wb: "♗", wn: "♘", wp: "♙",
@@ -26,11 +26,23 @@
   const PST_ALFIL = [-20, -10, -10, -10, -10, -10, -10, -20, -10, 0, 0, 0, 0, 0, 0, -10, -10, 0, 5, 10, 10, 5, 0, -10, -10, 5, 5, 10, 10, 5, 5, -10, -10, 0, 10, 10, 10, 10, 0, -10, -10, 10, 10, 10, 10, 10, 10, -10, -10, 5, 0, 0, 0, 0, 5, -10, -20, -10, -10, -10, -10, -10, -10, -20];
   const PST = { p: PST_PEON, n: PST_CABALLO, b: PST_ALFIL };
 
-  const NIVELES = {
-    paciente: { prof: 1, tiempo: 300, error: 0.35 },
-    normal: { prof: 2, tiempo: 700, error: 0.08 },
-    sabio: { prof: 4, tiempo: 1600, error: 0 }
-  };
+  /* Cada rival tiene su dificultad (cuánto calcula y cuánto se equivoca), su ritmo
+     al pensar y unas frases propias para que se sienta que hay alguien enfrente.
+     prof = jugadas que mira por adelantado; tiempo = tope de cálculo (ms);
+     error = probabilidad de elegir una jugada peor; pausa = [min, max] segundos
+     que "piensa" antes de mover. */
+  const RIVALES = [
+    { id: "aldeano", nombre: "Aldeano Común", dificultad: "Muy fácil", prof: 1, tiempo: 250, error: 0.5, pausa: [1.0, 2.6],
+      frases: { saludo: "Voy a... intentarlo.", jaque: "¿Eso es jaque? Creo que sí.", capturaRival: "Ay, creo que me comí una pieza.", capturaJugador: "Uy.", gana: "¡Gané! No sé cómo.", pierde: "Sabía que no iba a poder." } },
+    { id: "miliciano", nombre: "Miliciano de Brurland", dificultad: "Fácil", prof: 2, tiempo: 500, error: 0.22, pausa: [0.8, 2.0],
+      frases: { saludo: "Empieza cuando quieras.", jaque: "Jaque.", capturaRival: "Es mía.", capturaJugador: "Buen golpe.", gana: "Fin de la partida.", pierde: "Bien jugado." } },
+    { id: "baraja", nombre: "Baraja", dificultad: "Media", prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
+      frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
+    { id: "adam", nombre: "Adam Kovacs", dificultad: "Difícil", prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
+      frases: { saludo: "Que sea una partida digna.", jaque: "Jaque.", capturaRival: "Una pieza menos.", capturaJugador: "Bien tomada.", gana: "Se acabó.", pierde: "Una derrota honorable. Bien hecho." } },
+    { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
+      frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
+  ];
 
   let Chess = null;
   let juego = null;
@@ -38,6 +50,8 @@
   let seleccion = null;
   let ultimaJugada = null;
   let pensando = false;
+  let rival = null;
+  let partidaId = 0;
   let capturadas = { w: [], b: [] };
   let terminado = false;
   let record = {};
@@ -87,8 +101,7 @@
     return mejor;
   }
 
-  function elegirJugada(g, nivel) {
-    const cfg = NIVELES[nivel];
+  function elegirJugada(g, cfg) {
     const movs = ordenar(g.moves({ verbose: true }));
     if (!movs.length) return null;
     const maximiza = g.turn() === "w";
@@ -168,10 +181,15 @@
 
   function mensaje(texto) { estadoEl.textContent = texto; }
 
+  function comentar(clave, probabilidad) {
+    if (!rival || Math.random() > (probabilidad === undefined ? 1 : probabilidad)) return;
+    comentarioEl.textContent = `${rival.nombre}: «${rival.frases[clave]}»`;
+  }
+
   function actualizarEstado() {
     if (juego.isCheckmate()) {
       const gano = juego.turn() !== colorJugador;
-      terminar(gano ? "Jaque mate. Le ganaste a El perro sabio." : "Jaque mate. El perro sabio te ganó.", gano ? "gana" : "pierde");
+      terminar(gano ? `Jaque mate. Le ganaste a ${rival.nombre}.` : `Jaque mate. ${rival.nombre} te ganó.`, gano ? "gana" : "pierde");
     } else if (juego.isDraw()) {
       terminar("Tablas.", "tablas");
     } else if (juego.turn() === colorJugador) {
@@ -182,23 +200,31 @@
   function terminar(texto, resultado) {
     terminado = true;
     mensaje(texto);
-    const nivel = nivelEl.value;
+    rendirseEl.disabled = true;
     if (resultado === "gana") {
-      record[nivel] = (record[nivel] || 0) + 1;
+      record[rival.id] = (record[rival.id] || 0) + 1;
       try { localStorage.setItem(CLAVE_RECORD, JSON.stringify(record)); } catch (err) { /* sin almacenamiento */ }
+      comentar("pierde");
+    } else if (resultado === "pierde") {
+      comentar("gana");
     }
-    pintarRecord();
+    pintarRivales();
   }
 
-  function pintarRecord() {
-    resultadoEl.textContent = `Victorias: Paciente ${record.paciente || 0} · Normal ${record.normal || 0} · Sabio ${record.sabio || 0}`;
+  function pintarRivales() {
+    rivalesEl.innerHTML = RIVALES.map(r => `
+      <button type="button" class="aj-rival ${rival && rival.id === r.id ? "activo" : ""}" data-rival="${r.id}">
+        <strong>${r.nombre}</strong>
+        <span>${r.dificultad}</span>
+        <small>${record[r.id] ? `Victorias: ${record[r.id]}` : "Sin vencer"}</small>
+      </button>`).join("");
   }
 
   function registrarCaptura(m) {
     if (m.captured) capturadas[m.color].push(m.captured);
   }
 
-  function jugar(m) {
+  function jugar(m, esRival) {
     const hecha = juego.move(m);
     registrarCaptura(hecha);
     ultimaJugada = { from: hecha.from, to: hecha.to };
@@ -206,16 +232,34 @@
     pintarTablero();
     pintarLaterales();
     actualizarEstado();
+    if (!terminado) {
+      if (esRival && juego.inCheck()) comentar("jaque", 0.7);
+      else if (esRival && hecha.captured) comentar("capturaRival", 0.45);
+      else if (!esRival && hecha.captured) comentar("capturaJugador", 0.35);
+    }
   }
 
   function turnoRival() {
     if (terminado || juego.turn() === colorJugador) return;
     pensando = true;
-    mensaje("El perro sabio piensa...");
+    mensaje(`${rival.nombre} piensa...`);
+    const miPartida = partidaId;
+    const inicio = performance.now();
     setTimeout(() => {
-      const m = elegirJugada(juego, nivelEl.value);
-      pensando = false;
-      if (m && !terminado) jugar(m);
+      if (miPartida !== partidaId) return;
+      const legales = juego.moves({ verbose: true });
+      const m = elegirJugada(juego, rival);
+      // Ritmo humano: tarda más en posiciones abiertas que en apertura, recapturas o jugadas obligadas.
+      let [min, max] = rival.pausa;
+      const triviales = legales.length === 1 || juego.history().length < 8;
+      if (triviales) { min *= 0.35; max *= 0.5; }
+      const objetivo = (min + Math.random() * (max - min)) * 1000;
+      const espera = Math.max(0, objetivo - (performance.now() - inicio));
+      setTimeout(() => {
+        if (miPartida !== partidaId) return;
+        pensando = false;
+        if (m && !terminado) jugar(m, true);
+      }, espera);
     }, 80);
   }
 
@@ -228,7 +272,7 @@
       const mov = juego.moves({ square: seleccion, verbose: true }).find(m => m.to === casilla);
       if (mov) {
         // Coronación automática a dama
-        jugar({ from: mov.from, to: mov.to, promotion: mov.promotion ? "q" : undefined });
+        jugar({ from: mov.from, to: mov.to, promotion: mov.promotion ? "q" : undefined }, false);
         turnoRival();
         return;
       }
@@ -238,33 +282,45 @@
     pintarTablero();
   });
 
-  function nuevaPartida() {
+  function nuevaPartida(r) {
+    if (!r) return;
+    rival = r;
+    partidaId += 1;
     juego = new Chess();
     colorJugador = colorEl.value === "negras" ? "b" : "w";
     seleccion = null; ultimaJugada = null; pensando = false; terminado = false;
     capturadas = { w: [], b: [] };
+    comentarioEl.textContent = "";
+    rivalActualEl.textContent = `Contra ${r.nombre} · ${r.dificultad}`;
+    rendirseEl.disabled = false;
+    pintarRivales();
     pintarTablero(); pintarLaterales();
-    mensaje(colorJugador === "w" ? "Te toca." : "El perro sabio empieza.");
+    mensaje(colorJugador === "w" ? "Te toca." : `${r.nombre} empieza.`);
+    comentar("saludo");
     if (colorJugador === "b") turnoRival();
   }
 
-  deshacerEl.addEventListener("click", () => {
-    if (!juego || pensando || terminado) return;
-    // Deshace la jugada del rival y la tuya
-    const n = juego.turn() === colorJugador ? 2 : 1;
-    for (let i = 0; i < n && juego.history().length; i++) {
-      const u = juego.undo();
-      if (u && u.captured) capturadas[u.color].pop();
+  rivalesEl.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-rival]");
+    if (!b || !Chess) return;
+    if (juego && !terminado && juego.history().length > 0 && rival && rival.id !== b.dataset.rival) {
+      if (!confirm("Hay una partida en curso. ¿Abandonarla y cambiar de rival?")) return;
     }
-    seleccion = null; ultimaJugada = null;
-    pintarTablero(); pintarLaterales(); actualizarEstado();
+    nuevaPartida(RIVALES.find(r => r.id === b.dataset.rival));
   });
-  nuevaEl.addEventListener("click", nuevaPartida);
-  colorEl.addEventListener("change", nuevaPartida);
 
-  pintarRecord();
+  colorEl.addEventListener("change", () => { if (rival && juego && (terminado || juego.history().length === 0)) nuevaPartida(rival); });
+
+  rendirseEl.addEventListener("click", () => {
+    if (!juego || terminado) return;
+    if (!confirm("¿Te rindes?")) return;
+    partidaId += 1; pensando = false;
+    terminar(`Te rendiste. ${rival.nombre} gana.`, "pierde");
+  });
+
+  pintarRivales();
   mensaje("Cargando el tablero...");
   import("https://cdn.jsdelivr.net/npm/chess.js@1.0.0/+esm")
-    .then(mod => { Chess = mod.Chess; nuevaPartida(); })
+    .then(mod => { Chess = mod.Chess; mensaje("Elige a un rival para empezar."); })
     .catch(() => mensaje("No se pudo cargar el motor de ajedrez. Revisa tu conexión a internet y recarga."));
 })();

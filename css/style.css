@@ -3610,3 +3610,16 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-jugadas { list-style: none; margin: 0 0 12px; padding: 0; max-height: 280px; overflow-y: auto; font-size: .85rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
 .aj-jugadas li span { color: var(--muted); display: inline-block; width: 2em; }
 .aj-ayuda { margin: 0 0 8px; font-size: .78rem; color: var(--muted); }
+
+.aj-rivales { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 0 0 18px; }
+.aj-rival {
+  display: flex; flex-direction: column; gap: 4px; text-align: left; cursor: pointer; font-family: inherit;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 14px;
+}
+.aj-rival:hover { border-color: var(--accent-soft); }
+.aj-rival.activo { border-color: var(--text); background: var(--panel-2); }
+.aj-rival strong { font-size: .92rem; }
+.aj-rival span { font-size: .76rem; color: var(--muted); }
+.aj-rival small { font-size: .72rem; color: var(--accent-soft); }
+.aj-rival-actual { margin: 0 0 6px; font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.aj-comentario { margin: -6px 0 14px; min-height: 1.3em; font-size: .85rem; color: var(--muted); font-style: italic; }
