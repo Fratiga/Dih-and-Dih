@@ -42,6 +42,7 @@
     let resultado = "";
     let ultimo = 0;
     let cursor = null;
+    let mouse = false; // la mira solo se dibuja con ratón; en táctil taparía el dedo
 
     function ajustarTamano() {
       const dpr = window.devicePixelRatio || 1;
@@ -190,6 +191,26 @@
       ctx.fillRect(ancho / 2 - 70, 54, 140 * (1 - tiempo / duracion), 6);
     }
 
+    function dibujarMira(x, y) {
+      ctx.save();
+      ctx.lineCap = "round";
+      for (const [color, ancho] of [["rgba(0,0,0,.6)", 5], ["#ffe08a", 2.5]]) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = ancho;
+        ctx.beginPath();
+        ctx.arc(x, y, 17, 0, Math.PI * 2);
+        // cuatro marcas que salen del aro
+        ctx.moveTo(x - 27, y); ctx.lineTo(x - 9, y);
+        ctx.moveTo(x + 9, y); ctx.lineTo(x + 27, y);
+        ctx.moveTo(x, y - 27); ctx.lineTo(x, y - 9);
+        ctx.moveTo(x, y + 9); ctx.lineTo(x, y + 27);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#ff6b5a";
+      ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
     function dibujar() {
       ctx.clearRect(0, 0, ancho, alto);
       for (const b of blancos) dibujarBlanco(b);
@@ -207,6 +228,7 @@
       }
       ctx.globalAlpha = 1;
       if (estado !== "listo") dibujarMarcador();
+      if (estado === "jugando" && cursor && mouse) dibujarMira(cursor.x, cursor.y);
       if (pantallas && estado !== "jugando") {
         ctx.fillStyle = "rgba(0,0,0,.5)";
         ctx.fillRect(0, 0, ancho, alto);
@@ -229,6 +251,7 @@
       ultimo = t;
       actualizar(dt);
       dibujar();
+      canvas.style.cursor = estado === "jugando" && mouse ? "none" : "";
       requestAnimationFrame(cuadro);
     }
 
@@ -237,7 +260,7 @@
       const p = posicion(e);
       disparar(p.x, p.y);
     });
-    canvas.addEventListener("pointermove", e => { cursor = posicion(e); });
+    canvas.addEventListener("pointermove", e => { cursor = posicion(e); mouse = e.pointerType === "mouse"; });
     canvas.addEventListener("pointerleave", () => { cursor = null; });
     document.addEventListener("keydown", e => {
       if (e.repeat || estado !== "jugando" || !cursor) return;
