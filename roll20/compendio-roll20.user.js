@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.6.0
+// @version      2.7.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -70,6 +70,7 @@
     vista: GM_getValue("compendio_vista", "personaje"), // "personaje" | "enemigos"
     personajeId: GM_getValue("compendio_personaje", ""),
     enemigoId: GM_getValue("compendio_enemigo", ""),
+    recientes: leerJson("compendio_enemigos_recientes") || [], // ids de los últimos enemigos usados
     modo: "normal",
     susurro: GM_getValue("compendio_susurro", false),
     filtro: "favoritas",
@@ -195,6 +196,12 @@
     .cr20-tab { flex: 1; background: none; color: #a9a58f; border: 0; border-bottom: 2px solid transparent; padding: 8px; font: 600 12px sans-serif; cursor: pointer; }
     .cr20-tab.on { color: #e8e4d0; border-bottom-color: #a9a58f; }
     .cr20-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 10px 0; }
+    .cr20-etiqueta { display: flex; justify-content: space-between; padding: 8px 10px 0; color: #8d8977; font: 600 10px sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+    .cr20-etiqueta a { color: #8d8977; cursor: pointer; text-decoration: underline; font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .cr20-chip-wrap { display: inline-flex; }
+    .cr20-chip-wrap .cr20-chip { border-right: 0; }
+    .cr20-quitar { background: none; color: #6f6b5c; border: 1px solid #3a3a34; border-left: 0; padding: 0 6px; font: 12px sans-serif; cursor: pointer; }
+    .cr20-quitar:hover { color: #d99a9a; }
     .cr20-chip { background: none; color: #a9a58f; border: 1px solid #3a3a34; padding: 3px 8px; font: 12px sans-serif; cursor: pointer; }
     .cr20-chip.on { color: #e8e4d0; border-color: #a9a58f; background: #26272a; }
     #cr20-lista { overflow-y: auto; padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
@@ -430,6 +437,13 @@
       ${pieSesion()}`;
   }
 
+  /* Historial: los últimos enemigos que elegiste o usaste, para pasar de uno a otro
+     sin buscarlos cada vez. Se recuerda entre sesiones. */
+  function marcarReciente(id) {
+    estado.recientes = [id, ...estado.recientes.filter(x => x !== id)].slice(0, 12);
+    GM_setValue("compendio_enemigos_recientes", JSON.stringify(estado.recientes));
+  }
+
   function cuerpoEnemigos() {
     const lista = (estado.enemigos && estado.enemigos.enemigos) || [];
     if (!lista.length) {
@@ -438,8 +452,17 @@
     const enEscena = ((estado.enemigos && estado.enemigos.seleccion) || []).map(id => lista.find(e => e.id === id)).filter(Boolean);
     const q = estado.busqueda.trim().toLowerCase();
     let actual = lista.find(e => e.id === estado.enemigoId) || enEscena[0] || null;
-    const sugeridos = q ? lista.filter(e => e.nombre.toLowerCase().includes(q)).slice(0, 8) : enEscena;
+    const resultados = q ? lista.filter(e => e.nombre.toLowerCase().includes(q)).slice(0, 8) : [];
+    const idsEscena = new Set(enEscena.map(e => e.id));
+    const recientes = estado.recientes.map(id => lista.find(e => e.id === id)).filter(e => e && !idsEscena.has(e.id));
     if (actual) estado.enemigoId = actual.id;
+    const chip = e => `<button type="button" class="cr20-chip ${actual && actual.id === e.id ? "on" : ""}" data-enemigo="${esc(e.id)}">${esc(e.nombre)}</button>`;
+    const chipReciente = e => `<span class="cr20-chip-wrap">${chip(e)}<button type="button" class="cr20-quitar" data-quitar-reciente="${esc(e.id)}" title="Quitar del historial">×</button></span>`;
+    const selector = q
+      ? `<div class="cr20-chips">${resultados.map(chip).join("") || `<span class="cr20-vacio" style="padding:0">Nada coincide.</span>`}</div>`
+      : `${enEscena.length ? `<div class="cr20-etiqueta"><span>En escena</span></div><div class="cr20-chips">${enEscena.map(chip).join("")}</div>` : ""}
+         ${recientes.length ? `<div class="cr20-etiqueta"><span>Recientes</span><a id="cr20-limpiar-recientes">borrar</a></div><div class="cr20-chips">${recientes.map(chipReciente).join("")}</div>` : ""}
+         ${!enEscena.length && !recientes.length ? `<div class="cr20-chips"><span class="cr20-vacio" style="padding:0">Sin enemigos en escena. Busca uno y quedará aquí en Recientes.</span></div>` : ""}`;
 
     let cuerpo = "";
     if (actual) {
@@ -457,7 +480,7 @@
     return `
       ${controlesComunes()}
       <div class="cr20-fila"><input id="cr20-buscar" type="search" placeholder="Buscar enemigo..." value="${esc(estado.busqueda)}"></div>
-      <div class="cr20-chips">${sugeridos.map(e => `<button type="button" class="cr20-chip ${actual && actual.id === e.id ? "on" : ""}" data-enemigo="${esc(e.id)}">${esc(e.nombre)}</button>`).join("") || `<span class="cr20-vacio" style="padding:0">Sin enemigos en escena.</span>`}</div>
+      ${selector}
       ${cuerpo}`;
   }
 
@@ -688,13 +711,25 @@
     panel.querySelectorAll("[data-enemigo]").forEach(b => b.addEventListener("click", () => {
       estado.enemigoId = b.dataset.enemigo;
       GM_setValue("compendio_enemigo", estado.enemigoId);
+      marcarReciente(estado.enemigoId);
       estado.busqueda = "";
       pintar();
     }));
+    panel.querySelectorAll("[data-quitar-reciente]").forEach(b => b.addEventListener("click", e => {
+      e.stopPropagation();
+      estado.recientes = estado.recientes.filter(x => x !== b.dataset.quitarReciente);
+      GM_setValue("compendio_enemigos_recientes", JSON.stringify(estado.recientes));
+      pintar();
+    }));
+    panel.querySelector("#cr20-limpiar-recientes")?.addEventListener("click", () => {
+      estado.recientes = [];
+      GM_setValue("compendio_enemigos_recientes", "[]");
+      pintar();
+    });
     panel.querySelectorAll("[data-filtro-enemigo]").forEach(b => b.addEventListener("click", () => { estado.filtroEnemigo = b.dataset.filtroEnemigo; pintar(); }));
     panel.querySelectorAll("[data-enemigo-item]").forEach(b => b.addEventListener("click", () => {
       const item = buscarItem(b);
-      if (item) lanzar(item);
+      if (item) { marcarReciente(estado.enemigoId); lanzar(item); }
     }));
   }
 
