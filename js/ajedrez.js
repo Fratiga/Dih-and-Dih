@@ -35,11 +35,7 @@
   const RIVALES = [
     { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", azar: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
       frases: { saludo: "¡Yo juego con las de arriba! ¿Cuáles son las de arriba?", jaque: "¿Eso es jaque? Yo solo quería mover algo.", capturaRival: "¡Me comí una! No sé cuál era.", capturaJugador: "Ah, esa se movía sola, ¿no?", gana: "¿Gané? ¿Eso era ganar?", pierde: "Perdí. ¿Puedo jugar otra? Guau. Digo, sí." } },
-    { id: "aldeano", nombre: "Aldeano Común", dificultad: "Muy fácil", prof: 1, tiempo: 250, error: 0.5, pausa: [1.0, 2.6],
-      frases: { saludo: "Voy a... intentarlo.", jaque: "¿Eso es jaque? Creo que sí.", capturaRival: "Ay, creo que me comí una pieza.", capturaJugador: "Uy.", gana: "¡Gané! No sé cómo.", pierde: "Sabía que no iba a poder." } },
-    { id: "miliciano", nombre: "Miliciano de Brurland", dificultad: "Fácil", prof: 2, tiempo: 500, error: 0.22, pausa: [0.8, 2.0],
-      frases: { saludo: "Empieza cuando quieras.", jaque: "Jaque.", capturaRival: "Es mía.", capturaJugador: "Buen golpe.", gana: "Fin de la partida.", pierde: "Bien jugado." } },
-    { id: "ocevat", nombre: "Ocevat", dificultad: "Intermedio", prof: 3, tiempo: 700, error: 0.14, pausa: [1.0, 2.6],
+    { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
       frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
     { id: "baraja", nombre: "Baraja", dificultad: "Media", prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
       frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
@@ -233,7 +229,6 @@
     if (resultado === "gana" && esMate) min.mate = Math.max(1, mias);
     const res = await MjStats.registrar("ajedrez", rival.id, resultado, { suma, min });
     if (res.guardado) cargarRanking();
-    if (window.CartasCliente) CartasCliente.recompensar("ajedrez", rival.id, resultado, 0);
   }
 
   /* --- Ranking ----------------------------------------------------------- */
