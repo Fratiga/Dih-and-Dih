@@ -7,6 +7,10 @@
   const filtroTipo = document.getElementById("filtroTipo");
   const filtroAfinidad = document.getElementById("filtroAfinidad");
   const filtroTengo = document.getElementById("filtroTengo");
+  const filtroReveladas = document.getElementById("filtroReveladas");
+  const CLAVE_REVELAR = "compendioCartasRevelar";
+  // El admin puede ver todas las cartas sin que cuenten como suyas.
+  const revelando = () => typeof esAdmin === "function" && esAdmin() && filtroReveladas.checked;
 
   let propia = null; // { cartas: Map, numeros: Map } o null sin sesión
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -48,7 +52,7 @@
     const c = window.cartaPorId(id);
     if (!c) return;
     const cantidad = cantidadDe(id);
-    const tengo = cantidad > 0;
+    const tengo = cantidad > 0 || revelando();
     const numeros = propia && propia.numeros.get(id);
     const af = c.afinidad.map(a => window.CARTAS_AFINIDADES[a].nombre).join(" / ");
     const rareza = window.CARTAS_RAREZAS[c.rareza].nombre;
@@ -57,7 +61,7 @@
          <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)} · ${esc(af)}${c.limite ? ` · edición de ${c.limite}` : ""}</p>
          <p><strong>Habilidad.</strong> ${esc(c.habilidad)}</p>
          ${resumenFuente(c) ? `<p class="carta-resumen">${esc(resumenFuente(c))}</p>` : ""}
-         <p class="carta-meta">Tienes ${cantidad} copia${cantidad === 1 ? "" : "s"}.</p>`
+         <p class="carta-meta">${cantidad > 0 ? `Tienes ${cantidad} copia${cantidad === 1 ? "" : "s"}.` : "Vista de admin: no la tienes."}</p>`
       : `<h2>Carta sin descubrir</h2>
          <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)}</p>
          <p class="carta-resumen">${c.obtenible
@@ -81,7 +85,7 @@
       .sort((a, b) => window.CARTAS_RAREZAS[a.rareza].orden - window.CARTAS_RAREZAS[b.rareza].orden || a.coste - b.coste || a.nombre.localeCompare(b.nombre));
 
     gridEl.innerHTML = lista.length
-      ? lista.map(c => htmlCarta(c, cantidadDe(c.id) > 0, cantidadDe(c.id), propia && propia.numeros.get(c.id))).join("")
+      ? lista.map(c => htmlCarta(c, cantidadDe(c.id) > 0 || revelando(), cantidadDe(c.id), propia && propia.numeros.get(c.id))).join("")
       : `<p class="cartas-vacio">No hay cartas con esos filtros.</p>`;
   }
 
@@ -89,7 +93,14 @@
     Object.entries(window.CARTAS_RAREZAS).forEach(([k, v]) => filtroRareza.insertAdjacentHTML("beforeend", `<option value="${k}">${v.nombre}</option>`));
     [...new Set(window.CARTAS.map(c => c.tipo))].forEach(t => filtroTipo.insertAdjacentHTML("beforeend", `<option value="${esc(t)}">${esc(t)}</option>`));
     Object.entries(window.CARTAS_AFINIDADES).forEach(([k, v]) => filtroAfinidad.insertAdjacentHTML("beforeend", `<option value="${k}" title="${esc(v.descripcion)}">${v.nombre}</option>`));
-    [filtroRareza, filtroTipo, filtroAfinidad, filtroTengo].forEach(el => el.addEventListener("change", pintar));
+    if (typeof esAdmin === "function" && esAdmin()) {
+      document.getElementById("filtroReveladasEtiqueta").classList.remove("hidden");
+      try { filtroReveladas.checked = localStorage.getItem(CLAVE_REVELAR) !== "0"; } catch (e) { /* sin almacenamiento */ }
+      filtroReveladas.addEventListener("change", () => {
+        try { localStorage.setItem(CLAVE_REVELAR, filtroReveladas.checked ? "1" : "0"); } catch (e) { /* sin almacenamiento */ }
+      });
+    }
+    [filtroRareza, filtroTipo, filtroAfinidad, filtroTengo, filtroReveladas].forEach(el => el.addEventListener("change", pintar));
   }
 
   gridEl.addEventListener("click", ev => {
