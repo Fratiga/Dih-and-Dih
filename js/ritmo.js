@@ -14,6 +14,7 @@
   const CLAVE_RECORDS = "compendioRitmoRecords";
   const CLAVE_AJUSTES = "compendioRitmoAjustes";
   const HOP = 512;
+  const VIDA_FALLO = 7;
 
   const CARRILES = {
     arriba: { y: 175, color: "#8fdcff", etiqueta: "X · J · K" },
@@ -175,6 +176,7 @@
   let perfectos = 0;
   let buenos = 0;
   let fallos = 0;
+  let extras = 0;
   let vida = 100;
   let efectos = [];
   let avatar = { y: CARRILES.abajo.y, carril: "abajo", salto: -10, golpe: -10 };
@@ -246,7 +248,7 @@
 
   function arrancar() {
     punteroFallos = 0; puntos = 0; combo = 0; comboMax = 0;
-    perfectos = 0; buenos = 0; fallos = 0; vida = 100; efectos = [];
+    perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; efectos = [];
     avatar = { y: CARRILES.abajo.y, carril: "abajo", salto: -10, golpe: -10 };
     flash = { arriba: -10, abajo: -10 };
     mostrar(null);
@@ -308,7 +310,7 @@
       efectos.push({ x: X_GOLPE, y: y - 56, texto: "BIEN", color: "#e9e6d8", t: ahoraS() });
     } else {
       fallos++; combo = 0;
-      if (!ajustes.practica) vida = Math.max(0, vida - 7);
+      if (!ajustes.practica) vida = Math.max(0, vida - VIDA_FALLO);
       efectos.push({ x: X_GOLPE, y: y - 56, texto: "FALLO", color: "#e8837b", t: ahoraS() });
     }
     comboMax = Math.max(comboMax, combo);
@@ -326,7 +328,13 @@
       const dt = Math.abs(n.t - t);
       if (dt <= VENTANA_BIEN && (!mejor || dt < Math.abs(mejor.t - t))) mejor = n;
     }
-    if (!mejor) return;
+    if (!mejor) {
+      // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
+      extras++; combo = 0;
+      if (!ajustes.practica) vida = Math.max(0, vida - VIDA_FALLO);
+      efectos.push({ x: X_GOLPE, y: CARRILES[carril].y - 56, texto: "FALLO", color: "#e8837b", t: ahoraS() });
+      return;
+    }
     const dt = Math.abs(mejor.t - t);
     mejor.estado = dt <= VENTANA_PERFECTO ? "perfecto" : "bien";
     sumar(mejor.estado, carril);
@@ -396,7 +404,7 @@
     document.getElementById("rtFinRango").textContent = rango;
     document.getElementById("rtFinDatos").innerHTML =
       `${puntos.toLocaleString("es")} puntos · ${(acc * 100).toFixed(1)} % de precisión<br>` +
-      `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Combo máximo ${comboMax}` +
+      `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
       (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "");
     mostrar(finEl);
   }
@@ -631,7 +639,7 @@
   if (/[?&]debug\b/.test(location.search)) {
     window.__ritmo = {
       crearMapa, DIFICULTADES,
-      estado: () => ({ estado, puntos, combo, perfectos, buenos, fallos, vida, notas: notas.length }),
+      estado: () => ({ estado, puntos, combo, perfectos, buenos, fallos, extras, vida, notas: notas.length }),
       tick: t => { actualizar(t); dibujar(t); },
       golpear, notas: () => notas, tiempo: tiempoCancion,
       forzarTiempo: f => { tiempoCancion = f; }
