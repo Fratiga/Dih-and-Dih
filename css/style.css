@@ -3623,3 +3623,15 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-rival small { font-size: .72rem; color: var(--accent-soft); }
 .aj-rival-actual { margin: 0 0 6px; font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 .aj-comentario { margin: -6px 0 14px; min-height: 1.3em; font-size: .85rem; color: var(--muted); font-style: italic; }
+
+/* --- Ajedrez: arrastrar y deslizar piezas --- */
+.aj-tablero { touch-action: none; user-select: none; -webkit-user-select: none; }
+.aj-casilla .aj-pieza { display: inline-block; will-change: transform; }
+.aj-casilla.aj-deslizando { overflow: visible; z-index: 5; }
+.aj-casilla.aj-arrastrando .aj-pieza { opacity: .25; }
+.aj-casilla.aj-sobre { box-shadow: inset 0 0 0 3px rgba(143, 220, 255, .85); }
+.aj-casilla.aj-sobre.aj-captura { box-shadow: inset 0 0 0 3px rgba(224, 100, 92, .95); }
+.aj-fantasma {
+  position: fixed; z-index: 1000; pointer-events: none; line-height: 1;
+  transform: translate(-50%, -50%) scale(1.3); filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .55));
+}

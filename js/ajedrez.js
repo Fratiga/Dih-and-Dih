@@ -252,12 +252,40 @@
     if (m.captured) capturadas[m.color].push(m.captured);
   }
 
-  function jugar(m, esRival) {
+  /* La pieza se desliza de su casilla a la de destino (también la torre al enrocar).
+     Es un FLIP: se pinta ya en el destino y se la devuelve al origen con transform
+     para soltarla con una transición. */
+  function deslizar(desde, hasta, ms) {
+    const a = tableroEl.querySelector(`[data-casilla="${desde}"]`);
+    const b = tableroEl.querySelector(`[data-casilla="${hasta}"]`);
+    const pieza = b && b.querySelector(".aj-pieza");
+    if (!a || !pieza) return;
+    const ra = a.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    pieza.style.transition = "none";
+    pieza.style.transform = `translate(${ra.left - rb.left}px, ${ra.top - rb.top}px)`;
+    b.classList.add("aj-deslizando");
+    pieza.getBoundingClientRect();
+    pieza.style.transition = `transform ${ms}ms cubic-bezier(.2,.8,.25,1)`;
+    pieza.style.transform = "";
+    setTimeout(() => { b.classList.remove("aj-deslizando"); pieza.style.transition = ""; }, ms + 40);
+  }
+
+  function jugar(m, esRival, sinAnimar) {
     const hecha = juego.move(m);
     registrarCaptura(hecha);
     ultimaJugada = { from: hecha.from, to: hecha.to };
     seleccion = null;
     pintarTablero();
+    if (!sinAnimar) {
+      const ms = esRival ? 340 : 220;
+      deslizar(hecha.from, hecha.to, ms);
+      if (hecha.flags.includes("k") || hecha.flags.includes("q")) {
+        const fila = hecha.to[1];
+        const corto = hecha.flags.includes("k");
+        deslizar(corto ? "h" + fila : "a" + fila, corto ? "f" + fila : "d" + fila, ms);
+      }
+    }
     pintarLaterales();
     actualizarEstado();
     if (!terminado) {
@@ -292,6 +320,7 @@
   }
 
   tableroEl.addEventListener("click", ev => {
+    if (sinClic) return;
     const b = ev.target.closest("[data-casilla]");
     if (!b || terminado || pensando || !juego || juego.turn() !== colorJugador) return;
     const casilla = b.dataset.casilla;
@@ -310,10 +339,98 @@
     pintarTablero();
   });
 
+  /* --- Arrastrar piezas --------------------------------------------------
+     Se arrastra con ratón o dedo. La pieza se levanta, sigue al puntero, las casillas
+     legales se marcan al pasar por encima y al soltar entra en la casilla o vuelve a
+     su sitio. Hacer clic en la pieza y luego en el destino sigue funcionando igual. */
+  let arrastre = null;
+  let sinClic = false;
+
+  function centroDe(casilla) {
+    const el = tableroEl.querySelector(`[data-casilla="${casilla}"]`);
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function limpiarArrastre() {
+    if (!arrastre) return;
+    if (arrastre.fantasma) arrastre.fantasma.remove();
+    tableroEl.querySelectorAll(".aj-arrastrando, .aj-sobre").forEach(el => el.classList.remove("aj-arrastrando", "aj-sobre"));
+    arrastre = null;
+  }
+
+  tableroEl.addEventListener("pointerdown", ev => {
+    if (ev.button > 0 || arrastre) return;
+    const b = ev.target.closest("[data-casilla]");
+    if (!b || terminado || pensando || !juego || juego.turn() !== colorJugador) return;
+    const pieza = juego.get(b.dataset.casilla);
+    if (!pieza || pieza.color !== colorJugador) return;
+    arrastre = { casilla: b.dataset.casilla, id: ev.pointerId, x0: ev.clientX, y0: ev.clientY, activo: false, fantasma: null, sobre: null };
+  });
+
+  tableroEl.addEventListener("pointermove", ev => {
+    if (!arrastre || ev.pointerId !== arrastre.id) return;
+    if (!arrastre.activo) {
+      if (Math.hypot(ev.clientX - arrastre.x0, ev.clientY - arrastre.y0) < 6) return;
+      arrastre.activo = true;
+      try { tableroEl.setPointerCapture(ev.pointerId); } catch (err) { /* sin captura */ }
+      if (seleccion !== arrastre.casilla) { seleccion = arrastre.casilla; pintarTablero(); }
+      const origen = tableroEl.querySelector(`[data-casilla="${arrastre.casilla}"]`);
+      const glifo = origen.querySelector(".aj-pieza");
+      origen.classList.add("aj-arrastrando");
+      const f = glifo.cloneNode(true);
+      f.className = glifo.className + " aj-fantasma";
+      f.style.fontSize = getComputedStyle(glifo).fontSize;
+      document.body.appendChild(f);
+      arrastre.fantasma = f;
+      arrastre.legales = new Set(juego.moves({ square: arrastre.casilla, verbose: true }).map(m => m.to));
+    }
+    const f = arrastre.fantasma;
+    f.style.transition = "none";
+    f.style.left = ev.clientX + "px";
+    f.style.top = ev.clientY + "px";
+    const sobre = document.elementFromPoint(ev.clientX, ev.clientY)?.closest("[data-casilla]");
+    const nombre = sobre && arrastre.legales.has(sobre.dataset.casilla) ? sobre.dataset.casilla : null;
+    if (nombre !== arrastre.sobre) {
+      tableroEl.querySelector(".aj-sobre")?.classList.remove("aj-sobre");
+      if (nombre) sobre.classList.add("aj-sobre");
+      arrastre.sobre = nombre;
+    }
+  });
+
+  function soltar(ev, cancelado) {
+    if (!arrastre || ev.pointerId !== arrastre.id) return;
+    if (!arrastre.activo) { arrastre = null; return; }
+    sinClic = true;
+    setTimeout(() => { sinClic = false; }, 0);
+    const { fantasma, casilla } = arrastre;
+    const destino = cancelado ? null : document.elementFromPoint(ev.clientX, ev.clientY)?.closest("[data-casilla]")?.dataset.casilla;
+    const mov = destino && juego.moves({ square: casilla, verbose: true }).find(m => m.to === destino);
+    const ir = centroDe(mov ? destino : casilla);
+    fantasma.style.transition = "left .12s ease-out, top .12s ease-out, transform .12s ease-out";
+    fantasma.style.left = ir.x + "px";
+    fantasma.style.top = ir.y + "px";
+    fantasma.style.transform = "translate(-50%, -50%) scale(1)";
+    const miPartida = partidaId;
+    // mientras entra o vuelve, no se acepta otro arrastre
+    arrastre.id = -1;
+    setTimeout(() => {
+      limpiarArrastre();
+      if (miPartida !== partidaId || terminado) return;
+      if (mov) {
+        jugar({ from: mov.from, to: mov.to, promotion: mov.promotion ? "q" : undefined }, false, true);
+        turnoRival();
+      }
+    }, 130);
+  }
+  tableroEl.addEventListener("pointerup", ev => soltar(ev, false));
+  tableroEl.addEventListener("pointercancel", ev => soltar(ev, true));
+
   function nuevaPartida(r) {
     if (!r) return;
     rival = r;
     partidaId += 1;
+    limpiarArrastre();
     juego = new Chess();
     colorJugador = colorEl.value === "negras" ? "b" : "w";
     seleccion = null; ultimaJugada = null; pensando = false; terminado = false;
