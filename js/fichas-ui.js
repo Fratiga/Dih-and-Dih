@@ -1703,6 +1703,49 @@
     return texto.length > 700 ? texto.slice(0, 700) + "…" : texto;
   }
 
+  /* Cómo se arma cada tirada, para mostrarlo en Roll20 al pasar el mouse y en
+     la ventana de confirmación: de dónde sale cada número. */
+  function calculoItemRoll20(p, item) {
+    const comp = fichasCompetenciaTotal(p);
+    const mod = id => `mod. ${NOMBRES_ATRIBUTOS[id]} ${fichasSigno(fichasModificadorFinal(p, id))}`;
+    const ajuste = n => (Number(n) ? ` + ajuste ${fichasSigno(n)}` : "");
+    switch (item.tipo) {
+      case "salvacion": {
+        const s = p.salvaciones[item.refId];
+        return `1d20 + ${mod(item.refId)}${s.competente ? ` + competencia ${fichasSigno(comp)}` : ""}${ajuste(s.ajuste)}`;
+      }
+      case "habilidad": {
+        const def = FICHAS_HABILIDADES.find(h => h.id === item.refId);
+        const h = p.habilidades[item.refId];
+        const nivel = h.nivel === "pericia" ? ` + pericia ${fichasSigno(comp * 2)}` : h.nivel === "competente" ? ` + competencia ${fichasSigno(comp)}` : "";
+        return `1d20 + ${mod(def.atributo)}${nivel}${ajuste(h.ajuste)}`;
+      }
+      case "iniciativa": return `1d20 + ${mod("des")}${ajuste(p.combate.iniciativaAjuste)}`;
+      case "ataquedano": {
+        const a = p.ataques.find(x => x.id === item.refId);
+        if (!a) return "";
+        const lineas = [`Ataque: 1d20 + ${mod(a.atributo)}${a.competente ? ` + competencia ${fichasSigno(comp)}` : ""}${ajuste(a.ajusteAtaque)} = ${fichasSigno(fichasAtaqueTotal(p, a))}`];
+        const dano = fichasDanoAtaque(p, a);
+        if (dano) lineas.push(`Daño: ${dano}${a.tipoDano ? ` ${a.tipoDano}` : ""}`);
+        return lineas.join("\n");
+      }
+      case "hechizo": {
+        const h = p.hechizos.find(x => x.id === item.refId);
+        if (!h) return "";
+        const dano = h.dano ? fichasResolverFormula(p, h.dano) : "";
+        const lineaDano = dano ? `Daño: ${dano}${h.tipoDano ? ` de ${h.tipoDano}` : ""}` : "";
+        if (h.tipo === "ataque") return [`Ataque mágico: 1d20 ${fichasSigno(fichasLanzamientoAtaque(p))} (ataque de conjuros)`, lineaDano].filter(Boolean).join("\n");
+        if (h.tipo === "salvacion") return [`El objetivo salva contra CD ${fichasLanzamientoCD(p)} (${NOMBRES_ATRIBUTOS[p.lanzamiento.atributo]})`, lineaDano].filter(Boolean).join("\n");
+        return dano ? `Curación: ${dano}` : "";
+      }
+      case "rasgo": {
+        const r = p.rasgos.find(x => x.id === item.refId);
+        return r ? fichasResolverFormula(p, r.formulaRoll20) : "";
+      }
+      default: return "";
+    }
+  }
+
   function payloadRoll20DePersonaje(p) {
     const items = listaCompletaRoll20(p).map(i => {
       const cmd = {
@@ -1711,7 +1754,9 @@
         desventaja: comandoDeItemRoll20(p, i, "desventaja")
       };
       const desc = descripcionItemRoll20(p, i);
-      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}) };
+      let calc = "";
+      try { calc = calculoItemRoll20(p, i); } catch (e) { /* sin desglose */ }
+      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}), ...(calc ? { calc } : {}) };
     });
     items.sort((a, b) => Number(b.favorita) - Number(a.favorita));
     return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", items };
@@ -1751,6 +1796,13 @@
     }
   }
 
+  function tooltipItemRoll20(p, item) {
+    let calc = "";
+    try { calc = calculoItemRoll20(p, item); } catch (e) { /* sin desglose */ }
+    return calc ? `Cálculo:
+${calc}` : "";
+  }
+
   function renderRoll20Lista() {
     const p = personajeActual;
     if (!p) return;
@@ -1771,7 +1823,7 @@
       items.sort((a, b) => Number(p.favoritosRoll20.includes(b.id)) - Number(p.favoritosRoll20.includes(a.id)));
 
       cont.innerHTML = items.map(i => `
-        <div class="fichas-roll20-item">
+        <div class="fichas-roll20-item" title="${esc(tooltipItemRoll20(p, i))}">
           <div>
             <span class="fichas-roll20-item-cat">${esc(i.categoria)}</span>
             <span class="fichas-roll20-item-texto">${esc(i.texto)}</span>

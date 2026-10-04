@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.4.0
+// @version      2.5.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -75,7 +75,8 @@
     filtro: "favoritas",
     filtroEnemigo: "Acciones",
     busqueda: "",
-    abierto: GM_getValue("compendio_abierto", true)
+    abierto: GM_getValue("compendio_abierto", true),
+    confirmar: GM_getValue("compendio_confirmar", true) // abrir la ventana de confirmación antes de lanzar
   };
 
   /* --- Supabase por HTTP (GM_xmlhttpRequest evita los bloqueos de CORS/CSP de Roll20) --- */
@@ -209,6 +210,20 @@
     #cr20-tip { position: fixed; z-index: 100001; max-width: 300px; background: #26272a; color: #e8e4d0;
       border: 1px solid #a9a58f; padding: 8px 10px; font: 12px/1.5 sans-serif; white-space: pre-wrap;
       box-shadow: 0 6px 20px rgba(0,0,0,.5); pointer-events: none; }
+    #cr20-modal-fondo { position: fixed; inset: 0; z-index: 100002; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; }
+    #cr20-modal { width: min(460px, 94vw); max-height: 88vh; overflow-y: auto; background: #1d1e20; color: #e8e4d0;
+      border: 1px solid #a9a58f; padding: 16px; font: 13px/1.5 sans-serif; box-shadow: 0 12px 40px rgba(0,0,0,.7); }
+    #cr20-modal h3 { margin: 0 0 4px; font: 600 16px sans-serif; }
+    #cr20-modal .cr20-cat { color: #8d8977; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+    #cr20-modal .cr20-bloque { margin-top: 10px; }
+    #cr20-modal .cr20-etq { display: block; color: #a9a58f; font: 600 11px sans-serif; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+    #cr20-modal .cr20-texto { white-space: pre-wrap; background: #26272a; border: 1px solid #3a3a34; padding: 7px 9px; max-height: 160px; overflow-y: auto; }
+    #cr20-modal textarea { width: 100%; box-sizing: border-box; min-height: 84px; resize: vertical; background: #26272a; color: #e8e4d0;
+      border: 1px solid #5a5a48; padding: 7px 9px; font: 13px/1.5 monospace; }
+    #cr20-modal select { background: #26272a; color: #e8e4d0; border: 1px solid #3a3a34; padding: 5px 8px; font: 13px sans-serif; margin-bottom: 6px; }
+    #cr20-modal button.cr20-accion { background: #26272a; color: #e8e4d0; border: 1px solid #5a5a48; padding: 7px 14px; font: 13px sans-serif; cursor: pointer; }
+    #cr20-modal .cr20-botones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    #cr20-modal .cr20-ayuda { color: #8d8977; font-size: 11px; margin-top: 3px; }
     #cr20-toast { position: fixed; left: 10px; bottom: 56px; z-index: 100000; background: #26272a; color: #e8e4d0;
       border: 1px solid #a9a58f; padding: 8px 12px; font: 13px sans-serif; max-width: 320px; }
   `);
@@ -355,6 +370,7 @@
           <option value="ventaja" ${estado.modo === "ventaja" ? "selected" : ""}>Ventaja</option>
           <option value="desventaja" ${estado.modo === "desventaja" ? "selected" : ""}>Desventaja</option>
         </select>
+        <label class="cr20-susurro" style="padding:0;flex:1.2"><input type="checkbox" id="cr20-confirmar" ${estado.confirmar ? "checked" : ""}> Revisar antes de lanzar</label>
         ${estado.esAdmin ? `<label class="cr20-susurro" style="padding:0;flex:1.2"><input type="checkbox" id="cr20-susurro" ${estado.susurro ? "checked" : ""}> Solo yo (susurro)</label>` : ""}
       </div>`;
   }
@@ -410,7 +426,7 @@
       <div class="cr20-fila"><input id="cr20-buscar" type="search" placeholder="Buscar..." value="${esc(estado.busqueda)}"></div>
       <div class="cr20-chips">${chips.map(([v, t]) => `<button type="button" class="cr20-chip ${estado.filtro === v ? "on" : ""}" data-filtro="${esc(v)}">${esc(t)}</button>`).join("")}</div>
       ${estado.error ? `<div class="cr20-error">${esc(estado.error)}</div>` : ""}
-      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
+      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}${i.calc ? ` data-calc="${esc(i.calc)}"` : ""}><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
       ${pieSesion()}`;
   }
 
@@ -451,9 +467,25 @@
     if (t) t.remove();
   }
 
+  // Qué va a tirar, leído del comando que se manda al chat: "Ataque: 1d20+5"
+  function resumenComando(cmd) {
+    return String(cmd || "").split("\n")
+      .filter(l => l && !l.startsWith("/em"))
+      .map(l => l.replace(/\[\[(.*?)\]\]/g, "$1"))
+      .join("\n");
+  }
+
+  function textoTooltip(boton) {
+    const partes = [];
+    const calc = boton.dataset.calc || boton.dataset.cmdResumen;
+    if (calc) partes.push("Cálculo\n" + calc);
+    if (boton.dataset.desc) partes.push(boton.dataset.desc);
+    return partes.join("\n\n");
+  }
+
   function mostrarDescripcion(boton) {
     ocultarDescripcion();
-    const texto = boton.dataset.desc;
+    const texto = textoTooltip(boton);
     if (!texto) return;
     const tip = document.createElement("div");
     tip.id = "cr20-tip";
@@ -471,11 +503,99 @@
     tip.style.top = y + "px";
   }
 
+  /* --- Ventana de confirmación: descripción, cálculo y tirada editable --- */
+  function buscarItem(boton) {
+    if (boton.dataset.id) {
+      const p = estado.personajes.find(x => x.id === estado.personajeId) || estado.personajes[0];
+      return p && p.items.find(i => i.id === boton.dataset.id);
+    }
+    if (boton.dataset.enemigoItem) {
+      const lista = (estado.enemigos && estado.enemigos.enemigos) || [];
+      const enemigo = lista.find(e => e.id === estado.enemigoId);
+      return enemigo && enemigo.items.find(i => i.id === boton.dataset.enemigoItem);
+    }
+    return null;
+  }
+
+  function lanzar(item) {
+    if (!estado.confirmar) { enviarAlChat(item.cmd[estado.modo] || item.cmd.normal); return; }
+    abrirConfirmacion(item);
+  }
+
+  function cerrarConfirmacion() {
+    const f = document.getElementById("cr20-modal-fondo");
+    if (f) f.remove();
+  }
+
+  function abrirConfirmacion(item) {
+    cerrarConfirmacion();
+    ocultarDescripcion();
+    const fondo = document.createElement("div");
+    fondo.id = "cr20-modal-fondo";
+    const calc = item.calc || resumenComando(item.cmd[estado.modo] || item.cmd.normal);
+    fondo.innerHTML = `
+      <div id="cr20-modal" role="dialog" aria-modal="true">
+        <div class="cr20-cat">${esc(item.categoria || "")}</div>
+        <h3>${esc(item.texto)}</h3>
+        ${item.desc ? `<div class="cr20-bloque"><span class="cr20-etq">Descripción</span><div class="cr20-texto">${esc(item.desc)}</div></div>` : ""}
+        ${calc ? `<div class="cr20-bloque"><span class="cr20-etq">Cálculo</span><div class="cr20-texto">${esc(calc)}</div></div>` : ""}
+        <div class="cr20-bloque">
+          <span class="cr20-etq">Tirada (editable)</span>
+          <select id="cr20-m-modo">
+            <option value="normal">Normal</option>
+            <option value="ventaja">Ventaja</option>
+            <option value="desventaja">Desventaja</option>
+          </select>
+          <textarea id="cr20-m-cmd" spellcheck="false"></textarea>
+          <div class="cr20-ayuda">Cambia los dados o los bonos dentro de [[ ]]. Cada línea se manda como un mensaje al chat.</div>
+        </div>
+        <div class="cr20-botones">
+          <button type="button" class="cr20-accion" id="cr20-m-cancelar">Cancelar</button>
+          <button type="button" class="cr20-accion" id="cr20-m-lanzar" style="border-color:#a9a58f">Lanzar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(fondo);
+
+    const selModo = fondo.querySelector("#cr20-m-modo");
+    const area = fondo.querySelector("#cr20-m-cmd");
+    const poner = modo => { area.value = item.cmd[modo] || item.cmd.normal; };
+    selModo.value = item.cmd[estado.modo] ? estado.modo : "normal";
+    poner(selModo.value);
+    selModo.addEventListener("change", () => poner(selModo.value));
+
+    const lanzarYa = () => {
+      const texto = area.value.trim();
+      cerrarConfirmacion();
+      if (texto) enviarAlChat(texto);
+    };
+    fondo.querySelector("#cr20-m-lanzar").addEventListener("click", lanzarYa);
+    fondo.querySelector("#cr20-m-cancelar").addEventListener("click", cerrarConfirmacion);
+    fondo.addEventListener("mousedown", e => { if (e.target === fondo) cerrarConfirmacion(); });
+    // Roll20 tiene atajos de teclado: que no se enteren de lo que se escribe aquí
+    fondo.addEventListener("keydown", e => {
+      e.stopPropagation();
+      if (e.key === "Escape") cerrarConfirmacion();
+      else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) lanzarYa();
+    }, true);
+    fondo.addEventListener("keyup", e => e.stopPropagation(), true);
+    fondo.addEventListener("keypress", e => e.stopPropagation(), true);
+    area.focus();
+  }
+
   function enlazar() {
     ocultarDescripcion();
-    panel.querySelectorAll(".cr20-item[data-desc]").forEach(b => {
+    panel.querySelectorAll(".cr20-item").forEach(b => {
+      // Sin desglose propio (enemigos, macros), se muestra lo que tira el comando
+      if (!b.dataset.calc) {
+        const item = buscarItem(b);
+        if (item) b.dataset.cmdResumen = resumenComando(item.cmd[estado.modo] || item.cmd.normal);
+      }
       b.addEventListener("mouseenter", () => mostrarDescripcion(b));
       b.addEventListener("mouseleave", ocultarDescripcion);
+    });
+    panel.querySelector("#cr20-confirmar")?.addEventListener("change", e => {
+      estado.confirmar = e.target.checked;
+      GM_setValue("compendio_confirmar", estado.confirmar);
     });
 
     panel.querySelectorAll("[data-vista]").forEach(b => b.addEventListener("click", () => {
@@ -526,9 +646,8 @@
 
     // Personaje: botón de una tirada
     panel.querySelectorAll(".cr20-item[data-id]").forEach(b => b.addEventListener("click", () => {
-      const p = estado.personajes.find(x => x.id === estado.personajeId) || estado.personajes[0];
-      const item = p && p.items.find(i => i.id === b.dataset.id);
-      if (item) enviarAlChat(item.cmd[estado.modo] || item.cmd.normal);
+      const item = buscarItem(b);
+      if (item) lanzar(item);
     }));
 
     // Enemigos
@@ -540,10 +659,8 @@
     }));
     panel.querySelectorAll("[data-filtro-enemigo]").forEach(b => b.addEventListener("click", () => { estado.filtroEnemigo = b.dataset.filtroEnemigo; pintar(); }));
     panel.querySelectorAll("[data-enemigo-item]").forEach(b => b.addEventListener("click", () => {
-      const lista = (estado.enemigos && estado.enemigos.enemigos) || [];
-      const enemigo = lista.find(e => e.id === estado.enemigoId);
-      const item = enemigo && enemigo.items.find(i => i.id === b.dataset.enemigoItem);
-      if (item) enviarAlChat(item.cmd[estado.modo] || item.cmd.normal);
+      const item = buscarItem(b);
+      if (item) lanzar(item);
     }));
   }
 
