@@ -41,6 +41,7 @@
   let textos = [];
   let temblor = 0;
   let ultimo = 0;
+  let est = null;         // estadísticas de la partida en curso (del jugador)
   let victorias = {};
   try { victorias = JSON.parse(localStorage.getItem(CLAVE_VICTORIAS) || "{}") || {}; } catch (err) { victorias = {}; }
 
@@ -65,6 +66,7 @@
     j = nuevoLuchador("Tú", 330, 1, 100, [9, 20], 66, "#d8d2b8");
     e = nuevoLuchador(r.nombre.split(",")[0], 630, -1, r.hp, r.dano, r.arma, r.color);
     e.ia = { piensa: 1.2, estado: "libre", t: 0, plan: null, espera: 0, restante: 0 };
+    est = { dano: 0, recibido: 0, paradas: 0, esquivas: 0, segundos: 0 };
     textos = [];
     temblor = 0;
     cuenta = 2.2;
@@ -135,10 +137,20 @@
 
   /* El golpe llega: depende de lo que esté haciendo el que lo recibe. */
   function resolverGolpe(a, d) {
+    const antes = d.hp;
+    resolverGolpeCrudo(a, d);
+    const perdido = Math.max(0, antes - Math.max(0, d.hp));
+    if (est) {
+      if (d === e) est.dano += perdido; else est.recibido += perdido;
+    }
+  }
+
+  function resolverGolpeCrudo(a, d) {
     const dano = a.dano[a.tipo === "pesado" ? 1 : 0];
-    if (invulnerable(d)) { texto("¡Esquiva!", d, "#8fdcff"); a.parry = 0; return; }
+    if (invulnerable(d)) { if (d === j && est) est.esquivas++; texto("¡Esquiva!", d, "#8fdcff"); a.parry = 0; return; }
     if (d.accion === "block") {
       if (d.t <= PARADA) {
+        if (d === j && est) est.paradas++;
         texto("¡Parada!", d, "#ffe08a");
         d.parry = 0.3; d.st = Math.min(100, d.st + 18);
         empezarAccion(a, "stun", 0.85);
@@ -175,7 +187,7 @@
   }
 
   function soltarAtaque() {
-    j.cargando = false;
+    if (j) j.cargando = false;
   }
 
   function ordenar(tipo) {
@@ -333,6 +345,7 @@
       if (cuenta <= 0) { fase = "duelo"; texto("¡Duelo!", { x: 480 }, "#ffe08a"); }
     }
     if (fase === "duelo") {
+      if (est) est.segundos += dt;
       pensar(dt);
       actualizarLuchador(j, dt);
       actualizarLuchador(e, dt);
@@ -347,6 +360,42 @@
     textos = textos.filter(t => t.t < 1.1);
   }
 
+  /* Manda la partida al ranking (solo con sesión iniciada). */
+  async function anotarPartida(gano) {
+    if (!est || !window.MjStats) return;
+    const r = est;
+    const suma = {
+      dano: Math.round(r.dano), recibido: Math.round(r.recibido),
+      paradas: r.paradas, esquivas: r.esquivas, segundos: Math.round(r.segundos)
+    };
+    const max = {}, min = {};
+    if (gano) {
+      max.vida = Math.max(1, Math.round(j.hp));
+      min.segundos = Math.max(1, Math.round(r.segundos));
+    }
+    const res = await MjStats.registrar("duelo", rival.id, gano ? "gana" : "pierde", { suma, max, min });
+    if (res.guardado) cargarRanking();
+  }
+
+  /* --- Ranking ----------------------------------------------------------- */
+  const rankingEl = document.getElementById("dueloRankings");
+  const segundosTxt = n => `${Math.floor(n / 60)}:${String(Math.round(n % 60)).padStart(2, "0")}`;
+  const venceA = id => u => (u.porClave[id] ? u.porClave[id].victorias : 0);
+
+  function cargarRanking() {
+    if (!rankingEl || !window.MjStats) return;
+    MjStats.cargarYPintar("duelo", rankingEl, [
+      { titulo: "Más victorias", valor: u => u.victorias },
+      { titulo: "Victorias contra Adam Kovacs", valor: venceA("adam") },
+      { titulo: "Victoria más rápida", valor: u => u.minimo.segundos, menorEsMejor: true, formato: segundosTxt },
+      { titulo: "Más paradas", valor: u => u.suma.paradas },
+      { titulo: "Más esquivas", valor: u => u.suma.esquivas },
+      { titulo: "Más daño infligido", valor: u => u.suma.dano }
+    ]);
+  }
+
+  if (window.MjStats) MjStats.cargarSesion().then(cargarRanking);
+
   function terminar(gano) {
     fase = "fin";
     j.accion = gano ? j.accion : "dead";
@@ -356,6 +405,7 @@
       victorias[rival.id] = (victorias[rival.id] || 0) + 1;
       try { localStorage.setItem(CLAVE_VICTORIAS, JSON.stringify(victorias)); } catch (err) { /* sin almacenamiento */ }
     }
+    anotarPartida(gano);
     setTimeout(() => {
       finTituloEl.textContent = gano ? "Victoria" : "Derrota";
       finTextoEl.textContent = gano ? `Venciste a ${rival.nombre}.` : `${rival.nombre} te venció.`;

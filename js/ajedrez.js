@@ -209,7 +209,35 @@
       comentar("gana");
     }
     pintarRivales();
+    anotarPartida(resultado, texto.startsWith("Jaque mate"));
   }
+
+  /* Manda la partida al ranking (solo con sesión iniciada). */
+  async function anotarPartida(resultado, esMate) {
+    if (!window.MjStats || !juego) return;
+    const mias = juego.history({ verbose: true }).filter(m => m.color === colorJugador).length;
+    const suma = { jugadas: mias, capturas: capturadas[colorJugador].length };
+    const min = {};
+    if (resultado === "gana" && esMate) min.mate = Math.max(1, mias);
+    const res = await MjStats.registrar("ajedrez", rival.id, resultado, { suma, min });
+    if (res.guardado) cargarRanking();
+  }
+
+  /* --- Ranking ----------------------------------------------------------- */
+  const rankingEl = document.getElementById("ajRankings");
+
+  function cargarRanking() {
+    if (!rankingEl || !window.MjStats) return;
+    MjStats.cargarYPintar("ajedrez", rankingEl, [
+      { titulo: "Más victorias", valor: u => u.victorias },
+      { titulo: "Victorias contra El perro sabio", valor: u => (u.porClave.perro ? u.porClave.perro.victorias : 0) },
+      { titulo: "Mate más rápido (jugadas)", valor: u => u.minimo.mate, menorEsMejor: true },
+      { titulo: "Más tablas", valor: u => u.tablas },
+      { titulo: "Más piezas capturadas", valor: u => u.suma.capturas }
+    ]);
+  }
+
+  if (window.MjStats) MjStats.cargarSesion().then(cargarRanking);
 
   function pintarRivales() {
     rivalesEl.innerHTML = RIVALES.map(r => `
