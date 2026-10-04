@@ -3513,3 +3513,8 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fichas-objeto-estado:hover { color: var(--text); border-color: var(--accent-soft); }
 .fichas-objeto--equipado .fichas-objeto-estado { color: var(--text); border-color: var(--accent-soft); }
 .fichas-objeto-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+
+/* --- Munición de los ataques --- */
+.fichas-municion { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
+.fichas-municion[hidden] { display: none; }
+.fichas-municion .fichas-puntos-info { margin: 0; }

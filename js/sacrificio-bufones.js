@@ -171,7 +171,7 @@
 
       gltf.animations.forEach(c => { clips[c.name] = c; });
       try {
-        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261069");
+        if (!window.GANGNAM_CLIP) await cargarScriptClasico("assets/gangnam-clip.js?v=20261070");
         const g = window.GANGNAM_CLIP;
         // three.js quita los dos puntos de los nombres de nodo al cargar el modelo
         const pistas = g.pistas.map(p => {

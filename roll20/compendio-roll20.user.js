@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.5.0
+// @version      2.6.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -426,7 +426,7 @@
       <div class="cr20-fila"><input id="cr20-buscar" type="search" placeholder="Buscar..." value="${esc(estado.busqueda)}"></div>
       <div class="cr20-chips">${chips.map(([v, t]) => `<button type="button" class="cr20-chip ${estado.filtro === v ? "on" : ""}" data-filtro="${esc(v)}">${esc(t)}</button>`).join("")}</div>
       ${estado.error ? `<div class="cr20-error">${esc(estado.error)}</div>` : ""}
-      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}${i.calc ? ` data-calc="${esc(i.calc)}"` : ""}><small>${esc(i.categoria)}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
+      <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-id="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}${i.calc ? ` data-calc="${esc(i.calc)}"` : ""}><small>${esc(i.categoria)}${i.municion ? ` · Munición ${i.municion.actual}/${i.municion.max}` : ""}</small>${esc(i.texto)}</button>`).join("") || `<div class="cr20-vacio">Nada coincide.</div>`}</div>
       ${pieSesion()}`;
   }
 
@@ -518,8 +518,31 @@
   }
 
   function lanzar(item) {
-    if (!estado.confirmar) { enviarAlChat(item.cmd[estado.modo] || item.cmd.normal); return; }
+    if (!estado.confirmar) {
+      if (item.municion && item.municion.actual <= 0) { aviso("Sin munición. Recárgala en tu ficha del Compendio."); return; }
+      enviarAlChat(item.cmd[estado.modo] || item.cmd.normal);
+      gastarMunicion(item);
+      return;
+    }
     abrirConfirmacion(item);
+  }
+
+  /* Descuenta 1 de munición en la ficha (función fichas_gastar_municion en Supabase,
+     scratchpad/municion_ataques.sql). Si falla, la tirada igual se mandó. */
+  async function gastarMunicion(item) {
+    if (!item.municion) return;
+    const p = estado.personajes.find(x => x.id === estado.personajeId) || estado.personajes[0];
+    if (!p) return;
+    try {
+      const token = await tokenValido();
+      if (!token) throw new Error("sin sesión");
+      const nuevo = await pedir({ metodo: "POST", ruta: "/rest/v1/rpc/fichas_gastar_municion", cuerpo: { p_ficha: p.id, p_ataque: item.municion.ataque }, token });
+      item.municion.actual = Number(nuevo);
+      GM_setValue("compendio_cache", JSON.stringify(estado.personajes));
+      pintar();
+    } catch (e) {
+      aviso("No pude descontar la munición de tu ficha. Ajústala a mano en el Compendio.");
+    }
   }
 
   function cerrarConfirmacion() {
@@ -539,6 +562,11 @@
         <h3>${esc(item.texto)}</h3>
         ${item.desc ? `<div class="cr20-bloque"><span class="cr20-etq">Descripción</span><div class="cr20-texto">${esc(item.desc)}</div></div>` : ""}
         ${calc ? `<div class="cr20-bloque"><span class="cr20-etq">Cálculo</span><div class="cr20-texto">${esc(calc)}</div></div>` : ""}
+        ${item.municion ? `<div class="cr20-bloque"><span class="cr20-etq">Munición</span>
+          ${item.municion.actual > 0
+            ? `<label><input type="checkbox" id="cr20-m-gastar" checked> Gastar 1 (${item.municion.actual} → ${item.municion.actual - 1} de ${item.municion.max})</label>`
+            : `<div class="cr20-texto">Sin munición (0 / ${item.municion.max}). Recárgala en tu ficha del Compendio.</div>`}
+        </div>` : ""}
         <div class="cr20-bloque">
           <span class="cr20-etq">Tirada (editable)</span>
           <select id="cr20-m-modo">
@@ -563,10 +591,16 @@
     poner(selModo.value);
     selModo.addEventListener("change", () => poner(selModo.value));
 
+    const sinMunicion = item.municion && item.municion.actual <= 0;
+    const botonLanzar = fondo.querySelector("#cr20-m-lanzar");
+    if (sinMunicion) { botonLanzar.disabled = true; botonLanzar.style.opacity = ".45"; botonLanzar.style.cursor = "not-allowed"; }
     const lanzarYa = () => {
+      if (sinMunicion) return;
       const texto = area.value.trim();
+      const gastar = !!fondo.querySelector("#cr20-m-gastar")?.checked;
       cerrarConfirmacion();
       if (texto) enviarAlChat(texto);
+      if (texto && gastar) gastarMunicion(item);
     };
     fondo.querySelector("#cr20-m-lanzar").addEventListener("click", lanzarYa);
     fondo.querySelector("#cr20-m-cancelar").addEventListener("click", cerrarConfirmacion);

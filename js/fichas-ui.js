@@ -761,6 +761,31 @@
     </section>`;
   }
 
+  /* Munición del ataque: cada "Copiar ataque" gasta 1; nunca baja de 0. */
+  function textoMunicion(a) {
+    return `Munición ${Number(a.municionActual) || 0} / ${Number(a.municionMax) || 0}`;
+  }
+
+  function actualizarMunicionFila(id) {
+    const a = personajeActual.ataques.find(x => x.id === id);
+    const fila = document.querySelector(`[data-ataque="${id}"]`);
+    if (!a || !fila) return;
+    const bloque = fila.querySelector(".fichas-municion");
+    bloque.hidden = !(Number(a.municionMax) > 0);
+    bloque.querySelector("[data-municion-texto]").textContent = textoMunicion(a);
+    const act = fila.querySelector(`[data-bind="__ataque__.${id}.municionActual"]`);
+    if (act) act.value = a.municionActual ?? "";
+  }
+
+  function manejarMunicion(accion, id) {
+    const a = personajeActual.ataques.find(x => x.id === id);
+    if (!a) return;
+    if (accion === "gastar") a.municionActual = Math.max(0, (Number(a.municionActual) || 0) - 1);
+    else if (accion === "recargar") a.municionActual = Number(a.municionMax) || 0;
+    actualizarMunicionFila(id);
+    programarAutoguardado();
+  }
+
   function filaAtaque(a) {
     const p = personajeActual;
     return `
@@ -780,6 +805,11 @@
           <div class="fichas-field"><label>Daño extra (manual)</label>${campoTexto(`__ataque__.${a.id}.danoExtra`, a.danoExtra || "", 'placeholder="+1d4 o +2"')}</div>
         </div>
         <p class="fichas-puntos-info">Se tira de daño: <strong data-calc="danoAtaque:${a.id}">${esc(fichasDanoAtaque(p, a) || "—")}</strong></p>
+        <div class="fichas-municion" ${Number(a.municionMax) > 0 ? "" : "hidden"}>
+          <span class="fichas-puntos-info" data-municion-texto>${esc(textoMunicion(a))}</span>
+          <button type="button" class="fichas-copiar-btn" data-mun="gastar:${a.id}">−1</button>
+          <button type="button" class="fichas-copiar-btn" data-mun="recargar:${a.id}">Recargar</button>
+        </div>
         <div class="fichas-modo-tirada">
           Tirada:
           <label><input type="radio" name="modo-ataque-${a.id}" value="normal" checked> normal</label>
@@ -1376,6 +1406,8 @@
         aplicarFiltroInventario();
         return;
       }
+      const bindMun = (e.target.dataset && e.target.dataset.bind || "").match(/^__ataque__\.([^.]+)\.(municionActual|municionMax)$/);
+      if (bindMun) setTimeout(() => actualizarMunicionFila(bindMun[1]), 0);
       const bindObjCambio = (e.target.dataset && e.target.dataset.bind || "").match(/^__objeto__\.([^.]+)\.(estado|cargasActuales|cargasMax)$/);
       if (bindObjCambio) {
         // El binding genérico actualiza el objeto primero; después se redibuja la fila
@@ -1439,6 +1471,12 @@
     cont.addEventListener("change", manejarCambioBinding);
 
     cont.addEventListener("click", e => {
+      const munBtn = e.target.closest("[data-mun]");
+      if (munBtn) {
+        const [accion, id] = munBtn.dataset.mun.split(":");
+        return manejarMunicion(accion, id);
+      }
+
       const invBtn = e.target.closest("[data-inv]");
       if (invBtn) {
         const [accion, id] = invBtn.dataset.inv.split(":");
@@ -1566,7 +1604,19 @@
     else if (tipo === "habilidad") texto = fichasComandoPrueba(FICHAS_HABILIDADES.find(h => h.id === id).nombre, fichasHabilidadTotal(p, id));
     else if (tipo === "ataque" || tipo === "dano" || tipo === "ataquedano") {
       const a = p.ataques.find(x => x.id === id);
-      const modo = btn.closest(".fichas-repetible-item").querySelector(`input[name="modo-ataque-${id}"]:checked`)?.value || "normal";
+      const modo = btn.closest(".fichas-repetible-item")?.querySelector(`input[name="modo-ataque-${id}"]:checked`)?.value || "normal";
+      // Con munición configurada, cada ataque gasta 1 y sin munición no se tira
+      if (tipo !== "dano" && Number(a.municionMax) > 0) {
+        if ((Number(a.municionActual) || 0) <= 0) {
+          const original = btn.textContent;
+          btn.textContent = "Sin munición";
+          setTimeout(() => { btn.textContent = original; }, 1800);
+          return;
+        }
+        a.municionActual = Number(a.municionActual) - 1;
+        actualizarMunicionFila(id);
+        programarAutoguardado();
+      }
       if (tipo === "ataque") texto = fichasComandoAtaque(a.nombre, fichasAtaqueTotal(p, a), { modo });
       else if (tipo === "dano") texto = fichasComandoDano(a.nombre, fichasDanoAtaque(p, a), a.tipoDano);
       else texto = fichasComandoAtaqueYDano(p.identidad.nombre, a.nombre, fichasAtaqueTotal(p, a), fichasDanoAtaque(p, a), a.tipoDano, { modo });
@@ -1756,7 +1806,12 @@
       const desc = descripcionItemRoll20(p, i);
       let calc = "";
       try { calc = calculoItemRoll20(p, i); } catch (e) { /* sin desglose */ }
-      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}), ...(calc ? { calc } : {}) };
+      let municion = null;
+      if (i.tipo === "ataquedano") {
+        const a = p.ataques.find(x => x.id === i.refId);
+        if (a && Number(a.municionMax) > 0) municion = { actual: Number(a.municionActual) || 0, max: Number(a.municionMax), ataque: a.id };
+      }
+      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}), ...(calc ? { calc } : {}), ...(municion ? { municion } : {}) };
     });
     items.sort((a, b) => Number(b.favorita) - Number(a.favorita));
     return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", items };
