@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajedrez — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261080">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261080">
+</head>
+<body class="mj-pagina">
+  <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+  </div>
+  <main class="mj-contenido aj-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Ajedrez contra El perro sabio</h1>
+
+    <div class="aj-controles">
+      <label>Nivel
+        <select id="ajNivel">
+          <option value="paciente">Paciente</option>
+          <option value="normal" selected>Normal</option>
+          <option value="sabio">Sabio</option>
+        </select>
+      </label>
+      <label>Juegas con
+        <select id="ajColor">
+          <option value="blancas" selected>Blancas</option>
+          <option value="negras">Negras</option>
+        </select>
+      </label>
+      <button type="button" id="ajNueva" class="aj-boton">Nueva partida</button>
+      <button type="button" id="ajDeshacer" class="aj-boton">Deshacer jugada</button>
+    </div>
+
+    <div class="aj-zona">
+      <div class="aj-tablero-col">
+        <div class="aj-capturas" id="ajCapturasRival" aria-label="Piezas que te capturó el rival"></div>
+        <div id="ajTablero" class="aj-tablero"></div>
+        <div class="aj-capturas" id="ajCapturasJugador" aria-label="Piezas que capturaste"></div>
+      </div>
+      <aside class="aj-lateral">
+        <p id="ajEstado" class="aj-estado"></p>
+        <h3>Jugadas</h3>
+        <ol id="ajJugadas" class="aj-jugadas"></ol>
+        <p id="ajResultado" class="aj-ayuda"></p>
+        <p class="aj-ayuda">Haz clic en una pieza y luego en su destino. Los peones coronan a dama.</p>
+      </aside>
+    </div>
+  </main>
+  <script src="js/ajedrez.js?v=20261080"></script>
+</body>
+</html>

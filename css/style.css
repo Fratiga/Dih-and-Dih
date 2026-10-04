@@ -3576,3 +3576,37 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 }
 .duelo-control small { color: var(--muted); font-size: .7rem; font-family: sans-serif; }
 .duelo-control:active { border-color: var(--accent-soft); background: var(--panel-2); }
+
+/* --- Ajedrez --- */
+.aj-contenido { max-width: 1000px; }
+.aj-controles { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; margin-bottom: 18px; }
+.aj-controles label { display: flex; flex-direction: column; gap: 4px; font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.aj-controles select {
+  color-scheme: dark; appearance: none; background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  padding: 8px 28px 8px 10px; font-family: inherit; font-size: .9rem; border-radius: 0; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.aj-boton { background: none; border: 1px solid var(--accent-soft); color: var(--text); padding: 9px 16px; font-family: inherit; font-size: .85rem; cursor: pointer; }
+.aj-boton:hover { border-color: var(--text); }
+.aj-zona { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.aj-tablero-col { flex: 0 1 560px; min-width: 280px; width: 100%; max-width: 560px; }
+.aj-tablero { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; border: 1px solid var(--border); }
+.aj-casilla { position: relative; border: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+.aj-clara { background: #3a3b3e; }
+.aj-oscura { background: #26272a; }
+.aj-pieza { font-size: clamp(1.6rem, 6.4vw, 3.1rem); line-height: 1; pointer-events: none; }
+.aj-w { color: #f1ecd6; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+.aj-b { color: #9aa1a8; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+.aj-sel { outline: 3px solid var(--accent-soft); outline-offset: -3px; }
+.aj-ultima { box-shadow: inset 0 0 0 100px rgba(224, 180, 92, .18); }
+.aj-destino::after { content: ""; width: 26%; height: 26%; border-radius: 50%; background: rgba(143, 220, 255, .45); position: absolute; }
+.aj-captura { box-shadow: inset 0 0 0 4px rgba(224, 100, 92, .65); }
+.aj-jaque { box-shadow: inset 0 0 0 100px rgba(224, 100, 92, .4); }
+.aj-capturas { min-height: 1.6rem; padding: 4px 0; font-size: 1.3rem; letter-spacing: 2px; color: var(--muted); }
+.aj-lateral { flex: 1; min-width: 220px; }
+.aj-estado { margin: 0 0 14px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); font-size: .95rem; }
+.aj-lateral h3 { font-size: .85rem; margin: 0 0 6px; }
+.aj-jugadas { list-style: none; margin: 0 0 12px; padding: 0; max-height: 280px; overflow-y: auto; font-size: .85rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
+.aj-jugadas li span { color: var(--muted); display: inline-block; width: 2em; }
+.aj-ayuda { margin: 0 0 8px; font-size: .78rem; color: var(--muted); }
