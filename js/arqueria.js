@@ -53,6 +53,7 @@
     const ancho = LOGICO_ANCHO;
     const alto = LOGICO_ALTO;
 
+    let nombreJugador = "Tú"; // se cambia por el nombre de usuario cuando hay sesión
     let vs = false; // partida contra otro jugador: el puntaje del rival llega de fuera
     let textoFin = null;
     let azar = Math.random; // con semilla en las partidas contra otro jugador
@@ -196,7 +197,7 @@
       ctx.font = "600 30px sans-serif";
       ctx.textAlign = "left";
       ctx.fillStyle = "#e8e4d0";
-      ctx.fillText(`Tú ${puntaje}`, 22, 40);
+      ctx.fillText(`${nombreJugador} ${puntaje}`, 22, 40);
       ctx.textAlign = "right";
       ctx.fillStyle = cfg.color;
       ctx.fillText(`${cfg.nombre} ${puntajeRival}`, ancho - 22, 40);
@@ -264,7 +265,7 @@
         ctx.textAlign = "center";
         ctx.fillStyle = "#e8e4d0";
         ctx.font = "600 52px sans-serif";
-        const titulo = estado === "listo" ? `Tú contra ${cfg.nombre}`
+        const titulo = estado === "listo" ? `${nombreJugador} contra ${cfg.nombre}`
           : vs ? (textoFin ? textoFin.titulo : "Tiempo")
           : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
         ctx.fillText(titulo, ancho / 2, alto * 0.28);
@@ -325,6 +326,11 @@
       cambiarEstado("listo");
     }
 
+    function setNombreJugador(n) {
+      const limpio = String(n || "").trim().slice(0, 16);
+      if (limpio) nombreJugador = limpio;
+    }
+
     function setPuntajeRival(n) {
       if (n > puntajeRival) destelloRival = 0.35;
       puntajeRival = n;
@@ -339,6 +345,7 @@
       iniciar,
       cambiarRival,
       prepararVs,
+      setNombreJugador,
       setPuntajeRival,
       setFin,
       estado: () => estado,

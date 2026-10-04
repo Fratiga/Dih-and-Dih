@@ -380,6 +380,9 @@
     }
   }
 
+  // Con sesión iniciada, el marcador y el título usan tu nombre de usuario en vez de "Tú"
+  if (window.MjStats) MjStats.cargarSesion().then(({ nombre }) => { if (nombre) juego.setNombreJugador(nombre); });
+
   pintarRivales();
   pintarRecord();
   refrescarVistas();

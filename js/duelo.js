@@ -17,6 +17,10 @@
   const finTituloEl = document.getElementById("dueloFinTitulo");
   const finTextoEl = document.getElementById("dueloFinTexto");
 
+  // Con sesión iniciada se muestra el nombre de usuario en vez de "Tú"
+  let nombreJugador = "Tú";
+  if (window.MjStats) MjStats.cargarSesion().then(({ nombre }) => { if (nombre) nombreJugador = nombre.slice(0, 16); });
+
   const RIVALES = [
     { id: "recluta", nombre: "Recluta de Brurland", descripcion: "Para aprender los controles.", hp: 60, dano: [7, 13], reaccion: 0.55, bloqueo: 0.12, esquiva: 0.04, agresion: 0.55, finta: 0, castigo: 0.2, aviso: 0.4, arma: 62, color: "#7f93a8" },
     { id: "miliciano", nombre: "Miliciano de Brurland", descripcion: "Pega fuerte si lo dejas.", hp: 80, dano: [9, 17], reaccion: 0.42, bloqueo: 0.28, esquiva: 0.1, agresion: 0.75, finta: 0.05, castigo: 0.35, aviso: 0.33, arma: 68, color: "#9a8a6a" },
@@ -63,7 +67,7 @@
 
   function empezar(r) {
     rival = r;
-    j = nuevoLuchador("Tú", 330, 1, 100, [9, 20], 66, "#d8d2b8");
+    j = nuevoLuchador(nombreJugador, 330, 1, 100, [9, 20], 66, "#d8d2b8");
     e = nuevoLuchador(r.nombre.split(",")[0], 630, -1, r.hp, r.dano, r.arma, r.color);
     e.ia = { piensa: 1.2, estado: "libre", t: 0, plan: null, espera: 0, restante: 0 };
     est = { dano: 0, recibido: 0, paradas: 0, esquivas: 0, segundos: 0 };
