@@ -3635,3 +3635,20 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   position: fixed; z-index: 1000; pointer-events: none; line-height: 1;
   transform: translate(-50%, -50%) scale(1.3); filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .55));
 }
+
+/* --- Ajedrez contra otros jugadores --- */
+.aj-modos { display: flex; gap: 0; margin: 0 0 16px; }
+.aj-modo { background: none; border: 1px solid var(--border); color: var(--muted); padding: 9px 16px; font-family: inherit; font-size: .85rem; cursor: pointer; }
+.aj-modo + .aj-modo { border-left: 0; }
+.aj-modo.activo { background: var(--panel-2); color: var(--text); border-color: var(--accent-soft); }
+.aj-pvp-titulo { font-size: .85rem; margin: 16px 0 8px; }
+.aj-pvp-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; margin-bottom: 4px; background: var(--panel); border: 1px solid var(--border); font-size: .88rem; }
+.aj-pvp-aviso { border-color: var(--accent-soft); }
+.aj-pvp-fila .aj-boton { padding: 5px 12px; font-size: .78rem; }
+.aj-pvp-fila .aj-boton:disabled { opacity: .45; cursor: default; }
+.aj-pvp-jugadores { max-width: 520px; margin-bottom: 18px; }
+.aj-punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #55565a; margin-right: 6px; }
+.aj-punto.on { background: #7fd48a; box-shadow: 0 0 6px rgba(127, 212, 138, .7); }
+.aj-reloj { margin: 0 0 10px; padding: 8px 14px; background: var(--panel-2); border: 1px solid var(--border); font: 600 1.05rem var(--font-heading), sans-serif; letter-spacing: .04em; }
+.aj-reloj.urgente { color: #e8837b; border-color: #e8837b; animation: ajRelojLatido .6s ease-in-out infinite alternate; }
+@keyframes ajRelojLatido { from { background: var(--panel-2); } to { background: rgba(232, 131, 123, .18); } }

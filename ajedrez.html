@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ajedrez — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261089"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261089">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261089">
+  <script src="js/oculto.js?v=20261090"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261090">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261090">
 </head>
 <body class="mj-pagina">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -22,11 +22,26 @@
     <p class="eyebrow">PASATIEMPOS</p>
     <h1 class="mj-titulo">Ajedrez</h1>
 
-    <p class="aj-ayuda">Elige a tu rival. Cada uno juega a su manera y no hay vuelta atrás: lo que mueves, mueves.</p>
-    <div id="ajRivales" class="aj-rivales"></div>
+    <div class="aj-modos">
+      <button type="button" class="aj-modo activo" data-modo="maquina">Contra la máquina</button>
+      <button type="button" class="aj-modo" data-modo="jugadores">Contra jugadores</button>
+    </div>
 
-    <div class="aj-controles">
-      <label>Juegas con
+    <div id="ajModoMaquina">
+      <p class="aj-ayuda">Elige a tu rival. Cada uno juega a su manera y no hay vuelta atrás: lo que mueves, mueves.</p>
+      <div id="ajRivales" class="aj-rivales"></div>
+    </div>
+
+    <section id="ajModoJugadores" class="hidden">
+      <p id="ajPvpAviso" class="aj-ayuda"></p>
+      <div id="ajPvpPartidas"></div>
+      <h3 class="aj-pvp-titulo">Jugadores</h3>
+      <div id="ajPvpJugadores" class="aj-pvp-jugadores"></div>
+    </section>
+
+    <div class="aj-controles" id="ajControles">
+      <button type="button" id="ajCerrarOnline" class="aj-boton hidden">← Mis partidas</button>
+      <label id="ajColorLabel">Juegas con
         <select id="ajColor">
           <option value="blancas" selected>Blancas</option>
           <option value="negras">Negras</option>
@@ -43,6 +58,7 @@
       </div>
       <aside class="aj-lateral">
         <p id="ajRivalActual" class="aj-rival-actual"></p>
+        <p id="ajReloj" class="aj-reloj hidden"></p>
         <p id="ajEstado" class="aj-estado"></p>
         <p id="ajComentario" class="aj-comentario"></p>
         <h3>Jugadas</h3>
@@ -55,10 +71,10 @@
     <p class="mj-nota">Se anotan las partidas de quienes tienen sesión iniciada.</p>
     <div id="ajRankings" class="sacrificio-rankings"></div>
   </main>
-  <script src="js/temas.js?v=20261089"></script>
-  <script src="js/fichas-supabase.js?v=20261089"></script>
-  <script src="js/lado.js?v=20261089"></script>
-  <script src="js/minijuegos-stats.js?v=20261089"></script>
-  <script src="js/ajedrez.js?v=20261089"></script>
+  <script src="js/temas.js?v=20261090"></script>
+  <script src="js/fichas-supabase.js?v=20261090"></script>
+  <script src="js/lado.js?v=20261090"></script>
+  <script src="js/minijuegos-stats.js?v=20261090"></script>
+  <script src="js/ajedrez.js?v=20261090"></script>
 </body>
 </html>
