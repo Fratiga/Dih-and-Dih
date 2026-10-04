@@ -3591,8 +3591,8 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-boton:hover { border-color: var(--text); }
 .aj-zona { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
 .aj-tablero-col { flex: 0 1 560px; min-width: 280px; width: 100%; max-width: 560px; }
-.aj-tablero { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; border: 1px solid var(--border); }
-.aj-casilla { position: relative; border: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+.aj-tablero { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); aspect-ratio: 1; border: 1px solid var(--border); }
+.aj-casilla { position: relative; border: 0; padding: 0; margin: 0; min-width: 0; min-height: 0; aspect-ratio: 1; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
 .aj-clara { background: #3a3b3e; }
 .aj-oscura { background: #26272a; }
 .aj-pieza { font-size: clamp(1.6rem, 6.4vw, 3.1rem); line-height: 1; pointer-events: none; }
