@@ -9,7 +9,7 @@ window.RITMO_TUTORIALES = [
     pasos: [
       { texto: "Elige la canción en esta lista. Las que suben los DJ también salen aquí.", objetivo: "#reCancion" },
       { texto: "Elige la dificultad. Cada una tiene su propio mapa.", objetivo: ".re-segmentos[data-para='reDif']" },
-      { texto: "«Cargar automático» genera el mapa con el mismo motor que usa el juego. Si ya hay uno guardado, usa «Cargar guardado».", objetivo: ".re-campo-botones" },
+      { texto: "«Empezar en blanco» carga la canción y su pulso sin ninguna nota, para hacer el mapa a mano. «Cargar automático» lo genera con el mismo motor que usa el juego, y si ya hay uno guardado, usa «Cargar guardado».", objetivo: ".re-campo-botones" },
       { texto: "Dale a ▶ o pulsa Espacio. Con el sonido de notas y el metrónomo oyes si todo cae donde debe.", objetivo: ".re-transporte" },
       { texto: "Ctrl + rueda hace zoom y la rueda sola mueve la línea de tiempo. Haz clic en la regla o en la onda para saltar a otro punto.", objetivo: "#reLienzo" }
     ]

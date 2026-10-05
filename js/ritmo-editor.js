@@ -284,6 +284,22 @@
     }
   }
 
+  /* Mapa en blanco: carga la canción y detecta el pulso (para que las notas se peguen a la cuadrícula), pero no
+     pone ninguna nota. Para hacerlo todo a mano, con clic o tocando las teclas. */
+  async function empezarEnBlanco() {
+    try {
+      await cargarAudio();
+      mensaje("Preparando el pulso...");
+      await new Promise(r => setTimeout(r, 30));
+      const m = AN.crearMapa(buffer, difActual());
+      tomarMapa({ notas: [], pulsos: m.pulsos, tramos: m.tramos });
+      actualizadoCargado = null;
+      mensaje("Mapa en blanco listo, con el pulso de la canción. Pon las notas con clic en los carriles.");
+    } catch (err) {
+      mensaje("No se pudo cargar esa canción: " + (err && err.message || err), true);
+    }
+  }
+
   function aplicarGuardado(guardado) {
     if (typeof guardado.firma === "string") firmaEl.value = guardado.firma;
     const campoOffset = $("reOffset");
@@ -1316,7 +1332,11 @@
   });
 
   lienzo.addEventListener("mousedown", ev => {
-    if (ev.button !== 0 || !buffer) return;
+    if (ev.button !== 0) return;
+    if (!buffer) {
+      mensaje("Primero carga la canción: «Empezar en blanco» para hacerlo a mano, «Cargar automático» o «Cargar guardado».", true);
+      return;
+    }
     const { x, y } = posicion(ev);
     if (y < Y_REGLA[1] || y > Y_ONDA[0]) {
       arrastre = { tipo: "buscar" };
@@ -1531,6 +1551,7 @@
 
   /* --- Controles ---------------------------------------------------------------------------------------------------- */
   $("reAuto").addEventListener("click", cargarAutomatico);
+  $("reBlanco").addEventListener("click", empezarEnBlanco);
   $("reGuardado").addEventListener("click", cargarGuardado);
   playEl.addEventListener("click", alternarReproduccion);
   [["reVolMusica", "musica"], ["reVolClics", "clics"]].forEach(([id, clave]) => {
