@@ -35,3 +35,7 @@
 .rg-check { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--muted); }
 .rg-pie { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 14px; }
 .hidden.rg-caja, .rg-caja.hidden { display: none; }
+.rg-chico { width: min(520px, calc(100vw - 32px)); }
+.rg-campo.rg-ancho { display: flex; flex-direction: column; align-items: stretch; gap: 4px; flex: 1 1 100%; }
+.rg-campo input[type="text"] { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; font: inherit; font-size: .9rem; width: 100%; box-sizing: border-box; }
+.rg-btn.hidden { display: none; }

@@ -37,6 +37,10 @@ function renderTracks() {
 }
 
 renderTracks();
+window.addEventListener("musica-nombres", () => {
+  renderTracks();
+  if (audio) currentTrackEl.textContent = rocolaCurrentTrackName();
+});
 window.addEventListener("musica-nube", () => {
   renderTracks();
   if (audio) {

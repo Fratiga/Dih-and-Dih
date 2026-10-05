@@ -131,6 +131,7 @@
     if (k >= 0) cancionEl.value = String(k);
   }
   window.addEventListener("musica-nube", recargarCanciones);
+  window.addEventListener("musica-nombres", recargarCanciones);
   difEl.innerHTML = Object.entries(AN.DIFICULTADES).map(([id, d]) => `<option value="${id}">${d.nombre}</option>`).join("");
   try {
     const aj = JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}");

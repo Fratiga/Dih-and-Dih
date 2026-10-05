@@ -9,6 +9,7 @@
   const URL_BASE = "https://ilicqboqelrjuvtslaxd.supabase.co";
   const CLAVE = "rocolaNubeCache";
   const CLAVE_OCULTAS = "rocolaOcultasCache";
+  const CLAVE_NOMBRES = "rocolaNombresCache";
   const KEY = "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
 
   window.MUSICA = window.MUSICA || [];
@@ -48,10 +49,19 @@
     try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin almacenamiento */ }
   }
 
+  // Nombres puestos a mano a las canciones que trae el sitio (tabla rocola_nombres)
+  function aplicarNombres(lista) {
+    lista.forEach(c => {
+      if (!c || !c.ruta || !c.titulo) return;
+      window.MUSICA_NUBE_NOMBRES[c.ruta] = c.artista ? `${c.titulo} - ${c.artista}` : c.titulo;
+    });
+  }
+
   let guardada = leer(CLAVE);
   let ocultas = leer(CLAVE_OCULTAS);
   aplicar(guardada);
   aplicarOcultas(ocultas);
+  aplicarNombres(leer(CLAVE_NOMBRES));
 
   async function pedir(tabla, columnas, orden) {
     const resp = await fetch(`${URL_BASE}/rest/v1/${tabla}?select=${columnas}${orden ? "&order=" + orden : ""}`, {
@@ -65,6 +75,7 @@
   async function refrescar() {
     const nuevas = [];
     const quitadas = [];
+    const nombresAntes = JSON.stringify(window.MUSICA_NUBE_NOMBRES);
     try {
       const lista = await pedir("rocola_canciones", "ruta,titulo,artista,duracion", "creada.asc");
       if (lista) {
@@ -92,6 +103,20 @@
         nuevas.push(...r.nuevas);
       }
     } catch (e) { /* sin conexión */ }
+    try {
+      const nombres = await pedir("rocola_nombres", "ruta,titulo,artista");
+      if (nombres) {
+        // Una canción a la que se le quitó el nombre a mano vuelve al de su archivo
+        leer(CLAVE_NOMBRES).forEach(c => {
+          if (!nombres.some(n => n.ruta === c.ruta)) delete window.MUSICA_NUBE_NOMBRES[c.ruta];
+        });
+        escribir(CLAVE_NOMBRES, nombres);
+        aplicarNombres(nombres);
+        // Las subidas conservan su nombre de la tabla rocola_canciones
+        aplicar(guardada);
+      }
+    } catch (e) { /* sin conexión */ }
+    if (nombresAntes !== JSON.stringify(window.MUSICA_NUBE_NOMBRES)) window.dispatchEvent(new CustomEvent("musica-nombres"));
     if (nuevas.length || quitadas.length) window.dispatchEvent(new CustomEvent("musica-nube", { detail: { nuevas, quitadas } }));
     return nuevas;
   }

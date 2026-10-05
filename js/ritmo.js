@@ -1279,6 +1279,12 @@
     modal.addEventListener("pointerdown", ev => { if (calibrando && !ev.target.closest("button")) tocarCalibracion(ev); });
   }
 
+  /* Si un DJ le cambia el nombre a una canción, el menú lo muestra al momento */
+  window.addEventListener("musica-nombres", () => {
+    canciones.forEach(c => { if (c.ruta) Object.assign(c, cancionDe(c.ruta)); });
+    pintarMenu();
+  });
+
   /* Canciones que suben los DJ a la rocola: se suman a la lista en cuanto llegan */
   window.addEventListener("musica-nube", ev => {
     const nuevas = (ev.detail && ev.detail.nuevas) || [];

@@ -28,7 +28,7 @@
   }
   function textoError(err) {
     const t = String((err && (err.message || err.error_description)) || err || "");
-    if (/Bucket not found|does not exist|relation|rocola_canciones|rocola_ocultas/i.test(t)) return "Falta correr scratchpad/rocola_gestor.sql (y ritmo_dj.sql) en Supabase.";
+    if (/Bucket not found|does not exist|relation|rocola_canciones|rocola_ocultas|rocola_nombres/i.test(t)) return "Falta correr scratchpad/rocola_gestor.sql (y ritmo_dj.sql) en Supabase.";
     if (/row-level|policy|permission|Unauthorized|not authorized|JWT/i.test(t)) return "No tienes permiso. Hace falta ser Admin o DJ.";
     if (/duplicate|already exists/i.test(t)) return "Esa canción ya está subida.";
     return t || "Error desconocido";
@@ -36,6 +36,7 @@
 
   let filasNube = []; // canciones subidas, con su id
   let ocultas = []; // canciones del sitio ocultas: { ruta, titulo }
+  let nombres = []; // nombres puestos a mano a canciones del sitio: { ruta, titulo, artista }
   let filtro = "";
 
   const estado = $("rgEstado");
@@ -53,12 +54,16 @@
       ocultas = o.error ? [] : (o.data || []);
       if (o.error && !/relation|does not exist|schema cache/i.test(String(o.error.message))) throw o.error;
       sinTablaOcultas = !!o.error;
+      const n = await sb.from("rocola_nombres").select("ruta, titulo, artista");
+      nombres = n.error ? [] : (n.data || []);
+      sinTablaNombres = !!n.error;
     } catch (err) {
       decir(textoError(err), true);
     }
     pintar();
   }
   let sinTablaOcultas = false;
+  let sinTablaNombres = false;
 
   function nombreDe(ruta) {
     return typeof prettyName === "function" ? prettyName(ruta) : ruta.split("/").pop();
@@ -80,12 +85,12 @@
       const f = porRuta.get(ruta);
       return f
         ? { ruta, nube: true, id: f.id, titulo: f.titulo, artista: f.artista, dur: Number(f.duracion) || duracionDe(ruta), bytes: f.bytes, quien: f.nombre_subidor }
-        : { ruta, nube: false, titulo: nombreDe(ruta), artista: "", dur: duracionDe(ruta) };
+        : { ruta, nube: false, titulo: nombreDe(ruta), artista: "", dur: duracionDe(ruta), cambiado: nombres.some(n => n.ruta === ruta) };
     }).filter(c => !q || norma(c.titulo + " " + c.artista).includes(q));
     $("rgLista").innerHTML = visibles.length
       ? visibles.map(c => `<li data-ruta="${escHtml(c.ruta)}"><span class="rg-nombre">${escHtml(c.titulo)}${c.artista ? ` <small>· ${escHtml(c.artista)}</small>` : ""} <small>${formatoDur(c.dur)}${c.bytes ? ` · ${mb(c.bytes)} MB` : ""}${c.nube ? ` · subida${c.quien ? " por " + escHtml(c.quien) : ""}` : " · del sitio"}</small></span><span class="rg-acciones">` +
         `<button type="button" class="rg-btn" data-recortar>Recortar</button>` +
-        (c.nube ? `<button type="button" class="rg-btn" data-renombrar="${c.id}" data-titulo="${escHtml(c.titulo)}" data-artista="${escHtml(c.artista)}">Renombrar</button>` : "") +
+        `<button type="button" class="rg-btn" data-renombrar>Renombrar</button>` +
         `<button type="button" class="rg-btn rg-peligro" data-quitar>Quitar</button></span></li>`).join("")
       : `<li class="rg-vacio">${q ? "Ninguna canción coincide." : "No hay canciones."}</li>`;
     $("rgOcultasCaja").classList.toggle("hidden", !ocultas.length && !sinTablaOcultas);
@@ -205,21 +210,7 @@
 
     if (btn.dataset.recortar !== undefined) { abrirRecorte(ruta, nombre); return; }
 
-    if (btn.dataset.renombrar) {
-      const t = prompt("Título de la canción:", btn.dataset.titulo);
-      if (t === null) return;
-      const a = prompt("Artista:", btn.dataset.artista);
-      if (a === null) return;
-      if (!t.trim()) return decir("El título no puede quedar vacío.", true);
-      try {
-        const sb = await fichasCliente();
-        const { error } = await sb.from("rocola_canciones").update({ titulo: t.trim().slice(0, 140), artista: a.trim().slice(0, 140) }).eq("id", btn.dataset.renombrar);
-        if (error) throw error;
-        decir("Canción actualizada.");
-        await refrescarTodo();
-      } catch (err) { decir(textoError(err), true); }
-      return;
-    }
+    if (btn.dataset.renombrar !== undefined) { abrirNombre(ruta); return; }
 
     if (btn.dataset.quitar !== undefined) {
       const nube = esNube(ruta);
@@ -256,6 +247,69 @@
       decir("Canción restaurada.");
       await refrescarTodo();
     } catch (err) { btn.disabled = false; decir(textoError(err), true); }
+  });
+
+  /* --- Renombrar (cualquier canción) ------------------------------------------------------------ */
+  const dlgNombre = $("rgNombre");
+  let nombrando = null; // ruta
+
+  // Título y artista actuales: los de la fila si es subida, el nombre puesto a mano o el del archivo si es del sitio
+  function nombreActual(ruta) {
+    const f = filasNube.find(x => x.ruta === ruta);
+    if (f) return { titulo: f.titulo, artista: f.artista };
+    const n = nombres.find(x => x.ruta === ruta);
+    return n ? { titulo: n.titulo, artista: n.artista || "" } : partir(nombreCrudo(ruta));
+  }
+
+  function abrirNombre(ruta) {
+    nombrando = ruta;
+    const a = nombreActual(ruta);
+    $("rgNombreTitulo").value = a.titulo;
+    $("rgNombreArtista").value = a.artista;
+    const manual = !esNube(ruta) && nombres.some(x => x.ruta === ruta);
+    $("rgNombreRestablecer").classList.toggle("hidden", !manual);
+    $("rgNombreEstado").textContent = !esNube(ruta) && sinTablaNombres ? "Para cambiar el nombre de las canciones del sitio falta correr scratchpad/rocola_nombres.sql en Supabase." : "";
+    $("rgNombreEstado").classList.toggle("error", !esNube(ruta) && sinTablaNombres);
+    dlgNombre.showModal();
+    $("rgNombreTitulo").select();
+  }
+
+  $("rgNombreCancelar").addEventListener("click", () => dlgNombre.close());
+  $("rgNombreForm").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const ruta = nombrando;
+    const t = $("rgNombreTitulo").value.trim().slice(0, 140);
+    const a = $("rgNombreArtista").value.trim().slice(0, 140);
+    if (!t) { $("rgNombreEstado").textContent = "El título no puede quedar vacío."; $("rgNombreEstado").classList.add("error"); return; }
+    try {
+      const sb = await fichasCliente();
+      if (esNube(ruta)) {
+        const { error } = await sb.from("rocola_canciones").update({ titulo: t, artista: a }).eq("ruta", ruta);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from("rocola_nombres").upsert({ ruta, titulo: t, artista: a });
+        if (error) throw error;
+      }
+      dlgNombre.close();
+      decir("Nombre actualizado.");
+      await refrescarTodo();
+    } catch (err) {
+      $("rgNombreEstado").textContent = textoError(err);
+      $("rgNombreEstado").classList.add("error");
+    }
+  });
+  $("rgNombreRestablecer").addEventListener("click", async () => {
+    try {
+      const sb = await fichasCliente();
+      const { error } = await sb.from("rocola_nombres").delete().eq("ruta", nombrando);
+      if (error) throw error;
+      dlgNombre.close();
+      decir("Nombre restablecido al del archivo.");
+      await refrescarTodo();
+    } catch (err) {
+      $("rgNombreEstado").textContent = textoError(err);
+      $("rgNombreEstado").classList.add("error");
+    }
   });
 
   /* --- Recortar -------------------------------------------------------------------------------------- */
@@ -471,7 +525,7 @@
     if (sinCambios) return decirR("Mueve el inicio o el final para recortar algo.", true);
     const nube = esNube(ruta);
     const fila = filasNube.find(f => f.ruta === ruta);
-    const base = nube && fila ? { titulo: fila.titulo, artista: fila.artista } : partir(nombreCrudo(ruta));
+    const base = nombreActual(ruta);
     const aviso = (nube
       ? "La canción se reemplaza por la versión recortada (se borra el archivo anterior)."
       : "Se sube la versión recortada como canción nueva y la original se oculta del sitio.") +
