@@ -760,13 +760,12 @@
         ctxC.fillRect(X_GOLPE, y - 14, Math.max(0, Math.min(cola, W + 40) - X_GOLPE), 28);
         ctxC.globalAlpha = 1;
         if (cola < W + 40) topeDeLarga(Math.max(X_GOLPE, cola), y, CARRILES[n.carril].color);
-        // Mientras se mantiene, un texto fijo recuerda qué hacer y, al final, cuándo soltar
-        const resta = n.t + n.dur - t;
-        const cerca = resta < 0.35;
-        ctxC.fillStyle = cerca ? "#ffffff" : "rgba(255, 255, 255, 0.7)";
-        ctxC.font = cerca ? "800 20px sans-serif" : "700 15px sans-serif";
+        // Mientras se mantiene, un texto recuerda que hay que seguir pulsando. Al llegar el círculo del
+        // final al aro la larga se completa sola, así que no hay que "soltar" en un momento justo.
+        ctxC.fillStyle = "rgba(255, 255, 255, 0.75)";
+        ctxC.font = "700 15px sans-serif";
         ctxC.textAlign = "center";
-        if (cerca || t - n.t > 0.6) ctxC.fillText(cerca ? "¡SUELTA!" : "MANTÉN", X_GOLPE, y - 50);
+        if (t - n.t > 0.6) ctxC.fillText("MANTÉN", X_GOLPE, y - 50);
       });
       // Notas ya falladas que se alejan
       for (let i = Math.max(0, punteroFallos - 12); i < punteroFallos; i++) {
