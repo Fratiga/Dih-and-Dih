@@ -617,63 +617,106 @@
     ctxC.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
   }
 
-  /* Cada carril tiene su forma además de su color (círculo, rombo, cuadrado y hexágono), así se
-     distinguen sin depender del color. */
-  function trazarForma(carril, x, y, r) {
-    ctxC.beginPath();
+  /* Las notas son piezas de neón: núcleo oscuro, borde brillante del color del carril y el centro encendido,
+     como los rótulos del escenario. Cada carril conserva su forma (círculo, rombo, cuadrado y hexágono) para
+     distinguirlo sin depender del color. Se dibujan una sola vez en un lienzo pequeño y después solo se
+     copian, que además deja el brillo sin costo por fotograma. */
+  function trazarEn(g, carril, x, y, r) {
+    g.beginPath();
     if (carril === 0) {
-      ctxC.arc(x, y, r, 0, Math.PI * 2);
+      g.arc(x, y, r, 0, Math.PI * 2);
     } else if (carril === 1) {
-      ctxC.moveTo(x, y - r - 4); ctxC.lineTo(x + r + 4, y); ctxC.lineTo(x, y + r + 4); ctxC.lineTo(x - r - 4, y); ctxC.closePath();
+      g.moveTo(x, y - r - 4); g.lineTo(x + r + 4, y); g.lineTo(x, y + r + 4); g.lineTo(x - r - 4, y); g.closePath();
     } else if (carril === 2) {
       const a = r * 0.88;
-      ctxC.rect(x - a, y - a, a * 2, a * 2);
+      g.rect(x - a, y - a, a * 2, a * 2);
     } else {
       for (let k = 0; k < 6; k++) {
         const ang = (k * Math.PI) / 3 + Math.PI / 6;
-        ctxC.lineTo(x + Math.cos(ang) * (r + 2), y + Math.sin(ang) * (r + 2));
+        g.lineTo(x + Math.cos(ang) * (r + 2), y + Math.sin(ang) * (r + 2));
       }
-      ctxC.closePath();
+      g.closePath();
     }
+  }
+
+  const spritesNota = [];
+  function spriteNota(carril) {
+    if (spritesNota[carril]) return spritesNota[carril];
+    const color = CARRILES[carril].color;
+    const rgb = CARRILES[carril].rgb;
+    const lienzo = document.createElement("canvas");
+    lienzo.width = lienzo.height = 160;
+    const g = lienzo.getContext("2d");
+    g.scale(2, 2);
+    g.translate(40, 40);
+    g.lineJoin = "round";
+    // Cuerpo oscuro con el brillo del color alrededor
+    g.shadowColor = color;
+    g.shadowBlur = 12;
+    trazarEn(g, carril, 0, 0, 21);
+    g.fillStyle = "#12080a";
+    g.fill();
+    g.lineWidth = 4.5;
+    g.strokeStyle = color;
+    g.stroke();
+    g.shadowBlur = 0;
+    // Filo claro por dentro y centro encendido
+    trazarEn(g, carril, 0, 0, 15.5);
+    g.lineWidth = 1.2;
+    g.strokeStyle = "rgba(255, 255, 255, 0.5)";
+    g.stroke();
+    trazarEn(g, carril, 0, 0, 8.5);
+    g.fillStyle = `rgba(${rgb}, 0.95)`;
+    g.fill();
+    g.fillStyle = "rgba(255, 255, 255, 0.85)";
+    g.beginPath(); g.arc(-1.5, -1.5, 2.6, 0, Math.PI * 2); g.fill();
+    spritesNota[carril] = lienzo;
+    return lienzo;
   }
 
   function dibujarForma(carril, x, y, alfa) {
     ctxC.globalAlpha = alfa;
-    ctxC.fillStyle = CARRILES[carril].color;
-    ctxC.strokeStyle = "rgba(0, 0, 0, 0.7)";
-    ctxC.lineWidth = 4;
-    ctxC.lineJoin = "round";
-    trazarForma(carril, x, y, 23);
-    ctxC.fill();
-    ctxC.stroke();
-    ctxC.fillStyle = "rgba(255, 255, 255, 0.4)";
-    ctxC.beginPath(); ctxC.arc(x - 7, y - 8, 5, 0, Math.PI * 2); ctxC.fill();
+    ctxC.drawImage(spriteNota(carril), x - 40, y - 40, 80, 80);
     ctxC.globalAlpha = 1;
   }
 
-  /* Una nota: su forma; la larga lleva una barra hacia arriba hasta donde termina (yCola). */
+  /* Las barras largas son tubos de neón: relleno tenue, borde del color y una línea blanca al centro */
+  function dibujarTubo(x, arriba, abajo, color, alfa) {
+    const alto = abajo - arriba;
+    if (alto <= 0) return;
+    ctxC.globalAlpha = alfa * 0.3;
+    ctxC.fillStyle = color;
+    ctxC.fillRect(x - 12, arriba, 24, alto);
+    ctxC.globalAlpha = alfa * 0.95;
+    ctxC.strokeStyle = color;
+    ctxC.lineWidth = 3;
+    ctxC.strokeRect(x - 11.5, arriba, 23, alto);
+    ctxC.globalAlpha = alfa * 0.75;
+    ctxC.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctxC.fillRect(x - 1.5, arriba, 3, alto);
+    ctxC.globalAlpha = 1;
+  }
+
+  /* Una nota: su pieza de neón; la larga lleva un tubo hacia arriba hasta donde termina (yCola). */
   function dibujarNota(n, y, alfa, yCola) {
     const x = xCarril(n.carril);
     if (yCola !== undefined && yCola < y) {
       const arriba = Math.max(yCola, -40);
-      ctxC.globalAlpha = alfa * 0.55;
-      ctxC.fillStyle = CARRILES[n.carril].color;
-      ctxC.fillRect(x - 14, arriba, 28, y - arriba);
-      ctxC.globalAlpha = alfa;
-      if (yCola >= -40) topeDeLarga(x, yCola, CARRILES[n.carril].color);
-      ctxC.globalAlpha = 1;
+      dibujarTubo(x, arriba, y, CARRILES[n.carril].color, alfa);
+      if (yCola >= -40) { ctxC.globalAlpha = alfa; topeDeLarga(x, yCola, CARRILES[n.carril].color); ctxC.globalAlpha = 1; }
     }
     dibujarForma(n.carril, x, y, alfa);
   }
 
-  /* El final de una larga: un círculo blanco con un cuadrado dentro. Ahí se suelta. */
+  /* El final de una larga: un disco oscuro con aro de neón y un punto blanco. Al llegar al aro de abajo se
+     completa. */
   function topeDeLarga(x, y, color) {
-    ctxC.fillStyle = color;
-    ctxC.strokeStyle = "rgba(255, 255, 255, 0.92)";
-    ctxC.lineWidth = 3.5;
-    ctxC.beginPath(); ctxC.arc(x, y, 16, 0, Math.PI * 2); ctxC.fill(); ctxC.stroke();
+    ctxC.fillStyle = "#12080a";
+    ctxC.strokeStyle = color;
+    ctxC.lineWidth = 4;
+    ctxC.beginPath(); ctxC.arc(x, y, 14, 0, Math.PI * 2); ctxC.fill(); ctxC.stroke();
     ctxC.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctxC.fillRect(x - 5, y - 5, 10, 10);
+    ctxC.beginPath(); ctxC.arc(x, y, 4, 0, Math.PI * 2); ctxC.fill();
   }
 
   let ultimoAvatar = 0;
@@ -1088,10 +1131,7 @@
         const x = xCarril(n.carril);
         const cola = Y_GOLPE - ((n.t + n.dur - t) / cfg.aproximacion) * RECORRIDO;
         const arriba = Math.max(cola, -40);
-        ctxC.globalAlpha = 0.85;
-        ctxC.fillStyle = CARRILES[n.carril].color;
-        ctxC.fillRect(x - 14, arriba, 28, Y_GOLPE - arriba);
-        ctxC.globalAlpha = 1;
+        dibujarTubo(x, arriba, Y_GOLPE, CARRILES[n.carril].color, 1);
         if (cola >= -40) topeDeLarga(x, Math.min(cola, Y_GOLPE), CARRILES[n.carril].color);
         // Mientras se mantiene, un texto recuerda que hay que seguir pulsando. Al llegar el círculo del
         // final al aro la larga se completa sola, así que no hay que "soltar" en un momento justo.
