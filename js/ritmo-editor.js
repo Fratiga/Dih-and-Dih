@@ -19,6 +19,7 @@
   const Y_ARRIBA = 96;
   const Y_ABAJO = 186;
   const Y_ONDA = [244, 340];
+  const Y_CALOR = [226, 236];
 
   const $ = id => document.getElementById(id);
   const lienzo = $("reLienzo");
@@ -63,6 +64,21 @@
   let cambios = false; // hay cambios sin guardar
   let historial = [];
   let posHistorial = -1;
+  let actualizadoCargado = null; // fecha "actualizado" que tenía el mapa guardado al cargarlo (para avisar de conflictos)
+
+  // Bucle de práctica: repite el tramo entre A y B
+  let bucleA = null;
+  let bucleB = null;
+  let bucleOn = false;
+  let reiniciandoBucle = false;
+
+  // Modo prueba: se juega el mapa con las teclas dentro del editor
+  let pruebaOn = false;
+  const prueba = { estados: new Map(), mitades: new Map(), perfectos: 0, buenos: 0, fallos: 0, combo: 0, comboMax: 0, puntero: 0 };
+  const TECLAS_PRUEBA = { z: "arriba", d: "arriba", f: "arriba", arrowup: "arriba", x: "abajo", j: "abajo", k: "abajo", arrowdown: "abajo" };
+
+  let toques = []; // instantes (s) de los toques de "tap tempo"
+  let ondaBandas = null; // energía por banda para dibujar la onda separada en graves, medios y agudos
 
   // Vista
   let vistaIni = -1;
@@ -126,8 +142,10 @@
   function foto() { return JSON.stringify({ notas, pulsos, forzadas, bandas: tramos.map(t => [t.banda, t.vacio]) }); }
   function aplicarFoto(texto) {
     const f = JSON.parse(texto);
+    const cambioPulsos = f.pulsos.length !== pulsos.length;
     notas = f.notas; pulsos = f.pulsos; forzadas = f.forzadas || {};
-    f.bandas.forEach((b, i) => { if (tramos[i]) { tramos[i].banda = b[0]; tramos[i].vacio = b[1]; } });
+    if (cambioPulsos && buffer) recalcularTramos();
+    else f.bandas.forEach((b, i) => { if (tramos[i]) { tramos[i].banda = b[0]; tramos[i].vacio = b[1]; } });
     actualizarTramos();
     deseleccionar();
     reiniciarClics();
@@ -188,6 +206,18 @@
       for (let k = i * paso; k < Math.min(datos.length, (i + 1) * paso); k += 4) { const v = Math.abs(datos[k]); if (v > m) m = v; }
       onda[i] = m;
     }
+    // Energía de graves, medios y agudos para la onda separada
+    try {
+      const b = AN.bandas(buffer);
+      const norma = arr => {
+        const orden = Array.from(arr).sort((x, y) => x - y);
+        const tope = orden[Math.floor(orden.length * 0.97)] || 1;
+        const o = new Float32Array(arr.length);
+        for (let i = 0; i < arr.length; i++) o[i] = Math.min(1, arr[i] / tope);
+        return o;
+      };
+      ondaBandas = { bajo: norma(b.bajo), medio: norma(b.medio), alto: norma(b.alto), fps: b.sr / AN.HOP };
+    } catch (e) { ondaBandas = null; }
     posIni = 0;
     vistaIni = -1;
     playEl.disabled = false;
@@ -214,6 +244,7 @@
       mensaje("Analizando la canción...");
       await new Promise(r => setTimeout(r, 30));
       tomarMapa(AN.crearMapa(buffer, difActual()));
+      actualizadoCargado = null;
       mensaje(`Mapa automático: ${notas.length} notas, ${tramos.length} tramos.`);
     } catch (err) {
       mensaje("No se pudo cargar esa canción: " + (err && err.message || err), true);
@@ -240,14 +271,53 @@
     try {
       await cargarAudio();
       const sb = await supabase();
-      const { data, error } = await sb.from("ritmo_mapas").select("mapa").eq("cancion", rutaActual()).eq("dificultad", difActual()).maybeSingle();
+      const { data, error } = await sb.from("ritmo_mapas").select("mapa, actualizado").eq("cancion", rutaActual()).eq("dificultad", difActual()).maybeSingle();
       if (error) throw error;
       if (!data) { mensaje("No hay un mapa guardado para esta canción y dificultad."); return; }
       aplicarGuardado(data.mapa);
+      actualizadoCargado = data.actualizado;
       mensaje(`Mapa guardado cargado: ${notas.length} notas.`);
     } catch (err) {
       mensaje("No se pudo cargar: " + (err && err.message || err), true);
     }
+  }
+
+  /* --- Borrador local: cada 20 s se guarda en este navegador lo que no has guardado --------------- */
+  const CLAVE_BORRADORES = "ritmoBorradores";
+  const claveBorrador = () => `ritmoBorrador|${rutaActual()}|${difActual()}`;
+
+  function guardarBorrador() {
+    if (!cambios || !notas.length) return;
+    try {
+      const k = claveBorrador();
+      localStorage.setItem(k, JSON.stringify({ t: Date.now(), mapa: conFirma(AN.guardable(notas, pulsos)), esperado: actualizadoCargado }));
+      const idx = JSON.parse(localStorage.getItem(CLAVE_BORRADORES) || "[]").filter(x => x !== k);
+      idx.push(k);
+      while (idx.length > 6) localStorage.removeItem(idx.shift());
+      localStorage.setItem(CLAVE_BORRADORES, JSON.stringify(idx));
+    } catch (e) { /* sin espacio o sin almacenamiento */ }
+  }
+
+  function borrarBorrador() {
+    try {
+      const k = claveBorrador();
+      localStorage.removeItem(k);
+      const idx = JSON.parse(localStorage.getItem(CLAVE_BORRADORES) || "[]").filter(x => x !== k);
+      localStorage.setItem(CLAVE_BORRADORES, JSON.stringify(idx));
+    } catch (e) { /* sin almacenamiento */ }
+    const banner = $("reBorrador");
+    if (banner) banner.classList.add("hidden");
+  }
+
+  function comprobarBorrador() {
+    const banner = $("reBorrador");
+    if (!banner) return;
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(claveBorrador()) || "null"); } catch (e) { d = null; }
+    if (!d || !d.mapa || !d.mapa.notas || !d.mapa.notas.length) { banner.classList.add("hidden"); return; }
+    const cuando = new Date(d.t).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    $("reBorradorTxt").textContent = `Hay un borrador sin guardar de esta canción y dificultad (${cuando}, ${d.mapa.notas.length} notas).`;
+    banner.classList.remove("hidden");
   }
 
   /* --- Guardar, probar, exportar ----------------------------------------------------- */
@@ -255,6 +325,8 @@
      dobles con duración. */
   function limpiarNotas() {
     notas.sort((a, b) => a.t - b.t);
+    // Dos notas iguales una encima de otra: se queda la primera
+    notas = notas.filter((n, i) => !notas.slice(Math.max(0, i - 3), i).some(o => o.carril === n.carril && Math.abs(o.t - n.t) < 0.02));
     notas.forEach(n => { if (n.carril === "ambos") n.dur = 0; });
     for (let i = 0; i < notas.length; i++) {
       const n = notas[i];
@@ -282,22 +354,72 @@
   async function guardar() {
     if (!notas.length) { mensaje("No hay nada que guardar.", true); return; }
     limpiarNotas();
+    if (window.RitmoLogica && buffer) {
+      const rev = RitmoLogica.revisar(notas, pulsos, buffer.duration, difActual());
+      const errores = rev.problemas.filter(p => p.nivel === "error");
+      if (errores.length && !confirm(`El mapa tiene ${errores.length} problema${errores.length === 1 ? "" : "s"} que pueden hacerlo injugable (míralos en la pestaña Revisar).\n\n¿Guardar igual?`)) {
+        window.dispatchEvent(new CustomEvent("ritmo-abrir-tab", { detail: "revisar" }));
+        return;
+      }
+    }
+    await guardarEnServidor(false);
+  }
+
+  /* Guarda con una función del servidor que compara la fecha del mapa guardado con la que tenía al
+     cargarlo: si alguien lo cambió mientras tanto, avisa antes de pisarlo (y su versión queda en el
+     historial). */
+  async function guardarEnServidor(forzar) {
     try {
       const sb = await supabase();
-      const { error } = await sb.from("ritmo_mapas").upsert({
-        cancion: rutaActual(),
-        dificultad: difActual(),
-        mapa: conFirma(AN.guardable(notas, pulsos)),
-        actualizado: new Date().toISOString()
+      const mapa = conFirma(AN.guardable(notas, pulsos));
+      const { data, error } = await sb.rpc("ritmo_guardar_mapa", {
+        p_cancion: rutaActual(), p_dificultad: difActual(), p_mapa: mapa, p_esperado: actualizadoCargado, p_forzar: !!forzar
       });
-      if (error) throw error;
+      if (error) {
+        // Si todavía no se corrió ritmo_editor_2.sql, se guarda como antes, sin aviso de conflicto
+        if (/ritmo_guardar_mapa|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) return guardarSinAviso(mapa);
+        throw error;
+      }
+      if (data && data.conflicto) {
+        const quien = data.autor || "Otra persona";
+        const cuando = new Date(data.cuando).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+        if (!confirm(`${quien} guardó este mapa el ${cuando}, después de que lo cargaras.\n\nSi guardas ahora, tus cambios reemplazan los suyos (su versión queda en el historial).\n\n¿Guardar igual?`)) {
+          mensaje("No se guardó. Carga el mapa guardado, o mira el historial para ver la otra versión.", true);
+          return;
+        }
+        return guardarEnServidor(true);
+      }
+      actualizadoCargado = data.actualizado;
       cambios = false;
+      borrarBorrador();
+      window.dispatchEvent(new CustomEvent("ritmo-guardado"));
       mensaje(`Guardado (${notas.length} notas). Los jugadores lo usan desde la próxima vez que abran la canción.`);
     } catch (err) {
-      const t = String(err && err.message || err);
-      mensaje(/ritmo_mapas|relation|does not exist/i.test(t) ? "Falta correr scratchpad/ritmo_mapas.sql en Supabase." : /row-level|policy|permission|JWT/i.test(t) ? "Sin permiso: inicia sesión con la cuenta admin." : "No se pudo guardar: " + t, true);
+      mensaje(textoErrorGuardar(err), true);
     }
     sucio = true;
+  }
+
+  async function guardarSinAviso(mapa) {
+    try {
+      const sb = await supabase();
+      const { error } = await sb.from("ritmo_mapas").upsert({ cancion: rutaActual(), dificultad: difActual(), mapa, actualizado: new Date().toISOString() });
+      if (error) throw error;
+      cambios = false;
+      actualizadoCargado = null;
+      borrarBorrador();
+      mensaje(`Guardado (${notas.length} notas). Falta correr scratchpad/ritmo_editor_2.sql para tener historial y aviso de conflictos.`);
+    } catch (err) {
+      mensaje(textoErrorGuardar(err), true);
+    }
+    sucio = true;
+  }
+
+  function textoErrorGuardar(err) {
+    const t = String((err && err.message) || err);
+    return /ritmo_mapas|relation|does not exist/i.test(t) ? "Falta correr scratchpad/ritmo_mapas.sql en Supabase."
+      : /row-level|policy|permission|JWT|No autorizado/i.test(t) ? "Sin permiso: inicia sesión con una cuenta DJ o Admin."
+      : "No se pudo guardar: " + t;
   }
 
   function probar() {
@@ -334,6 +456,7 @@
       if (data.dificultad && AN.DIFICULTADES[data.dificultad]) difEl.value = data.dificultad;
       await cargarAudio();
       aplicarGuardado(mapa);
+      actualizadoCargado = null;
       cambios = true;
       mensaje(`Importado: ${notas.length} notas.`);
     } catch (err) {
@@ -347,6 +470,8 @@
       const sb = await supabase();
       const { error } = await sb.from("ritmo_mapas").delete().eq("cancion", rutaActual()).eq("dificultad", difActual());
       if (error) throw error;
+      actualizadoCargado = null;
+      window.dispatchEvent(new CustomEvent("ritmo-guardado"));
       mensaje("Guardado borrado. El juego usa el mapa automático.");
     } catch (err) {
       mensaje("No se pudo borrar: " + (err && err.message || err), true);
@@ -386,6 +511,59 @@
     if (!tramosSel) return null;
     return { k0: tramos[tramosSel.a].k0, k1: tramos[tramosSel.b].k1 };
   }
+
+  /* Rehace la lista de tramos (y qué banda sigue cada uno) con los pulsos actuales */
+  function recalcularTramos() {
+    const m = AN.crearMapa(buffer, difActual(), { pulsos, bandasForzadas: forzadas });
+    tramos = m.tramos.map(t => ({ k0: t.k0, k1: t.k1, banda: t.banda, vacio: t.vacio }));
+    tramosSel = null;
+  }
+
+  function pulsoMasCercano(t) {
+    let k = 0;
+    for (let q = 0; q < pulsos.length; q++) if (Math.abs(pulsos[q] - t) < Math.abs(pulsos[k] - t)) k = q;
+    return k;
+  }
+
+  /* El tempo cambia a "bpm" desde el pulso más cercano al cursor y sigue así hasta el final */
+  function bpmDesdeCursor() {
+    const bpm = Number($("reBpmValor").value);
+    if (!(bpm >= 50 && bpm <= 230)) { mensaje("Pon un BPM entre 50 y 230.", true); return; }
+    if (!buffer || !pulsos.length) { mensaje("Carga primero un mapa.", true); return; }
+    const k = pulsoMasCercano(tiempoActual());
+    guardarFoto();
+    pulsos = RitmoLogica.pulsosDesdeAncla(pulsos, pulsos[k], bpm, buffer.duration);
+    recalcularTramos();
+    guardarFoto();
+    sucio = true;
+    mensaje(`Desde ${formatoT(pulsos[k])} el pulso va a ${bpm} BPM. Las notas no se movieron: usa Tramos para generarlas de nuevo si quieres.`);
+  }
+
+  /* Tap tempo: con la música sonando, toca (tecla T o el botón) al ritmo */
+  function tocarTap() {
+    if (!reproduciendo) { mensaje("Reproduce la canción y toca al ritmo (tecla T o el botón).", true); return; }
+    const t = tiempoActual();
+    if (toques.length && t - toques[toques.length - 1] > 2.5) toques = [];
+    toques.push(t);
+    if (toques.length > 16) toques.shift();
+    const bpm = RitmoLogica.bpmDeToques(toques);
+    $("reTapBpm").textContent = bpm ? `${bpm} BPM (${toques.length} toques)` : `${toques.length} toque${toques.length === 1 ? "" : "s"}...`;
+  }
+
+  function aplicarTap() {
+    const bpm = RitmoLogica.bpmDeToques(toques);
+    if (!bpm) { mensaje("Toca al menos 4 veces al ritmo antes de aplicar.", true); return; }
+    guardarFoto();
+    pulsos = RitmoLogica.pulsosDesdeAncla(pulsos, toques[0], bpm, buffer.duration);
+    recalcularTramos();
+    guardarFoto();
+    toques = [];
+    $("reTapBpm").textContent = "Sin toques";
+    sucio = true;
+    mensaje(`Pulso rehecho a ${bpm} BPM desde tu primer toque. Si queda adelantado o atrasado, ajústalo con «Pulso al cursor».`);
+  }
+
+  function limpiarTap() { toques = []; $("reTapBpm").textContent = "Sin toques"; }
 
   function regularizar() {
     const r = rangoPulsos();
@@ -584,6 +762,91 @@
     while (proxClic < notas.length && notas[proxClic].t < t) proxClic++;
     proxPulso = 0;
     while (proxPulso < pulsos.length && pulsos[proxPulso] < t) proxPulso++;
+    reiniciarPrueba();
+  }
+
+  /* --- Modo prueba: juegas el mapa con las teclas para sentir cómo queda ------------------------- */
+  function reiniciarPrueba() {
+    prueba.estados.clear();
+    prueba.mitades.clear();
+    prueba.perfectos = 0; prueba.buenos = 0; prueba.fallos = 0; prueba.combo = 0; prueba.comboMax = 0;
+    const t = tiempoActual();
+    const cfg = AN.DIFICULTADES[difActual()] || AN.DIFICULTADES.normal;
+    prueba.puntero = 0;
+    while (prueba.puntero < notas.length && notas[prueba.puntero].t < t - cfg.bien) prueba.puntero++;
+  }
+
+  function registrarPrueba(n, juicio) {
+    prueba.estados.set(n, juicio);
+    if (juicio === "fallo") { prueba.fallos++; prueba.combo = 0; return; }
+    if (juicio === "perfecto") prueba.perfectos++; else prueba.buenos++;
+    prueba.combo++;
+    prueba.comboMax = Math.max(prueba.comboMax, prueba.combo);
+  }
+
+  function golpePrueba(carril) {
+    const cfg = AN.DIFICULTADES[difActual()] || AN.DIFICULTADES.normal;
+    const t = tiempoActual() - ((audio && audio.outputLatency) || 0);
+    let mejor = null;
+    for (let i = Math.max(0, prueba.puntero - 2); i < notas.length && notas[i].t <= t + cfg.bien; i++) {
+      const n = notas[i];
+      if (prueba.estados.has(n)) continue;
+      const mitades = prueba.mitades.get(n) || {};
+      if (!(n.carril === carril || (n.carril === "ambos" && !mitades[carril]))) continue;
+      const d = Math.abs(n.t - t);
+      if (d <= cfg.bien && (!mejor || d < Math.abs(mejor.t - t))) mejor = n;
+    }
+    if (!mejor) { prueba.fallos++; prueba.combo = 0; sucio = true; return; }
+    const juicio = Math.abs(mejor.t - t) <= cfg.perfecto ? "perfecto" : "bien";
+    if (mejor.carril === "ambos") {
+      const m = prueba.mitades.get(mejor) || {};
+      m[carril] = juicio;
+      prueba.mitades.set(mejor, m);
+      if (!(m.arriba && m.abajo)) return;
+      registrarPrueba(mejor, m.arriba === "perfecto" && m.abajo === "perfecto" ? "perfecto" : "bien");
+    } else {
+      registrarPrueba(mejor, juicio);
+    }
+    sucio = true;
+  }
+
+  function avanzarPrueba(t) {
+    if (!pruebaOn) return;
+    const cfg = AN.DIFICULTADES[difActual()] || AN.DIFICULTADES.normal;
+    const limite = t - cfg.bien - ((audio && audio.outputLatency) || 0);
+    while (prueba.puntero < notas.length && notas[prueba.puntero].t < limite) {
+      const n = notas[prueba.puntero];
+      if (!prueba.estados.has(n)) registrarPrueba(n, "fallo");
+      prueba.puntero++;
+    }
+  }
+
+  /* --- Bucle de práctica ---------------------------------------------------------------------------- */
+  function marcarBucle(cual) {
+    if (!pulsos.length) { mensaje("Carga primero un mapa.", true); return; }
+    const t = pulsos[pulsoMasCercano(tiempoActual())];
+    if (cual === "A") { bucleA = t; if (bucleB !== null && bucleB <= bucleA) bucleB = null; }
+    else { bucleB = t; if (bucleA === null || bucleA >= bucleB) { mensaje("Marca primero el inicio (A) antes que el final (B).", true); bucleB = null; sucio = true; return; } }
+    if (bucleA !== null && bucleB !== null) { bucleOn = true; $("reBucleOn").checked = true; }
+    sucio = true;
+    mensaje(cual === "A" ? `Inicio del bucle en ${formatoT(t)}.` : `Bucle de ${formatoT(bucleA)} a ${formatoT(bucleB)}.`);
+  }
+
+  function bucleDelTramo() {
+    const r = rangoPulsos();
+    if (!r) { mensaje("Elige primero uno o más tramos en la franja de colores.", true); return; }
+    bucleA = pulsos[r.k0];
+    bucleB = pulsos[r.k1];
+    bucleOn = true;
+    $("reBucleOn").checked = true;
+    sucio = true;
+    mensaje(`Bucle de ${formatoT(bucleA)} a ${formatoT(bucleB)}.`);
+  }
+
+  function quitarBucle() {
+    bucleA = null; bucleB = null; bucleOn = false;
+    $("reBucleOn").checked = false;
+    sucio = true;
   }
 
   function tono(frecuencia, cuando, duracion, volumen) {
@@ -743,6 +1006,33 @@
       g.fillText(formatoT(s).replace(/\.0$/, ""), x + 3, 10);
     }
 
+    // Región del bucle de práctica sobre la regla
+    if (bucleA !== null) {
+      const xa = tX(bucleA);
+      const xb = bucleB !== null ? tX(bucleB) : xa;
+      g.fillStyle = bucleOn ? "rgba(242, 212, 107, 0.28)" : "rgba(242, 212, 107, 0.12)";
+      if (bucleB !== null) g.fillRect(xa, Y_REGLA[0], xb - xa, Y_REGLA[1] - Y_REGLA[0]);
+      g.fillStyle = "#f2d46b";
+      g.fillRect(xa - 1, Y_REGLA[0], 3, Y_REGLA[1] - Y_REGLA[0] + 4);
+      if (bucleB !== null) g.fillRect(xb - 1, Y_REGLA[0], 3, Y_REGLA[1] - Y_REGLA[0] + 4);
+    }
+
+    // Mapa de calor: cuántas notas hay cada 2 s (en rojo, los tramos sin notas)
+    if (notas.length && buffer) {
+      const bin = 2;
+      const dens = RitmoLogica.densidad(notas, buffer.duration, bin);
+      let maxD = 1;
+      dens.forEach(v => { if (v > maxD) maxD = v; });
+      for (let q = Math.max(0, Math.floor(vistaIni / bin)); q < dens.length; q++) {
+        const x0 = tX(q * bin);
+        const x1 = tX((q + 1) * bin);
+        if (x0 > ancho) break;
+        if (x1 < 0) continue;
+        g.fillStyle = dens[q] === 0 ? "rgba(232, 131, 123, 0.3)" : `rgba(255, 79, 216, ${0.1 + 0.75 * (dens[q] / maxD)})`;
+        g.fillRect(x0, Y_CALOR[0], Math.max(1, x1 - x0 - 1), Y_CALOR[1] - Y_CALOR[0]);
+      }
+    }
+
     // Pulsos
     let k = Math.max(0, indicePulso(vistaIni));
     for (; k < pulsos.length; k++) {
@@ -757,8 +1047,36 @@
     // Notas
     notas.forEach(dibujarNota);
 
-    // Forma de onda
-    if (onda) {
+    // Anillos del modo prueba sobre las notas ya juzgadas
+    if (pruebaOn) {
+      prueba.estados.forEach((e, n) => {
+        const x = tX(n.t);
+        if (x < -20 || x > ancho + 20) return;
+        const ys = n.carril === "ambos" ? [Y_ARRIBA, Y_ABAJO] : [n.carril === "arriba" ? Y_ARRIBA : Y_ABAJO];
+        g.strokeStyle = e === "perfecto" ? "#f2d46b" : e === "bien" ? "#e9e6d8" : "#e8837b";
+        g.lineWidth = 3;
+        ys.forEach(y => { g.beginPath(); g.arc(x, y, 19, 0, Math.PI * 2); g.stroke(); });
+      });
+    }
+
+    // Forma de onda: separada en graves, medios y agudos, o la normal
+    if (ondaBandas && $("reOndaBandas") && $("reOndaBandas").checked) {
+      const mitad = (Y_ONDA[0] + Y_ONDA[1]) / 2;
+      const amp = (Y_ONDA[1] - Y_ONDA[0]) / 2;
+      [["bajo", "232, 131, 123"], ["medio", "126, 216, 127"], ["alto", "143, 220, 255"]].forEach(([banda, color]) => {
+        const arr = ondaBandas[banda];
+        g.fillStyle = `rgba(${color}, 0.5)`;
+        for (let x = 0; x < ancho; x++) {
+          const i0 = Math.floor(xT(x) * ondaBandas.fps);
+          const i1 = Math.max(i0 + 1, Math.floor(xT(x + 1) * ondaBandas.fps));
+          if (i1 < 0 || i0 >= arr.length) continue;
+          let m = 0;
+          for (let i = Math.max(0, i0); i < Math.min(arr.length, i1); i++) if (arr[i] > m) m = arr[i];
+          const h = m * amp;
+          g.fillRect(x, mitad - h, 1, Math.max(1, h * 2));
+        }
+      });
+    } else if (onda) {
       const mitad = (Y_ONDA[0] + Y_ONDA[1]) / 2;
       const amp = (Y_ONDA[1] - Y_ONDA[0]) / 2;
       g.fillStyle = "rgba(143, 220, 255, 0.45)";
@@ -793,6 +1111,19 @@
       }
     }
 
+    // Marcador del modo prueba
+    if (pruebaOn) {
+      g.fillStyle = "rgba(11, 7, 22, 0.82)";
+      g.fillRect(ancho - 226, 54, 216, 52);
+      g.strokeStyle = "#ff4fd8"; g.lineWidth = 1;
+      g.strokeRect(ancho - 225.5, 54.5, 215, 51);
+      g.fillStyle = "#fff"; g.font = "600 12px sans-serif"; g.textAlign = "left";
+      g.fillText(`PRUEBA  combo ${prueba.combo} (máx. ${prueba.comboMax})`, ancho - 216, 74);
+      g.fillStyle = "#f2d46b"; g.fillText(`Perfectos ${prueba.perfectos}`, ancho - 216, 94);
+      g.fillStyle = "#e9e6d8"; g.fillText(`Bien ${prueba.buenos}`, ancho - 134, 94);
+      g.fillStyle = "#e8837b"; g.fillText(`Fallos ${prueba.fallos}`, ancho - 80, 94);
+    }
+
     // Cursor de reproducción
     const xc = tX(t);
     g.strokeStyle = "#f2d46b"; g.lineWidth = 2;
@@ -803,7 +1134,14 @@
   function bucle() {
     if (reproduciendo) {
       const t = tiempoActual();
-      programarClics(t);
+      if (bucleOn && bucleA !== null && bucleB !== null && bucleB > bucleA && t >= bucleB && !reiniciandoBucle) {
+        reiniciandoBucle = true;
+        posIni = bucleA;
+        reproducir().finally(() => { reiniciandoBucle = false; });
+      } else if (!reiniciandoBucle) {
+        programarClics(t);
+        avanzarPrueba(t);
+      }
       sucio = true;
     }
     if (sucio) { sucio = false; dibujar(); }
@@ -874,6 +1212,12 @@
       }
       return;
     }
+    // Alt + arrastrar una línea de pulso la mueve sola (el resto no se toca)
+    if (ev.altKey && y > Y_TRAMOS[1] && y < Y_ONDA[0] - 4) {
+      let kp = -1;
+      for (let q = 0; q < pulsos.length; q++) if (Math.abs(tX(pulsos[q]) - x) <= 6) { kp = q; break; }
+      if (kp >= 0) { arrastre = { tipo: "pulso", k: kp, foto: foto(), movida: false }; return; }
+    }
     const n = notaEn(x, y);
     const suma = ev.shiftKey || ev.ctrlKey || ev.metaKey;
     if (n) {
@@ -904,6 +1248,18 @@
     const { x, y } = posicion(ev);
     if (arrastre.tipo === "buscar") { buscar(xT(x)); return; }
     if (arrastre.tipo === "caja") { arrastre.x1 = x; arrastre.y1 = y; sucio = true; return; }
+    if (arrastre.tipo === "pulso") {
+      if (!arrastre.movida) {
+        arrastre.movida = true;
+        historial = historial.slice(0, posHistorial + 1);
+        historial[posHistorial] = arrastre.foto;
+      }
+      const lo = (arrastre.k > 0 ? pulsos[arrastre.k - 1] : -Infinity) + 0.1;
+      const hi = (arrastre.k + 1 < pulsos.length ? pulsos[arrastre.k + 1] : Infinity) - 0.1;
+      pulsos[arrastre.k] = Math.round(Math.min(hi, Math.max(lo, xT(x))) * 1000) / 1000;
+      sucio = true;
+      return;
+    }
     const n = arrastre.nota;
     if (!arrastre.movida) {
       arrastre.movida = true;
@@ -1013,6 +1369,28 @@
   }
   function nudge(ms) { conSeleccion(n => { n.t = Math.max(0, Math.round((n.t + ms / 1000) * 1000) / 1000); }); }
 
+  function cuantizarSeleccion() {
+    if (!seleccion.size) { mensaje("Elige primero algunas notas.", true); return; }
+    conSeleccion(n => {
+      const fin = n.dur > 0 ? ajustar(n.t + n.dur) : 0;
+      n.t = ajustar(n.t);
+      if (n.dur > 0) n.dur = Math.max(0.2, Math.round((fin - n.t) * 100) / 100);
+    });
+    mensaje("Notas pegadas a la cuadrícula.");
+  }
+
+  function alternarCarriles() {
+    const lista = [...seleccion].filter(n => n.carril !== "ambos").sort((a, b) => a.t - b.t);
+    if (!lista.length) { mensaje("Elige primero algunas notas.", true); return; }
+    guardarFoto();
+    let c = lista[0].carril;
+    lista.forEach(n => { n.carril = c; c = c === "arriba" ? "abajo" : "arriba"; });
+    guardarFoto();
+    reiniciarClics();
+    sucio = true;
+    mensaje("Carriles alternados.");
+  }
+
   function seleccionarTodo() {
     seleccion.clear();
     notas.forEach(n => seleccion.add(n));
@@ -1051,6 +1429,33 @@
   $("reCarril").addEventListener("click", cambiarCarril);
   $("reBorrar").addEventListener("click", borrarSeleccion);
   $("reCompletar").addEventListener("click", completarDesdeCursor);
+  $("reCuantizar").addEventListener("click", cuantizarSeleccion);
+  $("reAlternar").addEventListener("click", alternarCarriles);
+  $("reMarcarA").addEventListener("click", () => marcarBucle("A"));
+  $("reMarcarB").addEventListener("click", () => marcarBucle("B"));
+  $("reBucleTramo").addEventListener("click", bucleDelTramo);
+  $("reQuitarBucle").addEventListener("click", quitarBucle);
+  $("reBucleOn").addEventListener("change", ev => { bucleOn = ev.target.checked && bucleA !== null && bucleB !== null; if (ev.target.checked && !bucleOn) { ev.target.checked = false; mensaje("Marca A y B primero, o usa «Bucle del tramo».", true); } sucio = true; });
+  $("rePruebaOn").addEventListener("change", ev => { pruebaOn = ev.target.checked; reiniciarPrueba(); sucio = true; if (pruebaOn) mensaje("Modo prueba: reproduce y toca Z D F ↑ (arriba) y X J K ↓ (abajo). Las largas cuentan solo al pulsar el inicio."); });
+  $("reTap").addEventListener("click", tocarTap);
+  $("reTapAplicar").addEventListener("click", aplicarTap);
+  $("reTapLimpiar").addEventListener("click", limpiarTap);
+  $("reBpmAplicar").addEventListener("click", bpmDesdeCursor);
+  $("reOndaBandas").addEventListener("change", () => { sucio = true; });
+  $("reBorradorRecuperar").addEventListener("click", async () => {
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(claveBorrador()) || "null"); } catch (e) { d = null; }
+    if (!d) return;
+    try {
+      await cargarAudio();
+      aplicarGuardado(d.mapa);
+      actualizadoCargado = d.esperado || null;
+      cambios = true;
+      $("reBorrador").classList.add("hidden");
+      mensaje("Borrador recuperado. Guarda para publicarlo.");
+    } catch (err) { mensaje("No se pudo recuperar: " + (err && err.message || err), true); }
+  });
+  $("reBorradorDescartar").addEventListener("click", borrarBorrador);
   $("reCopiar").addEventListener("click", () => (seleccion.size ? copiarSeleccion() : copiarTramos()));
   $("reSelTodo").addEventListener("click", seleccionarTodo);
   $("reSelTramo").addEventListener("click", seleccionarDelTramo);
@@ -1075,12 +1480,23 @@
     if (!tramosSel) { mensaje("Elige primero uno o más tramos en la franja de colores.", true); return; }
     regenerar(tramosSel.a, tramosSel.b, b.dataset.banda);
   }));
+  let seleccionPrevia = { c: cancionEl.value, d: difEl.value };
   [cancionEl, difEl].forEach(el => el.addEventListener("change", () => {
-    if (cambios && !confirm("Hay cambios sin guardar. ¿Descartarlos?")) return;
+    if (cambios && !confirm("Hay cambios sin guardar. ¿Descartarlos?")) {
+      // Se queda lo que estabas editando: se devuelve la selección anterior
+      cancionEl.value = seleccionPrevia.c;
+      if (difEl.value !== seleccionPrevia.d) { difEl.value = seleccionPrevia.d; difEl.dispatchEvent(new Event("change")); }
+      return;
+    }
+    seleccionPrevia = { c: cancionEl.value, d: difEl.value };
     detener();
     notas = []; pulsos = []; tramos = []; forzadas = {}; deseleccionar(); tramosSel = null; cambios = false;
+    actualizadoCargado = null;
+    toques = [];
+    quitarBucle();
     sucio = true;
     mensaje("Carga el mapa automático o el guardado para empezar.");
+    comprobarBorrador();
   }));
 
   window.addEventListener("keydown", ev => {
@@ -1097,6 +1513,9 @@
       if (portapapeles.soloNotas || !tramosSel) pegarEnCursor(); else pegarEnTramo();
       return;
     }
+    const carrilPrueba = pruebaOn && reproduciendo && !ev.ctrlKey && !ev.metaKey ? TECLAS_PRUEBA[k] : null;
+    if (carrilPrueba) { ev.preventDefault(); if (!ev.repeat) golpePrueba(carrilPrueba); return; }
+    if (k === "t" && !ev.ctrlKey && !ev.metaKey && !ev.repeat) { tocarTap(); return; }
     if (k === " ") { ev.preventDefault(); alternarReproduccion(); }
     else if (k === "delete" || k === "backspace") { ev.preventDefault(); borrarSeleccion(); }
     else if (k === "h") alternarLarga();
@@ -1106,13 +1525,64 @@
     else if (k === "arrowright" && seleccion.size) { ev.preventDefault(); nudge(10); }
   });
 
-  window.addEventListener("beforeunload", ev => { if (cambios) { ev.preventDefault(); ev.returnValue = ""; } });
+  window.addEventListener("beforeunload", ev => { guardarBorrador(); if (cambios) { ev.preventDefault(); ev.returnValue = ""; } });
+  setInterval(guardarBorrador, 20000);
   if (window.ResizeObserver) new ResizeObserver(() => { sucio = true; }).observe(lienzo);
 
   requestAnimationFrame(bucle);
 
   // Lo usan los apartados extra de la página (js/ritmo-editor-extras.js)
-  window.RitmoEditor = { recargarCanciones, mensaje, hayCambios: () => cambios };
+  /* Quita la segunda de dos notas del mismo carril a menos de 90 ms: no se pueden pulsar las dos */
+  function quitarEncimadas() {
+    notas.sort((a, b) => a.t - b.t);
+    const ultimo = { arriba: -9, abajo: -9 };
+    const quedan = [];
+    let quitadas = 0;
+    notas.forEach(n => {
+      const carriles = n.carril === "ambos" ? ["arriba", "abajo"] : [n.carril];
+      if (carriles.some(c => n.t - ultimo[c] < 0.09)) { quitadas++; return; }
+      carriles.forEach(c => { ultimo[c] = n.t; });
+      quedan.push(n);
+    });
+    if (quitadas) { guardarFoto(); notas = quedan; deseleccionar(); guardarFoto(); reiniciarClics(); sucio = true; }
+    return quitadas;
+  }
+
+  function irA(t) {
+    if (!buffer) return;
+    vistaIni = t - (ancho / pps) * 0.3;
+    buscar(t);
+    sucio = true;
+  }
+
+  /* Pone un mapa guardado (formato de la tabla) en el editor; esperado es su fecha "actualizado" */
+  function aplicarGuardableExterno(mapaGuardado, esperado) {
+    aplicarGuardado(mapaGuardado);
+    actualizadoCargado = esperado === undefined ? null : esperado;
+    cambios = true;
+  }
+
+  /* Reemplaza las notas (y opcionalmente los pulsos), con deshacer */
+  function aplicarNotasExternas(nuevas, pulsosNuevos) {
+    guardarFoto();
+    notas = nuevas.map(n => ({ t: n.t, carril: n.carril, dur: n.dur || 0 }));
+    if (pulsosNuevos) { pulsos = pulsosNuevos.slice(); recalcularTramos(); }
+    deseleccionar();
+    cambios = true;
+    guardarFoto();
+    reiniciarClics();
+    sucio = true;
+  }
+
+  window.RitmoEditor = {
+    recargarCanciones, mensaje, hayCambios: () => cambios,
+    obtener: () => ({ notas, pulsos, tramos, buffer, ruta: rutaActual(), dificultad: difActual(), tiempo: tiempoActual() }),
+    cargarAudio, supabase, repintar: () => { sucio = true; },
+    ir: irA, aplicarGuardableExterno, aplicarNotasExternas, limpiarNotas, quitarEncimadas,
+    cancionPorRuta: ruta => (canciones.find(c => c.ruta === ruta) || cancionDe(ruta)).nombre,
+    fijarEsperado: v => { actualizadoCargado = v; }
+  };
+  comprobarBorrador();
 
   if (/[?&]debug\b/.test(location.search)) {
     window.__editor = {
@@ -1120,6 +1590,8 @@
       notas: () => notas, pulsos: () => pulsos, tramos: () => tramos, cargarAutomatico, regenerar,
       fijarTramos: (a, b) => { tramosSel = { a, b }; }, limpiarNotas, ajustar, buscar,
       copiarTramos, copiarSeleccion, pegarEnTramo, pegarEnCursor, completarDesdeCursor, portapapeles: () => portapapeles,
+      cuantizarSeleccion, alternarCarriles, bpmDesdeCursor, tocarTap, aplicarTap, marcarBucle, bucleDelTramo, quitarBucle, golpePrueba, prueba: () => prueba,
+      guardarBorrador, comprobarBorrador, pulsos: () => pulsos, estadoBucle: () => ({ bucleA, bucleB, bucleOn }),
       seleccion: () => seleccion, seleccionarTodo, seleccionarDelTramo, borrarSeleccion, alternarLarga, alternarDoble, cambiarCarril, nudge,
       guardable: () => AN.guardable(notas, pulsos), dibujar: () => { sucio = true; dibujar(); }
     };

@@ -172,3 +172,22 @@
 @media (prefers-reduced-motion: reduce) {
   .re-tarjeta, .re-panel-tool, .re-plegable-cuerpo, .re-tuto-caja, .re-pildora-viva, .re-resalte, .re-chip.activo { animation: none; }
 }
+
+/* --- Segunda tanda: borrador, estadísticas, progreso, números --- */
+.re-borrador { border-color: #f2d46b; box-shadow: 0 0 18px rgba(242, 212, 107, .3); }
+.re-borrador p { margin: 0 0 8px; font-size: .9rem; color: #fff; }
+.re-campo-chico { width: 150px; }
+.re-pagina input[type="number"] { background: #120a26; border: 1px solid #3a1760; color: var(--text); padding: 9px 12px; font: inherit; font-size: .9rem; border-radius: 0; width: 100%; box-sizing: border-box; color-scheme: dark; }
+.re-pagina input[type="number"]:focus { outline: none; border-color: #7ae8ff; box-shadow: 0 0 12px rgba(40, 220, 255, .3); }
+.re-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.re-stats span { padding: 5px 12px; border: 1px solid #35205f; border-radius: 999px; font-size: .78rem; color: var(--muted); }
+.re-stats strong { color: #fff; }
+.re-lista li.nivel-error { border-color: #e8837b; }
+.re-lista li.nivel-aviso { border-color: #f2d46b; }
+.re-lista li.nivel-info { border-color: #4a2a80; }
+.re-nivel { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; margin-right: 8px; }
+.nivel-error .re-nivel { color: #e8837b; }
+.nivel-aviso .re-nivel { color: #f2d46b; }
+.nivel-info .re-nivel { color: #7ae8ff; }
+.re-lista li > span { white-space: normal; }
+.re-progreso { width: 100%; max-width: 560px; height: 10px; accent-color: #ff4fd8; }

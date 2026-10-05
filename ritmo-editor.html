@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editor de mapas — Zarabanda</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261129">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261129">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261129">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261129">
+  <link rel="stylesheet" href="css/style.css?v=20261130">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261130">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261130">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261130">
 </head>
 <body class="mj-pagina ritmo-tema re-pagina">
   <div class="mj-barra">
@@ -37,6 +37,14 @@
     </section>
 
     <div id="reTodo" class="hidden">
+      <div id="reBorrador" class="re-tarjeta re-borrador hidden">
+        <p id="reBorradorTxt"></p>
+        <div class="re-botones">
+          <button type="button" id="reBorradorRecuperar" class="re-btn re-principal">Recuperar</button>
+          <button type="button" id="reBorradorDescartar" class="re-btn re-btn-suave">Descartar</button>
+        </div>
+      </div>
+
       <!-- Canción y dificultad -->
       <section class="re-tarjeta re-sesion">
         <label class="re-campo re-campo-grande">
@@ -70,6 +78,7 @@
         </div>
         <label class="re-interruptor"><input type="checkbox" id="reClics" checked><span class="re-pista"></span><span class="re-int-txt">Sonido de notas</span></label>
         <label class="re-interruptor"><input type="checkbox" id="reMetro"><span class="re-pista"></span><span class="re-int-txt">Metrónomo</span></label>
+        <label class="re-interruptor"><input type="checkbox" id="reOndaBandas" checked><span class="re-pista"></span><span class="re-int-txt">Onda por bandas</span></label>
         <label class="re-deslizador"><span class="re-etq">Música</span><input type="range" id="reVolMusica" min="0" max="100" value="80"></label>
         <label class="re-deslizador"><span class="re-etq">Clics</span><input type="range" id="reVolClics" min="0" max="100" value="60"></label>
         <label class="re-deslizador"><span class="re-etq">Zoom</span><input type="range" id="reZoom" min="20" max="320" value="90"></label>
@@ -87,6 +96,9 @@
             <button type="button" class="re-tab" data-tab="pulso" role="tab">Pulso</button>
             <button type="button" class="re-tab" data-tab="copiar" role="tab">Copiar y pegar</button>
             <button type="button" class="re-tab" data-tab="completar" role="tab">Completar</button>
+            <button type="button" class="re-tab" data-tab="dificultades" role="tab">Dificultades</button>
+            <button type="button" class="re-tab" data-tab="revisar" role="tab">Revisar</button>
+            <button type="button" class="re-tab" data-tab="probar" role="tab">Probar</button>
           </div>
           <div class="re-tabs-der">
             <span id="reSelCuenta" class="re-chip">Sin notas elegidas</span>
@@ -103,6 +115,8 @@
             <button type="button" id="reCarril" class="re-btn" title="F">Cambiar carril</button>
             <button type="button" id="reNotaMenos" class="re-btn" title="←">−10 ms</button>
             <button type="button" id="reNotaMas" class="re-btn" title="→">+10 ms</button>
+            <button type="button" id="reCuantizar" class="re-btn" title="Pega las notas elegidas a la cuadrícula del Ajuste">Cuantizar</button>
+            <button type="button" id="reAlternar" class="re-btn" title="Arriba, abajo, arriba, abajo...">Alternar carriles</button>
             <button type="button" id="reBorrar" class="re-btn re-btn-peligro" title="Supr">Borrar</button>
           </div>
           <div class="re-botones">
@@ -131,6 +145,18 @@
             <button type="button" id="reMenos" class="re-btn">−10 ms</button>
             <button type="button" id="reMas" class="re-btn">+10 ms</button>
           </div>
+          <p class="re-ayuda-corta">Un pulso suelto se mueve con Alt + arrastrar su línea. Para un cambio de tempo:</p>
+          <div class="re-botones">
+            <label class="re-campo re-campo-chico"><span class="re-etq">BPM desde el cursor</span><input type="number" id="reBpmValor" min="50" max="230" step="0.1" value="120"></label>
+            <button type="button" id="reBpmAplicar" class="re-btn">Aplicar desde el cursor</button>
+          </div>
+          <p class="re-ayuda-corta">O reproduce la canción y toca al ritmo con la tecla T:</p>
+          <div class="re-botones">
+            <button type="button" id="reTap" class="re-btn" title="T">Tocar (T)</button>
+            <span id="reTapBpm" class="re-chip">Sin toques</span>
+            <button type="button" id="reTapAplicar" class="re-btn re-btn-vivo">Aplicar al resto</button>
+            <button type="button" id="reTapLimpiar" class="re-btn re-btn-suave">Limpiar</button>
+          </div>
         </div>
 
         <div class="re-panel-tool hidden" data-panel="copiar">
@@ -147,6 +173,41 @@
           <p class="re-ayuda-corta">Pon el cursor donde termina lo que ya hiciste. El resto se genera imitando tu estilo y lo anterior no se toca.</p>
           <div class="re-botones">
             <button type="button" id="reCompletar" class="re-btn re-btn-vivo">Completar desde el cursor</button>
+          </div>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="dificultades">
+          <p class="re-ayuda-corta">Crea la dificultad que tienes elegida arriba a partir de un mapa guardado de otra dificultad de esta canción. Hacia una más fácil se simplifica; hacia una más difícil se añaden notas en los huecos, con tu estilo. Lo que hay ahora en el editor se reemplaza (con deshacer).</p>
+          <div class="re-botones">
+            <label class="re-campo re-campo-chico"><span class="re-etq">Derivar desde</span><select id="reDerivarOrigen"><option value="">Cargando...</option></select></label>
+            <button type="button" id="reDerivar" class="re-btn re-btn-vivo">Derivar a la dificultad elegida</button>
+            <button type="button" id="reDerivarRefrescar" class="re-btn re-btn-suave">Actualizar lista</button>
+          </div>
+          <p id="reDerivarEstado" class="re-estado-chico"></p>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="revisar">
+          <p class="re-ayuda-corta">Busca lo que puede hacer el mapa injugable o incómodo. Al guardar se revisa solo y avisa si hay errores.</p>
+          <div class="re-botones">
+            <button type="button" id="reRevisar" class="re-btn re-btn-vivo">Revisar el mapa</button>
+            <button type="button" id="reCorregir" class="re-btn">Corregir lo corregible</button>
+          </div>
+          <div id="reRevisarStats" class="re-stats"></div>
+          <ul id="reRevisarLista" class="re-lista"></ul>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="probar">
+          <p class="re-ayuda-corta">Juega el mapa aquí mismo. Con el modo prueba activo, Z D F ↑ tocan arriba y X J K ↓ tocan abajo, con las ventanas de la dificultad elegida. Las largas cuentan solo al pulsar el inicio.</p>
+          <div class="re-botones">
+            <label class="re-interruptor"><input type="checkbox" id="rePruebaOn"><span class="re-pista"></span><span class="re-int-txt">Modo prueba (jugar con las teclas)</span></label>
+          </div>
+          <p class="re-ayuda-corta">Bucle de práctica: repite un tramo hasta que lo dejes bien.</p>
+          <div class="re-botones">
+            <button type="button" id="reMarcarA" class="re-btn">Marcar inicio (A)</button>
+            <button type="button" id="reMarcarB" class="re-btn">Marcar final (B)</button>
+            <button type="button" id="reBucleTramo" class="re-btn">Bucle del tramo elegido</button>
+            <label class="re-interruptor"><input type="checkbox" id="reBucleOn"><span class="re-pista"></span><span class="re-int-txt">Bucle activo</span></label>
+            <button type="button" id="reQuitarBucle" class="re-btn re-btn-suave">Quitar</button>
           </div>
         </div>
       </section>
@@ -168,6 +229,19 @@
         <p class="re-ayuda-corta">«Probar» abre Zarabanda en otra pestaña con tu mapa sin guardar. Solo lo ves tú, en este navegador. Elige la misma canción y dificultad y juega.</p>
       </section>
 
+      <!-- Historial y registro -->
+      <details class="re-tarjeta re-plegable" id="reHistorial">
+        <summary>Historial y registro de cambios</summary>
+        <div class="re-plegable-cuerpo">
+          <h3 class="re-subtitulo">Versiones de este mapa</h3>
+          <p class="re-ayuda-corta">Cada vez que alguien guarda o borra este mapa queda una copia (las últimas 40). «Cargar» la pone en el editor sin guardar nada: si te gusta, guárdala.</p>
+          <ul id="reVersiones" class="re-lista"><li class="re-vacio">Abre esta sección para cargarlas.</li></ul>
+          <h3 class="re-subtitulo">Registro de todos los mapas</h3>
+          <ul id="reRegistro" class="re-lista"></ul>
+          <div class="re-botones"><button type="button" id="reHistorialRefrescar" class="re-btn re-btn-suave">Actualizar</button></div>
+        </div>
+      </details>
+
       <!-- Subir canciones -->
       <details class="re-tarjeta re-plegable" id="reRocola">
         <summary>Subir una canción a la rocola</summary>
@@ -179,9 +253,11 @@
             <div class="re-botones">
               <button type="submit" id="reRocolaSubir" class="re-btn re-principal">Subir a la rocola</button>
             </div>
+            <progress id="reRocolaProgreso" class="re-progreso hidden" max="100" value="0"></progress>
             <p id="reRocolaEstado" class="re-estado-chico"></p>
           </form>
           <p class="re-ayuda-corta">Hasta 30 MB. Sale en la rocola y en la lista de Zarabanda (si dura menos de 6 minutos) para todos.</p>
+          <p id="reRocolaUso" class="re-ayuda-corta"></p>
           <h3 class="re-subtitulo">Subidas por DJ</h3>
           <ul id="reRocolaLista" class="re-lista"><li class="re-vacio">Cargando...</li></ul>
         </div>
@@ -243,16 +319,17 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261129"></script>
-  <script src="js/fichas-supabase.js?v=20261129"></script>
-  <script src="js/lado.js?v=20261129"></script>
-  <script src="data/musica.js?v=20261129"></script>
-  <script src="js/musica-nube.js?v=20261129"></script>
-  <script src="js/peticiones-supabase.js?v=20261129"></script>
-  <script src="js/ritmo-rol.js?v=20261129"></script>
-  <script src="js/ritmo-analisis.js?v=20261129"></script>
-  <script src="js/ritmo-editor.js?v=20261129"></script>
-  <script src="data/ritmo-tutoriales.js?v=20261129"></script>
-  <script src="js/ritmo-editor-extras.js?v=20261129"></script>
+  <script src="js/temas.js?v=20261130"></script>
+  <script src="js/fichas-supabase.js?v=20261130"></script>
+  <script src="js/lado.js?v=20261130"></script>
+  <script src="data/musica.js?v=20261130"></script>
+  <script src="js/musica-nube.js?v=20261130"></script>
+  <script src="js/peticiones-supabase.js?v=20261130"></script>
+  <script src="js/ritmo-rol.js?v=20261130"></script>
+  <script src="js/ritmo-analisis.js?v=20261130"></script>
+  <script src="js/ritmo-editor-logica.js?v=20261130"></script>
+  <script src="js/ritmo-editor.js?v=20261130"></script>
+  <script src="data/ritmo-tutoriales.js?v=20261130"></script>
+  <script src="js/ritmo-editor-extras.js?v=20261130"></script>
 </body>
 </html>

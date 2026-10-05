@@ -542,7 +542,7 @@
   function guardable(notas, pulsos) {
     return {
       v: 1,
-      notas: notas.map(n => [Math.round(n.t * 1000) / 1000, CODIGO_CARRIL[n.carril], Math.round((n.dur || 0) * 100) / 100]),
+      notas: notas.map(n => [Math.round(n.t * 1000) / 1000, CODIGO_CARRIL[n.carril], Math.floor((n.dur || 0) * 100 + 1e-6) / 100]),
       pulsos: pulsos.map(t => Math.round(t * 1000) / 1000)
     };
   }

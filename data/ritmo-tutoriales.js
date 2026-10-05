@@ -109,5 +109,59 @@ window.RITMO_TUTORIALES = [
       { texto: "Elige el mp3 (hasta 30 MB) y revisa el título y el artista.", objetivo: "#reRocolaForm", abrir: "#reRocola" },
       { texto: "Al subirla sale en la rocola y en Zarabanda para todos. Las que subiste aparecen abajo y las puedes quitar.", objetivo: "#reRocolaLista", abrir: "#reRocola" }
     ]
+  },
+  {
+    id: "probar",
+    titulo: "Probar y repetir un tramo",
+    resumen: "Juega el mapa sin salir del editor.",
+    pasos: [
+      { texto: "En la pestaña Probar activa el modo prueba. Con la música sonando, Z D F ↑ tocan arriba y X J K ↓ tocan abajo.", objetivo: ".re-panel-tool[data-panel='probar']", tab: "probar" },
+      { texto: "Arriba a la derecha de la línea de tiempo ves tu combo, los perfectos, los bien y los fallos. Un anillo marca cada nota que juzgó.", objetivo: "#reLienzo" },
+      { texto: "Para repetir una parte, marca el inicio (A) y el final (B) con el cursor, o usa «Bucle del tramo elegido».", objetivo: "#reBucleTramo", tab: "probar" },
+      { texto: "Con el bucle activo, la música vuelve a A cada vez que llega a B. Quítalo cuando termines.", objetivo: "#reQuitarBucle", tab: "probar" }
+    ]
+  },
+  {
+    id: "revisar",
+    titulo: "Revisar el mapa",
+    resumen: "Encontrar errores antes de guardar.",
+    pasos: [
+      { texto: "En la pestaña Revisar, «Revisar el mapa» busca largas que pisan notas, dobles dentro de largas, notas encimadas y partes demasiado cargadas o vacías.", objetivo: "#reRevisar", tab: "revisar" },
+      { texto: "Cada problema tiene un botón «Ir» que te lleva a ese punto. Arriba ves las estadísticas del mapa.", objetivo: "#reRevisarLista", tab: "revisar" },
+      { texto: "«Corregir lo corregible» arregla las largas, las dobles y las notas repetidas. Al guardar, el editor revisa solo y te avisa si hay errores.", objetivo: "#reCorregir", tab: "revisar" }
+    ]
+  },
+  {
+    id: "dificultades",
+    titulo: "Derivar dificultades",
+    resumen: "Sacar Normal o Difícil desde un mapa hecho.",
+    pasos: [
+      { texto: "Guarda primero el mapa que hiciste a mano, en la dificultad que sea.", objetivo: "#reGuardar" },
+      { texto: "Elige arriba la dificultad que quieres crear y abre la pestaña Dificultades.", objetivo: ".re-segmentos[data-para='reDif']" },
+      { texto: "Elige de cuál mapa partir. Hacia una más fácil se quitan notas con cuidado de no perder el ritmo; hacia una más difícil se añaden notas en los huecos con tu estilo.", objetivo: "#reDerivarOrigen", tab: "dificultades" },
+      { texto: "Pulsa «Derivar». El resultado queda en el editor, sin guardar: revísalo, retócalo y guarda.", objetivo: "#reDerivar", tab: "dificultades" }
+    ]
+  },
+  {
+    id: "tempo",
+    titulo: "Cambiar el tempo",
+    resumen: "BPM a mano, tap tempo y pulsos sueltos.",
+    pasos: [
+      { texto: "Para mover un solo pulso, mantén Alt y arrastra su línea. Los demás no se tocan.", objetivo: "#reLienzo" },
+      { texto: "Si la canción cambia de tempo, pon el cursor en el pulso donde cambia, escribe el BPM y pulsa «Aplicar desde el cursor».", objetivo: "#reBpmValor", tab: "pulso" },
+      { texto: "O reproduce y toca la tecla T al ritmo, al menos 4 veces. Verás el BPM que sale. «Aplicar al resto» rehace los pulsos desde tu primer toque.", objetivo: "#reTap", tab: "pulso" },
+      { texto: "Las notas ya puestas no se mueven. Si quieres que sigan al pulso nuevo, genera ese tramo de nuevo desde la pestaña Tramos.", objetivo: ".re-panel-tool[data-panel='tramos']", tab: "tramos" }
+    ]
+  },
+  {
+    id: "historial",
+    titulo: "Historial y conflictos",
+    resumen: "Volver a una versión y no pisar a nadie.",
+    pasos: [
+      { texto: "Si alguien guarda el mapa mientras lo editas, al guardar te avisa quién fue y cuándo, antes de pisar su trabajo.", objetivo: "#reGuardar" },
+      { texto: "Cada guardado y cada borrado deja una copia. Abre «Historial y registro de cambios» para verlas.", objetivo: "#reHistorial", abrir: "#reHistorial" },
+      { texto: "«Cargar» pone esa versión en el editor sin guardar nada. Si te sirve, guárdala y será la actual.", objetivo: "#reVersiones", abrir: "#reHistorial" },
+      { texto: "Además, cada minuto tu trabajo se guarda en este navegador. Si se cierra la pestaña, al volver te ofrece recuperarlo.", objetivo: "#reCancion" }
+    ]
   }
 ];
