@@ -32,6 +32,7 @@
     tabs.forEach(t => t.classList.toggle("activa", t.dataset.tab === id));
     paneles.forEach(p => p.classList.toggle("hidden", p.dataset.panel !== id));
     if (id === "dificultades" && typeof refrescarOrigenes === "function") refrescarOrigenes();
+    if (id === "patrones" && typeof pintarPatrones === "function") pintarPatrones();
   }
   tabs.forEach(t => t.addEventListener("click", () => abrirTab(t.dataset.tab)));
   window.addEventListener("ritmo-abrir-tab", ev => {
@@ -53,7 +54,7 @@
     if (r.puede) {
       abrir();
       $("reAdminLink").classList.toggle("hidden", !r.admin);
-      if (!djIniciado) { djIniciado = true; iniciarRocola(); }
+      if (!djIniciado) { djIniciado = true; iniciarRocola(); iniciarPresencia(); refrescarGuias(); iniciarPatrones(); }
       return;
     }
     todo.classList.add("hidden");
@@ -373,7 +374,7 @@
     const r = RitmoLogica.revisar(ed.notas, ed.pulsos, ed.buffer.duration, ed.dificultad);
     const st = r.stats;
     cont.innerHTML = [
-      ["Notas", st.total], ["Por segundo", st.npsMedio], ["Pico", st.picoNps + " /s"], ["Dobles", st.dobles], ["Largas", st.largas],
+      ["Nivel", st.nivel], ["Notas", st.total], ["Por segundo", st.npsMedio], ["Pico", st.picoNps + " /s"], ["Dobles", st.dobles], ["Largas", st.largas],
       ["Arriba", st.arriba], ["Abajo", st.abajo], ["Racha máx.", st.rachaMax], ["Hueco máx.", st.huecoMax + " s"]
     ].map(([k, v]) => `<span>${k} <strong>${v}</strong></span>`).join("");
     const nombres = { error: "Error", aviso: "Aviso", info: "Nota" };
@@ -501,6 +502,235 @@
       }
     });
   }
+
+  /* --- Marcas en la línea de tiempo ---------------------------------------------------------------------------- */
+  {
+    const lista = $("reMarcasLista");
+    const tiempoTxt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+    function pintarMarcas() {
+      const m = window.RitmoEditor ? window.RitmoEditor.obtenerMarcas() : [];
+      lista.innerHTML = m.length
+        ? m.map((x, i) => `<li><span><b class="re-nivel" style="color: ${x.tipo === "seccion" ? "#f2d46b" : "#7ae8ff"}">${x.tipo === "seccion" ? "Sección" : "Comentario"}</b>${tiempoTxt(x.t)} · ${escHtml(x.texto || "(sin texto)")}${x.autor ? ` <small>· ${escHtml(x.autor)}</small>` : ""}</span><span class="re-lista-acciones"><button type="button" class="re-btn re-btn-chico" data-ir="${x.t}">Ir</button><button type="button" class="re-btn re-btn-chico" data-editar-marca="${i}">Editar</button><button type="button" class="re-btn re-btn-chico re-btn-peligro" data-quitar-marca="${i}">Quitar</button></span></li>`).join("")
+        : `<li class="re-vacio">Todavía no hay marcas.</li>`;
+    }
+    window.addEventListener("ritmo-marcas", pintarMarcas);
+    $("reMarcaAgregar").addEventListener("click", () => {
+      window.RitmoEditor.agregarMarca($("reMarcaTipo").value, $("reMarcaTexto").value);
+      $("reMarcaTexto").value = "";
+    });
+    $("reMarcaTexto").addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); $("reMarcaAgregar").click(); } });
+    lista.addEventListener("click", ev => {
+      const ir = ev.target.closest("[data-ir]");
+      if (ir) { window.RitmoEditor.ir(Math.max(0, Number(ir.dataset.ir) - 0.5)); return; }
+      const ed = ev.target.closest("[data-editar-marca]");
+      if (ed) {
+        const i = Number(ed.dataset.editarMarca);
+        const actual = window.RitmoEditor.obtenerMarcas()[i];
+        const nuevo = prompt("Texto de la marca:", actual ? actual.texto : "");
+        if (nuevo !== null) window.RitmoEditor.editarMarca(i, nuevo);
+        return;
+      }
+      const q = ev.target.closest("[data-quitar-marca]");
+      if (q) window.RitmoEditor.quitarMarca(Number(q.dataset.quitarMarca));
+    });
+    pintarMarcas();
+  }
+
+  /* --- Patrones: guardados con nombre y compartidos entre los DJ ---------------------------------------------- */
+  const CLAVE_PATRONES_LOCAL = "ritmoPatronesLocal";
+  let patrones = [];
+  let patronesRemotos = true;
+
+  function iniciarPatrones() { cargarPatrones(); }
+
+  async function cargarPatrones() {
+    try {
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("ritmo_patrones").select("id, nombre, patron, autor_nombre, creada").order("creada", { ascending: false });
+      if (error) throw error;
+      patrones = data || [];
+      patronesRemotos = true;
+    } catch (err) {
+      // Si todavía no se corrió ritmo_editor_3.sql, quedan guardados solo en este navegador
+      patronesRemotos = false;
+      try { patrones = JSON.parse(localStorage.getItem(CLAVE_PATRONES_LOCAL) || "[]"); } catch (e) { patrones = []; }
+    }
+    pintarPatrones();
+  }
+
+  function pintarPatrones() {
+    const lista = $("rePatronesLista");
+    if (!lista) return;
+    lista.innerHTML = patrones.length
+      ? patrones.map(p => `<li><span>${escHtml(p.nombre)} <small>· ${p.patron.notas.length} notas · ${Math.max(1, Math.round(p.patron.pulsos))} pulsos${p.autor_nombre ? ` · ${escHtml(p.autor_nombre)}` : ""}</small></span><span class="re-lista-acciones"><button type="button" class="re-btn re-btn-chico" data-pegar-patron="${escHtml(String(p.id))}">Pegar en el cursor</button><button type="button" class="re-btn re-btn-chico re-btn-peligro" data-borrar-patron="${escHtml(String(p.id))}">Quitar</button></span></li>`).join("")
+      : `<li class="re-vacio">Todavía no hay patrones guardados.</li>`;
+    const est = $("rePatronEstado");
+    if (est && !patronesRemotos) est.textContent = "Se guardan solo en este navegador. Para compartirlos hace falta correr scratchpad/ritmo_editor_3.sql.";
+  }
+
+  $("rePatronGuardar").addEventListener("click", async () => {
+    const est = $("rePatronEstado");
+    const nombre = $("rePatronNombre").value.trim();
+    const patron = window.RitmoEditor.patronDeSeleccion();
+    est.classList.add("error");
+    if (!patron) { est.textContent = "Elige primero algunas notas en la línea de tiempo."; return; }
+    if (!nombre) { est.textContent = "Ponle un nombre al patrón."; return; }
+    est.classList.remove("error");
+    const quien = typeof nombreUsuario === "function" ? nombreUsuario() : "";
+    try {
+      if (patronesRemotos) {
+        const sb = await fichasCliente();
+        const { error } = await sb.from("ritmo_patrones").insert({ nombre, patron, autor_nombre: quien || "" });
+        if (error) throw error;
+      } else {
+        patrones.unshift({ id: "l" + Date.now(), nombre, patron, autor_nombre: quien || "" });
+        localStorage.setItem(CLAVE_PATRONES_LOCAL, JSON.stringify(patrones.slice(0, 60)));
+      }
+      $("rePatronNombre").value = "";
+      est.textContent = "Patrón guardado.";
+      await cargarPatrones();
+    } catch (err) {
+      est.classList.add("error");
+      est.textContent = "No se pudo guardar el patrón: " + (err && err.message || err);
+    }
+  });
+
+  $("rePatronesLista").addEventListener("click", async ev => {
+    const pegar = ev.target.closest("[data-pegar-patron]");
+    if (pegar) {
+      const p = patrones.find(x => String(x.id) === pegar.dataset.pegarPatron);
+      if (p) window.RitmoEditor.pegarPatron(p.patron);
+      return;
+    }
+    const borrar = ev.target.closest("[data-borrar-patron]");
+    if (!borrar) return;
+    const p = patrones.find(x => String(x.id) === borrar.dataset.borrarPatron);
+    if (!p || !confirm(`¿Quitar el patrón "${p.nombre}"?`)) return;
+    try {
+      if (patronesRemotos) {
+        const sb = await fichasCliente();
+        const { error } = await sb.from("ritmo_patrones").delete().eq("id", p.id);
+        if (error) throw error;
+      } else {
+        patrones = patrones.filter(x => x !== p);
+        localStorage.setItem(CLAVE_PATRONES_LOCAL, JSON.stringify(patrones));
+      }
+      await cargarPatrones();
+    } catch (err) {
+      avisar("No se pudo quitar: " + (err && err.message || err), true);
+    }
+  });
+
+  /* --- Quién más está editando esta canción ------------------------------------------------------------------------ */
+  let canalPresencia = null;
+  async function iniciarPresencia() {
+    try {
+      const sesion = await fichasSesionActual();
+      if (!sesion) return;
+      const sb = await fichasCliente();
+      const yo = sesion.user.id;
+      const nombre = (typeof nombreUsuario === "function" && nombreUsuario()) || "Alguien";
+      const aviso = $("reOtros");
+      const estado = () => {
+        const ed = window.RitmoEditor.obtener();
+        return { nombre, cancion: ed.ruta, dificultad: ed.dificultad };
+      };
+      const mirar = () => {
+        const ed = window.RitmoEditor.obtener();
+        const otros = [];
+        const todos = canalPresencia.presenceState();
+        Object.keys(todos).forEach(id => {
+          if (id === yo) return;
+          const m = todos[id][todos[id].length - 1];
+          if (m && m.cancion === ed.ruta && m.dificultad === ed.dificultad) otros.push(m.nombre || "alguien");
+        });
+        aviso.classList.toggle("hidden", !otros.length);
+        aviso.textContent = otros.length ? `${otros.join(" y ")} también ${otros.length === 1 ? "está" : "están"} editando esta canción y dificultad ahora mismo. Si guardáis a la vez, el último pisa al otro (queda en el historial).` : "";
+      };
+      canalPresencia = sb.channel("ritmo-editores", { config: { presence: { key: yo } } });
+      canalPresencia.on("presence", { event: "sync" }, mirar).subscribe(async st => {
+        if (st === "SUBSCRIBED") await canalPresencia.track(estado());
+      });
+      const cambio = async () => { try { await canalPresencia.track(estado()); mirar(); } catch (e) { /* sin presencia */ } };
+      [$("reCancion"), $("reDif")].forEach(el => el.addEventListener("change", () => setTimeout(cambio, 50)));
+    } catch (e) { /* sin presencia: el aviso de conflicto al guardar sigue funcionando */ }
+  }
+
+  /* --- Guía de otra dificultad ------------------------------------------------------------------------------------------ */
+  async function refrescarGuias() {
+    const sel = $("reSuperponer");
+    const ed = window.RitmoEditor && window.RitmoEditor.obtener();
+    if (!ed) return;
+    const actual = sel.value;
+    try {
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("ritmo_mapas").select("dificultad").eq("cancion", ed.ruta);
+      if (error) throw error;
+      const otros = (data || []).filter(f => f.dificultad !== ed.dificultad).sort((a, b) => RitmoLogica.ORDEN.indexOf(a.dificultad) - RitmoLogica.ORDEN.indexOf(b.dificultad));
+      sel.innerHTML = `<option value="">Ninguna</option>` + otros.map(f => `<option value="${f.dificultad}">${RitmoLogica.NOMBRE[f.dificultad]}</option>`).join("");
+      sel.value = otros.some(f => f.dificultad === actual) ? actual : "";
+    } catch (e) {
+      sel.innerHTML = `<option value="">Ninguna</option>`;
+    }
+    if (!sel.value) window.RitmoEditor.fijarSuperpuesto(null);
+  }
+
+  $("reSuperponer").addEventListener("change", async ev => {
+    const dif = ev.target.value;
+    const ed = window.RitmoEditor.obtener();
+    if (!dif) { window.RitmoEditor.fijarSuperpuesto(null); return; }
+    try {
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("ritmo_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", dif).maybeSingle();
+      if (error) throw error;
+      const desfase = data ? (Number(data.mapa.offset) || 0) / 1000 : 0;
+      window.RitmoEditor.fijarSuperpuesto(data ? data.mapa.notas.map(x => ({ t: x[0] + desfase, carril: ["abajo", "arriba", "ambos"][x[1]] || "abajo" })) : null);
+    } catch (err) {
+      avisar("No se pudo cargar esa guía.", true);
+    }
+  });
+  [$("reCancion"), $("reDif")].forEach(el => el.addEventListener("change", () => { window.RitmoEditor.fijarSuperpuesto(null); $("reSuperponer").value = ""; refrescarGuias(); window.RitmoEditor.fijarFallos(null); }));
+  window.addEventListener("ritmo-guardado", refrescarGuias);
+
+  /* --- Dónde fallan los jugadores ------------------------------------------------------------------------------------------ */
+  $("reVerFallosBtn").addEventListener("click", async () => {
+    const lista = $("reFallosLista");
+    const ed = window.RitmoEditor.obtener();
+    if (!ed.buffer) { lista.innerHTML = `<li class="re-vacio">Carga primero un mapa.</li>`; return; }
+    lista.innerHTML = `<li class="re-vacio">Cargando...</li>`;
+    try {
+      const sb = await fichasCliente();
+      const { data: act } = await sb.from("ritmo_mapas").select("actualizado").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).maybeSingle();
+      const version = act ? act.actualizado : "auto";
+      const { data, error } = await sb.from("ritmo_fallos").select("bloque, veces, fallos").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).eq("mapa_version", version);
+      if (error) throw error;
+      if (!data || !data.length) { window.RitmoEditor.fijarFallos(null); lista.innerHTML = `<li class="re-vacio">Todavía no hay partidas registradas de esta versión del mapa.</li>`; return; }
+      const nBloques = Math.ceil(ed.buffer.duration / 4) + 1;
+      const notasPorBloque = new Array(nBloques).fill(0);
+      ed.notas.forEach(n => { const b = Math.min(nBloques - 1, Math.floor(n.t / 4)); notasPorBloque[b] += n.carril === "ambos" ? 1 : 1; });
+      const tasas = new Array(nBloques).fill(null);
+      const detalle = [];
+      data.forEach(f => {
+        if (f.bloque >= nBloques || f.veces < 1) return;
+        const tasa = f.fallos / (f.veces * Math.max(1, notasPorBloque[f.bloque]));
+        tasas[f.bloque] = Math.min(1, tasa);
+        if (f.veces >= 3 && notasPorBloque[f.bloque] > 0) detalle.push({ bloque: f.bloque, tasa, veces: f.veces });
+      });
+      window.RitmoEditor.fijarFallos(tasas);
+      detalle.sort((a, b) => b.tasa - a.tasa);
+      const t = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+      lista.innerHTML = detalle.length
+        ? detalle.slice(0, 6).map(d => `<li><span>${t(d.bloque * 4)} a ${t(d.bloque * 4 + 4)} · se falla el <strong>${Math.round(d.tasa * 100)} %</strong> de las notas <small>· ${d.veces} partidas</small></span><button type="button" class="re-btn re-btn-chico" data-ir="${d.bloque * 4}">Ir</button></li>`).join("")
+        : `<li class="re-vacio">Hay pocas partidas todavía para señalar partes difíciles (hacen falta al menos 3).</li>`;
+    } catch (err) {
+      lista.innerHTML = `<li class="re-vacio">${escHtml(/relation|does not exist|schema cache/i.test(String(err && err.message)) ? "Falta correr scratchpad/ritmo_editor_3.sql en Supabase." : "No se pudo cargar.")}</li>`;
+    }
+  });
+  $("reFallosLista").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-ir]");
+    if (b) window.RitmoEditor.ir(Math.max(0, Number(b.dataset.ir) - 1));
+  });
+  $("reVerFallos").addEventListener("change", () => window.RitmoEditor.repintar());
 
   acceso();
 

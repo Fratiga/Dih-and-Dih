@@ -163,5 +163,44 @@ window.RITMO_TUTORIALES = [
       { texto: "«Cargar» pone esa versión en el editor sin guardar nada. Si te sirve, guárdala y será la actual.", objetivo: "#reVersiones", abrir: "#reHistorial" },
       { texto: "Además, cada minuto tu trabajo se guarda en este navegador. Si se cierra la pestaña, al volver te ofrece recuperarlo.", objetivo: "#reCancion" }
     ]
+  },
+  {
+    id: "marcas",
+    titulo: "Marcas y secciones",
+    resumen: "Apuntes sobre la línea de tiempo.",
+    pasos: [
+      { texto: "Pon el cursor donde quieras dejar una nota, elige si es una sección (dorada) o un comentario (celeste) y escribe el texto.", objetivo: "#reMarcaTexto", tab: "marcas" },
+      { texto: "Pulsa «Añadir en el cursor». Sale como una banderita en la regla de arriba. «Ir» te lleva a ella desde la lista.", objetivo: "#reMarcaAgregar", tab: "marcas" },
+      { texto: "Las marcas se guardan con el mapa, así que las ve el siguiente DJ que lo abra.", objetivo: "#reMarcasLista", tab: "marcas" }
+    ]
+  },
+  {
+    id: "patrones",
+    titulo: "Patrones guardados",
+    resumen: "Guarda un grupo de notas y pégalo donde quieras.",
+    pasos: [
+      { texto: "Selecciona las notas que forman el patrón, con los tramos o con el recuadro de selección.", objetivo: "#reLienzo" },
+      { texto: "Ponle un nombre y pulsa «Guardar la selección». Lo ven todos los DJ.", objetivo: "#rePatronGuardar", tab: "patrones" },
+      { texto: "Pon el cursor en un pulso y pulsa «Pegar en el cursor». El patrón se adapta al tempo de ese punto.", objetivo: "#rePatronesLista", tab: "patrones" }
+    ]
+  },
+  {
+    id: "guia",
+    titulo: "Guía de otra dificultad",
+    resumen: "Ver las notas de otro mapa en gris.",
+    pasos: [
+      { texto: "Si la canción tiene otra dificultad guardada, elígela aquí. Sus notas salen en gris detrás de las tuyas.", objetivo: "#reSuperponer" },
+      { texto: "Sirve para que Difícil no se salga de lo que ya hiciste en Normal, o para ver qué notas faltan.", objetivo: "#reLienzo" }
+    ]
+  },
+  {
+    id: "jugadores",
+    titulo: "Dónde fallan los jugadores",
+    resumen: "Los tramos difíciles, con datos reales.",
+    pasos: [
+      { texto: "Cada partida anota en qué tramos de 4 segundos se falla. Pulsa «Cargar los fallos» para verlo.", objetivo: "#reVerFallosBtn", tab: "revisar" },
+      { texto: "Los tramos con más fallos salen en naranja en la tira de abajo y en la lista. Si un tramo falla casi todo el mundo, quizá convenga aligerarlo.", objetivo: "#reFallosLista", tab: "revisar" },
+      { texto: "Los datos son de la versión actual del mapa. Si lo guardas de nuevo, empiezan de cero.", objetivo: "#reVerFallos", tab: "revisar" }
+    ]
   }
 ];

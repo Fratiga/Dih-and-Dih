@@ -168,3 +168,20 @@
 .rt-cancion-der .rt-mano { font-size: .9rem; }
 .rt-dif .rt-dif-mano { font-style: normal; font-size: .68rem; color: #f2d46b; letter-spacing: .04em; }
 .rt-enlace { text-decoration: none; display: inline-flex; align-items: center; }
+
+/* --- Teclas, calibración y versiones de los mapas --- */
+.rt-chico { padding: 6px 12px; font-size: .78rem; }
+.rt-teclas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.rt-teclas-grupo { display: inline-flex; align-items: center; gap: 6px; }
+.rt-teclas-grupo em { font-style: normal; font-size: .74rem; color: var(--muted); min-width: 3.6em; }
+.rt-tecla { min-width: 34px; height: 32px; padding: 0 8px; background: var(--panel-2); border: 1px solid var(--border); border-bottom-width: 3px; color: var(--text); font: 600 .85rem sans-serif; cursor: pointer; transition: border-color .15s, transform .12s; }
+.rt-tecla:hover { border-color: #7ae8ff; }
+.rt-tecla.esperando { border-color: #ff4fd8; color: #ff4fd8; animation: rtEspera .9s ease-in-out infinite; }
+@keyframes rtEspera { 50% { box-shadow: 0 0 14px rgba(255, 79, 216, .6); } }
+.rt-calibracion-caja { min-width: min(420px, 90vw); text-align: center; }
+.rt-calibracion-puntos { display: flex; justify-content: center; gap: 8px; min-height: 18px; }
+.rt-calibracion-puntos i { width: 14px; height: 14px; border-radius: 50%; background: #35205f; transition: background .15s, transform .15s; }
+.rt-calibracion-puntos i.sonado { background: #7ae8ff; }
+.rt-calibracion-puntos i.tocado { background: #ff4fd8; transform: scale(1.25); box-shadow: 0 0 10px #ff4fd8; }
+.rt-dif .rt-dif-nivel { font-style: normal; font-size: .68rem; color: #7ae8ff; letter-spacing: .04em; }
+.rt-tab.rt-tab-viejos { margin-left: 8px; border-style: dashed; }

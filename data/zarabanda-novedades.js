@@ -4,6 +4,17 @@
 window.ZARABANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "Teclas, calibración y niveles",
+    cambios: [
+      "Puedes elegir tus propias teclas para los dos carriles. Están junto al ajuste de sincronía.",
+      "El botón Calibrar mide el retraso de tu audio con unos pitidos y ajusta el desfase solo.",
+      "Cada mapa hecho a mano puede traer su propio ajuste de sincronía.",
+      "Si un DJ cambia un mapa, tus puntajes de la versión anterior no se pierden. Míralos en la pestaña Mapas anteriores.",
+      "Cada dificultad muestra su Nivel, calculado con la densidad real de notas."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "DJ y canciones nuevas",
     cambios: [
       "Hay un rol nuevo, DJ. Quien lo tiene puede usar el editor de mapas y subir canciones a la rocola.",

@@ -31,6 +31,14 @@
 
   const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
+  /* Nivel de un mapa, de 1 a 15, a partir de la densidad, los picos, las dobles y las largas.
+     Sirve para comparar mapas entre sí, no es una medida exacta. */
+  function nivel(st) {
+    const total = Math.max(1, st.total);
+    const v = 1 + st.npsMedio * 1.4 + Math.max(0, st.picoNps - st.npsMedio) * 0.5 + (st.dobles / total) * 8 + (st.largas / total) * 3;
+    return Math.round(Math.max(1, Math.min(15, v)) * 10) / 10;
+  }
+
   /* --- Revisión --------------------------------------------------------------------------------- */
   function revisar(notasEntrada, pulsos, dur, dificultad) {
     const cfg = AN.DIFICULTADES[dificultad] || AN.DIFICULTADES.normal;
@@ -130,6 +138,7 @@
       huecoMax: Math.round(huecoMax),
       fueraDeRejilla: fuera
     };
+    stats.nivel = nivel(stats);
     const peso = { error: 0, aviso: 1, info: 2 };
     problemas.sort((a, b) => peso[a.nivel] - peso[b.nivel] || a.t - b.t);
     return { stats, problemas };
@@ -324,5 +333,5 @@
     return bins;
   }
 
-  window.RitmoLogica = { revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
+  window.RitmoLogica = { nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
 })();

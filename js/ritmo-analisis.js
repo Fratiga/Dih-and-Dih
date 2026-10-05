@@ -551,8 +551,11 @@
   function desdeGuardado(guardado, buffer) {
     const sr = buffer.sampleRate;
     const n = Math.floor(buffer.length / HOP);
-    const notas = guardado.notas.map(g => ({ t: g[0], carril: NOMBRE_CARRIL[g[1]] || "abajo", dur: g[2] || 0 })).sort((a, b) => a.t - b.t);
-    return { notas, pulso: pulsoDe(guardado.pulsos || [], n, sr / HOP), dur: buffer.duration, sr, pulsos: guardado.pulsos || [], tramos: [], bpm: [], n, fps: sr / HOP };
+    // El mapa puede traer un desfase propio (ms) para canciones cuyo audio está corrido
+    const desfase = (Number(guardado.offset) || 0) / 1000;
+    const pulsosMapa = (guardado.pulsos || []).map(p => p + desfase);
+    const notas = guardado.notas.map(g => ({ t: g[0] + desfase, carril: NOMBRE_CARRIL[g[1]] || "abajo", dur: g[2] || 0 })).sort((a, b) => a.t - b.t);
+    return { notas, pulso: pulsoDe(pulsosMapa, n, sr / HOP), dur: buffer.duration, sr, pulsos: pulsosMapa, tramos: [], bpm: [], n, fps: sr / HOP };
   }
 
 

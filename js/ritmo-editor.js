@@ -77,6 +77,9 @@
   const prueba = { estados: new Map(), mitades: new Map(), perfectos: 0, buenos: 0, fallos: 0, combo: 0, comboMax: 0, puntero: 0 };
   const TECLAS_PRUEBA = { z: "arriba", d: "arriba", f: "arriba", arrowup: "arriba", x: "abajo", j: "abajo", k: "abajo", arrowdown: "abajo" };
 
+  let marcas = []; // marcas en la línea de tiempo: { t, tipo: "seccion" | "comentario", texto, autor }
+  let superpuesto = null; // notas de otra dificultad, dibujadas en gris como guía
+  let tasaFallos = null; // fallos de los jugadores por tramo de 4 s (0 a 1), si se pidieron
   let toques = []; // instantes (s) de los toques de "tap tempo"
   let ondaBandas = null; // energía por banda para dibujar la onda separada en graves, medios y agudos
 
@@ -139,11 +142,12 @@
   const difActual = () => difEl.value;
 
   /* --- Historial ---------------------------------------------------------------- */
-  function foto() { return JSON.stringify({ notas, pulsos, forzadas, bandas: tramos.map(t => [t.banda, t.vacio]) }); }
+  function foto() { return JSON.stringify({ notas, pulsos, forzadas, marcas, bandas: tramos.map(t => [t.banda, t.vacio]) }); }
   function aplicarFoto(texto) {
     const f = JSON.parse(texto);
     const cambioPulsos = f.pulsos.length !== pulsos.length;
-    notas = f.notas; pulsos = f.pulsos; forzadas = f.forzadas || {};
+    notas = f.notas; pulsos = f.pulsos; forzadas = f.forzadas || {}; marcas = f.marcas || [];
+    window.dispatchEvent(new CustomEvent("ritmo-marcas"));
     if (cambioPulsos && buffer) recalcularTramos();
     else f.bandas.forEach((b, i) => { if (tramos[i]) { tramos[i].banda = b[0]; tramos[i].vacio = b[1]; } });
     actualizarTramos();
@@ -230,6 +234,8 @@
     forzadas = {};
     deseleccionar();
     tramosSel = null;
+    marcas = [];
+    window.dispatchEvent(new CustomEvent("ritmo-marcas"));
     historial = [];
     posHistorial = -1;
     guardarFoto();
@@ -253,6 +259,8 @@
 
   function aplicarGuardado(guardado) {
     if (typeof guardado.firma === "string") firmaEl.value = guardado.firma;
+    const campoOffset = $("reOffset");
+    if (campoOffset) campoOffset.value = String(Number(guardado.offset) || 0);
     // Los tramos y la banda de cada uno se recalculan con el pulso guardado
     const m = AN.crearMapa(buffer, difActual(), { pulsos: guardado.pulsos });
     tomarMapa({
@@ -260,6 +268,8 @@
       pulsos: guardado.pulsos,
       tramos: m.tramos
     });
+    marcas = Array.isArray(guardado.marcas) ? guardado.marcas.filter(x => x && isFinite(x.t)).map(x => ({ t: Number(x.t), tipo: x.tipo === "seccion" ? "seccion" : "comentario", texto: String(x.texto || "").slice(0, 80), autor: String(x.autor || "").slice(0, 30) })) : [];
+    window.dispatchEvent(new CustomEvent("ritmo-marcas"));
   }
 
   async function supabase() {
@@ -348,6 +358,10 @@
   function conFirma(mapa) {
     const f = firmaEl.value.trim().slice(0, 30);
     if (f) mapa.firma = f;
+    const off = Math.max(-500, Math.min(500, Number($("reOffset") && $("reOffset").value) || 0));
+    if (off) mapa.offset = off;
+    if (marcas.length) mapa.marcas = marcas.map(m => ({ t: Math.round(m.t * 1000) / 1000, tipo: m.tipo, texto: m.texto, autor: m.autor }));
+    if (window.RitmoLogica && buffer && notas.length) mapa.nivel = RitmoLogica.revisar(notas, pulsos, buffer.duration, difActual()).stats.nivel;
     return mapa;
   }
 
@@ -1017,8 +1031,22 @@
       if (bucleB !== null) g.fillRect(xb - 1, Y_REGLA[0], 3, Y_REGLA[1] - Y_REGLA[0] + 4);
     }
 
+    // Fallos de los jugadores por tramos de 4 s (si se pidieron y están activados)
+    const verFallos = tasaFallos && $("reVerFallos") && $("reVerFallos").checked;
+    if (verFallos) {
+      for (let q = Math.max(0, Math.floor(vistaIni / 4)); q < tasaFallos.length; q++) {
+        const x0 = tX(q * 4);
+        const x1 = tX((q + 1) * 4);
+        if (x0 > ancho) break;
+        if (x1 < 0) continue;
+        const v = tasaFallos[q];
+        g.fillStyle = v === null ? "rgba(255,255,255,0.06)" : `rgba(255, ${Math.round(190 - 150 * Math.min(1, v * 2.2))}, 60, ${0.25 + 0.7 * Math.min(1, v * 2.2)})`;
+        g.fillRect(x0, Y_CALOR[0], Math.max(1, x1 - x0 - 1), Y_CALOR[1] - Y_CALOR[0]);
+      }
+    }
+
     // Mapa de calor: cuántas notas hay cada 2 s (en rojo, los tramos sin notas)
-    if (notas.length && buffer) {
+    if (notas.length && buffer && !verFallos) {
       const bin = 2;
       const dens = RitmoLogica.densidad(notas, buffer.duration, bin);
       let maxD = 1;
@@ -1042,6 +1070,17 @@
       g.strokeStyle = k % 4 === 0 ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)";
       g.lineWidth = k % 4 === 0 ? 2 : 1;
       g.beginPath(); g.moveTo(x, Y_TRAMOS[1]); g.lineTo(x, Y_ONDA[0] - 6); g.stroke();
+    }
+
+    // Notas de otra dificultad como guía
+    if (superpuesto) {
+      g.fillStyle = "rgba(220, 210, 255, 0.34)";
+      superpuesto.forEach(n => {
+        const x = tX(n.t);
+        if (x < -10 || x > ancho + 10) return;
+        const ys = n.carril === "ambos" ? [Y_ARRIBA, Y_ABAJO] : [n.carril === "arriba" ? Y_ARRIBA : Y_ABAJO];
+        ys.forEach(y => { g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 6, y); g.lineTo(x, y + 6); g.lineTo(x - 6, y); g.closePath(); g.fill(); });
+      });
     }
 
     // Notas
@@ -1090,6 +1129,19 @@
         g.fillRect(x, mitad - h, 1, Math.max(1, h * 2));
       }
     }
+
+    // Marcas de sección y comentarios sobre la regla
+    marcas.forEach(m => {
+      const x = tX(m.t);
+      if (x < -100 || x > ancho + 10) return;
+      g.fillStyle = m.tipo === "seccion" ? "#f2d46b" : "#7ae8ff";
+      g.fillRect(x - 1, Y_REGLA[0], 2, Y_TRAMOS[1]);
+      g.beginPath(); g.moveTo(x, Y_REGLA[0]); g.lineTo(x + 8, Y_REGLA[0] + 4); g.lineTo(x, Y_REGLA[0] + 8); g.closePath(); g.fill();
+      if (m.texto) {
+        g.font = "10px sans-serif"; g.textAlign = "left";
+        g.fillText(m.texto.slice(0, 22), x + 10, Y_REGLA[0] + 8);
+      }
+    });
 
     // Caja de selección (Mayús + arrastrar en un hueco)
     if (arrastre && arrastre.tipo === "caja") {
@@ -1429,6 +1481,7 @@
   $("reCarril").addEventListener("click", cambiarCarril);
   $("reBorrar").addEventListener("click", borrarSeleccion);
   $("reCompletar").addEventListener("click", completarDesdeCursor);
+  $("reOffset").addEventListener("input", () => { cambios = true; });
   $("reCuantizar").addEventListener("click", cuantizarSeleccion);
   $("reAlternar").addEventListener("click", alternarCarriles);
   $("reMarcarA").addEventListener("click", () => marcarBucle("A"));
@@ -1574,7 +1627,56 @@
     sucio = true;
   }
 
+  /* --- Marcas en la línea de tiempo --- */
+  function nombreAutor() { return typeof nombreUsuario === "function" ? nombreUsuario() : ""; }
+  function agregarMarca(tipo, texto) {
+    if (!buffer) { mensaje("Carga primero una canción.", true); return; }
+    guardarFoto();
+    marcas.push({ t: Math.round(tiempoActual() * 1000) / 1000, tipo: tipo === "seccion" ? "seccion" : "comentario", texto: String(texto || "").trim().slice(0, 80), autor: nombreAutor().slice(0, 30) });
+    marcas.sort((a, b) => a.t - b.t);
+    guardarFoto();
+    sucio = true;
+    window.dispatchEvent(new CustomEvent("ritmo-marcas"));
+  }
+  function quitarMarca(i) {
+    if (!marcas[i]) return;
+    guardarFoto();
+    marcas.splice(i, 1);
+    guardarFoto();
+    sucio = true;
+    window.dispatchEvent(new CustomEvent("ritmo-marcas"));
+  }
+  function editarMarca(i, texto) {
+    if (!marcas[i]) return;
+    guardarFoto();
+    marcas[i].texto = String(texto || "").trim().slice(0, 80);
+    guardarFoto();
+    sucio = true;
+    window.dispatchEvent(new CustomEvent("ritmo-marcas"));
+  }
+
+  /* --- Patrones: las notas elegidas, medidas en pulsos, para guardarlas y pegarlas donde sea --- */
+  function patronDeSeleccion() {
+    const lista = [...seleccion].sort((a, b) => a.t - b.t);
+    if (!lista.length) return null;
+    const k0 = Math.max(0, indicePulso(lista[0].t));
+    const ultimo = lista.reduce((m, n) => Math.max(m, n.t + (n.dur || 0)), 0);
+    const k1 = Math.min(pulsos.length - 1, Math.max(k0 + 1, indicePulso(ultimo) + 2));
+    return {
+      pulsos: k1 - k0,
+      notas: lista.map(n => { const b = enPulsos(n.t, k0, k1); return { b: Math.round(b * 1000) / 1000, carril: n.carril, d: n.dur > 0 ? Math.round((enPulsos(n.t + n.dur, k0, k1) - b) * 1000) / 1000 : 0 }; })
+    };
+  }
+  function pegarPatron(patron) {
+    portapapeles = { pulsos: patron.pulsos, soloNotas: true, bandas: [], notas: patron.notas };
+    pegarEnCursor();
+  }
+
   window.RitmoEditor = {
+    agregarMarca, quitarMarca, editarMarca, obtenerMarcas: () => marcas.map(m => Object.assign({}, m)),
+    patronDeSeleccion, pegarPatron,
+    fijarSuperpuesto: lista => { superpuesto = lista; sucio = true; },
+    fijarFallos: lista => { tasaFallos = lista; sucio = true; },
     recargarCanciones, mensaje, hayCambios: () => cambios,
     obtener: () => ({ notas, pulsos, tramos, buffer, ruta: rutaActual(), dificultad: difActual(), tiempo: tiempoActual() }),
     cargarAudio, supabase, repintar: () => { sucio = true; },

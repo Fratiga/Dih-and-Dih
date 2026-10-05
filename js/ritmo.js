@@ -18,7 +18,8 @@
     arriba: { y: 175, color: "#8fdcff", etiqueta: "Z · D · F" },
     abajo: { y: 385, color: "#e8837b", etiqueta: "X · J · K" }
   };
-  const TECLAS = { z: "arriba", d: "arriba", f: "arriba", arrowup: "arriba", x: "abajo", j: "abajo", k: "abajo", arrowdown: "abajo" };
+  let TECLAS = { z: "arriba", d: "arriba", f: "arriba", arrowup: "arriba", x: "abajo", j: "abajo", k: "abajo", arrowdown: "abajo" };
+  const TECLAS_BASE = { arriba: ["z", "d", "f"], abajo: ["x", "j", "k"] };
 
 
   const canvas = document.getElementById("rtCampo");
@@ -50,10 +51,24 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, teclas: null };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
+  /* --- Teclas de cada carril (se pueden cambiar; las flechas siempre valen) --- */
+  function teclasActuales() {
+    const t = ajustes.teclas && Array.isArray(ajustes.teclas.arriba) && Array.isArray(ajustes.teclas.abajo) ? ajustes.teclas : TECLAS_BASE;
+    const tres = lista => [0, 1, 2].map(i => (lista[i] ? String(lista[i]).toLowerCase() : ""));
+    return { arriba: tres(t.arriba), abajo: tres(t.abajo) };
+  }
+  function construirTeclas() {
+    const t = teclasActuales();
+    TECLAS = { arrowup: "arriba", arrowdown: "abajo" };
+    t.arriba.forEach(k => { if (k) TECLAS[k] = "arriba"; });
+    t.abajo.forEach(k => { if (k) TECLAS[k] = "abajo"; });
+    CARRILES.arriba.etiqueta = t.arriba.filter(Boolean).map(k => k.toUpperCase()).join(" · ") || "↑";
+    CARRILES.abajo.etiqueta = t.abajo.filter(Boolean).map(k => k.toUpperCase()).join(" · ") || "↓";
+  }
   function guardarRecords() { try { localStorage.setItem(CLAVE_RECORDS, JSON.stringify(records)); } catch (e) { /* sin almacenamiento */ } }
 
   /* Solo entran canciones de hasta 6 minutos: más largas dan mapas enormes y tardan en analizarse.
@@ -108,6 +123,8 @@
   let cancionActual = null;
   let notas = [];
   let punteroFallos = 0;
+  let versionJugada = "auto"; // "auto", la fecha del mapa hecho a mano o "prueba"
+  let fallosBloque = []; // fallos por tramos de 4 s de la partida en curso
   let activas = []; // largas que se están manteniendo
   let entradas = { arriba: new Set(), abajo: new Set() }; // teclas o dedos pulsados por carril
   let gracia = 0;
@@ -176,14 +193,14 @@
   async function mapaPersonalizado(ruta, dificultad) {
     try {
       const pr = JSON.parse(localStorage.getItem("ritmoPrueba") || "null");
-      if (/[?&]prueba\b/.test(location.search) && pr && pr.ruta === ruta && pr.dificultad === dificultad) return pr.mapa;
+      if (/[?&]prueba\b/.test(location.search) && pr && pr.ruta === ruta && pr.dificultad === dificultad) return { mapa: pr.mapa, version: "prueba" };
     } catch (e) { /* sin almacenamiento */ }
     try {
       if (typeof fichasCliente !== "function") return null;
       const supabase = await fichasCliente();
-      const consulta = supabase.from("ritmo_mapas").select("mapa").eq("cancion", ruta).eq("dificultad", dificultad).maybeSingle();
+      const consulta = supabase.from("ritmo_mapas").select("mapa, actualizado").eq("cancion", ruta).eq("dificultad", dificultad).maybeSingle();
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 3000))]);
-      return !error && data ? data.mapa : null;
+      return !error && data ? { mapa: data.mapa, version: data.actualizado || "auto" } : null;
     } catch (e) {
       return null;
     }
@@ -207,8 +224,9 @@
       // Un mapa hecho a mano en el editor (o de prueba) manda sobre el automático
       const guardado = await mapaPersonalizado(cancionActual.ruta, ajustes.dificultad);
       let base;
+      versionJugada = guardado ? guardado.version : "auto";
       if (guardado) {
-        base = desdeGuardado(guardado, buffer);
+        base = desdeGuardado(guardado.mapa, buffer);
       } else {
         if (!mapas.has(clave)) {
           if (mapas.size > 6) mapas.delete(mapas.keys().next().value);
@@ -237,6 +255,7 @@
   }
 
   function arrancar() {
+    fallosBloque = [];
     punteroFallos = 0; activas = []; limpiarEntradas(); gracia = 0; puntos = 0; combo = 0; comboMax = 0;
     perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; efectos = [];
     avatar = { y: CARRILES.abajo.y, carril: "abajo", salto: -10, golpe: -10 };
@@ -355,7 +374,26 @@
     return tiempoCancion() - Math.min(retraso, 0.1);
   }
 
+  let capturando = null; // { carril, i } mientras se elige una tecla
+  let calibrando = null;
+
   window.addEventListener("keydown", ev => {
+    if (capturando) {
+      ev.preventDefault();
+      const k = ev.key.toLowerCase();
+      if (k !== "escape" && k.length === 1 && k !== " ") {
+        const t = teclasActuales();
+        ["arriba", "abajo"].forEach(c => t[c].forEach((x, i) => { if (x === k) t[c][i] = ""; }));
+        t[capturando.carril][capturando.i] = k;
+        ajustes.teclas = t;
+        guardarAjustes();
+        construirTeclas();
+      }
+      capturando = null;
+      pintarTeclas();
+      return;
+    }
+    if (calibrando && ev.key !== "Escape") { ev.preventDefault(); if (!ev.repeat) tocarCalibracion(ev); return; }
     if (ev.key === "Escape") {
       if (estado === "jugando") pausar();
       else if (estado === "pausa") continuar();
@@ -396,7 +434,7 @@
   function actualizar(t) {
     while (punteroFallos < notas.length && notas[punteroFallos].t < t - cfg.bien) {
       const n = notas[punteroFallos];
-      if (!n.estado) { n.estado = "fallo"; sumar("fallo", n.carril); }
+      if (!n.estado) { n.estado = "fallo"; sumar("fallo", n.carril); anotarFallo(n.t); }
       punteroFallos++;
     }
     // Largas en curso: se completan al llegar al final y se rompen si sueltas antes
@@ -412,11 +450,32 @@
       } else if (t > gracia && entradas[n.carril].size === 0 && t < fin - 0.12) {
         n.mantiene = "rota";
         sumar("fallo", n.carril);
+        anotarFallo(n.t);
         activas.splice(k, 1);
       }
     }
     if (vida <= 0 && estado === "jugando") terminar(false);
     else if (t > mapa.dur + 0.8 && estado === "jugando") terminar(true);
+  }
+
+  function anotarFallo(t) {
+    const b = Math.max(0, Math.min(400, Math.floor(t / 4)));
+    fallosBloque[b] = (fallosBloque[b] || 0) + 1;
+  }
+
+  /* Al terminar una partida (completa o no) se manda dónde se falló, para que quien edita el mapa
+     vea qué partes cuestan más. Solo con sesión y sin práctica; nunca falla en voz alta. */
+  async function enviarFallos(completa) {
+    if (ajustes.practica || versionJugada === "prueba" || !mapa) return;
+    try {
+      const { sesion } = window.MjStats ? await MjStats.cargarSesion() : { sesion: null };
+      if (!sesion) return;
+      const alcanzo = Math.max(0, Math.min(400, completa ? Math.floor(mapa.dur / 4) : Math.floor(Math.max(0, tiempoCancion()) / 4)));
+      const lista = [];
+      for (let i = 0; i <= alcanzo; i++) lista.push(fallosBloque[i] || 0);
+      const supa = await fichasCliente();
+      await supa.rpc("ritmo_registrar_fallos", { p_cancion: cancionActual.ruta, p_dificultad: ajustes.dificultad, p_version: versionJugada, p_fallos: lista, p_alcanzo: alcanzo });
+    } catch (e) { /* sin estadísticas */ }
   }
 
   function rangoDe(acc) {
@@ -447,7 +506,9 @@
       (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "");
     mostrar(finEl);
     finPuntajesEl.innerHTML = "";
-    if (completa && !ajustes.practica) subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax);
+    enviarFallos(completa);
+    if (completa && !ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada);
+    else if (completa && versionJugada === "prueba") finPuntajesEl.innerHTML = `<p class="rt-nota">Es una prueba del editor: no cuenta para los puntajes.</p>`;
   }
 
   /* --- Dibujo --------------------------------------------------------------- */
@@ -741,24 +802,36 @@
   const DESCRIPCION = { facil: "Relajado", normal: "Equilibrado", dificil: "Exigente", experto: "Extremo" };
   const puntajesCache = new Map();
   let vistaPuntajes = null; // "todas", una dificultad, o null = la que está elegida para jugar
+  let verViejos = false; // false: puntajes de la versión actual del mapa; true: los de versiones anteriores
+  const versionDe = (ruta, dif) => { const f = aMano.get(ruta); const v = f && f.get(dif); return (v && v.version) || "auto"; };
   let tokenPuntajes = 0;
   let yo = { id: null, nombre: "" };
 
   async function filasPuntajes(ruta, dif) {
-    const clave = ruta + "|" + dif;
+    const clave = ruta + "|" + dif + "|" + (verViejos ? "viejos" : "vigentes");
     const guardado = puntajesCache.get(clave);
     if (guardado && Date.now() - guardado.t < 30000) return guardado.filas;
     const supa = await fichasCliente();
-    let q = supa.from("ritmo_puntajes").select("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas").eq("cancion", ruta);
-    if (dif !== "todas") q = q.eq("dificultad", dif);
-    const { data, error } = await q.order("puntos", { ascending: false }).limit(50);
-    if (error) throw error;
-    puntajesCache.set(clave, { t: Date.now(), filas: data || [] });
-    return data || [];
+    const pedir = async columnas => {
+      let q = supa.from("ritmo_puntajes").select(columnas).eq("cancion", ruta);
+      if (dif !== "todas") q = q.eq("dificultad", dif);
+      return q.order("puntos", { ascending: false }).limit(200);
+    };
+    let res = await pedir("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas, mapa_version");
+    // Si todavía no se corrió ritmo_editor_3.sql no existe la versión: se muestra todo como siempre
+    if (res.error && /mapa_version/i.test(String(res.error.message))) res = await pedir("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas");
+    if (res.error) throw res.error;
+    let filas = res.data || [];
+    if (filas.length && filas[0].mapa_version !== undefined) {
+      filas = filas.filter(f => (f.mapa_version === versionDe(ruta, f.dificultad)) !== verViejos);
+    }
+    filas = filas.slice(0, 50);
+    puntajesCache.set(clave, { t: Date.now(), filas });
+    return filas;
   }
 
   function tablaPuntajes(filas, { conDificultad, max }) {
-    if (!filas.length) return `<p class="rt-nota">Nadie ha jugado esta canción todavía. Sé el primero.</p>`;
+    if (!filas.length) return `<p class="rt-nota">${verViejos ? "No hay puntajes de versiones anteriores del mapa." : "Nadie ha jugado esta versión del mapa todavía. Sé el primero."}</p>`;
     const vistas = filas.slice(0, max);
     const miFila = yo.id ? filas.findIndex(f => f.user_id === yo.id) : -1;
     if (miFila >= max) vistas.push(Object.assign({ _puesto: miFila + 1 }, filas[miFila]));
@@ -774,7 +847,8 @@
     if (!c || !c.ruta) { puntajesEl.innerHTML = ""; puntajesTabsEl.innerHTML = ""; return; }
     const vista = vistaPuntajes || ajustes.dificultad;
     puntajesTabsEl.innerHTML = [["todas", "Todas"], ...Object.entries(DIFICULTADES).map(([id, d]) => [id, d.nombre])]
-      .map(([id, nombre]) => `<button type="button" class="rt-tab ${id === vista ? "activa" : ""}" data-vista="${id}">${nombre}</button>`).join("");
+      .map(([id, nombre]) => `<button type="button" class="rt-tab ${id === vista ? "activa" : ""}" data-vista="${id}">${nombre}</button>`).join("") +
+      `<button type="button" class="rt-tab rt-tab-viejos ${verViejos ? "activa" : ""}" data-viejos title="Los puntajes hechos antes de que se cambiara el mapa de esta canción">Mapas anteriores</button>`;
     const token = ++tokenPuntajes;
     puntajesEl.innerHTML = `<p class="rt-nota">Cargando puntajes...</p>`;
     try {
@@ -787,6 +861,7 @@
   }
 
   puntajesTabsEl.addEventListener("click", ev => {
+    if (ev.target.closest("[data-viejos]")) { verViejos = !verViejos; pintarPuntajes(); return; }
     const b = ev.target.closest("[data-vista]");
     if (!b) return;
     vistaPuntajes = b.dataset.vista;
@@ -794,7 +869,7 @@
   });
 
   /* Al terminar una canción: se guarda el puntaje (si hay sesión) y se muestra la tabla. */
-  async function subirPuntaje(ruta, dif, pts, acc, rango, combo) {
+  async function subirPuntaje(ruta, dif, pts, acc, rango, combo, version) {
     finPuntajesEl.innerHTML = `<p class="rt-nota">Guardando tu puntaje...</p>`;
     let aviso = "";
     try {
@@ -803,7 +878,10 @@
         aviso = "Inicia sesión (arriba a la derecha) para aparecer en los puntajes.";
       } else {
         const supa = await fichasCliente();
-        const { error } = await supa.rpc("ritmo_registrar", { p_cancion: ruta, p_dificultad: dif, p_puntos: pts, p_precision: acc, p_rango: rango, p_combo: combo });
+        const args = { p_cancion: ruta, p_dificultad: dif, p_puntos: pts, p_precision: acc, p_rango: rango, p_combo: combo };
+        let { error } = await supa.rpc("ritmo_registrar", Object.assign({ p_version: version || "auto" }, args));
+        // Sin ritmo_editor_3.sql la función no conoce la versión: se manda como antes
+        if (error && /p_version|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) ({ error } = await supa.rpc("ritmo_registrar", args));
         if (error) aviso = "No se pudo guardar el puntaje. Prueba de nuevo en un rato.";
       }
     } catch (e) {
@@ -833,21 +911,24 @@
 
   /* Canciones y dificultades con un mapa guardado desde el editor (hecho a mano por un admin).
      La lista es pública, así que se pide al abrir el menú. */
-  const aMano = new Map(); // ruta -> Map(dificultad -> firma)
+  const aMano = new Map(); // ruta -> Map(dificultad -> { firma, version, nivel })
   function textoMano(ruta) {
     const porDif = aMano.get(ruta);
     if (!porDif) return "";
-    return "Mapa hecho a mano en " + [...porDif].map(([d, firma]) => (DIFICULTADES[d] ? DIFICULTADES[d].nombre : d) + (firma ? " por " + firma : "")).join(", ");
+    return "Mapa hecho a mano en " + [...porDif].map(([d, firma]) => (DIFICULTADES[d] ? DIFICULTADES[d].nombre : d) + (firma && firma.firma ? " por " + firma.firma : "")).join(", ");
   }
   async function cargarMapasAMano() {
     try {
       if (typeof fichasCliente !== "function") return;
       const supabase = await fichasCliente();
-      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad, firma:mapa->>firma");
+      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad, actualizado, firma:mapa->>firma, nivel:mapa->>nivel");
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 4000))]);
       if (error || !data) return;
       aMano.clear();
-      data.forEach(f => { if (!aMano.has(f.cancion)) aMano.set(f.cancion, new Map()); aMano.get(f.cancion).set(f.dificultad, (f.firma || "").trim()); });
+      data.forEach(f => {
+        if (!aMano.has(f.cancion)) aMano.set(f.cancion, new Map());
+        aMano.get(f.cancion).set(f.dificultad, { firma: (f.firma || "").trim(), version: f.actualizado || "auto", nivel: f.nivel ? Number(f.nivel) : 0 });
+      });
       pintarMenu();
     } catch (e) { /* sin marcas */ }
   }
@@ -875,7 +956,7 @@
     tituloEl.textContent = c.titulo;
     metaEl.textContent = [c.artista, c.dur ? duracionTexto(c.dur) : ""].filter(Boolean).join(" · ");
     dificultadesEl.innerHTML = Object.entries(DIFICULTADES).map(([id, d]) =>
-      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small>${aMano.has(c.ruta) && aMano.get(c.ruta).has(id) ? `<em class="rt-dif-mano">★ ${esc(aMano.get(c.ruta).get(id) ? "Mapa de " + aMano.get(c.ruta).get(id) : "Mapa a mano")}</em>` : ""}</button>`).join("");
+      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small>${aMano.has(c.ruta) && aMano.get(c.ruta).has(id) ? `<em class="rt-dif-mano">★ ${esc(aMano.get(c.ruta).get(id).firma ? "Mapa de " + aMano.get(c.ruta).get(id).firma : "Mapa a mano")}</em>${aMano.get(c.ruta).get(id).nivel ? `<em class="rt-dif-nivel">Nivel ${aMano.get(c.ruta).get(id).nivel}</em>` : ""}` : ""}</button>`).join("");
     document.getElementById("rtLeyenda").classList.toggle("hidden", !aMano.size);
     desfaseEl.value = ajustes.desfase;
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
@@ -1040,6 +1121,124 @@
     document.getElementById("rtNovedadesVolver").addEventListener("click", () => mostrar(menuEl));
   }
   cargarMapasAMano();
+
+  /* --- Teclas: casillas para elegir las de cada carril --- */
+  function pintarTeclas() {
+    const cont = document.getElementById("rtTeclas");
+    if (!cont) return;
+    const t = teclasActuales();
+    const grupo = (carril, nombre) => `<span class="rt-teclas-grupo"><em>${nombre}</em>${[0, 1, 2].map(i => {
+      const espera = capturando && capturando.carril === carril && capturando.i === i;
+      return `<button type="button" class="rt-tecla ${espera ? "esperando" : ""}" data-carril="${carril}" data-i="${i}">${espera ? "..." : (t[carril][i] ? t[carril][i].toUpperCase() : "—")}</button>`;
+    }).join("")}</span>`;
+    cont.innerHTML = grupo("arriba", "Arriba") + grupo("abajo", "Abajo") + `<button type="button" class="rt-secundario rt-chico" data-restablecer>Restablecer</button>`;
+    const txt = document.getElementById("rtTeclasTxt");
+    if (txt) txt.textContent = `Arriba: ${CARRILES.arriba.etiqueta.replace(/ · /g, " ")} ↑. Abajo: ${CARRILES.abajo.etiqueta.replace(/ · /g, " ")} ↓.`;
+  }
+  document.getElementById("rtTeclas").addEventListener("click", ev => {
+    if (ev.target.closest("[data-restablecer]")) { ajustes.teclas = null; guardarAjustes(); construirTeclas(); capturando = null; pintarTeclas(); return; }
+    const b = ev.target.closest("[data-carril]");
+    if (!b) return;
+    capturando = { carril: b.dataset.carril, i: Number(b.dataset.i) };
+    pintarTeclas();
+  });
+  construirTeclas();
+  pintarTeclas();
+
+  /* --- Calibrar la sincronía: suenan 10 tics y se mide cuánto tardas en tocar --- */
+  {
+    const modal = document.getElementById("rtCalibracion");
+    const txt = document.getElementById("rtCalibracionTxt");
+    const puntos = document.getElementById("rtCalibracionPuntos");
+    const bEmpezar = document.getElementById("rtCalibracionEmpezar");
+    const bAplicar = document.getElementById("rtCalibracionAplicar");
+    let resultado = null;
+    let temporizador = 0;
+
+    function pintarPuntos() {
+      puntos.innerHTML = Array.from({ length: 10 }, (_, i) => `<i class="${calibrando && calibrando.taps.some(x => x.k === i) ? "tocado" : ""}"></i>`).join("");
+    }
+
+    window.tocarCalibracion = ev => {
+      if (!calibrando || !audio) return;
+      const retraso = Math.max(0, Math.min(0.1, (performance.now() - (ev.timeStamp || performance.now())) / 1000));
+      const crudo = audio.currentTime - retraso;
+      const k = Math.round((crudo - calibrando.t0) / calibrando.periodo);
+      if (k < 0 || k >= calibrando.n || calibrando.taps.some(x => x.k === k)) return;
+      const delta = crudo - (calibrando.t0 + k * calibrando.periodo);
+      if (Math.abs(delta) > 0.3) return;
+      calibrando.taps.push({ k, delta });
+      pintarPuntos();
+    };
+
+    function terminar() {
+      const taps = calibrando ? calibrando.taps : [];
+      calibrando = null;
+      bEmpezar.classList.remove("hidden");
+      bEmpezar.textContent = "Repetir";
+      if (taps.length < 6) {
+        txt.textContent = `Solo llegué a oír ${taps.length} toques de 10. Prueba otra vez, tocando al ritmo de los tics.`;
+        bAplicar.classList.add("hidden");
+        return;
+      }
+      const ordenados = taps.map(x => x.delta).sort((a, b) => a - b);
+      const mediana = ordenados[Math.floor(ordenados.length / 2)];
+      // Lo que se oye llega un poco después de lo que marca el reloj del audio
+      const ms = Math.round((((mediana - ((audio && audio.outputLatency) || 0)) * 1000)) / 5) * 5;
+      resultado = Math.max(-200, Math.min(200, ms));
+      txt.textContent = `Sueles tocar ${Math.abs(ms)} ms ${ms >= 0 ? "después de" : "antes de"} cada tic. Se ajustará la sincronía a ${resultado > 0 ? "+" : ""}${resultado} ms.`;
+      bAplicar.classList.remove("hidden");
+    }
+
+    async function empezar() {
+      await prepararAudio();
+      resultado = null;
+      bAplicar.classList.add("hidden");
+      bEmpezar.classList.add("hidden");
+      const periodo = 0.6;
+      const n = 10;
+      const t0 = audio.currentTime + 1.5;
+      for (let i = 0; i < n; i++) {
+        const o = audio.createOscillator();
+        const g = audio.createGain();
+        o.frequency.value = i % 4 === 0 ? 1200 : 880;
+        g.gain.setValueAtTime(0.35, t0 + i * periodo);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * periodo + 0.06);
+        o.connect(g); g.connect(audio.destination);
+        o.start(t0 + i * periodo); o.stop(t0 + i * periodo + 0.08);
+      }
+      calibrando = { t0, periodo, n, taps: [] };
+      txt.textContent = "Escucha... y toca con cada tic.";
+      pintarPuntos();
+      clearTimeout(temporizador);
+      temporizador = setTimeout(terminar, (t0 + n * periodo + 0.7 - audio.currentTime) * 1000);
+    }
+
+    document.getElementById("rtCalibrar").addEventListener("click", () => {
+      modal.classList.remove("hidden");
+      calibrando = null;
+      resultado = null;
+      bEmpezar.textContent = "Empezar";
+      bEmpezar.classList.remove("hidden");
+      bAplicar.classList.add("hidden");
+      txt.textContent = "Suenan 10 tics. Toca cualquier tecla, o la pantalla, justo cuando oigas cada uno.";
+      pintarPuntos();
+    });
+    bEmpezar.addEventListener("click", empezar);
+    bAplicar.addEventListener("click", () => {
+      if (resultado === null) return;
+      ajustes.desfase = resultado;
+      guardarAjustes();
+      pintarMenu();
+      modal.classList.add("hidden");
+    });
+    document.getElementById("rtCalibracionCerrar").addEventListener("click", () => {
+      clearTimeout(temporizador);
+      calibrando = null;
+      modal.classList.add("hidden");
+    });
+    modal.addEventListener("pointerdown", ev => { if (calibrando && !ev.target.closest("button")) tocarCalibracion(ev); });
+  }
 
   /* Canciones que suben los DJ a la rocola: se suman a la lista en cuanto llegan */
   window.addEventListener("musica-nube", ev => {

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editor de mapas — Zarabanda</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261131">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261131">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261131">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261131">
+  <link rel="stylesheet" href="css/style.css?v=20261132">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261132">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261132">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261132">
 </head>
 <body class="mj-pagina ritmo-tema re-pagina">
   <div class="mj-barra">
@@ -62,6 +62,8 @@
         </div>
       </section>
 
+      <div id="reOtros" class="re-tarjeta re-borrador hidden"></div>
+
       <!-- Reproducción -->
       <section class="re-tarjeta re-transporte">
         <button type="button" id="rePlay" class="re-play" disabled aria-label="Reproducir o pausar">▶</button>
@@ -81,6 +83,10 @@
         <label class="re-interruptor"><input type="checkbox" id="reOndaBandas" checked><span class="re-pista"></span><span class="re-int-txt">Onda por bandas</span></label>
         <label class="re-deslizador"><span class="re-etq">Música</span><input type="range" id="reVolMusica" min="0" max="100" value="80"></label>
         <label class="re-deslizador"><span class="re-etq">Clics</span><input type="range" id="reVolClics" min="0" max="100" value="60"></label>
+        <div class="re-campo re-campo-chico">
+          <span class="re-etq">Guía de otra dificultad</span>
+          <select id="reSuperponer"><option value="">Ninguna</option></select>
+        </div>
         <label class="re-deslizador"><span class="re-etq">Zoom</span><input type="range" id="reZoom" min="20" max="320" value="90"></label>
       </section>
 
@@ -99,6 +105,8 @@
             <button type="button" class="re-tab" data-tab="dificultades" role="tab">Dificultades</button>
             <button type="button" class="re-tab" data-tab="revisar" role="tab">Revisar</button>
             <button type="button" class="re-tab" data-tab="probar" role="tab">Probar</button>
+            <button type="button" class="re-tab" data-tab="marcas" role="tab">Marcas</button>
+            <button type="button" class="re-tab" data-tab="patrones" role="tab">Patrones</button>
           </div>
           <div class="re-tabs-der">
             <span id="reSelCuenta" class="re-chip">Sin notas elegidas</span>
@@ -194,6 +202,33 @@
           </div>
           <div id="reRevisarStats" class="re-stats"></div>
           <ul id="reRevisarLista" class="re-lista"></ul>
+          <h3 class="re-subtitulo">Dónde fallan los jugadores</h3>
+          <p class="re-ayuda-corta">Se junta lo que fallan los jugadores que han terminado esta versión del mapa. Hace falta que se haya jugado con sesión iniciada.</p>
+          <div class="re-botones">
+            <button type="button" id="reVerFallosBtn" class="re-btn">Cargar los fallos</button>
+            <label class="re-interruptor"><input type="checkbox" id="reVerFallos" checked><span class="re-pista"></span><span class="re-int-txt">Mostrarlos en la línea de tiempo</span></label>
+          </div>
+          <ul id="reFallosLista" class="re-lista"></ul>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="marcas">
+          <p class="re-ayuda-corta">Una marca queda en el punto donde está el cursor, con un texto. Las secciones (estrofa, estribillo...) sirven para moverte por la canción. Los comentarios son avisos para quien edite después. Se guardan con el mapa.</p>
+          <div class="re-botones">
+            <label class="re-campo re-campo-chico"><span class="re-etq">Tipo</span><select id="reMarcaTipo"><option value="seccion">Sección</option><option value="comentario">Comentario</option></select></label>
+            <label class="re-campo"><span class="re-etq">Texto</span><input type="text" id="reMarcaTexto" maxlength="80" placeholder="Estribillo, revisar esta parte..." autocomplete="off"></label>
+            <button type="button" id="reMarcaAgregar" class="re-btn re-btn-vivo">Añadir en el cursor</button>
+          </div>
+          <ul id="reMarcasLista" class="re-lista"></ul>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="patrones">
+          <p class="re-ayuda-corta">Elige unas notas, ponles nombre y guárdalas como patrón. Luego las pegas en el cursor en cualquier canción: se acomodan al pulso de ahí. Los patrones los ven todos los DJ.</p>
+          <div class="re-botones">
+            <label class="re-campo"><span class="re-etq">Nombre del patrón</span><input type="text" id="rePatronNombre" maxlength="60" placeholder="Subida en escalera, golpe doble..." autocomplete="off"></label>
+            <button type="button" id="rePatronGuardar" class="re-btn re-btn-vivo">Guardar la selección</button>
+          </div>
+          <p id="rePatronEstado" class="re-estado-chico"></p>
+          <ul id="rePatronesLista" class="re-lista"></ul>
         </div>
 
         <div class="re-panel-tool hidden" data-panel="probar">
@@ -214,10 +249,16 @@
 
       <!-- Guardar -->
       <section class="re-tarjeta re-acciones">
-        <label class="re-campo re-firma">
-          <span class="re-etq">Firma</span>
-          <input type="text" id="reFirma" maxlength="30" placeholder="Tu nombre (opcional)" autocomplete="off">
-        </label>
+        <div class="re-botones">
+          <label class="re-campo re-firma">
+            <span class="re-etq">Firma</span>
+            <input type="text" id="reFirma" maxlength="30" placeholder="Tu nombre (opcional)" autocomplete="off">
+          </label>
+          <label class="re-campo re-campo-chico" title="Si el audio de esta canción llega corrido respecto al mapa, mueve todas las notas en el juego este tiempo">
+            <span class="re-etq">Desfase del mapa (ms)</span>
+            <input type="number" id="reOffset" min="-500" max="500" step="5" value="0">
+          </label>
+        </div>
         <div class="re-botones">
           <button type="button" id="reGuardar" class="re-btn re-principal">Guardar para los jugadores</button>
           <button type="button" id="reProbar" class="re-btn" title="Abre Zarabanda en otra pestaña con tu mapa sin guardar. Solo se ve en este navegador.">Probar en el juego</button>
@@ -319,17 +360,17 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261131"></script>
-  <script src="js/fichas-supabase.js?v=20261131"></script>
-  <script src="js/lado.js?v=20261131"></script>
-  <script src="data/musica.js?v=20261131"></script>
-  <script src="js/musica-nube.js?v=20261131"></script>
-  <script src="js/peticiones-supabase.js?v=20261131"></script>
-  <script src="js/ritmo-rol.js?v=20261131"></script>
-  <script src="js/ritmo-analisis.js?v=20261131"></script>
-  <script src="js/ritmo-editor-logica.js?v=20261131"></script>
-  <script src="js/ritmo-editor.js?v=20261131"></script>
-  <script src="data/ritmo-tutoriales.js?v=20261131"></script>
-  <script src="js/ritmo-editor-extras.js?v=20261131"></script>
+  <script src="js/temas.js?v=20261132"></script>
+  <script src="js/fichas-supabase.js?v=20261132"></script>
+  <script src="js/lado.js?v=20261132"></script>
+  <script src="data/musica.js?v=20261132"></script>
+  <script src="js/musica-nube.js?v=20261132"></script>
+  <script src="js/peticiones-supabase.js?v=20261132"></script>
+  <script src="js/ritmo-rol.js?v=20261132"></script>
+  <script src="js/ritmo-analisis.js?v=20261132"></script>
+  <script src="js/ritmo-editor-logica.js?v=20261132"></script>
+  <script src="js/ritmo-editor.js?v=20261132"></script>
+  <script src="data/ritmo-tutoriales.js?v=20261132"></script>
+  <script src="js/ritmo-editor-extras.js?v=20261132"></script>
 </body>
 </html>

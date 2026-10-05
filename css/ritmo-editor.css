@@ -191,3 +191,6 @@
 .nivel-info .re-nivel { color: #7ae8ff; }
 .re-lista li > span { white-space: normal; }
 .re-progreso { width: 100%; max-width: 560px; height: 10px; accent-color: #ff4fd8; }
+
+.re-lista-acciones { display: inline-flex; gap: 6px; flex-shrink: 0; }
+#reOtros { color: #f2d46b; font-size: .88rem; line-height: 1.5; }
