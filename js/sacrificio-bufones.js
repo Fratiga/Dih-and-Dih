@@ -115,7 +115,15 @@
       // WebGPU real solo donde es confiable. En Firefox se usa el WebGLRenderer
       // clásico, mucho más liviano que el modo WebGL de WebGPURenderer.
       // Si WebGPU falla al arrancar, también se cae a WebGL.
-      clasico = /firefox|OPR\/|opera/i.test(navigator.userAgent) || /[?&]clasico=1/.test(location.search);
+      clasico = /firefox|\bOPR\/|opera/i.test(navigator.userAgent) || /[?&]clasico=1/.test(location.search);
+      // Chrome puede tener navigator.gpu pero ningún adaptador (aceleración por
+      // hardware apagada o tarjeta en lista negra): ahí el modo WebGPU cae a una
+      // emulación en WebGL2 muy pesada y se arrastra. Se usa el modo clásico.
+      if (!clasico) {
+        let adaptador = null;
+        try { adaptador = navigator.gpu ? await navigator.gpu.requestAdapter() : null; } catch (e) { adaptador = null; }
+        if (!adaptador) clasico = true;
+      }
       const prefiereWebGL = !navigator.gpu;
       async function abrirRenderer(webgl) {
         const r = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: webgl });
@@ -136,6 +144,15 @@
       // El lienzo cubre toda la ventana: en el modo clásico se dibuja a menor
       // resolución (el navegador lo estira) para que Firefox no se arrastre.
       resolucionBase = clasico ? 0.7 : 1;
+      // Sin tarjeta gráfica real (render por software) se dibuja aún más pequeño
+      if (clasico) {
+        try {
+          const gl = renderer.getContext();
+          const info = gl && gl.getExtension("WEBGL_debug_renderer_info");
+          const nombreGpu = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+          if (/swiftshader|llvmpipe|software|basic render/i.test(nombreGpu)) resolucionBase = 0.5;
+        } catch (e) { /* sin dato de la GPU */ }
+      }
       renderer.setPixelRatio(resolucionBase);
       renderer.setSize(ancho, alto);
       renderer.setClearColor(0x000000, 0);
@@ -147,7 +164,7 @@
       scene.add(dir);
       if (!clasico) {
         const pmrem = new THREE.PMREMGenerator(renderer);
-        scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.35).texture;
+        scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
       }
 
       await pausa();

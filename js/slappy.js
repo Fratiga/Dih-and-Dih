@@ -86,7 +86,7 @@
     scene.add(dir2);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.35).texture;
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
     const binary = atob(window.CLOWN_GLB_BASE64);
     const bytes = new Uint8Array(binary.length);
