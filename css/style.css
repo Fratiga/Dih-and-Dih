@@ -3711,4 +3711,3 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-rankings .sacrificio-lista li { padding: 9px 0; }
 .aj-rankings .sacrificio-lista li:nth-child(-n+3)::before { color: var(--accent, #e0b45c); font-weight: 700; }
 .aj-rankings .sacrificio-vacio { padding: 12px 0; }
-.aj-rival-estilo { font-size: .74rem; font-style: italic; color: var(--text); opacity: .85; }
