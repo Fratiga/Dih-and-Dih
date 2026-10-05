@@ -538,7 +538,7 @@ window.STATS = [
       { nombre: "Estoque veloz (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +7 al ataque. Daño: 1d8+5 perforante. Si recorrió al menos 15 pies antes de atacar, inflige 1d6 de daño adicional." },
       { nombre: "Paso evasivo (Acción Adicional)", descripcion: "Puede Correr, Destrabarse o Esconderse." },
       { nombre: "Corte al pasar (Pasiva)", descripcion: "Una vez por turno, después de golpear a una criatura, puede moverse hasta 10 pies sin provocar ataques de oportunidad de ese objetivo." },
-      { nombre: "Finta sonriente (Recarga 5-6)", descripcion: "Elige una criatura a 15 pies que pueda verla. El objetivo realiza una salvación de Sabiduría CD 14. Si falla, Voss tiene ventaja en su siguiente ataque contra ella y el objetivo no puede realizar reacciones hasta el comienzo de su próximo turno." },
+      { nombre: "Finta sonriente (Recarga 5-6)", descripcion: "Elige una criatura a 15 pies que pueda verla. El objetivo realiza una salvación de Sabiduría CD 15. Si falla, Voss tiene ventaja en su siguiente ataque contra ella y el objetivo no puede realizar reacciones hasta el comienzo de su próximo turno." },
       { nombre: "Desvío (Reacción)", descripcion: "Cuando recibe un ataque cuerpo a cuerpo que pueda ver, aumenta su CA en 3 contra ese ataque. Debe decidirlo antes de saber si el ataque impacta." }
     ],
     estrategia: "Hostiga y se reposiciona: nunca se queda al alcance de un solo enemigo por mucho tiempo. Rodea a Billy, golpea al objetivo que marcó Victor y se retira antes de que puedan responderle."
@@ -562,9 +562,9 @@ window.STATS = [
       "Percepción pasiva: 13"
     ],
     habilidades: [
-      { nombre: "Hachón pesado (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +7 al ataque. Daño: 1d12+5 cortante." },
-      { nombre: "Cornada de embestida (Pasiva)", descripcion: "Si se mueve al menos 15 pies en línea recta antes de golpear con su hachón, el objetivo recibe 1d6 de daño perforante adicional y debe superar una salvación de Fuerza CD 15 o caer Derribado." },
-      { nombre: "Golpe contra el suelo (Recarga 5-6)", descripcion: "Golpea el suelo. Todas las criaturas a su elección en un radio de 10 pies deben realizar una salvación de Destreza CD 15. Fallo: 2d6+3 de daño contundente y quedan Derribadas. Éxito: la mitad del daño y no caen." },
+      { nombre: "Hachón pesado (Acción)", descripcion: "Ataque cuerpo a cuerpo, alcance 5 pies. +8 al ataque. Daño: 1d12+5 cortante." },
+      { nombre: "Cornada de embestida (Pasiva)", descripcion: "Si se mueve al menos 15 pies en línea recta antes de golpear con su hachón, el objetivo recibe 1d6 de daño perforante adicional y debe superar una salvación de Fuerza CD 16 o caer Derribado." },
+      { nombre: "Golpe contra el suelo (Recarga 5-6)", descripcion: "Golpea el suelo. Todas las criaturas a su elección en un radio de 10 pies deben realizar una salvación de Destreza CD 16. Fallo: 2d6+3 de daño contundente y quedan Derribadas. Éxito: la mitad del daño y no caen." },
       { nombre: "Muro de carne (Pasiva, 1/ronda)", descripcion: "Los enemigos provocan un ataque de oportunidad de Billy incluso si se mueven usando la acción Destrabarse, siempre que intenten pasar junto a él para acercarse a uno de sus aliados." },
       { nombre: "Interponerse (Reacción)", descripcion: "Cuando un aliado a 5 pies recibe un ataque, Billy se convierte en el objetivo en su lugar." },
       { nombre: "Demasiado terco para caer (Rasgo único)", descripcion: "La primera vez que baja a 20 PV o menos, obtiene inmediatamente 10 PV temporales y no puede ser empujado ni derribado hasta el final de su siguiente turno." }
@@ -671,7 +671,7 @@ window.STATS = [
     habilidades: [
       { nombre: "Cuchillada de Tiza (Ataque cuerpo a cuerpo)", descripcion: "+6, daño 1d6 + 4 cortante. Inflige 1d6 adicional si uno de sus aliados está a 5 pies del objetivo." },
       { nombre: "Paso por la Manga (Acción adicional)", descripcion: "Se teletransporta hasta 20 pies hacia un espacio junto a una criatura. Su siguiente ataque durante ese turno tiene ventaja." },
-      { nombre: "Eso era importante, ¿no? (1/combate)", descripcion: "Una criatura a 5 pies hace una salvación de Destreza CD 13. Si falla, Verde le roba un foco, bolsa de componentes u objeto pequeño que lleve visible. La víctima no puede lanzar conjuros que requieran ese objeto hasta recuperarlo arrebatándoselo con una acción o derribando a Verde." }
+      { nombre: "Eso era importante, ¿no? (1/combate)", descripcion: "Una criatura a 5 pies hace una salvación de Destreza CD 14. Si falla, Verde le roba un foco, bolsa de componentes u objeto pequeño que lleve visible. La víctima no puede lanzar conjuros que requieran ese objeto hasta recuperarlo arrebatándoselo con una acción o derribando a Verde." }
     ],
     estrategia: "«¿Tu plan necesitaba esto? Qué mala suerte.» Se teletransporta detrás de los lanzadores de conjuros y roba sus focos apenas puede."
   },
