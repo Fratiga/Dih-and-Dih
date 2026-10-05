@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editor de mapas — Zarabanda</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261161">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261161">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261161">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261161">
+  <link rel="stylesheet" href="css/style.css?v=20261162">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261162">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261162">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261162">
 </head>
 <body class="mj-pagina ritmo-tema re-pagina">
   <div class="mj-barra">
@@ -56,6 +56,10 @@
           <select id="reDif" class="re-oculto" aria-label="Dificultad"></select>
           <div class="re-segmentos" data-para="reDif"></div>
         </div>
+        <label class="re-campo re-campo-chico" title="El mapa automático copia el estilo de un mapa hecho a mano">
+          <span class="re-etq">Estilo del automático</span>
+          <select id="reEstiloAuto"></select>
+        </label>
         <div class="re-campo re-campo-botones">
           <button type="button" id="reAuto" class="re-btn">Cargar automático</button>
           <button type="button" id="reGuardado" class="re-btn">Cargar guardado</button>
@@ -193,6 +197,12 @@
             <button type="button" id="reDerivarRefrescar" class="re-btn re-btn-suave">Actualizar lista</button>
           </div>
           <p id="reDerivarEstado" class="re-estado-chico"></p>
+          <p class="re-ayuda-corta">También puedes partir de un mapa de Parranda (cuatro carriles) de esta misma canción: los carriles 1 y 2 pasan a abajo, el 3 y el 4 a arriba, y un acorde entre las dos mitades se vuelve una doble. Queda como borrador en el editor.</p>
+          <div class="re-botones">
+            <label class="re-campo re-campo-chico"><span class="re-etq">Traer de Parranda</span><select id="reOtroOrigen"><option value="">Cargando...</option></select></label>
+            <button type="button" id="reOtroTraer" class="re-btn re-btn-vivo">Traer a la dificultad elegida</button>
+          </div>
+          <p id="reOtroEstado" class="re-estado-chico"></p>
         </div>
 
         <div class="re-panel-tool hidden" data-panel="revisar">
@@ -361,18 +371,20 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261161"></script>
-  <script src="js/fichas-supabase.js?v=20261161"></script>
-  <script src="js/presencia.js?v=20261161"></script>
-  <script src="js/lado.js?v=20261161"></script>
-  <script src="data/musica.js?v=20261161"></script>
-  <script src="js/musica-nube.js?v=20261161"></script>
-  <script src="js/peticiones-supabase.js?v=20261161"></script>
-  <script src="js/ritmo-rol.js?v=20261161"></script>
-  <script src="js/ritmo-analisis.js?v=20261161"></script>
-  <script src="js/ritmo-editor-logica.js?v=20261161"></script>
-  <script src="js/ritmo-editor.js?v=20261161"></script>
-  <script src="data/ritmo-tutoriales.js?v=20261161"></script>
-  <script src="js/ritmo-editor-extras.js?v=20261161"></script>
+  <script src="js/temas.js?v=20261162"></script>
+  <script src="js/fichas-supabase.js?v=20261162"></script>
+  <script src="js/presencia.js?v=20261162"></script>
+  <script src="js/lado.js?v=20261162"></script>
+  <script src="data/musica.js?v=20261162"></script>
+  <script src="js/musica-nube.js?v=20261162"></script>
+  <script src="js/peticiones-supabase.js?v=20261162"></script>
+  <script src="js/ritmo-rol.js?v=20261162"></script>
+  <script src="data/estilos-mapas.js?v=20261162"></script>
+  <script src="js/ritmo-analisis.js?v=20261162"></script>
+  <script src="js/estilos-mapas.js?v=20261162"></script>
+  <script src="js/ritmo-editor-logica.js?v=20261162"></script>
+  <script src="js/ritmo-editor.js?v=20261162"></script>
+  <script src="data/ritmo-tutoriales.js?v=20261162"></script>
+  <script src="js/ritmo-editor-extras.js?v=20261162"></script>
 </body>
 </html>

@@ -51,7 +51,7 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, teclas: null, sonidoGolpe: true };
+  let ajustes = { desfase: 0, practica: false, estiloAuto: "", dificultad: "normal", cancion: 0, ruta: "", personaje: true, teclas: null, sonidoGolpe: true };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
@@ -228,11 +228,21 @@
       if (guardado) {
         base = desdeGuardado(guardado.mapa, buffer);
       } else {
-        if (!mapas.has(clave)) {
-          if (mapas.size > 6) mapas.delete(mapas.keys().next().value);
-          mapas.set(clave, crearMapa(buffer, ajustes.dificultad));
+        // Si elegiste el estilo de un mapa hecho a mano, el automático lo copia (si no carga, sale el estándar)
+        let estiloInfo = null;
+        if (ajustes.estiloAuto && window.EstilosMapas) {
+          cargaTxtEl.textContent = "Cargando el estilo...";
+          const info = await EstilosMapas.cargar(ajustes.estiloAuto);
+          if (miCarga !== cargaId) return;
+          if (info && info.estilo) { estiloInfo = info; estilosInfo.set(ajustes.estiloAuto, info); }
         }
-        base = mapas.get(clave);
+        versionJugada = estiloInfo ? estiloInfo.version : "auto";
+        const claveMapa = clave + "|" + versionJugada;
+        if (!mapas.has(claveMapa)) {
+          if (mapas.size > 6) mapas.delete(mapas.keys().next().value);
+          mapas.set(claveMapa, crearMapa(buffer, ajustes.dificultad, estiloInfo ? { estilo: EstilosMapas.paraDificultad(estiloInfo.estilo, ajustes.dificultad) } : {}));
+        }
+        base = mapas.get(claveMapa);
       }
       mapa = base;
       notas = base.notas.map(n => ({ t: n.t, carril: n.carril, dur: n.dur, estado: null, mitades: {}, mantiene: null }));
@@ -838,7 +848,16 @@
   const puntajesCache = new Map();
   let vistaPuntajes = null; // "todas", una dificultad, o null = la que está elegida para jugar
   let verViejos = false; // false: puntajes de la versión actual del mapa; true: los de versiones anteriores
-  const versionDe = (ruta, dif) => { const f = aMano.get(ruta); const v = f && f.get(dif); return (v && v.version) || "auto"; };
+  const estilosInfo = new Map(); // id del estilo -> lo que devolvió EstilosMapas.cargar
+  // Versión del mapa que se juega: la fecha del mapa hecho a mano o, si no hay, la del automático (con su estilo)
+  const versionDe = (ruta, dif) => {
+    const f = aMano.get(ruta);
+    const v = f && f.get(dif);
+    if (v && v.version) return v.version;
+    const id = ajustes.estiloAuto;
+    if (id && window.EstilosMapas) { const i = estilosInfo.get(id); return i && i.version ? i.version : EstilosMapas.versionProvisional(id); }
+    return "auto";
+  };
   let tokenPuntajes = 0;
   let yo = { id: null, nombre: "" };
 
@@ -996,6 +1015,8 @@
     desfaseEl.value = ajustes.desfase;
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
     practicaEl.checked = !!ajustes.practica;
+    const estiloEl = document.getElementById("rtEstilo");
+    if (estiloEl && estiloEl.value !== (ajustes.estiloAuto || "")) estiloEl.value = ajustes.estiloAuto || "";
     document.getElementById("rtPersonaje").checked = ajustes.personaje !== false;
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
@@ -1027,6 +1048,34 @@
     guardarAjustes();
   });
   practicaEl.addEventListener("change", () => { ajustes.practica = practicaEl.checked; guardarAjustes(); });
+
+  /* Estilo de los mapas automáticos (data/estilos-mapas.js) */
+  {
+    const sel = document.getElementById("rtEstilo");
+    const txt = document.getElementById("rtEstiloTxt");
+    const base = txt.textContent;
+    if (window.EstilosMapas) {
+      sel.innerHTML = `<option value="">Estándar</option>` + EstilosMapas.lista.map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
+      sel.value = ajustes.estiloAuto || "";
+      const mostrar = async () => {
+        const id = ajustes.estiloAuto;
+        if (!id) { txt.textContent = base; return; }
+        txt.textContent = "Cargando el estilo...";
+        const info = await EstilosMapas.cargar(id);
+        if (id !== ajustes.estiloAuto) return;
+        estilosInfo.set(id, info);
+        const e = EstilosMapas.lista.find(x => x.id === id);
+        txt.textContent = info.estilo
+          ? `${e.detalle}. Pone unas ${info.estilo.nps.toLocaleString("es")} notas por segundo en Experto y escala eso en las demás dificultades. Tiene sus propios puntajes.`
+          : (info.error || "No se pudo cargar.") + " Mientras tanto se usa el estándar.";
+        pintarMenu();
+      };
+      sel.addEventListener("change", () => { ajustes.estiloAuto = sel.value; guardarAjustes(); pintarMenu(); mostrar(); });
+      if (ajustes.estiloAuto) mostrar();
+    } else {
+      sel.closest(".rt-ajuste-fila").classList.add("hidden");
+    }
+  }
   document.getElementById("rtPersonaje").addEventListener("change", ev => { ajustes.personaje = ev.target.checked; guardarAjustes(); });
   document.getElementById("rtSonidoGolpe").addEventListener("change", ev => { ajustes.sonidoGolpe = ev.target.checked; guardarAjustes(); });
 

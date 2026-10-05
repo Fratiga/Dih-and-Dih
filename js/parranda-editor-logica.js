@@ -303,6 +303,17 @@
     return subida ? enriquecer(origen, pulsos, buffer, difDestino) : simplificar(origen, pulsos, buffer.duration, difDestino);
   }
 
+  /* --- Traer un mapa de Zarabanda (dos carriles) a Parranda (cuatro) ----------------------------------- */
+  /* Cada nota se reparte entre los cuatro carriles según el tono de la melodía en ese instante (el mismo
+     reparto del mapa automático); las dobles se vuelven acordes y las largas se conservan. Hace falta el audio
+     ya cargado para medir el tono. */
+  function desdeZarabanda(notas2, buffer, dificultad) {
+    const orden = notas2.map(n => ({ t: n.t, carril: n.carril, dur: n.dur || 0 })).sort((a, b) => a.t - b.t);
+    const tonos = window.RitmoAnalisis.tonosDe(buffer, orden.map(n => n.t));
+    orden.forEach((n, i) => { n.tono = tonos[i]; });
+    return AN.repartir(orden, dificultad).map(n => ({ t: Math.round(n.t * 1000) / 1000, carril: n.carril, dur: n.dur }));
+  }
+
   /* --- Tempo ---------------------------------------------------------------------------------------- */
   /* BPM a partir de los instantes de unos toques (s), con la mediana de los intervalos */
   function bpmDeToques(toques) {
@@ -332,5 +343,5 @@
     return bins;
   }
 
-  window.ParrandaLogica = { nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
+  window.ParrandaLogica = { desdeZarabanda, nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
 })();

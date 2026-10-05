@@ -4,6 +4,15 @@
 window.ZARABANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "Mapas automáticos con estilo",
+    cambios: [
+      "En los ajustes, «Mapas automáticos» deja copiar el estilo de un mapa hecho a mano: el de Nuni (Rayman Origins) o el de Wonxarle (Excuse me Kirk).",
+      "El automático de cualquier canción imita cuántas notas pone esa persona, cuánto repite un carril, cuántas largas y dobles hace y si prefiere los tiempos o los contratiempos.",
+      "Cada estilo tiene sus propios puntajes, aparte de los del automático estándar."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "Canciones más largas",
     cambios: [
       "Ahora entran canciones de hasta 8 minutos, antes eran 6."

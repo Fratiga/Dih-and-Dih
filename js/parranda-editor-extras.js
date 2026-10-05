@@ -66,6 +66,10 @@
         : "Inicia sesión (arriba a la derecha) con una cuenta <strong>DJ</strong> o Admin para usar el editor.";
   }
 
+  function escHtml(t) {
+    return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
   /* --- Problemas o sugerencias: llegan a la pestaña Peticiones del panel de Admin --- */
   {
     const form = $("reBuzonForm");
@@ -200,7 +204,53 @@
   });
 
   /* --- Derivar una dificultad desde otra ------------------------------------------------------------------ */
+  /* --- Traer un mapa del otro juego ------------------------------------------------------------------------- */
+  async function refrescarOtro() {
+    const sel = $("reOtroOrigen");
+    const ed = window.ParrandaEditor && window.ParrandaEditor.obtener();
+    if (!ed || !sel) return;
+    try {
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("ritmo_mapas").select("dificultad, mapa").eq("cancion", ed.ruta);
+      if (error) throw error;
+      const lista = (data || []).slice().sort((a, b) => ParrandaLogica.ORDEN.indexOf(a.dificultad) - ParrandaLogica.ORDEN.indexOf(b.dificultad));
+      sel.innerHTML = lista.length
+        ? lista.map(f => `<option value="${f.dificultad}">${ParrandaLogica.NOMBRE[f.dificultad]} (${f.mapa.notas.length} notas${f.mapa.firma ? `, de ${escHtml(f.mapa.firma)}` : ""})</option>`).join("")
+        : `<option value="">No hay un mapa de Zarabanda de esta canción</option>`;
+    } catch (err) {
+      sel.innerHTML = `<option value="">No se pudo cargar la lista</option>`;
+    }
+  }
+
+  $("reOtroTraer").addEventListener("click", async () => {
+    const estado = $("reOtroEstado");
+    const origen = $("reOtroOrigen").value;
+    const ed = window.ParrandaEditor.obtener();
+    if (!origen) { estado.textContent = "Elige de qué mapa partir."; estado.classList.add("error"); return; }
+    estado.classList.remove("error");
+    estado.textContent = "Pasando el mapa...";
+    try {
+      await window.ParrandaEditor.cargarAudio();
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("ritmo_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", origen).maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Ese mapa ya no existe.");
+      const notasO = data.mapa.notas.map(x => ({ t: x[0], carril: ["abajo", "arriba", "ambos"][x[1]] || "abajo", dur: x[2] || 0 }));
+      await window.ParrandaEditor.cargarAudio();
+      const nuevas = ParrandaLogica.desdeZarabanda(notasO, window.ParrandaEditor.obtener().buffer, ed.dificultad);
+      window.ParrandaEditor.aplicarNotasExternas(nuevas, data.mapa.pulsos);
+      window.ParrandaEditor.fijarEsperado(null);
+      const texto = `Zarabanda ${ParrandaLogica.NOMBRE[origen]} (${notasO.length} notas) → ${nuevas.length} notas. Es un borrador: revísalo y retócalo antes de guardar.`;
+      estado.textContent = texto;
+      avisar(texto);
+    } catch (err) {
+      estado.classList.add("error");
+      estado.textContent = "No se pudo pasar el mapa: " + (err && err.message || err);
+    }
+  });
+
   async function refrescarOrigenes() {
+    refrescarOtro();
     const sel = $("reDerivarOrigen");
     const ed = window.ParrandaEditor && window.ParrandaEditor.obtener();
     if (!ed) return;

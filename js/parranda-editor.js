@@ -148,6 +148,30 @@
   const rutaActual = () => canciones[Number(cancionEl.value)].ruta;
   const difActual = () => difEl.value;
 
+  /* Estilo de los mapas automáticos: el de un mapa hecho a mano (data/estilos-mapas.js). El estilo medido se
+     guarda en estiloCache para usarlo también al regenerar tramos. */
+  const estiloSel = $("reEstiloAuto");
+  let estiloCache = null; // { estilo, nombre } del estilo elegido, ya medido
+  async function refrescarEstilo() {
+    estiloCache = null;
+    if (!estiloSel || !estiloSel.value || !window.EstilosMapas) return null;
+    const info = await EstilosMapas.cargar(estiloSel.value);
+    if (info && info.estilo) estiloCache = info;
+    else mensaje((info && info.error) || "No se pudo cargar el estilo. Se usa el estándar.", true);
+    return estiloCache;
+  }
+  const opcionesEstilo = () => (estiloCache ? { estilo: EstilosMapas.paraDificultad(estiloCache.estilo, difActual()) } : {});
+  if (estiloSel && window.EstilosMapas) {
+    estiloSel.innerHTML = `<option value="">Estándar</option>` + EstilosMapas.lista.map(e => `<option value="${e.id}" title="${e.detalle}">${e.nombre}</option>`).join("");
+    try { estiloSel.value = localStorage.getItem("compendioParrandaEditorEstilo") || ""; } catch (e) { /* sin almacenamiento */ }
+    estiloSel.addEventListener("change", () => {
+      try { localStorage.setItem("compendioParrandaEditorEstilo", estiloSel.value); } catch (e) { /* sin almacenamiento */ }
+      refrescarEstilo();
+    });
+  } else if (estiloSel) {
+    estiloSel.closest(".re-campo").classList.add("hidden");
+  }
+
   /* --- Historial ---------------------------------------------------------------- */
   function foto() { return JSON.stringify({ notas, pulsos, forzadas, marcas, bandas: tramos.map(t => [t.banda, t.vacio]) }); }
   function aplicarFoto(texto) {
@@ -255,10 +279,11 @@
     try {
       await cargarAudio();
       mensaje("Analizando la canción...");
+      await refrescarEstilo();
       await new Promise(r => setTimeout(r, 30));
-      tomarMapa(AN.crearMapa(buffer, difActual()));
+      tomarMapa(AN.crearMapa(buffer, difActual(), opcionesEstilo()));
       actualizadoCargado = null;
-      mensaje(`Mapa automático: ${notas.length} notas, ${tramos.length} tramos.`);
+      mensaje(`Mapa automático${estiloCache ? " con el " + estiloCache.nombre.charAt(0).toLowerCase() + estiloCache.nombre.slice(1) : ""}: ${notas.length} notas, ${tramos.length} tramos.`);
     } catch (err) {
       mensaje("No se pudo cargar esa canción: " + (err && err.message || err), true);
     }
@@ -519,7 +544,7 @@
     }
     const t0 = tramoT0(a);
     const t1 = tramoT1(b);
-    const m = AN.crearMapa(buffer, difActual(), { pulsos, bandasForzadas: forzadas });
+    const m = AN.crearMapa(buffer, difActual(), Object.assign({ pulsos, bandasForzadas: forzadas }, opcionesEstilo()));
     notas = notas.filter(n => n.t < t0 || n.t >= t1);
     m.notas.forEach(n => { if (n.t >= t0 && n.t < t1) notas.push({ t: n.t, carril: n.carril, dur: n.dur || 0 }); });
     notas.sort((x, y) => x.t - y.t);

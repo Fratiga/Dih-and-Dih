@@ -4,6 +4,15 @@
 window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "Estilos y notas de neón",
+    cambios: [
+      "Las notas ahora son piezas de neón, con el borde brillante del color de su carril. Las largas son tubos de neón.",
+      "En los ajustes, «Mapas automáticos» deja copiar el estilo del mapa hecho a mano de Nuni o de Wonxarle. Cada estilo tiene sus propios puntajes.",
+      "Los DJ pueden traer a Parranda un mapa de Zarabanda de la misma canción, y al revés."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "Fiebre, luces y ovación",
     cambios: [
       "Con un combo de 30 empieza la FIEBRE: los puntos valen el doble y la pista se pone dorada. Dura hasta que falles.",

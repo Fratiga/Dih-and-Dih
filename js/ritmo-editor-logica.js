@@ -304,6 +304,37 @@
     return subida ? enriquecer(origen, pulsos, buffer, difDestino) : simplificar(origen, pulsos, buffer.duration, difDestino);
   }
 
+  /* --- Traer un mapa de Parranda (cuatro carriles) a Zarabanda (dos) ----------------------------------- */
+  /* Los carriles 1 y 2 pasan a "abajo" y el 3 y el 4 a "arriba" (más grave abajo, más agudo arriba, como
+     en el mapa automático). Un acorde con notas en las dos mitades se vuelve una doble; si todas caen en la
+     misma mitad queda una sola nota, con la larga si la había. */
+  function desdeParranda(notas4) {
+    const orden = notas4.map(n => ({ t: n.t, carril: n.carril, dur: n.dur || 0 })).sort((a, b) => a.t - b.t || a.carril - b.carril);
+    const grupos = [];
+    orden.forEach(n => {
+      const u = grupos[grupos.length - 1];
+      if (u && Math.abs(u.t - n.t) < 0.02) u.notas.push(n); else grupos.push({ t: n.t, notas: [n] });
+    });
+    const convertidas = grupos.map(g => {
+      const bajas = g.notas.some(n => n.carril <= 1);
+      const altas = g.notas.some(n => n.carril >= 2);
+      if (bajas && altas) return { t: g.t, carril: "ambos", dur: 0 };
+      return { t: g.t, carril: bajas ? "abajo" : "arriba", dur: Math.max(...g.notas.map(n => n.dur)) };
+    });
+    // Dos notas casi encimadas en un mismo carril no se pueden pulsar: se queda la primera
+    const ultimo = { arriba: -9, abajo: -9 };
+    const limpias = [];
+    convertidas.forEach(n => {
+      const cs = n.carril === "ambos" ? ["arriba", "abajo"] : [n.carril];
+      if (cs.some(c => n.t - ultimo[c] < 0.09)) return;
+      cs.forEach(c => { ultimo[c] = n.t; });
+      limpias.push(n);
+    });
+    romperRachas(limpias, 3);
+    limpiarLargas(limpias);
+    return limpias.map(n => ({ t: Math.round(n.t * 1000) / 1000, carril: n.carril, dur: n.dur }));
+  }
+
   /* --- Tempo ---------------------------------------------------------------------------------------- */
   /* BPM a partir de los instantes de unos toques (s), con la mediana de los intervalos */
   function bpmDeToques(toques) {
@@ -333,5 +364,5 @@
     return bins;
   }
 
-  window.RitmoLogica = { nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
+  window.RitmoLogica = { desdeParranda, nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
 })();

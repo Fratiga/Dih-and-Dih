@@ -227,6 +227,60 @@
     return lista;
   }
 
+  /* Tono dominante (en log2 de Hz) en cada instante de la lista, por análisis de espectro (FFT de 2048
+     muestras y producto armónico). Lo usan crearMapa, para que el carril siga la melodía, y los
+     conversores entre Zarabanda y Parranda. */
+  function tonosDe(buffer, tiempos) {
+    const sr = buffer.sampleRate;
+    const sd0 = buffer.getChannelData(0);
+    const sd1 = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : sd0;
+    const NF = 2048;
+    const ventana = new Float64Array(NF);
+    for (let i = 0; i < NF; i++) ventana[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (NF - 1));
+    const re = new Float64Array(NF);
+    const im = new Float64Array(NF);
+    const rev = new Uint16Array(NF);
+    for (let i = 0; i < NF; i++) { let r = 0; for (let b = 0; b < 11; b++) r = (r << 1) | ((i >> b) & 1); rev[i] = r; }
+    const cosT = new Float64Array(NF / 2);
+    const sinT = new Float64Array(NF / 2);
+    for (let k = 0; k < NF / 2; k++) { cosT[k] = Math.cos((2 * Math.PI * k) / NF); sinT[k] = -Math.sin((2 * Math.PI * k) / NF); }
+    const fft = () => {
+      for (let len = 2; len <= NF; len <<= 1) {
+        const mitad = len >> 1;
+        const paso = NF / len;
+        for (let i = 0; i < NF; i += len) {
+          for (let j = 0; j < mitad; j++) {
+            const wr = cosT[j * paso];
+            const wi = sinT[j * paso];
+            const a = i + j;
+            const b = a + mitad;
+            const tr = re[b] * wr - im[b] * wi;
+            const ti = re[b] * wi + im[b] * wr;
+            re[b] = re[a] - tr; im[b] = im[a] - ti;
+            re[a] += tr; im[a] += ti;
+          }
+        }
+      }
+    };
+    const kMin = Math.ceil((70 * NF) / sr);
+    const kMax = Math.floor((1500 * NF) / sr);
+    const mag = new Float64Array(NF / 2);
+    const tonoDe = t => {
+      const ini = Math.max(0, Math.min(sd0.length - NF - 1, Math.round((t + 0.03) * sr)));
+      for (let i = 0; i < NF; i++) { re[rev[i]] = ((sd0[ini + i] + sd1[ini + i]) * 0.5) * ventana[i]; im[rev[i]] = 0; }
+      fft();
+      for (let k = 0; k < NF / 2; k++) mag[k] = Math.hypot(re[k], im[k]);
+      let mejorK = kMin;
+      let mejorV = -1;
+      for (let k = kMin; k <= kMax; k++) {
+        const v = mag[k] * mag[Math.min(NF / 2 - 1, k * 2)] * mag[Math.min(NF / 2 - 1, k * 3)];
+        if (v > mejorV) { mejorV = v; mejorK = k; }
+      }
+      return Math.log2((mejorK * sr) / NF);
+    };
+    return tiempos.map(tonoDe);
+  }
+
   /* opciones.pulsos: lista de pulsos (s) ya editada, en vez de la detectada.
      opciones.bandasForzadas: { numeroDeTramo: "bajo" | "medio" | "alto" | "vacio" } para
      decidir a mano qué banda sigue un tramo. Lo usa el editor de mapas.
@@ -300,7 +354,8 @@
       if (sl.f < corte) return;
       const veces = [slots[g - porCompas], slots[g + porCompas]].filter(o => o && !o.vacio && o.banda === sl.banda && o.f >= corte * cfg.repite);
       if (!veces.length && sl.f < cfg.sueltaFuerte) return;
-      candidatos.push({ t: sl.t, f: sl.f, tramo: sl.tramo, banda: sl.banda, i: Math.max(0, Math.round(sl.t * fps)), k: sl.k, j: sl.j, pos: (sl.k % 4) * sd + sl.j });
+      const pesoContra = contratiempo && opciones.estilo && opciones.estilo.fraccionContra !== undefined ? Math.max(0.55, Math.min(1.6, 0.55 + opciones.estilo.fraccionContra * 1.6)) : 1;
+      candidatos.push({ t: sl.t, f: sl.f * pesoContra, tramo: sl.tramo, banda: sl.banda, i: Math.max(0, Math.round(sl.t * fps)), k: sl.k, j: sl.j, pos: (sl.k % 4) * sd + sl.j });
     });
     candidatos.sort((a, b) => b.f - a.f);
 
@@ -321,54 +376,8 @@
     // Carril por tono: el carril sigue la melodía. Cada nota se compara con el tono de las
     // anteriores: más agudo que lo que venía, arriba; más grave, abajo; si no cambia, se
     // queda donde estaba. Así se siente que tocas lo que suena y no solo que sigues un ritmo.
-    const sd0 = buffer.getChannelData(0);
-    const sd1 = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : sd0;
-    const NF = 2048;
-    const ventana = new Float64Array(NF);
-    for (let i = 0; i < NF; i++) ventana[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (NF - 1));
-    const re = new Float64Array(NF);
-    const im = new Float64Array(NF);
-    const rev = new Uint16Array(NF);
-    for (let i = 0; i < NF; i++) { let r = 0; for (let b = 0; b < 11; b++) r = (r << 1) | ((i >> b) & 1); rev[i] = r; }
-    const cosT = new Float64Array(NF / 2);
-    const sinT = new Float64Array(NF / 2);
-    for (let k = 0; k < NF / 2; k++) { cosT[k] = Math.cos((2 * Math.PI * k) / NF); sinT[k] = -Math.sin((2 * Math.PI * k) / NF); }
-    const fft = () => {
-      for (let len = 2; len <= NF; len <<= 1) {
-        const mitad = len >> 1;
-        const paso = NF / len;
-        for (let i = 0; i < NF; i += len) {
-          for (let j = 0; j < mitad; j++) {
-            const wr = cosT[j * paso];
-            const wi = sinT[j * paso];
-            const a = i + j;
-            const b = a + mitad;
-            const tr = re[b] * wr - im[b] * wi;
-            const ti = re[b] * wi + im[b] * wr;
-            re[b] = re[a] - tr; im[b] = im[a] - ti;
-            re[a] += tr; im[a] += ti;
-          }
-        }
-      }
-    };
-    const kMin = Math.ceil((70 * NF) / sr);
-    const kMax = Math.floor((1500 * NF) / sr);
-    const mag = new Float64Array(NF / 2);
-    const tonoDe = t => {
-      const ini = Math.max(0, Math.min(sd0.length - NF - 1, Math.round((t + 0.03) * sr)));
-      for (let i = 0; i < NF; i++) { re[rev[i]] = ((sd0[ini + i] + sd1[ini + i]) * 0.5) * ventana[i]; im[rev[i]] = 0; }
-      fft();
-      for (let k = 0; k < NF / 2; k++) mag[k] = Math.hypot(re[k], im[k]);
-      let mejorK = kMin;
-      let mejorV = -1;
-      for (let k = kMin; k <= kMax; k++) {
-        const v = mag[k] * mag[Math.min(NF / 2 - 1, k * 2)] * mag[Math.min(NF / 2 - 1, k * 3)];
-        if (v > mejorV) { mejorV = v; mejorK = k; }
-      }
-      return Math.log2((mejorK * sr) / NF);
-    };
     {
-      const tonos = notas.map(nt => tonoDe(nt.t));
+      const tonos = tonosDe(buffer, notas.map(nt => nt.t));
       // Lo guarda cada nota: Parranda (cuatro carriles) reparte los carriles por tono con esto
       notas.forEach((nt, i) => { nt.tono = tonos[i]; });
       let carril = "abajo";
@@ -564,7 +573,7 @@
   /* Mide el estilo de un mapa hecho a mano entre t0 y t1: notas por segundo, rachas máximas
      de un mismo carril, cuántas son largas y cada cuánto hay una doble. Sirve para completar
      el resto de la canción "con la misma mano". */
-  function estiloDe(notas, t0, t1) {
+  function estiloDe(notas, t0, t1, pulsos) {
     const dentro = notas.filter(n => n.t >= t0 && n.t < t1).sort((a, b) => a.t - b.t);
     const dur = Math.max(1, t1 - t0);
     if (dentro.length < 20) return null;
@@ -580,14 +589,29 @@
     const p95 = rachas[Math.min(rachas.length - 1, Math.floor(rachas.length * 0.95))] || 3;
     const largas = dentro.filter(n => n.dur > 0).length;
     const dobles = dentro.filter(n => n.carril === "ambos").length;
-    return {
+    const est = {
       nps: Math.round((dentro.length / dur) * 100) / 100,
       corte: 0.02,
       maxRacha: Math.max(2, Math.min(4, p95)),
       fraccionLargas: Math.round((largas / dentro.length) * 1000) / 1000,
       huecoDobleS: dobles ? Math.max(0.8, (dur / dobles) * 0.7) : 6
     };
+    // Con el pulso del mapa se mide cuántas notas caen fuera del tiempo (contratiempos); el motor favorece
+    // o frena esos huecos según lo que hacía quien hizo el mapa
+    if (pulsos && pulsos.length > 8) {
+      let contra = 0;
+      dentro.forEach(n => {
+        let a = 0;
+        let b = pulsos.length;
+        while (a < b) { const m = (a + b) >> 1; if (pulsos[m] <= n.t) a = m + 1; else b = m; }
+        const k = Math.max(0, Math.min(pulsos.length - 2, a - 1));
+        const f = (n.t - pulsos[k]) / (pulsos[k + 1] - pulsos[k]);
+        if (Math.abs(f - Math.round(f)) > 0.2) contra++;
+      });
+      est.fraccionContra = Math.round((contra / dentro.length) * 1000) / 1000;
+    }
+    return est;
   }
 
-  window.RitmoAnalisis = { HOP, DIFICULTADES, crearMapa, pulsoDe, guardable, desdeGuardado, estiloDe, bandas, ataques, maximoMovil };
+  window.RitmoAnalisis = { HOP, DIFICULTADES, crearMapa, tonosDe, pulsoDe, guardable, desdeGuardado, estiloDe, bandas, ataques, maximoMovil };
 })();

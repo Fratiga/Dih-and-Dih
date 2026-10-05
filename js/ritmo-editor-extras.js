@@ -399,7 +399,52 @@
   });
 
   /* --- Derivar una dificultad desde otra ------------------------------------------------------------------ */
+  /* --- Traer un mapa del otro juego ------------------------------------------------------------------------- */
+  async function refrescarOtro() {
+    const sel = $("reOtroOrigen");
+    const ed = window.RitmoEditor && window.RitmoEditor.obtener();
+    if (!ed || !sel) return;
+    try {
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("parranda_mapas").select("dificultad, mapa").eq("cancion", ed.ruta);
+      if (error) throw error;
+      const lista = (data || []).slice().sort((a, b) => RitmoLogica.ORDEN.indexOf(a.dificultad) - RitmoLogica.ORDEN.indexOf(b.dificultad));
+      sel.innerHTML = lista.length
+        ? lista.map(f => `<option value="${f.dificultad}">${RitmoLogica.NOMBRE[f.dificultad]} (${f.mapa.notas.length} notas${f.mapa.firma ? `, de ${escHtml(f.mapa.firma)}` : ""})</option>`).join("")
+        : `<option value="">No hay un mapa de Parranda de esta canción</option>`;
+    } catch (err) {
+      sel.innerHTML = `<option value="">No se pudo cargar la lista</option>`;
+    }
+  }
+
+  $("reOtroTraer").addEventListener("click", async () => {
+    const estado = $("reOtroEstado");
+    const origen = $("reOtroOrigen").value;
+    const ed = window.RitmoEditor.obtener();
+    if (!origen) { estado.textContent = "Elige de qué mapa partir."; estado.classList.add("error"); return; }
+    estado.classList.remove("error");
+    estado.textContent = "Pasando el mapa...";
+    try {
+      await window.RitmoEditor.cargarAudio();
+      const sb = await fichasCliente();
+      const { data, error } = await sb.from("parranda_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", origen).maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Ese mapa ya no existe.");
+      const notasO = data.mapa.notas.map(x => ({ t: x[0], carril: Math.max(0, Math.min(3, x[1] | 0)), dur: x[2] || 0 }));
+      const nuevas = RitmoLogica.desdeParranda(notasO);
+      window.RitmoEditor.aplicarNotasExternas(nuevas, data.mapa.pulsos);
+      window.RitmoEditor.fijarEsperado(null);
+      const texto = `Parranda ${RitmoLogica.NOMBRE[origen]} (${notasO.length} notas) → ${nuevas.length} notas. Es un borrador: revísalo y retócalo antes de guardar.`;
+      estado.textContent = texto;
+      avisar(texto);
+    } catch (err) {
+      estado.classList.add("error");
+      estado.textContent = "No se pudo pasar el mapa: " + (err && err.message || err);
+    }
+  });
+
   async function refrescarOrigenes() {
+    refrescarOtro();
     const sel = $("reDerivarOrigen");
     const ed = window.RitmoEditor && window.RitmoEditor.obtener();
     if (!ed) return;
