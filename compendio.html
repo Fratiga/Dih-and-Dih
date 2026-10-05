@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reglas — Compendio del Mundo</title>
+  <title>Compendio — Entradas del mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <script type="importmap">
   {
@@ -21,8 +21,8 @@
    <div class="site-header-inner">
     <div class="header-left">
       <p class="eyebrow">ARCHIVO DEL MUNDO</p>
-      <h1>Compendio</h1>
-      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.</p>
+      <h1>hola pijes</h1>
+      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.<a href="secreto.html" class="huella-oculta" aria-hidden="true" tabindex="-1">.</a></p>
       <div id="slappyContenedor" class="slappy-contenedor hidden"></div>
     </div>
 
@@ -72,7 +72,7 @@
   <nav class="quick-nav" id="quickNav">
     <div class="nav-group">
       <a href="index.html" class="nav-chip">Inicio</a>
-      <a href="compendio.html" class="nav-chip">Compendio</a>
+      <a href="compendio.html" class="nav-chip active">Compendio</a>
       <a href="mapa.html" class="nav-chip">Mapa</a>
       <a href="cronologia.html" class="nav-chip">Cronología</a>
     </div>
@@ -89,7 +89,7 @@
       <a href="armas.html" class="nav-chip">Armas</a>
       <a href="objetos.html" class="nav-chip">Objetos</a>
       <a href="bestiario.html" class="nav-chip">Bestiario</a>
-      <a href="reglas.html" class="nav-chip active">Reglas</a>
+      <a href="reglas.html" class="nav-chip">Reglas</a>
     </div>
     <div class="nav-group">
       <a href="economia.html" class="nav-chip">Economía</a>
@@ -100,17 +100,36 @@
     </div>
   </nav>
 
-  <main class="layout layout-solo">
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="search-box">
+        <label for="search">Buscar</label>
+        <input id="search" type="search" placeholder="Personaje, lugar, magia...">
+      </div>
+
+      <div class="filter-group">
+        <h3>Etiquetas</h3>
+        <div id="tagFilters" class="pill-list"></div>
+      </div>
+
+      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
+    </aside>
+
     <section class="content">
-      <section id="reglas" class="page-section">
+      <section id="compendio" class="page-section">
         <div class="content-top">
           <div>
-            <p class="eyebrow">REFERENCIA RÁPIDA</p>
-            <h2>Reglas</h2>
+            <p class="eyebrow">CONOCIMIENTO PÚBLICO</p>
+            <h2 id="pageTitle">Entradas del compendio</h2>
           </div>
+          <span id="resultCount" class="result-count"></span>
         </div>
-        <div id="reglasChips" class="pill-list reglas-chips"></div>
-        <div id="reglasGrid" class="reglas-grid"></div>
+
+        <div id="entryGrid" class="entry-grid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <h3>No se encontraron entradas</h3>
+          <p>Prueba con otro término o elimina alguno de los filtros.</p>
+        </div>
       </section>
     </section>
   </main>
@@ -130,13 +149,13 @@
   <script src="data/bestiario.js?v=20261136"></script>
   <script src="data/razas.js?v=20261136"></script>
   <script src="data/religiones.js?v=20261136"></script>
-  <script src="data/reglas.js?v=20261136"></script>
   <script src="data/rotacion.js?v=20261136"></script>
   <script src="data/musica.js?v=20261136"></script>
   <script src="js/musica-nube.js?v=20261136"></script>
   <script src="js/common.js?v=20261136"></script>
   <script src="js/temas.js?v=20261136"></script>
   <script src="js/player.js?v=20261136"></script>
+  <script>window.TAG_GROUPS = { groupByCategory: true };</script>
   <script src="js/modal.js?v=20261136"></script>
   <script src="data/jumpscare.js?v=20261136"></script>
   <script src="data/contrasenas.js?v=20261136"></script>
@@ -145,6 +164,6 @@
   <script src="js/slappy.js?v=20261136"></script>
   <script src="js/busqueda-global.js?v=20261136"></script>
   <script src="js/header-marquee.js?v=20261136"></script>
-  <script src="js/reglas.js?v=20261136"></script>
+  <script src="js/compendio.js?v=20261136"></script>
 </body>
 </html>

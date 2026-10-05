@@ -1,0 +1,225 @@
+/* =============================================================================
+   LOBBY — la portada. Sin sesión muestra solo la bienvenida y manda a iniciar.
+   Con sesión llena la taberna: tu personaje, retos pendientes, novedades,
+   fanarts nuevos, tu posición en los rankings y quién está conectado.
+   Todo lo que viene de Supabase es opcional: si una tabla no existe o falla,
+   esa caja dice que no hay nada y el resto sigue funcionando.
+============================================================================= */
+(function () {
+  const $ = id => document.getElementById(id);
+  const body = document.body;
+
+  function esc(t) {
+    return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* --- Ambiente según el Side y los juegos escondidos ---------------------- */
+  function aplicarAmbiente() {
+    const lado = typeof ladoActual === "function" ? ladoActual() : null;
+    if (lado === "A" || lado === "B") body.dataset.lado = lado; else delete body.dataset.lado;
+    body.classList.toggle("lb-admin", typeof esAdmin === "function" && esAdmin());
+  }
+  aplicarAmbiente();
+
+  /* --- Novedades: cinta de arriba, tablón y "última actualización" --------- */
+  function fechaCorta(iso) {
+    const d = new Date(iso + "T12:00:00");
+    return isNaN(d) ? iso : d.toLocaleDateString("es", { day: "numeric", month: "short" });
+  }
+
+  function pintarNovedades() {
+    const lista = (window.NOVEDADES || []).slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+    $("lbTicker").innerHTML = lista.slice(0, 5).map(n =>
+      `<span><b>[${esc(fechaCorta(n.fecha))}]</b> ${n.enlace ? `<a href="${esc(n.enlace)}">${esc(n.titulo)}</a>` : esc(n.titulo)}</span>`
+    ).join("");
+    $("lbNovedades").innerHTML = lista.slice(0, 6).map(n => `
+      <div class="lb-novedad">
+        <time>${esc(fechaCorta(n.fecha))}</time>
+        <strong>${n.enlace ? `<a href="${esc(n.enlace)}">${esc(n.titulo)}</a>` : esc(n.titulo)}</strong>
+        <p>${esc(n.texto)}</p>
+      </div>`).join("") || `<p class="lb-chico">Nada nuevo por ahora.</p>`;
+    if (lista[0]) {
+      const d = new Date(lista[0].fecha + "T12:00:00");
+      $("lbActualizado").textContent = isNaN(d) ? lista[0].fecha : d.toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" });
+    }
+  }
+
+  /* --- Contador de visitas (guardado en este navegador) -------------------- */
+  function contarVisita() {
+    let n = 0; let ultima = "";
+    try {
+      n = (parseInt(localStorage.getItem("lbVisitas"), 10) || 0) + 1;
+      ultima = localStorage.getItem("lbUltimaVisita") || "";
+      localStorage.setItem("lbVisitas", String(n));
+      localStorage.setItem("lbUltimaVisita", new Date().toISOString());
+    } catch (e) { n = 1; }
+    $("lbVisitas").textContent = String(n).padStart(3, "0");
+    if (ultima) {
+      const d = new Date(ultima);
+      $("lbUltima").textContent = isNaN(d) ? "" : `Última vez: ${d.toLocaleDateString("es", { day: "numeric", month: "short" })}`;
+    } else {
+      $("lbUltima").textContent = "Primera vez por aquí.";
+    }
+  }
+
+  /* --- La escena: cuadro que cambia y un poco de profundidad --------------- */
+  function iniciarEscena() {
+    const escena = $("lbEscena");
+    if (!escena || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const caja = escena.closest(".lb-escena-caja");
+    caja.addEventListener("pointermove", e => {
+      const r = caja.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      escena.style.transform = `translate(${(-x * 6).toFixed(1)}px, ${(-y * 4).toFixed(1)}px) scale(1.012)`;
+    });
+    caja.addEventListener("pointerleave", () => { escena.style.transform = ""; });
+    escena.style.transition = "transform .15s steps(4)";
+  }
+
+  /* --- Saludo según la hora ------------------------------------------------ */
+  function saludar(nombre) {
+    const h = new Date().getHours();
+    const frase = h < 6 ? "Qué haces despierto" : h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches";
+    $("lbSaludo").innerHTML = `${frase}, <b>${esc(nombre || "viajero")}</b>. La mesa está lista.`;
+  }
+
+  /* --- Datos de la cuenta -------------------------------------------------- */
+  const ver = (id, html) => { const el = $(id); if (el) el.innerHTML = html; };
+
+  async function cargarPersonajes(supabase, miId) {
+    const { data, error } = await supabase.from("fichas_personajes")
+      .select("id, data, owner_id, archivado").eq("owner_id", miId).eq("archivado", false)
+      .order("updated_at", { ascending: false }).limit(6);
+    if (error) throw error;
+    const vivos = (data || []).filter(f => !(f.data && f.data.fallecido)).slice(0, 3);
+    if (!vivos.length) {
+      ver("lbPersonajes", `<p class="lb-chico">Todavía no tienes personajes.</p><p><a class="lb-boton" href="fichas.html">Crear uno</a></p>`);
+      return;
+    }
+    ver("lbPersonajes", vivos.map(f => {
+      const d = f.data || {};
+      const id = d.identidad || {};
+      const c = d.combate || {};
+      const pct = c.pvMax > 0 ? Math.max(0, Math.min(100, Math.round((c.pvActual / c.pvMax) * 100))) : 0;
+      return `<div class="lb-pj">
+        <a class="lb-pj-nombre" href="fichas.html">${esc(id.nombre || "Sin nombre")}</a>
+        <div class="lb-chico">${esc([id.raza, id.clase].filter(Boolean).join(" · ") || "—")} · Nivel ${esc(id.nivelTotal || 1)}</div>
+        ${c.pvMax > 0 ? `<div class="lb-barra"><i style="width:${pct}%"></i></div><div class="lb-chico">PV ${esc(c.pvActual)} / ${esc(c.pvMax)}</div>` : ""}
+      </div>`;
+    }).join(""));
+  }
+
+  async function cargarRetos(supabase, miId) {
+    const avisos = [];
+    // Ajedrez: retos que esperan respuesta y partidas donde te toca mover
+    try {
+      const { data } = await supabase.from("ajedrez_partidas").select("estado, retador, blancas, negras, jugadas").in("estado", ["pendiente", "en_curso"]);
+      const lista = data || [];
+      const retos = lista.filter(p => p.estado === "pendiente" && p.retador !== miId).length;
+      const turno = lista.filter(p => p.estado === "en_curso" && (p.jugadas.length % 2 === 0 ? p.blancas : p.negras) === miId).length;
+      if (retos) avisos.push(`<a class="lb-aviso" href="ajedrez.html">♞ Ajedrez: ${retos} reto${retos === 1 ? "" : "s"} sin responder</a>`);
+      if (turno) avisos.push(`<a class="lb-aviso" href="ajedrez.html">♞ Ajedrez: te toca mover en ${turno} partida${turno === 1 ? "" : "s"}</a>`);
+    } catch (e) { /* sin ajedrez entre jugadores */ }
+    // Arquería
+    try {
+      const { data } = await supabase.from("arqueria_partidas").select("estado, a, b").in("estado", ["pendiente", "listos", "jugando"]);
+      const lista = data || [];
+      const retos = lista.filter(p => p.estado === "pendiente" && p.b === miId).length;
+      const abiertas = lista.filter(p => p.estado !== "pendiente").length;
+      if (retos) avisos.push(`<a class="lb-aviso" href="arqueria.html">➶ Arquería: ${retos} reto${retos === 1 ? "" : "s"} sin responder</a>`);
+      if (abiertas) avisos.push(`<a class="lb-aviso" href="arqueria.html">➶ Arquería: ${abiertas} partida${abiertas === 1 ? "" : "s"} en marcha</a>`);
+    } catch (e) { /* sin arquería entre jugadores */ }
+    ver("lbRetos", avisos.join("") || `<p class="lb-chico">Nadie te ha retado. Mueve tú primero.</p>`);
+  }
+
+  async function cargarFanarts(supabase) {
+    const { data, error } = await supabase.from("fanarts_subidos").select("src, nombre").order("creada", { ascending: false }).limit(4);
+    if (error || !data || !data.length) return;
+    $("lbFanartsCaja").hidden = false;
+    ver("lbFanarts", data.map(f => `<a href="fanarts.html" title="${esc(f.nombre)}"><img src="${esc(f.src)}" alt="${esc(f.nombre)}" loading="lazy"></a>`).join(""));
+  }
+
+  async function cargarRanking(supabase, miId) {
+    const filas = [];
+    function puesto(lista, valor) {
+      const ordenada = lista.filter(x => valor(x) > 0).sort((a, b) => valor(b) - valor(a));
+      const i = ordenada.findIndex(x => x.user_id === miId);
+      return i < 0 ? null : { puesto: i + 1, de: ordenada.length, valor: valor(ordenada[i]) };
+    }
+    try {
+      const { data } = await supabase.from("mj_estadisticas").select("user_id, juego, victorias").in("juego", ["ajedrez", "duelo"]);
+      ["ajedrez", "duelo"].forEach(juego => {
+        const porUsuario = {};
+        (data || []).filter(f => f.juego === juego).forEach(f => { porUsuario[f.user_id] = (porUsuario[f.user_id] || 0) + f.victorias; });
+        const lista = Object.entries(porUsuario).map(([user_id, v]) => ({ user_id, v }));
+        const r = puesto(lista, x => x.v);
+        if (r) filas.push(`<div class="lb-fila"><span>${juego === "ajedrez" ? "Ajedrez" : "Duelo"}</span><b>#${r.puesto} de ${r.de}</b></div><div class="lb-chico" style="margin:0 0 2px">${r.valor} victoria${r.valor === 1 ? "" : "s"}</div>`);
+      });
+    } catch (e) { /* sin estadísticas */ }
+    try {
+      const { data } = await supabase.from("hooey_puntajes").select("user_id, mejor_racha");
+      const r = puesto(data || [], x => x.mejor_racha);
+      if (r) filas.push(`<div class="lb-fila"><span>Hooey</span><b>#${r.puesto} de ${r.de}</b></div><div class="lb-chico" style="margin:0 0 2px">Mejor racha: ${r.valor}</div>`);
+    } catch (e) { /* sin ranking de Hooey */ }
+    ver("lbRanking", filas.join("") || `<p class="lb-chico">Juega una partida y aparecerás aquí.</p>`);
+  }
+
+  /* --- Quién está en la taberna (presencia en tiempo real) ----------------- */
+  function iniciarPresencia(supabase, miId, miNombre) {
+    try {
+      const canal = supabase.channel("lobby-presencia", { config: { presence: { key: miId } } });
+      canal.on("presence", { event: "sync" }, () => {
+        const estado = canal.presenceState();
+        const nombres = Object.entries(estado).map(([id, metas]) => ({ id, nombre: (metas[0] && metas[0].nombre) || "alguien" }));
+        nombres.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+        ver("lbPresentes", nombres.length
+          ? nombres.map(n => `<div><span class="lb-punto"></span>${esc(n.nombre)}${n.id === miId ? " <span class=\"lb-chico\">(tú)</span>" : ""}</div>`).join("")
+          : `<p class="lb-chico">Solo estás tú.</p>`);
+      }).subscribe(async estado => {
+        if (estado === "SUBSCRIBED") await canal.track({ nombre: miNombre || "alguien" });
+      });
+    } catch (e) {
+      ver("lbPresentes", `<p class="lb-chico">No se puede ver quién hay.</p>`);
+    }
+  }
+
+  /* --- Sesión: qué se muestra ---------------------------------------------- */
+  let cargado = false;
+  async function conSesion(sesion) {
+    body.classList.remove("lb-invitado");
+    aplicarAmbiente();
+    const miId = sesion.user.id;
+    const nombre = (typeof nombreUsuario === "function" && nombreUsuario()) || (sesion.user.email || "").split("@")[0];
+    saludar(nombre);
+    if (cargado) return;
+    cargado = true;
+    pintarNovedades();
+    contarVisita();
+    let supabase;
+    try { supabase = await fichasCliente(); } catch (e) { return; }
+    iniciarPresencia(supabase, miId, nombre);
+    cargarPersonajes(supabase, miId).catch(() => ver("lbPersonajes", `<p class="lb-chico">No se pudieron cargar tus personajes.</p>`));
+    cargarRetos(supabase, miId).catch(() => ver("lbRetos", `<p class="lb-chico">Sin novedades de partidas.</p>`));
+    cargarFanarts(supabase).catch(() => {});
+    cargarRanking(supabase, miId).catch(() => ver("lbRanking", `<p class="lb-chico">Sin datos todavía.</p>`));
+  }
+
+  function sinSesion() {
+    body.classList.add("lb-invitado");
+    cargado = false;
+  }
+
+  $("lbEntrar").addEventListener("click", () => {
+    const insignia = $("globalLadoBadge");
+    if (insignia) insignia.click();
+  });
+
+  iniciarEscena();
+  pintarNovedades();
+  if (typeof fichasEnCambioDeSesion === "function") {
+    fichasEnCambioDeSesion(sesion => { if (sesion) conSesion(sesion); else sinSesion(); }).catch(sinSesion);
+  } else {
+    sinSesion();
+  }
+})();

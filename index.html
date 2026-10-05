@@ -3,168 +3,463 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compendio del Mundo</title>
+  <title>Compendio del Mundo — Lobby</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
-      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
-    }
-  }
-  </script>
-  <link rel="stylesheet" href="css/style.css?v=20261135">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261136">
+  <link rel="stylesheet" href="css/lobby.css?v=20261136">
 </head>
-<body>
-  <header class="site-header">
-   <div class="site-header-inner">
-    <div class="header-left">
-      <p class="eyebrow">ARCHIVO DEL MUNDO</p>
-      <h1>hola pijes</h1>
-      <p class="subtitle">Una enciclopedia para quienes recorren este mundo.<a href="secreto.html" class="huella-oculta" aria-hidden="true" tabindex="-1">.</a></p>
-      <div id="slappyContenedor" class="slappy-contenedor hidden"></div>
-    </div>
+<body class="lb lb-invitado">
+  <div class="lb-fondo" aria-hidden="true"></div>
 
-    <div class="header-right">
-      <div id="globalLadoWidget" class="global-lado-widget">
-        <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
-        <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+  <div class="lb-pagina">
+    <header class="lb-cab">
+      <div class="lb-cab-titulo">
+        <p class="lb-eyebrow">★ ARCHIVO DEL MUNDO ★</p>
+        <h1>hola pijes</h1>
+        <p class="lb-sub">Una taberna para quienes recorren este mundo.<a href="secreto.html" class="huella-oculta" aria-hidden="true" tabindex="-1">.</a></p>
+        <div id="slappyContenedor" class="slappy-contenedor hidden"></div>
       </div>
-      <div id="claveMagicaWidget" class="clave-magica-widget">
-        <button id="claveMagicaBadge" class="clave-magica-badge" type="button" title="¿Sabes la palabra mágica?" aria-label="¿Sabes la palabra mágica?"><img src="assets/cosas/gatipeps.webp" alt=""></button>
-        <div id="claveMagicaPopover" class="clave-magica-popover hidden">
-          <form id="claveMagicaForm">
-            <input type="text" id="claveMagicaInput" placeholder="..." autocomplete="off" aria-label="Palabra mágica">
-          </form>
+      <div class="lb-cab-widgets">
+        <div id="globalLadoWidget" class="global-lado-widget">
+          <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+          <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
         </div>
-      </div>
-      <div id="temaWidget" class="tema-widget">
-        <button id="temaBadge" class="tema-badge" type="button" title="Cambiar tema">Tema</button>
-        <div id="temaPopover" class="tema-popover hidden"></div>
-      </div>
-      <div id="rotacionBox" class="rotacion-box">
-        <div id="rotacionInner" class="rotacion-inner"></div>
-        <div id="rotacionEmpty" class="rotacion-empty hidden">
-          <small>Carpeta rotacion/ vacía</small>
-        </div>
-      </div>
-    </div>
-   </div>
-   <div class="header-marquee">
-     <div class="marquee-row marquee-row-right">
-       <div class="marquee-track" id="marqueeTrackA"></div>
-     </div>
-     <div class="header-topbar">
-       <div class="global-search-box">
-         <input id="globalSearch" type="search" placeholder="Buscar en todo el compendio..." aria-label="Buscar en todo el compendio">
-         <div id="globalSearchSugerencias" class="global-search-sugerencias hidden"></div>
-       </div>
-       <button id="globalRandomBtn" class="global-random-btn" type="button" title="Entrada aleatoria"><img src="assets/cosas/The-D6.png" alt="Entrada aleatoria"></button>
-       <button id="marqueeToggle" class="marquee-toggle" type="button" title="Detener franjas" aria-label="Detener franjas">⏸</button>
-     </div>
-     <div class="marquee-row marquee-row-left">
-       <div class="marquee-track" id="marqueeTrackB"></div>
-     </div>
-   </div>
-  </header>
-
-  <nav class="quick-nav" id="quickNav">
-    <div class="nav-group">
-      <a href="index.html" class="nav-chip active">Compendio</a>
-      <a href="mapa.html" class="nav-chip">Mapa</a>
-      <a href="cronologia.html" class="nav-chip">Cronología</a>
-    </div>
-    <div class="nav-group">
-      <a href="lugares.html" class="nav-chip">Lugares</a>
-      <a href="facciones.html" class="nav-chip">Facciones</a>
-      <a href="personajes.html" class="nav-chip">Personajes</a>
-      <a href="razas.html" class="nav-chip">Razas</a>
-      <a href="religion.html" class="nav-chip">Religión</a>
-    </div>
-    <div class="nav-group">
-      <a href="textos.html" class="nav-chip">Textos</a>
-      <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
-      <a href="armas.html" class="nav-chip">Armas</a>
-      <a href="objetos.html" class="nav-chip">Objetos</a>
-      <a href="bestiario.html" class="nav-chip">Bestiario</a>
-      <a href="reglas.html" class="nav-chip">Reglas</a>
-    </div>
-    <div class="nav-group">
-      <a href="economia.html" class="nav-chip">Economía</a>
-      <a href="fanarts.html" class="nav-chip">Fanarts</a>
-      <a href="peticiones.html" class="nav-chip">Peticiones</a>
-      <a href="fichas.html" class="nav-chip">Mis personajes</a>
-      <a href="admin.html" class="nav-chip hidden" data-admin-only>Admin</a>
-    </div>
-  </nav>
-
-  <main class="layout">
-    <aside class="sidebar">
-      <div class="search-box">
-        <label for="search">Buscar</label>
-        <input id="search" type="search" placeholder="Personaje, lugar, magia...">
-      </div>
-
-      <div class="filter-group">
-        <h3>Etiquetas</h3>
-        <div id="tagFilters" class="pill-list"></div>
-      </div>
-
-      <button id="clearFilters" class="secondary-button">Limpiar filtros</button>
-    </aside>
-
-    <section class="content">
-      <section id="compendio" class="page-section">
-        <div class="content-top">
-          <div>
-            <p class="eyebrow">CONOCIMIENTO PÚBLICO</p>
-            <h2 id="pageTitle">Entradas del compendio</h2>
+        <div id="claveMagicaWidget" class="clave-magica-widget">
+          <button id="claveMagicaBadge" class="clave-magica-badge" type="button" title="¿Sabes la palabra mágica?" aria-label="¿Sabes la palabra mágica?"><img src="assets/cosas/gorro-bufon.png" alt=""></button>
+          <div id="claveMagicaPopover" class="clave-magica-popover hidden">
+            <form id="claveMagicaForm">
+              <input type="text" id="claveMagicaInput" placeholder="..." autocomplete="off" aria-label="Palabra mágica">
+            </form>
           </div>
-          <span id="resultCount" class="result-count"></span>
+        </div>
+        <div id="temaWidget" class="tema-widget">
+          <button id="temaBadge" class="tema-badge" type="button" title="Cambiar tema">Tema</button>
+          <div id="temaPopover" class="tema-popover hidden"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="lb-ticker lb-solo-socio" aria-label="Novedades">
+      <span class="lb-ticker-etiqueta lb-parpadeo">NUEVO</span>
+      <div class="lb-ticker-ventana"><div class="lb-ticker-pista" id="lbTicker"></div></div>
+    </div>
+
+    <nav class="quick-nav lb-solo-socio" id="quickNav">
+      <div class="nav-group">
+        <a href="index.html" class="nav-chip active">Inicio</a>
+        <a href="compendio.html" class="nav-chip">Compendio</a>
+        <a href="mapa.html" class="nav-chip">Mapa</a>
+        <a href="cronologia.html" class="nav-chip">Cronología</a>
+      </div>
+      <div class="nav-group">
+        <a href="lugares.html" class="nav-chip">Lugares</a>
+        <a href="facciones.html" class="nav-chip">Facciones</a>
+        <a href="personajes.html" class="nav-chip">Personajes</a>
+        <a href="razas.html" class="nav-chip">Razas</a>
+        <a href="religion.html" class="nav-chip">Religión</a>
+      </div>
+      <div class="nav-group">
+        <a href="textos.html" class="nav-chip">Textos</a>
+        <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
+        <a href="armas.html" class="nav-chip">Armas</a>
+        <a href="objetos.html" class="nav-chip">Objetos</a>
+        <a href="bestiario.html" class="nav-chip">Bestiario</a>
+        <a href="reglas.html" class="nav-chip">Reglas</a>
+      </div>
+      <div class="nav-group">
+        <a href="economia.html" class="nav-chip">Economía</a>
+        <a href="fanarts.html" class="nav-chip">Fanarts</a>
+        <a href="peticiones.html" class="nav-chip">Peticiones</a>
+        <a href="fichas.html" class="nav-chip">Mis personajes</a>
+        <a href="admin.html" class="nav-chip hidden" data-admin-only>Admin</a>
+      </div>
+    </nav>
+
+    <div class="lb-cuerpo">
+      <!-- Columna izquierda: contadores, quién está y botoncitos -->
+      <aside class="lb-lado lb-izq lb-solo-socio">
+        <section class="lb-caja">
+          <h2>Tu visita</h2>
+          <div class="lb-caja-cuerpo">
+            <p class="lb-contador-etq">Has entrado</p>
+            <p class="lb-contador" id="lbVisitas">000</p>
+            <p class="lb-contador-etq">veces a la taberna</p>
+            <p class="lb-chico" id="lbUltima"></p>
+          </div>
+        </section>
+        <section class="lb-caja">
+          <h2>En la taberna</h2>
+          <div class="lb-caja-cuerpo" id="lbPresentes"><p class="lb-chico">Mirando quién hay...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Atajos</h2>
+          <div class="lb-caja-cuerpo lb-botoncitos">
+            <a class="lb-88" href="compendio.html" style="--c1:#6a4bb8;--c2:#3b2a73">COMPENDIO</a>
+            <a class="lb-88" href="mapa.html" style="--c1:#3f8f6a;--c2:#215a41">MAPA</a>
+            <a class="lb-88" href="cronologia.html" style="--c1:#b5703a;--c2:#6f3f1c">CRONOLOGÍA</a>
+            <a class="lb-88" href="bestiario.html" style="--c1:#b6453f;--c2:#6e211d">BESTIARIO</a>
+            <a class="lb-88" href="fanarts.html" style="--c1:#c2619b;--c2:#7c2f61">FANARTS</a>
+            <a class="lb-88" href="minijuegos.html" style="--c1:#3a8bb5;--c2:#1d546f">JUEGOS</a>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Centro: la taberna -->
+      <main class="lb-centro">
+        <p class="lb-saludo lb-solo-socio" id="lbSaludo"></p>
+
+        <div class="lb-escena-caja">
+          <div class="lb-escena-scroll">
+            <svg class="lb-escena" id="lbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="La taberna: elige una puerta o un objeto para ir a esa zona">
+              <defs>
+                <pattern id="pTablas" width="48" height="16" patternUnits="userSpaceOnUse">
+                  <rect width="48" height="16" fill="#2c2038"/>
+                  <rect x="0" y="0" width="48" height="2" fill="#241a2e"/>
+                  <rect x="16" y="8" width="2" height="8" fill="#241a2e"/>
+                  <rect x="40" y="0" width="2" height="8" fill="#241a2e"/>
+                </pattern>
+                <pattern id="pSuelo" width="64" height="24" patternUnits="userSpaceOnUse">
+                  <rect width="64" height="24" fill="#5a3d2b"/>
+                  <rect y="0" width="64" height="2" fill="#3f2a1d"/>
+                  <rect y="12" width="64" height="2" fill="#3f2a1d"/>
+                  <rect x="20" y="2" width="2" height="10" fill="#3f2a1d"/>
+                  <rect x="48" y="14" width="2" height="10" fill="#3f2a1d"/>
+                </pattern>
+                <pattern id="pLibros" width="32" height="48" patternUnits="userSpaceOnUse">
+                  <rect width="32" height="48" fill="#241810"/>
+                  <rect x="2" y="8" width="6" height="40" fill="#b6453f"/>
+                  <rect x="8" y="2" width="6" height="46" fill="#4f7fb5"/>
+                  <rect x="14" y="12" width="4" height="36" fill="#e8b84a"/>
+                  <rect x="18" y="6" width="6" height="42" fill="#4c8a4f"/>
+                  <rect x="24" y="14" width="6" height="34" fill="#8a5fc2"/>
+                </pattern>
+                <pattern id="pTablero" width="16" height="16" patternUnits="userSpaceOnUse">
+                  <rect width="16" height="16" fill="#e9dcc0"/>
+                  <rect width="8" height="8" fill="#3a2a1d"/>
+                  <rect x="8" y="8" width="8" height="8" fill="#3a2a1d"/>
+                </pattern>
+                <radialGradient id="gFarol">
+                  <stop offset="0" style="stop-color:var(--lb-luz)" stop-opacity=".75"/>
+                  <stop offset="1" style="stop-color:var(--lb-luz)" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="gHaz" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" style="stop-color:var(--lb-luna)" stop-opacity=".28"/>
+                  <stop offset="1" style="stop-color:var(--lb-luna)" stop-opacity="0"/>
+                </linearGradient>
+                <clipPath id="cCuadro"><rect x="600" y="120" width="80" height="64"/></clipPath>
+              </defs>
+
+              <!-- Pared, suelo y vigas -->
+              <rect width="960" height="372" fill="url(#pTablas)"/>
+              <rect y="372" width="960" height="168" fill="url(#pSuelo)"/>
+              <rect y="368" width="960" height="8" fill="#1c1422"/>
+              <rect width="960" height="24" fill="#1c1422"/>
+              <rect y="24" width="960" height="4" fill="#120d19"/>
+              <rect x="0" y="0" width="16" height="372" fill="#1c1422"/>
+              <rect x="944" y="0" width="16" height="372" fill="#1c1422"/>
+
+              <!-- Ventana con luna -->
+              <g>
+                <rect x="404" y="72" width="112" height="104" fill="#3b2a1d"/>
+                <rect x="412" y="80" width="96" height="88" fill="#10163a"/>
+                <rect x="428" y="96" width="4" height="4" fill="#fff"/><rect x="476" y="88" width="4" height="4" fill="#fff"/>
+                <rect x="492" y="120" width="4" height="4" fill="#cfd8ff"/><rect x="444" y="136" width="4" height="4" fill="#fff"/>
+                <rect x="460" y="100" width="24" height="24" fill="var(--lb-luna)"/>
+                <rect x="456" y="104" width="4" height="16" fill="var(--lb-luna)"/><rect x="484" y="104" width="4" height="16" fill="var(--lb-luna)"/>
+                <rect x="468" y="96" width="8" height="4" fill="#10163a"/>
+                <rect x="458" y="124" width="4" height="4" fill="#10163a" opacity="0"/>
+                <rect x="458" y="72" width="4" height="104" fill="#3b2a1d"/>
+                <rect x="404" y="120" width="112" height="4" fill="#3b2a1d"/>
+                <polygon points="412,176 508,176 560,372 360,372" fill="url(#gHaz)" class="lb-haz"/>
+              </g>
+
+              <!-- Cartel colgante: Salón de juegos -->
+              <a class="lb-spot" href="minijuegos.html" aria-label="Salón de juegos: minijuegos">
+                <g class="lb-forma">
+                  <rect x="428" y="24" width="4" height="16" fill="#8d8d99"/><rect x="488" y="24" width="4" height="16" fill="#8d8d99"/>
+                  <rect x="392" y="40" width="136" height="28" fill="#7a5233"/>
+                  <rect x="396" y="44" width="128" height="20" fill="#9a6a41"/>
+                  <text x="460" y="59" text-anchor="middle" class="lb-rotulo">SALÓN DE JUEGOS</text>
+                </g>
+              </a>
+
+              <!-- Biblioteca: el Compendio -->
+              <a class="lb-spot" href="compendio.html" aria-label="El Compendio: entradas del mundo">
+                <g class="lb-forma">
+                  <rect x="32" y="104" width="152" height="272" fill="#4a3220"/>
+                  <rect x="40" y="112" width="136" height="48" fill="url(#pLibros)"/>
+                  <rect x="40" y="168" width="136" height="48" fill="url(#pLibros)" transform="translate(8 0)"/>
+                  <rect x="40" y="224" width="136" height="48" fill="url(#pLibros)"/>
+                  <rect x="40" y="280" width="136" height="48" fill="url(#pLibros)" transform="translate(4 0)"/>
+                  <rect x="40" y="160" width="136" height="8" fill="#6a4a30"/><rect x="40" y="216" width="136" height="8" fill="#6a4a30"/>
+                  <rect x="40" y="272" width="136" height="8" fill="#6a4a30"/><rect x="40" y="328" width="136" height="8" fill="#6a4a30"/>
+                  <rect x="40" y="336" width="136" height="32" fill="#35241a"/>
+                  <rect x="96" y="344" width="24" height="16" fill="#e8b84a"/>
+                </g>
+                <text x="108" y="396" text-anchor="middle" class="lb-etq">EL COMPENDIO</text>
+              </a>
+
+              <!-- Espadas: Duelo (solo admin por ahora) -->
+              <a class="lb-spot" data-admin-only href="duelo.html" aria-label="Duelo">
+                <g class="lb-forma">
+                  <polygon points="52,36 60,32 156,92 148,100" fill="#c9cdd6"/>
+                  <polygon points="164,36 156,32 60,92 68,100" fill="#aeb3bf"/>
+                  <rect x="48" y="86" width="24" height="8" fill="#e8b84a" transform="rotate(35 60 90)"/>
+                  <rect x="144" y="86" width="24" height="8" fill="#e8b84a" transform="rotate(-35 156 90)"/>
+                </g>
+                <text x="108" y="30" text-anchor="middle" class="lb-etq lb-etq-alta">DUELO</text>
+              </a>
+
+              <!-- Mapa -->
+              <a class="lb-spot" href="mapa.html" aria-label="Mapa del mundo">
+                <g class="lb-forma">
+                  <rect x="216" y="96" width="4" height="24" fill="#8d6a45"/><rect x="316" y="96" width="4" height="24" fill="#8d6a45"/>
+                  <rect x="208" y="112" width="120" height="96" fill="#d9c48f"/>
+                  <rect x="208" y="112" width="120" height="6" fill="#bda56c"/><rect x="208" y="202" width="120" height="6" fill="#bda56c"/>
+                  <rect x="224" y="136" width="20" height="16" fill="#6fa86b"/><rect x="244" y="144" width="28" height="20" fill="#6fa86b"/>
+                  <rect x="276" y="128" width="32" height="24" fill="#6fa86b"/><rect x="236" y="168" width="40" height="16" fill="#6fa86b"/>
+                  <rect x="228" y="160" width="4" height="4" fill="#b6453f"/><rect x="236" y="164" width="4" height="4" fill="#b6453f"/>
+                  <rect x="248" y="172" width="4" height="4" fill="#b6453f"/><rect x="264" y="172" width="4" height="4" fill="#b6453f"/>
+                  <rect x="284" y="164" width="12" height="12" fill="#b6453f"/><rect x="288" y="160" width="4" height="20" fill="#b6453f"/>
+                </g>
+                <text x="268" y="230" text-anchor="middle" class="lb-etq">MAPA</text>
+              </a>
+
+              <!-- Rocola -->
+              <a class="lb-spot" href="rocola.html" aria-label="Rocola: música">
+                <g class="lb-forma">
+                  <rect x="408" y="248" width="104" height="128" fill="#6a2f5a"/>
+                  <rect x="416" y="232" width="88" height="16" fill="#6a2f5a"/><rect x="424" y="224" width="72" height="8" fill="#6a2f5a"/>
+                  <rect x="416" y="240" width="88" height="128" fill="#8a3d73"/>
+                  <rect x="424" y="248" width="72" height="56" fill="#16102a"/>
+                  <rect x="432" y="256" width="8" height="40" class="lb-neon lb-n1"/><rect x="448" y="264" width="8" height="32" class="lb-neon lb-n2"/>
+                  <rect x="464" y="252" width="8" height="44" class="lb-neon lb-n3"/><rect x="480" y="268" width="8" height="28" class="lb-neon lb-n1"/>
+                  <rect x="432" y="312" width="56" height="8" fill="#e8b84a"/>
+                  <rect x="440" y="328" width="40" height="32" fill="#4a1d40"/>
+                  <rect x="448" y="336" width="24" height="16" fill="#e8b84a"/>
+                </g>
+                <text x="460" y="396" text-anchor="middle" class="lb-etq">ROCOLA</text>
+              </a>
+
+              <!-- Chimenea con cuadro (fanarts) -->
+              <g>
+                <rect x="568" y="232" width="152" height="144" fill="#6e6a78"/>
+                <rect x="560" y="224" width="168" height="16" fill="#8b8696"/>
+                <rect x="584" y="256" width="120" height="120" fill="#17101b"/>
+                <rect x="600" y="272" width="88" height="104" fill="#0d080f"/>
+                <g class="lb-fuego">
+                  <rect x="616" y="344" width="56" height="24" fill="#e8872a"/>
+                  <rect x="624" y="320" width="40" height="28" fill="#f0b038" class="lb-llama"/>
+                  <rect x="632" y="304" width="24" height="24" fill="#f7dd6a" class="lb-llama lb-l2"/>
+                  <rect x="640" y="292" width="8" height="16" fill="#fff1b0" class="lb-llama lb-l3"/>
+                  <rect x="608" y="360" width="72" height="8" fill="#5b3a22"/>
+                </g>
+                <circle cx="644" cy="320" r="90" fill="url(#gFarol)" class="lb-brillo"/>
+              </g>
+              <a class="lb-spot" href="fanarts.html" aria-label="Fanarts: galería de imágenes">
+                <g class="lb-forma">
+                  <rect x="592" y="112" width="96" height="80" fill="#8d6a45"/>
+                  <rect x="596" y="116" width="88" height="72" fill="#5a3f27"/>
+                  <foreignObject x="600" y="120" width="80" height="64">
+                    <div xmlns="http://www.w3.org/1999/xhtml" id="rotacionBox" class="lb-cuadro-box">
+                      <div id="rotacionInner" class="rotacion-inner"></div>
+                      <div id="rotacionEmpty" class="rotacion-empty hidden"><small>Sin imágenes</small></div>
+                    </div>
+                  </foreignObject>
+                </g>
+                <text x="640" y="212" text-anchor="middle" class="lb-etq">FANARTS</text>
+              </a>
+
+              <!-- Tablón: Peticiones -->
+              <a class="lb-spot" href="peticiones.html" aria-label="Peticiones: tablón de anuncios">
+                <g class="lb-forma">
+                  <rect x="744" y="72" width="128" height="104" fill="#6b4a2f"/>
+                  <rect x="752" y="80" width="112" height="88" fill="#b78a55"/>
+                  <rect x="760" y="88" width="32" height="32" fill="#f2ead2"/><rect x="800" y="92" width="28" height="36" fill="#e9d9a0"/>
+                  <rect x="836" y="88" width="20" height="28" fill="#f2ead2"/><rect x="764" y="128" width="40" height="28" fill="#e9d9a0"/>
+                  <rect x="814" y="136" width="36" height="24" fill="#f2ead2"/>
+                  <rect x="774" y="84" width="4" height="4" fill="#b6453f"/><rect x="812" y="88" width="4" height="4" fill="#b6453f"/>
+                  <rect x="844" y="84" width="4" height="4" fill="#b6453f"/><rect x="780" y="124" width="4" height="4" fill="#4f7fb5"/>
+                  <rect x="826" y="132" width="4" height="4" fill="#4f7fb5"/>
+                  <rect x="764" y="96" width="24" height="2" fill="#6b4a2f"/><rect x="764" y="102" width="20" height="2" fill="#6b4a2f"/>
+                  <rect x="804" y="102" width="20" height="2" fill="#6b4a2f"/><rect x="804" y="108" width="16" height="2" fill="#6b4a2f"/>
+                </g>
+                <text x="808" y="196" text-anchor="middle" class="lb-etq">PETICIONES</text>
+              </a>
+
+              <!-- Diana: Arquería (solo admin por ahora) -->
+              <a class="lb-spot" data-admin-only href="arqueria.html" aria-label="Arquería">
+                <g class="lb-forma">
+                  <circle cx="912" cy="76" r="30" fill="#e9dcc0"/>
+                  <circle cx="912" cy="76" r="22" fill="#b6453f"/>
+                  <circle cx="912" cy="76" r="14" fill="#e9dcc0"/>
+                  <circle cx="912" cy="76" r="7" fill="#b6453f"/>
+                  <rect x="916" y="70" width="28" height="4" fill="#8d6a45"/><rect x="940" y="66" width="8" height="12" fill="#c9cdd6"/>
+                </g>
+                <text x="912" y="124" text-anchor="middle" class="lb-etq">ARQUERÍA</text>
+              </a>
+
+              <!-- Escritorio: Mis personajes -->
+              <a class="lb-spot" href="fichas.html" aria-label="Mis personajes: tus fichas">
+                <g class="lb-forma">
+                  <rect x="776" y="296" width="152" height="12" fill="#8d6a45"/>
+                  <rect x="784" y="308" width="16" height="68" fill="#6b4a2f"/><rect x="904" y="308" width="16" height="68" fill="#6b4a2f"/>
+                  <rect x="800" y="320" width="104" height="40" fill="#5a3f27"/>
+                  <rect x="796" y="272" width="56" height="24" fill="#f2ead2"/><rect x="796" y="268" width="56" height="4" fill="#d9c9a0"/>
+                  <rect x="804" y="278" width="40" height="2" fill="#6b4a2f"/><rect x="804" y="284" width="32" height="2" fill="#6b4a2f"/>
+                  <rect x="872" y="264" width="12" height="32" fill="#e9dcc0"/>
+                  <rect x="876" y="248" width="4" height="16" fill="#e9dcc0"/>
+                  <rect x="876" y="236" width="4" height="12" fill="#f0b038" class="lb-llama"/>
+                  <rect x="900" y="280" width="12" height="16" fill="#1c1422"/><rect x="904" y="266" width="4" height="14" fill="#e9dcc0"/>
+                </g>
+                <text x="852" y="396" text-anchor="middle" class="lb-etq">MIS PERSONAJES</text>
+              </a>
+
+              <!-- Mesa de ajedrez -->
+              <a class="lb-spot" href="ajedrez.html" aria-label="Ajedrez">
+                <g class="lb-forma">
+                  <rect x="224" y="424" width="144" height="16" fill="#8d6a45"/>
+                  <rect x="232" y="440" width="16" height="48" fill="#6b4a2f"/><rect x="344" y="440" width="16" height="48" fill="#6b4a2f"/>
+                  <rect x="248" y="396" width="96" height="32" fill="url(#pTablero)"/>
+                  <rect x="248" y="392" width="96" height="4" fill="#3a2a1d"/>
+                  <rect x="260" y="378" width="8" height="18" fill="#f2ead2"/><rect x="258" y="374" width="12" height="6" fill="#f2ead2"/>
+                  <rect x="300" y="382" width="8" height="14" fill="#f2ead2"/>
+                  <rect x="318" y="376" width="8" height="20" fill="#2a2030"/><rect x="316" y="372" width="12" height="6" fill="#2a2030"/>
+                  <rect x="282" y="386" width="8" height="10" fill="#2a2030"/>
+                </g>
+                <text x="296" y="512" text-anchor="middle" class="lb-etq">AJEDREZ</text>
+              </a>
+
+              <!-- Mesa de cartas (solo admin por ahora) -->
+              <a class="lb-spot" data-admin-only href="cartas.html" aria-label="Cartas malditas">
+                <g class="lb-forma">
+                  <rect x="552" y="432" width="168" height="16" fill="#8d6a45"/>
+                  <rect x="560" y="448" width="16" height="44" fill="#6b4a2f"/><rect x="696" y="448" width="16" height="44" fill="#6b4a2f"/>
+                  <rect x="560" y="404" width="152" height="28" fill="#2f6a4d"/>
+                  <rect x="580" y="388" width="24" height="32" fill="#f2ead2" transform="rotate(-12 592 404)"/>
+                  <rect x="620" y="392" width="24" height="32" fill="#7a2f4a" transform="rotate(6 632 408)"/>
+                  <rect x="660" y="390" width="24" height="32" fill="#f2ead2" transform="rotate(14 672 406)"/>
+                  <rect x="626" y="398" width="8" height="8" fill="#e8b84a" transform="rotate(6 632 408)"/>
+                </g>
+                <text x="636" y="512" text-anchor="middle" class="lb-etq">CARTAS</text>
+              </a>
+
+              <!-- Trampilla: Valhalla (solo admin por ahora) -->
+              <a class="lb-spot" data-admin-only href="valhalla.html" aria-label="Valhalla: la arena">
+                <g class="lb-forma">
+                  <rect x="776" y="448" width="136" height="64" fill="#2a1d14"/>
+                  <rect x="784" y="456" width="120" height="48" fill="#120c08"/>
+                  <rect x="792" y="464" width="104" height="8" fill="#3a2a1d"/><rect x="800" y="476" width="88" height="8" fill="#2c1f15"/>
+                  <rect x="808" y="488" width="72" height="8" fill="#20160f"/>
+                  <rect x="836" y="452" width="16" height="8" fill="#8d8d99"/>
+                  <circle cx="844" cy="452" r="6" fill="none" stroke="#8d8d99" stroke-width="3"/>
+                </g>
+                <text x="844" y="532" text-anchor="middle" class="lb-etq">VALHALLA</text>
+              </a>
+
+              <!-- Faroles y alfombra -->
+              <g>
+                <rect x="348" y="28" width="4" height="28" fill="#8d8d99"/>
+                <rect x="340" y="56" width="20" height="24" fill="#e8b84a"/><rect x="344" y="60" width="12" height="16" fill="#fff1b0" class="lb-llama"/>
+                <circle cx="350" cy="70" r="70" fill="url(#gFarol)" class="lb-brillo"/>
+                <rect x="738" y="28" width="4" height="20" fill="#8d8d99"/>
+                <rect x="730" y="48" width="20" height="24" fill="#e8b84a"/><rect x="734" y="52" width="12" height="16" fill="#fff1b0" class="lb-llama lb-l2"/>
+                <circle cx="740" cy="62" r="70" fill="url(#gFarol)" class="lb-brillo lb-b2"/>
+                <rect x="392" y="452" width="176" height="56" fill="#6e2f3a" opacity=".85"/>
+                <rect x="400" y="460" width="160" height="40" fill="none" stroke="#e8b84a" stroke-width="3" opacity=".7"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Bienvenida (solo para quien no ha iniciado sesión) -->
+          <div class="lb-bienvenida lb-solo-invitado" id="lbBienvenida">
+            <div class="lb-bienvenida-caja">
+              <p class="lb-eyebrow">★ BIENVENIDO ★</p>
+              <h2>La taberna está cerrada para ti</h2>
+              <p>Aquí están el mapa, las fichas, la música y los juegos de la mesa. Inicia sesión y te abrimos la puerta.</p>
+              <button type="button" class="lb-boton lb-boton-grande" id="lbEntrar">Iniciar sesión</button>
+              <p class="lb-chico"><a href="compendio.html">Solo quiero ver el compendio</a></p>
+            </div>
+          </div>
         </div>
 
-        <div id="entryGrid" class="entry-grid"></div>
-        <div id="emptyState" class="empty-state hidden">
-          <h3>No se encontraron entradas</h3>
-          <p>Prueba con otro término o elimina alguno de los filtros.</p>
-        </div>
-      </section>
-    </section>
-  </main>
+        <section class="lb-zonas lb-solo-socio" id="lbZonas">
+          <div class="lb-caja">
+            <h2>Mundo</h2>
+            <div class="lb-caja-cuerpo lb-lista-links">
+              <a href="compendio.html">Compendio</a><a href="mapa.html">Mapa</a><a href="cronologia.html">Cronología</a>
+              <a href="lugares.html">Lugares</a><a href="personajes.html">Personajes</a><a href="bestiario.html">Bestiario</a>
+              <a href="razas.html">Razas</a><a href="religion.html">Religión</a><a href="facciones.html">Facciones</a>
+            </div>
+          </div>
+          <div class="lb-caja">
+            <h2>Tu mesa</h2>
+            <div class="lb-caja-cuerpo lb-lista-links">
+              <a href="fichas.html">Mis personajes</a><a href="peticiones.html">Peticiones</a><a href="fanarts.html">Fanarts</a>
+              <a href="reglas.html">Reglas</a><a href="armas.html">Armas</a><a href="objetos.html">Objetos</a>
+              <a href="economia.html">Economía</a><a href="textos.html">Textos</a><a href="pergaminos.html">Pergaminos</a>
+            </div>
+          </div>
+          <div class="lb-caja">
+            <h2>Salón de juegos</h2>
+            <div class="lb-caja-cuerpo lb-lista-links">
+              <a href="minijuegos.html">Minijuegos</a><a href="ajedrez.html">Ajedrez</a><a href="ritmo.html">Zarabanda</a>
+              <a href="rocola.html">Rocola</a><a href="sacrificio.html">Hooey</a>
+              <a href="arqueria.html" data-admin-only>Arquería</a><a href="duelo.html" data-admin-only>Duelo</a>
+              <a href="cartas.html" data-admin-only>Cartas</a><a href="valhalla.html" data-admin-only>Valhalla</a>
+            </div>
+          </div>
+        </section>
+      </main>
 
-  <dialog id="entryModal">
-    <button id="closeModal" class="modal-close" aria-label="Cerrar">×</button>
-    <article id="modalContent"></article>
-  </dialog>
+      <!-- Columna derecha: lo que es tuyo y lo nuevo -->
+      <aside class="lb-lado lb-der lb-solo-socio">
+        <section class="lb-caja">
+          <h2>Tu personaje</h2>
+          <div class="lb-caja-cuerpo" id="lbPersonajes"><p class="lb-chico">Cargando...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Retos y partidas</h2>
+          <div class="lb-caja-cuerpo" id="lbRetos"><p class="lb-chico">Cargando...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Tablón</h2>
+          <div class="lb-caja-cuerpo" id="lbNovedades"></div>
+        </section>
+        <section class="lb-caja" id="lbFanartsCaja" hidden>
+          <h2>Fanarts nuevos</h2>
+          <div class="lb-caja-cuerpo lb-miniaturas" id="lbFanarts"></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Tu posición</h2>
+          <div class="lb-caja-cuerpo" id="lbRanking"><p class="lb-chico">Cargando...</p></div>
+        </section>
+      </aside>
+    </div>
 
-  <script src="data/entries.js?v=20261135"></script>
-  <script src="data/personajes.js?v=20261135"></script>
-  <script src="data/lugares.js?v=20261135"></script>
-  <script src="data/facciones.js?v=20261135"></script>
-  <script src="data/pergaminos.js?v=20261135"></script>
-  <script src="data/armas.js?v=20261135"></script>
-  <script src="data/objetos.js?v=20261135"></script>
-  <script src="data/bestiario.js?v=20261135"></script>
-  <script src="data/razas.js?v=20261135"></script>
-  <script src="data/religiones.js?v=20261135"></script>
-  <script src="data/rotacion.js?v=20261135"></script>
-  <script src="data/musica.js?v=20261135"></script>
-  <script src="js/musica-nube.js?v=20261135"></script>
-  <script src="js/common.js?v=20261135"></script>
-  <script src="js/temas.js?v=20261135"></script>
-  <script src="js/player.js?v=20261135"></script>
-  <script>window.TAG_GROUPS = { groupByCategory: true };</script>
-  <script src="js/modal.js?v=20261135"></script>
-  <script src="data/jumpscare.js?v=20261135"></script>
-  <script src="data/contrasenas.js?v=20261135"></script>
-  <script src="js/fichas-supabase.js?v=20261135"></script>
-  <script src="js/lado.js?v=20261135"></script>
-  <script src="js/slappy.js?v=20261135"></script>
-  <script src="js/busqueda-global.js?v=20261135"></script>
-  <script src="js/header-marquee.js?v=20261135"></script>
-  <script src="js/compendio.js?v=20261135"></script>
-  <script src="data/saludos.js?v=20261135"></script>
-  <script src="js/bienvenida.js?v=20261135"></script>
+    <footer class="lb-pie">
+      <p>Mejor visto con ganas de jugar · Última actualización: <span id="lbActualizado">—</span></p>
+      <p class="lb-chico">Hecho a mano para la mesa. Nada de esto es oficial de nadie.</p>
+    </footer>
+  </div>
+
+  <script src="data/rotacion.js?v=20261136"></script>
+  <script src="data/musica.js?v=20261136"></script>
+  <script src="js/musica-nube.js?v=20261136"></script>
+  <script src="js/common.js?v=20261136"></script>
+  <script src="js/temas.js?v=20261136"></script>
+  <script src="js/player.js?v=20261136"></script>
+  <script src="data/jumpscare.js?v=20261136"></script>
+  <script src="data/contrasenas.js?v=20261136"></script>
+  <script src="js/fichas-supabase.js?v=20261136"></script>
+  <script src="js/lado.js?v=20261136"></script>
+  <script src="js/slappy.js?v=20261136"></script>
+  <script src="data/novedades.js?v=20261136"></script>
+  <script src="data/saludos.js?v=20261136"></script>
+  <script src="js/bienvenida.js?v=20261136"></script>
+  <script src="js/lobby.js?v=20261136"></script>
 </body>
 </html>
