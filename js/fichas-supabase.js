@@ -75,6 +75,15 @@ async function adminListarPerfiles() {
   return data;
 }
 
+/* Dar o quitar el Admin a una cuenta. Solo lo puede hacer un Admin y el servidor
+   no deja quitarse el permiso a uno mismo ni dejar el sitio sin ningún Admin
+   (ver scratchpad/admin_dar_admin.sql). */
+async function adminCambiarAdmin(idUsuario, esAdmin) {
+  const supabase = await fichasCliente();
+  const { error } = await supabase.rpc("fichas_admin_set_admin", { target_id: idUsuario, nuevo: !!esAdmin });
+  if (error) throw error;
+}
+
 async function adminCambiarSide(idUsuario, nuevoSide) {
   const supabase = await fichasCliente();
   const { error } = await supabase.rpc("fichas_admin_set_side", { target_id: idUsuario, nuevo_side: nuevoSide });

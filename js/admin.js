@@ -102,6 +102,11 @@
     });
   }
 
+  let miIdCuenta = null;
+  if (typeof fichasSesionActual === "function") {
+    fichasSesionActual().then(ses => { miIdCuenta = ses && ses.user ? ses.user.id : null; }).catch(() => {});
+  }
+
   function pintarCuentas(lista) {
     const cont = document.getElementById("adminCuentasLista");
     const count = document.getElementById("adminCuentasCount");
@@ -113,16 +118,17 @@
     }
 
     cont.innerHTML = lista.map(u => `
-      <div class="admin-cuenta-fila" data-id="${u.id}">
+      <div class="admin-cuenta-fila" data-id="${u.id}" data-es-admin="${u.es_admin ? "1" : "0"}">
         <span class="admin-cuenta-nombre">
           ${escaparHtml(u.username || "(sin nombre de usuario)")}
-          ${u.es_admin ? '<span class="admin-cuenta-tag">★ Admin</span>' : ""}
+          <span class="admin-cuenta-tag"${u.es_admin ? "" : " hidden"}>★ Admin</span>
         </span>
         <div class="admin-cuenta-side">
           <button type="button" class="admin-side-btn ${u.side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
           <button type="button" class="admin-side-btn ${u.side === "B" ? "is-active" : ""}" data-side="B">${LADO_NOMBRES.B}</button>
         </div>
         <div class="admin-cuenta-acciones">
+          ${u.id === miIdCuenta ? "" : `<button type="button" class="admin-cuenta-accion" data-accion="admin">${u.es_admin ? "Quitar Admin" : "Dar Admin"}</button>`}
           <button type="button" class="admin-cuenta-accion" data-accion="password">Cambiar contraseña</button>
           <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-accion="eliminar">Eliminar cuenta</button>
         </div>
@@ -138,6 +144,29 @@
           fila.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b.dataset.side === side));
         } catch (err) {
           alert("No se pudo cambiar el Side. Prueba de nuevo.");
+        }
+      });
+    });
+
+    cont.querySelectorAll('[data-accion="admin"]').forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const fila = btn.closest("[data-id]");
+        const nombre = fila.querySelector(".admin-cuenta-nombre").textContent.replace("★ Admin", "").trim();
+        const darlo = fila.dataset.esAdmin !== "1";
+        const confirmado = confirm(darlo
+          ? `¿Dar Admin a "${nombre}"?\n\nPodrá ver y cambiar cuentas, fichas, peticiones y todo este panel.`
+          : `¿Quitarle el Admin a "${nombre}"?`);
+        if (!confirmado) return;
+        btn.disabled = true;
+        try {
+          await adminCambiarAdmin(fila.dataset.id, darlo);
+          fila.dataset.esAdmin = darlo ? "1" : "0";
+          fila.querySelector(".admin-cuenta-tag").hidden = !darlo;
+          btn.textContent = darlo ? "Quitar Admin" : "Dar Admin";
+        } catch (err) {
+          alert("No se pudo cambiar el permiso: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/admin_dar_admin.sql en Supabase?");
+        } finally {
+          btn.disabled = false;
         }
       });
     });
