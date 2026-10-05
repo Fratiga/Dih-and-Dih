@@ -33,19 +33,23 @@
     }
     let ultimo = 0;
     function cuadro(t) {
-      const dt = Math.min(0.05, (t - ultimo) / 1000 || 0);
+      requestAnimationFrame(cuadro);
+      // Con 30 cuadros por segundo las cenizas se ven igual y la página recompone la mitad de veces
+      if (t - ultimo < 33) return;
+      const dt = Math.min(0.1, (t - ultimo) / 1000 || 0);
       ultimo = t;
       ctx.clearRect(0, 0, w, h);
       for (const b of brasas) {
         b.y -= b.v * dt;
         b.f += dt * 2;
         if (b.y < -4) { b.y = h + 4; b.x = Math.random() * w; }
-        ctx.fillStyle = b.cal ? `rgba(240,194,90,${0.3 + 0.4 * Math.abs(Math.sin(b.f))})` : `rgba(150,145,130,${0.2 + 0.25 * Math.abs(Math.sin(b.f))})`;
+        ctx.fillStyle = b.cal ? "rgb(240,194,90)" : "rgb(150,145,130)";
+        ctx.globalAlpha = (b.cal ? 0.3 : 0.2) + (b.cal ? 0.4 : 0.25) * Math.abs(Math.sin(b.f));
         ctx.beginPath();
         ctx.arc(b.x + Math.sin(b.f) * 5, b.y, b.r, 0, 6.28);
         ctx.fill();
       }
-      requestAnimationFrame(cuadro);
+      ctx.globalAlpha = 1;
     }
     requestAnimationFrame(cuadro);
   })();
@@ -64,11 +68,13 @@
   }
 
   // El jefe: su "vida" muestra quién va adelante (la mitad = parejo)
+  let barraActual = -1;
   function animarBarra() {
     if (juego) {
       const m = juego.marcador();
       const f = Math.min(1, Math.max(0.02, 0.5 + (m.puntajeRival - m.puntaje) / 240));
-      barra.style.width = (f * 100) + "%";
+      // Solo se toca el estilo cuando el valor cambió de verdad, y con transform (sin recalcular la página)
+      if (Math.abs(f - barraActual) > 0.004) { barra.style.transform = `scaleX(${f.toFixed(3)})`; barraActual = f; }
     }
     requestAnimationFrame(animarBarra);
   }
@@ -116,6 +122,7 @@
       rival: "verdam",
       duracion: 60,
       pantallas: false,
+      resolucionMax: 1,
       onEstado: estado => {
         botonJugar.classList.toggle("hidden", estado !== "listo");
       },

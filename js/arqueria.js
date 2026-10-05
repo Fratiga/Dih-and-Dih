@@ -47,7 +47,11 @@
     };
   }
 
-  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, onEstado, onFin, onPuntaje }) {
+  /* resolucionMax: tope de píxeles por píxel CSS del lienzo. En pantallas de alta densidad
+     (2x o más) dibujar a resolución completa cuesta el doble o el triple de relleno por
+     cuadro y casi no se nota; el combate con Verdam lo baja más porque va sobre capas
+     con filtros. */
+  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, resolucionMax = 1.5, onEstado, onFin, onPuntaje }) {
     let cfg = RIVALES[claveRival] || RIVALES.hornet;
     const ctx = canvas.getContext("2d");
     const ancho = LOGICO_ANCHO;
@@ -57,6 +61,8 @@
     let vs = false; // partida contra otro jugador: el puntaje del rival llega de fuera
     let textoFin = null;
     let azar = Math.random; // con semilla en las partidas contra otro jugador
+    let sucio = true; // fuera de la partida solo se vuelve a dibujar cuando algo cambió
+    let cursorActual = "";
     let estado = "listo"; // listo | jugando | fin
     let tiempo = 0;
     let puntaje = 0;
@@ -71,12 +77,14 @@
     let cursor = null;
     let mouse = false; // la mira solo se dibuja con ratón; en táctil taparía el dedo
 
+    let lastW = 0;
     function ajustarTamano() {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, resolucionMax);
       const caja = canvas.getBoundingClientRect();
       canvas.width = Math.max(1, Math.round(caja.width * dpr));
       canvas.height = Math.max(1, Math.round(caja.height * dpr));
       ctx.setTransform(canvas.width / ancho, 0, 0, canvas.height / alto, 0, 0);
+      sucio = true;
     }
 
     function posicion(e) {
@@ -114,7 +122,7 @@
         puntaje += pts;
         if (onPuntaje) onPuntaje(puntaje);
         efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: `+${pts}`, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
-        for (let k = 0; k < 10; k++) {
+        for (let k = 0; k < 7; k++) {
           const a = Math.random() * Math.PI * 2;
           const v = 70 + Math.random() * 130;
           efectos.push({ tipo: "chispa", x: b.x, y: b.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, edad: 0, vida: 0.5, color: anillo === 0 ? "#f1c40f" : "#c0392b" });
@@ -134,6 +142,7 @@
 
     function cambiarEstado(nuevo) {
       estado = nuevo;
+      sucio = true;
       if (onEstado) onEstado(nuevo);
     }
 
@@ -281,8 +290,9 @@
       const dt = Math.min(0.05, (t - ultimo) / 1000 || 0);
       ultimo = t;
       actualizar(dt);
-      dibujar();
-      canvas.style.cursor = estado === "jugando" && mouse ? "none" : "";
+      if (estado === "jugando" || efectos.length || sucio) { dibujar(); sucio = false; }
+      const forma = estado === "jugando" && mouse ? "none" : "";
+      if (forma !== cursorActual) { canvas.style.cursor = forma; cursorActual = forma; }
       requestAnimationFrame(cuadro);
     }
 
@@ -301,6 +311,8 @@
       disparar(cursor.x, cursor.y);
     });
     window.addEventListener("resize", ajustarTamano);
+    // El lienzo también cambia de tamaño sin que la ventana cambie (la fuente o el tema cargan tarde)
+    if (window.ResizeObserver) new ResizeObserver(() => { const c = canvas.getBoundingClientRect(); if (Math.round(c.width * 100) !== lastW) { lastW = Math.round(c.width * 100); ajustarTamano(); } }).observe(canvas);
 
     ajustarTamano();
     requestAnimationFrame(cuadro);
@@ -328,16 +340,18 @@
 
     function setNombreJugador(n) {
       const limpio = String(n || "").trim().slice(0, 16);
-      if (limpio) nombreJugador = limpio;
+      if (limpio) { nombreJugador = limpio; sucio = true; }
     }
 
     function setPuntajeRival(n) {
       if (n > puntajeRival) destelloRival = 0.35;
       puntajeRival = n;
+      sucio = true;
     }
 
     function setFin(texto) {
       textoFin = texto;
+      sucio = true;
       if (estado === "listo") cambiarEstado("fin");
     }
 
