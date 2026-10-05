@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zarabanda — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261121">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261121">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261121">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261121">
-  <script src="js/mj-volumen.js?v=20261121"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261122">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261122">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261122">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261122">
+  <script src="js/mj-volumen.js?v=20261122"></script>
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -40,15 +40,28 @@
           <p class="rt-etiqueta">Dificultad</p>
           <div class="rt-dificultades" id="rtDificultades"></div>
 
-          <div class="rt-opciones">
-            <label class="rt-ajuste">Sincronía <input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0"> <output id="rtDesfaseTxt">0 ms</output></label>
-            <label class="rt-practica"><input type="checkbox" id="rtPractica"> Práctica (la vida no baja, no puntúa)</label>
-            <label class="rt-practica"><input type="checkbox" id="rtPersonaje"> Mostrar personaje</label>
-            <div class="rt-foto">
-              <button type="button" id="rtFotoBtn" class="rt-secundario">Usar mi foto</button>
-              <button type="button" id="rtFotoQuitar" class="rt-secundario hidden">Volver al slime</button>
-              <img id="rtFotoVista" class="rt-foto-vista hidden" alt="Tu foto de personaje">
-              <input type="file" id="rtFotoArchivo" accept="image/*" class="hidden">
+          <div class="rt-ajustes">
+            <p class="rt-etiqueta">Ajustes y accesibilidad</p>
+            <div class="rt-ajuste-fila">
+              <span class="rt-ajuste-info"><strong>Sincronía</strong><small>Si oyes la música desfasada de las notas</small></span>
+              <span class="rt-desfase"><input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0" aria-label="Sincronía"> <output id="rtDesfaseTxt">0 ms</output></span>
+            </div>
+            <label class="rt-ajuste-fila rt-interruptor">
+              <span class="rt-ajuste-info"><strong>Modo práctica</strong><small>La vida no baja y no puntúa</small></span>
+              <input type="checkbox" id="rtPractica"><span class="rt-pista"></span>
+            </label>
+            <label class="rt-ajuste-fila rt-interruptor">
+              <span class="rt-ajuste-info"><strong>Mostrar personaje</strong><small>Quítalo si te distrae</small></span>
+              <input type="checkbox" id="rtPersonaje"><span class="rt-pista"></span>
+            </label>
+            <div class="rt-ajuste-fila">
+              <span class="rt-ajuste-info"><strong>Foto del personaje</strong><small>Se recorta en círculo y reemplaza al slime</small></span>
+              <span class="rt-foto">
+                <img id="rtFotoVista" class="rt-foto-vista hidden" alt="Tu foto de personaje">
+                <button type="button" id="rtFotoBtn" class="rt-secundario">Usar mi foto</button>
+                <button type="button" id="rtFotoQuitar" class="rt-secundario hidden">Volver al slime</button>
+                <input type="file" id="rtFotoArchivo" accept="image/*" class="hidden">
+              </span>
             </div>
           </div>
 
@@ -127,14 +140,14 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261121"></script>
-  <script src="js/fichas-supabase.js?v=20261121"></script>
-  <script src="js/lado.js?v=20261121"></script>
-  <script src="js/minijuegos-stats.js?v=20261121"></script>
-  <script src="data/musica.js?v=20261121"></script>
-  <script src="data/musica-duraciones.js?v=20261121"></script>
-  <script src="js/peticiones-supabase.js?v=20261121"></script>
-  <script src="js/ritmo-analisis.js?v=20261121"></script>
-  <script src="js/ritmo.js?v=20261121"></script>
+  <script src="js/temas.js?v=20261122"></script>
+  <script src="js/fichas-supabase.js?v=20261122"></script>
+  <script src="js/lado.js?v=20261122"></script>
+  <script src="js/minijuegos-stats.js?v=20261122"></script>
+  <script src="data/musica.js?v=20261122"></script>
+  <script src="data/musica-duraciones.js?v=20261122"></script>
+  <script src="js/peticiones-supabase.js?v=20261122"></script>
+  <script src="js/ritmo-analisis.js?v=20261122"></script>
+  <script src="js/ritmo.js?v=20261122"></script>
 </body>
 </html>

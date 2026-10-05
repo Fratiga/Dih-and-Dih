@@ -70,9 +70,7 @@
     nombre = nombre.replace(/\.[^.]+$/, "");
     return Object.assign({ ruta, nombre, dur: duraciones[ruta] || 0 }, partirNombre(nombre));
   });
-  // Estas dos no las puede decodificar el navegador, así que no sirven para el juego
-  const SIN_DECODIFICAR = ["Love Like You (feat. Rebecca Sugar)", "Windmill Isle (Day) - Sonic Unleashed"];
-  const canciones = todas.filter(c => (!c.dur || c.dur <= LIMITE_S) && !SIN_DECODIFICAR.some(x => c.ruta.includes(x)));
+  const canciones = todas.filter(c => !c.dur || c.dur <= LIMITE_S);
   if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones", titulo: "No hay canciones", artista: "", dur: 0 });
   {
     // Las preferencias guardadas antes eran un número de lista; se pasa a la ruta de la canción
@@ -534,8 +532,18 @@
     const vista = document.getElementById("rtFotoVista");
     const quitar = document.getElementById("rtFotoQuitar");
     if (url) {
+      // Se prepara una sola vez en un lienzo del tamaño con el que se dibuja (con su aro): en cada
+      // fotograma solo se copia, sin recortar ni escalar, que es lo que más cuesta.
       const img = new Image();
-      img.onload = () => { fotoImg = img; };
+      img.onload = () => {
+        const lienzo = document.createElement("canvas");
+        lienzo.width = 140; lienzo.height = 140;
+        const gl = lienzo.getContext("2d");
+        gl.drawImage(img, 0, 0, 140, 140);
+        gl.strokeStyle = "rgba(255, 255, 255, 0.85)"; gl.lineWidth = 5;
+        gl.beginPath(); gl.arc(70, 70, 67.5, 0, Math.PI * 2); gl.stroke();
+        fotoImg = lienzo;
+      };
       img.src = url;
       vista.src = url;
     }
@@ -559,13 +567,8 @@
     ctxC.translate(x, y);
     ctxC.scale(1 / estira, estira);
     if (fotoImg) {
-      // La foto reemplaza al slime: círculo del mismo tamaño y con el mismo salto
-      ctxC.save();
-      ctxC.beginPath(); ctxC.arc(0, 0, 34, 0, Math.PI * 2); ctxC.clip();
-      ctxC.drawImage(fotoImg, -34, -34, 68, 68);
-      ctxC.restore();
-      ctxC.strokeStyle = "rgba(255, 255, 255, 0.85)"; ctxC.lineWidth = 3;
-      ctxC.beginPath(); ctxC.arc(0, 0, 34, 0, Math.PI * 2); ctxC.stroke();
+      // La foto (ya circular) reemplaza al slime, con el mismo salto
+      ctxC.drawImage(fotoImg, -35, -35, 70, 70);
       ctxC.restore();
       return;
     }

@@ -128,3 +128,32 @@
 .rt-recorte-lienzo:active { cursor: grabbing; }
 .rt-recorte-zoom { display: flex; align-items: center; gap: 10px; font-size: .8rem; color: var(--muted); width: 100%; }
 .rt-recorte-zoom input { flex: 1; }
+
+/* --- Ajustes y accesibilidad --- */
+.rt-ajustes { display: flex; flex-direction: column; border: 1px solid var(--border); background: rgba(255, 255, 255, .02); }
+.rt-ajustes > .rt-etiqueta { padding: 11px 16px; border-bottom: 1px solid var(--border); }
+.rt-ajuste-fila { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, .06); flex-wrap: wrap; }
+.rt-ajuste-fila:last-child { border-bottom: 0; }
+.rt-ajuste-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rt-ajuste-info strong { font-size: .9rem; font-weight: 600; color: var(--text); }
+.rt-ajuste-info small { font-size: .74rem; color: var(--muted); }
+.rt-desfase { display: flex; align-items: center; gap: 12px; }
+.rt-desfase input { width: 150px; }
+.rt-desfase output { min-width: 4.6em; text-align: right; font-size: .82rem; color: var(--text); font-variant-numeric: tabular-nums; }
+.rt-foto { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rt-foto .rt-secundario { padding: 8px 16px; }
+
+.rt-interruptor { position: relative; cursor: pointer; }
+.rt-interruptor input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.rt-pista {
+  position: relative; flex-shrink: 0; width: 44px; height: 24px; border-radius: 12px;
+  background: #241b3a; border: 1px solid #4a3c6e; transition: background .16s, border-color .16s;
+}
+.rt-pista::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #8d86a6; transition: transform .16s, background .16s;
+}
+.rt-interruptor input:checked + .rt-pista { background: rgba(255, 79, 216, .38); border-color: #ff4fd8; }
+.rt-interruptor input:checked + .rt-pista::after { transform: translateX(20px); background: #fff; }
+.rt-interruptor input:focus-visible + .rt-pista { outline: 2px solid #7ae8ff; outline-offset: 2px; }
+.rt-interruptor:hover .rt-pista { border-color: #7ae8ff; }
