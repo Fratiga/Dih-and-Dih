@@ -87,7 +87,9 @@
 
   async function cargarYPintar(juego, contenedor, definiciones) {
     try {
-      pintar(contenedor, agrupar(await filas(juego)), definiciones);
+      const usuarios = agrupar(await filas(juego));
+      // definiciones puede ser una función que arma los rankings según los datos (rankings por rival, por jugador...)
+      pintar(contenedor, usuarios, typeof definiciones === "function" ? definiciones(usuarios) : definiciones);
     } catch (e) {
       contenedor.innerHTML = `<p class="sacrificio-vacio">El ranking no está disponible por ahora.</p>`;
     }

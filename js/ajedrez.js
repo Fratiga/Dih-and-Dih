@@ -32,6 +32,7 @@
   const RELLENO = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟︎" };
   const VALOR = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
   const CLAVE_RECORD = "compendioAjedrezRecord";
+  const MUSICA_VICTORIA = "assets/cosas/Pizza Parlor Theme.mp3";
   const CLAVE_REGISTRADAS = "compendioAjedrezPvpRegistradas";
 
   // Tablas de posición simples (desde el punto de vista de las blancas, fila 8 arriba)
@@ -225,6 +226,82 @@
     }
   }
 
+  /* --- Pantalla de victoria ---------------------------------------------------
+     Sale unos instantes después de ganar, con música y las victorias que llevas
+     contra ese mismo rival (por dificultad) o contra ese jugador. */
+  const victoriaEl = document.getElementById("ajVictoria");
+  const confetiEl = document.getElementById("ajConfeti");
+  let musicaVictoria = null;
+  let musicaSilencio = false;
+  let victoriaTimer = null;
+
+  function sumarVictoria(clave) {
+    record[clave] = (record[clave] || 0) + 1;
+    try { localStorage.setItem(CLAVE_RECORD, JSON.stringify(record)); } catch (err) { /* sin almacenamiento */ }
+    return record[clave];
+  }
+
+  function ocultarVictoria() {
+    clearTimeout(victoriaTimer);
+    victoriaEl.classList.add("hidden");
+    confetiEl.innerHTML = "";
+    if (musicaVictoria) musicaVictoria.pause();
+  }
+
+  function mostrarVictoria(texto, conteo, derrota) {
+    victoriaEl.classList.toggle("aj-derrota", !!derrota);
+    document.getElementById("ajVictoriaTitulo").textContent = derrota ? "Derrota" : "¡Victoria!";
+    const img = document.getElementById("ajVictoriaImg");
+    if (img) img.classList.toggle("hidden", !!derrota);
+    document.getElementById("ajVictoriaSup").textContent = derrota ? "Esta vez no fue" : "Partida terminada";
+    document.getElementById("ajVictoriaTexto").textContent = texto;
+    document.getElementById("ajVictoriaConteo").textContent = conteo || "";
+    document.getElementById("ajVictoriaOtra").textContent = online ? "Revancha" : (derrota ? "Intentar de nuevo" : "Jugar otra");
+    if (derrota) {
+      // sin confeti ni música: solo el aviso
+      confetiEl.innerHTML = "";
+      victoriaEl.classList.remove("hidden");
+      if (musicaVictoria) musicaVictoria.pause();
+      return;
+    }
+    const colores = ["#e0b45c", "#8fdcff", "#e8837b", "#f1ecd6", "#7fd48a"];
+    confetiEl.innerHTML = Array.from({ length: 38 }, () => {
+      const x = Math.random() * 100;
+      const d = Math.random() * 1.6;
+      const t = 2.4 + Math.random() * 2;
+      const c = colores[Math.floor(Math.random() * colores.length)];
+      return `<i style="left:${x}%;background:${c};animation-delay:${d}s;animation-duration:${t}s"></i>`;
+    }).join("");
+    victoriaEl.classList.remove("hidden");
+    if (!musicaVictoria) { musicaVictoria = new Audio(MUSICA_VICTORIA); musicaVictoria.loop = true; musicaVictoria.volume = 0.55; }
+    musicaVictoria.muted = musicaSilencio;
+    musicaVictoria.currentTime = 0;
+    musicaVictoria.play().catch(() => { /* el navegador puede bloquear el sonido */ });
+  }
+
+  function victoriaProgramada(texto, conteo, derrota) {
+    clearTimeout(victoriaTimer);
+    const miPartida = partidaId;
+    // un momento para ver el tablero final antes de que tape todo
+    victoriaTimer = setTimeout(() => { if (miPartida === partidaId) mostrarVictoria(texto, conteo, derrota); }, 900);
+  }
+
+  function conteoContra(clave, nombre) {
+    return `Victorias contra ${nombre}: ${record[clave] || 0}`;
+  }
+
+  document.getElementById("ajVictoriaCerrar").addEventListener("click", ocultarVictoria);
+  document.getElementById("ajVictoriaSonido").addEventListener("click", ev => {
+    musicaSilencio = !musicaSilencio;
+    if (musicaVictoria) musicaVictoria.muted = musicaSilencio;
+    ev.currentTarget.style.opacity = musicaSilencio ? ".45" : "1";
+  });
+  document.getElementById("ajVictoriaOtra").addEventListener("click", () => {
+    ocultarVictoria();
+    if (online) revanchaEl.click();
+    else if (rival) nuevaPartida(rival);
+  });
+
   function terminar(texto, resultado) {
     terminado = true;
     detenerReloj();
@@ -234,14 +311,24 @@
       // Contra otro jugador: el resultado sale de la partida guardada y se anota solo
       setTimeout(cargarPartidas, 600);
       revanchaEl.classList.remove("hidden");
+      if (resultado === "gana") {
+        const n = sumarVictoria("j-" + online.oponente);
+        victoriaProgramada(`Le ganaste a ${rival.nombre}.`, `Victorias contra ${rival.nombre}: ${n}`);
+      } else if (resultado === "pierde") {
+        victoriaProgramada(texto, conteoContra("j-" + online.oponente, rival.nombre), true);
+      }
       return;
     }
     if (resultado === "gana" && !rival.sinRanking) {
-      record[rival.id] = (record[rival.id] || 0) + 1;
-      try { localStorage.setItem(CLAVE_RECORD, JSON.stringify(record)); } catch (err) { /* sin almacenamiento */ }
+      const n = sumarVictoria(rival.id);
       comentar("pierde");
+      victoriaProgramada(`Le ganaste a ${rival.nombre} (${rival.dificultad}).`, `Victorias contra ${rival.nombre}: ${n}`);
+    } else if (resultado === "gana") {
+      comentar("pierde");
+      victoriaProgramada(`Le ganaste a ${rival.nombre}.`, "Contra Hooey no se cuentan victorias.");
     } else if (resultado === "pierde") {
       comentar("gana");
+      victoriaProgramada(texto, rival.sinRanking ? "" : conteoContra(rival.id, rival.nombre), true);
     }
     pintarRivales();
     if (!rival.sinRanking) anotarPartida(resultado, texto.startsWith("Jaque mate"));
@@ -263,14 +350,28 @@
 
   function cargarRanking() {
     if (!rankingEl || !window.MjStats) return;
-    MjStats.cargarYPintar("ajedrez", rankingEl, [
-      { titulo: "Más victorias", valor: u => u.victorias },
-      { titulo: "Victorias contra El perro sabio", valor: u => (u.porClave.perro ? u.porClave.perro.victorias : 0) },
-      { titulo: "Victorias contra otros jugadores", valor: u => (u.porClave.jugador ? u.porClave.jugador.victorias : 0) },
-      { titulo: "Mate más rápido (jugadas)", valor: u => u.minimo.mate, menorEsMejor: true },
-      { titulo: "Más tablas", valor: u => u.tablas },
-      { titulo: "Más piezas capturadas", valor: u => u.suma.capturas }
-    ]);
+    MjStats.cargarYPintar("ajedrez", rankingEl, usuarios => {
+      const nombres = new Map(usuarios.map(u => [u.id, u.username]));
+      const victoriasCon = clave => u => (u.porClave[clave] ? u.porClave[clave].victorias : 0);
+      const defs = [{ titulo: "Más victorias", valor: u => u.victorias }];
+      // una lista por cada rival de la máquina, de menor a mayor dificultad
+      RIVALES.filter(r => !r.sinRanking).forEach(r => {
+        defs.push({ titulo: `Victorias contra ${r.nombre} (${r.dificultad})`, valor: victoriasCon(r.id) });
+      });
+      // y una por cada jugador al que alguien ya le ganó ("j-" + id del jugador)
+      const rivales = new Set();
+      usuarios.forEach(u => Object.entries(u.porClave).forEach(([k, f]) => { if (k.startsWith("j-") && f.victorias > 0) rivales.add(k); }));
+      [...rivales]
+        .map(k => ({ k, nombre: nombres.get(k.slice(2)) || "otro jugador" }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
+        .forEach(({ k, nombre }) => defs.push({ titulo: `Victorias contra ${nombre}`, valor: victoriasCon(k) }));
+      defs.push(
+        { titulo: "Mate más rápido (jugadas)", valor: u => u.minimo.mate, menorEsMejor: true },
+        { titulo: "Más tablas", valor: u => u.tablas },
+        { titulo: "Más piezas capturadas", valor: u => u.suma.capturas }
+      );
+      return defs;
+    });
   }
 
   if (window.MjStats) MjStats.cargarSesion().then(cargarRanking);
@@ -512,6 +613,7 @@
 
   function nuevaPartida(r) {
     if (!r) return;
+    ocultarVictoria();
     online = null;
     rival = r;
     partidaId += 1;
@@ -689,7 +791,7 @@
       const resultado = f.resultado === "tablas" ? "tablas" : ((f.resultado === "blancas") === (miColor === "w") ? "gana" : "pierde");
       const min = {};
       if (resultado === "gana" && f.motivo === "mate") min.mate = Math.max(1, mias);
-      const res = await MjStats.registrar("ajedrez", "jugador", resultado, { suma: { jugadas: mias, capturas }, min });
+      const res = await MjStats.registrar("ajedrez", "j-" + idOponente(f), resultado, { suma: { jugadas: mias, capturas }, min });
       if (!res.guardado) return; // se reintenta en la siguiente consulta
       registradas.add(f.id);
       try { localStorage.setItem(CLAVE_REGISTRADAS, JSON.stringify([...registradas].slice(-200))); } catch (err) { /* sin almacenamiento */ }
@@ -701,7 +803,8 @@
   function abrirOnline(f) {
     if (!Chess) return;
     modo = "jugadores";
-    online = { id: f.id };
+    ocultarVictoria();
+    online = { id: f.id, oponente: idOponente(f) };
     detenerReloj();
     rival = { id: "jugador", nombre: nombreOponente(f), dificultad: "Jugador", frases: null };
     partidaId += 1;
@@ -742,7 +845,8 @@
         const gane = (f.resultado === "blancas") === (f.blancas === miId);
         terminar(gane ? `${rival.nombre} se rindió. Ganaste.` : `Te rendiste. ${rival.nombre} gana.`, gane ? "gana" : "pierde");
       } else {
-        terminar(`${textoResultado(f)}.`, f.resultado === "tablas" ? "tablas" : "gana");
+        const gane = (f.resultado === "blancas") === (f.blancas === miId);
+        terminar(`${textoResultado(f)}.`, f.resultado === "tablas" ? "tablas" : (gane ? "gana" : "pierde"));
       }
     }
   }
@@ -814,6 +918,7 @@
   }));
 
   cerrarOnlineEl.addEventListener("click", () => {
+    ocultarVictoria();
     online = null; juego = null; partidaId += 1; limpiarArrastre();
     refrescarVistas();
     cargarPartidas();

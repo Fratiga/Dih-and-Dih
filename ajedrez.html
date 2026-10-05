@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ajedrez — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261107">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261107">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261107">
+  <link rel="stylesheet" href="css/style.css?v=20261108">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261108">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261108">
 </head>
 <body class="mj-pagina aj-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -35,8 +35,13 @@
     <section id="ajModoJugadores" class="hidden">
       <p id="ajPvpAviso" class="aj-ayuda"></p>
       <div id="ajPvpPartidas"></div>
-      <h3 class="aj-pvp-titulo">Jugadores</h3>
-      <div id="ajPvpJugadores" class="aj-pvp-jugadores"></div>
+      <div class="aj-pvp-cuerpo">
+        <div class="aj-pvp-columna">
+          <h3 class="aj-pvp-titulo">Jugadores</h3>
+          <div id="ajPvpJugadores" class="aj-pvp-jugadores"></div>
+        </div>
+        <img class="aj-pvp-banner" src="assets/banners/HTccIIlWkAA7hnv.webp" alt="Yakub, científico, creador y mente maestra, sosteniendo un rey blanco sobre un tablero">
+      </div>
     </section>
 
     <div class="aj-controles" id="ajControles">
@@ -55,6 +60,21 @@
       <div class="aj-tablero-col">
         <div class="aj-capturas" id="ajCapturasRival" aria-label="Piezas que te capturó el rival"></div>
         <div id="ajTablero" class="aj-tablero"></div>
+        <div id="ajVictoria" class="aj-victoria hidden" role="dialog" aria-label="Victoria">
+          <div class="aj-confeti" id="ajConfeti" aria-hidden="true"></div>
+          <div class="aj-victoria-caja">
+            <img id="ajVictoriaImg" class="aj-victoria-img" src="assets/cosas/victoria-ajedrez.png" alt="Solomon impressed" onerror="this.remove()">
+            <p class="aj-victoria-sup" id="ajVictoriaSup">Partida terminada</p>
+            <h2 class="aj-victoria-titulo" id="ajVictoriaTitulo">¡Victoria!</h2>
+            <p id="ajVictoriaTexto" class="aj-victoria-texto"></p>
+            <p id="ajVictoriaConteo" class="aj-victoria-conteo"></p>
+            <div class="aj-victoria-botones">
+              <button type="button" id="ajVictoriaOtra" class="aj-boton">Jugar otra</button>
+              <button type="button" id="ajVictoriaCerrar" class="aj-boton">Ver el tablero</button>
+              <button type="button" id="ajVictoriaSonido" class="aj-boton" title="Silenciar la música">♪</button>
+            </div>
+          </div>
+        </div>
         <div class="aj-capturas" id="ajCapturasJugador" aria-label="Piezas que capturaste"></div>
       </div>
       <aside class="aj-lateral">
@@ -72,11 +92,11 @@
     <p class="mj-nota">Se anotan las partidas de quienes tienen sesión iniciada.</p>
     <div id="ajRankings" class="sacrificio-rankings"></div>
   </main>
-  <script src="js/temas.js?v=20261107"></script>
-  <script src="js/fichas-supabase.js?v=20261107"></script>
-  <script src="js/lado.js?v=20261107"></script>
-  <script src="js/minijuegos-stats.js?v=20261107"></script>
-  <script src="js/ajedrez.js?v=20261107"></script>
-  <script src="js/minijuegos-avisos.js?v=20261107"></script>
+  <script src="js/temas.js?v=20261108"></script>
+  <script src="js/fichas-supabase.js?v=20261108"></script>
+  <script src="js/lado.js?v=20261108"></script>
+  <script src="js/minijuegos-stats.js?v=20261108"></script>
+  <script src="js/ajedrez.js?v=20261108"></script>
+  <script src="js/minijuegos-avisos.js?v=20261108"></script>
 </body>
 </html>

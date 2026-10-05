@@ -3662,3 +3662,30 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 #adminPanelOcultos .mj-tarjeta:hover { border-color: var(--accent-soft); transform: translateY(-2px); }
 #adminPanelOcultos .mj-tarjeta h3 { margin: 0 0 6px; font-size: 1.05rem; color: var(--text); }
 #adminPanelOcultos .mj-tarjeta p { margin: 0; color: var(--muted); font-size: .85rem; line-height: 1.45; text-decoration: none; }
+
+/* --- Ajedrez: pantalla de victoria --- */
+.aj-tablero-col { position: relative; }
+.aj-victoria { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(12, 12, 14, .78); overflow: hidden; animation: ajVictoriaEntra .45s ease-out both; }
+@keyframes ajVictoriaEntra { from { opacity: 0; } to { opacity: 1; } }
+.aj-victoria-caja { position: relative; text-align: center; padding: 22px 26px; max-width: 86%; background: rgba(30, 30, 33, .92); border: 1px solid var(--accent-soft); box-shadow: 0 0 40px rgba(224, 180, 92, .25); animation: ajVictoriaCaja .6s cubic-bezier(.2, 1.2, .3, 1) both; }
+@keyframes ajVictoriaCaja { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.aj-victoria-sup { margin: 0 0 4px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.aj-victoria-titulo { margin: 0 0 10px; font: 700 clamp(2rem, 8vw, 3rem) var(--font-heading), sans-serif; letter-spacing: .04em; color: #e0b45c; text-shadow: 0 0 18px rgba(224, 180, 92, .5); animation: ajVictoriaBrillo 1.6s ease-in-out infinite alternate; }
+@keyframes ajVictoriaBrillo { from { text-shadow: 0 0 10px rgba(224, 180, 92, .35); } to { text-shadow: 0 0 26px rgba(224, 180, 92, .8); } }
+.aj-victoria-texto { margin: 0 0 6px; font-size: 1rem; }
+.aj-victoria-conteo { margin: 0 0 16px; font-size: .85rem; color: var(--accent-soft); }
+.aj-victoria-botones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.aj-confeti { position: absolute; inset: 0; pointer-events: none; }
+.aj-confeti i { position: absolute; top: -12px; width: 8px; height: 14px; opacity: .9; animation-name: ajConfeti; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes ajConfeti { from { transform: translateY(-20px) rotate(0deg); } to { transform: translateY(620px) rotate(540deg); } }
+@media (prefers-reduced-motion: reduce) { .aj-confeti { display: none; } .aj-victoria-titulo { animation: none; } }
+
+/* --- Ajedrez: banner junto a la lista de jugadores --- */
+.aj-pvp-cuerpo { display: flex; align-items: flex-start; gap: 28px; }
+.aj-pvp-columna { flex: 0 1 520px; min-width: 0; }
+.aj-pvp-banner { flex: 0 1 460px; min-width: 0; width: 100%; max-width: 460px; height: auto; margin-top: 16px; position: sticky; top: 16px; border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0, 0, 0, .45); }
+@media (max-width: 900px) { .aj-pvp-cuerpo { flex-direction: column; } .aj-pvp-banner { position: static; max-width: 100%; } }
+.aj-victoria.aj-derrota { background: rgba(14, 10, 10, .84); }
+.aj-derrota .aj-victoria-caja { border-color: #8a4a45; box-shadow: 0 0 40px rgba(170, 70, 62, .22); }
+.aj-derrota .aj-victoria-titulo { color: #c9776f; text-shadow: 0 0 14px rgba(170, 70, 62, .45); animation: none; }
+.aj-victoria-img { display: block; max-width: 100%; max-height: 190px; margin: 0 auto 12px; object-fit: contain; border: 1px solid var(--border); }
