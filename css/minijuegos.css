@@ -71,3 +71,5 @@ body.mj-pagina::after { display: none; }
 .mj-rankings .sacrificio-lista li:nth-child(3)::before { color: #c98f5a; font-weight: 700; }
 .mj-rankings .sacrificio-lista li strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--accent, var(--text)); }
 .mj-rankings .sacrificio-vacio { padding: 12px 2px; }
+.mj-tarjeta-oculta { border-style: dashed; }
+.mj-tarjeta-oculta small { display: block; margin-top: 8px; color: var(--accent-soft); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; }
