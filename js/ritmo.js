@@ -49,21 +49,57 @@
   const finEl = document.getElementById("rtFin");
   const pausaEl = document.getElementById("rtPausa");
   const buzonEl = document.getElementById("rtBuzon");
+  const lobbyEl = document.getElementById("rtLobby");
+  const buscarEl = document.getElementById("rtBuscar");
+  const tituloEl = document.getElementById("rtTitulo");
+  const metaEl = document.getElementById("rtMeta");
+  const puntajesEl = document.getElementById("rtPuntajes");
+  const puntajesTabsEl = document.getElementById("rtPuntajesTabs");
+  const limiteNotaEl = document.getElementById("rtLimiteNota");
+  const finPuntajesEl = document.getElementById("rtFinPuntajes");
+  const pieEl = document.getElementById("rtPie");
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0 };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "" };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
   function guardarRecords() { try { localStorage.setItem(CLAVE_RECORDS, JSON.stringify(records)); } catch (e) { /* sin almacenamiento */ } }
 
-  const canciones = (window.MUSICA || []).map(ruta => ({
-    ruta,
-    nombre: decodeURIComponent(ruta.split("/").pop()).replace(/\.[^.]+$/, "")
-  }));
-  if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones" });
-  if (ajustes.cancion >= canciones.length) ajustes.cancion = 0;
+  /* Solo entran canciones de hasta 6 minutos: más largas dan mapas enormes y tardan en analizarse.
+     Las duraciones salen de data/musica-duraciones.js; si una canción no está ahí se mide al
+     cargarla (ver cargarCancion). */
+  const LIMITE_S = 360;
+  const duraciones = window.MUSICA_DURACIONES || {};
+  function partirNombre(nombre) {
+    const m = nombre.match(/^(.*\S) - ([^-]+)$/);
+    return m ? { titulo: m[1].trim(), artista: m[2].trim() } : { titulo: nombre, artista: "" };
+  }
+  const todas = (window.MUSICA || []).map(ruta => {
+    let nombre = ruta.split("/").pop();
+    try { nombre = decodeURIComponent(nombre); } catch (e) { /* nombre tal cual */ }
+    nombre = nombre.replace(/\.[^.]+$/, "");
+    return Object.assign({ ruta, nombre, dur: duraciones[ruta] || 0 }, partirNombre(nombre));
+  });
+  const canciones = todas.filter(c => !c.dur || c.dur <= LIMITE_S);
+  const omitidas = todas.length - canciones.length;
+  if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones", titulo: "No hay canciones", artista: "", dur: 0 });
+  {
+    // Las preferencias guardadas antes eran un número de lista; se pasa a la ruta de la canción
+    const rutaGuardada = ajustes.ruta || ((window.MUSICA || [])[ajustes.cancion] || "");
+    const k = canciones.findIndex(c => c.ruta === rutaGuardada);
+    ajustes.cancion = k >= 0 ? k : 0;
+    ajustes.ruta = canciones[ajustes.cancion].ruta;
+  }
+
+  function duracionTexto(s) {
+    const t = Math.round(s);
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+  }
+  function esc(t) {
+    return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
 
   /* --- Análisis de la canción -------------------------------------------- */
   /* Energía por tramos en dos bandas: graves (por debajo de ~150 Hz) y agudos
@@ -258,13 +294,27 @@
     const resp = await fetch(encodeURI(cancion.ruta));
     if (!resp.ok) throw new Error("No se pudo descargar la canción");
     const datos = await resp.arrayBuffer();
-    bufferActual = await audio.decodeAudioData(datos);
+    const buffer = await audio.decodeAudioData(datos);
+    if (buffer.duration > LIMITE_S + 1) {
+      const larga = new Error("larga");
+      larga.cancion = cancion;
+      throw larga;
+    }
+    bufferActual = buffer;
     rutaBuffer = cancion.ruta;
     return bufferActual;
   }
 
+  /* El menú y el buzón viven en la sección de arriba; la carga, el final y la pausa van
+     sobre el campo de juego, que solo se ve mientras se juega. */
   function mostrar(panel) {
-    [menuEl, cargaEl, finEl, pausaEl, buzonEl].forEach(p => p.classList.toggle("hidden", p !== panel));
+    const enMenu = panel === menuEl || panel === buzonEl;
+    lobbyEl.classList.toggle("hidden", !enMenu);
+    escenarioEl.classList.toggle("hidden", enMenu);
+    pieEl.classList.toggle("hidden", enMenu);
+    menuEl.classList.toggle("hidden", panel !== menuEl);
+    buzonEl.classList.toggle("hidden", panel !== buzonEl);
+    [cargaEl, finEl, pausaEl].forEach(p => p.classList.toggle("hidden", p !== panel));
   }
 
   async function empezar() {
@@ -292,7 +342,17 @@
     } catch (err) {
       estado = "menu";
       mostrar(menuEl);
-      recordEl.textContent = "No se pudo cargar esa canción. Prueba con otra.";
+      if (err && err.message === "larga") {
+        // Se quita de la lista: dura más de 6 minutos
+        const k = canciones.indexOf(err.cancion);
+        if (k >= 0 && canciones.length > 1) canciones.splice(k, 1);
+        ajustes.cancion = Math.min(ajustes.cancion, canciones.length - 1);
+        ajustes.ruta = canciones[ajustes.cancion].ruta;
+        pintarMenu();
+        recordEl.textContent = "Esa canción dura más de 6 minutos y se quitó de la lista. Elige otra.";
+      } else {
+        recordEl.textContent = "No se pudo cargar esa canción. Prueba con otra.";
+      }
       return;
     }
     arrancar();
@@ -508,6 +568,8 @@
       `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
       (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "");
     mostrar(finEl);
+    finPuntajesEl.innerHTML = "";
+    if (completa && !ajustes.practica) subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax);
   }
 
   /* --- Dibujo --------------------------------------------------------------- */
@@ -730,25 +792,145 @@
     if (estado === "jugando") raf = requestAnimationFrame(bucle);
   }
 
+  /* --- Puntajes de todos --------------------------------------------------------
+     Tabla ritmo_puntajes (scratchpad/ritmo_puntajes.sql): el mejor puntaje de cada
+     jugador por canción y dificultad. Se lee sin sesión; para guardar hay que haber
+     iniciado sesión. */
+  const DESCRIPCION = { facil: "Relajado", normal: "Equilibrado", dificil: "Exigente", experto: "Extremo" };
+  const puntajesCache = new Map();
+  let vistaPuntajes = null; // "todas", una dificultad, o null = la que está elegida para jugar
+  let tokenPuntajes = 0;
+  let yo = { id: null, nombre: "" };
+
+  async function filasPuntajes(ruta, dif) {
+    const clave = ruta + "|" + dif;
+    const guardado = puntajesCache.get(clave);
+    if (guardado && Date.now() - guardado.t < 30000) return guardado.filas;
+    const supa = await fichasCliente();
+    let q = supa.from("ritmo_puntajes").select("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas").eq("cancion", ruta);
+    if (dif !== "todas") q = q.eq("dificultad", dif);
+    const { data, error } = await q.order("puntos", { ascending: false }).limit(50);
+    if (error) throw error;
+    puntajesCache.set(clave, { t: Date.now(), filas: data || [] });
+    return data || [];
+  }
+
+  function tablaPuntajes(filas, { conDificultad, max }) {
+    if (!filas.length) return `<p class="rt-nota">Nadie ha jugado esta canción todavía. Sé el primero.</p>`;
+    const vistas = filas.slice(0, max);
+    const miFila = yo.id ? filas.findIndex(f => f.user_id === yo.id) : -1;
+    if (miFila >= max) vistas.push(Object.assign({ _puesto: miFila + 1 }, filas[miFila]));
+    return `<table class="rt-tabla"><thead><tr><th>#</th><th>Jugador</th>${conDificultad ? "<th>Dif.</th>" : ""}<th>Puntos</th><th>Rango</th><th>Prec.</th><th>Combo</th></tr></thead><tbody>${
+      vistas.map((f, k) => {
+        const puesto = f._puesto || k + 1;
+        return `<tr class="${f.user_id === yo.id ? "yo" : ""}"><td>${puesto}</td><td>${esc(f.username)}</td>${conDificultad ? `<td>${esc((DIFICULTADES[f.dificultad] || {}).nombre || f.dificultad)}</td>` : ""}<td>${Number(f.puntos).toLocaleString("es")}</td><td><b class="rt-rango-mini rango-${esc(f.rango)}">${esc(f.rango)}</b></td><td>${Number(f.precision).toFixed(1)} %</td><td>${f.combo_max}</td></tr>`;
+      }).join("")}</tbody></table>`;
+  }
+
+  async function pintarPuntajes() {
+    const c = canciones[ajustes.cancion];
+    if (!c || !c.ruta) { puntajesEl.innerHTML = ""; puntajesTabsEl.innerHTML = ""; return; }
+    const vista = vistaPuntajes || ajustes.dificultad;
+    puntajesTabsEl.innerHTML = [["todas", "Todas"], ...Object.entries(DIFICULTADES).map(([id, d]) => [id, d.nombre])]
+      .map(([id, nombre]) => `<button type="button" class="rt-tab ${id === vista ? "activa" : ""}" data-vista="${id}">${nombre}</button>`).join("");
+    const token = ++tokenPuntajes;
+    puntajesEl.innerHTML = `<p class="rt-nota">Cargando puntajes...</p>`;
+    try {
+      const filas = await filasPuntajes(c.ruta, vista);
+      if (token !== tokenPuntajes) return;
+      puntajesEl.innerHTML = tablaPuntajes(filas, { conDificultad: vista === "todas", max: 10 });
+    } catch (e) {
+      if (token === tokenPuntajes) puntajesEl.innerHTML = `<p class="rt-nota">Los puntajes no están disponibles por ahora.</p>`;
+    }
+  }
+
+  puntajesTabsEl.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-vista]");
+    if (!b) return;
+    vistaPuntajes = b.dataset.vista;
+    pintarPuntajes();
+  });
+
+  /* Al terminar una canción: se guarda el puntaje (si hay sesión) y se muestra la tabla. */
+  async function subirPuntaje(ruta, dif, pts, acc, rango, combo) {
+    finPuntajesEl.innerHTML = `<p class="rt-nota">Guardando tu puntaje...</p>`;
+    let aviso = "";
+    try {
+      const { sesion } = window.MjStats ? await MjStats.cargarSesion() : { sesion: null };
+      if (!sesion) {
+        aviso = "Inicia sesión (arriba a la derecha) para aparecer en los puntajes.";
+      } else {
+        const supa = await fichasCliente();
+        const { error } = await supa.rpc("ritmo_registrar", { p_cancion: ruta, p_dificultad: dif, p_puntos: pts, p_precision: acc, p_rango: rango, p_combo: combo });
+        if (error) aviso = "No se pudo guardar el puntaje. Prueba de nuevo en un rato.";
+      }
+    } catch (e) {
+      aviso = "No se pudo guardar el puntaje.";
+    }
+    puntajesCache.clear();
+    try {
+      const filas = await filasPuntajes(ruta, dif);
+      if (estado !== "fin") return;
+      finPuntajesEl.innerHTML = (aviso ? `<p class="rt-nota">${esc(aviso)}</p>` : "") + tablaPuntajes(filas, { conDificultad: false, max: 5 });
+    } catch (e) {
+      if (estado === "fin") finPuntajesEl.innerHTML = aviso ? `<p class="rt-nota">${esc(aviso)}</p>` : "";
+    }
+  }
+
+  if (window.MjStats) {
+    MjStats.cargarSesion().then(({ sesion, nombre }) => {
+      yo = { id: sesion ? sesion.user.id : null, nombre };
+      if (sesion) pintarPuntajes();
+    });
+  }
+
   /* --- Menú ------------------------------------------------------------------ */
+  function normalizar(t) {
+    return String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
   function pintarMenu() {
-    cancionesEl.innerHTML = canciones.map((c, i) =>
-      `<button type="button" class="rt-cancion ${i === ajustes.cancion ? "activa" : ""}" data-i="${i}" title="${c.nombre.replace(/"/g, "&quot;")}">${c.nombre.replace(/[&<>]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch]))}</button>`).join("");
+    const q = normalizar(buscarEl.value.trim());
+    const guardado = cancionesEl.scrollTop;
+    const filas = canciones.map((c, i) => ({ c, i })).filter(({ c }) => !q || normalizar(c.nombre).includes(q));
+    cancionesEl.innerHTML = filas.map(({ c, i }) => {
+      const r = records[c.ruta + "|" + ajustes.dificultad];
+      return `<button type="button" role="option" aria-selected="${i === ajustes.cancion}" class="rt-cancion ${i === ajustes.cancion ? "activa" : ""}" data-i="${i}">` +
+        `<span class="rt-cancion-txt"><strong>${esc(c.titulo)}</strong>${c.artista ? `<small>${esc(c.artista)}</small>` : ""}</span>` +
+        `<span class="rt-cancion-der">${c.dur ? `<em>${duracionTexto(c.dur)}</em>` : ""}${r ? `<b class="rt-rango-mini rango-${esc(r.rango)}" title="Tu mejor: ${Number(r.puntos).toLocaleString("es")}">${esc(r.rango)}</b>` : ""}</span></button>`;
+    }).join("") || `<p class="rt-nota">Ninguna canción coincide con la búsqueda.</p>`;
+    cancionesEl.scrollTop = guardado;
+    const activa = cancionesEl.querySelector(".activa");
+    if (activa && !q) {
+      // Se mantiene a la vista dentro de la lista, sin mover la página
+      const arriba = activa.offsetTop - cancionesEl.offsetTop;
+      if (arriba < cancionesEl.scrollTop) cancionesEl.scrollTop = arriba;
+      else if (arriba + activa.offsetHeight > cancionesEl.scrollTop + cancionesEl.clientHeight) cancionesEl.scrollTop = arriba + activa.offsetHeight - cancionesEl.clientHeight;
+    }
+
+    const c = canciones[ajustes.cancion];
+    tituloEl.textContent = c.titulo;
+    metaEl.textContent = [c.artista, c.dur ? duracionTexto(c.dur) : ""].filter(Boolean).join(" · ");
+    limiteNotaEl.textContent = omitidas
+      ? `Hasta 6 minutos por canción. ${omitidas === 1 ? "Hay 1 más larga que no aparece" : `Hay ${omitidas} más largas que no aparecen`}.`
+      : "Hasta 6 minutos por canción.";
     dificultadesEl.innerHTML = Object.entries(DIFICULTADES).map(([id, d]) =>
-      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}">${d.nombre}</button>`).join("");
+      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small></button>`).join("");
     desfaseEl.value = ajustes.desfase;
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
     practicaEl.checked = !!ajustes.practica;
-    const r = records[canciones[ajustes.cancion].ruta + "|" + ajustes.dificultad];
-    recordEl.textContent = r ? `Mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
-    const activa = cancionesEl.querySelector(".activa");
-    if (activa && activa.scrollIntoView) activa.scrollIntoView({ block: "nearest" });
+    const r = records[c.ruta + "|" + ajustes.dificultad];
+    recordEl.textContent = r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
+    pintarPuntajes();
   }
 
+  buscarEl.addEventListener("input", pintarMenu);
   cancionesEl.addEventListener("click", ev => {
     const b = ev.target.closest("[data-i]");
     if (!b) return;
     ajustes.cancion = Number(b.dataset.i);
+    ajustes.ruta = canciones[ajustes.cancion].ruta;
+    vistaPuntajes = null;
     guardarAjustes();
     pintarMenu();
   });
@@ -756,6 +938,7 @@
     const b = ev.target.closest("[data-dif]");
     if (!b) return;
     ajustes.dificultad = b.dataset.dif;
+    vistaPuntajes = null;
     guardarAjustes();
     pintarMenu();
   });
@@ -810,7 +993,7 @@
 
   if (/[?&]debug\b/.test(location.search)) {
     window.__ritmo = {
-      crearMapa, DIFICULTADES,
+      crearMapa, DIFICULTADES, subirPuntaje, forzarFin: () => { estado = "fin"; mostrar(finEl); },
       estado: () => ({ estado, puntos, combo, perfectos, buenos, fallos, extras, vida, notas: notas.length, activas: activas.length }),
       entradas,
       tick: t => { actualizar(t); dibujar(t); },

@@ -1,0 +1,31 @@
+// Duración en segundos de cada canción de data/musica.js (leída de las cabeceras de los mp3).
+// La usa Ritmo para dejar fuera las canciones de más de 6 minutos sin tener que descargarlas.
+// Si añades una canción nueva y no la pones aquí, Ritmo la comprueba al cargarla.
+window.MUSICA_DURACIONES = {
+  "assets/musica/-Dame Da Ne- Baka Mitai - Yakuza OST -  Lyrics (Español - Japones) - Gianx Attack.mp3": 288.3,
+  "assets/musica/6 foot 7 the tung tung man - Ized.mp3": 199.8,
+  "assets/musica/Alejandro Sanz - La Despedida (Lyric Video) - BulletTrainVEVO.mp3": 236.9,
+  "assets/musica/Bad Piggies Theme - Ilmari Hakkola.mp3": 160.7,
+  "assets/musica/Creep by radio chud - Poptart's shorts.mp3": 240.8,
+  "assets/musica/Cry for Me x Sweet Dreams (Kahoot remix) x Bubble Pop Electric x Hit the Jackpot - Mtang Music.mp3": 167.9,
+  "assets/musica/Excuse me Kirk (Lyric video) - Khamsim.mp3": 223.8,
+  "assets/musica/Gang-Plank Galleon with Freedom Motif - CLOVER!.mp3": 286.5,
+  "assets/musica/If You See Me Out In Quahog (Remastered) - Lasica.mp3": 126.0,
+  "assets/musica/Jane! - The Long Faces.mp3": 187.0,
+  "assets/musica/Love Like You (feat. Rebecca Sugar) [End Credits] - Steven Universe.mp3": 143.7,
+  "assets/musica/Majora's Mask Astral Observatory Music - Yacov B.mp3": 165.4,
+  "assets/musica/Mega Larp music mashup - Hello Juliet x Number x Jane! x Excuse me sir - RT-RD ASMR.mp3": 140.7,
+  "assets/musica/Rayman Origins Music Sea of Serendipity ~ Lums of the Water - Soniman001.mp3": 159.7,
+  "assets/musica/Rayman Origins music- Sea of Serendipity -The Lums of dreams (Glou Glou) Extended - Raging Toons.mp3": 1114.7,
+  "assets/musica/The Human Shields - (RE-UPLOAD) SHADOW BANNED - Shoot The Shields - stringanime.mp3": 207.3,
+  "assets/musica/Ugory - Zurawie (Maine ep 6 song) - Fish Smell Bad.mp3": 218.5,
+  "assets/musica/Hotline Miami 2 Wrong Number Soundtrack - Run - Maciej Nowicki.mp3": 294.0,
+  "assets/musica/Windmill Isle (Day) - Sonic Unleashed [OST] - DeoxysPrime (1).mp3": 301.1,
+  "assets/musica/Who Will Know (24 Bigslow) - Shiro Sagisu.mp3": 187.0,
+  "assets/musica/Zato1's theme but it's just the last 1 minute and 20 seconds (Guilty Gear Strive) - Jumpin'Jaggi.mp3": 80.8,
+  "assets/musica/Zombie Tsunami Official Soundtrack - In Game - Official Soundtracks.mp3": 124.4,
+  "assets/musica/a chud like me (ft. Kasane Teto SV) - Pizza-P!.mp3": 195.0,
+  "assets/musica/oasis wonderwall but maybeeeeeeeeeeeee - Fernando G.mp3": 245.6,
+  "assets/musica/You can run from your demons until you are exhausted... - Rather.mp3": 55.2,
+  "assets/musica/Mom I Really Hate You - Mewgenics Official Lyric Video - Planet Ridiculon (1).mp3": 203.0
+};

@@ -5,44 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ritmo — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261112">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261112">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261112">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261112">
-  <script src="js/mj-volumen.js?v=20261112"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261113">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261113">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261113">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261113">
+  <script src="js/mj-volumen.js?v=20261113"></script>
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
   <div class="mj-barra">
     <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
   </div>
-  <main class="mj-contenido">
+  <main class="mj-contenido rt-contenido">
     <p class="eyebrow">PASATIEMPOS</p>
     <h1 class="mj-titulo">Ritmo</h1>
 
-    <div class="rt-escenario" id="rtEscenario">
-      <div id="rtBrillo" class="rt-brillo"></div>
-      <canvas id="rtCampo" class="rt-campo" aria-label="Campo de juego de ritmo"></canvas>
+    <!-- Menú: canciones a la izquierda, detalle y puntajes a la derecha. Se esconde mientras se juega. -->
+    <section id="rtLobby" class="rt-lobby">
+      <div id="rtMenu" class="rt-menu">
+        <aside class="rt-lista-col">
+          <input type="search" id="rtBuscar" class="rt-buscar" placeholder="Buscar canción..." autocomplete="off" aria-label="Buscar canción">
+          <div id="rtCanciones" class="rt-canciones" role="listbox" aria-label="Canciones"></div>
+          <p id="rtLimiteNota" class="rt-nota"></p>
+        </aside>
 
-      <div id="rtMenu" class="rt-panel">
-        <h2>Elige una canción</h2>
-        <div id="rtCanciones" class="rt-canciones"></div>
-        <div class="rt-opciones">
+        <section class="rt-detalle">
+          <p class="rt-etiqueta">Canción elegida</p>
+          <h2 id="rtTitulo" class="rt-titulo"></h2>
+          <p id="rtMeta" class="rt-meta"></p>
+
+          <p class="rt-etiqueta">Dificultad</p>
           <div class="rt-dificultades" id="rtDificultades"></div>
-          <label class="rt-ajuste">Sincronía <input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0"> <output id="rtDesfaseTxt">0 ms</output></label>
-          <label class="rt-practica"><input type="checkbox" id="rtPractica"> Práctica (la vida no baja)</label>
-        </div>
-        <p id="rtRecord" class="rt-record"></p>
-        <div class="rt-fila">
-          <button type="button" id="rtJugar" class="rt-jugar">Jugar</button>
-          <button type="button" id="rtAbrirBuzon" class="rt-secundario">Buzón de canciones</button>
-        </div>
-        <p class="rt-ayuda">Arriba: Z D F ↑. Abajo: X J K ↓. En pantalla táctil, toca la mitad de abajo o la de arriba. Las barras se mantienen pulsadas y las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
+
+          <div class="rt-opciones">
+            <label class="rt-ajuste">Sincronía <input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0"> <output id="rtDesfaseTxt">0 ms</output></label>
+            <label class="rt-practica"><input type="checkbox" id="rtPractica"> Práctica (la vida no baja, no puntúa)</label>
+          </div>
+
+          <div class="rt-fila">
+            <button type="button" id="rtJugar" class="rt-jugar">▶ Jugar</button>
+            <button type="button" id="rtAbrirBuzon" class="rt-secundario">Pedir una canción</button>
+          </div>
+          <p id="rtRecord" class="rt-record"></p>
+
+          <div class="rt-puntajes">
+            <div class="rt-puntajes-cab">
+              <p class="rt-etiqueta">Puntajes de esta canción</p>
+              <div id="rtPuntajesTabs" class="rt-tabs"></div>
+            </div>
+            <div id="rtPuntajes" class="rt-tabla-caja"></div>
+          </div>
+
+          <p class="rt-ayuda">Arriba: Z D F ↑. Abajo: X J K ↓. En pantalla táctil, toca la mitad de abajo o la de arriba. Las barras se mantienen pulsadas y las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
+        </section>
       </div>
 
-      <div id="rtBuzon" class="rt-panel hidden">
-        <h2>Buzón de canciones</h2>
-        <p class="rt-ayuda">Pide una canción para el juego. Le llega al admin.</p>
+      <div id="rtBuzon" class="rt-buzon hidden">
+        <h2>Pedir una canción</h2>
+        <p class="rt-ayuda">Pide una canción para el juego. Le llega al admin. Las canciones pueden durar hasta 6 minutos.</p>
         <form id="rtBuzonForm" class="rt-form">
           <input type="text" id="rtBuzonCancion" required maxlength="140" placeholder="Canción y artista" autocomplete="off" aria-label="Canción y artista">
           <input type="text" id="rtBuzonEnlace" maxlength="300" placeholder="Enlace (opcional)" autocomplete="off" aria-label="Enlace de la canción (opcional)">
@@ -54,6 +78,12 @@
         </form>
         <p id="rtBuzonEstado" class="rt-record"></p>
       </div>
+    </section>
+
+    <!-- Campo de juego: solo se ve al jugar -->
+    <div class="rt-escenario hidden" id="rtEscenario">
+      <div id="rtBrillo" class="rt-brillo"></div>
+      <canvas id="rtCampo" class="rt-campo" aria-label="Campo de juego de ritmo"></canvas>
 
       <div id="rtCarga" class="rt-panel rt-centro hidden"><p id="rtCargaTxt">Analizando la canción...</p></div>
 
@@ -61,6 +91,7 @@
         <h2 id="rtFinTitulo"></h2>
         <p id="rtFinRango" class="rt-rango"></p>
         <p id="rtFinDatos" class="rt-datos"></p>
+        <div id="rtFinPuntajes" class="rt-fin-puntajes"></div>
         <div class="rt-botones">
           <button type="button" id="rtReintentar" class="rt-jugar">Otra vez</button>
           <button type="button" id="rtVolver" class="rt-secundario">Elegir canción</button>
@@ -75,12 +106,16 @@
         </div>
       </div>
     </div>
-    <p class="mj-linea">Esc pausa.</p>
+    <p id="rtPie" class="mj-linea hidden">Esc pausa.</p>
   </main>
 
-  <script src="js/temas.js?v=20261112"></script>
-  <script src="data/musica.js?v=20261112"></script>
-  <script src="js/peticiones-supabase.js?v=20261112"></script>
+  <script src="js/temas.js?v=20261113"></script>
+  <script src="js/fichas-supabase.js?v=20261113"></script>
+  <script src="js/lado.js?v=20261113"></script>
+  <script src="js/minijuegos-stats.js?v=20261113"></script>
+  <script src="data/musica.js?v=20261113"></script>
+  <script src="data/musica-duraciones.js?v=20261113"></script>
+  <script src="js/peticiones-supabase.js?v=20261113"></script>
   <script src="js/ritmo.js?v=20261113"></script>
 </body>
 </html>

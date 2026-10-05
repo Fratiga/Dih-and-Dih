@@ -207,6 +207,19 @@ body.ritmo-tema {
 .ritmo-tema .rt-jugar:hover { border-color: #7ae8ff; box-shadow: 0 0 26px rgba(40, 220, 255, .55); }
 .ritmo-tema .rt-rango { color: #fff; text-shadow: 0 0 10px #ff4fd8, 0 0 30px #ff4fd8; }
 .ritmo-tema .rt-record { color: #7ae8ff; }
+.ritmo-tema .rt-detalle, .ritmo-tema .rt-buzon { background: rgba(11, 7, 22, .9); border: 1px solid #ff4fd8; box-shadow: 0 0 0 1px #0b0716, 0 0 22px rgba(255, 79, 216, .28); }
+.ritmo-tema .rt-buscar { background: #120a26; border-color: #3a1760; }
+.ritmo-tema .rt-buscar:focus { border-color: #7ae8ff; box-shadow: 0 0 12px rgba(40, 220, 255, .35); }
+.ritmo-tema .rt-titulo { color: #fff; text-shadow: 0 0 14px rgba(255, 79, 216, .6); }
+.ritmo-tema .rt-etiqueta { color: #7ae8ff; }
+.ritmo-tema .rt-dif { border-color: #3a1760; }
+.ritmo-tema .rt-dif:hover { border-color: #7ae8ff; }
+.ritmo-tema .rt-tab.activa { background: #3a1760; border-color: #ff4fd8; color: #fff; }
+.ritmo-tema .rt-tab:hover { border-color: #7ae8ff; }
+.ritmo-tema .rt-tabla th { background: #0b0716; color: #7ae8ff; }
+.ritmo-tema .rt-tabla tr.yo td { background: rgba(255, 79, 216, .16); }
+.ritmo-tema .rt-puntajes { border-top-color: #3a1760; }
+.ritmo-tema .rt-secundario:hover { border-color: #7ae8ff; color: #fff; }
 
 /* ======================================================================
    CARTAS MALDITAS: la mesa de juego. Paño verde, filete de oro y vino.
