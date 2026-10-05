@@ -1,5 +1,5 @@
 // Duración en segundos de cada canción de data/musica.js (leída de las cabeceras de los mp3).
-// La usa Ritmo para dejar fuera las canciones de más de 6 minutos sin tener que descargarlas.
+// La usa Ritmo para dejar fuera las canciones de más de 8 minutos sin tener que descargarlas.
 // Si añades una canción nueva y no la pones aquí, Ritmo la comprueba al cargarla.
 window.MUSICA_DURACIONES = {
   "assets/musica/-Dame Da Ne- Baka Mitai - Yakuza OST -  Lyrics (Español - Japones) - Gianx Attack.mp3": 288.3,

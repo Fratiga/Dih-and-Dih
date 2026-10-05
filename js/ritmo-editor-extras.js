@@ -136,7 +136,7 @@
       a.onloadedmetadata = () => {
         duracion = isFinite(a.duration) ? a.duration : 0;
         URL.revokeObjectURL(url);
-        decir(duracion > 360 ? "Dura más de 6 minutos: sonará en la rocola, pero no saldrá en la lista de Zarabanda." : "");
+        decir(duracion > 480 ? "Dura más de 8 minutos: sonará en la rocola, pero no saldrá en la lista de Zarabanda." : "");
       };
       a.onerror = () => { URL.revokeObjectURL(url); };
       a.src = url;

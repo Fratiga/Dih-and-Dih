@@ -57,7 +57,7 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, multitud: true, teclas: null, sonidoGolpe: true };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, multitud: true, teclas: null, sonidoGolpe: true, avatar: { cuerpo: "verde", accesorio: "ninguno" }, multi: { tono: "rojo", cantidad: 2, luces: "encendedores" } };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
@@ -74,10 +74,10 @@
   }
   function guardarRecords() { try { localStorage.setItem(CLAVE_RECORDS, JSON.stringify(records)); } catch (e) { /* sin almacenamiento */ } }
 
-  /* Solo entran canciones de hasta 6 minutos: más largas dan mapas enormes y tardan en analizarse.
+  /* Solo entran canciones de hasta 8 minutos: más largas dan mapas enormes y tardan en analizarse.
      Las duraciones salen de data/musica-duraciones.js; si una canción no está ahí se mide al
      cargarla (ver cargarCancion). */
-  const LIMITE_S = 360;
+  const LIMITE_S = 480;
   const duraciones = Object.assign({}, window.MUSICA_NUBE_DURACIONES, window.MUSICA_DURACIONES);
   // Las canciones subidas por los DJ son direcciones completas (ya codificadas); las de assets, rutas
   const urlDe = ruta => (/^https?:/i.test(ruta) ? ruta : encodeURI(ruta));
@@ -243,7 +243,7 @@
       estado = "menu";
       mostrar(menuEl);
       if (err && err.message === "larga") {
-        // Dura más de 6 minutos: se quita de la lista sin más
+        // Dura más de 8 minutos: se quita de la lista sin más
         const k = canciones.indexOf(err.cancion);
         if (k >= 0 && canciones.length > 1) canciones.splice(k, 1);
         ajustes.cancion = Math.min(ajustes.cancion, canciones.length - 1);
@@ -636,10 +636,74 @@
     document.getElementById("rtFotoBtn").textContent = url ? "Cambiar mi foto" : "Usar mi foto";
   }
 
+  /* --- Tu personaje y la multitud, personalizables ---------------------------------------------------
+     El personaje se dibuja en cada fotograma (es uno solo). Los fans, en cambio, se dibujan una vez en
+     un lienzo pequeño ("sprite") y después solo se copian: así 40 fans cuestan casi lo mismo que 4. Los
+     brazos, las manos y las luces se pintan en tandas, un trazo por fila y no uno por fan. */
+  const CUERPOS = {
+    verde: ["#7ed87f", "#2e6e32"], rosa: ["#ff8fc7", "#8a2f5f"], azul: ["#7ab8ff", "#27508f"],
+    amarillo: ["#ffe36b", "#8a6f12"], morado: ["#c49aff", "#5a3a9a"], naranja: ["#ffa24d", "#8a4510"],
+    rojo: ["#ff6b6b", "#8a1c1c"], blanco: ["#f4efe6", "#8d8579"], negro: ["#3a3a46", "#101018"]
+  };
+  const ACCESORIOS = { ninguno: "Nada", gorra: "Gorra", gafas: "Gafas", cresta: "Cresta", diadema: "Diadema", corona: "Corona" };
+  const PALETAS_MULTI = {
+    rojo: ["#33171b", "#4a2025", "#662a30"], azul: ["#17202f", "#203049", "#2c4468"],
+    verde: ["#16281b", "#1f3a27", "#2a5236"], violeta: ["#25172f", "#35204a", "#4a2c66"]
+  };
+  const NOMBRES_TONO = ["rojo", "azul", "verde", "violeta", "mixto"];
+  const FILAS_MULTI = [{ y: 345, esc: 0.72 }, { y: 405, esc: 0.88 }, { y: 470, esc: 1.04 }];
+  const CANTIDADES = { 1: [4, 3, 3], 2: [6, 5, 4], 3: [8, 7, 6] };
+
+  function personalAvatar() {
+    const a = ajustes.avatar || {};
+    return { cuerpo: CUERPOS[a.cuerpo] ? a.cuerpo : "verde", accesorio: ACCESORIOS[a.accesorio] ? a.accesorio : "ninguno" };
+  }
+  function personalMulti() {
+    const m = ajustes.multi || {};
+    return {
+      tono: NOMBRES_TONO.includes(m.tono) ? m.tono : "rojo",
+      cantidad: CANTIDADES[m.cantidad] ? Number(m.cantidad) : 2,
+      luces: ["encendedores", "varitas", "ninguna"].includes(m.luces) ? m.luces : "encendedores"
+    };
+  }
+
+  /* El slime de tu color con su accesorio, centrado en (0, 0) del lienzo c (que ya está trasladado) */
+  function trazarPersonaje(c, golpe) {
+    const p = personalAvatar();
+    const [relleno, borde] = CUERPOS[p.cuerpo];
+    c.fillStyle = relleno; c.strokeStyle = borde; c.lineWidth = 4;
+    c.beginPath(); c.ellipse(0, 0, 40, 33, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    const ojos = p.cuerpo === "negro" ? "#f4efe6" : "#12330f";
+    c.fillStyle = ojos;
+    c.beginPath(); c.arc(-12, -6, 5, 0, Math.PI * 2); c.arc(12, -6, 5, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = ojos; c.lineWidth = 3;
+    c.beginPath(); c.arc(0, 6, golpe > 0 ? 9 : 6, 0.1 * Math.PI, 0.9 * Math.PI); c.stroke();
+    if (p.accesorio === "gorra") {
+      c.fillStyle = "#ff3b3b"; c.strokeStyle = "#7a0f0f"; c.lineWidth = 3;
+      c.beginPath(); c.ellipse(0, -22, 30, 17, 0, Math.PI, Math.PI * 2); c.fill(); c.stroke();
+      c.fillRect(-4, -23, 40, 6); c.strokeRect(-4, -23, 40, 6);
+    } else if (p.accesorio === "gafas") {
+      c.fillStyle = "#101018"; c.strokeStyle = "#101018"; c.lineWidth = 3;
+      c.fillRect(-24, -14, 20, 13); c.fillRect(4, -14, 20, 13);
+      c.beginPath(); c.moveTo(-4, -9); c.lineTo(4, -9); c.stroke();
+      c.fillStyle = "rgba(255, 255, 255, 0.5)"; c.fillRect(-21, -12, 6, 3); c.fillRect(7, -12, 6, 3);
+    } else if (p.accesorio === "cresta") {
+      c.fillStyle = "#ff3b3b"; c.strokeStyle = "#7a0f0f"; c.lineWidth = 2;
+      for (let i = -2; i <= 2; i++) {
+        const x = i * 9;
+        c.beginPath(); c.moveTo(x - 5, -29 + Math.abs(i) * 4); c.lineTo(x, -50 + Math.abs(i) * 8); c.lineTo(x + 5, -29 + Math.abs(i) * 4); c.closePath(); c.fill(); c.stroke();
+      }
+    } else if (p.accesorio === "diadema") {
+      c.strokeStyle = "#ffe14d"; c.lineWidth = 6; c.lineCap = "round";
+      c.beginPath(); c.arc(0, -4, 36, Math.PI * 1.18, Math.PI * 1.82); c.stroke();
+    } else if (p.accesorio === "corona") {
+      c.fillStyle = "#ffd84d"; c.strokeStyle = "#8a6f12"; c.lineWidth = 2.5;
+      c.beginPath(); c.moveTo(-18, -28); c.lineTo(-18, -46); c.lineTo(-9, -37); c.lineTo(0, -50); c.lineTo(9, -37); c.lineTo(18, -46); c.lineTo(18, -28); c.closePath(); c.fill(); c.stroke();
+    }
+  }
+
   function dibujarAvatar(ahora) {
     if (ajustes.personaje === false) return;
-    const dt = Math.min(0.05, Math.max(0, ahora - ultimoAvatar));
-    ultimoAvatar = ahora;
     const salto = Math.max(0, 1 - (ahora - avatar.salto) / 0.22);
     const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.2);
     const x = 150;
@@ -651,93 +715,143 @@
     if (fotoImg) {
       // La foto (ya circular) reemplaza al slime, con el mismo salto
       ctxC.drawImage(fotoImg, -42, -42, 84, 84);
-      ctxC.restore();
-      return;
+    } else {
+      trazarPersonaje(ctxC, golpe);
     }
-    ctxC.fillStyle = "#7ed87f";
-    ctxC.strokeStyle = "#2e6e32";
-    ctxC.lineWidth = 4;
-    ctxC.beginPath();
-    ctxC.ellipse(0, 0, 40, 33, 0, 0, Math.PI * 2);
-    ctxC.fill();
-    ctxC.stroke();
-    ctxC.fillStyle = "#12330f";
-    ctxC.beginPath(); ctxC.arc(-12, -6, 5, 0, Math.PI * 2); ctxC.arc(12, -6, 5, 0, Math.PI * 2); ctxC.fill();
-    ctxC.strokeStyle = "#12330f"; ctxC.lineWidth = 3;
-    ctxC.beginPath(); ctxC.arc(0, 6, golpe > 0 ? 9 : 6, 0.1 * Math.PI, 0.9 * Math.PI); ctxC.stroke();
     ctxC.restore();
   }
 
-  /* La multitud: fans a los dos lados de la pista, en tres filas. Rebotan con el pulso de la canción, saltan
-     cuando aciertas, levantan los brazos con un combo alto y sacan luces con uno muy alto. Si la vida
-     está baja, se desinflan. Tu personaje es uno más, en primera fila. Las posiciones son fijas (salen de
-     un generador con semilla) para que no cambien entre partidas. */
-  const fans = [];
-  {
+  /* Un fan (cuerpo, cabeza y peinado) dibujado una sola vez a doble resolución */
+  const sprites = new Map();
+  function spriteFan(paleta, fila, tipo) {
+    const clave = paleta + "|" + fila + "|" + tipo;
+    let sp = sprites.get(clave);
+    if (sp) return sp;
+    const esc = FILAS_MULTI[fila].esc;
+    const ancho = 60;
+    const alto = 82;
+    const lienzo = document.createElement("canvas");
+    lienzo.width = ancho * 2 * esc;
+    lienzo.height = alto * 2 * esc;
+    const c = lienzo.getContext("2d");
+    c.scale(2 * esc, 2 * esc);
+    // El punto (x, y) del fan queda en (30, 60) del sprite
+    c.translate(30, 60);
+    c.fillStyle = PALETAS_MULTI[paleta][fila];
+    c.beginPath(); c.ellipse(0, 0, 17, 23, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(0, -31, 11, 0, Math.PI * 2); c.fill();
+    if (tipo === 1) {
+      c.beginPath(); c.moveTo(-4, -40); c.lineTo(0, -55); c.lineTo(4, -40); c.closePath(); c.fill();
+    } else if (tipo === 2) {
+      c.beginPath(); c.ellipse(0, -25, 15, 17, 0, 0, Math.PI * 2); c.fill();
+    }
+    sp = { lienzo, ancho: ancho * esc, alto: alto * esc, ox: 30 * esc, oy: 60 * esc };
+    sprites.set(clave, sp);
+    return sp;
+  }
+
+  /* Posiciones fijas (salen de un generador con semilla): no cambian entre partidas */
+  let fans = [];
+  function reconstruirMultitud() {
+    const m = personalMulti();
+    const paletas = Object.keys(PALETAS_MULTI);
     let semilla = 20261;
     const azar = () => { semilla = (semilla * 1664525 + 1013904223) % 4294967296; return semilla / 4294967296; };
-    const filas = [{ y: 345, esc: 0.72, n: 6, color: "#33171b" }, { y: 405, esc: 0.88, n: 5, color: "#4a2025" }, { y: 470, esc: 1.04, n: 4, color: "#662a30" }];
+    fans = [];
     [[22, 282], [678, 938]].forEach(([x0, x1]) => {
-      filas.forEach((f, fi) => {
-        for (let i = 0; i < f.n; i++) {
-          const x = x0 + ((i + 0.5 + (azar() - 0.5) * 0.5) / f.n) * (x1 - x0);
+      FILAS_MULTI.forEach((f, fi) => {
+        const n = CANTIDADES[m.cantidad][fi];
+        for (let i = 0; i < n; i++) {
+          const x = x0 + ((i + 0.5 + (azar() - 0.5) * 0.5) / n) * (x1 - x0);
           // En primera fila a la izquierda queda sitio para el personaje del jugador
           if (fi === 2 && x0 === 22 && Math.abs(x - 150) < 62) continue;
-          fans.push({ x, y: f.y + (azar() - 0.5) * 10, esc: f.esc * (0.92 + azar() * 0.16), fila: fi, color: f.color, fase: azar() * Math.PI * 2, tipo: Math.floor(azar() * 3), ritmo: 4 + azar() * 3 });
+          const tipo = Math.floor(azar() * 3);
+          const paleta = m.tono === "mixto" ? paletas[Math.floor(azar() * paletas.length)] : m.tono;
+          fans.push({ x, y: f.y + (azar() - 0.5) * 10, esc: 0.92 + azar() * 0.16, fila: fi, sprite: spriteFan(paleta, fi, tipo), paleta, fase: azar() * Math.PI * 2, tipo, ritmo: 4 + azar() * 3, color: Math.floor(azar() * 4) });
         }
       });
     });
   }
-  function dibujarMultitud(ahora, pulso) {
-    if (ajustes.multitud === false) return;
-    const energia = vida < 35 && estado !== "menu" ? 0.12 : Math.min(1, 0.3 + combo / 40);
-    const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.3);
-    const luces = combo >= 50 && vida >= 35;
-    ctxC.lineCap = "round";
-    fans.forEach(f => {
-      const s = f.esc;
-      // Rebote con el pulso, más un salto extra cuando aciertas (cada fan responde un poco distinto)
-      const bote = pulso * 9 * s * energia + golpe * (6 + (f.fase % 3) * 3) * s * energia + Math.sin(ahora * f.ritmo + f.fase) * 1.6 * energia;
-      const y = f.y - bote + (vida < 35 && estado !== "menu" ? 7 * s : 0);
-      const x = f.x;
-      // Brazos arriba (energía media o alta)
-      const arriba = energia > 0.45;
-      if (arriba) {
-        ctxC.strokeStyle = f.color;
-        ctxC.lineWidth = 5.5 * s;
+  reconstruirMultitud();
+
+  /* La multitud: rebota con el pulso de la canción, salta cuando aciertas, levanta los brazos con un
+     combo alto y saca luces con uno muy alto. Con la vida baja se desinfla. */
+  function dibujarMultitud(c, ahora, pulso, energia, golpe, luces, desinflada) {
+    const m = personalMulti();
+    c.globalAlpha = 0.88 + 0.12 * pulso;
+    for (let i = 0; i < fans.length; i++) {
+      const f = fans[i];
+      const bote = pulso * 9 * f.esc * energia + golpe * (6 + (f.fase % 3) * 3) * f.esc * energia + Math.sin(ahora * f.ritmo + f.fase) * 1.6 * energia;
+      f.yy = f.y - bote + (desinflada ? 7 * f.esc : 0);
+      const sp = f.sprite;
+      c.drawImage(sp.lienzo, f.x - sp.ox, f.yy - sp.oy, sp.ancho, sp.alto);
+    }
+    c.globalAlpha = 1;
+    if (energia <= 0.45) return;
+    // Brazos y manos, un trazo por fila y por paleta
+    c.lineCap = "round";
+    const tandas = new Map();
+    for (let i = 0; i < fans.length; i++) {
+      const f = fans[i];
+      const clave = f.fila + "|" + f.paleta;
+      let t = tandas.get(clave);
+      if (!t) { t = { f, lista: [] }; tandas.set(clave, t); }
+      t.lista.push(f);
+    }
+    tandas.forEach(t => {
+      const esc = FILAS_MULTI[t.f.fila].esc;
+      c.strokeStyle = c.fillStyle = PALETAS_MULTI[t.f.paleta][t.f.fila];
+      c.lineWidth = 5.5 * esc;
+      c.beginPath();
+      t.lista.forEach(f => {
+        const s = f.esc;
         const onda = Math.sin(ahora * f.ritmo * 1.3 + f.fase) * 7 * s;
-        [-1, 1].forEach(lado => {
-          const hx = x + lado * (24 * s + (f.tipo === 1 ? 4 * s : 0)) + onda * lado;
-          const hy = y - 52 * s - golpe * 8 * s;
-          ctxC.beginPath(); ctxC.moveTo(x + lado * 13 * s, y - 8 * s); ctxC.lineTo(hx, hy); ctxC.stroke();
-          ctxC.fillStyle = f.color;
-          ctxC.beginPath(); ctxC.arc(hx, hy, 4.5 * s, 0, Math.PI * 2); ctxC.fill();
-          if (luces && f.fila === 2 && lado === (f.tipo === 0 ? -1 : 1)) {
-            ctxC.fillStyle = "rgba(255, 225, 77, 0.95)";
-            ctxC.beginPath(); ctxC.arc(hx, hy - 7 * s, 4 * s, 0, Math.PI * 2); ctxC.fill();
-            ctxC.fillStyle = "rgba(255, 225, 77, 0.22)";
-            ctxC.beginPath(); ctxC.arc(hx, hy - 7 * s, 12 * s, 0, Math.PI * 2); ctxC.fill();
-          }
-        });
-      }
-      // Cuerpo y cabeza
-      ctxC.fillStyle = f.color;
-      ctxC.beginPath(); ctxC.ellipse(x, y, 17 * s, 23 * s, 0, 0, Math.PI * 2); ctxC.fill();
-      ctxC.beginPath(); ctxC.arc(x, y - 31 * s, 11 * s, 0, Math.PI * 2); ctxC.fill();
-      // Peinado: nada, cresta o melena
-      if (f.tipo === 1) {
-        ctxC.beginPath(); ctxC.moveTo(x - 4 * s, y - 40 * s); ctxC.lineTo(x, y - 55 * s); ctxC.lineTo(x + 4 * s, y - 40 * s); ctxC.closePath(); ctxC.fill();
-      } else if (f.tipo === 2) {
-        ctxC.beginPath(); ctxC.ellipse(x, y - 25 * s, 15 * s, 17 * s, 0, 0, Math.PI * 2); ctxC.fill();
-      }
-      // Un borde de luz del color del carril en las dos filas de adelante
-      if (f.fila > 0) {
-        ctxC.strokeStyle = `rgba(${rgbPrevio || "255, 59, 59"}, ${f.fila === 2 ? 0.85 : 0.55})`;
-        ctxC.lineWidth = 2;
-        ctxC.beginPath(); ctxC.arc(x, y - 31 * s, 11 * s, Math.PI * 1.1, Math.PI * 1.9); ctxC.stroke();
-        ctxC.beginPath(); ctxC.ellipse(x, y, 17 * s, 23 * s, 0, Math.PI * 1.15, Math.PI * 1.85); ctxC.stroke();
-      }
+        for (let lado = -1; lado <= 1; lado += 2) {
+          const hx = f.x + lado * (24 * s + (f.tipo === 1 ? 4 * s : 0)) + onda * lado;
+          const hy = f.yy - 52 * s - golpe * 8 * s;
+          c.moveTo(f.x + lado * 13 * s, f.yy - 8 * s); c.lineTo(hx, hy);
+        }
+      });
+      c.stroke();
+      c.beginPath();
+      t.lista.forEach(f => {
+        const s = f.esc;
+        const onda = Math.sin(ahora * f.ritmo * 1.3 + f.fase) * 7 * s;
+        for (let lado = -1; lado <= 1; lado += 2) {
+          const hx = f.x + lado * (24 * s + (f.tipo === 1 ? 4 * s : 0)) + onda * lado;
+          const hy = f.yy - 52 * s - golpe * 8 * s;
+          c.moveTo(hx + 4.5 * s, hy); c.arc(hx, hy, 4.5 * s, 0, Math.PI * 2);
+        }
+      });
+      c.fill();
     });
+    // Luces en primera fila con un combo muy alto
+    if (luces && m.luces !== "ninguna") {
+      for (let i = 0; i < fans.length; i++) {
+        const f = fans[i];
+        if (f.fila !== 2) continue;
+        const s = f.esc;
+        const lado = f.tipo === 0 ? -1 : 1;
+        const onda = Math.sin(ahora * f.ritmo * 1.3 + f.fase) * 7 * s;
+        const hx = f.x + lado * (24 * s + (f.tipo === 1 ? 4 * s : 0)) + onda * lado;
+        const hy = f.yy - 52 * s - golpe * 8 * s;
+        if (m.luces === "encendedores") {
+          c.fillStyle = "rgba(255, 225, 77, 0.22)"; c.beginPath(); c.arc(hx, hy - 7 * s, 12 * s, 0, Math.PI * 2); c.fill();
+          c.fillStyle = "rgba(255, 225, 77, 0.95)"; c.beginPath(); c.arc(hx, hy - 7 * s, 4 * s, 0, Math.PI * 2); c.fill();
+        } else {
+          c.strokeStyle = CARRILES[f.color].color; c.lineWidth = 5 * s;
+          c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx + onda * 0.8, hy - 20 * s); c.stroke();
+        }
+      }
+    }
+  }
+
+  function pintarMultitud(ahora, pulso) {
+    if (ajustes.multitud === false) return;
+    const baja = vida < 35 && estado !== "menu";
+    const energia = baja ? 0.12 : Math.min(1, 0.3 + combo / 40);
+    const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.3);
+    dibujarMultitud(ctxC, ahora, pulso, energia, golpe, combo >= 50 && !baja, baja);
   }
 
   function dibujar(t) {
@@ -856,7 +970,7 @@
       }
     }
 
-    dibujarMultitud(ahora, pulso);
+    pintarMultitud(ahora, pulso);
     dibujarAvatar(ahora);
 
     // Textos de juicio
@@ -1217,6 +1331,91 @@
     });
   }
   cargarFoto();
+
+  /* --- Personalizar: tu personaje y la multitud, con vista previa --- */
+  {
+    const modal = document.getElementById("rtPersonalizar");
+    const lienzo = document.getElementById("rtPrevLienzo");
+    const gp = lienzo.getContext("2d");
+    const contenido = document.getElementById("rtPersCuerpo");
+    let raf = 0;
+
+    function chips(clave, grupo, opciones, actual, etiqueta) {
+      return `<div class="rt-pers-fila"><span class="rt-etiqueta">${etiqueta}</span><div class="rt-pers-chips">${opciones.map(([v, txt, color]) =>
+        `<button type="button" class="rt-pers-chip ${String(v) === String(actual) ? "activa" : ""}" data-grupo="${grupo}" data-clave="${clave}" data-valor="${v}"${color ? ` style="--c: ${color}" title="${txt}"` : ""}>${color ? "" : txt}</button>`).join("")}</div></div>`;
+    }
+
+    function pintarOpciones() {
+      const a = personalAvatar();
+      const m = personalMulti();
+      contenido.innerHTML =
+        `<p class="rt-etiqueta rt-pers-titulo">Tu personaje</p>` +
+        chips("cuerpo", "avatar", Object.entries(CUERPOS).map(([k, v]) => [k, k, v[0]]), a.cuerpo, "Color") +
+        chips("accesorio", "avatar", Object.entries(ACCESORIOS), a.accesorio, "Accesorio") +
+        `<p class="rt-etiqueta rt-pers-titulo">La multitud</p>` +
+        chips("tono", "multi", [["rojo", "Rojo", "#8a3a42"], ["azul", "Azul", "#3a5a8a"], ["verde", "Verde", "#3a7a50"], ["violeta", "Violeta", "#6a4a9a"], ["mixto", "Mezcla", "conic-gradient(#8a3a42, #3a5a8a, #3a7a50, #6a4a9a, #8a3a42)"]], m.tono, "Color") +
+        chips("cantidad", "multi", [[1, "Pocos"], [2, "Normal"], [3, "Muchos"]], m.cantidad, "Cuántos") +
+        chips("luces", "multi", [["encendedores", "Encendedores"], ["varitas", "Varitas de colores"], ["ninguna", "Sin luces"]], m.luces, "Luces con combo alto") +
+        `<p class="rt-ayuda">Con «Pocos» el juego va más ligero en equipos lentos. Para quitar a la multitud o al personaje del todo, usa los interruptores de los ajustes.</p>`;
+    }
+
+    // Vista previa: tres filas pequeñas de fans y tu personaje
+    function dibujarPrevia() {
+      const ahora = ahoraS();
+      gp.clearRect(0, 0, 320, 190);
+      gp.fillStyle = "#0a0607"; gp.fillRect(0, 0, 320, 190);
+      const g = gp.createLinearGradient(0, 0, 0, 190);
+      g.addColorStop(0, "rgba(255, 59, 59, 0.18)"); g.addColorStop(1, "rgba(255, 59, 59, 0)");
+      gp.fillStyle = g; gp.fillRect(0, 0, 320, 190);
+      const pulso = Math.pow(Math.max(0, 1 - ((ahora % 0.6) / 0.4)), 2);
+      // Un pedazo de la multitud: los fans de la izquierda, reubicados en la vista previa
+      const vista = fans.filter(f => f.x < 282);
+      gp.save();
+      gp.translate(66, 0);
+      gp.scale(0.62, 0.62);
+      gp.translate(0, -250);
+      dibujarMultitudEn(gp, ahora, pulso, vista);
+      gp.restore();
+      // Personaje
+      gp.save();
+      gp.translate(160, 138 - Math.abs(Math.sin(ahora * 3.2)) * 10);
+      gp.scale(1.2, 1.2);
+      if (fotoImg) gp.drawImage(fotoImg, -42, -42, 84, 84); else trazarPersonaje(gp, 0);
+      gp.restore();
+      raf = requestAnimationFrame(dibujarPrevia);
+    }
+
+    // La misma rutina de la multitud, pero sobre otra lista de fans y con mucha energía
+    function dibujarMultitudEn(c, ahora, pulso, lista) {
+      const guardada = fans;
+      fans = lista;
+      dibujarMultitud(c, ahora, pulso, 0.9, 0, true, false);
+      fans = guardada;
+    }
+
+    function abrir() {
+      pintarOpciones();
+      modal.classList.remove("hidden");
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(dibujarPrevia);
+    }
+    function cerrar() {
+      cancelAnimationFrame(raf);
+      modal.classList.add("hidden");
+    }
+    document.getElementById("rtPersonalizarBtn").addEventListener("click", abrir);
+    document.getElementById("rtPersonalizarCerrar").addEventListener("click", cerrar);
+    contenido.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-grupo]");
+      if (!b) return;
+      const grupo = b.dataset.grupo;
+      const valor = grupo === "multi" && b.dataset.clave === "cantidad" ? Number(b.dataset.valor) : b.dataset.valor;
+      ajustes[grupo] = Object.assign({}, ajustes[grupo], { [b.dataset.clave]: valor });
+      guardarAjustes();
+      if (grupo === "multi") reconstruirMultitud();
+      pintarOpciones();
+    });
+  }
 
   /* --- Novedades: lista de cambios (data/parranda-novedades.js) con un punto si hay algo que no viste --- */
   {

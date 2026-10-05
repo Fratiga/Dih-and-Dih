@@ -47,3 +47,16 @@ body.parranda-tema {
 .parranda-tema .rt-calibracion-puntos i.tocado { background: #ff3b3b; box-shadow: 0 0 10px #ff3b3b; }
 .parranda-tema .rt-dif .rt-dif-nivel { color: #ffb84d; }
 .parranda-tema .rt-buscar:focus { border-color: #ff3b3b; }
+
+/* Personalizar: personaje y multitud */
+.parranda-tema .rt-pers-caja { align-items: stretch; width: min(460px, 100%); max-height: 92vh; overflow-y: auto; }
+.rt-pers-previa { width: 100%; max-width: 320px; align-self: center; border: 1px solid #4a1a1a; background: #0a0607; display: block; }
+.rt-pers-cuerpo { display: flex; flex-direction: column; gap: 10px; }
+.rt-pers-titulo { margin: 8px 0 0; color: #ffb84d; }
+.rt-pers-fila { display: flex; flex-direction: column; gap: 6px; }
+.rt-pers-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rt-pers-chip { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; font: inherit; font-size: .8rem; cursor: pointer; transition: border-color .15s, transform .12s; }
+.rt-pers-chip:hover { border-color: #ffb84d; }
+.rt-pers-chip.activa { border-color: #ff3b3b; background: #3b1010; color: #fff; box-shadow: 0 0 10px rgba(255, 59, 59, .4); }
+.rt-pers-chip[style*="--c"] { width: 34px; height: 34px; padding: 0; border-radius: 50%; background: var(--c); border: 3px solid rgba(255, 255, 255, .2); }
+.rt-pers-chip[style*="--c"].activa { border-color: #fff; transform: scale(1.12); }

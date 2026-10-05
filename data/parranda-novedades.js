@@ -4,6 +4,17 @@
 window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "La multitud",
+    cambios: [
+      "Ahora hay una multitud a los lados de la pista. Rebota con la música, salta cuando aciertas y levanta los brazos con un combo alto.",
+      "Con un combo de 50 o más sacan luces. Si te quedas casi sin vida, se desinflan.",
+      "Tu personaje es uno más, en primera fila.",
+      "En Personalizar eliges el color y el accesorio de tu personaje, y el color, la cantidad y las luces de la multitud.",
+      "Entran canciones de hasta 8 minutos."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "Llega Parranda",
     cambios: [
       "Es el juego hermano de Zarabanda: cuatro carriles que caen desde arriba, con tema de rock.",

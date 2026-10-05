@@ -4,6 +4,13 @@
 window.ZARABANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "Canciones más largas",
+    cambios: [
+      "Ahora entran canciones de hasta 8 minutos, antes eran 6."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "Sonido al pulsar y barras más claras",
     cambios: [
       "Cada tecla suena al pulsarla, un toque suave más agudo arriba y más grave abajo. Se apaga en los ajustes.",

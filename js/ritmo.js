@@ -71,10 +71,10 @@
   }
   function guardarRecords() { try { localStorage.setItem(CLAVE_RECORDS, JSON.stringify(records)); } catch (e) { /* sin almacenamiento */ } }
 
-  /* Solo entran canciones de hasta 6 minutos: más largas dan mapas enormes y tardan en analizarse.
+  /* Solo entran canciones de hasta 8 minutos: más largas dan mapas enormes y tardan en analizarse.
      Las duraciones salen de data/musica-duraciones.js; si una canción no está ahí se mide al
      cargarla (ver cargarCancion). */
-  const LIMITE_S = 360;
+  const LIMITE_S = 480;
   const duraciones = Object.assign({}, window.MUSICA_NUBE_DURACIONES, window.MUSICA_DURACIONES);
   // Las canciones subidas por los DJ son direcciones completas (ya codificadas); las de assets, rutas
   const urlDe = ruta => (/^https?:/i.test(ruta) ? ruta : encodeURI(ruta));
@@ -240,7 +240,7 @@
       estado = "menu";
       mostrar(menuEl);
       if (err && err.message === "larga") {
-        // Dura más de 6 minutos: se quita de la lista sin más
+        // Dura más de 8 minutos: se quita de la lista sin más
         const k = canciones.indexOf(err.cancion);
         if (k >= 0 && canciones.length > 1) canciones.splice(k, 1);
         ajustes.cancion = Math.min(ajustes.cancion, canciones.length - 1);
