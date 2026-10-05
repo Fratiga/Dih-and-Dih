@@ -3,6 +3,7 @@ function normalizarTexto(texto) {
 }
 
 function prettyName(path) {
+  if (window.MUSICA_NUBE_NOMBRES && window.MUSICA_NUBE_NOMBRES[path]) return window.MUSICA_NUBE_NOMBRES[path];
   const base = path.split("/").pop().split("\\").pop();
   return base.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");
 }

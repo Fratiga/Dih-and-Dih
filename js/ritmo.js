@@ -60,17 +60,23 @@
      Las duraciones salen de data/musica-duraciones.js; si una canción no está ahí se mide al
      cargarla (ver cargarCancion). */
   const LIMITE_S = 360;
-  const duraciones = window.MUSICA_DURACIONES || {};
+  const duraciones = Object.assign({}, window.MUSICA_NUBE_DURACIONES, window.MUSICA_DURACIONES);
+  // Las canciones subidas por los DJ son direcciones completas (ya codificadas); las de assets, rutas
+  const urlDe = ruta => (/^https?:/i.test(ruta) ? ruta : encodeURI(ruta));
   function partirNombre(nombre) {
     const m = nombre.match(/^(.*\S) - ([^-]+)$/);
     return m ? { titulo: m[1].trim(), artista: m[2].trim() } : { titulo: nombre, artista: "" };
   }
-  const todas = (window.MUSICA || []).map(ruta => {
-    let nombre = ruta.split("/").pop();
-    try { nombre = decodeURIComponent(nombre); } catch (e) { /* nombre tal cual */ }
-    nombre = nombre.replace(/\.[^.]+$/, "");
+  function cancionDe(ruta) {
+    let nombre = (window.MUSICA_NUBE_NOMBRES || {})[ruta];
+    if (!nombre) {
+      nombre = ruta.split("/").pop();
+      try { nombre = decodeURIComponent(nombre); } catch (e) { /* nombre tal cual */ }
+      nombre = nombre.replace(/\.[^.]+$/, "");
+    }
     return Object.assign({ ruta, nombre, dur: duraciones[ruta] || 0 }, partirNombre(nombre));
-  });
+  }
+  const todas = (window.MUSICA || []).map(cancionDe);
   const canciones = todas.filter(c => !c.dur || c.dur <= LIMITE_S);
   if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones", titulo: "No hay canciones", artista: "", dur: 0 });
   {
@@ -138,7 +144,7 @@
     if (rutaBuffer === cancion.ruta && bufferActual) return bufferActual;
     bufferActual = null;
     rutaBuffer = "";
-    const resp = await fetch(encodeURI(cancion.ruta));
+    const resp = await fetch(urlDe(cancion.ruta));
     if (!resp.ok) throw new Error("No se pudo descargar la canción");
     const datos = await resp.arrayBuffer();
     const buffer = await audio.decodeAudioData(datos);
@@ -1034,6 +1040,31 @@
     document.getElementById("rtNovedadesVolver").addEventListener("click", () => mostrar(menuEl));
   }
   cargarMapasAMano();
+
+  /* Canciones que suben los DJ a la rocola: se suman a la lista en cuanto llegan */
+  window.addEventListener("musica-nube", ev => {
+    const nuevas = (ev.detail && ev.detail.nuevas) || [];
+    let cambiadas = false;
+    nuevas.forEach(ruta => {
+      if (canciones.some(c => c.ruta === ruta)) return;
+      Object.assign(duraciones, window.MUSICA_NUBE_DURACIONES);
+      const c = cancionDe(ruta);
+      if (c.dur && c.dur > LIMITE_S) return;
+      if (canciones.length === 1 && !canciones[0].ruta) canciones.length = 0;
+      canciones.push(c);
+      cambiadas = true;
+    });
+    if (cambiadas) pintarMenu();
+  });
+
+  /* Botón del editor de mapas: solo para Admin y DJ */
+  {
+    const botonEditor = document.getElementById("rtAbrirEditor");
+    if (botonEditor) {
+      if (window.RitmoRol) botonEditor.classList.toggle("hidden", !RitmoRol.cacheado());
+      if (window.RitmoRol) RitmoRol.verificar().then(r => botonEditor.classList.toggle("hidden", !r.puede));
+    }
+  }
   jugarEl.addEventListener("click", empezar);
 
   /* Buzón: la petición se guarda en la misma tabla de peticiones del sitio, marcada

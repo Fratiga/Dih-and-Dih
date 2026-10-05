@@ -3689,3 +3689,6 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-derrota .aj-victoria-caja { border-color: #8a4a45; box-shadow: 0 0 40px rgba(170, 70, 62, .22); }
 .aj-derrota .aj-victoria-titulo { color: #c9776f; text-shadow: 0 0 14px rgba(170, 70, 62, .45); animation: none; }
 .aj-victoria-img { display: block; max-width: 100%; max-height: 190px; margin: 0 auto 12px; object-fit: contain; border: 1px solid var(--border); }
+
+/* Etiqueta del rol DJ en el panel de Cuentas */
+.admin-cuenta-tag-dj { background: rgba(122, 232, 255, .14); color: #7ae8ff; border-color: rgba(122, 232, 255, .45); }

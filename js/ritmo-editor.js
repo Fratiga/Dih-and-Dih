@@ -31,13 +31,22 @@
   const velEl = $("reVel");
   const snapEl = $("reSnap");
   const zoomEl = $("reZoom");
+  const contadorEl = $("reSelCuenta");
+  let contadorPrevio = "";
 
   /* --- Estado ----------------------------------------------------------------- */
-  const canciones = (window.MUSICA || []).map(ruta => {
-    let nombre = ruta.split("/").pop();
-    try { nombre = decodeURIComponent(nombre); } catch (e) { /* tal cual */ }
-    return { ruta, nombre: nombre.replace(/\.[^.]+$/, "") };
-  });
+  // Las canciones subidas por los DJ son direcciones completas (ya codificadas); las de assets, rutas
+  const urlDe = ruta => (/^https?:/i.test(ruta) ? ruta : encodeURI(ruta));
+  function cancionDe(ruta) {
+    let nombre = (window.MUSICA_NUBE_NOMBRES || {})[ruta];
+    if (!nombre) {
+      nombre = ruta.split("/").pop();
+      try { nombre = decodeURIComponent(nombre); } catch (e) { /* tal cual */ }
+      nombre = nombre.replace(/\.[^.]+$/, "");
+    }
+    return { ruta, nombre };
+  }
+  const canciones = (window.MUSICA || []).map(cancionDe);
 
   let audio = null;
   let buffer = null;
@@ -47,7 +56,8 @@
   let pulsos = [];
   let tramos = [];
   let forzadas = {}; // número de tramo -> banda elegida a mano
-  let sel = null;
+  let sel = null; // la última nota tocada
+  const seleccion = new Set(); // todas las notas elegidas (Mayús o Ctrl para varias)
   let tramosSel = null; // { a, b }
   let sucio = true; // hay que redibujar
   let cambios = false; // hay cambios sin guardar
@@ -68,13 +78,39 @@
   let proxClic = 0;
   let proxPulso = 0;
 
+  const toastEl = $("reToast");
+  let toastT = 0;
+  function deseleccionar() {
+    sel = null;
+    seleccion.clear();
+  }
+
   function mensaje(texto, error) {
     estadoEl.textContent = texto;
     estadoEl.classList.toggle("error", !!error);
+    if (toastEl) {
+      toastEl.textContent = texto;
+      toastEl.className = "re-toast visible" + (error ? " error" : "");
+      clearTimeout(toastT);
+      toastT = setTimeout(() => toastEl.classList.remove("visible"), error ? 6500 : 3800);
+    }
   }
 
   /* --- Lista de canciones y dificultades -------------------------------------- */
-  cancionEl.innerHTML = canciones.map((c, i) => `<option value="${i}">${c.nombre.replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]))}</option>`).join("");
+  function llenarSelectCanciones() {
+    cancionEl.innerHTML = canciones.map((c, i) => `<option value="${i}">${c.nombre.replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]))}</option>`).join("");
+  }
+  llenarSelectCanciones();
+  /* Vuelve a leer la lista de canciones (por ejemplo después de subir o quitar una) */
+  function recargarCanciones() {
+    const actual = canciones[Number(cancionEl.value)] ? canciones[Number(cancionEl.value)].ruta : "";
+    canciones.length = 0;
+    (window.MUSICA || []).forEach(r => canciones.push(cancionDe(r)));
+    llenarSelectCanciones();
+    const k = canciones.findIndex(c => c.ruta === actual);
+    if (k >= 0) cancionEl.value = String(k);
+  }
+  window.addEventListener("musica-nube", recargarCanciones);
   difEl.innerHTML = Object.entries(AN.DIFICULTADES).map(([id, d]) => `<option value="${id}">${d.nombre}</option>`).join("");
   try {
     const aj = JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}");
@@ -93,7 +129,7 @@
     notas = f.notas; pulsos = f.pulsos; forzadas = f.forzadas || {};
     f.bandas.forEach((b, i) => { if (tramos[i]) { tramos[i].banda = b[0]; tramos[i].vacio = b[1]; } });
     actualizarTramos();
-    sel = null;
+    deseleccionar();
     reiniciarClics();
     sucio = true;
   }
@@ -139,7 +175,7 @@
     detener();
     mensaje("Cargando la canción...");
     await prepararAudio();
-    const resp = await fetch(encodeURI(ruta));
+    const resp = await fetch(urlDe(ruta));
     if (!resp.ok) throw new Error("No se pudo descargar la canción");
     buffer = await audio.decodeAudioData(await resp.arrayBuffer());
     rutaCargada = ruta;
@@ -162,7 +198,7 @@
     pulsos = m.pulsos.slice();
     tramos = m.tramos.map(t => ({ k0: t.k0, k1: t.k1, banda: t.banda, vacio: t.vacio }));
     forzadas = {};
-    sel = null;
+    deseleccionar();
     tramosSel = null;
     historial = [];
     posHistorial = -1;
@@ -339,7 +375,7 @@
     m.notas.forEach(n => { if (n.t >= t0 && n.t < t1) notas.push({ t: n.t, carril: n.carril, dur: n.dur || 0 }); });
     notas.sort((x, y) => x.t - y.t);
     for (let i = a; i <= b; i++) { if (m.tramos[i]) { tramos[i].banda = m.tramos[i].banda; tramos[i].vacio = m.tramos[i].vacio; } }
-    sel = null;
+    deseleccionar();
     guardarFoto();
     reiniciarClics();
     sucio = true;
@@ -401,6 +437,20 @@
     mensaje(`Copiados ${enRango.length} notas de ${tramosSel.b - tramosSel.a + 1} tramo${tramosSel.b > tramosSel.a ? "s" : ""}. Pégalos en otro lugar.`);
   }
 
+  /* Copia solo las notas elegidas (da igual si son de varios tramos o de la mitad de uno) */
+  function copiarSeleccion() {
+    const lista = [...seleccion].sort((a, b) => a.t - b.t);
+    if (!lista.length) { mensaje("Elige primero algunas notas.", true); return; }
+    const k0 = Math.max(0, indicePulso(lista[0].t));
+    const ultimo = lista.reduce((m, n) => Math.max(m, n.t + (n.dur || 0)), 0);
+    const k1 = Math.min(pulsos.length - 1, Math.max(k0 + 1, indicePulso(ultimo) + 2));
+    portapapeles = {
+      pulsos: k1 - k0, soloNotas: true, bandas: [],
+      notas: lista.map(n => { const b = enPulsos(n.t, k0, k1); return { b, carril: n.carril, d: n.dur > 0 ? enPulsos(n.t + n.dur, k0, k1) - b : 0 }; })
+    };
+    mensaje(`Copiadas ${lista.length} notas. Pon el cursor donde quieras y pega (Ctrl+V).`);
+  }
+
   function tiempoDePulso(kT, b) {
     const base = kT + Math.floor(b);
     if (base + 1 >= pulsos.length) return null;
@@ -410,7 +460,8 @@
   function pegarEn(kT) {
     if (!portapapeles) { mensaje("Primero copia uno o más tramos.", true); return; }
     if (kT < 0 || kT + 1 >= pulsos.length) { mensaje("Ese punto queda fuera de la canción.", true); return; }
-    const sumar = $("reSumar").checked;
+    const sumar = $("reSumar").checked || !!portapapeles.soloNotas;
+    const creadas = [];
     guardarFoto();
     const tIni = pulsos[kT];
     const tFin = pulsos[Math.min(kT + portapapeles.pulsos, pulsos.length - 1)];
@@ -420,13 +471,15 @@
       const t = tiempoDePulso(kT, n.b);
       if (t === null || t >= tFin + 1e-6) return;
       const fin = n.d > 0 ? tiempoDePulso(kT, n.b + n.d) : null;
-      notas.push({ t, carril: n.carril, dur: fin !== null && n.carril !== "ambos" ? Math.max(0.2, fin - t) : 0 });
+      const nueva = { t, carril: n.carril, dur: fin !== null && n.carril !== "ambos" ? Math.max(0.2, fin - t) : 0 };
+      notas.push(nueva);
+      creadas.push(nueva);
       puestas++;
     });
     notas.sort((a, b) => a.t - b.t);
     // Si se pega justo al inicio de un tramo, los tramos de destino siguen la misma banda
     let bandas = false;
-    if (kT % 8 === 0) {
+    if (!portapapeles.soloNotas && kT % 8 === 0) {
       const i0 = kT / 8;
       portapapeles.bandas.forEach((b, j) => {
         const tr = tramos[i0 + j];
@@ -437,10 +490,11 @@
       tramosSel = { a: i0, b: Math.min(tramos.length - 1, i0 + portapapeles.bandas.length - 1) };
       bandas = true;
     }
-    sel = null;
+    deseleccionar();
     guardarFoto();
     reiniciarClics();
     sucio = true;
+    if (portapapeles.soloNotas) { creadas.forEach(n => seleccion.add(n)); sel = creadas[creadas.length - 1] || null; }
     mensaje(`Pegadas ${puestas} notas${bandas ? " y la banda de cada tramo" : ""}${sumar ? " (sumadas a lo que había)" : ", reemplazando lo que había"}.`);
   }
 
@@ -474,7 +528,7 @@
     notas = notas.filter(n => n.t < t0 - 1e-6);
     m.notas.forEach(n => { if (n.t >= t0 - 1e-6) notas.push({ t: n.t, carril: n.carril, dur: n.dur || 0 }); });
     notas.sort((a, b) => a.t - b.t);
-    sel = null;
+    deseleccionar();
     guardarFoto();
     reiniciarClics();
     sucio = true;
@@ -651,7 +705,7 @@
       }
       g.fillStyle = n.carril === "ambos" ? (y === Y_ARRIBA ? COLOR.arriba : COLOR.abajo) : color;
       g.beginPath(); g.arc(x, y, 11, 0, Math.PI * 2); g.fill();
-      if (n === sel) { g.strokeStyle = "#fff"; g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, 15, 0, Math.PI * 2); g.stroke(); }
+      if (seleccion.has(n)) { g.strokeStyle = "#fff"; g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, 15, 0, Math.PI * 2); g.stroke(); }
     });
   }
 
@@ -719,6 +773,26 @@
       }
     }
 
+    // Caja de selección (Mayús + arrastrar en un hueco)
+    if (arrastre && arrastre.tipo === "caja") {
+      const bx = Math.min(arrastre.x0, arrastre.x1);
+      const by = Math.min(arrastre.y0, arrastre.y1);
+      const bw = Math.abs(arrastre.x1 - arrastre.x0);
+      const bh = Math.abs(arrastre.y1 - arrastre.y0);
+      g.fillStyle = "rgba(255, 79, 216, 0.14)";
+      g.fillRect(bx, by, bw, bh);
+      g.strokeStyle = "#ff4fd8"; g.lineWidth = 1;
+      g.strokeRect(bx + 0.5, by + 0.5, bw, bh);
+    }
+    if (contadorEl) {
+      const txt = seleccion.size ? `${seleccion.size} nota${seleccion.size === 1 ? "" : "s"} elegida${seleccion.size === 1 ? "" : "s"}` : "Sin notas elegidas";
+      if (txt !== contadorPrevio) {
+        contadorPrevio = txt;
+        contadorEl.textContent = txt;
+        contadorEl.classList.toggle("activo", seleccion.size > 0);
+      }
+    }
+
     // Cursor de reproducción
     const xc = tX(t);
     g.strokeStyle = "#f2d46b"; g.lineWidth = 2;
@@ -778,7 +852,10 @@
     ev.preventDefault();
     const { x, y } = posicion(ev);
     const n = notaEn(x, y);
-    if (n) { guardarFoto(); notas.splice(notas.indexOf(n), 1); if (sel === n) sel = null; guardarFoto(); reiniciarClics(); sucio = true; }
+    if (n) {
+      if (seleccion.has(n) && seleccion.size > 1) { borrarSeleccion(); return; }
+      guardarFoto(); notas.splice(notas.indexOf(n), 1); seleccion.delete(n); if (sel === n) sel = null; guardarFoto(); reiniciarClics(); sucio = true;
+    }
   });
 
   lienzo.addEventListener("mousedown", ev => {
@@ -798,17 +875,24 @@
       return;
     }
     const n = notaEn(x, y);
+    const suma = ev.shiftKey || ev.ctrlKey || ev.metaKey;
     if (n) {
+      // Mayús o Ctrl + clic en una nota la suma o la quita de la selección
+      if (suma) { if (seleccion.has(n)) seleccion.delete(n); else seleccion.add(n); sel = n; sucio = true; return; }
+      if (!seleccion.has(n)) { seleccion.clear(); seleccion.add(n); }
       sel = n;
-      if (enBordeLargo(n, x)) arrastre = { tipo: "larga", nota: n, foto: foto(), movida: false };
-      else arrastre = { tipo: "mover", nota: n, dx: xT(x) - n.t, foto: foto(), movida: false };
+      if (enBordeLargo(n, x) && seleccion.size === 1) arrastre = { tipo: "larga", nota: n, foto: foto(), movida: false };
+      else arrastre = { tipo: "mover", nota: n, dx: xT(x) - n.t, foto: foto(), movida: false, origen: [...seleccion].map(o => ({ o, t: o.t })) };
+    } else if (ev.shiftKey) {
+      // Mayús + arrastrar en un hueco: caja de selección
+      arrastre = { tipo: "caja", x0: x, y0: y, x1: x, y1: y, aditiva: ev.ctrlKey || ev.metaKey };
     } else {
       // Nota nueva en el carril donde se hizo clic
       guardarFoto();
       const nueva = { t: ajustar(xT(x)), carril: carrilEn(y), dur: 0 };
       notas.push(nueva);
       notas.sort((a, b) => a.t - b.t);
-      sel = nueva;
+      seleccion.clear(); seleccion.add(nueva); sel = nueva;
       guardarFoto();
       reiniciarClics();
     }
@@ -819,6 +903,7 @@
     if (!arrastre) return;
     const { x, y } = posicion(ev);
     if (arrastre.tipo === "buscar") { buscar(xT(x)); return; }
+    if (arrastre.tipo === "caja") { arrastre.x1 = x; arrastre.y1 = y; sucio = true; return; }
     const n = arrastre.nota;
     if (!arrastre.movida) {
       arrastre.movida = true;
@@ -827,8 +912,11 @@
       historial[posHistorial] = arrastre.foto;
     }
     if (arrastre.tipo === "mover") {
-      n.t = ajustar(xT(x) - arrastre.dx);
-      if (n.carril !== "ambos") n.carril = carrilEn(y);
+      // Todas las notas elegidas se mueven juntas la misma distancia
+      const nuevoT = ajustar(xT(x) - arrastre.dx);
+      const delta = nuevoT - arrastre.origen.find(r => r.o === n).t;
+      arrastre.origen.forEach(r => { r.o.t = Math.max(0, Math.round((r.t + delta) * 1000) / 1000); });
+      if (arrastre.origen.length === 1 && n.carril !== "ambos") n.carril = carrilEn(y);
     } else {
       const fin = ajustar(xT(x));
       n.dur = Math.max(0.2, fin - n.t);
@@ -836,8 +924,26 @@
     sucio = true;
   });
 
+  function seleccionarCaja(c) {
+    const x0 = Math.min(c.x0, c.x1);
+    const x1 = Math.max(c.x0, c.x1);
+    const y0 = Math.min(c.y0, c.y1);
+    const y1 = Math.max(c.y0, c.y1);
+    if (!c.aditiva) seleccion.clear();
+    notas.forEach(n => {
+      const nx = tX(n.t);
+      const fin = n.dur > 0 ? tX(n.t + n.dur) : nx;
+      if (fin < x0 - 8 || nx > x1 + 8) return;
+      const ys = n.carril === "ambos" ? [Y_ARRIBA, Y_ABAJO] : [n.carril === "arriba" ? Y_ARRIBA : Y_ABAJO];
+      if (ys.some(ny => ny + 15 >= y0 && ny - 15 <= y1)) seleccion.add(n);
+    });
+    sel = [...seleccion].pop() || null;
+    mensaje(seleccion.size ? `${seleccion.size} nota${seleccion.size === 1 ? "" : "s"} elegida${seleccion.size === 1 ? "" : "s"}.` : "No hay notas en esa caja.");
+  }
+
   window.addEventListener("mouseup", () => {
     if (!arrastre) return;
+    if (arrastre.tipo === "caja") { seleccionarCaja(arrastre); arrastre = null; sucio = true; return; }
     if (arrastre.movida) {
       notas.sort((a, b) => a.t - b.t);
       guardarFoto();
@@ -870,9 +976,9 @@
 
   /* --- Edición de la nota elegida ---------------------------------------------------------------------------- */
   function conSeleccion(fn) {
-    if (!sel) { mensaje("Elige primero una nota.", true); return; }
+    if (!seleccion.size) { mensaje("Elige primero una nota (Mayús o Ctrl para varias).", true); return; }
     guardarFoto();
-    fn(sel);
+    [...seleccion].forEach(fn);
     notas.sort((a, b) => a.t - b.t);
     guardarFoto();
     reiniciarClics();
@@ -880,27 +986,51 @@
   }
 
   function alternarLarga() {
+    if (!seleccion.size) { mensaje("Elige primero una nota (Mayús o Ctrl para varias).", true); return; }
+    const lista = [...seleccion].filter(n => n.carril !== "ambos");
+    if (!lista.length) { mensaje("Una nota doble no puede ser larga.", true); return; }
+    const quitar = lista.every(n => n.dur > 0);
     conSeleccion(n => {
-      if (n.carril === "ambos") { mensaje("Una nota doble no puede ser larga.", true); return; }
-      n.dur = n.dur > 0 ? 0 : Math.max(0.4, periodoEn(n.t) * 2);
+      if (n.carril === "ambos") return;
+      n.dur = quitar ? 0 : (n.dur > 0 ? n.dur : Math.max(0.4, periodoEn(n.t) * 2));
     });
   }
   function alternarDoble() {
-    conSeleccion(n => { if (n.carril === "ambos") n.carril = "abajo"; else { n.carril = "ambos"; n.dur = 0; } });
+    const todas = seleccion.size > 0 && [...seleccion].every(n => n.carril === "ambos");
+    conSeleccion(n => { if (todas) n.carril = "abajo"; else { n.carril = "ambos"; n.dur = 0; } });
   }
   function cambiarCarril() {
     conSeleccion(n => { if (n.carril !== "ambos") n.carril = n.carril === "arriba" ? "abajo" : "arriba"; });
   }
   function borrarSeleccion() {
-    if (!sel) return;
+    if (!seleccion.size) return;
     guardarFoto();
-    notas.splice(notas.indexOf(sel), 1);
-    sel = null;
+    notas = notas.filter(n => !seleccion.has(n));
+    deseleccionar();
     guardarFoto();
     reiniciarClics();
     sucio = true;
   }
   function nudge(ms) { conSeleccion(n => { n.t = Math.max(0, Math.round((n.t + ms / 1000) * 1000) / 1000); }); }
+
+  function seleccionarTodo() {
+    seleccion.clear();
+    notas.forEach(n => seleccion.add(n));
+    sel = notas[notas.length - 1] || null;
+    sucio = true;
+    mensaje(`${seleccion.size} notas elegidas.`);
+  }
+  function seleccionarDelTramo() {
+    const r = rangoPulsos();
+    if (!r) { mensaje("Elige primero uno o más tramos en la franja de colores.", true); return; }
+    const t0 = pulsos[r.k0];
+    const t1 = pulsos[r.k1];
+    seleccion.clear();
+    notas.forEach(n => { if (n.t >= t0 - 1e-6 && n.t < t1) seleccion.add(n); });
+    sel = [...seleccion].pop() || null;
+    sucio = true;
+    mensaje(`${seleccion.size} notas elegidas en los tramos.`);
+  }
 
   /* --- Controles ---------------------------------------------------------------------------------------------------- */
   $("reAuto").addEventListener("click", cargarAutomatico);
@@ -921,7 +1051,12 @@
   $("reCarril").addEventListener("click", cambiarCarril);
   $("reBorrar").addEventListener("click", borrarSeleccion);
   $("reCompletar").addEventListener("click", completarDesdeCursor);
-  $("reCopiar").addEventListener("click", copiarTramos);
+  $("reCopiar").addEventListener("click", () => (seleccion.size ? copiarSeleccion() : copiarTramos()));
+  $("reSelTodo").addEventListener("click", seleccionarTodo);
+  $("reSelTramo").addEventListener("click", seleccionarDelTramo);
+  $("reSelNada").addEventListener("click", () => { deseleccionar(); sucio = true; });
+  $("reNotaMenos").addEventListener("click", () => nudge(-10));
+  $("reNotaMas").addEventListener("click", () => nudge(10));
   $("rePegarTramo").addEventListener("click", pegarEnTramo);
   $("rePegarCursor").addEventListener("click", pegarEnCursor);
   $("reDeshacer").addEventListener("click", deshacer);
@@ -943,7 +1078,7 @@
   [cancionEl, difEl].forEach(el => el.addEventListener("change", () => {
     if (cambios && !confirm("Hay cambios sin guardar. ¿Descartarlos?")) return;
     detener();
-    notas = []; pulsos = []; tramos = []; forzadas = {}; sel = null; tramosSel = null; cambios = false;
+    notas = []; pulsos = []; tramos = []; forzadas = {}; deseleccionar(); tramosSel = null; cambios = false;
     sucio = true;
     mensaje("Carga el mapa automático o el guardado para empezar.");
   }));
@@ -954,15 +1089,21 @@
     const k = ev.key.toLowerCase();
     if ((ev.ctrlKey || ev.metaKey) && k === "z") { ev.preventDefault(); deshacer(); return; }
     if ((ev.ctrlKey || ev.metaKey) && (k === "y" || (ev.shiftKey && k === "z"))) { ev.preventDefault(); rehacer(); return; }
-    if ((ev.ctrlKey || ev.metaKey) && k === "c" && tramosSel) { ev.preventDefault(); copiarTramos(); return; }
-    if ((ev.ctrlKey || ev.metaKey) && k === "v" && portapapeles) { ev.preventDefault(); if (tramosSel) pegarEnTramo(); else pegarEnCursor(); return; }
+    if ((ev.ctrlKey || ev.metaKey) && k === "a") { ev.preventDefault(); seleccionarTodo(); return; }
+    if (k === "escape") { deseleccionar(); sucio = true; return; }
+    if ((ev.ctrlKey || ev.metaKey) && k === "c" && (seleccion.size || tramosSel)) { ev.preventDefault(); if (seleccion.size) copiarSeleccion(); else copiarTramos(); return; }
+    if ((ev.ctrlKey || ev.metaKey) && k === "v" && portapapeles) {
+      ev.preventDefault();
+      if (portapapeles.soloNotas || !tramosSel) pegarEnCursor(); else pegarEnTramo();
+      return;
+    }
     if (k === " ") { ev.preventDefault(); alternarReproduccion(); }
     else if (k === "delete" || k === "backspace") { ev.preventDefault(); borrarSeleccion(); }
     else if (k === "h") alternarLarga();
     else if (k === "d") alternarDoble();
     else if (k === "f") cambiarCarril();
-    else if (k === "arrowleft" && sel) { ev.preventDefault(); nudge(-10); }
-    else if (k === "arrowright" && sel) { ev.preventDefault(); nudge(10); }
+    else if (k === "arrowleft" && seleccion.size) { ev.preventDefault(); nudge(-10); }
+    else if (k === "arrowright" && seleccion.size) { ev.preventDefault(); nudge(10); }
   });
 
   window.addEventListener("beforeunload", ev => { if (cambios) { ev.preventDefault(); ev.returnValue = ""; } });
@@ -970,12 +1111,16 @@
 
   requestAnimationFrame(bucle);
 
+  // Lo usan los apartados extra de la página (js/ritmo-editor-extras.js)
+  window.RitmoEditor = { recargarCanciones, mensaje, hayCambios: () => cambios };
+
   if (/[?&]debug\b/.test(location.search)) {
     window.__editor = {
-      estado: () => ({ notas: notas.length, pulsos: pulsos.length, tramos: tramos.length, sel: !!sel, tramosSel, cambios, hist: historial.length }),
+      estado: () => ({ notas: notas.length, pulsos: pulsos.length, tramos: tramos.length, seleccion: seleccion.size, tramosSel, cambios, hist: historial.length }),
       notas: () => notas, pulsos: () => pulsos, tramos: () => tramos, cargarAutomatico, regenerar,
       fijarTramos: (a, b) => { tramosSel = { a, b }; }, limpiarNotas, ajustar, buscar,
-      copiarTramos, pegarEnTramo, pegarEnCursor, completarDesdeCursor, portapapeles: () => portapapeles,
+      copiarTramos, copiarSeleccion, pegarEnTramo, pegarEnCursor, completarDesdeCursor, portapapeles: () => portapapeles,
+      seleccion: () => seleccion, seleccionarTodo, seleccionarDelTramo, borrarSeleccion, alternarLarga, alternarDoble, cambiarCarril, nudge,
       guardable: () => AN.guardable(notas, pulsos), dibujar: () => { sucio = true; dibujar(); }
     };
   }

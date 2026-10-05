@@ -84,6 +84,21 @@ async function adminCambiarAdmin(idUsuario, esAdmin) {
   if (error) throw error;
 }
 
+/* Rol DJ (editor de mapas de Zarabanda y subir canciones a la rocola). Lo da y lo quita un
+   Admin; ver scratchpad/ritmo_dj.sql. adminListarDJs devuelve los ids de las cuentas DJ. */
+async function adminListarDJs() {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase.from("ritmo_djs").select("user_id");
+  if (error) throw error;
+  return (data || []).map(f => f.user_id);
+}
+
+async function adminCambiarDJ(idUsuario, esDJ) {
+  const supabase = await fichasCliente();
+  const { error } = await supabase.rpc("ritmo_admin_set_dj", { target_id: idUsuario, nuevo: !!esDJ });
+  if (error) throw error;
+}
+
 async function adminCambiarSide(idUsuario, nuevoSide) {
   const supabase = await fichasCliente();
   const { error } = await supabase.rpc("fichas_admin_set_side", { target_id: idUsuario, nuevo_side: nuevoSide });

@@ -3,105 +3,256 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editor de mapas — Ritmo</title>
+  <title>Editor de mapas — Zarabanda</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261125"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261125">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261125">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261125">
+  <link rel="stylesheet" href="css/style.css?v=20261126">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261126">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261126">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261126">
 </head>
-<body class="mj-pagina">
+<body class="mj-pagina ritmo-tema re-pagina">
   <div class="mj-barra">
-    <a href="admin.html" class="mj-volver">← Panel de admin</a>
+    <a href="ritmo.html" class="mj-volver">← Zarabanda</a>
     <div id="globalLadoWidget" class="global-lado-widget">
       <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
       <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
     </div>
   </div>
+
   <main class="mj-contenido re-contenido">
-    <p class="eyebrow">ADMIN</p>
-    <h1 class="mj-titulo">Editor de mapas de Ritmo</h1>
+    <header class="re-cab">
+      <div>
+        <p class="eyebrow">ZARABANDA · DJ</p>
+        <h1 class="mj-titulo">Editor de mapas</h1>
+        <p class="re-sub">Corrige notas, tramos y pulso. Lo que guardes lo juega todo el mundo.</p>
+      </div>
+      <div class="re-cab-acciones">
+        <button type="button" id="reTutoBtn" class="re-pildora re-pildora-viva">Tutoriales</button>
+        <a href="admin.html" id="reAdminLink" class="re-pildora hidden">Panel de admin</a>
+      </div>
+    </header>
 
-    <div class="re-fila">
-      <label>Canción <select id="reCancion"></select></label>
-      <label>Dificultad <select id="reDif"></select></label>
-      <button type="button" id="reAuto" class="re-btn">Cargar automático</button>
-      <button type="button" id="reGuardado" class="re-btn">Cargar guardado</button>
+    <section id="reAcceso" class="re-tarjeta re-acceso">
+      <p id="reAccesoTxt">Comprobando acceso...</p>
+    </section>
+
+    <div id="reTodo" class="hidden">
+      <!-- Canción y dificultad -->
+      <section class="re-tarjeta re-sesion">
+        <label class="re-campo re-campo-grande">
+          <span class="re-etq">Canción</span>
+          <select id="reCancion"></select>
+        </label>
+        <div class="re-campo">
+          <span class="re-etq">Dificultad</span>
+          <select id="reDif" class="re-oculto" aria-label="Dificultad"></select>
+          <div class="re-segmentos" data-para="reDif"></div>
+        </div>
+        <div class="re-campo re-campo-botones">
+          <button type="button" id="reAuto" class="re-btn">Cargar automático</button>
+          <button type="button" id="reGuardado" class="re-btn">Cargar guardado</button>
+        </div>
+      </section>
+
+      <!-- Reproducción -->
+      <section class="re-tarjeta re-transporte">
+        <button type="button" id="rePlay" class="re-play" disabled aria-label="Reproducir o pausar">▶</button>
+        <span id="reTiempo" class="re-tiempo">0:00.0</span>
+        <div class="re-campo">
+          <span class="re-etq">Velocidad</span>
+          <select id="reVel" class="re-oculto" aria-label="Velocidad"><option value="0.5">50 %</option><option value="0.75">75 %</option><option value="1" selected>100 %</option></select>
+          <div class="re-segmentos" data-para="reVel"></div>
+        </div>
+        <div class="re-campo">
+          <span class="re-etq">Ajuste a la cuadrícula</span>
+          <select id="reSnap" class="re-oculto" aria-label="Ajuste"><option value="1">Pulso</option><option value="2" selected>1/2</option><option value="4">1/4</option><option value="0">Libre</option></select>
+          <div class="re-segmentos" data-para="reSnap"></div>
+        </div>
+        <label class="re-interruptor"><input type="checkbox" id="reClics" checked><span class="re-pista"></span><span class="re-int-txt">Sonido de notas</span></label>
+        <label class="re-interruptor"><input type="checkbox" id="reMetro"><span class="re-pista"></span><span class="re-int-txt">Metrónomo</span></label>
+        <label class="re-deslizador"><span class="re-etq">Música</span><input type="range" id="reVolMusica" min="0" max="100" value="80"></label>
+        <label class="re-deslizador"><span class="re-etq">Clics</span><input type="range" id="reVolClics" min="0" max="100" value="60"></label>
+        <label class="re-deslizador"><span class="re-etq">Zoom</span><input type="range" id="reZoom" min="20" max="320" value="90"></label>
+      </section>
+
+      <div class="re-lienzo-caja"><canvas id="reLienzo" class="re-lienzo" aria-label="Línea de tiempo del mapa"></canvas></div>
+      <p id="reEstado" class="re-estado">Elige una canción y carga el mapa automático para empezar.</p>
+
+      <!-- Herramientas -->
+      <section class="re-tarjeta re-herramientas">
+        <div class="re-tabs-cab">
+          <div class="re-tabs" role="tablist">
+            <button type="button" class="re-tab activa" data-tab="notas" role="tab">Notas</button>
+            <button type="button" class="re-tab" data-tab="tramos" role="tab">Tramos</button>
+            <button type="button" class="re-tab" data-tab="pulso" role="tab">Pulso</button>
+            <button type="button" class="re-tab" data-tab="copiar" role="tab">Copiar y pegar</button>
+            <button type="button" class="re-tab" data-tab="completar" role="tab">Completar</button>
+          </div>
+          <div class="re-tabs-der">
+            <span id="reSelCuenta" class="re-chip">Sin notas elegidas</span>
+            <button type="button" id="reDeshacer" class="re-btn re-btn-chico" title="Ctrl+Z">Deshacer</button>
+            <button type="button" id="reRehacer" class="re-btn re-btn-chico" title="Ctrl+Y">Rehacer</button>
+          </div>
+        </div>
+
+        <div class="re-panel-tool" data-panel="notas">
+          <p class="re-ayuda-corta">Clic en un carril pone una nota. Mayús + arrastrar en un hueco dibuja una caja para elegir varias; Ctrl + clic suma o quita una.</p>
+          <div class="re-botones">
+            <button type="button" id="reLarga" class="re-btn" title="H">Larga</button>
+            <button type="button" id="reDoble" class="re-btn" title="D">Doble</button>
+            <button type="button" id="reCarril" class="re-btn" title="F">Cambiar carril</button>
+            <button type="button" id="reNotaMenos" class="re-btn" title="←">−10 ms</button>
+            <button type="button" id="reNotaMas" class="re-btn" title="→">+10 ms</button>
+            <button type="button" id="reBorrar" class="re-btn re-btn-peligro" title="Supr">Borrar</button>
+          </div>
+          <div class="re-botones">
+            <button type="button" id="reSelTodo" class="re-btn re-btn-suave" title="Ctrl+A">Elegir todas</button>
+            <button type="button" id="reSelTramo" class="re-btn re-btn-suave">Elegir las del tramo</button>
+            <button type="button" id="reSelNada" class="re-btn re-btn-suave" title="Esc">Quitar la selección</button>
+          </div>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="tramos">
+          <p class="re-ayuda-corta">Clic en la franja de colores de arriba para elegir un tramo (Mayús para varios) y dile qué banda sigue.</p>
+          <div class="re-botones">
+            <button type="button" data-banda="bajo" class="re-btn re-banda">Graves</button>
+            <button type="button" data-banda="medio" class="re-btn re-banda">Medios</button>
+            <button type="button" data-banda="alto" class="re-btn re-banda">Agudos</button>
+            <button type="button" data-banda="vacio" class="re-btn re-banda">Sin notas</button>
+            <button type="button" data-banda="auto" class="re-btn re-banda">Automático</button>
+          </div>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="pulso">
+          <p class="re-ayuda-corta">Afecta a los tramos elegidos. Activa el metrónomo para oír si el pulso va bien.</p>
+          <div class="re-botones">
+            <button type="button" id="reRegular" class="re-btn">Regularizar</button>
+            <button type="button" id="reAlCursor" class="re-btn">Pulso al cursor</button>
+            <button type="button" id="reMenos" class="re-btn">−10 ms</button>
+            <button type="button" id="reMas" class="re-btn">+10 ms</button>
+          </div>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="copiar">
+          <p class="re-ayuda-corta">Copia las notas elegidas, o los tramos si no hay notas elegidas, y pégalas en otro lugar.</p>
+          <div class="re-botones">
+            <button type="button" id="reCopiar" class="re-btn" title="Ctrl+C">Copiar</button>
+            <button type="button" id="rePegarTramo" class="re-btn" title="Ctrl+V">Pegar en el tramo elegido</button>
+            <button type="button" id="rePegarCursor" class="re-btn">Pegar en el cursor</button>
+            <label class="re-interruptor"><input type="checkbox" id="reSumar"><span class="re-pista"></span><span class="re-int-txt">Sumar sin borrar lo que hay</span></label>
+          </div>
+        </div>
+
+        <div class="re-panel-tool hidden" data-panel="completar">
+          <p class="re-ayuda-corta">Pon el cursor donde termina lo que ya hiciste. El resto se genera imitando tu estilo y lo anterior no se toca.</p>
+          <div class="re-botones">
+            <button type="button" id="reCompletar" class="re-btn re-btn-vivo">Completar desde el cursor</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Guardar -->
+      <section class="re-tarjeta re-acciones">
+        <label class="re-campo re-firma">
+          <span class="re-etq">Firma</span>
+          <input type="text" id="reFirma" maxlength="30" placeholder="Tu nombre (opcional)" autocomplete="off">
+        </label>
+        <div class="re-botones">
+          <button type="button" id="reGuardar" class="re-btn re-principal">Guardar para los jugadores</button>
+          <button type="button" id="reProbar" class="re-btn" title="Abre Zarabanda en otra pestaña con tu mapa sin guardar. Solo se ve en este navegador.">Probar en el juego</button>
+          <button type="button" id="reExportar" class="re-btn re-btn-suave">Exportar JSON</button>
+          <button type="button" id="reImportar" class="re-btn re-btn-suave">Importar JSON</button>
+          <button type="button" id="reBorrarGuardado" class="re-btn re-btn-peligro">Borrar el guardado</button>
+        </div>
+        <input type="file" id="reArchivo" accept="application/json" class="hidden">
+        <p class="re-ayuda-corta">«Probar» abre Zarabanda en otra pestaña con tu mapa sin guardar. Solo lo ves tú, en este navegador. Elige la misma canción y dificultad y juega.</p>
+      </section>
+
+      <!-- Subir canciones -->
+      <details class="re-tarjeta re-plegable" id="reRocola">
+        <summary>Subir una canción a la rocola</summary>
+        <div class="re-plegable-cuerpo">
+          <form id="reRocolaForm" class="re-formulario">
+            <label class="re-campo"><span class="re-etq">Archivo mp3</span><input type="file" id="reRocolaArchivo" accept=".mp3,audio/mpeg"></label>
+            <label class="re-campo"><span class="re-etq">Título</span><input type="text" id="reRocolaTitulo" maxlength="140" placeholder="Nombre de la canción" autocomplete="off"></label>
+            <label class="re-campo"><span class="re-etq">Artista</span><input type="text" id="reRocolaArtista" maxlength="140" placeholder="Quién la canta o la compuso" autocomplete="off"></label>
+            <div class="re-botones">
+              <button type="submit" id="reRocolaSubir" class="re-btn re-principal">Subir a la rocola</button>
+            </div>
+            <p id="reRocolaEstado" class="re-estado-chico"></p>
+          </form>
+          <p class="re-ayuda-corta">Hasta 30 MB. Sale en la rocola y en la lista de Zarabanda (si dura menos de 6 minutos) para todos.</p>
+          <h3 class="re-subtitulo">Subidas por DJ</h3>
+          <ul id="reRocolaLista" class="re-lista"><li class="re-vacio">Cargando...</li></ul>
+        </div>
+      </details>
+
+      <!-- Problemas o sugerencias -->
+      <details class="re-tarjeta re-plegable">
+        <summary>Problemas o sugerencias del editor</summary>
+        <div class="re-plegable-cuerpo">
+          <form id="reBuzonForm" class="re-formulario">
+            <label class="re-campo"><span class="re-etq">¿Qué pasó o qué te gustaría?</span><textarea id="reBuzonTexto" rows="4" maxlength="800" placeholder="Cuéntalo con calma. Si es un problema, di qué hacías y qué esperabas." required></textarea></label>
+            <label class="re-campo"><span class="re-etq">Tu nombre</span><input type="text" id="reBuzonNombre" maxlength="40" placeholder="Opcional" autocomplete="off"></label>
+            <div class="re-botones"><button type="submit" id="reBuzonEnviar" class="re-btn re-principal">Enviar a los admins</button></div>
+            <p id="reBuzonEstado" class="re-estado-chico"></p>
+          </form>
+        </div>
+      </details>
+
+      <!-- Atajos -->
+      <details class="re-tarjeta re-plegable">
+        <summary>Atajos de teclado</summary>
+        <div class="re-plegable-cuerpo">
+          <dl class="re-atajos">
+            <div><dt>Espacio</dt><dd>Reproducir o pausar</dd></div>
+            <div><dt>H</dt><dd>Larga o normal</dd></div>
+            <div><dt>D</dt><dd>Doble o simple</dd></div>
+            <div><dt>F</dt><dd>Cambiar de carril</dd></div>
+            <div><dt>← →</dt><dd>Mover las notas elegidas 10 ms</dd></div>
+            <div><dt>Supr</dt><dd>Borrar las notas elegidas</dd></div>
+            <div><dt>Ctrl + A</dt><dd>Elegir todas</dd></div>
+            <div><dt>Esc</dt><dd>Quitar la selección</dd></div>
+            <div><dt>Ctrl + C / V</dt><dd>Copiar y pegar</dd></div>
+            <div><dt>Ctrl + Z / Y</dt><dd>Deshacer y rehacer</dd></div>
+            <div><dt>Ctrl + rueda</dt><dd>Zoom</dd></div>
+            <div><dt>Clic derecho</dt><dd>Borrar la nota</dd></div>
+          </dl>
+        </div>
+      </details>
     </div>
-
-    <div class="re-fila re-transporte">
-      <button type="button" id="rePlay" class="re-btn re-play" disabled>▶</button>
-      <span id="reTiempo" class="re-tiempo">0:00.0</span>
-      <label>Velocidad <select id="reVel"><option value="0.5">50 %</option><option value="0.75">75 %</option><option value="1" selected>100 %</option></select></label>
-      <label>Ajuste <select id="reSnap"><option value="1">Pulso</option><option value="2" selected>1/2 pulso</option><option value="4">1/4 de pulso</option><option value="0">Libre</option></select></label>
-      <label class="re-check"><input type="checkbox" id="reClics" checked> Sonido de notas</label>
-      <label class="re-check"><input type="checkbox" id="reMetro"> Metrónomo</label>
-      <label>Música <input type="range" id="reVolMusica" min="0" max="100" value="80"></label>
-      <label>Clics <input type="range" id="reVolClics" min="0" max="100" value="60"></label>
-      <label>Zoom <input type="range" id="reZoom" min="20" max="320" value="90"></label>
-    </div>
-
-    <canvas id="reLienzo" class="re-lienzo" aria-label="Línea de tiempo del mapa"></canvas>
-
-    <div class="re-herramientas">
-      <div class="re-grupo">
-        <span class="re-etq">Nota</span>
-        <button type="button" id="reLarga" class="re-btn" title="H">Larga</button>
-        <button type="button" id="reDoble" class="re-btn" title="D">Doble</button>
-        <button type="button" id="reCarril" class="re-btn" title="F">Cambiar carril</button>
-        <button type="button" id="reBorrar" class="re-btn" title="Supr">Borrar</button>
-      </div>
-      <div class="re-grupo">
-        <span class="re-etq">Tramos (clic en la franja, Mayús para varios)</span>
-        <button type="button" data-banda="bajo" class="re-btn re-banda">Graves</button>
-        <button type="button" data-banda="medio" class="re-btn re-banda">Medios</button>
-        <button type="button" data-banda="alto" class="re-btn re-banda">Agudos</button>
-        <button type="button" data-banda="vacio" class="re-btn re-banda">Sin notas</button>
-        <button type="button" data-banda="auto" class="re-btn re-banda">Automático</button>
-      </div>
-      <div class="re-grupo">
-        <span class="re-etq">Pulso de los tramos elegidos</span>
-        <button type="button" id="reRegular" class="re-btn">Regularizar</button>
-        <button type="button" id="reAlCursor" class="re-btn">Pulso al cursor</button>
-        <button type="button" id="reMenos" class="re-btn">−10 ms</button>
-        <button type="button" id="reMas" class="re-btn">+10 ms</button>
-      </div>
-      <div class="re-grupo">
-        <span class="re-etq">Copiar y pegar tramos</span>
-        <button type="button" id="reCopiar" class="re-btn" title="Ctrl+C">Copiar tramos</button>
-        <button type="button" id="rePegarTramo" class="re-btn" title="Ctrl+V">Pegar en el tramo elegido</button>
-        <button type="button" id="rePegarCursor" class="re-btn">Pegar en el cursor</button>
-        <label class="re-check"><input type="checkbox" id="reSumar"> Sumar sin borrar lo que hay</label>
-      </div>
-      <div class="re-grupo">
-        <span class="re-etq">Completar con tu estilo</span>
-        <button type="button" id="reCompletar" class="re-btn">Completar desde el cursor</button>
-      </div>
-      <div class="re-grupo">
-        <button type="button" id="reDeshacer" class="re-btn" title="Ctrl+Z">Deshacer</button>
-        <button type="button" id="reRehacer" class="re-btn" title="Ctrl+Y">Rehacer</button>
-      </div>
-    </div>
-
-    <div class="re-fila re-acciones">
-      <label>Firma <input type="text" id="reFirma" maxlength="30" placeholder="Tu nombre (opcional)" autocomplete="off"></label>
-      <button type="button" id="reGuardar" class="re-btn re-principal">Guardar para los jugadores</button>
-      <button type="button" id="reProbar" class="re-btn">Probar en el juego</button>
-      <button type="button" id="reExportar" class="re-btn">Exportar JSON</button>
-      <button type="button" id="reImportar" class="re-btn">Importar JSON</button>
-      <button type="button" id="reBorrarGuardado" class="re-btn">Borrar el guardado</button>
-      <input type="file" id="reArchivo" accept="application/json" class="hidden">
-    </div>
-    <p id="reEstado" class="re-estado">Elige una canción y carga el mapa automático para empezar.</p>
-
-    <p class="re-ayuda">Clic en un carril pone una nota (clic derecho la borra). Arrastra una nota para moverla y el borde de una larga para alargarla. Espacio reproduce. Flechas ← → mueven la nota elegida 10 ms. El campo "Ajuste" decide a qué parte del pulso se pegan las notas.</p>
   </main>
 
-  <script src="js/temas.js?v=20261125"></script>
-  <script src="js/fichas-supabase.js?v=20261125"></script>
-  <script src="js/lado.js?v=20261125"></script>
-  <script src="data/musica.js?v=20261125"></script>
-  <script src="js/ritmo-analisis.js?v=20261125"></script>
-  <script src="js/ritmo-editor.js?v=20261125"></script>
+  <div id="reToast" class="re-toast" role="status" aria-live="polite"></div>
+
+  <!-- Tutoriales -->
+  <div id="reTuto" class="re-tuto hidden" role="dialog" aria-label="Tutoriales del editor">
+    <div class="re-tuto-caja">
+      <button type="button" id="reTutoCerrar" class="re-tuto-x" aria-label="Cerrar">×</button>
+      <div id="reTutoLista" class="re-tuto-lista"></div>
+      <div id="reTutoLeccion" class="re-tuto-leccion hidden">
+        <p id="reTutoTitulo" class="re-tuto-titulo"></p>
+        <p id="reTutoPaso" class="re-tuto-paso"></p>
+        <div id="reTutoPuntos" class="re-tuto-puntos"></div>
+        <div class="re-botones">
+          <button type="button" id="reTutoAtras" class="re-btn">Anterior</button>
+          <button type="button" id="reTutoSiguiente" class="re-btn re-principal">Siguiente</button>
+          <button type="button" id="reTutoVolver" class="re-btn re-btn-suave">Todas las lecciones</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/temas.js?v=20261126"></script>
+  <script src="js/fichas-supabase.js?v=20261126"></script>
+  <script src="js/lado.js?v=20261126"></script>
+  <script src="data/musica.js?v=20261126"></script>
+  <script src="js/musica-nube.js?v=20261126"></script>
+  <script src="js/peticiones-supabase.js?v=20261126"></script>
+  <script src="js/ritmo-rol.js?v=20261126"></script>
+  <script src="js/ritmo-analisis.js?v=20261126"></script>
+  <script src="js/ritmo-editor.js?v=20261126"></script>
+  <script src="data/ritmo-tutoriales.js?v=20261126"></script>
+  <script src="js/ritmo-editor-extras.js?v=20261126"></script>
 </body>
 </html>

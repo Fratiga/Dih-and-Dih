@@ -107,7 +107,7 @@
     fichasSesionActual().then(ses => { miIdCuenta = ses && ses.user ? ses.user.id : null; }).catch(() => {});
   }
 
-  function pintarCuentas(lista) {
+  function pintarCuentas(lista, djs = new Set()) {
     const cont = document.getElementById("adminCuentasLista");
     const count = document.getElementById("adminCuentasCount");
     count.textContent = `${lista.length} cuenta${lista.length === 1 ? "" : "s"}`;
@@ -118,10 +118,11 @@
     }
 
     cont.innerHTML = lista.map(u => `
-      <div class="admin-cuenta-fila" data-id="${u.id}" data-es-admin="${u.es_admin ? "1" : "0"}">
+      <div class="admin-cuenta-fila" data-id="${u.id}" data-es-admin="${u.es_admin ? "1" : "0"}" data-es-dj="${djs.has(u.id) ? "1" : "0"}">
         <span class="admin-cuenta-nombre">
-          ${escaparHtml(u.username || "(sin nombre de usuario)")}
+          <span class="admin-cuenta-usuario">${escaparHtml(u.username || "(sin nombre de usuario)")}</span>
           <span class="admin-cuenta-tag"${u.es_admin ? "" : " hidden"}>★ Admin</span>
+          <span class="admin-cuenta-tag admin-cuenta-tag-dj"${djs.has(u.id) ? "" : " hidden"}>DJ</span>
         </span>
         <div class="admin-cuenta-side">
           <button type="button" class="admin-side-btn ${u.side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
@@ -129,6 +130,7 @@
         </div>
         <div class="admin-cuenta-acciones">
           ${u.id === miIdCuenta ? "" : `<button type="button" class="admin-cuenta-accion" data-accion="admin">${u.es_admin ? "Quitar Admin" : "Dar Admin"}</button>`}
+          <button type="button" class="admin-cuenta-accion" data-accion="dj" title="Editor de mapas de Zarabanda y subir canciones a la rocola, nada más">${djs.has(u.id) ? "Quitar DJ" : "Dar DJ"}</button>
           <button type="button" class="admin-cuenta-accion" data-accion="password">Cambiar contraseña</button>
           <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-accion="eliminar">Eliminar cuenta</button>
         </div>
@@ -151,7 +153,7 @@
     cont.querySelectorAll('[data-accion="admin"]').forEach(btn => {
       btn.addEventListener("click", async () => {
         const fila = btn.closest("[data-id]");
-        const nombre = fila.querySelector(".admin-cuenta-nombre").textContent.replace("★ Admin", "").trim();
+        const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
         const darlo = fila.dataset.esAdmin !== "1";
         const confirmado = confirm(darlo
           ? `¿Dar Admin a "${nombre}"?\n\nPodrá ver y cambiar cuentas, fichas, peticiones y todo este panel.`
@@ -165,6 +167,29 @@
           btn.textContent = darlo ? "Quitar Admin" : "Dar Admin";
         } catch (err) {
           alert("No se pudo cambiar el permiso: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/admin_dar_admin.sql en Supabase?");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
+    cont.querySelectorAll('[data-accion="dj"]').forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const fila = btn.closest("[data-id]");
+        const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
+        const darlo = fila.dataset.esDj !== "1";
+        const confirmado = confirm(darlo
+          ? `¿Dar el rol DJ a "${nombre}"?\n\nPodrá usar el editor de mapas de Zarabanda y subir canciones a la rocola. Nada más: no ve este panel ni las cuentas.`
+          : `¿Quitarle el rol DJ a "${nombre}"?`);
+        if (!confirmado) return;
+        btn.disabled = true;
+        try {
+          await adminCambiarDJ(fila.dataset.id, darlo);
+          fila.dataset.esDj = darlo ? "1" : "0";
+          fila.querySelector(".admin-cuenta-tag-dj").hidden = !darlo;
+          btn.textContent = darlo ? "Quitar DJ" : "Dar DJ";
+        } catch (err) {
+          alert("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/ritmo_dj.sql en Supabase?");
         } finally {
           btn.disabled = false;
         }
@@ -195,7 +220,7 @@
     cont.querySelectorAll('[data-accion="eliminar"]').forEach(btn => {
       btn.addEventListener("click", async () => {
         const fila = btn.closest("[data-id]");
-        const nombre = fila.querySelector(".admin-cuenta-nombre").textContent.trim();
+        const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
         const confirmado = confirm(
           `¿Eliminar la cuenta de "${nombre}"?\n\nEsto borra su acceso por completo y no se puede deshacer. Sus fichas de personaje no se borran solas con esto.`
         );
@@ -746,7 +771,10 @@
     try {
       const [peticiones, cuentas] = await Promise.all([adminListarPeticiones(), adminListarPerfiles()]);
       pintarPeticiones(peticiones);
-      pintarCuentas(cuentas);
+      // Los DJ se piden aparte: si todavía no se corrió ritmo_dj.sql, las cuentas se ven igual
+      let djs = new Set();
+      try { djs = new Set(await adminListarDJs()); } catch (e) { /* sin rol DJ todavía */ }
+      pintarCuentas(cuentas, djs);
     } catch (e) {
       const mensaje = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin.sql en Supabase?</p>`;
       peticionesEl.innerHTML = mensaje;

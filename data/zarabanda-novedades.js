@@ -4,6 +4,14 @@
 window.ZARABANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "DJ y canciones nuevas",
+    cambios: [
+      "Hay un rol nuevo, DJ. Quien lo tiene puede usar el editor de mapas y subir canciones a la rocola.",
+      "Las canciones que suben los DJ salen en la rocola y en esta lista, con su duración."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "Estrellas y firmas",
     cambios: [
       "La estrella ★ marca las canciones con un mapa hecho a mano y, dentro de la canción, la dificultad que se editó.",
