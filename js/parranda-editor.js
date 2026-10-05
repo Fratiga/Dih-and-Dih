@@ -1070,6 +1070,8 @@
   const xT = x => x / pps + vistaIni;
 
   function ajustarLienzo() {
+    // El alto en pantalla tiene que ser el de dibujo: si no, la imagen se estira y los clics caen corridos
+    if (lienzo.style.height !== ALTO + "px") lienzo.style.height = ALTO + "px";
     const r = lienzo.getBoundingClientRect();
     ancho = Math.max(200, r.width);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);

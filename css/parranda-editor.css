@@ -89,7 +89,7 @@
 
 /* --- Línea de tiempo (la parte grande) ------------------------------------- */
 .re-lienzo-caja { border: 2px solid #ff3b3b; box-shadow: 0 0 0 1px #0a0607, 0 0 26px rgba(255, 59, 59, .45), 0 0 60px rgba(255, 170, 60, .14); margin-bottom: 8px; }
-.re-lienzo { display: block; width: 100%; height: 360px; background: #160a0c; cursor: crosshair; user-select: none; -webkit-user-select: none; }
+.re-lienzo { display: block; width: 100%; height: 392px; background: #160a0c; cursor: crosshair; user-select: none; -webkit-user-select: none; }
 .re-estado { min-height: 1.3em; margin: 6px 0 14px; font-size: .85rem; color: #ffb84d; }
 .re-estado.error { color: #e8837b; }
 .re-estado-chico { min-height: 1.2em; margin: 4px 0 0; font-size: .8rem; color: #ffb84d; }
