@@ -32,6 +32,7 @@
   const velEl = $("reVel");
   const snapEl = $("reSnap");
   const zoomEl = $("reZoom");
+  const escucharEl = $("reEscuchar");
   const contadorEl = $("reSelCuenta");
   let contadorPrevio = "";
 
@@ -905,6 +906,7 @@
   const fuentesVivas = new Set();
 
   function detener() {
+    pararTrozo();
     if (reproduciendo) posIni = tiempoActual();
     fuentesVivas.forEach(f => { f.onended = null; try { f.stop(); } catch (e) { /* ya parada */ } });
     fuentesVivas.clear();
@@ -939,9 +941,44 @@
 
   function alternarReproduccion() { if (reproduciendo) { detener(); sucio = true; } else reproducir(); }
 
-  function buscar(t) {
+  /* Al arrastrar el cursor con la música en pausa suena un trocito de cada punto por el que pasa,
+     a la velocidad elegida: con la velocidad baja se oye el beat para saber dónde poner una nota. */
+  let trozo = null;
+  let ultimoTrozo = 0;
+  function pararTrozo() {
+    if (!trozo) return;
+    const t = trozo;
+    trozo = null;
+    try { t.g.gain.cancelScheduledValues(0); t.g.gain.setValueAtTime(0, audio.currentTime); t.f.stop(); } catch (e) { /* ya parado */ }
+  }
+  async function escuchar(t) {
+    if (!buffer || reproduciendo || !escucharEl.checked) return;
+    const ahora = performance.now();
+    if (ahora - ultimoTrozo < 45) return;
+    ultimoTrozo = ahora;
+    await prepararAudio();
+    if (reproduciendo) return;
+    pararTrozo();
+    const f = audio.createBufferSource();
+    const g = audio.createGain();
+    f.buffer = buffer;
+    f.playbackRate.value = Number(velEl.value) || 1;
+    f.connect(g); g.connect(gMusica);
+    const t0 = audio.currentTime;
+    const dur = 0.22;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(1, t0 + 0.012);
+    g.gain.setValueAtTime(1, t0 + dur - 0.05);
+    g.gain.linearRampToValueAtTime(0, t0 + dur);
+    f.start(t0, Math.max(0, Math.min(buffer.duration - 0.05, t)));
+    f.stop(t0 + dur + 0.02);
+    trozo = { f, g };
+    f.onended = () => { if (trozo && trozo.f === f) trozo = null; };
+  }
+
+  function buscar(t, sonar) {
     posIni = Math.max(0, Math.min(buffer ? buffer.duration : 0, t));
-    if (reproduciendo) reproducir(); else { reiniciarClics(); sucio = true; }
+    if (reproduciendo) reproducir(); else { reiniciarClics(); sucio = true; if (sonar) escuchar(posIni); }
   }
 
   /* --- Dibujo ------------------------------------------------------------------------------------ */
@@ -1253,7 +1290,7 @@
     const { x, y } = posicion(ev);
     if (y < Y_REGLA[1] || y > Y_ONDA[0]) {
       arrastre = { tipo: "buscar" };
-      buscar(xT(x));
+      buscar(xT(x), true);
       return;
     }
     if (y < Y_TRAMOS[1]) {
@@ -1298,7 +1335,7 @@
   window.addEventListener("mousemove", ev => {
     if (!arrastre) return;
     const { x, y } = posicion(ev);
-    if (arrastre.tipo === "buscar") { buscar(xT(x)); return; }
+    if (arrastre.tipo === "buscar") { buscar(xT(x), true); return; }
     if (arrastre.tipo === "caja") { arrastre.x1 = x; arrastre.y1 = y; sucio = true; return; }
     if (arrastre.tipo === "pulso") {
       if (!arrastre.movida) {

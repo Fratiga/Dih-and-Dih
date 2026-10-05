@@ -31,5 +31,13 @@ window.MUSICA_DURACIONES = {
   "assets/musica/Great Escape - cinema staff.mp3": 205.2,
   "assets/musica/Akuma no Ko - Ai Higuchi.mp3": 229.3,
   "assets/musica/The Rumbling - SiM.mp3": 223.4,
-  "assets/musica/Guren no Yumiya - Linked Horizon.mp3": 317.0
+  "assets/musica/Guren no Yumiya - Linked Horizon.mp3": 317.0,
+  "assets/musica/77. Air Waves (DELTARUNE Chapter 3+4 Soundtrack) - Toby Fox - Toby Fox.mp3": 123.6,
+  "assets/musica/Club Penguin - All The Fun At The Fair [High Quality] - HQClubPenguinTracks.mp3": 122.4,
+  "assets/musica/Club Penguin - Pizza Parlor Theme [Loop High Quality] - HQClubPenguinTracks.mp3": 167.8,
+  "assets/musica/Endacopia OST - Track 65 - Code Talker - VideoGameGut5.mp3": 68.9,
+  "assets/musica/Fast Rap Yuno Miles Official video - Yuno Miles.mp3": 62.8,
+  "assets/musica/Lord Verity - Master of Humanity (song) - Horror Skunx.mp3": 140.8,
+  "assets/musica/Niño - Milo j.mp3": 210.6,
+  "assets/musica/Touhou 4 - Music #07 - BAD Apple!! - RubixNG.mp3": 169.0
 };

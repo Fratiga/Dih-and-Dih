@@ -51,7 +51,7 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, teclas: null };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, teclas: null, sonidoGolpe: true };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
@@ -333,6 +333,23 @@
     comboMax = Math.max(comboMax, combo);
   }
 
+  /* Un golpecito por cada pulsación, más agudo arriba y más grave abajo. Así se oye el ritmo que
+     estás tocando, que no siempre coincide con el de la canción. Si no había nota, suena apagado. */
+  function sonidoGolpe(carril, acierto) {
+    if (ajustes.sonidoGolpe === false || !audio || audio.state !== "running") return;
+    const t0 = audio.currentTime;
+    const o = audio.createOscillator();
+    const g = audio.createGain();
+    const f = carril === "arriba" ? 1320 : 520;
+    o.type = acierto ? "triangle" : "sine";
+    o.frequency.setValueAtTime(acierto ? f : f * 0.5, t0);
+    o.frequency.exponentialRampToValueAtTime(acierto ? f * 0.7 : f * 0.3, t0 + 0.07);
+    g.gain.setValueAtTime(acierto ? 0.22 : 0.09, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+    o.connect(g); g.connect(audio.destination);
+    o.start(t0); o.stop(t0 + 0.1);
+  }
+
   function golpear(carril, t) {
     flash[carril] = ahoraS();
     avatar.carril = carril;
@@ -349,6 +366,7 @@
       if (dt <= cfg.bien && (!mejor || dt < Math.abs(mejor.t - t))) mejor = n;
     }
     if (!mejor) {
+      sonidoGolpe(carril, false);
       // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
       extras++; combo = 0;
       if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
@@ -356,6 +374,7 @@
       return;
     }
     const juicio = Math.abs(mejor.t - t) <= cfg.perfecto ? "perfecto" : "bien";
+    sonidoGolpe(carril, true);
     if (mejor.carril === "ambos") {
       // Una nota doble solo cuenta cuando entran las dos mitades
       mejor.mitades[carril] = juicio;
@@ -445,11 +464,12 @@
         n.mantiene = "hecha";
         puntos += Math.round(150 * multiplicador());
         vida = Math.min(100, vida + 2);
-        efectos.push({ x: X_GOLPE, y: CARRILES[n.carril].y - 56, texto: "LARGA", color: "#f2d46b", t: ahoraS() });
+        efectos.push({ x: X_GOLPE, y: CARRILES[n.carril].y - 86, texto: "SOSTENIDA", color: "#f2d46b", t: ahoraS() });
         activas.splice(k, 1);
       } else if (t > gracia && entradas[n.carril].size === 0 && t < fin - 0.12) {
         n.mantiene = "rota";
         sumar("fallo", n.carril);
+        efectos[efectos.length - 1].texto = "SOLTASTE ANTES";
         anotarFallo(n.t);
         activas.splice(k, 1);
       }
@@ -579,11 +599,20 @@
       ctxC.fillStyle = CARRILES[n.carril].color;
       ctxC.fillRect(x, y - 14, fin - x, 28);
       ctxC.globalAlpha = alfa;
-      ctxC.fillStyle = "rgba(255, 255, 255, 0.6)";
-      ctxC.fillRect(fin - 4, y - 14, 4, 28);
+      topeDeLarga(fin, y);
       ctxC.globalAlpha = 1;
     }
     dibujarForma(n.carril, x, alfa);
+  }
+
+  /* El final de una larga: un círculo blanco con aro del color del carril. Ahí se suelta. */
+  function topeDeLarga(x, y) {
+    ctxC.fillStyle = "#ffffff";
+    ctxC.strokeStyle = "rgba(0, 0, 0, 0.45)";
+    ctxC.lineWidth = 3;
+    ctxC.beginPath(); ctxC.arc(x, y, 16, 0, Math.PI * 2); ctxC.fill(); ctxC.stroke();
+    ctxC.fillStyle = "rgba(0, 0, 0, 0.55)";
+    ctxC.fillRect(x - 5, y - 5, 10, 10);
   }
 
   let ultimoAvatar = 0;
@@ -731,6 +760,14 @@
         ctxC.fillStyle = CARRILES[n.carril].color;
         ctxC.fillRect(X_GOLPE, y - 14, Math.max(0, Math.min(cola, W + 40) - X_GOLPE), 28);
         ctxC.globalAlpha = 1;
+        if (cola < W + 40) topeDeLarga(Math.max(X_GOLPE, cola), y);
+        // Mientras se mantiene, un texto fijo recuerda qué hacer y, al final, cuándo soltar
+        const resta = n.t + n.dur - t;
+        const cerca = resta < 0.35;
+        ctxC.fillStyle = cerca ? "#ffffff" : "rgba(255, 255, 255, 0.7)";
+        ctxC.font = cerca ? "800 20px sans-serif" : "700 15px sans-serif";
+        ctxC.textAlign = "center";
+        if (cerca || t - n.t > 0.6) ctxC.fillText(cerca ? "¡SUELTA!" : "MANTÉN", X_GOLPE, y - 50);
       });
       // Notas ya falladas que se alejan
       for (let i = Math.max(0, punteroFallos - 12); i < punteroFallos; i++) {
@@ -962,6 +999,7 @@
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
     practicaEl.checked = !!ajustes.practica;
     document.getElementById("rtPersonaje").checked = ajustes.personaje !== false;
+    document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
     recordEl.textContent = r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
     pintarPuntajes();
@@ -992,6 +1030,7 @@
   });
   practicaEl.addEventListener("change", () => { ajustes.practica = practicaEl.checked; guardarAjustes(); });
   document.getElementById("rtPersonaje").addEventListener("change", ev => { ajustes.personaje = ev.target.checked; guardarAjustes(); });
+  document.getElementById("rtSonidoGolpe").addEventListener("change", ev => { ajustes.sonidoGolpe = ev.target.checked; guardarAjustes(); });
 
   /* --- Foto del personaje: se elige, se encuadra en un círculo y se guarda ya recortada --- */
   {
