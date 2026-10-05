@@ -460,6 +460,79 @@
   // Sin fila en el reparto (side === undefined) = "Ambos" = compartido,
   // lo ve todo el mundo. Mismo criterio que aplicarRepartoFanarts() en
   // js/fanarts.js.
+  /* --- Sistema: qué SQL falta correr -------------------------------------------
+     Cada comprobación solo lee o llama a una función con datos que no existen, así
+     que no cambia nada. Una tabla o función que "no se encuentra" = falta su SQL. */
+  const CERO = "00000000-0000-0000-0000-000000000000";
+  const CHEQUEOS = [
+    { que: "Cuentas y Sides (panel de Admin)", sql: "panel-admin.sql", tipo: "rpc", ref: "fichas_admin_listar_perfiles", args: {} },
+    { que: "Dar y quitar el Admin desde Cuentas", sql: "admin_dar_admin.sql", tipo: "rpc", ref: "fichas_admin_set_admin", args: { target_id: CERO, nuevo: true } },
+    { que: "Historial de cambios en fichas", sql: "fichas_historial.sql", tipo: "tabla", ref: "fichas_historial" },
+    { que: "Rankings de ajedrez y duelo", sql: "minijuegos_estadisticas.sql", tipo: "tabla", ref: "mj_estadisticas" },
+    { que: "Ranking de Hooey", sql: "hooey_ranking.sql", tipo: "tabla", ref: "hooey_puntajes" },
+    { que: "Muerte Súbita", sql: "muerte_subita.sql", tipo: "tabla", ref: "muerte_subita_intentos" },
+    { que: "Fanarts por Side", sql: "fanarts_side.sql", tipo: "tabla", ref: "fanarts_side" },
+    { que: "Fanarts ocultos", sql: "fanarts_ocultos.sql", tipo: "tabla", ref: "fanarts_ocultos" },
+    { que: "Subir fanarts desde el panel", sql: "fanarts_subidos.sql", tipo: "tabla", ref: "fanarts_subidos" },
+    { que: "Subir fanarts: almacenamiento", sql: "fanarts_subidos.sql", tipo: "bucket", ref: "fanarts" },
+    { que: "Ajedrez contra otros jugadores", sql: "ajedrez_pvp.sql", tipo: "tabla", ref: "ajedrez_partidas" },
+    { que: "Arquería contra otros jugadores", sql: "arqueria_pvp.sql", tipo: "tabla", ref: "arqueria_partidas" },
+    { que: "Mapas del editor de ritmo", sql: "ritmo_mapas.sql", tipo: "tabla", ref: "ritmo_mapas" },
+    { que: "Rol DJ", sql: "ritmo_dj.sql", tipo: "rpc", ref: "ritmo_es_dj", args: {} },
+    { que: "Canciones subidas a la rocola", sql: "ritmo_dj.sql", tipo: "tabla", ref: "rocola_canciones" },
+    { que: "Canciones de la rocola: almacenamiento", sql: "ritmo_dj.sql", tipo: "bucket", ref: "rocola" },
+    { que: "Puntajes de Zarabanda", sql: "ritmo_puntajes.sql", tipo: "tabla", ref: "ritmo_puntajes" },
+    { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
+    { que: "Regalar cartas (Admin)", sql: "cartas.sql", tipo: "rpc", ref: "cartas_regalar", args: { p_usuario: CERO, p_carta: "no-existe", p_nota: "" } },
+    { que: "Contador de visitas del lobby", sql: "lobby_contador.sql", tipo: "rpc", ref: "lobby_visita", args: { p_contar: false } },
+    { que: "Ver si una petición fue atendida", sql: "peticiones_estado.sql", tipo: "rpc", ref: "peticiones_estado", args: { p_codigos: [] } }
+  ];
+
+  async function comprobar(supabase, ch) {
+    try {
+      if (ch.tipo === "tabla") {
+        const { error } = await supabase.from(ch.ref).select("*", { head: true, count: "exact" }).limit(1);
+        if (!error) return { ok: true };
+        return /not find the table|does not exist|42P01|PGRST205/i.test(`${error.code} ${error.message}`) ? { ok: false } : { ok: true, nota: "existe (sin permiso para leerla)" };
+      }
+      if (ch.tipo === "rpc") {
+        const { error } = await supabase.rpc(ch.ref, ch.args || {});
+        if (!error) return { ok: true };
+        return /not find the function|PGRST202|42883/i.test(`${error.code} ${error.message}`) ? { ok: false } : { ok: true };
+      }
+      if (ch.tipo === "bucket") {
+        const { error } = await supabase.storage.from(ch.ref).list("", { limit: 1 });
+        return error ? { ok: false } : { ok: true };
+      }
+    } catch (e) { /* cae abajo */ }
+    return { ok: false, nota: "no se pudo comprobar" };
+  }
+
+  async function revisarSistema() {
+    const lista = document.getElementById("adminSistemaLista");
+    const boton = document.getElementById("adminSistemaRevisar");
+    boton.disabled = true;
+    lista.innerHTML = `<p class="admin-vacio">Revisando...</p>`;
+    const supabase = await fichasCliente();
+    const resultados = [];
+    for (const ch of CHEQUEOS) resultados.push({ ch, r: await comprobar(supabase, ch) });
+    const faltan = resultados.filter(x => !x.r.ok);
+    document.getElementById("adminSistemaCount").textContent = faltan.length ? String(faltan.length) : "";
+    const sqls = [...new Set(faltan.map(x => x.ch.sql))];
+    lista.innerHTML = `<p class="admin-sistema-resumen ${faltan.length ? "mal" : "bien"}">${faltan.length
+      ? `Faltan ${faltan.length} de ${resultados.length}. Corre: ${sqls.map(escaparHtml).join(", ")}`
+      : `Todo listo: ${resultados.length} de ${resultados.length}.`}</p>` +
+      resultados.map(({ ch, r }) => `
+        <div class="admin-sistema-fila ${r.ok ? "ok" : "falta"}">
+          <span class="admin-sistema-marca">${r.ok ? "✓" : "✗"}</span>
+          <span class="admin-sistema-que">${escaparHtml(ch.que)}${r.nota ? ` <small>${escaparHtml(r.nota)}</small>` : ""}</span>
+          <span class="admin-sistema-sql">${r.ok ? "" : escaparHtml(ch.sql)}</span>
+        </div>`).join("");
+    boton.disabled = false;
+  }
+  const botonSistema = document.getElementById("adminSistemaRevisar");
+  if (botonSistema) botonSistema.addEventListener("click", revisarSistema);
+
   async function cargarFanartsAdmin() {
     const fanartsEl = document.getElementById("adminFanartsLista");
     try {

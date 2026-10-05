@@ -14,9 +14,9 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261142">
-  <link rel="stylesheet" href="css/taberna.css?v=20261142">
-  <link rel="stylesheet" href="css/cartas.css?v=20261142">
+  <link rel="stylesheet" href="css/style.css?v=20261143">
+  <link rel="stylesheet" href="css/taberna.css?v=20261143">
+  <link rel="stylesheet" href="css/cartas.css?v=20261143">
 </head>
 <body>
   <header class="site-header">
@@ -134,6 +134,7 @@
         <button type="button" class="admin-tab" data-tab="historial">Historial de fichas <span id="adminHistorialCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="ocultos">Ocultos</button>
         <button type="button" class="admin-tab" data-tab="cartas">Cartas <span id="adminCartasCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="sistema">Sistema <span id="adminSistemaCount" class="admin-tab-badge"></span></button>
       </div>
 
       <section id="adminPanelPeticiones" class="admin-panel active">
@@ -158,6 +159,12 @@
         <div id="adminBufonLista" class="admin-bufon-lista">
           <p class="admin-vacio">Cargando...</p>
         </div>
+      </section>
+
+      <section id="adminPanelSistema" class="admin-panel">
+        <p class="admin-bufon-banner">Comprueba qué partes del sitio ya tienen su SQL corrido en Supabase. Lo que salga con ✗ no funciona todavía: corre el archivo que se indica en el SQL Editor y pulsa Revisar otra vez. No cambia ningún dato.</p>
+        <p><button type="button" id="adminSistemaRevisar" class="admin-cuenta-accion">Revisar ahora</button></p>
+        <div id="adminSistemaLista" class="admin-sistema-lista"><p class="admin-vacio">Pulsa "Revisar ahora".</p></div>
       </section>
 
       <section id="adminPanelFanarts" class="admin-panel">
@@ -229,37 +236,37 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="data/entries.js?v=20261142"></script>
-  <script src="data/personajes.js?v=20261142"></script>
-  <script src="data/lugares.js?v=20261142"></script>
-  <script src="data/facciones.js?v=20261142"></script>
-  <script src="data/pergaminos.js?v=20261142"></script>
-  <script src="data/armas.js?v=20261142"></script>
-  <script src="data/objetos.js?v=20261142"></script>
-  <script src="data/bestiario.js?v=20261142"></script>
-  <script src="data/razas.js?v=20261142"></script>
-  <script src="data/religiones.js?v=20261142"></script>
-  <script src="data/rotacion.js?v=20261142"></script>
-  <script src="data/musica.js?v=20261142"></script>
-  <script src="js/musica-nube.js?v=20261142"></script>
-  <script src="js/common.js?v=20261142"></script>
-  <script src="js/temas.js?v=20261142"></script>
-  <script src="js/taberna.js?v=20261142"></script>
-  <script src="js/player.js?v=20261142"></script>
-  <script src="js/modal.js?v=20261142"></script>
-  <script src="data/jumpscare.js?v=20261142"></script>
-  <script src="data/contrasenas.js?v=20261142"></script>
-  <script src="data/fanarts.js?v=20261142"></script>
-  <script src="js/cartas-datos.js?v=20261142"></script>
-  <script src="js/fichas-supabase.js?v=20261142"></script>
-  <script src="js/peticiones-supabase.js?v=20261142"></script>
-  <script src="js/bufon-supabase.js?v=20261142"></script>
-  <script src="js/muerte-subita-supabase.js?v=20261142"></script>
-  <script src="js/fanarts-supabase.js?v=20261142"></script>
-  <script src="js/lado.js?v=20261142"></script>
-  <script src="js/slappy.js?v=20261142"></script>
-  <script src="js/busqueda-global.js?v=20261142"></script>
-  <script src="js/header-marquee.js?v=20261142"></script>
-  <script src="js/admin.js?v=20261142"></script>
+  <script src="data/entries.js?v=20261143"></script>
+  <script src="data/personajes.js?v=20261143"></script>
+  <script src="data/lugares.js?v=20261143"></script>
+  <script src="data/facciones.js?v=20261143"></script>
+  <script src="data/pergaminos.js?v=20261143"></script>
+  <script src="data/armas.js?v=20261143"></script>
+  <script src="data/objetos.js?v=20261143"></script>
+  <script src="data/bestiario.js?v=20261143"></script>
+  <script src="data/razas.js?v=20261143"></script>
+  <script src="data/religiones.js?v=20261143"></script>
+  <script src="data/rotacion.js?v=20261143"></script>
+  <script src="data/musica.js?v=20261143"></script>
+  <script src="js/musica-nube.js?v=20261143"></script>
+  <script src="js/common.js?v=20261143"></script>
+  <script src="js/temas.js?v=20261143"></script>
+  <script src="js/taberna.js?v=20261143"></script>
+  <script src="js/player.js?v=20261143"></script>
+  <script src="js/modal.js?v=20261143"></script>
+  <script src="data/jumpscare.js?v=20261143"></script>
+  <script src="data/contrasenas.js?v=20261143"></script>
+  <script src="data/fanarts.js?v=20261143"></script>
+  <script src="js/cartas-datos.js?v=20261143"></script>
+  <script src="js/fichas-supabase.js?v=20261143"></script>
+  <script src="js/peticiones-supabase.js?v=20261143"></script>
+  <script src="js/bufon-supabase.js?v=20261143"></script>
+  <script src="js/muerte-subita-supabase.js?v=20261143"></script>
+  <script src="js/fanarts-supabase.js?v=20261143"></script>
+  <script src="js/lado.js?v=20261143"></script>
+  <script src="js/slappy.js?v=20261143"></script>
+  <script src="js/busqueda-global.js?v=20261143"></script>
+  <script src="js/header-marquee.js?v=20261143"></script>
+  <script src="js/admin.js?v=20261143"></script>
 </body>
 </html>

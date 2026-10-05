@@ -169,3 +169,28 @@ dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8
 .tema-personalizar { margin-top: 8px; padding-top: 8px; border-top: 2px dotted var(--lb-borde); display: flex; flex-direction: column; gap: 8px; }
 .tema-check { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text); cursor: pointer; }
 .tema-check select { color-scheme: dark; background: var(--panel-2); color: var(--text); border: 2px solid var(--lb-borde); padding: 3px 6px; font-family: inherit; }
+
+/* --- Mostrar más (compendio y listas) --- */
+.mas-caja { text-align: center; margin: 22px 0 6px; }
+.mas-caja[hidden] { display: none; }
+
+/* --- Tus peticiones --- */
+.peticion-mias { margin-top: 24px; max-width: 760px; border: 3px ridge var(--lb-borde); background: var(--lb-caja); box-shadow: 4px 4px 0 #000; padding: 12px 14px; }
+.peticion-mias h3 { margin: 0 0 8px; font-size: .95rem; }
+.peticion-mia { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px dotted var(--lb-borde); font-size: .88rem; }
+.peticion-mia:last-child { border-bottom: 0; }
+.peticion-mia-estado { flex: 0 0 110px; color: var(--lb-tenue); }
+.peticion-mia.atendida .peticion-mia-estado { color: #8cff8c; }
+.peticion-mia-texto { flex: 1; color: var(--text); }
+
+/* --- Admin: Sistema --- */
+.admin-sistema-resumen { padding: 8px 12px; border: 3px ridge var(--lb-borde); background: var(--lb-caja); margin: 0 0 12px; }
+.admin-sistema-resumen.mal { color: #ffb3a8; }
+.admin-sistema-resumen.bien { color: #8cff8c; }
+.admin-sistema-fila { display: flex; align-items: center; gap: 12px; padding: 6px 12px; border-bottom: 1px dotted var(--lb-borde); font-size: .9rem; }
+.admin-sistema-marca { width: 1.4em; font-weight: 700; }
+.admin-sistema-fila.ok .admin-sistema-marca { color: #8cff8c; }
+.admin-sistema-fila.falta .admin-sistema-marca { color: #ff8c7a; }
+.admin-sistema-que { flex: 1; }
+.admin-sistema-que small { color: var(--lb-tenue); }
+.admin-sistema-sql { font-family: "VT323", monospace; font-size: 1.15rem; color: var(--lb-acento); }

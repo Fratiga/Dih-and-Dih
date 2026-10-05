@@ -17,9 +17,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20261142">
-  <link rel="stylesheet" href="css/taberna.css?v=20261142">
-  <link rel="stylesheet" href="css/lobby.css?v=20261142">
+  <link rel="stylesheet" href="css/style.css?v=20261143">
+  <link rel="stylesheet" href="css/taberna.css?v=20261143">
+  <link rel="stylesheet" href="css/lobby.css?v=20261143">
 </head>
 <body class="lb lb-invitado">
   <div class="lb-fondo" aria-hidden="true"></div>
@@ -124,6 +124,11 @@
       <!-- Centro: la taberna -->
       <main class="lb-centro">
         <p class="lb-saludo lb-solo-socio" id="lbSaludo"></p>
+        <form class="lb-buscar lb-solo-socio" id="lbBuscar" action="compendio.html" method="get" role="search">
+          <label for="lbBuscarTexto">Buscar en todo el compendio</label>
+          <input type="search" id="lbBuscarTexto" name="q" placeholder="Un nombre, un lugar, una criatura..." autocomplete="off">
+          <button type="submit" class="lb-boton">Buscar</button>
+        </form>
 
         <div class="lb-escena-caja">
           <div class="lb-escena-scroll">
@@ -423,6 +428,18 @@
           </div>
         </div>
 
+        <!-- En el móvil la taberna se cambia por puertas grandes -->
+        <nav class="lb-puertas lb-solo-socio" aria-label="Puertas de la taberna">
+          <a href="compendio.html">El Compendio</a>
+          <a href="mapa.html">Mapa</a>
+          <a href="fichas.html">Mis personajes</a>
+          <a href="peticiones.html">Peticiones</a>
+          <a href="fanarts.html">Fanarts</a>
+          <a href="rocola.html">Rocola</a>
+          <a href="ajedrez.html">Ajedrez</a>
+          <a href="minijuegos.html">Salón de juegos</a>
+        </nav>
+
         <section class="lb-zonas lb-solo-socio" id="lbZonas">
           <div class="lb-caja">
             <h2>Mundo</h2>
@@ -479,20 +496,21 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20261142"></script>
-  <script src="data/musica.js?v=20261142"></script>
-  <script src="js/musica-nube.js?v=20261142"></script>
-  <script src="js/common.js?v=20261142"></script>
-  <script src="js/temas.js?v=20261142"></script>
-  <script src="js/player.js?v=20261142"></script>
-  <script src="data/jumpscare.js?v=20261142"></script>
-  <script src="data/contrasenas.js?v=20261142"></script>
-  <script src="js/fichas-supabase.js?v=20261142"></script>
-  <script src="js/lado.js?v=20261142"></script>
-  <script src="js/slappy.js?v=20261142"></script>
-  <script src="data/novedades.js?v=20261142"></script>
-  <script src="data/saludos.js?v=20261142"></script>
-  <script src="js/bienvenida.js?v=20261142"></script>
-  <script src="js/lobby.js?v=20261142"></script>
+  <script src="data/rotacion.js?v=20261143"></script>
+  <script src="data/musica.js?v=20261143"></script>
+  <script src="js/musica-nube.js?v=20261143"></script>
+  <script src="js/common.js?v=20261143"></script>
+  <script src="js/temas.js?v=20261143"></script>
+  <script src="js/player.js?v=20261143"></script>
+  <script src="data/jumpscare.js?v=20261143"></script>
+  <script src="data/contrasenas.js?v=20261143"></script>
+  <script src="js/fichas-supabase.js?v=20261143"></script>
+  <script src="js/lado.js?v=20261143"></script>
+  <script src="js/slappy.js?v=20261143"></script>
+  <script src="js/peticiones-supabase.js?v=20261143"></script>
+  <script src="data/novedades.js?v=20261143"></script>
+  <script src="data/saludos.js?v=20261143"></script>
+  <script src="js/bienvenida.js?v=20261143"></script>
+  <script src="js/lobby.js?v=20261143"></script>
 </body>
 </html>

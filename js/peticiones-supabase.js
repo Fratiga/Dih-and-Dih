@@ -19,11 +19,25 @@ function peticionesCliente() {
    avisarle si algo salió mal para que no piense que se mandó. */
 async function enviarPeticion({ texto, nombre }) {
   const supabase = await peticionesCliente();
-  const { error } = await supabase.from("peticiones").insert({
+  // Con scratchpad/peticiones_estado.sql la petición vuelve con un código para seguirla;
+  // sin él, se manda como siempre y simplemente no hay seguimiento.
+  const { data, error } = await supabase.rpc("peticion_enviar", { p_texto: texto, p_nombre: nombre || null });
+  if (!error) return data;
+  const { error: errorInsert } = await supabase.from("peticiones").insert({
     texto,
     nombre: nombre || null
   });
+  if (errorInsert) throw errorInsert;
+  return null;
+}
+
+/* Estado de tus peticiones: [{ codigo, atendida }]. Solo dice si ya la atendí. */
+async function peticionesEstado(codigos) {
+  if (!codigos.length) return [];
+  const supabase = await peticionesCliente();
+  const { data, error } = await supabase.rpc("peticiones_estado", { p_codigos: codigos });
   if (error) throw error;
+  return data || [];
 }
 
 /* Solo el Admin puede llegar hasta aquí de verdad: RLS bloquea el select a

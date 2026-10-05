@@ -111,24 +111,63 @@ function filteredEntries() {
   });
 }
 
+/* Las tarjetas se dibujan por tandas: con cientos de entradas, ponerlas todas de golpe
+   pesa mucho en móviles. El botón "Mostrar más" (o llegar al final de la lista) trae la
+   siguiente tanda. Buscar o filtrar vuelve a empezar desde la primera. */
+const TANDA = 60;
+let visibles = [];
+let dibujadas = 0;
+let masCaja = null;
+let masObservador = null;
+
+function tarjetaHTML(entry) {
+  const meta = cardMeta(entry);
+  return `
+    <article class="entry-card" data-id="${entry.id}">
+      <div class="entry-type">${entry.category}</div>
+      <h3>${entry.title}</h3>
+      ${meta ? `<p>${meta}</p>` : ""}
+      <p>${entry.summary}</p>
+      <div class="tags">
+        ${effectiveTags(entry).map(tag => `<span class="tag">${tag}</span>`).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function actualizarBotonMas() {
+  if (!masCaja) {
+    masCaja = document.createElement("div");
+    masCaja.className = "mas-caja";
+    masCaja.innerHTML = `<button type="button" class="secondary-button" id="masEntradas"></button>`;
+    entryGrid.insertAdjacentElement("afterend", masCaja);
+    masCaja.querySelector("button").addEventListener("click", dibujarTanda);
+    if ("IntersectionObserver" in window) {
+      masObservador = new IntersectionObserver(items => { if (items.some(i => i.isIntersecting)) dibujarTanda(); }, { rootMargin: "400px" });
+      masObservador.observe(masCaja);
+    }
+  }
+  const quedan = visibles.length - dibujadas;
+  masCaja.hidden = quedan <= 0;
+  masCaja.querySelector("button").textContent = `Mostrar más (${quedan} restantes)`;
+}
+
+function dibujarTanda() {
+  if (dibujadas >= visibles.length) return;
+  const fin = Math.min(dibujadas + TANDA, visibles.length);
+  entryGrid.insertAdjacentHTML("beforeend", visibles.slice(dibujadas, fin).map(tarjetaHTML).join(""));
+  dibujadas = fin;
+  actualizarBotonMas();
+}
+
 function renderCompendio() {
-  const entries = filteredEntries();
-  resultCount.textContent = `${entries.length} ${entries.length === 1 ? "entrada" : "entradas"}`;
-  emptyState.classList.toggle("hidden", entries.length !== 0);
-  entryGrid.innerHTML = entries.map(entry => {
-    const meta = cardMeta(entry);
-    return `
-      <article class="entry-card" data-id="${entry.id}">
-        <div class="entry-type">${entry.category}</div>
-        <h3>${entry.title}</h3>
-        ${meta ? `<p>${meta}</p>` : ""}
-        <p>${entry.summary}</p>
-        <div class="tags">
-          ${effectiveTags(entry).map(tag => `<span class="tag">${tag}</span>`).join("")}
-        </div>
-      </article>
-    `;
-  }).join("");
+  visibles = filteredEntries();
+  resultCount.textContent = `${visibles.length} ${visibles.length === 1 ? "entrada" : "entradas"}`;
+  emptyState.classList.toggle("hidden", visibles.length !== 0);
+  entryGrid.innerHTML = "";
+  dibujadas = 0;
+  dibujarTanda();
+  actualizarBotonMas();
 }
 
 entryGrid.addEventListener("click", e => {
@@ -137,5 +176,14 @@ entryGrid.addEventListener("click", e => {
   const entry = ALL_ENTRIES.find(item => item.id === card.dataset.id);
   openEntryModal(entry);
 });
+
+// Desde el buscador del lobby: compendio.html?q=palabra
+(function () {
+  const q = new URLSearchParams(location.search).get("q");
+  if (q && q.trim()) {
+    searchInput.value = q.trim();
+    state.search = q.trim().toLowerCase();
+  }
+})();
 
 renderCompendio();

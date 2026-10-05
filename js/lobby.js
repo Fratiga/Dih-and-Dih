@@ -185,6 +185,26 @@
     ver("lbRanking", filas.join("") || `<p class="lb-chico">Juega una partida y aparecerás aquí.</p>`);
   }
 
+  /* --- Peticiones que ya atendí (el estado lo guarda js/peticiones.js) ----------- */
+  async function avisarPeticiones() {
+    let mias = [];
+    try { mias = JSON.parse(localStorage.getItem("compendioMisPeticiones") || "[]") || []; } catch (e) { return; }
+    const pendientes = mias.filter(m => !m.atendida);
+    if (pendientes.length && typeof peticionesEstado === "function") {
+      try {
+        const estados = await peticionesEstado(pendientes.map(m => m.codigo));
+        const atendidas = new Set(estados.filter(e => e.atendida).map(e => e.codigo));
+        mias.forEach(m => { if (atendidas.has(m.codigo)) m.atendida = true; });
+        localStorage.setItem("compendioMisPeticiones", JSON.stringify(mias));
+      } catch (e) { /* sin el SQL de estado */ }
+    }
+    const nuevas = mias.filter(m => m.atendida && !m.visto);
+    if (!nuevas.length) return;
+    const caja = $("lbRetos");
+    const aviso = nuevas.map(m => `<a class="lb-aviso" href="peticiones.html">✔ Atendí tu petición: «${esc(m.texto.length > 50 ? m.texto.slice(0, 50) + "…" : m.texto)}»</a>`).join("");
+    caja.innerHTML = aviso + (caja.querySelector(".lb-chico") && caja.children.length === 1 ? "" : caja.innerHTML);
+  }
+
   /* --- Quién está en la taberna (presencia en tiempo real) ----------------- */
   function iniciarPresencia(supabase, miId, miNombre) {
     try {
@@ -220,7 +240,7 @@
     try { supabase = await fichasCliente(); } catch (e) { return; }
     iniciarPresencia(supabase, miId, nombre);
     cargarPersonajes(supabase, miId).catch(() => ver("lbPersonajes", `<p class="lb-chico">No se pudieron cargar tus personajes.</p>`));
-    cargarRetos(supabase, miId).catch(() => ver("lbRetos", `<p class="lb-chico">Sin novedades de partidas.</p>`));
+    cargarRetos(supabase, miId).catch(() => ver("lbRetos", `<p class="lb-chico">Sin novedades de partidas.</p>`)).then(avisarPeticiones);
     cargarFanarts(supabase).catch(() => {});
     cargarRanking(supabase, miId).catch(() => ver("lbRanking", `<p class="lb-chico">Sin datos todavía.</p>`));
   }
