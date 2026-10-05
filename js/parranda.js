@@ -57,7 +57,7 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, multitud: true, teclas: null, sonidoGolpe: true, avatar: { cuerpo: "verde", accesorio: "ninguno" }, multi: { tono: "rojo", cantidad: 2, luces: "encendedores" } };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, multitud: true, rayos: true, teclas: null, sonidoGolpe: true, avatar: { cuerpo: "verde", accesorio: "ninguno" }, multi: { tono: "rojo", cantidad: 2, luces: "encendedores" } };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
@@ -140,6 +140,12 @@
   let extras = 0;
   let vida = 100;
   let efectos = [];
+  let fiebre = false; // con un combo de 30 empieza la fiebre: doble puntaje hasta que falles
+  let celebracion = null; // { tipo, desde, ultimoFuego, dur } mientras la multitud reacciona al final
+  let particulas = [];
+  let ultimoDibujo = 0;
+  let rafFin = 0;
+  let temporizadorFin = 0;
   let avatar = { salto: -10, golpe: -10 };
   let flash = [-10, -10, -10, -10];
   let raf = 0;
@@ -261,6 +267,8 @@
     fallosBloque = [];
     punteroFallos = 0; activas = []; limpiarEntradas(); gracia = 0; puntos = 0; combo = 0; comboMax = 0;
     perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; efectos = [];
+    fiebre = false; celebracion = null; particulas = [];
+    clearTimeout(temporizadorFin); cancelAnimationFrame(rafFin);
     avatar = { salto: -10, golpe: -10 };
     flash = [-10, -10, -10, -10];
     mostrar(null);
@@ -299,6 +307,9 @@
   function salir() {
     detenerFuente();
     cancelAnimationFrame(raf);
+    cancelAnimationFrame(rafFin);
+    clearTimeout(temporizadorFin);
+    celebracion = null; particulas = []; fiebre = false;
     cargaId++;
     if (audio && audio.state === "suspended") audio.resume();
     estado = "menu";
@@ -310,7 +321,7 @@
   /* --- Golpes ------------------------------------------------------------- */
   function limpiarEntradas() { entradas.forEach(e => e.clear()); }
 
-  function multiplicador() { return 1 + Math.min(combo, 150) / 50; }
+  function multiplicador() { return (1 + Math.min(combo, 150) / 50) * (fiebre ? 2 : 1); }
 
   function sumar(juicio, carril, peso = 1) {
     const x = xCarril(carril);
@@ -331,6 +342,14 @@
       efectos.push({ x, y: Y_GOLPE - 70, texto: "FALLO", color: "#ff6b6b", t: ahoraS() });
     }
     comboMax = Math.max(comboMax, combo);
+    // La fiebre empieza con un combo de 30 y dura hasta el primer fallo
+    if (juicio === "fallo" && fiebre) {
+      fiebre = false;
+      efectos.push({ x: W / 2, y: 150, texto: "SE ACABÓ LA FIEBRE", color: "#a58f89", t: ahoraS() });
+    } else if (!fiebre && combo >= 30) {
+      fiebre = true;
+      efectos.push({ x: W / 2, y: 150, texto: "¡FIEBRE! PUNTOS x2", color: "#ffd84d", t: ahoraS() });
+    }
   }
 
   /* Un toque suave por cada pulsación, con una nota distinta en cada carril, para oír el ritmo que
@@ -365,7 +384,7 @@
     if (!mejor) {
       sonidoGolpe(carril, false);
       // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
-      extras++; combo = 0;
+      extras++; combo = 0; fiebre = false;
       if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
       efectos.push({ x: xCarril(carril), y: Y_GOLPE - 70, texto: "FALLO", color: "#ff6b6b", t: ahoraS() });
       return;
@@ -494,6 +513,62 @@
     return acc >= 0.95 ? "S" : acc >= 0.88 ? "A" : acc >= 0.75 ? "B" : acc >= 0.6 ? "C" : "D";
   }
 
+  /* Al acabar, la multitud reacciona unos segundos antes de que salga el resumen: ovación con fuegos
+     artificiales (rango S o A), aplauso (B o C), murmullo (D) o abucheo (te quedaste sin vida). Si la
+     multitud está desactivada, el resumen sale enseguida. */
+  function iniciarCelebracion(tipo) {
+    clearTimeout(temporizadorFin);
+    cancelAnimationFrame(rafFin);
+    particulas = [];
+    if (ajustes.multitud === false) { celebracion = null; mostrar(finEl); return; }
+    const dur = tipo === "ovacion" ? 3.4 : tipo === "abucheo" ? 2.2 : 2.4;
+    const desde = ahoraS();
+    celebracion = { tipo, desde, ultimoFuego: 0, dur };
+    aplauso(tipo, dur);
+    const bucleFin = () => {
+      if (!celebracion || celebracion.desde !== desde || estado !== "fin") return;
+      dibujar(tiempoCancion());
+      rafFin = requestAnimationFrame(bucleFin);
+    };
+    rafFin = requestAnimationFrame(bucleFin);
+    // El temporizador manda: aunque la pestaña esté oculta, el resumen acaba saliendo
+    temporizadorFin = setTimeout(() => {
+      if (!celebracion || celebracion.desde !== desde) return;
+      cancelAnimationFrame(rafFin);
+      celebracion = null;
+      particulas = [];
+      if (estado === "fin") mostrar(finEl);
+    }, dur * 1000);
+  }
+
+  /* Aplauso: ruido filtrado con golpecitos de volumen al azar. Muy suave, y solo si los sonidos están
+     activados. El murmullo y el abucheo no suenan. */
+  function aplauso(tipo, dur) {
+    if (ajustes.sonidoGolpe === false || !audio || audio.state !== "running" || tipo === "murmullo" || tipo === "abucheo") return;
+    const n = Math.floor(audio.sampleRate * dur);
+    const buf = audio.createBuffer(1, n, audio.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const fuenteRuido = audio.createBufferSource();
+    fuenteRuido.buffer = buf;
+    const filtro = audio.createBiquadFilter();
+    filtro.type = "bandpass"; filtro.frequency.value = 2200; filtro.Q.value = 0.6;
+    const g = audio.createGain();
+    const t0 = audio.currentTime;
+    const pico = tipo === "ovacion" ? 0.07 : 0.045;
+    g.gain.setValueAtTime(0.0001, t0);
+    const golpes = Math.floor(dur * 14);
+    for (let k = 0; k < golpes; k++) {
+      const t = t0 + (k / golpes) * dur;
+      const envolvente = Math.min(1, k / 4) * Math.min(1, (golpes - k) / 6);
+      g.gain.linearRampToValueAtTime(pico * envolvente * (0.3 + Math.random() * 0.7), t + 0.02);
+      g.gain.linearRampToValueAtTime(pico * envolvente * 0.15, t + 0.06);
+    }
+    g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+    fuenteRuido.connect(filtro); filtro.connect(g); g.connect(audio.destination);
+    fuenteRuido.start(t0); fuenteRuido.stop(t0 + dur);
+  }
+
   function terminar(completa) {
     estado = "fin";
     detenerFuente();
@@ -516,7 +591,7 @@
       `${puntos.toLocaleString("es")} puntos · ${(acc * 100).toFixed(1)} % de precisión<br>` +
       `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
       (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "");
-    mostrar(finEl);
+    iniciarCelebracion(!completa ? "abucheo" : rango === "S" || rango === "A" ? "ovacion" : rango === "D" ? "murmullo" : "aplauso");
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
     if (completa && !ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada);
@@ -848,10 +923,73 @@
 
   function pintarMultitud(ahora, pulso) {
     if (ajustes.multitud === false) return;
-    const baja = vida < 35 && estado !== "menu";
-    const energia = baja ? 0.12 : Math.min(1, 0.3 + combo / 40);
-    const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.3);
-    dibujarMultitud(ctxC, ahora, pulso, energia, golpe, combo >= 50 && !baja, baja);
+    let baja = vida < 35 && estado !== "menu" && !celebracion;
+    let energia = baja ? 0.12 : fiebre ? 1 : Math.min(1, 0.3 + combo / 40);
+    let golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.3);
+    let luces = (combo >= 50 || fiebre) && !baja;
+    if (celebracion) {
+      const k = celebracion.tipo;
+      baja = k === "abucheo";
+      energia = k === "ovacion" ? 1 : k === "aplauso" ? 0.8 : k === "murmullo" ? 0.35 : 0.1;
+      golpe = k === "ovacion" ? 0.5 + 0.5 * Math.pow(Math.sin(ahora * 9), 2) : 0;
+      luces = k === "ovacion";
+    }
+    dibujarMultitud(ctxC, ahora, pulso, energia, golpe, luces, baja);
+  }
+
+  /* Rayos de luz de escenario: cuatro haces que bajan del techo y se balancean, más fuertes con cada
+     pulso (y cambiando de color durante la fiebre). Los degradados se crean una sola vez. */
+  const RAYOS = [{ x: 90, ang: 0.35, col: 0 }, { x: 330, ang: -0.2, col: 1 }, { x: 630, ang: 0.2, col: 2 }, { x: 870, ang: -0.35, col: 3 }];
+  let degradados = null;
+  function dibujarRayos(ahora, pulso) {
+    if (ajustes.rayos === false) return;
+    if (!degradados) {
+      degradados = CARRILES.map(c => {
+        const g = ctxC.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, `rgba(${c.rgb}, 0.55)`);
+        g.addColorStop(1, `rgba(${c.rgb}, 0)`);
+        return g;
+      });
+    }
+    const fuerza = (0.25 + pulso * 0.55) * (fiebre ? 1.5 : 1) * (estado === "menu" ? 0.5 : 1);
+    ctxC.globalAlpha = Math.min(0.55, fuerza * 0.5);
+    const giro = fiebre ? Math.floor(ahora * 2) : 0;
+    RAYOS.forEach((r, i) => {
+      const base = r.x + Math.tan(r.ang + Math.sin(ahora * 0.7 + i * 1.7) * 0.28) * H;
+      ctxC.fillStyle = degradados[(r.col + giro) % 4];
+      ctxC.beginPath();
+      ctxC.moveTo(r.x - 10, 0); ctxC.lineTo(r.x + 10, 0); ctxC.lineTo(base + 70, H); ctxC.lineTo(base - 70, H);
+      ctxC.closePath();
+      ctxC.fill();
+    });
+    ctxC.globalAlpha = 1;
+  }
+
+  /* Fuegos artificiales de la ovación: ráfagas de chispas con un poco de gravedad */
+  function lanzarFuego(ahora) {
+    const cx = 60 + Math.random() * 840;
+    const cy = 70 + Math.random() * 160;
+    const col = Math.floor(Math.random() * 4);
+    for (let i = 0; i < 22; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const v = 60 + Math.random() * 150;
+      particulas.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: ahora, vida: 0.9 + Math.random() * 0.5, col });
+    }
+  }
+  function dibujarParticulas(ahora, dt) {
+    let vivas = 0;
+    for (let i = 0; i < particulas.length; i++) {
+      const p = particulas[i];
+      const edad = ahora - p.t;
+      if (edad > p.vida) continue;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 170 * dt;
+      ctxC.globalAlpha = 1 - edad / p.vida;
+      ctxC.fillStyle = CARRILES[p.col].color;
+      ctxC.fillRect(p.x - 2, p.y - 2, 4, 4);
+      particulas[vivas++] = p;
+    }
+    particulas.length = vivas;
+    ctxC.globalAlpha = 1;
   }
 
   function dibujar(t) {
@@ -874,14 +1012,16 @@
     }
     if (rgb !== rgbPrevio) { rgbPrevio = rgb; brilloEl.style.setProperty("--brillo-rgb", rgb); }
 
-    // La pista: fondo oscuro con borde rojo de neón y los cuatro carriles
+    dibujarRayos(ahora, pulso);
+
+    // La pista: fondo oscuro con borde rojo de neón (dorado en la fiebre) y los cuatro carriles
     const ancho = ANCHO * 4;
     ctxC.fillStyle = "rgba(8, 5, 6, 0.82)";
     ctxC.fillRect(X0, 0, ancho, H);
-    ctxC.fillStyle = "rgba(255, 59, 59, 0.28)";
+    ctxC.fillStyle = fiebre ? "rgba(255, 216, 77, 0.4)" : "rgba(255, 59, 59, 0.28)";
     ctxC.fillRect(X0 - 5, 0, 5, H);
     ctxC.fillRect(X0 + ancho, 0, 5, H);
-    ctxC.fillStyle = "#ff3b3b";
+    ctxC.fillStyle = fiebre ? "#ffd84d" : "#ff3b3b";
     ctxC.fillRect(X0 - 2, 0, 2, H);
     ctxC.fillRect(X0 + ancho, 0, 2, H);
     CARRILES.forEach((c, i) => {
@@ -973,6 +1113,22 @@
     pintarMultitud(ahora, pulso);
     dibujarAvatar(ahora);
 
+    // Fuegos artificiales y mensaje de la reacción final
+    const dtFrame = Math.min(0.05, Math.max(0, ahora - ultimoDibujo));
+    ultimoDibujo = ahora;
+    if (celebracion) {
+      if (celebracion.tipo === "ovacion" && ahora - celebracion.ultimoFuego > 0.3) { lanzarFuego(ahora); celebracion.ultimoFuego = ahora; }
+      const textos = { ovacion: ["¡OVACIÓN!", "#ffd84d"], aplauso: ["¡BIEN TOCADO!", "#f4efe6"], murmullo: ["Hmm...", "#a58f89"], abucheo: ["BUUU", "#ff6b6b"] };
+      const [texto, color] = textos[celebracion.tipo];
+      ctxC.globalAlpha = Math.min(1, (ahora - celebracion.desde) / 0.3);
+      ctxC.fillStyle = color;
+      ctxC.font = "800 52px sans-serif";
+      ctxC.textAlign = "center";
+      ctxC.fillText(texto, W / 2, 130);
+      ctxC.globalAlpha = 1;
+    }
+    if (particulas.length) dibujarParticulas(ahora, dtFrame);
+
     // Textos de juicio
     efectos = efectos.filter(e => ahora - e.t < 0.6);
     efectos.forEach(e => {
@@ -1000,6 +1156,12 @@
         ctxC.font = "600 12px sans-serif";
         ctxC.fillStyle = "rgba(255, 255, 255, 0.5)";
         ctxC.fillText("COMBO", W - 24, 64);
+      }
+      if (fiebre) {
+        ctxC.textAlign = "right";
+        ctxC.font = "800 15px sans-serif";
+        ctxC.fillStyle = "#ffd84d";
+        ctxC.fillText("FIEBRE x2", W - 24, 86);
       }
       // Vida
       ctxC.fillStyle = "rgba(255, 255, 255, 0.12)";
@@ -1192,6 +1354,7 @@
     practicaEl.checked = !!ajustes.practica;
     document.getElementById("rtPersonaje").checked = ajustes.personaje !== false;
     document.getElementById("rtMultitud").checked = ajustes.multitud !== false;
+    document.getElementById("rtRayos").checked = ajustes.rayos !== false;
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
     recordEl.textContent = r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
@@ -1224,6 +1387,7 @@
   practicaEl.addEventListener("change", () => { ajustes.practica = practicaEl.checked; guardarAjustes(); });
   document.getElementById("rtPersonaje").addEventListener("change", ev => { ajustes.personaje = ev.target.checked; guardarAjustes(); });
   document.getElementById("rtMultitud").addEventListener("change", ev => { ajustes.multitud = ev.target.checked; guardarAjustes(); });
+  document.getElementById("rtRayos").addEventListener("change", ev => { ajustes.rayos = ev.target.checked; guardarAjustes(); });
   document.getElementById("rtSonidoGolpe").addEventListener("change", ev => { ajustes.sonidoGolpe = ev.target.checked; guardarAjustes(); });
 
   /* --- Foto del personaje: se elige, se encuadra en un círculo y se guarda ya recortada --- */
@@ -1651,7 +1815,10 @@
       tick: t => { actualizar(t); dibujar(t); },
       golpear, notas: () => notas, tiempo: tiempoCancion,
       forzarTiempo: f => { tiempoCancion = f; },
-      forzarCombo: n => { combo = n; }
+      forzarCombo: n => { combo = n; },
+      forzarFiebre: v => { fiebre = v; },
+      poner: o => { if (o.perfectos !== undefined) perfectos = o.perfectos; if (o.buenos !== undefined) buenos = o.buenos; if (o.fallos !== undefined) fallos = o.fallos; },
+      terminar
     };
   }
 })();

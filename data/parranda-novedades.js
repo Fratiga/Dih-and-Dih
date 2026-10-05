@@ -4,6 +4,16 @@
 window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "Fiebre, luces y ovación",
+    cambios: [
+      "Con un combo de 30 empieza la FIEBRE: los puntos valen el doble y la pista se pone dorada. Dura hasta que falles.",
+      "Hay rayos de luz de escenario que bajan con el pulso. Se pueden quitar en los ajustes.",
+      "Al terminar, la multitud reacciona: ovación con fuegos artificiales si sacas S o A, aplauso con B o C, murmullo con D y abucheo si te quedas sin vida.",
+      "Los aplausos suenan muy suave y se apagan con el interruptor de Sonidos."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "La multitud",
     cambios: [
       "Ahora hay una multitud a los lados de la pista. Rebota con la música, salta cuando aciertas y levanta los brazos con un combo alto.",
