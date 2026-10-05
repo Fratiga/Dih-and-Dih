@@ -4,7 +4,7 @@
 /* --- Campo de juego (solo se ve mientras se juega) ------------------------- */
 .rt-escenario { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 9; margin: 18px auto 0; background: var(--panel); border: 1px solid var(--border); overflow: hidden; }
 .rt-campo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
-.rt-brillo { position: absolute; inset: 0; pointer-events: none; opacity: .2; will-change: opacity; background: radial-gradient(circle at 22% 50%, rgba(143, 220, 255, .3), rgba(143, 220, 255, 0) 60%); }
+.rt-brillo { position: absolute; inset: 0; pointer-events: none; opacity: .2; will-change: opacity; background: radial-gradient(circle at 22% 50%, rgba(var(--brillo-rgb, 143, 220, 255), .3), rgba(var(--brillo-rgb, 143, 220, 255), 0) 60%); }
 
 .rt-panel {
   position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; gap: 12px;
@@ -117,3 +117,14 @@
   .rt-rango { font-size: 2.4rem; }
   .rt-fin-puntajes { max-height: 30%; }
 }
+
+/* --- Personaje: slime o foto propia --- */
+.rt-foto { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rt-foto-vista { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-soft); object-fit: cover; background: var(--panel-2); }
+.rt-recorte { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .75); padding: 16px; }
+.rt-recorte-caja { background: var(--panel); border: 1px solid var(--accent-soft); padding: 20px; display: flex; flex-direction: column; gap: 12px; align-items: center; max-width: 100%; }
+.rt-recorte-caja h2 { margin: 0; font-size: 1.05rem; }
+.rt-recorte-lienzo { width: min(300px, 80vw); height: min(300px, 80vw); touch-action: none; cursor: grab; background: #000; display: block; }
+.rt-recorte-lienzo:active { cursor: grabbing; }
+.rt-recorte-zoom { display: flex; align-items: center; gap: 10px; font-size: .8rem; color: var(--muted); width: 100%; }
+.rt-recorte-zoom input { flex: 1; }

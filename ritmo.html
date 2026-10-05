@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zarabanda — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261120">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261120">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261120">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261120">
-  <script src="js/mj-volumen.js?v=20261120"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261121">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261121">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261121">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261121">
+  <script src="js/mj-volumen.js?v=20261121"></script>
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -43,6 +43,13 @@
           <div class="rt-opciones">
             <label class="rt-ajuste">Sincronía <input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0"> <output id="rtDesfaseTxt">0 ms</output></label>
             <label class="rt-practica"><input type="checkbox" id="rtPractica"> Práctica (la vida no baja, no puntúa)</label>
+            <label class="rt-practica"><input type="checkbox" id="rtPersonaje"> Mostrar personaje</label>
+            <div class="rt-foto">
+              <button type="button" id="rtFotoBtn" class="rt-secundario">Usar mi foto</button>
+              <button type="button" id="rtFotoQuitar" class="rt-secundario hidden">Volver al slime</button>
+              <img id="rtFotoVista" class="rt-foto-vista hidden" alt="Tu foto de personaje">
+              <input type="file" id="rtFotoArchivo" accept="image/*" class="hidden">
+            </div>
           </div>
 
           <div class="rt-fila">
@@ -108,14 +115,26 @@
     <p id="rtPie" class="mj-linea hidden">Esc pausa.</p>
   </main>
 
-  <script src="js/temas.js?v=20261120"></script>
-  <script src="js/fichas-supabase.js?v=20261120"></script>
-  <script src="js/lado.js?v=20261120"></script>
-  <script src="js/minijuegos-stats.js?v=20261120"></script>
-  <script src="data/musica.js?v=20261120"></script>
-  <script src="data/musica-duraciones.js?v=20261120"></script>
-  <script src="js/peticiones-supabase.js?v=20261120"></script>
-  <script src="js/ritmo-analisis.js?v=20261120"></script>
-  <script src="js/ritmo.js?v=20261120"></script>
+  <div id="rtRecorte" class="rt-recorte hidden" role="dialog" aria-label="Recortar la foto">
+    <div class="rt-recorte-caja">
+      <h2>Encuadra tu foto</h2>
+      <canvas id="rtRecorteLienzo" class="rt-recorte-lienzo" width="300" height="300"></canvas>
+      <label class="rt-recorte-zoom">Zoom <input type="range" id="rtRecorteZoom" min="100" max="400" value="100"></label>
+      <div class="rt-botones">
+        <button type="button" id="rtRecorteOk" class="rt-jugar">Usar</button>
+        <button type="button" id="rtRecorteNo" class="rt-secundario">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/temas.js?v=20261121"></script>
+  <script src="js/fichas-supabase.js?v=20261121"></script>
+  <script src="js/lado.js?v=20261121"></script>
+  <script src="js/minijuegos-stats.js?v=20261121"></script>
+  <script src="data/musica.js?v=20261121"></script>
+  <script src="data/musica-duraciones.js?v=20261121"></script>
+  <script src="js/peticiones-supabase.js?v=20261121"></script>
+  <script src="js/ritmo-analisis.js?v=20261121"></script>
+  <script src="js/ritmo.js?v=20261121"></script>
 </body>
 </html>

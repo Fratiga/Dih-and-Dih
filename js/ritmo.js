@@ -49,7 +49,7 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "" };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
@@ -521,9 +521,31 @@
 
   let ultimoAvatar = 0;
   let brilloPrevio = "";
+  let rgbPrevio = "";
   let puntosTexto = "";
   let puntosPrevio = -1;
+  /* Foto propia del jugador, ya recortada en círculo (se guarda en este navegador) */
+  const CLAVE_FOTO = "compendioRitmoFoto";
+  let fotoImg = null;
+  function cargarFoto() {
+    fotoImg = null;
+    let url = "";
+    try { url = localStorage.getItem(CLAVE_FOTO) || ""; } catch (e) { /* sin almacenamiento */ }
+    const vista = document.getElementById("rtFotoVista");
+    const quitar = document.getElementById("rtFotoQuitar");
+    if (url) {
+      const img = new Image();
+      img.onload = () => { fotoImg = img; };
+      img.src = url;
+      vista.src = url;
+    }
+    vista.classList.toggle("hidden", !url);
+    quitar.classList.toggle("hidden", !url);
+    document.getElementById("rtFotoBtn").textContent = url ? "Cambiar mi foto" : "Usar mi foto";
+  }
+
   function dibujarAvatar(ahora) {
+    if (ajustes.personaje === false) return;
     const objetivo = CARRILES[avatar.carril].y;
     const dt = Math.min(0.05, Math.max(0, ahora - ultimoAvatar));
     ultimoAvatar = ahora;
@@ -536,6 +558,17 @@
     ctxC.save();
     ctxC.translate(x, y);
     ctxC.scale(1 / estira, estira);
+    if (fotoImg) {
+      // La foto reemplaza al slime: círculo del mismo tamaño y con el mismo salto
+      ctxC.save();
+      ctxC.beginPath(); ctxC.arc(0, 0, 34, 0, Math.PI * 2); ctxC.clip();
+      ctxC.drawImage(fotoImg, -34, -34, 68, 68);
+      ctxC.restore();
+      ctxC.strokeStyle = "rgba(255, 255, 255, 0.85)"; ctxC.lineWidth = 3;
+      ctxC.beginPath(); ctxC.arc(0, 0, 34, 0, Math.PI * 2); ctxC.stroke();
+      ctxC.restore();
+      return;
+    }
     ctxC.fillStyle = "#7ed87f";
     ctxC.strokeStyle = "#2e6e32";
     ctxC.lineWidth = 4;
@@ -561,6 +594,16 @@
     ctxC.clearRect(0, 0, W, H);
     const brillo = (0.2 + pulso * 0.8).toFixed(2);
     if (brillo !== brilloPrevio) { brilloPrevio = brillo; brilloEl.style.opacity = brillo; }
+    // El color del resplandor sigue al carril de la última nota que pasó: naranja las de abajo,
+    // azul las de arriba y dorado las dobles
+    let rgb = "143, 220, 255";
+    if (estado !== "menu" && notas.length) {
+      let q = Math.max(0, punteroFallos - 4);
+      let ultima = null;
+      while (q < notas.length && notas[q].t <= t + 0.03) { ultima = notas[q]; q++; }
+      if (ultima && t - ultima.t < 1.2) rgb = ultima.carril === "abajo" ? "255, 140, 50" : ultima.carril === "ambos" ? "242, 212, 107" : "143, 220, 255";
+    }
+    if (rgb !== rgbPrevio) { rgbPrevio = rgb; brilloEl.style.setProperty("--brillo-rgb", rgb); }
 
     // Carriles
     Object.entries(CARRILES).forEach(([nombre, c]) => {
@@ -804,6 +847,7 @@
     desfaseEl.value = ajustes.desfase;
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
     practicaEl.checked = !!ajustes.practica;
+    document.getElementById("rtPersonaje").checked = ajustes.personaje !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
     recordEl.textContent = r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
     pintarPuntajes();
@@ -833,6 +877,113 @@
     guardarAjustes();
   });
   practicaEl.addEventListener("change", () => { ajustes.practica = practicaEl.checked; guardarAjustes(); });
+  document.getElementById("rtPersonaje").addEventListener("change", ev => { ajustes.personaje = ev.target.checked; guardarAjustes(); });
+
+  /* --- Foto del personaje: se elige, se encuadra en un círculo y se guarda ya recortada --- */
+  {
+    const recorteEl = document.getElementById("rtRecorte");
+    const lienzoR = document.getElementById("rtRecorteLienzo");
+    const gr = lienzoR.getContext("2d");
+    const zoomR = document.getElementById("rtRecorteZoom");
+    const TAM = 300;
+    let img = null;
+    let base = 1; // escala que hace que la imagen cubra el círculo
+    let zoom = 1;
+    let ox = 0;
+    let oy = 0;
+    let arrastrando = null;
+
+    function limitar() {
+      const w = img.width * base * zoom;
+      const h = img.height * base * zoom;
+      ox = Math.min(0, Math.max(TAM - w, ox));
+      oy = Math.min(0, Math.max(TAM - h, oy));
+    }
+
+    function pintarRecorte() {
+      gr.clearRect(0, 0, TAM, TAM);
+      gr.drawImage(img, ox, oy, img.width * base * zoom, img.height * base * zoom);
+      // Oscurece lo que queda fuera del círculo
+      gr.save();
+      gr.fillStyle = "rgba(0, 0, 0, 0.62)";
+      gr.beginPath();
+      gr.rect(0, 0, TAM, TAM);
+      gr.arc(TAM / 2, TAM / 2, TAM / 2 - 4, 0, Math.PI * 2, true);
+      gr.fill("evenodd");
+      gr.restore();
+      gr.strokeStyle = "rgba(255, 255, 255, 0.9)"; gr.lineWidth = 2;
+      gr.beginPath(); gr.arc(TAM / 2, TAM / 2, TAM / 2 - 4, 0, Math.PI * 2); gr.stroke();
+    }
+
+    function abrirRecorte(archivo) {
+      const url = URL.createObjectURL(archivo);
+      const nueva = new Image();
+      nueva.onload = () => {
+        URL.revokeObjectURL(url);
+        img = nueva;
+        base = Math.max(TAM / img.width, TAM / img.height);
+        zoom = 1;
+        zoomR.value = "100";
+        ox = (TAM - img.width * base) / 2;
+        oy = (TAM - img.height * base) / 2;
+        recorteEl.classList.remove("hidden");
+        pintarRecorte();
+      };
+      nueva.onerror = () => { URL.revokeObjectURL(url); alert("No se pudo leer esa imagen."); };
+      nueva.src = url;
+    }
+
+    document.getElementById("rtFotoBtn").addEventListener("click", () => document.getElementById("rtFotoArchivo").click());
+    document.getElementById("rtFotoArchivo").addEventListener("change", ev => {
+      const f = ev.target.files[0];
+      ev.target.value = "";
+      if (f) abrirRecorte(f);
+    });
+    document.getElementById("rtFotoQuitar").addEventListener("click", () => {
+      try { localStorage.removeItem(CLAVE_FOTO); } catch (e) { /* sin almacenamiento */ }
+      cargarFoto();
+    });
+
+    lienzoR.addEventListener("pointerdown", ev => {
+      lienzoR.setPointerCapture(ev.pointerId);
+      arrastrando = { x: ev.clientX, y: ev.clientY, ox, oy };
+    });
+    lienzoR.addEventListener("pointermove", ev => {
+      if (!arrastrando) return;
+      const k = TAM / lienzoR.getBoundingClientRect().width;
+      ox = arrastrando.ox + (ev.clientX - arrastrando.x) * k;
+      oy = arrastrando.oy + (ev.clientY - arrastrando.y) * k;
+      limitar();
+      pintarRecorte();
+    });
+    const soltar = () => { arrastrando = null; };
+    lienzoR.addEventListener("pointerup", soltar);
+    lienzoR.addEventListener("pointercancel", soltar);
+    zoomR.addEventListener("input", () => {
+      // El zoom se hace alrededor del centro del círculo
+      const antes = zoom;
+      zoom = Number(zoomR.value) / 100;
+      const cx = TAM / 2;
+      ox = cx - ((cx - ox) / antes) * zoom;
+      oy = cx - ((cx - oy) / antes) * zoom;
+      limitar();
+      pintarRecorte();
+    });
+    document.getElementById("rtRecorteNo").addEventListener("click", () => recorteEl.classList.add("hidden"));
+    document.getElementById("rtRecorteOk").addEventListener("click", () => {
+      // Se guarda a 160x160 con el recorte circular ya aplicado (PNG con transparencia)
+      const salida = document.createElement("canvas");
+      salida.width = 160; salida.height = 160;
+      const gs = salida.getContext("2d");
+      const k = 160 / TAM;
+      gs.beginPath(); gs.arc(80, 80, 80, 0, Math.PI * 2); gs.clip();
+      gs.drawImage(img, ox * k, oy * k, img.width * base * zoom * k, img.height * base * zoom * k);
+      try { localStorage.setItem(CLAVE_FOTO, salida.toDataURL("image/png")); } catch (e) { alert("No se pudo guardar la foto en este navegador."); }
+      recorteEl.classList.add("hidden");
+      cargarFoto();
+    });
+  }
+  cargarFoto();
   jugarEl.addEventListener("click", empezar);
 
   /* Buzón: la petición se guarda en la misma tabla de peticiones del sitio, marcada

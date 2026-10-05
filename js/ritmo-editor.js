@@ -361,6 +361,115 @@
     sucio = true;
   }
 
+  /* --- Copiar y pegar tramos ------------------------------------------------------------------
+     Se copian las notas de los tramos elegidos medidas en pulsos desde el primero del rango, no
+     en segundos, así al pegarlas en otro sitio se acomodan al pulso de ahí aunque el tempo sea
+     distinto. Al pegar en el inicio de un tramo también viaja la banda que seguía cada uno. */
+  let portapapeles = null; // { pulsos, notas: [{ b, carril, d }], bandas: [{ banda, vacio, forzada }] }
+
+  function enPulsos(t, k0, k1) {
+    const k = Math.max(k0, Math.min(k1 - 1, indicePulso(t)));
+    return (k - k0) + (t - pulsos[k]) / (pulsos[k + 1] - pulsos[k]);
+  }
+
+  function copiarTramos() {
+    const r = rangoPulsos();
+    if (!r) { mensaje("Elige primero uno o más tramos en la franja de colores.", true); return; }
+    const t0 = pulsos[r.k0];
+    const t1 = pulsos[r.k1];
+    const enRango = notas.filter(n => n.t >= t0 - 1e-6 && n.t < t1);
+    portapapeles = {
+      pulsos: r.k1 - r.k0,
+      notas: enRango.map(n => {
+        const b = enPulsos(n.t, r.k0, r.k1);
+        return { b, carril: n.carril, d: n.dur > 0 ? enPulsos(n.t + n.dur, r.k0, r.k1) - b : 0 };
+      }),
+      bandas: []
+    };
+    for (let i = tramosSel.a; i <= tramosSel.b; i++) portapapeles.bandas.push({ banda: tramos[i].banda, vacio: tramos[i].vacio });
+    mensaje(`Copiados ${enRango.length} notas de ${tramosSel.b - tramosSel.a + 1} tramo${tramosSel.b > tramosSel.a ? "s" : ""}. Pégalos en otro lugar.`);
+  }
+
+  function tiempoDePulso(kT, b) {
+    const base = kT + Math.floor(b);
+    if (base + 1 >= pulsos.length) return null;
+    return pulsos[base] + (b - Math.floor(b)) * (pulsos[base + 1] - pulsos[base]);
+  }
+
+  function pegarEn(kT) {
+    if (!portapapeles) { mensaje("Primero copia uno o más tramos.", true); return; }
+    if (kT < 0 || kT + 1 >= pulsos.length) { mensaje("Ese punto queda fuera de la canción.", true); return; }
+    const sumar = $("reSumar").checked;
+    guardarFoto();
+    const tIni = pulsos[kT];
+    const tFin = pulsos[Math.min(kT + portapapeles.pulsos, pulsos.length - 1)];
+    if (!sumar) notas = notas.filter(n => n.t < tIni - 1e-6 || n.t >= tFin);
+    let puestas = 0;
+    portapapeles.notas.forEach(n => {
+      const t = tiempoDePulso(kT, n.b);
+      if (t === null || t >= tFin + 1e-6) return;
+      const fin = n.d > 0 ? tiempoDePulso(kT, n.b + n.d) : null;
+      notas.push({ t, carril: n.carril, dur: fin !== null && n.carril !== "ambos" ? Math.max(0.2, fin - t) : 0 });
+      puestas++;
+    });
+    notas.sort((a, b) => a.t - b.t);
+    // Si se pega justo al inicio de un tramo, los tramos de destino siguen la misma banda
+    let bandas = false;
+    if (kT % 8 === 0) {
+      const i0 = kT / 8;
+      portapapeles.bandas.forEach((b, j) => {
+        const tr = tramos[i0 + j];
+        if (!tr) return;
+        tr.banda = b.banda; tr.vacio = b.vacio;
+        forzadas[i0 + j] = b.vacio ? "vacio" : b.banda;
+      });
+      tramosSel = { a: i0, b: Math.min(tramos.length - 1, i0 + portapapeles.bandas.length - 1) };
+      bandas = true;
+    }
+    sel = null;
+    guardarFoto();
+    reiniciarClics();
+    sucio = true;
+    mensaje(`Pegadas ${puestas} notas${bandas ? " y la banda de cada tramo" : ""}${sumar ? " (sumadas a lo que había)" : ", reemplazando lo que había"}.`);
+  }
+
+  function pegarEnTramo() {
+    if (!tramosSel) { mensaje("Elige el tramo donde quieres pegar.", true); return; }
+    pegarEn(tramos[tramosSel.a].k0);
+  }
+
+  function pegarEnCursor() {
+    if (!pulsos.length) return;
+    const t = tiempoActual();
+    let mejor = 0;
+    for (let k = 0; k < pulsos.length; k++) if (Math.abs(pulsos[k] - t) < Math.abs(pulsos[mejor] - t)) mejor = k;
+    pegarEn(mejor);
+  }
+
+  /* Rellena el resto de la canción, desde el compás del cursor, con notas generadas que imitan
+     el estilo de lo ya hecho (densidad, rachas por carril, largas y dobles). Lo anterior al
+     cursor no se toca. */
+  function completarDesdeCursor() {
+    if (!buffer || !pulsos.length) { mensaje("Carga primero un mapa.", true); return; }
+    const t = tiempoActual();
+    let k = 0;
+    for (let q = 0; q < pulsos.length; q++) if (Math.abs(pulsos[q] - t) < Math.abs(pulsos[k] - t)) k = q;
+    k = Math.min(pulsos.length - 1, Math.round(k / 4) * 4);
+    const t0 = pulsos[k];
+    const estilo = AN.estiloDe(notas, 0, t0);
+    if (!estilo) { mensaje("Hay muy poco trabajo antes del cursor para sacar un estilo. Pon el cursor más adelante.", true); return; }
+    guardarFoto();
+    const m = AN.crearMapa(buffer, difActual(), { pulsos, bandasForzadas: forzadas, estilo });
+    notas = notas.filter(n => n.t < t0 - 1e-6);
+    m.notas.forEach(n => { if (n.t >= t0 - 1e-6) notas.push({ t: n.t, carril: n.carril, dur: n.dur || 0 }); });
+    notas.sort((a, b) => a.t - b.t);
+    sel = null;
+    guardarFoto();
+    reiniciarClics();
+    sucio = true;
+    mensaje(`Completado desde ${formatoT(t0)} con tu estilo (${estilo.nps} notas/s, racha máxima ${estilo.maxRacha}, ${Math.round(estilo.fraccionLargas * 100)} % largas). Lo anterior no se tocó.`);
+  }
+
   function pulsoAlCursor() {
     const r = rangoPulsos();
     if (!r) { mensaje("Elige primero uno o más tramos en la franja de colores.", true); return; }
@@ -787,6 +896,10 @@
   $("reDoble").addEventListener("click", alternarDoble);
   $("reCarril").addEventListener("click", cambiarCarril);
   $("reBorrar").addEventListener("click", borrarSeleccion);
+  $("reCompletar").addEventListener("click", completarDesdeCursor);
+  $("reCopiar").addEventListener("click", copiarTramos);
+  $("rePegarTramo").addEventListener("click", pegarEnTramo);
+  $("rePegarCursor").addEventListener("click", pegarEnCursor);
   $("reDeshacer").addEventListener("click", deshacer);
   $("reRehacer").addEventListener("click", rehacer);
   $("reRegular").addEventListener("click", regularizar);
@@ -817,6 +930,8 @@
     const k = ev.key.toLowerCase();
     if ((ev.ctrlKey || ev.metaKey) && k === "z") { ev.preventDefault(); deshacer(); return; }
     if ((ev.ctrlKey || ev.metaKey) && (k === "y" || (ev.shiftKey && k === "z"))) { ev.preventDefault(); rehacer(); return; }
+    if ((ev.ctrlKey || ev.metaKey) && k === "c" && tramosSel) { ev.preventDefault(); copiarTramos(); return; }
+    if ((ev.ctrlKey || ev.metaKey) && k === "v" && portapapeles) { ev.preventDefault(); if (tramosSel) pegarEnTramo(); else pegarEnCursor(); return; }
     if (k === " ") { ev.preventDefault(); alternarReproduccion(); }
     else if (k === "delete" || k === "backspace") { ev.preventDefault(); borrarSeleccion(); }
     else if (k === "h") alternarLarga();
@@ -836,6 +951,7 @@
       estado: () => ({ notas: notas.length, pulsos: pulsos.length, tramos: tramos.length, sel: !!sel, tramosSel, cambios, hist: historial.length }),
       notas: () => notas, pulsos: () => pulsos, tramos: () => tramos, cargarAutomatico, regenerar,
       fijarTramos: (a, b) => { tramosSel = { a, b }; }, limpiarNotas, ajustar, buscar,
+      copiarTramos, pegarEnTramo, pegarEnCursor, completarDesdeCursor, portapapeles: () => portapapeles,
       guardable: () => AN.guardable(notas, pulsos), dibujar: () => { sucio = true; dibujar(); }
     };
   }

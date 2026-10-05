@@ -19,7 +19,7 @@
     facil: { nombre: "Fácil", nps: 1.5, hueco: 0.42, aproximacion: 1.6, sub: 1, corte: 0.6, repite: 0.7, sueltaFuerte: 99, perfecto: 0.06, bien: 0.12, vidaFallo: 5, dobles: false, largas: 0 },
     normal: { nombre: "Normal", nps: 2.6, hueco: 0.28, aproximacion: 1.3, sub: 2, corte: 0.42, repite: 0.6, sueltaFuerte: 2.2, perfecto: 0.05, bien: 0.11, vidaFallo: 7, dobles: false, largas: 0 },
     dificil: { nombre: "Difícil", nps: 4.0, hueco: 0.19, aproximacion: 1.0, sub: 2, corte: 0.28, repite: 0.45, sueltaFuerte: 1.4, perfecto: 0.04, bien: 0.09, vidaFallo: 9, dobles: true, huecoDoble: 5, largas: 0.2 },
-    experto: { nombre: "Experto", nps: 5.2, hueco: 0.12, aproximacion: 0.85, sub: 4, corte: 0.15, repite: 0.35, sueltaFuerte: 1.0, perfecto: 0.035, bien: 0.08, vidaFallo: 12, dobles: true, huecoDoble: 3.5, largas: 0.25 }
+    experto: { nombre: "Experto", nps: 4.8, hueco: 0.17, aproximacion: 0.85, sub: 2, corte: 0.07, repite: 0.2, sueltaFuerte: 0.5, perfecto: 0.035, bien: 0.08, vidaFallo: 12, dobles: true, huecoDoble: 3.5, largas: 0.25 }
   };
 
   /* --- Análisis de la canción -------------------------------------------- */
@@ -229,7 +229,9 @@
 
   /* opciones.pulsos: lista de pulsos (s) ya editada, en vez de la detectada.
      opciones.bandasForzadas: { numeroDeTramo: "bajo" | "medio" | "alto" | "vacio" } para
-     decidir a mano qué banda sigue un tramo. Lo usa el editor de mapas. */
+     decidir a mano qué banda sigue un tramo. Lo usa el editor de mapas.
+     opciones.estilo: { nps, corte, maxRacha, huecoDobleS, fraccionLargas } para imitar la
+     forma de un mapa hecho a mano (ver estiloDe) en vez de los valores de la dificultad. */
   function crearMapa(buffer, dificultad, opciones = {}) {
     const cfg = DIFICULTADES[dificultad];
     const { bajo, medio, alto, sr } = bandas(buffer);
@@ -294,7 +296,7 @@
     slots.forEach((sl, g) => {
       if (sl.vacio || sl.t < 0.8 || sl.t > dur - 0.5) return;
       const contratiempo = sl.j !== 0;
-      const corte = cfg.corte * (contratiempo && sd === 2 ? 1.3 : 1);
+      const corte = (opciones.estilo && opciones.estilo.corte !== undefined ? opciones.estilo.corte : cfg.corte) * (contratiempo && sd === 2 && !opciones.estilo ? 1.3 : 1);
       if (sl.f < corte) return;
       const veces = [slots[g - porCompas], slots[g + porCompas]].filter(o => o && !o.vacio && o.banda === sl.banda && o.f >= corte * cfg.repite);
       if (!veces.length && sl.f < cfg.sueltaFuerte) return;
@@ -304,7 +306,7 @@
 
     const celda = 0.02;
     const bloqueo = new Uint8Array(Math.ceil(dur / celda) + 2);
-    const maximo = Math.round(dur * cfg.nps);
+    const maximo = Math.round(dur * (opciones.estilo && opciones.estilo.nps ? opciones.estilo.nps : cfg.nps));
     const medioHueco = Math.round(cfg.hueco / celda);
     const notas = [];
     for (const c of candidatos) {
@@ -316,63 +318,198 @@
     }
     notas.sort((a, b) => a.t - b.t);
 
-    // Carril: dentro de un tramo, cada posición del compás va siempre al mismo carril, así el
-    // patrón se repite igual compás tras compás. Se elige por el brillo del sonido (graves al
-    // suelo, brillantes al aire) y, si no se distingue, por la posición (pares abajo).
-    const brillo = nt => {
-      const i = Math.min(n - 1, nt.i + 1);
-      const total = bajo[i] + medio[i] + alto[i] + 1e-9;
-      return (0.5 * medio[i] + alto[i]) / total;
-    };
-    const grupos = new Map();
-    notas.forEach(nt => {
-      const clave = nt.tramo + ":" + nt.pos;
-      if (!grupos.has(clave)) grupos.set(clave, []);
-      grupos.get(clave).push(brillo(nt));
-    });
-    const media = new Map();
-    grupos.forEach((lista, clave) => media.set(clave, lista.reduce((a, b) => a + b, 0) / lista.length));
-    const porTramo = new Map();
-    media.forEach((v, clave) => {
-      const tr = Number(clave.split(":")[0]);
-      if (!porTramo.has(tr)) porTramo.set(tr, []);
-      porTramo.get(tr).push(v);
-    });
-    const estadistica = new Map();
-    porTramo.forEach((lista, tr) => {
-      const orden = lista.slice().sort((a, b) => a - b);
-      estadistica.set(tr, { med: orden[Math.floor(orden.length / 2)], delta: 0.15 * (orden[orden.length - 1] - orden[0]) });
-    });
-    notas.forEach(nt => {
-      const e = estadistica.get(nt.tramo);
-      const m = media.get(nt.tramo + ":" + nt.pos);
-      nt.carril = m > e.med + e.delta ? "arriba" : m < e.med - e.delta ? "abajo" : (nt.pos % 2 === 0 ? "abajo" : "arriba");
-    });
-
-    // Dobles: solo en el primer pulso de cada frase de cuatro compases, cuando otra banda
-    // también marca fuerte. Son un acento, no un adorno constante.
-    if (cfg.dobles) {
-      let ultima = -99;
-      for (const nt of notas) {
-        if (nt.t - ultima < cfg.huecoDoble || nt.j !== 0 || nt.k % 16 !== 0) continue;
-        const otra = nombres.filter(b => b !== nt.banda).reduce((a, b) => Math.max(a, fuerzaEn(b, nt.t)), 0);
-        if (nt.f >= 0.9 && otra >= 1.0) { nt.carril = "ambos"; ultima = nt.t; }
+    // Carril por tono: el carril sigue la melodía. Cada nota se compara con el tono de las
+    // anteriores: más agudo que lo que venía, arriba; más grave, abajo; si no cambia, se
+    // queda donde estaba. Así se siente que tocas lo que suena y no solo que sigues un ritmo.
+    const sd0 = buffer.getChannelData(0);
+    const sd1 = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : sd0;
+    const NF = 2048;
+    const ventana = new Float64Array(NF);
+    for (let i = 0; i < NF; i++) ventana[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (NF - 1));
+    const re = new Float64Array(NF);
+    const im = new Float64Array(NF);
+    const rev = new Uint16Array(NF);
+    for (let i = 0; i < NF; i++) { let r = 0; for (let b = 0; b < 11; b++) r = (r << 1) | ((i >> b) & 1); rev[i] = r; }
+    const cosT = new Float64Array(NF / 2);
+    const sinT = new Float64Array(NF / 2);
+    for (let k = 0; k < NF / 2; k++) { cosT[k] = Math.cos((2 * Math.PI * k) / NF); sinT[k] = -Math.sin((2 * Math.PI * k) / NF); }
+    const fft = () => {
+      for (let len = 2; len <= NF; len <<= 1) {
+        const mitad = len >> 1;
+        const paso = NF / len;
+        for (let i = 0; i < NF; i += len) {
+          for (let j = 0; j < mitad; j++) {
+            const wr = cosT[j * paso];
+            const wi = sinT[j * paso];
+            const a = i + j;
+            const b = a + mitad;
+            const tr = re[b] * wr - im[b] * wi;
+            const ti = re[b] * wi + im[b] * wr;
+            re[b] = re[a] - tr; im[b] = im[a] - ti;
+            re[a] += tr; im[a] += ti;
+          }
+        }
       }
+    };
+    const kMin = Math.ceil((70 * NF) / sr);
+    const kMax = Math.floor((1500 * NF) / sr);
+    const mag = new Float64Array(NF / 2);
+    const tonoDe = t => {
+      const ini = Math.max(0, Math.min(sd0.length - NF - 1, Math.round((t + 0.03) * sr)));
+      for (let i = 0; i < NF; i++) { re[rev[i]] = ((sd0[ini + i] + sd1[ini + i]) * 0.5) * ventana[i]; im[rev[i]] = 0; }
+      fft();
+      for (let k = 0; k < NF / 2; k++) mag[k] = Math.hypot(re[k], im[k]);
+      let mejorK = kMin;
+      let mejorV = -1;
+      for (let k = kMin; k <= kMax; k++) {
+        const v = mag[k] * mag[Math.min(NF / 2 - 1, k * 2)] * mag[Math.min(NF / 2 - 1, k * 3)];
+        if (v > mejorV) { mejorV = v; mejorK = k; }
+      }
+      return Math.log2((mejorK * sr) / NF);
+    };
+    {
+      const tonos = notas.map(nt => tonoDe(nt.t));
+      let carril = "abajo";
+      notas.forEach((nt, i) => {
+        const ventanaTonos = tonos.slice(Math.max(0, i - 6), i + 1).sort((a, b) => a - b);
+        const med = ventanaTonos[Math.floor(ventanaTonos.length / 2)];
+        const rel = tonos[i] - med;
+        if (rel > 0.12) carril = "arriba"; else if (rel < -0.12) carril = "abajo"; else carril = carril === "arriba" ? "abajo" : "arriba";
+        nt.carril = carril;
+      });
     }
 
-    // Largas: sonidos que se sostienen, siempre que quepan antes de la siguiente nota del carril
-    if (cfg.largas) {
+    // Estilo: por defecto el de la dificultad; con opciones.estilo, el de un mapa hecho a mano
+    const est = Object.assign({
+      maxRacha: dificultad === "facil" ? 4 : 3,
+      huecoDobleS: dificultad === "experto" ? 1.6 : 3.2,
+      fraccionLargas: dificultad === "experto" ? 0.15 : dificultad === "dificil" ? 0.1 : 0
+    }, opciones.estilo || {});
+
+    // Rachas: no más de est.maxRacha notas seguidas en el mismo carril. La que se pasa se
+    // convierte en una de estas cosas, por turnos para que no se note una fórmula: pasar al
+    // otro carril, absorber la siguiente en una larga, volverse doble o quitarse. Todo cae
+    // sobre la misma cuadrícula, así el ritmo no se pierde.
+    {
+      const puedeLarga = cfg.largas > 0 || est.fraccionLargas > 0;
+      const turnos = ["volteo", "larga", "volteo", "doble", "volteo", "quitar"].filter(o => (o !== "larga" || puedeLarga) && (o !== "doble" || cfg.dobles));
+      let turno = 0;
+      let racha = 0;
+      let carrilAct = null;
+      let ultimaDoble = -99;
+      const finLarga = { arriba: -99, abajo: -99 };
+      const salida = [];
+      const hayCerca = (carril, t) => salida.slice(-3).some(o => o.carril === carril && Math.abs(o.t - t) < 0.12);
+      for (let i = 0; i < notas.length; i++) {
+        const nt = notas[i];
+        const previa = salida[salida.length - 1];
+        // Doble tras un silencio, como acento (si la dificultad las tiene)
+        if (cfg.dobles && previa && nt.t - previa.t >= 0.95 * (pulsos[nt.k + 1] - pulsos[nt.k]) && nt.t - ultimaDoble >= est.huecoDobleS
+          && nt.t > finLarga.arriba && nt.t > finLarga.abajo) {
+          nt.carril = "ambos"; ultimaDoble = nt.t; racha = 0; carrilAct = null; salida.push(nt); continue;
+        }
+        if (nt.carril === carrilAct) racha++; else { racha = 1; carrilAct = nt.carril; }
+        if (racha <= est.maxRacha) { salida.push(nt); continue; }
+        let resuelto = false;
+        for (let intento = 0; intento < turnos.length && !resuelto; intento++) {
+          const op = turnos[(turno + intento) % turnos.length];
+          if (op === "volteo") {
+            const otro = nt.carril === "arriba" ? "abajo" : "arriba";
+            if (nt.t > finLarga[otro] && !hayCerca(otro, nt.t)) { nt.carril = otro; carrilAct = otro; racha = 1; salida.push(nt); resuelto = true; }
+          } else if (op === "larga") {
+            // Absorbe las siguientes notas del mismo carril hasta tener al menos 0,3 s
+            let j = i + 1;
+            while (j < notas.length && j <= i + 3 && notas[j].carril === nt.carril && notas[j].t - nt.t < 0.3) j++;
+            if (j < notas.length && j <= i + 4 && notas[j].carril === nt.carril && notas[j].t - nt.t >= 0.3 && notas[j].t - nt.t <= 1.2) {
+              nt.dur = Math.round((notas[j].t - nt.t) * 100) / 100;
+              finLarga[nt.carril] = notas[j].t;
+              i = j; // la nota donde termina la larga también se absorbe
+              carrilAct = nt.carril; racha = 1; // la larga cuenta como una nota de la racha
+              salida.push(nt); resuelto = true;
+            }
+          } else if (op === "doble") {
+            if (nt.t - ultimaDoble >= est.huecoDobleS && nt.t > finLarga.arriba && nt.t > finLarga.abajo) {
+              nt.carril = "ambos"; ultimaDoble = nt.t; carrilAct = null; racha = 0; salida.push(nt); resuelto = true;
+            }
+          } else {
+            racha = est.maxRacha; resuelto = true; // se quita: queda un silencio
+          }
+        }
+        turno++;
+        if (!resuelto) salida.push(nt);
+      }
+      notas.length = 0;
+      salida.forEach(nt => notas.push(nt));
+    }
+
+    // Largas por sonido sostenido: donde una voz o un acorde se mantienen, siempre que quepan
+    // antes de la siguiente nota del carril
+    if (est.fraccionLargas > 0) {
       const siguiente = { abajo: Infinity, arriba: Infinity };
       const candidatas = [];
       for (let k = notas.length - 1; k >= 0; k--) {
         const nt = notas[k];
         if (nt.carril === "ambos") { siguiente.abajo = nt.t; siguiente.arriba = nt.t; continue; }
-        const largo = Math.min(2.5, siguiente[nt.carril] - 0.2 - nt.t, (sostenido(rms[nt.banda], nt.i) * HOP) / sr);
-        if (largo >= 0.6 && nt.t + largo < dur - 0.6) candidatas.push({ nt, largo });
+        if (nt.dur === 0) {
+          const largo = Math.min(2.5, siguiente[nt.carril] - 0.2 - nt.t, (sostenido(rms[nt.banda], nt.i) * HOP) / sr);
+          if (largo >= 0.6 && nt.t + largo < dur - 0.6) candidatas.push({ nt, largo });
+        }
         siguiente[nt.carril] = nt.t;
       }
       candidatas.sort((a, b) => b.largo - a.largo);
-      candidatas.slice(0, Math.floor(notas.length * cfg.largas)).forEach(c => { c.nt.dur = Math.round(c.largo * 100) / 100; });
+      const yaLargas = notas.filter(x => x.dur > 0).length;
+      const cupo = Math.max(0, Math.floor(notas.length * est.fraccionLargas) - yaLargas);
+      candidatas.slice(0, cupo).forEach(c => { c.nt.dur = Math.round(c.largo * 100) / 100; });
+    }
+
+    // Largas de relleno: si el estilo pide más largas de las que salieron por sonido sostenido,
+    // una nota se alarga hasta donde empezaba la siguiente nota de su mismo carril, que se
+    // absorbe. El ritmo sigue igual (la larga termina donde caía esa nota) pero hay menos
+    // toques sueltos. Las notas del otro carril siguen cayendo mientras se mantiene.
+    if (est.fraccionLargas > 0) {
+      const objetivo = Math.floor(notas.length * est.fraccionLargas);
+      let largas = notas.filter(x => x.dur > 0).length;
+      const separacion = Math.max(0.6, (dur / Math.max(1, objetivo)) * 0.5);
+      let ultimaLarga = -99;
+      for (let k = 0; k < notas.length && largas < objetivo; k++) {
+        const nt = notas[k];
+        if (nt.carril === "ambos" || nt.dur > 0 || nt.t - ultimaLarga < separacion) continue;
+        let q1 = -1;
+        let hayDoble = false;
+        for (let q = k + 1; q < notas.length && notas[q].t - nt.t < 1.3; q++) {
+          if (notas[q].carril === "ambos") { hayDoble = true; break; }
+          if (notas[q].carril === nt.carril) { q1 = q; break; }
+        }
+        if (q1 < 0 || hayDoble || notas[q1].dur > 0) continue;
+        const fin = notas[q1].t;
+        if (fin - nt.t < 0.3) continue;
+        let q2 = -1;
+        for (let q = q1 + 1; q < notas.length; q++) { if (notas[q].carril === nt.carril || notas[q].carril === "ambos") { q2 = q; break; } }
+        if (q2 >= 0 && notas[q2].t - fin < 0.2) continue;
+        nt.dur = Math.round((fin - nt.t) * 100) / 100;
+        notas.splice(q1, 1);
+        ultimaLarga = nt.t;
+        largas++;
+      }
+    }
+
+    // Repaso final: ninguna racha pasa de est.maxRacha ni siquiera después de las largas y
+    // dobles; la nota que se pasa cambia de carril si cabe, y si no se quita
+    {
+      let racha = 0;
+      let carrilAct = null;
+      for (let k = 0; k < notas.length; k++) {
+        const nt = notas[k];
+        if (nt.carril === "ambos") { racha = 0; carrilAct = null; continue; }
+        if (nt.carril === carrilAct) racha++; else { racha = 1; carrilAct = nt.carril; }
+        if (racha > est.maxRacha) {
+          const otro = nt.carril === "arriba" ? "abajo" : "arriba";
+          const choca = notas.some((o, q) => q !== k && o.carril !== "ambos" && o.carril === otro && Math.abs(o.t - nt.t) < 0.12) ||
+            notas.some(o => o.dur > 0 && o.carril === otro && nt.t > o.t - 0.01 && nt.t < o.t + o.dur + 0.01);
+          if (!choca && nt.dur === 0) { nt.carril = otro; carrilAct = otro; racha = 1; }
+          else if (nt.dur === 0) { notas.splice(k, 1); k--; racha = est.maxRacha; }
+        }
+      }
     }
 
     const pulso = pulsoDe(pulsos, n, fps);
@@ -418,5 +555,34 @@
     return { notas, pulso: pulsoDe(guardado.pulsos || [], n, sr / HOP), dur: buffer.duration, sr, pulsos: guardado.pulsos || [], tramos: [], bpm: [], n, fps: sr / HOP };
   }
 
-  window.RitmoAnalisis = { HOP, DIFICULTADES, crearMapa, pulsoDe, guardable, desdeGuardado, bandas, ataques, maximoMovil };
+
+  /* Mide el estilo de un mapa hecho a mano entre t0 y t1: notas por segundo, rachas máximas
+     de un mismo carril, cuántas son largas y cada cuánto hay una doble. Sirve para completar
+     el resto de la canción "con la misma mano". */
+  function estiloDe(notas, t0, t1) {
+    const dentro = notas.filter(n => n.t >= t0 && n.t < t1).sort((a, b) => a.t - b.t);
+    const dur = Math.max(1, t1 - t0);
+    if (dentro.length < 20) return null;
+    const rachas = [];
+    let r = 0;
+    let previo = null;
+    dentro.forEach(n => {
+      if (n.carril === "ambos") { if (r) rachas.push(r); r = 0; previo = null; return; }
+      if (n.carril === previo) r++; else { if (r) rachas.push(r); r = 1; previo = n.carril; }
+    });
+    if (r) rachas.push(r);
+    rachas.sort((a, b) => a - b);
+    const p95 = rachas[Math.min(rachas.length - 1, Math.floor(rachas.length * 0.95))] || 3;
+    const largas = dentro.filter(n => n.dur > 0).length;
+    const dobles = dentro.filter(n => n.carril === "ambos").length;
+    return {
+      nps: Math.round((dentro.length / dur) * 100) / 100,
+      corte: 0.02,
+      maxRacha: Math.max(2, Math.min(4, p95)),
+      fraccionLargas: Math.round((largas / dentro.length) * 1000) / 1000,
+      huecoDobleS: dobles ? Math.max(0.8, (dur / dobles) * 0.7) : 6
+    };
+  }
+
+  window.RitmoAnalisis = { HOP, DIFICULTADES, crearMapa, pulsoDe, guardable, desdeGuardado, estiloDe, bandas, ataques, maximoMovil };
 })();
