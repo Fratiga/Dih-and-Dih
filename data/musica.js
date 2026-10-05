@@ -30,8 +30,6 @@ window.MUSICA = [
   "assets/musica/The Rumbling - SiM.mp3",
   "assets/musica/Guren no Yumiya - Linked Horizon.mp3",
   "assets/musica/77. Air Waves (DELTARUNE Chapter 3+4 Soundtrack) - Toby Fox - Toby Fox.mp3",
-  "assets/musica/Club Penguin - All The Fun At The Fair [High Quality] - HQClubPenguinTracks.mp3",
-  "assets/musica/Club Penguin - Pizza Parlor Theme [Loop High Quality] - HQClubPenguinTracks.mp3",
   "assets/musica/Endacopia OST - Track 65 - Code Talker - VideoGameGut5.mp3",
   "assets/musica/Fast Rap Yuno Miles Official video - Yuno Miles.mp3",
   "assets/musica/Lord Verity - Master of Humanity (song) - Horror Skunx.mp3",

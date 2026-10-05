@@ -17,9 +17,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20261146">
-  <link rel="stylesheet" href="css/taberna.css?v=20261146">
-  <link rel="stylesheet" href="css/lobby.css?v=20261146">
+  <link rel="stylesheet" href="css/style.css?v=20261148">
+  <link rel="stylesheet" href="css/taberna.css?v=20261148">
+  <link rel="stylesheet" href="css/lobby.css?v=20261148">
 </head>
 <body class="lb lb-invitado">
   <div class="lb-fondo" aria-hidden="true"></div>
@@ -57,36 +57,6 @@
       <div class="lb-ticker-ventana"><div class="lb-ticker-pista" id="lbTicker"></div></div>
     </div>
 
-    <nav class="quick-nav lb-solo-socio" id="quickNav">
-      <div class="nav-group">
-        <a href="index.html" class="nav-chip active">Inicio</a>
-        <a href="compendio.html" class="nav-chip">Compendio</a>
-        <a href="mapa.html" class="nav-chip">Mapa</a>
-        <a href="cronologia.html" class="nav-chip">Cronología</a>
-      </div>
-      <div class="nav-group">
-        <a href="lugares.html" class="nav-chip">Lugares</a>
-        <a href="facciones.html" class="nav-chip">Facciones</a>
-        <a href="personajes.html" class="nav-chip">Personajes</a>
-        <a href="razas.html" class="nav-chip">Razas</a>
-        <a href="religion.html" class="nav-chip">Religión</a>
-      </div>
-      <div class="nav-group">
-        <a href="textos.html" class="nav-chip">Textos</a>
-        <a href="pergaminos.html" class="nav-chip">Pergaminos</a>
-        <a href="armas.html" class="nav-chip">Armas</a>
-        <a href="objetos.html" class="nav-chip">Objetos</a>
-        <a href="bestiario.html" class="nav-chip">Bestiario</a>
-        <a href="reglas.html" class="nav-chip">Reglas</a>
-      </div>
-      <div class="nav-group">
-        <a href="economia.html" class="nav-chip">Economía</a>
-        <a href="fanarts.html" class="nav-chip">Fanarts</a>
-        <a href="peticiones.html" class="nav-chip">Peticiones</a>
-        <a href="fichas.html" class="nav-chip">Mis personajes</a>
-        <a href="admin.html" class="nav-chip hidden" data-admin-only>Admin</a>
-      </div>
-    </nav>
 
     <div class="lb-cuerpo">
       <!-- Columna izquierda: contadores, quién está y botoncitos -->
@@ -105,14 +75,10 @@
           <div class="lb-caja-cuerpo" id="lbPresentes"><p class="lb-chico">Mirando quién hay...</p></div>
         </section>
         <section class="lb-caja">
-          <h2>Atajos</h2>
-          <div class="lb-caja-cuerpo lb-botoncitos">
-            <a class="lb-88" href="compendio.html" style="--c1:#6a4bb8;--c2:#3b2a73">COMPENDIO</a>
-            <a class="lb-88" href="mapa.html" style="--c1:#3f8f6a;--c2:#215a41">MAPA</a>
-            <a class="lb-88" href="cronologia.html" style="--c1:#b5703a;--c2:#6f3f1c">CRONOLOGÍA</a>
-            <a class="lb-88" href="bestiario.html" style="--c1:#b6453f;--c2:#6e211d">BESTIARIO</a>
-            <a class="lb-88" href="fanarts.html" style="--c1:#c2619b;--c2:#7c2f61">FANARTS</a>
-            <a class="lb-88" href="minijuegos.html" style="--c1:#3a8bb5;--c2:#1d546f">JUEGOS</a>
+          <h2>Atajos <button type="button" class="lb-editar" id="lbAtajosEditar" title="Elige tus atajos" aria-label="Elegir mis atajos">✎</button></h2>
+          <div class="lb-caja-cuerpo">
+            <div class="lb-botoncitos" id="lbAtajos"></div>
+            <div class="lb-atajos-editor hidden" id="lbAtajosEditor"></div>
           </div>
         </section>
         <section class="lb-caja">
@@ -440,7 +406,9 @@
           <a href="minijuegos.html">Salón de juegos</a>
         </nav>
 
-        <section class="lb-zonas lb-solo-socio" id="lbZonas">
+        <details class="lb-todo lb-solo-socio">
+        <summary>Todas las puertas del sitio</summary>
+        <section class="lb-zonas" id="lbZonas">
           <div class="lb-caja">
             <h2>Mundo</h2>
             <div class="lb-caja-cuerpo lb-lista-links">
@@ -467,6 +435,7 @@
             </div>
           </div>
         </section>
+        </details>
       </main>
 
       <!-- Columna derecha: lo que es tuyo y lo nuevo -->
@@ -496,21 +465,21 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20261146"></script>
-  <script src="data/musica.js?v=20261146"></script>
-  <script src="js/musica-nube.js?v=20261146"></script>
-  <script src="js/common.js?v=20261146"></script>
-  <script src="js/temas.js?v=20261146"></script>
-  <script src="js/player.js?v=20261146"></script>
-  <script src="data/jumpscare.js?v=20261146"></script>
-  <script src="data/contrasenas.js?v=20261146"></script>
-  <script src="js/fichas-supabase.js?v=20261146"></script>
-  <script src="js/lado.js?v=20261146"></script>
-  <script src="js/slappy.js?v=20261146"></script>
-  <script src="js/peticiones-supabase.js?v=20261146"></script>
-  <script src="data/novedades.js?v=20261146"></script>
-  <script src="data/saludos.js?v=20261146"></script>
-  <script src="js/bienvenida.js?v=20261146"></script>
-  <script src="js/lobby.js?v=20261146"></script>
+  <script src="data/rotacion.js?v=20261148"></script>
+  <script src="data/musica.js?v=20261148"></script>
+  <script src="js/musica-nube.js?v=20261148"></script>
+  <script src="js/common.js?v=20261148"></script>
+  <script src="js/temas.js?v=20261148"></script>
+  <script src="js/player.js?v=20261148"></script>
+  <script src="data/jumpscare.js?v=20261148"></script>
+  <script src="data/contrasenas.js?v=20261148"></script>
+  <script src="js/fichas-supabase.js?v=20261148"></script>
+  <script src="js/lado.js?v=20261148"></script>
+  <script src="js/slappy.js?v=20261148"></script>
+  <script src="js/peticiones-supabase.js?v=20261148"></script>
+  <script src="data/novedades.js?v=20261148"></script>
+  <script src="data/saludos.js?v=20261148"></script>
+  <script src="js/bienvenida.js?v=20261148"></script>
+  <script src="js/lobby.js?v=20261148"></script>
 </body>
 </html>
