@@ -22,15 +22,17 @@
   /* nps = notas por segundo que se buscan; hueco = separación mínima entre notas (s);
      aproximacion = segundos que tarda una nota desde el borde hasta el punto de golpe;
      sub = partes en que se divide cada pulso para colocar notas (1 = solo pulsos, 2 =
-     mitades, 4 = cuartos); corte = fuerza mínima del ataque para que haya nota; perfecto / bien =
+     mitades, 4 = cuartos); corte = fuerza mínima del ataque para que haya nota; repite = cuánto debe
+     sonar el mismo golpe en el compás anterior o siguiente para contarlo como parte del
+     patrón (un golpe que no se repite solo entra si es muy fuerte: sueltaFuerte); perfecto / bien =
      ventanas de acierto (s); vidaFallo = vida que quita cada fallo; dobles = hay notas
      que piden los dos carriles a la vez (huecoDoble = separación mínima entre ellas);
      largas = fracción de notas que se mantienen pulsadas. */
   const DIFICULTADES = {
-    facil: { nombre: "Fácil", nps: 1.5, hueco: 0.42, aproximacion: 1.6, sub: 1, corte: 0.6, perfecto: 0.06, bien: 0.12, vidaFallo: 5, dobles: false, largas: 0 },
-    normal: { nombre: "Normal", nps: 2.6, hueco: 0.28, aproximacion: 1.3, sub: 2, corte: 0.42, perfecto: 0.05, bien: 0.11, vidaFallo: 7, dobles: false, largas: 0 },
-    dificil: { nombre: "Difícil", nps: 4.0, hueco: 0.19, aproximacion: 1.0, sub: 2, corte: 0.28, perfecto: 0.04, bien: 0.09, vidaFallo: 9, dobles: true, huecoDoble: 0.9, largas: 0.2 },
-    experto: { nombre: "Experto", nps: 5.2, hueco: 0.12, aproximacion: 0.85, sub: 4, corte: 0.15, perfecto: 0.035, bien: 0.08, vidaFallo: 12, dobles: true, huecoDoble: 0.6, largas: 0.25 }
+    facil: { nombre: "Fácil", nps: 1.5, hueco: 0.42, aproximacion: 1.6, sub: 1, corte: 0.6, repite: 0.7, sueltaFuerte: 99, perfecto: 0.06, bien: 0.12, vidaFallo: 5, dobles: false, largas: 0 },
+    normal: { nombre: "Normal", nps: 2.6, hueco: 0.28, aproximacion: 1.3, sub: 2, corte: 0.42, repite: 0.6, sueltaFuerte: 2.2, perfecto: 0.05, bien: 0.11, vidaFallo: 7, dobles: false, largas: 0 },
+    dificil: { nombre: "Difícil", nps: 4.0, hueco: 0.19, aproximacion: 1.0, sub: 2, corte: 0.28, repite: 0.45, sueltaFuerte: 1.4, perfecto: 0.04, bien: 0.09, vidaFallo: 9, dobles: true, huecoDoble: 5, largas: 0.2 },
+    experto: { nombre: "Experto", nps: 5.2, hueco: 0.12, aproximacion: 0.85, sub: 4, corte: 0.15, repite: 0.35, sueltaFuerte: 1.0, perfecto: 0.035, bien: 0.08, vidaFallo: 12, dobles: true, huecoDoble: 3.5, largas: 0.25 }
   };
 
   const canvas = document.getElementById("rtCampo");
@@ -82,7 +84,9 @@
     nombre = nombre.replace(/\.[^.]+$/, "");
     return Object.assign({ ruta, nombre, dur: duraciones[ruta] || 0 }, partirNombre(nombre));
   });
-  const canciones = todas.filter(c => !c.dur || c.dur <= LIMITE_S);
+  // Estas dos no las puede decodificar el navegador, así que no sirven para el juego
+  const SIN_DECODIFICAR = ["Love Like You (feat. Rebecca Sugar)", "Windmill Isle (Day) - Sonic Unleashed"];
+  const canciones = todas.filter(c => (!c.dur || c.dur <= LIMITE_S) && !SIN_DECODIFICAR.some(x => c.ruta.includes(x)));
   if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones", titulo: "No hay canciones", artista: "", dur: 0 });
   {
     // Las preferencias guardadas antes eran un número de lista; se pasa a la ruta de la canción
@@ -345,15 +349,32 @@
       if (!vacio) previa = mejor;
     }
 
-    // 4. Notas sobre la cuadrícula, solo con los ataques de la banda del tramo
+    // 4. Notas sobre la cuadrícula, siguiendo el patrón que se repite en el tramo.
+    //    Un golpe entra si cae en la cuadrícula, es lo bastante fuerte y suena también en el
+    //    compás anterior o en el siguiente. Los golpes sueltos (adelantos, adornos que no se
+    //    repiten) se quedan fuera salvo que sean muy fuertes: así queda un hilo que se puede
+    //    escuchar y seguir, no uno que solo se puede leer en pantalla.
+    const sd = cfg.sub;
+    const porCompas = 4 * sd;
+    const tramoDe = k => Math.min(tramos.length - 1, Math.floor(k / 8));
+    const slots = [];
+    for (let k = 0; k + 1 < pulsos.length; k++) {
+      const tr = tramos[tramoDe(k)];
+      const periodo = pulsos[k + 1] - pulsos[k];
+      for (let j = 0; j < sd; j++) {
+        const t = pulsos[k] + (j / sd) * periodo;
+        slots.push({ t, k, j, tramo: tramoDe(k), banda: tr.banda, vacio: tr.vacio, f: tr.vacio ? 0 : fuerzaEn(tr.banda, t) });
+      }
+    }
     const candidatos = [];
-    tramos.forEach((tr, idx) => {
-      if (tr.vacio) return;
-      cuadricula(pulsos, tr.k0, tr.k1, cfg.sub, 0).forEach(t => {
-        if (t < 0.8 || t > dur - 0.5) return;
-        const f = fuerzaEn(tr.banda, t);
-        if (f >= cfg.corte) candidatos.push({ t, f, tramo: idx, banda: tr.banda, i: Math.max(0, Math.round(t * fps)) });
-      });
+    slots.forEach((sl, g) => {
+      if (sl.vacio || sl.t < 0.8 || sl.t > dur - 0.5) return;
+      const contratiempo = sl.j !== 0;
+      const corte = cfg.corte * (contratiempo && sd === 2 ? 1.3 : 1);
+      if (sl.f < corte) return;
+      const veces = [slots[g - porCompas], slots[g + porCompas]].filter(o => o && !o.vacio && o.banda === sl.banda && o.f >= corte * cfg.repite);
+      if (!veces.length && sl.f < cfg.sueltaFuerte) return;
+      candidatos.push({ t: sl.t, f: sl.f, tramo: sl.tramo, banda: sl.banda, i: Math.max(0, Math.round(sl.t * fps)), k: sl.k, j: sl.j, pos: (sl.k % 4) * sd + sl.j });
     });
     candidatos.sort((a, b) => b.f - a.f);
 
@@ -364,50 +385,54 @@
     const notas = [];
     for (const c of candidatos) {
       if (notas.length >= maximo) break;
-      const k = Math.round(c.t / celda);
-      if (bloqueo[k]) continue;
-      for (let j = Math.max(0, k - medioHueco); j <= Math.min(bloqueo.length - 1, k + medioHueco); j++) bloqueo[j] = 1;
-      notas.push({ t: c.t, i: c.i, carril: "abajo", f: c.f, dur: 0, tramo: c.tramo, banda: c.banda });
+      const kk = Math.round(c.t / celda);
+      if (bloqueo[kk]) continue;
+      for (let j = Math.max(0, kk - medioHueco); j <= Math.min(bloqueo.length - 1, kk + medioHueco); j++) bloqueo[j] = 1;
+      notas.push({ t: c.t, i: c.i, carril: "abajo", f: c.f, dur: 0, tramo: c.tramo, banda: c.banda, k: c.k, j: c.j, pos: c.pos });
     }
     notas.sort((a, b) => a.t - b.t);
 
-    // Carril: por brillo del sonido respecto a su tramo (graves al suelo, brillantes al
-    // aire); si no se distingue, se alterna para no repetir siempre el mismo carril
-    const brillo = nota => {
-      const i = Math.min(n - 1, nota.i + 1);
+    // Carril: dentro de un tramo, cada posición del compás va siempre al mismo carril, así el
+    // patrón se repite igual compás tras compás. Se elige por el brillo del sonido (graves al
+    // suelo, brillantes al aire) y, si no se distingue, por la posición (pares abajo).
+    const brillo = nt => {
+      const i = Math.min(n - 1, nt.i + 1);
       const total = bajo[i] + medio[i] + alto[i] + 1e-9;
       return (0.5 * medio[i] + alto[i]) / total;
     };
-    const porTramo = new Map();
+    const grupos = new Map();
     notas.forEach(nt => {
-      nt.brillo = brillo(nt);
-      if (!porTramo.has(nt.tramo)) porTramo.set(nt.tramo, []);
-      porTramo.get(nt.tramo).push(nt.brillo);
+      const clave = nt.tramo + ":" + nt.pos;
+      if (!grupos.has(clave)) grupos.set(clave, []);
+      grupos.get(clave).push(brillo(nt));
+    });
+    const media = new Map();
+    grupos.forEach((lista, clave) => media.set(clave, lista.reduce((a, b) => a + b, 0) / lista.length));
+    const porTramo = new Map();
+    media.forEach((v, clave) => {
+      const tr = Number(clave.split(":")[0]);
+      if (!porTramo.has(tr)) porTramo.set(tr, []);
+      porTramo.get(tr).push(v);
     });
     const estadistica = new Map();
-    porTramo.forEach((lista, idx) => {
+    porTramo.forEach((lista, tr) => {
       const orden = lista.slice().sort((a, b) => a - b);
-      estadistica.set(idx, { med: orden[Math.floor(orden.length / 2)], delta: 0.15 * (orden[orden.length - 1] - orden[0]) });
+      estadistica.set(tr, { med: orden[Math.floor(orden.length / 2)], delta: 0.15 * (orden[orden.length - 1] - orden[0]) });
     });
-    let anterior = "abajo";
     notas.forEach(nt => {
       const e = estadistica.get(nt.tramo);
-      const carril = nt.brillo > e.med + e.delta ? "arriba" : nt.brillo < e.med - e.delta ? "abajo" : (anterior === "abajo" ? "arriba" : "abajo");
-      nt.carril = carril;
-      anterior = carril;
+      const m = media.get(nt.tramo + ":" + nt.pos);
+      nt.carril = m > e.med + e.delta ? "arriba" : m < e.med - e.delta ? "abajo" : (nt.pos % 2 === 0 ? "abajo" : "arriba");
     });
 
-    // Dobles: en el primer pulso de cada compás, si otra banda también marca fuerte
+    // Dobles: solo en el primer pulso de cada frase de cuatro compases, cuando otra banda
+    // también marca fuerte. Son un acento, no un adorno constante.
     if (cfg.dobles) {
       let ultima = -99;
       for (const nt of notas) {
-        if (nt.t - ultima < cfg.huecoDoble) continue;
-        let kk = 0;
-        let dmin = Infinity;
-        for (let q = 0; q < pulsos.length; q++) { const d = Math.abs(pulsos[q] - nt.t); if (d < dmin) { dmin = d; kk = q; } if (pulsos[q] > nt.t + 0.5) break; }
-        if (dmin > 0.045 || kk % 4 !== 0) continue;
+        if (nt.t - ultima < cfg.huecoDoble || nt.j !== 0 || nt.k % 16 !== 0) continue;
         const otra = nombres.filter(b => b !== nt.banda).reduce((a, b) => Math.max(a, fuerzaEn(b, nt.t)), 0);
-        if (nt.f >= 0.7 && otra >= 0.9) { nt.carril = "ambos"; ultima = nt.t; }
+        if (nt.f >= 0.9 && otra >= 1.0) { nt.carril = "ambos"; ultima = nt.t; }
       }
     }
 
@@ -910,8 +935,24 @@
     });
 
     if (estado === "jugando" || estado === "pausa" || estado === "fin") {
-      // Notas
       const recorrido = W - X_GOLPE + 50;
+      // Guías del pulso: líneas verticales que viajan con las notas, más marcadas en cada
+      // compás. Ayudan a sentir el tiempo en vez de adivinarlo mirando las notas.
+      if (mapa && mapa.pulsos && mapa.pulsos.length) {
+        const ps = mapa.pulsos;
+        let a = 0;
+        let b = ps.length;
+        while (a < b) { const m = (a + b) >> 1; if (ps[m] < t - 0.25) a = m + 1; else b = m; }
+        ctxC.lineWidth = 2;
+        for (let q = a; q < ps.length; q++) {
+          const dtq = ps[q] - t;
+          if (dtq > cfg.aproximacion) break;
+          const x = X_GOLPE + (dtq / cfg.aproximacion) * recorrido;
+          ctxC.strokeStyle = q % 4 === 0 ? "rgba(255, 255, 255, 0.16)" : "rgba(255, 255, 255, 0.06)";
+          ctxC.beginPath(); ctxC.moveTo(x, CARRILES.arriba.y - 50); ctxC.lineTo(x, CARRILES.abajo.y + 50); ctxC.stroke();
+        }
+      }
+      // Notas
       for (let i = punteroFallos; i < notas.length; i++) {
         const n = notas[i];
         const dt = n.t - t;
