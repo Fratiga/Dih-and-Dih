@@ -253,12 +253,24 @@
     comentarioEl.textContent = `${rival.nombre}: «${rival.frases[clave]}»`;
   }
 
+  /* Por qué terminó en tablas, para que no parezca que el juego se quedó pegado. */
+  function textoTablas() {
+    if (juego.isStalemate()) {
+      const quien = juego.turn() === colorJugador ? "Tú no tienes" : `${rival.nombre} no tiene`;
+      return `Tablas por rey ahogado: ${quien} jugadas legales y su rey no está en jaque.`;
+    }
+    if (juego.isThreefoldRepetition()) return "Tablas por repetición: la misma posición se repitió tres veces.";
+    if (juego.isInsufficientMaterial()) return "Tablas por material insuficiente: ya no se puede dar mate.";
+    if (juego.isDrawByFiftyMoves()) return "Tablas por la regla de las 50 jugadas sin capturas ni peones.";
+    return "Tablas.";
+  }
+
   function actualizarEstado() {
     if (juego.isCheckmate()) {
       const gano = juego.turn() !== colorJugador;
       terminar(gano ? `Jaque mate. Le ganaste a ${rival.nombre}.` : `Jaque mate. ${rival.nombre} te ganó.`, gano ? "gana" : "pierde");
     } else if (juego.isDraw()) {
-      terminar("Tablas.", "tablas");
+      terminar(textoTablas(), "tablas");
     } else if (juego.turn() === colorJugador) {
       mensaje(juego.inCheck() ? "Estás en jaque. Te toca." : "Te toca.");
     } else if (online) {
@@ -286,9 +298,9 @@
     if (window.MjMusica) MjMusica.agachar(false);
   }
 
-  function mostrarVictoria(texto, conteo, derrota) {
+  function mostrarVictoria(texto, conteo, derrota, tablas) {
     victoriaEl.classList.toggle("aj-derrota", !!derrota);
-    document.getElementById("ajVictoriaTitulo").textContent = derrota ? "Derrota" : "¡Victoria!";
+    document.getElementById("ajVictoriaTitulo").textContent = tablas ? "Tablas" : (derrota ? "Derrota" : "¡Victoria!");
     // Las imágenes son opcionales: si el archivo no está, la pantalla sale sin ella
     const img = document.getElementById("ajVictoriaImg");
     img.classList.add("hidden");
@@ -296,10 +308,10 @@
     img.onerror = () => img.classList.add("hidden");
     img.alt = derrota ? "Stunned Solomon" : "Solomon impressed";
     img.src = derrota ? "assets/cosas/derrota-ajedrez.png" : "assets/cosas/victoria-ajedrez.png";
-    document.getElementById("ajVictoriaSup").textContent = derrota ? "Esta vez no fue" : "Partida terminada";
+    document.getElementById("ajVictoriaSup").textContent = tablas ? "Nadie ganó" : (derrota ? "Esta vez no fue" : "Partida terminada");
     document.getElementById("ajVictoriaTexto").textContent = texto;
     document.getElementById("ajVictoriaConteo").textContent = conteo || "";
-    document.getElementById("ajVictoriaOtra").textContent = online ? "Revancha" : (derrota ? "Intentar de nuevo" : "Jugar otra");
+    document.getElementById("ajVictoriaOtra").textContent = online ? "Revancha" : (tablas ? "Jugar otra" : (derrota ? "Intentar de nuevo" : "Jugar otra"));
     if (derrota) {
       // sin confeti ni sonido de victoria: solo el aviso, con el fondo más bajo
       confetiEl.innerHTML = "";
@@ -319,11 +331,11 @@
     if (window.MjMusica) { MjMusica.agachar(true); MjMusica.efecto(SONIDO_VICTORIA, 0.85); }
   }
 
-  function victoriaProgramada(texto, conteo, derrota) {
+  function victoriaProgramada(texto, conteo, derrota, tablas) {
     clearTimeout(victoriaTimer);
     const miPartida = partidaId;
     // un momento para ver el tablero final antes de que tape todo
-    victoriaTimer = setTimeout(() => { if (miPartida === partidaId) mostrarVictoria(texto, conteo, derrota); }, 900);
+    victoriaTimer = setTimeout(() => { if (miPartida === partidaId) mostrarVictoria(texto, conteo, derrota, tablas); }, 900);
   }
 
   function conteoContra(clave, nombre) {
@@ -351,6 +363,8 @@
         victoriaProgramada(`Le ganaste a ${rival.nombre}.`, `Victorias contra ${rival.nombre}: ${n}`);
       } else if (resultado === "pierde") {
         victoriaProgramada(texto, conteoContra("j-" + online.oponente, rival.nombre), true);
+      } else if (resultado === "tablas") {
+        victoriaProgramada(texto, "", true, true);
       }
       return;
     }
@@ -364,6 +378,8 @@
     } else if (resultado === "pierde") {
       comentar("gana");
       victoriaProgramada(texto, rival.sinRanking ? "" : conteoContra(rival.id, rival.nombre), true);
+    } else if (resultado === "tablas") {
+      victoriaProgramada(texto, "", true, true);
     }
     pintarRivales();
     if (!rival.sinRanking) anotarPartida(resultado, texto.startsWith("Jaque mate"));
