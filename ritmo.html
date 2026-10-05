@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zarabanda — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261130">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261130">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261130">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261130">
-  <script src="js/mj-volumen.js?v=20261130"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261131">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261131">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261131">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261131">
+  <script src="js/mj-volumen.js?v=20261131"></script>
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -45,7 +45,11 @@
             <p class="rt-etiqueta">Ajustes y accesibilidad</p>
             <div class="rt-ajuste-fila">
               <span class="rt-ajuste-info"><strong>Sincronía</strong><small>Si oyes la música desfasada de las notas</small></span>
-              <span class="rt-desfase"><input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0" aria-label="Sincronía"> <output id="rtDesfaseTxt">0 ms</output></span>
+              <span class="rt-desfase"><input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0" aria-label="Sincronía"> <output id="rtDesfaseTxt">0 ms</output> <button type="button" id="rtCalibrar" class="rt-secundario rt-chico">Calibrar</button></span>
+            </div>
+            <div class="rt-ajuste-fila">
+              <span class="rt-ajuste-info"><strong>Teclas</strong><small>Pulsa una casilla y luego la tecla que quieras. Las flechas siempre funcionan.</small></span>
+              <span id="rtTeclas" class="rt-teclas"></span>
             </div>
             <label class="rt-ajuste-fila rt-interruptor">
               <span class="rt-ajuste-info"><strong>Modo práctica</strong><small>La vida no baja y no puntúa</small></span>
@@ -82,7 +86,7 @@
             <div id="rtPuntajes" class="rt-tabla-caja"></div>
           </div>
 
-          <p class="rt-ayuda">Arriba: Z D F ↑. Abajo: X J K ↓. En pantalla táctil, toca la mitad de abajo o la de arriba. Las barras se mantienen pulsadas y las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
+          <p class="rt-ayuda"><span id="rtTeclasTxt">Arriba: Z D F ↑. Abajo: X J K ↓.</span> En pantalla táctil, toca la mitad de abajo o la de arriba. Las barras se mantienen pulsadas y las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
         </section>
       </div>
 
@@ -137,6 +141,19 @@
     <p id="rtPie" class="mj-linea hidden">Esc pausa.</p>
   </main>
 
+  <div id="rtCalibracion" class="rt-recorte hidden" role="dialog" aria-label="Calibrar la sincronía">
+    <div class="rt-recorte-caja rt-calibracion-caja">
+      <h2>Calibrar la sincronía</h2>
+      <p id="rtCalibracionTxt" class="rt-ayuda">Suenan 10 tics. Toca cualquier tecla, o la pantalla, justo cuando oigas cada uno.</p>
+      <div id="rtCalibracionPuntos" class="rt-calibracion-puntos"></div>
+      <div class="rt-botones">
+        <button type="button" id="rtCalibracionAplicar" class="rt-jugar hidden">Aplicar</button>
+        <button type="button" id="rtCalibracionEmpezar" class="rt-jugar">Empezar</button>
+        <button type="button" id="rtCalibracionCerrar" class="rt-secundario">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="rtRecorte" class="rt-recorte hidden" role="dialog" aria-label="Recortar la foto">
     <div class="rt-recorte-caja">
       <h2>Encuadra tu foto</h2>
@@ -149,17 +166,17 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261130"></script>
-  <script src="js/fichas-supabase.js?v=20261130"></script>
-  <script src="js/lado.js?v=20261130"></script>
-  <script src="js/minijuegos-stats.js?v=20261130"></script>
-  <script src="data/musica.js?v=20261130"></script>
-  <script src="js/musica-nube.js?v=20261130"></script>
-  <script src="data/zarabanda-novedades.js?v=20261130"></script>
-  <script src="data/musica-duraciones.js?v=20261130"></script>
-  <script src="js/peticiones-supabase.js?v=20261130"></script>
-  <script src="js/ritmo-rol.js?v=20261130"></script>
-  <script src="js/ritmo-analisis.js?v=20261130"></script>
-  <script src="js/ritmo.js?v=20261130"></script>
+  <script src="js/temas.js?v=20261131"></script>
+  <script src="js/fichas-supabase.js?v=20261131"></script>
+  <script src="js/lado.js?v=20261131"></script>
+  <script src="js/minijuegos-stats.js?v=20261131"></script>
+  <script src="data/musica.js?v=20261131"></script>
+  <script src="js/musica-nube.js?v=20261131"></script>
+  <script src="data/zarabanda-novedades.js?v=20261131"></script>
+  <script src="data/musica-duraciones.js?v=20261131"></script>
+  <script src="js/peticiones-supabase.js?v=20261131"></script>
+  <script src="js/ritmo-rol.js?v=20261131"></script>
+  <script src="js/ritmo-analisis.js?v=20261131"></script>
+  <script src="js/ritmo.js?v=20261131"></script>
 </body>
 </html>

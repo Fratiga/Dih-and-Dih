@@ -460,6 +460,64 @@
   // Sin fila en el reparto (side === undefined) = "Ambos" = compartido,
   // lo ve todo el mundo. Mismo criterio que aplicarRepartoFanarts() en
   // js/fanarts.js.
+  async function cargarFanartsAdmin() {
+    const fanartsEl = document.getElementById("adminFanartsLista");
+    try {
+      const reparto = await fanartsCargarSides();
+      const ocultos = await fanartsCargarOcultos().catch(() => new Set());
+      // Los subidos desde aquí van primero (los más nuevos arriba), luego los del repositorio
+      const subidos = await fanartsCargarSubidos().catch(() => []);
+      pintarFanartsAdmin([...subidos, ...(window.FANARTS || [])], reparto, ocultos);
+    } catch (e) {
+      console.error("[admin] Reparto de fanarts falló:", e);
+      fanartsEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/fanarts_side.sql en Supabase?</p>`;
+    }
+  }
+
+  /* --- Subir fanarts desde el panel (sin tocar el repositorio) --- */
+  (function iniciarSubidaFanarts() {
+    const entrada = document.getElementById("adminFanartArchivos");
+    const selectSide = document.getElementById("adminFanartSideSubir");
+    const estado = document.getElementById("adminFanartSubirEstado");
+    const zona = document.getElementById("adminPanelFanarts");
+    if (!entrada || !selectSide || !zona) return;
+    selectSide.innerHTML = `<option value="">Ambos</option><option value="A">${LADO_NOMBRES.A}</option><option value="B">${LADO_NOMBRES.B}</option>`;
+    const TIPOS = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    const MAX = 10 * 1024 * 1024;
+    let subiendo = false;
+
+    async function subir(archivos) {
+      if (subiendo) return;
+      const lista = Array.from(archivos).filter(a => TIPOS.includes(a.type) && a.size <= MAX);
+      const omitidos = archivos.length - lista.length;
+      if (!lista.length) { estado.textContent = "Ninguna imagen válida (PNG, JPG, WebP o GIF de hasta 10 MB)."; return; }
+      subiendo = true;
+      let hechas = 0;
+      let fallo = "";
+      for (const archivo of lista) {
+        estado.textContent = `Subiendo ${hechas + 1} de ${lista.length}: ${archivo.name}`;
+        try {
+          await fanartsAdminSubir(archivo, selectSide.value || null);
+          hechas += 1;
+        } catch (err) {
+          fallo = (err && err.message) || "error desconocido";
+          break;
+        }
+      }
+      subiendo = false;
+      entrada.value = "";
+      estado.textContent = `${hechas} subida${hechas === 1 ? "" : "s"}.`
+        + (omitidos ? ` ${omitidos} omitida${omitidos === 1 ? "" : "s"} por tipo o tamaño.` : "")
+        + (fallo ? ` Se detuvo: ${fallo}. ¿Corriste scratchpad/fanarts_subidos.sql en Supabase?` : "");
+      if (hechas) cargarFanartsAdmin();
+    }
+
+    entrada.addEventListener("change", () => { if (entrada.files.length) subir(entrada.files); });
+    ["dragenter", "dragover"].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.add("arrastrando"); }));
+    ["dragleave", "drop"].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.remove("arrastrando"); }));
+    zona.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files.length) subir(e.dataTransfer.files); });
+  })();
+
   function pintarFanartsAdmin(fanarts, reparto, ocultos) {
     const cont = document.getElementById("adminFanartsLista");
     const count = document.getElementById("adminFanartsCount");
@@ -799,15 +857,7 @@
     await cargarHistorialFichas();
 
     // Independiente también: requiere scratchpad/fanarts_side.sql.
-    const fanartsEl = document.getElementById("adminFanartsLista");
-    try {
-      const reparto = await fanartsCargarSides();
-      const ocultos = await fanartsCargarOcultos().catch(() => new Set());
-      pintarFanartsAdmin(window.FANARTS || [], reparto, ocultos);
-    } catch (e) {
-      console.error("[admin] Reparto de fanarts falló:", e);
-      fanartsEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/fanarts_side.sql en Supabase?</p>`;
-    }
+    await cargarFanartsAdmin();
   });
 
   const tabs = document.getElementById("adminTabs");

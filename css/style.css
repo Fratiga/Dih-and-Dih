@@ -3692,3 +3692,11 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 
 /* Etiqueta del rol DJ en el panel de Cuentas */
 .admin-cuenta-tag-dj { background: rgba(122, 232, 255, .14); color: #7ae8ff; border-color: rgba(122, 232, 255, .45); }
+
+/* --- Subir fanarts desde el Admin --- */
+.admin-fanart-subir { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 14px; border: 1px dashed var(--border); background: var(--panel); }
+.admin-fanart-subir-boton { cursor: pointer; }
+.admin-fanart-subir-side { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--muted); }
+.admin-fanart-subir-side select { color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 6px 8px; font-family: inherit; }
+.admin-fanart-subir-estado { font-size: .78rem; color: var(--muted); flex: 1 1 260px; }
+#adminPanelFanarts.arrastrando .admin-fanart-subir { border-color: var(--accent-soft); background: var(--panel-2); }

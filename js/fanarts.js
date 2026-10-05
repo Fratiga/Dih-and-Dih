@@ -77,10 +77,17 @@ function aplicarFiltroFanarts() {
 }
 
 async function cargarRepartoFanarts() {
-  const [reparto, ocultos] = await Promise.all([
+  const [reparto, ocultos, subidos] = await Promise.all([
     fanartsCargarSides().catch(() => ({})),
     fanartsCargarOcultos().catch(() => new Set()),
+    fanartsCargarSubidos().catch(() => []),
   ]);
+  // Los subidos desde el Admin se suman a los del repositorio
+  const nuevos = subidos.filter(src => !fanartTodos.includes(src));
+  if (nuevos.length) {
+    fanartTodos.push(...nuevos);
+    fanartTodos.sort((a, b) => prettyName(a).localeCompare(prettyName(b), "es", { sensitivity: "base" }));
+  }
   fanartReparto = reparto;
   fanartOcultos = ocultos;
   const visibles = fanartTodos.filter(src => !fanartOcultos.has(src));
