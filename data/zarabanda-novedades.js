@@ -6,9 +6,9 @@ window.ZARABANDA_NOVEDADES = [
     fecha: "2026-10-05",
     titulo: "Sonido al pulsar y barras más claras",
     cambios: [
-      "Cada tecla suena al pulsarla, más agudo arriba y más grave abajo. Se apaga en los ajustes.",
-      "Las barras largas terminan en un círculo blanco. Mientras las mantienes dice MANTÉN y, al llegar al final, ¡SUELTA!.",
-      "Si sueltas antes de tiempo ahora dice SOLTASTE ANTES, y al completarla dice SOSTENIDA.",
+      "Cada tecla suena al pulsarla, un toque suave más agudo arriba y más grave abajo. Se apaga en los ajustes.",
+      "Las barras largas terminan en un círculo del color de su carril. Mientras las mantienes dice MANTÉN y, al llegar al final, ¡SUELTA!.",
+      "Si sueltas antes de tiempo dice SOLTASTE ANTES, y si la completas dice PERFECTO.",
       "Seis canciones nuevas: Air Waves, Code Talker, Fast Rap, Lord Verity, Niño y Bad Apple!!.",
       "En el editor, al arrastrar el cursor por la regla suena un trocito de la canción. Con la velocidad baja se oye mejor el beat."
     ]

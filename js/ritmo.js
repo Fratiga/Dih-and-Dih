@@ -333,21 +333,20 @@
     comboMax = Math.max(comboMax, combo);
   }
 
-  /* Un golpecito por cada pulsación, más agudo arriba y más grave abajo. Así se oye el ritmo que
-     estás tocando, que no siempre coincide con el de la canción. Si no había nota, suena apagado. */
+  /* Un toque suave por cada pulsación, más agudo arriba y más grave abajo, para oír el ritmo que estás
+     tocando sin tapar la canción. Si no había nota, casi no se oye. */
   function sonidoGolpe(carril, acierto) {
     if (ajustes.sonidoGolpe === false || !audio || audio.state !== "running") return;
     const t0 = audio.currentTime;
     const o = audio.createOscillator();
     const g = audio.createGain();
-    const f = carril === "arriba" ? 1320 : 520;
-    o.type = acierto ? "triangle" : "sine";
-    o.frequency.setValueAtTime(acierto ? f : f * 0.5, t0);
-    o.frequency.exponentialRampToValueAtTime(acierto ? f * 0.7 : f * 0.3, t0 + 0.07);
-    g.gain.setValueAtTime(acierto ? 0.22 : 0.09, t0);
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+    o.type = "sine";
+    o.frequency.value = acierto ? (carril === "arriba" ? 660 : 330) : 150;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(acierto ? 0.05 : 0.02, t0 + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + (acierto ? 0.07 : 0.05));
     o.connect(g); g.connect(audio.destination);
-    o.start(t0); o.stop(t0 + 0.1);
+    o.start(t0); o.stop(t0 + 0.09);
   }
 
   function golpear(carril, t) {
@@ -464,7 +463,7 @@
         n.mantiene = "hecha";
         puntos += Math.round(150 * multiplicador());
         vida = Math.min(100, vida + 2);
-        efectos.push({ x: X_GOLPE, y: CARRILES[n.carril].y - 86, texto: "SOSTENIDA", color: "#f2d46b", t: ahoraS() });
+        efectos.push({ x: X_GOLPE, y: CARRILES[n.carril].y - 86, texto: "PERFECTO", color: "#f2d46b", t: ahoraS() });
         activas.splice(k, 1);
       } else if (t > gracia && entradas[n.carril].size === 0 && t < fin - 0.12) {
         n.mantiene = "rota";
@@ -599,19 +598,19 @@
       ctxC.fillStyle = CARRILES[n.carril].color;
       ctxC.fillRect(x, y - 14, fin - x, 28);
       ctxC.globalAlpha = alfa;
-      topeDeLarga(fin, y);
+      topeDeLarga(fin, y, CARRILES[n.carril].color);
       ctxC.globalAlpha = 1;
     }
     dibujarForma(n.carril, x, alfa);
   }
 
   /* El final de una larga: un círculo blanco con aro del color del carril. Ahí se suelta. */
-  function topeDeLarga(x, y) {
-    ctxC.fillStyle = "#ffffff";
-    ctxC.strokeStyle = "rgba(0, 0, 0, 0.45)";
-    ctxC.lineWidth = 3;
+  function topeDeLarga(x, y, color) {
+    ctxC.fillStyle = color;
+    ctxC.strokeStyle = "rgba(255, 255, 255, 0.92)";
+    ctxC.lineWidth = 3.5;
     ctxC.beginPath(); ctxC.arc(x, y, 16, 0, Math.PI * 2); ctxC.fill(); ctxC.stroke();
-    ctxC.fillStyle = "rgba(0, 0, 0, 0.55)";
+    ctxC.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctxC.fillRect(x - 5, y - 5, 10, 10);
   }
 
@@ -760,7 +759,7 @@
         ctxC.fillStyle = CARRILES[n.carril].color;
         ctxC.fillRect(X_GOLPE, y - 14, Math.max(0, Math.min(cola, W + 40) - X_GOLPE), 28);
         ctxC.globalAlpha = 1;
-        if (cola < W + 40) topeDeLarga(Math.max(X_GOLPE, cola), y);
+        if (cola < W + 40) topeDeLarga(Math.max(X_GOLPE, cola), y, CARRILES[n.carril].color);
         // Mientras se mantiene, un texto fijo recuerda qué hacer y, al final, cuándo soltar
         const resta = n.t + n.dur - t;
         const cerca = resta < 0.35;

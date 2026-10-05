@@ -335,12 +335,15 @@
   /* --- Guardar, probar, exportar ----------------------------------------------------- */
   /* Arregla lo que rompería el juego: largas que pisan la nota siguiente de su carril y
      dobles con duración. */
-  function limpiarNotas() {
+  /* recortarLargas: además de quitar las notas idénticas, acorta (o quita) las largas que pisan la nota
+     siguiente de su carril. Al guardar, probar y exportar no se hace: el mapa se guarda tal como lo
+     dejó quien lo hizo, y los avisos de la pestaña Revisar solo avisan. */
+  function limpiarNotas(recortarLargas = true) {
     notas.sort((a, b) => a.t - b.t);
     // Dos notas iguales una encima de otra: se queda la primera
     notas = notas.filter((n, i) => !notas.slice(Math.max(0, i - 3), i).some(o => o.carril === n.carril && Math.abs(o.t - n.t) < 0.02));
     notas.forEach(n => { if (n.carril === "ambos") n.dur = 0; });
-    for (let i = 0; i < notas.length; i++) {
+    for (let i = 0; i < notas.length && recortarLargas; i++) {
       const n = notas[i];
       if (!(n.dur > 0)) { n.dur = 0; continue; }
       for (let j = i + 1; j < notas.length; j++) {
@@ -369,16 +372,17 @@
 
   async function guardar() {
     if (!notas.length) { mensaje("No hay nada que guardar.", true); return; }
-    limpiarNotas();
+    limpiarNotas(false);
+    // Los problemas avisan pero nunca impiden guardar: a veces dos notas muy seguidas o una larga con
+    // otras al mismo tiempo son justo lo que se quiere
+    let errores = [];
     if (window.RitmoLogica && buffer) {
-      const rev = RitmoLogica.revisar(notas, pulsos, buffer.duration, difActual());
-      const errores = rev.problemas.filter(p => p.nivel === "error");
-      if (errores.length && !confirm(`El mapa tiene ${errores.length} problema${errores.length === 1 ? "" : "s"} que pueden hacerlo injugable (míralos en la pestaña Revisar).\n\n¿Guardar igual?`)) {
-        window.dispatchEvent(new CustomEvent("ritmo-abrir-tab", { detail: "revisar" }));
-        return;
-      }
+      errores = RitmoLogica.revisar(notas, pulsos, buffer.duration, difActual()).problemas.filter(p => p.nivel === "error");
     }
     await guardarEnServidor(false);
+    if (errores.length && !cambios) {
+      mensaje(`Guardado, con ${errores.length} aviso${errores.length === 1 ? "" : "s"} (notas muy juntas o largas pisadas). Se puede jugar igual; míralos en la pestaña Revisar.`, true);
+    }
   }
 
   /* Guarda con una función del servidor que compara la fecha del mapa guardado con la que tenía al
@@ -440,7 +444,7 @@
 
   function probar() {
     if (!notas.length) return;
-    limpiarNotas();
+    limpiarNotas(false);
     try {
       localStorage.setItem("ritmoPrueba", JSON.stringify({ ruta: rutaActual(), dificultad: difActual(), mapa: conFirma(AN.guardable(notas, pulsos)) }));
       const aj = JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}");
@@ -454,7 +458,7 @@
 
   function exportar() {
     if (!notas.length) return;
-    limpiarNotas();
+    limpiarNotas(false);
     const texto = JSON.stringify({ cancion: rutaActual(), dificultad: difActual(), mapa: conFirma(AN.guardable(notas, pulsos)) });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([texto], { type: "application/json" }));
