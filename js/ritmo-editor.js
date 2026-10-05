@@ -569,9 +569,15 @@
     }
   }
 
+  /* Todas las fuentes de audio creadas que aún pueden sonar. Al pausar o mover el cursor se
+     paran todas, no solo la última: así nunca quedan pistas sonando por detrás. */
+  const fuentesVivas = new Set();
+
   function detener() {
-    if (fuente) { try { fuente.stop(); } catch (e) { /* ya parada */ } fuente = null; }
     if (reproduciendo) posIni = tiempoActual();
+    fuentesVivas.forEach(f => { f.onended = null; try { f.stop(); } catch (e) { /* ya parada */ } });
+    fuentesVivas.clear();
+    fuente = null;
     reproduciendo = false;
     playEl.textContent = "▶";
   }
@@ -581,13 +587,20 @@
     await prepararAudio();
     detener();
     vel = Number(velEl.value);
-    fuente = audio.createBufferSource();
-    fuente.buffer = buffer;
-    fuente.playbackRate.value = vel;
-    fuente.connect(gMusica);
+    const esta = audio.createBufferSource();
+    esta.buffer = buffer;
+    esta.playbackRate.value = vel;
+    esta.connect(gMusica);
+    fuente = esta;
+    fuentesVivas.add(esta);
     ctxIni = audio.currentTime + 0.06;
-    fuente.start(ctxIni, posIni);
-    fuente.onended = () => { if (fuente) { reproduciendo = false; posIni = buffer.duration; fuente = null; playEl.textContent = "▶"; sucio = true; } };
+    esta.start(ctxIni, posIni);
+    // Solo cuenta el final de la fuente actual: el aviso de una que se acaba de parar no debe
+    // tocar el estado de la nueva
+    esta.onended = () => {
+      fuentesVivas.delete(esta);
+      if (fuente === esta) { reproduciendo = false; posIni = buffer.duration; fuente = null; playEl.textContent = "▶"; sucio = true; }
+    };
     reproduciendo = true;
     playEl.textContent = "❚❚";
     reiniciarClics();
