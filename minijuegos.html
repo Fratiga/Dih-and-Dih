@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minijuegos — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261137">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261137">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261137">
+  <link rel="stylesheet" href="css/style.css?v=20261138">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261138">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261138">
 </head>
 <body class="mj-pagina hub-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni
@@ -33,9 +33,32 @@
       </a>
     </div>
   </main>
-  <script src="js/mj-musica.js?v=20261137"></script>
+  <script>
+    /* Juegos que todavía se están afinando: solo los ve y abre el admin (mismo permiso
+       que js/oculto.js en cada una de sus páginas). Para abrirlos a todos, quita
+       oculto.js de su HTML y pásalos arriba como tarjetas normales. */
+    (function () {
+      if (localStorage.getItem("compendioAdmin") !== "1") return;
+      const grid = document.querySelector(".mj-grid");
+      [
+        ["arqueria.html", "Arquería", "Dispara a los blancos contra un rival o contra otro jugador."],
+        ["duelo.html", "Duelo", "Combate en tiempo real: ataca, bloquea y esquiva."],
+        ["cartas.html", "Cartas malditas", "Tu colección de cartas y las batallas."],
+        ["valhalla.html", "Valhalla", "La arena: combate por turnos en cuadrícula."]
+      ].forEach(([href, titulo, texto]) => {
+        const a = document.createElement("a");
+        a.className = "mj-tarjeta mj-tarjeta-oculta";
+        a.href = href;
+        a.innerHTML = "<h3></h3><p></p><small>Solo admin por ahora</small>";
+        a.querySelector("h3").textContent = titulo;
+        a.querySelector("p").textContent = texto;
+        grid.appendChild(a);
+      });
+    })();
+  </script>
+  <script src="js/mj-musica.js?v=20261138"></script>
   <script>MjMusica.iniciar("assets/cosas/All The Fun At The Fair.mp3", { volumen: 0.35 });</script>
-  <script src="js/fichas-supabase.js?v=20261137"></script>
-  <script src="js/minijuegos-avisos.js?v=20261137"></script>
+  <script src="js/fichas-supabase.js?v=20261138"></script>
+  <script src="js/minijuegos-avisos.js?v=20261138"></script>
 </body>
 </html>
