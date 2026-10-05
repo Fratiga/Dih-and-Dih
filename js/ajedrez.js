@@ -32,7 +32,8 @@
   const RELLENO = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟︎" };
   const VALOR = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
   const CLAVE_RECORD = "compendioAjedrezRecord";
-  const MUSICA_VICTORIA = "assets/cosas/Pizza Parlor Theme.mp3";
+  const MUSICA_FONDO = "assets/cosas/Pizza Parlor Theme.mp3";
+  const SONIDO_VICTORIA = "assets/cosas/Happy Wheels victory.mp3";
   const CLAVE_REGISTRADAS = "compendioAjedrezPvpRegistradas";
 
   // Tablas de posición simples (desde el punto de vista de las blancas, fila 8 arriba)
@@ -227,12 +228,10 @@
   }
 
   /* --- Pantalla de victoria ---------------------------------------------------
-     Sale unos instantes después de ganar, con música y las victorias que llevas
+     Sale unos instantes después de ganar, con su sonido y las victorias que llevas
      contra ese mismo rival (por dificultad) o contra ese jugador. */
   const victoriaEl = document.getElementById("ajVictoria");
   const confetiEl = document.getElementById("ajConfeti");
-  let musicaVictoria = null;
-  let musicaSilencio = false;
   let victoriaTimer = null;
 
   function sumarVictoria(clave) {
@@ -245,7 +244,7 @@
     clearTimeout(victoriaTimer);
     victoriaEl.classList.add("hidden");
     confetiEl.innerHTML = "";
-    if (musicaVictoria) musicaVictoria.pause();
+    if (window.MjMusica) MjMusica.agachar(false);
   }
 
   function mostrarVictoria(texto, conteo, derrota) {
@@ -263,10 +262,10 @@
     document.getElementById("ajVictoriaConteo").textContent = conteo || "";
     document.getElementById("ajVictoriaOtra").textContent = online ? "Revancha" : (derrota ? "Intentar de nuevo" : "Jugar otra");
     if (derrota) {
-      // sin confeti ni música: solo el aviso
+      // sin confeti ni sonido de victoria: solo el aviso, con el fondo más bajo
       confetiEl.innerHTML = "";
       victoriaEl.classList.remove("hidden");
-      if (musicaVictoria) musicaVictoria.pause();
+      if (window.MjMusica) MjMusica.agachar(true);
       return;
     }
     const colores = ["#e0b45c", "#8fdcff", "#e8837b", "#f1ecd6", "#7fd48a"];
@@ -278,10 +277,7 @@
       return `<i style="left:${x}%;background:${c};animation-delay:${d}s;animation-duration:${t}s"></i>`;
     }).join("");
     victoriaEl.classList.remove("hidden");
-    if (!musicaVictoria) { musicaVictoria = new Audio(MUSICA_VICTORIA); musicaVictoria.loop = true; musicaVictoria.volume = 0.55; }
-    musicaVictoria.muted = musicaSilencio;
-    musicaVictoria.currentTime = 0;
-    musicaVictoria.play().catch(() => { /* el navegador puede bloquear el sonido */ });
+    if (window.MjMusica) { MjMusica.agachar(true); MjMusica.efecto(SONIDO_VICTORIA, 0.85); }
   }
 
   function victoriaProgramada(texto, conteo, derrota) {
@@ -296,11 +292,6 @@
   }
 
   document.getElementById("ajVictoriaCerrar").addEventListener("click", ocultarVictoria);
-  document.getElementById("ajVictoriaSonido").addEventListener("click", ev => {
-    musicaSilencio = !musicaSilencio;
-    if (musicaVictoria) musicaVictoria.muted = musicaSilencio;
-    ev.currentTarget.style.opacity = musicaSilencio ? ".45" : "1";
-  });
   document.getElementById("ajVictoriaOtra").addEventListener("click", () => {
     ocultarVictoria();
     if (online) revanchaEl.click();
@@ -959,6 +950,7 @@
   window.addEventListener("hashchange", irAJugadores);
   irAJugadores();
 
+  if (window.MjMusica) MjMusica.iniciar(MUSICA_FONDO, { volumen: 0.35 });
   pintarRivales();
   mensaje("Cargando el tablero...");
   import("https://cdn.jsdelivr.net/npm/chess.js@1.0.0/+esm")
