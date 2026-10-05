@@ -251,8 +251,13 @@
   function mostrarVictoria(texto, conteo, derrota) {
     victoriaEl.classList.toggle("aj-derrota", !!derrota);
     document.getElementById("ajVictoriaTitulo").textContent = derrota ? "Derrota" : "¡Victoria!";
+    // Las imágenes son opcionales: si el archivo no está, la pantalla sale sin ella
     const img = document.getElementById("ajVictoriaImg");
-    if (img) img.classList.toggle("hidden", !!derrota);
+    img.classList.add("hidden");
+    img.onload = () => img.classList.remove("hidden");
+    img.onerror = () => img.classList.add("hidden");
+    img.alt = derrota ? "Stunned Solomon" : "Solomon impressed";
+    img.src = derrota ? "assets/cosas/derrota-ajedrez.png" : "assets/cosas/victoria-ajedrez.png";
     document.getElementById("ajVictoriaSup").textContent = derrota ? "Esta vez no fue" : "Partida terminada";
     document.getElementById("ajVictoriaTexto").textContent = texto;
     document.getElementById("ajVictoriaConteo").textContent = conteo || "";
