@@ -49,17 +49,24 @@
      que "piensa" antes de mover. tiempoMov = segundos que tienes para cada jugada
      (si se acaban, pierdes la partida; sin valor, no hay reloj). azar = no calcula nada: elige una pieza que pueda
      moverse al azar y mueve esa pieza a una casilla legal al azar. sinRanking = la
-     partida no suma a récords ni rankings. */
+     partida no suma a récords ni rankings.
+     estilo = su forma de jugar, además de cuánto calcula. Son bonos (en centésimas de
+     peón) que suma a las jugadas que le gustan, así entre jugadas parecidas elige
+     "como él": piezas = bono por tipo de pieza (p, n, b, r, q, k); jaque, captura,
+     enroque = bono por ese tipo de jugada; centro = bono por llegar al centro;
+     avance = bono por empujar peones. Las jugadas de pieza solo reciben el bono
+     completo si acercan la pieza al centro, capturan o dan jaque.
+     estiloTexto = cómo lo describe la tarjeta del rival. */
   const RIVALES = [
-    { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", azar: true, sinRanking: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
+    { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", estiloTexto: "Mueve lo primero que se le ocurre", azar: true, sinRanking: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
       frases: { saludo: "¡Yo juego con las de arriba! ¿Cuáles son las de arriba?", jaque: "¿Eso es jaque? Yo solo quería mover algo.", capturaRival: "¡Me comí una! No sé cuál era.", capturaJugador: "Ah, esa se movía sola, ¿no?", gana: "¿Gané? ¿Eso era ganar?", pierde: "Perdí. ¿Puedo jugar otra? Guau. Digo, sí." } },
-    { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", tiempoMov: 60, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
+    { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", estiloTexto: "Prudente: enroca pronto y protege a su rey", estilo: { piezas: { p: 12, b: 6, q: -25 }, enroque: 45, jaque: -10, captura: -5 }, tiempoMov: 60, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
       frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
-    { id: "baraja", nombre: "Baraja", dificultad: "Media", tiempoMov: 45, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
+    { id: "baraja", nombre: "Baraja", dificultad: "Media", estiloTexto: "Apostador: busca jaques y capturas", estilo: { piezas: { q: 18 }, jaque: 30, captura: 14 }, tiempoMov: 45, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
       frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
-    { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", tiempoMov: 30, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
+    { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", estiloTexto: "Estratega: toma el centro y avanza en bloque", estilo: { piezas: { p: 8, r: 14 }, centro: 22, avance: 6, enroque: 20 }, tiempoMov: 30, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
       frases: { saludo: "Siéntate. Veamos cómo mueves tus tropas.", jaque: "Jaque. Tu flanco quedó abierto.", capturaRival: "Una baja. Habrá más.", capturaJugador: "Un sacrificio. Lo anoto.", gana: "Partida cerrada. La frontera sigue en pie.", pierde: "Bien jugado. Pocos llegan hasta aquí." } },
-    { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", tiempoMov: 20, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
+    { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", estiloTexto: "Prefiere los caballos", estilo: { piezas: { n: 35, b: -6 }, centro: 8 }, tiempoMov: 20, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
       frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
   ];
 
@@ -122,6 +129,31 @@
     return mejor;
   }
 
+  const CENTRO = new Set(["c4", "d4", "e4", "f4", "c5", "d5", "e5", "f5", "d3", "e3", "d6", "e6"]);
+
+  function distanciaCentro(casilla) {
+    return Math.max(Math.abs("abcdefgh".indexOf(casilla[0]) - 3.5), Math.abs(Number(casilla[1]) - 1 - 3.5));
+  }
+
+  /* Cuánto le gusta a este rival una jugada, en centésimas de peón. */
+  function bonoEstilo(m, estilo) {
+    if (!estilo) return 0;
+    let b = 0;
+    const jaque = m.san.includes("+") || m.san.includes("#");
+    const conProposito = jaque || !!m.captured || distanciaCentro(m.to) < distanciaCentro(m.from);
+    const porPieza = (estilo.piezas && estilo.piezas[m.piece]) || 0;
+    b += porPieza * (conProposito || m.piece === "p" ? 1 : 0.35);
+    if (estilo.jaque && jaque) b += estilo.jaque;
+    if (estilo.captura && m.captured) b += estilo.captura;
+    if (estilo.enroque && (m.flags.includes("k") || m.flags.includes("q"))) b += estilo.enroque;
+    if (estilo.centro && CENTRO.has(m.to)) b += estilo.centro;
+    if (estilo.avance && m.piece === "p") {
+      const pasos = m.color === "w" ? Number(m.to[1]) - 2 : 7 - Number(m.to[1]);
+      b += estilo.avance * Math.max(0, pasos);
+    }
+    return b;
+  }
+
   function elegirJugada(g, cfg) {
     const movs = ordenar(g.moves({ verbose: true }));
     if (!movs.length) return null;
@@ -155,6 +187,13 @@
       if (Math.abs(mejorVal) > 90000) break;
     }
     if (!mejorGlobal) return movs[0];
+
+    // Su forma de jugar: las jugadas que le gustan suben un poco de valor (las que le gustan
+    // menos, bajan), así que entre alternativas parecidas elige como lo haría él.
+    if (cfg.estilo) {
+      mejorGlobal.puntajes = mejorGlobal.puntajes.map(p => ({ m: p.m, v: p.v + (maximiza ? 1 : -1) * bonoEstilo(p.m, cfg.estilo) }));
+      mejorGlobal.mejor = mejorGlobal.puntajes.reduce((a, c) => ((maximiza ? c.v > a.v : c.v < a.v) ? c : a)).m;
+    }
 
     // Los niveles bajos a veces eligen una jugada que no es la mejor
     if (cfg.error > 0 && Math.random() < cfg.error) {
@@ -377,6 +416,7 @@
       <button type="button" class="aj-rival ${rival && rival.id === r.id ? "activo" : ""}" data-rival="${r.id}">
         <strong>${r.nombre}</strong>
         <span>${r.dificultad}${r.tiempoMov ? ` · ${r.tiempoMov} s por jugada` : ""}</span>
+        ${r.estiloTexto ? `<em class="aj-rival-estilo">${r.estiloTexto}</em>` : ""}
         <small>${r.sinRanking ? "No cuenta para el ranking" : record[r.id] ? `Victorias: ${record[r.id]}` : "Sin vencer"}</small>
       </button>`).join("");
   }
@@ -619,7 +659,7 @@
     seleccion = null; ultimaJugada = null; pensando = false; terminado = false;
     capturadas = { w: [], b: [] };
     comentarioEl.textContent = "";
-    rivalActualEl.textContent = `Contra ${r.nombre} · ${r.dificultad}`;
+    rivalActualEl.textContent = `Contra ${r.nombre} · ${r.dificultad}${r.estiloTexto ? ` · ${r.estiloTexto}` : ""}`;
     rendirseEl.disabled = false;
     pintarRivales();
     refrescarVistas();
