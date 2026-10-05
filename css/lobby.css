@@ -242,3 +242,11 @@ body.lb::before { display: none; }
 .lb-todo > summary::before { content: "▸ "; }
 .lb-todo[open] > summary::before { content: "▾ "; }
 .lb-todo[open] > summary { margin-bottom: 14px; }
+
+/* Quién está y qué hace */
+.lb-presente { padding: 4px 0; border-bottom: 1px dotted #ffffff22; }
+.lb-presente:last-child { border-bottom: 0; }
+.lb-presente b { font-weight: normal; color: #ffe9a8; }
+.lb-frase { margin: 1px 0 0 16px; color: var(--lb-tenue); font-size: 17px; line-height: 1.1; }
+.lb-lejos .lb-punto { background: #8a8a8a; box-shadow: none; animation: none; }
+.lb-lejos b { color: var(--lb-tenue); }

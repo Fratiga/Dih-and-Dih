@@ -390,21 +390,18 @@
 
   /* --- Quién está en la taberna (presencia en tiempo real) ----------------- */
   function iniciarPresencia(supabase, miId, miNombre) {
-    try {
-      const canal = supabase.channel("lobby-presencia", { config: { presence: { key: miId } } });
-      canal.on("presence", { event: "sync" }, () => {
-        const estado = canal.presenceState();
-        const nombres = Object.entries(estado).map(([id, metas]) => ({ id, nombre: (metas[0] && metas[0].nombre) || "alguien" }));
-        nombres.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
-        ver("lbPresentes", nombres.length
-          ? nombres.map(n => `<div><span class="lb-punto"></span>${esc(n.nombre)}${n.id === miId ? " <span class=\"lb-chico\">(tú)</span>" : ""}</div>`).join("")
-          : `<p class="lb-chico">Solo estás tú.</p>`);
-      }).subscribe(async estado => {
-        if (estado === "SUBSCRIBED") await canal.track({ nombre: miNombre || "alguien" });
-      });
-    } catch (e) {
+    if (!window.Presencia) {
       ver("lbPresentes", `<p class="lb-chico">No se puede ver quién hay.</p>`);
+      return;
     }
+    window.Presencia.suscribir(lista => {
+      ver("lbPresentes", lista.length
+        ? lista.map(n => `<div class="lb-presente${n.oculto ? " lb-lejos" : ""}">
+            <span class="lb-punto"></span><b>${esc(n.nombre)}</b>${n.id === miId ? ` <span class="lb-chico">(tú)</span>` : ""}
+            ${n.frase ? `<div class="lb-frase">${esc(n.frase)}</div>` : ""}
+          </div>`).join("")
+        : `<p class="lb-chico">Solo estás tú.</p>`);
+    });
   }
 
   /* --- Sesión: qué se muestra ---------------------------------------------- */
