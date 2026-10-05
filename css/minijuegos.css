@@ -55,3 +55,19 @@ body.mj-pagina::after { display: none; }
 .mj-musica-btn { position: fixed; right: 14px; bottom: 14px; z-index: 50; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--accent-soft, #8a7a52); background: rgba(20, 20, 22, .85); color: var(--text, #eee); font-size: 1.1rem; line-height: 1; cursor: pointer; }
 .mj-musica-btn:hover { border-color: var(--text, #eee); }
 .mj-musica-btn.apagado { opacity: .55; text-decoration: line-through; }
+
+/* Rankings en tarjetas (arquería): más aire entre secciones, filas altas y los tres primeros marcados */
+.mj-seccion-rankings { margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); }
+.mj-seccion-rankings .mj-subtitulo { margin: 0 0 6px; font-size: 1.7rem; letter-spacing: .05em; }
+.mj-seccion-rankings .mj-nota { margin: 0 0 26px; font-size: .9rem; }
+.mj-rankings { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 24px; margin-top: 0; padding-bottom: 36px; }
+.mj-rankings .sacrificio-ranking { background: var(--panel); border: 1px solid var(--border); padding: 20px 22px 12px; min-width: 0; }
+.mj-rankings .sacrificio-ranking h3 { margin: 0 0 8px; padding-bottom: 12px; font-size: 1.02rem; letter-spacing: .04em; color: var(--accent, var(--text)); border-bottom: 1px solid var(--border); }
+.mj-rankings .sacrificio-lista li { align-items: center; gap: 12px; padding: 11px 2px; font-size: .97rem; border-bottom: 1px solid rgba(255, 255, 255, .06); }
+.mj-rankings .sacrificio-lista li:last-child { border-bottom: 0; }
+.mj-rankings .sacrificio-lista li::before { width: 1.8em; text-align: center; font-variant-numeric: tabular-nums; }
+.mj-rankings .sacrificio-lista li:nth-child(1)::before { color: #e7c25a; font-weight: 700; }
+.mj-rankings .sacrificio-lista li:nth-child(2)::before { color: #c3c8cc; font-weight: 700; }
+.mj-rankings .sacrificio-lista li:nth-child(3)::before { color: #c98f5a; font-weight: 700; }
+.mj-rankings .sacrificio-lista li strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; color: var(--accent, var(--text)); }
+.mj-rankings .sacrificio-vacio { padding: 12px 2px; }

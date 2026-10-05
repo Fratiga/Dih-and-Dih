@@ -51,7 +51,7 @@
      (2x o más) dibujar a resolución completa cuesta el doble o el triple de relleno por
      cuadro y casi no se nota; el combate con Verdam lo baja más porque va sobre capas
      con filtros. */
-  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, resolucionMax = 1.5, onEstado, onFin, onPuntaje }) {
+  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, resolucionMax = 1.25, onEstado, onFin, onPuntaje }) {
     let cfg = RIVALES[claveRival] || RIVALES.hornet;
     const ctx = canvas.getContext("2d");
     const ancho = LOGICO_ANCHO;
@@ -85,10 +85,16 @@
       canvas.height = Math.max(1, Math.round(caja.height * dpr));
       ctx.setTransform(canvas.width / ancho, 0, 0, canvas.height / alto, 0, 0);
       sucio = true;
+      cajaMedida = null;
     }
 
+    /* Medir el lienzo obliga al navegador a recalcular la página; con un ratón que manda más de
+       500 movimientos por segundo eso pesa. Se mide solo al cambiar de tamaño o al desplazar. */
+    let cajaMedida = null;
+    const medirCaja = () => { cajaMedida = null; };
+    window.addEventListener("scroll", medirCaja, { passive: true });
     function posicion(e) {
-      const r = canvas.getBoundingClientRect();
+      const r = cajaMedida || (cajaMedida = canvas.getBoundingClientRect());
       return { x: (e.clientX - r.left) * (ancho / r.width), y: (e.clientY - r.top) * (alto / r.height) };
     }
 
@@ -296,8 +302,10 @@
       requestAnimationFrame(cuadro);
     }
 
+    canvas.addEventListener("pointerenter", medirCaja);
     canvas.addEventListener("pointerdown", e => {
       if (estado !== "jugando") return;
+      cajaMedida = null; // un disparo siempre con la medida al día
       const p = posicion(e);
       disparar(p.x, p.y);
     });
