@@ -5,11 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Compendio del Mundo — Lobby</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20261138">
-  <link rel="stylesheet" href="css/lobby.css?v=20261138">
+  <link rel="stylesheet" href="css/style.css?v=20261140">
+  <link rel="stylesheet" href="css/lobby.css?v=20261140">
 </head>
 <body class="lb lb-invitado">
   <div class="lb-fondo" aria-hidden="true"></div>
@@ -28,7 +37,7 @@
           <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
         </div>
         <div id="claveMagicaWidget" class="clave-magica-widget">
-          <button id="claveMagicaBadge" class="clave-magica-badge" type="button" title="¿Sabes la palabra mágica?" aria-label="¿Sabes la palabra mágica?"><img src="assets/cosas/gorro-bufon.png" alt=""></button>
+          <button id="claveMagicaBadge" class="clave-magica-badge" type="button" title="¿Sabes la palabra mágica?" aria-label="¿Sabes la palabra mágica?"><img src="assets/cosas/gatipeps.webp" alt=""></button>
           <div id="claveMagicaPopover" class="clave-magica-popover hidden">
             <form id="claveMagicaForm">
               <input type="text" id="claveMagicaInput" placeholder="..." autocomplete="off" aria-label="Palabra mágica">
@@ -86,7 +95,7 @@
           <div class="lb-caja-cuerpo">
             <p class="lb-contador-etq">Han pasado por la taberna</p>
             <p class="lb-contador" id="lbVisitasGlobal">0000000</p>
-            <p class="lb-contador-etq">personas (y cuentan)</p>
+            <p class="lb-contador-etq">personas</p>
             <p class="lb-chico">Tú has entrado <b id="lbVisitas">0</b> veces. <span id="lbUltima"></span></p>
           </div>
         </section>
@@ -360,6 +369,29 @@
                 <text x="844" y="532" text-anchor="middle" class="lb-etq">VALHALLA</text>
               </a>
 
+              <!-- Decoración para quien no ve los juegos escondidos: la escena no se queda con huecos -->
+              <g class="lb-deco">
+                <!-- Escudo sobre la biblioteca -->
+                <rect x="84" y="36" width="48" height="56" fill="#8d6a45"/>
+                <rect x="88" y="40" width="40" height="48" fill="#3b4a8a"/>
+                <rect x="88" y="40" width="20" height="24" fill="#b6453f"/><rect x="108" y="64" width="20" height="24" fill="#b6453f"/>
+                <rect x="96" y="92" width="24" height="4" fill="#8d6a45"/><rect x="104" y="96" width="8" height="4" fill="#8d6a45"/>
+                <!-- Estandarte arriba a la derecha -->
+                <rect x="880" y="28" width="64" height="4" fill="#8d6a45"/>
+                <rect x="888" y="32" width="48" height="64" fill="#8a2f4a"/>
+                <rect x="888" y="88" width="16" height="12" fill="#8a2f4a"/><rect x="920" y="88" width="16" height="12" fill="#8a2f4a"/>
+                <rect x="904" y="48" width="16" height="16" fill="#e8b84a"/><rect x="908" y="44" width="8" height="4" fill="#e8b84a"/><rect x="908" y="64" width="8" height="8" fill="#e8b84a"/>
+                <!-- Barriles y caja donde iría la mesa de cartas -->
+                <rect x="568" y="420" width="56" height="72" fill="#7a5233"/><rect x="568" y="432" width="56" height="6" fill="#3a2a1d"/><rect x="568" y="470" width="56" height="6" fill="#3a2a1d"/>
+                <rect x="574" y="414" width="44" height="8" fill="#9a6a41"/>
+                <rect x="636" y="440" width="48" height="52" fill="#7a5233"/><rect x="636" y="452" width="48" height="6" fill="#3a2a1d"/><rect x="636" y="474" width="48" height="6" fill="#3a2a1d"/>
+                <rect x="690" y="456" width="44" height="36" fill="#9a6a41"/><rect x="690" y="470" width="44" height="4" fill="#6b4a2f"/><rect x="708" y="456" width="4" height="36" fill="#6b4a2f"/>
+                <!-- Alfombra redonda donde iría la trampilla -->
+                <rect x="800" y="464" width="96" height="40" fill="#2f6a4d"/><rect x="792" y="472" width="112" height="24" fill="#2f6a4d"/>
+                <rect x="808" y="472" width="80" height="24" fill="none" stroke="#e8b84a" stroke-width="3"/>
+                <rect x="836" y="476" width="24" height="16" fill="#e8b84a"/>
+              </g>
+
               <!-- Faroles y alfombra -->
               <g>
                 <rect x="348" y="28" width="4" height="28" fill="#8d8d99"/>
@@ -446,20 +478,20 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20261138"></script>
-  <script src="data/musica.js?v=20261138"></script>
-  <script src="js/musica-nube.js?v=20261138"></script>
-  <script src="js/common.js?v=20261138"></script>
-  <script src="js/temas.js?v=20261138"></script>
-  <script src="js/player.js?v=20261138"></script>
-  <script src="data/jumpscare.js?v=20261138"></script>
-  <script src="data/contrasenas.js?v=20261138"></script>
-  <script src="js/fichas-supabase.js?v=20261138"></script>
-  <script src="js/lado.js?v=20261138"></script>
-  <script src="js/slappy.js?v=20261138"></script>
-  <script src="data/novedades.js?v=20261138"></script>
-  <script src="data/saludos.js?v=20261138"></script>
-  <script src="js/bienvenida.js?v=20261138"></script>
-  <script src="js/lobby.js?v=20261138"></script>
+  <script src="data/rotacion.js?v=20261140"></script>
+  <script src="data/musica.js?v=20261140"></script>
+  <script src="js/musica-nube.js?v=20261140"></script>
+  <script src="js/common.js?v=20261140"></script>
+  <script src="js/temas.js?v=20261140"></script>
+  <script src="js/player.js?v=20261140"></script>
+  <script src="data/jumpscare.js?v=20261140"></script>
+  <script src="data/contrasenas.js?v=20261140"></script>
+  <script src="js/fichas-supabase.js?v=20261140"></script>
+  <script src="js/lado.js?v=20261140"></script>
+  <script src="js/slappy.js?v=20261140"></script>
+  <script src="data/novedades.js?v=20261140"></script>
+  <script src="data/saludos.js?v=20261140"></script>
+  <script src="js/bienvenida.js?v=20261140"></script>
+  <script src="js/lobby.js?v=20261140"></script>
 </body>
 </html>

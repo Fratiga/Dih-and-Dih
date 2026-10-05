@@ -218,3 +218,9 @@ body.lb-invitado .lb-pie { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .lb-llama, .lb-brillo, .lb-neon, .lb-haz, .lb-fondo, .lb-parpadeo, .lb-punto, .lb-ticker-pista { animation: none !important; }
 }
+
+/* Decoración de relleno: solo para quien no ve los juegos escondidos */
+body.lb-admin .lb-deco { display: none; }
+
+/* El bufón que baila (huevo de pascua) con el marco de la taberna */
+.lb .slappy-contenedor { border: 3px ridge var(--lb-borde); background: #0d0816; margin-top: 12px; }
