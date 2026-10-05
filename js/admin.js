@@ -484,6 +484,7 @@
     { que: "Puntajes de Zarabanda", sql: "ritmo_puntajes.sql", tipo: "tabla", ref: "ritmo_puntajes" },
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
     { que: "Regalar cartas (Admin)", sql: "cartas.sql", tipo: "rpc", ref: "cartas_regalar", args: { p_usuario: CERO, p_carta: "no-existe", p_nota: "" } },
+    { que: "Atajos del lobby guardados en la cuenta", sql: "atajos_usuario.sql", tipo: "tabla", ref: "atajos_usuario" },
     { que: "Contador de visitas del lobby", sql: "lobby_contador.sql", tipo: "rpc", ref: "lobby_visita", args: { p_contar: false } },
     { que: "Ver si una petición fue atendida", sql: "peticiones_estado.sql", tipo: "rpc", ref: "peticiones_estado", args: { p_codigos: [] } }
   ];

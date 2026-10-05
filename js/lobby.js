@@ -136,7 +136,63 @@
     return ATAJOS_BASE.map(h => disp.find(p => p.href === h)).filter(Boolean);
   }
   function guardarAtajos(lista) {
-    try { localStorage.setItem(ATAJOS_CLAVE, JSON.stringify(lista)); } catch (e) { /* sin almacenamiento */ }
+    try {
+      localStorage.setItem(ATAJOS_CLAVE, JSON.stringify(lista));
+      localStorage.setItem(ATAJOS_TS, new Date().toISOString());
+    } catch (e) { /* sin almacenamiento */ }
+    subirAtajos(lista);
+  }
+
+  /* Sincronización con la cuenta (tabla atajos_usuario, ver scratchpad/atajos_usuario.sql).
+     Gana lo más reciente: al entrar, si lo guardado en la cuenta es más nuevo que lo de este
+     navegador, se usa lo de la cuenta; si es al revés, se sube lo de este navegador. Sin la
+     tabla, los atajos siguen funcionando solo en este navegador. */
+  const ATAJOS_TS = "lbAtajosTs";
+  let atajosSupa = null;
+  let atajosUsuario = null;
+  let atajosTimer = null;
+
+  function subirAtajos(lista) {
+    if (!atajosSupa || !atajosUsuario) return;
+    clearTimeout(atajosTimer);
+    atajosTimer = setTimeout(async () => {
+      try {
+        await atajosSupa.from("atajos_usuario").upsert({ user_id: atajosUsuario, atajos: lista, updated_at: new Date().toISOString() });
+      } catch (e) { /* se queda en este navegador */ }
+    }, 600);
+  }
+
+  async function sincronizarAtajos(supabase, miId) {
+    atajosSupa = supabase;
+    atajosUsuario = miId;
+    try {
+      const { data, error } = await supabase.from("atajos_usuario").select("atajos, updated_at").eq("user_id", miId).maybeSingle();
+      if (error) throw error;
+      const tsLocal = localStorage.getItem(ATAJOS_TS) || "";
+      const hayLocal = localStorage.getItem(ATAJOS_CLAVE) !== null;
+      if (data && Array.isArray(data.atajos) && (!hayLocal || data.updated_at > tsLocal)) {
+        localStorage.setItem(ATAJOS_CLAVE, JSON.stringify(data.atajos));
+        localStorage.setItem(ATAJOS_TS, data.updated_at);
+        pintarAtajos();
+      } else if (data && data.atajos === null && data.updated_at > tsLocal) {
+        // en otro dispositivo los restablecieron
+        localStorage.removeItem(ATAJOS_CLAVE);
+        localStorage.setItem(ATAJOS_TS, data.updated_at);
+        pintarAtajos();
+      } else if (hayLocal && (!data || tsLocal > data.updated_at)) {
+        subirAtajos(leerAtajos());
+      }
+    } catch (e) { /* sin la tabla: solo este navegador */ }
+  }
+
+  function restablecerAtajos() {
+    try {
+      localStorage.removeItem(ATAJOS_CLAVE);
+      localStorage.setItem(ATAJOS_TS, new Date().toISOString());
+    } catch (e) { /* sin almacenamiento */ }
+    if (atajosSupa && atajosUsuario) {
+      atajosSupa.from("atajos_usuario").upsert({ user_id: atajosUsuario, atajos: null, updated_at: new Date().toISOString() }).then(() => {}, () => {});
+    }
   }
 
   function colorDe(texto) {
@@ -200,7 +256,7 @@
       else if (t.dataset.agrega !== undefined) { const p = disp.find(x => x.href === t.dataset.agrega); if (p && lista.length < 24) { lista.push(p); aplicar(); } }
       else if (t.id === "lbAtajosListo") { ed.classList.add("hidden"); ed.innerHTML = ""; }
       else if (t.id === "lbAtajosBase") {
-        localStorage.removeItem(ATAJOS_CLAVE);
+        restablecerAtajos();
         lista = leerAtajos();
         pintarAtajos(); pintar();
       }
@@ -365,6 +421,7 @@
     contarVisita();
     let supabase;
     try { supabase = await fichasCliente(); } catch (e) { return; }
+    sincronizarAtajos(supabase, miId);
     iniciarPresencia(supabase, miId, nombre);
     cargarPersonajes(supabase, miId).catch(() => ver("lbPersonajes", `<p class="lb-chico">No se pudieron cargar tus personajes.</p>`));
     cargarRetos(supabase, miId).catch(() => ver("lbRetos", `<p class="lb-chico">Sin novedades de partidas.</p>`)).then(avisarPeticiones);
