@@ -827,16 +827,21 @@
 
   /* Canciones y dificultades con un mapa guardado desde el editor (hecho a mano por un admin).
      La lista es pública, así que se pide al abrir el menú. */
-  const aMano = new Map();
+  const aMano = new Map(); // ruta -> Map(dificultad -> firma)
+  function textoMano(ruta) {
+    const porDif = aMano.get(ruta);
+    if (!porDif) return "";
+    return "Mapa hecho a mano en " + [...porDif].map(([d, firma]) => (DIFICULTADES[d] ? DIFICULTADES[d].nombre : d) + (firma ? " por " + firma : "")).join(", ");
+  }
   async function cargarMapasAMano() {
     try {
       if (typeof fichasCliente !== "function") return;
       const supabase = await fichasCliente();
-      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad");
+      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad, firma:mapa->>firma");
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 4000))]);
       if (error || !data) return;
       aMano.clear();
-      data.forEach(f => { if (!aMano.has(f.cancion)) aMano.set(f.cancion, new Set()); aMano.get(f.cancion).add(f.dificultad); });
+      data.forEach(f => { if (!aMano.has(f.cancion)) aMano.set(f.cancion, new Map()); aMano.get(f.cancion).set(f.dificultad, (f.firma || "").trim()); });
       pintarMenu();
     } catch (e) { /* sin marcas */ }
   }
@@ -849,7 +854,7 @@
       const r = records[c.ruta + "|" + ajustes.dificultad];
       return `<button type="button" role="option" aria-selected="${i === ajustes.cancion}" class="rt-cancion ${i === ajustes.cancion ? "activa" : ""}" data-i="${i}">` +
         `<span class="rt-cancion-txt"><strong>${esc(c.titulo)}</strong>${c.artista ? `<small>${esc(c.artista)}</small>` : ""}</span>` +
-        `<span class="rt-cancion-der">${aMano.has(c.ruta) ? `<i class="rt-mano" title="Mapa hecho a mano en ${[...aMano.get(c.ruta)].map(d => DIFICULTADES[d] ? DIFICULTADES[d].nombre : d).join(", ")}">✎</i>` : ""}${c.dur ? `<em>${duracionTexto(c.dur)}</em>` : ""}${r ? `<b class="rt-rango-mini rango-${esc(r.rango)}" title="Tu mejor: ${Number(r.puntos).toLocaleString("es")}">${esc(r.rango)}</b>` : ""}</span></button>`;
+        `<span class="rt-cancion-der">${aMano.has(c.ruta) ? `<i class="rt-mano" title="${esc(textoMano(c.ruta))}">★</i>` : ""}${c.dur ? `<em>${duracionTexto(c.dur)}</em>` : ""}${r ? `<b class="rt-rango-mini rango-${esc(r.rango)}" title="Tu mejor: ${Number(r.puntos).toLocaleString("es")}">${esc(r.rango)}</b>` : ""}</span></button>`;
     }).join("") || `<p class="rt-nota">Ninguna canción coincide con la búsqueda.</p>`;
     cancionesEl.scrollTop = guardado;
     const activa = cancionesEl.querySelector(".activa");
@@ -864,7 +869,7 @@
     tituloEl.textContent = c.titulo;
     metaEl.textContent = [c.artista, c.dur ? duracionTexto(c.dur) : ""].filter(Boolean).join(" · ");
     dificultadesEl.innerHTML = Object.entries(DIFICULTADES).map(([id, d]) =>
-      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small>${aMano.has(c.ruta) && aMano.get(c.ruta).has(id) ? `<em class="rt-dif-mano">✎ Mapa a mano</em>` : ""}</button>`).join("");
+      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small>${aMano.has(c.ruta) && aMano.get(c.ruta).has(id) ? `<em class="rt-dif-mano">★ ${esc(aMano.get(c.ruta).get(id) ? "Mapa de " + aMano.get(c.ruta).get(id) : "Mapa a mano")}</em>` : ""}</button>`).join("");
     document.getElementById("rtLeyenda").classList.toggle("hidden", !aMano.size);
     desfaseEl.value = ajustes.desfase;
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;

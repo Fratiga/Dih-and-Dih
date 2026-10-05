@@ -185,6 +185,7 @@
   }
 
   function aplicarGuardado(guardado) {
+    if (typeof guardado.firma === "string") firmaEl.value = guardado.firma;
     // Los tramos y la banda de cada uno se recalculan con el pulso guardado
     const m = AN.crearMapa(buffer, difActual(), { pulsos: guardado.pulsos });
     tomarMapa({
@@ -232,6 +233,16 @@
     }
   }
 
+  /* La firma va dentro del mapa guardado y se ve en el juego junto a la estrella. */
+  const firmaEl = $("reFirma");
+  try { firmaEl.value = localStorage.getItem("compendioRitmoFirma") || ""; } catch (e) { /* sin almacenamiento */ }
+  firmaEl.addEventListener("change", () => { try { localStorage.setItem("compendioRitmoFirma", firmaEl.value.trim()); } catch (e) { /* sin almacenamiento */ } });
+  function conFirma(mapa) {
+    const f = firmaEl.value.trim().slice(0, 30);
+    if (f) mapa.firma = f;
+    return mapa;
+  }
+
   async function guardar() {
     if (!notas.length) { mensaje("No hay nada que guardar.", true); return; }
     limpiarNotas();
@@ -240,7 +251,7 @@
       const { error } = await sb.from("ritmo_mapas").upsert({
         cancion: rutaActual(),
         dificultad: difActual(),
-        mapa: AN.guardable(notas, pulsos),
+        mapa: conFirma(AN.guardable(notas, pulsos)),
         actualizado: new Date().toISOString()
       });
       if (error) throw error;
@@ -257,7 +268,7 @@
     if (!notas.length) return;
     limpiarNotas();
     try {
-      localStorage.setItem("ritmoPrueba", JSON.stringify({ ruta: rutaActual(), dificultad: difActual(), mapa: AN.guardable(notas, pulsos) }));
+      localStorage.setItem("ritmoPrueba", JSON.stringify({ ruta: rutaActual(), dificultad: difActual(), mapa: conFirma(AN.guardable(notas, pulsos)) }));
       const aj = JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}");
       aj.ruta = rutaActual();
       aj.dificultad = difActual();
@@ -270,7 +281,7 @@
   function exportar() {
     if (!notas.length) return;
     limpiarNotas();
-    const texto = JSON.stringify({ cancion: rutaActual(), dificultad: difActual(), mapa: AN.guardable(notas, pulsos) });
+    const texto = JSON.stringify({ cancion: rutaActual(), dificultad: difActual(), mapa: conFirma(AN.guardable(notas, pulsos)) });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([texto], { type: "application/json" }));
     a.download = `mapa-${canciones[Number(cancionEl.value)].nombre.replace(/[^\w-]+/g, "_").slice(0, 40)}-${difActual()}.json`;

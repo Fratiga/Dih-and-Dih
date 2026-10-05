@@ -4,12 +4,19 @@
 window.ZARABANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
+    titulo: "Estrellas y firmas",
+    cambios: [
+      "La estrella ★ marca las canciones con un mapa hecho a mano y, dentro de la canción, la dificultad que se editó.",
+      "Los mapas llevan firma. Pasa el ratón por la estrella de la lista o mira la dificultad para ver quién lo hizo."
+    ]
+  },
+  {
+    fecha: "2026-10-05",
     titulo: "Mapas más musicales",
     cambios: [
       "Las notas siguen la melodía. Un sonido más agudo que el anterior va arriba y uno más grave va abajo.",
       "Se acabaron las filas largas en un solo carril. Ninguna racha pasa de 3 notas (4 en Fácil). Lo que sobra se vuelve larga, doble o descanso.",
       "Experto va en corcheas, con el estilo del mapa que hizo a mano una de las admins para Excuse me Kirk.",
-      "Las canciones con ✎ tienen un mapa hecho a mano por una admin, y la dificultad editada lleva su propia marca.",
       "Las dobles salen tras un silencio y las largas caen al final de los compases, no en cualquier parte."
     ]
   },

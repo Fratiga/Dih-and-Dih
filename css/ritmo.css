@@ -164,6 +164,6 @@
 .rt-novedad h3 { margin: 0 0 2px; font-size: 1rem; }
 .rt-novedad time { display: block; font-size: .72rem; color: var(--muted); letter-spacing: .08em; margin-bottom: 6px; }
 .rt-novedad ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: .86rem; line-height: 1.5; color: var(--text); }
-.rt-mano { font-style: normal; color: #ff9d4f; }
+.rt-mano { font-style: normal; color: #f2d46b; text-shadow: 0 0 6px rgba(242, 212, 107, .55); }
 .rt-cancion-der .rt-mano { font-size: .9rem; }
-.rt-dif .rt-dif-mano { font-style: normal; font-size: .68rem; color: #ff9d4f; letter-spacing: .04em; }
+.rt-dif .rt-dif-mano { font-style: normal; font-size: .68rem; color: #f2d46b; letter-spacing: .04em; }

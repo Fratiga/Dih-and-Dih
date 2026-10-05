@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editor de mapas — Ritmo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261123"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261123">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261123">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261123">
+  <script src="js/oculto.js?v=20261124"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261124">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261124">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261124">
 </head>
 <body class="mj-pagina">
   <div class="mj-barra">
@@ -84,6 +84,7 @@
     </div>
 
     <div class="re-fila re-acciones">
+      <label>Firma <input type="text" id="reFirma" maxlength="30" placeholder="Tu nombre (opcional)" autocomplete="off"></label>
       <button type="button" id="reGuardar" class="re-btn re-principal">Guardar para los jugadores</button>
       <button type="button" id="reProbar" class="re-btn">Probar en el juego</button>
       <button type="button" id="reExportar" class="re-btn">Exportar JSON</button>
@@ -96,11 +97,11 @@
     <p class="re-ayuda">Clic en un carril pone una nota (clic derecho la borra). Arrastra una nota para moverla y el borde de una larga para alargarla. Espacio reproduce. Flechas ← → mueven la nota elegida 10 ms. El campo "Ajuste" decide a qué parte del pulso se pegan las notas.</p>
   </main>
 
-  <script src="js/temas.js?v=20261123"></script>
-  <script src="js/fichas-supabase.js?v=20261123"></script>
-  <script src="js/lado.js?v=20261123"></script>
-  <script src="data/musica.js?v=20261123"></script>
-  <script src="js/ritmo-analisis.js?v=20261123"></script>
-  <script src="js/ritmo-editor.js?v=20261123"></script>
+  <script src="js/temas.js?v=20261124"></script>
+  <script src="js/fichas-supabase.js?v=20261124"></script>
+  <script src="js/lado.js?v=20261124"></script>
+  <script src="data/musica.js?v=20261124"></script>
+  <script src="js/ritmo-analisis.js?v=20261124"></script>
+  <script src="js/ritmo-editor.js?v=20261124"></script>
 </body>
 </html>
