@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zarabanda — Compendio del Mundo</title>
+  <title>Estruendo — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <link rel="stylesheet" href="css/style.css?v=20261157">
   <link rel="stylesheet" href="css/minijuegos.css?v=20261157">
   <link rel="stylesheet" href="css/ritmo.css?v=20261157">
+  <link rel="stylesheet" href="css/estruendo.css?v=20261157">
   <link rel="stylesheet" href="css/mj-temas.css?v=20261157">
   <script src="js/mj-volumen.js?v=20261157"></script>
 </head>
-<body class="mj-pagina ritmo-tema">
+<body class="mj-pagina estruendo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
   <div class="mj-barra">
     <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
@@ -22,7 +23,7 @@
   </div>
   <main class="mj-contenido rt-contenido">
     <p class="eyebrow">PASATIEMPOS</p>
-    <h1 class="mj-titulo">Zarabanda</h1>
+    <h1 class="mj-titulo">Estruendo</h1>
 
     <!-- Menú: canciones a la izquierda, detalle y puntajes a la derecha. Se esconde mientras se juega. -->
     <section id="rtLobby" class="rt-lobby">
@@ -48,7 +49,7 @@
               <span class="rt-desfase"><input type="range" id="rtDesfase" min="-200" max="200" step="5" value="0" aria-label="Sincronía"> <output id="rtDesfaseTxt">0 ms</output> <button type="button" id="rtCalibrar" class="rt-secundario rt-chico">Calibrar</button></span>
             </div>
             <div class="rt-ajuste-fila">
-              <span class="rt-ajuste-info"><strong>Teclas</strong><small>Pulsa una casilla y luego la tecla que quieras. Las flechas siempre funcionan.</small></span>
+              <span class="rt-ajuste-info"><strong>Teclas</strong><small>Dos casillas por carril, de izquierda a derecha. Pulsa una y luego la tecla que quieras. Las flechas siempre funcionan.</small></span>
               <span id="rtTeclas" class="rt-teclas"></span>
             </div>
             <label class="rt-ajuste-fila rt-interruptor">
@@ -56,7 +57,7 @@
               <input type="checkbox" id="rtPractica"><span class="rt-pista"></span>
             </label>
             <label class="rt-ajuste-fila rt-interruptor">
-              <span class="rt-ajuste-info"><strong>Sonido al pulsar</strong><small>Un golpecito por tecla, agudo arriba y grave abajo</small></span>
+              <span class="rt-ajuste-info"><strong>Sonido al pulsar</strong><small>Una nota distinta por carril, con un poco de distorsión</small></span>
               <input type="checkbox" id="rtSonidoGolpe"><span class="rt-pista"></span>
             </label>
             <label class="rt-ajuste-fila rt-interruptor">
@@ -64,7 +65,7 @@
               <input type="checkbox" id="rtPersonaje"><span class="rt-pista"></span>
             </label>
             <div class="rt-ajuste-fila">
-              <span class="rt-ajuste-info"><strong>Foto del personaje</strong><small>Se recorta en círculo y reemplaza al slime</small></span>
+              <span class="rt-ajuste-info"><strong>Foto del personaje</strong><small>Se recorta en círculo y reemplaza al slime. Es la misma de Zarabanda.</small></span>
               <span class="rt-foto">
                 <img id="rtFotoVista" class="rt-foto-vista hidden" alt="Tu foto de personaje">
                 <button type="button" id="rtFotoBtn" class="rt-secundario">Usar mi foto</button>
@@ -77,7 +78,7 @@
           <div class="rt-fila">
             <button type="button" id="rtJugar" class="rt-jugar">▶ Jugar</button>
             <button type="button" id="rtAbrirBuzon" class="rt-secundario">Pedir una canción</button>
-            <a id="rtAbrirEditor" class="rt-secundario rt-enlace hidden" href="ritmo-editor.html">Editor de mapas</a>
+            <a id="rtAbrirEditor" class="rt-secundario rt-enlace hidden" href="estruendo-editor.html">Editor de mapas</a>
             <button type="button" id="rtAbrirNovedades" class="rt-secundario">Novedades <i id="rtNuevo" class="rt-nuevo hidden"></i></button>
           </div>
           <p id="rtRecord" class="rt-record"></p>
@@ -90,7 +91,7 @@
             <div id="rtPuntajes" class="rt-tabla-caja"></div>
           </div>
 
-          <p class="rt-ayuda"><span id="rtTeclasTxt">Arriba: Z D F ↑. Abajo: X J K ↓.</span> En pantalla táctil, toca la mitad de abajo o la de arriba. En las barras largas mantén la tecla pulsada hasta que el círculo del final llegue al aro: se completan solas, no hace falta soltar justo entonces. Las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
+          <p class="rt-ayuda"><span id="rtTeclasTxt">Carriles de izquierda a derecha: D, F, J, K.</span> En pantalla táctil, toca la columna del carril. En las barras largas mantén la tecla pulsada hasta que el círculo del final llegue al aro: se completan solas, no hace falta soltar justo entonces. Si dos notas caen a la vez, pulsa los dos carriles juntos.</p>
         </section>
       </div>
 
@@ -119,7 +120,7 @@
     <!-- Campo de juego: solo se ve al jugar -->
     <div class="rt-escenario hidden" id="rtEscenario">
       <div id="rtBrillo" class="rt-brillo"></div>
-      <canvas id="rtCampo" class="rt-campo" aria-label="Campo de juego de ritmo"></canvas>
+      <canvas id="rtCampo" class="rt-campo" aria-label="Campo de juego de Estruendo"></canvas>
 
       <div id="rtCarga" class="rt-panel rt-centro hidden"><p id="rtCargaTxt">Analizando la canción...</p></div>
 
@@ -177,11 +178,12 @@
   <script src="js/minijuegos-stats.js?v=20261157"></script>
   <script src="data/musica.js?v=20261157"></script>
   <script src="js/musica-nube.js?v=20261157"></script>
-  <script src="data/zarabanda-novedades.js?v=20261157"></script>
+  <script src="data/estruendo-novedades.js?v=20261157"></script>
   <script src="data/musica-duraciones.js?v=20261157"></script>
   <script src="js/peticiones-supabase.js?v=20261157"></script>
   <script src="js/ritmo-rol.js?v=20261157"></script>
   <script src="js/ritmo-analisis.js?v=20261157"></script>
-  <script src="js/ritmo.js?v=20261157"></script>
+  <script src="js/estruendo-analisis.js?v=20261157"></script>
+  <script src="js/estruendo.js?v=20261157"></script>
 </body>
 </html>

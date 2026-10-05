@@ -544,8 +544,13 @@
       const nuevaRuta = await crearCancion(sb, blob, base.titulo.slice(0, 140), base.artista.slice(0, 140), fin - ini, fr => { barraR.value = 50 + Math.round(fr * 50); decirR(`Subiendo... ${Math.round(fr * 100)} %`); });
       let notaMapas = "";
       if (ini < 0.05) {
-        const { data, error } = await sb.from("ritmo_mapas").update({ cancion: nuevaRuta }).eq("cancion", ruta).select("dificultad");
-        if (!error && data && data.length) notaMapas = ` Se pasaron ${data.length} mapa${data.length === 1 ? "" : "s"}.`;
+        // Los mapas de Zarabanda y de Estruendo
+        let pasados = 0;
+        for (const tabla of ["ritmo_mapas", "estruendo_mapas"]) {
+          const { data, error } = await sb.from(tabla).update({ cancion: nuevaRuta }).eq("cancion", ruta).select("dificultad");
+          if (!error && data) pasados += data.length;
+        }
+        if (pasados) notaMapas = ` Se pasaron ${pasados} mapa${pasados === 1 ? "" : "s"}.`;
       }
       if (nube) {
         const { error } = await sb.from("rocola_canciones").delete().eq("ruta", ruta);
@@ -572,6 +577,8 @@
   function iniciar() { if (!iniciado) { iniciado = true; cargarDatos(); } }
   function mostrar(si) { caja.classList.toggle("hidden", !si); if (si) iniciar(); }
   caja.addEventListener("toggle", () => { if (caja.open && iniciado) cargarDatos(); });
+  // Los editores enlazan aquí (rocola.html#rgGestor): se abre el panel
+  if (location.hash === "#rgGestor") caja.open = true;
   if (window.RitmoRol) {
     if (RitmoRol.cacheado()) mostrar(true);
     RitmoRol.verificar().then(r => mostrar(!!r.puede));

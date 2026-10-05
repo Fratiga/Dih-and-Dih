@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editor de mapas — Zarabanda</title>
+  <title>Editor de mapas — Estruendo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <link rel="stylesheet" href="css/style.css?v=20261157">
   <link rel="stylesheet" href="css/minijuegos.css?v=20261157">
+  <link rel="stylesheet" href="css/estruendo.css?v=20261157">
   <link rel="stylesheet" href="css/mj-temas.css?v=20261157">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261157">
+  <link rel="stylesheet" href="css/estruendo-editor.css?v=20261157">
 </head>
-<body class="mj-pagina ritmo-tema re-pagina">
+<body class="mj-pagina estruendo-tema re-pagina">
   <div class="mj-barra">
-    <a href="ritmo.html" class="mj-volver">← Zarabanda</a>
+    <a href="estruendo.html" class="mj-volver">← Estruendo</a>
     <div id="globalLadoWidget" class="global-lado-widget">
       <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
       <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
@@ -22,9 +23,9 @@
   <main class="mj-contenido re-contenido">
     <header class="re-cab">
       <div>
-        <p class="eyebrow">ZARABANDA · DJ</p>
+        <p class="eyebrow">ESTRUENDO · DJ</p>
         <h1 class="mj-titulo">Editor de mapas</h1>
-        <p class="re-sub">Corrige notas, tramos y pulso. Lo que guardes lo juega todo el mundo.</p>
+        <p class="re-sub">Cuatro carriles, para lo que quieras seguir: guitarra, bajo, batería, voz. Lo que guardes lo juega todo el mundo.</p>
       </div>
       <div class="re-cab-acciones">
         <button type="button" id="reTutoBtn" class="re-pildora re-pildora-viva">Tutoriales</button>
@@ -117,15 +118,21 @@
         </div>
 
         <div class="re-panel-tool" data-panel="notas">
-          <p class="re-ayuda-corta">Clic en un carril pone una nota. Mayús + arrastrar en un hueco dibuja una caja para elegir varias; Ctrl + clic suma o quita una.</p>
+          <p class="re-ayuda-corta">Clic en un carril pone una nota. Mayús + arrastrar en un hueco dibuja una caja para elegir varias; Ctrl + clic suma o quita una. Las teclas 1 a 4 mandan las elegidas a ese carril.</p>
           <div class="re-botones">
             <button type="button" id="reLarga" class="re-btn" title="H">Larga</button>
-            <button type="button" id="reDoble" class="re-btn" title="D">Doble</button>
-            <button type="button" id="reCarril" class="re-btn" title="F">Cambiar carril</button>
+            <button type="button" id="reAcorde" class="re-btn" title="C">Acorde</button>
+            <span class="re-carril-btns" title="Mandar las notas elegidas a un carril (teclas 1 a 4)">
+              <button type="button" class="re-btn re-carril-btn" data-carril-btn="0">1</button>
+              <button type="button" class="re-btn re-carril-btn" data-carril-btn="1">2</button>
+              <button type="button" class="re-btn re-carril-btn" data-carril-btn="2">3</button>
+              <button type="button" class="re-btn re-carril-btn" data-carril-btn="3">4</button>
+            </span>
+            <button type="button" id="reCarril" class="re-btn" title="Pasa cada nota elegida al carril siguiente">Carril siguiente</button>
             <button type="button" id="reNotaMenos" class="re-btn" title="←">−10 ms</button>
             <button type="button" id="reNotaMas" class="re-btn" title="→">+10 ms</button>
             <button type="button" id="reCuantizar" class="re-btn" title="Pega las notas elegidas a la cuadrícula del Ajuste">Cuantizar</button>
-            <button type="button" id="reAlternar" class="re-btn" title="Arriba, abajo, arriba, abajo...">Alternar carriles</button>
+            <button type="button" id="reAlternar" class="re-btn" title="Las notas elegidas, en orden, recorren los carriles 1, 2, 3, 4, 1, 2...">Escalera</button>
             <button type="button" id="reBorrar" class="re-btn re-btn-peligro" title="Supr">Borrar</button>
           </div>
           <div class="re-botones">
@@ -233,9 +240,13 @@
         </div>
 
         <div class="re-panel-tool hidden" data-panel="probar">
-          <p class="re-ayuda-corta">Juega el mapa aquí mismo. Con el modo prueba activo, Z D F ↑ tocan arriba y X J K ↓ tocan abajo, con las ventanas de la dificultad elegida. Las largas cuentan solo al pulsar el inicio.</p>
+          <p class="re-ayuda-corta">Juega el mapa aquí mismo. Con el modo prueba activo, D F J K (o las flechas) tocan los carriles de izquierda a derecha, con las ventanas de la dificultad elegida. Las largas cuentan solo al pulsar el inicio.</p>
           <div class="re-botones">
             <label class="re-interruptor"><input type="checkbox" id="rePruebaOn"><span class="re-pista"></span><span class="re-int-txt">Modo prueba (jugar con las teclas)</span></label>
+          </div>
+          <p class="re-ayuda-corta">Grabar tocando: con la canción sonando, cada pulsación de D F J K (o las flechas) pone una nota en ese carril, pegada a la cuadrícula del Ajuste. Mantén la tecla para hacer una larga. Con la velocidad al 50 % es mucho más fácil. Sirve para mapear de oído una batería, un bajo o lo que quieras.</p>
+          <div class="re-botones">
+            <label class="re-interruptor"><input type="checkbox" id="reGrabarOn"><span class="re-pista"></span><span class="re-int-txt">Grabar tocando</span></label>
           </div>
           <p class="re-ayuda-corta">Bucle de práctica: repite un tramo hasta que lo dejes bien.</p>
           <div class="re-botones">
@@ -262,13 +273,13 @@
         </div>
         <div class="re-botones">
           <button type="button" id="reGuardar" class="re-btn re-principal">Guardar para los jugadores</button>
-          <button type="button" id="reProbar" class="re-btn" title="Abre Zarabanda en otra pestaña con tu mapa sin guardar. Solo se ve en este navegador.">Probar en el juego</button>
+          <button type="button" id="reProbar" class="re-btn" title="Abre Estruendo en otra pestaña con tu mapa sin guardar. Solo se ve en este navegador.">Probar en el juego</button>
           <button type="button" id="reExportar" class="re-btn re-btn-suave">Exportar JSON</button>
           <button type="button" id="reImportar" class="re-btn re-btn-suave">Importar JSON</button>
           <button type="button" id="reBorrarGuardado" class="re-btn re-btn-peligro">Borrar el guardado</button>
         </div>
         <input type="file" id="reArchivo" accept="application/json" class="hidden">
-        <p class="re-ayuda-corta">«Probar» abre Zarabanda en otra pestaña con tu mapa sin guardar. Solo lo ves tú, en este navegador. Elige la misma canción y dificultad y juega.</p>
+        <p class="re-ayuda-corta">«Probar» abre Estruendo en otra pestaña con tu mapa sin guardar. Solo lo ves tú, en este navegador. Elige la misma canción y dificultad y juega.</p>
       </section>
 
       <!-- Historial y registro -->
@@ -284,26 +295,10 @@
         </div>
       </details>
 
-      <!-- Subir canciones -->
-      <details class="re-tarjeta re-plegable" id="reRocola">
-        <summary>Subir una canción a la rocola</summary>
-        <div class="re-plegable-cuerpo">
-          <form id="reRocolaForm" class="re-formulario">
-            <label class="re-campo"><span class="re-etq">Archivo mp3</span><input type="file" id="reRocolaArchivo" accept=".mp3,audio/mpeg"></label>
-            <label class="re-campo"><span class="re-etq">Título</span><input type="text" id="reRocolaTitulo" maxlength="140" placeholder="Nombre de la canción" autocomplete="off"></label>
-            <label class="re-campo"><span class="re-etq">Artista</span><input type="text" id="reRocolaArtista" maxlength="140" placeholder="Quién la canta o la compuso" autocomplete="off"></label>
-            <div class="re-botones">
-              <button type="submit" id="reRocolaSubir" class="re-btn re-principal">Subir a la rocola</button>
-            </div>
-            <progress id="reRocolaProgreso" class="re-progreso hidden" max="100" value="0"></progress>
-            <p id="reRocolaEstado" class="re-estado-chico"></p>
-          </form>
-          <p class="re-ayuda-corta">Hasta 30 MB. Sale en la rocola y en la lista de Zarabanda (si dura menos de 6 minutos) para todos.</p>
-          <p id="reRocolaUso" class="re-ayuda-corta"></p>
-          <h3 class="re-subtitulo">Subidas por DJ</h3>
-          <ul id="reRocolaLista" class="re-lista"><li class="re-vacio">Cargando...</li></ul>
-        </div>
-      </details>
+      <!-- Canciones -->
+      <section class="re-tarjeta">
+        <p class="re-ayuda-corta" style="margin: 0">Para subir, quitar, renombrar o recortar canciones usa <a id="reRocolaEnlace" href="rocola.html#rgGestor">Gestionar rocola</a>, en la página de la rocola. Los cambios se ven aquí al momento.</p>
+      </section>
 
       <!-- Problemas o sugerencias -->
       <details class="re-tarjeta re-plegable">
@@ -325,8 +320,9 @@
           <dl class="re-atajos">
             <div><dt>Espacio</dt><dd>Reproducir o pausar</dd></div>
             <div><dt>H</dt><dd>Larga o normal</dd></div>
-            <div><dt>D</dt><dd>Doble o simple</dd></div>
-            <div><dt>F</dt><dd>Cambiar de carril</dd></div>
+            <div><dt>C</dt><dd>Acorde o simple</dd></div>
+            <div><dt>1 2 3 4</dt><dd>Mandar las notas elegidas a ese carril</dd></div>
+            <div><dt>D F J K</dt><dd>Con «Grabar tocando» o el modo prueba: tocar los carriles</dd></div>
             <div><dt>← →</dt><dd>Mover las notas elegidas 10 ms</dd></div>
             <div><dt>Supr</dt><dd>Borrar las notas elegidas</dd></div>
             <div><dt>Ctrl + A</dt><dd>Elegir todas</dd></div>
@@ -370,9 +366,10 @@
   <script src="js/peticiones-supabase.js?v=20261157"></script>
   <script src="js/ritmo-rol.js?v=20261157"></script>
   <script src="js/ritmo-analisis.js?v=20261157"></script>
-  <script src="js/ritmo-editor-logica.js?v=20261157"></script>
-  <script src="js/ritmo-editor.js?v=20261157"></script>
-  <script src="data/ritmo-tutoriales.js?v=20261157"></script>
-  <script src="js/ritmo-editor-extras.js?v=20261157"></script>
+  <script src="js/estruendo-analisis.js?v=20261157"></script>
+  <script src="js/estruendo-editor-logica.js?v=20261157"></script>
+  <script src="js/estruendo-editor.js?v=20261157"></script>
+  <script src="data/estruendo-tutoriales.js?v=20261157"></script>
+  <script src="js/estruendo-editor-extras.js?v=20261157"></script>
 </body>
 </html>

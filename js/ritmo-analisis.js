@@ -369,6 +369,8 @@
     };
     {
       const tonos = notas.map(nt => tonoDe(nt.t));
+      // Lo guarda cada nota: Estruendo (cuatro carriles) reparte los carriles por tono con esto
+      notas.forEach((nt, i) => { nt.tono = tonos[i]; });
       let carril = "abajo";
       notas.forEach((nt, i) => {
         const ventanaTonos = tonos.slice(Math.max(0, i - 6), i + 1).sort((a, b) => a - b);

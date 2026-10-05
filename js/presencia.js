@@ -36,6 +36,8 @@
     "minijuegos.html": ["Eligiendo con qué perder el tiempo", "Decidiendo qué juego le va a doler más"],
     "ajedrez.html": ["Pensando una jugada durante demasiado tiempo", "Fingiendo que sabe de ajedrez", "Moviendo un peón con aire de gran estratega"],
     "ritmo.html": ["Golpeando notas al compás de la Zarabanda", "Moviendo los dedos como si fueran de otro", "Siguiendo el ritmo con la cabeza"],
+    "estruendo.html": ["Rasgueando el aire mientras caen las notas", "Sintiéndose estrella de rock en el escenario", "Perdiendo el combo por culpa del dedo meñique"],
+    "estruendo-editor.html": ["Armando un mapa de Estruendo carril por carril", "Grabando notas a mano de oído", "Mapeando una batería con paciencia infinita"],
     "ritmo-editor.html": ["Jugueteando con el editor del Zarabanda", "Acomodando notas en el editor de mapas", "Poniéndole ritmo a una canción desde cero", "Pelando con el compás en el editor"],
     "rocola.html": ["Poniendo música a la taberna", "Peleando con la rocola", "Eligiendo la canción que todos van a odiar"],
     "sacrificio.html": ["Sacrificando a Hooey sin remordimientos", "Tratando de que ninguno toque el piso"]

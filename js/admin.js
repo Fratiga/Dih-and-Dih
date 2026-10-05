@@ -130,7 +130,7 @@
         </div>
         <div class="admin-cuenta-acciones">
           ${u.id === miIdCuenta ? "" : `<button type="button" class="admin-cuenta-accion" data-accion="admin">${u.es_admin ? "Quitar Admin" : "Dar Admin"}</button>`}
-          <button type="button" class="admin-cuenta-accion" data-accion="dj" title="Editor de mapas de Zarabanda y subir canciones a la rocola, nada más">${djs.has(u.id) ? "Quitar DJ" : "Dar DJ"}</button>
+          <button type="button" class="admin-cuenta-accion" data-accion="dj" title="Editores de mapas de Zarabanda y Estruendo y gestionar la rocola, nada más">${djs.has(u.id) ? "Quitar DJ" : "Dar DJ"}</button>
           <button type="button" class="admin-cuenta-accion" data-accion="password">Cambiar contraseña</button>
           <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-accion="eliminar">Eliminar cuenta</button>
         </div>
@@ -179,7 +179,7 @@
         const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
         const darlo = fila.dataset.esDj !== "1";
         const confirmado = confirm(darlo
-          ? `¿Dar el rol DJ a "${nombre}"?\n\nPodrá usar el editor de mapas de Zarabanda y subir canciones a la rocola. Nada más: no ve este panel ni las cuentas.`
+          ? `¿Dar el rol DJ a "${nombre}"?\n\nPodrá usar los editores de mapas de Zarabanda y Estruendo y gestionar la rocola. Nada más: no ve este panel ni las cuentas.`
           : `¿Quitarle el rol DJ a "${nombre}"?`);
         if (!confirmado) return;
         btn.disabled = true;
@@ -482,6 +482,10 @@
     { que: "Canciones subidas a la rocola", sql: "ritmo_dj.sql", tipo: "tabla", ref: "rocola_canciones" },
     { que: "Canciones de la rocola: almacenamiento", sql: "ritmo_dj.sql", tipo: "bucket", ref: "rocola" },
     { que: "Puntajes de Zarabanda", sql: "ritmo_puntajes.sql", tipo: "tabla", ref: "ritmo_puntajes" },
+    { que: "Estruendo: mapas del editor", sql: "estruendo.sql", tipo: "tabla", ref: "estruendo_mapas" },
+    { que: "Estruendo: puntajes", sql: "estruendo.sql", tipo: "tabla", ref: "estruendo_puntajes" },
+    { que: "Canciones ocultas de la rocola (gestor)", sql: "rocola_gestor.sql", tipo: "tabla", ref: "rocola_ocultas" },
+    { que: "Nombres de canciones del sitio (gestor)", sql: "rocola_nombres.sql", tipo: "tabla", ref: "rocola_nombres" },
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
     { que: "Regalar cartas (Admin)", sql: "cartas.sql", tipo: "rpc", ref: "cartas_regalar", args: { p_usuario: CERO, p_carta: "no-existe", p_nota: "" } },
     { que: "Atajos del lobby guardados en la cuenta", sql: "atajos_usuario.sql", tipo: "tabla", ref: "atajos_usuario" },
