@@ -46,12 +46,25 @@
   const GENERICAS = ["Trasteando por ahí", "Tras bambalinas, moviendo hilos", "En algún rincón de la taberna"];
   const OCULTAS = ["arqueria.html", "duelo.html", "cartas.html", "valhalla.html", "admin.html"];
   const FALLBACK = ["Paseando por la taberna", "Curioseando por ahí"];
-  const OTRA_PESTANA = ["En otra pestaña, vaya a saber qué hace", "Se fue a mirar otra cosa", "Desaparecido (probablemente tomando agua)"];
+  const OTRA_PESTANA = [
+    "En otra pestaña, vaya a saber qué hace", "Se fue a mirar otra cosa", "Desaparecido (probablemente tomando agua)",
+    "Contestando un mensaje que no era urgente", "Viendo videos de gatos, seguro", "Se levantó a por un snack",
+    "Perdido en otra pestaña, sin mapa", "Fingiendo trabajar en otra ventana", "Revisando el celular con cara de culpa",
+    "Atendiendo un asunto muy importante (no lo es)", "Se quedó dormido sobre el teclado", "Fue a ver qué ruido era ese",
+    "Discutiendo en un chat, mejor no preguntar", "De visita en el universo de otra pestaña", "Dejó la taberna con la puerta abierta"
+  ];
 
   const alAzar = lista => lista[Math.floor(Math.random() * lista.length)];
   const pagina = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const miFrase = OCULTAS.includes(pagina) ? alAzar(GENERICAS) : alAzar(FRASES[pagina] || FALLBACK);
-  const miOtra = alAzar(OTRA_PESTANA);
+  let ultimaOtra = "";
+  // cada vez que se va a otra pestaña se elige una frase distinta a la anterior
+  function otraPestana() {
+    let f = alAzar(OTRA_PESTANA);
+    if (f === ultimaOtra) f = alAzar(OTRA_PESTANA);
+    ultimaOtra = f;
+    return f;
+  }
 
   const oyentes = new Set();
   let ultimo = [];
@@ -93,7 +106,7 @@
       canal.on("presence", { event: "sync" }, avisar);
       const anunciar = () => canal.track({
         nombre, ts: Date.now(),
-        frase: document.hidden ? miOtra : miFrase,
+        frase: document.hidden ? otraPestana() : miFrase,
         oculto: document.hidden
       });
       canal.subscribe(async estado => { if (estado === "SUBSCRIBED") await anunciar(); });
