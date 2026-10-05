@@ -53,13 +53,32 @@
       localStorage.setItem("lbVisitas", String(n));
       localStorage.setItem("lbUltimaVisita", new Date().toISOString());
     } catch (e) { n = 1; }
-    $("lbVisitas").textContent = String(n).padStart(3, "0");
+    $("lbVisitas").textContent = String(n);
     if (ultima) {
       const d = new Date(ultima);
       $("lbUltima").textContent = isNaN(d) ? "" : `Última vez: ${d.toLocaleDateString("es", { day: "numeric", month: "short" })}`;
     } else {
       $("lbUltima").textContent = "Primera vez por aquí.";
     }
+  }
+
+  /* --- Contador global (tabla lobby_contador, ver scratchpad/lobby_contador.sql) ---
+     Cuenta una visita como mucho cada 30 minutos por navegador, así recargar no
+     lo infla. Si la tabla no existe todavía, la caja se queda en ceros. */
+  async function contarVisitaGlobal() {
+    const el = $("lbVisitasGlobal");
+    let contar = true;
+    try {
+      const ultima = parseInt(localStorage.getItem("lbVisitaGlobalTs"), 10) || 0;
+      contar = Date.now() - ultima > 30 * 60 * 1000;
+      if (contar) localStorage.setItem("lbVisitaGlobalTs", String(Date.now()));
+    } catch (e) { /* sin almacenamiento: se cuenta */ }
+    try {
+      const supabase = await fichasCliente();
+      const { data, error } = await supabase.rpc("lobby_visita", { p_contar: contar });
+      if (error) throw error;
+      if (data !== null && data !== undefined) el.textContent = String(data).padStart(7, "0");
+    } catch (e) { /* contador no disponible */ }
   }
 
   /* --- La escena: cuadro que cambia y un poco de profundidad --------------- */
@@ -121,8 +140,8 @@
       if (retos) avisos.push(`<a class="lb-aviso" href="ajedrez.html">♞ Ajedrez: ${retos} reto${retos === 1 ? "" : "s"} sin responder</a>`);
       if (turno) avisos.push(`<a class="lb-aviso" href="ajedrez.html">♞ Ajedrez: te toca mover en ${turno} partida${turno === 1 ? "" : "s"}</a>`);
     } catch (e) { /* sin ajedrez entre jugadores */ }
-    // Arquería
-    try {
+    // Arquería (escondida: solo se menciona al admin)
+    if (typeof esAdmin === "function" && esAdmin()) try {
       const { data } = await supabase.from("arqueria_partidas").select("estado, a, b").in("estado", ["pendiente", "listos", "jugando"]);
       const lista = data || [];
       const retos = lista.filter(p => p.estado === "pendiente" && p.b === miId).length;
@@ -148,8 +167,9 @@
       return i < 0 ? null : { puesto: i + 1, de: ordenada.length, valor: valor(ordenada[i]) };
     }
     try {
-      const { data } = await supabase.from("mj_estadisticas").select("user_id, juego, victorias").in("juego", ["ajedrez", "duelo"]);
-      ["ajedrez", "duelo"].forEach(juego => {
+      const juegos = (typeof esAdmin === "function" && esAdmin()) ? ["ajedrez", "duelo"] : ["ajedrez"]; // el duelo está escondido
+      const { data } = await supabase.from("mj_estadisticas").select("user_id, juego, victorias").in("juego", juegos);
+      juegos.forEach(juego => {
         const porUsuario = {};
         (data || []).filter(f => f.juego === juego).forEach(f => { porUsuario[f.user_id] = (porUsuario[f.user_id] || 0) + f.victorias; });
         const lista = Object.entries(porUsuario).map(([user_id, v]) => ({ user_id, v }));
@@ -217,6 +237,7 @@
 
   iniciarEscena();
   pintarNovedades();
+  contarVisitaGlobal();
   if (typeof fichasEnCambioDeSesion === "function") {
     fichasEnCambioDeSesion(sesion => { if (sesion) conSesion(sesion); else sinSesion(); }).catch(sinSesion);
   } else {
