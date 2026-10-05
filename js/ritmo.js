@@ -14,10 +14,10 @@
   const HOP = 512;
 
   const CARRILES = {
-    arriba: { y: 175, color: "#8fdcff", etiqueta: "X · J · K" },
-    abajo: { y: 385, color: "#e8837b", etiqueta: "Z · D · F" }
+    arriba: { y: 175, color: "#8fdcff", etiqueta: "Z · D · F" },
+    abajo: { y: 385, color: "#e8837b", etiqueta: "X · J · K" }
   };
-  const TECLAS = { x: "arriba", j: "arriba", k: "arriba", arrowup: "arriba", z: "abajo", d: "abajo", f: "abajo", arrowdown: "abajo" };
+  const TECLAS = { z: "arriba", d: "arriba", f: "arriba", arrowup: "arriba", x: "abajo", j: "abajo", k: "abajo", arrowdown: "abajo" };
 
   /* nps = notas por segundo que se buscan; hueco = separación mínima entre notas (s);
      aproximacion = segundos que tarda una nota desde el borde hasta el punto de golpe;
