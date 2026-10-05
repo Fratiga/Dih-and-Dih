@@ -108,8 +108,28 @@
   function rehacer() { if (posHistorial < historial.length - 1) { posHistorial++; aplicarFoto(historial[posHistorial]); cambios = true; } }
 
   /* --- Carga del mapa -------------------------------------------------------------- */
+  /* Dos volúmenes: la música y los sonidos del editor (clic de notas y metrónomo). Se
+     recuerdan entre visitas. */
+  const CLAVE_VOL = "compendioRitmoEditorVol";
+  let volumenes = { musica: 0.8, clics: 0.6 };
+  try { Object.assign(volumenes, JSON.parse(localStorage.getItem(CLAVE_VOL) || "{}")); } catch (e) { /* sin almacenamiento */ }
+  let gMusica = null;
+  let gClics = null;
+
+  function aplicarVolumenes() {
+    if (gMusica) gMusica.gain.value = volumenes.musica;
+    if (gClics) gClics.gain.value = volumenes.clics;
+  }
+
   async function prepararAudio() {
-    if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audio) {
+      audio = new (window.AudioContext || window.webkitAudioContext)();
+      gMusica = audio.createGain();
+      gClics = audio.createGain();
+      gMusica.connect(audio.destination);
+      gClics.connect(audio.destination);
+      aplicarVolumenes();
+    }
     if (audio.state === "suspended") await audio.resume();
   }
 
@@ -399,7 +419,7 @@
     o.type = "square";
     v.gain.setValueAtTime(volumen, cuando);
     v.gain.exponentialRampToValueAtTime(0.0001, cuando + duracion);
-    o.connect(v); v.connect(audio.destination);
+    o.connect(v); v.connect(gClics);
     o.start(cuando);
     o.stop(cuando + duracion + 0.02);
   }
@@ -444,7 +464,7 @@
     fuente = audio.createBufferSource();
     fuente.buffer = buffer;
     fuente.playbackRate.value = vel;
-    fuente.connect(audio.destination);
+    fuente.connect(gMusica);
     ctxIni = audio.currentTime + 0.06;
     fuente.start(ctxIni, posIni);
     fuente.onended = () => { if (fuente) { reproduciendo = false; posIni = buffer.duration; fuente = null; playEl.textContent = "▶"; sucio = true; } };
@@ -753,6 +773,15 @@
   $("reAuto").addEventListener("click", cargarAutomatico);
   $("reGuardado").addEventListener("click", cargarGuardado);
   playEl.addEventListener("click", alternarReproduccion);
+  [["reVolMusica", "musica"], ["reVolClics", "clics"]].forEach(([id, clave]) => {
+    const el = $(id);
+    el.value = String(Math.round(volumenes[clave] * 100));
+    el.addEventListener("input", () => {
+      volumenes[clave] = Number(el.value) / 100;
+      aplicarVolumenes();
+      try { localStorage.setItem(CLAVE_VOL, JSON.stringify(volumenes)); } catch (e) { /* sin almacenamiento */ }
+    });
+  });
   velEl.addEventListener("change", () => { if (reproduciendo) reproducir(); else vel = Number(velEl.value); });
   $("reLarga").addEventListener("click", alternarLarga);
   $("reDoble").addEventListener("click", alternarDoble);

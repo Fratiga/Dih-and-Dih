@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editor de mapas — Ritmo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261117"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261117">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261117">
-  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261117">
+  <script src="js/oculto.js?v=20261118"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261118">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261118">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261118">
 </head>
 <body class="mj-pagina">
   <div class="mj-barra">
@@ -36,6 +36,8 @@
       <label>Ajuste <select id="reSnap"><option value="1">Pulso</option><option value="2" selected>1/2 pulso</option><option value="4">1/4 de pulso</option><option value="0">Libre</option></select></label>
       <label class="re-check"><input type="checkbox" id="reClics" checked> Sonido de notas</label>
       <label class="re-check"><input type="checkbox" id="reMetro"> Metrónomo</label>
+      <label>Música <input type="range" id="reVolMusica" min="0" max="100" value="80"></label>
+      <label>Clics <input type="range" id="reVolClics" min="0" max="100" value="60"></label>
       <label>Zoom <input type="range" id="reZoom" min="20" max="320" value="90"></label>
     </div>
 
@@ -83,11 +85,11 @@
     <p class="re-ayuda">Clic en un carril pone una nota (clic derecho la borra). Arrastra una nota para moverla y el borde de una larga para alargarla. Espacio reproduce. Flechas ← → mueven la nota elegida 10 ms. El campo "Ajuste" decide a qué parte del pulso se pegan las notas.</p>
   </main>
 
-  <script src="js/temas.js?v=20261117"></script>
-  <script src="js/fichas-supabase.js?v=20261117"></script>
-  <script src="js/lado.js?v=20261117"></script>
-  <script src="data/musica.js?v=20261117"></script>
-  <script src="js/ritmo-analisis.js?v=20261117"></script>
-  <script src="js/ritmo-editor.js?v=20261117"></script>
+  <script src="js/temas.js?v=20261118"></script>
+  <script src="js/fichas-supabase.js?v=20261118"></script>
+  <script src="js/lado.js?v=20261118"></script>
+  <script src="data/musica.js?v=20261118"></script>
+  <script src="js/ritmo-analisis.js?v=20261118"></script>
+  <script src="js/ritmo-editor.js?v=20261118"></script>
 </body>
 </html>
