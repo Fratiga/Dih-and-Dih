@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ritmo — Compendio del Mundo</title>
+  <title>Zarabanda — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261114">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261114">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261114">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261114">
-  <script src="js/mj-volumen.js?v=20261114"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261115">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261115">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261115">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261115">
+  <script src="js/mj-volumen.js?v=20261115"></script>
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -22,7 +22,7 @@
   </div>
   <main class="mj-contenido rt-contenido">
     <p class="eyebrow">PASATIEMPOS</p>
-    <h1 class="mj-titulo">Ritmo</h1>
+    <h1 class="mj-titulo">Zarabanda</h1>
 
     <!-- Menú: canciones a la izquierda, detalle y puntajes a la derecha. Se esconde mientras se juega. -->
     <section id="rtLobby" class="rt-lobby">
@@ -30,7 +30,6 @@
         <aside class="rt-lista-col">
           <input type="search" id="rtBuscar" class="rt-buscar" placeholder="Buscar canción..." autocomplete="off" aria-label="Buscar canción">
           <div id="rtCanciones" class="rt-canciones" role="listbox" aria-label="Canciones"></div>
-          <p id="rtLimiteNota" class="rt-nota"></p>
         </aside>
 
         <section class="rt-detalle">
@@ -66,7 +65,7 @@
 
       <div id="rtBuzon" class="rt-buzon hidden">
         <h2>Pedir una canción</h2>
-        <p class="rt-ayuda">Pide una canción para el juego. Le llega al admin. Las canciones pueden durar hasta 6 minutos.</p>
+        <p class="rt-ayuda">Pide una canción para el juego. Le llega al admin.</p>
         <form id="rtBuzonForm" class="rt-form">
           <input type="text" id="rtBuzonCancion" required maxlength="140" placeholder="Canción y artista" autocomplete="off" aria-label="Canción y artista">
           <input type="text" id="rtBuzonEnlace" maxlength="300" placeholder="Enlace (opcional)" autocomplete="off" aria-label="Enlace de la canción (opcional)">
@@ -109,13 +108,13 @@
     <p id="rtPie" class="mj-linea hidden">Esc pausa.</p>
   </main>
 
-  <script src="js/temas.js?v=20261114"></script>
-  <script src="js/fichas-supabase.js?v=20261114"></script>
-  <script src="js/lado.js?v=20261114"></script>
-  <script src="js/minijuegos-stats.js?v=20261114"></script>
-  <script src="data/musica.js?v=20261114"></script>
-  <script src="data/musica-duraciones.js?v=20261114"></script>
-  <script src="js/peticiones-supabase.js?v=20261114"></script>
-  <script src="js/ritmo.js?v=20261114"></script>
+  <script src="js/temas.js?v=20261115"></script>
+  <script src="js/fichas-supabase.js?v=20261115"></script>
+  <script src="js/lado.js?v=20261115"></script>
+  <script src="js/minijuegos-stats.js?v=20261115"></script>
+  <script src="data/musica.js?v=20261115"></script>
+  <script src="data/musica-duraciones.js?v=20261115"></script>
+  <script src="js/peticiones-supabase.js?v=20261115"></script>
+  <script src="js/ritmo.js?v=20261115"></script>
 </body>
 </html>

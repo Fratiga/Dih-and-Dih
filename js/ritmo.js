@@ -56,7 +56,6 @@
   const metaEl = document.getElementById("rtMeta");
   const puntajesEl = document.getElementById("rtPuntajes");
   const puntajesTabsEl = document.getElementById("rtPuntajesTabs");
-  const limiteNotaEl = document.getElementById("rtLimiteNota");
   const finPuntajesEl = document.getElementById("rtFinPuntajes");
   const pieEl = document.getElementById("rtPie");
 
@@ -84,7 +83,6 @@
     return Object.assign({ ruta, nombre, dur: duraciones[ruta] || 0 }, partirNombre(nombre));
   });
   const canciones = todas.filter(c => !c.dur || c.dur <= LIMITE_S);
-  const omitidas = todas.length - canciones.length;
   if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones", titulo: "No hay canciones", artista: "", dur: 0 });
   {
     // Las preferencias guardadas antes eran un número de lista; se pasa a la ruta de la canción
@@ -546,13 +544,12 @@
       estado = "menu";
       mostrar(menuEl);
       if (err && err.message === "larga") {
-        // Se quita de la lista: dura más de 6 minutos
+        // Dura más de 6 minutos: se quita de la lista sin más
         const k = canciones.indexOf(err.cancion);
         if (k >= 0 && canciones.length > 1) canciones.splice(k, 1);
         ajustes.cancion = Math.min(ajustes.cancion, canciones.length - 1);
         ajustes.ruta = canciones[ajustes.cancion].ruta;
         pintarMenu();
-        recordEl.textContent = "Esa canción dura más de 6 minutos y se quitó de la lista. Elige otra.";
       } else {
         recordEl.textContent = "No se pudo cargar esa canción. Prueba con otra.";
       }
@@ -1114,9 +1111,6 @@
     const c = canciones[ajustes.cancion];
     tituloEl.textContent = c.titulo;
     metaEl.textContent = [c.artista, c.dur ? duracionTexto(c.dur) : ""].filter(Boolean).join(" · ");
-    limiteNotaEl.textContent = omitidas
-      ? `Hasta 6 minutos por canción. ${omitidas === 1 ? "Hay 1 más larga que no aparece" : `Hay ${omitidas} más largas que no aparecen`}.`
-      : "Hasta 6 minutos por canción.";
     dificultadesEl.innerHTML = Object.entries(DIFICULTADES).map(([id, d]) =>
       `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small></button>`).join("");
     desfaseEl.value = ajustes.desfase;
@@ -1174,7 +1168,7 @@
     boton.disabled = true;
     buzonEstadoEl.textContent = "Enviando...";
     try {
-      await enviarPeticion({ texto: "[Canción para Ritmo] " + cancion + (enlace ? "\n" + enlace : ""), nombre });
+      await enviarPeticion({ texto: "[Canción para Zarabanda] " + cancion + (enlace ? "\n" + enlace : ""), nombre });
       try { localStorage.setItem("compendioRitmoNombre", nombre); } catch (e) { /* sin almacenamiento */ }
       document.getElementById("rtBuzonCancion").value = "";
       document.getElementById("rtBuzonEnlace").value = "";
