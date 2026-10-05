@@ -34,7 +34,7 @@ function aplicarTema(id) {
    y el fondo (estrellas, cuadrícula o liso). */
 const FUENTE_KEY = "compendioFuenteLegible";
 const FONDO_KEY = "compendioFondo";
-const FONDOS = [["estrellas", "Estrellas"], ["cuadricula", "Cuadrícula"], ["liso", "Liso"]];
+const FONDOS = [["estrellas", "Estrellas"], ["cuadricula", "Cuadrícula"], ["tablas", "Tablas de madera"], ["liso", "Liso"]];
 
 function fuenteLegible() { return localStorage.getItem(FUENTE_KEY) === "1"; }
 function fondoActual() {

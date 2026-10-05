@@ -14,22 +14,7 @@ body.lb {
 }
 
 /* Fondo de estrellitas que titilan, como esos fondos en mosaico de las páginas personales */
-.lb-fondo {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(2px 2px at 20px 30px, #fff9 50%, transparent 52%),
-    radial-gradient(2px 2px at 90px 80px, #cfd8ff99 50%, transparent 52%),
-    radial-gradient(1px 1px at 150px 20px, #ffffffcc 50%, transparent 52%),
-    radial-gradient(2px 2px at 60px 130px, #ffd9a099 50%, transparent 52%);
-  background-size: 180px 160px;
-  animation: lbTitila 4s steps(2) infinite;
-}
-.lb-fondo::after {
-  content: ""; position: absolute; inset: 0;
-  background-image: linear-gradient(#ffffff08 1px, transparent 1px), linear-gradient(90deg, #ffffff08 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-@keyframes lbTitila { 50% { opacity: .55; } }
+.lb-fondo { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
 .lb-pagina { position: relative; z-index: 1; width: min(1240px, 96%); margin: 0 auto; padding: 14px 0 120px; }
 .lb a { color: var(--lb-acento); }

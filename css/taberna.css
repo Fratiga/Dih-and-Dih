@@ -44,22 +44,37 @@
   --tb-pixel: "Press Start 2P", "Courier New", monospace;
 }
 
-/* --- Fondo --- */
+/* --- Fondo (lo elige el botón Tema: data-fondo en la raíz). Lo dibuja body::before en
+       las páginas y .lb-fondo en el lobby. --- */
 body { background: var(--lb-fondo); }
-body::before {
-  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    radial-gradient(2px 2px at 20px 30px, #fff9 50%, transparent 52%),
-    radial-gradient(2px 2px at 90px 80px, #cfd8ff99 50%, transparent 52%),
-    radial-gradient(1px 1px at 150px 20px, #ffffffcc 50%, transparent 52%),
-    radial-gradient(2px 2px at 60px 130px, #ffd9a099 50%, transparent 52%);
-  background-size: 180px 160px;
+body::before, .lb-fondo {
+  content: ""; position: fixed; inset: 0; pointer-events: none;
 }
-:root[data-fondo="cuadricula"] body::before {
-  background-image: linear-gradient(#ffffff0d 1px, transparent 1px), linear-gradient(90deg, #ffffff0d 1px, transparent 1px);
+body::before { z-index: -1; }
+:root[data-fondo="estrellas"] body::before, :root[data-fondo="estrellas"] .lb-fondo {
+  background:
+    radial-gradient(3px 3px at 20px 30px, #ffffffcc 50%, transparent 55%),
+    radial-gradient(3px 3px at 90px 80px, #cfd8ffcc 50%, transparent 55%),
+    radial-gradient(2px 2px at 150px 20px, #fff 50%, transparent 55%),
+    radial-gradient(3px 3px at 60px 130px, #ffd9a0cc 50%, transparent 55%),
+    radial-gradient(2px 2px at 120px 105px, #ffffffaa 50%, transparent 55%);
+  background-size: 180px 160px;
+  animation: tbTitila 3.5s steps(2) infinite;
+}
+@keyframes tbTitila { 50% { opacity: .45; } }
+:root[data-fondo="cuadricula"] body::before, :root[data-fondo="cuadricula"] .lb-fondo {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--lb-borde) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--lb-borde) 45%, transparent) 1px, transparent 1px);
   background-size: 32px 32px;
 }
-:root[data-fondo="liso"] body::before { display: none; }
+:root[data-fondo="tablas"] body::before, :root[data-fondo="tablas"] .lb-fondo {
+  background-image:
+    repeating-linear-gradient(90deg, #00000055 0 3px, transparent 3px 64px),
+    repeating-linear-gradient(0deg, #ffffff0a 0 2px, transparent 2px 24px);
+}
+:root[data-fondo="liso"] body::before, :root[data-fondo="liso"] .lb-fondo { display: none; }
+@media (prefers-reduced-motion: reduce) { body::before, .lb-fondo { animation: none !important; } }
 
 /* --- Letra pixelada: solo títulos y menús (se apaga con la letra legible) --- */
 :root:not([data-fuente="legible"]) .site-header h1,
@@ -194,3 +209,17 @@ dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8
 .admin-sistema-que { flex: 1; }
 .admin-sistema-que small { color: var(--lb-tenue); }
 .admin-sistema-sql { font-family: "VT323", monospace; font-size: 1.15rem; color: var(--lb-acento); }
+
+/* --- Casilla pixelada del botón Tema (en vez de la del navegador) --- */
+.tema-check input[type="checkbox"] {
+  -webkit-appearance: none; appearance: none; flex-shrink: 0; position: relative;
+  width: 18px; height: 18px; margin: 0; cursor: pointer;
+  border: 3px ridge var(--lb-borde); border-radius: 0; background: color-mix(in srgb, var(--bg) 55%, #000);
+}
+.tema-check input[type="checkbox"]:checked { background: var(--lb-titulo-a); }
+.tema-check input[type="checkbox"]:checked::after {
+  content: ""; position: absolute; left: 1px; top: 4px; width: 2px; height: 2px; background: #fff;
+  box-shadow: 2px 2px 0 #fff, 4px 0 0 #fff, 6px -2px 0 #fff, 8px -4px 0 #fff;
+}
+.tema-check input[type="checkbox"]:focus-visible, .tema-check select:focus-visible { outline: 2px solid var(--lb-acento); outline-offset: 2px; }
+.tema-check select { border-radius: 0; border: 3px ridge var(--lb-borde); background: color-mix(in srgb, var(--bg) 55%, #000); }
