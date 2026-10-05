@@ -37,6 +37,13 @@ function renderTracks() {
 }
 
 renderTracks();
+window.addEventListener("musica-nube", () => {
+  renderTracks();
+  if (audio) {
+    currentTrackEl.textContent = rocolaCurrentTrackName();
+    playBtn.textContent = audio.paused ? "▶" : "❚❚";
+  }
+});
 
 if (audio) {
   volumeSlider.value = audio.volume;

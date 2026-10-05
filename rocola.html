@@ -14,8 +14,9 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20261149">
-  <link rel="stylesheet" href="css/taberna.css?v=20261149">
+  <link rel="stylesheet" href="css/style.css?v=20261150">
+  <link rel="stylesheet" href="css/rocola-gestor.css?v=20261150">
+  <link rel="stylesheet" href="css/taberna.css?v=20261150">
 </head>
 <body>
   <header class="site-header">
@@ -141,6 +142,56 @@
             </div>
           </div>
         </div>
+
+        <details id="rgGestor" class="rg-caja hidden">
+          <summary>Gestionar rocola <small>Admin y DJ</small></summary>
+          <div class="rg-cuerpo">
+            <form id="rgForm">
+              <h4>Añadir canciones</h4>
+              <div class="rg-fila">
+                <input type="file" id="rgArchivos" accept="audio/mpeg,.mp3" multiple aria-label="Archivos mp3">
+                <button type="submit" id="rgSubir" class="rg-btn rg-vivo">Subir</button>
+              </div>
+              <p class="rg-uso">Si el archivo se llama "Título - Artista.mp3", el título y el artista salen solos. Hasta 30 MB cada uno.</p>
+              <progress id="rgProgreso" class="rg-progreso hidden" max="100" value="0"></progress>
+            </form>
+            <p id="rgEstado" class="rg-estado" role="status"></p>
+            <div>
+              <h4>Canciones</h4>
+              <div class="rg-fila"><input type="search" id="rgFiltro" placeholder="Buscar..." aria-label="Buscar canción"></div>
+              <ul id="rgLista" class="rg-lista" style="margin-top: 8px"></ul>
+              <p id="rgUso" class="rg-uso"></p>
+            </div>
+            <div id="rgOcultasCaja" class="hidden">
+              <h4>Canciones ocultas</h4>
+              <ul id="rgOcultas" class="rg-lista"></ul>
+            </div>
+          </div>
+        </details>
+
+        <dialog id="rgRecorte" class="rg-recorte">
+          <h3>Recortar</h3>
+          <p id="rgRecorteTitulo" class="rg-uso"></p>
+          <div id="rgRecorteCuerpo" class="hidden">
+            <canvas id="rgOnda" class="rg-onda" width="1200" height="260" aria-label="Forma de onda: arrastra para elegir el inicio y el final"></canvas>
+            <div class="rg-fila">
+              <label class="rg-campo">Inicio (s) <input type="number" id="rgIni" min="0" step="0.1"></label>
+              <label class="rg-campo">Final (s) <input type="number" id="rgFin" min="0" step="0.1"></label>
+              <label class="rg-check"><input type="checkbox" id="rgRecorteFundido" checked> Bajar el volumen al final</label>
+            </div>
+            <p id="rgRecorteResumen" class="rg-uso"></p>
+            <div class="rg-fila">
+              <button type="button" id="rgRecortePrueba" class="rg-btn">Escuchar el inicio</button>
+              <button type="button" id="rgRecortePruebaFinal" class="rg-btn">Escuchar el final</button>
+            </div>
+          </div>
+          <p id="rgRecorteEstado" class="rg-estado" role="status"></p>
+          <progress id="rgRecorteProgreso" class="rg-progreso hidden" max="100" value="0"></progress>
+          <div class="rg-pie">
+            <button type="button" id="rgRecorteCancelar" class="rg-btn">Cancelar</button>
+            <button type="button" id="rgRecorteGuardar" class="rg-btn rg-vivo" disabled>Guardar recorte</button>
+          </div>
+        </dialog>
       </section>
     </section>
   </main>
@@ -150,32 +201,34 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="data/entries.js?v=20261149"></script>
-  <script src="data/personajes.js?v=20261149"></script>
-  <script src="data/lugares.js?v=20261149"></script>
-  <script src="data/facciones.js?v=20261149"></script>
-  <script src="data/pergaminos.js?v=20261149"></script>
-  <script src="data/armas.js?v=20261149"></script>
-  <script src="data/objetos.js?v=20261149"></script>
-  <script src="data/bestiario.js?v=20261149"></script>
-  <script src="data/razas.js?v=20261149"></script>
-  <script src="data/religiones.js?v=20261149"></script>
-  <script src="data/musica.js?v=20261149"></script>
-  <script src="js/musica-nube.js?v=20261149"></script>
-  <script src="data/rotacion.js?v=20261149"></script>
-  <script src="js/common.js?v=20261149"></script>
-  <script src="js/temas.js?v=20261149"></script>
-  <script src="js/taberna.js?v=20261149"></script>
+  <script src="data/entries.js?v=20261150"></script>
+  <script src="data/personajes.js?v=20261150"></script>
+  <script src="data/lugares.js?v=20261150"></script>
+  <script src="data/facciones.js?v=20261150"></script>
+  <script src="data/pergaminos.js?v=20261150"></script>
+  <script src="data/armas.js?v=20261150"></script>
+  <script src="data/objetos.js?v=20261150"></script>
+  <script src="data/bestiario.js?v=20261150"></script>
+  <script src="data/razas.js?v=20261150"></script>
+  <script src="data/religiones.js?v=20261150"></script>
+  <script src="data/musica.js?v=20261150"></script>
+  <script src="js/musica-nube.js?v=20261150"></script>
+  <script src="data/rotacion.js?v=20261150"></script>
+  <script src="js/common.js?v=20261150"></script>
+  <script src="js/temas.js?v=20261150"></script>
+  <script src="js/taberna.js?v=20261150"></script>
   <script>window.HIDE_MINI_PLAYER = true;</script>
-  <script src="js/player.js?v=20261149"></script>
-  <script src="js/modal.js?v=20261149"></script>
-  <script src="data/jumpscare.js?v=20261149"></script>
-  <script src="data/contrasenas.js?v=20261149"></script>
-  <script src="js/fichas-supabase.js?v=20261149"></script>
-  <script src="js/lado.js?v=20261149"></script>
-  <script src="js/slappy.js?v=20261149"></script>
-  <script src="js/busqueda-global.js?v=20261149"></script>
-  <script src="js/header-marquee.js?v=20261149"></script>
-  <script src="js/rocola.js?v=20261149"></script>
+  <script src="js/player.js?v=20261150"></script>
+  <script src="js/modal.js?v=20261150"></script>
+  <script src="data/jumpscare.js?v=20261150"></script>
+  <script src="data/contrasenas.js?v=20261150"></script>
+  <script src="js/fichas-supabase.js?v=20261150"></script>
+  <script src="js/lado.js?v=20261150"></script>
+  <script src="js/ritmo-rol.js?v=20261150"></script>
+  <script src="js/rocola-gestor.js?v=20261150"></script>
+  <script src="js/slappy.js?v=20261150"></script>
+  <script src="js/busqueda-global.js?v=20261150"></script>
+  <script src="js/header-marquee.js?v=20261150"></script>
+  <script src="js/rocola.js?v=20261150"></script>
 </body>
 </html>

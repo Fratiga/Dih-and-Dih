@@ -32,6 +32,7 @@ function saveRocolaState() {
 
 let audio = null;
 let lastSavedTime = 0;
+let rutaSonando = "";
 
 if (MUSICA_TRACKS.length) {
   audio = document.createElement("audio");
@@ -41,6 +42,7 @@ if (MUSICA_TRACKS.length) {
 
   audio.volume = rocola.volume;
   audio.src = MUSICA_TRACKS[rocola.order[rocola.pos]];
+  rutaSonando = MUSICA_TRACKS[rocola.order[rocola.pos]];
 
   audio.addEventListener("loadedmetadata", () => {
     if (rocola.time > 0 && rocola.time < audio.duration) {
@@ -74,9 +76,29 @@ function rocolaLoadByPos(pos, autoplay) {
   rocola.pos = (pos + rocola.order.length) % rocola.order.length;
   rocola.time = 0;
   audio.src = MUSICA_TRACKS[rocola.order[rocola.pos]];
+  rutaSonando = MUSICA_TRACKS[rocola.order[rocola.pos]];
   saveRocolaState();
   if (autoplay) audio.play().catch(() => {});
 }
+
+/* Si la lista de canciones cambia (un DJ sube, oculta o recorta una), el orden se rehace sin cortar
+   la que está sonando. Si esa ya no existe, se pasa a la primera sin reproducirla. */
+window.addEventListener("musica-nube", () => {
+  if (!audio) return;
+  const orden = shuffleOrder(MUSICA_TRACKS.length);
+  const actual = MUSICA_TRACKS.indexOf(rutaSonando);
+  if (actual >= 0) {
+    orden.splice(orden.indexOf(actual), 1);
+    orden.unshift(actual);
+    rocola.order = orden;
+    rocola.pos = 0;
+    saveRocolaState();
+  } else if (orden.length) {
+    rocola.order = orden;
+    audio.pause();
+    rocolaLoadByPos(0, false);
+  }
+});
 
 function rocolaLoadTrack(trackIndex, autoplay) {
   const pos = rocola.order.indexOf(trackIndex);

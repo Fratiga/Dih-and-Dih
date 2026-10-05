@@ -1282,7 +1282,20 @@
   /* Canciones que suben los DJ a la rocola: se suman a la lista en cuanto llegan */
   window.addEventListener("musica-nube", ev => {
     const nuevas = (ev.detail && ev.detail.nuevas) || [];
+    const quitadas = (ev.detail && ev.detail.quitadas) || [];
     let cambiadas = false;
+    quitadas.forEach(ruta => {
+      const i = canciones.findIndex(c => c.ruta === ruta);
+      if (i < 0) return;
+      canciones.splice(i, 1);
+      cambiadas = true;
+    });
+    if (cambiadas) {
+      if (!canciones.length) canciones.push({ ruta: "", nombre: "No hay canciones", titulo: "No hay canciones", artista: "", dur: 0 });
+      const k = canciones.findIndex(c => c.ruta === ajustes.ruta);
+      ajustes.cancion = k >= 0 ? k : 0;
+      ajustes.ruta = canciones[ajustes.cancion].ruta;
+    }
     nuevas.forEach(ruta => {
       if (canciones.some(c => c.ruta === ruta)) return;
       Object.assign(duraciones, window.MUSICA_NUBE_DURACIONES);
