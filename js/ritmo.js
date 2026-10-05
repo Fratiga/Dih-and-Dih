@@ -38,6 +38,7 @@
   const finEl = document.getElementById("rtFin");
   const pausaEl = document.getElementById("rtPausa");
   const buzonEl = document.getElementById("rtBuzon");
+  const novedadesEl = document.getElementById("rtNovedades");
   const lobbyEl = document.getElementById("rtLobby");
   const buscarEl = document.getElementById("rtBuscar");
   const tituloEl = document.getElementById("rtTitulo");
@@ -154,12 +155,13 @@
   /* El menú y el buzón viven en la sección de arriba; la carga, el final y la pausa van
      sobre el campo de juego, que solo se ve mientras se juega. */
   function mostrar(panel) {
-    const enMenu = panel === menuEl || panel === buzonEl;
+    const enMenu = panel === menuEl || panel === buzonEl || panel === novedadesEl;
     lobbyEl.classList.toggle("hidden", !enMenu);
     escenarioEl.classList.toggle("hidden", enMenu);
     pieEl.classList.toggle("hidden", enMenu);
     menuEl.classList.toggle("hidden", panel !== menuEl);
     buzonEl.classList.toggle("hidden", panel !== buzonEl);
+    novedadesEl.classList.toggle("hidden", panel !== novedadesEl);
     [cargaEl, finEl, pausaEl].forEach(p => p.classList.toggle("hidden", p !== panel));
   }
 
@@ -823,6 +825,22 @@
     return String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
+  /* Canciones y dificultades con un mapa guardado desde el editor (hecho a mano por un admin).
+     La lista es pública, así que se pide al abrir el menú. */
+  const aMano = new Map();
+  async function cargarMapasAMano() {
+    try {
+      if (typeof fichasCliente !== "function") return;
+      const supabase = await fichasCliente();
+      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad");
+      const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 4000))]);
+      if (error || !data) return;
+      aMano.clear();
+      data.forEach(f => { if (!aMano.has(f.cancion)) aMano.set(f.cancion, new Set()); aMano.get(f.cancion).add(f.dificultad); });
+      pintarMenu();
+    } catch (e) { /* sin marcas */ }
+  }
+
   function pintarMenu() {
     const q = normalizar(buscarEl.value.trim());
     const guardado = cancionesEl.scrollTop;
@@ -831,7 +849,7 @@
       const r = records[c.ruta + "|" + ajustes.dificultad];
       return `<button type="button" role="option" aria-selected="${i === ajustes.cancion}" class="rt-cancion ${i === ajustes.cancion ? "activa" : ""}" data-i="${i}">` +
         `<span class="rt-cancion-txt"><strong>${esc(c.titulo)}</strong>${c.artista ? `<small>${esc(c.artista)}</small>` : ""}</span>` +
-        `<span class="rt-cancion-der">${c.dur ? `<em>${duracionTexto(c.dur)}</em>` : ""}${r ? `<b class="rt-rango-mini rango-${esc(r.rango)}" title="Tu mejor: ${Number(r.puntos).toLocaleString("es")}">${esc(r.rango)}</b>` : ""}</span></button>`;
+        `<span class="rt-cancion-der">${aMano.has(c.ruta) ? `<i class="rt-mano" title="Mapa hecho a mano en ${[...aMano.get(c.ruta)].map(d => DIFICULTADES[d] ? DIFICULTADES[d].nombre : d).join(", ")}">✎</i>` : ""}${c.dur ? `<em>${duracionTexto(c.dur)}</em>` : ""}${r ? `<b class="rt-rango-mini rango-${esc(r.rango)}" title="Tu mejor: ${Number(r.puntos).toLocaleString("es")}">${esc(r.rango)}</b>` : ""}</span></button>`;
     }).join("") || `<p class="rt-nota">Ninguna canción coincide con la búsqueda.</p>`;
     cancionesEl.scrollTop = guardado;
     const activa = cancionesEl.querySelector(".activa");
@@ -846,7 +864,8 @@
     tituloEl.textContent = c.titulo;
     metaEl.textContent = [c.artista, c.dur ? duracionTexto(c.dur) : ""].filter(Boolean).join(" · ");
     dificultadesEl.innerHTML = Object.entries(DIFICULTADES).map(([id, d]) =>
-      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small></button>`).join("");
+      `<button type="button" class="rt-dif ${id === ajustes.dificultad ? "activa" : ""}" data-dif="${id}"><strong>${d.nombre}</strong><small>${DESCRIPCION[id]}</small>${aMano.has(c.ruta) && aMano.get(c.ruta).has(id) ? `<em class="rt-dif-mano">✎ Mapa a mano</em>` : ""}</button>`).join("");
+    document.getElementById("rtLeyenda").classList.toggle("hidden", !aMano.size);
     desfaseEl.value = ajustes.desfase;
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
     practicaEl.checked = !!ajustes.practica;
@@ -987,6 +1006,29 @@
     });
   }
   cargarFoto();
+
+  /* --- Novedades: lista de cambios (data/zarabanda-novedades.js) con un punto si hay algo que no viste --- */
+  {
+    const CLAVE_VISTAS = "compendioZarabandaNovedadesVistas";
+    const novedades = window.ZARABANDA_NOVEDADES || [];
+    const nuevoEl = document.getElementById("rtNuevo");
+    const clave = n => n.fecha + "|" + n.titulo;
+    let vistas = [];
+    try { vistas = JSON.parse(localStorage.getItem(CLAVE_VISTAS) || "[]"); } catch (e) { vistas = []; }
+    const hayNuevas = () => novedades.some(n => !vistas.includes(clave(n)));
+    nuevoEl.classList.toggle("hidden", !hayNuevas());
+    document.getElementById("rtNovedadesLista").innerHTML = novedades.length
+      ? novedades.map(n => `<article class="rt-novedad"><h3>${esc(n.titulo)}</h3><time datetime="${esc(n.fecha)}">${esc(new Date(n.fecha + "T12:00:00").toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" }))}</time><ul>${n.cambios.map(x => `<li>${esc(x)}</li>`).join("")}</ul></article>`).join("")
+      : `<p class="rt-nota">Todavía no hay novedades.</p>`;
+    document.getElementById("rtAbrirNovedades").addEventListener("click", () => {
+      mostrar(novedadesEl);
+      vistas = novedades.map(clave);
+      try { localStorage.setItem(CLAVE_VISTAS, JSON.stringify(vistas)); } catch (e) { /* sin almacenamiento */ }
+      nuevoEl.classList.add("hidden");
+    });
+    document.getElementById("rtNovedadesVolver").addEventListener("click", () => mostrar(menuEl));
+  }
+  cargarMapasAMano();
   jugarEl.addEventListener("click", empezar);
 
   /* Buzón: la petición se guarda en la misma tabla de peticiones del sitio, marcada

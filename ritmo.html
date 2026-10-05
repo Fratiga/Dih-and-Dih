@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zarabanda — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261122">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261122">
-  <link rel="stylesheet" href="css/ritmo.css?v=20261122">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261122">
-  <script src="js/mj-volumen.js?v=20261122"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261123">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261123">
+  <link rel="stylesheet" href="css/ritmo.css?v=20261123">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261123">
+  <script src="js/mj-volumen.js?v=20261123"></script>
 </head>
 <body class="mj-pagina ritmo-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
@@ -30,6 +30,7 @@
         <aside class="rt-lista-col">
           <input type="search" id="rtBuscar" class="rt-buscar" placeholder="Buscar canción..." autocomplete="off" aria-label="Buscar canción">
           <div id="rtCanciones" class="rt-canciones" role="listbox" aria-label="Canciones"></div>
+          <p id="rtLeyenda" class="rt-nota hidden"><i class="rt-mano">✎</i> Tiene un mapa hecho a mano por una admin</p>
         </aside>
 
         <section class="rt-detalle">
@@ -68,6 +69,7 @@
           <div class="rt-fila">
             <button type="button" id="rtJugar" class="rt-jugar">▶ Jugar</button>
             <button type="button" id="rtAbrirBuzon" class="rt-secundario">Pedir una canción</button>
+            <button type="button" id="rtAbrirNovedades" class="rt-secundario">Novedades <i id="rtNuevo" class="rt-nuevo hidden"></i></button>
           </div>
           <p id="rtRecord" class="rt-record"></p>
 
@@ -81,6 +83,12 @@
 
           <p class="rt-ayuda">Arriba: Z D F ↑. Abajo: X J K ↓. En pantalla táctil, toca la mitad de abajo o la de arriba. Las barras se mantienen pulsadas y las notas unidas por una línea dorada piden los dos carriles a la vez.</p>
         </section>
+      </div>
+
+      <div id="rtNovedades" class="rt-buzon rt-novedades hidden">
+        <h2>Novedades</h2>
+        <div id="rtNovedadesLista" class="rt-nov-lista"></div>
+        <div class="rt-botones rt-botones-izq"><button type="button" id="rtNovedadesVolver" class="rt-secundario">Volver</button></div>
       </div>
 
       <div id="rtBuzon" class="rt-buzon hidden">
@@ -140,14 +148,15 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261122"></script>
-  <script src="js/fichas-supabase.js?v=20261122"></script>
-  <script src="js/lado.js?v=20261122"></script>
-  <script src="js/minijuegos-stats.js?v=20261122"></script>
-  <script src="data/musica.js?v=20261122"></script>
-  <script src="data/musica-duraciones.js?v=20261122"></script>
-  <script src="js/peticiones-supabase.js?v=20261122"></script>
-  <script src="js/ritmo-analisis.js?v=20261122"></script>
-  <script src="js/ritmo.js?v=20261122"></script>
+  <script src="js/temas.js?v=20261123"></script>
+  <script src="js/fichas-supabase.js?v=20261123"></script>
+  <script src="js/lado.js?v=20261123"></script>
+  <script src="js/minijuegos-stats.js?v=20261123"></script>
+  <script src="data/musica.js?v=20261123"></script>
+  <script src="data/zarabanda-novedades.js?v=20261123"></script>
+  <script src="data/musica-duraciones.js?v=20261123"></script>
+  <script src="js/peticiones-supabase.js?v=20261123"></script>
+  <script src="js/ritmo-analisis.js?v=20261123"></script>
+  <script src="js/ritmo.js?v=20261123"></script>
 </body>
 </html>

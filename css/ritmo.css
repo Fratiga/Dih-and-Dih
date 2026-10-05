@@ -157,3 +157,13 @@
 .rt-interruptor input:checked + .rt-pista::after { transform: translateX(20px); background: #fff; }
 .rt-interruptor input:focus-visible + .rt-pista { outline: 2px solid #7ae8ff; outline-offset: 2px; }
 .rt-interruptor:hover .rt-pista { border-color: #7ae8ff; }
+
+/* --- Novedades y marca de mapa hecho a mano --- */
+.rt-nuevo { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff4fd8; box-shadow: 0 0 8px #ff4fd8; margin-left: 6px; vertical-align: middle; }
+.rt-nov-lista { display: flex; flex-direction: column; gap: 18px; max-height: 60vh; overflow-y: auto; padding-right: 6px; }
+.rt-novedad h3 { margin: 0 0 2px; font-size: 1rem; }
+.rt-novedad time { display: block; font-size: .72rem; color: var(--muted); letter-spacing: .08em; margin-bottom: 6px; }
+.rt-novedad ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: .86rem; line-height: 1.5; color: var(--text); }
+.rt-mano { font-style: normal; color: #ff9d4f; }
+.rt-cancion-der .rt-mano { font-size: .9rem; }
+.rt-dif .rt-dif-mano { font-style: normal; font-size: .68rem; color: #ff9d4f; letter-spacing: .04em; }
