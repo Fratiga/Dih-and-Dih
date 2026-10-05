@@ -1,0 +1,37 @@
+/* Editor de mapas de Ritmo (ritmo-editor.html). Se apoya en las variables de style.css. */
+.re-contenido { max-width: 1280px; }
+.re-fila { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin: 12px 0; }
+.re-fila label, .re-grupo label { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--muted); }
+.re-fila select, .re-grupo select {
+  color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  padding: 7px 10px; font: inherit; font-size: .85rem; border-radius: 0; max-width: 420px;
+}
+.re-check { cursor: pointer; }
+.re-btn {
+  background: none; border: 1px solid var(--border); color: var(--text); padding: 7px 14px;
+  font: inherit; font-size: .82rem; cursor: pointer;
+}
+.re-btn:hover:not(:disabled) { border-color: var(--accent-soft); }
+.re-btn:disabled { opacity: .4; cursor: default; }
+.re-principal { border-color: var(--accent-soft); }
+.re-play { width: 46px; padding: 7px 0; font-size: 1rem; }
+.re-tiempo { font: 600 1rem var(--font-heading), sans-serif; min-width: 5.5em; }
+.re-transporte { margin-top: 16px; }
+
+.re-lienzo {
+  display: block; width: 100%; height: 360px; background: var(--panel); border: 1px solid var(--border);
+  cursor: crosshair; user-select: none; -webkit-user-select: none;
+}
+
+.re-herramientas { display: flex; flex-wrap: wrap; gap: 14px 26px; margin: 14px 0; }
+.re-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.re-etq { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; width: 100%; }
+.re-banda[data-banda="bajo"] { border-left: 3px solid #e8837b; }
+.re-banda[data-banda="medio"] { border-left: 3px solid #7ed87f; }
+.re-banda[data-banda="alto"] { border-left: 3px solid #8fdcff; }
+.re-banda[data-banda="vacio"] { border-left: 3px solid #6c6d70; }
+
+.re-acciones { margin-top: 18px; }
+.re-estado { min-height: 1.3em; margin: 6px 0; font-size: .85rem; color: var(--accent-soft); }
+.re-estado.error { color: #e8837b; }
+.re-ayuda { margin: 12px 0 0; font-size: .75rem; color: var(--muted); line-height: 1.5; max-width: 80ch; }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor de mapas — Ritmo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20261117"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261117">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261117">
+  <link rel="stylesheet" href="css/ritmo-editor.css?v=20261117">
+</head>
+<body class="mj-pagina">
+  <div class="mj-barra">
+    <a href="admin.html" class="mj-volver">← Panel de admin</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido re-contenido">
+    <p class="eyebrow">ADMIN</p>
+    <h1 class="mj-titulo">Editor de mapas de Ritmo</h1>
+
+    <div class="re-fila">
+      <label>Canción <select id="reCancion"></select></label>
+      <label>Dificultad <select id="reDif"></select></label>
+      <button type="button" id="reAuto" class="re-btn">Cargar automático</button>
+      <button type="button" id="reGuardado" class="re-btn">Cargar guardado</button>
+    </div>
+
+    <div class="re-fila re-transporte">
+      <button type="button" id="rePlay" class="re-btn re-play" disabled>▶</button>
+      <span id="reTiempo" class="re-tiempo">0:00.0</span>
+      <label>Velocidad <select id="reVel"><option value="0.5">50 %</option><option value="0.75">75 %</option><option value="1" selected>100 %</option></select></label>
+      <label>Ajuste <select id="reSnap"><option value="1">Pulso</option><option value="2" selected>1/2 pulso</option><option value="4">1/4 de pulso</option><option value="0">Libre</option></select></label>
+      <label class="re-check"><input type="checkbox" id="reClics" checked> Sonido de notas</label>
+      <label class="re-check"><input type="checkbox" id="reMetro"> Metrónomo</label>
+      <label>Zoom <input type="range" id="reZoom" min="20" max="320" value="90"></label>
+    </div>
+
+    <canvas id="reLienzo" class="re-lienzo" aria-label="Línea de tiempo del mapa"></canvas>
+
+    <div class="re-herramientas">
+      <div class="re-grupo">
+        <span class="re-etq">Nota</span>
+        <button type="button" id="reLarga" class="re-btn" title="H">Larga</button>
+        <button type="button" id="reDoble" class="re-btn" title="D">Doble</button>
+        <button type="button" id="reCarril" class="re-btn" title="F">Cambiar carril</button>
+        <button type="button" id="reBorrar" class="re-btn" title="Supr">Borrar</button>
+      </div>
+      <div class="re-grupo">
+        <span class="re-etq">Tramos (clic en la franja, Mayús para varios)</span>
+        <button type="button" data-banda="bajo" class="re-btn re-banda">Graves</button>
+        <button type="button" data-banda="medio" class="re-btn re-banda">Medios</button>
+        <button type="button" data-banda="alto" class="re-btn re-banda">Agudos</button>
+        <button type="button" data-banda="vacio" class="re-btn re-banda">Sin notas</button>
+        <button type="button" data-banda="auto" class="re-btn re-banda">Automático</button>
+      </div>
+      <div class="re-grupo">
+        <span class="re-etq">Pulso de los tramos elegidos</span>
+        <button type="button" id="reRegular" class="re-btn">Regularizar</button>
+        <button type="button" id="reAlCursor" class="re-btn">Pulso al cursor</button>
+        <button type="button" id="reMenos" class="re-btn">−10 ms</button>
+        <button type="button" id="reMas" class="re-btn">+10 ms</button>
+      </div>
+      <div class="re-grupo">
+        <button type="button" id="reDeshacer" class="re-btn" title="Ctrl+Z">Deshacer</button>
+        <button type="button" id="reRehacer" class="re-btn" title="Ctrl+Y">Rehacer</button>
+      </div>
+    </div>
+
+    <div class="re-fila re-acciones">
+      <button type="button" id="reGuardar" class="re-btn re-principal">Guardar para los jugadores</button>
+      <button type="button" id="reProbar" class="re-btn">Probar en el juego</button>
+      <button type="button" id="reExportar" class="re-btn">Exportar JSON</button>
+      <button type="button" id="reImportar" class="re-btn">Importar JSON</button>
+      <button type="button" id="reBorrarGuardado" class="re-btn">Borrar el guardado</button>
+      <input type="file" id="reArchivo" accept="application/json" class="hidden">
+    </div>
+    <p id="reEstado" class="re-estado">Elige una canción y carga el mapa automático para empezar.</p>
+
+    <p class="re-ayuda">Clic en un carril pone una nota (clic derecho la borra). Arrastra una nota para moverla y el borde de una larga para alargarla. Espacio reproduce. Flechas ← → mueven la nota elegida 10 ms. El campo "Ajuste" decide a qué parte del pulso se pegan las notas.</p>
+  </main>
+
+  <script src="js/temas.js?v=20261117"></script>
+  <script src="js/fichas-supabase.js?v=20261117"></script>
+  <script src="js/lado.js?v=20261117"></script>
+  <script src="data/musica.js?v=20261117"></script>
+  <script src="js/ritmo-analisis.js?v=20261117"></script>
+  <script src="js/ritmo-editor.js?v=20261117"></script>
+</body>
+</html>

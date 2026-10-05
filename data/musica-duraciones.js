@@ -27,5 +27,9 @@ window.MUSICA_DURACIONES = {
   "assets/musica/a chud like me (ft. Kasane Teto SV) - Pizza-P!.mp3": 195.0,
   "assets/musica/oasis wonderwall but maybeeeeeeeeeeeee - Fernando G.mp3": 245.6,
   "assets/musica/You can run from your demons until you are exhausted... - Rather.mp3": 55.2,
-  "assets/musica/Mom I Really Hate You - Mewgenics Official Lyric Video - Planet Ridiculon (1).mp3": 203.0
+  "assets/musica/Mom I Really Hate You - Mewgenics Official Lyric Video - Planet Ridiculon (1).mp3": 203.0,
+  "assets/musica/Great Escape - cinema staff.mp3": 205.2,
+  "assets/musica/Akuma no Ko - Ai Higuchi.mp3": 229.3,
+  "assets/musica/The Rumbling - SiM.mp3": 223.4,
+  "assets/musica/Guren no Yumiya - Linked Horizon.mp3": 317.0
 };
