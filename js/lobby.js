@@ -16,7 +16,7 @@
   /* --- Ambiente según el Side y los juegos escondidos ---------------------- */
   function aplicarAmbiente() {
     const lado = typeof ladoActual === "function" ? ladoActual() : null;
-    if (lado === "A" || lado === "B") body.dataset.lado = lado; else delete body.dataset.lado;
+    if (lado === "A" || lado === "B") document.documentElement.dataset.lado = lado; else delete document.documentElement.dataset.lado;
     body.classList.toggle("lb-admin", typeof esAdmin === "function" && esAdmin());
   }
   aplicarAmbiente();

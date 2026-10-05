@@ -5,6 +5,7 @@
    localStorage, sitio entero, sin distinción de Side A/B ni de usuario.
 ============================================================================= */
 const TEMAS = [
+  { id: "taberna", nombre: "La Taberna", muestra: "#8f6bd1" },
   { id: "original", nombre: "Cátedra de Dolbred", muestra: "#cfcfba" },
   { id: "primer-tomo", nombre: "Primer Tomo", muestra: "#c6a96b" },
   { id: "rescoldos", nombre: "Rescoldos de Vado Ceniza", muestra: "#e0a15c" },
@@ -20,13 +21,32 @@ const TEMA_KEY = "compendioTema";
 
 function temaActual() {
   const id = localStorage.getItem(TEMA_KEY);
-  return TEMAS.some(t => t.id === id) ? id : "original";
+  return TEMAS.some(t => t.id === id) ? id : "taberna";
 }
 
 function aplicarTema(id) {
+  // "original" es el :root sin atributo; todos los demás (incluido "taberna") llevan el suyo
   if (id === "original") document.documentElement.removeAttribute("data-tema");
   else document.documentElement.setAttribute("data-tema", id);
 }
+
+/* Personalización de la taberna (css/taberna.css): letra legible en títulos y menús,
+   y el fondo (estrellas, cuadrícula o liso). */
+const FUENTE_KEY = "compendioFuenteLegible";
+const FONDO_KEY = "compendioFondo";
+const FONDOS = [["estrellas", "Estrellas"], ["cuadricula", "Cuadrícula"], ["liso", "Liso"]];
+
+function fuenteLegible() { return localStorage.getItem(FUENTE_KEY) === "1"; }
+function fondoActual() {
+  const f = localStorage.getItem(FONDO_KEY);
+  return FONDOS.some(x => x[0] === f) ? f : "estrellas";
+}
+function aplicarPersonalizacion() {
+  const raiz = document.documentElement;
+  if (fuenteLegible()) raiz.setAttribute("data-fuente", "legible"); else raiz.removeAttribute("data-fuente");
+  raiz.setAttribute("data-fondo", fondoActual());
+}
+aplicarPersonalizacion();
 
 // Se aplica ya mismo, antes de armar el widget — así no hace falta esperar
 // a que el resto de la página termine de cargar para ver el tema elegido.
@@ -49,7 +69,21 @@ function initTemaWidget() {
         <span class="tema-opcion-punto" style="background:${t.muestra}"></span>
         ${t.nombre}
       </button>
-    `).join("");
+    `).join("") + `
+      <div class="tema-personalizar">
+        <label class="tema-check"><input type="checkbox" id="temaFuenteLegible" ${fuenteLegible() ? "checked" : ""}> Letra legible en títulos y menús</label>
+        <label class="tema-check">Fondo
+          <select id="temaFondo">${FONDOS.map(f => `<option value="${f[0]}" ${f[0] === fondoActual() ? "selected" : ""}>${f[1]}</option>`).join("")}</select>
+        </label>
+      </div>`;
+    popover.querySelector("#temaFuenteLegible").addEventListener("change", e => {
+      localStorage.setItem(FUENTE_KEY, e.target.checked ? "1" : "0");
+      aplicarPersonalizacion();
+    });
+    popover.querySelector("#temaFondo").addEventListener("change", e => {
+      localStorage.setItem(FONDO_KEY, e.target.value);
+      aplicarPersonalizacion();
+    });
     popover.querySelectorAll("[data-tema-opcion]").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.temaOpcion;

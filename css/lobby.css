@@ -5,16 +5,6 @@
    para los widgets de la cabecera (sesión, tema, palabra mágica).
 ============================================================================= */
 body.lb {
-  --lb-acento: #e8b84a;
-  --lb-luz: #ffc864;
-  --lb-luna: #e8f0ff;
-  --lb-fondo: #140e1d;
-  --lb-caja: #1f1630;
-  --lb-borde: #8f6bd1;
-  --lb-titulo-a: #5b3aa8;
-  --lb-titulo-b: #2f1f66;
-  --lb-texto: #efe6ff;
-  --lb-tenue: #a99ac9;
   background: var(--lb-fondo);
   color: var(--lb-texto);
   font-family: "VT323", "Courier New", monospace;
@@ -22,8 +12,6 @@ body.lb {
   line-height: 1.2;
   min-height: 100vh;
 }
-body.lb[data-lado="A"] { --lb-acento: #5fe0d2; --lb-luz: #7fe6ff; --lb-luna: #dff6ff; --lb-borde: #4fa8c9; --lb-titulo-a: #2f7f9e; --lb-titulo-b: #17435a; }
-body.lb[data-lado="B"] { --lb-acento: #ff9a4a; --lb-luz: #ffae5a; --lb-luna: #ffe9c8; --lb-borde: #d9803f; --lb-titulo-a: #a34f1f; --lb-titulo-b: #5c2a0f; }
 
 /* Fondo de estrellitas que titilan, como esos fondos en mosaico de las páginas personales */
 .lb-fondo {
@@ -224,3 +212,4 @@ body.lb-admin .lb-deco { display: none; }
 
 /* El bufón que baila (huevo de pascua) con el marco de la taberna */
 .lb .slappy-contenedor { border: 3px ridge var(--lb-borde); background: #0d0816; margin-top: 12px; }
+body.lb::before { display: none; }

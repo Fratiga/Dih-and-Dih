@@ -1,0 +1,171 @@
+/* =============================================================================
+   LA TABERNA — el estilo del lobby aplicado al resto del sitio (páginas con
+   cabecera y barra de navegación). Se carga DESPUÉS de style.css y solo pisa
+   lo visual: fondo con estrellitas, cajas con borde biselado y sombra dura,
+   y letra pixelada SOLO en títulos y menús (el texto de lectura no cambia).
+
+   Todo sale de las variables del tema (--bg, --panel, --accent...), así que
+   los 9 temas de js/temas.js recolorean la taberna entera. "La Taberna" es el
+   tema por defecto. El botón Tema también activa la letra legible
+   (data-fuente="legible": títulos y menús con la tipografía normal) y elige
+   el fondo (data-fondo="estrellas" | "cuadricula" | "liso").
+============================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+/* --- Tema por defecto: La Taberna (el Side A/B la tiñe, los demás temas no) --- */
+:root[data-tema="taberna"] {
+  --bg: #140e1d;
+  --panel: #1f1630;
+  --panel-2: #291d3f;
+  --text: #efe6ff;
+  --muted: #a99ac9;
+  --accent: #e8b84a;
+  --accent-soft: #8f6bd1;
+  --border: #4a3478;
+  --shadow: rgba(0, 0, 0, .6);
+  --radio-tarjeta: 0px;
+  --recorte-tarjeta: none;
+}
+:root[data-tema="taberna"][data-lado="A"] { --accent: #5fe0d2; --accent-soft: #4fa8c9; --border: #2c6482; --bg: #0f1722; --panel: #15212f; --panel-2: #1b2b3d; --text: #e4f4ff; --muted: #8fb0c9; }
+:root[data-tema="taberna"][data-lado="B"] { --accent: #ff9a4a; --accent-soft: #d9803f; --border: #7a4a26; --bg: #1c120d; --panel: #281911; --panel-2: #33201a; --text: #fff0e0; --muted: #c9a688; }
+
+/* --- Paleta de la taberna derivada del tema --- */
+:root {
+  --lb-fondo: color-mix(in srgb, var(--bg) 78%, #000);
+  --lb-caja: var(--panel);
+  --lb-borde: var(--accent-soft);
+  --lb-titulo-a: color-mix(in srgb, var(--accent-soft) 80%, #000);
+  --lb-titulo-b: color-mix(in srgb, var(--accent-soft) 38%, #000);
+  --lb-texto: var(--text);
+  --lb-tenue: var(--muted);
+  --lb-acento: var(--accent);
+  --lb-luz: color-mix(in srgb, var(--accent) 78%, #fff);
+  --lb-luna: color-mix(in srgb, var(--accent) 22%, #fff);
+  --tb-pixel: "Press Start 2P", "Courier New", monospace;
+}
+
+/* --- Fondo --- */
+body { background: var(--lb-fondo); }
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 20px 30px, #fff9 50%, transparent 52%),
+    radial-gradient(2px 2px at 90px 80px, #cfd8ff99 50%, transparent 52%),
+    radial-gradient(1px 1px at 150px 20px, #ffffffcc 50%, transparent 52%),
+    radial-gradient(2px 2px at 60px 130px, #ffd9a099 50%, transparent 52%);
+  background-size: 180px 160px;
+}
+:root[data-fondo="cuadricula"] body::before {
+  background-image: linear-gradient(#ffffff0d 1px, transparent 1px), linear-gradient(90deg, #ffffff0d 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+:root[data-fondo="liso"] body::before { display: none; }
+
+/* --- Letra pixelada: solo títulos y menús (se apaga con la letra legible) --- */
+:root:not([data-fuente="legible"]) .site-header h1,
+:root:not([data-fuente="legible"]) .content-top h2,
+:root:not([data-fuente="legible"]) .eyebrow,
+:root:not([data-fuente="legible"]) .nav-chip,
+:root:not([data-fuente="legible"]) .secondary-button,
+:root:not([data-fuente="legible"]) .pill,
+:root:not([data-fuente="legible"]) .global-lado-badge,
+:root:not([data-fuente="legible"]) .tema-badge,
+:root:not([data-fuente="legible"]) .admin-tab,
+:root:not([data-fuente="legible"]) .fichas-tab,
+:root:not([data-fuente="legible"]) .filter-group h3,
+:root:not([data-fuente="legible"]) .entry-card h3,
+:root:not([data-fuente="legible"]) .entry-type,
+:root:not([data-fuente="legible"]) dialog h2 {
+  font-family: var(--tb-pixel) !important;
+}
+:root:not([data-fuente="legible"]) .site-header h1 { font-size: clamp(1.1rem, 2.8vw, 1.7rem); line-height: 1.4; text-shadow: 3px 3px 0 var(--lb-titulo-b), 6px 6px 0 #000; font-weight: 400; }
+:root:not([data-fuente="legible"]) .content-top h2 { font-size: .95rem; line-height: 1.5; font-weight: 400; text-shadow: 2px 2px 0 #000; }
+:root:not([data-fuente="legible"]) .eyebrow { font-size: .6rem; letter-spacing: .08em; line-height: 1.6; }
+:root:not([data-fuente="legible"]) .nav-chip { font-size: .55rem; letter-spacing: .02em; font-weight: 400; padding: 8px 8px; }
+:root:not([data-fuente="legible"]) .secondary-button,
+:root:not([data-fuente="legible"]) .pill { font-size: .55rem; letter-spacing: 0; font-weight: 400; line-height: 1.6; }
+:root:not([data-fuente="legible"]) .entry-card h3 { font-size: .68rem; line-height: 1.7; font-weight: 400; }
+:root:not([data-fuente="legible"]) .entry-type { font-size: .5rem; letter-spacing: .04em; }
+:root:not([data-fuente="legible"]) .filter-group h3 { font-size: .55rem; line-height: 1.6; font-weight: 400; }
+:root:not([data-fuente="legible"]) dialog h2 { font-size: .95rem; line-height: 1.5; font-weight: 400; }
+:root:not([data-fuente="legible"]) .admin-tab,
+:root:not([data-fuente="legible"]) .fichas-tab { font-size: .55rem; line-height: 1.6; font-weight: 400; }
+
+/* --- Cabecera: más baja y enmarcada --- */
+.site-header { border-bottom: 0; }
+.site-header-inner {
+  margin-top: 14px; padding: 18px 22px;
+  border: 4px double var(--lb-borde); background: var(--lb-caja); box-shadow: 6px 6px 0 #000;
+}
+.rotacion-box { width: 260px; max-width: 40vw; height: 160px; border: 4px ridge var(--lb-borde); box-shadow: 4px 4px 0 #000; }
+.header-right { gap: 10px; }
+.subtitle { color: var(--lb-tenue); }
+.header-marquee { border-top: 0; padding: 14px 0 0; gap: 10px; }
+.marquee-card {
+  border: 3px ridge var(--lb-borde); border-radius: 0; clip-path: none; box-shadow: 3px 3px 0 #000; background: var(--lb-caja);
+}
+.marquee-card:hover { border-color: var(--lb-acento); color: var(--text); }
+.marquee-toggle { border: 3px ridge var(--lb-borde); background: var(--lb-caja); color: var(--text); border-radius: 0; }
+.header-topbar .global-random-btn { border-radius: 0; }
+
+/* --- Barra de navegación --- */
+.quick-nav {
+  margin-top: 14px; padding: 6px 10px; border: 3px ridge var(--lb-borde); background: var(--lb-caja);
+  box-shadow: 4px 4px 0 #000; top: 6px;
+}
+.nav-group + .nav-group { border-left: 2px dotted var(--lb-borde); }
+.nav-chip { color: var(--lb-tenue); border: 2px solid transparent; transition: none; }
+.nav-chip:hover { color: #fff; background: #ffffff14; }
+.nav-chip.active { color: #fff; background: linear-gradient(90deg, var(--lb-titulo-a), var(--lb-titulo-b)); border-color: var(--lb-borde); text-shadow: 2px 2px 0 #000; }
+
+/* --- Cajas: barra lateral, tarjetas, ventana de entrada --- */
+.sidebar {
+  border: 3px ridge var(--lb-borde); background: var(--lb-caja); box-shadow: 4px 4px 0 #000;
+  padding: 14px; top: 64px;
+}
+.search-box input, .global-search-box input, .layout input[type="search"], .layout input[type="text"] {
+  border: 3px inset var(--lb-borde); border-radius: 0; background: color-mix(in srgb, var(--bg) 60%, #000); color: var(--text);
+}
+.pill { border: 2px solid transparent; }
+.pill:hover { background: #ffffff14; color: #fff; }
+.pill.active { background: linear-gradient(90deg, var(--lb-titulo-a), var(--lb-titulo-b)); border-color: var(--lb-borde); color: #fff; }
+.secondary-button {
+  border: 3px outset var(--lb-borde); background: var(--lb-titulo-a); color: #fff; border-radius: 0; text-shadow: 2px 2px 0 #000;
+}
+.secondary-button:hover { filter: brightness(1.2); color: #fff; }
+.secondary-button:active { border-style: inset; }
+
+.entry-card {
+  border: 3px ridge var(--lb-borde); border-radius: 0; clip-path: none; background: var(--lb-caja);
+  box-shadow: 4px 4px 0 #000; transition: transform .1s steps(2), box-shadow .1s steps(2);
+}
+.entry-card:hover { border-color: var(--lb-acento); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+.entry-type { color: var(--lb-acento); }
+.tag { border: 2px solid var(--lb-borde); border-radius: 0; }
+.content-top { border-bottom: 3px double var(--lb-borde); padding-bottom: 10px; }
+.result-count { color: var(--lb-tenue); }
+
+dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8px 0 #000; background: var(--lb-caja); }
+.modal-close { border-radius: 0; }
+
+/* --- Pestañas de Admin y de Mis personajes --- */
+.admin-tab, .fichas-tab { border-radius: 0; }
+.admin-tab.active, .fichas-tab.active { background: linear-gradient(90deg, var(--lb-titulo-a), var(--lb-titulo-b)); color: #fff; }
+
+/* --- Pie de página (lo pone js/taberna.js) --- */
+.tb-pie {
+  width: min(1450px, 94%); margin: 30px auto 110px; padding: 12px; text-align: center;
+  border-top: 3px double var(--lb-borde); color: var(--lb-tenue); font-family: "VT323", monospace; font-size: 20px;
+}
+.tb-pie a { color: var(--lb-acento); }
+.tb-pie p { margin: 3px 0; }
+
+@media (max-width: 900px) {
+  .site-header-inner { padding: 14px; }
+  .rotacion-box { height: 140px; max-width: 100%; width: 100%; }
+}
+
+/* --- Botón Tema: personalización --- */
+.tema-personalizar { margin-top: 8px; padding-top: 8px; border-top: 2px dotted var(--lb-borde); display: flex; flex-direction: column; gap: 8px; }
+.tema-check { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text); cursor: pointer; }
+.tema-check select { color-scheme: dark; background: var(--panel-2); color: var(--text); border: 2px solid var(--lb-borde); padding: 3px 6px; font-family: inherit; }
