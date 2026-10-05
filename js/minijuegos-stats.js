@@ -72,7 +72,13 @@
 
   /* definiciones: [{ titulo, valor(u) -> número|null, formato(n) -> texto, menorEsMejor }] */
   function pintar(contenedor, usuarios, definiciones) {
+    let grupoActual = null;
     contenedor.innerHTML = definiciones.map(d => {
+      let encabezado = "";
+      if (d.grupo && d.grupo !== grupoActual) {
+        grupoActual = d.grupo;
+        encabezado = `<h3 class="mj-ranking-grupo">${esc(d.grupo)}</h3>`;
+      }
       const items = usuarios
         .map(u => ({ nombre: u.username, v: d.valor(u) }))
         .filter(x => x.v !== null && x.v !== undefined && Number.isFinite(x.v) && x.v > 0)
@@ -81,7 +87,7 @@
       const lista = items.length
         ? items.map(i => `<li class="${i.nombre === nombre ? "yo" : ""}"><span>${esc(i.nombre)}</span><strong>${esc(d.formato ? d.formato(i.v) : i.v)}</strong></li>`).join("")
         : `<li class="sacrificio-vacio">Todavía no hay nadie.</li>`;
-      return `<div class="sacrificio-ranking"><h3>${esc(d.titulo)}</h3><ol class="sacrificio-lista">${lista}</ol></div>`;
+      return `${encabezado}<div class="sacrificio-ranking"><h3>${esc(d.titulo)}</h3><ol class="sacrificio-lista">${lista}</ol></div>`;
     }).join("");
   }
 

@@ -349,10 +349,15 @@
     MjStats.cargarYPintar("ajedrez", rankingEl, usuarios => {
       const nombres = new Map(usuarios.map(u => [u.id, u.username]));
       const victoriasCon = clave => u => (u.porClave[clave] ? u.porClave[clave].victorias : 0);
-      const defs = [{ titulo: "Más victorias", valor: u => u.victorias }];
+      const defs = [
+        { grupo: "General", titulo: "Más victorias", valor: u => u.victorias },
+        { grupo: "General", titulo: "Más tablas", valor: u => u.tablas },
+        { grupo: "General", titulo: "Mate más rápido (jugadas)", valor: u => u.minimo.mate, menorEsMejor: true },
+        { grupo: "General", titulo: "Más piezas capturadas", valor: u => u.suma.capturas }
+      ];
       // una lista por cada rival de la máquina, de menor a mayor dificultad
       RIVALES.filter(r => !r.sinRanking).forEach(r => {
-        defs.push({ titulo: `Victorias contra ${r.nombre} (${r.dificultad})`, valor: victoriasCon(r.id) });
+        defs.push({ grupo: "Contra la máquina", titulo: `${r.nombre} (${r.dificultad})`, valor: victoriasCon(r.id) });
       });
       // y una por cada jugador al que alguien ya le ganó ("j-" + id del jugador)
       const rivales = new Set();
@@ -360,12 +365,7 @@
       [...rivales]
         .map(k => ({ k, nombre: nombres.get(k.slice(2)) || "otro jugador" }))
         .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
-        .forEach(({ k, nombre }) => defs.push({ titulo: `Victorias contra ${nombre}`, valor: victoriasCon(k) }));
-      defs.push(
-        { titulo: "Mate más rápido (jugadas)", valor: u => u.minimo.mate, menorEsMejor: true },
-        { titulo: "Más tablas", valor: u => u.tablas },
-        { titulo: "Más piezas capturadas", valor: u => u.suma.capturas }
-      );
+        .forEach(({ k, nombre }) => defs.push({ grupo: "Contra otros jugadores", titulo: `Victorias contra ${nombre}`, valor: victoriasCon(k) }));
       return defs;
     });
   }

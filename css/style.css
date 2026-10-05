@@ -3700,3 +3700,14 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .admin-fanart-subir-side select { color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 6px 8px; font-family: inherit; }
 .admin-fanart-subir-estado { font-size: .78rem; color: var(--muted); flex: 1 1 260px; }
 #adminPanelFanarts.arrastrando .admin-fanart-subir { border-color: var(--accent-soft); background: var(--panel-2); }
+
+/* --- Ajedrez: rankings en tarjetas, por grupos y con aire al final --- */
+.aj-contenido .mj-subtitulo { margin-top: 64px; }
+.sacrificio-rankings.aj-rankings { grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 16px; margin: 22px 0 96px; align-items: start; }
+.aj-rankings .mj-ranking-grupo { grid-column: 1 / -1; margin: 18px 0 -4px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font: 600 .72rem sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.aj-rankings .mj-ranking-grupo:first-child { margin-top: 0; }
+.aj-rankings .sacrificio-ranking { background: rgba(0, 0, 0, .22); border: 1px solid var(--border); padding: 16px 20px 10px; }
+.aj-rankings .sacrificio-ranking h3 { margin: 0 0 8px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-size: .95rem; }
+.aj-rankings .sacrificio-lista li { padding: 9px 0; }
+.aj-rankings .sacrificio-lista li:nth-child(-n+3)::before { color: var(--accent, #e0b45c); font-weight: 700; }
+.aj-rankings .sacrificio-vacio { padding: 12px 0; }
