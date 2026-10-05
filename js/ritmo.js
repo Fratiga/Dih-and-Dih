@@ -359,6 +359,31 @@
     o.start(t0); o.stop(t0 + 0.09);
   }
 
+  /* Un toque que no cae sobre ninguna nota no debe castigar dos veces lo mismo:
+       - si había una nota de ese carril a punto de llegar (hasta 0,3 s), el toque cuenta como un solo fallo de
+         esa nota, que ya no vuelve a fallar al pasar;
+       - si esa nota ya se había dado por fallada hace un momento, o una larga se acababa de romper, el toque
+         no suma otro fallo (ya estaba castigado).
+     Devuelve true si el toque quedó explicado y no hay que sumar una "pulsación de más". */
+  function toqueDeUnaNotaCercana(carril, t) {
+    const sirve = n => n.carril === carril || n.carril === "ambos";
+    for (let i = punteroFallos; i < notas.length; i++) {
+      const n = notas[i];
+      if (n.t - t > 0.3) break;
+      if (n.estado || !sirve(n)) continue;
+      n.estado = "fallo";
+      sumar("fallo", n.carril);
+      anotarFallo(n.t);
+      return true;
+    }
+    for (let i = punteroFallos - 1; i >= Math.max(0, punteroFallos - 8); i--) {
+      const n = notas[i];
+      if (!sirve(n)) continue;
+      if ((n.estado === "fallo" && t - n.t <= 0.32) || (n.mantiene === "rota" && t - (n.rotaT || -9) <= 0.4)) return true;
+    }
+    return false;
+  }
+
   function golpear(carril, t) {
     flash[carril] = ahoraS();
     avatar.carril = carril;
@@ -376,6 +401,7 @@
     }
     if (!mejor) {
       sonidoGolpe(carril, false);
+      if (toqueDeUnaNotaCercana(carril, t)) return;
       // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
       extras++; combo = 0;
       if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
@@ -477,6 +503,7 @@
         activas.splice(k, 1);
       } else if (t > gracia && entradas[n.carril].size === 0 && t < fin - 0.12) {
         n.mantiene = "rota";
+        n.rotaT = t;
         sumar("fallo", n.carril);
         efectos[efectos.length - 1].texto = "SOLTASTE ANTES";
         anotarFallo(n.t);
@@ -759,7 +786,7 @@
         if (dt > cfg.aproximacion) break;
         if (n.estado === "perfecto" || n.estado === "bien") continue;
         const x = X_GOLPE + (dt / cfg.aproximacion) * recorrido;
-        dibujarNota(n, x, 1, n.dur > 0 ? X_GOLPE + ((n.t + n.dur - t) / cfg.aproximacion) * recorrido : undefined);
+        dibujarNota(n, x, n.estado === "fallo" ? 0.3 : 1, n.dur > 0 ? X_GOLPE + ((n.t + n.dur - t) / cfg.aproximacion) * recorrido : undefined);
       }
       // Largas que se están manteniendo: la cabeza se queda en el círculo y la cola se acerca
       activas.forEach(n => {
