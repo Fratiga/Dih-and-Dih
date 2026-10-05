@@ -96,6 +96,133 @@
     escena.style.transition = "transform .15s steps(4)";
   }
 
+  /* --- Atajos: cada quien elige los suyos (se guardan en este navegador) ---------
+     Se puede marcar cualquier página del sitio, ordenarlas y añadir enlaces propios. */
+  const PAGINAS = [
+    ["compendio.html", "Compendio"], ["mapa.html", "Mapa"], ["cronologia.html", "Cronología"],
+    ["lugares.html", "Lugares"], ["facciones.html", "Facciones"], ["personajes.html", "Personajes"],
+    ["razas.html", "Razas"], ["religion.html", "Religión"], ["textos.html", "Textos"],
+    ["pergaminos.html", "Pergaminos"], ["armas.html", "Armas"], ["objetos.html", "Objetos"],
+    ["bestiario.html", "Bestiario"], ["reglas.html", "Reglas"], ["economia.html", "Economía"],
+    ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
+    ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
+    ["ritmo.html", "Zarabanda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
+    ["arqueria.html", "Arquería", true], ["duelo.html", "Duelo", true], ["cartas.html", "Cartas", true],
+    ["valhalla.html", "Valhalla", true], ["admin.html", "Admin", true]
+  ];
+  const ATAJOS_CLAVE = "lbAtajos";
+  const ATAJOS_BASE = ["compendio.html", "mapa.html", "cronologia.html", "bestiario.html", "fanarts.html", "minijuegos.html"];
+
+  function paginasDisponibles() {
+    const admin = typeof esAdmin === "function" && esAdmin();
+    return PAGINAS.filter(p => !p[2] || admin).map(p => ({ href: p[0], nombre: p[1] }));
+  }
+
+  // Un atajo es { href, nombre }. Los enlaces propios solo pueden ser páginas del sitio o https://.
+  function enlaceValido(href) {
+    if (typeof href !== "string" || href.length > 300) return false;
+    if (/^https:\/\/[^\s]+$/i.test(href)) return true;
+    return /^[a-z0-9_\-]+\.html(#[\w\-]*)?(\?[\w=&%\-]*)?$/i.test(href);
+  }
+
+  function leerAtajos() {
+    try {
+      const guardado = JSON.parse(localStorage.getItem(ATAJOS_CLAVE) || "null");
+      if (Array.isArray(guardado)) {
+        return guardado.filter(a => a && typeof a.nombre === "string" && enlaceValido(a.href)).slice(0, 24);
+      }
+    } catch (e) { /* se usan los de base */ }
+    const disp = paginasDisponibles();
+    return ATAJOS_BASE.map(h => disp.find(p => p.href === h)).filter(Boolean);
+  }
+  function guardarAtajos(lista) {
+    try { localStorage.setItem(ATAJOS_CLAVE, JSON.stringify(lista)); } catch (e) { /* sin almacenamiento */ }
+  }
+
+  function colorDe(texto) {
+    let h = 0;
+    for (const ch of texto) h = (h * 31 + ch.charCodeAt(0)) % 360;
+    return [`hsl(${h} 45% 42%)`, `hsl(${h} 50% 22%)`];
+  }
+
+  function pintarAtajos() {
+    const cont = $("lbAtajos");
+    const lista = leerAtajos();
+    const admin = typeof esAdmin === "function" && esAdmin();
+    const visibles = lista.filter(a => admin || !PAGINAS.some(p => p[2] && p[0] === a.href));
+    cont.innerHTML = visibles.length
+      ? visibles.map(a => {
+        const [c1, c2] = colorDe(a.nombre);
+        const externo = /^https:/i.test(a.href);
+        return `<a class="lb-88" href="${esc(a.href)}" ${externo ? 'target="_blank" rel="noopener noreferrer"' : ""} style="--c1:${c1};--c2:${c2}" title="${esc(a.nombre)}">${esc(a.nombre.toUpperCase().slice(0, 14))}</a>`;
+      }).join("")
+      : `<p class="lb-vacio">Sin atajos. Pulsa ✎ para elegir.</p>`;
+  }
+
+  function abrirEditorAtajos() {
+    const ed = $("lbAtajosEditor");
+    let lista = leerAtajos();
+    const disp = paginasDisponibles();
+    const propios = lista.filter(a => !disp.some(p => p.href === a.href));
+
+    function pintar() {
+      const marcados = new Set(lista.map(a => a.href));
+      ed.innerHTML = `
+        <h3>Tus atajos (en orden)</h3>
+        ${lista.length ? lista.map((a, i) => `
+          <div class="lb-atajo-fila">
+            <label><input type="checkbox" checked data-quitar="${i}"> ${esc(a.nombre)}</label>
+            <button type="button" class="lb-mini" data-sube="${i}" ${i === 0 ? "disabled" : ""} aria-label="Subir">▲</button>
+            <button type="button" class="lb-mini" data-baja="${i}" ${i === lista.length - 1 ? "disabled" : ""} aria-label="Bajar">▼</button>
+          </div>`).join("") : `<p class="lb-vacio">Ninguno.</p>`}
+        <h3 style="margin-top:8px">Añadir una página</h3>
+        ${disp.filter(p => !marcados.has(p.href)).map(p => `
+          <div class="lb-atajo-fila"><label><input type="checkbox" data-agrega="${esc(p.href)}"> ${esc(p.nombre)}</label></div>`).join("") || `<p class="lb-vacio">Ya tienes todas.</p>`}
+        <h3 style="margin-top:8px">Enlace propio</h3>
+        <form id="lbAtajoPropio">
+          <input type="text" id="lbAtajoNombre" maxlength="14" placeholder="Nombre corto" required>
+          <input type="text" id="lbAtajoUrl" placeholder="https://... o una página .html" required>
+          <button type="submit" class="lb-boton">Añadir</button>
+          <p class="lb-chico" id="lbAtajoError"></p>
+        </form>
+        <div class="lb-atajos-acciones">
+          <button type="button" class="lb-boton" id="lbAtajosListo">Listo</button>
+          <button type="button" class="lb-boton" id="lbAtajosBase">Restablecer</button>
+        </div>`;
+    }
+    function aplicar() { guardarAtajos(lista); pintarAtajos(); pintar(); }
+
+    ed.onclick = e => {
+      const t = e.target;
+      if (t.dataset.sube !== undefined) { const i = +t.dataset.sube; [lista[i - 1], lista[i]] = [lista[i], lista[i - 1]]; aplicar(); }
+      else if (t.dataset.baja !== undefined) { const i = +t.dataset.baja; [lista[i + 1], lista[i]] = [lista[i], lista[i + 1]]; aplicar(); }
+      else if (t.dataset.quitar !== undefined) { lista.splice(+t.dataset.quitar, 1); aplicar(); }
+      else if (t.dataset.agrega !== undefined) { const p = disp.find(x => x.href === t.dataset.agrega); if (p && lista.length < 24) { lista.push(p); aplicar(); } }
+      else if (t.id === "lbAtajosListo") { ed.classList.add("hidden"); ed.innerHTML = ""; }
+      else if (t.id === "lbAtajosBase") {
+        localStorage.removeItem(ATAJOS_CLAVE);
+        lista = leerAtajos();
+        pintarAtajos(); pintar();
+      }
+    };
+    ed.onsubmit = e => {
+      e.preventDefault();
+      const nombre = $("lbAtajoNombre").value.trim();
+      let url = $("lbAtajoUrl").value.trim();
+      if (!enlaceValido(url)) { $("lbAtajoError").textContent = "Solo páginas del sitio (algo.html) o enlaces que empiecen con https://"; return; }
+      if (lista.length >= 24) { $("lbAtajoError").textContent = "Ya son demasiados atajos."; return; }
+      lista.push({ href: url, nombre });
+      aplicar();
+    };
+    ed.classList.remove("hidden");
+    pintar();
+  }
+
+  $("lbAtajosEditar").addEventListener("click", () => {
+    const ed = $("lbAtajosEditor");
+    if (ed.classList.contains("hidden")) abrirEditorAtajos(); else { ed.classList.add("hidden"); ed.innerHTML = ""; }
+  });
+
   /* --- Saludo según la hora ------------------------------------------------ */
   function saludar(nombre) {
     const h = new Date().getHours();
@@ -256,6 +383,7 @@
   });
 
   iniciarEscena();
+  pintarAtajos();
   pintarNovedades();
   contarVisitaGlobal();
   if (typeof fichasEnCambioDeSesion === "function") {
