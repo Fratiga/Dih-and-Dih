@@ -1,13 +1,13 @@
-/* Editor de mapas de Estruendo (Admin y DJ). Carga una canción, genera el mapa automático con el mismo
-   análisis que usa el juego (estruendo-analisis.js) y deja corregirlo a mano: poner, mover y borrar
+/* Editor de mapas de Parranda (Admin y DJ). Carga una canción, genera el mapa automático con el mismo
+   análisis que usa el juego (parranda-analisis.js) y deja corregirlo a mano: poner, mover y borrar
    notas en cuatro carriles, hacer largas y acordes, elegir qué banda sigue cada tramo, arreglar el
-   pulso y grabar tocando las teclas con la canción sonando. Lo guardado va a la tabla estruendo_mapas
-   (scratchpad/estruendo.sql) y el juego lo usa en lugar del automático. */
+   pulso y grabar tocando las teclas con la canción sonando. Lo guardado va a la tabla parranda_mapas
+   (scratchpad/parranda.sql) y el juego lo usa en lugar del automático. */
 (function () {
   "use strict";
 
-  const AN = window.EstruendoAnalisis;
-  const CLAVE_AJUSTES = "compendioEstruendoAjustes";
+  const AN = window.ParrandaAnalisis;
+  const CLAVE_AJUSTES = "compendioParrandaAjustes";
   // Los carriles no son de ningún instrumento: cada mapa decide qué sigue
   const COLOR = ["#ff3b3b", "#ffa51f", "#ffe14d", "#55d6ff"];
   const HZ_CARRIL = [330, 440, 588, 785]; // el tono de cada carril al sonar las notas
@@ -154,7 +154,7 @@
     const f = JSON.parse(texto);
     const cambioPulsos = f.pulsos.length !== pulsos.length;
     notas = f.notas; pulsos = f.pulsos; forzadas = f.forzadas || {}; marcas = f.marcas || [];
-    window.dispatchEvent(new CustomEvent("estruendo-marcas"));
+    window.dispatchEvent(new CustomEvent("parranda-marcas"));
     if (cambioPulsos && buffer) recalcularTramos();
     else f.bandas.forEach((b, i) => { if (tramos[i]) { tramos[i].banda = b[0]; tramos[i].vacio = b[1]; } });
     actualizarTramos();
@@ -175,7 +175,7 @@
   /* --- Carga del mapa -------------------------------------------------------------- */
   /* Dos volúmenes: la música y los sonidos del editor (clic de notas y metrónomo). Se
      recuerdan entre visitas. */
-  const CLAVE_VOL = "compendioEstruendoEditorVol";
+  const CLAVE_VOL = "compendioParrandaEditorVol";
   let volumenes = { musica: 0.8, clics: 0.6 };
   try { Object.assign(volumenes, JSON.parse(localStorage.getItem(CLAVE_VOL) || "{}")); } catch (e) { /* sin almacenamiento */ }
   let gMusica = null;
@@ -242,7 +242,7 @@
     deseleccionar();
     tramosSel = null;
     marcas = [];
-    window.dispatchEvent(new CustomEvent("estruendo-marcas"));
+    window.dispatchEvent(new CustomEvent("parranda-marcas"));
     historial = [];
     posHistorial = -1;
     guardarFoto();
@@ -276,7 +276,7 @@
       tramos: m.tramos
     });
     marcas = Array.isArray(guardado.marcas) ? guardado.marcas.filter(x => x && isFinite(x.t)).map(x => ({ t: Number(x.t), tipo: x.tipo === "seccion" ? "seccion" : "comentario", texto: String(x.texto || "").slice(0, 80), autor: String(x.autor || "").slice(0, 30) })) : [];
-    window.dispatchEvent(new CustomEvent("estruendo-marcas"));
+    window.dispatchEvent(new CustomEvent("parranda-marcas"));
   }
 
   async function supabase() {
@@ -288,7 +288,7 @@
     try {
       await cargarAudio();
       const sb = await supabase();
-      const { data, error } = await sb.from("estruendo_mapas").select("mapa, actualizado").eq("cancion", rutaActual()).eq("dificultad", difActual()).maybeSingle();
+      const { data, error } = await sb.from("parranda_mapas").select("mapa, actualizado").eq("cancion", rutaActual()).eq("dificultad", difActual()).maybeSingle();
       if (error) throw error;
       if (!data) { mensaje("No hay un mapa guardado para esta canción y dificultad."); return; }
       aplicarGuardado(data.mapa);
@@ -300,8 +300,8 @@
   }
 
   /* --- Borrador local: cada 20 s se guarda en este navegador lo que no has guardado --------------- */
-  const CLAVE_BORRADORES = "estruendoBorradores";
-  const claveBorrador = () => `estruendoBorrador|${rutaActual()}|${difActual()}`;
+  const CLAVE_BORRADORES = "parrandaBorradores";
+  const claveBorrador = () => `parrandaBorrador|${rutaActual()}|${difActual()}`;
 
   function guardarBorrador() {
     if (!cambios || !notas.length) return;
@@ -370,7 +370,7 @@
     const off = Math.max(-500, Math.min(500, Number($("reOffset") && $("reOffset").value) || 0));
     if (off) mapa.offset = off;
     if (marcas.length) mapa.marcas = marcas.map(m => ({ t: Math.round(m.t * 1000) / 1000, tipo: m.tipo, texto: m.texto, autor: m.autor }));
-    if (window.EstruendoLogica && buffer && notas.length) mapa.nivel = EstruendoLogica.revisar(notas, pulsos, buffer.duration, difActual()).stats.nivel;
+    if (window.ParrandaLogica && buffer && notas.length) mapa.nivel = ParrandaLogica.revisar(notas, pulsos, buffer.duration, difActual()).stats.nivel;
     return mapa;
   }
 
@@ -380,8 +380,8 @@
     // Los problemas avisan pero nunca impiden guardar: a veces dos notas muy seguidas o una larga con
     // otras al mismo tiempo son justo lo que se quiere
     let errores = [];
-    if (window.EstruendoLogica && buffer) {
-      errores = EstruendoLogica.revisar(notas, pulsos, buffer.duration, difActual()).problemas.filter(p => p.nivel === "error");
+    if (window.ParrandaLogica && buffer) {
+      errores = ParrandaLogica.revisar(notas, pulsos, buffer.duration, difActual()).problemas.filter(p => p.nivel === "error");
     }
     await guardarEnServidor(false);
     if (errores.length && !cambios) {
@@ -396,12 +396,12 @@
     try {
       const sb = await supabase();
       const mapa = conFirma(AN.guardable(notas, pulsos));
-      const { data, error } = await sb.rpc("estruendo_guardar_mapa", {
+      const { data, error } = await sb.rpc("parranda_guardar_mapa", {
         p_cancion: rutaActual(), p_dificultad: difActual(), p_mapa: mapa, p_esperado: actualizadoCargado, p_forzar: !!forzar
       });
       if (error) {
         // Si todavía no se corrió ritmo_editor_2.sql, se guarda como antes, sin aviso de conflicto
-        if (/estruendo_guardar_mapa|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) return guardarSinAviso(mapa);
+        if (/parranda_guardar_mapa|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) return guardarSinAviso(mapa);
         throw error;
       }
       if (data && data.conflicto) {
@@ -416,7 +416,7 @@
       actualizadoCargado = data.actualizado;
       cambios = false;
       borrarBorrador();
-      window.dispatchEvent(new CustomEvent("estruendo-guardado"));
+      window.dispatchEvent(new CustomEvent("parranda-guardado"));
       mensaje(`Guardado (${notas.length} notas). Los jugadores lo usan desde la próxima vez que abran la canción.`);
     } catch (err) {
       mensaje(textoErrorGuardar(err), true);
@@ -427,12 +427,12 @@
   async function guardarSinAviso(mapa) {
     try {
       const sb = await supabase();
-      const { error } = await sb.from("estruendo_mapas").upsert({ cancion: rutaActual(), dificultad: difActual(), mapa, actualizado: new Date().toISOString() });
+      const { error } = await sb.from("parranda_mapas").upsert({ cancion: rutaActual(), dificultad: difActual(), mapa, actualizado: new Date().toISOString() });
       if (error) throw error;
       cambios = false;
       actualizadoCargado = null;
       borrarBorrador();
-      mensaje(`Guardado (${notas.length} notas). Falta correr scratchpad/estruendo.sql para tener historial y aviso de conflictos.`);
+      mensaje(`Guardado (${notas.length} notas). Falta correr scratchpad/parranda.sql para tener historial y aviso de conflictos.`);
     } catch (err) {
       mensaje(textoErrorGuardar(err), true);
     }
@@ -441,7 +441,7 @@
 
   function textoErrorGuardar(err) {
     const t = String((err && err.message) || err);
-    return /estruendo_mapas|relation|does not exist/i.test(t) ? "Falta correr scratchpad/estruendo.sql en Supabase."
+    return /parranda_mapas|relation|does not exist/i.test(t) ? "Falta correr scratchpad/parranda.sql en Supabase."
       : /row-level|policy|permission|JWT|No autorizado/i.test(t) ? "Sin permiso: inicia sesión con una cuenta DJ o Admin."
       : "No se pudo guardar: " + t;
   }
@@ -450,13 +450,13 @@
     if (!notas.length) return;
     limpiarNotas(false);
     try {
-      localStorage.setItem("estruendoPrueba", JSON.stringify({ ruta: rutaActual(), dificultad: difActual(), mapa: conFirma(AN.guardable(notas, pulsos)) }));
+      localStorage.setItem("parrandaPrueba", JSON.stringify({ ruta: rutaActual(), dificultad: difActual(), mapa: conFirma(AN.guardable(notas, pulsos)) }));
       const aj = JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}");
       aj.ruta = rutaActual();
       aj.dificultad = difActual();
       localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(aj));
     } catch (e) { mensaje("No se pudo preparar la prueba.", true); return; }
-    window.open("estruendo.html?prueba=1", "_blank");
+    window.open("parranda.html?prueba=1", "_blank");
     mensaje("Se abrió el juego con este mapa sin guardar. Elige la canción y juega.");
   }
 
@@ -492,10 +492,10 @@
     if (!confirm("¿Borrar el mapa guardado de esta canción y dificultad? El juego volverá a usar el automático.")) return;
     try {
       const sb = await supabase();
-      const { error } = await sb.from("estruendo_mapas").delete().eq("cancion", rutaActual()).eq("dificultad", difActual());
+      const { error } = await sb.from("parranda_mapas").delete().eq("cancion", rutaActual()).eq("dificultad", difActual());
       if (error) throw error;
       actualizadoCargado = null;
-      window.dispatchEvent(new CustomEvent("estruendo-guardado"));
+      window.dispatchEvent(new CustomEvent("parranda-guardado"));
       mensaje("Guardado borrado. El juego usa el mapa automático.");
     } catch (err) {
       mensaje("No se pudo borrar: " + (err && err.message || err), true);
@@ -556,7 +556,7 @@
     if (!buffer || !pulsos.length) { mensaje("Carga primero un mapa.", true); return; }
     const k = pulsoMasCercano(tiempoActual());
     guardarFoto();
-    pulsos = EstruendoLogica.pulsosDesdeAncla(pulsos, pulsos[k], bpm, buffer.duration);
+    pulsos = ParrandaLogica.pulsosDesdeAncla(pulsos, pulsos[k], bpm, buffer.duration);
     recalcularTramos();
     guardarFoto();
     sucio = true;
@@ -570,15 +570,15 @@
     if (toques.length && t - toques[toques.length - 1] > 2.5) toques = [];
     toques.push(t);
     if (toques.length > 16) toques.shift();
-    const bpm = EstruendoLogica.bpmDeToques(toques);
+    const bpm = ParrandaLogica.bpmDeToques(toques);
     $("reTapBpm").textContent = bpm ? `${bpm} BPM (${toques.length} toques)` : `${toques.length} toque${toques.length === 1 ? "" : "s"}...`;
   }
 
   function aplicarTap() {
-    const bpm = EstruendoLogica.bpmDeToques(toques);
+    const bpm = ParrandaLogica.bpmDeToques(toques);
     if (!bpm) { mensaje("Toca al menos 4 veces al ritmo antes de aplicar.", true); return; }
     guardarFoto();
-    pulsos = EstruendoLogica.pulsosDesdeAncla(pulsos, toques[0], bpm, buffer.duration);
+    pulsos = ParrandaLogica.pulsosDesdeAncla(pulsos, toques[0], bpm, buffer.duration);
     recalcularTramos();
     guardarFoto();
     toques = [];
@@ -1137,7 +1137,7 @@
     // Mapa de calor: cuántas notas hay cada 2 s (en rojo, los tramos sin notas)
     if (notas.length && buffer && !verFallos) {
       const bin = 2;
-      const dens = EstruendoLogica.densidad(notas, buffer.duration, bin);
+      const dens = ParrandaLogica.densidad(notas, buffer.duration, bin);
       let maxD = 1;
       dens.forEach(v => { if (v > maxD) maxD = v; });
       for (let q = Math.max(0, Math.floor(vistaIni / bin)); q < dens.length; q++) {
@@ -1798,7 +1798,7 @@
     marcas.sort((a, b) => a.t - b.t);
     guardarFoto();
     sucio = true;
-    window.dispatchEvent(new CustomEvent("estruendo-marcas"));
+    window.dispatchEvent(new CustomEvent("parranda-marcas"));
   }
   function quitarMarca(i) {
     if (!marcas[i]) return;
@@ -1806,7 +1806,7 @@
     marcas.splice(i, 1);
     guardarFoto();
     sucio = true;
-    window.dispatchEvent(new CustomEvent("estruendo-marcas"));
+    window.dispatchEvent(new CustomEvent("parranda-marcas"));
   }
   function editarMarca(i, texto) {
     if (!marcas[i]) return;
@@ -1814,7 +1814,7 @@
     marcas[i].texto = String(texto || "").trim().slice(0, 80);
     guardarFoto();
     sucio = true;
-    window.dispatchEvent(new CustomEvent("estruendo-marcas"));
+    window.dispatchEvent(new CustomEvent("parranda-marcas"));
   }
 
   /* --- Patrones: las notas elegidas, medidas en pulsos, para guardarlas y pegarlas donde sea --- */
@@ -1834,7 +1834,7 @@
     pegarEnCursor();
   }
 
-  window.EstruendoEditor = {
+  window.ParrandaEditor = {
     agregarMarca, quitarMarca, editarMarca, obtenerMarcas: () => marcas.map(m => Object.assign({}, m)),
     patronDeSeleccion, pegarPatron,
     fijarSuperpuesto: lista => { superpuesto = lista; sucio = true; },

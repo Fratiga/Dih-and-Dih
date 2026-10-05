@@ -1,0 +1,49 @@
+/* Parranda: tema de rock para el juego de cuatro carriles. Va después de ritmo.css (comparten la
+   estructura) y cambia los colores: negro de escenario, rojo de neón, ámbar de focos y humo. */
+body.parranda-tema {
+  --bg: #0a0607; --panel: #150a0c; --panel-2: #211011; --text: #f4efe6; --muted: #a58f89;
+  --accent: #ff3b3b; --accent-soft: #8f1d1d; --border: #3b1717; --font-heading: 'Bebas Neue';
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 38% 70% at 14% -8%, rgba(255, 190, 120, .2), transparent 70%),
+    radial-gradient(ellipse 38% 70% at 86% -8%, rgba(255, 70, 70, .24), transparent 70%),
+    radial-gradient(ellipse at 50% 112%, rgba(255, 59, 59, .22), transparent 55%),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, .018) 0 2px, transparent 2px 22px);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  color: var(--text);
+}
+.parranda-tema .mj-barra { background: rgba(10, 6, 7, .85); border-bottom: 2px solid #ff3b3b; box-shadow: 0 2px 22px rgba(255, 59, 59, .35); }
+.parranda-tema .mj-volver { color: #ffb84d; }
+.parranda-tema .eyebrow { color: #ffb84d; letter-spacing: .34em; }
+.parranda-tema .mj-titulo {
+  font-size: clamp(2.6rem, 8vw, 4.6rem); letter-spacing: .1em; color: #fff; text-transform: uppercase;
+  text-shadow: 0 0 6px #ff3b3b, 0 0 22px rgba(255, 59, 59, .85), 0 3px 0 #7a0f0f, 0 0 50px rgba(255, 140, 40, .45);
+}
+.parranda-tema .rt-escenario { border: 3px solid #ff3b3b; box-shadow: 0 0 0 1px #0a0607, 0 0 30px rgba(255, 59, 59, .5), 0 0 70px rgba(255, 150, 40, .16); background: linear-gradient(180deg, #170a0c, #0a0607); }
+.parranda-tema .rt-brillo { background: radial-gradient(ellipse at 50% 92%, rgba(var(--brillo-rgb, 255, 59, 59), .38), rgba(var(--brillo-rgb, 255, 59, 59), 0) 62%); }
+.parranda-tema .rt-panel { background: rgba(10, 6, 7, .94); }
+.parranda-tema .rt-panel h2 { letter-spacing: .1em; color: #fff; text-shadow: 0 0 12px rgba(255, 59, 59, .8); }
+.parranda-tema .rt-detalle, .parranda-tema .rt-buzon { border-color: #4a1a1a; box-shadow: inset 0 0 0 1px rgba(255, 59, 59, .08); }
+.parranda-tema .rt-cancion { background: var(--panel); border-color: var(--border); }
+.parranda-tema .rt-cancion:hover { border-color: #ffb84d; }
+.parranda-tema .rt-cancion.activa { border-color: #ff3b3b; background: var(--panel-2); box-shadow: 0 0 16px rgba(255, 59, 59, .38); }
+.parranda-tema .rt-dif.activa { background: #3b1010; border-color: #ff3b3b; color: #fff; }
+.parranda-tema .rt-dif:hover { border-color: #ffb84d; }
+.parranda-tema .rt-jugar { border-color: #ff3b3b; background: linear-gradient(180deg, rgba(255, 59, 59, .22), rgba(255, 59, 59, .05)); box-shadow: 0 0 22px rgba(255, 59, 59, .5); text-transform: uppercase; }
+.parranda-tema .rt-jugar:hover { border-color: #ffb84d; box-shadow: 0 0 28px rgba(255, 170, 60, .6); }
+.parranda-tema .rt-secundario:hover { border-color: #ffb84d; }
+.parranda-tema .rt-rango { color: #fff; text-shadow: 0 0 10px #ff3b3b, 0 0 32px #ff3b3b; }
+.parranda-tema .rt-record { color: #ffb84d; }
+.parranda-tema .rt-tab.activa { border-color: #ff3b3b; }
+.parranda-tema .rt-tab:hover { border-color: #ffb84d; }
+.parranda-tema .rt-pista { background: #2b1414; border-color: #6a3030; }
+.parranda-tema .rt-interruptor input:checked + .rt-pista { background: rgba(255, 59, 59, .4); border-color: #ff3b3b; }
+.parranda-tema .rt-interruptor input:focus-visible + .rt-pista { outline-color: #ffb84d; }
+.parranda-tema .rt-interruptor:hover .rt-pista { border-color: #ffb84d; }
+.parranda-tema .rt-tecla:hover { border-color: #ffb84d; }
+.parranda-tema .rt-tecla.esperando { border-color: #ff3b3b; color: #ff6b6b; }
+.parranda-tema .rt-nuevo { background: #ff3b3b; box-shadow: 0 0 8px #ff3b3b; }
+.parranda-tema .rt-calibracion-puntos i { background: #3b1717; }
+.parranda-tema .rt-calibracion-puntos i.tocado { background: #ff3b3b; box-shadow: 0 0 10px #ff3b3b; }
+.parranda-tema .rt-dif .rt-dif-nivel { color: #ffb84d; }
+.parranda-tema .rt-buscar:focus { border-color: #ff3b3b; }

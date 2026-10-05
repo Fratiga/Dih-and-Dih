@@ -1,7 +1,7 @@
 // Minitutoriales del editor de mapas. Cada lección tiene pasos cortos; "objetivo" es lo que se
 // resalta en la página (un selector de CSS o una lista de ellos), "tab" abre esa pestaña de
 // herramientas y "abrir" despliega una sección.
-window.ESTRUENDO_TUTORIALES = [
+window.PARRANDA_TUTORIALES = [
   {
     id: "basico",
     titulo: "Primeros pasos",
@@ -106,7 +106,7 @@ window.ESTRUENDO_TUTORIALES = [
     resumen: "Publicar tu mapa.",
     pasos: [
       { texto: "Escribe tu firma. Sale en el juego junto a la estrella del mapa.", objetivo: "#reFirma" },
-      { texto: "«Probar en el juego» abre Estruendo con tu mapa sin guardar. Solo lo ves tú, en este navegador.", objetivo: "#reProbar" },
+      { texto: "«Probar en el juego» abre Parranda con tu mapa sin guardar. Solo lo ves tú, en este navegador.", objetivo: "#reProbar" },
       { texto: "«Guardar para los jugadores» lo publica. Desde ese momento lo juega todo el mundo.", objetivo: "#reGuardar" },
       { texto: "Exportar guarda una copia en un archivo y Importar la vuelve a cargar. Sirve de respaldo.", objetivo: ["#reExportar", "#reImportar"] }
     ]
@@ -117,7 +117,7 @@ window.ESTRUENDO_TUTORIALES = [
     resumen: "Añadir, quitar, renombrar o recortar.",
     pasos: [
       { texto: "Las canciones se gestionan en la página de la rocola, en la sección «Gestionar rocola». Este enlace te lleva allí.", objetivo: "#reRocolaEnlace" },
-      { texto: "Allí subes mp3 (hasta 30 MB cada uno), quitas, renombras y recortas canciones. Los cambios se ven al momento en Estruendo y en Zarabanda.", objetivo: "#reRocolaEnlace" }
+      { texto: "Allí subes mp3 (hasta 30 MB cada uno), quitas, renombras y recortas canciones. Los cambios se ven al momento en Parranda y en Zarabanda.", objetivo: "#reRocolaEnlace" }
     ]
   },
   {

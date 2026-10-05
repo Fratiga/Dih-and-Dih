@@ -1,10 +1,10 @@
-/* Lógica pura del editor de mapas de Estruendo (sin página): revisar un mapa, derivar una dificultad
+/* Lógica pura del editor de mapas de Parranda (sin página): revisar un mapa, derivar una dificultad
    desde otra, tempo (BPM y toques) y densidad. Trabaja con listas de notas { t, carril 0..3, dur } y
    de pulsos (s). Las notas que caen a la vez (un acorde) cuentan como un solo golpe para el ritmo. */
 (function () {
   "use strict";
 
-  const AN = window.EstruendoAnalisis;
+  const AN = window.ParrandaAnalisis;
   const CARRILES = AN.CARRILES;
   const ORDEN = ["facil", "normal", "dificil", "experto"];
   const NOMBRE = { facil: "Fácil", normal: "Normal", dificil: "Difícil", experto: "Experto" };
@@ -332,5 +332,5 @@
     return bins;
   }
 
-  window.EstruendoLogica = { nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
+  window.ParrandaLogica = { nivel, revisar, derivar, simplificar, enriquecer, bpmDeToques, pulsosDesdeAncla, densidad, limpiarLargas, ORDEN, NOMBRE };
 })();

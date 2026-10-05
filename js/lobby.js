@@ -106,7 +106,7 @@
     ["bestiario.html", "Bestiario"], ["reglas.html", "Reglas"], ["economia.html", "Economía"],
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
-    ["ritmo.html", "Zarabanda"], ["estruendo.html", "Estruendo"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
+    ["ritmo.html", "Zarabanda"], ["parranda.html", "Parranda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
     ["arqueria.html", "Arquería", true], ["duelo.html", "Duelo", true], ["cartas.html", "Cartas", true],
     ["valhalla.html", "Valhalla", true], ["admin.html", "Admin", true]
   ];

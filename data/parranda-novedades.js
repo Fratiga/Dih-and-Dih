@@ -1,10 +1,10 @@
-// Novedades de Estruendo, la más nueva primero. Las muestra el botón "Novedades" del menú.
+// Novedades de Parranda, la más nueva primero. Las muestra el botón "Novedades" del menú.
 // Para añadir una: pon un bloque nuevo arriba con la fecha (AAAA-MM-DD), un título y la lista
 // de cambios en frases cortas. El botón avisa con un punto a quien no haya visto la última.
-window.ESTRUENDO_NOVEDADES = [
+window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-05",
-    titulo: "Llega Estruendo",
+    titulo: "Llega Parranda",
     cambios: [
       "Es el juego hermano de Zarabanda: cuatro carriles que caen desde arriba, con tema de rock.",
       "Usa la misma rocola. Cualquier canción que esté ahí se puede jugar.",

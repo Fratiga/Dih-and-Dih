@@ -1,8 +1,8 @@
-/* Estruendo: mapas de cuatro carriles. El tempo, el pulso y el momento de cada nota salen del mismo
+/* Parranda: mapas de cuatro carriles. El tempo, el pulso y el momento de cada nota salen del mismo
    análisis que usa Zarabanda (ritmo-analisis.js), así que los dos juegos siguen la canción igual.
    Aquí solo se reparten las notas en cuatro carriles según el tono (la melodía sube y baja) y se
    pasa a y desde el formato guardado. Los carriles no son de ningún instrumento: cada mapa decide
-   qué sigue (guitarra, bajo, batería, voz...). Lo usan estruendo.html y estruendo-editor.html.
+   qué sigue (guitarra, bajo, batería, voz...). Lo usan parranda.html y parranda-editor.html.
    Una nota es { t, carril: 0..3, dur }. Un acorde son notas con el mismo t y carriles distintos. */
 (function () {
   "use strict";
@@ -83,7 +83,7 @@
     return m;
   }
 
-  /* Formato guardado (tabla estruendo_mapas): notas como [t, carril 0..3, duración] */
+  /* Formato guardado (tabla parranda_mapas): notas como [t, carril 0..3, duración] */
   function guardable(notas, pulsos) {
     return {
       v: 2,
@@ -132,5 +132,5 @@
     };
   }
 
-  window.EstruendoAnalisis = { HOP, CARRILES, DIFICULTADES, crearMapa, repartir, pulsoDe, guardable, desdeGuardado, estiloDe, golpes, bandas, ataques, maximoMovil };
+  window.ParrandaAnalisis = { HOP, CARRILES, DIFICULTADES, crearMapa, repartir, pulsoDe, guardable, desdeGuardado, estiloDe, golpes, bandas, ataques, maximoMovil };
 })();

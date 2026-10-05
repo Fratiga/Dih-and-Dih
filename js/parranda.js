@@ -1,4 +1,4 @@
-/* Estruendo: el juego hermano de Zarabanda. Cuatro carriles que caen desde arriba, con tema de rock.
+/* Parranda: el juego hermano de Zarabanda. Cuatro carriles que caen desde arriba, con tema de rock.
    Comparte la rocola, el análisis de la canción y el rol DJ con Zarabanda, pero tiene sus propios
    mapas, puntajes y editor. Los carriles no son de ningún instrumento: cada mapa decide qué sigue.
    El reloj del juego es el del audio, así que la música y las notas no se separan aunque la
@@ -12,10 +12,10 @@
   const RECORRIDO = Y_GOLPE + 50;
   const X0 = 300; // borde izquierdo de la pista
   const ANCHO = 90; // ancho de cada carril
-  const CLAVE_RECORDS = "compendioEstruendoRecords";
-  const CLAVE_AJUSTES = "compendioEstruendoAjustes";
-  // El análisis (tempo, pulso, notas) vive en estruendo-analisis.js y lo comparte el editor de mapas
-  const { HOP, DIFICULTADES, crearMapa, desdeGuardado } = window.EstruendoAnalisis;
+  const CLAVE_RECORDS = "compendioParrandaRecords";
+  const CLAVE_AJUSTES = "compendioParrandaAjustes";
+  // El análisis (tempo, pulso, notas) vive en parranda-analisis.js y lo comparte el editor de mapas
+  const { HOP, DIFICULTADES, crearMapa, desdeGuardado } = window.ParrandaAnalisis;
 
   /* hz: la nota que suena al pulsar el carril (cuartas: la, re, sol, do) */
   const CARRILES = [
@@ -57,7 +57,7 @@
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
-  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, teclas: null, sonidoGolpe: true };
+  let ajustes = { desfase: 0, practica: false, dificultad: "normal", cancion: 0, ruta: "", personaje: true, multitud: true, teclas: null, sonidoGolpe: true };
   try { records = JSON.parse(localStorage.getItem(CLAVE_RECORDS) || "{}") || {}; } catch (e) { records = {}; }
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "{}")); } catch (e) { /* sin almacenamiento */ }
   function guardarAjustes() { try { localStorage.setItem(CLAVE_AJUSTES, JSON.stringify(ajustes)); } catch (e) { /* sin almacenamiento */ } }
@@ -195,13 +195,13 @@
      dirección se usa el que dejó el editor en este navegador sin guardar. */
   async function mapaPersonalizado(ruta, dificultad) {
     try {
-      const pr = JSON.parse(localStorage.getItem("estruendoPrueba") || "null");
+      const pr = JSON.parse(localStorage.getItem("parrandaPrueba") || "null");
       if (/[?&]prueba\b/.test(location.search) && pr && pr.ruta === ruta && pr.dificultad === dificultad) return { mapa: pr.mapa, version: "prueba" };
     } catch (e) { /* sin almacenamiento */ }
     try {
       if (typeof fichasCliente !== "function") return null;
       const supabase = await fichasCliente();
-      const consulta = supabase.from("estruendo_mapas").select("mapa, actualizado").eq("cancion", ruta).eq("dificultad", dificultad).maybeSingle();
+      const consulta = supabase.from("parranda_mapas").select("mapa, actualizado").eq("cancion", ruta).eq("dificultad", dificultad).maybeSingle();
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 3000))]);
       return !error && data ? { mapa: data.mapa, version: data.actualizado || "auto" } : null;
     } catch (e) {
@@ -486,7 +486,7 @@
       const lista = [];
       for (let i = 0; i <= alcanzo; i++) lista.push(fallosBloque[i] || 0);
       const supa = await fichasCliente();
-      await supa.rpc("estruendo_registrar_fallos", { p_cancion: cancionActual.ruta, p_dificultad: ajustes.dificultad, p_version: versionJugada, p_fallos: lista, p_alcanzo: alcanzo });
+      await supa.rpc("parranda_registrar_fallos", { p_cancion: cancionActual.ruta, p_dificultad: ajustes.dificultad, p_version: versionJugada, p_fallos: lista, p_alcanzo: alcanzo });
     } catch (e) { /* sin estadísticas */ }
   }
 
@@ -642,8 +642,8 @@
     ultimoAvatar = ahora;
     const salto = Math.max(0, 1 - (ahora - avatar.salto) / 0.22);
     const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.2);
-    const x = 140;
-    const y = 380 - Math.sin(salto * Math.PI) * 30;
+    const x = 150;
+    const y = 438 - Math.sin(salto * Math.PI) * 30;
     const estira = 1 + golpe * 0.18;
     ctxC.save();
     ctxC.translate(x, y);
@@ -666,6 +666,78 @@
     ctxC.strokeStyle = "#12330f"; ctxC.lineWidth = 3;
     ctxC.beginPath(); ctxC.arc(0, 6, golpe > 0 ? 9 : 6, 0.1 * Math.PI, 0.9 * Math.PI); ctxC.stroke();
     ctxC.restore();
+  }
+
+  /* La multitud: fans a los dos lados de la pista, en tres filas. Rebotan con el pulso de la canción, saltan
+     cuando aciertas, levantan los brazos con un combo alto y sacan luces con uno muy alto. Si la vida
+     está baja, se desinflan. Tu personaje es uno más, en primera fila. Las posiciones son fijas (salen de
+     un generador con semilla) para que no cambien entre partidas. */
+  const fans = [];
+  {
+    let semilla = 20261;
+    const azar = () => { semilla = (semilla * 1664525 + 1013904223) % 4294967296; return semilla / 4294967296; };
+    const filas = [{ y: 345, esc: 0.72, n: 6, color: "#33171b" }, { y: 405, esc: 0.88, n: 5, color: "#4a2025" }, { y: 470, esc: 1.04, n: 4, color: "#662a30" }];
+    [[22, 282], [678, 938]].forEach(([x0, x1]) => {
+      filas.forEach((f, fi) => {
+        for (let i = 0; i < f.n; i++) {
+          const x = x0 + ((i + 0.5 + (azar() - 0.5) * 0.5) / f.n) * (x1 - x0);
+          // En primera fila a la izquierda queda sitio para el personaje del jugador
+          if (fi === 2 && x0 === 22 && Math.abs(x - 150) < 62) continue;
+          fans.push({ x, y: f.y + (azar() - 0.5) * 10, esc: f.esc * (0.92 + azar() * 0.16), fila: fi, color: f.color, fase: azar() * Math.PI * 2, tipo: Math.floor(azar() * 3), ritmo: 4 + azar() * 3 });
+        }
+      });
+    });
+  }
+  function dibujarMultitud(ahora, pulso) {
+    if (ajustes.multitud === false) return;
+    const energia = vida < 35 && estado !== "menu" ? 0.12 : Math.min(1, 0.3 + combo / 40);
+    const golpe = Math.max(0, 1 - (ahora - avatar.golpe) / 0.3);
+    const luces = combo >= 50 && vida >= 35;
+    ctxC.lineCap = "round";
+    fans.forEach(f => {
+      const s = f.esc;
+      // Rebote con el pulso, más un salto extra cuando aciertas (cada fan responde un poco distinto)
+      const bote = pulso * 9 * s * energia + golpe * (6 + (f.fase % 3) * 3) * s * energia + Math.sin(ahora * f.ritmo + f.fase) * 1.6 * energia;
+      const y = f.y - bote + (vida < 35 && estado !== "menu" ? 7 * s : 0);
+      const x = f.x;
+      // Brazos arriba (energía media o alta)
+      const arriba = energia > 0.45;
+      if (arriba) {
+        ctxC.strokeStyle = f.color;
+        ctxC.lineWidth = 5.5 * s;
+        const onda = Math.sin(ahora * f.ritmo * 1.3 + f.fase) * 7 * s;
+        [-1, 1].forEach(lado => {
+          const hx = x + lado * (24 * s + (f.tipo === 1 ? 4 * s : 0)) + onda * lado;
+          const hy = y - 52 * s - golpe * 8 * s;
+          ctxC.beginPath(); ctxC.moveTo(x + lado * 13 * s, y - 8 * s); ctxC.lineTo(hx, hy); ctxC.stroke();
+          ctxC.fillStyle = f.color;
+          ctxC.beginPath(); ctxC.arc(hx, hy, 4.5 * s, 0, Math.PI * 2); ctxC.fill();
+          if (luces && f.fila === 2 && lado === (f.tipo === 0 ? -1 : 1)) {
+            ctxC.fillStyle = "rgba(255, 225, 77, 0.95)";
+            ctxC.beginPath(); ctxC.arc(hx, hy - 7 * s, 4 * s, 0, Math.PI * 2); ctxC.fill();
+            ctxC.fillStyle = "rgba(255, 225, 77, 0.22)";
+            ctxC.beginPath(); ctxC.arc(hx, hy - 7 * s, 12 * s, 0, Math.PI * 2); ctxC.fill();
+          }
+        });
+      }
+      // Cuerpo y cabeza
+      ctxC.fillStyle = f.color;
+      ctxC.beginPath(); ctxC.ellipse(x, y, 17 * s, 23 * s, 0, 0, Math.PI * 2); ctxC.fill();
+      ctxC.beginPath(); ctxC.arc(x, y - 31 * s, 11 * s, 0, Math.PI * 2); ctxC.fill();
+      // Peinado: nada, cresta o melena
+      if (f.tipo === 1) {
+        ctxC.beginPath(); ctxC.moveTo(x - 4 * s, y - 40 * s); ctxC.lineTo(x, y - 55 * s); ctxC.lineTo(x + 4 * s, y - 40 * s); ctxC.closePath(); ctxC.fill();
+      } else if (f.tipo === 2) {
+        ctxC.beginPath(); ctxC.ellipse(x, y - 25 * s, 15 * s, 17 * s, 0, 0, Math.PI * 2); ctxC.fill();
+      }
+      // Un borde de luz del color del carril en las dos filas de adelante
+      if (f.fila > 0) {
+        ctxC.strokeStyle = `rgba(${rgbPrevio || "255, 59, 59"}, ${f.fila === 2 ? 0.85 : 0.55})`;
+        ctxC.lineWidth = 2;
+        ctxC.beginPath(); ctxC.arc(x, y - 31 * s, 11 * s, Math.PI * 1.1, Math.PI * 1.9); ctxC.stroke();
+        ctxC.beginPath(); ctxC.ellipse(x, y, 17 * s, 23 * s, 0, Math.PI * 1.15, Math.PI * 1.85); ctxC.stroke();
+      }
+    });
   }
 
   function dibujar(t) {
@@ -784,6 +856,7 @@
       }
     }
 
+    dibujarMultitud(ahora, pulso);
     dibujarAvatar(ahora);
 
     // Textos de juicio
@@ -855,12 +928,12 @@
     if (guardado && Date.now() - guardado.t < 30000) return guardado.filas;
     const supa = await fichasCliente();
     const pedir = async columnas => {
-      let q = supa.from("estruendo_puntajes").select(columnas).eq("cancion", ruta);
+      let q = supa.from("parranda_puntajes").select(columnas).eq("cancion", ruta);
       if (dif !== "todas") q = q.eq("dificultad", dif);
       return q.order("puntos", { ascending: false }).limit(200);
     };
     let res = await pedir("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas, mapa_version");
-    // Si todavía no se corrió estruendo.sql no existe la versión: se muestra todo como siempre
+    // Si todavía no se corrió parranda.sql no existe la versión: se muestra todo como siempre
     if (res.error && /mapa_version/i.test(String(res.error.message))) res = await pedir("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas");
     if (res.error) throw res.error;
     let filas = res.data || [];
@@ -921,9 +994,9 @@
       } else {
         const supa = await fichasCliente();
         const args = { p_cancion: ruta, p_dificultad: dif, p_puntos: pts, p_precision: acc, p_rango: rango, p_combo: combo };
-        let { error } = await supa.rpc("estruendo_registrar", Object.assign({ p_version: version || "auto" }, args));
-        // Sin estruendo.sql la función no conoce la versión: se manda como antes
-        if (error && /p_version|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) ({ error } = await supa.rpc("estruendo_registrar", args));
+        let { error } = await supa.rpc("parranda_registrar", Object.assign({ p_version: version || "auto" }, args));
+        // Sin parranda.sql la función no conoce la versión: se manda como antes
+        if (error && /p_version|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) ({ error } = await supa.rpc("parranda_registrar", args));
         if (error) aviso = "No se pudo guardar el puntaje. Prueba de nuevo en un rato.";
       }
     } catch (e) {
@@ -963,7 +1036,7 @@
     try {
       if (typeof fichasCliente !== "function") return;
       const supabase = await fichasCliente();
-      const consulta = supabase.from("estruendo_mapas").select("cancion, dificultad, actualizado, firma:mapa->>firma, nivel:mapa->>nivel");
+      const consulta = supabase.from("parranda_mapas").select("cancion, dificultad, actualizado, firma:mapa->>firma, nivel:mapa->>nivel");
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 4000))]);
       if (error || !data) return;
       aMano.clear();
@@ -1004,6 +1077,7 @@
     desfaseTxtEl.textContent = `${ajustes.desfase > 0 ? "+" : ""}${ajustes.desfase} ms`;
     practicaEl.checked = !!ajustes.practica;
     document.getElementById("rtPersonaje").checked = ajustes.personaje !== false;
+    document.getElementById("rtMultitud").checked = ajustes.multitud !== false;
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
     recordEl.textContent = r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
@@ -1035,6 +1109,7 @@
   });
   practicaEl.addEventListener("change", () => { ajustes.practica = practicaEl.checked; guardarAjustes(); });
   document.getElementById("rtPersonaje").addEventListener("change", ev => { ajustes.personaje = ev.target.checked; guardarAjustes(); });
+  document.getElementById("rtMultitud").addEventListener("change", ev => { ajustes.multitud = ev.target.checked; guardarAjustes(); });
   document.getElementById("rtSonidoGolpe").addEventListener("change", ev => { ajustes.sonidoGolpe = ev.target.checked; guardarAjustes(); });
 
   /* --- Foto del personaje: se elige, se encuadra en un círculo y se guarda ya recortada --- */
@@ -1143,10 +1218,10 @@
   }
   cargarFoto();
 
-  /* --- Novedades: lista de cambios (data/estruendo-novedades.js) con un punto si hay algo que no viste --- */
+  /* --- Novedades: lista de cambios (data/parranda-novedades.js) con un punto si hay algo que no viste --- */
   {
-    const CLAVE_VISTAS = "compendioEstruendoNovedadesVistas";
-    const novedades = window.ESTRUENDO_NOVEDADES || [];
+    const CLAVE_VISTAS = "compendioParrandaNovedadesVistas";
+    const novedades = window.PARRANDA_NOVEDADES || [];
     const nuevoEl = document.getElementById("rtNuevo");
     const clave = n => n.fecha + "|" + n.titulo;
     let vistas = [];
@@ -1349,7 +1424,7 @@
     boton.disabled = true;
     buzonEstadoEl.textContent = "Enviando...";
     try {
-      await enviarPeticion({ texto: "[Canción para Estruendo] " + cancion + (enlace ? "\n" + enlace : ""), nombre });
+      await enviarPeticion({ texto: "[Canción para Parranda] " + cancion + (enlace ? "\n" + enlace : ""), nombre });
       try { localStorage.setItem("compendioRitmoNombre", nombre); } catch (e) { /* sin almacenamiento */ }
       document.getElementById("rtBuzonCancion").value = "";
       document.getElementById("rtBuzonEnlace").value = "";
@@ -1376,7 +1451,8 @@
       entradas,
       tick: t => { actualizar(t); dibujar(t); },
       golpear, notas: () => notas, tiempo: tiempoCancion,
-      forzarTiempo: f => { tiempoCancion = f; }
+      forzarTiempo: f => { tiempoCancion = f; },
+      forzarCombo: n => { combo = n; }
     };
   }
 })();

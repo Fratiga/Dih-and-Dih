@@ -1,11 +1,11 @@
 /* Apartados de la página del editor de mapas que no tocan el editor en sí: control de acceso (Admin
    y DJ), pestañas y controles segmentados, subida de canciones a la rocola, buzón de problemas o
-   sugerencias y minitutoriales. Se carga después de estruendo-editor.js. */
+   sugerencias y minitutoriales. Se carga después de parranda-editor.js. */
 (function () {
   "use strict";
 
   const $ = id => document.getElementById(id);
-  const avisar = (texto, error) => { if (window.EstruendoEditor) window.EstruendoEditor.mensaje(texto, error); };
+  const avisar = (texto, error) => { if (window.ParrandaEditor) window.ParrandaEditor.mensaje(texto, error); };
 
   /* --- Controles segmentados: la dificultad, la velocidad y el ajuste son selects ocultos --- */
   document.querySelectorAll(".re-segmentos").forEach(cont => {
@@ -35,7 +35,7 @@
     if (id === "patrones" && typeof pintarPatrones === "function") pintarPatrones();
   }
   tabs.forEach(t => t.addEventListener("click", () => abrirTab(t.dataset.tab)));
-  window.addEventListener("estruendo-abrir-tab", ev => {
+  window.addEventListener("parranda-abrir-tab", ev => {
     abrirTab(ev.detail);
     if (ev.detail === "revisar") revisarMapa();
   });
@@ -82,7 +82,7 @@
       estado.classList.remove("error");
       estado.textContent = "Enviando...";
       try {
-        await enviarPeticion({ texto: "[Editor de Estruendo] " + t, nombre: nombre.value.trim() });
+        await enviarPeticion({ texto: "[Editor de Parranda] " + t, nombre: nombre.value.trim() });
         texto.value = "";
         estado.textContent = "Enviado. Gracias.";
       } catch (err) {
@@ -96,7 +96,7 @@
 
   /* --- Minitutoriales: lecciones de pasos cortos que resaltan lo que explican --- */
   {
-    const lecciones = window.ESTRUENDO_TUTORIALES || [];
+    const lecciones = window.PARRANDA_TUTORIALES || [];
     const raiz = $("reTuto");
     const lista = $("reTutoLista");
     const leccionEl = $("reTutoLeccion");
@@ -164,7 +164,7 @@
 
   /* --- Revisar el mapa ------------------------------------------------------------------------------------ */
   function revisarMapa() {
-    const ed = window.EstruendoEditor && window.EstruendoEditor.obtener();
+    const ed = window.ParrandaEditor && window.ParrandaEditor.obtener();
     const cont = $("reRevisarStats");
     const lista = $("reRevisarLista");
     if (!ed || !ed.buffer || !ed.notas.length) {
@@ -172,7 +172,7 @@
       lista.innerHTML = `<li class="re-vacio">Carga primero un mapa.</li>`;
       return;
     }
-    const r = EstruendoLogica.revisar(ed.notas, ed.pulsos, ed.buffer.duration, ed.dificultad);
+    const r = ParrandaLogica.revisar(ed.notas, ed.pulsos, ed.buffer.duration, ed.dificultad);
     const st = r.stats;
     cont.innerHTML = [
       ["Nivel", st.nivel], ["Notas", st.total], ["Golpes por segundo", st.npsMedio], ["Pico", st.picoNps + " /s"], ["Acordes", st.acordes], ["Largas", st.largas],
@@ -187,31 +187,31 @@
   }
   $("reRevisar").addEventListener("click", revisarMapa);
   $("reCorregir").addEventListener("click", () => {
-    if (!window.EstruendoEditor) return;
-    window.EstruendoEditor.limpiarNotas();
-    const quitadas = window.EstruendoEditor.quitarEncimadas();
-    window.EstruendoEditor.repintar();
+    if (!window.ParrandaEditor) return;
+    window.ParrandaEditor.limpiarNotas();
+    const quitadas = window.ParrandaEditor.quitarEncimadas();
+    window.ParrandaEditor.repintar();
     revisarMapa();
     avisar(`Largas y notas repetidas corregidas${quitadas ? `, y ${quitadas} nota${quitadas === 1 ? "" : "s"} encimada${quitadas === 1 ? "" : "s"} quitada${quitadas === 1 ? "" : "s"}` : ""}.`);
   });
   $("reRevisarLista").addEventListener("click", ev => {
     const b = ev.target.closest("[data-ir]");
-    if (b && window.EstruendoEditor) window.EstruendoEditor.ir(Math.max(0, Number(b.dataset.ir) - 1));
+    if (b && window.ParrandaEditor) window.ParrandaEditor.ir(Math.max(0, Number(b.dataset.ir) - 1));
   });
 
   /* --- Derivar una dificultad desde otra ------------------------------------------------------------------ */
   async function refrescarOrigenes() {
     const sel = $("reDerivarOrigen");
-    const ed = window.EstruendoEditor && window.EstruendoEditor.obtener();
+    const ed = window.ParrandaEditor && window.ParrandaEditor.obtener();
     if (!ed) return;
     try {
       const sb = await fichasCliente();
-      const { data, error } = await sb.from("estruendo_mapas").select("dificultad, mapa").eq("cancion", ed.ruta);
+      const { data, error } = await sb.from("parranda_mapas").select("dificultad, mapa").eq("cancion", ed.ruta);
       if (error) throw error;
       const otros = (data || []).filter(f => f.dificultad !== ed.dificultad)
-        .sort((a, b) => EstruendoLogica.ORDEN.indexOf(a.dificultad) - EstruendoLogica.ORDEN.indexOf(b.dificultad));
+        .sort((a, b) => ParrandaLogica.ORDEN.indexOf(a.dificultad) - ParrandaLogica.ORDEN.indexOf(b.dificultad));
       sel.innerHTML = otros.length
-        ? otros.map(f => `<option value="${f.dificultad}">${EstruendoLogica.NOMBRE[f.dificultad]} (${f.mapa.notas.length} notas${f.mapa.firma ? `, de ${escHtml(f.mapa.firma)}` : ""})</option>`).join("")
+        ? otros.map(f => `<option value="${f.dificultad}">${ParrandaLogica.NOMBRE[f.dificultad]} (${f.mapa.notas.length} notas${f.mapa.firma ? `, de ${escHtml(f.mapa.firma)}` : ""})</option>`).join("")
         : `<option value="">No hay otro mapa guardado de esta canción</option>`;
     } catch (err) {
       sel.innerHTML = `<option value="">No se pudo cargar la lista</option>`;
@@ -220,27 +220,27 @@
 
   $("reDerivarRefrescar").addEventListener("click", refrescarOrigenes);
   [$("reCancion"), $("reDif")].forEach(el => el.addEventListener("change", () => { if (!document.querySelector('[data-panel="dificultades"]').classList.contains("hidden")) refrescarOrigenes(); }));
-  window.addEventListener("estruendo-guardado", refrescarOrigenes);
+  window.addEventListener("parranda-guardado", refrescarOrigenes);
 
   $("reDerivar").addEventListener("click", async () => {
     const estado = $("reDerivarEstado");
     const origen = $("reDerivarOrigen").value;
-    const ed = window.EstruendoEditor.obtener();
+    const ed = window.ParrandaEditor.obtener();
     if (!origen) { estado.textContent = "Elige de qué mapa partir."; estado.classList.add("error"); return; }
     estado.classList.remove("error");
     estado.textContent = "Derivando...";
     try {
-      await window.EstruendoEditor.cargarAudio();
+      await window.ParrandaEditor.cargarAudio();
       const sb = await fichasCliente();
-      const { data, error } = await sb.from("estruendo_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", origen).maybeSingle();
+      const { data, error } = await sb.from("parranda_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", origen).maybeSingle();
       if (error) throw error;
       if (!data) throw new Error("Ese mapa ya no existe.");
-      const base = window.EstruendoEditor.obtener();
+      const base = window.ParrandaEditor.obtener();
       const notasO = data.mapa.notas.map(x => ({ t: x[0], carril: Math.max(0, Math.min(3, x[1] | 0)), dur: x[2] || 0 }));
-      const nuevas = EstruendoLogica.derivar(notasO, data.mapa.pulsos, base.buffer, origen, ed.dificultad);
-      window.EstruendoEditor.aplicarNotasExternas(nuevas, data.mapa.pulsos);
-      window.EstruendoEditor.fijarEsperado(null);
-      const texto = `${EstruendoLogica.NOMBRE[origen]} (${notasO.length} notas) → ${EstruendoLogica.NOMBRE[ed.dificultad]} (${nuevas.length} notas). Revísalo y retócalo antes de guardar.`;
+      const nuevas = ParrandaLogica.derivar(notasO, data.mapa.pulsos, base.buffer, origen, ed.dificultad);
+      window.ParrandaEditor.aplicarNotasExternas(nuevas, data.mapa.pulsos);
+      window.ParrandaEditor.fijarEsperado(null);
+      const texto = `${ParrandaLogica.NOMBRE[origen]} (${notasO.length} notas) → ${ParrandaLogica.NOMBRE[ed.dificultad]} (${nuevas.length} notas). Revísalo y retócalo antes de guardar.`;
       estado.textContent = texto;
       avisar(texto);
     } catch (err) {
@@ -254,47 +254,47 @@
     const versiones = $("reVersiones");
     const registro = $("reRegistro");
     const cuando = iso => new Date(iso).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-    const nombreDif = d => EstruendoLogica.NOMBRE[d] || d;
+    const nombreDif = d => ParrandaLogica.NOMBRE[d] || d;
 
     async function cargarHistorial() {
-      const ed = window.EstruendoEditor && window.EstruendoEditor.obtener();
+      const ed = window.ParrandaEditor && window.ParrandaEditor.obtener();
       if (!ed) return;
       try {
         const sb = await fichasCliente();
-        const { data, error } = await sb.from("estruendo_mapas_historial").select("id, cancion, dificultad, accion, notas, firma, autor_nombre, creada").order("creada", { ascending: false }).limit(120);
+        const { data, error } = await sb.from("parranda_mapas_historial").select("id, cancion, dificultad, accion, notas, firma, autor_nombre, creada").order("creada", { ascending: false }).limit(120);
         if (error) throw error;
         const detalle = f => (f.accion === "borrado" ? "borró el mapa" : `guardó ${f.notas} notas`) + (f.firma ? ` · firma ${escHtml(f.firma)}` : "");
         const propias = data.filter(f => f.cancion === ed.ruta && f.dificultad === ed.dificultad).slice(0, 40);
         versiones.innerHTML = propias.length
           ? propias.map(f => `<li><span>${cuando(f.creada)} · <strong>${escHtml(f.autor_nombre || "alguien")}</strong> ${detalle(f)}</span>${f.accion === "guardado" ? `<button type="button" class="re-btn re-btn-chico" data-version="${f.id}">Cargar</button>` : ""}</li>`).join("")
           : `<li class="re-vacio">Todavía no hay versiones guardadas de esta canción y dificultad.</li>`;
-        registro.innerHTML = data.slice(0, 40).map(f => `<li><span>${cuando(f.creada)} · <strong>${escHtml(f.autor_nombre || "alguien")}</strong> ${detalle(f)} <small>· ${escHtml(window.EstruendoEditor.cancionPorRuta(f.cancion))} · ${nombreDif(f.dificultad)}</small></span></li>`).join("") || `<li class="re-vacio">Nadie ha guardado mapas todavía.</li>`;
+        registro.innerHTML = data.slice(0, 40).map(f => `<li><span>${cuando(f.creada)} · <strong>${escHtml(f.autor_nombre || "alguien")}</strong> ${detalle(f)} <small>· ${escHtml(window.ParrandaEditor.cancionPorRuta(f.cancion))} · ${nombreDif(f.dificultad)}</small></span></li>`).join("") || `<li class="re-vacio">Nadie ha guardado mapas todavía.</li>`;
       } catch (err) {
         const falta = /relation|does not exist|schema cache/i.test(String(err && err.message));
-        versiones.innerHTML = `<li class="re-vacio">${falta ? "Falta correr scratchpad/estruendo.sql en Supabase." : "No se pudo cargar el historial."}</li>`;
+        versiones.innerHTML = `<li class="re-vacio">${falta ? "Falta correr scratchpad/parranda.sql en Supabase." : "No se pudo cargar el historial."}</li>`;
         registro.innerHTML = "";
       }
     }
 
     $("reHistorial").addEventListener("toggle", ev => { if (ev.target.open) cargarHistorial(); });
     $("reHistorialRefrescar").addEventListener("click", cargarHistorial);
-    window.addEventListener("estruendo-guardado", () => { if ($("reHistorial").open) cargarHistorial(); });
+    window.addEventListener("parranda-guardado", () => { if ($("reHistorial").open) cargarHistorial(); });
     [$("reCancion"), $("reDif")].forEach(el => el.addEventListener("change", () => { if ($("reHistorial").open) cargarHistorial(); }));
 
     versiones.addEventListener("click", async ev => {
       const b = ev.target.closest("[data-version]");
       if (!b) return;
-      if (window.EstruendoEditor.hayCambios() && !confirm("Hay cambios sin guardar en el editor. ¿Reemplazarlos con esa versión?")) return;
+      if (window.ParrandaEditor.hayCambios() && !confirm("Hay cambios sin guardar en el editor. ¿Reemplazarlos con esa versión?")) return;
       b.disabled = true;
       try {
         const sb = await fichasCliente();
-        const ed = window.EstruendoEditor.obtener();
-        const { data, error } = await sb.from("estruendo_mapas_historial").select("mapa").eq("id", b.dataset.version).single();
+        const ed = window.ParrandaEditor.obtener();
+        const { data, error } = await sb.from("parranda_mapas_historial").select("mapa").eq("id", b.dataset.version).single();
         if (error) throw error;
         // Para no recibir un aviso de conflicto contigo mismo, se toma la fecha del mapa guardado ahora
-        const { data: actual } = await sb.from("estruendo_mapas").select("actualizado").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).maybeSingle();
-        await window.EstruendoEditor.cargarAudio();
-        window.EstruendoEditor.aplicarGuardableExterno(data.mapa, actual ? actual.actualizado : null);
+        const { data: actual } = await sb.from("parranda_mapas").select("actualizado").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).maybeSingle();
+        await window.ParrandaEditor.cargarAudio();
+        window.ParrandaEditor.aplicarGuardableExterno(data.mapa, actual ? actual.actualizado : null);
         avisar("Versión cargada en el editor. Guarda si quieres que sea la actual.");
       } catch (err) {
         avisar("No se pudo cargar esa versión: " + (err && err.message || err), true);
@@ -309,36 +309,36 @@
     const lista = $("reMarcasLista");
     const tiempoTxt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
     function pintarMarcas() {
-      const m = window.EstruendoEditor ? window.EstruendoEditor.obtenerMarcas() : [];
+      const m = window.ParrandaEditor ? window.ParrandaEditor.obtenerMarcas() : [];
       lista.innerHTML = m.length
         ? m.map((x, i) => `<li><span><b class="re-nivel" style="color: ${x.tipo === "seccion" ? "#f2d46b" : "#7ae8ff"}">${x.tipo === "seccion" ? "Sección" : "Comentario"}</b>${tiempoTxt(x.t)} · ${escHtml(x.texto || "(sin texto)")}${x.autor ? ` <small>· ${escHtml(x.autor)}</small>` : ""}</span><span class="re-lista-acciones"><button type="button" class="re-btn re-btn-chico" data-ir="${x.t}">Ir</button><button type="button" class="re-btn re-btn-chico" data-editar-marca="${i}">Editar</button><button type="button" class="re-btn re-btn-chico re-btn-peligro" data-quitar-marca="${i}">Quitar</button></span></li>`).join("")
         : `<li class="re-vacio">Todavía no hay marcas.</li>`;
     }
-    window.addEventListener("estruendo-marcas", pintarMarcas);
+    window.addEventListener("parranda-marcas", pintarMarcas);
     $("reMarcaAgregar").addEventListener("click", () => {
-      window.EstruendoEditor.agregarMarca($("reMarcaTipo").value, $("reMarcaTexto").value);
+      window.ParrandaEditor.agregarMarca($("reMarcaTipo").value, $("reMarcaTexto").value);
       $("reMarcaTexto").value = "";
     });
     $("reMarcaTexto").addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); $("reMarcaAgregar").click(); } });
     lista.addEventListener("click", ev => {
       const ir = ev.target.closest("[data-ir]");
-      if (ir) { window.EstruendoEditor.ir(Math.max(0, Number(ir.dataset.ir) - 0.5)); return; }
+      if (ir) { window.ParrandaEditor.ir(Math.max(0, Number(ir.dataset.ir) - 0.5)); return; }
       const ed = ev.target.closest("[data-editar-marca]");
       if (ed) {
         const i = Number(ed.dataset.editarMarca);
-        const actual = window.EstruendoEditor.obtenerMarcas()[i];
+        const actual = window.ParrandaEditor.obtenerMarcas()[i];
         const nuevo = prompt("Texto de la marca:", actual ? actual.texto : "");
-        if (nuevo !== null) window.EstruendoEditor.editarMarca(i, nuevo);
+        if (nuevo !== null) window.ParrandaEditor.editarMarca(i, nuevo);
         return;
       }
       const q = ev.target.closest("[data-quitar-marca]");
-      if (q) window.EstruendoEditor.quitarMarca(Number(q.dataset.quitarMarca));
+      if (q) window.ParrandaEditor.quitarMarca(Number(q.dataset.quitarMarca));
     });
     pintarMarcas();
   }
 
   /* --- Patrones: guardados con nombre y compartidos entre los DJ ---------------------------------------------- */
-  const CLAVE_PATRONES_LOCAL = "estruendoPatronesLocal";
+  const CLAVE_PATRONES_LOCAL = "parrandaPatronesLocal";
   let patrones = [];
   let patronesRemotos = true;
 
@@ -347,7 +347,7 @@
   async function cargarPatrones() {
     try {
       const sb = await fichasCliente();
-      const { data, error } = await sb.from("estruendo_patrones").select("id, nombre, patron, autor_nombre, creada").order("creada", { ascending: false });
+      const { data, error } = await sb.from("parranda_patrones").select("id, nombre, patron, autor_nombre, creada").order("creada", { ascending: false });
       if (error) throw error;
       patrones = data || [];
       patronesRemotos = true;
@@ -366,13 +366,13 @@
       ? patrones.map(p => `<li><span>${escHtml(p.nombre)} <small>· ${p.patron.notas.length} notas · ${Math.max(1, Math.round(p.patron.pulsos))} pulsos${p.autor_nombre ? ` · ${escHtml(p.autor_nombre)}` : ""}</small></span><span class="re-lista-acciones"><button type="button" class="re-btn re-btn-chico" data-pegar-patron="${escHtml(String(p.id))}">Pegar en el cursor</button><button type="button" class="re-btn re-btn-chico re-btn-peligro" data-borrar-patron="${escHtml(String(p.id))}">Quitar</button></span></li>`).join("")
       : `<li class="re-vacio">Todavía no hay patrones guardados.</li>`;
     const est = $("rePatronEstado");
-    if (est && !patronesRemotos) est.textContent = "Se guardan solo en este navegador. Para compartirlos hace falta correr scratchpad/estruendo.sql.";
+    if (est && !patronesRemotos) est.textContent = "Se guardan solo en este navegador. Para compartirlos hace falta correr scratchpad/parranda.sql.";
   }
 
   $("rePatronGuardar").addEventListener("click", async () => {
     const est = $("rePatronEstado");
     const nombre = $("rePatronNombre").value.trim();
-    const patron = window.EstruendoEditor.patronDeSeleccion();
+    const patron = window.ParrandaEditor.patronDeSeleccion();
     est.classList.add("error");
     if (!patron) { est.textContent = "Elige primero algunas notas en la línea de tiempo."; return; }
     if (!nombre) { est.textContent = "Ponle un nombre al patrón."; return; }
@@ -381,7 +381,7 @@
     try {
       if (patronesRemotos) {
         const sb = await fichasCliente();
-        const { error } = await sb.from("estruendo_patrones").insert({ nombre, patron, autor_nombre: quien || "" });
+        const { error } = await sb.from("parranda_patrones").insert({ nombre, patron, autor_nombre: quien || "" });
         if (error) throw error;
       } else {
         patrones.unshift({ id: "l" + Date.now(), nombre, patron, autor_nombre: quien || "" });
@@ -400,7 +400,7 @@
     const pegar = ev.target.closest("[data-pegar-patron]");
     if (pegar) {
       const p = patrones.find(x => String(x.id) === pegar.dataset.pegarPatron);
-      if (p) window.EstruendoEditor.pegarPatron(p.patron);
+      if (p) window.ParrandaEditor.pegarPatron(p.patron);
       return;
     }
     const borrar = ev.target.closest("[data-borrar-patron]");
@@ -410,7 +410,7 @@
     try {
       if (patronesRemotos) {
         const sb = await fichasCliente();
-        const { error } = await sb.from("estruendo_patrones").delete().eq("id", p.id);
+        const { error } = await sb.from("parranda_patrones").delete().eq("id", p.id);
         if (error) throw error;
       } else {
         patrones = patrones.filter(x => x !== p);
@@ -433,11 +433,11 @@
       const nombre = (typeof nombreUsuario === "function" && nombreUsuario()) || "Alguien";
       const aviso = $("reOtros");
       const estado = () => {
-        const ed = window.EstruendoEditor.obtener();
+        const ed = window.ParrandaEditor.obtener();
         return { nombre, cancion: ed.ruta, dificultad: ed.dificultad };
       };
       const mirar = () => {
-        const ed = window.EstruendoEditor.obtener();
+        const ed = window.ParrandaEditor.obtener();
         const otros = [];
         const todos = canalPresencia.presenceState();
         Object.keys(todos).forEach(id => {
@@ -448,7 +448,7 @@
         aviso.classList.toggle("hidden", !otros.length);
         aviso.textContent = otros.length ? `${otros.join(" y ")} también ${otros.length === 1 ? "está" : "están"} editando esta canción y dificultad ahora mismo. Si guardáis a la vez, el último pisa al otro (queda en el historial).` : "";
       };
-      canalPresencia = sb.channel("estruendo-editores", { config: { presence: { key: yo } } });
+      canalPresencia = sb.channel("parranda-editores", { config: { presence: { key: yo } } });
       canalPresencia.on("presence", { event: "sync" }, mirar).subscribe(async st => {
         if (st === "SUBSCRIBED") await canalPresencia.track(estado());
       });
@@ -460,52 +460,52 @@
   /* --- Guía de otra dificultad ------------------------------------------------------------------------------------------ */
   async function refrescarGuias() {
     const sel = $("reSuperponer");
-    const ed = window.EstruendoEditor && window.EstruendoEditor.obtener();
+    const ed = window.ParrandaEditor && window.ParrandaEditor.obtener();
     if (!ed) return;
     const actual = sel.value;
     try {
       const sb = await fichasCliente();
-      const { data, error } = await sb.from("estruendo_mapas").select("dificultad").eq("cancion", ed.ruta);
+      const { data, error } = await sb.from("parranda_mapas").select("dificultad").eq("cancion", ed.ruta);
       if (error) throw error;
-      const otros = (data || []).filter(f => f.dificultad !== ed.dificultad).sort((a, b) => EstruendoLogica.ORDEN.indexOf(a.dificultad) - EstruendoLogica.ORDEN.indexOf(b.dificultad));
-      sel.innerHTML = `<option value="">Ninguna</option>` + otros.map(f => `<option value="${f.dificultad}">${EstruendoLogica.NOMBRE[f.dificultad]}</option>`).join("");
+      const otros = (data || []).filter(f => f.dificultad !== ed.dificultad).sort((a, b) => ParrandaLogica.ORDEN.indexOf(a.dificultad) - ParrandaLogica.ORDEN.indexOf(b.dificultad));
+      sel.innerHTML = `<option value="">Ninguna</option>` + otros.map(f => `<option value="${f.dificultad}">${ParrandaLogica.NOMBRE[f.dificultad]}</option>`).join("");
       sel.value = otros.some(f => f.dificultad === actual) ? actual : "";
     } catch (e) {
       sel.innerHTML = `<option value="">Ninguna</option>`;
     }
-    if (!sel.value) window.EstruendoEditor.fijarSuperpuesto(null);
+    if (!sel.value) window.ParrandaEditor.fijarSuperpuesto(null);
   }
 
   $("reSuperponer").addEventListener("change", async ev => {
     const dif = ev.target.value;
-    const ed = window.EstruendoEditor.obtener();
-    if (!dif) { window.EstruendoEditor.fijarSuperpuesto(null); return; }
+    const ed = window.ParrandaEditor.obtener();
+    if (!dif) { window.ParrandaEditor.fijarSuperpuesto(null); return; }
     try {
       const sb = await fichasCliente();
-      const { data, error } = await sb.from("estruendo_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", dif).maybeSingle();
+      const { data, error } = await sb.from("parranda_mapas").select("mapa").eq("cancion", ed.ruta).eq("dificultad", dif).maybeSingle();
       if (error) throw error;
       const desfase = data ? (Number(data.mapa.offset) || 0) / 1000 : 0;
-      window.EstruendoEditor.fijarSuperpuesto(data ? data.mapa.notas.map(x => ({ t: x[0] + desfase, carril: Math.max(0, Math.min(3, x[1] | 0)) })) : null);
+      window.ParrandaEditor.fijarSuperpuesto(data ? data.mapa.notas.map(x => ({ t: x[0] + desfase, carril: Math.max(0, Math.min(3, x[1] | 0)) })) : null);
     } catch (err) {
       avisar("No se pudo cargar esa guía.", true);
     }
   });
-  [$("reCancion"), $("reDif")].forEach(el => el.addEventListener("change", () => { window.EstruendoEditor.fijarSuperpuesto(null); $("reSuperponer").value = ""; refrescarGuias(); window.EstruendoEditor.fijarFallos(null); }));
-  window.addEventListener("estruendo-guardado", refrescarGuias);
+  [$("reCancion"), $("reDif")].forEach(el => el.addEventListener("change", () => { window.ParrandaEditor.fijarSuperpuesto(null); $("reSuperponer").value = ""; refrescarGuias(); window.ParrandaEditor.fijarFallos(null); }));
+  window.addEventListener("parranda-guardado", refrescarGuias);
 
   /* --- Dónde fallan los jugadores ------------------------------------------------------------------------------------------ */
   $("reVerFallosBtn").addEventListener("click", async () => {
     const lista = $("reFallosLista");
-    const ed = window.EstruendoEditor.obtener();
+    const ed = window.ParrandaEditor.obtener();
     if (!ed.buffer) { lista.innerHTML = `<li class="re-vacio">Carga primero un mapa.</li>`; return; }
     lista.innerHTML = `<li class="re-vacio">Cargando...</li>`;
     try {
       const sb = await fichasCliente();
-      const { data: act } = await sb.from("estruendo_mapas").select("actualizado").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).maybeSingle();
+      const { data: act } = await sb.from("parranda_mapas").select("actualizado").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).maybeSingle();
       const version = act ? act.actualizado : "auto";
-      const { data, error } = await sb.from("estruendo_fallos").select("bloque, veces, fallos").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).eq("mapa_version", version);
+      const { data, error } = await sb.from("parranda_fallos").select("bloque, veces, fallos").eq("cancion", ed.ruta).eq("dificultad", ed.dificultad).eq("mapa_version", version);
       if (error) throw error;
-      if (!data || !data.length) { window.EstruendoEditor.fijarFallos(null); lista.innerHTML = `<li class="re-vacio">Todavía no hay partidas registradas de esta versión del mapa.</li>`; return; }
+      if (!data || !data.length) { window.ParrandaEditor.fijarFallos(null); lista.innerHTML = `<li class="re-vacio">Todavía no hay partidas registradas de esta versión del mapa.</li>`; return; }
       const nBloques = Math.ceil(ed.buffer.duration / 4) + 1;
       const notasPorBloque = new Array(nBloques).fill(0);
       ed.notas.forEach(n => { const b = Math.min(nBloques - 1, Math.floor(n.t / 4)); notasPorBloque[b] += 1; });
@@ -517,21 +517,21 @@
         tasas[f.bloque] = Math.min(1, tasa);
         if (f.veces >= 3 && notasPorBloque[f.bloque] > 0) detalle.push({ bloque: f.bloque, tasa, veces: f.veces });
       });
-      window.EstruendoEditor.fijarFallos(tasas);
+      window.ParrandaEditor.fijarFallos(tasas);
       detalle.sort((a, b) => b.tasa - a.tasa);
       const t = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
       lista.innerHTML = detalle.length
         ? detalle.slice(0, 6).map(d => `<li><span>${t(d.bloque * 4)} a ${t(d.bloque * 4 + 4)} · se falla el <strong>${Math.round(d.tasa * 100)} %</strong> de las notas <small>· ${d.veces} partidas</small></span><button type="button" class="re-btn re-btn-chico" data-ir="${d.bloque * 4}">Ir</button></li>`).join("")
         : `<li class="re-vacio">Hay pocas partidas todavía para señalar partes difíciles (hacen falta al menos 3).</li>`;
     } catch (err) {
-      lista.innerHTML = `<li class="re-vacio">${escHtml(/relation|does not exist|schema cache/i.test(String(err && err.message)) ? "Falta correr scratchpad/estruendo.sql en Supabase." : "No se pudo cargar.")}</li>`;
+      lista.innerHTML = `<li class="re-vacio">${escHtml(/relation|does not exist|schema cache/i.test(String(err && err.message)) ? "Falta correr scratchpad/parranda.sql en Supabase." : "No se pudo cargar.")}</li>`;
     }
   });
   $("reFallosLista").addEventListener("click", ev => {
     const b = ev.target.closest("[data-ir]");
-    if (b) window.EstruendoEditor.ir(Math.max(0, Number(b.dataset.ir) - 1));
+    if (b) window.ParrandaEditor.ir(Math.max(0, Number(b.dataset.ir) - 1));
   });
-  $("reVerFallos").addEventListener("change", () => window.EstruendoEditor.repintar());
+  $("reVerFallos").addEventListener("change", () => window.ParrandaEditor.repintar());
 
   acceso();
 

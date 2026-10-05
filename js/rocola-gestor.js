@@ -544,9 +544,9 @@
       const nuevaRuta = await crearCancion(sb, blob, base.titulo.slice(0, 140), base.artista.slice(0, 140), fin - ini, fr => { barraR.value = 50 + Math.round(fr * 50); decirR(`Subiendo... ${Math.round(fr * 100)} %`); });
       let notaMapas = "";
       if (ini < 0.05) {
-        // Los mapas de Zarabanda y de Estruendo
+        // Los mapas de Zarabanda y de Parranda
         let pasados = 0;
-        for (const tabla of ["ritmo_mapas", "estruendo_mapas"]) {
+        for (const tabla of ["ritmo_mapas", "parranda_mapas"]) {
           const { data, error } = await sb.from(tabla).update({ cancion: nuevaRuta }).eq("cancion", ruta).select("dificultad");
           if (!error && data) pasados += data.length;
         }

@@ -369,7 +369,7 @@
     };
     {
       const tonos = notas.map(nt => tonoDe(nt.t));
-      // Lo guarda cada nota: Estruendo (cuatro carriles) reparte los carriles por tono con esto
+      // Lo guarda cada nota: Parranda (cuatro carriles) reparte los carriles por tono con esto
       notas.forEach((nt, i) => { nt.tono = tonos[i]; });
       let carril = "abajo";
       notas.forEach((nt, i) => {
