@@ -47,6 +47,7 @@
     const r = window.RitmoRol ? await RitmoRol.verificar() : { puede: false, sesion: false };
     if (r.puede) {
       abrir();
+      $("reAdminLink").classList.toggle("hidden", !r.admin);
       if (!djIniciado) { djIniciado = true; iniciarRocola(); }
       return;
     }
