@@ -570,7 +570,8 @@
       `${puntos.toLocaleString("es")} puntos · ${(acc * 100).toFixed(1)} % de precisión<br>` +
       `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
       (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "") +
-      (!completa ? "<br>No terminaste la canción: el puntaje no se guarda." : "");
+      (!completa ? "<br>No terminaste la canción: el puntaje no se guarda." : "") +
+      (versionJugada === "prueba" ? "<br><strong>Modo prueba del editor: esta partida no cuenta para los puntajes.</strong>" : "");
     mostrar(finEl);
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
@@ -860,6 +861,12 @@
       ctxC.fillRect(24, 58, 200, 8);
       ctxC.fillStyle = vida > 35 ? "#7ed87f" : "#e8837b";
       ctxC.fillRect(24, 58, 2 * vida, 8);
+      if (versionJugada === "prueba") {
+        ctxC.textAlign = "center";
+        ctxC.font = "800 14px sans-serif";
+        ctxC.fillStyle = "#ffb84d";
+        ctxC.fillText("MODO PRUEBA · NO CUENTA PARA LOS PUNTAJES", W / 2, 24);
+      }
       // Progreso
       if (mapa) {
         ctxC.fillStyle = "rgba(255, 255, 255, 0.12)";
@@ -1038,7 +1045,23 @@
     } catch (e) { /* sin marcas */ }
   }
 
+  /* Aviso del modo prueba: si el juego se abrió con "Probar en el juego" del editor (?prueba en la dirección),
+     las partidas del mapa sin guardar nunca cuentan para los puntajes. Se avisa bien claro y se ofrece salir. */
+  const avisoPruebaEl = document.getElementById("rtAvisoPrueba");
+  function pintarAvisoPrueba() {
+    if (!avisoPruebaEl) return;
+    let pr = null;
+    if (/[?&]prueba(?![a-z])/.test(location.search)) { try { pr = JSON.parse(localStorage.getItem("ritmoPrueba") || "null"); } catch (e) { pr = null; } }
+    if (!pr) { avisoPruebaEl.classList.add("hidden"); return; }
+    const c = canciones.find(x => x.ruta === pr.ruta);
+    const dif = (DIFICULTADES[pr.dificultad] || {}).nombre || pr.dificultad;
+    const pagina = location.pathname.split("/").pop() || "ritmo.html";
+    avisoPruebaEl.innerHTML = `<strong>Modo prueba del editor.</strong> Si juegas <b>${esc(c ? c.titulo : "la canción del editor")}</b> en ${esc(dif)}, juegas tu mapa sin guardar y <b>esa partida no cuenta para los puntajes</b>. Para jugar de verdad, <a href="${pagina}">sal del modo prueba</a>.`;
+    avisoPruebaEl.classList.remove("hidden");
+  }
+
   function pintarMenu() {
+    pintarAvisoPrueba();
     const q = normalizar(buscarEl.value.trim());
     const guardado = cancionesEl.scrollTop;
     const filas = canciones.map((c, i) => ({ c, i })).filter(({ c }) => !q || normalizar(c.nombre).includes(q));
