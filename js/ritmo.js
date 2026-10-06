@@ -265,6 +265,11 @@
   }
 
   function arrancar() {
+    // Si quedó a medias elegir una tecla o calibrar, las teclas de la partida se las comerían; y un control con
+    // el foco (el deslizador, el selector) también reaccionaría a las teclas
+    if (capturando) { capturando = null; pintarTeclas(); }
+    calibrando = null;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     fallosBloque = [];
     punteroFallos = 0; activas = []; limpiarEntradas(); gracia = 0; puntos = 0; combo = 0; comboMax = 0;
     perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; efectos = [];
@@ -397,8 +402,9 @@
     flash[carril] = ahoraS();
     avatar.carril = carril;
     avatar.salto = ahoraS();
-    // Con una larga en curso en este carril, otra pulsación no cuenta
-    if (activas.some(n => n.carril === carril)) return;
+    // Con una larga en curso en este carril, una pulsación sin nota al alcance no cuenta. Si cae una nota de este
+    // carril (el mapa puede traerlas bajo una larga), sí se juzga: antes se perdía la pulsación.
+    const enLarga = activas.some(n => n.carril === carril);
     let mejor = null;
     for (let i = punteroFallos; i < notas.length; i++) {
       const n = notas[i];
@@ -409,6 +415,7 @@
       if (dt <= cfg.bien && (!mejor || dt < Math.abs(mejor.t - t))) mejor = n;
     }
     if (!mejor) {
+      if (enLarga) return;
       sonidoGolpe(carril, false);
       if (toqueDeUnaNotaCercana(carril, t)) return;
       // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
@@ -437,6 +444,17 @@
     return tiempoCancion() - Math.min(retraso, 0.1);
   }
 
+  /* La tecla que se pulsó, como letra. Normalmente es lo que dice el teclado (ev.key). Con otra distribución
+     (cirílico, griego, árabe...), una tecla muerta o un método de entrada, ev.key no es la letra de la tecla y
+     antes la pulsación se perdía: en esos casos se usa la posición física de la tecla (ev.code). */
+  function teclaDe(ev) {
+    const k = String(ev.key || "").toLowerCase();
+    if (k.length === 1 && k.charCodeAt(0) < 128) return k;
+    if (k in TECLAS) return k;
+    const m = /^Key([A-Z])$/.exec(ev.code || "");
+    return m ? m[1].toLowerCase() : k;
+  }
+
   let capturando = null; // { carril, i } mientras se elige una tecla
   let calibrando = null;
 
@@ -463,19 +481,21 @@
       else if (estado === "pausa") continuar();
       return;
     }
-    const carril = TECLAS[ev.key.toLowerCase()];
+    const tecla = teclaDe(ev);
+    const carril = TECLAS[tecla];
     if (!carril) return;
     if (estado === "jugando") {
       ev.preventDefault();
       if (ev.repeat) return;
-      entradas[carril].add("k" + ev.key.toLowerCase());
+      entradas[carril].add("k" + tecla);
       golpear(carril, tiempoDeEvento(ev));
     }
   });
 
   window.addEventListener("keyup", ev => {
-    const carril = TECLAS[ev.key.toLowerCase()];
-    if (carril) entradas[carril].delete("k" + ev.key.toLowerCase());
+    const tecla = teclaDe(ev);
+    const carril = TECLAS[tecla];
+    if (carril) entradas[carril].delete("k" + tecla);
   });
 
   canvas.addEventListener("pointerdown", ev => {
