@@ -231,7 +231,10 @@
     });
     window.BUFON_CICLOS[cfg.id] = {
       id: cfg.id, nombre: cfg.nombre || cfg.id, abierto: cfg.abierto === true,
-      requiere: cfg.requiere || [], lados: cfg.lados || null, temas: []
+      requiere: cfg.requiere || [], lados: cfg.lados || null, temas: [],
+      // La descripción original, para que el Laboratorio del Bufón (panel de
+      // Admin) pueda cargar un ciclo existente en su editor.
+      def: cfg
     };
     (cfg.temas || []).forEach(t => construirTema(cfg.id, t));
     Object.keys(cfg.nodos || {}).forEach(id => nuevoNodo(id, cfg.nodos[id]));

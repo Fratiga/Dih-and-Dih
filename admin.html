@@ -15,6 +15,7 @@
   }
   </script>
   <link rel="stylesheet" href="css/style.css?v=20261183">
+  <link rel="stylesheet" href="css/bufon-lab.css?v=20261006b">
   <link rel="stylesheet" href="css/taberna.css?v=20261183">
   <link rel="stylesheet" href="css/cartas.css?v=20261183">
 </head>
@@ -129,6 +130,7 @@
         <button type="button" class="admin-tab active" data-tab="peticiones">Peticiones <span id="adminPeticionesCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="cuentas">Cuentas <span id="adminCuentasCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="bufon">Progreso del Bufón <span id="adminBufonCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="lab">Laboratorio del Bufón</button>
         <button type="button" class="admin-tab" data-tab="fanarts">Fanarts <span id="adminFanartsCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="muerte">Muerte Súbita <span id="adminMuerteCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="historial">Historial de fichas <span id="adminHistorialCount" class="admin-tab-badge"></span></button>
@@ -165,6 +167,11 @@
         <p class="admin-bufon-banner">Comprueba qué partes del sitio ya tienen su SQL corrido en Supabase. Lo que salga con ✗ no funciona todavía: corre el archivo que se indica en el SQL Editor y pulsa Revisar otra vez. No cambia ningún dato.</p>
         <p><button type="button" id="adminSistemaRevisar" class="admin-cuenta-accion">Revisar ahora</button></p>
         <div id="adminSistemaLista" class="admin-sistema-lista"><p class="admin-vacio">Pulsa "Revisar ahora".</p></div>
+      </section>
+
+      <section id="adminPanelLab" class="admin-panel">
+        <p class="admin-bufon-banner">Prueba el Bufón sin tocar nada real, arma ciclos y temas con formularios, y audita el contenido. Todo corre en este navegador: ni tu sesión ni Supabase se tocan.</p>
+        <div id="bufonLabRaiz"><p class="admin-vacio">Cargando...</p></div>
       </section>
 
       <section id="adminPanelFanarts" class="admin-panel">
@@ -269,5 +276,7 @@
   <script src="js/busqueda-global.js?v=20261183"></script>
   <script src="js/header-marquee.js?v=20261183"></script>
   <script src="js/admin.js?v=20261183"></script>
+  <script src="js/bufon-lab-motor.js?v=20261006h"></script>
+  <script src="js/bufon-lab.js?v=20261006g"></script>
 </body>
 </html>
