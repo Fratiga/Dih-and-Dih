@@ -20,9 +20,9 @@
   const CLAVE_REGISTRADAS = "compendioArqueriaPvpRegistradas";
 
   const RIVALES = [
-    { id: "hornet", nombre: "Hornet", dificultad: "Fácil" },
-    { id: "garra", nombre: "Garra", dificultad: "Media" },
-    { id: "cassius", nombre: "Cassius", dificultad: "Difícil" }
+    { id: "hornet", nombre: "Hornet", dificultad: "Fácil", nivel: 1, color: "#b48ad9", nota: "Dispara con calma y los blancos le caen en línea recta. Para empezar." },
+    { id: "garra", nombre: "Garra", dificultad: "Media", nivel: 2, color: "#d9794f", nota: "Más rápida y bastante precisa. No perdona los descuidos." },
+    { id: "cassius", nombre: "Cassius", dificultad: "Difícil", nivel: 3, color: "#d9a441", nota: "Los blancos zigzaguean y casi no falla. Hay que ir a por el centro." }
   ];
   // El récord de antes de que hubiera varios rivales era contra el rival más flojo, que ahora es Hornet
   const clave = id => id === "hornet" ? "compendioArqueriaCassius" : `compendioArqueria_${id}`;
@@ -46,17 +46,90 @@
   let registradas = new Set();
   try { registradas = new Set(JSON.parse(localStorage.getItem(CLAVE_REGISTRADAS) || "[]")); } catch (e) { registradas = new Set(); }
 
-  /* --- Ranking --------------------------------------------------------------- */
-  function cargarRanking() {
-    if (!rankingEl || !window.MjStats) return;
-    MjStats.cargarYPintar("arqueria", rankingEl, [
-      { titulo: "Mejor puntaje", valor: u => u.maximo.mejor },
-      { titulo: "Más victorias", valor: u => u.victorias },
-      { titulo: "Victorias contra Cassius", valor: u => (u.porClave.cassius ? u.porClave.cassius.victorias : 0) },
-      { titulo: "Victorias contra otros jugadores", valor: u => (u.porClave.jugador ? u.porClave.jugador.victorias : 0) },
-      { titulo: "Mejor puntaje contra otro jugador", valor: u => (u.porClave.jugador && u.porClave.jugador.maximo ? Number(u.porClave.jugador.maximo.mejor) || 0 : 0) }
-    ]);
+  /* --- Tabla de arqueros ------------------------------------------------------------
+     Una sola tabla con pestañas: el podio con los tres primeros y debajo el resto. A un
+     lado, un recuadro con tus propios números. Los datos salen de mj_estadisticas. */
+  const tabsEl = document.getElementById("arqueriaTabs");
+  const tuEl = document.getElementById("arqueriaTu");
+  const TABLAS = [
+    { id: "puntaje", titulo: "Puntaje", valor: u => Number(u.maximo.mejor) || 0, etiqueta: "pts" },
+    { id: "victorias", titulo: "Victorias", valor: u => u.victorias, etiqueta: "" },
+    { id: "cassius", titulo: "Contra Cassius", valor: u => (u.porClave.cassius ? u.porClave.cassius.victorias : 0), etiqueta: "" },
+    { id: "jugadores", titulo: "Entre jugadores", valor: u => (u.porClave.jugador ? u.porClave.jugador.victorias : 0), etiqueta: "",
+      sub: u => (u.porClave.jugador && u.porClave.jugador.maximo && Number(u.porClave.jugador.maximo.mejor) ? `mejor ${Number(u.porClave.jugador.maximo.mejor)} pts` : "") }
+  ];
+  let tablaActual = 0;
+  let datosTabla = null;
+  let yoSesion = { id: null };
+
+  function filasDe(t) {
+    return (datosTabla || [])
+      .map(u => ({ id: u.id, nombre: u.username, v: t.valor(u), sub: t.sub ? t.sub(u) : "" }))
+      .filter(f => Number.isFinite(f.v) && f.v > 0)
+      .sort((a, b) => b.v - a.v);
   }
+
+  function pintarTabla() {
+    tabsEl.innerHTML = TABLAS.map((t, k) => `<button type="button" role="tab" class="arq-tab ${k === tablaActual ? "activa" : ""}" data-tabla="${k}">${t.titulo}</button>`).join("");
+    if (!datosTabla) { rankingEl.innerHTML = `<p class="arq-vacio">Cargando la tabla...</p>`; return; }
+    const t = TABLAS[tablaActual];
+    const filas = filasDe(t);
+    if (!filas.length) {
+      rankingEl.innerHTML = `<p class="arq-vacio">Todavía no hay nadie en esta tabla. Juega con la sesión iniciada para abrirla.</p>`;
+      return;
+    }
+    const fmt = f => Number(f.v).toLocaleString("es") + (t.etiqueta ? ` ${t.etiqueta}` : "");
+    // Podio: el segundo a la izquierda, el primero al centro y el tercero a la derecha
+    const orden = [1, 0, 2];
+    const podio = orden.map(k => {
+      const f = filas[k];
+      if (!f) return `<div class="arq-podio-col puesto-${k + 1} vacio"><span class="arq-podio-nombre">—</span><span class="arq-podio-valor">·</span><div class="arq-peana">${k + 1}</div></div>`;
+      return `<div class="arq-podio-col puesto-${k + 1} ${f.id === yoSesion.id ? "yo" : ""}"><span class="arq-podio-nombre" title="${esc(f.nombre)}">${esc(f.nombre)}</span><span class="arq-podio-valor">${esc(fmt(f))}</span>${f.sub ? `<span class="arq-podio-sub">${esc(f.sub)}</span>` : ""}<div class="arq-peana">${k + 1}</div></div>`;
+    }).join("");
+    const resto = filas.slice(3, 10);
+    const miPuesto = yoSesion.id ? filas.findIndex(f => f.id === yoSesion.id) : -1;
+    const lista = resto.map(f => `<li class="${f.id === yoSesion.id ? "yo" : ""}"><span>${esc(f.nombre)}</span><strong>${esc(fmt(f))}</strong></li>`).join("")
+      + (miPuesto >= 10 ? `<li class="yo" style="counter-increment:none"><span>${esc(filas[miPuesto].nombre)} · puesto ${miPuesto + 1}</span><strong>${esc(fmt(filas[miPuesto]))}</strong></li>` : "");
+    rankingEl.innerHTML = `<div class="arq-podio">${podio}</div>${lista ? `<ol class="arq-lista">${lista}</ol>` : ""}`;
+  }
+
+  function pintarTu() {
+    if (!window.MjStats || !yoSesion.id) {
+      tuEl.innerHTML = `<p class="arq-nota">Inicia sesión (arriba a la derecha) para guardar tus puntajes y aparecer en la tabla.</p>`;
+      return;
+    }
+    const yo = (datosTabla || []).find(u => u.id === yoSesion.id);
+    if (!yo) {
+      tuEl.innerHTML = `<p class="arq-nota">Todavía no has jugado ninguna partida con la sesión iniciada. La primera que termines aparecerá aquí.</p>`;
+      return;
+    }
+    const puesto = filasDe(TABLAS[0]).findIndex(f => f.id === yo.id);
+    const celda = (rotulo, valor) => `<div class="arq-numero"><dt>${rotulo}</dt><dd>${valor}</dd></div>`;
+    tuEl.innerHTML = `<dl class="arq-numeros">${celda("Partidas", yo.partidas)}${celda("Victorias", yo.victorias)}${celda("Mejor puntaje", Number(yo.maximo.mejor) || 0)}${celda("Tu puesto", puesto >= 0 ? `#${puesto + 1}` : "—")}</dl>`;
+  }
+
+  tabsEl.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-tabla]");
+    if (!b) return;
+    tablaActual = Number(b.dataset.tabla);
+    pintarTabla();
+  });
+
+  async function cargarRanking() {
+    if (!rankingEl || !window.MjStats) return;
+    try {
+      const { sesion } = await MjStats.cargarSesion();
+      yoSesion = { id: sesion ? sesion.user.id : null };
+      datosTabla = await MjStats.datos("arqueria");
+    } catch (e) {
+      datosTabla = null;
+      rankingEl.innerHTML = `<p class="arq-vacio">La tabla no está disponible por ahora.</p>`;
+      return;
+    }
+    pintarTabla();
+    pintarTu();
+  }
+  if (tabsEl) pintarTabla();
 
   async function anotarPartida(claveRival, resultado, puntaje) {
     if (!window.MjStats) return { guardado: false };
@@ -86,10 +159,11 @@
   /* --- Contra rivales ------------------------------------------------------ */
   function pintarRivales() {
     rivalesEl.innerHTML = RIVALES.map(r => `
-      <button type="button" class="aj-rival ${r.id === rival.id ? "activo" : ""}" data-rival="${r.id}">
+      <button type="button" class="arq-rival ${r.id === rival.id ? "activo" : ""}" data-rival="${r.id}" style="--rc: ${r.color}">
+        <span class="arq-rival-icono" aria-hidden="true">${r.nombre[0]}</span>
         <strong>${r.nombre}</strong>
-        <span>${r.dificultad}</span>
-        <small>${leer(r.id) ? `Mejor puntaje: ${leer(r.id)}` : "Sin jugar"}</small>
+        <span class="arq-nivel" aria-label="Dificultad ${r.dificultad}">${[1, 2, 3].map(n => `<i class="${n <= r.nivel ? "on" : ""}">➳</i>`).join("")}<span>${r.dificultad}</span></span>
+        <small>${r.nota}<br><span class="arq-mejor">${leer(r.id) ? `Tu mejor: ${leer(r.id)} puntos` : "Aún sin jugar"}</span></small>
       </button>`).join("");
   }
 

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arquería — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261179"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261179">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261179">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261179">
-  <script src="js/mj-volumen.js?v=20261179"></script>
+  <script src="js/oculto.js?v=20261183"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261183">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261183">
+  <link rel="stylesheet" href="css/arqueria.css?v=20261183">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261183">
+  <script src="js/mj-volumen.js?v=20261183"></script>
 </head>
 <body class="mj-pagina arq-tema">
   <div class="mj-barra">
@@ -19,49 +20,69 @@
       <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
     </div>
   </div>
-  <main class="mj-contenido">
-    <p class="eyebrow">PASATIEMPOS</p>
-    <h1 class="mj-titulo">Arquería</h1>
-    <div class="aj-modos">
-      <button type="button" class="aj-modo activo" data-modo="rivales">Contra rivales</button>
-      <button type="button" class="aj-modo" data-modo="jugadores">Contra jugadores</button>
-    </div>
-    <div id="arqueriaModoRivales">
-      <div id="arqueriaRivales" class="aj-rivales"></div>
-    </div>
-    <section id="arqueriaLobby" class="hidden">
-      <p id="arqueriaAviso" class="aj-ayuda"></p>
-      <div id="arqueriaPartidas"></div>
-      <h3 class="aj-pvp-titulo">Jugadores</h3>
-      <div id="arqueriaJugadores" class="aj-pvp-jugadores"></div>
-    </section>
-    <div class="aj-controles hidden" id="arqueriaControles">
-      <button type="button" id="arqueriaCerrar" class="aj-boton">← Mis partidas</button>
-      <button type="button" id="arqueriaRendirse" class="aj-boton">Abandonar</button>
-      <button type="button" id="arqueriaRevancha" class="aj-boton hidden">Revancha</button>
-    </div>
-    <div class="mj-escenario">
-      <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
-      <button type="button" id="arqueriaJugar" class="mj-play" aria-label="Jugar">▶</button>
-      <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
-    </div>
-    <p id="arqueriaRecord" class="mj-linea"></p>
+  <main class="mj-contenido arq-pagina">
+    <header class="arq-cabecera">
+      <p class="eyebrow">PASATIEMPOS</p>
+      <h1 class="mj-titulo">Arquería</h1>
+      <p class="arq-lema">Un minuto. Los blancos caen y sumas más puntos cuanto más cerca del centro aciertes.</p>
+      <div class="aj-modos arq-modos">
+        <button type="button" class="aj-modo activo" data-modo="rivales">Contra rivales</button>
+        <button type="button" class="aj-modo" data-modo="jugadores">Contra jugadores</button>
+      </div>
+    </header>
 
-    <section class="mj-seccion-rankings">
-      <h2 class="mj-subtitulo">Ranking</h2>
-      <p class="mj-nota">Se anotan las partidas de quienes tienen sesión iniciada.</p>
-      <div id="arqueriaRankings" class="sacrificio-rankings mj-rankings"></div>
-    </section>
+    <div class="arq-diseno">
+      <div class="arq-principal">
+        <div id="arqueriaModoRivales">
+          <div id="arqueriaRivales" class="arq-rivales"></div>
+        </div>
+        <section id="arqueriaLobby" class="hidden">
+          <p id="arqueriaAviso" class="aj-ayuda"></p>
+          <div id="arqueriaPartidas"></div>
+          <h3 class="aj-pvp-titulo">Jugadores</h3>
+          <div id="arqueriaJugadores" class="aj-pvp-jugadores"></div>
+        </section>
+        <div class="aj-controles hidden" id="arqueriaControles">
+          <button type="button" id="arqueriaCerrar" class="aj-boton">← Mis partidas</button>
+          <button type="button" id="arqueriaRendirse" class="aj-boton">Abandonar</button>
+          <button type="button" id="arqueriaRevancha" class="aj-boton hidden">Revancha</button>
+        </div>
+        <div class="mj-escenario">
+          <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
+          <button type="button" id="arqueriaJugar" class="mj-play" aria-label="Jugar">▶</button>
+          <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
+        </div>
+        <p id="arqueriaRecord" class="mj-linea"></p>
+        <section class="arq-reglas-fila" aria-label="Cómo se juega">
+          <div class="arq-regla"><i>➳</i><b>Dispara</b><span>Clic, o Z / X con el cursor encima del blanco.</span></div>
+          <div class="arq-regla"><i>◎</i><b>Puntos</b><span>Centro 10, anillo medio 7 y borde 4.</span></div>
+          <div class="arq-regla"><i>☾</i><b>Un minuto</b><span>Gana quien sume más. El cielo se oscurece al acabarse el tiempo.</span></div>
+          <div class="arq-regla"><i>♜</i><b>Tu marca</b><span>Los puntajes se guardan solo con la sesión iniciada.</span></div>
+        </section>
+      </div>
+
+      <aside class="arq-lateral">
+        <section class="arq-panel arq-tu" aria-label="Tus números">
+          <h2>Tus números</h2>
+          <div id="arqueriaTu"></div>
+        </section>
+        <section class="arq-panel arq-tabla" aria-label="Tabla de arqueros">
+          <h2>Tabla de arqueros</h2>
+          <div id="arqueriaTabs" class="arq-tabs" role="tablist"></div>
+          <div id="arqueriaRankings"></div>
+        </section>
+      </aside>
+    </div>
   </main>
 
-  <script src="js/temas.js?v=20261179"></script>
-  <script src="js/fichas-supabase.js?v=20261179"></script>
-  <script src="js/presencia.js?v=20261179"></script>
-  <script src="js/lado.js?v=20261179"></script>
-  <script src="js/minijuegos-stats.js?v=20261179"></script>
-  <script src="js/arqueria-visual.js?v=20261179"></script>
-  <script src="js/arqueria.js?v=20261179"></script>
-  <script src="js/arqueria-pagina.js?v=20261179"></script>
-  <script src="js/minijuegos-avisos.js?v=20261179"></script>
+  <script src="js/temas.js?v=20261183"></script>
+  <script src="js/fichas-supabase.js?v=20261183"></script>
+  <script src="js/presencia.js?v=20261183"></script>
+  <script src="js/lado.js?v=20261183"></script>
+  <script src="js/minijuegos-stats.js?v=20261183"></script>
+  <script src="js/arqueria-visual.js?v=20261183"></script>
+  <script src="js/arqueria.js?v=20261183"></script>
+  <script src="js/arqueria-pagina.js?v=20261183"></script>
+  <script src="js/minijuegos-avisos.js?v=20261183"></script>
 </body>
 </html>

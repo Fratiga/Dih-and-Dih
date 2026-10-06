@@ -101,8 +101,14 @@
     }
   }
 
+  /* Los jugadores con sus estadísticas ya juntas (para páginas que arman su propia tabla). */
+  async function datos(juego) {
+    return agrupar(await filas(juego));
+  }
+
   window.MjStats = {
     cargarSesion,
+    datos,
     registrar,
     cargarYPintar,
     haySesion: () => !!sesion,

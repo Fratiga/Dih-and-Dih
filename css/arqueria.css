@@ -1,0 +1,109 @@
+/* Página de Arquería: la cabecera, el juego a la izquierda y la tabla de arqueros a la derecha. */
+.arq-pagina { max-width: 1480px; }
+
+/* --- Cabecera ------------------------------------------------------------------ */
+.arq-cabecera { text-align: center; margin: 6px 0 26px; }
+.arq-cabecera .eyebrow { margin-bottom: 4px; }
+.arq-cabecera .mj-titulo { margin: 0; font-size: clamp(2.6rem, 6vw, 4.2rem); }
+.arq-lema { max-width: 560px; margin: 10px auto 0; color: #b8c7a3; font-size: .98rem; line-height: 1.6; }
+.arq-cabecera::after {
+  content: ""; display: block; height: 14px; max-width: 420px; margin: 18px auto 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(209, 173, 85, .7) 20%, rgba(209, 173, 85, .7) 80%, transparent) center / 100% 1px no-repeat;
+}
+.arq-modos { justify-content: center; margin: 22px 0 0; }
+
+/* --- Distribución ---------------------------------------------------------------- */
+.arq-diseno { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 34px; align-items: start; }
+.arq-principal { min-width: 0; }
+.arq-lateral { display: flex; flex-direction: column; gap: 22px; position: sticky; top: 16px; min-width: 0; }
+
+/* --- Rivales -------------------------------------------------------------------------- */
+.arq-rivales { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; max-width: 960px; margin: 0 auto 8px; }
+.arq-rival {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
+  padding: 14px 16px; font: inherit; color: var(--text);
+  background: linear-gradient(180deg, #1d3023, #16251b); border: 1px solid var(--border);
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.arq-rival:hover { border-color: var(--rc, var(--accent)); transform: translateY(-2px); }
+.arq-rival.activo { border-color: var(--rc, var(--accent)); box-shadow: 0 0 0 1px var(--rc, var(--accent)), 0 8px 22px rgba(0, 0, 0, .4); background: linear-gradient(180deg, #25402d, #1a2d20); }
+.arq-rival-icono {
+  grid-row: 1 / span 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 1.5rem var(--font-heading), serif; color: #14201a; background: var(--rc, var(--accent)); box-shadow: 0 0 0 3px rgba(0, 0, 0, .35), 0 0 16px color-mix(in srgb, var(--rc, #d1ad55) 55%, transparent);
+}
+.arq-rival strong { font: 600 1.1rem var(--font-heading), serif; letter-spacing: .03em; }
+.arq-nivel { display: flex; align-items: center; gap: 2px; font-size: .78rem; color: var(--muted); }
+.arq-nivel i { font-style: normal; font-size: 1rem; opacity: .28; }
+.arq-nivel i.on { opacity: 1; color: var(--rc, var(--accent)); }
+.arq-nivel span { margin-left: 8px; }
+.arq-rival small { grid-column: 2; color: var(--muted); font-size: .76rem; line-height: 1.4; }
+.arq-rival .arq-mejor { color: var(--accent); }
+
+/* --- Escenario y estado -------------------------------------------------------------- */
+.arq-principal .mj-escenario { margin-top: 14px; }
+.arq-principal .mj-linea { margin-top: 16px; }
+
+/* --- Paneles de la columna derecha ------------------------------------------------ */
+.arq-panel {
+  position: relative; padding: 20px 22px 22px;
+  background: linear-gradient(180deg, rgba(31, 52, 38, .94), rgba(18, 32, 23, .94));
+  border: 1px solid #3a5a3f; border-top: 3px solid var(--accent);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(0, 0, 0, .25);
+}
+.arq-panel h2 { margin: 0 0 14px; font: 600 1.15rem var(--font-heading), serif; letter-spacing: .06em; color: #f1e4b4; display: flex; align-items: center; gap: 10px; }
+.arq-panel h2::before { content: "➳"; color: var(--accent); font-size: 1.1rem; }
+
+/* Tus números */
+.arq-numeros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.arq-numero { padding: 12px 14px; background: rgba(0, 0, 0, .22); border: 1px solid rgba(255, 255, 255, .06); }
+.arq-numero dt { margin: 0; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.arq-numero dd { margin: 4px 0 0; font: 700 1.55rem var(--font-heading), serif; color: #fff2cb; font-variant-numeric: tabular-nums; }
+.arq-nota { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.55; }
+
+/* Tabla de arqueros */
+.arq-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+.arq-tab { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; font: inherit; font-size: .78rem; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+.arq-tab:hover { color: var(--text); border-color: var(--accent-soft); }
+.arq-tab.activa { background: #2b4430; color: #f6efcf; border-color: var(--accent); }
+
+.arq-podio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; margin-bottom: 16px; min-height: 170px; }
+.arq-podio-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; text-align: center; min-width: 0; }
+.arq-podio-nombre { font-size: .8rem; color: var(--text); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.arq-podio-valor { font: 700 1.25rem var(--font-heading), serif; color: #fff2cb; margin: 2px 0 6px; font-variant-numeric: tabular-nums; }
+.arq-podio-sub { font-size: .66rem; color: var(--muted); margin-top: -4px; margin-bottom: 6px; }
+.arq-peana { width: 100%; display: grid; place-items: center; font: 700 1.5rem var(--font-heading), serif; color: rgba(20, 24, 16, .85); border: 1px solid rgba(0, 0, 0, .35); border-bottom: 0; }
+.puesto-1 .arq-peana { height: 78px; background: linear-gradient(180deg, #f3d57b, #b8923c); }
+.puesto-2 .arq-peana { height: 56px; background: linear-gradient(180deg, #d9dde0, #8f979c); }
+.puesto-3 .arq-peana { height: 42px; background: linear-gradient(180deg, #d89a62, #8f5b32); }
+.arq-podio-col.vacio .arq-podio-nombre, .arq-podio-col.vacio .arq-podio-valor { opacity: .35; }
+.arq-podio-col.yo .arq-podio-nombre { color: var(--accent); font-weight: 700; }
+
+.arq-lista { list-style: none; margin: 0; padding: 0; counter-reset: p 3; }
+.arq-lista li { counter-increment: p; display: flex; align-items: center; gap: 12px; padding: 9px 4px; border-top: 1px solid rgba(255, 255, 255, .07); font-size: .92rem; }
+.arq-lista li::before { content: counter(p); width: 1.6em; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; font-size: .82rem; }
+.arq-lista li span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arq-lista li strong { font: 700 1.02rem var(--font-heading), serif; color: var(--accent); font-variant-numeric: tabular-nums; }
+.arq-lista li.yo { background: rgba(209, 173, 85, .12); }
+.arq-lista li.yo span { color: #fff2cb; font-weight: 600; }
+.arq-vacio { margin: 8px 0 4px; color: var(--muted); font-size: .88rem; line-height: 1.55; text-align: center; padding: 18px 8px; border: 1px dashed rgba(255, 255, 255, .12); }
+
+/* Cómo se juega: una fila de cuatro fichas bajo el juego */
+.arq-reglas-fila { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 960px; margin: 26px auto 0; }
+.arq-regla { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: rgba(0, 0, 0, .2); border: 1px solid rgba(255, 255, 255, .07); border-top: 2px solid var(--accent-soft); }
+.arq-regla i { font-style: normal; font-size: 1.3rem; color: var(--accent); line-height: 1; }
+.arq-regla b { font: 600 .98rem var(--font-heading), serif; color: #f1e4b4; letter-spacing: .03em; }
+.arq-regla span { font-size: .8rem; line-height: 1.5; color: #b4c4a0; }
+
+@media (max-width: 1180px) {
+  .arq-diseno { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .arq-lateral { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); align-items: start; }
+  .arq-lateral .arq-tabla { grid-column: 1 / -1; }
+}
+@media (max-width: 900px) {
+  .arq-reglas-fila { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .arq-rivales { grid-template-columns: minmax(0, 1fr); }
+  .arq-podio { min-height: 150px; }
+}
