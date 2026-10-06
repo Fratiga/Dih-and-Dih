@@ -250,7 +250,7 @@ body.cartas-tema {
 .cartas-tema .mj-titulo::after { content: "♥"; }
 
 /* ======================================================================
-   OSTELAR: el coso de los alzados. Acero frío, hielo y oro.
+   OSTELAR: la arena de los alzados. Acero frío, hielo y oro.
 ====================================================================== */
 body.os-tema {
   --bg: #0c1118; --panel: #141b25; --panel-2: #1a2330; --text: #e1e8f0; --muted: #8499ad;
