@@ -18,12 +18,6 @@
    renombrar el texto visible más adelante no rompe nada. El id del punto
    de elección se guarda como dialogue_id.
 ============================================================================= */
-/* Interruptor de la fase 3 (tercer ciclo). Cerrado para todos los jugadores
-   hasta que se cambie a true y se publique. Admin siempre la ve, para poder
-   preparar y revisar contenido (ver ctx.fase3Abierta en secreto.html). Aun
-   abierta, cada lado necesita además su propia generación 2. */
-window.BUFON_FASE3_ABIERTA = false;
-
 window.BUFON_DIALOGO = {
   inicio: "intro_01",
 
@@ -897,92 +891,6 @@ window.BUFON_DIALOGO = {
       eleccion: "guillotina_hub"
     },
 
-    /* =====================================================================
-       FASE 3 — TEROS. Mismo material para Side A y Side B. Todo detrás de
-       ctx.fase3Abierta (ver BUFON_FASE3_ABIERTA). El Bufón lo cuenta como
-       un recuerdo que no sabe si es suyo; nunca dice que quiere nada ni
-       explica de dónde viene.
-    ===================================================================== */
-    bufon_teros_intro: {
-      lineas: [
-        "Se me vino un minotauro a la cabeza.",
-        "Enorme. Más ancho que una puerta y con mucha menos paciencia.",
-        "No sé de dónde lo saqué. No parece de por aquí.",
-        "Se llamaba Teros."
-      ],
-      completeDialogue: "teros_intro_seen",
-      eleccion: "teros_hub"
-    },
-    bufon_teros_quien: {
-      lineas: [
-        "Un borracho. De los buenos, es decir, de los malos.",
-        "Rompía mesas por deporte y deudas por costumbre. Fuerte como tres hombres y sin ninguna gana de servir para algo.",
-        "Lo condenaron a la horca. Lo normal, la verdad.",
-        "Lo raro es que se soltó. Y no dejó a mucha gente en pie.",
-        "Dejó vivo a uno. Un niño. Lo tuvo delante, con la mano ya lista, y se quedó mirándolo.",
-        "Acuérdate de eso."
-      ],
-      completeDialogue: "teros_quien",
-      eleccion: "teros_hub"
-    },
-    bufon_teros_templo: {
-      lineas: [
-        "Llegó a un templo por accidente. Buscaba dónde esconderse. Encontró otra cosa.",
-        "Los monjes no le preguntaron qué había hecho. Le dieron una escoba.",
-        "Barrió ese patio un año entero. Después aprendió a pelear sin odiar a nadie, que es bastante más difícil de lo que suena.",
-        "Pasó el resto de su vida intentando arreglar lo que rompió. Pueblos, deudas, una viuda que no quería verlo ni en pintura. Algunas cosas se arreglaron. Otras se quedaron rotas, y esas las cargó él.",
-        "Tengo una teoría sobre los que se reforman. Cargan el pasado como una maleta que nadie les pidió y nunca la dejan en el suelo.",
-        "Es una mala teoría. Pero me gusta cómo suena."
-      ],
-      completeDialogue: "teros_templo",
-      eleccion: "teros_hub"
-    },
-    bufon_teros_final: {
-      lineas: [
-        "Años después alguien tocó a su puerta. Reconoció la cara antes que la edad.",
-        "Era el niño. Había crecido y no se había olvidado.",
-        "Teros lo vio venir. Podía haberlo detenido con un dedo.",
-        "No levantó la mano.",
-        "...",
-        "Dijo que le tocaba.",
-        // Solo se muestra con La Herida en Murmullo o más (filtro por
-        // voiceStage en renderNodo).
-        { voz: "herida", texto: "El niño tampoco durmió bien en todos esos años." },
-        "Yo habría peleado. Soy mal ejemplo.",
-        "No sé si esto lo recuerdo o lo soñé. Pero cada vez que llego a esta parte me quedo sin chistes. Pasa pocas veces.",
-        "Si algún día te cruzas con uno que se le parezca, saluda de mi parte."
-      ],
-      completeDialogue: "teros_final",
-      eleccion: "teros_hub"
-    },
-    // Las tres respuestas a "¿Se lo merecía?" son mutuamente excluyentes
-    // (ver teros_hub) y ninguna contradice a las otras: el Bufón no
-    // obliga a tomar partido para poder seguir.
-    bufon_teros_merecia_si: {
-      lineas: [
-        "Mucha gente diría lo mismo. El niño, para empezar.",
-        "Teros también lo pensaba. Eso es lo que me molesta."
-      ],
-      completeDialogue: "teros_merecia_si",
-      next: "intro_reason_sin_recuerdo"
-    },
-    bufon_teros_merecia_no: {
-      lineas: [
-        "A mí tampoco me lo parece.",
-        "Pero rompió demasiado como para que la cuenta saliera en cero. Ni con todos mis chistes arreglo esa aritmética."
-      ],
-      completeDialogue: "teros_merecia_no",
-      next: "intro_reason_sin_recuerdo"
-    },
-    bufon_teros_merecia_nose: {
-      lineas: [
-        "Está bien. Yo llevo dándole vueltas desde que lo recuerdo.",
-        "Que no es mucho tiempo, ahora que lo pienso. Casi no recuerdo nada."
-      ],
-      completeDialogue: "teros_merecia_nose",
-      next: "intro_reason_sin_recuerdo"
-    },
-
     // Interrupción espontánea (Side A) — ver RECUERDOS_DISPONIBLES en
     // secreto.html. Distinto de cualquier chiste de "Eledar" de Side B
     // a propósito: es un personaje distinto, y en esta historia ya
@@ -1630,18 +1538,6 @@ window.BUFON_DIALOGO = {
             return !["guillotina_que_es", "guillotina_ataco", "guillotina_vuelve"].every(id => ctx.hasCompletedDialogue(id));
           },
           next: ctx => ctx.hasCompletedDialogue("guillotina_intro_seen") ? "guillotina_hub" : "bufon_guillotina_intro"
-        },
-
-        /* Fase 3 — Teros (ver BUFON_FASE3_ABIERTA). La intro llega sola
-           como recuerdo espontáneo; este botón solo vuelve a abrirlo si el
-           jugador cerró el menú a medias, y se esconde cuando ya
-           respondió "¿Se lo merecía?". */
-        {
-          id: "fase3_teros", texto: "Cuéntame otra vez lo del minotauro.",
-          visible: ctx => ctx.fase3Abierta
-            && ctx.hasCompletedDialogue("teros_intro_seen")
-            && !["teros_merecia_si", "teros_merecia_no", "teros_merecia_nose"].some(id => ctx.hasCompletedDialogue(id)),
-          next: "teros_hub"
         }
       ]
     },
@@ -1894,42 +1790,6 @@ window.BUFON_DIALOGO = {
           visible: ctx => !ctx.hasCompletedDialogue("guillotina_vuelve")
         },
         { id: "guillotina_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
-      ]
-    },
-
-    // Fase 3 — Teros. Las tres primeras preguntas se destapan en orden y
-    // cada una se esconde al contestarla. La pregunta final tiene tres
-    // respuestas mutuamente excluyentes, y "No lo sé" como salida neutral.
-    teros_hub: {
-      opciones: [
-        {
-          id: "teros_quien", texto: "¿Quién era?", next: "bufon_teros_quien",
-          visible: ctx => ctx.fase3Abierta && !ctx.hasCompletedDialogue("teros_quien")
-        },
-        {
-          id: "teros_templo", texto: "¿Y qué hizo después de escapar?", next: "bufon_teros_templo",
-          visible: ctx => ctx.fase3Abierta && ctx.hasCompletedDialogue("teros_quien") && !ctx.hasCompletedDialogue("teros_templo")
-        },
-        {
-          id: "teros_final", texto: "¿Cómo terminó?", next: "bufon_teros_final",
-          visible: ctx => ctx.fase3Abierta && ctx.hasCompletedDialogue("teros_templo") && !ctx.hasCompletedDialogue("teros_final")
-        },
-        {
-          id: "teros_merecia_si", texto: "Sí, se lo merecía.", next: "bufon_teros_merecia_si",
-          visible: ctx => ctx.fase3Abierta && ctx.hasCompletedDialogue("teros_final")
-            && !["teros_merecia_si", "teros_merecia_no", "teros_merecia_nose"].some(id => ctx.hasCompletedDialogue(id))
-        },
-        {
-          id: "teros_merecia_no", texto: "No, no se lo merecía.", next: "bufon_teros_merecia_no",
-          visible: ctx => ctx.fase3Abierta && ctx.hasCompletedDialogue("teros_final")
-            && !["teros_merecia_si", "teros_merecia_no", "teros_merecia_nose"].some(id => ctx.hasCompletedDialogue(id))
-        },
-        {
-          id: "teros_merecia_nose", texto: "No lo sé.", next: "bufon_teros_merecia_nose",
-          visible: ctx => ctx.fase3Abierta && ctx.hasCompletedDialogue("teros_final")
-            && !["teros_merecia_si", "teros_merecia_no", "teros_merecia_nose"].some(id => ctx.hasCompletedDialogue(id))
-        },
-        { id: "teros_cerrar", texto: "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" }
       ]
     },
 
