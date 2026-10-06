@@ -1356,16 +1356,19 @@
     return { x: ev.clientX - r.left, y: (ev.clientY - r.top) * (ALTO / (r.height || ALTO)) };
   }
 
+  /* La nota bajo el ratón: se busca dentro de la franja de su carril (no a una distancia exacta del
+     centro), así un clic un poco arriba o abajo de donde se ve la nota la encuentra igual. */
   function notaEn(x, y) {
+    const c = carrilEn(y);
     let mejor = null;
     let dmin = Infinity;
     notas.forEach(n => {
+      if (n.carril !== c) return;
       const nx = tX(n.t);
-      const ny = Y_CARRIL[n.carril];
-      const enCabeza = Math.hypot(x - nx, y - ny) <= 16;
-      const enBarra = n.dur > 0 && x >= nx && x <= nx + n.dur * pps && Math.abs(y - ny) <= 9;
+      const enCabeza = Math.abs(x - nx) <= 16;
+      const enBarra = n.dur > 0 && x >= nx && x <= nx + n.dur * pps + 9;
       if (enCabeza || enBarra) {
-        const d = Math.hypot(x - nx, y - ny);
+        const d = Math.abs(x - nx);
         if (d < dmin) { dmin = d; mejor = n; }
       }
     });
