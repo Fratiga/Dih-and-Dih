@@ -28,7 +28,7 @@
   }
   function textoError(err) {
     const t = String((err && (err.message || err.error_description)) || err || "");
-    if (/Bucket not found|does not exist|relation|rocola_canciones|rocola_ocultas|rocola_nombres/i.test(t)) return "Falta correr scratchpad/rocola_gestor.sql (y ritmo_dj.sql) en Supabase.";
+    if (/Bucket not found|does not exist|relation|rocola_canciones|rocola_ocultas|rocola_nombres|rocola_fondos/i.test(t)) return "Falta correr scratchpad/rocola_gestor.sql (y ritmo_dj.sql) en Supabase.";
     if (/row-level|policy|permission|Unauthorized|not authorized|JWT/i.test(t)) return "No tienes permiso. Hace falta ser Admin o DJ.";
     if (/duplicate|already exists/i.test(t)) return "Esa canción ya está subida.";
     return t || "Error desconocido";
@@ -37,6 +37,8 @@
   let filasNube = []; // canciones subidas, con su id
   let ocultas = []; // canciones del sitio ocultas: { ruta, titulo }
   let nombres = []; // nombres puestos a mano a canciones del sitio: { ruta, titulo, artista }
+  const fondos = new Map(); // ruta de la canción -> { cancion, url, tipo, opacidad, nombre }
+  let sinTablaFondos = false;
   let filtro = "";
 
   const estado = $("rgEstado");
@@ -57,6 +59,10 @@
       const n = await sb.from("rocola_nombres").select("ruta, titulo, artista");
       nombres = n.error ? [] : (n.data || []);
       sinTablaNombres = !!n.error;
+      const fo = await sb.from("rocola_fondos").select("cancion, url, tipo, opacidad, nombre");
+      fondos.clear();
+      (fo.error ? [] : (fo.data || [])).forEach(f => fondos.set(f.cancion, f));
+      sinTablaFondos = !!fo.error;
     } catch (err) {
       decir(textoError(err), true);
     }
@@ -91,6 +97,7 @@
       ? visibles.map(c => `<li data-ruta="${escHtml(c.ruta)}"><span class="rg-nombre">${escHtml(c.titulo)}${c.artista ? ` <small>· ${escHtml(c.artista)}</small>` : ""} <small>${formatoDur(c.dur)}${c.bytes ? ` · ${mb(c.bytes)} MB` : ""}${c.nube ? ` · subida${c.quien ? " por " + escHtml(c.quien) : ""}` : " · del sitio"}</small></span><span class="rg-acciones">` +
         `<button type="button" class="rg-btn" data-recortar>Recortar</button>` +
         `<button type="button" class="rg-btn" data-renombrar>Renombrar</button>` +
+        `<button type="button" class="rg-btn ${fondos.has(c.ruta) ? "rg-vivo" : ""}" data-fondo title="Imagen, GIF o video que se ve detrás de los carriles">${fondos.has(c.ruta) ? "Fondo ✓" : "Fondo"}</button>` +
         `<button type="button" class="rg-btn rg-peligro" data-quitar>Quitar</button></span></li>`).join("")
       : `<li class="rg-vacio">${q ? "Ninguna canción coincide." : "No hay canciones."}</li>`;
     $("rgOcultasCaja").classList.toggle("hidden", !ocultas.length && !sinTablaOcultas);
@@ -109,7 +116,7 @@
   $("rgFiltro").addEventListener("input", ev => { filtro = ev.target.value; pintar(); });
 
   /* --- Subida --------------------------------------------------------------------------------------- */
-  async function subirConProgreso(sb, ruta, blob, alProgreso) {
+  async function subirConProgreso(sb, ruta, blob, alProgreso, tipoMime = "audio/mpeg") {
     const { data } = await sb.auth.getSession();
     const sesion = data && data.session;
     if (!sesion) throw new Error("Sin sesión: inicia sesión de nuevo.");
@@ -119,7 +126,7 @@
       xhr.setRequestHeader("apikey", window.FICHAS_SUPABASE_KEY);
       xhr.setRequestHeader("Authorization", "Bearer " + sesion.access_token);
       xhr.setRequestHeader("x-upsert", "false");
-      xhr.setRequestHeader("Content-Type", "audio/mpeg");
+      xhr.setRequestHeader("Content-Type", tipoMime);
       xhr.upload.onprogress = e => { if (e.lengthComputable) alProgreso(e.loaded / e.total); };
       xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(xhr.responseText || `Error ${xhr.status}`)));
       xhr.onerror = () => reject(new Error("Sin conexión"));
@@ -212,6 +219,8 @@
 
     if (btn.dataset.renombrar !== undefined) { abrirNombre(ruta); return; }
 
+    if (btn.dataset.fondo !== undefined) { abrirFondo(ruta, nombre); return; }
+
     if (btn.dataset.quitar !== undefined) {
       const nube = esNube(ruta);
       const aviso = nube
@@ -225,6 +234,8 @@
           const { error } = await sb.from("rocola_canciones").delete().eq("ruta", ruta);
           if (error) throw error;
           await borrarArchivo(sb, ruta);
+          const viejo = fondos.get(ruta);
+          if (viejo) { await sb.from("rocola_fondos").delete().eq("cancion", ruta); await borrarArchivo(sb, viejo.url); }
         } else {
           const { error } = await sb.from("rocola_ocultas").insert({ ruta, titulo: nombre });
           if (error) throw error;
@@ -309,6 +320,129 @@
     } catch (err) {
       $("rgNombreEstado").textContent = textoError(err);
       $("rgNombreEstado").classList.add("error");
+    }
+  });
+
+  /* --- Fondo de la canción: imagen, GIF o video detrás de los carriles ---------------------------------- */
+  const dlgFondo = $("rgFondo");
+  let fondeando = null; // ruta de la canción
+  let archivoFondo = null;
+  let urlPrevia = null;
+  const LIMITE_IMAGEN = 15 * 1024 * 1024;
+  const LIMITE_VIDEO = 40 * 1024 * 1024;
+
+  function previaFondo(url, tipo) {
+    const caja = $("rgFondoPrevia");
+    caja.innerHTML = "";
+    if (!url) { caja.innerHTML = `<span class="rg-vacio">Sin fondo todavía</span>`; return; }
+    const el = tipo === "video" ? Object.assign(document.createElement("video"), { muted: true, loop: true, autoplay: true, playsInline: true }) : document.createElement("img");
+    el.src = url;
+    el.style.opacity = String(Number($("rgFondoOpacidad").value) / 100);
+    caja.appendChild(el);
+    // Unas franjas simulan los carriles encima, para ver cómo queda
+    caja.insertAdjacentHTML("beforeend", `<i class="rg-carril" style="top: 28%"></i><i class="rg-carril" style="top: 62%"></i>`);
+  }
+
+  function abrirFondo(ruta, nombre) {
+    fondeando = ruta;
+    archivoFondo = null;
+    if (urlPrevia) { URL.revokeObjectURL(urlPrevia); urlPrevia = null; }
+    const f = fondos.get(ruta);
+    $("rgFondoTitulo").textContent = nombre;
+    $("rgFondoArchivo").value = "";
+    $("rgFondoOpacidad").value = String(Math.round((f ? Number(f.opacidad) : 0.35) * 100));
+    $("rgFondoOpTxt").textContent = $("rgFondoOpacidad").value + " %";
+    $("rgFondoQuitar").classList.toggle("hidden", !f);
+    $("rgFondoEstado").textContent = sinTablaFondos ? "Para poner fondos falta correr scratchpad/fondos.sql en Supabase." : "";
+    $("rgFondoEstado").classList.toggle("error", sinTablaFondos);
+    $("rgFondoProgreso").classList.add("hidden");
+    $("rgFondoGuardar").disabled = false;
+    previaFondo(f ? f.url : null, f ? f.tipo : null);
+    dlgFondo.showModal();
+  }
+
+  $("rgFondoArchivo").addEventListener("change", () => {
+    const a = $("rgFondoArchivo").files[0];
+    archivoFondo = a || null;
+    if (urlPrevia) { URL.revokeObjectURL(urlPrevia); urlPrevia = null; }
+    if (!a) { const f = fondos.get(fondeando); previaFondo(f ? f.url : null, f ? f.tipo : null); return; }
+    const esVideo = /^video\//.test(a.type);
+    const esImagen = /^image\//.test(a.type);
+    const limite = esVideo ? LIMITE_VIDEO : LIMITE_IMAGEN;
+    if (!esVideo && !esImagen) { $("rgFondoEstado").textContent = "Tiene que ser una imagen (JPG, PNG, WebP, GIF) o un video (MP4 o WebM)."; $("rgFondoEstado").classList.add("error"); archivoFondo = null; return; }
+    if (a.size > limite) { $("rgFondoEstado").textContent = `Pesa ${mb(a.size)} MB: el máximo es ${mb(limite)} MB.`; $("rgFondoEstado").classList.add("error"); archivoFondo = null; return; }
+    $("rgFondoEstado").textContent = "";
+    $("rgFondoEstado").classList.remove("error");
+    urlPrevia = URL.createObjectURL(a);
+    previaFondo(urlPrevia, esVideo ? "video" : "imagen");
+  });
+
+  $("rgFondoOpacidad").addEventListener("input", () => {
+    $("rgFondoOpTxt").textContent = $("rgFondoOpacidad").value + " %";
+    const el = $("rgFondoPrevia").querySelector("img, video");
+    if (el) el.style.opacity = String(Number($("rgFondoOpacidad").value) / 100);
+  });
+
+  $("rgFondoCancelar").addEventListener("click", () => dlgFondo.close());
+  dlgFondo.addEventListener("close", () => { if (urlPrevia) { URL.revokeObjectURL(urlPrevia); urlPrevia = null; } $("rgFondoPrevia").innerHTML = ""; });
+
+  $("rgFondoGuardar").addEventListener("click", async () => {
+    const estado = $("rgFondoEstado");
+    const opacidad = Math.max(0.05, Math.min(1, Number($("rgFondoOpacidad").value) / 100));
+    const previo = fondos.get(fondeando);
+    if (!archivoFondo && !previo) { estado.textContent = "Elige un archivo."; estado.classList.add("error"); return; }
+    $("rgFondoGuardar").disabled = true;
+    try {
+      const sb = await fichasCliente();
+      const quien = typeof nombreUsuario === "function" ? nombreUsuario() : "";
+      if (!archivoFondo) {
+        // Solo cambia la transparencia
+        const { error } = await sb.from("rocola_fondos").update({ opacidad, actualizado: new Date().toISOString() }).eq("cancion", fondeando);
+        if (error) throw error;
+      } else {
+        const esVideo = /^video\//.test(archivoFondo.type);
+        const barra = $("rgFondoProgreso");
+        barra.value = 0;
+        barra.classList.remove("hidden");
+        estado.classList.remove("error");
+        estado.textContent = "Subiendo...";
+        const carpeta = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).slice(0, 8);
+        const base = archivoFondo.name.replace(/\.[^.]+$/, "");
+        const coincide = archivoFondo.name.match(/\.([A-Za-z0-9]{2,5})$/);
+        const ext = (coincide ? coincide[1] : (esVideo ? "mp4" : "jpg")).toLowerCase();
+        const ruta = `fondos/${carpeta}/${limpiarNombre(base)}.${ext}`;
+        await subirConProgreso(sb, ruta, archivoFondo, fr => { barra.value = Math.round(fr * 100); estado.textContent = `Subiendo... ${Math.round(fr * 100)} %`; }, archivoFondo.type || (esVideo ? "video/mp4" : "image/jpeg"));
+        const urlPublica = sb.storage.from("rocola").getPublicUrl(ruta).data.publicUrl;
+        const { error } = await sb.from("rocola_fondos").upsert({ cancion: fondeando, url: urlPublica, tipo: esVideo ? "video" : "imagen", opacidad, nombre: archivoFondo.name.slice(0, 100), nombre_subidor: quien || "", actualizado: new Date().toISOString() });
+        if (error) { await sb.storage.from("rocola").remove([ruta]); throw error; }
+        if (previo) await borrarArchivo(sb, previo.url);
+      }
+      dlgFondo.close();
+      decir("Fondo guardado. Se ve detrás de los carriles en Zarabanda y en Parranda.");
+      await cargarDatos();
+    } catch (err) {
+      estado.textContent = "No se pudo guardar el fondo: " + textoError(err);
+      estado.classList.add("error");
+    } finally {
+      $("rgFondoGuardar").disabled = false;
+      $("rgFondoProgreso").classList.add("hidden");
+    }
+  });
+
+  $("rgFondoQuitar").addEventListener("click", async () => {
+    const previo = fondos.get(fondeando);
+    if (!previo || !confirm("¿Quitar el fondo de esta canción?")) return;
+    try {
+      const sb = await fichasCliente();
+      const { error } = await sb.from("rocola_fondos").delete().eq("cancion", fondeando);
+      if (error) throw error;
+      await borrarArchivo(sb, previo.url);
+      dlgFondo.close();
+      decir("Fondo quitado.");
+      await cargarDatos();
+    } catch (err) {
+      $("rgFondoEstado").textContent = "No se pudo quitar: " + textoError(err);
+      $("rgFondoEstado").classList.add("error");
     }
   });
 
@@ -551,6 +685,7 @@
           if (!error && data) pasados += data.length;
         }
         if (pasados) notaMapas = ` Se pasaron ${pasados} mapa${pasados === 1 ? "" : "s"}.`;
+        if (fondos.has(ruta)) { await sb.from("rocola_fondos").update({ cancion: nuevaRuta }).eq("cancion", ruta); notaMapas += " El fondo también."; }
       }
       if (nube) {
         const { error } = await sb.from("rocola_canciones").delete().eq("ruta", ruta);

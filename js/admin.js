@@ -486,6 +486,7 @@
     { que: "Parranda: puntajes", sql: "parranda.sql", tipo: "tabla", ref: "parranda_puntajes" },
     { que: "Canciones ocultas de la rocola (gestor)", sql: "rocola_gestor.sql", tipo: "tabla", ref: "rocola_ocultas" },
     { que: "Nombres de canciones del sitio (gestor)", sql: "rocola_nombres.sql", tipo: "tabla", ref: "rocola_nombres" },
+    { que: "Fondos de las canciones (imagen, GIF o video)", sql: "fondos.sql", tipo: "tabla", ref: "rocola_fondos" },
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
     { que: "Regalar cartas (Admin)", sql: "cartas.sql", tipo: "rpc", ref: "cartas_regalar", args: { p_usuario: CERO, p_carta: "no-existe", p_nota: "" } },
     { que: "Atajos del lobby guardados en la cuenta", sql: "atajos_usuario.sql", tipo: "tabla", ref: "atajos_usuario" },

@@ -334,7 +334,10 @@
     //    compás anterior o en el siguiente. Los golpes sueltos (adelantos, adornos que no se
     //    repiten) se quedan fuera salvo que sean muy fuertes: así queda un hilo que se puede
     //    escuchar y seguir, no uno que solo se puede leer en pantalla.
-    const sd = cfg.sub;
+    // Un estilo (ver data/estilos-mapas.js) puede cambiar la rejilla (sub), pedir que no se exija repetición (libre),
+    // dar un peso distinto a tiempos, mitades y cuartos (pesos) y mirar las tres bandas a la vez (mezcla)
+    const E = opciones.estilo || null;
+    const sd = (E && E.sub) || cfg.sub;
     const porCompas = 4 * sd;
     const tramoDe = k => Math.min(tramos.length - 1, Math.floor(k / 8));
     const slots = [];
@@ -343,7 +346,10 @@
       const periodo = pulsos[k + 1] - pulsos[k];
       for (let j = 0; j < sd; j++) {
         const t = pulsos[k] + (j / sd) * periodo;
-        slots.push({ t, k, j, tramo: tramoDe(k), banda: tr.banda, vacio: tr.vacio, f: tr.vacio ? 0 : fuerzaEn(tr.banda, t) });
+        const f = tr.vacio ? 0 : (E && E.mezcla
+          ? Math.max(fuerzaEn("bajo", t) * PESO_BANDA.bajo, fuerzaEn("medio", t) * PESO_BANDA.medio, fuerzaEn("alto", t) * PESO_BANDA.alto)
+          : fuerzaEn(tr.banda, t));
+        slots.push({ t, k, j, tramo: tramoDe(k), banda: tr.banda, vacio: tr.vacio, f });
       }
     }
     const candidatos = [];
@@ -353,8 +359,13 @@
       const corte = (opciones.estilo && opciones.estilo.corte !== undefined ? opciones.estilo.corte : cfg.corte) * (contratiempo && sd === 2 && !opciones.estilo ? 1.3 : 1);
       if (sl.f < corte) return;
       const veces = [slots[g - porCompas], slots[g + porCompas]].filter(o => o && !o.vacio && o.banda === sl.banda && o.f >= corte * cfg.repite);
-      if (!veces.length && sl.f < cfg.sueltaFuerte) return;
-      const pesoContra = contratiempo && opciones.estilo && opciones.estilo.fraccionContra !== undefined ? Math.max(0.55, Math.min(1.6, 0.55 + opciones.estilo.fraccionContra * 1.6)) : 1;
+      if (!(E && E.libre) && !veces.length && sl.f < cfg.sueltaFuerte) return;
+      // Peso según el tipo de casilla: en el tiempo, en la mitad o en los cuartos del pulso
+      let pesoContra = 1;
+      if (E && E.pesos) {
+        const clase = sl.j === 0 ? "tiempo" : (sd === 2 || sl.j * 2 === sd) ? "mitad" : "cuarto";
+        pesoContra = E.pesos[clase] !== undefined ? E.pesos[clase] : 1;
+      }
       candidatos.push({ t: sl.t, f: sl.f * pesoContra, tramo: sl.tramo, banda: sl.banda, i: Math.max(0, Math.round(sl.t * fps)), k: sl.k, j: sl.j, pos: (sl.k % 4) * sd + sl.j });
     });
     candidatos.sort((a, b) => b.f - a.f);
@@ -362,7 +373,7 @@
     const celda = 0.02;
     const bloqueo = new Uint8Array(Math.ceil(dur / celda) + 2);
     const maximo = Math.round(dur * (opciones.estilo && opciones.estilo.nps ? opciones.estilo.nps : cfg.nps));
-    const medioHueco = Math.round(cfg.hueco / celda);
+    const medioHueco = Math.round(((E && E.hueco) || cfg.hueco) / celda);
     const notas = [];
     for (const c of candidatos) {
       if (notas.length >= maximo) break;
@@ -387,6 +398,30 @@
         const rel = tonos[i] - med;
         if (rel > 0.12) carril = "arriba"; else if (rel < -0.12) carril = "abajo"; else carril = carril === "arriba" ? "abajo" : "arriba";
         nt.carril = carril;
+      });
+    }
+
+    // Carril al estilo de quien hizo el mapa: ni los dos autores medidos siguen el tono; alternan más de lo que
+    // repiten y reparten mitad y mitad entre arriba y abajo. Con pRepite se elige cada carril por esa
+    // probabilidad (con un generador con semilla, así el mapa sale igual cada vez) y se empuja hacia el
+    // equilibrio si uno de los carriles va muy por delante.
+    if (E && E.pRepite !== undefined) {
+      let semilla = 777;
+      const azar = () => { semilla = (semilla * 1664525 + 1013904223) % 4294967296; return semilla / 4294967296; };
+      let previo = "abajo";
+      const reciente = [];
+      notas.forEach(nt => {
+        let carril = azar() < E.pRepite ? previo : (previo === "arriba" ? "abajo" : "arriba");
+        const arriba = reciente.filter(x => x === "arriba").length;
+        if (reciente.length >= 8) {
+          const parte = arriba / reciente.length;
+          if (parte > 0.62 && carril === "arriba" && azar() < 0.6) carril = "abajo";
+          else if (parte < 0.38 && carril === "abajo" && azar() < 0.6) carril = "arriba";
+        }
+        nt.carril = carril;
+        previo = carril;
+        reciente.push(carril);
+        if (reciente.length > 16) reciente.shift();
       });
     }
 

@@ -3,6 +3,15 @@
 // de cambios en frases cortas. El botón avisa con un punto a quien no haya visto la última.
 window.ZARABANDA_NOVEDADES = [
   {
+    fecha: "2026-10-06",
+    titulo: "Fondos en las canciones",
+    cambios: [
+      "Los DJ y los admin pueden poner una imagen, un GIF o un video detrás de los carriles de cada canción, desde Gestionar rocola.",
+      "Se ve semitransparente. Los carriles y las notas van por encima y se leen igual.",
+      "Un video va sin sonido y se repite. Si el juego va justo, se puede quitar con el interruptor «Fondos de las canciones» de los ajustes."
+    ]
+  },
+  {
     fecha: "2026-10-05",
     titulo: "Mapas automáticos con estilo",
     cambios: [

@@ -54,6 +54,8 @@
   const puntajesTabsEl = document.getElementById("rtPuntajesTabs");
   const finPuntajesEl = document.getElementById("rtFinPuntajes");
   const pieEl = document.getElementById("rtPie");
+  const fondoEl = document.getElementById("rtFondo");
+  let fondoActivo = false; // hay una imagen, GIF o video detrás de los carriles
 
   /* --- Datos guardados ---------------------------------------------------- */
   let records = {};
@@ -221,6 +223,8 @@
     estado = "cargando";
     cancionActual = canciones[ajustes.cancion];
     cfg = DIFICULTADES[ajustes.dificultad];
+    // El fondo de la canción (imagen, GIF o video que ponen los DJ) se pide mientras se analiza
+    const promesaFondo = ajustes.fondos !== false && window.FondosJuego ? FondosJuego.cargar(cancionActual.ruta) : Promise.resolve(null);
     mostrar(cargaEl);
     cargaTxtEl.textContent = "Cargando la canción...";
     try {
@@ -270,6 +274,9 @@
       }
       return;
     }
+    const fondo = await promesaFondo;
+    if (miCarga !== cargaId) return;
+    fondoActivo = !!(window.FondosJuego && FondosJuego.montar(fondoEl, fondo));
     arrancar();
   }
 
@@ -287,6 +294,7 @@
     avatar = { salto: -10, golpe: -10 };
     flash = [-10, -10, -10, -10];
     mostrar(null);
+    if (window.FondosJuego) FondosJuego.reproducir(fondoEl);
     fuente = audio.createBufferSource();
     fuente.buffer = bufferActual;
     fuente.connect(audio.destination);
@@ -306,6 +314,7 @@
     estado = "pausa";
     limpiarEntradas();
     audio.suspend();
+    if (window.FondosJuego) FondosJuego.pausar(fondoEl);
     mostrar(pausaEl);
   }
 
@@ -313,6 +322,7 @@
     if (estado !== "pausa") return;
     mostrar(null);
     await audio.resume();
+    if (window.FondosJuego) FondosJuego.reproducir(fondoEl);
     gracia = tiempoCancion() + 0.7; // margen para volver a pulsar las largas en curso
     estado = "jugando";
     cancelAnimationFrame(raf);
@@ -337,6 +347,8 @@
     cargaId++;
     if (audio && audio.state === "suspended") audio.resume();
     estado = "menu";
+    if (window.FondosJuego) FondosJuego.quitar(fondoEl);
+    fondoActivo = false;
     mostrar(menuEl);
     pintarMenu();
     dibujar(0);
@@ -1128,7 +1140,8 @@
 
     // La pista: fondo oscuro con borde rojo de neón (dorado en la fiebre) y los cuatro carriles
     const ancho = ANCHO * 4;
-    ctxC.fillStyle = "rgba(8, 5, 6, 0.82)";
+    // Con un fondo detrás, la pista se aclara para que se vea, pero sigue oscura bajo las notas
+    ctxC.fillStyle = fondoActivo ? "rgba(8, 5, 6, 0.5)" : "rgba(8, 5, 6, 0.82)";
     ctxC.fillRect(X0, 0, ancho, H);
     ctxC.fillStyle = fiebre ? "rgba(255, 216, 77, 0.4)" : "rgba(255, 59, 59, 0.28)";
     ctxC.fillRect(X0 - 5, 0, 5, H);
@@ -1511,6 +1524,7 @@
     document.getElementById("rtMultitud").checked = ajustes.multitud !== false;
     document.getElementById("rtRayos").checked = ajustes.rayos !== false;
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
+    document.getElementById("rtFondos").checked = ajustes.fondos !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
     recordEl.textContent = (ajustes.practica ? "Modo práctica activado: las partidas no se guardan en los puntajes. " : "") + (r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "");
     pintarPuntajes();
@@ -1572,6 +1586,7 @@
   document.getElementById("rtMultitud").addEventListener("change", ev => { ajustes.multitud = ev.target.checked; guardarAjustes(); });
   document.getElementById("rtRayos").addEventListener("change", ev => { ajustes.rayos = ev.target.checked; guardarAjustes(); });
   document.getElementById("rtSonidoGolpe").addEventListener("change", ev => { ajustes.sonidoGolpe = ev.target.checked; guardarAjustes(); });
+  document.getElementById("rtFondos").addEventListener("change", ev => { ajustes.fondos = ev.target.checked; guardarAjustes(); });
 
   /* --- Foto del personaje: se elige, se encuadra en un círculo y se guarda ya recortada --- */
   {
