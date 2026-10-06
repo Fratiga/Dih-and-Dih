@@ -600,10 +600,7 @@
     document.getElementById("rtFinRango").textContent = rango;
     document.getElementById("rtFinDatos").innerHTML =
       `${puntos.toLocaleString("es")} puntos · ${(acc * 100).toFixed(1)} % de precisión<br>` +
-      `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
-      (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "") +
-      (!completa ? "<br>No terminaste la canción: el puntaje no se guarda." : "") +
-      (versionJugada === "prueba" ? "<br><strong>Modo prueba del editor: esta partida no cuenta para los puntajes.</strong>" : "");
+      `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Extras ${extras} · Combo máximo ${comboMax}`;
     mostrar(finEl);
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
@@ -1129,7 +1126,7 @@
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     document.getElementById("rtFondos").checked = ajustes.fondos !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
-    recordEl.textContent = (ajustes.practica ? "Modo práctica activado: las partidas no se guardan en los puntajes. " : "") + (r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "");
+    recordEl.textContent = (ajustes.practica ? "Modo práctica activado. " : "") + (r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "");
     pintarPuntajes();
   }
 
@@ -1373,7 +1370,7 @@
       bEmpezar.classList.remove("hidden");
       bEmpezar.textContent = "Repetir";
       if (taps.length < 6) {
-        txt.textContent = `Solo llegué a oír ${taps.length} toques de 10. Prueba otra vez, tocando al ritmo de los tics.`;
+        txt.textContent = `Solo oí ${taps.length} toques de 10. Repite.`;
         bAplicar.classList.add("hidden");
         return;
       }
@@ -1382,7 +1379,7 @@
       // Lo que se oye llega un poco después de lo que marca el reloj del audio
       const ms = Math.round((((mediana - ((audio && audio.outputLatency) || 0)) * 1000)) / 5) * 5;
       resultado = Math.max(-200, Math.min(200, ms));
-      txt.textContent = `Sueles tocar ${Math.abs(ms)} ms ${ms >= 0 ? "después de" : "antes de"} cada tic. Se ajustará la sincronía a ${resultado > 0 ? "+" : ""}${resultado} ms.`;
+      txt.textContent = `Sueles ir ${Math.abs(ms)} ms ${ms >= 0 ? "tarde" : "pronto"}. Ajuste: ${resultado > 0 ? "+" : ""}${resultado} ms.`;
       bAplicar.classList.remove("hidden");
     }
 
@@ -1417,7 +1414,7 @@
       bEmpezar.textContent = "Empezar";
       bEmpezar.classList.remove("hidden");
       bAplicar.classList.add("hidden");
-      txt.textContent = "Suenan 10 tics. Toca cualquier tecla, o la pantalla, justo cuando oigas cada uno.";
+      txt.textContent = "Toca al ritmo de los 10 tics.";
       pintarPuntos();
     });
     bEmpezar.addEventListener("click", empezar);
