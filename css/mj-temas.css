@@ -250,9 +250,9 @@ body.cartas-tema {
 .cartas-tema .mj-titulo::after { content: "♥"; }
 
 /* ======================================================================
-   VALHALLA: el salón de los caídos. Acero frío, hielo y oro de runas.
+   OSTELAR: el coso de los alzados. Acero frío, hielo y oro.
 ====================================================================== */
-body.vh-tema {
+body.os-tema {
   --bg: #0c1118; --panel: #141b25; --panel-2: #1a2330; --text: #e1e8f0; --muted: #8499ad;
   --accent: #d9b869; --accent-soft: #6a7f96; --border: #2a384a; --font-heading: 'Uncial Antiqua';
   background-color: var(--bg);
@@ -262,13 +262,13 @@ body.vh-tema {
     radial-gradient(ellipse at 50% 120%, rgba(217, 184, 105, .12), transparent 50%);
   background-repeat: no-repeat; color: var(--text);
 }
-.vh-tema .mj-barra { background: rgba(12, 17, 24, .78); border-bottom: 1px solid var(--accent-soft); }
-.vh-tema .mj-volver { color: var(--accent); }
-.vh-tema .eyebrow { color: #8fc3e6; letter-spacing: .3em; }
-.vh-tema .mj-titulo { letter-spacing: .08em; color: #f1dfae; text-shadow: 0 2px 0 #2a2412, 0 0 22px rgba(217, 184, 105, .35); }
-.vh-tema .mj-titulo::before, .vh-tema .mj-titulo::after { content: "ᛟ"; color: #8fc3e6; margin: 0 14px; font-size: .75em; text-shadow: 0 0 14px rgba(143, 195, 230, .6); }
-.vh-tema .vh-panel, .vh-tema .vh-barra-grupo, .vh-tema .vh-carta { border-color: var(--border); background: linear-gradient(180deg, #19222f, #141b25); }
-.vh-tema .vh-boton, .vh-tema .vh-mini { border-color: var(--accent-soft); }
-.vh-tema .vh-boton:hover, .vh-tema .vh-mini:hover { border-color: var(--accent); color: #f6e7bd; }
-.vh-tema .vh-principal { border-color: var(--accent); background: #26303f; }
-.vh-tema .vh-subtitulo { color: var(--accent); letter-spacing: .05em; }
+.os-tema .mj-barra { background: rgba(12, 17, 24, .78); border-bottom: 1px solid var(--accent-soft); }
+.os-tema .mj-volver { color: var(--accent); }
+.os-tema .eyebrow { color: #8fc3e6; letter-spacing: .3em; }
+.os-tema .mj-titulo { letter-spacing: .08em; color: #f1dfae; text-shadow: 0 2px 0 #2a2412, 0 0 22px rgba(217, 184, 105, .35); }
+.os-tema .mj-titulo::before, .os-tema .mj-titulo::after { content: "◆"; color: #8fc3e6; margin: 0 14px; font-size: .75em; text-shadow: 0 0 14px rgba(143, 195, 230, .6); }
+.os-tema .os-panel, .os-tema .os-barra-grupo, .os-tema .os-carta { border-color: var(--border); background: linear-gradient(180deg, #19222f, #141b25); }
+.os-tema .os-boton, .os-tema .os-mini { border-color: var(--accent-soft); }
+.os-tema .os-boton:hover, .os-tema .os-mini:hover { border-color: var(--accent); color: #f6e7bd; }
+.os-tema .os-principal { border-color: var(--accent); background: #26303f; }
+.os-tema .os-subtitulo { color: var(--accent); letter-spacing: .05em; }

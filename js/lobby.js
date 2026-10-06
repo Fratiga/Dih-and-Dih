@@ -108,7 +108,7 @@
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["ritmo.html", "Zarabanda"], ["parranda.html", "Parranda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
     ["arqueria.html", "Arquería", true], ["duelo.html", "Duelo", true], ["cartas.html", "Cartas", true],
-    ["valhalla.html", "Valhalla", true], ["admin.html", "Admin", true]
+    ["ostelar.html", "Ostelar", true], ["admin.html", "Admin", true]
   ];
   const ATAJOS_CLAVE = "lbAtajos";
   const ATAJOS_BASE = ["compendio.html", "mapa.html", "cronologia.html", "bestiario.html", "fanarts.html", "minijuegos.html"];

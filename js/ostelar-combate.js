@@ -1,6 +1,6 @@
 /* =============================================================================
-   VALHALLA — motor de combate por turnos sobre cuadrícula. No toca el DOM:
-   solo estado y reglas. La pantalla (valhalla.js) le pregunta qué se puede
+   OSTELAR — motor de combate por turnos sobre cuadrícula. No toca el DOM:
+   solo estado y reglas. La pantalla (ostelar.js) le pregunta qué se puede
    hacer y le ordena hacerlo.
 
    Reglas (D&D 5e simplificado):
@@ -12,26 +12,26 @@
      · Sin ataques de oportunidad (como en un táctico de tablero pequeño): la
        gracia está en el terreno, los empujones y el fuego amigo.
 ============================================================================= */
-(function (VH) {
+(function (OS) {
   const TERRENO = { SUELO: 0, ROCA: 1, FUEGO: 2, PINCHOS: 3, BARRO: 4 };
-  VH.TERRENO = TERRENO;
+  OS.TERRENO = TERRENO;
   const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
   const clave = (x, y) => `${x},${y}`;
 
   /* El tamaño del tablero depende de cuántas fichas pelean: pocas fichas en un
      ring chico, muchas en un campo grande. */
-  VH.TAMANOS_MAPA = [
+  OS.TAMANOS_MAPA = [
     { hasta: 3, ancho: 8, alto: 6, flanco: 2, nombre: "Reñidero" },
     { hasta: 5, ancho: 10, alto: 7, flanco: 2, nombre: "Claro" },
     { hasta: 8, ancho: 12, alto: 8, flanco: 3, nombre: "Plaza" },
     { hasta: 11, ancho: 14, alto: 9, flanco: 3, nombre: "Campo" },
     { hasta: 99, ancho: 16, alto: 10, flanco: 3, nombre: "Gran campo" }
   ];
-  VH.tamanoMapa = n => VH.TAMANOS_MAPA.find(t => n <= t.hasta);
+  OS.tamanoMapa = n => OS.TAMANOS_MAPA.find(t => n <= t.hasta);
 
   /* Cada tema coloca terreno en la zona central (entre los dos flancos, que
      siempre quedan libres). Reciben (t, xMin, xMax, ancho, alto, poner). */
-  VH.TEMAS_MAPA = [
+  OS.TEMAS_MAPA = [
     {
       id: "claro", nombre: "Claro abierto",
       generar(t, x0, x1, W, H, poner) {
@@ -100,8 +100,8 @@
     }
   ];
 
-  VH.crearCombate = function (jugadores, enemigos, opciones) {
-    const tam = VH.tamanoMapa(jugadores.length + enemigos.length);
+  OS.crearCombate = function (jugadores, enemigos, opciones) {
+    const tam = OS.tamanoMapa(jugadores.length + enemigos.length);
     const ANCHO = tam.ancho;
     const ALTO = tam.alto;
     const FLANCO = tam.flanco;
@@ -129,7 +129,7 @@
     function generarMapa() {
       const x0 = FLANCO, x1 = ANCHO - 1 - FLANCO;
       for (let intento = 0; intento < 60; intento++) {
-        const tema = VH.TEMAS_MAPA[Math.floor(Math.random() * VH.TEMAS_MAPA.length)];
+        const tema = OS.TEMAS_MAPA[Math.floor(Math.random() * OS.TEMAS_MAPA.length)];
         const t = Array.from({ length: ALTO }, () => Array(ANCHO).fill(TERRENO.SUELO));
         const poner = (tipo, n) => {
           for (let i = 0; i < n; i++) t[Math.floor(Math.random() * ALTO)][x0 + Math.floor(Math.random() * (x1 - x0 + 1))] = tipo;
@@ -199,7 +199,7 @@
     c.unidades.forEach(u => {
       u.pv = u.pvMax; u.cond = {}; u.usos = {}; u.recargaPend = {}; u.usados = (u.espacios || []).map(() => 0);
       u.muerto = false; u.caido = false; u.concentra = null; u.castigoActivo = false; u.reservaMano = null;
-      u.ini = VH.d(20) + (u.iniciativa || 0);
+      u.ini = OS.d(20) + (u.iniciativa || 0);
     });
     c.orden = c.unidades.slice().sort((a, b) => b.ini - a.ini || b.mod.des - a.mod.des).map(u => u.id);
 
@@ -259,8 +259,8 @@
 
     function peligroEn(u, x, y) {
       const t = terrenoEn(x, y);
-      if (t === TERRENO.FUEGO) { recibirDano(u, VH.tirar("1d6").total, "fuego", null, "el fuego"); }
-      else if (t === TERRENO.PINCHOS) { recibirDano(u, VH.tirar("2d6").total, "perforante", null, "los pinchos"); }
+      if (t === TERRENO.FUEGO) { recibirDano(u, OS.tirar("1d6").total, "fuego", null, "el fuego"); }
+      else if (t === TERRENO.PINCHOS) { recibirDano(u, OS.tirar("2d6").total, "perforante", null, "los pinchos"); }
     }
 
     c.mover = function (u, x, y) {
@@ -289,13 +289,13 @@
         const otro = enMapa(nx, ny) ? unidadEn(nx, ny) : null;
         if (!enMapa(nx, ny) || terrenoEn(nx, ny) === TERRENO.ROCA) {
           escribir(`${objetivo.nombre} choca contra la pared.`, "dano");
-          recibirDano(objetivo, VH.tirar("1d6").total, "contundente", null, "el choque");
+          recibirDano(objetivo, OS.tirar("1d6").total, "contundente", null, "el choque");
           return;
         }
         if (otro) {
           escribir(`${objetivo.nombre} choca contra ${otro.nombre}.`, "dano");
-          recibirDano(objetivo, VH.tirar("1d6").total, "contundente", null, "el choque");
-          recibirDano(otro, VH.tirar("1d6").total, "contundente", null, "el choque");
+          recibirDano(objetivo, OS.tirar("1d6").total, "contundente", null, "el choque");
+          recibirDano(otro, OS.tirar("1d6").total, "contundente", null, "el choque");
           return;
         }
         objetivo.x = nx; objetivo.y = ny;
@@ -306,9 +306,9 @@
     /* --- Daño y curación ----------------------------------------------------- */
     function recibirDano(u, cantidad, tipo, fuente, causa) {
       if (!vivo(u) || cantidad <= 0) return 0;
-      const t = VH.tipoDanoCanon(tipo);
+      const t = OS.tipoDanoCanon(tipo);
       let n = cantidad;
-      const resiste = u.res.includes(t) || (tieneCond(u, "furia") && VH.FISICOS.includes(t));
+      const resiste = u.res.includes(t) || (tieneCond(u, "furia") && OS.FISICOS.includes(t));
       if (u.inm.includes(t)) n = 0;
       else if (resiste) n = Math.floor(n / 2);
       else if (u.vul.includes(t)) n *= 2;
@@ -318,7 +318,7 @@
       if (n) escribir(`${u.nombre} recibe ${n} de daño${t ? " " + t : ""}${causa ? " por " + causa : ""}${resiste && n ? " (resiste)" : ""}.`, "dano");
       if (u.concentra && n > 0) {
         const cd = Math.max(10, Math.floor(n / 2));
-        const tirada = VH.d(20) + u.mod.con;
+        const tirada = OS.d(20) + u.mod.con;
         if (tirada < cd) { escribir(`${u.nombre} pierde la concentración.`, "info"); cortarConcentracion(u); }
       }
       if (u.pv <= 0) {
@@ -363,7 +363,7 @@
       if (c.fin) return;
       if (c.unidades.filter(u => u.equipo === "enemigos").every(u => u.muerto)) {
         c.fin = "victoria";
-        c.xpGanada = c.unidades.filter(u => u.equipo === "enemigos").reduce((t, u) => t + VH.xpEnemigo(u.nivel), 0);
+        c.xpGanada = c.unidades.filter(u => u.equipo === "enemigos").reduce((t, u) => t + OS.xpEnemigo(u.nivel), 0);
         escribir("¡Victoria!", "info");
       } else if (c.unidades.filter(u => u.equipo === "jugadores").every(u => u.caido)) {
         c.fin = "derrota";
@@ -378,12 +378,12 @@
       if (tieneCond(def, "esquivando")) v -= 1;
       if (["aturdido", "paralizado", "cegado"].some(n => tieneCond(def, n))) v += 1;
       if (tieneCond(def, "derribado")) v += cuerpo ? 1 : -1;
-      if (!cuerpo && rivales(att).some(o => VH.dist(o, att) <= 1 && !incapacitado(o))) v -= 1;
+      if (!cuerpo && rivales(att).some(o => OS.dist(o, att) <= 1 && !incapacitado(o))) v -= 1;
       return v;
     }
 
     function d20(ventaja) {
-      const a = VH.d(20), b = VH.d(20);
+      const a = OS.d(20), b = OS.d(20);
       return ventaja > 0 ? Math.max(a, b) : ventaja < 0 ? Math.min(a, b) : a;
     }
 
@@ -391,15 +391,15 @@
       const v = ventajaContra(att, def, cuerpo);
       const natural = d20(v);
       let total = natural + bono;
-      if (tieneCond(att, "bendecido")) total += VH.d(4);
+      if (tieneCond(att, "bendecido")) total += OS.d(4);
       const critico = natural === 20 || (tieneCond(def, "paralizado") && cuerpo && natural !== 1);
       const impacta = natural !== 1 && (critico || total >= def.ca);
       return { natural, total, critico, impacta, ventaja: v };
     }
 
     function salvar(def, atributo, cd) {
-      let total = VH.d(20) + (def.mod[atributo] || 0);
-      if (tieneCond(def, "bendecido")) total += VH.d(4);
+      let total = OS.d(20) + (def.mod[atributo] || 0);
+      if (tieneCond(def, "bendecido")) total += OS.d(4);
       return { total, exito: total >= cd };
     }
 
@@ -482,7 +482,7 @@
 
     function infoAccion(u, a) {
       const partes = [];
-      if (a.ataque !== undefined && a.ataque !== null) partes.push(`${VH.signo(a.ataque)} al ataque`);
+      if (a.ataque !== undefined && a.ataque !== null) partes.push(`${OS.signo(a.ataque)} al ataque`);
       if (a.danos && a.danos.length) partes.push(a.danos.map(d => `${d.f} ${d.t}`).join(" + "));
       if (a.cura) partes.push(`cura ${a.cura}`);
       if (a.salv) partes.push(`salv. ${a.salv.toUpperCase()} CD ${a.cd}`);
@@ -509,7 +509,7 @@
       if (esEspecial) return [{ x: o.x, y: o.y, victimas: [u], propio: true }];
       if (p.tipo === "teleport") {
         for (let y = 0; y < ALTO; y++) for (let x = 0; x < ANCHO; x++) {
-          if (VH.dist(o, { x, y }) <= p.alcance && terrenoEn(x, y) !== TERRENO.ROCA && !unidadEn(x, y)) salida.push({ x, y, victimas: [], teleport: true });
+          if (OS.dist(o, { x, y }) <= p.alcance && terrenoEn(x, y) !== TERRENO.ROCA && !unidadEn(x, y)) salida.push({ x, y, victimas: [], teleport: true });
         }
         return salida;
       }
@@ -531,7 +531,7 @@
         return salida;
       }
       for (let y = 0; y < ALTO; y++) for (let x = 0; x < ANCHO; x++) {
-        const d = VH.dist(o, { x, y });
+        const d = OS.dist(o, { x, y });
         if (d > p.alcance) continue;
         if (!(x === o.x && y === o.y) && p.alcance > 1 && !visible(o, { x, y })) continue;
         if (terrenoEn(x, y) === TERRENO.ROCA) continue;
@@ -606,7 +606,7 @@
           const falta = blanco.pvMax - blanco.pv;
           n = Math.min(falta, u.reservaMano === null ? a.reserva : u.reservaMano);
           u.reservaMano = (u.reservaMano === null ? a.reserva : u.reservaMano) - n;
-        } else n = VH.tirar(a.cura).total;
+        } else n = OS.tirar(a.cura).total;
         escribir(`${u.nombre} usa ${a.nombre}${blanco !== u ? " sobre " + blanco.nombre : ""}.`, "accion");
         curar(blanco, n);
         return;
@@ -629,14 +629,14 @@
         if (a.tipo === "salvacion") {
           const s = salvar(v, a.salv, a.cd);
           escribir(`${v.nombre} salva ${a.salv.toUpperCase()}: ${s.total} contra CD ${a.cd} ${s.exito ? "(éxito)" : "(falla)"}.`, "tirada");
-          const total = a.danos.reduce((t, z) => t + VH.tirar(z.f).total, 0);
+          const total = a.danos.reduce((t, z) => t + OS.tirar(z.f).total, 0);
           if (a.danos.length) {
             const por = s.exito ? (a.mitad ? Math.floor(total / 2) : 0) : total;
             if (por > 0) recibirDano(v, por, a.danos[0].t, u, a.nombre);
           }
           if (!s.exito) { aplicarSecundarios(u, a, v); }
         } else {
-          a.danos.forEach(z => recibirDano(v, VH.tirar(z.f).total, z.t, u, a.nombre));
+          a.danos.forEach(z => recibirDano(v, OS.tirar(z.f).total, z.t, u, a.nombre));
           aplicarSecundarios(u, a, v);
         }
       });
@@ -651,21 +651,21 @@
       const cuerpo = !a.distancia && a.alcance <= 2;
       const r = tirarAtaque(u, blanco, a.ataque, cuerpo);
       const etiqueta = r.ventaja > 0 ? " (ventaja)" : r.ventaja < 0 ? " (desventaja)" : "";
-      escribir(`${u.nombre} ataca a ${blanco.nombre} con ${a.nombre}${etiqueta}: ${r.natural}${VH.signo(a.ataque)} = ${r.total} contra CA ${blanco.ca} ${r.impacta ? (r.critico ? "¡crítico!" : "impacta") : "falla"}.`, "tirada");
+      escribir(`${u.nombre} ataca a ${blanco.nombre} con ${a.nombre}${etiqueta}: ${r.natural}${OS.signo(a.ataque)} = ${r.total} contra CA ${blanco.ca} ${r.impacta ? (r.critico ? "¡crítico!" : "impacta") : "falla"}.`, "tirada");
       if (!r.impacta) { flotar(blanco, "falla", "#aaa"); return; }
       let total = 0;
       let tipoPrincipal = a.danos[0] ? a.danos[0].t : "";
       const partes = [];
       a.danos.forEach(z => {
-        const v = VH.tirar(z.f, r.critico).total;
+        const v = OS.tirar(z.f, r.critico).total;
         total += v; partes.push([v, z.t]);
       });
       const extras = [];
       if (a.furtivo && !u.turno.furtivo) {
-        const hayAliado = aliados(u).some(o => o !== u && VH.dist(o, blanco) <= 1 && !incapacitado(o));
+        const hayAliado = aliados(u).some(o => o !== u && OS.dist(o, blanco) <= 1 && !incapacitado(o));
         if (r.ventaja > 0 || (hayAliado && r.ventaja >= 0)) {
           u.turno.furtivo = true;
-          const v = VH.tirar(`${u.furtivoDados}d6`, r.critico).total;
+          const v = OS.tirar(`${u.furtivoDados}d6`, r.critico).total;
           extras.push([v, a.danos[0].t, "furtivo"]);
         }
       }
@@ -674,12 +674,12 @@
         const nivel = nivelEspacioMinimo(u, 1);
         if (nivel) {
           u.usados[nivel - 1]++;
-          const v = VH.tirar(`${Math.min(5, 1 + nivel)}d8`, r.critico).total;
+          const v = OS.tirar(`${Math.min(5, 1 + nivel)}d8`, r.critico).total;
           extras.push([v, "radiante", "castigo divino"]);
         }
       }
       if (a.cazador && tieneCond(blanco, "marcado") && blanco.marcadoPor === u.id) {
-        extras.push([VH.tirar(u.cazadorDados || "1d6", r.critico).total, a.danos[0].t, "presa marcada"]);
+        extras.push([OS.tirar(u.cazadorDados || "1d6", r.critico).total, a.danos[0].t, "presa marcada"]);
       }
       let dañado = 0;
       partes.forEach(([v, t]) => { dañado += recibirDano(blanco, v, t, u, a.nombre); });
@@ -693,14 +693,14 @@
           } else ponerCondicion(blanco, a.estado.nombre, a.estado.turnos, u);
         }
         if (a.empuje) empujar(blanco, u, a.empuje);
-        if (blanco.espinas && cuerpo) recibirDano(u, VH.tirar(blanco.espinas.f).total, blanco.espinas.t, blanco, "las espinas");
+        if (blanco.espinas && cuerpo) recibirDano(u, OS.tirar(blanco.espinas.f).total, blanco.espinas.t, blanco, "las espinas");
       }
     }
 
     function danoConjuro(cj, nivelUsado, nivelPj) {
       const base = cj.danos.map(z => ({ f: z.f, t: z.t }));
       if (cj.truco) {
-        const mult = VH.multiplicadorTruco(nivelPj);
+        const mult = OS.multiplicadorTruco(nivelPj);
         if (mult > 1) base.forEach(z => { z.f = z.f.replace(/^(\d+)d/, (m, n) => `${parseInt(n, 10) * mult}d`); });
       } else if (cj.escala && nivelUsado > cj.nivel) {
         const extra = nivelUsado - cj.nivel;
@@ -722,7 +722,7 @@
         objetivos.forEach(v => {
           let f = cj.cura;
           if (cj.escalaCura && nivelUsado > cj.nivel) f = `${f}+${(nivelUsado - cj.nivel)}${cj.escalaCura.replace(/^\d+/, "")}`;
-          const n = VH.tirar(f).total + (cj.sumaMod ? Math.max(0, u.lanz.mod) : 0);
+          const n = OS.tirar(f).total + (cj.sumaMod ? Math.max(0, u.lanz.mod) : 0);
           curar(v, n);
         });
         return;
@@ -734,22 +734,22 @@
         return;
       }
       const lista = objetivos.filter(v => v !== u);
-      const rayos = cj.rayos === "truco" ? VH.multiplicadorTruco(u.nivel) : (cj.rayos ? cj.rayos + (cj.escalaRayos && nivelUsado > cj.nivel ? cj.escalaRayos * (nivelUsado - cj.nivel) : 0) : 1);
+      const rayos = cj.rayos === "truco" ? OS.multiplicadorTruco(u.nivel) : (cj.rayos ? cj.rayos + (cj.escalaRayos && nivelUsado > cj.nivel ? cj.escalaRayos * (nivelUsado - cj.nivel) : 0) : 1);
       const dardos = cj.dardos ? cj.dardos + (cj.escalaDardos ? cj.escalaDardos * Math.max(0, nivelUsado - cj.nivel) : 0) : 1;
       lista.forEach(v => {
         if (cj.tipo === "ataque") {
           for (let i = 0; i < rayos && vivo(v); i++) {
             const r = tirarAtaque(u, v, u.lanz.ataque, false);
-            escribir(`${u.nombre} contra ${v.nombre}: ${r.natural}${VH.signo(u.lanz.ataque)} = ${r.total} contra CA ${v.ca} ${r.impacta ? (r.critico ? "¡crítico!" : "impacta") : "falla"}.`, "tirada");
+            escribir(`${u.nombre} contra ${v.nombre}: ${r.natural}${OS.signo(u.lanz.ataque)} = ${r.total} contra CA ${v.ca} ${r.impacta ? (r.critico ? "¡crítico!" : "impacta") : "falla"}.`, "tirada");
             if (!r.impacta) { flotar(v, "falla", "#aaa"); continue; }
-            danos.forEach(z => recibirDano(v, VH.tirar(z.f, r.critico).total + (cj.sumaMod && z === danos[0] ? Math.max(0, u.lanz.mod) : 0), z.t, u, cj.nombre));
+            danos.forEach(z => recibirDano(v, OS.tirar(z.f, r.critico).total + (cj.sumaMod && z === danos[0] ? Math.max(0, u.lanz.mod) : 0), z.t, u, cj.nombre));
             if (cj.estado && vivo(v)) ponerCondicion(v, cj.estado.nombre, cj.estado.turnos, u);
             if (cj.empuje && vivo(v)) empujar(v, u, cj.empuje);
           }
         } else if (cj.tipo === "salvacion") {
           const s = salvar(v, cj.salv, u.lanz.cd);
           escribir(`${v.nombre} salva ${cj.salv.toUpperCase()}: ${s.total} contra CD ${u.lanz.cd} ${s.exito ? "(éxito)" : "(falla)"}.`, "tirada");
-          const total = danos.reduce((t, z) => t + VH.tirar(z.f).total, 0);
+          const total = danos.reduce((t, z) => t + OS.tirar(z.f).total, 0);
           if (danos.length) {
             const por = s.exito ? (cj.mitad ? Math.floor(total / 2) : 0) : total;
             if (por > 0) recibirDano(v, por, danos[0].t, u, cj.nombre);
@@ -763,7 +763,7 @@
           }
         } else if (cj.tipo === "auto") {
           for (let i = 0; i < dardos && vivo(v); i++) {
-            danos.forEach(z => recibirDano(v, VH.tirar(z.f).total + (cj.sumaMod && z === danos[0] ? Math.max(0, u.lanz.mod) : 0), z.t, u, cj.nombre));
+            danos.forEach(z => recibirDano(v, OS.tirar(z.f).total + (cj.sumaMod && z === danos[0] ? Math.max(0, u.lanz.mod) : 0), z.t, u, cj.nombre));
           }
         }
       });
@@ -777,7 +777,7 @@
       if (tieneCond(u, "acelerado")) u.turno.accion = 2;
       Object.keys(u.recargaPend).forEach(id => {
         const a = u.acciones.find(z => z.id === id);
-        if (a && VH.d(6) >= a.recarga) { delete u.recargaPend[id]; escribir(`${u.nombre} recarga ${a.nombre}.`, "info"); }
+        if (a && OS.d(6) >= a.recarga) { delete u.recargaPend[id]; escribir(`${u.nombre} recarga ${a.nombre}.`, "info"); }
       });
       const t = terrenoEn(u.x, u.y);
       if (t === TERRENO.FUEGO) peligroEn(u, u.x, u.y);
@@ -842,7 +842,7 @@
       const enemigosV = d.victimas.filter(v => bando(v) !== bando(u));
       const tipo = cj ? cj.tipo : a.tipo;
       const danosBase = cj ? danoConjuro(cj, nivelEspacio || cj.nivel, u.nivel) : a.danos;
-      const promedio = (danosBase || []).reduce((t, z) => t + VH.promedio(z.f), 0);
+      const promedio = (danosBase || []).reduce((t, z) => t + OS.promedio(z.f), 0);
       const reparto = (v, probabilidad, mitad) => {
         const base = promedio * (mitad ? (0.5 + 0.5 * probabilidad) : probabilidad);
         return Math.min(base, v.pv + 6) + (base >= v.pv ? 6 : 0);
@@ -850,7 +850,7 @@
       if (tipo === "cura") {
         const f = cj ? cj.cura : a.cura;
         if (f === "reserva") return 0;
-        const prom = VH.promedio(f) + (cj && cj.sumaMod ? Math.max(0, u.lanz.mod) : 0);
+        const prom = OS.promedio(f) + (cj && cj.sumaMod ? Math.max(0, u.lanz.mod) : 0);
         const blancos = d.victimas.filter(v => bando(v) === bando(u));
         blancos.forEach(v => { if (v.pvMax - v.pv >= prom * 0.6 && v.pv < v.pvMax * 0.6) valor += Math.min(prom, v.pvMax - v.pv) * 0.9 + (v.caido ? 12 : 0); });
         return valor;
@@ -860,7 +860,7 @@
         if (!est) return 0;
         const ayuda = ["furia", "bendecido", "acelerado"].includes(est.nombre);
         if (est.nombre === "marcado") { const b = enemigosV[0]; return b && !tieneCond(b, "marcado") ? 5 : 0; }
-        if (ayuda) { const k = d.victimas.filter(v => bando(v) === bando(u) && !tieneCond(v, est.nombre)).length; return k && rivales(u).some(r => VH.dist(r, u) <= 8) ? 7 * Math.min(k, cj && cj.objetivosMax ? cj.objetivosMax : 1) : 0; }
+        if (ayuda) { const k = d.victimas.filter(v => bando(v) === bando(u) && !tieneCond(v, est.nombre)).length; return k && rivales(u).some(r => OS.dist(r, u) <= 8) ? 7 * Math.min(k, cj && cj.objetivosMax ? cj.objetivosMax : 1) : 0; }
         return enemigosV.length ? 6 : 0;
       }
       enemigosV.forEach(v => {
@@ -901,7 +901,7 @@
         if (ter === TERRENO.FUEGO) bonoPos -= 7;
         if (ter === TERRENO.PINCHOS) bonoPos -= 9;
         if (ter === TERRENO.BARRO) bonoPos -= 1;
-        const cercanos = rivales(u).filter(r => VH.dist(r, origen) <= 1);
+        const cercanos = rivales(u).filter(r => OS.dist(r, origen) <= 1);
         if (lejos) bonoPos -= cercanos.length * 3;
         bonoPos -= info.coste * 0.05;
         ops.forEach(op => {
@@ -958,4 +958,4 @@
 
     return c;
   };
-})(window.VH);
+})(window.OS);

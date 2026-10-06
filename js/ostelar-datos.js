@@ -1,15 +1,15 @@
 /* =============================================================================
-   VALHALLA — personajes, enemigos y botín. Convierte todo lo que ya existe en
+   OSTELAR — personajes, enemigos y botín. Convierte todo lo que ya existe en
    el Compendio a "unidades" que el motor de combate entiende:
-     · einherjar predeterminados (7 clases, nivel 1 a 20, calculados por fórmula)
+     · alzados predeterminados (7 clases, nivel 1 a 20, calculados por fórmula)
      · fichas de jugadores (se COPIAN; la ficha original no se toca)
      · enemigos desde data/stats.js (las habilidades se leen con statsR20Leer)
    Un "registro" es lo que se guarda (nivel, xp, mejoras, equipo). La "unidad"
    se reconstruye desde el registro antes de cada combate.
 ============================================================================= */
-(function (VH) {
+(function (OS) {
   const ATR = ["fue", "des", "con", "int", "sab", "car"];
-  const mod = VH.mod;
+  const mod = OS.mod;
 
   /* --- Armas (de data/armas.js) ------------------------------------------- */
   const metros = txt => {
@@ -17,7 +17,7 @@
     return m ? parseFloat(m[1]) : 0;
   };
 
-  VH.arma = function (id) {
+  OS.arma = function (id) {
     const a = (window.ARMAS || []).find(x => x.id === id);
     if (!a) return null;
     const props = (a.propiedades || []).join(" ").toLowerCase();
@@ -28,7 +28,7 @@
     if (distancia) alcance = Math.max(2, Math.floor(metros(a.alcance) / 1.5));
     else if (props.includes("alcance")) alcance = 2;
     return {
-      id: a.id, nombre: a.title, dano, tipoDano: VH.tipoDanoCanon(a.tipoDano), alcance, distancia,
+      id: a.id, nombre: a.title, dano, tipoDano: OS.tipoDanoCanon(a.tipoDano), alcance, distancia,
       sutil: props.includes("sutil"), dosManos: props.includes("dos manos"), marcial: tags.includes("marcial")
     };
   };
@@ -36,7 +36,7 @@
   /* --- Clases predeterminadas ---------------------------------------------
      atr: puntuaciones iniciales (ya con los bonos de raza). principal: la que
      sube con las mejoras de característica (nv. 4, 8, 12, 16 y 19). */
-  VH.CLASES = {
+  OS.CLASES = {
     guerrero: {
       nombre: "Guerrero", dado: 10, principal: "fue", secundaria: "con", lanza: "ninguno",
       atr: { fue: 17, des: 12, con: 15, int: 8, sab: 12, car: 10 },
@@ -91,21 +91,21 @@
   const COLORES = { guerrero: "#c98a4b", barbaro: "#c4573d", picaro: "#7d8fa8", mago: "#8a6fd0", clerigo: "#e0cf7a", paladin: "#e8e4d0", explorador: "#6fae72", ficha: "#a9c0d8" };
 
   /* --- Registros (lo que se guarda) -------------------------------------- */
-  VH.nuevoId = () => (crypto.randomUUID ? crypto.randomUUID() : `v-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  OS.nuevoId = () => (crypto.randomUUID ? crypto.randomUUID() : `v-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
-  VH.registroPredeterminado = function (claseId, nombre) {
-    const c = VH.CLASES[claseId];
+  OS.registroPredeterminado = function (claseId, nombre) {
+    const c = OS.CLASES[claseId];
     return {
-      id: VH.nuevoId(), origen: "predeterminado", claseId, nombre: nombre || `${c.nombre} de Valhalla`,
+      id: OS.nuevoId(), origen: "predeterminado", claseId, nombre: nombre || `${c.nombre} de Ostelar`,
       nivel: 1, xp: 0, mejoras: 0, bonosAtr: {}, equipo: {}, inventario: [],
       victorias: 0, derrotas: 0, color: COLORES[claseId]
     };
   };
 
   /* Reparte los puntos de mejora pendientes (2 por cada nivel 4, 8, 12, 16 y 19). */
-  VH.mejorasPorNivel = nivel => VH.NIVELES_MEJORA.filter(n => nivel >= n).length * 2;
-  VH.repartirMejorasAuto = function (reg) {
-    const c = VH.CLASES[reg.claseId];
+  OS.mejorasPorNivel = nivel => OS.NIVELES_MEJORA.filter(n => nivel >= n).length * 2;
+  OS.repartirMejorasAuto = function (reg) {
+    const c = OS.CLASES[reg.claseId];
     if (!c) return;
     reg.bonosAtr = reg.bonosAtr || {};
     while (reg.mejoras > 0) {
@@ -117,8 +117,8 @@
   };
 
   /* Copia una ficha de jugador. snapshot: la ficha entera en ese momento. */
-  VH.registroDesdeFicha = function (ficha) {
-    const nivel = Math.max(1, Math.min(VH.NIVEL_MAX, parseInt(ficha.identidad.nivelTotal, 10) || 1));
+  OS.registroDesdeFicha = function (ficha) {
+    const nivel = Math.max(1, Math.min(OS.NIVEL_MAX, parseInt(ficha.identidad.nivelTotal, 10) || 1));
     // La copia no necesita las imágenes grandes: pesarían mucho en el guardado del navegador.
     const copia = JSON.parse(JSON.stringify(ficha));
     copia.decoraciones = [];
@@ -126,47 +126,47 @@
     if (String(copia.identidad.retrato || "").length > 20000) copia.identidad.retrato = "";
     delete copia.importado;
     return {
-      id: VH.nuevoId(), origen: "ficha", fichaId: ficha.id, nombre: ficha.identidad.nombre || "Sin nombre",
-      nivel, nivelBase: nivel, xp: VH.XP_PARA_NIVEL[nivel] || 0, mejoras: 0, bonosAtr: {}, equipo: {}, inventario: [],
+      id: OS.nuevoId(), origen: "ficha", fichaId: ficha.id, nombre: ficha.identidad.nombre || "Sin nombre",
+      nivel, nivelBase: nivel, xp: OS.XP_PARA_NIVEL[nivel] || 0, mejoras: 0, bonosAtr: {}, equipo: {}, inventario: [],
       ficha: copia, victorias: 0, derrotas: 0, color: COLORES.ficha
     };
   };
 
   /* --- Objetos --------------------------------------------------------------- */
-  VH.nombreObjeto = it => {
+  OS.nombreObjeto = it => {
     if (!it) return "";
-    const b = it.bonus ? ` ${VH.signo(it.bonus)}` : "";
+    const b = it.bonus ? ` ${OS.signo(it.bonus)}` : "";
     return `${it.nombre}${b}${it.afijo ? " " + it.afijo.nombre : ""}`;
   };
 
   /* Botín: ítems nuevos según el nivel del enemigo derrotado. */
-  VH.generarObjeto = function (nivelEnemigo) {
+  OS.generarObjeto = function (nivelEnemigo) {
     const nivel = Math.max(1, nivelEnemigo);
     const bonus = Math.max(0, Math.min(3, Math.round((nivel - 2) / 5 + (Math.random() * 1.3 - 0.5))));
     const r = Math.random();
     if (r < 0.5) {
       const lista = (window.ARMAS || []).filter(a => /^\d/.test(a["daño"] || "") && (nivel >= 3 || !(a.tags || []).includes("marcial") || Math.random() < 0.4));
       const a = lista[Math.floor(Math.random() * lista.length)];
-      const afijos = VH.AFIJOS_ARMA.filter(x => x.minNivel <= nivel);
+      const afijos = OS.AFIJOS_ARMA.filter(x => x.minNivel <= nivel);
       const afijo = afijos.length && Math.random() < 0.35 ? afijos[Math.floor(Math.random() * afijos.length)] : null;
-      return { id: VH.nuevoId(), tipo: "arma", base: a.id, nombre: a.title, bonus, afijo };
+      return { id: OS.nuevoId(), tipo: "arma", base: a.id, nombre: a.title, bonus, afijo };
     }
     if (r < 0.8) {
       const max = Math.min(5, Math.ceil(nivel / 3));
-      const lista = VH.ARMADURAS.filter(x => x.tier <= max);
+      const lista = OS.ARMADURAS.filter(x => x.tier <= max);
       const a = lista[Math.floor(Math.random() * lista.length)];
-      const afijos = VH.AFIJOS_ARMADURA.filter(x => x.minNivel <= nivel);
+      const afijos = OS.AFIJOS_ARMADURA.filter(x => x.minNivel <= nivel);
       const afijo = afijos.length && Math.random() < 0.3 ? afijos[Math.floor(Math.random() * afijos.length)] : null;
-      return { id: VH.nuevoId(), tipo: "armadura", base: a.id, nombre: a.nombre, bonus, afijo };
+      return { id: OS.nuevoId(), tipo: "armadura", base: a.id, nombre: a.nombre, bonus, afijo };
     }
-    if (r < 0.9) return { id: VH.nuevoId(), tipo: "escudo", nombre: "Escudo", bonus, afijo: null };
+    if (r < 0.9) return { id: OS.nuevoId(), tipo: "escudo", nombre: "Escudo", bonus, afijo: null };
     const accesorios = [
       { nombre: "Anillo de protección", ca: Math.max(1, bonus) },
       { nombre: "Amuleto de vigor", pv: 8 + 6 * Math.max(1, bonus) },
       { nombre: "Botas de viento", vel: 1 }
     ];
     const ac = accesorios[Math.floor(Math.random() * accesorios.length)];
-    return Object.assign({ id: VH.nuevoId(), tipo: "accesorio", bonus: 0, afijo: null }, ac);
+    return Object.assign({ id: OS.nuevoId(), tipo: "accesorio", bonus: 0, afijo: null }, ac);
   };
 
   /* --- Unidades --------------------------------------------------------------- */
@@ -186,7 +186,7 @@
     let base;
     let extra = 0;
     let pvExtra = 0, velExtra = 0, espinas = null, resistencias = [];
-    const arm = eq.armadura ? VH.ARMADURAS.find(a => a.id === eq.armadura.base) : (claseDef && claseDef.armadura ? VH.ARMADURAS.find(a => a.id === claseDef.armadura) : null);
+    const arm = eq.armadura ? OS.ARMADURAS.find(a => a.id === eq.armadura.base) : (claseDef && claseDef.armadura ? OS.ARMADURAS.find(a => a.id === claseDef.armadura) : null);
     if (arm) {
       base = arm.base + Math.min(modDes, arm.des);
       if (eq.armadura) extra += eq.armadura.bonus || 0;
@@ -202,7 +202,7 @@
   }
 
   function accionArma(nombre, arma, bonoAtaque, danoMod, extra) {
-    const danos = [{ f: danoMod ? `${arma.dano}${VH.signo(danoMod)}` : arma.dano, t: arma.tipoDano }];
+    const danos = [{ f: danoMod ? `${arma.dano}${OS.signo(danoMod)}` : arma.dano, t: arma.tipoDano }];
     return Object.assign({
       id: `arma-${arma.id}`, nombre, costo: "accion", tipo: "arma", arma: true, alcance: arma.alcance, ataque: bonoAtaque,
       danos, sutil: arma.sutil, distancia: arma.distancia
@@ -212,10 +212,10 @@
   function aplicarEquipoArma(u, reg, modFue, modDes, comp, extraDano) {
     const it = reg.equipo && reg.equipo.arma;
     if (!it) return null;
-    const a = VH.arma(it.base);
+    const a = OS.arma(it.base);
     if (!a) return null;
     const m = a.distancia ? modDes : (a.sutil ? Math.max(modFue, modDes) : modFue);
-    const accion = accionArma(VH.nombreObjeto(it), a, m + comp + (it.bonus || 0), m + (it.bonus || 0) + (extraDano || 0), { equipada: true });
+    const accion = accionArma(OS.nombreObjeto(it), a, m + comp + (it.bonus || 0), m + (it.bonus || 0) + (extraDano || 0), { equipada: true });
     if (it.afijo) {
       if (it.afijo.extra) accion.danos.push({ f: it.afijo.extra.f, t: it.afijo.extra.t, extra: true });
       if (it.afijo.estado) accion.estado = it.afijo.estado;
@@ -228,22 +228,22 @@
   /* Conjuros de una lista de clase hasta el nivel de espacio máximo. */
   function conjurosDeClase(lista, espacios) {
     const maxNivel = espacios.length;
-    return VH.CONJUROS.filter(c => c.clases.includes(lista) && (c.nivel === 0 || c.nivel <= maxNivel));
+    return OS.CONJUROS.filter(c => c.clases.includes(lista) && (c.nivel === 0 || c.nivel <= maxNivel));
   }
 
-  VH.unidadDesdeRegistro = function (reg) {
+  OS.unidadDesdeRegistro = function (reg) {
     if (reg.origen === "ficha") return unidadDesdeFicha(reg);
     return unidadPredeterminada(reg);
   };
 
   function unidadPredeterminada(reg) {
-    const c = VH.CLASES[reg.claseId];
+    const c = OS.CLASES[reg.claseId];
     const nivel = reg.nivel;
     const bonos = bonosDe(reg);
     const score = id => Math.min(20, (c.atr[id] || 10) + (bonos[id] || 0));
     const m = {};
     ATR.forEach(id => { m[id] = mod(score(id)); });
-    const comp = VH.competencia(nivel);
+    const comp = OS.competencia(nivel);
     const a = armaduraCa(reg, m.des, m.con, c);
     const pvBase = c.dado + m.con + (nivel - 1) * (Math.floor(c.dado / 2) + 1 + m.con);
     const u = unidadVacia({
@@ -255,7 +255,7 @@
 
     // Arma principal (la del equipo, o la de la clase)
     const equipada = aplicarEquipoArma(u, reg, m.fue, m.des, comp, 0);
-    const baseArma = VH.arma(c.arma);
+    const baseArma = OS.arma(c.arma);
     const modArma = baseArma.distancia ? m.des : (baseArma.sutil ? Math.max(m.fue, m.des) : m.fue);
     const duelo = reg.claseId === "guerrero" ? 2 : 0;
     const principal = accionArma(baseArma.nombre, baseArma, modArma + comp, modArma + duelo);
@@ -269,7 +269,7 @@
       if (reg.claseId === "explorador") equipada.cazador = true;
     }
     if (c.armaDistancia) {
-      const ad = VH.arma(c.armaDistancia);
+      const ad = OS.arma(c.armaDistancia);
       const ar = accionArma(ad.nombre, ad, m.des + comp, m.des);
       if (reg.claseId === "picaro") ar.furtivo = true;
       u.acciones.push(ar);
@@ -306,7 +306,7 @@
 
     // Magia
     if (c.lanza !== "ninguno") {
-      u.espacios = VH.espaciosPara(c.lanza, nivel);
+      u.espacios = OS.espaciosPara(c.lanza, nivel);
       u.usados = u.espacios.map(() => 0);
       const modLanz = m[c.lanzAtr];
       u.lanz = { ataque: modLanz + comp, cd: 8 + modLanz + comp, mod: modLanz, atributo: c.lanzAtr };
@@ -336,7 +336,7 @@
     const p = reg.ficha;
     const nivel = reg.nivel;
     const base = reg.nivelBase || 1;
-    const dComp = VH.competencia(nivel) - VH.competencia(base);
+    const dComp = OS.competencia(nivel) - OS.competencia(base);
     const bonos = bonosDe(reg);
     const m = {};
     ATR.forEach(id => {
@@ -344,7 +344,7 @@
       m[id] = fichasModificadorFinal(p, id) + (mod(puntos + (bonos[id] || 0)) - mod(puntos));
     });
     const comp = fichasCompetenciaTotal(p) + dComp;
-    const claseTxt = VH.sinAcentos(`${p.identidad.clase} ${(p.identidad.clasesExtra || []).map(c => c.nombre).join(" ")}`);
+    const claseTxt = OS.sinAcentos(`${p.identidad.clase} ${(p.identidad.clasesExtra || []).map(c => c.nombre).join(" ")}`);
 
     // PV: los de la ficha más lo que da cada nivel nuevo
     const dado = parseInt(String((p.combate.dadosGolpe || {}).dado || "d8").replace(/\D/g, ""), 10) || 8;
@@ -352,7 +352,7 @@
     const ganado = Math.max(0, nivel - base) * Math.max(1, Math.floor(dado / 2) + 1 + m.con);
     const bonoCon = (mod((p.atributos.con || 8) + ((p.atributosRaciales || {}).con || 0) + (bonos.con || 0)) - mod((p.atributos.con || 8) + ((p.atributosRaciales || {}).con || 0))) * nivel;
     const a = armaduraCa({ equipo: reg.equipo }, m.des, m.con, null);
-    // CA de la ficha, más lo que aporte el equipo nuevo que se ganó en Valhalla
+    // CA de la ficha, más lo que aporte el equipo nuevo que se ganó en Ostelar
     const eq = reg.equipo || {};
     const escudoFicha = Number(p.combate.ca.escudo) || 0;
     let ca = fichasCATotal(p);
@@ -377,7 +377,7 @@
       const ataque = fichasAtaqueTotal(p, at) + (at.competente ? dComp : 0) + (m[at.atributo] - fichasModificadorFinal(p, at.atributo));
       u.acciones.push({
         id: `fa-${at.id}`, nombre: at.nombre || "Ataque", costo: "accion", tipo: "arma", arma: true,
-        alcance: alcanceDeTexto(at.alcance, false), ataque, danos: [{ f: dano.replace(/^\+/, ""), t: VH.tipoDanoCanon(at.tipoDano) }],
+        alcance: alcanceDeTexto(at.alcance, false), ataque, danos: [{ f: dano.replace(/^\+/, ""), t: OS.tipoDanoCanon(at.tipoDano) }],
         sutil: /sutil/i.test(at.propiedades || ""), distancia
       });
     });
@@ -391,12 +391,12 @@
     const lanzador = CLASES_LANZADORAS.find(([k]) => claseTxt.includes(k));
     const espaciosFicha = ((p.lanzamiento || {}).espacios || []).filter(e => Number(e.max) > 0);
     if (lanzador && nivel > base) {
-      u.espacios = VH.espaciosPara(lanzador[1], nivel);
+      u.espacios = OS.espaciosPara(lanzador[1], nivel);
     } else if (espaciosFicha.length) {
       const mx = Math.max(...espaciosFicha.map(e => Number(e.nivel) || 1));
       u.espacios = Array.from({ length: mx }, (_, i) => espaciosFicha.filter(e => Number(e.nivel) === i + 1).reduce((s, e) => s + Number(e.max), 0));
     } else if (lanzador) {
-      u.espacios = VH.espaciosPara(lanzador[1], nivel);
+      u.espacios = OS.espaciosPara(lanzador[1], nivel);
     }
     u.usados = u.espacios.map(() => 0);
     const atrLanz = (p.lanzamiento || {}).atributo || "int";
@@ -407,7 +407,7 @@
     };
     (p.hechizos || []).forEach(h => {
       if (h.disponible === false) return;
-      const cat = VH.conjuroPorNombre(h.nombre);
+      const cat = OS.conjuroPorNombre(h.nombre);
       if (cat) { u.conjuros.push(cat); return; }
       const generico = conjuroGenerico(p, h);
       if (generico) u.conjuros.push(generico); else u.notas.push(`${h.nombre}: sin automatizar`);
@@ -421,15 +421,15 @@
   function conjuroGenerico(p, h) {
     const danoTxt = String(fichasResolverFormula(p, h.dano || "") || "").replace(/\s+/g, "");
     if (!danoTxt || !/\d/.test(danoTxt)) return null;
-    const desc = VH.sinAcentos(h.descripcion || "");
+    const desc = OS.sinAcentos(h.descripcion || "");
     const salv = desc.match(/salvacion de (fuerza|destreza|constitucion|inteligencia|sabiduria|carisma)/);
     const idAtr = { fuerza: "fue", destreza: "des", constitucion: "con", inteligencia: "int", sabiduria: "sab", carisma: "car" };
     const tipo = h.tipo === "salvacion" ? "salvacion" : h.tipo === "ataque" ? "ataque" : (salv ? "salvacion" : "auto");
-    const t = VH.sinAcentos(h.tiempo || "");
+    const t = OS.sinAcentos(h.tiempo || "");
     return {
       id: `fh-${h.id}`, nombre: h.nombre, nivel: Number(h.nivel) || 0, escuela: h.escuela || "", truco: Number(h.nivel) === 0,
       costo: /adicional|bonus/.test(t) ? "bonus" : "accion", tipo, salv: salv ? idAtr[salv[1]] : "des", mitad: desc.includes("mitad"),
-      alcance: Math.max(1, alcanceDeTexto(h.alcance, true)), danos: [{ f: danoTxt, t: VH.tipoDanoCanon(h.tipoDano) }], generico: true, clases: []
+      alcance: Math.max(1, alcanceDeTexto(h.alcance, true)), danos: [{ f: danoTxt, t: OS.tipoDanoCanon(h.tipoDano) }], generico: true, clases: []
     };
   }
 
@@ -437,7 +437,7 @@
   const ATRIBUTO_ID = { fuerza: "fue", destreza: "des", constitucion: "con", inteligencia: "int", sabiduria: "sab", carisma: "car" };
 
   function pies(texto) {
-    const t = VH.sinAcentos(texto);
+    const t = OS.sinAcentos(texto);
     let m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:pies|pie|ft)/);
     if (m) return parseFloat(m[1].replace(",", ".")) / 5;
     m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:metros|m)\b/);
@@ -447,12 +447,12 @@
 
   function leerAccionEnemigo(s, hab, indice) {
     const nombreLimpio = statsR20Limpiar(hab.nombre);
-    const tag = VH.sinAcentos(hab.nombre);
+    const tag = OS.sinAcentos(hab.nombre);
     if (/pasiva|rasgo|una vez por combate/.test(tag) && !/accion|bonus/.test(tag.replace(/pasiva|rasgo/g, ""))) return { pasiva: nombreLimpio + ": " + hab.descripcion };
     if (/reaccion/.test(tag)) return { pasiva: nombreLimpio + " (reacción, sin automatizar): " + hab.descripcion };
     const costo = /bonus|adicional/.test(tag) ? "bonus" : "accion";
     const r = statsR20Leer(hab.descripcion, s, hab.nombre);
-    const d = VH.sinAcentos(hab.descripcion);
+    const d = OS.sinAcentos(hab.descripcion);
     const recarga = tag.match(/recarga\s*(\d)/);
     const a = {
       id: `e${indice}`, nombre: nombreLimpio, costo, tipo: "efecto", alcance: 1, danos: [], desc: hab.descripcion,
@@ -474,8 +474,8 @@
     }
 
     if (r.curacion) { a.tipo = "cura"; a.cura = r.curacion; a.alcance = 0; return { accion: a }; }
-    a.danos = r.danos.filter(x => !x.adicional || r.danos.length === 1).map(x => ({ f: x.formula, t: VH.tipoDanoCanon(x.tipo) }));
-    r.danos.filter(x => x.adicional).forEach(x => { if (a.danos.length) a.danos.push({ f: x.formula, t: VH.tipoDanoCanon(x.tipo), extra: true }); });
+    a.danos = r.danos.filter(x => !x.adicional || r.danos.length === 1).map(x => ({ f: x.formula, t: OS.tipoDanoCanon(x.tipo) }));
+    r.danos.filter(x => x.adicional).forEach(x => { if (a.danos.length) a.danos.push({ f: x.formula, t: OS.tipoDanoCanon(x.tipo), extra: true }); });
     if (r.ataque !== null) { a.tipo = "arma"; a.ataque = r.ataque; }
     else if (r.salvaciones.length) { a.tipo = "salvacion"; a.salv = r.salvaciones[0].atributo; a.cd = r.salvaciones[0].cd; a.mitad = /mitad/.test(d); }
     else if (a.danos.length) { a.tipo = "auto"; }
@@ -492,7 +492,7 @@
     return { accion: a };
   }
 
-  VH.unidadDesdeStats = function (s, subida) {
+  OS.unidadDesdeStats = function (s, subida) {
     const k = subida || 0;
     const m = {};
     ATR.forEach(id => { m[id] = mod((s.stats && s.stats[id]) || 10); });
@@ -502,7 +502,7 @@
     const u = unidadVacia({
       id: `${s.id}-${Math.random().toString(16).slice(2, 6)}`, equipo: "enemigos", nombre: s.nombre, nivel: nivel + k, clase: s.rol || "", baseId: s.id,
       pvMax: Math.round(pvBase * (1 + 0.3 * k)), ca: (Number(s.ca) || 10) + Math.floor(k / 2), vel, mod: m,
-      comp: VH.competencia(nivel), iniciativa: m.des, color: "#b5524a", tipoCriatura: s.tipo || ""
+      comp: OS.competencia(nivel), iniciativa: m.des, color: "#b5524a", tipoCriatura: s.tipo || ""
     });
     u.pv = u.pvMax;
     (s.habilidades || []).forEach((h, i) => {
@@ -529,27 +529,27 @@
   };
 
   /* Enemigos aptos para pelear (alguna acción que haga daño). */
-  VH.enemigosDisponibles = function () {
+  OS.enemigosDisponibles = function () {
     return (window.STATS || []).filter(s => Number.isFinite(Number(s.nivel)) && Number(s.nivel) >= 1 && Number.isFinite(Number(s.pv)))
       .filter(s => {
-        const u = VH.unidadDesdeStats(s);
+        const u = OS.unidadDesdeStats(s);
         return u.acciones.some(a => a.danos && a.danos.length);
       });
   };
 
   /* Un encuentro: lista de enemigos que suma aproximadamente el presupuesto de XP. */
-  VH.dificultades = {
+  OS.dificultades = {
     facil: { nombre: "Fácil", f: 0.2 },
     normal: { nombre: "Normal", f: 0.3 },
     dificil: { nombre: "Difícil", f: 0.45 },
     mortal: { nombre: "Mortal", f: 0.65 }
   };
 
-  VH.generarEncuentro = function (unidadesJugador, dificultadId) {
-    const f = (VH.dificultades[dificultadId] || VH.dificultades.normal).f;
+  OS.generarEncuentro = function (unidadesJugador, dificultadId) {
+    const f = (OS.dificultades[dificultadId] || OS.dificultades.normal).f;
     const nivelMedio = Math.max(1, Math.round(unidadesJugador.reduce((t, u) => t + u.nivel, 0) / unidadesJugador.length));
-    const presupuesto = unidadesJugador.length * VH.xpEnemigo(nivelMedio) * f;
-    const pool = VH.enemigosDisponibles();
+    const presupuesto = unidadesJugador.length * OS.xpEnemigo(nivelMedio) * f;
+    const pool = OS.enemigosDisponibles();
     const enemigos = [];
     let gastado = 0;
     let intentos = 0;
@@ -558,17 +558,17 @@
     const subida = s => Math.max(0, Math.min(6, Math.round((nivelMedio - 3 - s.nivel) / 2)));
     while (gastado < presupuesto * 0.8 && intentos++ < 40) {
       const restante = presupuesto - gastado;
-      let cand = pool.filter(s => s.nivel >= nivelMedio - 8 && s.nivel <= nivelMedio + 2 && VH.xpEnemigo(s.nivel + subida(s)) <= restante * 1.15);
+      let cand = pool.filter(s => s.nivel >= nivelMedio - 8 && s.nivel <= nivelMedio + 2 && OS.xpEnemigo(s.nivel + subida(s)) <= restante * 1.15);
       // los personajes con nombre propio salen una sola vez por combate; el resto puede repetirse
       cand = cand.filter(s => !(s.personajeId && enemigos.some(e => e.baseId === s.id)));
       if (!cand.length) break;
       const s = cand[Math.floor(Math.random() * cand.length)];
-      const e = VH.unidadDesdeStats(s, subida(s));
+      const e = OS.unidadDesdeStats(s, subida(s));
       enemigos.push(e);
-      gastado += VH.xpEnemigo(e.nivel);
+      gastado += OS.xpEnemigo(e.nivel);
       if (enemigos.length >= Math.max(3, unidadesJugador.length + 3)) break;
     }
-    if (!enemigos.length) enemigos.push(VH.unidadDesdeStats(pool.reduce((a, b) => (b.nivel < a.nivel ? b : a))));
+    if (!enemigos.length) enemigos.push(OS.unidadDesdeStats(pool.reduce((a, b) => (b.nivel < a.nivel ? b : a))));
     return enemigos;
   };
-})(window.VH);
+})(window.OS);

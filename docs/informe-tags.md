@@ -29,9 +29,9 @@ Se buscó en `js/` y en los `.html` (sin tocar los archivos de la sesión Cartas
 | `armas.html` (TAG_GROUPS, grupo "Alcance") | listaba `cuerpo a cuerpo` y `a distancia` | actualizado a `cuerpo-a-cuerpo` y `a-distancia` |
 | `objetos.html` (TAG_GROUPS, grupo "Categoría") | listaba `proteccion` | actualizado a `protección` |
 | `facciones.html` (TAG_GROUPS, grupo "Tipo") | listaba `orden religiosa` y `orden militar` | actualizado a `orden-religiosa` y `orden-militar` |
-| `js/valhalla-datos.js` línea 25 | `tags.includes("a distancia")` | actualizado a `"a-distancia"` |
+| `js/ostelar-datos.js` línea 25 | `tags.includes("a distancia")` | actualizado a `"a-distancia"` |
 | `js/mapa.js` | compara con `capital`, `catedral`, `fortaleza`, `torre`, `prisión`, `aldea`, `reino`, `imperio`, `provincia`, `ciudad-estado`, `región`, `continente`, `isla`, `bosque`, `montaña`, `volcán`, `río`, `lago`, `ciudad` | sin cambios, ya cumplían |
-| `js/valhalla-datos.js` línea 148 | compara con `marcial` | sin cambios |
+| `js/ostelar-datos.js` línea 148 | compara con `marcial` | sin cambios |
 | `js/compendio.js`, `js/busqueda-global.js`, `js/modal.js` | leen los tags sin compararlos con valores fijos | sin cambios |
 | `js/admin-personajes.js` | genera tags desde un campo de texto | sin cambios |
 

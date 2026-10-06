@@ -1,19 +1,19 @@
 /* =============================================================================
-   VALHALLA — reglas base. Dados, tablas de nivel, catálogo de conjuros y de
-   objetos. Todo es dato: el motor de combate (valhalla-combate.js) no sabe qué
+   OSTELAR — reglas base. Dados, tablas de nivel, catálogo de conjuros y de
+   objetos. Todo es dato: el motor de combate (ostelar-combate.js) no sabe qué
    es "Bola de fuego", solo interpreta los campos de cada entrada.
 
    Medidas: 1 casilla = 5 pies = 1,5 m. La distancia es la de D&D 5e por defecto
    (la diagonal cuenta como una casilla).
 ============================================================================= */
-window.VH = window.VH || {};
+window.OS = window.OS || {};
 
-(function (VH) {
+(function (OS) {
   /* --- Dados ------------------------------------------------------------- */
-  VH.d = n => 1 + Math.floor(Math.random() * n);
+  OS.d = n => 1 + Math.floor(Math.random() * n);
 
   /* "2d8+5", "1d10", "3", "2d6+1d4+3". Con critico se duplican los dados. */
-  VH.tirar = function (formula, critico) {
+  OS.tirar = function (formula, critico) {
     const f = String(formula || "0").replace(/\s+/g, "").replace(/-/g, "+-");
     let total = 0;
     const partes = [];
@@ -25,7 +25,7 @@ window.VH = window.VH || {};
         const n = parseInt(m[1], 10) * (critico ? 2 : 1);
         const caras = parseInt(m[2], 10);
         let suma = 0;
-        for (let i = 0; i < n; i++) suma += VH.d(caras);
+        for (let i = 0; i < n; i++) suma += OS.d(caras);
         total += neg ? -suma : suma;
         partes.push(`${neg ? "-" : ""}${n}d${caras}`);
       } else {
@@ -37,7 +37,7 @@ window.VH = window.VH || {};
   };
 
   /* Promedio de una fórmula, para que la IA compare opciones. */
-  VH.promedio = function (formula) {
+  OS.promedio = function (formula) {
     const f = String(formula || "0").replace(/\s+/g, "").replace(/-/g, "+-");
     let total = 0;
     f.split("+").filter(Boolean).forEach(p => {
@@ -50,29 +50,29 @@ window.VH = window.VH || {};
     return total;
   };
 
-  VH.mod = valor => Math.floor((valor - 10) / 2);
-  VH.competencia = nivel => 2 + Math.floor((Math.max(1, nivel) - 1) / 4);
-  VH.signo = n => (n >= 0 ? `+${n}` : `${n}`);
+  OS.mod = valor => Math.floor((valor - 10) / 2);
+  OS.competencia = nivel => 2 + Math.floor((Math.max(1, nivel) - 1) / 4);
+  OS.signo = n => (n >= 0 ? `+${n}` : `${n}`);
 
   /* --- Niveles ------------------------------------------------------------ */
-  VH.NIVEL_MAX = 20;
+  OS.NIVEL_MAX = 20;
   // XP necesaria para llegar al nivel (índice = nivel).
-  VH.XP_PARA_NIVEL = [0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
-  VH.nivelPorXp = xp => {
+  OS.XP_PARA_NIVEL = [0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+  OS.nivelPorXp = xp => {
     let n = 1;
-    for (let i = 2; i <= VH.NIVEL_MAX; i++) if (xp >= VH.XP_PARA_NIVEL[i]) n = i;
+    for (let i = 2; i <= OS.NIVEL_MAX; i++) if (xp >= OS.XP_PARA_NIVEL[i]) n = i;
     return n;
   };
   // XP que da un enemigo según su nivel (la tabla de valor de desafío de 5e).
-  VH.XP_ENEMIGO = [10, 200, 450, 700, 1100, 1800, 2300, 2900, 3900, 5000, 5900, 7200, 8400, 10000, 11500, 13000, 15000, 18000, 20000, 22000, 25000];
-  VH.xpEnemigo = nivel => VH.XP_ENEMIGO[Math.max(0, Math.min(20, Math.round(nivel) || 0))];
-  VH.NIVELES_MEJORA = [4, 8, 12, 16, 19];
+  OS.XP_ENEMIGO = [10, 200, 450, 700, 1100, 1800, 2300, 2900, 3900, 5000, 5900, 7200, 8400, 10000, 11500, 13000, 15000, 18000, 20000, 22000, 25000];
+  OS.xpEnemigo = nivel => OS.XP_ENEMIGO[Math.max(0, Math.min(20, Math.round(nivel) || 0))];
+  OS.NIVELES_MEJORA = [4, 8, 12, 16, 19];
 
   /* --- Distancias y casillas --------------------------------------------- */
-  VH.dist = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+  OS.dist = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
   /* --- Condiciones ------------------------------------------------------- */
-  VH.CONDICIONES = {
+  OS.CONDICIONES = {
     derribado: "Derribado: ataca con desventaja; los ataques cuerpo a cuerpo contra él tienen ventaja.",
     aturdido: "Aturdido: no actúa. Los ataques contra él tienen ventaja.",
     paralizado: "Paralizado: no actúa. Los ataques contra él tienen ventaja y los cuerpo a cuerpo son críticos.",
@@ -89,23 +89,23 @@ window.VH = window.VH || {};
   };
 
   /* --- Tipos de daño ------------------------------------------------------ */
-  VH.sinAcentos = t => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-  VH.tipoDanoCanon = t => {
-    const s = VH.sinAcentos(t);
+  OS.sinAcentos = t => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  OS.tipoDanoCanon = t => {
+    const s = OS.sinAcentos(t);
     const mapa = [["perfor", "perforante"], ["cortan", "cortante"], ["contund", "contundente"], ["fuego", "fuego"], ["frio", "frío"],
       ["veneno", "veneno"], ["acido", "ácido"], ["necrot", "necrótico"], ["radiante", "radiante"], ["psiqu", "psíquico"],
       ["fuerza", "fuerza"], ["relamp", "relámpago"], ["electr", "relámpago"], ["trueno", "trueno"], ["elemental", "elemental"]];
     const hallado = mapa.find(([k]) => s.includes(k));
     return hallado ? hallado[1] : (s || "");
   };
-  VH.FISICOS = ["perforante", "cortante", "contundente"];
+  OS.FISICOS = ["perforante", "cortante", "contundente"];
 
   /* --- Conjuros ------------------------------------------------------------
      tipo: "ataque" (tirada de ataque), "salvacion", "auto" (sin tirada),
            "cura", "efecto" (solo condición/movimiento).
      alcance en casillas (0 = el propio lanzador, 1 = toque).
      area: { forma: "esfera"|"explosion"|"cono"|"linea", radio|largo }.
-     clases: quién lo tiene en su lista (para los einherjar predeterminados).
+     clases: quién lo tiene en su lista (para los alzados predeterminados).
      escala: dados extra por nivel de espacio sobre el del conjuro, o por nivel
      del personaje para los trucos. */
   const C = [];
@@ -152,33 +152,33 @@ window.VH = window.VH || {};
   conj({ id: "lluvia-de-meteoros", nombre: "Enjambre de meteoros", nivel: 9, escuela: "evocación", alcance: 60, tipo: "salvacion", salv: "des", mitad: true, area: { forma: "esfera", radio: 8 }, danos: [{ f: "20d6", t: "fuego" }, { f: "20d6", t: "contundente" }], clases: ["mago"] });
   conj({ id: "sanar", nombre: "Sanar", nivel: 6, escuela: "evocación", alcance: 12, tipo: "cura", cura: "70", clases: ["clerigo"] });
 
-  VH.CONJUROS = C;
-  VH.conjuro = id => C.find(c => c.id === id) || null;
-  VH.conjuroPorNombre = nombre => {
-    const n = VH.sinAcentos(nombre).trim();
-    return C.find(c => VH.sinAcentos(c.nombre) === n) || null;
+  OS.CONJUROS = C;
+  OS.conjuro = id => C.find(c => c.id === id) || null;
+  OS.conjuroPorNombre = nombre => {
+    const n = OS.sinAcentos(nombre).trim();
+    return C.find(c => OS.sinAcentos(c.nombre) === n) || null;
   };
 
   /* Espacios de conjuro por nivel de lanzador (tabla de lanzador completo). */
-  VH.ESPACIOS_COMPLETO = [
+  OS.ESPACIOS_COMPLETO = [
     null,
     [2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2], [4, 3, 3, 3, 1], [4, 3, 3, 3, 2],
     [4, 3, 3, 3, 2, 1], [4, 3, 3, 3, 2, 1], [4, 3, 3, 3, 2, 1, 1], [4, 3, 3, 3, 2, 1, 1], [4, 3, 3, 3, 2, 1, 1, 1],
     [4, 3, 3, 3, 2, 1, 1, 1], [4, 3, 3, 3, 2, 1, 1, 1, 1], [4, 3, 3, 3, 3, 1, 1, 1, 1], [4, 3, 3, 3, 3, 2, 1, 1, 1], [4, 3, 3, 3, 3, 2, 2, 1, 1]
   ];
   /* tipo: "completo" | "mitad" | "ninguno" */
-  VH.espaciosPara = (tipoLanzador, nivel) => {
+  OS.espaciosPara = (tipoLanzador, nivel) => {
     let n = nivel;
     if (tipoLanzador === "mitad") n = Math.ceil(nivel / 2) - (nivel < 2 ? 1 : 0);
     if (tipoLanzador === "ninguno" || n < 1) return [];
-    return VH.ESPACIOS_COMPLETO[Math.min(20, n)].slice();
+    return OS.ESPACIOS_COMPLETO[Math.min(20, n)].slice();
   };
 
   /* Dados de daño de un truco según el nivel del personaje. */
-  VH.multiplicadorTruco = nivel => (nivel >= 17 ? 4 : nivel >= 11 ? 3 : nivel >= 5 ? 2 : 1);
+  OS.multiplicadorTruco = nivel => (nivel >= 17 ? 4 : nivel >= 11 ? 3 : nivel >= 5 ? 2 : 1);
 
   /* --- Equipo ------------------------------------------------------------ */
-  VH.ARMADURAS = [
+  OS.ARMADURAS = [
     { id: "acolchada", nombre: "Armadura acolchada", base: 11, des: 99, peso: "ligera", tier: 0 },
     { id: "cuero", nombre: "Armadura de cuero", base: 11, des: 99, peso: "ligera", tier: 0 },
     { id: "cuero-tachonado", nombre: "Cuero tachonado", base: 12, des: 99, peso: "ligera", tier: 1 },
@@ -194,7 +194,7 @@ window.VH = window.VH || {};
   ];
 
   /* Afijos: dan carácter al botín (y un toque caótico) sin salirse de lo tirable. */
-  VH.AFIJOS_ARMA = [
+  OS.AFIJOS_ARMA = [
     { id: "llamas", nombre: "de llamas", extra: { f: "1d6", t: "fuego" }, minNivel: 3 },
     { id: "escarcha", nombre: "de escarcha", extra: { f: "1d6", t: "frío" }, minNivel: 3, estado: { nombre: "ralentizado", turnos: 1 } },
     { id: "tormenta", nombre: "de la tormenta", extra: { f: "1d6", t: "relámpago" }, empuje: 1, minNivel: 5 },
@@ -202,10 +202,10 @@ window.VH = window.VH || {};
     { id: "pesada", nombre: "del titán", empuje: 2, minNivel: 4 },
     { id: "radiante", nombre: "del alba", extra: { f: "2d6", t: "radiante" }, minNivel: 10 }
   ];
-  VH.AFIJOS_ARMADURA = [
+  OS.AFIJOS_ARMADURA = [
     { id: "espinas", nombre: "de espinas", espinas: { f: "1d4", t: "perforante" }, minNivel: 3 },
     { id: "vida", nombre: "de vitalidad", pv: 10, minNivel: 4 },
     { id: "veloz", nombre: "del viento", vel: 1, minNivel: 5 },
     { id: "ira", nombre: "del bastión", resistencia: "contundente", minNivel: 8 }
   ];
-})(window.VH);
+})(window.OS);
