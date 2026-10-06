@@ -4,6 +4,16 @@
 window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-06",
+    titulo: "Estilos de Nuni y Wonxarle renovados",
+    cambios: [
+      "Ahora el estilo aprende de todos los mapas Experto que han hecho, no de uno solo.",
+      "Copia lo que hacen igual en todas sus canciones: cuánto repiten un carril, cuántas notas seguidas aguantan y cada cuánto meten una doble.",
+      "La cantidad de notas, las largas y las notas rápidas se copian solo cuando todos sus mapas coinciden. Si no, las decide la canción.",
+      "Cada mapa nuevo que hagan afina el estilo solo. Los puntajes de los estilos empiezan de cero porque los mapas cambian."
+    ]
+  },
+  {
+    fecha: "2026-10-06",
     titulo: "Fondos en las canciones",
     cambios: [
       "Los DJ y los admin pueden poner una imagen, un GIF o un video detrás de los carriles de cada canción, desde Gestionar rocola.",

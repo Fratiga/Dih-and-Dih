@@ -1572,7 +1572,7 @@
         estilosInfo.set(id, info);
         const e = EstilosMapas.lista.find(x => x.id === id);
         txt.textContent = info.estilo
-          ? `${e.detalle}. Pone unas ${info.estilo.nps.toLocaleString("es")} notas por segundo en Experto y escala eso en las demás dificultades. Tiene sus propios puntajes.`
+          ? EstilosMapas.describir(info, e)
           : (info.error || "No se pudo cargar.") + " Mientras tanto se usa el estándar.";
         pintarMenu();
       };

@@ -372,7 +372,10 @@
 
     const celda = 0.02;
     const bloqueo = new Uint8Array(Math.ceil(dur / celda) + 2);
-    const maximo = Math.round(dur * (opciones.estilo && opciones.estilo.nps ? opciones.estilo.nps : cfg.nps));
+    // Con un estilo, las largas absorben notas (cada una "se come" la siguiente de su carril): se pide algo más para
+    // que, ya hechas las largas, salga el nps del estilo
+    const compensacion = E && E.nps ? 1 / Math.max(0.55, 1 - 0.7 * (E.fraccionLargas || 0)) : 1;
+    const maximo = Math.round(dur * (opciones.estilo && opciones.estilo.nps ? opciones.estilo.nps * compensacion : cfg.nps));
     const medioHueco = Math.round(((E && E.hueco) || cfg.hueco) / celda);
     const notas = [];
     for (const c of candidatos) {
