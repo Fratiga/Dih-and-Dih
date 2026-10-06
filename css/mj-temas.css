@@ -88,11 +88,7 @@ body.aj-tema {
 body.arq-tema {
   --bg: #0e1812; --panel: #16251b; --panel-2: #1d3023; --text: #e7ead2; --muted: #8aa58f;
   --accent: #d1ad55; --accent-soft: #5d7d44; --border: #2d4a35; --font-heading: 'IM Fell English SC';
-  background-color: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 85% 0%, rgba(240, 160, 70, .2), transparent 45%),
-    radial-gradient(ellipse at 10% 100%, rgba(40, 90, 50, .5), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, .0) 0 6px, rgba(0, 0, 0, .06) 6px 7px);
+  background-color: var(--bg); /* el paisaje de fondo está en css/arqueria.css (body::before) */
   color: var(--text);
 }
 .arq-tema .mj-barra { background: rgba(14, 24, 18, .75); border-bottom: 1px solid var(--accent-soft); }
