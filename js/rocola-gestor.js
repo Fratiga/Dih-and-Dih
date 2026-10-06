@@ -330,6 +330,7 @@
   let urlPrevia = null;
   const LIMITE_IMAGEN = 15 * 1024 * 1024;
   const LIMITE_VIDEO = 40 * 1024 * 1024;
+  const LIMITE_GIF = 6 * 1024 * 1024; // un GIF pesa mucho más que un video igual y hace ir peor al juego
 
   function previaFondo(url, tipo) {
     const caja = $("rgFondoPrevia");
@@ -370,6 +371,7 @@
     const esImagen = /^image\//.test(a.type);
     const limite = esVideo ? LIMITE_VIDEO : LIMITE_IMAGEN;
     if (!esVideo && !esImagen) { $("rgFondoEstado").textContent = "Tiene que ser una imagen (JPG, PNG, WebP, GIF) o un video (MP4 o WebM)."; $("rgFondoEstado").classList.add("error"); archivoFondo = null; return; }
+    if (a.type === "image/gif" && a.size > LIMITE_GIF) { $("rgFondoEstado").textContent = `Este GIF pesa ${mb(a.size)} MB y haría ir lento el juego. Máximo ${mb(LIMITE_GIF)} MB. Conviértelo a MP4 o WebM (pesa mucho menos) o acórtalo.`; $("rgFondoEstado").classList.add("error"); archivoFondo = null; return; }
     if (a.size > limite) { $("rgFondoEstado").textContent = `Pesa ${mb(a.size)} MB: el máximo es ${mb(limite)} MB.`; $("rgFondoEstado").classList.add("error"); archivoFondo = null; return; }
     $("rgFondoEstado").textContent = "";
     $("rgFondoEstado").classList.remove("error");

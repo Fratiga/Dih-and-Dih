@@ -63,14 +63,33 @@
     return true;
   }
 
+  /* Un GIF no se puede pausar: al pausar el juego se deja congelado su fotograma actual en un lienzo encima */
   function reproducir(contenedor) {
-    const v = contenedor && contenedor.querySelector("video");
+    if (!contenedor) return;
+    const congelado = contenedor.querySelector("canvas");
+    if (congelado) congelado.remove();
+    const img = contenedor.querySelector("img");
+    if (img) img.style.visibility = "";
+    const v = contenedor.querySelector("video");
     if (v) v.play().catch(() => { /* el navegador no dejó: queda la imagen parada */ });
   }
 
   function pausar(contenedor) {
-    const v = contenedor && contenedor.querySelector("video");
+    if (!contenedor) return;
+    const v = contenedor.querySelector("video");
     if (v) v.pause();
+    const img = contenedor.querySelector("img");
+    if (img && /\.gif(\?|$)/i.test(img.src) && img.naturalWidth && !contenedor.querySelector("canvas")) {
+      try {
+        const lienzo = document.createElement("canvas");
+        lienzo.width = img.naturalWidth;
+        lienzo.height = img.naturalHeight;
+        lienzo.style.cssText = `width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;opacity:${img.style.opacity}`;
+        lienzo.getContext("2d").drawImage(img, 0, 0);
+        contenedor.appendChild(lienzo);
+        img.style.visibility = "hidden";
+      } catch (e) { /* sin permiso para copiar el fotograma: el GIF sigue moviéndose */ }
+    }
   }
 
   window.FondosJuego = { cargar, montar, reproducir, pausar, quitar };
