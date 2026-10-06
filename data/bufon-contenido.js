@@ -1568,7 +1568,7 @@ window.BUFON_DIALOGO = {
             // solo la jugadora de Laia habló de verdad con él — el
             // resto solo lo vio de lejos. Igual que Hubert Magnolia es
             // exclusivo de Hooey Magoo, este tema es exclusivo de ella.
-            if (!ctx.playerNameMatches("laia", "nuni", "nonie")) return false;
+            if (!ctx.esJugadoraDeLaia()) return false;
             if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("conocio_isa"))) return false;
             if (!ctx.hasCompletedDialogue("laia_intro_seen")) return true;
             return !["laia_quien_es", "laia_incomodo", "laia_enmascarado"]
