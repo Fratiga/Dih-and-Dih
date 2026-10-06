@@ -66,6 +66,7 @@
   let historial = [];
   let posHistorial = -1;
   let actualizadoCargado = null; // fecha "actualizado" que tenía el mapa guardado al cargarlo (para avisar de conflictos)
+  let puntajeVersion = null; // versión con la que se guardan los puntajes de ese mapa (su fecha, o la que heredó al conservarlos)
 
   // Bucle de práctica: repite el tramo entre A y B
   let bucleA = null;
@@ -278,6 +279,7 @@
       await new Promise(r => setTimeout(r, 30));
       tomarMapa(AN.crearMapa(buffer, difActual(), opcionesEstilo()));
       actualizadoCargado = null;
+      puntajeVersion = null;
       mensaje(`Mapa automático${estiloCache ? " con el " + estiloCache.nombre.charAt(0).toLowerCase() + estiloCache.nombre.slice(1) : ""}: ${notas.length} notas, ${tramos.length} tramos.`);
     } catch (err) {
       mensaje("No se pudo cargar esa canción: " + (err && err.message || err), true);
@@ -294,6 +296,7 @@
       const m = AN.crearMapa(buffer, difActual());
       tomarMapa({ notas: [], pulsos: m.pulsos, tramos: m.tramos });
       actualizadoCargado = null;
+      puntajeVersion = null;
       mensaje("Mapa en blanco listo, con el pulso de la canción. Pon las notas con clic en los carriles.");
     } catch (err) {
       mensaje("No se pudo cargar esa canción: " + (err && err.message || err), true);
@@ -329,6 +332,7 @@
       if (!data) { mensaje("No hay un mapa guardado para esta canción y dificultad."); return; }
       aplicarGuardado(data.mapa);
       actualizadoCargado = data.actualizado;
+      puntajeVersion = data.mapa.pv || data.actualizado;
       mensaje(`Mapa guardado cargado: ${notas.length} notas.`);
     } catch (err) {
       mensaje("No se pudo cargar: " + (err && err.message || err), true);
@@ -406,6 +410,10 @@
     if (f) mapa.firma = f;
     const off = Math.max(-500, Math.min(500, Number($("reOffset") && $("reOffset").value) || 0));
     if (off) mapa.offset = off;
+    // Conservar los puntajes: el mapa guarda la versión de puntajes que ya tenía, así el juego no los separa en
+    // "Mapas anteriores" por un cambio pequeño
+    const conservar = $("rePuntajes");
+    if (conservar && conservar.checked && puntajeVersion) mapa.pv = String(puntajeVersion).slice(0, 60);
     if (marcas.length) mapa.marcas = marcas.map(m => ({ t: Math.round(m.t * 1000) / 1000, tipo: m.tipo, texto: m.texto, autor: m.autor }));
     if (window.RitmoLogica && buffer && notas.length) mapa.nivel = RitmoLogica.revisar(notas, pulsos, buffer.duration, difActual()).stats.nivel;
     return mapa;
@@ -451,6 +459,7 @@
         return guardarEnServidor(true);
       }
       actualizadoCargado = data.actualizado;
+      puntajeVersion = mapa.pv || data.actualizado;
       cambios = false;
       borrarBorrador();
       window.dispatchEvent(new CustomEvent("ritmo-guardado"));
@@ -468,6 +477,7 @@
       if (error) throw error;
       cambios = false;
       actualizadoCargado = null;
+      puntajeVersion = null;
       borrarBorrador();
       mensaje(`Guardado (${notas.length} notas). Falta correr scratchpad/ritmo_editor_2.sql para tener historial y aviso de conflictos.`);
     } catch (err) {
@@ -518,6 +528,7 @@
       await cargarAudio();
       aplicarGuardado(mapa);
       actualizadoCargado = null;
+      puntajeVersion = null;
       cambios = true;
       mensaje(`Importado: ${notas.length} notas.`);
     } catch (err) {
@@ -532,6 +543,7 @@
       const { error } = await sb.from("ritmo_mapas").delete().eq("cancion", rutaActual()).eq("dificultad", difActual());
       if (error) throw error;
       actualizadoCargado = null;
+      puntajeVersion = null;
       window.dispatchEvent(new CustomEvent("ritmo-guardado"));
       mensaje("Guardado borrado. El juego usa el mapa automático.");
     } catch (err) {
@@ -1720,6 +1732,7 @@
   function aplicarGuardableExterno(mapaGuardado, esperado) {
     aplicarGuardado(mapaGuardado);
     actualizadoCargado = esperado === undefined ? null : esperado;
+    puntajeVersion = actualizadoCargado ? (mapaGuardado.pv || actualizadoCargado) : null;
     cambios = true;
   }
 
@@ -1790,7 +1803,7 @@
     cargarAudio, supabase, repintar: () => { sucio = true; },
     ir: irA, aplicarGuardableExterno, aplicarNotasExternas, limpiarNotas, quitarEncimadas,
     cancionPorRuta: ruta => (canciones.find(c => c.ruta === ruta) || cancionDe(ruta)).nombre,
-    fijarEsperado: v => { actualizadoCargado = v; }
+    fijarEsperado: v => { actualizadoCargado = v; if (v === null) puntajeVersion = null; }
   };
   comprobarBorrador();
 

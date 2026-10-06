@@ -200,7 +200,7 @@
       const supabase = await fichasCliente();
       const consulta = supabase.from("ritmo_mapas").select("mapa, actualizado").eq("cancion", ruta).eq("dificultad", dificultad).maybeSingle();
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 3000))]);
-      return !error && data ? { mapa: data.mapa, version: data.actualizado || "auto" } : null;
+      return !error && data ? { mapa: data.mapa, version: data.mapa.pv || data.actualizado || "auto" } : null;
     } catch (e) {
       return null;
     }
@@ -1002,13 +1002,13 @@
     try {
       if (typeof fichasCliente !== "function") return;
       const supabase = await fichasCliente();
-      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad, actualizado, firma:mapa->>firma, nivel:mapa->>nivel");
+      const consulta = supabase.from("ritmo_mapas").select("cancion, dificultad, actualizado, firma:mapa->>firma, nivel:mapa->>nivel, pv:mapa->>pv");
       const { data, error } = await Promise.race([consulta, new Promise(r => setTimeout(() => r({ error: true }), 4000))]);
       if (error || !data) return;
       aMano.clear();
       data.forEach(f => {
         if (!aMano.has(f.cancion)) aMano.set(f.cancion, new Map());
-        aMano.get(f.cancion).set(f.dificultad, { firma: (f.firma || "").trim(), version: f.actualizado || "auto", nivel: f.nivel ? Number(f.nivel) : 0 });
+        aMano.get(f.cancion).set(f.dificultad, { firma: (f.firma || "").trim(), version: f.pv || f.actualizado || "auto", nivel: f.nivel ? Number(f.nivel) : 0 });
       });
       pintarMenu();
     } catch (e) { /* sin marcas */ }
