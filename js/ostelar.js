@@ -45,6 +45,10 @@
     return `<div class="os-xp"><span style="width:${pct}%"></span></div><small>${r.xp - a} / ${b - a} XP</small>`;
   }
 
+  function colorReg(r) {
+    try { return OS.unidadDesdeRegistro(r).color; } catch (e) { return r.color || "#888"; }
+  }
+
   function resumen(r) {
     try {
       const u = OS.unidadDesdeRegistro(r);
@@ -55,7 +59,7 @@
   function pintarCuartel() {
     const grupo = datos.grupo.map(reg).filter(Boolean);
     const lista = datos.alzados.map(r => `
-      <article class="os-carta ${seleccionado === r.id ? "activa" : ""} ${datos.grupo.includes(r.id) ? "en-grupo" : ""}" data-id="${r.id}">
+      <article class="os-carta ${seleccionado === r.id ? "activa" : ""} ${datos.grupo.includes(r.id) ? "en-grupo" : ""}" data-id="${r.id}" style="--c:${colorReg(r)}">
         <h3>${esc(r.nombre)}</h3>
         <p class="os-sub">${esc(r.origen === "ficha" ? (r.ficha.identidad.clase || "Personaje") : OS.CLASES[r.claseId].nombre)} · nivel ${r.nivel}${r.mejoras ? ` · <b class="os-aviso">${r.mejoras} mejoras</b>` : ""}</p>
         ${barraXp(r)}
@@ -68,7 +72,7 @@
       <div class="os-barra-grupo">
         <div class="os-grupo">
           <strong>Grupo (${grupo.length}/4)</strong>
-          ${grupo.map(r => `<span class="os-chip" style="--c:${r.color}">${esc(r.nombre)} <small>nv. ${r.nivel}</small></span>`).join("") || `<span class="os-vacio">Nadie todavía</span>`}
+          ${grupo.map(r => `<span class="os-chip" style="--c:${colorReg(r)}">${esc(r.nombre)} <small>nv. ${r.nivel}</small></span>`).join("") || `<span class="os-vacio">Nadie todavía</span>`}
         </div>
         <label>Dificultad
           <select id="osDificultad">${Object.entries(OS.dificultades).map(([id, d]) => `<option value="${id}" ${datos.dificultad === id ? "selected" : ""}>${d.nombre}</option>`).join("")}</select>
@@ -417,7 +421,8 @@
     const ops = c.opciones(u);
     const espacios = u.espacios.map((n, i) => `<span class="${u.usados[i] >= n ? "gastado" : ""}">${i + 1}º ${n - u.usados[i]}/${n}</span>`).join("");
     const libres = u.espacios.length ? [...new Set(ops.filter(o => o.conjuro && o.conjuro.nivel > 0 && o.ok).flatMap(o => c.espaciosLibres(u, o.conjuro.nivel)))].sort() : [];
-    const boton = o => `<button type="button" class="os-op ${o.ok ? "" : "off"} ${modo && modo.op.clave === o.clave ? "elegida" : ""}" data-op="${o.clave}" ${o.ok ? "" : `title="${esc(o.motivo)}"`}>
+    const claseTipo = o => (o.conjuro ? (o.conjuro.tipo === "cura" ? "tipo-cura" : o.conjuro.tipo === "efecto" ? "tipo-util" : "tipo-conjuro") : o.tipo === "cura" ? "tipo-cura" : o.tipo === "especial" ? "tipo-util" : o.tipo === "arma" ? "" : o.tipo === "efecto" ? "tipo-util" : "tipo-habilidad");
+    const boton = o => `<button type="button" class="os-op ${claseTipo(o)} ${o.ok ? "" : "off"} ${modo && modo.op.clave === o.clave ? "elegida" : ""}" data-op="${o.clave}" ${o.ok ? "" : `title="${esc(o.motivo)}"`}>
         <strong>${esc(o.nombre)}</strong><small>${o.costo === "bonus" ? "adicional · " : o.costo === "libre" ? "libre · " : ""}${esc(o.info || "")}</small></button>`;
     const acciones = ops.filter(o => !o.conjuro);
     const conjuros = ops.filter(o => o.conjuro).sort((a, b) => a.nivel - b.nivel);
