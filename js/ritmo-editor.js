@@ -1288,7 +1288,9 @@
 
   function posicion(ev) {
     const r = lienzo.getBoundingClientRect();
-    return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    // El alto se convierte con el tamaño real con el que se ve el lienzo (si el CSS lo estirara, los clics
+    // seguirían cayendo donde se ve la nota)
+    return { x: ev.clientX - r.left, y: (ev.clientY - r.top) * (ALTO / (r.height || ALTO)) };
   }
 
   function notaEn(x, y) {
@@ -1310,7 +1312,7 @@
   }
 
   function enBordeLargo(n, x) {
-    return n.dur > 0 && Math.abs(x - tX(n.t + n.dur)) <= 7;
+    return n.dur > 0 && Math.abs(x - tX(n.t + n.dur)) <= 9;
   }
 
   function carrilEn(y) { return y < (Y_ARRIBA + Y_ABAJO) / 2 ? "arriba" : "abajo"; }
@@ -1329,6 +1331,15 @@
       if (seleccion.has(n) && seleccion.size > 1) { borrarSeleccion(); return; }
       guardarFoto(); notas.splice(notas.indexOf(n), 1); seleccion.delete(n); if (sel === n) sel = null; guardarFoto(); reiniciarClics(); sucio = true;
     }
+  });
+
+  // Doble clic sobre una nota: la borra (igual que el clic derecho)
+  lienzo.addEventListener("dblclick", ev => {
+    const { x, y } = posicion(ev);
+    const n = notaEn(x, y);
+    if (!n) return;
+    if (seleccion.has(n) && seleccion.size > 1) { borrarSeleccion(); return; }
+    guardarFoto(); notas.splice(notas.indexOf(n), 1); seleccion.delete(n); if (sel === n) sel = null; guardarFoto(); reiniciarClics(); sucio = true;
   });
 
   lienzo.addEventListener("mousedown", ev => {
@@ -1362,6 +1373,8 @@
     if (n) {
       // Mayús o Ctrl + clic en una nota la suma o la quita de la selección
       if (suma) { if (seleccion.has(n)) seleccion.delete(n); else seleccion.add(n); sel = n; sucio = true; return; }
+      // Agarrar el final de una larga la alarga, aunque haya varias notas elegidas
+      if (enBordeLargo(n, x) && seleccion.size > 1) { seleccion.clear(); seleccion.add(n); }
       if (!seleccion.has(n)) { seleccion.clear(); seleccion.add(n); }
       sel = n;
       if (enBordeLargo(n, x) && seleccion.size === 1) arrastre = { tipo: "larga", nota: n, foto: foto(), movida: false };
@@ -1370,9 +1383,16 @@
       // Mayús + arrastrar en un hueco: caja de selección
       arrastre = { tipo: "caja", x0: x, y0: y, x1: x, y1: y, aditiva: ev.ctrlKey || ev.metaKey };
     } else {
-      // Nota nueva en el carril donde se hizo clic
-      guardarFoto();
+      // Nota nueva en el carril donde se hizo clic. Si ya hay una a esa hora en ese carril, o es el segundo clic de
+      // un doble clic, no se pone otra: así no se apilan notas al hacer clic varias veces seguidas.
       const nueva = { t: ajustar(xT(x)), carril: carrilEn(y), dur: 0 };
+      const igual = notas.find(o => o.carril === nueva.carril && Math.abs(o.t - nueva.t) < 0.03);
+      if (igual || ev.detail >= 2) {
+        if (igual) { seleccion.clear(); seleccion.add(igual); sel = igual; }
+        sucio = true;
+        return;
+      }
+      guardarFoto();
       notas.push(nueva);
       notas.sort((a, b) => a.t - b.t);
       seleccion.clear(); seleccion.add(nueva); sel = nueva;
