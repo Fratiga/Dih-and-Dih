@@ -141,6 +141,7 @@
   let fallos = 0;
   let extras = 0;
   let vida = 100;
+  let caidaEn = null; // modo práctica: parte de la canción (0 a 1) en que la vida llegó a cero por primera vez
   let efectos = [];
   let fiebre = false; // con un combo de 30 empieza la fiebre: doble puntaje hasta que falles
   let celebracion = null; // { tipo, desde, ultimoFuego, dur } mientras la multitud reacciona al final
@@ -288,7 +289,7 @@
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     fallosBloque = [];
     punteroFallos = 0; activas = []; limpiarEntradas(); gracia = 0; puntos = 0; combo = 0; comboMax = 0;
-    perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; efectos = [];
+    perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; caidaEn = null; efectos = [];
     fiebre = false; celebracion = null; particulas = [];
     clearTimeout(temporizadorFin); cancelAnimationFrame(rafFin);
     avatar = { salto: -10, golpe: -10 };
@@ -374,7 +375,7 @@
       efectos.push({ x, y: Y_GOLPE - 70, texto: "BIEN", color: "#f4efe6", t: ahoraS() });
     } else {
       fallos++; combo = 0;
-      if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
+      vida = Math.max(0, vida - cfg.vidaFallo);
       efectos.push({ x, y: Y_GOLPE - 70, texto: "FALLO", color: "#ff6b6b", t: ahoraS() });
     }
     comboMax = Math.max(comboMax, combo);
@@ -449,7 +450,7 @@
       if (toqueDeUnaNotaCercana(carril, t)) return;
       // Pulsar sin nota a tiro cuenta como fallo: corta el combo y quita vida
       extras++; combo = 0; fiebre = false;
-      if (!ajustes.practica) vida = Math.max(0, vida - cfg.vidaFallo);
+      vida = Math.max(0, vida - cfg.vidaFallo);
       efectos.push({ x: xCarril(carril), y: Y_GOLPE - 70, texto: "FALLO", color: "#ff6b6b", t: ahoraS() });
       return;
     }
@@ -564,7 +565,9 @@
         activas.splice(k, 1);
       }
     }
-    if (vida <= 0 && estado === "jugando") terminar(false);
+    // En modo práctica no se puede perder, pero la vida corre igual: se anota dónde se habría acabado
+    if (vida <= 0 && estado === "jugando" && ajustes.practica && caidaEn === null) caidaEn = Math.max(0, Math.min(1, t / Math.max(1, mapa.dur)));
+    if (vida <= 0 && estado === "jugando" && !ajustes.practica) terminar(false);
     else if (t > mapa.dur + 0.8 && estado === "jugando") terminar(true);
   }
 
@@ -656,6 +659,7 @@
     const hechas = completa ? total : perfectos + buenos + fallos;
     const acc = (perfectos + buenos * 0.6) / Math.max(1, completa ? total : hechas);
     const rango = completa ? rangoDe(acc) : "—";
+    const llego = caidaEn === null ? 100 : Math.floor(caidaEn * 1000) / 10;
     const clave = cancionActual.ruta + "|" + ajustes.dificultad;
     const previo = records[clave] ? records[clave].puntos : 0;
     let nuevo = false;
@@ -669,13 +673,14 @@
     document.getElementById("rtFinDatos").innerHTML =
       `${puntos.toLocaleString("es")} puntos · ${(acc * 100).toFixed(1)} % de precisión<br>` +
       `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
-      (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "") +
+      (ajustes.practica && completa ? `<br>Práctica: llegaste al ${llego} %` : "") +
       (!completa ? "<br>No terminaste la canción: el puntaje no se guarda." : "") +
       (versionJugada === "prueba" ? "<br><strong>Modo prueba del editor: esta partida no cuenta para los puntajes.</strong>" : "");
     iniciarCelebracion(!completa ? "abucheo" : rango === "S" || rango === "A" ? "ovacion" : rango === "D" ? "murmullo" : "aplauso");
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
     if (completa && !ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada);
+    else if (completa && ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada, llego);
     else if (completa && versionJugada === "prueba") finPuntajesEl.innerHTML = `<p class="rt-nota">Es una prueba del editor: no cuenta para los puntajes.</p>`;
   }
 
@@ -1290,6 +1295,12 @@
       ctxC.fillRect(24, 58, 200, 8);
       ctxC.fillStyle = vida > 35 ? "#7ed87f" : "#ff6b6b";
       ctxC.fillRect(24, 58, 2 * vida, 8);
+      if (caidaEn !== null) {
+        ctxC.textAlign = "left";
+        ctxC.font = "800 13px sans-serif";
+        ctxC.fillStyle = "#e8837b";
+        ctxC.fillText(`${Math.floor(caidaEn * 100)} %`, 232, 67);
+      }
       if (versionJugada === "prueba") {
         ctxC.textAlign = "center";
         ctxC.font = "800 14px sans-serif";
@@ -1321,6 +1332,7 @@
   const DESCRIPCION = { facil: "Relajado", normal: "Equilibrado", dificil: "Exigente", experto: "Extremo" };
   const puntajesCache = new Map();
   let vistaPuntajes = null; // "todas", una dificultad, o null = la que está elegida para jugar
+  let verPractica = false; // true: el ranking aparte del modo práctica (hasta dónde llegó cada uno)
   let verViejos = false; // false: puntajes de la versión actual del mapa; true: los de versiones anteriores
   const estilosInfo = new Map(); // id del estilo -> lo que devolvió EstilosMapas.cargar
   // Versión del mapa que se juega: la fecha del mapa hecho a mano o, si no hay, la del automático (con su estilo)
@@ -1335,17 +1347,17 @@
   let tokenPuntajes = 0;
   let yo = { id: null, nombre: "" };
 
-  async function filasPuntajes(ruta, dif) {
-    const clave = ruta + "|" + dif + "|" + (verViejos ? "viejos" : "vigentes");
+  async function filasPuntajes(ruta, dif, soloPractica) {
+    const clave = ruta + "|" + dif + "|" + (verViejos ? "viejos" : "vigentes") + (soloPractica ? "|practica" : "");
     const guardado = puntajesCache.get(clave);
     if (guardado && Date.now() - guardado.t < 30000) return guardado.filas;
     const supa = await fichasCliente();
     const pedir = async columnas => {
-      let q = supa.from("parranda_puntajes").select(columnas).eq("cancion", ruta);
+      let q = supa.from(soloPractica ? "parranda_practica" : "parranda_puntajes").select(columnas).eq("cancion", ruta);
       if (dif !== "todas") q = q.eq("dificultad", dif);
-      return q.order("puntos", { ascending: false }).limit(200);
+      return (soloPractica ? q.order("llego", { ascending: false }).order("puntos", { ascending: false }) : q.order("puntos", { ascending: false })).limit(200);
     };
-    let res = await pedir("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas, mapa_version");
+    let res = await pedir((soloPractica ? "llego, " : "") + "user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas, mapa_version");
     // Si todavía no se corrió parranda.sql no existe la versión: se muestra todo como siempre
     if (res.error && /mapa_version/i.test(String(res.error.message))) res = await pedir("user_id, username, dificultad, puntos, precision, rango, combo_max, jugadas");
     if (res.error) throw res.error;
@@ -1358,15 +1370,15 @@
     return filas;
   }
 
-  function tablaPuntajes(filas, { conDificultad, max }) {
-    if (!filas.length) return `<p class="rt-nota">${verViejos ? "No hay puntajes de versiones anteriores del mapa." : "Nadie ha jugado esta versión del mapa todavía. Sé el primero."}</p>`;
+  function tablaPuntajes(filas, { conDificultad, max, soloPractica }) {
+    if (!filas.length) return `<p class="rt-nota">${soloPractica ? "Nadie ha jugado en práctica esta versión del mapa todavía." : verViejos ? "No hay puntajes de versiones anteriores del mapa." : "Nadie ha jugado esta versión del mapa todavía. Sé el primero."}</p>`;
     const vistas = filas.slice(0, max);
     const miFila = yo.id ? filas.findIndex(f => f.user_id === yo.id) : -1;
     if (miFila >= max) vistas.push(Object.assign({ _puesto: miFila + 1 }, filas[miFila]));
-    return `<table class="rt-tabla"><thead><tr><th>#</th><th>Jugador</th>${conDificultad ? "<th>Dif.</th>" : ""}<th>Puntos</th><th>Rango</th><th>Prec.</th><th>Combo</th></tr></thead><tbody>${
+    return `<table class="rt-tabla"><thead><tr><th>#</th><th>Jugador</th>${conDificultad ? "<th>Dif.</th>" : ""}${soloPractica ? "<th>Llegó</th>" : ""}<th>Puntos</th><th>Rango</th><th>Prec.</th><th>Combo</th></tr></thead><tbody>${
       vistas.map((f, k) => {
         const puesto = f._puesto || k + 1;
-        return `<tr class="${f.user_id === yo.id ? "yo" : ""}"><td>${puesto}</td><td>${esc(f.username)}</td>${conDificultad ? `<td>${esc((DIFICULTADES[f.dificultad] || {}).nombre || f.dificultad)}</td>` : ""}<td>${Number(f.puntos).toLocaleString("es")}</td><td><b class="rt-rango-mini rango-${esc(f.rango)}">${esc(f.rango)}</b></td><td>${Number(f.precision).toFixed(1)} %</td><td>${f.combo_max}</td></tr>`;
+        return `<tr class="${f.user_id === yo.id ? "yo" : ""}"><td>${puesto}</td><td>${esc(f.username)}</td>${conDificultad ? `<td>${esc((DIFICULTADES[f.dificultad] || {}).nombre || f.dificultad)}</td>` : ""}${soloPractica ? `<td>${Number(f.llego).toFixed(1).replace(/\.0$/, "")} %</td>` : ""}<td>${Number(f.puntos).toLocaleString("es")}</td><td><b class="rt-rango-mini rango-${esc(f.rango)}">${esc(f.rango)}</b></td><td>${Number(f.precision).toFixed(1)} %</td><td>${f.combo_max}</td></tr>`;
       }).join("")}</tbody></table>`;
   }
 
@@ -1376,19 +1388,21 @@
     const vista = vistaPuntajes || ajustes.dificultad;
     puntajesTabsEl.innerHTML = [["todas", "Todas"], ...Object.entries(DIFICULTADES).map(([id, d]) => [id, d.nombre])]
       .map(([id, nombre]) => `<button type="button" class="rt-tab ${id === vista ? "activa" : ""}" data-vista="${id}">${nombre}</button>`).join("") +
+      `<button type="button" class="rt-tab rt-tab-viejos ${verPractica ? "activa" : ""}" data-practica title="El ranking aparte de quienes juegan en modo práctica: gana quien llega más lejos">Práctica</button>` +
       `<button type="button" class="rt-tab rt-tab-viejos ${verViejos ? "activa" : ""}" data-viejos title="Los puntajes hechos antes de que se cambiara el mapa de esta canción">Mapas anteriores</button>`;
     const token = ++tokenPuntajes;
     puntajesEl.innerHTML = `<p class="rt-nota">Cargando puntajes...</p>`;
     try {
-      const filas = await filasPuntajes(c.ruta, vista);
+      const filas = await filasPuntajes(c.ruta, vista, verPractica);
       if (token !== tokenPuntajes) return;
-      puntajesEl.innerHTML = tablaPuntajes(filas, { conDificultad: vista === "todas", max: 10 });
+      puntajesEl.innerHTML = tablaPuntajes(filas, { conDificultad: vista === "todas", max: 10, soloPractica: verPractica });
     } catch (e) {
-      if (token === tokenPuntajes) puntajesEl.innerHTML = `<p class="rt-nota">Los puntajes no están disponibles por ahora.</p>`;
+      if (token === tokenPuntajes) puntajesEl.innerHTML = `<p class="rt-nota">${verPractica ? "El ranking de práctica todavía no está activado en el servidor." : "Los puntajes no están disponibles por ahora."}</p>`;
     }
   }
 
   puntajesTabsEl.addEventListener("click", ev => {
+    if (ev.target.closest("[data-practica]")) { verPractica = !verPractica; pintarPuntajes(); return; }
     if (ev.target.closest("[data-viejos]")) { verViejos = !verViejos; pintarPuntajes(); return; }
     const b = ev.target.closest("[data-vista]");
     if (!b) return;
@@ -1406,7 +1420,8 @@
     return "No se pudo guardar el puntaje (" + t.slice(0, 80) + ").";
   }
 
-  async function subirPuntaje(ruta, dif, pts, acc, rango, combo, version) {
+  async function subirPuntaje(ruta, dif, pts, acc, rango, combo, version, llego) {
+    const soloPractica = llego !== undefined;
     finPuntajesEl.innerHTML = `<p class="rt-nota">Guardando tu puntaje...</p>`;
     let aviso = "";
     let huboError = false;
@@ -1417,9 +1432,13 @@
       } else {
         const supa = await fichasCliente();
         const args = { p_cancion: ruta, p_dificultad: dif, p_puntos: pts, p_precision: acc, p_rango: rango, p_combo: combo };
-        let { error } = await supa.rpc("parranda_registrar", Object.assign({ p_version: version || "auto" }, args));
-        // Sin parranda.sql la función no conoce la versión: se manda como antes
-        if (error && /p_version|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) ({ error } = await supa.rpc("parranda_registrar", args));
+        let error;
+        if (soloPractica) ({ error } = await supa.rpc("parranda_registrar_practica", { p_cancion: ruta, p_dificultad: dif, p_version: version || "auto", p_llego: llego, p_puntos: pts, p_precision: acc, p_rango: rango, p_combo: combo }));
+        else {
+          ({ error } = await supa.rpc("parranda_registrar", Object.assign({ p_version: version || "auto" }, args)));
+          // Sin parranda.sql la función no conoce la versión: se manda como antes
+          if (error && /p_version|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) ({ error } = await supa.rpc("parranda_registrar", args));
+        }
         if (error) { aviso = mensajeErrorPuntaje(error); huboError = true; }
       }
     } catch (e) {
@@ -1428,11 +1447,11 @@
     }
     puntajesCache.clear();
     try {
-      const filas = await filasPuntajes(ruta, dif);
+      const filas = await filasPuntajes(ruta, dif, soloPractica);
       if (estado !== "fin") return;
-      finPuntajesEl.innerHTML = (aviso ? `<p class="rt-nota">${esc(aviso)}${huboError ? ` <button type="button" class="rt-secundario rt-chico" data-reintentar>Reintentar</button>` : ""}</p>` : "") + tablaPuntajes(filas, { conDificultad: false, max: 5 });
+      finPuntajesEl.innerHTML = (aviso ? `<p class="rt-nota">${esc(aviso)}${huboError ? ` <button type="button" class="rt-secundario rt-chico" data-reintentar>Reintentar</button>` : ""}</p>` : "") + tablaPuntajes(filas, { conDificultad: false, max: 5, soloPractica });
       const reintentar = finPuntajesEl.querySelector("[data-reintentar]");
-      if (reintentar) reintentar.addEventListener("click", () => subirPuntaje(ruta, dif, pts, acc, rango, combo, version));
+      if (reintentar) reintentar.addEventListener("click", () => subirPuntaje(ruta, dif, pts, acc, rango, combo, version, llego));
     } catch (e) {
       if (estado === "fin") finPuntajesEl.innerHTML = aviso ? `<p class="rt-nota">${esc(aviso)}</p>` : "";
     }
@@ -1526,7 +1545,7 @@
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     document.getElementById("rtFondos").checked = ajustes.fondos !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
-    recordEl.textContent = (ajustes.practica ? "Modo práctica activado: las partidas no se guardan en los puntajes. " : "") + (r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "");
+    recordEl.textContent = (ajustes.practica ? "Modo práctica activado: cuenta en su propio ranking. " : "") + (r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "");
     pintarPuntajes();
   }
 

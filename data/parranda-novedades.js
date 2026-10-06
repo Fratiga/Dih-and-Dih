@@ -4,6 +4,15 @@
 window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-06",
+    titulo: "Ranking del modo práctica",
+    cambios: [
+      "En el modo práctica sigues sin poder perder, pero el juego lleva la vida igual y anota hasta qué punto de la canción habrías llegado.",
+      "Al terminar ves el porcentaje al que llegaste. Va a un ranking aparte, el botón Práctica de los puntajes, ordenado por quién llegó más lejos.",
+      "El ranking normal no cambia."
+    ]
+  },
+  {
+    fecha: "2026-10-06",
     titulo: "Fondos por dificultad y por juego",
     cambios: [
       "En el editor de Parranda hay una pestaña nueva, Fondo, para poner una imagen, un GIF o un video detrás de los carriles.",
