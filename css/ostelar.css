@@ -163,6 +163,10 @@ body.os-pagina > * { position: relative; z-index: 1; }
 .os-cartel strong { font-family: 'Cinzel', serif; font-size: clamp(1.6rem, 5vw, 3.2rem); letter-spacing: .2em; text-transform: uppercase; color: #fff; text-shadow: 0 0 24px var(--cc, #ffcf4d), 0 4px 0 rgba(0, 0, 0, .7); }
 .os-cartel span { font-size: clamp(.8rem, 1.8vw, 1.05rem); letter-spacing: .3em; text-transform: uppercase; color: var(--cc, #ffcf4d); text-shadow: 0 0 12px var(--cc, #ffcf4d); }
 .os-cartel.inicio { --cc: #ffcf4d; }
+/* los carteles de turno van arriba y más chicos para no tapar la acción */
+.os-cartel.aliado, .os-cartel.enemigo { top: 14%; padding: 8px 10px; }
+.os-cartel.aliado strong, .os-cartel.enemigo strong { font-size: clamp(1.1rem, 3vw, 1.9rem); letter-spacing: .16em; }
+.os-cartel.aliado span, .os-cartel.enemigo span { font-size: .75rem; }
 .os-cartel.aliado { --cc: #38f0ff; }
 .os-cartel.enemigo { --cc: #ff3b5c; }
 .os-cartel.victoria { --cc: #ffcf4d; background: linear-gradient(90deg, transparent, rgba(60, 30, 0, .9) 15%, rgba(60, 30, 0, .9) 85%, transparent); }
