@@ -102,6 +102,7 @@
     canvas: document.getElementById("arqueriaCampo"),
     rival: rival.id,
     duracion: 60,
+    fondo: true,
     onEstado: estado => {
       jugando = estado === "jugando";
       if (!vs) boton.classList.toggle("hidden", jugando);

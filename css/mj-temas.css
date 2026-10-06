@@ -108,7 +108,9 @@ body.arq-tema {
   background:
     radial-gradient(ellipse at 78% 82%, rgba(255, 190, 90, .5), transparent 34%),
     linear-gradient(180deg, #14283a 0%, #3b5a56 38%, #c98f55 66%, #e7b574 70%, #36502b 71%, #223a1e 100%);
-  border: 6px solid #3a2a18; box-shadow: 0 0 0 2px var(--accent-soft), 0 20px 44px rgba(0, 0, 0, .6);
+  border: 12px solid #5a3d1f;
+  border-image: linear-gradient(135deg, #a07840 0%, #5a3d1f 22%, #3a2512 50%, #6e4c26 78%, #a07840 100%) 1;
+  box-shadow: 0 0 0 2px #1a1108, 0 0 0 4px rgba(209, 173, 85, .5), 0 22px 46px rgba(0, 0, 0, .65);
 }
 .arq-tema .mj-escenario::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 60px rgba(0, 0, 0, .35); }
 .arq-tema .mj-campo { background: transparent; border: 0; box-shadow: none; will-change: transform; }

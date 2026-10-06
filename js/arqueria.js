@@ -51,17 +51,24 @@
      (2x o más) dibujar a resolución completa cuesta el doble o el triple de relleno por
      cuadro y casi no se nota; el combate con Verdam lo baja más porque va sobre capas
      con filtros. */
-  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, resolucionMax = 1.25, onEstado, onFin, onPuntaje }) {
+  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, fondo = false, resolucionMax = 1.25, onEstado, onFin, onPuntaje }) {
     let cfg = RIVALES[claveRival] || RIVALES.hornet;
-    const ctx = canvas.getContext("2d");
     const ancho = LOGICO_ANCHO;
     const alto = LOGICO_ALTO;
+    // Con "fondo" el lienzo dibuja su propio paisaje (js/arqueria-visual.js) y es opaco, que se compone más barato.
+    // Sin él (Muerte Súbita) se queda transparente sobre el fondo de su página.
+    const visual = fondo && window.ArqueriaVisual ? window.ArqueriaVisual.crear({ ancho, alto }) : null;
+    const ctx = canvas.getContext("2d", visual ? { alpha: false } : undefined);
 
     let nombreJugador = "Tú"; // se cambia por el nombre de usuario cuando hay sesión
     let vs = false; // partida contra otro jugador: el puntaje del rival llega de fuera
     let textoFin = null;
     let azar = Math.random; // con semilla en las partidas contra otro jugador
     let sucio = true; // fuera de la partida solo se vuelve a dibujar cuando algo cambió
+    let relojVisual = 0; // segundos que lleva la página abierta: anima nubes, aves y luciérnagas
+    let faseVisual = 0; // 0 = hora dorada, 1 = noche; sigue al minuto de juego con suavidad
+    let ultimoDibujo = 0;
+    let sacudida = 0;
     let cursorActual = "";
     let estado = "listo"; // listo | jugando | fin
     let tiempo = 0;
@@ -84,6 +91,7 @@
       canvas.width = Math.max(1, Math.round(caja.width * dpr));
       canvas.height = Math.max(1, Math.round(caja.height * dpr));
       ctx.setTransform(canvas.width / ancho, 0, 0, canvas.height / alto, 0, 0);
+      if (visual) visual.redimensionar(canvas.width, canvas.height);
       sucio = true;
       cajaMedida = null;
     }
@@ -127,7 +135,17 @@
         const pts = PUNTOS_ANILLO[anillo];
         puntaje += pts;
         if (onPuntaje) onPuntaje(puntaje);
-        efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: `+${pts}`, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
+        efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: anillo === 0 && visual ? `¡CENTRO! +${pts}` : `+${pts}`, grande: anillo === 0, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
+        if (visual) {
+          efectos.push({ tipo: "estela", x0: ancho / 2, y0: alto + 14, x: b.x, y: b.y, edad: 0, vida: 0.14 });
+          efectos.push({ tipo: "anillo", x: b.x, y: b.y, r0: b.r * 0.4, r1: b.r * (anillo === 0 ? 2.1 : 1.5), color: anillo === 0 ? "#ffe27a" : "#f4ecd2", edad: 0, vida: anillo === 0 ? 0.5 : 0.35 });
+          for (let k = 0; k < 6; k++) {
+            const a = Math.random() * Math.PI * 2;
+            const v = 80 + Math.random() * 150;
+            efectos.push({ tipo: "pedazo", x: b.x, y: b.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 90, rot: Math.random() * 6, giro: (Math.random() - 0.5) * 18, l: 7 + Math.random() * 7, color: ["#e8e4d0", "#c0392b", "#e8e4d0", "#f1c40f"][k % 4], edad: 0, vida: 0.7 });
+          }
+          if (anillo === 0) sacudida = 0.16;
+        }
         for (let k = 0; k < 7; k++) {
           const a = Math.random() * Math.PI * 2;
           const v = 70 + Math.random() * 130;
@@ -135,6 +153,10 @@
         }
         blancos.splice(i, 1);
         return;
+      }
+      if (visual) {
+        efectos.push({ tipo: "estela", x0: ancho / 2, y0: alto + 14, x, y, edad: 0, vida: 0.12 });
+        efectos.push({ tipo: "polvo", x, y, fase: Math.random() * 6, edad: 0, vida: 0.5 });
       }
     }
 
@@ -144,6 +166,7 @@
       const anillo = r < cfg.dist[0] ? 0 : r < cfg.dist[0] + cfg.dist[1] ? 1 : 2;
       puntajeRival += PUNTOS_ANILLO[anillo];
       destelloRival = 0.45;
+      if (visual) efectos.push({ tipo: "texto", x: ancho - 120, y: 122, texto: `+${PUNTOS_ANILLO[anillo]}`, chico: true, edad: 0, vida: 0.7, color: cfg.color });
     }
 
     function cambiarEstado(nuevo) {
@@ -185,8 +208,8 @@
       }
       for (const e of efectos) {
         e.edad += dt;
-        if (e.tipo === "chispa") { e.vy += 380 * dt; e.x += e.vx * dt; e.y += e.vy * dt; }
-        else e.y -= 40 * dt;
+        if (e.tipo === "chispa" || e.tipo === "pedazo") { e.vy += (e.tipo === "pedazo" ? 620 : 380) * dt; e.x += e.vx * dt; e.y += e.vy * dt; }
+        else if (e.tipo === "texto") e.y -= 40 * dt;
       }
       efectos = efectos.filter(e => e.edad < e.vida);
     }
@@ -256,7 +279,31 @@
       ctx.restore();
     }
 
+    function dibujarConPaisaje() {
+      ctx.save();
+      if (sacudida > 0) ctx.translate((Math.random() - 0.5) * 5 * (sacudida / 0.16), (Math.random() - 0.5) * 5 * (sacudida / 0.16));
+      visual.fondo(ctx, { t: relojVisual, fase: faseVisual });
+      if (estado !== "fin") for (const b of blancos) dibujarBlanco(b);
+      for (const e of efectos) visual.efecto(ctx, e);
+      ctx.restore();
+      if (estado !== "listo") {
+        visual.hud(ctx, {
+          nombre: nombreJugador, puntaje, nombreRival: cfg.nombre, colorRival: cfg.color, puntajeRival,
+          destelloRival, tiempo, duracion, reloj: relojVisual
+        });
+      }
+      if (estado === "jugando" && cursor && mouse) dibujarMira(cursor.x, cursor.y);
+      if (pantallas && estado !== "jugando") {
+        const titulo = estado === "listo" ? `${nombreJugador} contra ${cfg.nombre}`
+          : vs ? (textoFin ? textoFin.titulo : "Tiempo")
+          : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
+        const sub = estado === "fin" ? (textoFin && textoFin.sub ? textoFin.sub : `${puntaje} a ${puntajeRival}`) : "";
+        visual.pantalla(ctx, { titulo, sub });
+      }
+    }
+
     function dibujar() {
+      if (visual) { dibujarConPaisaje(); return; }
       ctx.clearRect(0, 0, ancho, alto);
       for (const b of blancos) dibujarBlanco(b);
       for (const e of efectos) {
@@ -296,7 +343,14 @@
       const dt = Math.min(0.05, (t - ultimo) / 1000 || 0);
       ultimo = t;
       actualizar(dt);
-      if (estado === "jugando" || efectos.length || sucio) { dibujar(); sucio = false; }
+      if (visual) {
+        relojVisual += dt;
+        if (sacudida > 0) sacudida = Math.max(0, sacudida - dt);
+        const objetivo = estado === "jugando" ? tiempo / duracion : estado === "fin" ? 1 : 0;
+        faseVisual += (objetivo - faseVisual) * Math.min(1, dt * (estado === "jugando" ? 6 : 1.2));
+      }
+      // Con paisaje, fuera de la partida se redibuja a unos 25 cuadros por segundo para que el cielo siga vivo sin gastar de más
+      if (estado === "jugando" || efectos.length || sucio || (visual && t - ultimoDibujo >= 40)) { dibujar(); sucio = false; ultimoDibujo = t; }
       const forma = estado === "jugando" && mouse ? "none" : "";
       if (forma !== cursorActual) { canvas.style.cursor = forma; cursorActual = forma; }
       requestAnimationFrame(cuadro);
