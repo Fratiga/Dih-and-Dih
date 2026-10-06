@@ -107,7 +107,7 @@
     const FLANCO = tam.flanco;
     const c = {
       ancho: ANCHO, alto: ALTO, terreno: [], unidades: [], orden: [], indice: 0, ronda: 1, activo: null,
-      log: [], flotantes: [], fin: null, xpGanada: 0, version: 0, mapaNombre: "", tema: null
+      log: [], flotantes: [], eventos: [], fin: null, xpGanada: 0, version: 0, mapaNombre: "", tema: null
     };
 
     /* --- Mapa ----------------------------------------------------------- */
@@ -162,6 +162,7 @@
       if (c.log.length > 200) c.log.shift();
       c.version++;
     }
+    function emitir(ev) { c.eventos.push(ev); if (c.eventos.length > 400) c.eventos.shift(); }
     function flotar(u, msg, color) {
       c.flotantes.push({ x: u.x, y: u.y, msg, color: color || "#fff", t: 0 });
     }
@@ -284,16 +285,19 @@
     function empujar(objetivo, desde, casillas) {
       let dx = Math.sign(objetivo.x - desde.x), dy = Math.sign(objetivo.y - desde.y);
       if (!dx && !dy) return;
+      emitir({ t: "empuje", id: objetivo.id, x: objetivo.x, y: objetivo.y, dx, dy });
       for (let i = 0; i < casillas && vivo(objetivo); i++) {
         const nx = objetivo.x + dx, ny = objetivo.y + dy;
         const otro = enMapa(nx, ny) ? unidadEn(nx, ny) : null;
         if (!enMapa(nx, ny) || terrenoEn(nx, ny) === TERRENO.ROCA) {
           escribir(`${objetivo.nombre} choca contra la pared.`, "dano");
+          emitir({ t: "choque", x: objetivo.x + dx, y: objetivo.y + dy, fuerte: true });
           recibirDano(objetivo, OS.tirar("1d6").total, "contundente", null, "el choque");
           return;
         }
         if (otro) {
           escribir(`${objetivo.nombre} choca contra ${otro.nombre}.`, "dano");
+          emitir({ t: "choque", x: nx, y: ny, fuerte: true });
           recibirDano(objetivo, OS.tirar("1d6").total, "contundente", null, "el choque");
           recibirDano(otro, OS.tirar("1d6").total, "contundente", null, "el choque");
           return;
@@ -314,6 +318,7 @@
       else if (u.vul.includes(t)) n *= 2;
       n = Math.max(0, n);
       u.pv -= n;
+      emitir({ t: "dano", id: u.id, n, tipo: t, de: fuente ? fuente.id : null, resiste: !!resiste });
       flotar(u, n ? `-${n}` : "0", n ? "#ff7a6b" : "#aaa");
       if (n) escribir(`${u.nombre} recibe ${n} de daño${t ? " " + t : ""}${causa ? " por " + causa : ""}${resiste && n ? " (resiste)" : ""}.`, "dano");
       if (u.concentra && n > 0) {
@@ -327,6 +332,7 @@
         u.cond = {};
         cortarConcentracion(u);
         escribir(`${u.nombre} ${u.equipo === "enemigos" ? "cae derrotado" : "cae inconsciente"}.`, "muerte");
+        emitir({ t: "muerte", id: u.id });
         comprobarFin();
       }
       return n;
@@ -340,6 +346,7 @@
       if (u.caido && u.pv > 0) { u.caido = false; escribir(`${u.nombre} se levanta.`, "cura"); }
       const dif = u.pv - antes;
       flotar(u, `+${dif}`, "#8be08f");
+      emitir({ t: "cura", id: u.id, n: dif });
       escribir(`${u.nombre} recupera ${dif} PV.`, "cura");
       return dif;
     }
@@ -349,6 +356,7 @@
       u.cond[estado] = turnos;
       if (estado === "marcado" && de) u.marcadoPor = de.id;
       flotar(u, estado, "#e0cf7a");
+      emitir({ t: "estado", id: u.id, nombre: estado });
       escribir(`${u.nombre}: ${estado}.`, "info");
     }
 
@@ -624,6 +632,7 @@
       }
       // salvación (con o sin área) o daño automático
       escribir(`${u.nombre} usa ${a.nombre}.`, "accion");
+      emitir({ t: "conjuro", de: u.id, x: d.x, y: d.y, area: d.area || null, tipo: a.danos && a.danos[0] ? a.danos[0].t : "fuerza", nombre: a.nombre, nivel: 0, forma: a.area ? a.area.forma : "rayo", propio: !!d.propio });
       const lista = a.area ? objetivos.filter(v => v !== u) : objetivos;
       lista.forEach(v => {
         if (a.tipo === "salvacion") {
@@ -652,6 +661,7 @@
       const r = tirarAtaque(u, blanco, a.ataque, cuerpo);
       const etiqueta = r.ventaja > 0 ? " (ventaja)" : r.ventaja < 0 ? " (desventaja)" : "";
       escribir(`${u.nombre} ataca a ${blanco.nombre} con ${a.nombre}${etiqueta}: ${r.natural}${OS.signo(a.ataque)} = ${r.total} contra CA ${blanco.ca} ${r.impacta ? (r.critico ? "¡crítico!" : "impacta") : "falla"}.`, "tirada");
+      emitir({ t: "ataque", de: u.id, a: blanco.id, impacta: r.impacta, critico: r.critico, lejos: !cuerpo, tipo: a.danos[0] ? a.danos[0].t : "", nombre: a.nombre });
       if (!r.impacta) { flotar(blanco, "falla", "#aaa"); return; }
       let total = 0;
       let tipoPrincipal = a.danos[0] ? a.danos[0].t : "";
@@ -716,8 +726,12 @@
       if (cj.concentracion) {
         cortarConcentracion(u);
       }
-      if (d.teleport) { u.x = d.x; u.y = d.y; flotar(u, "¡Puf!", "#b9a0ff"); peligroEn(u, u.x, u.y); return; }
+      if (d.teleport) {
+        emitir({ t: "teleport", id: u.id, x0: u.x, y0: u.y, x1: d.x, y1: d.y });
+        u.x = d.x; u.y = d.y; flotar(u, "¡Puf!", "#b9a0ff"); peligroEn(u, u.x, u.y); return;
+      }
       const danos = danoConjuro(cj, nivelUsado, u.nivel);
+      emitir({ t: "conjuro", de: u.id, x: d.x, y: d.y, area: d.area || null, tipo: cj.tipo === "cura" ? "cura" : (cj.tipo === "efecto" ? "arcano" : (danos[0] ? danos[0].t : "fuerza")), nombre: cj.nombre, nivel: cj.nivel, forma: cj.area ? cj.area.forma : "rayo", propio: !!d.propio });
       if (cj.tipo === "cura") {
         objetivos.forEach(v => {
           let f = cj.cura;
@@ -772,6 +786,7 @@
     /* --- Turnos -------------------------------------------------------------------------- */
     function iniciarTurno(u) {
       c.activo = u;
+      emitir({ t: "turno", id: u.id });
       u.turno = { mov: velocidadActual(u), accion: 1, bonus: true, ataquesExtra: 0, movido: false, furtivo: false };
       if (tieneCond(u, "esquivando")) delete u.cond.esquivando;
       if (tieneCond(u, "acelerado")) u.turno.accion = 2;

@@ -88,7 +88,11 @@
     }
   };
 
-  const COLORES = { guerrero: "#c98a4b", barbaro: "#c4573d", picaro: "#7d8fa8", mago: "#8a6fd0", clerigo: "#e0cf7a", paladin: "#e8e4d0", explorador: "#6fae72", ficha: "#a9c0d8" };
+  const COLORES = { guerrero: "#ff9a2e", barbaro: "#ff4a3a", picaro: "#4d9dff", mago: "#b565ff", clerigo: "#ffe23d", paladin: "#f2f6ff", explorador: "#3fe673", ficha: "#38d6ff" };
+  // las copias de fichas y los enemigos reciben un color vivo según su identidad, para distinguirlos en el tablero
+  const COLORES_FICHA = ["#38d6ff", "#ff7ad9", "#a6ff3d", "#ffb02e", "#7a8bff", "#2ee6c5"];
+  const COLORES_ENEMIGO = ["#ff3d6e", "#ff7a2e", "#d94dff", "#ff5252", "#ffc02e", "#c2ff2e"];
+  const colorPorId = (lista, id) => { let h = 0; String(id).split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) | 0; }); return lista[Math.abs(h) % lista.length]; };
 
   /* --- Registros (lo que se guarda) -------------------------------------- */
   OS.nuevoId = () => (crypto.randomUUID ? crypto.randomUUID() : `v-${Date.now()}-${Math.random().toString(16).slice(2)}`);
@@ -247,7 +251,7 @@
     const a = armaduraCa(reg, m.des, m.con, c);
     const pvBase = c.dado + m.con + (nivel - 1) * (Math.floor(c.dado / 2) + 1 + m.con);
     const u = unidadVacia({
-      id: reg.id, nombre: reg.nombre, nivel, color: reg.color || COLORES[reg.claseId], claseId: reg.claseId, clase: c.nombre,
+      id: reg.id, nombre: reg.nombre, nivel, color: COLORES[reg.claseId] || reg.color, claseId: reg.claseId, clase: c.nombre,
       pvMax: Math.max(1, pvBase + a.pvExtra), ca: a.ca, vel: 6 + a.velExtra, mod: m, comp, iniciativa: m.des,
       ataquesPorAccion: c.ataques(nivel), res: a.resistencias.slice(), espinas: a.espinas, registro: reg
     });
@@ -359,7 +363,7 @@
     if (eq.armadura) ca = Math.max(ca, a.ca + (eq.escudo ? 0 : escudoFicha));
     else ca += (eq.escudo ? 2 + (eq.escudo.bonus || 0) : 0) + (eq.accesorio ? eq.accesorio.ca || 0 : 0);
     const u = unidadVacia({
-      id: reg.id, nombre: reg.nombre, nivel, color: reg.color, clase: p.identidad.clase || "", claseId: "ficha",
+      id: reg.id, nombre: reg.nombre, nivel, color: colorPorId(COLORES_FICHA, reg.id), clase: p.identidad.clase || "", claseId: "ficha",
       pvMax: Math.max(1, pvFicha + ganado + bonoCon + a.pvExtra), ca, vel: Math.max(1, Math.round((Number(p.combate.velocidad) || 30) / 5)) + a.velExtra,
       mod: m, comp, iniciativa: fichasIniciativaTotal(p) + (m.des - fichasModificadorFinal(p, "des")), res: a.resistencias.slice(), espinas: a.espinas,
       retrato: p.identidad.retrato || "", registro: reg
@@ -502,7 +506,7 @@
     const u = unidadVacia({
       id: `${s.id}-${Math.random().toString(16).slice(2, 6)}`, equipo: "enemigos", nombre: s.nombre, nivel: nivel + k, clase: s.rol || "", baseId: s.id,
       pvMax: Math.round(pvBase * (1 + 0.3 * k)), ca: (Number(s.ca) || 10) + Math.floor(k / 2), vel, mod: m,
-      comp: OS.competencia(nivel), iniciativa: m.des, color: "#b5524a", tipoCriatura: s.tipo || ""
+      comp: OS.competencia(nivel), iniciativa: m.des, color: colorPorId(COLORES_ENEMIGO, s.id), tipoCriatura: s.tipo || ""
     });
     u.pv = u.pvMax;
     (s.habilidades || []).forEach((h, i) => {

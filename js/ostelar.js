@@ -279,6 +279,7 @@
   let ocupado = false;
   let combateId = 0;
   let flashes = [];
+  let ultimoTurnoId = null;
   const canvas = $("osCanvas");
   const ctx = canvas.getContext("2d");
   let colores = {};
@@ -298,6 +299,8 @@
     modo = null; hover = null; flashes = []; ocupado = false; combateId++;
     leerColores();
     canvas.style.aspectRatio = `${c.ancho} / ${c.alto}`;
+    escena.reiniciar(c);
+    ultimoTurnoId = null;
     $("osCuartel").classList.add("hidden");
     $("osResultado").classList.add("hidden");
     $("osCombate").classList.remove("hidden");
@@ -306,7 +309,8 @@
     c.log.length = 0;
     c.log.push({ msg: `${c.mapaNombre}. Combate: ${enemigos.map(e => e.nombre).join(", ")}.`, tipo: "ronda" });
     pintarTodo();
-    siguiente();
+    cartel("¡A la arena!", enemigos.map(e => e.nombre).join(" · "), "inicio", 2000);
+    setTimeout(siguiente, 1400);
   }
 
   function ajustarCanvas() {
@@ -321,9 +325,18 @@
 
   function siguiente() {
     if (!c) return;
-    if (c.fin) { setTimeout(() => { if (c && c.fin) terminarCombate(); }, 900); return; }
+    if (c.fin) {
+      if (!c.cartelFin) { c.cartelFin = true; cartel(c.fin === "victoria" ? "¡Victoria!" : "Derrota", c.fin === "victoria" ? "La arena es tuya" : "Ostelar los levantará", c.fin === "victoria" ? "victoria" : "derrota", 2400); }
+      setTimeout(() => { if (c && c.fin) terminarCombate(); }, 2300);
+      return;
+    }
     const u = c.activo;
     pintarTodo();
+    if (u.id !== ultimoTurnoId) {
+      ultimoTurnoId = u.id;
+      if (u.equipo === "enemigos") cartel(u.nombre, "Turno del enemigo", "enemigo", 1100);
+      else cartel(u.nombre, "Tu turno", "aliado", 1000);
+    }
     if (u.equipo === "enemigos") turnoEnemigo();
     else if (c.opciones(u).every(o => !o.ok) && u.turno.mov === 0) {
       // paralizado, aturdido o sin nada que hacer: se pasa solo
@@ -539,104 +552,45 @@
     }
   });
 
-  /* --- Dibujo ------------------------------------------------------------------------------ */
-  const posVisual = new Map();
+  /* --- Dibujo: lo hace la escena (js/ostelar-escena.js) ---------------------------- */
+  const escena = OS.crearEscena(canvas);
   let ultimoCuadro = 0;
+  let cacheAlcance = { clave: "", mapa: null };
+
+  function alcanceActual() {
+    const u = c.activo;
+    if (!u || !u.turno) return null;
+    const clave = `${u.id}:${u.x},${u.y}:${u.turno.mov}:${c.version}`;
+    if (cacheAlcance.clave !== clave) cacheAlcance = { clave, mapa: c.alcanzables(u) };
+    return cacheAlcance.mapa;
+  }
 
   function dibujar(ahora) {
     requestAnimationFrame(dibujar);
     const dt = Math.min(0.05, (ahora - ultimoCuadro) / 1000 || 0);
     ultimoCuadro = ahora;
     if (!c || $("osCombate").classList.contains("hidden")) return;
-    const W = c.ancho * TS, H = c.alto * TS;
-    ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    const T = OS.TERRENO;
-
-    for (let y = 0; y < c.alto; y++) for (let x = 0; x < c.ancho; x++) {
-      ctx.fillStyle = (x + y) % 2 ? colores.panel : colores.panel2;
-      ctx.fillRect(x * TS, y * TS, TS, TS);
-      const t = c.terreno[y][x];
-      if (t === T.ROCA) {
-        ctx.fillStyle = "#4a4a48"; ctx.beginPath();
-        ctx.moveTo(x * TS + 8, y * TS + TS - 8); ctx.lineTo(x * TS + 18, y * TS + 12); ctx.lineTo(x * TS + 40, y * TS + 6); ctx.lineTo(x * TS + TS - 8, y * TS + 24); ctx.lineTo(x * TS + TS - 12, y * TS + TS - 8); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x * TS + 20, y * TS + 14, 14, 6);
-      } else if (t === T.FUEGO) {
-        const f = 0.5 + 0.5 * Math.sin(ahora / 160 + x * 2 + y);
-        ctx.fillStyle = `rgba(255,${100 + 60 * f},40,.55)`; ctx.fillRect(x * TS + 4, y * TS + 4, TS - 8, TS - 8);
-        ctx.fillStyle = `rgba(255,220,90,${0.4 + 0.3 * f})`; ctx.beginPath(); ctx.arc(x * TS + TS / 2, y * TS + TS / 2, 12 + 4 * f, 0, Math.PI * 2); ctx.fill();
-      } else if (t === T.PINCHOS) {
-        ctx.fillStyle = "#9aa0a6";
-        for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { ctx.beginPath(); ctx.moveTo(x * TS + 10 + i * 20, y * TS + 20 + j * 18); ctx.lineTo(x * TS + 16 + i * 20, y * TS + 6 + j * 18); ctx.lineTo(x * TS + 22 + i * 20, y * TS + 20 + j * 18); ctx.fill(); }
-      } else if (t === T.BARRO) {
-        ctx.fillStyle = "rgba(110,80,50,.55)"; ctx.fillRect(x * TS + 2, y * TS + 2, TS - 4, TS - 4);
-        ctx.fillStyle = "rgba(60,40,25,.6)"; ctx.beginPath(); ctx.ellipse(x * TS + 22, y * TS + 26, 10, 5, 0, 0, Math.PI * 2); ctx.ellipse(x * TS + 42, y * TS + 42, 12, 6, 0, 0, Math.PI * 2); ctx.fill();
-      }
-    }
-    ctx.strokeStyle = "rgba(255,255,255,.04)"; ctx.lineWidth = 1;
-    for (let x = 0; x <= c.ancho; x++) { ctx.beginPath(); ctx.moveTo(x * TS, 0); ctx.lineTo(x * TS, H); ctx.stroke(); }
-    for (let y = 0; y <= c.alto; y++) { ctx.beginPath(); ctx.moveTo(0, y * TS); ctx.lineTo(W, y * TS); ctx.stroke(); }
-
-    const activo = c.activo;
-    const turnoJugador = activo && activo.equipo === "jugadores" && !ocupado && !c.fin;
-    const celda = (x, y, color) => { ctx.fillStyle = color; ctx.fillRect(x * TS + 1, y * TS + 1, TS - 2, TS - 2); };
-
-    if (turnoJugador && !modo) {
-      c.alcanzables(activo).forEach(i => { if (!(i.x === activo.x && i.y === activo.y)) celda(i.x, i.y, "rgba(90,150,255,.22)"); });
-    }
-    if (modo && turnoJugador) {
-      modo.destinos.forEach(d => {
-        if (d.dirigido) return;
-        if (d.area) { celda(d.x, d.y, "rgba(255,255,255,.07)"); return; }
-        const aliado = d.victimas[0] && d.victimas[0].equipo === activo.equipo;
-        celda(d.x, d.y, d.teleport ? "rgba(170,120,255,.28)" : aliado ? "rgba(90,210,120,.3)" : "rgba(255,90,80,.3)");
-      });
-      const d = hover ? destinoEn(hover.x, hover.y) : null;
-      if (d) {
-        (d.area || []).forEach(k => celda(k.x, k.y, "rgba(255,160,50,.4)"));
-        d.victimas.forEach(v => { ctx.strokeStyle = "#ffd36a"; ctx.lineWidth = 3; ctx.strokeRect(v.x * TS + 3, v.y * TS + 3, TS - 6, TS - 6); });
-      }
-    }
-    flashes.forEach(f => { f.t += dt; const a = Math.max(0, 0.55 - f.t); f.celdas.forEach(k => celda(k.x, k.y, `rgba(255,170,60,${a})`)); });
-    flashes = flashes.filter(f => f.t < 0.55);
-    if (hover && !modo) { ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 2; ctx.strokeRect(hover.x * TS + 2, hover.y * TS + 2, TS - 4, TS - 4); }
-
-    // unidades
-    c.unidades.forEach(u => {
-      if (u.muerto) return;
-      let v = posVisual.get(u.id);
-      if (!v) { v = { x: u.x, y: u.y }; posVisual.set(u.id, v); }
-      const k = 1 - Math.pow(0.0009, dt);
-      v.x += (u.x - v.x) * k; v.y += (u.y - v.y) * k;
-      const px = v.x * TS + TS / 2, py = v.y * TS + TS / 2;
-      ctx.globalAlpha = u.caido ? 0.35 : 1;
-      if (u === activo && !c.fin) { ctx.strokeStyle = "#ffe08a"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(px, py, TS / 2 - 3, 0, Math.PI * 2); ctx.stroke(); }
-      ctx.fillStyle = u.color; ctx.beginPath(); ctx.arc(px, py, TS / 2 - 9, 0, Math.PI * 2); ctx.fill();
-      ctx.lineWidth = 3; ctx.strokeStyle = u.equipo === "enemigos" ? "#7a1f1a" : "#2c5a3a"; ctx.stroke();
-      ctx.fillStyle = "#101010"; ctx.font = "700 22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(u.nombre.trim().charAt(0).toUpperCase(), px, py + 1);
-      // vida
-      ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(px - 22, py + 26, 44, 6);
-      ctx.fillStyle = u.pv / u.pvMax > 0.5 ? "#6fd07a" : u.pv / u.pvMax > 0.25 ? "#e6c14e" : "#e0645c";
-      ctx.fillRect(px - 22, py + 26, 44 * Math.max(0, u.pv / u.pvMax), 6);
-      // condiciones
-      const conds = Object.keys(u.cond);
-      conds.slice(0, 4).forEach((n, i) => { ctx.fillStyle = "#e0cf7a"; ctx.font = "700 10px sans-serif"; ctx.fillText(n.charAt(0).toUpperCase(), px - 22 + i * 12 + 6, py - 31); });
-      ctx.globalAlpha = 1;
+    const turnoJugador = !!(c.activo && c.activo.equipo === "jugadores" && !ocupado && !c.fin);
+    escena.dibujar(c, ahora, dt, {
+      hover, modo, turnoJugador,
+      alcance: turnoJugador && !modo ? alcanceActual() : null,
+      destinoHover: modo && hover ? destinoEn(hover.x, hover.y) : null
     });
-
-    // textos flotantes
-    c.flotantes.forEach(f => {
-      f.t += dt;
-      ctx.globalAlpha = Math.max(0, 1 - f.t / 1.2);
-      ctx.fillStyle = f.color; ctx.font = "700 22px sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.7)";
-      const x = f.x * TS + TS / 2, y = f.y * TS - 6 - f.t * 28;
-      ctx.strokeText(f.msg, x, y); ctx.fillText(f.msg, x, y);
-      ctx.globalAlpha = 1;
-    });
-    c.flotantes = c.flotantes.filter(f => f.t < 1.2);
   }
   requestAnimationFrame(dibujar);
+
+  /* --- Carteles épicos sobre la arena ---------------------------------------------- */
+  let temporizadorCartel = 0;
+  function cartel(titulo, subtitulo, clase, ms) {
+    const el = $("osCartel");
+    if (!el) return;
+    el.className = `os-cartel ${clase || ""}`;
+    el.innerHTML = `<strong>${esc(titulo)}</strong>${subtitulo ? `<span>${esc(subtitulo)}</span>` : ""}`;
+    void el.offsetWidth;
+    el.classList.add("visible");
+    clearTimeout(temporizadorCartel);
+    temporizadorCartel = setTimeout(() => el.classList.remove("visible"), ms || 1300);
+  }
 
   /* --- Fin del combate ------------------------------------------------------------------------ */
   function terminarCombate() {
