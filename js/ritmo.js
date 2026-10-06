@@ -214,8 +214,8 @@
     estado = "cargando";
     cancionActual = canciones[ajustes.cancion];
     cfg = DIFICULTADES[ajustes.dificultad];
-    // El fondo de la canción (imagen, GIF o video que ponen los DJ) se pide mientras se analiza
-    const promesaFondo = ajustes.fondos !== false && window.FondosJuego ? FondosJuego.cargar(cancionActual.ruta) : Promise.resolve(null);
+    // El fondo de la canción para esta dificultad (imagen, GIF o video que ponen los DJ) se pide mientras se analiza
+    const promesaFondo = ajustes.fondos !== false && window.FondosJuego ? FondosJuego.cargar(cancionActual.ruta, "zarabanda", ajustes.dificultad) : Promise.resolve(null);
     mostrar(cargaEl);
     cargaTxtEl.textContent = "Cargando la canción...";
     try {

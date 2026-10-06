@@ -37,7 +37,8 @@
   let filasNube = []; // canciones subidas, con su id
   let ocultas = []; // canciones del sitio ocultas: { ruta, titulo }
   let nombres = []; // nombres puestos a mano a canciones del sitio: { ruta, titulo, artista }
-  const fondos = new Map(); // ruta de la canción -> { cancion, url, tipo, opacidad, nombre }
+  const fondos = new Map(); // ruta de la canción -> su fondo general { cancion, url, tipo, opacidad, nombre }
+  const fondosTodos = new Map(); // ruta de la canción -> todos sus fondos (general, de un juego y de una dificultad)
   let sinTablaFondos = false;
   let filtro = "";
 
@@ -59,9 +60,14 @@
       const n = await sb.from("rocola_nombres").select("ruta, titulo, artista");
       nombres = n.error ? [] : (n.data || []);
       sinTablaNombres = !!n.error;
-      const fo = await sb.from("rocola_fondos").select("cancion, url, tipo, opacidad, nombre");
+      const fo = await sb.from("rocola_fondos").select("cancion, url, tipo, opacidad, nombre, juego, dificultad");
       fondos.clear();
-      (fo.error ? [] : (fo.data || [])).forEach(f => fondos.set(f.cancion, f));
+      fondosTodos.clear();
+      (fo.error ? [] : (fo.data || [])).forEach(f => {
+        if (!fondosTodos.has(f.cancion)) fondosTodos.set(f.cancion, []);
+        fondosTodos.get(f.cancion).push(f);
+        if (!f.juego && !f.dificultad) fondos.set(f.cancion, f);
+      });
       sinTablaFondos = !!fo.error;
     } catch (err) {
       decir(textoError(err), true);
@@ -97,7 +103,7 @@
       ? visibles.map(c => `<li data-ruta="${escHtml(c.ruta)}"><span class="rg-nombre">${escHtml(c.titulo)}${c.artista ? ` <small>· ${escHtml(c.artista)}</small>` : ""} <small>${formatoDur(c.dur)}${c.bytes ? ` · ${mb(c.bytes)} MB` : ""}${c.nube ? ` · subida${c.quien ? " por " + escHtml(c.quien) : ""}` : " · del sitio"}</small></span><span class="rg-acciones">` +
         `<button type="button" class="rg-btn" data-recortar>Recortar</button>` +
         `<button type="button" class="rg-btn" data-renombrar>Renombrar</button>` +
-        `<button type="button" class="rg-btn ${fondos.has(c.ruta) ? "rg-vivo" : ""}" data-fondo title="Imagen, GIF o video que se ve detrás de los carriles">${fondos.has(c.ruta) ? "Fondo ✓" : "Fondo"}</button>` +
+        `<button type="button" class="rg-btn ${fondos.has(c.ruta) ? "rg-vivo" : ""}" data-fondo title="Fondo general de la canción: se ve en todos los juegos y dificultades. Para uno de un juego o de una dificultad, usa la pestaña Fondo del editor.">${fondos.has(c.ruta) ? "Fondo general ✓" : (fondosTodos.has(c.ruta) ? "Fondo general (hay otros)" : "Fondo general")}</button>` +
         `<button type="button" class="rg-btn rg-peligro" data-quitar>Quitar</button></span></li>`).join("")
       : `<li class="rg-vacio">${q ? "Ninguna canción coincide." : "No hay canciones."}</li>`;
     $("rgOcultasCaja").classList.toggle("hidden", !ocultas.length && !sinTablaOcultas);
@@ -234,8 +240,8 @@
           const { error } = await sb.from("rocola_canciones").delete().eq("ruta", ruta);
           if (error) throw error;
           await borrarArchivo(sb, ruta);
-          const viejo = fondos.get(ruta);
-          if (viejo) { await sb.from("rocola_fondos").delete().eq("cancion", ruta); await borrarArchivo(sb, viejo.url); }
+          const viejos = fondosTodos.get(ruta) || [];
+          if (viejos.length) { await sb.from("rocola_fondos").delete().eq("cancion", ruta); for (const v of viejos) await borrarArchivo(sb, v.url); }
         } else {
           const { error } = await sb.from("rocola_ocultas").insert({ ruta, titulo: nombre });
           if (error) throw error;
@@ -354,7 +360,7 @@
     $("rgFondoOpacidad").value = String(Math.round((f ? Number(f.opacidad) : 0.35) * 100));
     $("rgFondoOpTxt").textContent = $("rgFondoOpacidad").value + " %";
     $("rgFondoQuitar").classList.toggle("hidden", !f);
-    $("rgFondoEstado").textContent = sinTablaFondos ? "Para poner fondos falta correr scratchpad/fondos.sql en Supabase." : "";
+    $("rgFondoEstado").textContent = sinTablaFondos ? "Para poner fondos falta correr scratchpad/fondos_2.sql en Supabase." : "";
     $("rgFondoEstado").classList.toggle("error", sinTablaFondos);
     $("rgFondoProgreso").classList.add("hidden");
     $("rgFondoGuardar").disabled = false;
@@ -399,7 +405,7 @@
       const quien = typeof nombreUsuario === "function" ? nombreUsuario() : "";
       if (!archivoFondo) {
         // Solo cambia la transparencia
-        const { error } = await sb.from("rocola_fondos").update({ opacidad, actualizado: new Date().toISOString() }).eq("cancion", fondeando);
+        const { error } = await sb.from("rocola_fondos").update({ opacidad, actualizado: new Date().toISOString() }).eq("cancion", fondeando).eq("juego", "").eq("dificultad", "");
         if (error) throw error;
       } else {
         const esVideo = /^video\//.test(archivoFondo.type);
@@ -415,7 +421,7 @@
         const ruta = `fondos/${carpeta}/${limpiarNombre(base)}.${ext}`;
         await subirConProgreso(sb, ruta, archivoFondo, fr => { barra.value = Math.round(fr * 100); estado.textContent = `Subiendo... ${Math.round(fr * 100)} %`; }, archivoFondo.type || (esVideo ? "video/mp4" : "image/jpeg"));
         const urlPublica = sb.storage.from("rocola").getPublicUrl(ruta).data.publicUrl;
-        const { error } = await sb.from("rocola_fondos").upsert({ cancion: fondeando, url: urlPublica, tipo: esVideo ? "video" : "imagen", opacidad, nombre: archivoFondo.name.slice(0, 100), nombre_subidor: quien || "", actualizado: new Date().toISOString() });
+        const { error } = await sb.from("rocola_fondos").upsert({ cancion: fondeando, juego: "", dificultad: "", url: urlPublica, tipo: esVideo ? "video" : "imagen", opacidad, nombre: archivoFondo.name.slice(0, 100), nombre_subidor: quien || "", actualizado: new Date().toISOString() });
         if (error) { await sb.storage.from("rocola").remove([ruta]); throw error; }
         if (previo) await borrarArchivo(sb, previo.url);
       }
@@ -436,7 +442,7 @@
     if (!previo || !confirm("¿Quitar el fondo de esta canción?")) return;
     try {
       const sb = await fichasCliente();
-      const { error } = await sb.from("rocola_fondos").delete().eq("cancion", fondeando);
+      const { error } = await sb.from("rocola_fondos").delete().eq("cancion", fondeando).eq("juego", "").eq("dificultad", "");
       if (error) throw error;
       await borrarArchivo(sb, previo.url);
       dlgFondo.close();
@@ -687,7 +693,7 @@
           if (!error && data) pasados += data.length;
         }
         if (pasados) notaMapas = ` Se pasaron ${pasados} mapa${pasados === 1 ? "" : "s"}.`;
-        if (fondos.has(ruta)) { await sb.from("rocola_fondos").update({ cancion: nuevaRuta }).eq("cancion", ruta); notaMapas += " El fondo también."; }
+        if (fondosTodos.has(ruta)) { await sb.from("rocola_fondos").update({ cancion: nuevaRuta }).eq("cancion", ruta); notaMapas += fondosTodos.get(ruta).length > 1 ? " Los fondos también." : " El fondo también."; }
       }
       if (nube) {
         const { error } = await sb.from("rocola_canciones").delete().eq("ruta", ruta);

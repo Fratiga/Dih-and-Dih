@@ -1,0 +1,10 @@
+/* Pestaña "Fondo" de los editores (js/fondos-editor.js). Usa los colores de cada editor por herencia. */
+.re-fondo-previa { position: relative; width: min(100%, 480px); aspect-ratio: 16 / 9; background: #0a0a0c; border: 1px solid rgba(255, 255, 255, .15); overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 8px 0; }
+.re-fondo-previa img, .re-fondo-previa video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.re-fondo-previa .re-fondo-carril { position: absolute; left: 0; right: 0; height: 22%; background: rgba(0, 0, 0, .34); border-top: 1px solid rgba(255, 255, 255, .15); border-bottom: 1px solid rgba(255, 255, 255, .15); }
+.re-fondo-vacio { position: relative; font-size: .8rem; color: var(--muted); }
+.re-fondo-progreso { width: min(100%, 480px); height: 8px; margin: 4px 0; }
+.re-fondo-resumen li { flex-wrap: wrap; }
+.re-fondo-resumen li span:last-child { color: var(--muted); }
+.re-fondo-resumen li.re-fondo-vigente { border-color: currentColor; }
+.re-fondo-resumen li.re-fondo-vigente span:last-child { color: inherit; }

@@ -1,32 +1,43 @@
 /* Fondo de cada canción (tabla rocola_fondos, archivos en el bucket "rocola"): una imagen, un GIF o un video que
-   se ve detrás de los carriles, semitransparente. Lo usan Zarabanda y Parranda. La lista es pública, no pide
-   iniciar sesión. */
+   se ve detrás de los carriles, semitransparente. Cada fondo vale para toda la canción, para un juego o para una
+   dificultad de un juego. Lo usan Zarabanda y Parranda. La lista es pública, no pide iniciar sesión. */
 (function () {
   "use strict";
 
   const URL_BASE = "https://ilicqboqelrjuvtslaxd.supabase.co";
   const KEY = "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
-  const cache = new Map(); // ruta de la canción -> promesa con { url, tipo, opacidad } o null
+  const cache = new Map(); // ruta de la canción -> promesa con la lista de sus fondos
 
-  /* El fondo de una canción, o null si no tiene (o no se pudo preguntar a tiempo) */
-  function cargar(ruta) {
-    if (cache.has(ruta)) return cache.get(ruta);
-    const promesa = (async () => {
-      try {
-        const consulta = fetch(`${URL_BASE}/rest/v1/rocola_fondos?select=url,tipo,opacidad&cancion=eq.${encodeURIComponent(ruta)}`, {
-          headers: { apikey: KEY, Authorization: "Bearer " + KEY }
-        });
-        const resp = await Promise.race([consulta, new Promise((_, no) => setTimeout(() => no(new Error("tiempo")), 3000))]);
-        if (!resp.ok) return null;
-        const lista = await resp.json();
-        return Array.isArray(lista) && lista[0] ? lista[0] : null;
-      } catch (e) {
-        return null;
-      }
-    })();
-    cache.set(ruta, promesa);
-    setTimeout(() => cache.delete(ruta), 5 * 60 * 1000);
-    return promesa;
+  /* De todos los fondos de la canción, el más específico para este juego y esta dificultad: primero el de la
+     dificultad, luego el de todo el juego y por último el de todos los juegos. */
+  function elegir(lista, juego, dificultad) {
+    const de = (j, d) => lista.find(f => (f.juego || "") === j && (f.dificultad || "") === d);
+    return de(juego, dificultad) || de(juego, "") || de("", "") || null;
+  }
+
+  /* El fondo de una canción para ese juego ("zarabanda" o "parranda") y dificultad, o null si no tiene (o no se
+     pudo preguntar a tiempo) */
+  function cargar(ruta, juego, dificultad) {
+    if (!cache.has(ruta)) {
+      const promesa = (async () => {
+        try {
+          const consulta = fetch(`${URL_BASE}/rest/v1/rocola_fondos?select=url,tipo,opacidad,juego,dificultad&cancion=eq.${encodeURIComponent(ruta)}`, {
+            headers: { apikey: KEY, Authorization: "Bearer " + KEY }
+          });
+          const resp = await Promise.race([consulta, new Promise((_, no) => setTimeout(() => no(new Error("tiempo")), 3000))]);
+          if (!resp.ok) return null;
+          const lista = await resp.json();
+          return Array.isArray(lista) ? lista : null;
+        } catch (e) {
+          return null;
+        }
+      })();
+      cache.set(ruta, promesa);
+      // Si no se pudo preguntar, la próxima vez se vuelve a intentar
+      promesa.then(l => { if (!l) cache.delete(ruta); });
+      setTimeout(() => cache.delete(ruta), 5 * 60 * 1000);
+    }
+    return cache.get(ruta).then(lista => (lista ? elegir(lista, juego || "", dificultad || "") : null));
   }
 
   function quitar(contenedor) {
@@ -92,5 +103,5 @@
     }
   }
 
-  window.FondosJuego = { cargar, montar, reproducir, pausar, quitar };
+  window.FondosJuego = { cargar, elegir, montar, reproducir, pausar, quitar };
 })();

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Editor de mapas — Parranda</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261184">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261184">
-  <link rel="stylesheet" href="css/parranda.css?v=20261184">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261184">
-  <link rel="stylesheet" href="css/parranda-editor.css?v=20261184">
+  <link rel="stylesheet" href="css/style.css?v=20261187">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261187">
+  <link rel="stylesheet" href="css/parranda.css?v=20261187">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261187">
+  <link rel="stylesheet" href="css/parranda-editor.css?v=20261187">
+  <link rel="stylesheet" href="css/fondos-editor.css?v=20261187">
 </head>
 <body class="mj-pagina parranda-tema re-pagina">
   <div class="mj-barra">
@@ -112,6 +113,7 @@
             <button type="button" class="re-tab" data-tab="dificultades" role="tab">Dificultades</button>
             <button type="button" class="re-tab" data-tab="revisar" role="tab">Revisar</button>
             <button type="button" class="re-tab" data-tab="probar" role="tab">Probar</button>
+            <button type="button" class="re-tab" data-tab="fondo" role="tab">Fondo</button>
             <button type="button" class="re-tab" data-tab="marcas" role="tab">Marcas</button>
             <button type="button" class="re-tab" data-tab="patrones" role="tab">Patrones</button>
           </div>
@@ -250,6 +252,27 @@
           <ul id="rePatronesLista" class="re-lista"></ul>
         </div>
 
+        <div class="re-panel-tool hidden" data-panel="fondo">
+          <p class="re-ayuda-corta">Una imagen, un GIF o un video que se ve detrás de los carriles de esta canción, semitransparente (los carriles y las notas van por encima). Puedes poner uno solo para la dificultad que estás editando, uno para todas las dificultades de Parranda o uno para todos los juegos. En el juego gana el más específico.</p>
+          <p id="reFondoCancionTxt" class="re-estado-chico"></p>
+          <div class="re-botones">
+            <label class="re-campo re-campo-grande"><span class="re-etq">Dónde se ve</span><select id="reFondoAlcance"></select></label>
+          </div>
+          <ul id="reFondoResumen" class="re-lista re-fondo-resumen"></ul>
+          <div id="reFondoPrevia" class="re-fondo-previa"></div>
+          <div class="re-botones">
+            <label class="re-campo re-campo-grande"><span class="re-etq">Imagen, GIF o video</span><input type="file" id="reFondoArchivo" accept="image/*,video/mp4,video/webm"></label>
+            <label class="re-campo re-campo-grande"><span class="re-etq">Qué tan visible <span id="reFondoOpTxt"></span></span><input type="range" id="reFondoOpacidad" min="10" max="80" value="35"></label>
+          </div>
+          <p class="re-ayuda-corta">Imágenes hasta 15 MB, GIF hasta 6 MB y videos MP4 o WebM hasta 40 MB (mejor cortos y livianos). Un video va sin sonido y se repite.</p>
+          <progress id="reFondoProgreso" class="re-fondo-progreso hidden" max="100" value="0"></progress>
+          <div class="re-botones">
+            <button type="button" id="reFondoGuardar" class="re-btn re-btn-vivo">Guardar el fondo</button>
+            <button type="button" id="reFondoQuitar" class="re-btn re-btn-suave re-btn-peligro hidden">Quitar este fondo</button>
+          </div>
+          <p id="reFondoEstado" class="re-estado-chico" role="status"></p>
+        </div>
+
         <div class="re-panel-tool hidden" data-panel="probar">
           <p class="re-ayuda-corta">Juega el mapa aquí mismo. Con el modo prueba activo, D F J K (o las flechas) tocan los carriles de izquierda a derecha, con las ventanas de la dificultad elegida. Las largas cuentan solo al pulsar el inicio.</p>
           <div class="re-botones">
@@ -371,21 +394,22 @@
     </div>
   </div>
 
-  <script src="js/temas.js?v=20261184"></script>
-  <script src="js/fichas-supabase.js?v=20261184"></script>
-  <script src="js/presencia.js?v=20261184"></script>
-  <script src="js/lado.js?v=20261184"></script>
-  <script src="data/musica.js?v=20261184"></script>
-  <script src="js/musica-nube.js?v=20261184"></script>
-  <script src="js/peticiones-supabase.js?v=20261184"></script>
-  <script src="js/ritmo-rol.js?v=20261184"></script>
-  <script src="data/estilos-mapas.js?v=20261184"></script>
-  <script src="js/ritmo-analisis.js?v=20261184"></script>
-  <script src="js/parranda-analisis.js?v=20261184"></script>
-  <script src="js/estilos-mapas.js?v=20261184"></script>
-  <script src="js/parranda-editor-logica.js?v=20261184"></script>
-  <script src="js/parranda-editor.js?v=20261184"></script>
-  <script src="data/parranda-tutoriales.js?v=20261184"></script>
-  <script src="js/parranda-editor-extras.js?v=20261184"></script>
+  <script src="js/temas.js?v=20261187"></script>
+  <script src="js/fichas-supabase.js?v=20261187"></script>
+  <script src="js/presencia.js?v=20261187"></script>
+  <script src="js/lado.js?v=20261187"></script>
+  <script src="data/musica.js?v=20261187"></script>
+  <script src="js/musica-nube.js?v=20261187"></script>
+  <script src="js/peticiones-supabase.js?v=20261187"></script>
+  <script src="js/ritmo-rol.js?v=20261187"></script>
+  <script src="data/estilos-mapas.js?v=20261187"></script>
+  <script src="js/ritmo-analisis.js?v=20261187"></script>
+  <script src="js/parranda-analisis.js?v=20261187"></script>
+  <script src="js/estilos-mapas.js?v=20261187"></script>
+  <script src="js/parranda-editor-logica.js?v=20261187"></script>
+  <script src="js/parranda-editor.js?v=20261187"></script>
+  <script src="data/parranda-tutoriales.js?v=20261187"></script>
+  <script src="js/parranda-editor-extras.js?v=20261187"></script>
+  <script src="js/fondos-editor.js?v=20261187"></script>
 </body>
 </html>

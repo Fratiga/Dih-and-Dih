@@ -4,6 +4,15 @@
 window.PARRANDA_NOVEDADES = [
   {
     fecha: "2026-10-06",
+    titulo: "Fondos por dificultad y por juego",
+    cambios: [
+      "En el editor de Parranda hay una pestaña nueva, Fondo, para poner una imagen, un GIF o un video detrás de los carriles.",
+      "Se puede poner solo para una dificultad, para todas las dificultades del juego o para todos los juegos. En el juego se ve el más específico.",
+      "Un GIF se queda quieto mientras el juego está en pausa. Los GIF pueden pesar hasta 6 MB."
+    ]
+  },
+  {
+    fecha: "2026-10-06",
     titulo: "Estilos de Nuni y Wonxarle renovados",
     cambios: [
       "Ahora el estilo aprende de todos los mapas Experto que han hecho, no de uno solo.",

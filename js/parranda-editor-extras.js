@@ -33,6 +33,7 @@
     paneles.forEach(p => p.classList.toggle("hidden", p.dataset.panel !== id));
     if (id === "dificultades" && typeof refrescarOrigenes === "function") refrescarOrigenes();
     if (id === "patrones" && typeof pintarPatrones === "function") pintarPatrones();
+    if (id === "fondo" && window.FondosEditor) window.FondosEditor.refrescar();
   }
   tabs.forEach(t => t.addEventListener("click", () => abrirTab(t.dataset.tab)));
   window.addEventListener("parranda-abrir-tab", ev => {
