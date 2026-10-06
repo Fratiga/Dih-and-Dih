@@ -303,6 +303,15 @@
     raf = requestAnimationFrame(bucle);
   }
 
+  /* Desde la pausa: volver a empezar la misma canción y dificultad sin pasar por el menú */
+  function reiniciar() {
+    detenerFuente();
+    cancelAnimationFrame(raf);
+    cargaId++;
+    estado = "menu";
+    empezar();
+  }
+
   function salir() {
     detenerFuente();
     cancelAnimationFrame(raf);
@@ -448,6 +457,7 @@
       return;
     }
     if (calibrando && ev.key !== "Escape") { ev.preventDefault(); if (!ev.repeat) tocarCalibracion(ev); return; }
+    if (estado === "pausa" && ev.key.toLowerCase() === "r") { ev.preventDefault(); reiniciar(); return; }
     if (ev.key === "Escape") {
       if (estado === "jugando") pausar();
       else if (estado === "pausa") continuar();
@@ -559,7 +569,8 @@
     document.getElementById("rtFinDatos").innerHTML =
       `${puntos.toLocaleString("es")} puntos · ${(acc * 100).toFixed(1)} % de precisión<br>` +
       `Perfectos ${perfectos} · Bien ${buenos} · Fallos ${fallos} · Pulsaciones de más ${extras} · Combo máximo ${comboMax}` +
-      (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "");
+      (ajustes.practica ? "<br>Modo práctica: no cuenta para el récord." : "") +
+      (!completa ? "<br>No terminaste la canción: el puntaje no se guarda." : "");
     mostrar(finEl);
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
@@ -950,9 +961,19 @@
   });
 
   /* Al terminar una canción: se guarda el puntaje (si hay sesión) y se muestra la tabla. */
+  /* Qué decirle al jugador cuando el servidor no guarda su puntaje */
+  function mensajeErrorPuntaje(err) {
+    const t = String((err && (err.message || err.error_description)) || err || "");
+    if (/Demasiado r/i.test(t)) return "Se guardó una partida hace muy poco: espera unos 20 segundos entre partidas.";
+    if (/iniciar sesi|JWT|Unauthorized|not authenticated/i.test(t)) return "Tu sesión caducó: inicia sesión de nuevo y vuelve a jugar.";
+    if (/relation|does not exist|schema cache|PGRST/i.test(t)) return "Los puntajes todavía no están activados en el servidor.";
+    return "No se pudo guardar el puntaje (" + t.slice(0, 80) + ").";
+  }
+
   async function subirPuntaje(ruta, dif, pts, acc, rango, combo, version) {
     finPuntajesEl.innerHTML = `<p class="rt-nota">Guardando tu puntaje...</p>`;
     let aviso = "";
+    let huboError = false;
     try {
       const { sesion } = window.MjStats ? await MjStats.cargarSesion() : { sesion: null };
       if (!sesion) {
@@ -963,16 +984,19 @@
         let { error } = await supa.rpc("ritmo_registrar", Object.assign({ p_version: version || "auto" }, args));
         // Sin ritmo_editor_3.sql la función no conoce la versión: se manda como antes
         if (error && /p_version|PGRST202|schema cache/i.test(String(error.message || "") + String(error.code || ""))) ({ error } = await supa.rpc("ritmo_registrar", args));
-        if (error) aviso = "No se pudo guardar el puntaje. Prueba de nuevo en un rato.";
+        if (error) { aviso = mensajeErrorPuntaje(error); huboError = true; }
       }
     } catch (e) {
-      aviso = "No se pudo guardar el puntaje.";
+      aviso = mensajeErrorPuntaje(e);
+      huboError = true;
     }
     puntajesCache.clear();
     try {
       const filas = await filasPuntajes(ruta, dif);
       if (estado !== "fin") return;
-      finPuntajesEl.innerHTML = (aviso ? `<p class="rt-nota">${esc(aviso)}</p>` : "") + tablaPuntajes(filas, { conDificultad: false, max: 5 });
+      finPuntajesEl.innerHTML = (aviso ? `<p class="rt-nota">${esc(aviso)}${huboError ? ` <button type="button" class="rt-secundario rt-chico" data-reintentar>Reintentar</button>` : ""}</p>` : "") + tablaPuntajes(filas, { conDificultad: false, max: 5 });
+      const reintentar = finPuntajesEl.querySelector("[data-reintentar]");
+      if (reintentar) reintentar.addEventListener("click", () => subirPuntaje(ruta, dif, pts, acc, rango, combo, version));
     } catch (e) {
       if (estado === "fin") finPuntajesEl.innerHTML = aviso ? `<p class="rt-nota">${esc(aviso)}</p>` : "";
     }
@@ -1047,7 +1071,7 @@
     document.getElementById("rtPersonaje").checked = ajustes.personaje !== false;
     document.getElementById("rtSonidoGolpe").checked = ajustes.sonidoGolpe !== false;
     const r = records[c.ruta + "|" + ajustes.dificultad];
-    recordEl.textContent = r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "";
+    recordEl.textContent = (ajustes.practica ? "Modo práctica activado: las partidas no se guardan en los puntajes. " : "") + (r ? `Tu mejor: ${r.puntos.toLocaleString("es")} puntos · ${r.acc} % · rango ${r.rango}` : "");
     pintarPuntajes();
   }
 
@@ -1434,6 +1458,7 @@
   document.getElementById("rtVolver").addEventListener("click", salir);
   document.getElementById("rtContinuar").addEventListener("click", continuar);
   document.getElementById("rtSalir").addEventListener("click", salir);
+  document.getElementById("rtReiniciarPausa").addEventListener("click", reiniciar);
   window.addEventListener("resize", () => { if (estado !== "jugando") dibujar(tiempoCancion()); });
 
   pintarMenu();
