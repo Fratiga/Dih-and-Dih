@@ -1,18 +1,16 @@
 /* =============================================================================
    CICLO 3 — FASE 3. Mismo material para Side A y Side B.
 
-   Cerrado para los jugadores hasta que 'abierto' pase a true y se publique
-   (ver tools/bufon/bufon.js abrir fase3, que además sube el número de caché).
-   Admin siempre lo ve, para poder preparar y revisar contenido. Aun abierto,
-   cada lado necesita su propia generación 2 ("requiere": ["gen2"]).
+   Lo reciben solo los jugadores que estén en el ciclo 3. Nadie lo está hasta
+   que el Admin los mueva desde "Progreso del Bufón" (a un lado entero o a un
+   jugador). Admin siempre lo ve, para poder preparar y revisar contenido.
 
    Formato y reglas: ver data/bufon-ciclos.js y tools/bufon/LEEME.md.
 ============================================================================= */
 window.bufonAgregarCiclo({
   id: "fase3",
+  numero: 3,
   nombre: "Fase 3",
-  abierto: false,
-  requiere: ["gen2"],
   temas: [
 
     /* TEROS. El Bufón lo cuenta como un recuerdo que no sabe si es suyo.

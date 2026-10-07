@@ -101,3 +101,15 @@
   .blab-controles { position: static; }
   .blab-dos { grid-template-columns: 1fr; }
 }
+
+/* Interruptor de ciclo en "Progreso del Bufón" (panel de Admin) */
+.admin-ciclo-lado { margin: 0 0 12px; }
+.admin-ciclo-lado p { margin: 0 0 6px; }
+.admin-ciclo-control { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .82rem; }
+.admin-ciclo-control span { color: var(--muted); margin-right: 4px; }
+.admin-ciclo-control strong { color: var(--text); }
+.admin-ciclo-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 4px 12px; cursor: pointer; font-family: inherit; font-size: .8rem; }
+.admin-ciclo-btn:hover { color: var(--text); border-color: var(--accent-soft); }
+.admin-ciclo-control select, .admin-ciclo-jugador { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; font-family: inherit; font-size: .8rem; }
+.admin-ciclo-jugador { max-width: 190px; }
+.admin-ciclo-aviso { color: #d8c37a; font-size: .8rem; margin: 6px 0 0; }

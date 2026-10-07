@@ -1,8 +1,10 @@
 /* =============================================================================
    CICLOS Y TEMAS DEL BUFÓN — formato declarativo.
 
-   Un CICLO es un bloque de contenido con su propio interruptor (abierto o
-   cerrado) y sus propios temas. Se escribe en un archivo aparte,
+   Un CICLO es un bloque de contenido con un NÚMERO (3 en adelante; el 1 es el
+   contenido original y el 2 es "Lo que queda") y sus propios temas. Cada
+   jugador está en un ciclo y solo recibe lo de ese ciclo. El Admin mueve a un
+   lado o a un jugador de ciclo desde "Progreso del Bufón". Se escribe en un archivo aparte,
    data/bufon-ciclo-<id>.js, llamando a bufonAgregarCiclo({...}). Este
    archivo (el constructor) convierte esa descripción en nodos, elecciones,
    botones del menú y recuerdos espontáneos, y los suma al árbol que ya
@@ -10,7 +12,7 @@
    (secreto.html) para agregar un ciclo ni un tema.
 
    Para crear uno sin escribir esto a mano, usar las herramientas:
-     node tools/bufon/bufon.js nuevo-ciclo <id> "Nombre"
+     node tools/bufon/bufon.js nuevo-ciclo <numero> <id> "Nombre"
      node tools/bufon/bufon.js nuevo-tema <ciclo> <id> "Texto del botón"
    y leer tools/bufon/LEEME.md.
 
@@ -18,11 +20,9 @@
 
      bufonAgregarCiclo({
        id: "fase3",                 // a-z, 0-9 y _ ; único
+       numero: 3,                   // el ciclo al que pertenece. Debe estar en
+                                    // data/bufon-ciclos-lista.js
        nombre: "Fase 3",
-       abierto: false,              // el interruptor. Admin siempre ve todo.
-       requiere: ["gen2"],          // "gen2" = la generación 2 de SU lado ya
-                                    // se desbloqueó. "ciclo:<id>" = ese otro
-                                    // ciclo ya está abierto.
        lados: ["A", "B"],           // opcional: omitir = los dos lados
        temas: [ ...ver abajo... ],
        nodos: { ... },              // opcional: nodos sueltos, formato de siempre
@@ -200,8 +200,9 @@
     const comoBoton = t.intro.como === "boton";
     const idBoton = cid + "_" + tid;
     if (D.elecciones.intro_reason.opciones.some(o => o.id === idBoton)) fallar('el botón "' + idBoton + '" ya existe');
+    const numero = window.BUFON_CICLOS[cid].numero;
     D.elecciones.intro_reason.opciones.push({
-      id: idBoton, texto: t.boton,
+      id: idBoton, ciclo: numero, texto: t.boton,
       visible: ctx => ctx.cicloAbierto(cid) && extra(ctx)
         && (comoBoton || ctx.hasCompletedDialogue(introMarca))
         && !agotado(ctx),
@@ -211,6 +212,7 @@
     // Recuerdo espontáneo (el Bufón trae el tema solo, la primera vez)
     if (!comoBoton) {
       window.BUFON_RECUERDOS_MODULOS.push({
+        ciclo: numero,
         prioridad: t.prioridad || "RECUERDO",
         condicion: ctx => ctx.cicloAbierto(cid) && extra(ctx) && !ctx.hasCompletedDialogue(introMarca),
         nodo: "bufon_" + pre + "intro"
@@ -226,12 +228,13 @@
   function construirCiclo(cfg) {
     if (!cfg || !ID_VALIDO.test(cfg.id || "")) fallar("ciclo sin id válido (a-z, 0-9 y _)");
     if (window.BUFON_CICLOS[cfg.id]) fallar('el ciclo "' + cfg.id + '" ya existe');
-    (cfg.requiere || []).forEach(r => {
-      if (r !== "gen2" && !/^ciclo:[a-z0-9_]+$/.test(r)) fallar('requiere "' + r + '" no es válido (usar "gen2" o "ciclo:<id>")');
-    });
+    if (!Number.isInteger(cfg.numero) || cfg.numero < 3) fallar("falta 'numero': el número del ciclo al que pertenece (3 o más; el 1 es el contenido original y el 2 es \"Lo que queda\")");
+    const lista = window.BUFON_LISTA_CICLOS || [];
+    if (!lista.some(c => c.numero === cfg.numero)) fallar("el ciclo " + cfg.numero + " no está en data/bufon-ciclos-lista.js. Agrégalo ahí con su nombre.");
+    if (Object.values(window.BUFON_CICLOS).some(c => c.numero === cfg.numero)) avisar('ciclo "' + cfg.id + '": ya hay otro archivo con el número ' + cfg.numero + ". Los dos se mostrarían a la vez.");
+    if (cfg.abierto !== undefined || cfg.requiere !== undefined) avisar('ciclo "' + cfg.id + '": "abierto" y "requiere" ya no se usan. Ahora el ciclo se abre moviendo a los jugadores a este número desde "Progreso del Bufón".');
     window.BUFON_CICLOS[cfg.id] = {
-      id: cfg.id, nombre: cfg.nombre || cfg.id, abierto: cfg.abierto === true,
-      requiere: cfg.requiere || [], lados: cfg.lados || null, temas: [],
+      id: cfg.id, numero: cfg.numero, nombre: cfg.nombre || cfg.id, lados: cfg.lados || null, temas: [],
       // La descripción original, para que el Laboratorio del Bufón (panel de
       // Admin) pueda cargar un ciclo existente en su editor.
       def: cfg
@@ -244,7 +247,7 @@
     });
     (cfg.recuerdos || []).forEach(r => {
       if (typeof r.prioridad === "string" && PRIORIDADES.indexOf(r.prioridad) < 0) fallar('prioridad "' + r.prioridad + '" no válida');
-      window.BUFON_RECUERDOS_MODULOS.push(r);
+      window.BUFON_RECUERDOS_MODULOS.push(Object.assign({ ciclo: cfg.numero }, r));
     });
   }
 

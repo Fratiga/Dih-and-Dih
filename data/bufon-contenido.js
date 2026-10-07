@@ -1424,7 +1424,7 @@ window.BUFON_DIALOGO = {
            más arriba/abajo), no de una sola vez como los de arriba.
         ================================================================= */
         {
-          id: "side_b2_ledros", texto: "¿Qué es esa armadura?",
+          id: "side_b2_ledros", ciclo: 2, texto: "¿Qué es esa armadura?",
           // Una vez vista la intro, el botón se esconde de nuevo si ya
           // no queda ninguna pregunta pendiente en ledros_hub — así no
           // invita a entrar a un submenú vacío (solo "Ya fue, sigamos
@@ -1449,7 +1449,7 @@ window.BUFON_DIALOGO = {
           next: ctx => ctx.hasCompletedDialogue("ledros_intro_seen") ? "ledros_hub" : "bufon_ledros_intro"
         },
         {
-          id: "side_b2_comerciante", texto: "¿Conoces al tipo de anoche?",
+          id: "side_b2_comerciante", ciclo: 2, texto: "¿Conoces al tipo de anoche?",
           visible: ctx => {
             if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("chose_mask"))) return false;
             if (!ctx.hasCompletedDialogue("comerciante_intro_seen")) return true;
@@ -1459,7 +1459,7 @@ window.BUFON_DIALOGO = {
           next: ctx => ctx.hasCompletedDialogue("comerciante_intro_seen") ? "comerciante_hub" : "bufon_comerciante_intro"
         },
         {
-          id: "side_b2_hubert", texto: "Por cierto. Hubert Magnolia.",
+          id: "side_b2_hubert", ciclo: 2, texto: "Por cierto. Hubert Magnolia.",
           visible: ctx => {
             if (!(ctx.actualCampaign === "B" && ctx.sideBGen2 && ctx.hasFact("hubert_magnolia_named")
               && ctx.playerNameMatches("Hooey Magoo", "Hooey", "Magoo", "Joan", "mahooey"))) return false;
@@ -1470,7 +1470,7 @@ window.BUFON_DIALOGO = {
           next: ctx => ctx.hasCompletedDialogue("hubert_intro_seen") ? "hubert_hub" : "bufon_hubert_intro"
         },
         {
-          id: "side_b2_laia", texto: "¿Qué fue eso con el prisionero de los calabozos?",
+          id: "side_b2_laia", ciclo: 2, texto: "¿Qué fue eso con el prisionero de los calabozos?",
           visible: ctx => {
             // "conocio_isa" es un hecho de MESA (todo Side B), pero
             // solo la jugadora de Laia habló de verdad con él — el
@@ -1501,7 +1501,7 @@ window.BUFON_DIALOGO = {
            Ledros/Comerciante/Hubert/Laia.
         ================================================================= */
         {
-          id: "side_a2_mattei", texto: "¿Qué es esa cosa que se les pegó?",
+          id: "side_a2_mattei", ciclo: 2, texto: "¿Qué es esa cosa que se les pegó?",
           visible: ctx => {
             if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("mattei_se_unio"))) return false;
             if (!ctx.hasCompletedDialogue("mattei_intro_seen")) return true;
@@ -1510,7 +1510,7 @@ window.BUFON_DIALOGO = {
           next: ctx => ctx.hasCompletedDialogue("mattei_intro_seen") ? "mattei_hub" : "bufon_mattei_intro"
         },
         {
-          id: "side_a2_enzo", texto: "Por cierto. La pierna de Enzo.",
+          id: "side_a2_enzo", ciclo: 2, texto: "Por cierto. La pierna de Enzo.",
           visible: ctx => {
             if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("enzo_venganza_revelada"))) return false;
             if (!ctx.hasCompletedDialogue("enzo_intro_seen")) return true;
@@ -1519,7 +1519,7 @@ window.BUFON_DIALOGO = {
           next: ctx => ctx.hasCompletedDialogue("enzo_intro_seen") ? "enzo_hub" : "bufon_enzo_intro"
         },
         {
-          id: "side_a2_dagren", texto: "El del granero. Ahora cobra entrada.",
+          id: "side_a2_dagren", ciclo: 2, texto: "El del granero. Ahora cobra entrada.",
           visible: ctx => {
             if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("dagren_cobra_renta"))) return false;
             if (!ctx.hasCompletedDialogue("dagren_intro_seen")) return true;
@@ -1531,7 +1531,7 @@ window.BUFON_DIALOGO = {
           next: ctx => ctx.hasCompletedDialogue("dagren_intro_seen") ? "dagren_hub" : "bufon_dagren_intro"
         },
         {
-          id: "side_a2_guillotina", texto: "La gata que casi los mata.",
+          id: "side_a2_guillotina", ciclo: 2, texto: "La gata que casi los mata.",
           visible: ctx => {
             if (!(ctx.actualCampaign === "A" && ctx.sideAGen2 && ctx.hasFact("guillotina_identificada"))) return false;
             if (!ctx.hasCompletedDialogue("guillotina_intro_seen")) return true;

@@ -250,7 +250,8 @@ async function adminListarProgresoBufon() {
     { data: sideAAvanzo },
     { data: sideARealesCount },
     { data: sideBAvanzo },
-    { data: sideBRealesCount }
+    { data: sideBRealesCount },
+    { data: ciclosAdmin }
   ] = await Promise.all([
     supabase.from("bufon_elecciones").select("player_id, side, dialogue_id, category, choice_id, created_at, es_prueba").order("created_at", { ascending: true }),
     supabase.from("bufon_jugadores").select("player_id, nombre"),
@@ -268,7 +269,10 @@ async function adminListarProgresoBufon() {
     // scratchpad/bufon_excluir_conteo_admin.sql) tiene que venir de una
     // RPC en vez de calcularse aquí con las filas de bufon_elecciones
     // que sí podemos leer.
-    supabase.rpc("bufon_contar_side_b_reales")
+    supabase.rpc("bufon_contar_side_b_reales"),
+    // Los interruptores de ciclo que puso el Admin (ver scratchpad/bufon_ciclos.sql).
+    // Si todavía no corriste ese SQL falla en silencio y el panel no muestra interruptores.
+    supabase.rpc("bufon_admin_ciclos")
   ]);
   if (errElecciones) throw errElecciones;
   if (errJugadores) throw errJugadores;
@@ -317,8 +321,11 @@ async function adminListarProgresoBufon() {
 
   const motivoExcluidoPorId = new Map((excluidos || []).map(x => [String(x.player_id), x.motivo]));
 
+  const cicloManualPorJugador = new Map(((ciclosAdmin && ciclosAdmin.jugadores) || []).map(x => [String(x.player_id), x.ciclo]));
+
   const lista = Array.from(porJugador.values()).map(f => ({
     ...f,
+    cicloManual: cicloManualPorJugador.has(String(f.playerId)) ? cicloManualPorJugador.get(String(f.playerId)) : null,
     nombre: nombresPorId.get(String(f.playerId)) || null,
     excluido: motivoExcluidoPorId.has(String(f.playerId)),
     motivoExcluido: motivoExcluidoPorId.get(String(f.playerId)) || null
@@ -331,9 +338,27 @@ async function adminListarProgresoBufon() {
     // reales de Supabase Auth, no cualquier player_id anónimo. Si esa
     // función todavía no existe (no corriste el SQL), Number(undefined)
     // da NaN; se muestra 0 en vez de romper el panel.
-    sideA: { avanzo: !!sideAAvanzo, completos: Number(sideARealesCount) || 0, necesarios: 5 },
-    sideB: { avanzo: !!sideBAvanzo, completos: Number(sideBRealesCount) || 0, necesarios: 5 }
+    sideA: { avanzo: !!sideAAvanzo, completos: Number(sideARealesCount) || 0, necesarios: 5, cicloManual: ciclosAdmin && ciclosAdmin.lados && Number.isInteger(ciclosAdmin.lados.A) ? ciclosAdmin.lados.A : null },
+    sideB: { avanzo: !!sideBAvanzo, completos: Number(sideBRealesCount) || 0, necesarios: 5, cicloManual: ciclosAdmin && ciclosAdmin.lados && Number.isInteger(ciclosAdmin.lados.B) ? ciclosAdmin.lados.B : null },
+    // false = todavía no se corrió scratchpad/bufon_ciclos.sql (sin eso no hay interruptores)
+    hayInterruptores: !!ciclosAdmin
   };
+}
+
+/* El interruptor de ciclo del Admin. ciclo = número (1, 2, 3...) o null para volver
+   al modo automático. Cada jugador está en UN ciclo y solo recibe el contenido de
+   ese ciclo; el del jugador manda sobre el de su lado. Requiere
+   scratchpad/bufon_ciclos.sql. */
+async function adminSetCicloLado(side, ciclo) {
+  const supabase = await bufonCliente();
+  const { error } = await supabase.rpc("bufon_admin_set_ciclo_lado", { p_side: side, p_ciclo: ciclo });
+  if (error) throw error;
+}
+
+async function adminSetCicloJugador(playerId, ciclo) {
+  const supabase = await bufonCliente();
+  const { error } = await supabase.rpc("bufon_admin_set_ciclo_jugador", { p_player_id: playerId, p_ciclo: ciclo });
+  if (error) throw error;
 }
 
 /* Sacar/devolver un player_id de bufon_progreso_excluido: quien está ahí

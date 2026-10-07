@@ -49,10 +49,9 @@
       lado: cfg.lado || null,
       cuenta: cfg.cuenta || "",
       admin: !!cfg.admin,
-      rpcAvanzo: !!cfg.rpcAvanzo,   // el servidor ya dice "avanzó" aunque el navegador no lo sepa
+      rpcAvanzo: !!cfg.rpcAvanzo,   // el servidor dice que su lado avanzó (los 5 jugadores reales)
       latenciaRpc: cfg.latenciaRpc || 0,
-      abrir: (cfg.abrir || []).slice(),    // ciclos que se fuerzan a abiertos en la prueba
-      cerrar: (cfg.cerrar || []).slice(),  // ciclos que se fuerzan a cerrados
+      ciclo: Number.isInteger(cfg.ciclo) ? cfg.ciclo : null,  // el interruptor del Admin: pone al jugador en ese ciclo. null = automático
       eventos: [],   // lo que se habría mandado a Supabase
       errores: [],   // errores de JavaScript dentro del iframe
       toques: 0
@@ -134,7 +133,9 @@
     window.bufonCliente = function () {
       return Promise.resolve({
         rpc: function (nombre) {
-          var valor = { data: (/avanzo/.test(nombre) && L.rpcAvanzo) ? true : null };
+          var valor = (nombre === "bufon_ciclo_info")
+            ? { data: { manual: (typeof L.ciclo === "number" ? L.ciclo : null), avanzo: !!L.rpcAvanzo } }
+            : { data: (/avanzo/.test(nombre) && L.rpcAvanzo) ? true : null };
           if (!L.latenciaRpc) return Promise.resolve(valor);
           return new Promise(function (res) { setTimeout(function () { res(valor); }, L.latenciaRpc); });
         },
@@ -148,15 +149,15 @@
     window.bufonPlayerId = function () { return "laboratorio"; };
   }
 
-  /* Este script se mete justo antes del motor: suma los borradores del editor
-     y fuerza ciclos abiertos o cerrados según el estado de la prueba. */
+  /* Este script se mete justo antes del motor: suma los borradores del editor. Si el
+     número de ciclo de un borrador todavía no está en data/bufon-ciclos-lista.js, lo
+     agrega a la lista solo para esta prueba. */
   function scriptDeCiclos(idLab, borradores) {
     const datos = JSON.stringify(borradores || []).replace(/</g, "\\u003c");
-    return "(function(){var L=parent.__bufonLabs[" + JSON.stringify(idLab) + "];" +
-      "(" + datos + ").forEach(function(c){window.bufonAgregarCiclo(c);});" +
-      "(L.abrir||[]).forEach(function(i){if(window.BUFON_CICLOS&&BUFON_CICLOS[i])BUFON_CICLOS[i].abierto=true;});" +
-      "(L.cerrar||[]).forEach(function(i){if(window.BUFON_CICLOS&&BUFON_CICLOS[i])BUFON_CICLOS[i].abierto=false;});" +
-      "})();";
+    return "(function(){(" + datos + ").forEach(function(c){" +
+      "var l=window.BUFON_LISTA_CICLOS=window.BUFON_LISTA_CICLOS||[];" +
+      "if(!l.some(function(x){return x.numero===c.numero;}))l.push({numero:c.numero,nombre:c.nombre||c.id});" +
+      "window.bufonAgregarCiclo(c);});})();";
   }
 
   /* Los scripts de datos (data/*.js) se leen UNA sola vez y se meten en línea
@@ -294,6 +295,7 @@
     L.errores = [];
     const pg = await crearPagina(L, { borradores: o.borradores });
     const problemas = [];
+    const menu = new Set(); // botones del menú principal que vio
     try {
       const r = await abrirPuerta(pg, o.esperaMs);
       if (r.sinPuerta) return { nodos: [], elecciones: [], problemas, terminoPor: "sin_puerta", puertaCerrada: false };
@@ -307,6 +309,7 @@
         if (p.rota) problemas.push("Pantalla con 'undefined' tras el nodo " + pg.nodos[pg.nodos.length - 1]);
         if (p.tipo === "opciones") {
           const ids = p.opciones.map(x => x.id);
+          if (pg.elecciones[pg.elecciones.length - 1] === "intro_reason") ids.forEach(i => menu.add(i));
           const sinCerrar = ids.filter(i => !/cerrar$/.test(i));
           if (pg.elecciones[pg.elecciones.length - 1] === "intro_reason") {
             pasosHub++;
@@ -314,7 +317,7 @@
           }
           let elegido;
           if (ids.includes("registro_rechazar")) elegido = "registro_rechazar";
-          else if (sinCerrar.length) elegido = o.estrategia === "orden" ? sinCerrar[0] : sinCerrar[Math.floor(o.rnd() * sinCerrar.length)];
+          else if (sinCerrar.length) elegido = o.estrategia === "orden" ? sinCerrar[0] : o.estrategia === "ultima" ? sinCerrar[sinCerrar.length - 1] : o.estrategia === "segunda" ? sinCerrar[Math.min(1, sinCerrar.length - 1)] : sinCerrar[Math.floor(o.rnd() * sinCerrar.length)];
           else elegido = ids[0];
           try { await elegir(pg, elegido); } catch (e) { problemas.push("Excepción al elegir '" + elegido + "': " + e.message); break; }
           continue;
@@ -325,7 +328,7 @@
       }
       if (termino === "agotado") { termino = "LIMITE_DE_PASOS"; problemas.push("posible bucle: 800 pasos sin terminar la visita"); }
       L.errores.forEach(e => problemas.push("Error de JavaScript: " + e));
-      return { nodos: pg.nodos, elecciones: pg.elecciones, problemas, terminoPor: termino, puertaCerrada: false };
+      return { nodos: pg.nodos, elecciones: pg.elecciones, problemas, terminoPor: termino, puertaCerrada: false, menu: Array.from(menu) };
     } finally {
       pg.cerrar();
     }
@@ -340,12 +343,20 @@
       const D = w.BUFON_DIALOGO;
       const repetibles = new Set(["bufon_retorno_generico", "bufon_fase2_toque_silencioso", "early_return_01", "bufon_dia_sin_visita"]);
       Object.keys(D.nodos).forEach(n => { if (D.nodos[n].consumeEncounter) repetibles.add(n); });
+      const lista = JSON.parse(JSON.stringify(w.BUFON_LISTA_CICLOS || []));
+      // Los ciclos que viven en un archivo (3 en adelante); el 1 y el 2 están escritos a mano.
       const ciclos = {};
       Object.values(w.BUFON_CICLOS || {}).forEach(c => {
-        ciclos[c.id] = { id: c.id, nombre: c.nombre, abierto: c.abierto, requiere: c.requiere.slice(), lados: c.lados ? c.lados.slice() : null, temas: c.temas.map(t => ({ id: t.id, boton: t.boton, preguntas: t.preguntas, grupos: t.grupos, nodos: t.nodos.slice() })) };
+        ciclos[c.id] = { id: c.id, numero: c.numero, nombre: c.nombre, lados: c.lados ? c.lados.slice() : null, temas: c.temas.map(t => ({ id: t.id, boton: t.boton, preguntas: t.preguntas, grupos: t.grupos, nodos: t.nodos.slice() })) };
       });
+      // A qué ciclo pertenece cada nodo: los de archivo por su lista de nodos, los escritos a mano por prefijo.
+      const duenoDeNodo = {};
+      Object.values(ciclos).forEach(c => c.temas.forEach(t => t.nodos.forEach(n => { duenoDeNodo[n] = c.numero; })));
+      lista.forEach(c => (c.prefijos || []).forEach(p => Object.keys(D.nodos).forEach(n => { if (n.indexOf(p) === 0 && duenoDeNodo[n] === undefined) duenoDeNodo[n] = c.numero; })));
+      const botones = D.elecciones.intro_reason.opciones.map(o => ({ id: o.id, texto: o.texto, ciclo: o.ciclo !== undefined ? o.ciclo : 1 }));
       return {
-        ciclos,
+        lista, ciclos, duenoDeNodo, botones,
+        cicloDeBoton: Object.fromEntries(botones.map(b => [b.id, b.ciclo])),
         errores: Array.from(w.BUFON_ERRORES_CICLOS || []),
         avisos: Array.from(w.BUFON_AVISOS_CICLOS || []),
         nodos: Object.keys(D.nodos),
@@ -360,48 +371,67 @@
   }
 
   /* ---------- auditoría ---------- */
+  const unico = a => Array.from(new Set(a));
+
+  /* Un escenario = un jugador a lo largo de varias visitas.
+     cfg = { lado, visitas, cicloPorVisita:[n|null,...], avanzoEnVisita, maxHubPorVisita:[..], estrategia,
+             localInicial, cuenta, admin, semilla } */
   async function escenario(cfg, o) {
     const rnd = rng(cfg.semilla || 1);
-    const L = nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, admin: cfg.admin, cerrar: cfg.cerrar, local: cfg.localInicial });
+    const L = nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, admin: cfg.admin, local: cfg.localInicial });
     const visitas = [];
     for (let v = 0; v < cfg.visitas; v++) {
       if (o.cancelado()) break;
-      if (cfg.gen2EnVisita === v) L.local.setItem("bufonGen2v2_" + cfg.lado, "1");
-      L.abrir = Object.entries(cfg.abrirEnVisita || {}).filter(([, desde]) => v >= desde).map(([id]) => id);
+      L.ciclo = cfg.cicloPorVisita ? (cfg.cicloPorVisita[v % cfg.cicloPorVisita.length] || null) : null;
+      L.rpcAvanzo = cfg.avanzoEnVisita != null && v >= cfg.avanzoEnVisita;
       const maxHub = cfg.maxHubPorVisita ? cfg.maxHubPorVisita[v % cfg.maxHubPorVisita.length] : 999;
-      visitas.push(await jugarVisita(L, { rnd, maxHub, estrategia: cfg.estrategia || "azar", esperaMs: 30, borradores: o.borradores }));
+      const r = await jugarVisita(L, { rnd, maxHub, estrategia: cfg.estrategia || "azar", esperaMs: 30, borradores: o.borradores });
+      r.cicloForzado = L.ciclo;
+      visitas.push(r);
       o.tick();
     }
     return visitas;
   }
 
-  /* opts = { semillas, lados, borradores, nombres:[{lado,nombre,cuenta}], alProgreso(texto, fraccion), cancelado() } */
+  /* ¿Recibió esta visita algo de otro ciclo? (solo si el ciclo estaba forzado) */
+  function fugas(visita, meta) {
+    const n = visita.cicloForzado;
+    const out = [];
+    if (!n) return out;
+    visita.nodos.forEach(nodo => { const d = meta.duenoDeNodo[nodo]; if (d !== undefined && d !== n) out.push("el nodo " + nodo + " es del ciclo " + d); });
+    (visita.menu || []).forEach(b => { const c = meta.cicloDeBoton[b]; if (c !== undefined && c !== n) out.push("el botón " + b + " es del ciclo " + c); });
+    return unico(out);
+  }
+
+  /* opts = { semillas, lados, borradores, nombres:[{lado,cuenta,nombre}], alProgreso(texto, fraccion), cancelado() } */
   async function auditar(opts) {
-    const o = Object.assign({ semillas: 2, lados: ["A", "B"], borradores: [], nombres: [], alProgreso: () => {}, cancelado: () => false }, opts);
+    const o = Object.assign({ semillas: 1, lados: ["A", "B"], borradores: [], nombres: [], alProgreso: () => {}, cancelado: () => false }, opts);
     const meta = await leerMeta(o.borradores);
     const res = { errores: [], avisos: [], secciones: [] };
     meta.errores.forEach(e => res.errores.push("Ciclo mal escrito: " + e));
     meta.avisos.forEach(a => res.avisos.push(a));
+    const numeros = meta.lista.map(c => c.numero);
 
-    const ids = Object.keys(meta.ciclos);
-    const abrirTodos = Object.fromEntries(ids.map(id => [id, 5]));
+    // 1. Matriz de jugadores: repeticiones, bucles, textos rotos y contenido de otro ciclo
+    const recorrido = numeros.concat(numeros.slice().reverse()).filter((n, i, a) => i === 0 || n !== a[i - 1]);
+    const cicloPorVisita = [];
+    recorrido.forEach(n => { cicloPorVisita.push(n, n); });
     const matriz = [];
     o.lados.forEach(lado => {
-      matriz.push({ n: "Side " + lado + ": primer ciclo", cfg: { lado, visitas: 8, maxHubPorVisita: [3, 6, 40, 2, 40] } });
-      matriz.push({ n: "Side " + lado + ": entra a la generación 2", cfg: { lado, visitas: 12, gen2EnVisita: 3, maxHubPorVisita: [3, 6, 40, 2, 40] } });
-      matriz.push({ n: "Side " + lado + ": todos los ciclos abiertos", cfg: { lado, visitas: 14, gen2EnVisita: 2, abrirEnVisita: abrirTodos, maxHubPorVisita: [3, 6, 40, 2, 40] } });
-      matriz.push({ n: "Side " + lado + ": completista", cfg: { lado, visitas: 12, gen2EnVisita: 2, abrirEnVisita: abrirTodos, estrategia: "orden" } });
+      matriz.push({ n: "Side " + lado + ": primer ciclo (automático)", cfg: { lado, visitas: 8, maxHubPorVisita: [3, 6, 40, 2, 40] } });
+      matriz.push({ n: "Side " + lado + ": el lado avanza (automático)", cfg: { lado, visitas: 12, avanzoEnVisita: 3, maxHubPorVisita: [3, 6, 40, 2, 40] } });
+      matriz.push({ n: "Side " + lado + ": movido por el Admin hacia adelante y hacia atrás", cfg: { lado, visitas: cicloPorVisita.length, cicloPorVisita, maxHubPorVisita: [3, 6, 40, 2, 40] } });
+      matriz.push({ n: "Side " + lado + ": completista", cfg: { lado, visitas: cicloPorVisita.length, cicloPorVisita, estrategia: "orden" } });
     });
-    matriz.push({ n: "Side B como Admin", cfg: { lado: "B", admin: true, visitas: 8, maxHubPorVisita: [5, 40, 40] } });
+    matriz.push({ n: "Side B como Admin (ve todos los ciclos)", cfg: { lado: "B", admin: true, visitas: 8, maxHubPorVisita: [5, 40, 40] } });
 
     // total estimado de visitas, solo para la barra de progreso
     let total = matriz.reduce((s, e) => s + e.cfg.visitas, 0) * o.semillas;
-    total += ids.length * 112 + o.lados.length * 2 * 7 + o.nombres.length * 18;
+    total += meta.lista.length * 2 * 2 * 3 * 8 + o.lados.length * 2 * 7 + o.nombres.length * 18;
     let hechas = 0;
     const tick = () => { hechas++; o.alProgreso(null, Math.min(1, hechas / total)); };
     const E = { borradores: o.borradores, cancelado: o.cancelado, tick };
 
-    // 1. repeticiones, bucles, textos rotos
     const hallazgos = new Map();
     const alcanzados = new Set();
     const fin = new Map();
@@ -417,66 +447,62 @@
           dentro.forEach((c, n) => { if (c > 1 && !meta.repetibles.has(n)) anotar("Se repite dentro de una visita (×" + c + "): " + n); });
           new Set(v.nodos).forEach(n => (vistoEn.get(n) || vistoEn.set(n, []).get(n)).push(i + 1));
           v.problemas.forEach(p => anotar("Problema: " + p.slice(0, 200)));
+          fugas(v, meta).forEach(f => anotar("Contenido de otro ciclo (jugador en el ciclo " + v.cicloForzado + "): " + f));
           fin.set(v.terminoPor, (fin.get(v.terminoPor) || 0) + 1);
         });
         vistoEn.forEach((vs, n) => { if (vs.length > 1 && !meta.repetibles.has(n)) anotar("Se repite entre visitas: " + n); });
       }
     }
-    const s1 = { titulo: "Repeticiones, bucles y textos rotos", lineas: [] };
+    const s1 = { titulo: "Repeticiones, bucles, textos rotos y contenido de otro ciclo", lineas: [] };
     if (!hallazgos.size) s1.lineas.push({ ok: true, t: "Sin hallazgos." });
     hallazgos.forEach((h, t) => { s1.lineas.push({ ok: false, t: t + " (" + h.n + " veces, p. ej. " + h.ej + ")" }); res.errores.push(t); });
     s1.lineas.push({ info: true, t: "Cómo terminaron las visitas: " + Array.from(fin).map(([k, n]) => k + " " + n).join(" · ") });
     res.secciones.push(s1);
 
-    // 2. cada ciclo
+    // 2. Cada ciclo
     const s2 = { titulo: "Cada ciclo", lineas: [] };
-    if (!ids.length) s2.lineas.push({ info: true, t: "No hay ciclos cargados." });
-    for (const id of ids) {
+    for (const c of meta.lista) {
       if (o.cancelado()) break;
-      o.alProgreso("Ciclo " + id, null);
-      const c = meta.ciclos[id];
-      const nodosCiclo = new Set([].concat(...c.temas.map(t => t.nodos)));
-      const lados = c.lados || ["A", "B"];
-      const deps = c.requiere.filter(r => r.indexOf("ciclo:") === 0).map(r => r.slice(6));
-      const abrirCiclo = Object.fromEntries([id].concat(deps).map(x => [x, 0]));
+      o.alProgreso("Ciclo " + c.numero, null);
+      const n = c.numero;
+      const modulo = Object.values(meta.ciclos).find(m => m.numero === n);
+      const propios = new Set(Object.entries(meta.duenoDeNodo).filter(([, d]) => d === n).map(([nodo]) => nodo));
+      const lados = modulo && modulo.lados ? modulo.lados : ["A", "B"];
       const filtrados = new Set();
       const alcanzadosCiclo = new Set();
       for (const lado of ["A", "B"]) {
         const permitido = lados.includes(lado);
         for (let s = 1; s <= 2; s++) {
-          let v = await escenario({ lado, visitas: 6, gen2EnVisita: 0, cerrar: [id], semilla: s * 31, maxHubPorVisita: [40] }, E);
-          v.forEach(x => x.nodos.forEach(n => { if (nodosCiclo.has(n)) filtrados.add("[cerrado, Side " + lado + "] " + n); }));
-          if (c.requiere.includes("gen2")) {
-            v = await escenario({ lado, visitas: 6, abrirEnVisita: abrirCiclo, semilla: s * 37, maxHubPorVisita: [40] }, E);
-            v.forEach(x => x.nodos.forEach(n => { if (nodosCiclo.has(n)) filtrados.add("[abierto sin generación 2, Side " + lado + "] " + n); }));
-          }
-        }
-        for (let s = 1; s <= 2; s++) {
-          for (const estrategia of ["azar", "orden"]) {
-            const v = await escenario({ lado, visitas: 8, gen2EnVisita: 0, abrirEnVisita: abrirCiclo, estrategia, semilla: s * 41, maxHubPorVisita: [40] }, E);
-            v.forEach(x => x.nodos.forEach(n => {
-              if (!nodosCiclo.has(n)) return;
-              if (permitido) alcanzadosCiclo.add(n); else filtrados.add("[lado no permitido, Side " + lado + "] " + n);
-            }));
+          for (const estrategia of ["azar", "orden", "segunda", "ultima"]) {
+            const v = await escenario({ lado, visitas: 8, cicloPorVisita: [n], estrategia, semilla: s * 41, maxHubPorVisita: [40] }, E);
+            v.forEach(x => {
+              fugas(x, meta).forEach(f => filtrados.add("[ciclo " + n + ", Side " + lado + "] " + f));
+              x.nodos.forEach(nodo => {
+                if (!propios.has(nodo)) return;
+                if (permitido) alcanzadosCiclo.add(nodo); else filtrados.add("[Side " + lado + " no permitido] " + nodo);
+              });
+            });
           }
         }
       }
-      const faltan = Array.from(nodosCiclo).filter(n => !alcanzadosCiclo.has(n));
-      if (filtrados.size) { s2.lineas.push({ ok: false, t: id + ": se filtra. " + Array.from(filtrados).slice(0, 3).join("; ") }); res.errores.push("El ciclo '" + id + "' se filtra: " + Array.from(filtrados)[0]); }
-      else s2.lineas.push({ ok: true, t: id + ": cerrado no se filtra, respeta generación 2 y lados." });
-      if (faltan.length) {
-        const t = "Ciclo '" + id + "': " + faltan.length + " nodo(s) no alcanzables en la simulación (" + faltan.join(", ") + "). ¿Una condición visibleSi que exige un hecho o un nombre?";
-        s2.lineas.push({ ok: null, t }); res.avisos.push(t);
-      } else s2.lineas.push({ ok: true, t: id + ": se alcanzan los " + nodosCiclo.size + " nodos al abrirlo." });
+      const faltan = Array.from(propios).filter(nodo => !alcanzadosCiclo.has(nodo));
+      const etiqueta = "Ciclo " + n + " (" + c.nombre + ")";
+      if (filtrados.size) { s2.lineas.push({ ok: false, t: etiqueta + ": recibe contenido que no es suyo. " + Array.from(filtrados).slice(0, 3).join("; ") }); res.errores.push(etiqueta + " recibe contenido de otro ciclo: " + Array.from(filtrados)[0]); }
+      else s2.lineas.push({ ok: true, t: etiqueta + ": recibe solo contenido de su ciclo." });
+      if (!propios.size) s2.lineas.push({ info: true, t: etiqueta + ": todavía sin contenido." });
+      else if (modulo) {
+        if (faltan.length) { const t = etiqueta + ": " + faltan.length + " nodo(s) no alcanzables en la simulación (" + faltan.join(", ") + "). ¿Una condición visibleSi que exige un hecho o un nombre?"; s2.lineas.push({ ok: null, t }); res.avisos.push(t); }
+        else s2.lineas.push({ ok: true, t: etiqueta + ": se alcanzan sus " + propios.size + " nodos." });
+      } else s2.lineas.push({ info: true, t: etiqueta + ": alcanzó " + (propios.size - faltan.length) + " de " + propios.size + " nodos (varios dependen de hechos de la mesa o de nombres)." });
     }
     res.secciones.push(s2);
 
-    // 3. entrada a la generación 2
-    const s3 = { titulo: "Entrada a la generación 2 (el servidor ya dice 'avanzó' y el jugador abre la página justo después)", lineas: [] };
+    // 3. Entrada al ciclo 2
+    const s3 = { titulo: "Entrada al ciclo 2 (el servidor ya dice 'avanzó' y el jugador, que ya terminó el ciclo 1, abre la página justo después)", lineas: [] };
     for (const lado of o.lados) {
       for (const latencia of [0, 300]) {
         if (o.cancelado()) break;
-        o.alProgreso("Entrada a la generación 2, Side " + lado, null);
+        o.alProgreso("Entrada al ciclo 2, Side " + lado, null);
         const rnd = rng(42);
         const L = nuevoEstado({ lado });
         let cerrada = false;
@@ -488,33 +514,36 @@
         L.rpcAvanzo = true; L.latenciaRpc = latencia;
         const r1 = await jugarVisita(L, { rnd, maxHub: 999, estrategia: "orden", esperaMs: 900, borradores: o.borradores });
         tick();
-        const ok = !r1.puertaCerrada && L.local.getItem("bufonGen2v2_" + lado) === "1";
-        s3.lineas.push({ ok, t: "Side " + lado + ", red " + latencia + " ms: " + (ok ? "la primera visita ya ve el ciclo nuevo." : "la primera visita todavía ve la puerta cerrada o no guardó el desbloqueo.") });
-        if (!ok) res.errores.push("Entrada a la generación 2 (Side " + lado + ", red " + latencia + " ms)");
+        let cacheAvanzo = false;
+        try { cacheAvanzo = JSON.parse(L.local.getItem("bufonCicloInfo_" + lado) || "{}").avanzo === true; } catch (e) { /* sin cache */ }
+        const veCiclo2 = (r1.menu || []).some(b => meta.cicloDeBoton[b] === 2);
+        const ok = !r1.puertaCerrada && cacheAvanzo && veCiclo2;
+        s3.lineas.push({ ok, t: "Side " + lado + ", red " + latencia + " ms: " + (ok ? "la primera visita ya ve el ciclo 2." : "la primera visita no ve el ciclo 2 (puerta cerrada: " + r1.puertaCerrada + ", guardó el avance: " + cacheAvanzo + ", ve el menú del ciclo 2: " + veCiclo2 + ").") });
+        if (!ok) res.errores.push("Entrada al ciclo 2 (Side " + lado + ", red " + latencia + " ms)");
       }
     }
     res.secciones.push(s3);
 
-    // 4. nombres
+    // 4. Nombres (de la CUENTA: es lo único que el Bufón usa para reconocer a alguien)
     if (o.nombres.length) {
-      const s4 = { titulo: "Reacciones por nombre", lineas: [] };
+      const s4 = { titulo: "Reacciones por nombre de cuenta", lineas: [] };
       for (const c of o.nombres) {
         if (o.cancelado()) break;
-        o.alProgreso("Nombre " + c.nombre, null);
+        o.alProgreso("Cuenta " + c.cuenta, null);
         const alc = new Set(); const probs = [];
         for (let s = 1; s <= 3; s++) {
           const ini = { bufonIntroVista: "1" }; if (c.nombre) ini.jesterPlayerName = c.nombre;
           const L = nuevoEstado({ lado: c.lado, cuenta: c.cuenta, local: ini });
           for (let v = 0; v < 6; v++) {
-            if (v === 1) L.local.setItem("bufonGen2v2_" + c.lado, "1");
+            L.rpcAvanzo = v >= 1;
             const r = await jugarVisita(L, { rnd: rng(s * 7 + v), maxHub: 40, estrategia: "azar", esperaMs: 30, borradores: o.borradores });
             tick();
-            r.nodos.forEach(n => alc.add(n)); probs.push(...r.problemas);
+            r.nodos.forEach(nodo => alc.add(nodo)); probs.push(...r.problemas);
           }
         }
-        const reac = Array.from(alc).filter(n => /reconoce|_intro$|revelacion/.test(n));
-        s4.lineas.push({ ok: probs.length ? false : null, t: "Side " + c.lado + ", nombre «" + (c.nombre || "") + "»" + (c.cuenta ? ", cuenta «" + c.cuenta + "»" : "") + ": " + (reac.join(", ") || "sin reacción propia") + (probs.length ? " ⚠ " + probs[0] : "") });
-        if (probs.length) res.errores.push("Nombre " + c.nombre + ": " + probs[0]);
+        const reac = Array.from(alc).filter(nodo => /reconoce|_intro$|revelacion/.test(nodo));
+        s4.lineas.push({ ok: probs.length ? false : null, t: "Side " + c.lado + ", cuenta «" + (c.cuenta || "") + "»" + (c.nombre ? ", nombre escrito «" + c.nombre + "»" : "") + ": " + (reac.join(", ") || "sin reacción propia") + (probs.length ? " ⚠ " + probs[0] : "") });
+        if (probs.length) res.errores.push("Cuenta " + c.cuenta + ": " + probs[0]);
       }
       res.secciones.push(s4);
     }

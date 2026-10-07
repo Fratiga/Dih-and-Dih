@@ -248,12 +248,62 @@
     }
   }
 
-  function pintarBufonProgreso({ jugadores, sideA, sideB }) {
+  /* Los ciclos del Bufón (data/bufon-ciclos-lista.js). Cada jugador está en UNO y
+     solo recibe el contenido de ese ciclo. Aquí el Admin puede mover a un lado
+     entero o a un jugador. Sin interruptor el ciclo es automático. */
+  function listaDeCiclos() {
+    const l = window.BUFON_LISTA_CICLOS;
+    return (l && l.length) ? l : [{ numero: 1, nombre: "Contenido original" }, { numero: 2, nombre: "Lo que queda" }];
+  }
+  function opcionesDeCiclo(seleccionado, textoAutomatico) {
+    return `<option value="">${textoAutomatico}</option>` + listaDeCiclos().map(c =>
+      `<option value="${c.numero}" ${seleccionado === c.numero ? "selected" : ""}>Ciclo ${c.numero}: ${escaparHtml(c.nombre)}</option>`).join("");
+  }
+
+  function bloqueDeLado(lado, info, hayInterruptores) {
+    const manual = info.cicloManual;
+    const hoy = manual != null
+      ? `fijado por ti en el ciclo ${manual}`
+      : (info.avanzo ? "automático: pasa al ciclo 2 quien ya terminó el ciclo 1" : "automático: todos en el ciclo 1");
+    return `<div class="admin-ciclo-lado">
+      <p><strong>Side ${lado}</strong>: ${info.completos}/${info.necesarios} jugadores completaron el ciclo 1.${info.avanzo ? " El lado ya puede pasar al ciclo 2." : ""}</p>
+      ${hayInterruptores ? `<div class="admin-ciclo-control">
+        <span>Ciclo de todo el lado: <strong>${hoy}</strong></span>
+        <button type="button" class="admin-ciclo-btn" data-ciclo-paso="-1" data-lado="${lado}" title="Retroceder un ciclo">◀</button>
+        <select data-ciclo-lado="${lado}">${opcionesDeCiclo(manual, "Automático")}</select>
+        <button type="button" class="admin-ciclo-btn" data-ciclo-paso="1" data-lado="${lado}" title="Avanzar un ciclo">Avanzar ▶</button>
+      </div>` : ""}
+    </div>`;
+  }
+
+  async function aplicarCicloLado(lado, ciclo) {
+    try {
+      await adminSetCicloLado(lado, ciclo);
+      await cargarProgresoBufon();
+    } catch (err) {
+      alert("No se pudo cambiar el ciclo: " + (err.message || "error desconocido") + ". ¿Corriste scratchpad/bufon_ciclos.sql en Supabase?");
+    }
+  }
+
+  function pintarBufonProgreso({ jugadores, sideA, sideB, hayInterruptores }) {
     const banner = document.getElementById("adminBufonBanner");
-    banner.innerHTML = `<p>Side A: ${sideA.completos}/${sideA.necesarios} jugadores completaron el Bufón.` +
-      (sideA.avanzo ? " Generación 2 desbloqueada.</p>" : "</p>") +
-      `<p>Side B: ${sideB.completos}/${sideB.necesarios} jugadores completaron el Bufón.` +
-      (sideB.avanzo ? " Generación 2 desbloqueada.</p>" : "</p>");
+    banner.innerHTML = bloqueDeLado("A", sideA, hayInterruptores) + bloqueDeLado("B", sideB, hayInterruptores) +
+      (hayInterruptores ? "" : `<p class="admin-ciclo-aviso">Para mover a los jugadores de ciclo falta correr scratchpad/bufon_ciclos.sql en Supabase.</p>`);
+
+    const maxCiclo = Math.max(...listaDeCiclos().map(c => c.numero));
+    banner.querySelectorAll("[data-ciclo-lado]").forEach(sel => {
+      sel.addEventListener("change", () => aplicarCicloLado(sel.dataset.cicloLado, sel.value === "" ? null : parseInt(sel.value, 10)));
+    });
+    banner.querySelectorAll("[data-ciclo-paso]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const lado = btn.dataset.lado;
+        const info = lado === "A" ? sideA : sideB;
+        const actual = info.cicloManual != null ? info.cicloManual : (info.avanzo ? 2 : 1);
+        const siguiente = actual + parseInt(btn.dataset.cicloPaso, 10);
+        if (siguiente < 1 || siguiente > maxCiclo) { alert("No hay un ciclo " + siguiente + "."); return; }
+        aplicarCicloLado(lado, siguiente);
+      });
+    });
 
     const cont = document.getElementById("adminBufonLista");
     const count = document.getElementById("adminBufonCount");
@@ -275,6 +325,7 @@
         <span class="admin-bufon-dato">${j.ultimoNodo ? `Último: ${escaparHtml(j.ultimoNodo)}` : "—"}</span>
         <span class="admin-bufon-dato admin-bufon-toques">${j.toquesPuerta ? `<strong>${j.toquesPuerta}</strong> veces sin nada nuevo` : "Siempre encontró algo nuevo"}</span>
         <span class="admin-bufon-fecha">${formatearFecha(j.ultimaActividad)}</span>
+        ${hayInterruptores ? `<select class="admin-ciclo-jugador" data-ciclo-jugador="${j.playerId}" title="Ciclo de este jugador. Manda sobre el de su lado">${opcionesDeCiclo(j.cicloManual, "Ciclo de su lado")}</select>` : ""}
         <button type="button" class="admin-bufon-excluir-btn" data-toggle-excluido="${j.playerId}" title="${j.excluido ? escaparHtml(j.motivoExcluido || "Excluido del conteo") : "No cuenta para el progreso de Side A/B"}">
           ${j.excluido ? "Volver a contar" : "No contar para el progreso"}
         </button>
@@ -283,6 +334,20 @@
 
     cont.querySelectorAll("[data-player-id]").forEach(fila => {
       fila.addEventListener("click", () => mostrarConversacionBufon(fila.dataset.playerId, fila.dataset.nombre));
+    });
+
+    cont.querySelectorAll("[data-ciclo-jugador]").forEach(sel => {
+      sel.addEventListener("click", e => e.stopPropagation()); // no abrir la conversación al tocar el selector
+      sel.addEventListener("change", async () => {
+        sel.disabled = true;
+        try {
+          await adminSetCicloJugador(sel.dataset.cicloJugador, sel.value === "" ? null : parseInt(sel.value, 10));
+          await cargarProgresoBufon();
+        } catch (err) {
+          alert("No se pudo cambiar el ciclo: " + (err.message || "error desconocido"));
+          sel.disabled = false;
+        }
+      });
     });
 
     cont.querySelectorAll("[data-toggle-excluido]").forEach(btn => {

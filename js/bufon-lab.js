@@ -5,7 +5,7 @@
    Cuatro pestañas dentro de la pestaña "Laboratorio del Bufón" del panel de
    Admin:
      Jugar      el Bufón real en un marco, con un jugador de prueba aislado
-     Ciclos     qué ciclos hay, si están abiertos y qué temas tienen
+     Ciclos     los ciclos 1, 2, 3... y todo lo que corresponde a cada uno
      Editor     crear y editar ciclos y temas con formularios, probarlos al
                 instante y sacar el archivo listo para publicar
      Auditoría  cientos de visitas automáticas que buscan errores
@@ -49,10 +49,11 @@
 
   /* ---------- estado ---------- */
   const cfg = Object.assign({
-    lado: "B", nombre: "", cuenta: "", gen2: false, rpcAvanzo: false, admin: false,
-    abrir: [], usarBorradores: true, modelo3d: false, almacen: {}, nombresTexto: ""
+    lado: "B", nombre: "", cuenta: "", ciclo: null, rpcAvanzo: false, admin: false,
+    usarBorradores: true, modelo3d: false, almacen: {}, nombresTexto: ""
   }, leerJson(KEY_CFG, {}));
   let borradores = leerJson(KEY_BORR, []);
+  borradores.forEach(b => { if (b.numero === undefined) b.numero = ""; }); // borradores de antes de que los ciclos tuvieran número
   let borradorActual = borradores.length ? borradores[0].id : null;
   let meta = null;
   let L = null;
@@ -100,21 +101,39 @@
       h("span", null, etiqueta, ayuda ? h("small", null, ayuda) : null));
   }
 
+  /* Los ciclos del selector: los de data/bufon-ciclos-lista.js más el número de los borradores. */
+  function listaDeCiclos() {
+    const base = meta ? meta.lista.map(c => ({ numero: c.numero, nombre: c.nombre })) : [{ numero: 1, nombre: "Contenido original" }, { numero: 2, nombre: "Lo que queda" }];
+    if (cfg.usarBorradores) borradores.forEach(b => {
+      const n = parseInt(b.numero, 10);
+      if (Number.isInteger(n) && !base.some(c => c.numero === n)) base.push({ numero: n, nombre: (b.nombre || b.id) + " (borrador)" });
+    });
+    return base.sort((a, b) => a.numero - b.numero);
+  }
+  const nombreDelCiclo = n => { const c = listaDeCiclos().find(x => x.numero === n); return c ? c.nombre : ""; };
+  const selCiclo = h("select", { onchange: e => { cfg.ciclo = e.target.value === "" ? null : parseInt(e.target.value, 10); guardarCfg(); marcarPendiente(); } });
+  function pintarCiclosCtrl() {
+    selCiclo.replaceChildren(
+      h("option", { value: "", selected: cfg.ciclo == null }, "Automático (según su progreso)"),
+      ...listaDeCiclos().map(c => h("option", { value: String(c.numero), selected: cfg.ciclo === c.numero }, "Ciclo " + c.numero + ": " + c.nombre)));
+  }
+
   function controles() {
     const radios = ["A", "B"].map(lado => h("label", { class: "blab-radio" },
-      h("input", { type: "radio", name: "blabLado", value: lado, checked: cfg.lado === lado, onchange: () => { cfg.lado = lado; guardarCfg(); marcarPendiente(); pintarCiclosCtrl(); } }),
+      h("input", { type: "radio", name: "blabLado", value: lado, checked: cfg.lado === lado, onchange: () => { cfg.lado = lado; guardarCfg(); marcarPendiente(); } }),
       "Side " + lado));
     return h("div", { class: "blab-controles" },
       h("h4", null, "Jugador de prueba"),
       h("div", { class: "blab-fila-radios" }, radios),
-      campo("Nombre registrado en el Bufón", h("input", { type: "text", value: cfg.nombre, placeholder: "(ninguno)", onchange: e => { cfg.nombre = e.target.value.trim(); guardarCfg(); marcarPendiente(); } }), "Lo que el jugador escribió al registrarse con el Bufón."),
-      campo("Nombre de la cuenta", h("input", { type: "text", value: cfg.cuenta, placeholder: "(ninguna)", onchange: e => { cfg.cuenta = e.target.value.trim(); guardarCfg(); marcarPendiente(); } }), "El de su cuenta del sitio (algunos temas reconocen a su jugador por ahí)."),
-      casilla("Su generación 2 ya está desbloqueada", cfg.gen2, v => { cfg.gen2 = v; guardarCfg(); marcarPendiente(); }, "Lo que el navegador del jugador ya sabe."),
-      casilla("El servidor ya dice «avanzó»", cfg.rpcAvanzo, v => { cfg.rpcAvanzo = v; guardarCfg(); marcarPendiente(); }, "Pero su navegador todavía no lo sabe. Para probar la entrada a un ciclo nuevo."),
-      casilla("Modo Admin del Bufón", cfg.admin, v => { cfg.admin = v; guardarCfg(); marcarPendiente(); }, "Ve todos los ciclos aunque estén cerrados."),
-      h("h4", null, "Ciclos"),
-      listaCiclosCtrl,
-      casilla("Incluir los borradores del Editor", cfg.usarBorradores, v => { cfg.usarBorradores = v; guardarCfg(); marcarPendiente(); }),
+      campo("Nombre de su cuenta", h("input", { type: "text", value: cfg.cuenta, placeholder: "(ninguna)", onchange: e => { cfg.cuenta = e.target.value.trim(); guardarCfg(); marcarPendiente(); } }), "Es lo ÚNICO que el Bufón usa para reconocer a un jugador. Los jugadores de la campaña son las cuentas con personajes en «Mis personajes»."),
+      campo("Nombre que escribió en el Bufón", h("input", { type: "text", value: cfg.nombre, placeholder: "(ninguno)", onchange: e => { cfg.nombre = e.target.value.trim(); guardarCfg(); marcarPendiente(); } }), "Ya no sirve para reconocer a nadie. Solo cambia lo que el Bufón le dice a alguna cuenta concreta."),
+      h("h4", null, "Ciclo"),
+      campo("Ciclo del jugador", selCiclo, "Como el interruptor del Admin: el jugador solo recibe el contenido de ese ciclo. «Automático» sigue su progreso."),
+      casilla("Su lado ya avanzó (los 5 jugadores reales)", cfg.rpcAvanzo, v => { cfg.rpcAvanzo = v; guardarCfg(); marcarPendiente(); }, "Solo importa en automático: pasa al ciclo 2 cuando su lado avanzó y él ya terminó el ciclo 1. También sirve para probar la entrada a un ciclo nuevo."),
+      h("button", { type: "button", class: "secondary-button blab-agregar", title: "Un jugador automático juega todo el contenido original hasta la despedida y deja el resultado en este jugador de prueba", onclick: terminarOriginal }, "Terminar el contenido original (juega solo)"),
+      casilla("Modo Admin del Bufón", cfg.admin, v => { cfg.admin = v; guardarCfg(); marcarPendiente(); }, "Ve todos los ciclos a la vez, mezclados."),
+      h("h4", null, "Opciones"),
+      casilla("Incluir los borradores del Editor", cfg.usarBorradores, v => { cfg.usarBorradores = v; guardarCfg(); marcarPendiente(); pintarCiclosCtrl(); }),
       casilla("Con modelo 3D", cfg.modelo3d, v => { cfg.modelo3d = v; guardarCfg(); marcarPendiente(); }, "Más lento. Solo para ver cómo luce."),
       h("div", { class: "blab-botones" },
         h("button", { type: "button", class: "primary-button", onclick: nuevaVisita }, "Nueva visita"),
@@ -123,27 +142,6 @@
       avisoPendiente,
       h("p", { class: "blab-nota" }, "Tu sesión, tu lado y tu avance reales no se tocan, y nada llega a Supabase. «Nueva visita» es como volver a abrir la página con el mismo jugador. «Reiniciar jugador» borra todo lo que ha hablado.")
     );
-  }
-
-  function ciclosDisponibles() {
-    const delMeta = meta ? Object.values(meta.ciclos) : [];
-    const ids = delMeta.map(c => ({ id: c.id, nombre: c.nombre, abierto: c.abierto, borrador: false }));
-    if (cfg.usarBorradores) borradores.forEach(b => {
-      const i = ids.findIndex(x => x.id === b.id);
-      if (i >= 0) ids[i].borrador = true; else ids.push({ id: b.id, nombre: b.nombre || b.id, abierto: !!b.abierto, borrador: true });
-    });
-    return ids;
-  }
-  function pintarCiclosCtrl() {
-    listaCiclosCtrl.replaceChildren();
-    const cs = ciclosDisponibles();
-    if (!cs.length) { listaCiclosCtrl.append(h("p", { class: "blab-nota" }, meta ? "No hay ciclos." : "Cargando ciclos...")); return; }
-    cs.forEach(c => listaCiclosCtrl.append(casilla(
-      "Abrir «" + c.nombre + "» en la prueba" + (c.borrador ? " (borrador)" : ""),
-      cfg.abrir.includes(c.id),
-      v => { cfg.abrir = v ? unico(cfg.abrir.concat(c.id)) : cfg.abrir.filter(x => x !== c.id); guardarCfg(); marcarPendiente(); },
-      c.abierto ? "Ya está abierto en su archivo." : "Cerrado en su archivo."
-    )));
   }
 
   let guardadoPendiente = null;
@@ -161,9 +159,8 @@
     marco.replaceChildren(h("p", { class: "blab-vacio" }, "Abriendo..."));
     try {
       if (!meta) await cargarMeta();
-      L = M.nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, admin: cfg.admin, rpcAvanzo: cfg.rpcAvanzo, local: cfg.almacen, abrir: cfg.abrir });
+      L = M.nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, admin: cfg.admin, rpcAvanzo: cfg.rpcAvanzo, local: cfg.almacen, ciclo: cfg.ciclo });
       if (cfg.nombre) L.local.setItem("jesterPlayerName", cfg.nombre); else L.local.removeItem("jesterPlayerName");
-      if (cfg.gen2) L.local.setItem("bufonGen2v2_" + cfg.lado, "1"); else L.local.removeItem("bufonGen2v2_" + cfg.lado);
       L.local.alCambiar = persistirAlmacen;
       persistirAlmacen();
       marco.replaceChildren();
@@ -176,6 +173,32 @@
       marco.replaceChildren(h("p", { class: "blab-error" }, "No pude abrir el Bufón: " + e.message));
     }
   }
+  /* Un jugador automático juega el contenido original (ciclo 1) hasta la despedida, como
+     lo haría uno real, y deja el resultado en el jugador de prueba. Sirve para probar, por
+     ejemplo, a un jugador en automático cuyo lado ya avanzó. */
+  async function terminarOriginal() {
+    if (pg) { pg.cerrar(); pg = null; }
+    if (L) { L.local.alCambiar = null; cfg.almacen = L.local._volcar(); L = null; }
+    marco.replaceChildren(h("p", { class: "blab-vacio" }, "Jugando el contenido original..."));
+    let terminado = false;
+    try {
+      const E = M.nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, local: cfg.almacen, ciclo: 1 });
+      if (cfg.nombre) E.local.setItem("jesterPlayerName", cfg.nombre);
+      const rnd = M.rng(7);
+      for (let i = 0; i < 4 && !terminado; i++) {
+        await M.jugarVisita(E, { rnd, maxHub: 999, estrategia: "orden", esperaMs: 60, borradores: [] });
+        try { terminado = JSON.parse(E.local.getItem("bufonHistorial") || "[]").some(e => e.eleccionId === "__completado__" && e.opcionId === "goodbye_ever"); } catch (e) { terminado = false; }
+      }
+      cfg.almacen = E.local._volcar();
+      guardarCfg();
+    } catch (e) {
+      marco.replaceChildren(h("p", { class: "blab-error" }, "No pude jugarlo: " + e.message));
+      return;
+    }
+    marco.replaceChildren(h("p", { class: "blab-vacio" }, terminado ? "Listo: el jugador terminó el contenido original. Pulsa «Nueva visita»." : "El jugador automático no llegó a la despedida. Pulsa «Nueva visita» para ver cómo quedó."));
+    marcarPendiente();
+  }
+
   async function recargarMotor() {
     M.olvidarTextos(); meta = null;
     await cargarMeta().catch(() => {});
@@ -196,12 +219,12 @@
     const hechos = hist.filter(e => e.eleccionId === "__completado__").map(e => e.opcionId);
     const filas = [];
     filas.push(["Lado", ctx.actualCampaign || "(ninguno)"]);
-    filas.push(["Generación 2", "A: " + (ctx.sideAGen2 ? "sí" : "no") + " · B: " + (ctx.sideBGen2 ? "sí" : "no")]);
+    filas.push(["Ciclo de este jugador", ctx.ciclo + ": " + nombreDelCiclo(ctx.ciclo) + (cfg.admin ? " (en modo Admin ve todos a la vez)" : "")]);
     filas.push(["Elecciones hechas", String(ctx.totalChoices)]);
     filas.push(["Toques a la puerta", String(L.toques)]);
     Object.keys(meta ? meta.ciclos : {}).concat(borradoresActivos().map(b => b.id)).filter((x, i, a) => a.indexOf(x) === i).forEach(id => {
       let abierto = false; try { abierto = ctx.cicloAbierto(id); } catch (e) { /* ciclo no cargado */ }
-      filas.push(["Ciclo " + id, abierto ? "ABIERTO para este jugador" : "cerrado para este jugador"]);
+      filas.push(["Archivo " + id, abierto ? "lo recibe este jugador" : "no lo recibe este jugador"]);
     });
     const voces = (meta ? meta.voces : []).map(v => v + ": " + (ctx.innerVoices[v] || 0) + " pts, etapa " + ctx.voiceStage(v)).join(" · ");
     filas.push(["Voces", voces]);
@@ -236,23 +259,30 @@
   async function pintarCiclos() {
     pCiclos.replaceChildren(h("p", { class: "blab-vacio" }, "Leyendo ciclos..."));
     try { await cargarMeta(); } catch (e) { pCiclos.replaceChildren(h("p", { class: "blab-error" }, "No pude leer los ciclos: " + e.message)); return; }
-    const cs = Object.values(meta.ciclos);
-    pCiclos.replaceChildren(...bien(
-      h("p", { class: "blab-nota" }, "Un ciclo es un bloque de contenido con su propio interruptor. Los jugadores solo lo ven si está abierto en su archivo (data/bufon-ciclo-<id>.js) y cumplen sus requisitos. Admin siempre los ve."),
-      meta.errores.length ? h("div", { class: "blab-error" }, meta.errores.map(e => h("p", null, "Ciclo mal escrito: " + e))) : null,
-      cs.length ? cs.map(c => h("div", { class: "blab-tarjeta" },
+    const tarjetas = meta.lista.map(c => {
+      const modulo = Object.values(meta.ciclos).find(m => m.numero === c.numero);
+      const botones = meta.botones.filter(b => b.ciclo === c.numero);
+      const nodos = Object.values(meta.duenoDeNodo).filter(n => n === c.numero).length;
+      return h("div", { class: "blab-tarjeta" },
         h("div", { class: "blab-tarjeta-top" },
-          h("strong", null, c.nombre), h("code", null, c.id),
-          h("span", { class: "blab-etiqueta " + (c.abierto ? "ok" : "cerrado") }, c.abierto ? "abierto en su archivo" : "cerrado")),
-        h("p", { class: "blab-nota" }, "Requiere: " + (c.requiere.join(", ") || "nada") + " · Lados: " + (c.lados ? c.lados.join(", ") : "A y B") + " · Archivo: data/bufon-ciclo-" + c.id + ".js"),
-        c.temas.map(t => h("div", { class: "blab-tema-fila" },
-          h("strong", null, t.id), " · botón «" + t.boton + "» · " + t.preguntas + " pregunta(s), " + t.grupos + " grupo(s) de respuestas excluyentes, " + t.nodos.length + " nodos")),
+          h("strong", null, "Ciclo " + c.numero + ": " + c.nombre),
+          modulo ? h("code", null, "data/bufon-ciclo-" + modulo.id + ".js") : h("span", { class: "blab-etiqueta cerrado" }, "escrito a mano en bufon-contenido.js")),
+        h("p", { class: "blab-nota" }, botones.length + " botón(es) en el menú principal · " + nodos + " nodos" + (modulo ? " · Lados: " + (modulo.lados ? modulo.lados.join(", ") : "A y B") : "")),
+        botones.length ? h("div", { class: "blab-tema-fila" }, botones.map(b => "«" + b.texto + "»").join(" · ")) : null,
+        modulo ? modulo.temas.map(t => h("div", { class: "blab-tema-fila" },
+          h("strong", null, t.id), " · botón «" + t.boton + "» · " + t.preguntas + " pregunta(s), " + t.grupos + " grupo(s) de respuestas excluyentes, " + t.nodos.length + " nodos")) : null,
+        c.numero === 1 ? h("p", { class: "blab-nota" }, "Además de los botones: los recuerdos con los que el Bufón arranca solo (mascota, Gareth, dragón, refugio...).") : null,
+        c.numero === 2 ? h("p", { class: "blab-nota" }, "Además de los botones: los comentarios con los que el Bufón arranca solo (Eledar, Cassius, Torvrena, Ryn, rumores del juicio, la muerte de Eledar de Side A).") : null,
         h("div", { class: "blab-botones" },
-          h("button", { type: "button", class: "secondary-button", onclick: () => { cfg.abrir = unico(cfg.abrir.concat(c.id)); guardarCfg(); marcarPendiente(); mostrar("jugar"); pintarCiclosCtrl(); } }, "Probarlo en Jugar"),
-          h("button", { type: "button", class: "secondary-button", onclick: () => importarCiclo(c.id) }, "Editarlo en el Editor"))
-      )) : h("p", { class: "blab-vacio" }, "No hay ciclos todavía. Crea uno en el Editor."),
-      h("details", { class: "blab-detalle" }, h("summary", null, "Cómo se abre un ciclo a los jugadores"),
-        h("p", null, "En el archivo del ciclo, cambia abierto: false por abierto: true, sube el número de caché de ese archivo en secreto.html y publica. Aunque esté abierto, un jugador solo lo ve si cumple los requisitos: «gen2» es la generación 2 de su propio lado, y «ciclo:otro» es que ese otro ciclo también esté abierto. En la terminal: node tools/bufon/bufon.js abrir <ciclo>."))));
+          h("button", { type: "button", class: "secondary-button", onclick: () => { cfg.ciclo = c.numero; guardarCfg(); marcarPendiente(); pintarCiclosCtrl(); mostrar("jugar"); } }, "Probarlo en Jugar"),
+          modulo ? h("button", { type: "button", class: "secondary-button", onclick: () => importarCiclo(modulo.id) }, "Editarlo en el Editor") : null));
+    });
+    pCiclos.replaceChildren(...bien(
+      h("p", { class: "blab-nota" }, "Cada jugador está en UN ciclo y solo recibe el contenido de ese ciclo. Tú los mueves (a un lado entero o a un jugador) desde Progreso del Bufón. Si no los mueves, es automático: todos empiezan en el ciclo 1 y pasan al 2 cuando su lado avanzó y ellos terminaron el 1. Los ciclos 3 en adelante son archivos que se crean en el Editor."),
+      meta.errores.length ? h("div", { class: "blab-error" }, meta.errores.map(e => h("p", null, "Ciclo mal escrito: " + e))) : null,
+      tarjetas,
+      h("details", { class: "blab-detalle" }, h("summary", null, "Cómo se agrega un ciclo nuevo"),
+        h("p", null, "En el Editor, crea un ciclo con el número siguiente (3 o más), arma sus temas y descarga el archivo. Agrega su número y nombre a data/bufon-ciclos-lista.js, ponlo en secreto.html como los demás y publica. Nadie lo recibe hasta que muevas a un jugador o a un lado a ese número desde Progreso del Bufón."))));
   }
 
   /* =========================================================================
@@ -271,7 +301,7 @@
   const lineasATexto = arr => (arr || []).map(l => typeof l === "string" ? l : l.voz + "> " + l.texto).join("\n");
 
   function aConfig(b) {
-    const cfgCiclo = { id: b.id, nombre: b.nombre || b.id, abierto: !!b.abierto, requiere: lista(b.requiere) };
+    const cfgCiclo = { id: b.id, numero: parseInt(b.numero, 10), nombre: b.nombre || b.id };
     if (lista(b.lados).length) cfgCiclo.lados = lista(b.lados);
     cfgCiclo.temas = b.temas.map(t => ({
       id: t.id, boton: t.boton,
@@ -293,7 +323,7 @@
 
   function desdeConfig(def) {
     return {
-      id: def.id, nombre: def.nombre || def.id, abierto: !!def.abierto, requiere: (def.requiere || []).join(", "), lados: (def.lados || []).join(", "),
+      id: def.id, numero: def.numero, nombre: def.nombre || def.id, lados: (def.lados || []).join(", "),
       temas: (def.temas || []).map(t => ({
         id: t.id, boton: t.boton, como: t.intro && t.intro.como === "boton" ? "boton" : "recuerdo", intro: lineasATexto(t.intro && t.intro.lineas),
         preguntas: (t.preguntas || []).map(p => ({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", lineas: lineasATexto(p.lineas) })),
@@ -326,8 +356,9 @@
     const fecha = new Date().toISOString().slice(0, 10);
     return "/* =============================================================================\n" +
       "   CICLO: " + (b.nombre || b.id) + ".\n\n" +
-      "   Generado con el Laboratorio del Bufón (" + fecha + "). Cerrado para los jugadores\n" +
-      "   hasta que 'abierto' pase a true y se publique. Admin siempre lo ve.\n" +
+      "   Generado con el Laboratorio del Bufón (" + fecha + "). Lo reciben solo los\n" +
+      "   jugadores que estén en el ciclo " + c.numero + " (el Admin los mueve desde Progreso del\n" +
+      "   Bufón). Admin siempre lo ve. Su número debe estar en data/bufon-ciclos-lista.js.\n" +
       "   Formato y reglas: ver data/bufon-ciclos.js.\n" +
       "============================================================================= */\n" +
       "window.bufonAgregarCiclo(" + aJs(c) + ");\n";
@@ -401,7 +432,7 @@
     resultadoValidacion.filas.slice(0, 40).forEach(f => cajaValidacion.append(h("p", { class: "blab-fila-val " + (f.n === "x" ? "x" : "a") }, (f.n === "x" ? "✗ " : "! ") + f.t)));
   }
 
-  const nuevoBorrador = (id, nombre) => ({ id, nombre, abierto: false, requiere: "gen2", lados: "", temas: [] });
+  const nuevoBorrador = (id, nombre, numero) => ({ id, numero, nombre, lados: "", temas: [] });
   const nuevoTema = id => ({ id, boton: "", como: "recuerdo", intro: "", preguntas: [], grupos: [] });
   const nuevaPregunta = id => ({ id, texto: "", requiere: "", voz: "", lineas: "" });
   const nuevoGrupo = id => ({ id, requiere: "", opciones: [{ id: "si", texto: "", neutral: false, lineas: "" }, { id: "no", texto: "", neutral: false, lineas: "" }, { id: "nose", texto: "No lo sé.", neutral: true, lineas: "" }] });
@@ -461,7 +492,12 @@
         const id = pedirId("del ciclo nuevo"); if (!id) return;
         if (borradores.some(x => x.id === id)) { alert("Ya hay un borrador con ese id."); return; }
         const nombre = prompt("Nombre visible del ciclo:", id) || id;
-        borradores.push(nuevoBorrador(id, nombre)); borradorActual = id; guardarBorradores(); renderEditor(); programarValidacion();
+        const usados = meta ? meta.lista.map(c => c.numero) : [1, 2];
+        borradores.forEach(x => { const n = parseInt(x.numero, 10); if (Number.isInteger(n)) usados.push(n); });
+        const sugerido = Math.max(2, ...usados) + 1;
+        const numero = parseInt(prompt("Número del ciclo (3 o más). El 1 es el contenido original y el 2 es «Lo que queda»:", String(sugerido)), 10);
+        if (!Number.isInteger(numero) || numero < 3) { alert("El número debe ser 3 o más."); return; }
+        borradores.push(nuevoBorrador(id, nombre, numero)); borradorActual = id; guardarBorradores(); renderEditor(); programarValidacion();
       } }, "+ Ciclo nuevo"),
       importables.length ? h("select", { onchange: e => { if (e.target.value) importarCiclo(e.target.value); } },
         h("option", { value: "" }, "Cargar un ciclo existente..."), importables.map(id => h("option", { value: id }, id))) : null,
@@ -483,9 +519,8 @@
         cp("Id del ciclo", h("input", { type: "text", value: b.id, disabled: true }), "Es el nombre del archivo: data/bufon-ciclo-" + b.id + ".js"),
         cp("Nombre", entrada("nombre", b.nombre))),
       h("div", { class: "blab-dos" },
-        cp("Requiere", entrada("requiere", b.requiere, { ph: "gen2, ciclo:otro" }), "«gen2»: la generación 2 de su lado. «ciclo:otro»: que ese ciclo esté abierto."),
-        cp("Solo para el lado (opcional)", entrada("lados", b.lados, { ph: "A, B (vacío = los dos)" }))),
-      h("label", { class: "blab-casilla" }, h("input", { type: "checkbox", "data-r": "abierto", checked: b.abierto }), h("span", null, "Abierto para los jugadores al publicar", h("small", null, "Déjalo apagado mientras lo preparas.")))));
+        cp("Número de ciclo", entrada("numero", String(b.numero == null ? "" : b.numero), { ph: "3" }), "3 o más. Debe estar en data/bufon-ciclos-lista.js (con su nombre). Los jugadores lo reciben cuando los mueves a este número desde Progreso del Bufón."),
+        cp("Solo para el lado (opcional)", entrada("lados", b.lados, { ph: "A, B (vacío = los dos)" })))));
 
     b.temas.forEach((t, ti) => pEditor.append(formTema(t, ti, b)));
     pEditor.append(h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-tema" }, "+ Tema nuevo (un personaje o asunto)"));
@@ -505,9 +540,9 @@
       h("details", { class: "blab-detalle" }, h("summary", null, "Cómo se publica"),
         h("ol", null,
           h("li", null, "Pulsa «Descargar archivo» (o «Copiar archivo») y guárdalo como data/bufon-ciclo-" + b.id + ".js en el proyecto."),
-          h("li", null, "Si es un ciclo nuevo, agrega su <script> en secreto.html, justo debajo de los de los otros ciclos: <script src=\"data/bufon-ciclo-" + b.id + ".js?v=AAAAMMDD\"></script>. Si ya existía, solo sube el número de caché de su <script>."),
-          h("li", null, "Publica (git add, commit y push). Mientras tenga abierto: false, ningún jugador lo ve."),
-          h("li", null, "Para abrirlo a los jugadores: cambia abierto a true y vuelve a subir el número de caché. En la terminal, node tools/bufon/bufon.js abrir " + b.id + " lo hace por ti."),
+          h("li", null, "Si es un ciclo nuevo: agrega { numero: " + (b.numero || "N") + ", nombre: \"" + (b.nombre || b.id) + "\" } a data/bufon-ciclos-lista.js y su <script> en secreto.html, justo debajo de los de los otros ciclos: <script src=\"data/bufon-ciclo-" + b.id + ".js?v=AAAAMMDD\"></script>. Si ya existía, solo sube el número de caché de su <script>."),
+          h("li", null, "Publica (git add, commit y push). Nadie lo recibe todavía."),
+          h("li", null, "Para abrirlo: en Progreso del Bufón, mueve a un lado entero o a un jugador al ciclo " + (b.numero || "N") + ". En la terminal, node tools/bufon/bufon.js nuevo-ciclo " + (b.numero || "N") + " " + b.id + " \"Nombre\" hace los pasos de los archivos por ti."),
           h("li", null, "O pega aquí el archivo (o el JSON del borrador) en una conversación con Claude y que lo publique por ti."))));
     pEditor.append(salida);
     programarValidacion();
@@ -558,8 +593,9 @@
     }
     if (acc === "probar") {
       cfg.usarBorradores = true;
-      cfg.abrir = unico(cfg.abrir.concat(b.id, lista(b.requiere).filter(r => r.indexOf("ciclo:") === 0).map(r => r.slice(6))));
-      if (lista(b.requiere).includes("gen2")) cfg.gen2 = true;
+      const n = parseInt(b.numero, 10);
+      if (!Number.isInteger(n)) { aviso("Primero pon el número de ciclo de este borrador (3 o más)."); return; }
+      cfg.ciclo = n;
       cfg.admin = false;
       guardarCfg();
       await cargarMeta().catch(() => {});
@@ -587,14 +623,14 @@
   let cancelarAud = false;
   let corriendo = false;
   const selSemillas = h("select", null, [[1, "Rápida (unos 2 minutos)"], [2, "Normal (unos 4 minutos)"], [3, "Completa (unos 6 minutos)"]].map(([n, t]) => h("option", { value: n, selected: n === 1 }, t)));
-  const areaNombres = h("textarea", { class: "blab-area", rows: 4, placeholder: "B | nombre registrado\nA | nombre registrado | nombre de la cuenta", value: cfg.nombresTexto, onchange: e => { cfg.nombresTexto = e.target.value; guardarCfg(); } });
+  const areaNombres = h("textarea", { class: "blab-area", rows: 4, placeholder: "B | nombre de la cuenta\nA | nombre de la cuenta | nombre escrito en el Bufón (opcional)", value: cfg.nombresTexto, onchange: e => { cfg.nombresTexto = e.target.value; guardarCfg(); } });
   const btnEjecutar = h("button", { type: "button", class: "primary-button", onclick: ejecutarAuditoria }, "Auditar");
   const btnCancelar = h("button", { type: "button", class: "secondary-button oculto", onclick: () => { cancelarAud = true; } }, "Cancelar");
 
   function parseNombres(txt) {
     return String(txt || "").split("\n").map(s => s.trim()).filter(Boolean).map(l => {
       const p = l.split("|").map(x => x.trim());
-      return { lado: (p[0] || "B").toUpperCase() === "A" ? "A" : "B", nombre: p[1] || "", cuenta: p[2] || "" };
+      return { lado: (p[0] || "B").toUpperCase() === "A" ? "A" : "B", cuenta: p[1] || "", nombre: p[2] || "" };
     });
   }
 
