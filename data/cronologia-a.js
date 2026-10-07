@@ -358,35 +358,45 @@ window.CRONOLOGIA_A = [
     title: "El Nombre de Ledros",
     fecha: "Dentro de La Espesura, y la fogata más adelante",
     content: `
-      <p>Se adentraron en La Espesura. Dagren se quedó en el granero. Iban a revisar
-      lo que el dragón hubiera dejado roto ahí adentro, y lo que encontraron no
-      tenía nada que ver con el dragón.</p>
+      <p>La Espesura los recibió con la misma penumbra de siempre, esa que no
+      depende de la hora y que hace que todos los troncos parezcan el mismo. Dagren
+      se quedó en el granero con el brazo nuevo todavía quejándose, así que el
+      grupo entró solo. Caminaron un buen
+      trecho entre árboles quebrados y claros pisoteados, mirando cada marca en el
+      suelo por si el dragón había pasado por ahí.</p>
 
       <h4>Ledros</h4>
 
-      <p>Se toparon con Ledros. Al principio no hubo pelea. Hablaron con él un
-      buen rato y, al final, les dijo su nombre.</p>
+      <p>Se toparon con Ledros, y por una vez nadie sacó un arma. Conversaron con
+      él largo rato, y hacia el final les dijo su nombre.</p>
 
-      <p>Sir Buffolet terminó haciéndolo llorar. Ledros se fue, y al irse dejó algo
-      detrás.</p>
+      <p>Duró hasta que intervino Sir Buffolet. Con el tacto de siempre, el
+      paladín consiguió hacer llorar a Ledros ahí mismo, delante de todos. Ledros
+      no se quedó a ver cómo terminaba aquello. Se dio la vuelta y se fue.</p>
 
-      <h4>Los espíritus</h4>
+      <h4>Lo que dejó atrás</h4>
 
-      <p>Ledros soltó espíritus por todas partes. Se desprendieron de su armadura y
-      se metieron en el barro, en la madera y en las piedras del lugar, que se
-      levantaron con ellos adentro.</p>
+      <p>Al marcharse, Ledros fue soltando espíritus a su paso. Se desprendían de
+      su armadura sin parar y se hundían en lo primero que encontraban debajo, en el
+      barro del suelo, en la madera de los troncos caídos, en las piedras del
+      camino. Las tres cosas se levantaron animadas por ellos y fueron a buscar a
+      quien tenían más cerca.</p>
 
-      <p>El grupo eligió pelear. Aguantaron un tiempo, pero los espíritus los
-      superaron. Edge y Hornet decidieron huir. Dejaron atrás a Enzo, a Mattei y a
-      Sir Buffolet, a su suerte.</p>
+      <p>El grupo eligió pelear. Aguantaron un buen tiempo, pero los espíritus no
+      dejaban de salir y cada uno encontraba algo nuevo que levantar, hasta que
+      quedaron rodeados y superados. Edge y Hornet decidieron huir. Echaron a
+      correr entre los árboles y dejaron atrás a Enzo, a Mattei y a Sir Buffolet,
+      a su suerte.</p>
 
-      <p>Sir Buffolet no salió de ahí. Enzo lo dejó morir y, antes de irse, se
-      llevó su gorro. Enzo y Mattei salieron de La Espesura por su cuenta.</p>
+      <p>Sir Buffolet no salió con vida de aquello. Enzo lo dejó morir y, antes de
+      irse, le quitó el gorro y se lo quedó. Después se abrió paso junto a Mattei
+      hasta dejar atrás la pelea.</p>
 
       <h4>La fogata</h4>
 
-      <p>Más adelante encontraron una fogata. La habían encendido Hornet y Edge. Se
-      reencontraron alrededor de ella, y faltaba uno.</p>
+      <p>Más adelante vieron luz entre los troncos. Era una fogata, y la habían
+      encendido Hornet y Edge, que ya estaban sentados alrededor de ella cuando
+      Enzo y Mattei llegaron. Allí se reencontraron, con un compañero menos.</p>
     `
   }
 ];
