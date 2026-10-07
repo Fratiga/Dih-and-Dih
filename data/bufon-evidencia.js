@@ -60,7 +60,9 @@ window.BUFON_HECHOS_CONOCIDOS = {
   A: [
     "pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter",
     "eledar_asesinado", "mattei_se_unio", "enzo_venganza_revelada",
-    "dagren_cobra_renta", "guillotina_identificada"
+    "dagren_cobra_renta", "guillotina_identificada",
+    // Sir Buffolet no salió de la ciudad (Enzo lo dejó morir, ver cronologia-a.js).
+    "buffolet_murio"
   ],
   // Los siete nuevos son del ciclo "Lo que queda" (Ledros, el Comerciante de
   // Dávidas, Hubert Magnolia, etc. — Capítulos VI-VII de cronologia-b.js).

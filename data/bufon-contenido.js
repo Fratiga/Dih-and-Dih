@@ -907,6 +907,20 @@ window.BUFON_DIALOGO = {
       next: "intro_reason_sin_recuerdo"
     },
 
+    // Side A, cuando vuelven a entrar: Slappy se entera de que murió Sir
+    // Buffolet (otro bufón). Se dispara una sola vez por jugador y en
+    // cualquier ciclo (ver RECUERDOS_DISPONIBLES en secreto.html).
+    bufon_side_a_buffolet: {
+      lineas: [
+        "Así que se murió el bufón. Hah.",
+        "No esperaba que durase mucho más, la verdad. Me sorprende que haya durado lo que duró, de hecho.",
+        "¿No se les había muerto alguien más a ustedes también...?",
+        "¿Un pequeño verde?"
+      ],
+      completeDialogue: "side_a_buffolet_murio",
+      next: "intro_reason_sin_recuerdo"
+    },
+
     // --- Respiro: Eledar, Cassius, Torvrena, Ryn, rumores del juicio ---
     bufon_eledar_tobillo: {
       lineas: [
