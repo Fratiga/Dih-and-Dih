@@ -515,6 +515,12 @@
   /* Se llama después de CUALQUIER cambio de dato: refresca todo lo
      calculado que sea visible ahora mismo, sin releer el DOM entero. */
   function refrescarCalculado() {
+    // En nivel 1 todavía se está creando: lo que sobre de los 27 queda anotado, y al subir
+    // de nivel ya no se mueve (así una subida posterior no se confunde con la creación).
+    if (personajeActual && Number(personajeActual.identidad.nivelTotal) <= 1) {
+      const sobra = Math.max(0, FICHAS_PRESUPUESTO_COMPRA_PUNTOS - fichasCostoCreacionActual(personajeActual));
+      if (personajeActual.puntosCreacionSinGastar !== sobra) personajeActual.puntosCreacionSinGastar = sobra;
+    }
     renderEncabezado();
     document.querySelectorAll("[data-calc]").forEach(el => {
       try { el.textContent = fichasFormatearCalc(el.dataset.calc); } catch (e) { /* campo de un tab no activo todavía */ }
@@ -766,6 +772,7 @@
       <p class="fichas-puntos-info">Arriba de cada característica: bono racial. Abajo: ajuste manual.</p>
       <div class="fichas-field-grid">
         <div class="fichas-field"><label>Puntos cambiados por un feat</label>${campoNumero("puntosFeats", p.puntosFeats, 'min="0"')}</div>
+        <div class="fichas-field"><label title="De los 27 puntos de la compra de creación, cuántos no se gastaron. Si los dejaste sin usar, ponlos aquí para que subir una característica cuente como punto de nivel.">Puntos de creación sin gastar</label>${campoNumero("puntosCreacionSinGastar", p.puntosCreacionSinGastar, 'min="0" max="27"')}</div>
         <div class="fichas-field"><label>Competencia base</label><div class="fichas-field-resultado">${fichasSigno(fichasCompetenciaBase(p.identidad.nivelTotal))}</div></div>
         <div class="fichas-field"><label>Ajuste de competencia</label>${campoNumero("competenciaAjusteManual", p.competenciaAjusteManual)}</div>
         <div class="fichas-field"><label>Competencia total</label><div class="fichas-field-resultado" data-calc="competenciaTotal">${fichasSigno(fichasCompetenciaTotal(p))}</div></div>

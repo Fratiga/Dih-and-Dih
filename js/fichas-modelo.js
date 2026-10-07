@@ -120,6 +120,7 @@ function fichasPersonajeVacio() {
     atributosRaciales: fichasAtributosRacialesVacios(), // no cuenta como punto de mejora gastado
     ajustesAtributos: fichasAjustesVacios(), // ajuste manual al MODIFICADOR final
     puntosFeats: 0, // puntos de mejora cambiados por un feat en vez de subir stats; restan de los disponibles
+    puntosCreacionSinGastar: 0, // de los 27 de la compra por puntos, cuántos no se usaron al crear (ver fichasPuntosRepartidos)
 
     competenciaAjusteManual: 0,
 
@@ -190,6 +191,7 @@ function fichasMigrar(personaje) {
   if (!personaje.atributosRaciales) personaje.atributosRaciales = fichasAtributosRacialesVacios();
   if (!Array.isArray(personaje.decoraciones)) personaje.decoraciones = [];
   if (personaje.puntosFeats === undefined) personaje.puntosFeats = 0;
+  if (personaje.puntosCreacionSinGastar === undefined) personaje.puntosCreacionSinGastar = 0;
   // Daño de ataques: casilla "sumar el modificador" y daño extra manual. En los
   // ataques que ya existían se activa la casilla solo si el daño es únicamente
   // dados ("1d6"); si ya trae un número o un atributo escrito, se deja apagada

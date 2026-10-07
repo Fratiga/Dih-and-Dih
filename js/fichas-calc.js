@@ -68,6 +68,25 @@ const FICHAS_PRESUPUESTO_COMPRA_PUNTOS = 27;
    que seguir bajando creación (empezando por donde bajar un punto ahorra
    más costo, o sea los tramos 14→15) y subir nivel en su lugar, hasta que
    el costo total vuelva a entrar en el presupuesto. */
+/* El presupuesto de creación son los 27 puntos menos los que el personaje dejó
+   sin gastar al crearlo. Sin ese descuento, un personaje que creó con 25 de 27
+   "absorbía" su primera subida de nivel (por ejemplo 14 a 15, que cuesta 2) con
+   la holgura de la creación, y ese punto no se contaba como repartido. */
+function fichasPresupuestoCreacion(personaje) {
+  const sinGastar = Math.max(0, Math.min(FICHAS_PRESUPUESTO_COMPRA_PUNTOS, Number(personaje.puntosCreacionSinGastar) || 0));
+  return FICHAS_PRESUPUESTO_COMPRA_PUNTOS - sinGastar;
+}
+
+/* Costo de la compra por puntos con los valores actuales (antes de la racial y con
+   tope de 15). Sirve para saber cuánto de los 27 se usó al crear. */
+function fichasCostoCreacionActual(personaje) {
+  return FICHAS_ATRIBUTOS.reduce((t, { id }) => {
+    const antes = (Number(personaje.atributos[id]) || 0) - (Number(personaje.atributosRaciales?.[id]) || 0);
+    const creacion = Math.min(FICHAS_TOPE_COMPRA_CREACION, Math.max(FICHAS_PUNTUACION_BASE, antes));
+    return t + FICHAS_COSTO_COMPRA_PUNTOS[creacion];
+  }, 0);
+}
+
 function fichasPuntosRepartidos(personaje) {
   const atributos = FICHAS_ATRIBUTOS.map(({ id }) => {
     const actual = Number(personaje.atributos[id]) || 0;
@@ -78,7 +97,8 @@ function fichasPuntosRepartidos(personaje) {
   });
 
   let costoTotal = atributos.reduce((t, a) => t + FICHAS_COSTO_COMPRA_PUNTOS[a.creacion], 0);
-  while (costoTotal > FICHAS_PRESUPUESTO_COMPRA_PUNTOS) {
+  const presupuesto = fichasPresupuestoCreacion(personaje);
+  while (costoTotal > presupuesto) {
     let mejor = null;
     atributos.forEach(a => {
       if (a.creacion <= FICHAS_PUNTUACION_BASE) return;
