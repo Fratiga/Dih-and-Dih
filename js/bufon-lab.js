@@ -49,7 +49,7 @@
 
   /* ---------- estado ---------- */
   const cfg = Object.assign({
-    lado: "B", nombre: "", cuenta: "", ciclo: null, rpcAvanzo: false, admin: false,
+    lado: "B", nombre: "", cuenta: "", ciclo: 1, admin: false,
     usarBorradores: true, modelo3d: false, almacen: {}, nombresTexto: ""
   }, leerJson(KEY_CFG, {}));
   let borradores = leerJson(KEY_BORR, []);
@@ -111,11 +111,10 @@
     return base.sort((a, b) => a.numero - b.numero);
   }
   const nombreDelCiclo = n => { const c = listaDeCiclos().find(x => x.numero === n); return c ? c.nombre : ""; };
-  const selCiclo = h("select", { onchange: e => { cfg.ciclo = e.target.value === "" ? null : parseInt(e.target.value, 10); guardarCfg(); marcarPendiente(); } });
+  const selCiclo = h("select", { onchange: e => { cfg.ciclo = parseInt(e.target.value, 10); guardarCfg(); marcarPendiente(); } });
   function pintarCiclosCtrl() {
     selCiclo.replaceChildren(
-      h("option", { value: "", selected: cfg.ciclo == null }, "Automático (según su progreso)"),
-      ...listaDeCiclos().map(c => h("option", { value: String(c.numero), selected: cfg.ciclo === c.numero }, "Ciclo " + c.numero + ": " + c.nombre)));
+      ...listaDeCiclos().map(c => h("option", { value: String(c.numero), selected: (Number.isInteger(cfg.ciclo) ? cfg.ciclo : 1) === c.numero }, "Ciclo " + c.numero + ": " + c.nombre)));
   }
 
   function controles() {
@@ -128,9 +127,8 @@
       campo("Nombre de su cuenta", h("input", { type: "text", value: cfg.cuenta, placeholder: "(ninguna)", onchange: e => { cfg.cuenta = e.target.value.trim(); guardarCfg(); marcarPendiente(); } }), "Es lo ÚNICO que el Bufón usa para reconocer a un jugador. Los jugadores de la campaña son las cuentas con personajes en «Mis personajes»."),
       campo("Nombre que escribió en el Bufón", h("input", { type: "text", value: cfg.nombre, placeholder: "(ninguno)", onchange: e => { cfg.nombre = e.target.value.trim(); guardarCfg(); marcarPendiente(); } }), "Ya no sirve para reconocer a nadie. Solo cambia lo que el Bufón le dice a alguna cuenta concreta."),
       h("h4", null, "Ciclo"),
-      campo("Ciclo del jugador", selCiclo, "Como el interruptor del Admin: el jugador solo recibe el contenido de ese ciclo. «Automático» sigue su progreso."),
-      casilla("Su lado ya avanzó (los 5 jugadores reales)", cfg.rpcAvanzo, v => { cfg.rpcAvanzo = v; guardarCfg(); marcarPendiente(); }, "Solo importa en automático: pasa al ciclo 2 cuando su lado avanzó y él ya terminó el ciclo 1. También sirve para probar la entrada a un ciclo nuevo."),
-      h("button", { type: "button", class: "secondary-button blab-agregar", title: "Un jugador automático juega todo el contenido original hasta la despedida y deja el resultado en este jugador de prueba", onclick: terminarOriginal }, "Terminar el contenido original (juega solo)"),
+      campo("Ciclo del jugador", selCiclo, "Como el interruptor del Admin: el jugador solo recibe el contenido de ese ciclo."),
+      h("button", { type: "button", class: "secondary-button blab-agregar", title: "Un jugador automático juega todo el contenido original hasta la despedida y deja el resultado en este jugador de prueba", onclick: terminarOriginal }, "Hacer que agote el ciclo 1 (juega solo)"),
       casilla("Modo Admin del Bufón", cfg.admin, v => { cfg.admin = v; guardarCfg(); marcarPendiente(); }, "Ve todos los ciclos a la vez, mezclados."),
       h("h4", null, "Opciones"),
       casilla("Incluir los borradores del Editor", cfg.usarBorradores, v => { cfg.usarBorradores = v; guardarCfg(); marcarPendiente(); pintarCiclosCtrl(); }),
@@ -159,7 +157,7 @@
     marco.replaceChildren(h("p", { class: "blab-vacio" }, "Abriendo..."));
     try {
       if (!meta) await cargarMeta();
-      L = M.nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, admin: cfg.admin, rpcAvanzo: cfg.rpcAvanzo, local: cfg.almacen, ciclo: cfg.ciclo });
+      L = M.nuevoEstado({ lado: cfg.lado, cuenta: cfg.cuenta, admin: cfg.admin, local: cfg.almacen, ciclo: cfg.ciclo });
       if (cfg.nombre) L.local.setItem("jesterPlayerName", cfg.nombre); else L.local.removeItem("jesterPlayerName");
       L.local.alCambiar = persistirAlmacen;
       persistirAlmacen();
@@ -175,7 +173,7 @@
   }
   /* Un jugador automático juega el contenido original (ciclo 1) hasta la despedida, como
      lo haría uno real, y deja el resultado en el jugador de prueba. Sirve para probar, por
-     ejemplo, a un jugador en automático cuyo lado ya avanzó. */
+     ejemplo, para ver el aviso de que un jugador agotó su ciclo. */
   async function terminarOriginal() {
     if (pg) { pg.cerrar(); pg = null; }
     if (L) { L.local.alCambiar = null; cfg.almacen = L.local._volcar(); L = null; }
@@ -278,7 +276,7 @@
           modulo ? h("button", { type: "button", class: "secondary-button", onclick: () => importarCiclo(modulo.id) }, "Editarlo en el Editor") : null));
     });
     pCiclos.replaceChildren(...bien(
-      h("p", { class: "blab-nota" }, "Cada jugador está en UN ciclo y solo recibe el contenido de ese ciclo. Tú los mueves (a un lado entero o a un jugador) desde Progreso del Bufón. Si no los mueves, es automático: todos empiezan en el ciclo 1 y pasan al 2 cuando su lado avanzó y ellos terminaron el 1. Los ciclos 3 en adelante son archivos que se crean en el Editor."),
+      h("p", { class: "blab-nota" }, "Cada jugador está en UN ciclo y solo recibe el contenido de ese ciclo. Tú los mueves (a un lado entero o a un jugador) desde Progreso del Bufón. Nada avanza solo: todos empiezan en el ciclo 1 y el panel te avisa cuando agotan el suyo para que los avances tú. Los ciclos 3 en adelante son archivos que se crean en el Editor."),
       meta.errores.length ? h("div", { class: "blab-error" }, meta.errores.map(e => h("p", null, "Ciclo mal escrito: " + e))) : null,
       tarjetas,
       h("details", { class: "blab-detalle" }, h("summary", null, "Cómo se agrega un ciclo nuevo"),

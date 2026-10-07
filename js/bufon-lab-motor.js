@@ -374,7 +374,7 @@
   const unico = a => Array.from(new Set(a));
 
   /* Un escenario = un jugador a lo largo de varias visitas.
-     cfg = { lado, visitas, cicloPorVisita:[n|null,...], avanzoEnVisita, maxHubPorVisita:[..], estrategia,
+     cfg = { lado, visitas, cicloPorVisita:[n|null,...], maxHubPorVisita:[..], estrategia,
              localInicial, cuenta, admin, semilla } */
   async function escenario(cfg, o) {
     const rnd = rng(cfg.semilla || 1);
@@ -383,13 +383,13 @@
     for (let v = 0; v < cfg.visitas; v++) {
       if (o.cancelado()) break;
       L.ciclo = cfg.cicloPorVisita ? (cfg.cicloPorVisita[v % cfg.cicloPorVisita.length] || null) : null;
-      L.rpcAvanzo = cfg.avanzoEnVisita != null && v >= cfg.avanzoEnVisita;
       const maxHub = cfg.maxHubPorVisita ? cfg.maxHubPorVisita[v % cfg.maxHubPorVisita.length] : 999;
       const r = await jugarVisita(L, { rnd, maxHub, estrategia: cfg.estrategia || "azar", esperaMs: 30, borradores: o.borradores });
       r.cicloForzado = L.ciclo;
       visitas.push(r);
       o.tick();
     }
+    visitas.estado = L; // para ver lo que se habría guardado
     return visitas;
   }
 
@@ -418,8 +418,7 @@
     recorrido.forEach(n => { cicloPorVisita.push(n, n); });
     const matriz = [];
     o.lados.forEach(lado => {
-      matriz.push({ n: "Side " + lado + ": primer ciclo (automático)", cfg: { lado, visitas: 8, maxHubPorVisita: [3, 6, 40, 2, 40] } });
-      matriz.push({ n: "Side " + lado + ": el lado avanza (automático)", cfg: { lado, visitas: 12, avanzoEnVisita: 3, maxHubPorVisita: [3, 6, 40, 2, 40] } });
+      matriz.push({ n: "Side " + lado + ": primer ciclo (sin interruptor)", cfg: { lado, visitas: 8, maxHubPorVisita: [3, 6, 40, 2, 40] } });
       matriz.push({ n: "Side " + lado + ": movido por el Admin hacia adelante y hacia atrás", cfg: { lado, visitas: cicloPorVisita.length, cicloPorVisita, maxHubPorVisita: [3, 6, 40, 2, 40] } });
       matriz.push({ n: "Side " + lado + ": completista", cfg: { lado, visitas: cicloPorVisita.length, cicloPorVisita, estrategia: "orden" } });
     });
@@ -427,7 +426,7 @@
 
     // total estimado de visitas, solo para la barra de progreso
     let total = matriz.reduce((s, e) => s + e.cfg.visitas, 0) * o.semillas;
-    total += meta.lista.length * 2 * 2 * 3 * 8 + o.lados.length * 2 * 7 + o.nombres.length * 18;
+    total += meta.lista.length * 2 * 2 * 4 * 8 + meta.lista.length * 4 + o.lados.length * 2 * 7 + o.nombres.length * 18;
     let hechas = 0;
     const tick = () => { hechas++; o.alProgreso(null, Math.min(1, hechas / total)); };
     const E = { borradores: o.borradores, cancelado: o.cancelado, tick };
@@ -497,8 +496,25 @@
     }
     res.secciones.push(s2);
 
-    // 3. Entrada al ciclo 2
-    const s3 = { titulo: "Entrada al ciclo 2 (el servidor ya dice 'avanzó' y el jugador, que ya terminó el ciclo 1, abre la página justo después)", lineas: [] };
+    // 3. Aviso de ciclo agotado: al agotar su ciclo, el jugador deja la marca que lee el panel de Admin
+    const sAviso = { titulo: "Aviso de ciclo agotado (lo que lee el panel de Admin para avisarte de que toca avanzar al jugador)", lineas: [] };
+    for (const c of meta.lista) {
+      if (o.cancelado()) break;
+      const n = c.numero;
+      if (!Object.values(meta.duenoDeNodo).some(d => d === n)) continue;
+      o.alProgreso("Aviso de ciclo agotado, ciclo " + n, null);
+      const modulo = Object.values(meta.ciclos).find(m => m.numero === n);
+      const lado = modulo && modulo.lados ? modulo.lados[0] : "B";
+      const visitas = await escenario({ lado, visitas: 4, cicloPorVisita: [n], estrategia: "orden", semilla: 5, maxHubPorVisita: [999] }, E);
+      const marca = "agotado_ciclo_" + n;
+      const dejo = !!(visitas.estado && visitas.estado.eventos.some(e => e.opcion === marca));
+      sAviso.lineas.push({ ok: dejo, t: "Ciclo " + n + " (" + c.nombre + "), Side " + lado + ": " + (dejo ? "deja la marca " + marca + "." : "no deja la marca " + marca + " al agotar su contenido.") });
+      if (!dejo) res.errores.push("El ciclo " + n + " no deja la marca de ciclo agotado");
+    }
+    res.secciones.push(sAviso);
+
+    // 4. Entrada a un ciclo nuevo: el Admin lo mueve y el jugador abre la página justo después
+    const s3 = { titulo: "Entrada a un ciclo nuevo (el Admin acaba de mover al jugador al ciclo 2 y él abre la página justo después)", lineas: [] };
     for (const lado of o.lados) {
       for (const latencia of [0, 300]) {
         if (o.cancelado()) break;
@@ -511,14 +527,14 @@
           tick();
           if (r.puertaCerrada) cerrada = true;
         }
-        L.rpcAvanzo = true; L.latenciaRpc = latencia;
+        L.ciclo = 2; L.latenciaRpc = latencia;
         const r1 = await jugarVisita(L, { rnd, maxHub: 999, estrategia: "orden", esperaMs: 900, borradores: o.borradores });
         tick();
-        let cacheAvanzo = false;
-        try { cacheAvanzo = JSON.parse(L.local.getItem("bufonCicloInfo_" + lado) || "{}").avanzo === true; } catch (e) { /* sin cache */ }
+        let guardado = false;
+        try { guardado = JSON.parse(L.local.getItem("bufonCicloInfo_" + lado) || "{}").manual === 2; } catch (e) { /* sin cache */ }
         const veCiclo2 = (r1.menu || []).some(b => meta.cicloDeBoton[b] === 2);
-        const ok = !r1.puertaCerrada && cacheAvanzo && veCiclo2;
-        s3.lineas.push({ ok, t: "Side " + lado + ", red " + latencia + " ms: " + (ok ? "la primera visita ya ve el ciclo 2." : "la primera visita no ve el ciclo 2 (puerta cerrada: " + r1.puertaCerrada + ", guardó el avance: " + cacheAvanzo + ", ve el menú del ciclo 2: " + veCiclo2 + ").") });
+        const ok = cerrada && !r1.puertaCerrada && guardado && veCiclo2;
+        s3.lineas.push({ ok, t: "Side " + lado + ", red " + latencia + " ms: " + (ok ? "tenía la puerta cerrada y la primera visita tras moverlo ya ve el ciclo 2." : "falla (puerta cerrada antes: " + cerrada + ", puerta cerrada después: " + r1.puertaCerrada + ", guardó el ciclo: " + guardado + ", ve el menú del ciclo 2: " + veCiclo2 + ").") });
         if (!ok) res.errores.push("Entrada al ciclo 2 (Side " + lado + ", red " + latencia + " ms)");
       }
     }
@@ -535,7 +551,7 @@
           const ini = { bufonIntroVista: "1" }; if (c.nombre) ini.jesterPlayerName = c.nombre;
           const L = nuevoEstado({ lado: c.lado, cuenta: c.cuenta, local: ini });
           for (let v = 0; v < 6; v++) {
-            L.rpcAvanzo = v >= 1;
+            L.ciclo = v >= 1 ? 2 : 1;
             const r = await jugarVisita(L, { rnd: rng(s * 7 + v), maxHub: 40, estrategia: "azar", esperaMs: 30, borradores: o.borradores });
             tick();
             r.nodos.forEach(nodo => alc.add(nodo)); probs.push(...r.problemas);

@@ -249,28 +249,45 @@
   }
 
   /* Los ciclos del Bufón (data/bufon-ciclos-lista.js). Cada jugador está en UNO y
-     solo recibe el contenido de ese ciclo. Aquí el Admin puede mover a un lado
-     entero o a un jugador. Sin interruptor el ciclo es automático. */
+     solo recibe el contenido de ese ciclo. Aquí el Admin mueve a un lado entero
+     o a un jugador (el del jugador manda sobre el de su lado). Nada avanza solo:
+     sin interruptor un jugador se queda en el ciclo 1. Cuando un jugador agota
+     el contenido de su ciclo, el Bufón deja constancia (agotado_ciclo_N) y aquí
+     aparece un aviso para que lo avances. */
   function listaDeCiclos() {
     const l = window.BUFON_LISTA_CICLOS;
     return (l && l.length) ? l : [{ numero: 1, nombre: "Contenido original" }, { numero: 2, nombre: "Lo que queda" }];
   }
-  function opcionesDeCiclo(seleccionado, textoAutomatico) {
-    return `<option value="">${textoAutomatico}</option>` + listaDeCiclos().map(c =>
+  function opcionesDeCiclo(seleccionado, textoVacio) {
+    return `<option value="">${textoVacio}</option>` + listaDeCiclos().map(c =>
       `<option value="${c.numero}" ${seleccionado === c.numero ? "selected" : ""}>Ciclo ${c.numero}: ${escaparHtml(c.nombre)}</option>`).join("");
   }
 
-  function bloqueDeLado(lado, info, hayInterruptores) {
+  const infoDeLado = (lado, sideA, sideB) => (lado === "A" ? sideA : lado === "B" ? sideB : { cicloManual: null });
+  const cicloDelLado = info => (info.cicloManual != null ? info.cicloManual : 1);
+  const cicloDelJugador = (j, info) => (j.cicloManual != null ? j.cicloManual : cicloDelLado(info));
+  // ¿Este jugador ya agotó el contenido del ciclo en el que está? Entonces espera a que lo avances.
+  const esperaAvance = (j, info) => !!j.side && !j.excluido && (j.agotados || []).includes(cicloDelJugador(j, info));
+
+  function bloqueDeLado(lado, info, hayInterruptores, esperando, activos) {
     const manual = info.cicloManual;
-    const hoy = manual != null
-      ? `fijado por ti en el ciclo ${manual}`
-      : (info.avanzo ? "automático: pasa al ciclo 2 quien ya terminó el ciclo 1" : "automático: todos en el ciclo 1");
+    const hoy = manual != null ? `ciclo ${manual}` : "sin interruptor (ciclo 1)";
+    const actual = cicloDelLado(info);
+    const maxCiclo = Math.max(...listaDeCiclos().map(c => c.numero));
+    const aviso = esperando.length ? `<div class="admin-ciclo-alerta">
+        ⚠ <strong>${esperando.length} de ${activos} jugador${activos === 1 ? "" : "es"} de Side ${lado}</strong> agotaron el ciclo ${actual}:
+        ${esperando.map(j => escaparHtml(j.nombre || "Anónimo")).join(", ")}.
+        ${actual < maxCiclo && hayInterruptores
+          ? `<button type="button" class="admin-ciclo-btn" data-avanzar-lado="${lado}" data-ciclo-a="${actual + 1}">Avanzar Side ${lado} al ciclo ${actual + 1}</button>`
+          : `<em>No hay un ciclo ${actual + 1} todavía: créalo en el Laboratorio del Bufón.</em>`}
+      </div>` : "";
     return `<div class="admin-ciclo-lado">
-      <p><strong>Side ${lado}</strong>: ${info.completos}/${info.necesarios} jugadores completaron el ciclo 1.${info.avanzo ? " El lado ya puede pasar al ciclo 2." : ""}</p>
+      <p><strong>Side ${lado}</strong>: ${info.completos}/${info.necesarios} jugadores completaron el ciclo 1.</p>
+      ${aviso}
       ${hayInterruptores ? `<div class="admin-ciclo-control">
         <span>Ciclo de todo el lado: <strong>${hoy}</strong></span>
         <button type="button" class="admin-ciclo-btn" data-ciclo-paso="-1" data-lado="${lado}" title="Retroceder un ciclo">◀</button>
-        <select data-ciclo-lado="${lado}">${opcionesDeCiclo(manual, "Automático")}</select>
+        <select data-ciclo-lado="${lado}">${opcionesDeCiclo(manual, "Sin interruptor (ciclo 1)")}</select>
         <button type="button" class="admin-ciclo-btn" data-ciclo-paso="1" data-lado="${lado}" title="Avanzar un ciclo">Avanzar ▶</button>
       </div>` : ""}
     </div>`;
@@ -287,7 +304,13 @@
 
   function pintarBufonProgreso({ jugadores, sideA, sideB, hayInterruptores }) {
     const banner = document.getElementById("adminBufonBanner");
-    banner.innerHTML = bloqueDeLado("A", sideA, hayInterruptores) + bloqueDeLado("B", sideB, hayInterruptores) +
+    // El aviso del lado es solo para quienes siguen el ciclo del lado; quien tiene un ciclo propio puesto
+    // a mano se avisa en su fila.
+    const quienesEsperan = lado => jugadores.filter(j => j.side === lado && j.cicloManual == null && esperaAvance(j, infoDeLado(lado, sideA, sideB)));
+    const quienesActivos = lado => jugadores.filter(j => j.side === lado && !j.excluido && j.cicloManual == null).length;
+    const esperanA = quienesEsperan("A");
+    const esperanB = quienesEsperan("B");
+    banner.innerHTML = bloqueDeLado("A", sideA, hayInterruptores, esperanA, quienesActivos("A")) + bloqueDeLado("B", sideB, hayInterruptores, esperanB, quienesActivos("B")) +
       (hayInterruptores ? "" : `<p class="admin-ciclo-aviso">Para mover a los jugadores de ciclo falta correr scratchpad/bufon_ciclos.sql en Supabase.</p>`);
 
     const maxCiclo = Math.max(...listaDeCiclos().map(c => c.numero));
@@ -298,16 +321,22 @@
       btn.addEventListener("click", () => {
         const lado = btn.dataset.lado;
         const info = lado === "A" ? sideA : sideB;
-        const actual = info.cicloManual != null ? info.cicloManual : (info.avanzo ? 2 : 1);
+        const actual = cicloDelLado(info);
         const siguiente = actual + parseInt(btn.dataset.cicloPaso, 10);
         if (siguiente < 1 || siguiente > maxCiclo) { alert("No hay un ciclo " + siguiente + "."); return; }
         aplicarCicloLado(lado, siguiente);
       });
     });
 
+    banner.querySelectorAll("[data-avanzar-lado]").forEach(btn => {
+      btn.addEventListener("click", () => aplicarCicloLado(btn.dataset.avanzarLado, parseInt(btn.dataset.cicloA, 10)));
+    });
+
     const cont = document.getElementById("adminBufonLista");
     const count = document.getElementById("adminBufonCount");
-    count.textContent = `${jugadores.length} jugador${jugadores.length === 1 ? "" : "es"}`;
+    const esperanTotal = jugadores.filter(j => j.side && esperaAvance(j, infoDeLado(j.side, sideA, sideB))).length;
+    // La pestaña avisa aunque no la tengas abierta: "3 esperan" cuando hay jugadores que agotaron su ciclo.
+    count.textContent = esperanTotal ? `${esperanTotal} esperan` : `${jugadores.length} jugador${jugadores.length === 1 ? "" : "es"}`;
 
     if (!jugadores.length) {
       cont.innerHTML = `<p class="admin-vacio">Todavía nadie interactuó con el Bufón.</p>`;
@@ -324,8 +353,11 @@
         <span class="admin-bufon-dato"><strong>${j.completados}</strong> diálogos completados</span>
         <span class="admin-bufon-dato">${j.ultimoNodo ? `Último: ${escaparHtml(j.ultimoNodo)}` : "—"}</span>
         <span class="admin-bufon-dato admin-bufon-toques">${j.toquesPuerta ? `<strong>${j.toquesPuerta}</strong> veces sin nada nuevo` : "Siempre encontró algo nuevo"}</span>
+        ${esperaAvance(j, infoDeLado(j.side, sideA, sideB)) ? `<span class="admin-ciclo-espera" title="Ya no le queda nada en su ciclo">Agotó el ciclo ${cicloDelJugador(j, infoDeLado(j.side, sideA, sideB))}</span>` : ""}
         <span class="admin-bufon-fecha">${formatearFecha(j.ultimaActividad)}</span>
         ${hayInterruptores ? `<select class="admin-ciclo-jugador" data-ciclo-jugador="${j.playerId}" title="Ciclo de este jugador. Manda sobre el de su lado">${opcionesDeCiclo(j.cicloManual, "Ciclo de su lado")}</select>` : ""}
+        ${hayInterruptores && esperaAvance(j, infoDeLado(j.side, sideA, sideB)) && cicloDelJugador(j, infoDeLado(j.side, sideA, sideB)) < Math.max(...listaDeCiclos().map(c => c.numero))
+          ? `<button type="button" class="admin-ciclo-btn" data-avanzar-jugador="${j.playerId}" data-ciclo-a="${cicloDelJugador(j, infoDeLado(j.side, sideA, sideB)) + 1}">Avanzar al ciclo ${cicloDelJugador(j, infoDeLado(j.side, sideA, sideB)) + 1}</button>` : ""}
         <button type="button" class="admin-bufon-excluir-btn" data-toggle-excluido="${j.playerId}" title="${j.excluido ? escaparHtml(j.motivoExcluido || "Excluido del conteo") : "No cuenta para el progreso de Side A/B"}">
           ${j.excluido ? "Volver a contar" : "No contar para el progreso"}
         </button>
@@ -334,6 +366,20 @@
 
     cont.querySelectorAll("[data-player-id]").forEach(fila => {
       fila.addEventListener("click", () => mostrarConversacionBufon(fila.dataset.playerId, fila.dataset.nombre));
+    });
+
+    cont.querySelectorAll("[data-avanzar-jugador]").forEach(btn => {
+      btn.addEventListener("click", async e => {
+        e.stopPropagation(); // no abrir la conversación al tocar el botón
+        btn.disabled = true;
+        try {
+          await adminSetCicloJugador(btn.dataset.avanzarJugador, parseInt(btn.dataset.cicloA, 10));
+          await cargarProgresoBufon();
+        } catch (err) {
+          alert("No se pudo cambiar el ciclo: " + (err.message || "error desconocido"));
+          btn.disabled = false;
+        }
+      });
     });
 
     cont.querySelectorAll("[data-ciclo-jugador]").forEach(sel => {

@@ -290,7 +290,7 @@ async function adminListarProgresoBufon() {
 
   function fila(id) {
     if (!porJugador.has(id)) {
-      porJugador.set(id, { playerId: id, side: null, elecciones: 0, completados: 0, ultimoNodo: null, toquesPuerta: 0, ultimaActividad: null });
+      porJugador.set(id, { playerId: id, side: null, elecciones: 0, completados: 0, ultimoNodo: null, toquesPuerta: 0, ultimaActividad: null, agotados: [] });
     }
     return porJugador.get(id);
   }
@@ -302,8 +302,15 @@ async function adminListarProgresoBufon() {
     acumulado.ultimaActividad = e.created_at;
     if (e.side) acumulado.side = e.side;
     if (e.category === "completado") {
-      acumulado.completados++;
-      acumulado.ultimoNodo = e.choice_id;
+      // "agotado_ciclo_N" lo deja el Bufón cuando el jugador agota el contenido de su ciclo N.
+      const agotado = /^agotado_ciclo_(\d+)$/.exec(e.choice_id || "");
+      if (agotado) {
+        const n = parseInt(agotado[1], 10);
+        if (!acumulado.agotados.includes(n)) acumulado.agotados.push(n);
+      } else {
+        acumulado.completados++;
+        acumulado.ultimoNodo = e.choice_id;
+      }
     }
   });
 
