@@ -49,6 +49,14 @@
          animacion: "Parado",       // opcional
          risa: 2000                 // opcional: risa del Bufón, en milisegundos
        },
+       cerrar: "Ya fue, sigamos con otra cosa.",  // opcional: texto del botón de salida del submenú
+       tras: ["otro_dialogo"],      // opcional (también en preguntas y grupos): aparece solo si
+                                    // esos diálogos ya se completaron
+       hechos: ["mattei_se_unio"],  // opcional (también en preguntas y grupos): hechos de la mesa
+                                    // (data/bufon-evidencia.js) que deben haber pasado
+       // En preguntas y respuestas de grupo también: voces: { herida: 1, rostro: 2 }  (puntos que
+       // suma elegirla), cierra: true (cierra el tema), fin: true (termina la conversación),
+       // animacion y risa.
        preguntas: [                 // se destapan según "requiere"
          { id: "quien", texto: "¿Quién era?", lineas: [...], requiere: [] },
          { id: "templo", texto: "...", lineas: [...], requiere: ["quien"] }
@@ -145,6 +153,34 @@
         avisar(donde + ', grupo "' + g.id + '": ninguna opción marcada neutral:true. Las respuestas excluyentes deben incluir una salida neutral ("No lo sé") para no forzar al jugador a tomar partido.');
       }
     });
+    const listaDeIds = (donde2, x, campo) => {
+      if (x[campo] === undefined) return;
+      if (!Array.isArray(x[campo]) || x[campo].some(i => typeof i !== "string" || !i.trim())) fallar(donde2 + ": '" + campo + "' debe ser una lista de ids");
+    };
+    const voces = window.BUFON_VOCES_INFO || {};
+    const revisarVoces = (donde2, x, choiceId) => {
+      if (x.voces === undefined) return;
+      if (!x.voces || typeof x.voces !== "object" || Array.isArray(x.voces)) fallar(donde2 + ": 'voces' debe ser { voz: puntos }");
+      Object.keys(x.voces).forEach(v => {
+        if (!voces[v]) fallar(donde2 + ': la Voz "' + v + '" no existe (' + Object.keys(voces).join(", ") + ")");
+        if (!Number.isFinite(x.voces[v]) || x.voces[v] === 0) fallar(donde2 + ': los puntos de "' + v + '" deben ser un número distinto de 0');
+      });
+      window.BUFON_VOCES = window.BUFON_VOCES || {};
+      if (window.BUFON_VOCES[choiceId]) fallar(donde2 + ': la elección "' + choiceId + '" ya tiene puntos de Voces en otro lugar');
+      window.BUFON_VOCES[choiceId] = Object.assign({}, x.voces);
+    };
+    const revisarCamposExtra = (donde2, x) => {
+      listaDeIds(donde2, x, "tras"); listaDeIds(donde2, x, "hechos");
+      if (x.risa !== undefined && !(Number.isFinite(x.risa) && x.risa > 0)) fallar(donde2 + ": 'risa' son milisegundos (un número mayor que 0)");
+      if (x.animacion !== undefined && typeof x.animacion !== "string") fallar(donde2 + ": 'animacion' es el nombre de una animación");
+    };
+    revisarCamposExtra(donde, t);
+    revisarCamposExtra(donde + ", intro", t.intro);
+    preguntas.forEach(p => { revisarCamposExtra(donde + ', pregunta "' + p.id + '"', p); revisarVoces(donde + ', pregunta "' + p.id + '"', p, pre + p.id); });
+    grupos.forEach(g => {
+      revisarCamposExtra(donde + ', grupo "' + g.id + '"', g);
+      g.opciones.forEach(o => { revisarCamposExtra(donde + ', grupo "' + g.id + '", opción "' + o.id + '"', o); revisarVoces(donde + ', grupo "' + g.id + '", opción "' + o.id + '"', o, pre + g.id + "_" + o.id); });
+    });
     [...preguntas, ...grupos].forEach(x => (x.requiere || []).forEach(r => {
       if (!idsPregunta.has(r) && !idsGrupo.has(r)) fallar(donde + ', "' + x.id + '": requiere "' + r + '", que no es ninguna pregunta ni grupo de este tema');
       if (r === x.id) fallar(donde + ', "' + x.id + '": se requiere a sí mismo');
@@ -155,13 +191,15 @@
     const cumple = (ctx, r) => idsPregunta.has(r)
       ? ctx.hasCompletedDialogue(pre + r)
       : grupoHecho(ctx, grupos.find(g => g.id === r));
-    const requisitosOk = (ctx, x) => (x.requiere || []).every(r => cumple(ctx, r));
+    // tras: ids de diálogos ya completados (de cualquier tema). hechos: hechos de la mesa (hasFact).
+    const externo = (ctx, x) => (x.tras || []).every(i => ctx.hasCompletedDialogue(i)) && (x.hechos || []).every(h => ctx.hasFact(h));
+    const requisitosOk = (ctx, x) => externo(ctx, x) && (x.requiere || []).every(r => cumple(ctx, r));
     // Una pregunta o respuesta con cierra:true termina el tema para siempre: lo que quede pendiente ya no se ofrece.
     // Con fin:true además la conversación termina ahí mismo (sin volver al menú) y el tema queda cerrado.
     const cierraTema = ctx => preguntas.some(p => (p.cierra || p.fin) && ctx.hasCompletedDialogue(pre + p.id))
       || grupos.some(g => g.opciones.some(o => (o.cierra || o.fin) && ctx.hasCompletedDialogue(marcaGrupoOpcion(g, o))));
     const agotado = ctx => cierraTema(ctx) || (preguntas.every(p => ctx.hasCompletedDialogue(pre + p.id)) && grupos.every(g => grupoHecho(ctx, g)));
-    const extra = ctx => !t.visibleSi || t.visibleSi(ctx);
+    const extra = ctx => externo(ctx, t) && (!t.visibleSi || t.visibleSi(ctx));
 
     const decorar = (nodo, src) => {
       if (src.animacion) nodo.animacion = src.animacion;

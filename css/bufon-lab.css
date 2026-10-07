@@ -116,3 +116,9 @@
 .admin-ciclo-alerta { margin: 6px 0 8px; padding: 8px 12px; border: 1px solid #7a6f45; border-left: 3px solid #d8c37a; background: rgba(216, 195, 122, .08); font-size: .84rem; line-height: 1.6; }
 .admin-ciclo-alerta .admin-ciclo-btn { margin-left: 8px; color: #d8c37a; border-color: #7a6f45; }
 .admin-ciclo-espera { font-size: .72rem; color: #d8c37a; border: 1px solid #7a6f45; padding: 1px 8px; white-space: nowrap; }
+
+/* Editor: casillas juntas en una opción y vista de flujo */
+.blab-casilla.chico { flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.blab-casilla.chico input { margin: 0; }
+.blab-casilla.chico span + input { margin-left: 8px; }
+.blab-detalle pre[data-arbol] { font-family: Consolas, "Courier New", monospace; line-height: 1.55; max-height: 380px; }

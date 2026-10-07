@@ -296,28 +296,65 @@
       return m ? { voz: m[1], texto: m[2] } : l;
     });
   }
+  // "herida +1, rostro +2" <-> { herida: 1, rostro: 2 }
+  function parseVoces(txt) {
+    const o = {};
+    lista(txt).forEach(item => {
+      const m = /^([^\s+\-\d]+)\s*([+-]?\d+(?:\.\d+)?)?$/.exec(item);
+      if (m) o[m[1].toLowerCase()] = m[2] === undefined ? 1 : parseFloat(m[2]);
+      else o[item] = 0;
+    });
+    return o;
+  }
+  const vocesATexto = o => Object.keys(o || {}).map(v => v + " " + (o[v] > 0 ? "+" : "") + o[v]).join(", ");
+  // Campos que comparten temas, preguntas y respuestas: se escriben solo si tienen algo.
+  function extrasAConfig(x, o) {
+    if (lista(x.tras).length) o.tras = lista(x.tras);
+    if (lista(x.hechos).length) o.hechos = lista(x.hechos);
+    if (x.animacion) o.animacion = x.animacion.trim();
+    const r = parseInt(x.risa, 10); if (r > 0) o.risa = r;
+    return o;
+  }
+  const extrasDesdeConfig = x => ({ tras: (x.tras || []).join(", "), hechos: (x.hechos || []).join(", "), animacion: x.animacion || "", risa: x.risa ? String(x.risa) : "" });
   const lineasATexto = arr => (arr || []).map(l => typeof l === "string" ? l : l.voz + "> " + l.texto).join("\n");
 
   function aConfig(b) {
     const cfgCiclo = { id: b.id, numero: parseInt(b.numero, 10), nombre: b.nombre || b.id };
     if (lista(b.lados).length) cfgCiclo.lados = lista(b.lados);
-    cfgCiclo.temas = b.temas.map(t => ({
-      id: t.id, boton: t.boton,
-      intro: { como: t.como === "boton" ? "boton" : "recuerdo", lineas: parseLineas(t.intro) },
-      preguntas: t.preguntas.map(p => {
+    cfgCiclo.temas = b.temas.map(t => {
+      const tc = { id: t.id, boton: t.boton };
+      if ((t.cerrar || "").trim()) tc.cerrar = t.cerrar.trim();
+      if (lista(t.tras).length) tc.tras = lista(t.tras);
+      if (lista(t.hechos).length) tc.hechos = lista(t.hechos);
+      tc.intro = { como: t.como === "boton" ? "boton" : "recuerdo", lineas: parseLineas(t.intro) };
+      if (t.introAnimacion) tc.intro.animacion = t.introAnimacion.trim();
+      const ir = parseInt(t.introRisa, 10); if (ir > 0) tc.intro.risa = ir;
+      tc.preguntas = t.preguntas.map(p => {
         const o = { id: p.id, texto: p.texto };
         if (lista(p.requiere).length) o.requiere = lista(p.requiere);
         if (p.voz) o.voz = p.voz;
         if (p.cierra) o.cierra = true;
         if (p.fin) o.fin = true;
+        if (lista(p.voces).length) o.voces = parseVoces(p.voces);
+        extrasAConfig(p, o);
         o.lineas = parseLineas(p.lineas);
         return o;
-      }),
-      grupos: t.grupos.map(g => ({
-        id: g.id, requiere: lista(g.requiere),
-        opciones: g.opciones.map(o => { const x = { id: o.id, texto: o.texto }; if (o.neutral) x.neutral = true; if (o.cierra) x.cierra = true; if (o.fin) x.fin = true; x.lineas = parseLineas(o.lineas); return x; })
-      }))
-    }));
+      });
+      tc.grupos = t.grupos.map(g => {
+        const go = { id: g.id, requiere: lista(g.requiere) };
+        extrasAConfig(g, go);
+        go.opciones = g.opciones.map(o => {
+          const x = { id: o.id, texto: o.texto };
+          if (o.neutral) x.neutral = true; if (o.cierra) x.cierra = true; if (o.fin) x.fin = true;
+          if (lista(o.voces).length) x.voces = parseVoces(o.voces);
+          const r = parseInt(o.risa, 10); if (o.animacion) x.animacion = o.animacion.trim(); if (r > 0) x.risa = r;
+          x.lineas = parseLineas(o.lineas);
+          return x;
+        });
+        return go;
+      });
+      return tc;
+    });
     return cfgCiclo;
   }
 
@@ -325,9 +362,11 @@
     return {
       id: def.id, numero: def.numero, nombre: def.nombre || def.id, lados: (def.lados || []).join(", "),
       temas: (def.temas || []).map(t => ({
-        id: t.id, boton: t.boton, como: t.intro && t.intro.como === "boton" ? "boton" : "recuerdo", intro: lineasATexto(t.intro && t.intro.lineas),
-        preguntas: (t.preguntas || []).map(p => ({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", cierra: !!p.cierra, fin: !!p.fin, lineas: lineasATexto(p.lineas) })),
-        grupos: (t.grupos || []).map(g => ({ id: g.id, requiere: (g.requiere || []).join(", "), opciones: (g.opciones || []).map(o => ({ id: o.id, texto: o.texto, neutral: !!o.neutral, cierra: !!o.cierra, fin: !!o.fin, lineas: lineasATexto(o.lineas) })) }))
+        id: t.id, boton: t.boton, cerrar: t.cerrar || "", tras: (t.tras || []).join(", "), hechos: (t.hechos || []).join(", "),
+        como: t.intro && t.intro.como === "boton" ? "boton" : "recuerdo", intro: lineasATexto(t.intro && t.intro.lineas),
+        introAnimacion: (t.intro && t.intro.animacion) || "", introRisa: t.intro && t.intro.risa ? String(t.intro.risa) : "",
+        preguntas: (t.preguntas || []).map(p => Object.assign({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", cierra: !!p.cierra, fin: !!p.fin, voces: vocesATexto(p.voces), lineas: lineasATexto(p.lineas) }, extrasDesdeConfig(p))),
+        grupos: (t.grupos || []).map(g => Object.assign({ id: g.id, requiere: (g.requiere || []).join(", "), opciones: (g.opciones || []).map(o => Object.assign({ id: o.id, texto: o.texto, neutral: !!o.neutral, cierra: !!o.cierra, fin: !!o.fin, voces: vocesATexto(o.voces), lineas: lineasATexto(o.lineas) }, extrasDesdeConfig(o))) }, extrasDesdeConfig(g)))
       }))
     };
   }
@@ -433,8 +472,8 @@
   }
 
   const nuevoBorrador = (id, nombre, numero) => ({ id, numero, nombre, lados: "", temas: [] });
-  const nuevoTema = id => ({ id, boton: "", como: "recuerdo", intro: "", preguntas: [], grupos: [] });
-  const nuevaPregunta = id => ({ id, texto: "", requiere: "", voz: "", lineas: "" });
+  const nuevoTema = id => ({ id, boton: "", como: "recuerdo", intro: "", cerrar: "", tras: "", hechos: "", introAnimacion: "", introRisa: "", preguntas: [], grupos: [] });
+  const nuevaPregunta = id => ({ id, texto: "", requiere: "", voz: "", voces: "", tras: "", hechos: "", animacion: "", risa: "", lineas: "" });
   const nuevoGrupo = id => ({ id, requiere: "", opciones: [{ id: "si", texto: "", neutral: false, lineas: "" }, { id: "no", texto: "", neutral: false, lineas: "" }, { id: "nose", texto: "No lo sé.", neutral: true, lineas: "" }] });
   const idValido = s => /^[a-z0-9_]+$/.test(s || "");
   function pedirId(que) {
@@ -451,6 +490,69 @@
   }
   function cp(etiqueta, ctl, ayuda) { return h("label", { class: "blab-campo" }, h("span", null, etiqueta), ctl, ayuda ? h("small", null, ayuda) : null); }
 
+  const ANIMACIONES = ["Parado", "Pofavor", "Aplaudirnormal", "Aplaudirrapido", "Apuntando", "Auch", "Aymisbolas", "Bateria", "Boxing",
+    "Cantando", "Cariñito", "Celebrar", "Fistifght", "JumpinJacks", "Mma Kick", "Pumpin", "Riendosesentao", "Saltito", "Toma pesao",
+    "Rumba", "SillyDance", "Twerk", "Twist", "Swag", "Gangnam"];
+  const datalistAnim = () => h("datalist", { id: "blabAnimaciones" }, ANIMACIONES.map(a => h("option", { value: a })));
+
+  // Campos opcionales (condiciones, animación, risa) plegados para no llenar la pantalla.
+  function extrasForm(base, x, que) {
+    const hayAlgo = (x.tras || "").trim() || (x.hechos || "").trim() || (x.animacion || "").trim() || (x.risa || "").trim();
+    return h("details", { class: "blab-detalle", open: !!hayAlgo },
+      h("summary", null, "Condiciones, animación y risa" + (que ? " (" + que + ")" : "")),
+      h("div", { class: "blab-dos" },
+        cp("Solo si ya se completó...", entrada(base + ".tras", x.tras, { ph: "ids de diálogos, separados por coma" }), "Por ejemplo teros_final. Los ids de las preguntas de un tema son <tema>_<pregunta>."),
+        cp("Solo si en la mesa pasó...", entrada(base + ".hechos", x.hechos, { ph: "hechos, separados por coma" }), "Hechos de data/bufon-evidencia.js, por ejemplo mattei_se_unio.")),
+      h("div", { class: "blab-dos" },
+        cp("Animación del Bufón", h("input", { type: "text", list: "blabAnimaciones", "data-r": base + ".animacion", value: x.animacion || "", placeholder: "(la de siempre)" })),
+        cp("Risa del Bufón (milisegundos)", entrada(base + ".risa", x.risa || "", { ph: "por ejemplo 2000" }))));
+  }
+
+  // Resumen en árbol de cómo se destapa un tema. Se repinta mientras escribes.
+  function arbolTexto(t) {
+    const etiquetas = x => {
+      const e = [];
+      if (x.cierra && !x.fin) e.push("cierra el tema");
+      if (x.fin) e.push("termina la conversación");
+      if (x.voces && lista(x.voces).length) e.push("Voces: " + x.voces);
+      if (x.voz) e.push("solo si la Voz " + x.voz + " despertó");
+      if (lista(x.tras).length) e.push("tras " + lista(x.tras).join("+"));
+      if (lista(x.hechos).length) e.push("hechos " + lista(x.hechos).join("+"));
+      return e.length ? "  [" + e.join("; ") + "]" : "";
+    };
+    const elems = [];
+    t.preguntas.forEach(p => elems.push({ id: p.id, req: lista(p.requiere), pinta: nivel => [nivel + "• " + (p.texto || "(sin texto)") + "  <" + p.id + ">" + etiquetas(p)] }));
+    t.grupos.forEach(g => elems.push({
+      id: g.id, req: lista(g.requiere),
+      pinta: nivel => [nivel + "◆ una sola de" + etiquetas(g) + "  <" + g.id + ">"].concat(g.opciones.map(o => nivel + "    ○ " + (o.texto || "(sin texto)") + (o.neutral ? "  (neutral)" : "") + etiquetas(o)))
+    }));
+    const ids = new Set(elems.map(e => e.id));
+    const salida = ["Tema «" + t.id + "»  botón: «" + (t.boton || "...") + "»  empieza " + (t.como === "boton" ? "con el botón" : "como recuerdo") + etiquetas(t),
+      "└ intro (el Bufón cuenta)" + ((t.introAnimacion || t.introRisa) ? "  [animación/risa]" : "")];
+    const visto = new Set();
+    function hijosDe(padre, nivel, profundidad) {
+      if (profundidad > 12) return;
+      const hijos = elems.filter(e => !visto.has(e.id) && (padre === null ? !e.req.some(r => ids.has(r)) : e.req[0] === padre));
+      hijos.forEach(e => {
+        visto.add(e.id);
+        const extra = e.req.length > 1 ? "  (necesita también: " + e.req.slice(1).join(", ") + ")" : "";
+        e.pinta(nivel).forEach((l, i) => salida.push(l + (i === 0 ? extra : "")));
+        hijosDe(e.id, nivel + "    ", profundidad + 1);
+      });
+    }
+    hijosDe(null, "   ", 0);
+    elems.filter(e => !visto.has(e.id)).forEach(e => e.pinta("   ").forEach(l => salida.push(l + "  (!) nunca se destapa: revisa 'se destapa tras'")));
+    salida.push("└ salida del submenú: «" + ((t.cerrar || "").trim() || "Ya fue, sigamos con otra cosa.") + "»");
+    return salida.join("\n");
+  }
+  function repintarArboles() {
+    const b = bActual(); if (!b) return;
+    pEditor.querySelectorAll("[data-arbol]").forEach(pre => {
+      const t = b.temas[parseInt(pre.getAttribute("data-arbol"), 10)];
+      if (t) pre.textContent = arbolTexto(t);
+    });
+  }
+
   function formTema(t, ti, b) {
     const base = "temas." + ti;
     const idsPreg = t.preguntas.map(p => p.id);
@@ -459,33 +561,58 @@
       cp("Botón del menú principal", entrada(base + ".boton", t.boton, { ph: "Texto que ve el jugador" }), "Aparece cuando el tema ya empezó y se esconde solo al terminarlo."),
       cp("Cómo empieza", h("select", { "data-r": base + ".como" }, h("option", { value: "recuerdo", selected: t.como !== "boton" }, "El Bufón lo trae solo (recuerdo)"), h("option", { value: "boton", selected: t.como === "boton" }, "El botón aparece desde el principio"))),
       cp("Primeras líneas del Bufón", entrada(base + ".intro", t.intro, { area: true, filas: 4, ph: "Una línea por renglón" }), "Una línea por renglón. Para la interjección de una Voz: herida> texto (voces: coartada, testigo, grieta, muralla, hilo, rostro, herida, apetito)."),
+      h("details", { class: "blab-detalle", open: !!((t.tras || "").trim() || (t.hechos || "").trim() || (t.cerrar || "").trim() || (t.introAnimacion || "").trim() || (t.introRisa || "").trim()) },
+        h("summary", null, "Condiciones del tema, animación de la intro y texto de salida"),
+        h("div", { class: "blab-dos" },
+          cp("El tema solo existe si ya se completó...", entrada(base + ".tras", t.tras, { ph: "ids de diálogos, separados por coma" })),
+          cp("El tema solo existe si en la mesa pasó...", entrada(base + ".hechos", t.hechos, { ph: "hechos, separados por coma" }))),
+        h("div", { class: "blab-dos" },
+          cp("Animación al empezar", h("input", { type: "text", list: "blabAnimaciones", "data-r": base + ".introAnimacion", value: t.introAnimacion || "", placeholder: "(la de siempre)" })),
+          cp("Risa al empezar (milisegundos)", entrada(base + ".introRisa", t.introRisa || "", { ph: "por ejemplo 2000" }))),
+        cp("Texto del botón de salida del submenú", entrada(base + ".cerrar", t.cerrar || "", { ph: "Ya fue, sigamos con otra cosa." }), "Vuelve al menú principal sin cerrar el tema.")),
       h("h5", null, "Preguntas"),
       t.preguntas.map((p, pi) => h("div", { class: "blab-sub" },
         h("div", { class: "blab-sub-top" }, h("strong", null, "Pregunta «" + p.id + "»"), h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".preguntas." + pi }, "Quitar")),
         cp("Texto del botón", entrada(base + ".preguntas." + pi + ".texto", p.texto, { ph: "¿Qué dice el jugador?" })),
         cp("Se destapa tras...", entrada(base + ".preguntas." + pi + ".requiere", p.requiere, { ph: "ids separados por coma" }), idsPreg.length ? "Preguntas de este tema: " + idsPreg.join(", ") : null),
         cp("Respuesta del Bufón", entrada(base + ".preguntas." + pi + ".lineas", p.lineas, { area: true, filas: 6, ph: "Una línea por renglón" })),
+        cp("Voces que suben al elegirla", entrada(base + ".preguntas." + pi + ".voces", p.voces || "", { ph: "herida +1, rostro +2" }), "Puntos para las Voces cuando el jugador elige esta pregunta. Déjalo vacío si no suma nada. Voces: coartada, testigo, grieta, muralla, hilo, rostro, herida, apetito."),
+        extrasForm(base + ".preguntas." + pi, p, "esta pregunta"),
         h("label", { class: "blab-casilla" }, h("input", { type: "checkbox", "data-r": base + ".preguntas." + pi + ".cierra", checked: p.cierra }),
           h("span", null, "Cierra el tema. ", h("small", null, "Tras esta respuesta el Bufón vuelve al menú principal y el tema ya no sigue avanzando (lo pendiente desaparece). Úsalo para «No me interesa»."))),
         h("label", { class: "blab-casilla" }, h("input", { type: "checkbox", "data-r": base + ".preguntas." + pi + ".fin", checked: p.fin }),
           h("span", null, "Termina la conversación. ", h("small", null, "Tras esta respuesta el Bufón no ofrece más opciones y la visita acaba (como su despedida). Cierra también el tema."))))),
       h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-pregunta", "data-ruta": base }, "+ Pregunta"),
       h("h5", null, "Respuestas excluyentes"),
-      h("p", { class: "blab-nota" }, "Al elegir una, las otras desaparecen. Deja siempre una salida neutral («No lo sé»): así el Bufón no obliga a tomar partido para poder seguir."),
+      h("p", { class: "blab-nota" }, "Al elegir una, las otras desaparecen. Deja siempre una salida neutral («No lo sé»): así el Bufón no obliga a tomar partido para poder seguir. La casilla «salida neutral» solo sirve de recordatorio para el validador, no cambia lo que ve el jugador."),
       t.grupos.map((g, gi) => h("div", { class: "blab-sub" },
         h("div", { class: "blab-sub-top" }, h("strong", null, "Grupo «" + g.id + "»"), h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".grupos." + gi }, "Quitar")),
         cp("Aparece tras...", entrada(base + ".grupos." + gi + ".requiere", g.requiere, { ph: "ids de preguntas, separados por coma" })),
-        g.opciones.map((o, oi) => h("div", { class: "blab-opcion" },
-          h("div", { class: "blab-sub-top" }, h("code", null, o.id), h("label", { class: "blab-casilla chico" }, h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".neutral", checked: o.neutral }), h("span", null, "salida neutral"), h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".cierra", checked: o.cierra }), h("span", null, "cierra el tema"), h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".fin", checked: o.fin }), h("span", null, "termina la conversación"))),
-          cp("Texto del botón", entrada(base + ".grupos." + gi + ".opciones." + oi + ".texto", o.texto)),
-          cp("Reacción del Bufón", entrada(base + ".grupos." + gi + ".opciones." + oi + ".lineas", o.lineas, { area: true, filas: 3 })))))),
+        extrasForm(base + ".grupos." + gi, g, "todo el grupo"),
+        g.opciones.map((o, oi) => {
+          const ob = base + ".grupos." + gi + ".opciones." + oi;
+          return h("div", { class: "blab-opcion" },
+            h("div", { class: "blab-sub-top" }, h("code", null, o.id),
+              h("label", { class: "blab-casilla chico" }, h("input", { type: "checkbox", "data-r": ob + ".neutral", checked: o.neutral }), h("span", null, "salida neutral"), h("input", { type: "checkbox", "data-r": ob + ".cierra", checked: o.cierra }), h("span", null, "cierra el tema"), h("input", { type: "checkbox", "data-r": ob + ".fin", checked: o.fin }), h("span", null, "termina la conversación"))),
+            cp("Texto del botón", entrada(ob + ".texto", o.texto)),
+            cp("Reacción del Bufón", entrada(ob + ".lineas", o.lineas, { area: true, filas: 3 })),
+            cp("Voces que suben al elegirla", entrada(ob + ".voces", o.voces || "", { ph: "herida +1, rostro +2" })),
+            h("details", { class: "blab-detalle", open: !!((o.animacion || "").trim() || (o.risa || "").trim()) },
+              h("summary", null, "Animación y risa de esta reacción"),
+              h("div", { class: "blab-dos" },
+                cp("Animación del Bufón", h("input", { type: "text", list: "blabAnimaciones", "data-r": ob + ".animacion", value: o.animacion || "", placeholder: "(la de siempre)" })),
+                cp("Risa del Bufón (milisegundos)", entrada(ob + ".risa", o.risa || "", { ph: "por ejemplo 2000" })))));
+        }))),
       h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-grupo", "data-ruta": base }, "+ Grupo de respuestas excluyentes"),
+      h("details", { class: "blab-detalle", open: true },
+        h("summary", null, "Vista del flujo de este tema"),
+        h("pre", { "data-arbol": String(ti) }, arbolTexto(t))),
       h("div", { class: "blab-botones" },
         h("button", { type: "button", class: "secondary-button", "data-acc": "copiar-tema", "data-ruta": String(ti) }, "Copiar solo este tema")));
   }
 
   function renderEditor() {
-    pEditor.replaceChildren();
+    pEditor.replaceChildren(datalistAnim());
     const b = bActual();
     const importables = meta ? Object.keys(meta.ciclos).filter(id => meta.defs[id]) : [];
     const barra = h("div", { class: "blab-barra" },
@@ -557,14 +684,14 @@
     const b = bActual();
     if (!r || !b) return;
     ponerEnRuta(b, r, e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    guardarBorradores(); programarValidacion();
+    guardarBorradores(); programarValidacion(); repintarArboles();
   });
   pEditor.addEventListener("change", e => {
     const r = e.target.getAttribute && e.target.getAttribute("data-r");
     const b = bActual();
     if (!r || !b) return;
     ponerEnRuta(b, r, e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    guardarBorradores(); programarValidacion();
+    guardarBorradores(); programarValidacion(); repintarArboles();
   });
   pEditor.addEventListener("click", async e => {
     const btn = e.target.closest && e.target.closest("[data-acc]");
