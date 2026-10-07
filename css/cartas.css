@@ -47,7 +47,7 @@
 .cartas-aviso-sesion { margin: 18px 0 0; padding: 12px 14px; border: 1px solid var(--border); background: var(--panel); color: var(--muted); font-size: .88rem; }
 
 .carta {
-  position: relative; display: block; width: 100%; aspect-ratio: 5 / 7; padding: 0; border: 0; background: none;
+  position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; padding: 0; border: 0; background: none;
   color: #f4f1e6; text-align: left; cursor: pointer; font: inherit; transition: transform .15s;
   filter: drop-shadow(0 6px 10px var(--shadow));
 }
