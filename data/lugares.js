@@ -5386,22 +5386,25 @@ window.LUGARES = [
     title: "Vado Ceniza",
     category: "Lugares",
     tags: ["aldea", "frontera", "brurland"],
-    summary: "Asentamiento fronterizo de Brurland, escenario de la defensa desesperada contra un protodraco que costó la vida de Coach.",
+    summary: "Aldea fronteriza de Brurland, quemada desde hace mucho tiempo por el incendio que creó el Desierto de Cenizas y azotada todavía por oleadas de ceniza.",
     region: "Brurland, Derrovia, Gylas",
     gobierno: "",
     religionPredominante: "",
     lugaresDestacados: [],
     content: `
-      <p>Un asentamiento modesto en el límite del territorio brurlandés, compuesto por
+      <p>Un asentamiento modesto en el límite del territorio brurlandés, hecho de
       poco más que un puñado de granjas y un mercado semanal que atrae a viajeros de
       los alrededores. Sus defensas nunca fueron pensadas para resistir un ataque
       serio, apenas una empalizada de madera reforzada con lo que sus habitantes
       pudieron reunir con el tiempo.</p>
-      <p>El pueblo es recordado hoy por una noche en particular, la defensa desesperada
-      de su refugio improvisado contra un protodraco que descendió sobre las
-      barricadas. Los aldeanos que sobrevivieron todavía repiten los nombres de quienes
-      no lo lograron, y algunos aseguran que el sitio exacto donde cayó Coach nunca
-      volvió a crecer pasto verde.</p>
+      <p>Hace mucho tiempo que la aldea está quemada. El incendio que convirtió el
+      bosque vecino en el Desierto de Cenizas llegó hasta ahí, y la ceniza que
+      levantó llenó la aldea hasta casi enterrarla, un mar gris sin fin.</p>
+      <p>Hasta hoy la ceniza no ha dejado de azotarla. Cada cierto tiempo llegan
+      nuevas oleadas desde el desierto, y cada vez la aldea queda cubierta otra vez.
+      Los que se quedaron aprendieron a vivir con ello, y a los viajeros que llegan
+      al mercado les basta una mirada al cielo para saber si es buen día para
+      quedarse.</p>
     `
   },
   {
