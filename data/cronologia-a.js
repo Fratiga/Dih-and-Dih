@@ -350,5 +350,43 @@ window.CRONOLOGIA_A = [
       <p>El grupo decidió empezar por el bosque, para confirmar que el dragón no
       hubiera roto algo ahí adentro que todavía no habían visto.</p>
     `
+  },
+  {
+    id: "capitulo-8",
+    orden: 8,
+    numero: "Capítulo VIII",
+    title: "El Nombre de Ledros",
+    fecha: "Dentro del bosque, y la fogata más adelante",
+    content: `
+      <p>Se adentraron en el bosque sin Dagren. Iban a revisar lo que el dragón
+      hubiera dejado roto ahí adentro, y lo que encontraron no tenía nada que ver
+      con el dragón.</p>
+
+      <h4>Ledros</h4>
+
+      <p>Se toparon con Ledros. Al principio no hubo pelea. Hablaron con él un
+      buen rato y, al final, les dijo su nombre.</p>
+
+      <p>Sir Buffolet terminó haciéndolo llorar. Ledros se fue, y al irse dejó algo
+      detrás.</p>
+
+      <h4>Los espíritus</h4>
+
+      <p>Ledros soltó espíritus por todas partes. Se desprendieron de su armadura y
+      se metieron en el barro, en la madera y en las piedras del lugar, que se
+      levantaron con ellos adentro.</p>
+
+      <p>El grupo eligió pelear. Aguantaron un tiempo, pero los espíritus los
+      superaron. Edge y Hornet decidieron huir. Dejaron atrás a Enzo, a Mattei y a
+      Sir Buffolet, a su suerte.</p>
+
+      <p>Sir Buffolet no salió de ahí. Enzo lo dejó morir y, antes de irse, se
+      llevó su gorro. Enzo y Mattei salieron del bosque por su cuenta.</p>
+
+      <h4>La fogata</h4>
+
+      <p>Más adelante encontraron una fogata. La habían encendido Hornet y Edge. Se
+      reencontraron alrededor de ella, y faltaba uno.</p>
+    `
   }
 ];
