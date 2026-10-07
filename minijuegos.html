@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minijuegos — Compendio del Mundo</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20261189">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261189">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261189">
+  <link rel="stylesheet" href="css/style.css?v=20261190">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261190">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261190">
 </head>
 <body class="mj-pagina hub-tema">
   <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni
@@ -42,32 +42,48 @@
        que js/oculto.js en cada una de sus páginas). Para abrirlos a todos, quita
        oculto.js de su HTML y pásalos arriba como tarjetas normales. */
     (function () {
-      const esAdmin = localStorage.getItem("compendioAdmin") === "1";
-      // Quien tiene el rol Editor de cartas solo ve la tarjeta de las cartas
-      const esEditorCartas = localStorage.getItem("compendioCartasEditor") === "1";
-      if (!esAdmin && !esEditorCartas) return;
-      const grid = document.querySelector(".mj-grid");
-      [
+      const JUEGOS = [
         ["arqueria.html", "Arquería", "Dispara a los blancos contra un rival o contra otro jugador."],
         ["duelo.html", "Duelo", "Combate en tiempo real: ataca, bloquea y esquiva."],
         ["cartas.html", "Cartas malditas", "Tu colección de cartas y las batallas."],
         ["ostelar.html", "Ostelar", "La arena: combate por turnos en cuadrícula."]
-      ].filter(([href]) => esAdmin || href === "cartas.html").forEach(([href, titulo, texto]) => {
-        const a = document.createElement("a");
-        a.className = "mj-tarjeta mj-tarjeta-oculta";
-        a.href = href;
-        a.innerHTML = "<h3></h3><p></p><small></small>";
-        a.querySelector("small").textContent = esAdmin ? "Solo admin por ahora" : "Solo editores de cartas";
-        a.querySelector("h3").textContent = titulo;
-        a.querySelector("p").textContent = texto;
-        grid.appendChild(a);
+      ];
+      const puestas = new Set();
+      // Quien tiene el rol Editor de cartas solo ve la tarjeta de las cartas
+      function mostrar(esAdmin, esEditorCartas) {
+        if (!esAdmin && !esEditorCartas) return;
+        const grid = document.querySelector(".mj-grid");
+        JUEGOS.filter(([href]) => esAdmin || href === "cartas.html").forEach(([href, titulo, texto]) => {
+          if (puestas.has(href)) return;
+          puestas.add(href);
+          const a = document.createElement("a");
+          a.className = "mj-tarjeta mj-tarjeta-oculta";
+          a.href = href;
+          a.innerHTML = "<h3></h3><p></p><small></small>";
+          a.querySelector("small").textContent = esAdmin ? "Solo admin por ahora" : "Solo editores de cartas";
+          a.querySelector("h3").textContent = titulo;
+          a.querySelector("p").textContent = texto;
+          grid.appendChild(a);
+        });
+      }
+      mostrar(localStorage.getItem("compendioAdmin") === "1", localStorage.getItem("compendioCartasEditor") === "1");
+
+      // Si el navegador todavía no sabe quién eres, se le pregunta al servidor
+      window.addEventListener("load", async () => {
+        if (puestas.size) return;
+        try {
+          if (typeof fichasSesionActual !== "function" || !(await fichasSesionActual())) return;
+          const supabase = await fichasCliente();
+          const [a, e] = await Promise.all([supabase.rpc("fichas_es_admin"), supabase.rpc("cartas_es_editor")]);
+          mostrar(a.data === true, e.data === true);
+        } catch (err) { /* sin sesión o sin conexión: se quedan solo las públicas */ }
       });
     })();
   </script>
-  <script src="js/mj-musica.js?v=20261189"></script>
+  <script src="js/mj-musica.js?v=20261190"></script>
   <script>MjMusica.iniciar("assets/cosas/All The Fun At The Fair.mp3", { volumen: 0.35 });</script>
-  <script src="js/fichas-supabase.js?v=20261189"></script>
-  <script src="js/presencia.js?v=20261189"></script>
-  <script src="js/minijuegos-avisos.js?v=20261189"></script>
+  <script src="js/fichas-supabase.js?v=20261190"></script>
+  <script src="js/presencia.js?v=20261190"></script>
+  <script src="js/minijuegos-avisos.js?v=20261190"></script>
 </body>
 </html>
