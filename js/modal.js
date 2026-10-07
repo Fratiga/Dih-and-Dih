@@ -122,7 +122,7 @@ function datosGMBlock(entry) {
 
 /* Sitios relevantes de la historia dentro de un lugar grande (entry.subsecciones:
    [{ lado: "A" | "B" | "AB", titulo, texto }]). Cada Side ve solo los suyos; sin Side
-   elegido no se muestra ninguno, y el Admin ve todos con su etiqueta. Van fuera de
+   elegido no se muestra ninguno, y el Admin ve todos. No se marca de qué Side es cada una. Van fuera de
    "content" a propósito, para que no salgan en las búsquedas. */
 function subseccionesBlock(entry) {
   if (!entry.subsecciones || !entry.subsecciones.length) return "";
@@ -130,10 +130,9 @@ function subseccionesBlock(entry) {
   const lado = typeof ladoActual === "function" ? ladoActual() : null;
   const visibles = entry.subsecciones.filter(sub => admin || (lado && sub.lado.includes(lado)));
   if (!visibles.length) return "";
-  const etiqueta = l => (l === "AB" ? "Ambos Sides" : `Side ${l}`);
   const items = visibles.map(sub => `
     <div class="modal-subseccion">
-      <h4>${sub.titulo}${admin ? ` <small class="modal-subseccion-lado">${etiqueta(sub.lado)}</small>` : ""}</h4>
+      <h4>${sub.titulo}</h4>
       ${sub.texto}
     </div>`).join("");
   return `<div class="modal-subsecciones"><h3>Dentro de ${entry.title}</h3>${items}</div>`;
