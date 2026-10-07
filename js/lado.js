@@ -249,6 +249,7 @@ async function ladoSincronizar() {
     if (ladoCacheado || adminCacheado || nombreUsuario()) {
       localStorage.removeItem(LADO_KEY);
       localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem("compendioCartasEditor");
       localStorage.removeItem(USERNAME_KEY);
       recargarSiHaceFalta();
     }
@@ -285,10 +286,22 @@ async function ladoSincronizar() {
     if (side) localStorage.setItem(LADO_KEY, side); else localStorage.removeItem(LADO_KEY);
     if (username) localStorage.setItem(USERNAME_KEY, username); else localStorage.removeItem(USERNAME_KEY);
     localStorage.setItem(ADMIN_KEY, admin ? "1" : "0");
+    ladoSincronizarEditorCartas();
     if (cambioLado || cambioAdmin || cambioUsername) recargarSiHaceFalta();
   } catch (e) {
     // Silencioso: se queda con el último valor bueno cacheado.
   }
+}
+
+/* Rol "Editor de cartas": solo decide si se muestra el enlace a las cartas (el
+   servidor es el que deja o no guardar). No recarga la página. Si todavía no se
+   corrió scratchpad/cartas_editor.sql, la función no existe y simplemente queda en no. */
+async function ladoSincronizarEditorCartas() {
+  try {
+    const supabase = await fichasCliente();
+    const { data } = await supabase.rpc("cartas_es_editor");
+    localStorage.setItem("compendioCartasEditor", data === true ? "1" : "0");
+  } catch (e) { /* se queda con lo cacheado */ }
 }
 
 /* Evita loops de recarga infinita si por lo que sea el valor nunca
@@ -408,6 +421,7 @@ function initGlobalLadoWidget() {
       await fichasCerrarSesion();
       localStorage.removeItem(LADO_KEY);
       localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem("compendioCartasEditor");
       localStorage.removeItem(USERNAME_KEY);
       location.reload();
     });
@@ -699,6 +713,7 @@ function initLadoGate(onUnlock) {
     logoutBtn.addEventListener("click", async () => {
       await fichasCerrarSesion();
       localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem("compendioCartasEditor");
       localStorage.removeItem(LADO_KEY);
       location.reload();
     });
@@ -761,6 +776,7 @@ function initAdminGate(onUnlock) {
     logoutBtn.addEventListener("click", async () => {
       await fichasCerrarSesion();
       localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem("compendioCartasEditor");
       localStorage.removeItem(LADO_KEY);
       location.reload();
     });

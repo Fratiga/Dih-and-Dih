@@ -99,6 +99,21 @@ async function adminCambiarDJ(idUsuario, esDJ) {
   if (error) throw error;
 }
 
+/* Rol Editor de cartas (editar cartas desde el álbum). Solo lo da un Admin; ver
+   scratchpad/cartas_editor.sql. adminListarEditoresCartas devuelve los ids de esas cuentas. */
+async function adminListarEditoresCartas() {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase.from("cartas_editores").select("user_id");
+  if (error) throw error;
+  return (data || []).map(f => f.user_id);
+}
+
+async function adminCambiarEditorCartas(idUsuario, esEditor) {
+  const supabase = await fichasCliente();
+  const { error } = await supabase.rpc("cartas_admin_set_editor", { target_id: idUsuario, nuevo: !!esEditor });
+  if (error) throw error;
+}
+
 async function adminCambiarSide(idUsuario, nuevoSide) {
   const supabase = await fichasCliente();
   const { error } = await supabase.rpc("fichas_admin_set_side", { target_id: idUsuario, nuevo_side: nuevoSide });

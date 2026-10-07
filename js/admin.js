@@ -107,7 +107,7 @@
     fichasSesionActual().then(ses => { miIdCuenta = ses && ses.user ? ses.user.id : null; }).catch(() => {});
   }
 
-  function pintarCuentas(lista, djs = new Set()) {
+  function pintarCuentas(lista, djs = new Set(), editores = new Set()) {
     const cont = document.getElementById("adminCuentasLista");
     const count = document.getElementById("adminCuentasCount");
     count.textContent = `${lista.length} cuenta${lista.length === 1 ? "" : "s"}`;
@@ -118,11 +118,12 @@
     }
 
     cont.innerHTML = lista.map(u => `
-      <div class="admin-cuenta-fila" data-id="${u.id}" data-es-admin="${u.es_admin ? "1" : "0"}" data-es-dj="${djs.has(u.id) ? "1" : "0"}">
+      <div class="admin-cuenta-fila" data-id="${u.id}" data-es-admin="${u.es_admin ? "1" : "0"}" data-es-dj="${djs.has(u.id) ? "1" : "0"}" data-es-editor-cartas="${editores.has(u.id) ? "1" : "0"}">
         <span class="admin-cuenta-nombre">
           <span class="admin-cuenta-usuario">${escaparHtml(u.username || "(sin nombre de usuario)")}</span>
           <span class="admin-cuenta-tag"${u.es_admin ? "" : " hidden"}>★ Admin</span>
           <span class="admin-cuenta-tag admin-cuenta-tag-dj"${djs.has(u.id) ? "" : " hidden"}>DJ</span>
+          <span class="admin-cuenta-tag admin-cuenta-tag-cartas"${editores.has(u.id) ? "" : " hidden"}>Editor de cartas</span>
         </span>
         <div class="admin-cuenta-side">
           <button type="button" class="admin-side-btn ${u.side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
@@ -131,6 +132,7 @@
         <div class="admin-cuenta-acciones">
           ${u.id === miIdCuenta ? "" : `<button type="button" class="admin-cuenta-accion" data-accion="admin">${u.es_admin ? "Quitar Admin" : "Dar Admin"}</button>`}
           <button type="button" class="admin-cuenta-accion" data-accion="dj" title="Editores de mapas de Zarabanda y Parranda y gestionar la rocola, nada más">${djs.has(u.id) ? "Quitar DJ" : "Dar DJ"}</button>
+          <button type="button" class="admin-cuenta-accion" data-accion="editor-cartas" title="Puede crear y editar cartas desde el álbum, nada más">${editores.has(u.id) ? "Quitar editor de cartas" : "Dar editor de cartas"}</button>
           <button type="button" class="admin-cuenta-accion" data-accion="password">Cambiar contraseña</button>
           <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-accion="eliminar">Eliminar cuenta</button>
         </div>
@@ -190,6 +192,31 @@
           btn.textContent = darlo ? "Quitar DJ" : "Dar DJ";
         } catch (err) {
           alert("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/ritmo_dj.sql en Supabase?");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
+    cont.querySelectorAll('[data-accion="editor-cartas"]').forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const fila = btn.closest("[data-id]");
+        const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
+        const darlo = fila.dataset.esEditorCartas !== "1";
+        const confirmado = confirm(darlo
+          ? `¿Dar el rol Editor de cartas a "${nombre}"?
+
+Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nombre y descripción). Nada más: no ve este panel ni las cuentas, y no puede regalar cartas.`
+          : `¿Quitarle el rol Editor de cartas a "${nombre}"?`);
+        if (!confirmado) return;
+        btn.disabled = true;
+        try {
+          await adminCambiarEditorCartas(fila.dataset.id, darlo);
+          fila.dataset.esEditorCartas = darlo ? "1" : "0";
+          fila.querySelector(".admin-cuenta-tag-cartas").hidden = !darlo;
+          btn.textContent = darlo ? "Quitar editor de cartas" : "Dar editor de cartas";
+        } catch (err) {
+          alert("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/cartas_editor.sql en Supabase?");
         } finally {
           btn.disabled = false;
         }
@@ -599,6 +626,8 @@
     { que: "Nombres de canciones del sitio (gestor)", sql: "rocola_nombres.sql", tipo: "tabla", ref: "rocola_nombres" },
     { que: "Fondos de las canciones (imagen, GIF o video)", sql: "fondos.sql", tipo: "tabla", ref: "rocola_fondos" },
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
+    { que: "Editor de cartas: rol y definiciones", sql: "cartas_editor.sql", tipo: "tabla", ref: "cartas_definiciones" },
+    { que: "Editor de cartas: fotos (almacenamiento)", sql: "cartas_editor.sql", tipo: "bucket", ref: "cartas" },
     { que: "Regalar cartas (Admin)", sql: "cartas.sql", tipo: "rpc", ref: "cartas_regalar", args: { p_usuario: CERO, p_carta: "no-existe", p_nota: "" } },
     { que: "Atajos del lobby guardados en la cuenta", sql: "atajos_usuario.sql", tipo: "tabla", ref: "atajos_usuario" },
     { que: "Contador de visitas del lobby", sql: "lobby_contador.sql", tipo: "rpc", ref: "lobby_visita", args: { p_contar: false } },
@@ -969,6 +998,7 @@
     }
     const nombreJugador = id => (jugadores.find(j => j.id === id) || {}).username || "(desconocido)";
     jugadorEl.innerHTML = jugadores.map(j => `<option value="${j.id}">${escaparHtml(j.username || "(sin nombre)")}${j.side ? ` · ${j.side}` : ""}</option>`).join("");
+    if (window.CartasCliente) await CartasCliente.cargarDefiniciones(true);
     const orden = Object.entries(window.CARTAS_RAREZAS).sort((a, b) => a[1].orden - b[1].orden);
     cartaEl.innerHTML = orden.map(([clave, r]) => {
       const cartas = window.CARTAS.filter(c => c.rareza === clave);
@@ -1022,7 +1052,9 @@
       // Los DJ se piden aparte: si todavía no se corrió ritmo_dj.sql, las cuentas se ven igual
       let djs = new Set();
       try { djs = new Set(await adminListarDJs()); } catch (e) { /* sin rol DJ todavía */ }
-      pintarCuentas(cuentas, djs);
+      let editoresCartas = new Set();
+      try { editoresCartas = new Set(await adminListarEditoresCartas()); } catch (e) { /* sin rol de editor todavía */ }
+      pintarCuentas(cuentas, djs, editoresCartas);
     } catch (e) {
       const mensaje = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/panel-admin.sql en Supabase?</p>`;
       peticionesEl.innerHTML = mensaje;

@@ -32,5 +32,126 @@ window.CartasCliente = (function () {
     return { cartas, numeros };
   }
 
-  return { visible, coleccion, sesion };
+  /* --- Rol de editor ---------------------------------------------------- */
+  const CLAVE_EDITOR = "compendioCartasEditor";
+
+  /* Lo que ya se sabe sin preguntar al servidor (para mostrar u ocultar enseguida). */
+  function editorCacheado() {
+    try { return localStorage.getItem("compendioAdmin") === "1" || localStorage.getItem(CLAVE_EDITOR) === "1"; } catch (e) { return false; }
+  }
+
+  /* Pregunta al servidor: { admin, editor, puede }. Sin sesión devuelve que no. */
+  async function verificarRol() {
+    try {
+      if (!(await sesion())) return { admin: false, editor: false, puede: false };
+      const supabase = await fichasCliente();
+      const [a, e] = await Promise.all([supabase.rpc("fichas_es_admin"), supabase.rpc("cartas_es_editor")]);
+      const admin = !!a.data;
+      const editor = !!e.data;
+      try { localStorage.setItem(CLAVE_EDITOR, editor ? "1" : "0"); } catch (err) { /* sin almacenamiento */ }
+      return { admin, editor, puede: admin || editor };
+    } catch (err) {
+      return { admin: false, editor: false, puede: false };
+    }
+  }
+
+  /* --- Definiciones guardadas en el servidor ------------------------------ */
+  const CAMPOS = ["nombre", "epiteto", "tipo", "rareza", "afinidad", "coste", "atq", "pv", "habilidad", "descripcion", "imagen", "fuente", "lado", "obtenible", "limite"];
+  const VACIA = { epiteto: "", atq: null, pv: null, habilidad: "", descripcion: "", imagen: null, fuente: null, lado: null, obtenible: true, limite: null };
+
+  /* Mezcla lo guardado en el servidor con el catálogo base de cartas-datos.js:
+     una definición reemplaza a la carta con su id, o la crea si es nueva. Las
+     cartas despublicadas se quitan salvo para quien edita (que las ve con
+     borrador: true). Devuelve false si el servidor todavía no tiene las tablas. */
+  async function cargarDefiniciones(puedeEditar) {
+    try {
+      const supabase = await fichasCliente();
+      const [defs, cat] = await Promise.all([
+        supabase.from("cartas_definiciones").select("id, data"),
+        supabase.from("cartas_catalogo").select("id, publicada")
+      ]);
+      if (defs.error || cat.error) return false;
+      const lista = window.CARTAS;
+      (defs.data || []).forEach(f => {
+        const i = lista.findIndex(c => c.id === f.id);
+        const base = i >= 0 ? lista[i] : { id: f.id, fuente: null };
+        const nueva = Object.assign({}, VACIA, base, { id: f.id });
+        CAMPOS.forEach(k => { if (f.data[k] !== undefined) nueva[k] = f.data[k]; });
+        nueva.nuevaEnServidor = i < 0;
+        if (i >= 0) lista[i] = nueva; else lista.push(nueva);
+      });
+      const publicada = new Map((cat.data || []).map(f => [f.id, f.publicada]));
+      for (let i = lista.length - 1; i >= 0; i--) {
+        if (publicada.get(lista[i].id) === false) {
+          if (puedeEditar) lista[i].borrador = true; else lista.splice(i, 1);
+        }
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* Guarda una carta entera. datos: los campos de CAMPOS. */
+  async function guardar(id, datos, publicada) {
+    const supabase = await fichasCliente();
+    const limpio = {};
+    CAMPOS.forEach(k => { limpio[k] = datos[k] === undefined ? null : datos[k]; });
+    const { error } = await supabase.rpc("cartas_guardar", { p_id: id, p_data: limpio, p_publicada: !!publicada });
+    if (error) throw error;
+  }
+
+  async function borrar(id) {
+    const supabase = await fichasCliente();
+    const { error } = await supabase.rpc("cartas_borrar", { p_id: id });
+    if (error) throw error;
+  }
+
+  /* --- Fotos -------------------------------------------------------------- */
+  const MARCA_BUCKET = "/storage/v1/object/public/cartas/";
+
+  /* Recorta a la proporción del arte (4:3), reduce a 640 de ancho y pasa a WebP. */
+  function prepararImagen(archivo) {
+    return new Promise((resolver, rechazar) => {
+      const url = URL.createObjectURL(archivo);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const proporcion = 4 / 3;
+        let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0;
+        if (sw / sh > proporcion) { const w = sh * proporcion; sx = (sw - w) / 2; sw = w; }
+        else { const h = sw / proporcion; sy = (sh - h) / 2; sh = h; }
+        const ancho = Math.min(640, Math.round(sw));
+        const canvas = document.createElement("canvas");
+        canvas.width = ancho;
+        canvas.height = Math.round(ancho / proporcion);
+        canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(b => b ? resolver(b) : rechazar(new Error("No se pudo preparar la imagen")), "image/webp", 0.86);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rechazar(new Error("No se pudo leer esa imagen")); };
+      img.src = url;
+    });
+  }
+
+  /* Sube la foto al bucket y devuelve su URL pública. */
+  async function subirImagen(archivo) {
+    const blob = await prepararImagen(archivo);
+    const supabase = await fichasCliente();
+    const ruta = `${crypto.randomUUID()}.webp`;
+    const { error } = await supabase.storage.from("cartas").upload(ruta, blob, { contentType: "image/webp", upsert: false, cacheControl: "31536000" });
+    if (error) throw error;
+    return `${window.FICHAS_SUPABASE_URL}${MARCA_BUCKET}${ruta}`;
+  }
+
+  /* Borra del bucket una foto que ya no se usa (si no se puede, queda huérfana y no pasa nada). */
+  async function quitarImagen(url) {
+    try {
+      const i = String(url || "").indexOf(MARCA_BUCKET);
+      if (i < 0) return;
+      const supabase = await fichasCliente();
+      await supabase.storage.from("cartas").remove([decodeURIComponent(url.slice(i + MARCA_BUCKET.length))]);
+    } catch (e) { /* queda huérfana */ }
+  }
+
+  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, guardar, borrar, subirImagen, quitarImagen };
 })();

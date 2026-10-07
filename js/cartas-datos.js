@@ -3,10 +3,12 @@
    (fuente) y de ahí saca su descripción, para que el lore viva en un solo
    sitio. La rareza es la dificultad de conseguirla, no su fuerza.
 
-   El servidor tiene su propia copia mínima (id, rareza, lado, obtenible,
-   limite): se genera con scratchpad/cartas_semilla.sql desde este archivo.
-   Si cambias una rareza, un lado o añades una carta, vuelve a generar y correr
-   ese SQL.
+   Este archivo es solo el punto de partida. Lo que el Admin y los editores
+   cambian desde el editor del álbum se guarda en el servidor
+   (scratchpad/cartas_editor.sql) y reemplaza a esta lista carta por carta, y
+   las cartas nuevas se crean allí. El servidor tiene además su propia copia
+   mínima (id, rareza, lado, obtenible, limite): scratchpad/cartas.sql la
+   siembra desde aquí, solo con las cartas que todavía no existen.
 
    lado: null = la ven todos; ["A"], ["B"] o ["A","B"] igual que en las
    entradas (un jugador no ve ni recibe cartas del lado contrario).
@@ -20,6 +22,10 @@ window.CARTAS_RAREZAS = {
   legendaria: { nombre: "Legendaria", orden: 4 },
   limitada: { nombre: "Limitada", orden: 5 }
 };
+
+window.CARTAS_TIPOS = ["Personaje", "Criatura", "Entidad", "Objeto", "Acción", "Terreno", "Reacción"];
+// Tipos que llevan ataque y vida
+window.CARTAS_TIPOS_UNIDAD = ["Personaje", "Criatura", "Entidad"];
 
 window.CARTAS_AFINIDADES = {
   juramento: { nombre: "Juramento", descripcion: "Defensa, protección, curación y represalias." },
