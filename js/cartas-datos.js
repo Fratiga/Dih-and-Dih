@@ -96,7 +96,7 @@ window.CARTAS_AFINIDADES = {
   T("puente-de-las-legiones", "Puente de las Legiones", "puente-de-las-legiones", "comun", "caceria", 2, "Ruta directa: durante 2 turnos, tus unidades ignoran Provocar.");
   T("los-huesos", "Los Huesos", "los-huesos-pelgiria", "comun", "sombra", 2, "Pasajes de memoria: durante 3 turnos, tus unidades de Sombra no pueden ser bloqueadas.");
   T("glaciar-eterno", "Glaciar Eterno", "glaciar-eterno", "comun", "eternidad", 2, "Muro de hielo: durante 3 turnos, la primera unidad que entre cada turno no puede atacar ese turno.");
-  T("vado-ceniza", "Vado Ceniza", "vado-ceniza", "infrecuente", "juramento", 3, "Defensa desesperada: durante 3 turnos, tus unidades que no atacaron este turno ganan +2 de vida hasta tu próximo turno.");
+  T("vado-ceniza", "Vado Ceniza", "vado-ceniza", "infrecuente", "sombra", 3, "Oleada de ceniza: durante 3 turnos, las unidades no pueden ser objetivo de habilidades.");
   T("desierto-de-cenizas", "Desierto de Cenizas", "desierto-de-cenizas", "infrecuente", "eternidad", 3, "Ceniza que no cesa: durante 3 turnos, ninguna unidad puede curarse ni recuperar vida.");
   T("catedral-del-juramento", "Catedral del Juramento", "catedral-del-juramento", "infrecuente", "juramento", 3, "Juramento público: durante 3 turnos, las habilidades no pueden destruir unidades (el combate sí).");
   T("el-crater", "El Cráter", "el-crater", "infrecuente", "arcano", 2, "Pruebas arcanas: mientras esté en juego, tus cartas de Arcano cuestan 1 menos, pero al inicio de tu turno una unidad de Arcano al azar recibe 1 de daño.");
