@@ -56,8 +56,8 @@ window.CartasCliente = (function () {
   }
 
   /* --- Definiciones guardadas en el servidor ------------------------------ */
-  const CAMPOS = ["nombre", "epiteto", "tipo", "rareza", "afinidad", "coste", "atq", "pv", "habilidad", "descripcion", "imagen", "fuente", "lado", "obtenible", "limite"];
-  const VACIA = { epiteto: "", atq: null, pv: null, habilidad: "", descripcion: "", imagen: null, fuente: null, lado: null, obtenible: true, limite: null };
+  const CAMPOS = ["nombre", "epiteto", "tipo", "rareza", "afinidad", "coste", "atq", "pv", "habilidad", "descripcion", "imagen", "ajuste", "fuente", "lado", "obtenible", "limite"];
+  const VACIA = { epiteto: "", atq: null, pv: null, habilidad: "", descripcion: "", imagen: null, ajuste: null, fuente: null, lado: null, obtenible: true, limite: null };
 
   /* Mezcla lo guardado en el servidor con el catálogo base de cartas-datos.js:
      una definición reemplaza a la carta con su id, o la crea si es nueva. Las
@@ -110,22 +110,19 @@ window.CartasCliente = (function () {
   /* --- Fotos -------------------------------------------------------------- */
   const MARCA_BUCKET = "/storage/v1/object/public/cartas/";
 
-  /* Recorta a la proporción del arte (4:3), reduce a 640 de ancho y pasa a WebP. */
+  /* Reduce la foto (lado largo de 1000 como máximo) y la pasa a WebP, sin recortarla:
+     el encuadre se guarda aparte (ajuste) y se puede cambiar cuando quieras. */
   function prepararImagen(archivo) {
     return new Promise((resolver, rechazar) => {
       const url = URL.createObjectURL(archivo);
       const img = new Image();
       img.onload = () => {
         URL.revokeObjectURL(url);
-        const proporcion = 4 / 3;
-        let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0;
-        if (sw / sh > proporcion) { const w = sh * proporcion; sx = (sw - w) / 2; sw = w; }
-        else { const h = sw / proporcion; sy = (sh - h) / 2; sh = h; }
-        const ancho = Math.min(640, Math.round(sw));
+        const reduccion = Math.min(1, 1000 / Math.max(img.naturalWidth, img.naturalHeight));
         const canvas = document.createElement("canvas");
-        canvas.width = ancho;
-        canvas.height = Math.round(ancho / proporcion);
-        canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * reduccion));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * reduccion));
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(b => b ? resolver(b) : rechazar(new Error("No se pudo preparar la imagen")), "image/webp", 0.86);
       };
       img.onerror = () => { URL.revokeObjectURL(url); rechazar(new Error("No se pudo leer esa imagen")); };

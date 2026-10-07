@@ -32,8 +32,9 @@
       ? `<span class="carta-numero">${numeros.map(n => `${numeros2(n)}/${numeros2(c.limite)}`).join(" · ")}</span>` : "";
     const copias = tengo && cantidad > 1 ? `<span class="carta-copias">x${cantidad}</span>` : "";
     const borrador = c.borrador ? `<span class="carta-borrador">Borrador</span>` : "";
+    const aj = c.ajuste || { z: 1, x: 50, y: 50 };
     const arte = tengo && c.imagen
-      ? `<img src="${esc(c.imagen)}" alt="" loading="lazy" decoding="async">`
+      ? `<img src="${esc(c.imagen)}" alt="" loading="lazy" decoding="async" style="--z:${+aj.z || 1};--px:${+aj.x}%;--py:${+aj.y}%">`
       : `<b>${esc(tengo ? iniciales(c.nombre) : "?")}</b>`;
     return `
       <button type="button" class="carta carta-rareza-${c.rareza} carta-af-${afinidad} ${tengo ? "" : "sin-tener"}" data-id="${esc(c.id)}" aria-label="${tengo ? esc(c.nombre) : "Carta sin descubrir"}">
@@ -167,6 +168,7 @@
       habilidad: campos.habilidad.value.trim(),
       descripcion: campos.descripcion.value.trim(),
       imagen: edActual ? edActual.imagen : null,
+      ajuste: edActual && edActual.imagen && !esAjusteNeutro(edActual.ajuste) ? edActual.ajuste : null,
       fuente: f ? { data: f[0], id: f[1] } : null,
       lado,
       obtenible: campos.obtenible.checked,
@@ -174,15 +176,85 @@
     };
   }
 
+  const AJUSTE_NEUTRO = () => ({ z: 1, x: 50, y: 50 });
+  const esAjusteNeutro = a => !a || (a.z === 1 && a.x === 50 && a.y === 50);
+  const limitar = (n, min, max) => Math.min(max, Math.max(min, n));
+
   function pintarVistaPrevia() {
     $("cartaEditorVista").innerHTML = htmlCarta(cartaDelFormulario(), true, 0, null);
-    $("edImagenQuitar").disabled = !(edActual && edActual.imagen);
+    // Sin carga perezosa aquí: para arrastrar hace falta saber el tamaño real de la foto
+    $("cartaEditorVista").querySelectorAll("img").forEach(i => { i.loading = "eager"; });
+    const hayFoto = !!(edActual && edActual.imagen);
+    $("edImagenQuitar").disabled = !hayFoto;
+    $("edAjuste").classList.toggle("hidden", !hayFoto);
+    if (hayFoto) $("edZoom").value = edActual.ajuste.z;
+  }
+
+  /* Pone el encuadre actual en la imagen de la vista previa sin volver a dibujarla (para arrastrar sin tirones). */
+  function aplicarAjuste() {
+    const img = document.querySelector("#cartaEditorVista .carta-arte img");
+    if (!img || !edActual) return;
+    const a = edActual.ajuste;
+    img.style.setProperty("--z", a.z);
+    img.style.setProperty("--px", `${a.x}%`);
+    img.style.setProperty("--py", `${a.y}%`);
+  }
+
+  /* Arrastrar la foto en la vista previa: la imagen sigue al puntero 1 a 1. */
+  function prepararArrastreDeFoto() {
+    const vista = $("cartaEditorVista");
+    let arrastre = null;
+    vista.addEventListener("pointerdown", ev => {
+      const arte = ev.target.closest(".carta-arte");
+      const img = arte && arte.querySelector("img");
+      if (!img || !edActual) return;
+      const caja = arte.getBoundingClientRect();
+      // Tamaño con el que se ve la foto: cubre el marco y se amplía con el zoom
+      const base = Math.max(caja.width / img.naturalWidth, caja.height / img.naturalHeight) * edActual.ajuste.z;
+      arrastre = {
+        x0: ev.clientX, y0: ev.clientY, a0: { ...edActual.ajuste },
+        sobraX: caja.width - img.naturalWidth * base, sobraY: caja.height - img.naturalHeight * base
+      };
+      arte.setPointerCapture(ev.pointerId);
+      arte.classList.add("arrastrando");
+      ev.preventDefault();
+    });
+    vista.addEventListener("pointermove", ev => {
+      if (!arrastre || !edActual) return;
+      const { x0, y0, a0, sobraX, sobraY } = arrastre;
+      // La foto se mueve en pantalla (sobra * cambio de porcentaje / 100)
+      if (Math.abs(sobraX) > 0.5) edActual.ajuste.x = limitar(a0.x + ((ev.clientX - x0) / sobraX) * 100, 0, 100);
+      if (Math.abs(sobraY) > 0.5) edActual.ajuste.y = limitar(a0.y + ((ev.clientY - y0) / sobraY) * 100, 0, 100);
+      aplicarAjuste();
+    });
+    const soltar = ev => {
+      if (!arrastre) return;
+      arrastre = null;
+      const arte = ev.target.closest && ev.target.closest(".carta-arte");
+      if (arte) arte.classList.remove("arrastrando");
+      edActual.ajuste.x = Math.round(edActual.ajuste.x * 10) / 10;
+      edActual.ajuste.y = Math.round(edActual.ajuste.y * 10) / 10;
+    };
+    vista.addEventListener("pointerup", soltar);
+    vista.addEventListener("pointercancel", soltar);
+
+    $("edZoom").addEventListener("input", () => {
+      if (!edActual) return;
+      edActual.ajuste.z = Math.round(Number($("edZoom").value) * 100) / 100;
+      aplicarAjuste();
+    });
+    $("edCentrar").addEventListener("click", () => {
+      if (!edActual) return;
+      edActual.ajuste = AJUSTE_NEUTRO();
+      $("edZoom").value = 1;
+      aplicarAjuste();
+    });
   }
 
   function abrirEditor(id) {
     const existente = id ? window.cartaPorId(id) : null;
     const c = existente || { id: "", nombre: "", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 1, habilidad: "", descripcion: "", imagen: null, fuente: null, lado: null, obtenible: true, limite: null };
-    edActual = { id: existente ? existente.id : null, nueva: !existente, imagen: c.imagen || null, imagenOriginal: c.imagen || null, subidas: [], idManual: !!existente };
+    edActual = { id: existente ? existente.id : null, nueva: !existente, imagen: c.imagen || null, imagenOriginal: c.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), c.ajuste || {}), subidas: [], idManual: !!existente };
     $("cartaEditorTitulo").textContent = existente ? `Editar: ${c.nombre}` : "Nueva carta";
     campos.id.value = c.id;
     campos.id.disabled = !!existente;
@@ -280,6 +352,7 @@
     });
     campos.id.addEventListener("input", () => { if (edActual) edActual.idManual = true; });
 
+    prepararArrastreDeFoto();
     $("edImagen").addEventListener("change", async ev => {
       const archivo = ev.target.files[0];
       ev.target.value = "";
@@ -293,6 +366,7 @@
         if (edActual.imagen && edActual.subidas.includes(edActual.imagen)) CartasCliente.quitarImagen(edActual.imagen);
         edActual.subidas.push(url);
         edActual.imagen = url;
+        edActual.ajuste = AJUSTE_NEUTRO();
         estado.textContent = "";
         pintarVistaPrevia();
       } catch (e) {
@@ -303,6 +377,7 @@
       if (!edActual) return;
       if (edActual.imagen && edActual.subidas.includes(edActual.imagen)) CartasCliente.quitarImagen(edActual.imagen);
       edActual.imagen = null;
+      edActual.ajuste = AJUSTE_NEUTRO();
       pintarVistaPrevia();
     });
   }
