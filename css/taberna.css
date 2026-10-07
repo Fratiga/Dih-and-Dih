@@ -223,3 +223,12 @@ dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8
 }
 .tema-check input[type="checkbox"]:focus-visible, .tema-check select:focus-visible { outline: 2px solid var(--lb-acento); outline-offset: 2px; }
 .tema-check select { border-radius: 0; border: 3px ridge var(--lb-borde); background: color-mix(in srgb, var(--bg) 55%, #000); }
+
+/* --- Sitios dentro de un lugar (subsecciones por Side) --- */
+.modal-subsecciones { margin-top: 26px; padding-top: 14px; border-top: 3px double var(--lb-borde); }
+.modal-subsecciones > h3 { margin: 0 0 8px; font-size: 1rem; color: var(--lb-acento); }
+.modal-subseccion { margin: 14px 0; padding: 10px 14px; border: 3px ridge var(--lb-borde); background: color-mix(in srgb, var(--bg) 70%, #000); }
+.modal-subseccion h4 { margin: 0 0 6px; font-size: .95rem; }
+.modal-subseccion p { margin: 0 0 8px; }
+.modal-subseccion p:last-child { margin-bottom: 0; }
+.modal-subseccion-lado { margin-left: 8px; font-size: .65rem; letter-spacing: .06em; text-transform: uppercase; color: var(--lb-tenue); }

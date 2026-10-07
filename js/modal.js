@@ -120,6 +120,25 @@ function datosGMBlock(entry) {
   return `<div class="modal-gm"><p class="modal-gm-label">🔒 Solo GM</p>${entry.datosGM}</div>`;
 }
 
+/* Sitios relevantes de la historia dentro de un lugar grande (entry.subsecciones:
+   [{ lado: "A" | "B" | "AB", titulo, texto }]). Cada Side ve solo los suyos; sin Side
+   elegido no se muestra ninguno, y el Admin ve todos con su etiqueta. Van fuera de
+   "content" a propósito, para que no salgan en las búsquedas. */
+function subseccionesBlock(entry) {
+  if (!entry.subsecciones || !entry.subsecciones.length) return "";
+  const admin = typeof esAdmin === "function" && esAdmin();
+  const lado = typeof ladoActual === "function" ? ladoActual() : null;
+  const visibles = entry.subsecciones.filter(sub => admin || (lado && sub.lado.includes(lado)));
+  if (!visibles.length) return "";
+  const etiqueta = l => (l === "AB" ? "Ambos Sides" : `Side ${l}`);
+  const items = visibles.map(sub => `
+    <div class="modal-subseccion">
+      <h4>${sub.titulo}${admin ? ` <small class="modal-subseccion-lado">${etiqueta(sub.lado)}</small>` : ""}</h4>
+      ${sub.texto}
+    </div>`).join("");
+  return `<div class="modal-subsecciones"><h3>Dentro de ${entry.title}</h3>${items}</div>`;
+}
+
 function habilidadesBlock(entry) {
   if (!entry.habilidades || !entry.habilidades.length) return "";
   const items = entry.habilidades
@@ -239,6 +258,7 @@ function openEntryModal(entry) {
     ${modalExtraMeta(entry)}
     ${mapaLinkFor(entry)}
     <div class="modal-body">${entry.content}</div>
+    ${subseccionesBlock(entry)}
     ${habilidadesBlock(entry)}
     ${datosGMBlock(entry)}
   `;

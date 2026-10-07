@@ -883,6 +883,13 @@ window.LUGARES = [
     gobierno: "Corona de Brurland",
     religionPredominante: "Mortismo",
     lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Desierto de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Capilla de las Astas Caídas", "Los Centinelas Helados"],
+    subsecciones: [
+      {
+        lado: "A",
+        titulo: "El granero de Dagren",
+        texto: "<p>Un granero abandonado en las afueras, el único techo propio de los protagonistas tras huir. Es de Dagren, que llegó desde Cala Ronca al enterarse del ataque del dragón. Ahí se libró la pelea contra Guillotina, de la que Dagren salió sin un brazo y Enzo sin una pierna. Dagren les cobra renta por cabeza mientras se queden.</p>"
+      }
+    ],
     content: `
       <p>Un antiguo reino de caballería cuya historia está marcada por el honor, los
       dragones y la expansión militar. Aunque continúa siendo una potencia
@@ -1377,6 +1384,23 @@ window.LUGARES = [
     gobierno: "",
     religionPredominante: "Edrasismo",
     lugaresDestacados: [],
+    subsecciones: [
+      {
+        lado: "B",
+        titulo: "La choza de la ermitaña",
+        texto: "<p>Una choza casi abandonada, escondida entre la maleza, donde vive sola una vieja ermitaña que no se sorprende de recibir visitas. Sabe que Verdam parece dirigirse a Marshfield y que la armadura que camina sola por el bosque se llama Ledros y fue capitán de los caballeros de Brurland. A cambio de contarlo pidió que le dieran descanso a Ledros.</p>"
+      },
+      {
+        lado: "B",
+        titulo: "La mansión misteriosa",
+        texto: "<p>Una mansión aislada y silenciosa en medio del bosque, que no debería estar ahí. Se ve tétrica incluso desde lejos. Quien se separa para investigarla termina acorralado por criaturas horribles, y el piso cede hasta una cueva debajo.</p>"
+      },
+      {
+        lado: "B",
+        titulo: "La cueva de carne",
+        texto: "<p>Una cueva hecha enteramente de carne, tibia y húmeda, bajo la mansión. Probablemente es el interior de una de las criaturas de arriba. Las paredes laten y hay más monstruos de carne. Ahí vive desde hace doce años Darian Veyr, el único superviviente de una expedición de treinta y dos soldados, que sabe cómo abrirse paso desde adentro.</p>"
+      }
+    ],
     content: `
       <p>Cerca del extremo Este de las Marchas Nobrianas, a apenas un par de días a pie
       de las murallas de Kigan, los árboles crecen tan juntos que el sol apenas
@@ -4644,6 +4668,53 @@ window.LUGARES = [
     gobierno: "Corona de Brurland",
     religionPredominante: "",
     lugaresDestacados: [],
+    subsecciones: [
+      {
+        lado: "AB",
+        titulo: "La Taberna del Gigante",
+        texto: "<p>Una de esas tabernas que Brurland ofrece a quien busca trabajo, rumores o simplemente un techo. La frecuentan aventureros de paso, mercaderes cansados del camino y mercenarios que cobran por no hacer preguntas. Los protagonistas entraron ahí la noche en que Las Comadrejas llegaron arrastrando una jaula con una cría de grifón, poco antes del ataque del dragón.</p>"
+      },
+      {
+        lado: "B",
+        titulo: "La Taberna del Gigante, después",
+        texto: "<p>Su dueño es Gareth, un semigigante tan fuerte como de mal humor. La taberna sobrevivió al ataque del dragón casi de milagro y desde entonces no le falta clientela. Los protagonistas volvieron antes de partir al norte. Entre las mesas se enteraron de que Verdam se había instalado en la Espesura y de que alguien andaba repartiendo detalles del juicio por Kigan.</p>"
+      },
+      {
+        lado: "AB",
+        titulo: "El Refugio",
+        texto: "<p>Una improvisación desesperada levantada con vigas apiladas, carros volcados y puertas arrancadas de sus goznes, donde se apretaron cientos de personas durante el ataque. Eklino, que no se movió cuando todos querían hacerlo, encabezó la defensa. Resistió tres oleadas, una de kobolds, otra con un dragarto y otra con tres, y después el aliento de un protodraco que barrió una franja de la línea. Eklino y Coach murieron esa noche. Cuando los protagonistas volvieron del castillo no había supervivientes y Verdam quemaba cuerpos en una pira.</p>"
+      },
+      {
+        lado: "AB",
+        titulo: "Castillo Tormentoso",
+        texto: "<p>La sede de la corona de Brurland, en Kigan. Estaba bajo asedio cuando los protagonistas llegaron para avisar al rey. El dragón se enfrentaba a los caballeros reales sin un vencedor claro. Ahí lograron herirlo por primera vez, y el dragón se alejó de Brurland. El rey celebró, y por un momento hubo alivio en el castillo.</p>"
+      },
+      {
+        lado: "B",
+        titulo: "Los Calabozos de Kigan",
+        texto: "<p>Donde encerraron a los protagonistas a la espera de su audiencia, después de que se entregaran por voluntad propia junto a Sigismund. Piedra húmeda y guardias que evitan mirarlos a los ojos. Un carcelero les debía un favor y se planeó una fuga, pero Adam bajó a convencerlos de que huir solo confirmaría la versión de sus acusadores. El motín estalló sin ellos y los protagonistas se atrincheraron en su celda con un camastro contra la puerta.</p>"
+      },
+      {
+        lado: "B",
+        titulo: "La casa de baños",
+        texto: "<p>Un lugar donde los protagonistas se bañaron antes de partir. Adam se bañó con ellos y admitió que la excursión había sido una excusa para escaparse un rato del trabajo. Ahí, un desconocido llamó a Hooey por un nombre que nunca había usado, Hubert Magnolia, y desapareció antes de dar más detalles.</p>"
+      },
+      {
+        lado: "B",
+        titulo: "El barrio descuidado",
+        texto: "<p>Un barrio mucho más abandonado que el resto de Kigan, que los protagonistas cruzaron al salir hacia el norte. Ahí Billy, Voss y Victor los atacaron sin previo aviso. Cuando la pelea terminaba apareció su jefe, Cassius Coldgrave, que terminó uniéndose al grupo a cambio de dos piezas de oro y seis de cobre.</p>"
+      },
+      {
+        lado: "A",
+        titulo: "El Descanso del Trasgo",
+        texto: "<p>Una taberna de mala muerte, cargada de humo, alcohol y desconfianza, con carteles de \"Se Busca\" que llevan los rostros de los protagonistas. Gareth, el semigigante al que ayudaron contra la Bestia Trémula, bebía solo en una esquina. Entre los clientes corrían rumores sobre alguien que compró armas justo antes del ataque, y se supo que Verdam pagaba una recompensa propia por el escondite de los protagonistas.</p>"
+      },
+      {
+        lado: "A",
+        titulo: "El callejón",
+        texto: "<p>Un callejón de la ciudad donde Enzo encontró a Mattei, temblando contra una pared, después de que el asesino del refugio matara a Eledar con un arpón. El asesino los persiguió por media ciudad.</p>"
+      }
+    ],
     content: `
       <p>Kigan se alza sobre los acantilados que rodean un amplio golfo, con su puerto
       natural resguardado de las peores tormentas del mar. Desde la Corona de Brurland
