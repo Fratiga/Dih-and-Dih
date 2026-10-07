@@ -356,11 +356,11 @@ window.CRONOLOGIA_A = [
     orden: 8,
     numero: "Capítulo VIII",
     title: "El Nombre de Ledros",
-    fecha: "Dentro del bosque, y la fogata más adelante",
+    fecha: "Dentro de La Espesura, y la fogata más adelante",
     content: `
-      <p>Se adentraron en el bosque sin Dagren. Iban a revisar lo que el dragón
-      hubiera dejado roto ahí adentro, y lo que encontraron no tenía nada que ver
-      con el dragón.</p>
+      <p>Se adentraron en La Espesura. Dagren se quedó en el granero. Iban a revisar
+      lo que el dragón hubiera dejado roto ahí adentro, y lo que encontraron no
+      tenía nada que ver con el dragón.</p>
 
       <h4>Ledros</h4>
 
@@ -381,7 +381,7 @@ window.CRONOLOGIA_A = [
       Sir Buffolet, a su suerte.</p>
 
       <p>Sir Buffolet no salió de ahí. Enzo lo dejó morir y, antes de irse, se
-      llevó su gorro. Enzo y Mattei salieron del bosque por su cuenta.</p>
+      llevó su gorro. Enzo y Mattei salieron de La Espesura por su cuenta.</p>
 
       <h4>La fogata</h4>
 
