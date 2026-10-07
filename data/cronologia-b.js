@@ -367,42 +367,41 @@ window.CRONOLOGIA_B = [
     title: "La Espesura",
     fecha: "La primera noche en la Espesura",
     content: `
-      <p>Con Cassius sumado al grupo, se adentraron en la Espesura, el bosque al
-      norte de Kigan que le hacía honor a su nombre desde el primer paso.
-      Después de un encuentro con un par de animales salvajes que no pasó de
-      eso, algo mucho más raro les salió al cruce.</p>
+      <p>Con Cassius ya sumado al grupo, tomaron el camino que sale de Kigan hacia
+      el norte y se internaron en la Espesura. El bosque le hacía honor al nombre
+      desde los primeros pasos. Las ramas se cerraban tanto sobre sus cabezas que
+      la luz llegaba al suelo en monedas sueltas. Un par de animales salvajes les
+      salió al paso y se resolvió sin mayor ceremonia. Lo que vino después no se
+      resolvió tan fácil.</p>
 
       <h4>La armadura que caminaba</h4>
 
-      <p>Tirada en el suelo, el grupo encontró una armadura enorme, y antes de
-      que nadie pudiera decidir qué hacer con ella, la armadura decidió por su
-      cuenta: se levantó, y empezó a caminar y a hablar. Lo que dijo no tenía
-      demasiado sentido, algo sobre una lluvia que no estaba cayendo en ningún
-      lado, y cuando el grupo le señaló el oeste para sacársela de encima, ni
-      ellos ni la propia armadura tenían del todo claro dónde quedaba eso.</p>
+      <p>Tirada entre las raíces había una armadura enorme. Nadie había terminado de
+      ponerse de acuerdo sobre qué hacer con ella cuando la armadura decidió por su
+      cuenta. Se incorporó con un chirrido, echó a andar y empezó a hablar. Hablaba
+      de una lluvia que no caía en ningún lugar visible, con mucha seriedad y poco
+      sentido. El grupo, que solo quería sacársela de encima, le señaló el oeste.
+      Ni ellos ni la armadura tenían claro dónde quedaba eso.</p>
 
-      <p>La armadura empezó a caminar de todas formas hacia lo que fuera que
-      hubiera entendido por "oeste", y fue entonces cuando de las grietas de su
-      coraza empezaron a caer almas errantes, que se prendieron al barro, a las
-      piedras y a la madera de alrededor y las levantaron convertidas en
-      monstruosidades poseídas. El grupo no se quedó a comprobar cuántas más
-      podían salir de ahí adentro, y huyó bosque adentro.</p>
+      <p>La armadura se puso en marcha de todos modos hacia lo que hubiera entendido
+      por oeste. Entonces empezaron a caer almas errantes de las grietas de su
+      coraza. Se prendieron al barro, a las piedras y a la madera de los alrededores
+      y los levantaron convertidos en monstruosidades poseídas. El grupo no se quedó
+      a averiguar cuántas más cabían ahí adentro y salió corriendo bosque adentro.</p>
 
       <h4>La fogata</h4>
 
-      <p>La huida terminó pasándole factura al tobillo de Eledar, así que el
-      grupo decidió detenerse y armar una fogata para pasar la noche.</p>
+      <p>La huida le pasó factura al tobillo de Eledar, y con él cojeando no había
+      manera de seguir. Armaron una fogata y se dispusieron a pasar la noche.</p>
 
-      <p>Mientras la noche avanzaba, un par de ojos aparecieron del otro lado
-      del fuego. Pertenecían a una criatura tan oscura que ni los ojos élficos
-      del grupo lograron distinguir su forma. Sin apuro, les ofreció tres
-      objetos, y se tomó su tiempo para explicar, a su manera, qué era cada
-      uno. Entre el miedo y lo poco que lograron entender de la oferta, los
-      protagonistas terminaron eligiendo una máscara de la que, por ahora, no
-      saben mucho más que eso: que la eligieron.</p>
+      <p>Ya avanzada la noche, un par de ojos apareció del otro lado del fuego.
+      Pertenecían a una criatura tan oscura que ni siquiera los ojos élficos del
+      grupo lograron darle forma. No tenía apuro. Les ofreció tres objetos y se
+      tomó su tiempo para explicar, a su manera, qué era cada uno. Entre el miedo
+      y lo poco que alcanzaron a entender, los protagonistas eligieron una máscara.
+      Por ahora no saben de ella nada más que eso, que la eligieron.</p>
 
-      <p>Ryn no consiguió pegar ojo en toda la noche. El resto, al menos,
-      durmió.</p>
+      <p>Ryn no pegó ojo en toda la noche. El resto, al menos, durmió.</p>
     `
   },
   {
@@ -412,36 +411,33 @@ window.CRONOLOGIA_B = [
     title: "La Ermitaña de la Espesura",
     fecha: "Segundo día en la Espesura",
     content: `
-      <p>El descanso junto a la fogata no duró demasiado. Uno de los espectros
-      caídos de la armadura los encontró antes de que amaneciera del todo, y
-      el grupo entendió rápido que no tenía sentido quedarse a pelear contra
-      algo que podía seguir sacando refuerzos de sus propias grietas. Decidieron
-      que no podían ganar esa guerra de desgaste, y se internaron todavía más
-      en la Espesura para dejar atrás las oleadas.</p>
+      <p>El descanso no les duró. Uno de los espectros caídos de la armadura los
+      encontró antes de que terminara de amanecer, y el grupo entendió enseguida
+      que no tenía sentido quedarse a pelear. Era una guerra de desgaste contra algo
+      que sacaba refuerzos de sus propias grietas, y no había forma de ganarla.
+      Se internaron todavía más en la Espesura para dejar atrás las oleadas.</p>
 
       <h4>La choza de la ermitaña</h4>
 
-      <p>La huida los llevó hasta una choza casi abandonada, escondida entre
-      la maleza. Ahí vivía una vieja ermitaña, sola, que no pareció sorprenderse
-      demasiado de tener visitas. Le preguntaron por Verdam y por la armadura
-      que caminaba sola, y ella escuchó todo sin apuro, sopesando cuánto valía
-      la pena contarles.</p>
+      <p>La huida los llevó hasta una choza casi abandonada, escondida entre la
+      maleza. Vivía ahí una vieja ermitaña, sola, que no pareció sorprenderse de
+      recibir visitas. Le preguntaron por Verdam y por la armadura que caminaba sola.
+      Ella los escuchó sin prisa, sopesando cuánto valía la pena contarles.</p>
 
-      <p>Fue Cassius quien terminó de convencerla, a fuerza de coquetearle sin
-      ninguna vergüenza. La vieja soltó lo que sabía: Verdam parecía dirigirse
-      a Marshfield, y la armadura tenía un nombre. Se llamaba Ledros, antiguo
+      <p>Fue Cassius quien terminó de convencerla, a fuerza de coquetearle sin una
+      pizca de vergüenza. La vieja soltó lo que sabía. Verdam parecía dirigirse a
+      Marshfield, y la armadura tenía un nombre. Se llamaba Ledros y había sido
       capitán de los caballeros de Brurland, aunque la propia ermitaña no supo
-      explicar del todo qué lo había dejado en el estado en que estaba ahora.</p>
+      explicar qué lo había dejado en el estado en que estaba.</p>
 
-      <p>A cambio de la información, pidió que le dieran descanso a Ledros.
-      Los protagonistas aceptaron.</p>
+      <p>A cambio de la información pidió una sola cosa. Que le dieran descanso a
+      Ledros. Los protagonistas aceptaron.</p>
 
       <h4>Rumbo a la mansión</h4>
 
-      <p>Con el paradero de Ledros como objetivo, el grupo se tomó un breve
-      descanso antes de retomar la marcha. Poco después, la Espesura los llevó
-      hasta una mansión que no debería estar ahí, aislada y silenciosa, en
-      medio del bosque.</p>
+      <p>Con Ledros como objetivo, se tomaron un breve descanso antes de retomar la
+      marcha. Poco después la Espesura los llevó hasta una mansión que no debería
+      estar ahí, aislada y silenciosa en medio del bosque.</p>
     `
   },
   {
@@ -451,33 +447,31 @@ window.CRONOLOGIA_B = [
     title: "El Vientre de la Bestia",
     fecha: "La primera noche en la mansión",
     content: `
-      <p>La mansión se veía tétrica incluso desde lejos, con esa clase de
-      silencio que no invita a acercarse. El grupo se separó para investigar,
-      cada quien por su lado, y no tardó en notar que algo los estaba
-      acorralando. Criaturas horribles fueron cerrando el cerco poco a poco
-      hasta que no quedó ninguna salida.</p>
+      <p>La mansión se veía tétrica incluso desde lejos, y su silencio no invitaba a
+      acercarse. Aun así entraron. El grupo se separó para investigar, cada quien por
+      su lado, y no tardó en notar que algo los estaba acorralando. Criaturas
+      horribles fueron cerrando el cerco hasta que no quedó ninguna salida.</p>
 
       <p>El piso cedió bajo sus pies.</p>
 
       <h4>La cueva de carne</h4>
 
-      <p>Cayeron a una cueva hecha enteramente de carne, tibia y húmeda,
-      probablemente el interior de una de las criaturas de arriba. Ahí dentro
-      los esperaban más monstruos carnosos, y el grupo tuvo que pelear para
-      abrirse camino entre paredes que latían, sin encontrar la salida.</p>
+      <p>Cayeron a una cueva hecha enteramente de carne, tibia y húmeda, que
+      probablemente era el interior de una de las criaturas de arriba. Las paredes
+      latían. Ahí abajo los esperaban más monstruos de carne, y el grupo tuvo que
+      pelear para abrirse camino sin encontrar por dónde salir.</p>
 
       <h4>Darian</h4>
 
-      <p>En algún punto de esa búsqueda apareció Darian Veyr, un guerrero de
-      élite que llevaba doce años ahí dentro, el único superviviente de una
-      expedición de treinta y dos soldados. Desconfió de ellos al principio y
-      les pidió una prueba de que no eran otra imitación de la cueva. Lo que
-      le importa ahora es hacer llegar a las familias el cuaderno con los
-      nombres de los compañeros que perdió. A cambio de sacarlos de ahí, el
-      grupo aceptó llevarlo.</p>
+      <p>En algún punto de esa búsqueda apareció Darian Veyr, un guerrero de élite
+      que llevaba doce años ahí dentro. Era el único superviviente de una expedición
+      de treinta y dos soldados. Desconfió de ellos al principio y les pidió una
+      prueba de que no eran otra imitación de la cueva. Lo que le importaba ahora
+      era hacer llegar a las familias el cuaderno con los nombres de los compañeros
+      que perdió. A cambio de sacarlos de ahí, el grupo aceptó llevarlo.</p>
 
-      <p>Darian empezó a guiarlos hacia la salida, explicándoles cómo abrirse
-      paso desde adentro.</p>
+      <p>Darian empezó a guiarlos hacia la salida, explicándoles cómo abrirse paso
+      desde adentro.</p>
     `
   }
 ];
