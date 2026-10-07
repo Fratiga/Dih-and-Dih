@@ -371,7 +371,7 @@ window.CRONOLOGIA_A = [
       él largo rato, y hacia el final les dijo su nombre.</p>
 
       <p>Duró hasta que intervino Sir Buffolet. Con el tacto de siempre, el
-      paladín consiguió hacer llorar a Ledros ahí mismo, delante de todos. Ledros
+      bardo consiguió hacer llorar a Ledros ahí mismo, delante de todos. Ledros
       no se quedó a ver cómo terminaba aquello. Se dio la vuelta y se fue.</p>
 
       <h4>Lo que dejó atrás</h4>
