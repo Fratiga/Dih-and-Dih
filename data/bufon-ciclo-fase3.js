@@ -29,6 +29,14 @@ window.bufonAgregarCiclo({
       },
       preguntas: [
         {
+          id: "no_importa", texto: "No me interesa quién sea.", cierra: true,
+          lineas: [
+            "Hah. Qué directo.",
+            "Está bien. El minotauro no se va a ofender.",
+            "Lo dejo donde estaba."
+          ]
+        },
+        {
           id: "quien", texto: "¿Quién era?",
           lineas: [
             "Un borracho. De los buenos, es decir, de los malos.",

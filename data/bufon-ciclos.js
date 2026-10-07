@@ -156,7 +156,10 @@
       ? ctx.hasCompletedDialogue(pre + r)
       : grupoHecho(ctx, grupos.find(g => g.id === r));
     const requisitosOk = (ctx, x) => (x.requiere || []).every(r => cumple(ctx, r));
-    const agotado = ctx => preguntas.every(p => ctx.hasCompletedDialogue(pre + p.id)) && grupos.every(g => grupoHecho(ctx, g));
+    // Una pregunta o respuesta con cierra:true termina el tema para siempre: lo que quede pendiente ya no se ofrece.
+    const cierraTema = ctx => preguntas.some(p => p.cierra && ctx.hasCompletedDialogue(pre + p.id))
+      || grupos.some(g => g.opciones.some(o => o.cierra && ctx.hasCompletedDialogue(marcaGrupoOpcion(g, o))));
+    const agotado = ctx => cierraTema(ctx) || (preguntas.every(p => ctx.hasCompletedDialogue(pre + p.id)) && grupos.every(g => grupoHecho(ctx, g)));
     const extra = ctx => !t.visibleSi || t.visibleSi(ctx);
 
     const decorar = (nodo, src) => {
@@ -171,7 +174,7 @@
     }, t.intro));
     // Preguntas
     preguntas.forEach(p => nuevoNodo("bufon_" + pre + p.id, decorar({
-      lineas: p.lineas, completeDialogue: pre + p.id, eleccion: hubId
+      lineas: p.lineas, completeDialogue: pre + p.id, ...(p.cierra ? { next: "intro_reason_sin_recuerdo" } : { eleccion: hubId })
     }, p)));
     // Respuestas de cada grupo (al contestar, el tema termina: vuelve al menú)
     grupos.forEach(g => g.opciones.forEach(o => nuevoNodo("bufon_" + pre + g.id + "_" + o.id, decorar({
@@ -184,14 +187,14 @@
     preguntas.forEach(p => {
       const op = {
         id: pre + p.id, texto: p.texto, next: "bufon_" + pre + p.id,
-        visible: ctx => ctx.cicloAbierto(cid) && requisitosOk(ctx, p) && !ctx.hasCompletedDialogue(pre + p.id)
+        visible: ctx => ctx.cicloAbierto(cid) && !cierraTema(ctx) && requisitosOk(ctx, p) && !ctx.hasCompletedDialogue(pre + p.id)
       };
       if (p.voz) op.voz = p.voz;
       opciones.push(op);
     });
     grupos.forEach(g => g.opciones.forEach(o => opciones.push({
       id: marcaGrupoOpcion(g, o), texto: o.texto, next: "bufon_" + pre + g.id + "_" + o.id,
-      visible: ctx => ctx.cicloAbierto(cid) && requisitosOk(ctx, g) && !grupoHecho(ctx, g)
+      visible: ctx => ctx.cicloAbierto(cid) && !cierraTema(ctx) && requisitosOk(ctx, g) && !grupoHecho(ctx, g)
     })));
     opciones.push({ id: pre + "cerrar", texto: t.cerrar || "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" });
     D.elecciones[hubId] = { opciones };
