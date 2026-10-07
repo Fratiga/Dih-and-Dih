@@ -147,7 +147,7 @@
     campos.af1.innerHTML = afin;
     campos.af2.innerHTML = `<option value="">(ninguna)</option>` + afin;
     const grupo = (titulo, clave) => `<optgroup label="${titulo}">${(window[clave] || []).map(e => `<option value="${clave}|${esc(e.id)}">${esc(e.title)}</option>`).join("")}</optgroup>`;
-    campos.fuente.innerHTML = `<option value="">(ninguna)</option>${grupo("Personajes", "PERSONAJES")}${grupo("Bestiario", "BESTIARIO")}${grupo("Objetos", "OBJETOS")}`;
+    campos.fuente.innerHTML = `<option value="">(ninguna)</option>${grupo("Personajes", "PERSONAJES")}${grupo("Bestiario", "BESTIARIO")}${grupo("Objetos", "OBJETOS")}${grupo("Lugares", "LUGARES")}`;
   }
 
   /* Lo que hay en el formulario ahora mismo, con la forma de una carta. */

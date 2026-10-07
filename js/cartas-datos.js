@@ -47,6 +47,7 @@ window.CARTAS_AFINIDADES = {
   const P = id => ({ data: "PERSONAJES", id });
   const B = id => ({ data: "BESTIARIO", id });
   const O = id => ({ data: "OBJETOS", id });
+  const L = id => ({ data: "LUGARES", id });
   const A = { lado: ["A"] };
   const AB = { lado: ["A", "B"] };
   const Bl = { lado: ["B"] };
@@ -89,6 +90,20 @@ window.CARTAS_AFINIDADES = {
   o("bomba-de-humo", "Bomba de humo", "Objeto", O("bomba-de-humo"), "infrecuente", "sombra", 2, "Reacción: tus unidades no pueden ser objetivo del siguiente ataque del rival.");
   o("cristal-de-mana", "Cristal de maná", "Objeto", O("cristal-de-mana"), "infrecuente", "arcano", 0, "Gana 2 de energía este turno.");
   o("capucha-oscura", "Capucha oscura", "Objeto", O("capucha-oscura"), "comun", "sombra", 1, "Equipo: la unidad no puede ser objetivo de habilidades enemigas el turno en que entra.");
+
+  // --- Terrenos: cambian las condiciones del combate durante varios turnos. Cada uno sale de un lugar del compendio.
+  const T = (id, nombre, lugar, rareza, afinidad, coste, habilidad) => o(id, nombre, "Terreno", L(lugar), rareza, afinidad, coste, habilidad);
+  T("puente-de-las-legiones", "Puente de las Legiones", "puente-de-las-legiones", "comun", "caceria", 2, "Ruta directa: durante 2 turnos, tus unidades ignoran Provocar.");
+  T("los-huesos", "Los Huesos", "los-huesos-pelgiria", "comun", "sombra", 2, "Pasajes de memoria: durante 3 turnos, tus unidades de Sombra no pueden ser bloqueadas.");
+  T("glaciar-eterno", "Glaciar Eterno", "glaciar-eterno", "comun", "eternidad", 2, "Muro de hielo: durante 3 turnos, la primera unidad que entre cada turno no puede atacar ese turno.");
+  T("vado-ceniza", "Vado Ceniza", "vado-ceniza", "infrecuente", "juramento", 3, "Defensa desesperada: durante 3 turnos, tus unidades que no atacaron este turno ganan +2 de vida hasta tu próximo turno.");
+  T("desierto-de-cenizas", "Desierto de Cenizas", "desierto-de-cenizas", "infrecuente", "eternidad", 3, "Ceniza que no cesa: durante 3 turnos, ninguna unidad puede curarse ni recuperar vida.");
+  T("catedral-del-juramento", "Catedral del Juramento", "catedral-del-juramento", "infrecuente", "juramento", 3, "Juramento público: durante 3 turnos, las habilidades no pueden destruir unidades (el combate sí).");
+  T("el-crater", "El Cráter", "el-crater", "infrecuente", "arcano", 2, "Pruebas arcanas: mientras esté en juego, tus cartas de Arcano cuestan 1 menos, pero al inicio de tu turno una unidad de Arcano al azar recibe 1 de daño.");
+  T("kigan", "Kigan", "kigan", "infrecuente", "juramento", 3, "Puerto militar: al inicio de tu turno, si controlas 2 o más unidades, roba una carta.");
+  T("torre-del-silencio", "Torre del Silencio", "torre-del-silencio", "rara", "sombra", 3, "Silencio: durante 3 turnos, las unidades no pueden activar habilidades al entrar.");
+  T("la-espesura", "La Espesura", "la-espesura", "rara", "arcano", 4, "Presencia que no se ve: mientras esté en juego, al inicio de cada turno una unidad al azar, de cualquier jugador, no puede atacar ni bloquear ese turno.");
+  T("osario-de-la-frontera", "Osario de la Frontera", "osario-de-la-frontera", "rara", "eternidad", 4, "Centinelas no muertos: mientras esté en juego, cuando una de tus unidades muere, recibes un Centinela 1/1 en el campo.");
 
   // --- Especiales (solo por regalo del admin) -------------------------------
   u("el-bufon", "El Bufón", "Entidad", { data: null, id: null }, "limitada", "arcano", 4, 3, 3, "Cambio de reglas: al entrar, hasta el final del turno cada jugador puede jugar una carta más.", { obtenible: false, limite: 5, epiteto: "El último espectador" });
