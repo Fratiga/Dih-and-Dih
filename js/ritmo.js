@@ -374,6 +374,10 @@
      tocando sin tapar la canción. Si no había nota, casi no se oye. */
   function sonidoGolpe(carril, acierto) {
     if (ajustes.sonidoGolpe === false || !audio || audio.state !== "running") return;
+    try { tonoGolpe(carril, acierto); } catch (e) { /* sin audio: la pulsación se juzga igual */ }
+  }
+
+  function tonoGolpe(carril, acierto) {
     const t0 = audio.currentTime;
     const o = audio.createOscillator();
     const g = audio.createGain();
@@ -452,9 +456,12 @@
     if (mejor.dur > 0) { mejor.mantiene = "activa"; activas.push(mejor); }
   }
 
+  // Una nota se da por fallada con este margen: a las pulsaciones se les descuenta hasta 0,1 s por llegar tarde y,
+  // si el fotograma ya había dado la nota por fallada, esa pulsación se perdía
+  const MARGEN_EVENTO = 0.1;
   function tiempoDeEvento(ev) {
     const retraso = Math.max(0, (performance.now() - (ev.timeStamp || performance.now())) / 1000);
-    return tiempoCancion() - Math.min(retraso, 0.1);
+    return tiempoCancion() - Math.min(retraso, MARGEN_EVENTO);
   }
 
   /* La tecla que se pulsó, como letra. Normalmente es lo que dice el teclado (ev.key). Con otra distribución
@@ -529,7 +536,7 @@
 
   /* --- Avance y final ------------------------------------------------------ */
   function actualizar(t) {
-    while (punteroFallos < notas.length && notas[punteroFallos].t < t - cfg.bien) {
+    while (punteroFallos < notas.length && notas[punteroFallos].t < t - cfg.bien - MARGEN_EVENTO) {
       const n = notas[punteroFallos];
       if (!n.estado) { n.estado = "fallo"; sumar("fallo", n.carril); anotarFallo(n.t); }
       punteroFallos++;

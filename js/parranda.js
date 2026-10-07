@@ -363,7 +363,7 @@
   function sumar(juicio, carril, peso = 1) {
     const x = xCarril(carril);
     avatar.golpe = ahoraS();
-    flash[carril] = ahoraS();
+    if (juicio !== "fallo") flash[carril] = ahoraS();
     if (juicio === "perfecto") {
       perfectos++; combo++;
       puntos += Math.round(300 * peso * multiplicador());
@@ -393,6 +393,10 @@
      estás tocando sin tapar la canción. Si no había nota, casi no se oye. */
   function sonidoGolpe(carril, acierto) {
     if (ajustes.sonidoGolpe === false || !audio || audio.state !== "running") return;
+    try { tonoGolpe(carril, acierto); } catch (e) { /* sin audio: la pulsación se juzga igual */ }
+  }
+
+  function tonoGolpe(carril, acierto) {
     const t0 = audio.currentTime;
     const o = audio.createOscillator();
     const g = audio.createGain();
@@ -431,7 +435,6 @@
   }
 
   function golpear(carril, t) {
-    flash[carril] = ahoraS();
     avatar.salto = ahoraS();
     // Con una larga en curso en este carril, una pulsación sin nota al alcance no cuenta. Si cae una nota de este
     // carril (el mapa puede traerlas bajo una larga), sí se juzga: antes se perdía la pulsación.
@@ -461,9 +464,10 @@
     if (mejor.dur > 0) { mejor.mantiene = "activa"; activas.push(mejor); }
   }
 
+  const MARGEN_EVENTO = 0.1; // lo máximo que se le descuenta a una pulsación por llegar tarde
   function tiempoDeEvento(ev) {
     const retraso = Math.max(0, (performance.now() - (ev.timeStamp || performance.now())) / 1000);
-    return tiempoCancion() - Math.min(retraso, 0.1);
+    return tiempoCancion() - Math.min(retraso, MARGEN_EVENTO);
   }
 
   /* La tecla que se pulsó, como letra. Normalmente es lo que dice el teclado (ev.key). Con otra distribución
@@ -536,12 +540,12 @@
   canvas.addEventListener("pointerup", soltarDedo);
   canvas.addEventListener("pointercancel", soltarDedo);
 
-  window.addEventListener("blur", () => { if (estado === "jugando") pausar(); });
+  window.addEventListener("blur", () => { limpiarEntradas(); if (estado === "jugando") pausar(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden && estado === "jugando") pausar(); });
 
   /* --- Avance y final ------------------------------------------------------ */
   function actualizar(t) {
-    while (punteroFallos < notas.length && notas[punteroFallos].t < t - cfg.bien) {
+    while (punteroFallos < notas.length && notas[punteroFallos].t < t - cfg.bien - MARGEN_EVENTO) {
       const n = notas[punteroFallos];
       if (!n.estado) { n.estado = "fallo"; sumar("fallo", n.carril); anotarFallo(n.t); }
       punteroFallos++;
@@ -1157,8 +1161,13 @@
     CARRILES.forEach((c, i) => {
       const f = Math.max(0, 1 - (ahora - flash[i]) / 0.18);
       const apretado = entradas[i].size > 0;
-      ctxC.fillStyle = `rgba(${c.rgb}, ${(0.05 + f * 0.22 + (apretado ? 0.12 : 0)).toFixed(3)})`;
+      const sostenida = activas.some(n => n.carril === i);
+      ctxC.fillStyle = `rgba(${c.rgb}, ${(0.05 + f * 0.22 + (sostenida ? 0.12 : 0)).toFixed(3)})`;
       ctxC.fillRect(X0 + i * ANCHO, 0, ANCHO, H);
+      if (apretado && !sostenida) {
+        ctxC.fillStyle = "rgba(255, 255, 255, 0.04)";
+        ctxC.fillRect(X0 + i * ANCHO, 0, ANCHO, H);
+      }
       if (i > 0) {
         ctxC.fillStyle = "rgba(255, 255, 255, 0.07)";
         ctxC.fillRect(X0 + i * ANCHO - 1, 0, 2, H);
@@ -1188,9 +1197,13 @@
       const x = xCarril(i);
       const f = Math.max(0, 1 - (ahora - flash[i]) / 0.18);
       const apretado = entradas[i].size > 0;
-      if (apretado || f > 0) {
+      const sostenida = activas.some(n => n.carril === i);
+      if (sostenida || f > 0) {
         ctxC.fillStyle = `rgba(${c.rgb}, ${(0.18 + f * 0.3).toFixed(2)})`;
         ctxC.beginPath(); ctxC.arc(x, Y_GOLPE, 34 + f * 6, 0, Math.PI * 2); ctxC.fill();
+      } else if (apretado) {
+        ctxC.fillStyle = "rgba(255, 255, 255, 0.1)";
+        ctxC.beginPath(); ctxC.arc(x, Y_GOLPE, 34, 0, Math.PI * 2); ctxC.fill();
       }
       ctxC.strokeStyle = c.color;
       ctxC.lineWidth = 3 + f * 3;

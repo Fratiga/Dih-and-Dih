@@ -3,6 +3,15 @@
 // de cambios en frases cortas. El botón avisa con un punto a quien no haya visto la última.
 window.PARRANDA_NOVEDADES = [
   {
+    fecha: "2026-10-07",
+    titulo: "Teclas y brillo de los carriles",
+    cambios: [
+      "El carril solo se ilumina cuando aciertas. Si fallas, o dejas pasar una nota, ya no se enciende.",
+      "Mientras mantienes una tecla se ve un brillo blanco suave. El color vivo queda para los aciertos y las largas bien sostenidas.",
+      "Arreglado un caso en que una pulsación a tiempo se perdía si el juego iba justo en ese instante."
+    ]
+  },
+  {
     fecha: "2026-10-06",
     titulo: "Ranking del modo práctica",
     cambios: [
