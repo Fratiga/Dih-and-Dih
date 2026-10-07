@@ -4701,8 +4701,8 @@ window.LUGARES = [
       },
       {
         lado: "B",
-        titulo: "El barrio descuidado",
-        texto: "<p>Un barrio mucho más abandonado que el resto de Kigan, que los protagonistas cruzaron al salir hacia el norte. Ahí Billy, Voss y Victor los atacaron sin previo aviso. Cuando la pelea terminaba apareció su jefe, Cassius Coldgrave, que terminó uniéndose al grupo a cambio de dos piezas de oro y seis de cobre.</p>"
+        titulo: "Las Redes Rotas",
+        texto: "<p>Las Redes Rotas es un barrio mucho más abandonado que el resto de Kigan, que los protagonistas cruzaron al salir hacia el norte. Ahí Billy, Voss y Victor los atacaron sin previo aviso. Cuando la pelea terminaba apareció su jefe, Cassius Coldgrave, que terminó uniéndose al grupo a cambio de dos piezas de oro y seis de cobre.</p>"
       },
       {
         lado: "A",
