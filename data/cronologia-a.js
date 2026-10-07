@@ -358,12 +358,11 @@ window.CRONOLOGIA_A = [
     title: "El Nombre de Ledros",
     fecha: "Dentro de La Espesura, y la fogata más adelante",
     content: `
-      <p>La Espesura los recibió con la misma penumbra de siempre, esa que no
-      depende de la hora y que hace que todos los troncos parezcan el mismo. Dagren
-      se quedó en el granero con el brazo nuevo todavía quejándose, así que el
-      grupo entró solo. Caminaron un buen
-      trecho entre árboles quebrados y claros pisoteados, mirando cada marca en el
-      suelo por si el dragón había pasado por ahí.</p>
+      <p>Dagren se quedó en el granero con el brazo nuevo todavía quejándose, así que
+      el grupo entró solo a La Espesura. Estaba igual de oscura que la primera vez,
+      y entre tanto tronco parecido era fácil perder la cuenta de por dónde se había
+      andado. Caminaron un buen trecho entre árboles quebrados y claros pisoteados,
+      mirando cada marca en el suelo por si el dragón había dejado alguna.</p>
 
       <h4>Ledros</h4>
 
@@ -394,9 +393,9 @@ window.CRONOLOGIA_A = [
 
       <h4>La fogata</h4>
 
-      <p>Más adelante vieron luz entre los troncos. Era una fogata, y la habían
-      encendido Hornet y Edge, que ya estaban sentados alrededor de ella cuando
-      Enzo y Mattei llegaron. Allí se reencontraron, con un compañero menos.</p>
+      <p>Más adelante vieron luz entre los troncos. Hornet y Edge habían hecho una
+      fogata y estaban sentados junto a ella. Enzo y Mattei se acercaron, y así
+      volvieron a reunirse, con un compañero menos.</p>
     `
   }
 ];
