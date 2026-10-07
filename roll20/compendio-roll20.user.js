@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.8.0
+// @version      2.9.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -44,6 +44,26 @@
       try { copiar(FUENTE_ENEMIGOS.gm, localStorage.getItem(FUENTE_ENEMIGOS.local)); } catch (e) { /* sin acceso */ }
     };
     leerLocal();
+
+    // El tema que se ve en el sitio (La Taberna, Escarcha, el Side A/B...) se copia
+    // para que el panel de Roll20 se vea igual.
+    const leerTema = () => {
+      try {
+        const raiz = document.documentElement;
+        const cs = getComputedStyle(raiz);
+        const v = n => cs.getPropertyValue(n).trim();
+        const tema = {
+          bg: v("--bg"), panel: v("--panel"), panel2: v("--panel-2"), text: v("--text"), muted: v("--muted"),
+          accent: v("--accent"), accentSoft: v("--accent-soft"), border: v("--border"),
+          legible: raiz.getAttribute("data-fuente") === "legible",
+          fuenteTitulo: v("--font-heading")
+        };
+        if (tema.bg && tema.panel) copiar("compendio_tema", JSON.stringify(tema));
+      } catch (e) { /* sin acceso */ }
+    };
+    leerTema();
+    new MutationObserver(leerTema).observe(document.documentElement, { attributes: true });
+    window.addEventListener("storage", leerTema);
     window.addEventListener("message", e => {
       if (e.source !== window || !e.data || e.data.tipo !== FUENTE_ENEMIGOS.mensaje) return;
       try { copiar(FUENTE_ENEMIGOS.gm, JSON.stringify(e.data.payload)); } catch (err) { /* ignorar */ }
@@ -175,65 +195,112 @@
     pintar();
   }
 
+  /* --- Diseño: el de La Taberna del sitio. Los colores salen del tema que el jugador
+     tiene puesto en el Compendio (se copian solos al abrir cualquier página del sitio). --- */
+  const TEMA_BASE = {
+    bg: "#140e1d", panel: "#1f1630", panel2: "#291d3f", text: "#efe6ff", muted: "#a99ac9",
+    accent: "#e8b84a", accentSoft: "#8f6bd1", border: "#4a3478", legible: false, fuenteTitulo: "Oswald"
+  };
+
+  function aplicarTema() {
+    const t = Object.assign({}, TEMA_BASE, leerJson("compendio_tema") || {});
+    const r = document.documentElement.style;
+    r.setProperty("--cr-bg", t.bg);
+    r.setProperty("--cr-panel", t.panel);
+    r.setProperty("--cr-panel2", t.panel2);
+    r.setProperty("--cr-text", t.text);
+    r.setProperty("--cr-muted", t.muted);
+    r.setProperty("--cr-accent", t.accent);
+    r.setProperty("--cr-borde", t.accentSoft);
+    r.setProperty("--cr-titulo", t.legible
+      ? `${/['"]/.test(t.fuenteTitulo) ? t.fuenteTitulo : `'${t.fuenteTitulo || "Oswald"}'`}, sans-serif`
+      : `"Press Start 2P", "Courier New", monospace`);
+    r.setProperty("--cr-titulo-tam", t.legible ? "12px" : "8px");
+  }
+  aplicarTema();
+
   GM_addStyle(`
-    #cr20-boton { position: fixed; left: 10px; bottom: 10px; z-index: 99999; background: #1d1e20; color: #e8e4d0;
-      border: 1px solid #5a5a48; padding: 8px 12px; font: 600 13px sans-serif; cursor: pointer; }
-    #cr20-panel { position: fixed; left: 10px; bottom: 52px; z-index: 99999; width: 340px; max-height: 72vh;
-      display: flex; flex-direction: column; background: #1d1e20; color: #e8e4d0; border: 1px solid #5a5a48;
-      font: 13px sans-serif; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+    @import url('https://fonts.googleapis.com/css2?family=Karla:wght@400;500;700&family=Oswald:wght@400;500;600;700&family=Press+Start+2P&display=swap');
+    #cr20-boton, #cr20-panel, #cr20-modal, #cr20-tip, #cr20-toast {
+      --cr-ta: color-mix(in srgb, var(--cr-borde) 80%, #000);
+      --cr-tb: color-mix(in srgb, var(--cr-borde) 38%, #000);
+      --cr-hueco: color-mix(in srgb, var(--cr-bg) 60%, #000);
+      --cr-cuerpo: 'Karla', 'Segoe UI', sans-serif;
+      font-family: var(--cr-cuerpo);
+    }
+    #cr20-boton, #cr20-panel, #cr20-modal, #cr20-tip, #cr20-toast, #cr20-panel *, #cr20-modal * { box-sizing: border-box; border-radius: 0; }
+    #cr20-boton { position: fixed; left: 10px; bottom: 10px; z-index: 99999; background: var(--cr-ta); color: #fff;
+      border: 3px outset var(--cr-borde); padding: 9px 12px; font: 400 var(--cr-titulo-tam) var(--cr-titulo); letter-spacing: 0;
+      text-shadow: 2px 2px 0 #000; box-shadow: 3px 3px 0 #000; cursor: pointer; }
+    #cr20-boton:hover { filter: brightness(1.2); }
+    #cr20-panel { position: fixed; left: 10px; bottom: 56px; z-index: 99999; width: 340px; max-height: 72vh;
+      display: flex; flex-direction: column; background: var(--cr-panel); color: var(--cr-text); border: 3px ridge var(--cr-borde);
+      font: 13px/1.4 var(--cr-cuerpo); box-shadow: 4px 4px 0 #000; }
     #cr20-panel[hidden] { display: none; }
-    #cr20-asa { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; cursor: grab;
-      background: #26272a; border-bottom: 1px solid #3a3a34; color: #8d8977; font: 600 11px sans-serif;
-      letter-spacing: .06em; text-transform: uppercase; user-select: none; touch-action: none; }
+    #cr20-asa { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; cursor: grab;
+      background: linear-gradient(90deg, var(--cr-ta), var(--cr-tb)); border-bottom: 3px double var(--cr-borde); color: #fff;
+      font: 400 var(--cr-titulo-tam) var(--cr-titulo); letter-spacing: 0; text-shadow: 2px 2px 0 #000; user-select: none; touch-action: none; }
     #cr20-asa:active, #cr20-boton:active { cursor: grabbing; }
+    #cr20-boton:active { border-style: inset; }
     #cr20-cuerpo { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     #cr20-boton { touch-action: none; user-select: none; }
-    #cr20-panel select, #cr20-panel input[type=search], #cr20-panel input[type=email], #cr20-panel input[type=password] { background: #26272a; color: #e8e4d0; border: 1px solid #3a3a34;
-      padding: 6px 8px; font: 13px sans-serif; box-sizing: border-box; }
-    #cr20-panel button.cr20-accion { background: #26272a; color: #e8e4d0; border: 1px solid #5a5a48; padding: 7px 10px; font: 13px sans-serif; cursor: pointer; }
+    #cr20-panel select, #cr20-panel input[type=search], #cr20-panel input[type=email], #cr20-panel input[type=password],
+    #cr20-modal select, #cr20-modal textarea {
+      background: var(--cr-hueco); color: var(--cr-text); border: 3px inset var(--cr-borde);
+      padding: 5px 8px; font: 13px var(--cr-cuerpo); color-scheme: dark; height: auto; margin: 0; }
+    #cr20-panel button.cr20-accion, #cr20-modal button.cr20-accion {
+      background: var(--cr-ta); color: #fff; border: 3px outset var(--cr-borde); padding: 8px 12px;
+      font: 400 var(--cr-titulo-tam) / 1.6 var(--cr-titulo); letter-spacing: 0; text-shadow: 2px 2px 0 #000; cursor: pointer; margin: 0; }
+    #cr20-panel button.cr20-accion:hover, #cr20-modal button.cr20-accion:hover { filter: brightness(1.2); }
+    #cr20-panel button.cr20-accion:active, #cr20-modal button.cr20-accion:active { border-style: inset; }
+    #cr20-modal button.cr20-accion:disabled { filter: grayscale(1) brightness(.7); cursor: not-allowed; }
     .cr20-fila { display: flex; gap: 6px; padding: 8px 10px 0; align-items: center; }
     .cr20-fila > * { flex: 1; min-width: 0; }
-    .cr20-tabs { display: flex; border-bottom: 1px solid #3a3a34; }
-    .cr20-tab { flex: 1; background: none; color: #a9a58f; border: 0; border-bottom: 2px solid transparent; padding: 8px; font: 600 12px sans-serif; cursor: pointer; }
-    .cr20-tab.on { color: #e8e4d0; border-bottom-color: #a9a58f; }
+    .cr20-tabs { display: flex; border-bottom: 3px double var(--cr-borde); }
+    .cr20-tab { flex: 1; background: none; color: var(--cr-muted); border: 2px solid transparent; padding: 8px;
+      font: 400 var(--cr-titulo-tam) / 1.6 var(--cr-titulo); letter-spacing: 0; cursor: pointer; }
+    .cr20-tab:hover { color: #fff; background: #ffffff14; }
+    .cr20-tab.on { color: #fff; background: linear-gradient(90deg, var(--cr-ta), var(--cr-tb)); border-color: var(--cr-borde); text-shadow: 2px 2px 0 #000; }
     .cr20-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 10px 0; }
-    .cr20-etiqueta { display: flex; justify-content: space-between; padding: 8px 10px 0; color: #8d8977; font: 600 10px sans-serif; letter-spacing: .06em; text-transform: uppercase; }
-    .cr20-etiqueta a { color: #8d8977; cursor: pointer; text-decoration: underline; font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .cr20-etiqueta { display: flex; justify-content: space-between; padding: 8px 10px 0; color: var(--cr-muted);
+      font: 400 calc(var(--cr-titulo-tam) - 1px) var(--cr-titulo); letter-spacing: 0; text-transform: uppercase; }
+    .cr20-etiqueta a { color: var(--cr-accent); cursor: pointer; text-decoration: underline; font: 400 12px var(--cr-cuerpo); text-transform: none; }
     .cr20-chip-wrap { display: inline-flex; }
     .cr20-chip-wrap .cr20-chip { border-right: 0; }
-    .cr20-quitar { background: none; color: #6f6b5c; border: 1px solid #3a3a34; border-left: 0; padding: 0 6px; font: 12px sans-serif; cursor: pointer; }
-    .cr20-quitar:hover { color: #d99a9a; }
-    .cr20-chip { background: none; color: #a9a58f; border: 1px solid #3a3a34; padding: 3px 8px; font: 12px sans-serif; cursor: pointer; }
-    .cr20-chip.on { color: #e8e4d0; border-color: #a9a58f; background: #26272a; }
-    #cr20-lista { overflow-y: auto; padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
-    .cr20-item { text-align: left; background: #26272a; color: #e8e4d0; border: 1px solid #3a3a34; padding: 7px 9px; cursor: pointer; font: 13px sans-serif; }
-    .cr20-item:hover { border-color: #a9a58f; }
-    .cr20-item small { display: block; color: #8d8977; font-size: 11px; }
-    .cr20-vacio { color: #a9a58f; padding: 12px 10px; line-height: 1.5; }
-    .cr20-error { color: #d99a9a; padding: 8px 10px 0; }
-    .cr20-pie { color: #8d8977; font-size: 11px; padding: 6px 10px 8px; display: flex; justify-content: space-between; }
-    .cr20-pie a { color: #a9a58f; cursor: pointer; text-decoration: underline; }
-    .cr20-ficha { padding: 8px 10px 0; color: #a9a58f; font-size: 12px; }
-    .cr20-susurro { display: flex; align-items: center; gap: 6px; color: #a9a58f; font-size: 12px; padding: 8px 10px 0; }
-    #cr20-tip { position: fixed; z-index: 100001; max-width: 300px; background: #26272a; color: #e8e4d0;
-      border: 1px solid #a9a58f; padding: 8px 10px; font: 12px/1.5 sans-serif; white-space: pre-wrap;
-      box-shadow: 0 6px 20px rgba(0,0,0,.5); pointer-events: none; }
-    #cr20-modal-fondo { position: fixed; inset: 0; z-index: 100002; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; }
-    #cr20-modal { width: min(460px, 94vw); max-height: 88vh; overflow-y: auto; background: #1d1e20; color: #e8e4d0;
-      border: 1px solid #a9a58f; padding: 16px; font: 13px/1.5 sans-serif; box-shadow: 0 12px 40px rgba(0,0,0,.7); }
-    #cr20-modal h3 { margin: 0 0 4px; font: 600 16px sans-serif; }
-    #cr20-modal .cr20-cat { color: #8d8977; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-    #cr20-modal .cr20-bloque { margin-top: 10px; }
-    #cr20-modal .cr20-etq { display: block; color: #a9a58f; font: 600 11px sans-serif; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
-    #cr20-modal .cr20-texto { white-space: pre-wrap; background: #26272a; border: 1px solid #3a3a34; padding: 7px 9px; max-height: 160px; overflow-y: auto; }
-    #cr20-modal textarea { width: 100%; box-sizing: border-box; min-height: 84px; resize: vertical; background: #26272a; color: #e8e4d0;
-      border: 1px solid #5a5a48; padding: 7px 9px; font: 13px/1.5 monospace; }
-    #cr20-modal select { background: #26272a; color: #e8e4d0; border: 1px solid #3a3a34; padding: 5px 8px; font: 13px sans-serif; margin-bottom: 6px; }
-    #cr20-modal button.cr20-accion { background: #26272a; color: #e8e4d0; border: 1px solid #5a5a48; padding: 7px 14px; font: 13px sans-serif; cursor: pointer; }
-    #cr20-modal .cr20-botones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-    #cr20-modal .cr20-ayuda { color: #8d8977; font-size: 11px; margin-top: 3px; }
-    #cr20-toast { position: fixed; left: 10px; bottom: 56px; z-index: 100000; background: #26272a; color: #e8e4d0;
-      border: 1px solid #a9a58f; padding: 8px 12px; font: 13px sans-serif; max-width: 320px; }
+    .cr20-quitar { background: none; color: var(--cr-muted); border: 2px solid var(--cr-borde); border-left: 0; padding: 0 6px; font: 12px var(--cr-cuerpo); cursor: pointer; }
+    .cr20-quitar:hover { color: #f0a0a0; }
+    .cr20-chip { background: none; color: var(--cr-muted); border: 2px solid transparent; padding: 3px 8px; font: 12px var(--cr-cuerpo); cursor: pointer; }
+    .cr20-chip:hover { color: #fff; background: #ffffff14; }
+    .cr20-chip.on { color: #fff; background: linear-gradient(90deg, var(--cr-ta), var(--cr-tb)); border-color: var(--cr-borde); }
+    #cr20-lista { overflow-y: auto; padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; scrollbar-color: var(--cr-borde) var(--cr-hueco); }
+    .cr20-item { text-align: left; background: var(--cr-panel2); color: var(--cr-text); border: 2px ridge var(--cr-borde); padding: 7px 9px;
+      cursor: pointer; font: 13px var(--cr-cuerpo); box-shadow: 3px 3px 0 #000; transition: transform .1s steps(2), box-shadow .1s steps(2); }
+    .cr20-item:hover { border-color: var(--cr-accent); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
+    .cr20-item small { display: block; color: var(--cr-accent); font: 400 calc(var(--cr-titulo-tam) - 1px) / 1.7 var(--cr-titulo); letter-spacing: 0; text-transform: uppercase; }
+    .cr20-vacio { color: var(--cr-muted); padding: 12px 10px; line-height: 1.5; }
+    .cr20-error { color: #f0a0a0; padding: 8px 10px 0; }
+    .cr20-pie { color: var(--cr-muted); font-size: 11px; padding: 6px 10px 8px; display: flex; justify-content: space-between; border-top: 2px dotted var(--cr-borde); }
+    .cr20-pie a { color: var(--cr-accent); cursor: pointer; text-decoration: underline; }
+    .cr20-ficha { padding: 8px 10px 0; color: var(--cr-muted); font-size: 12px; }
+    .cr20-ficha strong { color: var(--cr-text); }
+    .cr20-susurro { display: flex; align-items: center; gap: 6px; color: var(--cr-muted); font-size: 12px; padding: 8px 10px 0; }
+    #cr20-tip { position: fixed; z-index: 100001; max-width: 300px; background: var(--cr-panel); color: var(--cr-text);
+      border: 3px ridge var(--cr-accent); padding: 8px 10px; font-size: 12px; line-height: 1.5; white-space: pre-wrap;
+      box-shadow: 4px 4px 0 #000; pointer-events: none; }
+    #cr20-modal-fondo { position: fixed; inset: 0; z-index: 100002; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; }
+    #cr20-modal { width: min(460px, 94vw); max-height: 88vh; overflow-y: auto; background: var(--cr-panel); color: var(--cr-text);
+      border: 4px double var(--cr-borde); padding: 16px; font: 13px/1.5 var(--cr-cuerpo); box-shadow: 8px 8px 0 #000; }
+    #cr20-modal h3 { margin: 2px 0 4px; font: 400 calc(var(--cr-titulo-tam) + 4px) / 1.5 var(--cr-titulo); letter-spacing: 0; text-shadow: 2px 2px 0 #000; color: var(--cr-text); }
+    #cr20-modal .cr20-cat { color: var(--cr-accent); font: 400 calc(var(--cr-titulo-tam) - 1px) var(--cr-titulo); letter-spacing: 0; text-transform: uppercase; }
+    #cr20-modal .cr20-bloque { margin-top: 12px; }
+    #cr20-modal .cr20-etq { display: block; color: var(--cr-muted); font: 400 calc(var(--cr-titulo-tam) - 1px) var(--cr-titulo); letter-spacing: 0; text-transform: uppercase; margin-bottom: 5px; }
+    #cr20-modal .cr20-texto { white-space: pre-wrap; background: var(--cr-hueco); border: 2px solid var(--cr-borde); padding: 7px 9px; max-height: 160px; overflow-y: auto; }
+    #cr20-modal textarea { width: 100%; min-height: 84px; resize: vertical; font: 13px/1.5 'Courier New', monospace; }
+    #cr20-modal select { margin-bottom: 6px; }
+    #cr20-modal .cr20-botones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 10px; border-top: 3px double var(--cr-borde); }
+    #cr20-modal .cr20-ayuda { color: var(--cr-muted); font-size: 11px; margin-top: 4px; }
+    #cr20-toast { position: fixed; left: 10px; bottom: 56px; z-index: 100000; background: var(--cr-panel); color: var(--cr-text);
+      border: 3px ridge var(--cr-accent); padding: 8px 12px; font-size: 13px; max-width: 320px; box-shadow: 4px 4px 0 #000; }
   `);
 
   const boton = document.createElement("button");
@@ -478,7 +545,7 @@
       if (!cats.includes(estado.filtroEnemigo)) estado.filtroEnemigo = cats[0];
       const items = actual.items.filter(i => i.categoria === estado.filtroEnemigo);
       cuerpo = `
-        <div class="cr20-ficha"><strong style="color:#e8e4d0">${esc(actual.nombre)}</strong>${actual.ca !== null ? ` · CA ${esc(actual.ca)}` : ""}${actual.pv !== null ? ` · PV ${esc(actual.pv)}` : ""}${textoVelocidad(actual.velocidad) ? ` · Vel. ${esc(textoVelocidad(actual.velocidad))}` : ""}<br>${esc(actual.rol)}</div>
+        <div class="cr20-ficha"><strong>${esc(actual.nombre)}</strong>${actual.ca !== null ? ` · CA ${esc(actual.ca)}` : ""}${actual.pv !== null ? ` · PV ${esc(actual.pv)}` : ""}${textoVelocidad(actual.velocidad) ? ` · Vel. ${esc(textoVelocidad(actual.velocidad))}` : ""}<br>${esc(actual.rol)}</div>
         <div class="cr20-chips">${cats.map(c => `<button type="button" class="cr20-chip ${estado.filtroEnemigo === c ? "on" : ""}" data-filtro-enemigo="${c}">${c}</button>`).join("")}</div>
         <div id="cr20-lista">${items.map(i => `<button type="button" class="cr20-item" data-enemigo-item="${esc(i.id)}"${i.desc ? ` data-desc="${esc(i.desc)}"` : ""}>${esc(i.texto)}</button>`).join("")}</div>`;
     } else {
@@ -610,7 +677,7 @@
         </div>
         <div class="cr20-botones">
           <button type="button" class="cr20-accion" id="cr20-m-cancelar">Cancelar</button>
-          <button type="button" class="cr20-accion" id="cr20-m-lanzar" style="border-color:#a9a58f">Lanzar</button>
+          <button type="button" class="cr20-accion" id="cr20-m-lanzar">Lanzar</button>
         </div>
       </div>`;
     document.body.appendChild(fondo);
@@ -741,6 +808,7 @@
     }));
   }
 
+  if (typeof GM_addValueChangeListener === "function") GM_addValueChangeListener("compendio_tema", aplicarTema);
   cargarEnemigos();
   pintar();
   if (estado.sesion) cargarPersonajes();
