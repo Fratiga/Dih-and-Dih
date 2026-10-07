@@ -157,8 +157,9 @@
       : grupoHecho(ctx, grupos.find(g => g.id === r));
     const requisitosOk = (ctx, x) => (x.requiere || []).every(r => cumple(ctx, r));
     // Una pregunta o respuesta con cierra:true termina el tema para siempre: lo que quede pendiente ya no se ofrece.
-    const cierraTema = ctx => preguntas.some(p => p.cierra && ctx.hasCompletedDialogue(pre + p.id))
-      || grupos.some(g => g.opciones.some(o => o.cierra && ctx.hasCompletedDialogue(marcaGrupoOpcion(g, o))));
+    // Con fin:true además la conversación termina ahí mismo (sin volver al menú) y el tema queda cerrado.
+    const cierraTema = ctx => preguntas.some(p => (p.cierra || p.fin) && ctx.hasCompletedDialogue(pre + p.id))
+      || grupos.some(g => g.opciones.some(o => (o.cierra || o.fin) && ctx.hasCompletedDialogue(marcaGrupoOpcion(g, o))));
     const agotado = ctx => cierraTema(ctx) || (preguntas.every(p => ctx.hasCompletedDialogue(pre + p.id)) && grupos.every(g => grupoHecho(ctx, g)));
     const extra = ctx => !t.visibleSi || t.visibleSi(ctx);
 
@@ -174,11 +175,11 @@
     }, t.intro));
     // Preguntas
     preguntas.forEach(p => nuevoNodo("bufon_" + pre + p.id, decorar({
-      lineas: p.lineas, completeDialogue: pre + p.id, ...(p.cierra ? { next: "intro_reason_sin_recuerdo" } : { eleccion: hubId })
+      lineas: p.lineas, completeDialogue: pre + p.id, ...(p.fin ? {} : p.cierra ? { next: "intro_reason_sin_recuerdo" } : { eleccion: hubId })
     }, p)));
     // Respuestas de cada grupo (al contestar, el tema termina: vuelve al menú)
     grupos.forEach(g => g.opciones.forEach(o => nuevoNodo("bufon_" + pre + g.id + "_" + o.id, decorar({
-      lineas: o.lineas, completeDialogue: marcaGrupoOpcion(g, o), next: g.despues || "intro_reason_sin_recuerdo"
+      lineas: o.lineas, completeDialogue: marcaGrupoOpcion(g, o), ...(o.fin ? {} : { next: g.despues || "intro_reason_sin_recuerdo" })
     }, o))));
 
     // Submenú

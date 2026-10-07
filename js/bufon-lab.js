@@ -309,12 +309,13 @@
         if (lista(p.requiere).length) o.requiere = lista(p.requiere);
         if (p.voz) o.voz = p.voz;
         if (p.cierra) o.cierra = true;
+        if (p.fin) o.fin = true;
         o.lineas = parseLineas(p.lineas);
         return o;
       }),
       grupos: t.grupos.map(g => ({
         id: g.id, requiere: lista(g.requiere),
-        opciones: g.opciones.map(o => { const x = { id: o.id, texto: o.texto }; if (o.neutral) x.neutral = true; if (o.cierra) x.cierra = true; x.lineas = parseLineas(o.lineas); return x; })
+        opciones: g.opciones.map(o => { const x = { id: o.id, texto: o.texto }; if (o.neutral) x.neutral = true; if (o.cierra) x.cierra = true; if (o.fin) x.fin = true; x.lineas = parseLineas(o.lineas); return x; })
       }))
     }));
     return cfgCiclo;
@@ -325,8 +326,8 @@
       id: def.id, numero: def.numero, nombre: def.nombre || def.id, lados: (def.lados || []).join(", "),
       temas: (def.temas || []).map(t => ({
         id: t.id, boton: t.boton, como: t.intro && t.intro.como === "boton" ? "boton" : "recuerdo", intro: lineasATexto(t.intro && t.intro.lineas),
-        preguntas: (t.preguntas || []).map(p => ({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", cierra: !!p.cierra, lineas: lineasATexto(p.lineas) })),
-        grupos: (t.grupos || []).map(g => ({ id: g.id, requiere: (g.requiere || []).join(", "), opciones: (g.opciones || []).map(o => ({ id: o.id, texto: o.texto, neutral: !!o.neutral, cierra: !!o.cierra, lineas: lineasATexto(o.lineas) })) }))
+        preguntas: (t.preguntas || []).map(p => ({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", cierra: !!p.cierra, fin: !!p.fin, lineas: lineasATexto(p.lineas) })),
+        grupos: (t.grupos || []).map(g => ({ id: g.id, requiere: (g.requiere || []).join(", "), opciones: (g.opciones || []).map(o => ({ id: o.id, texto: o.texto, neutral: !!o.neutral, cierra: !!o.cierra, fin: !!o.fin, lineas: lineasATexto(o.lineas) })) }))
       }))
     };
   }
@@ -465,7 +466,9 @@
         cp("Se destapa tras...", entrada(base + ".preguntas." + pi + ".requiere", p.requiere, { ph: "ids separados por coma" }), idsPreg.length ? "Preguntas de este tema: " + idsPreg.join(", ") : null),
         cp("Respuesta del Bufón", entrada(base + ".preguntas." + pi + ".lineas", p.lineas, { area: true, filas: 6, ph: "Una línea por renglón" })),
         h("label", { class: "blab-casilla" }, h("input", { type: "checkbox", "data-r": base + ".preguntas." + pi + ".cierra", checked: p.cierra }),
-          h("span", null, "Cierra el tema. ", h("small", null, "Tras esta respuesta el Bufón vuelve al menú principal y el tema ya no sigue avanzando (lo pendiente desaparece). Úsalo para «No me interesa»."))))),
+          h("span", null, "Cierra el tema. ", h("small", null, "Tras esta respuesta el Bufón vuelve al menú principal y el tema ya no sigue avanzando (lo pendiente desaparece). Úsalo para «No me interesa»."))),
+        h("label", { class: "blab-casilla" }, h("input", { type: "checkbox", "data-r": base + ".preguntas." + pi + ".fin", checked: p.fin }),
+          h("span", null, "Termina la conversación. ", h("small", null, "Tras esta respuesta el Bufón no ofrece más opciones y la visita acaba (como su despedida). Cierra también el tema."))))),
       h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-pregunta", "data-ruta": base }, "+ Pregunta"),
       h("h5", null, "Respuestas excluyentes"),
       h("p", { class: "blab-nota" }, "Al elegir una, las otras desaparecen. Deja siempre una salida neutral («No lo sé»): así el Bufón no obliga a tomar partido para poder seguir."),
@@ -473,7 +476,7 @@
         h("div", { class: "blab-sub-top" }, h("strong", null, "Grupo «" + g.id + "»"), h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".grupos." + gi }, "Quitar")),
         cp("Aparece tras...", entrada(base + ".grupos." + gi + ".requiere", g.requiere, { ph: "ids de preguntas, separados por coma" })),
         g.opciones.map((o, oi) => h("div", { class: "blab-opcion" },
-          h("div", { class: "blab-sub-top" }, h("code", null, o.id), h("label", { class: "blab-casilla chico" }, h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".neutral", checked: o.neutral }), h("span", null, "salida neutral"), h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".cierra", checked: o.cierra }), h("span", null, "cierra el tema"))),
+          h("div", { class: "blab-sub-top" }, h("code", null, o.id), h("label", { class: "blab-casilla chico" }, h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".neutral", checked: o.neutral }), h("span", null, "salida neutral"), h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".cierra", checked: o.cierra }), h("span", null, "cierra el tema"), h("input", { type: "checkbox", "data-r": base + ".grupos." + gi + ".opciones." + oi + ".fin", checked: o.fin }), h("span", null, "termina la conversación"))),
           cp("Texto del botón", entrada(base + ".grupos." + gi + ".opciones." + oi + ".texto", o.texto)),
           cp("Reacción del Bufón", entrada(base + ".grupos." + gi + ".opciones." + oi + ".lineas", o.lineas, { area: true, filas: 3 })))))),
       h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-grupo", "data-ruta": base }, "+ Grupo de respuestas excluyentes"),
