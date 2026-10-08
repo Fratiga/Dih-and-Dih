@@ -250,6 +250,55 @@
     if (robadas && !silencioso) log(est, `${J.nombre} roba ${robadas === 1 ? "una carta" : `${robadas} cartas`}.`);
   }
 
+  /* --- Cementerio -----------------------------------------------------------------
+     Cada jugador tiene el suyo: sus cartas por orden de llegada, la última encima. Entran las unidades que caen
+     (las fichas no: desaparecen), los objetos y acciones jugados o cancelados, las reacciones y los terrenos que
+     se desvanecen o los reemplaza otro. Lo que se pierde de la mano (mano llena, descartes forzados) va aparte, a
+     `descartes`, y no se puede recuperar. Es información pública: los dos jugadores ven los dos cementerios. */
+  const cementerioDe = (est, j) => est.jugadores[j].cementerio;
+
+  /* Cartas del cementerio que cumplen el filtro(meta, id) (todas si no hay): [{ id, i }], de la más antigua a la más reciente */
+  function enCementerio(est, j, filtro) {
+    return est.jugadores[j].cementerio.map((id, i) => ({ id, i })).filter(x => !filtro || filtro(meta(est, x.id), x.id));
+  }
+
+  /* Saca la carta de la posición i del cementerio para siempre (queda exiliada). Devuelve su id. */
+  function exiliar(est, j, i) {
+    const J = est.jugadores[j];
+    return i >= 0 && i < J.cementerio.length ? J.cementerio.splice(i, 1)[0] : null;
+  }
+
+  /* Devuelve una unidad del cementerio al campo de `j` (entra como cualquier otra: no ataca ese turno).
+     opciones:
+       desde       de quién es el cementerio (por defecto, el de j; poniendo el del rival se roba una unidad)
+       filtro      (meta, id) => bool; por defecto, cualquier unidad que no sea ficha
+       id          una carta concreta
+       cual        'ultima' (por defecto) | 'primera' | 'azar' | 'fuerte' (la de más ataque más vida)
+       pv          con cuánta vida vuelve (por defecto, la completa)
+       conEntrada  true para que se dispare su habilidad «al entrar» (con `objetivo` si la pide)
+       hueco       hueco del campo que prefiere
+       silencio    true para no escribir el aviso de regreso en el registro
+     Devuelve la unidad, o null si no había a quién devolver o el campo está lleno. */
+  function revivir(est, j, opciones) {
+    const o = opciones || {};
+    const de = o.desde === undefined ? j : o.desde;
+    const J = est.jugadores[j];
+    if (J.campo.length >= C.CAMPO_MAX) { log(est, "No hay sitio en el campo."); return null; }
+    const pasa = o.id ? (m, id) => id === o.id : (o.filtro || (m => !m.token));
+    const lista = enCementerio(est, de, (m, id) => esUnidad(m) && pasa(m, id));
+    if (!lista.length) { log(est, "No hay a quién devolver del cementerio."); return null; }
+    const peso = x => { const m = meta(est, x.id); return (m.atq || 0) + (m.pv || 0); };
+    const k = o.cual === "primera" ? lista[0]
+      : o.cual === "azar" ? lista[entero(est, lista.length)]
+      : o.cual === "fuerte" ? lista.reduce((a, b) => (peso(b) >= peso(a) ? b : a))
+      : lista[lista.length - 1];
+    exiliar(est, de, k.i);
+    const u = ponerUnidad(est, j, k.id, !!o.conEntrada, o.objetivo || null, o.hueco);
+    if (o.pv !== undefined && o.pv !== null) u.pv = Math.max(1, Math.min(o.pv, u.pvMax));
+    if (!o.silencio) log(est, `${nombre(est, u)} vuelve del cementerio${o.pv !== undefined && o.pv !== null ? ` con ${u.pv} de vida` : ""}.`);
+    return u;
+  }
+
   /* --- Daño y curación ---------------------------------------------------- */
   function revisarFinal(est) {
     if (est.ganador !== null) return;
@@ -265,10 +314,17 @@
     const i = J.campo.findIndex(x => x.uid === u.uid);
     if (i < 0) return;
     J.campo.splice(i, 1);
-    J.cementerio.push(u.cartaId);
+    if (!meta(est, u.cartaId).token) J.cementerio.push(u.cartaId);   // las fichas desaparecen sin dejar carta
     log(est, `${nombre(est, u)} cae.`);
     const ef = efectoDe(est, u);
     if (ef.alMorir) ef.alMorir({ est, M, u, j: u.dueno });
+    // Las demás unidades en juego que reaccionan a una caída (nigromantes, carroñeras...)
+    todas(est).slice().forEach(o => {
+      if (!buscar(est, o.uid)) return;
+      const eo = efectoDe(est, o), aliada = o.dueno === u.dueno;
+      if (aliada && eo.alMorirAliada) eo.alMorirAliada({ est, M, u: o, j: o.dueno, muerta: u });
+      else if (!aliada && eo.alMorirEnemiga) eo.alMorirEnemiga({ est, M, u: o, j: o.dueno, muerta: u });
+    });
     const T = defTerreno(est);
     if (T && T.alMorirUnidad) T.alMorirUnidad(est, u);
     if (fuente && fuente.uid) {
@@ -491,6 +547,7 @@
       est.terreno.restantes -= 1;
       if (est.terreno.restantes <= 0) {
         log(est, `${meta(est, est.terreno.cartaId).nombre} se desvanece.`);
+        est.jugadores[est.terreno.dueno].cementerio.push(est.terreno.cartaId);
         est.terreno = null;
         sincronizarTerreno(est);
       }
@@ -626,6 +683,7 @@
       ponerUnidad(est, jIdx, id, true, objetivo, hueco);
     } else if (m.tipo === "Terreno") {
       const T = TERRENOS[id] || {};
+      if (est.terreno) est.jugadores[est.terreno.dueno].cementerio.push(est.terreno.cartaId);   // el terreno anterior se va al cementerio
       est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno };
       log(est, `${J.nombre} juega el terreno ${m.nombre}.`);
       sincronizarTerreno(est);
@@ -939,7 +997,7 @@
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
-    infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
+    infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad, cementerioDe, enCementerio, exiliar, revivir,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, requisitoDeReaccion, unidadPuedeAtacar,
     puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, esEscurridizo, puedeApuntarHabilidad, terrenoActivo, marcadaVigente, sincronizarTerreno
   };

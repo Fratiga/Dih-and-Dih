@@ -33,6 +33,8 @@
   let ultimoTurno = 0;         // para saber cuándo cambió el turno y avisarlo
   let ultimoTerreno = "";      // lo mismo con el terreno
   let arrastre = null;         // arrastre de carta o de unidad en curso
+  let cementerioVista = null;  // cementerio abierto en pantalla: "yo", "rival" o null
+  let cemPrevio = [];          // cuántas cartas tenía cada cementerio la última vez, para avisar cuando crece
   let ignorarClic = false;     // tras un arrastre, el clic que lo cierra no cuenta
   let primeroDeLaPartida = 0;  // quién empieza (para la presentación)
   let introVisible = false;
@@ -187,6 +189,7 @@
     ultimoTurno = 0;
     ultimoTerreno = "";
     arrastre = null;
+    cementerioVista = null; cemPrevio = [];
     document.body.classList.add("bt-en-partida");
     $("btLobby").classList.add("hidden");
     $("btPartida").classList.remove("hidden");
@@ -418,6 +421,31 @@
     </div>`;
   }
 
+  /* El cementerio de un jugador: la última carta que cayó, apagada, y cuántas hay. Se abre con un clic. */
+  function htmlCementerio(J, rival) {
+    const n = J.cementerio.length;
+    const id = n ? J.cementerio[n - 1] : null;
+    const cara = id ? `<div class="bt-cem-tope">${htmlCarta(Object.assign({}, M.meta(est, id), { id, borrador: false, limite: null }), true, 0, null)}</div>` : '<div class="bt-cem-vacio">†</div>';
+    // Un div y no un botón: la carta de dentro ya es un botón y no se pueden anidar
+    return `<div class="bt-cem ${n ? "" : "vacio"}" role="button" tabindex="0" data-cementerio="${rival ? "rival" : "yo"}" title="Cementerio: ${n} carta${n === 1 ? "" : "s"}. Clic para verlo">${cara}<b class="bt-cem-n">${n}</b></div>`;
+  }
+
+  /* El cementerio abierto: todas sus cartas, la más reciente primero. Es público: se pueden mirar los dos. */
+  function pintarCementerioVista() {
+    const el = $("btCementerioVista");
+    if (!cementerioVista || !est) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+    const idx = indiceYo();
+    const J = est.jugadores[cementerioVista === "yo" ? idx : 1 - idx];
+    const cartas = J.cementerio.slice().reverse();
+    const n = cartas.length;
+    el.innerHTML = `<div class="bt-cem-caja">
+      <div class="bt-cem-cab"><h3>Cementerio de ${esc(J.nombre)} <small>${n} carta${n === 1 ? "" : "s"}</small></h3><button type="button" class="cartas-boton" data-cementerio-cerrar>Cerrar</button></div>
+      <p class="bt-nota">Aquí van las unidades que caen y los objetos, acciones, reacciones y terrenos que ya se usaron. La primera es la última en llegar.</p>
+      ${n ? `<div class="bt-cem-grid">${cartas.map((id, k) => `<div class="bt-cem-carta">${k === 0 ? '<span class="bt-cem-ultima">Última</span>' : ""}${htmlCarta(Object.assign({}, M.meta(est, id), { id, borrador: false, limite: null }), true, 0, null)}</div>`).join("")}</div>` : '<p class="bt-vacio">Está vacío.</p>'}
+    </div>`;
+    el.classList.remove("hidden");
+  }
+
   function htmlJugador(idx, rival) {
     const J = est.jugadores[idx];
     const activo = est.ganador === null && est.activo === idx;
@@ -427,6 +455,7 @@
         <div class="bt-conteo">${rival ? `Mano <strong>${J.mano.length}</strong> · ` : ""}Mazo <strong>${J.mazo.length}</strong></div>
       </div>
       ${htmlPila(J, idx, rival)}
+      ${htmlCementerio(J, rival)}
       ${htmlOrbe(J, idx)}
       ${rival ? '<div class="bt-atacar-cartel">⚔ Atacar al jugador</div>' : ""}`;
   }
@@ -718,6 +747,12 @@
     $("btLog").scrollTop = $("btLog").scrollHeight;
     pintarInspector();
     pintarFinal();
+    est.jugadores.forEach((Jx, k) => {
+      const n = Jx.cementerio.length;
+      if (cemPrevio[k] !== undefined && n > cemPrevio[k]) pulso(document.querySelector(`[data-jugador="${k === idx ? "yo" : "rival"}"] .bt-cem`));
+      cemPrevio[k] = n;
+    });
+    pintarCementerioVista();
     avisarMirada();
     anunciarTurno(false);
     anunciarTerreno();
@@ -1270,6 +1305,9 @@
     if (!est) return;
     if (ignorarClic) return;
     const idx = indiceYo();
+    const cem = ev.target.closest("[data-cementerio]");
+    if (cem) { cementerioVista = cementerioVista === cem.dataset.cementerio ? null : cem.dataset.cementerio; pintarCementerioVista(); return; }
+    if (cementerioVista && (ev.target.closest("[data-cementerio-cerrar]") || ev.target.id === "btCementerioVista")) { cementerioVista = null; pintarCementerioVista(); return; }
     if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) { atacantesSel.clear(); desafiosSel = {}; enviar({ t: "fin" }); } return; }
     // Ataque: se preparan las unidades y se declara todo junto
     if (ev.target.closest("[data-atacar-todas]")) {
@@ -1411,7 +1449,16 @@
   $("btMesa").addEventListener("mouseover", alPasarRaton);
   $("btVolver").addEventListener("click", volverAlLobby);
   document.addEventListener("keydown", ev => {
-    if (ev.key !== "Escape" || !est) return;
+    if (!est) return;
+    if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest && ev.target.closest("[data-cementerio]")) {
+      ev.preventDefault();
+      const quien = ev.target.closest("[data-cementerio]").dataset.cementerio;
+      cementerioVista = cementerioVista === quien ? null : quien;
+      pintarCementerioVista();
+      return;
+    }
+    if (ev.key !== "Escape") return;
+    if (cementerioVista) { cementerioVista = null; pintarCementerioVista(); return; }
     if (sel || atacantesSel.size) { sel = null; atacantesSel.clear(); desafiosSel = {}; pintarTablero(); }
   });
 

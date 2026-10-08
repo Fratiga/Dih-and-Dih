@@ -173,6 +173,58 @@ Si resulta demasiado fuerte, sube el coste a 9 o baja la vida a 3; si resulta fl
 - **Partidas en línea que estén a medias**: se guardan como lista de acciones y se repiten con las reglas nuevas, así que las que ya tengan ataques se rompen. Conviene terminarlas o rendirlas antes de subir esto.
 - **Pruebas del motor que no están en el repositorio**: las que usan `atacar` con un objetivo, `objetivosDeAtaque`, `ataquesMax`, Provocar o los estados `intocableHasta`, `sinProvocar` y `sinVolar` hay que actualizarlas. `node tools/probar-combate.js` prueba el combate nuevo y juega 300 partidas al azar.
 
+## Cementerio
+
+Cada jugador tiene el suyo (`J.cementerio`, una lista de ids por orden de llegada, la última encima). Es público: en la pantalla de batalla se pulsa el montón apagado que hay junto al mazo (el propio o el del rival) y se abre con todas sus cartas, la más reciente primero. Esc lo cierra.
+
+**Qué entra**
+
+- Las unidades que caen, por combate, habilidad, terreno o fatiga.
+- Los objetos y acciones jugados, las reacciones y las cartas canceladas.
+- Un terreno cuando se desvanece o lo reemplaza otro, en el cementerio de quien lo jugó.
+- No entran las fichas (`token: true`): desaparecen sin dejar carta. Tampoco lo que se pierde de la mano (mano llena, descartes forzados): eso va a `J.descartes` y no se recupera. Si algún día se quiere un mazo de reanimación por descarte, basta cambiar esos `descartes.push` por `cementerio.push`.
+
+**Cómo se usa desde una carta** (todo está en `M`, ver `js/cartas-motor.js`)
+
+| función | qué hace |
+|---|---|
+| `M.cementerioDe(est, j)` | la lista de ids del cementerio de `j` |
+| `M.enCementerio(est, j, filtro?)` | `[{ id, i }]` de las cartas que cumplen `filtro(meta, id)`, de la más antigua a la más reciente. Sirve para contar ("por cada unidad de Sombra en tu cementerio") |
+| `M.revivir(est, j, opciones?)` | devuelve una unidad del cementerio al campo de `j`. Devuelve la unidad, o `null` si no había a quién o el campo está lleno |
+| `M.exiliar(est, j, i)` | saca la carta de la posición `i` para siempre (para "devora una unidad de tu cementerio") |
+
+Opciones de `revivir`: `desde` (el cementerio de otro jugador, por ejemplo `1 - c.j` para robar una unidad del rival), `filtro(meta, id)` (por defecto, cualquier unidad que no sea ficha), `id` (una carta concreta), `cual` (`'ultima'` por defecto, `'primera'`, `'azar'`, `'fuerte'` = la de más ataque más vida), `pv` (con cuánta vida vuelve; por defecto la completa), `conEntrada` (`true` para que se dispare su habilidad «al entrar», con `objetivo` si la pide), `hueco` y `silencio`.
+
+La unidad devuelta entra como una unidad nueva: no ataca ese turno, vuelve sin el daño, los bonos ni el equipo que tuviera y no dispara «al entrar» salvo que se pida. Sí avisa a las aliadas con `alEntrarAliada`.
+
+**Ganchos nuevos** para nigromantes y carroñeros, en `js/cartas-efectos.js`:
+
+- `alMorirAliada: c => ...` cuando cae otra unidad aliada. `c.u` es la que reacciona y `c.muerta` la que cayó, que ya está en el cementerio.
+- `alMorirEnemiga: c => ...` igual, cuando cae una unidad del rival.
+
+Ninguno se activa por la caída de la propia unidad (para eso está `alMorir`).
+
+**Ejemplos**
+
+```js
+// Nigromante: al entrar, devuelve la última unidad de tu cementerio con 1 de vida
+R("nigromante", { alEntrar: { resolver: c => M.revivir(c.est, c.j, { pv: 1 }) } });
+// Acción: levanta a la más fuerte con 2 de vida
+R("llamado-de-ultratumba", { jugar: { resolver: c => M.revivir(c.est, c.j, { cual: "fuerte", pv: 2 }) } });
+// Recolector: gana +1 de ataque cada vez que cae una unidad, suya o del rival
+R("recolector", { alMorirAliada: c => { c.u.atq += 1; }, alMorirEnemiga: c => { c.u.atq += 1; } });
+// Pacto: la primera unidad aliada que cae cada turno vuelve con 1 de vida
+R("pacto", { alMorirAliada: c => {
+  if (c.u.flags.pactoTurno === c.est.turno) return;
+  c.u.flags.pactoTurno = c.est.turno;
+  M.revivir(c.est, c.j, { id: c.muerta.cartaId, pv: 1 });
+} });
+// Ladrón de tumbas: al entrar, se lleva la última unidad del cementerio del rival
+R("ladron-de-tumbas", { alEntrar: { resolver: c => M.revivir(c.est, c.j, { desde: 1 - c.j, pv: 1 }) } });
+```
+
+Para no crear bucles, una carta que devuelve unidades cuando cae otra conviene limitarla a una vez por turno (como en el ejemplo del Pacto) o dejar la unidad con poca vida. Para balancear, lo que más pesa es el coste, la vida con la que vuelve, que no ataque ese turno y quién puede ser devuelto (`filtro` por afinidad: Eternidad y Sombra son las que encajan). Sales aromáticas y el Pozo de la Eternidad ya usan `M.revivir`.
+
 ## La guía del lobby
 
 El lobby de Batalla trae una guía con cinco pestañas: cómo se juega, palabras clave, tipos de habilidad, tipos de carta y glosario. Tiene buscador y recuerda la última pestaña.
@@ -185,5 +237,6 @@ El lobby de Batalla trae una guía con cinco pestañas: cómo se juega, palabras
 
 - Reglas: `js/cartas-motor.js` (`atacar`, `iniciarBloqueo`, `bloquear`, `resolverCombate`, `puedeBloquear`).
 - Habilidades: `js/cartas-efectos.js`. Textos de las cartas: `js/cartas-datos.js`.
+- Cementerio: `cementerioDe`, `enCementerio`, `exiliar` y `revivir` en `js/cartas-motor.js`; el montón y la vista en `js/batalla.js` (`htmlCementerio`, `pintarCementerioVista`) y `css/cartas-juego.css`.
 - Pantalla: `js/batalla.js` (franja de combate, botones de atacar y bloquear, animación) y `css/cartas-juego.css`.
 - Guía del lobby: `data/triunfos-guia.js` (textos), `js/batalla-guia.js` (panel) y `tools/verificar-guia.js`.

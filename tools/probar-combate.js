@@ -325,6 +325,54 @@ ok(!!(M.EFECTOS["adam-kovacs-h"] && M.EFECTOS["adam-kovacs-h"].fuerzaHelenica), 
 function azar(sem) { let x = sem >>> 0; return () => { x = (x + 0x6D2B79F5) >>> 0; let t = x; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const ids = Object.keys(cartas);   // incluye las cartas de prueba (t11, t-temible...), que se filtran al armar los mazos
 let terminadas = 0, ataques = 0, bloqueos = 0;
+// Cementerio: qué entra, en qué orden y cómo se devuelven unidades
+mk("t-nigro", 2, 3); M.registrar("t-nigro", { alMorirAliada: c => { c.u.atq += 1; c.u.flags.aliadas = (c.u.flags.aliadas || 0) + 1; c.u.flags.ultimaMuerta = c.muerta.cartaId; },
+  alMorirEnemiga: c => { c.u.flags.enemigas = (c.u.flags.enemigas || 0) + 1; } });
+mk("t-reanima", 1, 2); M.registrar("t-reanima", { alEntrar: { resolver: c => M.revivir(c.est, c.j, { pv: 2, conEntrada: false }) } });
+mk("t-fallo", 1, 1); M.registrar("t-fallo", { alMorirAliada: c => { M.revivir(c.est, c.j, { id: c.muerta.cartaId, pv: 1 }); } });
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0];
+  const a = poner(e, 0, "t11"), b = poner(e, 0, "t33"), c = poner(e, 0, "centinela");
+  M.infligir(e, { u: a.uid }, 9, { tipo: "habilidad" }); M.infligir(e, { u: c.uid }, 9, { tipo: "habilidad" }); M.infligir(e, { u: b.uid }, 9, { tipo: "habilidad" });
+  ok(J.cementerio.join() === "t11,t33", `las unidades que caen llegan al cementerio por orden y las fichas no (${J.cementerio})`);
+  ok(M.cementerioDe(e, 0) === J.cementerio && M.enCementerio(e, 0).length === 2 && M.enCementerio(e, 0, m => m.pv === 3)[0].id === "t33", "cementerioDe y enCementerio");
+  ok(M.exiliar(e, 0, 0) === "t11" && J.cementerio.join() === "t33" && M.exiliar(e, 0, 9) === null, "exiliar saca la carta para siempre"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0];
+  J.cementerio = ["t11", "centinela", "t52", "t24", "cristal-de-mana"];
+  const u = M.revivir(e, 0, {});
+  ok(u && u.cartaId === "t24" && u.pv === u.pvMax && J.cementerio.join() === "t11,centinela,t52,cristal-de-mana", `revivir devuelve por defecto la última unidad, con la vida completa (${u && u.cartaId})`);
+  ok(!M.unidadPuedeAtacar(e, u), "la unidad devuelta entra como cualquier otra: no ataca ese turno");
+  ok(M.revivir(e, 0, { cual: "primera", pv: 1 }).cartaId === "t11" && M.buscar(e, u.uid) && J.campo.find(x => x.cartaId === "t11").pv === 1, "cual: primera, y pv fija la vida");
+  ok(M.revivir(e, 0, { cual: "fuerte" }).cartaId === "t52" && J.cementerio.join() === "centinela,cristal-de-mana", "cual: fuerte elige la de más ataque más vida");
+  ok(M.revivir(e, 0, {}) === null && J.cementerio.join() === "centinela,cristal-de-mana", "sin unidades que cumplan no hace nada (ni fichas ni objetos)");
+  J.cementerio = ["t11", "t33"]; ok(M.revivir(e, 0, { id: "t33", pv: 99 }).pv === 3 && J.cementerio.join() === "t11", "id elige una carta y pv no pasa de la vida máxima");
+  J.cementerio = ["t11", "t33", "t24"]; ok(M.revivir(e, 0, { filtro: m => m.atq === 2 }).cartaId === "t24", "filtro por meta");
+  const k = M.revivir(e, 0, { cual: "azar" }); ok(k && J.cementerio.length === 1, "cual: azar"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0], R = e.jugadores[1];
+  while (J.campo.length < 6) poner(e, 0, "t11"); J.cementerio = ["t33"];
+  ok(M.revivir(e, 0, {}) === null && J.cementerio.join() === "t33", "con el campo lleno no devuelve nada y la carta se queda en el cementerio");
+  J.campo.length = 0; R.cementerio = ["t52"]; const robada = M.revivir(e, 0, { desde: 1 });
+  ok(robada && robada.dueno === 0 && R.cementerio.length === 0, "desde: el cementerio del rival, la unidad entra en tu campo"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0]; J.cementerio = ["t24"]; J.mano = ["t-reanima"]; J.energia = 9;
+  M.aplicar(e, { t: "jugar", i: 0 }, 0);
+  ok(J.campo.some(u => u.cartaId === "t24" && u.pv === 2) && J.campo.some(u => u.cartaId === "t-reanima") && J.cementerio.length === 0, "una unidad que revive a otra al entrar"); }
+{ const e = partida([], []); turnoDe(e, 0);
+  const n = poner(e, 0, "t-nigro"), a = poner(e, 0, "t11"), r = poner(e, 1, "t11"), r2 = poner(e, 1, "t24");
+  M.infligir(e, { u: a.uid }, 9, { tipo: "habilidad" });
+  ok(n.flags.aliadas === 1 && n.flags.ultimaMuerta === "t11" && M.atqEfectivo(e, n) === 3 && !n.flags.enemigas, "alMorirAliada: reacciona a la caída de un aliado, con la muerta ya en el cementerio");
+  M.infligir(e, { u: r.uid }, 9, { tipo: "habilidad" });
+  ok(n.flags.enemigas === 1 && n.flags.aliadas === 1, "alMorirEnemiga: reacciona a la caída de un rival");
+  M.infligir(e, { u: n.uid }, 9, { tipo: "habilidad" });
+  ok(!M.buscar(e, n.uid) && e.jugadores[0].cementerio.includes("t-nigro"), "no se reacciona a la propia caída"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0]; poner(e, 0, "t-fallo"); const v = poner(e, 0, "t33");
+  M.infligir(e, { u: v.uid }, 9, { tipo: "habilidad" });
+  ok(J.campo.some(u => u.cartaId === "t33" && u.pv === 1) && !J.cementerio.includes("t33"), "una unidad puede devolver a la aliada que acaba de caer"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0];
+  J.mano = ["sales-aromaticas"]; J.energia = 9; M.aplicar(e, { t: "jugar", i: 0 }, 0);
+  ok(J.cementerio.at(-1) === "sales-aromaticas", "los objetos y acciones jugados van al cementerio");
+  J.mano = ["osario-de-la-frontera"]; J.energia = 9; M.aplicar(e, { t: "jugar", i: 0 }, 0);
+  J.mano = ["pozo-de-la-eternidad"]; J.energia = 9; M.aplicar(e, { t: "jugar", i: 0 }, 0);
+  ok(J.cementerio.at(-1) === "osario-de-la-frontera" && e.terreno.cartaId === "pozo-de-la-eternidad", "un terreno reemplazado se va al cementerio de su dueño"); }
+
 for (let g = 0; g < 300; g++) {
   const r = azar(g + 1000);
   const reales = ids.filter(i => !/^t(\d|-)/.test(i));

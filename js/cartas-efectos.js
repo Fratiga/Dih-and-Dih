@@ -28,6 +28,12 @@
      alEntrarAliada  cuando otra unidad aliada entra
      alRecibirDano   al recibir daño sin morir
      alMorir         al morir
+     alMorirAliada   cuando cae otra unidad aliada: { est, M, u (la que reacciona), j, muerta }
+     alMorirEnemiga  cuando cae una unidad del rival: { est, M, u, j, muerta }
+                     Las dos se llaman con la caída ya hecha: la unidad `muerta` ya está en el cementerio
+                     (salvo las fichas, que no dejan carta). Para devolver unidades del cementerio están
+                     M.revivir(est, j, opciones), M.enCementerio(est, j, filtro) y M.exiliar(est, j, i)
+                     (ver «Cementerio» en docs/combate-triunfos.md).
      alMatar         al destruir a una unidad con un ataque
      alInicioTurno   al inicio del turno de su dueño
      jugar           { objetivo?, resolver(c) } para objetos y acciones
@@ -267,14 +273,8 @@
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} se da vuelta la capa: hasta el final del próximo turno del rival nadie puede elegirla.`);
     } } });
     R("sales-aromaticas", { jugar: { resolver: c => {
-      const J = c.est.jugadores[c.j];
-      const k = J.cementerio.map((id, i) => ({ id, i })).reverse().find(x => M.esUnidad(M.meta(c.est, x.id)) && !M.meta(c.est, x.id).token);
-      if (!k) { M.log(c.est, "No hay a quién despertar."); return; }
-      if (J.campo.length >= M.C.CAMPO_MAX) { M.log(c.est, "No hay sitio en el campo."); return; }
-      J.cementerio.splice(k.i, 1);
-      const u = M.ponerUnidad(c.est, c.j, k.id, false, null);
-      u.pv = 1;
-      M.log(c.est, `${M.nombre(c.est, u)} despierta con 1 de vida.`);
+      const u = M.revivir(c.est, c.j, { pv: 1, silencio: true });
+      if (u) M.log(c.est, `${M.nombre(c.est, u)} despierta con 1 de vida.`);
     } } });
     // Trampa para animales: reacción que hiere a un atacante. Respeta Escurridizo, como una habilidad.
     R("trampa-para-animales", { reaccion: { cuando: "ataque", objetivo: "atacante",
@@ -335,14 +335,10 @@
     RT("pozo-de-la-eternidad", { alMorirUnidad: (est, u) => {
       const T = est.terreno;
       if (u.dueno !== T.dueno || T.usado === est.turno || M.meta(est, u.cartaId).token || !esDe(est, u, "eternidad")) return;
-      const J = est.jugadores[u.dueno];
-      if (J.campo.length >= M.C.CAMPO_MAX) return;
+      if (est.jugadores[u.dueno].campo.length >= M.C.CAMPO_MAX) return;
       T.usado = est.turno;
-      const k = J.cementerio.lastIndexOf(u.cartaId);
-      if (k >= 0) J.cementerio.splice(k, 1);
-      const nueva = M.ponerUnidad(est, u.dueno, u.cartaId, false, null, u.hueco);
-      nueva.pv = 1;
-      M.log(est, `El Pozo de la Eternidad devuelve a ${M.nombre(est, nueva)} con 1 de vida.`);
+      const nueva = M.revivir(est, u.dueno, { id: u.cartaId, pv: 1, hueco: u.hueco, silencio: true });
+      if (nueva) M.log(est, `El Pozo de la Eternidad devuelve a ${M.nombre(est, nueva)} con 1 de vida.`);
     } });
     // Fauces Grises: los rastreadores de Cacería eligen a su presa.
     RT("fauces-grises", { duracion: 3, daPalabra: (est, u, palabra) => palabra === "desafiante" && esDe(est, u, "caceria") });
