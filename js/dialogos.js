@@ -5,6 +5,11 @@
      if (!(await dialogo.confirmar("¿Borrar?", { peligro: true }))) return;
      const nombre = await dialogo.pedir("Nuevo nombre", actual);   // null si se cancela
      await dialogo.copiar("Copia esto a mano:", texto);
+     const v = await dialogo.formulario("Cambia tu contraseña", [
+       { id: "actual", etiqueta: "Contraseña actual", tipo: "password", autocomplete: "current-password" },
+       { id: "nueva", etiqueta: "Contraseña nueva", tipo: "password", autocomplete: "new-password" }
+     ], { titulo: "Cambiar contraseña", aceptar: "Cambiar", validar: v => (v.nueva.length < 6 ? "Mínimo 6 caracteres." : "") });
+                                                                       // { actual, nueva } o null si se cancela
 
    El aspecto sale de las variables de cada página (--panel, --accent, --border,
    --font-heading...) y de la clase de tema del <body>; ver css/dialogos.css.
@@ -60,7 +65,7 @@
     const previo = document.activeElement;
     const fondo = el("div", "dlg-fondo");
     const caja = el("div", "dlg dlg-" + cfg.tipo + (cfg.peligro ? " dlg-peligro" : ""));
-    caja.setAttribute("role", cfg.tipo === "confirmar" || cfg.tipo === "pedir" ? "dialog" : "alertdialog");
+    caja.setAttribute("role", ["confirmar", "pedir", "formulario"].includes(cfg.tipo) ? "dialog" : "alertdialog");
     caja.setAttribute("aria-modal", "true");
     const idTitulo = "dlg-t-" + Math.random().toString(36).slice(2, 8);
     const idMsg = "dlg-m-" + Math.random().toString(36).slice(2, 8);
@@ -87,6 +92,22 @@
       if (cfg.tipo === "copiar") campo.readOnly = true;
       campo.setAttribute("aria-labelledby", idMsg);
       caja.appendChild(campo);
+    }
+    // Formulario: varios campos de una línea, cada uno con su etiqueta
+    const filas = [];
+    if (cfg.tipo === "formulario") {
+      cfg.campos.forEach(c => {
+        const fila = el("label", "dlg-fila");
+        fila.appendChild(el("span", "dlg-etiqueta", c.etiqueta));
+        const entrada = el("input", "dlg-campo");
+        entrada.type = c.tipo || "text";
+        entrada.autocomplete = c.autocomplete || "off";
+        if (c.marcador) entrada.placeholder = c.marcador;
+        if (c.maximo) entrada.maxLength = c.maximo;
+        fila.appendChild(entrada);
+        caja.appendChild(fila);
+        filas.push({ id: c.id, entrada });
+      });
     }
     const error = el("p", "dlg-error");
     error.hidden = true;
@@ -127,6 +148,18 @@
           if (problema) { error.textContent = problema; error.hidden = false; campo.focus(); return; }
         }
         cerrar(campo.value);
+      } else if (cfg.tipo === "formulario") {
+        const valores = {};
+        filas.forEach(f => { valores[f.id] = f.entrada.value; });
+        const problema = cfg.validar ? cfg.validar(valores) : "";
+        if (problema) {
+          error.textContent = typeof problema === "object" ? problema.mensaje : problema;
+          error.hidden = false;
+          const donde = typeof problema === "object" && filas.find(f => f.id === problema.campo);
+          (donde || filas[0]).entrada.focus();
+          return;
+        }
+        cerrar(valores);
       } else if (cfg.tipo === "copiar") {
         copiarTexto(cfg.valor).then(ok => {
           if (ok) cerrar(true);
@@ -136,7 +169,7 @@
         cerrar(cfg.tipo === "confirmar" ? true : undefined);
       }
     }
-    function cancelar() { cerrar(cfg.tipo === "confirmar" ? false : cfg.tipo === "pedir" ? null : undefined); }
+    function cancelar() { cerrar(cfg.tipo === "confirmar" ? false : cfg.tipo === "pedir" || cfg.tipo === "formulario" ? null : undefined); }
 
     function teclas(e) {
       if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cancelar(); return; }
@@ -160,7 +193,7 @@
     document.body.appendChild(fondo);
     requestAnimationFrame(() => fondo.classList.add("dlg-visible"));
     // En acciones que borran o descartan, el foco empieza en Cancelar.
-    const inicial = campo || (cfg.peligro && bCancelar ? bCancelar : bAceptar);
+    const inicial = campo || (filas.length ? filas[0].entrada : null) || (cfg.peligro && bCancelar ? bCancelar : bAceptar);
     inicial.focus();
     if (campo) campo.select();
   }
@@ -229,6 +262,17 @@
         if (saliendo) return;
         if (o.alSalir) o.alSalir();
         if (o.hayCambios()) { ev.preventDefault(); ev.returnValue = ""; }
+      });
+    },
+    /* Varios campos de una línea (por ejemplo contraseña actual y nueva). campos: [{ id, etiqueta, tipo?, autocomplete?,
+       marcador?, maximo? }]. validar(valores) devuelve un texto de error o "" (también { mensaje, campo }).
+       Resuelve con { id: valor, ... } o con null si se cancela. */
+    formulario(mensaje, campos, opciones) {
+      const o = opcionesBase(opciones);
+      return mostrar({
+        tipo: "formulario", mensaje: String(mensaje), campos,
+        titulo: o.titulo || "Completa los datos", icono: o.icono || "✎",
+        aceptar: o.aceptar || "Aceptar", cancelar: o.cancelar || "Cancelar", validar: o.validar, peligro: false
       });
     },
     // Texto para copiar a mano cuando el portapapeles no está disponible.

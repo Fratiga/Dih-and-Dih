@@ -331,6 +331,7 @@ function ladoAuthWidgetHTML() {
       <input type="password" id="ladoAuthPassword" placeholder="Contraseña" required autocomplete="current-password">
       <button type="submit">Entrar</button>
       <button type="button" id="ladoAuthIrSignup" class="lado-auth-link">Crear cuenta</button>
+      <button type="button" id="ladoAuthOlvide" class="lado-auth-link">¿Olvidaste tu contraseña?</button>
     </form>
     <form id="ladoAuthSignup" class="lado-auth-form hidden">
       <input type="email" id="ladoAuthSignupEmail" placeholder="Email" required autocomplete="username">
@@ -347,6 +348,15 @@ function ladoAuthWidgetHTML() {
     <p id="ladoAuthError" class="global-lado-error hidden">TE EQUIVOCASTESSS</p>
   `;
 }
+
+/* "¿Olvidaste tu contraseña?" del panel de inicio de sesión (el del encabezado y el de las puertas de Side):
+   un solo oyente para todos, con el email que ya se hubiera escrito. */
+document.addEventListener("click", ev => {
+  const b = ev.target.closest && ev.target.closest("#ladoAuthOlvide");
+  if (!b) return;
+  const campo = b.closest("form") && b.closest("form").querySelector("#ladoAuthEmail");
+  fichasOlvideContrasena(campo ? campo.value : "");
+});
 
 function ladoSidePickerHTML(ladoElegido) {
   return `
@@ -394,8 +404,15 @@ function initGlobalLadoWidget() {
         <button type="button" id="ladoUsernameGuardar">Guardar</button>
       </div>
       ${mostrarSelector ? ladoSidePickerHTML(lado) : `<p class="lado-picker-texto">Side ${lado}</p>`}
-      <button type="button" id="ladoAuthCerrarSesion" class="lado-auth-link">Cerrar sesión</button>
+      <div class="lado-cuenta-enlaces">
+        <button type="button" id="ladoAuthCambiarPass" class="lado-auth-link">Cambiar contraseña</button>
+        <button type="button" id="ladoAuthCerrarSesion" class="lado-auth-link">Cerrar sesión</button>
+      </div>
     `;
+    document.getElementById("ladoAuthCambiarPass").addEventListener("click", () => {
+      cerrarPopover();
+      fichasCambiarContrasena();
+    });
     if (mostrarSelector) {
       popover.querySelectorAll("[data-elegir-side]").forEach(btn => {
         btn.addEventListener("click", async () => {

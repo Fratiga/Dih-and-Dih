@@ -64,19 +64,12 @@ function fichasInitAuthUI(onSesion) {
     }
   });
 
-  olvideBtn.addEventListener("click", async () => {
-    const email = (document.getElementById("fichasLoginEmail").value || "").trim();
-    if (!email) {
-      mostrarStatus("Escribe tu email en el campo de arriba primero.", "error");
-      return;
-    }
-    try {
-      await fichasEnviarRecuperacion(email);
-      mostrarStatus("Si esa cuenta existe, te llegó un correo para elegir una contraseña nueva.", "ok");
-    } catch (err) {
-      mostrarStatus(fichasTraducirErrorAuth(err), "error");
-    }
+  // Abre el aviso de "olvidé mi contraseña" con el email que ya hubiera escrito
+  olvideBtn.addEventListener("click", () => {
+    fichasOlvideContrasena(document.getElementById("fichasLoginEmail").value);
   });
+
+  document.getElementById("fichasCambiarPassBtn").addEventListener("click", () => { fichasCambiarContrasena(); });
 
   logoutBtn.addEventListener("click", async () => {
     await fichasCerrarSesion();
@@ -104,11 +97,4 @@ function fichasInitAuthUI(onSesion) {
   });
 }
 
-function fichasTraducirErrorAuth(err) {
-  const msg = (err && err.message) || "";
-  if (/already registered|already exists/i.test(msg)) return "Ese email ya tiene una cuenta, prueba iniciar sesión.";
-  if (/invalid login credentials/i.test(msg)) return "Email o contraseña incorrectos.";
-  if (/password.*(at least|should be)/i.test(msg)) return "La contraseña necesita al menos 6 caracteres.";
-  if (/email.*invalid/i.test(msg)) return "Ese email no parece válido.";
-  return msg || "Algo falló. Prueba de nuevo en un rato.";
-}
+/* fichasTraducirErrorAuth y fichasOlvideContrasena viven en js/fichas-supabase.js */

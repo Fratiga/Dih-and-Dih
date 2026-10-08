@@ -505,6 +505,8 @@ body::after {
   align-self: flex-start;
 }
 .lado-auth-link:hover { color: var(--text); }
+#ladoAuthOlvide { white-space: nowrap; text-align: left; }
+.lado-cuenta-enlaces { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 2px; }
 .lado-popover-email { margin: 0 0 10px; font-size: .8rem; color: var(--muted); word-break: break-all; }
 
 .lado-username-editar { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -2575,6 +2577,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   text-decoration: underline;
 }
 .fichas-link-button:hover { color: var(--text); }
+.fichas-cuenta-enlaces { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 18px; }
 
 /* --- Autenticación --- */
 .fichas-auth-gate { max-width: 480px; }
