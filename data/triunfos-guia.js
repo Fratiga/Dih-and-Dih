@@ -135,12 +135,13 @@ window.TRIUNFOS_GUIA = {
     { id: "bonusCombate", nombre: "Bonificación de combate", campo: "bonusAtaque",
       resumen: "Daño extra solo cuando la unidad pelea contra otra unidad.",
       detalle: ["Vale al atacar y al bloquear. No suma cuando el golpe va al jugador, porque ahí no hay unidad rival."] },
-    { id: "golpeExacto", nombre: "Golpe exacto", campo: "golpeExacto",
-      resumen: "En combate contra una unidad, hace tanto daño como vida tenga esa unidad.",
+    { id: "fuerzaHelenica", nombre: "Fuerza Helénica", campo: "fuerzaHelenica",
+      resumen: "Mata a la unidad que pelea con ella y, si toca al jugador, lo derrota de un golpe.",
       detalle: [
         "El daño es la vida exacta que tiene la unidad rival cuando empieza el combate. Ni el ataque de la carta ni las bonificaciones de daño cuentan. Vale al atacar y al bloquear.",
         "No ignora resistencias. Barrera, Duro, Esquivo, la reducción de daño y los guardianes actúan como con cualquier golpe de combate, así que una unidad resistente puede sobrevivir.",
-        "Contra el jugador pega con su ataque normal. La unidad sigue recibiendo el daño de su rival, a la vez."
+        "Si nadie la bloquea y toca al jugador, le quita toda la vida y la partida termina. Por eso hay que tener siempre un bloqueador, o una forma de pararla antes.",
+        "La unidad sigue recibiendo el daño de su rival, a la vez."
       ] },
     { id: "reduccion", nombre: "Reducción de daño", campo: "reduceDano",
       resumen: "Resta daño de cada golpe que recibe.",

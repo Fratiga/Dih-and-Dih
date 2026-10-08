@@ -34,6 +34,9 @@ begin
 end;
 $$;
 
+-- Es una función de disparador: nadie tiene que poder llamarla desde la API (Supabase lo marcaba como aviso)
+revoke all on function public.peticiones_poner_nombre() from public, anon, authenticated;
+
 drop trigger if exists peticiones_poner_nombre on public.peticiones;
 create trigger peticiones_poner_nombre
   before insert on public.peticiones

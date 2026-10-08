@@ -127,7 +127,7 @@ Los valores 96 y 288 están medidos en simulaciones de 6 años de mundo (la pobl
 
 ## Servidor
 
-1. Ejecuta `docs/hipodromo.sql` en el editor SQL. Se puede repetir. Crea las tablas, los permisos y `hipodromo_guardar`.
+1. `docs/hipodromo.sql` ya está aplicado en tu proyecto de Supabase (8 de octubre de 2026): las tablas están vacías, y se comprobó con el rol anónimo, el de servicio y un usuario con sesión que cada tabla ve lo que debe y que el estado secreto no se puede leer. Si hay que repetirlo se puede: crea las tablas, los permisos y `hipodromo_guardar`.
 2. Despliega `docs/hipodromo-avanzar.ts` como función `hipodromo-avanzar` con los tres archivos del motor al lado. Los pasos y los secretos están al principio del archivo.
 3. Programa una llamada por minuto con `pg_cron` y `pg_net`. Es idempotente: si no toca nada, responde `{avanzadas: 0}`.
 

@@ -125,24 +125,27 @@ Un objeto o una reacción que apunta a una unidad enemiga respeta Escurridizo y 
 
 ## Adam Kovacs, héroe de Brurland
 
-Variante legendaria de Adam. El Adam capitán sigue siendo `adam-kovacs`. Esta carta se creó desde el editor del álbum, así que su número y su texto viven en el servidor y el motor solo pone la habilidad.
+Variante legendaria de Adam. El Adam capitán sigue siendo `adam-kovacs`. Esta carta se creó desde el editor del álbum, así que su número y su texto viven en el servidor (su id es `adam-kovacs-h`) y el motor solo pone la habilidad.
 
-**Habilidad: Golpe exacto.** En combate contra una unidad, su daño es la vida que tiene esa unidad cuando empieza el combate. Ni su ataque ni las bonificaciones (marca, Edge, Lobo...) suman. Las resistencias no se ignoran: Barrera lo absorbe, Duro quita 1, Esquivo deja la mitad, Draco quita 2 y un guardián como Ocevat puede recibir el golpe. Contra el jugador pega con su ataque normal, para que no mate de un golpe. Sigue recibiendo el daño de su rival, a la vez.
+**Habilidad: Fuerza Helénica.** Tiene dos partes:
 
-**Números recomendados** (se cambian en el editor, no en el código):
+- **Contra una unidad**, su daño es la vida que tiene esa unidad cuando empieza el combate, al atacar y al bloquear. Ni su ataque ni las bonificaciones (marca, Edge, Lobo...) suman. Las resistencias no se ignoran: Barrera lo absorbe, Duro quita 1, Esquivo deja la mitad, Draco quita 2 y un guardián como Ocevat puede recibir el golpe.
+- **Contra el jugador**, si nadie la bloquea y toca al jugador, le quita toda la vida y la partida termina. Si la bloquean, el jugador no recibe nada.
+
+**Números** (están puestos en el servidor; se cambian en el editor, no en el código):
 
 | campo | valor | motivo |
 |---|---|---|
 | Rareza | Legendaria | |
-| Afinidad | Juramento | igual que el Adam capitán |
-| Coste | 7 | igual que Verdam, Draco y Kraken |
-| Ataque | 4 | solo cuenta contra el jugador |
-| Vida | 6 | cae contra cualquier unidad con 6 o más de ataque, incluidos Verdam, Kraken y Draco |
-| Habilidad | Golpe exacto: en combate contra una unidad, hace tanto daño como vida tenga. Barrera, Duro, Esquivo y las demás resistencias le afectan igual. Contra el jugador pega con su ataque. | |
+| Afinidad | Juramento y Cacería | |
+| Coste | 8 | por encima de las demás legendarias (7): ganar al tocar es lo más fuerte que hay |
+| Ataque | 2 | ya no cuenta para nada: contra una unidad manda su vida y contra el jugador, la muerte |
+| Vida | 4 | cae contra una unidad con 4 o más de ataque (un tercio del catálogo), y tras 3 de Trampa para animales queda a un golpe de caer |
+| Habilidad | Fuerza Helénica: en combate contra una unidad, hace tanto daño como vida tenga (las resistencias le afectan igual). Si toca al jugador, lo derrota de un golpe. | |
 
-Cómo se equilibra. Mata a casi cualquier unidad que bloquee o que lo bloquee, pero no puede pegar a una unidad que nadie le ponga delante: sin Desafiante, quien lo enfrenta decide si bloquea. Se desgasta, porque recibe el ataque de la unidad a la que golpea, y las unidades resistentes (Barrera, Duro, Esquivo, Draco) lo frenan. Si resulta fuerte, sube el coste a 8 o baja la vida a 5. Si resulta flojo, sube la vida a 7.
+Cómo se equilibra. Obliga al rival a tener siempre un bloqueador: sin él, pierde. Bloquear es barato, pero un bloqueador débil muere sin matarla y hay que repetirlo cada turno, y uno con 4 o más de ataque se lleva la carta por delante, de modo que su dueño gasta 8 de energía por una unidad de 4 o 5. Lo que de verdad la hace ganar es quitar bloqueadores: Desafiante (Garra, Rojo, Verdam, y las unidades de Cacería con Fauces Grises) obliga a bloquear a una unidad concreta, Azul impide bloquear a una unidad rival ese turno y el Puente de las Legiones salta el Provocar. Contra ella valen la Bomba de humo (la deja fuera del combate), la Trampa para animales (3 de daño, que sumados a cualquier bloqueo la matan), las unidades con Barrera, Duro o Esquivo (aguantan el golpe) y cualquier unidad con 4 o más de ataque. El Silbato de guardia ayuda al bloqueador a sobrevivir, y el Saco de abrojos no hace nada, porque su daño no sale del ataque.
 
-El id con que se guardó la carta en el servidor es `adam-kovacs-h`, y es el que está registrado en `js/cartas-efectos.js`. Hoy esa carta tiene en el servidor coste 0, ataque 1, vida 1 y la habilidad vacía: son los números provisionales, no los recomendados de arriba.
+Si resulta demasiado fuerte, sube el coste a 9 o baja la vida a 3; si resulta floja, baja el coste a 7 o sube la vida a 5. Hay que ver cómo se juega antes de tocar nada.
 
 ## Piezas nuevas del motor
 
@@ -151,7 +154,7 @@ El id con que se guardó la carta en el servidor es `adam-kovacs-h`, y es el que
 - `eco` en un terreno: repite la habilidad al entrar (Montaña del Eco Arcano).
 - `duplicaEn` en una carta: duplica su ataque y su vida mientras ese terreno esté en juego (`sincronizarTerreno`, que corre al entrar una unidad y al cambiar o irse el terreno).
 - `guardianUnaVez`: un guardián que solo actúa una vez por partida.
-- `golpeExacto`: el daño de combate contra una unidad es su vida, sin ignorar resistencias.
+- `fuerzaHelenica`: el daño de combate contra una unidad es su vida, sin ignorar resistencias, y sin bloqueo derrota al jugador de un golpe.
 - `reaccion.valido`: filtra qué atacantes puede elegir una reacción.
 
 ## Acciones de la partida

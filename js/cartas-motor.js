@@ -25,7 +25,7 @@
      que sobra tras matar al bloqueador pasa al jugador. Barrera: ignora el
      primer daño que reciba. Duro: recibe 1 menos de daño. Esquivo: en combate
      recibe la mitad del daño (redondeado hacia abajo). Escurridizo (regla propia):
-     ni los desafíos ni las habilidades enemigas pueden elegirla. Golpe exacto: contra una
+     ni los desafíos ni las habilidades enemigas pueden elegirla. Fuerza Helénica: contra una
      unidad hace tanto daño como vida tenga, sin ignorar sus resistencias.
    - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
@@ -733,9 +733,10 @@
 
   /* Daño de una unidad contra otra en combate (con sus bonificaciones) */
   function danoDeCombate(est, u, contra) {
-    // Golpe exacto: contra una unidad hace tanto daño como vida tenga. Ni el ataque ni las bonificaciones cuentan,
-    // y las resistencias (Barrera, Duro, Esquivo, reduceDano, guardián) actúan después, al infligir el daño.
-    if (contra && efectoDe(est, u).golpeExacto) return Math.max(0, contra.pv);
+    // Fuerza Helénica: contra una unidad hace tanto daño como vida tenga (ni el ataque ni las bonificaciones cuentan, y las
+    // resistencias, Barrera, Duro, Esquivo, reduceDano y guardián, actúan después, al infligir el daño). Si nadie la bloquea
+    // y toca al jugador, le quita toda la vida de un golpe.
+    if (efectoDe(est, u).fuerzaHelenica) return contra ? Math.max(0, contra.pv) : Math.max(1, est.jugadores[1 - u.dueno].vida);
     let d = atqEfectivo(est, u);
     if (contra) {
       const ef = efectoDe(est, u);
@@ -802,6 +803,7 @@
     pares.forEach(par => {
       if (par.b || est.ganador !== null) return;
       const { a } = par;
+      if (efectoDe(est, a).fuerzaHelenica) log(est, `${nombre(est, a)} toca a ${est.jugadores[D].nombre} con Fuerza Helénica: cae de un solo golpe.`);
       par.jugador += infligir(est, { j: D }, par.dA, { tipo: "combate", uid: a.uid });
       const ef = efectoDe(est, a);
       if (ef.alAtacarJugador && buscar(est, a.uid)) ef.alAtacarJugador({ est, M, u: a, j: A });

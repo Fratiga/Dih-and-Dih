@@ -143,7 +143,7 @@ revoke all on function public.hipodromo_guardar(bigint, jsonb) from public, anon
 grant execute on function public.hipodromo_guardar(bigint, jsonb) to service_role;
 
 -- ------------------------------------------------------------------ vistas útiles para la interfaz
-create or replace view public.hipodromo_leyendas as
+create or replace view public.hipodromo_leyendas with (security_invoker = true) as
   select id, nombre, sexo, estado, gen, salidas, victorias, premios, publico
     from public.hipodromo_criaturas
    where leyenda
@@ -184,7 +184,8 @@ create policy "hipodromo_votos cambiar" on public.hipodromo_votos for update usi
 revoke all on public.hipodromo_votos from anon, authenticated;
 grant select, insert, update on public.hipodromo_votos to authenticated;
 
--- Solo cuentas agregadas: nadie ve quién votó qué
+-- Solo cuentas agregadas: nadie ve quién votó qué. Es una vista con los permisos de su dueño (hace falta para contar los
+-- votos de todos), y el panel de Supabase la marca como aviso de seguridad: es a propósito, solo da números.
 create or replace view public.hipodromo_comunidad as
   select n, criatura_id, count(*)::integer as votos
     from public.hipodromo_votos
