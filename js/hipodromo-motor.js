@@ -523,7 +523,7 @@
     else if (g.cuota >= 12) titulo = elige(rng, [`Sorpresa en ${pista}: ${g.nombre} gana pagando ${cuota}`, `Batacazo: ${g.nombre} (${cuota}) se lleva ${res.nombre}`]);
     else if (fav && fav.pos >= 5 && fav.id !== g.id) titulo = `Se hunde el favorito: ${fav.nombre} llega ${fav.pos}º y gana ${g.nombre}`;
     else titulo = elige(rng, [`${g.nombre} gana ${res.nombre}`, `${res.nombre}: victoria de ${g.nombre}`, `${g.nombre} se impone en ${pista}`]);
-    const texto = `${g.nombre} cruzó primero en ${fmtTiempo(g.t)} sobre ${res.dist} m, con la pista ${res.estadoPista} y ${CLIMAS[res.clima].texto}. Ganó ${fmtMargen(s.margen)} a ${s.nombre}${t ? `, con ${t.nombre} tercero` : ""}. Pagó ${cuota} a ganador entre ${res.llegada.length} corredores.`;
+    const texto = `${g.nombre} cruzó primero en ${fmtTiempo(g.t)} sobre ${res.dist} m, con el terreno ${res.estadoPista} y ${CLIMAS[res.clima].texto}. Ganó ${fmtMargen(s.margen)} a ${s.nombre}${t ? `, con ${t.nombre} tercero` : ""}. Pagó ${cuota} a ganador entre ${res.llegada.length} corredores.`;
     return noticia(m, "resultado", titulo, texto, [g.id, s.id], res.n);
   }
 
@@ -738,7 +738,7 @@
     };
   }
   const SECUELAS = { vel: "cojea un poco de una pata trasera", res: "respira corto después de esforzarse", ace: "arranca despacio desde la puerta", agi: "tiene la columna rígida en las curvas", tem: "quedó nerviosa tras el accidente" };
-  /* Estrellas por tipo de pista, leídas de lo que ya ha corrido (hacen falta 2 salidas en esa pista) */
+  /* Estrellas por tipo de terreno, leídas de lo que ya ha corrido (hacen falta 2 salidas en ese terreno) */
   function aptitudes(c) {
     const out = {}, tasaTotal = c.salidas ? (c.vic + c.seg + c.ter) / c.salidas : 0;
     SUELOS.forEach(sl => {
@@ -750,8 +750,8 @@
   function etiquetas(c, apt) {
     const e = [];
     const con = SUELOS.filter(sl => apt[sl] && apt[sl].salidas >= 3);
-    con.filter(sl => apt[sl].estrellas >= 4).forEach(sl => e.push(`Se crece en pista ${sl}`));
-    con.filter(sl => apt[sl].estrellas <= 2).forEach(sl => e.push(`Sufre en pista ${sl}`));
+    con.filter(sl => apt[sl].estrellas >= 4).forEach(sl => e.push(`Se crece en terreno ${sl}`));
+    con.filter(sl => apt[sl].estrellas <= 2).forEach(sl => e.push(`Sufre en terreno ${sl}`));
     if (c.racha >= 2) e.push(`En racha: ${c.racha} victorias seguidas`);
     const ult = c.hist.slice(-4);
     if (ult.length === 4 && ult.every(h => h.pos > h.campo * 0.6)) e.push("En mala racha");

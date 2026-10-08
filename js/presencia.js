@@ -45,7 +45,7 @@
   };
   // Páginas escondidas o de administración: no se dice qué son
   const GENERICAS = ["Trasteando por ahí", "Tras bambalinas, moviendo hilos", "En algún rincón de la taberna"];
-  const OCULTAS = ["duelo.html", "cartas.html", "ostelar.html", "admin.html"];
+  const OCULTAS = ["duelo.html", "cartas.html", "ostelar.html", "hipodromo.html", "admin.html"];
   const FALLBACK = ["Paseando por la taberna", "Curioseando por ahí"];
   const OTRA_PESTANA = [
     "En otra pestaña, vaya a saber qué hace", "Se fue a mirar otra cosa", "Desaparecido (probablemente tomando agua)",

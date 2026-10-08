@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hipódromo — Compendio del Mundo</title>
+  <script src="js/dialogos.js?v=20261210"></script>
+  <script src="js/oculto.js?v=20261208"></script>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20261210">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261208">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20261216">
+</head>
+<body class="mj-pagina hip-tema" data-fase="abierta">
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <span class="hip-modo">Prueba local: el mundo corre en este navegador, sin servidor</span>
+  </div>
+
+  <main class="mj-contenido hip-pagina">
+    <header class="hip-cabecera">
+      <div>
+        <p class="eyebrow">CARRERAS</p>
+        <h1 class="mj-titulo">Hipódromo</h1>
+      </div>
+      <div class="hip-billetera"><span>Monedas</span><strong id="hipSaldo">-</strong></div>
+    </header>
+
+    <p id="hipCargando" class="hip-cargando hidden">Creando el mundo, con 300 carreras de historia...</p>
+    <p id="hipAviso" class="hip-aviso" role="status" aria-live="polite"></p>
+
+    <section class="hip-reloj" aria-label="Reloj de las carreras">
+      <div class="hip-reloj-fase">
+        <span id="hipFase" class="hip-fase">-</span>
+        <strong id="hipCuenta">--:--</strong>
+      </div>
+      <p id="hipRelojInfo" class="hip-reloj-info"></p>
+      <div class="hip-reloj-mandos">
+        <div id="hipVelocidad" class="hip-velocidad" role="group" aria-label="Velocidad del reloj"></div>
+        <button type="button" id="hipSaltar" class="hip-boton">Ir a la salida</button>
+      </div>
+      <p id="hipRelojNota" class="hip-nota"></p>
+    </section>
+
+    <nav class="hip-pestanas" role="tablist" aria-label="Secciones">
+      <button type="button" role="tab" data-pestana="carrera" aria-selected="true">Carrera</button>
+      <button type="button" role="tab" data-pestana="criaturas" aria-selected="false">Criaturas</button>
+      <button type="button" role="tab" data-pestana="noticias" aria-selected="false">Noticias</button>
+      <button type="button" role="tab" data-pestana="apuestas" aria-selected="false">Mis apuestas</button>
+      <button type="button" role="tab" data-pestana="mundo" aria-selected="false">Mundo</button>
+    </nav>
+
+    <!-- CARRERA -->
+    <div id="hipPanel-carrera" class="hip-panel">
+      <section id="hipEscena" class="hip-escena hidden" aria-label="La carrera">
+        <div class="hip-escena-cab"><h2 id="hipEscenaTitulo">En pista</h2><span id="hipEscenaProgreso"></span></div>
+        <div id="hipPista" class="hip-pista"></div>
+        <div id="hipEscenaRes" class="hip-escena-res"></div>
+      </section>
+
+      <div class="hip-columnas">
+        <div class="hip-col-principal">
+          <section id="hipPrograma" class="hip-tarjeta hip-programa" aria-label="Próxima carrera"></section>
+          <section class="hip-tarjeta" aria-label="Inscritas">
+            <h3>Inscritas</h3>
+            <div class="hip-tabla-ancha"><div id="hipInscritos"></div></div>
+            <p class="hip-nota">Pulsa la cuota para apostar a esa criatura. La cuota es lo que paga por cada moneda si acierta; «podio» es lo que paga si llega entre las tres primeras. Las estrellas se afinan con las salidas.</p>
+          </section>
+          <section id="hipUltimoCaja" class="hip-tarjeta" aria-label="Último resultado">
+            <h3>Último resultado</h3>
+            <div class="hip-tabla-ancha"><div id="hipUltimo"></div></div>
+          </section>
+        </div>
+
+        <aside class="hip-col-lateral">
+          <section id="hipPanelApuesta" class="hip-tarjeta hip-apuesta" aria-label="Apostar">
+            <h3>Apostar</h3>
+            <label>Tipo
+              <select id="hipTipo">
+                <option value="ganador">Ganador</option>
+                <option value="podio">Podio</option>
+                <option value="exacta">Exacta</option>
+              </select>
+            </label>
+            <p id="hipTipoAyuda" class="hip-nota"></p>
+            <label><span id="hipSel1Etiqueta">Criatura</span> <select id="hipSel1"></select></label>
+            <label id="hipSel2Caja" class="hidden">Segundo <select id="hipSel2"></select></label>
+            <label>Monedas <input type="number" id="hipMonto" min="1" step="1" value="50" inputmode="numeric"></label>
+            <div class="hip-atajos">
+              <button type="button" class="hip-boton chico" data-monto="10">10</button>
+              <button type="button" class="hip-boton chico" data-monto="50">50</button>
+              <button type="button" class="hip-boton chico" data-monto="100">100</button>
+              <button type="button" class="hip-boton chico" data-monto="todo">Todo</button>
+            </div>
+            <dl class="hip-resumen-apuesta"><div><dt>Cuota</dt><dd id="hipCuotaApuesta">-</dd></div><div><dt>Si acierta</dt><dd id="hipPosible">-</dd></div></dl>
+            <button type="button" id="hipApostar" class="hip-boton principal">Apostar</button>
+            <p id="hipApuestaMsg" class="hip-aviso" role="status" aria-live="polite"></p>
+            <div id="hipMias"></div>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <!-- CRIATURAS -->
+    <div id="hipPanel-criaturas" class="hip-panel hidden">
+      <div class="hip-filtros">
+        <label>Mostrar
+          <select id="hipCriaEstado">
+            <option value="pista">En condiciones de correr</option>
+            <option value="todas">Todas</option>
+            <option value="favoritas">Mis favoritas</option>
+            <option value="leyendas">Leyendas</option>
+            <option value="lesionadas">Lesionadas</option>
+            <option value="jovenes">Crías y potros</option>
+            <option value="criadoras">En la cría</option>
+            <option value="retiradas">Retiradas y fallecidas</option>
+          </select>
+        </label>
+        <label>Ordenar por
+          <select id="hipCriaOrden">
+            <option value="vic">Victorias</option>
+            <option value="prem">Premios</option>
+            <option value="sal">Salidas</option>
+            <option value="edad">Más jóvenes</option>
+            <option value="nombre">Nombre</option>
+          </select>
+        </label>
+        <label>Buscar <input type="search" id="hipCriaBuscar" placeholder="Nombre" autocomplete="off"></label>
+        <span id="hipCriaCuenta" class="hip-nota"></span>
+      </div>
+      <div id="hipCriaLista" class="hip-cria-lista"></div>
+      <button type="button" id="hipCriaMas" class="hip-boton hidden">Mostrar más</button>
+    </div>
+
+    <!-- NOTICIAS -->
+    <div id="hipPanel-noticias" class="hip-panel hidden">
+      <div id="hipNoticiasLista" class="hip-noticias"></div>
+    </div>
+
+    <!-- APUESTAS -->
+    <div id="hipPanel-apuestas" class="hip-panel hidden">
+      <div id="hipApuestasResumen"></div>
+      <div id="hipApuestasPend"></div>
+      <div class="hip-tabla-ancha"><div id="hipApuestasHist"></div></div>
+      <p><button type="button" id="hipMonedas" class="hip-boton">Reiniciar mis monedas</button></p>
+    </div>
+
+    <!-- MUNDO -->
+    <div id="hipPanel-mundo" class="hip-panel hidden">
+      <div id="hipMundoDatos"></div>
+      <div class="hip-tarjeta">
+        <h3>Ajustes de prueba</h3>
+        <label class="hip-casilla"><input type="checkbox" id="hipOculto"> Mostrar lo oculto (probabilidad real, forma, genes)</label>
+        <p class="hip-nota">Sirve para comprobar el equilibrio. El jugador de verdad no lo vería.</p>
+        <p><button type="button" id="hipReiniciar" class="hip-boton">Empezar un mundo nuevo</button></p>
+      </div>
+      <div class="hip-tarjeta">
+        <h3>Esto es una prueba</h3>
+        <p class="hip-nota">El mundo, las monedas y las apuestas se guardan solo en este navegador. El reloj del mundo es virtual y solo avanza con la página abierta. Cuando esté el servidor, todos verán la misma carrera a la misma hora. Cómo funciona todo: docs/hipodromo.md.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Ficha de una criatura -->
+  <div id="hipFicha" class="hip-ficha hidden" role="dialog" aria-modal="true" aria-label="Ficha de la criatura">
+    <div class="hip-ficha-caja">
+      <button type="button" id="hipFichaCerrar" class="hip-ficha-cerrar" aria-label="Cerrar la ficha">×</button>
+      <div id="hipFichaCuerpo"></div>
+    </div>
+  </div>
+
+  <script src="data/hipodromo-palabras.js?v=20261216"></script>
+  <script src="js/hipodromo-nombres.js?v=20261216"></script>
+  <script src="js/hipodromo-motor.js?v=20261216"></script>
+  <script src="js/hipodromo-dibujo.js?v=20261216"></script>
+  <script src="js/hipodromo-pagina.js?v=20261216"></script>
+</body>
+</html>

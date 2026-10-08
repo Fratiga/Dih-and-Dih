@@ -1,6 +1,6 @@
 # Hipódromo: un mundo de carreras que sigue sin ti
 
-Estado: el motor, las palabras para los nombres, el SQL, la función de servidor y las pruebas están hechos. **No hay interfaz** y la página no existe ni está enlazada en el sitio. Este documento explica cómo funciona, qué se probó y qué falta.
+Estado: el motor, las palabras para los nombres, el SQL, la función de servidor, las pruebas y una **página de prueba en modo local** están hechos. La página (`hipodromo.html`) es solo para admin, como Ostelar o Duelo: sale en el hub de Minijuegos y en el panel de Admin solo para cuentas admin, y quien entre por la dirección vuelve a Minijuegos. Este documento explica cómo funciona, qué se probó y qué falta.
 
 La idea, en una frase: el jugador no posee ni entrena a nadie. Observa un mundo de criaturas corredoras que nacen, compiten, se lesionan, se retiran, crían y mueren con o sin él, y decide en quién confía su apuesta cada 30 minutos.
 
@@ -11,9 +11,23 @@ La idea, en una frase: el jugador no posee ni entrena a nadie. Observa un mundo 
 | `data/hipodromo-palabras.js` | Las listas de palabras de los nombres, en español (con género) y en inglés. |
 | `js/hipodromo-nombres.js` | El generador de nombres: gramática, concordancia, herencia, homenajes y nombres de carrera. |
 | `js/hipodromo-motor.js` | El mundo: genes, cuerpo, carrera, cuotas, apuestas, vida, noticias, perfil público y el paso del servidor. Reglas puras, sin pantalla ni reloj propio. |
+| `hipodromo.html`, `css/hipodromo.css`, `js/hipodromo-pagina.js`, `js/hipodromo-dibujo.js` | La página de prueba en modo local (ver «La página de prueba») y el dibujo de las criaturas. |
 | `tools/probar-hipodromo.js` | 158 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido` (medio minuto). |
 | `docs/hipodromo.sql` | Tablas, permisos y la función que guarda cada tanda. Probado en PostgreSQL 16. |
 | `docs/hipodromo-avanzar.ts` | La Edge Function de Supabase. **No se ejecutó nunca** (aquí no hay Deno ni acceso a Supabase). |
+
+## La página de prueba
+
+`hipodromo.html` corre el mundo entero en el navegador, sin Supabase, y lo guarda en `localStorage` (clave `hipodromoLocal`, unos 250 KB). Al abrirla por primera vez crea un mundo con 300 carreras de historia (tarda un par de segundos) y la primera carrera sale a los 4 minutos.
+
+- **Reloj**: es virtual y solo avanza con la página abierta. Hay pausa, 1×, 10×, 60× y 600×, y un botón que salta a la salida, salta la carrera o pasa a la siguiente. Durante la carrera el reloj no pasa de 10× para que se vea.
+- **Carrera**: la próxima carrera con pista, distancia, bolsa, pronóstico y rumores; las inscritas con su dibujo, récord, estrellas, últimas cuatro carreras y cuota (se pulsa la cuota para apostar); el panel de apuesta (ganador, podio y exacta); la carrera animada con los tiempos por tramo, con tropiezos y lesiones marcados; y el último resultado.
+- **Criaturas**: todas las vivas y las retiradas, con filtros (en condiciones de correr, lesionadas, crías, en la cría, retiradas y fallecidas, leyendas, favoritas), orden y búsqueda. La ficha enseña el cuerpo, las aptitudes por terreno, el linaje, las últimas carreras y lo que has apostado por ella, y se puede seguir (favoritas).
+- **Noticias**, **Mis apuestas** (saldo, pendientes, historial y rendimiento) y **Mundo** (estadísticas y ajustes).
+- **Lo oculto**: una casilla en Mundo enseña la probabilidad real de cada inscrita, lo que «vale» su cuota, y en la ficha el rating, la forma, la fatiga, el talento y los genes. Sirve para comprobar el equilibrio.
+- Las monedas empiezan en 1000. Como todo es local, cualquiera puede tocarlas desde las herramientas del navegador.
+
+El dibujo es una silueta simple generada a partir de las proporciones del perfil (`HipodromoDibujo.silueta`). Cuando haya arte se cambia esa sola función.
 
 ## Cómo se mueve el mundo
 
@@ -53,7 +67,7 @@ El perfil público trae el cuerpo con 5 niveles de texto por parte («Patas larg
 
 **Lo que no se ve** (solo está en el estado del servidor): los genes exactos, un *talento oculto* de cada capacidad (la cría no es una copia del cuerpo), la **forma del día** (sube y baja con el tiempo), la fatiga y el rating real. Dos criaturas con el mismo cuerpo no rinden igual, y por eso el historial sigue importando.
 
-**Lo que sí se aprende corriendo**: estrellas con ruido que mejoran con las salidas (con pocas carreras pueden engañar), estrellas por tipo de pista (hacen falta 2 salidas en esa pista), etiquetas («Se crece en pista pesado», «En mala racha»), el estilo (va al frente, remonta desde atrás) a partir de 3 salidas, y las secuelas visibles de lesiones permanentes («cojea un poco de una pata trasera»).
+**Lo que sí se aprende corriendo**: estrellas con ruido que mejoran con las salidas (con pocas carreras pueden engañar), estrellas por tipo de terreno (hacen falta 2 salidas en ese terreno), etiquetas («Se crece en terreno pesado», «En mala racha»), el estilo (va al frente, remonta desde atrás) a partir de 3 salidas, y las secuelas visibles de lesiones permanentes («cojea un poco de una pata trasera»).
 
 **Etapas de la vida**, por edad: cría, potro, joven, adulto, veterano, y al final retirado o fallecido. `HipodromoMotor.etapaDe(edad, estado)` la calcula; el dibujo puede cambiar con ella.
 
@@ -146,7 +160,8 @@ Las monedas están en el navegador, como se eligió para empezar. Hace falta:
 
 ## Qué no se hizo
 
-- Ninguna interfaz, ni el dibujo de las criaturas ni el de la carrera.
+- Arte de verdad: el dibujo de las criaturas y de la pista es provisional.
+- Versión con servidor de la página: hoy lee y guarda todo en el navegador.
 - Pistas fantásticas («arcana»), y el «Núcleo de Carrera» como órgano propio: el motor tiene `suelo` en cada pista, pero ninguna regla distinta para una pista mágica.
 - Las secuelas cambian el texto del perfil pero no hay un dibujo asociado.
 - El «doble» con cuota fija (ver arriba), y las cuotas que se mueven con las apuestas.
