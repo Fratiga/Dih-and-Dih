@@ -150,3 +150,42 @@ body.arq-tema::before {
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 720px 240px, 900px 240px, 1400px 320px, 100% 100%, 100% 100%, 100% 100%;
 }
 
+
+/* --- Cosas traídas de los otros minijuegos ------------------------------------------------------ */
+/* Botón principal con palabra y brillo, como el «Jugar» de Zarabanda y Parranda (antes era un círculo con un ▶ sin texto) */
+.arq-principal .mj-play {
+  width: auto; aspect-ratio: auto; padding: 13px 30px 13px 26px; border-radius: 2px;
+  font: 700 1.05rem var(--font-heading), serif; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; color: #fff2cb;
+  background: linear-gradient(180deg, #2f4d37, #1b2f23); border: 2px solid var(--accent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 40%, transparent), 0 6px 18px rgba(0, 0, 0, .5);
+  transition: border-color .15s, filter .15s, transform .15s;
+}
+.arq-principal .mj-play:hover { border-color: #fff2cb; filter: brightness(1.12); transform: translate(-50%, -50%) scale(1.03); }
+
+/* Subtítulo bajo el encabezado de la tabla, como el «Ranking» de Ajedrez y Duelo */
+.arq-panel .arq-sub { margin: -8px 0 14px; color: var(--muted); font-size: .8rem; line-height: 1.45; }
+
+/* Marca de «ya la venciste» en la ficha de rival, como el «Sin vencer» de Ajedrez */
+.arq-rival-icono { position: relative; }
+.arq-vencido {
+  position: absolute; right: -5px; bottom: -4px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 .72rem/1 sans-serif; font-style: normal; color: #1d2a14; background: var(--accent); border: 2px solid #14201a;
+}
+.arq-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Nuevo mejor puntaje: se nota en la línea bajo el campo */
+.arq-pie .mj-linea.nuevo { color: #fff2cb; border-color: var(--accent); background: rgba(75, 58, 18, .55); }
+
+/* Contra jugadores: dos paneles (quién hay y tus partidas), como el lobby de Batalla, en vez de texto suelto */
+#arqueriaLobby .aj-ayuda { margin: 0 0 12px; font-size: .85rem; line-height: 1.5; }
+.arq-lobby-rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.arq-lobby-panel { padding: 16px 18px 18px; }
+.arq-lobby-panel h2 { margin: 0 0 12px; font-size: 1rem; }
+.arq-lobby-panel .aj-pvp-jugadores { max-width: none; margin: 0; }
+.arq-lobby-panel .aj-pvp-titulo { margin: 14px 0 8px; font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.arq-lobby-panel .aj-pvp-titulo:first-child { margin-top: 0; }
+.arq-lobby-panel .aj-ayuda { margin: 0; padding: 14px 8px; text-align: center; border: 1px dashed rgba(255, 255, 255, .12); font-size: .82rem; line-height: 1.5; }
+@media (max-width: 720px) {
+  .arq-lobby-rejilla { grid-template-columns: minmax(0, 1fr); }
+  .arq-principal .mj-play { padding: 11px 22px 11px 18px; font-size: .95rem; }
+}

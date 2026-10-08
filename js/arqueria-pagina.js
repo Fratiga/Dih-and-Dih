@@ -17,6 +17,7 @@
   const rendirseSoloEl = document.getElementById("arqueriaRendirseSolo");
   const rendirseSoloFilaEl = document.getElementById("arqueriaRendirseSoloFila");
   const pieEl = document.getElementById("arqueriaPie");
+  let estadoJuego = "listo";   // listo | jugando | fin, según el motor
   const cuentaEl = document.getElementById("arqueriaCuenta");
   const revanchaEl = document.getElementById("arqueriaRevancha");
   const rankingEl = document.getElementById("arqueriaRankings");
@@ -136,6 +137,7 @@
     }
     pintarTabla();
     pintarTu();
+    pintarRivales();
   }
   if (tabsEl) { pintarTabla(); tuEl.innerHTML = `<p class="arq-nota">Cargando tus números...</p>`; }
 
@@ -173,16 +175,23 @@
   function pintarPie() {
     pieEl.classList.toggle("hidden", recordEl.classList.contains("hidden") && rendirseSoloFilaEl.classList.contains("hidden"));
   }
-  function ponerLinea(texto) { recordEl.textContent = texto; actualizarLinea(); }
+  function ponerLinea(texto) { recordEl.textContent = texto; recordEl.classList.remove("nuevo"); actualizarLinea(); }
+
+  /* ¿Ya le ganaste a este rival con la sesión iniciada? (la marca de "vencida" de las fichas de rival) */
+  function venciste(id) {
+    const yo = datosTabla && yoSesion.id ? datosTabla.find(u => u.id === yoSesion.id) : null;
+    return !!(yo && yo.porClave && yo.porClave[id] && yo.porClave[id].victorias > 0);
+  }
 
   /* --- Contra rivales ------------------------------------------------------ */
   function pintarRivales() {
     rivalesEl.innerHTML = RIVALES.map(r => {
       const activo = r.id === rival.id;
+      const vencido = venciste(r.id);
       return `
-      <button type="button" class="arq-rival ${activo ? "activo" : ""}" data-rival="${r.id}" aria-pressed="${activo}" style="--rc: ${r.color}" title="${esc(r.nota)}">
-        <span class="arq-rival-icono" aria-hidden="true">${r.nombre[0]}</span>
-        <span class="arq-rival-cab"><strong>${r.nombre}</strong><span class="arq-nivel" aria-label="Dificultad ${r.dificultad}">${r.dificultad}</span></span>
+      <button type="button" class="arq-rival ${activo ? "activo" : ""}" data-rival="${r.id}" aria-pressed="${activo}" style="--rc: ${r.color}" title="${esc(r.nota)}${vencido ? " Ya la venciste." : ""}">
+        <span class="arq-rival-icono" aria-hidden="true">${r.nombre[0]}${vencido ? '<i class="arq-vencido">✓</i>' : ""}</span>
+        <span class="arq-rival-cab"><strong>${r.nombre}</strong><span class="arq-nivel" aria-label="Dificultad ${r.dificultad}">${r.dificultad}</span>${vencido ? '<span class="arq-sr"> Ya la venciste.</span>' : ""}</span>
         <small>${r.corta}</small>
       </button>`;
     }).join("");
@@ -199,6 +208,7 @@
     duracion: 60,
     fondo: true,
     onEstado: estado => {
+      estadoJuego = estado;
       jugando = estado === "jugando";
       if (!vs) boton.classList.toggle("hidden", jugando);
       pintarRendirse();
@@ -208,11 +218,13 @@
       if (esVs) { finalizarVs(puntaje); return; }
       anotarPartida(rival.id, resultado === "ganado" ? "gana" : resultado === "perdido" ? "pierde" : "tablas", puntaje);
       // Una partida a la que te rendiste cuenta como derrota, pero no mejora tu mejor puntaje
-      if (!rendicion && puntaje > leer(rival.id)) {
+      const nuevoRecord = !rendicion && puntaje > leer(rival.id);
+      if (nuevoRecord) {
         try { localStorage.setItem(clave(rival.id), String(puntaje)); } catch (e) { /* sin almacenamiento */ }
       }
       pintarRivales();
       pintarRecord();
+      if (nuevoRecord) { ponerLinea(`Nuevo mejor puntaje contra ${rival.nombre}: ${puntaje}`); recordEl.classList.add("nuevo"); }
     }
   });
 
@@ -232,7 +244,14 @@
 
   /* Botón de rendirse. Contra un rival de la casa solo se ve mientras se juega, y ocupa su sitio siempre para que el campo
      no salte. Contra otro jugador es el botón de los controles de la partida, que dice "Rendirse" una vez empezada. */
+  /* El botón grande del campo dice lo que va a pasar: jugar, jugar otra vez o, contra otro jugador, que estás listo */
+  function pintarBoton() {
+    const texto = vs ? "Estoy listo" : estadoJuego === "fin" ? "Jugar otra vez" : "Jugar";
+    boton.textContent = `▶ ${texto}`;
+  }
+
   function pintarRendirse() {
+    pintarBoton();
     rendirseSoloFilaEl.classList.toggle("hidden", modo === "jugadores" || !!vs);
     rendirseSoloFilaEl.classList.toggle("arq-inactivo", !jugando);
     rendirseSoloEl.disabled = !jugando;
@@ -281,6 +300,8 @@
   }
 
   function pintarLobby() {
+    // Sin sesión o sin conexión no hay nada que listar: los dos paneles solo salen cuando hay datos que mostrar
+    document.getElementById("arqueriaLobbyRejilla").classList.toggle("hidden", !supa);
     if (!supa) return;
     const abiertas = partidas.filter(f => ["pendiente", "listos", "jugando"].includes(f.estado));
     const recibidos = abiertas.filter(f => f.estado === "pendiente" && f.a !== miId);
@@ -317,14 +338,14 @@
           <button type="button" class="aj-boton" data-revancha="${idOponente(f)}" ${ocupadosRev.has(idOponente(f)) ? "disabled" : ""}>Revancha</button>
         </div>`).join("");
     }
-    partidasEl.innerHTML = html;
+    partidasEl.innerHTML = html || `<p class="aj-ayuda">Nadie te ha retado todavía. Elige a alguien de la lista y espera su respuesta, o acepta aquí un reto cuando llegue.</p>`;
 
     const ocupados = new Set(abiertas.map(idOponente));
     jugadoresEl.innerHTML = jugadores.length ? jugadores.map(j => `
       <div class="aj-pvp-fila">
         <span><i class="aj-punto ${presentes.has(j.user_id) ? "on" : ""}" title="${presentes.has(j.user_id) ? "En línea" : "Desconectado"}"></i> ${esc(j.username)}</span>
         <button type="button" class="aj-boton" data-retar="${j.user_id}" ${ocupados.has(j.user_id) ? "disabled" : ""}>${ocupados.has(j.user_id) ? "Partida abierta" : "Retar"}</button>
-      </div>`).join("") : `<p class="aj-ayuda">No hay otros jugadores con cuenta todavía.</p>`;
+      </div>`).join("") : `<p class="aj-ayuda">Todavía no hay otros jugadores con cuenta. Cuando alguien cree una, aparecerá aquí para retarlo.</p>`;
   }
 
   async function cargarJugadores() {
@@ -370,7 +391,7 @@
       mostrarResultado(f);
     } else {
       boton.classList.remove("hidden");
-      estadoTexto(`Pulsa ▶ cuando estés listo. La partida con ${nombreOponente(f)} empieza cuando los dos lo hayan pulsado.`);
+      estadoTexto(`Pulsa «Estoy listo» cuando quieras. La partida con ${nombreOponente(f)} empieza cuando los dos lo hayan pulsado.`);
     }
     sondeoVs = setInterval(cargarPartidas, 800);
     escenarioEl.scrollIntoView({ block: "nearest" });
@@ -546,7 +567,7 @@
       miId = sesion.user.id;
       supa = await fichasCliente();
       enLinea = true;
-      avisoEl.textContent = "Reta a alguien de la lista. Cuando acepte, abre la partida y pulsen ▶ los dos: juegan el mismo campo a la vez y ven el puntaje del otro subir.";
+      avisoEl.textContent = "Reta a alguien de la lista. Cuando acepte, abre la partida y pulsen «Estoy listo» los dos: juegan el mismo campo a la vez y ven el puntaje del otro subir.";
       try { await supa.rpc("arqueria_caducar"); } catch (err) { /* aún sin el SQL de caducidad */ }
       await Promise.all([cargarJugadores(), cargarPartidas()]);
       suscribir();

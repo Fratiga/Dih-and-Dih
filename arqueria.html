@@ -8,7 +8,7 @@
   <script src="js/dialogos.js?v=20261210"></script>
   <link rel="stylesheet" href="css/style.css?v=20261210">
   <link rel="stylesheet" href="css/minijuegos.css?v=20261208">
-  <link rel="stylesheet" href="css/arqueria.css?v=20261213">
+  <link rel="stylesheet" href="css/arqueria.css?v=20261215">
   <link rel="stylesheet" href="css/mj-temas.css?v=20261208">
   <script src="js/mj-volumen.js?v=20261208"></script>
 </head>
@@ -35,13 +35,20 @@
     <div class="arq-diseno">
       <div class="arq-principal">
         <div id="arqueriaModoRivales">
-          <div id="arqueriaRivales" class="arq-rivales"></div>
+          <div id="arqueriaRivales" class="arq-rivales" role="group" aria-label="Elige a tu rival"></div>
         </div>
         <section id="arqueriaLobby" class="hidden">
           <p id="arqueriaAviso" class="aj-ayuda"></p>
-          <div id="arqueriaPartidas"></div>
-          <h3 class="aj-pvp-titulo">Jugadores</h3>
-          <div id="arqueriaJugadores" class="aj-pvp-jugadores"></div>
+          <div id="arqueriaLobbyRejilla" class="arq-lobby-rejilla hidden">
+            <section class="arq-panel arq-lobby-panel" aria-label="Jugadores">
+              <h2>Jugadores</h2>
+              <div id="arqueriaJugadores" class="aj-pvp-jugadores"></div>
+            </section>
+            <section class="arq-panel arq-lobby-panel" aria-label="Tus partidas">
+              <h2>Tus partidas</h2>
+              <div id="arqueriaPartidas"></div>
+            </section>
+          </div>
         </section>
         <div class="aj-controles hidden" id="arqueriaControles">
           <button type="button" id="arqueriaCerrar" class="aj-boton">← Mis partidas</button>
@@ -50,7 +57,7 @@
         </div>
         <div class="mj-escenario">
           <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
-          <button type="button" id="arqueriaJugar" class="mj-play" aria-label="Jugar">▶</button>
+          <button type="button" id="arqueriaJugar" class="mj-play">▶ Jugar</button>
           <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
         </div>
         <!-- Pie del campo: tu mejor puntaje o el estado de la partida a la izquierda, y a la derecha rendirse contra un rival de la
@@ -70,6 +77,7 @@
         </section>
         <section class="arq-panel arq-tabla" aria-label="Tabla de arqueros">
           <h2>Tabla de arqueros</h2>
+          <p class="arq-sub">Se anotan las partidas de quienes tienen sesión iniciada.</p>
           <div id="arqueriaTabs" class="arq-tabs" role="tablist"></div>
           <div id="arqueriaRankings"></div>
         </section>
@@ -84,7 +92,7 @@
   <script src="js/minijuegos-stats.js?v=20261208"></script>
   <script src="js/arqueria-visual.js?v=20261210"></script>
   <script src="js/arqueria.js?v=20261211"></script>
-  <script src="js/arqueria-pagina.js?v=20261212"></script>
+  <script src="js/arqueria-pagina.js?v=20261214"></script>
   <script src="js/minijuegos-avisos.js?v=20261208"></script>
 </body>
 </html>
