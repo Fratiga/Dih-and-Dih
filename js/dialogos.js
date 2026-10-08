@@ -203,6 +203,34 @@
         marcador: o.marcador, multilinea: !!o.multilinea, tipoCampo: o.tipoCampo, validar: o.validar, peligro: false
       });
     },
+    /* Avisa antes de irse de la página con cambios sin guardar. Al tocar un enlace del sitio sale
+       el aviso propio; cerrar la pestaña o recargar solo se puede frenar con el aviso del navegador,
+       que ningún sitio puede cambiar. Uso: dialogo.protegerSalida({ hayCambios: () => bool, alSalir: fn }) */
+    protegerSalida(opciones) {
+      const o = opciones || {};
+      let saliendo = false;
+      const mensaje = o.mensaje || "Hay cambios sin guardar. Si sales ahora, se pierden.";
+      document.addEventListener("click", async ev => {
+        if (ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+        const a = ev.target.closest && ev.target.closest("a[href]");
+        if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+        const href = a.getAttribute("href");
+        if (!href || href.startsWith("#") || /^(javascript|mailto|tel):/i.test(href)) return;
+        if (!o.hayCambios()) return;
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        const ok = await window.dialogo.confirmar(mensaje, { titulo: o.titulo || "Salir sin guardar", aceptar: "Salir", cancelar: "Quedarme", peligro: true });
+        if (!ok) return;
+        saliendo = true;
+        if (o.alSalir) o.alSalir();
+        location.href = a.href;
+      }, true);
+      window.addEventListener("beforeunload", ev => {
+        if (saliendo) return;
+        if (o.alSalir) o.alSalir();
+        if (o.hayCambios()) { ev.preventDefault(); ev.returnValue = ""; }
+      });
+    },
     // Texto para copiar a mano cuando el portapapeles no está disponible.
     copiar(mensaje, texto, opciones) {
       const o = opcionesBase(opciones);

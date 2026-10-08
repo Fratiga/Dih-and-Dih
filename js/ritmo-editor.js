@@ -1698,7 +1698,7 @@
     else if (k === "arrowright" && seleccion.size) { ev.preventDefault(); nudge(10); }
   });
 
-  window.addEventListener("beforeunload", ev => { guardarBorrador(); if (cambios) { ev.preventDefault(); ev.returnValue = ""; } });
+  dialogo.protegerSalida({ hayCambios: () => cambios, alSalir: guardarBorrador, mensaje: "Hay cambios sin guardar en el editor. Se queda un borrador, pero el mapa no se ha guardado." });
   setInterval(guardarBorrador, 20000);
   if (window.ResizeObserver) new ResizeObserver(() => { sucio = true; }).observe(lienzo);
 

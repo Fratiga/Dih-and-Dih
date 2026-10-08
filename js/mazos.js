@@ -200,7 +200,7 @@
   $("mzBorrar").addEventListener("click", borrar);
   [$("mzRareza"), $("mzTipo"), $("mzAfinidad"), $("mzSoloFuera")].forEach(el => el.addEventListener("change", pintarColeccion));
   $("mzBuscar").addEventListener("input", pintarColeccion);
-  window.addEventListener("beforeunload", ev => { if (firma() !== original) { ev.preventDefault(); ev.returnValue = ""; } });
+  dialogo.protegerSalida({ hayCambios: () => firma() !== original, mensaje: "Hay cambios sin guardar en este mazo. Si sales ahora, se pierden." });
 
   function llenarFiltros() {
     const rarezaActual = $("mzRareza").value;
