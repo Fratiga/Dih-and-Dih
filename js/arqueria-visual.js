@@ -376,7 +376,7 @@
       ctx.textBaseline = "alphabetic";
 
       // Jugador
-      placa(ctx, 20, 16, 270, 82, "rgba(209,173,85,.75)");
+      placa(ctx, 20, 16, 270, 82, "rgba(230, 193, 94,.75)");
       ctx.textAlign = "left";
       ctx.font = `600 15px ${TITULO}`;
       ctx.fillStyle = "#d9c07a";
@@ -447,7 +447,7 @@
       ctx.fillStyle = "rgba(34,25,14,.95)";
       ctx.fill();
       ctx.lineWidth = 3;
-      ctx.strokeStyle = "#d1ad55";
+      ctx.strokeStyle = "#e6c15e";
       ctx.stroke();
       rectRedondo(ctx, x + 8, y + 8, w - 16, h - 16, 12);
       ctx.lineWidth = 1;
@@ -456,8 +456,8 @@
 
       // adornos: flechas a los lados del título
       const ty = y + (reglas.length ? 66 : d.sub ? 70 : h / 2 + 2);
-      ctx.strokeStyle = "#d1ad55";
-      ctx.fillStyle = "#d1ad55";
+      ctx.strokeStyle = "#e6c15e";
+      ctx.fillStyle = "#e6c15e";
       ctx.lineWidth = 2;
       for (const lado of [-1, 1]) {
         const x0 = ancho / 2 + lado * (w / 2 - 34);
@@ -480,7 +480,7 @@
       }
       // Reglas: líneas cortas bajo el título, con un filete que las separa
       if (reglas.length) {
-        ctx.strokeStyle = "rgba(209,173,85,.4)";
+        ctx.strokeStyle = "rgba(230, 193, 94,.4)";
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(x + 60, ty + 22); ctx.lineTo(x + w - 60, ty + 22); ctx.stroke();
         ctx.font = `600 ${letra}px ${NUMEROS}`;
