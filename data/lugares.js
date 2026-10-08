@@ -882,7 +882,7 @@ window.LUGARES = [
     region: "Derrovia, Gylas",
     gobierno: "Corona de Brurland",
     religionPredominante: "Mortismo",
-    lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Desierto de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Capilla de las Astas Caídas", "Los Centinelas Helados"],
+    lugaresDestacados: ["Kigan (capital)", "Wolfmere", "Rivenport", "Vado Ceniza", "Marshfield", "Wheatholt", "Stonedelve", "Desierto de Cenizas", "Torre del Silencio", "Catedral del Juramento", "Río del Caballero", "Colinas de Wolfmere", "Espuela Rota", "Campamento de las Astas Caídas", "Los Centinelas Helados"],
     subsecciones: [
       {
         lado: "A",
@@ -931,17 +931,17 @@ window.LUGARES = [
     `
   },
   {
-    id: "capilla-de-las-astas-caidas",
-    title: "Capilla de las Astas Caídas",
+    id: "campamento-de-las-astas-caidas",
+    title: "Campamento de las Astas Caídas",
     category: "Lugares",
-    tags: ["aldea", "brurland", "derrovia", "caballería"],
+    tags: ["campamento", "brurland", "derrovia", "caballería"],
     summary: "Campamento de duelo improvisado al suroeste de Kigan, levantado apenas semanas atrás por familias que todavía no tienen dónde llorar a los caídos de la tragedia de la corona.",
     region: "Brurland, Derrovia, Gylas",
     gobierno: "",
     religionPredominante: "Mortismo",
     lugaresDestacados: [],
     content: `
-      <p>La tierra alrededor de la capilla todavía está removida, docenas de
+      <p>La tierra del campamento todavía está removida, docenas de
       astas de lanza rotas clavadas apenas semanas atrás por familias que
       llegaron desde Kigan sin cuerpo que enterrar. Cada astilla clavada es
       reciente, la corteza todavía sin curtir por el clima, y nuevas familias
@@ -949,8 +949,8 @@ window.LUGARES = [
       para pronunciarlo dos veces seguidas.</p>
       <p>Un puñado de sacerdotes del Mortismo llegó desde Kigan poco después de
       la tragedia para improvisar algo de estructura sobre lo que empezó como
-      duelo espontáneo, y todavía están decidiendo cómo va a funcionar la
-      capilla una vez que el dolor más agudo empiece a asentarse. Nadie aquí
+      duelo espontáneo, y todavía están decidiendo cómo va a funcionar el
+      campamento una vez que el dolor más agudo empiece a asentarse. Nadie aquí
       habla todavía de tradición ni de ceremonia fija, apenas de sobrevivir
       un día de luto a la vez.</p>
     `

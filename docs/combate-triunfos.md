@@ -108,7 +108,7 @@ Cada uno premia a una afinidad.
 
 | carta | afinidad | coste | efecto |
 |---|---|---|---|
-| Capilla de las Astas Caídas | Juramento | 3 | La primera vez cada turno que muere una unidad tuya, las demás ganan +1 de ataque hasta el final de tu próximo turno |
+| Campamento de las Astas Caídas | Juramento | 3 | La primera vez cada turno que muere una unidad tuya, las demás ganan +1 de ataque hasta el final de tu próximo turno |
 | Fauces Grises | Cacería | 3 | 3 turnos: tus unidades de Cacería tienen Desafiante |
 | Montaña del Eco Arcano | Arcano | 4 | 3 turnos: las habilidades al entrar de tus unidades de Arcano se activan dos veces |
 | Pozo de la Eternidad | Eternidad | 5 | La primera unidad de Eternidad tuya que muera cada turno vuelve con 1 de vida |

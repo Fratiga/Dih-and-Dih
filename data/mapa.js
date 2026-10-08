@@ -87,7 +87,7 @@ window.MAPA_PUNTOS = [
   { lugarId: "la-espesura", x: 29.6, y: 72 },
   { lugarId: "kigan", x: 29.3, y: 75.3 },
   { lugarId: "espuela-rota", x: 26.5, y: 76 },
-  { lugarId: "capilla-de-las-astas-caidas", x: 28.5, y: 79.5 },
+  { lugarId: "campamento-de-las-astas-caidas", x: 28.5, y: 79.5 },
   { lugarId: "torre-del-silencio", x: 32, y: 80 },
   { lugarId: "catedral-del-juramento", x: 32, y: 75 },
   { lugarId: "fel", x: 38, y: 64 },

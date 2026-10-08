@@ -180,12 +180,12 @@ const terreno = (e, id, dueno, restantes = null) => { e.terreno = { cartaId: id,
   M.infligir(e, { u: g2.uid }, 20, { tipo: "habilidad" }); ok(!M.buscar(e, g2.uid) && e.jugadores[0].cementerio.includes("mamut-gelido"), "solo una vez por turno");
   M.infligir(e, { u: b.uid }, 20, { tipo: "habilidad" }); ok(!M.buscar(e, b.uid), "una unidad de otra afinidad no vuelve");
   e.terreno.usado = 0; M.infligir(e, { u: rival.uid }, 20, { tipo: "habilidad" }); ok(!M.buscar(e, rival.uid), "la del rival tampoco"); }
-// Capilla de las Astas Caídas
-{ const e = partida([], []); turnoDe(e, 0); terreno(e, "capilla-de-las-astas-caidas", 0);
+// Campamento de las Astas Caídas
+{ const e = partida([], []); turnoDe(e, 0); terreno(e, "campamento-de-las-astas-caidas", 0);
   const a = poner(e, 0, "t33"), b = poner(e, 0, "t24"), c = poner(e, 0, "t11"), r = poner(e, 1, "t33");
   M.infligir(e, { u: r.uid }, 9, { tipo: "habilidad" }); ok(M.atqEfectivo(e, a) === 3, "muere una del rival: sin luto");
   M.infligir(e, { u: c.uid }, 9, { tipo: "habilidad" });
-  ok(M.atqEfectivo(e, a) === 4 && M.atqEfectivo(e, b) === 3, "Capilla: las demás ganan +1 de ataque");
+  ok(M.atqEfectivo(e, a) === 4 && M.atqEfectivo(e, b) === 3, "Campamento: las demás ganan +1 de ataque");
   M.infligir(e, { u: b.uid }, 9, { tipo: "habilidad" }); ok(M.atqEfectivo(e, a) === 4, "solo la primera muerte de cada turno");
   M.aplicar(e, { t: "fin" }, 0); ok(M.atqEfectivo(e, a) === 4, "sigue en el turno del rival");
   M.aplicar(e, { t: "fin" }, 1); ok(M.atqEfectivo(e, a) === 4, "y en el propio turno siguiente");

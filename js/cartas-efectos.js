@@ -343,8 +343,8 @@
     RT("fauces-grises", { duracion: 3, daPalabra: (est, u, palabra) => palabra === "desafiante" && esDe(est, u, "caceria") });
     // Montaña del Eco Arcano: los conjuros de Arcano resuenan y se repiten.
     RT("montana-del-eco-arcano", { duracion: 3, eco: (est, u) => est.terreno.dueno === u.dueno && esDe(est, u, "arcano") });
-    // Capilla de las Astas Caídas: el duelo endurece a los que quedan.
-    RT("capilla-de-las-astas-caidas", { alMorirUnidad: (est, u) => {
+    // Campamento de las Astas Caídas: el duelo endurece a los que quedan.
+    RT("campamento-de-las-astas-caidas", { alMorirUnidad: (est, u) => {
       const T = est.terreno;
       if (u.dueno !== T.dueno || T.luto === est.turno || M.meta(est, u.cartaId).token) return;
       T.luto = est.turno;

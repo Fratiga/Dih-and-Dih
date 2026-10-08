@@ -244,9 +244,9 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-bioma[data-b="catedral"] { background: linear-gradient(180deg, rgba(255,226,140,.32), rgba(58,40,10,.68)); }
 .bt-bioma[data-b="catedral"]::before { background: repeating-linear-gradient(100deg, rgba(255,242,190,.14) 0 38px, transparent 38px 112px); animation: bt-niebla 40s linear infinite; width: 200%; }
 .bt-bioma[data-b="puente"] { background: linear-gradient(180deg, rgba(255,150,80,.42), rgba(60,40,72,.7)); }
-/* Capilla de las Astas Caídas: velas y luto */
-.bt-bioma[data-b="capilla"] { background: radial-gradient(ellipse at 50% 100%, rgba(255,196,110,.34), rgba(58,36,40,.74) 60%, rgba(18,10,14,.9)); }
-.bt-bioma[data-b="capilla"]::before { background: repeating-radial-gradient(circle at 22% 80%, rgba(255,214,150,.12) 0 2px, transparent 2px 30px); animation: bt-latido 4.4s ease-in-out infinite; }
+/* Campamento de las Astas Caídas: hogueras de vigilia y luto */
+.bt-bioma[data-b="campamento"] { background: radial-gradient(ellipse at 50% 100%, rgba(255,196,110,.34), rgba(58,36,40,.74) 60%, rgba(18,10,14,.9)); }
+.bt-bioma[data-b="campamento"]::before { background: repeating-radial-gradient(circle at 22% 80%, rgba(255,214,150,.12) 0 2px, transparent 2px 30px); animation: bt-latido 4.4s ease-in-out infinite; }
 /* Fauces Grises: cacería bajo la lluvia */
 .bt-bioma[data-b="fauces"] { background: linear-gradient(180deg, rgba(84,92,86,.62), rgba(20,26,22,.86)); }
 .bt-bioma[data-b="fauces"]::after { top: -100%; height: 200%; background-image: repeating-linear-gradient(105deg, rgba(200,214,208,.16) 0 1px, transparent 1px 14px); animation: bt-cae 5s linear infinite; }
