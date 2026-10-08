@@ -107,7 +107,7 @@
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["ritmo.html", "Zarabanda"], ["parranda.html", "Parranda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
-    ["arqueria.html", "Arquería", true], ["duelo.html", "Duelo", true], ["cartas.html", "Cartas", true],
+    ["arqueria.html", "Arquería"], ["duelo.html", "Duelo", true], ["cartas.html", "Cartas", true],
     ["ostelar.html", "Ostelar", true], ["admin.html", "Admin", true]
   ];
   const ATAJOS_CLAVE = "lbAtajos";
@@ -323,8 +323,8 @@
       if (retos) avisos.push(`<a class="lb-aviso" href="ajedrez.html">♞ Ajedrez: ${retos} reto${retos === 1 ? "" : "s"} sin responder</a>`);
       if (turno) avisos.push(`<a class="lb-aviso" href="ajedrez.html">♞ Ajedrez: te toca mover en ${turno} partida${turno === 1 ? "" : "s"}</a>`);
     } catch (e) { /* sin ajedrez entre jugadores */ }
-    // Arquería (escondida: solo se menciona al admin)
-    if (typeof esAdmin === "function" && esAdmin()) try {
+    // Arquería
+    try {
       const { data } = await supabase.from("arqueria_partidas").select("estado, a, b").in("estado", ["pendiente", "listos", "jugando"]);
       const lista = data || [];
       const retos = lista.filter(p => p.estado === "pendiente" && p.b === miId).length;

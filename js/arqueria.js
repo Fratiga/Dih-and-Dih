@@ -189,6 +189,17 @@
       if (onFin) onFin({ puntaje, puntajeRival, resultado, vs });
     }
 
+    /* Rendirse en una partida contra un rival de la casa: termina ya, cuenta como derrota y lo avisa en onFin
+       con rendicion: true. Devuelve false si no hay partida en marcha o es contra otro jugador (ahí rinde el servidor). */
+    function rendirse() {
+      if (estado !== "jugando" || vs) return false;
+      resultado = "perdido";
+      textoFin = { titulo: "Te rendiste", sub: `${puntaje} a ${puntajeRival}` };
+      cambiarEstado("fin");
+      if (onFin) onFin({ puntaje, puntajeRival, resultado, vs, rendicion: true });
+      return true;
+    }
+
     function actualizar(dt) {
       if (estado === "jugando") {
         tiempo += dt;
@@ -295,7 +306,8 @@
       if (estado === "jugando" && cursor && mouse) dibujarMira(cursor.x, cursor.y);
       if (pantallas && estado !== "jugando") {
         const titulo = estado === "listo" ? `${nombreJugador} contra ${cfg.nombre}`
-          : vs ? (textoFin ? textoFin.titulo : "Tiempo")
+          : textoFin && textoFin.titulo ? textoFin.titulo
+          : vs ? "Tiempo"
           : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
         const sub = estado === "fin" ? (textoFin && textoFin.sub ? textoFin.sub : `${puntaje} a ${puntajeRival}`) : "";
         visual.pantalla(ctx, { titulo, sub });
@@ -328,7 +340,8 @@
         ctx.fillStyle = "#e8e4d0";
         ctx.font = "600 52px sans-serif";
         const titulo = estado === "listo" ? `${nombreJugador} contra ${cfg.nombre}`
-          : vs ? (textoFin ? textoFin.titulo : "Tiempo")
+          : textoFin && textoFin.titulo ? textoFin.titulo
+          : vs ? "Tiempo"
           : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
         ctx.fillText(titulo, ancho / 2, alto * 0.28);
         if (estado === "fin") {
@@ -419,6 +432,7 @@
 
     return {
       iniciar,
+      rendirse,
       cambiarRival,
       prepararVs,
       setNombreJugador,

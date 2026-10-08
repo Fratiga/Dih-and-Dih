@@ -14,6 +14,8 @@
   const controlesEl = document.getElementById("arqueriaControles");
   const cerrarEl = document.getElementById("arqueriaCerrar");
   const rendirseEl = document.getElementById("arqueriaRendirse");
+  const rendirseSoloEl = document.getElementById("arqueriaRendirseSolo");
+  const rendirseSoloFilaEl = document.getElementById("arqueriaRendirseSoloFila");
   const cuentaEl = document.getElementById("arqueriaCuenta");
   const revanchaEl = document.getElementById("arqueriaRevancha");
   const rankingEl = document.getElementById("arqueriaRankings");
@@ -180,12 +182,14 @@
     onEstado: estado => {
       jugando = estado === "jugando";
       if (!vs) boton.classList.toggle("hidden", jugando);
+      pintarRendirse();
     },
     onPuntaje: puntaje => { if (vs) vs.puntaje = puntaje; },
-    onFin: ({ puntaje, resultado, vs: esVs }) => {
+    onFin: ({ puntaje, resultado, vs: esVs, rendicion }) => {
       if (esVs) { finalizarVs(puntaje); return; }
       anotarPartida(rival.id, resultado === "ganado" ? "gana" : resultado === "perdido" ? "pierde" : "tablas", puntaje);
-      if (puntaje > leer(rival.id)) {
+      // Una partida a la que te rendiste cuenta como derrota, pero no mejora tu mejor puntaje
+      if (!rendicion && puntaje > leer(rival.id)) {
         try { localStorage.setItem(clave(rival.id), String(puntaje)); } catch (e) { /* sin almacenamiento */ }
       }
       pintarRivales();
@@ -207,6 +211,15 @@
     pintarRecord();
   });
 
+  /* Botón de rendirse. Contra un rival de la casa solo se ve mientras se juega, y ocupa su sitio siempre para que el campo
+     no salte. Contra otro jugador es el botón de los controles de la partida, que dice "Rendirse" una vez empezada. */
+  function pintarRendirse() {
+    rendirseSoloFilaEl.classList.toggle("hidden", modo === "jugadores" || !!vs);
+    rendirseSoloFilaEl.classList.toggle("arq-inactivo", !jugando);
+    rendirseSoloEl.disabled = !jugando;
+    if (vs) rendirseEl.textContent = vs.iniciada && !vs.terminada ? "Rendirse" : "Abandonar";
+  }
+
   /* --- Vistas -------------------------------------------------------------- */
   function refrescarVistas() {
     const pvp = modo === "jugadores";
@@ -215,6 +228,7 @@
     escenarioEl.classList.toggle("hidden", pvp && !vs);
     recordEl.classList.toggle("hidden", pvp && !vs);
     controlesEl.classList.toggle("hidden", !vs);
+    pintarRendirse();
     document.querySelectorAll(".aj-modo").forEach(b => b.classList.toggle("activo", b.dataset.modo === modo));
   }
 
@@ -378,6 +392,7 @@
       clearInterval(vs.reloj);
       cuentaEl.classList.add("hidden");
       vs.iniciada = true;
+      pintarRendirse();
       juego.iniciar();
       envioPuntaje = setInterval(enviarPuntaje, 1000);
     }, 1000);
@@ -392,6 +407,7 @@
   async function finalizarVs(puntaje, tardio) {
     if (!vs || vs.terminada) return;
     vs.terminada = true;
+    pintarRendirse();
     clearInterval(envioPuntaje); envioPuntaje = null;
     juego.setFin({ titulo: "Esperando al otro jugador...", sub: `${puntaje} puntos` });
     const id = vs.id;
@@ -469,6 +485,13 @@
     cerrarVs();
     refrescarVistas();
     cargarPartidas();
+  });
+
+  rendirseSoloEl.addEventListener("click", async () => {
+    if (vs || !jugando) return;
+    const quien = rival.nombre;
+    if (!(await dialogo.confirmar(`¿Te rindes? Cuenta como una derrota contra ${quien}.`, { titulo: "Rendirse", aceptar: "Rendirme", peligro: true }))) return;
+    juego.rendirse();   // si el tiempo se acabó mientras decidías, ya no hay nada que rendir
   });
 
   rendirseEl.addEventListener("click", async () => {

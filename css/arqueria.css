@@ -131,3 +131,7 @@ body.arq-tema::before {
   background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 100%, 60px calc(100% - 46px), 0 calc(100% - 96px), 0 0, 0 0, 0 0;
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 720px 240px, 900px 240px, 1400px 320px, 100% 100%, 100% 100%, 100% 100%;
 }
+
+/* Rendirse contra un rival de la casa: ocupa su sitio siempre y solo se oculta a la vista, para que el campo no salte */
+.arq-rendirse-fila { display: flex; justify-content: flex-end; margin-top: 8px; }
+.arq-rendirse-fila.arq-inactivo { visibility: hidden; }
