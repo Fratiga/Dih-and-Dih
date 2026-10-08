@@ -60,6 +60,13 @@ function turnoDe(est, j) { let g = 0; while (est.activo !== j && g++ < 4) M.apli
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const b = poner(e, 1, "t33", { barrera: true });
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
   ok(b.pv === 3 && !b.flags.barrera, "Barrera absorbe el primer daño"); }
+// 8b) Esquivo: recibe la mitad del daño de combate
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const b = poner(e, 1, "mattei"); // Mattei 1/2
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
+  ok(b.pv === 1 && !M.buscar(e, a.uid) === false, `Esquivo: 3 de daño pasan a 1 (pv ${b.pv})`); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t11"); const b = poner(e, 1, "mattei");
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
+  ok(b.pv === 2, `Esquivo: 1 de daño se esquiva del todo (pv ${b.pv})`); }
 // 9) Arrollar
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "kraken"); const b = poner(e, 1, "t11");
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);

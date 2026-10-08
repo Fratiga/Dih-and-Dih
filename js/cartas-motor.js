@@ -19,7 +19,8 @@
      nadie bloquea golpean al jugador. Volar: solo la bloquean unidades que vuelan.
      Temible: no la bloquean unidades con menos de 3 de ataque. Arrollar: el daño
      que sobra tras matar al bloqueador pasa al jugador. Barrera: ignora el
-     primer daño que reciba. Duro: recibe 1 menos de daño.
+     primer daño que reciba. Duro: recibe 1 menos de daño. Esquivo: en combate
+     recibe la mitad del daño (redondeado hacia abajo).
    - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
    - Un terreno a la vez: jugar uno nuevo reemplaza al anterior.
@@ -262,6 +263,11 @@
     }
     let n = cantidad;
     const ef = efectoDe(est, u);
+    // Esquivo: en combate esquiva parte del golpe (recibe la mitad, redondeando hacia abajo)
+    if (fuente && fuente.tipo === "combate" && tienePalabra(est, u, "esquivo")) {
+      n = Math.floor(n / 2);
+      if (n <= 0) { log(est, `${nombre(est, u)} esquiva el golpe.`); return 0; }
+    }
     if (tienePalabra(est, u, "duro")) n -= 1;
     if (ef.reduceDano) n -= ef.reduceDano(est, u, n, fuente) || 0;
     n = Math.max(0, n);

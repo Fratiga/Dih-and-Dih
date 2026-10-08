@@ -66,9 +66,9 @@ window.CARTAS_AFINIDADES = {
   u("hornet", "Hornet", "Personaje", P("hornet"), "comun", "caceria", 3, 3, 3, "Disparo certero: al entrar, inflige 1 de daño a una unidad enemiga.", A);
   u("sir-buffolet", "Sir Buffolet", "Personaje", P("sir-buffolet"), "infrecuente", "arcano", 2, 2, 2, "Mal bardo: al entrar, cada jugador descarta una carta al azar.", A);
   u("enzo", "Enzo", "Personaje", P("enzo"), "infrecuente", "carne", 4, 2, 3, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño.", A);
-  u("mattei", "Mattei", "Personaje", P("mattei"), "comun", "sombra", 1, 1, 2, "Escurridizo: entra con Barrera (ignora el primer daño que reciba).", A);
+  u("mattei", "Mattei", "Personaje", P("mattei"), "comun", "sombra", 1, 1, 2, "Escurridizo: Esquivo (en combate recibe la mitad del daño, redondeado hacia abajo).", A);
   u("adam-kovacs", "Adam Kovacs", "Personaje", P("adam-kovacs"), "rara", "juramento", 6, 6, 7, "Capitán: tus demás unidades tienen +1 de ataque.", Bl);
-  u("cassius-coldgrave", "Cassius Coldgrave", "Personaje", P("cassius-coldgrave"), "infrecuente", "caceria", 3, 2, 3, "Cobarde: tiene Volar (solo la bloquean unidades que vuelan), pero no puede bloquear.", Bl);
+  u("cassius-coldgrave", "Cassius Coldgrave", "Personaje", P("cassius-coldgrave"), "infrecuente", "caceria", 3, 2, 3, "Cobarde: no puede bloquear. Esquivo: en combate recibe la mitad del daño, redondeado hacia abajo.", Bl);
   u("torvrena", "Torvrena", "Personaje", P("torvrena"), "infrecuente", "caceria", 4, 4, 4, "Trampa de mandíbula: al entrar, una unidad enemiga no puede atacar el próximo turno.", Bl);
   u("ryn", "Ryn", "Personaje", P("ryn"), "rara", "arcano", 3, 2, 3, "Canción de bardo: al entrar, una unidad aliada gana +2/+2 este turno.", Bl);
   u("hooey-magoo", "Hooey Magoo", "Personaje", P("hooey-magoo"), "rara", "carne", 3, 4, 3, "Sacrificado: al morir, roba una carta.", Bl);

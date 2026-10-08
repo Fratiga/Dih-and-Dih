@@ -5,7 +5,8 @@
      palabras        'volar' (solo la bloquean unidades que vuelan), 'temible' (no la
                      bloquean unidades con menos de 3 de ataque), 'veloz' (en combate golpea
                      antes), 'arrollar' (el daño que sobra pasa al jugador), 'duro' (recibe 1
-                     menos de daño), 'noBloquea' (no puede bloquear). Barrera no es una palabra
+                     menos de daño), 'esquivo' (en combate recibe la mitad del daño, redondeado hacia
+                     abajo), 'noBloquea' (no puede bloquear). Barrera no es una palabra
                      fija sino un estado: se da con u.flags.barrera = true (ver alCrear)
      pasivaAtq       ataque extra mientras está en juego
      auraAtq         ataque extra para las demás unidades aliadas
@@ -68,9 +69,9 @@
       });
     } } });
     R("enzo", { palabras: ["veloz"] });
-    R("mattei", { alCrear: (est, u) => { u.flags.barrera = true; } });
+    R("mattei", { palabras: ["esquivo"] });
     R("adam-kovacs", { auraAtq: () => 1 });
-    R("cassius-coldgrave", { palabras: ["volar", "noBloquea"] });
+    R("cassius-coldgrave", { palabras: ["esquivo", "noBloquea"] });
     R("torvrena", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       c.objetivo.flags.noAtacaHasta = c.est.turno + 1;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda atrapada y no podrá atacar el próximo turno.`);

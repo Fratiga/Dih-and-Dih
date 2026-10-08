@@ -20,6 +20,7 @@ Ya no se ataca al jugador ni a una unidad concreta a golpe de clic: lo que nadie
 | Veloz | en combate golpea antes; si mata a su rival, no recibe daño |
 | Arrollar | el daño que sobra al matar al bloqueador pasa al jugador |
 | Duro | recibe 1 menos de daño |
+| Esquivo | en combate recibe la mitad del daño (redondeado hacia abajo) |
 | Barrera | ignora el primer daño que reciba (se rompe) |
 | No bloquea | no puede bloquear |
 
@@ -34,8 +35,8 @@ Desaparece **Provocar**, que no tiene sentido sin elegir objetivo.
 | Garra | el enemigo pierde Provocar y Volar | el enemigo no puede bloquear este turno |
 | Verdam | +2 contra la marcada e ignora Provocar | sus unidades le hacen +2 en combate a la marcada |
 | Enzo | ataca dos veces por turno | Veloz |
-| Mattei | no puede ser objetivo de ataques | entra con Barrera |
-| Cassius Coldgrave | no se le puede atacar con otra unidad en el campo | Volar, pero no puede bloquear |
+| Mattei | no puede ser objetivo de ataques | Esquivo |
+| Cassius Coldgrave | no se le puede atacar con otra unidad en el campo | Esquivo, pero no puede bloquear |
 | Aeromanta, Guiverno | solo las atacan unidades que vuelan | solo las bloquean unidades que vuelan |
 | Kraken | | gana Arrollar |
 | Edge | +2 si el objetivo ya recibió daño | +2 contra la unidad con la que combate si ya recibió daño |

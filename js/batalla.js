@@ -328,11 +328,12 @@
     veloz: { nombre: "Veloz", texto: "En combate golpea antes; si mata a su rival, no recibe daño." },
     arrollar: { nombre: "Arrollar", texto: "El daño que sobra al matar a su bloqueador pasa al jugador." },
     duro: { nombre: "Duro", texto: "Recibe 1 menos de daño." },
+    esquivo: { nombre: "Esquivo", texto: "En combate recibe la mitad del daño (redondeado hacia abajo)." },
     noBloquea: { nombre: "No bloquea", texto: "No puede bloquear." },
     barrera: { nombre: "Barrera", texto: "Ignora el primer daño que reciba." }
   };
   function palabrasDe(u) {
-    const out = ["volar", "temible", "veloz", "arrollar", "duro", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
+    const out = ["volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
     if (u.flags.barrera) out.push("barrera");
     if (u.flags.noBloqueaHasta >= est.turno && !out.includes("noBloquea")) out.push("noBloquea");
     return out;
