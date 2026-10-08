@@ -322,21 +322,11 @@
     return Object.assign({}, m, { id: u.cartaId, atq: M.atqEfectivo(est, u), pv: u.pv, borrador: false, limite: null });
   }
 
-  /* Palabras clave: qué significan (se muestran al ver una unidad) */
-  const PALABRAS = {
-    desafiante: { nombre: "Desafiante", texto: "Al atacar, elige qué unidad enemiga debe bloquearla, aunque vuele o no pueda bloquear. Respeta Provocar." },
-    provocar: { nombre: "Provocar", texto: "Los desafíos enemigos deben apuntar a una unidad con Provocar antes que a otras." },
-    escurridizo: { nombre: "Escurridizo", texto: "Los desafíos y las habilidades enemigas no pueden elegirla. Si bloquea o la bloquean, recibe daño normal." },
-    marcada: { nombre: "Marcada", texto: "Es Vulnerable para las unidades de quien la marcó: cualquiera puede obligarla a bloquear, ignorando Provocar, y le hacen 2 de daño extra en combate." },
-    volar: { nombre: "Volar", texto: "Solo la bloquean unidades que también vuelan." },
-    temible: { nombre: "Temible", texto: "No la bloquean unidades con menos de 3 de ataque." },
-    veloz: { nombre: "Veloz", texto: "En combate golpea antes; si mata a su rival, no recibe daño." },
-    arrollar: { nombre: "Arrollar", texto: "El daño que sobra al matar a su bloqueador pasa al jugador." },
-    duro: { nombre: "Duro", texto: "Recibe 1 menos de daño." },
-    esquivo: { nombre: "Esquivo", texto: "En combate recibe la mitad del daño (redondeado hacia abajo)." },
-    noBloquea: { nombre: "No bloquea", texto: "No puede bloquear." },
-    barrera: { nombre: "Barrera", texto: "Ignora el primer daño que reciba." }
-  };
+  /* Palabras clave: qué significan (se muestran al ver una unidad). El texto sale de la guía del lobby
+     (data/triunfos-guia.js), para que haya una sola versión. */
+  const PALABRAS = {};
+  ((window.TRIUNFOS_GUIA || {}).palabras || []).forEach(p => { PALABRAS[p.id] = { nombre: p.nombre, texto: p.resumen }; });
+  const infoPalabra = k => PALABRAS[k] || { nombre: k, texto: "" };
   function palabrasDe(u) {
     const out = ["desafiante", "provocar", "volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
     if (M.esEscurridizo(est, u)) out.push("escurridizo");
@@ -374,7 +364,7 @@
     let html = htmlCarta(vistaUnidad(u), true, 0, null);
     if (u.pv < u.pvMax) html = html.replace('class="carta-stat pv"', 'class="carta-stat pv herida"');
     if (M.atqEfectivo(est, u) > u.atqBase) html = html.replace('class="carta-stat atq"', 'class="carta-stat atq sube"');
-    const chips = palabrasDe(u).map(k => PALABRAS[k].nombre);
+    const chips = palabrasDe(u).map(k => infoPalabra(k).nombre);
     if (u.flags.inmune) chips.push("Protegida");
     if (u.flags.noAtacaHasta >= est.turno) chips.push("No ataca");
     if (u.entro === est.turno && u.dueno === est.activo) chips.push("Recién llegada");
@@ -994,7 +984,7 @@
             : `<p class="bt-nota">Esta unidad no puede atacar ahora.</p>`;
         }
         extra += `<p class="bt-nota">Vida ${hit.u.pv}/${hit.u.pvMax} · Ataque ${c.atq}</p>`;
-        extra += palabrasDe(hit.u).map(k => `<p class="bt-nota"><b>${PALABRAS[k].nombre}.</b> ${PALABRAS[k].texto}</p>`).join("");
+        extra += palabrasDe(hit.u).map(k => `<p class="bt-nota"><b>${infoPalabra(k).nombre}.</b> ${infoPalabra(k).texto}</p>`).join("");
       }
     }
     if (!c) { el.innerHTML = `<p class="bt-nota">Pasa el ratón o elige una carta o unidad para verla aquí.</p>`; return; }
@@ -1441,6 +1431,7 @@
     const rol = await CartasCliente.verificarRol();
     esEditor = rol.puede;
     await CartasCliente.cargarDefiniciones(esEditor);
+    if (window.TriunfosGuia) window.TriunfosGuia.pintar();   // por si el catálogo cambió
     try {
       const ses = await fichasSesionActual();
       miId = ses ? ses.user.id : null;

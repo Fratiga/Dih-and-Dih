@@ -148,8 +148,17 @@ Un objeto o una reacción que apunta a una unidad enemiga respeta Escurridizo y 
 - **Partidas en línea que estén a medias**: se guardan como lista de acciones y se repiten con las reglas nuevas, así que las que ya tengan ataques se rompen. Conviene terminarlas o rendirlas antes de subir esto.
 - **Pruebas del motor que no están en el repositorio**: las que usan `atacar` con un objetivo, `objetivosDeAtaque`, `ataquesMax`, Provocar o los estados `intocableHasta`, `sinProvocar` y `sinVolar` hay que actualizarlas. `node tools/probar-combate.js` prueba el combate nuevo y juega 300 partidas al azar.
 
+## La guía del lobby
+
+El lobby de Batalla trae una guía con cinco pestañas: cómo se juega, palabras clave, tipos de habilidad, tipos de carta y glosario. Tiene buscador y recuerda la última pestaña.
+
+- El texto está en `data/triunfos-guia.js`, y es la única versión: los textos cortos del inspector del tablero salen de ahí (`resumen` de cada palabra clave).
+- Las listas de cartas ("Cartas relacionadas", "Cartas con este tipo") se arman solas desde `js/cartas-efectos.js` y el catálogo.
+- Al cambiar una regla, cambia su texto en la guía. `node tools/verificar-guia.js` avisa si falta una palabra clave, un tipo de habilidad o un gancho de terreno, si una cifra ya no coincide con el motor (vida, mano, campo, tiempos) o si un texto lleva rayas largas o voseo.
+
 ## Dónde está en el código
 
 - Reglas: `js/cartas-motor.js` (`atacar`, `iniciarBloqueo`, `bloquear`, `resolverCombate`, `puedeBloquear`).
 - Habilidades: `js/cartas-efectos.js`. Textos de las cartas: `js/cartas-datos.js`.
 - Pantalla: `js/batalla.js` (franja de combate, botones de atacar y bloquear, animación) y `css/cartas-juego.css`.
+- Guía del lobby: `data/triunfos-guia.js` (textos), `js/batalla-guia.js` (panel) y `tools/verificar-guia.js`.
