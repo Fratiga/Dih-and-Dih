@@ -28,7 +28,9 @@ body.os-pagina::before {
   opacity: .7;
 }
 @keyframes os-brasas { from { transform: translateY(0); } to { transform: translateY(-14vh); } }
-body.os-pagina > * { position: relative; z-index: 1; }
+/* El contenido va por encima de las brasas. Solo la barra y el cuerpo de la página: una regla para todos los hijos del body
+   también pisaba lo que los scripts le añaden en posición fija (el control de volumen, los avisos y los carteles de retos). */
+body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index: 1; }
 
 .os-pagina .mj-barra { background: rgba(10, 5, 24, .8); backdrop-filter: blur(6px); border-bottom: 1px solid var(--accent-soft); box-shadow: 0 6px 24px rgba(0, 0, 0, .5); }
 .os-pagina .mj-volver { color: var(--oro); font-weight: 600; }
