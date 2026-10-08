@@ -251,24 +251,44 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-conteo { font-size: .78rem; color: var(--muted); }
 .bt-conteo strong { color: var(--text); }
 
+/* Las esferas: aro de metal, cristal y un líquido que sube y baja. Roja = vida, azul = energía. */
 .bt-orbe {
-  position: relative; flex: none; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
-  border: 3px solid #d9b866; background: #121c2e; box-shadow: 0 0 0 2px #3a2b12;
+  --sup1: #ff9aa4; --sup2: #d42b3d; --liq: linear-gradient(180deg, #ff8b97, #d42b3d 40%, #7f0f1f); --rast: rgba(255, 235, 235, .42);
+  position: relative; flex: none; width: 68px; height: 68px; padding: 4px; box-sizing: border-box; border-radius: 50%;
+  background: conic-gradient(from 200deg, #f6dd92, #b88f3a 22%, #7a5a22 42%, #d9b866 62%, #f6dd92 82%, #b88f3a);
+  box-shadow: 0 0 0 2px #3a2b12, 0 3px 0 2px #2a1d0c;
 }
-.bt-orbe .num { position: relative; z-index: 3; font-family: var(--font-heading), sans-serif; font-weight: 700; font-size: 1.8rem; line-height: 1; color: #fff; text-shadow: 0 2px 0 #000; }
-.bt-orbe small { position: absolute; z-index: 3; bottom: 6px; font-size: .62rem; color: rgba(255,255,255,.75); text-shadow: 0 1px 0 #000; }
-.bt-orbe.vida { background: #ba3845; }
+.bt-orbe.energia { --sup1: #b3e2ff; --sup2: #4a95ea; --liq: linear-gradient(180deg, #8fd0ff, #2b74d6 55%, #123f8f); --rast: rgba(205, 238, 255, .4); }
+.bt-orbe .vidrio {
+  position: relative; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; isolation: isolate; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 30%, #232b42, #080b14 75%); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .6);
+}
+.bt-orbe .liquido, .bt-orbe .rastro, .bt-orbe .gasto { position: absolute; left: -12%; width: 124%; bottom: 0; }
+.bt-orbe .liquido { height: var(--llena); background: var(--liq); z-index: 1; transition: height .9s cubic-bezier(.3, .8, .3, 1); }
+.bt-orbe .rastro { height: var(--rastro); background: var(--rast); transition: height 1.5s ease .25s; }
+.bt-orbe .liquido::before, .bt-orbe .liquido::after { content: ""; position: absolute; left: -25%; width: 150%; height: 13px; border-radius: 50%; }
+.bt-orbe .liquido::before { top: -6px; background: var(--sup1); animation: bt-ola 2.6s ease-in-out infinite alternate; }
+.bt-orbe .liquido::after { top: -3px; background: var(--sup2); opacity: .85; animation: bt-ola 3.5s ease-in-out infinite alternate-reverse; }
+@keyframes bt-ola { from { transform: translateX(-10%) scaleY(1); } to { transform: translateX(10%) scaleY(.65); } }
+.bt-orbe .burbuja { position: absolute; bottom: 4%; width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, .6); opacity: 0; animation: bt-burbuja 3.4s linear infinite; }
+.bt-orbe .burbuja.b1 { left: 28%; }
+.bt-orbe .burbuja.b2 { left: 56%; width: 3px; height: 3px; animation-duration: 4.2s; animation-delay: 1.1s; }
+.bt-orbe .burbuja.b3 { left: 74%; width: 5px; height: 5px; animation-duration: 3.8s; animation-delay: 2.2s; }
+@keyframes bt-burbuja { 0% { bottom: 4%; opacity: 0; } 15% { opacity: .85; } 100% { bottom: 88%; opacity: 0; } }
+.bt-orbe .gasto { z-index: 2; height: var(--gasto); bottom: calc(var(--llena) - var(--gasto)); transition: height .9s cubic-bezier(.3, .8, .3, 1), bottom .9s cubic-bezier(.3, .8, .3, 1); background: repeating-linear-gradient(45deg, rgba(255, 150, 40, .85) 0 6px, rgba(255, 110, 20, .6) 6px 12px); animation: bt-parpadeo 1s ease-in-out infinite; }
+@keyframes bt-parpadeo { 50% { opacity: .45; } }
+.bt-orbe .cristal { position: absolute; inset: 0; z-index: 3; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 60%, rgba(0, 0, 0, .5) 100%);
+  box-shadow: inset 0 -7px 11px rgba(0, 0, 0, .35), inset 0 3px 4px rgba(255, 255, 255, .2); }
+.bt-orbe .cristal::before { content: ""; position: absolute; left: 13%; top: 7%; width: 46%; height: 26%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, .75), rgba(255, 255, 255, .06)); transform: rotate(-26deg); }
+.bt-orbe .cristal::after { content: ""; position: absolute; right: 14%; bottom: 9%; width: 20%; height: 9%; border-radius: 50%; background: rgba(255, 255, 255, .2); transform: rotate(-30deg); }
+.bt-orbe .num { position: relative; z-index: 4; font-family: var(--font-heading), sans-serif; font-weight: 700; font-size: 1.8rem; line-height: 1; color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .9), 0 0 4px rgba(0, 0, 0, .75); }
+.bt-orbe small { position: absolute; z-index: 4; bottom: 7px; font-size: .62rem; color: rgba(255, 255, 255, .85); text-shadow: 0 1px 0 #000; }
 .bt-orbe.vida .num { font-size: 2rem; }
 .bt-orbe.vida.baja { animation: bt-peligro 1s ease-in-out infinite; }
-@keyframes bt-peligro { 50% { box-shadow: 0 0 0 3px rgba(255,80,90,.5); } }
-.bt-orbe.energia .liquido, .bt-orbe.energia .gasto { position: absolute; left: -10%; width: 120%; bottom: 0; transition: height .7s cubic-bezier(.3,.8,.3,1), bottom .7s cubic-bezier(.3,.8,.3,1); }
-.bt-orbe.energia .liquido { height: var(--llena); background: #4481cc; }
-.bt-orbe.energia .liquido::before { content: ""; position: absolute; left: 0; right: 0; top: -5px; height: 10px; border-radius: 50%; background: rgba(170,222,255,.9); animation: bt-ola 2.4s ease-in-out infinite alternate; }
-@keyframes bt-ola { from { transform: translateX(-8%) scaleY(1); } to { transform: translateX(8%) scaleY(.7); } }
-.bt-orbe.energia .gasto { height: var(--gasto); bottom: calc(var(--llena) - var(--gasto)); background: repeating-linear-gradient(45deg, rgba(255,150,40,.85) 0 6px, rgba(255,110,20,.6) 6px 12px); animation: bt-parpadeo 1s ease-in-out infinite; }
-.bt-orbe.energia.vacia { border-color: #6c6a5c; }
-.bt-orbe.energia .extra { position: absolute; z-index: 3; top: 3px; right: 6px; font-size: .68rem; color: #ffe08a; }
-@keyframes bt-parpadeo { 50% { opacity: .45; } }
+@keyframes bt-peligro { 50% { box-shadow: 0 0 0 5px rgba(255, 80, 90, .55), 0 3px 0 2px #2a1d0c; } }
+.bt-orbe.energia.vacia { background: conic-gradient(from 200deg, #a09c8c, #6c6a5c 40%, #8b887a 70%, #a09c8c); }
+.bt-orbe.energia .extra { position: absolute; z-index: 4; top: 4px; right: 7px; font-size: .68rem; color: #ffe08a; text-shadow: 0 1px 0 #000; }
 .bt-orbe-gasto { color: #ffb25c; font-weight: 700; font-family: var(--font-heading), sans-serif; margin-left: -8px; }
 
 /* Atacar al jugador: el panel del rival se convierte en un blanco evidente */
@@ -424,7 +444,7 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 @keyframes bt-golpe { 0% { transform: translateX(0); } 20% { transform: translateX(-6px) rotate(-2deg); } 40% { transform: translateX(6px) rotate(2deg); } 60% { transform: translateX(-4px); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .bt-bioma::before, .bt-bioma::after, .bt-bioma, .bt-jugador.objetivo, .bt-unidad.objetivo, .bt-unidad.golpe, .bt-fin.activo, .bt-cinta.mio,
-  .bt-orbe.energia .liquido::before, .bt-orbe.vida.baja { animation: none !important; }
+  .bt-orbe .liquido::before, .bt-orbe .liquido::after, .bt-orbe .burbuja, .bt-orbe.vida.baja { animation: none !important; }
 }
 @media (max-width: 1100px) {
   .bt-zona { grid-template-columns: 1fr; }
@@ -434,7 +454,7 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
   .bt-hueco { width: 92px; }
   .bt-unidad { width: 92px; }
   .bt-carta { width: 98px; margin-left: -40px; }
-  .bt-orbe { width: 54px; height: 54px; }
+  .bt-orbe { width: 56px; height: 56px; padding: 3px; }
   .bt-orbe .num { font-size: 1.4rem; }
   .bt-centro { grid-template-columns: 1fr; justify-items: center; }
   .bt-terreno-ficha { justify-self: center; }

@@ -35,6 +35,7 @@
   let arrastre = null;         // arrastre de carta o de unidad en curso
   let cementerioVista = null;  // cementerio abierto en pantalla: "yo", "rival" o null
   let cemPrevio = [];          // cuántas cartas tenía cada cementerio la última vez, para avisar cuando crece
+  let orbes = {};              // nivel (en %) con el que se pintó cada esfera la última vez, para vaciarla o llenarla en vez de saltar
   let ignorarClic = false;     // tras un arrastre, el clic que lo cierra no cuenta
   let primeroDeLaPartida = 0;  // quién empieza (para la presentación)
   let introVisible = false;
@@ -189,7 +190,7 @@
     ultimoTurno = 0;
     ultimoTerreno = "";
     arrastre = null;
-    cementerioVista = null; cemPrevio = [];
+    cementerioVista = null; cemPrevio = []; orbes = {};
     document.body.classList.add("bt-en-partida");
     $("btLobby").classList.add("hidden");
     $("btPartida").classList.remove("hidden");
@@ -387,6 +388,37 @@
 
   /* Orbe de energía: se llena con la energía que queda y se vacía al gastarla. Si hay una carta elegida,
      la parte que gastaría se ve en naranja. */
+  /* Las esferas son de cristal con un líquido dentro: la roja es la vida (de 0 a 20) y la azul, la energía.
+     Al cambiar el nivel el líquido baja o sube y, si baja, queda un rastro pálido que se vacía más despacio.
+     El panel se vuelve a crear en cada pintada, así que se arranca desde el nivel de la vez anterior (--llena y
+     --rastro) y animarOrbes() lo lleva al nivel nuevo (data-llena). */
+  function htmlEsfera(clave, tipo, pct, titulo, dentro, estilo = "", clases = "") {
+    const previo = orbes[clave] === undefined ? pct : orbes[clave];
+    orbes[clave] = pct;
+    return `<div class="bt-orbe ${tipo} ${clases}" title="${titulo}" data-llena="${pct}%" style="--llena:${previo}%;--rastro:${Math.max(previo, pct)}%;${estilo}">
+      <div class="vidrio">
+        <div class="rastro"></div>
+        <div class="liquido"><i class="burbuja b1"></i><i class="burbuja b2"></i><i class="burbuja b3"></i></div>
+        ${tipo === "energia" ? '<div class="gasto"></div>' : ""}
+        <div class="cristal"></div>
+        ${dentro}
+      </div>
+    </div>`;
+  }
+
+  function animarOrbes() {
+    document.querySelectorAll(".bt-orbe[data-llena]").forEach(el => {
+      void el.offsetWidth;   // fija el nivel de partida antes de cambiarlo, para que el líquido se mueva
+      el.style.setProperty("--llena", el.dataset.llena);
+      el.style.setProperty("--rastro", el.dataset.llena);
+    });
+  }
+
+  function htmlOrbeVida(J, idx) {
+    const pct = Math.max(0, Math.min(100, Math.round((100 * J.vida) / M.C.VIDA)));
+    return htmlEsfera(`${idx}-vida`, "vida", pct, `Vida: ${Math.max(0, J.vida)} de ${M.C.VIDA}`, `<span class="num">${Math.max(0, J.vida)}</span>`, "", J.vida <= 5 ? "baja" : "");
+  }
+
   function htmlOrbe(J, idx) {
     const max = Math.max(J.energiaMax, 1);
     const llena = Math.min(100, Math.round((100 * J.energia) / max));
@@ -397,10 +429,8 @@
     }
     const gastoPct = Math.round((100 * gasto) / max);
     const extra = J.energia > J.energiaMax ? `<b class="extra">+${J.energia - J.energiaMax}</b>` : "";
-    return `<div class="bt-orbe energia ${J.energia === 0 ? "vacia" : ""}" title="Energía: ${J.energia} de ${J.energiaMax}" style="--llena:${llena}%;--gasto:${gastoPct}%">
-      <div class="liquido"></div><div class="gasto"></div>
-      <span class="num">${J.energia}</span><small>/ ${J.energiaMax}</small>${extra}
-    </div>${gasto ? `<span class="bt-orbe-gasto">−${gasto}</span>` : ""}`;
+    return htmlEsfera(`${idx}-energia`, "energia", llena, `Energía: ${J.energia} de ${J.energiaMax}`, `<span class="num">${J.energia}</span><small>/ ${J.energiaMax}</small>${extra}`, `--gasto:${gastoPct}%`, J.energia === 0 ? "vacia" : "")
+      + (gasto ? `<span class="bt-orbe-gasto">−${gasto}</span>` : "");
   }
 
   /* El mazo sobre la mesa, boca abajo. Si has mirado la carta superior (Cuervo del augurio), se da vuelta
@@ -449,7 +479,7 @@
   function htmlJugador(idx, rival) {
     const J = est.jugadores[idx];
     const activo = est.ganador === null && est.activo === idx;
-    return `<div class="bt-orbe vida ${J.vida <= 5 ? "baja" : ""}" title="Vida"><span class="num">${Math.max(0, J.vida)}</span></div>
+    return `${htmlOrbeVida(J, idx)}
       <div class="bt-datos">
         <div class="bt-nombre">${esc(J.nombre)}${activo ? '<em class="bt-tag-turno">Su turno</em>' : ""}</div>
         <div class="bt-conteo">${rival ? `Mano <strong>${J.mano.length}</strong> · ` : ""}Mazo <strong>${J.mazo.length}</strong></div>
@@ -671,6 +701,7 @@
     ["btRival", "btYo"].forEach(id => $(id).classList.remove("objetivo", "sobre"));
     $("btRival").innerHTML = htmlJugador(rival, true);
     $("btYo").innerHTML = htmlJugador(idx, false);
+    animarOrbes();
     $("btRival").classList.toggle("activo", est.ganador === null && est.activo === rival);
     $("btYo").classList.toggle("activo", est.ganador === null && est.activo === idx);
 
