@@ -10,7 +10,7 @@ Todo está en `js/fichas-supabase.js`, y los avisos usan el sistema de `js/dialo
 |---|---|---|
 | "¿Olvidaste tu contraseña?" como aviso con el email | panel de inicio de sesión del encabezado (todas las páginas) y `fichas.html` | `fichasOlvideContrasena(emailInicial)` |
 | Cambiar la contraseña con la sesión iniciada (actual, nueva y repetir) | panel del encabezado con sesión ("Cambiar contraseña") y `fichas.html`, junto a "Cerrar sesión" | `fichasCambiarContrasena()` |
-| Elegir la contraseña nueva tras recuperarla | **sin conectar** | `fichasElegirContrasenaNueva()` |
+| Elegir la contraseña nueva tras recuperarla | se abre sola al llegar desde el enlace del correo (evento `PASSWORD_RECOVERY`) | `fichasElegirContrasenaNueva()` |
 
 - `dialogo.formulario(mensaje, campos, opciones)` es nuevo en `js/dialogos.js`: varios campos de una línea, con validación y foco en el campo que falla.
 - Las cuentas creadas con un email inventado no reciben el correo. El aviso de "olvidé mi contraseña" lo dice y manda a pedir el cambio a un admin, que sí puede hacerlo desde el panel de administración (`adminCambiarPassword`).
@@ -20,16 +20,14 @@ Todo está en `js/fichas-supabase.js`, y los avisos usan el sistema de `js/dialo
 
 El correo de recuperación lleva a la persona de vuelta al sitio con una sesión de recuperación, pero nada le pide la contraseña nueva. Hoy entra sin más y la contraseña no cambia.
 
-### 1. Conectar el evento (código)
+### 1. Conectar el evento (código): hecho
 
-1. En `resetPasswordForEmail`, pasar `redirectTo`. Lo más simple es `fichas.html`, que siempre crea el cliente al cargar:
-   ```js
-   await supabase.auth.resetPasswordForEmail(email, { redirectTo: new URL("fichas.html", location.href).href });
-   ```
-2. En `fichasEnCambioDeSesion`, hoy se ignora el nombre del evento (`_evento`). Cuando sea `"PASSWORD_RECOVERY"`, llamar a `fichasElegirContrasenaNueva()` una sola vez.
-3. Limpiar el hash de la URL después de procesarlo (`history.replaceState`), para que recargar no repita el aviso.
-4. Si el enlace venció o ya se usó, Supabase vuelve con `#error=access_denied&error_code=otp_expired` en el hash. Mostrar un aviso claro ("El enlace venció, pide otro") en vez de dejar la pantalla sin explicar.
-5. Si la persona pulsa "Ahora no", se queda con la sesión de recuperación iniciada y sin contraseña nueva. Decidir si se cierra esa sesión (lo más limpio) o se deja.
+- `resetPasswordForEmail` pasa `redirectTo` a `fichas.html`, calculado desde la dirección en la que está el sitio.
+- El cliente de Supabase se engancha a `PASSWORD_RECOVERY` en el mismo momento en que se crea (`fichasConectarRecuperacion`), porque ese evento sale mientras lee el enlace y quien se suscribe después ya no lo recibe. Abre `fichasElegirContrasenaNueva()` una sola vez por carga, y fuera del callback de Supabase.
+- El hash de la URL se limpia con `history.replaceState`, así que recargar no repite el aviso.
+- Enlace vencido o ya usado (`#error=access_denied&error_code=otp_expired`): aviso "El enlace venció o ya se usó. Pide otro…" (`fichasRevisarErrorEnlace`). Cualquier otro error del enlace muestra un aviso general.
+- "Ahora no": se cierra la sesión de recuperación (lo más limpio), para que nadie quede dentro de la cuenta sin haber puesto contraseña.
+- Se probó en el navegador con un cliente simulado: otros eventos se ignoran, `PASSWORD_RECOVERY` abre "Contraseña nueva", "Ahora no" cierra la sesión una vez y un segundo evento no reabre nada. **Falta la prueba con un correo real** (punto 3).
 
 ### 2. Configuración en Supabase
 

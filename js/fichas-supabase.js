@@ -10,14 +10,75 @@
 window.FICHAS_SUPABASE_URL = "https://ilicqboqelrjuvtslaxd.supabase.co";
 window.FICHAS_SUPABASE_KEY = "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
 
+/* Lo que trae la URL al cargar la página (el enlace del correo de recuperación deja ahí su resultado). Se guarda
+   antes de que el cliente de Supabase toque el hash. */
+const fichasHashInicial = location.hash || "";
+
 let fichasClientePromesa = null;
 function fichasCliente() {
   if (!fichasClientePromesa) {
     fichasClientePromesa = import("https://esm.sh/@supabase/supabase-js@2")
-      .then(({ createClient }) => createClient(window.FICHAS_SUPABASE_URL, window.FICHAS_SUPABASE_KEY));
+      .then(({ createClient }) => {
+        const cliente = createClient(window.FICHAS_SUPABASE_URL, window.FICHAS_SUPABASE_KEY);
+        // Se engancha en el mismo instante en que se crea: el evento PASSWORD_RECOVERY sale mientras el
+        // cliente lee el enlace, y quien se suscribe después ya no lo recibe.
+        fichasConectarRecuperacion(cliente);
+        return cliente;
+      });
   }
   return fichasClientePromesa;
 }
+
+/* --- Recuperar la contraseña desde el enlace del correo (ver docs/recuperar-contrasena.md) ------------------ */
+
+function fichasLimpiarHashAuth() {
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* sin historial */ }
+}
+
+// Espera a que la página y los avisos (js/dialogos.js) estén listos para mostrar algo.
+async function fichasEsperarDialogos() {
+  if (document.readyState === "loading") await new Promise(r => document.addEventListener("DOMContentLoaded", r, { once: true }));
+  for (let i = 0; i < 30 && typeof dialogo === "undefined"; i++) await new Promise(r => setTimeout(r, 100));
+  return typeof dialogo !== "undefined";
+}
+
+let fichasRecuperacionAtendida = false;
+
+function fichasConectarRecuperacion(cliente) {
+  cliente.auth.onAuthStateChange(evento => {
+    if (evento === "PASSWORD_RECOVERY") fichasProcesarRecuperacion();
+  });
+}
+
+/* Llega con una sesión de recuperación: pide la contraseña nueva. Si la persona pulsa "Ahora no", se cierra esa
+   sesión para que no se quede dentro de la cuenta sin haber puesto contraseña. Corre una sola vez por carga. */
+async function fichasProcesarRecuperacion() {
+  if (fichasRecuperacionAtendida) return;
+  fichasRecuperacionAtendida = true;
+  fichasLimpiarHashAuth();
+  // Fuera del callback de Supabase: ahí dentro no conviene llamar a otras funciones del cliente.
+  await new Promise(r => setTimeout(r, 0));
+  if (!(await fichasEsperarDialogos())) return;
+  const guardada = await fichasElegirContrasenaNueva();
+  if (!guardada) {
+    try { await fichasCerrarSesion(); } catch (e) { /* ya estaba cerrada */ }
+  }
+}
+
+/* Si el enlace venció o ya se usó, Supabase vuelve con #error=access_denied&error_code=otp_expired. */
+async function fichasRevisarErrorEnlace() {
+  const hash = fichasHashInicial.replace(/^#/, "");
+  if (!hash || !/(^|&)error(_code)?=/.test(hash)) return;
+  const p = new URLSearchParams(hash);
+  fichasLimpiarHashAuth();
+  if (!(await fichasEsperarDialogos())) return;
+  const vencio = p.get("error_code") === "otp_expired";
+  await dialogo.avisar(vencio
+    ? "El enlace venció o ya se usó. Pide otro desde «¿Olvidaste tu contraseña?»."
+    : "No se pudo usar el enlace del correo. Pide otro desde «¿Olvidaste tu contraseña?».",
+    { titulo: "Enlace no válido", tipoAviso: "error" });
+}
+fichasRevisarErrorEnlace();
 
 /* Si el proyecto de Supabase tiene activado "Confirm email" (Authentication
    > Providers > Email), signUp no deja sesión iniciada hasta que el
@@ -40,7 +101,9 @@ async function fichasIniciarSesion(email, password) {
 
 async function fichasEnviarRecuperacion(email) {
   const supabase = await fichasCliente();
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  // El enlace del correo vuelve a fichas.html (siempre crea el cliente al cargar). Esa dirección tiene que estar en
+  // Authentication > URL Configuration > Redirect URLs, en Supabase.
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: new URL("fichas.html", location.href).href });
   if (error) throw error;
 }
 
@@ -133,8 +196,8 @@ async function fichasCambiarContrasena() {
 }
 
 /* Para quien llega desde el enlace del correo de recuperación (ya con sesión de recuperación, sin conocer la contraseña
-   actual): pide la nueva y su repetición. AÚN SIN CONECTAR a ningún evento: falta engancharla a PASSWORD_RECOVERY y
-   probarla con un correo real (ver docs/recuperar-contrasena.md). Devuelve true si se guardó. */
+   actual): pide la nueva y su repetición. Se abre sola con el evento PASSWORD_RECOVERY (fichasProcesarRecuperacion).
+   Falta probarla con un correo real (ver docs/recuperar-contrasena.md). Devuelve true si se guardó. */
 async function fichasElegirContrasenaNueva() {
   const v = await dialogo.formulario("Elige la contraseña con la que vas a entrar desde ahora.", fichasCamposContrasenaNueva, {
     titulo: "Contraseña nueva", aceptar: "Guardar", cancelar: "Ahora no", validar: v => fichasValidarContrasenaNueva(v)
