@@ -16,7 +16,11 @@
      todas las unidades que atacan. Después el rival elige quién bloquea: cada unidad
      suya bloquea como mucho a un atacante y cada atacante recibe como mucho un
      bloqueador. Los bloqueados se hacen daño a la vez (Veloz golpea antes); los que
-     nadie bloquea golpean al jugador. Volar: solo la bloquean unidades que vuelan.
+     nadie bloquea golpean al jugador. Desafiante: al atacar, elige qué unidad
+     enemiga tiene que bloquearla (aunque vuele o no pueda bloquear). Una unidad
+     marcada es Vulnerable para quien la marcó: cualquiera de sus atacantes puede
+     desafiarla. Provocar (regla propia): los desafíos deben apuntar antes a una
+     unidad con Provocar, salvo contra una marcada o con el Puente de las Legiones. Volar: solo la bloquean unidades que vuelan.
      Temible: no la bloquean unidades con menos de 3 de ataque. Arrollar: el daño
      que sobra tras matar al bloqueador pasa al jugador. Barrera: ignora el
      primer daño que reciba. Duro: recibe 1 menos de daño. Esquivo: en combate
@@ -111,16 +115,15 @@
     return Math.max(0, a);
   }
 
-  /* Palabras clave: las de la carta, más las que da el terreno (Puente: Temible a las unidades de su dueño;
-     Los Huesos: Volar a las unidades de Sombra de su dueño). */
+  /* Palabras clave: las de la carta, más las que da el terreno (Los Huesos: Volar a las unidades de Sombra
+     de su dueño). Provocar y Volar se pueden perder un tiempo (flags.sinProvocarHasta, sinVolarHasta). */
   function tienePalabra(est, u, palabra) {
+    if (palabra === "provocar" && u.flags.sinProvocarHasta >= est.turno) return false;
+    if (palabra === "volar" && u.flags.sinVolarHasta >= est.turno) return false;
     const ef = efectoDe(est, u);
     if ((ef.palabras || []).includes(palabra)) return true;
     const T = est.terreno;
-    if (T && T.dueno === u.dueno) {
-      if (palabra === "temible" && T.cartaId === "puente-de-las-legiones") return true;
-      if (palabra === "volar" && T.cartaId === "los-huesos" && (meta(est, u.cartaId).afinidad || []).includes("sombra")) return true;
-    }
+    if (T && T.dueno === u.dueno && palabra === "volar" && T.cartaId === "los-huesos" && (meta(est, u.cartaId).afinidad || []).includes("sombra")) return true;
     return false;
   }
 
@@ -141,7 +144,7 @@
     const u = {
       uid: est.siguienteUid++, cartaId, dueno: jIdx, atq, pv, pvMax: pv, atqBase: atq, pvBase: pv,
       entro: est.turno, equipo: [], mods: [],
-      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, barrera: false, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
+      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, barrera: false, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
     };
     const ef = EFECTOS[cartaId];
     if (ef && ef.alCrear) ef.alCrear(est, u);
@@ -372,6 +375,28 @@
     return est.jugadores[1 - hit.j].campo.filter(b => puedeBloquear(est, b, hit.u)).map(b => b.uid);
   }
 
+  /* A quién puede desafiar esta unidad al atacar (uids de unidades enemigas). Un desafío obliga a bloquear aunque
+     la unidad vuele o no pueda bloquear. Desafiante: cualquiera, pero primero las que tengan Provocar (salvo con el
+     Puente de las Legiones). Una unidad marcada es Vulnerable para quien la marcó: la puede desafiar cualquiera de
+     sus unidades y Provocar no cuenta. */
+  function objetivosDeDesafio(est, atk) {
+    const defensores = est.jugadores[1 - atk.dueno].campo;
+    const out = new Set();
+    if (tienePalabra(est, atk, "desafiante")) {
+      const ignora = terrenoActivo(est, "puente-de-las-legiones") && est.terreno.dueno === atk.dueno;
+      const provocan = defensores.filter(d => tienePalabra(est, d, "provocar"));
+      (!ignora && provocan.length ? provocan : defensores).forEach(d => out.add(d.uid));
+    }
+    defensores.forEach(d => { if (d.flags.marcadaPor === atk.dueno) out.add(d.uid); });
+    return [...out];
+  }
+
+  /* Quienes pueden bloquear a esta atacante sin estar ya obligados a bloquear a otra */
+  function bloqueadoresLibres(est, atkUid) {
+    const forzados = new Set(Object.values(est.combate ? est.combate.forzados || {} : {}));
+    return bloqueadoresPosibles(est, atkUid).filter(b => !forzados.has(b));
+  }
+
   /* --- Turnos -------------------------------------------------------------- */
   function iniciarTurno(est) {
     est.turno += 1;
@@ -560,7 +585,7 @@
      Pasos: 1) el jugador activo declara sus atacantes (una vez por turno); 2) el rival puede reaccionar si
      tiene una reacción que encaje; 3) el rival elige sus bloqueos; 4) se resuelve todo a la vez.
      est.ultimoCombate guarda cómo salió, para que la pantalla lo anime. */
-  function atacar(est, jIdx, uidsRaw) {
+  function atacar(est, jIdx, uidsRaw, desafiosRaw) {
     if (est.combate) return { error: "Ya hay un combate en marcha." };
     if (est.atacado === est.turno) return { error: "Ya atacaste este turno: solo se ataca una vez." };
     const lista = (Array.isArray(uidsRaw) ? uidsRaw : [uidsRaw]).filter(x => x !== undefined && x !== null);
@@ -576,25 +601,43 @@
       if (atqEfectivo(est, u) <= 0) return { error: `${nombre(est, u)} no tiene ataque.` };
       unidades.push(u);
     }
+    // Desafíos: { uidAtacante: uidDefensor }. Obligan al defensor a bloquear a ese atacante.
+    const desafios = {};
+    const desafiados = new Set();
+    for (const [k, v] of Object.entries(desafiosRaw && typeof desafiosRaw === "object" ? desafiosRaw : {})) {
+      const atk = unidades.find(u => String(u.uid) === String(k));
+      if (!atk) return { error: "Solo una unidad que ataca puede desafiar." };
+      const def = buscar(est, v);
+      if (!def || def.j === jIdx) return { error: "Ese desafío no apunta a una unidad enemiga." };
+      if (!objetivosDeDesafio(est, atk).includes(v)) return { error: `${nombre(est, atk)} no puede desafiar a ${nombre(est, def.u)}.` };
+      if (desafiados.has(v)) return { error: "Una unidad solo puede ser desafiada por un atacante." };
+      desafiados.add(v);
+      desafios[atk.uid] = v;
+    }
     // De izquierda a derecha según su hueco: así el orden es igual en todos los navegadores
     unidades.sort((a, b) => (a.hueco - b.hueco) || (a.uid - b.uid));
     const uids = unidades.map(u => u.uid);
     est.atacado = est.turno;
-    est.combate = { atacantes: uids, bloqueos: {} };
+    est.combate = { atacantes: uids, bloqueos: {}, desafios, forzados: {} };
     log(est, `${est.jugadores[jIdx].nombre} ataca con ${unidades.map(u => nombre(est, u)).join(", ")}.`);
+    Object.entries(desafios).forEach(([a, d]) => log(est, `${nombre(est, buscar(est, Number(a)).u)} desafía a ${nombre(est, buscar(est, d).u)}: tendrá que bloquearla.`));
     if (abrirVentana(est, { tipo: "ataque", actor: jIdx, atacantes: uids }, { atacantes: uids })) return { ok: true, pendiente: true };
     iniciarBloqueo(est);
     revisarFinal(est);
     return { ok: true, pendiente: !!est.pendiente };
   }
 
-  /* Tras las reacciones: si el rival puede bloquear a alguien, le toca elegir; si no, se resuelve ya. */
+  /* Tras las reacciones: los desafíos que siguen en pie fijan sus bloqueos. Si el rival aún puede bloquear a
+     alguien más, le toca elegir; si no, se resuelve ya. */
   function iniciarBloqueo(est) {
     const c = est.combate;
     if (!c) return;
     c.atacantes = c.atacantes.filter(uid => buscar(est, uid));
     if (!c.atacantes.length) { log(est, "El ataque se desvanece."); est.combate = null; return; }
-    if (!c.atacantes.some(uid => bloqueadoresPosibles(est, uid).length)) { resolverCombate(est); return; }
+    c.forzados = {};
+    c.atacantes.forEach(uid => { const d = (c.desafios || {})[uid]; if (d !== undefined && buscar(est, d)) c.forzados[uid] = d; });
+    c.bloqueos = Object.assign({}, c.forzados);
+    if (!c.atacantes.some(uid => !(uid in c.forzados) && bloqueadoresLibres(est, uid).length)) { resolverCombate(est); return; }
     est.pendienteN += 1;
     est.pendiente = { id: est.pendienteN, tipo: "bloqueo", actor: est.activo, reactor: 1 - est.activo, datos: { atacantes: c.atacantes.slice() }, evento: { tipo: "bloqueo", actor: est.activo }, cancelado: false };
   }
@@ -606,10 +649,14 @@
     if (jIdx !== p.reactor) return { error: "No te toca bloquear." };
     if (!Array.isArray(pares)) return { error: "Bloqueos inválidos." };
     const atacadas = new Set(), bloqueando = new Set(), mapa = {};
+    const forzados = est.combate.forzados || {};
+    const defForzados = new Set(Object.values(forzados));
     for (const par of pares) {
       if (!Array.isArray(par) || par.length !== 2) return { error: "Bloqueo inválido." };
       const [a, b] = par;
       if (!est.combate.atacantes.includes(a)) return { error: "Esa unidad no está atacando." };
+      if (a in forzados) return { error: "Ese atacante ya tiene a su bloqueador por un desafío." };
+      if (defForzados.has(b)) return { error: "Esa unidad está obligada a bloquear a otro atacante." };
       if (atacadas.has(a)) return { error: "Un atacante solo puede ser bloqueado por una unidad." };
       if (bloqueando.has(b)) return { error: "Una unidad solo puede bloquear a un atacante." };
       const ha = buscar(est, a), hb = buscar(est, b);
@@ -618,9 +665,9 @@
       if (!puedeBloquear(est, hb.u, ha.u)) return { error: `${nombre(est, hb.u)} no puede bloquear a ${nombre(est, ha.u)}.` };
       atacadas.add(a); bloqueando.add(b); mapa[a] = b;
     }
-    est.combate.bloqueos = mapa;
+    est.combate.bloqueos = Object.assign({}, forzados, mapa);
     pares.forEach(([a, b]) => log(est, `${nombre(est, buscar(est, b).u)} bloquea a ${nombre(est, buscar(est, a).u)}.`));
-    if (!pares.length) log(est, `${est.jugadores[jIdx].nombre} no bloquea.`);
+    if (!pares.length) log(est, `${est.jugadores[jIdx].nombre} no bloquea${Object.keys(forzados).length ? " más allá de los desafíos" : ""}.`);
     return resolverPendiente(est);
   }
 
@@ -699,7 +746,7 @@
     pares.forEach(par => { par.aMuere = !buscar(est, par.a.uid); par.bMuere = !!par.b && !buscar(est, par.b.uid); });
     est.ultimoCombate = {
       id: est.combateN, turno: est.turno, atacante: A,
-      pares: pares.map(par => ({ a: par.antes.a, b: par.antes.b, dA: par.dA, dB: par.dB, jugador: par.jugador, aMuere: par.aMuere, bMuere: par.bMuere }))
+      pares: pares.map(par => ({ a: par.antes.a, b: par.antes.b, dA: par.dA, dB: par.dB, jugador: par.jugador, aMuere: par.aMuere, bMuere: par.bMuere, desafio: !!(par.b && (c.forzados || {})[par.a.uid] === par.b.uid) }))
     };
     revisarFinal(est);
   }
@@ -712,7 +759,7 @@
   const reproducir = (est, accion) => aplicar(est, accion, emisorDe(est, accion));
 
   /* Aplica una acción de un jugador.
-       { t:'jugar', i, o?, h? } | { t:'atacar', u: [uid, ...] } | { t:'fin' }
+       { t:'jugar', i, o?, h? } | { t:'atacar', u: [uid, ...], d?: { uidAtacante: uidDefensor } } | { t:'fin' }
        { t:'reaccionar', i, o? } | { t:'bloquear', b: [[uidAtacante, uidBloqueador], ...] } | { t:'pasar', forzar? }
        (las tres últimas, solo mientras hay una acción pendiente) */
   function aplicar(est, accion, jIdx) {
@@ -734,7 +781,7 @@
     if (accion.t === "bloquear") return { error: "No hay nada que bloquear." };
     if (jIdx !== est.activo) return { error: "No es tu turno." };
     if (accion.t === "jugar") return jugarCarta(est, jIdx, accion.i, accion.o, accion.h);
-    if (accion.t === "atacar") return atacar(est, jIdx, accion.u);
+    if (accion.t === "atacar") return atacar(est, jIdx, accion.u, accion.d);
     if (accion.t === "fin") { est.combate = null; finalizarTurno(est); return { ok: true }; }
     return { error: "Acción desconocida." };
   }
@@ -748,8 +795,10 @@
         // Sin bloquear, cada bloqueo suelto posible y una asignación completa
         const out = [{ t: "bloquear", b: [] }];
         const libres = new Set(est.jugadores[p.reactor].campo.map(u => u.uid)), completo = [];
+        Object.values(est.combate.forzados || {}).forEach(d => libres.delete(d));
         est.combate.atacantes.forEach(a => {
-          const posibles = bloqueadoresPosibles(est, a);
+          if (a in (est.combate.forzados || {})) return;
+          const posibles = bloqueadoresLibres(est, a);
           posibles.forEach(b => out.push({ t: "bloquear", b: [[a, b]] }));
           const b = posibles.find(x => libres.has(x));
           if (b !== undefined) { libres.delete(b); completo.push([a, b]); }
@@ -774,7 +823,10 @@
     });
     // Atacar: cada unidad lista por separado y todas juntas
     const listas = J.campo.filter(u => unidadPuedeAtacar(est, u));
-    listas.forEach(u => out.push({ t: "atacar", u: [u.uid] }));
+    listas.forEach(u => {
+      out.push({ t: "atacar", u: [u.uid] });
+      objetivosDeDesafio(est, u).slice(0, 3).forEach(d => out.push({ t: "atacar", u: [u.uid], d: { [u.uid]: d } }));
+    });
     if (listas.length > 1) out.push({ t: "atacar", u: listas.map(u => u.uid) });
     out.push({ t: "fin" });
     return out;
@@ -824,7 +876,7 @@
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, requisitoDeReaccion, unidadPuedeAtacar,
-    puedeBloquear, bloqueadoresPosibles, puedeApuntarHabilidad, terrenoActivo
+    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, puedeApuntarHabilidad, terrenoActivo
   };
 
   raiz.CartasMotor = M;

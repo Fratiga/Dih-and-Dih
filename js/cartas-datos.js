@@ -54,12 +54,12 @@ window.CARTAS_AFINIDADES = {
 
   // --- Personajes -----------------------------------------------------------
   u("rook", "Rook", "Personaje", P("rook"), "rara", "caceria", 4, 5, 4, "Cazador solitario: +2 de ataque mientras sea tu única unidad en el campo.", A);
-  u("bull", "Bull", "Personaje", P("bull"), "comun", "juramento", 3, 3, 4, "Duro: recibe 1 menos de daño.", AB);
-  u("garra", "Garra", "Personaje", P("garra"), "comun", "caceria", 2, 3, 2, "Arpón: al entrar, una unidad enemiga no puede bloquear hasta el final del turno.", AB);
+  u("bull", "Bull", "Personaje", P("bull"), "comun", "juramento", 3, 3, 4, "Provocar: los desafíos enemigos deben apuntar a esta unidad antes que a otras.", AB);
+  u("garra", "Garra", "Personaje", P("garra"), "comun", "caceria", 2, 3, 2, "Desafiante: al atacar, elige qué unidad enemiga debe bloquearla, aunque vuele. Arpón: al entrar, una unidad enemiga pierde Provocar y Volar hasta el final del próximo turno de su dueño.", AB);
   u("baraja", "Baraja", "Personaje", P("baraja"), "infrecuente", "arcano", 3, 2, 3, "Cartas del destino: al entrar, roba una carta.", AB);
   u("ocevat", "Ocevat", "Personaje", P("ocevat"), "rara", "juramento", 5, 4, 6, "Defensor del refugio: una vez por turno, recibe en lugar de una unidad aliada el daño que esta fuera a recibir.", AB);
-  u("verdam", "Verdam", "Personaje", P("verdam"), "legendaria", "caceria", 7, 7, 6, "Marca de la presa: al entrar, marca a una unidad enemiga. Tus unidades le hacen 2 de daño extra en combate.", AB);
-  u("eklino-a", "Eklino", "Personaje", P("eklino-a"), "comun", "juramento", 2, 1, 5, "Barrera: ignora el primer daño que reciba. Defender el refugio: las demás unidades aliadas ganan +1 de vida al entrar.", A);
+  u("verdam", "Verdam", "Personaje", P("verdam"), "legendaria", "caceria", 7, 7, 6, "Desafiante. Marca de la presa: al entrar, marca a una unidad enemiga. Es Vulnerable para tus unidades (cualquiera puede obligarla a bloquear, ignorando Provocar) y le hacen 2 de daño extra en combate.", AB);
+  u("eklino-a", "Eklino", "Personaje", P("eklino-a"), "comun", "juramento", 2, 1, 5, "Provocar: los desafíos enemigos deben apuntar a esta unidad antes que a otras. Defender el refugio: las demás unidades aliadas ganan +1 de vida al entrar.", A);
   u("dagren", "Dagren", "Personaje", P("dagren"), "infrecuente", "carne", 4, 4, 5, "Furia de veterano: gana +1 de ataque cada vez que recibe daño.", A);
   u("orina", "Orina", "Personaje", P("orina"), "infrecuente", "juramento", 1, 1, 1, "Proyectil: al morir, inflige 3 de daño a una unidad enemiga.", A);
   u("edge", "Edge", "Personaje", P("edge"), "comun", "sombra", 3, 3, 2, "Ataque furtivo: +2 de daño contra una unidad que ya recibió daño este turno.", A);
@@ -97,7 +97,7 @@ window.CARTAS_AFINIDADES = {
 
   // --- Terrenos: cambian las condiciones del combate durante varios turnos. Cada uno sale de un lugar del compendio.
   const T = (id, nombre, lugar, rareza, afinidad, coste, habilidad) => o(id, nombre, "Terreno", L(lugar), rareza, afinidad, coste, habilidad);
-  T("puente-de-las-legiones", "Puente de las Legiones", "puente-de-las-legiones", "comun", "caceria", 2, "Ruta directa: durante 2 turnos, tus unidades tienen Temible (no las bloquean unidades con menos de 3 de ataque).");
+  T("puente-de-las-legiones", "Puente de las Legiones", "puente-de-las-legiones", "comun", "caceria", 2, "Ruta directa: durante 2 turnos, tus desafíos ignoran Provocar.");
   T("los-huesos", "Los Huesos", "los-huesos-pelgiria", "comun", "sombra", 2, "Pasajes de memoria: durante 3 turnos, tus unidades de Sombra tienen Volar.");
   T("glaciar-eterno", "Glaciar Eterno", "glaciar-eterno", "comun", "eternidad", 2, "Muro de hielo: durante 3 turnos, la primera unidad que entre en cada turno no puede atacar en el siguiente turno de su dueño.");
   T("vado-ceniza", "Vado Ceniza", "vado-ceniza", "infrecuente", "sombra", 3, "Oleada de ceniza: durante 3 turnos, las unidades no pueden ser objetivo de habilidades.");

@@ -48,10 +48,45 @@ function turnoDe(est, j) { let g = 0; while (est.activo !== j && g++ < 4) M.apli
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); ok(!e.pendiente, "noBloqueaHasta impide bloquear"); }
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const b = poner(e, 1, "cassius-coldgrave");
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); ok(!e.pendiente, "Cassius no bloquea"); }
-{ const e = partida([], []); turnoDe(e, 0); e.terreno = { cartaId: "puente-de-las-legiones", dueno: 0, restantes: 2, turnoEntrada: 0, desde: 1 };
-  const a = poner(e, 0, "t33"); const b = poner(e, 1, "t24"), c = poner(e, 1, "t11");
+M.registrar("t-temible", { palabras: ["temible"] }); mk("t-temible", 3, 3);
+{ const e = partida([], []); turnoDe(e, 0);
+  const a = poner(e, 0, "t-temible"); const b = poner(e, 1, "t24"), c = poner(e, 1, "t11");
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); ok(M.aplicar(e, { t: "bloquear", b: [[a.uid, c.uid]] }, 1).error, "Temible: no la bloquea una unidad de menos de 3 de ataque");
   ok(M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1).error, "t24 (ataque 2) tampoco"); M.aplicar(e, { t: "pasar" }, 1); }
+// 6b) Desafío
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"); const manta = poner(e, 1, "manta-del-cielo"); const otra = poner(e, 1, "t24");
+  ok(M.objetivosDeDesafio(e, g).includes(manta.uid), "Garra puede desafiar a una voladora");
+  const r = M.aplicar(e, { t: "atacar", u: [g.uid], d: { [g.uid]: manta.uid } }, 0); ok(r.ok, "atacar con desafío " + JSON.stringify(r));
+  ok(!e.pendiente && !M.buscar(e, manta.uid), "la voladora fue obligada a bloquear y recibió el golpe"); ok(e.jugadores[1].vida === 20, "el desafío no deja pasar el golpe al jugador"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"); const bull = poner(e, 1, "bull"); const manta = poner(e, 1, "manta-del-cielo");
+  ok(M.objetivosDeDesafio(e, g).length === 1 && M.objetivosDeDesafio(e, g)[0] === bull.uid, "Provocar: el desafío debe apuntar a Bull primero");
+  ok(M.aplicar(e, { t: "atacar", u: [g.uid], d: { [g.uid]: manta.uid } }, 0).error, "no se puede saltar a Provocar"); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const bull = poner(e, 1, "bull");
+  ok(M.objetivosDeDesafio(e, a).length === 0, "sin Desafiante no se desafía"); ok(M.aplicar(e, { t: "atacar", u: [a.uid], d: { [a.uid]: bull.uid } }, 0).error, "desafío sin Desafiante"); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const bull = poner(e, 1, "bull"); const manta = poner(e, 1, "manta-del-cielo"); manta.flags.marcadaPor = 0;
+  ok(M.objetivosDeDesafio(e, a).includes(manta.uid), "la marcada es Vulnerable: cualquiera de sus atacantes la desafía, aunque haya Provocar");
+  ok(M.aplicar(e, { t: "atacar", u: [a.uid], d: { [a.uid]: manta.uid } }, 0).ok && !M.buscar(e, manta.uid), "desafío a la marcada: 3 de ataque +2 por la marca matan a la Aeromanta de 3 de vida"); }
+{ const e = partida([], []); turnoDe(e, 0); e.terreno = { cartaId: "puente-de-las-legiones", dueno: 0, restantes: 2, turnoEntrada: 0, desde: 1 };
+  const g = poner(e, 0, "garra"); const bull = poner(e, 1, "bull"); const manta = poner(e, 1, "manta-del-cielo");
+  ok(M.objetivosDeDesafio(e, g).includes(manta.uid), "Puente de las Legiones: los desafíos ignoran Provocar"); }
+{ const e = partida([], []); turnoDe(e, 0); const bull = poner(e, 1, "bull"); const manta = poner(e, 1, "manta-del-cielo", { barrera: false });
+  const garra = M.ponerUnidad(e, 0, "garra", true, M.buscar(e, bull.uid).u);
+  ok(!M.tienePalabra(e, bull, "provocar") && M.tienePalabra(e, manta, "volar"), "Arpón: quita Provocar");
+  const m2 = M.ponerUnidad(e, 1, "manta-del-cielo", false, null); const g2 = M.ponerUnidad(e, 0, "garra", true, M.buscar(e, m2.uid).u);
+  ok(!M.tienePalabra(e, m2, "volar"), "Arpón: quita Volar a la voladora");
+  e.activo = 1; e.turno += 1; ok(!M.tienePalabra(e, m2, "volar"), "sigue sin Volar en el turno del rival (así sus voladoras se bloquean)");
+  e.turno += 1; ok(M.tienePalabra(e, m2, "volar"), "después recupera Volar"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"), a2 = poner(e, 0, "t33"); const d1 = poner(e, 1, "t24"), d2 = poner(e, 1, "t11"); d1.flags.noBloqueaHasta = 0;
+  M.aplicar(e, { t: "atacar", u: [g.uid, a2.uid], d: { [g.uid]: d1.uid } }, 0);
+  ok(e.pendiente && e.pendiente.tipo === "bloqueo" && e.combate.forzados[g.uid] === d1.uid, "el desafío fija ese bloqueo y deja elegir el resto");
+  ok(M.aplicar(e, { t: "bloquear", b: [[a2.uid, d1.uid]] }, 1).error, "el desafiado no puede bloquear a otro");
+  ok(M.aplicar(e, { t: "bloquear", b: [[g.uid, d2.uid]] }, 1).error, "el atacante desafiante ya tiene su bloqueador");
+  ok(M.aplicar(e, { t: "bloquear", b: [[a2.uid, d2.uid]] }, 1).ok, "el otro atacante sí puede ser bloqueado por otra unidad"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"); const cas = poner(e, 1, "cassius-coldgrave");
+  M.aplicar(e, { t: "atacar", u: [g.uid], d: { [g.uid]: cas.uid } }, 0); ok(cas.pv < 3 || !M.buscar(e, cas.uid), "un desafío obliga a bloquear a quien no puede bloquear"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"), a2 = poner(e, 0, "t33"); const d1 = poner(e, 1, "t24"); e.jugadores[1].mano = ["bomba-de-humo"]; e.jugadores[1].energia = 5;
+  M.aplicar(e, { t: "atacar", u: [g.uid, a2.uid], d: { [g.uid]: d1.uid } }, 0); M.aplicar(e, { t: "reaccionar", i: 0, o: { u: g.uid } }, 1);
+  ok(e.combate && !(g.uid in e.combate.forzados) && e.combate.atacantes.length === 1, "la bomba sobre el desafiante libera al desafiado"); }
 // 7) Veloz
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "enzo"); a.atq = 3; const b = poner(e, 1, "t24"); b.atq = 4; b.pv = 3; b.pvMax = 3;
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);

@@ -535,3 +535,11 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-acciones button { white-space: nowrap; }
 .bt-acciones .bt-fin { padding: 10px 20px; }
 .bt-atacar, .bt-todas { padding: 9px 18px; }
+
+/* Desafíos: el atacante elige qué unidad enemiga tiene que bloquearlo */
+.bt-bloqueo-hueco.desafiable { border-style: dashed; border-color: rgba(255, 150, 90, .7); color: #ffc09a; background: radial-gradient(circle, rgba(255, 120, 60, .16), transparent 70%); cursor: pointer; }
+.bt-bloqueo-hueco.desafiable:hover, .bt-bloqueo-hueco.desafiable.elegido { border-style: solid; border-color: #ff9a6a; box-shadow: 0 0 20px rgba(255, 120, 60, .55); }
+.bt-forzado { position: relative; cursor: default; }
+.bt-forzado .carta { filter: drop-shadow(0 0 10px #ff8c3a); }
+.bt-forzado[data-quita-desafio] { cursor: pointer; }
+.bt-forzado-sello { position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); padding: 1px 9px; border-radius: 10px; background: #8a2a14; border: 1px solid #ffb27a; color: #ffe3d0; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; z-index: 4; }

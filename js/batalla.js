@@ -25,6 +25,7 @@
   let reveladoPila = null;     // carta superior de tu mazo que ya conoces: { carta, largo }
   let atacantesSel = new Set();  // unidades que has preparado para atacar (aún sin declarar)
   let bloqueosTmp = {};          // bloqueos elegidos y sin confirmar: { uidAtacante: uidBloqueador }
+  let desafiosSel = {};          // desafíos elegidos al preparar el ataque: { uidAtacante: uidDefensor }
   let bloqueoPid = 0;            // ventana de bloqueo a la que pertenecen
   let combateVisto = 0;          // último combate ya animado
   let animCombate = null;        // { hasta, datos } mientras se anima cómo salió un combate
@@ -180,7 +181,7 @@
     cerrando = false;
     mostradaMirada = "";
     reveladoPila = null;
-    atacantesSel = new Set(); bloqueosTmp = {}; bloqueoPid = 0; animCombate = null;
+    atacantesSel = new Set(); bloqueosTmp = {}; desafiosSel = {}; bloqueoPid = 0; animCombate = null;
     combateVisto = est && est.ultimoCombate ? est.ultimoCombate.id : 0;
     pvPrevios = new Map();
     ultimoTurno = 0;
@@ -323,6 +324,9 @@
 
   /* Palabras clave: qué significan (se muestran al ver una unidad) */
   const PALABRAS = {
+    desafiante: { nombre: "Desafiante", texto: "Al atacar, elige qué unidad enemiga debe bloquearla, aunque vuele o no pueda bloquear. Respeta Provocar." },
+    provocar: { nombre: "Provocar", texto: "Los desafíos enemigos deben apuntar a una unidad con Provocar antes que a otras." },
+    marcada: { nombre: "Marcada", texto: "Es Vulnerable para las unidades de quien la marcó: cualquiera puede obligarla a bloquear, ignorando Provocar, y le hacen 2 de daño extra en combate." },
     volar: { nombre: "Volar", texto: "Solo la bloquean unidades que también vuelan." },
     temible: { nombre: "Temible", texto: "No la bloquean unidades con menos de 3 de ataque." },
     veloz: { nombre: "Veloz", texto: "En combate golpea antes; si mata a su rival, no recibe daño." },
@@ -333,7 +337,8 @@
     barrera: { nombre: "Barrera", texto: "Ignora el primer daño que reciba." }
   };
   function palabrasDe(u) {
-    const out = ["volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
+    const out = ["desafiante", "provocar", "volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
+    if (u.flags.marcadaPor !== null) out.push("marcada");
     if (u.flags.barrera) out.push("barrera");
     if (u.flags.noBloqueaHasta >= est.turno && !out.includes("noBloquea")) out.push("noBloquea");
     return out;
@@ -342,7 +347,10 @@
   /* ¿Me toca elegir bloqueos? Y qué unidades mías pueden bloquear a quién */
   const bloqueoVigente = idx => est.ganador === null && !!est.pendiente && est.pendiente.tipo === "bloqueo" && est.pendiente.reactor === idx && !!est.combate;
   function atacantesQuePuedeBloquear(blk) {
-    return (est.combate ? est.combate.atacantes : []).filter(uid => { const h = M.buscar(est, uid); return h && M.puedeBloquear(est, blk, h.u); });
+    if (!est.combate) return [];
+    const forzados = est.combate.forzados || {};
+    if (Object.values(forzados).includes(blk.uid)) return [];       // ya está obligado a bloquear a otro
+    return est.combate.atacantes.filter(uid => { const h = M.buscar(est, uid); return h && !(uid in forzados) && M.puedeBloquear(est, blk, h.u); });
   }
   const puedeBloquearAlguno = blk => atacantesQuePuedeBloquear(blk).length > 0;
   const paresTmp = () => Object.entries(bloqueosTmp).map(([a, b]) => [Number(a), b]).filter(([a, b]) => {
@@ -365,7 +373,6 @@
     if (u.pv < u.pvMax) html = html.replace('class="carta-stat pv"', 'class="carta-stat pv herida"');
     if (M.atqEfectivo(est, u) > u.atqBase) html = html.replace('class="carta-stat atq"', 'class="carta-stat atq sube"');
     const chips = palabrasDe(u).map(k => PALABRAS[k].nombre);
-    if (u.flags.marcadaPor !== null) chips.push("Marcada");
     if (u.flags.inmune) chips.push("Protegida");
     if (u.flags.noAtacaHasta >= est.turno) chips.push("No ataca");
     if (u.entro === est.turno && u.dueno === est.activo) chips.push("Recién llegada");
@@ -448,6 +455,11 @@
       if (est.pendiente || !miTurnoDe(idx)) return [];
       const req = M.requisitoDeJugada(est, idx, id);
       return req ? req.validos : [];
+    }
+    if (sel.tipo === "desafio" && miTurnoDe(idx)) {
+      const hit = M.buscar(est, sel.uid);
+      const tomados = new Set(Object.entries(desafiosSel).filter(([a]) => Number(a) !== sel.uid).map(([, d]) => d));
+      return hit ? M.objetivosDeDesafio(est, hit.u).filter(d => !tomados.has(d)).map(u => ({ u })) : [];
     }
     if (sel.tipo === "bloqueador" && bloqueoVigente(idx)) {
       const hit = M.buscar(est, sel.uid);
@@ -542,6 +554,11 @@
     if (pid !== bloqueoPid) { bloqueoPid = pid; bloqueosTmp = {}; }
     // Atacantes preparados: solo mientras sea mi turno y la unidad pueda atacar
     atacantesSel.forEach(uid => { const h = M.buscar(est, uid); if (!h || !miTurnoDe(idx) || !M.unidadPuedeAtacar(est, h.u)) atacantesSel.delete(uid); });
+    // Desafíos elegidos: solo valen para atacantes preparados y objetivos que sigan siendo válidos
+    Object.keys(desafiosSel).forEach(k => {
+      const h = M.buscar(est, Number(k));
+      if (!h || !atacantesSel.has(Number(k)) || !M.objetivosDeDesafio(est, h.u).includes(desafiosSel[k])) delete desafiosSel[k];
+    });
     // Un combate nuevo (el último guardado en el estado): se anima cómo salió
     const uc = est.ultimoCombate;
     if (uc && uc.id > combateVisto) {
@@ -581,11 +598,13 @@
         if (!h) return "";
         const sideA = lado(h.j);
         const celdaA = htmlUnidad(h.u, idx);
-        const bUid = defensor ? bloqueosTmp[uid] : undefined;
+        const forzado = (c.forzados || {})[uid];
+        const bUid = forzado !== undefined ? forzado : (defensor ? bloqueosTmp[uid] : undefined);
         const hb = bUid !== undefined ? M.buscar(est, bUid) : null;
         let celdaB;
         const posible = sel && sel.tipo === "bloqueador" && objetivosVigentes().some(o => o.u === uid);
-        if (hb) celdaB = `<div class="bt-bloqueador-asignado" data-bloqueador-de="${uid}" title="Quitar este bloqueo">${htmlUnidad(hb.u, idx)}</div>`;
+        if (forzado !== undefined && hb) celdaB = `<div class="bt-forzado" title="Desafiado: tiene que bloquear a este atacante">${htmlUnidad(hb.u, idx)}<span class="bt-forzado-sello">Desafiado</span></div>`;
+        else if (hb) celdaB = `<div class="bt-bloqueador-asignado" data-bloqueador-de="${uid}" title="Quitar este bloqueo">${htmlUnidad(hb.u, idx)}</div>`;
         else if (defensor) celdaB = `<div class="bt-bloqueo-hueco ${posible ? "posible" : ""}" data-bloquea="${uid}"><span>${posible ? "Bloquear aquí" : "Sin bloqueo"}</span></div>`;
         else celdaB = `<div class="bt-bloqueo-hueco vacio"><span>${est.pendiente && est.pendiente.tipo === "bloqueo" ? "Eligiendo bloqueo…" : ""}</span></div>`;
         const arriba = sideA === "arriba" ? celdaA : celdaB, abajo = sideA === "abajo" ? celdaA : celdaB;
@@ -596,7 +615,13 @@
       html = [...atacantesSel].map(uid => {
         const h = M.buscar(est, uid);
         if (!h) return "";
-        return carril(uid, `<div class="bt-bloqueo-hueco vacio"><span>Rival</span></div>`, `<div class="bt-previa" data-uid-previa="${uid}">${htmlUnidad(h.u, idx)}</div>`, "previa");
+        const dUid = desafiosSel[uid], hd = dUid !== undefined ? M.buscar(est, dUid) : null;
+        const puedeDesafiar = M.objetivosDeDesafio(est, h.u).length > 0;
+        const elegido = sel && sel.tipo === "desafio" && sel.uid === uid;
+        const rival = hd ? `<div class="bt-forzado" data-quita-desafio="${uid}" title="Quitar el desafío">${htmlUnidad(hd.u, idx)}<span class="bt-forzado-sello">Desafiar</span></div>`
+          : puedeDesafiar ? `<div class="bt-bloqueo-hueco desafiable ${elegido ? "elegido" : ""}" data-desafia="${uid}"><span>${elegido ? "Elige la unidad enemiga" : "Desafiar a…"}</span></div>`
+          : `<div class="bt-bloqueo-hueco vacio"><span>Rival</span></div>`;
+        return carril(uid, rival, `<div class="bt-previa" data-uid-previa="${uid}">${htmlUnidad(h.u, idx)}</div>`, "previa");
       }).join("");
       clase += " activo previa";
     }
@@ -628,8 +653,10 @@
     const enCombate = new Set();
     if (est.combate) {
       est.combate.atacantes.forEach(uid => enCombate.add(uid));
+      Object.values(est.combate.forzados || {}).forEach(uid => enCombate.add(uid));
       Object.values(bloqueosTmp).forEach(uid => { if (bloqueoVigente(idx)) enCombate.add(uid); });
     }
+    Object.values(desafiosSel).forEach(uid => { if (miTurnoDe(idx) && !est.combate) enCombate.add(uid); });
     if (animCombate) animCombate.datos.pares.forEach(par => { enCombate.add(par.a.uid); if (par.b) enCombate.add(par.b.uid); });
     atacantesSel.forEach(uid => { if (miTurnoDe(idx) && !est.combate) enCombate.add(uid); });
     const htmlCampo = Jx => Array.from({ length: M.C.CAMPO_MAX }, (_, k) => {
@@ -870,8 +897,9 @@
     const idx = indiceYo();
     const quien = est.jugadores[p.actor].nombre;
     const nombresAtacantes = () => (est.combate ? est.combate.atacantes : []).map(uid => { const h = M.buscar(est, uid); return h ? M.nombre(est, h.u) : null; }).filter(Boolean).join(", ") || "sus unidades";
-    const que = p.tipo === "ataque" ? `${quien} ataca con ${nombresAtacantes()}.`
-      : p.tipo === "bloqueo" ? `${quien} ataca con ${nombresAtacantes()}.`
+    const textoDesafios = () => Object.entries(est.combate ? est.combate.desafios || {} : {}).map(([a, d]) => { const ha = M.buscar(est, Number(a)), hd = M.buscar(est, d); return ha && hd ? ` ${M.nombre(est, ha.u)} desafía a ${M.nombre(est, hd.u)}.` : ""; }).join("");
+    const que = p.tipo === "ataque" ? `${quien} ataca con ${nombresAtacantes()}.${textoDesafios()}`
+      : p.tipo === "bloqueo" ? `${quien} ataca con ${nombresAtacantes()}.${textoDesafios()}`
       : `${quien} juega ${M.meta(est, p.datos.id).nombre}.`;
     const cuenta = local() ? "" : `<span id="btCuenta" class="bt-cuenta"></span>`;
     if (p.tipo === "bloqueo") {
@@ -949,12 +977,13 @@
         else if (req && !req.opcional) extra = `<p class="bt-nota">No hay objetivos válidos para esta carta.</p>`;
         else extra = `<button type="button" class="cartas-boton cartas-boton-principal" data-jugar>Jugar (${c.coste})</button>`;
       }
-    } else if (sel && (sel.tipo === "unidad" || sel.tipo === "ver" || sel.tipo === "bloqueador")) {
+    } else if (sel && (sel.tipo === "unidad" || sel.tipo === "ver" || sel.tipo === "bloqueador" || sel.tipo === "desafio")) {
       const hit = M.buscar(est, sel.uid);
       if (hit) {
         c = vistaUnidad(hit.u);
         const jug = hit.j === idx;
         if (sel.tipo === "bloqueador") extra = `<p class="bt-nota">Elige el atacante al que bloquea.</p>`;
+        else if (sel.tipo === "desafio") extra = `<p class="bt-nota">Elige la unidad enemiga resaltada que tendrá que bloquearla.</p>`;
         else if (jug && miTurnoDe(idx)) {
           if (est.atacado === est.turno) extra = `<p class="bt-nota">Ya atacaste este turno.</p>`;
           else extra = M.unidadPuedeAtacar(est, hit.u)
@@ -1230,16 +1259,30 @@
     if (!est) return;
     if (ignorarClic) return;
     const idx = indiceYo();
-    if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) { atacantesSel.clear(); enviar({ t: "fin" }); } return; }
+    if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) { atacantesSel.clear(); desafiosSel = {}; enviar({ t: "fin" }); } return; }
     // Ataque: se preparan las unidades y se declara todo junto
     if (ev.target.closest("[data-atacar-todas]")) {
       if (miTurnoDe(idx)) { est.jugadores[idx].campo.forEach(u => { if (M.unidadPuedeAtacar(est, u)) atacantesSel.add(u.uid); }); pintarTablero(); }
       return;
     }
     if (ev.target.closest("[data-atacar]")) {
-      if (miTurnoDe(idx) && atacantesSel.size) { const u = [...atacantesSel]; atacantesSel.clear(); enviar({ t: "atacar", u }); }
+      if (miTurnoDe(idx) && atacantesSel.size) {
+        const u = [...atacantesSel], d = Object.assign({}, desafiosSel);
+        atacantesSel.clear(); desafiosSel = {};
+        enviar(Object.keys(d).length ? { t: "atacar", u, d } : { t: "atacar", u });
+      }
       return;
     }
+    // Desafíos al preparar el ataque: elegir al atacante, y luego la unidad enemiga
+    const ranuraDesafio = ev.target.closest("[data-desafia]");
+    if (ranuraDesafio && miTurnoDe(idx)) {
+      const uid = Number(ranuraDesafio.dataset.desafia);
+      sel = sel && sel.tipo === "desafio" && sel.uid === uid ? null : { tipo: "desafio", uid };
+      pintarTablero();
+      return;
+    }
+    const quitar = ev.target.closest("[data-quita-desafio]");
+    if (quitar) { delete desafiosSel[quitar.dataset.quitaDesafio]; sel = null; pintarTablero(); return; }
     // Bloqueo: confirmar lo elegido, o no bloquear
     if (ev.target.closest("[data-bloquear-ok]")) { if (bloqueoVigente(idx)) enviar({ t: "bloquear", b: paresTmp() }); return; }
     if (ev.target.closest("[data-bloquear-no]")) { if (bloqueoVigente(idx)) enviar({ t: "bloquear", b: [] }); return; }
@@ -1291,6 +1334,7 @@
       if (objetivos.some(o => o.u === uid)) {
         if (sel.tipo === "mano") enviar(accionJugar(sel.i, { u: uid }));
         else if (sel.tipo === "bloqueador") asignarBloqueo(sel.uid, uid);
+        else if (sel.tipo === "desafio") { desafiosSel[sel.uid] = uid; sel = null; ocultarFlecha(); pintarTablero(); }
         return;
       }
     }
@@ -1364,7 +1408,7 @@
   $("btVolver").addEventListener("click", volverAlLobby);
   document.addEventListener("keydown", ev => {
     if (ev.key !== "Escape" || !est) return;
-    if (sel || atacantesSel.size) { sel = null; atacantesSel.clear(); pintarTablero(); }
+    if (sel || atacantesSel.size) { sel = null; atacantesSel.clear(); desafiosSel = {}; pintarTablero(); }
   });
 
   $("btLobby").addEventListener("click", ev => {

@@ -2,7 +2,9 @@
    CARTAS MALDITAS — habilidades de cada carta, por id. Cada entrada le dice al
    motor (cartas-motor.js) qué hace la carta en cada momento:
 
-     palabras        'volar' (solo la bloquean unidades que vuelan), 'temible' (no la
+     palabras        'desafiante' (al atacar elige qué unidad enemiga debe bloquearla),
+                     'provocar' (los desafíos deben apuntar antes a una unidad con
+                     Provocar), 'volar' (solo la bloquean unidades que vuelan), 'temible' (no la
                      bloquean unidades con menos de 3 de ataque), 'veloz' (en combate golpea
                      antes), 'arrollar' (el daño que sobra pasa al jugador), 'duro' (recibe 1
                      menos de daño), 'esquivo' (en combate recibe la mitad del daño, redondeado hacia
@@ -39,18 +41,20 @@
 
     // --- Personajes ------------------------------------------------------
     R("rook", { pasivaAtq: (est, u) => (est.jugadores[u.dueno].campo.length === 1 ? 2 : 0) });
-    R("bull", { palabras: ["duro"] });
-    R("garra", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
-      c.objetivo.flags.noBloqueaHasta = c.est.turno;
-      M.log(c.est, `${M.nombre(c.est, c.u)} arrastra a ${M.nombre(c.est, c.objetivo)}: no puede bloquear este turno.`);
+    R("bull", { palabras: ["provocar"] });
+    // Garra: el arpón baja a las voladoras y quita el escudo a quien provoca; además desafía al atacar.
+    R("garra", { palabras: ["desafiante"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+      c.objetivo.flags.sinProvocarHasta = c.est.turno + 1;
+      c.objetivo.flags.sinVolarHasta = c.est.turno + 1;
+      M.log(c.est, `${M.nombre(c.est, c.u)} engancha a ${M.nombre(c.est, c.objetivo)}: pierde Provocar y Volar hasta el final del próximo turno de su dueño.`);
     } } });
     R("baraja", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
     R("ocevat", { guardian: true });
-    R("verdam", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+    R("verdam", { palabras: ["desafiante"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       c.objetivo.flags.marcadaPor = c.j;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda marcada.`);
     } } });
-    R("eklino-a", { alCrear: (est, u) => { u.flags.barrera = true; }, alEntrarAliada: c => { c.otra.pv += 1; c.otra.pvMax += 1; } });
+    R("eklino-a", { palabras: ["provocar"], alEntrarAliada: c => { c.otra.pv += 1; c.otra.pvMax += 1; } });
     R("dagren", { alRecibirDano: c => { c.u.atq += 1; } });
     R("orina", { alMorir: c => {
       const validos = enemigas(c.est, c.j).filter(t => M.puedeApuntarHabilidad(c.est, t, c.j));
