@@ -5,7 +5,7 @@ body.hip-tema {
   --accent: #d9b84a; --accent-soft: #7a6a2c; --border: #2c4838; --font-heading: 'Cinzel';
   --hip-rojo: #d0634a; --hip-verde: #67b873; --hip-plata: #b8c0c4;
   background-color: var(--bg);
-  background-image: radial-gradient(ellipse at 50% -10%, rgba(217, 184, 74, .12), transparent 55%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .018) 0 40px, transparent 40px 80px);
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, .018) 0 40px, transparent 40px 80px);
   color: var(--text);
 }
 .hip-tema .mj-barra { border-bottom: 1px solid var(--accent-soft); background: rgba(15, 29, 23, .8); }
@@ -153,7 +153,7 @@ body[data-fase="corriendo"] .hip-reloj { border-left-color: var(--hip-rojo); }
 .hip-ultimo-cab span { color: var(--muted); font-size: .8rem; }
 
 /* ------------------------------------------------------------------ la carrera en pista */
-.hip-escena { margin-bottom: 18px; padding: 14px 16px; background: linear-gradient(180deg, #1c3a26, #16281f); border: 1px solid var(--accent-soft); }
+.hip-escena { margin-bottom: 18px; padding: 14px 16px; background: #193122; border: 1px solid var(--accent-soft); }
 .hip-escena-cab { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
 .hip-escena-cab h2 { margin: 0; font: 600 1.15rem var(--font-heading), serif; color: var(--accent); }
 .hip-escena-cab span { color: var(--muted); font-size: .84rem; font-variant-numeric: tabular-nums; }
@@ -166,8 +166,8 @@ body[data-fase="corriendo"] .hip-reloj { border-left-color: var(--hip-rojo); }
 .hip-carril-pista::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 6px; background: repeating-linear-gradient(0deg, #f3efe0 0 6px, #1b1b1b 6px 12px); }
 .hip-corredor { position: absolute; left: 0; top: 2px; display: flex; align-items: center; gap: 4px; will-change: transform; }
 .hip-corredor .hip-mini { width: 66px; }
-.hip-corredor-nombre { font-size: .7rem; color: #f3efe0; text-shadow: 0 1px 2px #000; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
-.hip-aviso-inc { display: none; font-weight: 700; color: var(--hip-rojo); text-shadow: 0 1px 2px #000; }
+.hip-corredor-nombre { font-size: .7rem; color: #f3efe0; text-shadow: 0 1px 0 #000; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+.hip-aviso-inc { display: none; font-weight: 700; color: var(--hip-rojo); text-shadow: 0 1px 0 #000; }
 .hip-aviso-inc.on { display: inline; }
 .hip-escena-res { margin-top: 14px; overflow-x: auto; }
 .hip-escena-res:empty { display: none; }
@@ -186,7 +186,7 @@ body[data-fase="corriendo"] .hip-reloj { border-left-color: var(--hip-rojo); }
 /* ------------------------------------------------------------------ ficha */
 body.hip-con-ficha { overflow: hidden; }
 .hip-ficha { position: fixed; inset: 0; z-index: 1000; background: rgba(5, 12, 9, .78); display: flex; align-items: flex-start; justify-content: center; padding: 3vh 12px; overflow-y: auto; }
-.hip-ficha-caja { position: relative; width: min(760px, 100%); background: var(--panel); border: 1px solid var(--accent-soft); padding: 22px 22px 26px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.hip-ficha-caja { position: relative; width: min(760px, 100%); background: var(--panel); border: 1px solid var(--accent-soft); padding: 22px 22px 26px; }
 .hip-ficha-cerrar { position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; background: none; border: 1px solid var(--border); color: var(--text); font-size: 1.4rem; line-height: 1; cursor: pointer; }
 .hip-ficha-cerrar:hover { border-color: var(--accent); color: var(--accent); }
 .hip-ficha-cab { display: grid; grid-template-columns: minmax(150px, 290px) 1fr; gap: 18px; align-items: center; margin-right: 36px; }

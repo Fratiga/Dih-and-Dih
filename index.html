@@ -17,9 +17,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20261218">
-  <link rel="stylesheet" href="css/taberna.css?v=20261218">
-  <link rel="stylesheet" href="css/lobby.css?v=20261218">
+  <link rel="stylesheet" href="css/style.css?v=20261220">
+  <link rel="stylesheet" href="css/taberna.css?v=20261220">
+  <link rel="stylesheet" href="css/lobby.css?v=20261220">
 </head>
 <body class="lb lb-invitado">
   <div class="lb-fondo" aria-hidden="true"></div>
@@ -126,14 +126,6 @@
                   <rect width="8" height="8" fill="#3a2a1d"/>
                   <rect x="8" y="8" width="8" height="8" fill="#3a2a1d"/>
                 </pattern>
-                <radialGradient id="gFarol">
-                  <stop offset="0" style="stop-color:var(--lb-luz)" stop-opacity=".75"/>
-                  <stop offset="1" style="stop-color:var(--lb-luz)" stop-opacity="0"/>
-                </radialGradient>
-                <linearGradient id="gHaz" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" style="stop-color:var(--lb-luna)" stop-opacity=".28"/>
-                  <stop offset="1" style="stop-color:var(--lb-luna)" stop-opacity="0"/>
-                </linearGradient>
                 <clipPath id="cCuadro"><rect x="600" y="120" width="80" height="64"/></clipPath>
               </defs>
 
@@ -158,7 +150,7 @@
                 <rect x="458" y="124" width="4" height="4" fill="#10163a" opacity="0"/>
                 <rect x="458" y="72" width="4" height="104" fill="#3b2a1d"/>
                 <rect x="404" y="120" width="112" height="4" fill="#3b2a1d"/>
-                <polygon points="412,176 508,176 560,372 360,372" fill="url(#gHaz)" class="lb-haz"/>
+                <polygon points="412,176 508,176 560,372 360,372" style="fill:var(--lb-luna)" fill-opacity=".1" class="lb-haz"/>
               </g>
 
               <!-- Cartel colgante: Salón de juegos -->
@@ -242,7 +234,7 @@
                   <rect x="640" y="292" width="8" height="16" fill="#fff1b0" class="lb-llama lb-l3"/>
                   <rect x="608" y="360" width="72" height="8" fill="#5b3a22"/>
                 </g>
-                <circle cx="644" cy="320" r="90" fill="url(#gFarol)" class="lb-brillo"/>
+                <circle cx="644" cy="320" r="56" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
               </g>
               <a class="lb-spot" href="fanarts.html" aria-label="Fanarts: galería de imágenes">
                 <g class="lb-forma">
@@ -372,10 +364,10 @@
               <g>
                 <rect x="348" y="28" width="4" height="28" fill="#8d8d99"/>
                 <rect x="340" y="56" width="20" height="24" fill="#e8b84a"/><rect x="344" y="60" width="12" height="16" fill="#fff1b0" class="lb-llama"/>
-                <circle cx="350" cy="70" r="70" fill="url(#gFarol)" class="lb-brillo"/>
+                <circle cx="350" cy="70" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
                 <rect x="738" y="28" width="4" height="20" fill="#8d8d99"/>
                 <rect x="730" y="48" width="20" height="24" fill="#e8b84a"/><rect x="734" y="52" width="12" height="16" fill="#fff1b0" class="lb-llama lb-l2"/>
-                <circle cx="740" cy="62" r="70" fill="url(#gFarol)" class="lb-brillo lb-b2"/>
+                <circle cx="740" cy="62" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
                 <rect x="392" y="452" width="176" height="56" fill="#6e2f3a" opacity=".85"/>
                 <rect x="400" y="460" width="160" height="40" fill="none" stroke="#e8b84a" stroke-width="3" opacity=".7"/>
               </g>

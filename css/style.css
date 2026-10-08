@@ -114,8 +114,7 @@
 
 /* Paleta con la que arrancó el sitio, antes del rediseño hacia el archivo
    oscuro y anguloso actual — recuperada del primer commit del proyecto.
-   Dorado cálido, tarjetas redondeadas con degradé diagonal y un halo
-   radial detrás de todo, en vez del fondo plano de los demás temas. */
+   Dorado cálido y tarjetas redondeadas. */
 :root[data-tema="primer-tomo"] {
   --bg: #11100e;
   --panel: #191714;
@@ -129,8 +128,6 @@
   --font-heading: 'Cinzel';
   --radio-tarjeta: 9px;
   --recorte-tarjeta: none;
-  --fondo-tarjeta: linear-gradient(145deg, var(--panel), var(--panel-2));
-  --fondo-pagina: radial-gradient(circle at top, #242018 0, var(--bg) 42%);
 }
 /* Kigan, la ciudad de las casas de baños — vapor, agua tibia, mármol
    pulido. Tarjetas muy redondeadas, como una pastilla de jabón. */
@@ -256,8 +253,6 @@ body::after {
 .marquee-row {
   overflow: hidden;
   white-space: nowrap;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
 .marquee-track {
   display: inline-flex;
@@ -330,7 +325,6 @@ body::after {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: 0 8px 24px var(--shadow);
   max-height: 320px;
   overflow-y: auto;
 }
@@ -418,7 +412,6 @@ body::after {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: 0 8px 24px var(--shadow);
   padding: 16px;
   width: 220px;
 }
@@ -602,7 +595,6 @@ body::after {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: 0 8px 24px var(--shadow);
   padding: 10px;
   width: 160px;
 }
@@ -640,7 +632,6 @@ body::after {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: 0 8px 24px var(--shadow);
   padding: 10px;
   width: 240px;
   display: flex;
@@ -855,7 +846,6 @@ h3 { margin-top: 0; }
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: 0 8px 24px var(--shadow);
   max-height: 260px;
   overflow-y: auto;
 }
@@ -1473,14 +1463,14 @@ input[type="search"]:focus { border-color: var(--accent-soft); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
+  background: rgba(0,0,0,.45);
 }
 .fanart-side-label {
   font-family: var(--font-heading), sans-serif;
   font-size: 1.6rem;
   letter-spacing: .04em;
   color: var(--text);
-  text-shadow: 0 2px 10px rgba(0,0,0,.6);
+  text-shadow: 0 2px 0 rgba(0,0,0,.6);
   text-align: center;
   padding: 0 16px;
 }
@@ -1503,7 +1493,6 @@ dialog {
   border: 1px solid var(--border);
   border-radius: 0;
   padding: 38px;
-  box-shadow: 0 20px 70px var(--shadow);
   scrollbar-width: thin;
   scrollbar-color: var(--accent-soft) transparent;
 }
@@ -1660,13 +1649,13 @@ dialog::backdrop { background: rgba(0,0,0,.8); }
 #afOutput { font-family: monospace; font-size: .78rem; white-space: pre; }
 
 @keyframes mapa-pin-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 0 4px rgba(207,207,186,.4), 0 2px 8px var(--shadow); }
-  50% { box-shadow: 0 0 0 4px var(--accent-soft), 0 0 0 14px rgba(207,207,186,0), 0 2px 8px var(--shadow); }
+  0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft); }
+  50% { box-shadow: 0 0 0 4px var(--accent); }
 }
 .mapa-pin--highlight {
   z-index: 5;
   transform: scale(1.6);
-  animation: mapa-pin-pulse 0.7s ease-out 3;
+  animation: mapa-pin-pulse .7s steps(1) 3;
 }
 
 .modal-body { line-height: 1.75; }
@@ -1748,7 +1737,6 @@ dialog::backdrop { background: rgba(0,0,0,.8); }
   max-height: 80vh;
   object-fit: contain;
   border-radius: 0;
-  box-shadow: 0 10px 50px rgba(0,0,0,.6);
   transform-origin: center center;
   will-change: transform;
 }
@@ -1769,7 +1757,6 @@ dialog::backdrop { background: rgba(0,0,0,.8); }
   cursor: pointer;
   z-index: 40;
   opacity: .88;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
   transition: transform .5s ease, opacity .5s ease;
 }
 .huella-bufon-icono:hover { transform: scale(1.15) rotate(-6deg); }
@@ -2193,7 +2180,7 @@ body.has-mini-player { padding-bottom: 74px; }
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(35px) brightness(.55);
+  filter: brightness(.35) grayscale(.4);
 }
 .lado-susto img {
   position: relative;
@@ -2202,7 +2189,6 @@ body.has-mini-player { padding-bottom: 74px; }
   width: auto;
   height: auto;
   object-fit: contain;
-  box-shadow: 0 10px 60px rgba(0,0,0,.8);
 }
 .lado-susto img.hidden { display: none; }
 
@@ -2360,7 +2346,6 @@ body.has-mini-player { padding-bottom: 74px; }
   padding: 12px 16px;
   background: var(--panel);
   border: 1px solid var(--accent-soft);
-  box-shadow: 0 10px 40px var(--shadow);
   font-size: .85rem;
 }
 .stat-compare-bar span { flex: 1; color: var(--text); }
@@ -2502,7 +2487,6 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent-soft);
   border-radius: 0;
-  box-shadow: 0 8px 24px var(--shadow);
   padding: 12px 22px;
   text-align: center;
   min-width: 180px;
@@ -2662,7 +2646,6 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   position: absolute; top: 40px; right: 14px; z-index: 5;
   background: var(--panel-2); border: 1px solid var(--border);
   min-width: 140px;
-  box-shadow: 0 8px 24px var(--shadow);
 }
 .fichas-card-menu.hidden { display: none; }
 .fichas-card-menu button {
@@ -2705,7 +2688,6 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .fichas-decoraciones { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .fichas-decoracion {
   position: absolute; pointer-events: auto; cursor: grab; touch-action: none;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .5));
 }
 .fichas-decoracion--arrastrando { cursor: grabbing; opacity: .85; }
 .fichas-decoracion img { width: 100%; height: auto; display: block; pointer-events: none; }
@@ -3371,15 +3353,14 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 /* --- Marca del Dominio (Muerte Súbita) en Mis personajes --- */
 .fichas-marca-dominio {
   display: inline-block; margin: 6px 0 0; padding: 3px 10px; font-size: .72rem; letter-spacing: .05em;
-  color: #f0d4ff; background: rgba(88, 28, 135, .45); border: 1px solid #a855f7;
-  box-shadow: 0 0 12px rgba(168, 85, 247, .7); text-shadow: 0 0 6px #c026d3;
+  color: #e3d6ea; background: #3a2f42; border: 1px solid #7d6a8a;
 }
 .fichas-marca-dominio.hidden { display: none; }
-.fichas-card-marcada { border-color: #7c3aed; box-shadow: 0 0 22px rgba(124, 58, 237, .55), inset 0 0 18px rgba(88, 28, 135, .35); }
-/* Punto violeta en el chip Admin cuando hay derrotas de Muerte Súbita sin revisar */
+.fichas-card-marcada { border-color: #7d6a8a; }
+/* Punto ciruela en el chip Admin cuando hay derrotas de Muerte Súbita sin revisar */
 .nav-chip.nav-chip-aviso::after {
   content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 7px; border-radius: 50%;
-  background: #d946ef; box-shadow: 0 0 8px #d946ef; vertical-align: middle; animation: msPunto 1.6s ease-in-out infinite;
+  background: #b08fc2; vertical-align: middle; animation: msPunto 1.6s steps(2) infinite;
 }
 @keyframes msPunto { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
@@ -3599,8 +3580,8 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-clara { background: #3a3b3e; }
 .aj-oscura { background: #26272a; }
 .aj-pieza { font-size: clamp(1.6rem, 6.4vw, 3.1rem); line-height: 1; pointer-events: none; }
-.aj-w { color: #f1ecd6; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
-.aj-b { color: #9aa1a8; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+.aj-w { color: #f1ecd6; text-shadow: 0 1px 0 rgba(0,0,0,.7); }
+.aj-b { color: #9aa1a8; text-shadow: 0 1px 0 rgba(0,0,0,.7); }
 .aj-sel { outline: 3px solid var(--accent-soft); outline-offset: -3px; }
 .aj-ultima { box-shadow: inset 0 0 0 100px rgba(224, 180, 92, .18); }
 .aj-destino::after { content: ""; width: 26%; height: 26%; border-radius: 50%; background: rgba(143, 220, 255, .45); position: absolute; }
@@ -3636,7 +3617,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-casilla.aj-sobre.aj-captura { box-shadow: inset 0 0 0 3px rgba(224, 100, 92, .95); }
 .aj-fantasma {
   position: fixed; z-index: 1000; pointer-events: none; line-height: 1;
-  transform: translate(-50%, -50%) scale(1.3); filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .55));
+  transform: translate(-50%, -50%) scale(1.3);
 }
 
 /* --- Ajedrez contra otros jugadores --- */
@@ -3651,7 +3632,7 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-pvp-fila .aj-boton:disabled { opacity: .45; cursor: default; }
 .aj-pvp-jugadores { max-width: 520px; margin-bottom: 18px; }
 .aj-punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #55565a; margin-right: 6px; }
-.aj-punto.on { background: #7fd48a; box-shadow: 0 0 6px rgba(127, 212, 138, .7); }
+.aj-punto.on { background: #7fd48a; }
 .aj-reloj { margin: 0 0 10px; padding: 8px 14px; background: var(--panel-2); border: 1px solid var(--border); font: 600 1.05rem var(--font-heading), sans-serif; letter-spacing: .04em; }
 .aj-reloj.urgente { color: #e8837b; border-color: #e8837b; animation: ajRelojLatido .6s ease-in-out infinite alternate; }
 @keyframes ajRelojLatido { from { background: var(--panel-2); } to { background: rgba(232, 131, 123, .18); } }
@@ -3670,11 +3651,10 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 .aj-tablero-col { position: relative; }
 .aj-victoria { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(12, 12, 14, .78); overflow: hidden; animation: ajVictoriaEntra .45s ease-out both; }
 @keyframes ajVictoriaEntra { from { opacity: 0; } to { opacity: 1; } }
-.aj-victoria-caja { position: relative; text-align: center; padding: 22px 26px; max-width: 86%; background: rgba(30, 30, 33, .92); border: 1px solid var(--accent-soft); box-shadow: 0 0 40px rgba(224, 180, 92, .25); animation: ajVictoriaCaja .6s cubic-bezier(.2, 1.2, .3, 1) both; }
+.aj-victoria-caja { position: relative; text-align: center; padding: 22px 26px; max-width: 86%; background: rgba(30, 30, 33, .92); border: 1px solid var(--accent-soft); animation: ajVictoriaCaja .6s cubic-bezier(.2, 1.2, .3, 1) both; }
 @keyframes ajVictoriaCaja { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .aj-victoria-sup { margin: 0 0 4px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.aj-victoria-titulo { margin: 0 0 10px; font: 700 clamp(2rem, 8vw, 3rem) var(--font-heading), sans-serif; letter-spacing: .04em; color: #e0b45c; text-shadow: 0 0 18px rgba(224, 180, 92, .5); animation: ajVictoriaBrillo 1.6s ease-in-out infinite alternate; }
-@keyframes ajVictoriaBrillo { from { text-shadow: 0 0 10px rgba(224, 180, 92, .35); } to { text-shadow: 0 0 26px rgba(224, 180, 92, .8); } }
+.aj-victoria-titulo { margin: 0 0 10px; font: 700 clamp(2rem, 8vw, 3rem) var(--font-heading), sans-serif; letter-spacing: .04em; color: #e0b45c; }
 .aj-victoria-texto { margin: 0 0 6px; font-size: 1rem; }
 .aj-victoria-conteo { margin: 0 0 16px; font-size: .85rem; color: var(--accent-soft); }
 .aj-victoria-botones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
@@ -3686,11 +3666,11 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
 /* --- Ajedrez: banner junto a la lista de jugadores --- */
 .aj-pvp-cuerpo { display: flex; align-items: flex-start; gap: 28px; }
 .aj-pvp-columna { flex: 0 1 520px; min-width: 0; }
-.aj-pvp-banner { flex: 0 1 460px; min-width: 0; width: 100%; max-width: 460px; height: auto; margin-top: 16px; position: sticky; top: 16px; border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0, 0, 0, .45); }
+.aj-pvp-banner { flex: 0 1 460px; min-width: 0; width: 100%; max-width: 460px; height: auto; margin-top: 16px; position: sticky; top: 16px; border: 1px solid var(--border); }
 @media (max-width: 900px) { .aj-pvp-cuerpo { flex-direction: column; } .aj-pvp-banner { position: static; max-width: 100%; } }
 .aj-victoria.aj-derrota { background: rgba(14, 10, 10, .84); }
-.aj-derrota .aj-victoria-caja { border-color: #8a4a45; box-shadow: 0 0 40px rgba(170, 70, 62, .22); }
-.aj-derrota .aj-victoria-titulo { color: #c9776f; text-shadow: 0 0 14px rgba(170, 70, 62, .45); animation: none; }
+.aj-derrota .aj-victoria-caja { border-color: #8a4a45; }
+.aj-derrota .aj-victoria-titulo { color: #c9776f; animation: none; }
 .aj-victoria-img { display: block; max-width: 100%; max-height: 190px; margin: 0 auto 12px; object-fit: contain; border: 1px solid var(--border); }
 
 /* Etiqueta del rol DJ en el panel de Cuentas */

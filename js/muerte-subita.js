@@ -48,9 +48,9 @@
   /* --- Cartas de desafío: rectángulos verticales chicos, con ojo que mira --- */
   function ojoSVG() {
     return `<svg class="ms-ojo" viewBox="0 0 100 60" aria-hidden="true">
-      <path d="M4 30 C22 6 78 6 96 30 C78 54 22 54 4 30 Z" fill="#12061f" stroke="#c084fc" stroke-width="2.5"/>
-      <circle cx="50" cy="30" r="15" fill="#a855f7"/>
-      <g class="ms-pupila"><ellipse cx="50" cy="30" rx="5" ry="12" fill="#06020c"/><circle cx="46" cy="25" r="2.4" fill="#f5d0fe"/></g>
+      <path d="M4 30 C22 6 78 6 96 30 C78 54 22 54 4 30 Z" fill="#150b18" stroke="#b898c4" stroke-width="2.5"/>
+      <circle cx="50" cy="30" r="15" fill="#8d6a9c"/>
+      <g class="ms-pupila"><ellipse cx="50" cy="30" rx="5" ry="12" fill="#06020c"/><circle cx="46" cy="25" r="2.4" fill="#e8cfe0"/></g>
     </svg>`;
   }
 
@@ -128,7 +128,7 @@
     medir();
     window.addEventListener("resize", medir);
     for (let i = 0; i < 70; i++) {
-      motas.push({ x: Math.random() * w, y: Math.random() * h, v: 6 + Math.random() * 22, r: 0.8 + Math.random() * 2.2, f: Math.random() * 6.28, color: Math.random() < 0.7 ? "192,132,252" : "232,121,249" });
+      motas.push({ x: Math.random() * w, y: Math.random() * h, v: 6 + Math.random() * 22, r: 0.8 + Math.random() * 2.2, f: Math.random() * 6.28, color: Math.random() < 0.7 ? "184,152,196" : "197,138,176" });
     }
     function rayo() {
       const x0 = Math.random() * w;
@@ -159,7 +159,7 @@
       if (proximoRayo <= 0) { rayo(); proximoRayo = 2.5 + Math.random() * 5; }
       for (const r of rayos) {
         r.edad += dt;
-        ctx.strokeStyle = `rgba(233,170,255,${Math.max(0, 1 - r.edad / r.vida)})`;
+        ctx.strokeStyle = `rgba(214,190,222,${Math.max(0, 1 - r.edad / r.vida)})`;
         ctx.lineWidth = 1.6;
         ctx.beginPath();
         r.puntos.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));

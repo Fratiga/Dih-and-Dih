@@ -488,10 +488,8 @@
     ctx.save();
     if (temblor > 0.3) ctx.translate((Math.random() - 0.5) * temblor, (Math.random() - 0.5) * temblor);
 
-    // fondo: suelo y un resplandor tenue
-    const g = ctx.createLinearGradient(0, 0, 0, LOGICO_ALTO);
-    g.addColorStop(0, "rgba(255,255,255,.02)"); g.addColorStop(1, "rgba(255,255,255,.07)");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, LOGICO_ANCHO, LOGICO_ALTO);
+    // fondo: el suelo
+    ctx.fillStyle = "rgba(255,255,255,.045)"; ctx.fillRect(0, 0, LOGICO_ANCHO, LOGICO_ALTO);
     ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(0, SUELO, LOGICO_ANCHO, 3);
 
     if (j && e) {

@@ -1,11 +1,11 @@
 /* Aspecto de la arquería: un valle de bosque que pasa de la hora dorada a la noche mientras corre
-   el minuto, con montañas lejanas, pinares en capas, bruma, nubes, aves y luciérnagas.
+   el minuto, con montañas lejanas, pinares en capas, nubes, aves y luciérnagas, todo en colores lisos.
    También dibuja el marcador, las pantallas de inicio y fin y los efectos de cada tiro.
 
    Pensado para no pesar: el paisaje (montañas, pinos, pradera) se dibuja UNA vez en un lienzo
-   aparte al medir la pantalla y después solo se copia. Todo lo que se mueve (nubes, bruma, aves,
+   aparte al medir la pantalla y después solo se copia. Todo lo que se mueve (nubes, aves,
    luciérnagas, estrellas) son pocos dibujos pequeños calculados a partir del tiempo, sin estado.
-   No se usan sombras difuminadas, filtros ni modos de mezcla. */
+   No se usan degradados, sombras difuminadas, filtros ni modos de mezcla. */
 (function () {
   "use strict";
 
@@ -48,6 +48,7 @@
   const CIELO_ARRIBA = [[24, 44, 78], [6, 10, 26]];
   const CIELO_MEDIO = [[150, 96, 112], [30, 26, 62]];
   const CIELO_HORIZONTE = [[246, 186, 112], [104, 64, 92]];
+  const FRANJAS = 8;
 
   function crear({ ancho, alto }) {
     let sx = 1;
@@ -55,7 +56,6 @@
     let paisaje = null;
     let sol = null;
     let nubes = [];
-    let bruma = null;
     let luna = null;
     let construido = false;
     const horizonte = alto * 0.62;
@@ -64,38 +64,15 @@
     const estrellas = Array.from({ length: 70 }, () => ({ x: azar() * ancho, y: azar() * alto * 0.5, r: 0.6 + azar() * 1.3, f: azar() * 6.28, v: 1 + azar() * 2 }));
     const luciernagas = Array.from({ length: 24 }, () => ({ x: azar() * ancho, y: alto * (0.5 + azar() * 0.45), fx: 0.2 + azar() * 0.5, fy: 0.3 + azar() * 0.6, px: azar() * 6.28, py: azar() * 6.28, f: azar() * 6.28, amp: 12 + azar() * 30 }));
 
-    /* --- Sprites suaves (a media resolución: son difusos) ---------------------------------- */
+    /* --- Sprites (a media resolución) ------------------------------------------------------- */
     function construirSol() {
       const R = 330;
       const k = 0.5;
       const c = lienzo(R * 2 * sx * k, R * 2 * sy * k);
       const g = c.getContext("2d");
       g.setTransform(sx * k, 0, 0, sy * k, 0, 0);
-      const brillo = g.createRadialGradient(R, R, 0, R, R, R);
-      brillo.addColorStop(0, "rgba(255,244,205,1)");
-      brillo.addColorStop(0.07, "rgba(255,226,150,.95)");
-      brillo.addColorStop(0.16, "rgba(255,170,80,.55)");
-      brillo.addColorStop(0.45, "rgba(255,120,60,.16)");
-      brillo.addColorStop(1, "rgba(255,100,60,0)");
-      g.fillStyle = brillo;
-      g.fillRect(0, 0, R * 2, R * 2);
-      // rayos de luz
-      g.translate(R, R);
-      for (let i = 0; i < 9; i++) {
-        const ang = Math.PI * (0.62 + i * 0.095);
-        const a = ang - 0.03;
-        const b = ang + 0.03;
-        const rayo = g.createLinearGradient(0, 0, Math.cos(ang) * R, Math.sin(ang) * R);
-        rayo.addColorStop(0, "rgba(255,226,160,.20)");
-        rayo.addColorStop(1, "rgba(255,226,160,0)");
-        g.fillStyle = rayo;
-        g.beginPath();
-        g.moveTo(0, 0);
-        g.lineTo(Math.cos(a) * R * 1.05, Math.sin(a) * R * 1.05);
-        g.lineTo(Math.cos(b) * R * 1.05, Math.sin(b) * R * 1.05);
-        g.closePath();
-        g.fill();
-      }
+      g.fillStyle = "#ffd98a";
+      g.beginPath(); g.arc(R, R, 46, 0, Math.PI * 2); g.fill();
       return c;
     }
 
@@ -105,11 +82,6 @@
       const c = lienzo(R * 2 * sx * k, R * 2 * sy * k);
       const g = c.getContext("2d");
       g.setTransform(sx * k, 0, 0, sy * k, 0, 0);
-      const halo = g.createRadialGradient(R, R, 8, R, R, R);
-      halo.addColorStop(0, "rgba(220,230,255,.45)");
-      halo.addColorStop(1, "rgba(220,230,255,0)");
-      g.fillStyle = halo;
-      g.fillRect(0, 0, R * 2, R * 2);
       g.fillStyle = "#eef1ff";
       g.beginPath(); g.arc(R, R, 22, 0, Math.PI * 2); g.fill();
       g.fillStyle = "rgba(160,170,210,.35)";
@@ -134,40 +106,9 @@
         g.save();
         g.translate(x, y);
         g.scale(alargado, 0.42);
-        const grad = g.createRadialGradient(0, 0, 0, 0, 0, r);
-        grad.addColorStop(0, "rgba(255,230,205,.62)");
-        grad.addColorStop(0.6, "rgba(255,196,170,.22)");
-        grad.addColorStop(1, "rgba(255,180,160,0)");
-        g.fillStyle = grad;
-        g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#f3cdb4";
+        g.beginPath(); g.arc(0, 0, r * 0.8, 0, Math.PI * 2); g.fill();
         g.restore();
-      }
-      return c;
-    }
-
-    function construirBruma() {
-      const w = ancho * 1.3;
-      const h = 150;
-      const k = 0.5;
-      const c = lienzo(w * sx * k, h * sy * k);
-      const g = c.getContext("2d");
-      g.setTransform(sx * k, 0, 0, sy * k, 0, 0);
-      const banda = g.createLinearGradient(0, 0, 0, h);
-      banda.addColorStop(0, "rgba(255,206,170,0)");
-      banda.addColorStop(0.5, "rgba(255,206,170,.5)");
-      banda.addColorStop(1, "rgba(255,206,170,0)");
-      g.fillStyle = banda;
-      g.fillRect(0, 0, w, h);
-      const a = generador(77);
-      for (let i = 0; i < 14; i++) {
-        const x = a() * w;
-        const y = h * (0.3 + a() * 0.4);
-        const r = 40 + a() * 70;
-        const grad = g.createRadialGradient(x, y, 0, x, y, r);
-        grad.addColorStop(0, "rgba(255,214,184,.28)");
-        grad.addColorStop(1, "rgba(255,214,184,0)");
-        g.fillStyle = grad;
-        g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
       }
       return c;
     }
@@ -190,7 +131,7 @@
       g.fillRect(x - h * 0.03, yBase - h * 0.2, h * 0.06, h * 0.2);
     }
 
-    function cresta(g, base, amplitud, ondas, dentado, colorArriba, colorAbajo, hasta) {
+    function cresta(g, base, amplitud, ondas, dentado, colorArriba, hasta) {
       const a = generador(base * 13 + ondas.length);
       const ph = ondas.map(() => a() * 6.28);
       g.beginPath();
@@ -208,10 +149,7 @@
       }
       g.lineTo(ancho + MARGEN, hasta);
       g.closePath();
-      const grad = g.createLinearGradient(0, base - amplitud, 0, hasta);
-      grad.addColorStop(0, colorArriba);
-      grad.addColorStop(1, colorAbajo);
-      g.fillStyle = grad;
+      g.fillStyle = colorArriba;
       g.fill();
       return puntos;
     }
@@ -222,14 +160,14 @@
       g.setTransform(sx, 0, 0, sy, MARGEN * sx, MARGEN * sy);
       const a = generador(42);
 
-      // Montañas lejanas: azules y violetas, con la bruma del horizonte
-      const lejos = cresta(g, horizonte - 52, 62, [[0.011, 0.5], [0.027, 0.3], [0.061, 0.2]], true, "#4b5278", "#9a7d8e", horizonte + 30);
+      // Montañas lejanas: azules y violetas
+      const lejos = cresta(g, horizonte - 52, 62, [[0.011, 0.5], [0.027, 0.3], [0.061, 0.2]], true, "#5a5f82", horizonte + 30);
       // un toque de nieve/luz en las cumbres más altas
       g.fillStyle = "rgba(255,226,196,.22)";
       lejos.forEach(([x, y], i) => { if (i % 5 === 0 && y < horizonte - 96) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + 14, y + 22); g.lineTo(x - 14, y + 22); g.closePath(); g.fill(); } });
 
       // Colinas medias con pinos pequeños
-      const medio = cresta(g, horizonte + 8, 30, [[0.008, 0.6], [0.022, 0.4]], false, "#3a5550", "#274039", horizonte + 80);
+      const medio = cresta(g, horizonte + 8, 30, [[0.008, 0.6], [0.022, 0.4]], false, "#33504a", horizonte + 80);
       for (let i = 0; i < 90; i++) {
         const idx = Math.floor(a() * medio.length);
         const [x, y] = medio[idx];
@@ -237,7 +175,7 @@
       }
 
       // Bosque cercano: pinos más grandes y oscuros
-      const cerca = cresta(g, horizonte + 56, 22, [[0.012, 0.55], [0.031, 0.45]], false, "#243e2f", "#16281c", horizonte + 150);
+      const cerca = cresta(g, horizonte + 56, 22, [[0.012, 0.55], [0.031, 0.45]], false, "#203a2b", horizonte + 150);
       for (let i = 0; i < 56; i++) {
         const idx = Math.floor(a() * cerca.length);
         const [x, y] = cerca[idx];
@@ -246,10 +184,7 @@
 
       // Pradera del primer plano
       const suelo = alto * 0.8;
-      const pradera = g.createLinearGradient(0, suelo - 30, 0, alto + MARGEN);
-      pradera.addColorStop(0, "#33552b");
-      pradera.addColorStop(1, "#122410");
-      g.fillStyle = pradera;
+      g.fillStyle = "#264321";
       g.beginPath();
       g.moveTo(-MARGEN, suelo);
       for (let x = -MARGEN; x <= ancho + MARGEN; x += 12) g.lineTo(x, suelo - 8 * Math.sin(x * 0.01 + 1) - 5 * Math.sin(x * 0.027));
@@ -306,7 +241,6 @@
       paisaje = construirPaisaje();
       sol = construirSol();
       luna = construirLuna();
-      bruma = construirBruma();
       nubes = [
         { img: construirNube(320, 90, 1), y: 70, v: 7, x0: 80, a: 0.9 },
         { img: construirNube(260, 74, 2), y: 150, v: 11, x0: 520, a: 0.8 },
@@ -322,13 +256,18 @@
       if (!construido) return;
       const noche = suave(0.35, 1, fase);
 
-      // Cielo
-      const cielo = ctx.createLinearGradient(0, 0, 0, horizonte + 10);
-      cielo.addColorStop(0, color(CIELO_ARRIBA[0], CIELO_ARRIBA[1], fase));
-      cielo.addColorStop(0.55, color(CIELO_MEDIO[0], CIELO_MEDIO[1], fase));
-      cielo.addColorStop(1, color(CIELO_HORIZONTE[0], CIELO_HORIZONTE[1], fase));
-      ctx.fillStyle = cielo;
-      ctx.fillRect(-MARGEN, -MARGEN, ancho + MARGEN * 2, horizonte + 10 + MARGEN);
+      // Cielo: franjas lisas, de la más alta (arriba) a la del horizonte
+      const alturaCielo = horizonte + 10 + MARGEN;
+      for (let i = 0; i < FRANJAS; i++) {
+        const u = (i + 0.5) / FRANJAS;
+        const c = u < 0.55
+          ? [0, 1, 2].map(j => mezcla(mezcla(CIELO_ARRIBA[0][j], CIELO_ARRIBA[1][j], fase), mezcla(CIELO_MEDIO[0][j], CIELO_MEDIO[1][j], fase), u / 0.55))
+          : [0, 1, 2].map(j => mezcla(mezcla(CIELO_MEDIO[0][j], CIELO_MEDIO[1][j], fase), mezcla(CIELO_HORIZONTE[0][j], CIELO_HORIZONTE[1][j], fase), (u - 0.55) / 0.45));
+        ctx.fillStyle = `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+        const y0 = -MARGEN + Math.floor(alturaCielo * i / FRANJAS);
+        const y1 = -MARGEN + Math.ceil(alturaCielo * (i + 1) / FRANJAS);
+        ctx.fillRect(-MARGEN, y0, ancho + MARGEN * 2, y1 - y0);
+      }
       ctx.fillStyle = color(CIELO_HORIZONTE[0], CIELO_HORIZONTE[1], fase);
       ctx.fillRect(-MARGEN, horizonte, ancho + MARGEN * 2, alto - horizonte + MARGEN);
 
@@ -373,26 +312,6 @@
       // Paisaje
       ctx.drawImage(paisaje, -MARGEN, -MARGEN, ancho + MARGEN * 2, alto + MARGEN * 2);
 
-      // La luz del sol tiñe de cálido el paisaje cercano
-      if (solA > 0.01) {
-        ctx.globalAlpha = solA * 0.28;
-        ctx.drawImage(sol, 720 - 330, solY - 330, 660, 660);
-        ctx.globalAlpha = 1;
-      }
-
-      // Bruma entre las colinas
-      const bw = bruma.width / sx * 2;
-      const bh = bruma.height / sy * 2;
-      ctx.globalAlpha = 0.4 * (1 - noche * 0.5);
-      let bx = -((t * 6) % bw);
-      ctx.drawImage(bruma, bx, horizonte - 40, bw, bh);
-      ctx.drawImage(bruma, bx + bw, horizonte - 40, bw, bh);
-      ctx.globalAlpha = 0.28 * (1 - noche * 0.5);
-      bx = -(((t * 9) + bw * 0.5) % bw);
-      ctx.drawImage(bruma, bx, horizonte + 30, bw, bh * 0.8);
-      ctx.drawImage(bruma, bx + bw, horizonte + 30, bw, bh * 0.8);
-      ctx.globalAlpha = 1;
-
       // Aves cruzando el cielo (una cada 14 segundos)
       const ciclo = Math.floor(t / 14);
       const avance = (t % 14) / 9;
@@ -423,9 +342,6 @@
         const x = l.x + Math.sin(t * l.fx + l.px) * l.amp;
         const y = l.y + Math.sin(t * l.fy + l.py) * l.amp * 0.6;
         const p = (0.45 + 0.55 * Math.sin(t * 2.2 + l.f)) * brillo;
-        ctx.globalAlpha = p * 0.2;
-        ctx.fillStyle = "#e8ff9a";
-        ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = Math.min(1, p * 1.2);
         ctx.fillStyle = "#fbffd0";
         ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fill();
@@ -528,10 +444,7 @@
       const x = (ancho - w) / 2;
       const y = alto * (reglas.length ? 0.27 : 0.3) - h / 2;
       rectRedondo(ctx, x, y, w, h, 18);
-      const fondoPanel = ctx.createLinearGradient(0, y, 0, y + h);
-      fondoPanel.addColorStop(0, "rgba(46,34,20,.94)");
-      fondoPanel.addColorStop(1, "rgba(22,16,9,.94)");
-      ctx.fillStyle = fondoPanel;
+      ctx.fillStyle = "rgba(34,25,14,.95)";
       ctx.fill();
       ctx.lineWidth = 3;
       ctx.strokeStyle = "#d1ad55";

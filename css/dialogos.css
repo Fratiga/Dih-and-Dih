@@ -19,7 +19,6 @@
   border: 1px solid var(--border, #333330);
   border-top: 3px solid var(--accent, #cfcfba);
   border-radius: var(--radio-tarjeta, 0px);
-  box-shadow: 0 18px 50px var(--shadow, rgba(0, 0, 0, .5));
   transform: translateY(8px) scale(.98); transition: transform .14s ease;
 }
 .dlg-visible .dlg { transform: none; }
@@ -79,12 +78,16 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 .ritmo-tema .dlg-btn, .parranda-tema .dlg-btn { font-family: var(--font-heading), sans-serif; font-size: 1.05rem; letter-spacing: .1em; text-transform: uppercase; border-radius: 0; }
 .ritmo-tema .dlg-btn-pri, .parranda-tema .dlg-btn-pri { box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 60%, transparent); }
 .ritmo-tema .dlg-icono, .parranda-tema .dlg-icono { border-radius: 0; width: 34px; height: 34px; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+/* Parranda: lo mismo pero liso, sin brillo ni degradé */
+.parranda-tema .dlg { background: var(--panel); box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); }
+.parranda-tema .dlg-titulo { text-shadow: none; }
+.parranda-tema .dlg-btn-pri { box-shadow: none; }
 
 /* ===== Ajedrez: madera y pergamino ===== */
 .aj-tema .dlg {
   border: 3px double var(--accent-soft); border-top: 3px double var(--accent); border-radius: 6px;
-  background: linear-gradient(180deg, #3a2517, #2a1a10);
-  box-shadow: inset 0 0 0 1px rgba(255, 224, 138, .12), 0 18px 50px rgba(0, 0, 0, .65);
+  background: #322014;
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 138, .12);
 }
 .aj-tema .dlg-titulo { font-family: var(--font-heading), serif; color: #f6e7c4; letter-spacing: .06em; }
 .aj-tema .dlg-icono { border-radius: 4px; background: #8c5c36; color: #fff1cf; }
@@ -94,7 +97,7 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 /* ===== Arquería: bosque ===== */
 .arq-tema .dlg {
   border: 1px solid var(--border); border-top: 4px solid var(--accent); border-radius: 18px 4px 18px 4px;
-  background: linear-gradient(180deg, #1d3023, #16251b);
+  background: #1a2a1f;
 }
 .arq-tema .dlg-titulo { color: #f1e4b4; letter-spacing: .05em; }
 .arq-tema .dlg-icono { border-radius: 50% 0 50% 0; }
@@ -104,8 +107,8 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 /* ===== Duelo: arena de hierro ===== */
 .duelo-tema .dlg {
   border: 3px solid #4a3029; border-top: 6px solid var(--accent); border-radius: 0;
-  background: linear-gradient(180deg, #2a1712, #1a0d0a);
-  box-shadow: 0 0 0 1px #000, 0 18px 50px rgba(0, 0, 0, .7);
+  background: #22120e;
+  box-shadow: 0 0 0 1px #000;
 }
 .duelo-tema .dlg-titulo { font-size: 1.3rem; letter-spacing: .14em; text-transform: uppercase; color: #f5e3cd; }
 .duelo-tema .dlg-icono { border-radius: 0; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); width: 32px; height: 32px; }
@@ -116,7 +119,7 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 .cartas-tema .dlg {
   border: 1px solid var(--accent-soft); border-top: 1px solid var(--accent); border-radius: 10px;
   background: linear-gradient(180deg, var(--panel-2), var(--panel));
-  box-shadow: inset 0 0 0 5px var(--panel), inset 0 0 0 6px var(--accent-soft), 0 18px 50px rgba(0, 0, 0, .65);
+  box-shadow: inset 0 0 0 5px var(--panel), inset 0 0 0 6px var(--accent-soft);
   padding: 26px 28px 22px;
 }
 .cartas-tema .dlg-cab { flex-direction: column; text-align: center; gap: 6px; }
@@ -128,8 +131,8 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 /* ===== Hub de minijuegos: boleto de feria ===== */
 .hub-tema .dlg {
   border: 2px dashed var(--accent); border-top: 2px dashed var(--accent); border-radius: 10px;
-  background: linear-gradient(180deg, #36202b, #2a1520);
-  box-shadow: 0 0 0 5px #a3202f, 0 18px 50px rgba(0, 0, 0, .6);
+  background: #301a26;
+  box-shadow: 0 0 0 5px #a3202f;
 }
 .hub-tema .dlg-titulo { font-size: 1.35rem; letter-spacing: .05em; }
 .hub-tema .dlg-btn { border-radius: 999px; }
@@ -137,8 +140,7 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 /* ===== Sacrificio (Hooey): brasas ===== */
 .hooey-tema .dlg {
   border: 2px solid var(--accent-soft); border-top: 4px solid var(--accent); border-radius: 18px;
-  background: linear-gradient(180deg, #2e1b12, #22140e);
-  box-shadow: 0 0 30px rgba(255, 110, 30, .35), 0 18px 50px rgba(0, 0, 0, .6);
+  background: #281810;
 }
 .hooey-tema .dlg-btn { border-radius: 999px; }
 
@@ -149,14 +151,13 @@ textarea.dlg-campo { min-height: 90px; resize: vertical; }
 /* ===== Muerte súbita: púrpura ===== */
 .ms-pagina .dlg {
   --dlg-peligro: #ef4444;
-  background: var(--ms-panel, #14072a); color: var(--ms-texto, #ede9fe);
-  border: 1px solid var(--ms-linea, #4c1d95); border-top: 3px solid var(--ms-hot, #d946ef); border-radius: 6px;
-  box-shadow: 0 0 28px color-mix(in srgb, var(--ms-glow, #a855f7) 45%, transparent), 0 18px 50px rgba(0, 0, 0, .7);
+  background: var(--ms-panel, #1c1120); color: var(--ms-texto, #e8dfe9);
+  border: 1px solid var(--ms-linea, #4f3558); border-top: 3px solid var(--ms-hot, #b9809f); border-radius: 6px;
 }
-.ms-pagina .dlg-titulo { color: var(--ms-hot, #d946ef); }
-.ms-pagina .dlg-icono, .ms-pagina .dlg-btn-pri { background: var(--ms-glow, #a855f7); border-color: var(--ms-glow, #a855f7); color: #fff; }
-.ms-pagina .dlg-campo { background: var(--ms-fondo, #0a0313); border-color: var(--ms-linea, #4c1d95); color: var(--ms-texto, #ede9fe); }
-.ms-pagina .dlg-btn { border-color: var(--ms-linea, #4c1d95); }
+.ms-pagina .dlg-titulo { color: var(--ms-hot, #b9809f); }
+.ms-pagina .dlg-icono, .ms-pagina .dlg-btn-pri { background: var(--ms-glow, #8d6a9c); border-color: var(--ms-glow, #8d6a9c); color: #fff; }
+.ms-pagina .dlg-campo { background: var(--ms-fondo, #120a14); border-color: var(--ms-linea, #4f3558); color: var(--ms-texto, #e8dfe9); }
+.ms-pagina .dlg-btn { border-color: var(--ms-linea, #4f3558); }
 .ms-pagina .dlg-peligro .dlg-icono, .ms-pagina .dlg-peligro .dlg-btn-pri { background: var(--dlg-peligro); border-color: var(--dlg-peligro); }
 
 /* Las acciones que borran siguen viéndose en rojo en todos los estilos */

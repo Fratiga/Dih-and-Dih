@@ -740,16 +740,13 @@
     g.scale(2, 2);
     g.translate(40, 40);
     g.lineJoin = "round";
-    // Cuerpo oscuro con el brillo del color alrededor
-    g.shadowColor = color;
-    g.shadowBlur = 12;
+    // Cuerpo oscuro con el contorno del color
     trazarEn(g, carril, 0, 0, 21);
     g.fillStyle = "#12080a";
     g.fill();
     g.lineWidth = 4.5;
     g.strokeStyle = color;
     g.stroke();
-    g.shadowBlur = 0;
     // Filo claro por dentro y centro encendido
     trazarEn(g, carril, 0, 0, 15.5);
     g.lineWidth = 1.2;
@@ -1071,18 +1068,13 @@
   }
 
   /* Rayos de luz de escenario: cuatro haces que bajan del techo y se balancean, más fuertes con cada
-     pulso (y cambiando de color durante la fiebre). Los degradados se crean una sola vez. */
+     pulso (y cambiando de color durante la fiebre). Los colores se calculan una sola vez. */
   const RAYOS = [{ x: 90, ang: 0.35, col: 0 }, { x: 330, ang: -0.2, col: 1 }, { x: 630, ang: 0.2, col: 2 }, { x: 870, ang: -0.35, col: 3 }];
   let degradados = null;
   function dibujarRayos(ahora, pulso) {
     if (ajustes.rayos === false) return;
     if (!degradados) {
-      degradados = CARRILES.map(c => {
-        const g = ctxC.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, `rgba(${c.rgb}, 0.55)`);
-        g.addColorStop(1, `rgba(${c.rgb}, 0)`);
-        return g;
-      });
+      degradados = CARRILES.map(c => `rgba(${c.rgb}, 0.3)`);
     }
     const fuerza = (0.25 + pulso * 0.55) * (fiebre ? 1.5 : 1) * (estado === "menu" ? 0.5 : 1);
     ctxC.globalAlpha = Math.min(0.55, fuerza * 0.5);
@@ -1747,7 +1739,7 @@
         chips("cuerpo", "avatar", Object.entries(CUERPOS).map(([k, v]) => [k, k, v[0]]), a.cuerpo, "Color") +
         chips("accesorio", "avatar", Object.entries(ACCESORIOS), a.accesorio, "Accesorio") +
         `<p class="rt-etiqueta rt-pers-titulo">La multitud</p>` +
-        chips("tono", "multi", [["rojo", "Rojo", "#8a3a42"], ["azul", "Azul", "#3a5a8a"], ["verde", "Verde", "#3a7a50"], ["violeta", "Violeta", "#6a4a9a"], ["mixto", "Mezcla", "conic-gradient(#8a3a42, #3a5a8a, #3a7a50, #6a4a9a, #8a3a42)"]], m.tono, "Color") +
+        chips("tono", "multi", [["rojo", "Rojo", "#8a3a42"], ["azul", "Azul", "#3a5a8a"], ["verde", "Verde", "#3a7a50"], ["violeta", "Violeta", "#6a4a9a"], ["mixto", "Mezcla", "conic-gradient(#8a3a42 0 25%, #3a5a8a 0 50%, #3a7a50 0 75%, #6a4a9a 0)"]], m.tono, "Color") +
         chips("cantidad", "multi", [[1, "Pocos"], [2, "Normal"], [3, "Muchos"]], m.cantidad, "Cuántos") +
         chips("luces", "multi", [["encendedores", "Encendedores"], ["varitas", "Varitas de colores"], ["ninguna", "Sin luces"]], m.luces, "Luces con combo alto") +
         `<p class="rt-ayuda">Con «Pocos» el juego va más ligero en equipos lentos. Para quitar a la multitud o al personaje del todo, usa los interruptores de los ajustes.</p>`;
@@ -1758,9 +1750,6 @@
       const ahora = ahoraS();
       gp.clearRect(0, 0, 320, 190);
       gp.fillStyle = "#0a0607"; gp.fillRect(0, 0, 320, 190);
-      const g = gp.createLinearGradient(0, 0, 0, 190);
-      g.addColorStop(0, "rgba(255, 59, 59, 0.18)"); g.addColorStop(1, "rgba(255, 59, 59, 0)");
-      gp.fillStyle = g; gp.fillRect(0, 0, 320, 190);
       const pulso = Math.pow(Math.max(0, 1 - ((ahora % 0.6) / 0.4)), 2);
       // Un pedazo de la multitud: los fans de la izquierda, reubicados en la vista previa
       const vista = fans.filter(f => f.x < 282);

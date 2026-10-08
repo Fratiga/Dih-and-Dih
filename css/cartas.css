@@ -49,7 +49,6 @@
 .carta {
   position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; padding: 0; border: 0; background: none;
   color: #f4f1e6; text-align: left; cursor: pointer; font: inherit; transition: transform .15s;
-  filter: drop-shadow(0 6px 10px var(--shadow));
 }
 .carta:hover { transform: translateY(-4px); }
 /* Todo el diseño se mide en cqw (porcentaje del ancho de la carta) para que escale igual en el álbum, el detalle y el editor */
@@ -58,40 +57,40 @@
   position: absolute; inset: 0; overflow: hidden; border-radius: 5cqw; display: grid; place-items: center;
   --marco: color-mix(in srgb, var(--rar, #9c8b62) 35%, #a8946a);
   box-shadow: 0 0 0 1cqw var(--marco), 0 0 0 1.7cqw #17140d;
-  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--af, var(--muted)) 55%, #000) 0%, #0e0f12 85%);
+  background: color-mix(in srgb, var(--af, var(--muted)) 38%, #0e0f12);
 }
 .carta-arte b { font-family: var(--font-heading), sans-serif; font-size: 34cqw; letter-spacing: .04em; color: color-mix(in srgb, var(--af, var(--muted)) 70%, #fff); opacity: .8; margin-top: -12cqw; }
 
 /* Coste: orbe azul arriba a la izquierda */
 .carta-coste {
   position: absolute; top: -3.5cqw; left: -3.5cqw; width: 19cqw; height: 19cqw; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 35% 28%, #5aa9f5 0%, #2362b8 58%, #0d2d6b 100%);
-  border: 1cqw solid #d8ceb0; box-shadow: 0 1cqw 2cqw rgba(0,0,0,.55), inset 0 0 0 .5cqw rgba(8,20,50,.6);
-  color: #fff; font-family: var(--font-heading), sans-serif; font-weight: 700; font-size: 10.5cqw; line-height: 1; text-shadow: 0 .4cqw .8cqw rgba(0,0,0,.6);
+  background: #2362b8;
+  border: 1cqw solid #d8ceb0; box-shadow: inset 0 0 0 .5cqw rgba(8,20,50,.6);
+  color: #fff; font-family: var(--font-heading), sans-serif; font-weight: 700; font-size: 10.5cqw; line-height: 1; text-shadow: 0 .4cqw 0 rgba(0,0,0,.6);
 }
 
 /* Afinidades: hexágonos arriba a la derecha */
 .carta-afinidades { position: absolute; top: -2.5cqw; right: -2.5cqw; display: flex; flex-direction: column; gap: 1.5cqw; align-items: center; }
 .carta-af-icono {
   position: relative; width: 15cqw; height: 17.4cqw; display: grid; place-items: center; color: var(--af, #ccc);
-  background: linear-gradient(160deg, #e5d6a6, #8b7740); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: #b9a56b; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
 .carta-af-icono::before { content: ""; position: absolute; inset: 1.1cqw; background: #101727; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
 .carta-af-icono svg { position: relative; width: 8cqw; height: 8cqw; fill: currentColor; }
 
-/* Nombre y reglas abajo, sobre un degradado oscuro */
+/* Nombre y reglas abajo, sobre una placa oscura */
 .carta-texto {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 22cqw 6.5cqw 13cqw; text-align: center;
-  background: linear-gradient(to top, rgba(7,8,11,.96) 0%, rgba(7,8,11,.9) 55%, rgba(7,8,11,0) 100%);
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 7cqw 6.5cqw 13cqw; text-align: center;
+  background: rgba(7,8,11,.92); border-top: .7cqw solid var(--rar, #9c8b62);
 }
 .carta-nombre {
   margin: 0; font-family: 'Cinzel', 'Marcellus', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
-  font-size: 7.4cqw; line-height: 1.15; color: #f3ecd6; text-shadow: 0 .5cqw 1.2cqw #000;
+  font-size: 7.4cqw; line-height: 1.15; color: #f3ecd6; text-shadow: 0 .5cqw 0 #000;
 }
 .carta-nombre.largo { font-size: 6.2cqw; letter-spacing: .06em; }
 .carta-nombre.muylargo { font-size: 5.2cqw; letter-spacing: .03em; }
 .carta-nombre small { display: block; margin-top: .8cqw; font-family: var(--font-body, inherit), sans-serif; font-size: 4.2cqw; font-weight: 400; font-style: italic; letter-spacing: .04em; text-transform: none; color: #cfc6a8; }
-.carta-habilidad { margin: 2.2cqw 0 0; font-size: 5.3cqw; line-height: 1.28; color: #f4f1e6; text-shadow: 0 .4cqw 1cqw #000; }
+.carta-habilidad { margin: 2.2cqw 0 0; font-size: 5.3cqw; line-height: 1.28; color: #f4f1e6; text-shadow: 0 .4cqw 0 #000; }
 .carta-habilidad .kw { color: #f2c94c; font-weight: 700; }
 .carta-numero { display: block; margin-top: 2cqw; font-size: 4.6cqw; font-weight: 700; letter-spacing: .08em; color: var(--rar); }
 
@@ -99,19 +98,19 @@
 .carta-stat {
   position: absolute; bottom: -3.5cqw; width: 20cqw; height: 19cqw; display: grid; place-items: center; z-index: 1;
   font-family: var(--font-heading), sans-serif; font-weight: 700; font-size: 11.5cqw; line-height: 1; color: #fff;
-  text-shadow: 0 .5cqw 1cqw rgba(0,0,0,.65);
+  text-shadow: 0 .5cqw 0 rgba(0,0,0,.65);
 }
-.carta-stat::before { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, #ecdfb4, #8b7740); clip-path: var(--forma); z-index: -2; }
+.carta-stat::before { content: ""; position: absolute; inset: 0; background: #b9a56b; clip-path: var(--forma); z-index: -2; }
 .carta-stat::after { content: ""; position: absolute; inset: 1cqw; background: var(--relleno); clip-path: var(--forma); z-index: -1; }
-.carta-stat.atq { left: -3.5cqw; --forma: polygon(0 16%, 100% 0, 100% 100%, 0 100%); --relleno: linear-gradient(180deg, #f7a53a, #c25a0b); }
-.carta-stat.pv { right: -3.5cqw; --forma: polygon(0 0, 100% 16%, 100% 100%, 0 100%); --relleno: linear-gradient(180deg, #e8404a, #8d101a); }
+.carta-stat.atq { left: -3.5cqw; --forma: polygon(0 16%, 100% 0, 100% 100%, 0 100%); --relleno: #d9822b; }
+.carta-stat.pv { right: -3.5cqw; --forma: polygon(0 0, 100% 16%, 100% 100%, 0 100%); --relleno: #c23a43; }
 
 /* Gema de rareza, abajo al centro */
 .carta-gema { position: absolute; left: 50%; bottom: -4.5cqw; width: 10cqw; height: 9cqw; transform: translateX(-50%); z-index: 1; }
-.carta-gema::before { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, #ecdfb4, #8b7740); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.carta-gema::before { content: ""; position: absolute; inset: 0; background: #b9a56b; clip-path: polygon(0 0, 100% 0, 50% 100%); }
 .carta-gema::after { content: ""; position: absolute; inset: 1.1cqw 1.3cqw 1.5cqw; background: var(--rar); clip-path: polygon(0 0, 100% 0, 50% 100%); }
 
-.carta-copias { position: absolute; top: -3.5cqw; left: 50%; transform: translateX(-50%); min-width: 11cqw; height: 9cqw; padding: 0 3cqw; border-radius: 5cqw; background: var(--rar); color: #151515; font-weight: 700; font-size: 6cqw; display: grid; place-items: center; font-family: var(--font-heading), sans-serif; z-index: 2; box-shadow: 0 .5cqw 1.5cqw rgba(0,0,0,.5); }
+.carta-copias { position: absolute; top: -3.5cqw; left: 50%; transform: translateX(-50%); min-width: 11cqw; height: 9cqw; padding: 0 3cqw; border-radius: 5cqw; background: var(--rar); color: #151515; font-weight: 700; font-size: 6cqw; display: grid; place-items: center; font-family: var(--font-heading), sans-serif; z-index: 2; }
 .carta-borrador { position: absolute; top: 18cqw; left: 1cqw; padding: .6cqw 3cqw; border-radius: 4cqw; background: #8a6d2a; color: #fff6d8; font-size: 4cqw; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; z-index: 2; }
 
 /* Carta que todavía no se tiene: silueta con el tipo y la rareza */
@@ -123,13 +122,6 @@
   display: block; position: absolute; left: 0; right: 0; bottom: 7cqw; text-align: center; font-size: 4.6cqw; text-transform: uppercase; letter-spacing: .12em; color: #44474a;
 }
 .carta.sin-tener .carta-gema { filter: grayscale(.6) brightness(.6); }
-.carta.carta-rareza-limitada:not(.sin-tener) .carta-arte::after, .carta.carta-rareza-legendaria:not(.sin-tener) .carta-arte::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 50%, transparent 65%);
-  background-size: 250% 100%; animation: carta-brillo 5s linear infinite;
-}
-@keyframes carta-brillo { from { background-position: 150% 0; } to { background-position: -100% 0; } }
-@media (prefers-reduced-motion: reduce) { .carta-arte::after { animation: none !important; } }
 
 /* Detalle */
 .carta-detalle { max-width: 760px; width: calc(100% - 32px); padding: 22px; border: 1px solid var(--border); background: var(--panel); color: var(--text); }

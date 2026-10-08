@@ -88,10 +88,10 @@
     }
   };
 
-  const COLORES = { guerrero: "#ff9a2e", barbaro: "#ff4a3a", picaro: "#4d9dff", mago: "#b565ff", clerigo: "#ffe23d", paladin: "#f2f6ff", explorador: "#3fe673", ficha: "#38d6ff" };
+  const COLORES = { guerrero: "#d9803f", barbaro: "#c4503f", picaro: "#5f8fc9", mago: "#9a7bb8", clerigo: "#d9c35a", paladin: "#e6ebf2", explorador: "#6fb55a", ficha: "#6fa8bd" };
   // las copias de fichas y los enemigos reciben un color vivo según su identidad, para distinguirlos en el tablero
-  const COLORES_FICHA = ["#38d6ff", "#ff7ad9", "#a6ff3d", "#ffb02e", "#7a8bff", "#2ee6c5"];
-  const COLORES_ENEMIGO = ["#ff3d6e", "#ff7a2e", "#d94dff", "#ff5252", "#ffc02e", "#c2ff2e"];
+  const COLORES_FICHA = ["#6fa8bd", "#c88aa8", "#8fb35a", "#d9a53a", "#7f8fd0", "#5fb3a0"];
+  const COLORES_ENEMIGO = ["#c8506a", "#d98040", "#a56fba", "#c4574f", "#d9b34a", "#a7bf4a"];
   const colorPorId = (lista, id) => { let h = 0; String(id).split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) | 0; }); return lista[Math.abs(h) % lista.length]; };
 
   /* --- Registros (lo que se guarda) -------------------------------------- */

@@ -28,19 +28,19 @@
 .arq-rival {
   display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 3px 12px; align-items: center; text-align: left; cursor: pointer;
   padding: 10px 14px; font: inherit; color: var(--text); opacity: .72;
-  background: linear-gradient(180deg, #1b2c21, #15231a); border: 1px solid var(--border);
+  background: #18281e; border: 1px solid var(--border);
   transition: border-color .15s, opacity .15s, box-shadow .15s, background .15s;
 }
 .arq-rival:hover { opacity: 1; border-color: var(--rc, var(--accent)); }
 .arq-rival.activo {
   opacity: 1; border-color: var(--rc, var(--accent));
-  background: linear-gradient(180deg, color-mix(in srgb, var(--rc, #d1ad55) 26%, #1f3a29), color-mix(in srgb, var(--rc, #d1ad55) 10%, #14231a));
-  box-shadow: inset 0 0 0 1px var(--rc, var(--accent)), 0 6px 18px rgba(0, 0, 0, .4);
+  background: color-mix(in srgb, var(--rc, #d1ad55) 18%, #182a1e);
+  box-shadow: inset 0 0 0 1px var(--rc, var(--accent));
 }
 .arq-rival-icono {
   grid-row: 1 / span 2; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
   font: 700 1.3rem var(--font-heading), serif; color: #14201a; background: var(--rc, var(--accent));
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, .35), 0 0 14px color-mix(in srgb, var(--rc, #d1ad55) 50%, transparent);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .35);
 }
 .arq-rival-cab { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .arq-rival strong { font: 600 1.05rem var(--font-heading), serif; letter-spacing: .03em; }
@@ -65,9 +65,9 @@
 /* --- Paneles de la columna derecha ------------------------------------------------ */
 .arq-panel {
   position: relative; padding: 20px 22px 22px;
-  background: linear-gradient(180deg, rgba(31, 52, 38, .94), rgba(18, 32, 23, .94));
+  background: rgba(24,42,30,0.94);
   border: 1px solid #3a5a3f; border-top: 3px solid var(--accent);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(0, 0, 0, .25);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .25);
 }
 .arq-panel h2 { margin: 0 0 14px; font: 600 1.15rem var(--font-heading), serif; letter-spacing: .06em; color: #f1e4b4; display: flex; align-items: center; gap: 10px; }
 .arq-panel h2::before { content: "➳"; color: var(--accent); font-size: 1.1rem; }
@@ -91,9 +91,9 @@
 .arq-podio-valor { font: 700 1.25rem var(--font-heading), serif; color: #fff2cb; margin: 2px 0 6px; font-variant-numeric: tabular-nums; }
 .arq-podio-sub { font-size: .66rem; color: var(--muted); margin-top: -4px; margin-bottom: 6px; }
 .arq-peana { width: 100%; display: grid; place-items: center; font: 700 1.5rem var(--font-heading), serif; color: rgba(20, 24, 16, .85); border: 1px solid rgba(0, 0, 0, .35); border-bottom: 0; }
-.puesto-1 .arq-peana { height: 78px; background: linear-gradient(180deg, #f3d57b, #b8923c); }
-.puesto-2 .arq-peana { height: 56px; background: linear-gradient(180deg, #d9dde0, #8f979c); }
-.puesto-3 .arq-peana { height: 42px; background: linear-gradient(180deg, #d89a62, #8f5b32); }
+.puesto-1 .arq-peana { height: 78px; background: #d6b45c; }
+.puesto-2 .arq-peana { height: 56px; background: #b4babe; }
+.puesto-3 .arq-peana { height: 42px; background: #b47a4a; }
 .arq-podio-col.vacio .arq-podio-nombre, .arq-podio-col.vacio .arq-podio-valor { opacity: .35; }
 .arq-podio-col.yo .arq-podio-nombre { color: var(--accent); font-weight: 700; }
 
@@ -127,37 +127,34 @@
 }
 
 /* --- Fondo de la página: un valle de bosque al anochecer --------------------------------
-   Es una capa fija (no se mueve ni se anima) hecha con degradados y tres tiras de siluetas
-   que se repiten, así que no cuesta nada al desplazar la página. */
+   Es una capa fija (no se mueve ni se anima) hecha con un color liso, unas luciérnagas y tres
+   tiras de siluetas que se repiten, así que no cuesta nada al desplazar la página. */
 body.arq-tema::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background-image:
-    radial-gradient(ellipse at 50% 34%, transparent 38%, rgba(2, 6, 10, .6) 100%),
-    radial-gradient(circle at 9% 78%, rgba(238, 255, 160, .75) 0 2px, rgba(238, 255, 160, .18) 3px, transparent 7px),
-    radial-gradient(circle at 21% 88%, rgba(238, 255, 160, .6) 0 1.6px, rgba(238, 255, 160, .15) 3px, transparent 6px),
-    radial-gradient(circle at 33% 72%, rgba(238, 255, 160, .55) 0 1.6px, rgba(238, 255, 160, .12) 3px, transparent 6px),
-    radial-gradient(circle at 64% 84%, rgba(238, 255, 160, .7) 0 2px, rgba(238, 255, 160, .16) 3px, transparent 7px),
-    radial-gradient(circle at 78% 70%, rgba(238, 255, 160, .5) 0 1.6px, rgba(238, 255, 160, .12) 3px, transparent 6px),
-    radial-gradient(circle at 91% 86%, rgba(238, 255, 160, .65) 0 2px, rgba(238, 255, 160, .15) 3px, transparent 7px),
+    radial-gradient(circle at 9% 78%, rgba(238, 255, 160, .75) 0 2px, transparent 2.6px),
+    radial-gradient(circle at 21% 88%, rgba(238, 255, 160, .6) 0 1.6px, transparent 2.6px),
+    radial-gradient(circle at 33% 72%, rgba(238, 255, 160, .55) 0 1.6px, transparent 2.6px),
+    radial-gradient(circle at 64% 84%, rgba(238, 255, 160, .7) 0 2px, transparent 2.6px),
+    radial-gradient(circle at 78% 70%, rgba(238, 255, 160, .5) 0 1.6px, transparent 2.6px),
+    radial-gradient(circle at 91% 86%, rgba(238, 255, 160, .65) 0 2px, transparent 2.6px),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 240' preserveAspectRatio='none'%3E%3Cpath fill='%2308150f' fill-opacity='1' d='M11 117L23 186L-1 186ZM11 150L31 203L-10 203ZM11 183L40 220L-18 220ZM7 215h7v25h-7ZM731 117L743 186L719 186ZM731 150L751 203L710 203ZM731 183L760 220L702 220ZM727 215h7v25h-7ZM30 69L47 165L14 165ZM30 115L58 189L2 189ZM30 161L70 213L-10 213ZM25 206h10v34h-10ZM750 69L767 165L734 165ZM750 115L778 189L722 189ZM750 161L790 213L710 213ZM745 206h10v34h-10ZM43 72L59 166L27 166ZM43 117L71 189L15 189ZM43 163L82 213L3 213ZM38 206h10v34h-10ZM763 72L779 166L747 166ZM763 117L791 189L735 189ZM763 163L802 213L723 213ZM758 206h10v34h-10ZM65 27L86 146L45 146ZM65 85L101 176L30 176ZM65 142L115 206L15 206ZM59 197h13v43h-13ZM68 63L85 162L51 162ZM68 111L97 187L38 187ZM68 159L109 212L26 212ZM62 205h11v35h-11ZM113 50L132 156L95 156ZM113 101L145 183L82 183ZM113 152L158 210L69 210ZM108 202h11v38h-11ZM133 65L150 163L116 163ZM133 112L162 188L104 188ZM133 160L174 212L92 212ZM128 205h10v35h-10ZM137 47L156 155L118 155ZM137 99L169 182L105 182ZM137 151L182 209L92 209ZM131 201h12v39h-12ZM174 70L191 165L158 165ZM174 116L202 189L146 189ZM174 162L214 213L134 213ZM169 206h10v34h-10ZM218 89L233 174L204 174ZM218 130L243 195L194 195ZM218 171L254 216L183 216ZM214 210h9v30h-9ZM326 10L348 139L304 139ZM326 72L364 171L288 171ZM326 134L380 203L272 203ZM319 194h14v46h-14ZM335 10L357 139L313 139ZM335 72L373 171L297 171ZM335 134L389 203L281 203ZM328 194h14v46h-14ZM366 28L386 147L345 147ZM366 85L401 176L330 176ZM366 142L415 206L316 206ZM359 198h13v42h-13ZM369 42L388 153L349 153ZM369 96L401 181L336 181ZM369 149L415 208L322 208ZM363 200h12v40h-12ZM380 85L395 172L365 172ZM380 127L406 194L355 194ZM380 169L417 215L344 215ZM376 209h9v31h-9ZM403 95L417 176L389 176ZM403 134L427 196L379 196ZM403 173L437 217L369 217ZM399 211h9v29h-9ZM423 88L438 173L408 173ZM423 129L448 194L398 194ZM423 170L459 216L387 216ZM418 210h9v30h-9ZM443 112L456 184L431 184ZM443 147L464 202L422 202ZM443 181L473 220L413 220ZM439 214h8v26h-8ZM454 36L473 150L434 150ZM454 91L487 179L420 179ZM454 146L501 207L406 207ZM447 199h12v41h-12ZM471 76L487 168L455 168ZM471 120L498 191L444 191ZM471 165L509 214L432 214ZM466 207h10v33h-10ZM499 27L520 146L479 146ZM499 84L535 176L464 176ZM499 142L549 206L449 206ZM493 197h13v43h-13ZM571 77L587 168L555 168ZM571 121L598 191L544 191ZM571 165L609 214L533 214ZM566 207h10v33h-10ZM583 15L605 141L561 141ZM583 75L620 172L546 172ZM583 136L636 204L530 204ZM576 195h14v45h-14ZM-55 27L-34 146L-75 146ZM-55 84L-19 176L-90 176ZM-55 142L-5 206L-105 206ZM-61 197h13v43h-13ZM665 27L686 146L645 146ZM665 84L701 176L630 176ZM665 142L715 206L615 206ZM659 197h13v43h-13ZM-25 120L-14 187L-37 187ZM-25 152L-5 204L-45 204ZM-25 185L3 221L-54 221ZM-29 216h7v24h-7ZM695 120L706 187L683 187ZM695 152L715 204L675 204ZM695 185L723 221L666 221ZM691 216h7v24h-7ZM-13 97L1 177L-27 177ZM-13 136L11 197L-37 197ZM-13 174L21 217L-46 217ZM-17 211h9v29h-9ZM707 97L721 177L693 177ZM707 136L731 197L683 197ZM707 174L741 217L674 217ZM703 211h9v29h-9Z'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 240' preserveAspectRatio='none'%3E%3Cpath fill='%23132338' fill-opacity='0.92' d='M34 145L43 198L25 198ZM34 171L49 212L18 212ZM34 196L56 225L12 225ZM31 221h6v19h-6ZM934 145L943 198L925 198ZM934 171L949 212L918 212ZM934 196L956 225L912 225ZM931 221h6v19h-6ZM42 134L52 193L32 193ZM42 162L60 208L24 208ZM42 191L67 223L17 223ZM39 219h6v21h-6ZM942 134L952 193L932 193ZM942 162L960 208L924 208ZM942 191L967 223L917 223ZM939 219h6v21h-6ZM52 96L66 176L38 176ZM52 135L76 197L28 197ZM52 174L86 217L18 217ZM48 211h9v29h-9ZM952 96L966 176L938 176ZM952 135L976 197L928 197ZM952 174L986 217L918 217ZM948 211h9v29h-9ZM57 116L69 185L45 185ZM57 149L77 203L36 203ZM57 183L86 220L27 220ZM53 215h7v25h-7ZM957 116L969 185L945 185ZM957 149L977 203L936 203ZM957 183L986 220L927 220ZM953 215h7v25h-7ZM63 125L74 189L52 189ZM63 156L82 205L44 205ZM63 187L90 222L36 222ZM59 217h7v23h-7ZM65 103L78 180L52 180ZM65 140L88 199L43 199ZM65 177L97 218L33 218ZM61 213h8v27h-8ZM82 114L94 184L69 184ZM82 148L103 202L61 202ZM82 182L111 220L52 220ZM78 215h8v25h-8ZM106 126L117 190L95 190ZM106 157L125 206L87 206ZM106 188L133 222L79 222ZM103 217h7v23h-7ZM111 86L126 172L97 172ZM111 128L137 194L86 194ZM111 169L147 215L75 215ZM107 209h9v31h-9ZM130 94L144 176L116 176ZM130 133L154 196L106 196ZM130 173L164 217L96 217ZM125 211h9v29h-9ZM136 130L146 192L125 192ZM136 160L154 207L118 207ZM136 190L161 222L110 222ZM132 218h7v22h-7ZM163 104L176 180L150 180ZM163 141L185 199L140 199ZM163 177L195 218L131 218ZM159 213h8v27h-8ZM201 108L214 182L188 182ZM201 144L223 200L179 200ZM201 179L232 219L170 219ZM197 214h8v26h-8ZM261 80L276 170L245 170ZM261 123L287 192L234 192ZM261 166L298 214L223 214ZM256 208h10v32h-10ZM278 92L292 175L263 175ZM278 132L302 195L253 195ZM278 172L312 216L243 216ZM273 210h9v30h-9ZM291 127L302 190L281 190ZM291 157L310 206L273 206ZM291 188L318 222L265 222ZM288 217h7v23h-7ZM329 72L345 166L313 166ZM329 117L357 189L301 189ZM329 163L369 213L290 213ZM324 206h10v34h-10ZM335 141L345 196L326 196ZM335 167L352 210L319 210ZM335 194L358 224L312 224ZM332 220h6v20h-6ZM357 117L369 186L345 186ZM357 150L377 203L337 203ZM357 183L386 220L328 220ZM353 215h7v25h-7ZM382 89L397 174L368 174ZM382 130L407 195L357 195ZM382 171L417 216L347 216ZM378 210h9v30h-9ZM390 138L400 195L380 195ZM390 165L407 209L373 209ZM390 193L414 224L366 224ZM387 220h6v20h-6ZM457 111L469 183L444 183ZM457 146L478 201L435 201ZM457 181L487 219L426 219ZM453 214h8v26h-8ZM482 147L491 199L473 199ZM482 172L498 212L467 212ZM482 197L504 225L460 225ZM479 221h6v19h-6ZM493 97L507 177L479 177ZM493 135L517 197L469 197ZM493 174L527 217L459 217ZM489 211h9v29h-9ZM519 89L534 173L505 173ZM519 130L544 195L494 195ZM519 170L555 216L484 216ZM515 210h9v30h-9ZM523 104L537 180L510 180ZM523 141L546 199L501 199ZM523 178L555 218L492 218ZM519 213h8v27h-8ZM565 80L580 170L549 170ZM565 123L591 192L538 192ZM565 166L602 214L527 214ZM560 208h10v32h-10ZM575 125L586 189L564 189ZM575 156L594 205L556 205ZM575 187L602 222L548 222ZM572 217h7v23h-7ZM586 94L600 176L572 176ZM586 134L610 196L562 196ZM586 173L620 217L552 217ZM581 211h9v29h-9ZM735 102L748 179L721 179ZM735 140L757 199L712 199ZM735 177L767 218L702 218ZM730 212h8v28h-8ZM744 104L757 180L731 180ZM744 140L767 199L722 199ZM744 177L776 218L712 218ZM740 213h8v27h-8ZM773 114L785 184L760 184ZM773 148L794 202L752 202ZM773 182L802 220L743 220ZM769 215h8v25h-8ZM-47 83L-32 171L-62 171ZM-47 125L-21 193L-73 193ZM-47 168L-10 215L-84 215ZM-52 209h9v31h-9ZM853 83L868 171L838 171ZM853 125L879 193L827 193ZM853 168L890 215L816 215ZM848 209h9v31h-9ZM-21 74L-5 167L-37 167ZM-21 119L6 190L-49 190ZM-21 164L17 214L-60 214ZM-26 207h10v33h-10ZM879 74L895 167L863 167ZM879 119L906 190L851 190ZM879 164L917 214L840 214ZM874 207h10v33h-10Z'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 320' preserveAspectRatio='none'%3E%3Cpath fill='%23182a47' d='M0 320L0 11L14 69L28 113L42 105L56 134L70 201L84 203L98 154L112 118L126 175L140 242L154 257L168 263L182 294L196 264L210 261L224 160L238 124L252 152L266 204L280 205L294 247L308 255L322 173L336 200L350 243L364 206L378 132L392 97L406 76L420 38L434 -36L448 -33L462 50L476 157L490 189L504 203L518 261L532 280L546 281L560 228L574 246L588 260L602 204L616 229L630 234L644 221L658 233L672 266L686 203L700 235L714 261L728 205L742 197L756 134L770 76L784 55L798 115L812 164L826 109L840 59L854 59L868 94L882 86L896 86L910 160L924 278L938 188L952 185L966 187L980 165L994 161L1008 213L1022 242L1036 202L1050 120L1064 118L1078 171L1092 208L1106 191L1120 239L1134 281L1148 272L1162 211L1176 127L1190 97L1204 109L1218 87L1232 71L1246 130L1260 218L1274 235L1288 182L1302 164L1316 231L1330 288L1344 272L1358 230L1372 117L1386 19L1400 11L1400 320Z'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse 36% 22% at 78% 66%, rgba(255, 150, 80, .42), transparent 70%),
-    radial-gradient(circle at 74% 8%, rgba(222, 232, 255, .9) 0 15px, rgba(190, 205, 255, .22) 16px, transparent 90px),
-    linear-gradient(180deg, #07101e 0%, #10243b 34%, #2b3452 58%, #5a4150 78%, #8a5a48 100%);
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat-x, repeat-x, repeat-x, no-repeat, no-repeat, no-repeat;
-  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 100%, 60px calc(100% - 46px), 0 calc(100% - 96px), 0 0, 0 0, 0 0;
-  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 720px 240px, 900px 240px, 1400px 320px, 100% 100%, 100% 100%, 100% 100%;
+    radial-gradient(circle at 74% 8%, rgba(222, 232, 255, .9) 0 15px, transparent 15.8px);
+  background-color: #0e1d30;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat-x, repeat-x, repeat-x, no-repeat;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 100%, 60px calc(100% - 46px), 0 calc(100% - 96px), 0 0;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 720px 240px, 900px 240px, 1400px 320px, 100% 100%;
 }
 
 
 /* --- Cosas traídas de los otros minijuegos ------------------------------------------------------ */
-/* Botón principal con palabra y brillo, como el «Jugar» de Zarabanda y Parranda (antes era un círculo con un ▶ sin texto) */
+/* Botón principal con palabra, como el «Jugar» de Zarabanda y Parranda (antes era un círculo con un ▶ sin texto) */
 .arq-principal .mj-play {
   width: auto; aspect-ratio: auto; padding: 13px 30px 13px 26px; border-radius: 2px;
   font: 700 1.05rem var(--font-heading), serif; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; color: #fff2cb;
-  background: linear-gradient(180deg, #2f4d37, #1b2f23); border: 2px solid var(--accent);
-  box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 40%, transparent), 0 6px 18px rgba(0, 0, 0, .5);
+  background: #253e2d; border: 2px solid var(--accent);
   transition: border-color .15s, filter .15s, transform .15s;
 }
 .arq-principal .mj-play:hover { border-color: #fff2cb; filter: brightness(1.12); transform: translate(-50%, -50%) scale(1.03); }

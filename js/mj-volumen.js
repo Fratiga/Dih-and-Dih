@@ -132,7 +132,7 @@
       .mj-volumen-control {
         position: fixed; right: 16px; bottom: 16px; z-index: 60; display: flex; align-items: center; gap: 8px;
         padding: 6px 12px 6px 8px; background: var(--panel, #1e2022); border: 1px solid var(--accent-soft, #55554a);
-        color: var(--accent, #cfcfba); box-shadow: 0 6px 22px rgba(0, 0, 0, .5);
+        color: var(--accent, #cfcfba);
       }
       .mj-volumen-control button { background: none; border: 0; color: inherit; cursor: pointer; padding: 2px; display: flex; }
       .mj-volumen-control button:hover { color: var(--text, #fff); }

@@ -9,12 +9,12 @@
 
   /* --- Paletas por tema de mapa ------------------------------------------------ */
   const PALETAS = {
-    claro:   { a: "#2f9e4f", b: "#3cc063", suelo: "#134d27", roca: "#a9adbb", luz: "#d8ffb0", brillo: "#b8ff7a", mota: "#f4ff9a" },
-    ruinas:  { a: "#cf9448", b: "#e5ad5c", suelo: "#6b4217", roca: "#b9a99a", luz: "#ffe2a8", brillo: "#ffd27a", mota: "#ffe9b0" },
-    pozo:    { a: "#4a1a3a", b: "#632350", suelo: "#1c0716", roca: "#80566a", luz: "#ff8a4a", brillo: "#ff6a2e", mota: "#ffae4d" },
-    pantano: { a: "#1f9487", b: "#27b5a4", suelo: "#0a4640", roca: "#7ea396", luz: "#a7ffe8", brillo: "#5cffd6", mota: "#c5ffa0" },
-    puente:  { a: "#5546c9", b: "#6e5ef0", suelo: "#1f1666", roca: "#a29cd6", luz: "#cfc6ff", brillo: "#a99aff", mota: "#ffb3f2" },
-    pilares: { a: "#3f7bdd", b: "#58a0ff", suelo: "#12337f", roca: "#bcc9ea", luz: "#cfe6ff", brillo: "#8ad0ff", mota: "#ffffff" }
+    claro:   { a: "#4b8a50", b: "#549a58", suelo: "#1f4a2a", roca: "#a9adbb", luz: "#d9e8bf", brillo: "#b5d98a", mota: "#e6eeb0" },
+    ruinas:  { a: "#b98a52", b: "#c79a5e", suelo: "#6b4217", roca: "#b9a99a", luz: "#f0d9b0", brillo: "#e5c07c", mota: "#f0dcb8" },
+    pozo:    { a: "#47283f", b: "#563049", suelo: "#1d0f1a", roca: "#80566a", luz: "#e59a66", brillo: "#d9824a", mota: "#e8b06a" },
+    pantano: { a: "#3a8478", b: "#44968a", suelo: "#16443f", roca: "#7ea396", luz: "#bfe6da", brillo: "#86cdb8", mota: "#cfe6b0" },
+    puente:  { a: "#5f5a98", b: "#6e69aa", suelo: "#2a2552", roca: "#a39fc4", luz: "#d6d0ee", brillo: "#a9a2d6", mota: "#e6bfe0" },
+    pilares: { a: "#4f7aaa", b: "#5f8bbc", suelo: "#1d3a63", roca: "#bcc9ea", luz: "#d3e2f2", brillo: "#a3c8e6", mota: "#ffffff" }
   };
 
   /* Colores de cada tipo de daño (también para proyectiles y chispas). */
@@ -240,11 +240,8 @@
       const W = c.ancho * TS, H = c.alto * TS;
       for (let y = 0; y < c.alto; y++) for (let x = 0; x < c.ancho; x++) {
         const px = x * TS, py = y * TS;
-        const g = ctx.createLinearGradient(px, py, px + TS, py + TS);
         const base = (x + y) % 2 ? paleta.a : paleta.b;
-        g.addColorStop(0, aclarar(base, 0.1 + ruidoCelda[y][x] * 0.08));
-        g.addColorStop(1, oscurecer(base, 0.16));
-        ctx.fillStyle = g;
+        ctx.fillStyle = aclarar(base, ruidoCelda[y][x] * 0.08);
         ctx.fillRect(px, py, TS, TS);
         // brillo de arista arriba a la izquierda
         ctx.fillStyle = "rgba(255,255,255,.10)"; ctx.fillRect(px, py, TS, 2); ctx.fillRect(px, py, 2, TS);
@@ -258,9 +255,7 @@
         const px = x * TS, py = y * TS;
         if (t === T.ROCA) {
           ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.ellipse(px + TS / 2, py + TS - 9, 25, 8, 0, 0, 6.283); ctx.fill();
-          const g = ctx.createLinearGradient(px, py, px + TS, py + TS);
-          g.addColorStop(0, aclarar(paleta.roca, 0.45)); g.addColorStop(0.55, paleta.roca); g.addColorStop(1, oscurecer(paleta.roca, 0.45));
-          ctx.fillStyle = g;
+          ctx.fillStyle = paleta.roca;
           ctx.beginPath();
           ctx.moveTo(px + 9, py + TS - 10); ctx.lineTo(px + 14, py + 24); ctx.lineTo(px + 28, py + 7); ctx.lineTo(px + 46, py + 12); ctx.lineTo(px + TS - 8, py + 30); ctx.lineTo(px + TS - 12, py + TS - 10);
           ctx.closePath(); ctx.fill();
@@ -268,34 +263,26 @@
           ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.moveTo(px + 18, py + 26); ctx.lineTo(px + 28, py + 12); ctx.lineTo(px + 38, py + 16); ctx.lineTo(px + 24, py + 32); ctx.fill();
         } else if (t === T.FUEGO) {
           const f = 0.5 + 0.5 * Math.sin(ahora / 140 + x * 2 + y);
-          const g = ctx.createRadialGradient(px + TS / 2, py + TS / 2, 2, px + TS / 2, py + TS / 2, TS * 0.75);
-          g.addColorStop(0, "rgba(255,240,120,.95)"); g.addColorStop(0.45, "rgba(255,110,30,.85)"); g.addColorStop(1, "rgba(160,20,10,.55)");
-          ctx.fillStyle = g; ctx.fillRect(px, py, TS, TS);
-          ctx.globalCompositeOperation = "lighter";
+          ctx.fillStyle = "#b8321a"; ctx.fillRect(px, py, TS, TS);
           for (let i = 0; i < 4; i++) {
             const fx = px + 14 + i * 12 + Math.sin(ahora / 220 + i * 1.7 + x) * 4;
             const alto = 20 + 14 * Math.sin(ahora / 120 + i * 2.3 + y) * f + i % 2 * 8;
-            const lg = ctx.createLinearGradient(0, py + TS - 8, 0, py + TS - 8 - alto);
-            lg.addColorStop(0, "rgba(255,90,20,.9)"); lg.addColorStop(1, "rgba(255,230,100,0)");
-            ctx.fillStyle = lg;
+            ctx.fillStyle = "#f08a2a";
             ctx.beginPath(); ctx.moveTo(fx - 7, py + TS - 8); ctx.quadraticCurveTo(fx, py + TS - 8 - alto * 1.2, fx + 7, py + TS - 8); ctx.fill();
+            ctx.fillStyle = "#ffd75a";
+            ctx.beginPath(); ctx.moveTo(fx - 3.5, py + TS - 8); ctx.quadraticCurveTo(fx, py + TS - 8 - alto * 0.7, fx + 3.5, py + TS - 8); ctx.fill();
           }
-          ctx.globalCompositeOperation = "source-over";
           if (Math.random() < 0.04) particulas.push({ x: px + aleatorio(10, 54), y: py + TS - 10, vx: aleatorio(-14, 14), vy: aleatorio(-70, -35), g: -10, vida: 0.9, max: 0.9, color: "#ffb347", tam: aleatorio(1.5, 3), retraso: 0, luz: true });
         } else if (t === T.PINCHOS) {
           ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(px + 4, py + 4, TS - 8, TS - 8);
           for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
             const sx = px + 8 + i * 20, sy = py + 22 + j * 17;
-            const g = ctx.createLinearGradient(sx, sy, sx + 14, sy);
-            g.addColorStop(0, "#f4f8ff"); g.addColorStop(1, "#7f8aa8");
-            ctx.fillStyle = g;
+            ctx.fillStyle = "#c9d2e6";
             ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 7, sy - 17); ctx.lineTo(sx + 14, sy); ctx.closePath(); ctx.fill();
             ctx.fillStyle = "rgba(255,70,90,.55)"; ctx.fillRect(sx + 5, sy - 17, 3, 3);
           }
         } else if (t === T.BARRO) {
-          const g = ctx.createRadialGradient(px + TS / 2, py + TS / 2, 4, px + TS / 2, py + TS / 2, TS * 0.7);
-          g.addColorStop(0, "rgba(120,86,40,.95)"); g.addColorStop(1, "rgba(70,46,22,.85)");
-          ctx.fillStyle = g; rect(px + 3, py + 3, TS - 6, TS - 6, 16); ctx.fill();
+          ctx.fillStyle = "rgba(96,68,32,.95)"; rect(px + 3, py + 3, TS - 6, TS - 6, 16); ctx.fill();
           for (let i = 0; i < 3; i++) {
             const b = (ahora / 900 + i * 0.37 + ruidoCelda[y][x]) % 1;
             ctx.strokeStyle = `rgba(210,170,100,${0.7 * (1 - b)})`; ctx.lineWidth = 2;
@@ -343,22 +330,18 @@
       if (v.aparece > 0) { escala = 1 + v.aparece * 0.6; opacidad = 1 - v.aparece * 1.2; }
       const bob = u.caido ? 0 : Math.sin(ahora / 320 + hash(u.id) % 7) * 2.2;
       const px = v.x * TS + TS / 2 + ox, py = v.y * TS + TS / 2 + oy + bob;
-      const equipoColor = u.equipo === "enemigos" ? "#ff3d7a" : "#38f0ff";
+      const equipoColor = u.equipo === "enemigos" ? "#d4506a" : "#6fb8cc";
       ctx.save();
       ctx.globalAlpha = Math.max(0, opacidad) * (u.caido ? 0.5 : 1);
       // sombra
       ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.beginPath(); ctx.ellipse(px - ox, py - oy + 22 - bob, 22 * escala, 8 * escala, 0, 0, 6.283); ctx.fill();
       ctx.translate(px, py); ctx.rotate(giro); ctx.scale(escala, escala);
-      // resplandor de equipo
-      const gl = ctx.createRadialGradient(0, 0, 14, 0, 0, 44);
-      gl.addColorStop(0, alfa(equipoColor, u === activo ? 0.55 : 0.32)); gl.addColorStop(1, alfa(equipoColor, 0));
-      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(0, 0, 44, 0, 6.283); ctx.fill();
+      // base del equipo: un disco liso bajo la ficha
+      ctx.fillStyle = alfa(equipoColor, u === activo ? 0.4 : 0.22); ctx.beginPath(); ctx.arc(0, 0, 33, 0, 6.283); ctx.fill();
       // aura de hechizo
       if (v.aura) { const t = v.aura.t / 0.6; ctx.strokeStyle = alfa(v.aura.color, 1 - t); ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, 26 + t * 30, 0, 6.283); ctx.stroke(); }
       // cuerpo
-      const cuerpo = ctx.createRadialGradient(-9, -11, 3, 0, 0, 28);
-      cuerpo.addColorStop(0, aclarar(u.color, 0.7)); cuerpo.addColorStop(0.45, u.color); cuerpo.addColorStop(1, oscurecer(u.color, 0.5));
-      ctx.fillStyle = cuerpo; ctx.beginPath(); ctx.arc(0, 0, 25, 0, 6.283); ctx.fill();
+      ctx.fillStyle = u.color; ctx.beginPath(); ctx.arc(0, 0, 25, 0, 6.283); ctx.fill();
       ctx.lineWidth = 4; ctx.strokeStyle = equipoColor; ctx.stroke();
       ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.beginPath(); ctx.ellipse(-9, -12, 9, 5, -0.6, 0, 6.283); ctx.fill();
       // inicial
@@ -375,11 +358,7 @@
       const frac = Math.max(0, Math.min(1, v.pv / u.pvMax));
       const bx = px - 25, by = py + 28;
       ctx.fillStyle = "rgba(10,8,20,.8)"; rect(bx - 2, by - 2, 54, 10, 5); ctx.fill();
-      const hg = ctx.createLinearGradient(bx, 0, bx + 50, 0);
-      if (frac > 0.5) { hg.addColorStop(0, "#37e26b"); hg.addColorStop(1, "#b8ff4d"); }
-      else if (frac > 0.25) { hg.addColorStop(0, "#ffb02e"); hg.addColorStop(1, "#ffe14d"); }
-      else { hg.addColorStop(0, "#ff2e5a"); hg.addColorStop(1, "#ff7a3d"); }
-      ctx.fillStyle = hg; rect(bx, by, Math.max(2, 50 * frac), 6, 3); ctx.fill();
+      ctx.fillStyle = frac > 0.5 ? "#6fb55a" : frac > 0.25 ? "#d9a53a" : "#c4503f"; rect(bx, by, Math.max(2, 50 * frac), 6, 3); ctx.fill();
       // condiciones
       Object.keys(u.cond).slice(0, 4).forEach((n, i) => {
         const cx = px - 22 + i * 15, cy = py - 36;
@@ -441,7 +420,7 @@
           ctx.setLineDash([]);
           const fin = r[r.length - 1], q = centroCelda(fin.x, fin.y);
           ctx.fillStyle = "rgba(10,8,30,.85)"; ctx.beginPath(); ctx.arc(q.x + 20, q.y - 20, 12, 0, 6.283); ctx.fill();
-          ctx.fillStyle = "#38f0ff"; ctx.font = "800 14px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(fin.coste), q.x + 20, q.y - 19);
+          ctx.fillStyle = "#86b4c2"; ctx.font = "800 14px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(fin.coste), q.x + 20, q.y - 19);
         }
       }
       if (ui.modo && ui.turnoJugador) {
@@ -490,7 +469,6 @@
       c.unidades.slice().sort((a, b) => visual(a).y - visual(b).y).forEach(u => dibujarUnidad(c, u, ahora, dt, activo));
 
       // proyectiles
-      ctx.globalCompositeOperation = "lighter";
       proyectiles.forEach(p => {
         if (p.retraso > 0) { p.retraso -= dt; return; }
         p.t += dt;
@@ -501,11 +479,9 @@
           const a = i / p.estela.length;
           ctx.fillStyle = alfa(p.color, 0.5 * a); ctx.beginPath(); ctx.arc(q.x, q.y, (p.tipo === "orbe" ? 12 : 4) * a + 1, 0, 6.283); ctx.fill();
         });
-        const gr = ctx.createRadialGradient(x, y, 0, x, y, p.tipo === "orbe" ? 22 : 12);
-        gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.35, p.color); gr.addColorStop(1, alfa(p.color, 0));
-        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, p.tipo === "orbe" ? 22 : 12, 0, 6.283); ctx.fill();
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(x, y, p.tipo === "orbe" ? 11 : 6, 0, 6.283); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x, y, p.tipo === "orbe" ? 5 : 2.5, 0, 6.283); ctx.fill();
       });
-      ctx.globalCompositeOperation = "source-over";
       proyectiles = proyectiles.filter(p => p.t < p.dur);
 
       // ondas
@@ -522,25 +498,21 @@
       ondas = ondas.filter(o => o.t < o.dur);
 
       // partículas
-      ctx.globalCompositeOperation = "lighter";
       particulas.forEach(p => {
         if (p.retraso > 0) { p.retraso -= dt; return; }
         p.vida -= dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt;
         const a = Math.max(0, p.vida / p.max);
         ctx.fillStyle = alfa(p.color, a); ctx.beginPath(); ctx.arc(p.x, p.y, p.tam * (0.4 + 0.6 * a), 0, 6.283); ctx.fill();
       });
-      ctx.globalCompositeOperation = "source-over";
       particulas = particulas.filter(p => p.vida > 0 || p.retraso > 0);
       if (particulas.length > 900) particulas.splice(0, particulas.length - 900);
 
       // motas de ambiente
-      ctx.globalCompositeOperation = "lighter";
       ambiente.forEach(m => {
         m.y -= m.v * dt; m.x += Math.sin(ahora / 900 + m.f) * 10 * dt;
         if (m.y < -10) { m.y = H + 10; m.x = Math.random() * W; }
         ctx.fillStyle = alfa(m.color, 0.35 + 0.25 * Math.sin(ahora / 400 + m.f)); ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill();
       });
-      ctx.globalCompositeOperation = "source-over";
 
       // textos
       textos.forEach(t => {
@@ -559,10 +531,7 @@
       textos = textos.filter(t => t.t < 1.15);
 
       ctx.restore();
-      // viñeta y destello
-      const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95);
-      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(8,4,24,.5)");
-      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+      // destello
       if (destello > 0.01) { ctx.fillStyle = alfa(colorDestello, destello); ctx.fillRect(0, 0, W, H); destello *= Math.pow(0.002, dt); }
     }
 

@@ -540,17 +540,13 @@
       const cx = m.x + m.w / 2;
       const cy = m.y + m.h / 2;
       if (m.tipo === "blindado") {
-        // Aura azul pulsante; el aro exterior marca que aún tiene escudo
+        // Disco azul que late; el aro exterior marca que aún tiene escudo
         const pulso = 0.6 + 0.25 * Math.sin(m.fase * 1.5);
         const radio = Math.max(m.w, m.h) * 0.8;
-        const g = ctx.createRadialGradient(cx, cy, radio * 0.25, cx, cy, radio);
-        const fuerza = m.vidas > 1 ? 0.5 : 0.22;
-        g.addColorStop(0, "rgba(120, 210, 255, 0)");
-        g.addColorStop(0.7, `rgba(120, 210, 255, ${fuerza * pulso})`);
-        g.addColorStop(1, "rgba(120, 210, 255, 0)");
-        ctx.fillStyle = g;
+        const fuerza = m.vidas > 1 ? 0.3 : 0.14;
+        ctx.fillStyle = `rgba(120, 210, 255, ${fuerza * pulso})`;
         ctx.beginPath();
-        ctx.arc(cx, cy, radio, 0, Math.PI * 2);
+        ctx.arc(cx, cy, radio * 0.85, 0, Math.PI * 2);
         ctx.fill();
         if (m.vidas > 1) {
           ctx.strokeStyle = `rgba(190, 235, 255, ${0.75 * pulso})`;

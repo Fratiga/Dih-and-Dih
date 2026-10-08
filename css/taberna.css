@@ -131,7 +131,7 @@ body::before { z-index: -1; }
 .nav-group + .nav-group { border-left: 2px dotted var(--lb-borde); }
 .nav-chip { color: var(--lb-tenue); border: 2px solid transparent; transition: none; }
 .nav-chip:hover { color: #fff; background: #ffffff14; }
-.nav-chip.active { color: #fff; background: linear-gradient(90deg, var(--lb-titulo-a), var(--lb-titulo-b)); border-color: var(--lb-borde); text-shadow: 2px 2px 0 #000; }
+.nav-chip.active { color: #fff; background: var(--lb-titulo-a); border-color: var(--lb-borde); text-shadow: 2px 2px 0 #000; }
 
 /* --- Cajas: barra lateral, tarjetas, ventana de entrada --- */
 .sidebar {
@@ -143,7 +143,7 @@ body::before { z-index: -1; }
 }
 .pill { border: 2px solid transparent; }
 .pill:hover { background: #ffffff14; color: #fff; }
-.pill.active { background: linear-gradient(90deg, var(--lb-titulo-a), var(--lb-titulo-b)); border-color: var(--lb-borde); color: #fff; }
+.pill.active { background: var(--lb-titulo-a); border-color: var(--lb-borde); color: #fff; }
 .secondary-button {
   border: 3px outset var(--lb-borde); background: var(--lb-titulo-a); color: #fff; border-radius: 0; text-shadow: 2px 2px 0 #000;
 }
@@ -165,7 +165,7 @@ dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8
 
 /* --- Pestañas de Admin y de Mis personajes --- */
 .admin-tab, .fichas-tab { border-radius: 0; }
-.admin-tab.active, .fichas-tab.active { background: linear-gradient(90deg, var(--lb-titulo-a), var(--lb-titulo-b)); color: #fff; }
+.admin-tab.active, .fichas-tab.active { background: var(--lb-titulo-a); color: #fff; }
 
 /* --- Pie de página (lo pone js/taberna.js) --- */
 .tb-pie {

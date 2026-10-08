@@ -874,8 +874,6 @@
     $("btFlechaPunta").setAttribute("transform", `translate(${b.x},${b.y}) rotate(${(Math.atan2(ty, tx) * 180 / Math.PI).toFixed(1)}) scale(${escala})`);
     $("btFlechaOrigen").setAttribute("transform", `translate(${a.x},${a.y})`);
     $("btFlechaDiana").setAttribute("transform", `translate(${b.x},${b.y})`);
-    const g = $("btFlechaGrad");
-    g.setAttribute("x1", a.x); g.setAttribute("y1", a.y); g.setAttribute("x2", b.x); g.setAttribute("y2", b.y);
     svg.classList.add("visible");
     svg.classList.toggle("valida", !!valida);
   }
