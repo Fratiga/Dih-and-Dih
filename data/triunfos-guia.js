@@ -135,6 +135,13 @@ window.TRIUNFOS_GUIA = {
     { id: "bonusCombate", nombre: "Bonificación de combate", campo: "bonusAtaque",
       resumen: "Daño extra solo cuando la unidad pelea contra otra unidad.",
       detalle: ["Vale al atacar y al bloquear. No suma cuando el golpe va al jugador, porque ahí no hay unidad rival."] },
+    { id: "golpeExacto", nombre: "Golpe exacto", campo: "golpeExacto",
+      resumen: "En combate contra una unidad, hace tanto daño como vida tenga esa unidad.",
+      detalle: [
+        "El daño es la vida exacta que tiene la unidad rival cuando empieza el combate. Ni el ataque de la carta ni las bonificaciones de daño cuentan. Vale al atacar y al bloquear.",
+        "No ignora resistencias. Barrera, Duro, Esquivo, la reducción de daño y los guardianes actúan como con cualquier golpe de combate, así que una unidad resistente puede sobrevivir.",
+        "Contra el jugador pega con su ataque normal. La unidad sigue recibiendo el daño de su rival, a la vez."
+      ] },
     { id: "reduccion", nombre: "Reducción de daño", campo: "reduceDano",
       resumen: "Resta daño de cada golpe que recibe.",
       detalle: ["Se aplica después de Esquivo y de Duro, con un mínimo de 0."] },

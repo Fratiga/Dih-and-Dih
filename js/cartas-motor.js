@@ -25,7 +25,8 @@
      que sobra tras matar al bloqueador pasa al jugador. Barrera: ignora el
      primer daño que reciba. Duro: recibe 1 menos de daño. Esquivo: en combate
      recibe la mitad del daño (redondeado hacia abajo). Escurridizo (regla propia):
-     ni los desafíos ni las habilidades enemigas pueden elegirla.
+     ni los desafíos ni las habilidades enemigas pueden elegirla. Golpe exacto: contra una
+     unidad hace tanto daño como vida tenga, sin ignorar sus resistencias.
    - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
    - Un terreno a la vez: jugar uno nuevo reemplaza al anterior.
@@ -732,6 +733,9 @@
 
   /* Daño de una unidad contra otra en combate (con sus bonificaciones) */
   function danoDeCombate(est, u, contra) {
+    // Golpe exacto: contra una unidad hace tanto daño como vida tenga. Ni el ataque ni las bonificaciones cuentan,
+    // y las resistencias (Barrera, Duro, Esquivo, reduceDano, guardián) actúan después, al infligir el daño.
+    if (contra && efectoDe(est, u).golpeExacto) return Math.max(0, contra.pv);
     let d = atqEfectivo(est, u);
     if (contra) {
       const ef = efectoDe(est, u);

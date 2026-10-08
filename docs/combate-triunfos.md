@@ -123,6 +123,27 @@ Cada uno premia a una afinidad.
 
 Un objeto o una reacción que apunta a una unidad enemiga respeta Escurridizo y Capucha oscura, igual que una habilidad.
 
+## Adam Kovacs, héroe de Brurland
+
+Variante legendaria de Adam. El Adam capitán sigue siendo `adam-kovacs`. Esta carta se creó desde el editor del álbum, así que su número y su texto viven en el servidor y el motor solo pone la habilidad.
+
+**Habilidad: Golpe exacto.** En combate contra una unidad, su daño es la vida que tiene esa unidad cuando empieza el combate. Ni su ataque ni las bonificaciones (marca, Edge, Lobo...) suman. Las resistencias no se ignoran: Barrera lo absorbe, Duro quita 1, Esquivo deja la mitad, Draco quita 2 y un guardián como Ocevat puede recibir el golpe. Contra el jugador pega con su ataque normal, para que no mate de un golpe. Sigue recibiendo el daño de su rival, a la vez.
+
+**Números recomendados** (se cambian en el editor, no en el código):
+
+| campo | valor | motivo |
+|---|---|---|
+| Rareza | Legendaria | |
+| Afinidad | Juramento | igual que el Adam capitán |
+| Coste | 7 | igual que Verdam, Draco y Kraken |
+| Ataque | 4 | solo cuenta contra el jugador |
+| Vida | 6 | cae contra cualquier unidad con 6 o más de ataque, incluidos Verdam, Kraken y Draco |
+| Habilidad | Golpe exacto: en combate contra una unidad, hace tanto daño como vida tenga. Barrera, Duro, Esquivo y las demás resistencias le afectan igual. Contra el jugador pega con su ataque. | |
+
+Cómo se equilibra. Mata a casi cualquier unidad que bloquee o que lo bloquee, pero no puede pegar a una unidad que nadie le ponga delante: sin Desafiante, quien lo enfrenta decide si bloquea. Se desgasta, porque recibe el ataque de la unidad a la que golpea, y las unidades resistentes (Barrera, Duro, Esquivo, Draco) lo frenan. Si resulta fuerte, sube el coste a 8 o baja la vida a 5. Si resulta flojo, sube la vida a 7.
+
+Para que el motor le dé la habilidad hay que registrar el id con que se guardó la carta en `js/cartas-efectos.js`. Hoy están registrados `adam-kovacs-heroe-de-brurland`, `adam-heroe-de-brurland`, `adam-kovacs-heroe`, `adam-heroe`, `adam-kovacs-brurland` y `adam-brurland`.
+
 ## Piezas nuevas del motor
 
 - `marcadaHasta`: una marca con fecha de vencimiento (`marcadaVigente`).
@@ -130,6 +151,7 @@ Un objeto o una reacción que apunta a una unidad enemiga respeta Escurridizo y 
 - `eco` en un terreno: repite la habilidad al entrar (Montaña del Eco Arcano).
 - `duplicaEn` en una carta: duplica su ataque y su vida mientras ese terreno esté en juego (`sincronizarTerreno`, que corre al entrar una unidad y al cambiar o irse el terreno).
 - `guardianUnaVez`: un guardián que solo actúa una vez por partida.
+- `golpeExacto`: el daño de combate contra una unidad es su vida, sin ignorar resistencias.
 - `reaccion.valido`: filtra qué atacantes puede elegir una reacción.
 
 ## Acciones de la partida

@@ -289,6 +289,29 @@ const terreno = (e, id, dueno, restantes = null) => { e.terreno = { cartaId: id,
   ok(e.jugadores[1].vida === 20 - (2 + 4), `Saco de abrojos: cada atacante pierde 1 de ataque (vida ${e.jugadores[1].vida})`);
   ok(M.atqEfectivo(e, a) === 2, "hasta el final del turno"); }
 
+// Golpe exacto: el daño contra una unidad es su vida, y las resistencias siguen valiendo
+M.registrar("t-exacto", { golpeExacto: true }); mk("t-exacto", 4, 6);
+M.registrar("t-duro", { palabras: ["duro"] }); mk("t-duro", 2, 5);
+const exacto = (obj, atkExtra) => { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t-exacto"); const b = poner(e, 1, obj.id, obj.flags || {});
+  if (obj.pv) { b.pv = obj.pv; b.pvMax = Math.max(b.pvMax, obj.pv); }
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1); return { e, a, b }; };
+{ const { a, b, e } = exacto({ id: "t24", pv: 4 }); ok(!M.buscar(e, b.uid) && a.pv === 4, `Golpe exacto: mata a la unidad bloqueadora de 4 de vida y recibe su ataque (a.pv ${a.pv})`); }
+{ const { a, b, e } = exacto({ id: "t24", pv: 4 }); ok(e.ultimoCombate.pares[0].dA === 4, "el daño registrado es la vida del objetivo"); }
+{ const { b, e } = exacto({ id: "t-duro" }); ok(M.buscar(e, b.uid) && b.pv === 1, `Duro: queda con 1 de vida (${b.pv})`); }
+{ const { b, e } = exacto({ id: "t-esquivo", pv: 6 }); ok(M.buscar(e, b.uid) && b.pv === 3, `Esquivo: recibe la mitad (${b.pv})`); }
+{ const { b, e } = exacto({ id: "t33", flags: { barrera: true } }); ok(b.pv === 3 && !b.flags.barrera, "Barrera: absorbe el golpe entero"); }
+{ const { b, e } = exacto({ id: "draco" }); ok(M.buscar(e, b.uid) && b.pv === 2, `Draco reduce 2: sobrevive con 2 (${b.pv})`); }
+{ const { b, e } = exacto({ id: "t-duro", flags: { marcadaPor: 0 } }); ok(b.pv === 1, `la marca no suma: sigue siendo la vida exacta (${b.pv})`); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t-exacto"); e.jugadores[1].campo.length = 0;
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); ok(e.jugadores[1].vida === 16, `contra el jugador pega con su ataque normal (vida ${e.jugadores[1].vida})`); }
+{ const e = partida([], []); turnoDe(e, 1); const a = poner(e, 1, "t52"); const b = poner(e, 0, "t-exacto"); a.pv = 4; a.pvMax = 4; e.jugadores[0].campo.forEach(u => { u.entro = 0; });
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 1); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 0);
+  ok(!M.buscar(e, a.uid) && b.pv === 1, `al bloquear también mata al atacante (b.pv ${b.pv})`); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t-exacto"), amigo = poner(e, 0, "t11"); const og = poner(e, 1, "ocevat"), v = poner(e, 1, "t24"); v.pv = 3; v.pvMax = 4;
+  M.aplicar(e, { t: "atacar", u: [a.uid], d: {} }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, v.uid]] }, 1);
+  ok(M.buscar(e, v.uid) && v.pv === 3 && og.pv === 3, `el guardián recibe el golpe exacto en su lugar: el objetivo se salva y Ocevat queda en ${og.pv}/6`); }
+ok(["adam-kovacs-heroe-de-brurland", "adam-heroe-de-brurland"].every(id => M.EFECTOS[id] && M.EFECTOS[id].golpeExacto), "Adam, héroe de Brurland: efecto registrado");
+
 // 15) simulación aleatoria con accionesLegales
 function azar(sem) { let x = sem >>> 0; return () => { x = (x + 0x6D2B79F5) >>> 0; let t = x; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const ids = Object.keys(cartas);   // incluye las cartas de prueba (t11, t-temible...), que se filtran al armar los mazos

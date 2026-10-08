@@ -13,6 +13,9 @@
      pasivaAtq       ataque extra mientras está en juego
      auraAtq         ataque extra para las demás unidades aliadas
      bonusAtaque     daño extra en combate contra otra unidad (atacando o bloqueando)
+     golpeExacto     en combate contra una unidad su daño es la vida que tiene esa unidad (contra el
+                     jugador pega con su ataque). No ignora resistencias: Barrera, Duro, Esquivo,
+                     reduceDano y los guardianes se aplican después
      reduceDano      daño que se quita de cada golpe que recibe
      guardian        recibe en lugar de un aliado el daño (una vez por turno); con
                      guardianUnaVez: true, una sola vez en toda la partida
@@ -93,6 +96,10 @@
     R("mattei", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; } });
     R("adam-kovacs", { auraAtq: () => 1 });
     R("cassius-coldgrave", { palabras: ["noBloquea"], escurridizo: (est, u) => est.jugadores[u.dueno].campo.length > 1 });
+    // Adam Kovacs, héroe de Brurland (carta creada desde el editor, así que su id depende de cómo se guardó).
+    // Si la tuya tiene otro id, añádelo a esta lista.
+    ["adam-kovacs-heroe-de-brurland", "adam-heroe-de-brurland", "adam-kovacs-heroe", "adam-heroe", "adam-kovacs-brurland", "adam-brurland"]
+      .forEach(id => R(id, { golpeExacto: true }));
     R("torvrena", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       c.objetivo.flags.noAtacaHasta = c.est.turno + 1;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda atrapada y no podrá atacar el próximo turno.`);
