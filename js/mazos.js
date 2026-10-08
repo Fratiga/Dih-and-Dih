@@ -40,11 +40,12 @@
       .sort((a, b) => a.coste - b.coste || a.nombre.localeCompare(b.nombre));
     gridEl.innerHTML = lista.length ? lista.map(c => {
       const n = actual.cuenta[c.id] || 0, max = maximoUsable(c);
+      const tengo = (propia && propia.cartas.get(c.id)) || 0;
       return `<div class="mz-item ${n >= max ? "lleno" : ""} ${n ? "en-mazo" : ""}" data-id="${esc(c.id)}">
-        ${htmlCarta(c, true, 0, null)}
+        ${htmlCarta(c, true, tengo, null)}
         <div class="mz-item-pie">
           <button type="button" data-quitar="${esc(c.id)}" ${n ? "" : "disabled"} aria-label="Quitar una">−</button>
-          <span><strong>${n}</strong> / ${max}</span>
+          <span title="${tengo > 1 ? `Tienes ${tengo} copias en tu colección, pero solo ${max === 1 ? "una" : max} cabe${max === 1 ? "" : "n"} en un mazo.` : ""}"><strong>${n}</strong> / ${max}</span>
           <button type="button" data-poner="${esc(c.id)}" ${n >= max ? "disabled" : ""} aria-label="Añadir una">+</button>
         </div>
       </div>`;
