@@ -142,7 +142,7 @@ Variante legendaria de Adam. El Adam capitán sigue siendo `adam-kovacs`. Esta c
 
 Cómo se equilibra. Mata a casi cualquier unidad que bloquee o que lo bloquee, pero no puede pegar a una unidad que nadie le ponga delante: sin Desafiante, quien lo enfrenta decide si bloquea. Se desgasta, porque recibe el ataque de la unidad a la que golpea, y las unidades resistentes (Barrera, Duro, Esquivo, Draco) lo frenan. Si resulta fuerte, sube el coste a 8 o baja la vida a 5. Si resulta flojo, sube la vida a 7.
 
-Para que el motor le dé la habilidad hay que registrar el id con que se guardó la carta en `js/cartas-efectos.js`. Hoy están registrados `adam-kovacs-heroe-de-brurland`, `adam-heroe-de-brurland`, `adam-kovacs-heroe`, `adam-heroe`, `adam-kovacs-brurland` y `adam-brurland`.
+El id con que se guardó la carta en el servidor es `adam-kovacs-h`, y es el que está registrado en `js/cartas-efectos.js`. Hoy esa carta tiene en el servidor coste 0, ataque 1, vida 1 y la habilidad vacía: son los números provisionales, no los recomendados de arriba.
 
 ## Piezas nuevas del motor
 

@@ -96,10 +96,8 @@
     R("mattei", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; } });
     R("adam-kovacs", { auraAtq: () => 1 });
     R("cassius-coldgrave", { palabras: ["noBloquea"], escurridizo: (est, u) => est.jugadores[u.dueno].campo.length > 1 });
-    // Adam Kovacs, héroe de Brurland (carta creada desde el editor, así que su id depende de cómo se guardó).
-    // Si la tuya tiene otro id, añádelo a esta lista.
-    ["adam-kovacs-heroe-de-brurland", "adam-heroe-de-brurland", "adam-kovacs-heroe", "adam-heroe", "adam-kovacs-brurland", "adam-brurland"]
-      .forEach(id => R(id, { golpeExacto: true }));
+    // Adam Kovacs, héroe de Brurland (carta creada desde el editor: su id en el servidor es adam-kovacs-h)
+    R("adam-kovacs-h", { golpeExacto: true });
     R("torvrena", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       c.objetivo.flags.noAtacaHasta = c.est.turno + 1;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda atrapada y no podrá atacar el próximo turno.`);

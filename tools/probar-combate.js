@@ -310,7 +310,7 @@ const exacto = (obj, atkExtra) => { const e = partida([], []); turnoDe(e, 0); co
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t-exacto"), amigo = poner(e, 0, "t11"); const og = poner(e, 1, "ocevat"), v = poner(e, 1, "t24"); v.pv = 3; v.pvMax = 4;
   M.aplicar(e, { t: "atacar", u: [a.uid], d: {} }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, v.uid]] }, 1);
   ok(M.buscar(e, v.uid) && v.pv === 3 && og.pv === 3, `el guardián recibe el golpe exacto en su lugar: el objetivo se salva y Ocevat queda en ${og.pv}/6`); }
-ok(["adam-kovacs-heroe-de-brurland", "adam-heroe-de-brurland"].every(id => M.EFECTOS[id] && M.EFECTOS[id].golpeExacto), "Adam, héroe de Brurland: efecto registrado");
+ok(!!(M.EFECTOS["adam-kovacs-h"] && M.EFECTOS["adam-kovacs-h"].golpeExacto), "Adam, héroe de Brurland (adam-kovacs-h): efecto registrado");
 
 // 15) simulación aleatoria con accionesLegales
 function azar(sem) { let x = sem >>> 0; return () => { x = (x + 0x6D2B79F5) >>> 0; let t = x; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
