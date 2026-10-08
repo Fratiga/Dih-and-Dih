@@ -519,10 +519,14 @@
     function pantalla(ctx, d) {
       ctx.fillStyle = "rgba(6,10,8,.5)";
       ctx.fillRect(-MARGEN, -MARGEN, ancho + MARGEN * 2, alto + MARGEN * 2);
-      const w = 600;
-      const h = d.sub ? 170 : 130;
+      const reglas = d.reglas || [];
+      // En un campo pequeño (móvil) el texto de las reglas se agranda para que siga leyéndose: escala = píxeles de pantalla por unidad del campo
+      const letra = Math.max(23, Math.min(32, 12 / (d.escala || 1)));
+      const paso = Math.round(letra * 1.4);
+      const w = reglas.length ? Math.min(ancho - 40, 680 + (letra - 23) * 14) : 600;
+      const h = reglas.length ? 120 + paso * reglas.length : d.sub ? 170 : 130;
       const x = (ancho - w) / 2;
-      const y = alto * 0.3 - h / 2;
+      const y = alto * (reglas.length ? 0.27 : 0.3) - h / 2;
       rectRedondo(ctx, x, y, w, h, 18);
       const fondoPanel = ctx.createLinearGradient(0, y, 0, y + h);
       fondoPanel.addColorStop(0, "rgba(46,34,20,.94)");
@@ -538,7 +542,7 @@
       ctx.stroke();
 
       // adornos: flechas a los lados del título
-      const ty = y + (d.sub ? 70 : h / 2 + 2);
+      const ty = y + (reglas.length ? 66 : d.sub ? 70 : h / 2 + 2);
       ctx.strokeStyle = "#d1ad55";
       ctx.fillStyle = "#d1ad55";
       ctx.lineWidth = 2;
@@ -560,6 +564,15 @@
         ctx.font = `700 28px ${NUMEROS}`;
         ctx.fillStyle = "#cdbf94";
         ctx.fillText(d.sub, ancho / 2, ty + 50, w - 80);
+      }
+      // Reglas: líneas cortas bajo el título, con un filete que las separa
+      if (reglas.length) {
+        ctx.strokeStyle = "rgba(209,173,85,.4)";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x + 60, ty + 22); ctx.lineTo(x + w - 60, ty + 22); ctx.stroke();
+        ctx.font = `600 ${letra}px ${NUMEROS}`;
+        ctx.fillStyle = "#d8cba0";
+        reglas.forEach((linea, i) => ctx.fillText(linea, ancho / 2, ty + 24 + paso * (i + 1), w - 60));
       }
     }
 

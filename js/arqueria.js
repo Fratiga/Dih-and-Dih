@@ -34,6 +34,8 @@
     }
   };
   const PUNTOS_ANILLO = [10, 7, 4];
+  // Lo que se lee en la pantalla previa al disparo (antes estaba en una fila de fichas bajo el campo)
+  const REGLAS = ["Un minuto. Gana quien sume más puntos.", "Centro 10, anillo medio 7 y borde 4.", "Dispara con clic, o con Z / X sobre el blanco."];
 
   // Generador con semilla: los dos jugadores de una partida ven los mismos blancos.
   function generadorConSemilla(semilla) {
@@ -310,7 +312,7 @@
           : vs ? "Tiempo"
           : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
         const sub = estado === "fin" ? (textoFin && textoFin.sub ? textoFin.sub : `${puntaje} a ${puntajeRival}`) : "";
-        visual.pantalla(ctx, { titulo, sub });
+        visual.pantalla(ctx, { titulo, sub, reglas: estado === "listo" ? REGLAS : null, escala: (canvas.clientWidth || ancho) / ancho });
       }
     }
 

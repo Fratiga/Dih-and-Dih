@@ -8,7 +8,7 @@
   <script src="js/dialogos.js?v=20261210"></script>
   <link rel="stylesheet" href="css/style.css?v=20261210">
   <link rel="stylesheet" href="css/minijuegos.css?v=20261208">
-  <link rel="stylesheet" href="css/arqueria.css?v=20261209">
+  <link rel="stylesheet" href="css/arqueria.css?v=20261213">
   <link rel="stylesheet" href="css/mj-temas.css?v=20261208">
   <script src="js/mj-volumen.js?v=20261208"></script>
 </head>
@@ -22,10 +22,11 @@
   </div>
   <main class="mj-contenido arq-pagina">
     <header class="arq-cabecera">
-      <p class="eyebrow">PASATIEMPOS</p>
-      <h1 class="mj-titulo">Arquería</h1>
-      <p class="arq-lema">Un minuto. Los blancos caen y sumas más puntos cuanto más cerca del centro aciertes.</p>
-      <div class="aj-modos arq-modos">
+      <div class="arq-titulo">
+        <p class="eyebrow">PASATIEMPOS</p>
+        <h1 class="mj-titulo">Arquería</h1>
+      </div>
+      <div class="aj-modos arq-modos" role="group" aria-label="Modo de juego">
         <button type="button" class="aj-modo activo" data-modo="rivales">Contra rivales</button>
         <button type="button" class="aj-modo" data-modo="jugadores">Contra jugadores</button>
       </div>
@@ -52,17 +53,14 @@
           <button type="button" id="arqueriaJugar" class="mj-play" aria-label="Jugar">▶</button>
           <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
         </div>
-        <!-- Rendirse en una partida contra un rival de la casa. Ocupa su sitio siempre (solo se oculta a la vista) para que el campo no salte al empezar -->
-        <div id="arqueriaRendirseSoloFila" class="arq-rendirse-fila arq-inactivo">
-          <button type="button" id="arqueriaRendirseSolo" class="aj-boton" disabled>Rendirse</button>
+        <!-- Pie del campo: tu mejor puntaje o el estado de la partida a la izquierda, y a la derecha rendirse contra un rival de la
+             casa (ocupa su sitio siempre y solo se oculta a la vista, para que el campo no salte al empezar) -->
+        <div id="arqueriaPie" class="arq-pie">
+          <p id="arqueriaRecord" class="mj-linea"></p>
+          <div id="arqueriaRendirseSoloFila" class="arq-rendirse-fila arq-inactivo">
+            <button type="button" id="arqueriaRendirseSolo" class="aj-boton" disabled>Rendirse</button>
+          </div>
         </div>
-        <p id="arqueriaRecord" class="mj-linea"></p>
-        <section class="arq-reglas-fila" aria-label="Cómo se juega">
-          <div class="arq-regla"><i>➳</i><b>Dispara</b><span>Clic, o Z / X con el cursor encima del blanco.</span></div>
-          <div class="arq-regla"><i>◎</i><b>Puntos</b><span>Centro 10, anillo medio 7 y borde 4.</span></div>
-          <div class="arq-regla"><i>☾</i><b>Un minuto</b><span>Gana quien sume más. El cielo se oscurece al acabarse el tiempo.</span></div>
-          <div class="arq-regla"><i>♜</i><b>Tu marca</b><span>Los puntajes se guardan solo con la sesión iniciada.</span></div>
-        </section>
       </div>
 
       <aside class="arq-lateral">
@@ -84,9 +82,9 @@
   <script src="js/presencia.js?v=20261209"></script>
   <script src="js/lado.js?v=20261210"></script>
   <script src="js/minijuegos-stats.js?v=20261208"></script>
-  <script src="js/arqueria-visual.js?v=20261208"></script>
-  <script src="js/arqueria.js?v=20261209"></script>
-  <script src="js/arqueria-pagina.js?v=20261209"></script>
+  <script src="js/arqueria-visual.js?v=20261210"></script>
+  <script src="js/arqueria.js?v=20261211"></script>
+  <script src="js/arqueria-pagina.js?v=20261212"></script>
   <script src="js/minijuegos-avisos.js?v=20261208"></script>
 </body>
 </html>

@@ -1,48 +1,66 @@
 /* Página de Arquería: la cabecera, el juego a la izquierda y la tabla de arqueros a la derecha. */
-.arq-pagina { max-width: 1480px; }
-
-/* --- Cabecera ------------------------------------------------------------------ */
-.arq-cabecera { text-align: center; margin: 6px 0 26px; }
-.arq-cabecera .eyebrow { margin-bottom: 4px; }
-.arq-cabecera .mj-titulo { margin: 0; font-size: clamp(2.6rem, 6vw, 4.2rem); }
-.arq-lema { max-width: 560px; margin: 10px auto 0; color: #b8c7a3; font-size: .98rem; line-height: 1.6; }
-.arq-cabecera::after {
-  content: ""; display: block; height: 14px; max-width: 420px; margin: 18px auto 0;
-  background:
-    linear-gradient(90deg, transparent, rgba(209, 173, 85, .7) 20%, rgba(209, 173, 85, .7) 80%, transparent) center / 100% 1px no-repeat;
+.arq-pagina {
+  max-width: 1480px;
+  /* Un solo ancho para el campo, los rivales y el pie, y un grupo (juego + columna derecha) que la cabecera sigue, así todo
+     comparte los mismos bordes. El campo se encoge si la ventana es baja, para que entre entero sin hacer scroll. */
+  --arq-ancho: min(960px, max(520px, calc((100vh - 300px) * 1.6)));
+  --arq-grupo: calc(var(--arq-ancho) + 34px + 370px);
 }
-.arq-modos { justify-content: center; margin: 22px 0 0; }
+
+/* --- Cabecera: título a la izquierda y el modo de juego a la derecha, en una sola franja ---------- */
+.arq-cabecera {
+  max-width: var(--arq-grupo); margin-left: auto; margin-right: auto;
+  display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 10px 24px;
+  margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(209, 173, 85, .35);
+}
+.arq-titulo .eyebrow { margin: 0 0 2px; }
+.arq-cabecera .mj-titulo { margin: 0; text-align: left; font-size: clamp(2rem, 4.2vw, 2.9rem); line-height: 1.05; }
+.arq-modos { margin: 0; }
 
 /* --- Distribución ---------------------------------------------------------------- */
-.arq-diseno { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 34px; align-items: start; }
+.arq-diseno { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 34px; align-items: start; max-width: var(--arq-grupo); margin: 0 auto; }
 .arq-principal { min-width: 0; }
+.arq-principal #arqueriaLobby, .arq-principal .aj-controles { width: 100%; max-width: var(--arq-ancho); margin-left: 0; margin-right: auto; box-sizing: border-box; }
 .arq-lateral { display: flex; flex-direction: column; gap: 22px; position: sticky; top: 16px; min-width: 0; }
 
-/* --- Rivales -------------------------------------------------------------------------- */
-.arq-rivales { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; max-width: 960px; margin: 0 auto 8px; }
+/* --- Rivales: tres fichas compactas; la elegida se distingue de un vistazo ------------------------- */
+.arq-rivales { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: var(--arq-ancho); margin: 0; }
 .arq-rival {
-  display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
-  padding: 14px 16px; font: inherit; color: var(--text);
-  background: linear-gradient(180deg, #1d3023, #16251b); border: 1px solid var(--border);
-  transition: border-color .15s, transform .15s, box-shadow .15s;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 3px 12px; align-items: center; text-align: left; cursor: pointer;
+  padding: 10px 14px; font: inherit; color: var(--text); opacity: .72;
+  background: linear-gradient(180deg, #1b2c21, #15231a); border: 1px solid var(--border);
+  transition: border-color .15s, opacity .15s, box-shadow .15s, background .15s;
 }
-.arq-rival:hover { border-color: var(--rc, var(--accent)); transform: translateY(-2px); }
-.arq-rival.activo { border-color: var(--rc, var(--accent)); box-shadow: 0 0 0 1px var(--rc, var(--accent)), 0 8px 22px rgba(0, 0, 0, .4); background: linear-gradient(180deg, #25402d, #1a2d20); }
+.arq-rival:hover { opacity: 1; border-color: var(--rc, var(--accent)); }
+.arq-rival.activo {
+  opacity: 1; border-color: var(--rc, var(--accent));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rc, #d1ad55) 26%, #1f3a29), color-mix(in srgb, var(--rc, #d1ad55) 10%, #14231a));
+  box-shadow: inset 0 0 0 1px var(--rc, var(--accent)), 0 6px 18px rgba(0, 0, 0, .4);
+}
 .arq-rival-icono {
-  grid-row: 1 / span 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
-  font: 700 1.5rem var(--font-heading), serif; color: #14201a; background: var(--rc, var(--accent)); box-shadow: 0 0 0 3px rgba(0, 0, 0, .35), 0 0 16px color-mix(in srgb, var(--rc, #d1ad55) 55%, transparent);
+  grid-row: 1 / span 2; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 1.3rem var(--font-heading), serif; color: #14201a; background: var(--rc, var(--accent));
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .35), 0 0 14px color-mix(in srgb, var(--rc, #d1ad55) 50%, transparent);
 }
-.arq-rival strong { font: 600 1.1rem var(--font-heading), serif; letter-spacing: .03em; }
-.arq-nivel { display: flex; align-items: center; gap: 2px; font-size: .78rem; color: var(--muted); }
-.arq-nivel i { font-style: normal; font-size: 1rem; opacity: .28; }
-.arq-nivel i.on { opacity: 1; color: var(--rc, var(--accent)); }
-.arq-nivel span { margin-left: 8px; }
-.arq-rival small { grid-column: 2; color: var(--muted); font-size: .76rem; line-height: 1.4; }
-.arq-rival .arq-mejor { color: var(--accent); }
+.arq-rival-cab { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.arq-rival strong { font: 600 1.05rem var(--font-heading), serif; letter-spacing: .03em; }
+.arq-nivel {
+  padding: 1px 8px; border: 1px solid color-mix(in srgb, var(--rc, #d1ad55) 60%, transparent); border-radius: 999px;
+  font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--rc, var(--accent)); white-space: nowrap;
+}
+.arq-rival.activo .arq-nivel { background: color-mix(in srgb, var(--rc, #d1ad55) 22%, transparent); color: #fff2cb; }
+.arq-rival small { grid-column: 2; color: #a9b99a; font-size: .78rem; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* --- Escenario y estado -------------------------------------------------------------- */
-.arq-principal .mj-escenario { margin-top: 14px; }
-.arq-principal .mj-linea { margin-top: 16px; }
+/* --- Escenario y pie del campo ------------------------------------------------------------------- */
+.arq-principal .mj-escenario { margin: 12px 0 0; max-width: var(--arq-ancho); }
+.arq-pie { display: flex; align-items: center; gap: 16px; width: 100%; max-width: var(--arq-ancho); min-height: 36px; margin: 10px 0 0; }
+.arq-pie .mj-linea {
+  flex: 0 1 auto; min-width: 0; margin: 0; padding: 6px 12px; text-align: left; color: #cfdabf;
+  background: rgba(8, 14, 10, .62); border: 1px solid rgba(255, 255, 255, .06);
+}
+.arq-rendirse-fila .aj-boton { background: rgba(8, 14, 10, .7); }
+.arq-rendirse-fila { margin-left: auto; }
+.arq-rendirse-fila.arq-inactivo { visibility: hidden; }
 
 /* --- Paneles de la columna derecha ------------------------------------------------ */
 .arq-panel {
@@ -62,8 +80,8 @@
 .arq-nota { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.55; }
 
 /* Tabla de arqueros */
-.arq-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
-.arq-tab { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; font: inherit; font-size: .78rem; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+.arq-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0 0 18px; }
+.arq-tab { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 10px; text-align: center; font: inherit; font-size: .78rem; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
 .arq-tab:hover { color: var(--text); border-color: var(--accent-soft); }
 .arq-tab.activa { background: #2b4430; color: #f6efcf; border-color: var(--accent); }
 
@@ -88,24 +106,24 @@
 .arq-lista li.yo span { color: #fff2cb; font-weight: 600; }
 .arq-vacio { margin: 8px 0 4px; color: var(--muted); font-size: .88rem; line-height: 1.55; text-align: center; padding: 18px 8px; border: 1px dashed rgba(255, 255, 255, .12); }
 
-/* Cómo se juega: una fila de cuatro fichas bajo el juego */
-.arq-reglas-fila { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 960px; margin: 26px auto 0; }
-.arq-regla { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: rgba(0, 0, 0, .2); border: 1px solid rgba(255, 255, 255, .07); border-top: 2px solid var(--accent-soft); }
-.arq-regla i { font-style: normal; font-size: 1.3rem; color: var(--accent); line-height: 1; }
-.arq-regla b { font: 600 .98rem var(--font-heading), serif; color: #f1e4b4; letter-spacing: .03em; }
-.arq-regla span { font-size: .8rem; line-height: 1.5; color: #b4c4a0; }
-
 @media (max-width: 1180px) {
+  .arq-pagina { --arq-grupo: var(--arq-ancho); }
   .arq-diseno { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .arq-lateral { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); align-items: start; }
   .arq-lateral .arq-tabla { grid-column: 1 / -1; }
 }
-@media (max-width: 900px) {
-  .arq-reglas-fila { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (max-width: 720px) {
-  .arq-rivales { grid-template-columns: minmax(0, 1fr); }
+  .arq-pagina { padding-left: 12px; padding-right: 12px; }
+  .arq-cabecera { margin-bottom: 14px; }
+  /* Tres rivales en una fila para que el campo quede a la vista: el icono arriba y solo el nombre y la dificultad */
+  .arq-rivales { gap: 6px; }
+  .arq-rival { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 4px; padding: 10px 6px; }
+  .arq-rival-icono { grid-row: auto; }
+  .arq-rival-cab { flex-direction: column; gap: 4px; }
+  .arq-rival small { grid-column: 1; max-width: 100%; white-space: normal; }
   .arq-podio { min-height: 150px; }
+  /* El panel de reglas ocupa más del campo en un móvil: el ▶ baja para no tocarlo */
+  .arq-principal .mj-play { top: 66%; }
 }
 
 /* --- Fondo de la página: un valle de bosque al anochecer --------------------------------
@@ -125,13 +143,10 @@ body.arq-tema::before {
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 240' preserveAspectRatio='none'%3E%3Cpath fill='%23132338' fill-opacity='0.92' d='M34 145L43 198L25 198ZM34 171L49 212L18 212ZM34 196L56 225L12 225ZM31 221h6v19h-6ZM934 145L943 198L925 198ZM934 171L949 212L918 212ZM934 196L956 225L912 225ZM931 221h6v19h-6ZM42 134L52 193L32 193ZM42 162L60 208L24 208ZM42 191L67 223L17 223ZM39 219h6v21h-6ZM942 134L952 193L932 193ZM942 162L960 208L924 208ZM942 191L967 223L917 223ZM939 219h6v21h-6ZM52 96L66 176L38 176ZM52 135L76 197L28 197ZM52 174L86 217L18 217ZM48 211h9v29h-9ZM952 96L966 176L938 176ZM952 135L976 197L928 197ZM952 174L986 217L918 217ZM948 211h9v29h-9ZM57 116L69 185L45 185ZM57 149L77 203L36 203ZM57 183L86 220L27 220ZM53 215h7v25h-7ZM957 116L969 185L945 185ZM957 149L977 203L936 203ZM957 183L986 220L927 220ZM953 215h7v25h-7ZM63 125L74 189L52 189ZM63 156L82 205L44 205ZM63 187L90 222L36 222ZM59 217h7v23h-7ZM65 103L78 180L52 180ZM65 140L88 199L43 199ZM65 177L97 218L33 218ZM61 213h8v27h-8ZM82 114L94 184L69 184ZM82 148L103 202L61 202ZM82 182L111 220L52 220ZM78 215h8v25h-8ZM106 126L117 190L95 190ZM106 157L125 206L87 206ZM106 188L133 222L79 222ZM103 217h7v23h-7ZM111 86L126 172L97 172ZM111 128L137 194L86 194ZM111 169L147 215L75 215ZM107 209h9v31h-9ZM130 94L144 176L116 176ZM130 133L154 196L106 196ZM130 173L164 217L96 217ZM125 211h9v29h-9ZM136 130L146 192L125 192ZM136 160L154 207L118 207ZM136 190L161 222L110 222ZM132 218h7v22h-7ZM163 104L176 180L150 180ZM163 141L185 199L140 199ZM163 177L195 218L131 218ZM159 213h8v27h-8ZM201 108L214 182L188 182ZM201 144L223 200L179 200ZM201 179L232 219L170 219ZM197 214h8v26h-8ZM261 80L276 170L245 170ZM261 123L287 192L234 192ZM261 166L298 214L223 214ZM256 208h10v32h-10ZM278 92L292 175L263 175ZM278 132L302 195L253 195ZM278 172L312 216L243 216ZM273 210h9v30h-9ZM291 127L302 190L281 190ZM291 157L310 206L273 206ZM291 188L318 222L265 222ZM288 217h7v23h-7ZM329 72L345 166L313 166ZM329 117L357 189L301 189ZM329 163L369 213L290 213ZM324 206h10v34h-10ZM335 141L345 196L326 196ZM335 167L352 210L319 210ZM335 194L358 224L312 224ZM332 220h6v20h-6ZM357 117L369 186L345 186ZM357 150L377 203L337 203ZM357 183L386 220L328 220ZM353 215h7v25h-7ZM382 89L397 174L368 174ZM382 130L407 195L357 195ZM382 171L417 216L347 216ZM378 210h9v30h-9ZM390 138L400 195L380 195ZM390 165L407 209L373 209ZM390 193L414 224L366 224ZM387 220h6v20h-6ZM457 111L469 183L444 183ZM457 146L478 201L435 201ZM457 181L487 219L426 219ZM453 214h8v26h-8ZM482 147L491 199L473 199ZM482 172L498 212L467 212ZM482 197L504 225L460 225ZM479 221h6v19h-6ZM493 97L507 177L479 177ZM493 135L517 197L469 197ZM493 174L527 217L459 217ZM489 211h9v29h-9ZM519 89L534 173L505 173ZM519 130L544 195L494 195ZM519 170L555 216L484 216ZM515 210h9v30h-9ZM523 104L537 180L510 180ZM523 141L546 199L501 199ZM523 178L555 218L492 218ZM519 213h8v27h-8ZM565 80L580 170L549 170ZM565 123L591 192L538 192ZM565 166L602 214L527 214ZM560 208h10v32h-10ZM575 125L586 189L564 189ZM575 156L594 205L556 205ZM575 187L602 222L548 222ZM572 217h7v23h-7ZM586 94L600 176L572 176ZM586 134L610 196L562 196ZM586 173L620 217L552 217ZM581 211h9v29h-9ZM735 102L748 179L721 179ZM735 140L757 199L712 199ZM735 177L767 218L702 218ZM730 212h8v28h-8ZM744 104L757 180L731 180ZM744 140L767 199L722 199ZM744 177L776 218L712 218ZM740 213h8v27h-8ZM773 114L785 184L760 184ZM773 148L794 202L752 202ZM773 182L802 220L743 220ZM769 215h8v25h-8ZM-47 83L-32 171L-62 171ZM-47 125L-21 193L-73 193ZM-47 168L-10 215L-84 215ZM-52 209h9v31h-9ZM853 83L868 171L838 171ZM853 125L879 193L827 193ZM853 168L890 215L816 215ZM848 209h9v31h-9ZM-21 74L-5 167L-37 167ZM-21 119L6 190L-49 190ZM-21 164L17 214L-60 214ZM-26 207h10v33h-10ZM879 74L895 167L863 167ZM879 119L906 190L851 190ZM879 164L917 214L840 214ZM874 207h10v33h-10Z'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 320' preserveAspectRatio='none'%3E%3Cpath fill='%23182a47' d='M0 320L0 11L14 69L28 113L42 105L56 134L70 201L84 203L98 154L112 118L126 175L140 242L154 257L168 263L182 294L196 264L210 261L224 160L238 124L252 152L266 204L280 205L294 247L308 255L322 173L336 200L350 243L364 206L378 132L392 97L406 76L420 38L434 -36L448 -33L462 50L476 157L490 189L504 203L518 261L532 280L546 281L560 228L574 246L588 260L602 204L616 229L630 234L644 221L658 233L672 266L686 203L700 235L714 261L728 205L742 197L756 134L770 76L784 55L798 115L812 164L826 109L840 59L854 59L868 94L882 86L896 86L910 160L924 278L938 188L952 185L966 187L980 165L994 161L1008 213L1022 242L1036 202L1050 120L1064 118L1078 171L1092 208L1106 191L1120 239L1134 281L1148 272L1162 211L1176 127L1190 97L1204 109L1218 87L1232 71L1246 130L1260 218L1274 235L1288 182L1302 164L1316 231L1330 288L1344 272L1358 230L1372 117L1386 19L1400 11L1400 320Z'/%3E%3C/svg%3E"),
     radial-gradient(ellipse 36% 22% at 78% 66%, rgba(255, 150, 80, .42), transparent 70%),
-    radial-gradient(circle at 14% 11%, rgba(222, 232, 255, .9) 0 15px, rgba(190, 205, 255, .22) 16px, transparent 90px),
+    radial-gradient(circle at 74% 8%, rgba(222, 232, 255, .9) 0 15px, rgba(190, 205, 255, .22) 16px, transparent 90px),
     linear-gradient(180deg, #07101e 0%, #10243b 34%, #2b3452 58%, #5a4150 78%, #8a5a48 100%);
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat-x, repeat-x, repeat-x, no-repeat, no-repeat, no-repeat;
   background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 100%, 60px calc(100% - 46px), 0 calc(100% - 96px), 0 0, 0 0, 0 0;
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 720px 240px, 900px 240px, 1400px 320px, 100% 100%, 100% 100%, 100% 100%;
 }
 
-/* Rendirse contra un rival de la casa: ocupa su sitio siempre y solo se oculta a la vista, para que el campo no salte */
-.arq-rendirse-fila { display: flex; justify-content: flex-end; margin-top: 8px; }
-.arq-rendirse-fila.arq-inactivo { visibility: hidden; }

@@ -16,15 +16,16 @@
   const rendirseEl = document.getElementById("arqueriaRendirse");
   const rendirseSoloEl = document.getElementById("arqueriaRendirseSolo");
   const rendirseSoloFilaEl = document.getElementById("arqueriaRendirseSoloFila");
+  const pieEl = document.getElementById("arqueriaPie");
   const cuentaEl = document.getElementById("arqueriaCuenta");
   const revanchaEl = document.getElementById("arqueriaRevancha");
   const rankingEl = document.getElementById("arqueriaRankings");
   const CLAVE_REGISTRADAS = "compendioArqueriaPvpRegistradas";
 
   const RIVALES = [
-    { id: "hornet", nombre: "Hornet", dificultad: "Fácil", nivel: 1, color: "#b48ad9", nota: "Dispara con calma y los blancos le caen en línea recta. Para empezar." },
-    { id: "garra", nombre: "Garra", dificultad: "Media", nivel: 2, color: "#d9794f", nota: "Más rápida y bastante precisa. No perdona los descuidos." },
-    { id: "cassius", nombre: "Cassius", dificultad: "Difícil", nivel: 3, color: "#d9a441", nota: "Los blancos zigzaguean y casi no falla. Hay que ir a por el centro." }
+    { id: "hornet", nombre: "Hornet", dificultad: "Fácil", nivel: 1, color: "#b48ad9", nota: "Dispara con calma y los blancos le caen en línea recta. Para empezar.", corta: "Blancos en línea recta" },
+    { id: "garra", nombre: "Garra", dificultad: "Media", nivel: 2, color: "#d9794f", nota: "Más rápida y bastante precisa. No perdona los descuidos.", corta: "Rápida y precisa" },
+    { id: "cassius", nombre: "Cassius", dificultad: "Difícil", nivel: 3, color: "#d9a441", nota: "Los blancos zigzaguean y casi no falla. Hay que ir a por el centro.", corta: "Blancos en zigzag" }
   ];
   // El récord de antes de que hubiera varios rivales era contra el rival más flojo, que ahora es Hornet
   const clave = id => id === "hornet" ? "compendioArqueriaCassius" : `compendioArqueria_${id}`;
@@ -56,7 +57,7 @@
   const TABLAS = [
     { id: "puntaje", titulo: "Puntaje", valor: u => Number(u.maximo.mejor) || 0, etiqueta: "pts" },
     { id: "victorias", titulo: "Victorias", valor: u => u.victorias, etiqueta: "" },
-    { id: "cassius", titulo: "Contra Cassius", valor: u => (u.porClave.cassius ? u.porClave.cassius.victorias : 0), etiqueta: "" },
+    { id: "cassius", titulo: "Contra Cassius", ayuda: "Partidas ganadas contra Cassius, el rival más difícil", valor: u => (u.porClave.cassius ? u.porClave.cassius.victorias : 0), etiqueta: "" },
     { id: "jugadores", titulo: "Entre jugadores", valor: u => (u.porClave.jugador ? u.porClave.jugador.victorias : 0), etiqueta: "",
       sub: u => (u.porClave.jugador && u.porClave.jugador.maximo && Number(u.porClave.jugador.maximo.mejor) ? `mejor ${Number(u.porClave.jugador.maximo.mejor)} pts` : "") }
   ];
@@ -72,7 +73,7 @@
   }
 
   function pintarTabla() {
-    tabsEl.innerHTML = TABLAS.map((t, k) => `<button type="button" role="tab" class="arq-tab ${k === tablaActual ? "activa" : ""}" data-tabla="${k}">${t.titulo}</button>`).join("");
+    tabsEl.innerHTML = TABLAS.map((t, k) => `<button type="button" role="tab" aria-selected="${k === tablaActual}" class="arq-tab ${k === tablaActual ? "activa" : ""}" data-tabla="${k}"${t.ayuda ? ` title="${t.ayuda}"` : ""}>${t.titulo}</button>`).join("");
     if (!datosTabla) { rankingEl.innerHTML = `<p class="arq-vacio">Cargando la tabla...</p>`; return; }
     const t = TABLAS[tablaActual];
     const filas = filasDe(t);
@@ -97,7 +98,11 @@
 
   function pintarTu() {
     if (!window.MjStats || !yoSesion.id) {
-      tuEl.innerHTML = `<p class="arq-nota">Inicia sesión (arriba a la derecha) para guardar tus puntajes y aparecer en la tabla.</p>`;
+      tuEl.innerHTML = `<p class="arq-nota">Los puntajes se guardan solo con la sesión iniciada. Inicia sesión (arriba a la derecha) para guardar los tuyos y aparecer en la tabla.</p>`;
+      return;
+    }
+    if (!datosTabla) {
+      tuEl.innerHTML = `<p class="arq-nota">Tus números no están disponibles por ahora. Prueba de nuevo en un rato.</p>`;
       return;
     }
     const yo = (datosTabla || []).find(u => u.id === yoSesion.id);
@@ -125,13 +130,14 @@
       datosTabla = await MjStats.datos("arqueria");
     } catch (e) {
       datosTabla = null;
-      rankingEl.innerHTML = `<p class="arq-vacio">La tabla no está disponible por ahora.</p>`;
+      rankingEl.innerHTML = `<p class="arq-vacio">La tabla no está disponible por ahora. Prueba de nuevo en un rato.</p>`;
+      pintarTu();
       return;
     }
     pintarTabla();
     pintarTu();
   }
-  if (tabsEl) pintarTabla();
+  if (tabsEl) { pintarTabla(); tuEl.innerHTML = `<p class="arq-nota">Cargando tus números...</p>`; }
 
   async function anotarPartida(claveRival, resultado, puntaje) {
     if (!window.MjStats) return { guardado: false };
@@ -158,20 +164,33 @@
     return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
+  /* La línea bajo el campo (tu mejor puntaje, o lo que pasa en una partida entre jugadores) solo ocupa sitio si dice algo */
+  function actualizarLinea() {
+    recordEl.classList.toggle("hidden", (modo === "jugadores" && !vs) || !recordEl.textContent);
+    pintarPie();
+  }
+  // El pie del campo desaparece entero si no tiene ni texto ni botón (por ejemplo, en la lista de partidas entre jugadores)
+  function pintarPie() {
+    pieEl.classList.toggle("hidden", recordEl.classList.contains("hidden") && rendirseSoloFilaEl.classList.contains("hidden"));
+  }
+  function ponerLinea(texto) { recordEl.textContent = texto; actualizarLinea(); }
+
   /* --- Contra rivales ------------------------------------------------------ */
   function pintarRivales() {
-    rivalesEl.innerHTML = RIVALES.map(r => `
-      <button type="button" class="arq-rival ${r.id === rival.id ? "activo" : ""}" data-rival="${r.id}" style="--rc: ${r.color}">
+    rivalesEl.innerHTML = RIVALES.map(r => {
+      const activo = r.id === rival.id;
+      return `
+      <button type="button" class="arq-rival ${activo ? "activo" : ""}" data-rival="${r.id}" aria-pressed="${activo}" style="--rc: ${r.color}" title="${esc(r.nota)}">
         <span class="arq-rival-icono" aria-hidden="true">${r.nombre[0]}</span>
-        <strong>${r.nombre}</strong>
-        <span class="arq-nivel" aria-label="Dificultad ${r.dificultad}">${[1, 2, 3].map(n => `<i class="${n <= r.nivel ? "on" : ""}">➳</i>`).join("")}<span>${r.dificultad}</span></span>
-        <small>${r.nota}<br><span class="arq-mejor">${leer(r.id) ? `Tu mejor: ${leer(r.id)} puntos` : "Aún sin jugar"}</span></small>
-      </button>`).join("");
+        <span class="arq-rival-cab"><strong>${r.nombre}</strong><span class="arq-nivel" aria-label="Dificultad ${r.dificultad}">${r.dificultad}</span></span>
+        <small>${r.corta}</small>
+      </button>`;
+    }).join("");
   }
 
   function pintarRecord() {
     if (modo === "jugadores") return;
-    recordEl.textContent = leer(rival.id) ? `Tu mejor puntaje contra ${rival.nombre}: ${leer(rival.id)}` : "Clic, o Z / X con el cursor encima.";
+    ponerLinea(leer(rival.id) ? `Tu mejor puntaje contra ${rival.nombre}: ${leer(rival.id)}` : "");
   }
 
   const juego = crearArqueria({
@@ -217,6 +236,7 @@
     rendirseSoloFilaEl.classList.toggle("hidden", modo === "jugadores" || !!vs);
     rendirseSoloFilaEl.classList.toggle("arq-inactivo", !jugando);
     rendirseSoloEl.disabled = !jugando;
+    pintarPie();
     if (vs) rendirseEl.textContent = vs.iniciada && !vs.terminada ? "Rendirse" : "Abandonar";
   }
 
@@ -226,7 +246,7 @@
     modoRivalesEl.classList.toggle("hidden", pvp);
     lobbyEl.classList.toggle("hidden", !pvp || !!vs);
     escenarioEl.classList.toggle("hidden", pvp && !vs);
-    recordEl.classList.toggle("hidden", pvp && !vs);
+    actualizarLinea();
     controlesEl.classList.toggle("hidden", !vs);
     pintarRendirse();
     document.querySelectorAll(".aj-modo").forEach(b => b.classList.toggle("activo", b.dataset.modo === modo));
@@ -331,7 +351,7 @@
     aplazado = setTimeout(cargarPartidas, 120);
   }
 
-  function estadoTexto(texto) { recordEl.textContent = texto; }
+  function estadoTexto(texto) { ponerLinea(texto); }
 
   /* Abre una partida: deja el campo listo y espera a que los dos pulsen Listo. */
   function abrirVs(f) {
