@@ -340,7 +340,7 @@
   function palabrasDe(u) {
     const out = ["desafiante", "provocar", "volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
     if (M.esEscurridizo(est, u)) out.push("escurridizo");
-    if (u.flags.marcadaPor !== null) out.push("marcada");
+    if (M.marcadaVigente(est, u) !== null) out.push("marcada");
     if (u.flags.barrera) out.push("barrera");
     if (u.flags.noBloqueaHasta >= est.turno && !out.includes("noBloquea")) out.push("noBloquea");
     return out;
@@ -772,7 +772,8 @@
   const BIOMAS = {
     "puente-de-las-legiones": "puente", "los-huesos": "huesos", "glaciar-eterno": "hielo", "vado-ceniza": "ceniza",
     "desierto-de-cenizas": "desierto", "catedral-del-juramento": "catedral", "el-crater": "crater", "kigan": "puerto",
-    "torre-del-silencio": "torre", "la-espesura": "espesura", "osario-de-la-frontera": "osario", "cueva-de-carne": "carne"
+    "torre-del-silencio": "torre", "la-espesura": "espesura", "osario-de-la-frontera": "osario", "cueva-de-carne": "carne",
+    "capilla-de-las-astas-caidas": "capilla", "fauces-grises": "fauces", "montana-del-eco-arcano": "eco", "pozo-de-la-eternidad": "pozo", "carronada": "carronada"
   };
 
   function aplicarTablero() {

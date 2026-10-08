@@ -125,7 +125,18 @@
     if ((ef.palabras || []).includes(palabra)) return true;
     const T = est.terreno;
     if (T && T.dueno === u.dueno && palabra === "volar" && T.cartaId === "los-huesos" && (meta(est, u.cartaId).afinidad || []).includes("sombra")) return true;
+    // Otros terrenos que dan una palabra a las unidades de su dueño (Fauces Grises: Desafiante a las de Cacería)
+    const D = defTerreno(est);
+    if (T && D && D.daPalabra && T.dueno === u.dueno && D.daPalabra(est, u, palabra)) return true;
     return false;
+  }
+
+  /* Marcada: Vulnerable para quien la marcó. Puede ser para siempre (Verdam) o hasta el final de un turno
+     (flags.marcadaHasta, Victor). Devuelve el jugador que la marcó, o null. */
+  function marcadaVigente(est, u) {
+    if (u.flags.marcadaPor === null || u.flags.marcadaPor === undefined) return null;
+    if (u.flags.marcadaHasta && u.flags.marcadaHasta < est.turno) return null;
+    return u.flags.marcadaPor;
   }
 
   function costeDe(est, jIdx, id) {
@@ -145,7 +156,7 @@
     const u = {
       uid: est.siguienteUid++, cartaId, dueno: jIdx, atq, pv, pvMax: pv, atqBase: atq, pvBase: pv,
       entro: est.turno, equipo: [], mods: [],
-      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
+      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, marcadaHasta: 0, guardiaTurno: 0, guardiaUsada: false, dupPv: 0, danada: false, inmune: false }
     };
     const ef = EFECTOS[cartaId];
     if (ef && ef.alCrear) ef.alCrear(est, u);
@@ -166,6 +177,7 @@
     u.hueco = huecoLibre(J, hueco);
     J.campo.push(u);
     log(est, `${J.nombre} juega a ${nombre(est, u)}.`);
+    sincronizarTerreno(est);
     const T = defTerreno(est);
     if (T && T.alEntrarUnidad) T.alEntrarUnidad(est, u);
     J.campo.forEach(o => {
@@ -177,12 +189,41 @@
       const ef = efectoDe(est, u);
       if (ef.alEntrar) {
         if (ef.alEntrar.objetivo && !objetivo) log(est, `La habilidad de ${nombre(est, u)} no encuentra objetivo.`);
-        else ef.alEntrar.resolver({ est, M, u, j: jIdx, objetivo });
+        else {
+          ef.alEntrar.resolver({ est, M, u, j: jIdx, objetivo });
+          // Eco (Montaña del Eco Arcano): la habilidad al entrar se repite con el mismo objetivo, si sigue ahí
+          const D = defTerreno(est);
+          if (D && D.eco && D.eco(est, u) && buscar(est, u.uid) && (!objetivo || objetivo.uid === undefined || buscar(est, objetivo.uid))) {
+            log(est, `El eco arcano repite la habilidad de ${nombre(est, u)}.`);
+            ef.alEntrar.resolver({ est, M, u, j: jIdx, objetivo });
+          }
+        }
       }
     } else if (conEntrada && efectoDe(est, u).alEntrar) {
       log(est, `El silencio de la Torre apaga la habilidad de ${nombre(est, u)}.`);
     }
     return u;
+  }
+
+  /* Unidades que cambian con el terreno (efecto.duplicaEn = id del terreno): mientras ese terreno esté en juego
+     duplican su ataque (lo hace pasivaAtq) y su vida. Se llama cada vez que entra una unidad o cambia el terreno. */
+  function sincronizarTerreno(est) {
+    todas(est).forEach(u => {
+      const ef = efectoDe(est, u);
+      if (!ef.duplicaEn) return;
+      const debe = terrenoActivo(est, ef.duplicaEn);
+      if (debe && !u.flags.dupPv) {
+        u.flags.dupPv = u.pvMax;
+        u.pvMax += u.flags.dupPv;
+        u.pv += u.flags.dupPv;
+        log(est, `${nombre(est, u)} se crece en ${meta(est, ef.duplicaEn).nombre}: duplica su ataque y su vida.`);
+      } else if (!debe && u.flags.dupPv) {
+        u.pvMax = Math.max(1, u.pvMax - u.flags.dupPv);
+        u.flags.dupPv = 0;
+        u.pv = Math.max(1, Math.min(u.pv, u.pvMax));
+        log(est, `${nombre(est, u)} pierde lo que le daba ${meta(est, ef.duplicaEn).nombre}.`);
+      }
+    });
   }
 
   /* --- Robar -------------------------------------------------------------- */
@@ -254,9 +295,11 @@
     let u = hit.u;
     // Guardián: otra unidad aliada recibe el golpe en su lugar (una vez por turno)
     const ownerJ = est.jugadores[u.dueno];
-    const guardian = ownerJ.campo.find(g => g.uid !== u.uid && efectoDe(est, g).guardian && g.flags.guardiaTurno !== est.turno);
+    const guardian = ownerJ.campo.find(g => g.uid !== u.uid && efectoDe(est, g).guardian && g.flags.guardiaTurno !== est.turno
+      && !(efectoDe(est, g).guardianUnaVez && g.flags.guardiaUsada));
     if (guardian) {
       guardian.flags.guardiaTurno = est.turno;
+      guardian.flags.guardiaUsada = true;
       log(est, `${nombre(est, guardian)} se interpone y recibe el golpe de ${nombre(est, u)}.`);
       u = guardian;
     }
@@ -308,11 +351,11 @@
   }
 
   /* Bonificación temporal de ataque y vida hasta el final del turno `hasta` */
-  function mod(est, u, atq, pv, hasta) {
+  function mod(est, u, atq, pv, hasta, texto) {
     u.mods.push({ atq, pv, hasta });
     u.pvMax += pv;
     u.pv += pv;
-    log(est, `${nombre(est, u)} gana ${atq >= 0 ? "+" : ""}${atq}/${pv >= 0 ? "+" : ""}${pv} este turno.`);
+    log(est, texto || `${nombre(est, u)} gana ${atq >= 0 ? "+" : ""}${atq}/${pv >= 0 ? "+" : ""}${pv} este turno.`);
   }
 
   /* --- Objetivos ---------------------------------------------------------- */
@@ -350,11 +393,13 @@
     const spec = esUnidad(m) ? ef.alEntrar : ef.jugar;
     if (!spec || !spec.objetivo) return null;
     const esU = esUnidad(m);
+    // Un objeto que apunta a una unidad enemiga respeta Escurridizo y Capucha oscura, igual que una habilidad
+    const hostil = esU || spec.objetivo === "unidadEnemiga";
     return {
       tipo: spec.objetivo,
-      habilidad: esU,
+      habilidad: hostil,
       opcional: esU,
-      validos: validosParaObjetivo(est, jIdx, spec.objetivo, esU, null)
+      validos: validosParaObjetivo(est, jIdx, spec.objetivo, hostil, null)
     };
   }
 
@@ -398,7 +443,7 @@
       const provocan = defensores.filter(d => tienePalabra(est, d, "provocar"));
       (!ignora && provocan.length ? provocan : defensores).forEach(d => out.add(d.uid));
     }
-    defensores.forEach(d => { if (d.flags.marcadaPor === atk.dueno) out.add(d.uid); });
+    defensores.forEach(d => { if (marcadaVigente(est, d) === atk.dueno) out.add(d.uid); });
     return [...out].filter(uid => !esEscurridizo(est, defensores.find(d => d.uid === uid)));
   }
 
@@ -446,6 +491,7 @@
       if (est.terreno.restantes <= 0) {
         log(est, `${meta(est, est.terreno.cartaId).nombre} se desvanece.`);
         est.terreno = null;
+        sincronizarTerreno(est);
       }
     }
     est.activo = 1 - est.activo;
@@ -491,7 +537,8 @@
   function requisitoDeReaccion(est, jIdx, id) {
     const ef = EFECTOS[id];
     if (!ef || !ef.reaccion || ef.reaccion.objetivo !== "atacante" || !est.combate) return null;
-    return { tipo: "atacante", validos: est.combate.atacantes.filter(uid => buscar(est, uid)).map(uid => ({ u: uid })) };
+    const valida = uid => { const hit = buscar(est, uid); return !!hit && (!ef.reaccion.valido || ef.reaccion.valido(est, hit.u, jIdx)); };
+    return { tipo: "atacante", validos: est.combate.atacantes.filter(valida).map(uid => ({ u: uid })) };
   }
 
   function jugarReaccion(est, jIdx, i, objetivoRaw) {
@@ -580,6 +627,7 @@
       const T = TERRENOS[id] || {};
       est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno };
       log(est, `${J.nombre} juega el terreno ${m.nombre}.`);
+      sincronizarTerreno(est);
     } else {
       log(est, `${J.nombre} juega ${m.nombre}.`);
       const ef = EFECTOS[id];
@@ -688,7 +736,7 @@
     if (contra) {
       const ef = efectoDe(est, u);
       if (ef.bonusAtaque) d += ef.bonusAtaque(est, u, contra) || 0;
-      if (contra.flags.marcadaPor === u.dueno) d += 2;
+      if (marcadaVigente(est, contra) === u.dueno) d += 2;
     }
     return d;
   }
@@ -887,7 +935,7 @@
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, requisitoDeReaccion, unidadPuedeAtacar,
-    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, esEscurridizo, puedeApuntarHabilidad, terrenoActivo
+    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, esEscurridizo, puedeApuntarHabilidad, terrenoActivo, marcadaVigente, sincronizarTerreno
   };
 
   raiz.CartasMotor = M;

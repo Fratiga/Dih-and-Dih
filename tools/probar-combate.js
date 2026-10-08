@@ -147,13 +147,156 @@ M.registrar("t-esquivo", { palabras: ["esquivo"] }); mk("t-esquivo", 1, 2);
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); poner(e, 1, "t24");
   M.reproducir(e, { t: "atacar", u: [a.uid] }); ok(e.pendiente && M.reproducir(e, { t: "bloquear", b: [] }).ok, "reproducir enruta bloquear al defensor"); }
 
+// 14b) Cartas del compendio añadidas con las afinidades: Darian y la Cueva de Carne
+const terreno = (e, id, dueno, restantes = null) => { e.terreno = { cartaId: id, dueno, restantes, turnoEntrada: 0, desde: e.turno }; M.sincronizarTerreno(e); };
+{ const e = partida([], []); turnoDe(e, 0); const d = poner(e, 0, "darian");
+  ok(M.atqEfectivo(e, d) === 3 && d.pv === 4 && d.flags.barrera && M.tienePalabra(e, d, "duro"), "Darian: 3/4 con Barrera y Duro");
+  e.jugadores[0].mano = ["cueva-de-carne"]; e.jugadores[0].energia = 10;
+  ok(M.aplicar(e, { t: "jugar", i: 0 }, 0).ok, "juega la Cueva de Carne");
+  ok(M.atqEfectivo(e, d) === 6 && d.pv === 8 && d.pvMax === 8, `Darian dentro de la Cueva: duplica ataque y vida (${M.atqEfectivo(e, d)}/${d.pv})`);
+  const d2 = M.ponerUnidad(e, 0, "darian", false, null);
+  ok(M.atqEfectivo(e, d2) === 6 && d2.pvMax === 8, "un Darian que entra con la Cueva ya en juego también se duplica");
+  d.pv = 6; terreno(e, "puente-de-las-legiones", 0, 2);
+  ok(M.atqEfectivo(e, d) === 3 && d.pvMax === 4 && d.pv === 4, `al irse la Cueva vuelve a 3/4 (${M.atqEfectivo(e, d)}/${d.pv}/${d.pvMax})`);
+  terreno(e, "cueva-de-carne", 1); ok(M.atqEfectivo(e, d) === 6 && d.pvMax === 8, "la Cueva del rival también lo duplica (el terreno es de todos)");
+  terreno(e, "cueva-de-carne", 1); ok(d.pvMax === 8, "no se duplica dos veces"); }
+{ const e = partida([], []); turnoDe(e, 0); const d = poner(e, 0, "darian"); const r = poner(e, 1, "t24");
+  M.infligir(e, { u: d.uid }, 5, { tipo: "habilidad" }); ok(d.pv === 4 && !d.flags.barrera, "Darian: la Barrera absorbe el primer golpe");
+  M.infligir(e, { u: d.uid }, 2, { tipo: "habilidad" }); ok(d.pv === 3, "y después Duro quita 1"); }
+// Fauces Grises: Desafiante a la Cacería del dueño
+{ const e = partida([], []); turnoDe(e, 0); const h = poner(e, 0, "hornet"), ry = poner(e, 0, "ryn"), hr = poner(e, 1, "hornet");
+  const manta = poner(e, 1, "manta-del-cielo");
+  ok(!M.tienePalabra(e, h, "desafiante"), "sin terreno, Hornet no desafía");
+  terreno(e, "fauces-grises", 0, 3);
+  ok(M.tienePalabra(e, h, "desafiante") && !M.tienePalabra(e, ry, "desafiante") && !M.tienePalabra(e, hr, "desafiante"), "Fauces Grises: solo la Cacería de su dueño es Desafiante");
+  ok(M.aplicar(e, { t: "atacar", u: [h.uid], d: { [h.uid]: manta.uid } }, 0).ok, "Hornet desafía a la voladora");
+  ok(e.ultimoCombate && e.ultimoCombate.pares[0].desafio, "el desafío quedó registrado"); }
+// Pozo de la Eternidad
+{ const e = partida([], []); turnoDe(e, 0); terreno(e, "pozo-de-la-eternidad", 0);
+  const g = poner(e, 0, "mamut-gelido"), g2 = poner(e, 0, "mamut-gelido"), b = poner(e, 0, "bull"), rival = poner(e, 1, "mamut-gelido");
+  M.infligir(e, { u: g.uid }, 20, { tipo: "habilidad" });
+  const vuelto = e.jugadores[0].campo.find(u => u.cartaId === "mamut-gelido" && u.uid !== g2.uid);
+  ok(vuelto && vuelto.pv === 1 && vuelto.hueco === g.hueco && !e.jugadores[0].cementerio.includes("mamut-gelido"), "Pozo: la unidad de Eternidad vuelve con 1 de vida, en su hueco");
+  M.infligir(e, { u: g2.uid }, 20, { tipo: "habilidad" }); ok(!M.buscar(e, g2.uid) && e.jugadores[0].cementerio.includes("mamut-gelido"), "solo una vez por turno");
+  M.infligir(e, { u: b.uid }, 20, { tipo: "habilidad" }); ok(!M.buscar(e, b.uid), "una unidad de otra afinidad no vuelve");
+  e.terreno.usado = 0; M.infligir(e, { u: rival.uid }, 20, { tipo: "habilidad" }); ok(!M.buscar(e, rival.uid), "la del rival tampoco"); }
+// Capilla de las Astas Caídas
+{ const e = partida([], []); turnoDe(e, 0); terreno(e, "capilla-de-las-astas-caidas", 0);
+  const a = poner(e, 0, "t33"), b = poner(e, 0, "t24"), c = poner(e, 0, "t11"), r = poner(e, 1, "t33");
+  M.infligir(e, { u: r.uid }, 9, { tipo: "habilidad" }); ok(M.atqEfectivo(e, a) === 3, "muere una del rival: sin luto");
+  M.infligir(e, { u: c.uid }, 9, { tipo: "habilidad" });
+  ok(M.atqEfectivo(e, a) === 4 && M.atqEfectivo(e, b) === 3, "Capilla: las demás ganan +1 de ataque");
+  M.infligir(e, { u: b.uid }, 9, { tipo: "habilidad" }); ok(M.atqEfectivo(e, a) === 4, "solo la primera muerte de cada turno");
+  M.aplicar(e, { t: "fin" }, 0); ok(M.atqEfectivo(e, a) === 4, "sigue en el turno del rival");
+  M.aplicar(e, { t: "fin" }, 1); ok(M.atqEfectivo(e, a) === 4, "y en el propio turno siguiente");
+  M.aplicar(e, { t: "fin" }, 0); ok(M.atqEfectivo(e, a) === 3, "luego termina"); }
+// Carroñada
+{ const e = partida([], []); turnoDe(e, 0); terreno(e, "carronada", 0);
+  const a = poner(e, 0, "t33"), p = poner(e, 0, "bull"), v = poner(e, 1, "t11"); a.pv = 1;
+  M.infligir(e, { u: v.uid }, 5, { tipo: "habilidad" }); ok(a.pv === 3 && p.pv === 4, `Carroñada: los de Carne se curan 2 cuando cae una unidad (${a.pv})`); }
+// Montaña del Eco Arcano
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0];
+  const robadas = () => { J.mano = []; M.ponerUnidad(e, 0, "baraja", true, null); return J.mano.length; };
+  const sinEco = robadas();
+  terreno(e, "montana-del-eco-arcano", 0, 3); const conEco = robadas();
+  ok(sinEco === 1 && conEco === 2, `Eco: la habilidad al entrar de una unidad de Arcano se repite (${sinEco} y ${conEco})`);
+  const t = poner(e, 0, "t33"); M.ponerUnidad(e, 0, "ryn", true, t); ok(M.atqEfectivo(e, t) === 7, "Ryn bajo el eco da +4");
+  const t2 = poner(e, 0, "t33"); M.ponerUnidad(e, 0, "hornet", true, null);   // sin objetivo no debe fallar
+  terreno(e, "montana-del-eco-arcano", 1, 3); ok(robadas() === 1, "el eco solo vale para su dueño");
+  terreno(e, "montana-del-eco-arcano", 0, 3); J.mano = []; M.ponerUnidad(e, 0, "t33", true, null); ok(J.mano.length === 0, "ni para unidades de otra afinidad"); }
+// La banda de Cassius
+{ const e = partida([], []); turnoDe(e, 0); const v = poner(e, 0, "voss"); e.jugadores[1].campo.length = 0; e.jugadores[1].mano = ["t11", "t11", "t11"];
+  M.aplicar(e, { t: "atacar", u: [v.uid] }, 0); ok(e.jugadores[1].mano.length === 2 && e.jugadores[1].vida === 17, "Voss: al golpear al jugador, este descarta una carta"); }
+{ const e = partida([], []); turnoDe(e, 0); const v = poner(e, 0, "voss"); const b = poner(e, 1, "t24"); e.jugadores[1].mano = ["t11", "t11"];
+  M.aplicar(e, { t: "atacar", u: [v.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[v.uid, b.uid]] }, 1); ok(e.jugadores[1].mano.length === 2, "Voss bloqueada: sin descarte"); }
+{ const e = partida([], []); turnoDe(e, 0); const t = poner(e, 1, "t33"), t2 = poner(e, 1, "t11");
+  const vic = M.ponerUnidad(e, 0, "victor", true, t);
+  ok(M.marcadaVigente(e, t) === 0 && M.objetivosDeDesafio(e, poner(e, 0, "t33")).includes(t.uid), "Victor: la unidad queda marcada y cualquiera puede desafiarla");
+  e.turno += 2; ok(M.marcadaVigente(e, t) === 0, "sigue marcada hasta el final de tu próximo turno");
+  e.turno += 1; ok(M.marcadaVigente(e, t) === null && M.objetivosDeDesafio(e, vic).length === 0, "y luego se acaba"); }
+{ const e = partida([], []); turnoDe(e, 0); const b = poner(e, 1, "billy"), o = poner(e, 1, "t11"), g = poner(e, 0, "garra");
+  ok(M.objetivosDeDesafio(e, g).length === 1 && M.objetivosDeDesafio(e, g)[0] === b.uid, "Billy tiene Provocar"); }
+// Los Seis del Último Apunte
+{ const e = partida([], []); turnoDe(e, 0); const am = poner(e, 0, "amarillo-ultimo-apunte"), a = poner(e, 0, "t33"), b = poner(e, 0, "t24");
+  M.infligir(e, { u: a.uid }, 2, { tipo: "habilidad" }); ok(a.pv === 3 && am.pv === 4, "Amarillo recibe el primer golpe de una aliada (con Duro)");
+  M.infligir(e, { u: b.uid }, 2, { tipo: "habilidad" }); ok(b.pv === 2 && am.pv === 4, "pero solo esa primera vez"); }
+{ const e = partida([], []); turnoDe(e, 0); const r1 = poner(e, 1, "t24"), r2 = poner(e, 1, "t24");
+  M.ponerUnidad(e, 0, "azul-ultimo-apunte", true, r1); const a = poner(e, 0, "t33");
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); ok(e.pendiente && !M.puedeBloquear(e, r1, a) && M.puedeBloquear(e, r2, a), "Azul: la unidad señalada no puede bloquear este turno");
+  M.aplicar(e, { t: "pasar" }, 1); }
+{ const e = partida([], []); turnoDe(e, 0); const r1 = poner(e, 1, "t24");
+  M.ponerUnidad(e, 0, "morado-ultimo-apunte", true, r1);
+  ok(r1.flags.noBloqueaHasta >= e.turno + 1 && r1.flags.noAtacaHasta >= e.turno + 1, "Morado: ni ataca ni bloquea hasta el final de su próximo turno");
+  M.aplicar(e, { t: "fin" }, 0); r1.entro = 0; ok(!M.unidadPuedeAtacar(e, r1), "no puede atacar en su turno"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "gris-ultimo-apunte"), a = poner(e, 0, "t33");
+  ok(M.atqEfectivo(e, a) === 4 && M.atqEfectivo(e, g) === 1, "Gris: las demás tienen +1 de ataque"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "gris-ultimo-apunte"), a = poner(e, 0, "t33");
+  const rojo = M.ponerUnidad(e, 0, "rojo-ultimo-apunte", true, null);
+  ok(g.pv === 5 && M.atqEfectivo(e, g) === 2 && a.pv === 3 && M.tienePalabra(e, rojo, "desafiante"), "Rojo: solo los del Último Apunte ganan +1/+1"); }
+{ const e = partida([], []); turnoDe(e, 0); const big = poner(e, 0, "t24"); big.pv = 1; big.pvMax = 10; big.atq = 2;
+  M.ponerUnidad(e, 0, "elias-morcant", true, big); ok(big.pv === 6, `Elías cura 5 a una de Carne (${big.pv})`);
+  const ry = poner(e, 0, "ryn"); ry.pv = 1; ry.pvMax = 10; M.ponerUnidad(e, 0, "elias-morcant", true, ry); ok(ry.pv === 4, `y 3 a una de otra afinidad (${ry.pv})`);
+}
+{ const e = partida([], []); turnoDe(e, 0); const el = poner(e, 0, "elias-morcant"), tgt = poner(e, 1, "t33"); tgt.flags.danada = true;
+  M.aplicar(e, { t: "atacar", u: [el.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[el.uid, tgt.uid]] }, 1);
+  ok(!M.buscar(e, tgt.uid), "Elías: +2 de daño contra una unidad que ya recibió daño (2+2 matan a la de 3 de vida)"); }
+{ const e = partida([], []); turnoDe(e, 0); const el = poner(e, 0, "elias-morcant"), tgt = poner(e, 1, "t33");
+  M.aplicar(e, { t: "atacar", u: [el.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[el.uid, tgt.uid]] }, 1);
+  ok(tgt.pv === 1, "y sin daño previo pega solo 2"); }
+{ const e = partida([], []); turnoDe(e, 0); const t = poner(e, 1, "t33"); M.ponerUnidad(e, 0, "baltasar-sorel", true, t); ok(t.pv === 1, "Baltasar: 2 de daño al entrar");
+  const t2 = poner(e, 1, "t33"); M.ponerUnidad(e, 0, "protodraco", true, t2); ok(t2.pv === 1 && M.tienePalabra(e, M.todas(e).find(u => u.cartaId === "protodraco"), "volar"), "Protodraco: Volar y 2 de daño al entrar"); }
+{ const e = partida([], []); turnoDe(e, 0); const n = poner(e, 0, "nico"), tobi = poner(e, 0, "coronel-tobi"), f = poner(e, 0, "felino-veloz-mistico");
+  ok(M.tienePalabra(e, n, "esquivo") && M.tienePalabra(e, tobi, "provocar") && M.tienePalabra(e, tobi, "arrollar"), "Nico Esquivo; Tobi Provocar y Arrollar");
+  ok(M.esEscurridizo(e, f) && M.tienePalabra(e, f, "veloz"), "Fulguepardo: Veloz y Escurridizo al entrar");
+  const gu = poner(e, 0, "guillotina"), dr = poner(e, 0, "dragarto"), ge = poner(e, 0, "mamut-gelido"), ha = poner(e, 0, "halcon-linire"), co = poner(e, 0, "colmillo-gris");
+  ok(M.tienePalabra(e, gu, "veloz") && M.tienePalabra(e, gu, "arrollar") && M.tienePalabra(e, dr, "arrollar") && M.tienePalabra(e, ge, "duro") && M.tienePalabra(e, ha, "volar") && M.tienePalabra(e, co, "veloz"), "palabras de las criaturas nuevas"); }
+// Objetos nuevos
+{ const e = partida([], []); turnoDe(e, 0); const t = poner(e, 1, "t33"), esc = poner(e, 1, "t11", { escurridizoHasta: 99 });
+  e.jugadores[0].mano = ["veneno-debil"]; e.jugadores[0].energia = 5;
+  const req = M.requisitoDeJugada(e, 0, "veneno-debil"); ok(req.validos.length === 1 && req.validos[0].u === t.uid, "un objeto hostil no puede apuntar a una escurridiza");
+  ok(M.aplicar(e, { t: "jugar", i: 0, o: { u: t.uid } }, 0).ok && M.atqEfectivo(e, t) === 1, "Veneno débil: -2 de ataque");
+  M.aplicar(e, { t: "fin" }, 0); ok(M.atqEfectivo(e, t) === 1, "dura en el turno del rival"); M.aplicar(e, { t: "fin" }, 1); ok(M.atqEfectivo(e, t) === 3, "y luego se acaba"); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); e.jugadores[0].mano = ["capa-reversible"]; e.jugadores[0].energia = 5;
+  M.aplicar(e, { t: "jugar", i: 0, o: { u: a.uid } }, 0); ok(M.esEscurridizo(e, a), "Capa reversible: Escurridizo");
+  e.turno += 1; ok(M.esEscurridizo(e, a), "durante el turno del rival"); e.turno += 1; ok(!M.esEscurridizo(e, a), "y luego no"); }
+{ const e = partida([], []); turnoDe(e, 0); const c = poner(e, 0, "t24"), ry = poner(e, 0, "ryn"); c.pv = 1; ry.pv = 1;
+  e.jugadores[0].mano = ["kit-de-sanador", "kit-de-sanador"]; e.jugadores[0].energia = 9;
+  M.aplicar(e, { t: "jugar", i: 0, o: { u: ry.uid } }, 0); ok(ry.pv === 3 && M.atqEfectivo(e, ry) === 2 && ry.pvMax === 3, `Kit de sanador: cura 4, sin bono a otra afinidad (${ry.pv})`);
+  M.aplicar(e, { t: "jugar", i: 0, o: { u: c.uid } }, 0); ok(c.pv === 5 && M.atqEfectivo(e, c) === 3 && c.pvMax === 5, `y a una de Carne le da +1/+1 (${c.pv}/${c.pvMax})`); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0]; J.mano = ["corneta-de-senales"]; J.energia = 3; poner(e, 0, "bull");
+  let n0 = J.mano.length; M.aplicar(e, { t: "jugar", i: 0 }, 0); ok(J.mano.length - (n0 - 1) === 1, "Corneta: una carta con menos de dos de Juramento");
+  J.mano = ["corneta-de-senales"]; J.energia = 3; poner(e, 0, "billy"); n0 = J.mano.length; M.aplicar(e, { t: "jugar", i: 0 }, 0); ok(J.mano.length - (n0 - 1) === 2, "y dos con dos de Juramento"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0]; J.energia = 9; J.mano = ["sales-aromaticas"];
+  J.cementerio = ["bull", "centinela", "kraken", "cristal-de-mana"];
+  M.aplicar(e, { t: "jugar", i: 0 }, 0); const k = J.campo.find(u => u.cartaId === "kraken");
+  ok(k && k.pv === 1 && !J.cementerio.includes("kraken") && J.cementerio.includes("bull"), "Sales aromáticas: despierta a la última unidad del cementerio con 1 de vida");
+  J.mano = ["sales-aromaticas"]; J.cementerio = ["cristal-de-mana"]; ok(M.aplicar(e, { t: "jugar", i: 0 }, 0).ok, "sin nadie a quien despertar no falla"); }
+// Reacciones nuevas
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"), m = poner(e, 0, "t52", { escurridizoHasta: 99 });
+  e.jugadores[1].mano = ["trampa-para-animales"]; e.jugadores[1].energia = 5;
+  M.aplicar(e, { t: "atacar", u: [a.uid, m.uid] }, 0);
+  const req = M.requisitoDeReaccion(e, 1, "trampa-para-animales");
+  ok(e.pendiente && req.validos.length === 1 && req.validos[0].u === a.uid, "Trampa para animales: no puede apuntar a una escurridiza");
+  ok(M.aplicar(e, { t: "reaccionar", i: 0, o: { u: m.uid } }, 1).error, "elegirla se rechaza");
+  ok(M.aplicar(e, { t: "reaccionar", i: 0, o: { u: a.uid } }, 1).ok && !M.buscar(e, a.uid), "y hiere a la elegida (3 de daño matan a la de 3 de vida)");
+  ok(e.jugadores[1].vida === 15, `la otra atacante golpea al jugador (vida ${e.jugadores[1].vida})`); }
+{ const e = partida([], []); turnoDe(e, 0); const m = poner(e, 0, "t33", { escurridizoHasta: 99 });
+  e.jugadores[1].mano = ["trampa-para-animales"]; e.jugadores[1].energia = 5;
+  M.aplicar(e, { t: "atacar", u: [m.uid] }, 0); ok(!e.pendiente && e.jugadores[1].vida === 17, "sin objetivo posible no hay ventana de reacción"); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"), b = poner(e, 0, "t52");
+  e.jugadores[1].mano = ["saco-de-abrojos"]; e.jugadores[1].energia = 5;
+  M.aplicar(e, { t: "atacar", u: [a.uid, b.uid] }, 0); M.aplicar(e, { t: "reaccionar", i: 0 }, 1);
+  ok(e.jugadores[1].vida === 20 - (2 + 4), `Saco de abrojos: cada atacante pierde 1 de ataque (vida ${e.jugadores[1].vida})`);
+  ok(M.atqEfectivo(e, a) === 2, "hasta el final del turno"); }
+
 // 15) simulación aleatoria con accionesLegales
 function azar(sem) { let x = sem >>> 0; return () => { x = (x + 0x6D2B79F5) >>> 0; let t = x; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const ids = Object.keys(cartas).filter(id => !id.startsWith("t") && cartas[id].tipo !== "Terreno" || cartas[id].tipo === "Terreno");
+const ids = Object.keys(cartas);   // incluye las cartas de prueba (t11, t-temible...), que se filtran al armar los mazos
 let terminadas = 0, ataques = 0, bloqueos = 0;
 for (let g = 0; g < 300; g++) {
   const r = azar(g + 1000);
-  const mazo = () => Array.from({ length: 24 }, () => ids.filter(i => !i.startsWith("t")).concat([])[Math.floor(r() * ids.filter(i => !i.startsWith("t")).length)]);
+  const reales = ids.filter(i => !/^t(\d|-)/.test(i));
+  const mazo = () => Array.from({ length: 24 }, () => reales[Math.floor(r() * reales.length)]);
   const e = M.crearPartida({ semilla: g + 1, primero: g % 2, cartas, jugadores: [{ id: "a", nombre: "A", mazo: mazo() }, { id: "b", nombre: "B", mazo: mazo() }] });
   let pasos = 0;
   while (e.ganador === null && pasos++ < 1500) {

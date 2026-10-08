@@ -196,6 +196,21 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-bioma[data-b="catedral"] { background: linear-gradient(180deg, rgba(255,226,140,.32), rgba(58,40,10,.68)); }
 .bt-bioma[data-b="catedral"]::before { background: repeating-linear-gradient(100deg, rgba(255,242,190,.14) 0 38px, transparent 38px 112px); animation: bt-niebla 40s linear infinite; width: 200%; }
 .bt-bioma[data-b="puente"] { background: linear-gradient(180deg, rgba(255,150,80,.42), rgba(60,40,72,.7)); }
+/* Capilla de las Astas Caídas: velas y luto */
+.bt-bioma[data-b="capilla"] { background: radial-gradient(ellipse at 50% 100%, rgba(255,196,110,.34), rgba(58,36,40,.74) 60%, rgba(18,10,14,.9)); }
+.bt-bioma[data-b="capilla"]::before { background: repeating-radial-gradient(circle at 22% 80%, rgba(255,214,150,.12) 0 2px, transparent 2px 30px); animation: bt-latido 4.4s ease-in-out infinite; }
+/* Fauces Grises: cacería bajo la lluvia */
+.bt-bioma[data-b="fauces"] { background: linear-gradient(180deg, rgba(84,92,86,.62), rgba(20,26,22,.86)); }
+.bt-bioma[data-b="fauces"]::after { top: -100%; height: 200%; background-image: repeating-linear-gradient(105deg, rgba(200,214,208,.16) 0 1px, transparent 1px 14px); animation: bt-cae 5s linear infinite; }
+/* Montaña del Eco Arcano: ondas que se repiten */
+.bt-bioma[data-b="eco"] { background: radial-gradient(ellipse at 50% 50%, rgba(86,120,255,.3), rgba(40,20,110,.66) 60%, rgba(10,6,40,.9)); }
+.bt-bioma[data-b="eco"]::before { background: repeating-radial-gradient(circle at 50% 50%, rgba(170,190,255,.14) 0 3px, transparent 3px 46px); animation: bt-latido 3s ease-in-out infinite; }
+/* Pozo de la Eternidad: ceniza dorada que sube */
+.bt-bioma[data-b="pozo"] { background: radial-gradient(ellipse at 50% 100%, rgba(255,226,150,.32), rgba(46,34,64,.72) 55%, rgba(12,8,24,.9)); }
+.bt-bioma[data-b="pozo"]::after { top: -100%; height: 200%; background-image: radial-gradient(circle, rgba(255,230,160,.9) 1.4px, transparent 2px), radial-gradient(circle, rgba(255,214,120,.6) 1px, transparent 1.6px); background-size: 97px 113px, 151px 131px; animation: bt-cae 13s linear infinite reverse; }
+/* Carroñada: pardo y verdoso */
+.bt-bioma[data-b="carronada"] { background: linear-gradient(180deg, rgba(112,92,60,.5), rgba(34,40,24,.84)); }
+.bt-bioma[data-b="carronada"]::before { background: repeating-radial-gradient(circle at 70% 75%, rgba(150,170,90,.1) 0 3px, transparent 3px 28px); }
 .bt-bioma[data-b="generico"] { background: linear-gradient(180deg, rgba(120,70,170,.4), rgba(30,14,50,.7)); }
 
 /* --- Jugadores: vida, energía y turno -------------------------------------- */

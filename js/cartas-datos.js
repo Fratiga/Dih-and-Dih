@@ -51,6 +51,7 @@ window.CARTAS_AFINIDADES = {
   const A = { lado: ["A"] };
   const AB = { lado: ["A", "B"] };
   const Bl = { lado: ["B"] };
+  const Be = epiteto => ({ lado: ["B"], epiteto });   // Lado B con epíteto
 
   // --- Personajes -----------------------------------------------------------
   u("rook", "Rook", "Personaje", P("rook"), "rara", "caceria", 4, 5, 4, "Cazador solitario: +2 de ataque mientras sea tu única unidad en el campo.", A);
@@ -73,6 +74,26 @@ window.CARTAS_AFINIDADES = {
   u("ryn", "Ryn", "Personaje", P("ryn"), "rara", "arcano", 3, 2, 3, "Canción de bardo: al entrar, una unidad aliada gana +2/+2 este turno.", Bl);
   u("hooey-magoo", "Hooey Magoo", "Personaje", P("hooey-magoo"), "rara", "carne", 3, 4, 3, "Sacrificado: al morir, roba una carta.", Bl);
 
+  // La banda de Cassius: los tres que atacaron a los protagonistas en Kigan
+  u("billy", "Billy", "Personaje", P("billy"), "comun", "juramento", 3, 2, 6, "Muro de carne. Provocar: los desafíos enemigos deben apuntar a esta unidad antes que a otras.", Bl);
+  u("voss", "Voss", "Personaje", P("voss"), "infrecuente", "sombra", 2, 3, 2, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño. Corte al pasar: cuando golpea al jugador, este descarta una carta al azar.", Bl);
+  u("victor", "Victor", "Personaje", P("victor"), "infrecuente", "arcano", 4, 2, 4, "Exponer debilidad: al entrar, marca a una unidad enemiga hasta el final de tu próximo turno. Es Vulnerable para tus unidades (cualquiera puede obligarla a bloquear, ignorando Provocar) y le hacen 2 de daño extra en combate.", Bl);
+
+  // Los Seis del Último Apunte
+  u("amarillo-ultimo-apunte", "Amarillo", "Personaje", P("amarillo-ultimo-apunte"), "infrecuente", "juramento", 3, 2, 5, "Duro: recibe 1 menos de daño. Le pegabas a otro: la primera vez que una unidad aliada fuera a recibir daño, lo recibe él en su lugar.", Be("El Matón"));
+  u("azul-ultimo-apunte", "Azul", "Personaje", P("azul-ultimo-apunte"), "comun", "sombra", 3, 2, 3, "Interrumpir: al entrar, una unidad enemiga no puede bloquear este turno.", Be("El Tramposo"));
+  u("verde-ultimo-apunte", "Verde", "Personaje", P("verde-ultimo-apunte"), "comun", "sombra", 2, 2, 2, "Eso era importante, ¿no?: cuando golpea al jugador, roba una carta.", Be("El Rastrero"));
+  u("morado-ultimo-apunte", "Morado", "Personaje", P("morado-ultimo-apunte"), "infrecuente", "arcano", 4, 3, 3, "Quédate ahí: al entrar, una unidad enemiga ni ataca ni bloquea hasta el final de su próximo turno.", Be("El Aguafiestas"));
+  u("gris-ultimo-apunte", "Gris", "Personaje", P("gris-ultimo-apunte"), "rara", "arcano", 3, 1, 4, "Corrección del Maestro: tus demás unidades tienen +1 de ataque.", Be("El Verdadero Discípulo"));
+  u("rojo-ultimo-apunte", "Rojo", "Personaje", P("rojo-ultimo-apunte"), "rara", "arcano", 5, 4, 4, "Desafiante: al atacar, elige qué unidad enemiga debe bloquearla, aunque vuele. ¡Todos contra ese idiota!: al entrar, tus demás unidades del Último Apunte ganan +1/+1.", Be("El Bocazas"));
+
+  // El laboratorio de Dexter
+  u("darian", "Darian Veyr", "Personaje", P("darian"), "rara", "carne", 4, 3, 4, "Barrera: ignora el primer daño que reciba. Duro: recibe 1 menos de daño. Injerto del Dominio: mientras La Cueva de Carne esté en juego, duplica su ataque y su vida.", Be("El Indigerible"));
+  u("coronel-tobi", "Coronel Tobi", "Personaje", P("coronel-tobi"), "rara", "carne", 5, 4, 5, "La puerta no se toca. Provocar: los desafíos enemigos deben apuntar a esta unidad antes que a otras. Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.", Be("El Soldadito"));
+  u("elias-morcant", "Elías Morcant", "Personaje", P("elias-morcant"), "infrecuente", "carne", 3, 2, 3, "Sutura de emergencia: al entrar, cura 3 de vida a una unidad aliada (5 si es de Carne). Incisión exploratoria: +2 de daño contra una unidad que ya recibió daño este turno.", Be("El joven"));
+  u("baltasar-sorel", "Baltasar Sorel", "Personaje", P("baltasar-sorel"), "infrecuente", "sombra", 4, 3, 3, "Disparo contaminante: al entrar, inflige 2 de daño a una unidad enemiga.", Be("El veterano"));
+  u("nico", "Nico", "Personaje", P("nico"), "comun", "sombra", 2, 2, 2, "¡A que no me atrapas!. Esquivo: en combate recibe la mitad del daño (redondeado hacia abajo).", Be("El pequeño"));
+
   // --- Criaturas ------------------------------------------------------------
   u("kobold", "Kobold", "Criatura", B("kobold"), "comun", "carne", 1, 1, 1, "Instinto de manada: +1 de ataque por cada otro Kobold en el campo.");
   u("manta-del-cielo", "Aeromanta", "Criatura", B("manta-del-cielo"), "comun", "arcano", 2, 1, 3, "Volar: solo puede ser bloqueada por unidades que también vuelan.");
@@ -82,6 +103,13 @@ window.CARTAS_AFINIDADES = {
   u("hidra", "Hidra", "Criatura", B("hidra"), "rara", "carne", 6, 4, 7, "Cabezas regenerativas: al inicio de tu turno recupera 2 de vida.");
   u("draco", "Draco", "Criatura", B("draco"), "legendaria", "carne", 7, 7, 7, "Cuerpo blindado: reduce en 2 el daño que recibe.");
   u("kraken", "Kraken", "Criatura", B("kraken"), "legendaria", "arcano", 7, 6, 8, "Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador. Hambre insaciable: cuando destruye una unidad, roba una carta.");
+  u("halcon-linire", "Halcón Linire", "Criatura", B("halcon-linire"), "comun", "caceria", 2, 2, 2, "Volar: solo puede ser bloqueado por unidades que también vuelan.");
+  u("colmillo-gris", "Colmillo Gris", "Criatura", B("colmillo-gris"), "comun", "caceria", 3, 3, 2, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño.");
+  u("felino-veloz-mistico", "Fulguepardo", "Criatura", B("felino-veloz-mistico"), "infrecuente", "arcano", 3, 2, 3, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño. Teletransporte: hasta el final del próximo turno del rival, los desafíos y las habilidades enemigas no pueden elegirlo.");
+  u("guillotina", "Guillotina", "Criatura", B("guillotina"), "infrecuente", "carne", 4, 4, 3, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño. Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.");
+  u("dragarto", "Dragarto", "Criatura", B("dragarto"), "rara", "carne", 5, 4, 6, "Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.");
+  u("mamut-gelido", "Gelifante", "Criatura", B("mamut-gelido"), "infrecuente", "eternidad", 5, 3, 7, "Duro: recibe 1 menos de daño.");
+  u("protodraco", "Protodraco", "Criatura", B("protodraco"), "rara", "eternidad", 6, 5, 5, "Volar: solo puede ser bloqueado por unidades que también vuelan. Aliento inestable: al entrar, inflige 2 de daño a una unidad enemiga.");
 
   // --- Objetos --------------------------------------------------------------
   o("pocion-de-curacion-menor", "Poción de curación menor", "Objeto", O("pocion-de-curacion-menor"), "comun", "carne", 1, "Cura 3 de vida a una unidad o a ti.");
@@ -90,10 +118,17 @@ window.CARTAS_AFINIDADES = {
   o("bomba-de-humo", "Bomba de humo", "Reacción", O("bomba-de-humo"), "infrecuente", "sombra", 2, "Reacción: cuando el rival declare un ataque, una de sus unidades atacantes se queda fuera del combate.");
   o("cristal-de-mana", "Cristal de maná", "Objeto", O("cristal-de-mana"), "infrecuente", "arcano", 0, "Gana 2 de energía este turno.");
   o("capucha-oscura", "Capucha oscura", "Objeto", O("capucha-oscura"), "comun", "sombra", 1, "Equipo: las habilidades enemigas no pueden apuntar a la unidad.");
+  o("veneno-debil", "Veneno débil", "Objeto", O("veneno-debil"), "comun", "sombra", 1, "Una unidad enemiga pierde 2 de ataque hasta el final del próximo turno de su dueño.");
+  o("capa-reversible", "Capa reversible", "Objeto", O("capa-reversible"), "infrecuente", "sombra", 1, "Una unidad aliada es Escurridizo hasta el final del próximo turno del rival: los desafíos y las habilidades enemigas no pueden elegirla.");
+  o("kit-de-sanador", "Kit de sanador", "Objeto", O("kit-de-sanador"), "infrecuente", "carne", 2, "Cura 4 de vida a una unidad aliada. Si es de Carne, además gana +1/+1.");
+  o("corneta-de-senales", "Corneta de señales", "Objeto", O("corneta-de-senales"), "comun", "juramento", 1, "Roba una carta. Si controlas 2 o más unidades de Juramento, roba otra.");
+  o("sales-aromaticas", "Sales aromáticas", "Objeto", O("sales-aromaticas"), "infrecuente", "eternidad", 3, "Despierta: devuelve al campo, con 1 de vida, la última unidad de tu cementerio.");
 
   // --- Reacciones: se juegan en el turno del rival, como respuesta a lo que hace
   o("silbato-de-guardia", "Silbato de guardia", "Reacción", O("silbato-de-guardia"), "comun", "juramento", 1, "Reacción: cuando el rival declare un ataque, tus unidades ganan +0/+2 hasta el final del turno.");
   o("llave-maestra-defectuosa", "Llave maestra defectuosa", "Reacción", O("llave-maestra-defectuosa"), "infrecuente", "sombra", 2, "Reacción: cuando el rival juegue un objeto, una acción o un terreno, cancélalo.");
+  o("trampa-para-animales", "Trampa para animales", "Reacción", O("trampa-para-animales"), "comun", "caceria", 2, "Reacción: cuando el rival declare un ataque, una de sus unidades atacantes, a tu elección, recibe 3 de daño.");
+  o("saco-de-abrojos", "Saco de abrojos", "Reacción", O("saco-de-abrojos"), "comun", "juramento", 1, "Reacción: cuando el rival declare un ataque, sus unidades atacantes pierden 1 de ataque hasta el final del turno.");
 
   // --- Terrenos: cambian las condiciones del combate durante varios turnos. Cada uno sale de un lugar del compendio.
   const T = (id, nombre, lugar, rareza, afinidad, coste, habilidad) => o(id, nombre, "Terreno", L(lugar), rareza, afinidad, coste, habilidad);
@@ -108,6 +143,11 @@ window.CARTAS_AFINIDADES = {
   T("torre-del-silencio", "Torre del Silencio", "torre-del-silencio", "rara", "sombra", 3, "Silencio: durante 3 turnos, las unidades no pueden activar habilidades al entrar.");
   T("la-espesura", "La Espesura", "la-espesura", "rara", "arcano", 4, "Presencia que no se ve: mientras esté en juego, al inicio de cada turno una unidad al azar, de cualquier jugador, no puede atacar ese turno.");
   T("osario-de-la-frontera", "Osario de la Frontera", "osario-de-la-frontera", "rara", "eternidad", 4, "Centinelas no muertos: mientras esté en juego, cuando una de tus unidades muere, recibes un Centinela 1/1 en el campo.");
+  T("capilla-de-las-astas-caidas", "Capilla de las Astas Caídas", "capilla-de-las-astas-caidas", "infrecuente", "juramento", 3, "Luto: mientras esté en juego, la primera vez cada turno que muere una unidad tuya, tus demás unidades ganan +1 de ataque hasta el final de tu próximo turno.");
+  T("fauces-grises", "Fauces Grises", "fauces-grises", "infrecuente", "caceria", 3, "Presa rastreada: durante 3 turnos, tus unidades de Cacería tienen Desafiante.");
+  T("montana-del-eco-arcano", "Montaña del Eco Arcano", "montana-del-eco-arcano", "rara", "arcano", 4, "Eco de conjuros: durante 3 turnos, las habilidades al entrar de tus unidades de Arcano se activan dos veces.");
+  T("pozo-de-la-eternidad", "Pozo de la Eternidad", "pozo-de-la-eternidad", "rara", "eternidad", 5, "Cementerio de dragones: mientras esté en juego, la primera unidad de Eternidad tuya que muera cada turno vuelve al campo con 1 de vida.");
+  T("carronada", "Carroñada", "carronada", "comun", "carne", 2, "Carroñeros: mientras esté en juego, cuando muere una unidad, tus unidades de Carne recuperan 2 de vida.");
   // Subsección que solo ve el Side B de La Espesura: la carta es solo para el Side B
   o("cueva-de-carne", "La Cueva de Carne", "Terreno", L("la-espesura"), "rara", "carne", 4,
     "Interior vivo: mientras esté en juego, al final de cada turno las unidades de Carne recuperan 1 de vida y las demás unidades reciben 1 de daño.",
