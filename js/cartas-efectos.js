@@ -19,6 +19,8 @@
      alMatar         al destruir a una unidad con un ataque
      alInicioTurno   al inicio del turno de su dueño
      jugar           { objetivo?, resolver(c) } para objetos y acciones
+     reaccion        { cuando: 'ataque'|'jugar', puede(c), resolver(c) } para cartas de tipo
+                     Reacción (c.pendiente.cancelado = true cancela lo que iba a pasar)
 
    Los terrenos se registran con registrarTerreno. Una carta que no aparece
    aquí (por ejemplo una creada desde el editor) juega solo con sus números.
@@ -94,10 +96,21 @@
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} se equipa con un escudo reforzado (+0/+3).`);
     } } });
     R("baraja-de-cartas", { jugar: { resolver: c => M.robar(c.est, c.j, 2) } });
-    R("bomba-de-humo", { jugar: { resolver: c => {
-      c.est.jugadores[1 - c.j].malus = { atq: -2, hasta: c.est.turno + 1 };
-      M.log(c.est, "El humo cubre el campo: las unidades enemigas atacan con -2 hasta el final del próximo turno.");
+    // Reacciones: se juegan en el turno del rival, como respuesta (ver el motor)
+    const objetivoEsMio = c => c.evento.objetivo.u !== undefined && (M.buscar(c.est, c.evento.objetivo.u) || { j: -1 }).j === c.j;
+    R("bomba-de-humo", { reaccion: { cuando: "ataque", puede: objetivoEsMio, resolver: c => {
+      c.pendiente.cancelado = true;
+      const hit = M.buscar(c.est, c.pendiente.datos.objetivo.u);
+      if (hit) hit.u.flags.intocableHasta = Math.max(hit.u.flags.intocableHasta, c.est.turno);
+      M.log(c.est, "El humo lo cubre todo: el ataque se pierde.");
     } } });
+    R("silbato-de-guardia", { reaccion: { cuando: "ataque", puede: objetivoEsMio, resolver: c => {
+      const hit = M.buscar(c.est, c.pendiente.datos.objetivo.u);
+      if (hit) M.mod(c.est, hit.u, 0, 3, c.est.turno);
+    } } });
+    R("llave-maestra-defectuosa", { reaccion: { cuando: "jugar",
+      puede: c => ["Objeto", "Acción", "Terreno"].includes(M.meta(c.est, c.evento.carta).tipo),
+      resolver: c => { c.pendiente.cancelado = true; M.log(c.est, "La llave atasca el mecanismo."); } } });
     R("cristal-de-mana", { jugar: { resolver: c => { c.est.jugadores[c.j].energia += 2; } } });
     R("capucha-oscura", { jugar: { objetivo: "unidadAliada", resolver: c => {
       c.objetivo.flags.inmune = true; c.objetivo.equipo.push("capucha-oscura");

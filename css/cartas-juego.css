@@ -165,3 +165,12 @@
   .bt-unidad { width: 92px; }
   .bt-carta { width: 98px; }
 }
+
+/* Reacciones */
+.bt-ventana { padding: 10px 16px; text-align: center; background: rgba(0,0,0,.5); border: 1px solid var(--accent); animation: bt-aparece .25s ease; }
+.bt-ventana p { margin: 0 0 6px; }
+.bt-ventana-botones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.bt-cuenta { color: var(--accent); font-family: var(--font-heading), sans-serif; min-width: 3ch; display: inline-block; }
+.bt-carta { position: relative; }
+.bt-etiqueta { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); z-index: 2; padding: 1px 8px; font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; background: #3b5fa8; color: #eaf1ff; border-radius: 8px; white-space: nowrap; }
+@keyframes bt-aparece { from { opacity: 0; transform: translateY(-6px); } }

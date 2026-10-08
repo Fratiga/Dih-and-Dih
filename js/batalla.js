@@ -16,7 +16,8 @@
   let modo = "lobby";          // lobby | partida | local
   let fila = null;             // fila de cartas_partidas (en línea)
   let est = null;              // estado del motor
-  let aplicadas = 0;           // acciones ya aplicadas al estado
+  let lista = [];              // acciones ya aplicadas al estado (como texto, para compararlas con el servidor)
+  let ventana = { id: 0, desde: 0, enviado: false };  // reacción pendiente que se está esperando
   let yo = 0;                  // mi índice de jugador (0 o 1)
   let sel = null;              // { tipo: 'mano', i } | { tipo: 'unidad', uid } | { tipo: 'ver', uid }
   let cerrando = false;
@@ -25,7 +26,9 @@
 
   const local = () => modo === "local";
   const miTurno = () => est && est.ganador === null && est.activo === yo;
-  const indiceYo = () => (local() ? est.activo : yo);
+  const indiceYo = () => (local() ? M.quienActua(est) : yo);
+  const ESPERA_REACCION = 20000;       // cuánto espera el rival para reaccionar
+  const ESPERA_ACTOR = 22000;          // cuánto espera quien actuó antes de seguir sin su respuesta
 
   /* ---------------------------------------------------------------- avisos */
   function aviso(texto) {
@@ -149,13 +152,10 @@
       semilla: f.semilla, primero: f.primero, cartas: f.cartas,
       jugadores: [{ id: f.j1, nombre: f.nombre1, mazo: f.mazo1 }, { id: f.j2, nombre: f.nombre2, mazo: f.mazo2 }]
     });
-    let n = 0;
-    for (const a of f.acciones) {
-      const r = M.aplicar(e, a, e.activo);
-      if (r.error) break;
-      n++;
-    }
-    return { e, n };
+    const l = [];
+    // Una acción que no vale se ignora igual en todos los navegadores
+    for (const a of f.acciones) { M.reproducir(e, a); l.push(JSON.stringify(a)); }
+    return { e, l };
   }
 
   function entrarPartida(titulo) {
@@ -176,8 +176,8 @@
     if (!f || f.estado === "pendiente" || f.estado === "rechazada") return;
     fila = f;
     modo = "partida";
-    const { e, n } = construir(f);
-    est = e; aplicadas = n;
+    const { e, l } = construir(f);
+    est = e; lista = l;
     yo = f.j1 === miId ? 0 : 1;
     entrarPartida(`${f.nombre1} contra ${f.nombre2}`);
     cerrarSiHaceFalta();
@@ -191,7 +191,7 @@
       semilla: Math.floor(Math.random() * 2147483647), primero: Math.random() < 0.5 ? 0 : 1, cartas,
       jugadores: [{ id: "a", nombre: a.nombre, mazo: CartasCliente.aplanar(a.cartas) }, { id: "b", nombre: b.nombre === a.nombre ? `${b.nombre} (2)` : b.nombre, mazo: CartasCliente.aplanar(b.cartas) }]
     });
-    fila = null; aplicadas = 0;
+    fila = null; lista = [];
     modo = "local";
     entrarPartida("Prueba en solitario");
   }
@@ -210,14 +210,18 @@
     const nueva = partidas.find(p => p.id === fila.id);
     if (!nueva) return;
     fila = nueva;
-    if (fila.acciones.length < aplicadas) {
-      const { e, n } = construir(fila);
-      est = e; aplicadas = n;
+    // ¿Lo que ya aplicamos coincide con lo que guardó el servidor? Si no (por una carrera entre jugadores), se rehace
+    const acciones = fila.acciones;
+    const comun = Math.min(lista.length, acciones.length);
+    let i = 0;
+    while (i < comun && lista[i] === JSON.stringify(acciones[i])) i++;
+    if (i < comun) {
+      const r = construir(fila);
+      est = r.e; lista = r.l;
     } else {
-      for (let i = aplicadas; i < fila.acciones.length; i++) {
-        const r = M.aplicar(est, fila.acciones[i], est.activo);
-        if (r.error) { const { e, n } = construir(fila); est = e; aplicadas = n; break; }
-        aplicadas = i + 1;
+      for (let k = lista.length; k < acciones.length; k++) {
+        M.reproducir(est, acciones[k]);
+        lista.push(JSON.stringify(acciones[k]));
       }
     }
     if (fila.estado === "terminada" && est.ganador === null) {
@@ -239,20 +243,22 @@
 
   async function enviar(accion) {
     if (!est || est.ganador !== null) return;
-    const jugador = indiceYo();
-    if (!local() && !miTurno()) { toast("No es tu turno."); return; }
+    let jugador = indiceYo();
+    const sigueSinEsperar = !!accion.forzar && est.activo === yo;
+    if (sigueSinEsperar) jugador = yo;
+    else if (!local() && M.quienActua(est) !== yo) { toast(est.pendiente ? "Espera la respuesta de tu rival." : "No es tu turno."); return; }
     const r = M.aplicar(est, accion, jugador);
     if (r.error) { toast(r.error); return; }
     sel = null;
     if (!local()) {
-      aplicadas += 1;
+      lista.push(JSON.stringify(accion));
       pintarTablero();
       const { error } = await supa.rpc("cartas_accion", { p_id: fila.id, p_accion: accion });
       if (error) {
         toast(error.message || "No se pudo enviar la jugada.");
         await cargarPartidas();
-        const { e, n } = construir(partidas.find(p => p.id === fila.id) || fila);
-        est = e; aplicadas = n;
+        const r2 = construir(partidas.find(p => p.id === fila.id) || fila);
+        est = r2.e; lista = r2.l;
         pintarTablero();
         return;
       }
@@ -297,7 +303,10 @@
     </div>`;
   }
 
-  const miTurnoDe = idx => est.ganador === null && est.activo === idx;
+  // Turno normal de ese jugador (sin ninguna reacción en el aire)
+  const miTurnoDe = idx => est.ganador === null && est.activo === idx && !est.pendiente;
+  // Le toca decidir si reacciona
+  const reaccionaYo = idx => est.ganador === null && !!est.pendiente && est.pendiente.reactor === idx;
 
   function htmlJugador(idx, rival) {
     const J = est.jugadores[idx];
@@ -311,7 +320,7 @@
 
   function objetivosVigentes() {
     // Lista de objetivos { u } / { j } que se pueden elegir con la selección actual
-    if (!sel || !miTurnoDe(indiceYo())) return [];
+    if (!sel || est.pendiente || !miTurnoDe(indiceYo())) return [];
     const idx = indiceYo();
     if (sel.tipo === "mano") {
       const id = est.jugadores[idx].mano[sel.i];
@@ -353,9 +362,12 @@
     $("btMano").innerHTML = J.mano.map((id, i) => {
       const m = M.meta(est, id);
       const coste = M.costeDe(est, idx, id);
-      const jugable = miTurnoDe(idx) && coste <= J.energia && m.tipo !== "Reacción";
+      const esReaccion = m.tipo === "Reacción";
+      const jugable = est.pendiente
+        ? reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)
+        : miTurnoDe(idx) && coste <= J.energia && !esReaccion;
       const vista = Object.assign({}, m, { id, coste, borrador: false, limite: null });
-      return `<div class="bt-carta ${jugable ? "jugable" : ""} ${sel && sel.tipo === "mano" && sel.i === i ? "elegida" : ""}" data-i="${i}">${htmlCarta(vista, true, 0, null)}</div>`;
+      return `<div class="bt-carta ${jugable ? "jugable" : ""} ${esReaccion ? "es-reaccion" : ""} ${sel && sel.tipo === "mano" && sel.i === i ? "elegida" : ""}" data-i="${i}">${esReaccion ? '<span class="bt-etiqueta">Reacción</span>' : ""}${htmlCarta(vista, true, 0, null)}</div>`;
     }).join("") || `<p class="bt-vacio">Sin cartas en la mano</p>`;
 
     // Objetivos que se pueden elegir
@@ -376,8 +388,12 @@
     }));
 
     const turnoEl = $("btTurno");
-    turnoEl.textContent = est.ganador !== null ? "Partida terminada" : local() ? `Turno de ${est.jugadores[est.activo].nombre}` : miTurno() ? "Es tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`;
-    turnoEl.className = `bt-turno ${miTurnoDe(idx) ? "mio" : ""}`;
+    const reactor = est.pendiente ? est.jugadores[est.pendiente.reactor].nombre : "";
+    turnoEl.textContent = est.ganador !== null ? "Partida terminada"
+      : est.pendiente ? (local() ? `${reactor} puede reaccionar` : reaccionaYo(idx) ? "Puedes reaccionar" : `Esperando la reacción de ${reactor}`)
+      : local() ? `Turno de ${est.jugadores[est.activo].nombre}` : miTurno() ? "Es tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`;
+    turnoEl.className = `bt-turno ${miTurnoDe(idx) || reaccionaYo(idx) ? "mio" : ""}`;
+    pintarVentana();
 
     $("btLog").innerHTML = est.log.slice(-40).map(l => `<li class="${l.startsWith("—") ? "turno" : ""}">${esc(l)}</li>`).join("");
     $("btLog").scrollTop = $("btLog").scrollHeight;
@@ -385,6 +401,57 @@
     pintarFinal();
     avisarMirada();
   }
+
+  /* Panel de la reacción en el aire: a quien le toca decidir le ofrece sus cartas; al otro le avisa de que espera */
+  function pintarVentana() {
+    const el = $("btVentana");
+    const p = est && est.ganador === null ? est.pendiente : null;
+    if (!p) { el.classList.add("hidden"); ventana = { id: 0, desde: 0, enviado: false }; return; }
+    if (ventana.id !== p.id) ventana = { id: p.id, desde: Date.now(), enviado: false };
+    const idx = indiceYo();
+    const hit = p.tipo === "ataque" ? M.buscar(est, p.datos.uid) : null;
+    const objetivoU = p.tipo === "ataque" && p.datos.objetivo.u !== undefined ? M.buscar(est, p.datos.objetivo.u) : null;
+    const quien = est.jugadores[p.actor].nombre;
+    const que = p.tipo === "ataque"
+      ? `${quien} ataca con ${hit ? M.nombre(est, hit.u) : "una unidad"} a ${objetivoU ? M.nombre(est, objetivoU.u) : est.jugadores[p.datos.objetivo.j].nombre}.`
+      : `${quien} juega ${M.meta(est, p.datos.id).nombre}.`;
+    const cuenta = local() ? "" : `<span id="btCuenta" class="bt-cuenta"></span>`;
+    if (reaccionaYo(idx)) {
+      const vistas = new Set();
+      const botones = M.reaccionesPosibles(est, idx, p.evento).filter(i => {
+        // Una sola opción por carta distinta, aunque haya copias en la mano
+        const id = est.jugadores[idx].mano[i];
+        if (vistas.has(id)) return false;
+        vistas.add(id);
+        return true;
+      }).map(i => {
+        const id = est.jugadores[idx].mano[i];
+        return `<button type="button" class="cartas-boton cartas-boton-principal" data-reaccionar="${i}">Reaccionar con ${esc(M.meta(est, id).nombre)} (${M.costeDe(est, idx, id)})</button>`;
+      }).join("");
+      el.innerHTML = `<p><strong>${esc(que)}</strong></p><div class="bt-ventana-botones">${botones}<button type="button" class="cartas-boton" data-pasar>Dejar pasar</button>${cuenta}</div>`;
+    } else {
+      el.innerHTML = `<p><strong>${esc(que)}</strong></p><p class="bt-nota">Esperando la reacción de ${esc(est.jugadores[p.reactor].nombre)}... ${cuenta}</p>`;
+    }
+    el.classList.remove("hidden");
+    actualizarCuenta();
+  }
+
+  /* Cuenta atrás de la reacción. Al acabar, el rival pasa solo; si no responde, quien actuó sigue sin esperarlo. */
+  function actualizarCuenta() {
+    if (!est || !est.pendiente || local() || est.ganador !== null) return;
+    const p = est.pendiente;
+    if (ventana.id !== p.id) return;
+    const soyReactor = est.pendiente.reactor === yo;
+    const limite = soyReactor ? ESPERA_REACCION : ESPERA_ACTOR;
+    const falta = Math.max(0, Math.ceil((limite - (Date.now() - ventana.desde)) / 1000));
+    const el = $("btCuenta");
+    if (el) el.textContent = `${falta} s`;
+    if (falta === 0 && !ventana.enviado) {
+      ventana.enviado = true;
+      enviar(soyReactor ? { t: "pasar" } : { t: "pasar", forzar: true });
+    }
+  }
+  setInterval(actualizarCuenta, 500);
 
   function pintarInspector() {
     const el = $("btInspector");
@@ -397,7 +464,12 @@
         c = Object.assign({}, m, { id, coste: M.costeDe(est, idx, id), borrador: false, limite: null });
         const req = M.requisitoDeJugada(est, idx, id);
         const energia = est.jugadores[idx].energia;
-        if (!miTurnoDe(idx)) extra = `<p class="bt-nota">Espera tu turno.</p>`;
+        if (m.tipo === "Reacción") {
+          if (reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(sel.i)) extra = `<button type="button" class="cartas-boton cartas-boton-principal" data-reaccionar="${sel.i}">Reaccionar (${c.coste})</button>`;
+          else if (reaccionaYo(idx)) extra = `<p class="bt-nota">No encaja con lo que está pasando, o no te alcanza la energía.</p>`;
+          else extra = `<p class="bt-nota">Se juega como respuesta en el turno del rival, con la energía que te sobre.</p>`;
+        }
+        else if (!miTurnoDe(idx)) extra = `<p class="bt-nota">Espera tu turno.</p>`;
         else if (c.coste > energia) extra = `<p class="bt-nota">Te faltan ${c.coste - energia} de energía.</p>`;
         else if (req && req.validos.length) extra = `<p class="bt-nota">Elige un objetivo resaltado en el tablero.</p>`;
         else if (req && !req.opcional) extra = `<p class="bt-nota">No hay objetivos válidos para esta carta.</p>`;
@@ -447,6 +519,9 @@
     if (ev.target.closest("#btRendirse")) { rendirse(); return; }
     if (ev.target.closest("#btVolver2")) { volverAlLobby(); return; }
     if (ev.target.closest("[data-jugar]")) { if (sel && sel.tipo === "mano") enviar({ t: "jugar", i: sel.i }); return; }
+    if (ev.target.closest("[data-pasar]")) { if (reaccionaYo(idx)) enviar({ t: "pasar" }); return; }
+    const botonReaccion = ev.target.closest("[data-reaccionar]");
+    if (botonReaccion) { if (reaccionaYo(idx)) enviar({ t: "reaccionar", i: Number(botonReaccion.dataset.reaccionar) }); return; }
 
     const objetivos = objetivosVigentes();
     const unidad = ev.target.closest("[data-uid]");
@@ -476,9 +551,14 @@
       if (sel && sel.tipo === "mano" && sel.i === i) {
         // Segundo clic: jugarla si no pide objetivo
         const id = est.jugadores[idx].mano[i];
+        if (M.meta(est, id).tipo === "Reacción") {
+          if (reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)) enviar({ t: "reaccionar", i });
+          else { sel = null; pintarTablero(); }
+          return;
+        }
         const req = M.requisitoDeJugada(est, idx, id);
         if (miTurnoDe(idx) && (!req || (req.opcional && !req.validos.length))) enviar({ t: "jugar", i });
-        else sel = null, pintarTablero();
+        else { sel = null; pintarTablero(); }
       } else {
         sel = { tipo: "mano", i };
         pintarTablero();

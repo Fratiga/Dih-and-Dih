@@ -17,6 +17,9 @@
    - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
    - Un terreno a la vez: jugar uno nuevo reemplaza al anterior.
+   - Reacciones: cartas que se juegan en el turno del rival, como respuesta a un
+     ataque contra una unidad suya o a una carta que él juega. Se pagan con la
+     energía que te sobró. Si no tienes ninguna aplicable, no hay espera.
 
    Las habilidades de cada carta están en js/cartas-efectos.js. Una carta sin
    efecto registrado juega solo con sus números.
@@ -378,6 +381,73 @@
   /* --- Acciones ------------------------------------------------------------ */
   const igual = (a, b) => (a === undefined || b === undefined ? a === b : (a.u !== undefined ? a.u === b.u : a.j === b.j));
 
+  /* --- Reacciones ------------------------------------------------------------
+     Una reacción es una carta que se juega en el turno del rival, como respuesta a
+     lo que hace. Cuando el jugador activo ataca o juega una carta, si el rival tiene
+     en la mano una reacción que pueda pagar y que encaje, la acción queda
+     "pendiente": el rival puede reaccionar o dejarla pasar, y después se resuelve.
+     Si no tiene ninguna, la acción se resuelve al instante (no hay espera).
+     evento: { tipo: 'ataque', actor, uid (del atacante), objetivo } | { tipo: 'jugar', actor, carta } */
+  function reaccionesPosibles(est, reactor, evento) {
+    const J = est.jugadores[reactor];
+    const lista = [];
+    J.mano.forEach((id, i) => {
+      const m = meta(est, id);
+      if (m.tipo !== "Reacción") return;
+      const ef = EFECTOS[id];
+      if (!ef || !ef.reaccion || ef.reaccion.cuando !== evento.tipo) return;
+      if (costeDe(est, reactor, id) > J.energia) return;
+      if (ef.reaccion.puede && !ef.reaccion.puede({ est, M, j: reactor, evento })) return;
+      lista.push(i);
+    });
+    return lista;
+  }
+
+  function abrirVentana(est, evento, datos) {
+    const reactor = 1 - evento.actor;
+    if (!reaccionesPosibles(est, reactor, evento).length) return false;
+    est.pendienteN += 1;
+    est.pendiente = { id: est.pendienteN, tipo: evento.tipo, actor: evento.actor, reactor, datos, evento, cancelado: false };
+    return true;
+  }
+
+  /* Quién tiene que actuar ahora: el rival si hay una reacción en el aire, si no el jugador activo */
+  const quienActua = est => (est.pendiente ? est.pendiente.reactor : est.activo);
+
+  function jugarReaccion(est, jIdx, i, objetivoRaw) {
+    const p = est.pendiente;
+    if (jIdx !== p.reactor) return { error: "No te toca reaccionar." };
+    if (!reaccionesPosibles(est, jIdx, p.evento).includes(i)) return { error: "Esa carta no se puede jugar como reacción ahora." };
+    const J = est.jugadores[jIdx];
+    const id = J.mano[i];
+    const ef = EFECTOS[id];
+    J.energia -= costeDe(est, jIdx, id);
+    J.mano.splice(i, 1);
+    log(est, `${J.nombre} reacciona con ${meta(est, id).nombre}.`);
+    ef.reaccion.resolver({ est, M, j: jIdx, pendiente: p, objetivo: objetivoRaw || null });
+    J.cementerio.push(id);
+    return resolverPendiente(est);
+  }
+
+  function resolverPendiente(est) {
+    const p = est.pendiente;
+    est.pendiente = null;
+    if (p.tipo === "jugar") {
+      const { id, objetivo } = p.datos;
+      if (p.cancelado) {
+        est.jugadores[p.actor].cementerio.push(id);
+        log(est, `${meta(est, id).nombre} queda cancelada.`);
+      } else {
+        resolverJugada(est, p.actor, id, objetivo);
+      }
+    } else if (p.tipo === "ataque") {
+      ejecutarAtaque(est, p.actor, p.datos.uid, p.datos.objetivo, p.cancelado);
+    }
+    revisarFinal(est);
+    return { ok: true };
+  }
+
+  /* --- Jugar una carta ------------------------------------------------------- */
   function jugarCarta(est, jIdx, i, objetivoRaw) {
     const J = est.jugadores[jIdx];
     if (i === undefined || i < 0 || i >= J.mano.length) return { error: "Esa carta no está en tu mano." };
@@ -385,14 +455,12 @@
     const m = meta(est, id);
     const coste = costeDe(est, jIdx, id);
     if (coste > J.energia) return { error: "No tienes energía suficiente." };
-    if (m.tipo === "Reacción") return { error: "Las reacciones todavía no existen." };
+    if (m.tipo === "Reacción") return { error: "Una reacción solo se juega como respuesta en el turno del rival." };
     if (esUnidad(m) && J.campo.length >= C.CAMPO_MAX) return { error: "Tu campo está lleno." };
     const req = requisitoDeJugada(est, jIdx, id);
-    let objetivo = null;
     if (req) {
       if (objetivoRaw) {
         if (!req.validos.some(v => igual(v, objetivoRaw))) return { error: "Ese objetivo no es válido." };
-        objetivo = objetivoRaw.u !== undefined ? buscar(est, objetivoRaw.u).u : objetivoRaw;
       } else if (!req.opcional) {
         return { error: "Elige un objetivo." };
       } else if (req.validos.length) {
@@ -401,7 +469,24 @@
     }
     J.energia -= coste;
     J.mano.splice(i, 1);
+    const objetivo = req && objetivoRaw ? objetivoRaw : null;
+    if (abrirVentana(est, { tipo: "jugar", actor: jIdx, carta: id }, { id, objetivo })) return { ok: true, pendiente: true };
+    resolverJugada(est, jIdx, id, objetivo);
+    revisarFinal(est);
+    return { ok: true };
+  }
+
+  /* Aplica el efecto de una carta ya pagada. objetivoRaw: { u } | { j } | null (puede haber desaparecido). */
+  function resolverJugada(est, jIdx, id, objetivoRaw) {
+    const J = est.jugadores[jIdx];
+    const m = meta(est, id);
+    let objetivo = null;
+    if (objetivoRaw) {
+      if (objetivoRaw.u !== undefined) { const hit = buscar(est, objetivoRaw.u); objetivo = hit ? hit.u : null; }
+      else objetivo = objetivoRaw;
+    }
     if (esUnidad(m)) {
+      if (J.campo.length >= C.CAMPO_MAX) { J.cementerio.push(id); log(est, `No hay sitio para ${m.nombre}.`); return; }
       ponerUnidad(est, jIdx, id, true, objetivo);
     } else if (m.tipo === "Terreno") {
       const T = TERRENOS[id] || {};
@@ -410,13 +495,15 @@
     } else {
       log(est, `${J.nombre} juega ${m.nombre}.`);
       const ef = EFECTOS[id];
-      if (ef && ef.jugar) ef.jugar.resolver({ est, M, j: jIdx, objetivo });
+      if (ef && ef.jugar) {
+        if (ef.jugar.objetivo && !objetivo) log(est, "El objetivo ya no está.");
+        else ef.jugar.resolver({ est, M, j: jIdx, objetivo });
+      }
       J.cementerio.push(id);
     }
-    revisarFinal(est);
-    return { ok: true };
   }
 
+  /* --- Atacar ---------------------------------------------------------------- */
   function atacar(est, jIdx, uid, objetivoRaw) {
     const hit = buscar(est, uid);
     if (!hit || hit.j !== jIdx) return { error: "Esa unidad no es tuya." };
@@ -436,40 +523,72 @@
     } else {
       return { error: "Elige a quién atacar." };
     }
-
-    const ef = efectoDe(est, u);
-    let ataque = atqEfectivo(est, u);
-    let tUnidad = null;
-    if (objetivo.u !== undefined) {
-      tUnidad = buscar(est, objetivo.u).u;
-      if (ef.bonusAtaque) ataque += ef.bonusAtaque(est, u, tUnidad) || 0;
-      if (tUnidad.flags.marcadaPor === jIdx) ataque += 2;
-    }
-    const contra = tUnidad ? atqEfectivo(est, tUnidad) : 0;
     u.ataques += 1;
-    log(est, tUnidad ? `${nombre(est, u)} ataca a ${nombre(est, tUnidad)}.` : `${nombre(est, u)} ataca a ${est.jugadores[1 - jIdx].nombre}.`);
-    infligir(est, objetivo, ataque, { tipo: "combate", uid: u.uid });
-    if (tUnidad && contra > 0 && buscar(est, u.uid)) infligir(est, { u: u.uid }, contra, { tipo: "combate", uid: tUnidad.uid });
+    const ev = { tipo: "ataque", actor: jIdx, uid, objetivo };
+    if (abrirVentana(est, ev, { uid, objetivo })) return { ok: true, pendiente: true };
+    ejecutarAtaque(est, jIdx, uid, objetivo, false);
     revisarFinal(est);
     return { ok: true };
   }
 
-  /* Aplica una acción de un jugador. accion: { t:'jugar', i, o? } | { t:'atacar', u, o } | { t:'fin' } */
-  function aplicar(est, accion, jIdx) {
-    if (est.ganador !== null) return { error: "La partida ya terminó." };
-    if (jIdx !== est.activo) return { error: "No es tu turno." };
-    if (!accion || typeof accion !== "object") return { error: "Acción inválida." };
-    let r;
-    if (accion.t === "jugar") r = jugarCarta(est, jIdx, accion.i, accion.o);
-    else if (accion.t === "atacar") r = atacar(est, jIdx, accion.u, accion.o);
-    else if (accion.t === "fin") { finalizarTurno(est); r = { ok: true }; }
-    else r = { error: "Acción desconocida." };
-    return r;
+  function ejecutarAtaque(est, jIdx, uid, objetivo, cancelado) {
+    const hit = buscar(est, uid);
+    if (!hit) return;
+    const u = hit.u;
+    const tUnidad = objetivo.u !== undefined ? (buscar(est, objetivo.u) || {}).u || null : null;
+    if (objetivo.u !== undefined && !tUnidad) { log(est, `${nombre(est, u)} ataca, pero su objetivo ya no está.`); return; }
+    log(est, tUnidad ? `${nombre(est, u)} ataca a ${nombre(est, tUnidad)}.` : `${nombre(est, u)} ataca a ${est.jugadores[1 - jIdx].nombre}.`);
+    if (cancelado) { log(est, "El ataque se cancela."); return; }
+    const ef = efectoDe(est, u);
+    let ataque = atqEfectivo(est, u);
+    if (tUnidad) {
+      if (ef.bonusAtaque) ataque += ef.bonusAtaque(est, u, tUnidad) || 0;
+      if (tUnidad.flags.marcadaPor === jIdx) ataque += 2;
+    }
+    const contra = tUnidad ? atqEfectivo(est, tUnidad) : 0;
+    infligir(est, objetivo, ataque, { tipo: "combate", uid: u.uid });
+    if (tUnidad && contra > 0 && buscar(est, u.uid)) infligir(est, { u: u.uid }, contra, { tipo: "combate", uid: tUnidad.uid });
   }
 
-  /* Todas las acciones posibles del jugador activo (para la interfaz y para las pruebas) */
+  /* Quién envió una acción ya guardada (para repetir una partida desde cero). */
+  function emisorDe(est, accion) {
+    if (est.pendiente && accion && (accion.t === "reaccionar" || (accion.t === "pasar" && !accion.forzar))) return est.pendiente.reactor;
+    return est.activo;
+  }
+  const reproducir = (est, accion) => aplicar(est, accion, emisorDe(est, accion));
+
+  /* Aplica una acción de un jugador.
+       { t:'jugar', i, o? } | { t:'atacar', u, o } | { t:'fin' }
+       { t:'reaccionar', i } | { t:'pasar', forzar? }  (mientras hay una acción pendiente) */
+  function aplicar(est, accion, jIdx) {
+    if (est.ganador !== null) return { error: "La partida ya terminó." };
+    if (!accion || typeof accion !== "object") return { error: "Acción inválida." };
+    const p = est.pendiente;
+    if (p) {
+      if (accion.t === "reaccionar") return jugarReaccion(est, jIdx, accion.i, accion.o);
+      if (accion.t === "pasar") {
+        // El rival deja pasar. El jugador activo solo puede seguir sin esperar si pasó el tiempo (lo comprueba el servidor).
+        if (jIdx === p.reactor || (accion.forzar && jIdx === p.actor)) return resolverPendiente(est);
+        return { error: "No te toca reaccionar." };
+      }
+      return { error: "Espera la respuesta del rival." };
+    }
+    if (accion.t === "pasar") return { ok: true }; // sobra: la reacción ya se resolvió
+    if (accion.t === "reaccionar") return { error: "No hay nada a lo que reaccionar." };
+    if (jIdx !== est.activo) return { error: "No es tu turno." };
+    if (accion.t === "jugar") return jugarCarta(est, jIdx, accion.i, accion.o);
+    if (accion.t === "atacar") return atacar(est, jIdx, accion.u, accion.o);
+    if (accion.t === "fin") { finalizarTurno(est); return { ok: true }; }
+    return { error: "Acción desconocida." };
+  }
+
+  /* Todas las acciones posibles de quien tiene que actuar (para la interfaz y para las pruebas) */
   function accionesLegales(est) {
     if (est.ganador !== null) return [];
+    if (est.pendiente) {
+      const p = est.pendiente;
+      return [...reaccionesPosibles(est, p.reactor, p.evento).map(i => ({ t: "reaccionar", i })), { t: "pasar" }];
+    }
     const jIdx = est.activo, J = est.jugadores[jIdx], out = [];
     J.mano.forEach((id, i) => {
       const m = meta(est, id);
@@ -499,7 +618,7 @@
         id: j.id, nombre: j.nombre, vida: C.VIDA, energia: 0, energiaMax: 0,
         mazo: j.mazo.slice(), mano: [], campo: [], cementerio: [], descartes: [], fatiga: 0, costeMenos: 0, malus: null
       })),
-      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: []
+      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0
     };
     est.jugadores.forEach(J => barajar(est, J.mazo));
     est.jugadores.forEach(J => robar(est, est.jugadores.indexOf(J), C.MANO_INICIAL));
@@ -529,7 +648,7 @@
     C, TOPE_COPIAS, TOKENS, EFECTOS, TERRENOS,
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
-    crearPartida, aplicar, accionesLegales, validarMazo,
+    crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,
     meta, efectoDe, nombre, esUnidad, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, objetivosDeAtaque, unidadPuedeAtacar,
