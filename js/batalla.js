@@ -22,6 +22,7 @@
   let sel = null;              // { tipo: 'mano', i } | { tipo: 'unidad', uid } | { tipo: 'ver', uid }
   let cerrando = false;
   let mostradaMirada = "";
+  let reveladoPila = null;     // carta superior de tu mazo que ya conoces: { carta, largo }
   let pvPrevios = new Map();
   let ultimoTurno = 0;         // para saber cuándo cambió el turno y avisarlo
   let ultimoTerreno = "";      // lo mismo con el terreno
@@ -172,6 +173,7 @@
     sel = null;
     cerrando = false;
     mostradaMirada = "";
+    reveladoPila = null;
     pvPrevios = new Map();
     ultimoTurno = 0;
     ultimoTerreno = "";
@@ -352,6 +354,24 @@
     </div>${gasto ? `<span class="bt-orbe-gasto">−${gasto}</span>` : ""}`;
   }
 
+  /* El mazo sobre la mesa, boca abajo. Si has mirado la carta superior (Cuervo del augurio), se da vuelta
+     y se queda a la vista: es la siguiente que robarás. Solo la ves tú; la del rival siempre va boca abajo. */
+  function htmlPila(J, idx, rival) {
+    const n = J.mazo.length;
+    const rev = !rival && reveladoPila && n > 0 && reveladoPila.largo === n && J.mazo[0] === reveladoPila.carta;
+    let frente = "", nombre = "";
+    if (rev) {
+      const m = M.meta(est, reveladoPila.carta);
+      nombre = m.nombre;
+      const vista = Object.assign({}, m, { id: reveladoPila.carta, coste: M.costeDe(est, idx, reveladoPila.carta), borrador: false, limite: null });
+      frente = `<div class="bt-pila-frente">${htmlCarta(vista, true, 0, null)}</div>`;
+    }
+    return `<div class="bt-pila ${n === 0 ? "vacia" : ""} ${rev ? "con-revelada" : ""}" title="${rev ? `Siguiente carta: ${esc(nombre)}` : `Mazo: ${n} cartas`}">
+      ${n > 2 ? '<i class="bt-pila-capa c2"></i>' : ""}${n > 1 ? '<i class="bt-pila-capa c1"></i>' : ""}
+      ${n ? `<div class="bt-pila-tope ${rev ? "revelada" : ""}"><div class="bt-pila-giro"><div class="bt-vuelo-dorso"><i></i></div>${frente}</div></div>` : '<div class="bt-pila-vacia">0</div>'}
+    </div>`;
+  }
+
   function htmlJugador(idx, rival) {
     const J = est.jugadores[idx];
     const activo = est.ganador === null && est.activo === idx;
@@ -360,6 +380,7 @@
         <div class="bt-nombre">${esc(J.nombre)}${activo ? '<em class="bt-tag-turno">Su turno</em>' : ""}</div>
         <div class="bt-conteo">${rival ? `Mano <strong>${J.mano.length}</strong> · ` : ""}Mazo <strong>${J.mazo.length}</strong></div>
       </div>
+      ${htmlPila(J, idx, rival)}
       ${htmlOrbe(J, idx)}
       ${rival ? '<div class="bt-atacar-cartel">⚔ Atacar al jugador</div>' : ""}`;
   }
@@ -428,9 +449,8 @@
       const n = restantes.get(id) || 0;
       if (n > 0) restantes.set(id, n - 1); else nuevas.push(i);
     });
-    const mazoYo = document.querySelector("#btYo .bt-conteo strong:last-child");
+    const mazoYo = document.querySelector("#btYo .bt-pila") || document.querySelector("#btYo .bt-conteo strong:last-child");
     if (nuevas.length && mazoYo) {
-      pulso(mazoYo);
       nuevas.slice(0, 4).forEach((i, k) => {
         const el = document.querySelector(`#btMano [data-i="${i}"]`);
         if (!el) return;
@@ -438,6 +458,7 @@
         const frente = cartaEl ? cartaEl.outerHTML : "";
         el.style.visibility = "hidden";
         const giro = parseFloat(el.style.getPropertyValue("--r")) || 0;
+        pulso(document.querySelector("#btYo .bt-conteo strong:last-child"));
         volar(mazoYo, el, { ancho: el.offsetWidth, alto: el.offsetHeight || el.offsetWidth * 1.5, frente, giro, duracion: 760, retraso: k * 190 })
           .then(() => {
             el.style.visibility = "";
@@ -450,10 +471,10 @@
 
     // Cartas del rival: el dorso viaja del mazo a su contador de mano
     const robadasRival = R.mano.length - antes.manoRival;
-    const mazoR = document.querySelector("#btRival .bt-conteo strong:last-child");
+    const mazoR = document.querySelector("#btRival .bt-pila") || document.querySelector("#btRival .bt-conteo strong:last-child");
     const manoR = document.querySelector("#btRival .bt-conteo strong:first-child");
     if (robadasRival > 0 && mazoR && manoR) {
-      pulso(mazoR);
+      pulso(document.querySelector("#btRival .bt-conteo strong:last-child"));
       for (let k = 0; k < Math.min(robadasRival, 4); k++) {
         volar(mazoR, manoR, { ancho: 46, alto: 69, soloDorso: true, duracion: 640, retraso: k * 170 }).then(() => { if (k === 0) pulso(manoR); });
       }
@@ -478,9 +499,16 @@
     $("btYo").classList.toggle("activo", est.ganador === null && est.activo === idx);
 
     // Seis huecos por campo: se ve cuánto sitio queda
-    const huecos = n => `<div class="bt-hueco"></div>`.repeat(Math.max(0, M.C.CAMPO_MAX - n));
-    $("btCampoRival").innerHTML = est.jugadores[rival].campo.map(u => htmlUnidad(u, idx)).join("") + huecos(est.jugadores[rival].campo.length);
-    $("btCampoYo").innerHTML = J.campo.map(u => htmlUnidad(u, idx)).join("") + huecos(J.campo.length);
+    // Cada unidad ocupa el hueco que se eligió al jugarla; los demás quedan vacíos en su sitio
+    const htmlCampo = Jx => Array.from({ length: M.C.CAMPO_MAX }, (_, k) => {
+      const u = Jx.campo.find(x => x.hueco === k);
+      return u ? htmlUnidad(u, idx) : `<div class="bt-hueco" data-hueco="${k}"></div>`;
+    }).join("");
+    $("btCampoRival").innerHTML = htmlCampo(est.jugadores[rival]);
+    $("btCampoYo").innerHTML = htmlCampo(J);
+    // Con una unidad de la mano elegida, los huecos libres de tu campo se ofrecen como destino
+    const cartaElegida = sel && sel.tipo === "mano" ? J.mano[sel.i] : null;
+    $("btCampoYo").classList.toggle("eligiendo", !!(cartaElegida && M.esUnidad(M.meta(est, cartaElegida)) && miTurnoDe(idx) && !est.pendiente));
 
     pintarCentro(idx);
     aplicarBioma();
@@ -792,7 +820,24 @@
     if (clave === mostradaMirada) return;
     mostradaMirada = clave;
     if (m.cartas) toast(`Lectura: ${m.cartas.map(id => M.meta(est, id).nombre).join(", ")}. Robas ${M.meta(est, m.elegida).nombre}.`);
-    else toast(m.carta ? `Carta superior de tu mazo: ${M.meta(est, m.carta).nombre}` : "Tu mazo está vacío.");
+    else if (m.carta) {
+      // La carta superior del mazo se levanta, se da vuelta y queda a la vista hasta que se robe
+      reveladoPila = { carta: m.carta, largo: est.jugadores[m.j].mazo.length };
+      const vieja = document.querySelector("#btYo .bt-pila");
+      if (vieja) vieja.outerHTML = htmlPila(est.jugadores[m.j], m.j, false);
+      animarRevelado();
+    } else toast("Tu mazo está vacío.");
+  }
+
+  function animarRevelado() {
+    if (sinAnimaciones()) return;
+    const tope = document.querySelector("#btYo .bt-pila-tope");
+    if (!tope) return;
+    const giro = tope.querySelector(".bt-pila-giro");
+    const opts = { duration: 2600, easing: "cubic-bezier(.2,.8,.25,1)" };
+    const arriba = "translateY(-96px) scale(3.1)";
+    tope.animate([{ transform: "translateY(0) scale(1)" }, { transform: arriba, offset: .3 }, { transform: arriba, offset: .82 }, { transform: "translateY(0) scale(1)" }], opts);
+    giro.animate([{ transform: "rotateY(0deg)" }, { transform: "rotateY(180deg)", offset: .34 }, { transform: "rotateY(180deg)" }], Object.assign({ fill: "none" }, opts));
   }
 
   /* --------------------------------------------------------- arrastrar y soltar */
@@ -848,6 +893,26 @@
     if (a.destinos.zona === "mesa") $("btMesa").classList.add("zona-soltar");
   }
 
+  /* El hueco libre de tu campo más cercano en horizontal (para soltar una carta entre dos huecos) */
+  function huecoCercano(x) {
+    let mejor, dist = Infinity;
+    document.querySelectorAll("#btCampoYo .bt-hueco").forEach(h => {
+      const r = h.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - x);
+      if (d < dist) { dist = d; mejor = Number(h.dataset.hueco); }
+    });
+    return mejor;
+  }
+
+  /* Acción de jugar una carta, con el hueco elegido si es una unidad */
+  function accionJugar(i, o, hueco) {
+    const a = { t: "jugar", i };
+    if (o) a.o = o;
+    const id = est.jugadores[indiceYo()].mano[i];
+    const h = hueco !== undefined ? hueco : sel && sel.tipo === "mano" && sel.i === i ? sel.hueco : undefined;
+    if (h !== undefined && id && M.esUnidad(M.meta(est, id))) a.h = h;
+    return a;
+  }
+
   /* ¿Sobre qué cosa válida está el puntero? { objetivo } o { zona } o null */
   function destinoBajo(a, x, y) {
     const el = document.elementFromPoint(x, y);
@@ -858,7 +923,11 @@
       if (o.u !== undefined && unidad && Number(unidad.dataset.uid) === o.u) return { objetivo: o, el: unidad };
       if (o.j !== undefined && jugador && (jugador.dataset.jugador === "yo" ? idx : 1 - idx) === o.j) return { objetivo: o, el: jugador };
     }
-    if (a.destinos.zona === "campo" && el.closest("#btCampoYo, #btCentro")) return { zona: true, el: $("btCampoYo") };
+    if (a.destinos.zona === "campo") {
+      const hz = el.closest("#btCampoYo .bt-hueco");
+      if (hz) return { zona: true, hueco: Number(hz.dataset.hueco), el: hz };
+      if (el.closest("#btCampoYo, #btCentro")) return { zona: true, hueco: huecoCercano(x), el: $("btCampoYo") };
+    }
     if (a.destinos.zona === "mesa" && el.closest("#btMesa")) return { zona: true, el: $("btMesa") };
     return null;
   }
@@ -885,14 +954,14 @@
     ocultarFlecha();
     if (dest && dest.objetivo) {
       const o = dest.objetivo;
-      if (a.tipo === "mano") enviar({ t: "jugar", i: a.i, o });
+      if (a.tipo === "mano") enviar(accionJugar(a.i, o));
       else enviar({ t: "atacar", u: a.uid, o });
       return;
     }
     if (dest && dest.zona) {
       if (a.destinos.zona === "mesa") { enviar({ t: "reaccionar", i: a.i }); return; }
-      if (a.destinos.pideObjetivo) { pintarTablero(); toast("Ahora elige el objetivo."); return; }  // la carta queda elegida
-      enviar({ t: "jugar", i: a.i });
+      if (a.destinos.pideObjetivo) { if (sel && dest.hueco !== undefined) sel.hueco = dest.hueco; pintarTablero(); toast("Ahora elige el objetivo."); return; }  // la carta queda elegida
+      enviar(accionJugar(a.i, null, dest.hueco));
       return;
     }
     sel = null;
@@ -978,7 +1047,19 @@
     if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) enviar({ t: "fin" }); return; }
     if (ev.target.closest("#btRendirse")) { rendirse(); return; }
     if (ev.target.closest("#btVolver2")) { volverAlLobby(); return; }
-    if (ev.target.closest("[data-jugar]")) { if (sel && sel.tipo === "mano") enviar({ t: "jugar", i: sel.i }); return; }
+    if (ev.target.closest("[data-jugar]")) { if (sel && sel.tipo === "mano") enviar(accionJugar(sel.i)); return; }
+    // Una unidad de la mano elegida se coloca en el hueco libre que se toque
+    const hueco = ev.target.closest("#btCampoYo .bt-hueco");
+    if (hueco && sel && sel.tipo === "mano" && miTurnoDe(idx) && !est.pendiente) {
+      const id = est.jugadores[idx].mano[sel.i];
+      if (id && M.esUnidad(M.meta(est, id))) {
+        const h = Number(hueco.dataset.hueco);
+        const req = M.requisitoDeJugada(est, idx, id);
+        if (req && req.validos.length) { sel.hueco = h; pintarTablero(); toast("Ahora elige el objetivo."); }
+        else enviar(accionJugar(sel.i, null, h));
+        return;
+      }
+    }
     if (ev.target.closest("[data-pasar]")) { if (reaccionaYo(idx)) enviar({ t: "pasar" }); return; }
     const botonReaccion = ev.target.closest("[data-reaccionar]");
     if (botonReaccion) { if (reaccionaYo(idx)) enviar({ t: "reaccionar", i: Number(botonReaccion.dataset.reaccionar) }); return; }
@@ -992,7 +1073,7 @@
     if (unidad && sel) {
       const uid = Number(unidad.dataset.uid);
       if (objetivos.some(o => o.u === uid)) {
-        if (sel.tipo === "mano") enviar({ t: "jugar", i: sel.i, o: { u: uid } });
+        if (sel.tipo === "mano") enviar(accionJugar(sel.i, { u: uid }));
         else enviar({ t: "atacar", u: sel.uid, o: { u: uid } });
         return;
       }
@@ -1000,7 +1081,7 @@
     if (jugador && sel) {
       const j = jugador.dataset.jugador === "yo" ? idx : 1 - idx;
       if (objetivos.some(o => o.j === j)) {
-        if (sel.tipo === "mano") enviar({ t: "jugar", i: sel.i, o: { j } });
+        if (sel.tipo === "mano") enviar(accionJugar(sel.i, { j }));
         else enviar({ t: "atacar", u: sel.uid, o: { j } });
         return;
       }
@@ -1017,7 +1098,7 @@
           return;
         }
         const req = M.requisitoDeJugada(est, idx, id);
-        if (miTurnoDe(idx) && (!req || (req.opcional && !req.validos.length))) enviar({ t: "jugar", i });
+        if (miTurnoDe(idx) && (!req || (req.opcional && !req.validos.length))) enviar(accionJugar(i));
         else { sel = null; pintarTablero(); }
       } else {
         sel = { tipo: "mano", i };

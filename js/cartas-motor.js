@@ -137,9 +137,18 @@
     return u;
   }
 
-  function ponerUnidad(est, jIdx, cartaId, conEntrada, objetivo) {
+  /* Hueco del campo (0 a CAMPO_MAX - 1): el pedido si está libre, y si no el primero libre. -1 si no queda ninguno. */
+  function huecoLibre(J, pedido) {
+    const usados = new Set(J.campo.map(x => x.hueco));
+    if (Number.isInteger(pedido) && pedido >= 0 && pedido < C.CAMPO_MAX && !usados.has(pedido)) return pedido;
+    for (let k = 0; k < C.CAMPO_MAX; k++) if (!usados.has(k)) return k;
+    return -1;
+  }
+
+  function ponerUnidad(est, jIdx, cartaId, conEntrada, objetivo, hueco) {
     const J = est.jugadores[jIdx];
     const u = nuevaUnidad(est, jIdx, cartaId);
+    u.hueco = huecoLibre(J, hueco);
     J.campo.push(u);
     log(est, `${J.nombre} juega a ${nombre(est, u)}.`);
     const T = defTerreno(est);
@@ -447,12 +456,12 @@
     const p = est.pendiente;
     est.pendiente = null;
     if (p.tipo === "jugar") {
-      const { id, objetivo } = p.datos;
+      const { id, objetivo, hueco } = p.datos;
       if (p.cancelado) {
         est.jugadores[p.actor].cementerio.push(id);
         log(est, `${meta(est, id).nombre} queda cancelada.`);
       } else {
-        resolverJugada(est, p.actor, id, objetivo);
+        resolverJugada(est, p.actor, id, objetivo, hueco);
       }
     } else if (p.tipo === "ataque") {
       ejecutarAtaque(est, p.actor, p.datos.uid, p.datos.objetivo, p.cancelado);
@@ -462,7 +471,7 @@
   }
 
   /* --- Jugar una carta ------------------------------------------------------- */
-  function jugarCarta(est, jIdx, i, objetivoRaw) {
+  function jugarCarta(est, jIdx, i, objetivoRaw, huecoPedido) {
     const J = est.jugadores[jIdx];
     if (i === undefined || i < 0 || i >= J.mano.length) return { error: "Esa carta no está en tu mano." };
     const id = J.mano[i];
@@ -471,6 +480,10 @@
     if (coste > J.energia) return { error: "No tienes energía suficiente." };
     if (esReaccion(est, id)) return { error: "Una reacción solo se juega como respuesta en el turno del rival." };
     if (esUnidad(m) && J.campo.length >= C.CAMPO_MAX) return { error: "Tu campo está lleno." };
+    if (esUnidad(m) && huecoPedido !== undefined && huecoPedido !== null) {
+      if (!Number.isInteger(huecoPedido) || huecoPedido < 0 || huecoPedido >= C.CAMPO_MAX) return { error: "Ese hueco no existe." };
+      if (J.campo.some(x => x.hueco === huecoPedido)) return { error: "Ese hueco está ocupado." };
+    }
     const req = requisitoDeJugada(est, jIdx, id);
     if (req) {
       if (objetivoRaw) {
@@ -484,14 +497,14 @@
     J.energia -= coste;
     J.mano.splice(i, 1);
     const objetivo = req && objetivoRaw ? objetivoRaw : null;
-    if (abrirVentana(est, { tipo: "jugar", actor: jIdx, carta: id }, { id, objetivo })) return { ok: true, pendiente: true };
-    resolverJugada(est, jIdx, id, objetivo);
+    if (abrirVentana(est, { tipo: "jugar", actor: jIdx, carta: id }, { id, objetivo, hueco: huecoPedido })) return { ok: true, pendiente: true };
+    resolverJugada(est, jIdx, id, objetivo, huecoPedido);
     revisarFinal(est);
     return { ok: true };
   }
 
   /* Aplica el efecto de una carta ya pagada. objetivoRaw: { u } | { j } | null (puede haber desaparecido). */
-  function resolverJugada(est, jIdx, id, objetivoRaw) {
+  function resolverJugada(est, jIdx, id, objetivoRaw, hueco) {
     const J = est.jugadores[jIdx];
     const m = meta(est, id);
     let objetivo = null;
@@ -501,7 +514,7 @@
     }
     if (esUnidad(m)) {
       if (J.campo.length >= C.CAMPO_MAX) { J.cementerio.push(id); log(est, `No hay sitio para ${m.nombre}.`); return; }
-      ponerUnidad(est, jIdx, id, true, objetivo);
+      ponerUnidad(est, jIdx, id, true, objetivo, hueco);
     } else if (m.tipo === "Terreno") {
       const T = TERRENOS[id] || {};
       est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno };
@@ -573,7 +586,7 @@
   const reproducir = (est, accion) => aplicar(est, accion, emisorDe(est, accion));
 
   /* Aplica una acción de un jugador.
-       { t:'jugar', i, o? } | { t:'atacar', u, o } | { t:'fin' }
+       { t:'jugar', i, o?, h? } | { t:'atacar', u, o } | { t:'fin' }
        { t:'reaccionar', i } | { t:'pasar', forzar? }  (mientras hay una acción pendiente) */
   function aplicar(est, accion, jIdx) {
     if (est.ganador !== null) return { error: "La partida ya terminó." };
@@ -591,7 +604,7 @@
     if (accion.t === "pasar") return { ok: true }; // sobra: la reacción ya se resolvió
     if (accion.t === "reaccionar") return { error: "No hay nada a lo que reaccionar." };
     if (jIdx !== est.activo) return { error: "No es tu turno." };
-    if (accion.t === "jugar") return jugarCarta(est, jIdx, accion.i, accion.o);
+    if (accion.t === "jugar") return jugarCarta(est, jIdx, accion.i, accion.o, accion.h);
     if (accion.t === "atacar") return atacar(est, jIdx, accion.u, accion.o);
     if (accion.t === "fin") { finalizarTurno(est); return { ok: true }; }
     return { error: "Acción desconocida." };
