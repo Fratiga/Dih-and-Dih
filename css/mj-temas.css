@@ -226,22 +226,26 @@ body.ritmo-tema {
 .ritmo-tema .rt-secundario:hover { border-color: #7ae8ff; color: #fff; }
 
 /* ======================================================================
-   CARTAS MALDITAS: la mesa de juego. Paño verde, filete de oro y vino.
+   TRIUNFOS: la mesa de juego. Violeta humo, vino y latón viejo, con un toque de azul de noche.
 ====================================================================== */
 body.cartas-tema {
-  --bg: #0d1a14; --panel: #15281f; --panel-2: #1c3428; --text: #efe6cc; --muted: #93aa98;
-  --accent: #d4af58; --accent-soft: #8a6f2c; --border: #2f4d3b; --font-heading: 'Cinzel';
+  --bg: #15121b; --panel: #211b2b; --panel-2: #2b2338; --text: #efe5d0; --muted: #a79eb4;
+  --accent: #d3ab5e; --accent-soft: #7e6334; --border: #3d3350; --font-heading: 'Cinzel';
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse at 50% 35%, rgba(60, 130, 90, .3), transparent 62%),
-    radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0, 0, 0, .55) 100%),
+    radial-gradient(ellipse at 50% -8%, rgba(150, 78, 118, .34), transparent 58%),
+    radial-gradient(ellipse at 100% 100%, rgba(48, 98, 124, .26), transparent 52%),
+    radial-gradient(ellipse at 0% 85%, rgba(110, 50, 70, .22), transparent 50%),
+    radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0, 0, 0, .5) 100%),
     repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 2px, transparent 2px 5px);
+  background-attachment: fixed;
   color: var(--text);
 }
-.cartas-tema .mj-barra { background: rgba(13, 26, 20, .78); border-bottom: 1px solid var(--accent-soft); }
+.cartas-tema .mj-barra { background: rgba(21, 16, 28, .8); border-bottom: 1px solid var(--accent-soft); }
 .cartas-tema .mj-volver { color: var(--accent); }
 .cartas-tema .eyebrow { color: var(--accent); letter-spacing: .3em; }
-.cartas-tema .mj-titulo { color: #f3e2ad; letter-spacing: .1em; text-shadow: 0 2px 0 #3a2a0c, 0 0 22px rgba(212, 175, 88, .35); }
-.cartas-tema .mj-titulo::before, .cartas-tema .mj-titulo::after { content: "♠"; color: #7a1f2b; margin: 0 14px; font-size: .7em; text-shadow: none; }
+.cartas-tema .mj-titulo { color: #f4e4b4; letter-spacing: .14em; text-transform: uppercase; text-shadow: 0 2px 0 #3a2a0c, 0 0 24px rgba(211, 171, 94, .4); }
+.cartas-tema .mj-titulo::before, .cartas-tema .mj-titulo::after { content: "♠"; color: #9c3350; margin: 0 14px; font-size: .6em; text-shadow: none; vertical-align: .15em; }
+.cartas-tema .mj-titulo::after { content: "♦"; }
 .cartas-tema .mj-titulo::after { content: "♥"; }
 

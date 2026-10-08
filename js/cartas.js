@@ -1,4 +1,4 @@
-/* Álbum de Cartas malditas y editor de cartas (Admin y rol Editor de cartas). */
+/* Álbum de Triunfos y editor de cartas (Admin y rol Editor de cartas). */
 (function () {
   const gridEl = document.getElementById("cartasGrid");
   const detalleEl = document.getElementById("cartaDetalle");
@@ -106,7 +106,7 @@
     id: $("edId"), nombre: $("edNombre"), epiteto: $("edEpiteto"), tipo: $("edTipo"), rareza: $("edRareza"),
     af1: $("edAfinidad1"), af2: $("edAfinidad2"), coste: $("edCoste"), atq: $("edAtq"), pv: $("edPv"),
     habilidad: $("edHabilidad"), descripcion: $("edDescripcion"), fuente: $("edFuente"), lado: $("edLado"),
-    limite: $("edLimite"), obtenible: $("edObtenible"), publicada: $("edPublicada")
+    limite: $("edLimite"), copiasMax: $("edCopiasMax"), obtenible: $("edObtenible"), publicada: $("edPublicada")
   };
   let edActual = null; // { id, nueva, imagen, imagenOriginal, subidas:[], idManual }
 
@@ -144,7 +144,8 @@
       fuente: f ? { data: f[0], id: f[1] } : null,
       lado,
       obtenible: campos.obtenible.checked,
-      limite: numeroOVacio(campos.limite)
+      limite: numeroOVacio(campos.limite),
+      copiasMax: numeroOVacio(campos.copiasMax)
     };
   }
 
@@ -225,7 +226,7 @@
 
   function abrirEditor(id) {
     const existente = id ? window.cartaPorId(id) : null;
-    const c = existente || { id: "", nombre: "", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 1, habilidad: "", descripcion: "", imagen: null, fuente: null, lado: null, obtenible: true, limite: null };
+    const c = existente || { id: "", nombre: "", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 1, habilidad: "", descripcion: "", imagen: null, fuente: null, lado: null, obtenible: true, limite: null, copiasMax: null };
     edActual = { id: existente ? existente.id : null, nueva: !existente, imagen: c.imagen || null, imagenOriginal: c.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), c.ajuste || {}), subidas: [], idManual: !!existente };
     $("cartaEditorTitulo").textContent = existente ? `Editar: ${c.nombre}` : "Nueva carta";
     campos.id.value = c.id;
@@ -245,6 +246,7 @@
     campos.fuente.value = c.fuente && c.fuente.data ? `${c.fuente.data}|${c.fuente.id}` : "";
     campos.lado.value = c.lado && c.lado.length === 1 ? c.lado[0] : "";
     campos.limite.value = c.limite ?? "";
+    campos.copiasMax.value = c.copiasMax ?? "";
     campos.obtenible.checked = c.obtenible !== false;
     campos.publicada.checked = !c.borrador;
     $("edBorrar").classList.toggle("hidden", !existente || idsBase.has(c.id));

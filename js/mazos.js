@@ -1,4 +1,4 @@
-/* Constructor de mazos de Cartas malditas. */
+/* Constructor de mazos de Triunfos. */
 (function () {
   const { esc, htmlCarta } = window.CartasVista;
   const M = window.CartasMotor;
@@ -13,7 +13,7 @@
   let original = "";            // para saber si hay cambios sin guardar
 
   const cartaPorId = id => window.cartaPorId(id);
-  const tope = c => M.TOPE_COPIAS[c.rareza] || 1;
+  const tope = c => M.topeCopias(c);
   // Cuántas copias puede usar este jugador: las que tiene; los editores, todas las que permite la rareza
   const posee = c => (esEditor ? tope(c) : (propia && propia.cartas.get(c.id)) || 0);
   const maximoUsable = c => Math.min(tope(c), posee(c));

@@ -1,4 +1,4 @@
-/* Batalla de Cartas malditas: lobby (retos entre jugadores), tablero y modo "probar solo".
+/* Batalla de Triunfos: lobby (retos entre jugadores), tablero y modo "probar solo".
    Las reglas las lleva js/cartas-motor.js; aquí solo se dibuja y se mandan las acciones. */
 (function () {
   const { esc, htmlCarta } = window.CartasVista;
@@ -23,6 +23,15 @@
   let cerrando = false;
   let mostradaMirada = "";
   let pvPrevios = new Map();
+  let ultimoTurno = 0;         // para saber cuándo cambió el turno y avisarlo
+  let ultimoTerreno = "";      // lo mismo con el terreno
+  let arrastre = null;         // arrastre de carta o de unidad en curso
+  let ignorarClic = false;     // tras un arrastre, el clic que lo cierra no cuenta
+  let primeroDeLaPartida = 0;  // quién empieza (para la presentación)
+  let introVisible = false;
+  let bannerTimer = null;
+  let tablero = "terciopelo";
+  try { tablero = localStorage.getItem("cartasTablero") || "terciopelo"; } catch (e) { /* sin almacenamiento */ }
 
   const local = () => modo === "local";
   const miTurno = () => est && est.ganador === null && est.activo === yo;
@@ -164,11 +173,24 @@
     cerrando = false;
     mostradaMirada = "";
     pvPrevios = new Map();
+    ultimoTurno = 0;
+    ultimoTerreno = "";
+    arrastre = null;
+    document.body.classList.add("bt-en-partida");
     $("btLobby").classList.add("hidden");
     $("btPartida").classList.remove("hidden");
     $("btFinal").classList.add("hidden");
     $("btTitulo").textContent = titulo;
+    $("btRendirse").textContent = local() ? "Salir" : "Rendirse";
+    aplicarTablero();
     pintarTablero();
+    // Presentación: una vez por partida y sesión, y solo si la partida acaba de empezar
+    let ver = true;
+    if (fila) {
+      try { ver = !sessionStorage.getItem(`btIntro:${fila.id}`); sessionStorage.setItem(`btIntro:${fila.id}`, "1"); } catch (e) { /* sin almacenamiento */ }
+    }
+    if (ver && est.turno <= 3) mostrarIntro();
+    else anunciarTurno(true);
   }
 
   function abrirPartida(id) {
@@ -176,6 +198,7 @@
     if (!f || f.estado === "pendiente" || f.estado === "rechazada") return;
     fila = f;
     modo = "partida";
+    primeroDeLaPartida = f.primero;
     const { e, l } = construir(f);
     est = e; lista = l;
     yo = f.j1 === miId ? 0 : 1;
@@ -192,6 +215,7 @@
       jugadores: [{ id: "a", nombre: a.nombre, mazo: CartasCliente.aplanar(a.cartas) }, { id: "b", nombre: b.nombre === a.nombre ? `${b.nombre} (2)` : b.nombre, mazo: CartasCliente.aplanar(b.cartas) }]
     });
     fila = null; lista = [];
+    primeroDeLaPartida = est.activo;
     modo = "local";
     entrarPartida("Prueba en solitario");
   }
@@ -199,6 +223,8 @@
   function volverAlLobby() {
     modo = "lobby";
     est = null; fila = null;
+    document.body.classList.remove("bt-en-partida");
+    ocultarFlecha();
     $("btPartida").classList.add("hidden");
     $("btLobby").classList.remove("hidden");
     cargarPartidas();
@@ -308,14 +334,34 @@
   // Le toca decidir si reacciona
   const reaccionaYo = idx => est.ganador === null && !!est.pendiente && est.pendiente.reactor === idx;
 
+  /* Orbe de energía: se llena con la energía que queda y se vacía al gastarla. Si hay una carta elegida,
+     la parte que gastaría se ve en naranja. */
+  function htmlOrbe(J, idx) {
+    const max = Math.max(J.energiaMax, 1);
+    const llena = Math.min(100, Math.round((100 * J.energia) / max));
+    let gasto = 0;
+    if (sel && sel.tipo === "mano" && idx === indiceYo() && miTurnoDe(idx)) {
+      const id = J.mano[sel.i];
+      if (id && M.meta(est, id).tipo !== "Reacción") gasto = Math.min(J.energia, M.costeDe(est, idx, id));
+    }
+    const gastoPct = Math.round((100 * gasto) / max);
+    const extra = J.energia > J.energiaMax ? `<b class="extra">+${J.energia - J.energiaMax}</b>` : "";
+    return `<div class="bt-orbe energia ${J.energia === 0 ? "vacia" : ""}" title="Energía: ${J.energia} de ${J.energiaMax}" style="--llena:${llena}%;--gasto:${gastoPct}%">
+      <div class="liquido"></div><div class="gasto"></div>
+      <span class="num">${J.energia}</span><small>/ ${J.energiaMax}</small>${extra}
+    </div>${gasto ? `<span class="bt-orbe-gasto">−${gasto}</span>` : ""}`;
+  }
+
   function htmlJugador(idx, rival) {
     const J = est.jugadores[idx];
-    const orbes = Array.from({ length: Math.max(J.energiaMax, 1) }, (_, i) => `<i class="${i < J.energia ? "llena" : ""}"></i>`).join("");
-    const extra = J.energia > J.energiaMax ? `<small>+${J.energia - J.energiaMax}</small>` : "";
-    return `<div class="bt-nombre">${esc(J.nombre)}${est.activo === idx && est.ganador === null ? ' <em>· su turno</em>' : ""}</div>
-      <div class="bt-vida" title="Vida"><span>♥</span> <strong>${Math.max(0, J.vida)}</strong></div>
-      <div class="bt-energia" title="Energía: ${J.energia}/${J.energiaMax}">${orbes}${extra}</div>
-      <div class="bt-conteo">${rival ? `Mano <strong>${J.mano.length}</strong> · ` : ""}Mazo <strong>${J.mazo.length}</strong></div>`;
+    const activo = est.ganador === null && est.activo === idx;
+    return `<div class="bt-orbe vida ${J.vida <= 5 ? "baja" : ""}" title="Vida"><span class="num">${Math.max(0, J.vida)}</span></div>
+      <div class="bt-datos">
+        <div class="bt-nombre">${esc(J.nombre)}${activo ? '<em class="bt-tag-turno">Su turno</em>' : ""}</div>
+        <div class="bt-conteo">${rival ? `Mano <strong>${J.mano.length}</strong> · ` : ""}Mazo <strong>${J.mazo.length}</strong></div>
+      </div>
+      ${htmlOrbe(J, idx)}
+      ${rival ? '<div class="bt-atacar-cartel">⚔ Atacar al jugador</div>' : ""}`;
   }
 
   function objetivosVigentes() {
@@ -338,27 +384,31 @@
 
   function pintarTablero() {
     if (!est) return;
+    if (arrastre && arrastre.activo) { arrastre.repintar = true; return; }
     const idx = indiceYo();
     const rival = 1 - idx;
     const J = est.jugadores[idx];
+    const mesa = $("btMesa");
+
+    mesa.dataset.turno = est.ganador !== null ? "fin" : reaccionaYo(idx) ? "reaccion" : miTurnoDe(idx) ? "mio" : "rival";
 
     // Los paneles de jugador no se vuelven a crear: se les quita la marca de objetivo de la vez anterior
-    $("btRival").classList.remove("objetivo");
-    $("btYo").classList.remove("objetivo");
+    ["btRival", "btYo"].forEach(id => $(id).classList.remove("objetivo", "sobre"));
     $("btRival").innerHTML = htmlJugador(rival, true);
-    $("btYo").innerHTML = htmlJugador(idx, false) + `
-      <div class="bt-botones">
-        <button type="button" id="btFin" class="cartas-boton cartas-boton-principal" ${miTurnoDe(idx) ? "" : "disabled"}>Terminar turno</button>
-        <button type="button" id="btRendirse" class="cartas-boton cartas-boton-peligro">${local() ? "Salir" : "Rendirse"}</button>
-      </div>`;
-    $("btCampoRival").innerHTML = est.jugadores[rival].campo.map(u => htmlUnidad(u, idx)).join("") || `<p class="bt-vacio">Sin unidades</p>`;
-    $("btCampoYo").innerHTML = J.campo.map(u => htmlUnidad(u, idx)).join("") || `<p class="bt-vacio">Sin unidades</p>`;
+    $("btYo").innerHTML = htmlJugador(idx, false);
+    $("btRival").classList.toggle("activo", est.ganador === null && est.activo === rival);
+    $("btYo").classList.toggle("activo", est.ganador === null && est.activo === idx);
 
-    const T = est.terreno;
-    $("btCentro").innerHTML = T
-      ? `<div class="bt-terreno carta-rareza-${esc(M.meta(est, T.cartaId).rareza)}" title="${esc(M.meta(est, T.cartaId).habilidad)}"><strong>${esc(M.meta(est, T.cartaId).nombre)}</strong><span>${esc(M.meta(est, T.cartaId).habilidad)}</span><small>${T.restantes === null ? "hasta que entre otro terreno" : `${T.restantes} turno${T.restantes === 1 ? "" : "s"}`} · de ${esc(est.jugadores[T.dueno].nombre)}</small></div>`
-      : `<div class="bt-terreno vacio">Sin terreno</div>`;
+    // Seis huecos por campo: se ve cuánto sitio queda
+    const huecos = n => `<div class="bt-hueco"></div>`.repeat(Math.max(0, M.C.CAMPO_MAX - n));
+    $("btCampoRival").innerHTML = est.jugadores[rival].campo.map(u => htmlUnidad(u, idx)).join("") + huecos(est.jugadores[rival].campo.length);
+    $("btCampoYo").innerHTML = J.campo.map(u => htmlUnidad(u, idx)).join("") + huecos(J.campo.length);
 
+    pintarCentro(idx);
+    aplicarBioma();
+
+    const n = J.mano.length;
+    const medio = (n - 1) / 2;
     $("btMano").innerHTML = J.mano.map((id, i) => {
       const m = M.meta(est, id);
       const coste = M.costeDe(est, idx, id);
@@ -367,12 +417,13 @@
         ? reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)
         : miTurnoDe(idx) && coste <= J.energia && !esReaccion;
       const vista = Object.assign({}, m, { id, coste, borrador: false, limite: null });
-      return `<div class="bt-carta ${jugable ? "jugable" : ""} ${esReaccion ? "es-reaccion" : ""} ${sel && sel.tipo === "mano" && sel.i === i ? "elegida" : ""}" data-i="${i}">${esReaccion ? '<span class="bt-etiqueta">Reacción</span>' : ""}${htmlCarta(vista, true, 0, null)}</div>`;
+      const giro = ((i - medio) * Math.min(4, 22 / Math.max(n, 1))).toFixed(1);
+      const baja = (Math.abs(i - medio) ** 2 * 1.4).toFixed(1);
+      return `<div class="bt-carta ${jugable ? "jugable" : ""} ${esReaccion ? "es-reaccion" : ""} ${sel && sel.tipo === "mano" && sel.i === i ? "elegida" : ""}" data-i="${i}" style="--r:${giro}deg;--y:${baja}px">${esReaccion ? '<span class="bt-etiqueta">Reacción</span>' : ""}${htmlCarta(vista, true, 0, null)}</div>`;
     }).join("") || `<p class="bt-vacio">Sin cartas en la mano</p>`;
 
     // Objetivos que se pueden elegir
-    const objetivos = objetivosVigentes();
-    objetivos.forEach(o => {
+    objetivosVigentes().forEach(o => {
       const el = o.u !== undefined ? document.querySelector(`[data-uid="${o.u}"]`) : document.querySelector(`[data-jugador="${o.j === idx ? "yo" : "rival"}"]`);
       if (el) el.classList.add("objetivo");
     });
@@ -400,7 +451,149 @@
     pintarInspector();
     pintarFinal();
     avisarMirada();
+    anunciarTurno(false);
+    anunciarTerreno();
   }
+
+  /* Franja del centro: terreno actual, de quién es el turno y el botón de terminar turno */
+  function pintarCentro(idx) {
+    const T = est.terreno;
+    const m = T ? M.meta(est, T.cartaId) : null;
+    const terreno = T
+      ? `<div class="bt-terreno-ficha carta-rareza-${esc(m.rareza)}" title="${esc(m.habilidad)}">
+          <span class="bt-terreno-icono"></span>
+          <div><strong>${esc(m.nombre)}</strong><small>${T.restantes === null ? "hasta que entre otro" : `${T.restantes} turno${T.restantes === 1 ? "" : "s"}`} · de ${esc(est.jugadores[T.dueno].nombre)}</small></div>
+        </div>`
+      : `<div class="bt-terreno-ficha vacia"><span class="bt-terreno-icono"></span><div><small>Sin terreno</small></div></div>`;
+    const miTurnoAhora = miTurnoDe(idx);
+    const cinta = est.ganador !== null ? "Fin de la partida"
+      : est.pendiente ? (reaccionaYo(idx) ? "¡Reacciona!" : "Esperando respuesta")
+      : local() ? `Turno de ${est.jugadores[est.activo].nombre}` : miTurnoAhora ? "Tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`;
+    $("btCentro").innerHTML = `${terreno}
+      <div class="bt-cinta ${miTurnoAhora ? "mio" : ""}">${esc(cinta)}</div>
+      <button type="button" id="btFin" class="bt-fin ${miTurnoAhora ? "activo" : ""}" ${miTurnoAhora ? "" : "disabled"}>Terminar turno</button>`;
+  }
+
+  /* ----------------------------------------------------------- tableros y biomas */
+  const TABLEROS = [
+    { id: "terciopelo", nombre: "Terciopelo" },
+    { id: "pano", nombre: "Paño verde" },
+    { id: "taberna", nombre: "Mesa de taberna" },
+    { id: "cripta", nombre: "Cripta" },
+    { id: "bosque", nombre: "Claro del bosque" },
+    { id: "cenizas", nombre: "Llanura de ceniza" },
+    { id: "glaciar", nombre: "Glaciar" }
+  ];
+  // Cada terreno cambia el ambiente de todo el tablero (ver css/cartas-juego.css)
+  const BIOMAS = {
+    "puente-de-las-legiones": "puente", "los-huesos": "huesos", "glaciar-eterno": "hielo", "vado-ceniza": "ceniza",
+    "desierto-de-cenizas": "desierto", "catedral-del-juramento": "catedral", "el-crater": "crater", "kigan": "puerto",
+    "torre-del-silencio": "torre", "la-espesura": "espesura", "osario-de-la-frontera": "osario", "cueva-de-carne": "carne"
+  };
+
+  function aplicarTablero() {
+    if (!TABLEROS.some(t => t.id === tablero)) tablero = "terciopelo";
+    $("btMesa").dataset.tablero = tablero;
+    $("btTablero").value = tablero;
+  }
+
+  let biomaActual = "";
+  function aplicarBioma() {
+    const el = $("btBioma");
+    const T = est && est.terreno;
+    const nuevo = T ? (BIOMAS[T.cartaId] || "generico") : "";
+    if (nuevo === biomaActual) return;
+    biomaActual = nuevo;
+    // Se desvanece el ambiente anterior y entra el nuevo
+    el.classList.remove("on");
+    setTimeout(() => {
+      if (biomaActual !== nuevo) return;
+      el.dataset.b = nuevo;
+      if (nuevo) { void el.offsetWidth; el.classList.add("on"); }
+    }, nuevo && el.dataset.b ? 450 : 0);
+  }
+
+  function mostrarBanner(titulo, subtitulo, clase, ms) {
+    const b = $("btBanner");
+    b.className = `bt-banner ${clase || ""}`;
+    b.innerHTML = `<strong>${esc(titulo)}</strong>${subtitulo ? `<span>${esc(subtitulo)}</span>` : ""}`;
+    void b.offsetWidth;
+    b.classList.add("visible");
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => b.classList.remove("visible"), ms || 1900);
+  }
+
+  /* Cartel grande cuando cambia el turno */
+  function anunciarTurno(forzar) {
+    if (!est || introVisible || est.ganador !== null) return;
+    if (!forzar && est.turno === ultimoTurno) return;
+    const primera = ultimoTurno === 0;
+    ultimoTurno = est.turno;
+    if (primera && !forzar) return;
+    const idx = indiceYo();
+    const mio = est.activo === idx || local();
+    mostrarBanner(local() ? `Turno de ${est.jugadores[est.activo].nombre}` : mio ? "Tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`,
+      `Turno ${est.turno}`, local() ? "mio" : mio ? "mio" : "rival");
+  }
+
+  /* Cartel cuando entra un terreno nuevo (o se va) */
+  function anunciarTerreno() {
+    const T = est.terreno;
+    const clave = T ? `${T.cartaId}:${T.desde}` : "";
+    if (clave === ultimoTerreno) return;
+    const habiaAntes = ultimoTerreno !== "";
+    ultimoTerreno = clave;
+    if (introVisible) return;
+    if (T) {
+      const m = M.meta(est, T.cartaId);
+      mostrarBanner(m.nombre, m.habilidad, "terreno", 3200);
+    } else if (habiaAntes) {
+      mostrarBanner("El terreno se desvanece", "", "terreno", 1600);
+    }
+  }
+
+  /* Presentación de la partida: los dos nombres, el sorteo y quién empieza */
+  function mostrarIntro() {
+    const el = $("btIntro");
+    const a = indiceYo(), b = 1 - a;
+    const JA = est.jugadores[a], JB = est.jugadores[b];
+    const empieza = est.jugadores[primeroDeLaPartida].nombre;
+    introVisible = true;
+    el.innerHTML = `<div class="bt-intro-caja">
+        <div class="bt-intro-j izq"><small>${local() ? "Jugador 1" : "Tú"}</small><strong>${esc(JA.nombre)}</strong></div>
+        <div class="bt-intro-vs">VS</div>
+        <div class="bt-intro-j der"><small>${local() ? "Jugador 2" : "Rival"}</small><strong>${esc(JB.nombre)}</strong></div>
+        <div class="bt-intro-moneda"><i></i></div>
+        <p class="bt-intro-primero">Empieza <strong>${esc(empieza)}</strong></p>
+        <small class="bt-intro-skip">Toca para empezar</small>
+      </div>`;
+    el.className = "bt-intro";
+    const cerrar = () => {
+      if (!introVisible) return;
+      introVisible = false;
+      el.classList.add("salir");
+      setTimeout(() => { el.classList.add("hidden"); el.classList.remove("salir"); }, 500);
+      anunciarTurno(true);
+    };
+    el.onclick = cerrar;
+    setTimeout(cerrar, 4200);
+  }
+
+  /* ----------------------------------------------------------------- flechas */
+  function posicionEnMesa(el) {
+    const r = el.getBoundingClientRect(), m = $("btMesa").getBoundingClientRect();
+    return { x: r.left + r.width / 2 - m.left, y: r.top + r.height / 2 - m.top };
+  }
+
+  function dibujarFlecha(a, b, valida) {
+    const svg = $("btFlecha");
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const cx = (a.x + b.x) / 2 - dy * 0.12, cy = (a.y + b.y) / 2 + dx * 0.12 - Math.min(90, Math.hypot(dx, dy) * 0.25);
+    $("btFlechaTrazo").setAttribute("d", `M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}`);
+    svg.classList.add("visible");
+    svg.classList.toggle("valida", !!valida);
+  }
+  const ocultarFlecha = () => $("btFlecha").classList.remove("visible", "valida");
 
   /* Panel de la reacción en el aire: a quien le toca decidir le ofrece sus cartas; al otro le avisa de que espera */
   function pintarVentana() {
@@ -511,9 +704,185 @@
     toast(m.carta ? `Carta superior de tu mazo: ${M.meta(est, m.carta).nombre}` : "Tu mazo está vacío.");
   }
 
+  /* --------------------------------------------------------- arrastrar y soltar */
+  /* Se arrastra una carta de la mano hacia el tablero (o hacia su objetivo), o una unidad hacia lo que quiere atacar. */
+  function destinosDe(a) {
+    const idx = indiceYo();
+    if (a.tipo === "mano") {
+      const id = est.jugadores[idx].mano[a.i];
+      if (!id) return null;
+      if (M.meta(est, id).tipo === "Reacción") return { zona: "mesa", objetivos: [] };
+      const req = M.requisitoDeJugada(est, idx, id);
+      if (req && req.validos.length) return { zona: "campo", objetivos: req.validos, pideObjetivo: true };
+      return { zona: "campo", objetivos: [] };
+    }
+    const hit = M.buscar(est, a.uid);
+    if (!hit || !M.unidadPuedeAtacar(est, hit.u)) return null;
+    const v = M.objetivosDeAtaque(est, a.uid);
+    return { zona: null, objetivos: [...v.unidades.map(x => ({ u: x })), ...(v.jugador ? [{ j: 1 - idx }] : [])] };
+  }
+
+  function elementoDeObjetivo(o) {
+    const idx = indiceYo();
+    return o.u !== undefined ? document.querySelector(`[data-uid="${o.u}"]`) : document.querySelector(`[data-jugador="${o.j === idx ? "yo" : "rival"}"]`);
+  }
+
+  function iniciarArrastre() {
+    const a = arrastre;
+    a.destinos = destinosDe(a);
+    if (!a.destinos) { arrastre = null; return; }
+    sel = a.tipo === "mano" ? { tipo: "mano", i: a.i } : { tipo: "unidad", uid: a.uid };
+    pintarTablero();           // marca los objetivos posibles
+    a.activo = true;
+    document.body.classList.add("bt-arrastrando");
+    if (a.tipo === "mano") {
+      const idx = indiceYo();
+      const id = est.jugadores[idx].mano[a.i];
+      const m = M.meta(est, id);
+      const vista = Object.assign({}, m, { id, coste: M.costeDe(est, idx, id), borrador: false, limite: null });
+      const f = document.createElement("div");
+      f.className = "bt-fantasma";
+      f.innerHTML = htmlCarta(vista, true, 0, null);
+      document.body.appendChild(f);
+      a.fantasma = f;
+      const original = document.querySelector(`.bt-carta[data-i="${a.i}"]`);
+      if (original) original.classList.add("arrastrando");
+      a.origen = original ? posicionEnMesa(original) : null;
+    } else {
+      const original = document.querySelector(`.bt-unidad[data-uid="${a.uid}"]`);
+      a.origen = original ? posicionEnMesa(original) : null;
+    }
+    // Zonas donde se puede soltar
+    if (a.destinos.zona === "campo") { $("btCampoYo").classList.add("zona-soltar"); $("btCentro").classList.add("zona-soltar"); }
+    if (a.destinos.zona === "mesa") $("btMesa").classList.add("zona-soltar");
+  }
+
+  /* ¿Sobre qué cosa válida está el puntero? { objetivo } o { zona } o null */
+  function destinoBajo(a, x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    const unidad = el.closest("[data-uid]"), jugador = el.closest("[data-jugador]");
+    const idx = indiceYo();
+    for (const o of a.destinos.objetivos) {
+      if (o.u !== undefined && unidad && Number(unidad.dataset.uid) === o.u) return { objetivo: o, el: unidad };
+      if (o.j !== undefined && jugador && (jugador.dataset.jugador === "yo" ? idx : 1 - idx) === o.j) return { objetivo: o, el: jugador };
+    }
+    if (a.destinos.zona === "campo" && el.closest("#btCampoYo, #btCentro")) return { zona: true, el: $("btCampoYo") };
+    if (a.destinos.zona === "mesa" && el.closest("#btMesa")) return { zona: true, el: $("btMesa") };
+    return null;
+  }
+
+  function moverArrastre(ev) {
+    const a = arrastre;
+    if (a.fantasma) a.fantasma.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px) translate(-50%, -60%) rotate(-4deg)`;
+    const mesa = $("btMesa").getBoundingClientRect();
+    const dest = destinoBajo(a, ev.clientX, ev.clientY);
+    document.querySelectorAll(".sobre").forEach(e => e.classList.remove("sobre"));
+    if (dest) dest.el.classList.add("sobre");
+    // Flecha: desde el origen hasta el puntero (o hasta el objetivo si está encima)
+    if (a.origen && (a.tipo === "unidad" || a.destinos.pideObjetivo)) {
+      const hasta = dest && dest.objetivo ? posicionEnMesa(dest.el) : { x: ev.clientX - mesa.left, y: ev.clientY - mesa.top };
+      dibujarFlecha(a.origen, hasta, !!(dest && dest.objetivo));
+    }
+  }
+
+  function terminarArrastre(a, ev) {
+    const dest = destinoBajo(a, ev.clientX, ev.clientY);
+    if (a.fantasma) a.fantasma.remove();
+    document.body.classList.remove("bt-arrastrando");
+    document.querySelectorAll(".sobre, .zona-soltar, .arrastrando").forEach(e => e.classList.remove("sobre", "zona-soltar", "arrastrando"));
+    ocultarFlecha();
+    if (dest && dest.objetivo) {
+      const o = dest.objetivo;
+      if (a.tipo === "mano") enviar({ t: "jugar", i: a.i, o });
+      else enviar({ t: "atacar", u: a.uid, o });
+      return;
+    }
+    if (dest && dest.zona) {
+      if (a.destinos.zona === "mesa") { enviar({ t: "reaccionar", i: a.i }); return; }
+      if (a.destinos.pideObjetivo) { pintarTablero(); toast("Ahora elige el objetivo."); return; }  // la carta queda elegida
+      enviar({ t: "jugar", i: a.i });
+      return;
+    }
+    sel = null;
+    pintarTablero();
+  }
+
+  function cancelarArrastre() {
+    if (!arrastre) return;
+    const a = arrastre;
+    arrastre = null;
+    if (a.activo) {
+      if (a.fantasma) a.fantasma.remove();
+      document.body.classList.remove("bt-arrastrando");
+      document.querySelectorAll(".sobre, .zona-soltar, .arrastrando").forEach(e => e.classList.remove("sobre", "zona-soltar", "arrastrando"));
+      ocultarFlecha();
+      sel = null;
+      pintarTablero();
+    }
+  }
+
+  $("btMesa").addEventListener("pointerdown", ev => {
+    if (ev.button !== 0 || !est) return;
+    const carta = ev.target.closest(".bt-carta.jugable");
+    const unidad = ev.target.closest(".bt-unidad.lista");
+    if (!carta && !unidad) return;
+    arrastre = {
+      tipo: carta ? "mano" : "unidad", i: carta ? Number(carta.dataset.i) : null, uid: unidad ? Number(unidad.dataset.uid) : null,
+      x0: ev.clientX, y0: ev.clientY, activo: false
+    };
+  });
+  document.addEventListener("pointermove", ev => {
+    if (!arrastre) return;
+    if (!arrastre.activo) {
+      if (Math.hypot(ev.clientX - arrastre.x0, ev.clientY - arrastre.y0) < 8) return;
+      iniciarArrastre();
+      if (!arrastre) return;
+    }
+    moverArrastre(ev);
+    ev.preventDefault();
+  });
+  document.addEventListener("pointerup", ev => {
+    if (!arrastre) return;
+    const a = arrastre;
+    arrastre = null;
+    if (!a.activo) return;                       // fue un clic normal
+    ignorarClic = true;
+    setTimeout(() => { ignorarClic = false; }, 120);
+    a.activo = false;
+    terminarArrastre(a, ev);
+  });
+  document.addEventListener("pointercancel", cancelarArrastre);
+
+  /* Con una carta o una unidad elegida, la flecha sigue al ratón y se marca el objetivo */
+  $("btMesa").addEventListener("mousemove", ev => {
+    if (!est || arrastre || !sel) return;
+    const objetivos = objetivosVigentes();
+    if (!objetivos.length) { ocultarFlecha(); return; }
+    const origen = sel.tipo === "unidad" ? document.querySelector(`.bt-unidad[data-uid="${sel.uid}"]`) : document.querySelector(`.bt-carta[data-i="${sel.i}"]`);
+    if (!origen) { ocultarFlecha(); return; }
+    const mesa = $("btMesa").getBoundingClientRect();
+    const el = ev.target.closest("[data-uid], [data-jugador]");
+    let valido = null;
+    if (el) {
+      const idx = indiceYo();
+      valido = objetivos.find(o => (o.u !== undefined && el.dataset.uid && Number(el.dataset.uid) === o.u) || (o.j !== undefined && el.dataset.jugador && (el.dataset.jugador === "yo" ? idx : 1 - idx) === o.j));
+    }
+    dibujarFlecha(posicionEnMesa(origen), valido ? posicionEnMesa(el) : { x: ev.clientX - mesa.left, y: ev.clientY - mesa.top }, !!valido);
+  });
+  $("btMesa").addEventListener("mouseleave", () => { if (!arrastre) ocultarFlecha(); });
+
+  $("btTablero").innerHTML = TABLEROS.map(t => `<option value="${t.id}">${t.nombre}</option>`).join("");
+  $("btTablero").addEventListener("change", () => {
+    tablero = $("btTablero").value;
+    try { localStorage.setItem("cartasTablero", tablero); } catch (e) { /* sin almacenamiento */ }
+    aplicarTablero();
+  });
+
   /* ---------------------------------------------------------------- eventos */
   function alClicTablero(ev) {
     if (!est) return;
+    if (ignorarClic) return;
     const idx = indiceYo();
     if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) enviar({ t: "fin" }); return; }
     if (ev.target.closest("#btRendirse")) { rendirse(); return; }
@@ -574,7 +943,7 @@
       pintarTablero();
       return;
     }
-    if (sel) { sel = null; pintarTablero(); }
+    if (sel) { sel = null; ocultarFlecha(); pintarTablero(); }
   }
 
   function alPasarRaton(ev) {

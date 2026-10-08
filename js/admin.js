@@ -984,7 +984,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     }
   }
 
-  // --- Cartas malditas (requiere scratchpad/cartas.sql) ---
+  // --- Triunfos (cartas) (requiere scratchpad/cartas.sql) ---
   async function cargarCartasAdmin() {
     const estadoEl = document.getElementById("adminCartasEstado");
     const registroEl = document.getElementById("adminCartasRegistro");

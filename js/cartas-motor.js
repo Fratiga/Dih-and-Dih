@@ -6,8 +6,9 @@
    navegador las repite en orden y llega al mismo resultado.
 
    Reglas:
-   - 20 de vida. Mazo de 20 a 30 cartas. Se roban 5 al empezar (el segundo
-     jugador roba 1 más).
+   - 20 de vida. Mazo de 20 a 30 cartas, con una sola copia de cada personaje
+     (salvo excepciones) y de 1 a 3 de las demás según su rareza. Se roban 5 al
+     empezar (el segundo jugador roba 1 más).
    - La energía máxima sube 1 en cada turno propio, hasta 10, y se rellena.
    - Un turno: robas una carta, juegas cartas pagando su coste y atacas con tus
      unidades. Una unidad que entra no puede atacar hasta tu siguiente turno.
@@ -28,6 +29,10 @@
   const C = { VIDA: 20, MANO_INICIAL: 5, MANO_MAX: 8, CAMPO_MAX: 6, ENERGIA_MAX: 10, MAZO_MIN: 20, MAZO_MAX: 30 };
   const TIPOS_UNIDAD = ["Personaje", "Criatura", "Entidad"];
   const TOPE_COPIAS = { comun: 3, infrecuente: 3, rara: 2, legendaria: 1, limitada: 1 };
+  /* Copias de una carta que caben en un mazo: una sola por personaje, salvo que la carta tenga su propia
+     excepción (copiasMax); el resto, según su rareza. */
+  const topeCopias = c => (Number.isFinite(c.copiasMax) && c.copiasMax >= 1 ? Math.min(3, c.copiasMax)
+    : c.tipo === "Personaje" ? 1 : (TOPE_COPIAS[c.rareza] || 1));
 
   const TOKENS = {
     centinela: { id: "centinela", nombre: "Centinela", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 1, pv: 1, habilidad: "", token: true }
@@ -490,7 +495,7 @@
       ponerUnidad(est, jIdx, id, true, objetivo);
     } else if (m.tipo === "Terreno") {
       const T = TERRENOS[id] || {};
-      est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0 };
+      est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno };
       log(est, `${J.nombre} juega el terreno ${m.nombre}.`);
     } else {
       log(est, `${J.nombre} juega ${m.nombre}.`);
@@ -637,15 +642,15 @@
     Object.entries(cuenta).forEach(([id, n]) => {
       const c = cartas[id];
       if (!c) { problemas.push(`La carta ${id} ya no existe.`); return; }
-      const tope = TOPE_COPIAS[c.rareza] || 1;
-      if (n > tope) problemas.push(`${c.nombre}: como máximo ${tope} copia${tope === 1 ? "" : "s"}.`);
+      const tope = topeCopias(c);
+      if (n > tope) problemas.push(`${c.nombre}: como máximo ${tope} copia${tope === 1 ? "" : "s"}${c.tipo === "Personaje" && tope === 1 ? " (un personaje por mazo)" : ""}.`);
       if (posee && n > (posee[id] || 0)) problemas.push(`${c.nombre}: solo tienes ${posee[id] || 0}.`);
     });
     return problemas;
   }
 
   const M = {
-    C, TOPE_COPIAS, TOKENS, EFECTOS, TERRENOS,
+    C, TOPE_COPIAS, topeCopias, TOKENS, EFECTOS, TERRENOS,
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,

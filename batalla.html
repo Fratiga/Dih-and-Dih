@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batalla — Cartas malditas</title>
+  <title>Batalla — Triunfos</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261199" data-permite="compendioCartasEditor"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261199">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261199">
-  <link rel="stylesheet" href="css/cartas.css?v=20261199">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20261199">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261199">
-  <script src="js/mj-volumen.js?v=20261199"></script>
+  <script src="js/oculto.js?v=20261203" data-permite="compendioCartasEditor"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261203">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261203">
+  <link rel="stylesheet" href="css/cartas.css?v=20261203">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20261203">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261203">
+  <script src="js/mj-volumen.js?v=20261203"></script>
 </head>
 <body class="mj-pagina cartas-tema">
   <div class="mj-barra">
@@ -65,16 +65,29 @@
         <button type="button" id="btVolver" class="cartas-boton">← Lobby</button>
         <strong id="btTitulo"></strong>
         <span id="btTurno" class="bt-turno"></span>
+        <label class="bt-selector">Tablero <select id="btTablero"></select></label>
+        <button type="button" id="btRendirse" class="cartas-boton cartas-boton-peligro">Rendirse</button>
       </div>
       <div class="bt-zona">
-        <div id="btMesa" class="bt-mesa">
-          <div id="btRival" class="bt-jugador bt-jugador-rival" data-jugador="rival"></div>
-          <div id="btCampoRival" class="bt-campo"></div>
-          <div id="btCentro" class="bt-centro"></div>
-          <div id="btCampoYo" class="bt-campo"></div>
-          <div id="btYo" class="bt-jugador bt-jugador-yo" data-jugador="yo"></div>
-          <div id="btVentana" class="bt-ventana hidden"></div>
-          <div id="btMano" class="bt-mano"></div>
+        <div id="btMesa" class="bt-mesa" data-tablero="terciopelo" data-turno="">
+          <div class="bt-fondo"></div>
+          <div id="btBioma" class="bt-bioma"></div>
+          <div class="bt-ambiente"></div>
+          <div class="bt-contenido">
+            <div id="btRival" class="bt-jugador bt-jugador-rival" data-jugador="rival"></div>
+            <div id="btCampoRival" class="bt-campo bt-campo-rival"></div>
+            <div id="btCentro" class="bt-centro"></div>
+            <div id="btCampoYo" class="bt-campo bt-campo-yo"></div>
+            <div id="btYo" class="bt-jugador bt-jugador-yo" data-jugador="yo"></div>
+            <div id="btVentana" class="bt-ventana hidden"></div>
+            <div id="btMano" class="bt-mano"></div>
+          </div>
+          <svg id="btFlecha" class="bt-flecha" aria-hidden="true">
+            <defs><marker id="btPunta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+            <path id="btFlechaTrazo" d="" marker-end="url(#btPunta)"/>
+          </svg>
+          <div id="btBanner" class="bt-banner"></div>
+          <div id="btIntro" class="bt-intro hidden"></div>
           <div id="btFinal" class="bt-final hidden"></div>
         </div>
         <aside class="bt-lateral">
@@ -86,19 +99,19 @@
   </main>
   <div id="btToast" class="bt-toast"></div>
 
-  <script src="data/personajes.js?v=20261199"></script>
-  <script src="data/objetos.js?v=20261199"></script>
-  <script src="data/lugares.js?v=20261199"></script>
-  <script src="data/bestiario.js?v=20261199"></script>
-  <script src="js/temas.js?v=20261199"></script>
-  <script src="js/fichas-supabase.js?v=20261199"></script>
-  <script src="js/presencia.js?v=20261199"></script>
-  <script src="js/lado.js?v=20261199"></script>
-  <script src="js/cartas-datos.js?v=20261199"></script>
-  <script src="js/cartas-cliente.js?v=20261199"></script>
-  <script src="js/cartas-vista.js?v=20261199"></script>
-  <script src="js/cartas-motor.js?v=20261199"></script>
-  <script src="js/cartas-efectos.js?v=20261199"></script>
-  <script src="js/batalla.js?v=20261199"></script>
+  <script src="data/personajes.js?v=20261203"></script>
+  <script src="data/objetos.js?v=20261203"></script>
+  <script src="data/lugares.js?v=20261203"></script>
+  <script src="data/bestiario.js?v=20261203"></script>
+  <script src="js/temas.js?v=20261203"></script>
+  <script src="js/fichas-supabase.js?v=20261203"></script>
+  <script src="js/presencia.js?v=20261203"></script>
+  <script src="js/lado.js?v=20261203"></script>
+  <script src="js/cartas-datos.js?v=20261203"></script>
+  <script src="js/cartas-cliente.js?v=20261203"></script>
+  <script src="js/cartas-vista.js?v=20261203"></script>
+  <script src="js/cartas-motor.js?v=20261203"></script>
+  <script src="js/cartas-efectos.js?v=20261203"></script>
+  <script src="js/batalla.js?v=20261203"></script>
 </body>
 </html>
