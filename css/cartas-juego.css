@@ -304,11 +304,32 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 /* --- Flecha de ataque -------------------------------------------------------- */
 .bt-flecha { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 6; pointer-events: none; opacity: 0; transition: opacity .12s; overflow: visible; }
 .bt-flecha.visible { opacity: 1; }
-.bt-flecha path#btFlechaTrazo { fill: none; stroke: #ffb347; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 2 12; animation: bt-guion .6s linear infinite; filter: drop-shadow(0 0 6px rgba(0,0,0,.7)); }
-.bt-flecha marker path { fill: #ffb347; }
-.bt-flecha.valida path#btFlechaTrazo { stroke: #ff4d3d; stroke-dasharray: none; stroke-width: 8; animation: none; }
-.bt-flecha.valida marker path { fill: #ff4d3d; }
-@keyframes bt-guion { to { stroke-dashoffset: -14; } }
+/* Flecha dorada de terciopelo: base oscura, hilo de oro que se enciende hacia el objetivo, destellos que corren y punta de lanza */
+.bt-flecha { --f-0: #a9741f; --f-1: #ffe08a; --f-glow: rgba(240, 194, 77, .75); --f-borde: #17140d; }
+.bt-flecha.valida { --f-0: #b3301f; --f-1: #ff6a4d; --f-glow: rgba(255, 80, 60, .85); }
+#btFlechaG0 { stop-color: var(--f-0); stop-opacity: .45; }
+#btFlechaG1 { stop-color: var(--f-1); }
+.bt-flecha path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.bt-flecha #btFlechaSombra { stroke: var(--f-borde); stroke-width: 13; opacity: .85; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .7)); }
+.bt-flecha #btFlechaTrazo { stroke: url(#btFlechaGrad); stroke-width: 7; filter: drop-shadow(0 0 7px var(--f-glow)); }
+.bt-flecha #btFlechaBrillo { stroke: #fffbe8; stroke-width: 2.4; stroke-dasharray: 1 20; opacity: .9; animation: bt-guion .7s linear infinite; }
+.bt-flecha.valida #btFlechaBrillo { animation-duration: .35s; }
+#btFlechaPunta path { fill: url(#btPuntaGrad); stroke: var(--f-borde); stroke-width: 2.5; filter: drop-shadow(0 0 8px var(--f-glow)); }
+#btFlechaPunta path.reflejo { fill: rgba(255, 255, 255, .5); stroke: none; filter: none; }
+.bt-flecha.valida #btFlechaPunta path:not(.reflejo) { fill: #ff7a5c; }
+#btFlechaOrigen .anillo { fill: #17140d; stroke: var(--f-1); stroke-width: 3; filter: drop-shadow(0 0 6px var(--f-glow)); }
+#btFlechaOrigen .punto { fill: var(--f-1); }
+#btFlechaDiana { opacity: 0; transition: opacity .15s; }
+.bt-flecha.valida #btFlechaDiana { opacity: 1; }
+#btFlechaDiana circle { fill: none; stroke: var(--f-1); }
+#btFlechaDiana .diana-giro { stroke-width: 3.5; stroke-dasharray: 7 9; filter: drop-shadow(0 0 6px var(--f-glow)); transform-origin: 0 0; animation: bt-diana-giro 3.2s linear infinite; }
+#btFlechaDiana .diana-pulso { stroke-width: 2; transform-origin: 0 0; animation: bt-diana-pulso 1s ease-out infinite; }
+@keyframes bt-guion { to { stroke-dashoffset: -21; } }
+@keyframes bt-diana-giro { to { transform: rotate(360deg); } }
+@keyframes bt-diana-pulso { from { transform: scale(.7); opacity: .9; } to { transform: scale(1.35); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-flecha #btFlechaBrillo, #btFlechaDiana .diana-giro, #btFlechaDiana .diana-pulso { animation: none; }
+}
 
 /* --- Carteles: turno, terreno --------------------------------------------------- */
 .bt-banner { position: absolute; left: 0; right: 0; top: 44%; z-index: 7; text-align: center; padding: 16px 0; pointer-events: none; opacity: 0; background: linear-gradient(90deg, transparent, rgba(0,0,0,.78) 18%, rgba(0,0,0,.78) 82%, transparent); }

@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Batalla — Triunfos</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <script src="js/oculto.js?v=20261208" data-permite="compendioCartasEditor"></script>
-  <link rel="stylesheet" href="css/style.css?v=20261208">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20261208">
-  <link rel="stylesheet" href="css/cartas.css?v=20261208">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20261208">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20261208">
-  <script src="js/dialogos.js?v=20261208"></script>
-  <script src="js/mj-volumen.js?v=20261208"></script>
+  <script src="js/oculto.js?v=20261209" data-permite="compendioCartasEditor"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261209">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261209">
+  <link rel="stylesheet" href="css/cartas.css?v=20261209">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20261209">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261209">
+  <script src="js/dialogos.js?v=20261209"></script>
+  <script src="js/mj-volumen.js?v=20261209"></script>
 </head>
 <body class="mj-pagina cartas-tema">
   <div class="mj-barra">
@@ -84,8 +84,18 @@
             <div id="btMano" class="bt-mano"></div>
           </div>
           <svg id="btFlecha" class="bt-flecha" aria-hidden="true">
-            <defs><marker id="btPunta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
-            <path id="btFlechaTrazo" d="" marker-end="url(#btPunta)"/>
+            <defs>
+              <linearGradient id="btFlechaGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="0">
+                <stop id="btFlechaG0" offset="0" /><stop id="btFlechaG1" offset="1" />
+              </linearGradient>
+              <linearGradient id="btPuntaGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9a6a1d"/><stop offset=".55" stop-color="#ffe9a8"/><stop offset="1" stop-color="#fff6d6"/></linearGradient>
+            </defs>
+            <path id="btFlechaSombra" d=""/>
+            <path id="btFlechaTrazo" d=""/>
+            <path id="btFlechaBrillo" d=""/>
+            <g id="btFlechaOrigen"><circle r="10" class="anillo"/><circle r="3.6" class="punto"/></g>
+            <g id="btFlechaDiana"><circle r="30" class="diana-pulso"/><circle r="24" class="diana-giro"/></g>
+            <g id="btFlechaPunta"><path d="M0,0 L-36,-19 L-24,0 L-36,19 Z"/><path d="M-5,0 L-28,-10 L-21,0 L-28,10 Z" class="reflejo"/></g>
           </svg>
           <div id="btBanner" class="bt-banner"></div>
           <div id="btIntro" class="bt-intro hidden"></div>
@@ -100,19 +110,19 @@
   </main>
   <div id="btToast" class="bt-toast"></div>
 
-  <script src="data/personajes.js?v=20261208"></script>
-  <script src="data/objetos.js?v=20261208"></script>
-  <script src="data/lugares.js?v=20261208"></script>
-  <script src="data/bestiario.js?v=20261208"></script>
-  <script src="js/temas.js?v=20261208"></script>
-  <script src="js/fichas-supabase.js?v=20261208"></script>
-  <script src="js/presencia.js?v=20261208"></script>
-  <script src="js/lado.js?v=20261208"></script>
-  <script src="js/cartas-datos.js?v=20261208"></script>
-  <script src="js/cartas-cliente.js?v=20261208"></script>
-  <script src="js/cartas-vista.js?v=20261208"></script>
-  <script src="js/cartas-motor.js?v=20261208"></script>
-  <script src="js/cartas-efectos.js?v=20261208"></script>
-  <script src="js/batalla.js?v=20261208"></script>
+  <script src="data/personajes.js?v=20261209"></script>
+  <script src="data/objetos.js?v=20261209"></script>
+  <script src="data/lugares.js?v=20261209"></script>
+  <script src="data/bestiario.js?v=20261209"></script>
+  <script src="js/temas.js?v=20261209"></script>
+  <script src="js/fichas-supabase.js?v=20261209"></script>
+  <script src="js/presencia.js?v=20261209"></script>
+  <script src="js/lado.js?v=20261209"></script>
+  <script src="js/cartas-datos.js?v=20261209"></script>
+  <script src="js/cartas-cliente.js?v=20261209"></script>
+  <script src="js/cartas-vista.js?v=20261209"></script>
+  <script src="js/cartas-motor.js?v=20261209"></script>
+  <script src="js/cartas-efectos.js?v=20261209"></script>
+  <script src="js/batalla.js?v=20261209"></script>
 </body>
 </html>

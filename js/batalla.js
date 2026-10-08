@@ -668,7 +668,18 @@
     const svg = $("btFlecha");
     const dx = b.x - a.x, dy = b.y - a.y;
     const cx = (a.x + b.x) / 2 - dy * 0.12, cy = (a.y + b.y) / 2 + dx * 0.12 - Math.min(90, Math.hypot(dx, dy) * 0.25);
-    $("btFlechaTrazo").setAttribute("d", `M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}`);
+    // La punta se orienta con la tangente de la curva y el trazo termina donde empieza su base
+    let tx = b.x - cx, ty = b.y - cy;
+    const tl = Math.hypot(tx, ty) || 1;
+    tx /= tl; ty /= tl;
+    const escala = valida ? 1.2 : 1;
+    const d = `M${a.x},${a.y} Q${cx},${cy} ${b.x - tx * 22 * escala},${b.y - ty * 22 * escala}`;
+    ["btFlechaSombra", "btFlechaTrazo", "btFlechaBrillo"].forEach(id => $(id).setAttribute("d", d));
+    $("btFlechaPunta").setAttribute("transform", `translate(${b.x},${b.y}) rotate(${(Math.atan2(ty, tx) * 180 / Math.PI).toFixed(1)}) scale(${escala})`);
+    $("btFlechaOrigen").setAttribute("transform", `translate(${a.x},${a.y})`);
+    $("btFlechaDiana").setAttribute("transform", `translate(${b.x},${b.y})`);
+    const g = $("btFlechaGrad");
+    g.setAttribute("x1", a.x); g.setAttribute("y1", a.y); g.setAttribute("x2", b.x); g.setAttribute("y2", b.y);
     svg.classList.add("visible");
     svg.classList.toggle("valida", !!valida);
   }
