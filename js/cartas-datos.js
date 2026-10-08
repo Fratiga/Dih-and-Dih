@@ -104,6 +104,10 @@ window.CARTAS_AFINIDADES = {
   T("torre-del-silencio", "Torre del Silencio", "torre-del-silencio", "rara", "sombra", 3, "Silencio: durante 3 turnos, las unidades no pueden activar habilidades al entrar.");
   T("la-espesura", "La Espesura", "la-espesura", "rara", "arcano", 4, "Presencia que no se ve: mientras esté en juego, al inicio de cada turno una unidad al azar, de cualquier jugador, no puede atacar ni bloquear ese turno.");
   T("osario-de-la-frontera", "Osario de la Frontera", "osario-de-la-frontera", "rara", "eternidad", 4, "Centinelas no muertos: mientras esté en juego, cuando una de tus unidades muere, recibes un Centinela 1/1 en el campo.");
+  // Subsección que solo ve el Side B de La Espesura: la carta es solo para el Side B
+  o("cueva-de-carne", "La Cueva de Carne", "Terreno", L("la-espesura"), "rara", "carne", 4,
+    "Interior vivo: mientras esté en juego, al final de cada turno las unidades de Carne recuperan 1 de vida y las demás unidades reciben 1 de daño.",
+    { lado: ["B"], descripcion: "Una cueva hecha enteramente de carne, tibia y húmeda, bajo la mansión de La Espesura. Las paredes laten, y probablemente son el interior de una de las criaturas de arriba." });
 
   // --- Especiales (solo por regalo del admin) -------------------------------
   u("el-bufon", "El Bufón", "Entidad", { data: null, id: null }, "limitada", "arcano", 4, 3, 3, "Cambio de reglas: al entrar, hasta el final del turno cada jugador puede jugar una carta más.", { obtenible: false, limite: 5, epiteto: "El último espectador" });
