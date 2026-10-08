@@ -24,7 +24,8 @@
      Temible: no la bloquean unidades con menos de 3 de ataque. Arrollar: el daño
      que sobra tras matar al bloqueador pasa al jugador. Barrera: ignora el
      primer daño que reciba. Duro: recibe 1 menos de daño. Esquivo: en combate
-     recibe la mitad del daño (redondeado hacia abajo).
+     recibe la mitad del daño (redondeado hacia abajo). Escurridizo (regla propia):
+     ni los desafíos ni las habilidades enemigas pueden elegirla.
    - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
    - Un terreno a la vez: jugar uno nuevo reemplaza al anterior.
@@ -144,7 +145,7 @@
     const u = {
       uid: est.siguienteUid++, cartaId, dueno: jIdx, atq, pv, pvMax: pv, atqBase: atq, pvBase: pv,
       entro: est.turno, equipo: [], mods: [],
-      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, barrera: false, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
+      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
     };
     const ef = EFECTOS[cartaId];
     if (ef && ef.alCrear) ef.alCrear(est, u);
@@ -315,10 +316,20 @@
   }
 
   /* --- Objetivos ---------------------------------------------------------- */
+  /* Escurridizo (regla propia): no la pueden elegir los desafíos ni las habilidades enemigas. No es invulnerable:
+     si bloquea o la bloquean, recibe daño normal, y los efectos que no apuntan a nadie (terrenos) la alcanzan.
+     Puede ser temporal (flags.escurridizoHasta) o depender de algo (efecto.escurridizo). */
+  function esEscurridizo(est, u) {
+    if (u.flags.escurridizoHasta >= est.turno) return true;
+    const ef = efectoDe(est, u);
+    return !!(ef.escurridizo && ef.escurridizo(est, u));
+  }
+
   /* ¿Puede una habilidad (de unidad) apuntar a esta unidad? */
   function puedeApuntarHabilidad(est, t, desdeDueno) {
     if (terrenoActivo(est, "vado-ceniza")) return false;
     if (t.flags.inmune && t.dueno !== desdeDueno) return false;
+    if (esEscurridizo(est, t) && t.dueno !== desdeDueno) return false;
     return true;
   }
 
@@ -388,7 +399,7 @@
       (!ignora && provocan.length ? provocan : defensores).forEach(d => out.add(d.uid));
     }
     defensores.forEach(d => { if (d.flags.marcadaPor === atk.dueno) out.add(d.uid); });
-    return [...out];
+    return [...out].filter(uid => !esEscurridizo(est, defensores.find(d => d.uid === uid)));
   }
 
   /* Quienes pueden bloquear a esta atacante sin estar ya obligados a bloquear a otra */
@@ -876,7 +887,7 @@
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, requisitoDeReaccion, unidadPuedeAtacar,
-    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, puedeApuntarHabilidad, terrenoActivo
+    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, esEscurridizo, puedeApuntarHabilidad, terrenoActivo
   };
 
   raiz.CartasMotor = M;

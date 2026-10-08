@@ -16,6 +16,8 @@
      reduceDano      daño que se quita de cada golpe que recibe
      guardian        recibe en lugar de un aliado el daño (una vez por turno)
      alCrear         al crearse, sin importar silencios
+     escurridizo     (est, u) => bool; si devuelve true, ni los desafíos ni las habilidades
+                     enemigas pueden elegirla (también existe flags.escurridizoHasta)
      alEntrar        { objetivo?, resolver(c) } habilidad "al entrar"
      alEntrarAliada  cuando otra unidad aliada entra
      alRecibirDano   al recibir daño sin morir
@@ -73,9 +75,10 @@
       });
     } } });
     R("enzo", { palabras: ["veloz"] });
-    R("mattei", { palabras: ["esquivo"] });
+    // Escurridizo: ni desafíos ni habilidades enemigas pueden elegirlo (Mattei, solo el turno siguiente a entrar)
+    R("mattei", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; } });
     R("adam-kovacs", { auraAtq: () => 1 });
-    R("cassius-coldgrave", { palabras: ["esquivo", "noBloquea"] });
+    R("cassius-coldgrave", { palabras: ["noBloquea"], escurridizo: (est, u) => est.jugadores[u.dueno].campo.length > 1 });
     R("torvrena", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       c.objetivo.flags.noAtacaHasta = c.est.turno + 1;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda atrapada y no podrá atacar el próximo turno.`);

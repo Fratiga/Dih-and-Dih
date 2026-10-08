@@ -326,6 +326,7 @@
   const PALABRAS = {
     desafiante: { nombre: "Desafiante", texto: "Al atacar, elige qué unidad enemiga debe bloquearla, aunque vuele o no pueda bloquear. Respeta Provocar." },
     provocar: { nombre: "Provocar", texto: "Los desafíos enemigos deben apuntar a una unidad con Provocar antes que a otras." },
+    escurridizo: { nombre: "Escurridizo", texto: "Los desafíos y las habilidades enemigas no pueden elegirla. Si bloquea o la bloquean, recibe daño normal." },
     marcada: { nombre: "Marcada", texto: "Es Vulnerable para las unidades de quien la marcó: cualquiera puede obligarla a bloquear, ignorando Provocar, y le hacen 2 de daño extra en combate." },
     volar: { nombre: "Volar", texto: "Solo la bloquean unidades que también vuelan." },
     temible: { nombre: "Temible", texto: "No la bloquean unidades con menos de 3 de ataque." },
@@ -338,6 +339,7 @@
   };
   function palabrasDe(u) {
     const out = ["desafiante", "provocar", "volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
+    if (M.esEscurridizo(est, u)) out.push("escurridizo");
     if (u.flags.marcadaPor !== null) out.push("marcada");
     if (u.flags.barrera) out.push("barrera");
     if (u.flags.noBloqueaHasta >= est.turno && !out.includes("noBloquea")) out.push("noBloquea");

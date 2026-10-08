@@ -96,12 +96,30 @@ M.registrar("t-temible", { palabras: ["temible"] }); mk("t-temible", 3, 3);
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
   ok(b.pv === 3 && !b.flags.barrera, "Barrera absorbe el primer daño"); }
 // 8b) Esquivo: recibe la mitad del daño de combate
-{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const b = poner(e, 1, "mattei"); // Mattei 1/2
+M.registrar("t-esquivo", { palabras: ["esquivo"] }); mk("t-esquivo", 1, 2);
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const b = poner(e, 1, "t-esquivo"); // 1/2
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
   ok(b.pv === 1 && !M.buscar(e, a.uid) === false, `Esquivo: 3 de daño pasan a 1 (pv ${b.pv})`); }
-{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t11"); const b = poner(e, 1, "mattei");
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t11"); const b = poner(e, 1, "t-esquivo");
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
   ok(b.pv === 2, `Esquivo: 1 de daño se esquiva del todo (pv ${b.pv})`); }
+// 8c) Escurridizo: ni desafíos ni habilidades enemigas pueden elegirlo
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"); const mat = M.ponerUnidad(e, 1, "mattei", false, null); const otra = poner(e, 1, "t24");
+  ok(M.esEscurridizo(e, mat), "Mattei recién entrado es escurridizo");
+  ok(!M.objetivosDeDesafio(e, g).includes(mat.uid) && M.objetivosDeDesafio(e, g).includes(otra.uid), "no se puede desafiar a Mattei");
+  ok(M.aplicar(e, { t: "atacar", u: [g.uid], d: { [g.uid]: mat.uid } }, 0).error, "desafío a Mattei rechazado");
+  ok(!M.puedeApuntarHabilidad(e, mat, 0) && M.puedeApuntarHabilidad(e, mat, 1), "las habilidades enemigas no le apuntan, las suyas sí");
+  const hornet = M.ponerUnidad(e, 0, "hornet", false, null); ok(!M.requisitoDeJugada(e, 0, "hornet").validos.some(v => v.u === mat.uid), "Hornet no puede apuntarle");
+  // pasa el turno siguiente y deja de serlo
+  e.turno += 1; ok(M.esEscurridizo(e, mat), "sigue siéndolo el turno siguiente"); e.turno += 1; ok(!M.esEscurridizo(e, mat), "luego deja de serlo"); }
+{ const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "garra"); const cas = poner(e, 1, "cassius-coldgrave");
+  ok(M.esEscurridizo(e, cas) === false && M.objetivosDeDesafio(e, g).includes(cas.uid), "Cassius solo es vulnerable");
+  const otra = poner(e, 1, "t24"); ok(M.esEscurridizo(e, cas) && !M.objetivosDeDesafio(e, g).includes(cas.uid), "con otra unidad en el campo, Cassius es escurridizo");
+  cas.flags.marcadaPor = 0; ok(!M.objetivosDeDesafio(e, g).includes(cas.uid), "escurridizo gana a la marca");
+  const a = poner(e, 0, "t33"); M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); ok(!e.pendiente || e.pendiente.tipo === "bloqueo", "puede ser atacado por combate normal si bloquea"); }
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"); const mat = M.ponerUnidad(e, 1, "mattei", false, null);
+  M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, mat.uid]] }, 1);
+  ok(!M.buscar(e, mat.uid), "si Mattei bloquea, recibe el daño de combate normal"); }
 // 9) Arrollar
 { const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "kraken"); const b = poner(e, 1, "t11");
   M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);

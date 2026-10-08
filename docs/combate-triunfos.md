@@ -23,7 +23,8 @@ Ya no se ataca al jugador ni a una unidad concreta a golpe de clic: lo que nadie
 | Veloz | en combate golpea antes; si mata a su rival, no recibe daño |
 | Arrollar | el daño que sobra al matar al bloqueador pasa al jugador |
 | Duro | recibe 1 menos de daño |
-| Esquivo | en combate recibe la mitad del daño (redondeado hacia abajo) |
+| Escurridizo | regla propia: ni los desafíos ni las habilidades enemigas pueden elegirla. No es invulnerable: si bloquea o la bloquean recibe daño normal, y los efectos que no apuntan (terrenos) la alcanzan |
+| Esquivo | en combate recibe la mitad del daño (redondeado hacia abajo). Ninguna carta lo usa por ahora |
 | Barrera | ignora el primer daño que reciba (se rompe) |
 | No bloquea | no puede bloquear |
 
@@ -42,8 +43,8 @@ Provocar no existe en Runeterra. Aquí es una regla propia que protege de los de
 | Garra | al entrar, el enemigo pierde Provocar y Volar | igual, pero hasta el final del próximo turno del rival (así sus voladoras se bloquean), y además es Desafiante |
 | Verdam | +2 contra la marcada e ignora Provocar | Desafiante; la marcada es Vulnerable (cualquiera de sus atacantes la desafía, sin Provocar) y recibe +2 |
 | Enzo | ataca dos veces por turno | Veloz |
-| Mattei | no puede ser objetivo de ataques | Esquivo |
-| Cassius Coldgrave | no se le puede atacar con otra unidad en el campo | Esquivo, pero no puede bloquear |
+| Mattei | no puede ser objetivo de ataques durante el próximo turno del rival | Escurridizo (el mismo turno) |
+| Cassius Coldgrave | no se le puede atacar con otra unidad en el campo | Escurridizo mientras tengas otra unidad, pero no puede bloquear |
 | Aeromanta, Guiverno | solo las atacan unidades que vuelan | solo las bloquean unidades que vuelan |
 | Kraken | | gana Arrollar |
 | Edge | +2 si el objetivo ya recibió daño | +2 contra la unidad con la que combate si ya recibió daño |
