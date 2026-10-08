@@ -296,7 +296,7 @@
 
   async function rendirse() {
     if (local()) { volverAlLobby(); return; }
-    if (!est || est.ganador !== null || !confirm("¿Te rindes?")) return;
+    if (!est || est.ganador !== null || !(await dialogo.confirmar("¿Te rindes?", { titulo: "Rendirse", aceptar: "Rendirme", peligro: true }))) return;
     await accionServidor("cartas_rendirse", { p_id: fila.id });
   }
 

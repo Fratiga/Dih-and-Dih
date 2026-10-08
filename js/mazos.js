@@ -154,7 +154,7 @@
   }
 
   async function borrar() {
-    if (!actual.id || !confirm(`¿Borrar el mazo "${actual.nombre}"?`)) return;
+    if (!actual.id || !(await dialogo.confirmar(`¿Borrar el mazo "${actual.nombre}"?`, { titulo: "Borrar mazo", aceptar: "Borrar", peligro: true }))) return;
     try {
       await CartasCliente.borrarMazo(actual.id);
       mazos = await CartasCliente.listarMazos();
@@ -166,8 +166,8 @@
   }
 
   /* --- Eventos --------------------------------------------------------------- */
-  function preguntarSiHayCambios() {
-    return firma() === original || confirm("Hay cambios sin guardar en este mazo. ¿Dejarlos?");
+  async function preguntarSiHayCambios() {
+    return firma() === original || await dialogo.confirmar("Hay cambios sin guardar en este mazo. ¿Dejarlos?", { titulo: "Cambios sin guardar", aceptar: "Dejarlos", peligro: true });
   }
 
   gridEl.addEventListener("click", ev => {
@@ -191,11 +191,11 @@
     if (quitar) cambiar(quitar.dataset.quitar, -1);
   });
   $("mzNombre").addEventListener("input", () => { actual.nombre = $("mzNombre").value; pintarMazo(); });
-  listaEl.addEventListener("change", () => {
-    if (!preguntarSiHayCambios()) { listaEl.value = actual.id || ""; return; }
+  listaEl.addEventListener("change", async () => {
+    if (!(await preguntarSiHayCambios())) { listaEl.value = actual.id || ""; return; }
     elegirMazo(listaEl.value);
   });
-  $("mzNuevo").addEventListener("click", () => { if (preguntarSiHayCambios()) elegirMazo(""); });
+  $("mzNuevo").addEventListener("click", async () => { if (await preguntarSiHayCambios()) elegirMazo(""); });
   $("mzGuardar").addEventListener("click", guardar);
   $("mzBorrar").addEventListener("click", borrar);
   [$("mzRareza"), $("mzTipo"), $("mzAfinidad"), $("mzSoloFuera")].forEach(el => el.addEventListener("change", pintarColeccion));

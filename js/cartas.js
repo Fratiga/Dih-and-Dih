@@ -297,7 +297,7 @@
   async function borrarEditor() {
     if (!edActual || edActual.nueva) return;
     const c = window.cartaPorId(edActual.id);
-    if (!confirm(`¿Borrar "${c.nombre}"? Solo se puede si nadie la ha tenido.`)) return;
+    if (!(await dialogo.confirmar(`¿Borrar "${c.nombre}"? Solo se puede si nadie la ha tenido.`, { titulo: "Borrar carta", aceptar: "Borrar", peligro: true }))) return;
     try {
       await CartasCliente.borrar(c.id);
       if (c.imagen) CartasCliente.quitarImagen(c.imagen);
