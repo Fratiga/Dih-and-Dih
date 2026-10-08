@@ -382,6 +382,84 @@
     return [];
   }
 
+  /* Animación de robar: la carta sale del mazo, cruza la mesa y se gira en la mano. Para el rival
+     solo viaja el dorso hasta su contador de mano. Se compara la mano con la del dibujo anterior,
+     así que sirve también para cartas que llegan por efectos. */
+  let robo = null;   // lo que había en la última pasada: mano propia, mazo, turno y manos del rival
+  function sinAnimaciones() { return window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; }
+  function pulso(el) {
+    if (!el) return;
+    el.classList.remove("bt-pulso"); void el.offsetWidth; el.classList.add("bt-pulso");
+    el.addEventListener("animationend", () => el.classList.remove("bt-pulso"), { once: true });
+  }
+  function volar(origen, destino, opts) {
+    const a = origen.getBoundingClientRect(), d = destino.getBoundingClientRect();
+    const ancho = opts.ancho, alto = opts.alto;
+    const fantasma = document.createElement("div");
+    fantasma.className = "bt-vuelo" + (opts.soloDorso ? " solo-dorso" : "");
+    fantasma.style.cssText = `left:${d.left + d.width / 2 - ancho / 2}px;top:${d.top + d.height / 2 - alto / 2}px;width:${ancho}px;height:${alto}px`;
+    fantasma.innerHTML = `<div class="bt-vuelo-giro"><div class="bt-vuelo-dorso"><i></i></div>${opts.frente ? `<div class="bt-vuelo-frente">${opts.frente}</div>` : ""}</div>`;
+    document.body.appendChild(fantasma);
+    const dx = a.left + a.width / 2 - (d.left + d.width / 2), dy = a.top + a.height / 2 - (d.top + d.height / 2);
+    const giro = opts.giro || 0;
+    const viaje = fantasma.animate(opts.soloDorso
+      ? [{ transform: `translate(${dx}px,${dy}px) scale(.55) rotate(-10deg)`, opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .75 }, { transform: "translate(0,0) scale(.2) rotate(8deg)", opacity: 0 }]
+      : [{ transform: `translate(${dx}px,${dy}px) scale(.3) rotate(-14deg)`, opacity: 0 }, { opacity: 1, offset: .12 }, { transform: `translate(${dx * .15}px,${dy * .15 - 30}px) scale(1.12) rotate(${giro / 2}deg)`, offset: .78 }, { transform: `translate(0,0) scale(1) rotate(${giro}deg)`, opacity: 1 }],
+      { duration: opts.duracion, delay: opts.retraso, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" });
+    if (!opts.soloDorso) {
+      fantasma.querySelector(".bt-vuelo-giro").animate([{ transform: "rotateY(0deg)" }, { transform: "rotateY(0deg)", offset: .4 }, { transform: "rotateY(180deg)" }],
+        { duration: opts.duracion, delay: opts.retraso, easing: "ease-in-out", fill: "both" });
+    }
+    return viaje.finished.catch(() => {}).then(() => fantasma.remove());
+  }
+  function animarRobos(idx) {
+    const J = est.jugadores[idx], R = est.jugadores[1 - idx];
+    const antes = robo;
+    robo = { mano: J.mano.slice(), mazo: J.mazo.length, turno: est.turno, manoRival: R.mano.length, mazoRival: R.mazo.length };
+    // Partida nueva (el mazo crece o el turno vuelve atrás) o primer dibujo: nada que animar
+    if (!antes || J.mazo.length > antes.mazo || est.turno < antes.turno || R.mazo.length > antes.mazoRival) return;
+    if (document.hidden || sinAnimaciones()) return;
+
+    // Cartas propias nuevas: lo que hay ahora en la mano y no estaba antes
+    const restantes = new Map();
+    antes.mano.forEach(id => restantes.set(id, (restantes.get(id) || 0) + 1));
+    const nuevas = [];
+    J.mano.forEach((id, i) => {
+      const n = restantes.get(id) || 0;
+      if (n > 0) restantes.set(id, n - 1); else nuevas.push(i);
+    });
+    const mazoYo = document.querySelector("#btYo .bt-conteo strong:last-child");
+    if (nuevas.length && mazoYo) {
+      pulso(mazoYo);
+      nuevas.slice(0, 4).forEach((i, k) => {
+        const el = document.querySelector(`#btMano [data-i="${i}"]`);
+        if (!el) return;
+        const cartaEl = el.querySelector(".carta");
+        const frente = cartaEl ? cartaEl.outerHTML : "";
+        el.style.visibility = "hidden";
+        const giro = parseFloat(el.style.getPropertyValue("--r")) || 0;
+        volar(mazoYo, el, { ancho: el.offsetWidth, alto: el.offsetHeight || el.offsetWidth * 1.5, frente, giro, duracion: 760, retraso: k * 190 })
+          .then(() => {
+            el.style.visibility = "";
+            el.classList.add("bt-llega");
+            el.addEventListener("animationend", () => el.classList.remove("bt-llega"), { once: true });
+          });
+      });
+      nuevas.slice(4).forEach(i => { const el = document.querySelector(`#btMano [data-i="${i}"]`); if (el) el.classList.add("bt-llega"); });
+    }
+
+    // Cartas del rival: el dorso viaja del mazo a su contador de mano
+    const robadasRival = R.mano.length - antes.manoRival;
+    const mazoR = document.querySelector("#btRival .bt-conteo strong:last-child");
+    const manoR = document.querySelector("#btRival .bt-conteo strong:first-child");
+    if (robadasRival > 0 && mazoR && manoR) {
+      pulso(mazoR);
+      for (let k = 0; k < Math.min(robadasRival, 4); k++) {
+        volar(mazoR, manoR, { ancho: 46, alto: 69, soloDorso: true, duracion: 640, retraso: k * 170 }).then(() => { if (k === 0) pulso(manoR); });
+      }
+    }
+  }
+
   function pintarTablero() {
     if (!est) return;
     if (arrastre && arrastre.activo) { arrastre.repintar = true; return; }
@@ -421,6 +499,7 @@
       const baja = (Math.abs(i - medio) ** 2 * 1.4).toFixed(1);
       return `<div class="bt-carta ${jugable ? "jugable" : ""} ${esReaccion ? "es-reaccion" : ""} ${sel && sel.tipo === "mano" && sel.i === i ? "elegida" : ""}" data-i="${i}" style="--r:${giro}deg;--y:${baja}px">${esReaccion ? '<span class="bt-etiqueta">Reacción</span>' : ""}${htmlCarta(vista, true, 0, null)}</div>`;
     }).join("") || `<p class="bt-vacio">Sin cartas en la mano</p>`;
+    animarRobos(idx);
 
     // Objetivos que se pueden elegir
     objetivosVigentes().forEach(o => {

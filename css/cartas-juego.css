@@ -392,3 +392,26 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-ventana-botones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
 .bt-cuenta { color: var(--accent); font-family: var(--font-heading), sans-serif; min-width: 3ch; display: inline-block; }
 @keyframes bt-aparece { from { opacity: 0; transform: translateY(-6px); } }
+
+/* --- Robar cartas: la carta viaja del mazo a la mano (js/batalla.js, animarRobos) ------ */
+.bt-vuelo { position: fixed; z-index: 9000; pointer-events: none; perspective: 900px; }
+.bt-vuelo-giro { position: absolute; inset: 0; transform-style: preserve-3d; }
+.bt-vuelo-dorso, .bt-vuelo-frente { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.bt-vuelo-frente { transform: rotateY(180deg); }
+.bt-vuelo-frente .carta { pointer-events: none; width: 100%; }
+.bt-vuelo-dorso {
+  border-radius: 5% / 3.4%; border: 2px solid var(--accent, #d3ab5e);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(211, 171, 94, .35), transparent 55%),
+    repeating-linear-gradient(45deg, rgba(211, 171, 94, .12) 0 6px, transparent 6px 12px),
+    linear-gradient(160deg, #3a2347, #1c1226);
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .35), inset 0 0 0 5px rgba(211, 171, 94, .35), 0 8px 18px rgba(0, 0, 0, .6);
+}
+.bt-vuelo-dorso i { position: absolute; left: 50%; top: 50%; width: 34%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(45deg); border: 2px solid var(--accent, #d3ab5e); background: rgba(0, 0, 0, .35); box-shadow: 0 0 12px rgba(211, 171, 94, .5); }
+.bt-carta.bt-llega { animation: bt-llega .45s ease-out; }
+@keyframes bt-llega { 0% { filter: brightness(1.9) drop-shadow(0 0 14px #f0c24d); } 100% { filter: none; } }
+.bt-conteo strong.bt-pulso { display: inline-block; animation: bt-pulso-num .5s ease; }
+@keyframes bt-pulso-num { 40% { transform: scale(1.6); color: var(--accent, #d3ab5e); } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-carta.bt-llega, .bt-conteo strong.bt-pulso { animation: none; }
+}
