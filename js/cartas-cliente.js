@@ -150,5 +150,46 @@ window.CartasCliente = (function () {
     } catch (e) { /* queda huérfana */ }
   }
 
-  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, guardar, borrar, subirImagen, quitarImagen };
+  /* --- Mazos ------------------------------------------------------------- */
+  /* Mazos del jugador: [{ id, nombre, cartas: { cartaId: copias } }] */
+  async function listarMazos() {
+    const supabase = await fichasCliente();
+    const { data, error } = await supabase.from("cartas_mazos").select("id, nombre, cartas, actualizado").order("actualizado", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function guardarMazo(id, nombre, cartas) {
+    const supabase = await fichasCliente();
+    const { data, error } = await supabase.rpc("cartas_guardar_mazo", { p_id: id || null, p_nombre: nombre, p_cartas: cartas });
+    if (error) throw error;
+    return data;
+  }
+
+  async function borrarMazo(id) {
+    const supabase = await fichasCliente();
+    const { error } = await supabase.rpc("cartas_borrar_mazo", { p_id: id });
+    if (error) throw error;
+  }
+
+  /* Copia de los datos de las cartas de un mazo, para guardarla en la partida y que los dos
+     jugadores vean lo mismo aunque después se edite una carta. */
+  function instantanea(ids) {
+    const out = {};
+    [...new Set(ids)].forEach(id => {
+      const c = window.cartaPorId(id);
+      if (!c) return;
+      out[id] = {
+        id, nombre: c.nombre, epiteto: c.epiteto || "", tipo: c.tipo, rareza: c.rareza, afinidad: c.afinidad,
+        coste: c.coste, atq: c.atq ?? null, pv: c.pv ?? null, habilidad: c.habilidad || "",
+        imagen: c.imagen || null, ajuste: c.ajuste || null
+      };
+    });
+    return out;
+  }
+
+  /* Pasa { cartaId: copias } a la lista de ids repetidos */
+  const aplanar = cuenta => Object.entries(cuenta).flatMap(([id, n]) => Array(n).fill(id));
+
+  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, guardar, borrar, subirImagen, quitarImagen, listarMazos, guardarMazo, borrarMazo, instantanea, aplanar };
 })();

@@ -628,6 +628,8 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
     { que: "Editor de cartas: rol y definiciones", sql: "cartas_editor.sql", tipo: "tabla", ref: "cartas_definiciones" },
     { que: "Editor de cartas: fotos (almacenamiento)", sql: "cartas_editor.sql", tipo: "bucket", ref: "cartas" },
+    { que: "Mazos de cartas", sql: "cartas_combate.sql", tipo: "tabla", ref: "cartas_mazos" },
+    { que: "Partidas de cartas entre jugadores", sql: "cartas_combate.sql", tipo: "tabla", ref: "cartas_partidas" },
     { que: "Regalar cartas (Admin)", sql: "cartas.sql", tipo: "rpc", ref: "cartas_regalar", args: { p_usuario: CERO, p_carta: "no-existe", p_nota: "" } },
     { que: "Atajos del lobby guardados en la cuenta", sql: "atajos_usuario.sql", tipo: "tabla", ref: "atajos_usuario" },
     { que: "Contador de visitas del lobby", sql: "lobby_contador.sql", tipo: "rpc", ref: "lobby_visita", args: { p_contar: false } },
@@ -891,7 +893,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     disponible: "disponible", usados: "usados", max: "máximos", actuales: "actuales", dano: "daño",
     tipoDano: "tipo de daño", descripcion: "descripción", cantidad: "cantidad", estado: "estado",
     competente: "competente", ajuste: "ajuste", oro: "oro", plata: "plata", cobre: "cobre",
-    archivado: "Archivado", fallecido: "Fallecido", fecha: "fecha", decoraciones: "Pegatinas", puntosFeats: "Puntos de feat", side: "Side"
+    archivado: "Archivado", fallecido: "Fallecido", fecha: "fecha", decoraciones: "Pegatinas", puntosFeats: "Puntos de feat", puntosCreacionSinGastar: "Puntos de creación sin gastar", side: "Side"
   };
 
   function etiquetaRutaHistorial(ruta) {

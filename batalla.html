@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batalla — Cartas malditas</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20261198" data-permite="compendioCartasEditor"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261198">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261198">
+  <link rel="stylesheet" href="css/cartas.css?v=20261198">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20261198">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261198">
+  <script src="js/mj-volumen.js?v=20261198"></script>
+</head>
+<body class="mj-pagina cartas-tema">
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido cartas-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Batalla</h1>
+    <nav class="cartas-nav">
+      <a href="cartas.html">Álbum</a>
+      <a href="mazos.html">Mazos</a>
+      <a href="batalla.html" class="activa">Batalla</a>
+    </nav>
+    <p id="btAviso" class="cartas-aviso-sesion hidden"></p>
+
+    <!-- Lobby: retar, aceptar y elegir partida -->
+    <section id="btLobby" class="bt-lobby">
+      <div class="bt-panel">
+        <h2>Tu mazo</h2>
+        <select id="btMazo" aria-label="Tu mazo"></select>
+        <p id="btMazoInfo" class="bt-nota"></p>
+        <h2>Retar a un jugador</h2>
+        <ul id="btJugadores" class="bt-lista"></ul>
+      </div>
+      <div class="bt-panel">
+        <h2>Retos recibidos</h2>
+        <ul id="btRecibidos" class="bt-lista"></ul>
+        <h2>Retos enviados</h2>
+        <ul id="btEnviados" class="bt-lista"></ul>
+        <h2>Partidas en curso</h2>
+        <ul id="btCurso" class="bt-lista"></ul>
+        <h2>Terminadas</h2>
+        <ul id="btTerminadas" class="bt-lista"></ul>
+      </div>
+      <div class="bt-panel">
+        <h2>Probar solo</h2>
+        <p class="bt-nota">Juegas los dos lados en esta pantalla, sin servidor. Sirve para probar mazos.</p>
+        <label>Mazo del primero <select id="btLocalA"></select></label>
+        <label>Mazo del segundo <select id="btLocalB"></select></label>
+        <button type="button" id="btLocalIr" class="cartas-boton cartas-boton-principal">Empezar</button>
+      </div>
+    </section>
+
+    <!-- Partida -->
+    <section id="btPartida" class="bt-partida hidden">
+      <div class="bt-cabeza">
+        <button type="button" id="btVolver" class="cartas-boton">← Lobby</button>
+        <strong id="btTitulo"></strong>
+        <span id="btTurno" class="bt-turno"></span>
+      </div>
+      <div class="bt-zona">
+        <div id="btMesa" class="bt-mesa">
+          <div id="btRival" class="bt-jugador bt-jugador-rival" data-jugador="rival"></div>
+          <div id="btCampoRival" class="bt-campo"></div>
+          <div id="btCentro" class="bt-centro"></div>
+          <div id="btCampoYo" class="bt-campo"></div>
+          <div id="btYo" class="bt-jugador bt-jugador-yo" data-jugador="yo"></div>
+          <div id="btMano" class="bt-mano"></div>
+          <div id="btFinal" class="bt-final hidden"></div>
+        </div>
+        <aside class="bt-lateral">
+          <div id="btInspector" class="bt-inspector"></div>
+          <ol id="btLog" class="bt-log"></ol>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <div id="btToast" class="bt-toast"></div>
+
+  <script src="data/personajes.js?v=20261198"></script>
+  <script src="data/objetos.js?v=20261198"></script>
+  <script src="data/lugares.js?v=20261198"></script>
+  <script src="data/bestiario.js?v=20261198"></script>
+  <script src="js/temas.js?v=20261198"></script>
+  <script src="js/fichas-supabase.js?v=20261198"></script>
+  <script src="js/presencia.js?v=20261198"></script>
+  <script src="js/lado.js?v=20261198"></script>
+  <script src="js/cartas-datos.js?v=20261198"></script>
+  <script src="js/cartas-cliente.js?v=20261198"></script>
+  <script src="js/cartas-vista.js?v=20261198"></script>
+  <script src="js/cartas-motor.js?v=20261198"></script>
+  <script src="js/cartas-efectos.js?v=20261198"></script>
+  <script src="js/batalla.js?v=20261198"></script>
+</body>
+</html>

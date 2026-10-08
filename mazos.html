@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mazos — Cartas malditas</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20261198" data-permite="compendioCartasEditor"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261198">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20261198">
+  <link rel="stylesheet" href="css/cartas.css?v=20261198">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20261198">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20261198">
+  <script src="js/mj-volumen.js?v=20261198"></script>
+</head>
+<body class="mj-pagina cartas-tema">
+  <div class="mj-barra">
+    <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido cartas-contenido">
+    <p class="eyebrow">PASATIEMPOS</p>
+    <h1 class="mj-titulo">Mazos</h1>
+    <nav class="cartas-nav">
+      <a href="cartas.html">Álbum</a>
+      <a href="mazos.html" class="activa">Mazos</a>
+      <a href="batalla.html">Batalla</a>
+    </nav>
+    <p id="mzAviso" class="cartas-aviso-sesion hidden"></p>
+
+    <div class="mz-zona">
+      <section class="mz-coleccion">
+        <div class="cartas-filtros">
+          <input type="search" id="mzBuscar" placeholder="Buscar carta..." class="mz-buscar">
+          <select id="mzRareza"><option value="">Todas las rarezas</option></select>
+          <select id="mzTipo"><option value="">Todos los tipos</option></select>
+          <select id="mzAfinidad"><option value="">Todas las afinidades</option></select>
+          <label><input type="checkbox" id="mzSoloFuera"> Solo las que no están en el mazo</label>
+        </div>
+        <p class="mz-ayuda">Clic en una carta para añadirla, clic derecho para quitarla.</p>
+        <div id="mzGrid" class="mz-grid"></div>
+      </section>
+
+      <aside class="mz-mazo">
+        <div class="mz-mazo-cabeza">
+          <select id="mzLista" aria-label="Tus mazos"></select>
+          <button type="button" id="mzNuevo" class="cartas-boton">Nuevo</button>
+        </div>
+        <label class="mz-nombre">Nombre del mazo <input type="text" id="mzNombre" maxlength="40" placeholder="Mi mazo"></label>
+        <div class="mz-contador"><strong id="mzTotal">0</strong> / <span id="mzMax">30</span> cartas <small>(mínimo <span id="mzMin">20</span>)</small></div>
+        <div class="mz-barra"><i id="mzBarra"></i></div>
+        <div id="mzCurva" class="mz-curva" aria-label="Curva de coste"></div>
+        <div id="mzTipos" class="mz-tipos"></div>
+        <ul id="mzCartas" class="mz-cartas"></ul>
+        <ul id="mzProblemas" class="mz-problemas"></ul>
+        <p id="mzEstado" class="carta-editor-estado"></p>
+        <div class="carta-editor-botones">
+          <button type="button" id="mzGuardar" class="cartas-boton cartas-boton-principal">Guardar mazo</button>
+          <button type="button" id="mzBorrar" class="cartas-boton cartas-boton-peligro">Borrar</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="data/personajes.js?v=20261198"></script>
+  <script src="data/objetos.js?v=20261198"></script>
+  <script src="data/lugares.js?v=20261198"></script>
+  <script src="data/bestiario.js?v=20261198"></script>
+  <script src="js/temas.js?v=20261198"></script>
+  <script src="js/fichas-supabase.js?v=20261198"></script>
+  <script src="js/presencia.js?v=20261198"></script>
+  <script src="js/lado.js?v=20261198"></script>
+  <script src="js/cartas-datos.js?v=20261198"></script>
+  <script src="js/cartas-cliente.js?v=20261198"></script>
+  <script src="js/cartas-vista.js?v=20261198"></script>
+  <script src="js/cartas-motor.js?v=20261198"></script>
+  <script src="js/cartas-efectos.js?v=20261198"></script>
+  <script src="js/mazos.js?v=20261198"></script>
+</body>
+</html>

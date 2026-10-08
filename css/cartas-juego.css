@@ -1,0 +1,167 @@
+/* Cartas malditas: mazos y batalla. Se apoya en css/cartas.css (la carta) y en las variables del tema. */
+
+.cartas-nav { display: flex; gap: 6px; margin: 14px 0 20px; border-bottom: 1px solid var(--border); }
+.cartas-nav a {
+  padding: 8px 18px; color: var(--muted); text-decoration: none; font-family: var(--font-heading), sans-serif;
+  letter-spacing: .08em; text-transform: uppercase; font-size: .85rem; border: 1px solid transparent; border-bottom: 0; margin-bottom: -1px;
+}
+.cartas-nav a:hover { color: var(--text); }
+.cartas-nav a.activa { color: var(--accent); background: var(--panel); border-color: var(--border); }
+
+/* ------------------------------------------------------------ constructor de mazos */
+.mz-zona { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+.mz-buscar {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; font: inherit; font-size: .85rem; border-radius: 0; outline: none; min-width: 180px;
+}
+.mz-ayuda { margin: 0 0 14px; color: var(--muted); font-size: .8rem; }
+.mz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 22px 16px; }
+.mz-item { position: relative; }
+.mz-item .carta { width: 100%; }
+.mz-item.en-mazo .carta { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 70%, transparent)); }
+.mz-item.lleno .carta { opacity: .55; }
+.mz-item-pie { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: .8rem; color: var(--muted); }
+.mz-item-pie button, .mz-fila-cant button {
+  width: 26px; height: 26px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0;
+}
+.mz-item-pie button:hover:not(:disabled), .mz-fila-cant button:hover:not(:disabled) { border-color: var(--accent-soft); color: var(--accent); }
+.mz-item-pie button:disabled, .mz-fila-cant button:disabled { opacity: .35; cursor: default; }
+.mz-item-pie strong { color: var(--text); }
+
+.mz-mazo { position: sticky; top: 12px; background: var(--panel); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 24px); overflow: auto; }
+.mz-mazo-cabeza { display: flex; gap: 8px; }
+.mz-mazo select, .mz-nombre input, .bt-lobby select {
+  color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; font: inherit; font-size: .85rem; border-radius: 0; min-width: 0;
+}
+.mz-mazo-cabeza select { flex: 1; }
+.mz-nombre { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: var(--muted); }
+.mz-contador { font-size: .9rem; color: var(--muted); }
+.mz-contador strong { font-family: var(--font-heading), sans-serif; font-size: 1.4rem; color: var(--text); }
+.mz-barra { height: 6px; background: var(--panel-2); border: 1px solid var(--border); }
+.mz-barra i { display: block; height: 100%; background: var(--accent); transition: width .2s; }
+.mz-barra i.corto { background: #b9792f; }
+.mz-barra i.largo { background: #b94a4a; }
+.mz-curva { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; height: 72px; align-items: end; }
+.mz-col { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.mz-col i { display: block; width: 100%; background: color-mix(in srgb, var(--accent) 65%, #000); min-height: 0; }
+.mz-col b { position: absolute; top: -2px; font-size: .62rem; color: var(--muted); font-weight: 400; }
+.mz-col small { font-size: .65rem; color: var(--muted); margin-top: 2px; }
+.mz-tipos { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .75rem; color: var(--muted); }
+.mz-tipos strong { color: var(--text); }
+.mz-cartas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; max-height: 320px; overflow: auto; }
+.mz-fila { display: grid; grid-template-columns: 24px 1fr auto auto; gap: 8px; align-items: center; padding: 3px 6px; background: var(--panel-2); border-left: 3px solid var(--rar, var(--border)); font-size: .82rem; }
+.mz-fila-coste { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #2362b8; color: #fff; font-weight: 700; font-size: .75rem; }
+.mz-fila-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mz-fila-tipo { color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; }
+.mz-fila-cant { display: flex; align-items: center; gap: 6px; }
+.mz-fila-cant strong { min-width: 14px; text-align: center; }
+.mz-vacio { color: var(--muted); font-size: .82rem; padding: 10px 0; list-style: none; }
+.mz-problemas { list-style: none; margin: 0; padding: 0; font-size: .78rem; color: #e0a15c; display: flex; flex-direction: column; gap: 2px; }
+@media (max-width: 900px) {
+  .mz-zona { grid-template-columns: 1fr; }
+  .mz-mazo { position: static; max-height: none; }
+}
+
+/* ------------------------------------------------------------------------ lobby */
+.bt-lobby { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; align-items: start; }
+.bt-panel { background: var(--panel); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.bt-panel h2 { margin: 6px 0 0; font-size: 1rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.bt-panel h2:first-child { margin-top: 0; }
+.bt-panel label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: var(--muted); }
+.bt-panel select { width: 100%; }
+.bt-nota { margin: 0; font-size: .8rem; color: var(--muted); }
+.bt-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bt-lista li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 6px 8px; background: var(--panel-2); font-size: .85rem; }
+.bt-lista li select { flex: 1; min-width: 120px; width: auto; }
+.bt-vacio { color: var(--muted); font-size: .82rem; }
+.bt-lista .bt-vacio { background: none; padding: 2px 0; }
+.bt-tuturno { color: var(--accent); }
+
+/* ---------------------------------------------------------------------- partida */
+.bt-cabeza { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.bt-turno { margin-left: auto; font-size: .85rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.bt-turno.mio { color: var(--accent); font-weight: 700; }
+.bt-zona { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.bt-mesa {
+  position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,.05), transparent 70%), rgba(0,0,0,.18); border: 1px solid var(--border);
+}
+
+.bt-jugador { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--border); }
+.bt-jugador.objetivo { outline: 2px solid #e0645c; outline-offset: 2px; cursor: crosshair; animation: bt-pulso 1s ease-in-out infinite; }
+.bt-nombre { font-family: var(--font-heading), sans-serif; font-size: 1rem; }
+.bt-nombre em { color: var(--accent); font-style: normal; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+.bt-vida { font-size: 1.1rem; }
+.bt-vida span { color: #d8506a; }
+.bt-vida strong { font-family: var(--font-heading), sans-serif; font-size: 1.5rem; }
+.bt-energia { display: flex; gap: 4px; align-items: center; }
+.bt-energia i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #2d6fc6; background: transparent; }
+.bt-energia i.llena { background: radial-gradient(circle at 35% 30%, #7dbcf8, #2362b8); box-shadow: 0 0 6px rgba(80,150,240,.6); }
+.bt-energia small { color: #7dbcf8; font-size: .75rem; }
+.bt-conteo { font-size: .8rem; color: var(--muted); }
+.bt-conteo strong { color: var(--text); }
+.bt-botones { margin-left: auto; display: flex; gap: 8px; }
+
+.bt-campo { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 22px 14px; min-height: 220px; padding: 12px 6px 22px; background: rgba(0,0,0,.12); border: 1px dashed rgba(255,255,255,.08); }
+.bt-campo .bt-vacio { align-self: center; }
+.bt-unidad { position: relative; width: 112px; cursor: pointer; transition: transform .12s; }
+.bt-unidad .carta { pointer-events: none; }
+.bt-unidad:hover { transform: translateY(-3px); }
+.bt-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; margin-top: 10px; min-height: 16px; }
+.bt-chips span { font-size: .6rem; padding: 1px 5px; background: rgba(0,0,0,.55); border: 1px solid var(--border); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.bt-unidad.lista .carta { filter: drop-shadow(0 0 7px #6fe08a); }
+.bt-unidad.elegida .carta { filter: drop-shadow(0 0 9px var(--accent)); }
+.bt-unidad.objetivo .carta { filter: drop-shadow(0 0 9px #ff6b5a); }
+.bt-unidad.objetivo { cursor: crosshair; }
+.bt-unidad.golpe { animation: bt-golpe .5s ease; }
+.carta-stat.herida { color: #ffb4a8; }
+.carta-stat.sube { color: #c8ffd2; }
+
+.bt-centro { display: flex; justify-content: center; }
+.bt-terreno { max-width: 520px; width: 100%; padding: 6px 14px; text-align: center; background: rgba(0,0,0,.35); border: 1px solid var(--rar, var(--border)); display: flex; flex-direction: column; gap: 2px; }
+.bt-terreno strong { font-family: var(--font-heading), sans-serif; letter-spacing: .06em; }
+.bt-terreno span { font-size: .78rem; }
+.bt-terreno small { color: var(--muted); font-size: .7rem; }
+.bt-terreno.vacio { color: var(--muted); font-size: .78rem; background: none; border-style: dashed; border-color: rgba(255,255,255,.1); }
+
+.bt-mano { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px 10px; min-height: 190px; padding: 10px 6px 20px; }
+.bt-carta { width: 118px; cursor: pointer; transition: transform .12s; opacity: .6; }
+.bt-carta .carta { pointer-events: none; }
+.bt-carta.jugable { opacity: 1; }
+.bt-carta.jugable .carta { filter: drop-shadow(0 0 6px #6fe08a); }
+.bt-carta:hover { transform: translateY(-8px); opacity: 1; }
+.bt-carta.elegida { transform: translateY(-14px); opacity: 1; }
+.bt-carta.elegida .carta { filter: drop-shadow(0 0 10px var(--accent)); }
+
+.bt-final {
+  position: absolute; inset: 0; z-index: 5; background: rgba(5, 12, 9, .82); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px; text-align: center;
+}
+.bt-final h2 { margin: 0; font-size: 2.4rem; color: #f3e2ad; letter-spacing: .1em; font-family: var(--font-heading), sans-serif; }
+.bt-final p { margin: 0; color: var(--muted); }
+
+.bt-lateral { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 12px; }
+.bt-inspector { display: flex; gap: 12px; padding: 12px; background: var(--panel); border: 1px solid var(--border); min-height: 120px; }
+.bt-inspector-carta { width: 120px; flex: none; }
+.bt-inspector-texto { min-width: 0; font-size: .82rem; display: flex; flex-direction: column; gap: 6px; }
+.bt-inspector-texto h3 { margin: 0; font-size: 1rem; font-family: var(--font-heading), sans-serif; }
+.bt-inspector-texto p { margin: 0; }
+.bt-inspector .carta { width: 100%; pointer-events: none; }
+.bt-log { list-style: none; margin: 0; padding: 8px 10px; background: var(--panel); border: 1px solid var(--border); max-height: 320px; overflow: auto; font-size: .75rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.bt-log li.turno { color: var(--accent); margin-top: 6px; }
+
+.bt-toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); z-index: 60; max-width: min(90vw, 460px);
+  padding: 10px 18px; background: var(--panel); color: var(--text); border: 1px solid var(--accent-soft); box-shadow: 0 8px 24px var(--shadow);
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; font-size: .88rem;
+}
+.bt-toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+@keyframes bt-pulso { 50% { outline-color: #ffb0a8; } }
+@keyframes bt-golpe { 0% { transform: translateX(0); } 20% { transform: translateX(-6px) rotate(-2deg); } 40% { transform: translateX(6px) rotate(2deg); } 60% { transform: translateX(-4px); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .bt-unidad.golpe, .bt-jugador.objetivo { animation: none; } }
+@media (max-width: 980px) {
+  .bt-zona { grid-template-columns: 1fr; }
+  .bt-lateral { position: static; }
+  .bt-unidad { width: 92px; }
+  .bt-carta { width: 98px; }
+}
