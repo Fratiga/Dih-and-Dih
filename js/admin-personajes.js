@@ -96,7 +96,7 @@
     const nombre = nombreInput.value.trim();
     const id = idInput.value.trim() || slugify(nombre);
     if (!nombre || !id) {
-      alert("Falta el nombre del personaje.");
+      dialogo.avisar("Falta el nombre del personaje.");
       return;
     }
 
@@ -104,13 +104,13 @@
     const ladoB = document.getElementById("afLadoB").checked;
     const lado = [...(ladoA ? ["A"] : []), ...(ladoB ? ["B"] : [])];
     if (!lado.length) {
-      alert("Elige al menos un lado.");
+      dialogo.avisar("Elige al menos un lado.");
       return;
     }
 
     const contentRaw = document.getElementById("afContent").value.trim();
     if (!contentRaw) {
-      alert("Falta el contenido del personaje.");
+      dialogo.avisar("Falta el contenido del personaje.");
       return;
     }
 

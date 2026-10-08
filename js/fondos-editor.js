@@ -212,7 +212,7 @@
     const ed = contexto();
     const a = alcance();
     const previo = filaDe(a.juego, a.dificultad);
-    if (!previo || !confirm("¿Quitar este fondo?")) return;
+    if (!previo || !(await dialogo.confirmar("¿Quitar este fondo?", { titulo: "Quitar fondo", aceptar: "Quitar", peligro: true }))) return;
     try {
       const sb = await fichasCliente();
       const { error } = await sb.from("rocola_fondos").delete().eq("cancion", ed.ruta).eq("juego", a.juego).eq("dificultad", a.dificultad);

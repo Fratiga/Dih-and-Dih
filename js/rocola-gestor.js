@@ -191,7 +191,7 @@
         const { titulo, artista } = partir(f.name.replace(/\.[^.]+$/, ""));
         const nt = norma(titulo);
         const repetida = nt.length >= 4 && (window.MUSICA || []).some(r => norma(nombreDe(r)).includes(nt));
-        if (repetida && !confirm(`Ya hay algo parecido a "${titulo}" en la rocola. ¿Subirla igual?`)) { fallos.push(`${f.name}: omitida (parecida a una existente)`); continue; }
+        if (repetida && !(await dialogo.confirmar(`Ya hay algo parecido a "${titulo}" en la rocola. ¿Subirla igual?`, { titulo: "Canción parecida", aceptar: "Subir igual" }))) { fallos.push(`${f.name}: omitida (parecida a una existente)`); continue; }
         decir(`Subiendo ${etiqueta}...`);
         barra.value = 0;
         try {
@@ -232,7 +232,7 @@
       const aviso = nube
         ? `¿Quitar "${nombre}" de la rocola? Se borra el archivo. Los mapas que tenga guardados se quedan, pero la canción deja de aparecer.`
         : `¿Quitar "${nombre}" de la rocola y de Zarabanda? Se oculta del sitio y puedes restaurarla desde "Canciones ocultas".`;
-      if (!confirm(aviso)) return;
+      if (!(await dialogo.confirmar(aviso, { titulo: "Quitar de la rocola", aceptar: "Quitar", peligro: true }))) return;
       btn.disabled = true;
       try {
         const sb = await fichasCliente();
@@ -439,7 +439,7 @@
 
   $("rgFondoQuitar").addEventListener("click", async () => {
     const previo = fondos.get(fondeando);
-    if (!previo || !confirm("¿Quitar el fondo de esta canción?")) return;
+    if (!previo || !(await dialogo.confirmar("¿Quitar el fondo de esta canción?", { titulo: "Quitar fondo", aceptar: "Quitar", peligro: true }))) return;
     try {
       const sb = await fichasCliente();
       const { error } = await sb.from("rocola_fondos").delete().eq("cancion", fondeando).eq("juego", "").eq("dificultad", "");
@@ -673,7 +673,7 @@
       : "Se sube la versión recortada como canción nueva y la original se oculta del sitio.") +
       (ini < 0.05 ? " Los mapas de la canción se pasan a la versión recortada." : " Como cambia el inicio, los mapas hechos para la versión larga no encajarían: no se pasan y tendrás que rehacerlos.") +
       " Los puntajes empiezan de cero.\n\n¿Seguir?";
-    if (!confirm(aviso)) return;
+    if (!(await dialogo.confirmar(aviso, { titulo: "Guardar recorte", aceptar: "Guardar" }))) return;
     $("rgRecorteGuardar").disabled = true;
     barraR.classList.remove("hidden");
     barraR.value = 0;

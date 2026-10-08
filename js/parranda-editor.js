@@ -456,7 +456,7 @@
       if (data && data.conflicto) {
         const quien = data.autor || "Otra persona";
         const cuando = new Date(data.cuando).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-        if (!confirm(`${quien} guardó este mapa el ${cuando}, después de que lo cargaras.\n\nSi guardas ahora, tus cambios reemplazan los suyos (su versión queda en el historial).\n\n¿Guardar igual?`)) {
+        if (!(await dialogo.confirmar(`${quien} guardó este mapa el ${cuando}, después de que lo cargaras.\n\nSi guardas ahora, tus cambios reemplazan los suyos (su versión queda en el historial).\n\n¿Guardar igual?`, { titulo: "Alguien guardó antes que tú", aceptar: "Guardar igual", peligro: true }))) {
           mensaje("No se guardó. Carga el mapa guardado, o mira el historial para ver la otra versión.", true);
           return;
         }
@@ -541,7 +541,7 @@
   }
 
   async function borrarGuardado() {
-    if (!confirm("¿Borrar el mapa guardado de esta canción y dificultad? El juego volverá a usar el automático.")) return;
+    if (!(await dialogo.confirmar("¿Borrar el mapa guardado de esta canción y dificultad? El juego volverá a usar el automático.", { titulo: "Borrar mapa guardado", aceptar: "Borrar", peligro: true }))) return;
     try {
       const sb = await supabase();
       const { error } = await sb.from("parranda_mapas").delete().eq("cancion", rutaActual()).eq("dificultad", difActual());
@@ -1770,8 +1770,8 @@
     regenerar(tramosSel.a, tramosSel.b, b.dataset.banda);
   }));
   let seleccionPrevia = { c: cancionEl.value, d: difEl.value };
-  [cancionEl, difEl].forEach(el => el.addEventListener("change", () => {
-    if (cambios && !confirm("Hay cambios sin guardar. ¿Descartarlos?")) {
+  [cancionEl, difEl].forEach(el => el.addEventListener("change", async () => {
+    if (cambios && !(await dialogo.confirmar("Hay cambios sin guardar. ¿Descartarlos?", { titulo: "Cambios sin guardar", aceptar: "Descartar", peligro: true }))) {
       // Se queda lo que estabas editando: se devuelve la selección anterior
       cancionEl.value = seleccionPrevia.c;
       if (difEl.value !== seleccionPrevia.d) { difEl.value = seleccionPrevia.d; difEl.dispatchEvent(new Event("change")); }

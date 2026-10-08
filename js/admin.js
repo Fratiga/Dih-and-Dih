@@ -81,7 +81,7 @@
           repintarPeticiones();
         } catch (err) {
           e.target.checked = !nuevoValor;
-          alert("No se pudo guardar. Prueba de nuevo.");
+          dialogo.avisar("No se pudo guardar. Prueba de nuevo.");
         }
       });
     });
@@ -147,7 +147,7 @@
           await adminCambiarSide(fila.dataset.id, side);
           fila.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b.dataset.side === side));
         } catch (err) {
-          alert("No se pudo cambiar el Side. Prueba de nuevo.");
+          dialogo.avisar("No se pudo cambiar el Side. Prueba de nuevo.");
         }
       });
     });
@@ -157,9 +157,9 @@
         const fila = btn.closest("[data-id]");
         const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
         const darlo = fila.dataset.esAdmin !== "1";
-        const confirmado = confirm(darlo
+        const confirmado = await dialogo.confirmar(darlo
           ? `¿Dar Admin a "${nombre}"?\n\nPodrá ver y cambiar cuentas, fichas, peticiones y todo este panel.`
-          : `¿Quitarle el Admin a "${nombre}"?`);
+          : `¿Quitarle el Admin a "${nombre}"?`, { titulo: darlo ? "Dar Admin" : "Quitar Admin", peligro: darlo });
         if (!confirmado) return;
         btn.disabled = true;
         try {
@@ -168,7 +168,7 @@
           fila.querySelector(".admin-cuenta-tag").hidden = !darlo;
           btn.textContent = darlo ? "Quitar Admin" : "Dar Admin";
         } catch (err) {
-          alert("No se pudo cambiar el permiso: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/admin_dar_admin.sql en Supabase?");
+          dialogo.avisar("No se pudo cambiar el permiso: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/admin_dar_admin.sql en Supabase?");
         } finally {
           btn.disabled = false;
         }
@@ -180,9 +180,9 @@
         const fila = btn.closest("[data-id]");
         const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
         const darlo = fila.dataset.esDj !== "1";
-        const confirmado = confirm(darlo
+        const confirmado = await dialogo.confirmar(darlo
           ? `¿Dar el rol DJ a "${nombre}"?\n\nPodrá usar los editores de mapas de Zarabanda y Parranda y gestionar la rocola. Nada más: no ve este panel ni las cuentas.`
-          : `¿Quitarle el rol DJ a "${nombre}"?`);
+          : `¿Quitarle el rol DJ a "${nombre}"?`, { titulo: darlo ? "Dar rol DJ" : "Quitar rol DJ" });
         if (!confirmado) return;
         btn.disabled = true;
         try {
@@ -191,7 +191,7 @@
           fila.querySelector(".admin-cuenta-tag-dj").hidden = !darlo;
           btn.textContent = darlo ? "Quitar DJ" : "Dar DJ";
         } catch (err) {
-          alert("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/ritmo_dj.sql en Supabase?");
+          dialogo.avisar("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/ritmo_dj.sql en Supabase?");
         } finally {
           btn.disabled = false;
         }
@@ -203,11 +203,11 @@
         const fila = btn.closest("[data-id]");
         const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
         const darlo = fila.dataset.esEditorCartas !== "1";
-        const confirmado = confirm(darlo
+        const confirmado = await dialogo.confirmar(darlo
           ? `¿Dar el rol Editor de cartas a "${nombre}"?
 
 Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nombre y descripción). Nada más: no ve este panel ni las cuentas, y no puede regalar cartas.`
-          : `¿Quitarle el rol Editor de cartas a "${nombre}"?`);
+          : `¿Quitarle el rol Editor de cartas a "${nombre}"?`, { titulo: darlo ? "Dar rol Editor de cartas" : "Quitar rol Editor de cartas" });
         if (!confirmado) return;
         btn.disabled = true;
         try {
@@ -216,7 +216,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
           fila.querySelector(".admin-cuenta-tag-cartas").hidden = !darlo;
           btn.textContent = darlo ? "Quitar editor de cartas" : "Dar editor de cartas";
         } catch (err) {
-          alert("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/cartas_editor.sql en Supabase?");
+          dialogo.avisar("No se pudo cambiar el rol: " + (err.message || "error desconocido") + "\n\n¿Corriste scratchpad/cartas_editor.sql en Supabase?");
         } finally {
           btn.disabled = false;
         }
@@ -226,18 +226,18 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     cont.querySelectorAll('[data-accion="password"]').forEach(btn => {
       btn.addEventListener("click", async () => {
         const fila = btn.closest("[data-id]");
-        const nueva = prompt("Nueva contraseña para esta cuenta (mínimo 6 caracteres):");
+        const nueva = await dialogo.pedir("Nueva contraseña para esta cuenta (mínimo 6 caracteres):", "", { titulo: "Cambiar contraseña", tipoCampo: "password", validar: v => (v && v.length < 6 ? "Debe tener al menos 6 caracteres." : "") });
         if (!nueva) return;
         if (nueva.length < 6) {
-          alert("La contraseña debe tener al menos 6 caracteres.");
+          dialogo.avisar("La contraseña debe tener al menos 6 caracteres.");
           return;
         }
         btn.disabled = true;
         try {
           await adminCambiarPassword(fila.dataset.id, nueva);
-          alert("Contraseña cambiada.");
+          dialogo.avisar("Contraseña cambiada.");
         } catch (err) {
-          alert("No se pudo cambiar la contraseña: " + (err.message || "error desconocido"));
+          dialogo.avisar("No se pudo cambiar la contraseña: " + (err.message || "error desconocido"));
         } finally {
           btn.disabled = false;
         }
@@ -248,8 +248,9 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
       btn.addEventListener("click", async () => {
         const fila = btn.closest("[data-id]");
         const nombre = fila.querySelector(".admin-cuenta-usuario").textContent.trim();
-        const confirmado = confirm(
-          `¿Eliminar la cuenta de "${nombre}"?\n\nEsto borra su acceso por completo y no se puede deshacer. Sus fichas de personaje no se borran solas con esto.`
+        const confirmado = await dialogo.confirmar(
+          `¿Eliminar la cuenta de "${nombre}"?\n\nEsto borra su acceso por completo y no se puede deshacer. Sus fichas de personaje no se borran solas con esto.`,
+          { titulo: "Eliminar cuenta", aceptar: "Eliminar", peligro: true }
         );
         if (!confirmado) return;
         btn.disabled = true;
@@ -257,7 +258,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
           await adminEliminarCuenta(fila.dataset.id);
           fila.remove();
         } catch (err) {
-          alert("No se pudo eliminar la cuenta: " + (err.message || "error desconocido"));
+          dialogo.avisar("No se pudo eliminar la cuenta: " + (err.message || "error desconocido"));
           btn.disabled = false;
         }
       });
@@ -325,7 +326,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
       await adminSetCicloLado(lado, ciclo);
       await cargarProgresoBufon();
     } catch (err) {
-      alert("No se pudo cambiar el ciclo: " + (err.message || "error desconocido") + ". ¿Corriste scratchpad/bufon_ciclos.sql en Supabase?");
+      dialogo.avisar("No se pudo cambiar el ciclo: " + (err.message || "error desconocido") + ". ¿Corriste scratchpad/bufon_ciclos.sql en Supabase?");
     }
   }
 
@@ -350,7 +351,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
         const info = lado === "A" ? sideA : sideB;
         const actual = cicloDelLado(info);
         const siguiente = actual + parseInt(btn.dataset.cicloPaso, 10);
-        if (siguiente < 1 || siguiente > maxCiclo) { alert("No hay un ciclo " + siguiente + "."); return; }
+        if (siguiente < 1 || siguiente > maxCiclo) { dialogo.avisar("No hay un ciclo " + siguiente + "."); return; }
         aplicarCicloLado(lado, siguiente);
       });
     });
@@ -403,7 +404,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
           await adminSetCicloJugador(btn.dataset.avanzarJugador, parseInt(btn.dataset.cicloA, 10));
           await cargarProgresoBufon();
         } catch (err) {
-          alert("No se pudo cambiar el ciclo: " + (err.message || "error desconocido"));
+          dialogo.avisar("No se pudo cambiar el ciclo: " + (err.message || "error desconocido"));
           btn.disabled = false;
         }
       });
@@ -417,7 +418,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
           await adminSetCicloJugador(sel.dataset.cicloJugador, sel.value === "" ? null : parseInt(sel.value, 10));
           await cargarProgresoBufon();
         } catch (err) {
-          alert("No se pudo cambiar el ciclo: " + (err.message || "error desconocido"));
+          dialogo.avisar("No se pudo cambiar el ciclo: " + (err.message || "error desconocido"));
           sel.disabled = false;
         }
       });
@@ -433,12 +434,12 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
           if (estaExcluido) {
             await adminReincluirEnBufon(playerId);
           } else {
-            const motivo = prompt("¿Por qué no debería contar para el progreso? (opcional)") || null;
+            const motivo = (await dialogo.pedir("¿Por qué no debería contar para el progreso? (opcional)", "", { titulo: "Excluir del progreso" })) || null;
             await adminExcluirDelBufon(playerId, motivo);
           }
           await cargarProgresoBufon();
         } catch (err) {
-          alert("No se pudo actualizar: " + (err.message || "error desconocido"));
+          dialogo.avisar("No se pudo actualizar: " + (err.message || "error desconocido"));
           btn.disabled = false;
         }
       });
@@ -776,7 +777,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
           await fanartsAdminSetSide(card.dataset.src, nuevoSide);
         } catch (err) {
           card.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b === anterior));
-          alert("No se pudo guardar. Prueba de nuevo.");
+          dialogo.avisar("No se pudo guardar. Prueba de nuevo.");
         }
       });
     });
@@ -785,14 +786,14 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
       btn.addEventListener("click", async () => {
         const card = btn.closest("[data-src]");
         const ocultar = !card.classList.contains("is-oculto");
-        if (ocultar && !confirm("¿Eliminar este fanart de la galería? Puedes restaurarlo desde aquí cuando quieras.")) return;
+        if (ocultar && !(await dialogo.confirmar("¿Eliminar este fanart de la galería? Puedes restaurarlo desde aquí cuando quieras.", { titulo: "Eliminar fanart", aceptar: "Eliminar", peligro: true }))) return;
         btn.disabled = true;
         try {
           await fanartsAdminSetOculto(card.dataset.src, ocultar);
           card.classList.toggle("is-oculto", ocultar);
           btn.textContent = ocultar ? "Restaurar" : "Eliminar";
         } catch (err) {
-          alert("No se pudo guardar. ¿Corriste scratchpad/fanarts_ocultos.sql en Supabase?");
+          dialogo.avisar("No se pudo guardar. ¿Corriste scratchpad/fanarts_ocultos.sql en Supabase?");
         } finally {
           btn.disabled = false;
         }
@@ -866,13 +867,13 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
         const frase = accion === "confirmado" ? "¿Confirmar este resultado?"
           : accion === "perdonado" ? "¿Quitar la marca del Dominio a este personaje? El intento sigue contando, no podrá repetirlo."
           : "¿Anular este intento? Ese personaje podrá volver a intentarlo.";
-        if (!confirm(frase)) return;
+        if (!(await dialogo.confirmar(frase, { titulo: accion === "confirmado" ? "Confirmar resultado" : accion === "perdonado" ? "Quitar marca" : "Anular intento", peligro: accion === "anulado" }))) return;
         btn.disabled = true;
         try {
           await msAdminResolver(fila.dataset.id, accion);
           pintarMuerteSubita(await msListarIntentos());
         } catch (err) {
-          alert("No se pudo guardar. Prueba de nuevo.");
+          dialogo.avisar("No se pudo guardar. Prueba de nuevo.");
           btn.disabled = false;
         }
       });
@@ -1038,8 +1039,8 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
       }
     }
     document.getElementById("adminCartasRegalar").addEventListener("click", () => ejecutar("cartas_regalar", "Regalada"));
-    document.getElementById("adminCartasQuitar").addEventListener("click", () => {
-      if (confirm(`¿Quitar una copia de ${nombreCarta(cartaEl.value)} a ${nombreJugador(jugadorEl.value)}?`)) ejecutar("cartas_quitar", "Quitada");
+    document.getElementById("adminCartasQuitar").addEventListener("click", async () => {
+      if (await dialogo.confirmar(`¿Quitar una copia de ${nombreCarta(cartaEl.value)} a ${nombreJugador(jugadorEl.value)}?`, { titulo: "Quitar carta", aceptar: "Quitar", peligro: true })) ejecutar("cartas_quitar", "Quitada");
     });
     pintarRegistro();
   }

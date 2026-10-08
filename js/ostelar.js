@@ -226,14 +226,14 @@
       r.mejoras--; guardar(); pintarCuartel();
     }));
     raiz.querySelectorAll("[data-auto]").forEach(b => b.addEventListener("click", () => { OS.repartirMejorasAuto(reg(b.dataset.auto)); guardar(); pintarCuartel(); }));
-    raiz.querySelectorAll("[data-renombrar]").forEach(b => b.addEventListener("click", () => {
+    raiz.querySelectorAll("[data-renombrar]").forEach(b => b.addEventListener("click", async () => {
       const r = reg(b.dataset.renombrar);
-      const n = prompt("Nuevo nombre", r.nombre);
+      const n = await dialogo.pedir("Nuevo nombre", r.nombre, { titulo: "Renombrar" });
       if (n && n.trim()) { r.nombre = n.trim().slice(0, 40); guardar(); pintarCuartel(); }
     }));
-    raiz.querySelectorAll("[data-borrar]").forEach(b => b.addEventListener("click", () => {
+    raiz.querySelectorAll("[data-borrar]").forEach(b => b.addEventListener("click", async () => {
       const r = reg(b.dataset.borrar);
-      if (!confirm(`¿Eliminar a ${r.nombre} para siempre? Su equipo vuelve a la reserva.`)) return;
+      if (!(await dialogo.confirmar(`¿Eliminar a ${r.nombre} para siempre? Su equipo vuelve a la reserva.`, { titulo: "Eliminar", aceptar: "Eliminar", peligro: true }))) return;
       Object.values(r.equipo || {}).forEach(it => { if (it) datos.reserva.push(it); });
       datos.alzados = datos.alzados.filter(x => x.id !== r.id);
       datos.grupo = datos.grupo.filter(x => x !== r.id);
@@ -488,8 +488,8 @@
     siguiente();
   }
 
-  function abandonar() {
-    if (!confirm("¿Abandonar el combate? No ganas experiencia ni botín.")) return;
+  async function abandonar() {
+    if (!(await dialogo.confirmar("¿Abandonar el combate? No ganas experiencia ni botín.", { titulo: "Abandonar el combate", aceptar: "Abandonar", peligro: true }))) return;
     combateId++; ocupado = false; c = null; modo = null;
     $("osCombate").classList.add("hidden");
     $("osCuartel").classList.remove("hidden");

@@ -186,7 +186,7 @@
         const nombre = norma(window.RitmoEditor ? window.RitmoEditor.cancionPorRuta(r) : r);
         return nombre.includes(nt) && (!na || nombre.includes(na));
       });
-      if (parecida && !confirm("Ya hay una canción con un nombre parecido en la rocola. ¿Subirla igual?")) return decir("No se subió.", true);
+      if (parecida && !(await dialogo.confirmar("Ya hay una canción con un nombre parecido en la rocola. ¿Subirla igual?", { titulo: "Canción parecida", aceptar: "Subir igual" }))) return decir("No se subió.", true);
       boton.disabled = true;
       progreso.value = 0;
       progreso.classList.remove("hidden");
@@ -224,9 +224,9 @@
     lista.addEventListener("click", async ev => {
       const ed = ev.target.closest("[data-editar]");
       if (ed) {
-        const nuevoTitulo = prompt("Título de la canción:", ed.dataset.titulo);
+        const nuevoTitulo = await dialogo.pedir("Título de la canción:", ed.dataset.titulo, { titulo: "Editar canción" });
         if (nuevoTitulo === null) return;
-        const nuevoArtista = prompt("Artista:", ed.dataset.artista);
+        const nuevoArtista = await dialogo.pedir("Artista:", ed.dataset.artista, { titulo: "Editar canción" });
         if (nuevoArtista === null) return;
         if (!nuevoTitulo.trim()) { avisar("El título no puede quedar vacío.", true); return; }
         try {
@@ -243,7 +243,7 @@
       const b = ev.target.closest("[data-id]");
       if (!b) return;
       const nombre = b.closest("li").querySelector("span").textContent.trim();
-      if (!confirm(`¿Quitar "${nombre}" de la rocola? Los mapas que tenga guardados se quedan, pero la canción deja de aparecer.`)) return;
+      if (!(await dialogo.confirmar(`¿Quitar "${nombre}" de la rocola? Los mapas que tenga guardados se quedan, pero la canción deja de aparecer.`, { titulo: "Quitar de la rocola", aceptar: "Quitar", peligro: true }))) return;
       b.disabled = true;
       try {
         const sb = await fichasCliente();
@@ -529,7 +529,7 @@
     versiones.addEventListener("click", async ev => {
       const b = ev.target.closest("[data-version]");
       if (!b) return;
-      if (window.RitmoEditor.hayCambios() && !confirm("Hay cambios sin guardar en el editor. ¿Reemplazarlos con esa versión?")) return;
+      if (window.RitmoEditor.hayCambios() && !(await dialogo.confirmar("Hay cambios sin guardar en el editor. ¿Reemplazarlos con esa versión?", { titulo: "Cargar versión", aceptar: "Reemplazar", peligro: true }))) return;
       b.disabled = true;
       try {
         const sb = await fichasCliente();
@@ -565,14 +565,14 @@
       $("reMarcaTexto").value = "";
     });
     $("reMarcaTexto").addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); $("reMarcaAgregar").click(); } });
-    lista.addEventListener("click", ev => {
+    lista.addEventListener("click", async ev => {
       const ir = ev.target.closest("[data-ir]");
       if (ir) { window.RitmoEditor.ir(Math.max(0, Number(ir.dataset.ir) - 0.5)); return; }
       const ed = ev.target.closest("[data-editar-marca]");
       if (ed) {
         const i = Number(ed.dataset.editarMarca);
         const actual = window.RitmoEditor.obtenerMarcas()[i];
-        const nuevo = prompt("Texto de la marca:", actual ? actual.texto : "");
+        const nuevo = await dialogo.pedir("Texto de la marca:", actual ? actual.texto : "", { titulo: "Editar marca" });
         if (nuevo !== null) window.RitmoEditor.editarMarca(i, nuevo);
         return;
       }
@@ -651,7 +651,7 @@
     const borrar = ev.target.closest("[data-borrar-patron]");
     if (!borrar) return;
     const p = patrones.find(x => String(x.id) === borrar.dataset.borrarPatron);
-    if (!p || !confirm(`¿Quitar el patrón "${p.nombre}"?`)) return;
+    if (!p || !(await dialogo.confirmar(`¿Quitar el patrón "${p.nombre}"?`, { titulo: "Quitar patrón", aceptar: "Quitar", peligro: true }))) return;
     try {
       if (patronesRemotos) {
         const sb = await fichasCliente();

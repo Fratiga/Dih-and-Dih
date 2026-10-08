@@ -66,7 +66,7 @@ document.addEventListener("click", async e => {
   const texto = boton.dataset.cmd;
   let ok = false;
   try { await navigator.clipboard.writeText(texto); ok = true; } catch (err) { /* sin permiso */ }
-  if (!ok) { prompt("Copia este comando a mano:", texto); return; }
+  if (!ok) { dialogo.copiar("Copia este comando a mano:", texto, { titulo: "Copiar comando" }); return; }
   const original = boton.textContent;
   boton.textContent = "✓";
   setTimeout(() => { boton.textContent = original; }, 1200);

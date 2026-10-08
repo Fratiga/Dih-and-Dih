@@ -202,8 +202,8 @@
     await cargarMeta().catch(() => {});
     await nuevaVisita();
   }
-  function reiniciarJugador() {
-    if (!confirm("¿Borrar todo lo que este jugador de prueba ha hablado?")) return;
+  async function reiniciarJugador() {
+    if (!(await dialogo.confirmar("¿Borrar todo lo que este jugador de prueba ha hablado?", { titulo: "Reiniciar jugador", aceptar: "Borrar", peligro: true }))) return;
     cfg.almacen = {}; guardarCfg();
     nuevaVisita();
   }
@@ -414,8 +414,8 @@
   async function importarCiclo(id) {
     if (!meta) await cargarMeta();
     const def = meta.defs[id];
-    if (!def) { alert("Ese ciclo no se puede cargar en el editor."); return; }
-    if (borradores.some(b => b.id === id) && !confirm("Ya tienes un borrador con ese id. ¿Reemplazarlo con el ciclo tal como está en su archivo?")) return;
+    if (!def) { dialogo.avisar("Ese ciclo no se puede cargar en el editor."); return; }
+    if (borradores.some(b => b.id === id) && !(await dialogo.confirmar("Ya tienes un borrador con ese id. ¿Reemplazarlo con el ciclo tal como está en su archivo?", { titulo: "Reemplazar borrador", aceptar: "Reemplazar", peligro: true }))) return;
     borradores = borradores.filter(b => b.id !== id);
     borradores.push(desdeConfig(def));
     borradorActual = id;
@@ -476,10 +476,10 @@
   const nuevaPregunta = id => ({ id, texto: "", requiere: "", voz: "", voces: "", tras: "", hechos: "", animacion: "", risa: "", lineas: "" });
   const nuevoGrupo = id => ({ id, requiere: "", opciones: [{ id: "si", texto: "", neutral: false, lineas: "" }, { id: "no", texto: "", neutral: false, lineas: "" }, { id: "nose", texto: "No lo sé.", neutral: true, lineas: "" }] });
   const idValido = s => /^[a-z0-9_]+$/.test(s || "");
-  function pedirId(que) {
-    const v = (prompt("Id " + que + " (solo minúsculas sin tildes, números y _; por ejemplo: mi_tema):") || "").trim();
+  async function pedirId(que) {
+    const v = ((await dialogo.pedir("Id " + que + " (solo minúsculas sin tildes, números y _; por ejemplo: mi_tema):", "", { titulo: "Nuevo id" })) || "").trim();
     if (!v) return null;
-    if (!idValido(v)) { alert("Ese id no es válido. Usa solo minúsculas sin tildes, números y _."); return null; }
+    if (!idValido(v)) { dialogo.avisar("Ese id no es válido. Usa solo minúsculas sin tildes, números y _."); return null; }
     return v;
   }
 
@@ -619,21 +619,21 @@
       h("select", { onchange: e => { borradorActual = e.target.value || null; renderEditor(); programarValidacion(); } },
         h("option", { value: "" }, borradores.length ? "Elige un borrador..." : "(sin borradores)"),
         borradores.map(x => h("option", { value: x.id, selected: x.id === borradorActual }, (x.nombre || x.id) + " [" + x.id + "]"))),
-      h("button", { type: "button", class: "secondary-button", onclick: () => {
-        const id = pedirId("del ciclo nuevo"); if (!id) return;
-        if (borradores.some(x => x.id === id)) { alert("Ya hay un borrador con ese id."); return; }
-        const nombre = prompt("Nombre visible del ciclo:", id) || id;
+      h("button", { type: "button", class: "secondary-button", onclick: async () => {
+        const id = await pedirId("del ciclo nuevo"); if (!id) return;
+        if (borradores.some(x => x.id === id)) { dialogo.avisar("Ya hay un borrador con ese id."); return; }
+        const nombre = (await dialogo.pedir("Nombre visible del ciclo:", id, { titulo: "Nombre del ciclo" })) || id;
         const usados = meta ? meta.lista.map(c => c.numero) : [1, 2];
         borradores.forEach(x => { const n = parseInt(x.numero, 10); if (Number.isInteger(n)) usados.push(n); });
         const sugerido = Math.max(2, ...usados) + 1;
-        const numero = parseInt(prompt("Número del ciclo (3 o más). El 1 es el contenido original y el 2 es «Lo que queda»:", String(sugerido)), 10);
-        if (!Number.isInteger(numero) || numero < 3) { alert("El número debe ser 3 o más."); return; }
+        const numero = parseInt(await dialogo.pedir("Número del ciclo (3 o más). El 1 es el contenido original y el 2 es «Lo que queda»:", String(sugerido), { titulo: "Número del ciclo" }), 10);
+        if (!Number.isInteger(numero) || numero < 3) { dialogo.avisar("El número debe ser 3 o más."); return; }
         borradores.push(nuevoBorrador(id, nombre, numero)); borradorActual = id; guardarBorradores(); renderEditor(); programarValidacion();
       } }, "+ Ciclo nuevo"),
       importables.length ? h("select", { onchange: e => { if (e.target.value) importarCiclo(e.target.value); } },
         h("option", { value: "" }, "Cargar un ciclo existente..."), importables.map(id => h("option", { value: id }, id))) : null,
-      b ? h("button", { type: "button", class: "secondary-button peligro", onclick: () => {
-        if (!confirm("¿Borrar el borrador «" + b.id + "»? Esto no borra ningún archivo.")) return;
+      b ? h("button", { type: "button", class: "secondary-button peligro", onclick: async () => {
+        if (!(await dialogo.confirmar("¿Borrar el borrador «" + b.id + "»? Esto no borra ningún archivo.", { titulo: "Borrar borrador", aceptar: "Borrar", peligro: true }))) return;
         borradores = borradores.filter(x => x.id !== b.id); borradorActual = borradores.length ? borradores[0].id : null; guardarBorradores(); renderEditor();
       } }, "Borrar borrador") : null);
     pEditor.append(barra);
@@ -701,24 +701,24 @@
     const ruta = btn.getAttribute("data-ruta");
     const aviso = t => { const el = document.getElementById("blabAccion"); if (el) el.textContent = t; };
     if (acc === "add-tema") {
-      const id = pedirId("del tema"); if (!id) return;
-      if (b.temas.some(t => t.id === id)) { alert("Ya hay un tema con ese id en este ciclo."); return; }
+      const id = await pedirId("del tema"); if (!id) return;
+      if (b.temas.some(t => t.id === id)) { dialogo.avisar("Ya hay un tema con ese id en este ciclo."); return; }
       b.temas.push(nuevoTema(id)); guardarBorradores(); renderEditor(); return;
     }
     if (acc === "add-pregunta") {
       const t = porRuta(b, ruta);
-      const id = pedirId("de la pregunta"); if (!id) return;
-      if (t.preguntas.concat(t.grupos).some(x => x.id === id)) { alert("Ese id ya se usa en este tema."); return; }
+      const id = await pedirId("de la pregunta"); if (!id) return;
+      if (t.preguntas.concat(t.grupos).some(x => x.id === id)) { dialogo.avisar("Ese id ya se usa en este tema."); return; }
       t.preguntas.push(nuevaPregunta(id)); guardarBorradores(); renderEditor(); return;
     }
     if (acc === "add-grupo") {
       const t = porRuta(b, ruta);
-      const id = pedirId("del grupo de respuestas"); if (!id) return;
-      if (t.preguntas.concat(t.grupos).some(x => x.id === id)) { alert("Ese id ya se usa en este tema."); return; }
+      const id = await pedirId("del grupo de respuestas"); if (!id) return;
+      if (t.preguntas.concat(t.grupos).some(x => x.id === id)) { dialogo.avisar("Ese id ya se usa en este tema."); return; }
       t.grupos.push(nuevoGrupo(id)); guardarBorradores(); renderEditor(); return;
     }
     if (acc === "quitar") {
-      if (!confirm("¿Quitar esto?")) return;
+      if (!(await dialogo.confirmar("¿Quitar esto?", { titulo: "Quitar", aceptar: "Quitar", peligro: true }))) return;
       const partes = ruta.split("."); const idx = parseInt(partes.pop(), 10);
       porRuta(b, partes.join(".")).splice(idx, 1); guardarBorradores(); renderEditor(); return;
     }

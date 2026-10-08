@@ -1263,7 +1263,7 @@
         recorteEl.classList.remove("hidden");
         pintarRecorte();
       };
-      nueva.onerror = () => { URL.revokeObjectURL(url); alert("No se pudo leer esa imagen."); };
+      nueva.onerror = () => { URL.revokeObjectURL(url); dialogo.avisar("No se pudo leer esa imagen."); };
       nueva.src = url;
     }
 
@@ -1312,7 +1312,7 @@
       const k = 160 / TAM;
       gs.beginPath(); gs.arc(80, 80, 80, 0, Math.PI * 2); gs.clip();
       gs.drawImage(img, ox * k, oy * k, img.width * base * zoom * k, img.height * base * zoom * k);
-      try { localStorage.setItem(CLAVE_FOTO, salida.toDataURL("image/png")); } catch (e) { alert("No se pudo guardar la foto en este navegador."); }
+      try { localStorage.setItem(CLAVE_FOTO, salida.toDataURL("image/png")); } catch (e) { dialogo.avisar("No se pudo guardar la foto en este navegador."); }
       recorteEl.classList.add("hidden");
       cargarFoto();
     });

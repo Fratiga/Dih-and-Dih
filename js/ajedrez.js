@@ -685,11 +685,11 @@
     if (colorJugador === "b") turnoRival();
   }
 
-  rivalesEl.addEventListener("click", ev => {
+  rivalesEl.addEventListener("click", async ev => {
     const b = ev.target.closest("[data-rival]");
     if (!b || !Chess) return;
     if (juego && !terminado && juego.history().length > 0 && rival && rival.id !== b.dataset.rival) {
-      if (!confirm("Hay una partida en curso. ¿Abandonarla y cambiar de rival?")) return;
+      if (!(await dialogo.confirmar("Hay una partida en curso. ¿Abandonarla y cambiar de rival?", { titulo: "Cambiar de rival", aceptar: "Abandonar", peligro: true }))) return;
     }
     nuevaPartida(RIVALES.find(r => r.id === b.dataset.rival));
   });
@@ -698,7 +698,7 @@
 
   rendirseEl.addEventListener("click", async () => {
     if (!juego || terminado) return;
-    if (!confirm("¿Te rindes?")) return;
+    if (!(await dialogo.confirmar("¿Te rindes?", { titulo: "Rendirse", aceptar: "Rendirme", peligro: true }))) return;
     if (online) {
       const { error } = await supa.rpc("ajedrez_rendirse", { p_id: online.id });
       if (error) { mensaje("No se pudo registrar la rendición. Inténtalo otra vez."); return; }
@@ -924,7 +924,7 @@
 
   async function accion(rpc, args) {
     const { error } = await supa.rpc(rpc, args);
-    if (error) alert(error.message || "No se pudo completar la acción.");
+    if (error) dialogo.avisar(error.message || "No se pudo completar la acción.");
     await cargarPartidas();
   }
 

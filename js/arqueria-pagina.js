@@ -431,7 +431,7 @@
 
   async function accion(rpc, args) {
     const { error } = await supa.rpc(rpc, args);
-    if (error) alert(error.message || "No se pudo completar la acción.");
+    if (error) dialogo.avisar(error.message || "No se pudo completar la acción.");
     await cargarPartidas();
   }
 
@@ -473,9 +473,9 @@
 
   rendirseEl.addEventListener("click", async () => {
     if (!vs) return;
-    if (!confirm(vs.iniciada && !vs.terminada ? "¿Te rindes? Pierdes la partida." : "¿Abandonar esta partida?")) return;
+    if (!(await dialogo.confirmar(vs.iniciada && !vs.terminada ? "¿Te rindes? Pierdes la partida." : "¿Abandonar esta partida?", { titulo: vs.iniciada && !vs.terminada ? "Rendirse" : "Abandonar", aceptar: vs.iniciada && !vs.terminada ? "Rendirme" : "Abandonar", peligro: true }))) return;
     const { error } = await supa.rpc("arqueria_rendirse", { p_id: vs.id });
-    if (error) { alert(error.message || "No se pudo abandonar."); return; }
+    if (error) { dialogo.avisar(error.message || "No se pudo abandonar."); return; }
     cerrarVs();
     refrescarVistas();
     cargarPartidas();

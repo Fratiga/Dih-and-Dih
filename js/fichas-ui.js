@@ -60,13 +60,13 @@
     if (p.fallecido) {
       p.fallecido = null;
     } else {
-      if (!confirm(`¿Marcar a "${p.identidad.nombre || "este personaje"}" como fallecido? Seguirá en la lista, con su sello.`)) return;
+      if (!(await dialogo.confirmar(`¿Marcar a "${p.identidad.nombre || "este personaje"}" como fallecido? Seguirá en la lista, con su sello.`, { titulo: "Marcar como fallecido", aceptar: "Marcar", peligro: true }))) return;
       p.fallecido = { fecha: new Date().toISOString() };
     }
     try {
       await fichasStorage.guardar(p);
     } catch (err) {
-      alert("No se pudo guardar el cambio. Si es la ficha de otro jugador, necesitas el permiso de edición de Admin (scratchpad/admin_editar_fichas.sql).");
+      dialogo.avisar("No se pudo guardar el cambio. Si es la ficha de otro jugador, necesitas el permiso de edición de Admin (scratchpad/admin_editar_fichas.sql).");
     }
   }
 
@@ -129,7 +129,7 @@
       el.addEventListener("click", async e => {
         e.stopPropagation();
         const nombre = el.dataset.nombre || "este personaje";
-        if (!confirm(`¿Eliminar "${nombre}" para siempre? Esto no se puede deshacer.`)) return;
+        if (!(await dialogo.confirmar(`¿Eliminar "${nombre}" para siempre? Esto no se puede deshacer.`, { titulo: "Eliminar ficha", aceptar: "Eliminar", peligro: true }))) return;
         await fichasStorage.eliminar(el.dataset.eliminar);
         cargarLista();
       });
@@ -238,7 +238,7 @@
       importacionPendiente = { personaje: resultado.personaje, pendientesRevision: resultado.pendientesRevision, esNuevoDeCero: true };
       mostrarRevision(`Detectado como: ${resultado.adaptador}`);
     } catch (err) {
-      alert("No se pudo importar el PDF: " + (err.message || err));
+      dialogo.avisar("No se pudo importar el PDF: " + (err.message || err));
     }
   }
 
@@ -246,12 +246,12 @@
     try {
       const texto = await leerArchivoComoTexto(file);
       const val = fichasValidarImportacion(texto);
-      if (!val.ok) { alert(val.error); return; }
+      if (!val.ok) { dialogo.avisar(val.error); return; }
       // Si son varias fichas en un respaldo, se importan todas directo
       // (ya son fichas completas y válidas, no un borrador a revisar campo
       // por campo como el PDF) y se vuelve a la lista.
       if (val.personajes.length > 1) {
-        if (!confirm(`Este archivo tiene ${val.personajes.length} personajes. ¿Importarlos todos?`)) return;
+        if (!(await dialogo.confirmar(`Este archivo tiene ${val.personajes.length} personajes. ¿Importarlos todos?`, { titulo: "Importar fichas", aceptar: "Importar" }))) return;
         await fichasImportarRespaldo(val.personajes);
         cargarLista();
         return;
@@ -259,7 +259,7 @@
       importacionPendiente = { personaje: val.personajes[0], pendientesRevision: [], esNuevoDeCero: false };
       mostrarRevision("Respaldo JSON de este sitio");
     } catch (err) {
-      alert("No se pudo leer el archivo: " + (err.message || err));
+      dialogo.avisar("No se pudo leer el archivo: " + (err.message || err));
     }
   }
 
@@ -337,7 +337,7 @@
   ========================================================================== */
   async function abrirFicha(id) {
     const p = await fichasStorage.obtener(id);
-    if (!p) { alert("No se encontró ese personaje."); return; }
+    if (!p) { dialogo.avisar("No se encontró ese personaje."); return; }
     personajeActual = p;
     avisoPuntosActivo = false;
     renderEncabezado();
@@ -383,14 +383,14 @@
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/")) { alert("Eso no es una imagen."); return; }
+    if (!file.type.startsWith("image/")) { dialogo.avisar("Eso no es una imagen."); return; }
     try {
       const dataUrl = await fichasImagenADataUrl(file, 400, 0.85);
       personajeActual.decoraciones.push({ id: fichasNuevoId(), imagen: dataUrl, xPct: 70, yPct: 4, anchoPct: 14 });
       renderDecoraciones();
       programarAutoguardado();
     } catch (err) {
-      alert("No se pudo procesar la imagen: " + (err.message || err));
+      dialogo.avisar("No se pudo procesar la imagen: " + (err.message || err));
     }
   });
 
@@ -499,13 +499,13 @@
     estadoGuardado("Guardado", "guardado");
   }
 
-  document.getElementById("fichasFallecidoBtn")?.addEventListener("click", () => {
+  document.getElementById("fichasFallecidoBtn")?.addEventListener("click", async () => {
     const p = personajeActual;
     if (!p) return;
     if (p.fallecido) {
       p.fallecido = null;
     } else {
-      if (!confirm(`¿Marcar a "${p.identidad.nombre || "este personaje"}" como fallecido?`)) return;
+      if (!(await dialogo.confirmar(`¿Marcar a "${p.identidad.nombre || "este personaje"}" como fallecido?`, { titulo: "Marcar como fallecido", aceptar: "Marcar", peligro: true }))) return;
       p.fallecido = { fecha: new Date().toISOString() };
     }
     programarAutoguardado();
@@ -1473,7 +1473,7 @@
   async function manejarSubidaImagen(slot, file) {
     const cfg = CAMPOS_IMAGEN_TABLERO[slot];
     if (!cfg) return;
-    if (!file.type.startsWith("image/")) { alert("Eso no es una imagen."); return; }
+    if (!file.type.startsWith("image/")) { dialogo.avisar("Eso no es una imagen."); return; }
     const label = document.querySelector(`[data-imagen-input="${slot}"]`)?.closest(".fichas-imagen-subir");
     const textoOriginal = label ? label.firstChild.textContent : "";
     if (label) label.firstChild.textContent = "Procesando...";
@@ -1484,7 +1484,7 @@
       refrescarCalculado();
       programarAutoguardado();
     } catch (err) {
-      alert("No se pudo procesar la imagen: " + (err.message || err));
+      dialogo.avisar("No se pudo procesar la imagen: " + (err.message || err));
     } finally {
       if (label) label.firstChild.textContent = textoOriginal;
     }
@@ -1852,8 +1852,7 @@
       setTimeout(() => { btn.textContent = original; btn.classList.remove("fichas-copiado"); }, 1800);
     } else {
       // Fallback: campo de texto seleccionado para copiar a mano.
-      const campo = prompt("No se pudo copiar automáticamente. Copia este texto a mano:", texto);
-      void campo;
+      await dialogo.copiar("No se pudo copiar automáticamente. Copia este texto a mano:", texto, { titulo: "Copiar tirada" });
     }
   }
 

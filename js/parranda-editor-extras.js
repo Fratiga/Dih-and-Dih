@@ -335,7 +335,7 @@
     versiones.addEventListener("click", async ev => {
       const b = ev.target.closest("[data-version]");
       if (!b) return;
-      if (window.ParrandaEditor.hayCambios() && !confirm("Hay cambios sin guardar en el editor. ¿Reemplazarlos con esa versión?")) return;
+      if (window.ParrandaEditor.hayCambios() && !(await dialogo.confirmar("Hay cambios sin guardar en el editor. ¿Reemplazarlos con esa versión?", { titulo: "Cargar versión", aceptar: "Reemplazar", peligro: true }))) return;
       b.disabled = true;
       try {
         const sb = await fichasCliente();
@@ -371,14 +371,14 @@
       $("reMarcaTexto").value = "";
     });
     $("reMarcaTexto").addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); $("reMarcaAgregar").click(); } });
-    lista.addEventListener("click", ev => {
+    lista.addEventListener("click", async ev => {
       const ir = ev.target.closest("[data-ir]");
       if (ir) { window.ParrandaEditor.ir(Math.max(0, Number(ir.dataset.ir) - 0.5)); return; }
       const ed = ev.target.closest("[data-editar-marca]");
       if (ed) {
         const i = Number(ed.dataset.editarMarca);
         const actual = window.ParrandaEditor.obtenerMarcas()[i];
-        const nuevo = prompt("Texto de la marca:", actual ? actual.texto : "");
+        const nuevo = await dialogo.pedir("Texto de la marca:", actual ? actual.texto : "", { titulo: "Editar marca" });
         if (nuevo !== null) window.ParrandaEditor.editarMarca(i, nuevo);
         return;
       }
@@ -457,7 +457,7 @@
     const borrar = ev.target.closest("[data-borrar-patron]");
     if (!borrar) return;
     const p = patrones.find(x => String(x.id) === borrar.dataset.borrarPatron);
-    if (!p || !confirm(`¿Quitar el patrón "${p.nombre}"?`)) return;
+    if (!p || !(await dialogo.confirmar(`¿Quitar el patrón "${p.nombre}"?`, { titulo: "Quitar patrón", aceptar: "Quitar", peligro: true }))) return;
     try {
       if (patronesRemotos) {
         const sb = await fichasCliente();
