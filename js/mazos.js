@@ -57,7 +57,8 @@
     const c = cartaPorId(id);
     if (!c) return;
     const n = (actual.cuenta[id] || 0) + delta;
-    if (n < 0 || n > maximoUsable(c)) return;
+    // Quitar siempre se puede (aunque el mazo tenga más copias de las que caben); solo añadir está limitado
+    if (n < 0 || (delta > 0 && n > maximoUsable(c))) return;
     if (delta > 0 && total() >= M.C.MAZO_MAX) { $("mzEstado").textContent = `El mazo ya tiene ${M.C.MAZO_MAX} cartas.`; return; }
     if (n === 0) delete actual.cuenta[id]; else actual.cuenta[id] = n;
     $("mzEstado").textContent = "";
@@ -130,8 +131,27 @@
     $("mzNombre").value = actual.nombre;
     original = firma();
     $("mzEstado").textContent = "";
+    // Un mazo guardado con las reglas de antes puede traer copias de más, cartas que ya no existen o que ya no tienes:
+    // se recortan solas y queda como cambio sin guardar, para que se pueda guardar el mazo ya corregido.
+    const quitadas = ajustarAlLimite();
+    if (quitadas) $("mzEstado").textContent = `Se quitaron ${quitadas} carta${quitadas === 1 ? "" : "s"} que ya no caben en el mazo (copias de más o cartas que no tienes). Guarda el mazo para confirmar.`;
     pintarLista();
     pintarTodo();
+  }
+
+  /* Deja cada carta del mazo en lo que cabe: sin pasar del tope de copias, sin cartas desconocidas ni que no se tienen. */
+  function ajustarAlLimite() {
+    let quitadas = 0;
+    Object.keys(actual.cuenta).forEach(id => {
+      const c = cartaPorId(id);
+      // Si todavía no se pudo leer la colección, no se descuenta lo que "no se tiene": solo el tope de copias
+      const permitido = c ? (esEditor || propia ? maximoUsable(c) : tope(c)) : 0;
+      if (actual.cuenta[id] > permitido) {
+        quitadas += actual.cuenta[id] - permitido;
+        if (permitido === 0) delete actual.cuenta[id]; else actual.cuenta[id] = permitido;
+      }
+    });
+    return quitadas;
   }
 
   /* --- Guardar y borrar ----------------------------------------------------- */
