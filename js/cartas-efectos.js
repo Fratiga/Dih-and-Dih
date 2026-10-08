@@ -19,6 +19,7 @@
      alMatar         al destruir a una unidad con un ataque
      alInicioTurno   al inicio del turno de su dueño
      jugar           { objetivo?, resolver(c) } para objetos y acciones
+     alAtacarJugador cuando su ataque golpea al jugador rival
      reaccion        { cuando: 'ataque'|'jugar', puede(c), resolver(c) } para cartas de tipo
                      Reacción (c.pendiente.cancelado = true cancela lo que iba a pasar)
 
@@ -88,6 +89,54 @@
     R("draco", { reduceDano: () => 2 });
     R("kraken", { alMatar: c => M.robar(c.est, c.j, 1) });
     R("el-bufon", { alEntrar: { resolver: c => { c.est.jugadores[c.j].costeMenos += 1; } } });
+
+    // --- Personajes creados desde el editor (sus textos viven en el servidor) -----------------
+    // Eledar, tarotista: lee el mazo; sus cartas, eso sí, no vieron venir el golpe.
+    R("eledar", {
+      alEntrar: { resolver: c => {
+        const J = c.est.jugadores[c.j];
+        const arriba = J.mazo.slice(0, 3);
+        if (!arriba.length) return;
+        let mejor = 0;
+        arriba.forEach((id, i) => { if (M.meta(c.est, id).coste > M.meta(c.est, arriba[mejor]).coste) mejor = i; });
+        const elegida = arriba[mejor];
+        // La elegida va a la mano y las otras al fondo del mazo
+        J.mazo.splice(0, arriba.length);
+        arriba.forEach((id, i) => { if (i !== mejor) J.mazo.push(id); });
+        J.mazo.unshift(elegida);
+        M.log(c.est, `${J.nombre} lee las cartas de Eledar y elige ${M.meta(c.est, elegida).nombre}.`);
+        c.est.mirada = { j: c.j, cartas: arriba, elegida, turno: c.est.turno };
+        M.robar(c.est, c.j, 1);
+      } },
+      reduceDano: (est, u, n, fuente) => (fuente && fuente.tipo === "combate" ? -1 : 0)
+    });
+    // Laia, cambiante de familia de ladrones: toma la forma de otra unidad y tiene las manos largas.
+    R("laia", {
+      alEntrar: { objetivo: "unidad", resolver: c => {
+        const t = c.objetivo;
+        c.u.atq = M.atqEfectivo(c.est, t);
+        c.u.pvMax = c.u.pv = t.pvMax;
+        M.log(c.est, `${M.nombre(c.est, c.u)} toma la forma de ${M.nombre(c.est, t)} (${c.u.atq}/${c.u.pv}).`);
+      } },
+      alAtacarJugador: c => M.robar(c.est, c.j, 1)
+    });
+    // Ledros, la armadura poseída: las almas errantes levantan barro, piedra o madera. Al darle descanso, se van.
+    const RESTOS = ["resto-barro", "resto-piedra", "resto-madera"];
+    R("ledros", {
+      alEntrar: { resolver: c => {
+        if (c.est.jugadores[c.j].campo.length >= M.C.CAMPO_MAX) return;
+        const cuerpo = RESTOS[M.entero(c.est, RESTOS.length)];
+        M.log(c.est, "Las almas errantes de Ledros levantan un cuerpo.");
+        M.ponerUnidad(c.est, c.j, cuerpo, false, null);
+      } },
+      alMorir: c => {
+        const restos = c.est.jugadores[c.j].campo.filter(u => RESTOS.includes(u.cartaId));
+        if (!restos.length) return;
+        M.log(c.est, "Ledros descansa: las almas errantes lo siguen.");
+        restos.forEach(u => { if (M.buscar(c.est, u.uid)) M.morir(c.est, u, { tipo: "habilidad" }); });
+      }
+    });
+    R("resto-piedra", { reduceDano: () => 1 });
 
     // --- Objetos -------------------------------------------------------------
     R("pocion-de-curacion-menor", { jugar: { objetivo: "jugadorOUnidadAliada", resolver: c => M.curar(c.est, c.objetivo.uid !== undefined ? { u: c.objetivo.uid } : c.objetivo, 3) } });

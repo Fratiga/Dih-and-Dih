@@ -35,7 +35,10 @@
     : c.tipo === "Personaje" ? 1 : (TOPE_COPIAS[c.rareza] || 1));
 
   const TOKENS = {
-    centinela: { id: "centinela", nombre: "Centinela", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 1, pv: 1, habilidad: "", token: true }
+    centinela: { id: "centinela", nombre: "Centinela", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 1, pv: 1, habilidad: "", token: true },
+    "resto-barro": { id: "resto-barro", nombre: "Resto de barro", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 1, pv: 4, habilidad: "Cuerpo de barro: aguanta mucho, pega poco.", token: true },
+    "resto-piedra": { id: "resto-piedra", nombre: "Resto de piedra", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 2, pv: 3, habilidad: "Cuerpo de piedra: reduce en 1 el daño que recibe.", token: true },
+    "resto-madera": { id: "resto-madera", nombre: "Resto de madera", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 3, pv: 2, habilidad: "Cuerpo de madera: ligero y quebradizo.", token: true }
   };
 
   const EFECTOS = {};
@@ -63,6 +66,8 @@
   const efectoDe = (est, idOUnidad) => EFECTOS[typeof idOUnidad === "string" ? idOUnidad : idOUnidad.cartaId] || {};
   const nombre = (est, u) => meta(est, u.cartaId).nombre;
   const esUnidad = m => TIPOS_UNIDAD.includes(m.tipo);
+  // Es una reacción si su tipo lo dice o si su efecto es de reacción (aunque alguien la haya guardado con otro tipo)
+  const esReaccion = (est, id) => meta(est, id).tipo === "Reacción" || !!(EFECTOS[id] && EFECTOS[id].reaccion);
 
   function log(est, texto) {
     est.log.push(texto);
@@ -284,6 +289,7 @@
     const ok = t => (!habilidad || puedeApuntarHabilidad(est, t, jIdx)) && t.uid !== excluirUid;
     if (tipo === "unidadEnemiga") return el.campo.filter(ok).map(t => ({ u: t.uid }));
     if (tipo === "unidadAliada" || tipo === "unidadAliadaOtra") return yo.campo.filter(ok).map(t => ({ u: t.uid }));
+    if (tipo === "unidad") return [...yo.campo, ...el.campo].filter(ok).map(t => ({ u: t.uid }));
     if (tipo === "jugadorOUnidadAliada") return [{ j: jIdx }, ...yo.campo.filter(ok).map(t => ({ u: t.uid }))];
     return [];
   }
@@ -397,8 +403,7 @@
     const J = est.jugadores[reactor];
     const lista = [];
     J.mano.forEach((id, i) => {
-      const m = meta(est, id);
-      if (m.tipo !== "Reacción") return;
+      if (!esReaccion(est, id)) return;
       const ef = EFECTOS[id];
       if (!ef || !ef.reaccion || ef.reaccion.cuando !== evento.tipo) return;
       if (costeDe(est, reactor, id) > J.energia) return;
@@ -460,7 +465,7 @@
     const m = meta(est, id);
     const coste = costeDe(est, jIdx, id);
     if (coste > J.energia) return { error: "No tienes energía suficiente." };
-    if (m.tipo === "Reacción") return { error: "Una reacción solo se juega como respuesta en el turno del rival." };
+    if (esReaccion(est, id)) return { error: "Una reacción solo se juega como respuesta en el turno del rival." };
     if (esUnidad(m) && J.campo.length >= C.CAMPO_MAX) return { error: "Tu campo está lleno." };
     const req = requisitoDeJugada(est, jIdx, id);
     if (req) {
@@ -552,6 +557,7 @@
     }
     const contra = tUnidad ? atqEfectivo(est, tUnidad) : 0;
     infligir(est, objetivo, ataque, { tipo: "combate", uid: u.uid });
+    if (!tUnidad && ef.alAtacarJugador && buscar(est, u.uid)) ef.alAtacarJugador({ est, M, u, j: jIdx });
     if (tUnidad && contra > 0 && buscar(est, u.uid)) infligir(est, { u: u.uid }, contra, { tipo: "combate", uid: tUnidad.uid });
   }
 
@@ -597,7 +603,7 @@
     const jIdx = est.activo, J = est.jugadores[jIdx], out = [];
     J.mano.forEach((id, i) => {
       const m = meta(est, id);
-      if (costeDe(est, jIdx, id) > J.energia || m.tipo === "Reacción") return;
+      if (costeDe(est, jIdx, id) > J.energia || esReaccion(est, id)) return;
       if (esUnidad(m) && J.campo.length >= C.CAMPO_MAX) return;
       const req = requisitoDeJugada(est, jIdx, id);
       if (!req) out.push({ t: "jugar", i });
@@ -654,7 +660,7 @@
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,
-    meta, efectoDe, nombre, esUnidad, buscar, todas, log, entero, rnd, barajar,
+    meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, objetivosDeAtaque, unidadPuedeAtacar,
     puedeApuntarHabilidad, terrenoActivo, ataquesMax

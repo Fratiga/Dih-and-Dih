@@ -342,7 +342,7 @@
     let gasto = 0;
     if (sel && sel.tipo === "mano" && idx === indiceYo() && miTurnoDe(idx)) {
       const id = J.mano[sel.i];
-      if (id && M.meta(est, id).tipo !== "Reacción") gasto = Math.min(J.energia, M.costeDe(est, idx, id));
+      if (id && !M.esReaccion(est, id)) gasto = Math.min(J.energia, M.costeDe(est, idx, id));
     }
     const gastoPct = Math.round((100 * gasto) / max);
     const extra = J.energia > J.energiaMax ? `<b class="extra">+${J.energia - J.energiaMax}</b>` : "";
@@ -412,7 +412,7 @@
     $("btMano").innerHTML = J.mano.map((id, i) => {
       const m = M.meta(est, id);
       const coste = M.costeDe(est, idx, id);
-      const esReaccion = m.tipo === "Reacción";
+      const esReaccion = M.esReaccion(est, id);
       const jugable = est.pendiente
         ? reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)
         : miTurnoDe(idx) && coste <= J.energia && !esReaccion;
@@ -657,7 +657,7 @@
         c = Object.assign({}, m, { id, coste: M.costeDe(est, idx, id), borrador: false, limite: null });
         const req = M.requisitoDeJugada(est, idx, id);
         const energia = est.jugadores[idx].energia;
-        if (m.tipo === "Reacción") {
+        if (M.esReaccion(est, id)) {
           if (reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(sel.i)) extra = `<button type="button" class="cartas-boton cartas-boton-principal" data-reaccionar="${sel.i}">Reaccionar (${c.coste})</button>`;
           else if (reaccionaYo(idx)) extra = `<p class="bt-nota">No encaja con lo que está pasando, o no te alcanza la energía.</p>`;
           else extra = `<p class="bt-nota">Se juega como respuesta en el turno del rival, con la energía que te sobre.</p>`;
@@ -698,10 +698,11 @@
   function avisarMirada() {
     const m = est.mirada;
     if (!m || m.turno !== est.turno || m.j !== indiceYo()) return;
-    const clave = `${m.turno}-${m.carta}-${m.j}`;
+    const clave = `${m.turno}-${m.carta || (m.cartas || []).join("+")}-${m.j}`;
     if (clave === mostradaMirada) return;
     mostradaMirada = clave;
-    toast(m.carta ? `Carta superior de tu mazo: ${M.meta(est, m.carta).nombre}` : "Tu mazo está vacío.");
+    if (m.cartas) toast(`Lectura: ${m.cartas.map(id => M.meta(est, id).nombre).join(", ")}. Robas ${M.meta(est, m.elegida).nombre}.`);
+    else toast(m.carta ? `Carta superior de tu mazo: ${M.meta(est, m.carta).nombre}` : "Tu mazo está vacío.");
   }
 
   /* --------------------------------------------------------- arrastrar y soltar */
@@ -711,7 +712,7 @@
     if (a.tipo === "mano") {
       const id = est.jugadores[idx].mano[a.i];
       if (!id) return null;
-      if (M.meta(est, id).tipo === "Reacción") return { zona: "mesa", objetivos: [] };
+      if (M.esReaccion(est, id)) return { zona: "mesa", objetivos: [] };
       const req = M.requisitoDeJugada(est, idx, id);
       if (req && req.validos.length) return { zona: "campo", objetivos: req.validos, pideObjetivo: true };
       return { zona: "campo", objetivos: [] };
@@ -920,7 +921,7 @@
       if (sel && sel.tipo === "mano" && sel.i === i) {
         // Segundo clic: jugarla si no pide objetivo
         const id = est.jugadores[idx].mano[i];
-        if (M.meta(est, id).tipo === "Reacción") {
+        if (M.esReaccion(est, id)) {
           if (reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)) enviar({ t: "reaccionar", i });
           else { sel = null; pintarTablero(); }
           return;
