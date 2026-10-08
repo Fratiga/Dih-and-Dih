@@ -1,17 +1,16 @@
 /* Hipódromo (página de prueba). Se apoya en las variables de style.css y las reescribe con la clase hip-tema:
    un club de carreras, verde de césped, oro viejo y tinta de programa de mano. Sin imágenes ni animaciones pesadas. */
 body.hip-tema {
-  --bg: #0f1d17; --panel: #16281f; --panel-2: #1d3428; --text: #ece7cf; --muted: #93a78f;
-  --accent: #d9b84a; --accent-soft: #7a6a2c; --border: #2c4838; --font-heading: 'Cinzel';
+  --bg: #16291f; --panel: #1f3a2c; --panel-2: #2a4a39; --text: #f2edd5; --muted: #a9bea5;
+  --accent: #e6c24e; --accent-soft: #a08a35; --border: #46705a; --sombra-dura: #07120c; --font-heading: 'Cinzel';
   --hip-rojo: #d0634a; --hip-verde: #67b873; --hip-plata: #b8c0c4;
   background-color: var(--bg);
   background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, .018) 0 40px, transparent 40px 80px);
   color: var(--text);
 }
-.hip-tema .mj-barra { border-bottom: 1px solid var(--accent-soft); background: rgba(15, 29, 23, .8); }
 .hip-tema .mj-volver { color: var(--accent); }
 .hip-tema .eyebrow { color: var(--accent); letter-spacing: .3em; }
-.hip-tema .mj-titulo { color: var(--accent); letter-spacing: .06em; text-shadow: 0 2px 0 #4a3f14; }
+.hip-tema .mj-titulo { color: var(--accent); letter-spacing: .06em; }
 .hip-modo { color: var(--muted); font-size: .78rem; text-align: right; }
 @media (max-width: 560px) { .hip-modo { display: none; } }
 
@@ -217,3 +216,7 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-casilla { display: flex; gap: 10px; align-items: center; cursor: pointer; }
 #hipPanel-apuestas > * { margin-bottom: 16px; }
 @media (prefers-reduced-motion: reduce) { .hip-cria:hover { transform: none; } }
+
+/* Color en bloques: tarjetas con borde grueso y sombra dura */
+.hip-tema .hip-tarjeta, .hip-tema .hip-reloj, .hip-tema .hip-billetera { border-width: 2px; border-color: var(--accent-soft); box-shadow: 4px 4px 0 var(--sombra-dura); }
+.hip-tema .hip-reloj { border-left-width: 6px; }

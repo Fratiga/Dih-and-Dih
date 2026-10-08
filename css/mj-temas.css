@@ -9,8 +9,8 @@
    MINIJUEGOS (centro): la feria ambulante. Toldo a rayas, boletos y oro.
 ====================================================================== */
 body.hub-tema {
-  --bg: #1b0e13; --panel: #2a1520; --panel-2: #36202b; --text: #f6e6c6; --muted: #b9917c;
-  --accent: #f2b84b; --accent-soft: #c0792f; --border: #5c2b37; --font-heading: 'Sancreek';
+  --bg: #2b1520; --panel: #42202f; --panel-2: #512a3b; --text: #f9ead0; --muted: #d3a98f;
+  --accent: #f6bf4d; --accent-soft: #d98a34; --border: #8a3a4c; --sombra-dura: #11060b; --font-heading: 'Sancreek';
   background-color: var(--bg);
   background-image: repeating-linear-gradient(90deg, #a3202f 0 54px, #f3e2bd 54px 108px);
   background-size: 100% 30px;
@@ -18,36 +18,36 @@ body.hub-tema {
   background-position: 0 0;
   color: var(--text);
 }
-.hub-tema .mj-barra { border-bottom: 3px double var(--accent-soft); padding-top: 42px; background: rgba(27, 14, 19, .72); }
+.hub-tema .mj-barra { border-bottom: 3px double var(--accent-soft); padding-top: 42px; background: transparent; }
 .hub-tema .mj-volver { color: var(--accent); }
 .hub-tema .eyebrow { color: var(--accent); letter-spacing: .3em; }
 .hub-tema .mj-titulo { color: var(--accent); text-shadow: 0 3px 0 #6b1d28; letter-spacing: .04em; }
 .hub-tema .mj-tarjeta {
-  position: relative; padding: 24px 22px 22px 30px; background: #321a26;
-  border: 2px dashed #9a5a3a; border-radius: 6px;
+  position: relative; padding: 24px 22px 22px 30px; background: #4c2536;
+  border: 2px dashed #d98a34; border-radius: 6px; box-shadow: 5px 5px 0 var(--sombra-dura);
 }
 .hub-tema .mj-tarjeta::before, .hub-tema .mj-tarjeta::after {
-  content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border-right: 2px dashed #9a5a3a;
+  content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border-right: 2px dashed #d98a34;
 }
 .hub-tema .mj-tarjeta::before { top: 22%; }
 .hub-tema .mj-tarjeta::after { bottom: 22%; }
-.hub-tema .mj-tarjeta:hover { border-color: var(--accent); transform: translateY(-3px) rotate(-.4deg); }
+.hub-tema .mj-tarjeta:hover { border-color: var(--accent); transform: translate(-2px, -3px) rotate(-.4deg); box-shadow: 8px 8px 0 var(--sombra-dura); }
 .hub-tema .mj-tarjeta h3 { color: var(--accent); font-size: 1.2rem; }
 
 /* ======================================================================
    AJEDREZ: estudio a la luz de las velas. Nogal, marfil y latón.
 ====================================================================== */
 body.aj-tema {
-  --bg: #1b120c; --panel: #2a1b11; --panel-2: #38251a; --text: #f1e4c9; --muted: #b59b78;
-  --accent: #dcb461; --accent-soft: #9a7435; --border: #523720; --font-heading: 'Cormorant Garamond';
+  --bg: #33221a; --panel: #4b2f1f; --panel-2: #5e3b27; --text: #f8ecd4; --muted: #d2b88f;
+  --accent: #f2c768; --accent-soft: #c08f3e; --border: #7a5230; --sombra-dura: #170d07; --font-heading: 'Cormorant Garamond';
   background-color: var(--bg);
   background-image: repeating-linear-gradient(92deg, rgba(255, 220, 160, .025) 0 2px, transparent 2px 7px);
   color: var(--text);
 }
-.aj-tema .mj-barra { background: rgba(27, 18, 12, .75); border-bottom: 1px solid var(--accent-soft); }
+.aj-tema .mj-barra { background: var(--panel-2); border-bottom: 4px solid var(--accent); }
 .aj-tema .mj-volver { color: var(--accent); }
-.aj-tema .eyebrow { color: var(--accent); letter-spacing: .28em; }
-.aj-tema .mj-titulo { font-weight: 700; letter-spacing: .1em; color: #f6e7c4; }
+.aj-tema .eyebrow { color: #2b1a0c; background: var(--accent); display: inline-block; padding: 3px 10px 3px 14px; letter-spacing: .28em; }
+.aj-tema .mj-titulo { font-weight: 700; letter-spacing: .1em; color: #fff1cf; text-shadow: 3px 3px 0 var(--sombra-dura); }
 .aj-tema .mj-titulo::after { content: "♞"; margin-left: 14px; color: var(--accent); font-size: .8em; }
 .aj-tema .aj-clara { background: #dcbf8c; }
 .aj-tema .aj-oscura { background: #8c5c36; }
@@ -64,13 +64,17 @@ body.aj-tema {
 .aj-tema .aj-casilla.aj-sobre { box-shadow: inset 0 0 0 4px rgba(255, 224, 138, .95); }
 .aj-tema .aj-capturas { color: #e9d8b2; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); }
 .aj-tema .aj-estado, .aj-tema .aj-reloj, .aj-tema .aj-pvp-fila, .aj-tema .aj-rival {
-  background: #2e1e16; border-color: var(--border);
+  background: var(--panel); border: 2px solid var(--accent-soft); box-shadow: 4px 4px 0 var(--sombra-dura);
 }
-.aj-tema .aj-rival:hover, .aj-tema .aj-modo:hover { border-color: var(--accent); }
-.aj-tema .aj-rival.activo { border-color: var(--accent); }
+.aj-tema .aj-rival { transition: transform .1s steps(2), box-shadow .1s steps(2); }
+.aj-tema .aj-rival:hover { border-color: var(--accent); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--sombra-dura); }
+.aj-tema .aj-modo:hover { border-color: var(--accent); }
+.aj-tema .aj-rival.activo { background: var(--accent); border-color: var(--accent); }
+.aj-tema .aj-rival.activo strong, .aj-tema .aj-rival.activo span, .aj-tema .aj-rival.activo small { color: #2b1a0c; }
 .aj-tema .aj-rival strong { font-family: var(--font-heading), serif; font-size: 1.1rem; letter-spacing: .03em; }
-.aj-tema .aj-boton, .aj-tema .aj-modo { border-color: var(--accent-soft); }
-.aj-tema .aj-modo.activo { background: #4a2f1c; border-color: var(--accent); color: #fff1cf; }
+.aj-tema .aj-boton, .aj-tema .aj-modo { border-width: 2px; border-color: var(--accent-soft); }
+.aj-tema .aj-boton:hover { background: var(--accent-soft); color: #2b1a0c; border-color: var(--accent-soft); }
+.aj-tema .aj-modo.activo { background: var(--accent); border-color: var(--accent); color: #2b1a0c; font-weight: 700; }
 .aj-tema .aj-comentario { color: #d5bd92; }
 .aj-tema .aj-jugadas li { border-bottom: 1px solid rgba(220, 180, 97, .1); }
 
@@ -78,8 +82,8 @@ body.aj-tema {
    ARQUERÍA: el bosque al atardecer. Verdes hondos, cuero y oro viejo.
 ====================================================================== */
 body.arq-tema {
-  --bg: #0e1812; --panel: #16251b; --panel-2: #1d3023; --text: #e7ead2; --muted: #8aa58f;
-  --accent: #d1ad55; --accent-soft: #5d7d44; --border: #2d4a35; --font-heading: 'IM Fell English SC';
+  --bg: #14281c; --panel: #1f3d2a; --panel-2: #2a5039; --text: #f0f1da; --muted: #a8c6a6;
+  --accent: #e6c15e; --accent-soft: #7aa653; --border: #4a7a53; --sombra-dura: #07120b; --font-heading: 'IM Fell English SC';
   background-color: var(--bg); /* el paisaje de fondo está en css/arqueria.css (body::before) */
   color: var(--text);
 }
@@ -113,8 +117,8 @@ body.arq-tema {
    DUELO: la arena al ocaso. Arena, hierro y sangre.
 ====================================================================== */
 body.duelo-tema {
-  --bg: #1a0d0a; --panel: #281511; --panel-2: #351c16; --text: #f2dfc9; --muted: #b58d78;
-  --accent: #e2623f; --accent-soft: #8e3a28; --border: #5a2a20; --font-heading: 'Bebas Neue';
+  --bg: #2c1611; --panel: #432219; --panel-2: #552c20; --text: #f8e8d3; --muted: #d3a58e;
+  --accent: #f26c45; --accent-soft: #b9492e; --border: #8a4332; --sombra-dura: #140806; --font-heading: 'Bebas Neue';
   background-color: var(--bg);
   color: var(--text);
 }
@@ -125,7 +129,8 @@ body.duelo-tema {
 .duelo-tema .mj-titulo::before, .duelo-tema .mj-titulo::after { content: "⚔"; color: var(--accent); font-size: .6em; margin: 0 14px; vertical-align: .12em; }
 .duelo-tema .duelo-escenario {
   background:
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .0) 0 78px, rgba(0, 0, 0, .28) 78px 82px) 0 0 / 100% 38% no-repeat, #8d5836;
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .0) 0 78px, rgba(0, 0, 0, .28) 78px 82px) 0 0 / 100% 38% no-repeat,
+    linear-gradient(180deg, #3a1612 0 14%, #5b2419 14% 28%, #8a3a22 28% 42%, #c2623a 42% 56%, #e29a5a 56% 77%, #b98a52 77% 88%, #8f6a3e 88% 94%, #5d4224 94% 100%);
   border: 8px solid #3a1f16; box-shadow: 0 0 0 2px var(--accent-soft);
 }
 .duelo-tema .duelo-capa { background: rgba(26,8,6,0.48); }
@@ -141,8 +146,8 @@ body.duelo-tema {
    SACRIFICAR A HOOEY: ritual de brasas y baba verde.
 ====================================================================== */
 body.hooey-tema {
-  --bg: #130c09; --panel: #22140e; --panel-2: #2e1b12; --text: #f6e4cf; --muted: #b0907a;
-  --accent: #ff9a3d; --accent-soft: #9a4a1c; --border: #4e2a1a; --font-heading: 'Baloo 2';
+  --bg: #22140e; --panel: #382015; --panel-2: #4a2b1c; --text: #fbead6; --muted: #d0aa90;
+  --accent: #ffa24a; --accent-soft: #c0621f; --border: #7a4426; --sombra-dura: #120a06; --font-heading: 'Baloo 2';
   background-color: var(--bg);
   color: var(--text);
 }
@@ -209,8 +214,8 @@ body.ritmo-tema {
    TRIUNFOS: la mesa de juego. Violeta humo, vino y latón viejo, con un toque de azul de noche.
 ====================================================================== */
 body.cartas-tema {
-  --bg: #15121b; --panel: #211b2b; --panel-2: #2b2338; --text: #efe5d0; --muted: #a79eb4;
-  --accent: #d3ab5e; --accent-soft: #7e6334; --border: #3d3350; --font-heading: 'Cinzel';
+  --bg: #1e1a2a; --panel: #2d2640; --panel-2: #3b3253; --text: #f5ecd8; --muted: #bdb3cc;
+  --accent: #e6bd68; --accent-soft: #a07f3e; --border: #5a4c78; --sombra-dura: #0c0914; --font-heading: 'Cinzel';
   background-color: var(--bg);
   background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 2px, transparent 2px 5px);
   color: var(--text);
@@ -223,3 +228,26 @@ body.cartas-tema {
 .cartas-tema .mj-titulo::after { content: "♦"; }
 .cartas-tema .mj-titulo::after { content: "♥"; }
 
+/* ======================================================================
+   COLOR EN BLOQUES: la vida de estas páginas, sin brillos ni degradados.
+   Una franja de color arriba, etiquetas y estados elegidos en color pleno con el texto oscuro,
+   y tarjetas con borde grueso y sombra dura (sin desenfoque) que se despegan del fondo.
+====================================================================== */
+:is(.hub-tema, .arq-tema, .duelo-tema, .hooey-tema, .cartas-tema, .os-pagina, .hip-tema) .eyebrow {
+  color: var(--bg); background: var(--accent); display: inline-block; padding: 3px 10px 3px 14px;
+}
+:is(.arq-tema, .duelo-tema, .cartas-tema, .os-pagina, .hip-tema) .mj-barra, .hooey-tema .sacrificio-barra {
+  background: var(--panel-2); border-bottom: 4px solid var(--accent);
+}
+:is(.hub-tema, .arq-tema, .duelo-tema, .cartas-tema, .os-pagina, .hip-tema) .mj-titulo { text-shadow: 3px 3px 0 var(--sombra-dura); }
+.arq-tema .arq-rival, .arq-tema .arq-panel, .duelo-tema .duelo-rival, .hooey-tema .sacrificio-medidor, .hooey-tema .sacrificio-ranking {
+  background: var(--panel); border: 2px solid var(--accent-soft); box-shadow: 4px 4px 0 var(--sombra-dura);
+}
+.arq-tema .arq-panel { border-top: 4px solid var(--accent); }
+.arq-tema .arq-rival { opacity: 1; transition: transform .1s steps(2), box-shadow .1s steps(2); }
+.arq-tema .arq-rival:hover, .duelo-tema .duelo-rival:hover { border-color: var(--accent); transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--sombra-dura); }
+.arq-tema .arq-rival.activo { background: color-mix(in srgb, var(--rc, #e6c15e) 40%, var(--panel)); border-color: var(--rc, var(--accent)); }
+.arq-tema .arq-tab.activa { background: var(--accent); border-color: var(--accent); color: #14220f; font-weight: 700; }
+.duelo-tema .duelo-rival { transition: transform .1s steps(2), box-shadow .1s steps(2); }
+.duelo-tema .duelo-boton { border-width: 2px; }
+.duelo-tema .duelo-boton:hover { background: var(--accent-soft); border-color: var(--accent-soft); color: #1a0a06; }

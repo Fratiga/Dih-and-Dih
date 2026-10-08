@@ -1,7 +1,7 @@
 /* Ostelar: la arena de los alzados. Colores lisos: ciruela oscura, oro viejo y carmesí. */
 body.os-pagina {
-  --bg: #130e18; --panel: #1b1421; --panel-2: #241a2c; --text: #eee6dc; --muted: #a39aa6;
-  --accent: #d8b04e; --accent-soft: #6a5078; --border: #3b2e45; --font-heading: 'Cinzel';
+  --bg: #1e1626; --panel: #2c2036; --panel-2: #392a45; --text: #f6eee2; --muted: #bcb0c0;
+  --accent: #e8bc54; --accent-soft: #8f6ba8; --border: #5c4573; --sombra-dura: #0b0610; --font-heading: 'Cinzel';
   --oro: #d8b04e; --carmesi: #c13a4f; --electrico: #86b4c2; --violeta: #9d7fb2;
   background-color: var(--bg); color: var(--text);
   min-height: 100vh;
@@ -30,7 +30,7 @@ body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index:
 
 /* botones */
 .os-boton, .os-mini {
-  background: #2b1f33; border: 1px solid var(--accent-soft); color: var(--text); font-family: inherit; cursor: pointer;
+  background: var(--panel-2); border: 1px solid var(--accent-soft); color: var(--text); font-family: inherit; cursor: pointer;
   transition: transform .14s, border-color .14s, box-shadow .14s, background .14s;
 }
 .os-boton { padding: 10px 20px; font-size: .9rem; font-weight: 600; letter-spacing: .04em; }
@@ -47,7 +47,7 @@ body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index:
 
 /* paneles */
 .os-barra-grupo, .os-panel {
-  background: rgba(36,26,44,0.93);
+  background: var(--panel);
   border: 1px solid var(--border);
   position: relative;
 }
@@ -59,7 +59,7 @@ body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index:
 .os-botones-fila { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 .os-panel { padding: 18px; margin: 12px 0; }
 .os-clases { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 12px; margin: 10px 0; }
-.os-clase { text-align: left; background: #291d31; border: 1px solid var(--border); color: var(--text); padding: 12px 14px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 4px; transition: transform .15s, border-color .15s, box-shadow .15s; }
+.os-clase { text-align: left; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 4px; transition: transform .15s, border-color .15s, box-shadow .15s; }
 .os-clase:hover { border-color: var(--oro); transform: translateY(-4px) scale(1.02); }
 .os-clase strong { font-family: 'Cinzel', serif; font-size: 1.05rem; color: var(--oro); }
 .os-clase span { font-size: .78rem; color: var(--muted); }
@@ -148,13 +148,13 @@ body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index:
 .os-cartel.derrota strong { font-size: clamp(2.2rem, 7vw, 4.6rem); }
 
 .os-lateral { display: flex; flex-direction: column; gap: 12px; }
-.os-ficha { background: rgba(36,26,44,0.93); border: 1px solid var(--border); padding: 12px 14px; }
+.os-ficha { background: var(--panel); border: 1px solid var(--border); padding: 12px 14px; }
 .os-ficha h3 { margin: 0 0 8px; font-size: 1.05rem; font-family: 'Cinzel', serif; }
 .os-ficha small { color: var(--muted); }
 .os-pv { height: 10px; background: rgba(0, 0, 0, .55); margin-bottom: 4px; border-radius: 5px; overflow: hidden; }
 .os-pv span { display: block; height: 100%; background: #6fb55a; transition: width .4s; }
 .os-cond { display: inline-block; margin: 2px 4px 2px 0; padding: 0 8px; font-size: .7rem; border: 1px solid var(--oro); color: var(--oro); background: rgba(216, 176, 78, .1); }
-.os-log { list-style: none; margin: 0; padding: 10px 12px; background: rgba(22,15,28,0.95); border: 1px solid var(--border); height: 330px; overflow-y: auto; font-size: .78rem; display: flex; flex-direction: column; gap: 4px; }
+.os-log { list-style: none; margin: 0; padding: 10px 12px; background: var(--panel); border: 1px solid var(--border); height: 330px; overflow-y: auto; font-size: .78rem; display: flex; flex-direction: column; gap: 4px; }
 .os-log li { color: var(--muted); }
 .os-log li.accion { color: #fff; font-weight: 600; }
 .os-log li.dano { color: #d98a8a; }
@@ -163,7 +163,7 @@ body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index:
 .os-log li.ronda { color: var(--electrico); }
 .os-log li.tirada { font-size: .72rem; }
 
-.os-acciones { margin-top: 14px; padding: 14px; background: rgba(36,26,44,0.93); border: 1px solid var(--border); }
+.os-acciones { margin-top: 14px; padding: 14px; background: var(--panel); border: 1px solid var(--border); }
 .os-estado { margin: 0; color: var(--muted); font-style: italic; }
 .os-recursos { display: flex; flex-wrap: wrap; gap: 6px 20px; align-items: center; font-size: .85rem; margin-bottom: 12px; color: var(--muted); }
 .os-recursos b { color: var(--oro); font-size: 1rem; }
@@ -209,3 +209,12 @@ body.os-pagina > .mj-barra, body.os-pagina > main { position: relative; z-index:
 @media (prefers-reduced-motion: reduce) {
   .os-orden-chip.activo { animation: none; }
 }
+
+/* Color en bloques: tarjetas con borde grueso y sombra dura, el estado elegido en color pleno */
+.os-pagina .os-panel, .os-pagina .os-barra-grupo, .os-pagina .os-ficha, .os-pagina .os-acciones, .os-pagina .os-log, .os-pagina .os-clase {
+  border: 2px solid var(--accent-soft); box-shadow: 4px 4px 0 var(--sombra-dura);
+}
+.os-pagina .os-boton, .os-pagina .os-mini { border-width: 2px; }
+.os-pagina .os-boton:hover, .os-pagina .os-mini:hover { background: var(--accent-soft); color: #14091c; }
+.os-pagina .os-mini.elegida { background: var(--oro); color: #1c1306; border-color: var(--oro); }
+.os-pagina .os-orden-chip.activo { background: var(--oro); color: #1c1306; }
