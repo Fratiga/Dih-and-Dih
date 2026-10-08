@@ -457,6 +457,8 @@
       const hit = M.buscar(est, sel.uid);
       return hit ? atacantesQuePuedeBloquear(hit.u).map(u => ({ u })) : [];
     }
+    // Arrastrando una unidad para atacar: se resaltan las enemigas a las que puede desafiar
+    if (sel.tipo === "unidad" && arrastre && arrastre.destinos && arrastre.destinos.zona === "ataque") return arrastre.destinos.objetivos;
     return [];
   }
 
@@ -602,6 +604,10 @@
         const arriba = sideA === "arriba" ? celdaA : celdaB, abajo = sideA === "abajo" ? celdaA : celdaB;
         return carril(uid, arriba, abajo, "", `data-atk="${uid}"`);
       }).join("");
+      if (defensor) {
+        const nBloq = paresTmp().length;
+        html += `<div class="bt-combate-pie"><button type="button" class="bt-confirmar" data-bloquear-ok>${nBloq ? `✔ Confirmar bloqueos (${nBloq})` : "✔ Sin bloquear"}</button>${nBloq ? `<button type="button" class="bt-no-bloquear" data-bloquear-no>No bloquear</button>` : ""}</div>`;
+      }
       clase += " activo";
     } else if (atacantesSel.size && miTurnoDe(idx)) {
       html = [...atacantesSel].map(uid => {
@@ -895,10 +901,8 @@
     const cuenta = local() ? "" : `<span id="btCuenta" class="bt-cuenta"></span>`;
     if (p.tipo === "bloqueo") {
       if (reaccionaYo(idx)) {
-        const n = paresTmp().length;
         el.innerHTML = `<p><strong>${esc(que)}</strong></p>
-          <p class="bt-nota">Elige una unidad tuya y luego el atacante al que bloquea (o arrástrala hasta él). Cada atacante recibe un solo bloqueador.</p>
-          <div class="bt-ventana-botones"><button type="button" class="cartas-boton cartas-boton-principal" data-bloquear-ok>${n ? `Confirmar bloqueos (${n})` : "Confirmar sin bloquear"}</button>${n ? `<button type="button" class="cartas-boton" data-bloquear-no>No bloquear</button>` : ""}${cuenta}</div>`;
+          <p class="bt-nota">Elige una unidad tuya y luego el atacante al que bloquea (o arrástrala hasta él). Cada atacante recibe un solo bloqueador. Confirma con el botón dorado de la franja de combate.${cuenta ? ` ${cuenta}` : ""}</p>`;
       } else {
         el.innerHTML = `<p><strong>${esc(que)}</strong></p><p class="bt-nota">${esc(est.jugadores[p.reactor].nombre)} está eligiendo sus bloqueos... ${cuenta}</p>`;
       }
@@ -978,7 +982,7 @@
         else if (jug && miTurnoDe(idx)) {
           if (est.atacado === est.turno) extra = `<p class="bt-nota">Ya atacaste este turno.</p>`;
           else extra = M.unidadPuedeAtacar(est, hit.u)
-            ? `<p class="bt-nota">${atacantesSel.has(hit.u.uid) ? "Está preparada para atacar. Pulsa «Atacar» o elige más unidades." : "Haz clic para prepararla como atacante."}</p>`
+            ? `<p class="bt-nota">${atacantesSel.has(hit.u.uid) ? "Está preparada para atacar. Pulsa «Atacar» o elige más unidades." : "Haz clic para prepararla como atacante, o arrástrala hasta el rival para atacar ya."}</p>`
             : `<p class="bt-nota">Esta unidad no puede atacar ahora.</p>`;
         }
         extra += `<p class="bt-nota">Vida ${hit.u.pv}/${hit.u.pvMax} · Ataque ${c.atq}</p>`;
@@ -1053,9 +1057,23 @@
       const validos = atacantesQuePuedeBloquear(hit.u).map(u => ({ u }));
       return validos.length ? { zona: null, objetivos: validos, pideObjetivo: true } : null;
     }
-    // Atacar: se arrastra una unidad lista hasta la franja de combate para prepararla
+    // Atacar: se arrastra una unidad lista hasta el lado del rival (ataca ya) o hasta una unidad enemiga a la que desafía
     if (!miTurnoDe(idx) || hit.j !== idx || !M.unidadPuedeAtacar(est, hit.u)) return null;
-    return { zona: "combate", objetivos: [] };
+    return { zona: "ataque", objetivos: M.objetivosDeDesafio(est, hit.u).map(u => ({ u })), flecha: true };
+  }
+
+  /* Declara el ataque con las unidades preparadas y, si se arrastró una, también esa (con su desafío, si lo hay) */
+  function declararAtaque(uidExtra, desafio) {
+    const idx = indiceYo();
+    if (!miTurnoDe(idx)) return;
+    const unidades = new Set(atacantesSel);
+    if (uidExtra !== undefined) unidades.add(uidExtra);
+    if (!unidades.size) return;
+    const d = Object.assign({}, desafiosSel);
+    if (desafio !== undefined) d[uidExtra] = desafio;
+    const u = [...unidades];
+    atacantesSel.clear(); desafiosSel = {}; sel = null;
+    enviar(Object.keys(d).length ? { t: "atacar", u, d } : { t: "atacar", u });
   }
 
   function elementoDeObjetivo(o) {
@@ -1090,7 +1108,7 @@
     }
     // Zonas donde se puede soltar
     if (a.destinos.zona === "campo") { $("btCampoYo").classList.add("zona-soltar"); $("btCentro").classList.add("zona-soltar"); }
-    if (a.destinos.zona === "combate") { $("btCentro").classList.add("zona-soltar"); $("btCombate").classList.add("zona-soltar"); }
+    if (a.destinos.zona === "ataque") { $("btCampoRival").classList.add("zona-soltar"); $("btCentro").classList.add("zona-soltar"); $("btRival").classList.add("objetivo"); }
     if (a.destinos.zona === "mesa") $("btMesa").classList.add("zona-soltar");
   }
 
@@ -1133,7 +1151,7 @@
       if (el.closest("#btCampoYo, #btCentro")) return { zona: true, hueco: huecoCercano(x), el: $("btCampoYo") };
     }
     if (a.destinos.zona === "mesa" && el.closest("#btMesa")) return { zona: true, el: $("btMesa") };
-    if (a.destinos.zona === "combate" && el.closest("#btCombate, #btCentro")) return { zona: true, el: $("btCombate") };
+    if (a.destinos.zona === "ataque" && el.closest("#btCampoRival, #btRival, #btCentro, #btCombate")) return { zona: true, el: $("btCampoRival") };
     return null;
   }
 
@@ -1145,9 +1163,9 @@
     document.querySelectorAll(".sobre").forEach(e => e.classList.remove("sobre"));
     if (dest) dest.el.classList.add("sobre");
     // Flecha: desde el origen hasta el puntero (o hasta el objetivo si está encima)
-    if (a.origen && a.destinos.pideObjetivo) {
+    if (a.origen && (a.destinos.pideObjetivo || a.destinos.flecha)) {
       const hasta = dest && dest.objetivo ? posicionEnMesa(dest.el) : { x: ev.clientX - mesa.left, y: ev.clientY - mesa.top };
-      dibujarFlecha(a.origen, hasta, !!(dest && dest.objetivo));
+      dibujarFlecha(a.origen, hasta, !!dest);
     }
   }
 
@@ -1156,15 +1174,17 @@
     if (a.fantasma) a.fantasma.remove();
     document.body.classList.remove("bt-arrastrando");
     document.querySelectorAll(".sobre, .zona-soltar, .arrastrando").forEach(e => e.classList.remove("sobre", "zona-soltar", "arrastrando"));
+    $("btRival").classList.remove("objetivo");
     ocultarFlecha();
     if (dest && dest.objetivo) {
       const o = dest.objetivo;
       if (a.tipo === "mano") enviar(accionJugar(a.i, o));
       else if (a.tipo === "bloqueador") asignarBloqueo(a.uid, o.u);
+      else declararAtaque(a.uid, o.u);
       return;
     }
     if (dest && dest.zona) {
-      if (a.destinos.zona === "combate") { atacantesSel.add(a.uid); sel = { tipo: "unidad", uid: a.uid }; pintarTablero(); return; }
+      if (a.destinos.zona === "ataque") { declararAtaque(a.uid); return; }
       if (a.destinos.zona === "mesa") { enviar({ t: "reaccionar", i: a.i }); return; }
       if (a.destinos.pideObjetivo) { if (sel && dest.hueco !== undefined) sel.hueco = dest.hueco; pintarTablero(); toast("Ahora elige el objetivo."); return; }  // la carta queda elegida
       enviar(accionJugar(a.i, null, dest.hueco));
@@ -1256,14 +1276,7 @@
       if (miTurnoDe(idx)) { est.jugadores[idx].campo.forEach(u => { if (M.unidadPuedeAtacar(est, u)) atacantesSel.add(u.uid); }); pintarTablero(); }
       return;
     }
-    if (ev.target.closest("[data-atacar]")) {
-      if (miTurnoDe(idx) && atacantesSel.size) {
-        const u = [...atacantesSel], d = Object.assign({}, desafiosSel);
-        atacantesSel.clear(); desafiosSel = {};
-        enviar(Object.keys(d).length ? { t: "atacar", u, d } : { t: "atacar", u });
-      }
-      return;
-    }
+    if (ev.target.closest("[data-atacar]")) { declararAtaque(); return; }
     // Desafíos al preparar el ataque: elegir al atacante, y luego la unidad enemiga
     const ranuraDesafio = ev.target.closest("[data-desafia]");
     if (ranuraDesafio && miTurnoDe(idx)) {

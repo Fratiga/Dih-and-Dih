@@ -509,7 +509,7 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-todas { padding: 8px 16px; font-size: .8rem; border-color: var(--accent-soft, #7e6334); background: transparent; color: var(--accent, #d3ab5e); cursor: pointer; }
 .bt-todas:hover { border-color: var(--accent, #d3ab5e); }
 
-.bt-combate { position: relative; display: flex; justify-content: center; align-items: stretch; gap: 22px; padding: 10px 16px; margin: 0 14px; border-radius: 12px; border: 1px solid rgba(240, 194, 77, .3); background: rgba(32,11,11,0.17); }
+.bt-combate { position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 22px; padding: 10px 16px; margin: 0 14px; border-radius: 12px; border: 1px solid rgba(240, 194, 77, .3); background: rgba(32,11,11,0.17); }
 .bt-combate.hidden { display: none; }
 .bt-combate.previa { border-style: dashed; background: rgba(240, 194, 77, .05); }
 .bt-combate.zona-soltar { background: rgba(240, 194, 77, .14); }
@@ -573,3 +573,12 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-forzado .carta { outline: 3px solid #ff8c3a; outline-offset: 4px; border-radius: 5% / 3.4%; }
 .bt-forzado[data-quita-desafio] { cursor: pointer; }
 .bt-forzado-sello { position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); padding: 1px 9px; border-radius: 10px; background: #8a2a14; border: 1px solid #ffb27a; color: #ffe3d0; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; z-index: 4; }
+
+/* Confirmar los bloqueos: un botón grande y dorado al pie de la franja de combate, donde están los atacantes */
+.bt-combate-pie { flex: 0 0 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; padding-top: 4px; }
+.bt-confirmar { padding: 14px 46px; border: 3px solid #ffe08a; border-radius: 32px; background: #f0c24d; color: #281b05; font-family: var(--font-heading), sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; box-shadow: 4px 4px 0 #17140d; transition: transform .1s steps(2), box-shadow .1s steps(2); }
+.bt-confirmar:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #17140d; }
+.bt-confirmar:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #17140d; }
+.bt-no-bloquear { padding: 10px 24px; border: 2px solid var(--accent-soft); border-radius: 24px; background: var(--panel-2); color: var(--text); font: inherit; font-size: .95rem; cursor: pointer; }
+.bt-no-bloquear:hover { border-color: var(--accent); }
+@media (max-width: 700px) { .bt-confirmar { padding: 12px 28px; font-size: 1.1rem; } }

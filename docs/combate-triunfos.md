@@ -4,7 +4,7 @@ El combate dejó de ser "una unidad ataca a un objetivo". Ahora se declara un at
 
 ## Cómo funciona
 
-1. **Declarar.** En tu turno, una sola vez, eliges todas las unidades que atacan. Se preparan con un clic (o arrastrándolas a la franja de combate) y se declaran con **⚔ Atacar**. Una unidad que entró este turno no ataca. El botón **Todas** prepara a todas las que pueden.
+1. **Declarar.** En tu turno, una sola vez, eliges todas las unidades que atacan. Se puede **arrastrar una unidad lista hasta el lado del rival** (su campo, su panel o la franja central): ataca ya, junto con las que estén preparadas; si se suelta sobre una unidad enemiga a la que puede desafiar, la desafía. O se preparan con un clic y se declaran con **⚔ Atacar**. Una unidad que entró este turno no ataca. El botón **Todas** prepara a todas las que pueden.
 2. **Reaccionar.** Si el rival tiene una reacción que encaje, puede jugarla ahora.
 3. **Bloquear.** Los desafíos (ver abajo) ya fijan algunos bloqueos. El rival elige quién bloquea en el resto. Cada unidad suya bloquea como mucho a un atacante, y cada atacante recibe como mucho un bloqueador. Se elige una unidad y luego el atacante (o se arrastra hasta él). Si no hay nadie que pueda bloquear, se resuelve solo.
 4. **Resolver.** Todo a la vez. Los atacantes bloqueados y sus bloqueadores se hacen daño. Los atacantes sin bloqueo golpean al jugador. Después se anima cómo salió (embestida, daño, quién cae).
