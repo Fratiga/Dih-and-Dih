@@ -162,8 +162,9 @@
   }
 
   /* --- Robar -------------------------------------------------------------- */
-  function robar(est, jIdx, n = 1) {
+  function robar(est, jIdx, n = 1, silencioso = false) {
     const J = est.jugadores[jIdx];
+    let robadas = 0;
     for (let i = 0; i < n; i++) {
       if (!J.mazo.length) {
         J.fatiga += 1;
@@ -177,8 +178,10 @@
         log(est, `${J.nombre} tiene la mano llena: ${meta(est, carta).nombre} se pierde.`);
       } else {
         J.mano.push(carta);
+        robadas += 1;
       }
     }
+    if (robadas && !silencioso) log(est, `${J.nombre} roba ${robadas === 1 ? "una carta" : `${robadas} cartas`}.`);
   }
 
   /* --- Daño y curación ---------------------------------------------------- */
@@ -357,7 +360,7 @@
     J.campo.forEach(u => { u.ataques = 0; u.flags.danada = false; });
     est.jugadores[1 - jIdx].campo.forEach(u => { u.flags.danada = false; });
     log(est, `— Turno ${est.turno}: ${J.nombre} —`);
-    if (!(est.turno === 1)) robar(est, jIdx, 1);
+    if (!(est.turno === 1)) robar(est, jIdx, 1, true);
     if (est.ganador !== null) return;
     const T = defTerreno(est);
     if (T && T.inicioTurno) T.inicioTurno(est, jIdx);
@@ -633,8 +636,8 @@
       terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0
     };
     est.jugadores.forEach(J => barajar(est, J.mazo));
-    est.jugadores.forEach(J => robar(est, est.jugadores.indexOf(J), C.MANO_INICIAL));
-    robar(est, 1 - primero, 1);
+    est.jugadores.forEach(J => robar(est, est.jugadores.indexOf(J), C.MANO_INICIAL, true));
+    robar(est, 1 - primero, 1, true);
     iniciarTurno(est);
     return est;
   }
