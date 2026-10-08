@@ -121,8 +121,7 @@
           <label for="peticionTexto">Tu petición o recomendación</label>
           <textarea id="peticionTexto" rows="6" maxlength="2000" required placeholder="Escribe aquí..."></textarea>
 
-          <label for="peticionNombre">Tu nombre (opcional)</label>
-          <input type="text" id="peticionNombre" maxlength="60" placeholder="Déjalo vacío para mandarlo anónimo">
+          <p id="peticionQuien" class="peticion-status peticion-status-pendiente" aria-live="polite"></p>
 
           <button type="submit" id="peticionSubmit" class="secondary-button">Enviar</button>
           <p id="peticionStatus" class="peticion-status hidden"></p>
@@ -163,7 +162,7 @@
   <script src="js/slappy.js?v=20261208"></script>
   <script src="js/busqueda-global.js?v=20261208"></script>
   <script src="js/header-marquee.js?v=20261208"></script>
-  <script src="js/peticiones-supabase.js?v=20261208"></script>
-  <script src="js/peticiones.js?v=20261208"></script>
+  <script src="js/peticiones-supabase.js?v=20261216"></script>
+  <script src="js/peticiones.js?v=20261216"></script>
 </body>
 </html>

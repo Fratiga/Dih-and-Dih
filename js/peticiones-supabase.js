@@ -16,16 +16,20 @@ function peticionesCliente() {
 
 /* A diferencia de bufonRegistrar, esto NO falla en silencio: es un
    formulario que el jugador llena a propósito, así que sí necesita
-   avisarle si algo salió mal para que no piense que se mandó. */
+   avisarle si algo salió mal para que no piense que se mandó.
+   Ya no hay peticiones anónimas: siempre llevan el nombre de la cuenta. Para que no se
+   pueda saltar desde fuera de la página, el servidor también lo tiene que poner él
+   (docs/peticiones-con-nombre.sql). */
 async function enviarPeticion({ texto, nombre }) {
+  if (!nombre) throw new Error("Falta el nombre de la cuenta");
   const supabase = await peticionesCliente();
   // Con scratchpad/peticiones_estado.sql la petición vuelve con un código para seguirla;
   // sin él, se manda como siempre y simplemente no hay seguimiento.
-  const { data, error } = await supabase.rpc("peticion_enviar", { p_texto: texto, p_nombre: nombre || null });
+  const { data, error } = await supabase.rpc("peticion_enviar", { p_texto: texto, p_nombre: nombre });
   if (!error) return data;
   const { error: errorInsert } = await supabase.from("peticiones").insert({
     texto,
-    nombre: nombre || null
+    nombre
   });
   if (errorInsert) throw errorInsert;
   return null;

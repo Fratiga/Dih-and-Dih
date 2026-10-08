@@ -1,7 +1,7 @@
 (function () {
   const form = document.getElementById("peticionForm");
   const textoInput = document.getElementById("peticionTexto");
-  const nombreInput = document.getElementById("peticionNombre");
+  const quien = document.getElementById("peticionQuien");
   const submitBtn = document.getElementById("peticionSubmit");
   const status = document.getElementById("peticionStatus");
 
@@ -16,6 +16,29 @@
   function leerMias() { try { return JSON.parse(localStorage.getItem(CLAVE) || "[]") || []; } catch (e) { return []; } }
   function guardarMias(lista) { try { localStorage.setItem(CLAVE, JSON.stringify(lista.slice(0, 30))); } catch (e) { /* sin almacenamiento */ } }
   function esc(t) { return String(t).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])); }
+
+  /* Quién envía: ya no se puede mandar sin cuenta. La petición va con el nombre de usuario de la cuenta. */
+  let cuenta = null;   // { nombre } cuando hay sesión iniciada
+  async function nombreDeLaCuenta(sesion) {
+    try {
+      const supabase = await fichasCliente();
+      const { data } = await supabase.from("perfiles").select("username").eq("user_id", sesion.user.id).maybeSingle();
+      if (data && data.username) return data.username;
+    } catch (err) { /* se usa lo que haya guardado */ }
+    return (typeof nombreUsuario === "function" && nombreUsuario()) || (sesion.user.email || "").split("@")[0] || "";
+  }
+  function pintarQuien() {
+    quien.innerHTML = cuenta
+      ? `Se enviará con el nombre de tu cuenta: <strong>${esc(cuenta.nombre)}</strong>.`
+      : "Para enviar una petición tienes que iniciar sesión: se manda con el nombre de tu cuenta.";
+  }
+  pintarQuien();
+  if (typeof fichasEnCambioDeSesion === "function") {
+    fichasEnCambioDeSesion(async sesion => {
+      cuenta = sesion ? { nombre: await nombreDeLaCuenta(sesion) } : null;
+      pintarQuien();
+    }).catch(() => { /* sin conexión: queda el aviso de iniciar sesión */ });
+  }
 
   const caja = document.createElement("section");
   caja.className = "peticion-mias hidden";
@@ -46,11 +69,22 @@
     const texto = textoInput.value.trim();
     if (!texto) return;
 
+    // La sesión se vuelve a mirar al enviar: pudo vencer mientras se escribía
+    let sesion = null;
+    try { sesion = await fichasSesionActual(); } catch (err) { sesion = null; }
+    if (!sesion) {
+      cuenta = null; pintarQuien();
+      mostrarStatus("Inicia sesión para enviar tu petición. Tu texto se queda aquí.", "error");
+      return;
+    }
+    const nombre = await nombreDeLaCuenta(sesion);
+    if (!nombre) { mostrarStatus("No se pudo leer el nombre de tu cuenta. Prueba de nuevo.", "error"); return; }
+
     submitBtn.disabled = true;
     mostrarStatus("Enviando...", "pendiente");
 
     try {
-      const codigo = await enviarPeticion({ texto, nombre: nombreInput.value.trim() });
+      const codigo = await enviarPeticion({ texto, nombre });
       if (codigo) { guardarMias([{ codigo, texto, atendida: false, visto: false }, ...leerMias()]); pintarMias(); }
       form.reset();
       mostrarStatus("Listo, la recibí. Gracias.", "ok");
