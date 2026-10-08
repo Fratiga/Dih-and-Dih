@@ -54,51 +54,51 @@ window.CARTAS_AFINIDADES = {
 
   // --- Personajes -----------------------------------------------------------
   u("rook", "Rook", "Personaje", P("rook"), "rara", "caceria", 4, 5, 4, "Cazador solitario: +2 de ataque mientras sea tu única unidad en el campo.", A);
-  u("bull", "Bull", "Personaje", P("bull"), "comun", "juramento", 3, 3, 4, "Provocar: los enemigos deben atacar a esta unidad antes que a otras.", AB);
-  u("garra", "Garra", "Personaje", P("garra"), "comun", "caceria", 2, 3, 2, "Arpón: al entrar, una unidad enemiga pierde Provocar y Volar hasta el final del turno.", AB);
+  u("bull", "Bull", "Personaje", P("bull"), "comun", "juramento", 3, 3, 4, "Duro: recibe 1 menos de daño.", AB);
+  u("garra", "Garra", "Personaje", P("garra"), "comun", "caceria", 2, 3, 2, "Arpón: al entrar, una unidad enemiga no puede bloquear hasta el final del turno.", AB);
   u("baraja", "Baraja", "Personaje", P("baraja"), "infrecuente", "arcano", 3, 2, 3, "Cartas del destino: al entrar, roba una carta.", AB);
   u("ocevat", "Ocevat", "Personaje", P("ocevat"), "rara", "juramento", 5, 4, 6, "Defensor del refugio: una vez por turno, recibe en lugar de una unidad aliada el daño que esta fuera a recibir.", AB);
-  u("verdam", "Verdam", "Personaje", P("verdam"), "legendaria", "caceria", 7, 7, 6, "Marca de la presa: al entrar, marca a una unidad enemiga. Tus ataques contra ella hacen 2 de daño extra y ignoran Provocar.", AB);
-  u("eklino-a", "Eklino", "Personaje", P("eklino-a"), "comun", "juramento", 2, 1, 5, "Provocar. Defender el refugio: las demás unidades aliadas ganan +1 de vida al entrar.", A);
+  u("verdam", "Verdam", "Personaje", P("verdam"), "legendaria", "caceria", 7, 7, 6, "Marca de la presa: al entrar, marca a una unidad enemiga. Tus unidades le hacen 2 de daño extra en combate.", AB);
+  u("eklino-a", "Eklino", "Personaje", P("eklino-a"), "comun", "juramento", 2, 1, 5, "Barrera: ignora el primer daño que reciba. Defender el refugio: las demás unidades aliadas ganan +1 de vida al entrar.", A);
   u("dagren", "Dagren", "Personaje", P("dagren"), "infrecuente", "carne", 4, 4, 5, "Furia de veterano: gana +1 de ataque cada vez que recibe daño.", A);
   u("orina", "Orina", "Personaje", P("orina"), "infrecuente", "juramento", 1, 1, 1, "Proyectil: al morir, inflige 3 de daño a una unidad enemiga.", A);
-  u("edge", "Edge", "Personaje", P("edge"), "comun", "sombra", 3, 3, 2, "Ataque furtivo: +2 de daño si el objetivo ya recibió daño este turno.", A);
+  u("edge", "Edge", "Personaje", P("edge"), "comun", "sombra", 3, 3, 2, "Ataque furtivo: +2 de daño contra una unidad que ya recibió daño este turno.", A);
   u("hornet", "Hornet", "Personaje", P("hornet"), "comun", "caceria", 3, 3, 3, "Disparo certero: al entrar, inflige 1 de daño a una unidad enemiga.", A);
   u("sir-buffolet", "Sir Buffolet", "Personaje", P("sir-buffolet"), "infrecuente", "arcano", 2, 2, 2, "Mal bardo: al entrar, cada jugador descarta una carta al azar.", A);
-  u("enzo", "Enzo", "Personaje", P("enzo"), "infrecuente", "carne", 4, 2, 3, "Golpe doble: ataca dos veces por turno.", A);
-  u("mattei", "Mattei", "Personaje", P("mattei"), "comun", "sombra", 1, 1, 2, "Escurridizo: no puede ser objetivo de ataques durante el próximo turno del rival.", A);
+  u("enzo", "Enzo", "Personaje", P("enzo"), "infrecuente", "carne", 4, 2, 3, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño.", A);
+  u("mattei", "Mattei", "Personaje", P("mattei"), "comun", "sombra", 1, 1, 2, "Escurridizo: entra con Barrera (ignora el primer daño que reciba).", A);
   u("adam-kovacs", "Adam Kovacs", "Personaje", P("adam-kovacs"), "rara", "juramento", 6, 6, 7, "Capitán: tus demás unidades tienen +1 de ataque.", Bl);
-  u("cassius-coldgrave", "Cassius Coldgrave", "Personaje", P("cassius-coldgrave"), "infrecuente", "caceria", 3, 2, 3, "Cobarde: no puede ser atacado mientras tengas otra unidad en el campo.", Bl);
+  u("cassius-coldgrave", "Cassius Coldgrave", "Personaje", P("cassius-coldgrave"), "infrecuente", "caceria", 3, 2, 3, "Cobarde: tiene Volar (solo la bloquean unidades que vuelan), pero no puede bloquear.", Bl);
   u("torvrena", "Torvrena", "Personaje", P("torvrena"), "infrecuente", "caceria", 4, 4, 4, "Trampa de mandíbula: al entrar, una unidad enemiga no puede atacar el próximo turno.", Bl);
   u("ryn", "Ryn", "Personaje", P("ryn"), "rara", "arcano", 3, 2, 3, "Canción de bardo: al entrar, una unidad aliada gana +2/+2 este turno.", Bl);
   u("hooey-magoo", "Hooey Magoo", "Personaje", P("hooey-magoo"), "rara", "carne", 3, 4, 3, "Sacrificado: al morir, roba una carta.", Bl);
 
   // --- Criaturas ------------------------------------------------------------
   u("kobold", "Kobold", "Criatura", B("kobold"), "comun", "carne", 1, 1, 1, "Instinto de manada: +1 de ataque por cada otro Kobold en el campo.");
-  u("manta-del-cielo", "Aeromanta", "Criatura", B("manta-del-cielo"), "comun", "arcano", 2, 1, 3, "Volar: solo puede ser atacada por unidades que también vuelan.");
+  u("manta-del-cielo", "Aeromanta", "Criatura", B("manta-del-cielo"), "comun", "arcano", 2, 1, 3, "Volar: solo puede ser bloqueada por unidades que también vuelan.");
   u("lobo", "Lobo", "Criatura", B("lobo"), "comun", "caceria", 2, 2, 2, "Cazador: +1 de ataque contra unidades que ya tengan daño.");
   u("cuervo-del-augurio", "Cuervo del augurio", "Criatura", B("cuervo-del-augurio"), "comun", "eternidad", 1, 1, 1, "Augurio: al entrar, mira la carta superior de tu mazo.");
-  u("guiverno", "Guiverno", "Criatura", B("guiverno"), "rara", "caceria", 5, 5, 4, "Volar: solo puede ser atacada por unidades que también vuelan. Depredador del cielo: +1 de ataque contra unidades terrestres.");
+  u("guiverno", "Guiverno", "Criatura", B("guiverno"), "rara", "caceria", 5, 5, 4, "Volar: solo puede ser bloqueado por unidades que también vuelan. Depredador del cielo: +1 de ataque contra unidades terrestres.");
   u("hidra", "Hidra", "Criatura", B("hidra"), "rara", "carne", 6, 4, 7, "Cabezas regenerativas: al inicio de tu turno recupera 2 de vida.");
   u("draco", "Draco", "Criatura", B("draco"), "legendaria", "carne", 7, 7, 7, "Cuerpo blindado: reduce en 2 el daño que recibe.");
-  u("kraken", "Kraken", "Criatura", B("kraken"), "legendaria", "arcano", 7, 6, 8, "Hambre insaciable: cuando destruye una unidad, roba una carta.");
+  u("kraken", "Kraken", "Criatura", B("kraken"), "legendaria", "arcano", 7, 6, 8, "Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador. Hambre insaciable: cuando destruye una unidad, roba una carta.");
 
   // --- Objetos --------------------------------------------------------------
   o("pocion-de-curacion-menor", "Poción de curación menor", "Objeto", O("pocion-de-curacion-menor"), "comun", "carne", 1, "Cura 3 de vida a una unidad o a ti.");
   o("escudo-reforzado", "Escudo reforzado", "Objeto", O("escudo-reforzado"), "comun", "juramento", 2, "Equipo: la unidad gana +0/+3.");
   o("baraja-de-cartas", "Baraja de cartas", "Objeto", O("baraja-de-cartas"), "infrecuente", "arcano", 2, "Roba dos cartas.");
-  o("bomba-de-humo", "Bomba de humo", "Reacción", O("bomba-de-humo"), "infrecuente", "sombra", 2, "Reacción: cuando una unidad tuya sea atacada, cancela ese ataque. Esa unidad no puede ser atacada hasta el final del turno.");
+  o("bomba-de-humo", "Bomba de humo", "Reacción", O("bomba-de-humo"), "infrecuente", "sombra", 2, "Reacción: cuando el rival declare un ataque, una de sus unidades atacantes se queda fuera del combate.");
   o("cristal-de-mana", "Cristal de maná", "Objeto", O("cristal-de-mana"), "infrecuente", "arcano", 0, "Gana 2 de energía este turno.");
   o("capucha-oscura", "Capucha oscura", "Objeto", O("capucha-oscura"), "comun", "sombra", 1, "Equipo: las habilidades enemigas no pueden apuntar a la unidad.");
 
   // --- Reacciones: se juegan en el turno del rival, como respuesta a lo que hace
-  o("silbato-de-guardia", "Silbato de guardia", "Reacción", O("silbato-de-guardia"), "comun", "juramento", 1, "Reacción: cuando una unidad tuya sea atacada, gana +0/+3 hasta el final del turno.");
+  o("silbato-de-guardia", "Silbato de guardia", "Reacción", O("silbato-de-guardia"), "comun", "juramento", 1, "Reacción: cuando el rival declare un ataque, tus unidades ganan +0/+2 hasta el final del turno.");
   o("llave-maestra-defectuosa", "Llave maestra defectuosa", "Reacción", O("llave-maestra-defectuosa"), "infrecuente", "sombra", 2, "Reacción: cuando el rival juegue un objeto, una acción o un terreno, cancélalo.");
 
   // --- Terrenos: cambian las condiciones del combate durante varios turnos. Cada uno sale de un lugar del compendio.
   const T = (id, nombre, lugar, rareza, afinidad, coste, habilidad) => o(id, nombre, "Terreno", L(lugar), rareza, afinidad, coste, habilidad);
-  T("puente-de-las-legiones", "Puente de las Legiones", "puente-de-las-legiones", "comun", "caceria", 2, "Ruta directa: durante 2 turnos, tus unidades ignoran Provocar.");
-  T("los-huesos", "Los Huesos", "los-huesos-pelgiria", "comun", "sombra", 2, "Pasajes de memoria: durante 3 turnos, tus unidades de Sombra no pueden ser objetivo de ataques.");
+  T("puente-de-las-legiones", "Puente de las Legiones", "puente-de-las-legiones", "comun", "caceria", 2, "Ruta directa: durante 2 turnos, tus unidades tienen Temible (no las bloquean unidades con menos de 3 de ataque).");
+  T("los-huesos", "Los Huesos", "los-huesos-pelgiria", "comun", "sombra", 2, "Pasajes de memoria: durante 3 turnos, tus unidades de Sombra tienen Volar.");
   T("glaciar-eterno", "Glaciar Eterno", "glaciar-eterno", "comun", "eternidad", 2, "Muro de hielo: durante 3 turnos, la primera unidad que entre en cada turno no puede atacar en el siguiente turno de su dueño.");
   T("vado-ceniza", "Vado Ceniza", "vado-ceniza", "infrecuente", "sombra", 3, "Oleada de ceniza: durante 3 turnos, las unidades no pueden ser objetivo de habilidades.");
   T("desierto-de-cenizas", "Desierto de Cenizas", "desierto-de-cenizas", "infrecuente", "eternidad", 3, "Ceniza que no cesa: durante 3 turnos, ninguna unidad puede curarse ni recuperar vida.");

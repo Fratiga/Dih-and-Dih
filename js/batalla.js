@@ -23,6 +23,11 @@
   let cerrando = false;
   let mostradaMirada = "";
   let reveladoPila = null;     // carta superior de tu mazo que ya conoces: { carta, largo }
+  let atacantesSel = new Set();  // unidades que has preparado para atacar (aún sin declarar)
+  let bloqueosTmp = {};          // bloqueos elegidos y sin confirmar: { uidAtacante: uidBloqueador }
+  let bloqueoPid = 0;            // ventana de bloqueo a la que pertenecen
+  let combateVisto = 0;          // último combate ya animado
+  let animCombate = null;        // { hasta, datos } mientras se anima cómo salió un combate
   let pvPrevios = new Map();
   let ultimoTurno = 0;         // para saber cuándo cambió el turno y avisarlo
   let ultimoTerreno = "";      // lo mismo con el terreno
@@ -39,6 +44,7 @@
   const indiceYo = () => (local() ? M.quienActua(est) : yo);
   const ESPERA_REACCION = 20000;       // cuánto espera el rival para reaccionar
   const ESPERA_ACTOR = 22000;          // cuánto espera quien actuó antes de seguir sin su respuesta
+  const ESPERA_BLOQUEO = 45000;        // elegir bloqueos lleva más que decidir una reacción
 
   /* ---------------------------------------------------------------- avisos */
   function aviso(texto) {
@@ -174,6 +180,8 @@
     cerrando = false;
     mostradaMirada = "";
     reveladoPila = null;
+    atacantesSel = new Set(); bloqueosTmp = {}; bloqueoPid = 0; animCombate = null;
+    combateVisto = est && est.ultimoCombate ? est.ultimoCombate.id : 0;
     pvPrevios = new Map();
     ultimoTurno = 0;
     ultimoTerreno = "";
@@ -278,6 +286,8 @@
     const r = M.aplicar(est, accion, jugador);
     if (r.error) { toast(r.error); return; }
     sel = null;
+    ocultarFlecha();
+    if (accion.t === "bloquear") bloqueosTmp = {};
     if (!local()) {
       lista.push(JSON.stringify(accion));
       pintarTablero();
@@ -311,21 +321,57 @@
     return Object.assign({}, m, { id: u.cartaId, atq: M.atqEfectivo(est, u), pv: u.pv, borrador: false, limite: null });
   }
 
+  /* Palabras clave: qué significan (se muestran al ver una unidad) */
+  const PALABRAS = {
+    volar: { nombre: "Volar", texto: "Solo la bloquean unidades que también vuelan." },
+    temible: { nombre: "Temible", texto: "No la bloquean unidades con menos de 3 de ataque." },
+    veloz: { nombre: "Veloz", texto: "En combate golpea antes; si mata a su rival, no recibe daño." },
+    arrollar: { nombre: "Arrollar", texto: "El daño que sobra al matar a su bloqueador pasa al jugador." },
+    duro: { nombre: "Duro", texto: "Recibe 1 menos de daño." },
+    noBloquea: { nombre: "No bloquea", texto: "No puede bloquear." },
+    barrera: { nombre: "Barrera", texto: "Ignora el primer daño que reciba." }
+  };
+  function palabrasDe(u) {
+    const out = ["volar", "temible", "veloz", "arrollar", "duro", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
+    if (u.flags.barrera) out.push("barrera");
+    if (u.flags.noBloqueaHasta >= est.turno && !out.includes("noBloquea")) out.push("noBloquea");
+    return out;
+  }
+
+  /* ¿Me toca elegir bloqueos? Y qué unidades mías pueden bloquear a quién */
+  const bloqueoVigente = idx => est.ganador === null && !!est.pendiente && est.pendiente.tipo === "bloqueo" && est.pendiente.reactor === idx && !!est.combate;
+  function atacantesQuePuedeBloquear(blk) {
+    return (est.combate ? est.combate.atacantes : []).filter(uid => { const h = M.buscar(est, uid); return h && M.puedeBloquear(est, blk, h.u); });
+  }
+  const puedeBloquearAlguno = blk => atacantesQuePuedeBloquear(blk).length > 0;
+  const paresTmp = () => Object.entries(bloqueosTmp).map(([a, b]) => [Number(a), b]).filter(([a, b]) => {
+    const ha = M.buscar(est, a), hb = M.buscar(est, b);
+    return ha && hb && M.puedeBloquear(est, hb.u, ha.u);
+  });
+  function asignarBloqueo(blkUid, atkUid) {
+    const hb = M.buscar(est, blkUid), ha = M.buscar(est, atkUid);
+    if (!hb || !ha || !M.puedeBloquear(est, hb.u, ha.u)) { toast("Esa unidad no puede bloquear a ese atacante."); return; }
+    Object.keys(bloqueosTmp).forEach(a => { if (bloqueosTmp[a] === blkUid || Number(a) === atkUid) delete bloqueosTmp[a]; });
+    bloqueosTmp[atkUid] = blkUid;
+    sel = null;
+    ocultarFlecha();
+    pintarTablero();
+  }
+
   function htmlUnidad(u, miIdx) {
     const m = verMeta(u);
     let html = htmlCarta(vistaUnidad(u), true, 0, null);
     if (u.pv < u.pvMax) html = html.replace('class="carta-stat pv"', 'class="carta-stat pv herida"');
     if (M.atqEfectivo(est, u) > u.atqBase) html = html.replace('class="carta-stat atq"', 'class="carta-stat atq sube"');
-    const chips = [];
-    if (M.tienePalabra(est, u, "provocar")) chips.push("Provocar");
-    if (M.tienePalabra(est, u, "volar")) chips.push("Volar");
+    const chips = palabrasDe(u).map(k => PALABRAS[k].nombre);
     if (u.flags.marcadaPor !== null) chips.push("Marcada");
-    if (u.flags.intocableHasta >= est.turno) chips.push("Oculta");
     if (u.flags.inmune) chips.push("Protegida");
-    if (u.flags.noAtacaHasta >= est.turno) chips.push("Inmóvil");
+    if (u.flags.noAtacaHasta >= est.turno) chips.push("No ataca");
     if (u.entro === est.turno && u.dueno === est.activo) chips.push("Recién llegada");
     const listo = u.dueno === miIdx && miTurnoDe(miIdx) && M.unidadPuedeAtacar(est, u);
-    return `<div class="bt-unidad ${listo ? "lista" : ""} ${sel && sel.uid === u.uid ? "elegida" : ""}" data-uid="${u.uid}" title="${esc(m.nombre)}">
+    const bloquea = bloqueoVigente(miIdx) && u.dueno === miIdx && puedeBloquearAlguno(u);
+    const clases = [listo ? "lista" : "", atacantesSel.has(u.uid) ? "en-ataque" : "", bloquea ? "puede-bloquear" : "", sel && sel.uid === u.uid ? "elegida" : ""].filter(Boolean).join(" ");
+    return `<div class="bt-unidad ${clases}" data-uid="${u.uid}" title="${esc(m.nombre)}">
       ${html}
       <div class="bt-chips">${chips.map(c => `<span>${c}</span>`).join("")}</div>
     </div>`;
@@ -387,18 +433,24 @@
 
   function objetivosVigentes() {
     // Lista de objetivos { u } / { j } que se pueden elegir con la selección actual
-    if (!sel || est.pendiente || !miTurnoDe(indiceYo())) return [];
+    if (!sel) return [];
     const idx = indiceYo();
     if (sel.tipo === "mano") {
       const id = est.jugadores[idx].mano[sel.i];
-      const req = id && M.requisitoDeJugada(est, idx, id);
+      if (!id) return [];
+      if (M.esReaccion(est, id)) {
+        // Reacciones que piden elegir una unidad atacante (Bomba de humo)
+        if (!reaccionaYo(idx) || est.pendiente.tipo !== "ataque") return [];
+        const req = M.requisitoDeReaccion(est, idx, id);
+        return req ? req.validos : [];
+      }
+      if (est.pendiente || !miTurnoDe(idx)) return [];
+      const req = M.requisitoDeJugada(est, idx, id);
       return req ? req.validos : [];
     }
-    if (sel.tipo === "unidad") {
-      const u = M.buscar(est, sel.uid);
-      if (!u || !M.unidadPuedeAtacar(est, u.u)) return [];
-      const v = M.objetivosDeAtaque(est, sel.uid);
-      return [...v.unidades.map(x => ({ u: x })), ...(v.jugador ? [{ j: 1 - idx }] : [])];
+    if (sel.tipo === "bloqueador" && bloqueoVigente(idx)) {
+      const hit = M.buscar(est, sel.uid);
+      return hit ? atacantesQuePuedeBloquear(hit.u).map(u => ({ u })) : [];
     }
     return [];
   }
@@ -481,6 +533,76 @@
     }
   }
 
+  /* --- Combate en pantalla ---------------------------------------------------------
+     Franja de combate entre los dos campos: una columna por atacante, con su bloqueador al otro lado. */
+  function prepararCombate(idx) {
+    // Los bloqueos sin confirmar pertenecen a una ventana; al cambiar de ventana se descartan
+    const pid = est.pendiente && est.pendiente.tipo === "bloqueo" ? est.pendiente.id : 0;
+    if (pid !== bloqueoPid) { bloqueoPid = pid; bloqueosTmp = {}; }
+    // Atacantes preparados: solo mientras sea mi turno y la unidad pueda atacar
+    atacantesSel.forEach(uid => { const h = M.buscar(est, uid); if (!h || !miTurnoDe(idx) || !M.unidadPuedeAtacar(est, h.u)) atacantesSel.delete(uid); });
+    // Un combate nuevo (el último guardado en el estado): se anima cómo salió
+    const uc = est.ultimoCombate;
+    if (uc && uc.id > combateVisto) {
+      combateVisto = uc.id;
+      if (!introVisible && !sinAnimaciones() && !document.hidden) {
+        animCombate = { id: uc.id, datos: uc };
+        setTimeout(() => { if (animCombate && animCombate.id === uc.id) { animCombate = null; if (est) pintarTablero(); } }, 2300);
+      }
+    }
+  }
+
+  const htmlSnap = s => htmlCarta(Object.assign({}, M.meta(est, s.cartaId), { id: s.cartaId, atq: s.atq, pv: s.pv, borrador: false, limite: null }), true, 0, null);
+
+  function pintarCombate(idx) {
+    const el = $("btCombate");
+    const lado = dueno => (dueno === idx ? "abajo" : "arriba");   // mis unidades abajo, las del rival arriba
+    const carril = (atk, arriba, abajo, extra = "", datos = "") => `<div class="bt-carril ${extra}" ${datos}><div class="bt-carril-celda arriba">${arriba}</div><div class="bt-carril-celda abajo">${abajo}</div></div>`;
+    let html = "", clase = "bt-combate";
+    if (animCombate) {
+      // Cómo salió el combate: cada pareja se mide y se ve el daño
+      const uc = animCombate.datos;
+      html = uc.pares.map((par, k) => {
+        const sideA = lado(par.a.dueno), sideB = par.b ? lado(par.b.dueno) : (sideA === "abajo" ? "arriba" : "abajo");
+        const celdaA = `<div class="bt-snap atacante ${par.aMuere ? "cae" : ""}" style="--k:${k}">${htmlSnap(par.a)}${par.dB > 0 ? `<b class="bt-dano">−${par.dB}</b>` : ""}</div>`;
+        const celdaB = par.b
+          ? `<div class="bt-snap bloqueador ${par.bMuere ? "cae" : ""}" style="--k:${k}">${htmlSnap(par.b)}${par.dA > 0 ? `<b class="bt-dano">−${par.dA}</b>` : ""}</div>`
+          : `<div class="bt-golpe-jugador" style="--k:${k}"><span>${par.jugador > 0 ? `−${par.jugador}` : "¡Golpe!"}</span><small>${esc(est.jugadores[uc.atacante === idx ? 1 - idx : idx].nombre)}</small></div>`;
+        const arriba = sideA === "arriba" ? celdaA : celdaB, abajo = sideA === "abajo" ? celdaA : celdaB;
+        return carril(null, arriba, abajo, "resolviendo", `data-sentido="${sideA}"`);
+      }).join("");
+      clase += " activo resolviendo";
+    } else if (est.combate) {
+      const c = est.combate;
+      const defensor = bloqueoVigente(idx);
+      html = c.atacantes.map(uid => {
+        const h = M.buscar(est, uid);
+        if (!h) return "";
+        const sideA = lado(h.j);
+        const celdaA = htmlUnidad(h.u, idx);
+        const bUid = defensor ? bloqueosTmp[uid] : undefined;
+        const hb = bUid !== undefined ? M.buscar(est, bUid) : null;
+        let celdaB;
+        const posible = sel && sel.tipo === "bloqueador" && objetivosVigentes().some(o => o.u === uid);
+        if (hb) celdaB = `<div class="bt-bloqueador-asignado" data-bloqueador-de="${uid}" title="Quitar este bloqueo">${htmlUnidad(hb.u, idx)}</div>`;
+        else if (defensor) celdaB = `<div class="bt-bloqueo-hueco ${posible ? "posible" : ""}" data-bloquea="${uid}"><span>${posible ? "Bloquear aquí" : "Sin bloqueo"}</span></div>`;
+        else celdaB = `<div class="bt-bloqueo-hueco vacio"><span>${est.pendiente && est.pendiente.tipo === "bloqueo" ? "Eligiendo bloqueo…" : ""}</span></div>`;
+        const arriba = sideA === "arriba" ? celdaA : celdaB, abajo = sideA === "abajo" ? celdaA : celdaB;
+        return carril(uid, arriba, abajo, "", `data-atk="${uid}"`);
+      }).join("");
+      clase += " activo";
+    } else if (atacantesSel.size && miTurnoDe(idx)) {
+      html = [...atacantesSel].map(uid => {
+        const h = M.buscar(est, uid);
+        if (!h) return "";
+        return carril(uid, `<div class="bt-bloqueo-hueco vacio"><span>Rival</span></div>`, `<div class="bt-previa" data-uid-previa="${uid}">${htmlUnidad(h.u, idx)}</div>`, "previa");
+      }).join("");
+      clase += " activo previa";
+    }
+    el.className = html ? clase : "bt-combate hidden";
+    el.innerHTML = html;
+  }
+
   function pintarTablero() {
     if (!est) return;
     if (arrastre && arrastre.activo) { arrastre.repintar = true; return; }
@@ -488,6 +610,7 @@
     const rival = 1 - idx;
     const J = est.jugadores[idx];
     const mesa = $("btMesa");
+    prepararCombate(idx);
 
     mesa.dataset.turno = est.ganador !== null ? "fin" : reaccionaYo(idx) ? "reaccion" : miTurnoDe(idx) ? "mio" : "rival";
 
@@ -500,8 +623,17 @@
 
     // Seis huecos por campo: se ve cuánto sitio queda
     // Cada unidad ocupa el hueco que se eligió al jugarla; los demás quedan vacíos en su sitio
+    // Las que están en el combate salen del campo y se ven en la franja de combate
+    const enCombate = new Set();
+    if (est.combate) {
+      est.combate.atacantes.forEach(uid => enCombate.add(uid));
+      Object.values(bloqueosTmp).forEach(uid => { if (bloqueoVigente(idx)) enCombate.add(uid); });
+    }
+    if (animCombate) animCombate.datos.pares.forEach(par => { enCombate.add(par.a.uid); if (par.b) enCombate.add(par.b.uid); });
+    atacantesSel.forEach(uid => { if (miTurnoDe(idx) && !est.combate) enCombate.add(uid); });
     const htmlCampo = Jx => Array.from({ length: M.C.CAMPO_MAX }, (_, k) => {
       const u = Jx.campo.find(x => x.hueco === k);
+      if (u && enCombate.has(u.uid)) return `<div class="bt-hueco en-combate" title="${esc(M.nombre(est, u))} está en combate"></div>`;
       return u ? htmlUnidad(u, idx) : `<div class="bt-hueco" data-hueco="${k}"></div>`;
     }).join("");
     $("btCampoRival").innerHTML = htmlCampo(est.jugadores[rival]);
@@ -510,7 +642,9 @@
     const cartaElegida = sel && sel.tipo === "mano" ? J.mano[sel.i] : null;
     $("btCampoYo").classList.toggle("eligiendo", !!(cartaElegida && M.esUnidad(M.meta(est, cartaElegida)) && miTurnoDe(idx) && !est.pendiente));
 
+    if (!sel && !arrastre) ocultarFlecha();
     pintarCentro(idx);
+    pintarCombate(idx);
     aplicarBioma();
 
     const n = J.mano.length;
@@ -548,6 +682,7 @@
     const turnoEl = $("btTurno");
     const reactor = est.pendiente ? est.jugadores[est.pendiente.reactor].nombre : "";
     turnoEl.textContent = est.ganador !== null ? "Partida terminada"
+      : est.pendiente && est.pendiente.tipo === "bloqueo" ? (local() ? `${reactor} elige sus bloqueos` : reaccionaYo(idx) ? "Elige tus bloqueos" : `${reactor} elige sus bloqueos`)
       : est.pendiente ? (local() ? `${reactor} puede reaccionar` : reaccionaYo(idx) ? "Puedes reaccionar" : `Esperando la reacción de ${reactor}`)
       : local() ? `Turno de ${est.jugadores[est.activo].nombre}` : miTurno() ? "Es tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`;
     turnoEl.className = `bt-turno ${miTurnoDe(idx) || reaccionaYo(idx) ? "mio" : ""}`;
@@ -563,6 +698,16 @@
   }
 
   /* Franja del centro: terreno actual, de quién es el turno y el botón de terminar turno */
+  /* Botones de ataque: solo en tu turno, antes de haber atacado */
+  function botonAtacar(idx, miTurnoAhora) {
+    if (!miTurnoAhora || est.atacado === est.turno || est.combate) return "";
+    const listas = est.jugadores[idx].campo.filter(u => M.unidadPuedeAtacar(est, u));
+    if (!listas.length) return "";
+    const n = atacantesSel.size;
+    return `${listas.length > 1 && n < listas.length ? `<button type="button" class="bt-todas" data-atacar-todas title="Preparar a todas las unidades que pueden atacar">Todas</button>` : ""}
+      <button type="button" class="bt-atacar ${n ? "activo" : ""}" data-atacar ${n ? "" : "disabled"}>⚔ Atacar${n ? ` (${n})` : ""}</button>`;
+  }
+
   function pintarCentro(idx) {
     const T = est.terreno;
     const m = T ? M.meta(est, T.cartaId) : null;
@@ -574,11 +719,13 @@
       : `<div class="bt-terreno-ficha vacia"><span class="bt-terreno-icono"></span><div><small>Sin terreno</small></div></div>`;
     const miTurnoAhora = miTurnoDe(idx);
     const cinta = est.ganador !== null ? "Fin de la partida"
-      : est.pendiente ? (reaccionaYo(idx) ? "¡Reacciona!" : "Esperando respuesta")
+      : est.pendiente ? (est.pendiente.tipo === "bloqueo" ? (reaccionaYo(idx) ? "¡Elige bloqueos!" : "Eligiendo bloqueos") : reaccionaYo(idx) ? "¡Reacciona!" : "Esperando respuesta")
       : local() ? `Turno de ${est.jugadores[est.activo].nombre}` : miTurnoAhora ? "Tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`;
     $("btCentro").innerHTML = `${terreno}
       <div class="bt-cinta ${miTurnoAhora ? "mio" : ""}">${esc(cinta)}</div>
-      <button type="button" id="btFin" class="bt-fin ${miTurnoAhora ? "activo" : ""}" ${miTurnoAhora ? "" : "disabled"}>Terminar turno</button>`;
+      <div class="bt-acciones">${botonAtacar(idx, miTurnoAhora)}
+        <button type="button" id="btFin" class="bt-fin ${miTurnoAhora ? "activo" : ""}" ${miTurnoAhora ? "" : "disabled"}>Terminar turno</button>
+      </div>`;
   }
 
   /* ----------------------------------------------------------- tableros y biomas */
@@ -720,13 +867,25 @@
     if (!p) { el.classList.add("hidden"); ventana = { id: 0, desde: 0, enviado: false }; return; }
     if (ventana.id !== p.id) ventana = { id: p.id, desde: Date.now(), enviado: false };
     const idx = indiceYo();
-    const hit = p.tipo === "ataque" ? M.buscar(est, p.datos.uid) : null;
-    const objetivoU = p.tipo === "ataque" && p.datos.objetivo.u !== undefined ? M.buscar(est, p.datos.objetivo.u) : null;
     const quien = est.jugadores[p.actor].nombre;
-    const que = p.tipo === "ataque"
-      ? `${quien} ataca con ${hit ? M.nombre(est, hit.u) : "una unidad"} a ${objetivoU ? M.nombre(est, objetivoU.u) : est.jugadores[p.datos.objetivo.j].nombre}.`
+    const nombresAtacantes = () => (est.combate ? est.combate.atacantes : []).map(uid => { const h = M.buscar(est, uid); return h ? M.nombre(est, h.u) : null; }).filter(Boolean).join(", ") || "sus unidades";
+    const que = p.tipo === "ataque" ? `${quien} ataca con ${nombresAtacantes()}.`
+      : p.tipo === "bloqueo" ? `${quien} ataca con ${nombresAtacantes()}.`
       : `${quien} juega ${M.meta(est, p.datos.id).nombre}.`;
     const cuenta = local() ? "" : `<span id="btCuenta" class="bt-cuenta"></span>`;
+    if (p.tipo === "bloqueo") {
+      if (reaccionaYo(idx)) {
+        const n = paresTmp().length;
+        el.innerHTML = `<p><strong>${esc(que)}</strong></p>
+          <p class="bt-nota">Elige una unidad tuya y luego el atacante al que bloquea (o arrástrala hasta él). Cada atacante recibe un solo bloqueador.</p>
+          <div class="bt-ventana-botones"><button type="button" class="cartas-boton cartas-boton-principal" data-bloquear-ok>${n ? `Confirmar bloqueos (${n})` : "Confirmar sin bloquear"}</button>${n ? `<button type="button" class="cartas-boton" data-bloquear-no>No bloquear</button>` : ""}${cuenta}</div>`;
+      } else {
+        el.innerHTML = `<p><strong>${esc(que)}</strong></p><p class="bt-nota">${esc(est.jugadores[p.reactor].nombre)} está eligiendo sus bloqueos... ${cuenta}</p>`;
+      }
+      el.classList.remove("hidden");
+      actualizarCuenta();
+      return;
+    }
     if (reaccionaYo(idx)) {
       const vistas = new Set();
       const botones = M.reaccionesPosibles(est, idx, p.evento).filter(i => {
@@ -737,7 +896,8 @@
         return true;
       }).map(i => {
         const id = est.jugadores[idx].mano[i];
-        return `<button type="button" class="cartas-boton cartas-boton-principal" data-reaccionar="${i}">Reaccionar con ${esc(M.meta(est, id).nombre)} (${M.costeDe(est, idx, id)})</button>`;
+        const pide = M.requisitoDeReaccion(est, idx, id);
+        return `<button type="button" class="cartas-boton cartas-boton-principal" data-reaccionar="${i}">Reaccionar con ${esc(M.meta(est, id).nombre)} (${M.costeDe(est, idx, id)})${pide ? " · elige un atacante" : ""}</button>`;
       }).join("");
       el.innerHTML = `<p><strong>${esc(que)}</strong></p><div class="bt-ventana-botones">${botones}<button type="button" class="cartas-boton" data-pasar>Dejar pasar</button>${cuenta}</div>`;
     } else {
@@ -753,13 +913,15 @@
     const p = est.pendiente;
     if (ventana.id !== p.id) return;
     const soyReactor = est.pendiente.reactor === yo;
-    const limite = soyReactor ? ESPERA_REACCION : ESPERA_ACTOR;
+    const bloqueo = p.tipo === "bloqueo";
+    const limite = soyReactor ? (bloqueo ? ESPERA_BLOQUEO : ESPERA_REACCION) : (bloqueo ? ESPERA_BLOQUEO + 4000 : ESPERA_ACTOR);
     const falta = Math.max(0, Math.ceil((limite - (Date.now() - ventana.desde)) / 1000));
     const el = $("btCuenta");
     if (el) el.textContent = `${falta} s`;
     if (falta === 0 && !ventana.enviado) {
       ventana.enviado = true;
-      enviar(soyReactor ? { t: "pasar" } : { t: "pasar", forzar: true });
+      // Al acabarse el tiempo se manda lo que ya estaba elegido (los bloqueos a medias no se pierden)
+      enviar(soyReactor ? (bloqueo ? { t: "bloquear", b: paresTmp() } : { t: "pasar" }) : { t: "pasar", forzar: true });
     }
   }
   setInterval(actualizarCuenta, 500);
@@ -786,13 +948,20 @@
         else if (req && !req.opcional) extra = `<p class="bt-nota">No hay objetivos válidos para esta carta.</p>`;
         else extra = `<button type="button" class="cartas-boton cartas-boton-principal" data-jugar>Jugar (${c.coste})</button>`;
       }
-    } else if (sel && (sel.tipo === "unidad" || sel.tipo === "ver")) {
+    } else if (sel && (sel.tipo === "unidad" || sel.tipo === "ver" || sel.tipo === "bloqueador")) {
       const hit = M.buscar(est, sel.uid);
       if (hit) {
         c = vistaUnidad(hit.u);
         const jug = hit.j === idx;
-        if (jug && miTurnoDe(idx)) extra = M.unidadPuedeAtacar(est, hit.u) ? `<p class="bt-nota">Elige a quién atacar.</p>` : `<p class="bt-nota">Esta unidad no puede atacar ahora.</p>`;
+        if (sel.tipo === "bloqueador") extra = `<p class="bt-nota">Elige el atacante al que bloquea.</p>`;
+        else if (jug && miTurnoDe(idx)) {
+          if (est.atacado === est.turno) extra = `<p class="bt-nota">Ya atacaste este turno.</p>`;
+          else extra = M.unidadPuedeAtacar(est, hit.u)
+            ? `<p class="bt-nota">${atacantesSel.has(hit.u.uid) ? "Está preparada para atacar. Pulsa «Atacar» o elige más unidades." : "Haz clic para prepararla como atacante."}</p>`
+            : `<p class="bt-nota">Esta unidad no puede atacar ahora.</p>`;
+        }
         extra += `<p class="bt-nota">Vida ${hit.u.pv}/${hit.u.pvMax} · Ataque ${c.atq}</p>`;
+        extra += palabrasDe(hit.u).map(k => `<p class="bt-nota"><b>${PALABRAS[k].nombre}.</b> ${PALABRAS[k].texto}</p>`).join("");
       }
     }
     if (!c) { el.innerHTML = `<p class="bt-nota">Pasa el ratón o elige una carta o unidad para verla aquí.</p>`; return; }
@@ -847,15 +1016,25 @@
     if (a.tipo === "mano") {
       const id = est.jugadores[idx].mano[a.i];
       if (!id) return null;
-      if (M.esReaccion(est, id)) return { zona: "mesa", objetivos: [] };
+      if (M.esReaccion(est, id)) {
+        const req = M.requisitoDeReaccion(est, idx, id);
+        return req && req.validos.length ? { zona: null, objetivos: req.validos, pideObjetivo: true } : { zona: "mesa", objetivos: [] };
+      }
       const req = M.requisitoDeJugada(est, idx, id);
       if (req && req.validos.length) return { zona: "campo", objetivos: req.validos, pideObjetivo: true };
       return { zona: "campo", objetivos: [] };
     }
     const hit = M.buscar(est, a.uid);
-    if (!hit || !M.unidadPuedeAtacar(est, hit.u)) return null;
-    const v = M.objetivosDeAtaque(est, a.uid);
-    return { zona: null, objetivos: [...v.unidades.map(x => ({ u: x })), ...(v.jugador ? [{ j: 1 - idx }] : [])] };
+    if (!hit) return null;
+    // Bloquear: se arrastra una unidad tuya hasta el atacante al que bloquea
+    if (a.tipo === "bloqueador") {
+      if (!bloqueoVigente(idx) || hit.j !== idx) return null;
+      const validos = atacantesQuePuedeBloquear(hit.u).map(u => ({ u }));
+      return validos.length ? { zona: null, objetivos: validos, pideObjetivo: true } : null;
+    }
+    // Atacar: se arrastra una unidad lista hasta la franja de combate para prepararla
+    if (!miTurnoDe(idx) || hit.j !== idx || !M.unidadPuedeAtacar(est, hit.u)) return null;
+    return { zona: "combate", objetivos: [] };
   }
 
   function elementoDeObjetivo(o) {
@@ -867,7 +1046,7 @@
     const a = arrastre;
     a.destinos = destinosDe(a);
     if (!a.destinos) { arrastre = null; return; }
-    sel = a.tipo === "mano" ? { tipo: "mano", i: a.i } : { tipo: "unidad", uid: a.uid };
+    sel = a.tipo === "mano" ? { tipo: "mano", i: a.i } : { tipo: a.tipo, uid: a.uid };
     pintarTablero();           // marca los objetivos posibles
     a.activo = true;
     document.body.classList.add("bt-arrastrando");
@@ -890,6 +1069,7 @@
     }
     // Zonas donde se puede soltar
     if (a.destinos.zona === "campo") { $("btCampoYo").classList.add("zona-soltar"); $("btCentro").classList.add("zona-soltar"); }
+    if (a.destinos.zona === "combate") { $("btCentro").classList.add("zona-soltar"); $("btCombate").classList.add("zona-soltar"); }
     if (a.destinos.zona === "mesa") $("btMesa").classList.add("zona-soltar");
   }
 
@@ -905,9 +1085,10 @@
 
   /* Acción de jugar una carta, con el hueco elegido si es una unidad */
   function accionJugar(i, o, hueco) {
+    const id = est.jugadores[indiceYo()].mano[i];
+    if (id && M.esReaccion(est, id)) { const r = { t: "reaccionar", i }; if (o) r.o = o; return r; }
     const a = { t: "jugar", i };
     if (o) a.o = o;
-    const id = est.jugadores[indiceYo()].mano[i];
     const h = hueco !== undefined ? hueco : sel && sel.tipo === "mano" && sel.i === i ? sel.hueco : undefined;
     if (h !== undefined && id && M.esUnidad(M.meta(est, id))) a.h = h;
     return a;
@@ -919,8 +1100,10 @@
     if (!el) return null;
     const unidad = el.closest("[data-uid]"), jugador = el.closest("[data-jugador]");
     const idx = indiceYo();
+    const carrilEl = el.closest("[data-atk]");
     for (const o of a.destinos.objetivos) {
       if (o.u !== undefined && unidad && Number(unidad.dataset.uid) === o.u) return { objetivo: o, el: unidad };
+      if (o.u !== undefined && carrilEl && Number(carrilEl.dataset.atk) === o.u) return { objetivo: o, el: carrilEl };
       if (o.j !== undefined && jugador && (jugador.dataset.jugador === "yo" ? idx : 1 - idx) === o.j) return { objetivo: o, el: jugador };
     }
     if (a.destinos.zona === "campo") {
@@ -929,6 +1112,7 @@
       if (el.closest("#btCampoYo, #btCentro")) return { zona: true, hueco: huecoCercano(x), el: $("btCampoYo") };
     }
     if (a.destinos.zona === "mesa" && el.closest("#btMesa")) return { zona: true, el: $("btMesa") };
+    if (a.destinos.zona === "combate" && el.closest("#btCombate, #btCentro")) return { zona: true, el: $("btCombate") };
     return null;
   }
 
@@ -940,7 +1124,7 @@
     document.querySelectorAll(".sobre").forEach(e => e.classList.remove("sobre"));
     if (dest) dest.el.classList.add("sobre");
     // Flecha: desde el origen hasta el puntero (o hasta el objetivo si está encima)
-    if (a.origen && (a.tipo === "unidad" || a.destinos.pideObjetivo)) {
+    if (a.origen && a.destinos.pideObjetivo) {
       const hasta = dest && dest.objetivo ? posicionEnMesa(dest.el) : { x: ev.clientX - mesa.left, y: ev.clientY - mesa.top };
       dibujarFlecha(a.origen, hasta, !!(dest && dest.objetivo));
     }
@@ -955,10 +1139,11 @@
     if (dest && dest.objetivo) {
       const o = dest.objetivo;
       if (a.tipo === "mano") enviar(accionJugar(a.i, o));
-      else enviar({ t: "atacar", u: a.uid, o });
+      else if (a.tipo === "bloqueador") asignarBloqueo(a.uid, o.u);
       return;
     }
     if (dest && dest.zona) {
+      if (a.destinos.zona === "combate") { atacantesSel.add(a.uid); sel = { tipo: "unidad", uid: a.uid }; pintarTablero(); return; }
       if (a.destinos.zona === "mesa") { enviar({ t: "reaccionar", i: a.i }); return; }
       if (a.destinos.pideObjetivo) { if (sel && dest.hueco !== undefined) sel.hueco = dest.hueco; pintarTablero(); toast("Ahora elige el objetivo."); return; }  // la carta queda elegida
       enviar(accionJugar(a.i, null, dest.hueco));
@@ -985,10 +1170,10 @@
   $("btMesa").addEventListener("pointerdown", ev => {
     if (ev.button !== 0 || !est) return;
     const carta = ev.target.closest(".bt-carta.jugable");
-    const unidad = ev.target.closest(".bt-unidad.lista");
+    const unidad = ev.target.closest(".bt-unidad.lista:not(.en-ataque), .bt-unidad.puede-bloquear");
     if (!carta && !unidad) return;
     arrastre = {
-      tipo: carta ? "mano" : "unidad", i: carta ? Number(carta.dataset.i) : null, uid: unidad ? Number(unidad.dataset.uid) : null,
+      tipo: carta ? "mano" : unidad.classList.contains("puede-bloquear") ? "bloqueador" : "unidad", i: carta ? Number(carta.dataset.i) : null, uid: unidad ? Number(unidad.dataset.uid) : null,
       x0: ev.clientX, y0: ev.clientY, activo: false
     };
   });
@@ -1019,7 +1204,7 @@
     if (!est || arrastre || !sel) return;
     const objetivos = objetivosVigentes();
     if (!objetivos.length) { ocultarFlecha(); return; }
-    const origen = sel.tipo === "unidad" ? document.querySelector(`.bt-unidad[data-uid="${sel.uid}"]`) : document.querySelector(`.bt-carta[data-i="${sel.i}"]`);
+    const origen = sel.tipo === "mano" ? document.querySelector(`.bt-carta[data-i="${sel.i}"]`) : document.querySelector(`.bt-unidad[data-uid="${sel.uid}"]`);
     if (!origen) { ocultarFlecha(); return; }
     const mesa = $("btMesa").getBoundingClientRect();
     const el = ev.target.closest("[data-uid], [data-jugador]");
@@ -1044,12 +1229,35 @@
     if (!est) return;
     if (ignorarClic) return;
     const idx = indiceYo();
-    if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) enviar({ t: "fin" }); return; }
+    if (ev.target.closest("#btFin")) { if (miTurnoDe(idx)) { atacantesSel.clear(); enviar({ t: "fin" }); } return; }
+    // Ataque: se preparan las unidades y se declara todo junto
+    if (ev.target.closest("[data-atacar-todas]")) {
+      if (miTurnoDe(idx)) { est.jugadores[idx].campo.forEach(u => { if (M.unidadPuedeAtacar(est, u)) atacantesSel.add(u.uid); }); pintarTablero(); }
+      return;
+    }
+    if (ev.target.closest("[data-atacar]")) {
+      if (miTurnoDe(idx) && atacantesSel.size) { const u = [...atacantesSel]; atacantesSel.clear(); enviar({ t: "atacar", u }); }
+      return;
+    }
+    // Bloqueo: confirmar lo elegido, o no bloquear
+    if (ev.target.closest("[data-bloquear-ok]")) { if (bloqueoVigente(idx)) enviar({ t: "bloquear", b: paresTmp() }); return; }
+    if (ev.target.closest("[data-bloquear-no]")) { if (bloqueoVigente(idx)) enviar({ t: "bloquear", b: [] }); return; }
+    if (bloqueoVigente(idx)) {
+      // Quitar un bloqueo ya puesto
+      const asignado = ev.target.closest("[data-bloqueador-de]");
+      if (asignado) { delete bloqueosTmp[asignado.dataset.bloqueadorDe]; sel = null; pintarTablero(); return; }
+      // Poner el bloqueador elegido sobre un atacante (sobre su columna o su hueco)
+      const columna = ev.target.closest("[data-atk], [data-bloquea]");
+      if (columna && sel && sel.tipo === "bloqueador") {
+        asignarBloqueo(sel.uid, Number(columna.dataset.atk !== undefined ? columna.dataset.atk : columna.dataset.bloquea));
+        return;
+      }
+    }
     if (ev.target.closest("#btRendirse")) { rendirse(); return; }
     if (ev.target.closest("#btVolver2")) { volverAlLobby(); return; }
     if (ev.target.closest("[data-jugar]")) { if (sel && sel.tipo === "mano") enviar(accionJugar(sel.i)); return; }
     // Una unidad de la mano elegida se coloca en el hueco libre que se toque
-    const hueco = ev.target.closest("#btCampoYo .bt-hueco");
+    const hueco = ev.target.closest("#btCampoYo .bt-hueco[data-hueco]");
     if (hueco && sel && sel.tipo === "mano" && miTurnoDe(idx) && !est.pendiente) {
       const id = est.jugadores[idx].mano[sel.i];
       if (id && M.esUnidad(M.meta(est, id))) {
@@ -1062,7 +1270,14 @@
     }
     if (ev.target.closest("[data-pasar]")) { if (reaccionaYo(idx)) enviar({ t: "pasar" }); return; }
     const botonReaccion = ev.target.closest("[data-reaccionar]");
-    if (botonReaccion) { if (reaccionaYo(idx)) enviar({ t: "reaccionar", i: Number(botonReaccion.dataset.reaccionar) }); return; }
+    if (botonReaccion) {
+      if (reaccionaYo(idx)) {
+        const i = Number(botonReaccion.dataset.reaccionar);
+        if (M.requisitoDeReaccion(est, idx, est.jugadores[idx].mano[i])) { sel = { tipo: "mano", i }; pintarTablero(); toast("Elige la unidad atacante resaltada."); }
+        else enviar({ t: "reaccionar", i });
+      }
+      return;
+    }
 
     const objetivos = objetivosVigentes();
     const unidad = ev.target.closest("[data-uid]");
@@ -1074,17 +1289,13 @@
       const uid = Number(unidad.dataset.uid);
       if (objetivos.some(o => o.u === uid)) {
         if (sel.tipo === "mano") enviar(accionJugar(sel.i, { u: uid }));
-        else enviar({ t: "atacar", u: sel.uid, o: { u: uid } });
+        else if (sel.tipo === "bloqueador") asignarBloqueo(sel.uid, uid);
         return;
       }
     }
     if (jugador && sel) {
       const j = jugador.dataset.jugador === "yo" ? idx : 1 - idx;
-      if (objetivos.some(o => o.j === j)) {
-        if (sel.tipo === "mano") enviar(accionJugar(sel.i, { j }));
-        else enviar({ t: "atacar", u: sel.uid, o: { j } });
-        return;
-      }
+      if (objetivos.some(o => o.j === j) && sel.tipo === "mano") { enviar(accionJugar(sel.i, { j })); return; }
     }
 
     if (carta) {
@@ -1093,8 +1304,10 @@
         // Segundo clic: jugarla si no pide objetivo
         const id = est.jugadores[idx].mano[i];
         if (M.esReaccion(est, id)) {
-          if (reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)) enviar({ t: "reaccionar", i });
-          else { sel = null; pintarTablero(); }
+          if (reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)) {
+            if (M.requisitoDeReaccion(est, idx, id)) toast("Elige la unidad atacante resaltada.");
+            else enviar({ t: "reaccionar", i });
+          } else { sel = null; pintarTablero(); }
           return;
         }
         const req = M.requisitoDeJugada(est, idx, id);
@@ -1110,6 +1323,19 @@
       const uid = Number(unidad.dataset.uid);
       const hit = M.buscar(est, uid);
       if (!hit) return;
+      // Eligiendo bloqueos: una unidad tuya que pueda bloquear se elige para luego señalar al atacante
+      if (bloqueoVigente(idx) && hit.j === idx && puedeBloquearAlguno(hit.u)) {
+        sel = sel && sel.tipo === "bloqueador" && sel.uid === uid ? null : { tipo: "bloqueador", uid };
+        pintarTablero();
+        return;
+      }
+      // En tu turno, una unidad lista se prepara (o se desprepara) para atacar
+      if (hit.j === idx && miTurnoDe(idx) && M.unidadPuedeAtacar(est, hit.u)) {
+        if (atacantesSel.has(uid)) atacantesSel.delete(uid); else atacantesSel.add(uid);
+        sel = { tipo: "unidad", uid };
+        pintarTablero();
+        return;
+      }
       if (sel && sel.uid === uid) sel = null;
       else sel = { tipo: hit.j === idx ? "unidad" : "ver", uid };
       pintarTablero();
@@ -1135,7 +1361,10 @@
   $("btPartida").addEventListener("click", alClicTablero);
   $("btMesa").addEventListener("mouseover", alPasarRaton);
   $("btVolver").addEventListener("click", volverAlLobby);
-  document.addEventListener("keydown", ev => { if (ev.key === "Escape" && sel) { sel = null; pintarTablero(); } });
+  document.addEventListener("keydown", ev => {
+    if (ev.key !== "Escape" || !est) return;
+    if (sel || atacantesSel.size) { sel = null; atacantesSel.clear(); pintarTablero(); }
+  });
 
   $("btLobby").addEventListener("click", ev => {
     const b = ev.target.closest("button");

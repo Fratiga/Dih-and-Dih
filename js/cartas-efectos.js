@@ -2,14 +2,15 @@
    CARTAS MALDITAS — habilidades de cada carta, por id. Cada entrada le dice al
    motor (cartas-motor.js) qué hace la carta en cada momento:
 
-     palabras        'provocar' (hay que atacarla primero), 'volar' (solo la atacan
-                     unidades que también vuelan)
+     palabras        'volar' (solo la bloquean unidades que vuelan), 'temible' (no la
+                     bloquean unidades con menos de 3 de ataque), 'veloz' (en combate golpea
+                     antes), 'arrollar' (el daño que sobra pasa al jugador), 'duro' (recibe 1
+                     menos de daño), 'noBloquea' (no puede bloquear). Barrera no es una palabra
+                     fija sino un estado: se da con u.flags.barrera = true (ver alCrear)
      pasivaAtq       ataque extra mientras está en juego
      auraAtq         ataque extra para las demás unidades aliadas
-     bonusAtaque     daño extra al atacar a una unidad
+     bonusAtaque     daño extra en combate contra otra unidad (atacando o bloqueando)
      reduceDano      daño que se quita de cada golpe que recibe
-     ataquesMax      ataques por turno
-     noAtacable      si devuelve true, no se le puede atacar
      guardian        recibe en lugar de un aliado el daño (una vez por turno)
      alCrear         al crearse, sin importar silencios
      alEntrar        { objetivo?, resolver(c) } habilidad "al entrar"
@@ -19,9 +20,12 @@
      alMatar         al destruir a una unidad con un ataque
      alInicioTurno   al inicio del turno de su dueño
      jugar           { objetivo?, resolver(c) } para objetos y acciones
-     alAtacarJugador cuando su ataque golpea al jugador rival
-     reaccion        { cuando: 'ataque'|'jugar', puede(c), resolver(c) } para cartas de tipo
-                     Reacción (c.pendiente.cancelado = true cancela lo que iba a pasar)
+     alAtacarJugador cuando golpea al jugador rival (atacante sin bloquear, o arrollar)
+     reaccion        { cuando: 'ataque'|'jugar', objetivo?: 'atacante', puede(c), resolver(c) }
+                     para cartas de tipo Reacción. 'ataque' es la declaración de ataques, antes
+                     de los bloqueos (c.evento.atacantes, c.est.combate); con objetivo: 'atacante'
+                     se elige una unidad atacante (c.objetivo = { u }). c.pendiente.cancelado = true
+                     cancela una carta que se iba a jugar
 
    Los terrenos se registran con registrarTerreno. Una carta que no aparece
    aquí (por ejemplo una creada desde el editor) juega solo con sus números.
@@ -34,11 +38,10 @@
 
     // --- Personajes ------------------------------------------------------
     R("rook", { pasivaAtq: (est, u) => (est.jugadores[u.dueno].campo.length === 1 ? 2 : 0) });
-    R("bull", { palabras: ["provocar"] });
+    R("bull", { palabras: ["duro"] });
     R("garra", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
-      c.objetivo.flags.sinProvocar = c.est.turno;
-      c.objetivo.flags.sinVolar = c.est.turno;
-      M.log(c.est, `${M.nombre(c.est, c.u)} arrastra a ${M.nombre(c.est, c.objetivo)}: pierde Provocar y Volar este turno.`);
+      c.objetivo.flags.noBloqueaHasta = c.est.turno;
+      M.log(c.est, `${M.nombre(c.est, c.u)} arrastra a ${M.nombre(c.est, c.objetivo)}: no puede bloquear este turno.`);
     } } });
     R("baraja", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
     R("ocevat", { guardian: true });
@@ -46,7 +49,7 @@
       c.objetivo.flags.marcadaPor = c.j;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda marcada.`);
     } } });
-    R("eklino-a", { palabras: ["provocar"], alEntrarAliada: c => { c.otra.pv += 1; c.otra.pvMax += 1; } });
+    R("eklino-a", { alCrear: (est, u) => { u.flags.barrera = true; }, alEntrarAliada: c => { c.otra.pv += 1; c.otra.pvMax += 1; } });
     R("dagren", { alRecibirDano: c => { c.u.atq += 1; } });
     R("orina", { alMorir: c => {
       const validos = enemigas(c.est, c.j).filter(t => M.puedeApuntarHabilidad(c.est, t, c.j));
@@ -64,10 +67,10 @@
         M.log(c.est, `${J.nombre} descarta ${M.meta(c.est, carta).nombre}.`);
       });
     } } });
-    R("enzo", { ataquesMax: 2 });
-    R("mattei", { alCrear: (est, u) => { u.flags.intocableHasta = est.turno + 1; } });
+    R("enzo", { palabras: ["veloz"] });
+    R("mattei", { alCrear: (est, u) => { u.flags.barrera = true; } });
     R("adam-kovacs", { auraAtq: () => 1 });
-    R("cassius-coldgrave", { noAtacable: (est, u) => est.jugadores[u.dueno].campo.length > 1 });
+    R("cassius-coldgrave", { palabras: ["volar", "noBloquea"] });
     R("torvrena", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       c.objetivo.flags.noAtacaHasta = c.est.turno + 1;
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} queda atrapada y no podrá atacar el próximo turno.`);
@@ -87,7 +90,7 @@
     R("guiverno", { palabras: ["volar"], bonusAtaque: (est, u, t) => (t && !M.tienePalabra(est, t, "volar") ? 1 : 0) });
     R("hidra", { alInicioTurno: c => M.curar(c.est, { u: c.u.uid }, 2) });
     R("draco", { reduceDano: () => 2 });
-    R("kraken", { alMatar: c => M.robar(c.est, c.j, 1) });
+    R("kraken", { palabras: ["arrollar"], alMatar: c => M.robar(c.est, c.j, 1) });
     R("el-bufon", { alEntrar: { resolver: c => { c.est.jugadores[c.j].costeMenos += 1; } } });
 
     // --- Personajes creados desde el editor (sus textos viven en el servidor) -----------------
@@ -145,17 +148,18 @@
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} se equipa con un escudo reforzado (+0/+3).`);
     } } });
     R("baraja-de-cartas", { jugar: { resolver: c => M.robar(c.est, c.j, 2) } });
-    // Reacciones: se juegan en el turno del rival, como respuesta (ver el motor)
-    const objetivoEsMio = c => c.evento.objetivo.u !== undefined && (M.buscar(c.est, c.evento.objetivo.u) || { j: -1 }).j === c.j;
-    R("bomba-de-humo", { reaccion: { cuando: "ataque", puede: objetivoEsMio, resolver: c => {
-      c.pendiente.cancelado = true;
-      const hit = M.buscar(c.est, c.pendiente.datos.objetivo.u);
-      if (hit) hit.u.flags.intocableHasta = Math.max(hit.u.flags.intocableHasta, c.est.turno);
-      M.log(c.est, "El humo lo cubre todo: el ataque se pierde.");
+    // Reacciones: se juegan en el turno del rival, como respuesta (ver el motor). Las de ataque se
+    // juegan al declarar el rival sus atacantes, antes de elegir los bloqueos.
+    R("bomba-de-humo", { reaccion: { cuando: "ataque", objetivo: "atacante", resolver: c => {
+      const combate = c.est.combate;
+      const hit = M.buscar(c.est, c.objetivo.u);
+      if (!combate || !hit) return;
+      combate.atacantes = combate.atacantes.filter(uid => uid !== c.objetivo.u);
+      M.log(c.est, `El humo cubre a ${M.nombre(c.est, hit.u)}: se queda fuera del combate.`);
     } } });
-    R("silbato-de-guardia", { reaccion: { cuando: "ataque", puede: objetivoEsMio, resolver: c => {
-      const hit = M.buscar(c.est, c.pendiente.datos.objetivo.u);
-      if (hit) M.mod(c.est, hit.u, 0, 3, c.est.turno);
+    R("silbato-de-guardia", { reaccion: { cuando: "ataque", resolver: c => {
+      M.log(c.est, "El silbato resuena: las unidades de la guardia se preparan.");
+      c.est.jugadores[c.j].campo.slice().forEach(u => M.mod(c.est, u, 0, 2, c.est.turno));
     } } });
     R("llave-maestra-defectuosa", { reaccion: { cuando: "jugar",
       puede: c => ["Objeto", "Acción", "Terreno"].includes(M.meta(c.est, c.evento.carta).tipo),

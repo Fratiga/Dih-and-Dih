@@ -464,3 +464,74 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
   .bt-campo.eligiendo .bt-hueco { animation: none; }
   .bt-pila-tope { transition: none; }
 }
+
+/* --- Combate al estilo Runeterra: atacantes, bloqueos y resolución ------------------------ */
+.bt-atacar-cartel { display: none !important; }   /* ya no se ataca a un jugador a golpe de clic: el que no se bloquea lo golpea */
+.bt-acciones { justify-self: end; display: flex; align-items: center; gap: 10px; }
+.bt-atacar, .bt-todas {
+  padding: 10px 22px; border-radius: 28px; border: 2px solid #6b3a2c; background: #2b1a17; color: #8a6a60; cursor: default;
+  font-family: var(--font-heading), sans-serif; font-size: .95rem; letter-spacing: .1em; text-transform: uppercase;
+}
+.bt-atacar.activo { cursor: pointer; border-color: #ff9a6a; background: linear-gradient(180deg, #ff7a52, #b8321f); color: #fff1e6; font-weight: 700; box-shadow: 0 4px 16px rgba(255, 110, 70, .55); animation: bt-atacar-late 1.5s ease-in-out infinite; }
+.bt-atacar.activo:hover { filter: brightness(1.12); transform: scale(1.04); }
+.bt-todas { padding: 8px 16px; font-size: .8rem; border-color: var(--accent-soft, #7e6334); background: transparent; color: var(--accent, #d3ab5e); cursor: pointer; }
+.bt-todas:hover { border-color: var(--accent, #d3ab5e); }
+@keyframes bt-atacar-late { 50% { box-shadow: 0 4px 30px rgba(255, 120, 80, .95); } }
+
+.bt-combate { position: relative; display: flex; justify-content: center; align-items: stretch; gap: 22px; padding: 10px 16px; margin: 0 14px; border-radius: 12px; border: 1px solid rgba(240, 194, 77, .3); background: linear-gradient(180deg, rgba(0, 0, 0, .12), rgba(60, 20, 20, .28), rgba(0, 0, 0, .12)); }
+.bt-combate.hidden { display: none; }
+.bt-combate.previa { border-style: dashed; background: rgba(240, 194, 77, .05); }
+.bt-combate.zona-soltar { background: rgba(240, 194, 77, .14); }
+.bt-carril { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.bt-carril[data-atk]::after, .bt-carril.resolviendo::after { content: "⚔"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 1.3rem; color: #ffb27a; text-shadow: 0 0 10px rgba(255, 90, 50, .9), 0 2px 4px #000; z-index: 3; pointer-events: none; }
+.bt-carril.previa { opacity: .85; }
+.bt-carril-celda { width: 104px; min-height: 156px; display: grid; place-items: center; }
+.bt-combate .bt-unidad { width: 104px; }
+.bt-combate .bt-unidad:hover { transform: none; }
+.bt-bloqueo-hueco { width: 104px; aspect-ratio: 2 / 3; border-radius: 8%; border: 2px dashed rgba(106, 167, 255, .45); display: grid; place-items: center; text-align: center; padding: 6px; box-sizing: border-box; color: #9ec4ff; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; background: radial-gradient(circle, rgba(106, 167, 255, .08), transparent 70%); }
+.bt-bloqueo-hueco.vacio { border-color: rgba(211, 171, 94, .25); color: var(--muted, #a79eb4); background: none; }
+.bt-bloqueo-hueco.posible { border-style: solid; border-color: #6aa7ff; background: radial-gradient(circle, rgba(106, 167, 255, .32), rgba(106, 167, 255, .08) 75%); box-shadow: 0 0 22px rgba(106, 167, 255, .6); cursor: pointer; animation: bt-bloqueo-late 1.1s ease-in-out infinite; }
+@keyframes bt-bloqueo-late { 50% { box-shadow: 0 0 34px rgba(106, 167, 255, .95); } }
+.bt-bloqueador-asignado { position: relative; cursor: pointer; }
+.bt-bloqueador-asignado .carta { filter: drop-shadow(0 0 10px #6aa7ff); }
+.bt-bloqueador-asignado::after { content: "×"; position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #1b2a4a; border: 2px solid #6aa7ff; color: #cfe3ff; font-weight: 700; z-index: 4; }
+.bt-hueco.en-combate { border-style: dotted; border-color: rgba(255, 150, 100, .45); background: rgba(255, 90, 50, .06); }
+.bt-hueco.en-combate::after { content: "⚔"; color: rgba(255, 160, 110, .5); font-size: 1.6rem; }
+.bt-unidad.en-ataque .carta { filter: drop-shadow(0 0 11px #ff8c3a); }
+.bt-unidad.puede-bloquear { cursor: grab; }
+.bt-unidad.puede-bloquear .carta { filter: drop-shadow(0 0 9px #6aa7ff); }
+.bt-unidad.puede-bloquear.elegida .carta { filter: drop-shadow(0 0 14px #bcd8ff); }
+.bt-unidad.puede-bloquear.elegida { transform: translateY(-6px); }
+
+/* Resolución: el atacante embiste, se ve el daño de cada lado y lo que cae */
+.bt-carril[data-sentido="abajo"] { --dir: -1; }
+.bt-carril[data-sentido="arriba"] { --dir: 1; }
+.bt-snap { position: relative; width: 104px; }
+.bt-snap .carta { pointer-events: none; }
+.bt-snap.atacante { animation: bt-embiste 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); z-index: 2; }
+.bt-snap.bloqueador { animation: bt-sacude 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); }
+.bt-snap.cae { animation-name: bt-embiste-cae; }
+.bt-snap.bloqueador.cae { animation-name: bt-sacude-cae; }
+@keyframes bt-embiste { 0% { transform: none; } 28% { transform: translateY(calc(var(--dir) * 54px)) scale(1.07); } 38% { transform: translateY(calc(var(--dir) * 40px)); } 100% { transform: none; } }
+@keyframes bt-embiste-cae { 0% { transform: none; opacity: 1; } 28% { transform: translateY(calc(var(--dir) * 54px)) scale(1.07); opacity: 1; } 70% { opacity: 1; filter: none; } 100% { transform: translateY(calc(var(--dir) * -20px)) scale(.9); opacity: 0; filter: grayscale(1) brightness(.5); } }
+@keyframes bt-sacude { 0%, 28% { transform: none; } 34% { transform: translateX(-6px); } 42% { transform: translateX(6px); } 52% { transform: translateX(-3px); } 62%, 100% { transform: none; } }
+@keyframes bt-sacude-cae { 0%, 28% { transform: none; opacity: 1; } 34% { transform: translateX(-6px); } 42% { transform: translateX(6px); } 70% { opacity: 1; filter: none; } 100% { transform: scale(.9); opacity: 0; filter: grayscale(1) brightness(.5); } }
+.bt-dano { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); z-index: 5; font-family: var(--font-heading), sans-serif; font-size: 1.9rem; color: #ff6a55; text-shadow: 0 0 10px #000, 0 2px 0 #000, 0 0 18px rgba(255, 60, 40, .9); opacity: 0; animation: bt-dano 1.4s ease both; animation-delay: calc(var(--k, 0) * .12s + .42s); pointer-events: none; }
+@keyframes bt-dano { 0% { opacity: 0; transform: translate(-50%, 10px) scale(.6); } 20% { opacity: 1; transform: translate(-50%, 0) scale(1.25); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -36px) scale(1); } }
+.bt-golpe-jugador { width: 104px; min-height: 156px; display: grid; place-content: center; text-align: center; gap: 4px; border-radius: 8%; border: 2px solid rgba(255, 90, 70, .7); background: radial-gradient(circle, rgba(255, 70, 50, .4), transparent 70%); animation: bt-golpe-jugador 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); }
+.bt-golpe-jugador span { font-family: var(--font-heading), sans-serif; font-size: 2.2rem; color: #ff7a64; text-shadow: 0 0 12px #000, 0 0 20px rgba(255, 60, 40, .9); }
+.bt-golpe-jugador small { color: #ffd0c6; font-size: .72rem; letter-spacing: .06em; }
+@keyframes bt-golpe-jugador { 0% { opacity: 0; transform: scale(.7); } 30% { opacity: 1; transform: scale(1.1); } 40% { transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; } }
+@media (max-width: 700px) {
+  .bt-carril-celda, .bt-bloqueo-hueco, .bt-snap, .bt-combate .bt-unidad, .bt-golpe-jugador { width: 78px; }
+  .bt-carril-celda { min-height: 117px; }
+  .bt-acciones { justify-self: center; flex-wrap: wrap; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-atacar.activo, .bt-bloqueo-hueco.posible, .bt-snap, .bt-dano, .bt-golpe-jugador { animation: none !important; }
+  .bt-dano { opacity: 1; }
+}
+.bt-acciones { flex-wrap: wrap; justify-content: flex-end; }
+.bt-acciones button { white-space: nowrap; }
+.bt-acciones .bt-fin { padding: 10px 20px; }
+.bt-atacar, .bt-todas { padding: 9px 18px; }

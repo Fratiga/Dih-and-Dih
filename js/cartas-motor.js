@@ -12,9 +12,14 @@
    - La energía máxima sube 1 en cada turno propio, hasta 10, y se rellena.
    - Un turno: robas una carta, juegas cartas pagando su coste y atacas con tus
      unidades. Una unidad que entra no puede atacar hasta tu siguiente turno.
-   - Atacar: eliges una unidad enemiga (las dos se hacen daño) o al jugador. Las
-     unidades con Provocar deben ser atacadas antes que nada. Las unidades con
-     Volar solo las pueden atacar otras unidades con Volar.
+   - Atacar (como en Legends of Runeterra): una sola vez por turno, declaras a la vez
+     todas las unidades que atacan. Después el rival elige quién bloquea: cada unidad
+     suya bloquea como mucho a un atacante y cada atacante recibe como mucho un
+     bloqueador. Los bloqueados se hacen daño a la vez (Veloz golpea antes); los que
+     nadie bloquea golpean al jugador. Volar: solo la bloquean unidades que vuelan.
+     Temible: no la bloquean unidades con menos de 3 de ataque. Arrollar: el daño
+     que sobra tras matar al bloqueador pasa al jugador. Barrera: ignora el
+     primer daño que reciba. Duro: recibe 1 menos de daño.
    - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
    - Un terreno a la vez: jugar uno nuevo reemplaza al anterior.
@@ -105,12 +110,17 @@
     return Math.max(0, a);
   }
 
+  /* Palabras clave: las de la carta, más las que da el terreno (Puente: Temible a las unidades de su dueño;
+     Los Huesos: Volar a las unidades de Sombra de su dueño). */
   function tienePalabra(est, u, palabra) {
     const ef = efectoDe(est, u);
-    if (!(ef.palabras || []).includes(palabra)) return false;
-    if (palabra === "provocar" && u.flags.sinProvocar >= est.turno) return false;
-    if (palabra === "volar" && u.flags.sinVolar >= est.turno) return false;
-    return true;
+    if ((ef.palabras || []).includes(palabra)) return true;
+    const T = est.terreno;
+    if (T && T.dueno === u.dueno) {
+      if (palabra === "temible" && T.cartaId === "puente-de-las-legiones") return true;
+      if (palabra === "volar" && T.cartaId === "los-huesos" && (meta(est, u.cartaId).afinidad || []).includes("sombra")) return true;
+    }
+    return false;
   }
 
   function costeDe(est, jIdx, id) {
@@ -129,8 +139,8 @@
     const pv = Number.isFinite(m.pv) && m.pv > 0 ? m.pv : 1;
     const u = {
       uid: est.siguienteUid++, cartaId, dueno: jIdx, atq, pv, pvMax: pv, atqBase: atq, pvBase: pv,
-      entro: est.turno, ataques: 0, equipo: [], mods: [],
-      flags: { noAtacaHasta: 0, intocableHasta: 0, sinProvocar: 0, sinVolar: 0, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
+      entro: est.turno, equipo: [], mods: [],
+      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, barrera: false, marcadaPor: null, guardiaTurno: 0, danada: false, inmune: false }
     };
     const ef = EFECTOS[cartaId];
     if (ef && ef.alCrear) ef.alCrear(est, u);
@@ -245,8 +255,14 @@
       log(est, `${nombre(est, guardian)} se interpone y recibe el golpe de ${nombre(est, u)}.`);
       u = guardian;
     }
+    if (u.flags.barrera) {
+      u.flags.barrera = false;
+      log(est, `La barrera de ${nombre(est, u)} absorbe el golpe y se rompe.`);
+      return 0;
+    }
     let n = cantidad;
     const ef = efectoDe(est, u);
+    if (tienePalabra(est, u, "duro")) n -= 1;
     if (ef.reduceDano) n -= ef.reduceDano(est, u, n, fuente) || 0;
     n = Math.max(0, n);
     if (fuente && fuente.tipo === "habilidad" && terrenoActivo(est, "catedral-del-juramento")) n = Math.max(0, Math.min(n, u.pv - 1));
@@ -322,40 +338,32 @@
     };
   }
 
-  /* Objetivos que puede atacar una unidad: { unidades: [uid], jugador: bool } */
-  function objetivosDeAtaque(est, uid) {
-    const hit = buscar(est, uid);
-    if (!hit) return { unidades: [], jugador: false };
-    const { u, j } = hit;
-    const enemigas = est.jugadores[1 - j].campo;
-    const ignoraProvocar = terrenoActivo(est, "puente-de-las-legiones") && est.terreno.dueno === j;
-    const vuela = tienePalabra(est, u, "volar");
-    const T = est.terreno;
-    const atacable = t => {
-      if (t.flags.intocableHasta >= est.turno) return false;
-      const ef = efectoDe(est, t);
-      if (ef.noAtacable && ef.noAtacable(est, t)) return false;
-      if (T && T.cartaId === "los-huesos" && t.dueno === T.dueno && (meta(est, t.cartaId).afinidad || []).includes("sombra")) return false;
-      if (tienePalabra(est, t, "volar") && !vuela) return false;
-      return true;
-    };
-    const validas = enemigas.filter(atacable);
-    const provocadoras = validas.filter(t => tienePalabra(est, t, "provocar"));
-    let permitidas = validas;
-    if (!ignoraProvocar && provocadoras.length) {
-      permitidas = validas.filter(t => tienePalabra(est, t, "provocar") || t.flags.marcadaPor === j);
-    }
-    return { unidades: permitidas.map(t => t.uid), jugador: ignoraProvocar || provocadoras.length === 0 };
-  }
-
-  function ataquesMax(est, u) { return efectoDe(est, u).ataquesMax || 1; }
-
+  /* --- Atacar y bloquear ------------------------------------------------------ */
+  /* ¿Puede esta unidad (del jugador activo) formar parte de un ataque ahora? */
   function unidadPuedeAtacar(est, u) {
-    if (est.ganador !== null || est.activo !== u.dueno) return false;
+    if (est.ganador !== null || est.activo !== u.dueno || est.combate) return false;
+    if (est.atacado === est.turno) return false;
     if (u.entro === est.turno) return false;
     if (u.flags.noAtacaHasta >= est.turno) return false;
-    if (u.ataques >= ataquesMax(est, u)) return false;
     return atqEfectivo(est, u) > 0;
+  }
+
+  /* ¿Puede la unidad `blk` bloquear a la atacante `atk`? Volar: solo la bloquean unidades que vuelan.
+     Temible: no la bloquean unidades con menos de 3 de ataque. */
+  function puedeBloquear(est, blk, atk) {
+    if (blk.dueno === atk.dueno) return false;
+    if (tienePalabra(est, blk, "noBloquea")) return false;
+    if (blk.flags.noBloqueaHasta >= est.turno) return false;
+    if (tienePalabra(est, atk, "volar") && !tienePalabra(est, blk, "volar")) return false;
+    if (tienePalabra(est, atk, "temible") && atqEfectivo(est, blk) < 3) return false;
+    return true;
+  }
+
+  /* Uids de las unidades del defensor que podrían bloquear a esta atacante */
+  function bloqueadoresPosibles(est, atkUid) {
+    const hit = buscar(est, atkUid);
+    if (!hit) return [];
+    return est.jugadores[1 - hit.j].campo.filter(b => puedeBloquear(est, b, hit.u)).map(b => b.uid);
   }
 
   /* --- Turnos -------------------------------------------------------------- */
@@ -366,7 +374,7 @@
     J.energiaMax = Math.min(C.ENERGIA_MAX, J.energiaMax + 1);
     J.energia = J.energiaMax;
     J.costeMenos = 0;
-    J.campo.forEach(u => { u.ataques = 0; u.flags.danada = false; });
+    J.campo.forEach(u => { u.flags.danada = false; });
     est.jugadores[1 - jIdx].campo.forEach(u => { u.flags.danada = false; });
     log(est, `— Turno ${est.turno}: ${J.nombre} —`);
     if (!(est.turno === 1)) robar(est, jIdx, 1, true);
@@ -437,6 +445,13 @@
   /* Quién tiene que actuar ahora: el rival si hay una reacción en el aire, si no el jugador activo */
   const quienActua = est => (est.pendiente ? est.pendiente.reactor : est.activo);
 
+  /* Algunas reacciones piden elegir a una unidad atacante: { tipo, validos: [{ u }] } o null */
+  function requisitoDeReaccion(est, jIdx, id) {
+    const ef = EFECTOS[id];
+    if (!ef || !ef.reaccion || ef.reaccion.objetivo !== "atacante" || !est.combate) return null;
+    return { tipo: "atacante", validos: est.combate.atacantes.filter(uid => buscar(est, uid)).map(uid => ({ u: uid })) };
+  }
+
   function jugarReaccion(est, jIdx, i, objetivoRaw) {
     const p = est.pendiente;
     if (jIdx !== p.reactor) return { error: "No te toca reaccionar." };
@@ -444,6 +459,8 @@
     const J = est.jugadores[jIdx];
     const id = J.mano[i];
     const ef = EFECTOS[id];
+    const req = requisitoDeReaccion(est, jIdx, id);
+    if (req && !(objetivoRaw && req.validos.some(v => igual(v, objetivoRaw)))) return { error: "Elige la unidad atacante a la que va dirigida." };
     J.energia -= costeDe(est, jIdx, id);
     J.mano.splice(i, 1);
     log(est, `${J.nombre} reacciona con ${meta(est, id).nombre}.`);
@@ -464,7 +481,9 @@
         resolverJugada(est, p.actor, id, objetivo, hueco);
       }
     } else if (p.tipo === "ataque") {
-      ejecutarAtaque(est, p.actor, p.datos.uid, p.datos.objetivo, p.cancelado);
+      iniciarBloqueo(est);
+    } else if (p.tipo === "bloqueo") {
+      resolverCombate(est);
     }
     revisarFinal(est);
     return { ok: true };
@@ -530,70 +549,173 @@
     }
   }
 
-  /* --- Atacar ---------------------------------------------------------------- */
-  function atacar(est, jIdx, uid, objetivoRaw) {
-    const hit = buscar(est, uid);
-    if (!hit || hit.j !== jIdx) return { error: "Esa unidad no es tuya." };
-    const u = hit.u;
-    if (u.entro === est.turno) return { error: "Esa unidad acaba de entrar." };
-    if (u.flags.noAtacaHasta >= est.turno) return { error: "Esa unidad no puede atacar este turno." };
-    if (u.ataques >= ataquesMax(est, u)) return { error: "Esa unidad ya atacó." };
-    if (atqEfectivo(est, u) <= 0) return { error: "Esa unidad no tiene ataque." };
-    const validos = objetivosDeAtaque(est, uid);
-    let objetivo;
-    if (objetivoRaw && objetivoRaw.j !== undefined) {
-      if (objetivoRaw.j !== 1 - jIdx || !validos.jugador) return { error: "No puedes atacar al jugador ahora." };
-      objetivo = { j: objetivoRaw.j };
-    } else if (objetivoRaw && objetivoRaw.u !== undefined) {
-      if (!validos.unidades.includes(objetivoRaw.u)) return { error: "No puedes atacar a esa unidad." };
-      objetivo = { u: objetivoRaw.u };
-    } else {
-      return { error: "Elige a quién atacar." };
+  /* --- Combate ------------------------------------------------------------------
+     est.combate = { atacantes: [uid], bloqueos: { uidAtacante: uidBloqueador } } mientras se decide el combate.
+     Pasos: 1) el jugador activo declara sus atacantes (una vez por turno); 2) el rival puede reaccionar si
+     tiene una reacción que encaje; 3) el rival elige sus bloqueos; 4) se resuelve todo a la vez.
+     est.ultimoCombate guarda cómo salió, para que la pantalla lo anime. */
+  function atacar(est, jIdx, uidsRaw) {
+    if (est.combate) return { error: "Ya hay un combate en marcha." };
+    if (est.atacado === est.turno) return { error: "Ya atacaste este turno: solo se ataca una vez." };
+    const lista = (Array.isArray(uidsRaw) ? uidsRaw : [uidsRaw]).filter(x => x !== undefined && x !== null);
+    if (!lista.length) return { error: "Elige al menos una unidad para atacar." };
+    if (new Set(lista).size !== lista.length) return { error: "Una unidad no puede atacar dos veces." };
+    const unidades = [];
+    for (const uid of lista) {
+      const hit = buscar(est, uid);
+      if (!hit || hit.j !== jIdx) return { error: "Esa unidad no es tuya." };
+      const u = hit.u;
+      if (u.entro === est.turno) return { error: `${nombre(est, u)} acaba de entrar.` };
+      if (u.flags.noAtacaHasta >= est.turno) return { error: `${nombre(est, u)} no puede atacar este turno.` };
+      if (atqEfectivo(est, u) <= 0) return { error: `${nombre(est, u)} no tiene ataque.` };
+      unidades.push(u);
     }
-    u.ataques += 1;
-    const ev = { tipo: "ataque", actor: jIdx, uid, objetivo };
-    if (abrirVentana(est, ev, { uid, objetivo })) return { ok: true, pendiente: true };
-    ejecutarAtaque(est, jIdx, uid, objetivo, false);
+    // De izquierda a derecha según su hueco: así el orden es igual en todos los navegadores
+    unidades.sort((a, b) => (a.hueco - b.hueco) || (a.uid - b.uid));
+    const uids = unidades.map(u => u.uid);
+    est.atacado = est.turno;
+    est.combate = { atacantes: uids, bloqueos: {} };
+    log(est, `${est.jugadores[jIdx].nombre} ataca con ${unidades.map(u => nombre(est, u)).join(", ")}.`);
+    if (abrirVentana(est, { tipo: "ataque", actor: jIdx, atacantes: uids }, { atacantes: uids })) return { ok: true, pendiente: true };
+    iniciarBloqueo(est);
     revisarFinal(est);
-    return { ok: true };
+    return { ok: true, pendiente: !!est.pendiente };
   }
 
-  function ejecutarAtaque(est, jIdx, uid, objetivo, cancelado) {
-    const hit = buscar(est, uid);
-    if (!hit) return;
-    const u = hit.u;
-    const tUnidad = objetivo.u !== undefined ? (buscar(est, objetivo.u) || {}).u || null : null;
-    if (objetivo.u !== undefined && !tUnidad) { log(est, `${nombre(est, u)} ataca, pero su objetivo ya no está.`); return; }
-    log(est, tUnidad ? `${nombre(est, u)} ataca a ${nombre(est, tUnidad)}.` : `${nombre(est, u)} ataca a ${est.jugadores[1 - jIdx].nombre}.`);
-    if (cancelado) { log(est, "El ataque se cancela."); return; }
-    const ef = efectoDe(est, u);
-    let ataque = atqEfectivo(est, u);
-    if (tUnidad) {
-      if (ef.bonusAtaque) ataque += ef.bonusAtaque(est, u, tUnidad) || 0;
-      if (tUnidad.flags.marcadaPor === jIdx) ataque += 2;
+  /* Tras las reacciones: si el rival puede bloquear a alguien, le toca elegir; si no, se resuelve ya. */
+  function iniciarBloqueo(est) {
+    const c = est.combate;
+    if (!c) return;
+    c.atacantes = c.atacantes.filter(uid => buscar(est, uid));
+    if (!c.atacantes.length) { log(est, "El ataque se desvanece."); est.combate = null; return; }
+    if (!c.atacantes.some(uid => bloqueadoresPosibles(est, uid).length)) { resolverCombate(est); return; }
+    est.pendienteN += 1;
+    est.pendiente = { id: est.pendienteN, tipo: "bloqueo", actor: est.activo, reactor: 1 - est.activo, datos: { atacantes: c.atacantes.slice() }, evento: { tipo: "bloqueo", actor: est.activo }, cancelado: false };
+  }
+
+  /* pares: [[uidAtacante, uidBloqueador], ...]. Cada atacante, un bloqueador como mucho, y viceversa. */
+  function bloquear(est, jIdx, pares) {
+    const p = est.pendiente;
+    if (!p || p.tipo !== "bloqueo" || !est.combate) return { error: "No hay nada que bloquear." };
+    if (jIdx !== p.reactor) return { error: "No te toca bloquear." };
+    if (!Array.isArray(pares)) return { error: "Bloqueos inválidos." };
+    const atacadas = new Set(), bloqueando = new Set(), mapa = {};
+    for (const par of pares) {
+      if (!Array.isArray(par) || par.length !== 2) return { error: "Bloqueo inválido." };
+      const [a, b] = par;
+      if (!est.combate.atacantes.includes(a)) return { error: "Esa unidad no está atacando." };
+      if (atacadas.has(a)) return { error: "Un atacante solo puede ser bloqueado por una unidad." };
+      if (bloqueando.has(b)) return { error: "Una unidad solo puede bloquear a un atacante." };
+      const ha = buscar(est, a), hb = buscar(est, b);
+      if (!ha) return { error: "Ese atacante ya no está." };
+      if (!hb || hb.j !== jIdx) return { error: "Esa unidad no es tuya." };
+      if (!puedeBloquear(est, hb.u, ha.u)) return { error: `${nombre(est, hb.u)} no puede bloquear a ${nombre(est, ha.u)}.` };
+      atacadas.add(a); bloqueando.add(b); mapa[a] = b;
     }
-    const contra = tUnidad ? atqEfectivo(est, tUnidad) : 0;
-    infligir(est, objetivo, ataque, { tipo: "combate", uid: u.uid });
-    if (!tUnidad && ef.alAtacarJugador && buscar(est, u.uid)) ef.alAtacarJugador({ est, M, u, j: jIdx });
-    if (tUnidad && contra > 0 && buscar(est, u.uid)) infligir(est, { u: u.uid }, contra, { tipo: "combate", uid: tUnidad.uid });
+    est.combate.bloqueos = mapa;
+    pares.forEach(([a, b]) => log(est, `${nombre(est, buscar(est, b).u)} bloquea a ${nombre(est, buscar(est, a).u)}.`));
+    if (!pares.length) log(est, `${est.jugadores[jIdx].nombre} no bloquea.`);
+    return resolverPendiente(est);
+  }
+
+  /* Daño de una unidad contra otra en combate (con sus bonificaciones) */
+  function danoDeCombate(est, u, contra) {
+    let d = atqEfectivo(est, u);
+    if (contra) {
+      const ef = efectoDe(est, u);
+      if (ef.bonusAtaque) d += ef.bonusAtaque(est, u, contra) || 0;
+      if (contra.flags.marcadaPor === u.dueno) d += 2;
+    }
+    return d;
+  }
+
+  function instantanea(est, u) {
+    return { uid: u.uid, cartaId: u.cartaId, dueno: u.dueno, atq: atqEfectivo(est, u), pv: u.pv, pvMax: u.pvMax };
+  }
+
+  function resolverCombate(est) {
+    const c = est.combate;
+    est.combate = null;
+    if (!c) return;
+    const A = est.activo, D = 1 - A;
+    // 1) Quién pelea con quién y cuánto daño hace cada uno (con los números de antes del combate)
+    const pares = [];
+    c.atacantes.forEach(uid => {
+      const ha = buscar(est, uid);
+      if (!ha) return;
+      const bUid = c.bloqueos[uid];
+      const hb = bUid !== undefined ? buscar(est, bUid) : null;
+      const a = ha.u, b = hb ? hb.u : null;
+      pares.push({ a, b, dA: danoDeCombate(est, a, b), dB: b ? danoDeCombate(est, b, a) : 0, antes: { a: instantanea(est, a), b: b ? instantanea(est, b) : null }, jugador: 0, aMuere: false, bMuere: false });
+    });
+    est.combateN = (est.combateN || 0) + 1;
+    // 2) Los golpes. Veloz golpea primero y, si mata, no recibe el golpe de vuelta. El resto, a la vez.
+    const golpe = (de, a, dano, pvAntes, esAtacante, par) => {
+      if (dano <= 0) return;
+      infligir(est, { u: a.uid }, dano, { tipo: "combate", uid: de.uid });
+      if (esAtacante && tienePalabra(est, de, "arrollar")) {
+        const exceso = dano - pvAntes;
+        if (exceso > 0 && est.ganador === null) {
+          par.jugador += infligir(est, { j: D }, exceso, { tipo: "combate", uid: de.uid });
+          const ef = efectoDe(est, de);
+          if (ef.alAtacarJugador && buscar(est, de.uid)) ef.alAtacarJugador({ est, M, u: de, j: A });
+        }
+      }
+    };
+    pares.forEach(par => {
+      const { a, b } = par;
+      if (!b) return;
+      const vA = tienePalabra(est, a, "veloz"), vB = tienePalabra(est, b, "veloz");
+      if (vA && !vB) {
+        const pvB = b.pv;
+        golpe(a, b, par.dA, pvB, true, par);
+        if (buscar(est, b.uid)) golpe(b, a, par.dB, a.pv, false, par);
+        else log(est, `${nombre(est, b)} cae antes de poder golpear.`);
+      } else if (vB && !vA) {
+        const pvA = a.pv;
+        golpe(b, a, par.dB, pvA, false, par);
+        if (buscar(est, a.uid)) golpe(a, b, par.dA, b.pv, true, par);
+        else log(est, `${nombre(est, a)} cae antes de poder golpear.`);
+      } else {
+        const pvA = a.pv, pvB = b.pv;
+        golpe(a, b, par.dA, pvB, true, par);
+        golpe(b, a, par.dB, pvA, false, par);
+      }
+    });
+    // Los atacantes sin bloqueo golpean al jugador
+    pares.forEach(par => {
+      if (par.b || est.ganador !== null) return;
+      const { a } = par;
+      par.jugador += infligir(est, { j: D }, par.dA, { tipo: "combate", uid: a.uid });
+      const ef = efectoDe(est, a);
+      if (ef.alAtacarJugador && buscar(est, a.uid)) ef.alAtacarJugador({ est, M, u: a, j: A });
+    });
+    pares.forEach(par => { par.aMuere = !buscar(est, par.a.uid); par.bMuere = !!par.b && !buscar(est, par.b.uid); });
+    est.ultimoCombate = {
+      id: est.combateN, turno: est.turno, atacante: A,
+      pares: pares.map(par => ({ a: par.antes.a, b: par.antes.b, dA: par.dA, dB: par.dB, jugador: par.jugador, aMuere: par.aMuere, bMuere: par.bMuere }))
+    };
+    revisarFinal(est);
   }
 
   /* Quién envió una acción ya guardada (para repetir una partida desde cero). */
   function emisorDe(est, accion) {
-    if (est.pendiente && accion && (accion.t === "reaccionar" || (accion.t === "pasar" && !accion.forzar))) return est.pendiente.reactor;
+    if (est.pendiente && accion && (accion.t === "reaccionar" || accion.t === "bloquear" || (accion.t === "pasar" && !accion.forzar))) return est.pendiente.reactor;
     return est.activo;
   }
   const reproducir = (est, accion) => aplicar(est, accion, emisorDe(est, accion));
 
   /* Aplica una acción de un jugador.
-       { t:'jugar', i, o?, h? } | { t:'atacar', u, o } | { t:'fin' }
-       { t:'reaccionar', i } | { t:'pasar', forzar? }  (mientras hay una acción pendiente) */
+       { t:'jugar', i, o?, h? } | { t:'atacar', u: [uid, ...] } | { t:'fin' }
+       { t:'reaccionar', i, o? } | { t:'bloquear', b: [[uidAtacante, uidBloqueador], ...] } | { t:'pasar', forzar? }
+       (las tres últimas, solo mientras hay una acción pendiente) */
   function aplicar(est, accion, jIdx) {
     if (est.ganador !== null) return { error: "La partida ya terminó." };
     if (!accion || typeof accion !== "object") return { error: "Acción inválida." };
     const p = est.pendiente;
     if (p) {
       if (accion.t === "reaccionar") return jugarReaccion(est, jIdx, accion.i, accion.o);
+      if (accion.t === "bloquear") return bloquear(est, jIdx, accion.b);
       if (accion.t === "pasar") {
         // El rival deja pasar. El jugador activo solo puede seguir sin esperar si pasó el tiempo (lo comprueba el servidor).
         if (jIdx === p.reactor || (accion.forzar && jIdx === p.actor)) return resolverPendiente(est);
@@ -603,10 +725,11 @@
     }
     if (accion.t === "pasar") return { ok: true }; // sobra: la reacción ya se resolvió
     if (accion.t === "reaccionar") return { error: "No hay nada a lo que reaccionar." };
+    if (accion.t === "bloquear") return { error: "No hay nada que bloquear." };
     if (jIdx !== est.activo) return { error: "No es tu turno." };
     if (accion.t === "jugar") return jugarCarta(est, jIdx, accion.i, accion.o, accion.h);
-    if (accion.t === "atacar") return atacar(est, jIdx, accion.u, accion.o);
-    if (accion.t === "fin") { finalizarTurno(est); return { ok: true }; }
+    if (accion.t === "atacar") return atacar(est, jIdx, accion.u);
+    if (accion.t === "fin") { est.combate = null; finalizarTurno(est); return { ok: true }; }
     return { error: "Acción desconocida." };
   }
 
@@ -615,7 +738,23 @@
     if (est.ganador !== null) return [];
     if (est.pendiente) {
       const p = est.pendiente;
-      return [...reaccionesPosibles(est, p.reactor, p.evento).map(i => ({ t: "reaccionar", i })), { t: "pasar" }];
+      if (p.tipo === "bloqueo") {
+        // Sin bloquear, cada bloqueo suelto posible y una asignación completa
+        const out = [{ t: "bloquear", b: [] }];
+        const libres = new Set(est.jugadores[p.reactor].campo.map(u => u.uid)), completo = [];
+        est.combate.atacantes.forEach(a => {
+          const posibles = bloqueadoresPosibles(est, a);
+          posibles.forEach(b => out.push({ t: "bloquear", b: [[a, b]] }));
+          const b = posibles.find(x => libres.has(x));
+          if (b !== undefined) { libres.delete(b); completo.push([a, b]); }
+        });
+        if (completo.length > 1) out.push({ t: "bloquear", b: completo });
+        return out;
+      }
+      return [...reaccionesPosibles(est, p.reactor, p.evento).flatMap(i => {
+        const req = requisitoDeReaccion(est, p.reactor, est.jugadores[p.reactor].mano[i]);
+        return req ? req.validos.map(o => ({ t: "reaccionar", i, o })) : [{ t: "reaccionar", i }];
+      }), { t: "pasar" }];
     }
     const jIdx = est.activo, J = est.jugadores[jIdx], out = [];
     J.mano.forEach((id, i) => {
@@ -627,12 +766,10 @@
       else if (req.validos.length) req.validos.forEach(v => out.push({ t: "jugar", i, o: v }));
       else if (req.opcional) out.push({ t: "jugar", i });
     });
-    J.campo.forEach(u => {
-      if (!unidadPuedeAtacar(est, u)) return;
-      const v = objetivosDeAtaque(est, u.uid);
-      v.unidades.forEach(t => out.push({ t: "atacar", u: u.uid, o: { u: t } }));
-      if (v.jugador) out.push({ t: "atacar", u: u.uid, o: { j: 1 - jIdx } });
-    });
+    // Atacar: cada unidad lista por separado y todas juntas
+    const listas = J.campo.filter(u => unidadPuedeAtacar(est, u));
+    listas.forEach(u => out.push({ t: "atacar", u: [u.uid] }));
+    if (listas.length > 1) out.push({ t: "atacar", u: listas.map(u => u.uid) });
     out.push({ t: "fin" });
     return out;
   }
@@ -641,12 +778,13 @@
   /* jugadores: [{ id, nombre, mazo: [cartaId, ...] }, ...]. cartas: { id: datos de carta }. */
   function crearPartida({ semilla, jugadores, primero, cartas }) {
     const est = {
-      v: 1, rng: semilla >>> 0, turno: 0, activo: primero, cartas: cartas || {},
+      v: 2, rng: semilla >>> 0, turno: 0, activo: primero, cartas: cartas || {},
       jugadores: jugadores.map(j => ({
         id: j.id, nombre: j.nombre, vida: C.VIDA, energia: 0, energiaMax: 0,
         mazo: j.mazo.slice(), mano: [], campo: [], cementerio: [], descartes: [], fatiga: 0, costeMenos: 0, malus: null
       })),
-      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0
+      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0,
+      combate: null, atacado: 0, combateN: 0, ultimoCombate: null
     };
     est.jugadores.forEach(J => barajar(est, J.mazo));
     est.jugadores.forEach(J => robar(est, est.jugadores.indexOf(J), C.MANO_INICIAL, true));
@@ -679,8 +817,8 @@
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad,
-    atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, objetivosDeAtaque, unidadPuedeAtacar,
-    puedeApuntarHabilidad, terrenoActivo, ataquesMax
+    atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, requisitoDeReaccion, unidadPuedeAtacar,
+    puedeBloquear, bloqueadoresPosibles, puedeApuntarHabilidad, terrenoActivo
   };
 
   raiz.CartasMotor = M;
