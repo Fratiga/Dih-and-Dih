@@ -473,5 +473,96 @@ window.CRONOLOGIA_B = [
       <p>Darian empezó a guiarlos hacia la salida, explicándoles cómo abrirse paso
       desde adentro.</p>
     `
+  },
+  {
+    id: "capitulo-10",
+    orden: 10,
+    numero: "Capítulo X",
+    title: "Los Corazones de la Bestia",
+    fecha: "Dentro de la bestia",
+    content: `
+      <p>Con la explicación de Darian todavía fresca, el grupo se dividió para
+      atacar. Para salir de la bestia había que destruir cuatro de sus corazones,
+      y los corazones no estaban juntos, así que cada grupo fue por su lado con la
+      idea de romperlos de forma coordinada.</p>
+
+      <p>Llegar hasta ellos tuvo sus altibajos, pero Hooey y Laia lograron cumplir
+      su cometido y los corazones se rompieron al mismo tiempo.</p>
+
+      <h4>La carne se desmorona</h4>
+
+      <p>Las paredes empezaron a desprenderse en cuanto los corazones cedieron. La
+      carne de la bestia se venía abajo a pedazos, y esos pedazos no se quedaron
+      quietos: los restos se juntaron y levantaron una ola de criaturas que avanzaba
+      directo hacia el grupo. Contra eso no había pelea posible. Corrieron por sus
+      vidas hacia la salida más cercana.</p>
+
+      <p>Cada quien huyó como pudo. Algunos se fusionaron, otros corrieron de la mano
+      y hubo incluso quienes lanzaron a otros.</p>
+
+      <p>No todos corrían con la misma suerte. Torvrena estaba muy mal herida, y la
+      ola ya casi la alcanzaba cuando Cassius hizo lo último que se esperaba de él.
+      Había prometido acompañarlos hasta que decidiera huir, y esta vez decidió lo
+      contrario: fue por ella, la sacó de ahí y logró llevarla hasta el otro lado,
+      a salvo.</p>
+
+      <h4>La cueva de los huesos</h4>
+
+      <p>Del otro lado ya no los perseguía nada, y el grupo se dejó caer a descansar
+      en lo que parecía una cueva llena de huesos. Olía a cosas que nadie supo
+      describir y nadie quiso intentarlo.</p>
+
+      <p>Entonces apareció Darian. Lo habían dado por muerto, y llegó hasta ellos por
+      su cuenta, pero se negó a participar en la salida: llevaba doce años dentro de
+      la bestia y la idea de dejarla lo aterraba.</p>
+
+      <p>Eledar intentó convencerlo y solo consiguió asustarlo más. Ryn tuvo que
+      intervenir con una excusa: que su capitán lo estaba llamando y que debía ir
+      con ellos. Funcionó, y el grupo sumó un miembro más.</p>
+    `
+  },
+  {
+    id: "capitulo-11",
+    orden: 11,
+    numero: "Capítulo XI",
+    title: "El Laboratorio",
+    fecha: "Más adentro de la bestia",
+    content: `
+      <p>Siguieron por un camino angosto, y a mitad de él se cruzaron con dos
+      figuras que no esperaban encontrar: Clef, una mujer aarakocra, y Ulis, una
+      niña ajolote.</p>
+
+      <p>Las dos sabían más que ellos. La bestia, les contaron, estaba hecha de
+      capas, y para salir había que llegar hasta el centro, donde trabajaba Dexter,
+      el dueño de aquel lugar.</p>
+
+      <p>Con eso retomaron la marcha, esta vez con un objetivo claro. Había que
+      llegar al centro para salir por fin de ahí, en un sitio que a cada paso se
+      volvía más desconocido y más despiadado.</p>
+
+      <h4>La puerta del Coronel</h4>
+
+      <p>Después de un par de encontronazos con enemigos, en lo que ya parecían
+      instalaciones de laboratorio, dieron con una criatura que custodiaba una
+      puerta. Era la que suponían que debían cruzar para llegar hasta Dexter, y la
+      criatura, que exigía que la llamaran Coronel Tobi, no pensaba dejar pasar a
+      nadie.</p>
+
+      <p>Intentaron engañarlo y no lo pasaron bien. El Coronel era muy terco, y el
+      estruendo que se armó atrajo a unos doctores que trabajaban por ahí: Baltasar
+      Sorel, Elías Morcant y Nico.</p>
+
+      <p>La batalla fue larga y dura. Al final lograron hacer retroceder a los
+      doctores y derribar al Coronel, y el paso quedó libre.</p>
+
+      <h4>La enfermera</h4>
+
+      <p>Pasadas unas horas llegaron a otras instalaciones, bastante más sofisticadas
+      que las anteriores, y ahí se encontraron con la enfermera Harrow.</p>
+
+      <p>Harrow se interesó en Laia y trató de convencerlo de que se quedara para
+      estudiarlo en persona. Laia se negó, y la negativa terminó en combate. En medio
+      de la pelea volvió a aparecer Ulis.</p>
+    `
   }
 ];

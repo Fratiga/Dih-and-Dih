@@ -1233,7 +1233,7 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Centinela",
     faccion: "fundacion-dexter",
-    primeraAparicion: "",
+    primeraAparicion: "El Laboratorio",
     lado: ["B"],
     relacionesConocidas: [],
     content: `
@@ -1261,7 +1261,7 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Médico",
     faccion: "fundacion-dexter",
-    primeraAparicion: "",
+    primeraAparicion: "El Laboratorio",
     lado: ["B"],
     relacionesConocidas: [
       { id: "elias-morcant", nota: "Su cirujano" },
@@ -1285,7 +1285,7 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Cirujano",
     faccion: "fundacion-dexter",
-    primeraAparicion: "",
+    primeraAparicion: "El Laboratorio",
     lado: ["B"],
     relacionesConocidas: [
       { id: "baltasar-sorel", nota: "Lo ve como una figura de autoridad" },
@@ -1309,7 +1309,7 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Asistente de laboratorio",
     faccion: "fundacion-dexter",
-    primeraAparicion: "",
+    primeraAparicion: "El Laboratorio",
     lado: ["B"],
     relacionesConocidas: [
       { id: "baltasar-sorel", nota: "Busca constantemente su atención" },
@@ -1333,7 +1333,7 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "Científica en pasantía",
     faccion: "fundacion-dexter",
-    primeraAparicion: "",
+    primeraAparicion: "El Laboratorio",
     lado: ["B"],
     relacionesConocidas: [
       { id: "ulis", nota: "Le da órdenes y ella las sigue" },
@@ -1364,7 +1364,7 @@ window.PERSONAJES = [
     lugarOrigen: "",
     ocupacion: "",
     faccion: "",
-    primeraAparicion: "",
+    primeraAparicion: "El Laboratorio",
     lado: ["B"],
     relacionesConocidas: [
       { id: "clef", nota: "Sigue sus órdenes" },
