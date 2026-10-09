@@ -506,10 +506,10 @@ window.CRONOLOGIA_B = [
       contrario: fue por ella, la sacó de ahí y logró llevarla hasta el otro lado,
       a salvo.</p>
 
-      <h4>La cueva de los huesos</h4>
+      <h4>Otra cueva de carne</h4>
 
       <p>Del otro lado ya no los perseguía nada, y el grupo se dejó caer a descansar
-      en lo que parecía una cueva llena de huesos. Olía a cosas que nadie supo
+      en lo que parecía otra cueva de carne. Olía a cosas que nadie supo
       describir y nadie quiso intentarlo.</p>
 
       <p>Entonces apareció Darian. Lo habían dado por muerto, y llegó hasta ellos por
