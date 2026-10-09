@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.9.0
+// @version      2.10.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -403,6 +403,13 @@
     area.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true }));
   }
 
+  /* Lo que se manda al chat al usar una tirada: el comando y, si la ficha lo trae
+     (conjuros), la descripción en líneas de texto aparte (item.chat). */
+  function textoDeEnvio(item, modo) {
+    const comando = item.cmd[modo] || item.cmd.normal;
+    return item.chat ? comando + "\n" + item.chat : comando;
+  }
+
   function enviarAlChat(texto) {
     let lineas = String(texto).split("\n").filter(Boolean);
     // En susurro (solo para el máster) se omiten las acciones narradas (/em) y el resto va como "/w gm ..."
@@ -618,7 +625,7 @@
   function lanzar(item) {
     if (!estado.confirmar) {
       if (item.municion && item.municion.actual <= 0) { aviso("Sin munición. Recárgala en tu ficha del Compendio."); return; }
-      enviarAlChat(item.cmd[estado.modo] || item.cmd.normal);
+      enviarAlChat(textoDeEnvio(item, estado.modo));
       gastarMunicion(item);
       return;
     }
@@ -684,7 +691,7 @@
 
     const selModo = fondo.querySelector("#cr20-m-modo");
     const area = fondo.querySelector("#cr20-m-cmd");
-    const poner = modo => { area.value = item.cmd[modo] || item.cmd.normal; };
+    const poner = modo => { area.value = textoDeEnvio(item, modo); };
     selModo.value = item.cmd[estado.modo] ? estado.modo : "normal";
     poner(selModo.value);
     selModo.addEventListener("change", () => poner(selModo.value));

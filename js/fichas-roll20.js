@@ -82,6 +82,45 @@ function fichasComandoHechizoCuracion(nombreHechizo, curacionFormula) {
   return `${nombreHechizo} — Curación: [[${curacionFormula}]] PV`;
 }
 
+/* Descripción de un conjuro para el chat de Roll20. La manda la extensión
+   (roll20/compendio-roll20.user.js) después de la tirada, una línea por mensaje:
+   primero los datos (nivel, escuela, tiempo, alcance...) y luego cada párrafo
+   de la descripción, partido en trozos para que ningún mensaje sea enorme.
+   Devuelve "" si el conjuro no tiene nada que contar. */
+const FICHAS_CHAT_MAX_LINEA = 900;
+const FICHAS_CHAT_MAX_TOTAL = 3500;
+
+// Para que el chat no interprete la descripción como un comando: una línea que
+// empieza con / ! & # o un ?{...} / @{...} / %{...} se dejaría de leer como texto.
+function fichasLimpiarLineaChat(linea) {
+  return String(linea).replace(/([?@%])\{/g, "$1\u200b{").replace(/^([\/!&#])/, "\u200b$1");
+}
+
+function fichasPartirLinea(linea, max) {
+  const trozos = [];
+  let resto = linea;
+  while (resto.length > max) {
+    let corte = resto.lastIndexOf(". ", max);
+    if (corte < max * 0.5) corte = resto.lastIndexOf(" ", max);
+    if (corte < max * 0.5) corte = max;
+    else corte += 1;
+    trozos.push(resto.slice(0, corte).trim());
+    resto = resto.slice(corte).trim();
+  }
+  if (resto) trozos.push(resto);
+  return trozos;
+}
+
+function fichasChatDeHechizo(h, etiquetaNivel) {
+  const datos = [etiquetaNivel, h.escuela, h.tiempo, h.alcance, h.duracion, h.componentes, h.concentracion ? "Concentración" : "", h.ritual ? "Ritual" : ""].filter(Boolean);
+  let desc = String(h.descripcion || "").replace(/\r/g, "").trim();
+  if (!desc && datos.length <= 1) return "";
+  if (desc.length > FICHAS_CHAT_MAX_TOTAL) desc = desc.slice(0, FICHAS_CHAT_MAX_TOTAL).trimEnd() + "…";
+  const lineas = [datos.join(" · ")];
+  desc.split("\n").map(l => l.trim()).filter(Boolean).forEach(l => lineas.push(...fichasPartirLinea(l, FICHAS_CHAT_MAX_LINEA)));
+  return lineas.map(fichasLimpiarLineaChat).join("\n");
+}
+
 /* --- Rasgos con fórmula libre --------------------------------------------
    El jugador escribe su propia expresión (puede ser un d20+X, un dado de
    daño, un texto con [[...]] ya armado, etc.) — aquí solo se envuelve con

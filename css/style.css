@@ -2970,9 +2970,22 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   font-family: inherit; font-size: .78rem; cursor: pointer;
 }
 .fichas-vista-toggle button.activo { color: var(--text); background: var(--panel-2); }
-.fichas-hechizos--lista { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
-.fichas-hechizos--cubos { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.fichas-hechizos { margin-bottom: 12px; }
+.fichas-hechizos--lista .fh-grupo-lista { display: flex; flex-direction: column; gap: 4px; }
+.fichas-hechizos--cubos .fh-grupo-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
 .fichas-hechizos--cubos .fichas-hechizo[open] { grid-column: 1 / -1; }
+/* Los conjuros se agrupan por nivel: Trucos, Nivel 1, 2... y los niveles con letra al final */
+.fh-grupo[hidden] { display: none; }
+.fh-grupo + .fh-grupo { margin-top: 16px; }
+.fh-grupo-titulo {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 0 0 5px;
+  border-bottom: 2px solid var(--accent-soft, var(--border));
+  font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.fh-grupo-n {
+  min-width: 20px; padding: 1px 6px; text-align: center; font-size: .68rem; letter-spacing: 0;
+  color: var(--text, inherit); background: var(--panel-2); border: 1px solid var(--border);
+}
 .fichas-hechizo { border: 1px solid var(--border); background: var(--fondo-tarjeta, var(--panel)); }
 .fichas-hechizo[hidden] { display: none; }
 .fichas-hechizo > summary {

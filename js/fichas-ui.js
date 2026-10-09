@@ -1072,7 +1072,7 @@
         <button type="button" class="fichas-link-button" id="fhColapsar">Colapsar todo</button>
         <span id="fhConteo" class="fichas-puntos-info"></span>
       </div>
-      <div data-lista="hechizos" class="fichas-hechizos fichas-hechizos--${vista}">${p.hechizos.map(h => filaHechizo(h, h.id === hechizoParaAbrir)).join("")}</div>
+      <div data-lista="hechizos" class="fichas-hechizos fichas-hechizos--${vista}">${htmlGruposHechizos(p.hechizos)}</div>
       <button type="button" class="secondary-button fichas-add-btn" data-add="hechizo">+ Agregar conjuro</button>`;
     return `
     <section class="fichas-panel" data-panel="hechizos">
@@ -1098,8 +1098,90 @@
       </div>`;
   }
 
+  /* El nivel de un conjuro es un número (0 = truco) o, si el jugador escribe otra
+     cosa, ese texto tal cual (una letra, por ejemplo). Los números se ordenan
+     primero y las letras después, y cada nivel distinto tiene su propio grupo
+     en la lista. */
+  function normalizarNivelHechizo(v) {
+    const t = String(v == null ? "" : v).trim().slice(0, 12);
+    if (t === "") return 0;
+    if (/^\d+$/.test(t)) return Number(t);
+    return t.length === 1 ? t.toUpperCase() : t; // "a" y "A" son el mismo nivel
+  }
+
+  function infoNivelHechizo(h) {
+    const n = normalizarNivelHechizo(h.nivel);
+    if (typeof n === "string") return { clave: `t${n.toLowerCase()}`, texto: n, etiqueta: n, corto: `nv. ${n}`, titulo: `Nivel ${n}` };
+    if (n > 0) return { clave: `n${n}`, numero: n, etiqueta: `Nv ${n}`, corto: `nv. ${n}`, titulo: `Nivel ${n}` };
+    return { clave: "n0", numero: 0, etiqueta: "Truco", corto: "truco", titulo: "Trucos" };
+  }
+
   function etiquetaNivelHechizo(h) {
-    return Number(h.nivel) > 0 ? `Nv ${h.nivel}` : "Truco";
+    return infoNivelHechizo(h).etiqueta;
+  }
+
+  // Trucos, luego 1, 2, 3... y al final los niveles escritos con letras (A, B...)
+  function compararNivelesHechizo(a, b) {
+    const aNum = a.numero !== undefined;
+    const bNum = b.numero !== undefined;
+    if (aNum && bNum) return a.numero - b.numero;
+    if (aNum !== bNum) return aNum ? -1 : 1;
+    return a.texto.localeCompare(b.texto, "es", { numeric: true, sensitivity: "base" });
+  }
+
+  function htmlGrupoHechizos(info, filas, cuantos) {
+    return `
+      <section class="fh-grupo" data-fh-grupo="${esc(info.clave)}" data-fh-numero="${info.numero === undefined ? "" : info.numero}" data-fh-texto="${esc(info.texto || "")}">
+        <h4 class="fh-grupo-titulo"><span>${esc(info.titulo)}</span><span class="fh-grupo-n">${cuantos}</span></h4>
+        <div class="fh-grupo-lista">${filas}</div>
+      </section>`;
+  }
+
+  function htmlGruposHechizos(hechizos) {
+    const grupos = new Map();
+    hechizos.forEach(h => {
+      const info = infoNivelHechizo(h);
+      if (!grupos.has(info.clave)) grupos.set(info.clave, { info, hechizos: [] });
+      grupos.get(info.clave).hechizos.push(h);
+    });
+    return [...grupos.values()]
+      .sort((a, b) => compararNivelesHechizo(a.info, b.info))
+      .map(g => htmlGrupoHechizos(g.info, g.hechizos.map(h => filaHechizo(h, h.id === hechizoParaAbrir)).join(""), g.hechizos.length))
+      .join("");
+  }
+
+  /* Cuando un conjuro se cierra después de cambiarle el nivel, se pasa a su grupo.
+     No se hace mientras se escribe (la fila se movería bajo los dedos) ni con la
+     fila abierta. */
+  function reagruparHechizo(detalle) {
+    const p = personajeActual;
+    const cont = detalle.closest('[data-lista="hechizos"]');
+    const h = p && p.hechizos.find(x => x.id === detalle.dataset.hechizo);
+    if (!cont || !h || detalle.open) return;
+    const info = infoNivelHechizo(h);
+    const origen = detalle.closest(".fh-grupo");
+    if (origen && origen.dataset.fhGrupo === info.clave) return;
+
+    let destino = [...cont.querySelectorAll(".fh-grupo")].find(g => g.dataset.fhGrupo === info.clave);
+    if (!destino) {
+      const plantilla = document.createElement("template");
+      plantilla.innerHTML = htmlGrupoHechizos(info, "", 0).trim();
+      destino = plantilla.content.firstElementChild;
+      const despues = [...cont.querySelectorAll(".fh-grupo")].find(g => compararNivelesHechizo(info, infoDeGrupo(g)) < 0);
+      cont.insertBefore(destino, despues || null);
+    }
+    // Dentro del grupo conserva el orden que tiene en la ficha
+    const lista = destino.querySelector(".fh-grupo-lista");
+    const indice = id => p.hechizos.findIndex(x => x.id === id);
+    const siguiente = [...lista.children].find(f => indice(f.dataset.hechizo) > indice(h.id));
+    lista.insertBefore(detalle, siguiente || null);
+    if (origen && !origen.querySelector(".fichas-hechizo")) origen.remove();
+    aplicarFiltroHechizos();
+    detalle.scrollIntoView({ block: "nearest" });
+  }
+
+  function infoDeGrupo(g) {
+    return g.dataset.fhTexto ? { texto: g.dataset.fhTexto } : { numero: Number(g.dataset.fhNumero) || 0 };
   }
 
   function filaHechizo(h, abierto) {
@@ -1124,7 +1206,7 @@
           <button type="button" class="fichas-repetible-remove" data-remove="hechizo:${h.id}">×</button>
         </div>
         <div class="fichas-field-grid fichas-grid-chico">
-          <div class="fichas-field"><label>Nivel</label>${campoNumero(`__hechizo__.${h.id}.nivel`, h.nivel)}</div>
+          <div class="fichas-field"><label title="Un número (0 es un truco) o una letra">Nivel</label>${campoTexto(`__hechizo__.${h.id}.nivel`, normalizarNivelHechizo(h.nivel), 'maxlength="12" placeholder="0 = truco" autocomplete="off"')}</div>
           <div class="fichas-field"><label>Tipo</label>${campoSelect(`__hechizo__.${h.id}.tipo`, h.tipo || "ninguno", [["ataque", "Ataque mágico"], ["salvacion", "Requiere salvación"], ["ninguno", "Ninguno"]])}</div>
           <div class="fichas-field"><label>Daño/curación</label>${campoTexto(`__hechizo__.${h.id}.dano`, h.dano, 'placeholder="8d6 o 1d4+3"')}</div>
           <div class="fichas-field"><label>Tipo de daño</label>${campoTexto(`__hechizo__.${h.id}.tipoDano`, h.tipoDano)}</div>
@@ -1132,6 +1214,7 @@
         <div class="fichas-field"><label>Descripción</label>${campoTextarea(`__hechizo__.${h.id}.descripcion`, h.descripcion, 2)}</div>
         <div class="fichas-copiar-fila">
           <button type="button" class="fichas-copiar-btn" data-copiar="hechizo" data-id="${h.id}">Copiar para Roll20</button>
+          <label class="fichas-compacto-check" title="Con la extensión de Roll20, después de la tirada manda al chat los datos y la descripción del conjuro"><input type="checkbox" data-bind="__hechizo__.${h.id}.descripcionEnChat" ${h.descripcionEnChat !== false ? "checked" : ""}> Pegar la descripción en el chat</label>
         </div>
         ${mas(`
           <div class="fichas-field-grid fichas-grid-chico">
@@ -1184,6 +1267,11 @@
       const coincide = (!q || d.dataset.nombre.includes(q)) && (!filtroHechizos.soloDisponibles || esDisp);
       d.hidden = !coincide;
       if (coincide) visibles += 1;
+    });
+    document.querySelectorAll("#fichasTabsPaneles .fh-grupo").forEach(g => {
+      const aVista = g.querySelectorAll(".fichas-hechizo:not([hidden])").length;
+      g.hidden = aVista === 0;
+      g.querySelector(".fh-grupo-n").textContent = aVista;
     });
     const conteo = document.getElementById("fhConteo");
     if (conteo) conteo.textContent = `${lista.length} ${lista.length === 1 ? "conjuro" : "conjuros"} · ${disponibles} ${disponibles === 1 ? "disponible" : "disponibles"}` + (visibles !== lista.length ? ` · ${visibles} a la vista` : "");
@@ -1518,6 +1606,7 @@
     cont.addEventListener("toggle", e => {
       const d = e.target;
       if (d.classList && d.classList.contains("fichas-hechizo") && d.open && !d.dataset.listo) llenarCuerpoHechizo(d);
+      if (d.classList && d.classList.contains("fichas-hechizo") && !d.open && !imprimiendo) reagruparHechizo(d);
       if (!imprimiendo && d.classList) {
         const clave = d.classList.contains("fichas-fila") ? d.dataset.fila : (d.classList.contains("fichas-hechizo") ? `hechizo:${d.dataset.hechizo}` : null);
         if (clave) { if (d.open) filasAbiertas.add(clave); else filasAbiertas.delete(clave); }
@@ -1562,7 +1651,7 @@
           const nuevo = m[2] === "nombre" ? e.target.value : h.nombre;
           d.querySelector(".fh-nombre").textContent = nuevo || "Sin nombre";
           d.dataset.nombre = normalizarBusqueda(nuevo);
-          if (m[2] === "nivel") d.querySelector(".fh-nivel").textContent = Number(e.target.value) > 0 ? `Nv ${e.target.value}` : "Truco";
+          if (m[2] === "nivel") d.querySelector(".fh-nivel").textContent = etiquetaNivelHechizo({ nivel: e.target.value });
         }
       }
     }, true);
@@ -1723,6 +1812,7 @@
     let valor;
     if (el.type === "checkbox") valor = el.checked;
     else if (el.type === "number") valor = el.value === "" ? null : Number(el.value);
+    else if (prefijo === "__hechizo__" && campo === "nivel") valor = normalizarNivelHechizo(el.value);
     else valor = el.value;
     item[campo] = valor;
 
@@ -1764,7 +1854,12 @@
     if (!lista) return;
     const porIndice = tipo === "claseExtra" || tipo === "espacio";
     const i = porIndice ? Number(ref) : lista.findIndex(x => x.id === ref);
-    const j = i + delta;
+    let j = i + delta;
+    if (tipo === "hechizo" && i >= 0) {
+      // La lista se ve agrupada por nivel: sube/baja respecto al conjuro vecino de su mismo nivel
+      const clave = infoNivelHechizo(lista[i]).clave;
+      while (j >= 0 && j < lista.length && infoNivelHechizo(lista[j]).clave !== clave) j += delta;
+    }
     if (i < 0 || j < 0 || j >= lista.length) return;
     [lista[i], lista[j]] = [lista[j], lista[i]];
 
@@ -1883,7 +1978,7 @@
       items.push({ id: `ataquedano:${a.id}`, categoria: "Ataques", texto: `${a.nombre}: ataque ${fichasSigno(fichasAtaqueTotal(p, a))}, daño ${fichasDanoAtaque(p, a) || "—"}`, tipo: "ataquedano", refId: a.id });
     });
     p.hechizos.filter(h => h.disponible !== false).forEach(h => {
-      items.push({ id: `hechizo:${h.id}`, categoria: "Conjuros", texto: `${h.nombre} (nv. ${h.nivel})`, tipo: "hechizo", refId: h.id });
+      items.push({ id: `hechizo:${h.id}`, categoria: "Conjuros", texto: `${h.nombre} (${infoNivelHechizo(h).corto})`, tipo: "hechizo", refId: h.id });
     });
     p.rasgos.filter(r => r.formulaRoll20 && r.disponible !== false).forEach(r => {
       items.push({ id: `rasgo:${r.id}`, categoria: "Rasgos", texto: r.nombre, tipo: "rasgo", refId: r.id });
@@ -2010,12 +2105,17 @@
       const desc = descripcionItemRoll20(p, i);
       let calc = "";
       try { calc = calculoItemRoll20(p, i); } catch (e) { /* sin desglose */ }
+      let chat = "";
+      if (i.tipo === "hechizo") {
+        const h = p.hechizos.find(x => x.id === i.refId);
+        if (h && h.descripcionEnChat !== false) chat = fichasChatDeHechizo(h, etiquetaNivelHechizo(h));
+      }
       let municion = null;
       if (i.tipo === "ataquedano") {
         const a = p.ataques.find(x => x.id === i.refId);
         if (a && Number(a.municionMax) > 0) municion = { actual: Number(a.municionActual) || 0, max: Number(a.municionMax), ataque: a.id };
       }
-      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}), ...(calc ? { calc } : {}), ...(municion ? { municion } : {}) };
+      return { id: i.id, categoria: i.categoria, texto: i.texto, favorita: p.favoritosRoll20.includes(i.id), cmd, ...(desc ? { desc } : {}), ...(chat ? { chat } : {}), ...(calc ? { calc } : {}), ...(municion ? { municion } : {}) };
     });
     items.sort((a, b) => Number(b.favorita) - Number(a.favorita));
     return { id: p.id, nombre: p.identidad.nombre || "Sin nombre", velocidad: p.combate.velocidad, items };
