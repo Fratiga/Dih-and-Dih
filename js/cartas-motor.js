@@ -288,6 +288,20 @@
 
   const vinculosActivos = (est, u) => bonosDe(est, u).items;
 
+  /* --- Formas ------------------------------------------------------------------
+     Una carta puede tener varias formas o posturas (campo `formas` de la carta: una lista con el nombre, la imagen y
+     el encuadre de cada una; la forma 0 es la carta base). La forma en que está una unidad vive en u.flags.forma y
+     solo cambia con una habilidad (cambiarForma). Lo único que el motor hace con ella es avisarlo en el registro:
+     lo que cambia con cada forma lo decide la carta (pasivaAtq, etc.) y la imagen la elige la pantalla. */
+  const formasDe = (est, u) => meta(est, u.cartaId).formas || [];
+  const nombreForma = (est, u) => { const k = u.flags.forma || 0; return k > 0 && formasDe(est, u)[k - 1] ? formasDe(est, u)[k - 1].nombre || "" : ""; };
+  function cambiarForma(est, u, k, texto) {
+    if ((u.flags.forma || 0) === k) return false;
+    u.flags.forma = k;
+    if (texto) log(est, texto);
+    return true;
+  }
+
   /* --- Creación de unidades ---------------------------------------------- */
   function nuevaUnidad(est, jIdx, cartaId) {
     const m = meta(est, cartaId);
@@ -296,7 +310,7 @@
     const u = {
       uid: est.siguienteUid++, cartaId, dueno: jIdx, atq, pv, pvMax: pv, atqBase: atq, pvBase: pv,
       entro: est.turno, equipo: [], mods: [],
-      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, marcadaHasta: 0, guardiaTurno: 0, guardiaUsada: false, dupPv: 0, danada: false, inmune: false, vincPv: 0, vincBarrera: false, sinCurarHasta: 0 }
+      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, marcadaHasta: 0, guardiaTurno: 0, guardiaUsada: false, dupPv: 0, danada: false, inmune: false, vincPv: 0, vincBarrera: false, sinCurarHasta: 0, forma: 0 }
     };
     const ef = EFECTOS[cartaId];
     if (ef && ef.alCrear) ef.alCrear(est, u);
@@ -709,6 +723,10 @@
 
   function finalizarTurno(est) {
     const J = est.jugadores[est.activo];
+    J.campo.slice().forEach(u => {
+      const ef = efectoDe(est, u);
+      if (ef.alFinTurno && buscar(est, u.uid)) ef.alFinTurno({ est, M, u, j: est.activo });
+    });
     J.costeMenos = 0;
     const T = defTerreno(est);
     if (T && T.finTurno) T.finTurno(est);
@@ -915,6 +933,8 @@
     est.combate = { atacantes: uids, bloqueos: {}, desafios, forzados: {} };
     log(est, `${est.jugadores[jIdx].nombre} ataca con ${unidades.map(u => nombre(est, u)).join(", ")}.`);
     Object.entries(desafios).forEach(([a, d]) => log(est, `${nombre(est, buscar(est, Number(a)).u)} desafía a ${nombre(est, buscar(est, d).u)}: tendrá que bloquearla.`));
+    // Habilidades que se activan al declarar el ataque (antes de las reacciones y de los bloqueos): Ulis se transforma
+    unidades.forEach(u => { const ef = efectoDe(est, u); if (ef.alAtacar && buscar(est, u.uid)) ef.alAtacar({ est, M, u, j: jIdx }); });
     if (abrirVentana(est, { tipo: "ataque", actor: jIdx, atacantes: uids }, { atacantes: uids })) return { ok: true, pendiente: true };
     iniciarBloqueo(est);
     revisarFinal(est);
@@ -982,15 +1002,15 @@
   }
 
   function instantanea(est, u) {
-    return { uid: u.uid, cartaId: u.cartaId, dueno: u.dueno, atq: atqEfectivo(est, u), pv: u.pv, pvMax: u.pvMax };
+    return { uid: u.uid, cartaId: u.cartaId, dueno: u.dueno, atq: atqEfectivo(est, u), pv: u.pv, pvMax: u.pvMax, forma: u.flags.forma || 0 };
   }
 
   function resolverCombate(est) {
     const c = est.combate;
+    est.combate = null;
     if (!c) return;
     const A = est.activo, D = 1 - A;
-    // 1) Quién pelea con quién y cuánto daño hace cada uno (con los números de antes del combate). El combate sigue en
-    //    est.combate mientras se calcula, para las pasivas que dependen de pelear (Ulis); se cierra justo después.
+    // 1) Quién pelea con quién y cuánto daño hace cada uno (con los números de antes del combate)
     const pares = [];
     c.atacantes.forEach(uid => {
       const ha = buscar(est, uid);
@@ -1000,7 +1020,6 @@
       const a = ha.u, b = hb ? hb.u : null;
       pares.push({ a, b, dA: danoDeCombate(est, a, b), dB: b ? danoDeCombate(est, b, a) : 0, antes: { a: instantanea(est, a), b: b ? instantanea(est, b) : null }, jugador: 0, aMuere: false, bMuere: false });
     });
-    est.combate = null;
     est.combateN = (est.combateN || 0) + 1;
     // 2) Los golpes. Veloz golpea primero y, si mata, no recibe el golpe de vuelta. El resto, a la vez.
     const golpe = (de, a, dano, pvAntes, esAtacante, par) => {
@@ -1174,7 +1193,7 @@
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
     registrarVinculos: def => { (def.circulos || []).forEach(c => VINC.circulos.push(c)); (def.rivalidades || []).forEach(r => VINC.rivalidades.push(r)); },
-    VINC, bonosDe, vinculosActivos, sincronizarVinculos, devolverAMano,
+    VINC, bonosDe, vinculosActivos, sincronizarVinculos, devolverAMano, cambiarForma, nombreForma, formasDe,
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad, cementerioDe, enCementerio, exiliar, revivir,

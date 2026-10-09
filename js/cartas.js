@@ -44,12 +44,16 @@
       return `<li><b>${esc(v.nombre)}.</b> ${esc(v.texto)} <span class="carta-meta">Con: ${esc(otros.join(", "))}.</span></li>`;
     });
     const vinculos = vincs.length ? `<p><strong>Vínculos.</strong> Si están juntas en tu campo, se fortalecen.</p><ul class="carta-vinculos">${vincs.join("")}</ul>` : "";
+    const formas = tengo && c.formas && c.formas.length
+      ? `<div class="carta-formas"><p><strong>Formas.</strong> En la partida esta carta cambia de forma.</p><div class="carta-formas-fila">${c.formas.map((f, i) =>
+          `<figure>${htmlCarta(Object.assign({}, c, { forma: i + 1 }), true, 0, null)}<figcaption>${esc(f.nombre || `Forma ${i + 2}`)}</figcaption></figure>`).join("")}</div></div>` : "";
     const editar = puedeEditar ? `<p><button type="button" class="cartas-boton" data-editar="${esc(c.id)}">Editar esta carta</button></p>` : "";
     const cuerpo = tengo
       ? `<h2>${esc(c.nombre)}${c.epiteto ? ` — ${esc(c.epiteto)}` : ""}</h2>
          <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)} · ${esc(af)}${c.limite ? ` · edición de ${c.limite}` : ""}</p>
          ${c.habilidad ? `<p><strong>Reglas.</strong> ${esc(c.habilidad)}</p>` : ""}
          ${descripcionDe(c) ? `<p class="carta-resumen">${esc(descripcionDe(c))}</p>` : ""}
+         ${formas}
          ${vinculos}
          <p class="carta-meta">${cantidad > 0 ? `Tienes ${cantidad} copia${cantidad === 1 ? "" : "s"}.` : "Vista de editor: no la tienes."}</p>${editar}`
       : `<h2>Carta sin descubrir</h2>
@@ -114,7 +118,10 @@
     habilidad: $("edHabilidad"), descripcion: $("edDescripcion"), fuente: $("edFuente"), lado: $("edLado"),
     limite: $("edLimite"), copiasMax: $("edCopiasMax"), obtenible: $("edObtenible"), publicada: $("edPublicada")
   };
-  let edActual = null; // { id, nueva, imagen, imagenOriginal, subidas:[], idManual }
+  // fotos[0] es la carta base y las demás son sus formas (nombre, foto y encuadre propios); sel es la que se está viendo
+  let edActual = null; // { id, nueva, fotos:[{ nombre, imagen, ajuste }], sel, originales:[], subidas:[], idManual }
+  const MAX_FOTOS = 8; // la base y hasta 7 formas más
+  const foto = () => edActual.fotos[edActual.sel];
 
   const slug = t => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
   const numeroOVacio = el => (el.value.trim() === "" ? null : Math.round(Number(el.value)));
@@ -130,10 +137,12 @@
   }
 
   /* Lo que hay en el formulario ahora mismo, con la forma de una carta. */
-  function cartaDelFormulario() {
+  function cartaDelFormulario(paraVista) {
     const f = campos.fuente.value ? campos.fuente.value.split("|") : null;
     const lado = campos.lado.value ? [campos.lado.value] : null;
-    return {
+    const fotos = edActual ? edActual.fotos : [{ imagen: null, ajuste: null }];
+    const ajusteDe = f => (f.imagen && !esAjusteNeutro(f.ajuste) ? f.ajuste : null);
+    const carta = {
       id: campos.id.value.trim(),
       nombre: campos.nombre.value.trim() || "Sin nombre",
       epiteto: campos.epiteto.value.trim(),
@@ -145,14 +154,17 @@
       pv: numeroOVacio(campos.pv),
       habilidad: campos.habilidad.value.trim(),
       descripcion: campos.descripcion.value.trim(),
-      imagen: edActual ? edActual.imagen : null,
-      ajuste: edActual && edActual.imagen && !esAjusteNeutro(edActual.ajuste) ? edActual.ajuste : null,
+      imagen: fotos[0].imagen,
+      ajuste: ajusteDe(fotos[0]),
+      formas: fotos.slice(1).map((f, i) => ({ nombre: (f.nombre || "").trim() || `Forma ${i + 2}`, imagen: f.imagen, ajuste: ajusteDe(f) })),
       fuente: f ? { data: f[0], id: f[1] } : null,
       lado,
       obtenible: campos.obtenible.checked,
       limite: numeroOVacio(campos.limite),
       copiasMax: numeroOVacio(campos.copiasMax)
     };
+    if (paraVista && edActual) carta.forma = edActual.sel;   // solo para la vista previa: no se guarda
+    return carta;
   }
 
   const AJUSTE_NEUTRO = () => ({ z: 1, x: 50, y: 50 });
@@ -160,20 +172,50 @@
   const limitar = (n, min, max) => Math.min(max, Math.max(min, n));
 
   function pintarVistaPrevia() {
-    $("cartaEditorVista").innerHTML = htmlCarta(cartaDelFormulario(), true, 0, null);
+    $("cartaEditorVista").innerHTML = htmlCarta(cartaDelFormulario(true), true, 0, null);
     // Sin carga perezosa aquí: para arrastrar hace falta saber el tamaño real de la foto
     $("cartaEditorVista").querySelectorAll("img").forEach(i => { i.loading = "eager"; });
-    const hayFoto = !!(edActual && edActual.imagen);
+    const hayFoto = !!(edActual && foto().imagen);
     $("edImagenQuitar").disabled = !hayFoto;
     $("edAjuste").classList.toggle("hidden", !hayFoto);
-    if (hayFoto) $("edZoom").value = edActual.ajuste.z;
+    if (hayFoto) $("edZoom").value = foto().ajuste.z;
+    pintarFormas();
+  }
+
+  /* Pestañas de formas: la base y las demás. La que se ve es la que se edita (foto, encuadre y nombre). */
+  function pintarFormas() {
+    if (!edActual) return;
+    $("edFormas").innerHTML = edActual.fotos.map((f, i) =>
+      `<button type="button" class="carta-forma-tab${i === edActual.sel ? " activa" : ""}" data-forma="${i}">${i === 0 ? "Base" : esc((f.nombre || "").trim() || `Forma ${i + 1}`)}</button>`).join("")
+      + (edActual.fotos.length < MAX_FOTOS ? `<button type="button" class="carta-forma-tab nueva" data-forma-nueva title="Añadir otra forma o postura">+ Forma</button>` : "");
+    $("edFormaDatos").classList.toggle("hidden", edActual.sel === 0);
+  }
+
+  function seleccionarForma(i) {
+    if (!edActual || i < 0 || i >= edActual.fotos.length) return;
+    edActual.sel = i;
+    $("edFormaNombre").value = i > 0 ? (foto().nombre || "") : "";
+    pintarVistaPrevia();
+  }
+  function anadirForma() {
+    if (!edActual || edActual.fotos.length >= MAX_FOTOS) return;
+    edActual.fotos.push({ nombre: "", imagen: null, ajuste: AJUSTE_NEUTRO() });
+    seleccionarForma(edActual.fotos.length - 1);
+    $("edFormaNombre").focus();
+  }
+  function quitarForma() {
+    if (!edActual || edActual.sel === 0) return;
+    const f = foto();
+    if (f.imagen && edActual.subidas.includes(f.imagen)) CartasCliente.quitarImagen(f.imagen);
+    edActual.fotos.splice(edActual.sel, 1);
+    seleccionarForma(edActual.sel - 1);
   }
 
   /* Pone el encuadre actual en la imagen de la vista previa sin volver a dibujarla (para arrastrar sin tirones). */
   function aplicarAjuste() {
     const img = document.querySelector("#cartaEditorVista .carta-arte img");
     if (!img || !edActual) return;
-    const a = edActual.ajuste;
+    const a = foto().ajuste;
     img.style.setProperty("--z", a.z);
     img.style.setProperty("--px", `${a.x}%`);
     img.style.setProperty("--py", `${a.y}%`);
@@ -186,12 +228,12 @@
     vista.addEventListener("pointerdown", ev => {
       const arte = ev.target.closest(".carta-arte");
       const img = arte && arte.querySelector("img");
-      if (!img || !edActual) return;
+      if (!img || !edActual || !foto().imagen) return;
       const caja = arte.getBoundingClientRect();
       // Tamaño con el que se ve la foto: cubre el marco y se amplía con el zoom
-      const base = Math.max(caja.width / img.naturalWidth, caja.height / img.naturalHeight) * edActual.ajuste.z;
+      const base = Math.max(caja.width / img.naturalWidth, caja.height / img.naturalHeight) * foto().ajuste.z;
       arrastre = {
-        x0: ev.clientX, y0: ev.clientY, a0: { ...edActual.ajuste },
+        x0: ev.clientX, y0: ev.clientY, a0: { ...foto().ajuste },
         sobraX: caja.width - img.naturalWidth * base, sobraY: caja.height - img.naturalHeight * base
       };
       arte.setPointerCapture(ev.pointerId);
@@ -200,10 +242,11 @@
     });
     vista.addEventListener("pointermove", ev => {
       if (!arrastre || !edActual) return;
+      const aj = foto().ajuste;
       const { x0, y0, a0, sobraX, sobraY } = arrastre;
       // La foto se mueve en pantalla (sobra * cambio de porcentaje / 100)
-      if (Math.abs(sobraX) > 0.5) edActual.ajuste.x = limitar(a0.x + ((ev.clientX - x0) / sobraX) * 100, 0, 100);
-      if (Math.abs(sobraY) > 0.5) edActual.ajuste.y = limitar(a0.y + ((ev.clientY - y0) / sobraY) * 100, 0, 100);
+      if (Math.abs(sobraX) > 0.5) aj.x = limitar(a0.x + ((ev.clientX - x0) / sobraX) * 100, 0, 100);
+      if (Math.abs(sobraY) > 0.5) aj.y = limitar(a0.y + ((ev.clientY - y0) / sobraY) * 100, 0, 100);
       aplicarAjuste();
     });
     const soltar = ev => {
@@ -211,20 +254,21 @@
       arrastre = null;
       const arte = ev.target.closest && ev.target.closest(".carta-arte");
       if (arte) arte.classList.remove("arrastrando");
-      edActual.ajuste.x = Math.round(edActual.ajuste.x * 10) / 10;
-      edActual.ajuste.y = Math.round(edActual.ajuste.y * 10) / 10;
+      const aj = foto().ajuste;
+      aj.x = Math.round(aj.x * 10) / 10;
+      aj.y = Math.round(aj.y * 10) / 10;
     };
     vista.addEventListener("pointerup", soltar);
     vista.addEventListener("pointercancel", soltar);
 
     $("edZoom").addEventListener("input", () => {
       if (!edActual) return;
-      edActual.ajuste.z = Math.round(Number($("edZoom").value) * 100) / 100;
+      foto().ajuste.z = Math.round(Number($("edZoom").value) * 100) / 100;
       aplicarAjuste();
     });
     $("edCentrar").addEventListener("click", () => {
       if (!edActual) return;
-      edActual.ajuste = AJUSTE_NEUTRO();
+      foto().ajuste = AJUSTE_NEUTRO();
       $("edZoom").value = 1;
       aplicarAjuste();
     });
@@ -232,8 +276,11 @@
 
   function abrirEditor(id) {
     const existente = id ? window.cartaPorId(id) : null;
-    const c = existente || { id: "", nombre: "", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 1, habilidad: "", descripcion: "", imagen: null, fuente: null, lado: null, obtenible: true, limite: null, copiasMax: null };
-    edActual = { id: existente ? existente.id : null, nueva: !existente, imagen: c.imagen || null, imagenOriginal: c.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), c.ajuste || {}), subidas: [], idManual: !!existente };
+    const c = existente || { id: "", nombre: "", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 1, habilidad: "", descripcion: "", imagen: null, formas: [], fuente: null, lado: null, obtenible: true, limite: null, copiasMax: null };
+    const fotos = [{ nombre: "", imagen: c.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), c.ajuste || {}) }]
+      .concat((c.formas || []).map(f => ({ nombre: f.nombre || "", imagen: f.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), f.ajuste || {}) })));
+    edActual = { id: existente ? existente.id : null, nueva: !existente, fotos, sel: 0, originales: fotos.map(f => f.imagen).filter(Boolean), subidas: [], idManual: !!existente };
+    $("edFormaNombre").value = "";
     $("cartaEditorTitulo").textContent = existente ? `Editar: ${c.nombre}` : "Nueva carta";
     campos.id.value = c.id;
     campos.id.disabled = !!existente;
@@ -284,7 +331,9 @@
     $("edGuardar").disabled = true;
     try {
       await CartasCliente.guardar(id, datos, campos.publicada.checked);
-      if (edActual.imagenOriginal && edActual.imagenOriginal !== datos.imagen) CartasCliente.quitarImagen(edActual.imagenOriginal);
+      // Las fotos que tenía la carta y ya no usa ninguna forma se borran del almacenamiento
+      const enUso = new Set([datos.imagen].concat(datos.formas.map(f => f.imagen)).filter(Boolean));
+      edActual.originales.filter(u => !enUso.has(u)).forEach(u => CartasCliente.quitarImagen(u));
       const lista = window.CARTAS;
       const i = lista.findIndex(c => c.id === id);
       const guardada = Object.assign({}, i >= 0 ? lista[i] : {}, datos, { id, borrador: !campos.publicada.checked });
@@ -307,6 +356,7 @@
     try {
       await CartasCliente.borrar(c.id);
       if (c.imagen) CartasCliente.quitarImagen(c.imagen);
+      (c.formas || []).forEach(f => { if (f.imagen) CartasCliente.quitarImagen(f.imagen); });
       window.CARTAS.splice(window.CARTAS.indexOf(c), 1);
       edActual.subidas = [];
       edActual = null;
@@ -342,11 +392,12 @@
       try {
         const url = await CartasCliente.subirImagen(archivo);
         if (!edActual) { CartasCliente.quitarImagen(url); return; }
-        // Una foto nueva reemplaza a la de este formulario; si no estaba guardada, se borra ya
-        if (edActual.imagen && edActual.subidas.includes(edActual.imagen)) CartasCliente.quitarImagen(edActual.imagen);
+        // Una foto nueva reemplaza a la de esta forma; si no estaba guardada, se borra ya
+        const f = foto();
+        if (f.imagen && edActual.subidas.includes(f.imagen)) CartasCliente.quitarImagen(f.imagen);
         edActual.subidas.push(url);
-        edActual.imagen = url;
-        edActual.ajuste = AJUSTE_NEUTRO();
+        f.imagen = url;
+        f.ajuste = AJUSTE_NEUTRO();
         estado.textContent = "";
         pintarVistaPrevia();
       } catch (e) {
@@ -355,11 +406,23 @@
     });
     $("edImagenQuitar").addEventListener("click", () => {
       if (!edActual) return;
-      if (edActual.imagen && edActual.subidas.includes(edActual.imagen)) CartasCliente.quitarImagen(edActual.imagen);
-      edActual.imagen = null;
-      edActual.ajuste = AJUSTE_NEUTRO();
+      const f = foto();
+      if (f.imagen && edActual.subidas.includes(f.imagen)) CartasCliente.quitarImagen(f.imagen);
+      f.imagen = null;
+      f.ajuste = AJUSTE_NEUTRO();
       pintarVistaPrevia();
     });
+    $("edFormas").addEventListener("click", ev => {
+      const t = ev.target.closest("[data-forma]");
+      if (t) seleccionarForma(Number(t.dataset.forma));
+      else if (ev.target.closest("[data-forma-nueva]")) anadirForma();
+    });
+    $("edFormaNombre").addEventListener("input", () => {
+      if (!edActual || edActual.sel === 0) return;
+      foto().nombre = $("edFormaNombre").value;
+      pintarFormas();
+    });
+    $("edFormaQuitar").addEventListener("click", quitarForma);
   }
 
   /* ---- Eventos del álbum ---- */

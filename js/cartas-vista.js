@@ -33,14 +33,17 @@ window.CartasVista = (function () {
       ? `<span class="carta-numero">${numeros.map(n => `${numeros2(n)}/${numeros2(c.limite)}`).join(" · ")}</span>` : "";
     const copias = tengo && cantidad > 1 ? `<span class="carta-copias">x${cantidad}</span>` : "";
     const borrador = c.borrador ? `<span class="carta-borrador">Borrador</span>` : "";
-    const aj = c.ajuste || { z: 1, x: 50, y: 50 };
-    const arte = tengo && c.imagen
-      ? `<img src="${esc(c.imagen)}" alt="" loading="lazy" decoding="async" style="--z:${+aj.z || 1};--px:${+aj.x}%;--py:${+aj.y}%">`
+    // Forma de la carta (0 = base). Una forma sin foto propia se ve con la de la base
+    const forma = c.forma > 0 && c.formas && c.formas[c.forma - 1] && c.formas[c.forma - 1].imagen ? c.formas[c.forma - 1] : null;
+    const imagen = forma ? forma.imagen : c.imagen;
+    const aj = (forma ? forma.ajuste : c.ajuste) || { z: 1, x: 50, y: 50 };
+    const arte = tengo && imagen
+      ? `<img src="${esc(imagen)}" alt="" loading="lazy" decoding="async" style="--z:${+aj.z || 1};--px:${+aj.x}%;--py:${+aj.y}%">`
       : `<b>${esc(tengo ? iniciales(c.nombre) : "?")}</b>`;
     const largo = c.nombre.length > 22 ? " muylargo" : c.nombre.length > 15 ? " largo" : "";
     const iconos = c.afinidad.map(a => `<span class="carta-af-icono carta-af-${a}" title="${esc(window.CARTAS_AFINIDADES[a].nombre)}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONOS_AFINIDAD[a] || ""}</svg></span>`).join("");
     return `
-      <button type="button" class="carta carta-rareza-${c.rareza} carta-af-${afinidad} ${tengo ? "" : "sin-tener"}" data-id="${esc(c.id)}" aria-label="${tengo ? esc(c.nombre) : "Carta sin descubrir"}">
+      <button type="button" class="carta carta-rareza-${c.rareza} carta-af-${afinidad} ${tengo ? "" : "sin-tener"}${c.forma > 0 ? " carta-forma" : ""}" data-id="${esc(c.id)}"${c.forma > 0 ? ` data-forma="${+c.forma}"` : ""} aria-label="${tengo ? esc(c.nombre) : "Carta sin descubrir"}">
         <div class="carta-caja">
           <div class="carta-arte">${arte}</div>
           <span class="carta-coste" title="Coste">${c.coste}</span>

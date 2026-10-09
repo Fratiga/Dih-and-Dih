@@ -422,15 +422,35 @@ mk("t-fallo", 1, 1); M.registrar("t-fallo", { alMorirAliada: c => { M.revivir(c.
   ok(M.atqEfectivo(e, ulis) === 3 && ulis.pvMax === 4, "Clef y Ulis: Ulis gana +1/+1 (y +1 de ataque más por ser las dos del Instituto)");
   e.jugadores[1].campo.length = 0; const dar = poner(e, 1, "darian");
   ok(M.atqEfectivo(e, ulis) === 6 && ulis.pvMax === 7, `Ulis frente a Darian: la orden de Clef le da fuerza de monstruo (${M.atqEfectivo(e, ulis)}/${ulis.pvMax})`); }
-{ const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis"); ul.entro = 0; poner(e, 1, "t33");
-  ok(M.atqEfectivo(e, ul) === 1, "Ulis fuera de combate es la niña: 1 de ataque");
+{ const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis"); poner(e, 1, "t33");
+  ok(M.atqEfectivo(e, ul) === 1 && ul.flags.forma === 0, "Ulis sin atacar es la niña: forma 0 y 1 de ataque");
   M.aplicar(e, { t: "atacar", u: [ul.uid] }, 0);
-  ok(M.atqEfectivo(e, ul) === 3, "al atacar se transforma sin coste: +2 de ataque");
+  ok(ul.flags.forma === 1 && M.atqEfectivo(e, ul) === 3, "al atacar se transforma en monstruo ajolote, sin coste: forma 1 y +2 de ataque");
+  ok(e.log.some(l => /se transforma en un monstruo ajolote/.test(typeof l === "string" ? l : l.texto || "")), "el registro lo cuenta");
   M.aplicar(e, { t: "pasar" }, 1);
-  ok(M.atqEfectivo(e, ul) === 1 && ul.pv === ul.pvMax, "al terminar el combate vuelve a ser la niña y no queda herida por transformarse"); }
-{ const e = partida([], []); turnoDe(e, 1); const ul = poner(e, 0, "ulis"); const at = poner(e, 1, "t33"); at.entro = 0;
+  ok(ul.flags.forma === 1 && M.atqEfectivo(e, ul) === 3 && ul.pv === ul.pvMax, "tras el combate sigue siendo el monstruo y no queda herida por transformarse");
+  M.aplicar(e, { t: "fin" }, 0);
+  ok(ul.flags.forma === 1, "el turno en que atacó no la devuelve a niña"); }
+{ // monstruo al bloquear en el turno del rival, y vuelve a niña tras un turno suyo sin atacar
+  const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis"); const at = poner(e, 1, "t33"); at.entro = 0;
+  M.aplicar(e, { t: "atacar", u: [ul.uid] }, 0); M.aplicar(e, { t: "pasar" }, 1); M.aplicar(e, { t: "fin" }, 0);
+  at.entro = 0; ul.pvMax = ul.pv = 10;
   M.aplicar(e, { t: "atacar", u: [at.uid] }, 1); const rb = M.aplicar(e, { t: "bloquear", b: [[at.uid, ul.uid]] }, 0);
-  ok(rb.ok, "Ulis bloquea " + JSON.stringify(rb)); ok(!M.buscar(e, at.uid), "al bloquear también se transforma: golpea con 3 y destruye a una 3/3"); }
+  ok(rb.ok && !M.buscar(e, at.uid), "en el turno del rival bloquea todavía como monstruo (3 de ataque) y destruye a una 3/3");
+  M.aplicar(e, { t: "fin" }, 1);
+  ok(ul.flags.forma === 1, "al empezar su turno sigue como monstruo");
+  M.aplicar(e, { t: "fin" }, 0);
+  ok(ul.flags.forma === 0 && M.atqEfectivo(e, ul) === 1, "pasa un turno sin atacar y vuelve a ser la niña");
+  ok(e.log.some(l => /pasa un turno sin atacar y vuelve a ser una niña/.test(typeof l === "string" ? l : l.texto || "")), "el registro lo cuenta"); }
+{ // si ataca otra vez en su turno, se queda de monstruo
+  const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis");
+  M.aplicar(e, { t: "atacar", u: [ul.uid] }, 0); M.aplicar(e, { t: "pasar" }, 1); M.aplicar(e, { t: "fin" }, 0); M.aplicar(e, { t: "fin" }, 1);
+  ul.entro = 0; M.aplicar(e, { t: "atacar", u: [ul.uid] }, 0); M.aplicar(e, { t: "pasar" }, 1); M.aplicar(e, { t: "fin" }, 0);
+  ok(ul.flags.forma === 1, "atacando turno tras turno no vuelve a niña"); }
+{ // el daño que recibe no depende de la forma, y cambiar de forma no cura ni hiere
+  const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis"); ul.pv = 2; poner(e, 1, "t33");
+  M.aplicar(e, { t: "atacar", u: [ul.uid] }, 0);
+  ok(ul.pv === 2 && ul.pvMax === 3, "transformarse no cambia su vida"); }
 
 // 15) Rivalidades secretas
 { const e = partida([], []); turnoDe(e, 0); const enzo = poner(e, 0, "enzo"); const alia = poner(e, 0, "t33");

@@ -323,7 +323,7 @@
   /* Datos de la carta con los números de ahora, para dibujarla en el campo */
   function vistaUnidad(u) {
     const m = verMeta(u);
-    return Object.assign({}, m, { id: u.cartaId, atq: M.atqEfectivo(est, u), pv: u.pv, borrador: false, limite: null });
+    return Object.assign({}, m, { id: u.cartaId, atq: M.atqEfectivo(est, u), pv: u.pv, borrador: false, limite: null, forma: u.flags.forma || 0 });
   }
 
   /* Palabras clave: qué significan (se muestran al ver una unidad). El texto sale de la guía del lobby
@@ -372,6 +372,8 @@
     if (u.flags.inmune) chips.push("Protegida");
     if (u.flags.noAtacaHasta >= est.turno) chips.push("No ataca");
     if (u.entro === est.turno && u.dueno === est.activo) chips.push("Recién llegada");
+    const nForma = M.nombreForma(est, u);
+    if (nForma) chips.unshift(nForma);
     const vinc = M.vinculosActivos(est, u);
     const chipsVinc = vinc.map(v => `<span class="${v.tipo === "rivalidad" ? "rivalidad" : "vinculo"}" title="${esc(v.nombre)}">${v.tipo === "rivalidad" ? "Rivalidad" : "Unidos"}</span>`);
     const listo = u.dueno === miIdx && miTurnoDe(miIdx) && M.unidadPuedeAtacar(est, u);
@@ -625,7 +627,7 @@
     }
   }
 
-  const htmlSnap = s => htmlCarta(Object.assign({}, M.meta(est, s.cartaId), { id: s.cartaId, atq: s.atq, pv: s.pv, borrador: false, limite: null }), true, 0, null);
+  const htmlSnap = s => htmlCarta(Object.assign({}, M.meta(est, s.cartaId), { id: s.cartaId, atq: s.atq, pv: s.pv, borrador: false, limite: null, forma: s.forma || 0 }), true, 0, null);
 
   function pintarCombate(idx) {
     const el = $("btCombate");

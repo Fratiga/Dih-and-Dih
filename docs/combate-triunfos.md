@@ -193,7 +193,7 @@ Personajes que salían en la cronología y no tenían carta. Todos con su habili
 | Sett (Carne) | B | 3 | 3/2 | Arrollar |
 | La Vieja de la Espesura (Eternidad) | B | 3 | 1/4 | Al entrar, robas una carta |
 | Clef (Arcano) | B | 3 | 1/3 | Al entrar, una aliada gana +2 de ataque hasta el final de tu próximo turno |
-| Ulis (Carne) | B | 2 | 1/3 | Se transforma a voluntad en monstruo ajolote, sin coste ni desgaste: +2 de ataque mientras ataca o bloquea. Al inicio de tu turno recupera 1 de vida |
+| Ulis (Carne) | B | 2 | 1/3 | Al atacar se transforma en monstruo ajolote (forma 1), sin coste ni desgaste: +2 de ataque. Si pasa un turno suyo sin atacar, vuelve a ser la niña. Al inicio de tu turno recupera 1 de vida |
 | Enfermera Harrow (Carne) | B | 5 | 2/5 | Al entrar, cura 3 a una aliada o hace 2 de daño a una enemiga y no la deja curarse. Una vez por partida salva de morir a una aliada |
 
 Cartas que estaban vacías (1/1, coste 1, sin texto) y ahora tienen habilidad:
@@ -207,6 +207,15 @@ Cartas que estaban vacías (1/1, coste 1, sin texto) y ahora tienen habilidad:
 | Leonard Goldenside (rara) | 5 | 4/5 | Basado en Leo Whitefang de Guilty Gear Strive. Postura de Brynhildr: no puede bloquear, pero solo lo bloquean unidades con 3 o más de ataque. Graviert Würde: al entrar, 2 de daño a una unidad enemiga. Eisen Strum: la unidad que le hace daño en combate recibe 2 |
 
 Las cartas de editor (Coach, Julius, Leonard, Mercader, el Vendedor, Laia, Ledros, Eledar y Adam Kovacs el Héroe) solo existen en el servidor. `tools/cartas-del-servidor.js` guarda una copia para las pruebas y la simulación.
+
+## Formas de una carta
+
+Una carta puede tener varias formas o posturas, cada una con su imagen. En la definición de la carta hay un campo `formas`: una lista de hasta 7 objetos `{ nombre, imagen, ajuste }`. La carta base es la forma 0 y usa los campos `imagen` y `ajuste` de siempre; `formas[0]` es la forma 1, `formas[1]` la forma 2, y así. Una forma sin `imagen` se ve con la de la base.
+
+- **En la partida.** Cada unidad lleva `u.flags.forma` (0 al entrar). Solo cambia con una habilidad: `M.cambiarForma(est, u, k, textoDelRegistro)`, que anota el cambio en el registro y devuelve si cambió algo. Lo que cambia con cada forma lo decide la carta (por ejemplo `pasivaAtq` mirando `u.flags.forma`); el motor no da nada solo por tener una forma. Ulis usa `alAtacar` para pasar a la forma 1 y `alFinTurno` para volver a la 0 si ese turno no atacó. `M.nombreForma(est, u)` y `M.formasDe(est, u)` leen los nombres.
+- **En pantalla.** `htmlCarta` acepta `c.forma` (el tablero lo pasa desde `vistaUnidad`, y las instantáneas del combate guardan `forma`). La unidad con una forma distinta de la base lleva un marco dorado, `data-forma` y una etiqueta con el nombre de la forma.
+- **En el álbum.** El detalle de la carta muestra una hilera con cada forma, con su nombre. El editor tiene pestañas «Base», una por forma y «+ Forma»: cada pestaña tiene su foto, su encuadre y (las formas) su nombre. Una forma nueva se guarda en `cartas_definiciones.data.formas`.
+- **En el servidor.** `cartas_guardar` valida `formas` como valida la imagen de la base: hasta 7, nombre de 1 a 40 letras, imagen solo del almacenamiento `cartas` y encuadre con x e y de 0 a 100 y z de 1 a 3. La migración está en `docs/cartas-formas.sql`.
 
 ## Equilibrio
 
@@ -227,7 +236,8 @@ Las cartas de editor (Coach, Julius, Leonard, Mercader, el Vendedor, Laia, Ledro
 - `guardianUnaVez`: un guardián que solo actúa una vez por partida.
 - `fuerzaHelenica`: el daño de combate contra una unidad es su vida, sin ignorar resistencias, y sin bloqueo derrota al jugador de un golpe.
 - `reaccion.valido`: filtra qué atacantes puede elegir una reacción.
-- `pasivaAtq` puede leer `est.combate` para valer solo mientras la unidad pelea (Ulis). `resolverCombate` mantiene `est.combate` hasta calcular el daño de cada par, para que esas pasivas cuenten.
+- `alAtacar({ est, M, u, j })`: se activa al declarar su dueño un ataque en el que participa la unidad, antes de las reacciones y de los bloqueos (Ulis se transforma). `alFinTurno({ est, M, u, j })`: al terminar el turno de su dueño (Ulis vuelve a ser la niña si no atacó).
+- `formas` (campo de la carta, no una habilidad), `u.flags.forma` y `M.cambiarForma(est, u, k, texto)`: ver «Formas de una carta».
 - `evitaMuerte(est, guardian, unidad)`: cuando una aliada fuera a morir se queda con 1 de vida (Julius, Harrow). La habilidad lleva su propia cuenta de usos.
 - `costeMod(est, unidad, metaDeLaCarta)`: abarata o encarece cartas de su dueño mientras está en el campo (Mercader).
 - `alEntrar.filtro(est, objetivo)`: limita qué objetivos son válidos para la habilidad al entrar (Gareth: coste 3 o menos).

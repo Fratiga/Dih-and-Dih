@@ -28,6 +28,8 @@
      alEntrarAliada  cuando otra unidad aliada entra
      alRecibirDano   al recibir daño sin morir ({ est, M, u, j, cantidad, fuente })
      evitaMuerte     (est, g, u, fuente) => bool; una unidad aliada g puede evitar que u muera (u se queda con 1 de vida)
+     formas          (no es una habilidad: es un campo de la carta) cada unidad tiene u.flags.forma (0 = base) y la cambia
+                     M.cambiarForma(est, u, k, textoDelRegistro); la imagen de cada forma está en carta.formas[k - 1]
      costeMod        (est, u, meta) => número; abarata o encarece cartas de su dueño mientras esté en juego
      filtro          (dentro de alEntrar/jugar) (est, objetivo, j) => bool; limita qué objetivos son válidos
      alMorir         al morir
@@ -39,6 +41,8 @@
                      (ver «Cementerio» en docs/combate-triunfos.md).
      alMatar         al destruir a una unidad con un ataque
      alInicioTurno   al inicio del turno de su dueño
+     alFinTurno      al terminar el turno de su dueño
+     alAtacar        al declarar su dueño un ataque en el que participa la unidad (antes de reacciones y bloqueos)
      jugar           { objetivo?, resolver(c) } para objetos y acciones
      alAtacarJugador cuando golpea al jugador rival (atacante sin bloquear, o arrollar)
      reaccion        { cuando: 'ataque'|'jugar', objetivo?: 'atacante', valido?(est, u, j), puede(c), resolver(c) }
@@ -295,10 +299,17 @@
     R("vieja-de-la-espesura", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
     R("clef", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.mod(c.est, c.objetivo, 2, 0, c.est.turno + 2, `Clef da una orden: ${M.nombre(c.est, c.objetivo)} gana +2 de ataque hasta el final de tu próximo turno.`) } });
     // Ulis es una niña pequeña que se vuelve un monstruo ajolote grande cuando quiere y sin desgaste. En el juego se
-    // transforma sola al atacar o bloquear: mientras dura el combate tiene +2 de ataque, y después vuelve a ser la niña.
+    // transforma al atacar (forma 1) y, si pasa un turno suyo sin atacar, vuelve a ser la niña (forma 0).
     R("ulis", {
       alInicioTurno: c => M.curar(c.est, { u: c.u.uid }, 1),
-      pasivaAtq: (est, u) => (est.combate && (est.combate.atacantes.includes(u.uid) || Object.values(est.combate.bloqueos).includes(u.uid)) ? 2 : 0)
+      alAtacar: c => {
+        c.u.flags.ataqueTurno = c.est.turno;
+        M.cambiarForma(c.est, c.u, 1, `${M.nombre(c.est, c.u)} se transforma en un monstruo ajolote grande.`);
+      },
+      alFinTurno: c => {
+        if (c.u.flags.ataqueTurno !== c.est.turno) M.cambiarForma(c.est, c.u, 0, `${M.nombre(c.est, c.u)} pasa un turno sin atacar y vuelve a ser una niña.`);
+      },
+      pasivaAtq: (est, u) => (u.flags.forma === 1 ? 2 : 0)
     });
     // La enfermera Harrow: la jeringa cura a los suyos o castiga a los demás, y salva a una aliada de morir (una vez por partida).
     R("enfermera-harrow", {

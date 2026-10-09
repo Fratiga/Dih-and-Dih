@@ -202,3 +202,20 @@
 .carta-editor-ajuste { display: flex; flex-direction: column; gap: 8px; }
 .carta-editor-ajuste label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: var(--muted); }
 .carta-editor-ajuste input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+/* Formas de una carta (posturas o transformaciones): pestañas del editor, hilera del detalle y marco de la unidad transformada */
+.carta-editor-formas { display: flex; flex-wrap: wrap; gap: 6px; }
+.carta-forma-tab { padding: 5px 10px; font: inherit; font-size: .76rem; color: var(--muted); background: rgba(255,255,255,.04); border: 1px solid var(--border); cursor: pointer; }
+.carta-forma-tab:hover { color: var(--text); border-color: var(--accent-soft); }
+.carta-forma-tab.activa { color: var(--text); border-color: var(--accent); background: rgba(255,255,255,.1); }
+.carta-forma-tab.nueva { border-style: dashed; }
+.carta-editor-forma-datos { display: flex; flex-direction: column; gap: 6px; }
+.carta-editor-forma-datos label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: var(--muted); }
+.carta-editor-forma-datos input { padding: 6px 8px; font: inherit; color: var(--text); background: rgba(0,0,0,.35); border: 1px solid var(--border); }
+.carta-formas { margin-top: 14px; }
+.carta-formas p { margin: 0 0 8px; }
+.carta-formas-fila { display: flex; flex-wrap: wrap; gap: 12px; }
+.carta-formas-fila figure { margin: 0; width: 120px; text-align: center; }
+.carta-formas-fila figcaption { margin-top: 4px; font-size: .74rem; color: var(--muted); }
+.carta-formas-fila .carta { pointer-events: none; }
+.carta.carta-forma .carta-caja { box-shadow: inset 0 0 0 2px rgba(224,168,90,.7), 0 0 14px rgba(224,168,90,.4); }

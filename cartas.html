@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261229">
   <link rel="stylesheet" href="css/minijuegos.css?v=20261220">
   <link rel="stylesheet" href="css/cartas-juego.css?v=20261230">
-  <link rel="stylesheet" href="css/cartas.css?v=20261223">
+  <link rel="stylesheet" href="css/cartas.css?v=20270102">
   <link rel="stylesheet" href="css/mj-temas.css?v=20261221">
   <script src="js/dialogos.js?v=20261228"></script>
   <script src="js/mj-volumen.js?v=20261220"></script>
@@ -61,6 +61,11 @@
     <h2 id="cartaEditorTitulo">Editar carta</h2>
     <form id="cartaEditorForm" class="carta-editor-fila" autocomplete="off">
       <div class="carta-editor-vista">
+        <div id="edFormas" class="carta-editor-formas" aria-label="Formas de la carta"></div>
+        <div id="edFormaDatos" class="carta-editor-forma-datos hidden">
+          <label>Nombre de la forma <input type="text" id="edFormaNombre" maxlength="40" placeholder="Ej. Monstruo ajolote"></label>
+          <button type="button" id="edFormaQuitar" class="cartas-boton">Quitar esta forma</button>
+        </div>
         <div id="cartaEditorVista"></div>
         <label class="cartas-boton cartas-boton-archivo">Subir foto
           <input type="file" id="edImagen" accept="image/png,image/jpeg,image/webp" hidden>
@@ -70,7 +75,7 @@
           <label>Zoom <input type="range" id="edZoom" min="1" max="3" step="0.05" value="1"></label>
           <button type="button" id="edCentrar" class="cartas-boton">Centrar foto</button>
         </div>
-        <small>Arrastra la foto sobre la carta para acomodarla. Se reduce sola al subirla.</small>
+        <small>Arrastra la foto sobre la carta para acomodarla. Se reduce sola al subirla. La foto y el encuadre son los de la forma elegida arriba; una forma sin foto se ve con la de la base.</small>
       </div>
       <div class="carta-editor-campos">
         <div class="carta-editor-grupo">
@@ -130,10 +135,10 @@
   <script src="js/fichas-supabase.js?v=20261218"></script>
   <script src="js/presencia.js?v=20261218"></script>
   <script src="js/lado.js?v=20261218"></script>
-  <script src="js/cartas-datos.js?v=20270101"></script>
+  <script src="js/cartas-datos.js?v=20270102"></script>
   <script src="js/cartas-vinculos.js?v=20270101"></script>
-  <script src="js/cartas-cliente.js?v=20261218"></script>
-  <script src="js/cartas-vista.js?v=20261218"></script>
-  <script src="js/cartas.js?v=20261230"></script>
+  <script src="js/cartas-cliente.js?v=20270102"></script>
+  <script src="js/cartas-vista.js?v=20270102"></script>
+  <script src="js/cartas.js?v=20270102"></script>
 </body>
 </html>

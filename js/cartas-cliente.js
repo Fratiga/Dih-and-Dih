@@ -56,8 +56,8 @@ window.CartasCliente = (function () {
   }
 
   /* --- Definiciones guardadas en el servidor ------------------------------ */
-  const CAMPOS = ["nombre", "epiteto", "tipo", "rareza", "afinidad", "coste", "atq", "pv", "habilidad", "descripcion", "imagen", "ajuste", "fuente", "lado", "obtenible", "limite", "copiasMax"];
-  const VACIA = { epiteto: "", atq: null, pv: null, habilidad: "", descripcion: "", imagen: null, ajuste: null, fuente: null, lado: null, obtenible: true, limite: null, copiasMax: null };
+  const CAMPOS = ["nombre", "epiteto", "tipo", "rareza", "afinidad", "coste", "atq", "pv", "habilidad", "descripcion", "imagen", "ajuste", "formas", "fuente", "lado", "obtenible", "limite", "copiasMax"];
+  const VACIA = { epiteto: "", atq: null, pv: null, habilidad: "", descripcion: "", imagen: null, ajuste: null, formas: [], fuente: null, lado: null, obtenible: true, limite: null, copiasMax: null };
 
   /* Mezcla lo guardado en el servidor con el catálogo base de cartas-datos.js:
      una definición reemplaza a la carta con su id, o la crea si es nueva. Las
