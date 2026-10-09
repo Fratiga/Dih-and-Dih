@@ -1238,7 +1238,7 @@ window.STATS = [
       "Salvaciones: CON +6, INT +7, SAB +6. Habilidades: Medicina +9 (pericia), Investigación +7, Percepción +6. Percepción pasiva 16. Competencia +3.",
       "Bonificador de ataque +7 y CD de sus habilidades 15 (Inteligencia).",
       "Tiene una acción y una acción adicional por turno. No usa dos veces en el mismo turno una habilidad con recarga.",
-      "Concepto: una enfermera de combate convertida en pesadilla médica. Para ella el combate es un procedimiento. Mantiene a los suyos en pie y convierte las heridas de sus enemigos en una sentencia."
+      "Concepto: enfermera de combate. Pelea con una jeringa enorme y un maletín con un ojo dentro. Cura a los suyos para que sigan en pie y a los demás les corta la curación."
     ],
     habilidades: [
       { nombre: "Yo sé lo que te conviene (Reacción)", descripcion: "Cuando un aliado a 30 pies o menos cae a 0 PV, Harrow puede estabilizarlo al instante: el aliado recupera 1 PV y obtiene 10 PV temporales. Una criatura solo se beneficia de este efecto una vez por descanso largo. Harrow no puede usarlo sobre sí misma." },

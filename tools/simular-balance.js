@@ -1,16 +1,19 @@
 // Simulación de balance de Triunfos: mazos al azar (o con tema) jugados por un bot sencillo. Sirve para ver qué cartas
 // ganan mucho más (o mucho menos) de lo normal, cuánto duran las partidas y cuánto se llena el campo.
-// Uso: node tools/simular-balance.js [partidas=4000] [semilla=1] [--temas] [--sin-vinculos] [--campo=N] [--json=archivo] [--unidades=15 (0 = sin composición fija)]
+// Uso: node tools/simular-balance.js [partidas=4000] [semilla=1] [--temas] [--sin-vinculos] [--campo=N] [--json=archivo] [--unidades=15 (0 = sin composición fija)] [--vida=20] [--mazo=24] [--enjambre]
 //   --temas: además prueba mazos hechos alrededor de un círculo de vínculos (js/cartas-vinculos.js).
 //   --sin-vinculos y --campo=6: para comparar con cómo era el juego antes de los vínculos y del campo de 10.
 // El bot no es listo: juega lo más caro que puede, ataca cuando no pierde la unidad y bloquea si le conviene. Vale para
 // comparar cartas entre sí, no para saber cómo jugaría una persona.
 const vm = require("vm"), fs = require("fs"), path = require("path");
 const sb = { console }; sb.window = sb; sb.globalThis = sb; vm.createContext(sb);
-const UNIDADES = Number(((process.argv.find(a => a.startsWith("--unidades=")) || "").split("=")[1]) || 15);
+const UNIDADES_ARG = (process.argv.find(a => a.startsWith("--unidades=")) || "").split("=")[1];
 const SIN_VINC = process.argv.includes("--sin-vinculos"), CAMPO = (process.argv.find(a => a.startsWith("--campo=")) || "").split("=")[1];
 for (const f of ["cartas-datos", "cartas-motor", "cartas-efectos"].concat(SIN_VINC ? [] : ["cartas-vinculos"])) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js", `${f}.js`), "utf8"), sb, { filename: f });
 const M = sb.CartasMotor;
+const arg = n => (process.argv.find(a => a.startsWith(`--${n}=`)) || "").split("=")[1];
+if (arg("vida")) M.C.VIDA = Number(arg("vida"));
+const TAM_MAZO = Number(arg("mazo")) || 24, ENJAMBRE = process.argv.includes("--enjambre");
 if (CAMPO) M.C.CAMPO_MAX = Number(CAMPO);
 const cartas = {};
 sb.CARTAS.forEach(c => { cartas[c.id] = { id: c.id, nombre: c.nombre, tipo: c.tipo, rareza: c.rareza, afinidad: c.afinidad, coste: c.coste, atq: c.atq ?? null, pv: c.pv ?? null, habilidad: c.habilidad || "", lado: c.lado || null, obtenible: c.obtenible }; });
@@ -23,16 +26,18 @@ function azar(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>
 
 /* --- Mazos ------------------------------------------------------------------ */
 const legalPara = lado => todas.filter(c => !c.lado || c.lado.includes(lado));
-function mazoAlAzar(r, lado, tam = 24, semilla = []) {
+function mazoAlAzar(r, lado, tam = TAM_MAZO, semilla = []) {
+  const unidades = UNIDADES_ARG !== undefined ? Number(UNIDADES_ARG) : Math.round(tam * 15 / 24);
   const pool = legalPara(lado), cuenta = {}, mazo = [];
   const mete = c => { const tope = M.topeCopias(c); if ((cuenta[c.id] || 0) >= tope) return false; cuenta[c.id] = (cuenta[c.id] || 0) + 1; mazo.push(c.id); return true; };
   semilla.forEach(id => cartas[id] && mete(cartas[id]));
   // Composición fija (UNIDADES unidades y el resto de otras cartas) para que un lado con más personajes no gane solo por tener más unidades
   const esU = c => c.atq !== null && c.atq !== undefined;
-  const us = pool.filter(esU), otras = pool.filter(c => !esU(c));
+  // --enjambre: solo unidades baratas (coste 3 o menos), para llenar el campo cuanto antes
+  const us = pool.filter(c => esU(c) && (!ENJAMBRE || c.coste <= 3)), otras = pool.filter(c => !esU(c));
   let g = 0;
-  if (UNIDADES) {
-    while (mazo.filter(id => esU(cartas[id])).length < UNIDADES && g++ < 2000) mete(us[Math.floor(r() * us.length)]);
+  if (unidades) {
+    while (mazo.filter(id => esU(cartas[id])).length < (ENJAMBRE ? tam : unidades) && g++ < 2000) mete(us[Math.floor(r() * us.length)]);
     while (mazo.length < tam && g++ < 4000) mete(otras[Math.floor(r() * otras.length)]);
   }
   while (mazo.length < tam && g++ < 6000) mete(pool[Math.floor(r() * pool.length)]);
