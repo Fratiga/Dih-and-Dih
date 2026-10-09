@@ -1221,5 +1221,33 @@ window.STATS = [
       { nombre: "Marca del Cazador (Acción adicional)", descripcion: "Elige a una criatura que pueda ver. Mientras la persigue (hasta que ella muera, salga de su vista durante 1 minuto o se elija otra marca), su velocidad aumenta 10 pies y tiene ventaja en los ataques contra ella." }
     ],
     estrategia: "Elige a la criatura que más daño le ha hecho y la persigue sin tregua, ignorando a los demás salvo que se interpongan. La atrapa con el Tentáculo, la arrastra y la golpea. No negocia, no se asusta y apenas siente el dolor. Para pararlo hay que bloquear el paso o usar a un aliado como señuelo y cortarle el camino con terreno que no pueda atravesar."
+  },
+  {
+    id: "nurse-harrow",
+    nombre: "Nurse Harrow",
+    rol: "Élite · Soporte hostil · Control",
+    tipo: "Humanoide",
+    raza: "Humanoide Mediana · Médica de campo",
+    nivel: 5,
+    pv: 95,
+    ca: 15,
+    velocidad: "30 pies",
+    stats: { fue: 10, des: 16, con: 16, int: 18, sab: 16, car: 14 },
+    equipo: ["Jeringa hipodérmica enorme", "Maletín de recuperación (con un ojo dentro)", "Instrumental quirúrgico"],
+    notas: [
+      "Salvaciones: CON +6, INT +7, SAB +6. Habilidades: Medicina +9 (pericia), Investigación +7, Percepción +6. Percepción pasiva 16. Competencia +3.",
+      "Bonificador de ataque +7 y CD de sus habilidades 15 (Inteligencia).",
+      "Tiene una acción y una acción adicional por turno. No usa dos veces en el mismo turno una habilidad con recarga.",
+      "Concepto: una enfermera de combate convertida en pesadilla médica. Para ella el combate es un procedimiento. Mantiene a los suyos en pie y convierte las heridas de sus enemigos en una sentencia."
+    ],
+    habilidades: [
+      { nombre: "Yo sé lo que te conviene (Reacción)", descripcion: "Cuando un aliado a 30 pies o menos cae a 0 PV, Harrow puede estabilizarlo al instante: el aliado recupera 1 PV y obtiene 10 PV temporales. Una criatura solo se beneficia de este efecto una vez por descanso largo. Harrow no puede usarlo sobre sí misma." },
+      { nombre: "Jeringa hipodérmica (Acción)", descripcion: "Ataque a distancia, alcance 60 pies. +7 al impacto. Daño: 2d8+3 perforante. El objetivo recibe 1d6 de daño necrótico adicional y hace una salvación de Constitución CD 15 o no puede recuperar PV hasta el inicio del siguiente turno de Harrow." },
+      { nombre: "Jeringa curativa (Acción)", descripcion: "Dispara la jeringa contra un aliado a 60 pies: sin tirada de ataque, el aliado recupera 2d8+4 PV." },
+      { nombre: "Maletín de recuperación (Acción adicional, Recarga 5-6)", descripcion: "El ojo del maletín se abre y absorbe la vitalidad de una criatura herida que Harrow pueda ver a 40 pies. El objetivo hace una salvación de Constitución CD 15 o recibe 3d8 de daño necrótico (mitad si supera). Harrow o un aliado a 30 pies de ella recupera PV iguales a la mitad del daño infligido. No funciona contra criaturas sin vida biológica." },
+      { nombre: "Sanguijuelas de asistencia (Recarga 4-6)", descripcion: "Acción. Libera una nube de sanguijuelas en una esfera de 15 pies de radio centrada en un punto a 60 pies. Los enemigos en el área hacen una salvación de Destreza CD 15: si fallan, reciben 3d6 de daño necrótico y su velocidad se reduce a la mitad durante 1 turno; si superan, la mitad del daño y sin reducción. Elige hasta dos aliados dentro del área: cada uno recupera 2d8 PV. Las sanguijuelas los evitan a propósito." },
+      { nombre: "Terror acechante (Acción adicional, 1/combate)", descripcion: "El maletín flota, sus cierres se abren y algo observa desde dentro. Durante 3 turnos: tiene velocidad de vuelo de 30 pies y flota; ventaja en pruebas de Medicina y en salvaciones de Constitución para mantener la concentración; una vez por turno, cuando daña a alguien con su jeringa, puede curar a un aliado a 30 pies (1d8+4 PV); los enemigos a 10 pies tienen desventaja en pruebas de Percepción basadas en la vista. Al terminar no puede volver a activarlo hasta un descanso largo." }
+    ],
+    estrategia: "Estricta y aterradora, pero convencida de que salva vidas. «No se mueva. Está empeorando su condición.» «Puede gritar si lo necesita. No afecta al procedimiento.» «¿Ve? Ya está mejorando. Debería darme las gracias.» «Usted no está autorizado para morir.» Abre disparando la jeringa al más peligroso del grupo para cortarle la recuperación. En mitad del combate usa las Sanguijuelas cuando varios enemigos se agrupan, y sostiene a los suyos. Cuando un aliado está a punto de caer, activa el Maletín para robar vitalidad y salvarlo. En la fase final usa Terror acechante para flotar sobre la primera línea y seguir tratando a sus aliados mientras ataca. Funciona mejor acompañada de dos o tres experimentadores débiles: sola aguanta, pero su peligro real es impedir que los jugadores terminen con sus compañeros. Con 4 jugadores de nivel 5 y atributos reforzados, empieza con estos PV y súmale o quítale según cuántos enemigos la acompañen."
   }
 ];
