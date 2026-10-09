@@ -511,16 +511,32 @@ mk("t-fallo", 1, 1); M.registrar("t-fallo", { alMorirAliada: c => { M.revivir(c.
 { const e = partida([], []); turnoDe(e, 0); const v = poner(e, 0, "el-vendedor-de-davidas");
   for (let i = 0; i < 5; i++) { const x = poner(e, i % 2, "t11"); M.morir(e, x, { tipo: "habilidad" }); }
   ok(v.atq === 4 && v.pvMax === 6, `El vendedor de Dávidas crece con cada caída, hasta 3 veces (${v.atq}/${v.pvMax})`); }
-{ const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const atk = poner(e, 1, "t33");
-  ok(M.tienePalabra(e, leo, "noBloquea") && M.tienePalabra(e, leo, "temible"), "Leonard: Postura de Brynhildr (no bloquea, difícil de bloquear)");
-  const debil = poner(e, 1, "t11"); const blk = M.bloqueadoresPosibles(e, leo.uid); ok(!blk.includes(debil.uid) && blk.includes(atk.uid), "solo lo bloquean unidades con 3 o más de ataque");
-  const e3 = partida([], []); turnoDe(e3, 0); const enemigo = poner(e3, 1, "t52"); M.ponerUnidad(e3, 0, "leonard-goldenside", true, enemigo);
-  ok(enemigo.pv === 0 || !M.buscar(e3, enemigo.uid), "Graviert Würde: 2 de daño al entrar (mata a un t52 de 2 de vida)"); }
-{ const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const g = poner(e, 1, "garra");
-  M.aplicar(e, { t: "fin" }, 0); turnoDe(e, 1); const atk = poner(e, 1, "t33"); atk.entro = 0;
-  const g2 = M.buscar(e, g.uid).u; g2.entro = 0;
+{ // Leonard de guardia: bloquea y devuelve el golpe; atacando pasa a la Postura de Brynhildr
+  const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const atk = poner(e, 1, "t33"); const debil = poner(e, 1, "t11");
+  ok(leo.flags.forma === 0 && !M.tienePalabra(e, leo, "noBloquea") && !M.tienePalabra(e, leo, "temible"), "Leonard entra de guardia: puede bloquear y lo bloquea cualquiera");
+  ok(M.bloqueadoresPosibles(e, leo.uid).includes(debil.uid), "en la guardia lo bloquea hasta una unidad con 1 de ataque");
+  const e3 = partida([], []); turnoDe(e3, 0); const enemigo = poner(e3, 1, "t52"); M.ponerUnidad(e3, 0, "leonard-goldenside", true, null);
+  ok(M.buscar(e3, enemigo.uid) && enemigo.pv === 2, "ya no hace daño al entrar (sin Graviert Würde)");
+  M.aplicar(e, { t: "atacar", u: [leo.uid] }, 0);
+  ok(leo.flags.forma === 1 && M.tienePalabra(e, leo, "noBloquea") && M.tienePalabra(e, leo, "temible"), "al atacar adopta la Postura de Brynhildr: no bloquea y es difícil de bloquear");
+  ok(e.log.some(l => /Postura de Brynhildr/.test(typeof l === "string" ? l : l.texto || "")), "el registro lo cuenta"); }
+{ const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const atk = poner(e, 1, "t33"); const debil = poner(e, 1, "t11");
+  M.aplicar(e, { t: "atacar", u: [leo.uid] }, 0); M.aplicar(e, { t: "pasar" }, 1);
+  const blk = M.bloqueadoresPosibles(e, leo.uid); ok(!blk.includes(debil.uid) && blk.includes(atk.uid), "en la postura de Brynhildr solo lo bloquean unidades con 3 o más de ataque");
+  M.aplicar(e, { t: "fin" }, 0);
+  ok(leo.flags.forma === 1, "el turno en que atacó se queda en la postura de Brynhildr (no bloquea en el turno del rival)");
+  M.aplicar(e, { t: "fin" }, 1);
+  M.aplicar(e, { t: "fin" }, 0);
+  ok(leo.flags.forma === 0 && M.tienePalabra(e, leo, "noBloquea") === false, "un turno suyo sin atacar lo devuelve a la guardia"); }
+{ // Eisen Strum solo de guardia
+  const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const g = poner(e, 1, "garra");
+  M.aplicar(e, { t: "fin" }, 0); turnoDe(e, 1); const g2 = M.buscar(e, g.uid).u; g2.entro = 0;
   M.aplicar(e, { t: "atacar", u: [g2.uid], d: { [g2.uid]: leo.uid } }, 1);
-  ok(!M.buscar(e, g2.uid) && leo.pv < 5, "Eisen Strum: la atacante recibe 2 de daño de vuelta (Garra 3/2 muere)"); }
+  ok(!M.buscar(e, g2.uid) && leo.pv < 5, "Eisen Strum de guardia: la atacante recibe 2 de daño de vuelta (Garra 3/2 muere)"); }
+{ const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const g = poner(e, 1, "t33");
+  leo.flags.forma = 1; const pvAntes = g.pv;
+  M.infligir(e, { u: leo.uid }, 1, { tipo: "combate", uid: g.uid });
+  ok(M.buscar(e, g.uid) && g.pv === pvAntes, "en la postura de Brynhildr no devuelve el golpe"); }
 { const e = partida([], []); turnoDe(e, 0); const sig = poner(e, 0, "sigismund"); const suelo = poner(e, 1, "t24"), vuela = poner(e, 1, "manta-del-cielo");
   const e2 = partida([], []); turnoDe(e2, 0); const m2 = poner(e2, 1, "manta-del-cielo"); M.ponerUnidad(e2, 0, "sigismund", true, m2);
   ok(!M.buscar(e2, m2.uid), "Balista de asedio: 4 de daño a una voladora (la Aeromanta de 3 cae)");

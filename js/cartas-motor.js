@@ -132,6 +132,9 @@
     if (bv.palabras.includes(palabra)) return true;
     const ef = efectoDe(est, u);
     if ((ef.palabras || []).includes(palabra)) return true;
+    // Palabras que da una forma (palabrasForma: { 1: [...] }): Leonard en la Postura de Brynhildr
+    const pf = ef.palabrasForma && ef.palabrasForma[u.flags.forma || 0];
+    if (pf && pf.includes(palabra)) return true;
     const T = est.terreno;
     if (T && T.dueno === u.dueno && palabra === "volar" && T.cartaId === "los-huesos" && (meta(est, u.cartaId).afinidad || []).includes("sombra")) return true;
     // Otros terrenos que dan una palabra a las unidades de su dueño (Fauces Grises: Desafiante a las de Cacería)

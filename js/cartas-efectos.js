@@ -28,6 +28,7 @@
      alEntrarAliada  cuando otra unidad aliada entra
      alRecibirDano   al recibir daño sin morir ({ est, M, u, j, cantidad, fuente })
      evitaMuerte     (est, g, u, fuente) => bool; una unidad aliada g puede evitar que u muera (u se queda con 1 de vida)
+     palabrasForma   { k: [palabras] } palabras que da la forma k de la unidad (la forma 0 es la base)
      formas          (no es una habilidad: es un campo de la carta) cada unidad tiene u.flags.forma (0 = base) y la cambia
                      M.cambiarForma(est, u, k, textoDelRegistro); la imagen de cada forma está en carta.formas[k - 1]
      costeMod        (est, u, meta) => número; abarata o encarece cartas de su dueño mientras esté en juego
@@ -61,6 +62,17 @@
     const R = M.registrar, RT = M.registrarTerreno;
     const enemigas = (est, j) => est.jugadores[1 - j].campo;
     const aleatoria = (est, lista) => lista[M.entero(est, lista.length)];
+    // Cartas que cambian de forma según cómo se las juega: al atacar pasan a la forma 1 y, si pasa un turno de su
+    // dueño sin que ataquen, vuelven a la forma 0. `ida` y `vuelta` son los textos del registro (reciben el nombre).
+    const formaAlAtacar = (ida, vuelta) => ({
+      alAtacar: c => {
+        c.u.flags.ataqueTurno = c.est.turno;
+        M.cambiarForma(c.est, c.u, 1, ida(M.nombre(c.est, c.u)));
+      },
+      alFinTurno: c => {
+        if (c.u.flags.ataqueTurno !== c.est.turno) M.cambiarForma(c.est, c.u, 0, vuelta(M.nombre(c.est, c.u)));
+      }
+    });
     const esDe = (est, u, afinidad) => (M.meta(est, u.cartaId).afinidad || []).includes(afinidad);
     const cuantas = (est, j, afinidad) => est.jugadores[j].campo.filter(u => esDe(est, u, afinidad)).length;
     const descartarAlAzar = (est, j) => {
@@ -253,21 +265,21 @@
     });
     // Leonard, inspirado en Leo Whitefang (Guilty Gear Strive): Postura de Brynhildr (da la espalda: no bloquea, pero lo suyo
     // es difícil de bloquear), Graviert Würde (onda de energía) y Eisen Strum (contraataque).
-    R("leonard-goldenside", {
-      palabras: ["noBloquea", "temible"],
-      alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
-        M.log(c.est, `${M.nombre(c.est, c.u)} lanza una onda de energía.`);
-        M.infligir(c.est, { u: c.objetivo.uid }, 2, { tipo: "habilidad", dueno: c.j });
-      } },
+    // Leonard (basado en Leo Whitefang, de Guilty Gear Strive) cambia de postura según cómo se le juegue: de guardia bloquea y
+    // devuelve el golpe (Eisen Strum); si ataca se pone de espaldas en la Postura de Brynhildr (no bloquea y casi nadie lo
+    // bloquea a él). Un turno suyo sin atacar lo devuelve a la guardia.
+    R("leonard-goldenside", Object.assign({
+      palabrasForma: { 1: ["noBloquea", "temible"] },
       alRecibirDano: c => {
+        if (c.u.flags.forma) return;                                  // Eisen Strum solo en la guardia
         const f = c.fuente;
         if (!f || f.tipo !== "combate" || !f.uid) return;
         const h = M.buscar(c.est, f.uid);
         if (!h || h.j === c.j) return;
-        M.log(c.est, `${M.nombre(c.est, c.u)} responde con un contraataque.`);
+        M.log(c.est, `${M.nombre(c.est, c.u)} responde con Eisen Strum.`);
         M.infligir(c.est, { u: h.u.uid }, 2, { tipo: "habilidad", dueno: c.j });
       }
-    });
+    }, formaAlAtacar(n => `${n} da la espalda: adopta la Postura de Brynhildr.`, n => `${n} pasa un turno sin atacar y vuelve a la guardia.`)));
     R("mercader", { costeMod: (est, u, m) => (m.tipo === "Objeto" ? -1 : 0) });
     // El Comerciante de Dávidas espera a que otros terminen de vivir y se queda con lo que dejan.
     const carronia = c => {
@@ -298,19 +310,11 @@
     R("sett", { palabras: ["arrollar"] });
     R("vieja-de-la-espesura", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
     R("clef", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.mod(c.est, c.objetivo, 2, 0, c.est.turno + 2, `Clef da una orden: ${M.nombre(c.est, c.objetivo)} gana +2 de ataque hasta el final de tu próximo turno.`) } });
-    // Ulis es una niña pequeña que se vuelve un monstruo ajolote grande cuando quiere y sin desgaste. En el juego se
-    // transforma al atacar (forma 1) y, si pasa un turno suyo sin atacar, vuelve a ser la niña (forma 0).
-    R("ulis", {
+    // Ulis es una niña pequeña que se vuelve un monstruo ajolote grande cuando quiere y sin desgaste.
+    R("ulis", Object.assign({
       alInicioTurno: c => M.curar(c.est, { u: c.u.uid }, 1),
-      alAtacar: c => {
-        c.u.flags.ataqueTurno = c.est.turno;
-        M.cambiarForma(c.est, c.u, 1, `${M.nombre(c.est, c.u)} se transforma en un monstruo ajolote grande.`);
-      },
-      alFinTurno: c => {
-        if (c.u.flags.ataqueTurno !== c.est.turno) M.cambiarForma(c.est, c.u, 0, `${M.nombre(c.est, c.u)} pasa un turno sin atacar y vuelve a ser una niña.`);
-      },
       pasivaAtq: (est, u) => (u.flags.forma === 1 ? 2 : 0)
-    });
+    }, formaAlAtacar(n => `${n} se transforma en un monstruo ajolote grande.`, n => `${n} pasa un turno sin atacar y vuelve a ser una niña.`)));
     // La enfermera Harrow: la jeringa cura a los suyos o castiga a los demás, y salva a una aliada de morir (una vez por partida).
     R("enfermera-harrow", {
       alEntrar: { objetivo: "unidad", resolver: c => {

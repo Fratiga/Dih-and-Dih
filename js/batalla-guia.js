@@ -36,13 +36,13 @@ window.TriunfosGuia = (function () {
   const conEfecto = pred => nombresDe(Object.keys(M.EFECTOS).filter(id => pred(M.EFECTOS[id], id)));
 
   function cartasDePalabra(p) {
-    const solas = conEfecto(ef => (ef.palabras || []).includes(p.id)).map(c => c.id);
+    const solas = conEfecto(ef => (ef.palabras || []).includes(p.id) || Object.values(ef.palabrasForma || {}).some(l => l.includes(p.id))).map(c => c.id);
     return nombresDe([...solas, ...(p.cartas || []), ...(p.tambien || [])]);
   }
   function cartasDeHabilidad(h) {
     if (h.ejemplos) return nombresDe(h.ejemplos);
     if (h.campo === "terreno") return nombresDe(Object.keys(M.TERRENOS));
-    if (h.campo === "palabras") return conEfecto(ef => (ef.palabras || []).length > 0);
+    if (h.campo === "palabras") return conEfecto(ef => (ef.palabras || []).length > 0 || Object.keys(ef.palabrasForma || {}).length > 0);
     if (h.campo === "jugar") return conEfecto((ef, id) => !!ef.jugar && (window.cartaPorId(id) || {}).tipo !== "Terreno");
     return conEfecto(ef => !!ef[h.campo]);
   }
