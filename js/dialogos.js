@@ -190,7 +190,10 @@
     if (bCancelar) bCancelar.addEventListener("click", cancelar);
     fondo.addEventListener("mousedown", e => { if (e.target === fondo && cfg.tipo === "avisar") cancelar(); });
 
-    document.body.appendChild(fondo);
+    // Con un <dialog> modal abierto, lo que cuelga del body queda detrás y sin poder tocarse:
+    // el aviso se monta dentro de ese dialog.
+    const abiertos = document.querySelectorAll("dialog[open]");
+    (abiertos.length ? abiertos[abiertos.length - 1] : document.body).appendChild(fondo);
     requestAnimationFrame(() => fondo.classList.add("dlg-visible"));
     // En acciones que borran o descartan, el foco empieza en Cancelar.
     const inicial = campo || (filas.length ? filas[0].entrada : null) || (cfg.peligro && bCancelar ? bCancelar : bAceptar);
