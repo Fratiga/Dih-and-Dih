@@ -68,7 +68,7 @@ window.CARTAS_AFINIDADES = {
   u("sir-buffolet", "Sir Buffolet", "Personaje", P("sir-buffolet"), "infrecuente", "arcano", 2, 2, 2, "Mal bardo: al entrar, cada jugador descarta una carta al azar.", A);
   u("enzo", "Enzo", "Personaje", P("enzo"), "infrecuente", "carne", 4, 2, 3, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño.", A);
   u("mattei", "Mattei", "Personaje", P("mattei"), "comun", "sombra", 1, 1, 2, "Escurridizo: hasta el final del próximo turno del rival, los desafíos y las habilidades enemigas no pueden elegirlo.", A);
-  u("adam-kovacs", "Adam Kovacs", "Personaje", P("adam-kovacs"), "rara", "juramento", 6, 6, 7, "Capitán: tus demás unidades tienen +1 de ataque.", Bl);
+  u("adam-kovacs", "Adam Kovacs", "Personaje", P("adam-kovacs"), "rara", "juramento", 6, 4, 6, "Capitán: tus demás unidades tienen +1 de ataque.", Bl);
   u("cassius-coldgrave", "Cassius Coldgrave", "Personaje", P("cassius-coldgrave"), "infrecuente", "caceria", 3, 2, 3, "Cobarde: no puede bloquear. Escurridizo: mientras controles otra unidad, los desafíos y las habilidades enemigas no pueden elegirlo.", Bl);
   u("torvrena", "Torvrena", "Personaje", P("torvrena"), "infrecuente", "caceria", 4, 4, 4, "Trampa de mandíbula: al entrar, una unidad enemiga no puede atacar el próximo turno.", Bl);
   u("ryn", "Ryn", "Personaje", P("ryn"), "rara", "arcano", 3, 2, 3, "Canción de bardo: al entrar, una unidad aliada gana +2/+2 este turno.", Bl);
@@ -94,6 +94,16 @@ window.CARTAS_AFINIDADES = {
   u("baltasar-sorel", "Baltasar Sorel", "Personaje", P("baltasar-sorel"), "infrecuente", "sombra", 4, 3, 3, "Disparo contaminante: al entrar, inflige 2 de daño a una unidad enemiga.", Be("El veterano"));
   u("nico", "Nico", "Personaje", P("nico"), "comun", "sombra", 2, 2, 2, "¡A que no me atrapas!. Esquivo: en combate recibe la mitad del daño (redondeado hacia abajo).", Be("El pequeño"));
 
+  // Personajes de la cronología que faltaban. Sus fichas del compendio son del Lado B; Gareth sale en las dos cronologías.
+  u("gareth", "Gareth", "Personaje", { data: null, id: null }, "infrecuente", "juramento", 4, 3, 5, "Duro: recibe 1 menos de daño. Echar a la calle: al entrar, devuelve a la mano de su dueño a una unidad enemiga con coste 3 o menos.", { lado: ["A", "B"], epiteto: "El tabernero", descripcion: "Semigigante dueño de La Taberna del Gigante, tan fuerte como de mal humor. Su local sobrevivió al ataque del dragón casi de milagro." });
+  u("sigismund", "Sigismund", "Personaje", P("sigismund"), "infrecuente", "juramento", 4, 3, 5, "Duro: recibe 1 menos de daño. Balista de asedio: al entrar, inflige 2 de daño a una unidad enemiga (4 si vuela).", Be("El paladín"));
+  u("isa", "Isa", "Personaje", P("isa"), "infrecuente", "sombra", 3, 2, 3, "Irresistible: al entrar, una unidad enemiga no puede atacar el próximo turno.", Be("El apuesto"));
+  u("sett", "Sett", "Personaje", P("sett"), "comun", "carne", 3, 3, 2, "Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.", Be("El fornido"));
+  u("vieja-de-la-espesura", "La Vieja de la Espesura", "Personaje", P("vieja-espesura"), "infrecuente", "eternidad", 3, 1, 4, "Consejo de la ermitaña: al entrar, roba una carta.", Be("La ermitaña"));
+  u("clef", "Clef", "Personaje", P("clef"), "infrecuente", "arcano", 3, 1, 3, "Orden: al entrar, una unidad aliada gana +2 de ataque hasta el final de tu próximo turno.", Be("La científica"));
+  u("ulis", "Ulis", "Personaje", P("ulis"), "infrecuente", "carne", 2, 2, 2, "Ajolote: al inicio de tu turno recupera 1 de vida.", Be("La ajolote"));
+  u("enfermera-harrow", "Enfermera Harrow", "Personaje", { data: null, id: null }, "rara", "carne", 5, 2, 5, "Jeringa: al entrar, elige una unidad: si es aliada, cura 3 de vida; si es enemiga, recibe 2 de daño y no puede curarse hasta el final del próximo turno de su dueño. Yo sé lo que te conviene: una vez por partida, cuando una unidad aliada fuera a morir, se queda con 1 de vida.", { lado: ["B"], epiteto: "La enfermera", descripcion: "Enfermera de combate convertida en pesadilla médica. Mantiene a los suyos en pie y convierte las heridas de sus enemigos en una sentencia." });
+
   // --- Criaturas ------------------------------------------------------------
   u("kobold", "Kobold", "Criatura", B("kobold"), "comun", "carne", 1, 1, 1, "Instinto de manada: +1 de ataque por cada otro Kobold en el campo.");
   u("manta-del-cielo", "Aeromanta", "Criatura", B("manta-del-cielo"), "comun", "arcano", 2, 1, 3, "Volar: solo puede ser bloqueada por unidades que también vuelan.");
@@ -109,7 +119,7 @@ window.CARTAS_AFINIDADES = {
   u("guillotina", "Guillotina", "Criatura", B("guillotina"), "infrecuente", "carne", 4, 4, 3, "Veloz: en combate golpea antes que su rival; si lo mata, no recibe daño. Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.");
   u("dragarto", "Dragarto", "Criatura", B("dragarto"), "rara", "carne", 5, 4, 6, "Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.");
   u("mamut-gelido", "Gelifante", "Criatura", B("mamut-gelido"), "infrecuente", "eternidad", 5, 3, 7, "Duro: recibe 1 menos de daño.");
-  u("protodraco", "Protodraco", "Criatura", B("protodraco"), "rara", "eternidad", 6, 5, 5, "Volar: solo puede ser bloqueado por unidades que también vuelan. Aliento inestable: al entrar, inflige 2 de daño a una unidad enemiga.");
+  u("protodraco", "Protodraco", "Criatura", B("protodraco"), "rara", "eternidad", 6, 4, 5, "Volar: solo puede ser bloqueado por unidades que también vuelan. Aliento inestable: al entrar, inflige 2 de daño a una unidad enemiga.");
 
   // --- Objetos --------------------------------------------------------------
   o("pocion-de-curacion-menor", "Poción de curación menor", "Objeto", O("pocion-de-curacion-menor"), "comun", "carne", 1, "Cura 3 de vida a una unidad o a ti.");
@@ -145,8 +155,8 @@ window.CARTAS_AFINIDADES = {
   T("osario-de-la-frontera", "Osario de la Frontera", "osario-de-la-frontera", "rara", "eternidad", 4, "Centinelas no muertos: mientras esté en juego, cuando una de tus unidades muere, recibes un Centinela 1/1 en el campo.");
   T("campamento-de-las-astas-caidas", "Campamento de las Astas Caídas", "campamento-de-las-astas-caidas", "infrecuente", "juramento", 3, "Luto: mientras esté en juego, la primera vez cada turno que muere una unidad tuya, tus demás unidades ganan +1 de ataque hasta el final de tu próximo turno.");
   T("fauces-grises", "Fauces Grises", "fauces-grises", "infrecuente", "caceria", 3, "Presa rastreada: durante 3 turnos, tus unidades de Cacería tienen Desafiante.");
-  T("montana-del-eco-arcano", "Montaña del Eco Arcano", "montana-del-eco-arcano", "rara", "arcano", 4, "Eco de conjuros: durante 3 turnos, las habilidades al entrar de tus unidades de Arcano se activan dos veces.");
-  T("pozo-de-la-eternidad", "Pozo de la Eternidad", "pozo-de-la-eternidad", "rara", "eternidad", 5, "Cementerio de dragones: mientras esté en juego, la primera unidad de Eternidad tuya que muera cada turno vuelve al campo con 1 de vida.");
+  T("montana-del-eco-arcano", "Montaña del Eco Arcano", "montana-del-eco-arcano", "rara", "arcano", 3, "Eco de conjuros: durante 3 turnos, las habilidades al entrar de tus unidades de Arcano se activan dos veces.");
+  T("pozo-de-la-eternidad", "Pozo de la Eternidad", "pozo-de-la-eternidad", "rara", "eternidad", 4, "Cementerio de dragones: mientras esté en juego, la primera unidad de Eternidad tuya que muera cada turno vuelve al campo con 1 de vida.");
   T("carronada", "Carroñada", "carronada", "comun", "carne", 2, "Carroñeros: mientras esté en juego, cuando muere una unidad, tus unidades de Carne recuperan 2 de vida.");
   // Subsección que solo ve el Side B de La Espesura: la carta es solo para el Side B
   o("cueva-de-carne", "La Cueva de Carne", "Terreno", L("la-espesura"), "rara", "carne", 4,

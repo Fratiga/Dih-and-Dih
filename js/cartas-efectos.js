@@ -26,7 +26,10 @@
                      enemigas pueden elegirla (también existe flags.escurridizoHasta)
      alEntrar        { objetivo?, resolver(c) } habilidad "al entrar"
      alEntrarAliada  cuando otra unidad aliada entra
-     alRecibirDano   al recibir daño sin morir
+     alRecibirDano   al recibir daño sin morir ({ est, M, u, j, cantidad, fuente })
+     evitaMuerte     (est, g, u, fuente) => bool; una unidad aliada g puede evitar que u muera (u se queda con 1 de vida)
+     costeMod        (est, u, meta) => número; abarata o encarece cartas de su dueño mientras esté en juego
+     filtro          (dentro de alEntrar/jugar) (est, objetivo, j) => bool; limita qué objetivos son válidos
      alMorir         al morir
      alMorirAliada   cuando cae otra unidad aliada: { est, M, u (la que reacciona), j, muerta }
      alMorirEnemiga  cuando cae una unidad del rival: { est, M, u, j, muerta }
@@ -226,6 +229,88 @@
       }
     });
     R("resto-piedra", { reduceDano: () => 1 });
+
+    // --- Personajes de la cronología sumados después ------------------------------
+    // Coach se interpuso entre el protodraco y quien tenía detrás (con Ryn u Orina cubre siempre: ver cartas-vinculos.js).
+    R("coach", { guardian: true, guardianUnaVez: true });
+    // Julius: el decreto del rey y la sentencia aplazada.
+    R("julius-goldenside", {
+      alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+        c.objetivo.flags.noAtacaHasta = Math.max(c.objetivo.flags.noAtacaHasta, c.est.turno + 1);
+        c.objetivo.flags.noBloqueaHasta = Math.max(c.objetivo.flags.noBloqueaHasta, c.est.turno + 1);
+        M.log(c.est, `El decreto del rey Julius cae sobre ${M.nombre(c.est, c.objetivo)}: ni ataca ni bloquea hasta el final de su próximo turno.`);
+      } },
+      evitaMuerte: (est, g, u) => {
+        if (g.flags.sentenciaUsada) return false;
+        g.flags.sentenciaUsada = true;
+        M.log(est, `Sentencia aplazada: ${M.nombre(est, g)} salva a ${M.nombre(est, u)}, que se queda con 1 de vida.`);
+        return true;
+      }
+    });
+    // Leonard, inspirado en Leo Whitefang (Guilty Gear Strive): Postura de Brynhildr (da la espalda: no bloquea, pero lo suyo
+    // es difícil de bloquear), Graviert Würde (onda de energía) y Eisen Strum (contraataque).
+    R("leonard-goldenside", {
+      palabras: ["noBloquea", "temible"],
+      alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+        M.log(c.est, `${M.nombre(c.est, c.u)} lanza una onda de energía.`);
+        M.infligir(c.est, { u: c.objetivo.uid }, 2, { tipo: "habilidad", dueno: c.j });
+      } },
+      alRecibirDano: c => {
+        const f = c.fuente;
+        if (!f || f.tipo !== "combate" || !f.uid) return;
+        const h = M.buscar(c.est, f.uid);
+        if (!h || h.j === c.j) return;
+        M.log(c.est, `${M.nombre(c.est, c.u)} responde con un contraataque.`);
+        M.infligir(c.est, { u: h.u.uid }, 2, { tipo: "habilidad", dueno: c.j });
+      }
+    });
+    R("mercader", { costeMod: (est, u, m) => (m.tipo === "Objeto" ? -1 : 0) });
+    // El Comerciante de Dávidas espera a que otros terminen de vivir y se queda con lo que dejan.
+    const carronia = c => {
+      if ((c.u.flags.carronias || 0) >= 3) return;
+      c.u.flags.carronias = (c.u.flags.carronias || 0) + 1;
+      c.u.atq += 1; c.u.pvMax += 1; c.u.pv += 1;
+      M.log(c.est, `${M.nombre(c.est, c.u)} recoge lo que ${M.nombre(c.est, c.muerta)} dejó: +1/+1.`);
+    };
+    R("el-vendedor-de-davidas", { alMorirAliada: carronia, alMorirEnemiga: carronia });
+    R("gareth", {
+      palabras: ["duro"],
+      alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => M.meta(est, t.cartaId).coste <= 3, resolver: c => {
+        M.log(c.est, `Gareth echa a ${M.nombre(c.est, c.objetivo)} a la calle.`);
+        M.devolverAMano(c.est, c.objetivo);
+      } }
+    });
+    R("sigismund", {
+      palabras: ["duro"],
+      alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+        M.log(c.est, `${M.nombre(c.est, c.u)} dispara la balista.`);
+        M.infligir(c.est, { u: c.objetivo.uid }, M.tienePalabra(c.est, c.objetivo, "volar") ? 4 : 2, { tipo: "habilidad", dueno: c.j });
+      } }
+    });
+    R("isa", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+      c.objetivo.flags.noAtacaHasta = Math.max(c.objetivo.flags.noAtacaHasta, c.est.turno + 1);
+      M.log(c.est, `${M.nombre(c.est, c.objetivo)} se queda mirando a Isa: no podrá atacar el próximo turno.`);
+    } } });
+    R("sett", { palabras: ["arrollar"] });
+    R("vieja-de-la-espesura", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
+    R("clef", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.mod(c.est, c.objetivo, 2, 0, c.est.turno + 2, `Clef da una orden: ${M.nombre(c.est, c.objetivo)} gana +2 de ataque hasta el final de tu próximo turno.`) } });
+    R("ulis", { alInicioTurno: c => M.curar(c.est, { u: c.u.uid }, 1) });
+    // La enfermera Harrow: la jeringa cura a los suyos o castiga a los demás, y salva a una aliada de morir (una vez por partida).
+    R("enfermera-harrow", {
+      alEntrar: { objetivo: "unidad", resolver: c => {
+        const t = c.objetivo;
+        if (t.dueno === c.j) { M.log(c.est, `Harrow inyecta a ${M.nombre(c.est, t)}.`); M.curar(c.est, { u: t.uid }, 3); return; }
+        M.log(c.est, `Harrow clava la jeringa en ${M.nombre(c.est, t)}.`);
+        t.flags.sinCurarHasta = Math.max(t.flags.sinCurarHasta, c.est.turno + 1);
+        M.infligir(c.est, { u: t.uid }, 2, { tipo: "habilidad", dueno: c.j });
+      } },
+      evitaMuerte: (est, g, u) => {
+        if (g.flags.harrowUsada) return false;
+        g.flags.harrowUsada = true;
+        M.log(est, `«Usted no está autorizado para morir»: Harrow estabiliza a ${M.nombre(est, u)}, que se queda con 1 de vida.`);
+        return true;
+      }
+    });
 
     // --- Objetos -------------------------------------------------------------
     R("pocion-de-curacion-menor", { jugar: { objetivo: "jugadorOUnidadAliada", resolver: c => M.curar(c.est, c.objetivo.uid !== undefined ? { u: c.objetivo.uid } : c.objetivo, 3) } });

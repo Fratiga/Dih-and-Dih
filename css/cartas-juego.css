@@ -299,7 +299,9 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 @keyframes bt-blanco { 50% { box-shadow: 0 0 0 4px rgba(255,140,120,.7); } }
 
 /* --- Campos de batalla ---------------------------------------------------- */
-.bt-campo { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; align-items: flex-start; gap: 20px 14px; flex: 1; min-height: 232px; padding: 18px 20px 26px; margin: 0 14px; border-radius: 12px; background: rgba(0,0,0,0.14); transition: background .2s, box-shadow .2s; }
+/* Diez huecos por campo: una sola fila que se ajusta al ancho de la mesa (hasta 124px cada uno). */
+.bt-campo { display: grid; grid-template-columns: repeat(var(--hmax, 10), minmax(0, 124px)); justify-content: center; align-content: start; align-items: start; gap: 14px 8px; flex: 1; padding: 14px 12px 22px; margin: 0 8px; border-radius: 12px; background: rgba(0,0,0,0.14); transition: background .2s, box-shadow .2s; }
+.bt-campo .bt-hueco, .bt-campo .bt-unidad { width: auto; min-width: 0; }
 .bt-hueco { width: 124px; aspect-ratio: 2 / 3; border-radius: 8%; border: 2px dashed rgba(211,171,94,.22); background: rgba(211,171,94,.05); position: relative; flex: none; }
 .bt-hueco::after { content: "\2666"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 2rem; color: rgba(211,171,94,.14); }
 .bt-hueco + .bt-hueco { margin-left: 0; }
@@ -320,6 +322,12 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-unidad.golpe { animation: bt-golpe .5s ease; }
 .bt-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; margin-top: 10px; min-height: 16px; }
 .bt-chips span { font-size: .6rem; padding: 1px 5px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.18); color: #d9d4c0; text-transform: uppercase; letter-spacing: .04em; }
+.bt-chips span.vinculo { border-color: rgba(214,178,94,.7); color: #e8cf8a; }
+.bt-chips span.rivalidad { border-color: rgba(190,60,60,.85); color: #f0a0a0; background: rgba(70,10,10,.7); }
+.bt-vinculo b { color: #e8cf8a; }
+.bt-vinculo.rivalidad b { color: #f0a0a0; }
+.carta-vinculos { margin: 0 0 8px; padding-left: 18px; }
+.carta-vinculos li { margin-bottom: 6px; }
 .carta-stat.herida { color: #ffb4a8; }
 .carta-stat.sube { color: #c8ffd2; }
 
@@ -450,6 +458,10 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
   .bt-zona { grid-template-columns: 1fr; }
   .bt-lateral { position: static; }
 }
+@media (max-width: 760px) {
+  /* En el móvil las diez casillas no caben en pantalla: el campo se desliza de lado, con cartas de 72px */
+  .bt-campo { grid-template-columns: repeat(var(--hmax, 10), 72px); justify-content: start; overflow-x: auto; padding-bottom: 28px; scrollbar-width: thin; }
+}
 @media (max-width: 700px) {
   .bt-hueco { width: 92px; }
   .bt-unidad { width: 92px; }
@@ -529,17 +541,22 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-todas { padding: 8px 16px; font-size: .8rem; border-color: var(--accent-soft, #7e6334); background: transparent; color: var(--accent, #d3ab5e); cursor: pointer; }
 .bt-todas:hover { border-color: var(--accent, #d3ab5e); }
 
-.bt-combate { position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 22px; padding: 10px 16px; margin: 0 14px; border-radius: 12px; border: 1px solid rgba(240, 194, 77, .3); background: rgba(32,11,11,0.17); }
+.bt-combate { container-type: inline-size; position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 22px; padding: 10px 16px; margin: 0 14px; border-radius: 12px; border: 1px solid rgba(240, 194, 77, .3); background: rgba(32,11,11,0.17); }
 .bt-combate.hidden { display: none; }
 .bt-combate.previa { border-style: dashed; background: rgba(240, 194, 77, .05); }
 .bt-combate.zona-soltar { background: rgba(240, 194, 77, .14); }
 .bt-carril { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .bt-carril[data-atk]::after, .bt-carril.resolviendo::after { content: "⚔"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 1.3rem; color: #ffb27a; text-shadow: 0 2px 0 #000; z-index: 3; pointer-events: none; }
 .bt-carril.previa { opacity: .85; }
-.bt-carril-celda { width: 104px; min-height: 156px; display: grid; place-items: center; }
-.bt-combate .bt-unidad { width: 104px; }
+/* Ancho de cada carril: 104px, o menos si hay tantos atacantes que no caben en una fila (--n los cuenta) */
+.bt-carril { --cw: 104px; }
+@supports (width: 1cqw) {
+  .bt-carril { --cw: clamp(62px, calc((100cqw - 32px - (var(--n, 4) - 1) * 22px) / var(--n, 4)), 104px); }
+}
+.bt-carril-celda { width: var(--cw); min-height: calc(var(--cw) * 1.5); display: grid; place-items: center; }
+.bt-combate .bt-unidad { width: var(--cw, 104px); }
 .bt-combate .bt-unidad:hover { transform: none; }
-.bt-bloqueo-hueco { width: 104px; aspect-ratio: 2 / 3; border-radius: 8%; border: 2px dashed rgba(106, 167, 255, .45); display: grid; place-items: center; text-align: center; padding: 6px; box-sizing: border-box; color: #9ec4ff; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; background: rgba(106, 167, 255, .08); }
+.bt-bloqueo-hueco { width: var(--cw, 104px); aspect-ratio: 2 / 3; border-radius: 8%; border: 2px dashed rgba(106, 167, 255, .45); display: grid; place-items: center; text-align: center; padding: 6px; box-sizing: border-box; color: #9ec4ff; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; background: rgba(106, 167, 255, .08); }
 .bt-bloqueo-hueco.vacio { border-color: rgba(211, 171, 94, .25); color: var(--muted, #a79eb4); background: none; }
 .bt-bloqueo-hueco.posible { border-style: solid; border-color: #6aa7ff; background: rgba(106,167,255,0.2); cursor: pointer; }
 .bt-bloqueador-asignado { position: relative; cursor: pointer; }
@@ -556,7 +573,7 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 /* Resolución: el atacante embiste, se ve el daño de cada lado y lo que cae */
 .bt-carril[data-sentido="abajo"] { --dir: -1; }
 .bt-carril[data-sentido="arriba"] { --dir: 1; }
-.bt-snap { position: relative; width: 104px; }
+.bt-snap { position: relative; width: var(--cw, 104px); }
 .bt-snap .carta { pointer-events: none; }
 .bt-snap.atacante { animation: bt-embiste 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); z-index: 2; }
 .bt-snap.bloqueador { animation: bt-sacude 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); }
@@ -568,13 +585,13 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 @keyframes bt-sacude-cae { 0%, 28% { transform: none; opacity: 1; } 34% { transform: translateX(-6px); } 42% { transform: translateX(6px); } 70% { opacity: 1; filter: none; } 100% { transform: scale(.9); opacity: 0; filter: grayscale(1) brightness(.5); } }
 .bt-dano { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); z-index: 5; font-family: var(--font-heading), sans-serif; font-size: 1.9rem; color: #ff6a55; text-shadow: 0 2px 0 #000; opacity: 0; animation: bt-dano 1.4s ease both; animation-delay: calc(var(--k, 0) * .12s + .42s); pointer-events: none; }
 @keyframes bt-dano { 0% { opacity: 0; transform: translate(-50%, 10px) scale(.6); } 20% { opacity: 1; transform: translate(-50%, 0) scale(1.25); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -36px) scale(1); } }
-.bt-golpe-jugador { width: 104px; min-height: 156px; display: grid; place-content: center; text-align: center; gap: 4px; border-radius: 8%; border: 2px solid rgba(255, 90, 70, .7); background: rgba(255, 70, 50, .25); animation: bt-golpe-jugador 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); }
+.bt-golpe-jugador { width: var(--cw, 104px); min-height: calc(var(--cw, 104px) * 1.5); display: grid; place-content: center; text-align: center; gap: 4px; border-radius: 8%; border: 2px solid rgba(255, 90, 70, .7); background: rgba(255, 70, 50, .25); animation: bt-golpe-jugador 1.5s ease both; animation-delay: calc(var(--k, 0) * .12s); }
 .bt-golpe-jugador span { font-family: var(--font-heading), sans-serif; font-size: 2.2rem; color: #ff7a64; }
 .bt-golpe-jugador small { color: #ffd0c6; font-size: .72rem; letter-spacing: .06em; }
 @keyframes bt-golpe-jugador { 0% { opacity: 0; transform: scale(.7); } 30% { opacity: 1; transform: scale(1.1); } 40% { transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; } }
 @media (max-width: 700px) {
-  .bt-carril-celda, .bt-bloqueo-hueco, .bt-snap, .bt-combate .bt-unidad, .bt-golpe-jugador { width: 78px; }
-  .bt-carril-celda { min-height: 117px; }
+  .bt-carril { --cw: 78px; }
+  @supports (width: 1cqw) { .bt-carril { --cw: clamp(56px, calc((100cqw - 32px - (var(--n, 4) - 1) * 22px) / var(--n, 4)), 78px); } }
   .bt-acciones { justify-self: center; flex-wrap: wrap; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {

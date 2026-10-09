@@ -147,6 +147,76 @@ Cómo se equilibra. Obliga al rival a tener siempre un bloqueador: sin él, pier
 
 Si resulta demasiado fuerte, sube el coste a 9 o baja la vida a 3; si resulta floja, baja el coste a 7 o sube la vida a 5. Hay que ver cómo se juega antes de tocar nada.
 
+## Campo de 10, vínculos y rivalidades
+
+**Campo.** Cada jugador tiene 10 huecos (`C.CAMPO_MAX` en `js/cartas-motor.js`; era 6). El tablero es una cuadrícula que reparte el ancho y, en pantallas estrechas, se desliza hacia el lado. En las partidas simuladas el campo se llena en menos del 1 % de los casos, así que el límite casi nunca estorba; lo que sí cambia con más huecos es el valor de las auras. Por eso Adam Kovacs, cuyo aura (+1 de ataque a las demás) crece con cada unidad, bajó de 6/7 a 4/6.
+
+**Vínculos.** Los datos están en `js/cartas-vinculos.js` (solo datos; el motor lo calcula todo mirando los dos campos, sin guardar nada). Un *círculo* da a cada miembro el bono del nivel más alto que alcance el número de miembros distintos que haya en su campo. Un *lazo* es un círculo de dos y puede dar bonos distintos a cada uno (`ind`). `completo` suma otro bono cuando están todas las cartas de `requiere`. Un bono puede traer ataque, vida, palabras clave (`palabras`), quitar una (`quita`), reducir daño (`reduce`), cubrir a otra carta como un guardián (`guarda`) o una Barrera. La vida de los vínculos se sincroniza como la de los terrenos (`sincronizarVinculos`): al ganarla sube también la vida actual y al perderla baja lo mismo, sin curar nunca al cambiar de compañeros. El registro avisa una vez cuando un vínculo se activa o sube de nivel.
+
+| círculo | miembros | niveles |
+|---|---|---|
+| Las Comadrejas | Rook, Bull, Garra, Baraja | 2: +1/+0 · 3: +1/+1 · 4: +2/+1 |
+| Compañeros de huida | Orina, Edge, Hornet, Sir Buffolet, Enzo, Mattei, Eledar | 2: +1/+1 · 4: +2/+1 · 6: +2/+2. Los siete: +1/+1 y Barrera |
+| Los forasteros de Brurland | Laia, Eledar, Ryn, Hooey, Sigismund, Cassius, Torvrena, Darian | 3: +1/+0 · 5: +1/+1 · 7: +1/+2. Laia, Eledar, Ryn, Hooey y Sigismund: Barrera |
+| La banda de Cassius | Cassius, Billy, Voss, Victor | 2: +1/+1 · 3: +2/+1 · 4: +2/+2. Los cuatro: +1/+0 y Cassius sí bloquea |
+| Los Seis del Último Apunte | Rojo, Verde, Morado, Amarillo, Azul, Gris | 2: +1/+1 · 4: +2/+1 · 6: +2/+2 |
+| Personal del Instituto | Tobi, Sorel, Elías, Nico, Clef, Ulis, Harrow | 2: +1/+0 · 4: +1/+1 · 6: +2/+1 |
+| La Corona de Brurland | Julius, Leonard, Adam Kovacs (ambos) | 2: +1/+0 · 3: +1/+1. Julius, Leonard y Adam: Duro |
+| Los del refugio | Eklino, Coach, Ocevat | 2: +0/+1 · 3: +1/+1. Los tres: Duro |
+
+Lazos (dos cartas): Coach y Ryn (Coach cubre a Ryn y Ryn +0/+1), Coach y Orina (igual), Sigismund y Ocevat (Sigismund +1/+1, Ocevat +0/+1), Clef y Ulis (Ulis +1/+1, Clef +0/+1), Enzo y Mattei (Enzo +1/+0, Mattei +0/+1), Ryn y Sett (+1/+0 cada uno), Laia e Isa (Laia +0/+1, Isa +1/+0), Ledros y la Vieja de la Espesura (Ledros +0/+2, la Vieja +1/+0), Sorel y Nico (Nico +1/+0).
+
+**Rivalidades secretas.** Se activan cuando hay una carta del `bando` en un campo y una de `contra` en el contrario. La carta no dice nada: el registro lo anuncia al activarse y la unidad lleva la etiqueta «Rivalidad». En el Álbum solo se muestran los vínculos amistosos.
+
+| rivalidad | quién contra quién | efecto |
+|---|---|---|
+| La muerte que mereces | Enzo contra Orina | +1 de daño a Orina. Si Enzo la mata, su Proyectil no se dispara y Enzo roba una carta (cobra la recompensa) |
+| El arpón no avisa | Rook contra Eledar | Rook puede desafiarlo aunque haya Provocar y le hace +1 |
+| Hubert Magnolia | Los Seis contra Hooey | los Seis ganan +1 de ataque; si Hooey cae, hace 3 de daño a cada unidad del Último Apunte enemiga |
+| Bestia gigante | Ulis contra Darian | Ulis gana +3/+3 |
+| Usted se queda | Harrow contra Laia | Harrow desafía a Laia aunque haya Provocar, +1 de daño; Laia gana Esquivo |
+| Brazo militar | Dagren contra Guillotina | +2 de daño contra ella |
+| Lágrimas del espectro | Ledros contra Sir Buffolet | +2 de daño contra él |
+| Nadie le da órdenes al Coronel | Tobi contra Rojo | Tobi gana +2 de ataque |
+
+Las rivalidades se miran antes de quitar la unidad del campo (`rivalidadesAlMorir`), porque el efecto depende de que la rival siga ahí al morir.
+
+## Cartas de la cronología sumadas después
+
+Personajes que salían en la cronología y no tenían carta. Todos con su habilidad programada en `js/cartas-efectos.js`.
+
+| carta | lado | coste | ataque/vida | habilidad |
+|---|---|---|---|---|
+| Gareth (Juramento) | A y B | 4 | 3/5 | Duro. Al entrar, devuelve a la mano de su dueño a una unidad enemiga de coste 3 o menos |
+| Sigismund (Juramento) | B | 4 | 3/5 | Duro. Al entrar, 2 de daño a una unidad enemiga (4 si vuela) |
+| Isa (Sombra) | B | 3 | 2/3 | Al entrar, una unidad enemiga no puede atacar el próximo turno |
+| Sett (Carne) | B | 3 | 3/2 | Arrollar |
+| La Vieja de la Espesura (Eternidad) | B | 3 | 1/4 | Al entrar, robas una carta |
+| Clef (Arcano) | B | 3 | 1/3 | Al entrar, una aliada gana +2 de ataque hasta el final de tu próximo turno |
+| Ulis (Carne) | B | 2 | 2/2 | Al inicio de tu turno recupera 1 de vida |
+| Enfermera Harrow (Carne) | B | 5 | 2/5 | Al entrar, cura 3 a una aliada o hace 2 de daño a una enemiga y no la deja curarse. Una vez por partida salva de morir a una aliada |
+
+Cartas que estaban vacías (1/1, coste 1, sin texto) y ahora tienen habilidad:
+
+| carta | coste | ataque/vida | habilidad |
+|---|---|---|---|
+| Coach | 2 | 1/4 | La primera vez que una aliada fuera a recibir daño, lo recibe él |
+| Mercader | 1 | 1/3 | Tus Objetos cuestan 1 menos |
+| El vendedor de Dávidas | 3 | 1/3 | Cada vez que muere otra unidad gana +1/+1 (hasta 3 veces) |
+| Julius Goldenside (rara) | 6 | 3/6 | Al entrar, una unidad enemiga ni ataca ni bloquea hasta el final de su próximo turno. Una vez por partida salva de morir a una aliada |
+| Leonard Goldenside (rara) | 5 | 4/5 | Basado en Leo Whitefang de Guilty Gear Strive. Postura de Brynhildr: no puede bloquear, pero solo lo bloquean unidades con 3 o más de ataque. Graviert Würde: al entrar, 2 de daño a una unidad enemiga. Eisen Strum: la unidad que le hace daño en combate recibe 2 |
+
+Las cartas de editor (Coach, Julius, Leonard, Mercader, el Vendedor, Laia, Ledros, Eledar y Adam Kovacs el Héroe) solo existen en el servidor. `tools/cartas-del-servidor.js` guarda una copia para las pruebas y la simulación.
+
+## Equilibrio
+
+`node tools/simular-balance.js [partidas] [semilla] [--temas] [--sin-vinculos] [--campo=N] [--unidades=15] [--json=archivo]` juega mazos al azar con un bot sencillo y muestra, para cada carta, su win rate y cuántos puntos queda por encima o por debajo de lo normal para los mazos de su lado. Sirve para comparar cartas entre sí, no para saber cómo jugaría una persona.
+
+- Los mazos tienen composición fija (15 unidades y 9 cartas más). Sin eso, el lado B ganaba el 65 % de las partidas solo por tener más personajes que el A. Con la composición fija, el lado A gana entre el 47 y el 53 %.
+- `--temas` arma mazos alrededor de cada círculo. Tras el ajuste ganan entre el 50 y el 56 % contra mazos al azar.
+- Ajustes hechos: Harrow 3/5 con una salvación por unidad a 2/5 con una sola salvación en toda la partida (+9,9 puntos a +2,9), Adam Kovacs 6/7 a 4/6, Protodraco 5/5 a 4/5, Isa 2/2 a 2/3, Montaña del Eco Arcano coste 4 a 3, Pozo de la Eternidad coste 5 a 4, Mercader coste 2 a 1, y los bonos de los círculos de los Compañeros de huida, los forasteros, la banda de Cassius y el Último Apunte.
+- Todas las cartas quedan entre unos 4 puntos por debajo y 4 por encima de lo normal. Quien empieza gana entre el 56 y el 58 % en estas partidas: el segundo jugador roba una carta más, y si en las partidas reales se nota, el siguiente ajuste es darle algo más (por ejemplo, 1 de energía extra el primer turno).
+
 ## Piezas nuevas del motor
 
 - `marcadaHasta`: una marca con fecha de vencimiento (`marcadaVigente`).
@@ -156,6 +226,11 @@ Si resulta demasiado fuerte, sube el coste a 9 o baja la vida a 3; si resulta fl
 - `guardianUnaVez`: un guardián que solo actúa una vez por partida.
 - `fuerzaHelenica`: el daño de combate contra una unidad es su vida, sin ignorar resistencias, y sin bloqueo derrota al jugador de un golpe.
 - `reaccion.valido`: filtra qué atacantes puede elegir una reacción.
+- `evitaMuerte(est, guardian, unidad)`: cuando una aliada fuera a morir se queda con 1 de vida (Julius, Harrow). La habilidad lleva su propia cuenta de usos.
+- `costeMod(est, unidad, metaDeLaCarta)`: abarata o encarece cartas de su dueño mientras está en el campo (Mercader).
+- `alEntrar.filtro(est, objetivo)`: limita qué objetivos son válidos para la habilidad al entrar (Gareth: coste 3 o menos).
+- `flags.sinCurarHasta`: la unidad no puede curarse hasta ese turno (Harrow). `M.devolverAMano(est, unidad)` vuelve una unidad a la mano de su dueño (Gareth).
+- `M.bonosDe`, `M.vinculosActivos` y `M.sincronizarVinculos`: lo que dan los vínculos y las rivalidades.
 
 ## Acciones de la partida
 
@@ -240,3 +315,5 @@ El lobby de Batalla trae una guía con cinco pestañas: cómo se juega, palabras
 - Cementerio: `cementerioDe`, `enCementerio`, `exiliar` y `revivir` en `js/cartas-motor.js`; el montón y la vista en `js/batalla.js` (`htmlCementerio`, `pintarCementerioVista`) y `css/cartas-juego.css`.
 - Pantalla: `js/batalla.js` (franja de combate, botones de atacar y bloquear, animación) y `css/cartas-juego.css`.
 - Guía del lobby: `data/triunfos-guia.js` (textos), `js/batalla-guia.js` (panel) y `tools/verificar-guia.js`.
+- Vínculos y rivalidades: datos en `js/cartas-vinculos.js` (se carga después de `cartas-efectos.js`), cálculo en `js/cartas-motor.js` (`bonosDe`, `bonusVsRival`, `rivalidadesAlMorir`, `sincronizarVinculos`), etiquetas y texto en `js/batalla.js` (`htmlUnidad` y el inspector) y vínculos amistosos en el detalle del Álbum (`js/cartas.js`).
+- Equilibrio: `tools/simular-balance.js`. Pruebas de reglas: `tools/probar-combate.js`.

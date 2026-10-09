@@ -2,9 +2,11 @@
 // Uso: node tools/probar-combate.js
 const vm = require("vm"), fs = require("fs"), path = require("path");
 const sb = { console }; sb.window = sb; sb.globalThis = sb; vm.createContext(sb);
-for (const f of ["cartas-datos", "cartas-motor", "cartas-efectos"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js", `${f}.js`), "utf8"), sb, { filename: f });
+for (const f of ["cartas-datos", "cartas-motor", "cartas-efectos", "cartas-vinculos"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js", `${f}.js`), "utf8"), sb, { filename: f });
 const M = sb.CartasMotor;
 const cartas = {}; sb.CARTAS.forEach(c => { cartas[c.id] = { id: c.id, nombre: c.nombre, tipo: c.tipo, rareza: c.rareza, afinidad: c.afinidad, coste: c.coste, atq: c.atq ?? null, pv: c.pv ?? null, habilidad: c.habilidad || "" }; });
+// las cartas que solo existen en el servidor (Eledar, Laia, Leonard...): copia en tools/cartas-del-servidor.js
+require("./cartas-del-servidor.js").forEach(c => { cartas[c.id] = { id: c.id, nombre: c.nombre, tipo: c.tipo, rareza: c.rareza, afinidad: c.afinidad, coste: c.coste, atq: c.atq ?? null, pv: c.pv ?? null, habilidad: c.habilidad || "" }; });
 // cartas de prueba
 const mk = (id, atq, pv) => { cartas[id] = { id, nombre: id, tipo: "Criatura", rareza: "comun", afinidad: ["carne"], coste: 0, atq, pv, habilidad: "" }; };
 mk("t11", 1, 1); mk("t33", 3, 3); mk("t24", 2, 4); mk("t52", 5, 2);
@@ -232,7 +234,7 @@ const terreno = (e, id, dueno, restantes = null) => { e.terreno = { cartaId: id,
   ok(M.atqEfectivo(e, a) === 4 && M.atqEfectivo(e, g) === 1, "Gris: las demás tienen +1 de ataque"); }
 { const e = partida([], []); turnoDe(e, 0); const g = poner(e, 0, "gris-ultimo-apunte"), a = poner(e, 0, "t33");
   const rojo = M.ponerUnidad(e, 0, "rojo-ultimo-apunte", true, null);
-  ok(g.pv === 5 && M.atqEfectivo(e, g) === 2 && a.pv === 3 && M.tienePalabra(e, rojo, "desafiante"), "Rojo: solo los del Último Apunte ganan +1/+1"); }
+  ok(g.pv === 6 && M.atqEfectivo(e, g) === 3 && a.pv === 3 && M.tienePalabra(e, rojo, "desafiante"), "Rojo: solo los del Último Apunte ganan +1/+1 (y juntos, el vínculo del Último Apunte suma otro +1/+1)"); }
 { const e = partida([], []); turnoDe(e, 0); const big = poner(e, 0, "t24"); big.pv = 1; big.pvMax = 10; big.atq = 2;
   M.ponerUnidad(e, 0, "elias-morcant", true, big); ok(big.pv === 6, `Elías cura 5 a una de Carne (${big.pv})`);
   const ry = poner(e, 0, "ryn"); ry.pv = 1; ry.pvMax = 10; M.ponerUnidad(e, 0, "elias-morcant", true, ry); ok(ry.pv === 4, `y 3 a una de otra afinidad (${ry.pv})`);
@@ -348,7 +350,7 @@ mk("t-fallo", 1, 1); M.registrar("t-fallo", { alMorirAliada: c => { M.revivir(c.
   J.cementerio = ["t11", "t33", "t24"]; ok(M.revivir(e, 0, { filtro: m => m.atq === 2 }).cartaId === "t24", "filtro por meta");
   const k = M.revivir(e, 0, { cual: "azar" }); ok(k && J.cementerio.length === 1, "cual: azar"); }
 { const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0], R = e.jugadores[1];
-  while (J.campo.length < 6) poner(e, 0, "t11"); J.cementerio = ["t33"];
+  while (J.campo.length < M.C.CAMPO_MAX) poner(e, 0, "t11"); J.cementerio = ["t33"];
   ok(M.revivir(e, 0, {}) === null && J.cementerio.join() === "t33", "con el campo lleno no devuelve nada y la carta se queda en el cementerio");
   J.campo.length = 0; R.cementerio = ["t52"]; const robada = M.revivir(e, 0, { desde: 1 });
   ok(robada && robada.dueno === 0 && R.cementerio.length === 0, "desde: el cementerio del rival, la unidad entra en tu campo"); }
@@ -373,6 +375,131 @@ mk("t-fallo", 1, 1); M.registrar("t-fallo", { alMorirAliada: c => { M.revivir(c.
   J.mano = ["pozo-de-la-eternidad"]; J.energia = 9; M.aplicar(e, { t: "jugar", i: 0 }, 0);
   ok(J.cementerio.at(-1) === "osario-de-la-frontera" && e.terreno.cartaId === "pozo-de-la-eternidad", "un terreno reemplazado se va al cementerio de su dueño"); }
 
+
+// 13) Campo de 10 unidades
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0];
+  ok(M.C.CAMPO_MAX === 10, "el campo tiene 10 huecos");
+  for (let i = 0; i < 10; i++) poner(e, 0, "t11");
+  J.mano = ["t33"]; J.energia = 9; ok(M.aplicar(e, { t: "jugar", i: 0 }, 0).error === "Tu campo está lleno.", "con 10 unidades el campo está lleno");
+  ok(new Set(J.campo.map(u => u.hueco)).size === 10, "cada unidad en su hueco (0 a 9)"); }
+
+// 14) Vínculos: círculos, lazos y completos
+{ const e = partida([], []); turnoDe(e, 0);
+  const rook = poner(e, 0, "rook"), bull = poner(e, 0, "bull");
+  ok(M.atqEfectivo(e, bull) === 4 && bull.pv === 4, "Las Comadrejas: dos juntas, +1 de ataque");
+  const garra = poner(e, 0, "garra");
+  ok(M.atqEfectivo(e, bull) === 4 && bull.pv === 5 && garra.pvMax === 3, `tres Comadrejas: +1/+1 (bull ${M.atqEfectivo(e, bull)}/${bull.pv})`);
+  const baraja = poner(e, 0, "baraja");
+  ok(M.atqEfectivo(e, bull) === 5 && bull.pv === 5 && M.atqEfectivo(e, rook) === 7, `la banda entera: +2/+1 (bull ${M.atqEfectivo(e, bull)}/${bull.pv}, rook ${M.atqEfectivo(e, rook)})`);
+  ok(M.vinculosActivos(e, bull).some(x => x.id === "comadrejas" && x.n === 4), "los vínculos activos se pueden consultar");
+  M.morir(e, baraja, { tipo: "habilidad" }); M.morir(e, garra, { tipo: "habilidad" });
+  ok(bull.pv === 4 && bull.pvMax === 4 && M.atqEfectivo(e, bull) === 4, `al caer sus compañeras, el bono se va (bull ${M.atqEfectivo(e, bull)}/${bull.pv})`);
+  M.morir(e, rook, { tipo: "habilidad" }); ok(M.atqEfectivo(e, bull) === 3, "solo, Bull vuelve a sus números"); }
+{ const e = partida([], []); turnoDe(e, 0);   // el bono de vida no cura ni deja al borde de la muerte
+  const bull = poner(e, 0, "bull"), rook = poner(e, 0, "rook"); bull.pv = 2;
+  const garra = poner(e, 0, "garra"); ok(bull.pv === 3 && bull.pvMax === 5, "el +1 de vida también sube la vida actual");
+  M.morir(e, garra, { tipo: "habilidad" }); ok(bull.pv === 2 && bull.pvMax === 4, "al perder el bono, la vida actual baja con él"); }
+{ const e = partida([], []); turnoDe(e, 0);   // completo con Barrera (una sola vez por unidad)
+  const ids = ["orina", "edge", "hornet", "sir-buffolet", "enzo", "mattei", "eledar"];
+  const us = ids.slice(0, 6).map(id => poner(e, 0, id));
+  ok(us.every(u => !u.flags.barrera), "con seis de siete no hay Barrera");
+  const eledar = poner(e, 0, "eledar");
+  ok(us.concat(eledar).every(u => u.flags.barrera), "los siete fugitivos juntos ganan Barrera");
+  us[0].flags.barrera = false; M.morir(e, eledar, { tipo: "habilidad" }); poner(e, 0, "eledar");
+  ok(us[0].flags.barrera === false, "la Barrera de un vínculo se da una sola vez a cada unidad"); }
+{ const e = partida([], []); turnoDe(e, 0); const cas = poner(e, 0, "cassius-coldgrave"), billy = poner(e, 0, "billy"), voss = poner(e, 0, "voss");
+  ok(M.tienePalabra(e, cas, "noBloquea"), "Cassius con dos de su banda sigue sin bloquear");
+  const victor = poner(e, 0, "victor");
+  ok(!M.tienePalabra(e, cas, "noBloquea") && M.tienePalabra(e, billy, "provocar"), "con toda la banda detrás, Cassius sí bloquea");
+  M.morir(e, victor, { tipo: "habilidad" }); ok(M.tienePalabra(e, cas, "noBloquea"), "sin uno de ellos vuelve a ser cobarde"); }
+{ const e = partida([], []); turnoDe(e, 0);   // Coach cubre siempre a Ryn
+  const ryn = poner(e, 0, "ryn"), coach = poner(e, 0, "coach");
+  ok(ryn.pv === 4 && coach.pv === 4, "Coach y Ryn: Ryn gana +1 de vida");
+  M.infligir(e, { u: ryn.uid }, 1, { tipo: "habilidad" }); ok(ryn.pv === 4 && coach.pv === 3, "Coach recibe el golpe en lugar de Ryn");
+  M.infligir(e, { u: ryn.uid }, 1, { tipo: "habilidad" }); ok(ryn.pv === 3, "una sola vez por turno");
+  e.turno += 1; M.infligir(e, { u: ryn.uid }, 1, { tipo: "habilidad" }); ok(ryn.pv === 3 && coach.pv === 2, "y otra vez al turno siguiente (por el lazo)"); }
+{ const e = partida([], []); turnoDe(e, 0); const clef = poner(e, 0, "clef"), ulis = poner(e, 0, "ulis");
+  ok(M.atqEfectivo(e, ulis) === 4 && ulis.pvMax === 3, "Clef y Ulis: Ulis gana +1/+1 (y +1 de ataque más por ser las dos del Instituto)");
+  e.jugadores[1].campo.length = 0; const dar = poner(e, 1, "darian");
+  ok(M.atqEfectivo(e, ulis) === 7 && ulis.pvMax === 6, `Ulis frente a Darian se vuelve una bestia gigante (${M.atqEfectivo(e, ulis)}/${ulis.pvMax})`); }
+
+// 15) Rivalidades secretas
+{ const e = partida([], []); turnoDe(e, 0); const enzo = poner(e, 0, "enzo"); const alia = poner(e, 0, "t33");
+  const orina = poner(e, 1, "orina");
+  ok(e.log.some(l => l.includes("La muerte que mereces")), "se anuncia la rivalidad al activarse");
+  ok(M.vinculosActivos(e, enzo).some(x => x.tipo === "rivalidad" && x.nombre === "La muerte que mereces"), "Enzo tiene la rivalidad activa");
+  const mano0 = e.jugadores[0].mano.length;
+  M.aplicar(e, { t: "atacar", u: [enzo.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[enzo.uid, orina.uid]] }, 1);
+  ok(!M.buscar(e, orina.uid) && alia.pv === 3, "si Enzo mata a Orina, su Proyectil no se dispara");
+  ok(e.jugadores[0].mano.length === mano0 + 1, "y Enzo cobra la recompensa: roba una carta"); }
+{ const e = partida([], []); turnoDe(e, 0); const enzo = poner(e, 0, "enzo"); const col = poner(e, 0, "colmillo-gris");   // Veloz: mata sin recibir daño
+  const orina = poner(e, 1, "orina");
+  M.aplicar(e, { t: "atacar", u: [col.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[col.uid, orina.uid]] }, 1);
+  ok(!M.buscar(e, orina.uid) && !M.buscar(e, col.uid), "si la mata otra unidad, el Proyectil sí hace su daño (3 a Colmillo Gris)"); }
+{ const e = partida([], []); turnoDe(e, 0); poner(e, 0, "enzo"); const orina = poner(e, 0, "orina");
+  ok(!e.log.some(l => l.includes("La muerte que mereces")) && M.vinculosActivos(e, orina).every(x => x.tipo !== "rivalidad"), "Enzo y Orina del mismo lado no son rivales"); }
+{ const e = partida([], []); turnoDe(e, 0); const rook = poner(e, 0, "rook"); const bull = poner(e, 1, "bull"), eledar = poner(e, 1, "eledar");
+  ok(M.objetivosDeDesafio(e, rook).length === 1 && M.objetivosDeDesafio(e, rook)[0] === eledar.uid, "El arpón no avisa: Rook puede desafiar a Eledar aunque Bull tenga Provocar");
+  ok(M.aplicar(e, { t: "atacar", u: [rook.uid], d: { [rook.uid]: eledar.uid } }, 0).ok && !M.buscar(e, eledar.uid), "el desafío mata a Eledar (7 de ataque, más 1 de Presagio fallido)"); }
+{ const e = partida([], []); turnoDe(e, 0); const rojo = poner(e, 0, "rojo-ultimo-apunte"), verde = poner(e, 0, "verde-ultimo-apunte");
+  const base = M.atqEfectivo(e, verde);
+  const hooey = poner(e, 1, "hooey-magoo"); const robaba = e.jugadores[1].mano.length;
+  ok(M.atqEfectivo(e, verde) === base + 1, "Hubert Magnolia: los del Último Apunte cazan a Hooey (+1 de ataque)");
+  M.infligir(e, { u: hooey.uid }, 99, { tipo: "habilidad", dueno: 0 });
+  ok(rojo.pv === 1 && !M.buscar(e, verde.uid), "al caer, Hooey explota: 3 de daño al Último Apunte (Verde muere, Rojo queda con 1)");
+  ok(e.jugadores[1].mano.length === robaba + 1, "y su Sacrificado sigue robando carta"); }
+{ const e = partida([], []); turnoDe(e, 0); const tobi = poner(e, 0, "coronel-tobi"); const base = M.atqEfectivo(e, tobi);
+  poner(e, 1, "rojo-ultimo-apunte"); ok(M.atqEfectivo(e, tobi) === base + 2, "Nadie le da órdenes al Coronel: +2 de ataque frente a Rojo"); }
+{ const e = partida([], []); turnoDe(e, 0); const dag = poner(e, 0, "dagren"); const gui = poner(e, 1, "guillotina");
+  const antes = gui.pv; M.aplicar(e, { t: "atacar", u: [dag.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[dag.uid, gui.uid]] }, 1);
+  ok(!M.buscar(e, gui.uid) || gui.pv < antes - 5, "Brazo militar: Dagren hace 2 de daño extra a Guillotina"); }
+{ const e = partida([], []); turnoDe(e, 0); const har = poner(e, 0, "enfermera-harrow"); const laia = poner(e, 1, "laia"); poner(e, 1, "bull");
+  ok(M.objetivosDeDesafio(e, har).includes(laia.uid) && M.tienePalabra(e, laia, "esquivo"), "Usted se queda: Harrow desafía a Laia pese a Provocar y Laia esquiva"); }
+{ const e = partida([], []); turnoDe(e, 0); const led = poner(e, 0, "ledros"); const buf = poner(e, 1, "sir-buffolet");
+  M.aplicar(e, { t: "atacar", u: [led.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[led.uid, buf.uid]] }, 1);
+  ok(!M.buscar(e, buf.uid), "Lágrimas del espectro: Ledros mata a Sir Buffolet de un golpe (3 + 2)"); }
+
+// 16) Cartas nuevas de la cronología
+{ const e = partida([], []); turnoDe(e, 0); const jul = poner(e, 0, "julius-goldenside"), a = poner(e, 0, "t33"), b = poner(e, 0, "t33");
+  M.infligir(e, { u: a.uid }, 9, { tipo: "habilidad" }); ok(M.buscar(e, a.uid) && a.pv === 1, "Sentencia aplazada: una unidad aliada se queda con 1 de vida");
+  M.infligir(e, { u: b.uid }, 9, { tipo: "habilidad" }); ok(!M.buscar(e, b.uid), "pero solo una vez por partida"); }
+{ const e = partida([], []); turnoDe(e, 0); const du = poner(e, 0, "enfermera-harrow"), a = poner(e, 0, "t33"), b = poner(e, 0, "t33");
+  M.infligir(e, { u: a.uid }, 9, { tipo: "habilidad" }); ok(M.buscar(e, a.uid) && a.pv === 1, "Harrow salva a una unidad aliada: se queda con 1 de vida");
+  M.infligir(e, { u: b.uid }, 9, { tipo: "habilidad" }); ok(!M.buscar(e, b.uid), "pero solo una vez por partida"); }
+{ const e = partida([], []); turnoDe(e, 0); const aliada = poner(e, 0, "t33"); aliada.pv = 1; const enem = poner(e, 1, "t33");
+  M.ponerUnidad(e, 0, "enfermera-harrow", true, aliada); ok(aliada.pv === 3, "Jeringa sobre una aliada: cura 3");
+  const e2 = partida([], []); turnoDe(e2, 0); const en2 = poner(e2, 1, "t33");
+  M.ponerUnidad(e2, 0, "enfermera-harrow", true, en2); ok(en2.pv === 1 && en2.flags.sinCurarHasta > e2.turno, "Jeringa sobre una enemiga: 2 de daño y no puede curarse");
+  M.curar(e2, { u: en2.uid }, 5); ok(en2.pv === 1, "no se cura mientras dure"); }
+{ const e = partida([], []); turnoDe(e, 0); const barata = poner(e, 1, "t11"), cara = poner(e, 1, "dragarto");
+  const req = M.requisitoDeJugada(e, 0, "gareth"); ok(req.validos.length === 1 && req.validos[0].u === barata.uid, "Gareth solo elige unidades enemigas de coste 3 o menos");
+  e.jugadores[1].mano = []; M.ponerUnidad(e, 0, "gareth", true, barata);
+  ok(!M.buscar(e, barata.uid) && e.jugadores[1].mano.includes("t11") && !e.jugadores[1].cementerio.includes("t11"), "Echar a la calle: vuelve a la mano de su dueño, sin pasar por el cementerio");
+  const ficha = poner(e, 1, "centinela"); M.ponerUnidad(e, 0, "gareth", true, ficha); ok(!M.buscar(e, ficha.uid) && !e.jugadores[1].mano.includes("centinela"), "una ficha echada a la calle desaparece"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0];
+  ok(M.costeDe(e, 0, "pocion-de-curacion-menor") === 1, "sin Mercader, una poción cuesta 1");
+  poner(e, 0, "mercader"); ok(M.costeDe(e, 0, "pocion-de-curacion-menor") === 0 && M.costeDe(e, 0, "garra") === 2, "Mercader: los Objetos cuestan 1 menos, las demás cartas no"); }
+{ const e = partida([], []); turnoDe(e, 0); const v = poner(e, 0, "el-vendedor-de-davidas");
+  for (let i = 0; i < 5; i++) { const x = poner(e, i % 2, "t11"); M.morir(e, x, { tipo: "habilidad" }); }
+  ok(v.atq === 4 && v.pvMax === 6, `El vendedor de Dávidas crece con cada caída, hasta 3 veces (${v.atq}/${v.pvMax})`); }
+{ const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const atk = poner(e, 1, "t33");
+  ok(M.tienePalabra(e, leo, "noBloquea") && M.tienePalabra(e, leo, "temible"), "Leonard: Postura de Brynhildr (no bloquea, difícil de bloquear)");
+  const debil = poner(e, 1, "t11"); const blk = M.bloqueadoresPosibles(e, leo.uid); ok(!blk.includes(debil.uid) && blk.includes(atk.uid), "solo lo bloquean unidades con 3 o más de ataque");
+  const e3 = partida([], []); turnoDe(e3, 0); const enemigo = poner(e3, 1, "t52"); M.ponerUnidad(e3, 0, "leonard-goldenside", true, enemigo);
+  ok(enemigo.pv === 0 || !M.buscar(e3, enemigo.uid), "Graviert Würde: 2 de daño al entrar (mata a un t52 de 2 de vida)"); }
+{ const e = partida([], []); turnoDe(e, 0); const leo = poner(e, 0, "leonard-goldenside"); const g = poner(e, 1, "garra");
+  M.aplicar(e, { t: "fin" }, 0); turnoDe(e, 1); const atk = poner(e, 1, "t33"); atk.entro = 0;
+  const g2 = M.buscar(e, g.uid).u; g2.entro = 0;
+  M.aplicar(e, { t: "atacar", u: [g2.uid], d: { [g2.uid]: leo.uid } }, 1);
+  ok(!M.buscar(e, g2.uid) && leo.pv < 5, "Eisen Strum: la atacante recibe 2 de daño de vuelta (Garra 3/2 muere)"); }
+{ const e = partida([], []); turnoDe(e, 0); const sig = poner(e, 0, "sigismund"); const suelo = poner(e, 1, "t24"), vuela = poner(e, 1, "manta-del-cielo");
+  const e2 = partida([], []); turnoDe(e2, 0); const m2 = poner(e2, 1, "manta-del-cielo"); M.ponerUnidad(e2, 0, "sigismund", true, m2);
+  ok(!M.buscar(e2, m2.uid), "Balista de asedio: 4 de daño a una voladora (la Aeromanta de 3 cae)");
+  const e3 = partida([], []); turnoDe(e3, 0); const s3 = poner(e3, 1, "t24"); M.ponerUnidad(e3, 0, "sigismund", true, s3); ok(s3.pv === 2, "y 2 de daño a una terrestre"); }
+{ const e = partida([], []); turnoDe(e, 0); const x = poner(e, 1, "t33"); M.ponerUnidad(e, 0, "isa", true, x); ok(x.flags.noAtacaHasta >= e.turno + 1, "Isa: la unidad enemiga no ataca el próximo turno");
+  const a = poner(e, 0, "t33"); M.ponerUnidad(e, 0, "clef", true, a); ok(M.atqEfectivo(e, a) === 5, "Clef: +2 de ataque a una aliada"); }
+{ const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis"); ul.pv = 1; M.aplicar(e, { t: "fin" }, 0); M.aplicar(e, { t: "fin" }, 1); ok(ul.pv === 2, "Ulis recupera 1 de vida al inicio de su turno"); }
+
 for (let g = 0; g < 300; g++) {
   const r = azar(g + 1000);
   const reales = ids.filter(i => !/^t(\d|-)/.test(i));
@@ -391,8 +518,8 @@ for (let g = 0; g < 300; g++) {
     if (res.error) { fallos.push(`acción legal rechazada (partida ${g}): ${JSON.stringify(a)} -> ${res.error}`); break; }
     // invariantes
     for (const J of e.jugadores) {
-      const h = J.campo.map(u => u.hueco); if (new Set(h).size !== h.length || h.some(x => !(x >= 0 && x < 6))) { fallos.push(`huecos inválidos partida ${g}: ${h}`); e.ganador = "x"; }
-      if (J.campo.length > 6) { fallos.push("campo > 6"); e.ganador = "x"; }
+      const h = J.campo.map(u => u.hueco); if (new Set(h).size !== h.length || h.some(x => !(x >= 0 && x < M.C.CAMPO_MAX))) { fallos.push(`huecos inválidos partida ${g}: ${h}`); e.ganador = "x"; }
+      if (J.campo.length > M.C.CAMPO_MAX) { fallos.push("campo > máximo"); e.ganador = "x"; }
     }
     if (e.combate && !e.pendiente) { fallos.push(`combate colgado sin pendiente partida ${g}`); break; }
   }

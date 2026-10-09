@@ -39,12 +39,18 @@
     const numeros = propia && propia.numeros.get(id);
     const af = c.afinidad.map(a => window.CARTAS_AFINIDADES[a].nombre).join(" / ");
     const rareza = window.CARTAS_RAREZAS[c.rareza].nombre;
+    const vincs = (window.vinculosDeCarta ? window.vinculosDeCarta(c.id) : []).map(v => {
+      const otros = v.miembros.filter(m => m !== c.id).map(m => { const o = window.cartaPorId(m); return o ? o.nombre : m; });
+      return `<li><b>${esc(v.nombre)}.</b> ${esc(v.texto)} <span class="carta-meta">Con: ${esc(otros.join(", "))}.</span></li>`;
+    });
+    const vinculos = vincs.length ? `<p><strong>Vínculos.</strong> Si están juntas en tu campo, se fortalecen.</p><ul class="carta-vinculos">${vincs.join("")}</ul>` : "";
     const editar = puedeEditar ? `<p><button type="button" class="cartas-boton" data-editar="${esc(c.id)}">Editar esta carta</button></p>` : "";
     const cuerpo = tengo
       ? `<h2>${esc(c.nombre)}${c.epiteto ? ` — ${esc(c.epiteto)}` : ""}</h2>
          <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)} · ${esc(af)}${c.limite ? ` · edición de ${c.limite}` : ""}</p>
          ${c.habilidad ? `<p><strong>Reglas.</strong> ${esc(c.habilidad)}</p>` : ""}
          ${descripcionDe(c) ? `<p class="carta-resumen">${esc(descripcionDe(c))}</p>` : ""}
+         ${vinculos}
          <p class="carta-meta">${cantidad > 0 ? `Tienes ${cantidad} copia${cantidad === 1 ? "" : "s"}.` : "Vista de editor: no la tienes."}</p>${editar}`
       : `<h2>Carta sin descubrir</h2>
          <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)}</p>

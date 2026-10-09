@@ -372,12 +372,14 @@
     if (u.flags.inmune) chips.push("Protegida");
     if (u.flags.noAtacaHasta >= est.turno) chips.push("No ataca");
     if (u.entro === est.turno && u.dueno === est.activo) chips.push("Recién llegada");
+    const vinc = M.vinculosActivos(est, u);
+    const chipsVinc = vinc.map(v => `<span class="${v.tipo === "rivalidad" ? "rivalidad" : "vinculo"}" title="${esc(v.nombre)}">${v.tipo === "rivalidad" ? "Rivalidad" : "Unidos"}</span>`);
     const listo = u.dueno === miIdx && miTurnoDe(miIdx) && M.unidadPuedeAtacar(est, u);
     const bloquea = bloqueoVigente(miIdx) && u.dueno === miIdx && puedeBloquearAlguno(u);
     const clases = [listo ? "lista" : "", atacantesSel.has(u.uid) ? "en-ataque" : "", bloquea ? "puede-bloquear" : "", sel && sel.uid === u.uid ? "elegida" : ""].filter(Boolean).join(" ");
     return `<div class="bt-unidad ${clases}" data-uid="${u.uid}" title="${esc(m.nombre)}">
       ${html}
-      <div class="bt-chips">${chips.map(c => `<span>${c}</span>`).join("")}</div>
+      <div class="bt-chips">${chips.map(c => `<span>${c}</span>`).join("")}${chipsVinc.join("")}</div>
     </div>`;
   }
 
@@ -682,6 +684,7 @@
       }).join("");
       clase += " activo previa";
     }
+    el.style.setProperty("--n", Math.max(1, (html.match(/class="bt-carril /g) || []).length));
     el.className = html ? clase : "bt-combate hidden";
     el.innerHTML = html;
   }
@@ -705,7 +708,7 @@
     $("btRival").classList.toggle("activo", est.ganador === null && est.activo === rival);
     $("btYo").classList.toggle("activo", est.ganador === null && est.activo === idx);
 
-    // Seis huecos por campo: se ve cuánto sitio queda
+    // Diez huecos por campo: se ve cuánto sitio queda
     // Cada unidad ocupa el hueco que se eligió al jugarla; los demás quedan vacíos en su sitio
     // Las que están en el combate salen del campo y se ven en la franja de combate
     const enCombate = new Set();
@@ -722,6 +725,8 @@
       if (u && enCombate.has(u.uid)) return `<div class="bt-hueco en-combate" title="${esc(M.nombre(est, u))} está en combate"></div>`;
       return u ? htmlUnidad(u, idx) : `<div class="bt-hueco" data-hueco="${k}"></div>`;
     }).join("");
+    $("btCampoRival").style.setProperty("--hmax", M.C.CAMPO_MAX);
+    $("btCampoYo").style.setProperty("--hmax", M.C.CAMPO_MAX);
     $("btCampoRival").innerHTML = htmlCampo(est.jugadores[rival]);
     $("btCampoYo").innerHTML = htmlCampo(J);
     // Con una unidad de la mano elegida, los huecos libres de tu campo se ofrecen como destino
@@ -1053,6 +1058,7 @@
         }
         extra += `<p class="bt-nota">Vida ${hit.u.pv}/${hit.u.pvMax} · Ataque ${c.atq}</p>`;
         extra += palabrasDe(hit.u).map(k => `<p class="bt-nota"><b>${infoPalabra(k).nombre}.</b> ${infoPalabra(k).texto}</p>`).join("");
+        extra += M.vinculosActivos(est, hit.u).map(v => `<p class="bt-nota bt-vinculo ${v.tipo === "rivalidad" ? "rivalidad" : ""}"><b>${v.tipo === "rivalidad" ? "Rivalidad" : v.tipo === "lazo" ? "Lazo" : "Vínculo"}: ${esc(v.nombre)}.</b> ${esc(v.texto)}${v.completo ? " <em>¡Completo!</em>" : ""}</p>`).join("");
       }
     }
     if (!c) { el.innerHTML = `<p class="bt-nota">Pasa el ratón o elige una carta o unidad para verla aquí.</p>`; return; }

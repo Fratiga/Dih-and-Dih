@@ -27,9 +27,12 @@
      recibe la mitad del daño (redondeado hacia abajo). Escurridizo (regla propia):
      ni los desafíos ni las habilidades enemigas pueden elegirla. Fuerza Helénica: contra una
      unidad hace tanto daño como vida tenga, sin ignorar sus resistencias.
-   - Máximo 6 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
+   - Máximo 10 unidades en tu campo y 8 cartas en la mano. Sin cartas en el mazo,
      cada robo hace daño creciente (fatiga).
    - Un terreno a la vez: jugar uno nuevo reemplaza al anterior.
+   - Vínculos y rivalidades (js/cartas-vinculos.js): algunas cartas se refuerzan al estar juntas en tu campo
+     (según quién se conoce con quién y qué tal se llevan), y otras tienen una rivalidad secreta que se
+     activa cuando una está en tu campo y su rival en el del contrario.
    - Reacciones: cartas que se juegan en el turno del rival, como respuesta a un
      ataque contra una unidad suya o a una carta que él juega. Se pagan con la
      energía que te sobró. Si no tienes ninguna aplicable, no hay espera.
@@ -38,7 +41,7 @@
    efecto registrado juega solo con sus números.
 ============================================================================= */
 (function (raiz) {
-  const C = { VIDA: 20, MANO_INICIAL: 5, MANO_MAX: 8, CAMPO_MAX: 6, ENERGIA_MAX: 10, MAZO_MIN: 20, MAZO_MAX: 30 };
+  const C = { VIDA: 20, MANO_INICIAL: 5, MANO_MAX: 8, CAMPO_MAX: 10, ENERGIA_MAX: 10, MAZO_MIN: 20, MAZO_MAX: 30 };
   const TIPOS_UNIDAD = ["Personaje", "Criatura", "Entidad"];
   const TOPE_COPIAS = { comun: 3, infrecuente: 3, rara: 2, legendaria: 1, limitada: 1 };
   /* Copias de una carta que caben en un mazo: los personajes van de a uno (salvo que la carta tenga su propia
@@ -56,6 +59,7 @@
 
   const EFECTOS = {};
   const TERRENOS = {};
+  const VINC = { circulos: [], rivalidades: [] };   // vínculos entre cartas (js/cartas-vinculos.js)
 
   /* --- Azar con semilla (mulberry32) ------------------------------------- */
   function rnd(est) {
@@ -107,6 +111,7 @@
     modsActivos(est, u).forEach(m => { a += m.atq; });
     const ef = efectoDe(est, u);
     if (ef.pasivaAtq) a += ef.pasivaAtq(est, u) || 0;
+    a += bonosDe(est, u).atq;
     est.jugadores[u.dueno].campo.forEach(o => {
       if (o.uid === u.uid) return;
       const eo = efectoDe(est, o);
@@ -122,6 +127,9 @@
   function tienePalabra(est, u, palabra) {
     if (palabra === "provocar" && u.flags.sinProvocarHasta >= est.turno) return false;
     if (palabra === "volar" && u.flags.sinVolarHasta >= est.turno) return false;
+    const bv = bonosDe(est, u);
+    if (bv.quita.includes(palabra)) return false;
+    if (bv.palabras.includes(palabra)) return true;
     const ef = efectoDe(est, u);
     if ((ef.palabras || []).includes(palabra)) return true;
     const T = est.terreno;
@@ -146,8 +154,139 @@
     c -= est.jugadores[jIdx].costeMenos || 0;
     const T = defTerreno(est);
     if (T && T.costeMod) c += T.costeMod(est, jIdx, m) || 0;
+    // Unidades que abaratan cartas (Mercader: los Objetos)
+    est.jugadores[jIdx].campo.forEach(u => { const e = EFECTOS[u.cartaId]; if (e && e.costeMod) c += e.costeMod(est, u, m) || 0; });
     return Math.max(0, c);
   }
+
+  /* --- Vínculos y rivalidades -------------------------------------------------------
+     Datos en js/cartas-vinculos.js. Todo se calcula mirando los dos campos, así que no hay que guardar nada:
+     - Círculo (o lazo, si son dos): cada carta miembro gana el bono del nivel más alto que alcance el número
+       de miembros distintos que haya en SU campo. `completo` suma otro bono si están todos los de `requiere`.
+     - Rivalidad: una unidad del `bando` en un campo y una de `contra` en el contrario (secreta: la carta no
+       lo dice, solo se anuncia en el registro cuando se activa). Cada lado recibe su bono (paraBando, paraContra).
+     Un bono puede traer: atq, pv, palabras, quita (palabras que pierde), reduce, guarda (ids de aliadas a las
+     que cubre), barrera, y en rivalidades bonusContra, marca, anulaAlMorirContra, alMatarContra, alMorirPropia. */
+  const campoIds = J => new Set(J.campo.map(x => x.cartaId));
+
+  function sumarBono(b, x) {
+    if (!x) return;
+    b.atq += x.atq || 0; b.pv += x.pv || 0; b.reduce += x.reduce || 0;
+    (x.palabras || []).forEach(p => b.palabras.push(p));
+    (x.quita || []).forEach(p => b.quita.push(p));
+    (x.guarda || []).forEach(p => b.guarda.push(p));
+    if (x.barrera) b.barrera = true;
+  }
+
+  function textoBono(x) {
+    const t = [];
+    if (x.atq || x.pv) t.push(`${x.atq >= 0 ? "+" : ""}${x.atq || 0}/${(x.pv || 0) >= 0 ? "+" : ""}${x.pv || 0}`);
+    if (x.barrera) t.push("Barrera");
+    (x.palabras || []).forEach(p => t.push(p));
+    return t.join(", ");
+  }
+
+  /* Todo lo que los vínculos le dan a esta unidad ahora mismo, y la lista de vínculos activos (para pintarlos) */
+  function bonosDe(est, u) {
+    const b = { atq: 0, pv: 0, reduce: 0, palabras: [], quita: [], guarda: [], barrera: false, items: [] };
+    if (!VINC.circulos.length && !VINC.rivalidades.length) return b;
+    const J = est.jugadores[u.dueno], R = est.jugadores[1 - u.dueno];
+    const propios = campoIds(J);
+    VINC.circulos.forEach(c => {
+      if (!c.miembros.includes(u.cartaId)) return;
+      const n = c.miembros.filter(id => propios.has(id)).length;
+      if (n < 2) return;
+      let nivel = -1;
+      c.niveles.forEach((t, i) => { if (n >= t.n) nivel = i; });
+      const completo = !!(c.completo && c.completo.requiere.every(id => propios.has(id)));
+      if (nivel < 0 && !completo) return;
+      if (nivel >= 0) { const t = c.niveles[nivel]; sumarBono(b, t); sumarBono(b, t.ind && t.ind[u.cartaId]); }
+      if (completo) { sumarBono(b, c.completo); sumarBono(b, c.completo.ind && c.completo.ind[u.cartaId]); }
+      const cuentan = nivel >= 0 ? textoBono(c.niveles[nivel]) : "";
+      b.items.push({
+        clave: `c:${c.id}:${u.dueno}`, firma: `${nivel}|${completo ? 1 : 0}`, tipo: c.tipo || "circulo", id: c.id, nombre: c.nombre, n, completo, texto: c.texto || "",
+        aviso: `${c.nombre}: ${n} de ${c.miembros.length} en el campo de ${J.nombre}${cuentan ? ` (${cuentan} a cada miembro)` : ""}${completo ? `. ${c.completo.nombre || "¡Completo!"}` : ""}.`
+      });
+    });
+    VINC.rivalidades.forEach(r => {
+      const esBando = r.bando.includes(u.cartaId), esContra = r.contra.includes(u.cartaId);
+      if (esBando && R.campo.some(x => r.contra.includes(x.cartaId))) {
+        sumarBono(b, r.paraBando);
+        b.items.push({ clave: `r:${r.id}:${u.dueno}`, firma: "1", tipo: "rivalidad", id: r.id, nombre: r.nombre, texto: r.texto || "", secreta: true, aviso: `¡Rivalidad! ${nombreDe(est, r.bando, J)} y ${nombreDe(est, r.contra, R)} están frente a frente: se activa «${r.nombre}».` });
+      }
+      if (esContra && R.campo.some(x => r.bando.includes(x.cartaId))) {
+        sumarBono(b, r.paraContra);
+        b.items.push({ clave: `r:${r.id}:${1 - u.dueno}`, firma: "1", tipo: "rivalidad", id: r.id, nombre: r.nombre, texto: r.texto || "", secreta: true, aviso: `¡Rivalidad! ${nombreDe(est, r.bando, R)} y ${nombreDe(est, r.contra, J)} están frente a frente: se activa «${r.nombre}».` });
+      }
+    });
+    return b;
+  }
+
+  // Nombre de la primera unidad del campo de J cuya carta está en `ids`
+  function nombreDe(est, ids, J) {
+    const x = J.campo.find(o => ids.includes(o.cartaId));
+    return x ? nombre(est, x) : "?";
+  }
+
+  /* Daño extra de una unidad contra una rival concreta (rivalidades) */
+  function bonusVsRival(est, u, t) {
+    if (!VINC.rivalidades.length || u.dueno === t.dueno) return 0;
+    let n = 0;
+    VINC.rivalidades.forEach(r => {
+      if (r.bando.includes(u.cartaId) && r.contra.includes(t.cartaId)) n += (r.paraBando && r.paraBando.bonusContra) || 0;
+      if (r.contra.includes(u.cartaId) && r.bando.includes(t.cartaId)) n += (r.paraContra && r.paraContra.bonusContra) || 0;
+    });
+    return n;
+  }
+
+  /* ¿Puede `atk` desafiar a `d` por una rivalidad (aunque haya Provocar)? */
+  function marcaPorRivalidad(est, atk, d) {
+    return VINC.rivalidades.some(r => r.bando.includes(atk.cartaId) && r.contra.includes(d.cartaId) && r.paraBando && r.paraBando.marca);
+  }
+
+  /* Lo que las rivalidades cambian al morir `u` (se mira ANTES de quitarla del campo, mientras la rival sigue ahí):
+     anula: la rivalidad que anula su habilidad al morir; recompensas: lo que gana quien la mató; propias: lo que hace ella al caer */
+  function rivalidadesAlMorir(est, u, asesino) {
+    const out = { anula: null, recompensas: [], propias: [] };
+    if (!VINC.rivalidades.length) return out;
+    const R = est.jugadores[1 - u.dueno];
+    VINC.rivalidades.forEach(r => {
+      if (r.contra.includes(u.cartaId) && R.campo.some(x => r.bando.includes(x.cartaId))) {
+        if (asesino && asesino.dueno !== u.dueno && r.bando.includes(asesino.cartaId)) {
+          if (r.paraBando && r.paraBando.anulaAlMorirContra) out.anula = r;
+          if (r.paraBando && r.paraBando.alMatarContra) out.recompensas.push(r);
+        }
+        if (r.paraContra && r.paraContra.alMorirPropia) out.propias.push(r);
+      }
+    });
+    return out;
+  }
+
+  /* Vida y Barrera de los vínculos: se ajustan cuando cambian los campos (entra o cae una unidad), igual que lo
+     que da un terreno. El registro avisa solo cuando un vínculo se activa o sube de nivel. */
+  function sincronizarVinculos(est) {
+    if (!VINC.circulos.length && !VINC.rivalidades.length) return;
+    if (!est.vinc) est.vinc = {};
+    const vistos = {};
+    todas(est).forEach(u => {
+      const b = bonosDe(est, u);
+      const delta = b.pv - (u.flags.vincPv || 0);
+      if (delta !== 0) {
+        u.pvMax = Math.max(1, u.pvMax + delta);
+        // Al ganar vida del vínculo sube también la actual; al perderla baja lo mismo (nunca por debajo de 1), así no se cura cambiando de compañeros
+        u.pv = delta > 0 ? u.pv + delta : Math.max(1, Math.min(u.pv + delta, u.pvMax));
+        u.flags.vincPv = b.pv;
+      }
+      if (b.barrera && !u.flags.vincBarrera) { u.flags.vincBarrera = true; u.flags.barrera = true; }
+      b.items.forEach(it => { vistos[it.clave] = it; });
+    });
+    Object.entries(vistos).forEach(([k, it]) => {
+      if (est.vinc[k] !== it.firma) { est.vinc[k] = it.firma; log(est, it.aviso); }
+    });
+    Object.keys(est.vinc).forEach(k => { if (!(k in vistos)) delete est.vinc[k]; });
+  }
+
+  const vinculosActivos = (est, u) => bonosDe(est, u).items;
 
   /* --- Creación de unidades ---------------------------------------------- */
   function nuevaUnidad(est, jIdx, cartaId) {
@@ -157,7 +296,7 @@
     const u = {
       uid: est.siguienteUid++, cartaId, dueno: jIdx, atq, pv, pvMax: pv, atqBase: atq, pvBase: pv,
       entro: est.turno, equipo: [], mods: [],
-      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, marcadaHasta: 0, guardiaTurno: 0, guardiaUsada: false, dupPv: 0, danada: false, inmune: false }
+      flags: { noAtacaHasta: 0, noBloqueaHasta: 0, sinProvocarHasta: 0, sinVolarHasta: 0, escurridizoHasta: 0, barrera: false, marcadaPor: null, marcadaHasta: 0, guardiaTurno: 0, guardiaUsada: false, dupPv: 0, danada: false, inmune: false, vincPv: 0, vincBarrera: false, sinCurarHasta: 0 }
     };
     const ef = EFECTOS[cartaId];
     if (ef && ef.alCrear) ef.alCrear(est, u);
@@ -179,6 +318,7 @@
     J.campo.push(u);
     log(est, `${J.nombre} juega a ${nombre(est, u)}.`);
     sincronizarTerreno(est);
+    sincronizarVinculos(est);
     const T = defTerreno(est);
     if (T && T.alEntrarUnidad) T.alEntrarUnidad(est, u);
     J.campo.forEach(o => {
@@ -299,6 +439,20 @@
     return u;
   }
 
+  /* Devuelve una unidad del campo a la mano de su dueño (no cuenta como caída: no hay «al morir»). Si la mano
+     está llena, la carta se pierde; una ficha desaparece. Devuelve true si la quitó. */
+  function devolverAMano(est, u) {
+    const J = est.jugadores[u.dueno];
+    const i = J.campo.findIndex(x => x.uid === u.uid);
+    if (i < 0) return false;
+    J.campo.splice(i, 1);
+    if (meta(est, u.cartaId).token) log(est, `${nombre(est, u)} desaparece.`);
+    else if (J.mano.length >= C.MANO_MAX) { J.descartes.push(u.cartaId); log(est, `${nombre(est, u)} vuelve a la mano de ${J.nombre}, pero la tiene llena: se pierde.`); }
+    else { J.mano.push(u.cartaId); log(est, `${nombre(est, u)} vuelve a la mano de ${J.nombre}.`); }
+    sincronizarVinculos(est);
+    return true;
+  }
+
   /* --- Daño y curación ---------------------------------------------------- */
   function revisarFinal(est) {
     if (est.ganador !== null) return;
@@ -313,11 +467,18 @@
     const J = est.jugadores[u.dueno];
     const i = J.campo.findIndex(x => x.uid === u.uid);
     if (i < 0) return;
+    // Las rivalidades se miran antes de que caiga, mientras su rival sigue en el campo
+    const aseHit = fuente && fuente.uid ? buscar(est, fuente.uid) : null;
+    const riv = rivalidadesAlMorir(est, u, aseHit ? aseHit.u : null);
     J.campo.splice(i, 1);
     if (!meta(est, u.cartaId).token) J.cementerio.push(u.cartaId);   // las fichas desaparecen sin dejar carta
     log(est, `${nombre(est, u)} cae.`);
     const ef = efectoDe(est, u);
-    if (ef.alMorir) ef.alMorir({ est, M, u, j: u.dueno });
+    if (ef.alMorir) {
+      if (riv.anula) log(est, `«${riv.anula.nombre}»: la habilidad de ${nombre(est, u)} al morir no ocurre.`);
+      else ef.alMorir({ est, M, u, j: u.dueno });
+    }
+    riv.propias.forEach(r => { if (est.ganador === null) r.paraContra.alMorirPropia({ est, M, u, j: u.dueno, rivalidad: r }); });
     // Las demás unidades en juego que reaccionan a una caída (nigromantes, carroñeras...)
     todas(est).slice().forEach(o => {
       if (!buscar(est, o.uid)) return;
@@ -332,8 +493,10 @@
       if (ata) {
         const ea = efectoDe(est, ata.u);
         if (ea.alMatar) ea.alMatar({ est, M, u: ata.u, j: ata.j, muerta: u });
+        riv.recompensas.forEach(r => r.paraBando.alMatarContra({ est, M, u: ata.u, j: ata.j, muerta: u, rivalidad: r }));
       }
     }
+    sincronizarVinculos(est);
     revisarFinal(est);
   }
 
@@ -352,8 +515,12 @@
     let u = hit.u;
     // Guardián: otra unidad aliada recibe el golpe en su lugar (una vez por turno)
     const ownerJ = est.jugadores[u.dueno];
-    const guardian = ownerJ.campo.find(g => g.uid !== u.uid && efectoDe(est, g).guardian && g.flags.guardiaTurno !== est.turno
-      && !(efectoDe(est, g).guardianUnaVez && g.flags.guardiaUsada));
+    const guardian = ownerJ.campo.find(g => {
+      if (g.uid === u.uid || g.flags.guardiaTurno === est.turno) return false;
+      const eg = efectoDe(est, g);
+      if (eg.guardian && !(eg.guardianUnaVez && g.flags.guardiaUsada)) return true;
+      return bonosDe(est, g).guarda.includes(u.cartaId);   // se interpone por quien le importa (vínculo)
+    });
     if (guardian) {
       guardian.flags.guardiaTurno = est.turno;
       guardian.flags.guardiaUsada = true;
@@ -374,14 +541,22 @@
     }
     if (tienePalabra(est, u, "duro")) n -= 1;
     if (ef.reduceDano) n -= ef.reduceDano(est, u, n, fuente) || 0;
+    n -= bonosDe(est, u).reduce;
     n = Math.max(0, n);
     if (fuente && fuente.tipo === "habilidad" && terrenoActivo(est, "catedral-del-juramento")) n = Math.max(0, Math.min(n, u.pv - 1));
     if (n <= 0) { log(est, `${nombre(est, u)} no recibe daño.`); return 0; }
     u.pv -= n;
     u.flags.danada = true;
     log(est, `${nombre(est, u)} recibe ${n} de daño.`);
+    // Una aliada puede evitar la muerte (Sentencia aplazada de Julius, Yo sé lo que te conviene de Harrow)
+    if (u.pv <= 0) {
+      for (const g of est.jugadores[u.dueno].campo) {
+        const eg = efectoDe(est, g);
+        if (eg.evitaMuerte && eg.evitaMuerte(est, g, u, fuente)) { u.pv = 1; break; }
+      }
+    }
     if (u.pv > 0) {
-      if (ef.alRecibirDano) ef.alRecibirDano({ est, M, u, j: u.dueno, cantidad: n });
+      if (ef.alRecibirDano) ef.alRecibirDano({ est, M, u, j: u.dueno, cantidad: n, fuente });
     } else {
       morir(est, u, fuente);
     }
@@ -401,6 +576,7 @@
     const hit = buscar(est, objetivo.u);
     if (!hit) return 0;
     const u = hit.u;
+    if (u.flags.sinCurarHasta >= est.turno) { log(est, `${nombre(est, u)} no puede curarse ahora.`); return 0; }
     const antes = u.pv;
     u.pv = Math.min(u.pvMax, u.pv + cantidad);
     if (u.pv > antes) log(est, `${nombre(est, u)} recupera ${u.pv - antes} de vida.`);
@@ -433,9 +609,9 @@
     return true;
   }
 
-  function validosParaObjetivo(est, jIdx, tipo, habilidad, excluirUid) {
+  function validosParaObjetivo(est, jIdx, tipo, habilidad, excluirUid, filtro) {
     const yo = est.jugadores[jIdx], el = est.jugadores[1 - jIdx];
-    const ok = t => (!habilidad || puedeApuntarHabilidad(est, t, jIdx)) && t.uid !== excluirUid;
+    const ok = t => (!habilidad || puedeApuntarHabilidad(est, t, jIdx)) && t.uid !== excluirUid && (!filtro || filtro(est, t, jIdx));
     if (tipo === "unidadEnemiga") return el.campo.filter(ok).map(t => ({ u: t.uid }));
     if (tipo === "unidadAliada" || tipo === "unidadAliadaOtra") return yo.campo.filter(ok).map(t => ({ u: t.uid }));
     if (tipo === "unidad") return [...yo.campo, ...el.campo].filter(ok).map(t => ({ u: t.uid }));
@@ -456,7 +632,7 @@
       tipo: spec.objetivo,
       habilidad: hostil,
       opcional: esU,
-      validos: validosParaObjetivo(est, jIdx, spec.objetivo, hostil, null)
+      validos: validosParaObjetivo(est, jIdx, spec.objetivo, hostil, null, spec.filtro)
     };
   }
 
@@ -500,7 +676,7 @@
       const provocan = defensores.filter(d => tienePalabra(est, d, "provocar"));
       (!ignora && provocan.length ? provocan : defensores).forEach(d => out.add(d.uid));
     }
-    defensores.forEach(d => { if (marcadaVigente(est, d) === atk.dueno) out.add(d.uid); });
+    defensores.forEach(d => { if (marcadaVigente(est, d) === atk.dueno || marcaPorRivalidad(est, atk, d)) out.add(d.uid); });
     return [...out].filter(uid => !esEscurridizo(est, defensores.find(d => d.uid === uid)));
   }
 
@@ -799,6 +975,7 @@
     if (contra) {
       const ef = efectoDe(est, u);
       if (ef.bonusAtaque) d += ef.bonusAtaque(est, u, contra) || 0;
+      d += bonusVsRival(est, u, contra);
       if (marcadaVigente(est, contra) === u.dueno) d += 2;
     }
     return d;
@@ -964,7 +1141,7 @@
         id: j.id, nombre: j.nombre, vida: C.VIDA, energia: 0, energiaMax: 0,
         mazo: j.mazo.slice(), mano: [], campo: [], cementerio: [], descartes: [], fatiga: 0, costeMenos: 0, malus: null
       })),
-      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0,
+      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0, vinc: {},
       combate: null, atacado: 0, combateN: 0, ultimoCombate: null
     };
     est.jugadores.forEach(J => barajar(est, J.mazo));
@@ -995,6 +1172,8 @@
     C, TOPE_COPIAS, topeCopias, TOKENS, EFECTOS, TERRENOS,
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
+    registrarVinculos: def => { (def.circulos || []).forEach(c => VINC.circulos.push(c)); (def.rivalidades || []).forEach(r => VINC.rivalidades.push(r)); },
+    VINC, bonosDe, vinculosActivos, sincronizarVinculos, devolverAMano,
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad, cementerioDe, enCementerio, exiliar, revivir,
