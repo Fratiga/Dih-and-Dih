@@ -13,10 +13,10 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 
 ## Resumen
 
-- Ataques revisados: 48, coherentes: 35.
-- CD revisadas: 63, coherentes: 46.
-- PV revisados: 39, coherentes: 38.
-- Diferencias en la tabla: 31.
+- Ataques revisados: 66, coherentes: 54.
+- CD revisadas: 85, coherentes: 72.
+- PV revisados: 49, coherentes: 48.
+- Diferencias en la tabla: 26.
 
 ## Bloques que no se pudieron comprobar
 
@@ -75,6 +75,16 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 | restos-de-ledros-piedra | 32 | 5d6+15 (media 32) | 3 | sí | 5 dados frente a nivel 3 |
 | restos-de-ledros-madera | 32 | 5d6+15 (media 32) | 3 | sí | 5 dados frente a nivel 3 |
 | restos-de-ledros-barro | 42 | 5d10+15 (media 42) | 3 | sí | 5 dados frente a nivel 3 |
+| desollado | 160 | 19d8+76 (media 161) | 5 | sí | 19 dados frente a nivel 5 |
+| acechador-descabezado | 150 | 20d6+80 (media 150) | 5 | sí | 20 dados frente a nivel 5 |
+| mortaja-de-ojos | 142 | 19d6+76 (media 142) | 5 | sí | 19 dados frente a nivel 5 |
+| gigante-velludo | 200 | 21d8+105 (media 199) | 5 | sí | 21 dados frente a nivel 5 |
+| segador-acorazado | 150 | 20d6+80 (media 150) | 5 | sí | 20 dados frente a nivel 5 |
+| callador | 120 | 16d8+48 (media 120) | 5 | sí | 16 dados frente a nivel 5 |
+| miron | 125 | 23d6+46 (media 126) | 5 | sí | 23 dados frente a nivel 5 |
+| colgado | 180 | 19d8+95 (media 180) | 5 | sí | 19 dados frente a nivel 5 |
+| reptil-indestructible | 230 | 20d8+140 (media 230) | 7 | sí | 20 dados frente a nivel 7 |
+| perseguidor | 190 | 20d6+120 (media 190) | 5 | sí | 20 dados frente a nivel 5 |
 
 ## Diferencias
 
@@ -106,8 +116,3 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 | dragon | Acciones Legendarias (hasta 5 por ronda) (CD) | 30 | 29 | 8 + competencia +6 + mod. Más cercano: FUE. FUE 29, CAR 27, SAB 25, INT 24, DES 23, CON 29. |
 | dragon | Segunda Fase — El Dragón Desatado (Rasgo especial) (CD) | 35 | 29 | 8 + competencia +6 + mod. Más cercano: FUE. FUE 29, CAR 27, SAB 25, INT 24, DES 23, CON 29. |
 | dragon | Muerte (CD) | 30 | 29 | 8 + competencia +6 + mod. Más cercano: FUE. FUE 29, CAR 27, SAB 25, INT 24, DES 23, CON 29. |
-| voss | Finta sonriente (Recarga 5-6) (CD) | 14 | 15 | 8 + competencia +2 + mod. Más cercano: DES. DES 15, SAB 12, CAR 12, INT 10, FUE 9, CON 11. |
-| billy | Hachón pesado (Acción) (ataque) | +7 | +8 | Competencia +3 (nivel 5). FUE +8, DES +3, INT +2, SAB +4, CAR +2. |
-| billy | Cornada de embestida (Pasiva) (CD) | 15 | 16 | 8 + competencia +3 + mod. Más cercano: FUE. FUE 16, SAB 12, DES 11, INT 10, CAR 10, CON 16. |
-| billy | Golpe contra el suelo (Recarga 5-6) (CD) | 15 | 16 | 8 + competencia +3 + mod. Más cercano: FUE. FUE 16, SAB 12, DES 11, INT 10, CAR 10, CON 16. |
-| verde-ultimo-apunte | Eso era importante, ¿no? (1/combate) (CD) | 13 | 14 | 8 + competencia +2 + mod. Más cercano: DES. DES 14, INT 12, SAB 11, CAR 10, FUE 9, CON 11. |
