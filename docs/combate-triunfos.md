@@ -173,7 +173,7 @@ Lazos (dos cartas): Coach y Ryn (Coach cubre a Ryn y Ryn +0/+1), Coach y Orina (
 | La muerte que mereces | Enzo contra Orina | +1 de daño a Orina. Si Enzo la mata, su Proyectil no se dispara y Enzo roba una carta (cobra la recompensa) |
 | El arpón no avisa | Rook contra Eledar | Rook puede desafiarlo aunque haya Provocar y le hace +1 |
 | Hubert Magnolia | Los Seis contra Hooey | los Seis ganan +1 de ataque; si Hooey cae, hace 3 de daño a cada unidad del Último Apunte enemiga |
-| Bestia gigante | Ulis contra Darian | Ulis gana +3/+3 |
+| Orden de Clef | Ulis contra Darian | Ulis gana +3/+3 |
 | Usted se queda | Harrow contra Laia | Harrow desafía a Laia aunque haya Provocar, +1 de daño; Laia gana Esquivo |
 | Brazo militar | Dagren contra Guillotina | +2 de daño contra ella |
 | Lágrimas del espectro | Ledros contra Sir Buffolet | +2 de daño contra él |
@@ -193,7 +193,7 @@ Personajes que salían en la cronología y no tenían carta. Todos con su habili
 | Sett (Carne) | B | 3 | 3/2 | Arrollar |
 | La Vieja de la Espesura (Eternidad) | B | 3 | 1/4 | Al entrar, robas una carta |
 | Clef (Arcano) | B | 3 | 1/3 | Al entrar, una aliada gana +2 de ataque hasta el final de tu próximo turno |
-| Ulis (Carne) | B | 2 | 2/2 | Al inicio de tu turno recupera 1 de vida |
+| Ulis (Carne) | B | 2 | 1/3 | Se transforma a voluntad en monstruo ajolote, sin coste ni desgaste: +2 de ataque mientras ataca o bloquea. Al inicio de tu turno recupera 1 de vida |
 | Enfermera Harrow (Carne) | B | 5 | 2/5 | Al entrar, cura 3 a una aliada o hace 2 de daño a una enemiga y no la deja curarse. Una vez por partida salva de morir a una aliada |
 
 Cartas que estaban vacías (1/1, coste 1, sin texto) y ahora tienen habilidad:
@@ -227,6 +227,7 @@ Las cartas de editor (Coach, Julius, Leonard, Mercader, el Vendedor, Laia, Ledro
 - `guardianUnaVez`: un guardián que solo actúa una vez por partida.
 - `fuerzaHelenica`: el daño de combate contra una unidad es su vida, sin ignorar resistencias, y sin bloqueo derrota al jugador de un golpe.
 - `reaccion.valido`: filtra qué atacantes puede elegir una reacción.
+- `pasivaAtq` puede leer `est.combate` para valer solo mientras la unidad pelea (Ulis). `resolverCombate` mantiene `est.combate` hasta calcular el daño de cada par, para que esas pasivas cuenten.
 - `evitaMuerte(est, guardian, unidad)`: cuando una aliada fuera a morir se queda con 1 de vida (Julius, Harrow). La habilidad lleva su propia cuenta de usos.
 - `costeMod(est, unidad, metaDeLaCarta)`: abarata o encarece cartas de su dueño mientras está en el campo (Mercader).
 - `alEntrar.filtro(est, objetivo)`: limita qué objetivos son válidos para la habilidad al entrar (Gareth: coste 3 o menos).

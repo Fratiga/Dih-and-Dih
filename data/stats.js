@@ -1249,5 +1249,36 @@ window.STATS = [
       { nombre: "Terror acechante (Acción adicional, 1/combate)", descripcion: "El maletín flota, sus cierres se abren y algo observa desde dentro. Durante 3 turnos: tiene velocidad de vuelo de 30 pies y flota; ventaja en pruebas de Medicina y en salvaciones de Constitución para mantener la concentración; una vez por turno, cuando daña a alguien con su jeringa, puede curar a un aliado a 30 pies (1d8+4 PV); los enemigos a 10 pies tienen desventaja en pruebas de Percepción basadas en la vista. Al terminar no puede volver a activarlo hasta un descanso largo." }
     ],
     estrategia: "Estricta y aterradora, pero convencida de que salva vidas. «No se mueva. Está empeorando su condición.» «Puede gritar si lo necesita. No afecta al procedimiento.» «¿Ve? Ya está mejorando. Debería darme las gracias.» «Usted no está autorizado para morir.» Abre disparando la jeringa al más peligroso del grupo para cortarle la recuperación. En mitad del combate usa las Sanguijuelas cuando varios enemigos se agrupan, y sostiene a los suyos. Cuando un aliado está a punto de caer, activa el Maletín para robar vitalidad y salvarlo. En la fase final usa Terror acechante para flotar sobre la primera línea y seguir tratando a sus aliados mientras ataca. Funciona mejor acompañada de dos o tres experimentadores débiles: sola aguanta, pero su peligro real es impedir que los jugadores terminen con sus compañeros. Con 4 jugadores de nivel 5 y atributos reforzados, empieza con estos PV y súmale o quítale según cuántos enemigos la acompañen."
+  },
+  {
+    id: "ulis",
+    personajeId: "ulis",
+    nombre: "Ulis",
+    rol: "Élite · Bruto · Cambiaformas",
+    tipo: "Humanoide",
+    raza: "Ajolote Pequeña / Grande · Cambiaformas",
+    nivel: 5,
+    pv: 126,
+    ca: 16,
+    velocidad: "30 pies",
+    stats: { fue: 22, des: 16, con: 20, int: 10, sab: 12, car: 8 },
+    notas: [
+      "Salvaciones: FUE +9, CON +8. Habilidades: Percepción +4 (pasiva 14), Sigilo +6, Atletismo +9. Competencia +3. Anfibia: respira aire y agua y nada a 40 pies.",
+      "Los atributos de arriba son los de su forma de monstruo. En forma de niña tiene FUE 10 (modificador +0) y es de tamaño Pequeño; en forma de monstruo es de tamaño Grande. Los PV, la CA y la regeneración son los mismos en las dos formas.",
+      "Tiene una acción y una acción adicional por turno. Transformarse usa la acción adicional.",
+      "Concepto: niña ajolote que se transforma a voluntad en un monstruo ajolote grande, sin desgaste aparente."
+    ],
+    habilidades: [
+      { nombre: "Transformación (Acción adicional, a voluntad)", descripcion: "Cambia entre su forma de niña y su forma de monstruo ajolote. Puede hacerlo todas las veces que quiera, sin límite de usos y sin coste: no queda agotada, no pierde PV y no necesita descansar entre un cambio y otro. Conserva los PV que tenga al transformarse." },
+      { nombre: "Regeneración de ajolote (Pasiva)", descripcion: "Al inicio de su turno recupera 5 PV si tiene al menos 1 PV. Si recibió daño de fuego o de ácido desde su último turno, no se regenera ese turno." },
+      { nombre: "Escurridiza (Pasiva, forma de niña)", descripcion: "Es de tamaño Pequeño: puede atravesar el espacio de criaturas Medianas o mayores y no provoca ataques de oportunidad al moverse." },
+      { nombre: "Arañazo (Acción, forma de niña)", descripcion: "+6 al impacto, alcance 5 pies, un objetivo. Daño: 2d6+3 cortante." },
+      { nombre: "Piel resbaladiza (Reacción, forma de niña)", descripcion: "Cuando un ataque la impacta, reduce el daño que recibe en 1d10+5." },
+      { nombre: "Multiataque (Acción, forma de monstruo)", descripcion: "Realiza un ataque de Mordisco y uno de Coletazo." },
+      { nombre: "Mordisco (Acción, forma de monstruo)", descripcion: "+9 al impacto, alcance 10 pies, un objetivo. Daño: 3d8+6 perforante. Un objetivo Mediano o menor queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 17). Mientras sujeta a una criatura no puede morder a otra." },
+      { nombre: "Coletazo (Acción, forma de monstruo)", descripcion: "+9 al impacto, alcance 10 pies, un objetivo. Daño: 2d10+6 contundente. El objetivo hace una salvación de Fuerza CD 17 o cae Derribado." },
+      { nombre: "Oleada viscosa (Acción, forma de monstruo, Recarga 5–6)", descripcion: "Vomita una oleada de agua y limo en un cono de 15 pies. Las criaturas en el área hacen una salvación de Destreza CD 16: si fallan, reciben 4d6 contundente y son empujados 10 pies; si superan, la mitad del daño y no se mueven." }
+    ],
+    estrategia: "Habla poco y casi siempre hace lo que Clef le manda. Empieza como niña, se cuela entre los enemigos sin provocar ataques de oportunidad y se transforma en cuanto está pegada al objetivo. Muerde y agarra al más peligroso, derriba con la cola a quien la rodea y usa la Oleada cuando hay varios en el cono. Si se está llevando mucho daño vuelve a ser niña para recortar el golpe con la Piel resbaladiza y se transforma otra vez en su turno, porque cambiar no le cuesta nada. Contra ella funcionan el fuego y el ácido: sin regeneración se queda sin su mejor defensa. Con 4 jugadores de nivel 5 y atributos reforzados, empieza con estos PV y súmale o quítale según cuántos enemigos la acompañen."
   }
 ];

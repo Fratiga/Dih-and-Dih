@@ -1356,8 +1356,8 @@ window.PERSONAJES = [
     id: "ulis",
     title: "Ulis",
     category: "Personajes",
-    tags: ["npc", "ajolote"],
-    summary: "Niña pequeña con pinta de ajolote que sigue las órdenes de Clef. Se transformó en una bestia gigante para atacar a Darian, y Clef canceló el ataque.",
+    tags: ["npc", "ajolote", "cambiaformas"],
+    summary: "Niña pequeña con pinta de ajolote que se transforma a voluntad en un monstruo ajolote grande, sin desgaste aparente. Sigue las órdenes de Clef.",
     retrato: "",
     titulo: "",
     raza: "",
@@ -1374,11 +1374,15 @@ window.PERSONAJES = [
     content: `
       <p>Una niña con pinta de ajolote que parece muy pequeña. Habla poco y
       sigue sobre todo las órdenes de Clef.</p>
+      <p>Puede transformarse en un monstruo ajolote grande cuando quiere y volver
+      a ser una niña igual de fácil. Cambia de forma a voluntad y, por lo que se
+      ve, sin desgaste.</p>
       <p>Cuando Clef descubrió que Darian era un sujeto de pruebas que había
       asimilado parte de La Carne, la criatura de carne gigante, le ordenó
-      atacar. Ulis se transformó en una bestia gigante para hacerlo, pero Clef
-      canceló el ataque al acordar con el grupo que los dejaba ir a cambio de
-      que le trajeran a Darian de vuelta después. La promesa era falsa.</p>
+      atacar. Ulis se transformó en un monstruo ajolote grande para hacerlo,
+      pero Clef canceló el ataque al acordar con el grupo que los dejaba ir a
+      cambio de que le trajeran a Darian de vuelta después. La promesa era
+      falsa.</p>
     `
   }
 ];

@@ -987,10 +987,10 @@
 
   function resolverCombate(est) {
     const c = est.combate;
-    est.combate = null;
     if (!c) return;
     const A = est.activo, D = 1 - A;
-    // 1) Quién pelea con quién y cuánto daño hace cada uno (con los números de antes del combate)
+    // 1) Quién pelea con quién y cuánto daño hace cada uno (con los números de antes del combate). El combate sigue en
+    //    est.combate mientras se calcula, para las pasivas que dependen de pelear (Ulis); se cierra justo después.
     const pares = [];
     c.atacantes.forEach(uid => {
       const ha = buscar(est, uid);
@@ -1000,6 +1000,7 @@
       const a = ha.u, b = hb ? hb.u : null;
       pares.push({ a, b, dA: danoDeCombate(est, a, b), dB: b ? danoDeCombate(est, b, a) : 0, antes: { a: instantanea(est, a), b: b ? instantanea(est, b) : null }, jugador: 0, aMuere: false, bMuere: false });
     });
+    est.combate = null;
     est.combateN = (est.combateN || 0) + 1;
     // 2) Los golpes. Veloz golpea primero y, si mata, no recibe el golpe de vuelta. El resto, a la vez.
     const golpe = (de, a, dano, pvAntes, esAtacante, par) => {

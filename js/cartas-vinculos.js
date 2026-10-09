@@ -98,8 +98,8 @@
           objetivos.slice().forEach(o => c.M.infligir(c.est, { u: o.uid }, 3, { tipo: "habilidad", dueno: c.j }));
         }
       } },
-    { id: "bestia-gigante", nombre: "Bestia gigante", bando: ["ulis"], contra: ["darian"],
-      texto: "Clef le ordenó a Ulis atacar a Darian y ella se transformó en una bestia gigante. En la historia el ataque se canceló, pero en la mesa Ulis gana +3/+3 frente a él.",
+    { id: "bestia-gigante", nombre: "Orden de Clef", bando: ["ulis"], contra: ["darian"],
+      texto: "Clef le ordenó a Ulis atacar a Darian y ella se transformó en un monstruo ajolote grande. En la historia el ataque se canceló, pero en la mesa Ulis gana +3/+3 frente a él.",
       paraBando: { atq: 3, pv: 3 }, paraContra: {} },
     { id: "usted-se-queda", nombre: "Usted se queda", bando: ["enfermera-harrow"], contra: ["laia"],
       texto: "Harrow quiere estudiar a Laia en persona. Puede desafiarlo aunque haya Provocar y le pega 1 más; Laia, que se niega, esquiva la mitad de los golpes.",

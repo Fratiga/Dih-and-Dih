@@ -101,7 +101,7 @@ window.CARTAS_AFINIDADES = {
   u("sett", "Sett", "Personaje", P("sett"), "comun", "carne", 3, 3, 2, "Arrollar: el daño que sobra al matar a su bloqueador pasa al jugador.", Be("El fornido"));
   u("vieja-de-la-espesura", "La Vieja de la Espesura", "Personaje", P("vieja-espesura"), "infrecuente", "eternidad", 3, 1, 4, "Consejo de la ermitaña: al entrar, roba una carta.", Be("La ermitaña"));
   u("clef", "Clef", "Personaje", P("clef"), "infrecuente", "arcano", 3, 1, 3, "Orden: al entrar, una unidad aliada gana +2 de ataque hasta el final de tu próximo turno.", Be("La científica"));
-  u("ulis", "Ulis", "Personaje", P("ulis"), "infrecuente", "carne", 2, 2, 2, "Ajolote: al inicio de tu turno recupera 1 de vida.", Be("La ajolote"));
+  u("ulis", "Ulis", "Personaje", P("ulis"), "infrecuente", "carne", 2, 1, 3, "Monstruo ajolote: se transforma a voluntad, sin coste ni desgaste. Mientras ataca o bloquea tiene +2 de ataque. Ajolote: al inicio de tu turno recupera 1 de vida.", Be("La ajolote"));
   u("enfermera-harrow", "Enfermera Harrow", "Personaje", { data: null, id: null }, "rara", "carne", 5, 2, 5, "Jeringa: al entrar, elige una unidad: si es aliada, cura 3 de vida; si es enemiga, recibe 2 de daño y no puede curarse hasta el final del próximo turno de su dueño. Yo sé lo que te conviene: una vez por partida, cuando una unidad aliada fuera a morir, se queda con 1 de vida.", { lado: ["B"], epiteto: "La enfermera", descripcion: "Enfermera de combate. Pelea con una jeringa enorme y un maletín con un ojo dentro: cura a los suyos y a los demás les corta la curación." });
 
   // --- Criaturas ------------------------------------------------------------

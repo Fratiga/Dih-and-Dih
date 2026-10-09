@@ -13,9 +13,9 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 
 ## Resumen
 
-- Ataques revisados: 67, coherentes: 55.
-- CD revisadas: 88, coherentes: 75.
-- PV revisados: 50, coherentes: 49.
+- Ataques revisados: 70, coherentes: 58.
+- CD revisadas: 91, coherentes: 78.
+- PV revisados: 51, coherentes: 50.
 - Diferencias en la tabla: 26.
 
 ## Bloques que no se pudieron comprobar
@@ -86,6 +86,7 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 | reptil-indestructible | 230 | 20d8+140 (media 230) | 7 | sí | 20 dados frente a nivel 7 |
 | perseguidor | 190 | 20d6+120 (media 190) | 5 | sí | 20 dados frente a nivel 5 |
 | nurse-harrow | 95 | 10d12+30 (media 95) | 5 | sí | 10 dados frente a nivel 5 |
+| ulis | 126 | 12d10+60 (media 126) | 5 | sí | 12 dados frente a nivel 5 |
 
 ## Diferencias
 

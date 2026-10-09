@@ -538,8 +538,9 @@ window.CRONOLOGIA_B = [
 
       <p>Fue Clef quien reparó en Darian. Al verlo entendió que era un sujeto de
       pruebas que había asimilado parte de La Carne, la criatura gigante de carne,
-      y le ordenó a Ulis que lo atacara. Ulis se transformó en una bestia gigante
-      para hacerlo, pero el ataque se canceló por orden de Clef.</p>
+      y le ordenó a Ulis que lo atacara. Ulis se transformó sin esfuerzo aparente
+      en un monstruo ajolote grande para hacerlo, pero el ataque se canceló por
+      orden de Clef.</p>
 
       <p>Hablaron y acordaron que Clef los dejaba ir a cambio de que le trajeran
       a Darian de vuelta después. Era una promesa falsa.</p>

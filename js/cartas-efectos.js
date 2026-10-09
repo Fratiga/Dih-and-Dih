@@ -294,7 +294,12 @@
     R("sett", { palabras: ["arrollar"] });
     R("vieja-de-la-espesura", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
     R("clef", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.mod(c.est, c.objetivo, 2, 0, c.est.turno + 2, `Clef da una orden: ${M.nombre(c.est, c.objetivo)} gana +2 de ataque hasta el final de tu próximo turno.`) } });
-    R("ulis", { alInicioTurno: c => M.curar(c.est, { u: c.u.uid }, 1) });
+    // Ulis es una niña pequeña que se vuelve un monstruo ajolote grande cuando quiere y sin desgaste. En el juego se
+    // transforma sola al atacar o bloquear: mientras dura el combate tiene +2 de ataque, y después vuelve a ser la niña.
+    R("ulis", {
+      alInicioTurno: c => M.curar(c.est, { u: c.u.uid }, 1),
+      pasivaAtq: (est, u) => (est.combate && (est.combate.atacantes.includes(u.uid) || Object.values(est.combate.bloqueos).includes(u.uid)) ? 2 : 0)
+    });
     // La enfermera Harrow: la jeringa cura a los suyos o castiga a los demás, y salva a una aliada de morir (una vez por partida).
     R("enfermera-harrow", {
       alEntrar: { objetivo: "unidad", resolver: c => {

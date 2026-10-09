@@ -419,9 +419,18 @@ mk("t-fallo", 1, 1); M.registrar("t-fallo", { alMorirAliada: c => { M.revivir(c.
   M.infligir(e, { u: ryn.uid }, 1, { tipo: "habilidad" }); ok(ryn.pv === 3, "una sola vez por turno");
   e.turno += 1; M.infligir(e, { u: ryn.uid }, 1, { tipo: "habilidad" }); ok(ryn.pv === 3 && coach.pv === 2, "y otra vez al turno siguiente (por el lazo)"); }
 { const e = partida([], []); turnoDe(e, 0); const clef = poner(e, 0, "clef"), ulis = poner(e, 0, "ulis");
-  ok(M.atqEfectivo(e, ulis) === 4 && ulis.pvMax === 3, "Clef y Ulis: Ulis gana +1/+1 (y +1 de ataque más por ser las dos del Instituto)");
+  ok(M.atqEfectivo(e, ulis) === 3 && ulis.pvMax === 4, "Clef y Ulis: Ulis gana +1/+1 (y +1 de ataque más por ser las dos del Instituto)");
   e.jugadores[1].campo.length = 0; const dar = poner(e, 1, "darian");
-  ok(M.atqEfectivo(e, ulis) === 7 && ulis.pvMax === 6, `Ulis frente a Darian se vuelve una bestia gigante (${M.atqEfectivo(e, ulis)}/${ulis.pvMax})`); }
+  ok(M.atqEfectivo(e, ulis) === 6 && ulis.pvMax === 7, `Ulis frente a Darian: la orden de Clef le da fuerza de monstruo (${M.atqEfectivo(e, ulis)}/${ulis.pvMax})`); }
+{ const e = partida([], []); turnoDe(e, 0); const ul = poner(e, 0, "ulis"); ul.entro = 0; poner(e, 1, "t33");
+  ok(M.atqEfectivo(e, ul) === 1, "Ulis fuera de combate es la niña: 1 de ataque");
+  M.aplicar(e, { t: "atacar", u: [ul.uid] }, 0);
+  ok(M.atqEfectivo(e, ul) === 3, "al atacar se transforma sin coste: +2 de ataque");
+  M.aplicar(e, { t: "pasar" }, 1);
+  ok(M.atqEfectivo(e, ul) === 1 && ul.pv === ul.pvMax, "al terminar el combate vuelve a ser la niña y no queda herida por transformarse"); }
+{ const e = partida([], []); turnoDe(e, 1); const ul = poner(e, 0, "ulis"); const at = poner(e, 1, "t33"); at.entro = 0;
+  M.aplicar(e, { t: "atacar", u: [at.uid] }, 1); const rb = M.aplicar(e, { t: "bloquear", b: [[at.uid, ul.uid]] }, 0);
+  ok(rb.ok, "Ulis bloquea " + JSON.stringify(rb)); ok(!M.buscar(e, at.uid), "al bloquear también se transforma: golpea con 3 y destruye a una 3/3"); }
 
 // 15) Rivalidades secretas
 { const e = partida([], []); turnoDe(e, 0); const enzo = poner(e, 0, "enzo"); const alia = poner(e, 0, "t33");
