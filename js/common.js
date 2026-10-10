@@ -221,3 +221,12 @@ function activarFlechasNumericas(raiz) {
     campo.dispatchEvent(new Event("input", { bubbles: true }));
   });
 }
+
+/* Menú superior: la página actual queda a la vista (en móvil el menú se desplaza y si no, siempre empezaba por «Inicio») */
+(function centrarPestanaActiva() {
+  const nav = document.querySelector(".quick-nav");
+  const activa = nav && nav.querySelector(".nav-chip.active");
+  if (!activa) return;
+  activa.setAttribute("aria-current", "page");
+  nav.scrollLeft = Math.max(0, activa.offsetLeft - (nav.clientWidth - activa.offsetWidth) / 2);
+})();
