@@ -35,9 +35,12 @@ function renderRotacion(rotacion) {
   }
   empty.classList.add("hidden");
   rotacionState.index = loadRotacionIndex(rotacion.length);
+  // Solo se descargan la foto actual y la siguiente; las demás llevan su ruta en data-src hasta que les toca
   inner.innerHTML = rotacion.map((src, i) => `
-    <img src="${src}" alt="" data-rot="${i}" class="${i === rotacionState.index ? "active" : ""}" loading="lazy">
+    <img ${i === rotacionState.index ? `src="${src}"` : `data-src="${src}"`} alt="" data-rot="${i}" class="${i === rotacionState.index ? "active" : ""}">
   `).join("");
+  const cargar = img => { if (img && img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; } };
+  cargar(inner.querySelectorAll("img")[(rotacionState.index + 1) % rotacion.length]);
   if (rotacion.length > 1) {
     setInterval(() => {
       const imgs = inner.querySelectorAll("img");
@@ -45,6 +48,8 @@ function renderRotacion(rotacion) {
       const prev = rotacionState.index;
       rotacionState.index = (rotacionState.index + 1) % imgs.length;
       imgs[prev]?.classList.remove("active");
+      cargar(imgs[rotacionState.index]);
+      cargar(imgs[(rotacionState.index + 1) % imgs.length]);
       imgs[rotacionState.index]?.classList.add("active");
       localStorage.setItem(ROTACION_KEY, rotacionState.index);
     }, 4500);

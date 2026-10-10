@@ -6,3 +6,8 @@ Notas.docx
 
 # Herramientas locales del Bufón (simulador y creador de ciclos): traen nombres de jugadores en texto plano
 tools/bufon/
+
+# Archivos de Blender del Bufón y una textura sin usar: pesan ~175 MB y no los carga ninguna página (siguen en tu disco)
+*.blend
+*.blend1
+assets/cosas/sample-white-cotton-textile.jpg

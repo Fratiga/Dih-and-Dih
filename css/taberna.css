@@ -20,7 +20,7 @@
   --text: #efe6ff;
   --muted: #a99ac9;
   --accent: #e8b84a;
-  --accent-soft: #8f6bd1;
+  --accent-soft: #a384e6;
   --border: #4a3478;
   --shadow: rgba(0, 0, 0, .6);
   --radio-tarjeta: 0px;
@@ -95,16 +95,16 @@ body::before { z-index: -1; }
 }
 :root:not([data-fuente="legible"]) .site-header h1 { font-size: clamp(1.1rem, 2.8vw, 1.7rem); line-height: 1.4; text-shadow: 3px 3px 0 var(--lb-titulo-b), 6px 6px 0 #000; font-weight: 400; }
 :root:not([data-fuente="legible"]) .content-top h2 { font-size: .95rem; line-height: 1.5; font-weight: 400; text-shadow: 2px 2px 0 #000; }
-:root:not([data-fuente="legible"]) .eyebrow { font-size: .6rem; letter-spacing: .08em; line-height: 1.6; }
-:root:not([data-fuente="legible"]) .nav-chip { font-size: .55rem; letter-spacing: .02em; font-weight: 400; padding: 8px 8px; }
+:root:not([data-fuente="legible"]) .eyebrow { font-size: .68rem; letter-spacing: .08em; line-height: 1.6; }
+:root:not([data-fuente="legible"]) .nav-chip { font-size: .68rem; letter-spacing: .02em; font-weight: 400; padding: 9px 9px; }
 :root:not([data-fuente="legible"]) .secondary-button,
-:root:not([data-fuente="legible"]) .pill { font-size: .55rem; letter-spacing: 0; font-weight: 400; line-height: 1.6; }
-:root:not([data-fuente="legible"]) .entry-card h3 { font-size: .68rem; line-height: 1.7; font-weight: 400; }
-:root:not([data-fuente="legible"]) .entry-type { font-size: .5rem; letter-spacing: .04em; }
-:root:not([data-fuente="legible"]) .filter-group h3 { font-size: .55rem; line-height: 1.6; font-weight: 400; }
+:root:not([data-fuente="legible"]) .pill { font-size: .68rem; letter-spacing: 0; font-weight: 400; line-height: 1.6; }
+:root:not([data-fuente="legible"]) .entry-card h3 { font-size: .78rem; line-height: 1.7; font-weight: 400; }
+:root:not([data-fuente="legible"]) .entry-type { font-size: .62rem; letter-spacing: .04em; }
+:root:not([data-fuente="legible"]) .filter-group h3 { font-size: .68rem; line-height: 1.6; font-weight: 400; }
 :root:not([data-fuente="legible"]) dialog h2 { font-size: .95rem; line-height: 1.5; font-weight: 400; }
 :root:not([data-fuente="legible"]) .admin-tab,
-:root:not([data-fuente="legible"]) .fichas-tab { font-size: .55rem; line-height: 1.6; font-weight: 400; }
+:root:not([data-fuente="legible"]) .fichas-tab { font-size: .68rem; line-height: 1.6; font-weight: 400; }
 
 /* --- Cabecera: más baja y enmarcada --- */
 .site-header { border-bottom: 0; }
@@ -231,3 +231,16 @@ dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8
 .modal-subseccion h4 { margin: 0 0 6px; font-size: .95rem; }
 .modal-subseccion p { margin: 0 0 8px; }
 .modal-subseccion p:last-child { margin-bottom: 0; }
+
+/* --- Móvil: cabecera compacta (el contenido tiene que verse sin bajar) y botones más fáciles de tocar --- */
+@media (max-width: 700px) {
+  .site-header-inner { margin-top: 8px; padding: 12px 14px; gap: 10px; }
+  .header-left .subtitle { display: none; }
+  .header-right { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
+  .header-right .rotacion-box { width: 100%; max-width: 100%; height: 96px; order: 9; }
+  .header-topbar { flex-direction: row; align-items: center; gap: 8px; }
+  .header-topbar .global-search-box { flex: 1 1 0; min-width: 0; }
+}
+@media (pointer: coarse) {
+  .nav-chip, .secondary-button, .pill, .global-lado-badge, .tema-badge { min-height: 40px; display: inline-flex; align-items: center; }
+}
