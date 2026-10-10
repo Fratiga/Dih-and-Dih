@@ -71,6 +71,7 @@ window.CartasCliente = (function () {
         supabase.from("cartas_catalogo").select("id, publicada")
       ]);
       if (defs.error || cat.error) return false;
+      await cargarVinculos();
       const lista = window.CARTAS;
       (defs.data || []).forEach(f => {
         const i = lista.findIndex(c => c.id === f.id);
@@ -90,6 +91,37 @@ window.CartasCliente = (function () {
     } catch (e) {
       return false;
     }
+  }
+
+  /* --- Sinergias y rivalidades guardadas en el servidor (tabla cartas_vinculos) ---
+     Devuelve las filas (o null si la tabla todavía no existe) y las aplica sobre js/cartas-vinculos.js. */
+  let filasVinculos = [];
+  async function cargarVinculos() {
+    try {
+      const supabase = await fichasCliente();
+      const { data, error } = await supabase.from("cartas_vinculos").select("id, tipo, data, borrado");
+      if (error) return null;
+      filasVinculos = data || [];
+      if (window.aplicarVinculosServidor) window.aplicarVinculosServidor(filasVinculos);
+      return filasVinculos;
+    } catch (e) {
+      return null;
+    }
+  }
+  const vinculosGuardados = () => filasVinculos;
+
+  async function guardarVinculo(id, tipo, datos, borrado) {
+    const supabase = await fichasCliente();
+    const { error } = await supabase.rpc("cartas_vinculo_guardar", { p_id: id, p_tipo: tipo, p_data: datos, p_borrado: !!borrado });
+    if (error) throw error;
+    await cargarVinculos();
+  }
+
+  async function restaurarVinculo(id) {
+    const supabase = await fichasCliente();
+    const { error } = await supabase.rpc("cartas_vinculo_restaurar", { p_id: id });
+    if (error) throw error;
+    await cargarVinculos();
   }
 
   /* Guarda una carta entera. datos: los campos de CAMPOS. */
@@ -191,5 +223,5 @@ window.CartasCliente = (function () {
   /* Pasa { cartaId: copias } a la lista de ids repetidos */
   const aplanar = cuenta => Object.entries(cuenta).flatMap(([id, n]) => Array(n).fill(id));
 
-  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, guardar, borrar, subirImagen, quitarImagen, listarMazos, guardarMazo, borrarMazo, instantanea, aplanar };
+  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, cargarVinculos, vinculosGuardados, guardarVinculo, restaurarVinculo, guardar, borrar, subirImagen, quitarImagen, listarMazos, guardarMazo, borrarMazo, instantanea, aplanar };
 })();

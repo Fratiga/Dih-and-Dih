@@ -41,7 +41,7 @@
     const rareza = window.CARTAS_RAREZAS[c.rareza].nombre;
     const vincs = (window.vinculosDeCarta ? window.vinculosDeCarta(c.id) : []).map(v => {
       const otros = v.miembros.filter(m => m !== c.id).map(m => { const o = window.cartaPorId(m); return o ? o.nombre : m; });
-      return `<li><b>${esc(v.nombre)}.</b> ${esc(v.texto)} <span class="carta-meta">Con: ${esc(otros.join(", "))}.</span></li>`;
+      return `<li><b>${esc(v.nombre)}.</b> ${esc(v.texto)} <span class="carta-meta">Con: ${esc(otros.join(", "))}.</span>${puedeEditar ? ` <button type="button" class="cartas-boton" data-vinculo="${esc(v.id)}">Editar</button>` : ""}</li>`;
     });
     const vinculos = vincs.length ? `<p><strong>Vínculos.</strong> Si están juntas en tu campo, se fortalecen.</p><ul class="carta-vinculos">${vincs.join("")}</ul>` : "";
     const formas = tengo && c.formas && c.formas.length
@@ -93,6 +93,7 @@
   function mostrarControlesDeEditor() {
     document.getElementById("filtroReveladasEtiqueta").classList.toggle("hidden", !puedeEditar);
     document.getElementById("cartaNueva").classList.toggle("hidden", !puedeEditar);
+    document.getElementById("vinculosAbrir").classList.toggle("hidden", !puedeEditar);
   }
 
   function prepararFiltros() {
@@ -433,6 +434,8 @@
   detalleContenidoEl.addEventListener("click", ev => {
     const b = ev.target.closest("[data-editar]");
     if (b) abrirEditor(b.dataset.editar);
+    const v = ev.target.closest("[data-vinculo]");
+    if (v) { detalleEl.close(); window.VinculosEditor.abrir(v.dataset.vinculo); }
   });
   document.getElementById("cartaDetalleCerrar").addEventListener("click", () => detalleEl.close());
   detalleEl.addEventListener("click", ev => { if (ev.target === detalleEl) detalleEl.close(); });

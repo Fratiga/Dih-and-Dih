@@ -116,6 +116,50 @@
   ];
 
   raiz.CARTAS_VINCULOS = { circulos, rivalidades };
+  const base = { circulos: circulos.map(c => c.id), rivalidades: rivalidades.map(r => r.id) };
+
+  /* Vínculos guardados en el servidor (tabla cartas_vinculos, los edita el editor de cartas). Cada fila
+     reemplaza al vínculo con su id, lo crea si es nuevo o lo quita si trae borrado. En una rivalidad se
+     conservan solo los efectos de código del archivo (alMatarContra, alMorirPropia...); los números son los de la fila. Se vuelve a aplicar
+     desde cero cada vez, así que se puede llamar tras cada guardado. Una fila mal formada se ignora. */
+  const lista = a => Array.isArray(a) && a.length && a.every(x => typeof x === "string") ? a : null;
+  function valido(tipo, d) {
+    if (!d || typeof d !== "object") return false;
+    if (tipo === "rivalidad") return !!(lista(d.bando) && lista(d.contra));
+    return !!(lista(d.miembros) && Array.isArray(d.niveles) && d.niveles.length && d.niveles.every(n => n && typeof n.n === "number"));
+  }
+  const soloCodigo = o => { const r = {}; Object.keys(o || {}).forEach(k => { if (typeof o[k] === "function") r[k] = o[k]; }); return r; };
+  const originales = { circulos: circulos.slice(), rivalidades: rivalidades.slice() };
+  raiz.aplicarVinculosServidor = function (filas) {
+    const nuevos = { circulos: originales.circulos.slice(), rivalidades: originales.rivalidades.slice() };
+    (filas || []).forEach(f => {
+      try {
+        const grupo = f.tipo === "rivalidad" ? nuevos.rivalidades : nuevos.circulos;
+        const i = grupo.findIndex(x => x.id === f.id);
+        if (f.borrado) { if (i >= 0) grupo.splice(i, 1); return; }
+        if (!valido(f.tipo, f.data)) return;
+        let v;
+        if (f.tipo === "rivalidad") {
+          const e = i >= 0 ? grupo[i] : {};
+          v = Object.assign({}, f.data, { id: f.id,
+            paraBando: Object.assign(soloCodigo(e.paraBando), f.data.paraBando),
+            paraContra: Object.assign(soloCodigo(e.paraContra), f.data.paraContra) });
+        } else {
+          v = Object.assign({}, f.data, { id: f.id });
+          if (f.tipo === "lazo") v.tipo = "lazo"; else delete v.tipo;
+        }
+        if (i >= 0) grupo[i] = v; else grupo.push(v);
+      } catch (e) { /* una fila rota no debe tumbar el resto */ }
+    });
+    circulos.splice(0, circulos.length, ...nuevos.circulos);
+    rivalidades.splice(0, rivalidades.length, ...nuevos.rivalidades);
+    if (raiz.CartasMotor && raiz.CartasMotor.VINC) {
+      raiz.CartasMotor.VINC.circulos.splice(0, raiz.CartasMotor.VINC.circulos.length, ...circulos);
+      raiz.CartasMotor.VINC.rivalidades.splice(0, raiz.CartasMotor.VINC.rivalidades.length, ...rivalidades);
+    }
+  };
+  /* Las listas tal como vienen del archivo (para mostrar «restaurar» en el editor) */
+  raiz.vinculosBase = () => ({ circulos: base.circulos.slice(), rivalidades: base.rivalidades.slice() });
   /* Para el álbum: los vínculos amistosos de una carta (los de rivalidad son secretos) */
   raiz.vinculosDeCarta = id => circulos.filter(c => c.miembros.includes(id));
   if (raiz.CartasMotor) raiz.CartasMotor.registrarVinculos(raiz.CARTAS_VINCULOS);

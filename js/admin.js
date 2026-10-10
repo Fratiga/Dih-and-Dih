@@ -628,6 +628,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     { que: "Fondos de las canciones (imagen, GIF o video)", sql: "fondos.sql", tipo: "tabla", ref: "rocola_fondos" },
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
     { que: "Editor de cartas: rol y definiciones", sql: "cartas_editor.sql", tipo: "tabla", ref: "cartas_definiciones" },
+    { que: "Editor de sinergias y rivalidades", sql: "cartas_vinculos.sql", tipo: "tabla", ref: "cartas_vinculos" },
     { que: "Editor de cartas: fotos (almacenamiento)", sql: "cartas_editor.sql", tipo: "bucket", ref: "cartas" },
     { que: "Mazos de cartas", sql: "cartas_combate.sql", tipo: "tabla", ref: "cartas_mazos" },
     { que: "Partidas de cartas entre jugadores", sql: "cartas_combate.sql", tipo: "tabla", ref: "cartas_partidas" },
