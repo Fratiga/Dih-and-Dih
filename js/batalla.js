@@ -1064,7 +1064,7 @@
       }
     }
     if (!c) { el.innerHTML = `<p class="bt-nota">Pasa el ratón o elige una carta o unidad para verla aquí.</p>`; return; }
-    el.innerHTML = `<div class="bt-inspector-carta">${htmlCarta(c, true, 0, null)}</div>
+    el.innerHTML = `<div class="bt-inspector-carta">${htmlCarta(c, true, 0, null, { completa: true })}</div>
       <div class="bt-inspector-texto"><h3>${esc(c.nombre)}</h3><p class="carta-meta">${esc(c.tipo)} · ${esc((window.CARTAS_RAREZAS[c.rareza] || {}).nombre || c.rareza)}</p>${c.habilidad ? `<p>${esc(c.habilidad)}</p>` : ""}${extra}</div>`;
   }
 

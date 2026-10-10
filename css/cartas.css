@@ -219,3 +219,23 @@
 .carta-formas-fila figcaption { margin-top: 4px; font-size: .74rem; color: var(--muted); }
 .carta-formas-fila .carta { pointer-events: none; }
 .carta.carta-forma .carta-caja { box-shadow: inset 0 0 0 2px rgba(224,168,90,.7), 0 0 14px rgba(224,168,90,.4); }
+
+/* --- Reglas largas: etiquetas con los nombres + pestaña que despliega el texto completo --- */
+.carta-claves { display: flex; flex-wrap: wrap; gap: 1.4cqw; margin: 2cqw 0 0; justify-content: center; }
+.carta-clave {
+  display: inline-flex; align-items: center; gap: .9cqw; padding: .5cqw 1.8cqw; font-size: 4.6cqw; font-weight: 700; line-height: 1.2;
+  color: #f2c94c; background: #0009; border: .35cqw solid #f2c94c88; border-radius: 1.2cqw; text-shadow: none;
+}
+.carta-clave svg { width: 4.6cqw; height: 4.6cqw; fill: currentColor; flex-shrink: 0; }
+.carta-reglas-tab {
+  display: block; margin: 2cqw auto 0; width: max-content; padding: .4cqw 2.4cqw; font-size: 4.2cqw; font-weight: 700; letter-spacing: .06em;
+  color: #f2c94c; background: #0007; border: .3cqw solid #f2c94c55; border-radius: 1cqw; cursor: pointer; user-select: none;
+}
+.carta-reglas-tab:hover { background: #f2c94c; color: #1a1408; }
+.carta-reglas-completas {
+  display: none; position: absolute; left: 3%; right: 3%; top: 22%; bottom: 14%; z-index: 6; overflow-y: auto; padding: 3cqw 3.4cqw;
+  background: rgba(12, 9, 20, .96); border: .4cqw solid #f2c94c88; border-radius: 1.6cqw; text-align: left; scrollbar-width: thin;
+}
+.carta-reglas-completas .carta-habilidad { margin: 0; font-size: 5cqw; }
+.carta.carta-reglas-abiertas .carta-reglas-completas,
+.carta:has(.carta-reglas-tab:hover) .carta-reglas-completas { display: block; }

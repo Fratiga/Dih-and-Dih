@@ -19,13 +19,63 @@ window.CartasVista = (function () {
     caceria: '<path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm0 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>'
   };
 
-  /* "Palabra clave: efecto" -> la palabra clave sale en dorado (solo si no lleva punto antes de los dos puntos) */
-  function htmlReglas(texto) {
-    const m = String(texto || "").match(/^([^.:]{2,32}):\s*([\s\S]*)$/);
-    return m ? `<span class="kw">${esc(m[1])}:</span> ${esc(m[2])}` : esc(texto);
+  /* Palabras clave del Triunfos (data/triunfos-guia.js), con un icono pequeño para las más comunes. */
+  const ICONOS_CLAVE = {
+    guardia: '<path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"/>',
+    provocar: '<path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"/>',
+    volar: '<path d="M2 14c4 0 6-3 10-9 4 6 6 9 10 9-3 1-6 3-10 7-4-4-7-6-10-7z"/>',
+    arrollar: '<path d="M4 4l8 8-8 8M12 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3"/>',
+    temible: '<path d="M12 2a8 8 0 0 0-8 8c0 3 1.6 5 4 6v4h8v-4c2.4-1 4-3 4-6a8 8 0 0 0-8-8zM9 10a1.5 1.5 0 1 1 0 .1zm6 0a1.5 1.5 0 1 1 0 .1z"/>',
+    veloz: '<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+    duro: '<path d="M12 2l9 10-9 10L3 12z"/>',
+    esquivo: '<path d="M12 4a8 8 0 1 0 8 8" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 3v6h-6z"/>',
+    barrera: '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3"/>',
+    escurridizo: '<path d="M12 3a7 7 0 0 0-7 7v11l3.5-3 3.5 3 3.5-3 3.5 3V10a7 7 0 0 0-7-7z"/>'
+  };
+  const sinTildes = t => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  /* Por encima de este largo, la carta muestra solo los nombres de sus reglas y el texto entero sale
+     en una pestaña que se despliega (y en la ficha de la carta). */
+  const UMBRAL_REGLAS = 90;
+
+  /* Parte el texto en cláusulas "Nombre: efecto". Lo que venga antes de la primera es la introducción. */
+  function clausulas(texto) {
+    const t = String(texto || "").trim();
+    const re = /(?:^|(?<=[.!?]\s))([A-ZÁÉÍÓÚÑ][^.:\n]{1,40}):\s+/g;
+    const marcas = [];
+    let m;
+    while ((m = re.exec(t))) marcas.push({ nombre: m[1].trim(), ini: m.index, fin: re.lastIndex });
+    return {
+      intro: marcas.length ? t.slice(0, marcas[0].ini).trim() : t,
+      lista: marcas.map((k, i) => ({ nombre: k.nombre, texto: t.slice(k.fin, i + 1 < marcas.length ? marcas[i + 1].ini : t.length).trim() }))
+    };
   }
 
-  function htmlCarta(c, tengo, cantidad, numeros) {
+  function htmlClave(nombre) {
+    const icono = ICONOS_CLAVE[sinTildes(nombre)];
+    return `<span class="carta-clave">${icono ? `<svg viewBox="0 0 24 24" aria-hidden="true">${icono}</svg>` : ""}${esc(nombre)}</span>`;
+  }
+
+  /* Cara de la carta: nombres de las reglas como etiquetas + pestaña "Reglas" que abre el texto completo. */
+  function htmlReglasCompactas(texto) {
+    const { intro, lista } = clausulas(texto);
+    const resumen = lista.length ? "" : (intro.length > 64 ? intro.slice(0, 62).trimEnd() + "…" : intro);
+    return `
+      ${lista.length ? `<div class="carta-claves">${lista.map(k => htmlClave(k.nombre)).join("")}</div>` : ""}
+      ${resumen ? `<p class="carta-habilidad">${esc(resumen)}</p>` : ""}
+      <span class="carta-reglas-tab" role="button" tabindex="0" aria-label="Ver las reglas completas">Reglas ▾</span>`;
+  }
+
+  /* "Palabra clave: efecto" -> la palabra clave sale en dorado (solo si no lleva punto antes de los dos puntos) */
+  function htmlReglas(texto) {
+    const { intro, lista } = clausulas(texto);
+    if (!lista.length) return esc(texto);
+    return (intro ? esc(intro) + " " : "") + lista.map(k => `<span class="kw">${esc(k.nombre)}:</span> ${esc(k.texto)}`).join(" ");
+  }
+
+  function htmlCarta(c, tengo, cantidad, numeros, opciones) {
+    const completa = !!(opciones && opciones.completa);
+    const compacta = !completa && c.habilidad && String(c.habilidad).length > UMBRAL_REGLAS;
     const rareza = window.CARTAS_RAREZAS[c.rareza] || { nombre: c.rareza };
     const afinidad = c.afinidad[0];
     const conStats = c.atq !== null && c.atq !== undefined;
@@ -50,9 +100,10 @@ window.CartasVista = (function () {
           <div class="carta-afinidades">${iconos}</div>
           <div class="carta-texto">
             <p class="carta-nombre${largo}">${esc(c.nombre)}${c.epiteto ? `<small>${esc(c.epiteto)}</small>` : ""}</p>
-            ${c.habilidad ? `<p class="carta-habilidad">${htmlReglas(c.habilidad)}</p>` : ""}
+            ${c.habilidad ? (compacta ? htmlReglasCompactas(c.habilidad) : `<p class="carta-habilidad">${htmlReglas(c.habilidad)}</p>`) : ""}
             ${marcaNumero}
           </div>
+          ${compacta ? `<div class="carta-reglas-completas"><p class="carta-habilidad">${htmlReglas(c.habilidad)}</p></div>` : ""}
           ${conStats ? `<span class="carta-stat atq" title="Ataque">${c.atq}</span><span class="carta-stat pv" title="Vida">${c.pv}</span>` : ""}
           <span class="carta-gema" title="${esc(rareza.nombre)}"></span>
           <div class="carta-oculta-info">${esc(c.tipo)} · ${esc(rareza.nombre)}</div>
@@ -60,6 +111,19 @@ window.CartasVista = (function () {
         </div>
       </button>`;
   }
+
+  /* La pestaña "Reglas" abre y cierra el texto completo. Va en la captura para que pulsarla no abra la ficha
+     de la carta ni la seleccione en el tablero. */
+  function alternarReglas(e) {
+    const tab = e.target.closest && e.target.closest(".carta-reglas-tab");
+    if (!tab) return;
+    if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    e.stopPropagation();
+    tab.closest(".carta").classList.toggle("carta-reglas-abiertas");
+  }
+  document.addEventListener("click", alternarReglas, true);
+  document.addEventListener("keydown", alternarReglas, true);
 
   return { esc, iniciales, numeros2, htmlReglas, htmlCarta, ICONOS_AFINIDAD };
 })();
