@@ -196,11 +196,13 @@
     const J = est.jugadores[u.dueno], R = est.jugadores[1 - u.dueno];
     const propios = campoIds(J);
     VINC.circulos.forEach(c => {
-      if (!c.miembros.includes(u.cartaId)) return;
+      // Una carta de `completo.requiere` que no sea miembro no cuenta para los niveles, pero sí recibe el bono del grupo completo
+      const esMiembro = c.miembros.includes(u.cartaId);
+      if (!esMiembro && !(c.completo && c.completo.requiere.includes(u.cartaId))) return;
       const n = c.miembros.filter(id => propios.has(id)).length;
       if (n < 2) return;
       let nivel = -1;
-      c.niveles.forEach((t, i) => { if (n >= t.n) nivel = i; });
+      if (esMiembro) c.niveles.forEach((t, i) => { if (n >= t.n) nivel = i; });
       const completo = !!(c.completo && c.completo.requiere.every(id => propios.has(id)));
       if (nivel < 0 && !completo) return;
       if (nivel >= 0) { const t = c.niveles[nivel]; sumarBono(b, t); sumarBono(b, t.ind && t.ind[u.cartaId]); }

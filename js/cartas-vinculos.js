@@ -36,7 +36,7 @@
     { id: "forasteros", nombre: "Los forasteros de Brurland", miembros: ["laia", "eledar", "ryn", "hooey-magoo", "cassius-coldgrave", "torvrena"],
       texto: "El grupo que se entregó en Kigan, aceptó la misión del Rey y partió al norte a matar al dragón.",
       niveles: [{ n: 3, atq: 1 }, { n: 5, atq: 1, pv: 1 }, { n: 6, atq: 1, pv: 2 }],
-      completo: { requiere: ["laia", "eledar", "ryn", "hooey-magoo"], nombre: "Juntos hasta el dragón: el grupo entero gana una Barrera", barrera: true } },
+      completo: { requiere: ["laia", "eledar", "ryn", "hooey-magoo", "sigismund"], nombre: "Juntos hasta el dragón: el grupo entero gana una Barrera", barrera: true } },
     { id: "banda-de-cassius", nombre: "La banda de Cassius", miembros: ["cassius-coldgrave", "billy", "voss", "victor"],
       texto: "El charlatán de Vado Ceniza y los tres matones que trabajan para él.",
       niveles: [{ n: 2, atq: 1, pv: 1 }, { n: 3, atq: 2, pv: 1 }, { n: 4, atq: 2, pv: 2 }],
@@ -161,7 +161,7 @@
   /* Las listas tal como vienen del archivo (para mostrar «restaurar» en el editor) */
   raiz.vinculosBase = () => ({ circulos: base.circulos.slice(), rivalidades: base.rivalidades.slice() });
   /* Para el álbum: los vínculos amistosos de una carta (los de rivalidad son secretos) */
-  raiz.vinculosDeCarta = id => circulos.filter(c => c.miembros.includes(id));
+  raiz.vinculosDeCarta = id => circulos.filter(c => c.miembros.includes(id) || (c.completo && (c.completo.requiere || []).includes(id)));
   if (raiz.CartasMotor) raiz.CartasMotor.registrarVinculos(raiz.CARTAS_VINCULOS);
   else raiz.__registrarVinculosCartas = M => M.registrarVinculos(raiz.CARTAS_VINCULOS);
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.CARTAS_VINCULOS;
