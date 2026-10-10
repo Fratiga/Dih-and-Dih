@@ -40,6 +40,10 @@
   let primeroDeLaPartida = 0;  // quién empieza (para la presentación)
   let introVisible = false;
   let bannerTimer = null;
+  let vincVisto = null;        // hasta qué aviso de vínculo (est.vincSeq) se ha mostrado
+  let colaVinc = [];           // avisos de vínculos pendientes de mostrar
+  let vincMostrando = false;
+  let vincTimer = null;
   let tablero = "terciopelo";
   try { tablero = localStorage.getItem("cartasTablero") || "terciopelo"; } catch (e) { /* sin almacenamiento */ }
 
@@ -189,6 +193,7 @@
     pvPrevios = new Map();
     ultimoTurno = 0;
     ultimoTerreno = "";
+    vincVisto = null; colaVinc = []; vincMostrando = false;
     arrastre = null;
     cementerioVista = null; cemPrevio = []; orbes = {};
     document.body.classList.add("bt-en-partida");
@@ -794,6 +799,7 @@
     avisarMirada();
     anunciarTurno(false);
     anunciarTerreno();
+    anunciarVinculos();
   }
 
   /* Franja del centro: terreno actual, de quién es el turno y el botón de terminar turno */
@@ -888,6 +894,43 @@
     const mio = est.activo === idx || local();
     mostrarBanner(local() ? `Turno de ${est.jugadores[est.activo].nombre}` : mio ? "Tu turno" : `Turno de ${est.jugadores[est.activo].nombre}`,
       `Turno ${est.turno}`, local() ? "mio" : mio ? "mio" : "rival");
+  }
+
+  /* Aviso breve cuando se activa un vínculo, un lazo o una rivalidad (el motor deja los avisos en est.vincAvisos).
+     Aparece y se va solo; si se activan varios a la vez, salen uno tras otro. Un toque lo cierra antes. */
+  function anunciarVinculos() {
+    if (!est) return;
+    const seq = est.vincSeq || 0;
+    if (vincVisto === null || seq < vincVisto) { vincVisto = seq; return; }   // partida recién abierta o nueva: no hay nada que contar
+    if (seq === vincVisto) return;
+    const nuevos = (est.vincAvisos || []).filter(a => a.seq > vincVisto);
+    vincVisto = seq;
+    if (introVisible) return;
+    colaVinc.push(...nuevos);
+    if (colaVinc.length > 5) colaVinc.splice(0, colaVinc.length - 5);
+    if (!vincMostrando) siguienteVinculo();
+  }
+
+  function siguienteVinculo() {
+    const a = colaVinc.shift();
+    const el = $("btVinculo");
+    if (!a) { vincMostrando = false; return; }
+    vincMostrando = true;
+    el.className = `bt-vinculo-modal ${a.tipo}`;
+    el.innerHTML = `<small>${esc(a.titulo)}${a.completo ? " completo" : ""}</small><strong>${esc(a.nombre)}</strong>
+      <em>${esc(a.cartas)}</em>${a.texto ? `<p>${esc(a.texto)}</p>` : ""}${a.efecto && a.tipo !== "rivalidad" ? `<p class="efecto">${esc(a.efecto[0].toUpperCase() + a.efecto.slice(1))}.</p>` : ""}`;
+    void el.offsetWidth;
+    el.classList.add("entra");
+    const ms = Math.min(5200, 2600 + (a.texto || "").length * 12);
+    const cerrar = () => {
+      clearTimeout(vincTimer);
+      el.removeEventListener("click", cerrar);
+      el.classList.remove("entra");
+      el.classList.add("sale");
+      setTimeout(() => { el.classList.remove("sale"); siguienteVinculo(); }, 260);
+    };
+    el.addEventListener("click", cerrar);
+    vincTimer = setTimeout(cerrar, ms);
   }
 
   /* Cartel cuando entra un terreno nuevo (o se va) */

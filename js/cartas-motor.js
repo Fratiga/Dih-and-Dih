@@ -181,12 +181,51 @@
     if (x.barrera) b.barrera = true;
   }
 
-  function textoBono(x) {
+  function textoBono(x, est) {
     const t = [];
-    if (x.atq || x.pv) t.push(`${x.atq >= 0 ? "+" : ""}${x.atq || 0}/${(x.pv || 0) >= 0 ? "+" : ""}${x.pv || 0}`);
+    const a = x.atq || 0, v = x.pv || 0;
+    if (a || v) t.push(`${a >= 0 ? "+" : ""}${a}/${v >= 0 ? "+" : ""}${v}`);
     if (x.barrera) t.push("Barrera");
     (x.palabras || []).forEach(p => t.push(p));
+    if (est) {
+      if (x.reduce) t.push(`recibe ${x.reduce} menos de daño`);
+      (x.quita || []).forEach(p => t.push(`pierde ${p}`));
+      if ((x.guarda || []).length) t.push(`cubre a ${x.guarda.map(id => meta(est, id).nombre).join(" y ")}`);
+    }
     return t.join(", ");
+  }
+
+  /* Lo que hace un vínculo o una rivalidad, en palabras, para el registro y el aviso de la partida */
+  function efectoVinculo(est, it) {
+    const partes = [];
+    if (it.tipo === "rivalidad") {
+      const r = it.vinc, de = (x, quien) => {
+        const t = [];
+        const b = textoBono(x || {}, est);
+        if (b) t.push(b);
+        if (x && x.bonusContra) t.push(`+${x.bonusContra} de daño contra ${quien}`);
+        if (x && x.marca) t.push("puede desafiarla aunque haya Provocar");
+        if (x && x.anulaAlMorirContra) t.push("si la mata, su habilidad al morir no ocurre");
+        return t.join(", ");
+      };
+      const a = de(r.paraBando, "la rival"), c = de(r.paraContra, "la otra");
+      if (a) partes.push(`el bando gana ${a}`);
+      if (c) partes.push(`la rival gana ${c}`);
+      return partes.join("; ");
+    }
+    const c = it.vinc;
+    if (it.nivel >= 0) {
+      const t = c.niveles[it.nivel];
+      const g = textoBono(t, est);
+      if (g) partes.push(`cada miembro gana ${g}`);
+      Object.keys(t.ind || {}).forEach(id => { const x = textoBono(t.ind[id], est); if (x) partes.push(`${meta(est, id).nombre}: ${x}`); });
+    }
+    if (it.completo) {
+      const x = textoBono(c.completo, est);
+      partes.push(`${c.completo.nombre || "completo"}${x ? ` (${x})` : ""}`);
+      Object.keys(c.completo.ind || {}).forEach(id => { const y = textoBono(c.completo.ind[id], est); if (y) partes.push(`${meta(est, id).nombre}: ${y}`); });
+    }
+    return partes.join("; ");
   }
 
   /* Todo lo que los vínculos le dan a esta unidad ahora mismo, y la lista de vínculos activos (para pintarlos) */
@@ -207,21 +246,20 @@
       if (nivel < 0 && !completo) return;
       if (nivel >= 0) { const t = c.niveles[nivel]; sumarBono(b, t); sumarBono(b, t.ind && t.ind[u.cartaId]); }
       if (completo) { sumarBono(b, c.completo); sumarBono(b, c.completo.ind && c.completo.ind[u.cartaId]); }
-      const cuentan = nivel >= 0 ? textoBono(c.niveles[nivel]) : "";
       b.items.push({
         clave: `c:${c.id}:${u.dueno}`, firma: `${nivel}|${completo ? 1 : 0}`, tipo: c.tipo || "circulo", id: c.id, nombre: c.nombre, n, completo, texto: c.texto || "",
-        aviso: `${c.nombre}: ${n} de ${c.miembros.length} en el campo de ${J.nombre}${cuentan ? ` (${cuentan} a cada miembro)` : ""}${completo ? `. ${c.completo.nombre || "¡Completo!"}` : ""}.`
+        vinc: c, nivel, dueno: u.dueno
       });
     });
     VINC.rivalidades.forEach(r => {
       const esBando = r.bando.includes(u.cartaId), esContra = r.contra.includes(u.cartaId);
       if (esBando && R.campo.some(x => r.contra.includes(x.cartaId))) {
         sumarBono(b, r.paraBando);
-        b.items.push({ clave: `r:${r.id}:${u.dueno}`, firma: "1", tipo: "rivalidad", id: r.id, nombre: r.nombre, texto: r.texto || "", secreta: true, aviso: `¡Rivalidad! ${nombreDe(est, r.bando, J)} y ${nombreDe(est, r.contra, R)} están frente a frente: se activa «${r.nombre}».` });
+        b.items.push({ clave: `r:${r.id}:${u.dueno}`, firma: "1", tipo: "rivalidad", id: r.id, nombre: r.nombre, texto: r.texto || "", secreta: true, vinc: r, dueno: u.dueno, quienes: [nombreDe(est, r.bando, J), nombreDe(est, r.contra, R)] });
       }
       if (esContra && R.campo.some(x => r.bando.includes(x.cartaId))) {
         sumarBono(b, r.paraContra);
-        b.items.push({ clave: `r:${r.id}:${1 - u.dueno}`, firma: "1", tipo: "rivalidad", id: r.id, nombre: r.nombre, texto: r.texto || "", secreta: true, aviso: `¡Rivalidad! ${nombreDe(est, r.bando, R)} y ${nombreDe(est, r.contra, J)} están frente a frente: se activa «${r.nombre}».` });
+        b.items.push({ clave: `r:${r.id}:${1 - u.dueno}`, firma: "1", tipo: "rivalidad", id: r.id, nombre: r.nombre, texto: r.texto || "", secreta: true, vinc: r, dueno: 1 - u.dueno, quienes: [nombreDe(est, r.bando, R), nombreDe(est, r.contra, J)] });
       }
     });
     return b;
@@ -286,9 +324,35 @@
       b.items.forEach(it => { vistos[it.clave] = it; });
     });
     Object.entries(vistos).forEach(([k, it]) => {
-      if (est.vinc[k] !== it.firma) { est.vinc[k] = it.firma; log(est, it.aviso); }
+      if (est.vinc[k] === it.firma) return;
+      est.vinc[k] = it.firma;
+      anunciarVinculo(est, it);
     });
     Object.keys(est.vinc).forEach(k => { if (!(k in vistos)) delete est.vinc[k]; });
+  }
+
+  /* Deja en el registro qué vínculo o rivalidad se activó y qué hace, y guarda el aviso (est.vincAvisos) para que la
+     pantalla lo muestre en un cartel. est.vincSeq cuenta los avisos; la pantalla recuerda hasta cuál llegó. */
+  function anunciarVinculo(est, it) {
+    const efecto = efectoVinculo(est, it);
+    const J = est.jugadores[it.dueno];
+    let titulo, cartas, texto;
+    if (it.tipo === "rivalidad") {
+      titulo = "Rivalidad";
+      cartas = it.quienes.join(" contra ");
+      texto = it.texto || (efecto ? `${efecto[0].toUpperCase()}${efecto.slice(1)}.` : "");
+      log(est, `¡Rivalidad! ${it.quienes[0]} y ${it.quienes[1]} están frente a frente: se activa «${it.nombre}». ${texto}`.trim());
+    } else {
+      titulo = it.tipo === "lazo" ? "Lazo" : "Vínculo";
+      const campo = new Set(J.campo.map(x => x.cartaId));
+      cartas = it.vinc.miembros.filter(id => campo.has(id)).map(id => meta(est, id).nombre).join(", ");
+      texto = it.texto;
+      log(est, `${titulo} «${it.nombre}» activo en el campo de ${J.nombre} (${it.n} de ${it.vinc.miembros.length}).${it.texto ? ` ${it.texto}` : ""}${efecto ? ` Efecto: ${efecto}.` : ""}${it.completo ? " ¡Completo!" : ""}`);
+    }
+    if (!est.vincAvisos) est.vincAvisos = [];
+    est.vincSeq = (est.vincSeq || 0) + 1;
+    est.vincAvisos.push({ seq: est.vincSeq, tipo: it.tipo === "rivalidad" ? "rivalidad" : it.tipo === "lazo" ? "lazo" : "circulo", titulo, nombre: it.nombre, jugador: J.nombre, cartas, texto, efecto, completo: !!it.completo });
+    if (est.vincAvisos.length > 12) est.vincAvisos.splice(0, est.vincAvisos.length - 12);
   }
 
   const vinculosActivos = (est, u) => bonosDe(est, u).items;

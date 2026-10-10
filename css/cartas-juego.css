@@ -403,6 +403,21 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 .bt-banner.terreno strong { color: #f3ecd6; font-size: clamp(1.4rem, 4vw, 2.4rem); }
 @keyframes bt-cartel { 0% { opacity: 0; transform: scaleY(.2); } 12% { opacity: 1; transform: scaleY(1.06); } 20% { transform: scaleY(1); } 82% { opacity: 1; } 100% { opacity: 0; transform: scaleY(1.1); } }
 
+/* --- Aviso de vínculo, lazo o rivalidad --- */
+.bt-vinculo-modal { position: absolute; left: 50%; top: 30%; z-index: 8; width: min(440px, 88%); transform: translate(-50%, -50%) scale(.85); opacity: 0; pointer-events: none; text-align: center;
+  padding: 14px 20px 16px; background: rgba(18,12,26,.96); border: 1px solid rgba(214,178,94,.8); box-shadow: 0 10px 40px rgba(0,0,0,.7), 0 0 28px rgba(214,178,94,.25); }
+.bt-vinculo-modal.entra { pointer-events: auto; cursor: pointer; animation: bt-vinculo-entra .26s cubic-bezier(.2,.9,.3,1.2) both; }
+.bt-vinculo-modal.sale { animation: bt-vinculo-sale .26s ease both; }
+.bt-vinculo-modal small { display: block; font-size: .68rem; letter-spacing: .26em; text-transform: uppercase; color: #e8cf8a; }
+.bt-vinculo-modal strong { display: block; margin: 2px 0 4px; font-family: var(--font-heading), sans-serif; font-size: clamp(1.15rem, 3.4vw, 1.6rem); letter-spacing: .06em; color: #f3ecd6; }
+.bt-vinculo-modal em { display: block; font-style: normal; font-size: .8rem; color: #bdb6a0; }
+.bt-vinculo-modal p { margin: 8px 0 0; font-size: .85rem; line-height: 1.4; color: #d7d2bf; }
+.bt-vinculo-modal p.efecto { color: #f6d46c; }
+.bt-vinculo-modal.rivalidad { border-color: rgba(190,60,60,.9); box-shadow: 0 10px 40px rgba(0,0,0,.7), 0 0 28px rgba(190,60,60,.3); }
+.bt-vinculo-modal.rivalidad small { color: #f0a0a0; }
+@keyframes bt-vinculo-entra { from { opacity: 0; transform: translate(-50%, -42%) scale(.85); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes bt-vinculo-sale { from { opacity: 1; transform: translate(-50%, -50%) scale(1); } to { opacity: 0; transform: translate(-50%, -58%) scale(.92); } }
+
 /* --- Presentación de la partida ---------------------------------------------------- */
 .bt-intro { position: absolute; inset: 0; z-index: 9; display: grid; place-items: center; cursor: pointer; background: rgba(22,14,28,0.96); animation: bt-intro-entra .5s ease both; }
 .bt-intro.salir { animation: bt-intro-sale .5s ease both; }
