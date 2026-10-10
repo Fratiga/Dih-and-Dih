@@ -481,44 +481,44 @@ window.CRONOLOGIA_B = [
     title: "Los Corazones de la Bestia",
     fecha: "Dentro de la bestia",
     content: `
-      <p>Con la explicación de Darian todavía fresca, el grupo se dividió para
-      atacar. Para salir de la bestia había que destruir cuatro de sus corazones,
-      y los corazones no estaban juntos, así que cada grupo fue por su lado con la
-      idea de romperlos de forma coordinada.</p>
+      <p>Con la explicación de Darian todavía fresca, el grupo se repartió el
+      trabajo mientras las paredes seguían latiendo a su alrededor. Para salir de la
+      bestia había que destruir cuatro de sus corazones, y los corazones no estaban
+      juntos, de modo que cada grupo se fue por su lado con la idea de romperlos a
+      la vez.</p>
 
-      <p>Llegar hasta ellos tuvo sus altibajos, pero Hooey y Laia lograron cumplir
-      su cometido y los corazones se rompieron al mismo tiempo.</p>
+      <p>Llegar hasta ellos tuvo sus altibajos. Hooey y Laia cumplieron con lo
+      suyo, y los corazones se rompieron al mismo tiempo.</p>
 
       <h4>La carne se desmorona</h4>
 
       <p>Las paredes empezaron a desprenderse en cuanto los corazones cedieron. La
-      carne de la bestia se venía abajo a pedazos, y esos pedazos no se quedaron
-      quietos: los restos se juntaron y levantaron una ola de criaturas que avanzaba
-      directo hacia el grupo. Contra eso no había pelea posible. Corrieron por sus
-      vidas hacia la salida más cercana.</p>
+      carne de la bestia se vino abajo a pedazos, con un ruido de tela mojada que se
+      rasga, y los pedazos no se quedaron quietos. Se juntaron entre sí y levantaron
+      una ola de criaturas que avanzaba directo hacia el grupo. Pelear no era una
+      opción, así que todos corrieron hacia la salida más cercana.</p>
 
-      <p>Cada quien huyó como pudo. Algunos se fusionaron, otros corrieron de la mano
-      y hubo incluso quienes lanzaron a otros.</p>
+      <p>Cada quien huyó como pudo. Algunos se fusionaron, otros corrieron de la
+      mano y hubo incluso quienes lanzaron a otros.</p>
 
-      <p>No todos corrían con la misma suerte. Torvrena estaba muy mal herida, y la
-      ola ya casi la alcanzaba cuando Cassius hizo lo último que se esperaba de él.
-      Había prometido acompañarlos hasta que decidiera huir, y esta vez decidió lo
-      contrario: fue por ella, la sacó de ahí y logró llevarla hasta el otro lado,
-      a salvo.</p>
+      <p>Torvrena estaba muy mal herida y la ola ya casi la alcanzaba cuando Cassius
+      hizo lo que menos se esperaba de él. Había prometido acompañarlos hasta que
+      decidiera huir, y esta vez decidió lo contrario. Fue por ella, la sacó de ahí
+      y la llevó hasta el otro lado, a salvo.</p>
 
       <h4>Otra cueva de carne</h4>
 
-      <p>Del otro lado ya no los perseguía nada, y el grupo se dejó caer a descansar
-      en lo que parecía otra cueva de carne. Olía a cosas que nadie supo
-      describir y nadie quiso intentarlo.</p>
+      <p>Del otro lado ya nada los perseguía, y el grupo se dejó caer a descansar en
+      lo que parecía otra cueva de carne. Olía a cosas que nadie supo describir, y
+      nadie quiso intentarlo.</p>
 
-      <p>Entonces apareció Darian. Lo habían dado por muerto, y llegó hasta ellos por
-      su cuenta, pero se negó a participar en la salida: llevaba doce años dentro de
+      <p>Entonces apareció Darian. Lo habían dado por muerto y llegó hasta ellos por
+      su cuenta, pero se negó a participar en la salida. Llevaba doce años dentro de
       la bestia y la idea de dejarla lo aterraba.</p>
 
       <p>Eledar intentó convencerlo y solo consiguió asustarlo más. Ryn tuvo que
-      intervenir con una excusa: que su capitán lo estaba llamando y que debía ir
-      con ellos. Funcionó, y el grupo sumó un miembro más.</p>
+      intervenir con una excusa. Dijo que su capitán lo estaba llamando y que debía
+      ir con ellos. Funcionó, y el grupo sumó un miembro más.</p>
     `
   },
   {
@@ -528,26 +528,26 @@ window.CRONOLOGIA_B = [
     title: "El Laboratorio",
     fecha: "Más adentro de la bestia",
     content: `
-      <p>Siguieron por un camino angosto, y a mitad de él se cruzaron con dos
-      figuras que no esperaban encontrar: Clef, una mujer aarakocra, y Ulis, una
-      niña ajolote.</p>
+      <p>Siguieron por un camino angosto y, a mitad de él, se cruzaron con dos
+      figuras que no esperaban encontrar. Una era Clef, una mujer aarakocra. La otra
+      era Ulis, una niña ajolote.</p>
 
       <p>Las dos sabían más que ellos. La bestia, les contaron, estaba hecha de
       capas, y para salir había que llegar hasta el centro, donde trabajaba Dexter,
       el dueño de aquel lugar.</p>
 
-      <p>Fue Clef quien reparó en Darian. Al verlo entendió que era un sujeto de
-      pruebas que había asimilado parte de La Carne, la criatura gigante de carne,
-      y le ordenó a Ulis que lo atacara. Ulis se transformó sin esfuerzo aparente
-      en un monstruo ajolote grande para hacerlo, pero el ataque se canceló por
-      orden de Clef.</p>
+      <p>Fue Clef quien reparó en Darian. Le bastó mirarlo para entender que era un
+      sujeto de pruebas que había asimilado parte de La Carne, la criatura gigante
+      de carne, y le ordenó a Ulis que lo atacara. Ulis se transformó sin esfuerzo
+      aparente en un monstruo ajolote enorme para hacerlo, pero el ataque se
+      canceló por orden de la propia Clef.</p>
 
-      <p>Hablaron y acordaron que Clef los dejaba ir a cambio de que le trajeran
-      a Darian de vuelta después. Era una promesa falsa.</p>
+      <p>Hablaron, y acordaron que Clef los dejaría ir a cambio de que le llevaran a
+      Darian de vuelta más tarde. La promesa era falsa.</p>
 
-      <p>Con todo eso encima retomaron la marcha, esta vez con un objetivo claro.
-      Había que llegar al centro para salir por fin de ahí, en un sitio que a cada
-      paso se volvía más desconocido y más despiadado.</p>
+      <p>Retomaron la marcha con un objetivo claro. Había que llegar al centro para
+      salir por fin de ahí, en un sitio que a cada paso se volvía más desconocido
+      y más despiadado.</p>
 
       <h4>La puerta del Coronel</h4>
 
@@ -557,9 +557,9 @@ window.CRONOLOGIA_B = [
       criatura, que exigía que la llamaran Coronel Tobi, no pensaba dejar pasar a
       nadie.</p>
 
-      <p>Intentaron engañarlo y no lo pasaron bien. El Coronel era muy terco, y el
-      estruendo que se armó atrajo a unos doctores que trabajaban por ahí: Baltasar
-      Sorel, Elías Morcant y Nico.</p>
+      <p>Intentaron engañarlo y no lo pasaron bien. El Coronel era terco, y el
+      estruendo que se armó atrajo a unos doctores que trabajaban por ahí. Eran
+      Baltasar Sorel, Elías Morcant y Nico.</p>
 
       <p>La batalla fue larga y dura. Al final lograron hacer retroceder a los
       doctores y derribar al Coronel, y el paso quedó libre.</p>
@@ -569,9 +569,9 @@ window.CRONOLOGIA_B = [
       <p>Pasadas unas horas llegaron a otras instalaciones, bastante más sofisticadas
       que las anteriores, y ahí se encontraron con la enfermera Harrow.</p>
 
-      <p>Harrow se interesó en Laia y trató de convencerlo de que se quedara para
-      estudiarlo en persona. Laia se negó, y la negativa terminó en combate. En medio
-      de la pelea volvió a aparecer Ulis.</p>
+      <p>Harrow se interesó en Laia y quiso quedarse con Laia para estudiar en persona
+      lo que era. Laia se negó, y la negativa terminó en combate. En medio de la pelea
+      volvió a aparecer Ulis.</p>
     `
   }
 ];
