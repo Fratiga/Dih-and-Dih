@@ -39,11 +39,12 @@
     const numeros = propia && propia.numeros.get(id);
     const af = c.afinidad.map(a => window.CARTAS_AFINIDADES[a].nombre).join(" / ");
     const rareza = window.CARTAS_RAREZAS[c.rareza].nombre;
-    const vincs = (window.vinculosDeCarta ? window.vinculosDeCarta(c.id) : []).map(v => {
+    // Los vínculos no se explican a los jugadores: se descubren por el lore de cada personaje. Solo los ve quien edita.
+    const vincs = (puedeEditar && window.vinculosDeCarta ? window.vinculosDeCarta(c.id) : []).map(v => {
       const otros = v.miembros.filter(m => m !== c.id).map(m => { const o = window.cartaPorId(m); return o ? o.nombre : m; });
       return `<li><b>${esc(v.nombre)}.</b> ${esc(v.texto)} <span class="carta-meta">Con: ${esc(otros.join(", "))}.</span>${puedeEditar ? ` <button type="button" class="cartas-boton" data-vinculo="${esc(v.id)}">Editar</button>` : ""}</li>`;
     });
-    const vinculos = vincs.length ? `<p><strong>Vínculos.</strong> Si están juntas en tu campo, se fortalecen.</p><ul class="carta-vinculos">${vincs.join("")}</ul>` : "";
+    const vinculos = vincs.length ? `<p><strong>Vínculos</strong> <span class="carta-meta">(solo lo ven los editores)</span></p><ul class="carta-vinculos">${vincs.join("")}</ul>` : "";
     const formas = tengo && c.formas && c.formas.length
       ? `<div class="carta-formas"><p><strong>Formas.</strong> En la partida esta carta cambia de forma.</p><div class="carta-formas-fila">${c.formas.map((f, i) =>
           `<figure>${htmlCarta(Object.assign({}, c, { forma: i + 1 }), true, 0, null)}<figcaption>${esc(f.nombre || `Forma ${i + 2}`)}</figcaption></figure>`).join("")}</div></div>` : "";
