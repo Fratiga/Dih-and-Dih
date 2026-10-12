@@ -112,7 +112,7 @@
 
   function pintarVista() {
     const v = $("frVista");
-    const fn = { guerra: vistaGuerra, soldados: vistaSoldados, casas: vistaCasas, reliquias: vistaReliquias, salon: vistaSalon, cronicas: vistaCronicas, mundo: vistaMundo }[pestana];
+    const fn = { guerra: vistaGuerra, duelos: vistaDuelos, soldados: vistaSoldados, casas: vistaCasas, reliquias: vistaReliquias, salon: vistaSalon, cronicas: vistaCronicas, mundo: vistaMundo }[pestana];
     fn(v);
   }
 
@@ -371,6 +371,7 @@
   function empezarGuerra() {
     const cfg = C.prepararGuerra(ej, ajustesGuerra.ids, { tipo: ajustesGuerra.tipo === "azar" ? "azar" : ajustesGuerra.tipo, dificultad: ajustesGuerra.dificultad, rival: ajustesGuerra.rival === "azar" ? null : ajustesGuerra.rival });
     if (!cfg) { aviso("No hay soldados disponibles.", true); return; }
+    pararSondeo(); pvp = null; yoIdx = 0;
     est = FM.crearGuerra(cfg);
     cfgGuerraActual = { faccion: ej.faccion };
     ejercitosAntes = null;
@@ -381,12 +382,13 @@
   const musicaPartida = si => { if (window.MusicaPaginas) window.MusicaPaginas.partida(si); };
   let cfgGuerraActual = null, ejercitosAntes = null;
 
-  function guardarEnCurso() { clearTimeout(guardarEstadoTimer); guardarEstadoTimer = setTimeout(() => Red.guardarGuerra(est, cfgGuerraActual), 300); }
+  function guardarEnCurso() { if (pvp) return; clearTimeout(guardarEstadoTimer); guardarEstadoTimer = setTimeout(() => Red.guardarGuerra(est, cfgGuerraActual), 300); }
 
   function retomarGuerra() {
     const g = Red.cargarGuerra();
     if (!g || !ejercitos[g.cfg.faccion]) return;
     ej = ejercitos[g.cfg.faccion];
+    pararSondeo(); pvp = null; yoIdx = 0;
     est = g.est; cfgGuerraActual = g.cfg;
     sel = { uid: null, ciudad: null }; modo = null; lat = "sel";
     entrarGuerra();
@@ -401,8 +403,16 @@
     if (est.ganador !== null) terminarGuerraUI();
   }
 
-  const humano = () => 0;
+  let yoIdx = 0;           // qué lado soy (siempre 0 contra la IA)
+  let pvp = null;          // guerra entre jugadores en curso: { id, n, acciones, timer, miUid }
+  const humano = () => yoIdx;
   const soyYo = () => est.activo === humano() && est.ganador === null;
+  /* Toda acción mía pasa por aquí: en una guerra entre jugadores se anota para enviarla al terminar el turno */
+  function aplicarYo(acc) {
+    const r = FM.aplicar(est, acc);
+    if (r.ok && pvp) pvp.acciones.push(acc);
+    return r;
+  }
 
   function refrescar() {
     pintarRecursos();
@@ -450,7 +460,7 @@
     // Habilidades que piden una casilla
     if (modo && u) {
       if (modo.id === "alterar") {
-        const r = FM.aplicar(est, { t: "habilidad", id: "alterar", uid: u.uid, x, y, a: modo.a });
+        const r = aplicarYo({ t: "habilidad", id: "alterar", uid: u.uid, x, y, a: modo.a });
         modo = null; if (!r.ok) aviso(r.error, true);
         return despuesDeAccion();
       }
@@ -466,19 +476,19 @@
         let mejor = null;
         info.destinos.forEach(n => { const dd = Math.max(Math.abs(enCasilla.x - n.x), Math.abs(enCasilla.y - n.y)); if (dd <= e.alc && dd >= 1 && (!mejor || n.c < mejor.c || (n.c === mejor.c && dd > mejor.dd))) mejor = { x: n.x, y: n.y, c: n.c, dd }; });
         if (!mejor) { aviso("No llega hasta ahí este turno.", true); return; }
-        const m = FM.aplicar(est, { t: "mover", uid: u.uid, x: mejor.x, y: mejor.y });
+        const m = aplicarYo({ t: "mover", uid: u.uid, x: mejor.x, y: mejor.y });
         if (!m.ok) { aviso(m.error, true); return; }
         tablero.redibujar();
         if (est.ganador !== null || !est.unidades[u.uid]) return despuesDeAccion();
       }
-      const a = FM.aplicar(est, { t: "atacar", uid: u.uid, x: enCasilla.x, y: enCasilla.y });
+      const a = aplicarYo({ t: "atacar", uid: u.uid, x: enCasilla.x, y: enCasilla.y });
       if (!a.ok) aviso(a.error, true);
       return despuesDeAccion();
     }
     if (u && u.dueno === H && !enCasilla) {
       const info = FM.alcanzables(est, u);
       if (info.destinos.has(`${x},${y}`) && u.pm > 0) {
-        const m = FM.aplicar(est, { t: "mover", uid: u.uid, x, y });
+        const m = aplicarYo({ t: "mover", uid: u.uid, x, y });
         if (!m.ok) aviso(m.error, true);
         return despuesDeAccion();
       }
@@ -607,17 +617,17 @@
     if (!soyYo()) return;
     let r = null;
     const rec = t.closest("[data-recluta]"), con = t.closest("[data-construye]"), mej = t.closest("[data-mejora]"), inv = t.closest("[data-investiga]"), hab = t.closest("[data-hab]");
-    if (rec && sel.ciudad) r = FM.aplicar(est, { t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta });
-    else if (con && sel.ciudad) r = FM.aplicar(est, { t: "construir", ciudad: sel.ciudad, edificio: con.dataset.construye });
-    else if (mej) r = FM.aplicar(est, { t: "mejorar", ciudad: mej.dataset.mejora });
-    else if (inv) r = FM.aplicar(est, { t: "investigar", escuela: inv.dataset.investiga });
+    if (rec && sel.ciudad) r = aplicarYo({ t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta });
+    else if (con && sel.ciudad) r = aplicarYo({ t: "construir", ciudad: sel.ciudad, edificio: con.dataset.construye });
+    else if (mej) r = aplicarYo({ t: "mejorar", ciudad: mej.dataset.mejora });
+    else if (inv) r = aplicarYo({ t: "investigar", escuela: inv.dataset.investiga });
     else if (hab) {
       const u = sel.uid && est.unidades[sel.uid];
       if (!u) return;
       const id = hab.dataset.hab;
       if (id === "alterar") { modo = { id: "alterar", a: hab.dataset.a }; refrescar(); return; }
-      if (id === "sabotear") r = FM.aplicar(est, { t: "habilidad", id, uid: u.uid, x: Number(hab.dataset.x), y: Number(hab.dataset.y), edificio: hab.dataset.ed });
-      if (id === "reanimar") r = FM.aplicar(est, { t: "habilidad", id, uid: u.uid, x: Number(hab.dataset.x), y: Number(hab.dataset.y) });
+      if (id === "sabotear") r = aplicarYo({ t: "habilidad", id, uid: u.uid, x: Number(hab.dataset.x), y: Number(hab.dataset.y), edificio: hab.dataset.ed });
+      if (id === "reanimar") r = aplicarYo({ t: "habilidad", id, uid: u.uid, x: Number(hab.dataset.x), y: Number(hab.dataset.y) });
     }
     if (r) { if (!r.ok) aviso(r.error, true); if (r.uid) { sel = { uid: r.uid, ciudad: null }; } despuesDeAccion(); }
     void H;
@@ -630,8 +640,9 @@
     const sinActuar = FM.unidadesDe(est, humano()).filter(u => !u.lider && u.pm > 0 && !u.atacado && u.quieto).length;
     if (sinActuar >= 3 && !(await dialogo.confirmar(`Tienes ${sinActuar} unidades sin mover. ¿Terminar el turno?`, { aceptar: "Terminar" }))) return;
     sel = { uid: null, ciudad: null }; modo = null;
-    FM.aplicar(est, { t: "terminar" });
+    aplicarYo({ t: "terminar" });
     refrescar();
+    if (pvp) { await enviarTurnoPvp(); return; }
     if (est.ganador !== null) { terminarGuerraUI(); return; }
     cartel("Turno del rival");
     setTimeout(() => {
@@ -650,7 +661,8 @@
   $("frRendirse").addEventListener("click", async () => {
     if (!soyYo()) return;
     if (!(await dialogo.confirmar("Rendirte cuenta como derrota. Los soldados que lleves conservarán lo que hayan ganado, pero perderás lo que no hayas recuperado.", { titulo: "Rendirse", aceptar: "Rendirme", peligro: true }))) return;
-    FM.terminarGuerra(est, 1, `${est.jugadores[0].nombre} se rinde.`);
+    if (pvp) { try { await Red.pvpRendirse(pvp.id); } catch (e) { aviso(`No se pudo rendir: ${e.message || e}`, true); return; } }
+    FM.terminarGuerra(est, 1 - yoIdx, `${est.jugadores[yoIdx].nombre} se rinde.`);
     refrescar();
     terminarGuerraUI();
   });
@@ -674,10 +686,14 @@
     const narr = CR.narrar(est, ej, resumen, humano());
     const reg = resumen.registro;
     reg.titulo = narr.titulo; reg.parrafos = narr.parrafos.slice(0, 12);
-    ultimoResumen = { resumen, narr, reg, estFin: est };
-    Red.borrarGuerra();
+    ultimoResumen = { resumen, narr, reg, estFin: est, pvp: !!pvp };
+    if (!pvp) Red.borrarGuerra();
     await guardar();
-    const id = await Red.registrarGuerra({ ejercito: ej.nombre, faccion: ej.faccion, rival: reg.rival, tipo: reg.tipo, resultado: reg.resultado, turnos: reg.turnos, razon: reg.razon || "", bajas: reg.bajas, logros: reg.logros, titulo: narr.titulo, cronica: narr.parrafos.slice(0, 12), anio: reg.anio });
+    if (pvp) {
+      pararSondeo();
+      try { await Red.pvpTerminar(pvp.id, est.ganador === "empate" ? "empate" : est.ganador, est.razon); } catch (e) { /* el otro lado ya lo anotó */ }
+    }
+    const id = await Red.registrarGuerra({ ejercito: ej.nombre, faccion: ej.faccion, rival: reg.rival, tipo: reg.tipo, resultado: reg.resultado, turnos: reg.turnos, razon: reg.razon || "", bajas: reg.bajas, logros: reg.logros, titulo: narr.titulo, cronica: narr.parrafos.slice(0, 12), anio: reg.anio, pvp: !!pvp });
     ultimoResumen.guerraId = id;
     pantallaFin();
   }
@@ -685,7 +701,7 @@
   function pantallaFin() {
     const { resumen, narr, reg } = ultimoResumen;
     mostrar("frFin");
-    const premio = resumen.gano && ultimoResumen.guerraId && !ultimoResumen.premiado;
+    const premio = resumen.gano && ultimoResumen.guerraId && !ultimoResumen.premiado && !ultimoResumen.pvp;
     const pend = C.pendientesDeAscenso(ej);
     $("frFin").innerHTML = `
       <p class="eyebrow">${resumen.gano ? "VICTORIA" : resumen.perdio ? "DERROTA" : "TABLAS"}</p>
@@ -699,7 +715,7 @@
   }
   $("frFin").addEventListener("click", async ev => {
     const t = ev.target;
-    if (t.closest("[data-volver]")) { entrarCuartel("guerra"); return; }
+    if (t.closest("[data-volver]")) { pvp = null; yoIdx = 0; entrarCuartel(ultimoResumen && ultimoResumen.pvp ? "duelos" : "guerra"); return; }
     const f = t.closest("[data-ficha-fin]");
     if (f) { abrirFicha(f.dataset.fichaFin); $("frFicha").addEventListener("close", () => { if (!$("frFin").classList.contains("hidden")) pantallaFin(); }, { once: true }); return; }
     if (t.closest("[data-premio]")) {
@@ -715,7 +731,123 @@
     }
   });
 
-  window.addEventListener("pagehide", () => { if (est && est.ganador === null) Red.guardarGuerra(est, cfgGuerraActual); });
+  window.addEventListener("pagehide", () => { if (est && est.ganador === null && !pvp) Red.guardarGuerra(est, cfgGuerraActual); });
+
+  /* =========================================================================
+     GUERRAS ENTRE JUGADORES
+  ========================================================================= */
+  const nombreFaccion = f => (FACCIONES[f] ? FACCIONES[f].corto : f);
+
+  async function vistaDuelos(v) {
+    v.innerHTML = `<p class="fr-sub">Cargando...</p>`;
+    const s = await Red.sesion();
+    if (!s) { v.innerHTML = `<p class="fr-vacio">Las guerras entre jugadores necesitan iniciar sesión. Se juegan por turnos, cada quien cuando puede.</p>`; return; }
+    let partidas = [], jugadores = [];
+    try { [partidas, jugadores] = await Promise.all([Red.pvpListar(), Red.pvpJugadores().catch(() => [])]); }
+    catch (e) { v.innerHTML = `<p class="fr-vacio">No se pudieron leer las guerras. ¿Corriste scratchpad/fractura_pvp.sql en Supabase? (${esc(e.message || e)})</p>`; return; }
+    const yo = s.user.id;
+    const recibidos = partidas.filter(p => p.estado === "pendiente" && p.j2 === yo);
+    const enviados = partidas.filter(p => p.estado === "pendiente" && p.j1 === yo);
+    const activas = partidas.filter(p => p.estado === "activa");
+    const terminadas = partidas.filter(p => p.estado === "terminada").slice(0, 5);
+    const rival = p => (p.j1 === yo ? p.nombre2 : p.nombre1);
+    const faccionDe = p => (p.j1 === yo ? p.f1 : p.f2);
+    v.innerHTML = `
+      <p class="fr-sub">Cada quien lleva su contingente y su ejército. Si alguien cae, cae de verdad. Estas guerras quedan en la historia, pero no dan cartas.</p>
+      <div class="fr-dos"><div>
+        <h3 class="fr-h3">Retar</h3>
+        <p class="fr-sub">Llevarás a tu contingente actual (${(ajustesGuerra.ids || []).length} soldados). Cámbialo en la pestaña Guerra.</p>
+        <label class="fr-campo">Jugador<select data-pvp="rival"><option value="">Elige a alguien</option>${jugadores.map(j => `<option value="${j.user_id}">${esc(j.username)}</option>`).join("")}</select></label>
+        <label class="fr-campo">Tipo de Fractura<select data-pvp="tipo">${Object.keys(TIPOS_FRACTURA).map(t => `<option value="${t}">${esc(TIPOS_FRACTURA[t].nombre)}</option>`).join("")}</select></label>
+        <button type="button" class="fr-btn fr-btn-principal" data-pvp-retar>Enviar el reto</button>
+      </div><div>
+        ${recibidos.length ? `<h3 class="fr-h3">Retos recibidos</h3>${recibidos.map(p => `<div class="fr-soldado"><span class="fr-soldado-nombre">${esc(p.nombre1)} te reta</span><span class="fr-soldado-meta">Con ${esc(nombreFaccion(p.f1))} · ${esc(TIPOS_FRACTURA[p.tipo] ? TIPOS_FRACTURA[p.tipo].nombre : p.tipo)}</span>
+          <span class="fr-fila"><button type="button" class="fr-btn fr-btn-chico fr-btn-principal" data-pvp-acepta="${p.id}">Aceptar con mi contingente</button><button type="button" class="fr-btn fr-btn-chico" data-pvp-rechaza="${p.id}">Rechazar</button></span></div>`).join("")}` : ""}
+        ${enviados.length ? `<h3 class="fr-h3">Retos enviados</h3>${enviados.map(p => `<div class="fr-soldado"><span class="fr-soldado-nombre">${esc(p.nombre2)}</span><span class="fr-soldado-meta">Esperando respuesta</span></div>`).join("")}` : ""}
+        <h3 class="fr-h3">En curso</h3>
+        ${activas.length ? activas.map(p => `<button type="button" class="fr-soldado" data-pvp-abre="${p.id}"><span class="fr-soldado-nombre">Contra ${esc(rival(p))}</span><span class="fr-soldado-meta">${(p.j1 === yo ? p.activo === 0 : p.activo === 1) ? "Es tu turno" : "Turno del rival"}</span></button>`).join("") : `<p class="fr-vacio">Ninguna.</p>`}
+        ${terminadas.length ? `<h3 class="fr-h3">Terminadas</h3>${terminadas.map(p => `<div class="fr-soldado"><span class="fr-soldado-nombre">Contra ${esc(rival(p))}</span><span class="fr-soldado-meta">${p.ganador === "empate" ? "Tablas" : Number(p.ganador) === (p.j1 === yo ? 0 : 1) ? "Ganada" : "Perdida"}${p.razon ? ` · ${esc(p.razon)}` : ""}</span></div>`).join("")}` : ""}
+      </div></div>`;
+    v.dataset.yo = yo;
+  }
+
+  $("frVista").addEventListener("click", async ev => {
+    const t = ev.target;
+    const retar = t.closest("[data-pvp-retar]"), acepta = t.closest("[data-pvp-acepta]"), rechaza = t.closest("[data-pvp-rechaza]"), abre = t.closest("[data-pvp-abre]");
+    if (!(retar || acepta || rechaza || abre)) return;
+    try {
+      if (retar) {
+        const rival = $("frVista").querySelector('[data-pvp="rival"]').value, tipo = $("frVista").querySelector('[data-pvp="tipo"]').value;
+        if (!rival) { aviso("Elige a quién retar.", true); return; }
+        const b = C.prepararBando(ej, ajustesGuerra.ids);
+        await Red.pvpRetar(rival, { tipo, anio: ej.anio, maxTurnos: 35, hold: 6, dificultad: "normal", pvp: true, jugadores: [b] });
+        aviso("Reto enviado.");
+        await guardar();
+        vistaDuelos($("frVista"));
+      } else if (acepta) {
+        await Red.pvpResponder(acepta.dataset.pvpAcepta, true, C.prepararBando(ej, ajustesGuerra.ids));
+        await guardar();
+        abrirPartidaPvp(acepta.dataset.pvpAcepta);
+      } else if (rechaza) {
+        await Red.pvpResponder(rechaza.dataset.pvpRechaza, false, null);
+        vistaDuelos($("frVista"));
+      } else if (abre) abrirPartidaPvp(abre.dataset.pvpAbre);
+    } catch (e) { aviso(`No se pudo: ${e.message || e}`, true); }
+  });
+
+  /* Reconstruye la guerra desde el servidor: misma configuración y todas las acciones ya hechas */
+  async function abrirPartidaPvp(id) {
+    const fila = await Red.pvpGet(id);
+    const s = await Red.sesion();
+    const miIdx = fila.j1 === s.user.id ? 0 : 1;
+    const cfg = fila.config;
+    if (!cfg.jugadores || cfg.jugadores.length < 2) { aviso("Esa guerra todavía no empezó.", true); return; }
+    if (cfg.jugadores[miIdx].faccion !== ej.faccion) { aviso(`Esa guerra se juega con ${nombreFaccion(cfg.jugadores[miIdx].faccion)}. Entra a ese ejército.`, true); return; }
+    pararSondeo();
+    yoIdx = miIdx;
+    est = FM.crearGuerra(Object.assign({}, cfg, { humanoIdx: miIdx }));
+    cfgGuerraActual = { faccion: ej.faccion };
+    pvp = { id, n: 0, acciones: [], timer: null };
+    aplicarTurnosNuevos(fila);
+    sel = { uid: null, ciudad: null }; modo = null; lat = "sel";
+    entrarGuerra();
+    if (est.ganador === null && est.activo !== miIdx) { cartel("Turno del rival"); iniciarSondeo(); }
+  }
+
+  function aplicarTurnosNuevos(fila) {
+    const turnos = fila.turnos || [];
+    for (let i = pvp.n; i < turnos.length; i++) {
+      (turnos[i].acc || []).forEach(a => { if (est.ganador === null) FM.aplicar(est, a); });
+    }
+    pvp.n = turnos.length;
+    if (est.ganador === null && fila.estado === "terminada") FM.terminarGuerra(est, fila.ganador === "empate" ? "empate" : Number(fila.ganador), fila.razon || "La guerra terminó.");
+  }
+
+  async function enviarTurnoPvp() {
+    const acc = pvp.acciones; pvp.acciones = [];
+    try { await Red.pvpTurno(pvp.id, pvp.n, acc); pvp.n += 1; }
+    catch (e) { aviso(`No se pudo enviar el turno (${e.message || e}). Se recarga la guerra.`, true); await abrirPartidaPvp(pvp.id); return; }
+    if (est.ganador !== null) { terminarGuerraUI(); return; }
+    cartel("Turno del rival");
+    iniciarSondeo();
+  }
+
+  function iniciarSondeo() {
+    pararSondeo();
+    if (!pvp) return;
+    pvp.timer = setInterval(async () => {
+      if (!pvp || est.ganador !== null || est.activo === yoIdx) { pararSondeo(); return; }
+      try {
+        const fila = await Red.pvpGet(pvp.id);
+        if ((fila.turnos || []).length === pvp.n && !(fila.estado === "terminada" && est.ganador === null)) return;
+        aplicarTurnosNuevos(fila);
+        refrescar();
+        if (est.ganador !== null) { pararSondeo(); terminarGuerraUI(); }
+        else if (est.activo === yoIdx) { pararSondeo(); cartel("Tu turno", 1200); }
+      } catch (e) { /* sin conexión: se reintenta */ }
+    }, 5000);
+  }
+  function pararSondeo() { if (pvp && pvp.timer) { clearInterval(pvp.timer); pvp.timer = null; } }
 
   pantallaInicio();
 })();

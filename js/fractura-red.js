@@ -92,5 +92,36 @@ window.FracturaRed = (function () {
     } catch (e) { return []; }
   }
 
-  return { listarEjercitos, guardarEjercito, borrarEjercito, guardarGuerra, cargarGuerra, borrarGuerra, registrarGuerra, pedirPremio, historiaDelMundo, sesion };
+  /* --- Guerras entre jugadores --- */
+  async function pvpJugadores() {
+    const sb = await cliente();
+    const { data, error } = await sb.rpc("cartas_jugadores");
+    if (error) throw error;
+    return data || [];
+  }
+  async function pvpListar() {
+    const sb = await cliente();
+    const { data, error } = await sb.from("fractura_partidas").select("id, j1, j2, nombre1, nombre2, estado, activo, ganador, razon, actualizada, tipo:config->>tipo, f1:config->jugadores->0->>faccion, f2:config->jugadores->1->>faccion").order("actualizada", { ascending: false }).limit(30);
+    if (error) throw error;
+    return data || [];
+  }
+  async function pvpGet(id) {
+    const sb = await cliente();
+    const { data, error } = await sb.from("fractura_partidas").select("*").eq("id", id).single();
+    if (error) throw error;
+    return data;
+  }
+  async function pvpRpc(nombre, args) {
+    const sb = await cliente();
+    const { data, error } = await sb.rpc(nombre, args);
+    if (error) throw error;
+    return data;
+  }
+  const pvpRetar = (rival, config) => pvpRpc("fractura_retar", { p_rival: rival, p_config: config });
+  const pvpResponder = (id, aceptar, jug) => pvpRpc("fractura_responder", { p_id: id, p_aceptar: aceptar, p_jug: jug });
+  const pvpTurno = (id, n, acciones) => pvpRpc("fractura_turno", { p_id: id, p_n: n, p_acciones: acciones });
+  const pvpTerminar = (id, ganador, razon) => pvpRpc("fractura_terminar", { p_id: id, p_ganador: String(ganador), p_razon: razon || "" });
+  const pvpRendirse = id => pvpRpc("fractura_rendirse", { p_id: id });
+
+  return { pvpJugadores, pvpListar, pvpGet, pvpRetar, pvpResponder, pvpTurno, pvpTerminar, pvpRendirse, listarEjercitos, guardarEjercito, borrarEjercito, guardarGuerra, cargarGuerra, borrarGuerra, registrarGuerra, pedirPremio, historiaDelMundo, sesion };
 })();

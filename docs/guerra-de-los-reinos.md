@@ -1,71 +1,36 @@
-# Guerra de los Reinos (La Fractura): borrador de diseño
+# La Fractura (antes «Guerra de los Reinos»)
 
-Idea reunida de tres propuestas. Nada de esto está construido ni aprobado. Sirve para decidir antes de programar.
+Estrategia por turnos con soldados que tienen nombre, familia e historia. Página: `fractura.html`, oculta (solo admin) y en «En pruebas» del hub de minijuegos.
 
-## Qué es
+## Lo que ya está hecho
 
-Juego de estrategia por turnos sobre un mapa por casillas (unos 12×12 al principio). Cada jugador lleva una facción del mundo y un ejército de soldados con nombre, historia y descendencia. Las partidas duran 20 a 40 turnos y dejan una crónica.
+- **Mapa** 13×13 simétrico, siempre conectado, con fragmentos de lugares del compendio, costuras entre fragmentos, ruinas, fortalezas con guardianes y el Núcleo del Sueño. Cinco tipos de Fractura.
+- **Motor** de reglas determinista (`js/fractura-motor.js`): movimiento por casillas, combate con represalia, niebla de guerra, 6 recursos, edificios con especialización de ciudad, 3 escuelas de desarrollo, estabilidad de regiones, sucesos, reliquias en el suelo y estado del líder caído.
+- **Seis facciones** (Caballeros del Reino, Academia Arcana de Dolbred, Trono de Ceniza, Compañía Dorada, Hijos del Acero, Peregrinos del Alba) con ventajas y clases propias.
+- **IA** con tres dificultades. El rival crece con tu ejército.
+- **Soldados con identidad**: nombre, casa, características ocultas, victorias, rangos (Recluta a Leyenda), apodos, especializaciones de veterano y cicatrices.
+- **Campaña por cuenta** (`js/fractura-campana.js`): contingente limitado, capitanes y compañías, heridos graves en vez de muerte segura, luto por los caídos, compañeros de armas, némesis que vuelven, hijos y casas con árbol, retiro y vejez, reliquias heredables con su historial de propietarios.
+- **Crónica** narrada de cada guerra (`js/fractura-cronica.js`) y **historia del mundo** con las guerras de todos.
+- **Guerras entre jugadores** por turnos, asíncronas. Las dos partes reconstruyen la misma guerra desde la semilla y las acciones guardadas. No dan cartas.
+- **Premio en cartas** por ganar contra la IA (el servidor elige la rareza según los logros).
 
-## Ambientación: La Fractura
+## SQL (en `scratchpad/`, correr en este orden)
 
-Los combates ocurren en la Fractura, un espacio fuera del mundo conocido hecho de fragmentos de lugares, sueños y recuerdos. Resuelve dos problemas:
+1. `fractura.sql`: ejércitos por cuenta, historia de guerras y premios.
+2. `fractura_pvp.sql`: partidas entre jugadores. Reemplaza dos funciones de la primera (registrar y premio) para marcar las guerras entre jugadores.
 
-- Lugares y facciones de regiones distintas pueden compartir tablero sin contradecir la geografía del canon.
-- Lo que pasa en una partida no cambia el canon de la campaña. Si alguien conquista Brurland, cae una representación de Brurland dentro de la Fractura.
+Sin el SQL el juego funciona igual, pero solo guarda en este navegador.
 
-Tres capas, que no se mezclan:
+## Decisiones que se tomaron
 
-1. **Canon**: personajes, lugares y hechos como están en el compendio. No cambian por una partida.
-2. **Fractura**: la versión jugable (regiones aisladas, duplicadas o conectadas por «costuras»).
-3. **Crónica de guerra**: lo que ocurrió en cada partida (conquistas, caídos, casas militares).
+- **No hay personajes del canon.** Los líderes y soldados son inventados. Los personajes del compendio tienen lado y secretos de campaña, y usarlos filtraría información. Se puede añadir una lista de «ecos» por lado más adelante.
+- **La Fractura** se trata como un lugar fuera de la continuidad. No hay entrada en el compendio hasta que se apruebe.
+- **Contingente limitado** (6, y sube con las guerras ganadas): solo quien va a la guerra gana experiencia o muere.
+- **Heridos graves.** Al caer, un soldado tiene entre un 40 y un 65 % de sobrevivir herido y fuera de dos guerras. Sin eso el ejército se vaciaba.
 
-**Decisión de lore pendiente (es del DM):** la Fractura y el Núcleo del Sueño serían elementos nuevos del mundo. No entran al compendio hasta que se aprueben.
+## Pendiente o por pulir
 
-## Soldados con identidad
-
-Cada soldado es una ficha: nombre, procedencia, edad, clase, victorias, rango, equipo, padre y fecha de muerte.
-
-- Rangos por victorias: Recluta (0-4), Soldado (5-14), Veterano (15-29), Élite (30-49), Leyenda (50+).
-- Al llegar a Veterano se elige una especialización (guardia, duelista, explorador, tirador, rompelíneas). Sin habilidades activas.
-- Linajes: un soldado veterano puede quedar «establecido» y tener descendencia. Herencia orientativa: 60 % propia de la clase, 20 % del padre, 20 % de azar.
-- Capitanes: el jugador nombra a pocos (por ejemplo 3). Llevan un objeto extra (estandarte).
-- Objetos con historia: al morir un portador se recuperan y se eligen heredero; cada objeto recuerda sus propietarios.
-- Relaciones (compañeros, hermanos, rivales) que se generan en momentos importantes y dan pequeños bonos.
-- Salón de los Caídos con la historia de cada soldado.
-
-## Lo demás
-
-- **Civilizaciones**: facciones del compendio con una ventaja cada una.
-- **Clases de unidad**: guerrero, cazador, arcanista, paladín, pícaro.
-- **Recursos** (3 al principio): comida, materiales, oro. Más adelante mineral, maná y ánima.
-- **Ciudades**: producen recursos y reclutan; luego, especialización (militar, económica, mágica).
-- **Estabilidad dimensional** por región: las estables se defienden mejor; las inestables cambian conexiones, generan criaturas o alteran recursos.
-- **Mapas por tipo de fractura**: Reinos, Sueño de los Muertos, Jardín Imposible, Archivo Hundido, Horizonte Roto.
-- **Crónica e historia del mundo**: relato automático de cada partida y estadísticas acumuladas.
-- **Premios**: cartas por ganar guerras, derrotar facciones concretas o conquistar regiones especiales.
-
-## Qué se reutiliza
-
-- Motor por turnos sobre cuadrícula y clases: Ostelar.
-- Partidas entre jugadores guardadas en el servidor: Ajedrez, Arquería, batalla de Triunfos.
-- Facciones, razas, lugares y objetos: datos del compendio.
-- Cartas como premio: Triunfos.
-
-## Lo que cambia por tener un ejército que dura
-
-- Hay que guardar el ejército por cuenta (tabla en Supabase con RLS): es una campaña, no un minijuego suelto.
-- La muerte permanente pesa más contra otro jugador; mejor dejar eso para una fase posterior.
-- Hay que ajustar el ritmo de rangos y herencias jugando; si no, nadie llega a ver un ascenso.
-
-## Fases propuestas
-
-1. Partida contra la IA con soldados con identidad guardados por cuenta (nombre, victorias, rango, muerte, Salón de los Caídos).
-2. Linajes, objetos con historial y crónica de cada partida.
-3. Capitanes, relaciones y estandartes.
-4. Jugador contra jugador, mapas por tipo de fractura y premios en cartas.
-
-## Pendiente de decidir
-
-- ¿Se empieza por la fase 1 contra la IA?
-- ¿Se aprueba la Fractura como parte del lore, o se plantea sin explicar el origen?
-- ¿Qué facciones entran primero?
+- Probar con jugadores reales las guerras entre jugadores (las pruebas en Node confirman que repetir las acciones reproduce la misma guerra).
+- Balance: la Compañía Dorada sigue por debajo del resto; el ritmo de rangos y herencias se ajusta jugando.
+- La interfaz móvil funciona pero no se ha revisado a fondo.
+- Ideas sin hacer: relaciones entre soldados distintas de familia y compañeros (rivales, amigos), estandartes con más efectos, eventos de región con elecciones, eco de personajes del canon por lado.

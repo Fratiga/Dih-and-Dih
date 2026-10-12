@@ -170,6 +170,28 @@
 
   const elegirOrigen = (fac, r) => fac.origenes[S.ent(r, fac.origenes.length)];
 
+  /* El bando de este ejército para una guerra entre jugadores: soldados clonados y las reliquias que llevan */
+  function prepararBando(ej, ids) {
+    const lim = limiteContingente(ej);
+    const elegidos = (ids && ids.length ? ids : elegirContingenteAuto(ej)).slice(0, lim).map(id => ej.soldados[id]).filter(s => s && disponibles(ej).includes(s));
+    const soldados = elegidos.map(s => { const c = clon(s); c.victoriasAntes = s.victorias; return c; });
+    const fac = FACCIONES[ej.faccion];
+    const r = { s: ej.rs };
+    const mezcla = ["guerrero", "cazador", "guerrero", "cazador", "picaro", "paladin"];
+    for (let i = soldados.length; i < 6; i++) {
+      let clase = mezcla[i % mezcla.length];
+      if (CLASES[clase].exclusiva && CLASES[clase].exclusiva !== ej.faccion) clase = "guerrero";
+      const s = S.crearSoldado(r, { clase, cultura: fac.cultura, origen: elegirOrigen(fac, r), anio: ej.anio });
+      s.victoriasAntes = 0; s.reemplazo = true;
+      soldados.push(s);
+    }
+    ej.rs = r.s;
+    const reliquias = [];
+    const vistas = new Set();
+    soldados.forEach(s => Object.values(s.equipo || {}).forEach(id => { if (ej.reliquias[id] && !vistas.has(id)) { vistas.add(id); reliquias.push(clon(ej.reliquias[id])); } }));
+    return { nombre: ej.nombre, faccion: ej.faccion, humano: true, soldados, reliquias, ejercito: true };
+  }
+
   function prepararGuerra(ej, ids, opciones) {
     opciones = opciones || {};
     const dif = opciones.dificultad || ej.config.dificultad || "normal";
@@ -365,7 +387,7 @@
     // Némesis: quien mató a un veterano y sigue vivo vuelve la próxima vez; quien cae por tu mano desaparece
     caidosGuerra.forEach(c => {
       const s = c._s;
-      if (!s || !c.por || c.por.dueno === jIdx || s.estado !== "caido") return;
+      if (est.pvp || !s || !c.por || c.por.dueno === jIdx || s.estado !== "caido") return;
       const sigue = c.por.uid && est.unidades[c.por.uid];
       if (!sigue || !c.por.sId) return;
       const asesino = est.unidades[c.por.uid].s;
@@ -526,7 +548,7 @@
 
   raiz.FracturaCampana = {
     MAX_SOLDADOS, MAX_CAPITANES, crearEjercito, todos, vivos, enFila, caidos, retirados, ninos, capitanes, limiteContingente, casas, reliquiasDe, reliquiasLibres,
-    nombrarCapitan, quitarCapitan, asignarCompania, equipar, desequipar, renombrarEjercito, elegirContingenteAuto, prepararGuerra, cerrarGuerra,
+    nombrarCapitan, quitarCapitan, asignarCompania, equipar, desequipar, renombrarEjercito, elegirContingenteAuto, prepararBando, prepararGuerra, cerrarGuerra,
     disponibles, convaleciente, elegirEspecializacion, pendientesDeAscenso, relaciones, arbolDeCasa, historialReliquia, calcularLogros, hito, clon
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaCampana;

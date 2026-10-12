@@ -258,8 +258,9 @@
       jugadores: [], ciudades: {}, unidades: {}, siguienteUid: 1, siguienteCiudad: 1, reliquias: {}, tumbas: [], log: [], cronica: [],
       ganador: null, razon: null, nucleoHold: [0, 0], vision: [new Array(mapa.ancho * mapa.alto).fill(0), new Array(mapa.ancho * mapa.alto).fill(0)],
       fortalezas: [], fortalezasDueno: [], stats: { bajas: [0, 0], ciudades: [0, 0], oficiales: [0, 0] }, pendientes: [], humano: cfg.jugadores[0].humano ? 0 : cfg.jugadores[1].humano ? 1 : -1,
-      primerTurno: true, ev: [], caidos: []
+      primerTurno: true, ev: [], caidos: [], pvp: !!cfg.pvp
     };
+    if (cfg.pvp) est.humano = cfg.humanoIdx === undefined ? 0 : cfg.humanoIdx;
     // Jugadores
     cfg.jugadores.forEach((jc, j) => {
       const fac = FACCIONES[jc.faccion];
