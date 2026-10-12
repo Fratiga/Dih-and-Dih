@@ -32,6 +32,7 @@ window.RITMO_TUTORIALES = [
     pasos: [
       { texto: "Elige una nota y pulsa H. Se vuelve larga. Arrastra el borde de la barra para alargarla o acortarla.", objetivo: "#reLarga", tab: "notas" },
       { texto: "Una doble pide los dos carriles a la vez. Elige una nota y pulsa D.", objetivo: "#reDoble", tab: "notas" },
+      { texto: "Para una doble larga, elige una larga y pulsa D: le sale su pareja en el otro carril, del mismo largo. Arrastra el final de cada una por separado para que midan distinto. Con D otra vez se quita la pareja. También puedes elegir una doble y pulsar H: se parte en dos largas.", objetivo: "#reDoble", tab: "notas" },
       { texto: "Una larga no puede pisar otra nota de su mismo carril. Si pasa, el editor lo corrige solo al guardar.", objetivo: "#reLienzo" }
     ]
   },

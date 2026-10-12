@@ -43,6 +43,7 @@ window.PARRANDA_TUTORIALES = [
     pasos: [
       { texto: "Elige una nota y pulsa H. Se vuelve larga. Arrastra el borde de la barra para alargarla o acortarla.", objetivo: "#reLarga", tab: "notas" },
       { texto: "Un acorde son dos notas a la vez en carriles vecinos. Elige una nota y pulsa C: aparece su pareja. Si la pulsas de nuevo, se quita.", objetivo: "#reAcorde", tab: "notas" },
+      { texto: "Para un acorde de dos largas, haz larga una nota y pulsa C: su pareja sale larga también, del mismo largo. Arrastra el final de cada una por separado para que midan distinto.", objetivo: "#reAcorde", tab: "notas" },
       { texto: "Una larga no puede pisar otra nota de su mismo carril. Si pasa, el editor lo corrige solo al guardar.", objetivo: "#reLienzo" }
     ]
   },
