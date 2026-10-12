@@ -222,11 +222,95 @@ function activarFlechasNumericas(raiz) {
   });
 }
 
-/* Menú superior: la página actual queda a la vista (en móvil el menú se desplaza y si no, siempre empezaba por «Inicio») */
-(function centrarPestanaActiva() {
+/* =============================================================================
+   Navegación común (todas las páginas del compendio)
+   - Menú superior agrupado: Inicio, Compendio, cinco grupos con desplegable y Admin. Los enlaces están aquí,
+     en una sola lista, en vez de repetidos en cada HTML (los de Inicio, Compendio y Admin siguen en el HTML).
+   - En móvil el menú se esconde al bajar y reaparece al subir.
+   - Enlace «Saltar al contenido» para quien navega con teclado.
+============================================================================= */
+const MENU_GRUPOS = [
+  { nombre: "Mundo", items: [["mapa.html", "Mapa"], ["cronologia.html", "Cronología"], ["lugares.html", "Lugares"], ["facciones.html", "Facciones"],
+    ["personajes.html", "Personajes"], ["razas.html", "Razas"], ["religion.html", "Religión"]] },
+  { nombre: "Archivo", items: [["textos.html", "Textos"], ["pergaminos.html", "Pergaminos"], ["armas.html", "Armas"], ["objetos.html", "Objetos"], ["bestiario.html", "Bestiario"]] },
+  { nombre: "Reglas", items: [["reglas.html", "Reglas"], ["economia.html", "Economía"], ["estadisticas.html", "Estadísticas"]] },
+  { nombre: "Jugar", items: [["minijuegos.html", "Minijuegos"], ["rocola.html", "Rocola"]] },
+  { nombre: "Comunidad", items: [["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"], ["fichas.html", "Mis personajes"]] }
+];
+
+(function menuAgrupado() {
   const nav = document.querySelector(".quick-nav");
-  const activa = nav && nav.querySelector(".nav-chip.active");
-  if (!activa) return;
-  activa.setAttribute("aria-current", "page");
-  nav.scrollLeft = Math.max(0, activa.offsetLeft - (nav.clientWidth - activa.offsetWidth) / 2);
+  if (!nav) return;
+  const actual = location.pathname.split("/").pop() || "index.html";
+  // Se reutilizan los enlaces de Inicio, Compendio y Admin (otros scripts los buscan por su href) y el resto se reconstruye
+  const enlace = h => nav.querySelector(`a.nav-chip[href="${h}"]`);
+  const inicio = enlace("index.html"), compendio = enlace("compendio.html"), admin = enlace("admin.html");
+  [inicio, compendio].forEach(a => { if (a && a.getAttribute("href") === actual) a.setAttribute("aria-current", "page"); });
+  nav.textContent = "";
+  [inicio, compendio].forEach(a => { if (a) nav.append(a); });
+
+  const paneles = [];
+  const cerrarTodos = (devolverFoco) => paneles.forEach(g => {
+    if (g.panel.hidden) return;
+    g.panel.hidden = true;
+    g.boton.setAttribute("aria-expanded", "false");
+    if (devolverFoco) g.boton.focus();
+  });
+
+  MENU_GRUPOS.forEach(grupo => {
+    const enGrupo = grupo.items.some(([h]) => h === actual);
+    const caja = document.createElement("div");
+    caja.className = "menu-grupo";
+    caja.innerHTML = `<button type="button" class="nav-chip menu-boton${enGrupo ? " active" : ""}" aria-expanded="false" aria-haspopup="true">${grupo.nombre} <span aria-hidden="true">▾</span></button>
+      <ul class="menu-panel" hidden>${grupo.items.map(([h, t]) =>
+        `<li><a class="menu-item" href="${h}"${h === actual ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}</ul>`;
+    const boton = caja.querySelector("button"), panel = caja.querySelector("ul");
+    paneles.push({ boton, panel });
+    boton.addEventListener("click", ev => {
+      ev.stopPropagation();
+      const abrir = panel.hidden;
+      cerrarTodos(false);
+      if (!abrir) return;
+      panel.hidden = false;
+      boton.setAttribute("aria-expanded", "true");
+      // El panel es fijo para que no lo recorte el menú; se coloca bajo el botón sin salirse de la pantalla
+      const b = boton.getBoundingClientRect();
+      const libreAbajo = innerHeight - b.bottom - 80, libreArriba = b.top - 10;   // 80: el reproductor de abajo
+      const alto = panel.offsetHeight;
+      const arriba = alto > libreAbajo && libreArriba > libreAbajo;
+      const sitio = Math.max(120, arriba ? libreArriba : libreAbajo);
+      panel.style.maxHeight = `${Math.round(sitio)}px`;
+      panel.style.top = arriba ? `${Math.round(Math.max(6, b.top - Math.min(alto, sitio) - 4))}px` : `${Math.round(b.bottom + 4)}px`;
+      panel.style.left = `${Math.max(6, Math.min(b.left, innerWidth - panel.offsetWidth - 6))}px`;
+    });
+    nav.append(caja);
+  });
+  if (admin) nav.append(admin);
+
+  document.addEventListener("click", ev => { if (!ev.target.closest(".menu-grupo")) cerrarTodos(false); });
+  document.addEventListener("keydown", ev => { if (ev.key === "Escape") cerrarTodos(true); });
+  addEventListener("resize", () => cerrarTodos(false));
+
+  // En móvil: el menú se esconde al bajar y vuelve al subir (ocupaba casi una quinta parte de la pantalla)
+  let ultimaY = scrollY;
+  addEventListener("scroll", () => {
+    const y = scrollY;
+    cerrarTodos(false);
+    if (!matchMedia("(max-width: 700px)").matches) { nav.classList.remove("nav-oculta"); ultimaY = y; return; }
+    if (y > ultimaY + 8 && y > 160) nav.classList.add("nav-oculta");
+    else if (y < ultimaY - 8 || y < 80) nav.classList.remove("nav-oculta");
+    ultimaY = y;
+  }, { passive: true });
+})();
+
+(function saltarAlContenido() {
+  const main = document.querySelector("main");
+  if (!main) return;
+  if (!main.id) main.id = "contenido";
+  main.setAttribute("tabindex", "-1");
+  const a = document.createElement("a");
+  a.className = "saltar-contenido";
+  a.href = `#${main.id}`;
+  a.textContent = "Saltar al contenido";
+  document.body.prepend(a);
 })();

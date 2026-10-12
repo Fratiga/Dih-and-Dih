@@ -244,3 +244,27 @@ dialog { border: 4px double var(--lb-borde); border-radius: 0; box-shadow: 8px 8
 @media (pointer: coarse) {
   .nav-chip, .secondary-button, .pill, .global-lado-badge, .tema-badge { min-height: 40px; display: inline-flex; align-items: center; }
 }
+
+/* --- Menú superior agrupado (js/common.js) --- */
+.quick-nav { flex-wrap: wrap; overflow: visible; row-gap: 6px; transition: top .2s ease; }
+.quick-nav.nav-oculta { top: -160px; }
+.menu-grupo { display: inline-block; }
+.menu-boton { cursor: pointer; background: none; border: 2px solid transparent; color: var(--lb-tenue); }
+.menu-boton:hover { color: #fff; background: #ffffff14; }
+.menu-boton.active { color: #fff; background: var(--lb-titulo-a); border-color: var(--lb-borde); text-shadow: 2px 2px 0 #000; }
+.menu-boton[aria-expanded="true"] { color: #fff; background: #ffffff1f; border-color: var(--lb-borde); }
+.menu-panel {
+  position: fixed; z-index: 60; min-width: 190px; margin: 0; padding: 6px; list-style: none; overflow-y: auto;
+  background: var(--lb-caja); border: 3px ridge var(--lb-borde); box-shadow: 4px 4px 0 #000;
+}
+.menu-panel[hidden] { display: none; }
+.menu-item { display: block; padding: 10px 14px; min-height: 40px; box-sizing: border-box; color: var(--text); text-decoration: none; font-size: .92rem; }
+.menu-item:hover { background: #ffffff14; color: #fff; }
+.menu-item[aria-current="page"] { color: #fff; background: var(--lb-titulo-a); text-shadow: 2px 2px 0 #000; }
+
+/* --- Saltar al contenido (solo se ve al enfocarlo con el teclado) --- */
+.saltar-contenido { position: absolute; left: 8px; top: -80px; z-index: 10000; padding: 10px 16px; background: #000; color: #fff; border: 2px solid var(--accent); text-decoration: none; }
+.saltar-contenido:focus { top: 8px; }
+
+/* --- Copiar enlace de una entrada --- */
+.modal-copiar { margin: 4px 0 10px; }

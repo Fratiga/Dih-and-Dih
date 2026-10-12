@@ -246,14 +246,23 @@ const HUELLA_MODAL_UMBRAL = 4000;
 let huellaModalEsLarga = false;
 let huellaModalInsertada = false;
 
-function openEntryModal(entry) {
+/* Enlace propio de cada entrada (#e=id): se puede compartir, y el botón Atrás cierra la entrada en vez de salir de la página. */
+const ENTRADA_HASH = /^#e=([^&]+)/;
+let ignorarPopstate = false;
+const empujesActuales = () => (history.state && history.state.n) || 0;   // cuántos estados de esta ventana hay apilados
+let modalEntradaId = null;
+const entradaEnHash = () => { const m = location.hash.match(ENTRADA_HASH); return m ? decodeURIComponent(m[1]) : null; };
+
+function openEntryModal(entry, desdeHistorial) {
   if (!entry) return;
+  modalEntradaId = entry.id;
   huellaModalEsLarga = (entry.content || "").length >= HUELLA_MODAL_UMBRAL;
   huellaModalInsertada = false;
   modalContent.innerHTML = `
     <div class="entry-type">${entry.category}</div>
     <h2>${entry.title}</h2>
     <p class="modal-meta">${entry.tags.join(" · ")}</p>
+    <button type="button" class="secondary-button modal-copiar" data-copiar-enlace>Copiar enlace</button>
     ${modalExtraMeta(entry)}
     ${mapaLinkFor(entry)}
     <div class="modal-body">${entry.content}</div>
@@ -262,10 +271,53 @@ function openEntryModal(entry) {
     ${datosGMBlock(entry)}
   `;
   modal.showModal();
+  if (!desdeHistorial && entradaEnHash() !== entry.id) {
+    try { history.pushState({ entrada: entry.id, n: empujesActuales() + 1 }, "", `#e=${encodeURIComponent(entry.id)}`); } catch (e) { /* sin historial */ }
+  }
 }
 
-document.getElementById("closeModal").addEventListener("click", () => modal.close());
-modal.addEventListener("click", e => { if (e.target === modal) modal.close(); });
+/* Al cerrar la entrada se deshace lo que se añadió al historial. Se llama desde los botones y desde el evento close
+   (Esc); si ya se está volviendo atrás, no hace nada. */
+function limpiarEntradaDelHistorial() {
+  if (ignorarPopstate || !entradaEnHash()) return;   // ya limpio, o se cerró al volver atrás
+  try {
+    const n = empujesActuales();
+    if (n > 0) { ignorarPopstate = true; history.go(-n); }
+    else history.replaceState(null, "", location.pathname + location.search);   // se llegó con el enlace directo
+  } catch (e) { /* sin historial */ }
+}
+modal.addEventListener("close", limpiarEntradaDelHistorial);
+
+window.addEventListener("popstate", () => {
+  if (ignorarPopstate) {   // volvimos al punto de partida al cerrar: si era un enlace directo, se limpia la dirección
+    ignorarPopstate = false;
+    if (entradaEnHash()) history.replaceState(null, "", location.pathname + location.search);
+    return;
+  }
+  const id = entradaEnHash();
+  if (id) {
+    const e = ALL_ENTRIES.find(x => x.id === id);
+    if (e) openEntryModal(e, true);
+  } else if (modal.open) {
+    modal.close();
+  }
+});
+
+modalContent.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copiar-enlace]");
+  if (!b || !modalEntradaId) return;
+  const url = new URL("compendio.html", location.href).href.split("#")[0] + `#e=${encodeURIComponent(modalEntradaId)}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    b.textContent = "Enlace copiado";
+    setTimeout(() => { b.textContent = "Copiar enlace"; }, 1800);
+  } catch (err) {
+    if (window.dialogo) window.dialogo.copiar("Copia el enlace a mano:", url);
+  }
+});
+
+document.getElementById("closeModal").addEventListener("click", () => { modal.close(); limpiarEntradaDelHistorial(); });
+modal.addEventListener("click", e => { if (e.target === modal) { modal.close(); limpiarEntradaDelHistorial(); } });
 
 modal.addEventListener("scroll", () => {
   if (!huellaModalEsLarga || huellaModalInsertada) return;
@@ -302,3 +354,10 @@ modalContent.addEventListener("click", e => {
   e.preventDefault();
   if (typeof window.focusMapaPin === "function") window.focusMapaPin(mapaLink.dataset.mapaId);
 });
+
+// Entrada abierta desde un enlace compartido (compendio.html#e=id)
+(function () {
+  const id = entradaEnHash();
+  const e = id && ALL_ENTRIES.find(x => x.id === id);
+  if (e) openEntryModal(e, true);
+})();

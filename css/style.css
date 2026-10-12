@@ -3755,3 +3755,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
   outline: 2px solid var(--accent) !important;
   outline-offset: 2px;
 }
+
+/* Enlaces de la barra superior de los juegos: volver al hub y salidas al inicio y al compendio */
+.mj-enlaces { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; }
+.mj-volver-sec { opacity: .75; }
