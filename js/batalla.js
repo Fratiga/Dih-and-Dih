@@ -12,6 +12,9 @@
   let jugadores = [];
   let partidas = [];
 
+  let apuestaSel = null;       // { ids, copias }: cartas que se apuestan al retar (economía de cartas)
+  let ultimoRefresco = 0;      // para pedir al servidor que ponga al día lo caducado, no en cada consulta
+
   // Partida abierta
   let modo = "lobby";          // lobby | partida | local
   let fila = null;             // fila de cartas_partidas (en línea)
@@ -94,29 +97,47 @@
     const mias = id => partidas.filter(p => id(p));
     const recibidos = mias(p => p.estado === "pendiente" && p.j2 === miId);
     const enviados = mias(p => p.estado === "pendiente" && p.j1 === miId);
-    const curso = mias(p => p.estado === "en_curso");
+    const curso = mias(p => p.estado === "en_curso" || p.estado === "disputa");
     const fin = mias(p => p.estado === "terminada").slice(0, 8);
     const rival = p => (p.j1 === miId ? p.nombre2 : p.nombre1);
 
+    const apuestaDe = p => (p.apuesta1_info && p.apuesta1_info.length ? `<span class="ba-linea">Apuesta del retador: <b>${BatallaApuestas.texto(p.apuesta1_info)}</b>. Para aceptar eliges ${p.apuesta1_info.length} carta${p.apuesta1_info.length === 1 ? "" : "s"} tuya${p.apuesta1_info.length === 1 ? "" : "s"}.</span>` : "");
+    const apuestaMia = p => {
+      const mia = p.j1 === miId ? p.apuesta1_info : p.apuesta2_info, suya = p.j1 === miId ? p.apuesta2_info : p.apuesta1_info;
+      if (!(mia && mia.length) && !(suya && suya.length)) return "";
+      return `<span class="ba-linea">Apuestas: tú <b>${BatallaApuestas.texto(mia) || "—"}</b> · ${esc(rival(p))} <b>${BatallaApuestas.texto(suya) || "—"}</b></span>`;
+    };
+    $("btApuestaTexto").innerHTML = apuestaSel ? apuestaSel.copias.map(c => esc(c.nombre)).join(", ") : "ninguna";
+    $("btApuestaQuitar").classList.toggle("hidden", !apuestaSel);
+    $("btApuestaElegir").textContent = apuestaSel ? "Cambiar cartas" : "Elegir cartas";
+
     $("btRecibidos").innerHTML = recibidos.length ? recibidos.map(p => `
-      <li><span>${esc(p.nombre1)} te retó</span>
+      <li><span>${esc(p.nombre1)} te retó${p.apuesta1_info && p.apuesta1_info.length ? ' <i class="ba-sello">con apuesta</i>' : ""}${apuestaDe(p)}</span>
         <select data-mazo-de="${p.id}">${opcionesMazos("")}</select>
         <button type="button" class="cartas-boton cartas-boton-principal" data-aceptar="${p.id}">Aceptar</button>
         <button type="button" class="cartas-boton" data-rechazar="${p.id}">Rechazar</button></li>`).join("")
       : `<li class="bt-vacio">Ninguno.</li>`;
     $("btEnviados").innerHTML = enviados.length ? enviados.map(p => `
-      <li><span>A ${esc(p.nombre2)}, esperando respuesta</span><button type="button" class="cartas-boton" data-cancelar="${p.id}">Cancelar</button></li>`).join("")
+      <li><span>A ${esc(p.nombre2)}, esperando respuesta${apuestaMia(p)}</span><button type="button" class="cartas-boton" data-cancelar="${p.id}">Cancelar</button></li>`).join("")
       : `<li class="bt-vacio">Ninguno.</li>`;
     $("btCurso").innerHTML = curso.length ? curso.map(p => {
       const suTurno = p.turno === miId;
-      return `<li><span>Contra ${esc(rival(p))}${suTurno ? " · <b class=\"bt-tuturno\">te toca</b>" : ""}</span>
+      return `<li><span>Contra ${esc(rival(p))}${suTurno ? " · <b class=\"bt-tuturno\">te toca</b>" : ""}${p.estado === "disputa" ? ' <i class="ba-sello ba-disputa">disputa</i>' : ""}${apuestaMia(p)}${p.estado === "disputa" ? '<span class="ba-linea ba-disputa">Los dos avisaron resultados distintos: lo resuelve el máster.</span>' : ""}</span>
         <button type="button" class="cartas-boton cartas-boton-principal" data-abrir="${p.id}">Jugar</button></li>`;
     }).join("") : `<li class="bt-vacio">Ninguna.</li>`;
     $("btTerminadas").innerHTML = fin.length ? fin.map(p => {
       const yoSoyJ1 = p.j1 === miId;
       const gane = p.resultado === (yoSoyJ1 ? "j1" : "j2");
       const texto = p.resultado === "empate" ? "Empate" : gane ? "Ganaste" : "Perdiste";
-      return `<li><span>${texto} contra ${esc(rival(p))}${p.motivo === "rendicion" ? " (rendición)" : ""}</span></li>`;
+      let cartas = "";
+      if (p.apuesta_estado === "resuelta" || p.apuesta_estado === "devuelta") {
+        const mia = yoSoyJ1 ? p.apuesta1_info : p.apuesta2_info, suya = yoSoyJ1 ? p.apuesta2_info : p.apuesta1_info;
+        if (p.apuesta_estado === "devuelta") cartas = `<span class="ba-linea">Apuesta devuelta: cada carta volvió a su dueño.</span>`;
+        else if (p.resultado === "empate") cartas = `<span class="ba-linea">Empate: cada quien recuperó sus cartas.</span>`;
+        else if (gane) cartas = `<span class="ba-linea">Te llevaste: <b>${BatallaApuestas.texto(suya)}</b></span>`;
+        else cartas = `<span class="ba-linea">Perdiste: <b>${BatallaApuestas.texto(mia)}</b></span>`;
+      }
+      return `<li><span>${texto} contra ${esc(rival(p))}${p.motivo === "rendicion" ? " (rendición)" : ""}${p.motivo === "admin" ? " (resuelta por el máster)" : ""}${cartas}</span></li>`;
     }).join("") : `<li class="bt-vacio">Todavía no hay.</li>`;
   }
 
@@ -129,6 +150,11 @@
   }
 
   async function cargarPartidas() {
+    // Pone al día lo que caducó (retos sin respuesta, resultados que nadie contradijo); no hace falta en cada consulta
+    if (miId && Date.now() - ultimoRefresco > 60000) {
+      ultimoRefresco = Date.now();
+      try { await supa.rpc("cartas_refrescar"); } catch (e) { /* aún sin economia_4_apuestas.sql */ }
+    }
     try {
       const { data, error } = await supa.from("cartas_partidas").select("*").order("actualizada", { ascending: false }).limit(40);
       if (error) throw error;
@@ -158,7 +184,18 @@
   async function retar(rivalId) {
     const m = mazoPorId($("btMazo").value);
     if (!m) { toast("Elige uno de tus mazos primero."); return; }
-    await accionServidor("cartas_retar", { p_rival: rivalId, p_mazo: m.id, p_cartas: CartasCliente.instantanea(CartasCliente.aplanar(m.cartas)) }, "Reto enviado.");
+    const args = { p_rival: rivalId, p_mazo: m.id, p_cartas: CartasCliente.instantanea(CartasCliente.aplanar(m.cartas)) };
+    if (apuestaSel) args.p_apuesta = apuestaSel.ids;
+    const ok = await accionServidor("cartas_retar", args, apuestaSel ? "Reto enviado con tu apuesta." : "Reto enviado.");
+    if (ok && apuestaSel) { apuestaSel = null; pintarLobby(); }
+  }
+
+  async function elegirApuesta() {
+    const r = await BatallaApuestas.elegir({ cantidad: null, titulo: "Elige las cartas que apuestas" });
+    if (!r) return;
+    if (r.error) { toast(r.error); return; }
+    apuestaSel = r;
+    pintarLobby();
   }
 
   async function responder(id, aceptar) {
@@ -166,7 +203,15 @@
     const sel = document.querySelector(`[data-mazo-de="${id}"]`);
     const m = sel && mazoPorId(sel.value);
     if (!m) { toast("Elige uno de tus mazos para aceptar."); return; }
-    const ok = await accionServidor("cartas_responder", { p_id: id, p_aceptar: true, p_mazo: m.id, p_cartas: CartasCliente.instantanea(CartasCliente.aplanar(m.cartas)) });
+    const args = { p_id: id, p_aceptar: true, p_mazo: m.id, p_cartas: CartasCliente.instantanea(CartasCliente.aplanar(m.cartas)) };
+    const reto = partidas.find(p => p.id === id);
+    if (reto && reto.apuesta1 && reto.apuesta1.length) {
+      const r = await BatallaApuestas.elegir({ cantidad: reto.apuesta1.length, titulo: "Acepta el reto con tu apuesta", contra: reto.apuesta1_info });
+      if (!r) return;
+      if (r.error) { toast(r.error); return; }
+      args.p_apuesta = r.ids;
+    }
+    const ok = await accionServidor("cartas_responder", args);
     if (ok) abrirPartida(id);
   }
 
@@ -1557,6 +1602,8 @@
     else if (b.dataset.abrir) abrirPartida(b.dataset.abrir);
   });
   $("btLocalIr").addEventListener("click", empezarLocal);
+  $("btApuestaElegir").addEventListener("click", elegirApuesta);
+  $("btApuestaQuitar").addEventListener("click", () => { apuestaSel = null; pintarLobby(); });
 
   /* ------------------------------------------------------------------ inicio */
   function suscribir() {

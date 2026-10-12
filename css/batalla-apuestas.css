@@ -1,0 +1,23 @@
+/* Apuestas en el lobby de batalla (js/batalla-apuestas.js) */
+.ba-caja { margin: 8px 0 14px; padding: 10px 12px; border: 1px dashed var(--accent-soft, #888); font-size: .88rem; }
+.ba-caja b { color: var(--accent, #fc0); }
+.ba-caja .cartas-boton { margin: 6px 6px 0 0; }
+.ba-sello { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: #1a1408; background: var(--accent, #fc0); }
+.ba-linea { display: block; margin-top: 3px; font-size: .78rem; color: var(--muted, #aaa); line-height: 1.35; }
+.ba-linea b { color: var(--text, #eee); }
+.ba-disputa { color: #ff9a7a; }
+
+.ba-dialogo { width: min(480px, calc(100% - 24px)); max-height: calc(100vh - 24px); overflow: auto; padding: 20px; background: var(--panel, #222); color: var(--text, #eee); border: 1px solid var(--accent-soft, #888); }
+.ba-dialogo::backdrop { background: rgba(0, 0, 0, .72); }
+.ba-dialogo h2 { margin: 0 0 8px; font-size: 1.15rem; }
+.ba-contra { margin: 0 0 8px; font-size: .88rem; }
+.ba-ayuda { margin: 0 0 10px; font-size: .8rem; color: var(--muted, #aaa); line-height: 1.45; }
+.ba-lista { list-style: none; margin: 0 0 10px; padding: 0; max-height: 42vh; overflow-y: auto; border: 1px solid var(--border, #555); }
+.ba-lista li { border-bottom: 1px solid var(--border, #555); }
+.ba-lista label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer; }
+.ba-lista label:hover { background: rgba(255, 255, 255, .05); }
+.ba-nombre { flex: 1; font-size: .92rem; }
+.ba-lista small { color: var(--muted, #aaa); font-size: .74rem; }
+.ba-cuenta { margin: 0 0 10px; font-size: .85rem; color: var(--accent, #fc0); }
+.ba-botones { display: flex; gap: 10px; }
+.ba-botones button:disabled { opacity: .4; cursor: default; }
