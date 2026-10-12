@@ -251,3 +251,30 @@ body.cartas-tema {
 .duelo-tema .duelo-rival { transition: transform .1s steps(2), box-shadow .1s steps(2); }
 .duelo-tema .duelo-boton { border-width: 2px; }
 .duelo-tema .duelo-boton:hover { background: var(--accent-soft); border-color: var(--accent-soft); color: #1a0a06; }
+
+/* --- Hub de minijuegos: tarjetas con ilustración, texto más legible y los juegos en pruebas aparte --- */
+.hub-tema .mj-lead { margin: 10px 0 0; max-width: 62ch; color: #ecd3bb; font-size: 1.05rem; line-height: 1.55; }
+.hub-tema .mj-seccion { margin: 34px 0 0; font-size: .8rem; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); font-family: inherit; font-weight: 700; border-bottom: 2px dashed var(--accent-soft); padding-bottom: 8px; }
+.hub-tema .mj-nota { margin: 10px 0 0; color: #ecd3bb; font-size: .92rem; }
+.hub-tema .mj-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; margin-top: 18px; }
+.hub-tema .mj-tarjeta { padding: 0; overflow: visible; display: flex; flex-direction: column; }
+.hub-tema .mj-tarjeta::before, .hub-tema .mj-tarjeta::after { display: none; }
+.hub-tema .mj-arte { display: block; width: 100%; height: auto; aspect-ratio: 320 / 150; border-radius: 4px 4px 0 0; border-bottom: 2px dashed #d98a34; background: var(--panel-2); }
+.hub-tema .mj-cuerpo { position: relative; padding: 16px 22px 18px 30px; flex: 1; display: flex; flex-direction: column; }
+.hub-tema .mj-cuerpo::before, .hub-tema .mj-cuerpo::after {
+  content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border-right: 2px dashed #d98a34;
+}
+.hub-tema .mj-cuerpo::before { top: 12%; }
+.hub-tema .mj-cuerpo::after { bottom: 12%; }
+.hub-tema .mj-tarjeta h3 { font-size: 1.4rem; margin: 0 0 8px; }
+.hub-tema .mj-tarjeta p { color: #f0dcc4; font-size: 1rem; line-height: 1.5; }
+.hub-tema .mj-jugar { margin-top: auto; padding-top: 14px; align-self: flex-start; color: var(--accent); font-size: .85rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.hub-tema .mj-tarjeta:hover .mj-jugar { text-decoration: underline; }
+.hub-tema .mj-tarjeta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* En pruebas: más apagadas, con cinta de quién las ve */
+.hub-tema .mj-pruebas { margin-top: 10px; }
+.hub-tema .mj-tarjeta-oculta { position: relative; background: #3a1d2a; border-color: #8a3a4c; }
+.hub-tema .mj-tarjeta-oculta .mj-arte { filter: grayscale(.45); opacity: .85; border-bottom-color: #8a3a4c; }
+.hub-tema .mj-tarjeta-oculta h3 { color: #e9d5b0; }
+.hub-tema .mj-cinta { position: absolute; top: 12px; right: -2px; z-index: 2; padding: 4px 12px; background: #8a3a4c; color: #f9ead0; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; box-shadow: 3px 3px 0 var(--sombra-dura); }
+@media (max-width: 520px) { .hub-tema .mj-grid { grid-template-columns: 1fr; } }

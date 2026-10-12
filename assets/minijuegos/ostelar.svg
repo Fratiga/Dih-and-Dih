@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-hidden="true"><rect width="320" height="150" fill="#1c1420"/>
+<rect x="40" y="15" width="30" height="30" fill="#3a2a44"/>
+<rect x="70" y="15" width="30" height="30" fill="#2a1e34"/>
+<rect x="100" y="15" width="30" height="30" fill="#3a2a44"/>
+<rect x="130" y="15" width="30" height="30" fill="#2a1e34"/>
+<rect x="160" y="15" width="30" height="30" fill="#3a2a44"/>
+<rect x="190" y="15" width="30" height="30" fill="#2a1e34"/>
+<rect x="220" y="15" width="30" height="30" fill="#3a2a44"/>
+<rect x="250" y="15" width="30" height="30" fill="#2a1e34"/>
+<rect x="40" y="45" width="30" height="30" fill="#2a1e34"/>
+<rect x="70" y="45" width="30" height="30" fill="#3a2a44"/>
+<rect x="100" y="45" width="30" height="30" fill="#2a1e34"/>
+<rect x="130" y="45" width="30" height="30" fill="#3a2a44"/>
+<rect x="160" y="45" width="30" height="30" fill="#2a1e34"/>
+<rect x="190" y="45" width="30" height="30" fill="#3a2a44"/>
+<rect x="220" y="45" width="30" height="30" fill="#2a1e34"/>
+<rect x="250" y="45" width="30" height="30" fill="#3a2a44"/>
+<rect x="40" y="75" width="30" height="30" fill="#3a2a44"/>
+<rect x="70" y="75" width="30" height="30" fill="#2a1e34"/>
+<rect x="100" y="75" width="30" height="30" fill="#3a2a44"/>
+<rect x="130" y="75" width="30" height="30" fill="#2a1e34"/>
+<rect x="160" y="75" width="30" height="30" fill="#3a2a44"/>
+<rect x="190" y="75" width="30" height="30" fill="#2a1e34"/>
+<rect x="220" y="75" width="30" height="30" fill="#3a2a44"/>
+<rect x="250" y="75" width="30" height="30" fill="#2a1e34"/>
+<rect x="40" y="105" width="30" height="30" fill="#2a1e34"/>
+<rect x="70" y="105" width="30" height="30" fill="#3a2a44"/>
+<rect x="100" y="105" width="30" height="30" fill="#2a1e34"/>
+<rect x="130" y="105" width="30" height="30" fill="#3a2a44"/>
+<rect x="160" y="105" width="30" height="30" fill="#2a1e34"/>
+<rect x="190" y="105" width="30" height="30" fill="#3a2a44"/>
+<rect x="220" y="105" width="30" height="30" fill="#2a1e34"/>
+<rect x="250" y="105" width="30" height="30" fill="#3a2a44"/>
+<g><circle cx="100" cy="90" r="11" fill="#6ad0ff"/><path d="M90 104h20v10H90z" fill="#6ad0ff"/><circle cx="220" cy="60" r="11" fill="#e23b3b"/><path d="M210 74h20v10h-20z" fill="#e23b3b"/><circle cx="190" cy="120" r="11" fill="#f6bf4d"/></g>
+<path d="M100 90l60-30" stroke="#f9ead0" stroke-width="3" stroke-dasharray="5 5"/></svg>
