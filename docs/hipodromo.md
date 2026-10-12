@@ -27,7 +27,7 @@ La idea, en una frase: el jugador no posee ni entrena a nadie. Observa un mundo 
 - **Lo oculto**: una casilla en Mundo enseña la probabilidad real de cada inscrita, lo que «vale» su cuota, y en la ficha el rating, la forma, la fatiga, el talento y los genes. Sirve para comprobar el equilibrio.
 - Las monedas empiezan en 1000. Como todo es local, cualquiera puede tocarlas desde las herramientas del navegador.
 
-El dibujo es una silueta simple generada a partir de las proporciones del perfil (`HipodromoDibujo.silueta`). Cuando haya arte se cambia esa sola función.
+El dibujo es una silueta en SVG hecha con piezas (`HipodromoDibujo.silueta`): cuerpo, patas, cuello, cabeza, cuernos, espalda, cola, piel y alas. Se mueven dos cosas por separado. La **morfología** (largo de patas, pecho, cadera, cola, torso...) sale de la silueta del perfil, o sea de los genes, y es lo que dice algo de las capacidades. Los **rasgos de identidad** (cuernos, orejas, forma del cuello, cola, espalda, piel, patas extra, ojos, alas, dedos y patrón de color) no cambian ninguna capacidad: salen del id y del id de los padres, se heredan por linaje y a veces mutan, sin tocar el motor ni el estado del servidor. Los raros (seis patas, tres ojos, alas, varios cuernos) son mutaciones que pueden pasar a los hijos. `HipodromoDibujo.rasgos(perfil)` da la lista de rasgos llamativos para la ficha. Cuando haya arte se cambia solo ese archivo.
 
 ## Cómo se mueve el mundo
 

@@ -337,6 +337,7 @@
   /* ---------------------------------------------------------------- pestaña Criaturas y ficha */
   function listaCriaturas() {
     const todas = m.vivos.concat(m.criadores).map(c => M.perfil(m, c)).concat(Object.values(est.archivo));
+    todas.forEach(p => D.registrar(p));   // el dibujo hereda los rasgos por linaje: que conozca a toda la familia
     const q = norm(filtros.q.trim());
     const pasa = p => {
       const e = edadDe(p);
@@ -391,6 +392,7 @@
         <div class="hip-ficha-dibujo">${D.silueta(p, { clase: "hip-silueta grande" })}</div>
         <div class="hip-ficha-titulo"><h2>${esc(p.nombre)}</h2>
           <p>${sexoTxt(p)} · ${esc(p.etapa)} · ${edadTxt(p)} · generación ${p.gen}${p.arquetipo ? " · " + esc(p.arquetipo) : ""}</p>
+          ${D.rasgos(p).length ? `<p class="hip-rasgos">${D.rasgos(p).map(esc).join(" · ")}</p>` : ""}
           <p class="hip-sellos">${etiquetasEstado(p)}${p.etiquetas.filter(t => t !== "Leyenda").map(t => `<span class="hip-sello">${esc(t)}</span>`).join("")}</p>
           <button type="button" class="hip-boton" data-favorito="${p.id}" aria-pressed="${fav}">${fav ? "♥ En favoritas" : "♡ Seguir"}</button></div></div>
       ${lesion}

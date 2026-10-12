@@ -220,3 +220,14 @@ body.hip-con-ficha { overflow: hidden; }
 /* Color en bloques: tarjetas con borde grueso y sombra dura */
 .hip-tema .hip-tarjeta, .hip-tema .hip-reloj, .hip-tema .hip-billetera { border-width: 2px; border-color: var(--accent-soft); box-shadow: 4px 4px 0 var(--sombra-dura); }
 .hip-tema .hip-reloj { border-left-width: 6px; }
+
+/* Movimiento discreto de las criaturas grandes: respiran y mueven la cola. Las pequeñas (listas y carrera) quedan quietas. */
+.hip-silueta .hip-resp, .hip-silueta .hip-cola { transform-box: fill-box; }
+.hip-silueta.grande .hip-resp, .hip-silueta.mediana .hip-resp { transform-origin: 50% 100%; animation: hipResp 3.8s ease-in-out infinite; }
+.hip-silueta.grande .hip-cola, .hip-silueta.mediana .hip-cola { transform-origin: 100% 0%; animation: hipCola 4.6s ease-in-out infinite alternate; }
+@keyframes hipResp { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.012); } }
+@keyframes hipCola { from { transform: rotate(-2.5deg); } to { transform: rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .hip-silueta .hip-resp, .hip-silueta .hip-cola { animation: none !important; } }
+
+/* Rasgos visibles de la criatura (cuernos, patas extra...) en su ficha. */
+.hip-rasgos { margin: 4px 0 6px; font-size: .78rem; color: #b9b3a2; line-height: 1.5; }
