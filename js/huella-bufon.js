@@ -194,8 +194,11 @@
     posicionar(el);
     document.body.appendChild(el);
     el.addEventListener("click", () => onClick(el));
-    // Se ríe apenas aparece en la página, no solo cuando lo encuentran.
-    reproducirRisita();
+    // Se ríe apenas aparece en la página, no solo cuando lo encuentran. Solo si nunca has visitado al Bufón
+    // (secreto.html guarda bufonIntroVista al saludarte): quien ya lo conoce no tiene por qué oírlo en cada entrada.
+    let yaLoConoce = false;
+    try { yaLoConoce = !!localStorage.getItem("bufonIntroVista"); } catch (e) { /* sin almacenamiento: se ríe */ }
+    if (!yaLoConoce) reproducirRisita();
   }
 
   crearIcono();
