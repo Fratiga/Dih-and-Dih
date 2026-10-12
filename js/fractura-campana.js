@@ -38,8 +38,14 @@
     if (faccionId === "compania-dorada") { base[4] = "mercenario"; base[5] = "mercenario"; }
     const r = { s: ej.rs };
     const casas = [S.casaNueva(r, fac.cultura), S.casaNueva(r, fac.cultura), S.casaNueva(r, fac.cultura)];
+    const usados = new Set();
     base.forEach((clase, i) => {
-      const s = S.crearSoldado(r, { clase, cultura: fac.cultura, origen: fac.origenes[i % fac.origenes.length], anio: 1, edad: 19 + (i * 3) % 9, casa: i < 4 ? casas[i % 3] : undefined });
+      let s;
+      for (let intento = 0; intento < 20; intento++) {
+        s = S.crearSoldado(r, { clase, cultura: fac.cultura, origen: fac.origenes[i % fac.origenes.length], anio: 1, edad: 19 + (i * 3) % 9, casa: i < 4 ? casas[i % 3] : undefined });
+        if (!usados.has(S.nombreCompleto(s))) break;
+      }
+      usados.add(S.nombreCompleto(s));
       hito(s, 1, "Se une a la compañía fundadora.");
       ej.soldados[s.id] = s;
     });

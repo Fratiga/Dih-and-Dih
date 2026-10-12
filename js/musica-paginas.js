@@ -27,10 +27,10 @@
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["arqueria.html", "Arquería"], ["duelo.html", "Duelo"], ["cartas.html", "Triunfos: álbum"], ["mazos.html", "Triunfos: mazos"],
-    ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"],
+    ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"], ["fractura.html", "La Fractura"],
     ["muerte-subita.html", "Muerte Súbita"], ["encuentro-verdam.html", "Encuentro con Verdam"]
   ];
-  const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html"]);
+  const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html", "fractura.html"]);
 
   const leerJson = (almacen, clave, defecto) => { try { return JSON.parse(almacen.getItem(clave) || "null") || defecto; } catch (e) { return defecto; } };
   const escribirJson = (almacen, clave, valor) => { try { almacen.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin almacenamiento */ } };

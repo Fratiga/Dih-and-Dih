@@ -1,0 +1,144 @@
+/* =============================================================================
+   LA FRACTURA: ceniza, hueso y oro viejo. Todo plano, sin resplandores.
+============================================================================= */
+body.fractura-tema {
+  --bg: #17121b; --panel: #231b29; --panel-2: #2d2335; --text: #f1e8d6; --muted: #c2b3a8; --accent: #e0b24c; --accent-soft: #a9822f; --border: #5b4660;
+  --font-heading: 'Cinzel', serif;
+  background: var(--bg); color: var(--text);
+}
+.fractura-tema .mj-barra { background: var(--panel); border-bottom: 3px solid var(--accent-soft); }
+.fractura-tema .mj-volver { color: var(--accent); }
+.fractura-tema .eyebrow { color: var(--bg); background: var(--accent); display: inline-block; padding: 3px 10px 3px 14px; }
+.fractura-tema .mj-titulo { color: var(--accent); letter-spacing: .04em; }
+.fr-contenido { max-width: 1240px; }
+.fr-lead { max-width: 70ch; margin: 8px 0 18px; color: #e6d9c4; line-height: 1.55; }
+.fr-pantalla.hidden { display: none; }
+.fr-h2 { margin: 0 0 4px; color: var(--accent); font-size: 1.5rem; }
+.fr-h3 { margin: 18px 0 6px; color: var(--accent); font-size: 1.05rem; text-transform: uppercase; letter-spacing: .12em; }
+.fr-h4 { margin: 14px 0 6px; color: #e6d9c4; font-size: .85rem; text-transform: uppercase; letter-spacing: .1em; }
+.fr-sub { margin: 4px 0 8px; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+.fr-vacio { color: var(--muted); padding: 18px 0; }
+.fr-aviso { position: sticky; top: 8px; z-index: 30; margin: 8px 0; padding: 10px 14px; background: var(--panel-2); border: 1px solid var(--accent-soft); color: var(--text); }
+.fr-aviso.hidden { display: none; }
+.fr-aviso-error { border-color: #c0463c; color: #ffd6d0; }
+
+/* Botones */
+.fr-btn { font: inherit; color: var(--text); background: var(--panel-2); border: 2px solid var(--border); padding: 9px 16px; cursor: pointer; }
+.fr-btn:hover:not(:disabled) { border-color: var(--accent-soft); }
+.fr-btn:disabled { opacity: .45; cursor: default; }
+.fr-btn-principal { background: var(--accent); color: #1a1408; border-color: var(--accent); font-weight: 700; }
+.fr-btn-principal:hover:not(:disabled) { background: #f0c45e; }
+.fr-btn-chico { padding: 5px 10px; font-size: .85rem; }
+.fr-btn-chico small { display: block; opacity: .8; font-size: .72rem; }
+.fr-btn-grande { padding: 14px 26px; font-size: 1.05rem; margin-top: 12px; }
+.fr-enlace { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.fr-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+.fr-fila-botones { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Elegir ejército */
+.fr-ejercitos { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+.fr-ejercito { background: var(--panel); border: 2px solid var(--border); padding: 0 0 18px; display: flex; flex-direction: column; gap: 8px; }
+.fr-ejercito-banda { height: 10px; background: var(--c); border-bottom: 4px solid var(--b); }
+.fr-ejercito h3 { margin: 6px 18px 0; color: var(--c); font-size: 1.15rem; }
+.fr-ejercito p { margin: 0 18px; line-height: 1.45; font-size: .93rem; }
+.fr-ejercito-resumen { color: #e6d9c4; }
+.fr-ejercito-ventaja { color: var(--muted); }
+.fr-ejercito-datos { color: var(--accent); font-size: .85rem; }
+.fr-ejercito .fr-btn { margin: auto 18px 0; }
+.fr-banner { background: var(--panel-2); border: 1px solid var(--accent-soft); border-left: 6px solid var(--accent); padding: 12px 16px; margin: 12px 0; grid-column: 1 / -1; }
+.fr-banner p { margin: 0 0 8px; }
+
+/* Cuartel */
+.fr-cabecera { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.fr-cabecera > div { flex: 1; min-width: 200px; }
+.fr-pestanas { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 14px; }
+.fr-pestanas button { font: inherit; background: none; color: var(--muted); border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; }
+.fr-pestanas button:hover { color: var(--text); }
+.fr-pestanas button.activa { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.fr-pestanas-chicas button { padding: 6px 10px; font-size: .85rem; }
+.fr-dos { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: start; }
+.fr-dos-chico { grid-template-columns: 1fr 1fr; gap: 18px; }
+.fr-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; margin: 8px 0; }
+.fr-lista-marcar { grid-template-columns: 1fr; }
+.fr-lista-chica { grid-template-columns: 1fr; gap: 4px; }
+.fr-soldado { display: flex; flex-direction: column; gap: 2px; text-align: left; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border); padding: 9px 12px; cursor: pointer; }
+button.fr-soldado:hover { border-color: var(--accent-soft); }
+.fr-soldado-chico { padding: 6px 10px; }
+.fr-soldado-nombre { font-weight: 700; }
+.fr-soldado-meta { color: var(--muted); font-size: .84rem; }
+.fr-etiquetas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.fr-etiquetas i { font-style: normal; font-size: .72rem; padding: 1px 7px; background: var(--panel-2); border: 1px solid var(--accent-soft); color: var(--accent); }
+.fr-caido { opacity: .8; border-style: dashed; }
+.fr-marcar { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--border); padding: 7px 10px; cursor: pointer; }
+.fr-marcar input { width: 18px; height: 18px; accent-color: var(--accent); }
+.fr-linea small { color: var(--muted); }
+.fr-campo { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; color: var(--muted); font-size: .85rem; }
+.fractura-tema select { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); padding: 8px 10px; color-scheme: dark; }
+
+/* Casas, reliquias y crónicas */
+.fr-casa, .fr-cronica, .fr-reliquia { background: var(--panel); border: 1px solid var(--border); margin: 8px 0; }
+.fr-casa-cab { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; font: inherit; color: var(--text); background: none; border: 0; padding: 12px 16px; cursor: pointer; }
+.fr-casa-cab strong { color: var(--accent); }
+.fr-casa-cab span { color: var(--muted); font-size: .88rem; }
+.fr-arbol { padding: 4px 16px 14px; border-top: 1px dashed var(--border); }
+.fr-arbol.hidden { display: none; }
+.fr-arbol-lista { list-style: none; margin: 6px 0 0; padding-left: 0; }
+.fr-arbol-lista .fr-arbol-lista { padding-left: 22px; border-left: 2px solid var(--border); margin-left: 6px; }
+.fr-arbol-lista li { margin: 6px 0; }
+.fr-arbol-lista small { color: var(--muted); margin-left: 6px; }
+.fr-reliquia { padding: 12px 16px; }
+.fr-reliquia h4 { margin: 0 0 4px; color: var(--accent); }
+.fr-reliquia h4 small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.fr-reliquia p { margin: 4px 0; }
+.fr-historia p, .fr-cronica-texto p, .fr-arbol p { line-height: 1.6; margin: 8px 0; }
+.fr-cronica-texto { max-width: 76ch; background: var(--panel); border: 1px solid var(--border); padding: 8px 20px; margin: 10px 0; }
+
+/* Ficha */
+.fr-ficha { width: min(820px, calc(100% - 20px)); max-height: calc(100vh - 20px); overflow: auto; padding: 22px; background: var(--panel); color: var(--text); border: 2px solid var(--accent-soft); }
+.fr-ficha::backdrop { background: rgba(0, 0, 0, .75); }
+.fr-cerrar { position: absolute; top: 8px; right: 12px; background: none; border: 0; color: var(--muted); font-size: 1.8rem; cursor: pointer; }
+.fr-epitafio { padding: 8px 12px; border-left: 4px solid var(--border); background: var(--panel-2); font-style: italic; }
+.fr-cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 12px 0; }
+.fr-cifras > div { background: var(--panel-2); border: 1px solid var(--border); padding: 8px; font-size: .78rem; color: var(--muted); text-align: center; }
+.fr-cifras b { display: block; font-size: 1.25rem; color: var(--accent); }
+.fr-cifras-chicas > div { padding: 5px; }
+.fr-cifras-chicas b { font-size: 1rem; }
+.fr-stat { display: grid; grid-template-columns: 120px 1fr 24px; align-items: center; gap: 8px; margin: 4px 0; font-size: .85rem; }
+.fr-stat i { display: block; height: 8px; background: var(--panel-2); border: 1px solid var(--border); }
+.fr-stat b { display: block; height: 100%; background: var(--accent); }
+.fr-slot { margin: 6px 0; font-size: .9rem; }
+.fr-rel { margin: 4px 0; padding-left: 18px; }
+.fr-hitos { margin: 6px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
+
+/* La guerra */
+.fr-barra-guerra { display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; align-items: center; background: var(--panel); border: 1px solid var(--border); padding: 8px 12px; margin-bottom: 10px; }
+.fr-recursos { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.fr-rec { font-size: .86rem; }
+.fr-rec b { color: var(--muted); font-weight: 400; margin-right: 4px; }
+.fr-rec small { margin-left: 3px; color: #8fd18a; }
+.fr-rec small.fr-neg { color: #e0705f; }
+.fr-turno { display: flex; align-items: center; gap: 12px; }
+.fr-mesa { display: grid; grid-template-columns: minmax(0, 760px) minmax(280px, 1fr); gap: 14px; align-items: start; }
+.fr-tablero-caja { width: 100%; position: relative; background: #0c0912; border: 2px solid var(--border); line-height: 0; }
+.fr-tablero-caja canvas { display: block; touch-action: manipulation; max-width: 100%; }
+.fr-cartel { position: absolute; left: 0; right: 0; top: 42%; text-align: center; padding: 14px 0; background: rgba(12, 9, 18, .88); color: var(--accent); font-size: 1.6rem; letter-spacing: .15em; text-transform: uppercase; line-height: 1.2; pointer-events: none; }
+.fr-cartel.hidden { display: none; }
+.fr-lateral { background: var(--panel); border: 1px solid var(--border); }
+.fr-lateral .fr-pestanas { margin: 0; padding: 0 6px; }
+.fr-lateral-cuerpo { padding: 8px 14px 14px; max-height: 560px; overflow-y: auto; }
+.fr-saber { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px dashed var(--border); }
+.fr-saber p { margin: 2px 0 0; }
+.fr-saber.fr-hecho { opacity: .6; }
+.fr-saber em { color: var(--muted); font-size: .8rem; text-align: right; }
+.fr-registro { list-style: none; margin: 0; padding: 0; font-size: .85rem; display: flex; flex-direction: column; gap: 3px; }
+.fr-registro li { padding: 3px 0; border-bottom: 1px dotted var(--border); }
+.fr-log-muerte b, .fr-log-lider b { color: #e0705f; }
+.fr-log-conquista b { color: var(--accent); }
+.fr-ayuda { margin: 10px 0 0; color: var(--muted); font-size: .85rem; max-width: 100ch; }
+
+@media (max-width: 900px) {
+  .fr-dos, .fr-dos-chico { grid-template-columns: 1fr; }
+  .fr-mesa { grid-template-columns: 1fr; }
+  .fr-lateral-cuerpo { max-height: none; }
+  .fr-pestanas button { padding: 8px 10px; }
+}
