@@ -14,10 +14,10 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270147">
-  <link rel="stylesheet" href="css/bufon-lab.css?v=20270147c">
-  <link rel="stylesheet" href="css/taberna.css?v=20270147">
-  <link rel="stylesheet" href="css/cartas.css?v=20270147">
+  <link rel="stylesheet" href="css/style.css?v=20270148">
+  <link rel="stylesheet" href="css/bufon-lab.css?v=20270148c">
+  <link rel="stylesheet" href="css/taberna.css?v=20270148">
+  <link rel="stylesheet" href="css/cartas.css?v=20270148">
 </head>
 <body>
   <header class="site-header">
@@ -136,6 +136,7 @@
         <button type="button" class="admin-tab" data-tab="historial">Historial de fichas <span id="adminHistorialCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="ocultos">Ocultos</button>
         <button type="button" class="admin-tab" data-tab="cartas">Cartas <span id="adminCartasCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="economia">Economía de cartas <span id="adminEconomiaCount" class="admin-tab-badge" title="Cartas sin límite global"></span></button>
         <button type="button" class="admin-tab" data-tab="sistema">Sistema <span id="adminSistemaCount" class="admin-tab-badge"></span></button>
       </div>
 
@@ -220,6 +221,10 @@
         </div>
       </section>
 
+      <section id="adminPanelEconomia" class="admin-panel">
+        <div id="adminEconomia"><p class="admin-vacio">Abre esta pestaña para cargar los límites.</p></div>
+      </section>
+
       <section id="adminPanelCartas" class="admin-panel">
         <p class="admin-bufon-banner">Regala una carta a un jugador, por ejemplo por algo que pasó en la campaña. Si la carta es limitada, se le asigna el siguiente número de la edición y no se puede pasar del tope.</p>
         <div class="admin-cartas-form">
@@ -243,43 +248,44 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="js/dialogos.js?v=20270147"></script>
-  <script src="data/entries.js?v=20270147"></script>
-  <script src="data/personajes.js?v=20270147"></script>
-  <script src="data/lugares.js?v=20270147"></script>
-  <script src="data/facciones.js?v=20270147"></script>
-  <script src="data/pergaminos.js?v=20270147"></script>
-  <script src="data/armas.js?v=20270147"></script>
-  <script src="data/objetos.js?v=20270147"></script>
-  <script src="data/bestiario.js?v=20270147"></script>
-  <script src="data/razas.js?v=20270147"></script>
-  <script src="data/religiones.js?v=20270147"></script>
-  <script src="data/rotacion.js?v=20270147"></script>
-  <script src="data/musica.js?v=20270147"></script>
-  <script src="js/musica-nube.js?v=20270147"></script>
-  <script src="js/common.js?v=20270147"></script>
-  <script src="js/temas.js?v=20270147"></script>
-  <script src="js/taberna.js?v=20270147"></script>
-  <script src="js/player.js?v=20270147"></script>
-  <script src="js/modal.js?v=20270147"></script>
-  <script src="data/jumpscare.js?v=20270147"></script>
-  <script src="data/contrasenas.js?v=20270147"></script>
-  <script src="data/fanarts.js?v=20270147"></script>
-  <script src="js/cartas-datos.js?v=20270147"></script>
-  <script src="js/cartas-cliente.js?v=20270147"></script>
-  <script src="js/fichas-supabase.js?v=20270147"></script>
-  <script src="js/presencia.js?v=20270147"></script>
-  <script src="js/peticiones-supabase.js?v=20270147"></script>
-  <script src="js/bufon-supabase.js?v=20270147c"></script>
-  <script src="js/muerte-subita-supabase.js?v=20270147"></script>
-  <script src="js/fanarts-supabase.js?v=20270147"></script>
-  <script src="js/lado.js?v=20270147"></script>
-  <script src="js/slappy.js?v=20270147"></script>
-  <script src="js/busqueda-global.js?v=20270147"></script>
-  <script src="js/header-marquee.js?v=20270147"></script>
-  <script src="data/bufon-ciclos-lista.js?v=20270147"></script>
-  <script src="js/admin.js?v=20270147d"></script>
-  <script src="js/bufon-lab-motor.js?v=20270147c"></script>
-  <script src="js/bufon-lab.js?v=20270147f"></script>
+  <script src="js/dialogos.js?v=20270148"></script>
+  <script src="data/entries.js?v=20270148"></script>
+  <script src="data/personajes.js?v=20270148"></script>
+  <script src="data/lugares.js?v=20270148"></script>
+  <script src="data/facciones.js?v=20270148"></script>
+  <script src="data/pergaminos.js?v=20270148"></script>
+  <script src="data/armas.js?v=20270148"></script>
+  <script src="data/objetos.js?v=20270148"></script>
+  <script src="data/bestiario.js?v=20270148"></script>
+  <script src="data/razas.js?v=20270148"></script>
+  <script src="data/religiones.js?v=20270148"></script>
+  <script src="data/rotacion.js?v=20270148"></script>
+  <script src="data/musica.js?v=20270148"></script>
+  <script src="js/musica-nube.js?v=20270148"></script>
+  <script src="js/common.js?v=20270148"></script>
+  <script src="js/temas.js?v=20270148"></script>
+  <script src="js/taberna.js?v=20270148"></script>
+  <script src="js/player.js?v=20270148"></script>
+  <script src="js/modal.js?v=20270148"></script>
+  <script src="data/jumpscare.js?v=20270148"></script>
+  <script src="data/contrasenas.js?v=20270148"></script>
+  <script src="data/fanarts.js?v=20270148"></script>
+  <script src="js/cartas-datos.js?v=20270148"></script>
+  <script src="js/cartas-cliente.js?v=20270148"></script>
+  <script src="js/fichas-supabase.js?v=20270148"></script>
+  <script src="js/presencia.js?v=20270148"></script>
+  <script src="js/peticiones-supabase.js?v=20270148"></script>
+  <script src="js/bufon-supabase.js?v=20270148c"></script>
+  <script src="js/muerte-subita-supabase.js?v=20270148"></script>
+  <script src="js/fanarts-supabase.js?v=20270148"></script>
+  <script src="js/lado.js?v=20270148"></script>
+  <script src="js/slappy.js?v=20270148"></script>
+  <script src="js/busqueda-global.js?v=20270148"></script>
+  <script src="js/header-marquee.js?v=20270148"></script>
+  <script src="data/bufon-ciclos-lista.js?v=20270148"></script>
+  <script src="js/admin.js?v=20270148d"></script>
+  <script src="js/admin-economia.js?v=20270148d"></script>
+  <script src="js/bufon-lab-motor.js?v=20270148c"></script>
+  <script src="js/bufon-lab.js?v=20270148f"></script>
 </body>
 </html>

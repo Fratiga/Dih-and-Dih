@@ -14,9 +14,10 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270147">
-  <link rel="stylesheet" href="css/mj-temas.css?v=20270147">
-  <script src="js/mj-volumen.js?v=20270147"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270148">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20270148">
+  <link rel="stylesheet" href="css/hooey.css?v=20270148">
+  <script src="js/mj-volumen.js?v=20270148"></script>
 </head>
 <body class="sacrificio-pagina hooey-tema">
   <!-- Página aparte, a propósito: sin cabecera, marquesinas, mini reproductor
@@ -33,58 +34,77 @@
     </div>
   </div>
 
-  <main class="sacrificio-contenido">
-    <div class="content-top">
-      <div>
+  <main class="sacrificio-contenido hy-main">
+    <header class="hy-cabecera">
+      <div class="hy-titulos">
         <p class="eyebrow">PASATIEMPOS</p>
         <h1 class="sacrificio-titulo">Sacrificar a Hooey</h1>
+        <p class="hy-objetivo">Sacrifica a cada Hooey antes de que toque el piso. Un solo descuido corta la racha.</p>
       </div>
+      <div class="sacrificio-medidor hy-marcador">
+        <span class="sacrificio-medidor-etiqueta">Hooeys sacrificados en total</span>
+        <strong id="sacrificioMedidor">—</strong>
+      </div>
+    </header>
+
+    <div class="hy-mesa">
+      <div class="hy-marco">
+        <div class="sacrificio-fila">
+          <div class="sacrificio-banner" aria-hidden="true"></div>
+          <div class="sacrificio-escenario">
+            <canvas id="sacrificioCampo" class="sacrificio-campo" role="button" tabindex="0" aria-label="Sacrificar a Hooey"></canvas>
+            <canvas id="sacrificioFuego" class="sacrificio-fuego" width="384" height="216" aria-hidden="true"></canvas>
+            <button type="button" id="sacrificioJugar" class="sacrificio-play" aria-label="Jugar">▶</button>
+          </div>
+          <div class="sacrificio-banner sacrificio-banner-der" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <aside class="hy-lateral">
+        <div class="hy-marcadores" aria-label="Tus marcas">
+          <div class="hy-marca"><span>Racha</span><strong id="hyStatRacha">0</strong></div>
+          <div class="hy-marca hy-marca-record"><span>Récord</span><strong id="hyStatRecord">0</strong></div>
+          <div class="hy-marca"><span>Tus sacrificados</span><strong id="hyStatTotal">0</strong></div>
+        </div>
+        <p id="sacrificioEstado" class="sacrificio-contador"></p>
+        <p id="sacrificioCuenta" class="sacrificio-ayuda"></p>
+        <p class="sacrificio-ayuda sacrificio-controles">Clic sobre cada Hooey, o Z / X con el cursor encima.</p>
+        <label class="sacrificio-ayuda sacrificio-cancion hy-musica">Música
+          <select id="sacrificioCancion">
+            <option value="mata">Air Waves</option>
+            <option value="badapple">Bad Apple!!</option>
+          </select>
+        </label>
+      </aside>
     </div>
 
-    <div class="sacrificio-medidor">
-      <span class="sacrificio-medidor-etiqueta">Hooeys sacrificados en total</span>
-      <strong id="sacrificioMedidor">—</strong>
-    </div>
-
-    <div class="sacrificio-fila">
-    <div class="sacrificio-banner" aria-hidden="true"></div>
-    <div class="sacrificio-escenario">
-      <canvas id="sacrificioCampo" class="sacrificio-campo" role="button" tabindex="0" aria-label="Sacrificar a Hooey"></canvas>
-      <canvas id="sacrificioFuego" class="sacrificio-fuego" width="384" height="216" aria-hidden="true"></canvas>
-      <button type="button" id="sacrificioJugar" class="sacrificio-play" aria-label="Jugar">▶</button>
-    </div>
-    <div class="sacrificio-banner sacrificio-banner-der" aria-hidden="true"></div>
-    </div>
-    <p id="sacrificioEstado" class="sacrificio-contador"></p>
-    <p id="sacrificioCuenta" class="sacrificio-ayuda"></p>
-    <p class="sacrificio-ayuda sacrificio-controles">Clic, o Z / X con el cursor encima.</p>
-    <label class="sacrificio-ayuda sacrificio-cancion">Música
-      <select id="sacrificioCancion">
-        <option value="mata">Air Waves</option>
-        <option value="badapple">Bad Apple!!</option>
-      </select>
-    </label>
-
-    <div class="sacrificio-rankings">
-      <div class="sacrificio-ranking">
-        <h3>Más Hooeys sacrificados</h3>
-        <ol id="sacrificioRankTotal" class="sacrificio-lista"></ol>
+    <section class="hy-rankings" aria-label="Rankings">
+      <div class="hy-pestanas" role="tablist">
+        <button type="button" class="hy-pestana activa" role="tab" data-rank="total">Más sacrificios</button>
+        <button type="button" class="hy-pestana" role="tab" data-rank="racha">Mejor racha</button>
       </div>
-      <div class="sacrificio-ranking">
-        <h3>Mejor racha sin tocar el piso</h3>
-        <ol id="sacrificioRankRacha" class="sacrificio-lista"></ol>
+      <div class="sacrificio-rankings">
+        <div class="sacrificio-ranking" data-panel="total">
+          <h3>Más Hooeys sacrificados</h3>
+          <ol id="sacrificioRankTotal" class="sacrificio-lista"></ol>
+        </div>
+        <div class="sacrificio-ranking" data-panel="racha" hidden>
+          <h3>Mejor racha sin tocar el piso</h3>
+          <ol id="sacrificioRankRacha" class="sacrificio-lista"></ol>
+        </div>
       </div>
-    </div>
+    </section>
   </main>
 
   <div id="sacrificioBufones" class="sacrificio-bufones"></div>
 
-  <script src="js/temas.js?v=20270147"></script>
-  <script src="js/dialogos.js?v=20270147"></script>
-  <script src="js/fichas-supabase.js?v=20270147"></script>
-  <script src="js/presencia.js?v=20270147"></script>
-  <script src="js/lado.js?v=20270147"></script>
-  <script src="js/sacrificio-bufones.js?v=20270147"></script>
-  <script src="js/sacrificio.js?v=20270147"></script>
+  <script src="js/temas.js?v=20270148"></script>
+  <script src="js/dialogos.js?v=20270148"></script>
+  <script src="js/fichas-supabase.js?v=20270148"></script>
+  <script src="js/presencia.js?v=20270148"></script>
+  <script src="js/lado.js?v=20270148"></script>
+  <script src="js/sacrificio-bufones.js?v=20270148"></script>
+  <script src="js/sacrificio.js?v=20270148"></script>
+  <script src="js/sacrificio-ui.js?v=20270148"></script>
 </body>
 </html>

@@ -126,7 +126,7 @@ window.HipodromoDibujo = (function () {
     pixel: { contorno: 1.2, patas: 1, grosor: 1.15, torso: 1.05, cabeza: 1.1, cuello: 1, ojo: 1.3, pixel: 3, elegante: false },
     elegante: { contorno: 0, patas: 1.16, grosor: 0.7, torso: 0.82, cabeza: 0.86, cuello: 1.25, ojo: 0.95, pixel: 0, elegante: true }
   };
-  let ESTILO_DEFECTO = "caricatura";
+  let ESTILO_DEFECTO = "elegante";
   function ponerEstilo(nombre) { if (ESTILOS[nombre]) ESTILO_DEFECTO = nombre; return ESTILO_DEFECTO; }
 
   /* Marca de familia: un color por linaje (el del fundador). Se ve en el tobillo y en la manta de carrera. */
@@ -144,7 +144,7 @@ window.HipodromoDibujo = (function () {
     const s = perfil.silueta || {}, g = k => (typeof s[k] === "number" ? s[k] : 0.5);
     const uid = "hd" + perfil.id + "_" + (++CONTADOR);
     const corre = /(^|\s)corre(\s|$)/.test(opciones.clase || "");   // en la pista: galopa
-    const ciclo = (0.44 + (perfil.id % 5) * 0.02).toFixed(2);          // segundos por zancada, distinto en cada criatura
+    const ciclo = (0.5 + (perfil.id % 5) * 0.02).toFixed(2);          // segundos por zancada, distinto en cada criatura
     const base = colorCapa(perfil.capa), oscuro = mezcla(base, -0.45), lejos = mezcla(base, -0.3), claro = mezcla(base, 0.25);
     const seis = R.patas !== "4";
     const estilo = ESTILOS[opciones.estilo] ? opciones.estilo : ESTILO_DEFECTO, E = ESTILOS[estilo];
@@ -226,7 +226,7 @@ window.HipodromoDibujo = (function () {
       }
       if (R.dedos === "garras") for (let i = 0; i < 3; i++) cana += `<path d="M ${f1(x + grC / 2 + 1.2 + i * 2.2)} ${f1(yb - 3.4 + i * 0.4)} l 3 1.4 l -3 1.2 Z" fill="${HUESO}"/>`;
       if (!corre) return muslo + cana;
-      const N = 12, A = 36, B = 54;
+      const N = 24, A = 36, B = 54;
       const giro = (cx, cy2, f) => `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: N + 1 }, (_, i) => f(2 * Math.PI * i / N + fase).toFixed(1) + " " + f1(cx) + " " + f1(cy2)).join(";")}"/>`;
       return `<g>${muslo}<g>${cana}${giro(x + kx, ym, w => B * (0.5 - 0.5 * Math.cos(w)))}</g>${giro(x, y0, w => A * Math.sin(w))}</g>`;
     }
@@ -256,7 +256,7 @@ window.HipodromoDibujo = (function () {
     /* ---- cola */
     const colaX = xAtras - rCadera * 0.86, colaY = cy - 3;
     const kCola = R.cola === "corta" ? 0.5 : R.cola === "bifurcada" ? 0.7 : 1, L = largoCola * kCola;
-    const P0 = [colaX, colaY], P1 = [colaX - L * 0.5, colaY - 8], P2 = [colaX - L, colaY + 6], P3 = [colaX - L * 0.9, colaY + L * 0.8];
+    const P0 = [colaX + 8, colaY], P1 = [colaX - L * 0.5, colaY - 8], P2 = [colaX - L, colaY + 6], P3 = [colaX - L * 0.9, colaY + L * 0.8];
     const grosorCola = (R.cola === "gruesa" || R.cola === "espinada" ? 7 + 3 * g("tamano_cola") : 3 + 3 * g("tamano_cola"));
     // tres mechones superpuestos (oscuro, medio y claro) que fluyen; la cola gruesa o espinada es una sola pieza
     let cola = (R.cola === "gruesa" || R.cola === "espinada")
@@ -275,7 +275,7 @@ window.HipodromoDibujo = (function () {
       const a = bez(P0, P1, P2, P3, 0.25), b = bez(P0, P1, P2, P3, 0.9);
       cola += `<path d="M ${f1(a.x)} ${f1(a.y)} L ${f1(a.x + a.nx * -9)} ${f1(a.y + a.ny * -9)} L ${f1(b.x + b.nx * -6)} ${f1(b.y + b.ny * -6)} L ${f1(b.x)} ${f1(b.y)} Z" fill="${lejos}" opacity=".9"/>`;
     }
-    cola = `<g class="hip-cola">${cola}${corre ? `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="9 ${f1(colaX)} ${f1(colaY)};-7 ${f1(colaX)} ${f1(colaY)};9 ${f1(colaX)} ${f1(colaY)}"/>` : ""}</g>`;
+    cola = `<g class="hip-cola">${cola}${corre ? `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => (5 * Math.sin(2 * Math.PI * i / 16 - 0.8)).toFixed(2) + " " + f1(P0[0]) + " " + f1(P0[1])).join(";")}"/>` : ""}</g>`;
 
     /* ---- alas (detrás del cuerpo) */
     const ax = xFrente - 6, ay = yLomo(xFrente - 6) + 2;
@@ -423,6 +423,9 @@ window.HipodromoDibujo = (function () {
     const manta = (numero !== null || corre) ? `<path d="M ${f1(centro - 10)} ${f1(mantaY)} h 20 v 11 q 0 2 -2 2 h -16 q -2 0 -2 -2 Z" fill="${famil}" stroke="${tinta}" stroke-width=".7"/>` +
       (numero !== null ? `<text x="${f1(centro)}" y="${f1(mantaY + 8.6)}" text-anchor="middle" font-size="7.8" font-weight="700" font-family="Arial, Helvetica, sans-serif" fill="#fff" stroke="#000" stroke-width=".35" paint-order="stroke">${numero.replace(/[<>&]/g, "")}</text>` : "") : "";
 
+    // cabeceo suave: cuello y cabeza giran juntos desde la base del cuello, un poco después del rebote del cuerpo
+    const cabeceoG = html => (corre ? `<g>${html}<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => (2.4 * Math.sin(2 * Math.PI * i / 16 + 1.2)).toFixed(2) + " " + f1(N0[0]) + " " + f1(N0[1])).join(";")}"/></g>` : html);
+
     /* ---- composición y encuadre */
     const alturaCuerno = ["ramas", "unico", "recto", "espiral", "curvo"].includes(R.cuernos) ? 20 : R.cuernos === "ninguno" ? 4 : 11;
     const arriba = Math.min(cabY - cabezaY - alturaCuerno, cuelloY - 6, R.alas === "membranosas" ? lomo - 36 : lomo - 18);
@@ -438,11 +441,11 @@ window.HipodromoDibujo = (function () {
       `<ellipse cx="${f1(cx)}" cy="${suelo}" rx="${f1(Math.min(100, (der - izq) * 0.45))}" ry="3" fill="rgba(0,0,0,.28)">${corre ? `<animate attributeName="rx" dur="${ciclo}s" repeatCount="indefinite" values="${f1(Math.min(100, (der - izq) * 0.45))};${f1(Math.min(100, (der - izq) * 0.36))};${f1(Math.min(100, (der - izq) * 0.45))};${f1(Math.min(100, (der - izq) * 0.4))};${f1(Math.min(100, (der - izq) * 0.45))}"/>` : ""}</ellipse>` +
       (corre ? `<g class="hip-vel"><path d="M ${f1(izq - 3)} ${f1(suelo - 62)} h -20 M ${f1(izq + 3)} ${f1(suelo - 50)} h -26 M ${f1(izq - 1)} ${f1(suelo - 38)} h -16 M ${f1(izq + 6)} ${f1(suelo - 26)} h -22" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/></g>` : "") + polvo +
       `<g class="hip-resp" style="animation-delay:-${(perfil.id % 7) * 0.6}s">` +
-      (corre ? `<g><animateTransform attributeName="transform" type="translate" dur="${ciclo}s" repeatCount="indefinite" values="0 0;0 -2.6;0 0;0 -1.4;0 0"/>` : "") +
-      alas + cola + patasLejos + cuello +
+      (corre ? `<g><animateTransform attributeName="transform" type="translate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => { const t = 2 * Math.PI * i / 16; return "0 " + (-(2.4 * Math.max(0, Math.sin(t)) + 0.9 * Math.max(0, Math.sin(2 * t + 1)))).toFixed(2); }).join(";")}"/>` : "") +
+      alas + cola + patasLejos + cabeceoG(cuello) +
       (cb ? `<path d="${cuerpoD}" fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round"/>` : "") +
       `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + manta + espalda +
-      patasCerca + cabeza +
+      patasCerca + cabeceoG(cabeza) +
       (corre ? `</g>` : "") +
       `</g>` + (E.pixel ? `</g>` : "") + `</g></svg>`;
   }
