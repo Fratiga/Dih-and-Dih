@@ -30,6 +30,7 @@
 
   // Tiempos del jugador y reglas comunes (segundos)
   const PARADA = 0.14;            // ventana de parada desde que se levanta la guardia
+  const ESPERA_PARADA = 2;        // tras una parada lograda, la ventana no vuelve a abrirse durante este tiempo
   const RAPIDO = { aviso: 0.2, recuperar: 0.36, costo: 12 };
   const PESADO = { aviso: 0.55, recuperar: 0.62, costo: 26 };
   const ESQUIVA = { dur: 0.42, inicioInv: 0.05, finInv: 0.27, costo: 18 };
@@ -60,7 +61,7 @@
     return {
       nombre, x, dir, hp, hpMax: hp, st: 100, dano, arma, color,
       accion: "idle", tipo: "rapido", t: 0, dur: 0,
-      sinRegen: 0, buffer: null, retroceso: 0, destello: 0, parry: 0,
+      sinRegen: 0, buffer: null, retroceso: 0, destello: 0, parry: 0, esperaParada: 0,
       finta: false, mantener: false, cargando: false
     };
   }
@@ -154,7 +155,8 @@
     const dano = a.dano[a.tipo === "pesado" ? 1 : 0];
     if (invulnerable(d)) { if (d === j && est) est.esquivas++; texto("¡Esquiva!", d, "#8fdcff"); a.parry = 0; return; }
     if (d.accion === "block") {
-      if (d.t <= PARADA) {
+      if (d.t <= PARADA && d.esperaParada <= 0) {
+        d.esperaParada = ESPERA_PARADA;
         if (d === j && est) est.paradas++;
         texto("¡Parada!", d, "#ffe08a");
         d.parry = 0.3; d.st = Math.min(100, d.st + 18);
@@ -307,6 +309,7 @@
     f.t += dt;
     if (f.destello > 0) f.destello -= dt;
     if (f.parry > 0) f.parry -= dt;
+    if (f.esperaParada > 0) f.esperaParada -= dt;
     f.retroceso *= Math.pow(0.0005, dt);
 
     if (f.accion === "windup") {
@@ -465,7 +468,7 @@
 
     // escudo al bloquear
     if (f.accion === "block") {
-      ctx.strokeStyle = f.t <= PARADA ? "#ffe08a" : "#8fdcff"; ctx.lineWidth = 7;
+      ctx.strokeStyle = f.t <= PARADA && f.esperaParada <= 0 ? "#ffe08a" : "#8fdcff"; ctx.lineWidth = 7;
       ctx.beginPath(); ctx.arc(22, -88, 54, -1.0, 1.0); ctx.stroke();
     }
     if (f.parry > 0) {
