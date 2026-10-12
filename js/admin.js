@@ -625,6 +625,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     { que: "Parranda: puntajes", sql: "parranda.sql", tipo: "tabla", ref: "parranda_puntajes" },
     { que: "Canciones ocultas de la rocola (gestor)", sql: "rocola_gestor.sql", tipo: "tabla", ref: "rocola_ocultas" },
     { que: "Nombres de canciones del sitio (gestor)", sql: "rocola_nombres.sql", tipo: "tabla", ref: "rocola_nombres" },
+    { que: "Música de fondo por página", sql: "musica_paginas.sql", tipo: "tabla", ref: "musica_paginas" },
     { que: "Fondos de las canciones (imagen, GIF o video)", sql: "fondos.sql", tipo: "tabla", ref: "rocola_fondos" },
     { que: "Catálogo y colección de cartas", sql: "cartas.sql", tipo: "tabla", ref: "cartas_coleccion" },
     { que: "Editor de cartas: rol y definiciones", sql: "cartas_editor.sql", tipo: "tabla", ref: "cartas_definiciones" },

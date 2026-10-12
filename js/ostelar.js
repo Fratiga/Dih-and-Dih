@@ -298,6 +298,7 @@
     if (!jugadores.length) return;
     const enemigos = OS.generarEncuentro(jugadores, datos.dificultad);
     c = OS.crearCombate(jugadores, enemigos);
+    if (window.MusicaPaginas) MusicaPaginas.partida(true);
     c.participantes = jugadores.map(u => u.id);
     c.enemigosIniciales = enemigos.slice();
     modo = null; hover = null; flashes = []; ocupado = false; combateId++;
@@ -599,6 +600,7 @@
 
   /* --- Fin del combate ------------------------------------------------------------------------ */
   function terminarCombate() {
+    if (window.MusicaPaginas) MusicaPaginas.partida(false);
     const gano = c.fin === "victoria";
     const participantes = c.participantes.map(reg).filter(Boolean);
     const xpTotal = c.unidades.filter(u => u.equipo === "enemigos").reduce((t, u) => t + OS.xpEnemigo(u.nivel), 0);

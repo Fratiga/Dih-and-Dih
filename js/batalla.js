@@ -183,6 +183,7 @@
   }
 
   function entrarPartida(titulo) {
+    if (window.MusicaPaginas) MusicaPaginas.partida(true);
     modo = modo === "local" ? "local" : "partida";
     sel = null;
     cerrando = false;
@@ -241,6 +242,7 @@
   }
 
   function volverAlLobby() {
+    if (window.MusicaPaginas) MusicaPaginas.partida(false);
     modo = "lobby";
     est = null; fila = null;
     document.body.classList.remove("bt-en-partida");
@@ -1114,6 +1116,7 @@
   function pintarFinal() {
     const el = $("btFinal");
     if (est.ganador === null) { el.classList.add("hidden"); return; }
+    if (window.MusicaPaginas) MusicaPaginas.partida(false);
     let texto;
     if (est.ganador === "empate") texto = "Empate";
     else if (local()) texto = `Gana ${est.jugadores[est.ganador].nombre}`;

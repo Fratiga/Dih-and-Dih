@@ -370,6 +370,7 @@
     function cambiarEstado(nuevo) {
       estado = nuevo;
       sucio = true;
+      if (window.MusicaPaginas) MusicaPaginas.partida(nuevo === "jugando");
       if (onEstado) onEstado(nuevo);
     }
 

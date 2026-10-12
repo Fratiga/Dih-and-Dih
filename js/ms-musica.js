@@ -23,6 +23,7 @@
     // Si el archivo no está, el navegador simplemente no suena.
     const audio = new Audio(encodeURI("assets/cosas/The Crack of Doom.mp3"));
     audio.loop = true;
+    (window.__fondoPropio = window.__fondoPropio || []).push(audio);   // js/musica-paginas.js la calla si la página tiene playlist
 
     let volumen = Math.min(1, Math.max(0, parseFloat(leer(CLAVE_VOLUMEN, "0.5")) || 0.5));
     let silenciado = leer(CLAVE_SILENCIO, "0") === "1";

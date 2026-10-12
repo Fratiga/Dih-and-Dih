@@ -402,6 +402,7 @@
   });
 
   function terminar(texto, resultado) {
+    if (window.MusicaPaginas) MusicaPaginas.partida(false);
     terminado = true;
     detenerReloj();
     mensaje(texto);
@@ -726,6 +727,7 @@
 
   function nuevaPartida(r) {
     if (!r) return;
+    if (window.MusicaPaginas) MusicaPaginas.partida(true);
     ocultarVictoria();
     online = null;
     rival = r;
@@ -917,6 +919,7 @@
   function abrirOnline(f) {
     if (!Chess) return;
     modo = "jugadores";
+    if (window.MusicaPaginas) MusicaPaginas.partida(f.estado === "en_curso" || f.estado === "activa");
     ocultarVictoria();
     online = { id: f.id, oponente: idOponente(f) };
     detenerReloj();
@@ -1033,6 +1036,7 @@
 
   cerrarOnlineEl.addEventListener("click", () => {
     ocultarVictoria();
+    if (window.MusicaPaginas) MusicaPaginas.partida(false);
     online = null; juego = null; partidaId += 1; limpiarArrastre();
     refrescarVistas();
     cargarPartidas();
