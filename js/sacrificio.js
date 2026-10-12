@@ -2,6 +2,9 @@
   const canvas = document.getElementById("sacrificioCampo");
   const estadoEl = document.getElementById("sacrificioEstado");
   const cuentaEl = document.getElementById("sacrificioCuenta");
+  const statRachaEl = document.getElementById("hyStatRacha");
+  const statRecordEl = document.getElementById("hyStatRecord");
+  const statTotalEl = document.getElementById("hyStatTotal");
   const botonJugar = document.getElementById("sacrificioJugar");
   const rankTotalEl = document.getElementById("sacrificioRankTotal");
   const rankRachaEl = document.getElementById("sacrificioRankRacha");
@@ -301,9 +304,30 @@
     }
   }
 
+  /* Marcadores personales junto al juego. Cada vez que cambia un número se le da un golpecito
+     (clase hy-pop) y, si la racha de la partida supera el récord, el récord se enciende. */
+  function ponerMarca(el, valor) {
+    const texto = Number(valor).toLocaleString("es");
+    if (!el || el.textContent === texto) return;
+    el.textContent = texto;
+    el.classList.remove("hy-pop");
+    void el.offsetWidth;
+    el.classList.add("hy-pop");
+  }
+
+  function pintarMarcadores() {
+    const mejor = sesion ? datosCuenta.mejor : recordLocal;
+    const jugando = fase === "jugando";
+    ponerMarca(statRachaEl, racha);
+    ponerMarca(statRecordEl, Math.max(mejor, jugando ? racha : 0));
+    ponerMarca(statTotalEl, sesion ? datosCuenta.total : totalLocal);
+    if (statRecordEl) statRecordEl.closest(".hy-marca").classList.toggle("hy-record-vivo", jugando && racha > 0 && racha >= mejor);
+  }
+
   function refrescarTextos() {
     actualizarEfectos();
     pintarMedidor();
+    pintarMarcadores();
     estadoEl.textContent = textoEstado();
     cuentaEl.textContent = textoCuenta();
     botonJugar.classList.toggle("hidden", !(fase === "listo" || (fase === "fin" && cierreVisible)));
@@ -346,6 +370,7 @@
       const { error } = await supabase.rpc("hooey_registrar_partida", { p_racha: valor });
       if (error) throw error;
       datosCuenta.mejor = Math.max(datosCuenta.mejor, valor);
+      datosCuenta.total += valor;
       if (totalGlobal !== null) totalGlobal += valor;
       refrescarTextos();
       cargarRankings();
