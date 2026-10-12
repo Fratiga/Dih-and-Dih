@@ -235,6 +235,10 @@ body.bt-arrastrando .bt-carta { pointer-events: none; }
 /* Carroñada: pardo y verdoso */
 .bt-bioma[data-b="carronada"] { background: rgba(63,59,37,0.67); }
 .bt-bioma[data-b="carronada"]::before { background: repeating-radial-gradient(circle at 70% 75%, rgba(150,170,90,.1) 0 3px, transparent 3px 28px); }
+.bt-bioma[data-b="tormenta"] { background: rgba(22,28,58,0.78); }
+.bt-bioma[data-b="tormenta"]::before { background: radial-gradient(ellipse at 50% 0%, rgba(190,210,255,.5), transparent 60%); animation: bt-rayo 5.5s linear infinite; }
+.bt-bioma[data-b="tormenta"]::after { top: -100%; height: 200%; background-image: repeating-linear-gradient(100deg, rgba(190,210,255,.2) 0 1px, transparent 1px 11px); animation: bt-cae 2.4s linear infinite; }
+@keyframes bt-rayo { 0%, 86%, 100% { opacity: 0; } 88% { opacity: 1; } 90% { opacity: .1; } 92% { opacity: .85; } 95% { opacity: 0; } }
 .bt-bioma[data-b="generico"] { background: rgba(63,34,94,0.55); }
 
 /* --- Jugadores: vida, energía y turno -------------------------------------- */

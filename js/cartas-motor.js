@@ -54,6 +54,8 @@
     centinela: { id: "centinela", nombre: "Centinela", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 1, pv: 1, habilidad: "", token: true },
     "resto-barro": { id: "resto-barro", nombre: "Resto de barro", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 1, pv: 4, habilidad: "Cuerpo de barro: aguanta mucho, pega poco.", token: true },
     "resto-piedra": { id: "resto-piedra", nombre: "Resto de piedra", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 2, pv: 3, habilidad: "Cuerpo de piedra: reduce en 1 el daño que recibe.", token: true },
+    // El terreno que levanta Zraith al entrar: no es una carta, es de Zraith y se va con él (ver ponerTerreno)
+    "tormenta-de-zraith": { id: "tormenta-de-zraith", nombre: "Tormenta de Zraith", tipo: "Terreno", rareza: "legendaria", afinidad: ["arcano"], coste: 0, atq: null, pv: null, habilidad: "Mientras Zraith esté en juego, al final de tu turno cae un rayo sobre una unidad enemiga al azar (1 de daño). Si Zraith se va, la tormenta se disipa.", token: true },
     "resto-madera": { id: "resto-madera", nombre: "Resto de madera", tipo: "Criatura", rareza: "comun", afinidad: ["eternidad"], coste: 0, atq: 3, pv: 2, habilidad: "Cuerpo de madera: ligero y quebradizo.", token: true }
   };
 
@@ -100,6 +102,29 @@
   }
   const todas = est => est.jugadores.flatMap(J => J.campo);
 
+  /* Quita el terreno actual. Un terreno que viene de una carta va a su cementerio; el que levanta una unidad (token) no. */
+  function retirarTerreno(est, texto) {
+    const T = est.terreno;
+    if (!T) return;
+    if (texto) log(est, texto);
+    if (!meta(est, T.cartaId).token) est.jugadores[T.dueno].cementerio.push(T.cartaId);
+    est.terreno = null;
+  }
+  /* Pone un terreno que no sale de la mano (lo levanta una unidad). opciones.ligadoA = uid de la unidad: si esa unidad
+     cae o vuelve a la mano, el terreno se disipa; si lo reemplaza otro terreno, la unidad sigue en juego. */
+  function ponerTerreno(est, jIdx, id, opciones) {
+    const T = TERRENOS[id] || {};
+    retirarTerreno(est, null);
+    est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno, ligadoA: (opciones && opciones.ligadoA) || null };
+    log(est, `${est.jugadores[jIdx].nombre} levanta ${meta(est, id).nombre}.`);
+    sincronizarTerreno(est);
+  }
+  // Si el terreno dependía de esta unidad, se disipa con ella
+  function soltarTerreno(est, u) {
+    if (!est.terreno || est.terreno.ligadoA !== u.uid) return;
+    retirarTerreno(est, `${meta(est, est.terreno.cartaId).nombre} se disipa.`);
+    sincronizarTerreno(est);
+  }
   function terrenoActivo(est, id) { return !!est.terreno && est.terreno.cartaId === id; }
   const defTerreno = est => (est.terreno ? TERRENOS[est.terreno.cartaId] || null : null);
 
@@ -529,6 +554,7 @@
     const i = J.campo.findIndex(x => x.uid === u.uid);
     if (i < 0) return false;
     J.campo.splice(i, 1);
+    soltarTerreno(est, u);
     if (meta(est, u.cartaId).token) log(est, `${nombre(est, u)} desaparece.`);
     else if (J.mano.length >= C.MANO_MAX) { J.descartes.push(u.cartaId); log(est, `${nombre(est, u)} vuelve a la mano de ${J.nombre}, pero la tiene llena: se pierde.`); }
     else { J.mano.push(u.cartaId); log(est, `${nombre(est, u)} vuelve a la mano de ${J.nombre}.`); }
@@ -556,6 +582,7 @@
     J.campo.splice(i, 1);
     if (!meta(est, u.cartaId).token) J.cementerio.push(u.cartaId);   // las fichas desaparecen sin dejar carta
     log(est, `${nombre(est, u)} cae.`);
+    soltarTerreno(est, u);
     const ef = efectoDe(est, u);
     if (ef.alMorir) {
       if (riv.anula) log(est, `«${riv.anula.nombre}»: la habilidad de ${nombre(est, u)} al morir no ocurre.`);
@@ -809,9 +836,7 @@
     if (est.terreno && est.terreno.restantes !== null) {
       est.terreno.restantes -= 1;
       if (est.terreno.restantes <= 0) {
-        log(est, `${meta(est, est.terreno.cartaId).nombre} se desvanece.`);
-        est.jugadores[est.terreno.dueno].cementerio.push(est.terreno.cartaId);
-        est.terreno = null;
+        retirarTerreno(est, `${meta(est, est.terreno.cartaId).nombre} se desvanece.`);
         sincronizarTerreno(est);
       }
     }
@@ -946,8 +971,8 @@
       ponerUnidad(est, jIdx, id, true, objetivo, hueco);
     } else if (m.tipo === "Terreno") {
       const T = TERRENOS[id] || {};
-      if (est.terreno) est.jugadores[est.terreno.dueno].cementerio.push(est.terreno.cartaId);   // el terreno anterior se va al cementerio
-      est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno };
+      retirarTerreno(est, null);   // el terreno anterior se va al cementerio
+      est.terreno = { cartaId: id, dueno: jIdx, restantes: T.duracion || null, turnoEntrada: 0, desde: est.turno, ligadoA: null };
       log(est, `${J.nombre} juega el terreno ${m.nombre}.`);
       sincronizarTerreno(est);
     } else {
@@ -1267,7 +1292,7 @@
     meta, efectoDe, nombre, esUnidad, esReaccion, buscar, todas, log, entero, rnd, barajar,
     infligir, curar, robar, mod, morir, ponerUnidad, nuevaUnidad, cementerioDe, enCementerio, exiliar, revivir,
     atqEfectivo, tienePalabra, costeDe, requisitoDeJugada, requisitoDeReaccion, unidadPuedeAtacar,
-    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, esEscurridizo, puedeApuntarHabilidad, terrenoActivo, marcadaVigente, sincronizarTerreno
+    puedeBloquear, bloqueadoresPosibles, bloqueadoresLibres, objetivosDeDesafio, esEscurridizo, puedeApuntarHabilidad, terrenoActivo, marcadaVigente, sincronizarTerreno, ponerTerreno
   };
 
   raiz.CartasMotor = M;

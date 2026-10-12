@@ -324,12 +324,16 @@
     R("cocatriz", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
       M.mod(c.est, c.objetivo, -2, 0, c.est.turno + 1, `${M.nombre(c.est, c.objetivo)} respira el vapor negro de la cocatriz: -2 de ataque hasta el final del próximo turno de su dueño.`);
     } } });
-    R("zraith", { palabras: ["volar"], alEntrar: { resolver: c => {
-      const rivales = enemigas(c.est, c.j).slice();
+    // Zraith es criatura y terreno a la vez: al entrar levanta su tormenta, que dura mientras él siga en juego.
+    R("zraith", { palabras: ["volar"], alEntrar: { resolver: c => M.ponerTerreno(c.est, c.j, "tormenta-de-zraith", { ligadoA: c.u.uid }) } });
+    RT("tormenta-de-zraith", { finTurno: est => {
+      if (est.activo !== est.terreno.dueno) return;
+      const rivales = enemigas(est, est.terreno.dueno);
       if (!rivales.length) return;
-      M.log(c.est, `Zraith bate las alas y la tormenta cae sobre el campo rival.`);
-      rivales.forEach(t => { if (M.buscar(c.est, t.uid)) M.infligir(c.est, { u: t.uid }, 1, { tipo: "habilidad", dueno: c.j }); });
-    } } });
+      const t = aleatoria(est, rivales);
+      M.log(est, `Un rayo de la tormenta de Zraith cae sobre ${M.nombre(est, t)}.`);
+      M.infligir(est, { u: t.uid }, 1, { tipo: "terreno" });
+    } });
     R("gareth", {
       palabras: ["duro"],
       alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => M.meta(est, t.cartaId).coste <= 3, resolver: c => {

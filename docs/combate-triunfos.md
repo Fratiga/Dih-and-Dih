@@ -234,6 +234,7 @@ Una carta puede tener varias formas o posturas, cada una con su imagen. En la de
 - `daPalabra` en un terreno: le da una palabra clave a las unidades de su dueño (Fauces Grises).
 - `eco` en un terreno: repite la habilidad al entrar (Montaña del Eco Arcano).
 - `duplicaEn` en una carta: duplica su ataque y su vida mientras ese terreno esté en juego (`sincronizarTerreno`, que corre al entrar una unidad y al cambiar o irse el terreno).
+- `M.ponerTerreno(est, j, id, { ligadoA: uid })`: terreno que levanta una unidad en vez de jugarse desde la mano (Zraith y la Tormenta de Zraith, una ficha de terreno en TOKENS). Se disipa si la unidad cae o vuelve a la mano; si lo reemplaza otro terreno, la unidad sigue. Un terreno ficha no va al cementerio (`retirarTerreno`).
 - `guardianUnaVez`: un guardián que solo actúa una vez por partida.
 - `fuerzaHelenica`: el daño de combate contra una unidad es su vida, sin ignorar resistencias, y sin bloqueo derrota al jugador de un golpe.
 - `reaccion.valido`: filtra qué atacantes puede elegir una reacción.

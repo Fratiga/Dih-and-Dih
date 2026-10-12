@@ -850,7 +850,7 @@
     "puente-de-las-legiones": "puente", "los-huesos": "huesos", "glaciar-eterno": "hielo", "vado-ceniza": "ceniza",
     "desierto-de-cenizas": "desierto", "catedral-del-juramento": "catedral", "el-crater": "crater", "kigan": "puerto",
     "torre-del-silencio": "torre", "la-espesura": "espesura", "osario-de-la-frontera": "osario", "cueva-de-carne": "carne",
-    "campamento-de-las-astas-caidas": "campamento", "fauces-grises": "fauces", "montana-del-eco-arcano": "eco", "pozo-de-la-eternidad": "pozo", "carronada": "carronada"
+    "campamento-de-las-astas-caidas": "campamento", "fauces-grises": "fauces", "montana-del-eco-arcano": "eco", "pozo-de-la-eternidad": "pozo", "carronada": "carronada", "tormenta-de-zraith": "tormenta"
   };
 
   function aplicarTablero() {

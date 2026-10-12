@@ -593,9 +593,24 @@ for (let g = 0; g < 300; g++) {
 { const e = partida([], []); turnoDe(e, 0); const sapo = poner(e, 0, "sapo-beluto"); const vuela = poner(e, 1, "manta-del-cielo"), suelo = poner(e, 1, "t33");
   ok(M.atqEfectivo(e, sapo) === 1, "Sapo Beluto: 1 de ataque base");
   M.aplicar(e, { t: "fin" }, 0); }
-{ const e = partida([], []); turnoDe(e, 0); const rival = [poner(e, 1, "t33"), poner(e, 1, "t24"), poner(e, 1, "t11")];
-  M.ponerUnidad(e, 0, "zraith", true, null);
-  ok(rival[0].pv === 2 && rival[1].pv === 3 && !M.buscar(e, rival[2].uid), "Zraith: 1 de daño a cada unidad enemiga al entrar");
-  ok(M.tienePalabra(e, e.jugadores[0].campo[0], "volar"), "y vuela"); }
+{ const e = partida([], []); turnoDe(e, 0); const r = poner(e, 1, "t33"); poner(e, 1, "t24");
+  M.ponerUnidad(e, 0, "zraith", true, null); const z = e.jugadores[0].campo.find(u => u.cartaId === "zraith");
+  ok(e.terreno && e.terreno.cartaId === "tormenta-de-zraith" && e.terreno.ligadoA === z.uid && e.terreno.dueno === 0, "Zraith levanta la Tormenta de Zraith al entrar");
+  ok(M.tienePalabra(e, z, "volar"), "y vuela");
+  const antes = e.jugadores[1].campo.reduce((s, u) => s + u.pv, 0);
+  M.aplicar(e, { t: "fin" }, 0);
+  ok(e.jugadores[1].campo.reduce((s, u) => s + u.pv, 0) === antes - 1, "al final de su turno cae un rayo (1 de daño a una enemiga)");
+  M.aplicar(e, { t: "fin" }, 1);
+  const antes2 = e.jugadores[1].campo.reduce((s, u) => s + u.pv, 0); M.aplicar(e, { t: "fin" }, 0);
+  ok(e.jugadores[1].campo.reduce((s, u) => s + u.pv, 0) === antes2 - 1 || e.jugadores[1].campo.length < 2, "y otra vez en el siguiente turno suyo");
+  M.infligir(e, { u: z.uid }, 99, { tipo: "habilidad" });
+  ok(!M.buscar(e, z.uid) && e.terreno === null, "si Zraith cae, la tormenta se disipa");
+  ok(!e.jugadores[0].cementerio.includes("tormenta-de-zraith") && e.jugadores[0].cementerio.includes("zraith"), "la tormenta no deja carta en el cementerio"); }
+{ const e = partida([], []); turnoDe(e, 0); M.ponerUnidad(e, 0, "zraith", true, null); const z = e.jugadores[0].campo.find(u => u.cartaId === "zraith");
+  const J1 = e.jugadores[1]; J1.mano = ["los-huesos"]; J1.energia = 9; e.activo = 1; M.aplicar(e, { t: "jugar", i: 0 }, 1);
+  ok(e.terreno.cartaId === "los-huesos" && M.buscar(e, z.uid), "otro terreno reemplaza la tormenta y Zraith sigue en juego");
+  ok(!e.jugadores[0].cementerio.includes("tormenta-de-zraith"), "sin dejar la tormenta en el cementerio");
+  const e2 = partida([], []); turnoDe(e2, 0); M.ponerUnidad(e2, 0, "zraith", true, null); const z2 = e2.jugadores[0].campo[0];
+  M.devolverAMano(e2, z2); ok(e2.terreno === null, "si Zraith vuelve a la mano, la tormenta se disipa"); }
 console.log(fallos.length ? `${fallos.length} fallo(s):\n  ` + fallos.slice(0, 12).join("\n  ") : `OK: ${n} comprobaciones y ${terminadas} partidas al azar terminadas (${ataques} ataques, ${bloqueos} bloqueos).`);
 process.exit(fallos.length ? 1 : 0);
