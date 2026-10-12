@@ -113,6 +113,50 @@ function iniciarFanartsPagina() {
   cargarRepartoFanarts();
 }
 
+/* Subir fanarts desde esta misma página (solo Admin; lo comprueban las políticas del servidor, esto solo decide qué se ve) */
+(function iniciarSubidaFanarts() {
+  const entrada = document.getElementById("fanartArchivos");
+  const selectSide = document.getElementById("fanartSideSubir");
+  const estado = document.getElementById("fanartSubirEstado");
+  if (!entrada || !selectSide) return;
+  selectSide.innerHTML = `<option value="">Ambos</option><option value="A">${LADO_NOMBRES.A}</option><option value="B">${LADO_NOMBRES.B}</option>`;
+  const TIPOS = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+  const MAX = 10 * 1024 * 1024;
+  let subiendo = false;
+
+  async function subir(archivos) {
+    if (subiendo || typeof esAdmin !== "function" || !esAdmin()) return;
+    const lista = Array.from(archivos).filter(a => TIPOS.includes(a.type) && a.size <= MAX);
+    const omitidos = archivos.length - lista.length;
+    if (!lista.length) { estado.textContent = "Ninguna imagen válida (PNG, JPG, WebP o GIF de hasta 10 MB)."; return; }
+    subiendo = true;
+    let hechas = 0, fallo = "";
+    for (const archivo of lista) {
+      estado.textContent = `Subiendo ${hechas + 1} de ${lista.length}: ${archivo.name}`;
+      try {
+        await fanartsAdminSubir(archivo, selectSide.value || null);
+        hechas += 1;
+      } catch (err) {
+        fallo = (err && err.message) || "error desconocido";
+        break;
+      }
+    }
+    subiendo = false;
+    entrada.value = "";
+    estado.textContent = `${hechas} subida${hechas === 1 ? "" : "s"}.`
+      + (omitidos ? ` ${omitidos} omitida${omitidos === 1 ? "" : "s"} por tipo o tamaño.` : "")
+      + (fallo ? ` Se detuvo: ${fallo}. ¿Corriste scratchpad/fanarts_subidos.sql en Supabase?` : "");
+    if (hechas) await cargarRepartoFanarts();
+  }
+
+  entrada.addEventListener("change", () => { if (entrada.files.length) subir(entrada.files); });
+  const zona = document.getElementById("fanarts");
+  const hayArchivos = e => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files");
+  ["dragenter", "dragover"].forEach(ev => zona.addEventListener(ev, e => { if (hayArchivos(e)) { e.preventDefault(); zona.classList.add("arrastrando"); } }));
+  ["dragleave", "drop"].forEach(ev => zona.addEventListener(ev, e => { if (hayArchivos(e)) { e.preventDefault(); zona.classList.remove("arrastrando"); } }));
+  zona.addEventListener("drop", e => { if (hayArchivos(e) && e.dataTransfer.files.length) subir(e.dataTransfer.files); });
+})();
+
 fanartSideCambiar.addEventListener("click", () => {
   fanartSection.classList.add("hidden");
   fanartSideGate.classList.remove("hidden");
