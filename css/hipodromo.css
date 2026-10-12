@@ -225,7 +225,7 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-silueta .hip-resp, .hip-silueta .hip-cola { transform-box: fill-box; }
 .hip-silueta.grande .hip-resp, .hip-silueta.mediana .hip-resp { transform-origin: 50% 100%; animation: hipResp 3.8s ease-in-out infinite; }
 .hip-silueta.grande .hip-cola, .hip-silueta.mediana .hip-cola { transform-origin: 100% 0%; animation: hipCola 4.6s ease-in-out infinite alternate; }
-@keyframes hipResp { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.012); } }
+@keyframes hipResp { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.04) translateY(-0.6px); } }
 @keyframes hipCola { from { transform: rotate(-2.5deg); } to { transform: rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) { .hip-silueta .hip-resp, .hip-silueta .hip-cola { animation: none !important; } }
 

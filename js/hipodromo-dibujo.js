@@ -143,16 +143,30 @@ window.HipodromoDibujo = (function () {
     const cuelloX = xFrente + rPecho * 0.35, cuelloY = cy - alto / 2 + 3;
     const cabX = cuelloX + largoCuello * 0.72 + cabezaX * 0.55, cabY = cuelloY - largoCuello * 0.7 + 2;
     const lomo = cy - alto / 2;      // altura del lomo
-    const ry = { pecho: alto / 2 + 2 + 8 * g("tamano_pecho"), cadera: alto / 2 + 2 + 9 * g("tamano_cadera") };
+    const ryC = alto / 2 + 1 + 5 * g("tamano_cadera"), ryP = alto / 2 + 1 + 6 * g("tamano_pecho");
+    const centro = (xAtras + xFrente) / 2;
 
-    /* ---- piezas del cuerpo (se usan para pintar, recortar y degradar) */
-    const partesCuerpo = rel => `<ellipse cx="${f1((xAtras + xFrente) / 2)}" cy="${f1(cy)}" rx="${f1((xFrente - xAtras) / 2 + 12)}" ry="${f1(alto / 2)}" ${rel}/>` +
-      `<ellipse cx="${f1(xFrente)}" cy="${f1(cy + 1)}" rx="${f1(rPecho)}" ry="${f1(ry.pecho)}" ${rel}/>` +
-      `<ellipse cx="${f1(xAtras)}" cy="${f1(cy - 1)}" rx="${f1(rCadera)}" ry="${f1(ry.cadera)}" ${rel}/>`;
+    /* ---- el cuerpo es una sola curva suave (grupa, lomo, cruz, pecho, vientre): sin óvalos pegados */
+    const PC = [[xAtras - rCadera, cy - 1], [xAtras + 2, cy - ryC], [centro, lomo + 0.5], [xFrente - 2, cy - ryP], [xFrente + rPecho, cy + 1], [xFrente, cy + ryP], [centro, cy + alto / 2 + 0.5], [xAtras + 2, cy + ryC]];
+    const SEG = PC.map((_, i) => {
+      const a = PC[(i + 7) % 8], b = PC[i], c = PC[(i + 1) % 8], d = PC[(i + 2) % 8];
+      return [b, [b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6], [c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6], c];
+    });
+    const cuerpoD = `M ${f1(PC[0][0])} ${f1(PC[0][1])}` + SEG.map(q => ` C ${f1(q[1][0])} ${f1(q[1][1])}, ${f1(q[2][0])} ${f1(q[2][1])}, ${f1(q[3][0])} ${f1(q[3][1])}`).join("") + " Z";
+    // contorno del lomo, de la grupa a la cruz: ahí se apoyan las espinas, las placas y la raya dorsal
+    const LOMO = [];
+    [0, 1, 2].forEach(i => { for (let t = 0; t <= 1.0001; t += 0.04) { const q = bez(SEG[i][0], SEG[i][1], SEG[i][2], SEG[i][3], t); LOMO.push([q.x, q.y]); } });
+    const yLomo = x => {
+      if (x <= LOMO[0][0]) return LOMO[0][1];
+      for (let i = 1; i < LOMO.length; i++) if (x <= LOMO[i][0]) { const a = LOMO[i - 1], b = LOMO[i], u = (x - a[0]) / ((b[0] - a[0]) || 1); return a[1] + (b[1] - a[1]) * u; }
+      return LOMO[LOMO.length - 1][1];
+    };
+    const normalLomo = x => { const m = (yLomo(x + 1.5) - yLomo(x - 1.5)) / 3, l = Math.hypot(m, 1); return [m / l, -1 / l]; };
     const relleno = R.patron === "degradado" ? `url(#${uid}g)` : base;
     const defs = `<defs>` +
-      `<clipPath id="${uid}c">${partesCuerpo("")}</clipPath>` +
+      `<clipPath id="${uid}c"><path d="${cuerpoD}"/></clipPath>` +
       (R.patron === "degradado" ? `<linearGradient id="${uid}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${oscuro}"/><stop offset="0.55" stop-color="${base}"/><stop offset="1" stop-color="${claro}"/></linearGradient>` : "") +
+      (R.piel === "escamas" || R.piel === "mixta" ? `<pattern id="${uid}e" width="6" height="5" patternUnits="userSpaceOnUse"><path d="M0 5 Q3 1.3 6 5 M-3 2.5 Q0 -1.2 3 2.5 M3 2.5 Q6 -1.2 9 2.5" fill="none" stroke="${claro}" stroke-width=".8" opacity=".5"/></pattern>` : "") +
       `</defs>`;
 
     /* ---- patas */
@@ -190,7 +204,7 @@ window.HipodromoDibujo = (function () {
     const patasCerca = POS.map(p => pata(p[0], p[2], p[3], base)).join("");
 
     /* ---- cola */
-    const colaX = xAtras - rCadera * 0.7, colaY = cy - alto * 0.15;
+    const colaX = xAtras - rCadera * 0.86, colaY = cy - 3;
     const kCola = R.cola === "corta" ? 0.5 : R.cola === "bifurcada" ? 0.7 : 1, L = largoCola * kCola;
     const P0 = [colaX, colaY], P1 = [colaX - L * 0.5, colaY - 8], P2 = [colaX - L, colaY + 6], P3 = [colaX - L * 0.9, colaY + L * 0.8];
     const grosorCola = (R.cola === "gruesa" || R.cola === "espinada" ? 7 + 3 * g("tamano_cola") : 3 + 3 * g("tamano_cola"));
@@ -211,7 +225,7 @@ window.HipodromoDibujo = (function () {
     cola = `<g class="hip-cola">${cola}</g>`;
 
     /* ---- alas (detrás del cuerpo) */
-    const ax = xFrente - 6, ay = lomo + 2;
+    const ax = xFrente - 6, ay = yLomo(xFrente - 6) + 2;
     const alas = {
       no: "",
       atrofiadas: `<path d="M ${f1(ax)} ${f1(ay)} l -4 -9 l 8 3 Z" fill="${lejos}"/>`,
@@ -281,34 +295,40 @@ window.HipodromoDibujo = (function () {
       `<g fill="${base}"><ellipse cx="0" cy="0" rx="${f1(cabezaX * 0.9)}" ry="${f1(cabezaY)}"/>${hocico}</g>` +
       marcaCabeza + oreja + cuernos + ojos + fosa + `</g>`;
 
-    /* ---- espalda */
-    const ex0 = cuelloX - 2, ex1 = xAtras - rCadera * 0.3, yLomo = x => lomo - 1.5 + 0.0 * x;
+    /* ---- espalda: todo se apoya en el contorno real del lomo */
+    const ex0 = xFrente - 3, ex1 = xAtras - rCadera * 0.15;
+    const pincho = (x, w, h, relleno, trazo) => {
+      const n = normalLomo(x), y = yLomo(x), x1 = x - w / 2, x2 = x + w / 2;
+      return `<path d="M ${f1(x1)} ${f1(yLomo(x1) + 1.2)} L ${f1(x + n[0] * h)} ${f1(y + n[1] * h)} L ${f1(x2)} ${f1(yLomo(x2) + 1.2)} Z" fill="${relleno}"${trazo ? ` stroke="${trazo}" stroke-width=".8" stroke-linejoin="round"` : ""}/>`;
+    };
     let espalda = "";
-    if (R.espalda === "cresta") for (let i = 0; i < 10; i++) { const x = ex0 + (ex1 - ex0) * i / 9; espalda += `<path d="M ${f1(x - 2)} ${f1(yLomo(x) + 1)} l 2 -4.5 l 2 4.5 Z" fill="${oscuro}"/>`; }
-    if (R.espalda === "espinas") for (let i = 0; i < 5; i++) { const x = ex0 + (ex1 - ex0) * (i + 0.5) / 5; espalda += `<path d="M ${f1(x - 3.5)} ${f1(yLomo(x) + 1.5)} l 3.5 -9.5 l 3.5 9.5 Z" fill="${oscuro}"/>`; }
-    if (R.espalda === "placas") for (let i = 0; i < 6; i++) { const x = ex0 + (ex1 - ex0) * (i + 0.5) / 6, h = 5 + 3 * Math.sin((i + 0.5) / 6 * Math.PI); espalda += `<path d="M ${f1(x - 4)} ${f1(yLomo(x) + 1.5)} l 4 ${f1(-h * 1.6)} l 4 ${f1(h * 1.6)} Z" fill="${lejos}" stroke="${oscuro}" stroke-width=".8"/>`; }
+    if (R.espalda === "cresta") for (let i = 0; i < 11; i++) espalda += pincho(ex0 + (ex1 - ex0) * i / 10, 3.6, 4.4, oscuro);
+    if (R.espalda === "espinas") for (let i = 0; i < 5; i++) espalda += pincho(ex0 + (ex1 - ex0) * (i + 0.5) / 5, 7, 9.5, oscuro);
+    if (R.espalda === "placas") for (let i = 0; i < 6; i++) espalda += pincho(ex0 + (ex1 - ex0) * (i + 0.5) / 6, 8.5, 5.5 + 2.5 * Math.sin((i + 0.5) / 6 * Math.PI), lejos, oscuro);
     if (R.espalda === "continua") {
-      let d = `M ${f1(ex0)} ${f1(yLomo(ex0) + 1)}`;
-      for (let i = 1; i <= 12; i++) { const x = ex0 + (ex1 - ex0) * i / 12; d += ` L ${f1(x)} ${f1(yLomo(x) - (i % 2 ? 6 : 2.5))}`; }
-      d += ` L ${f1(ex1)} ${f1(yLomo(ex1) + 1.5)} Z`;
-      espalda += `<path d="${d}" fill="${oscuro}" opacity=".9"/>`;
+      let alto_ = "", bajo_ = "";
+      for (let i = 0; i <= 16; i++) { const x = ex0 + (ex1 - ex0) * i / 16, n = normalLomo(x), h = i % 2 ? 6.5 : 2.5; alto_ += ` L ${f1(x + n[0] * h)} ${f1(yLomo(x) + n[1] * h)}`; }
+      for (let i = 16; i >= 0; i--) { const x = ex0 + (ex1 - ex0) * i / 16; bajo_ += ` L ${f1(x)} ${f1(yLomo(x) + 1.2)}`; }
+      espalda += `<path d="M ${f1(ex0)} ${f1(yLomo(ex0) + 1.2)}${alto_}${bajo_} Z" fill="${oscuro}" opacity=".92"/>`;
     }
 
     /* ---- piel y patrones (recortados al cuerpo) */
     let capaCuerpo = "";
-    const centroX = (xAtras + xFrente) / 2, mitad = (xFrente - xAtras) / 2 + 14;
-    const escamas = (desde, hasta) => {
-      let t = "";
-      for (let j = 0; j < 4; j++) for (let x = desde + (j % 2) * 3; x < hasta; x += 6) t += `<path d="M ${f1(x)} ${f1(cy - alto / 2 + 4 + j * (alto / 4))} q 2.7 3.4 5.4 0" fill="none" stroke="${claro}" stroke-width="1" opacity=".42"/>`;
-      return t;
-    };
-    if (R.piel === "escamas") capaCuerpo += escamas(centroX - mitad - 12, centroX + mitad + 12);
-    if (R.piel === "mixta") capaCuerpo += escamas(xAtras - rCadera, centroX + 4);
-    if (R.piel === "placas") for (let i = 0; i < 4; i++) capaCuerpo += `<rect x="${f1(xAtras - 4 + i * ((xFrente - xAtras + 6) / 4))}" y="${f1(cy - alto / 2 + 2)}" width="${f1((xFrente - xAtras + 6) / 4 - 2)}" height="${f1(alto - 4)}" rx="4" fill="none" stroke="${oscuro}" stroke-width="1.2" opacity=".55"/>`;
-    if (R.piel === "lisa") capaCuerpo += `<ellipse cx="${f1(centroX)}" cy="${f1(cy - alto * 0.28)}" rx="${f1(mitad * 0.8)}" ry="${f1(alto * 0.16)}" fill="${claro}" opacity=".22"/>`;
-    if (R.piel === "pelo" && g("pelaje") > 0.6) for (let i = 0; i < 9; i++) capaCuerpo += `<path d="M ${f1(xAtras - 6 + i * ((xFrente - xAtras + 14) / 9))} ${f1(cy + alto / 2 - 1)} q 1.2 3.4 -0.8 5.6" fill="none" stroke="${oscuro}" stroke-width="1.5" opacity=".5"/>`;
-    if (R.patron === "dorsal") capaCuerpo += `<path d="M ${f1(cuelloX)} ${f1(lomo + 3)} L ${f1(xAtras - rCadera * 0.5)} ${f1(lomo + 2)}" stroke="${oscuro}" stroke-width="5" opacity=".55" fill="none"/>`;
-    if (R.patron === "bandas") for (let i = 0; i < 5; i++) { const x = xAtras - 2 + i * ((xFrente - xAtras + 10) / 5); capaCuerpo += `<path d="M ${f1(x + 5)} ${f1(cy - alto)} L ${f1(x - 5)} ${f1(cy + alto)}" stroke="${oscuro}" stroke-width="3.2" opacity=".45"/>`; }
+    const caja = `x="${f1(xAtras - rCadera - 2)}" y="${f1(cy - alto - 8)}" height="${f1(alto * 2 + 16)}"`;
+    const ancho = (xFrente - xAtras) + rCadera + rPecho + 4;
+    // volumen para todos: vientre algo más oscuro y una luz suave en el lomo
+    capaCuerpo += `<ellipse cx="${f1(centro)}" cy="${f1(cy + alto * 0.62)}" rx="${f1(ancho * 0.55)}" ry="${f1(alto * 0.42)}" fill="${oscuro}" opacity=".16"/>`;
+    if (R.piel === "escamas") capaCuerpo += `<rect ${caja} width="${f1(ancho)}" fill="url(#${uid}e)"/>`;
+    if (R.piel === "mixta") capaCuerpo += `<rect ${caja} width="${f1(ancho * 0.55)}" fill="url(#${uid}e)"/>`;
+    if (R.piel === "placas") for (let i = 0; i < 6; i++) { const x = xAtras - 4 + i * ((xFrente - xAtras + 10) / 6); capaCuerpo += `<path d="M ${f1(x)} ${f1(lomo - 9)} Q ${f1(x + 5)} ${f1(cy)} ${f1(x)} ${f1(cy + alto / 2 + 9)}" fill="none" stroke="${oscuro}" stroke-width="1.1" opacity=".38"/>`; }
+    if (R.piel === "lisa") capaCuerpo += `<ellipse cx="${f1(centro)}" cy="${f1(cy - alto * 0.3)}" rx="${f1(ancho * 0.36)}" ry="${f1(alto * 0.14)}" fill="${claro}" opacity=".22"/>`;
+    if (R.piel === "pelo" && g("pelaje") > 0.6) for (let i = 0; i < 9; i++) capaCuerpo += `<path d="M ${f1(xAtras - 6 + i * ((xFrente - xAtras + 14) / 9))} ${f1(cy + alto / 2 - 1)} q 1.2 3.4 -0.8 5.6" fill="none" stroke="${oscuro}" stroke-width="1.5" opacity=".45"/>`;
+    if (R.patron === "dorsal") {
+      let d = "";
+      LOMO.forEach((q, i) => { if (q[0] >= xAtras - 2 && q[0] <= xFrente - 2) d += (d ? " L " : "M ") + f1(q[0]) + " " + f1(q[1] + 3); });
+      capaCuerpo += `<path d="${d}" stroke="${oscuro}" stroke-width="5" stroke-linejoin="round" opacity=".5" fill="none"/>`;
+    }
+    if (R.patron === "bandas") for (let i = 0; i < 5; i++) { const x = xAtras + i * ((xFrente - xAtras) / 4.4); capaCuerpo += `<path d="M ${f1(x + 3)} ${f1(lomo - 9)} Q ${f1(x + 8)} ${f1(cy)} ${f1(x)} ${f1(cy + alto / 2 + 9)}" fill="none" stroke="${oscuro}" stroke-width="2.8" opacity=".4"/>`; }
     // manchas: del gen del motor (capa moteada o con manchas) o del patrón de identidad
     let manchas = "";
     const conManchas = /mancha|motead/.test(perfil.capa || "");
@@ -322,7 +342,7 @@ window.HipodromoDibujo = (function () {
 
     /* ---- composición y encuadre */
     const alturaCuerno = ["ramas", "unico", "recto", "espiral", "curvo"].includes(R.cuernos) ? 20 : R.cuernos === "ninguno" ? 4 : 11;
-    const arriba = Math.min(cabY - cabezaY - alturaCuerno, cuelloY - 6, R.alas === "membranosas" ? lomo - 36 : lomo - 14);
+    const arriba = Math.min(cabY - cabezaY - alturaCuerno, cuelloY - 6, R.alas === "membranosas" ? lomo - 36 : lomo - 18);
     const izq = Math.min(xAtras - rCadera - largoCola * (R.cola === "corta" ? 0.5 : 0.95) - 6, R.alas === "membranosas" ? ax - 36 : 999);
     const der = cabX + puntaX + 5;
     const kAlto = (suelo + 8) / Math.max(40, suelo - arriba), kAncho = 226 / Math.max(60, der - izq);
@@ -333,7 +353,7 @@ window.HipodromoDibujo = (function () {
       `<ellipse cx="${f1(cx)}" cy="${suelo}" rx="${f1(Math.min(100, (der - izq) * 0.45))}" ry="3" fill="rgba(0,0,0,.28)"/>` +
       `<g class="hip-resp" style="animation-delay:-${(perfil.id % 7) * 0.6}s">` +
       alas + cola + patasLejos + cuello +
-      partesCuerpo(`fill="${relleno}"`) + sobreCuerpo + espalda +
+      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + espalda +
       patasCerca + cabeza +
       `</g></g></svg>`;
   }
