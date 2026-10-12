@@ -1,0 +1,99 @@
+/* Duelo: la arena. Cabecera compacta con las marcas al lado, la arena grande en un marco de hierro y
+   piedra con antorchas, controles como teclas debajo y los rankings en pestañas.
+   Dorado solo para lo que se pulsa y los números. Se carga después de style.css, mj-temas.css y mj-pestanas.css. */
+
+/* ---------- Cabecera ---------- */
+.duelo-tema .duelo-contenido { max-width: 1240px; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 28px; align-items: end; }
+.duelo-tema .duelo-contenido > * { grid-column: 1 / -1; }
+.duelo-tema .duelo-contenido > .eyebrow { grid-column: 1; grid-row: 1; margin-bottom: 0; justify-self: start; }
+.duelo-tema .duelo-contenido > .mj-titulo { grid-column: 1; grid-row: 2; margin: 0; }
+.duelo-tema .duelo-contenido > .dl-objetivo { grid-column: 1; grid-row: 3; margin: 8px 0 0; max-width: 52ch; color: #ead7c2; font-size: .98rem; line-height: 1.45; }
+.duelo-tema .duelo-contenido > .dl-marcas { grid-column: 2; grid-row: 1 / span 3; align-self: end; display: flex; gap: 8px; }
+.dl-marca {
+  min-width: 112px; padding: 9px 16px 8px; background: #190c09; border: 1px solid #5a3426; border-top: 3px solid #e2623f;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.dl-marca span { font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: #cdae98; }
+.dl-marca strong { font-family: var(--font-heading), sans-serif; font-size: 1.9rem; line-height: 1; color: #ffcf7a; letter-spacing: .04em; font-variant-numeric: tabular-nums; display: inline-block; transform-origin: 0 70%; }
+.dl-pop { animation: dlPop .24s ease-out; }
+@keyframes dlPop { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+/* ---------- Arena enmarcada ---------- */
+.dl-marco {
+  position: relative; width: 100%; box-sizing: border-box; margin: 22px auto 0; max-width: 1060px; padding: 14px 16px;
+  background: linear-gradient(180deg, #2c1a14, #170b08); border: 3px solid #6b4a3a; border-radius: 4px;
+  box-shadow: 0 0 0 2px #120806, 0 0 0 6px #3d2a22, 0 26px 56px rgba(0, 0, 0, .7), inset 0 0 36px rgba(0, 0, 0, .55);
+}
+/* Remaches en las esquinas */
+.dl-marco::before, .dl-marco::after {
+  content: ""; position: absolute; left: 8px; right: 8px; height: 8px;
+  background:
+    radial-gradient(circle, #a98a74 0 2.5px, transparent 3px) 0 50% / 100% 8px no-repeat,
+    radial-gradient(circle, #a98a74 0 2.5px, transparent 3px) 100% 50% / 8px 8px no-repeat;
+  background-size: 8px 8px, 8px 8px; background-position: 0 50%, 100% 50%;
+}
+.dl-marco::before { top: 3px; }
+.dl-marco::after { bottom: 3px; }
+.dl-marco .duelo-escenario { margin: 0 auto; max-width: none; border: 0; box-shadow: 0 0 0 2px #000, 0 0 30px rgba(226, 98, 63, .22); }
+
+/* Antorchas a los lados: una llama que oscila despacio, sin parpadeo fuerte */
+.dl-antorcha { position: absolute; top: 22%; width: 12px; height: 92px; background: linear-gradient(90deg, #4a2f1f, #7a5436, #3d261a); border-radius: 3px; box-shadow: 0 0 0 2px #1a0e0a; }
+.dl-antorcha-izq { left: -34px; }
+.dl-antorcha-der { right: -34px; }
+.dl-antorcha::before {
+  content: ""; position: absolute; left: 50%; top: -44px; width: 30px; height: 46px; transform: translateX(-50%); transform-origin: 50% 100%;
+  background: radial-gradient(ellipse at 50% 78%, #fff3b0 0 16%, #f6a23a 38%, #d8431e 66%, transparent 70%);
+  border-radius: 50% 50% 42% 42% / 72% 72% 28% 28%; animation: dlLlama 1.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 10px rgba(246, 130, 40, .8));
+}
+.dl-antorcha-der::before { animation-delay: -.9s; }
+@keyframes dlLlama { from { transform: translateX(-50%) scaleY(.94) rotate(-2deg); } to { transform: translateX(-50%) scaleY(1.06) rotate(2deg); } }
+@media (max-width: 1180px) { .dl-antorcha { display: none; } }
+
+/* Capas del juego (elegir rival, fin del combate) */
+.duelo-tema .duelo-capa h2 { font-size: clamp(1.5rem, 3.4vw, 2.2rem); }
+.duelo-tema .duelo-ayuda { color: #ead7c2; line-height: 1.5; }
+.duelo-tema .duelo-rival { padding: 12px 14px; }
+.duelo-tema .duelo-rival span { color: #d4b8a2; }
+.duelo-tema .duelo-rival small { color: #ffcf7a; }
+.duelo-tema .duelo-boton { background: linear-gradient(180deg, #f5b540, #c47a1c); border-color: #ffe08a; color: #2b1520; font-weight: 700; padding: 11px 22px; letter-spacing: .04em; }
+.duelo-tema .duelo-boton:hover { background: linear-gradient(180deg, #ffd27a, #d68a24); border-color: #fff4cf; }
+
+/* ---------- Controles como teclas ---------- */
+.duelo-tema .duelo-controles { width: 100%; margin: 18px auto 0; gap: 12px; }
+.duelo-tema .duelo-control {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 14px 12px; background: linear-gradient(180deg, #34201a, #24140f);
+  border: 1px solid #6a4a3a; border-bottom-width: 4px; font-size: 1.15rem; color: #f6e8d8;
+}
+.duelo-tema .duelo-control small {
+  min-width: 2.2em; padding: 2px 8px; background: #120806; border: 1px solid #7a5a4a; border-bottom-width: 3px; border-radius: 4px;
+  color: #ffcf7a; font: 700 .85rem sans-serif; letter-spacing: .05em;
+}
+.duelo-tema .duelo-control:active { border-bottom-width: 1px; transform: translateY(3px); }
+
+/* ---------- Ranking en pestañas ---------- */
+.duelo-tema .mj-subtitulo { margin-top: 32px; font-size: 1.05rem; color: #ffcf7a; letter-spacing: .14em; text-transform: uppercase; }
+.duelo-tema .mj-nota { margin-bottom: 12px; color: #c9aa95; }
+.duelo-tema .sacrificio-rankings.mj-con-pestanas { margin: 0 0 96px; }
+.duelo-tema .sacrificio-ranking { background: rgba(23, 11, 8, .72); border: 1px solid #4a2c22; padding: 14px 18px 8px; }
+
+/* ---------- Pantallas estrechas ---------- */
+@media (max-width: 760px) {
+  .duelo-tema .duelo-contenido { grid-template-columns: minmax(0, 1fr); }
+  .duelo-tema .duelo-contenido > .dl-marcas { grid-column: 1; grid-row: auto; margin-top: 12px; }
+  .dl-marca { flex: 1; min-width: 0; }
+  .dl-marco { padding: 8px; }
+  .dl-marco::before, .dl-marco::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .dl-antorcha::before, .dl-pop { animation: none; } }
+
+/* En el móvil el escenario es chico: la lista de rivales se compacta y se puede desplazar */
+@media (max-width: 560px) {
+  .duelo-tema .duelo-capa { overflow-y: auto; justify-content: flex-start; padding: 10px; gap: 8px; }
+  .duelo-tema .duelo-capa h2 { font-size: 1.15rem; }
+  .duelo-tema .duelo-rivales { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .duelo-tema .duelo-rival { padding: 7px 8px; }
+  .duelo-tema .duelo-rival strong { font-size: .85rem; }
+  .duelo-tema .duelo-rival span, .duelo-tema .duelo-rival small { font-size: .68rem; }
+  .duelo-tema .duelo-ayuda { display: none; }
+}

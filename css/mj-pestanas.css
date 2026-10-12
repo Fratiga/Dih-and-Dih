@@ -1,0 +1,17 @@
+/* Pestañas de ranking compartidas (js/mj-pestanas.js). Usan las variables de la página, así que
+   cada juego las ve con su propio color. */
+.mj-pestanas { display: flex; flex-wrap: wrap; gap: 0; margin: 0 0 12px; max-width: 760px; }
+.mj-pestanas[hidden] { display: none; }
+.mj-pestana {
+  flex: 1 1 auto; padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+  font-family: var(--font-heading), sans-serif; font-size: .95rem; letter-spacing: .03em; cursor: pointer; white-space: nowrap;
+}
+.mj-pestana + .mj-pestana { border-left: 0; }
+.mj-pestana:hover { color: var(--text); }
+.mj-pestana.activa { background: var(--panel-2); color: var(--accent); border-color: var(--accent-soft); box-shadow: inset 0 -3px 0 var(--accent); }
+.mj-con-pestanas { display: block !important; max-width: 760px; }
+.mj-con-pestanas > .sacrificio-ranking[hidden] { display: none; }
+@media (max-width: 640px) {
+  .mj-pestanas { flex-wrap: nowrap; overflow-x: auto; }
+}
+.mj-pestana-mas { appearance: none; -webkit-appearance: none; padding-right: 14px; color-scheme: dark; text-align: center; }

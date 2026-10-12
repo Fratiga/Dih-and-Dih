@@ -510,7 +510,7 @@
     pieza.getBoundingClientRect();
     pieza.style.transition = `transform ${ms}ms cubic-bezier(.2,.8,.25,1)`;
     pieza.style.transform = "";
-    setTimeout(() => { b.classList.remove("aj-deslizando"); pieza.style.transition = ""; }, ms + 40);
+    setTimeout(() => { b.classList.remove("aj-deslizando"); pieza.style.transition = ""; pieza.classList.add("aj-asienta"); }, ms + 40);
   }
 
   function jugar(m, esRival, sinAnimar) {

@@ -1,0 +1,78 @@
+/* Ajedrez: un salón de estudio. El tablero manda: cabecera compacta, rivales en una sola tira,
+   el tablero grande al centro y la hoja de partida (rival, reloj, estado y jugadas) a su lado.
+   Dorado solo para lo que se pulsa y las marcas. Se carga después de style.css, minijuegos.css y mj-temas.css. */
+
+/* ---------- Cabecera: título a la izquierda y los modos a la derecha ---------- */
+.aj-tema .aj-contenido { max-width: 1280px; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; align-items: end; }
+.aj-tema .aj-contenido > * { grid-column: 1 / -1; }
+.aj-tema .aj-contenido > .eyebrow { grid-column: 1; grid-row: 1; margin-bottom: 0; justify-self: start; }
+.aj-tema .aj-contenido > .mj-titulo { grid-column: 1; grid-row: 2; font-size: clamp(2.2rem, 5vw, 3.2rem); line-height: 1.05; }
+.aj-tema .aj-contenido > .aj-modos { grid-column: 2; grid-row: 1 / span 2; margin: 0 0 6px; }
+.aj-tema .aj-modo { padding: 10px 18px; font-size: .9rem; }
+.aj-tema .aj-ayuda { color: #cdb894; font-size: .85rem; margin: 10px 0 8px; }
+
+/* ---------- Rivales: una sola tira que se desliza ---------- */
+.aj-tema .aj-rivales { display: flex; gap: 8px; margin: 0 0 14px; padding-bottom: 6px; overflow-x: auto; }
+.aj-tema .aj-rival { flex: 0 0 auto; min-width: 156px; padding: 9px 14px; gap: 2px; }
+.aj-tema .aj-rival strong { font-size: 1.12rem; }
+.aj-tema .aj-rival span { color: #cdb894; }
+.aj-tema .aj-rival small { color: #dcb461; }
+.aj-tema .aj-rival.activo { background: #5a3a20; border-color: #dcb461; }
+.aj-tema .aj-rival.activo strong { color: #fff1cf; }
+.aj-tema .aj-rival.activo span { color: #e6d3a8; }
+.aj-tema .aj-rival.activo small { color: #ffd98a; }
+
+.aj-tema .aj-controles { margin: 0 0 14px; gap: 10px 14px; }
+.aj-tema .aj-controles label { color: #cdb894; }
+
+/* ---------- Mesa: tablero grande + hoja de partida ---------- */
+.aj-tema .aj-zona { display: grid; grid-template-columns: minmax(0, 700px) minmax(290px, 370px); justify-content: center; gap: 28px; align-items: start; }
+.aj-tema .aj-tablero-col { flex: none; width: 100%; max-width: 700px; min-width: 0; }
+.aj-tema .aj-pieza { font-size: clamp(1.7rem, 7vw, 3.9rem); }
+.aj-tema .aj-capturas { min-height: 2rem; font-size: 1.4rem; }
+
+.aj-tema .aj-lateral {
+  position: sticky; top: 16px; min-width: 0; padding: 18px 20px 14px;
+  background: linear-gradient(180deg, #2f1d11, #22150c); border: 2px solid #8a6a35; border-radius: 4px;
+  box-shadow: 0 0 0 4px #1b120c, 0 14px 34px rgba(0, 0, 0, .5), inset 0 0 26px rgba(0, 0, 0, .4);
+}
+.aj-tema .aj-rival-actual { margin: 0 0 12px; padding-bottom: 10px; border-bottom: 1px solid #5a4126; color: #f6e7c4; font-family: var(--font-heading), serif; font-size: 1.35rem; letter-spacing: .02em; text-transform: none; }
+.aj-tema .aj-rival-actual:empty { display: none; }
+.aj-tema .aj-reloj { margin: 0 0 10px; padding: 8px 14px; background: #160d07; border: 1px solid #6a4a28; color: #ffe08a; font-size: 1.5rem; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; }
+.aj-tema .aj-estado { margin: 0 0 12px; padding: 11px 14px; background: #160d07; border: 1px solid #5a4126; border-left: 3px solid #dcb461; color: #f6ecd6; font-size: 1rem; }
+.aj-tema .aj-comentario { margin: 0 0 14px; padding: 10px 14px; background: rgba(255, 224, 138, .06); border-left: 3px solid #8a6a35; color: #e3cfa6; font-size: .9rem; font-style: italic; min-height: 0; }
+.aj-tema .aj-comentario:empty { display: none; }
+.aj-tema .aj-lateral h3 { margin: 0 0 8px; color: #dcb461; font-size: .8rem; letter-spacing: .16em; text-transform: uppercase; }
+.aj-tema .aj-jugadas { max-height: 250px; font-size: .92rem; font-variant-numeric: tabular-nums; color: #efe2c4; padding: 6px 10px; background: #160d07; border: 1px solid #4a361f; }
+.aj-tema .aj-jugadas li { padding: 2px 0; }
+.aj-tema .aj-lateral .aj-ayuda { margin: 10px 0 0; color: #bda585; font-size: .78rem; line-height: 1.45; }
+
+/* La pieza recién movida se asienta con un golpecito */
+.aj-asienta { animation: ajAsienta .24s ease-out; }
+@keyframes ajAsienta { 0% { transform: scale(1.22); } 100% { transform: scale(1); } }
+
+/* ---------- Ranking en pestañas ---------- */
+.aj-tema .mj-subtitulo { margin-top: 30px; font-size: 1.05rem; color: #dcb461; letter-spacing: .12em; text-transform: uppercase; }
+.aj-tema .mj-nota { margin-bottom: 12px; color: #bda585; }
+.aj-tema .aj-rankings.mj-con-pestanas { margin: 0 0 96px; }
+.aj-tema .aj-rankings .sacrificio-ranking { background: rgba(22, 13, 7, .7); border-color: #4a361f; }
+
+/* ---------- Pantallas estrechas ---------- */
+@media (max-width: 900px) {
+  .aj-tema .aj-zona { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .aj-tema .aj-lateral { position: static; }
+}
+@media (max-width: 640px) {
+  .aj-tema .aj-contenido { grid-template-columns: minmax(0, 1fr); }
+  .aj-tema .aj-contenido > .aj-modos { grid-column: 1; grid-row: auto; margin: 10px 0 4px; }
+  .aj-tema .aj-rival { min-width: 138px; }
+  .aj-tema .aj-pieza { font-size: clamp(1.5rem, 8.6vw, 2.6rem); }
+}
+@media (prefers-reduced-motion: reduce) { .aj-asienta { animation: none; } }
+
+/* Tablero vacío: invita a elegir rival en vez de dejar un cuadro marrón sin nada */
+.aj-tema .aj-tablero:empty { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #3a2515, #24160c); }
+.aj-tema .aj-tablero:empty::before {
+  content: "♞  Elige a tu rival para sentarte a la mesa"; max-width: 22ch; padding: 24px; text-align: center; line-height: 1.4;
+  color: #e3cfa6; font-family: var(--font-heading), serif; font-size: clamp(1.1rem, 3vw, 1.6rem);
+}
