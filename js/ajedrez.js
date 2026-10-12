@@ -155,6 +155,7 @@
     return Math.max(Math.abs("abcdefgh".indexOf(casilla[0]) - 3.5), Math.abs(Number(casilla[1]) - 1 - 3.5));
   }
 
+  const DECIR_HUMOR = false;
   let momentoElegido = null; // humor con el que acaba de elegir su última jugada
   let momentoActual = null;  // id del humor en el que está, para avisar solo cuando cambia
 
@@ -606,11 +607,12 @@
         const humor = momentoElegido;
         if (m && !terminado) {
           jugar(m, true);
-          // Al cambiar de humor, lo dice con sus propias palabras
+          // Al cambiar de humor podría decirlo con sus palabras (frase de cada momento). Por ahora
+          // no dicen nada: poner DECIR_HUMOR en true para activarlo.
           const id = humor ? humor.id : null;
           if (id !== momentoActual) {
             momentoActual = id;
-            if (humor && humor.frase && !terminado) comentarioEl.textContent = `${rival.nombre}: «${humor.frase}»`;
+            if (DECIR_HUMOR && humor && humor.frase && !terminado) comentarioEl.textContent = `${rival.nombre}: «${humor.frase}»`;
           }
         }
       }, espera);
