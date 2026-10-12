@@ -412,8 +412,9 @@
       const pulso = 0.5 + 0.5 * Math.sin(ahora / 220);
       // zonas de despliegue (tenue)
       if (ui.turnoJugador && !ui.modo && ui.alcance) {
-        ui.alcance.forEach(i => { if (!(i.x === activo.x && i.y === activo.y)) celda(i.x, i.y, `rgba(56,240,255,${0.16 + 0.1 * pulso})`, 0); });
-        if (hover && ui.alcance.get(`${hover.x},${hover.y}`) && !(hover.x === activo.x && hover.y === activo.y)) {
+        ui.alcance.forEach(i => { if (!i.ocupada && !(i.x === activo.x && i.y === activo.y)) celda(i.x, i.y, `rgba(56,240,255,${0.16 + 0.1 * pulso})`, 0); });
+        const alcanzada = hover && ui.alcance.get(`${hover.x},${hover.y}`);
+        if (alcanzada && !alcanzada.ocupada && !(hover.x === activo.x && hover.y === activo.y)) {
           const r = ruta(ui.alcance, hover.x, hover.y);
           ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.setLineDash([2, 9]); ctx.lineCap = "round";
           ctx.beginPath(); r.forEach((p, i) => { const q = centroCelda(p.x, p.y); if (i) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y); }); ctx.stroke();

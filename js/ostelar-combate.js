@@ -16,6 +16,9 @@
   const TERRENO = { SUELO: 0, ROCA: 1, FUEGO: 2, PINCHOS: 3, BARRO: 4 };
   OS.TERRENO = TERRENO;
   const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  // Las fichas solo se mueven en línea recta por el tablero (arriba, abajo, izquierda, derecha), nunca en diagonal.
+  // Las diagonales siguen sirviendo para apuntar, medir alcance y atacar al que está en una esquina.
+  const DIRS_MOV = [[1, 0], [-1, 0], [0, 1], [0, -1]];
   const clave = (x, y) => `${x},${y}`;
 
   /* El tamaño del tablero depende de cuántas fichas pelean: pocas fichas en un
@@ -117,7 +120,7 @@
       const cola = [[0, y0]];
       while (cola.length) {
         const [x, y] = cola.shift();
-        DIRS.forEach(([dx, dy]) => {
+        DIRS_MOV.forEach(([dx, dy]) => {
           const nx = x + dx, ny = y + dy;
           if (nx < 0 || ny < 0 || nx >= ANCHO || ny >= ALTO || t[ny][nx] === TERRENO.ROCA || vistos.has(clave(nx, ny))) return;
           vistos.add(clave(nx, ny)); cola.push([nx, ny]);
@@ -223,7 +226,7 @@
         cola.sort((a, b) => a.coste - b.coste);
         const cur = cola.shift();
         if (dist.get(clave(cur.x, cur.y)).coste < cur.coste) continue;
-        DIRS.forEach(([dx, dy]) => {
+        DIRS_MOV.forEach(([dx, dy]) => {
           const nx = cur.x + dx, ny = cur.y + dy;
           if (!enMapa(nx, ny) || terrenoEn(nx, ny) === TERRENO.ROCA) return;
           const otro = unidadEn(nx, ny);
@@ -237,11 +240,10 @@
           }
         });
       }
-      // no se puede terminar encima de otra unidad
-      [...dist.keys()].forEach(k => {
-        const d = dist.get(k);
+      // no se puede terminar encima de otra unidad: se marca, no se borra, para que los caminos que pasan por un aliado sigan completos
+      dist.forEach(d => {
         const otro = unidadEn(d.x, d.y);
-        if (otro && otro !== u) dist.delete(k);
+        if (otro && otro !== u) d.ocupada = true;
       });
       return dist;
     }
@@ -268,7 +270,7 @@
       const t = u.turno;
       const mapa = alcanzables(u);
       const destino = mapa.get(clave(x, y));
-      if (!destino || (x === u.x && y === u.y)) return false;
+      if (!destino || destino.ocupada || (x === u.x && y === u.y)) return false;
       const ruta = caminoA(mapa, x, y).slice(1);
       ruta.forEach(p => {
         if (!vivo(u)) return;
@@ -285,6 +287,8 @@
     function empujar(objetivo, desde, casillas) {
       let dx = Math.sign(objetivo.x - desde.x), dy = Math.sign(objetivo.y - desde.y);
       if (!dx && !dy) return;
+      // el empujón también va en línea recta: gana el eje en que hay más distancia
+      if (dx && dy) { if (Math.abs(objetivo.x - desde.x) >= Math.abs(objetivo.y - desde.y)) dy = 0; else dx = 0; }
       emitir({ t: "empuje", id: objetivo.id, x: objetivo.x, y: objetivo.y, dx, dy });
       for (let i = 0; i < casillas && vivo(objetivo); i++) {
         const nx = objetivo.x + dx, ny = objetivo.y + dy;
@@ -840,7 +844,7 @@
       while (cola.length) {
         const [x, y] = cola.shift();
         const d = mapa.get(clave(x, y));
-        DIRS.forEach(([dx, dy]) => {
+        DIRS_MOV.forEach(([dx, dy]) => {
           const nx = x + dx, ny = y + dy;
           if (!enMapa(nx, ny) || terrenoEn(nx, ny) === TERRENO.ROCA || mapa.has(clave(nx, ny))) return;
           mapa.set(clave(nx, ny), d + 1); cola.push([nx, ny]);
@@ -910,6 +914,7 @@
       const ops = c.opciones(u).filter(o => o.ok && !(o.accion && o.accion.tipo === "especial") && !(o.conjuro && o.conjuro.tipo === "teleport"));
       const lejos = u.ia === "distancia";
       mapa.forEach((info, k) => {
+        if (info.ocupada) return;
         const origen = { x: info.x, y: info.y };
         let bonoPos = 0;
         const ter = terrenoEn(info.x, info.y);
@@ -953,6 +958,7 @@
         const mapa = alcanzables(u);
         let mejor = null;
         mapa.forEach((info) => {
+          if (info.ocupada) return;
           const dm = Math.min(...campos.map(f => (f.get(clave(info.x, info.y)) === undefined ? 99 : f.get(clave(info.x, info.y)))));
           const ter = terrenoEn(info.x, info.y);
           let costo = dm + (ter === TERRENO.FUEGO ? 6 : ter === TERRENO.PINCHOS ? 8 : 0);
