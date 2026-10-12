@@ -56,17 +56,37 @@
      enroque = bono por ese tipo de jugada; centro = bono por llegar al centro;
      avance = bono por empujar peones. Las jugadas de pieza solo reciben el bono
      completo si acercan la pieza al centro, capturan o dan jaque.
+     ataqueRey = bono por cada casilla que una pieza se acerca al rey rival.
+     momentos = cambios de humor según cómo va la partida: la primera condición que se
+     cumple (cuando(ctx)) reemplaza a su estilo base mientras dure y suelta una frase
+     al entrar en ese humor. ctx = { mias, suyas (piezas por tipo), material (suyo menos
+     del rival, en centésimas de peón), jugadas, enJaque }.
      Su estilo no se anuncia en pantalla: que cada jugador lo descubra. */
   const RIVALES = [
     { id: "hooey", nombre: "Hooey Magoo", dificultad: "Caos", azar: true, sinRanking: true, prof: 0, tiempo: 0, error: 0, pausa: [0.4, 1.3],
       frases: { saludo: "¡Yo juego con las de arriba! ¿Cuáles son las de arriba?", jaque: "¿Eso es jaque? Yo solo quería mover algo.", capturaRival: "¡Me comí una! No sé cuál era.", capturaJugador: "Ah, esa se movía sola, ¿no?", gana: "¿Gané? ¿Eso era ganar?", pierde: "Perdí. ¿Puedo jugar otra? Guau. Digo, sí." } },
-    { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", estilo: { piezas: { p: 12, b: 6, q: -25 }, enroque: 45, jaque: -10, captura: -5 }, tiempoMov: 60, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
+    { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", estilo: { piezas: { p: 12, b: 6, q: -25 }, enroque: 45, jaque: -10, captura: -5 },
+      momentos: [
+        { id: "determinado", cuando: c => c.material <= -200, estilo: { piezas: { q: 22, n: 14, r: 10 }, jaque: 35, captura: 22, ataqueRey: 14, avance: 5 }, frase: "No pienso rendirme. Que sea lo que tenga que ser." }
+      ], tiempoMov: 60, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
       frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
-    { id: "baraja", nombre: "Baraja", dificultad: "Media", estilo: { piezas: { q: 18 }, jaque: 30, captura: 14 }, tiempoMov: 45, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
+    { id: "baraja", nombre: "Baraja", dificultad: "Media", estilo: { piezas: { q: 18 }, jaque: 30, captura: 14 },
+      momentos: [
+        { id: "doble", cuando: c => c.material <= -200, estilo: { piezas: { q: 40, r: 16 }, jaque: 70, captura: 40, ataqueRey: 22, avance: 8 }, frase: "Subo la apuesta. Todo o nada." },
+        { id: "cobra", cuando: c => c.material >= 300, estilo: { piezas: { p: 10 }, captura: 22, enroque: 45, jaque: -25 }, frase: "Con esto me alcanza. Me quedo con la ganancia." }
+      ], tiempoMov: 45, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
       frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
-    { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", estilo: { piezas: { p: 8, r: 14 }, centro: 22, avance: 6, enroque: 20 }, tiempoMov: 30, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
+    { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", estilo: { piezas: { p: 8, r: 14 }, centro: 22, avance: 6, enroque: 20 },
+      momentos: [
+        { id: "asedio", cuando: c => c.material >= 200, estilo: { piezas: { p: 10, r: 18, q: 14 }, captura: 30, jaque: 30, avance: 12, centro: 12, ataqueRey: 14 }, frase: "Es hora de cerrar el cerco." },
+        { id: "repliegue", cuando: c => c.material <= -200, estilo: { piezas: { p: 14, b: 8 }, enroque: 50, captura: -10, jaque: -15 }, frase: "Repliego las tropas. La línea se sostiene." }
+      ], tiempoMov: 30, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
       frases: { saludo: "Siéntate. Veamos cómo mueves tus tropas.", jaque: "Jaque. Tu flanco quedó abierto.", capturaRival: "Una baja. Habrá más.", capturaJugador: "Un sacrificio. Lo anoto.", gana: "Partida cerrada. La frontera sigue en pie.", pierde: "Bien jugado. Pocos llegan hasta aquí." } },
-    { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", estilo: { piezas: { n: 35, b: -6 }, centro: 8 }, tiempoMov: 20, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
+    { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", estilo: { piezas: { n: 35, b: -6 }, centro: 8 },
+      momentos: [
+        { id: "furia", cuando: c => c.mias.n === 0, estilo: { piezas: { q: 40, r: 26, b: 16, p: 10 }, jaque: 90, captura: 45, ataqueRey: 32, avance: 12 }, frase: "Mis caballos... Se acabó la paciencia. Ahora voy por ti." },
+        { id: "inquieto", cuando: c => c.mias.n === 1, estilo: { piezas: { n: 30, q: 14 }, jaque: 30, captura: 18, ataqueRey: 10, centro: 8 }, frase: "Perdí un caballo. Mal presagio." }
+      ], tiempoMov: 20, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
       frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
   ];
 
@@ -135,10 +155,36 @@
     return Math.max(Math.abs("abcdefgh".indexOf(casilla[0]) - 3.5), Math.abs(Number(casilla[1]) - 1 - 3.5));
   }
 
+  let momentoElegido = null; // humor con el que acaba de elegir su última jugada
+  let momentoActual = null;  // id del humor en el que está, para avisar solo cuando cambia
+
+  /* Cómo va la partida desde el punto de vista de quien mueve (para los cambios de humor). */
+  function contextoDe(g, color) {
+    const mias = { p: 0, n: 0, b: 0, r: 0, q: 0 };
+    const suyas = { p: 0, n: 0, b: 0, r: 0, q: 0 };
+    let material = 0;
+    let reyRival = null;
+    g.board().forEach((fila, f) => fila.forEach((p, c) => {
+      if (!p) return;
+      if (p.type === "k") { if (p.color !== color) reyRival = casillaNombre(f, c); return; }
+      (p.color === color ? mias : suyas)[p.type] += 1;
+      material += (p.color === color ? 1 : -1) * VALOR[p.type];
+    }));
+    return { mias, suyas, material, jugadas: g.history().length, enJaque: g.inCheck(), reyRival };
+  }
+
+  function distanciaCasillas(a, b) {
+    return Math.max(Math.abs("abcdefgh".indexOf(a[0]) - "abcdefgh".indexOf(b[0])), Math.abs(Number(a[1]) - Number(b[1])));
+  }
+
   /* Cuánto le gusta a este rival una jugada, en centésimas de peón. */
-  function bonoEstilo(m, estilo) {
+  function bonoEstilo(m, estilo, ctx) {
     if (!estilo) return 0;
     let b = 0;
+    if (estilo.ataqueRey && ctx && ctx.reyRival && m.piece !== "k") {
+      const acerca = distanciaCasillas(m.from, ctx.reyRival) - distanciaCasillas(m.to, ctx.reyRival);
+      b += estilo.ataqueRey * Math.max(-2, Math.min(2, acerca));
+    }
     const jaque = m.san.includes("+") || m.san.includes("#");
     const conProposito = jaque || !!m.captured || distanciaCentro(m.to) < distanciaCentro(m.from);
     const porPieza = (estilo.piezas && estilo.piezas[m.piece]) || 0;
@@ -165,6 +211,11 @@
       return suyos[Math.floor(Math.random() * suyos.length)];
     }
     const maximiza = g.turn() === "w";
+    // Humor del momento: si la partida va de cierta manera, juega distinto a su estilo base.
+    const ctx = contextoDe(g, g.turn());
+    const momento = cfg.momentos ? cfg.momentos.find(x => x.cuando(ctx)) : null;
+    const estiloAhora = momento ? momento.estilo : cfg.estilo;
+    momentoElegido = momento || null;
     limite = performance.now() + cfg.tiempo;
     let mejorGlobal = null;
 
@@ -190,8 +241,8 @@
 
     // Su forma de jugar: las jugadas que le gustan suben un poco de valor (las que le gustan
     // menos, bajan), así que entre alternativas parecidas elige como lo haría él.
-    if (cfg.estilo) {
-      mejorGlobal.puntajes = mejorGlobal.puntajes.map(p => ({ m: p.m, v: p.v + (maximiza ? 1 : -1) * bonoEstilo(p.m, cfg.estilo) }));
+    if (estiloAhora) {
+      mejorGlobal.puntajes = mejorGlobal.puntajes.map(p => ({ m: p.m, v: p.v + (maximiza ? 1 : -1) * bonoEstilo(p.m, estiloAhora, ctx) }));
       mejorGlobal.mejor = mejorGlobal.puntajes.reduce((a, c) => ((maximiza ? c.v > a.v : c.v < a.v) ? c : a)).m;
     }
 
@@ -552,7 +603,16 @@
       setTimeout(() => {
         if (miPartida !== partidaId) return;
         pensando = false;
-        if (m && !terminado) jugar(m, true);
+        const humor = momentoElegido;
+        if (m && !terminado) {
+          jugar(m, true);
+          // Al cambiar de humor, lo dice con sus propias palabras
+          const id = humor ? humor.id : null;
+          if (id !== momentoActual) {
+            momentoActual = id;
+            if (humor && humor.frase && !terminado) comentarioEl.textContent = `${rival.nombre}: «${humor.frase}»`;
+          }
+        }
       }, espera);
     }, 80);
   }
@@ -667,6 +727,7 @@
     ocultarVictoria();
     online = null;
     rival = r;
+    momentoActual = null; momentoElegido = null;
     partidaId += 1;
     limpiarArrastre();
     juego = new Chess();
