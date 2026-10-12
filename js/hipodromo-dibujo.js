@@ -28,7 +28,7 @@ window.HipodromoDibujo = (function () {
 
   /* ---------------------------------------------------------------- rasgos de identidad: tablas con su frecuencia */
   const TABLAS = {
-    patas: [["4", 95], ["hex", 2.2], ["del", 1.6], ["fina", 1.2]],
+    patas: [["4", 95], ["hex", 1.6], ["del", 1.1], ["fina", 0.8], ["tras", 0.8], ["aux", 0.7]],
     cuello: [["recto", 40], ["serpentino", 14], ["grueso", 14], ["segmentado", 8], ["melena", 24]],
     hocico: [["medio", 30], ["corto", 20], ["largo", 18], ["cuadrado", 16], ["punta", 16]],
     orejas: [["pequeñas", 18], ["largas", 18], ["puntiagudas", 20], ["caidas", 14], ["redondas", 12], ["aleta", 10], ["dobles", 5], ["ninguna", 3]],
@@ -77,7 +77,7 @@ window.HipodromoDibujo = (function () {
 
   /* ---------------------------------------------------------------- textos de los rasgos */
   const NOMBRES = {
-    patas: { hex: "Seis patas", del: "Seis patas, delanteras dobles y fuertes", fina: "Seis patas, el par extra más fino" },
+    patas: { hex: "Seis patas", del: "Seis patas, delanteras dobles y fuertes", fina: "Seis patas, el par extra más fino", tras: "Seis patas, traseras dobles", aux: "Seis patas, un par fino en medio" },
     cuello: { serpentino: "Cuello serpentino", grueso: "Cuello grueso", segmentado: "Cuello segmentado", melena: "Melena en el cuello" },
     hocico: { corto: "Hocico corto", largo: "Hocico largo", cuadrado: "Hocico cuadrado", punta: "Hocico puntiagudo" },
     orejas: { largas: "Orejas largas", puntiagudas: "Orejas puntiagudas", caidas: "Orejas caídas", redondas: "Orejas redondas", aleta: "Orejas en aleta", dobles: "Dos pares de orejas", ninguna: "Sin orejas externas" },
@@ -175,13 +175,16 @@ window.HipodromoDibujo = (function () {
     }
     // [x de la pata cercana, x de la lejana, largo, grosor]
     const trasera = [xAtras - 2, xAtras + 10, 1, rp], delantera = [xFrente + 8, xFrente - 2, 1, dp];
-    // el par extra va justo detrás de las delanteras y llega al suelo, como piernas funcionales
+    // Todas las patas extra llegan al suelo: son piernas que sirven, nunca algo colgando del torso.
+    const medio = (xAtras + xFrente) / 2;
     const extra = (k, w) => [xFrente - 17, xFrente - 28, k, w];
     const POS = {
       "4": [trasera, delantera],
-      hex: [trasera, extra(1, dp * 0.95), delantera],
-      del: [trasera, extra(1, dp * 1.12), [xFrente + 8, xFrente - 2, 1, dp * 1.12]],
-      fina: [trasera, extra(1, dp * 0.7), delantera]
+      hex: [trasera, extra(1, dp * 0.95), delantera],                                          // el par extra detrás de las delanteras
+      del: [trasera, extra(1, dp * 1.12), [xFrente + 8, xFrente - 2, 1, dp * 1.12]],           // delanteras dobles y fuertes
+      fina: [trasera, extra(1, dp * 0.7), delantera],                                          // par extra más fino
+      tras: [[xAtras - 3, xAtras + 8, 1, rp], [xAtras + 17, xAtras + 28, 1, rp * 0.95], delantera],   // traseras dobles
+      aux: [trasera, [medio - 3, medio + 8, 1, 0.62], delantera]                               // par fino en medio, también apoyado
     }[R.patas] || [trasera, delantera];
     const patasLejos = POS.map(p => pata(p[1], p[2], p[3], lejos)).join("");
     const patasCerca = POS.map(p => pata(p[0], p[2], p[3], base)).join("");
