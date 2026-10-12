@@ -8,6 +8,8 @@
   const filtroAfinidad = document.getElementById("filtroAfinidad");
   const filtroTengo = document.getElementById("filtroTengo");
   const filtroReveladas = document.getElementById("filtroReveladas");
+  const filtroBuscar = document.getElementById("filtroBuscar");
+  const filtroOrden = document.getElementById("filtroOrden");
   const CLAVE_REVELAR = "compendioCartasRevelar";
 
   // Los ids del catálogo base (cartas-datos.js): esas cartas no se borran, solo se despublican.
@@ -66,6 +68,8 @@
     if (!detalleEl.open) detalleEl.showModal();
   }
 
+  const sinTildes = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
   function pintar() {
     const visibles = window.CARTAS.filter(c => CartasCliente.visible(c));
     const tengo = visibles.filter(c => cantidadDe(c.id) > 0);
@@ -74,10 +78,20 @@
     document.getElementById("cartasCopias").textContent = String(tengo.reduce((s, c) => s + cantidadDe(c.id), 0));
     document.getElementById("cartasProgreso").style.width = `${visibles.length ? Math.round((tengo.length / visibles.length) * 100) : 0}%`;
 
-    const f = { rareza: filtroRareza.value, tipo: filtroTipo.value, af: filtroAfinidad.value, soloTengo: filtroTengo.checked };
+    const f = { rareza: filtroRareza.value, tipo: filtroTipo.value, af: filtroAfinidad.value, soloTengo: filtroTengo.checked, texto: sinTildes(filtroBuscar.value.trim()) };
+    // Una carta sin descubrir no se puede buscar ni ordenar por su nombre: eso la delataría
+    const conocida = c => cantidadDe(c.id) > 0 || revelando();
+    const coincide = c => !f.texto || (conocida(c) && sinTildes(`${c.nombre} ${c.epiteto || ""}`).includes(f.texto));
+    const porRareza = (a, b) => window.CARTAS_RAREZAS[a.rareza].orden - window.CARTAS_RAREZAS[b.rareza].orden || a.coste - b.coste || a.nombre.localeCompare(b.nombre);
+    const porNombre = (a, b) => a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" });
+    const orden = {
+      nombre: porNombre, "nombre-inv": (a, b) => porNombre(b, a),
+      coste: (a, b) => a.coste - b.coste || porNombre(a, b), "coste-inv": (a, b) => b.coste - a.coste || porNombre(a, b),
+      atq: (a, b) => (b.atq || 0) - (a.atq || 0) || porNombre(a, b), pv: (a, b) => (b.pv || 0) - (a.pv || 0) || porNombre(a, b)
+    }[filtroOrden.value] || porRareza;
     const lista = visibles
-      .filter(c => (!f.rareza || c.rareza === f.rareza) && (!f.tipo || c.tipo === f.tipo) && (!f.af || c.afinidad.includes(f.af)) && (!f.soloTengo || cantidadDe(c.id) > 0))
-      .sort((a, b) => window.CARTAS_RAREZAS[a.rareza].orden - window.CARTAS_RAREZAS[b.rareza].orden || a.coste - b.coste || a.nombre.localeCompare(b.nombre));
+      .filter(c => (!f.rareza || c.rareza === f.rareza) && (!f.tipo || c.tipo === f.tipo) && (!f.af || c.afinidad.includes(f.af)) && (!f.soloTengo || cantidadDe(c.id) > 0) && coincide(c))
+      .sort((a, b) => (filtroOrden.value ? conocida(b) - conocida(a) : 0) || orden(a, b));
 
     gridEl.innerHTML = lista.length
       ? lista.map(c => htmlCarta(c, cantidadDe(c.id) > 0 || revelando(), cantidadDe(c.id), propia && propia.numeros.get(c.id))).join("")
@@ -105,7 +119,8 @@
     filtroReveladas.addEventListener("change", () => {
       try { localStorage.setItem(CLAVE_REVELAR, filtroReveladas.checked ? "1" : "0"); } catch (e) { /* sin almacenamiento */ }
     });
-    [filtroRareza, filtroTipo, filtroAfinidad, filtroTengo, filtroReveladas].forEach(el => el.addEventListener("change", pintar));
+    [filtroRareza, filtroTipo, filtroAfinidad, filtroTengo, filtroReveladas, filtroOrden].forEach(el => el.addEventListener("change", pintar));
+    filtroBuscar.addEventListener("input", pintar);
     mostrarControlesDeEditor();
   }
 

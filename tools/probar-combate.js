@@ -570,5 +570,32 @@ for (let g = 0; g < 300; g++) {
   }
   if (e.ganador !== null) terminadas++;
 }
+// 17) Las diez cartas que eran 1/1 sin habilidad
+{ const e = partida([], []); turnoDe(e, 0); const a = poner(e, 0, "t33"), enem = poner(e, 1, "t33");
+  M.ponerUnidad(e, 0, "arquero-de-la-milicia", true, enem); ok(M.atqEfectivo(e, enem) === 2, "Arquero: la unidad enemiga pierde 1 de ataque");
+  M.ponerUnidad(e, 0, "cocatriz", true, enem); ok(M.atqEfectivo(e, enem) === 0, "Cocatriz: pierde 2 de ataque más (no baja de 0)");
+  M.ponerUnidad(e, 0, "mago-de-milicia", true, a); ok(a.flags.barrera === true, "Mago de la Milicia: da Barrera a una unidad aliada");
+  const mil = poner(e, 0, "miliciano-de-brurland");
+  M.ponerUnidad(e, 0, "sargento-de-la-milicia", true, null);
+  ok(M.atqEfectivo(e, mil) === 3 && M.atqEfectivo(e, a) === 3, `Sargento: +1 a las de Juramento y no a las otras (${M.atqEfectivo(e, mil)}, ${M.atqEfectivo(e, a)})`); }
+{ const e = partida([], []); turnoDe(e, 0); const mil = poner(e, 0, "miliciano-de-brurland");
+  M.infligir(e, { u: mil.uid }, 2, { tipo: "habilidad" }); ok(mil.pv === 1, "Miliciano solo: recibe el daño entero");
+  const e2 = partida([], []); turnoDe(e2, 0); const m2 = poner(e2, 0, "miliciano-de-brurland"); poner(e2, 0, "arquero-de-la-milicia");
+  M.infligir(e2, { u: m2.uid }, 2, { tipo: "habilidad" }); ok(m2.pv === 2, "Miliciano con otra de Juramento: recibe 1 menos"); }
+{ const e = partida([], []); turnoDe(e, 0); const cab = poner(e, 0, "caballero-de-brurland");
+  ok(M.tienePalabra(e, cab, "arrollar"), "Caballero: Arrollar");
+  M.infligir(e, { u: cab.uid }, 99, { tipo: "habilidad" }); ok(M.buscar(e, cab.uid) && cab.pv === 1, "Caballero: la primera vez que fuera a morir se queda con 1");
+  M.infligir(e, { u: cab.uid }, 99, { tipo: "habilidad" }); ok(!M.buscar(e, cab.uid), "y la segunda muere"); }
+{ const e = partida([], []); turnoDe(e, 0); const rata = poner(e, 0, "rata"); const c = M.ponerUnidad(e, 0, "rata", false, null);
+  ok(M.esEscurridizo(e, c), "Rata: no se puede elegir el turno en que entra"); }
+{ const e = partida([], []); turnoDe(e, 0); const J = e.jugadores[0]; const n0 = J.mano.length;
+  M.ponerUnidad(e, 0, "perro-sabio", true, null); ok(J.mano.length === n0 + 1, "Perro sabio: roba una carta al entrar"); }
+{ const e = partida([], []); turnoDe(e, 0); const sapo = poner(e, 0, "sapo-beluto"); const vuela = poner(e, 1, "manta-del-cielo"), suelo = poner(e, 1, "t33");
+  ok(M.atqEfectivo(e, sapo) === 1, "Sapo Beluto: 1 de ataque base");
+  M.aplicar(e, { t: "fin" }, 0); }
+{ const e = partida([], []); turnoDe(e, 0); const rival = [poner(e, 1, "t33"), poner(e, 1, "t24"), poner(e, 1, "t11")];
+  M.ponerUnidad(e, 0, "zraith", true, null);
+  ok(rival[0].pv === 2 && rival[1].pv === 3 && !M.buscar(e, rival[2].uid), "Zraith: 1 de daño a cada unidad enemiga al entrar");
+  ok(M.tienePalabra(e, e.jugadores[0].campo[0], "volar"), "y vuela"); }
 console.log(fallos.length ? `${fallos.length} fallo(s):\n  ` + fallos.slice(0, 12).join("\n  ") : `OK: ${n} comprobaciones y ${terminadas} partidas al azar terminadas (${ataques} ataques, ${bloqueos} bloqueos).`);
 process.exit(fallos.length ? 1 : 0);

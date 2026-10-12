@@ -22,5 +22,16 @@ module.exports = [
   { id: "mercader", nombre: "Mercader", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 3,
     habilidad: "Regateo: tus Objetos cuestan 1 menos." },
   { id: "el-vendedor-de-davidas", nombre: "El vendedor de Dávidas", epiteto: "", tipo: "Personaje", rareza: "infrecuente", afinidad: ["sombra"], coste: 3, atq: 1, pv: 3,
-    habilidad: "Carroñero: cada vez que muere otra unidad, de cualquier jugador, gana +1/+1 (hasta 3 veces)." }
+    habilidad: "Carroñero: cada vez que muere otra unidad, de cualquier jugador, gana +1/+1 (hasta 3 veces)." },
+  // Eran 1/1 sin habilidad (SQL: cartas_diez_vacias.sql)
+  { id: "rata", nombre: "Rata", epiteto: "", tipo: "Criatura", rareza: "comun", afinidad: ["sombra"], coste: 1, atq: 1, pv: 1, habilidad: "Sabandija: el turno en que entra, ni los desafíos ni las habilidades enemigas pueden elegirla." },
+  { id: "perro-sabio", nombre: "Perro sabio", epiteto: "", tipo: "Criatura", rareza: "comun", afinidad: ["arcano"], coste: 2, atq: 2, pv: 2, habilidad: "Consejo sabio: al entrar, roba una carta." },
+  { id: "arquero-de-la-milicia", nombre: "Arquero de la Milicia", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 2, atq: 2, pv: 1, habilidad: "Disparo de cobertura: al entrar, una unidad enemiga pierde 1 de ataque hasta el final del próximo turno de su dueño." },
+  { id: "caballero-de-brurland", nombre: "Caballero de Brurland", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 5, atq: 4, pv: 5, habilidad: "Embestida: Arrollar. Resolución inquebrantable: la primera vez que fuera a morir, se queda con 1 de vida." },
+  { id: "sargento-de-la-milicia", nombre: "Sargento de la Milicia", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 3, atq: 2, pv: 4, habilidad: "¡Adelante!: al entrar, tus demás unidades de Juramento ganan +1 de ataque este turno." },
+  { id: "mago-de-milicia", nombre: "Mago de la Milicia", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento","arcano"], coste: 2, atq: 1, pv: 2, habilidad: "Resguardo: al entrar, una unidad aliada gana Barrera (ignora el primer daño que reciba)." },
+  { id: "sapo-beluto", nombre: "Sapo Beluto", epiteto: "", tipo: "Criatura", rareza: "comun", afinidad: ["caceria"], coste: 2, atq: 1, pv: 4, habilidad: "Cazador de plagas: +3 de ataque contra unidades con Volar." },
+  { id: "miliciano-de-brurland", nombre: "Miliciano de Brurland", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 2, atq: 2, pv: 3, habilidad: "Formación cerrada: recibe 1 menos de daño mientras controlas otra unidad de Juramento." },
+  { id: "cocatriz", nombre: "Cocatriz", epiteto: "", tipo: "Criatura", rareza: "comun", afinidad: ["carne"], coste: 3, atq: 2, pv: 2, habilidad: "Aliento negro: al entrar, una unidad enemiga pierde 2 de ataque hasta el final del próximo turno de su dueño." },
+  { id: "zraith", nombre: "Zraith", epiteto: "El Águila de la Tormenta", tipo: "Criatura", rareza: "legendaria", afinidad: ["arcano"], coste: 7, atq: 5, pv: 6, habilidad: "Volar: solo puede ser bloqueada por unidades que también vuelan. Tormenta: al entrar, inflige 1 de daño a cada unidad enemiga." }
 ];

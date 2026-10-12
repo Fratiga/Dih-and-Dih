@@ -289,6 +289,47 @@
       M.log(c.est, `${M.nombre(c.est, c.u)} recoge lo que ${M.nombre(c.est, c.muerta)} dejó: +1/+1.`);
     };
     R("el-vendedor-de-davidas", { alMorirAliada: carronia, alMorirEnemiga: carronia });
+
+    // --- La milicia de Brurland y otros que eran cartas vacías (stats en data/stats.js, bestiario y ajedrez) ---------
+    // Miliciano: la formación cerrada de los escudos (+1 CA junto a otro miliciano, en D&D).
+    R("miliciano-de-brurland", { reduceDano: (est, u) => (est.jugadores[u.dueno].campo.some(o => o.uid !== u.uid && esDe(est, o, "juramento")) ? 1 : 0) });
+    // Arquero: el disparo de cobertura frena a quien alcanza.
+    R("arquero-de-la-milicia", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+      M.mod(c.est, c.objetivo, -1, 0, c.est.turno + 1, `${M.nombre(c.est, c.objetivo)} queda bajo fuego de cobertura: -1 de ataque hasta el final del próximo turno de su dueño.`);
+    } } });
+    // Sargento: la orden de avanzar.
+    R("sargento-de-la-milicia", { alEntrar: { resolver: c => {
+      const tropa = c.est.jugadores[c.j].campo.filter(o => o.uid !== c.u.uid && esDe(c.est, o, "juramento"));
+      tropa.forEach(o => M.mod(c.est, o, 1, 0, c.est.turno));
+      if (tropa.length) M.log(c.est, `${M.nombre(c.est, c.u)} ordena avanzar: ${tropa.length === 1 ? "su compañero de Juramento gana" : "sus compañeros de Juramento ganan"} +1 de ataque este turno.`);
+    } } });
+    // Caballero: la embestida arrolla y la resolución inquebrantable lo deja en pie una vez.
+    R("caballero-de-brurland", {
+      palabras: ["arrollar"],
+      evitaMuerte: (est, g, u) => {
+        if (g.uid !== u.uid || g.flags.resolucionUsada) return false;
+        g.flags.resolucionUsada = true;
+        M.log(est, `Resolución inquebrantable: ${M.nombre(est, g)} se queda en pie con 1 de vida.`);
+        return true;
+      }
+    });
+    // Mago de la milicia: un resguardo para quien va a recibir los golpes.
+    R("mago-de-milicia", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => {
+      c.objetivo.flags.barrera = true;
+      M.log(c.est, `${M.nombre(c.est, c.u)} levanta un resguardo sobre ${M.nombre(c.est, c.objetivo)}: ignora el primer daño que reciba.`);
+    } } });
+    R("perro-sabio", { alEntrar: { resolver: c => M.robar(c.est, c.j, 1) } });
+    R("rata", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; } });
+    R("sapo-beluto", { bonusAtaque: (est, u, t) => (t && M.tienePalabra(est, t, "volar") ? 3 : 0) });
+    R("cocatriz", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => {
+      M.mod(c.est, c.objetivo, -2, 0, c.est.turno + 1, `${M.nombre(c.est, c.objetivo)} respira el vapor negro de la cocatriz: -2 de ataque hasta el final del próximo turno de su dueño.`);
+    } } });
+    R("zraith", { palabras: ["volar"], alEntrar: { resolver: c => {
+      const rivales = enemigas(c.est, c.j).slice();
+      if (!rivales.length) return;
+      M.log(c.est, `Zraith bate las alas y la tormenta cae sobre el campo rival.`);
+      rivales.forEach(t => { if (M.buscar(c.est, t.uid)) M.infligir(c.est, { u: t.uid }, 1, { tipo: "habilidad", dueno: c.j }); });
+    } } });
     R("gareth", {
       palabras: ["duro"],
       alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => M.meta(est, t.cartaId).coste <= 3, resolver: c => {
