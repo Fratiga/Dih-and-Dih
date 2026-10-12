@@ -291,7 +291,7 @@
       return { id: e.id, nombre: e.nombre, puerta: e.puerta, per, tramos: res.tramos[e.id], pos: l.pos, t: l.t };
     });
     poner($("hipPista"), carriles.map(c => `<div class="hip-carril" data-id="${c.id}"><span class="hip-carril-p">${c.puerta}</span>
-      <div class="hip-carril-pista"><div class="hip-corredor">${D.silueta(c.per, { clase: "hip-mini corre" })}<span class="hip-corredor-nombre">${esc(c.nombre)}</span><span class="hip-aviso-inc"></span></div></div><span class="hip-carril-lugar">-</span></div>`).join(""));
+      <div class="hip-carril-pista"><div class="hip-corredor">${D.silueta(c.per, { clase: "hip-mini corre", numero: c.puerta })}<span class="hip-corredor-nombre">${esc(c.nombre)}</span><span class="hip-aviso-inc"></span></div></div><span class="hip-carril-lugar">-</span></div>`).join(""));
     $("hipPista")._h = null;
     escena = { n: p.n, factor: ultimo / (C.DURACION_SEG - 8), carriles, dist: res.dist, disparados: new Set(), resFinal: false, res,
       nodos: [...$("hipPista").querySelectorAll(".hip-carril")] };
@@ -317,6 +317,7 @@
       corre.style.transform = `translateX(${(Math.min(1, s.metros / escena.dist) * Math.max(0, ancho)).toFixed(1)}px)`;
       textoDe(nodo.querySelector(".hip-carril-lugar"), (s.terminada ? s.c.pos : lugar.get(s.c.id)) + "º");
       nodo.classList.toggle("fin", s.terminada);
+      nodo.classList.toggle("lider", lugar.get(s.c.id) === 1 && !s.terminada && s.metros > 20);   // líneas de velocidad para quien va primero
       D.galope(corre.querySelector("svg"), !s.terminada);   // llega a meta y se queda quieto
     });
     // tropiezos y lesiones

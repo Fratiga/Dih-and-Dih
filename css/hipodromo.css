@@ -231,3 +231,7 @@ body.hip-con-ficha { overflow: hidden; }
 
 /* Rasgos visibles de la criatura (cuernos, patas extra...) en su ficha. */
 .hip-rasgos { margin: 4px 0 6px; font-size: .78rem; color: #b9b3a2; line-height: 1.5; }
+
+/* Líneas de velocidad detrás de quien va primero en la pista. */
+.hip-vel { opacity: 0; transition: opacity .25s; }
+.hip-carril.lider .hip-vel { opacity: .8; }
