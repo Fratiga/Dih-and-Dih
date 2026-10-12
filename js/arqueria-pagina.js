@@ -225,8 +225,9 @@
     onPuntaje: puntaje => { if (vs) vs.puntaje = puntaje; },
     onGolpe: golpe => enviarGolpe(golpe),
     onMira: (x, y) => enviarMira(x, y),
-    onFin: ({ puntaje, resultado, vs: esVs, rendicion }) => {
+    onFin: ({ puntaje, puntajeRival, resultado, vs: esVs, rendicion }) => {
       if (esVs) { finalizarVs(); return; }
+      if (window.Recompensas) Recompensas.terminar("arqueria", resultado === "ganado" ? "gana" : resultado === "perdido" ? "pierde" : "tablas", puntaje - (puntajeRival || 0));
       anotarPartida(rival.id, resultado === "ganado" ? "gana" : resultado === "perdido" ? "pierde" : "tablas", puntaje);
       // Una partida a la que te rendiste cuenta como derrota, pero no mejora tu mejor puntaje
       const nuevoRecord = !rendicion && puntaje > leer(rival.id);
@@ -241,7 +242,10 @@
 
   boton.addEventListener("click", () => {
     if (vs) marcarListo();
-    else juego.iniciar();
+    else {
+      if (window.Recompensas) Recompensas.iniciar("arqueria", rival.id);
+      juego.iniciar();
+    }
   });
 
   rivalesEl.addEventListener("click", e => {

@@ -68,6 +68,7 @@
 
   function empezar(r) {
     if (window.MusicaPaginas) MusicaPaginas.partida(true);
+    if (window.Recompensas) Recompensas.iniciar("duelo", r.id);
     rival = r;
     j = nuevoLuchador(nombreJugador, 330, 1, 100, [9, 20], 66, "#d8d2b8");
     e = nuevoLuchador(r.nombre.split(",")[0], 630, -1, r.hp, r.dano, r.arma, r.color);
@@ -410,6 +411,7 @@
 
   function terminar(gano) {
     if (window.MusicaPaginas) MusicaPaginas.partida(false);
+    if (window.Recompensas) Recompensas.terminar("duelo", gano ? "gana" : "pierde");
     fase = "fin";
     j.accion = gano ? j.accion : "dead";
     e.accion = gano ? "dead" : e.accion;

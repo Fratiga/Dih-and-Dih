@@ -421,6 +421,7 @@
       }
       return;
     }
+    if (window.Recompensas) Recompensas.terminar("ajedrez", resultado);
     if (resultado === "gana" && !rival.sinRanking) {
       const n = sumarVictoria(rival.id);
       comentar("pierde");
@@ -728,6 +729,7 @@
   function nuevaPartida(r) {
     if (!r) return;
     if (window.MusicaPaginas) MusicaPaginas.partida(true);
+    if (window.Recompensas) Recompensas.iniciar("ajedrez", r.id);
     ocultarVictoria();
     online = null;
     rival = r;
