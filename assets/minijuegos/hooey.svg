@@ -1,18 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-hidden="true">
-<defs><radialGradient id="res" cx=".5" cy="1" r=".9"><stop offset="0" stop-color="#e8641e" stop-opacity=".75"/><stop offset="1" stop-color="#e8641e" stop-opacity="0"/></radialGradient></defs>
+<defs>
+<radialGradient id="res" cx=".5" cy="1" r=".9"><stop offset="0" stop-color="#e8641e" stop-opacity=".7"/><stop offset="1" stop-color="#e8641e" stop-opacity="0"/></radialGradient>
+<radialGradient id="slime" cx=".45" cy=".35" r=".75"><stop offset="0" stop-color="#7be866"/><stop offset=".6" stop-color="#43b83f"/><stop offset="1" stop-color="#2a8a30"/></radialGradient>
+<linearGradient id="capa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a35b0"/><stop offset="1" stop-color="#4f1f7c"/></linearGradient>
+<path id="espiral" d="M0 0c0-2.4 3.6-2.4 3.6 0c0 4.4-7.2 4.4-7.2 0c0-6.6 10.8-6.6 10.8 0c0 8.8-14.4 8.8-14.4 0" fill="none" stroke="#1a1a1a" stroke-width="2.1" stroke-linecap="round"/>
+</defs>
 <rect width="320" height="150" fill="#1d120c"/>
 <rect width="320" height="150" fill="url(#res)"/>
 <g id="llama"><path d="M0 150q-6-24 8-40q2 14 12 10q10 16 4 30z" fill="#e8641e"/><path d="M6 150q-2-14 6-22q2 8 8 6q4 8 0 16z" fill="#f6bf4d"/></g>
-<use href="#llama" x="30"/><use href="#llama" x="78" y="6"/><use href="#llama" x="236"/><use href="#llama" x="282" y="6"/>
-<g stroke="#7bd35a" stroke-width="9" stroke-linecap="round"><path d="M116 84L98 58M204 84L222 58"/></g>
-<path d="M112 112Q106 64 160 56Q214 64 208 112Q208 122 196 118Q186 128 176 118Q166 128 156 118Q146 128 136 118Q122 122 112 112Z" fill="#7bd35a"/>
-<ellipse cx="136" cy="76" rx="9" ry="6" fill="#a6ea85" transform="rotate(-25 136 76)"/>
-<circle cx="141" cy="90" r="8" fill="#f9ead0"/><circle cx="179" cy="90" r="8" fill="#f9ead0"/>
-<circle cx="143" cy="91" r="3.5" fill="#2b1520"/><circle cx="181" cy="91" r="3.5" fill="#2b1520"/>
-<path d="M142 102Q160 116 178 102" stroke="#2b1520" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<ellipse cx="160" cy="60" rx="54" ry="9" fill="#4a2f8a"/>
-<path d="M122 58L164 6L200 58Z" fill="#5b3aa6"/>
-<path d="M126 52Q160 60 196 52L200 58Q160 68 122 58Z" fill="#f6bf4d"/>
-<path d="M168 28l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z" fill="#f6bf4d"/>
-<g fill="#f6bf4d"><circle cx="86" cy="40" r="3"/><circle cx="236" cy="44" r="3"/><circle cx="252" cy="22" r="2"/><circle cx="70" cy="22" r="2"/></g>
+<use href="#llama" x="16"/><use href="#llama" x="58" y="8"/><use href="#llama" x="246"/><use href="#llama" x="282" y="8"/>
+<g transform="translate(160 150) scale(1.12) translate(-160 -150)">
+<path d="M102 150C98 124 110 104 116 88C116 58 134 40 160 40C186 40 204 58 204 88C210 104 222 124 218 150Z" fill="url(#slime)"/>
+<ellipse cx="138" cy="66" rx="14" ry="9" fill="#9bf58a" opacity=".45" transform="rotate(-30 138 66)"/>
+<use href="#espiral" x="142" y="82"/><use href="#espiral" x="180" y="80"/>
+<path d="M136 92C140 112 152 116 164 116C180 116 190 106 192 90" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<path d="M104 124Q160 142 216 124L218 138Q160 156 102 138Z" fill="url(#capa)"/>
+<circle cx="160" cy="134" r="3" fill="#2b1520"/>
+<path d="M80 64Q88 44 160 42Q232 44 240 64Q228 64 214 58Q160 68 106 58Q92 64 80 64Z" fill="#3a3838"/>
+<path d="M122 54Q122 18 160 16Q198 18 198 54Q160 62 122 54Z" fill="#2f2d2d"/>
+<path d="M122 46Q160 56 198 46L198 53Q160 63 122 53Z" fill="#1c1b1b"/>
+</g>
+<g fill="#f6bf4d"><circle cx="86" cy="36" r="3"/><circle cx="240" cy="40" r="3"/><circle cx="252" cy="18" r="2"/><circle cx="72" cy="20" r="2"/></g>
 </svg>

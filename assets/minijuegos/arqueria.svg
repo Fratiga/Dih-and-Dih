@@ -1,14 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-hidden="true">
 <defs><linearGradient id="cie" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3a4a"/><stop offset="1" stop-color="#e7a45c"/></linearGradient></defs>
 <rect width="320" height="150" fill="url(#cie)"/>
-<circle cx="70" cy="92" r="14" fill="#f6bf4d" opacity=".85"/>
+<circle cx="62" cy="96" r="14" fill="#f6bf4d" opacity=".85"/>
 <path d="M0 104q50-26 100-4t110 2q60-22 110 4v44H0z" fill="#2a4b33"/>
 <rect y="122" width="320" height="28" fill="#1f3b2a"/>
 <path d="M236 100l-22 40M236 100l22 40" stroke="#6b3b24" stroke-width="6" stroke-linecap="round"/>
 <g transform="translate(236 66)"><circle r="42" fill="#f9ead0" stroke="#2b1520" stroke-width="2"/><circle r="33" fill="#a3202f"/><circle r="24" fill="#f9ead0"/><circle r="15" fill="#a3202f"/><circle r="6" fill="#f6bf4d"/></g>
-<path d="M62 30Q18 76 62 122" stroke="#6b3b24" stroke-width="7" fill="none" stroke-linecap="round"/>
-<path d="M62 30L44 80L62 122" stroke="#f9ead0" stroke-width="2" fill="none" stroke-linejoin="round"/>
-<path d="M44 80L234 68" stroke="#c9a46b" stroke-width="4" stroke-linecap="round"/>
-<path d="M44 80l10-9l5 2l-7 8zM44 80l10 9l5-2l-7-8z" fill="#a3202f"/>
-<path d="M54 79l10-9l5 2l-7 8zM54 79l10 9l5-2l-7-8z" fill="#a3202f"/>
+<!-- Arco: el vientre mira al objetivo y las puntas hacia el arquero; la cuerda se estira hacia atrás hasta la muesca de la flecha -->
+<path d="M82 22Q134 76 82 130" stroke="#6b3b24" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M102 66Q110 76 102 86" stroke="#c9a46b" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M82 22L46 76L82 130" stroke="#f9ead0" stroke-width="2" fill="none" stroke-linejoin="round"/>
+<path d="M46 76L232 66" stroke="#c9a46b" stroke-width="4" stroke-linecap="round"/>
+<path d="M46 76l-9-9l4-2l8 8zM46 76l-9 9l4 2l8-8z" fill="#a3202f"/>
+<path d="M58 75l-9-9l4-2l8 8zM58 75l-9 9l4 2l8-8z" fill="#a3202f"/>
 </svg>
