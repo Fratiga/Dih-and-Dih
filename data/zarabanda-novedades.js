@@ -3,6 +3,16 @@
 // de cambios en frases cortas. El botón avisa con un punto a quien no haya visto la última.
 window.ZARABANDA_NOVEDADES = [
   {
+    fecha: "2026-10-12",
+    titulo: "Largas dobles",
+    cambios: [
+      "En el editor ahora hay dobles largas: dos largas que empiezan a la vez, una en cada carril, cada una con su propio largo.",
+      "Pulsa Doble con una larga elegida y le sale su pareja en el otro carril. Luego arrastra el final de cada una por separado. Con Larga sobre una doble, se parte en dos largas.",
+      "En el juego se unen con el puente dorado y cada larga se mantiene y se suelta por su cuenta.",
+      "Al traer un mapa de Parranda, un acorde con alguna larga se vuelve una doble larga."
+    ]
+  },
+  {
     fecha: "2026-10-06",
     titulo: "Ranking del modo práctica",
     cambios: [

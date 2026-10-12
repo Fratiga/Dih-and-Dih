@@ -251,6 +251,12 @@
       }
       mapa = base;
       notas = base.notas.map(n => ({ t: n.t, carril: n.carril, dur: n.dur, estado: null, mitades: {}, mantiene: null }));
+      // Dos largas que empiezan a la vez en carriles distintos (una doble larga): cada una se juzga y se mantiene por
+      // su cuenta, y se unen con el mismo puente dorado de las dobles
+      notas.forEach(n => {
+        if (n.carril !== "arriba") return;
+        n.puente = notas.some(o => o.carril === "abajo" && Math.abs(o.t - n.t) < 0.02 && (o.dur > 0 || n.dur > 0));
+      });
     } catch (err) {
       estado = "menu";
       mostrar(menuEl);
@@ -672,6 +678,13 @@
   /* Una nota: forma de su carril; la doble une las dos con un puente dorado; la larga
      lleva una barra hasta donde termina. xCola es la posición del final de la barra. */
   function dibujarNota(n, x, alfa, xCola) {
+    if (n.puente) {
+      ctxC.globalAlpha = alfa;
+      ctxC.strokeStyle = "#f2d46b";
+      ctxC.lineWidth = 5;
+      ctxC.beginPath(); ctxC.moveTo(x, CARRILES.arriba.y + 27); ctxC.lineTo(x, CARRILES.abajo.y - 29); ctxC.stroke();
+      ctxC.globalAlpha = 1;
+    }
     if (n.carril === "ambos") {
       ctxC.globalAlpha = alfa;
       ctxC.strokeStyle = "#f2d46b";

@@ -1064,7 +1064,9 @@
     if (x + largo < -20 || x > ancho + 20) return;
     const lineas = n.carril === "ambos" ? [Y_ARRIBA, Y_ABAJO] : [n.carril === "arriba" ? Y_ARRIBA : Y_ABAJO];
     const color = COLOR[n.carril];
-    if (n.carril === "ambos") {
+    // Dos notas a la vez en carriles distintos, con alguna larga, forman una doble larga: se unen con el puente
+    const hayPareja = n.carril === "arriba" && notas.some(o => o.carril === "abajo" && Math.abs(o.t - n.t) < 0.02 && (o.dur > 0 || n.dur > 0));
+    if (n.carril === "ambos" || hayPareja) {
       g.strokeStyle = COLOR.ambos; g.lineWidth = 4;
       g.beginPath(); g.moveTo(x, Y_ARRIBA); g.lineTo(x, Y_ABAJO); g.stroke();
     }
@@ -1512,19 +1514,71 @@
     sucio = true;
   }
 
+  /* Una doble no puede ser larga como tal: al pedirlo se parte en dos largas a la vez, una en cada carril, y cada una
+     se alarga por su cuenta (arrastrando su final). Con una larga normal, funciona como siempre. */
   function alternarLarga() {
     if (!seleccion.size) { mensaje("Elige primero una nota (Mayús o Ctrl para varias).", true); return; }
-    const lista = [...seleccion].filter(n => n.carril !== "ambos");
-    if (!lista.length) { mensaje("Una nota doble no puede ser larga.", true); return; }
-    const quitar = lista.every(n => n.dur > 0);
-    conSeleccion(n => {
-      if (n.carril === "ambos") return;
+    const lista = [...seleccion];
+    const quitar = lista.every(n => n.carril !== "ambos" && n.dur > 0);
+    guardarFoto();
+    const nuevas = [];
+    lista.forEach(n => {
+      if (n.carril === "ambos") {
+        const dur = Math.max(0.4, periodoEn(n.t) * 2);
+        seleccion.delete(n);
+        notas = notas.filter(o => o !== n);
+        ["arriba", "abajo"].forEach(carril => nuevas.push({ t: n.t, carril, dur }));
+        return;
+      }
       n.dur = quitar ? 0 : (n.dur > 0 ? n.dur : Math.max(0.4, periodoEn(n.t) * 2));
     });
+    nuevas.forEach(n => { notas.push(n); seleccion.add(n); });
+    notas.sort((a, b) => a.t - b.t);
+    guardarFoto();
+    reiniciarClics();
+    sucio = true;
   }
+
+  /* Doble: una nota corta pasa a ser una doble (las dos notas a la vez en un solo golpe). Una larga recibe una
+     pareja larga en el otro carril, del mismo largo, que luego se ajusta por separado; con D otra vez se quita la
+     pareja. Si las dos largas se dejan en cero, D las vuelve a juntar en una doble. */
   function alternarDoble() {
-    const todas = seleccion.size > 0 && [...seleccion].every(n => n.carril === "ambos");
-    conSeleccion(n => { if (todas) n.carril = "abajo"; else { n.carril = "ambos"; n.dur = 0; } });
+    if (!seleccion.size) { mensaje("Elige primero una nota (Mayús o Ctrl para varias).", true); return; }
+    const lista = [...seleccion];
+    guardarFoto();
+    if (lista.every(n => n.carril === "ambos")) {
+      lista.forEach(n => { n.carril = "abajo"; });
+    } else {
+      const quitar = new Set();
+      const nuevas = [];
+      let ocupados = 0;
+      lista.forEach(n => {
+        if (n.carril === "ambos" || quitar.has(n)) return;
+        const otro = n.carril === "arriba" ? "abajo" : "arriba";
+        const par = notas.find(o => o !== n && o.carril === otro && Math.abs(o.t - n.t) < 0.02);
+        if (par) {
+          if (!(n.dur > 0) && !(par.dur > 0)) { n.carril = "ambos"; n.dur = 0; }
+          quitar.add(par);
+          return;
+        }
+        if (n.dur > 0) {
+          const choca = notas.some(o => o.carril === otro && o.t > n.t - 0.02 && o.t < n.t + n.dur);
+          if (choca) { ocupados++; return; }
+          nuevas.push({ t: n.t, carril: otro, dur: n.dur });
+          return;
+        }
+        n.carril = "ambos";
+        n.dur = 0;
+      });
+      notas = notas.filter(n => !quitar.has(n));
+      quitar.forEach(n => seleccion.delete(n));
+      nuevas.forEach(n => { notas.push(n); seleccion.add(n); });
+      if (ocupados) mensaje(ocupados === 1 ? "No cabe la pareja: el otro carril tiene una nota ahí." : `No caben ${ocupados} parejas: el otro carril tiene notas ahí.`, true);
+    }
+    notas.sort((a, b) => a.t - b.t);
+    guardarFoto();
+    reiniciarClics();
+    sucio = true;
   }
   function cambiarCarril() {
     conSeleccion(n => { if (n.carril !== "ambos") n.carril = n.carril === "arriba" ? "abajo" : "arriba"; });

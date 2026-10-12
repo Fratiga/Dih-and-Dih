@@ -3,6 +3,14 @@
 // de cambios en frases cortas. El botón avisa con un punto a quien no haya visto la última.
 window.PARRANDA_NOVEDADES = [
   {
+    fecha: "2026-10-12",
+    titulo: "Largas dobles",
+    cambios: [
+      "En el editor, al hacer un acorde con una nota larga, la segunda nota sale larga también, del mismo largo.",
+      "Cada nota del acorde se alarga por separado arrastrando su final, así que las largas del acorde pueden medir distinto."
+    ]
+  },
+  {
     fecha: "2026-10-07",
     titulo: "Teclas y brillo de los carriles",
     cambios: [

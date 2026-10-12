@@ -1606,8 +1606,10 @@
       lista.forEach(n => {
         if (hermanas(n).length) return;
         const opciones = [n.carril + 1, n.carril - 1, n.carril + 2, n.carril - 2].filter(c => c >= 0 && c <= 3);
-        const libre = opciones.find(c => !notas.some(o => o.carril === c && o.t - 0.01 <= n.t && n.t <= o.t + (o.dur || 0) + 0.01));
-        if (libre !== undefined) nuevas.push({ t: n.t, carril: libre, dur: 0 });
+        // Una larga recibe una pareja larga del mismo largo (luego se ajusta por separado)
+        const dur = n.dur > 0 ? n.dur : 0;
+        const libre = opciones.find(c => !notas.some(o => o.carril === c && o.t - 0.01 <= n.t + dur && n.t <= o.t + (o.dur || 0) + 0.01));
+        if (libre !== undefined) nuevas.push({ t: n.t, carril: libre, dur });
       });
       nuevas.forEach(n => { notas.push(n); seleccion.add(n); });
     }

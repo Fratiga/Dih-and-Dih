@@ -306,8 +306,8 @@
 
   /* --- Traer un mapa de Parranda (cuatro carriles) a Zarabanda (dos) ----------------------------------- */
   /* Los carriles 1 y 2 pasan a "abajo" y el 3 y el 4 a "arriba" (más grave abajo, más agudo arriba, como
-     en el mapa automático). Un acorde con notas en las dos mitades se vuelve una doble; si todas caen en la
-     misma mitad queda una sola nota, con la larga si la había. */
+     en el mapa automático). Un acorde con notas en las dos mitades se vuelve una doble (o dos largas a la vez, si
+     alguna era larga); si todas caen en la misma mitad queda una sola nota, con la larga si la había. */
   function desdeParranda(notas4) {
     const orden = notas4.map(n => ({ t: n.t, carril: n.carril, dur: n.dur || 0 })).sort((a, b) => a.t - b.t || a.carril - b.carril);
     const grupos = [];
@@ -315,11 +315,18 @@
       const u = grupos[grupos.length - 1];
       if (u && Math.abs(u.t - n.t) < 0.02) u.notas.push(n); else grupos.push({ t: n.t, notas: [n] });
     });
-    const convertidas = grupos.map(g => {
+    const convertidas = grupos.flatMap(g => {
       const bajas = g.notas.some(n => n.carril <= 1);
       const altas = g.notas.some(n => n.carril >= 2);
-      if (bajas && altas) return { t: g.t, carril: "ambos", dur: 0 };
-      return { t: g.t, carril: bajas ? "abajo" : "arriba", dur: Math.max(...g.notas.map(n => n.dur)) };
+      if (bajas && altas) {
+        const largoDe = lista => Math.max(0, ...lista.map(n => n.dur));
+        const durAbajo = largoDe(g.notas.filter(n => n.carril <= 1));
+        const durArriba = largoDe(g.notas.filter(n => n.carril >= 2));
+        // Un acorde con alguna larga se vuelve una doble larga: dos largas a la vez, cada una con su largo
+        if (durAbajo > 0 || durArriba > 0) return [{ t: g.t, carril: "arriba", dur: durArriba }, { t: g.t, carril: "abajo", dur: durAbajo }];
+        return [{ t: g.t, carril: "ambos", dur: 0 }];
+      }
+      return [{ t: g.t, carril: bajas ? "abajo" : "arriba", dur: Math.max(...g.notas.map(n => n.dur)) }];
     });
     // Dos notas casi encimadas en un mismo carril no se pueden pulsar: se queda la primera
     const ultimo = { arriba: -9, abajo: -9 };
