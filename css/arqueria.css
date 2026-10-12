@@ -185,3 +185,22 @@ body.arq-tema::before {
   .arq-lobby-rejilla { grid-template-columns: minmax(0, 1fr); }
   .arq-principal .mj-play { padding: 11px 22px 11px 18px; font-size: .95rem; }
 }
+
+/* --- Campo grande ----------------------------------------------------------------------------
+   El campo ya no se encoge para caber en la altura de la ventana: ocupa el ancho que haya, como el de
+   Hooey (que también compensa el zoom del navegador: --arq-zoom lo pone arqueria-pagina.js). A partir
+   de ~1740 px de ancho la columna de tablas queda a su lado; por debajo, bajo el campo. */
+.arq-pagina {
+  --arq-ancho: min(calc(1240px * var(--arq-zoom, 1)), calc(100vw - 48px));
+  --arq-grupo: calc(var(--arq-ancho) + 34px + 370px);
+  max-width: calc(var(--arq-grupo) + 48px);
+}
+@media (max-width: 1740px) {
+  .arq-pagina { --arq-grupo: var(--arq-ancho); }
+  .arq-diseno { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .arq-lateral { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); align-items: start; }
+  .arq-lateral .arq-tabla { grid-column: auto; }
+}
+@media (max-width: 900px) {
+  .arq-lateral { grid-template-columns: minmax(0, 1fr); }
+}

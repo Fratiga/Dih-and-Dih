@@ -4,7 +4,12 @@
    se les dispara con clic (o con las teclas Z / X sobre el cursor) y puntúa lo
    cerca que quede el tiro del centro. A un lado corre el puntaje del rival.
    Lo usan arqueria.html (Hornet, Garra y Cassius, y partidas contra otros jugadores) y
-   Muerte Súbita (Verdam). */
+   Muerte Súbita (Verdam).
+
+   En una partida entre dos jugadores el campo es COMPARTIDO: los blancos salen de un calendario
+   que se calcula igual en los dos navegadores (semilla + reloj de la partida), así que los dos
+   ven lo mismo en el mismo instante. Cada blanco es de quien lo acierte primero: el disparo se
+   manda al servidor, que da el blanco al primero que llega, y el otro lo ve desaparecer. */
 (function () {
   const LOGICO_ANCHO = 960;
   const LOGICO_ALTO = 600;
@@ -36,6 +41,7 @@
   const PUNTOS_ANILLO = [10, 7, 4];
   // Lo que se lee en la pantalla previa al disparo (antes estaba en una fila de fichas bajo el campo)
   const REGLAS = ["Un minuto. Gana quien sume más puntos.", "Centro 10, anillo medio 7 y borde 4.", "Dispara con clic, o con Z / X sobre el blanco."];
+  const REGLAS_VS = ["Un minuto. Los blancos son de los dos: se lo lleva quien dispare primero.", "Centro 10, anillo medio 7 y borde 4.", "Dispara con clic, o con Z / X sobre el blanco."];
 
   // Generador con semilla: los dos jugadores de una partida ven los mismos blancos.
   function generadorConSemilla(semilla) {
@@ -53,7 +59,7 @@
      (2x o más) dibujar a resolución completa cuesta el doble o el triple de relleno por
      cuadro y casi no se nota; el combate con Verdam lo baja más porque va sobre capas
      con filtros. */
-  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, fondo = false, resolucionMax = 1.25, onEstado, onFin, onPuntaje }) {
+  function crearArqueria({ canvas, rival: claveRival, duracion = 60, pantallas = true, fondo = false, resolucionMax = 1.25, onEstado, onFin, onPuntaje, onGolpe, onMira }) {
     let cfg = RIVALES[claveRival] || RIVALES.hornet;
     const ancho = LOGICO_ANCHO;
     const alto = LOGICO_ALTO;
@@ -72,6 +78,7 @@
     let ultimoDibujo = 0;
     let sacudida = 0;
     let cursorActual = "";
+    let compartido = null; // partida entre dos jugadores: calendario de blancos, golpes ya repartidos y mira del rival
     let estado = "listo"; // listo | jugando | fin
     let tiempo = 0;
     let puntaje = 0;
@@ -88,8 +95,9 @@
 
     let lastW = 0;
     function ajustarTamano() {
-      const dpr = Math.min(window.devicePixelRatio || 1, resolucionMax);
       const caja = canvas.getBoundingClientRect();
+      // Con el campo grande no se pasa de ~1500 píxeles de ancho de dibujo, para no pagar relleno que no se ve
+      const dpr = Math.max(0.75, Math.min(window.devicePixelRatio || 1, resolucionMax, 1500 / Math.max(1, caja.width)));
       canvas.width = Math.max(1, Math.round(caja.width * dpr));
       canvas.height = Math.max(1, Math.round(caja.height * dpr));
       ctx.setTransform(canvas.width / ancho, 0, 0, canvas.height / alto, 0, 0);
@@ -127,6 +135,113 @@
       };
     }
 
+    /* --- Campo compartido ------------------------------------------------------------------
+       El blanco k sale en tiempos[k] y su posición es una función pura del tiempo de la partida:
+       no depende de la velocidad de cuadros ni de lo que haga nadie, así los dos navegadores
+       dibujan lo mismo. Misma física que en solitario: velocidad = base + 2,2 por segundo. */
+    function prepararCompartido(semilla) {
+      const tiempos = [0];
+      while (tiempos.length < 300) {
+        const t = tiempos[tiempos.length - 1];
+        tiempos.push(t + Math.max(0.45, 0.85 - t * 0.006));
+      }
+      compartido = { semilla: semilla >>> 0, t0: 0, tiempos, parametros: [], golpes: new Map(), kMin: 0, miraRival: null };
+    }
+
+    function paramsBlanco(k) {
+      let p = compartido.parametros[k];
+      if (!p) {
+        const a = generadorConSemilla((compartido.semilla * 31 + k * 7919) >>> 0);
+        const r = cfg.radio;
+        p = compartido.parametros[k] = { r, x0: r + a() * (ancho - r * 2), amp: cfg.zigzag ? 18 + a() * 40 : 0, frec: 1.2 + a() * 1.6, vel: 0.92 + a() * 0.2 };
+      }
+      return p;
+    }
+
+    function posBlanco(k, T) {
+      const p = paramsBlanco(k);
+      const t0 = compartido.tiempos[k];
+      const edad = T - t0;
+      const y = -p.r + p.vel * (cfg.velocidadBase * edad + 1.1 * (T * T - t0 * t0));
+      const x = p.amp ? Math.min(ancho - p.r, Math.max(p.r, p.x0 + Math.sin(edad * p.frec * 2) * p.amp)) : p.x0;
+      return { k, x, y, r: p.r };
+    }
+
+    function blancosCompartidos(T) {
+      const lista = [];
+      if (T < 0) return lista;
+      const { tiempos, golpes } = compartido;
+      for (let k = compartido.kMin; k < tiempos.length && tiempos[k] <= T; k++) {
+        const b = posBlanco(k, T);
+        if (b.y - b.r >= alto) { if (k === compartido.kMin) compartido.kMin++; continue; }
+        if (golpes.has(k)) continue;
+        lista.push(b);
+      }
+      return lista;
+    }
+
+    function efectosRival(k, pts) {
+      if (!visual) return;
+      const b = posBlanco(k, Math.max(0, tiempo));
+      const y = Math.min(alto - 30, Math.max(40, b.y));
+      const m = compartido.miraRival;
+      const x0 = m ? m.px : ancho / 2;
+      const y0 = m ? m.py + 40 : alto + 14;
+      efectos.push({ tipo: "estela", x0, y0, x: b.x, y, edad: 0, vida: 0.14 });
+      efectos.push({ tipo: "anillo", x: b.x, y, r0: b.r * 0.4, r1: b.r * (pts === 10 ? 2.1 : 1.5), color: cfg.color, edad: 0, vida: pts === 10 ? 0.5 : 0.35 });
+      efectos.push({ tipo: "texto", x: b.x, y, texto: pts === 10 ? `¡CENTRO! +${pts}` : `+${pts}`, grande: pts === 10, edad: 0, vida: 0.8, color: cfg.color });
+      for (let j = 0; j < 5; j++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = 80 + Math.random() * 140;
+        efectos.push({ tipo: "pedazo", x: b.x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 90, rot: Math.random() * 6, giro: (Math.random() - 0.5) * 18, l: 7 + Math.random() * 7, color: [cfg.color, "#e8e4d0", cfg.color, "#ffffff"][j % 4], edad: 0, vida: 0.7 });
+      }
+    }
+
+    /* El golpe de tu rival llega del servidor. Si tú también habías disparado a ese blanco, el servidor
+       decide: hasta que conteste se espera, y si te lo ganaron, perdido() lo aplica. */
+    function golpeRival(k, pts, silencioso) {
+      if (!compartido) return;
+      const g = compartido.golpes.get(k);
+      if (g && g.por === "yo" && !g.perdido) { g.rivalPts = pts; return; }
+      if (g && g.por === "rival" && g.contado) return;
+      compartido.golpes.set(k, { por: "rival", pts, contado: true });
+      puntajeRival += pts;
+      destelloRival = 0.35;
+      sucio = true;
+      if (!silencioso) efectosRival(k, pts);
+    }
+
+    /* Tu propio golpe confirmado por el servidor (o recuperado al volver a abrir la partida). */
+    function golpePropio(k, pts) {
+      if (!compartido) return;
+      const g = compartido.golpes.get(k);
+      if (g && g.por === "yo") { g.pendiente = false; return; }
+      if (g) return;
+      compartido.golpes.set(k, { por: "yo", pts });
+      puntaje += pts;
+      sucio = true;
+    }
+
+    /* El servidor dio el blanco a tu rival (llegó antes) o tu disparo no pudo registrarse. */
+    function perdido(k) {
+      const g = compartido && compartido.golpes.get(k);
+      if (!g || g.por !== "yo" || g.perdido) return;
+      puntaje = Math.max(0, puntaje - g.pts);
+      const pts = g.rivalPts || 0;
+      compartido.golpes.set(k, pts ? { por: "rival", pts, contado: true } : { por: "rival", pts: 0, contado: false });
+      if (pts) { puntajeRival += pts; destelloRival = 0.35; }
+      const b = posBlanco(k, Math.max(0, tiempo));
+      efectos.push({ tipo: "texto", x: b.x, y: Math.min(alto - 40, Math.max(60, b.y)), texto: "¡Te lo ganaron!", chico: true, edad: 0, vida: 0.9, color: "#ff9d8a" });
+      if (pts) efectosRival(k, pts);
+      sucio = true;
+    }
+
+    function setMiraRival(x, y) {
+      if (!compartido) return;
+      const m = compartido.miraRival || (compartido.miraRival = { x, y, px: x, py: y, t: 0 });
+      m.x = x; m.y = y; m.t = relojVisual;
+    }
+
     function disparar(x, y) {
       // El blanco más cercano al frente (el último dibujado) que contenga el tiro
       for (let i = blancos.length - 1; i >= 0; i--) {
@@ -137,6 +252,11 @@
         const pts = PUNTOS_ANILLO[anillo];
         puntaje += pts;
         if (onPuntaje) onPuntaje(puntaje);
+        if (compartido) {
+          // El blanco desaparece ya para ti; el servidor confirma si fuiste el primero (si no, perdido())
+          compartido.golpes.set(b.k, { por: "yo", pts, pendiente: true });
+          if (onGolpe) onGolpe({ blanco: b.k, puntos: pts, x: b.x, y: b.y });
+        }
         efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: anillo === 0 && visual ? `¡CENTRO! +${pts}` : `+${pts}`, grande: anillo === 0, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
         if (visual) {
           efectos.push({ tipo: "estela", x0: ancho / 2, y0: alto + 14, x: b.x, y: b.y, edad: 0, vida: 0.14 });
@@ -185,6 +305,19 @@
       cambiarEstado("jugando");
     }
 
+    /* Arranca la partida entre jugadores en el instante t0 (en milisegundos de performance.now()). Con t0 en el
+       futuro hay cuenta atrás; con t0 pasado (se recargó la página a mitad de partida) entra por donde va. */
+    function iniciarCompartido(t0) {
+      if (!compartido) return;
+      compartido.t0 = t0;
+      compartido.golpes.clear();
+      compartido.kMin = 0;
+      compartido.miraRival = null;
+      textoFin = null; puntaje = 0; puntajeRival = 0; efectos = []; blancos = []; destelloRival = 0; resultado = "";
+      tiempo = (performance.now() - t0) / 1000;
+      cambiarEstado("jugando");
+    }
+
     function terminar() {
       resultado = vs ? "" : puntaje > puntajeRival ? "ganado" : puntaje < puntajeRival ? "perdido" : "empate";
       cambiarEstado("fin");
@@ -203,7 +336,12 @@
     }
 
     function actualizar(dt) {
-      if (estado === "jugando") {
+      if (estado === "jugando" && compartido) {
+        tiempo = (performance.now() - compartido.t0) / 1000;
+        blancos = blancosCompartidos(tiempo);
+        if (destelloRival > 0) destelloRival -= dt;
+        if (tiempo >= duracion) { tiempo = duracion; blancos = []; terminar(); }
+      } else if (estado === "jugando") {
         tiempo += dt;
         temporizadorBlanco -= dt;
         if (temporizadorBlanco <= 0) { blancos.push(nuevoBlanco()); temporizadorBlanco = intervaloBlanco(); }
@@ -292,6 +430,35 @@
       ctx.restore();
     }
 
+    /* La mira de tu rival, que llega del otro navegador unas diez veces por segundo y se suaviza al dibujarla */
+    function dibujarMiraRival() {
+      const m = compartido && compartido.miraRival;
+      if (!m || estado !== "jugando") return;
+      const viejo = relojVisual - m.t;
+      if (viejo > 1.5) return;
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.9, 1.5 - viejo);
+      ctx.strokeStyle = cfg.color;
+      ctx.fillStyle = cfg.color;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(m.px, m.py, 15, 0, Math.PI * 2);
+      ctx.moveTo(m.px - 24, m.py); ctx.lineTo(m.px - 8, m.py);
+      ctx.moveTo(m.px + 8, m.py); ctx.lineTo(m.px + 24, m.py);
+      ctx.moveTo(m.px, m.py - 24); ctx.lineTo(m.px, m.py - 8);
+      ctx.moveTo(m.px, m.py + 8); ctx.lineTo(m.px, m.py + 24);
+      ctx.stroke();
+      ctx.font = '700 13px "Karla", "Segoe UI", Arial, sans-serif';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(10,10,6,.75)";
+      ctx.strokeText(cfg.nombre, m.px, m.py - 30);
+      ctx.fillText(cfg.nombre, m.px, m.py - 30);
+      ctx.restore();
+    }
+
     function dibujarConPaisaje() {
       ctx.save();
       if (sacudida > 0) ctx.translate((Math.random() - 0.5) * 5 * (sacudida / 0.16), (Math.random() - 0.5) * 5 * (sacudida / 0.16));
@@ -299,10 +466,11 @@
       if (estado !== "fin") for (const b of blancos) dibujarBlanco(b);
       for (const e of efectos) visual.efecto(ctx, e);
       ctx.restore();
+      dibujarMiraRival();
       if (estado !== "listo") {
         visual.hud(ctx, {
           nombre: nombreJugador, puntaje, nombreRival: cfg.nombre, colorRival: cfg.color, puntajeRival,
-          destelloRival, tiempo, duracion, reloj: relojVisual
+          destelloRival, tiempo: Math.max(0, tiempo), duracion, reloj: relojVisual
         });
       }
       if (estado === "jugando" && cursor && mouse) dibujarMira(cursor.x, cursor.y);
@@ -312,7 +480,7 @@
           : vs ? "Tiempo"
           : resultado === "ganado" ? "Ganaste" : resultado === "perdido" ? "Perdiste" : "Empate";
         const sub = estado === "fin" ? (textoFin && textoFin.sub ? textoFin.sub : `${puntaje} a ${puntajeRival}`) : "";
-        visual.pantalla(ctx, { titulo, sub, reglas: estado === "listo" ? REGLAS : null, escala: (canvas.clientWidth || ancho) / ancho });
+        visual.pantalla(ctx, { titulo, sub, reglas: estado === "listo" ? (vs ? REGLAS_VS : REGLAS) : null, escala: (canvas.clientWidth || ancho) / ancho });
       }
     }
 
@@ -361,7 +529,9 @@
       if (visual) {
         relojVisual += dt;
         if (sacudida > 0) sacudida = Math.max(0, sacudida - dt);
-        const objetivo = estado === "jugando" ? tiempo / duracion : estado === "fin" ? 1 : 0;
+        const objetivo = estado === "jugando" ? Math.max(0, tiempo) / duracion : estado === "fin" ? 1 : 0;
+        const m = compartido && compartido.miraRival;
+        if (m) { m.px += (m.x - m.px) * Math.min(1, dt * 16); m.py += (m.y - m.py) * Math.min(1, dt * 16); }
         faseVisual += (objetivo - faseVisual) * Math.min(1, dt * (estado === "jugando" ? 6 : 1.2));
       }
       // Con paisaje, fuera de la partida se redibuja a unos 25 cuadros por segundo para que el cielo siga vivo sin gastar de más
@@ -378,7 +548,11 @@
       const p = posicion(e);
       disparar(p.x, p.y);
     });
-    canvas.addEventListener("pointermove", e => { cursor = posicion(e); mouse = e.pointerType === "mouse"; });
+    canvas.addEventListener("pointermove", e => {
+      cursor = posicion(e);
+      mouse = e.pointerType === "mouse";
+      if (compartido && onMira && estado === "jugando") onMira(cursor.x, cursor.y);
+    });
     canvas.addEventListener("pointerleave", () => { cursor = null; });
     document.addEventListener("keydown", e => {
       if (e.repeat || estado !== "jugando" || !cursor) return;
@@ -399,6 +573,7 @@
       if (estado === "jugando" || !RIVALES[clave]) return;
       cfg = RIVALES[clave];
       vs = false;
+      compartido = null;
       azar = Math.random;
       cambiarEstado("listo");
     }
@@ -409,6 +584,7 @@
       if (estado === "jugando") return;
       cfg = { nombre, color, intervalo: 99, precision: 0, dist: [0.3, 0.4, 0.3], radio: 40, velocidadBase: 125, zigzag: true };
       vs = true;
+      prepararCompartido(semilla);
       azar = generadorConSemilla(semilla);
       textoFin = null;
       puntaje = 0; puntajeRival = 0;
@@ -421,6 +597,8 @@
     }
 
     function setPuntajeRival(n) {
+      // En el campo compartido el puntaje sale de los golpes; el del servidor solo corrige si faltó alguno
+      if (compartido && n <= puntajeRival) return;
       if (n > puntajeRival) destelloRival = 0.35;
       puntajeRival = n;
       sucio = true;
@@ -437,10 +615,16 @@
       rendirse,
       cambiarRival,
       prepararVs,
+      iniciarCompartido,
+      golpeRival,
+      golpePropio,
+      perdido,
+      setMiraRival,
       setNombreJugador,
       setPuntajeRival,
       setFin,
       estado: () => estado,
+      blancosVisibles: () => blancos.map(b => ({ k: b.k, x: b.x, y: b.y, r: b.r })),
       ajustarTamano,
       marcador: () => ({ puntaje, puntajeRival, tiempo, duracion })
     };

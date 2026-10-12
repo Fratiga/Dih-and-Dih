@@ -183,6 +183,15 @@
     return !!(yo && yo.porClave && yo.porClave[id] && yo.porClave[id].victorias > 0);
   }
 
+  // Como en el juego de Hooey: el zoom del navegador no encoge el campo, se compensa con --arq-zoom (ver css/arqueria.css)
+  function fijarZoom() {
+    const ratio = window.outerWidth && window.innerWidth ? window.outerWidth / window.innerWidth : 1;
+    const z = Math.abs(ratio - 1) > 0.12 ? Math.min(2.5, Math.max(0.6, ratio)) : 1;
+    document.documentElement.style.setProperty("--arq-zoom", z.toFixed(3));
+  }
+  window.addEventListener("resize", fijarZoom);
+  fijarZoom();
+
   /* --- Contra rivales ------------------------------------------------------ */
   function pintarRivales() {
     rivalesEl.innerHTML = RIVALES.map(r => {
@@ -214,8 +223,10 @@
       pintarRendirse();
     },
     onPuntaje: puntaje => { if (vs) vs.puntaje = puntaje; },
+    onGolpe: golpe => enviarGolpe(golpe),
+    onMira: (x, y) => enviarMira(x, y),
     onFin: ({ puntaje, resultado, vs: esVs, rendicion }) => {
-      if (esVs) { finalizarVs(puntaje); return; }
+      if (esVs) { finalizarVs(); return; }
       anotarPartida(rival.id, resultado === "ganado" ? "gana" : resultado === "perdido" ? "pierde" : "tablas", puntaje);
       // Una partida a la que te rendiste cuenta como derrota, pero no mejora tu mejor puntaje
       const nuevoRecord = !rendicion && puntaje > leer(rival.id);
@@ -374,19 +385,40 @@
 
   function estadoTexto(texto) { ponerLinea(texto); }
 
-  /* Abre una partida: deja el campo listo y espera a que los dos pulsen Listo. */
+  /* --- Partida en vivo ---------------------------------------------------------------
+     Los dos jugadores comparten el campo: cada blanco es de quien lo acierte primero. El servidor
+     reparte los golpes (arqueria_disparo) y cada navegador los recibe por tiempo real, con una
+     consulta cada 0,7 s de respaldo. El reloj de la partida es el del servidor (el campo "inicio"
+     de la fila), corregido con lo que tarda en contestar arqueria_hora, para que los dos navegadores
+     arranquen a la vez aunque sus relojes no coincidan. */
+  let offsetHora = 0;
+  async function sincronizarHora() {
+    let mejor = null;
+    for (let i = 0; i < 4; i++) {
+      const a = Date.now();
+      const { data, error } = await supa.rpc("arqueria_hora");
+      const b = Date.now();
+      if (error || !data) continue;
+      const rtt = b - a;
+      if (!mejor || rtt < mejor.rtt) mejor = { rtt, desfase: Date.parse(data) - (a + b) / 2 };
+    }
+    offsetHora = mejor ? mejor.desfase : 0;
+  }
+  // El instante de arranque de la partida, en milisegundos de performance.now()
+  const inicioLocal = f => performance.now() + (Date.parse(f.inicio) - offsetHora - Date.now());
+
+  /* Abre una partida: deja el campo listo y espera a que los dos pulsen Listo. Si ya está en juego
+     (se recargó la página), entra por donde va. */
   function abrirVs(f) {
     cerrarVs();
     modo = "jugadores";
     rendirseEl.classList.remove("hidden");
     revanchaEl.classList.add("hidden");
-    vs = { id: f.id, lado: mi(f), listoEnviado: false, cuenta: false, iniciada: false, terminada: false, puntaje: 0, enviado: 0, reclamo: null };
+    vs = { id: f.id, lado: mi(f), listoEnviado: false, cuenta: false, iniciada: false, terminada: false, puntaje: 0, vistos: new Set(), t0: 0, canales: [], canalMira: null, sondeoGolpes: null, reloj: null };
     juego.prepararVs({ nombre: nombreOponente(f), color: "#8fb4e8", semilla: f.semilla });
     refrescarVistas();
     if (f.estado === "jugando") {
-      // La partida ya había empezado y esta página no la estaba jugando (se recargó): cuenta lo que llevaba
-      if (!f[`fin_${vs.lado}`]) finalizarVs(puntajeMio(f), true);
-      else estadoTexto("Esperando a que termine el otro jugador...");
+      empezarCompartida(f);
     } else if (f.estado === "terminada") {
       mostrarResultado(f);
     } else {
@@ -399,9 +431,11 @@
 
   function cerrarVs() {
     clearInterval(sondeoVs); sondeoVs = null;
-    clearInterval(envioPuntaje); envioPuntaje = null;
-    clearTimeout(vs && vs.reclamo);
-    clearInterval(vs && vs.reloj);
+    if (vs) {
+      clearInterval(vs.sondeoGolpes);
+      clearInterval(vs.reloj);
+      (vs.canales || []).forEach(c => { try { supa.removeChannel(c); } catch (e) { /* ya cerrado */ } });
+    }
     cuentaEl.classList.add("hidden");
     vs = null;
   }
@@ -411,50 +445,112 @@
     vs.listoEnviado = true;
     boton.classList.add("hidden");
     estadoTexto("Esperando al otro jugador...");
-    const { data, error } = await supa.rpc("arqueria_listo", { p_id: vs.id });
+    const { error } = await supa.rpc("arqueria_listo", { p_id: vs.id });
     if (error) { vs.listoEnviado = false; boton.classList.remove("hidden"); estadoTexto("No se pudo marcar como listo. Inténtalo otra vez."); return; }
-    if (data === "jugando") iniciarCuenta();
-    else cargarPartidas();
+    cargarPartidas(); // si el otro ya estaba listo, la partida ya empezó y aplicarFila la arranca
   }
 
-  /* Cuenta atrás de 3 segundos y arranca. Cada navegador la hace al enterarse de que
-     la partida empezó, así que la diferencia entre los dos es solo lo que tarde el aviso. */
-  function iniciarCuenta() {
-    if (!vs || vs.cuenta || vs.iniciada) return;
+  /* Pone en marcha el campo compartido: cuenta atrás hasta el "inicio" del servidor, y desde ahí a disparar. */
+  async function empezarCompartida(f) {
+    if (!vs || vs.cuenta || vs.terminada) return;
     vs.cuenta = true;
     boton.classList.add("hidden");
-    let n = 3;
-    cuentaEl.textContent = n;
-    cuentaEl.classList.remove("hidden");
     estadoTexto("");
+    const id = vs.id;
+    await sincronizarHora();
+    if (!vs || vs.id !== id) return;
+    vs.t0 = inicioLocal(f);
+    if ((performance.now() - vs.t0) / 1000 > 62) { finalizarVs(); return; } // el minuto ya pasó
+    juego.iniciarCompartido(vs.t0);
+    await recuperarGolpes(true); // los golpes que ya hubiera (si se recargó a mitad de partida)
+    if (!vs || vs.id !== id) return;
+    suscribirGolpes();
     vs.reloj = setInterval(() => {
-      n -= 1;
-      if (n > 0) { cuentaEl.textContent = n; return; }
-      clearInterval(vs.reloj);
-      cuentaEl.classList.add("hidden");
-      vs.iniciada = true;
-      pintarRendirse();
-      juego.iniciar();
-      envioPuntaje = setInterval(enviarPuntaje, 1000);
-    }, 1000);
+      if (!vs) return;
+      const falta = (vs.t0 - performance.now()) / 1000;
+      if (falta > 0) {
+        cuentaEl.textContent = falta <= 3.5 ? Math.ceil(falta) : "";
+        cuentaEl.classList.toggle("hidden", falta > 3.5);
+      } else {
+        cuentaEl.classList.add("hidden");
+        clearInterval(vs.reloj); vs.reloj = null;
+        vs.iniciada = true;
+        pintarRendirse();
+      }
+    }, 100);
   }
 
-  async function enviarPuntaje() {
-    if (!vs || vs.terminada || vs.puntaje === vs.enviado) return;
-    vs.enviado = vs.puntaje;
-    await supa.rpc("arqueria_puntaje", { p_id: vs.id, p_puntaje: vs.puntaje });
+  function procesarGolpe(g, silencioso) {
+    if (!vs || vs.vistos.has(g.blanco)) return;
+    vs.vistos.add(g.blanco);
+    if (g.usuario === miId) juego.golpePropio(g.blanco, g.puntos);
+    else juego.golpeRival(g.blanco, g.puntos, silencioso);
   }
 
-  async function finalizarVs(puntaje, tardio) {
+  async function recuperarGolpes(silencioso) {
+    if (!vs || !supa) return;
+    const id = vs.id;
+    const { data, error } = await supa.from("arqueria_golpes").select("blanco, usuario, puntos").eq("partida", id).order("creado", { ascending: true });
+    if (error || !data || !vs || vs.id !== id) return;
+    data.forEach(g => procesarGolpe(g, !!silencioso));
+  }
+
+  function suscribirGolpes() {
+    const id = vs.id;
+    try {
+      const golpes = supa.channel("arq-golpes-" + id)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "arqueria_golpes", filter: `partida=eq.${id}` }, p => procesarGolpe(p.new))
+        .subscribe();
+      const mira = supa.channel("arq-mira-" + id, { config: { broadcast: { self: false } } })
+        .on("broadcast", { event: "mira" }, ({ payload }) => { if (payload) juego.setMiraRival(payload.x, payload.y); })
+        .subscribe();
+      vs.canales = [golpes, mira];
+      vs.canalMira = mira;
+    } catch (e) { vs.canales = []; }
+    vs.sondeoGolpes = setInterval(() => recuperarGolpes(false), 700); // respaldo por si el tiempo real falla
+  }
+
+  // Tu disparo acertó: el servidor dice si el blanco es tuyo o si el otro llegó antes
+  async function enviarGolpe({ blanco, puntos }) {
+    if (!vs) return;
+    const id = vs.id;
+    try {
+      const { data, error } = await supa.rpc("arqueria_disparo", { p_id: id, p_blanco: blanco, p_puntos: puntos });
+      if (error) {
+        // Sin respuesta clara: si el golpe no aparece en la tabla en un momento, no era tuyo
+        setTimeout(() => { if (vs && vs.id === id && !vs.vistos.has(blanco)) juego.perdido(blanco); }, 2500);
+      } else if (data !== true) {
+        juego.perdido(blanco);
+      }
+    } catch (e) {
+      setTimeout(() => { if (vs && vs.id === id && !vs.vistos.has(blanco)) juego.perdido(blanco); }, 2500);
+    }
+  }
+
+  // Tu mira, unas diez veces por segundo, para que el otro te vea apuntar
+  let ultimaMira = 0;
+  function enviarMira(x, y) {
+    if (!vs || !vs.canalMira) return;
+    const t = performance.now();
+    if (t - ultimaMira < 90) return;
+    ultimaMira = t;
+    try { vs.canalMira.send({ type: "broadcast", event: "mira", payload: { x: Math.round(x), y: Math.round(y) } }); } catch (e) { /* sin tiempo real */ }
+  }
+
+  /* Se acabó el minuto: se pide al servidor que cierre la partida (los puntos ya están contados ahí). */
+  async function finalizarVs() {
     if (!vs || vs.terminada) return;
     vs.terminada = true;
     pintarRendirse();
-    clearInterval(envioPuntaje); envioPuntaje = null;
-    juego.setFin({ titulo: "Esperando al otro jugador...", sub: `${puntaje} puntos` });
+    clearInterval(vs.sondeoGolpes); vs.sondeoGolpes = null;
+    cuentaEl.classList.add("hidden");
+    juego.setFin({ titulo: "Contando los últimos puntos...", sub: "" });
     const id = vs.id;
-    await supa.rpc("arqueria_terminar", { p_id: id, p_puntaje: puntaje });
-    // Si el otro nunca termina, pasado un tiempo se cierra la partida con su último puntaje
-    vs.reclamo = setTimeout(async () => { await supa.rpc("arqueria_reclamar", { p_id: id }); cargarPartidas(); }, tardio ? 1000 : 45000);
+    for (let i = 0; i < 15 && vs && vs.id === id; i++) {
+      const { data } = await supa.rpc("arqueria_cerrar", { p_id: id });
+      if (data === "terminada" || data === "rechazada") break;
+      await new Promise(r => setTimeout(r, 800));
+    }
     cargarPartidas();
   }
 
@@ -478,7 +574,7 @@
       return;
     }
     if (f.estado === "jugando" && !vs.cuenta && !vs.iniciada && !vs.terminada) {
-      if (vs.listoEnviado) iniciarCuenta();
+      if (vs.listoEnviado) empezarCompartida(f);
       return;
     }
     if (f.estado === "terminada" && !jugando && (vs.terminada || !vs.iniciada)) {
@@ -567,7 +663,7 @@
       miId = sesion.user.id;
       supa = await fichasCliente();
       enLinea = true;
-      avisoEl.textContent = "Reta a alguien de la lista. Cuando acepte, abre la partida y pulsen «Estoy listo» los dos: juegan el mismo campo a la vez y ven el puntaje del otro subir.";
+      avisoEl.textContent = "Reta a alguien de la lista. Cuando acepte, abre la partida y pulsen «Estoy listo» los dos. Compiten por los mismos blancos: cada uno es de quien lo acierte primero.";
       try { await supa.rpc("arqueria_caducar"); } catch (err) { /* aún sin el SQL de caducidad */ }
       await Promise.all([cargarJugadores(), cargarPartidas()]);
       suscribir();
