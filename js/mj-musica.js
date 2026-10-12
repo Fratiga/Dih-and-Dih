@@ -41,6 +41,7 @@
     volumenBase = (opciones && opciones.volumen) || 0.4;
     audio = new Audio(src);
     audio.loop = true;
+    audio.rutaOriginal = src;   // el editor de música de páginas la muestra como la que suena hoy
     (window.__fondoPropio = window.__fondoPropio || []).push(audio);   // js/musica-paginas.js la calla si la página tiene playlist
     crearBoton();
     aplicar();

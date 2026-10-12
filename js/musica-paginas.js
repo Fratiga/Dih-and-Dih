@@ -140,8 +140,8 @@
   function pintarBoton() {
     if (!caja) return;
     const hay = hayMusica();
-    const admin = esAdminLocal();
-    caja.hidden = !hay && !admin;
+    const aj = caja.querySelector(".pagmus-ajustes");
+    caja.hidden = !hay && !(aj && !aj.hidden);
     botonSonido.hidden = !hay;
     botonSonido.classList.toggle("apagado", silencio);
     botonSonido.title = silencio ? "Activar la música de la página" : "Silenciar la música de la página";
@@ -168,6 +168,7 @@
     });
     if (esAdminLocal()) {
       const ajustes = document.createElement("button");
+      ajustes.hidden = true;   // aparece cuando el servidor confirma que eres admin
       ajustes.type = "button";
       ajustes.className = "pagmus-ajustes";
       ajustes.title = "Música de esta página (solo admin)";
@@ -178,6 +179,22 @@
     }
     document.body.appendChild(caja);
     pintarBoton();
+    if (esAdminLocal()) confirmarAdmin().then(ok => {
+      const aj = caja.querySelector(".pagmus-ajustes");
+      if (aj) { if (ok) aj.hidden = false; else aj.remove(); }
+      pintarBoton();
+    });
+  }
+
+  /* La marca del navegador (compendioAdmin) solo decide si se enseña el botón; quién es admin lo dice el servidor.
+     Sin tener que cargar nada si no hay marca, y el editor vuelve a comprobarlo al abrirse. */
+  async function confirmarAdmin() {
+    try {
+      if (typeof fichasCliente !== "function") await cargarScript("js/fichas-supabase.js");
+      const supabase = await fichasCliente();
+      const { data } = await supabase.rpc("fichas_es_admin");
+      return data === true;
+    } catch (e) { return false; }
   }
 
   // La versión del script (?v=...) se reutiliza para lo que se carga después
@@ -198,6 +215,7 @@
 
   async function abrirEditor() {
     try {
+      if (!(await confirmarAdmin())) { alert("Solo el admin puede cambiar la música de las páginas."); return; }
       if (!window.MUSICA || !window.MUSICA_NUBE_NOMBRES) {
         if (!window.MUSICA) await cargarScript("data/musica.js");
         await cargarScript("js/musica-nube.js");
