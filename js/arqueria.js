@@ -6,6 +6,10 @@
    Lo usan arqueria.html (Hornet, Garra y Cassius, y partidas contra otros jugadores) y
    Muerte Súbita (Verdam).
 
+   Contra un rival de la casa (en la página de arquería) también es una galería de tiro: el rival
+   tiene su propia mira, elige un blanco de los que caen, apunta, dispara y, si acierta, el blanco
+   desaparece para los dos. Muerte Súbita sigue con el rival abstracto de siempre.
+
    En una partida entre dos jugadores el campo es COMPARTIDO: los blancos salen de un calendario
    que se calcula igual en los dos navegadores (semilla + reloj de la partida), así que los dos
    ven lo mismo en el mismo instante. Cada blanco es de quien lo acierte primero: el disparo se
@@ -78,6 +82,8 @@
     let ultimoDibujo = 0;
     let sacudida = 0;
     let cursorActual = "";
+    // Rival de la casa en modo galería: su mira, el blanco que tiene elegido y lo que tarda en apuntar
+    let ia = null;
     let compartido = null; // partida entre dos jugadores: calendario de blancos, golpes ya repartidos y mira del rival
     let estado = "listo"; // listo | jugando | fin
     let tiempo = 0;
@@ -121,7 +127,8 @@
     }
 
     function intervaloBlanco() {
-      return Math.max(0.45, 0.85 - tiempo * 0.006);
+      // En la galería el rival se lleva buena parte de los blancos, así que caen más seguidos
+      return Math.max(0.45, 0.85 - tiempo * 0.006) * (visual && !vs ? 0.7 : 1);
     }
 
     function nuevoBlanco() {
@@ -180,21 +187,23 @@
       return lista;
     }
 
-    function efectosRival(k, pts) {
+    function golpeVisualRival(x, y, r, pts, x0, y0) {
       if (!visual) return;
-      const b = posBlanco(k, Math.max(0, tiempo));
-      const y = Math.min(alto - 30, Math.max(40, b.y));
-      const m = compartido.miraRival;
-      const x0 = m ? m.px : ancho / 2;
-      const y0 = m ? m.py + 40 : alto + 14;
-      efectos.push({ tipo: "estela", x0, y0, x: b.x, y, edad: 0, vida: 0.14 });
-      efectos.push({ tipo: "anillo", x: b.x, y, r0: b.r * 0.4, r1: b.r * (pts === 10 ? 2.1 : 1.5), color: cfg.color, edad: 0, vida: pts === 10 ? 0.5 : 0.35 });
-      efectos.push({ tipo: "texto", x: b.x, y, texto: pts === 10 ? `¡CENTRO! +${pts}` : `+${pts}`, grande: pts === 10, edad: 0, vida: 0.8, color: cfg.color });
+      efectos.push({ tipo: "estela", x0, y0, x, y, edad: 0, vida: 0.14 });
+      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * (pts === 10 ? 2.1 : 1.5), color: cfg.color, edad: 0, vida: pts === 10 ? 0.5 : 0.35 });
+      efectos.push({ tipo: "texto", x, y, texto: pts === 10 ? `¡CENTRO! +${pts}` : `+${pts}`, grande: pts === 10, edad: 0, vida: 0.8, color: cfg.color });
       for (let j = 0; j < 5; j++) {
         const a = Math.random() * Math.PI * 2;
         const v = 80 + Math.random() * 140;
-        efectos.push({ tipo: "pedazo", x: b.x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 90, rot: Math.random() * 6, giro: (Math.random() - 0.5) * 18, l: 7 + Math.random() * 7, color: [cfg.color, "#e8e4d0", cfg.color, "#ffffff"][j % 4], edad: 0, vida: 0.7 });
+        efectos.push({ tipo: "pedazo", x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 90, rot: Math.random() * 6, giro: (Math.random() - 0.5) * 18, l: 7 + Math.random() * 7, color: [cfg.color, "#e8e4d0", cfg.color, "#ffffff"][j % 4], edad: 0, vida: 0.7 });
       }
+    }
+
+    function efectosRival(k, pts) {
+      if (!visual) return;
+      const b = posBlanco(k, Math.max(0, tiempo));
+      const m = compartido.miraRival;
+      golpeVisualRival(b.x, Math.min(alto - 30, Math.max(40, b.y)), b.r, pts, m ? m.px : ancho / 2, m ? m.py + 40 : alto + 14);
     }
 
     /* El golpe de tu rival llega del servidor. Si tú también habías disparado a ese blanco, el servidor
@@ -282,6 +291,73 @@
       }
     }
 
+    /* --- Rival de la casa como tirador de galería -------------------------------------------------
+       Cada "intervalo" elige uno de los blancos que caen (con preferencia por los que están a punto
+       de llegar al suelo), mueve su mira hacia donde estará y dispara. Acierta con su precisión y
+       el anillo sale de su reparto de siempre, así que su puntaje esperado no cambia; lo que cambia
+       es que el blanco que se lleva ya no es tuyo, y el que le robas, tampoco es suyo. */
+    function nuevaIA() {
+      return { mira: { x: ancho * 0.7, y: alto * 0.45, px: ancho * 0.7, py: alto * 0.45, t: 0 }, destino: { x: ancho * 0.7, y: alto * 0.45 }, objetivo: null, apuntar: 0, espera: 0.8, deriva: 0 };
+    }
+
+    function actualizarIA(dt) {
+      if (!ia) ia = nuevaIA();
+      const m = ia.mira;
+      m.t = relojVisual;
+      ia.deriva += dt;
+      if (ia.objetivo && !blancos.includes(ia.objetivo)) { ia.objetivo = null; ia.espera = 0.12; } // se lo quitaron
+      if (!ia.objetivo) {
+        ia.destino = { x: ancho * (0.5 + 0.28 * Math.sin(ia.deriva * 0.6)), y: alto * (0.42 + 0.12 * Math.sin(ia.deriva * 0.9 + 1)) };
+        ia.espera -= dt;
+        if (ia.espera <= 0) {
+          if (!blancos.length) { ia.espera = 0.15; }
+          else {
+            let mejor = null;
+            let puntos = -Infinity;
+            for (const b of blancos) { const p = b.y + Math.random() * 90; if (p > puntos) { puntos = p; mejor = b; } }
+            ia.objetivo = mejor;
+            ia.apuntar = Math.min(0.42, cfg.intervalo * 0.5) + Math.random() * 0.12;
+          }
+        }
+      } else {
+        ia.apuntar -= dt;
+        // apunta a donde estará el blanco cuando dispare
+        const v = velocidad() * ia.objetivo.vel;
+        ia.destino = { x: ia.objetivo.x, y: ia.objetivo.y + v * Math.max(0, ia.apuntar) };
+        if (ia.apuntar <= 0) dispararIA();
+      }
+      const k = Math.min(1, dt * 11);
+      m.x += (ia.destino.x - m.x) * k;
+      m.y += (ia.destino.y - m.y) * k;
+      m.px = m.x; m.py = m.y;
+      if (destelloRival > 0) destelloRival -= dt;
+    }
+
+    function dispararIA() {
+      const b = ia.objetivo;
+      ia.objetivo = null;
+      ia.espera = Math.max(0.1, cfg.intervalo - Math.min(0.42, cfg.intervalo * 0.5));
+      const x0 = ia.mira.x;
+      const y0 = ia.mira.y + 40;
+      if (Math.random() > cfg.precision) {
+        // Falla: la flecha cae cerca del blanco
+        const a = Math.random() * Math.PI * 2;
+        const d = b.r * (1.25 + Math.random() * 0.9);
+        const x = b.x + Math.cos(a) * d;
+        const y = b.y + Math.sin(a) * d;
+        efectos.push({ tipo: "estela", x0, y0, x, y, edad: 0, vida: 0.12 });
+        efectos.push({ tipo: "polvo", x, y, fase: Math.random() * 6, edad: 0, vida: 0.5 });
+        return;
+      }
+      const r = Math.random();
+      const anillo = r < cfg.dist[0] ? 0 : r < cfg.dist[0] + cfg.dist[1] ? 1 : 2;
+      const pts = PUNTOS_ANILLO[anillo];
+      puntajeRival += pts;
+      destelloRival = 0.45;
+      blancos = blancos.filter(o => o !== b);
+      golpeVisualRival(b.x, b.y, b.r, pts, x0, y0);
+    }
+
     function tiroDelRival() {
       if (Math.random() > cfg.precision) return;
       const r = Math.random();
@@ -300,6 +376,7 @@
     function iniciar() {
       if (!vs) azar = Math.random;
       textoFin = null;
+      ia = nuevaIA();
       tiempo = 0; puntaje = 0; puntajeRival = 0; blancos = [nuevoBlanco()]; efectos = [];
       temporizadorBlanco = intervaloBlanco(); temporizadorRival = cfg.intervalo; destelloRival = 0; resultado = "";
       cambiarEstado("jugando");
@@ -346,7 +423,7 @@
         temporizadorBlanco -= dt;
         if (temporizadorBlanco <= 0) { blancos.push(nuevoBlanco()); temporizadorBlanco = intervaloBlanco(); }
         temporizadorRival -= dt;
-        if (!vs) while (temporizadorRival <= 0) { tiroDelRival(); temporizadorRival += cfg.intervalo; }
+        if (!vs && !visual) while (temporizadorRival <= 0) { tiroDelRival(); temporizadorRival += cfg.intervalo; }
         if (destelloRival > 0) destelloRival -= dt;
         const v = velocidad();
         for (const b of blancos) {
@@ -355,6 +432,7 @@
           if (b.amp) b.x = Math.min(ancho - b.r, Math.max(b.r, b.x0 + Math.sin(b.t * b.frec * 2) * b.amp));
         }
         blancos = blancos.filter(b => b.y - b.r < alto);
+        if (!vs && visual) actualizarIA(dt);
         if (tiempo >= duracion) { tiempo = duracion; terminar(); }
       }
       for (const e of efectos) {
@@ -432,7 +510,7 @@
 
     /* La mira de tu rival, que llega del otro navegador unas diez veces por segundo y se suaviza al dibujarla */
     function dibujarMiraRival() {
-      const m = compartido && compartido.miraRival;
+      const m = compartido ? compartido.miraRival : (visual && !vs && ia ? ia.mira : null);
       if (!m || estado !== "jugando") return;
       const viejo = relojVisual - m.t;
       if (viejo > 1.5) return;
