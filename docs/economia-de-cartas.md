@@ -8,6 +8,38 @@ Cada punto lleva una de tres etiquetas.
 - **Propuesta**: una forma razonable de resolverlo, con sus números cuando hacen falta. Se puede cambiar.
 - **Pendiente**: hay que elegir. Se resume en la sección 14.
 
+## Estado de la construcción (12 de octubre de 2026)
+
+Las fases 1 a 6 del orden de la sección 13 están construidas y aplicadas en Supabase. Las reglas de las secciones 3 a 11 que aparecen como **Propuesta** se implementaron tal como están escritas, con los números que se indican. Lo que cambie desde el panel de admin se puede ajustar sin tocar código.
+
+**Decidido desde entonces**
+
+- Se elige la opción **C** de la sección 5.1: el límite global cuenta lo emitido alguna vez y lo que vuelve al mercado queda en la reserva, que se reparte antes de emitir copias nuevas.
+- Los límites globales de partida están puestos con la tabla de `economia_2_limites_iniciales.sql` (personajes 8, 5, 3 y 1; criaturas y objetos 20, 12, 5 y 1; reacciones 15, 8 y 4; terrenos 12, 8 y 4; legendarias 1; el Bufón conserva su 5). Son valores provisionales: se corrigen carta por carta en Admin > Economía de cartas.
+
+**Qué hay y dónde**
+
+| Pieza | Dónde se maneja | Archivos |
+|---|---|---|
+| Ejemplares, libro de movimientos, bloqueos, límites y auditoría | Admin > Economía de cartas (límites, auditoría, movimientos) | `economia_1_nucleo.sql`, `js/admin-economia.js` |
+| Recompensas de ajedrez, duelo, arquería y Hooey | Se muestran solas al terminar una partida contra la casa | `economia_3_recompensas.sql`, `js/recompensas.js` |
+| Duelos de cartas con apuesta | Batalla (lobby): elegir cartas al retar y al aceptar | `economia_4_apuestas.sql`, `js/batalla-apuestas.js`, `js/batalla.js` |
+| Intercambios, mercader y forja | Triunfos > Intercambios | `economia_5_intercambios.sql`, `economia_6_forja.sql`, `intercambios.html`, `js/intercambios.js` |
+
+**Detalles que no estaban en el borrador**
+
+- Los duelos con apuesta cruzan el aviso de resultado de los dos navegadores: si coinciden se resuelve; si discrepan queda en disputa y la resuelve el admin (función `cartas_admin_resolver_apuesta`); declararse perdedor es definitivo; si solo avisa uno y el otro calla 10 minutos, vale lo que dijo.
+- Las recompensas usan una partida registrada en el servidor (permiso al empezar, entrega al terminar) con un tiempo mínimo por juego. Los juegos contra la casa corren en el navegador, así que el servidor no puede comprobar la puntuación: la defensa real son los topes diarios, los rendimientos decrecientes y la revisión del admin.
+- El mercader empieza vacío: su inventario sale de lo que los jugadores le cambian y de la reserva. El admin puede ponerle ofertas especiales desde la pestaña Mercader de Intercambios.
+- La forja trae tres recetas (fundir comunes, alquimia y contrapeso) que el admin puede cambiar con `cartas_admin_guardar_receta`.
+
+**Todavía sin construir**
+
+- Apuestas y recompensas en Muerte Súbita (sección 10), a la espera de tu decisión.
+- Carreras, estrategia militar (la Fractura), expediciones, criadero, taberna de rumores y refugio personal: ninguno entrega ni mueve cartas todavía. Cuando se conecten, tienen que usar `cartas_i_emitir`, `cartas_i_transferir`, `cartas_i_retirar` y `cartas_i_bloquear` como el resto.
+- Panel de vigilancia (11.5) más allá de la auditoría y los movimientos.
+- Torneos con fondo de premios (sección 9, punto 8).
+
 ## 1. Idea general
 
 Los minijuegos de la página se conectan mediante cartas coleccionables. Las cartas cumplen tres funciones a la vez.
@@ -393,8 +425,8 @@ Nada de esto está aprobado. La columna «Recomendación» es solo una sugerenci
 
 | # | Pregunta | Opciones | Recomendación |
 |---|---|---|---|
-| 1 | Valores del límite global de cada carta | Un valor por carta, método de la sección 3.3 | Fijarlos por lotes tras revisar el catálogo |
-| 2 | ¿Qué cuenta contra el límite global? | A: lo emitido alguna vez. B: lo que existe ahora. C: A con reserva | C |
+| 1 | Valores del límite global de cada carta | Un valor por carta, método de la sección 3.3 | **Puestos de forma provisional**; se corrigen en Admin |
+| 2 | ¿Qué cuenta contra el límite global? | A: lo emitido alguna vez. B: lo que existe ahora. C: A con reserva | **Elegida: C** |
 | 3 | ¿Cada servicio destruye o devuelve a la reserva? | Decidirlo servicio a servicio | Sacrificio y forja destruyen. Apuestas contra el sistema devuelven |
 | 4 | Excepciones a «una copia global» en legendarias y limitadas | Lista de cartas con más de una copia | Solo con motivo de campaña |
 | 5 | Reglas de emisión y ritmo | Regulador de la sección 6.7, o cuota fija | Regulador |

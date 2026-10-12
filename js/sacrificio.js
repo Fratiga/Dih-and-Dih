@@ -337,6 +337,7 @@
   function empezar() {
     racha = 0;
     motivoFin = "piso";
+    if (window.Recompensas) Recompensas.iniciar("hooey", cancion);
     if (typeof audio !== "undefined" && audio && !audio.paused) audio.pause();
     if (window.SacrificioBufones) window.SacrificioBufones.precargar();
     prepararFuego();
@@ -351,6 +352,7 @@
   }
 
   function terminar() {
+    if (window.Recompensas) Recompensas.terminar("hooey", "gana", racha);
     fase = "fin";
     cierreVisible = false;
     tiempoCaida = 0;
