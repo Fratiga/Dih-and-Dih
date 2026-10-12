@@ -491,8 +491,65 @@
 
     /* --- Efectos de cada tiro -------------------------------------------------------------------- */
     function efecto(ctx, e) {
+      if (e.edad < 0) return; // efecto que espera a que llegue su flecha
       const k = e.edad / e.vida;
       switch (e.tipo) {
+        case "flecha": {
+          // Vuela del arco al blanco en e.viaje segundos y se queda clavada un momento antes de desvanecerse
+          const t = Math.min(1, e.edad / e.viaje);
+          const avance = 1 - (1 - t) * (1 - t);
+          const dx = e.x - e.x0;
+          const dy = e.y - e.y0;
+          const ang = Math.atan2(dy, dx);
+          const px = e.x0 + dx * avance;
+          const py = e.y0 + dy * avance;
+          const resto = t < 1 ? 1 : Math.max(0, 1 - (e.edad - e.viaje) / (e.vida - e.viaje));
+          const largo = 54;
+          const cx = Math.cos(ang);
+          const cy = Math.sin(ang);
+          const colaX = px - cx * largo;
+          const colaY = py - cy * largo;
+          ctx.globalAlpha = resto;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          if (t < 1) {
+            // rastro del vuelo
+            ctx.strokeStyle = "rgba(255, 240, 190, .35)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(e.x0 + dx * Math.max(0, avance - 0.5), e.y0 + dy * Math.max(0, avance - 0.5));
+            ctx.lineTo(colaX, colaY);
+            ctx.stroke();
+          }
+          // asta
+          ctx.strokeStyle = "rgba(15, 10, 4, .8)";
+          ctx.lineWidth = 6;
+          ctx.beginPath(); ctx.moveTo(colaX, colaY); ctx.lineTo(px, py); ctx.stroke();
+          ctx.strokeStyle = "#e0c58a";
+          ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(colaX, colaY); ctx.lineTo(px, py); ctx.stroke();
+          // punta
+          ctx.fillStyle = "#eef0f2";
+          ctx.strokeStyle = "rgba(15, 10, 4, .8)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(px + cx * 9, py + cy * 9);
+          ctx.lineTo(px - cx * 5 - cy * 6, py - cy * 5 + cx * 6);
+          ctx.lineTo(px - cx * 5 + cy * 6, py - cy * 5 - cx * 6);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+          // plumas, del color de quien dispara
+          ctx.fillStyle = e.plumas || "#e9c764";
+          for (const lado of [-1, 1]) {
+            ctx.beginPath();
+            ctx.moveTo(colaX + cx * 4, colaY + cy * 4);
+            ctx.lineTo(colaX + cx * 17 - cy * 7 * lado, colaY + cy * 17 + cx * 7 * lado);
+            ctx.lineTo(colaX + cx * 14, colaY + cy * 14);
+            ctx.closePath();
+            ctx.fill();
+          }
+          break;
+        }
         case "estela": {
           ctx.globalAlpha = (1 - k) * 0.9;
           ctx.strokeStyle = "#fff0b8";

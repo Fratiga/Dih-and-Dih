@@ -187,15 +187,24 @@
       return lista;
     }
 
-    function golpeVisualRival(x, y, r, pts, x0, y0) {
+    /* Una flecha que vuela de (x0, y0) a (x, y). Las tuyas salen de abajo en el centro y son doradas; las del rival, del color de
+       su mira y desde el borde de abajo, bajo su mira. */
+    function lanzarFlecha(x0, y0, x, y, plumas, viaje) {
       if (!visual) return;
-      efectos.push({ tipo: "estela", x0, y0, x, y, edad: 0, vida: 0.14 });
-      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * (pts === 10 ? 2.1 : 1.5), color: cfg.color, edad: 0, vida: pts === 10 ? 0.5 : 0.35 });
-      efectos.push({ tipo: "texto", x, y, texto: pts === 10 ? `¡CENTRO! +${pts}` : `+${pts}`, grande: pts === 10, edad: 0, vida: 0.8, color: cfg.color });
+      efectos.push({ tipo: "flecha", x0, y0, x, y, plumas, viaje, edad: 0, vida: viaje + 0.5 });
+    }
+
+    /* El golpe de tu rival: su flecha (si no se ha lanzado ya) y, cuando llega, el blanco que salta en pedazos. */
+    function golpeVisualRival(x, y, r, pts, x0, y0, { flecha = true, retraso = 0 } = {}) {
+      if (!visual) return;
+      if (flecha) lanzarFlecha(x0, y0, x, y, cfg.color, retraso || 0.14);
+      const e0 = -retraso;
+      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * (pts === 10 ? 2.1 : 1.5), color: cfg.color, edad: e0, vida: pts === 10 ? 0.5 : 0.35 });
+      efectos.push({ tipo: "texto", x, y, texto: pts === 10 ? `¡CENTRO! +${pts}` : `+${pts}`, grande: pts === 10, edad: e0, vida: 0.8, color: cfg.color });
       for (let j = 0; j < 5; j++) {
         const a = Math.random() * Math.PI * 2;
         const v = 80 + Math.random() * 140;
-        efectos.push({ tipo: "pedazo", x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 90, rot: Math.random() * 6, giro: (Math.random() - 0.5) * 18, l: 7 + Math.random() * 7, color: [cfg.color, "#e8e4d0", cfg.color, "#ffffff"][j % 4], edad: 0, vida: 0.7 });
+        efectos.push({ tipo: "pedazo", x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 90, rot: Math.random() * 6, giro: (Math.random() - 0.5) * 18, l: 7 + Math.random() * 7, color: [cfg.color, "#e8e4d0", cfg.color, "#ffffff"][j % 4], edad: e0, vida: 0.7 });
       }
     }
 
@@ -203,7 +212,7 @@
       if (!visual) return;
       const b = posBlanco(k, Math.max(0, tiempo));
       const m = compartido.miraRival;
-      golpeVisualRival(b.x, Math.min(alto - 30, Math.max(40, b.y)), b.r, pts, m ? m.px : ancho / 2, m ? m.py + 40 : alto + 14);
+      golpeVisualRival(b.x, Math.min(alto - 30, Math.max(40, b.y)), b.r, pts, m ? m.px : ancho * 0.75, alto + 14, { retraso: 0.14 });
     }
 
     /* El golpe de tu rival llega del servidor. Si tú también habías disparado a ese blanco, el servidor
@@ -268,7 +277,7 @@
         }
         efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: anillo === 0 && visual ? `¡CENTRO! +${pts}` : `+${pts}`, grande: anillo === 0, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
         if (visual) {
-          efectos.push({ tipo: "estela", x0: ancho / 2, y0: alto + 14, x: b.x, y: b.y, edad: 0, vida: 0.14 });
+          lanzarFlecha(ancho / 2, alto + 14, b.x, b.y, "#f1c40f", 0.09);
           efectos.push({ tipo: "anillo", x: b.x, y: b.y, r0: b.r * 0.4, r1: b.r * (anillo === 0 ? 2.1 : 1.5), color: anillo === 0 ? "#ffe27a" : "#f4ecd2", edad: 0, vida: anillo === 0 ? 0.5 : 0.35 });
           for (let k = 0; k < 6; k++) {
             const a = Math.random() * Math.PI * 2;
@@ -286,7 +295,7 @@
         return;
       }
       if (visual) {
-        efectos.push({ tipo: "estela", x0: ancho / 2, y0: alto + 14, x, y, edad: 0, vida: 0.12 });
+        lanzarFlecha(ancho / 2, alto + 14, x, y, "#f1c40f", 0.09);
         efectos.push({ tipo: "polvo", x, y, fase: Math.random() * 6, edad: 0, vida: 0.5 });
       }
     }
@@ -297,7 +306,7 @@
        el anillo sale de su reparto de siempre, así que su puntaje esperado no cambia; lo que cambia
        es que el blanco que se lleva ya no es tuyo, y el que le robas, tampoco es suyo. */
     function nuevaIA() {
-      return { mira: { x: ancho * 0.7, y: alto * 0.45, px: ancho * 0.7, py: alto * 0.45, t: 0 }, destino: { x: ancho * 0.7, y: alto * 0.45 }, objetivo: null, apuntar: 0, espera: 0.8, deriva: 0 };
+      return { mira: { x: ancho * 0.7, y: alto * 0.45, px: ancho * 0.7, py: alto * 0.45, t: 0 }, destino: { x: ancho * 0.7, y: alto * 0.45 }, objetivo: null, apuntar: 0, espera: 0.8, deriva: 0, vuelo: null };
     }
 
     function actualizarIA(dt) {
@@ -305,6 +314,7 @@
       const m = ia.mira;
       m.t = relojVisual;
       ia.deriva += dt;
+      if (ia.vuelo) { ia.vuelo.restante -= dt; if (ia.vuelo.restante <= 0) aterrizarIA(); }
       if (ia.objetivo && !blancos.includes(ia.objetivo)) { ia.objetivo = null; ia.espera = 0.12; } // se lo quitaron
       if (!ia.objetivo) {
         ia.destino = { x: ancho * (0.5 + 0.28 * Math.sin(ia.deriva * 0.6)), y: alto * (0.42 + 0.12 * Math.sin(ia.deriva * 0.9 + 1)) };
@@ -333,29 +343,41 @@
       if (destelloRival > 0) destelloRival -= dt;
     }
 
+    /* Dispara: la flecha sale de abajo, bajo su mira, y tarda un momento en llegar. Hasta entonces el blanco sigue ahí, así que
+       puedes quitárselo. Si acierta, al llegar el blanco salta en pedazos y el punto es suyo. */
+    const VIAJE_IA = 0.16;
     function dispararIA() {
       const b = ia.objetivo;
       ia.objetivo = null;
       ia.espera = Math.max(0.1, cfg.intervalo - Math.min(0.42, cfg.intervalo * 0.5));
       const x0 = ia.mira.x;
-      const y0 = ia.mira.y + 40;
+      const y0 = alto + 14;
+      const v = velocidad() * b.vel;
       if (Math.random() > cfg.precision) {
         // Falla: la flecha cae cerca del blanco
         const a = Math.random() * Math.PI * 2;
         const d = b.r * (1.25 + Math.random() * 0.9);
         const x = b.x + Math.cos(a) * d;
-        const y = b.y + Math.sin(a) * d;
-        efectos.push({ tipo: "estela", x0, y0, x, y, edad: 0, vida: 0.12 });
-        efectos.push({ tipo: "polvo", x, y, fase: Math.random() * 6, edad: 0, vida: 0.5 });
+        const y = b.y + v * VIAJE_IA + Math.sin(a) * d;
+        lanzarFlecha(x0, y0, x, y, cfg.color, VIAJE_IA);
+        ia.vuelo = { b, golpe: false, x, y, restante: VIAJE_IA };
         return;
       }
       const r = Math.random();
       const anillo = r < cfg.dist[0] ? 0 : r < cfg.dist[0] + cfg.dist[1] ? 1 : 2;
-      const pts = PUNTOS_ANILLO[anillo];
-      puntajeRival += pts;
+      lanzarFlecha(x0, y0, b.x, b.y + v * VIAJE_IA, cfg.color, VIAJE_IA);
+      ia.vuelo = { b, golpe: true, pts: PUNTOS_ANILLO[anillo], x: b.x, y: b.y + v * VIAJE_IA, restante: VIAJE_IA };
+    }
+
+    function aterrizarIA() {
+      const vuelo = ia.vuelo;
+      ia.vuelo = null;
+      if (!vuelo.golpe) { efectos.push({ tipo: "polvo", x: vuelo.x, y: vuelo.y, fase: Math.random() * 6, edad: 0, vida: 0.5 }); return; }
+      if (!blancos.includes(vuelo.b)) return; // se lo quitaron mientras volaba la flecha
+      puntajeRival += vuelo.pts;
       destelloRival = 0.45;
-      blancos = blancos.filter(o => o !== b);
-      golpeVisualRival(b.x, b.y, b.r, pts, x0, y0);
+      blancos = blancos.filter(o => o !== vuelo.b);
+      golpeVisualRival(vuelo.b.x, vuelo.b.y, vuelo.b.r, vuelo.pts, 0, 0, { flecha: false });
     }
 
     function tiroDelRival() {
@@ -438,6 +460,7 @@
       }
       for (const e of efectos) {
         e.edad += dt;
+        if (e.edad < 0) continue; // todavía espera a que llegue su flecha
         if (e.tipo === "chispa" || e.tipo === "pedazo") { e.vy += (e.tipo === "pedazo" ? 620 : 380) * dt; e.x += e.vx * dt; e.y += e.vy * dt; }
         else if (e.tipo === "texto") e.y -= 40 * dt;
       }
