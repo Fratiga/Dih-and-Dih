@@ -128,6 +128,8 @@ window.HipodromoDibujo = (function () {
     const R = rasgosDe(perfil.id, 0);
     const s = perfil.silueta || {}, g = k => (typeof s[k] === "number" ? s[k] : 0.5);
     const uid = "hd" + perfil.id + "_" + (++CONTADOR);
+    const corre = /(^|\s)corre(\s|$)/.test(opciones.clase || "");   // en la pista: galopa
+    const ciclo = (0.44 + (perfil.id % 5) * 0.02).toFixed(2);          // segundos por zancada, distinto en cada criatura
     const base = colorCapa(perfil.capa), oscuro = mezcla(base, -0.45), lejos = mezcla(base, -0.3), claro = mezcla(base, 0.25);
     const seis = R.patas !== "4";
 
@@ -171,21 +173,28 @@ window.HipodromoDibujo = (function () {
 
     /* ---- patas */
     const rp = Math.min(1.5, 1 + 0.9 * (g("tamano_cadera") - 0.5)), dp = Math.min(1.4, 1 + 0.8 * (g("tamano_pecho") - 0.5));
-    function pata(x, k, w, pintar) {
+    /* Cada pata son dos tramos: el muslo gira en la cadera y la caña en la rodilla. Quieta se ve como siempre;
+       en la pista (clase "corre") se anima con SMIL: las patas de atrás y de delante van desfasadas, y la rodilla
+       se pliega al llevar la pata hacia delante, como en un galope. */
+    function pata(x, k, w, pintar, fase) {
       const gr = grosorPata * w, yb = cy + alto / 2 + largoPata * k, y0 = cy + alto / 2 - 4, ym = y0 + (yb - y0) * 0.5;
       // la rodilla se dobla: hacia atrás en las patas de atrás y hacia delante en las de delante (no es un caballo)
       const kx = (x < (xAtras + xFrente) / 2 ? -4.2 : 3.2) * Math.min(1, 0.5 + k);
-      let t = `<path d="M ${f1(x)} ${f1(y0)} L ${f1(x + kx)} ${f1(ym)} L ${f1(x)} ${f1(yb - 2)}" fill="none" stroke="${pintar}" stroke-width="${f1(gr)}" stroke-linecap="round" stroke-linejoin="round"/>`;
-      if (R.patron === "patas") t += `<path d="M ${f1(x + kx)} ${f1(ym)} L ${f1(x)} ${f1(yb - 2)}" fill="none" stroke="${oscuro}" stroke-opacity=".75" stroke-width="${f1(gr)}" stroke-linecap="round"/>`;
+      const muslo = `<path d="M ${f1(x)} ${f1(y0)} L ${f1(x + kx)} ${f1(ym)}" fill="none" stroke="${pintar}" stroke-width="${f1(gr)}" stroke-linecap="round"/>`;
+      let cana = `<path d="M ${f1(x + kx)} ${f1(ym)} L ${f1(x)} ${f1(yb - 2)}" fill="none" stroke="${pintar}" stroke-width="${f1(gr)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+      if (R.patron === "patas") cana += `<path d="M ${f1(x + kx)} ${f1(ym)} L ${f1(x)} ${f1(yb - 2)}" fill="none" stroke="${oscuro}" stroke-opacity=".75" stroke-width="${f1(gr)}" stroke-linecap="round"/>`;
       const pie = R.dedos === "palmeadas" ? gr / 2 + 6 : gr / 2 + 3.5, grosor = R.dedos === "palmeadas" ? 1.8 : 2.5;
-      t += `<ellipse cx="${f1(x + 1.5)}" cy="${f1(yb - 2.3)}" rx="${f1(pie)}" ry="${f1(R.dedos === "palmeadas" ? 2.2 : 2.6)}" fill="${oscuro}"/>`;
+      cana += `<ellipse cx="${f1(x + 1.5)}" cy="${f1(yb - 2.3)}" rx="${f1(pie)}" ry="${f1(R.dedos === "palmeadas" ? 2.2 : 2.6)}" fill="${oscuro}"/>`;
       const marcas = R.dedos === "cuatro" ? 3 : R.dedos === "garras" ? 0 : 2;
       for (let i = 1; i <= marcas; i++) {
         const px = x + 1.5 - pie + (2 * pie * i) / (marcas + 1);
-        t += `<line x1="${f1(px)}" y1="${f1(yb - 4.6)}" x2="${f1(px)}" y2="${f1(yb - grosor * 0.2)}" stroke="${base}" stroke-width="0.9" opacity=".85"/>`;
+        cana += `<line x1="${f1(px)}" y1="${f1(yb - 4.6)}" x2="${f1(px)}" y2="${f1(yb - grosor * 0.2)}" stroke="${base}" stroke-width="0.9" opacity=".85"/>`;
       }
-      if (R.dedos === "garras") for (let i = 0; i < 3; i++) t += `<path d="M ${f1(x + gr / 2 + 1.2 + i * 2.2)} ${f1(yb - 3.4 + i * 0.4)} l 3 1.4 l -3 1.2 Z" fill="${HUESO}"/>`;
-      return t;
+      if (R.dedos === "garras") for (let i = 0; i < 3; i++) cana += `<path d="M ${f1(x + gr / 2 + 1.2 + i * 2.2)} ${f1(yb - 3.4 + i * 0.4)} l 3 1.4 l -3 1.2 Z" fill="${HUESO}"/>`;
+      if (!corre) return muslo + cana;
+      const N = 12, A = 36, B = 54;
+      const giro = (cx, cy2, f) => `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: N + 1 }, (_, i) => f(2 * Math.PI * i / N + fase).toFixed(1) + " " + f1(cx) + " " + f1(cy2)).join(";")}"/>`;
+      return `<g>${muslo}<g>${cana}${giro(x + kx, ym, w => B * (0.5 - 0.5 * Math.cos(w)))}</g>${giro(x, y0, w => A * Math.sin(w))}</g>`;
     }
     // [x de la pata cercana, x de la lejana, largo, grosor]
     const trasera = [xAtras - 2, xAtras + 10, 1, rp], delantera = [xFrente + 8, xFrente - 2, 1, dp];
@@ -200,8 +209,9 @@ window.HipodromoDibujo = (function () {
       tras: [[xAtras - 3, xAtras + 8, 1, rp], [xAtras + 17, xAtras + 28, 1, rp * 0.95], delantera],   // traseras dobles
       aux: [trasera, [medio - 3, medio + 8, 1, 0.62], delantera]                               // par fino en medio, también apoyado
     }[R.patas] || [trasera, delantera];
-    const patasLejos = POS.map(p => pata(p[1], p[2], p[3], lejos)).join("");
-    const patasCerca = POS.map(p => pata(p[0], p[2], p[3], base)).join("");
+    const faseDe = (p, lejana) => (p[0] < (xAtras + xFrente) / 2 ? 0 : Math.PI * 0.9) + (lejana ? 1.0 : 0) + (p[0] > xAtras + 20 && p[0] < xFrente - 10 ? 0.5 : 0);
+    const patasLejos = POS.map(p => pata(p[1], p[2], p[3], lejos, faseDe(p, true))).join("");
+    const patasCerca = POS.map(p => pata(p[0], p[2], p[3], base, faseDe(p, false))).join("");
 
     /* ---- cola */
     const colaX = xAtras - rCadera * 0.86, colaY = cy - 3;
@@ -222,7 +232,7 @@ window.HipodromoDibujo = (function () {
       const a = bez(P0, P1, P2, P3, 0.25), b = bez(P0, P1, P2, P3, 0.9);
       cola += `<path d="M ${f1(a.x)} ${f1(a.y)} L ${f1(a.x + a.nx * -9)} ${f1(a.y + a.ny * -9)} L ${f1(b.x + b.nx * -6)} ${f1(b.y + b.ny * -6)} L ${f1(b.x)} ${f1(b.y)} Z" fill="${lejos}" opacity=".9"/>`;
     }
-    cola = `<g class="hip-cola">${cola}</g>`;
+    cola = `<g class="hip-cola">${cola}${corre ? `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="9 ${f1(colaX)} ${f1(colaY)};-7 ${f1(colaX)} ${f1(colaY)};9 ${f1(colaX)} ${f1(colaY)}"/>` : ""}</g>`;
 
     /* ---- alas (detrás del cuerpo) */
     const ax = xFrente - 6, ay = yLomo(xFrente - 6) + 2;
@@ -352,11 +362,22 @@ window.HipodromoDibujo = (function () {
       `<g transform="translate(120 ${suelo}) scale(${k.toFixed(3)}) translate(${f1(-cx)} ${-suelo})">` +
       `<ellipse cx="${f1(cx)}" cy="${suelo}" rx="${f1(Math.min(100, (der - izq) * 0.45))}" ry="3" fill="rgba(0,0,0,.28)"/>` +
       `<g class="hip-resp" style="animation-delay:-${(perfil.id % 7) * 0.6}s">` +
+      (corre ? `<g><animateTransform attributeName="transform" type="translate" dur="${ciclo}s" repeatCount="indefinite" values="0 0;0 -2.6;0 0;0 -1.4;0 0"/>` : "") +
       alas + cola + patasLejos + cuello +
       `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + espalda +
       patasCerca + cabeza +
+      (corre ? `</g>` : "") +
       `</g></g></svg>`;
   }
 
-  return { silueta, colorCapa, registrar, rasgos };
+  /* Para o reanuda el galope de un dibujo (svg) de la pista. Parado vuelve a la pose inicial. */
+  function galope(svg, activo) {
+    if (!svg || !svg.pauseAnimations) return;
+    const q = activo ? "1" : "0";
+    if (svg.dataset.galope === q) return;
+    svg.dataset.galope = q;
+    if (activo) svg.unpauseAnimations(); else { svg.setCurrentTime(0); svg.pauseAnimations(); }
+  }
+
+  return { silueta, colorCapa, registrar, rasgos, galope };
 })();

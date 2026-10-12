@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Fractura — Compendio del Mundo</title>
+  <script src="js/dialogos.js?v=20270144"></script>
+  <script src="js/oculto.js?v=20270144"></script>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20270144">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270144">
+  <link rel="stylesheet" href="css/fractura.css?v=20270144">
+</head>
+<body class="mj-pagina fractura-tema">
+  <!-- Página aparte a propósito: sin cabecera del sitio ni mini reproductor. -->
+  <div class="mj-barra">
+    <span class="mj-enlaces">
+      <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+      <a href="index.html" class="mj-volver mj-volver-sec">Inicio</a>
+      <a href="compendio.html" class="mj-volver mj-volver-sec">Compendio</a>
+    </span>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+
+  <main class="mj-contenido fr-contenido">
+    <p class="eyebrow">ESTRATEGIA</p>
+    <h1 class="mj-titulo">La Fractura</h1>
+    <p class="fr-lead">Un espacio fuera del mundo conocido, hecho de fragmentos de lugares, sueños y recuerdos. Lo que pase aquí no cambia lo que ocurre en la campaña. Tus soldados sí lo recordarán.</p>
+    <p id="frAviso" class="fr-aviso hidden" role="status"></p>
+
+    <!-- 1. Elegir ejército -->
+    <section id="frInicio" class="fr-pantalla">
+      <h2 class="fr-h2">Tus ejércitos</h2>
+      <div id="frEjercitos" class="fr-ejercitos"></div>
+    </section>
+
+    <!-- 2. Cuartel -->
+    <section id="frCuartel" class="fr-pantalla hidden">
+      <div class="fr-cabecera">
+        <button type="button" id="frAtras" class="fr-btn">← Ejércitos</button>
+        <div>
+          <h2 id="frNombreEjercito" class="fr-h2"></h2>
+          <p id="frResumenEjercito" class="fr-sub"></p>
+        </div>
+        <button type="button" id="frRenombrar" class="fr-btn fr-btn-chico">Renombrar</button>
+      </div>
+      <nav id="frPestanas" class="fr-pestanas" aria-label="Secciones del ejército">
+        <button type="button" data-p="guerra" class="activa">Guerra</button>
+        <button type="button" data-p="soldados">Soldados</button>
+        <button type="button" data-p="casas">Casas</button>
+        <button type="button" data-p="reliquias">Reliquias</button>
+        <button type="button" data-p="salon">Salón de los Caídos</button>
+        <button type="button" data-p="cronicas">Crónicas</button>
+        <button type="button" data-p="mundo">Historia del mundo</button>
+      </nav>
+      <div id="frVista" class="fr-vista"></div>
+    </section>
+
+    <!-- 3. La guerra -->
+    <section id="frGuerra" class="fr-pantalla hidden">
+      <div class="fr-barra-guerra">
+        <div id="frRecursos" class="fr-recursos" aria-label="Recursos"></div>
+        <div class="fr-turno">
+          <span id="frTurno"></span>
+          <button type="button" id="frTerminar" class="fr-btn fr-btn-principal">Terminar turno</button>
+        </div>
+      </div>
+      <div class="fr-mesa">
+        <div class="fr-tablero-caja">
+          <canvas id="frTablero" aria-label="Mapa de la Fractura"></canvas>
+          <div id="frCartel" class="fr-cartel hidden"></div>
+        </div>
+        <aside class="fr-lateral">
+          <nav class="fr-pestanas fr-pestanas-chicas" id="frLatPestanas">
+            <button type="button" data-l="sel" class="activa">Selección</button>
+            <button type="button" data-l="ciudades">Ciudades</button>
+            <button type="button" data-l="saber">Investigar</button>
+            <button type="button" data-l="registro">Registro</button>
+          </nav>
+          <div id="frLateral" class="fr-lateral-cuerpo"></div>
+        </aside>
+      </div>
+      <p class="fr-ayuda">Toca una unidad para ver adónde llega y a quién alcanza. Toca una casilla marcada para moverla y un enemigo marcado para atacarlo. Las ciudades vacías se toman entrando en ellas.</p>
+    </section>
+
+    <!-- 4. Fin de la guerra -->
+    <section id="frFin" class="fr-pantalla hidden"></section>
+  </main>
+
+  <dialog id="frFicha" class="fr-ficha">
+    <button type="button" class="fr-cerrar" id="frFichaCerrar" aria-label="Cerrar">×</button>
+    <div id="frFichaCuerpo"></div>
+  </dialog>
+
+  <script src="js/temas.js?v=20270144"></script>
+  <script src="js/fichas-supabase.js?v=20270144"></script>
+  <script src="js/presencia.js?v=20270144"></script>
+  <script src="js/lado.js?v=20270144"></script>
+  <script src="js/fractura-datos.js?v=20270144"></script>
+  <script src="js/fractura-soldados.js?v=20270144"></script>
+  <script src="js/fractura-mapa.js?v=20270144"></script>
+  <script src="js/fractura-motor.js?v=20270144"></script>
+  <script src="js/fractura-ia.js?v=20270144"></script>
+  <script src="js/fractura-campana.js?v=20270144"></script>
+  <script src="js/fractura-cronica.js?v=20270144"></script>
+  <script src="js/fractura-red.js?v=20270144"></script>
+  <script src="js/fractura-tablero.js?v=20270144"></script>
+  <script src="js/fractura.js?v=20270144"></script>
+  <script src="js/musica-paginas.js?v=20270144"></script>
+</body>
+</html>

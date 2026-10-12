@@ -317,6 +317,7 @@
       corre.style.transform = `translateX(${(Math.min(1, s.metros / escena.dist) * Math.max(0, ancho)).toFixed(1)}px)`;
       textoDe(nodo.querySelector(".hip-carril-lugar"), (s.terminada ? s.c.pos : lugar.get(s.c.id)) + "º");
       nodo.classList.toggle("fin", s.terminada);
+      D.galope(corre.querySelector("svg"), !s.terminada);   // llega a meta y se queda quieto
     });
     // tropiezos y lesiones
     escena.res.incidentes.forEach(inc => {
