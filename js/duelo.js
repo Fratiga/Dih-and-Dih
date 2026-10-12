@@ -30,7 +30,7 @@
 
   // Tiempos del jugador y reglas comunes (segundos)
   const PARADA = 0.14;            // ventana de parada desde que se levanta la guardia
-  const ESPERA_PARADA = 2;        // tras una parada lograda, la ventana no vuelve a abrirse durante este tiempo
+  const ESPERA_PARADA = 2;        // al levantar la guardia se gasta la ventana de parada; vuelve tras este tiempo, o ya si la parada sale
   const RAPIDO = { aviso: 0.2, recuperar: 0.36, costo: 12 };
   const PESADO = { aviso: 0.55, recuperar: 0.62, costo: 26 };
   const ESQUIVA = { dur: 0.42, inicioInv: 0.05, finInv: 0.27, costo: 18 };
@@ -61,7 +61,7 @@
     return {
       nombre, x, dir, hp, hpMax: hp, st: 100, dano, arma, color,
       accion: "idle", tipo: "rapido", t: 0, dur: 0,
-      sinRegen: 0, buffer: null, retroceso: 0, destello: 0, parry: 0, esperaParada: 0,
+      sinRegen: 0, buffer: null, retroceso: 0, destello: 0, parry: 0, esperaParada: 0, ventanaParada: false,
       finta: false, mantener: false, cargando: false
     };
   }
@@ -118,6 +118,9 @@
   function bloquear(f) {
     if (f.accion === "block") return;
     empezarAccion(f, "block", 9999);
+    // Levantar la guardia gasta la ventana de parada; si no se aprovecha, tarda en volver
+    f.ventanaParada = f.esperaParada <= 0;
+    if (f.ventanaParada) f.esperaParada = ESPERA_PARADA;
   }
 
   function esquivar(f) {
@@ -155,8 +158,9 @@
     const dano = a.dano[a.tipo === "pesado" ? 1 : 0];
     if (invulnerable(d)) { if (d === j && est) est.esquivas++; texto("¡Esquiva!", d, "#8fdcff"); a.parry = 0; return; }
     if (d.accion === "block") {
-      if (d.t <= PARADA && d.esperaParada <= 0) {
-        d.esperaParada = ESPERA_PARADA;
+      if (d.t <= PARADA && d.ventanaParada) {
+        d.ventanaParada = false;
+        d.esperaParada = 0; // una parada lograda no gasta la espera: se puede volver a usar enseguida
         if (d === j && est) est.paradas++;
         texto("¡Parada!", d, "#ffe08a");
         d.parry = 0.3; d.st = Math.min(100, d.st + 18);
@@ -468,7 +472,7 @@
 
     // escudo al bloquear
     if (f.accion === "block") {
-      ctx.strokeStyle = f.t <= PARADA && f.esperaParada <= 0 ? "#ffe08a" : "#8fdcff"; ctx.lineWidth = 7;
+      ctx.strokeStyle = f.t <= PARADA && f.ventanaParada ? "#ffe08a" : "#8fdcff"; ctx.lineWidth = 7;
       ctx.beginPath(); ctx.arc(22, -88, 54, -1.0, 1.0); ctx.stroke();
     }
     if (f.parry > 0) {
