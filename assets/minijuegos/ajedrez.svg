@@ -1,19 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-hidden="true"><rect width="320" height="150" fill="#2b1a10"/>
-<g><rect x="60" y="14" width="200" height="122" fill="#d8b98a"/><rect x="85" y="14" width="25" height="30" fill="#7a4a2a"/>
-<rect x="135" y="14" width="25" height="30" fill="#7a4a2a"/>
-<rect x="185" y="14" width="25" height="30" fill="#7a4a2a"/>
-<rect x="235" y="14" width="25" height="30" fill="#7a4a2a"/>
-<rect x="60" y="44" width="25" height="30" fill="#7a4a2a"/>
-<rect x="110" y="44" width="25" height="30" fill="#7a4a2a"/>
-<rect x="160" y="44" width="25" height="30" fill="#7a4a2a"/>
-<rect x="210" y="44" width="25" height="30" fill="#7a4a2a"/>
-<rect x="85" y="74" width="25" height="30" fill="#7a4a2a"/>
-<rect x="135" y="74" width="25" height="30" fill="#7a4a2a"/>
-<rect x="185" y="74" width="25" height="30" fill="#7a4a2a"/>
-<rect x="235" y="74" width="25" height="30" fill="#7a4a2a"/>
-<rect x="60" y="104" width="25" height="30" fill="#7a4a2a"/>
-<rect x="110" y="104" width="25" height="30" fill="#7a4a2a"/>
-<rect x="160" y="104" width="25" height="30" fill="#7a4a2a"/>
-<rect x="210" y="104" width="25" height="30" fill="#7a4a2a"/></g>
-<g fill="#f9ead0" stroke="#2b1a10" stroke-width="3"><path d="M134 118v-34l-10-6v-8h26v8l-10 6v34z"/><path d="M154 42h12v-10h12v10h12v18h-36z"/></g>
-<g fill="#2b1a10" stroke="#f9ead0" stroke-width="3"><path d="M190 120v-30q-22-4-24-26q8-14 30-12q22 8 20 36l-6 32z"/><circle cx="198" cy="70" r="3" fill="#f9ead0"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-hidden="true">
+<defs>
+<pattern id="tab" width="80" height="80" patternUnits="userSpaceOnUse"><rect width="80" height="80" fill="#d8b98a"/><rect width="40" height="40" fill="#8a5a34"/><rect x="40" y="40" width="40" height="40" fill="#8a5a34"/></pattern>
+<linearGradient id="vel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1a10" stop-opacity=".1"/><stop offset="1" stop-color="#2b1a10" stop-opacity=".55"/></linearGradient>
+</defs>
+<rect width="320" height="150" fill="url(#tab)"/>
+<rect width="320" height="150" fill="url(#vel)"/>
+<ellipse cx="104" cy="128" rx="44" ry="7" fill="#000" opacity=".35"/>
+<ellipse cx="226" cy="128" rx="44" ry="7" fill="#000" opacity=".35"/>
+<g fill="#f9ead0" stroke="#2b1a10" stroke-width="3" stroke-linejoin="round">
+<rect x="80" y="112" width="48" height="14" rx="4"/>
+<path d="M88 112l6-50h20l6 50z"/>
+<rect x="84" y="56" width="40" height="9" rx="4"/>
+<path d="M90 56q14-34 28 0z"/>
+<rect x="100" y="12" width="8" height="26" rx="2"/>
+<rect x="92" y="19" width="24" height="8" rx="2"/>
+</g>
+<g fill="#2b1a10" stroke="#f9ead0" stroke-width="3" stroke-linejoin="round">
+<rect x="198" y="112" width="56" height="14" rx="4"/>
+<path d="M206 112l5-52h30l5 52z"/>
+<rect x="202" y="44" width="48" height="16" rx="3"/>
+<path d="M202 44V28h12v8h6v-8h12v8h6v-8h12v16z"/>
+</g>
+</svg>
