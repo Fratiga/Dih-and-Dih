@@ -3759,3 +3759,33 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
 /* Enlaces de la barra superior de los juegos: volver al hub y salidas al inicio y al compendio */
 .mj-enlaces { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; }
 .mj-volver-sec { opacity: .75; }
+
+/* --- Admin: economía de cartas (js/admin-economia.js) --- */
+.eco-vistas { display: flex; gap: 6px; margin: 0 0 12px; }
+.eco-vistas button { font: inherit; padding: 8px 16px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); cursor: pointer; }
+.eco-vistas button.activo { color: var(--text); border-color: var(--accent-soft); background: var(--panel); }
+.eco-estado { min-height: 1.3em; margin: 0 0 8px; font-size: .88rem; color: var(--accent); }
+.eco-estado.eco-error, .eco-error { color: #ff8a7a; }
+.eco-ayuda { font-size: .85rem; color: var(--muted); line-height: 1.5; }
+.eco-ayuda p { margin: 0 0 6px; }
+.eco-resumen { margin: 10px 0; font-size: .9rem; color: var(--text); }
+.eco-filtros, .eco-lote, .eco-guardar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 10px 0; font-size: .85rem; }
+.eco-filtros input[type="search"], .eco-filtros select, .eco-lote input, .eco-tabla input[type="number"] {
+  font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); padding: 6px 8px; color-scheme: dark;
+}
+.eco-lote input { width: 110px; }
+.eco-tabla-caja { overflow-x: auto; max-height: 70vh; overflow-y: auto; border: 1px solid var(--border); }
+.eco-tabla { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.eco-tabla th { position: sticky; top: 0; z-index: 1; text-align: left; padding: 8px 10px; background: var(--panel-2); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.eco-tabla td { padding: 6px 10px; border-top: 1px solid var(--border); vertical-align: middle; }
+.eco-tabla td small { display: block; color: var(--muted); font-size: .72rem; }
+.eco-tabla input[type="number"] { width: 88px; }
+.eco-tabla input.eco-sin { border-color: #c98f3a; }
+.eco-tabla input.eco-mal { border-color: #ff6a5a; }
+.eco-tabla tr.eco-cambiada td { background: rgba(246, 191, 77, .08); }
+.eco-tabla tr.eco-borrador td { opacity: .65; }
+.eco-vacia { color: var(--muted); padding: 12px; }
+.eco-ok { color: #8fd694; font-weight: 700; }
+.eco-problemas { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.eco-problemas li { padding: 8px 10px; border: 1px solid #ff6a5a66; background: rgba(255, 106, 90, .08); }
+.eco-problemas small { display: block; color: var(--muted); }

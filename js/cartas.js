@@ -53,7 +53,7 @@
     const editar = puedeEditar ? `<p><button type="button" class="cartas-boton" data-editar="${esc(c.id)}">Editar esta carta</button></p>` : "";
     const cuerpo = tengo
       ? `<h2>${esc(c.nombre)}${c.epiteto ? ` — ${esc(c.epiteto)}` : ""}</h2>
-         <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)} · ${esc(af)}${c.limite ? ` · edición de ${c.limite}` : ""}</p>
+         <p class="carta-meta">${esc(c.tipo)} · ${esc(rareza)} · ${esc(af)}${c.limite && (c.rareza === "legendaria" || c.rareza === "limitada") ? ` · edición de ${c.limite}` : ""}</p>
          ${c.habilidad ? `<p><strong>Reglas.</strong> ${esc(c.habilidad)}</p>` : ""}
          ${descripcionDe(c) ? `<p class="carta-resumen">${esc(descripcionDe(c))}</p>` : ""}
          ${formas}
