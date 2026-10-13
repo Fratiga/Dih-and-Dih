@@ -1,16 +1,20 @@
--- HIPÓDROMO: tablas, permisos y la función que guarda cada tanda de carreras.
+-- HIPÓDROMO: tablas, permisos y las funciones del servidor (mundo, monedas, apuestas y cuadras).
 -- Se ejecuta una vez en el editor SQL de Supabase. Se puede repetir sin romper nada.
--- Explicación del conjunto en docs/hipodromo.md. Probado con PostgreSQL 16 (ver «Cómo se probó»).
+-- Explicación del conjunto en docs/hipodromo.md. Probado con PostgreSQL 17 (ver «Cómo se probó»).
 --
 -- Quién puede qué:
---   * hipodromo_estado    : el mundo entero, con lo oculto (genes, forma, resultado de la próxima carrera).
---                           Nadie lo lee ni lo escribe salvo la función de servicio (service_role).
---   * hipodromo_criaturas : el perfil público de cada criatura. Lo lee cualquiera.
---   * hipodromo_programa  : la próxima carrera (inscritos, puertas, pronóstico, cuotas). Lo lee cualquiera.
---   * hipodromo_carreras  : el resultado de cada carrera. La propia base lo esconde hasta la hora de salida
---                           (la carrera se calcula 30 minutos antes), así no hace falta un reloj exacto en el servidor.
---   * hipodromo_noticias  : las noticias; se leen cuando su hora ya pasó.
---   * hipodromo_votos     : (opcional) a quién apuesta cada jugador, para enseñar el porcentaje de la comunidad.
+--   * hipodromo_estado     : el mundo entero, con lo oculto (genes, forma, resultado de la próxima carrera).
+--                            Nadie lo lee ni lo escribe salvo la función de servicio (service_role).
+--   * hipodromo_criaturas  : el perfil público de cada criatura (con su dueño y su precio). Lo lee cualquiera.
+--   * hipodromo_programa   : la próxima carrera (inscritos, puertas, pronóstico, cuotas). Lo lee cualquiera.
+--   * hipodromo_carreras   : el resultado de cada carrera. La propia base lo esconde hasta la hora de salida
+--                            (la carrera se calcula 30 minutos antes), así no hace falta un reloj exacto en el servidor.
+--   * hipodromo_noticias   : las noticias; se leen cuando su hora ya pasó.
+--   * hipodromo_calendario : las próximas carreras (categoría, distancia, pista, precio de inscribir). Lo lee cualquiera.
+--   * hipodromo_votos      : (opcional) a quién apuesta cada jugador, para enseñar el porcentaje de la comunidad.
+--   * hipodromo_billeteras, _movimientos, _apuestas, _ordenes, _avisos y _cuadras: lo de cada jugador. Cada uno lee
+--     solo lo suyo y nadie escribe directamente: todo pasa por las funciones de abajo (security definer).
+--   Las monedas son del servidor: apostar y mandar órdenes a la cuadra pasan por funciones que comprueban saldo y plazo.
 
 -- ------------------------------------------------------------------ estado secreto del mundo
 create table if not exists public.hipodromo_estado (
@@ -36,13 +40,17 @@ create table if not exists public.hipodromo_criaturas (
   victorias integer not null default 0,
   premios   integer not null default 0,
   leyenda   boolean not null default false,
+  dueno     text,                             -- id del jugador dueño (null si la lleva el mundo)
   n         integer not null default 0,       -- última carrera en la que cambió
   publico   jsonb not null                    -- perfil público completo, tal como lo calcula el motor
 );
+alter table public.hipodromo_criaturas add column if not exists dueno text;
+drop index if exists public.hipodromo_criaturas_nombre;
 create unique index if not exists hipodromo_criaturas_nombre on public.hipodromo_criaturas (lower(nombre));
 create index if not exists hipodromo_criaturas_estado on public.hipodromo_criaturas (estado);
 create index if not exists hipodromo_criaturas_victorias on public.hipodromo_criaturas (victorias desc);
 create index if not exists hipodromo_criaturas_leyenda on public.hipodromo_criaturas (leyenda) where leyenda;
+create index if not exists hipodromo_criaturas_dueno on public.hipodromo_criaturas (dueno) where dueno is not null;
 
 create table if not exists public.hipodromo_programa (
   n       integer primary key,
@@ -69,10 +77,16 @@ create table if not exists public.hipodromo_noticias (
 create index if not exists hipodromo_noticias_hora on public.hipodromo_noticias (hora desc);
 create index if not exists hipodromo_noticias_ids on public.hipodromo_noticias using gin (ids);
 
+create table if not exists public.hipodromo_calendario (
+  n     integer primary key,
+  datos jsonb not null
+);
+
 alter table public.hipodromo_criaturas enable row level security;
 alter table public.hipodromo_programa enable row level security;
 alter table public.hipodromo_carreras enable row level security;
 alter table public.hipodromo_noticias enable row level security;
+alter table public.hipodromo_calendario enable row level security;
 
 drop policy if exists "hipodromo_criaturas se lee" on public.hipodromo_criaturas;
 create policy "hipodromo_criaturas se lee" on public.hipodromo_criaturas for select using (true);
@@ -82,14 +96,100 @@ drop policy if exists "hipodromo_carreras se lee desde la salida" on public.hipo
 create policy "hipodromo_carreras se lee desde la salida" on public.hipodromo_carreras for select using (hora <= now());
 drop policy if exists "hipodromo_noticias se lee cuando toca" on public.hipodromo_noticias;
 create policy "hipodromo_noticias se lee cuando toca" on public.hipodromo_noticias for select using (hora <= now());
+drop policy if exists "hipodromo_calendario se lee" on public.hipodromo_calendario;
+create policy "hipodromo_calendario se lee" on public.hipodromo_calendario for select using (true);
 
-revoke all on public.hipodromo_criaturas, public.hipodromo_programa, public.hipodromo_carreras, public.hipodromo_noticias from anon, authenticated;
-grant select on public.hipodromo_criaturas, public.hipodromo_programa, public.hipodromo_carreras, public.hipodromo_noticias to anon, authenticated;
+revoke all on public.hipodromo_criaturas, public.hipodromo_programa, public.hipodromo_carreras, public.hipodromo_noticias, public.hipodromo_calendario from anon, authenticated;
+grant select on public.hipodromo_criaturas, public.hipodromo_programa, public.hipodromo_carreras, public.hipodromo_noticias, public.hipodromo_calendario to anon, authenticated;
+
+-- ------------------------------------------------------------------ lo de cada jugador
+create table if not exists public.hipodromo_billeteras (
+  usuario uuid primary key,
+  saldo   numeric(12, 2) not null default 1000 check (saldo >= 0),
+  creada  timestamptz not null default now()
+);
+create table if not exists public.hipodromo_movimientos (
+  id       bigint generated always as identity primary key,
+  usuario  uuid not null,
+  n        integer,
+  concepto text not null,
+  monto    numeric(12, 2) not null,
+  saldo    numeric(12, 2) not null,
+  creado   timestamptz not null default now()
+);
+create index if not exists hipodromo_movimientos_usuario on public.hipodromo_movimientos (usuario, id desc);
+create table if not exists public.hipodromo_apuestas (
+  id      bigint generated always as identity primary key,
+  usuario uuid not null,
+  n       integer not null,
+  tipo    text not null check (tipo in ('ganador', 'podio', 'exacta')),
+  sel     jsonb not null,                       -- un id de criatura, o [primero, segundo] en la exacta
+  nombres jsonb not null default '[]',
+  carrera text,
+  monto   numeric(12, 2) not null check (monto >= 1),
+  cuota   numeric(8, 2) not null,
+  estado  text not null default 'pendiente' check (estado in ('pendiente', 'ganada', 'perdida', 'devuelta')),
+  pago    numeric(12, 2) not null default 0,
+  creada  timestamptz not null default now()
+);
+create index if not exists hipodromo_apuestas_usuario on public.hipodromo_apuestas (usuario, id desc);
+create index if not exists hipodromo_apuestas_pendientes on public.hipodromo_apuestas (n) where estado = 'pendiente';
+create table if not exists public.hipodromo_ordenes (
+  id       bigint generated always as identity primary key,
+  usuario  uuid not null,
+  datos    jsonb not null,
+  estado   text not null default 'pendiente' check (estado in ('pendiente', 'hecha', 'rechazada')),
+  texto    text,
+  creada   timestamptz not null default now(),
+  resuelta timestamptz
+);
+create index if not exists hipodromo_ordenes_usuario on public.hipodromo_ordenes (usuario, id desc);
+create index if not exists hipodromo_ordenes_pendientes on public.hipodromo_ordenes (id) where estado = 'pendiente';
+create table if not exists public.hipodromo_avisos (
+  id          bigint generated always as identity primary key,
+  usuario     uuid not null,
+  n           integer,
+  criatura_id bigint,
+  texto       text not null,
+  creado      timestamptz not null default now()
+);
+create index if not exists hipodromo_avisos_usuario on public.hipodromo_avisos (usuario, id desc);
+create table if not exists public.hipodromo_cuadras (
+  dueno       uuid not null,
+  criatura_id bigint not null,
+  n           integer not null,
+  datos       jsonb not null,                   -- lo que le cuenta su entrenador: órdenes, cansancio, capacidades redondeadas
+  primary key (dueno, criatura_id)
+);
+
+alter table public.hipodromo_billeteras enable row level security;
+alter table public.hipodromo_movimientos enable row level security;
+alter table public.hipodromo_apuestas enable row level security;
+alter table public.hipodromo_ordenes enable row level security;
+alter table public.hipodromo_avisos enable row level security;
+alter table public.hipodromo_cuadras enable row level security;
+drop policy if exists "hipodromo_billeteras la propia" on public.hipodromo_billeteras;
+create policy "hipodromo_billeteras la propia" on public.hipodromo_billeteras for select using (usuario = auth.uid());
+drop policy if exists "hipodromo_movimientos los propios" on public.hipodromo_movimientos;
+create policy "hipodromo_movimientos los propios" on public.hipodromo_movimientos for select using (usuario = auth.uid());
+drop policy if exists "hipodromo_apuestas las propias" on public.hipodromo_apuestas;
+create policy "hipodromo_apuestas las propias" on public.hipodromo_apuestas for select using (usuario = auth.uid());
+drop policy if exists "hipodromo_ordenes las propias" on public.hipodromo_ordenes;
+create policy "hipodromo_ordenes las propias" on public.hipodromo_ordenes for select using (usuario = auth.uid());
+drop policy if exists "hipodromo_avisos los propios" on public.hipodromo_avisos;
+create policy "hipodromo_avisos los propios" on public.hipodromo_avisos for select using (usuario = auth.uid());
+drop policy if exists "hipodromo_cuadras la propia" on public.hipodromo_cuadras;
+create policy "hipodromo_cuadras la propia" on public.hipodromo_cuadras for select using (dueno = auth.uid());
+revoke all on public.hipodromo_billeteras, public.hipodromo_movimientos, public.hipodromo_apuestas, public.hipodromo_ordenes, public.hipodromo_avisos, public.hipodromo_cuadras from anon, authenticated;
+grant select on public.hipodromo_billeteras, public.hipodromo_movimientos, public.hipodromo_apuestas, public.hipodromo_ordenes, public.hipodromo_avisos, public.hipodromo_cuadras to authenticated;
 
 -- ------------------------------------------------------------------ guardar una tanda (la llama la Edge Function)
 -- p_version: la versión del estado que leyó la función (0 la primera vez). Si otra ejecución se adelantó, falla con
--- el código 40001 y la función simplemente vuelve a intentarlo desde el estado nuevo. Todo se guarda en una transacción.
--- p_lote: lo que devuelve HipodromoMotor.lote(...) o loteInicial(...): { mundo, criaturas, programas, carreras, noticias }
+-- el código 40001 y la función simplemente vuelve a intentarlo desde el estado nuevo. Todo se guarda en una transacción:
+-- el mundo, las criaturas, las carreras, las noticias, los pagos de monedas, el resultado de las órdenes, los avisos
+-- y la liquidación de las apuestas de las carreras que se aplican. Si un pago dejara a alguien con saldo negativo
+-- (alguien apostó entre la lectura y el guardado), falla con 23514 y la función repite con los saldos nuevos.
+-- p_lote: lo que devuelve HipodromoMotor.lote(...) o loteInicial(...)
 create or replace function public.hipodromo_guardar(p_version bigint, p_lote jsonb)
 returns bigint
 language plpgsql
@@ -98,6 +198,10 @@ set search_path = public
 as $$
 declare
   v_nueva bigint;
+  r record;
+  v_saldo numeric;
+  v_orden bigint[];
+  v_gana boolean;
 begin
   if p_version = 0 then
     insert into hipodromo_estado (id, version, mundo) values (1, 1, p_lote->'mundo') on conflict (id) do nothing;
@@ -111,14 +215,14 @@ begin
     if v_nueva is null then raise exception 'version' using errcode = '40001'; end if;
   end if;
 
-  insert into hipodromo_criaturas (id, nombre, sexo, estado, nac, gen, padre_id, madre_id, salidas, victorias, premios, leyenda, n, publico)
-  select x.id, x.nombre, x.sexo, x.estado, x.nac, x.gen, x.padre_id, x.madre_id, x.salidas, x.victorias, x.premios, x.leyenda, x.n, x.publico
+  insert into hipodromo_criaturas (id, nombre, sexo, estado, nac, gen, padre_id, madre_id, salidas, victorias, premios, leyenda, dueno, n, publico)
+  select x.id, x.nombre, x.sexo, x.estado, x.nac, x.gen, x.padre_id, x.madre_id, x.salidas, x.victorias, x.premios, x.leyenda, x.dueno, x.n, x.publico
     from jsonb_to_recordset(coalesce(p_lote->'criaturas', '[]'::jsonb)) as x(
       id bigint, nombre text, sexo text, estado text, nac integer, gen integer, padre_id bigint, madre_id bigint,
-      salidas integer, victorias integer, premios integer, leyenda boolean, n integer, publico jsonb)
+      salidas integer, victorias integer, premios integer, leyenda boolean, dueno text, n integer, publico jsonb)
   on conflict (id) do update set
-    estado = excluded.estado, gen = excluded.gen, salidas = excluded.salidas, victorias = excluded.victorias,
-    premios = excluded.premios, leyenda = excluded.leyenda, n = excluded.n, publico = excluded.publico;
+    nombre = excluded.nombre, estado = excluded.estado, gen = excluded.gen, salidas = excluded.salidas, victorias = excluded.victorias,
+    premios = excluded.premios, leyenda = excluded.leyenda, dueno = excluded.dueno, n = excluded.n, publico = excluded.publico;
 
   insert into hipodromo_programa (n, hora, cierre, publico)
   select x.n, to_timestamp(x.hora / 1000.0), to_timestamp(x.cierre / 1000.0), x.publico
@@ -136,11 +240,181 @@ begin
          coalesce(array(select jsonb_array_elements_text(x.ids)::bigint), '{}')
     from jsonb_to_recordset(coalesce(p_lote->'noticias', '[]'::jsonb)) as x(n integer, hora bigint, tipo text, titulo text, texto text, ids jsonb);
 
+  -- las próximas carreras (lo que se puede inscribir) y lo privado de cada cuadra: se reemplazan enteros
+  if p_lote ? 'calendario' then
+    delete from hipodromo_calendario;
+    insert into hipodromo_calendario (n, datos) select (x->>'n')::integer, x from jsonb_array_elements(p_lote->'calendario') as x;
+  end if;
+  if p_lote ? 'cuadras' then
+    delete from hipodromo_cuadras;
+    insert into hipodromo_cuadras (dueno, criatura_id, n, datos)
+    select x.dueno::uuid, x.criatura_id, x.n, x.datos
+      from jsonb_to_recordset(p_lote->'cuadras') as x(dueno text, criatura_id bigint, n integer, datos jsonb);
+  end if;
+
+  -- monedas: premios, inscripciones, compras, ventas, montas. Cada pago deja un movimiento.
+  for r in select x.dueno::uuid as usuario, x.monto, x.concepto, x.n
+             from jsonb_to_recordset(coalesce(p_lote->'pagos', '[]'::jsonb)) as x(dueno text, monto numeric, concepto text, n integer)
+            where x.monto <> 0 loop
+    insert into hipodromo_billeteras (usuario) values (r.usuario) on conflict (usuario) do nothing;
+    update hipodromo_billeteras set saldo = saldo + r.monto where usuario = r.usuario returning saldo into v_saldo;
+    insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (r.usuario, r.n, left(coalesce(r.concepto, ''), 200), r.monto, v_saldo);
+  end loop;
+
+  -- el resultado de cada orden que se ha procesado
+  update hipodromo_ordenes o
+     set estado = case when x.ok then 'hecha' else 'rechazada' end, texto = left(coalesce(x.texto, x.error, ''), 300), resuelta = now()
+    from jsonb_to_recordset(coalesce(p_lote->'ordenes', '[]'::jsonb)) as x(oid bigint, ok boolean, texto text, error text)
+   where o.id = x.oid and o.estado = 'pendiente';
+
+  insert into hipodromo_avisos (usuario, n, criatura_id, texto)
+  select x.dueno::uuid, x.n, x.id, left(x.texto, 300)
+    from jsonb_to_recordset(coalesce(p_lote->'avisos', '[]'::jsonb)) as x(dueno text, n integer, id bigint, texto text);
+
+  -- liquidar las apuestas de las carreras que se aplican ahora (su resultado ya está guardado desde que se programó)
+  for r in select a.id, a.usuario, a.tipo, a.sel, a.monto, a.cuota, c.resultado
+             from hipodromo_apuestas a
+             left join hipodromo_carreras c on c.n = a.n
+            where a.estado = 'pendiente'
+              and a.n in (select (jsonb_array_elements_text(coalesce(p_lote->'aplicadas', '[]'::jsonb)))::integer)
+            order by a.id loop
+    if r.resultado is null then
+      update hipodromo_apuestas set estado = 'devuelta', pago = r.monto where id = r.id;
+      update hipodromo_billeteras set saldo = saldo + r.monto where usuario = r.usuario returning saldo into v_saldo;
+      insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (r.usuario, null, 'Apuesta devuelta', r.monto, v_saldo);
+      continue;
+    end if;
+    select array(select (e->>'id')::bigint from jsonb_array_elements(r.resultado->'llegada') with ordinality t(e, i) order by i) into v_orden;
+    v_gana := case r.tipo
+      when 'ganador' then (r.sel #>> '{}')::bigint = v_orden[1]
+      when 'podio' then (r.sel #>> '{}')::bigint = any (v_orden[1:3])
+      else (r.sel->>0)::bigint = v_orden[1] and (r.sel->>1)::bigint = v_orden[2]
+    end;
+    if v_gana then
+      update hipodromo_apuestas set estado = 'ganada', pago = round(r.monto * r.cuota, 2) where id = r.id;
+      update hipodromo_billeteras set saldo = saldo + round(r.monto * r.cuota, 2) where usuario = r.usuario returning saldo into v_saldo;
+      insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (r.usuario, null, 'Apuesta ganada', round(r.monto * r.cuota, 2), v_saldo);
+    else
+      update hipodromo_apuestas set estado = 'perdida' where id = r.id;
+    end if;
+  end loop;
+
   return v_nueva;
 end;
 $$;
 revoke all on function public.hipodromo_guardar(bigint, jsonb) from public, anon, authenticated;
 grant execute on function public.hipodromo_guardar(bigint, jsonb) to service_role;
+
+-- ------------------------------------------------------------------ funciones de los jugadores
+-- La hora del servidor (para ajustar el reloj de la página)
+create or replace function public.hipodromo_ahora() returns timestamptz language sql stable as $$ select now() $$;
+revoke all on function public.hipodromo_ahora() from public;
+grant execute on function public.hipodromo_ahora() to anon, authenticated;
+
+-- Crea la billetera del jugador si no existe (1000 monedas) y devuelve el saldo
+create or replace function public.hipodromo_saldo() returns numeric
+language plpgsql security definer set search_path = public as $$
+declare v_uid uuid := auth.uid(); v_saldo numeric;
+begin
+  if v_uid is null then raise exception 'Hace falta iniciar sesión.'; end if;
+  insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
+  select saldo into v_saldo from hipodromo_billeteras where usuario = v_uid;
+  return v_saldo;
+end;
+$$;
+revoke all on function public.hipodromo_saldo() from public, anon;
+grant execute on function public.hipodromo_saldo() to authenticated;
+
+-- Apostar. La cuota la pone el servidor con lo publicado, nunca el cliente. Devuelve { ok, ... } o { ok: false, error }.
+create or replace function public.hipodromo_apostar(p_n integer, p_tipo text, p_sel jsonb, p_monto numeric)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_monto numeric := floor(p_monto);
+  v_prog hipodromo_programa%rowtype;
+  v_saldo numeric;
+  v_ids bigint[];
+  v_ent jsonb;
+  v_cuota numeric;
+  v_nombres jsonb := '[]';
+  v_a bigint; v_b bigint; v_pa numeric; v_pb numeric; v_raw numeric;
+begin
+  if v_uid is null then return jsonb_build_object('ok', false, 'error', 'Hace falta iniciar sesión.'); end if;
+  if p_tipo not in ('ganador', 'podio', 'exacta') then return jsonb_build_object('ok', false, 'error', 'Ese tipo de apuesta no existe.'); end if;
+  if v_monto is null or v_monto < 1 or v_monto > 1000000 then return jsonb_build_object('ok', false, 'error', 'Pon un importe de al menos 1 moneda.'); end if;
+  select * into v_prog from hipodromo_programa where n = p_n;
+  if not found then return jsonb_build_object('ok', false, 'error', 'Esa carrera no existe.'); end if;
+  if now() >= v_prog.cierre then return jsonb_build_object('ok', false, 'error', 'Las apuestas de esa carrera están cerradas.'); end if;
+  if coalesce((v_prog.publico->>'suspendida')::boolean, false) then return jsonb_build_object('ok', false, 'error', 'La carrera está suspendida.'); end if;
+  select array(select (e->>'id')::bigint from jsonb_array_elements(v_prog.publico->'entrantes') e) into v_ids;
+
+  if p_tipo = 'exacta' then
+    if jsonb_typeof(p_sel) <> 'array' or jsonb_array_length(p_sel) <> 2 then return jsonb_build_object('ok', false, 'error', 'Elige dos criaturas distintas.'); end if;
+    v_a := (p_sel->>0)::bigint; v_b := (p_sel->>1)::bigint;
+    if v_a = v_b or not (v_a = any (v_ids)) or not (v_b = any (v_ids)) then return jsonb_build_object('ok', false, 'error', 'Elige dos criaturas distintas que corran.'); end if;
+    v_pa := (v_prog.publico->'mercado'->>(v_a::text))::numeric; v_pb := (v_prog.publico->'mercado'->>(v_b::text))::numeric;
+    v_raw := least(500, greatest(1.05, 1 / ((v_pa * v_pb / (1 - v_pa)) * 1.25)));
+    v_cuota := case when v_raw < 10 then round(v_raw, 2) when v_raw < 100 then round(v_raw, 1) else round(v_raw, 0) end;
+    select jsonb_agg(e->>'nombre' order by case when (e->>'id')::bigint = v_a then 0 else 1 end) into v_nombres
+      from jsonb_array_elements(v_prog.publico->'entrantes') e where (e->>'id')::bigint in (v_a, v_b);
+  else
+    if jsonb_typeof(p_sel) <> 'number' then return jsonb_build_object('ok', false, 'error', 'Esa criatura no corre.'); end if;
+    v_a := (p_sel #>> '{}')::bigint;
+    if not (v_a = any (v_ids)) then return jsonb_build_object('ok', false, 'error', 'Esa criatura no corre.'); end if;
+    select (e->>(case when p_tipo = 'ganador' then 'gan' else 'pod' end))::numeric, jsonb_build_array(e->>'nombre') into v_cuota, v_nombres
+      from jsonb_array_elements(v_prog.publico->'entrantes') e where (e->>'id')::bigint = v_a;
+  end if;
+
+  insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
+  select saldo into v_saldo from hipodromo_billeteras where usuario = v_uid for update;
+  if v_monto > v_saldo then return jsonb_build_object('ok', false, 'error', 'No tienes tantas monedas.'); end if;
+  if (select count(*) from hipodromo_apuestas where usuario = v_uid and n = p_n and estado = 'pendiente') >= 20 then
+    return jsonb_build_object('ok', false, 'error', 'Demasiadas apuestas en la misma carrera.');
+  end if;
+  update hipodromo_billeteras set saldo = saldo - v_monto where usuario = v_uid returning saldo into v_saldo;
+  insert into hipodromo_apuestas (usuario, n, tipo, sel, nombres, carrera, monto, cuota)
+    values (v_uid, p_n, p_tipo, p_sel, v_nombres, v_prog.publico->>'nombre', v_monto, v_cuota);
+  insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (v_uid, p_n, 'Apuesta: ' || p_tipo || ', carrera ' || p_n, -v_monto, v_saldo);
+  return jsonb_build_object('ok', true, 'cuota', v_cuota, 'saldo', v_saldo, 'nombres', v_nombres);
+end;
+$$;
+revoke all on function public.hipodromo_apostar(integer, text, jsonb, numeric) from public, anon;
+grant execute on function public.hipodromo_apostar(integer, text, jsonb, numeric) to authenticated;
+
+-- Mandar una orden a la cuadra. No se resuelve aquí: la Edge Function la lee en el siguiente minuto, el motor decide si
+-- vale y cuánto cuesta, y el resultado y el cobro se guardan junto al mundo. Devuelve el id de la orden (míralo en hipodromo_ordenes).
+create or replace function public.hipodromo_ordenar(p_datos jsonb) returns bigint
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_tipo text := p_datos->>'tipo';
+  v_d jsonb;
+  v_id bigint;
+begin
+  if v_uid is null then raise exception 'Hace falta iniciar sesión.'; end if;
+  if v_tipo is null or v_tipo not in ('adoptar', 'comprar', 'vender', 'inscribir', 'desinscribir', 'entrenar', 'cuidar', 'tactica', 'nombre', 'retirar', 'cruzar') then
+    raise exception 'Orden desconocida.';
+  end if;
+  insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
+  if (select count(*) from hipodromo_ordenes where usuario = v_uid and estado = 'pendiente') >= 20 then
+    raise exception 'Tienes demasiadas órdenes sin resolver.';
+  end if;
+  -- solo se guardan los campos conocidos y el dueño es siempre quien manda la orden
+  v_d := jsonb_strip_nulls(jsonb_build_object(
+    'tipo', v_tipo, 'dueno', v_uid::text,
+    'id', case when p_datos ? 'id' then (p_datos->>'id')::bigint end,
+    'n', case when p_datos ? 'n' then (p_datos->>'n')::integer end,
+    'madre', case when p_datos ? 'madre' then (p_datos->>'madre')::bigint end,
+    'padre', case when p_datos ? 'padre' then (p_datos->>'padre')::bigint end,
+    'stat', left(p_datos->>'stat', 8), 'tactica', left(p_datos->>'tactica', 8), 'sexo', left(p_datos->>'sexo', 1),
+    'nombre', left(p_datos->>'nombre', 28)));
+  insert into hipodromo_ordenes (usuario, datos) values (v_uid, v_d) returning id into v_id;
+  return v_id;
+end;
+$$;
+revoke all on function public.hipodromo_ordenar(jsonb) from public, anon;
+grant execute on function public.hipodromo_ordenar(jsonb) to authenticated;
 
 -- ------------------------------------------------------------------ vistas útiles para la interfaz
 create or replace view public.hipodromo_leyendas with (security_invoker = true) as
@@ -152,9 +426,7 @@ grant select on public.hipodromo_leyendas to anon, authenticated;
 
 -- ------------------------------------------------------------------ OPCIONAL: opinión de la comunidad
 -- Cada jugador con sesión deja a quién apuesta como ganador (una sola criatura por carrera, se puede cambiar
--- hasta que cierran las apuestas). No hay monedas: las monedas son del navegador. Esto solo sirve para enseñar
--- «Relámpago 43 %, Peregrino 21 %...». Ojo: como las monedas no están en el servidor, quien quiera puede votar
--- distinto de lo que apuesta; es una encuesta, no un registro.
+-- hasta que cierran las apuestas). Es una encuesta: se puede votar una cosa y apostar otra.
 create table if not exists public.hipodromo_votos (
   n           integer not null,
   usuario     uuid not null default auth.uid(),

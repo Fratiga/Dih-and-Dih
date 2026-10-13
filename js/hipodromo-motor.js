@@ -1171,7 +1171,7 @@
   function loteInicial(m) {
     const prog = m.proxima;
     return { mundo: m, criaturas: m.vivos.concat(m.criadores).map(c => filaCriatura(m, perfil(m, c))), programas: [filaPrograma(prog)],
-      carreras: prog.secreto.res ? [{ n: prog.n, hora: prog.hora, resultado: prog.secreto.res }] : [], noticias: [], aplicadas: [], pagos: [], avisos: [], cuadras: [] };
+      carreras: prog.secreto.res ? [{ n: prog.n, hora: prog.hora, resultado: prog.secreto.res }] : [], noticias: [], aplicadas: [], pagos: [], avisos: [], cuadras: [], ordenes: [], calendario: calendario(m, m.n + 1, C.ADELANTO) };
   }
   /* Tras uno o varios avanzar(): las criaturas que cambiaron (la última versión de cada una), las carreras programadas y las noticias */
   function lote(m, eventos, ordenes) {
@@ -1183,6 +1183,7 @@
       carreras: eventos.filter(ev => ev.programada).map(ev => ({ n: ev.programa.n, hora: ev.programa.hora, resultado: ev.programada })),
       noticias: (ordenes ? ordenes.noticias : []).concat(eventos.reduce((a, ev) => a.concat(ev.noticias), [])),
       aplicadas: eventos.filter(ev => ev.aplicada != null).map(ev => ev.aplicada),
+      ordenes: ordenes ? ordenes.resultados : [], calendario: calendario(m, m.n + 1, C.ADELANTO),
       pagos: (ordenes ? ordenes.pagos : []).concat(eventos.reduce((a, ev) => a.concat(ev.pagos), [])),
       avisos: (ordenes ? ordenes.avisos : []).concat(eventos.reduce((a, ev) => a.concat(ev.avisos), [])),
       cuadras: filasCuadra(m) };
