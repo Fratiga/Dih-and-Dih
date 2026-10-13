@@ -42,7 +42,7 @@ window.HipodromoGlosario = (function () {
     podio: "Apuesta a podio: aciertas si la criatura llega entre las tres primeras. Paga menos que ganador.",
     exacta: "Apuesta exacta: aciertas si eliges la primera y la segunda, en ese orden. Paga mucho, pero es difícil.",
     pozo: "Apuesta al pozo: aciertas si la criatura gana, pero no hay cuota fija. Todo lo apostado al pozo más 50 monedas de la casa, menos un 10 %, se reparte entre quienes aciertan según lo que pusieron. Cuanta menos gente acierta, más paga.",
-    doble: "Doble: si aciertas, lo que cobras no pasa a tu saldo, sino que se juega solo a ganador al favorito de la carrera siguiente, con su cuota. Si no se puede apostar a esa, se cobra normal.",
+    doble: "Doble: una apuesta a ganador encadenada con la carrera siguiente. Si aciertas, no cobras: lo que habrías cobrado se apuesta solo, a ganador, al favorito de la siguiente carrera. Ejemplo: apuestas 100 a cuota 4 y aciertas (te tocarían 400). Con doble, esos 400 van a la siguiente a cuota 2: si gana, cobras 800; si pierde, no cobras nada. Sirve para buscar un premio mayor arriesgando lo ganado. Si no se puede apostar a la siguiente, cobras normal.",
     rendimiento: "Lo que has ganado o perdido en apuestas, en porcentaje de lo apostado. Con una cuota con margen de la casa, a la larga lo normal es perder un poco.",
     /* ---- la criatura */
     valoracion: "Una nota de 0,5 a 5 estrellas según sus resultados. Lleva ruido: con pocas salidas puede engañar, y se afina cuantas más carreras corre.",
