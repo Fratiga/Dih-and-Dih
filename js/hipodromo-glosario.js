@@ -95,7 +95,7 @@ window.HipodromoGlosario = (function () {
     tactica: "Cómo sale a correr: al frente, a media tabla o desde atrás. Ir contra la naturaleza de la criatura cuesta un poco de velocidad.",
     monta: "La monta es lo que se paga por que un semental críe con una de tus hembras. Si el semental es de otro jugador, el dinero va para él.",
     cruzar: "Cruzar una hembra retirada a la cría con un semental. La cría nace 12 carreras después y es del dueño de la madre.",
-    reserva: "La reserva de cartas: las copias que los jugadores vendieron o perdieron. Es lo único que se puede comprar con monedas; comprar no crea cartas nuevas."
+    reserva: "La reserva de cartas: las copias que los jugadores han vendido por monedas. Es lo único que se puede comprar con monedas; comprar no crea cartas nuevas."
   };
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

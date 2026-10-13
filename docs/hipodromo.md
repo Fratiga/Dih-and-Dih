@@ -184,7 +184,7 @@ El motor no toca monedas: dice cuánto cuesta cada orden (`costo`), cuánto devu
 
 En el hipódromo **empiezas sin monedas** (la billetera nace en 0; la criatura de la casa sí es gratis). El dinero entra de tres formas: vendiendo cartas, con los premios de tus criaturas y apostando. Es la única conexión entre la economía de cartas y el hipódromo, y cambia una decisión de `docs/economia-de-cartas.md` («no existe una moneda universal») por una moneda concreta, la del hipódromo, que el DM aprobó el 13 de octubre de 2026. Está en `docs/hipodromo-2_cartas.sql` y en la pestaña **Cartas** de la página (solo en modo servidor; los nombres de las cartas se cargan al abrirla).
 
-- **Vender una carta tuya**: la casa la paga según su rareza y la copia pasa a la **reserva** (la misma a la que vuelven las cartas que se pierden contra la IA). Solo se venden copias libres, no las apostadas ni las que están en un intercambio.
+- **Vender una carta tuya**: la casa la paga según su rareza y la copia pasa a la **reserva** (el conjunto de copias sin dueño que la economía de cartas reparte antes de emitir ninguna nueva). Solo se venden copias libres, no las apostadas ni las que están en un intercambio.
 - **Comprar una carta**: solo de lo que hay en la reserva. No se emite nada nuevo, así que comprar no crea cartas, solo las mueve. Se respeta el límite por jugador y el Side (no se compran cartas del lado que no ves).
 - **Precios por rareza** (en `hipodromo_precios_cartas`, el admin los cambia con `hipodromo_admin_precios`):
 

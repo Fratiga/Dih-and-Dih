@@ -1,7 +1,7 @@
 /* =============================================================================
    HIPÓDROMO: la pestaña «Cartas». Las monedas del hipódromo se cambian por cartas en los dos sentidos:
    - Vender una carta tuya: la casa te la paga según su rareza y la copia vuelve a la reserva.
-   - Comprar una carta de la reserva (las copias que otros vendieron o perdieron): cuesta más de lo que se paga al vender.
+   - Comprar una carta de la reserva (las copias que otros jugadores vendieron aquí): cuesta más de lo que se paga al vender.
    Todo lo decide el servidor (docs/hipodromo-2_cartas.sql); esto solo enseña y manda la orden.
    Los nombres de las cartas salen del catálogo (js/cartas-datos.js y los datos del compendio, unos 1,3 MB), así que
    solo se cargan cuando se abre esta pestaña.
@@ -82,7 +82,7 @@ window.HipodromoCartas = (function () {
         <ul class="hip-avisos">${tabla}</ul>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p></section>
         <section class="hip-tarjeta"><h3>Vender mis cartas</h3>${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te pagan</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas.</p>'}</section>
-        <section class="hip-tarjeta"><h3>Comprar de la reserva</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">La reserva está vacía ahora mismo. Se llena con lo que los jugadores venden y con las cartas que se pierden contra la casa.</p>'}</section>`;
+        <section class="hip-tarjeta"><h3>Comprar de la reserva</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">La reserva está vacía ahora mismo. Se llena con las cartas que los jugadores venden aquí.</p>'}</section>`;
     }
 
     async function operar(rpc, args, textoOk) {

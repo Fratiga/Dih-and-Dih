@@ -4,7 +4,7 @@
 -- Qué hace:
 --   * Nadie empieza con monedas: la billetera nace con 0. El dinero entra vendiendo cartas, con los premios de una criatura
 --     o con lo que se gana apostando.
---   * Vender una carta: la copia pasa a la reserva (la misma a la que vuelven las cartas que se pierden contra la IA) y
+--   * Vender una carta: la copia pasa a la reserva (las copias sin dueño que la economía de cartas reparte antes de emitir ninguna nueva) y
 --     el jugador cobra un precio que depende de la rareza.
 --   * Comprar una carta: solo de lo que hay en la reserva (copias que algún jugador vendió o perdió). No se emite nada
 --     nuevo: comprar no crea cartas, solo las mueve. Cuesta más de lo que se paga al vender (2,5 veces por defecto), así
