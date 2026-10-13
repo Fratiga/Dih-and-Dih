@@ -64,8 +64,10 @@
     try {
       const supabase = await cliente();
       if (dest.options.length <= 3) {
-        const { data: cuentas } = await supabase.from("perfiles").select("user_id, username").order("username");
-        (cuentas || []).forEach(c => dest.insertAdjacentHTML("beforeend", `<option value="u:${esc(c.user_id)}">${esc(c.username || "(sin nombre)")}</option>`));
+        // Todas las cuentas salen de la misma función del servidor que usa la pestaña Cuentas (la tabla perfiles solo deja ver la propia)
+        const cuentas = await adminListarPerfiles();
+        cuentas.slice().sort((a, b) => String(a.username || "").localeCompare(String(b.username || ""), "es"))
+          .forEach(c => dest.insertAdjacentHTML("beforeend", `<option value="u:${esc(c.id)}">${esc(c.username || "(sin nombre)")}</option>`));
       }
       const { data, error } = await supabase.from("admin_mensajes").select("id, texto, para, side, creado, expira, activo").order("id", { ascending: false }).limit(30);
       if (error) throw error;
