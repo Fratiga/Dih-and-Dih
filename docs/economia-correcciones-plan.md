@@ -14,7 +14,7 @@ Una rama de Supabase habría nacido sin tablas ni funciones (el proyecto solo ti
 
 | | Código actual de producción | Con las correcciones |
 |---|---|---|
-| Comprobaciones que pasan | 140 de 231 (sin la batería de explotación, añadida después) | 243 de 243 |
+| Comprobaciones que pasan | 140 de 231 (las baterías de verificación y circulación no existían) | 315 de 315 + 906 del veredicto de partidas |
 | Comprobaciones que fallan | 91 | 0 |
 | Interbloqueos en el estrés | n/a | 0 |
 
@@ -105,6 +105,9 @@ Todas en el entorno local (sección 1), con usuarios inventados. Ninguna toca da
 | Permisos | pasa (87 comprobaciones) | Sin sesión, jugador, editor y admin: funciones de admin, funciones internas, escrituras directas, Side, nombre, editor de cartas, validación de recetas y ajustes (A6, A7, A10) |
 | Apuestas | pasa (59 comprobaciones) | Cartas del duelo desde las definiciones (A1), avisos iguales y de empate, disputa y resolución del admin, regla de 24 horas, 72 horas sin avisos, plazo cambiado por el admin, concesión, reto sin respuesta, bloqueos huérfanos, liberación por el admin, editor sin cartas (A11) |
 | Explotación | pasa | Cada receta pierde valor de media; el mercader cobra siempre más de lo que vale la carta; dos cuentas colaborando no crean valor; 45 operaciones aleatorias donde el valor total nunca sube (subió 0 veces, bajó 6) |
+| Verificación | pasa (42 comprobaciones) | Solo el servidor puede cerrar una apuesta con un veredicto; disputa resuelta por el registro; aviso falso con el rival callado; aviso verdadero confirmado al instante; empate; abandono; idempotencia; quién queda anotado y quién no |
+| En circulación | pasa (30 comprobaciones) | Las cartas nuevas nacen fuera; solo el admin cambia la etiqueta; ni la emisión directa, ni la reserva, ni los minijuegos, ni la forja, ni el escaparate del mercader sacan una carta fuera de circulación; el admin sí puede regalarla; quitarla no quita copias |
+| Veredicto de partidas (Node) | pasa (906 comprobaciones) | `node tools/probar-verificacion.js`: 120 partidas completas al azar, un registro con acciones inventadas da el mismo resultado, avisos falsos detectados, 60 partidas cortadas con abandono |
 | Estrés | pasa | Más de 120 operaciones aleatorias simultáneas de cuatro jugadores: 0 interbloqueos, ninguna carta perdida o duplicada, auditoría limpia, todos dentro de su límite |
 
 Por hacer:

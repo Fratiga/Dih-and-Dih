@@ -30,9 +30,12 @@ sh docs/pruebas/t_permisos.sh           # una sola batería (recarga antes con c
 | `t_permisos.sh` | Sin sesión, jugador, editor y admin: funciones de admin, funciones internas, escrituras directas, Side y nombre (A6, A7, A10) |
 | `t_apuestas.sh` | Cartas del duelo desde las definiciones (A1), avisos iguales, empate, disputa, regla de 24 horas, 72 horas sin avisos, concesión, reto sin respuesta, bloqueos huérfanos, panel (A11) |
 | `t_regresion.sh` | Flujos normales: regalar y quitar, reserva y límites, intercambios, mercader, forja, defensas internas, recompensas encendidas en la copia local |
+| `t_explotacion.sh` | Cada receta de la forja pierde valor de media, el mercader cobra siempre más de lo que vale la carta, dos cuentas colaborando no crean valor, 45 operaciones aleatorias donde el valor total nunca sube. Imprime la diferencia de precio entre mercader y forja |
+| `t_verificacion.sh` | Cerrar una apuesta con el veredicto del registro (`cartas_i_aplicar_verificacion`): solo el servidor puede, el que avisó algo falso queda anotado, el abandono, la idempotencia y los casos que no se tocan |
+| `t_circulacion.sh` | La etiqueta «En circulación»: las cartas nuevas nacen fuera, solo el admin la cambia, ninguna vía automática (recompensas, forja, reserva, mercader) emite una carta fuera de circulación, quitarla no quita copias |
 | `t_estres.sh` | Más de 120 operaciones aleatorias simultáneas de cuatro jugadores: sin interbloqueos, sin cartas perdidas ni duplicadas, auditoría limpia |
 
-Cada batería parte de una base limpia (`correr_todo.sh` la recarga antes de cada una). Las pruebas con dos sesiones usan dos conexiones reales a Postgres, y la primera retiene sus candados unos segundos (una espera dentro de su transacción) para obligar a la segunda a esperar.
+Además, `node tools/probar-verificacion.js` prueba el veredicto en sí (volver a jugar el registro de una partida) con 120 partidas completas al azar y 60 cortadas. Cada batería parte de una base limpia (`correr_todo.sh` la recarga antes de cada una). Las pruebas con dos sesiones usan dos conexiones reales a Postgres, y la primera retiene sus candados unos segundos (una espera dentro de su transacción) para obligar a la segunda a esperar.
 
 ## Qué no cubre
 
