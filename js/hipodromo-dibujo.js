@@ -214,9 +214,9 @@ window.HipodromoDibujo = (function () {
     }).join("") : "";
 
     /* ---- cola */
-    const colaX = xAtras - rCadera * 0.86, colaY = cy - 3;
+    const colaX = xAtras - rCadera + 1.5, colaY = cy - 2;   // la cola nace justo en el borde de la grupa y va por delante del cuerpo: su raíz nunca se esconde
     const kCola = R.cola === "corta" ? 0.5 : R.cola === "bifurcada" ? 0.7 : 1, L = largoCola * kCola;
-    const P0 = [colaX + 8, colaY], P1 = [colaX - L * 0.5, colaY - 8], P2 = [colaX - L, colaY + 6], P3 = [colaX - L * 0.9, colaY + L * 0.8];
+    const P0 = [colaX, colaY], P1 = [colaX - L * 0.5, colaY - 8], P2 = [colaX - L, colaY + 6], P3 = [colaX - L * 0.9, colaY + L * 0.8];
     const grosorCola = (R.cola === "gruesa" || R.cola === "espinada" ? 7 + 3 * g("tamano_cola") : 3 + 3 * g("tamano_cola"));
     // tres mechones superpuestos (oscuro, medio y claro) que fluyen; la cola gruesa o espinada es una sola pieza
     let cola = (R.cola === "gruesa" || R.cola === "espinada")
@@ -413,9 +413,9 @@ window.HipodromoDibujo = (function () {
       (corre ? `<g class="hip-vel"><path d="M ${f1(izq - 3)} ${f1(suelo - 62)} h -20 M ${f1(izq + 3)} ${f1(suelo - 50)} h -26 M ${f1(izq - 1)} ${f1(suelo - 38)} h -16 M ${f1(izq + 6)} ${f1(suelo - 26)} h -22" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/></g>` : "") + polvo +
       `<g class="hip-resp" style="animation-delay:-${(perfil.id % 7) * 0.6}s${secs.includes("res") ? ";animation-duration:2.1s" : ""}">` +
       (corre ? `<g><animateTransform attributeName="transform" type="translate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => { const t = 2 * Math.PI * i / 16; return "0 " + (-(2.4 * Math.max(0, Math.sin(t)) + 0.9 * Math.max(0, Math.sin(2 * t + 1)))).toFixed(2); }).join(";")}"/>` : "") +
-      alas + cola + patasLejos + cabeceoG(cuello) +
+      alas + patasLejos + cabeceoG(cuello) +
       (cb ? `<path d="${cuerpoD}" fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round"/>` : "") +
-      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + manta + espalda +
+      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + manta + espalda + cola +
       patasCerca + cabeceoG(cabeza) +
       (corre ? `</g>` : "") +
       `</g>` + (E.pixel ? `</g>` : "") + `</g></svg>`;
