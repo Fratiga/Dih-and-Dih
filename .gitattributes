@@ -1,0 +1,2 @@
+# Los scripts de shell tienen que quedarse con saltos de linea LF (en Windows autocrlf los romperia)
+*.sh text eol=lf
