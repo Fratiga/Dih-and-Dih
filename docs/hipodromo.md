@@ -14,6 +14,7 @@ La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se 
 | `js/hipodromo-motor.js` | El mundo: genes, cuerpo, rasgos, carrera, pistas (con las arcanas), cuotas, apuestas (con pozo y doble), vida, la cuadra de los jugadores, noticias, perfil público y el paso del servidor. Reglas puras, sin pantalla ni reloj propio. |
 | `hipodromo.html`, `css/hipodromo.css`, `js/hipodromo-pagina.js` | La página, con dos modos: servidor (el normal, con sesión) y prueba local. |
 | `js/hipodromo-online.js` | El modo servidor de la página: lee el mundo compartido de Supabase, apuesta y manda órdenes con las funciones del servidor. |
+| `js/hipodromo-glosario.js` | El glosario: ~80 explicaciones de las palabras técnicas (terreno, drenaje, cuota, podio, estilo, núcleo...). Se señalan o se tocan y sale la explicación en una caja flotante. Para añadir una: una línea en `G` y `HipodromoGlosario.tip("clave", "texto")`. |
 | `js/hipodromo-cuadra.js` | La pestaña «Mi cuadra». No sabe de dónde salen los datos: la página le pasa un objeto `api` (servidor o local). |
 | `js/hipodromo-dibujo.js`, `js/hipodromo-pista.js` | El dibujo de las criaturas (SVG) y la pista de la carrera (cámara que sigue al pelotón, clima y terreno, galope animado). |
 | `tools/probar-hipodromo.js` | 247 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |

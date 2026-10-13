@@ -293,3 +293,9 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-adoptar { padding: 10px 12px; border: 1px dashed rgba(255, 255, 255, .25); border-radius: 8px; margin: 10px 0; }
 .hip-duena { color: #f1e29a; display: block; }
 @media (max-width: 620px) { .hip-mia-cab { grid-template-columns: 90px 1fr; } .hip-cap { grid-template-columns: 76px 1fr 30px 38px; } }
+
+/* Glosario: palabras técnicas con su explicación al señalarlas (js/hipodromo-glosario.js) */
+.hip-tip { border-bottom: 1px dotted currentColor; cursor: help; }
+.hip-tip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hip-tipcaja { position: fixed; z-index: 10000; max-width: 320px; padding: 8px 11px; background: #10231a; color: #f1ecd9; border: 1px solid var(--accent); border-radius: 4px; box-shadow: 0 6px 22px rgba(0, 0, 0, .55); font: 400 .82rem/1.4 sans-serif; text-transform: none; letter-spacing: 0; text-align: left; pointer-events: none; }
+.hip-tipcaja[hidden] { display: none; }

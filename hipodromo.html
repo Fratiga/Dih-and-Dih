@@ -93,7 +93,7 @@
             <p id="hipTipoAyuda" class="hip-nota"></p>
             <label><span id="hipSel1Etiqueta">Criatura</span> <select id="hipSel1"></select></label>
             <label id="hipSel2Caja" class="hidden">Segundo <select id="hipSel2"></select></label>
-            <label id="hipDobleCaja" class="hip-casilla"><input type="checkbox" id="hipDoble"> Doble: si acierto, lo ganado pasa solo a ganador al favorito de la siguiente carrera</label>
+            <label id="hipDobleCaja" class="hip-casilla"><input type="checkbox" id="hipDoble"> <span class="hip-tip" data-tip-id="doble" tabindex="0">Doble</span>: si acierto, lo ganado pasa solo a ganador al favorito de la siguiente carrera</label>
             <label>Monedas <input type="number" id="hipMonto" min="1" step="1" value="50" inputmode="numeric"></label>
             <div class="hip-atajos">
               <button type="button" class="hip-boton chico" data-monto="10">10</button>
@@ -101,7 +101,7 @@
               <button type="button" class="hip-boton chico" data-monto="100">100</button>
               <button type="button" class="hip-boton chico" data-monto="todo">Todo</button>
             </div>
-            <dl class="hip-resumen-apuesta"><div><dt>Cuota</dt><dd id="hipCuotaApuesta">-</dd></div><div><dt>Si acierta</dt><dd id="hipPosible">-</dd></div></dl>
+            <dl class="hip-resumen-apuesta"><div><dt><span class="hip-tip" data-tip-id="cuota" tabindex="0">Cuota</span></dt><dd id="hipCuotaApuesta">-</dd></div><div><dt>Si acierta</dt><dd id="hipPosible">-</dd></div></dl>
             <button type="button" id="hipApostar" class="hip-boton principal">Apostar</button>
             <p id="hipApuestaMsg" class="hip-aviso" role="status" aria-live="polite"></p>
             <div id="hipMias"></div>
@@ -194,6 +194,7 @@
   <script src="js/hipodromo-motor.js?v=20270163"></script>
   <script src="js/hipodromo-dibujo.js?v=20270163"></script>
   <script src="js/hipodromo-pista.js?v=20270163"></script>
+  <script src="js/hipodromo-glosario.js?v=20270163"></script>
   <script src="js/hipodromo-cartas.js?v=20270163"></script>
   <script src="js/hipodromo-cuadra.js?v=20270163"></script>
   <script src="js/fichas-supabase.js?v=20270163"></script>

@@ -26,6 +26,7 @@
   const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
   const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), mi = Math.floor(s / 60) % 60; return h ? `${h}:${pad(mi)}:${pad(s % 60)}` : `${pad(mi)}:${pad(s % 60)}`; };
   const monedas = x => (Math.round(x * 100) / 100).toLocaleString("es", { maximumFractionDigits: 2 });
+  const T = (clave, texto) => (window.HipodromoGlosario ? window.HipodromoGlosario.tip(clave, texto) : texto);   // palabra técnica con su explicación al señalarla
   const poner = (el, html) => { if (el && el._h !== html) { el.innerHTML = html; el._h = html; } };
   const textoDe = (el, t) => { if (el && el._t !== t) { el.textContent = t; el._t = t; } };
 
@@ -78,11 +79,11 @@
   const nombreBtn = (id, texto) => `<button type="button" class="hip-enlace" data-ficha="${id}">${esc(texto || nombreDe(id))}</button>`;
   function etiquetasEstado(p) {
     const e = [];
-    if (p.estado === "fallecido") e.push('<span class="hip-sello gris">Fallecida</span>');
-    else if (p.estado === "retirado") e.push('<span class="hip-sello gris">Retirada</span>');
-    else if (p.estado === "criador") e.push('<span class="hip-sello">Cría</span>');
-    if (p.lesion) e.push(`<span class="hip-sello rojo">${esc(p.lesion.tipo)}</span>`);
-    if (p.leyenda) e.push('<span class="hip-sello oro">Leyenda</span>');
+    if (p.estado === "fallecido") e.push(`<span class="hip-sello gris">${T("retirada", "Fallecida")}</span>`);
+    else if (p.estado === "retirado") e.push(`<span class="hip-sello gris">${T("retirada", "Retirada")}</span>`);
+    else if (p.estado === "criador") e.push(`<span class="hip-sello">${T("criador", "Cría")}</span>`);
+    if (p.lesion) e.push(`<span class="hip-sello rojo">${T("lesion", esc(p.lesion.tipo))}</span>`);
+    if (p.leyenda) e.push(`<span class="hip-sello oro">${T("leyenda", "Leyenda")}</span>`);
     return e.join("");
   }
 
@@ -201,17 +202,17 @@
     const barra = (v, t) => `<span class="hip-barrita" title="${t}: ${Math.round(v * 100)} %"><i style="width:${Math.round(v * 100)}%"></i></span>`;
     poner($("hipPrograma"), `
       <div class="hip-prog-cab">
-        <div><p class="hip-grado">${esc(G.nombre)}</p><h2>${esc(p.nombre)}</h2></div>
+        <div><p class="hip-grado">${T("grado_" + p.grado, esc(G.nombre))}</p><h2>${esc(p.nombre)}</h2></div>
         <div class="hip-prog-hora"><span>n.º ${p.n}</span><strong>${horaTxt(p.hora)}</strong></div>
       </div>
       <div class="hip-datos">
-        <div><span>Pista</span><strong>${esc(pista.nombre)}</strong><small>${esc(pista.suelo)} · ${esc(M.etiquetaPista(humPrev))}</small></div>
-        <div><span>Distancia</span><strong>${p.dist} m</strong><small>${p.dist / 100} tramos</small></div>
-        <div><span>Bolsa</span><strong>${monedas(p.bolsa)}</strong><small>reparto entre los 5 primeros</small></div>
-        <div><span>Pista en detalle</span><small class="hip-barras">Curvas ${barra(pista.curvas, "Curvas")} Cuestas ${barra(pista.cuestas, "Cuestas")} Drenaje ${barra(pista.drenaje, "Drenaje")}</small></div>
+        <div><span>${T("pista", "Pista")}</span><strong>${esc(pista.nombre)}</strong><small>${T("suelo", esc(pista.suelo))} · ${T("terreno_" + M.etiquetaPista(humPrev), esc(M.etiquetaPista(humPrev)))}</small></div>
+        <div><span>${T("distancia", "Distancia")}</span><strong>${p.dist} m</strong><small>${p.dist / 100} ${T("tramo", "tramos")}</small></div>
+        <div><span>${T("bolsa", "Bolsa")}</span><strong>${monedas(p.bolsa)}</strong><small>reparto entre los 5 primeros</small></div>
+        <div><span>Pista en detalle</span><small class="hip-barras">${T("curvas", "Curvas")} ${barra(pista.curvas, "Curvas")} ${T("cuestas", "Cuestas")} ${barra(pista.cuestas, "Cuestas")} ${T("drenaje", "Drenaje")} ${barra(pista.drenaje, "Drenaje")}</small></div>
       </div>
-      ${pista.arcana ? `<p class="hip-arcana"><strong>Pista arcana · ${esc(M.REGLAS_ARCANAS[pista.arcana].nombre)}.</strong> ${esc(M.REGLAS_ARCANAS[pista.arcana].texto)} Las criaturas con núcleo responden mejor aquí.</p>` : ""}
-      <div class="hip-pron"><span>Pronóstico</span>${pronosticoTxt(p)}</div>
+      ${pista.arcana ? `<p class="hip-arcana"><strong>${T("arcana", "Pista arcana")} · ${esc(M.REGLAS_ARCANAS[pista.arcana].nombre)}.</strong> ${esc(M.REGLAS_ARCANAS[pista.arcana].texto)} Las criaturas con núcleo responden mejor aquí.</p>` : ""}
+      <div class="hip-pron"><span>${T("pronostico", "Pronóstico")}</span>${pronosticoTxt(p)}</div>
       ${p.rumores.length ? `<ul class="hip-rumores">${p.rumores.map(r => `<li>${esc(r.texto)}</li>`).join("")}</ul>` : ""}
       ${p.suspendida ? '<p class="hip-vacio">No hay criaturas en condiciones de correr. La carrera se aplaza.</p>' : ""}`);
   }
@@ -225,16 +226,16 @@
       return `<tr>
         <td class="hip-puerta">${e.puerta}</td>
         <td><div class="hip-celda-cria">${D.silueta(per, { clase: "hip-mini" })}<div><button type="button" class="hip-enlace" data-ficha="${e.id}">${fav ? "♥ " : ""}${esc(per.nombre)}</button>
-          <small>${sexoTxt(per)} · ${esc(per.etapa)} · ${edadTxt(per)}${per.arquetipo ? " · " + esc(per.arquetipo) : ""}</small>
+          <small>${sexoTxt(per)} · ${T("etapa", esc(per.etapa))} · ${edadTxt(per)}${per.arquetipo ? " · " + T("arq_" + norm(per.arquetipo), esc(per.arquetipo)) : ""}</small>
           ${e.dueno ? `<small class="hip-duena">${e.dueno.id === YO ? "★ tuya" : "cuadra de " + esc(e.dueno.nombre || "otro jugador")}</small>` : ""}
           <small>${per.salidas ? `${per.salidas} salidas · ${per.vic}-${per.seg}-${per.ter}` : "debuta"}</small></div></div></td>
         <td class="hip-col-extra">${estrellasTxt(per.estrellas)}</td>
         <td class="hip-col-extra">${per.ultimas.slice(0, 4).map(chipPuesto).join("") || '<span class="hip-sin">-</span>'}</td>
-        <td class="hip-cuota"><button type="button" class="hip-cuota-btn" data-apostar="${e.id}" aria-label="Apostar a ${esc(per.nombre)}, cuota ${M.fmtCuota(e.gan)}"><strong>${M.fmtCuota(e.gan)}</strong><small>podio ${M.fmtCuota(e.pod)}</small></button></td>
+        <td class="hip-cuota"><button type="button" class="hip-cuota-btn" data-apostar="${e.id}" aria-label="Apostar a ${esc(per.nombre)}, cuota ${M.fmtCuota(e.gan)}"><strong>${M.fmtCuota(e.gan)}</strong><small>${T("podio", "podio")} ${M.fmtCuota(e.pod)}</small></button></td>
         ${oculto ? `<td class="hip-oculto-col">${real == null ? "" : coma(real * 100, 1) + " %"}<small>${real == null ? "" : "vale " + coma(real * e.gan, 2)}</small></td>` : ""}
       </tr>`;
     }).join("");
-    poner($("hipInscritos"), `<table class="hip-tabla"><thead><tr><th>Pta.</th><th>Criatura</th><th class="hip-col-extra">Valoración</th><th class="hip-col-extra">Últimas</th><th>Cuota</th>${oculto ? '<th class="hip-oculto-col">Real</th>' : ""}</tr></thead><tbody>${filas}</tbody></table>`);
+    poner($("hipInscritos"), `<table class="hip-tabla"><thead><tr><th>${T("puerta", "Pta.")}</th><th>Criatura</th><th class="hip-col-extra">${T("valoracion", "Valoración")}</th><th class="hip-col-extra">${T("ultimas", "Últimas")}</th><th>${T("cuota", "Cuota")}</th>${oculto ? '<th class="hip-oculto-col">Real</th>' : ""}</tr></thead><tbody>${filas}</tbody></table>`);
   }
 
   /* panel de apuestas */
@@ -311,8 +312,8 @@
   }
 
   function tablaResultado(res) {
-    return `<table class="hip-tabla"><thead><tr><th>Pos.</th><th>Criatura</th><th>Tiempo</th><th class="hip-col-extra">Distancia</th><th>Cuota</th><th class="hip-col-extra">Premio</th></tr></thead><tbody>${res.llegada.map(l => `<tr>
-      <td class="hip-puerta">${l.pos}</td><td>${nombreBtn(l.id, l.nombre)}${l.lesion ? ' <span class="hip-sello rojo">lesión</span>' : ""}${l.id === res.favorito ? ' <span class="hip-sello">favorito</span>' : ""}</td>
+    return `<table class="hip-tabla"><thead><tr><th>Pos.</th><th>Criatura</th><th>Tiempo</th><th class="hip-col-extra">${T("margen", "Distancia")}</th><th>${T("cuota", "Cuota")}</th><th class="hip-col-extra">${T("bolsa", "Premio")}</th></tr></thead><tbody>${res.llegada.map(l => `<tr>
+      <td class="hip-puerta">${l.pos}</td><td>${nombreBtn(l.id, l.nombre)}${l.lesion ? ` <span class="hip-sello rojo">${T("lesion", "lesión")}</span>` : ""}${l.id === res.favorito ? ` <span class="hip-sello">${T("favorito", "favorito")}</span>` : ""}</td>
       <td>${M.fmtTiempo(l.t)}</td><td class="hip-col-extra">${l.pos === 1 ? "-" : "+" + coma(l.margen, 1) + " cuerpos"}</td><td class="hip-cuota">${M.fmtCuota(l.cuota)}</td><td class="hip-cuota hip-col-extra">${l.premio ? monedas(l.premio) : ""}</td></tr>`).join("")}</tbody></table>${res.fotoMeta ? '<p class="hip-nota">Foto de meta: ganó por un hocico.</p>' : ""}`;
   }
   function pintarUltimo() {
@@ -387,7 +388,7 @@
     const fav = est.favoritos.includes(p.id);
     return `<button type="button" class="hip-cria" data-ficha="${p.id}">${D.silueta(p, { clase: "hip-silueta mediana" })}
       <strong>${fav ? "♥ " : ""}${esc(p.nombre)}</strong>
-      <small>${sexoTxt(p)} · ${esc(p.etapa)} · gen. ${p.gen}</small>
+      <small>${sexoTxt(p)} · ${T("etapa", esc(p.etapa))} · ${T("generacion", "gen.")} ${p.gen}</small>
       <span class="hip-cria-record">${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</span>
       ${estrellasTxt(p.estrellas)}<span class="hip-sellos">${etiquetasEstado(p)}</span></button>`;
   }
@@ -432,18 +433,18 @@
     return `<div class="hip-ficha-cab">
         <div class="hip-ficha-dibujo">${D.silueta(p, { clase: "hip-silueta grande" })}</div>
         <div class="hip-ficha-titulo"><h2>${esc(p.nombre)}</h2>
-          <p>${sexoTxt(p)} · ${esc(p.etapa)} · ${edadTxt(p)} · generación ${p.gen}${p.arquetipo ? " · " + esc(p.arquetipo) : ""}</p>
+          <p>${sexoTxt(p)} · ${T("etapa", esc(p.etapa))} · ${edadTxt(p)} · ${T("generacion", "generación")} ${p.gen}${p.arquetipo ? " · " + T("arq_" + norm(p.arquetipo), esc(p.arquetipo)) : ""}</p>
           ${rasgosHtml(p)}
-          <p class="hip-sellos">${etiquetasEstado(p)}${p.etiquetas.filter(t => t !== "Leyenda").map(t => `<span class="hip-sello">${esc(t.replace(/^Se crece en/, "Rinde mejor en"))}</span>`).join("")}</p>
+          <p class="hip-sellos">${etiquetasEstado(p)}${p.etiquetas.filter(t => t !== "Leyenda").map(t => `<span class="hip-sello">${T(window.HipodromoGlosario ? window.HipodromoGlosario.claveEtiqueta(t) : null, esc(t.replace(/^Se crece en/, "Rinde mejor en")))}</span>`).join("")}</p>
           <button type="button" class="hip-boton" data-favorito="${p.id}" aria-pressed="${fav}">${fav ? "♥ En favoritas" : "♡ Seguir"}</button></div></div>
       ${lesion}
       <div class="hip-datos"><div><span>Salidas</span><strong>${p.salidas}</strong><small>${p.vic} victorias · ${p.seg} segundos · ${p.ter} terceros</small></div>
         <div><span>Premios</span><strong>${monedas(p.premios)}</strong><small>${p.gp ? p.gp + (p.gp > 1 ? " Grandes Premios" : " Gran Premio") : "sin Grandes Premios"}</small></div>
-        <div><span>Valoración</span><strong>${estrellasTxt(p.estrellas)}</strong><small>${p.estilo ? esc(p.estilo) : "estilo por conocer"}</small></div>
-        <div><span>Tipo</span><strong>${esc(p.perfilDist)}</strong><small>${p.crias ? p.crias + " crías" : "sin crías"}</small></div></div>
-      <section class="hip-ficha-sec"><h3>Cuerpo</h3><ul class="hip-cuerpo">${p.cuerpo.map(x => `<li><span>${esc(x.parte)}</span> ${esc(x.texto)} <i class="hip-nivel" title="nivel ${x.nivel} de 5">${"●".repeat(x.nivel)}${"○".repeat(5 - x.nivel)}</i></li>`).join("")}</ul>
+        <div><span>${T("valoracion", "Valoración")}</span><strong>${estrellasTxt(p.estrellas)}</strong><small>${p.estilo ? T("estilo", esc(p.estilo)) : "estilo por conocer"}</small></div>
+        <div><span>${T("tipo_dist", "Tipo")}</span><strong>${esc(p.perfilDist)}</strong><small>${p.crias ? p.crias + " crías" : "sin crías"}</small></div></div>
+      <section class="hip-ficha-sec"><h3>Cuerpo</h3><ul class="hip-cuerpo">${p.cuerpo.map(x => `<li><span>${T("cuerpo_" + x.clave, esc(x.parte))}</span> ${esc(x.texto)} <i class="hip-nivel" title="nivel ${x.nivel} de 5">${"●".repeat(x.nivel)}${"○".repeat(5 - x.nivel)}</i></li>`).join("")}</ul>
         <p class="hip-nota">Capa ${esc(p.capa)}.${p.secuelas.length ? " Secuelas: " + esc(p.secuelas.join("; ")) + "." : ""}</p></section>
-      <section class="hip-ficha-sec"><h3>En cada tipo de terreno</h3><div class="hip-aptitudes">${Object.keys(nombres).map(k => `<div><span>${nombres[k]}</span>${apt[k] ? estrellasTxt(apt[k].estrellas) + `<small>${apt[k].salidas} salidas</small>` : '<span class="hip-sin">sin datos</span>'}</div>`).join("")}</div></section>
+      <section class="hip-ficha-sec"><h3>${T("aptitudes", "En cada tipo de terreno")}</h3><div class="hip-aptitudes">${Object.keys(nombres).map(k => `<div><span>${T("terreno_" + k, nombres[k])}</span>${apt[k] ? estrellasTxt(apt[k].estrellas) + `<small>${apt[k].salidas} salidas</small>` : '<span class="hip-sin">sin datos</span>'}</div>`).join("")}</div></section>
       <section class="hip-ficha-sec"><h3>Linaje</h3><p>${linaje}</p></section>
       <section class="hip-ficha-sec"><h3>Últimas carreras</h3>${p.ultimas.length ? `<table class="hip-tabla"><thead><tr><th>n.º</th><th>Pista</th><th>Metros</th><th>Puesto</th><th>Cuota</th></tr></thead><tbody>${p.ultimas.map(h => `<tr><td>${h.n}</td><td>${esc(M.PISTAS[h.pista].nombre)}<small> ${esc(h.estadoPista)}</small></td><td>${h.dist}</td><td>${chipPuesto(h)} <small>de ${h.campo}</small></td><td>${M.fmtCuota(h.cuota)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-sin">Todavía no ha corrido.</p>'}</section>
       ${duenoHtml(p)}
@@ -467,7 +468,7 @@
   }
   function pintarApuestas() {
     const tot = est.historial.reduce((a, h) => ({ ap: a.ap + (h.devuelta ? 0 : h.monto), co: a.co + (h.devuelta ? 0 : h.pago) }), { ap: 0, co: 0 });
-    poner($("hipApuestasResumen"), `<div class="hip-datos"><div><span>Monedas</span><strong>${monedas(est.saldo)}</strong></div><div><span>Apostado</span><strong>${monedas(tot.ap)}</strong></div><div><span>Cobrado</span><strong>${monedas(tot.co)}</strong></div><div><span>Rendimiento</span><strong>${tot.ap ? coma((tot.co / tot.ap - 1) * 100, 1) + " %" : "-"}</strong></div></div>`);
+    poner($("hipApuestasResumen"), `<div class="hip-datos"><div><span>Monedas</span><strong>${monedas(est.saldo)}</strong></div><div><span>Apostado</span><strong>${monedas(tot.ap)}</strong></div><div><span>Cobrado</span><strong>${monedas(tot.co)}</strong></div><div><span>${T("rendimiento", "Rendimiento")}</span><strong>${tot.ap ? coma((tot.co / tot.ap - 1) * 100, 1) + " %" : "-"}</strong></div></div>`);
     poner($("hipApuestasPend"), est.pendientes.length ? `<h3>Pendientes</h3><ul class="hip-lista-apuestas">${est.pendientes.map(a => `<li>n.º ${a.n} · <strong>${esc(M.TIPOS_APUESTA[a.tipo].nombre)}</strong> ${esc(a.nombres.join(" y "))} · ${monedas(a.monto)} a ${M.fmtCuota(a.cuota)}</li>`).join("")}</ul>` : "");
     poner($("hipApuestasHist"), est.historial.length ? `<h3>Historial</h3><table class="hip-tabla"><thead><tr><th>n.º</th><th>Apuesta</th><th>Importe</th><th>Cuota</th><th>Resultado</th></tr></thead><tbody>${est.historial.map(h => `<tr class="${h.devuelta ? "" : h.gana ? "gana" : "pierde"}"><td>${h.n}</td><td>${esc(M.TIPOS_APUESTA[h.tipo].nombre)} a ${esc(h.nombres.join(" y "))}</td><td>${monedas(h.monto)}</td><td>${M.fmtCuota(h.cuota)}</td><td>${h.devuelta ? "devuelta" : h.gana ? "+" + monedas(h.pago - h.monto) : "-" + monedas(h.monto)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-vacio">Todavía no has apostado.</p>');
   }

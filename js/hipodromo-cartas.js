@@ -9,6 +9,7 @@
 window.HipodromoCartas = (function () {
   "use strict";
   const SCRIPTS = ["data/personajes.js", "data/objetos.js", "data/lugares.js", "data/bestiario.js", "js/lado.js", "js/cartas-datos.js", "js/cartas-cliente.js"];
+  const T = (clave, texto) => (window.HipodromoGlosario ? window.HipodromoGlosario.tip(clave, texto) : texto);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const ORDEN = { comun: 1, infrecuente: 2, rara: 3, limitada: 4, legendaria: 5 };
   const nombreRareza = r => (window.CARTAS_RAREZAS && window.CARTAS_RAREZAS[r] ? window.CARTAS_RAREZAS[r].nombre : r);
@@ -81,7 +82,7 @@ window.HipodromoCartas = (function () {
         <ul class="hip-avisos">${tabla}</ul>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p></section>
         <section class="hip-tarjeta"><h3>Vender mis cartas</h3>${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te pagan</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas.</p>'}</section>
-        <section class="hip-tarjeta"><h3>Comprar de la reserva</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>En la reserva</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">La reserva está vacía ahora mismo. Se llena con lo que los jugadores venden y con las cartas que se pierden contra la casa.</p>'}</section>`;
+        <section class="hip-tarjeta"><h3>Comprar de la reserva</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">La reserva está vacía ahora mismo. Se llena con lo que los jugadores venden y con las cartas que se pierden contra la casa.</p>'}</section>`;
     }
 
     async function operar(rpc, args, textoOk) {
