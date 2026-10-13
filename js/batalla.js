@@ -98,7 +98,7 @@
     const recibidos = mias(p => p.estado === "pendiente" && p.j2 === miId);
     const enviados = mias(p => p.estado === "pendiente" && p.j1 === miId);
     const curso = mias(p => p.estado === "en_curso" || p.estado === "disputa");
-    const fin = mias(p => p.estado === "terminada").slice(0, 8);
+    const fin = mias(p => p.estado === "terminada" || p.estado === "cancelada").slice(0, 8);
     const rival = p => (p.j1 === miId ? p.nombre2 : p.nombre1);
 
     const apuestaDe = p => (p.apuesta1_info && p.apuesta1_info.length ? `<span class="ba-linea">Apuesta del retador: <b>${BatallaApuestas.texto(p.apuesta1_info)}</b>. Para aceptar eliges ${p.apuesta1_info.length} carta${p.apuesta1_info.length === 1 ? "" : "s"} tuya${p.apuesta1_info.length === 1 ? "" : "s"}.</span>` : "");
@@ -128,16 +128,17 @@
     $("btTerminadas").innerHTML = fin.length ? fin.map(p => {
       const yoSoyJ1 = p.j1 === miId;
       const gane = p.resultado === (yoSoyJ1 ? "j1" : "j2");
-      const texto = p.resultado === "empate" ? "Empate" : gane ? "Ganaste" : "Perdiste";
+      const cancelada = p.estado === "cancelada";
+      const texto = cancelada ? "Partida cancelada" : p.resultado === "empate" ? "Empate" : gane ? "Ganaste" : "Perdiste";
       let cartas = "";
       if (p.apuesta_estado === "resuelta" || p.apuesta_estado === "devuelta") {
         const mia = yoSoyJ1 ? p.apuesta1_info : p.apuesta2_info, suya = yoSoyJ1 ? p.apuesta2_info : p.apuesta1_info;
-        if (p.apuesta_estado === "devuelta") cartas = `<span class="ba-linea">Apuesta devuelta: cada carta volvió a su dueño.</span>`;
+        if (p.apuesta_estado === "devuelta") cartas = `<span class="ba-linea">Apuesta devuelta: ${p.motivo === "tiempo" ? "nadie confirmó el resultado a tiempo, así que no gana nadie y " : ""}cada carta volvió a su dueño.</span>`;
         else if (p.resultado === "empate") cartas = `<span class="ba-linea">Empate: cada quien recuperó sus cartas.</span>`;
         else if (gane) cartas = `<span class="ba-linea">Te llevaste: <b>${BatallaApuestas.texto(suya)}</b></span>`;
         else cartas = `<span class="ba-linea">Perdiste: <b>${BatallaApuestas.texto(mia)}</b></span>`;
       }
-      return `<li><span>${texto} contra ${esc(rival(p))}${p.motivo === "rendicion" ? " (rendición)" : ""}${p.motivo === "admin" ? " (resuelta por el máster)" : ""}${cartas}</span></li>`;
+      return `<li><span>${texto} contra ${esc(rival(p))}${p.motivo === "rendicion" ? " (rendición)" : ""}${p.motivo === "admin" ? (cancelada ? " (cancelada por el máster)" : " (resuelta por el máster)") : ""}${cartas}</span></li>`;
     }).join("") : `<li class="bt-vacio">Todavía no hay.</li>`;
   }
 

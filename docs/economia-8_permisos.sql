@@ -160,11 +160,11 @@ begin
   v_existe := found;
   if not v_es_admin then
     if v_existe then
-      if v_rareza is distinct from v_previa.rareza then v_ignorados := v_ignorados || 'rareza'; end if;
-      if v_tipo is distinct from v_previa.tipo then v_ignorados := v_ignorados || 'tipo'; end if;
-      if v_lado is distinct from v_previa.lado then v_ignorados := v_ignorados || 'lado'; end if;
-      if v_limite is distinct from v_previa.limite then v_ignorados := v_ignorados || 'limite'; end if;
-      if v_obtenible is distinct from v_previa.obtenible then v_ignorados := v_ignorados || 'obtenible'; end if;
+      if v_rareza is distinct from v_previa.rareza then v_ignorados := array_append(v_ignorados, 'rareza'); end if;
+      if v_tipo is distinct from v_previa.tipo then v_ignorados := array_append(v_ignorados, 'tipo'); end if;
+      if v_lado is distinct from v_previa.lado then v_ignorados := array_append(v_ignorados, 'lado'); end if;
+      if v_limite is distinct from v_previa.limite then v_ignorados := array_append(v_ignorados, 'limite'); end if;
+      if v_obtenible is distinct from v_previa.obtenible then v_ignorados := array_append(v_ignorados, 'obtenible'); end if;
       v_rareza := v_previa.rareza; v_tipo := v_previa.tipo; v_lado := v_previa.lado;
       v_limite := v_previa.limite; v_obtenible := v_previa.obtenible;
     else

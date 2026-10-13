@@ -347,19 +347,23 @@
     estado.textContent = "Guardando...";
     $("edGuardar").disabled = true;
     try {
-      await CartasCliente.guardar(id, datos, campos.publicada.checked);
+      const respuesta = await CartasCliente.guardar(id, datos, campos.publicada.checked);
+      const ignorados = respuesta && Array.isArray(respuesta.ignorados) ? respuesta.ignorados : [];
       // Las fotos que tenía la carta y ya no usa ninguna forma se borran del almacenamiento
       const enUso = new Set([datos.imagen].concat(datos.formas.map(f => f.imagen)).filter(Boolean));
       edActual.originales.filter(u => !enUso.has(u)).forEach(u => CartasCliente.quitarImagen(u));
       const lista = window.CARTAS;
       const i = lista.findIndex(c => c.id === id);
       const guardada = Object.assign({}, i >= 0 ? lista[i] : {}, datos, { id, borrador: !campos.publicada.checked });
+      // Lo que solo cambia el admin (rareza, tipo, lado, disponibilidad, límite) se queda como estaba también aquí
+      if (i >= 0) ignorados.forEach(k => { guardada[k] = lista[i][k]; });
       if (i >= 0) lista[i] = guardada; else lista.push(guardada);
       edActual.subidas = []; // ya quedaron en uso
       edActual = null;
       editorEl.close();
       llenarFiltroTipo();
       pintar();
+      if (ignorados.length && window.dialogo) dialogo.avisar(`Se guardó la carta, pero estos datos solo los cambia el admin y se dejaron como estaban: ${ignorados.join(", ")}.`);
     } catch (e) {
       estado.textContent = `No se pudo guardar: ${e.message || e}`;
       $("edGuardar").disabled = false;

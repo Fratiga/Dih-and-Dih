@@ -38,6 +38,9 @@
         <button type="button" data-vista="limites" class="${vista === "limites" ? "activo" : ""}">Límites</button>
         <button type="button" data-vista="auditoria" class="${vista === "auditoria" ? "activo" : ""}">Auditoría</button>
         <button type="button" data-vista="historial" class="${vista === "historial" ? "activo" : ""}">Movimientos</button>
+        <button type="button" data-vista="apuestas" class="${vista === "apuestas" ? "activo" : ""}">Apuestas y disputas</button>
+        <button type="button" data-vista="bloqueos" class="${vista === "bloqueos" ? "activo" : ""}">Bloqueos e incidencias</button>
+        <button type="button" data-vista="juegos" class="${vista === "juegos" ? "activo" : ""}">Juegos y recetas</button>
       </div>
       <p class="eco-estado" role="status"></p>
       <div id="ecoCuerpo"></div>`;
@@ -53,6 +56,9 @@
   function pintarVista() {
     if (vista === "limites") pintarLimites();
     else if (vista === "auditoria") pintarAuditoria();
+    else if (vista === "apuestas") pintarApuestas();
+    else if (vista === "bloqueos") pintarBloqueos();
+    else if (vista === "juegos") pintarJuegos();
     else pintarHistorial();
   }
 
@@ -255,6 +261,182 @@
     };
     document.getElementById("ecoHVer").addEventListener("click", ver);
     ver();
+  }
+
+  /* ---------------- apuestas y disputas ---------------- */
+  const fecha = t => (t ? new Date(t).toLocaleString("es", { dateStyle: "short", timeStyle: "short" }) : "");
+  const cartasTxt = info => (info || []).map(c => `${esc(c.nombre)} #${c.numero}`).join(", ") || "—";
+  const SITUACION = {
+    disputa: ["Disputa", "Los dos avisaron resultados distintos. Decide tú."],
+    un_aviso: ["Un solo aviso", "El otro no ha confirmado. Si sigue así, la apuesta se devuelve sola (sin ganador)."],
+    sin_avisos: ["Sin avisos", "Nadie ha avisado ni se ha movido nada. Se devuelve sola pasado el plazo."],
+    sin_respuesta: ["Reto sin respuesta", "Caduca solo y devuelve la apuesta."],
+    otra: ["Cerrada", "Resuelta o devuelta hace poco."]
+  };
+  const REPORTE = (p, n) => ({ j1: `gana ${p.nombre1}`, j2: `gana ${p.nombre2}`, empate: "empate" }[n === 1 ? p.reporte1 : p.reporte2] || "sin avisar");
+
+  async function pintarApuestas() {
+    const cuerpo = document.getElementById("ecoCuerpo");
+    cuerpo.innerHTML = `<p class="eco-ayuda">Aquí ves las partidas con apuesta que necesitan atención. Un jugador que avisa un resultado y no es confirmado en el plazo no gana nada: la apuesta se devuelve. Las disputas las resuelves tú con el botón del resultado que consideres justo; cada carta se mueve una sola vez.</p><div id="ecoApRes">Cargando...</div>`;
+    const res = document.getElementById("ecoApRes");
+    try {
+      const lista = await rpc("cartas_admin_apuestas");
+      if (!lista.length) { res.innerHTML = `<p class="eco-ok">No hay apuestas abiertas ni recientes.</p>`; return; }
+      res.innerHTML = `<div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Situación</th><th>Jugadores</th><th>Apuestas</th><th>Avisos</th><th>Fechas</th><th>Resolver</th></tr></thead><tbody>${
+        lista.map(p => {
+          const [titulo, ayuda] = SITUACION[p.situacion] || SITUACION.otra;
+          const abierta = ["disputa", "un_aviso", "sin_avisos", "sin_respuesta"].includes(p.situacion);
+          return `<tr data-id="${esc(p.id)}" class="${abierta ? "" : "eco-borrador"}">
+            <td><b>${esc(titulo)}</b><small>${esc(ayuda)}</small><small>${esc(p.estado)} / ${esc(p.apuesta_estado || "—")}${p.motivo ? ` / ${esc(p.motivo)}` : ""}${p.resultado ? ` / ${esc(p.resultado)}` : ""}</small></td>
+            <td>${esc(p.nombre1)} contra ${esc(p.nombre2)}</td>
+            <td>${esc(p.nombre1)}: ${cartasTxt(p.apuesta1_info)}<br>${esc(p.nombre2)}: ${cartasTxt(p.apuesta2_info)}</td>
+            <td>${esc(p.nombre1)}: ${esc(REPORTE(p, 1))}<br>${esc(p.nombre2)}: ${esc(REPORTE(p, 2))}</td>
+            <td><small>Creada ${esc(fecha(p.creada))}</small>${p.reportado ? `<small>Primer aviso ${esc(fecha(p.reportado))}</small>` : ""}${p.se_devuelve_el && abierta ? `<small>Se devuelve el ${esc(fecha(p.se_devuelve_el))}</small>` : ""}</td>
+            <td>${abierta ? `<div class="eco-acciones">
+              <button type="button" data-res="j1">Gana ${esc(p.nombre1)}</button>
+              <button type="button" data-res="j2">Gana ${esc(p.nombre2)}</button>
+              <button type="button" data-res="empate">Empate</button>
+              <button type="button" data-res="cancelar">Cancelar y devolver</button></div>` : ""}</td></tr>`;
+        }).join("")
+      }</tbody></table></div>`;
+      res.querySelectorAll("[data-res]").forEach(b => b.addEventListener("click", async () => {
+        const tr = b.closest("tr");
+        const textos = { j1: "ganador al primer jugador (se lleva las cartas del otro)", j2: "ganador al segundo jugador (se lleva las cartas del otro)", empate: "empate (cada carta vuelve a su dueño)", cancelar: "cancelar y devolver todo" };
+        if (!window.confirm(`¿Seguro? Vas a dar ${textos[b.dataset.res]}. No se puede deshacer.`)) return;
+        try {
+          await rpc("cartas_admin_resolver_apuesta", { p_id: tr.dataset.id, p_resultado: b.dataset.res });
+          estado("Resuelta.");
+          pintarApuestas();
+        } catch (e) { estado(`No se pudo resolver: ${e.message || e}`, true); }
+      }));
+    } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}</p>`; }
+  }
+
+  /* ---------------- bloqueos e incidencias ---------------- */
+  async function pintarBloqueos() {
+    const cuerpo = document.getElementById("ecoCuerpo");
+    cuerpo.innerHTML = `<p class="eco-ayuda">Copias retenidas por una apuesta o un intercambio. Si la operación ya terminó (o no existe) puedes soltarlas desde aquí. Si sigue activa, resuélvela o cancélala desde su pestaña: así las cartas se devuelven una sola vez y queda registro.</p><div id="ecoBlRes">Cargando...</div><h3>Incidencias</h3><label class="eco-linea"><input type="checkbox" id="ecoIncTodas"> Mostrar también las resueltas</label><div id="ecoIncRes"></div>`;
+    const pintar = async () => {
+      const res = document.getElementById("ecoBlRes");
+      try {
+        const lista = await rpc("cartas_admin_bloqueos");
+        res.innerHTML = lista.length ? `<div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Operación</th><th>Estado de la operación</th><th>Copias</th><th>Desde</th><th></th></tr></thead><tbody>${
+          lista.map(g => `<tr data-ref="${esc(g.referencia)}" class="${g.situacion === "activa" ? "" : "eco-cambiada"}">
+            <td><small>${esc(g.referencia)}</small></td>
+            <td><b>${esc({ activa: "Activa", cerrada: "Terminada", inexistente: "No existe", desconocida: "Desconocida" }[g.situacion] || g.situacion)}</b></td>
+            <td>${g.cartas.map(c => `${esc(nombreCarta(c.carta))} #${c.numero} (${esc(c.nombre || "—")})`).join("<br>")}</td>
+            <td>${esc(fecha(g.desde))}</td>
+            <td>${g.situacion === "activa" ? "" : `<button type="button" data-soltar>Soltar</button>`}</td></tr>`).join("")
+        }</tbody></table></div>` : `<p class="eco-ok">No hay copias bloqueadas.</p>`;
+        res.querySelectorAll("[data-soltar]").forEach(b => b.addEventListener("click", async () => {
+          const ref = b.closest("tr").dataset.ref;
+          const motivo = window.prompt("¿Por qué las sueltas? (queda anotado)", "bloqueo atascado");
+          if (!motivo) return;
+          try {
+            const n = await rpc("cartas_admin_liberar_bloqueos", { p_referencia: ref, p_motivo: motivo });
+            estado(`Se soltaron ${n} copia${n === 1 ? "" : "s"}.`);
+            pintarBloqueos();
+          } catch (e) { estado(`No se pudo: ${e.message || e}`, true); }
+        }));
+      } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}</p>`; }
+    };
+    const pintarInc = async () => {
+      const res = document.getElementById("ecoIncRes");
+      try {
+        const lista = await rpc("cartas_admin_incidencias", { p_incluir_resueltas: document.getElementById("ecoIncTodas").checked });
+        res.innerHTML = lista.length ? `<div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Cuándo</th><th>Qué</th><th>Referencia</th><th>Detalle</th><th></th></tr></thead><tbody>${
+          lista.map(i => `<tr data-id="${i.id}" class="${i.resuelta ? "eco-borrador" : ""}"><td>${esc(fecha(i.creada))}</td><td>${esc(i.tipo.replace(/_/g, " "))}</td><td><small>${esc(i.referencia)}</small></td><td>${esc(i.detalle)}</td><td>${i.resuelta ? "" : `<button type="button" data-cerrar>Marcar como vista</button>`}</td></tr>`).join("")
+        }</tbody></table></div>` : `<p class="eco-ok">Sin incidencias pendientes.</p>`;
+        res.querySelectorAll("[data-cerrar]").forEach(b => b.addEventListener("click", async () => {
+          try { await rpc("cartas_admin_cerrar_incidencia", { p_id: Number(b.closest("tr").dataset.id) }); pintarInc(); } catch (e) { estado(`No se pudo: ${e.message || e}`, true); }
+        }));
+      } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}</p>`; }
+    };
+    document.getElementById("ecoIncTodas").addEventListener("change", pintarInc);
+    pintar();
+    pintarInc();
+  }
+  const nombreCarta = id => (filas.find(f => f.id === id) || { nombre: id }).nombre;
+
+  /* ---------------- juegos, ajustes y recetas ---------------- */
+  async function pintarJuegos() {
+    const cuerpo = document.getElementById("ecoCuerpo");
+    cuerpo.innerHTML = `<div id="ecoJgRes">Cargando...</div>`;
+    const res = document.getElementById("ecoJgRes");
+    try {
+      const [datos, recetas] = await Promise.all([rpc("cartas_admin_juegos"), rpc("cartas_admin_recetas")]);
+      const todosApagados = datos.juegos.every(j => !j.activo);
+      const aj = datos.ajustes || {};
+      const json = v => esc(JSON.stringify(v ?? null, null, 1));
+      res.innerHTML = `
+        <p class="${todosApagados ? "eco-ok" : "eco-error"}">${todosApagados ? "Las recompensas de cartas están APAGADAS: nadie gana cartas jugando." : "Hay juegos con recompensa ENCENDIDA. Mientras el servidor no pueda comprobar el resultado de la partida, un jugador con el navegador modificado puede inventar su resultado (los topes diarios limitan el daño, no lo impiden)."}</p>
+        <h3>Juegos</h3>
+        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Juego</th><th>Da cartas</th><th>Tope/día</th><th>Segundos mínimos</th><th>Sellos por carta</th><th>Umbrales (participación, bueno, excelente, extraordinario)</th><th></th></tr></thead><tbody>${
+          datos.juegos.map(j => `<tr data-juego="${esc(j.juego)}"><td><b>${esc(j.nombre)}</b></td>
+            <td><input type="checkbox" data-c="activo"${j.activo ? " checked" : ""} aria-label="Da cartas: ${esc(j.nombre)}"></td>
+            <td><input type="number" data-c="tope_dia" min="0" max="50" value="${j.tope_dia}"></td>
+            <td><input type="number" data-c="min_segundos" min="0" max="3600" value="${j.min_segundos}"></td>
+            <td><input type="number" data-c="sellos_por_carta" min="1" max="50" value="${j.sellos_por_carta}"></td>
+            <td>${["participacion", "bueno", "excelente", "extraordinario"].map(k => `<input type="number" data-u="${k}" value="${j.umbrales[k]}" step="any" title="${k}" style="width:4.5em">`).join(" ")}</td>
+            <td><button type="button" data-guardar-juego>Guardar</button></td></tr>`).join("")
+        }</tbody></table></div>
+        <h3>Ajustes generales</h3>
+        <div class="eco-filtros" id="ecoAjustes">
+          <label>Cartas por día entre todos los juegos <input type="number" data-a="tope_dia_total" min="0" value="${esc(aj.tope_dia_total ?? 6)}"></label>
+          <label>Partidas buenas sin carta antes de asegurar una <input type="number" data-a="pity" min="1" value="${esc(aj.pity ?? 10)}"></label>
+          <label>Mejora personal (0,1 = 10 %) <input type="number" data-a="mejora_personal" step="any" min="0" value="${esc(aj.mejora_personal ?? 0.1)}"></label>
+          <label>Horas para devolver una apuesta con un solo aviso <input type="number" data-a="apuesta_silencio_horas" min="1" max="720" value="${esc(aj.apuesta_silencio_horas ?? 24)}"></label>
+          <label>Horas para devolver una apuesta sin avisos <input type="number" data-a="apuesta_inactividad_horas" min="1" max="720" value="${esc(aj.apuesta_inactividad_horas ?? 72)}"></label>
+          <button type="button" id="ecoGuardarAjustes">Guardar ajustes</button>
+        </div>
+        <h3>Recetas de la forja</h3>
+        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Receta</th><th>Activa</th><th>Entrada (JSON)</th><th>Salida (JSON)</th><th>Éxito (0 a 1)</th><th>Al fallar</th><th>Cartas usadas</th><th></th></tr></thead><tbody>${
+          recetas.map(r => `<tr data-receta="${esc(r.id)}"><td><b>${esc(r.nombre)}</b><small>${esc(r.id)}</small></td>
+            <td><input type="checkbox" data-r="activa"${r.activa ? " checked" : ""}></td>
+            <td><textarea data-r="entrada" rows="3" cols="26">${json(r.entrada)}</textarea></td>
+            <td><textarea data-r="salida" rows="3" cols="20">${json(r.salida)}</textarea></td>
+            <td><input type="number" data-r="exito" min="0" max="1" step="0.05" value="${r.exito}" style="width:5em"></td>
+            <td><select data-r="al_fallar"><option value="perder_todo"${r.al_fallar === "perder_todo" ? " selected" : ""}>Se pierde todo</option><option value="devolver_una"${r.al_fallar === "devolver_una" ? " selected" : ""}>Devuelve una</option></select></td>
+            <td><select data-r="destino"><option value="destruida"${r.destino === "destruida" ? " selected" : ""}>Se destruyen</option><option value="reserva"${r.destino === "reserva" ? " selected" : ""}>Van a la reserva</option></select></td>
+            <td><button type="button" data-guardar-receta>Guardar</button></td></tr>`).join("")
+        }</tbody></table></div>
+        <p class="eco-ayuda">Las recetas piden rarezas <code>comun</code>, <code>infrecuente</code> o <code>rara</code> (la forja nunca usa legendarias ni limitadas). Ejemplo de entrada: <code>[{"rareza":"comun","n":5}]</code>. Salida: <code>{"rareza":"infrecuente"}</code>.</p>`;
+
+      res.querySelectorAll("[data-guardar-juego]").forEach(b => b.addEventListener("click", async () => {
+        const tr = b.closest("tr");
+        const cfg = {
+          activo: tr.querySelector('[data-c="activo"]').checked,
+          tope_dia: Number(tr.querySelector('[data-c="tope_dia"]').value),
+          min_segundos: Number(tr.querySelector('[data-c="min_segundos"]').value),
+          sellos_por_carta: Number(tr.querySelector('[data-c="sellos_por_carta"]').value),
+          umbrales: Object.fromEntries([...tr.querySelectorAll("[data-u]")].map(i => [i.dataset.u, Number(i.value)]))
+        };
+        if (cfg.activo && !window.confirm("Vas a encender las recompensas de cartas de este juego. El servidor no puede comprobar el resultado de la partida y los jugadores podrían falsearlo. ¿Seguro?")) return;
+        try { await rpc("cartas_admin_guardar_juego", { p_juego: tr.dataset.juego, p_cfg: cfg }); estado("Juego guardado."); pintarJuegos(); }
+        catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
+      }));
+      document.getElementById("ecoGuardarAjustes").addEventListener("click", async () => {
+        const ajustes = {};
+        document.querySelectorAll("#ecoAjustes [data-a]").forEach(i => { ajustes[i.dataset.a] = Number(i.value); });
+        try { await rpc("cartas_admin_guardar_ajustes", { p_ajustes: ajustes }); estado("Ajustes guardados."); }
+        catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
+      });
+      res.querySelectorAll("[data-guardar-receta]").forEach(b => b.addEventListener("click", async () => {
+        const tr = b.closest("tr");
+        try {
+          const cfg = {
+            activa: tr.querySelector('[data-r="activa"]').checked,
+            entrada: JSON.parse(tr.querySelector('[data-r="entrada"]').value),
+            salida: JSON.parse(tr.querySelector('[data-r="salida"]').value),
+            exito: Number(tr.querySelector('[data-r="exito"]').value),
+            al_fallar: tr.querySelector('[data-r="al_fallar"]').value,
+            destino: tr.querySelector('[data-r="destino"]').value
+          };
+          await rpc("cartas_admin_guardar_receta", { p_id: tr.dataset.receta, p_cfg: cfg });
+          estado("Receta guardada.");
+        } catch (e) { estado(`No se pudo guardar${e instanceof SyntaxError ? " (el JSON no es válido)" : ""}: ${e.message || e}`, true); }
+      }));
+    } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}</p>`; }
   }
 
   /* ---------------- arranque ---------------- */

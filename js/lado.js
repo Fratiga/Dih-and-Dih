@@ -432,7 +432,21 @@ function initGlobalLadoWidget() {
         localStorage.setItem(USERNAME_KEY, nuevo);
         actualizarBadge();
         cerrarPopover();
-      } catch (e) { /* red caída: se queda como estaba */ }
+      } catch (e) {
+        // Nombre repetido o inválido: se avisa. Cualquier otro fallo (red caída) deja el nombre como estaba.
+        const msg = String((e && e.message) || "");
+        if (/ya está en uso|entre 2 y 30|no válidos|duplicate key/i.test(msg)) {
+          let aviso = document.getElementById("ladoUsernameAviso");
+          if (!aviso) {
+            aviso = document.createElement("p");
+            aviso.id = "ladoUsernameAviso";
+            aviso.className = "lado-picker-texto";
+            aviso.setAttribute("role", "alert");
+            document.getElementById("ladoUsernameInput").closest(".lado-username-editar").after(aviso);
+          }
+          aviso.textContent = /duplicate key/i.test(msg) ? "Ese nombre de usuario ya está en uso." : msg;
+        }
+      }
     });
     document.getElementById("ladoAuthCerrarSesion").addEventListener("click", async () => {
       await fichasCerrarSesion();

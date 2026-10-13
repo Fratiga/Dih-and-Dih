@@ -3761,7 +3761,13 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
 .mj-volver-sec { opacity: .75; }
 
 /* --- Admin: economía de cartas (js/admin-economia.js) --- */
-.eco-vistas { display: flex; gap: 6px; margin: 0 0 12px; }
+.eco-vistas { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.eco-acciones { display: flex; flex-direction: column; gap: 4px; }
+.eco-acciones button, .eco-tabla button, #ecoGuardarAjustes { font: inherit; font-size: .8rem; padding: 4px 10px; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); cursor: pointer; }
+.eco-acciones button:hover, .eco-tabla button:hover, #ecoGuardarAjustes:hover { border-color: var(--accent-soft); }
+.eco-linea { display: block; margin: 6px 0; font-size: .85rem; }
+.eco-tabla textarea { font: inherit; font-size: .75rem; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); padding: 4px 6px; }
+.eco-tabla select { font: inherit; font-size: .8rem; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); padding: 4px 6px; color-scheme: dark; }
 .eco-vistas button { font: inherit; padding: 8px 16px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); cursor: pointer; }
 .eco-vistas button.activo { color: var(--text); border-color: var(--accent-soft); background: var(--panel); }
 .eco-estado { min-height: 1.3em; margin: 0 0 8px; font-size: .88rem; color: var(--accent); }

@@ -129,8 +129,9 @@ window.CartasCliente = (function () {
     const supabase = await fichasCliente();
     const limpio = {};
     CAMPOS.forEach(k => { limpio[k] = datos[k] === undefined ? null : datos[k]; });
-    const { error } = await supabase.rpc("cartas_guardar", { p_id: id, p_data: limpio, p_publicada: !!publicada });
+    const { data, error } = await supabase.rpc("cartas_guardar", { p_id: id, p_data: limpio, p_publicada: !!publicada });
     if (error) throw error;
+    return data;   // { ignorados: [...] } cuando el servidor no deja a un editor cambiar rareza, tipo, lado, disponibilidad o límite
   }
 
   async function borrar(id) {

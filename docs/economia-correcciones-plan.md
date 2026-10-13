@@ -1,20 +1,33 @@
 # Economía de cartas: plan de correcciones (12 de octubre de 2026)
 
-Estado: **nada de esto está aplicado en producción**. Hay tres borradores de SQL en `docs/` y este plan. Las recompensas de cartas siguen apagadas (`cartas_juegos.activo = false` en los cuatro juegos) desde que lo pediste.
+Estado: **nada de esto está aplicado en producción**. Hay tres migraciones de SQL en `docs/` (probadas en local) y este plan. Las recompensas de cartas siguen apagadas (`cartas_juegos.activo = false` en los cuatro juegos) desde que lo pediste.
 
-## 1. Cómo se va a probar: el entorno de pruebas
+## 1. Entorno de pruebas: Postgres local en Docker (gratis)
 
-El proyecto de Supabase no guarda su historia de migraciones (solo hay 3 registradas: hipódromo, estadísticas y formas de cartas). Casi todo se aplicó pegando SQL en el editor. Una rama de Supabase se crea reproduciendo esa historia, así que nacería **sin tablas ni funciones**. Para que la prueba valga hay que cargarle antes el esquema real.
+Una rama de Supabase habría nacido sin tablas ni funciones (el proyecto solo tiene 3 migraciones registradas; casi todo se aplicó pegando SQL) y cuesta dinero, así que se descartó. Las pruebas corren en un **Postgres 17 local en Docker** con un Supabase simulado (roles `anon` y `authenticated`, esquema `auth`, `auth.uid()` leyendo la sesión simulada). No toca producción, no cuesta nada y permite abrir varias conexiones reales a la vez.
 
-Opciones:
+- El esquema base se leyó del catálogo de producción (solo estructura, sin datos de jugadores) y las funciones de `economia-1` a `economia-6` se cargaron desde el repositorio.
+- Se comprobó función por función contra producción: 70 funciones, 51 idénticas al carácter, 13 que solo difieren en comentarios o variables sin usar (misma lógica, verificado), y 8 que no están en el repositorio (viejas funciones del editor y del combate) y no se necesitan para las pruebas.
+- Cómo usarlo: `docs/pruebas/README.md`.
 
-| Opción | Qué es | Coste | Fidelidad |
-|---|---|---|---|
-| **A (recomendada)** | Rama de Supabase del proyecto actual. Se le carga un volcado del esquema de producción (tablas, restricciones, índices, políticas, funciones, disparadores y permisos, leído del catálogo) y se verifica que cada función coincide con la de producción. Datos solo de prueba, con 4 usuarios inventados. | 0,01344 USD por hora de rama (unos 0,32 USD al día) mientras exista. Se borra al terminar. | Alta, comprobable función por función |
-| B | Un proyecto de Supabase aparte con el mismo volcado | Depende del plan de la organización | Igual que A, más trabajo y más ruido |
-| C | Pruebas con `begin ... rollback` contra producción | Ninguno | No toca datos, pero toma candados en producción y no cumple tu regla de no probar ahí |
+### Resultados
 
-La rama necesita tu confirmación de coste, así que **no la he creado**.
+| | Código actual de producción | Con las correcciones |
+|---|---|---|
+| Comprobaciones que pasan | __PROD_OK__ | __TODO_OK__ |
+| Comprobaciones que fallan | __PROD_FALLA__ | 0 |
+| Interbloqueos en el estrés | n/a | 0 |
+
+Lo que se reproduce hoy con el código de producción, con dos conexiones reales a la vez:
+
+- **A2**: dos compras al mercader con las mismas tres cartas dan **dos cartas del mercader por una entrega**. La auditoría no lo detecta.
+- **A3**: un intercambio mueve una copia que sigue ofrecida en otro intercambio abierto; el segundo intercambio queda abierto sobre una copia que ya es de otro.
+- **A9**: cinco compras, cinco forjas y ocho ofertas simultáneas **se saltan** los topes de 3, 3 y 5.
+- **A1, A6, A7, A10**: reproducidos leyendo el código y con las baterías de permisos y de apuestas.
+
+Lo que encontraron las pruebas en mis propios borradores: `cartas_guardar` fallaba para el editor (`text[] || 'rareza'` se interpretaba como literal de array). Corregido en `economia-8_permisos.sql` con `array_append`.
+
+Lo que **no** cubre el entorno local: el navegador con sesión real de Supabase, y la versión exacta de Auth y PostgREST. Por eso, antes de declarar el sistema listo, hay que repetir el reto con apuesta, el intercambio, el mercader y la forja con dos navegadores reales en la web publicada.
 
 ## 2. Cambios previstos
 
@@ -100,16 +113,16 @@ Todas en la rama de pruebas, con usuarios inventados. Ninguna toca datos de juga
 
 Siguen apagadas hasta que el álbum y los flujos estén probados. No se borra ninguna recompensa ni carta.
 
-Propuesta por juego para no dar cartas por resultados que el servidor no puede verificar. Es preliminar: antes de implementar hay que leer cada motor.
+Hoy los cuatro juegos corren enteros en el navegador y el servidor solo recibe «gané» y una puntuación. Propuesta por juego para no dar cartas por resultados que el servidor no puede verificar (leído el código de cada uno):
 
-| Juego | Qué recibe hoy el servidor | Validación posible | Qué exige rediseño |
+| Juego | Cómo funciona hoy | Qué se puede validar | Qué exige rediseñar |
 |---|---|---|---|
-| Duelo contra la casa | Resultado y clave del rival, declarados por el navegador | El motor de cartas es determinista con semilla, igual que en los duelos entre jugadores. El servidor entregaría la semilla al empezar, el navegador mandaría la lista de acciones y una función en el servidor volvería a jugar la partida con el mismo motor para decidir el ganador | Que el rival de la casa sea determinista (o que sus decisiones queden en el registro) y portar `cartas-motor.js` a una Edge Function |
-| Ajedrez contra la casa | Resultado y rival | Legalidad de cada jugada y fin de partida (mate o tablas) con una Edge Function | Que la IA sea reproducible desde una semilla del servidor; si no, el navegador puede jugar contra una IA más débil que la declarada |
-| Arquería | Resultado y puntuación | Plausibilidad (tiempo mínimo, puntuación máxima posible) | Física determinista con semilla del servidor y registro de cada disparo para reproducirla; sin eso solo se puede limitar el daño |
-| Hooey (racha) | Racha | Cota de plausibilidad (racha máxima por segundo) | Registro de eventos con marcas de tiempo; sin eso la racha es falsificable |
+| **Arquería** | Blancos con generador de semilla (los mismos en los dos navegadores en partidas entre jugadores); disparo con clic, puntúa la cercanía al centro; rival simulado | **La más viable.** El servidor entrega la semilla al empezar; el navegador manda la lista de disparos (posición y tiempo) y una Edge Function recalcula los blancos y la puntuación | Que el puntaje del rival simulado también salga de la semilla (hoy usa `Math.random` en parte) |
+| **Ajedrez contra la casa** | Reglas y IA en el navegador; la IA usa `Math.random` sin semilla | Que cada jugada sea legal y que la partida acabe de verdad en mate o tablas, con la lista de jugadas y una librería de ajedrez en una Edge Function | La fuerza del rival: el navegador puede jugar contra una IA más débil que la declarada. Hay que mover la IA al servidor o hacerla reproducible desde una semilla |
+| **Duelo contra la casa** | Duelo de reflejos en tiempo real (atacar, bloquear, esquivar) con IA que reacciona; no usa el motor de cartas; `Math.random` sin semilla | Solo plausibilidad: duración mínima, que una victoria exija un tiempo razonable | Simulación determinista con semilla del servidor y registro de entradas con marcas de tiempo para volver a jugarla. Es el más caro de verificar |
+| **Hooey (racha)** | Oleadas que caen a velocidad fija; la racha es el número de aciertos seguidos | Cota de plausibilidad (la racha no puede superar los segundos jugados dividido entre el intervalo de las oleadas) | Oleadas desde una semilla del servidor y registro de cada acierto con su marca de tiempo. Sin eso, la racha es falsificable |
 
-Mientras un juego no tenga validación completa, la recomendación es que dé como mucho **sellos** (que están acotados por los topes diarios) y no cartas por tramo.
+Recomendación: mientras un juego no tenga validación completa, que dé como mucho **sellos** (están acotados por los topes diarios) y no cartas por tramo. El orden de menor a mayor esfuerzo es arquería, ajedrez, Hooey y duelo.
 
 ## 7. Límites de lo que se puede corregir sin rediseñar
 
