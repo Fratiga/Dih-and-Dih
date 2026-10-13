@@ -17,6 +17,11 @@ Las fases 1 a 6 del orden de la sección 13 están construidas y aplicadas en Su
 - Se elige la opción **C** de la sección 5.1: el límite global cuenta lo emitido alguna vez y lo que vuelve al mercado queda en la reserva, que se reparte antes de emitir copias nuevas.
 - Los límites globales de partida están puestos con la tabla de `economia_2_limites_iniciales.sql` (personajes 8, 5, 3 y 1; criaturas y objetos 20, 12, 5 y 1; reacciones 15, 8 y 4; terrenos 12, 8 y 4; legendarias 1; el Bufón conserva su 5). Son valores provisionales: se corrigen carta por carta en Admin > Economía de cartas.
 
+**Excepciones documentadas (provisionales, no se tocan sin aprobación)**
+
+- **El Bufón** (`el-bufon`, limitada): límite global 5, una copia por jugador (el efectivo sale de la regla de las limitadas, `limite_jugador` está vacío) y no obtenible por recompensas (`obtenible` en falso). Solo llega a un jugador por regalo del admin. La regla general dice que una limitada tiene 1 copia global; el 5 del Bufón es la excepción, conservada tal como estaba antes de la economía.
+- **Mercader frente a forja**: hoy el mercader es más barato que la forja para subir de categoría (3 comunes por una poco común frente a 5 en la forja; 2 poco comunes por una rara frente a 3 poco comunes con un 20 % de fallo). No es un ciclo que genere valor, pero es una diferencia de diseño. No se han cambiado los costes; se mide primero con las pruebas de explotación de `docs/economia-correcciones-plan.md`.
+
 **Qué hay y dónde**
 
 | Pieza | Dónde se maneja | Archivos |
