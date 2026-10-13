@@ -3,6 +3,14 @@
 // de cambios en frases cortas. El botón avisa con un punto a quien no haya visto la última.
 window.PARRANDA_NOVEDADES = [
   {
+    fecha: "2026-10-13",
+    titulo: "Pulsar antes de tiempo",
+    cambios: [
+      "Si pulsas antes de tiempo, la nota ya no se da por fallada: sigue ahí y puedes darle cuando pase por la tecla.",
+      "Esa pulsación adelantada cuenta como pulsación de más (corta el combo y quita algo de vida), igual que en Guitar Hero."
+    ]
+  },
+  {
     fecha: "2026-10-12",
     titulo: "Largas dobles",
     cambios: [

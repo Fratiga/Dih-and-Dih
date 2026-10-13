@@ -410,8 +410,9 @@
   }
 
   /* Un toque que no cae sobre ninguna nota no debe castigar dos veces lo mismo:
-       - si había una nota de ese carril a punto de llegar (hasta 0,3 s), el toque cuenta como un solo fallo de
-         esa nota, que ya no vuelve a fallar al pasar;
+       - si había una nota de ese carril que ya pasó sin tocarse (por muy poco), el toque cuenta como un solo fallo
+         de esa nota, que ya no vuelve a fallar al pasar. Una nota que todavía no ha llegado no se toca: pulsar antes
+         de tiempo cuenta como pulsación de más, pero la nota sigue ahí para darle cuando pase por la tecla;
        - si esa nota ya se había dado por fallada hace un momento, o una larga se acababa de romper, el toque
          no suma otro fallo (ya estaba castigado).
      Devuelve true si el toque quedó explicado y no hay que sumar una "pulsación de más". */
@@ -419,7 +420,7 @@
     const sirve = n => n.carril === carril;
     for (let i = punteroFallos; i < notas.length; i++) {
       const n = notas[i];
-      if (n.t - t > 0.3) break;
+      if (n.t > t) break;
       if (n.estado || !sirve(n)) continue;
       n.estado = "fallo";
       sumar("fallo", n.carril);
