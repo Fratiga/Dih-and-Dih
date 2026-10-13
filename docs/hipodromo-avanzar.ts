@@ -15,9 +15,13 @@
 //   * Crear la función:  supabase functions new hipodromo-avanzar  y poner este archivo como index.ts.
 //   * El motor: o se copian al lado de index.ts, SIN cambiarlos, estos cuatro archivos del sitio
 //       data/hipodromo-palabras.js   js/hipodromo-nombres.js   js/hipodromo-rasgos.js   js/hipodromo-motor.js
-//     o se define el secreto HIPODROMO_BASE con la dirección de una versión FIJA del repositorio (con el hash del commit,
-//     que nunca cambia), por ejemplo  https://cdn.jsdelivr.net/gh/Fratiga/Dih-and-Dih@<hash-del-commit>  y la función los trae de ahí.
+//     o (lo que se hizo al desplegar con el editor de Supabase) se cambian las cuatro líneas «import "./...js"» de abajo por
+//     la dirección de una versión FIJA del repositorio, con el hash del commit, que nunca cambia:
+//       import "https://cdn.jsdelivr.net/gh/Fratiga/Dih-and-Dih@<hash-del-commit>/js/hipodromo-motor.js";
+//     (los imports tienen que ser estáticos: la Edge Function no admite import() dinámico de direcciones web).
 //     Cambiar de commit cambia las reglas del mundo en marcha: hazlo solo a propósito y repitiendo tools/probar-hipodromo.js.
+//   * Un archivo ventana.ts con una sola línea:  (globalThis as any).window = globalThis;   (los archivos del motor son
+//     scripts de navegador y esperan `window`; se importa primero, antes que ellos).
 //   * Secretos:  supabase secrets set HIPODROMO_CLAVE=<una clave larga al azar> HIPODROMO_SEMILLA=<cualquier texto>
 //     (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY ya los pone Supabase). La semilla solo importa la primera vez y
 //     tiene que ser secreta: con ella se podría adivinar el tiempo de las carreras futuras.
@@ -35,12 +39,12 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-// Los archivos del motor son scripts de navegador: esperan una variable global `window`.
-(globalThis as any).window = globalThis;
-const BASE = Deno.env.get("HIPODROMO_BASE") ?? "";
-for (const [remoto, local] of [["data/hipodromo-palabras.js", "./hipodromo-palabras.js"], ["js/hipodromo-nombres.js", "./hipodromo-nombres.js"], ["js/hipodromo-rasgos.js", "./hipodromo-rasgos.js"], ["js/hipodromo-motor.js", "./hipodromo-motor.js"]]) {
-  await import(BASE ? BASE + "/" + remoto : local);
-}
+// Los archivos del motor son scripts de navegador: esperan una variable global `window` (la pone ventana.ts, que va primero).
+import "./ventana.ts";
+import "./hipodromo-palabras.js";
+import "./hipodromo-nombres.js";
+import "./hipodromo-rasgos.js";
+import "./hipodromo-motor.js";
 const Motor = (globalThis as any).HipodromoMotor;
 
 const respuesta = (estado: number, cuerpo: unknown) =>

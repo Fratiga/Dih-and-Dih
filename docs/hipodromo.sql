@@ -248,11 +248,11 @@ begin
 
   -- las próximas carreras (lo que se puede inscribir) y lo privado de cada cuadra: se reemplazan enteros
   if p_lote ? 'calendario' then
-    delete from hipodromo_calendario;
+    delete from hipodromo_calendario where true;   -- Supabase exige WHERE en todo DELETE (pg-safeupdate)
     insert into hipodromo_calendario (n, datos) select (x->>'n')::integer, x from jsonb_array_elements(p_lote->'calendario') as x;
   end if;
   if p_lote ? 'cuadras' then
-    delete from hipodromo_cuadras;
+    delete from hipodromo_cuadras where true;
     insert into hipodromo_cuadras (dueno, criatura_id, n, datos)
     select x.dueno::uuid, x.criatura_id, x.n, x.datos
       from jsonb_to_recordset(p_lote->'cuadras') as x(dueno text, criatura_id bigint, n integer, datos jsonb);
