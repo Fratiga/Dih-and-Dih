@@ -24,12 +24,12 @@
   const CLAVE_REGISTRADAS = "compendioArqueriaPvpRegistradas";
 
   const RIVALES = [
-    { id: "hornet", nombre: "Hornet", dificultad: "Fácil", nivel: 1, color: "#b48ad9", nota: "Dispara con calma y los blancos le caen en línea recta. Para empezar.", corta: "Blancos en línea recta" },
+    { id: "hornet", nombre: "Hornet", dificultad: "Fácil", nivel: 1, color: "#b48ad9", nota: "Tarda en ver los blancos y su mira es lenta. Blancos grandes y que duran. Para empezar.", corta: "Lenta, blancos grandes" },
     { id: "garra", nombre: "Garra", dificultad: "Media", nivel: 2, color: "#d9794f", nota: "Más rápida y bastante precisa. No perdona los descuidos.", corta: "Rápida y precisa" },
-    { id: "cassius", nombre: "Cassius", dificultad: "Difícil", nivel: 3, color: "#d9a441", nota: "Los blancos zigzaguean y casi no falla. Hay que ir a por el centro.", corta: "Blancos en zigzag" },
+    { id: "cassius", nombre: "Cassius", dificultad: "Difícil", nivel: 3, color: "#d9a441", nota: "Algunos blancos se deslizan y él casi no falla. Hay que ir a por el centro.", corta: "Blancos que se deslizan" },
     { id: "torvrena", nombre: "Torvrena", dificultad: "Muy difícil", nivel: 4, color: "#5fd0c0", nota: "Cazadora de monstruos: pocas palabras, cicatrices y una puntería que no perdona.", corta: "Rápida y certera" },
     { id: "milicia", nombre: "Miliciano", dificultad: "Experto", nivel: 5, color: "#cf6f8f", nota: "El mejor arquero de la milicia: casi cada flecha va al centro.", corta: "Casi todo al centro" },
-    { id: "tobi", nombre: "Tobi", dificultad: "Extremo", nivel: 6, color: "#9bd05f", nota: "El centinela no pierde el tiempo: se lleva el blanco antes de que lo veas bien.", corta: "Casi no deja disparar" }
+    { id: "tobi", nombre: "Tobi", dificultad: "Extremo", nivel: 6, color: "#9bd05f", nota: "El centinela no pierde el tiempo: ve el blanco antes que tú y su mira vuela.", corta: "Reflejos de centinela" }
   ];
   // El récord de antes de que hubiera varios rivales era contra el rival más flojo, que ahora es Hornet
   const clave = id => id === "hornet" ? "compendioArqueriaCassius" : `compendioArqueria_${id}`;

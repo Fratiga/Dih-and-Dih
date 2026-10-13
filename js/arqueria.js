@@ -18,54 +18,54 @@
   const LOGICO_ANCHO = 960;
   const LOGICO_ALTO = 600;
 
-  /* Rivales. En la galería (arqueria.html) cada uno dispara con su propia mira:
-       ciclo   = segundos entre un disparo y el siguiente
-       apuntar = lo que tarda en apuntar a un blanco (más apuntarRuido al azar)
-       vuelo   = lo que tarda su flecha en llegar (hasta entonces puedes quitarle el blanco)
-       ruido   = cuánto se despista al elegir el blanco más urgente (menos = elige mejor)
+  /* Rivales. La arquería es una galería de tiro: los blancos APARECEN en cualquier punto del campo, duran unos
+     segundos con un anillo que se va vaciando y se esfuman. Los pequeños y dorados duran menos y valen el doble.
+     Cada rival dispara con su propia mira, que tiene que viajar hasta el blanco, así que la dificultad sale de
+     sus reflejos y de lo rápido que mueve la mira, no de una cadencia imposible:
+       reaccion = lo que tarda en ver un blanco nuevo        veloz    = píxeles por segundo que recorre su mira
+       asentar  = lo que tarda en estabilizar la mira        recarga  = pausa entre un disparo y el siguiente
+       vuelo    = lo que tarda su flecha en llegar (hasta entonces puedes quitarle el blanco)
+       ruido    = cuánto se despista al elegir blanco (menos = elige mejor: valor y cercanía)
        precision y dist = cuántos tiros aciertan y el reparto [centro, medio, borde] de los que aciertan
-     radio, velocidadBase y zigzag son de los blancos que caen contra ese rival.
-     Las cifras salen de partidas simuladas con un jugador bueno (unos 1,6 aciertos por segundo y reflejos
-     normales): Hornet le pierde por mucho, Garra también, Cassius queda parejo, y de Torvrena en adelante
-     la máquina gana, hasta el coronel Tobi, que casi no deja disparar. (Torvrena es la cazadora de monstruos; el arquero
-     de la milicia, el mejor tirador de los suyos.)
-     intervalo solo lo usa el rival abstracto de Muerte Súbita (Verdam). */
+     Del lado de los blancos: radio, vida (segundos), desliza (fracción que se mueve de lado) y rapido (fracción de
+     dorados). Las cifras salen de partidas simuladas con dos jugadores: uno medio (reflejos de 0,36 s) y uno bueno (0,28 s). Con el medio, Hornet, Garra y Cassius pierden, Torvrena queda pareja y de Miliciano en adelante gana la máquina; el bueno le gana a Miliciano por poco y pierde con Tobi. intervalo y velocidadBase solo los usa el
+     rival abstracto de Muerte Súbita (Verdam). */
   const RIVALES = {
     hornet: {
       nombre: "Hornet", color: "#b48ad9",
-      intervalo: 1.0, ciclo: 1.1, apuntar: 0.38, apuntarRuido: 0.14, vuelo: 0.18, ruido: 120,
-      precision: 0.70, dist: [0.2, 0.4, 0.4],
-      radio: 46, velocidadBase: 110, zigzag: false
+      radio: 48, vida: 2.9, desliza: 0, rapido: 0.15,
+      reaccion: 0.7, veloz: 700, asentar: 0.2, recarga: 0.65, vuelo: 0.17, ruido: 0.8,
+      precision: 0.74, dist: [0.2, 0.4, 0.4]
     },
     garra: {
       nombre: "Garra", color: "#d9794f",
-      intervalo: 0.85, ciclo: 0.62, apuntar: 0.27, apuntarRuido: 0.1, vuelo: 0.14, ruido: 80,
-      precision: 0.86, dist: [0.38, 0.4, 0.22],
-      radio: 42, velocidadBase: 125, zigzag: false
+      radio: 44, vida: 2.5, desliza: 0.15, rapido: 0.2,
+      reaccion: 0.5, veloz: 1100, asentar: 0.15, recarga: 0.5, vuelo: 0.14, ruido: 0.6,
+      precision: 0.87, dist: [0.35, 0.4, 0.25]
     },
     cassius: {
       nombre: "Cassius", color: "#d9a441",
-      intervalo: 0.8, ciclo: 0.52, apuntar: 0.23, apuntarRuido: 0.09, vuelo: 0.12, ruido: 60,
-      precision: 0.9, dist: [0.45, 0.38, 0.17],
-      radio: 38, velocidadBase: 150, zigzag: true
+      radio: 40, vida: 2.2, desliza: 0.3, rapido: 0.25,
+      reaccion: 0.35, veloz: 1750, asentar: 0.11, recarga: 0.3, vuelo: 0.1, ruido: 0.35,
+      precision: 0.92, dist: [0.45, 0.38, 0.17]
     },
     torvrena: {
       nombre: "Torvrena", color: "#5fd0c0",
-      intervalo: 0.8, ciclo: 0.42, apuntar: 0.2, apuntarRuido: 0.08, vuelo: 0.11, ruido: 45,
-      precision: 0.93, dist: [0.5, 0.35, 0.15],
-      radio: 35, velocidadBase: 160, zigzag: true
+      radio: 37, vida: 1.95, desliza: 0.4, rapido: 0.3,
+      reaccion: 0.32, veloz: 1900, asentar: 0.09, recarga: 0.3, vuelo: 0.1, ruido: 0.3,
+      precision: 0.94, dist: [0.52, 0.34, 0.14]
     },
     milicia: {
       nombre: "Miliciano", color: "#cf6f8f",
-      intervalo: 0.8, ciclo: 0.32, apuntar: 0.15, apuntarRuido: 0.05, vuelo: 0.09, ruido: 30,
-      precision: 0.95, dist: [0.58, 0.32, 0.1],
-      radio: 33, velocidadBase: 175, zigzag: true
+      radio: 34, vida: 1.75, desliza: 0.5, rapido: 0.3,
+      reaccion: 0.21, veloz: 2700, asentar: 0.07, recarga: 0.2, vuelo: 0.08, ruido: 0.18,
+      precision: 0.96, dist: [0.6, 0.3, 0.1]
     },
     tobi: {
       nombre: "Tobi", color: "#9bd05f",
-      intervalo: 0.8, ciclo: 0.24, apuntar: 0.11, apuntarRuido: 0.04, vuelo: 0.07, ruido: 18,
-      precision: 0.97, dist: [0.7, 0.25, 0.05],
-      radio: 30, velocidadBase: 190, zigzag: true
+      radio: 31, vida: 1.55, desliza: 0.6, rapido: 0.35,
+      reaccion: 0.18, veloz: 3400, asentar: 0.05, recarga: 0.16, vuelo: 0.065, ruido: 0.1,
+      precision: 0.975, dist: [0.7, 0.25, 0.05]
     },
     verdam: {
       nombre: "Verdam", color: "#8fd06a",
@@ -75,8 +75,8 @@
   };
   const PUNTOS_ANILLO = [10, 7, 4];
   // Lo que se lee en la pantalla previa al disparo (antes estaba en una fila de fichas bajo el campo)
-  const REGLAS = ["Un minuto. Gana quien sume más puntos.", "Centro 10, anillo medio 7 y borde 4.", "Dispara con clic, o con Z / X sobre el blanco."];
-  const REGLAS_VS = ["Un minuto. Los blancos son de los dos: se lo lleva quien dispare primero.", "Centro 10, anillo medio 7 y borde 4.", "Dispara con clic, o con Z / X sobre el blanco."];
+  const REGLAS = ["Un minuto. Los blancos aparecen y se esfuman en segundos.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco."];
+  const REGLAS_VS = ["Un minuto. Los blancos son de los dos: se lo lleva quien dispare primero.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco."];
 
   // Generador con semilla: los dos jugadores de una partida ven los mismos blancos.
   function generadorConSemilla(semilla) {
@@ -115,6 +115,7 @@
     let cursorActual = "";
     // Rival de la casa en modo galería: su mira, el blanco que tiene elegido y lo que tarda en apuntar
     let ia = null;
+    let cal = null; // calendario de blancos de la partida (el mismo en solitario y entre jugadores)
     let compartido = null; // partida entre dos jugadores: calendario de blancos, golpes ya repartidos y mira del rival
     let estado = "listo"; // listo | jugando | fin
     let tiempo = 0;
@@ -173,45 +174,62 @@
       };
     }
 
-    /* --- Campo compartido ------------------------------------------------------------------
-       El blanco k sale en tiempos[k] y su posición es una función pura del tiempo de la partida:
-       no depende de la velocidad de cuadros ni de lo que haga nadie, así los dos navegadores
-       dibujan lo mismo. Misma física que en solitario: velocidad = base + 2,2 por segundo. */
-    function prepararCompartido(semilla) {
-      const tiempos = [0];
-      while (tiempos.length < 300) {
+    /* --- Calendario de blancos ---------------------------------------------------------------
+       El blanco k aparece en tiempos[k], en un punto del campo que sale de la semilla, vive "vida" segundos y se
+       esfuma. Su posición es una función pura del tiempo de la partida: no depende de la velocidad de cuadros ni de lo
+       que haga nadie. Así, entre dos jugadores, los dos navegadores dibujan exactamente lo mismo. */
+    function nuevoCalendario(semilla) {
+      const tiempos = [0.5];
+      while (tiempos.length < 400) {
         const t = tiempos[tiempos.length - 1];
-        tiempos.push(t + Math.max(0.45, 0.85 - t * 0.006));
+        tiempos.push(t + Math.max(0.3, 0.62 - t * 0.0055) * (cfg.tasa ?? 1));
       }
-      compartido = { semilla: semilla >>> 0, t0: 0, tiempos, parametros: [], golpes: new Map(), kMin: 0, miraRival: null };
+      return { semilla: semilla >>> 0, tiempos, parametros: [], golpes: new Map(), kMin: 0 };
+    }
+
+    function prepararCompartido(semilla) {
+      compartido = Object.assign(nuevoCalendario(semilla), { t0: 0, miraRival: null });
+      cal = compartido;
     }
 
     function paramsBlanco(k) {
-      let p = compartido.parametros[k];
+      let p = cal.parametros[k];
       if (!p) {
-        const a = generadorConSemilla((compartido.semilla * 31 + k * 7919) >>> 0);
-        const r = cfg.radio;
-        p = compartido.parametros[k] = { r, x0: r + a() * (ancho - r * 2), amp: cfg.zigzag ? 18 + a() * 40 : 0, frec: 1.2 + a() * 1.6, vel: 0.92 + a() * 0.2 };
+        const a = generadorConSemilla((cal.semilla * 31 + k * 7919) >>> 0);
+        const rapido = a() < (cfg.rapido ?? 0.25);
+        const r = cfg.radio * (rapido ? 0.68 : 0.92 + a() * 0.16);
+        const margen = r + 24;
+        const x0 = margen + a() * (ancho - margen * 2);
+        const y0 = 128 + r + a() * (alto - 128 - r * 2 - 36); // bajo el marcador
+        const vx = a() < (cfg.desliza ?? 0) ? (a() < 0.5 ? -1 : 1) * (70 + a() * 110) : 0;
+        const vida = (cfg.vida ?? 2.2) * (rapido ? 0.62 : 1) * Math.max(0.72, 1 - cal.tiempos[k] * 0.003);
+        p = cal.parametros[k] = { r, x0, y0, vx, vida, mult: rapido ? 2 : 1, rapido };
       }
       return p;
     }
 
     function posBlanco(k, T) {
       const p = paramsBlanco(k);
-      const t0 = compartido.tiempos[k];
-      const edad = T - t0;
-      const y = -p.r + p.vel * (cfg.velocidadBase * edad + 1.1 * (T * T - t0 * t0));
-      const x = p.amp ? Math.min(ancho - p.r, Math.max(p.r, p.x0 + Math.sin(edad * p.frec * 2) * p.amp)) : p.x0;
-      return { k, x, y, r: p.r };
+      const edad = T - cal.tiempos[k];
+      let x = p.x0;
+      if (p.vx) {
+        // los que se deslizan rebotan en los bordes del campo
+        const lo = p.r + 8;
+        const tramo = ancho - p.r - 8 - lo;
+        let u = (p.x0 - lo + p.vx * edad) % (2 * tramo);
+        if (u < 0) u += 2 * tramo;
+        x = lo + (u > tramo ? 2 * tramo - u : u);
+      }
+      return { k, x, y: p.y0, r: p.r, edad, vida: p.vida, mult: p.mult, rapido: p.rapido };
     }
 
-    function blancosCompartidos(T) {
+    function blancosVivos(T) {
       const lista = [];
-      if (T < 0) return lista;
-      const { tiempos, golpes } = compartido;
-      for (let k = compartido.kMin; k < tiempos.length && tiempos[k] <= T; k++) {
+      if (T < 0 || !cal) return lista;
+      const { tiempos, golpes } = cal;
+      for (let k = cal.kMin; k < tiempos.length && tiempos[k] <= T; k++) {
         const b = posBlanco(k, T);
-        if (b.y - b.r >= alto) { if (k === compartido.kMin) compartido.kMin++; continue; }
+        if (b.edad >= b.vida) { if (k === cal.kMin) cal.kMin++; continue; }
         if (golpes.has(k)) continue;
         lista.push(b);
       }
@@ -230,8 +248,9 @@
       if (!visual) return;
       if (flecha) lanzarFlecha(x0, y0, x, y, cfg.color, retraso || 0.14);
       const e0 = -retraso;
-      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * (pts === 10 ? 2.1 : 1.5), color: cfg.color, edad: e0, vida: pts === 10 ? 0.5 : 0.35 });
-      efectos.push({ tipo: "texto", x, y, texto: pts === 10 ? `¡CENTRO! +${pts}` : `+${pts}`, grande: pts === 10, edad: e0, vida: 0.8, color: cfg.color });
+      const centro = pts === 10 || pts === 20;
+      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * (centro ? 2.1 : 1.5), color: cfg.color, edad: e0, vida: centro ? 0.5 : 0.35 });
+      efectos.push({ tipo: "texto", x, y, texto: centro ? `¡CENTRO! +${pts}` : `+${pts}`, grande: centro, edad: e0, vida: 0.8, color: cfg.color });
       for (let j = 0; j < 5; j++) {
         const a = Math.random() * Math.PI * 2;
         const v = 80 + Math.random() * 140;
@@ -298,13 +317,13 @@
         const d = Math.hypot(x - b.x, y - b.y) / b.r;
         if (d > 1) continue;
         const anillo = d < 0.25 ? 0 : d < 0.55 ? 1 : 2;
-        const pts = PUNTOS_ANILLO[anillo];
+        const pts = PUNTOS_ANILLO[anillo] * (b.mult || 1);
         puntaje += pts;
         if (onPuntaje) onPuntaje(puntaje);
-        if (compartido) {
-          // El blanco desaparece ya para ti; el servidor confirma si fuiste el primero (si no, perdido())
-          compartido.golpes.set(b.k, { por: "yo", pts, pendiente: true });
-          if (onGolpe) onGolpe({ blanco: b.k, puntos: pts, x: b.x, y: b.y });
+        if (cal) {
+          // El blanco desaparece ya para ti; entre jugadores el servidor confirma si fuiste el primero (si no, perdido())
+          cal.golpes.set(b.k, { por: "yo", pts, pendiente: !!compartido });
+          if (compartido && onGolpe) onGolpe({ blanco: b.k, puntos: pts, x: b.x, y: b.y });
         }
         efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: anillo === 0 && visual ? `¡CENTRO! +${pts}` : `+${pts}`, grande: anillo === 0, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
         if (visual) {
@@ -331,13 +350,31 @@
       }
     }
 
-    /* --- Rival de la casa como tirador de galería -------------------------------------------------
-       Cada "intervalo" elige uno de los blancos que caen (con preferencia por los que están a punto
-       de llegar al suelo), mueve su mira hacia donde estará y dispara. Acierta con su precisión y
-       el anillo sale de su reparto de siempre, así que su puntaje esperado no cambia; lo que cambia
-       es que el blanco que se lleva ya no es tuyo, y el que le robas, tampoco es suyo. */
+    /* --- Rival de la casa como tirador de galería ------------------------------------------------
+       Ve un blanco nuevo cuando pasa su tiempo de reacción, elige el que más le conviene (valor entre lo
+       que tarda en llegar la mira, con algo de despiste según su nivel), mueve su mira hasta él a su velocidad,
+       la asienta, dispara y recarga. Si el blanco se esfuma o se lo llevas antes, elige otro. */
     function nuevaIA() {
-      return { mira: { x: ancho * 0.7, y: alto * 0.45, px: ancho * 0.7, py: alto * 0.45, t: 0 }, destino: { x: ancho * 0.7, y: alto * 0.45 }, objetivo: null, apuntar: 0, espera: 0.8, deriva: 0, vuelo: null };
+      return { mira: { x: ancho * 0.5, y: alto * 0.55, px: ancho * 0.5, py: alto * 0.55, t: 0 }, objetivo: null, asentar: 0, recarga: 0.6, vuelo: null, deriva: 0 };
+    }
+
+    const viajeIA = () => cfg.vuelo ?? 0.14;
+
+    function elegirIA() {
+      const m = ia.mira;
+      let mejor = null;
+      let mejorP = 0;
+      for (const b of blancos) {
+        if (b.edad < cfg.reaccion + ((b.k * 0.37) % 0.12)) continue; // todavía no lo ha visto
+        const f = posBlanco(b.k, tiempo + 0.2);
+        const tLleg = Math.hypot(f.x - m.x, f.y - m.y) / cfg.veloz + cfg.asentar + viajeIA();
+        if (tLleg > b.vida - b.edad - 0.04) continue; // no le da tiempo
+        const p = ((b.mult * 7) / (tLleg + 0.25)) * (1 + Math.random() * cfg.ruido);
+        if (p > mejorP) { mejorP = p; mejor = b; }
+      }
+      if (!mejor) { ia.recarga = 0.05; return; }
+      ia.objetivo = mejor;
+      ia.asentar = cfg.asentar * (0.85 + Math.random() * 0.4);
     }
 
     function actualizarIA(dt) {
@@ -346,70 +383,69 @@
       m.t = relojVisual;
       ia.deriva += dt;
       if (ia.vuelo) { ia.vuelo.restante -= dt; if (ia.vuelo.restante <= 0) aterrizarIA(); }
-      if (ia.objetivo && !blancos.includes(ia.objetivo)) { ia.objetivo = null; ia.espera = 0.12; } // se lo quitaron
+      ia.recarga -= dt;
+      if (ia.objetivo) ia.objetivo = blancos.find(o => o.k === ia.objetivo.k) || null; // se esfumó o se lo quitaron
       if (!ia.objetivo) {
-        ia.destino = { x: ancho * (0.5 + 0.28 * Math.sin(ia.deriva * 0.6)), y: alto * (0.42 + 0.12 * Math.sin(ia.deriva * 0.9 + 1)) };
-        ia.espera -= dt;
-        if (ia.espera <= 0) {
-          if (!blancos.length) { ia.espera = 0.15; }
-          else {
-            let mejor = null;
-            let puntos = -Infinity;
-            for (const b of blancos) { const p = b.y + Math.random() * (cfg.ruido ?? 90); if (p > puntos) { puntos = p; mejor = b; } }
-            ia.objetivo = mejor;
-            ia.apuntar = tiempoApuntar() + Math.random() * (cfg.apuntarRuido ?? 0.12);
-          }
-        }
+        // sin blanco, la mira vaga despacio por el centro
+        const dx = ancho * (0.5 + 0.3 * Math.sin(ia.deriva * 0.5)) - m.x;
+        const dy = alto * (0.55 + 0.12 * Math.sin(ia.deriva * 0.8 + 1)) - m.y;
+        m.x += dx * Math.min(1, dt * 2.5);
+        m.y += dy * Math.min(1, dt * 2.5);
+        if (ia.recarga <= 0) elegirIA();
       } else {
-        ia.apuntar -= dt;
-        // apunta a donde estará el blanco cuando dispare
-        const v = velocidad() * ia.objetivo.vel;
-        ia.destino = { x: ia.objetivo.x, y: ia.objetivo.y + v * Math.max(0, ia.apuntar) };
-        if (ia.apuntar <= 0) dispararIA();
+        const f = posBlanco(ia.objetivo.k, tiempo + viajeIA() * 0.5 + 0.05);
+        const dx = f.x - m.x;
+        const dy = f.y - m.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > ia.objetivo.r * 0.3) {
+          const k = Math.min(1, (cfg.veloz * dt) / dist);
+          m.x += dx * k;
+          m.y += dy * k;
+        } else {
+          m.x = f.x; m.y = f.y;
+          ia.asentar -= dt;
+          if (ia.asentar <= 0) dispararIA();
+        }
       }
-      const k = Math.min(1, dt * 11);
-      m.x += (ia.destino.x - m.x) * k;
-      m.y += (ia.destino.y - m.y) * k;
       m.px = m.x; m.py = m.y;
-      if (destelloRival > 0) destelloRival -= dt;
     }
 
     /* Dispara: la flecha sale de abajo, bajo su mira, y tarda un momento en llegar. Hasta entonces el blanco sigue ahí, así que
        puedes quitárselo. Si acierta, al llegar el blanco salta en pedazos y el punto es suyo. */
-    const tiempoApuntar = () => cfg.apuntar ?? Math.min(0.42, cfg.intervalo * 0.5);
-    const viajeIA = () => cfg.vuelo ?? 0.16;
     function dispararIA() {
       const b = ia.objetivo;
       ia.objetivo = null;
-      ia.espera = Math.max(0.03, (cfg.ciclo ?? cfg.intervalo) - tiempoApuntar());
+      ia.recarga = cfg.recarga * (0.85 + Math.random() * 0.35);
+      const f = posBlanco(b.k, tiempo + viajeIA());
       const x0 = ia.mira.x;
       const y0 = alto + 14;
-      const v = velocidad() * b.vel;
-      if (Math.random() > cfg.precision) {
+      if (Math.random() > cfg.precision * (b.rapido ? 0.9 : 1)) {
         // Falla: la flecha cae cerca del blanco
         const a = Math.random() * Math.PI * 2;
         const d = b.r * (1.25 + Math.random() * 0.9);
-        const x = b.x + Math.cos(a) * d;
-        const y = b.y + v * viajeIA() + Math.sin(a) * d;
+        const x = f.x + Math.cos(a) * d;
+        const y = f.y + Math.sin(a) * d;
         lanzarFlecha(x0, y0, x, y, cfg.color, viajeIA());
         ia.vuelo = { b, golpe: false, x, y, restante: viajeIA() };
         return;
       }
       const r = Math.random();
       const anillo = r < cfg.dist[0] ? 0 : r < cfg.dist[0] + cfg.dist[1] ? 1 : 2;
-      lanzarFlecha(x0, y0, b.x, b.y + v * viajeIA(), cfg.color, viajeIA());
-      ia.vuelo = { b, golpe: true, pts: PUNTOS_ANILLO[anillo], x: b.x, y: b.y + v * viajeIA(), restante: viajeIA() };
+      lanzarFlecha(x0, y0, f.x, f.y, cfg.color, viajeIA());
+      ia.vuelo = { b, golpe: true, pts: PUNTOS_ANILLO[anillo] * b.mult, x: f.x, y: f.y, restante: viajeIA() };
     }
 
     function aterrizarIA() {
       const vuelo = ia.vuelo;
       ia.vuelo = null;
       if (!vuelo.golpe) { efectos.push({ tipo: "polvo", x: vuelo.x, y: vuelo.y, fase: Math.random() * 6, edad: 0, vida: 0.5 }); return; }
-      if (!blancos.includes(vuelo.b)) return; // se lo quitaron mientras volaba la flecha
+      const vivo = blancos.find(o => o.k === vuelo.b.k);
+      if (!vivo) return; // se esfumó o se lo quitaron mientras volaba la flecha
       puntajeRival += vuelo.pts;
       destelloRival = 0.45;
-      blancos = blancos.filter(o => o !== vuelo.b);
-      golpeVisualRival(vuelo.b.x, vuelo.b.y, vuelo.b.r, vuelo.pts, 0, 0, { flecha: false });
+      cal.golpes.set(vivo.k, { por: "rival", pts: vuelo.pts, contado: true });
+      blancos = blancos.filter(o => o.k !== vivo.k);
+      golpeVisualRival(vivo.x, vivo.y, vivo.r, vuelo.pts, 0, 0, { flecha: false });
     }
 
     function tiroDelRival() {
@@ -432,7 +468,9 @@
       if (!vs) azar = Math.random;
       textoFin = null;
       ia = nuevaIA();
-      tiempo = 0; puntaje = 0; puntajeRival = 0; blancos = [nuevoBlanco()]; efectos = [];
+      tiempo = 0; puntaje = 0; puntajeRival = 0; efectos = [];
+      if (visual) { cal = nuevoCalendario(Math.floor(Math.random() * 2147483647)); blancos = []; }
+      else blancos = [nuevoBlanco()];
       temporizadorBlanco = intervaloBlanco(); temporizadorRival = cfg.intervalo; destelloRival = 0; resultado = "";
       cambiarEstado("jugando");
     }
@@ -470,8 +508,14 @@
     function actualizar(dt) {
       if (estado === "jugando" && compartido) {
         tiempo = (performance.now() - compartido.t0) / 1000;
-        blancos = blancosCompartidos(tiempo);
+        blancos = blancosVivos(tiempo);
         if (destelloRival > 0) destelloRival -= dt;
+        if (tiempo >= duracion) { tiempo = duracion; blancos = []; terminar(); }
+      } else if (estado === "jugando" && visual) {
+        tiempo += dt;
+        blancos = blancosVivos(tiempo);
+        if (destelloRival > 0) destelloRival -= dt;
+        actualizarIA(dt);
         if (tiempo >= duracion) { tiempo = duracion; blancos = []; terminar(); }
       } else if (estado === "jugando") {
         tiempo += dt;
@@ -487,7 +531,6 @@
           if (b.amp) b.x = Math.min(ancho - b.r, Math.max(b.r, b.x0 + Math.sin(b.t * b.frec * 2) * b.amp));
         }
         blancos = blancos.filter(b => b.y - b.r < alto);
-        if (!vs && visual) actualizarIA(dt);
         if (tiempo >= duracion) { tiempo = duracion; terminar(); }
       }
       for (const e of efectos) {
@@ -499,7 +542,53 @@
       efectos = efectos.filter(e => e.edad < e.vida);
     }
 
+    /* Blanco de la galería: aparece con un pequeño rebote, un anillo de tiempo se va vaciando a su alrededor
+       (se pone rojo al final) y se desvanece en el último momento. Los dorados valen el doble. */
+    function dibujarBlancoGaleria(b) {
+      const resto = b.vida - b.edad;
+      const e = Math.min(1, b.edad / 0.14);
+      const esc = e < 1 ? 1 + 2.70158 * Math.pow(e - 1, 3) + 1.70158 * Math.pow(e - 1, 2) : 1;
+      const paleta = b.rapido
+        ? [[1, "#fff1b8"], [0.78, "#e0902a"], [0.55, "#fff1b8"], [0.38, "#e0902a"], [0.25, "#ffffff"]]
+        : [[1, "#e8e4d0"], [0.78, "#c0392b"], [0.55, "#e8e4d0"], [0.38, "#c0392b"], [0.25, "#f1c40f"]];
+      ctx.save();
+      ctx.globalAlpha = resto < 0.3 ? Math.max(0, resto / 0.3) : 1;
+      ctx.translate(b.x, b.y);
+      ctx.scale(esc, esc);
+      for (const [f, color] of paleta) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(0, 0, b.r * f, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "rgba(0,0,0,.45)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, b.r, 0, Math.PI * 2);
+      ctx.stroke();
+      const quedan = Math.max(0, resto / b.vida);
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = quedan < 0.28 ? "#ff7a5c" : b.rapido ? "#ffd84a" : "rgba(255,255,255,.8)";
+      ctx.beginPath();
+      ctx.arc(0, 0, b.r + 8, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * quedan);
+      ctx.stroke();
+      if (b.rapido) {
+        ctx.font = '800 15px "Karla", "Segoe UI", Arial, sans-serif';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "rgba(10,10,6,.8)";
+        ctx.strokeText("×2", 0, -b.r - 14);
+        ctx.fillStyle = "#ffd84a";
+        ctx.fillText("×2", 0, -b.r - 14);
+      }
+      ctx.restore();
+    }
+
     function dibujarBlanco(b) {
+      if (b.vida) { dibujarBlancoGaleria(b); return; }
       const anillos = [[1, "#e8e4d0"], [0.78, "#c0392b"], [0.55, "#e8e4d0"], [0.38, "#c0392b"], [0.25, "#f1c40f"]];
       for (const [f, color] of anillos) {
         ctx.fillStyle = color;
@@ -708,6 +797,7 @@
       cfg = RIVALES[clave];
       vs = false;
       compartido = null;
+      cal = null;
       azar = Math.random;
       cambiarEstado("listo");
     }
@@ -716,7 +806,7 @@
        semilla) y se arranca con iniciar() cuando termina la cuenta atrás. */
     function prepararVs({ nombre, color, semilla }) {
       if (estado === "jugando") return;
-      cfg = { nombre, color, intervalo: 99, precision: 0, dist: [0.3, 0.4, 0.3], radio: 40, velocidadBase: 125, zigzag: true };
+      cfg = { nombre, color, intervalo: 99, precision: 0, dist: [0.3, 0.4, 0.3], radio: 40, vida: 2.2, desliza: 0.3, rapido: 0.25, velocidadBase: 125, zigzag: true };
       vs = true;
       prepararCompartido(semilla);
       azar = generadorConSemilla(semilla);
@@ -758,7 +848,8 @@
       setPuntajeRival,
       setFin,
       estado: () => estado,
-      blancosVisibles: () => blancos.map(b => ({ k: b.k, x: b.x, y: b.y, r: b.r })),
+      blancosVisibles: () => blancos.map(b => ({ k: b.k, x: b.x, y: b.y, r: b.r, mult: b.mult, edad: b.edad, vida: b.vida, rapido: b.rapido })),
+      tiempoPartida: () => tiempo,
       ajustarTamano,
       marcador: () => ({ puntaje, puntajeRival, tiempo, duracion })
     };
