@@ -14,8 +14,8 @@ Una rama de Supabase habría nacido sin tablas ni funciones (el proyecto solo ti
 
 | | Código actual de producción | Con las correcciones |
 |---|---|---|
-| Comprobaciones que pasan | __PROD_OK__ | __TODO_OK__ |
-| Comprobaciones que fallan | __PROD_FALLA__ | 0 |
+| Comprobaciones que pasan | 140 de 231 (sin la batería de explotación, añadida después) | 243 de 243 |
+| Comprobaciones que fallan | 91 | 0 |
 | Interbloqueos en el estrés | n/a | 0 |
 
 Lo que se reproduce hoy con el código de producción, con dos conexiones reales a la vez:
@@ -23,7 +23,11 @@ Lo que se reproduce hoy con el código de producción, con dos conexiones reales
 - **A2**: dos compras al mercader con las mismas tres cartas dan **dos cartas del mercader por una entrega**. La auditoría no lo detecta.
 - **A3**: un intercambio mueve una copia que sigue ofrecida en otro intercambio abierto; el segundo intercambio queda abierto sobre una copia que ya es de otro.
 - **A9**: cinco compras, cinco forjas y ocho ofertas simultáneas **se saltan** los topes de 3, 3 y 5.
-- **A1, A6, A7, A10**: reproducidos leyendo el código y con las baterías de permisos y de apuestas.
+- **A1**: un reto con `p_cartas` inventado guarda las cartas falsas (ataque 99, nombre «HACK», una carta que no existe), y quien acepta pisa las cartas del retador con las suyas (77 y 88).
+- **Regla de silencio actual**: con un solo aviso y el otro callado, a los pocos minutos la partida **se resuelve a favor de quien avisó** y se lleva las cartas del otro.
+- **A7**: un jugador cambia su Side de A a B, se borra el perfil y toma el nombre de otro jugador (también con otras mayúsculas).
+- **A10**: cualquier jugador puede llamar a `cartas_mazo_error` sobre otro usuario y saber qué cartas le faltan; las funciones internas existen y las tablas conservan permisos de escritura (RLS las frena, pero es la única barrera).
+- **A6**: leído en el código; el editor no se puede probar en «antes» porque la `cartas_guardar` anterior no está en el repositorio.
 
 Lo que encontraron las pruebas en mis propios borradores: `cartas_guardar` fallaba para el editor (`text[] || 'rareza'` se interpretaba como literal de array). Corregido en `economia-8_permisos.sql` con `array_append`.
 
@@ -89,25 +93,29 @@ La interfaz (nuevas vistas en la pestaña «Economía de cartas» de `admin.html
 
 ## 5. Pruebas
 
-Todas en la rama de pruebas, con usuarios inventados. Ninguna toca datos de jugadores.
+Todas en el entorno local (sección 1), con usuarios inventados. Ninguna toca datos de jugadores. Código en `docs/pruebas/`.
 
-**Regresión** (flujo completo, sin concurrencia): regalar, retar y aceptar sin apuesta y con apuesta, terminar con avisos iguales, distintos y de uno solo, rendirse, rechazar, caducar, intercambio completo y cancelado, compra al mercader, cada receta de la forja con éxito y fallo, panel de límites, editor de cartas, registro de cuenta nueva, cambio de nombre. Tras cada una, `cartas_auditoria()` debe volver vacía.
+| Batería | Estado | Qué cubre |
+|---|---|---|
+| Regresión | pasa (59 comprobaciones) | Regalar y quitar, reserva y límites, intercambio completo, cancelado, caducado y con errores, límite por jugador al intercambiar, mercader, forja con éxito, fallo y sin salida, defensas internas del núcleo, recompensas encendidas en la copia local |
+| Dos sesiones concurrentes | pasa | Dos compras al mercader con las mismas cartas (A2), aceptar un intercambio con una copia ofrecida en otro (A3) |
+| Topes diarios | pasa | 5 compras y 5 forjas a la vez contra el tope de 3, 8 ofertas contra el tope de 5, dos forjas con las mismas cartas (A9) |
+| Permisos | pasa (87 comprobaciones) | Sin sesión, jugador, editor y admin: funciones de admin, funciones internas, escrituras directas, Side, nombre, editor de cartas, validación de recetas y ajustes (A6, A7, A10) |
+| Apuestas | pasa (59 comprobaciones) | Cartas del duelo desde las definiciones (A1), avisos iguales y de empate, disputa y resolución del admin, regla de 24 horas, 72 horas sin avisos, plazo cambiado por el admin, concesión, reto sin respuesta, bloqueos huérfanos, liberación por el admin, editor sin cartas (A11) |
+| Explotación | pasa | Cada receta pierde valor de media; el mercader cobra siempre más de lo que vale la carta; dos cuentas colaborando no crean valor; 45 operaciones aleatorias donde el valor total nunca sube (subió 0 veces, bajó 6) |
+| Estrés | pasa | Más de 120 operaciones aleatorias simultáneas de cuatro jugadores: 0 interbloqueos, ninguna carta perdida o duplicada, auditoría limpia, todos dentro de su límite |
 
-**Dos sesiones concurrentes** (dos peticiones en paralelo al mismo tiempo; una retiene sus candados con una espera dentro de la misma transacción):
+Por hacer:
 
-1. Dos compras al mercader sobre ofertas distintas con las mismas cartas de entrada: solo una debe tener éxito.
-2. Aceptar un intercambio mientras el oferente lo cancela y apuesta la misma copia.
-3. Dos aceptaciones del mismo intercambio.
-4. Dos reportes del mismo resultado de una apuesta y un reporte contra una rendición: la apuesta se reparte una sola vez.
-5. Cinco forjas o compras simultáneas contra el tope diario de 3.
-6. Reparto de recompensas con la carta pedida agotándose a mitad (cuando se reactiven, en la rama).
-7. `cartas_refrescar` desde dos sesiones a la vez sobre las mismas apuestas atascadas.
+- **Sesiones reales**: el reto con apuesta, el intercambio, el mercader y la forja con dos navegadores sobre la web publicada. Hasta que eso se haga y se vea en pantalla, **no se declara el sistema listo para el lanzamiento**.
+- Aceptar el mismo intercambio desde dos sesiones a la vez, y avisar el mismo resultado de una apuesta desde dos sesiones a la vez: están cubiertos por el candado de los jugadores y por el `for update` de la fila, pero no tienen batería propia.
+- Reparto de recompensas con la carta agotándose a mitad, cuando se reactiven.
 
-**Permisos** (como `anon`, como jugador, como editor y como admin): cada función de admin, cada función interna, cada escritura directa a cada tabla, `cartas_guardar` con campos económicos, cambio de Side y de nombre por un jugador, un editor y un admin.
+### Explotación: lo que midieron las pruebas (sin cambiar costes)
 
-**Explotación** (documentar sin cambiar costes): ciclo mercader + forja con cantidades pequeñas y grandes, ida y vuelta de copias entre dos cuentas, forja que agota la capacidad de emisión de las raras, y la ventaja de precio del mercader frente a la forja.
-
-**Sesiones reales**: la rama también sirve para entrar con dos navegadores a la web publicada apuntando a esa rama. Hasta que eso se haga y se vea en pantalla el reto con apuesta, el intercambio, el mercader y la forja, **no se declara el sistema listo para el lanzamiento**.
+- No hay ciclo que cree valor. La forja siempre pierde (fundir comunes 5 → 2, alquimia 6 → 2,8 esperado, contrapeso 8 → 1,8). El mercader conserva el valor total, pero el jugador pierde al menos 1 en cada cambio.
+- **La diferencia de precio es grande**: por la forja una rara cuesta de media 3,5 poco comunes, unas **17,5 comunes**; por el mercader cuesta **4 comunes** si ese día la tiene en el escaparate. Es unas 4,4 veces más barato. Lo frena que el mercader solo vende lo que otros le han dado (o la reserva), muestra como mucho 6 ofertas al día y cada jugador hace 3 cambios al día. Decisión tuya si quieres igualarlos.
+- La forja y los jugadores pueden agotar la capacidad de emisión de las raras (cada forja con éxito emite una copia nueva y las destruidas no liberan hueco).
 
 ## 6. Recompensas (fase 2) y A4
 
@@ -137,3 +145,14 @@ Recomendación: mientras un juego no tenga validación completa, que dé como mu
 5. **Validar partidas en el servidor** (sección 7 y A4). Es la única forma de cerrar el fraude por acciones ilegales y por puntuaciones inventadas, y supone portar el motor a una Edge Function.
 6. **Forja que gasta capacidad de emisión** y **mercader más barato que la forja**: documentados, sin cambios.
 7. **Límites globales provisionales**: sin tocar. Siguen pendientes de tu revisión.
+
+## 9. Cómo se aplicaría en producción (cuando lo apruebes)
+
+Nada de esto se ha hecho. Orden previsto:
+
+1. **Copia de seguridad de lo que se va a sustituir**: volcado de las funciones afectadas (incluida la `cartas_guardar` actual, que no está en el repositorio), de la política de `perfiles` y de los permisos de tablas y funciones, guardado en `docs/rollback/`.
+2. **Tres migraciones registradas** (`apply_migration`), una por archivo y cada una en una sola transacción: `economia_7_integridad`, `economia_8_permisos`, `economia_9_panel_admin`. Hoy la base está vacía de ejemplares, movimientos y bloqueos, así que ninguna reescribe datos de jugadores. Lo único que toca filas es el índice único de nombres (hoy 14 perfiles, ninguno repetido).
+3. **Comprobaciones solo de lectura**: que las huellas de las funciones coincidan con las del entorno local, que `anon` no pueda ejecutar las funciones cerradas, que las políticas y disparadores estén y que `cartas_auditoria()` devuelva vacío.
+4. **Deshacer**: volver a cargar los archivos `economia-1` a `economia-6` restaura las funciones tal como estaban (los envoltorios se sustituyen por los originales), y el volcado de `docs/rollback/` restaura `cartas_guardar`, la política de `perfiles` y los permisos. El núcleo renombrado (`cartas_i_*_nucleo`) y las funciones nuevas se pueden borrar sin consecuencias.
+5. **Páginas**: los cambios de navegador ya están publicados y son compatibles con las dos versiones del servidor (las vistas nuevas del panel muestran «No se pudo cargar» hasta que exista la función). Tras la migración, un cambio posterior puede dejar de enviar las estadísticas de las cartas en los retos (ahora se ignoran).
+6. **Sesiones reales**: con cuentas de prueba o con tu cuenta de admin, un reto con apuesta, un intercambio, el mercader y la forja en dos navegadores sobre la web publicada. Eso crea datos en producción, así que lo haríamos juntos y con cuentas inventadas que luego se borran, o lo dejas tú para cuando quieras.

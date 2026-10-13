@@ -4,7 +4,7 @@
 D="$(cd "$(dirname "$0")" && pwd)"
 MODO="${1:-todo}"
 TOTAL=0
-for t in t_concurrencia t_permisos t_apuestas t_topes t_regresion t_estres; do
+for t in t_concurrencia t_permisos t_apuestas t_topes t_regresion t_explotacion t_estres; do
   [ -f "$D/$t.sh" ] || continue
   sh "$D/cargar_local.sh" "$MODO" >/dev/null 2>&1
   echo "######## $t ($MODO)"
