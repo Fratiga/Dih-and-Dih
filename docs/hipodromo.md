@@ -1,8 +1,8 @@
 # Hipódromo: un mundo de carreras que sigue sin ti
 
-Estado: el motor, las palabras para los nombres, el SQL, la función de servidor, las pruebas y una **página de prueba en modo local** están hechos. La página (`hipodromo.html`) es solo para admin, como Ostelar o Duelo: sale en el hub de Minijuegos y en el panel de Admin solo para cuentas admin, y quien entre por la dirección vuelve a Minijuegos. Este documento explica cómo funciona, qué se probó y qué falta.
+Estado: está todo hecho y **desplegado en el Supabase real** (tablas, funciones, Edge Function y la tarea de cada minuto). El motor, el SQL y las pruebas están al día. La página (`hipodromo.html`) es solo para admin, como Ostelar o Duelo: sale en el hub de Minijuegos y en el panel de Admin solo para cuentas admin, y quien entre por la dirección vuelve a Minijuegos. Este documento explica cómo funciona, qué se probó y qué falta.
 
-La idea, en una frase: el jugador no posee ni entrena a nadie. Observa un mundo de criaturas corredoras que nacen, compiten, se lesionan, se retiran, crían y mueren con o sin él, y decide en quién confía su apuesta cada 30 minutos.
+La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se lesionan, se retiran, crían y mueren con o sin ti. Puedes mirarlo y apostar cada 30 minutos (ganador, podio, exacta, pozo y doble), y también tener tu propia cuadra: adoptar o comprar criaturas, inscribirlas, entrenarlas, cuidarlas, marcarles una táctica y cruzarlas.
 
 ## Qué hay
 
@@ -10,24 +10,62 @@ La idea, en una frase: el jugador no posee ni entrena a nadie. Observa un mundo 
 |---|---|
 | `data/hipodromo-palabras.js` | Las listas de palabras de los nombres, en español (con género) y en inglés. |
 | `js/hipodromo-nombres.js` | El generador de nombres: gramática, concordancia, herencia, homenajes y nombres de carrera. |
-| `js/hipodromo-motor.js` | El mundo: genes, cuerpo, carrera, cuotas, apuestas, vida, noticias, perfil público y el paso del servidor. Reglas puras, sin pantalla ni reloj propio. |
-| `hipodromo.html`, `css/hipodromo.css`, `js/hipodromo-pagina.js`, `js/hipodromo-dibujo.js` | La página de prueba en modo local (ver «La página de prueba») y el dibujo de las criaturas. |
-| `tools/probar-hipodromo.js` | 158 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido` (medio minuto). |
-| `docs/hipodromo.sql` | Tablas, permisos y la función que guarda cada tanda. Probado en PostgreSQL 16. |
-| `docs/hipodromo-avanzar.ts` | La Edge Function de Supabase. **No se ejecutó nunca** (aquí no hay Deno ni acceso a Supabase). |
+| `js/hipodromo-rasgos.js` | Los rasgos de las criaturas (cuernos, alas, piel, ojos, patas extra, núcleo...): las tablas de frecuencia, la herencia, los textos y **lo que hace cada uno en la carrera**. Lo comparten el motor y el dibujo. |
+| `js/hipodromo-motor.js` | El mundo: genes, cuerpo, rasgos, carrera, pistas (con las arcanas), cuotas, apuestas (con pozo y doble), vida, la cuadra de los jugadores, noticias, perfil público y el paso del servidor. Reglas puras, sin pantalla ni reloj propio. |
+| `hipodromo.html`, `css/hipodromo.css`, `js/hipodromo-pagina.js` | La página, con dos modos: servidor (el normal, con sesión) y prueba local. |
+| `js/hipodromo-online.js` | El modo servidor de la página: lee el mundo compartido de Supabase, apuesta y manda órdenes con las funciones del servidor. |
+| `js/hipodromo-cuadra.js` | La pestaña «Mi cuadra». No sabe de dónde salen los datos: la página le pasa un objeto `api` (servidor o local). |
+| `js/hipodromo-dibujo.js`, `js/hipodromo-pista.js` | El dibujo de las criaturas (SVG) y la pista de la carrera (cámara que sigue al pelotón, clima y terreno, galope animado). |
+| `tools/probar-hipodromo.js` | 247 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |
+| `tools/probar-hipodromo-sql.js` | 62 comprobaciones del SQL contra un PostgreSQL de verdad (Docker, contenedor `cartas-pruebas`), con el motor de verdad. |
+| `docs/hipodromo.sql` | Tablas, permisos y funciones del servidor (guardar, apostar, ordenar, saldo). |
+| `docs/hipodromo-avanzar.ts` | La Edge Function de Supabase, la que mueve el mundo cada minuto. |
 
-## La página de prueba
+## La página
 
-`hipodromo.html` corre el mundo entero en el navegador, sin Supabase, y lo guarda en `localStorage` (clave `hipodromoLocal`, unos 250 KB). Al abrirla por primera vez crea un mundo con 300 carreras de historia (tarda un par de segundos) y la primera carrera sale a los 4 minutos.
+Tiene dos modos con la misma pantalla.
 
-- **Reloj**: es virtual y solo avanza con la página abierta. Hay pausa, 1×, 10×, 60× y 600×, y un botón que salta a la salida, salta la carrera o pasa a la siguiente. Durante la carrera el reloj no pasa de 10× para que se vea.
-- **Carrera**: la próxima carrera con pista, distancia, bolsa, pronóstico y rumores; las inscritas con su dibujo, récord, estrellas, últimas cuatro carreras y cuota (se pulsa la cuota para apostar); el panel de apuesta (ganador, podio y exacta); la carrera animada con los tiempos por tramo, con tropiezos y lesiones marcados; y el último resultado.
-- **Criaturas**: todas las vivas y las retiradas, con filtros (en condiciones de correr, lesionadas, crías, en la cría, retiradas y fallecidas, leyendas, favoritas), orden y búsqueda. La ficha enseña el cuerpo, las aptitudes por terreno, el linaje, las últimas carreras y lo que has apostado por ella, y se puede seguir (favoritas).
-- **Noticias**, **Mis apuestas** (saldo, pendientes, historial y rendimiento) y **Mundo** (estadísticas y ajustes).
-- **Lo oculto**: una casilla en Mundo enseña la probabilidad real de cada inscrita, lo que «vale» su cuota, y en la ficha el rating, la forma, la fatiga, el talento y los genes. Sirve para comprobar el equilibrio.
-- Las monedas empiezan en 1000. Como todo es local, cualquiera puede tocarlas desde las herramientas del navegador.
+- **Servidor** (el normal): hace falta haber iniciado sesión (en «Mis personajes»). El mundo es uno solo para todos y a la hora real: lo escribe la Edge Function, la página lo lee de Supabase, ajusta su reloj con la hora del servidor (`hipodromo_ahora()`) y se actualiza sola (más seguido cerca de la salida y mientras espera que el servidor aplique el resultado). Las monedas, las apuestas y las órdenes de la cuadra son del servidor: se mandan con funciones que comprueban saldo y plazo.
+- **Prueba local** (sin sesión, sin servidor, o con `?local` en la dirección): el mundo corre entero en el navegador y se guarda en `localStorage` (clave `hipodromoLocal`). Hay un reloj virtual (pausa, 1×, 10×, 60×, 600×) y se puede ver lo oculto (probabilidad real, forma, genes). Las monedas son del navegador y cualquiera puede tocarlas.
 
-El dibujo es una silueta en SVG hecha con piezas (`HipodromoDibujo.silueta`): cuerpo, patas, cuello, cabeza, cuernos, espalda, cola, piel y alas. Se mueven dos cosas por separado. La **morfología** (largo de patas, pecho, cadera, cola, torso...) sale de la silueta del perfil, o sea de los genes, y es lo que dice algo de las capacidades. Los **rasgos de identidad** (cuernos, orejas, forma del cuello, cola, espalda, piel, patas extra, ojos, alas, dedos y patrón de color) no cambian ninguna capacidad: salen del id y del id de los padres, se heredan por linaje y a veces mutan, sin tocar el motor ni el estado del servidor. Los raros (seis patas, tres ojos, alas, varios cuernos) son mutaciones que pueden pasar a los hijos. `HipodromoDibujo.rasgos(perfil)` da la lista de rasgos llamativos para la ficha. Hay cuatro estilos de dibujo (plano, caricatura, pixel y elegante, en `ESTILOS`); el elegido es el elegante (`ESTILO_DEFECTO`). En la pista las criaturas galopan con SMIL (clase `corre`, número de puerta y manta de la familia) y `HipodromoDibujo.galope(svg, activo)` las detiene al llegar a meta. Cuando haya arte se cambia solo ese archivo.
+Pestañas: **Carrera** (la próxima con pista, distancia, bolsa, pronóstico, rumores y las reglas de la pista arcana; las inscritas con cuota; el panel de apuesta; la carrera animada; el último resultado), **Mi cuadra**, **Criaturas** (con filtros y la ficha de cada una: cuerpo, rasgos y lo que hacen, aptitudes por terreno, linaje, carreras, dueño y precio), **Noticias**, **Mis apuestas** y **Mundo**.
+
+### La carrera en pantalla
+
+`HipodromoPista` dibuja la carrera como una toma de televisión: la cámara sigue al líder y hace zoom según lo juntos que vayan, y las criaturas, grandes y galopando, corren en carriles con profundidad. Es solo la parte visual: cada criatura pasa por cada marca de 100 m exactamente en el tiempo que dice el motor; entre marcas la velocidad se suaviza y se le suman arranques y flojeras que valen cero en cada marca. La carrera dura entre 38 y 62 segundos en pantalla según la distancia (más 3 de cuenta atrás), aunque el motor la cuenta como 75 s. Se ve el clima (lluvia, tormenta con rayos, niebla, calor) y el terreno (charcos y barro según la humedad, hierba, arcilla, arena y los suelos arcanos), las zonas donde actúa la regla de una pista arcana, los tropiezos (la criatura se encabrita) y las lesiones (cojea). Hay marcador de metros que faltan y top 5, minimapa y las criaturas por las que has apostado llevan ★.
+
+### El dibujo y los rasgos
+
+El dibujo es una silueta en SVG (`HipodromoDibujo.silueta`) con cuatro estilos (plano, caricatura, pixel y elegante; el elegido es el elegante). Dos cosas por separado: la **morfología** (largo de patas, pecho, cadera, cola, torso...) sale de los genes y dice algo de las capacidades; los **rasgos** (cuernos, orejas, cuello, cola, espalda, piel, patas extra, ojos, alas, dedos, patrón de color y núcleo) los decide el motor al nacer, se heredan (46 % del padre, 46 % de la madre y 8 % nuevo) y van en `perfil.rasgos`. El dibujo también muestra la **etapa de la vida** (las crías son pequeñas, de patas cortas y cabeza grande; los veteranos tienen canas en el hocico), las **secuelas** (vendaje en la pata, cicatrices en la grupa, vendaje en el lomo, jadeo, sudor) y las **lesiones de ahora** (vendaje).
+
+## Los rasgos tienen efecto (`js/hipodromo-rasgos.js`)
+
+Todo lo que tiene efecto se ve en el cuerpo, así que quien lee bien la criatura sabe qué hace; los efectos son pequeños a propósito (valen lo que un cuerpo algo mejor o peor). Cada ficha lista los rasgos y, si hacen algo, lo que hacen.
+
+| rasgo | efecto |
+|---|---|
+| Patas extra | Seis patas: arranque +5, agilidad -2, algo más frágil. Delanteras dobles: arranque +3, velocidad +2. Traseras dobles: arranque +6. Par fino: agilidad +4 (o +3 y resistencia +2 si va en medio). |
+| Alas | Pequeñas, de membrana y de plumas alivian las cuestas, casi no dejan tropezar y vuelan en el Cielo Roto; pesan (velocidad -1 a -3). Las atrofiadas son adorno. |
+| Cuernos | Los grandes (astas, corona, muchos, espiral) frenan el aire (-3 vel.) pero abren paso en el pelotón; los de choque (recto, delante, único, colmillos, laterales) abren paso y la hacen algo más frágil; los de atrás y curvos cortan el aire (+2 vel.). |
+| Piel | Escamas: menos lesiones, menos efecto del clima, -2 vel. Placas: la que menos se lesiona, -4 vel., -2 res. Mixta: casi no nota el clima. Lisa: +2 vel., más frágil. |
+| Ojos | Tres: temple +4, la niebla la desordena menos. Cuatro: temple +7 y los Espejos casi no la engañan. |
+| Dedos | Palmeadas: mejor en terreno blando y en la Ciénaga. Garras: tropiezan menos y agarran en las cuestas. Cuatro dedos: tropiezan menos. |
+| Cola | Aleta y plumas: agilidad +3 y +2. Maza: arranque +2, velocidad -2. |
+| Cuello | Serpentino y segmentado: ganan unos centímetros al estirar el cuello en la meta. Grueso: resistencia +2. |
+| Orejas / espalda | Dos pares de orejas: temple +3. Espinas y placas dorsales: un poco de paso en el pelotón y algo de protección. |
+| Núcleo de carrera | Latente, vivo y ardiente. Solo importa en las pistas arcanas (ventaja de 0,4 %, 1 % y 1,6 % de velocidad) y los más vivos son más frágiles. |
+| Adorno | Hocico y patrón de color no hacen nada. |
+
+## Pistas arcanas
+
+Además de las siete pistas normales hay cuatro con reglas propias, que salen la mitad de veces (una jornada de cada cuatro o cinco). Las reglas están en `HipodromoMotor.REGLAS_ARCANAS` y la página las explica en la carrera.
+
+- **Corredor de los Espejos** (ilusión): en algunos tramos los espejos confunden y pierden ritmo; el temple y los ojos de más ayudan.
+- **Cielo Roto** (corrientes): hay tramos de aire ascendente donde las criaturas con alas ganan velocidad; es una pista de cuestas.
+- **Ciénaga Susurrante** (sumidero): el suelo se las come, todas gastan más energía, menos las de patas palmeadas; siempre húmeda.
+- **Cuenca de Brasas** (brasas): calor extremo siempre; el pelaje denso sufre y la piel de escamas y placas ayuda.
+
+En todas responde el núcleo de la criatura.
 
 ## Cómo se mueve el mundo
 
@@ -97,7 +135,7 @@ Tipos de apuesta:
 
 `liquidar(apuesta, resultado)` devuelve `{ gana, pago }`; `cuotaApuesta(programa, tipo, sel)` devuelve la cuota publicada; `ventana(programa, ahora)` dice si está `abierta`, `cerrada`, `corriendo` o `terminada`.
 
-**No hay «doble» con cuota fija**, y no es por falta de ganas: el campo de la carrera siguiente no existe hasta que se aplica el resultado de la actual (depende de quién se lesionó, quién quedó cansado y de las valoraciones nuevas), así que no se puede poner precio antes de que se corra la primera. La alternativa que sí funciona es el **doble encadenado**: si ganas una apuesta, puedes jugar lo ganado a ganador en la carrera siguiente mientras sus apuestas sigan abiertas. Es solo una apuesta normal con el premio como importe; no necesita nada del motor.
+**El doble y el pozo.** No hay «doble» con cuota fija: el campo de la carrera siguiente no existe hasta que se aplica el resultado de la actual, así que no se le puede poner precio antes. El **doble** que sí hay es un encadenado: marcas «doble» en una apuesta a ganador y, si aciertas, lo que cobras no pasa a tu saldo sino que se juega solo a ganador al favorito de la carrera siguiente (el de menor cuota), con su cuota fija, si todavía se puede apostar; si no, se cobra normal. El **pozo** es un tipo de apuesta distinto, sin cuota fija: todo lo apostado al pozo de esa carrera más un bote de la casa de 50 monedas, menos el 10 % de retención, se reparte entre los que aciertan al ganador en proporción a lo que pusieron (nunca menos de lo apostado). Cuanta menos gente acierta, más paga; si nadie acierta, la casa se queda con todo. Se enseña una cuota estimada con lo que hay apostado en ese momento (la vista `hipodromo_pozos` da las sumas por criatura, sin decir quién apostó).
 
 ## La vida
 
@@ -125,52 +163,51 @@ Hay 48 carreras al día. Eso fija todo lo demás, y las dos cosas que se pidiero
 
 Los valores 96 y 288 están medidos en simulaciones de 6 años de mundo (la población se mantiene, la gente nace y se retira al mismo ritmo y las salidas por año son iguales). El «frecuente» no se probó. Elegir uno depende de cuánta gente va a mirar: con poca comunidad, más criaturas significan menos caras conocidas.
 
-## Servidor
+## La cuadra
 
-1. `docs/hipodromo.sql` ya está aplicado en tu proyecto de Supabase (8 de octubre de 2026): las tablas están vacías, y se comprobó con el rol anónimo, el de servicio y un usuario con sesión que cada tabla ve lo que debe y que el estado secreto no se puede leer. Si hay que repetirlo se puede: crea las tablas, los permisos y `hipodromo_guardar`.
-2. Despliega `docs/hipodromo-avanzar.ts` como función `hipodromo-avanzar` con los tres archivos del motor al lado. Los pasos y los secretos están al principio del archivo.
-3. Programa una llamada por minuto con `pg_cron` y `pg_net`. Es idempotente: si no toca nada, responde `{avanzadas: 0}`.
+Cada jugador puede tener hasta 4 criaturas. Lo que tiene dueño no lo inscriben los entrenadores del mundo: lo decide su dueño.
 
-Quién ve qué:
+- **Conseguirlas**: **adoptar** una criatura joven de cuerpo corriente de la casa (gratis, una sola vez, a elegir el sexo) o **comprar** otra del mercado (criaturas vivas sin dueño; el precio sale solo de lo público: linaje de las crías, estrellas y palmarés de las demás, de 100 a 3000 monedas). **Vender** a la casa paga el 40 % de lo que costaría ahora y devuelve las inscripciones.
+- **Inscribir** en cualquiera de las próximas 12 carreras (cuesta el 10 % de la bolsa; las inscripciones de una carrera cierran cuando termina la anterior; hasta 3 tuyas por carrera). Si la criatura no puede correr (lesión, cansancio, entrenando) o la carrera se suspende, se devuelve lo pagado. El calendario de las próximas carreras (categoría, distancia, pista y precio) está en `hipodromo_calendario`.
+- **Entrenar** una capacidad: una sesión dura 6 carreras (3 horas), cuesta 30 monedas, la criatura no corre mientras tanto, mejora un poco (más si es joven, menos cuanto más entrenada, con tope de +8) y puede lesionarse.
+- **Cuidar**: 40 monedas; quita 20 de cansancio y acorta una lesión leve o media un 40 %.
+- **Táctica**: al frente, a media tabla o desde atrás, gratis; ir contra la naturaleza de la criatura cuesta un poco (1,2 % de velocidad por unidad de diferencia).
+- **Bautizar** (25 monedas, una vez), **retirar a la cría** y **cruzar**: una hembra retirada a la cría con un semental también en la cría (la monta cuesta de 60 a 800 monedas y se paga a su dueño si es de otro jugador); la cría nace 12 carreras después y es del dueño de la madre.
+- **Premios**: la bolsa de cada carrera (50 %, 25 %, 12 %, 8 %, 5 % a los cinco primeros) es del dueño. Una criatura con dueño solo se retira por salud, por edad o porque su dueño lo decide, no por rendir poco.
+- **Lo privado** de cada dueño (`hipodromo_cuadras`): órdenes, cansancio, forma en palabras y las capacidades que le cuenta su entrenador, redondeadas de 5 en 5 (el talento exacto sigue oculto).
+- **Economía**: correr todo el tiempo en Novatos y Corriente rinde, de media, alrededor de un 30 % menos de lo gastado (de -90 % a +90 % según la criatura): no regala dinero. Se mide en `tools/probar-hipodromo.js`.
 
-| tabla | quién lee | por qué |
-|---|---|---|
-| `hipodromo_estado` | nadie salvo la función de servicio | tiene los genes, el talento, la forma y el resultado de la próxima carrera |
-| `hipodromo_criaturas` | todos | solo el perfil público |
-| `hipodromo_programa` | todos | inscritos, puertas, pronóstico, cuotas, rumores |
-| `hipodromo_carreras` | todos, desde la hora de salida | los tiempos por tramo para animar la carrera |
-| `hipodromo_noticias` | todos, desde su hora | |
-| `hipodromo_leyendas` | todos | vista de las leyendas |
-| `hipodromo_votos` y `hipodromo_comunidad` | cada uno ve su voto; la vista solo da cuentas | opcional (ver abajo) |
+El motor no toca monedas: dice cuánto cuesta cada orden (`costo`), cuánto devuelve (`ingreso`) y los premios (`pagos`), y quien lo llama las cobra.
 
-`hipodromo_guardar(version, lote)` guarda el mundo, las criaturas que cambiaron, los programas, los resultados y las noticias en una sola transacción, y si otra ejecución se adelantó falla con el código `40001` para que la función relea y repita. Un resultado ya publicado no se vuelve a escribir.
+## El servidor
 
-Las criaturas ya nacidas antes del primer día (la historia previa de 300 carreras) existen con su palmarés, pero esas carreras no tienen fila en `hipodromo_carreras`: la interfaz debe aceptar que un puesto del historial no tenga detalle.
+Las monedas, las apuestas y la cuadra son del servidor. Todas las tablas `hipodromo_*` tienen RLS: cada jugador lee solo lo suyo y nadie escribe directamente; todo pasa por funciones `security definer`.
 
-## Navegador: lo que tiene que hacer la interfaz
+| tabla / función | qué hace |
+|---|---|
+| `hipodromo_estado` | El mundo entero con lo oculto. Nadie lo lee salvo la función de servicio. |
+| `hipodromo_criaturas`, `_programa`, `_carreras`, `_noticias`, `_calendario` | Lo público. La carrera y las noticias se ven desde su hora (política `hora <= now()`). |
+| `hipodromo_billeteras`, `_movimientos`, `_apuestas`, `_ordenes`, `_avisos`, `_cuadras` | Lo de cada jugador (cada uno ve solo lo suyo). |
+| `hipodromo_saldo()` | Crea la billetera (1000 monedas) y devuelve el saldo. |
+| `hipodromo_apostar(n, tipo, sel, monto, doble)` | Comprueba plazo, criatura y saldo, **pone la cuota el servidor** y descuenta. |
+| `hipodromo_ordenar(datos)` | Encola una orden de la cuadra; el dueño es siempre quien la manda. |
+| `hipodromo_guardar(version, lote)` | La llama la Edge Function: guarda el mundo y todo lo demás en una transacción: cobra las órdenes, paga los premios, liquida las apuestas (pozo y doble incluidos) y marca las órdenes. Con una versión vieja falla con 40001 y con un saldo negativo, con 23514: la función repite. |
+| `hipodromo_ahora()` | La hora del servidor, para el reloj de la página. |
 
-Las monedas están en el navegador, como se eligió para empezar. Hace falta:
-
-1. Una billetera en `localStorage` (por ejemplo, la clave `hipodromoBilletera`) con saldo y apuestas pendientes `{ n, tipo, sel, monto, cuota }`. Al abrir la página y cada vez que termina una carrera, se liquidan las apuestas pendientes con `liquidar` contra la fila de `hipodromo_carreras`.
-2. Leer `hipodromo_programa` (próxima carrera), `hipodromo_carreras` (resultado y animación), `hipodromo_noticias` y `hipodromo_criaturas` (perfiles).
-3. Favoritos y «lo que has apostado por Peregrino» guardados también en el navegador, y un salón de la fama que sea la vista `hipodromo_leyendas`.
-4. Opcional: la **opinión de la comunidad**. Cada jugador con sesión deja su voto a ganador (una criatura por carrera, se cambia hasta que cierran las apuestas) y la vista `hipodromo_comunidad` da los porcentajes. No hay monedas de por medio: es una encuesta y se puede votar una cosa y apostar otra.
-
-**Por qué importa que las monedas sean locales**: cualquier cosa que se calcule con ellas, un ranking de apostadores por ejemplo, es manipulable desde las herramientas del navegador. Para un minijuego entre conocidos puede bastar. Si algún día importa, hay que pasar la billetera y las apuestas al servidor (una función `hipodromo_apostar` con comprobación de saldo y plazo, y la liquidación dentro de `hipodromo_guardar`). Entonces también se podría hacer que las cuotas se muevan con la popularidad de las apuestas (reparto entre jugadores en vez de cuota fija), que es lo que sugería el diseño. Con cuota fija y monedas locales no es posible.
+Una **Edge Function** (`hipodromo-avanzar`) corre cada minuto con `pg_cron`: lee el mundo, las órdenes pendientes y los saldos, llama a `HipodromoMotor.paso()` y guarda con `hipodromo_guardar`. Las órdenes se resuelven en el siguiente minuto y la página espera su resultado. El mundo se crea con 300 carreras de historia por vivir y se pone al día de 20 en 20 (las que quedan atrás se programan con pocas simulaciones). Pasos de despliegue y secretos en `docs/hipodromo-avanzar.ts`; lo desplegado usa los archivos del motor de un commit fijo del repositorio (importados por dirección web), no copias.
 
 ## Qué no se hizo
 
-- Arte de verdad: el dibujo de las criaturas y de la pista es provisional.
-- Versión con servidor de la página: hoy lee y guarda todo en el navegador.
-- Pistas fantásticas («arcana»), y el «Núcleo de Carrera» como órgano propio: el motor tiene `suelo` en cada pista, pero ninguna regla distinta para una pista mágica.
-- Las secuelas cambian el texto del perfil pero no hay un dibujo asociado.
-- El «doble» con cuota fija (ver arriba), y las cuotas que se mueven con las apuestas.
+- Arte de verdad: el dibujo de las criaturas y de la pista es provisional (hecho con SVG y canvas).
+- Intercambios de criaturas entre jugadores (hoy solo se compra a la casa y se cruza con sementales de otros).
+- Un jinete aparte de la táctica, y entrenamientos distintos por estilo.
+- Que las cuotas fijas de ganador, podio y exacta se muevan con las apuestas (para eso está el pozo).
 
 ## Cómo se probó
 
-- `node tools/probar-hipodromo.js` (158 comprobaciones, un minuto): nombres (únicos, concordancia, «del» y «de la», títulos según el sexo, herencia, homenajes, equilibrio de idiomas), genes y cuerpo, la carrera (velocista contra fondista, terreno y clima, cansancio, forma, duelo de líderes, lesiones), un mundo de 8 años (población estable, calendario, premios exactos, rating sin crear ni perder puntos, deriva genética, reanudar desde JSON da lo mismo, nada oculto en lo público, noticias bien formadas), cuotas (calibración, margen, exacta, liquidar) y el paso del servidor.
-- `docs/hipodromo.sql` se ejecutó dos veces en PostgreSQL 16 local con los roles `anon`, `authenticated` y `service_role` y una función `auth.uid()` de mentira: guardar la primera vez y las siguientes, choque de versiones, lo que ve un anónimo (el resultado de una carrera futura no se ve, una vez pasada su hora sí, el estado secreto no se puede leer ni escribir), los votos (solo a quien corre, solo antes del cierre) y que los datos del motor pasados por `jsonb` y de vuelta dan los mismos resultados.
-- **No se probó**: la Edge Function (solo se comprobó que el archivo se interpreta), `pg_cron` y `pg_net`, ni nada contra el Supabase real. Supabase tiene permisos por defecto distintos de los del Postgres local; el SQL los revoca explícitamente, pero conviene mirar en el panel que las tablas `hipodromo_*` salen con las políticas esperadas.
+- `node tools/probar-hipodromo.js` (247 comprobaciones): nombres, genes y cuerpo, la carrera (velocista contra fondista, terreno y clima, cansancio, forma, duelo de líderes, lesiones), **rasgos** (herencia, efectos acotados, y que cada uno gane donde debe: alas en el Cielo Roto, ojos en los Espejos, palmeadas en la Ciénaga...), pistas arcanas, **la cuadra** (adoptar, comprar, inscribir con devolución, entrenar, cuidar, táctica, bautizar, cruzar, montas de otros, premios, reanudar desde JSON, que lo privado no sale en lo público y el rendimiento económico), el pozo y el doble, un mundo de años (población estable, calendario, premios exactos, rating, deriva genética, noticias), cuotas (calibración, margen, exacta, liquidar), el paso del servidor y ponerse al día en varias llamadas.
+- `node tools/probar-hipodromo-sql.js` (62 comprobaciones, necesita Docker): ejecuta el SQL dos veces, comprueba permisos (anónimo y jugador), apostar con la cuota del servidor (la de la exacta coincide con la del motor), el pozo y el doble repartidos igual que en el motor, las órdenes procesadas por el motor con el cobro junto al mundo, premios y apuestas liquidados, choques de versión y saldos negativos que no dejan nada a medias.
+- **Contra el Supabase real**: se aplicó el SQL, se desplegó la Edge Function, se programó el cron y se comprobó que el mundo se crea y se pone al día. Esto sacó dos cosas que el Postgres local no enseñaba: Supabase exige `WHERE` en todo `DELETE` (pg-safeupdate) y da permisos de escritura por defecto a las vistas nuevas (el SQL los quita). Los imports de la Edge Function tienen que ser estáticos.
 
 ## Mandos
 
