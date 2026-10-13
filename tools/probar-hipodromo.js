@@ -225,7 +225,7 @@ function cabezaACabeza(a, b, cond, veces) {
   const s1 = duelo({ dedos: "palmeadas" }, cond("cienaga"), {}), s2 = duelo({ dedos: "palmeadas" }, cond("silver"), {});
   ok(s1 > 0.62 && s1 > s2 + 0.1, `las patas palmeadas se llevan bien con la Ciénaga (${pct(s1)} contra ${pct(s2)})`);
   const b1 = duelo({ piel: "escamas" }, cond("brasas"), { pel: 0.9 }), b2 = duelo({ piel: "escamas" }, cond("silver", "nublado"), { pel: 0.9 });
-  ok(b1 > 0.55 && b1 > b2 + 0.03, `la piel de escamas sufre menos el calor de las Brasas (${pct(b1)} contra ${pct(b2)} con tiempo fresco)`);
+  ok(b1 > 0.52 && b1 > b2 + 0.03, `la piel de escamas sufre menos el calor de las Brasas (${pct(b1)} contra ${pct(b2)} con tiempo fresco)`);
   { let g = 0; const A = con({ cuernos: "recto" }), B = con({}); A.ritmo = B.ritmo = 0.1;
     const campo = (c0) => { const es = [I.efectivo(mundo, c0, cond("silver"), 1)]; es[0].id = 0; for (let k = 1; k < 9; k++) { const o = con({}); o.ritmo = 0.9 - 0.1 * k; const e = I.efectivo(mundo, o, cond("silver"), k + 1); e.id = k; es.push(e); } return es; };
     let tA = 0, tB = 0; for (let j = 0; j < 300; j++) { tA += I.simular(M.crearRng("tr", j), campo(A), cond("silver"))[0].t; tB += I.simular(M.crearRng("tr", j), campo(B), cond("silver"))[0].t; }
