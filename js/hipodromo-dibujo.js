@@ -24,84 +24,35 @@ window.HipodromoDibujo = (function () {
   /* ---------------------------------------------------------------- azar repetible, propio del dibujo */
   const hashTxt = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
   const azar = semilla => { let a = semilla >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
-  const elegir = (az, tabla) => { let r = az() * tabla.reduce((s, x) => s + x[1], 0); for (const [v, p] of tabla) { r -= p; if (r < 0) return v; } return tabla[0][0]; };
+  const HR = window.HipodromoRasgos;   // js/hipodromo-rasgos.js: las tablas, los textos y lo que hace cada rasgo
 
-  /* ---------------------------------------------------------------- rasgos de identidad: tablas con su frecuencia */
-  const TABLAS = {
-    patas: [["4", 95], ["hex", 1.6], ["del", 1.1], ["fina", 0.8], ["tras", 0.8], ["aux", 0.7]],
-    cuello: [["recto", 40], ["serpentino", 14], ["grueso", 14], ["segmentado", 8], ["melena", 24]],
-    hocico: [["medio", 30], ["corto", 20], ["largo", 18], ["cuadrado", 16], ["punta", 16]],
-    orejas: [["pequeñas", 18], ["largas", 18], ["puntiagudas", 20], ["caidas", 14], ["redondas", 12], ["aleta", 10], ["dobles", 5], ["ninguna", 3]],
-    cuernos: [["ninguno", 42], ["recto", 8], ["atras", 8], ["adelante", 5], ["curvo", 8], ["espiral", 5], ["ramas", 7], ["corona", 2], ["lateral", 4], ["colmillos", 3], ["pequeños", 8], ["unico", 4], ["multiple", 2]],
-    espalda: [["lisa", 42], ["cresta", 18], ["espinas", 14], ["placas", 12], ["continua", 14]],
-    cola: [["fina", 24], ["corta", 14], ["gruesa", 14], ["mechon", 16], ["plumas", 8], ["bifurcada", 3], ["espinada", 8], ["maza", 2], ["aleta", 11]],
-    piel: [["pelo", 50], ["escamas", 16], ["placas", 8], ["mixta", 12], ["lisa", 14]],
-    ojos: [["dos", 93], ["tres", 5], ["cuatro", 2]],
-    alas: [["no", 96], ["atrofiadas", 1.5], ["pequeñas", 1], ["membranosas", 0.9], ["emplumadas", 0.6]],
-    dedos: [["tres", 70], ["cuatro", 14], ["palmeadas", 8], ["garras", 8]],
-    patron: [["uniforme", 30], ["patas", 16], ["cara", 14], ["manchas", 14], ["dorsal", 8], ["bandas", 8], ["degradado", 6], ["mascara", 4]]
-  };
-  const CLAVES = Object.keys(TABLAS);
-
-  /* Linaje: id -> { padre, madre }. Se rellena con cada perfil que se dibuja o se registra. */
+  /* Linaje: id -> { padre, madre }. Solo sirve para el color de la familia (el del fundador). */
   const LINAJE = new Map();
-  let MEMO = new Map();
   function registrar(p) {
     if (!p || p.id == null) return;
     const nuevo = { padre: p.padre ? p.padre.id : null, madre: p.madre ? p.madre.id : null };
     const viejo = LINAJE.get(p.id);
     if (viejo && viejo.padre === nuevo.padre && viejo.madre === nuevo.madre) return;
     LINAJE.set(p.id, nuevo);
-    MEMO = new Map();   // un dato nuevo del linaje puede cambiar a los descendientes ya calculados
   }
 
-  function rasgosDe(id, prof) {
-    if (MEMO.has(id)) return MEMO.get(id);
-    const az = azar(hashTxt("rasgos:" + id));
-    const l = LINAJE.get(id) || {};
-    const pa = l.padre != null && prof < 60 ? rasgosDe(l.padre, prof + 1) : null;
-    const ma = l.madre != null && prof < 60 ? rasgosDe(l.madre, prof + 1) : null;
-    const r = {};
-    CLAVES.forEach(k => {
-      const u = az(), libre = elegir(az, TABLAS[k]);
-      if (pa && ma) r[k] = u < 0.46 ? pa[k] : u < 0.92 ? ma[k] : libre;   // casi todo se hereda; un 8 % es nuevo
-      else r[k] = libre;
-    });
-    // coherencia: no todo combina con todo
-    if (r.cuernos === "multiple" && r.orejas === "dobles") r.orejas = "pequeñas";
-    if (r.alas !== "no" && r.espalda === "continua") r.espalda = "placas";
-    if (r.cola === "maza" && r.espalda === "continua") r.espalda = "espinas";
-    MEMO.set(id, r);
-    return r;
-  }
-
-  /* ---------------------------------------------------------------- textos de los rasgos */
-  const NOMBRES = {
-    patas: { hex: "Seis patas", del: "Seis patas, delanteras dobles y fuertes", fina: "Seis patas, el par extra más fino", tras: "Seis patas, traseras dobles", aux: "Seis patas, un par fino en medio" },
-    cuello: { serpentino: "Cuello serpentino", grueso: "Cuello grueso", segmentado: "Cuello segmentado", melena: "Melena en el cuello" },
-    hocico: { corto: "Hocico corto", largo: "Hocico largo", cuadrado: "Hocico cuadrado", punta: "Hocico puntiagudo" },
-    orejas: { largas: "Orejas largas", puntiagudas: "Orejas puntiagudas", caidas: "Orejas caídas", redondas: "Orejas redondas", aleta: "Orejas en aleta", dobles: "Dos pares de orejas", ninguna: "Sin orejas externas" },
-    cuernos: { recto: "Cuernos rectos", atras: "Cuernos hacia atrás", adelante: "Cuernos hacia delante", curvo: "Cuernos curvados", espiral: "Cuernos en espiral", ramas: "Astas ramificadas", corona: "Corona de cuernos", lateral: "Cuernos laterales", colmillos: "Colmillos de hueso", pequeños: "Cuernos pequeños", unico: "Un solo cuerno", multiple: "Muchos cuernos" },
-    espalda: { cresta: "Cresta dorsal", espinas: "Espinas dorsales", placas: "Placas dorsales", continua: "Cresta continua" },
-    cola: { corta: "Cola corta", gruesa: "Cola gruesa", mechon: "Cola con mechón", plumas: "Cola de plumas", bifurcada: "Cola bifurcada", espinada: "Cola espinada", maza: "Cola con maza", aleta: "Cola con aleta" },
-    piel: { escamas: "Escamas", placas: "Placas de armadura", mixta: "Escamas y pelo", lisa: "Piel lisa" },
-    ojos: { tres: "Tres ojos", cuatro: "Cuatro ojos" },
-    alas: { atrofiadas: "Alas atrofiadas", pequeñas: "Alas pequeñas", membranosas: "Alas de membrana", emplumadas: "Alas de plumas" },
-    dedos: { cuatro: "Cuatro dedos", palmeadas: "Patas palmeadas", garras: "Garras" },
-    patron: { patas: "Patas oscuras", cara: "Cara clara", manchas: "Manchas", dorsal: "Raya en el lomo", bandas: "Bandas", degradado: "Degradado", mascara: "Máscara oscura" }
+  /* Los rasgos los decide el motor (perfil.rasgos). Si el perfil no los trae, salen del id. */
+  const rasgosDe = perfil => {
+    if (perfil.rasgos) return HR.completo(perfil.rasgos);
+    const az = azar(hashTxt("rasgos:" + perfil.id));
+    return HR.completo(HR.sortear({ f: az, peso: tabla => { let r = az() * tabla.reduce((t, x) => t + x[1], 0); for (const [v, q] of tabla) { r -= q; if (r < 0) return v; } return tabla[0][0]; } }));
   };
 
-  /* Lista de rasgos llamativos de una criatura (solo los que se salen de lo común), para la ficha. */
+  /* Lista de rasgos llamativos de una criatura (solo los que se salen de lo común), para la ficha: textos. */
   function rasgos(perfil) {
-    registrar(perfil);
-    const r = rasgosDe(perfil.id, 0), s = perfil.silueta || {}, out = [];
-    ["patas", "cuernos", "alas", "ojos", "cuello", "espalda", "cola", "piel", "dedos", "hocico", "orejas", "patron"].forEach(k => {
-      const t = NOMBRES[k] && NOMBRES[k][r[k]];
-      if (t) out.push(t);
-    });
+    return rasgosDetalle(perfil).map(x => x.texto);
+  }
+  /* Lo mismo con lo que hace cada uno en la carrera: [{ clave, valor, texto, hace }] (hace vacío = adorno) */
+  function rasgosDetalle(perfil) {
+    const s = perfil.silueta || {}, out = HR.lista(rasgosDe(perfil));
     if (typeof s.longitud_cuello === "number") {
-      if (s.longitud_cuello > 0.85) out.unshift("Cuello larguísimo");
-      else if (s.longitud_cuello < 0.18) out.unshift("Cuello muy corto");
+      if (s.longitud_cuello > 0.85) out.unshift({ clave: "cuello", valor: "larguisimo", texto: "Cuello larguísimo", hace: "" });
+      else if (s.longitud_cuello < 0.18) out.unshift({ clave: "cuello", valor: "cortisimo", texto: "Cuello muy corto", hace: "" });
     }
     return out;
   }
@@ -140,7 +91,7 @@ window.HipodromoDibujo = (function () {
   function silueta(perfil, opciones) {
     opciones = opciones || {};
     registrar(perfil);
-    const R = rasgosDe(perfil.id, 0);
+    const R = rasgosDe(perfil);
     const s = perfil.silueta || {}, g = k => (typeof s[k] === "number" ? s[k] : 0.5);
     const uid = "hd" + perfil.id + "_" + (++CONTADOR);
     const corre = /(^|\s)corre(\s|$)/.test(opciones.clase || "");   // en la pista: galopa
@@ -152,11 +103,14 @@ window.HipodromoDibujo = (function () {
     const mirada = typeof s.mirada === "number" ? s.mirada : 0.5;     // 0 nervioso … 1 sereno
     const numero = opciones.numero != null ? String(opciones.numero) : null;
 
-    const escala = 0.82 + 0.3 * g("altura");
-    const largoPata = (24 + 40 * g("longitud_patas")) * E.patas, grosorPata = (3 + 4.5 * g("grosor_patas")) * E.grosor;
+    // etapa de la vida: las crías son pequeñas, de patas cortas y cabeza grande; el veterano tiene canas en el hocico
+    const etapa = perfil.etapa || "adulto", kEdad = { "cría": 0.62, potro: 0.8, joven: 0.93 }[etapa] || 1, inf = 1 - kEdad;
+    const secs = perfil.secuelasCod || [], lesionada = !!(perfil.lesion && perfil.lesion.tipo !== "desaparecido" && perfil.estado !== "retirado");
+    const escala = (0.82 + 0.3 * g("altura")) * kEdad;
+    const largoPata = (24 + 40 * g("longitud_patas")) * E.patas * (1 - inf * 0.45), grosorPata = (3 + 4.5 * g("grosor_patas")) * E.grosor;
     const largoCuerpo = (64 + 54 * g("longitud_cuerpo")) * (seis ? 1.16 : 1), alto = (24 + 24 * g("anchura_torso")) * E.torso;
     const rPecho = 12 + 10 * g("tamano_pecho"), rCadera = 12 + 10 * g("tamano_cadera");
-    const largoCuello = (9 + 32 * g("longitud_cuello")) * E.cuello, cabezaX = (8 + 8 * g("tamano_cabeza")) * E.cabeza, cabezaY = (5.5 + 4.5 * g("tamano_cabeza")) * E.cabeza;
+    const largoCuello = (9 + 32 * g("longitud_cuello")) * E.cuello * (1 - inf * 0.35), cabezaX = (8 + 8 * g("tamano_cabeza")) * E.cabeza * (1 + inf * 0.7), cabezaY = (5.5 + 4.5 * g("tamano_cabeza")) * E.cabeza * (1 + inf * 0.7);
     const largoCola = 14 + 30 * g("tamano_cola");
 
     const suelo = 128, cy = suelo - largoPata - alto / 2;
@@ -197,7 +151,8 @@ window.HipodromoDibujo = (function () {
     /* Cada pata son dos tramos: el muslo gira en la cadera y la caña en la rodilla. Quieta se ve como siempre;
        en la pista (clase "corre") se anima con SMIL: las patas de atrás y de delante van desfasadas, y la rodilla
        se pliega al llevar la pata hacia delante, como en un galope. */
-    function pata(x, k, w, pintar, fase, cercana) {
+    function pata(x, k, w, pintar, fase, cercana, m) {
+      m = m || {};
       const gr = grosorPata * w, yb = cy + alto / 2 + largoPata * k, y0 = cy + alto / 2 - 4, ym = y0 + (yb - y0) * 0.5;
       // la rodilla se dobla: hacia atrás en las patas de atrás y hacia delante en las de delante (no es un caballo)
       const kx = (x < (xAtras + xFrente) / 2 ? -4.2 : 3.2) * Math.min(1, 0.5 + k);
@@ -225,8 +180,12 @@ window.HipodromoDibujo = (function () {
         cana += `<line x1="${f1(px)}" y1="${f1(yb - 4.6)}" x2="${f1(px)}" y2="${f1(yb - grosor * 0.2)}" stroke="${base}" stroke-width="0.9" opacity=".85"/>`;
       }
       if (R.dedos === "garras") for (let i = 0; i < 3; i++) cana += `<path d="M ${f1(x + grC / 2 + 1.2 + i * 2.2)} ${f1(yb - 3.4 + i * 0.4)} l 3 1.4 l -3 1.2 Z" fill="${HUESO}"/>`;
+      if (m.vendaje) {   // vendaje: una secuela de la pata o una lesión de ahora
+        const t = 0.4, bx = x + kx * (1 - t), by = ym + (yb - 2 - ym) * t, ww = grC + 3.4;
+        cana += `<rect x="${f1(bx - ww / 2)}" y="${f1(by - 3.4)}" width="${f1(ww)}" height="6.8" rx="1.2" fill="#f3efe2" stroke="#b9b3a0" stroke-width=".5"/><path d="M ${f1(bx - ww / 2)} ${f1(by - 1)} l ${f1(ww)} 2.4 M ${f1(bx - ww / 2)} ${f1(by + 1.6)} l ${f1(ww)} 2" stroke="#b9b3a0" stroke-width=".5" fill="none"/>`;
+      }
       if (!corre) return muslo + cana;
-      const N = 24, A = 36, B = 54;
+      const N = 24, A = m.cojo ? 20 : 36, B = m.cojo ? 24 : 54;
       const giro = (cx, cy2, f) => `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: N + 1 }, (_, i) => f(2 * Math.PI * i / N + fase).toFixed(1) + " " + f1(cx) + " " + f1(cy2)).join(";")}"/>`;
       return `<g>${muslo}<g>${cana}${giro(x + kx, ym, w => B * (0.5 - 0.5 * Math.cos(w)))}</g>${giro(x, y0, w => A * Math.sin(w))}</g>`;
     }
@@ -245,7 +204,8 @@ window.HipodromoDibujo = (function () {
     }[R.patas] || [trasera, delantera];
     const faseDe = (p, lejana) => (p[0] < (xAtras + xFrente) / 2 ? 0 : Math.PI * 0.9) + (lejana ? 1.0 : 0) + (p[0] > xAtras + 20 && p[0] < xFrente - 10 ? 0.5 : 0);
     const patasLejos = POS.map(p => pata(p[1], p[2], p[3], lejos, faseDe(p, true))).join("");
-    const patasCerca = POS.map(p => pata(p[0], p[2], p[3], base, faseDe(p, false), true)).join("");
+    const marcaPata = i => ({ vendaje: (i === 0 && secs.includes("vel")) || (i === POS.length - 1 && lesionada), cojo: i === 0 && secs.includes("vel") });
+    const patasCerca = POS.map((p, i) => pata(p[0], p[2], p[3], base, faseDe(p, false), true, marcaPata(i))).join("");
     // polvo en cada pisada (solo en la pista): una nube que crece y se desvanece detrás de cada pata cercana
     const polvo = corre ? POS.map(p => {
       const f = faseDe(p, false), t0 = (-((f % (2 * Math.PI)) / (2 * Math.PI)) * Number(ciclo)).toFixed(2), yb = cy + alto / 2 + largoPata * p[2];
@@ -357,10 +317,12 @@ window.HipodromoDibujo = (function () {
     const fosa = `<circle cx="${f1(puntaX * 0.88)}" cy="${f1(cabezaY * 0.1)}" r="1" fill="#101010" opacity=".7"/>`;
     const formaCabeza = `<ellipse cx="0" cy="0" rx="${f1(cabezaX * 0.9)}" ry="${f1(cabezaY)}"/>${hocico}`;
     const orejaEstado = `<g transform="rotate(${f1(-(0.5 - mirada) * 36)} ${f1(ex)} ${f1(ey)})">${oreja}</g>`;
+    const canas = etapa === "veterano" ? `<ellipse cx="${f1(cabezaX * 0.95)}" cy="${f1(cabezaY * 0.22)}" rx="${f1(cabezaX * 0.6)}" ry="${f1(cabezaY * 0.42)}" fill="#e9e6dc" opacity=".55"/>` : "";
+    const sudor = secs.includes("tem") ? `<path d="M ${f1(-cabezaX * 0.55)} ${f1(-cabezaY * 1.05)} q 2 3.4 0 5 q -2 -1.6 0 -5 Z M ${f1(-cabezaX * 0.05)} ${f1(-cabezaY * 1.3)} q 1.6 2.8 0 4 q -1.6 -1.2 0 -4 Z" fill="#8fd3ff" opacity=".9"/>` : "";
     const cabeza = `<g transform="translate(${f1(cabX)} ${f1(cabY)}) rotate(18)">` +
       (cb ? `<g fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round">${formaCabeza}</g>` : "") +
       `<g fill="${base}">${formaCabeza}</g>` +
-      marcaCabeza + orejaEstado + cuernos + ojos + boca + fosa + `</g>`;
+      marcaCabeza + canas + orejaEstado + cuernos + ojos + boca + fosa + sudor + `</g>`;
 
     /* ---- espalda: todo se apoya en el contorno real del lomo */
     const ex0 = xFrente - 3, ex1 = xAtras - rCadera * 0.15;
@@ -405,7 +367,10 @@ window.HipodromoDibujo = (function () {
       const cuantas = /motead/.test(perfil.capa || "") ? 9 : conManchas ? 4 : 5;
       for (let i = 0; i < cuantas; i++) manchas += `<circle cx="${f1(xAtras + al() * (xFrente - xAtras))}" cy="${f1(cy - alto * 0.3 + al() * alto * 0.6)}" r="${f1(2.2 + al() * 3.4)}" fill="${claro}" opacity=".75"/>`;
     }
-    const sobreCuerpo = `<g clip-path="url(#${uid}c)">${capaCuerpo}${manchas}</g>`;
+    let cicatrices = "";
+    if (secs.includes("ace")) cicatrices += `<path d="M ${f1(xAtras + rCadera * 0.1)} ${f1(cy - ryC * 0.55)} l 10 9 M ${f1(xAtras + rCadera * 0.1 + 4)} ${f1(cy - ryC * 0.65)} l 10 9 M ${f1(xAtras + rCadera * 0.1 + 8)} ${f1(cy - ryC * 0.75)} l 10 9" stroke="#f4e9d8" stroke-width="1.5" opacity=".8" stroke-linecap="round" fill="none"/>`;
+    if (secs.includes("agi")) cicatrices += `<rect x="${f1(centro - 5)}" y="${f1(lomo - 3)}" width="11" height="${f1(alto * 0.6)}" rx="1.5" fill="#f3efe2" stroke="#b9b3a0" stroke-width=".6" opacity=".95"/><path d="M ${f1(centro - 5)} ${f1(lomo + 3)} l 11 3 M ${f1(centro - 5)} ${f1(lomo + 7)} l 11 3" stroke="#b9b3a0" stroke-width=".6" fill="none"/>`;
+    const sobreCuerpo = `<g clip-path="url(#${uid}c)">${capaCuerpo}${manchas}${cicatrices}</g>`;
     // volumen: luz en el lomo, músculo en la grupa y en el hombro
     let lomoLuz = "";
     LOMO.forEach(q => { if (q[0] >= xAtras - rCadera * 0.6 && q[0] <= xFrente - 2) lomoLuz += (lomoLuz ? " L " : "M ") + f1(q[0]) + " " + f1(q[1] + 1.6); });
@@ -418,6 +383,12 @@ window.HipodromoDibujo = (function () {
       (E.elegante ? `<path d="M ${f1(xAtras + rCadera * 0.2)} ${f1(cy - alto * 0.12)} Q ${f1(centro)} ${f1(cy - alto * 0.32)} ${f1(xFrente - rPecho * 0.2)} ${f1(cy - alto * 0.1)}" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" opacity=".16"/>` +
         `<path d="M ${f1(xAtras + rCadera * 0.4)} ${f1(cy + alto * 0.3)} Q ${f1(centro)} ${f1(cy + alto * 0.46)} ${f1(xFrente - rPecho * 0.3)} ${f1(cy + alto * 0.3)}" fill="none" stroke="${oscuro}" stroke-width="2.4" stroke-linecap="round" opacity=".14"/>` : "") +
       `</g>`;
+    // núcleo de carrera: un brillo en el pecho (más fuerte cuanto más vivo); el ardiente late
+    const nucleo = R.nucleo !== "ninguno" ? (() => {
+      const nv = { latente: [0.35, 3.2, "#8fd3ff"], vivo: [0.7, 4.2, "#5ff0d0"], ardiente: [0.95, 5.2, "#ffb347"] }[R.nucleo];
+      const nx = xFrente - rPecho * 0.2, ny = cy + ryP * 0.1;
+      return `<g clip-path="url(#${uid}c)"><circle cx="${f1(nx)}" cy="${f1(ny)}" r="${f1(nv[1] * 2.2)}" fill="${nv[2]}" opacity="${(nv[0] * 0.28).toFixed(2)}"/><circle cx="${f1(nx)}" cy="${f1(ny)}" r="${nv[1]}" fill="${nv[2]}" opacity="${nv[0]}">${R.nucleo !== "latente" ? `<animate attributeName="opacity" dur="${R.nucleo === "ardiente" ? 0.9 : 1.8}s" repeatCount="indefinite" values="${nv[0]};${(nv[0] * 0.55).toFixed(2)};${nv[0]}"/>` : ""}</circle></g>`;
+    })() : "";
     // manta de carrera: el color es el de la familia; en la pista lleva el número de puerta
     const mantaY = yLomo(centro) + 0.6;
     const manta = (numero !== null || corre) ? `<path d="M ${f1(centro - 10)} ${f1(mantaY)} h 20 v 11 q 0 2 -2 2 h -16 q -2 0 -2 -2 Z" fill="${famil}" stroke="${tinta}" stroke-width=".7"/>` +
@@ -440,11 +411,11 @@ window.HipodromoDibujo = (function () {
       (E.pixel ? `<g filter="url(#${uid}p)">` : "") +
       `<ellipse cx="${f1(cx)}" cy="${suelo}" rx="${f1(Math.min(100, (der - izq) * 0.45))}" ry="3" fill="rgba(0,0,0,.28)">${corre ? `<animate attributeName="rx" dur="${ciclo}s" repeatCount="indefinite" values="${f1(Math.min(100, (der - izq) * 0.45))};${f1(Math.min(100, (der - izq) * 0.36))};${f1(Math.min(100, (der - izq) * 0.45))};${f1(Math.min(100, (der - izq) * 0.4))};${f1(Math.min(100, (der - izq) * 0.45))}"/>` : ""}</ellipse>` +
       (corre ? `<g class="hip-vel"><path d="M ${f1(izq - 3)} ${f1(suelo - 62)} h -20 M ${f1(izq + 3)} ${f1(suelo - 50)} h -26 M ${f1(izq - 1)} ${f1(suelo - 38)} h -16 M ${f1(izq + 6)} ${f1(suelo - 26)} h -22" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/></g>` : "") + polvo +
-      `<g class="hip-resp" style="animation-delay:-${(perfil.id % 7) * 0.6}s">` +
+      `<g class="hip-resp" style="animation-delay:-${(perfil.id % 7) * 0.6}s${secs.includes("res") ? ";animation-duration:2.1s" : ""}">` +
       (corre ? `<g><animateTransform attributeName="transform" type="translate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => { const t = 2 * Math.PI * i / 16; return "0 " + (-(2.4 * Math.max(0, Math.sin(t)) + 0.9 * Math.max(0, Math.sin(2 * t + 1)))).toFixed(2); }).join(";")}"/>` : "") +
       alas + cola + patasLejos + cabeceoG(cuello) +
       (cb ? `<path d="${cuerpoD}" fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round"/>` : "") +
-      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + manta + espalda +
+      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + manta + espalda +
       patasCerca + cabeceoG(cabeza) +
       (corre ? `</g>` : "") +
       `</g>` + (E.pixel ? `</g>` : "") + `</g></svg>`;
@@ -459,5 +430,5 @@ window.HipodromoDibujo = (function () {
     if (activo) svg.unpauseAnimations(); else { svg.setCurrentTime(0); svg.pauseAnimations(); }
   }
 
-  return { silueta, colorCapa, registrar, rasgos, galope, ponerEstilo, estilos: Object.keys(ESTILOS) };
+  return { silueta, colorCapa, registrar, rasgos, rasgosDetalle, galope, ponerEstilo, estilos: Object.keys(ESTILOS) };
 })();

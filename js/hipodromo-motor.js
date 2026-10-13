@@ -23,6 +23,7 @@
 ============================================================================= */
 (function (raiz) {
   "use strict";
+  const HR = raiz.HipodromoRasgos;   // js/hipodromo-rasgos.js, se carga antes que el motor
 
   /* ---------------------------------------------------------------- constantes (los mandos del juego) */
   const C = {
@@ -115,9 +116,23 @@
     ceniza: { id: "ceniza", nombre: "Valle de Ceniza", suelo: "arena", curvas: 0.45, cuestas: 0.30, drenaje: 0.90 },
     mapache: { id: "mapache", nombre: "Anillo del Mapache", suelo: "arcilla", curvas: 0.80, cuestas: 0.00, drenaje: 0.40 },
     silver: { id: "silver", nombre: "Silver Mile", suelo: "hierba", curvas: 0.15, cuestas: 0.10, drenaje: 0.55 },
-    hollow: { id: "hollow", nombre: "Hollow Oak Park", suelo: "hierba", curvas: 0.50, cuestas: 0.40, drenaje: 0.35 }
+    hollow: { id: "hollow", nombre: "Hollow Oak Park", suelo: "hierba", curvas: 0.50, cuestas: 0.40, drenaje: 0.35 },
+    // pistas arcanas: con reglas propias (ver REGLAS_ARCANAS). Salen la mitad de veces que las normales.
+    espejos: { id: "espejos", nombre: "Corredor de los Espejos", suelo: "cristal", curvas: 0.65, cuestas: 0.00, drenaje: 0.60, arcana: "ilusion" },
+    cielo: { id: "cielo", nombre: "Cielo Roto", suelo: "nube", curvas: 0.20, cuestas: 0.85, drenaje: 0.80, arcana: "corrientes" },
+    cienaga: { id: "cienaga", nombre: "Ciénaga Susurrante", suelo: "pantano", curvas: 0.40, cuestas: 0.05, drenaje: 0.00, arcana: "sumidero", humedad: 0.35 },
+    brasas: { id: "brasas", nombre: "Cuenca de Brasas", suelo: "brasa", curvas: 0.35, cuestas: 0.25, drenaje: 0.95, arcana: "brasas", calor: 1.0 }
   };
   const IDS_PISTAS = Object.keys(PISTAS);
+  const PESO_PISTA = id => (PISTAS[id].arcana ? 0.5 : 1);
+  const PESOS_PISTAS_TOTAL = IDS_PISTAS.reduce((a, id) => a + PESO_PISTA(id), 0);
+  /* Qué hace cada regla arcana. El núcleo de la criatura responde en todas (ventaja `nucleo` de los rasgos). */
+  const REGLAS_ARCANAS = {
+    ilusion: { nombre: "Ilusión", texto: "En algunos tramos los espejos las confunden y pierden ritmo. El temple y los ojos de más ayudan." },
+    corrientes: { nombre: "Corrientes", texto: "Hay tramos de aire ascendente: las criaturas con alas ganan velocidad en ellos." },
+    sumidero: { nombre: "Sumidero", texto: "El suelo se las come: todas gastan más energía, menos las de patas palmeadas." },
+    brasas: { nombre: "Brasas", texto: "El calor es siempre extremo: el pelaje denso sufre y la piel de escamas y placas ayuda." }
+  };
 
   const CLIMAS = {
     despejado: { texto: "cielo despejado", aporte: 0.00, temp: 0.15, ruido: 1.00, incid: 1.0 },
@@ -205,6 +220,8 @@
   }
   /* Quien suma mucho en velocidad, resistencia y ancas se rompe más: frena que todo el mundo acabe perfecto */
   const fragilidad = c => 0.6 + 2.0 * Math.max(0, c.genes.pat + c.genes.pul + c.genes.mus - 1.5);
+  /* Los rasgos: si el mundo es de antes de que existieran, salen del id (siempre los mismos) */
+  const rasgosDe = c => c.rasgos || (c.rasgos = HR.sortear(crearRng(c.id, "rasgos")));
   const edadAnios = (n, c) => (n - c.nac) / C.ANIO;
   const edadMult = a => (a < 1 ? 0.86 : a < 2.5 ? 0.93 + 0.07 * (a - 1) / 1.5 : a <= 5 ? 1 : Math.max(0.8, 1 - 0.045 * (a - 5)));
   function statsBase(c) {
@@ -235,6 +252,7 @@
     };
     const h = padres.length ? padres.reduce((x, p) => x + p.ritmo, 0) / padres.length : 0.5;
     c.ritmo = clamp(0.5 + 0.35 * (genes.mus - genes.pul) + 0.3 * (h - 0.5) + rng.norm(0, 0.22), 0, 1);
+    c.rasgos = padres.length === 2 ? HR.heredar(rng, padres[0].rasgos, padres[1].rasgos) : HR.sortear(rng);
     return c;
   }
 
@@ -242,28 +260,31 @@
   function condiciones(prog, w) {
     const pista = PISTAS[prog.pista], cl = CLIMAS[w];
     const base = prog.mojadoPrevio * 0.7 + cl.aporte;
-    const hum = clamp(base * (1 - 0.5 * pista.drenaje), 0, 1);
-    return { clima: w, base, hum, temp: cl.temp, ruido: cl.ruido, incid: cl.incid, dist: prog.dist, nSeg: prog.dist / 100,
-      curvas: pista.curvas, costeTramo: 1 + 0.15 * pista.cuestas, estadoPista: etiquetaPista(hum) };
+    const hum = clamp((base + (pista.humedad || 0)) * (1 - 0.5 * pista.drenaje), 0, 1);
+    return { clima: w, base, hum, temp: pista.calor != null ? Math.max(cl.temp, pista.calor) : cl.temp, ruido: cl.ruido, incid: cl.incid, dist: prog.dist, nSeg: prog.dist / 100,
+      curvas: pista.curvas, costeTramo: 1 + 0.15 * pista.cuestas, estadoPista: etiquetaPista(hum), arcana: pista.arcana || null, n: prog.n };
   }
   /* Valores de una criatura ese día (en puntos de 25 a 100) */
   function efectivo(m, c, cond, puerta) {
     const b = statsBase(c), em = edadMult(edadAnios(m.n, c));
     const exp = Math.min(1, c.salidas / 16);
-    const pref = (c.genes.pez - 0.5) * 2, abrigo = (c.genes.pel - 0.5) * 2;
+    const fx = HR.efectos(rasgosDe(c));
+    const pref = (c.genes.pez - 0.5) * 2 + fx.pref, abrigo = (c.genes.pel - 0.5) * 2;
     const terreno = 16 * pref * (cond.hum - 0.3) / 0.6;
-    const clima = -15 * abrigo * cond.temp;
+    const clima = -15 * abrigo * cond.temp * fx.temp;
     return {
-      id: c.id, puerta,
-      vel: b.vel * em - 0.35 * c.fatiga + 12 * c.forma + terreno + clima,
-      res: b.res * em - 0.35 * c.fatiga + 6 * c.forma + 0.8 * clima,
-      ace: b.ace * em - 0.20 * c.fatiga + 4 * c.forma,
-      agi: b.agi * em - 0.15 * c.fatiga,
-      tem: b.tem + 10 * exp,
-      ritmo: c.ritmo, frag: fragilidad(c), fatiga: c.fatiga
+      id: c.id, puerta, fx,
+      vel: b.vel * em - 0.35 * c.fatiga + 12 * c.forma + terreno + clima + fx.vel,
+      res: b.res * em - 0.35 * c.fatiga + 6 * c.forma + 0.8 * clima + fx.res,
+      ace: b.ace * em - 0.20 * c.fatiga + 4 * c.forma + fx.ace,
+      agi: b.agi * em - 0.15 * c.fatiga + fx.agi,
+      tem: b.tem + 10 * exp + fx.tem,
+      ritmo: c.ritmo, frag: fragilidad(c) + fx.frag, fatiga: c.fatiga
     };
   }
   const esCurva = (s, curvas) => ((s * 0.618034) % 1) < curvas;
+  const ilusionEn = (s, n) => ((s * 0.754877 + (n % 11) * 0.173) % 1) < 0.28;      // tramos de los Espejos en que se confunden
+  const corrienteEn = (s, n) => ((s * 0.569840 + (n % 13) * 0.091) % 1) < 0.30;     // tramos con aire ascendente en el Cielo Roto
   const probLesion = (e, cond) => 0.010 * e.frag * (1 + e.fatiga / 60) * (1 + 0.8 * cond.hum) * Math.sqrt(cond.dist / 1600) * cond.incid;
 
   /* ---------------------------------------------------------------- la carrera
@@ -271,6 +292,12 @@
      (cuanto más larga la carrera, más pesa la resistencia; en las cortas manda la velocidad), y se equivoca
      un poco según su temple. Devuelve, por corredor, el tiempo de meta, los tiempos acumulados por tramo,
      los tropiezos y si se lesionó. */
+  const FX_NEUTRO = HR.efectos({});
+  /* Los tramos (de 100 m) en que actúa la regla de una pista arcana: para dibujarlos. Brasas y Sumidero actúan en toda la pista. */
+  function zonasArcanas(regla, n, nSeg) {
+    const f = regla === "ilusion" ? s => ilusionEn(s, n) : regla === "corrientes" ? s => corrienteEn(s, n) : regla ? () => true : () => false;
+    return Array.from({ length: nSeg }, (_, k) => f(k));
+  }
   function simular(rng, es, cond) {
     const nSeg = cond.nSeg, nE = es.length;
     const lideres = es.filter(e => e.ritmo > 0.66).length;
@@ -278,31 +305,35 @@
     for (let k = 0; k < nE; k++) {
       const e = es[k];
       const dia = rng.norm(0, AJUSTE.SIG_DIA) * (1.25 - e.tem / 200);                  // cómo amanece ese día: toda la carrera, no solo un tramo
-      const vmax = (AJUSTE.VEL_BASE + AJUSTE.VEL_K * e.vel) * (1 + dia);
+      const fx = e.fx || FX_NEUTRO;
+      const vmax = (AJUSTE.VEL_BASE + AJUSTE.VEL_K * e.vel) * (1 + dia) * (cond.arcana ? 1 + fx.nucleo : 1);
       let tanque = 10.5 + 0.075 * e.res;
-      const sig = AJUSTE.SIG_TRAMO * (1.5 - e.tem / 100) * cond.ruido;
+      const sig = AJUSTE.SIG_TRAMO * (1.5 - e.tem / 100) * (1 + (cond.ruido - 1) * fx.ruido);
+      const coste = (1 + (cond.costeTramo - 1) * (1 - fx.cuesta)) * (cond.arcana === "sumidero" ? 1.12 * fx.sumidero : 1);
       const lesTramo = rng.f() < probLesion(e, cond) ? rng.i(1, Math.max(1, nSeg - 1)) : -1;
-      const trafico = (1 - e.ritmo) * (nE - 1) / 10 * Math.max(0, 1 - e.agi / 130) * rng.f() * 0.008;
+      const trafico = (1 - e.ritmo) * (nE - 1) / 10 * Math.max(0, 1 - e.agi / 130) * rng.f() * 0.008 * (1 - fx.trafico);
       const ventajaPuerta = ((nE / 2 - e.puerta + 0.5) / nE) * 0.004 * cond.curvas;
-      const pTrop = 0.0035 * (1 + 1.2 * cond.hum) * Math.max(0.1, 1.15 - e.agi / 100) * cond.incid;
+      const pTrop = 0.0035 * (1 + 1.2 * cond.hum) * Math.max(0.1, 1.15 - e.agi / 100) * cond.incid * fx.tropiezo;
       const tramos = new Array(nSeg), tropiezos = [];
       let t = 0, tropiezo = 0;
       for (let s = 0; s < nSeg; s++) {
         const p = (s + 0.5) / nSeg;
-        let ec = clamp(Math.pow(Math.max(0.02, tanque) / ((nSeg - s) * cond.costeTramo), 1 / AJUSTE.K_COSTE), 0.55, 1.0);
+        let ec = clamp(Math.pow(Math.max(0.02, tanque) / ((nSeg - s) * coste), 1 / AJUSTE.K_COSTE), 0.55, 1.0);
         let forma = 1 + 0.06 * (e.ritmo - 0.5) * (1 - 2 * p);
         if (lideres > 1 && e.ritmo > 0.66 && p < 0.4) forma *= 1 + 0.01 * (lideres - 1);   // duelo de líderes
         let v = vmax * clamp(ec * forma * (1 + rng.norm(0, sig)), 0.5, 1.06);
         if (s < 3) v *= 1 - 0.06 * (1 - e.ace / 100) * (1 - s / 3);
         if (esCurva(s, cond.curvas)) v *= 1 - 0.03 * (1 - e.agi / 100);
         if (p > 0.3 && p < 0.8) v *= 1 - trafico;
+        if (cond.arcana === "ilusion" && ilusionEn(s, cond.n)) v *= 1 - 0.045 * Math.max(0, 1 - e.tem / 110) * fx.ilusion;
+        else if (cond.arcana === "corrientes" && corrienteEn(s, cond.n)) v *= 1 + fx.corriente;
         v *= 1 + ventajaPuerta;
         if (tropiezo > 0) { v *= 0.95; tropiezo--; }
         else if (rng.f() < pTrop) { tropiezo = 1; v *= 0.95; tropiezos.push(s); }
         if (lesTramo >= 0 && s >= lesTramo) v *= 0.55;
-        tanque -= Math.pow(v / vmax, AJUSTE.K_COSTE) * cond.costeTramo;
+        tanque -= Math.pow(v / vmax, AJUSTE.K_COSTE) * coste;
         if (tanque < 0) v *= Math.max(0.75, 1 + tanque * 0.12);
-        t += 100 / v;
+        t += 100 / v - (s === nSeg - 1 ? fx.meta : 0);
         tramos[s] = t;
       }
       salida.push({ k, id: e.id, puerta: e.puerta, t, tramos, tropiezos, lesTramo });
@@ -448,8 +479,9 @@
   function pistaDeJornada(semilla, jornada) {
     const rng = crearRng(semilla, "pista", jornada);
     const ant = jornada > 0 ? crearRng(semilla, "pista", jornada - 1) : null;
-    const previa = ant ? IDS_PISTAS[Math.floor(ant.f() * IDS_PISTAS.length)] : null;
-    let id; do { id = IDS_PISTAS[Math.floor(rng.f() * IDS_PISTAS.length)]; } while (id === previa && IDS_PISTAS.length > 1 && rng.f() < 0.9);
+    const elige = r => { let x = r.f() * PESOS_PISTAS_TOTAL; for (const id of IDS_PISTAS) { x -= PESO_PISTA(id); if (x < 0) return id; } return IDS_PISTAS[IDS_PISTAS.length - 1]; };
+    const previa = ant ? elige(ant) : null;
+    let id; do { id = elige(rng); } while (id === previa && IDS_PISTAS.length > 1 && rng.f() < 0.9);
     return id;
   }
 
@@ -765,7 +797,7 @@
       cuerpo: cuerpo(c), silueta: silueta(c), arquetipo: arquetipo(c), perfilDist: perfilDistancia(c), estilo: c.salidas >= 3 ? estiloTexto(c.ritmo) : null,
       salidas: c.salidas, vic: c.vic, seg: c.seg, ter: c.ter, gp: c.gp, premios: c.premios, racha: c.racha, ultima: c.ultima,
       estrellas: estrellas(c), aptitudes: apt, etiquetas: etiquetas(c, apt), ultimas: c.hist.slice().reverse(), suelos: c.suelos,
-      secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]),
+      secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)),
       lesion: c.lesion ? { tipo: c.lesion.tipo, gravedad: c.lesion.gravedad, hasta: c.lesion.hasta } : null,
       padre: c.padre, madre: c.madre, crias: c.crias, leyenda: esLeyenda(c), muerte: c.muerte
     };
@@ -858,10 +890,10 @@
   }
 
   raiz.HipodromoMotor = {
-    C, AJUSTE, ESPECIE, PISTAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
+    C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
     cuotaApuesta, cuotaExacta, liquidar, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    _interno: { simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores }
+    zonasArcanas, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);

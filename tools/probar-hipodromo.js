@@ -3,7 +3,7 @@
 const vm = require("vm"), fs = require("fs"), path = require("path");
 const rapido = process.argv.includes("--rapido");
 const sb = { console }; sb.window = sb; sb.globalThis = sb; vm.createContext(sb);
-for (const f of ["data/hipodromo-palabras.js", "js/hipodromo-nombres.js", "js/hipodromo-motor.js"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", f), "utf8"), sb, { filename: f });
+for (const f of ["data/hipodromo-palabras.js", "js/hipodromo-nombres.js", "js/hipodromo-rasgos.js", "js/hipodromo-motor.js"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", f), "utf8"), sb, { filename: f });
 const M = sb.HipodromoMotor, N = sb.HipodromoNombres, P = sb.HIPODROMO_PALABRAS, I = M._interno, C = M.C;
 const fallos = []; let n = 0;
 const ok = (c, msg) => { n++; if (!c) fallos.push(msg); };
@@ -183,6 +183,60 @@ function cabezaACabeza(a, b, cond, veces) {
   ok(lBase > 0.004 && lBase < 0.03, `lesiones por salida en condiciones normales (${pct(lBase)})`);
   ok(lFrag > lBase && lCans > lBase && lBarro > lBase, "se lesionan más las frágiles, las cansadas y con barro y tormenta");
   informe.push(`lesiones por salida: normal ${pct(lBase)}, frágil ${pct(lFrag)}, cansada ${pct(lCans)}, barro y tormenta ${pct(lBarro)}`); }
+
+// 4b) Rasgos con efecto y pistas arcanas
+{ const HR = sb.HipodromoRasgos;
+  const rg = M.crearRng("rasgos"), N = rapido ? 4000 : 12000;
+  const sorteo = Array.from({ length: N }, () => HR.sortear(rg));
+  ok(sorteo.every(r => HR.CLAVES.every(k => HR.TABLAS[k].some(x => x[0] === r[k]))), "cada rasgo sorteado existe en su tabla");
+  ok(Math.abs(sorteo.filter(r => r.patas === "4").length / N - 0.95) < 0.02, "el 95 % tiene cuatro patas");
+  ok(sorteo.filter(r => r.alas !== "no").length / N < 0.06 && sorteo.filter(r => r.nucleo !== "ninguno").length / N > 0.12, "las alas son raras y el núcleo, algo más común");
+  ok(sorteo.every(r => !(r.alas !== "no" && r.espalda === "continua") && !(r.cuernos === "multiple" && r.orejas === "dobles")), "las combinaciones imposibles no salen");
+  // herencia: de cada rasgo, 46 % del padre, 46 % de la madre y 8 % nuevo
+  { const A = HR.sortear(M.crearRng("pa")), B = HR.sortear(M.crearRng("ma")), hij = Array.from({ length: N }, () => HR.heredar(rg, A, B));
+    const k = "cuernos"; const A2 = Object.assign({}, A, { [k]: "recto" }), B2 = Object.assign({}, B, { [k]: "espiral" });
+    const h2 = Array.from({ length: N }, () => HR.heredar(rg, A2, B2)), delPadre = h2.filter(r => r[k] === "recto").length / N, delaMadre = h2.filter(r => r[k] === "espiral").length / N;
+    ok(Math.abs(delPadre - 0.46) < 0.04 && Math.abs(delaMadre - 0.46) < 0.04, `una cría hereda un rasgo del padre (${pct(delPadre)}) o de la madre (${pct(delaMadre)}) en torno al 46 %`);
+    ok(hij.every(r => HR.CLAVES.every(c => r[c])), "la cría siempre tiene todos los rasgos"); }
+  // los efectos son pequeños y la mayoría de las criaturas no se ve afectada
+  { const fxs = sorteo.map(r => HR.efectos(r));
+    ok(fxs.every(f => Math.abs(f.vel) <= 12 && Math.abs(f.ace) <= 14 && f.tropiezo >= 0.4 && f.trafico <= 1 && f.cuesta <= 1), "ningún efecto se sale de lo razonable");
+    const media = k => fxs.reduce((a, f) => a + f[k], 0) / fxs.length;
+    ok(Math.abs(media("vel")) < 1.5 && Math.abs(media("ace")) < 1.2, `el efecto medio en velocidad y arranque es casi nulo (${media("vel").toFixed(2)}, ${media("ace").toFixed(2)})`);
+    informe.push(`rasgos: efecto medio vel ${media("vel").toFixed(2)}, frag ${media("frag").toFixed(3)}; con efecto en la velocidad: ${pct(fxs.filter(f => f.vel !== 0).length / N)}`); }
+  // en la carrera: la misma criatura con un rasgo contra sí misma sin él, mismo azar
+  const mundo = { n: 400, sigId: 0, nombres: {} }, molde = I.nuevaCriatura(mundo, M.crearRng("molde"), { nac: 0 });
+  molde.fatiga = 0; molde.forma = 0; molde.rasgos = HR.completo({ cuernos: "ninguno", piel: "pelo", ojos: "dos", alas: "no", nucleo: "ninguno", dedos: "tres", patas: "4", cola: "fina", cuello: "recto", orejas: "pequeñas" });
+  const con = (r, genes) => { const c = JSON.parse(JSON.stringify(molde)); c.rasgos = Object.assign({}, c.rasgos, r); Object.assign(c.genes, genes || {}); return c; };
+  const KK = rapido ? 500 : 1500;
+  const duelo = (r, cond, genes, dist) => { let g = 0; const A = con(r, genes), B = con({}, genes);
+    for (let j = 0; j < KK; j++) { const ea = I.efectivo(mundo, A, cond, 1), eb = I.efectivo(mundo, B, cond, 2); ea.id = 0; eb.id = 1;
+      if (I.ordenLlegada(I.simular(M.crearRng("rd", JSON.stringify(r), j), [ea, eb], cond))[0].id === 0) g++; }
+    return g / KK; };
+  const cond = (pista, clima, dist) => I.condiciones({ pista, dist: dist || 1600, mojadoPrevio: 0.1, n: 7 }, clima || "despejado");
+  const d1 = duelo({ alas: "membranosas" }, cond("cielo"), {}), d2 = duelo({ alas: "membranosas" }, cond("silver"), {});
+  ok(d1 > 0.57 && d2 < 0.53, `las alas de membrana ganan en el Cielo Roto (${pct(d1)}) y estorban en una pista llana (${pct(d2)})`);
+  const d3 = duelo({ alas: "membranosas" }, cond("impuesto"), {});
+  ok(d3 > d2, `y alivian las cuestas aunque no sea una pista arcana (${pct(d3)} contra ${pct(d2)} en llano)`);
+  const e1 = duelo({ nucleo: "ardiente" }, cond("espejos"), {}), e2 = duelo({ nucleo: "ardiente" }, cond("silver"), {});
+  ok(e1 > 0.62 && e2 < 0.52, `el núcleo ardiente gana en pista arcana (${pct(e1)}) y no en una normal (${pct(e2)})`);
+  const o1 = duelo({ ojos: "cuatro" }, cond("espejos"), { ojo: 0.2 }), o2 = duelo({ ojos: "cuatro" }, cond("silver"), { ojo: 0.2 });
+  ok(o1 > 0.6 && o1 > o2, `cuatro ojos casi no se confunden en los Espejos (${pct(o1)} contra ${pct(o2)} en llano)`);
+  const s1 = duelo({ dedos: "palmeadas" }, cond("cienaga"), {}), s2 = duelo({ dedos: "palmeadas" }, cond("silver"), {});
+  ok(s1 > 0.62 && s1 > s2 + 0.1, `las patas palmeadas se llevan bien con la Ciénaga (${pct(s1)} contra ${pct(s2)})`);
+  const b1 = duelo({ piel: "escamas" }, cond("brasas"), { pel: 0.9 }), b2 = duelo({ piel: "escamas" }, cond("silver", "nublado"), { pel: 0.9 });
+  ok(b1 > 0.55 && b1 > b2 + 0.03, `la piel de escamas sufre menos el calor de las Brasas (${pct(b1)} contra ${pct(b2)} con tiempo fresco)`);
+  { let g = 0; const A = con({ cuernos: "recto" }), B = con({}); A.ritmo = B.ritmo = 0.1;
+    const campo = (c0) => { const es = [I.efectivo(mundo, c0, cond("silver"), 1)]; es[0].id = 0; for (let k = 1; k < 9; k++) { const o = con({}); o.ritmo = 0.9 - 0.1 * k; const e = I.efectivo(mundo, o, cond("silver"), k + 1); e.id = k; es.push(e); } return es; };
+    let tA = 0, tB = 0; for (let j = 0; j < 300; j++) { tA += I.simular(M.crearRng("tr", j), campo(A), cond("silver"))[0].t; tB += I.simular(M.crearRng("tr", j), campo(B), cond("silver"))[0].t; }
+    ok(tA < tB, "unos cuernos que abren paso ayudan a la que sale de atrás entre un pelotón apretado"); }
+  // pistas
+  ok(Object.values(M.PISTAS).filter(x => x.arcana).every(x => M.REGLAS_ARCANAS[x.arcana] && M.REGLAS_ARCANAS[x.arcana].texto), "cada pista arcana tiene su regla escrita");
+  { let arc = 0; const vistas = new Set();
+    for (let j = 0; j < 1200; j++) { const pr = I.pistaDeJornada("pistas", j); vistas.add(pr); if (M.PISTAS[pr].arcana) arc++; }
+    ok(vistas.size === Object.keys(M.PISTAS).length, "todas las pistas llegan a salir");
+    const fr = arc / 1200; ok(fr > 0.14 && fr < 0.32, `las pistas arcanas salen en torno a una de cada cuatro jornadas (${pct(fr)})`); }
+}
 
 // 5) Un mundo largo
 const AÑOS = rapido ? 3 : 8, CARRERAS = AÑOS * C.ANIO;

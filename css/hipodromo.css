@@ -242,7 +242,7 @@ body.hip-con-ficha { overflow: hidden; }
 .hpx canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .hpx-frente { pointer-events: none; z-index: 300; }
 .hpx-caballos { position: absolute; inset: 0; z-index: 10; }
-.hpx-cab { position: absolute; left: 0; top: 0; will-change: transform; pointer-events: none; }
+.hpx-cab { position: absolute; left: 0; top: 0; will-change: transform; pointer-events: none; transform-origin: 50% 85%; }
 .hpx-cab svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .25)); }
 .hpx-nombre { position: absolute; left: 50%; top: -4px; transform: translateX(-50%); font: 700 .66rem sans-serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; white-space: nowrap; opacity: .0; transition: opacity .2s; }
 .hpx-cab:hover .hpx-nombre, .hpx-nombre.mia { opacity: 1; }
@@ -266,3 +266,10 @@ body.hip-con-ficha { overflow: hidden; }
 .hpx-mini-barra i { position: absolute; top: -3px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; border: 1px solid #000a; }
 .hpx-mini-meta { position: absolute; right: 0; top: 0; font: 700 .62rem sans-serif; color: #fff; text-shadow: 0 1px 2px #000; }
 @media (max-width: 720px) { .hpx-top { min-width: 110px; font-size: .68rem; } .hpx-faltan strong { font-size: 1rem; } }
+
+/* Rasgos de la ficha y reglas de las pistas arcanas */
+.hip-rasgo { display: inline-block; margin: 2px 4px 2px 0; padding: 1px 8px; border-radius: 10px; font-size: .78rem; background: rgba(255, 255, 255, .08); color: #cfd9cf; }
+.hip-rasgo.activo { background: rgba(232, 217, 138, .16); color: #f1e29a; cursor: help; }
+.hip-rasgos-hace { margin: 4px 0 10px; padding-left: 18px; font-size: .82rem; color: #b9c8bc; }
+.hip-rasgos-hace li { margin: 2px 0; }
+.hip-arcana { margin: 10px 0 4px; padding: 8px 12px; border-left: 3px solid #b99cff; background: rgba(150, 120, 255, .10); font-size: .9rem; }

@@ -183,6 +183,7 @@
         <div><span>Bolsa</span><strong>${monedas(p.bolsa)}</strong><small>reparto entre los 5 primeros</small></div>
         <div><span>Pista en detalle</span><small class="hip-barras">Curvas ${barra(pista.curvas, "Curvas")} Cuestas ${barra(pista.cuestas, "Cuestas")} Drenaje ${barra(pista.drenaje, "Drenaje")}</small></div>
       </div>
+      ${pista.arcana ? `<p class="hip-arcana"><strong>Pista arcana · ${esc(M.REGLAS_ARCANAS[pista.arcana].nombre)}.</strong> ${esc(M.REGLAS_ARCANAS[pista.arcana].texto)} Las criaturas con núcleo responden mejor aquí.</p>` : ""}
       <div class="hip-pron"><span>Pronóstico</span>${pronosticoTxt(p)}</div>
       ${p.rumores.length ? `<ul class="hip-rumores">${p.rumores.map(r => `<li>${esc(r.texto)}</li>`).join("")}</ul>` : ""}
       ${p.suspendida ? '<p class="hip-vacio">No hay criaturas en condiciones de correr. La carrera se aplaza.</p>' : ""}`);
@@ -295,7 +296,7 @@
     est.pendientes.filter(a => a.n === p.n).forEach(a => carriles.forEach(c => { if (a.nombres.includes(c.nombre)) marcadas.add(c.id); }));
     $("hipPista")._h = null;
     const suelo = (M.PISTAS && M.PISTAS[res.pista]) ? M.PISTAS[res.pista] : null;
-    const pista = HipodromoPista.crear($("hipPista"), { res, carriles, ultimo, D, marcadas, suelo: suelo ? suelo.suelo : "hierba", cuestas: suelo ? suelo.cuestas : 0 });
+    const pista = HipodromoPista.crear($("hipPista"), { res, carriles, ultimo, D, marcadas, suelo: suelo ? suelo.suelo : "hierba", cuestas: suelo ? suelo.cuestas : 0, arcana: suelo ? suelo.arcana : null, zonas: suelo && suelo.arcana ? M.zonasArcanas(suelo.arcana, res.n, res.dist / 100) : [] });
     escena = { n: p.n, carriles, dist: res.dist, res, pista, resFinal: false };
     $("hipEscenaTitulo").textContent = `${res.nombre} · ${res.dist} m · terreno ${res.estadoPista} · ${M.CLIMAS[res.clima].texto}`;
     $("hipEscenaRes").innerHTML = "";
@@ -349,6 +350,14 @@
     $("hipCriaMas").classList.toggle("hidden", l.length <= mostrarMas);
   }
 
+  /* Rasgos de la criatura: los que hacen algo en la carrera llevan su efecto escrito; los demás son adorno */
+  function rasgosHtml(p) {
+    const lista = D.rasgosDetalle(p);
+    if (!lista.length) return "";
+    const con = lista.filter(x => x.hace);
+    return `<p class="hip-rasgos">${lista.map(x => `<span class="hip-rasgo${x.hace ? " activo" : ""}" ${x.hace ? `title="${esc(x.hace)}"` : ""}>${esc(x.texto)}</span>`).join(" ")}</p>` +
+      (con.length ? `<ul class="hip-rasgos-hace">${con.map(x => `<li><strong>${esc(x.texto)}.</strong> ${esc(x.hace)}</li>`).join("")}</ul>` : "");
+  }
   function fichaHtml(p) {
     const c = M.buscar(m, p.id), apt = p.aptitudes;
     const nombres = { firme: "Firme", bueno: "Bueno", blando: "Blando", pesado: "Pesado" };
@@ -370,7 +379,7 @@
         <div class="hip-ficha-dibujo">${D.silueta(p, { clase: "hip-silueta grande" })}</div>
         <div class="hip-ficha-titulo"><h2>${esc(p.nombre)}</h2>
           <p>${sexoTxt(p)} · ${esc(p.etapa)} · ${edadTxt(p)} · generación ${p.gen}${p.arquetipo ? " · " + esc(p.arquetipo) : ""}</p>
-          ${D.rasgos(p).length ? `<p class="hip-rasgos">${D.rasgos(p).map(esc).join(" · ")}</p>` : ""}
+          ${rasgosHtml(p)}
           <p class="hip-sellos">${etiquetasEstado(p)}${p.etiquetas.filter(t => t !== "Leyenda").map(t => `<span class="hip-sello">${esc(t)}</span>`).join("")}</p>
           <button type="button" class="hip-boton" data-favorito="${p.id}" aria-pressed="${fav}">${fav ? "♥ En favoritas" : "♡ Seguir"}</button></div></div>
       ${lesion}

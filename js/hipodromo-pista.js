@@ -34,8 +34,14 @@ window.HipodromoPista = (function () {
   const SUELO = {
     hierba: { pista: "#3f9a3d", franja: "#47a845", orilla: "#2d6e2c", colina: "#2f7a3a", lejos: "#4c8f55" },
     arcilla: { pista: "#a8643b", franja: "#b3703f", orilla: "#7c4526", colina: "#85533a", lejos: "#9a6a4c" },
-    arena: { pista: "#dcbb78", franja: "#e5c78c", orilla: "#b48c49", colina: "#c19a5e", lejos: "#d2b07c" }
+    arena: { pista: "#dcbb78", franja: "#e5c78c", orilla: "#b48c49", colina: "#c19a5e", lejos: "#d2b07c" },
+    // pistas arcanas
+    cristal: { pista: "#6f62ad", franja: "#8274c4", orilla: "#3f3470", colina: "#54489a", lejos: "#8d82c8", cielo: ["#2c1f5e", "#b79cf0"] },
+    nube: { pista: "#cfe0f2", franja: "#e1eefb", orilla: "#8fb0d0", colina: "#aac6e2", lejos: "#c6d9ec", cielo: ["#5fb4f5", "#f4fbff"] },
+    pantano: { pista: "#586638", franja: "#657545", orilla: "#37431f", colina: "#43522b", lejos: "#6b7b50", cielo: ["#41563f", "#a9c29a"] },
+    brasa: { pista: "#4b2a22", franja: "#5a342b", orilla: "#26130f", colina: "#3c1c16", lejos: "#6e3c2d", cielo: ["#4a140e", "#ff8a3d"] }
   };
+  const COLOR_ZONA = { ilusion: "180,140,255", corrientes: "255,255,255", sumidero: "40,70,30", brasas: "255,90,30" };
   const HUM = { firme: 0, bueno: 0.12, blando: 0.32, pesado: 0.55 };
 
   function mezcla(hex, aHex, f) {   // mezcla dos colores #rrggbb
@@ -71,8 +77,10 @@ window.HipodromoPista = (function () {
   function crear(cont, cfg) {
     const { res, carriles, ultimo, D } = cfg;
     const dist = res.dist, n = carriles.length;
-    const clima = CLIMA[res.clima] || CLIMA.despejado;
+    const clima = Object.assign({}, CLIMA[res.clima] || CLIMA.despejado);
     const suelo = SUELO[(cfg.suelo || "hierba")] || SUELO.hierba;
+    const arcana = cfg.arcana || null, zonas = cfg.zonas || [];
+    if (suelo.cielo) clima.cielo = suelo.cielo;   // las pistas arcanas tienen cielo propio
     const hum = HUM[res.estadoPista] != null ? HUM[res.estadoPista] : 0;
     const cuestas = clamp(cfg.cuestas || 0, 0, 1);
     const durRace = duracionCarrera(dist), factor = ultimo / durRace;
@@ -168,7 +176,17 @@ window.HipodromoPista = (function () {
       arboles.forEach(a => {
         const x = W / 2 + (a.m - camGr) * gp * 0.32; if (x < -50 || x > W + 50) return;
         const alto = (22 + a.h * 28) * (0.8 + a.t * 0.4), y = hz + 3;
-        if (cfg.suelo === "arena") {          // cactus
+        if (cfg.suelo === "cristal") {          // cristales que brillan
+          gF.fillStyle = mezcla("#9a86f0", clima.cielo[1], 0.2); gF.beginPath(); gF.moveTo(x - 7, y); gF.lineTo(x - 2, y - alto * 1.05); gF.lineTo(x + 3, y - alto * 0.6); gF.lineTo(x + 8, y); gF.closePath(); gF.fill();
+          gF.fillStyle = "rgba(255,255,255,.35)"; gF.beginPath(); gF.moveTo(x - 2, y - alto * 1.05); gF.lineTo(x + 3, y - alto * 0.6); gF.lineTo(x - 1, y - alto * 0.5); gF.closePath(); gF.fill();
+        } else if (cfg.suelo === "nube") {      // islas de nube
+          gF.fillStyle = "rgba(255,255,255,.75)"; for (let q = 0; q < 3; q++) { gF.beginPath(); gF.ellipse(x + q * 14 - 14, y - alto * 0.5 - q % 2 * 5, 15, 8, 0, 0, 7); gF.fill(); }
+        } else if (cfg.suelo === "pantano") {   // árboles secos y juncos
+          gF.strokeStyle = mezcla("#3a2f24", clima.cielo[1], 0.2); gF.lineWidth = 3; gF.beginPath(); gF.moveTo(x, y); gF.lineTo(x, y - alto * 0.9); gF.moveTo(x, y - alto * 0.55); gF.lineTo(x + 9, y - alto * 0.85); gF.moveTo(x, y - alto * 0.7); gF.lineTo(x - 8, y - alto); gF.stroke();
+        } else if (cfg.suelo === "brasa") {     // agujas de roca con la punta al rojo
+          gF.fillStyle = mezcla("#2c1a16", clima.cielo[1], 0.15); gF.beginPath(); gF.moveTo(x - 9, y); gF.lineTo(x - 1, y - alto * 1.1); gF.lineTo(x + 9, y); gF.closePath(); gF.fill();
+          gF.fillStyle = "rgba(255,120,40," + (0.55 + 0.3 * Math.sin(ahora * 3 + a.c * 9)) + ")"; gF.beginPath(); gF.moveTo(x - 3.5, y - alto * 0.8); gF.lineTo(x - 1, y - alto * 1.1); gF.lineTo(x + 2.4, y - alto * 0.78); gF.closePath(); gF.fill();
+        } else if (cfg.suelo === "arena") {          // cactus
           gF.fillStyle = mezcla("#5a8a47", clima.cielo[1], 0.25 + clima.niebla * 0.4);
           gF.fillRect(x - 3, y - alto, 6, alto); gF.fillRect(x - 11, y - alto * 0.65, 5, alto * 0.3); gF.fillRect(x + 6, y - alto * 0.8, 5, alto * 0.3);
         } else if (cfg.suelo === "arcilla") { // rocas y troncos secos
@@ -221,6 +239,20 @@ window.HipodromoPista = (function () {
         for (let k = 0; k < 90; k++) { const r = azar(k * 977 + m)(); gF.fillStyle = ["#e85d5d", "#f1c84b", "#5da9e8", "#8bd36a", "#f5f0e6", "#c77ae8"][Math.floor(r * 6)]; gF.fillRect(x - 126 + (k % 30) * 4.2, y0 - 42 + Math.floor(k / 30) * 11 + ((ahora * 3 + k) % 7 < 0.5 ? -1 : 0), 3, 3.4); }
         gF.fillStyle = "#f7f3e2"; gF.fillRect(x - 130, y0 - 58, 130, 12); gF.fillStyle = "#222"; gF.font = "700 9px sans-serif"; gF.textAlign = "center"; gF.fillText(txt, x - 65, y0 - 49);
       });
+      // la regla de la pista arcana: los tramos donde actúa se ven
+      if (arcana && zonas.length) {
+        const col = COLOR_ZONA[arcana] || "255,255,255";
+        zonas.forEach((on, s) => {
+          if (!on) return;
+          const xa = xm(s * 100), xb = xm(s * 100 + 100); if (xb < 0 || xa > W) return;
+          const gz = gF.createLinearGradient(0, y0, 0, H); gz.addColorStop(0, "rgba(" + col + ",0)"); gz.addColorStop(1, "rgba(" + col + "," + (arcana === "corrientes" ? 0.22 : 0.2) + ")");
+          gF.fillStyle = gz; gF.fillRect(xa, y0, xb - xa, H - y0);
+          if (arcana === "ilusion") { gF.strokeStyle = "rgba(" + col + "," + (0.35 + 0.25 * Math.sin(ahora * 4 + s)) + ")"; gF.lineWidth = 1.4; for (let q = 0; q < 6; q++) { const xx = xa + (xb - xa) * (q + 0.5) / 6; gF.beginPath(); gF.moveTo(xx, y0 + 4); gF.lineTo(xx + 14, H); gF.stroke(); } }
+          if (arcana === "corrientes") { gF.strokeStyle = "rgba(255,255,255,.55)"; gF.lineWidth = 1.6; for (let q = 0; q < 7; q++) { const yy = y0 + 20 + q * ((H - y0 - 30) / 7), off = ((ahora * 160 + q * 53 + s * 31) % (xb - xa)); gF.beginPath(); gF.moveTo(xa + off, yy); gF.lineTo(Math.min(xb, xa + off + 38), yy - 9); gF.stroke(); } }
+        });
+        if (arcana === "sumidero" || arcana === "brasas") { gF.fillStyle = "rgba(" + col + ",0.08)"; gF.fillRect(0, y0, W, H - y0); }
+        if (arcana === "brasas") { gF.fillStyle = "rgba(255,170,80,.7)"; for (let q = 0; q < 26; q++) { const xx = (q * 97 + ahora * 20) % W, yy = H - ((ahora * 40 + q * 61) % (H - y0)); gF.fillRect(xx, yy, 2, 2); } }
+      }
       // la línea de meta
       const xf = xm(dist);
       if (xf > -10 && xf < W + 10) {
@@ -300,7 +332,10 @@ window.HipodromoPista = (function () {
         const x = xLider + (mv - L) * pxM;
         const w = bw * info.escala, h = bh * info.escala;
         k.el.style.width = w + "px";
-        k.el.style.transform = "translate(" + (x - w * 0.5).toFixed(1) + "px," + (info.yPies - h * 0.92).toFixed(1) + "px)";
+        let giro = 0, bajo = 0;
+        if (k.tropiezo != null) { const u = (el - k.tropiezo) / 0.7; if (u >= 1) k.tropiezo = null; else { giro = -11 * Math.sin(Math.PI * u) * (1 - u * 0.4); bajo = 5 * Math.sin(Math.PI * u) * h / 100; } }
+        if (k.cojo) bajo += Math.abs(Math.sin(el * 9)) * 3.5 * h / 100;
+        k.el.style.transform = "translate(" + (x - w * 0.5).toFixed(1) + "px," + (info.yPies - h * 0.92 + bajo).toFixed(1) + "px)" + (giro ? " rotate(" + giro.toFixed(1) + "deg)" : "");
         k.el.style.zIndex = info.z;
         k.el.classList.toggle("lider", k.lugar === 1 && T < k.tFin && k.metros > 20);
         const fuera = x < -w || x > W + w;
@@ -315,6 +350,7 @@ window.HipodromoPista = (function () {
         const k = cors.find(x => x.c.id === inc.id);
         if (k && k.metros >= inc.tramo * 100 + 50) {
           inc.visto = true;
+          if (inc.tipo === "lesion") k.cojo = true; else k.tropiezo = el;
           k.aviso.textContent = inc.tipo === "lesion" ? "✚" : "!"; k.aviso.className = "hpx-aviso on " + inc.tipo;
           if (inc.tipo !== "lesion") setTimeout(() => { k.aviso.className = "hpx-aviso"; }, 1700);
         }
