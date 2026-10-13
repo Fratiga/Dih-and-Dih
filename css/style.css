@@ -3795,3 +3795,23 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
 .eco-problemas { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .eco-problemas li { padding: 8px 10px; border: 1px solid #ff6a5a66; background: rgba(255, 106, 90, .08); }
 .eco-problemas small { display: block; color: var(--muted); }
+
+/* --- Admin: cambios, copias y salud --- */
+.admin-cambios-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.admin-cambios-barra select { color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 6px 8px; font: inherit; }
+.admin-cambios-lista { display: flex; flex-direction: column; gap: 10px; }
+.admin-cambio { padding: 12px 14px; border: 1px solid var(--border); background: var(--panel); display: flex; flex-direction: column; gap: 6px; }
+.admin-cambio.revertido { opacity: .6; }
+.admin-cambio-top { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .78rem; color: var(--muted); }
+.admin-cambio-tabla { color: var(--accent-soft); }
+.admin-cambio-que code { font-size: .85rem; color: var(--text); background: var(--panel-2); padding: 1px 6px; }
+.admin-cambio-diff { font-size: .82rem; color: var(--muted); overflow-wrap: anywhere; }
+.admin-cambio details summary { cursor: pointer; font-size: .8rem; color: var(--muted); }
+.admin-cambio-json { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+.admin-cambio-json pre { margin: 4px 0 0; padding: 8px; max-height: 220px; overflow: auto; font-size: .72rem; background: var(--panel-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-cambio .admin-cuenta-accion { align-self: flex-start; }
+@media (max-width: 700px) { .admin-cambio-json { grid-template-columns: 1fr; } }
+details.admin-sistema-fila { display: block; }
+details.admin-sistema-fila > summary { display: flex; align-items: center; gap: 12px; cursor: pointer; list-style: none; }
+details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
+.admin-salud-detalle { grid-column: 1 / -1; margin: 6px 0 0 28px; padding-left: 16px; font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }

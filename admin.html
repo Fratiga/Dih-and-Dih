@@ -14,10 +14,10 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270164">
-  <link rel="stylesheet" href="css/bufon-lab.css?v=20270164">
-  <link rel="stylesheet" href="css/taberna.css?v=20270164">
-  <link rel="stylesheet" href="css/cartas.css?v=20270164">
+  <link rel="stylesheet" href="css/style.css?v=20270169">
+  <link rel="stylesheet" href="css/bufon-lab.css?v=20270169">
+  <link rel="stylesheet" href="css/taberna.css?v=20270169">
+  <link rel="stylesheet" href="css/cartas.css?v=20270169">
 </head>
 <body>
   <header class="site-header">
@@ -138,6 +138,9 @@
         <button type="button" class="admin-tab" data-tab="cartas">Cartas <span id="adminCartasCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="economia">Economía de cartas <span id="adminEconomiaCount" class="admin-tab-badge" title="Cartas sin límite global"></span></button>
         <button type="button" class="admin-tab" data-tab="sistema">Sistema <span id="adminSistemaCount" class="admin-tab-badge"></span></button>
+        <button type="button" class="admin-tab" data-tab="cambios">Cambios</button>
+        <button type="button" class="admin-tab" data-tab="copias">Copias</button>
+        <button type="button" class="admin-tab" data-tab="salud">Salud <span id="adminSaludCount" class="admin-tab-badge"></span></button>
       </div>
 
       <section id="adminPanelPeticiones" class="admin-panel active">
@@ -162,6 +165,30 @@
         <div id="adminBufonLista" class="admin-bufon-lista">
           <p class="admin-vacio">Cargando...</p>
         </div>
+      </section>
+
+      <section id="adminPanelCambios" class="admin-panel">
+        <p class="admin-bufon-banner">Todo lo que se edita desde la web (cartas, sinergias, música, fanarts, rocola...) queda anotado con quién lo hizo y cómo estaba antes. Cualquier cambio se puede deshacer; deshacer también queda anotado, así que se puede rehacer. Se guardan 120 días.</p>
+        <p class="admin-cambios-barra">
+          <label>Mostrar <select id="adminCambiosTabla"><option value="">Todo</option></select></label>
+          <button type="button" id="adminCambiosRecargar" class="admin-cuenta-accion">Actualizar</button>
+        </p>
+        <div id="adminCambiosLista" class="admin-cambios-lista"><p class="admin-vacio">Abre esta pestaña para cargar el historial.</p></div>
+      </section>
+
+      <section id="adminPanelCopias" class="admin-panel">
+        <p class="admin-bufon-banner">Descarga una copia en un archivo. «Solo contenido» trae lo que se edita desde la web (cartas, música, fanarts, rocola...). «Completa» añade también lo de los jugadores (perfiles, fichas, colecciones, peticiones...): guarda ese archivo con cuidado, tiene datos de las cuentas. Los textos del compendio y el código ya están en el repositorio de GitHub.</p>
+        <p>
+          <button type="button" id="adminCopiaContenido" class="admin-cuenta-accion">Descargar solo contenido</button>
+          <button type="button" id="adminCopiaTodo" class="admin-cuenta-accion">Descargar copia completa</button>
+        </p>
+        <p id="adminCopiasEstado" class="admin-cartas-estado" role="status"></p>
+      </section>
+
+      <section id="adminPanelSalud" class="admin-panel">
+        <p class="admin-bufon-banner">Abre cada página del sitio en segundo plano y anota errores de código, archivos que no cargan e imágenes rotas. Tarda un par de minutos. No cambia ningún dato. No suena nada durante la revisión.</p>
+        <p><button type="button" id="adminSaludRevisar" class="admin-cuenta-accion">Revisar las páginas</button></p>
+        <div id="adminSaludLista" class="admin-sistema-lista"><p class="admin-vacio">Pulsa «Revisar las páginas».</p></div>
       </section>
 
       <section id="adminPanelSistema" class="admin-panel">
@@ -248,44 +275,45 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="js/dialogos.js?v=20270164"></script>
-  <script src="data/entries.js?v=20270164"></script>
-  <script src="data/personajes.js?v=20270164"></script>
-  <script src="data/lugares.js?v=20270164"></script>
-  <script src="data/facciones.js?v=20270164"></script>
-  <script src="data/pergaminos.js?v=20270164"></script>
-  <script src="data/armas.js?v=20270164"></script>
-  <script src="data/objetos.js?v=20270164"></script>
-  <script src="data/bestiario.js?v=20270164"></script>
-  <script src="data/razas.js?v=20270164"></script>
-  <script src="data/religiones.js?v=20270164"></script>
-  <script src="data/rotacion.js?v=20270164"></script>
-  <script src="data/musica.js?v=20270164"></script>
-  <script src="js/musica-nube.js?v=20270164"></script>
-  <script src="js/common.js?v=20270164"></script>
-  <script src="js/temas.js?v=20270164"></script>
-  <script src="js/taberna.js?v=20270164"></script>
-  <script src="js/player.js?v=20270164"></script>
-  <script src="js/modal.js?v=20270164"></script>
-  <script src="data/jumpscare.js?v=20270164"></script>
-  <script src="data/contrasenas.js?v=20270164"></script>
-  <script src="data/fanarts.js?v=20270164"></script>
-  <script src="js/cartas-datos.js?v=20270164"></script>
-  <script src="js/cartas-cliente.js?v=20270164"></script>
-  <script src="js/fichas-supabase.js?v=20270164"></script>
-  <script src="js/presencia.js?v=20270164"></script>
-  <script src="js/peticiones-supabase.js?v=20270164"></script>
-  <script src="js/bufon-supabase.js?v=20270164"></script>
-  <script src="js/muerte-subita-supabase.js?v=20270164"></script>
-  <script src="js/fanarts-supabase.js?v=20270164"></script>
-  <script src="js/lado.js?v=20270164"></script>
-  <script src="js/slappy.js?v=20270164"></script>
-  <script src="js/busqueda-global.js?v=20270164"></script>
-  <script src="js/header-marquee.js?v=20270164"></script>
-  <script src="data/bufon-ciclos-lista.js?v=20270164"></script>
-  <script src="js/admin.js?v=20270164"></script>
-  <script src="js/admin-economia.js?v=20270164"></script>
-  <script src="js/bufon-lab-motor.js?v=20270164"></script>
-  <script src="js/bufon-lab.js?v=20270164"></script>
+  <script src="js/dialogos.js?v=20270169"></script>
+  <script src="data/entries.js?v=20270169"></script>
+  <script src="data/personajes.js?v=20270169"></script>
+  <script src="data/lugares.js?v=20270169"></script>
+  <script src="data/facciones.js?v=20270169"></script>
+  <script src="data/pergaminos.js?v=20270169"></script>
+  <script src="data/armas.js?v=20270169"></script>
+  <script src="data/objetos.js?v=20270169"></script>
+  <script src="data/bestiario.js?v=20270169"></script>
+  <script src="data/razas.js?v=20270169"></script>
+  <script src="data/religiones.js?v=20270169"></script>
+  <script src="data/rotacion.js?v=20270169"></script>
+  <script src="data/musica.js?v=20270169"></script>
+  <script src="js/musica-nube.js?v=20270169"></script>
+  <script src="js/common.js?v=20270169"></script>
+  <script src="js/temas.js?v=20270169"></script>
+  <script src="js/taberna.js?v=20270169"></script>
+  <script src="js/player.js?v=20270169"></script>
+  <script src="js/modal.js?v=20270169"></script>
+  <script src="data/jumpscare.js?v=20270169"></script>
+  <script src="data/contrasenas.js?v=20270169"></script>
+  <script src="data/fanarts.js?v=20270169"></script>
+  <script src="js/cartas-datos.js?v=20270169"></script>
+  <script src="js/cartas-cliente.js?v=20270169"></script>
+  <script src="js/fichas-supabase.js?v=20270169"></script>
+  <script src="js/presencia.js?v=20270169"></script>
+  <script src="js/peticiones-supabase.js?v=20270169"></script>
+  <script src="js/bufon-supabase.js?v=20270169"></script>
+  <script src="js/muerte-subita-supabase.js?v=20270169"></script>
+  <script src="js/fanarts-supabase.js?v=20270169"></script>
+  <script src="js/lado.js?v=20270169"></script>
+  <script src="js/slappy.js?v=20270169"></script>
+  <script src="js/busqueda-global.js?v=20270169"></script>
+  <script src="js/header-marquee.js?v=20270169"></script>
+  <script src="data/bufon-ciclos-lista.js?v=20270169"></script>
+  <script src="js/admin.js?v=20270169"></script>
+  <script src="js/admin-herramientas.js?v=20270169"></script>
+  <script src="js/admin-economia.js?v=20270169"></script>
+  <script src="js/bufon-lab-motor.js?v=20270169"></script>
+  <script src="js/bufon-lab.js?v=20270169"></script>
 </body>
 </html>

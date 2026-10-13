@@ -626,6 +626,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     { que: "Canciones ocultas de la rocola (gestor)", sql: "rocola_gestor.sql", tipo: "tabla", ref: "rocola_ocultas" },
     { que: "Nombres de canciones del sitio (gestor)", sql: "rocola_nombres.sql", tipo: "tabla", ref: "rocola_nombres" },
     { que: "Música de fondo por página", sql: "musica_paginas.sql", tipo: "tabla", ref: "musica_paginas" },
+    { que: "Historial de cambios y Deshacer", sql: "docs/admin/admin_historial.sql", tipo: "rpc", ref: "admin_cambios_listar", args: { p_limite: 1 } },
     { que: "Economía de cartas: ejemplares y límites", sql: "economia_1_nucleo.sql", tipo: "tabla", ref: "cartas_ejemplares" },
     { que: "Economía de cartas: recompensas de minijuegos", sql: "economia_3_recompensas.sql", tipo: "tabla", ref: "cartas_juegos" },
     { que: "Economía de cartas: apuestas en duelos", sql: "economia_4_apuestas.sql", tipo: "rpc", ref: "cartas_refrescar", args: {} },
