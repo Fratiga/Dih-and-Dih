@@ -846,7 +846,7 @@
   function etiquetas(c, apt) {
     const e = [];
     const con = SUELOS.filter(sl => apt[sl] && apt[sl].salidas >= 3);
-    con.filter(sl => apt[sl].estrellas >= 4).forEach(sl => e.push(`Se crece en terreno ${sl}`));
+    con.filter(sl => apt[sl].estrellas >= 4).forEach(sl => e.push(`Rinde mejor en terreno ${sl}`));
     con.filter(sl => apt[sl].estrellas <= 2).forEach(sl => e.push(`Sufre en terreno ${sl}`));
     if (c.racha >= 2) e.push(`En racha: ${c.racha} victorias seguidas`);
     const ult = c.hist.slice(-4);

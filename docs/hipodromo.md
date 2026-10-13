@@ -105,7 +105,7 @@ El perfil público trae el cuerpo con 5 niveles de texto por parte («Patas larg
 
 **Lo que no se ve** (solo está en el estado del servidor): los genes exactos, un *talento oculto* de cada capacidad (la cría no es una copia del cuerpo), la **forma del día** (sube y baja con el tiempo), la fatiga y el rating real. Dos criaturas con el mismo cuerpo no rinden igual, y por eso el historial sigue importando.
 
-**Lo que sí se aprende corriendo**: estrellas con ruido que mejoran con las salidas (con pocas carreras pueden engañar), estrellas por tipo de terreno (hacen falta 2 salidas en ese terreno), etiquetas («Se crece en terreno pesado», «En mala racha»), el estilo (va al frente, remonta desde atrás) a partir de 3 salidas, y las secuelas visibles de lesiones permanentes («cojea un poco de una pata trasera»).
+**Lo que sí se aprende corriendo**: estrellas con ruido que mejoran con las salidas (con pocas carreras pueden engañar), estrellas por tipo de terreno (hacen falta 2 salidas en ese terreno), etiquetas («Rinde mejor en terreno pesado», «En mala racha»), el estilo (va al frente, remonta desde atrás) a partir de 3 salidas, y las secuelas visibles de lesiones permanentes («cojea un poco de una pata trasera»).
 
 **Etapas de la vida**, por edad: cría, potro, joven, adulto, veterano, y al final retirado o fallecido. `HipodromoMotor.etapaDe(edad, estado)` la calcula; el dibujo puede cambiar con ella.
 

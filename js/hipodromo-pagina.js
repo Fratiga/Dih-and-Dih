@@ -434,7 +434,7 @@
         <div class="hip-ficha-titulo"><h2>${esc(p.nombre)}</h2>
           <p>${sexoTxt(p)} · ${esc(p.etapa)} · ${edadTxt(p)} · generación ${p.gen}${p.arquetipo ? " · " + esc(p.arquetipo) : ""}</p>
           ${rasgosHtml(p)}
-          <p class="hip-sellos">${etiquetasEstado(p)}${p.etiquetas.filter(t => t !== "Leyenda").map(t => `<span class="hip-sello">${esc(t)}</span>`).join("")}</p>
+          <p class="hip-sellos">${etiquetasEstado(p)}${p.etiquetas.filter(t => t !== "Leyenda").map(t => `<span class="hip-sello">${esc(t.replace(/^Se crece en/, "Rinde mejor en"))}</span>`).join("")}</p>
           <button type="button" class="hip-boton" data-favorito="${p.id}" aria-pressed="${fav}">${fav ? "♥ En favoritas" : "♡ Seguir"}</button></div></div>
       ${lesion}
       <div class="hip-datos"><div><span>Salidas</span><strong>${p.salidas}</strong><small>${p.vic} victorias · ${p.seg} segundos · ${p.ter} terceros</small></div>
