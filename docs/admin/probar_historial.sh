@@ -16,7 +16,7 @@ P <<SQL
 create table fichas_admins (user_id uuid primary key);
 insert into fichas_admins values ('$ADMIN');
 create function fichas_es_admin() returns boolean language sql security definer stable as \$\$ select exists (select 1 from fichas_admins where user_id = auth.uid()) \$\$;
-create table perfiles (user_id uuid primary key, nombre text, side text);
+create table perfiles (user_id uuid primary key, username text, side text);
 insert into perfiles values ('$ADMIN', 'Admin Prueba', 'A');
 insert into auth.users (id, email) values ('$ADMIN', 'admin@prueba'), ('$JUG', 'jug@prueba') on conflict do nothing;
 create table cartas_catalogo (id text primary key, rareza text);

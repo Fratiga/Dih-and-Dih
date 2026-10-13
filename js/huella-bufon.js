@@ -11,6 +11,8 @@
    los mismos campos relacionales que ya tienen las entradas.
 ============================================================================= */
 (function () {
+  const apagado = clave => { try { return (JSON.parse(localStorage.getItem("sitioInterruptores") || "{}") || {})[clave] === false; } catch (e) { return false; } };
+  if (apagado("huella_bufon")) return;   // interruptor del panel de Admin
   const HUELLA_KEY_TARGET = "huellaBufonTarget";
   const HUELLA_KEY_HIST = "huellaBufonHistorial";
   const HUELLA_KEY_HOPS = "huellaBufonHops";
@@ -150,6 +152,7 @@
   ];
 
   function reproducirRisita() {
+    if (apagado("huella_risita")) return;
     try {
       const src = RISITAS[Math.floor(Math.random() * RISITAS.length)];
       const audio = new Audio(src);

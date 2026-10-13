@@ -3852,3 +3852,28 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-mapa-pin { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; padding: 0; border-radius: 50%; background: var(--accent); border: 2px solid #000; cursor: grab; touch-action: none; }
 .admin-mapa-pin.activo { background: #ff5d5d; box-shadow: 0 0 0 4px #fff; z-index: 2; }
 .admin-mapa-pin:active { cursor: grabbing; }
+
+/* --- Admin: interruptores, archivos, respuestas --- */
+.admin-interruptores { display: flex; flex-direction: column; gap: 8px; }
+.admin-interruptor { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border: 1px solid var(--border); background: var(--panel); cursor: pointer; }
+.admin-interruptor input { margin-top: 4px; width: 18px; height: 18px; }
+.admin-interruptor strong { display: block; }
+.admin-interruptor small, .admin-interruptor em { display: block; font-size: .8rem; color: var(--muted); font-style: normal; }
+.admin-archivos { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.admin-archivo { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--border); background: var(--panel); min-width: 0; }
+.admin-archivo-vista { height: 120px; display: grid; place-items: center; background: #000; overflow: hidden; }
+.admin-archivo-vista img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.admin-archivo-vista audio { width: 100%; }
+.admin-archivo-nombre { font-size: .75rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-archivo-botones { display: flex; flex-wrap: wrap; gap: 6px; }
+#adminPanelArchivos.arrastrando { outline: 2px dashed var(--accent-soft); outline-offset: 4px; }
+.admin-respuesta { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.admin-respuesta label { font-size: .78rem; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.admin-respuesta textarea, #adminMensajeForm textarea { width: 100%; box-sizing: border-box; color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; font: inherit; }
+.admin-respuesta .admin-cuenta-accion { align-self: flex-start; }
+.peticion-mia-respuesta { display: block; margin-top: 4px; padding: 6px 10px; border-left: 3px solid var(--accent-soft); background: var(--panel-2); font-size: .88rem; }
+.aviso-admin { position: fixed; inset: 0; z-index: 99999; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .72); }
+.aviso-admin-cuerpo { max-width: 460px; width: 100%; padding: 22px; background: var(--panel, #222); color: var(--text, #eee); border: 2px solid var(--accent-soft, #888); display: flex; flex-direction: column; gap: 10px; }
+.aviso-admin-cuerpo h2 { margin: 0; font-size: 1.15rem; color: var(--accent, #fc0); }
+.aviso-admin-cuerpo p { margin: 0; line-height: 1.5; white-space: pre-wrap; }
+.aviso-admin-cerrar { align-self: flex-end; padding: 8px 18px; font: inherit; font-weight: 700; color: #1a1408; background: var(--accent, #fc0); border: 0; cursor: pointer; }

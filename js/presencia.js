@@ -10,6 +10,7 @@
 ============================================================================= */
 (function () {
   if (typeof fichasCliente !== "function" || typeof fichasSesionActual !== "function") return;
+  try { if ((JSON.parse(localStorage.getItem("sitioInterruptores") || "{}") || {}).presencia === false) return; } catch (e) { /* sin almacenamiento */ }   // interruptor del panel de Admin
 
   // Frases por página (se elige una al azar al entrar). Siempre en tercera persona.
   const FRASES = {
@@ -55,6 +56,7 @@
     "Discutiendo en un chat, mejor no preguntar", "De visita en el universo de otra pestaña", "Dejó la taberna con la puerta abierta"
   ];
 
+  const entradoEn = Date.now();
   const alAzar = lista => lista[Math.floor(Math.random() * lista.length)];
   const pagina = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const lista = OCULTAS.includes(pagina) ? GENERICAS : (FRASES[pagina] || FALLBACK);
@@ -83,7 +85,7 @@
     return Object.entries(estado).map(([id, metas]) => {
       // si hay varias pestañas de la misma persona, vale la más reciente
       const m = metas.slice().sort((a, b) => (b.ts || 0) - (a.ts || 0))[0] || {};
-      return { id, nombre: m.nombre || "alguien", frase: m.frase || "", oculto: !!m.oculto };
+      return { id, nombre: m.nombre || "alguien", frase: m.frase || "", oculto: !!m.oculto, pag: m.pag || "", desde: m.desde || 0 };
     }).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
   }
 
@@ -113,6 +115,8 @@
       canal.on("presence", { event: "sync" }, avisar);
       const anunciar = () => canal.track({
         nombre, ts: Date.now(),
+        // La página real solo se dice si no es de las escondidas (ahí va vacío); lo usa la pestaña En vivo del panel de Admin
+        pag: OCULTAS.includes(pagina) ? "" : pagina, desde: entradoEn,
         frase: document.hidden ? otraPestana() : fraseActual,
         oculto: document.hidden
       });

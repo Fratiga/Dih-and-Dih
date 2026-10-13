@@ -25,9 +25,13 @@ Reglas comunes:
 | 6, 7 | Balance y prueba de cartas | 3 | Pendiente |
 | 8 | Dificultad de los rivales | 3 | Pendiente |
 | 9, 10 | Regalos y eventos, calendario del Hipódromo | 3 | Pendiente (coordinar con las sesiones de Economía e Hipódromo) |
-| 11, 12 | Editor de diálogos del Bufón e interruptores | 4 | Pendiente |
-| 14 a 17 | Actividad en vivo, mensajes, bloqueo de cuentas, respuestas a peticiones | 4 | Pendiente |
-| 22 | Gestor de imágenes y audio | 4 | Pendiente |
+| 12 | Interruptores del sitio | 4 | Hecho. SQL: `docs/admin/herramientas_2.sql` |
+| 11 | Editor de diálogos del Bufón | 4 | Pendiente |
+| 14 | Actividad en vivo (pestaña En vivo) | 4 | Hecha (presencia, sin SQL) |
+| 15 | Mensajes a jugadores | 4 | Hecho. SQL: `herramientas_2.sql` |
+| 16 | Suspensión de cuentas | 4 | Hecha (suave: avisa y cierra la sesión). SQL: `herramientas_2.sql` |
+| 17 | Respuestas a peticiones | 4 | Hechas. SQL: `herramientas_2.sql` |
+| 22 | Gestor de imágenes y audio (pestaña Archivos) | 4 | Hecho. SQL: `herramientas_2.sql` |
 
 ## Fase 1
 
@@ -62,3 +66,14 @@ Cómo funciona por dentro (`js/contenido-servidor.js`, va justo después de los 
 Probado: SQL en local (`sh docs/admin/probar_contenido.sh`) y mezcla en el navegador con filas simuladas. No probado: guardar con una sesión real de admin (aquí no hay).
 
 El editor del mapa se abre al elegir «Mapa: pines»: arrastra un pin para moverlo, o elige un lugar sin pin y toca el mapa.
+
+## Fase 4 (primera parte)
+
+SQL: `docs/admin/herramientas_2.sql` (se prueba con `sh docs/admin/probar_herramientas2.sh`).
+
+- **Interruptores**: tabla `sitio_interruptores`. Los scripts leen la última copia guardada en el navegador (`sitioInterruptores`) y `js/interruptores.js` la refresca; un cambio se nota en la siguiente página que abra cada jugador. Hay cuatro: el gorro del Bufón, su risita, la música de páginas y «En la taberna». Para sumar uno: añádelo a `INTERRUPTORES` en `js/admin-herramientas-2.js` y haz que el script lo lea con la misma fórmula.
+- **Mensajes**: `admin_mensajes`. Para todos, un Side o una cuenta; con caducidad. `js/avisos-admin.js` (en las páginas de uso) los muestra una vez y recuerda cuáles vio la persona en su navegador.
+- **Suspensión**: `cuentas_suspendidas`. Es suave: al abrir una página la cuenta ve el motivo y se le cierra la sesión, pero el servidor no le bloquea nada (quien sepa cómo podría saltarla). Para un bloqueo duro habría que condicionar las políticas RLS de cada tabla, o desactivar al usuario desde el panel de Supabase.
+- **Respuestas a peticiones**: `peticiones.respuesta`; `peticiones_estado` ahora devuelve también la respuesta, que sale en «Tus peticiones».
+- **Archivos**: bucket público `archivos` con escritura solo de Admin; copia el enlace de cada archivo para pegarlo en el HTML de una entrada.
+- **En vivo**: usa la presencia de `js/presencia.js`, que ahora anuncia también la página real (vacía si es una escondida) y desde cuándo.

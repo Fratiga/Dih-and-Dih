@@ -108,7 +108,7 @@ begin
   return coalesce((
     select jsonb_agg(f order by f.id desc) from (
       select c.id, c.tabla, coalesce(t.etiqueta, c.tabla) as etiqueta, c.clave, c.operacion, c.antes, c.despues, c.momento, c.revierte,
-             c.usuario, coalesce(p.nombre, u.email, '') as quien,
+             c.usuario, coalesce(nullif(p.username, ''), u.email, '') as quien,
              exists (select 1 from admin_cambios r where r.revierte = c.id) as revertido
       from admin_cambios c
       left join admin_tablas t on t.tabla = c.tabla

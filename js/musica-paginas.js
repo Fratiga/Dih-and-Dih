@@ -32,6 +32,8 @@
   ];
   const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html", "fractura.html"]);
 
+  // Interruptor del panel de Admin: apagada, la música de páginas no suena (ni calla a la propia de cada página)
+  const apagada = (() => { try { return (JSON.parse(localStorage.getItem("sitioInterruptores") || "{}") || {}).musica_paginas === false; } catch (e) { return false; } })();
   const leerJson = (almacen, clave, defecto) => { try { return JSON.parse(almacen.getItem(clave) || "null") || defecto; } catch (e) { return defecto; } };
   const escribirJson = (almacen, clave, valor) => { try { almacen.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin almacenamiento */ } };
 
@@ -66,7 +68,7 @@
       if (!rocola.paused && !silencio && lista.length) rocola.pause();
     }
   }
-  const hayMusica = () => !!(cfg && ((cfg.lista || []).length || (cfg.partida && (cfg.partida.lista || []).length)));
+  const hayMusica = () => !apagada && !!(cfg && ((cfg.lista || []).length || (cfg.partida && (cfg.partida.lista || []).length)));
   const urlDe = r => { try { return encodeURI(decodeURI(r)); } catch (e) { return encodeURI(r); } };
 
   /* --- Lista actual --- */
@@ -89,7 +91,7 @@
   }
 
   function sonar() {
-    if (silencio || document.hidden || !lista.length) return;
+    if (apagada || silencio || document.hidden || !lista.length) return;
     apartarOtrasMusicas();
     audio.play().then(() => { pendienteGesto = false; }).catch(() => { pendienteGesto = true; });
   }

@@ -50,7 +50,8 @@
     try {
       const estados = await peticionesEstado(mias.map(m => m.codigo));
       const porCodigo = new Map(estados.map(e => [e.codigo, e.atendida]));
-      mias.forEach(m => { if (porCodigo.has(m.codigo)) m.atendida = porCodigo.get(m.codigo); });
+      const respuestas = new Map(estados.filter(e => e.respuesta).map(e => [e.codigo, e.respuesta]));
+      mias.forEach(m => { if (porCodigo.has(m.codigo)) m.atendida = porCodigo.get(m.codigo); if (respuestas.has(m.codigo)) m.respuesta = respuestas.get(m.codigo); });
       guardarMias(mias);
     } catch (err) { /* sin conexión o sin el SQL: se muestra lo último que se supo */ }
     caja.classList.remove("hidden");
@@ -58,6 +59,7 @@
       <div class="peticion-mia ${m.atendida ? "atendida" : ""}">
         <span class="peticion-mia-estado">${m.atendida ? "✔ Atendida" : "… Pendiente"}</span>
         <span class="peticion-mia-texto">${esc(m.texto.length > 140 ? m.texto.slice(0, 140) + "…" : m.texto)}</span>
+        ${m.respuesta ? `<span class="peticion-mia-respuesta"><strong>Respuesta:</strong> ${esc(m.respuesta)}</span>` : ""}
       </div>`).join("");
     // las que ya viste atendidas dejan de avisar en el lobby
     guardarMias(mias.map(m => (m.atendida ? { ...m, visto: true } : m)));
