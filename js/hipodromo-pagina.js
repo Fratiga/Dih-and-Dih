@@ -1,8 +1,10 @@
 /* =============================================================================
-   HIPÓDROMO (página de prueba, modo local). El mundo de js/hipodromo-motor.js corre entero en este
-   navegador y se guarda en localStorage: no usa Supabase. El reloj del mundo es virtual para poder
-   adelantar el tiempo y ver días de carreras en minutos; solo avanza mientras la página está abierta.
-   Las monedas también son de este navegador. Mira docs/hipodromo.md.
+   HIPÓDROMO. Dos modos con la misma pantalla:
+   - Servidor (el normal, con sesión): el mundo es uno solo para todos y lo escribe la Edge Function. La página lo lee
+     (js/hipodromo-online.js), apuesta y manda órdenes a la cuadra con funciones que comprueban saldo y plazo.
+   - Prueba local (sin sesión, sin servidor o con ?local en la dirección): el mundo de js/hipodromo-motor.js corre entero
+     en este navegador y se guarda en localStorage. El reloj es virtual para adelantar el tiempo; las monedas son de aquí.
+   Mira docs/hipodromo.md.
 ============================================================================= */
 (function () {
   "use strict";
@@ -27,7 +29,7 @@
   const poner = (el, html) => { if (el && el._h !== html) { el.innerHTML = html; el._h = html; } };
   const textoDe = (el, t) => { if (el && el._t !== t) { el.textContent = t; el._t = t; } };
 
-  let cuadraUI = null;
+  let cuadraUI = null, online = null;
   let est = null, m = null, pestana = "carrera", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
@@ -39,6 +41,7 @@
   }
   function guardar() {
     if (!est) return;
+    if (online) { online.guardarFavoritos(); return; }
     try { localStorage.setItem(CLAVE, JSON.stringify(est)); }
     catch (e) {
       try { const ids = Object.keys(est.archivo).slice(-60); const nuevo = {}; ids.forEach(i => { nuevo[i] = est.archivo[i]; }); est.archivo = nuevo; localStorage.setItem(CLAVE, JSON.stringify(est)); }
@@ -61,7 +64,7 @@
   const semillaAzar = () => "mundo-" + Math.random().toString(36).slice(2, 8);
 
   /* ---------------------------------------------------------------- datos de ayuda */
-  const perfilDe = id => { const c = M.buscar(m, id); return c ? M.perfil(m, c) : est.archivo[id] || null; };
+  const perfilDe = id => { if (online) return online.perfil(id); const c = M.buscar(m, id); return c ? M.perfil(m, c) : est.archivo[id] || null; };
   const nombreDe = id => { const p = perfilDe(id); return p ? p.nombre : "#" + id; };
   const edadDe = p => (m.n - p.nac) / C.ANIO;
   const edadTxt = p => { const e = edadDe(p); return e < 0 ? "por nacer" : `${coma(e, 1)} años`; };
@@ -87,6 +90,12 @@
   function bucle(ts) {
     requestAnimationFrame(bucle);
     if (!est || !m) { ultimoMarco = ts; return; }
+    if (online) {          // el reloj es el del servidor: la página no adelanta nada
+      est.virtual = online.ahora(); velEfectiva = 1;
+      pintarEscena();
+      if (ts - ultimoPintado > 200) { ultimoPintado = ts; pintarReloj(); }
+      return;
+    }
     const dt = Math.min(1000, ts - ultimoMarco); ultimoMarco = ts;
     if (dt <= 0) return;
     let v = est.vel;
@@ -247,7 +256,7 @@
     textoDe($("hipPosible"), cuota && monto > 0 ? monedas(monto * cuota) : "-");
     textoDe($("hipTipoAyuda"), M.TIPOS_APUESTA[tipo].texto);
   }
-  function apostar() {
+  async function apostar() {
     const p = m.proxima, f = M.ventana(p, est.virtual), msg = $("hipApuestaMsg");
     const falla = t => { msg.textContent = t; msg.className = "hip-aviso mal"; };
     if (f !== "abierta") return falla("Las apuestas de esta carrera están cerradas.");
@@ -257,6 +266,16 @@
     const cuota = M.cuotaApuesta(p, tipo, sel);
     if (!cuota) return falla(tipo === "exacta" ? "Elige dos criaturas distintas." : "Esa criatura no corre.");
     const ids = tipo === "exacta" ? sel : [sel];
+    if (online) {
+      $("hipApostar").disabled = true;
+      const r = await online.apostar(p.n, tipo, sel, monto);
+      $("hipApostar").disabled = false;
+      if (!r.ok) return falla(r.error || "No se pudo apostar.");
+      msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${M.fmtCuota(Number(r.cuota))}.`;
+      msg.className = "hip-aviso bien";
+      pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
+      return;
+    }
     est.saldo -= monto;
     est.pendientes.push({ n: p.n, tipo, sel, monto, cuota, nombres: ids.map(nombreDe), carrera: p.nombre });
     guardar();
@@ -322,7 +341,7 @@
 
   /* ---------------------------------------------------------------- pestaña Criaturas y ficha */
   function listaCriaturas() {
-    const todas = m.vivos.concat(m.criadores).map(c => M.perfil(m, c)).concat(Object.values(est.archivo));
+    const todas = online ? online.perfiles() : m.vivos.concat(m.criadores).map(c => M.perfil(m, c)).concat(Object.values(est.archivo));
     todas.forEach(p => D.registrar(p));   // el dibujo hereda los rasgos por linaje: que conozca a toda la familia
     const q = norm(filtros.q.trim());
     const pasa = p => {
@@ -372,7 +391,7 @@
     return "";
   }
   function fichaHtml(p) {
-    const c = M.buscar(m, p.id), apt = p.aptitudes;
+    const c = online ? null : M.buscar(m, p.id), apt = p.aptitudes;
     const nombres = { firme: "Firme", bueno: "Bueno", blando: "Blando", pesado: "Pesado" };
     const fav = est.favoritos.includes(p.id);
     const lesion = p.lesion ? `<p class="hip-nota rojo">${esc(p.lesion.tipo)} (${esc(p.lesion.gravedad)})${p.lesion.gravedad === "grave" ? "" : `, vuelve en unas ${Math.max(1, p.lesion.hasta - m.n)} carreras`}.</p>` : "";
@@ -431,6 +450,16 @@
     poner($("hipApuestasHist"), est.historial.length ? `<h3>Historial</h3><table class="hip-tabla"><thead><tr><th>n.º</th><th>Apuesta</th><th>Importe</th><th>Cuota</th><th>Resultado</th></tr></thead><tbody>${est.historial.map(h => `<tr class="${h.devuelta ? "" : h.gana ? "gana" : "pierde"}"><td>${h.n}</td><td>${esc(M.TIPOS_APUESTA[h.tipo].nombre)} a ${esc(h.nombres.join(" y "))}</td><td>${monedas(h.monto)}</td><td>${M.fmtCuota(h.cuota)}</td><td>${h.devuelta ? "devuelta" : h.gana ? "+" + monedas(h.pago - h.monto) : "-" + monedas(h.monto)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-vacio">Todavía no has apostado.</p>');
   }
   function pintarMundo() {
+    if (online) {
+      const ps = online.perfiles(), vivas = ps.filter(x => x.estado === "activo").length, cria = ps.filter(x => x.estado === "criador").length, ley = ps.filter(x => x.leyenda).length;
+      poner($("hipMundoDatos"), `<div class="hip-datos">
+        <div><span>Carrera actual</span><strong>n.º ${m.n}</strong><small>${coma(Math.max(0, (m.n - 300) / 48), 1)} días de mundo en vivo</small></div>
+        <div><span>Criaturas en pista</span><strong>${vivas}</strong><small>${cria} en la cría</small></div>
+        <div><span>Leyendas</span><strong>${ley}</strong><small>ganadoras de 14 carreras o 3 Grandes Premios</small></div>
+        <div><span>Tu cuadra</span><strong>${online.mias().length}</strong><small>de ${C.MAX_CABALLOS} posibles</small></div></div>
+        <p class="hip-nota">Un año de las criaturas son ${C.ANIO} carreras (${coma(C.ANIO / 48, 1)} días). Hay una carrera cada ${C.MINUTOS} minutos para todo el mundo.</p>`);
+      return;
+    }
     const s = m.stats, vivas = m.vivos.length;
     const dias = (m.n - 300) / 48;
     poner($("hipMundoDatos"), `<div class="hip-datos">
@@ -495,7 +524,10 @@
     $("hipMonto").addEventListener("input", pintarCuotaApuesta);
     document.querySelectorAll("[data-monto]").forEach(b => b.addEventListener("click", () => { $("hipMonto").value = b.dataset.monto === "todo" ? Math.floor(est.saldo) : b.dataset.monto; pintarCuotaApuesta(); }));
     $("hipApostar").addEventListener("click", apostar);
-    $("hipCriaEstado").addEventListener("change", e => { filtros.estado = e.target.value; mostrarMas = 48; pintarCriaturas(); });
+    $("hipCriaEstado").addEventListener("change", e => {
+      filtros.estado = e.target.value; mostrarMas = 48; pintarCriaturas();
+      if (online && (filtros.estado === "retiradas" || filtros.estado === "todas" || filtros.estado === "leyendas") && !online.retiradasCargadas) { online.retiradasCargadas = true; online.leerRetiradas().then(pintarCriaturas); }
+    });
     $("hipCriaOrden").addEventListener("change", e => { filtros.orden = e.target.value; pintarCriaturas(); });
     $("hipCriaBuscar").addEventListener("input", e => { filtros.q = e.target.value; mostrarMas = 48; pintarCriaturas(); });
     $("hipCriaMas").addEventListener("click", () => { mostrarMas += 48; pintarCriaturas(); });
@@ -511,6 +543,58 @@
     });
     window.addEventListener("beforeunload", guardar);
     document.addEventListener("visibilitychange", () => { if (document.hidden) guardar(); });
+  }
+
+  /* ---------------------------------------------------------------- modo servidor */
+  function alCambiarOnline(tipo) {
+    if (!online) return;   // la primera lectura llega antes de que la página tenga el objeto
+    if (tipo === "carrera") {
+      const liq = est.liquidadas || []; est.liquidadas = [];
+      const ganadas = liq.filter(h => h.gana), perdidas = liq.filter(h => !h.gana && !h.devuelta);
+      if (liq.length) avisar([ganadas.length ? `Ganaste ${monedas(ganadas.reduce((t, h) => t + h.pago, 0))} monedas (${ganadas.length} ${ganadas.length === 1 ? "apuesta" : "apuestas"})` : "", perdidas.length ? `Perdiste ${perdidas.length} ${perdidas.length === 1 ? "apuesta" : "apuestas"}` : ""].filter(Boolean).join(" · "), ganadas.length ? "bien" : "mal");
+      nUI = -1; escena = null;
+    }
+    pintarTodo();
+  }
+  function apiOnlineCuadra() {
+    const lineaje = p => { if (p) D.registrar(p); return p; };
+    return {
+      M, D, monedas, edadTxt, estrellasTxt, listo: () => !!(online && est && m.proxima),
+      saldo: () => est.saldo, perfil: id => perfilDe(id),
+      nombreJugador: () => { try { return localStorage.getItem("compendioUsername") || "Jugador"; } catch (e) { return "Jugador"; } },
+      adoptada: () => online.adoptada(),
+      mias: () => online.mias().map(x => ({ p: lineaje(x.p), c: x.c })),
+      calendario: () => online.calendario(),
+      mercado: () => online.perfiles().filter(x => !x.dueno && x.precio && x.estado === "activo" && !m.proxima.entrantes.some(e => e.id === x.id)).map(lineaje)
+        .sort((a, b) => (a.etapa === "cría" || a.etapa === "potro" ? 0 : 1) - (b.etapa === "cría" || b.etapa === "potro" ? 0 : 1) || a.precio - b.precio).slice(0, 40),
+      sementales: () => online.perfiles().filter(x => x.estado === "criador" && x.sexo === "m" && x.montaPrecio).map(lineaje),
+      avisos: () => est.avisos,
+      ordenar: o => online.ordenar(o)
+    };
+  }
+  function ponerModoServidor() {
+    oculto = false;
+    document.querySelector(".hip-modo").textContent = "Servidor: un mundo para todos, a la hora real";
+    ["hipVelocidad", "hipSaltar"].forEach(id => $(id).classList.add("hidden"));
+    document.querySelectorAll(".hip-solo-local").forEach(el => el.classList.add("hidden"));
+    $("hipRelojNota").textContent = "";
+  }
+  async function iniciarServidor() {
+    if (/[?&]local\b/.test(location.search) || !window.HipodromoOnline) return false;
+    let r;
+    try { r = await window.HipodromoOnline.conectar(M, alCambiarOnline); } catch (e) { r = { ok: false, motivo: "servidor", detalle: String(e && e.message || e) }; }
+    if (!r.ok) {
+      const nota = $("hipModoNota"), motivos = { sesion: 'Estás en la prueba local: el mundo corre en este navegador. Para entrar al mundo de verdad, <a href="fichas.html">inicia sesión</a> y vuelve.', vacio: "Estás en la prueba local: el servidor todavía no tiene el hipódromo en marcha.", servidor: "Estás en la prueba local: no se pudo hablar con el servidor." };
+      if (nota) { nota.innerHTML = motivos[r.motivo] || motivos.servidor; nota.classList.remove("hidden"); }
+      return false;
+    }
+    online = r.en; est = online.est; m = online.m;
+    ponerModoServidor();
+    if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiOnlineCuadra(), $("hipCuadra"));
+    $("hipCargando").classList.add("hidden");
+    pintarTodo();
+    requestAnimationFrame(ts => { ultimoMarco = ts; bucle(ts); });
+    return true;
   }
 
   /* ---------------------------------------------------------------- la cuadra (modo local) */
@@ -539,8 +623,9 @@
   };
 
   /* ---------------------------------------------------------------- arranque */
-  function iniciar() {
+  async function iniciar() {
     iniciarEventos();
+    if (await iniciarServidor()) return;
     if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiLocal, $("hipCuadra"));
     est = cargar();
     if (est) {

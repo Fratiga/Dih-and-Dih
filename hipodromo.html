@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hipódromo — Compendio del Mundo</title>
-  <script src="js/dialogos.js?v=20270156"></script>
-  <script src="js/oculto.js?v=20270156"></script>
+  <script src="js/dialogos.js?v=20270157"></script>
+  <script src="js/oculto.js?v=20270157"></script>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270156">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20270156">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20270156">
+  <link rel="stylesheet" href="css/style.css?v=20270157">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270157">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20270157">
 </head>
 <body class="mj-pagina hip-tema" data-fase="abierta">
   <div class="mj-barra">
@@ -30,6 +30,7 @@
       <div class="hip-billetera"><span>Monedas</span><strong id="hipSaldo">-</strong></div>
     </header>
 
+    <p id="hipModoNota" class="hip-nota hidden"></p>
     <p id="hipCargando" class="hip-cargando hidden">Creando el mundo, con 300 carreras de historia...</p>
     <p id="hipAviso" class="hip-aviso" role="status" aria-live="polite"></p>
 
@@ -152,19 +153,19 @@
       <div id="hipApuestasResumen"></div>
       <div id="hipApuestasPend"></div>
       <div class="hip-tabla-ancha"><div id="hipApuestasHist"></div></div>
-      <p><button type="button" id="hipMonedas" class="hip-boton">Reiniciar mis monedas</button></p>
+      <p class="hip-solo-local"><button type="button" id="hipMonedas" class="hip-boton">Reiniciar mis monedas</button></p>
     </div>
 
     <!-- MUNDO -->
     <div id="hipPanel-mundo" class="hip-panel hidden">
       <div id="hipMundoDatos"></div>
-      <div class="hip-tarjeta">
+      <div class="hip-tarjeta hip-solo-local">
         <h3>Ajustes de prueba</h3>
         <label class="hip-casilla"><input type="checkbox" id="hipOculto"> Mostrar lo oculto (probabilidad real, forma, genes)</label>
         <p class="hip-nota">Sirve para comprobar el equilibrio. El jugador de verdad no lo vería.</p>
         <p><button type="button" id="hipReiniciar" class="hip-boton">Empezar un mundo nuevo</button></p>
       </div>
-      <div class="hip-tarjeta">
+      <div class="hip-tarjeta hip-solo-local">
         <h3>Esto es una prueba</h3>
         <p class="hip-nota">El mundo, las monedas y las apuestas se guardan solo en este navegador. El reloj del mundo es virtual y solo avanza con la página abierta. Cuando esté el servidor, todos verán la misma carrera a la misma hora. Cómo funciona todo: docs/hipodromo.md.</p>
       </div>
@@ -179,14 +180,16 @@
     </div>
   </div>
 
-  <script src="data/hipodromo-palabras.js?v=20270156"></script>
-  <script src="js/hipodromo-nombres.js?v=20270156"></script>
-  <script src="js/hipodromo-rasgos.js?v=20270156"></script>
-  <script src="js/hipodromo-motor.js?v=20270156"></script>
-  <script src="js/hipodromo-dibujo.js?v=20270156"></script>
-  <script src="js/hipodromo-pista.js?v=20270156"></script>
-  <script src="js/hipodromo-cuadra.js?v=20270156"></script>
-  <script src="js/hipodromo-pagina.js?v=20270156"></script>
-  <script src="js/musica-paginas.js?v=20270156"></script>
+  <script src="data/hipodromo-palabras.js?v=20270157"></script>
+  <script src="js/hipodromo-nombres.js?v=20270157"></script>
+  <script src="js/hipodromo-rasgos.js?v=20270157"></script>
+  <script src="js/hipodromo-motor.js?v=20270157"></script>
+  <script src="js/hipodromo-dibujo.js?v=20270157"></script>
+  <script src="js/hipodromo-pista.js?v=20270157"></script>
+  <script src="js/hipodromo-cuadra.js?v=20270157"></script>
+  <script src="js/fichas-supabase.js?v=20270157"></script>
+  <script src="js/hipodromo-online.js?v=20270157"></script>
+  <script src="js/hipodromo-pagina.js?v=20270157"></script>
+  <script src="js/musica-paginas.js?v=20270157"></script>
 </body>
 </html>
