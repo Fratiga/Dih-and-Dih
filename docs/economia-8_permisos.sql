@@ -4,7 +4,8 @@
 --
 --   A6  Solo el admin cambia los parámetros económicos de una carta existente (rareza, tipo, lado, disponibilidad para
 --       recompensas y límite global). Un editor puede seguir editando el resto (nombre, texto, imagen, coste, ataque...).
---       Una carta NUEVA de un editor nace sin límite global y no ganable; el admin decide después.
+--       Una carta NUEVA de un editor nace sin publicar, sin límite global y no ganable; un admin la revisa y la configura.
+--       Un editor tampoco publica ni despublica cartas existentes (la disponibilidad es del admin).
 --   A7  El Side no se puede cambiar una vez elegido (salvo el admin, que puede previsualizar ambos lados, como ya hace la
 --       interfaz). El nombre de usuario es único sin distinguir mayúsculas.
 --   A10 Menos permisos: ninguna función de cartas es ejecutable sin sesión (salvo las dos que usan las políticas y la
@@ -33,6 +34,7 @@ declare
   v_previa cartas_catalogo%rowtype;
   v_existe boolean;
   v_ignorados text[] := '{}';
+  v_publicada boolean := coalesce(p_publicada, true);
 begin
   if uid is null or not cartas_puede_editar() then
     raise exception 'No autorizado';
@@ -165,9 +167,14 @@ begin
       if v_lado is distinct from v_previa.lado then v_ignorados := array_append(v_ignorados, 'lado'); end if;
       if v_limite is distinct from v_previa.limite then v_ignorados := array_append(v_ignorados, 'limite'); end if;
       if v_obtenible is distinct from v_previa.obtenible then v_ignorados := array_append(v_ignorados, 'obtenible'); end if;
+      if v_publicada is distinct from v_previa.publicada then v_ignorados := array_append(v_ignorados, 'publicada'); end if;
+      v_publicada := v_previa.publicada;
       v_rareza := v_previa.rareza; v_tipo := v_previa.tipo; v_lado := v_previa.lado;
       v_limite := v_previa.limite; v_obtenible := v_previa.obtenible;
     else
+      -- Una carta nueva de un editor queda sin publicar, sin límite global y no obtenible hasta que un admin la revise y la configure
+      if v_publicada then v_ignorados := array_append(v_ignorados, 'publicada'); end if;
+      v_publicada := false;
       v_limite := null;
       v_obtenible := false;
     end if;
@@ -176,7 +183,7 @@ begin
   end if;
 
   insert into cartas_catalogo (id, rareza, lado, obtenible, limite, publicada, tipo, copias_max)
-  values (p_id, v_rareza, v_lado, v_obtenible, v_limite, coalesce(p_publicada, true),
+  values (p_id, v_rareza, v_lado, v_obtenible, v_limite, v_publicada,
           v_tipo, (p_data ->> 'copiasMax')::int)
   on conflict (id) do update set
     rareza = excluded.rareza, lado = excluded.lado, obtenible = excluded.obtenible,
@@ -186,7 +193,7 @@ begin
   values (p_id, p_data, now(), uid)
   on conflict (id) do update set data = excluded.data, actualizada = now(), actualizada_por = uid;
 
-  return jsonb_build_object('id', p_id, 'publicada', coalesce(p_publicada, true), 'ignorados', to_jsonb(v_ignorados));
+  return jsonb_build_object('id', p_id, 'publicada', v_publicada, 'ignorados', to_jsonb(v_ignorados));
 end;
 $$;
 grant execute on function cartas_guardar(text, jsonb, boolean) to authenticated;

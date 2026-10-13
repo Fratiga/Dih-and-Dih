@@ -48,3 +48,6 @@ mazo_de() {
 }
 # Como el servidor (Edge Function con la clave de servicio): rol service_role
 servicio() { printf 'begin;\nset local role service_role;\n%s\ncommit;\n' "$1" | sup 2>&1 | grep -v '^$' | grep -v '^SET$\|^BEGIN$\|^COMMIT$'; }
+
+# Igual que servicio, pero retiene sus candados unos segundos antes de terminar (para obligar a otra sesión a esperar)
+servicio_espera() { printf 'begin;\nset local role service_role;\n%s\nselect pg_sleep(%s);\ncommit;\n' "$1" "${2:-2}" | sup 2>&1 | grep -v '^$' | grep -v '^SET$\|^BEGIN$\|^COMMIT$\|^pg_sleep$'; }

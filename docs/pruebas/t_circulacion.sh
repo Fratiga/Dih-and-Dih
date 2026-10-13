@@ -79,6 +79,22 @@ todas true; poner "'poco-4','poco-5'" false
 sql "update cartas_catalogo set obtenible = false where id = 'bufon'" >/dev/null
 comprobar "cartas_disponibilidad solo cuenta las que están en circulación (21 de 23 menos Bufón y las 2 quitadas)" "$(sql "select count(*) from cartas_catalogo where obtenible and publicada and en_circulacion")" "$(como $U1 "select jsonb_array_length(cartas_disponibilidad());" | tail -1)"
 
+echo "== Regalos a mano: permitidos, y siempre registrados"
+limpiar; todas true; poner "'comun-5'" false
+R=$(como $ADMIN "select cartas_regalar('$U2', 'comun-5', 'para probarla');")
+nocontiene "el admin regala una carta fuera de circulación" "$R" "ERROR"
+comprobar "queda en el libro de movimientos con el admin y la nota" "1" "$(sql "select count(*) from cartas_movimientos where tipo='emision' and por='$ADMIN' and motivo like 'regalo del admin: para probarla%'")"
+comprobar "queda en el registro de la colección" "admin" "$(sql "select origen from cartas_registro where user_id='$U2' and carta_id='comun-5'")"
+comprobar "y, al no estar en circulación, deja una incidencia visible" "1" "$(sql "select count(*) from cartas_incidencias where tipo='regalo_fuera_de_circulacion' and referencia='comun-5' and resuelta_por='$ADMIN'")"
+como $ADMIN "select cartas_regalar('$U2', 'comun-6', 'una normal');" >/dev/null
+comprobar "un regalo de una carta en circulación no deja incidencia" "0" "$(sql "select count(*) from cartas_incidencias where tipo='regalo_fuera_de_circulacion' and referencia='comun-6'")"
+contiene "los editores siguen sin poder regalar" "$(como $EDITOR "select cartas_regalar('$U2', 'comun-5', 'x');")" "Solo el admin"
+comprobar "la copia regalada sigue siendo del jugador" "1" "$(sql "select count(*) from cartas_ejemplares where propietario='$U2' and carta_id='comun-5'")"
+echo "== Mercader: ni las ofertas especiales del admin salen de una carta fuera de circulación"
+contiene "no se puede ofrecer" "$(como $ADMIN "select cartas_admin_mercader_agregar('comun-5', 3);")" "no está en circulación"
+poner "'comun-5'" true
+nocontiene "cuando la pone en circulación, sí" "$(como $ADMIN "select cartas_admin_mercader_agregar('comun-5', 3);")" "ERROR"
+
 echo "== Quitar de circulación no quita nada a los jugadores"
 limpiar; todas true
 Z=$(dar $U1 comun-2)

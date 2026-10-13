@@ -149,3 +149,45 @@ create policy cartas_partidas_select on public.cartas_partidas for SELECT to pub
 create policy cartas_registro_select on public.cartas_registro for SELECT to public using (((user_id = auth.uid()) OR fichas_es_admin()));
 create policy cartas_vinculos_select on public.cartas_vinculos for SELECT to public using (true);
 create policy "Cada quien lee y edita su propio perfil" on public.perfiles for ALL to authenticated using ((auth.uid() = user_id)) with check ((auth.uid() = user_id));
+
+-- cartas_accion: la única vía por la que se escribe el registro de acciones de una partida (copiada de producción)
+CREATE OR REPLACE FUNCTION public.cartas_accion(p_id uuid, p_accion jsonb) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$
+declare
+  uid uuid := auth.uid();
+  fila cartas_partidas%rowtype;
+  otro uuid;
+  tipo text;
+  forzar boolean;
+begin
+  if p_accion is null or jsonb_typeof(p_accion) <> 'object' or length(p_accion::text) > 300
+     or coalesce(p_accion ->> 't', '') not in ('jugar', 'atacar', 'fin', 'reaccionar', 'bloquear', 'pasar') then
+    raise exception 'Acción inválida';
+  end if;
+  tipo := p_accion ->> 't';
+  forzar := coalesce((p_accion ->> 'forzar')::boolean, false);
+
+  select * into fila from cartas_partidas where id = p_id for update;
+  if not found or uid is null or uid not in (fila.j1, fila.j2) then raise exception 'Partida no encontrada'; end if;
+  if fila.estado <> 'en_curso' then raise exception 'La partida no está en curso'; end if;
+  if jsonb_array_length(fila.acciones) >= 4000 then raise exception 'La partida es demasiado larga'; end if;
+
+  if tipo in ('reaccionar', 'bloquear', 'pasar') then
+    if forzar then
+      if tipo <> 'pasar' then raise exception 'Acción inválida'; end if;
+      if fila.turno <> uid then raise exception 'Solo quien tiene el turno puede seguir sin esperar'; end if;
+      if now() - fila.actualizada < interval '15 seconds' then raise exception 'Todavía hay tiempo para reaccionar'; end if;
+    elsif fila.turno = uid then
+      raise exception 'Esperas la respuesta de tu rival';
+    end if;
+  elsif fila.turno <> uid then
+    raise exception 'No es tu turno';
+  end if;
+
+  otro := case when uid = fila.j1 then fila.j2 else fila.j1 end;
+  update cartas_partidas
+    set acciones = acciones || p_accion,
+        turno = case when tipo = 'fin' then otro else turno end,
+        actualizada = now()
+    where id = p_id;
+end;
+$function$;

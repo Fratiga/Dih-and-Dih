@@ -23,6 +23,8 @@ function jugar(g, { cortar = null } = {}) {
   const semilla = g + 1, primero = g % 2;
   const e = M.crearPartida({ semilla, primero, cartas, jugadores: [j1, j2] });
   const acciones = [];
+  // El turno que guardaría el servidor (cartas_responder lo fija según quién empieza y cartas_accion lo cambia con cada «fin»)
+  let turno = primero === 0 ? "u1" : "u2";
   let pasos = 0;
   while (e.ganador === null && pasos++ < 1500 && (cortar === null || acciones.length < cortar)) {
     const legales = M.accionesLegales(e); const quien = M.quienActua(e);
@@ -31,10 +33,11 @@ function jugar(g, { cortar = null } = {}) {
     const bl = legales.filter(x => x.t === "bloquear" && x.b.length); if (bl.length && r() < 0.8) a = bl[Math.floor(r() * bl.length)];
     M.aplicar(e, a, quien);
     acciones.push(a);
+    if (a.t === "fin") turno = turno === "u1" ? "u2" : "u1";
   }
   return {
     e,
-    fila: { semilla, primero, cartas, j1: j1.id, j2: j2.id, nombre1: j1.nombre, nombre2: j2.nombre, mazo1: j1.mazo, mazo2: j2.mazo, acciones, actualizada: new Date().toISOString() }
+    fila: { semilla, primero, cartas, j1: j1.id, j2: j2.id, nombre1: j1.nombre, nombre2: j2.nombre, mazo1: j1.mazo, mazo2: j2.mazo, acciones, turno, motor1: M.VERSION, motor2: M.VERSION, actualizada: new Date().toISOString() }
   };
 }
 const resultadoDe = e => e.ganador === "empate" ? "empate" : e.ganador === 0 ? "j1" : "j2";
@@ -79,11 +82,45 @@ for (let g = 200; g < 260; g++) {
 }
 ok(enJuego > 30, `se esperaban más de 30 partidas cortadas, hubo ${enJuego}`);
 
+// Seguros de la decisión (motor y turno)
+{
+  let probadas = 0;
+  for (let g = 300; g < 330 && probadas < 10; g++) {
+    const { e, fila } = jugar(g, { cortar: 9 });
+    if (e.ganador !== null) continue;
+    probadas++;
+    const hace = h => new Date(Date.now() - h * 3600000).toISOString();
+    const vieja = Object.assign({}, fila, { actualizada: hace(60) });
+    ok(V.analizar(vieja, M, { horasTurno: 48 }).estado === "abandono", `partida ${g}: con todo en orden debe haber abandono`);
+    // Motor: si alguno de los dos no registró la versión, o es otra, no se decide nada
+    ["motor1", "motor2"].forEach(k => {
+      ["", null, "0.0.1"].forEach(malo => {
+        const r = V.analizar(Object.assign({}, vieja, { [k]: malo || undefined }), M, { horasTurno: 48 });
+        ok(r.estado === "motor", `partida ${g}: ${k}=${JSON.stringify(malo)} debería rechazarse por el motor (${r.estado})`);
+      });
+    });
+    // Turno: si el turno guardado no cuadra con la repetición, no se da el abandono
+    const otro = fila.turno === fila.j1 ? fila.j2 : fila.j1;
+    const r1 = V.analizar(Object.assign({}, vieja, { turno: otro }), M, { horasTurno: 48 });
+    ok(r1.estado === "error", `partida ${g}: un turno guardado distinto debe impedir el abandono (${r1.estado})`);
+    const r2 = V.analizar(Object.assign({}, vieja, { turno: null }), M, { horasTurno: 48 });
+    ok(r2.estado === "error", `partida ${g}: sin turno guardado no se da el abandono (${r2.estado})`);
+    // Pero si la partida ya terminó según el registro, un turno estropeado no salva al que pierde
+  }
+  for (let g = 0; g < 60; g++) {
+    const { e, fila } = jugar(g);
+    if (e.ganador === null) continue;
+    const r = V.analizar(Object.assign({}, fila, { turno: "cualquiera" }), M, { horasTurno: 48 });
+    ok(r.estado === "terminada" && r.resultado === resultadoDe(e), `partida ${g}: un turno estropeado no debe cambiar una partida terminada (${JSON.stringify(r)})`);
+  }
+  ok(probadas >= 5, "se esperaban al menos 5 partidas cortadas para probar los seguros");
+}
+
 // Entradas incompletas o rotas: error claro, sin excepciones
 ok(V.analizar(null, M).estado === "error", "fila nula debe dar error");
 ok(V.analizar({ semilla: null }, M).estado === "error", "sin semilla debe dar error");
-ok(V.analizar({ semilla: 1, primero: 0, mazo1: [], mazo2: [], cartas: {}, j1: "a", j2: "b" }, M).estado !== undefined, "mazos vacíos no lanzan excepción");
-ok(V.analizar({ semilla: 1, primero: 0, mazo1: ["inexistente"], mazo2: ["inexistente"], cartas: {}, j1: "a", j2: "b", acciones: [{ t: "fin" }] }, M).estado !== undefined, "cartas inexistentes no lanzan excepción");
+ok(V.analizar({ semilla: 1, primero: 0, mazo1: [], mazo2: [], cartas: {}, j1: "a", j2: "b", motor1: M.VERSION, motor2: M.VERSION }, M).estado !== undefined, "mazos vacíos no lanzan excepción");
+ok(V.analizar({ semilla: 1, primero: 0, mazo1: ["inexistente"], mazo2: ["inexistente"], cartas: {}, j1: "a", j2: "b", motor1: M.VERSION, motor2: M.VERSION, acciones: [{ t: "fin" }] }, M).estado !== undefined, "cartas inexistentes no lanzan excepción");
 
 console.log(`${n} comprobaciones, ${terminadas} partidas terminadas verificadas, ${enJuego} cortadas, ${abandonos} abandonos`);
 if (fallos.length) { console.log(`${fallos.length} FALLOS:`); fallos.slice(0, 20).forEach(f => console.log("  - " + f)); process.exit(1); }

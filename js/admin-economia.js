@@ -284,7 +284,7 @@
   const fecha = t => (t ? new Date(t).toLocaleString("es", { dateStyle: "short", timeStyle: "short" }) : "");
   const cartasTxt = info => (info || []).map(c => `${esc(c.nombre)} #${c.numero}`).join(", ") || "—";
   const SITUACION = {
-    disputa: ["Disputa", "Los dos avisaron resultados distintos. Decide tú."],
+    disputa: ["Disputa", "Los dos avisaron resultados distintos. Se resuelve con el registro de la partida o la decides tú; si nadie la resuelve se cierra sola sin ganador y se devuelven las apuestas."],
     un_aviso: ["Un solo aviso", "El otro no ha confirmado. Si sigue así, la apuesta se devuelve sola (sin ganador)."],
     sin_avisos: ["Sin avisos", "Nadie ha avisado ni se ha movido nada. Se devuelve sola pasado el plazo."],
     sin_respuesta: ["Reto sin respuesta", "Caduca solo y devuelve la apuesta."],
@@ -327,10 +327,12 @@
       };
       const resumen = (v, p) => {
         const nombre = r => (r === "j1" ? p.nombre1 : r === "j2" ? p.nombre2 : "empate");
+        if (v.resultadoServidor && v.resultadoServidor !== "resuelta") return `El servidor no aplicó el resultado (${v.resultadoServidor}). ${v.resultadoServidor === "cambiada" ? "La partida cambió mientras se comprobaba; vuelve a intentarlo." : v.resultadoServidor === "motor" ? "Los jugadores no registraron la misma versión del motor." : v.resultadoServidor === "no-vencido" ? "El plazo de abandono todavía no venció." : "No hacía falta."}`;
         if (v.estado === "terminada") return `Según el registro (${v.acciones} acciones, ${v.ignoradas} ignoradas) la partida terminó: ${v.resultado === "empate" ? "empate" : "gana " + nombre(v.resultado)}.${(v.avisosFalsos || []).length ? " Avisó algo distinto: " + v.avisosFalsos.map(a => a.nombre).join(", ") + "." : ""}`;
         if (v.estado === "abandono") return `Según el registro la partida sigue, pero ${nombre(v.pierde === 0 ? "j1" : "j2")} lleva ${v.horas} h sin actuar: pierde por abandono y gana ${nombre(v.resultado)}.`;
         if (v.estado === "en_juego") return `Según el registro la partida sigue en juego: le toca a ${nombre(v.actua === 0 ? "j1" : "j2")} (${v.horas} h sin movimiento).`;
         if (v.estado === "nada") return v.mensaje;
+        if (v.estado === "motor") return v.mensaje;
         return `No se pudo comprobar: ${v.mensaje || v.error || "error"}`;
       };
       res.querySelectorAll("[data-ver]").forEach(b => b.addEventListener("click", async () => {

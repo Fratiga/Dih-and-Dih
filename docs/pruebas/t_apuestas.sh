@@ -144,6 +144,37 @@ como $ADMIN "select cartas_admin_resolver_apuesta('$PI', 'cancelar');" >/dev/nul
 comprobar "se cancela por su vía y se devuelve" "cancelada/devuelta/admin/-" "$(estado_partida $PI)"
 comprobar "la auditoría está limpia" "0" "$(auditar)"
 
+echo "== Disputas sin resolver: a los 14 días se cierran sin ganador y se devuelve todo"
+sql "update cartas_partidas set creada = creada - interval '2 days' where cardinality(apuesta1) > 0" >/dev/null   # fuera de los topes del día
+sql "update cartas_catalogo set limite = 80 where id in ('comun-1', 'comun-2')" >/dev/null                          # las apuestas de prueba gastan muchas copias
+nueva_apuesta $U2 $U3; PX=$P; SAx=$SA; SBx=$SB
+como $U2 "select cartas_terminar('$PX', 'j1');" >/dev/null
+como $U3 "select cartas_terminar('$PX', 'j2');" >/dev/null
+comprobar "los dos avisan que ganaron: disputa" "disputa/activa/-/-" "$(estado_partida $PX)"
+comprobar "el panel dice cuándo se cerrará (dentro de unos 14 días)" "14" "$(como $ADMIN "select round(extract(epoch from ((x ->> 'se_devuelve_el')::timestamptz - now())) / 86400)::int from jsonb_array_elements(cartas_admin_apuestas()) x where x ->> 'id' = '$PX';" | tail -1)"
+sql "update cartas_partidas set actualizada = now() - interval '13 days' where id='$PX'" >/dev/null
+refrescar
+comprobar "a los 13 días sigue en disputa" "disputa/activa/-/-" "$(estado_partida $PX)"
+sql "update cartas_partidas set actualizada = now() - interval '15 days' where id='$PX'" >/dev/null
+refrescar
+comprobar "a los 15 días se cierra como no resuelta, sin ganador" "cancelada/devuelta/sin_resolver/-" "$(estado_partida $PX)"
+comprobar "cada carta vuelve a su dueño" "$U2/poseida|$U3/poseida" "$(dueno $SAx)|$(dueno $SBx)"
+comprobar "no quedan bloqueos" "0" "$(bloqueos)"
+comprobar "se conserva el historial: los dos avisos siguen en la partida" "j1|j2" "$(sql "select reporte1||'|'||reporte2 from cartas_partidas where id='$PX'")"
+comprobar "y queda una incidencia con quién avisó qué" "1" "$(sql "select count(*) from cartas_incidencias where tipo='disputa_sin_resolver' and referencia='apuesta:$PX' and detalle like '%avisó «j1»%' and detalle like '%avisó «j2»%'")"
+refrescar; refrescar
+comprobar "volver a refrescar no cambia nada" "cancelada/devuelta/sin_resolver/-|1" "$(estado_partida $PX)|$(sql "select count(*) from cartas_incidencias where tipo='disputa_sin_resolver' and referencia='apuesta:$PX'")"
+comprobar "cada carta se desbloqueó una sola vez" "1|1" "$(sql "select (select count(*) from cartas_movimientos where ejemplar='$SAx' and tipo='desbloqueo')||'|'||(select count(*) from cartas_movimientos where ejemplar='$SBx' and tipo='desbloqueo')")"
+nocontiene "el plazo se puede cambiar desde el panel" "$(como $ADMIN "select cartas_admin_guardar_ajustes('{\"disputa_dias\": 3}'::jsonb);")" "ERROR"
+nueva_apuesta $U3 $U4; PY=$P
+como $U3 "select cartas_terminar('$PY', 'j1');" >/dev/null; como $U4 "select cartas_terminar('$PY', 'j2');" >/dev/null
+sql "update cartas_partidas set actualizada = now() - interval '4 days' where id='$PY'" >/dev/null
+refrescar
+comprobar "con el plazo en 3 días, una disputa de 4 se cierra" "cancelada/devuelta/sin_resolver/-" "$(estado_partida $PY)"
+contiene "los días fuera de rango se rechazan" "$(como $ADMIN "select cartas_admin_guardar_ajustes('{\"disputa_dias\": 0}'::jsonb);")" "Los días van de 1 a 365"
+como $ADMIN "select cartas_admin_guardar_ajustes('{\"disputa_dias\": 14}'::jsonb);" >/dev/null
+comprobar "la auditoría está limpia" "0" "$(auditar)"
+
 echo "== Editor y admin no juegan con cartas que no tienen cuando hay apuesta"
 sql "insert into cartas_mazos (user_id, nombre, cartas) values ('$EDITOR', 'Mazo ajeno', '{\"comun-1\":3,\"comun-2\":3,\"comun-3\":3,\"comun-4\":3,\"comun-5\":3,\"comun-6\":3,\"poco-1\":2}'::jsonb)" >/dev/null
 ME=$(sql "select id from cartas_mazos where user_id='$EDITOR'")

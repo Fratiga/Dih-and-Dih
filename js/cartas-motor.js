@@ -1282,8 +1282,13 @@
     return problemas;
   }
 
+  /* Versión de las reglas. Cada navegador la registra al abrir una partida apostada y el servidor solo repite la partida para
+     comprobarla si los dos jugadores jugaron con la versión con que la repite (ver js/cartas-verificar.js). CÁMBIALA SIEMPRE que
+     cambies algo que altere el resultado de una partida: este archivo, cartas-efectos.js o cartas-vinculos.js. */
+  const VERSION = "2026.10.13-1";
+
   const M = {
-    C, TOPE_COPIAS, topeCopias, TOKENS, EFECTOS, TERRENOS,
+    VERSION, C, TOPE_COPIAS, topeCopias, TOKENS, EFECTOS, TERRENOS,
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
     registrarVinculos: def => { (def.circulos || []).forEach(c => VINC.circulos.push(c)); (def.rivalidades || []).forEach(r => VINC.rivalidades.push(r)); },

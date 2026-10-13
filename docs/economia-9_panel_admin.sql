@@ -15,6 +15,7 @@ as $$
 declare
   horas_silencio numeric := (cartas_ajuste('apuesta_silencio_horas', '24'))::text::numeric;
   horas_inactividad numeric := (cartas_ajuste('apuesta_inactividad_horas', '72'))::text::numeric;
+  dias_disputa numeric := (cartas_ajuste('disputa_dias', '14'))::text::numeric;
 begin
   if not fichas_es_admin() then raise exception 'No autorizado'; end if;
   return coalesce((
@@ -41,6 +42,7 @@ begin
                when p.estado = 'en_curso' and p.reporte1 is null and p.reporte2 is null
                  then p.actualizada + horas_inactividad * interval '1 hour'
                when p.estado = 'pendiente' then p.creada + interval '7 days'
+               when p.estado = 'disputa' then p.actualizada + dias_disputa * interval '1 day'
              end as se_devuelve_el
       from cartas_partidas p
       where p.apuesta_estado in ('pendiente', 'activa') or p.estado = 'disputa'

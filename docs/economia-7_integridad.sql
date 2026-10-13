@@ -21,8 +21,14 @@
 -- 0) Ajustes nuevos y tabla de incidencias -------------------------------------------------------------------
 insert into cartas_economia_ajustes (clave, valor) values
   ('apuesta_silencio_horas', '24'),      -- un solo aviso de resultado y el otro calla: pasado este plazo se devuelve la apuesta
-  ('apuesta_inactividad_horas', '72')    -- partida apostada sin ningún aviso ni movimiento: pasado este plazo se devuelve (PROPUESTA, por confirmar)
+  ('apuesta_inactividad_horas', '72'),   -- partida apostada sin ningún aviso ni movimiento: pasado este plazo se devuelve (PROPUESTA, por confirmar)
+  ('disputa_dias', '14')                 -- una disputa que nadie resuelve en estos días se cierra como no resuelta y devuelve las apuestas
 on conflict (clave) do nothing;
+
+-- Motivos con los que se cierra una partida (economia_10 añade «verificada» y «abandono»)
+alter table cartas_partidas drop constraint if exists cartas_partidas_motivo_check;
+alter table cartas_partidas add constraint cartas_partidas_motivo_check
+  check (motivo is null or motivo in ('vida', 'rendicion', 'acuerdo', 'admin', 'tiempo', 'sin_resolver'));
 
 create table if not exists cartas_incidencias (
   id bigserial primary key,
@@ -50,8 +56,11 @@ begin
   if not fichas_es_admin() then raise exception 'No autorizado'; end if;
   if p_ajustes is null or jsonb_typeof(p_ajustes) <> 'object' then raise exception 'Ajustes inválidos'; end if;
   for k in select jsonb_object_keys(p_ajustes) loop
-    if k not in ('tope_dia_total', 'multiplicadores', 'pity', 'mejora_personal', 'apuesta_silencio_horas', 'apuesta_inactividad_horas') then
+    if k not in ('tope_dia_total', 'multiplicadores', 'pity', 'mejora_personal', 'apuesta_silencio_horas', 'apuesta_inactividad_horas', 'disputa_dias') then
       raise exception 'Ajuste desconocido: %', k;
+    end if;
+    if k = 'disputa_dias' and (jsonb_typeof(p_ajustes -> k) <> 'number' or (p_ajustes ->> k)::numeric not between 1 and 365) then
+      raise exception 'Los días van de 1 a 365 (%)', k;
     end if;
     if k in ('apuesta_silencio_horas', 'apuesta_inactividad_horas') and
        (jsonb_typeof(p_ajustes -> k) <> 'number' or (p_ajustes ->> k)::numeric not between 1 and 720) then
@@ -172,6 +181,17 @@ as $$
   join cartas_definiciones d on d.id = c.id;
 $$;
 
+-- Para los barridos automáticos: si alguno de los dos jugadores está ocupado con otra operación, se salta y se reintenta en la
+-- siguiente vuelta, en vez de esperar (así dos barridos que se cruzan nunca se bloquean entre sí)
+create or replace function cartas_i_intentar_candado_jugadores(p_a uuid, p_b uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select pg_try_advisory_xact_lock(hashtext('cartas_jugador_' || p_a::text)) and pg_try_advisory_xact_lock(hashtext('cartas_jugador_' || p_b::text));
+$$;
+revoke all on function cartas_i_intentar_candado_jugadores(uuid, uuid) from public, anon, authenticated;
 revoke all on function cartas_i_candado_jugador(uuid) from public, anon, authenticated;
 revoke all on function cartas_i_candado_jugadores(uuid, uuid) from public, anon, authenticated;
 revoke all on function cartas_i_exigir(uuid, uuid[], text, text) from public, anon, authenticated;
@@ -425,7 +445,7 @@ declare
 begin
   select * into previo from cartas_partidas where id = p_id;
   if not found then return; end if;
-  perform cartas_i_candado_jugadores(previo.j1, previo.j2);
+  if not cartas_i_intentar_candado_jugadores(previo.j1, previo.j2) then return; end if;
   select * into f from cartas_partidas where id = p_id for update;
   if f.estado <> 'en_curso' or f.apuesta_estado is distinct from 'activa' then return; end if;
   update cartas_partidas set estado = 'cancelada', motivo = 'tiempo', actualizada = now() where id = p_id;
@@ -435,6 +455,33 @@ begin
 end;
 $$;
 revoke all on function cartas_i_devolver_por_tiempo(uuid, text) from public, anon, authenticated;
+
+-- Una disputa que nadie resuelve en «disputa_dias» (14) se cierra como NO RESUELTA: se devuelven las apuestas, nadie gana y el
+-- historial queda (la partida conserva los dos avisos y la incidencia los repite).
+create or replace function cartas_i_cerrar_disputa_vieja(p_id uuid, p_dias numeric)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  previo cartas_partidas%rowtype;
+  f cartas_partidas%rowtype;
+begin
+  select * into previo from cartas_partidas where id = p_id;
+  if not found then return; end if;
+  if not cartas_i_intentar_candado_jugadores(previo.j1, previo.j2) then return; end if;
+  select * into f from cartas_partidas where id = p_id for update;
+  if f.estado <> 'disputa' or f.apuesta_estado is distinct from 'activa' or f.actualizada >= now() - p_dias * interval '1 day' then return; end if;
+  update cartas_partidas set estado = 'cancelada', motivo = 'sin_resolver', actualizada = now() where id = p_id;
+  perform cartas_i_apuesta_devolver(p_id);
+  insert into cartas_incidencias (tipo, referencia, detalle, resuelta)
+  values ('disputa_sin_resolver', 'apuesta:' || p_id::text,
+          left(format('Disputa de más de %s días sin resolver; apuestas devueltas. %s avisó «%s» y %s avisó «%s».',
+                      p_dias, f.nombre1, coalesce(f.reporte1, 'nada'), f.nombre2, coalesce(f.reporte2, 'nada')), 300), now());
+end;
+$$;
+revoke all on function cartas_i_cerrar_disputa_vieja(uuid, numeric) from public, anon, authenticated;
 
 -- Reparte las cartas apostadas según el resultado. Si una carta no se puede mover por un motivo inesperado, la partida
 -- queda en disputa con una incidencia para el admin; nunca se traga el error en silencio.
@@ -497,6 +544,7 @@ declare
   f record;
   horas_silencio numeric := (cartas_ajuste('apuesta_silencio_horas', '24'))::text::numeric;
   horas_inactividad numeric := (cartas_ajuste('apuesta_inactividad_horas', '72'))::text::numeric;
+  dias_disputa numeric := (cartas_ajuste('disputa_dias', '14'))::text::numeric;
 begin
   for f in select id from cartas_partidas where estado = 'pendiente' and creada < now() - interval '7 days' loop
     update cartas_partidas set estado = 'rechazada', actualizada = now() where id = f.id and estado = 'pendiente';
@@ -513,6 +561,11 @@ begin
            where estado = 'en_curso' and apuesta_estado = 'activa' and reporte1 is null and reporte2 is null
              and actualizada < now() - horas_inactividad * interval '1 hour' loop
     perform cartas_i_devolver_por_tiempo(f.id, format('Sin avisos ni movimientos en %s horas', horas_inactividad));
+  end loop;
+  -- Disputas que nadie resolvió en dias_disputa: se cierran sin ganador y se devuelve todo
+  for f in select id from cartas_partidas
+           where estado = 'disputa' and apuesta_estado = 'activa' and actualizada < now() - dias_disputa * interval '1 day' loop
+    perform cartas_i_cerrar_disputa_vieja(f.id, dias_disputa);
   end loop;
   perform cartas_i_liberar_huerfanos();
   perform cartas_i_liberar_caducados();

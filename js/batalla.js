@@ -288,6 +288,11 @@
     if (!f || f.estado === "pendiente" || f.estado === "rechazada") return;
     fila = f;
     modo = "partida";
+    // Cada navegador anota con qué versión del motor juega (la primera vez): el servidor solo comprueba una partida apostada
+    // volviéndola a jugar si los dos jugaron con la misma versión que él usa (ver js/cartas-verificar.js)
+    if (f.estado === "en_curso" && M.VERSION && (f.j1 === miId ? !f.motor1 : !f.motor2)) {
+      supa.rpc("cartas_registrar_motor", { p_id: f.id, p_version: M.VERSION }).then(() => {}, () => { /* aún sin economia_10 */ });
+    }
     primeroDeLaPartida = f.primero;
     const { e, l } = construir(f);
     est = e; lista = l;

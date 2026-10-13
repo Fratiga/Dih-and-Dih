@@ -27,6 +27,12 @@ create table if not exists cartas_ejemplares (
   actualizada timestamptz not null default now(),
   unique (carta_id, numero)
 );
+-- Estado y dueño siempre concuerdan (esta restricción estaba en producción pero no en este archivo; se añadió después)
+alter table cartas_ejemplares drop constraint if exists cartas_ejemplares_check;
+alter table cartas_ejemplares add constraint cartas_ejemplares_check check (
+  ((estado = any (array['poseida', 'bloqueada'])) = (propietario is not null))
+  or (estado = 'destruida' and propietario is null)
+  or (estado = any (array['en_reserva', 'en_mercader']) and propietario is null));
 create index if not exists cartas_ejemplares_prop_idx on cartas_ejemplares (propietario, carta_id) where propietario is not null;
 create index if not exists cartas_ejemplares_reserva_idx on cartas_ejemplares (carta_id, numero) where estado = 'en_reserva';
 

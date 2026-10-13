@@ -6,8 +6,14 @@
 // una pista. Con el veredicto llama a cartas_i_aplicar_verificacion (docs/economia-10_verificacion.sql), que reparte las cartas
 // una sola vez, anota a quien avisó algo falso y deja constancia.
 //   * Partida terminada según el registro  -> se cierra con ese resultado (motivo «verificada»).
-//   * Quien tiene que actuar lleva más de «apuesta_turno_horas» sin hacerlo -> pierde por abandono (motivo «abandono»).
-//   * Cualquier otra cosa (sigue en juego, error) -> no cambia nada; valen las reglas de tiempo de economia_7.
+//   * Quien tiene que actuar lleva más de «apuesta_turno_horas» (48 h) sin hacerlo -> pierde por abandono (motivo «abandono»).
+//   * Cualquier otra cosa (sigue en juego, error, versión del motor distinta) -> no cambia nada; valen las reglas de tiempo de economia_7.
+//
+// Seguros (los comprueba también la base de datos, así que no dependen de esta función):
+//   * Solo se decide con la MISMA versión del motor con la que jugaron los dos jugadores (CartasMotor.VERSION, que cada navegador
+//     registra con cartas_registrar_motor). Si falta o no coincide, no se decide nada.
+//   * El registro no puede haber cambiado entre que se repite y que se aplica (número de acciones y marca de última actividad).
+//   * El abandono lo mide el reloj de la base de datos y exige que el turno guardado coincida con el de la repetición.
 //
 // Quién la puede llamar: los dos jugadores de la partida y el admin (con su sesión). Es idempotente: llamarla de más no mueve
 // ninguna carta. El admin puede pasar { "aplicar": false } para ver el veredicto sin aplicarlo.
@@ -88,7 +94,7 @@ Deno.serve(async (req: Request) => {
 
     const veredicto = g.CartasVerificar.analizar(fila, g.CartasMotor, { horasTurno });
     const falsos = g.CartasVerificar.avisosFalsos(fila, veredicto);
-    if (veredicto.estado !== "terminada" && veredicto.estado !== "abandono") return responder({ ...veredicto, aplicado: false });
+    if (veredicto.estado !== "terminada" && veredicto.estado !== "abandono") return responder({ ...veredicto, aplicado: false });   // en_juego, motor o error
     if (!aplicar) return responder({ ...veredicto, avisosFalsos: falsos, aplicado: false });
 
     const detalle = veredicto.estado === "abandono"
@@ -96,9 +102,13 @@ Deno.serve(async (req: Request) => {
       : `Repetida la partida: ${veredicto.acciones} acciones, ${veredicto.ignoradas} ignoradas, fin por ${veredicto.motivo}. Motor ${MOTOR}`;
     const resultado = await rest("rpc/cartas_i_aplicar_verificacion", {
       method: "POST",
-      body: JSON.stringify({ p_id: id, p_resultado: veredicto.resultado, p_motivo: veredicto.estado === "abandono" ? "abandono" : "verificada", p_detalle: detalle }),
+      body: JSON.stringify({
+        p_id: id, p_resultado: veredicto.resultado, p_motivo: veredicto.estado === "abandono" ? "abandono" : "verificada",
+        p_acciones: veredicto.acciones, p_actualizada: veredicto.actualizada, p_motor: veredicto.motor, p_detalle: detalle,
+      }),
     });
-    return responder({ ...veredicto, avisosFalsos: falsos, aplicado: resultado === "resuelta" });
+    // 'resuelta' | 'ya-resuelta' | 'cambiada' | 'motor' | 'no-vencido' | 'no-aplica'
+    return responder({ ...veredicto, avisosFalsos: falsos, aplicado: resultado === "resuelta", resultadoServidor: resultado });
   } catch (e) {
     return responder({ error: String((e as Error).message || e) }, 500);
   }

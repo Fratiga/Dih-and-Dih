@@ -197,3 +197,71 @@ $$;
 
 grant execute on function cartas_admin_limites() to authenticated;
 grant execute on function cartas_admin_guardar_limites(jsonb) to authenticated;
+
+-- 4) Regalos a mano: se permiten con cualquier carta, pero quedan registrados. El libro de movimientos y el registro de cartas ya
+--    guardaban quién regaló qué y a quién; ahora, si la carta no está en circulación, además queda una incidencia visible en el panel.
+create or replace function cartas_regalar(p_usuario uuid, p_carta text, p_nota text default '')
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  res jsonb;
+  total int;
+  en_circ boolean;
+begin
+  if uid is null or not fichas_es_admin() then
+    raise exception 'Solo el admin puede regalar cartas';
+  end if;
+  -- El admin puede dar una carta que todavía no tiene límite global ni está en circulación, pero nunca pasar un límite ya definido
+  res := cartas_i_emitir(p_usuario, p_carta, 'regalo del admin: ' || coalesce(p_nota, ''), '', uid, true);
+  select count(*) into total from cartas_ejemplares where propietario = p_usuario and carta_id = p_carta and estado in ('poseida', 'bloqueada');
+  insert into cartas_registro (user_id, carta_id, origen, detalle, por)
+  values (p_usuario, p_carta, 'admin', left(coalesce(p_nota, ''), 200), uid);
+  select en_circulacion into en_circ from cartas_catalogo where id = p_carta;
+  if not en_circ then
+    insert into cartas_incidencias (tipo, referencia, detalle, resuelta, resuelta_por)
+    values ('regalo_fuera_de_circulacion', p_carta,
+            left(format('Regalo a mano a %s (copia nº %s). La carta no está en circulación. %s',
+                        coalesce((select username from perfiles where user_id = p_usuario), p_usuario::text), res ->> 'numero', coalesce(p_nota, '')), 300),
+            now(), uid);
+  end if;
+  return jsonb_build_object('carta', p_carta, 'cantidad', total, 'numero', (res ->> 'numero')::int);
+end;
+$$;
+grant execute on function cartas_regalar(uuid, text, text) to authenticated;
+
+-- 5) Mercader: las ofertas especiales del admin también tienen que ser de cartas en circulación
+create or replace function cartas_admin_mercader_agregar(p_carta text, p_valor_min int)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  c cartas_catalogo%rowtype;
+  ej uuid;
+  emitidas int;
+begin
+  if uid is null or not fichas_es_admin() then raise exception 'No autorizado'; end if;
+  select * into c from cartas_catalogo where id = p_carta;
+  if not found then raise exception 'Esa carta no existe'; end if;
+  if not c.en_circulacion then raise exception 'Esa carta no está en circulación: ponla en circulación antes de ofrecerla en el mercader'; end if;
+  if p_valor_min not between 1 and 40 then raise exception 'El valor va de 1 a 40'; end if;
+  perform cartas_i_candado(p_carta);
+  select id into ej from cartas_ejemplares where carta_id = p_carta and estado in ('en_reserva', 'en_mercader')
+    and not exists (select 1 from cartas_mercader_ofertas o where o.ejemplar = cartas_ejemplares.id and o.estado = 'activa')
+    order by (estado = 'en_mercader') desc, numero limit 1;
+  if ej is null then
+    select coalesce(max(numero), 0) into emitidas from cartas_ejemplares where carta_id = p_carta;
+    if c.limite is not null and emitidas >= c.limite then raise exception 'AGOTADA: ya se emitieron las % copias de esta carta', c.limite; end if;
+    insert into cartas_ejemplares (carta_id, numero, propietario, estado) values (p_carta, emitidas + 1, null, 'en_mercader') returning id into ej;
+    insert into cartas_movimientos (ejemplar, carta_id, tipo, motivo, por) values (ej, p_carta, 'emision', 'oferta especial del mercader', uid);
+  end if;
+  insert into cartas_mercader_ofertas (ejemplar, valor_min, especial) values (ej, p_valor_min, true);
+end;
+$$;
+grant execute on function cartas_admin_mercader_agregar(text, int) to authenticated;

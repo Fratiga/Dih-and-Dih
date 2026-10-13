@@ -11,15 +11,23 @@
      M: CartasMotor ya cargado (con los efectos y los vínculos registrados).
      opciones: { ahora (ms, por defecto Date.now()), horasTurno (tras cuántas horas sin actuar pierde quien tenía que actuar; 0 = nunca) }
      Devuelve uno de:
-       { estado: "terminada", resultado: "j1" | "j2" | "empate", motivo, acciones, ignoradas }
-       { estado: "abandono", resultado: "j1" | "j2", pierde: 0 | 1, horas }           (ganó quien no era el que debía actuar)
+       { estado: "terminada", resultado: "j1" | "j2" | "empate", motivo, acciones, ignoradas, actualizada, motor }
+       { estado: "abandono", resultado: "j1" | "j2", pierde: 0 | 1, horas, acciones, actualizada, motor }    (ganó quien no era el que debía actuar)
        { estado: "en_juego", actua: 0 | 1, horas }
-       { estado: "error", mensaje } */
+       { estado: "error", mensaje }
+     Seguros: (1) los dos jugadores tienen que haber registrado la misma versión del motor que se usa para repetir (fila.motor1,
+     fila.motor2 y M.VERSION); si no, no se decide nada. (2) Un abandono solo se da si el turno guardado por el servidor coincide
+     con el de la repetición: así «quien tenía que actuar» es de verdad quien ese servidor esperaba. Una partida ya terminada según
+     el registro se da por terminada aunque el turno guardado no cuadre: el motor ignora igual en todos lados las acciones que no
+     valen, y así nadie puede esquivar una derrota estropeando a propósito el turno guardado. */
   function analizar(fila, M, opciones) {
     const o = opciones || {};
     try {
       if (!fila || fila.semilla === null || fila.semilla === undefined || !Array.isArray(fila.mazo1) || !Array.isArray(fila.mazo2)) {
         return { estado: "error", mensaje: "La partida no está completa (falta la semilla o algún mazo)." };
+      }
+      if (M.VERSION && (fila.motor1 !== M.VERSION || fila.motor2 !== M.VERSION)) {
+        return { estado: "motor", mensaje: `Los dos jugadores no jugaron con la versión ${M.VERSION} del motor (jugaron con ${fila.motor1 || "sin registrar"} y ${fila.motor2 || "sin registrar"}). No se decide automáticamente.` };
       }
       const est = M.crearPartida({
         semilla: fila.semilla, primero: fila.primero, cartas: fila.cartas || {},
@@ -33,14 +41,19 @@
         if (r && r.error) ignoradas++;
       }
       if (est.ganador !== null) {
-        return { estado: "terminada", resultado: est.ganador === "empate" ? "empate" : est.ganador === 0 ? "j1" : "j2", motivo: est.motivo || "vida", acciones: acciones.length, ignoradas };
+        return { estado: "terminada", resultado: est.ganador === "empate" ? "empate" : est.ganador === 0 ? "j1" : "j2", motivo: est.motivo || "vida", acciones: acciones.length, ignoradas, actualizada: fila.actualizada, motor: M.VERSION || null };
       }
       const actua = M.quienActua(est);
       const desde = Date.parse(fila.actualizada);
       const ahora = o.ahora === undefined ? Date.now() : o.ahora;
       const horas = Number.isFinite(desde) ? Math.max(0, (ahora - desde) / 3600000) : 0;
       if (o.horasTurno && horas >= o.horasTurno) {
-        return { estado: "abandono", resultado: actua === 0 ? "j2" : "j1", pierde: actua, horas: Math.round(horas * 10) / 10 };
+        // El turno que guardó el servidor tiene que ser el de la repetición, o no se sabe de quién era la obligación de actuar
+        const turnoGuardado = fila.turno === fila.j1 ? 0 : fila.turno === fila.j2 ? 1 : null;
+        if (turnoGuardado !== est.activo) {
+          return { estado: "error", mensaje: "El turno guardado por el servidor no coincide con el de la repetición: no se decide el abandono automáticamente." };
+        }
+        return { estado: "abandono", resultado: actua === 0 ? "j2" : "j1", pierde: actua, horas: Math.round(horas * 10) / 10, acciones: acciones.length, actualizada: fila.actualizada, motor: M.VERSION || null };
       }
       return { estado: "en_juego", actua, horas: Math.round(horas * 10) / 10 };
     } catch (e) {

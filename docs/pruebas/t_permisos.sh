@@ -74,6 +74,19 @@ contiene "el editor no puede regalar" "$(como $EDITOR "select cartas_regalar('$U
 contiene "el editor no cambia su Side" "$(como $EDITOR "update perfiles set side = 'B' where user_id = '$EDITOR';")" "El Side no se puede cambiar"
 nocontiene "el editor sí puede borrar una carta que nadie tuvo" "$(como $EDITOR "select cartas_borrar('carta-del-editor');")" "ERROR"
 
+echo "== Editor: cartas sin publicar hasta que un admin las revise"
+R=$(como $EDITOR "select cartas_guardar('otra-del-editor', jsonb_build_object('nombre', 'Otra', 'epiteto', '', 'tipo', 'Criatura', 'rareza', 'comun', 'limite', 5, 'obtenible', true, 'afinidad', '[\"carne\"]'::jsonb, 'coste', 1, 'atq', 1, 'pv', 1, 'habilidad', 'x'), true);")
+contiene "pidió publicarla y se le avisa" "$R" "publicada"
+comprobar "la carta nueva de un editor queda sin publicar, sin límite y no obtenible" "false||false" "$(sql "select publicada||'|'||coalesce(limite::text,'')||'|'||obtenible from cartas_catalogo where id='otra-del-editor'")"
+comprobar "los jugadores no la ven" "0" "$(como $U1 "select count(*) from cartas_definiciones where id='otra-del-editor';" | tail -1)"
+R=$(como $EDITOR "select cartas_guardar('otra-del-editor', jsonb_build_object('nombre', 'Otra editada', 'epiteto', '', 'tipo', 'Criatura', 'rareza', 'comun', 'afinidad', '[\"carne\"]'::jsonb, 'coste', 1, 'atq', 1, 'pv', 1, 'habilidad', 'x'), true);")
+comprobar "editarla otra vez tampoco la publica" "f" "$(sql "select publicada from cartas_catalogo where id='otra-del-editor'")"
+como $ADMIN "select cartas_guardar('otra-del-editor', jsonb_build_object('nombre', 'Otra revisada', 'epiteto', '', 'tipo', 'Criatura', 'rareza', 'comun', 'limite', 8, 'obtenible', true, 'afinidad', '[\"carne\"]'::jsonb, 'coste', 1, 'atq', 1, 'pv', 1, 'habilidad', 'x'), true);" >/dev/null
+comprobar "un admin la revisa, configura y publica" "true|8|true" "$(sql "select publicada||'|'||limite||'|'||obtenible from cartas_catalogo where id='otra-del-editor'")"
+R=$(como $EDITOR "select cartas_guardar('otra-del-editor', jsonb_build_object('nombre', 'Otra', 'epiteto', '', 'tipo', 'Criatura', 'rareza', 'comun', 'limite', 8, 'obtenible', true, 'afinidad', '[\"carne\"]'::jsonb, 'coste', 1, 'atq', 1, 'pv', 1, 'habilidad', 'x'), false);")
+contiene "un editor no puede despublicar una carta ya revisada" "$R" "publicada"
+comprobar "...y sigue publicada" "t" "$(sql "select publicada from cartas_catalogo where id='otra-del-editor'")"
+
 echo "== Admin"
 R=$(como $ADMIN "select cartas_guardar('comun-2', jsonb_build_object('nombre', 'Común 2', 'epiteto', '', 'tipo', 'Criatura', 'rareza', 'infrecuente', 'limite', 25, 'obtenible', false, 'afinidad', '[\"carne\"]'::jsonb, 'coste', 2, 'atq', 1, 'pv', 2, 'habilidad', 'x'), true);")
 nocontiene "el admin puede guardar una carta" "$R" "ERROR"

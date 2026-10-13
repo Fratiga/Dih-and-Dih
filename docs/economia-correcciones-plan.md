@@ -165,17 +165,17 @@ Qué sigue sin cubrir:
 - Pasarse cartas entre dos cuentas propias: acotado por los límites, no impedible.
 - Lo mismo para las recompensas de los minijuegos contra la casa (sección 6) sigue pendiente: esos juegos no tienen registro que repetir.
 
-## 8. Decisiones que te corresponden
+## 8. Decisiones (cerradas el 13 de octubre)
 
-1. **Horas para perder por abandono** (`apuesta_turno_horas`): propongo 48. Quien tiene que actuar y no lo hace en ese plazo pierde la partida y las cartas apostadas. Es el número que más afecta a jugar con calma; se cambia desde el panel sin tocar código.
-2. **Inactividad sin ningún aviso**: propongo 72 horas hasta devolver la apuesta (`apuesta_inactividad_horas`). Solo se usa si la función de verificación no está o no puede decidir.
-3. **Disputas sin resolver**: con la verificación desplegada casi no deberían quedar; las que sí (error de la función) esperan al admin sin límite. ¿Se devuelven solas pasado un plazo (por ejemplo 14 días)?
-4. **Editores y cartas nuevas**: una carta que crea un editor nace sin límite, no obtenible y ahora **fuera de circulación**. ¿Quieres que además quede sin publicar hasta que la revises?
-5. **Campos que se protegen a los editores**: rareza, tipo, lado, obtenible y límite global. El tipo y el lado no estaban en tu lista, pero cambian el límite por jugador y a quién le sale la carta.
-6. **Etiqueta «En circulación»**: todas las cartas que ya existen quedan **fuera** hasta que las marques (Admin > Economía de cartas, con selección por lotes). Es lo más seguro: nada se cuela. El efecto es que, al encender las recompensas, no saldrá ninguna carta hasta que marques las que estén listas.
-7. **Desplegar la función de verificación**: hay que fijar el commit del motor y desplegar con la cuenta de Supabase. Lo hago yo cuando lo apruebes.
-8. **Forja que gasta capacidad de emisión** y **mercader más barato que la forja**: documentados, sin cambios.
-9. **Límites globales provisionales**: sin tocar. Siguen pendientes de tu revisión.
+El despliegue se hace por etapas, con copias recuperables y comprobaciones entre pasos: ver **`docs/economia-despliegue.md`**.
+
+1. **Abandono a las 48 horas** de que un jugador deba actuar y no actúe (`apuesta_turno_horas`). El servidor comprueba que el turno le corresponde, que la partida sigue activa y que el plazo venció según su reloj antes de resolver.
+2. **Todas las cartas existentes empiezan fuera de circulación**; las habilitas desde el panel. Fuera de circulación no entra por recompensas, forja, reserva ni mercader. Los regalos manuales se permiten y quedan registrados.
+3. **Disputas a 14 días** (`disputa_dias`): devolución de las apuestas, cierre como no resuelta e historial conservado.
+4. **Cartas nuevas de editores**: sin publicar, sin límite global y no obtenibles hasta que un admin las revise. Los editores no cambian tipo, lado ni parámetros económicos (ni la publicación) de cartas existentes.
+5. **Antes de desplegar la función del servidor**: registro auténtico, versión del motor y operaciones idempotentes. Comprobado y probado (despliegue, sección 5).
+
+Siguen abiertas, por decisión tuya (despliegue, sección 2): **D1** el Hipódromo compra y vende cartas con monedas (incluidas legendarias) y **D2** la recompensa de La Fractura se salta los ejemplares. Y, como antes: la forja que gasta capacidad de emisión, el mercader más barato que la forja y los límites globales provisionales, que no se tocan.
 
 ## 9. Cómo se aplicaría en producción (cuando lo apruebes)
 

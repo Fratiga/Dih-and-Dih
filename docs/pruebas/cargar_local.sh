@@ -7,7 +7,7 @@ HASTA="${1:-prod}"
 P="docker exec -i cartas-pruebas psql -U postgres -v ON_ERROR_STOP=1 -q"
 docker exec cartas-pruebas psql -U postgres -q -c "drop database if exists pruebas" -c "create database pruebas" >/dev/null 2>&1 || true
 docker exec cartas-pruebas psql -U postgres -q -c "drop database if exists pruebas with (force)" -c "create database pruebas"
-for f in pruebas/00_supabase_simulado.sql pruebas/01_esquema_base.sql pruebas/02_datos_prueba.sql economia-1_nucleo.sql economia-3_recompensas.sql economia-4_apuestas.sql economia-5_intercambios.sql economia-6_forja.sql; do
+for f in pruebas/00_supabase_simulado.sql pruebas/01_esquema_base.sql pruebas/02_datos_prueba.sql economia-1_nucleo.sql economia-3_recompensas.sql economia-4_apuestas.sql economia-5_intercambios.sql economia-6_forja.sql pruebas/03_funciones_externas.sql; do
   echo "== $f"; $P -d pruebas < "$DOCS/$f"
 done
 if [ "$HASTA" = "todo" ]; then
