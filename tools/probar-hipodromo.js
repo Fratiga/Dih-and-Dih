@@ -238,6 +238,149 @@ function cabezaACabeza(a, b, cond, veces) {
     const fr = arc / 1200; ok(fr > 0.14 && fr < 0.32, `las pistas arcanas salen en torno a una de cada cuatro jornadas (${pct(fr)})`); }
 }
 
+// 4c) La cuadra: dueños, órdenes, entrenamiento, cría y premios
+{ const mk = () => M.crearMundo("cuadra", { calentar: 30, t0: Date.UTC(2026, 0, 1), simsCalentar: 8 });
+  const avanza = (w, k, evs) => { for (let i = 0; i < k; i++) { const ev = M.avanzar(w, { sims: 8 }); if (evs) evs.push(ev); } };
+  const ord = (w, o, saldos) => M.procesarOrdenes(w, [Object.assign({ oid: 1 }, o)], saldos).resultados[0];
+  { const w = mk();
+    // adoptar
+    const a = ord(w, { dueno: "u1", tipo: "adoptar", nombre: "Ana", sexo: "f" });
+    const mia = M.cuadraDe(w, "u1");
+    ok(a.ok && mia.length === 1 && mia[0].sexo === "f" && mia[0].dueno === "u1" && M.nombreDueno(w, "u1") === "Ana", "adoptar da una criatura de la casa, del sexo pedido, con dueño");
+    ok(!ord(w, { dueno: "u1", tipo: "adoptar" }).ok, "solo se adopta una vez");
+    ok(M.edadAnios(w.n, mia[0]) >= C.DEBUT, "la criatura de la casa ya puede debutar");
+    const c = mia[0];
+    ok(M.perfil(w, c).dueno.id === "u1" && M.perfil(w, c).precio === null, "el perfil público dice quién es el dueño y no la pone a la venta");
+    // la casa no la inscribe sola
+    { const w2 = JSON.parse(JSON.stringify(w)); avanza(w2, 30); ok(M.buscar(w2, c.id).salidas === 0, "una criatura con dueño no corre si su dueño no la inscribe"); }
+    // inscribir
+    const n1 = w.n + 1, cal = M.calendario(w, n1, 3);
+    ok(cal.length === 3 && cal[0].n === n1 && cal[0].inscripcion > 0 && cal[0].plazas > 0, "el calendario enseña las próximas carreras con su precio de inscripción");
+    ok(!ord(w, { dueno: "u2", tipo: "inscribir", id: c.id, n: n1 }).ok, "no se puede inscribir la criatura de otro");
+    ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n }).ok && !ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 40 }).ok, "solo se inscribe en las carreras que vienen, con un margen");
+    ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }, { u1: 1 }).ok, "sin monedas no se inscribe");
+    const ins = ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }, { u1: 1000 });
+    ok(ins.ok && ins.costo === cal[0].inscripcion, "inscribir cuesta lo que dice el calendario");
+    ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }).ok, "no se inscribe dos veces en la misma");
+    const evs = []; avanza(w, 1, evs);
+    ok(w.proxima.n === n1 && w.proxima.entrantes.some(e => e.id === c.id && e.dueno && e.dueno.id === "u1"), "la criatura inscrita corre y su dueño aparece en el programa");
+    avanza(w, 1, evs);
+    const cc = M.buscar(w, c.id);
+    ok(cc.salidas === 1 && cc.entradas.length === 0, "corrió una vez y la inscripción se gastó");
+    const pagos = evs.reduce((a, ev) => a.concat(ev.pagos), []).filter(q => q.dueno === "u1");
+    ok(evs.every(ev => Array.isArray(ev.avisos)) && evs.reduce((a, ev) => a.concat(ev.avisos), []).some(x => x.dueno === "u1" && /llegó/.test(x.texto)), "el dueño recibe un aviso con el resultado");
+    ok(pagos.every(q => q.monto > 0), "los premios llegan al dueño como pagos positivos");
+    // cancelar con devolución
+    { const w3 = mk(); ord(w3, { dueno: "u1", tipo: "adoptar", sexo: "m" }); const c3 = M.cuadraDe(w3, "u1")[0];
+      ord(w3, { dueno: "u1", tipo: "inscribir", id: c3.id, n: w3.n + 2 }); const d = ord(w3, { dueno: "u1", tipo: "desinscribir", id: c3.id, n: w3.n + 2 });
+      ok(d.ok && d.ingreso === M.calendario(w3, w3.n + 2, 1)[0].inscripcion && c3.entradas.length === 0, "cancelar una inscripción devuelve lo pagado"); }
+    // lesionada: la inscripción se devuelve
+    { const w3 = mk(); ord(w3, { dueno: "u1", tipo: "adoptar" }); const c3 = M.cuadraDe(w3, "u1")[0];
+      ord(w3, { dueno: "u1", tipo: "inscribir", id: c3.id, n: w3.n + 1 });
+      c3.lesion = { tipo: "torcedura leve", gravedad: "leve", hasta: w3.n + 50 };
+      const ev = M.avanzar(w3, { sims: 8 });
+      ok(!w3.proxima.entrantes.some(e => e.id === c3.id) && ev.pagos.some(q => q.dueno === "u1" && q.monto > 0 && /devuelta/.test(q.concepto)), "si no puede correr, la carrera sigue sin ella y se devuelve la inscripción"); }
+  }
+  // comprar y vender
+  { const w = mk(); const venta = M.enVenta(w), c = venta.find(x => M.edadAnios(w.n, x) < C.DEBUT) || venta[0];
+    ok(venta.length > 20 && venta.every(x => !x.dueno && x.estado === "activo"), "hay criaturas a la venta y ninguna tiene dueño");
+    const pr = M.precioCompra(w, c); ok(pr >= 100 && pr <= 3000 && pr % 10 === 0, `el precio es razonable (${pr})`);
+    ok(!ord(w, { dueno: "u1", tipo: "comprar", id: c.id }, { u1: pr - 1 }).ok, "sin monedas no se compra");
+    const comp = ord(w, { dueno: "u1", tipo: "comprar", id: c.id }, { u1: pr });
+    ok(comp.ok && comp.costo === pr && c.dueno === "u1", "comprar cuesta lo que dice el precio y da la criatura");
+    ok(!ord(w, { dueno: "u2", tipo: "comprar", id: c.id }, { u2: 99999 }).ok, "no se compra lo que ya tiene dueño");
+    const v = ord(w, { dueno: "u1", tipo: "vender", id: c.id });
+    ok(v.ok && v.ingreso === M.valorVenta(w, c) && v.ingreso < pr && c.dueno === null, "vender paga menos de lo que costó y la devuelve al mundo");
+    // límite de la cuadra
+    const w2 = mk(); const lista = M.enVenta(w2).slice(0, 6); let n5 = 0; lista.forEach(x => { if (ord(w2, { dueno: "u9", tipo: "comprar", id: x.id }).ok) n5++; });
+    ok(n5 === C.MAX_CABALLOS, `la cuadra tiene un máximo de ${C.MAX_CABALLOS} criaturas`); }
+  // entrenar y cuidar
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0];
+    const antes = c.perm.vel;
+    const e1 = ord(w, { dueno: "u1", tipo: "entrenar", id: c.id, stat: "vel" }, { u1: 100 });
+    ok(e1.ok && e1.costo === C.ENTRENO_COSTE && c.entreno && c.entreno.stat === "vel", "entrenar cuesta y deja a la criatura entrenando");
+    ok(!ord(w, { dueno: "u1", tipo: "entrenar", id: c.id, stat: "res" }).ok, "no se entrenan dos cosas a la vez");
+    ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 2 }).ok, "mientras entrena no se puede inscribir");
+    const evs = []; avanza(w, C.ENTRENO_CARRERAS + 2, evs);
+    ok(c.entreno === null && c.perm.vel > antes && c.perm.vel <= C.ENTRENO_TOPE, `al terminar la sesión mejora la velocidad (+${(c.perm.vel - antes).toFixed(2)})`);
+    ok(evs.reduce((a, ev) => a.concat(ev.avisos), []).some(x => x.dueno === "u1" && /terminó su entrenamiento/.test(x.texto)), "el dueño recibe el aviso del entrenamiento");
+    // el techo del entrenamiento
+    c.perm.vel = C.ENTRENO_TOPE; ok(!ord(w, { dueno: "u1", tipo: "entrenar", id: c.id, stat: "vel" }).ok, "hay un techo de mejora por entrenamiento");
+    // cuidar
+    c.fatiga = 40; const cu = ord(w, { dueno: "u1", tipo: "cuidar", id: c.id }, { u1: 100 });
+    ok(cu.ok && cu.costo === C.CUIDADO_COSTE && c.fatiga === 20, "los cuidados quitan cansancio");
+    ok(!ord(w, { dueno: "u1", tipo: "cuidar", id: c.id }).ok, "no se puede cuidar sin parar");
+    avanza(w, C.CUIDADO_ESPERA + 1); c.lesion = { tipo: "distensión", gravedad: "media", hasta: w.n + 50 };
+    ok(ord(w, { dueno: "u1", tipo: "cuidar", id: c.id }).ok && c.lesion.hasta - w.n <= 31, "los cuidados acortan una lesión"); }
+  // táctica
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0], cond = I.condiciones({ pista: "silver", dist: 1600, mojadoPrevio: 0.1, n: 5 }, "despejado");
+    const e0 = I.efectivo(w, c, cond, 1);
+    ok(ord(w, { dueno: "u1", tipo: "tactica", id: c.id, tactica: "frente" }).ok && I.efectivo(w, c, cond, 1).ritmo === M.TACTICAS.frente, "la táctica cambia cómo sale a correr");
+    c.ritmo = 0.9; const afavor = I.efectivo(w, c, cond, 1).pen; c.ritmo = 0.1; const encontra = I.efectivo(w, c, cond, 1).pen;
+    ok(afavor > encontra && encontra < 1 && afavor > 0.99, "ir contra la naturaleza de la criatura cuesta un poco");
+    ok(!ord(w, { dueno: "u1", tipo: "tactica", id: c.id, tactica: "volando" }).ok && ord(w, { dueno: "u1", tipo: "tactica", id: c.id, tactica: null }).ok && I.efectivo(w, c, cond, 1).ritmo === c.ritmo, "se puede quitar la táctica y no valen las inventadas"); }
+  // nombre
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); ord(w, { dueno: "u2", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0], otra = M.cuadraDe(w, "u2")[0];
+    ok(!ord(w, { dueno: "u1", tipo: "nombre", id: c.id, nombre: "<b>x" }).ok && !ord(w, { dueno: "u1", tipo: "nombre", id: c.id, nombre: "A" }).ok && !ord(w, { dueno: "u1", tipo: "nombre", id: c.id, nombre: otra.nombre }).ok, "un nombre mal formado o repetido no vale");
+    const r = ord(w, { dueno: "u1", tipo: "nombre", id: c.id, nombre: "Trueno del Sur" }, { u1: 100 });
+    ok(r.ok && r.costo === C.NOMBRE_COSTE && c.nombre === "Trueno del Sur" && w.nombres["trueno del sur"], "se puede bautizar");
+    ok(!ord(w, { dueno: "u1", tipo: "nombre", id: c.id, nombre: "Otro Nombre" }).ok, "solo una vez"); }
+  // cría dirigida
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0];
+    ok(!ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: (w.criadores.find(x => x.sexo === "m") || {}).id }).ok, "para criar hay que retirar antes a la madre a la cría");
+    ok(ord(w, { dueno: "u1", tipo: "retirar", id: mad.id }).ok && mad.estado === "criador" && w.criadores.includes(mad) && !w.vivos.includes(mad), "el dueño puede retirar a su criatura a la cría");
+    const semental = w.criadores.find(x => x.sexo === "m" && !x.dueno && !(mad.padre && x.padre && mad.padre.id === x.padre.id)), pr = M.precioMonta(w, semental);
+    ok(pr >= 60 && pr <= 800, `la monta tiene un precio razonable (${pr})`);
+    ok(!ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }, { u1: pr - 1 }).ok, "sin monedas no se cruza");
+    const cr = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }, { u1: 1000 });
+    ok(cr.ok && cr.costo === pr && w.cruces.length === 1, "cruzar cuesta la monta y queda esperando cría");
+    ok(!ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }).ok, "no se cruza dos veces seguidas");
+    const antes = w.vivos.length; avanza(w, C.CRUCE_ESPERA + 1);
+    const cria = w.vivos.find(x => x.padre && x.padre.id === semental.id && x.madre && x.madre.id === mad.id);
+    ok(cria && cria.dueno === "u1" && cria.gen > 1 && w.cruces.length === 0, "nace la cría, con los padres elegidos y del dueño de la madre");
+    ok(cria && cria.rasgos && ["cuernos", "piel", "alas"].every(k => cria.rasgos[k]), "la cría tiene rasgos heredados");
+    // monta de un semental ajeno: el dinero va al otro dueño
+    const w2 = mk(); ord(w2, { dueno: "u1", tipo: "adoptar", sexo: "m" }); ord(w2, { dueno: "u2", tipo: "adoptar", sexo: "f" });
+    const pad = M.cuadraDe(w2, "u1")[0], mad2 = M.cuadraDe(w2, "u2")[0]; ord(w2, { dueno: "u1", tipo: "retirar", id: pad.id }); ord(w2, { dueno: "u2", tipo: "retirar", id: mad2.id });
+    const r2 = M.procesarOrdenes(w2, [{ oid: 5, dueno: "u2", tipo: "cruzar", madre: mad2.id, padre: pad.id }], { u2: 1000, u1: 0 });
+    ok(r2.resultados[0].ok && r2.pagos.some(q => q.dueno === "u1" && q.monto > 0) && r2.pagos.some(q => q.dueno === "u2" && q.monto < 0), "la monta de un semental ajeno se paga a su dueño"); }
+  // retiros de las criaturas con dueño
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0]; c.rating = 1300; c.salidas = 20;
+    avanza(w, 60); ok(M.buscar(w, c.id) && M.buscar(w, c.id).estado === "activo", "una criatura con dueño no se retira sola por rendir poco"); }
+  // la cuadra sobrevive a guardar y reanudar, y no filtra nada oculto
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const c = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 2 }); ord(w, { dueno: "u1", tipo: "tactica", id: c.id, tactica: "atras" });
+    const a = JSON.parse(JSON.stringify(w)), b = JSON.parse(JSON.stringify(w)); avanza(a, 6);
+    const b2 = JSON.parse(JSON.stringify(b)); avanza(b2, 6);
+    ok(JSON.stringify(a) === JSON.stringify(b2), "el mundo con cuadras se reanuda desde JSON y da lo mismo");
+    const pf = M.perfil(w, c), txt = JSON.stringify(pf);
+    ok(!/talento|"genes"|"forma"|fatiga|tactica|entradas|entreno/.test(txt), "el perfil público no enseña lo privado de la cuadra");
+    const pc = M.perfilCuadra(w, c);
+    ok(pc.entradas.length === 1 && pc.tactica === "atras" && M.STATS.every(k => pc.capacidades[k] % 5 === 0), "la ficha privada enseña órdenes y capacidades redondeadas"); }
+  // el paso del servidor con órdenes
+  { const raw = M.paso(null, Date.UTC(2026, 0, 1), { calentar: 20, semilla: "paso-ordenes", simsCalentar: 8 });
+    const fila = { version: 1, mundo: JSON.parse(JSON.stringify(raw.lote.mundo)) };
+    const ahora = M.horaDe(fila.mundo, fila.mundo.n) + 1000;
+    const r = M.paso(fila, ahora, { ordenes: [{ oid: 11, dueno: "u1", tipo: "adoptar", nombre: "Ana" }, { oid: 12, dueno: "u1", tipo: "comprar", id: 0 }], saldos: { u1: 500 } });
+    ok(r && r.ordenes.length === 2 && r.ordenes[0].ok && !r.ordenes[1].ok, "el paso aplica las órdenes y dice cuáles fallaron");
+    ok(r.lote.cuadras.length === 1 && r.lote.cuadras[0].dueno === "u1" && Array.isArray(r.lote.pagos) && Array.isArray(r.lote.avisos) && Array.isArray(r.lote.aplicadas), "el lote lleva las cuadras, los pagos, los avisos y las carreras aplicadas");
+    ok(r.lote.criaturas.some(x => x.dueno === "u1"), "la criatura adoptada sale en el lote con su dueño"); }
+  // economía: ¿sale a cuenta tener una criatura corriendo siempre que puede?
+  { const K = rapido ? 6 : 14, carreras = rapido ? 150 : 288, w = mk(), duenos = [];
+    for (let i = 0; i < K; i++) { const d = "e" + i; ord(w, { dueno: d, tipo: "adoptar" }); duenos.push(d); }
+    const saldo = {}, gastado = {}; duenos.forEach(d => { saldo[d] = 1000; gastado[d] = 0; });
+    for (let i = 0; i < carreras; i++) {
+      // cada dueño inscribe a su criatura en cuanto puede, pero solo en las categorías que le van (Novatos y Corriente)
+      const cal = M.calendario(w, w.n + 1, 6).filter(x => x.grado === "novatos" || x.grado === "corriente");
+      const rs = []; duenos.forEach(d => M.cuadraDe(w, d).forEach(c => cal.forEach(x => rs.push({ oid: rs.length, dueno: d, tipo: "inscribir", id: c.id, n: x.n }))));
+      M.procesarOrdenes(w, rs, saldo).pagos.forEach(q => { if (q.monto < 0) gastado[q.dueno] -= q.monto; });
+      M.avanzar(w, { sims: 8 }).pagos.forEach(q => { saldo[q.dueno] += q.monto; if (/devuelta/.test(q.concepto)) gastado[q.dueno] -= q.monto; });
+    }
+    const neto = duenos.map(d => saldo[d] - 1000), rend = duenos.map((d, i) => (gastado[d] ? neto[i] / gastado[d] : 0));
+    informe.push(`cuadra: ${K} dueños con una criatura corriendo siempre que puede (${carreras} carreras): gastan de media ${Math.round(media(duenos.map(d => gastado[d])))} y ganan ${Math.round(media(neto))} netos, rendimiento medio sobre lo gastado ${pct(media(rend))} (de ${pct(Math.min(...rend))} a ${pct(Math.max(...rend))})`);
+    ok(media(rend) > -0.6 && media(rend) < 0.4, "correr siempre en Novatos y Corriente no regala dinero ni arruina de golpe (rendimiento medio entre -60 % y +40 %)");
+    ok(Math.max(...rend) > -0.3, "alguna cuadra buena casi llega a salir a cuenta"); }
+}
+
 // 5) Un mundo largo
 const AÑOS = rapido ? 3 : 8, CARRERAS = AÑOS * C.ANIO;
 let m;
