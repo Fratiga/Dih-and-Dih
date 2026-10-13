@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquería — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/dialogos.js?v=20270154"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270154">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270154">
+  <link rel="stylesheet" href="css/arqueria.css?v=20270154">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20270154">
+  <script src="js/mj-volumen.js?v=20270154"></script>
+</head>
+<body class="mj-pagina arq-tema">
+  <div class="mj-barra">
+    <span class="mj-enlaces">
+      <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+      <a href="index.html" class="mj-volver mj-volver-sec">Inicio</a>
+      <a href="compendio.html" class="mj-volver mj-volver-sec">Compendio</a>
+    </span>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido arq-pagina">
+    <header class="arq-cabecera">
+      <div class="arq-titulo">
+        <p class="eyebrow">PASATIEMPOS</p>
+        <h1 class="mj-titulo">Arquería</h1>
+      </div>
+      <div class="aj-modos arq-modos" role="group" aria-label="Modo de juego">
+        <button type="button" class="aj-modo activo" data-modo="rivales">Contra rivales</button>
+        <button type="button" class="aj-modo" data-modo="jugadores">Contra jugadores</button>
+      </div>
+    </header>
+
+    <div class="arq-diseno">
+      <div class="arq-principal">
+        <div id="arqueriaModoRivales">
+          <div id="arqueriaRivales" class="arq-rivales" role="group" aria-label="Elige a tu rival"></div>
+        </div>
+        <section id="arqueriaLobby" class="hidden">
+          <p id="arqueriaAviso" class="aj-ayuda"></p>
+          <div id="arqueriaLobbyRejilla" class="arq-lobby-rejilla hidden">
+            <section class="arq-panel arq-lobby-panel" aria-label="Jugadores">
+              <h2>Jugadores</h2>
+              <div id="arqueriaJugadores" class="aj-pvp-jugadores"></div>
+            </section>
+            <section class="arq-panel arq-lobby-panel" aria-label="Tus partidas">
+              <h2>Tus partidas</h2>
+              <div id="arqueriaPartidas"></div>
+            </section>
+          </div>
+        </section>
+        <div class="aj-controles hidden" id="arqueriaControles">
+          <button type="button" id="arqueriaCerrar" class="aj-boton">← Mis partidas</button>
+          <button type="button" id="arqueriaRendirse" class="aj-boton">Abandonar</button>
+          <button type="button" id="arqueriaRevancha" class="aj-boton hidden">Revancha</button>
+        </div>
+        <div class="mj-escenario">
+          <canvas id="arqueriaCampo" class="mj-campo" role="button" tabindex="0" aria-label="Campo de arquería"></canvas>
+          <button type="button" id="arqueriaJugar" class="mj-play">▶ Jugar</button>
+          <div id="arqueriaCuenta" class="arqueria-cuenta hidden"></div>
+        </div>
+        <!-- Pie del campo: tu mejor puntaje o el estado de la partida a la izquierda, y a la derecha rendirse contra un rival de la
+             casa (ocupa su sitio siempre y solo se oculta a la vista, para que el campo no salte al empezar) -->
+        <div id="arqueriaPie" class="arq-pie">
+          <p id="arqueriaRecord" class="mj-linea"></p>
+          <div id="arqueriaRendirseSoloFila" class="arq-rendirse-fila arq-inactivo">
+            <button type="button" id="arqueriaRendirseSolo" class="aj-boton" disabled>Rendirse</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="arq-lateral">
+        <section class="arq-panel arq-tu" aria-label="Tus números">
+          <h2>Tus números</h2>
+          <div id="arqueriaTu"></div>
+        </section>
+        <section class="arq-panel arq-tabla" aria-label="Tabla de arqueros">
+          <h2>Tabla de arqueros</h2>
+          <p class="arq-sub">Se anotan las partidas de quienes tienen sesión iniciada.</p>
+          <div id="arqueriaTabs" class="arq-tabs" role="tablist"></div>
+          <div id="arqueriaRankings"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="js/temas.js?v=20270154"></script>
+  <script src="js/fichas-supabase.js?v=20270154"></script>
+<script>
+window.__errs = [];
+window.addEventListener("error", e => window.__errs.push(e.message));
+const YO = "u-yo";
+const fake = { from: () => { const q = { select() { return q; }, eq() { return q; }, order() { return q; }, limit() { return q; }, maybeSingle() { return Promise.resolve({ data: { username: "Yo" } }); }, then(r) { return Promise.resolve({ data: [], error: null }).then(r); } }; return q; }, channel: () => { const c = { on() { return c; }, subscribe() { return c; }, track() { return Promise.resolve(); }, presenceState: () => ({}) }; return c; }, rpc: async () => ({ data: null, error: null }) };
+window.fichasCliente = async () => fake;
+window.fichasSesionActual = async () => ({ user: { id: YO, email: "y@t" } });
+
+/* Reloj falso: cada cuadro avanza 33 ms de partida y un "humano" automático dispara cuando le toca */
+let ft = 0;
+window.__humano = null;
+let siguiente = 0;
+function gauss() { return (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 1.22; }
+function humanoActua(t) {
+  const h = window.__humano; const g = window.__g;
+  if (!h || !g || g.estado() !== "jugando") return;
+  if (t < siguiente) return;
+  const bs = g.blancosVisibles();
+  if (!bs.length) { siguiente = t + 40; return; }
+  // prefiere los de abajo, sin ser perfecto
+  let mejor = null, pm = -1e9;
+  for (const b of bs) { const p = b.y * h.urgencia + Math.random() * 300; if (p > pm) { pm = p; mejor = b; } }
+  const cv = document.getElementById("arqueriaCampo"); const r = cv.getBoundingClientRect();
+  const x = mejor.x + gauss() * h.sigma * mejor.r; const y = mejor.y + gauss() * h.sigma * mejor.r;
+  cv.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: r.left + x * r.width / 960, clientY: r.top + y * r.height / 600, pointerType: "mouse" }));
+  siguiente = t + h.intervalo * 1000 * (0.75 + Math.random() * 0.5);
+}
+window.requestAnimationFrame = cb => setTimeout(() => { ft += 33; humanoActua(ft); cb(ft); }, 0);
+
+window.__sim = async function (rivalId, humano, veces) {
+  const g = window.__g; const res = [];
+  for (let i = 0; i < veces; i++) {
+    g.cambiarRival(rivalId);
+    window.__humano = humano; siguiente = ft + 500;
+    g.iniciar();
+    while (g.estado() === "jugando") await new Promise(r => setTimeout(r, 20));
+    const m = g.marcador(); res.push([m.puntaje, m.puntajeRival]);
+    window.__humano = null;
+    await new Promise(r => setTimeout(r, 30));
+  }
+  return res;
+};
+</script>
+  <script src="js/presencia.js?v=20270154"></script>
+  <script src="js/lado.js?v=20270154"></script>
+  <script src="js/minijuegos-stats.js?v=20270154"></script>
+  <script src="js/arqueria-visual.js?v=20270154"></script>
+  <script src="js/arqueria.js?v=20270154"></script>
+<script>{const o=crearArqueria; const prop=o.RIVALES; window.crearArqueria=function(x){const g=o(x); window.__g=g; return g;}; window.crearArqueria.RIVALES=prop; window.__RIV=prop;}</script>
+  <script src="js/recompensas.js?v=20270154"></script>
+  <script src="js/arqueria-pagina.js?v=20270154"></script>
+  <script src="js/minijuegos-avisos.js?v=20270154"></script>
+  <script src="js/musica-paginas.js?v=20270154"></script>
+</body>
+</html>

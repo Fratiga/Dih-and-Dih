@@ -290,11 +290,13 @@
       const per = perfilDe(e.id), l = res.llegada.find(x => x.id === e.id);
       return { id: e.id, nombre: e.nombre, puerta: e.puerta, per, tramos: res.tramos[e.id], pos: l.pos, t: l.t };
     });
-    poner($("hipPista"), carriles.map(c => `<div class="hip-carril" data-id="${c.id}"><span class="hip-carril-p">${c.puerta}</span>
-      <div class="hip-carril-pista"><div class="hip-corredor">${D.silueta(c.per, { clase: "hip-mini corre", numero: c.puerta })}<span class="hip-corredor-nombre">${esc(c.nombre)}</span><span class="hip-aviso-inc"></span></div></div><span class="hip-carril-lugar">-</span></div>`).join(""));
+    if (escena && escena.pista) escena.pista.destruir();
+    const marcadas = new Set();   // las criaturas por las que apostaste llevan su nombre a la vista
+    est.pendientes.filter(a => a.n === p.n).forEach(a => carriles.forEach(c => { if (a.nombres.includes(c.nombre)) marcadas.add(c.id); }));
     $("hipPista")._h = null;
-    escena = { n: p.n, factor: ultimo / (C.DURACION_SEG - 8), carriles, dist: res.dist, disparados: new Set(), resFinal: false, res,
-      nodos: [...$("hipPista").querySelectorAll(".hip-carril")] };
+    const suelo = (M.PISTAS && M.PISTAS[res.pista]) ? M.PISTAS[res.pista] : null;
+    const pista = HipodromoPista.crear($("hipPista"), { res, carriles, ultimo, D, marcadas, suelo: suelo ? suelo.suelo : "hierba", cuestas: suelo ? suelo.cuestas : 0 });
+    escena = { n: p.n, carriles, dist: res.dist, res, pista, resFinal: false };
     $("hipEscenaTitulo").textContent = `${res.nombre} · ${res.dist} m · terreno ${res.estadoPista} · ${M.CLIMAS[res.clima].texto}`;
     $("hipEscenaRes").innerHTML = "";
   }
@@ -304,36 +306,10 @@
     caja.classList.toggle("hidden", !visible);
     if (!visible) return;
     if (!escena || escena.n !== p.n) construirEscena(p.secreto.res);
-    const el = Math.max(0, (est.virtual - p.hora) / 1000), T = Math.min(el, C.DURACION_SEG) * escena.factor;
-    const ancho = escena.nodos[0].querySelector(".hip-carril-pista").clientWidth - 70;
-    const estados = escena.carriles.map(c => {
-      const terminada = T >= c.tramos[c.tramos.length - 1];
-      return { c, metros: metrosEn(c.tramos, T), terminada };
-    });
-    const orden = estados.slice().sort((a, b) => (a.terminada !== b.terminada ? (a.terminada ? -1 : 1) : a.terminada ? a.c.pos - b.c.pos : b.metros - a.metros));
-    const lugar = new Map(orden.map((s, i) => [s.c.id, i + 1]));
-    estados.forEach((s, i) => {
-      const nodo = escena.nodos[i], corre = nodo.querySelector(".hip-corredor");
-      corre.style.transform = `translateX(${(Math.min(1, s.metros / escena.dist) * Math.max(0, ancho)).toFixed(1)}px)`;
-      textoDe(nodo.querySelector(".hip-carril-lugar"), (s.terminada ? s.c.pos : lugar.get(s.c.id)) + "º");
-      nodo.classList.toggle("fin", s.terminada);
-      nodo.classList.toggle("lider", lugar.get(s.c.id) === 1 && !s.terminada && s.metros > 20);   // líneas de velocidad para quien va primero
-      D.galope(corre.querySelector("svg"), !s.terminada);   // llega a meta y se queda quieto
-    });
-    // tropiezos y lesiones
-    escena.res.incidentes.forEach(inc => {
-      const k = `${inc.id}-${inc.tramo}-${inc.tipo}`; if (escena.disparados.has(k)) return;
-      const s = estados.find(x => x.c.id === inc.id);
-      if (s && s.metros >= inc.tramo * 100 + 50) {
-        escena.disparados.add(k);
-        const nodo = escena.nodos[estados.indexOf(s)], marca = nodo.querySelector(".hip-aviso-inc");
-        marca.textContent = inc.tipo === "lesion" ? "✚" : "!";
-        marca.className = "hip-aviso-inc on " + inc.tipo;
-        setTimeout(() => { if (inc.tipo !== "lesion") marca.className = "hip-aviso-inc"; }, 1600);
-      }
-    });
-    textoDe($("hipEscenaProgreso"), el >= C.DURACION_SEG ? "Meta" : `${Math.min(escena.dist, Math.round(Math.max.apply(null, estados.map(s => s.metros)) / 10) * 10)} m de ${escena.dist} m`);
-    if (el >= C.DURACION_SEG && !escena.resFinal) { escena.resFinal = true; $("hipEscenaRes").innerHTML = tablaResultado(escena.res); }
+    const el = Math.max(0, (est.virtual - p.hora) / 1000);
+    const r = escena.pista.dibujar(el);
+    textoDe($("hipEscenaProgreso"), r.fin ? "Meta" : `${Math.min(escena.dist, Math.round(r.metrosLider / 10) * 10)} m de ${escena.dist} m`);
+    if (r.hecho && !escena.resFinal) { escena.resFinal = true; $("hipEscenaRes").innerHTML = tablaResultado(escena.res); }
   }
 
   /* ---------------------------------------------------------------- pestaña Criaturas y ficha */

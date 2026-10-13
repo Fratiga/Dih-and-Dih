@@ -124,7 +124,7 @@ window.HipodromoDibujo = (function () {
     plano: { contorno: 0, patas: 1, grosor: 1, torso: 1, cabeza: 1, cuello: 1, ojo: 1, pixel: 0, elegante: false },
     caricatura: { contorno: 1.3, patas: 0.93, grosor: 1.28, torso: 1.1, cabeza: 1.22, cuello: 1.05, ojo: 1.45, pixel: 0, elegante: false },
     pixel: { contorno: 1.2, patas: 1, grosor: 1.15, torso: 1.05, cabeza: 1.1, cuello: 1, ojo: 1.3, pixel: 3, elegante: false },
-    elegante: { contorno: 0, patas: 1.16, grosor: 0.7, torso: 0.82, cabeza: 0.86, cuello: 1.25, ojo: 0.95, pixel: 0, elegante: true }
+    elegante: { contorno: 0, patas: 1.12, grosor: 1.12, torso: 0.82, cabeza: 0.86, cuello: 1.25, ojo: 0.95, pixel: 0, elegante: true }
   };
   let ESTILO_DEFECTO = "elegante";
   function ponerEstilo(nombre) { if (ESTILOS[nombre]) ESTILO_DEFECTO = nombre; return ESTILO_DEFECTO; }
