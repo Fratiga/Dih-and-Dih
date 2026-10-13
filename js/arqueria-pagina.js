@@ -27,9 +27,9 @@
     { id: "hornet", nombre: "Hornet", dificultad: "Fácil", nivel: 1, color: "#b48ad9", nota: "Dispara con calma y los blancos le caen en línea recta. Para empezar.", corta: "Blancos en línea recta" },
     { id: "garra", nombre: "Garra", dificultad: "Media", nivel: 2, color: "#d9794f", nota: "Más rápida y bastante precisa. No perdona los descuidos.", corta: "Rápida y precisa" },
     { id: "cassius", nombre: "Cassius", dificultad: "Difícil", nivel: 3, color: "#d9a441", nota: "Los blancos zigzaguean y casi no falla. Hay que ir a por el centro.", corta: "Blancos en zigzag" },
-    { id: "enzo", nombre: "Enzo", dificultad: "Muy difícil", nivel: 4, color: "#5fd0c0", nota: "Cazarrecompensas: elige el blanco que se escapa y dispara sin dudar.", corta: "Rápido y certero" },
-    { id: "adam", nombre: "Adam", dificultad: "Experto", nivel: 5, color: "#d95f5f", nota: "El capitán de los caballeros. Casi cada flecha va al centro.", corta: "Casi todo al centro" },
-    { id: "tobi", nombre: "Tobi", dificultad: "Extremo", nivel: 6, color: "#9bd05f", nota: "El coronel no pierde el tiempo: se lleva el blanco antes de que lo veas bien.", corta: "Casi no deja disparar" }
+    { id: "torvrena", nombre: "Torvrena", dificultad: "Muy difícil", nivel: 4, color: "#5fd0c0", nota: "Cazadora de monstruos: pocas palabras, cicatrices y una puntería que no perdona.", corta: "Rápida y certera" },
+    { id: "milicia", nombre: "Miliciano", dificultad: "Experto", nivel: 5, color: "#cf6f8f", nota: "El mejor arquero de la milicia: casi cada flecha va al centro.", corta: "Casi todo al centro" },
+    { id: "tobi", nombre: "Tobi", dificultad: "Extremo", nivel: 6, color: "#9bd05f", nota: "El centinela no pierde el tiempo: se lleva el blanco antes de que lo veas bien.", corta: "Casi no deja disparar" }
   ];
   // El récord de antes de que hubiera varios rivales era contra el rival más flojo, que ahora es Hornet
   const clave = id => id === "hornet" ? "compendioArqueriaCassius" : `compendioArqueria_${id}`;
@@ -61,7 +61,7 @@
   const TABLAS = [
     { id: "puntaje", titulo: "Puntaje", valor: u => Number(u.maximo.mejor) || 0, etiqueta: "pts" },
     { id: "victorias", titulo: "Victorias", valor: u => u.victorias, etiqueta: "" },
-    { id: "dificiles", titulo: "Contra los difíciles", ayuda: "Partidas ganadas contra Cassius, Enzo, Adam o Tobi", valor: u => ["cassius", "enzo", "adam", "tobi"].reduce((n, id) => n + (u.porClave[id] ? u.porClave[id].victorias : 0), 0), etiqueta: "" },
+    { id: "dificiles", titulo: "Contra los difíciles", ayuda: "Partidas ganadas contra Cassius, Torvrena, el Miliciano o Tobi", valor: u => ["cassius", "torvrena", "milicia", "tobi"].reduce((n, id) => n + (u.porClave[id] ? u.porClave[id].victorias : 0), 0), etiqueta: "" },
     { id: "jugadores", titulo: "Entre jugadores", valor: u => (u.porClave.jugador ? u.porClave.jugador.victorias : 0), etiqueta: "",
       sub: u => (u.porClave.jugador && u.porClave.jugador.maximo && Number(u.porClave.jugador.maximo.mejor) ? `mejor ${Number(u.porClave.jugador.maximo.mejor)} pts` : "") }
   ];

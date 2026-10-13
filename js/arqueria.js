@@ -26,8 +26,9 @@
        precision y dist = cuántos tiros aciertan y el reparto [centro, medio, borde] de los que aciertan
      radio, velocidadBase y zigzag son de los blancos que caen contra ese rival.
      Las cifras salen de partidas simuladas con un jugador bueno (unos 1,6 aciertos por segundo y reflejos
-     normales): Hornet le pierde por mucho, Garra también, Cassius queda parejo, y de Enzo en adelante
-     la máquina gana, hasta el coronel Tobi, que casi no deja disparar.
+     normales): Hornet le pierde por mucho, Garra también, Cassius queda parejo, y de Torvrena en adelante
+     la máquina gana, hasta el coronel Tobi, que casi no deja disparar. (Torvrena es la cazadora de monstruos; el arquero
+     de la milicia, el mejor tirador de los suyos.)
      intervalo solo lo usa el rival abstracto de Muerte Súbita (Verdam). */
   const RIVALES = {
     hornet: {
@@ -48,14 +49,14 @@
       precision: 0.9, dist: [0.45, 0.38, 0.17],
       radio: 38, velocidadBase: 150, zigzag: true
     },
-    enzo: {
-      nombre: "Enzo", color: "#5fd0c0",
+    torvrena: {
+      nombre: "Torvrena", color: "#5fd0c0",
       intervalo: 0.8, ciclo: 0.42, apuntar: 0.2, apuntarRuido: 0.08, vuelo: 0.11, ruido: 45,
       precision: 0.93, dist: [0.5, 0.35, 0.15],
       radio: 35, velocidadBase: 160, zigzag: true
     },
-    adam: {
-      nombre: "Adam", color: "#d95f5f",
+    milicia: {
+      nombre: "Miliciano", color: "#cf6f8f",
       intervalo: 0.8, ciclo: 0.32, apuntar: 0.15, apuntarRuido: 0.05, vuelo: 0.09, ruido: 30,
       precision: 0.95, dist: [0.58, 0.32, 0.1],
       radio: 33, velocidadBase: 175, zigzag: true
