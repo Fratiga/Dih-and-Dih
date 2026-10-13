@@ -18,23 +18,53 @@
   const LOGICO_ANCHO = 960;
   const LOGICO_ALTO = 600;
 
-  // dist = [centro, interior, exterior] de los tiros que aciertan; ritmo
-  // sale de intervalo * precisión * promedio de anillo (Hornet ~300, Garra ~440, Cassius ~540, Verdam ~620 en 60 s)
+  /* Rivales. En la galería (arqueria.html) cada uno dispara con su propia mira:
+       ciclo   = segundos entre un disparo y el siguiente
+       apuntar = lo que tarda en apuntar a un blanco (más apuntarRuido al azar)
+       vuelo   = lo que tarda su flecha en llegar (hasta entonces puedes quitarle el blanco)
+       ruido   = cuánto se despista al elegir el blanco más urgente (menos = elige mejor)
+       precision y dist = cuántos tiros aciertan y el reparto [centro, medio, borde] de los que aciertan
+     radio, velocidadBase y zigzag son de los blancos que caen contra ese rival.
+     Las cifras salen de partidas simuladas con un jugador bueno (unos 1,6 aciertos por segundo y reflejos
+     normales): Hornet le pierde por mucho, Garra también, Cassius queda parejo, y de Enzo en adelante
+     la máquina gana, hasta el coronel Tobi, que casi no deja disparar.
+     intervalo solo lo usa el rival abstracto de Muerte Súbita (Verdam). */
   const RIVALES = {
     hornet: {
       nombre: "Hornet", color: "#b48ad9",
-      intervalo: 1.0, precision: 0.75, dist: [0.25, 0.40, 0.35],
+      intervalo: 1.0, ciclo: 1.1, apuntar: 0.38, apuntarRuido: 0.14, vuelo: 0.18, ruido: 120,
+      precision: 0.70, dist: [0.2, 0.4, 0.4],
       radio: 46, velocidadBase: 110, zigzag: false
-    },
-    cassius: {
-      nombre: "Cassius", color: "#d9a441",
-      intervalo: 0.8, precision: 0.9, dist: [0.48, 0.37, 0.15],
-      radio: 40, velocidadBase: 135, zigzag: true
     },
     garra: {
       nombre: "Garra", color: "#d9794f",
-      intervalo: 0.85, precision: 0.84, dist: [0.38, 0.37, 0.25],
+      intervalo: 0.85, ciclo: 0.62, apuntar: 0.27, apuntarRuido: 0.1, vuelo: 0.14, ruido: 80,
+      precision: 0.86, dist: [0.38, 0.4, 0.22],
       radio: 42, velocidadBase: 125, zigzag: false
+    },
+    cassius: {
+      nombre: "Cassius", color: "#d9a441",
+      intervalo: 0.8, ciclo: 0.52, apuntar: 0.23, apuntarRuido: 0.09, vuelo: 0.12, ruido: 60,
+      precision: 0.9, dist: [0.45, 0.38, 0.17],
+      radio: 38, velocidadBase: 150, zigzag: true
+    },
+    enzo: {
+      nombre: "Enzo", color: "#5fd0c0",
+      intervalo: 0.8, ciclo: 0.42, apuntar: 0.2, apuntarRuido: 0.08, vuelo: 0.11, ruido: 45,
+      precision: 0.93, dist: [0.5, 0.35, 0.15],
+      radio: 35, velocidadBase: 160, zigzag: true
+    },
+    adam: {
+      nombre: "Adam", color: "#d95f5f",
+      intervalo: 0.8, ciclo: 0.32, apuntar: 0.15, apuntarRuido: 0.05, vuelo: 0.09, ruido: 30,
+      precision: 0.95, dist: [0.58, 0.32, 0.1],
+      radio: 33, velocidadBase: 175, zigzag: true
+    },
+    tobi: {
+      nombre: "Tobi", color: "#9bd05f",
+      intervalo: 0.8, ciclo: 0.24, apuntar: 0.11, apuntarRuido: 0.04, vuelo: 0.07, ruido: 18,
+      precision: 0.97, dist: [0.7, 0.25, 0.05],
+      radio: 30, velocidadBase: 190, zigzag: true
     },
     verdam: {
       nombre: "Verdam", color: "#8fd06a",
@@ -324,9 +354,9 @@
           else {
             let mejor = null;
             let puntos = -Infinity;
-            for (const b of blancos) { const p = b.y + Math.random() * 90; if (p > puntos) { puntos = p; mejor = b; } }
+            for (const b of blancos) { const p = b.y + Math.random() * (cfg.ruido ?? 90); if (p > puntos) { puntos = p; mejor = b; } }
             ia.objetivo = mejor;
-            ia.apuntar = Math.min(0.42, cfg.intervalo * 0.5) + Math.random() * 0.12;
+            ia.apuntar = tiempoApuntar() + Math.random() * (cfg.apuntarRuido ?? 0.12);
           }
         }
       } else {
@@ -345,11 +375,12 @@
 
     /* Dispara: la flecha sale de abajo, bajo su mira, y tarda un momento en llegar. Hasta entonces el blanco sigue ahí, así que
        puedes quitárselo. Si acierta, al llegar el blanco salta en pedazos y el punto es suyo. */
-    const VIAJE_IA = 0.16;
+    const tiempoApuntar = () => cfg.apuntar ?? Math.min(0.42, cfg.intervalo * 0.5);
+    const viajeIA = () => cfg.vuelo ?? 0.16;
     function dispararIA() {
       const b = ia.objetivo;
       ia.objetivo = null;
-      ia.espera = Math.max(0.1, cfg.intervalo - Math.min(0.42, cfg.intervalo * 0.5));
+      ia.espera = Math.max(0.03, (cfg.ciclo ?? cfg.intervalo) - tiempoApuntar());
       const x0 = ia.mira.x;
       const y0 = alto + 14;
       const v = velocidad() * b.vel;
@@ -358,15 +389,15 @@
         const a = Math.random() * Math.PI * 2;
         const d = b.r * (1.25 + Math.random() * 0.9);
         const x = b.x + Math.cos(a) * d;
-        const y = b.y + v * VIAJE_IA + Math.sin(a) * d;
-        lanzarFlecha(x0, y0, x, y, cfg.color, VIAJE_IA);
-        ia.vuelo = { b, golpe: false, x, y, restante: VIAJE_IA };
+        const y = b.y + v * viajeIA() + Math.sin(a) * d;
+        lanzarFlecha(x0, y0, x, y, cfg.color, viajeIA());
+        ia.vuelo = { b, golpe: false, x, y, restante: viajeIA() };
         return;
       }
       const r = Math.random();
       const anillo = r < cfg.dist[0] ? 0 : r < cfg.dist[0] + cfg.dist[1] ? 1 : 2;
-      lanzarFlecha(x0, y0, b.x, b.y + v * VIAJE_IA, cfg.color, VIAJE_IA);
-      ia.vuelo = { b, golpe: true, pts: PUNTOS_ANILLO[anillo], x: b.x, y: b.y + v * VIAJE_IA, restante: VIAJE_IA };
+      lanzarFlecha(x0, y0, b.x, b.y + v * viajeIA(), cfg.color, viajeIA());
+      ia.vuelo = { b, golpe: true, pts: PUNTOS_ANILLO[anillo], x: b.x, y: b.y + v * viajeIA(), restante: viajeIA() };
     }
 
     function aterrizarIA() {
@@ -732,5 +763,6 @@
     };
   }
 
+  crearArqueria.RIVALES = RIVALES; // para ajustar la dificultad con pruebas automáticas
   window.crearArqueria = crearArqueria;
 })();
