@@ -510,3 +510,7 @@ create or replace view public.hipodromo_comunidad as
     from public.hipodromo_votos
    group by n, criatura_id;
 grant select on public.hipodromo_comunidad to anon, authenticated;
+
+-- Supabase da a las vistas nuevas permisos de escritura por defecto: se quitan, las vistas solo se leen.
+revoke all on public.hipodromo_pozos, public.hipodromo_leyendas, public.hipodromo_comunidad from anon, authenticated;
+grant select on public.hipodromo_pozos, public.hipodromo_leyendas, public.hipodromo_comunidad to anon, authenticated;
