@@ -192,10 +192,9 @@ En el hipódromo **empiezas sin monedas** (la billetera nace en 0; la criatura d
 | Común | 20 | 50 |
 | Infrecuente | 60 | 150 |
 | Rara | 200 | 500 |
-| Limitada | 500 | 1250 |
 | Legendaria | 800 | 2000 |
 
-Comprar cuesta 2,5 veces lo que se paga al vender: vender y recomprar siempre pierde monedas. Todo pasa por `cartas_i_retirar` y `cartas_i_emitir` de la economía de cartas, así que queda en su libro de movimientos (referencias `hipodromo:venta` y `hipodromo:compra`). Una carta común vendida (20) no llega ni a una inscripción en una carrera corriente (80): se pensó para que cambiar cartas por monedas sea una decisión, no un grifo. Los precios se pueden subir o bajar si resulta corto o largo.
+Las **limitadas no se pueden comprar ni vender** en el hipódromo: solo las da el DM (una rareza sin precio queda fuera). Comprar cuesta 2,5 veces lo que se paga al vender: vender y recomprar siempre pierde monedas. Todo pasa por `cartas_i_retirar` y `cartas_i_emitir` de la economía de cartas, así que queda en su libro de movimientos (referencias `hipodromo:venta` y `hipodromo:compra`). Una carta común vendida (20) no llega ni a una inscripción en una carrera corriente (80): se pensó para que cambiar cartas por monedas sea una decisión, no un grifo. Los precios se pueden subir o bajar si resulta corto o largo.
 
 ## El servidor
 
