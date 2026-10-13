@@ -40,7 +40,9 @@ Se aplican en este orden, cada archivo como una migración registrada (así qued
 1. `economia-7_integridad.sql` (A1, A2, A3, A9, A11 y regla de silencio)
 2. `economia-8_permisos.sql` (A6, A7, A10)
 3. `economia-9_panel_admin.sql` (funciones del panel)
-4. Cambios de navegador (panel admin, mensajes de error de nombre repetido, selector de apuestas que deja de mandar las estadísticas).
+4. `economia-10_verificacion.sql` (avisos falsos y abandono, ver sección 7)
+5. `economia-11_en_circulacion.sql` (etiqueta «En circulación»: una carta que no lo está no sale por recompensas, forja, reserva ni escaparate del mercader, aunque esté publicada y sea ganable; solo la pone el admin; las cartas nuevas nacen fuera)
+6. La Edge Function `cartas-verificar` (`docs/cartas-verificar.ts`) y los cambios de navegador (panel, aviso de nombre repetido, estado de las partidas canceladas, columna «En circulación»).
 
 | Hallazgo | Corrección | Qué cambia para un jugador |
 |---|---|---|
@@ -132,19 +134,45 @@ Hoy los cuatro juegos corren enteros en el navegador y el servidor solo recibe �
 
 Recomendación: mientras un juego no tenga validación completa, que dé como mucho **sellos** (están acotados por los topes diarios) y no cartas por tramo. El orden de menor a mayor esfuerzo es arquería, ajedrez, Hooey y duelo.
 
-## 7. Límites de lo que se puede corregir sin rediseñar
+## 7. Avisos falsos y abandono: verificar con el registro de la partida
 
-`cartas_accion` solo comprueba que la acción tenga forma válida y que sea el turno de quien la manda. La legalidad de una jugada (por ejemplo, jugar una carta que no está en la mano) la deciden los dos navegadores al reproducir la partida, no el servidor. Un cliente modificado puede mandar acciones ilegales; si el navegador del rival las rechaza o se desincroniza, el resultado acabará en disputa, pero el servidor no lo impide. La corrección completa es la misma que la de los duelos contra la casa: validar la partida en el servidor con el motor. Queda como decisión tuya (sección 8).
+Corrección a lo que dije antes: un cliente modificado **no** puede ganar mandando jugadas ilegales. El motor ignora una acción que no vale igual en todos los navegadores (`M.reproducir`), y `cartas_accion` ya comprueba de quién es el turno. El registro de acciones guardado en `cartas_partidas` es la verdad: cualquiera que lo repita con la semilla, los mazos y las cartas guardadas obtiene el mismo ganador. Lo único que hoy cree el servidor sin comprobar es lo que cada jugador **avisa** al final.
+
+Qué hay hecho (todo probado en local, sin desplegar):
+
+- `js/cartas-verificar.js`: vuelve a jugar el registro y devuelve un veredicto (terminada con ganador, abandono, en juego o error). Funciona en el navegador, en Node y en el servidor. `node tools/probar-verificacion.js`: 906 comprobaciones sobre 120 partidas completas al azar (el veredicto siempre coincide con el ganador real, un registro con acciones inventadas da el mismo resultado, y un aviso falso queda al descubierto) y 60 partidas cortadas (abandono tras el plazo).
+- `docs/economia-10_verificacion.sql`: `cartas_i_aplicar_verificacion`, que solo puede llamar el servidor. Reparte las cartas una sola vez, es idempotente, y anota en las incidencias quién avisó algo desmentido y quién abandonó (el panel lo suma por jugador).
+- `docs/cartas-verificar.ts`: la Edge Function que lo une. La pueden llamar los dos jugadores y el admin con su sesión.
+- Navegador: `js/batalla.js` la llama sola cuando hay una disputa, un aviso sin confirmar a los 2 minutos o una partida parada 6 horas, y justo después de avisar un resultado. El panel tiene «Qué dice el registro» y «Resolver según el registro».
+
+Cómo queda cada trampa:
+
+| Trampa | Antes | Ahora (con la función desplegada) |
+|---|---|---|
+| Avisar que ganó sin haber ganado | Disputa para el admin, o ganaba si el otro callaba | El registro decide al momento; el que mintió no gana nada y queda anotado |
+| Perder y no avisar | La apuesta se devolvía a las 24 h y el que perdió no perdía nada | Si el registro dice que perdió, pierde; no hace falta que avise |
+| Desaparecer a mitad de partida | A las 72 h se devolvía | Pierde por abandono quien tenía que actuar y lleva más de `apuesta_turno_horas` (48 h por defecto) sin hacerlo |
+| Abandonar para no perder | Sin consecuencias | Igual que el anterior |
+| Jugadas ilegales | Ignoradas, sin efecto | Igual |
+
+Qué sigue sin cubrir:
+
+- Si la función no está desplegada o falla, valen las reglas de tiempo de economia_7 (disputa para el admin y devolución a las 24 y 72 horas).
+- **Versión del motor**: la función repite la partida con el motor del commit que se fije al desplegarla. Si cambias `js/cartas-motor.js`, `cartas-efectos.js` o `cartas-vinculos.js` hay que actualizar ese commit, o se repetirían las partidas con reglas distintas a las que vieron los jugadores. Los vínculos del servidor (tabla `cartas_vinculos`) se leen en el momento de repetir: editarlos con una partida apostada en marcha podría cambiar su resultado.
+- Pasarse cartas entre dos cuentas propias: acotado por los límites, no impedible.
+- Lo mismo para las recompensas de los minijuegos contra la casa (sección 6) sigue pendiente: esos juegos no tienen registro que repetir.
 
 ## 8. Decisiones que te corresponden
 
-1. **Inactividad de una partida apostada sin ningún aviso**: propongo 72 horas hasta devolver la apuesta (`apuesta_inactividad_horas`). Tú fijaste solo las 24 horas del caso de un aviso.
-2. **Disputas sin resolver**: hoy esperan al admin sin límite. ¿Se devuelven solas pasado un plazo (por ejemplo 14 días) o siempre las resuelves tú?
-3. **Editores y cartas nuevas**: una carta que crea un editor nace sin límite y no obtenible. ¿Quieres que además quede sin publicar hasta que la revises?
-4. **Campos que se protegen a los editores**: rareza, tipo, lado, obtenible y límite global. El tipo y el lado no estaban en tu lista, pero cambian el límite por jugador y a quién le sale la carta.
-5. **Validar partidas en el servidor** (sección 7 y A4). Es la única forma de cerrar el fraude por acciones ilegales y por puntuaciones inventadas, y supone portar el motor a una Edge Function.
-6. **Forja que gasta capacidad de emisión** y **mercader más barato que la forja**: documentados, sin cambios.
-7. **Límites globales provisionales**: sin tocar. Siguen pendientes de tu revisión.
+1. **Horas para perder por abandono** (`apuesta_turno_horas`): propongo 48. Quien tiene que actuar y no lo hace en ese plazo pierde la partida y las cartas apostadas. Es el número que más afecta a jugar con calma; se cambia desde el panel sin tocar código.
+2. **Inactividad sin ningún aviso**: propongo 72 horas hasta devolver la apuesta (`apuesta_inactividad_horas`). Solo se usa si la función de verificación no está o no puede decidir.
+3. **Disputas sin resolver**: con la verificación desplegada casi no deberían quedar; las que sí (error de la función) esperan al admin sin límite. ¿Se devuelven solas pasado un plazo (por ejemplo 14 días)?
+4. **Editores y cartas nuevas**: una carta que crea un editor nace sin límite, no obtenible y ahora **fuera de circulación**. ¿Quieres que además quede sin publicar hasta que la revises?
+5. **Campos que se protegen a los editores**: rareza, tipo, lado, obtenible y límite global. El tipo y el lado no estaban en tu lista, pero cambian el límite por jugador y a quién le sale la carta.
+6. **Etiqueta «En circulación»**: todas las cartas que ya existen quedan **fuera** hasta que las marques (Admin > Economía de cartas, con selección por lotes). Es lo más seguro: nada se cuela. El efecto es que, al encender las recompensas, no saldrá ninguna carta hasta que marques las que estén listas.
+7. **Desplegar la función de verificación**: hay que fijar el commit del motor y desplegar con la cuenta de Supabase. Lo hago yo cuando lo apruebes.
+8. **Forja que gasta capacidad de emisión** y **mercader más barato que la forja**: documentados, sin cambios.
+9. **Límites globales provisionales**: sin tocar. Siguen pendientes de tu revisión.
 
 ## 9. Cómo se aplicaría en producción (cuando lo apruebes)
 

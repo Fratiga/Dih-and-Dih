@@ -46,3 +46,5 @@ mazo_de() {
   dar $u poco-1 >/dev/null; dar $u poco-1 >/dev/null
   sql "insert into cartas_mazos (user_id, nombre, cartas) values ('$u', 'Mazo prueba', '{\"comun-1\":3,\"comun-2\":3,\"comun-3\":3,\"comun-4\":3,\"comun-5\":3,\"comun-6\":3,\"poco-1\":2}'::jsonb) returning id"
 }
+# Como el servidor (Edge Function con la clave de servicio): rol service_role
+servicio() { printf 'begin;\nset local role service_role;\n%s\ncommit;\n' "$1" | sup 2>&1 | grep -v '^$' | grep -v '^SET$\|^BEGIN$\|^COMMIT$'; }

@@ -11,10 +11,18 @@ for f in pruebas/00_supabase_simulado.sql pruebas/01_esquema_base.sql pruebas/02
   echo "== $f"; $P -d pruebas < "$DOCS/$f"
 done
 if [ "$HASTA" = "todo" ]; then
-  for f in economia-7_integridad.sql economia-8_permisos.sql economia-9_panel_admin.sql; do
+  for f in economia-7_integridad.sql economia-8_permisos.sql economia-9_panel_admin.sql economia-10_verificacion.sql economia-11_en_circulacion.sql; do
     echo "== $f"; $P -d pruebas < "$DOCS/$f"
   done
 fi
 # Como en producción: las recompensas de cartas están apagadas
 docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -c "update cartas_juegos set activo = false"
+# Las cartas de prueba están en circulación (menos el Bufón), salvo que la etiqueta aún no exista
+docker exec -i cartas-pruebas psql -U postgres -d pruebas -q <<'SQL'
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_name = 'cartas_catalogo' and column_name = 'en_circulacion') then
+    update cartas_catalogo set en_circulacion = true where id <> 'bufon';
+  end if;
+end $$;
+SQL
 echo "listo ($HASTA)"

@@ -14,7 +14,7 @@
   let filas = [];
   const pendientes = new Map();      // id -> { limite?, limite_jugador? }
   const seleccion = new Set();
-  let filtro = { texto: "", tipo: "", rareza: "", soloPendientes: false, soloSinLimite: false };
+  let filtro = { texto: "", tipo: "", rareza: "", soloPendientes: false, soloSinLimite: false, soloFuera: false };
   let vista = "limites";
 
   async function rpc(nombre, args) {
@@ -77,6 +77,8 @@
     }
   }
 
+  // La etiqueta solo existe si el servidor ya tiene economia-11 (si no, la columna no se enseña)
+  const conCirc = () => filas.length > 0 && "en_circulacion" in filas[0];
   const valorPend = (f, campo) => (pendientes.has(f.id) && campo in pendientes.get(f.id) ? pendientes.get(f.id)[campo] : f[campo]);
 
   function filasVisibles() {
@@ -86,7 +88,8 @@
       (!filtro.tipo || f.tipo === filtro.tipo) &&
       (!filtro.rareza || f.rareza === filtro.rareza) &&
       (!filtro.soloPendientes || pendientes.has(f.id)) &&
-      (!filtro.soloSinLimite || valorPend(f, "limite") === null));
+      (!filtro.soloSinLimite || valorPend(f, "limite") === null) &&
+      (!filtro.soloFuera || valorPend(f, "en_circulacion") === false));
   }
 
   function pintarLimites() {
@@ -101,12 +104,14 @@
         <p><b>Límite por jugador</b>: cuántas copias puede tener cada jugador. Si lo dejas vacío usa el que corresponde al tipo (3 personajes, 10 el resto, 1 legendarias y limitadas). Nunca supera al global.</p>
         <p>No se puede bajar el global por debajo de lo ya emitido. Bajar el de por jugador no quita nada a nadie: solo impide recibir más.</p>
       </div>
-      <div class="eco-resumen">${filas.length} cartas · ${emitidas} copias emitidas de ${total} posibles · ${filas.filter(f => f.limite === null).length} sin límite global</div>
+      <div class="eco-resumen">${filas.length} cartas · ${emitidas} copias emitidas de ${total} posibles · ${filas.filter(f => f.limite === null).length} sin límite global${conCirc() ? ` · ${filas.filter(f => valorPend(f, "en_circulacion")).length} en circulación` : ""}</div>
+      ${conCirc() ? `<div class="eco-ayuda"><p><b>En circulación</b>: una carta que no lo está no sale por ninguna vía automática (recompensas, forja, reserva, escaparate del mercader), aunque esté publicada y sea ganable. Tú sí puedes regalarla a mano. Quitarla de circulación no quita copias a nadie. Las cartas nuevas nacen fuera de circulación.</p></div>` : ""}
       <div class="eco-filtros">
         <input type="search" id="ecoTexto" placeholder="Buscar carta..." aria-label="Buscar carta" value="${esc(filtro.texto)}">
         <select id="ecoTipo" aria-label="Tipo"><option value="">Todos los tipos</option>${tipos.map(t => `<option${filtro.tipo === t ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>
         <select id="ecoRareza" aria-label="Rareza"><option value="">Todas las rarezas</option>${Object.entries(RAREZAS).map(([k, v]) => `<option value="${k}"${filtro.rareza === k ? " selected" : ""}>${v}</option>`).join("")}</select>
         <label><input type="checkbox" id="ecoSoloSin"${filtro.soloSinLimite ? " checked" : ""}> Solo sin límite global</label>
+        ${conCirc() ? `<label><input type="checkbox" id="ecoSoloFuera"${filtro.soloFuera ? " checked" : ""}> Solo fuera de circulación</label>` : ""}
         <label><input type="checkbox" id="ecoSoloPend"${filtro.soloPendientes ? " checked" : ""}> Solo cambiadas</label>
       </div>
       <div class="eco-lote">
@@ -114,10 +119,11 @@
         <label>Global <input type="number" id="ecoLoteGlobal" min="1" max="999" placeholder="sin cambio"></label>
         <label>Por jugador <input type="number" id="ecoLoteJugador" min="1" max="99" placeholder="sin cambio"></label>
         <button type="button" id="ecoLoteAplicar">Aplicar a la selección</button>
+        ${conCirc() ? `<button type="button" id="ecoLoteEntra">Poner en circulación</button><button type="button" id="ecoLoteSale">Sacar de circulación</button>` : ""}
       </div>
       <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr>
         <th><input type="checkbox" id="ecoTodas" aria-label="Seleccionar las visibles"></th>
-        <th>Carta</th><th>Emitidas</th><th>Límite global</th><th>Límite por jugador</th>
+        <th>Carta</th><th>Emitidas</th><th>Límite global</th><th>Límite por jugador</th>${conCirc() ? `<th title="Sin esta marca la carta no sale por recompensas, forja ni mercader">En circulación</th>` : ""}
         <th title="Sin dueño, se reparte antes de emitir">Reserva</th><th>Con jugadores</th><th>Bloqueadas</th><th>Destruidas</th><th title="Copias por mazo (se cambia en el editor de cartas)">Por mazo</th>
       </tr></thead><tbody id="ecoFilas"></tbody></table></div>
       <div class="eco-guardar">
@@ -141,8 +147,9 @@
         <td>${f.emitidas}</td>
         <td><input type="number" data-campo="limite" min="${Math.max(1, f.emitidas)}" max="999" value="${g ?? ""}" placeholder="sin definir" class="${g === null ? "eco-sin" : ""}${bajo ? " eco-mal" : ""}" aria-label="Límite global de ${esc(f.nombre)}"></td>
         <td><input type="number" data-campo="limite_jugador" min="1" max="99" value="${j ?? ""}" placeholder="${f.limite_jugador_efectivo}" aria-label="Límite por jugador de ${esc(f.nombre)}"></td>
+        ${conCirc() ? `<td><input type="checkbox" data-campo="en_circulacion"${valorPend(f, "en_circulacion") ? " checked" : ""} aria-label="En circulación: ${esc(f.nombre)}"></td>` : ""}
         <td>${f.reserva || ""}</td><td>${f.poseidas || ""}</td><td>${f.bloqueadas || ""}</td><td>${f.destruidas || ""}</td><td>${f.copias_max ?? ""}</td></tr>`;
-    }).join("") || `<tr><td colspan="10" class="eco-vacia">Ninguna carta coincide.</td></tr>`;
+    }).join("") || `<tr><td colspan="11" class="eco-vacia">Ninguna carta coincide.</td></tr>`;
     const todas = document.getElementById("ecoTodas");
     if (todas) todas.checked = visibles.length > 0 && visibles.every(f => seleccion.has(f.id));
     const n = document.getElementById("ecoSelN");
@@ -165,8 +172,9 @@
   function enlazarLimites() {
     const filtrar = () => { filtro.texto = document.getElementById("ecoTexto").value; filtro.tipo = document.getElementById("ecoTipo").value;
       filtro.rareza = document.getElementById("ecoRareza").value; filtro.soloSinLimite = document.getElementById("ecoSoloSin").checked;
-      filtro.soloPendientes = document.getElementById("ecoSoloPend").checked; pintarFilas(); };
-    ["ecoTexto", "ecoTipo", "ecoRareza", "ecoSoloSin", "ecoSoloPend"].forEach(id => document.getElementById(id).addEventListener("input", filtrar));
+      filtro.soloPendientes = document.getElementById("ecoSoloPend").checked;
+      const fuera = document.getElementById("ecoSoloFuera"); filtro.soloFuera = !!(fuera && fuera.checked); pintarFilas(); };
+    ["ecoTexto", "ecoTipo", "ecoRareza", "ecoSoloSin", "ecoSoloPend", "ecoSoloFuera"].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener("input", filtrar); });
     const tbody = document.getElementById("ecoFilas");
     tbody.addEventListener("change", ev => {
       const tr = ev.target.closest("tr[data-id]");
@@ -175,7 +183,7 @@
       if (ev.target.matches("[data-sel]")) { if (ev.target.checked) seleccion.add(id); else seleccion.delete(id); document.getElementById("ecoSelN").textContent = String(seleccion.size); return; }
       const campo = ev.target.dataset.campo;
       if (!campo) return;
-      apuntar(id, campo, ev.target.value === "" ? null : Math.round(Number(ev.target.value)));
+      apuntar(id, campo, ev.target.type === "checkbox" ? ev.target.checked : ev.target.value === "" ? null : Math.round(Number(ev.target.value)));
       tr.classList.toggle("eco-cambiada", pendientes.has(id));
       refrescarGuardar();
       pintarFilas();
@@ -195,6 +203,15 @@
       estado(g !== "" ? "Los límites globales por debajo de lo ya emitido se subieron a lo emitido." : "");
       pintarLimites();
     });
+    const circLote = valor => () => {
+      if (!seleccion.size) { estado("Selecciona alguna carta primero.", true); return; }
+      filas.filter(f => seleccion.has(f.id)).forEach(f => apuntar(f.id, "en_circulacion", valor));
+      estado(valor ? "Marcadas en circulación. Falta guardar." : "Marcadas fuera de circulación. Falta guardar.");
+      pintarLimites();
+    };
+    const entra = document.getElementById("ecoLoteEntra"), sale = document.getElementById("ecoLoteSale");
+    if (entra) entra.addEventListener("click", circLote(true));
+    if (sale) sale.addEventListener("click", circLote(false));
     document.getElementById("ecoDescartar").addEventListener("click", () => { pendientes.clear(); pintarLimites(); });
     document.getElementById("ecoRecargar").addEventListener("click", cargar);
     document.getElementById("ecoGuardar").addEventListener("click", guardar);
@@ -293,12 +310,44 @@
             <td>${esc(p.nombre1)}: ${esc(REPORTE(p, 1))}<br>${esc(p.nombre2)}: ${esc(REPORTE(p, 2))}</td>
             <td><small>Creada ${esc(fecha(p.creada))}</small>${p.reportado ? `<small>Primer aviso ${esc(fecha(p.reportado))}</small>` : ""}${p.se_devuelve_el && abierta ? `<small>Se devuelve el ${esc(fecha(p.se_devuelve_el))}</small>` : ""}</td>
             <td>${abierta ? `<div class="eco-acciones">
+              <button type="button" data-ver="${esc(p.id)}">Qué dice el registro</button>
+              <button type="button" data-reg="${esc(p.id)}">Resolver según el registro</button>
               <button type="button" data-res="j1">Gana ${esc(p.nombre1)}</button>
               <button type="button" data-res="j2">Gana ${esc(p.nombre2)}</button>
               <button type="button" data-res="empate">Empate</button>
               <button type="button" data-res="cancelar">Cancelar y devolver</button></div>` : ""}</td></tr>`;
         }).join("")
       }</tbody></table></div>`;
+      const verRegistro = async (id, aplicar) => {
+        const supabase = await fichasCliente();
+        const { data, error } = await supabase.functions.invoke("cartas-verificar", { body: { partida: id, aplicar } });
+        if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+        return data;
+      };
+      const resumen = (v, p) => {
+        const nombre = r => (r === "j1" ? p.nombre1 : r === "j2" ? p.nombre2 : "empate");
+        if (v.estado === "terminada") return `Según el registro (${v.acciones} acciones, ${v.ignoradas} ignoradas) la partida terminó: ${v.resultado === "empate" ? "empate" : "gana " + nombre(v.resultado)}.${(v.avisosFalsos || []).length ? " Avisó algo distinto: " + v.avisosFalsos.map(a => a.nombre).join(", ") + "." : ""}`;
+        if (v.estado === "abandono") return `Según el registro la partida sigue, pero ${nombre(v.pierde === 0 ? "j1" : "j2")} lleva ${v.horas} h sin actuar: pierde por abandono y gana ${nombre(v.resultado)}.`;
+        if (v.estado === "en_juego") return `Según el registro la partida sigue en juego: le toca a ${nombre(v.actua === 0 ? "j1" : "j2")} (${v.horas} h sin movimiento).`;
+        if (v.estado === "nada") return v.mensaje;
+        return `No se pudo comprobar: ${v.mensaje || v.error || "error"}`;
+      };
+      res.querySelectorAll("[data-ver]").forEach(b => b.addEventListener("click", async () => {
+        const p = lista.find(x => x.id === b.dataset.ver);
+        estado("Repitiendo la partida...");
+        try { estado(resumen(await verRegistro(p.id, false), p)); }
+        catch (e) { estado(`No se pudo comprobar: ${e.message || e}. ¿Está desplegada la función cartas-verificar?`, true); }
+      }));
+      res.querySelectorAll("[data-reg]").forEach(b => b.addEventListener("click", async () => {
+        const p = lista.find(x => x.id === b.dataset.reg);
+        if (!window.confirm("Se repite la partida y se reparten las cartas según lo que diga el registro. No se puede deshacer. ¿Seguro?")) return;
+        try {
+          const v = await verRegistro(p.id, true);
+          estado(v.aplicado ? `Resuelta. ${resumen(v, p)}` : resumen(v, p), !v.aplicado && v.estado !== "en_juego");
+          if (v.aplicado) pintarApuestas();
+        } catch (e) { estado(`No se pudo resolver: ${e.message || e}`, true); }
+      }));
       res.querySelectorAll("[data-res]").forEach(b => b.addEventListener("click", async () => {
         const tr = b.closest("tr");
         const textos = { j1: "ganador al primer jugador (se lleva las cartas del otro)", j2: "ganador al segundo jugador (se lleva las cartas del otro)", empate: "empate (cada carta vuelve a su dueño)", cancelar: "cancelar y devolver todo" };
@@ -309,7 +358,18 @@
           pintarApuestas();
         } catch (e) { estado(`No se pudo resolver: ${e.message || e}`, true); }
       }));
+      pintarReputacion(res);
     } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}</p>`; }
+  }
+  async function pintarReputacion(res) {
+    try {
+      const rep = await rpc("cartas_admin_reputacion");
+      if (!rep.length) return;
+      res.insertAdjacentHTML("beforeend", `<h3>Avisos desmentidos y abandonos</h3><p class="eco-ayuda">Jugadores a los que el registro de la partida contradijo, o que dejaron pasar el plazo sin jugar. Solo informa: no se quita nada por esto.</p>
+        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Jugador</th><th>Avisos desmentidos</th><th>Abandonos</th><th>Última vez</th></tr></thead><tbody>${
+          rep.map(r => `<tr><td><b>${esc(r.nombre)}</b></td><td>${r.avisos_desmentidos}</td><td>${r.abandonos}</td><td>${esc(fecha(r.ultima))}</td></tr>`).join("")
+        }</tbody></table></div>`);
+    } catch (e) { /* aún sin economia-10: no hay reputación que enseñar */ }
   }
 
   /* ---------------- bloqueos e incidencias ---------------- */

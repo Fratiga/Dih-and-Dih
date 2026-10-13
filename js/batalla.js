@@ -166,6 +166,29 @@
     }
     if (modo === "partida") sincronizar();
     else if (modo === "lobby") pintarLobby();
+    verificarPendientes();
+  }
+
+  /* Una apuesta que no se resuelve sola (avisos distintos, un solo aviso, rival que no contesta o que desapareció) la
+     comprueba el servidor volviendo a jugar el registro de acciones (Edge Function cartas-verificar): lo que cada jugador
+     avise no manda, manda lo que pasó en la partida. Si la función no existe todavía, valen las reglas de tiempo del servidor. */
+  const verificadas = new Map();    // id de partida -> última vez que se pidió
+  async function verificarPartida(id) {
+    if (Date.now() - (verificadas.get(id) || 0) < 600000) return;
+    verificadas.set(id, Date.now());
+    try {
+      const { data, error } = await supa.functions.invoke("cartas-verificar", { body: { partida: id } });
+      if (!error && data && data.aplicado) programarCarga();
+    } catch (e) { /* sin la función: valen las reglas de tiempo */ }
+  }
+  function verificarPendientes() {
+    if (!miId) return;
+    partidas.forEach(p => {
+      if (p.apuesta_estado !== "activa" || (p.estado !== "en_curso" && p.estado !== "disputa")) return;
+      const desdeAviso = p.reportado ? Date.now() - Date.parse(p.reportado) : 0;
+      const quieta = Date.now() - Date.parse(p.actualizada);
+      if (p.estado === "disputa" || (p.reportado && desdeAviso > 120000) || quieta > 6 * 3600000) verificarPartida(p.id);
+    });
   }
 
   let cargaPendiente = null;
@@ -331,8 +354,12 @@
     if (local() || !est || est.ganador === null || !fila || fila.estado !== "en_curso" || cerrando || est.motivo === "rendicion") return;
     cerrando = true;
     const resultado = est.ganador === "empate" ? "empate" : est.ganador === 0 ? "j1" : "j2";
-    try { await supa.rpc("cartas_terminar", { p_id: fila.id, p_resultado: resultado }); } catch (e) { /* lo intentará el otro jugador */ }
+    const id = fila.id;
+    try { await supa.rpc("cartas_terminar", { p_id: id, p_resultado: resultado }); } catch (e) { /* lo intentará el otro jugador */ }
     await cargarPartidas();
+    // Si el rival no ha avisado todavía, el servidor comprueba el resultado con el registro sin esperar
+    const p = partidas.find(x => x.id === id);
+    if (p && p.apuesta_estado === "activa" && (p.estado === "en_curso" || p.estado === "disputa")) verificarPartida(id);
   }
 
   async function enviar(accion) {
