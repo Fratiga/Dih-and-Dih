@@ -13,8 +13,11 @@
 // Preparación (una sola vez):
 //   * Ejecutar docs/hipodromo.sql en el editor SQL.
 //   * Crear la función:  supabase functions new hipodromo-avanzar  y poner este archivo como index.ts.
-//   * Copiar al lado de index.ts, SIN cambiarlos, estos cuatro archivos del sitio:
+//   * El motor: o se copian al lado de index.ts, SIN cambiarlos, estos cuatro archivos del sitio
 //       data/hipodromo-palabras.js   js/hipodromo-nombres.js   js/hipodromo-rasgos.js   js/hipodromo-motor.js
+//     o se define el secreto HIPODROMO_BASE con la dirección de una versión FIJA del repositorio (con el hash del commit,
+//     que nunca cambia), por ejemplo  https://cdn.jsdelivr.net/gh/Fratiga/Dih-and-Dih@<hash-del-commit>  y la función los trae de ahí.
+//     Cambiar de commit cambia las reglas del mundo en marcha: hazlo solo a propósito y repitiendo tools/probar-hipodromo.js.
 //   * Secretos:  supabase secrets set HIPODROMO_CLAVE=<una clave larga al azar> HIPODROMO_SEMILLA=<cualquier texto>
 //     (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY ya los pone Supabase). La semilla solo importa la primera vez y
 //     tiene que ser secreta: con ella se podría adivinar el tiempo de las carreras futuras.
@@ -27,17 +30,17 @@
 //           headers := jsonb_build_object('Content-Type', 'application/json', 'x-hipodromo-clave', '<LA MISMA CLAVE>'),
 //           body    := '{}'::jsonb) $$);
 //
-// La primera ejecución crea el mundo con 300 carreras de historia previa y fija la primera carrera en vivo en la
+// La primera ejecución crea el mundo, con 300 carreras de historia que las siguientes ejecuciones van viviendo (20 por minuto), y fija la primera carrera en vivo en la
 // próxima media hora redonda que quede a más de 5 minutos. Para empezar de cero: vaciar las tablas hipodromo_*.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 // Los archivos del motor son scripts de navegador: esperan una variable global `window`.
 (globalThis as any).window = globalThis;
-await import("./hipodromo-palabras.js");
-await import("./hipodromo-nombres.js");
-await import("./hipodromo-rasgos.js");
-await import("./hipodromo-motor.js");
+const BASE = Deno.env.get("HIPODROMO_BASE") ?? "";
+for (const [remoto, local] of [["data/hipodromo-palabras.js", "./hipodromo-palabras.js"], ["js/hipodromo-nombres.js", "./hipodromo-nombres.js"], ["js/hipodromo-rasgos.js", "./hipodromo-rasgos.js"], ["js/hipodromo-motor.js", "./hipodromo-motor.js"]]) {
+  await import(BASE ? BASE + "/" + remoto : local);
+}
 const Motor = (globalThis as any).HipodromoMotor;
 
 const respuesta = (estado: number, cuerpo: unknown) =>
@@ -47,7 +50,9 @@ Deno.serve(async (req: Request) => {
   if (req.headers.get("x-hipodromo-clave") !== Deno.env.get("HIPODROMO_CLAVE")) return respuesta(401, { error: "clave" });
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-  const cfg = { semilla: Deno.env.get("HIPODROMO_SEMILLA") ?? "hipodromo", max: 48 };
+  // Una Edge Function no puede gastar mucho tiempo de cálculo de una vez: el mundo se crea con 300 carreras de historia por vivir
+  // y se pone al día de 20 en 20 en las llamadas siguientes (las que quedan atrás se programan con pocas simulaciones).
+  const cfg = { semilla: Deno.env.get("HIPODROMO_SEMILLA") ?? "hipodromo", historia: 300, max: 20, rapido: 12 };
 
   for (let intento = 0; intento < 4; intento++) {
     const { data: fila, error: errLeer } = await sb.from("hipodromo_estado").select("version, mundo").eq("id", 1).maybeSingle();

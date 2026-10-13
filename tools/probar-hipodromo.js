@@ -399,6 +399,19 @@ function cabezaACabeza(a, b, cond, veces) {
   const fav = M.favoritoDe({ entrantes: [{ id: 1, nombre: "A", gan: 3.2 }, { id: 2, nombre: "B", gan: 2.1 }, { id: 3, nombre: "C", gan: 9 }] });
   ok(fav.id === 2 && fav.cuota === 2.1 && M.favoritoDe({ suspendida: true, entrantes: [] }) === null, "el doble juega al favorito de la siguiente (el de menor cuota) y se salta una carrera suspendida"); }
 
+// 4e) Ponerse al día en varias llamadas (lo que hace la Edge Function: no puede calcular todo de golpe)
+{ const t = Date.UTC(2026, 0, 1, 12, 0, 0), HIS = 50;
+  const crea = () => { const r = M.paso(null, t, { historia: HIS, semilla: "al-dia", sims: 8 }); return { version: 1, mundo: JSON.parse(JSON.stringify(r.lote.mundo)) }; };
+  const ahora = t + (HIS + 3) * 30 * 60000;
+  let fila = crea(), llamadas = 0, avanzadas = 0, r;
+  const trozos = [];
+  while ((r = M.paso({ version: fila.version, mundo: fila.mundo }, ahora, { max: 12, rapido: 6, sims: 8 })) && llamadas < 20) { llamadas++; avanzadas += r.avanzadas; trozos.push(r.avanzadas); fila = { version: r.version + 1, mundo: JSON.parse(JSON.stringify(r.lote.mundo)) }; }
+  const f2 = crea(), r2 = M.paso(f2, ahora, { max: 500, rapido: 6, sims: 8 });
+  ok(llamadas >= 4 && trozos.slice(0, -1).every(x => x === 12) && avanzadas === r2.avanzadas, `el mundo se pone al día en varias llamadas de 12 (${trozos.join(", ")})`);
+  ok(JSON.stringify(fila.mundo) === JSON.stringify(r2.lote.mundo), "ponerse al día en varias llamadas deja exactamente el mismo mundo que de una vez");
+  ok(fila.mundo.proxima.hora > ahora - 60000 && fila.mundo.proxima.entrantes.length >= 3, "al final la carrera programada es la que viene");
+  ok(r === null, "cuando ya está al día no hay nada más que hacer"); }
+
 // 5) Un mundo largo
 const AÑOS = rapido ? 3 : 8, CARRERAS = AÑOS * C.ANIO;
 let m;

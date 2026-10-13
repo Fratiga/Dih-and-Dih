@@ -1217,7 +1217,11 @@
   /* Pone el mundo al día: aplica todas las carreras cuya hora ya pasó (más APLICAR_SEG). Devuelve los eventos de cada una. */
   function avanzarHasta(m, ahora, opc) {
     const out = [];
-    while (ahora >= horaDe(m, m.n) + C.APLICAR_SEG * 1000 && out.length < ((opc && opc.max) || 200)) out.push(avanzar(m, opc));
+    while (ahora >= horaDe(m, m.n) + C.APLICAR_SEG * 1000 && out.length < ((opc && opc.max) || 200)) {
+      // al ponerse al día, las carreras que ya van a quedar atrás se programan con pocas simulaciones; la última, con todas
+      const sigue = ahora >= horaDe(m, m.n + 1) + C.APLICAR_SEG * 1000;
+      out.push(avanzar(m, sigue && opc && opc.rapido ? { sims: opc.rapido } : opc));
+    }
     return out;
   }
 
@@ -1228,15 +1232,17 @@
   function paso(fila, ahora, cfg) {
     cfg = cfg || {};
     if (!fila) {
-      const calentar = cfg.calentar == null ? 300 : cfg.calentar, tramo = C.MINUTOS * 60000;
+      // cfg.historia: en vez de calentar el mundo de golpe, se crea con esa historia por vivir y se pone al día en varias llamadas
+      // (cada llamada avanza cfg.max carreras): sirve donde una sola llamada no puede gastar tanto tiempo, como una Edge Function
+      const historia = cfg.historia || 0, calentar = historia ? 0 : (cfg.calentar == null ? 300 : cfg.calentar), tramo = C.MINUTOS * 60000;
       const inicio = Math.ceil((ahora + 5 * 60000) / tramo) * tramo;
-      const m = crearMundo(cfg.semilla || "hipodromo", { calentar, t0: inicio - calentar * tramo, simsCalentar: cfg.simsCalentar });
+      const m = crearMundo(cfg.semilla || "hipodromo", { calentar, t0: inicio - (historia || calentar) * tramo, simsCalentar: cfg.simsCalentar });
       return { version: 0, lote: loteInicial(m), avanzadas: 0 };
     }
     const m = fila.mundo;
     // primero las órdenes de los jugadores (cfg.ordenes, con los saldos de cfg.saldos), después las carreras que ya tocan
     const rOrd = cfg.ordenes && cfg.ordenes.length ? procesarOrdenes(m, cfg.ordenes, cfg.saldos) : null;
-    const eventos = avanzarHasta(m, ahora, { max: cfg.max || 48, sims: cfg.sims });
+    const eventos = avanzarHasta(m, ahora, { max: cfg.max || 48, sims: cfg.sims, rapido: cfg.rapido });
     return eventos.length || rOrd ? { version: fila.version, lote: lote(m, eventos, rOrd), avanzadas: eventos.length, ordenes: rOrd ? rOrd.resultados : [] } : null;
   }
 
