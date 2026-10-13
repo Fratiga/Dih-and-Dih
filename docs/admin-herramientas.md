@@ -17,11 +17,11 @@ Reglas comunes:
 | 20 | Copias de seguridad (pestaña Copias) | 1 | Hecha, sin SQL |
 | 19 | Panel de salud (pestaña Salud) | 1 | Hecha, sin SQL |
 | 18 | Música por página | antes | Hecha. SQL: `scratchpad/musica_paginas.sql` |
-| 1, 3 | Editor de entradas del compendio + Side | 2 | Pendiente |
-| 2 | Editor de cronología | 2 | Pendiente |
-| 5 | Editor de reglas, economía y estadísticas | 2 | Pendiente |
-| 4 | Editor de pines del mapa | 2 | Pendiente |
-| 13 | Anuncios y novedades | 2 | Pendiente |
+| 1, 3 | Editor de entradas del compendio + quién lo ve (Side) | 2 | Hecho. SQL: `docs/admin/contenido_servidor.sql` |
+| 2 | Editor de cronología | 2 | Hecho (misma pestaña Contenido) |
+| 5 | Editor de reglas y economía | 2 | Hecho. Las estadísticas de combate ya se editan en su página (`docs/estadisticas-edicion.md`) |
+| 4 | Editor de pines del mapa (arrastrar sobre el mapa) | 2 | Hecho |
+| 13 | Anuncios y novedades del lobby | 2 | Hecho (colección «Novedades del lobby») |
 | 6, 7 | Balance y prueba de cartas | 3 | Pendiente |
 | 8 | Dificultad de los rivales | 3 | Pendiente |
 | 9, 10 | Regalos y eventos, calendario del Hipódromo | 3 | Pendiente (coordinar con las sesiones de Economía e Hipódromo) |
@@ -46,3 +46,19 @@ Descarga un JSON leyendo las tablas desde la sesión del Admin. «Solo contenido
 ### Salud
 
 Abre cada página en un marco invisible (sin sonido) y anota errores de código, recursos que no cargan e imágenes rotas. Una página se da por revisada 3,5 s después de que su HTML esté listo.
+
+## Fase 2: contenido
+
+Pestaña **Contenido**. Elige qué editar (entradas por categoría, cronología de cada Side, arcos, reglas, economía, novedades, pines del mapa), busca, y edita en un formulario: casillas para los campos principales, un editor de HTML con barra y vista previa para los textos largos, y una casilla JSON para el resto de campos.
+
+Cómo funciona por dentro (`js/contenido-servidor.js`, va justo después de los `data/*.js` en cada página):
+
+- La tabla `contenido_servidor` guarda un PARCHE por elemento: los campos que cambiaron respecto al archivo (un campo en `null` se quita), un elemento nuevo completo, o `borrado = true`.
+- Al cargar, la página aplica al instante lo último que sabe (guardado en el navegador) y en segundo plano pregunta al servidor; si algo cambió, lo baja y se recarga una vez. Como mucho una consulta cada 20 segundos.
+- «Volver al original» borra el parche. Un parche vacío se convierte en eso solo.
+- Los archivos `data/*.js` siguen mandando en todo lo que no se parchea: si yo corrijo un texto en el archivo, se ve salvo que lo hayas editado tú.
+- El identificador de un elemento nuevo solo admite minúsculas, números y guiones. La clave de las reglas es el título; la de la economía, categoría + nombre; la de las novedades, fecha + título; la de los pines, el id del lugar.
+
+Probado: SQL en local (`sh docs/admin/probar_contenido.sh`) y mezcla en el navegador con filas simuladas. No probado: guardar con una sesión real de admin (aquí no hay).
+
+El editor del mapa se abre al elegir «Mapa: pines»: arrastra un pin para moverlo, o elige un lugar sin pin y toca el mapa.

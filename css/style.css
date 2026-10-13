@@ -3815,3 +3815,40 @@ details.admin-sistema-fila { display: block; }
 details.admin-sistema-fila > summary { display: flex; align-items: center; gap: 12px; cursor: pointer; list-style: none; }
 details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-salud-detalle { grid-column: 1 / -1; margin: 6px 0 0 28px; padding-left: 16px; font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+
+/* --- Admin: editor de contenido --- */
+.admin-cont { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+.admin-cont-lista { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 8px; max-height: calc(100vh - 24px); }
+.admin-cont-lista select, .admin-cont-lista input, .admin-cont-campo input, .admin-cont-campo select, .admin-cont-campo textarea, .admin-cont-form details textarea {
+  width: 100%; box-sizing: border-box; color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; font: inherit; }
+.admin-cont-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .78rem; color: var(--muted); }
+.admin-cont-items { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
+.admin-cont-item { width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; padding: 7px 9px; font: inherit; font-size: .85rem; color: var(--text); background: var(--panel); border: 1px solid var(--border); cursor: pointer; }
+.admin-cont-item:hover, .admin-cont-item.activo { border-color: var(--accent-soft); background: var(--panel-2); }
+.admin-cont-item span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-cont-item small { color: var(--muted); }
+.admin-cont-item i { font-size: .68rem; color: var(--accent-soft); font-style: normal; text-transform: uppercase; letter-spacing: .06em; }
+.admin-cont-item.borrado span { text-decoration: line-through; opacity: .6; }
+.admin-cont-mas { padding: 6px 4px; font-size: .8rem; color: var(--muted); }
+.admin-cont-form { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.admin-cont-form h3 small { font-weight: 400; color: var(--muted); margin-left: 8px; }
+.admin-cont-campo { display: flex; flex-direction: column; gap: 4px; }
+.admin-cont-campo > label { font-size: .78rem; color: var(--muted); }
+.admin-cont-campo textarea { resize: vertical; line-height: 1.45; }
+.admin-cont-barra { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-cont-barra button { font: inherit; font-size: .78rem; padding: 4px 10px; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); cursor: pointer; }
+.admin-cont-vista { padding: 14px; border: 1px dashed var(--border); max-height: 360px; overflow: auto; }
+.admin-cont-botones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.admin-cont-ver { font-size: .85rem; color: var(--accent); }
+.admin-cartas-estado.mal { color: #ff8a7a; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 900px) { .admin-cont { grid-template-columns: 1fr; } .admin-cont-lista { position: static; max-height: 320px; } }
+.admin-cont-derecha { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.admin-mapa-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; font-size: .82rem; color: var(--muted); margin-bottom: 8px; }
+.admin-mapa-barra select { color-scheme: dark; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 6px 8px; font: inherit; max-width: 240px; }
+.admin-mapa-marco { max-height: 70vh; overflow: auto; border: 1px solid var(--border); background: #000; }
+.admin-mapa { position: relative; line-height: 0; touch-action: none; }
+.admin-mapa img { width: 100%; display: block; user-select: none; }
+.admin-mapa-pin { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; padding: 0; border-radius: 50%; background: var(--accent); border: 2px solid #000; cursor: grab; touch-action: none; }
+.admin-mapa-pin.activo { background: #ff5d5d; box-shadow: 0 0 0 4px #fff; z-index: 2; }
+.admin-mapa-pin:active { cursor: grabbing; }
