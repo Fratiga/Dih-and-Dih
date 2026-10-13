@@ -273,3 +273,23 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-rasgos-hace { margin: 4px 0 10px; padding-left: 18px; font-size: .82rem; color: #b9c8bc; }
 .hip-rasgos-hace li { margin: 2px 0; }
 .hip-arcana { margin: 10px 0 4px; padding: 8px 12px; border-left: 3px solid #b99cff; background: rgba(150, 120, 255, .10); font-size: .9rem; }
+
+/* Mi cuadra */
+.hip-cuadra-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hip-cuadra-cab h3 small { font-weight: 400; opacity: .7; }
+.hip-mias { display: grid; gap: 14px; margin-top: 10px; }
+.hip-mia { border: 1px solid rgba(255, 255, 255, .14); border-radius: 8px; padding: 12px; background: rgba(0, 0, 0, .18); }
+.hip-mia-cab { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; }
+.hip-mia-cab h4 { margin: 0 0 2px; font-size: 1.1rem; }
+.hip-caps { margin: 8px 0; }
+.hip-cap { display: grid; grid-template-columns: 90px 1fr 34px 40px; gap: 8px; align-items: center; font-size: .82rem; margin: 2px 0; }
+.hip-cap .hip-barrita { width: 100%; }
+.hip-cap .hip-barrita.mal i { background: #d9604a; }
+.hip-cap small.sube { color: #8fe08f; } .hip-cap small.baja { color: #e08f8f; }
+.hip-fila-acc { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+.hip-mia details { margin: 6px 0; border-top: 1px solid rgba(255, 255, 255, .08); padding-top: 6px; }
+.hip-mia summary { cursor: pointer; font-weight: 600; }
+.hip-avisos { margin: 6px 0 0; padding-left: 18px; font-size: .88rem; } .hip-avisos li { margin: 3px 0; }
+.hip-adoptar { padding: 10px 12px; border: 1px dashed rgba(255, 255, 255, .25); border-radius: 8px; margin: 10px 0; }
+.hip-duena { color: #f1e29a; display: block; }
+@media (max-width: 620px) { .hip-mia-cab { grid-template-columns: 90px 1fr; } .hip-cap { grid-template-columns: 76px 1fr 30px 38px; } }

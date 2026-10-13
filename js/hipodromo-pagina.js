@@ -9,6 +9,7 @@
   const M = window.HipodromoMotor, D = window.HipodromoDibujo;
   if (!M || !D) return;
   const C = M.C;
+  const YO = "yo";   // en modo local el único dueño eres tú
   const CLAVE = "hipodromoLocal", CLAVE_OCULTO = "hipodromoOculto", CLAVE_PESTANA = "hipodromoPestana";
   const SALDO_INICIAL = 1000, MAX_NOTICIAS = 200, MAX_ARCHIVO = 250, MAX_RESULTADOS = 12, MAX_HISTORIAL = 80;
   const VELOCIDADES = [[0, "Pausa"], [1, "1×"], [10, "10×"], [60, "60×"], [600, "600×"]];
@@ -26,13 +27,14 @@
   const poner = (el, html) => { if (el && el._h !== html) { el.innerHTML = html; el._h = html; } };
   const textoDe = (el, t) => { if (el && el._t !== t) { el.textContent = t; el._t = t; } };
 
+  let cuadraUI = null;
   let est = null, m = null, pestana = "carrera", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
 
   /* ---------------------------------------------------------------- guardar y crear */
   function cargar() {
-    try { const g = JSON.parse(localStorage.getItem(CLAVE)); if (g && g.v === 1 && g.mundo && g.mundo.proxima) return g; } catch (e) { /* vacío o dañado */ }
+    try { const g = JSON.parse(localStorage.getItem(CLAVE)); if (g && g.v === 1 && g.mundo && g.mundo.proxima) { g.avisos = g.avisos || []; return g; } } catch (e) { /* vacío o dañado */ }
     return null;
   }
   function guardar() {
@@ -48,7 +50,7 @@
     setTimeout(() => {
       const r = M.paso(null, Date.now(), { calentar: 300, semilla, simsCalentar: 12 });
       const mundo = r.lote.mundo;
-      est = { v: 1, semilla, mundo, virtual: mundo.proxima.hora - 4 * 60000, vel: 10, saldo: SALDO_INICIAL, pendientes: [], historial: [], noticias: [], archivo: {}, resultados: [], favoritos: [], desde: Date.now() };
+      est = { v: 1, semilla, mundo, virtual: mundo.proxima.hora - 4 * 60000, vel: 10, saldo: SALDO_INICIAL, pendientes: [], historial: [], noticias: [], archivo: {}, resultados: [], favoritos: [], avisos: [], desde: Date.now() };
       m = est.mundo;
       nUI = -1; escena = null;
       guardar();
@@ -119,6 +121,10 @@
       return false;
     });
     est.historial.length = Math.min(est.historial.length, MAX_HISTORIAL);
+    ev.pagos.filter(q => q.dueno === YO).forEach(q => { est.saldo += q.monto; });
+    est.avisos = ev.avisos.filter(a => a.dueno === YO).reverse().concat(est.avisos).slice(0, 60);
+    const premio = ev.pagos.filter(q => q.dueno === YO && q.monto > 0 && /^Premio/.test(q.concepto)).reduce((t, q) => t + q.monto, 0);
+    if (premio) msgs.push(`Tu cuadra cobra ${monedas(premio)} monedas de premios`);
     est.noticias = ev.noticias.slice().reverse().concat(est.noticias).slice(0, MAX_NOTICIAS);
     ev.perfiles.filter(p => p.estado === "retirado" || p.estado === "fallecido").forEach(p => { est.archivo[p.id] = p; });
     const ids = Object.keys(est.archivo);
@@ -199,6 +205,7 @@
         <td class="hip-puerta">${e.puerta}</td>
         <td><div class="hip-celda-cria">${D.silueta(per, { clase: "hip-mini" })}<div><button type="button" class="hip-enlace" data-ficha="${e.id}">${fav ? "♥ " : ""}${esc(per.nombre)}</button>
           <small>${sexoTxt(per)} · ${esc(per.etapa)} · ${edadTxt(per)}${per.arquetipo ? " · " + esc(per.arquetipo) : ""}</small>
+          ${e.dueno ? `<small class="hip-duena">${e.dueno.id === YO ? "★ tuya" : "cuadra de " + esc(e.dueno.nombre || "otro jugador")}</small>` : ""}
           <small>${per.salidas ? `${per.salidas} salidas · ${per.vic}-${per.seg}-${per.ter}` : "debuta"}</small></div></div></td>
         <td class="hip-col-extra">${estrellasTxt(per.estrellas)}</td>
         <td class="hip-col-extra">${per.ultimas.slice(0, 4).map(chipPuesto).join("") || '<span class="hip-sin">-</span>'}</td>
@@ -358,6 +365,12 @@
     return `<p class="hip-rasgos">${lista.map(x => `<span class="hip-rasgo${x.hace ? " activo" : ""}" ${x.hace ? `title="${esc(x.hace)}"` : ""}>${esc(x.texto)}</span>`).join(" ")}</p>` +
       (con.length ? `<ul class="hip-rasgos-hace">${con.map(x => `<li><strong>${esc(x.texto)}.</strong> ${esc(x.hace)}</li>`).join("")}</ul>` : "");
   }
+  function duenoHtml(p) {
+    if (p.dueno) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>De ${esc(p.dueno.nombre || "otro jugador")}${p.dueno.id === YO ? " (es tuya)" : ""}.${p.montaPrecio && p.estado === "criador" ? ` Monta: ${monedas(p.montaPrecio)} monedas.` : ""}</p></section>`;
+    if (p.precio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>Sin dueño. A la venta por ${monedas(p.precio)} monedas. <button type="button" class="hip-boton chico" data-ir-cuadra>Ir al mercado</button></p></section>`;
+    if (p.montaPrecio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>En la cría. Monta: ${monedas(p.montaPrecio)} monedas.</p></section>`;
+    return "";
+  }
   function fichaHtml(p) {
     const c = M.buscar(m, p.id), apt = p.aptitudes;
     const nombres = { firme: "Firme", bueno: "Bueno", blando: "Blando", pesado: "Pesado" };
@@ -392,6 +405,7 @@
       <section class="hip-ficha-sec"><h3>En cada tipo de terreno</h3><div class="hip-aptitudes">${Object.keys(nombres).map(k => `<div><span>${nombres[k]}</span>${apt[k] ? estrellasTxt(apt[k].estrellas) + `<small>${apt[k].salidas} salidas</small>` : '<span class="hip-sin">sin datos</span>'}</div>`).join("")}</div></section>
       <section class="hip-ficha-sec"><h3>Linaje</h3><p>${linaje}</p></section>
       <section class="hip-ficha-sec"><h3>Últimas carreras</h3>${p.ultimas.length ? `<table class="hip-tabla"><thead><tr><th>n.º</th><th>Pista</th><th>Metros</th><th>Puesto</th><th>Cuota</th></tr></thead><tbody>${p.ultimas.map(h => `<tr><td>${h.n}</td><td>${esc(M.PISTAS[h.pista].nombre)}<small> ${esc(h.estadoPista)}</small></td><td>${h.dist}</td><td>${chipPuesto(h)} <small>de ${h.campo}</small></td><td>${M.fmtCuota(h.cuota)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-sin">Todavía no ha corrido.</p>'}</section>
+      ${duenoHtml(p)}
       ${apuestas.length ? `<section class="hip-ficha-sec"><h3>Tus apuestas por ${esc(p.nombre)}</h3><p>${apuestas.length} ${apuestas.length === 1 ? "apuesta" : "apuestas"}: apostaste ${monedas(apostado)} y cobraste ${monedas(cobrado)}.</p></section>` : ""}
       ${ocultoHtml}`;
   }
@@ -438,6 +452,7 @@
     }
     pintarInscritos();
     pintarCriaturas();
+    if (cuadraUI) cuadraUI.pintar();
     mostrarPestana(pestana, true);
   }
   function mostrarPestana(id, sinGuardar) {
@@ -446,6 +461,7 @@
     document.querySelectorAll(".hip-panel").forEach(p => p.classList.toggle("hidden", p.id !== "hipPanel-" + id));
     if (!sinGuardar) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
     if (id === "criaturas") pintarCriaturas();
+    if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
   }
 
   /* ---------------------------------------------------------------- eventos */
@@ -463,6 +479,7 @@
       const f = e.target.closest("[data-ficha]"); if (f) { abrirFicha(Number(f.dataset.ficha)); return; }
       const a = e.target.closest("[data-apostar]");
       if (a) { $("hipSel1").value = a.dataset.apostar; pintarPanelApuesta(false); $("hipPanelApuesta").scrollIntoView({ behavior: "smooth", block: "center" }); $("hipMonto").focus(); return; }
+      if (e.target.closest("[data-ir-cuadra]")) { cerrarFicha(); mostrarPestana("cuadra"); return; }
       const fav = e.target.closest("[data-favorito]");
       if (fav) {
         const id = Number(fav.dataset.favorito), i = est.favoritos.indexOf(id);
@@ -496,9 +513,35 @@
     document.addEventListener("visibilitychange", () => { if (document.hidden) guardar(); });
   }
 
+  /* ---------------------------------------------------------------- la cuadra (modo local) */
+  const conLinaje = p => { D.registrar(p); return p; };
+  const apiLocal = {
+    M, D, monedas, edadTxt, estrellasTxt, listo: () => !!(est && m),
+    saldo: () => est.saldo,
+    perfil: id => perfilDe(id),
+    nombreJugador: () => { try { return localStorage.getItem("compendioUsername") || "Tú"; } catch (e) { return "Tú"; } },
+    adoptada: () => !!(m.duenos && m.duenos[YO] && m.duenos[YO].adoptada),
+    mias: () => M.cuadraDe(m, YO).map(c => ({ p: conLinaje(M.perfil(m, c)), c: M.perfilCuadra(m, c) })),
+    calendario: () => M.calendario(m, m.n + 1, C.ADELANTO).map(x => Object.assign(x, { cierra: M.horaDe(m, x.n - 1) + C.APLICAR_SEG * 1000 })),
+    mercado: () => M.enVenta(m).map(c => conLinaje(M.perfil(m, c))).sort((a, b) => (a.etapa === "cría" || a.etapa === "potro" ? 0 : 1) - (b.etapa === "cría" || b.etapa === "potro" ? 0 : 1) || a.precio - b.precio).slice(0, 40),
+    sementales: () => m.criadores.filter(c => c.sexo === "m" && M.edadAnios(m.n, c) < 12).map(c => conLinaje(M.perfil(m, c))),
+    avisos: () => est.avisos,
+    async ordenar(o) {
+      const saldos = { [YO]: est.saldo };
+      const r = M.procesarOrdenes(m, [Object.assign({ oid: 1, dueno: YO }, o)], saldos);
+      const res = r.resultados[0];
+      if (!res.ok) return res;
+      est.saldo = saldos[YO];
+      est.noticias = r.noticias.slice().reverse().concat(est.noticias).slice(0, MAX_NOTICIAS);
+      nUI = -1; guardar(); pintarTodo();
+      return res;
+    }
+  };
+
   /* ---------------------------------------------------------------- arranque */
   function iniciar() {
     iniciarEventos();
+    if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiLocal, $("hipCuadra"));
     est = cargar();
     if (est) {
       m = est.mundo; est.vel = est.vel == null ? 10 : est.vel;
