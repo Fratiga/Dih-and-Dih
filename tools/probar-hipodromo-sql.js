@@ -89,6 +89,15 @@ q(`update hipodromo_programa set cierre = now() + interval '20 minutes' where n 
 // un segundo jugador apuesta a otra criatura y pierde, para comprobar las dos caras
 const c3 = ent[ent.length - 1];
 j = JSON.parse(ultima(como(U2, `select hipodromo_apostar(${nCarrera}, 'ganador', '${c3.id}'::jsonb, 10);`))); ok(j.ok, "el segundo jugador también apuesta");
+// el pozo (cuota que se mueve) y el doble (lo ganado pasa solo al favorito de la siguiente)
+j = JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'pozo', '${a.id}'::jsonb, 100);`)));
+ok(j.ok && Number(j.cuota) === M.cuotaPozo({}, a.id, 100), `la cuota estimada del pozo vacío es la del motor (${j.cuota})`);
+j = JSON.parse(ultima(como(U2, `select hipodromo_apostar(${nCarrera}, 'pozo', '${c3.id}'::jsonb, 100);`)));
+ok(j.ok && Number(j.cuota) === M.cuotaPozo({ [a.id]: 100 }, c3.id, 100), "y la del segundo jugador cuenta lo que ya hay apostado");
+const pozos = JSON.parse(ultima(anonimo(`select json_agg(json_build_object('c', criatura_id, 't', total) order by criatura_id) from hipodromo_pozos where n = ${nCarrera};`)));
+ok(pozos.length === 2 && pozos.every(x => Number(x.t) === 100), "la vista de pozos enseña lo apostado a cada criatura, sin decir quién");
+ok(!JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'podio', '${a.id}'::jsonb, 10, true);`))).ok, "el doble solo vale a ganador");
+ent.forEach(x => { const d = JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${x.id}'::jsonb, 10, true);`))); ok(d.ok, "apuesta doble a " + x.nombre); });
 
 // ---------------------------------------------------------------- órdenes de la cuadra
 const ordenar = (uid, datos) => ultima(como(uid, `select hipodromo_ordenar($hj$${JSON.stringify(datos)}$hj$::jsonb);`));
@@ -138,15 +147,26 @@ ok(q(`select estado from hipodromo_ordenes where id = ${idMal};`) === "rechazada
 // aplicar la carrera: liquida las apuestas, paga premios y devuelve inscripciones
 const horaN = fila.mundo.proxima.hora;
 const antes = { u1: Number(q(`select saldo from hipodromo_billeteras where usuario = '${U1}';`)), u2: Number(q(`select saldo from hipodromo_billeteras where usuario = '${U2}';`)) };
+const maxMov = Number(q("select coalesce(max(id), 0) from hipodromo_movimientos;"));
 e = edge(horaN + C.APLICAR_SEG * 1000 + 1000);
 ok(e.paso && e.paso.avanzadas >= 1 && e.lote.aplicadas.includes(nCarrera), "al pasar la hora se aplica la carrera");
 const res = JSON.parse(q(`select resultado::text from hipodromo_carreras where n = ${nCarrera};`)), orden = res.llegada.map(l => l.id);
-const estados = JSON.parse(q(`select json_agg(json_build_object('t', tipo, 's', sel, 'e', estado, 'p', pago, 'm', monto, 'c', cuota)) from hipodromo_apuestas where usuario = '${U1}';`));
+const estados = JSON.parse(q(`select json_agg(json_build_object('t', tipo, 's', sel, 'e', estado, 'p', pago, 'm', monto, 'c', cuota)) from hipodromo_apuestas where usuario = '${U1}' and n = ${nCarrera} and not doble and tipo <> 'pozo';`));
 const debeGanar = ap => (ap.t === "ganador" ? ap.s === orden[0] : ap.t === "podio" ? orden.slice(0, 3).includes(ap.s) : ap.s[0] === orden[0] && ap.s[1] === orden[1]);
 ok(estados.length === 3 && estados.every(ap => ap.e === (debeGanar(ap) ? "ganada" : "perdida") && (ap.e === "ganada" ? Math.abs(ap.p - ap.m * ap.c) < 0.011 : ap.p === 0)), "las apuestas se liquidan como dice el resultado: " + estados.map(x => x.t + ":" + x.e).join(", "));
 const cobrado = estados.reduce((t, ap) => t + Number(ap.p), 0);
-ok(Math.abs(Number(q(`select saldo from hipodromo_billeteras where usuario = '${U1}';`)) - (antes.u1 + cobrado + (e.lote.pagos.filter(p => p.dueno === U1).reduce((t, p) => t + p.monto, 0)))) < 0.011, "el saldo del jugador suma lo cobrado en apuestas y los pagos del motor");
-ok(Number(q(`select count(*) from hipodromo_apuestas where estado = 'pendiente';`)) === 0, "no queda ninguna apuesta de esa carrera sin liquidar");
+ok(Math.abs(Number(q(`select saldo from hipodromo_billeteras where usuario = '${U1}';`)) - (antes.u1 + Number(q(`select coalesce(sum(monto), 0) from hipodromo_movimientos where usuario = '${U1}' and id > ${maxMov};`)))) < 0.011 && cobrado >= 0, "el saldo del jugador cuadra con sus movimientos (apuestas cobradas, pozo, premios y devoluciones)");
+ok(Number(q(`select count(*) from hipodromo_apuestas where n = ${nCarrera} and estado = 'pendiente';`)) === 0, "no queda ninguna apuesta de esa carrera sin liquidar");
+// el pozo, como lo reparte el motor
+{ const filas = JSON.parse(q(`select json_agg(json_build_object('id', id, 'sel', sel, 'monto', monto, 'e', estado, 'p', pago) order by id) from hipodromo_apuestas where n = ${nCarrera} and tipo = 'pozo';`));
+  const esperado = M.pagarPozo(filas.map(x => ({ id: x.id, sel: x.sel, monto: Number(x.monto) })), orden[0]);
+  ok(filas.length === 2 && filas.every((x, i) => x.e === esperado[i].estado && Math.abs(Number(x.p) - esperado[i].pago) < 0.011), "el pozo se reparte en la base igual que en el motor: " + filas.map(x => x.e + " " + x.p).join(", "));
+  // el doble: la apuesta que ganó (una de las ocho) abre otra a ganador al favorito de la carrera siguiente, con lo cobrado
+  const ganadora = JSON.parse(q(`select json_agg(json_build_object('id', id, 'p', pago)) from hipodromo_apuestas where n = ${nCarrera} and doble and estado = 'ganada';`));
+  ok(ganadora && ganadora.length === 1, "de las ocho apuestas dobles, una gana");
+  const cadena = JSON.parse(q(`select json_agg(json_build_object('n', n, 'tipo', tipo, 'sel', sel, 'monto', monto, 'cuota', cuota, 'estado', estado, 'doble', doble)) from hipodromo_apuestas where origen = ${ganadora[0].id};`));
+  const sigProg = JSON.parse(q(`select publico::text from hipodromo_programa where n = ${nCarrera + 1};`)), favId = M.favoritoDe(sigProg);
+  ok(cadena && cadena.length === 1 && cadena[0].n === nCarrera + 1 && cadena[0].tipo === "ganador" && cadena[0].sel === favId.id && Math.abs(Number(cadena[0].monto) - Number(ganadora[0].p)) < 0.011 && Number(cadena[0].cuota) === favId.cuota && cadena[0].estado === "pendiente" && !cadena[0].doble, "lo ganado pasa solo a ganador al favorito de la siguiente carrera, con su cuota" ); }
 // y la siguiente, donde sí corre la criatura del jugador: aviso con el resultado y, si hay premio, el pago
 e = edge(M.horaDe(leerMundo().mundo, objetivo.n) + C.APLICAR_SEG * 1000 + 1000);
 ok(e.paso && e.lote.aplicadas.includes(objetivo.n), "se aplica también la carrera donde corre la criatura del jugador");

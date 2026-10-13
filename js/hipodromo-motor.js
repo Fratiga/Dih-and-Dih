@@ -63,7 +63,9 @@
     NOMBRE_COSTE: 25,
     CRUCE_ESPERA: 12,            // carreras desde el cruce hasta que nace la cría
     VENTA: 0.4,                  // lo que paga la casa por una criatura, respecto a lo que costaría comprarla
-    CASTIGO_TACTICA: 0.012       // lo que cuesta ir contra la naturaleza de la criatura (por unidad de diferencia)
+    CASTIGO_TACTICA: 0.012,      // lo que cuesta ir contra la naturaleza de la criatura (por unidad de diferencia)
+    POZO_RETENCION: 0.10,        // el pozo se queda con el 10 % de lo apostado
+    POZO_BOTE: 50                // y la casa le suma 50 monedas a cada pozo para que apostar solo también tenga premio
   };
   const ESPECIE = { singular: "cérvago", plural: "cérvagos", provisional: true };   // nombre de la especie, un solo sitio para cambiarlo
   const AJUSTE = {          // puntos de afinación de la simulación (los calibra tools/probar-hipodromo.js)
@@ -403,6 +405,7 @@
   }
 
   const TIPOS_APUESTA = {
+    pozo: { nombre: "Pozo", texto: "Acierta quién gana, pero sin cuota fija: todo lo que se apuesta al pozo, más el bote de la casa, se reparte entre quienes aciertan (menos un 10 %). Cuanta menos gente acierte, más paga." },
     ganador: { nombre: "Ganador", texto: "Acierta quién cruza primero la meta." },
     podio: { nombre: "Podio", texto: "Acierta que la criatura acaba entre las tres primeras." },
     exacta: { nombre: "Exacta", texto: "Acierta primero y segundo, en ese orden." }
@@ -417,6 +420,7 @@
   function cuotaApuesta(prog, tipo, sel) {
     const ids = prog.entrantes.map(e => e.id);
     if (tipo === "ganador") { const i = ids.indexOf(sel); return i < 0 ? null : prog.entrantes[i].gan; }
+    if (tipo === "pozo") return ids.indexOf(sel) < 0 ? null : 0;   // sin cuota fija: se calcula con cuotaPozo
     if (tipo === "podio") { const i = ids.indexOf(sel); return i < 0 ? null : prog.entrantes[i].pod; }
     if (tipo === "exacta") {
       const a = ids.indexOf(sel[0]), b = ids.indexOf(sel[1]);
@@ -426,11 +430,32 @@
     }
     return null;
   }
+  /* El pozo: apuestas { id, sel, monto } a ganador, sin cuota fija. Reparto cuando se sabe el ganador: lo apostado por todos más
+     el bote de la casa, menos la retención, entre quienes acertaron en proporción a lo que pusieron (nunca menos de lo que
+     pusieron). Si nadie acierta, la casa se queda con todo. Devuelve [{ id, pago, estado }] en el mismo orden. */
+  function pagarPozo(lista, ganadorId) {
+    const total = lista.reduce((t, a) => t + a.monto, 0), ganan = lista.filter(a => a.sel === ganadorId), base = ganan.reduce((t, a) => t + a.monto, 0);
+    const bolsa = (total + C.POZO_BOTE) * (1 - C.POZO_RETENCION);
+    return lista.map(a => (a.sel === ganadorId ? { id: a.id, pago: redondea(Math.max(a.monto, bolsa * a.monto / base), 2), estado: "ganada" } : { id: a.id, pago: 0, estado: "perdida" }));
+  }
+  /* Lo que pagaría ahora una apuesta de `monto` al pozo por la criatura `id`, dado lo que hay apostado (totales = { id: monedas }), como cuota */
+  function cuotaPozo(totales, id, monto) {
+    const T = Object.keys(totales || {}).reduce((t, k) => t + totales[k], 0), G = (totales && totales[id]) || 0;
+    const pago = Math.max(monto, (T + monto + C.POZO_BOTE) * (1 - C.POZO_RETENCION) * monto / (G + monto));
+    return redondearCuota(pago / monto);
+  }
+  /* El «doble»: lo que se gana se juega solo a ganador al favorito de la carrera siguiente. Devuelve { id, nombre, cuota } o null */
+  function favoritoDe(prog) {
+    if (!prog || prog.suspendida || !prog.entrantes || !prog.entrantes.length) return null;
+    const f = prog.entrantes.reduce((a, e) => (e.gan < a.gan ? e : a), prog.entrantes[0]);
+    return { id: f.id, nombre: f.nombre, cuota: f.gan };
+  }
+
   /* Una apuesta es { n, tipo, sel, monto, cuota }. Devuelve { gana, pago } con el resultado publicado. */
   function liquidar(ap, res) {
     const orden = res.llegada.map(l => l.id);
     let gana = false;
-    if (ap.tipo === "ganador") gana = orden[0] === ap.sel;
+    if (ap.tipo === "ganador" || ap.tipo === "pozo") gana = orden[0] === ap.sel;
     else if (ap.tipo === "podio") gana = orden.indexOf(ap.sel) >= 0 && orden.indexOf(ap.sel) < 3;
     else if (ap.tipo === "exacta") gana = orden[0] === ap.sel[0] && orden[1] === ap.sel[1];
     return { gana, pago: gana ? redondea(ap.monto * ap.cuota, 2) : 0 };
@@ -1218,7 +1243,7 @@
   raiz.HipodromoMotor = {
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
-    cuotaApuesta, cuotaExacta, liquidar, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
+    cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
     zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;

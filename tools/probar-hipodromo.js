@@ -381,6 +381,24 @@ function cabezaACabeza(a, b, cond, veces) {
     ok(Math.max(...rend) > -0.3, "alguna cuadra buena casi llega a salir a cuenta"); }
 }
 
+// 4d) El pozo y el doble
+{ const a = [{ id: 1, sel: 10, monto: 100 }, { id: 2, sel: 10, monto: 50 }, { id: 3, sel: 11, monto: 200 }, { id: 4, sel: 12, monto: 50 }];
+  const r = M.pagarPozo(a, 10), bolsa = (400 + C.POZO_BOTE) * (1 - C.POZO_RETENCION);
+  ok(r[0].estado === "ganada" && r[1].estado === "ganada" && r[2].estado === "perdida" && r[3].estado === "perdida", "en el pozo cobran los que aciertan y pierden los demás");
+  ok(Math.abs(r[0].pago + r[1].pago - bolsa) < 0.02 && Math.abs(r[0].pago / r[1].pago - 2) < 0.02, "los que aciertan se reparten el pozo, el bote y menos la retención, en proporción a lo que pusieron");
+  const sola = M.pagarPozo([{ id: 1, sel: 5, monto: 100 }], 5)[0]; ok(sola.pago === redondeaT((100 + C.POZO_BOTE) * (1 - C.POZO_RETENCION)), "quien apuesta solo y acierta cobra el bote");
+  ok(M.pagarPozo([{ id: 1, sel: 5, monto: 100 }, { id: 2, sel: 6, monto: 100 }], 7).every(x => x.pago === 0), "si nadie acierta, la casa se queda con todo");
+  const llena = M.pagarPozo([{ id: 1, sel: 5, monto: 1000 }, { id: 2, sel: 5, monto: 1000 }], 5); ok(llena.every(x => x.pago >= 1000), "nunca se cobra menos de lo apostado si se acierta");
+  function redondeaT(x) { return Math.round(x * 100) / 100; }
+  const t0 = {}, c0 = M.cuotaPozo(t0, 10, 100), c1 = M.cuotaPozo({ 11: 800 }, 10, 100), c2 = M.cuotaPozo({ 10: 800 }, 10, 100);
+  ok(c1 > c0 && c2 < c1 && c2 >= 1, `la cuota del pozo sube cuando todos apuestan a otras criaturas (${c1}) y baja cuando apuestan a la tuya (${c2})`);
+  const total = { 10: 300, 11: 100 }, previsto = M.cuotaPozo(total, 10, 100), real = M.pagarPozo([{ id: 1, sel: 10, monto: 300 }, { id: 2, sel: 11, monto: 100 }, { id: 3, sel: 10, monto: 100 }], 10)[2].pago / 100;
+  ok(Math.abs(previsto - real) < 0.02, `la cuota que se enseña antes de apostar es la que sale si nadie más apuesta (${previsto} contra ${real})`);
+  ok(M.TIPOS_APUESTA.pozo && M.cuotaApuesta({ entrantes: [{ id: 10, gan: 2, pod: 1.2 }], mercado: {} }, "pozo", 10) === 0, "el pozo es un tipo de apuesta que no tiene cuota fija");
+  ok(M.liquidar({ tipo: "pozo", sel: 10, monto: 10, cuota: 0 }, { llegada: [{ id: 10 }, { id: 11 }] }).gana, "liquidar sabe quién acierta en el pozo");
+  const fav = M.favoritoDe({ entrantes: [{ id: 1, nombre: "A", gan: 3.2 }, { id: 2, nombre: "B", gan: 2.1 }, { id: 3, nombre: "C", gan: 9 }] });
+  ok(fav.id === 2 && fav.cuota === 2.1 && M.favoritoDe({ suspendida: true, entrantes: [] }) === null, "el doble juega al favorito de la siguiente (el de menor cuota) y se salta una carrera suspendida"); }
+
 // 5) Un mundo largo
 const AÑOS = rapido ? 3 : 8, CARRERAS = AÑOS * C.ANIO;
 let m;

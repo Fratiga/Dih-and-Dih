@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hipódromo — Compendio del Mundo</title>
-  <script src="js/dialogos.js?v=20270157"></script>
-  <script src="js/oculto.js?v=20270157"></script>
+  <script src="js/dialogos.js?v=20270158"></script>
+  <script src="js/oculto.js?v=20270158"></script>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270157">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20270157">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20270157">
+  <link rel="stylesheet" href="css/style.css?v=20270158">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270158">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20270158">
 </head>
 <body class="mj-pagina hip-tema" data-fase="abierta">
   <div class="mj-barra">
@@ -84,6 +84,7 @@
             <label>Tipo
               <select id="hipTipo">
                 <option value="ganador">Ganador</option>
+                <option value="pozo">Pozo (la cuota se mueve)</option>
                 <option value="podio">Podio</option>
                 <option value="exacta">Exacta</option>
               </select>
@@ -91,6 +92,7 @@
             <p id="hipTipoAyuda" class="hip-nota"></p>
             <label><span id="hipSel1Etiqueta">Criatura</span> <select id="hipSel1"></select></label>
             <label id="hipSel2Caja" class="hidden">Segundo <select id="hipSel2"></select></label>
+            <label id="hipDobleCaja" class="hip-casilla"><input type="checkbox" id="hipDoble"> Doble: si acierto, lo ganado pasa solo a ganador al favorito de la siguiente carrera</label>
             <label>Monedas <input type="number" id="hipMonto" min="1" step="1" value="50" inputmode="numeric"></label>
             <div class="hip-atajos">
               <button type="button" class="hip-boton chico" data-monto="10">10</button>
@@ -180,16 +182,16 @@
     </div>
   </div>
 
-  <script src="data/hipodromo-palabras.js?v=20270157"></script>
-  <script src="js/hipodromo-nombres.js?v=20270157"></script>
-  <script src="js/hipodromo-rasgos.js?v=20270157"></script>
-  <script src="js/hipodromo-motor.js?v=20270157"></script>
-  <script src="js/hipodromo-dibujo.js?v=20270157"></script>
-  <script src="js/hipodromo-pista.js?v=20270157"></script>
-  <script src="js/hipodromo-cuadra.js?v=20270157"></script>
-  <script src="js/fichas-supabase.js?v=20270157"></script>
-  <script src="js/hipodromo-online.js?v=20270157"></script>
-  <script src="js/hipodromo-pagina.js?v=20270157"></script>
-  <script src="js/musica-paginas.js?v=20270157"></script>
+  <script src="data/hipodromo-palabras.js?v=20270158"></script>
+  <script src="js/hipodromo-nombres.js?v=20270158"></script>
+  <script src="js/hipodromo-rasgos.js?v=20270158"></script>
+  <script src="js/hipodromo-motor.js?v=20270158"></script>
+  <script src="js/hipodromo-dibujo.js?v=20270158"></script>
+  <script src="js/hipodromo-pista.js?v=20270158"></script>
+  <script src="js/hipodromo-cuadra.js?v=20270158"></script>
+  <script src="js/fichas-supabase.js?v=20270158"></script>
+  <script src="js/hipodromo-online.js?v=20270158"></script>
+  <script src="js/hipodromo-pagina.js?v=20270158"></script>
+  <script src="js/musica-paginas.js?v=20270158"></script>
 </body>
 </html>

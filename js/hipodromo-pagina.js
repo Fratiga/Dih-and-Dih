@@ -120,15 +120,27 @@
       est.resultados.unshift(Object.assign({}, res, { tramos: undefined }));
       est.resultados.length = Math.min(est.resultados.length, MAX_RESULTADOS);
     }
+    // el pozo se reparte entre todas las apuestas al pozo de esa carrera (aquí, solo las tuyas más el bote)
+    const pozoPagos = new Map(), enPozo = est.pendientes.filter(ap => ap.n === n && ap.tipo === "pozo");
+    if (res && enPozo.length) M.pagarPozo(enPozo.map((ap, i) => ({ id: i, sel: ap.sel, monto: ap.monto })), res.llegada[0].id).forEach((x, i) => pozoPagos.set(enPozo[i], x.pago));
+    const nuevas = [];
     est.pendientes = est.pendientes.filter(ap => {
       if (ap.n !== n) return true;
       if (!res) { est.saldo += ap.monto; est.historial.unshift(Object.assign({}, ap, { gana: false, pago: ap.monto, devuelta: true })); return false; }
-      const r = M.liquidar(ap, res);
-      est.saldo += r.pago;
+      const r = ap.tipo === "pozo" ? { gana: res.llegada[0].id === ap.sel, pago: pozoPagos.get(ap) || 0 } : M.liquidar(ap, res);
       est.historial.unshift(Object.assign({}, ap, { gana: r.gana, pago: r.pago, ganador: res.llegada[0].nombre }));
+      // doble: lo ganado no se cobra, pasa a ganador al favorito de la siguiente carrera si todavía se puede apostar
+      const fav = r.gana && ap.doble ? M.favoritoDe(m.proxima) : null;
+      if (fav && est.virtual < m.proxima.cierre) {
+        nuevas.push({ n: m.proxima.n, tipo: "ganador", sel: fav.id, monto: r.pago, cuota: fav.cuota, nombres: [fav.nombre], carrera: m.proxima.nombre });
+        msgs.push(`Ganaste ${monedas(r.pago)} monedas (${TIPOS_TXT(ap)}): pasan a ${fav.nombre} en la siguiente (doble)`);
+        return false;
+      }
+      est.saldo += r.pago;
       msgs.push(r.gana ? `Ganaste ${monedas(r.pago)} monedas (${TIPOS_TXT(ap)})` : `Perdiste ${monedas(ap.monto)} monedas (${TIPOS_TXT(ap)})`);
       return false;
     });
+    est.pendientes = est.pendientes.concat(nuevas);
     est.historial.length = Math.min(est.historial.length, MAX_HISTORIAL);
     ev.pagos.filter(q => q.dueno === YO).forEach(q => { est.saldo += q.monto; });
     est.avisos = ev.avisos.filter(a => a.dueno === YO).reverse().concat(est.avisos).slice(0, 60);
@@ -226,9 +238,15 @@
   }
 
   /* panel de apuestas */
+  /* Lo que hay apostado ahora al pozo de la carrera que viene, por criatura: del servidor, o de tus apuestas en modo local */
+  function pozosAhora() {
+    if (online && est.pozos) return est.pozos;
+    const t = {}; est.pendientes.filter(a => a.n === m.proxima.n && a.tipo === "pozo").forEach(a => { t[a.sel] = (t[a.sel] || 0) + a.monto; });
+    return t;
+  }
   function opcionesApuesta(tipo, quitar) {
-    const p = m.proxima;
-    return p.entrantes.filter(e => e.id !== quitar).map(e => `<option value="${e.id}">${e.puerta}. ${esc(e.nombre)}${tipo === "exacta" ? "" : " (" + M.fmtCuota(tipo === "podio" ? e.pod : e.gan) + ")"}</option>`).join("");
+    const p = m.proxima, pz = tipo === "pozo" ? pozosAhora() : null;
+    return p.entrantes.filter(e => e.id !== quitar).map(e => `<option value="${e.id}">${e.puerta}. ${esc(e.nombre)}${tipo === "exacta" ? "" : tipo === "pozo" ? " (pozo " + monedas(pz[e.id] || 0) + ")" : " (" + M.fmtCuota(tipo === "podio" ? e.pod : e.gan) + ")"}</option>`).join("");
   }
   function pintarPanelApuesta(reset) {
     const tipo = $("hipTipo").value, a = $("hipSel1"), b = $("hipSel2");
@@ -238,6 +256,9 @@
       if (v1 && [...a.options].some(o => o.value === v1) && !reset) a.value = v1;
     }
     $("hipSel2Caja").classList.toggle("hidden", tipo !== "exacta");
+    $("hipDobleCaja").classList.toggle("hidden", tipo !== "ganador");
+    if (tipo !== "ganador") $("hipDoble").checked = false;
+    if (tipo === "pozo" && a._pozo !== JSON.stringify(pozosAhora())) { a._pozo = JSON.stringify(pozosAhora()); const v = a.value; a.innerHTML = opcionesApuesta(tipo); if (v) a.value = v; }
     $("hipSel1Etiqueta").textContent = tipo === "exacta" ? "Primero" : "Criatura";
     if (tipo === "exacta") {
       b.innerHTML = opcionesApuesta(tipo, Number(a.value));
@@ -250,9 +271,9 @@
     return { tipo, sel: tipo === "exacta" ? [a, b] : a };
   }
   function pintarCuotaApuesta() {
-    const { tipo, sel } = seleccion(), cuota = M.cuotaApuesta(m.proxima, tipo, sel);
-    const monto = Math.floor(Number($("hipMonto").value) || 0);
-    textoDe($("hipCuotaApuesta"), cuota ? M.fmtCuota(cuota) : "-");
+    const { tipo, sel } = seleccion(), monto = Math.floor(Number($("hipMonto").value) || 0);
+    const cuota = tipo === "pozo" ? (M.cuotaApuesta(m.proxima, tipo, sel) === null ? null : M.cuotaPozo(pozosAhora(), sel, Math.max(1, monto))) : M.cuotaApuesta(m.proxima, tipo, sel);
+    textoDe($("hipCuotaApuesta"), cuota ? (tipo === "pozo" ? "≈ " : "") + M.fmtCuota(cuota) : "-");
     textoDe($("hipPosible"), cuota && monto > 0 ? monedas(monto * cuota) : "-");
     textoDe($("hipTipoAyuda"), M.TIPOS_APUESTA[tipo].texto);
   }
@@ -263,29 +284,30 @@
     const { tipo, sel } = seleccion(), monto = Math.floor(Number($("hipMonto").value) || 0);
     if (!(monto >= 1)) return falla("Pon un importe de al menos 1 moneda.");
     if (monto > est.saldo) return falla("No tienes tantas monedas.");
-    const cuota = M.cuotaApuesta(p, tipo, sel);
-    if (!cuota) return falla(tipo === "exacta" ? "Elige dos criaturas distintas." : "Esa criatura no corre.");
+    const cuotaFija = M.cuotaApuesta(p, tipo, sel), doble = tipo === "ganador" && $("hipDoble").checked;
+    if (cuotaFija === null) return falla(tipo === "exacta" ? "Elige dos criaturas distintas." : "Esa criatura no corre.");
+    const cuota = tipo === "pozo" ? M.cuotaPozo(pozosAhora(), sel, monto) : cuotaFija;
     const ids = tipo === "exacta" ? sel : [sel];
     if (online) {
       $("hipApostar").disabled = true;
-      const r = await online.apostar(p.n, tipo, sel, monto);
+      const r = await online.apostar(p.n, tipo, sel, monto, doble);
       $("hipApostar").disabled = false;
       if (!r.ok) return falla(r.error || "No se pudo apostar.");
-      msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${M.fmtCuota(Number(r.cuota))}.`;
+      msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(Number(r.cuota))}${doble ? " (doble)" : ""}.`;
       msg.className = "hip-aviso bien";
       pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
       return;
     }
     est.saldo -= monto;
-    est.pendientes.push({ n: p.n, tipo, sel, monto, cuota, nombres: ids.map(nombreDe), carrera: p.nombre });
+    est.pendientes.push({ n: p.n, tipo, sel, monto, cuota, nombres: ids.map(nombreDe), carrera: p.nombre, doble });
     guardar();
-    msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${M.fmtCuota(cuota)}.`;
+    msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(cuota)}${doble ? " (doble)" : ""}.`;
     msg.className = "hip-aviso bien";
     pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
   }
   function pintarPendientesCarrera() {
     const mias = est.pendientes.filter(a => a.n === m.proxima.n);
-    poner($("hipMias"), mias.length ? `<h3>Tus apuestas en esta carrera</h3><ul class="hip-lista-apuestas">${mias.map(a => `<li><strong>${esc(M.TIPOS_APUESTA[a.tipo].nombre)}</strong> ${esc(a.nombres.join(" y "))} · ${monedas(a.monto)} a ${M.fmtCuota(a.cuota)} <small>(si acierta, ${monedas(a.monto * a.cuota)})</small></li>`).join("")}</ul>` : "");
+    poner($("hipMias"), mias.length ? `<h3>Tus apuestas en esta carrera</h3><ul class="hip-lista-apuestas">${mias.map(a => `<li><strong>${esc(M.TIPOS_APUESTA[a.tipo].nombre)}${a.doble ? " doble" : ""}</strong> ${esc(a.nombres.join(" y "))} · ${monedas(a.monto)} a ${a.tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(a.cuota)} <small>(si acierta, ${a.tipo === "pozo" ? "unas " : ""}${monedas(a.monto * a.cuota)})</small></li>`).join("")}</ul>` : "");
   }
 
   function tablaResultado(res) {

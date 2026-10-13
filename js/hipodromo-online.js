@@ -78,6 +78,11 @@ window.HipodromoOnline = (function () {
       if (avisoError("resultados", error) || !data) return;
       est.resultados = data.map(x => Object.assign({}, x.resultado, { tramos: undefined }));
     }
+    async function leerPozos(n) {
+      const { data, error } = await supa.from("hipodromo_pozos").select("criatura_id, total").eq("n", n);
+      if (avisoError("pozos", error)) return;
+      est.pozos = {}; (data || []).forEach(x => { est.pozos[x.criatura_id] = Number(x.total); });
+    }
     async function leerMiCuenta() {
       const [b, a, av, cu, ca, ad] = await Promise.all([
         supa.from("hipodromo_billeteras").select("saldo").eq("usuario", yo).maybeSingle(),
@@ -107,6 +112,7 @@ window.HipodromoOnline = (function () {
         const prog = await leerPrograma();
         if (!prog) { enCurso = false; return; }
         const cambio = prog.n !== ultimoN;
+        await leerPozos(prog.n);
         if (cambio) {
           await leerCriaturas();
           await Promise.all([leerNoticias(), leerResultados(), leerMiCuenta()]);
@@ -142,10 +148,10 @@ window.HipodromoOnline = (function () {
     function ciclo() { if (parado) return; temporizador = setTimeout(async () => { await refrescar(); ciclo(); }, proximoRefresco()); }
 
     /* ---------------------------------------------------------------- acciones */
-    async function apostar(n, tipo, sel, monto) {
-      const { data, error } = await supa.rpc("hipodromo_apostar", { p_n: n, p_tipo: tipo, p_sel: sel, p_monto: monto });
+    async function apostar(n, tipo, sel, monto, doble) {
+      const { data, error } = await supa.rpc("hipodromo_apostar", { p_n: n, p_tipo: tipo, p_sel: sel, p_monto: monto, p_doble: !!doble });
       if (error) return { ok: false, error: error.message };
-      if (data && data.ok) { await leerMiCuenta(); alCambiar("cuenta"); }
+      if (data && data.ok) { await Promise.all([leerMiCuenta(), leerPozos(n)]); alCambiar("cuenta"); }
       return data || { ok: false, error: "Sin respuesta." };
     }
     async function ordenar(o) {

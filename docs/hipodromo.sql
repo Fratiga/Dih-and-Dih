@@ -122,7 +122,7 @@ create table if not exists public.hipodromo_apuestas (
   id      bigint generated always as identity primary key,
   usuario uuid not null,
   n       integer not null,
-  tipo    text not null check (tipo in ('ganador', 'podio', 'exacta')),
+  tipo    text not null check (tipo in ('ganador', 'podio', 'exacta', 'pozo')),
   sel     jsonb not null,                       -- un id de criatura, o [primero, segundo] en la exacta
   nombres jsonb not null default '[]',
   carrera text,
@@ -132,6 +132,11 @@ create table if not exists public.hipodromo_apuestas (
   pago    numeric(12, 2) not null default 0,
   creada  timestamptz not null default now()
 );
+-- doble: si se gana, lo cobrado se juega solo a ganador al favorito de la carrera siguiente. origen: la apuesta de la que viene.
+alter table public.hipodromo_apuestas add column if not exists doble boolean not null default false;
+alter table public.hipodromo_apuestas add column if not exists origen bigint;
+alter table public.hipodromo_apuestas drop constraint if exists hipodromo_apuestas_tipo_check;
+alter table public.hipodromo_apuestas add constraint hipodromo_apuestas_tipo_check check (tipo in ('ganador', 'podio', 'exacta', 'pozo'));
 create index if not exists hipodromo_apuestas_usuario on public.hipodromo_apuestas (usuario, id desc);
 create index if not exists hipodromo_apuestas_pendientes on public.hipodromo_apuestas (n) where estado = 'pendiente';
 create table if not exists public.hipodromo_ordenes (
@@ -202,6 +207,7 @@ declare
   v_saldo numeric;
   v_orden bigint[];
   v_gana boolean;
+  v_base numeric; v_total numeric; v_pago numeric; v_next hipodromo_programa%rowtype; v_fav jsonb;
 begin
   if p_version = 0 then
     insert into hipodromo_estado (id, version, mundo) values (1, 1, p_lote->'mundo') on conflict (id) do nothing;
@@ -272,7 +278,7 @@ begin
     from jsonb_to_recordset(coalesce(p_lote->'avisos', '[]'::jsonb)) as x(dueno text, n integer, id bigint, texto text);
 
   -- liquidar las apuestas de las carreras que se aplican ahora (su resultado ya está guardado desde que se programó)
-  for r in select a.id, a.usuario, a.tipo, a.sel, a.monto, a.cuota, c.resultado
+  for r in select a.id, a.usuario, a.n, a.tipo, a.sel, a.monto, a.cuota, a.doble, c.resultado
              from hipodromo_apuestas a
              left join hipodromo_carreras c on c.n = a.n
             where a.estado = 'pendiente'
@@ -285,15 +291,39 @@ begin
       continue;
     end if;
     select array(select (e->>'id')::bigint from jsonb_array_elements(r.resultado->'llegada') with ordinality t(e, i) order by i) into v_orden;
-    v_gana := case r.tipo
-      when 'ganador' then (r.sel #>> '{}')::bigint = v_orden[1]
-      when 'podio' then (r.sel #>> '{}')::bigint = any (v_orden[1:3])
-      else (r.sel->>0)::bigint = v_orden[1] and (r.sel->>1)::bigint = v_orden[2]
-    end;
+    if r.tipo = 'pozo' then
+      -- el pozo: lo apostado por todos más el bote, menos la retención, entre quienes aciertan (nunca menos de lo apostado)
+      select sum(monto) into v_total from hipodromo_apuestas where n = r.n and tipo = 'pozo';
+      select coalesce(sum(monto), 0) into v_base from hipodromo_apuestas where n = r.n and tipo = 'pozo' and (sel #>> '{}')::bigint = v_orden[1];
+      v_gana := (r.sel #>> '{}')::bigint = v_orden[1];
+      v_pago := case when v_gana then round(greatest(r.monto, (v_total + 50) * 0.9 * r.monto / v_base), 2) else 0 end;
+    else
+      v_gana := case r.tipo
+        when 'ganador' then (r.sel #>> '{}')::bigint = v_orden[1]
+        when 'podio' then (r.sel #>> '{}')::bigint = any (v_orden[1:3])
+        else (r.sel->>0)::bigint = v_orden[1] and (r.sel->>1)::bigint = v_orden[2]
+      end;
+      v_pago := case when v_gana then round(r.monto * r.cuota, 2) else 0 end;
+    end if;
     if v_gana then
-      update hipodromo_apuestas set estado = 'ganada', pago = round(r.monto * r.cuota, 2) where id = r.id;
-      update hipodromo_billeteras set saldo = saldo + round(r.monto * r.cuota, 2) where usuario = r.usuario returning saldo into v_saldo;
-      insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (r.usuario, null, 'Apuesta ganada', round(r.monto * r.cuota, 2), v_saldo);
+      update hipodromo_apuestas set estado = 'ganada', pago = v_pago where id = r.id;
+      -- doble: lo ganado no se cobra, pasa a ganador al favorito de la carrera siguiente si todavía se puede apostar
+      v_fav := null;
+      if r.doble then
+        select * into v_next from hipodromo_programa where n = r.n + 1 and now() < cierre and not coalesce((publico->>'suspendida')::boolean, false);
+        if found then
+          select e into v_fav from jsonb_array_elements(v_next.publico->'entrantes') e order by (e->>'gan')::numeric, (e->>'puerta')::integer limit 1;
+        end if;
+      end if;
+      if v_fav is not null then
+        insert into hipodromo_apuestas (usuario, n, tipo, sel, nombres, carrera, monto, cuota, origen)
+          values (r.usuario, r.n + 1, 'ganador', to_jsonb((v_fav->>'id')::bigint), jsonb_build_array(v_fav->>'nombre'), v_next.publico->>'nombre', v_pago, (v_fav->>'gan')::numeric, r.id);
+        select saldo into v_saldo from hipodromo_billeteras where usuario = r.usuario;
+        insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (r.usuario, r.n + 1, 'Doble: lo ganado pasa a la carrera ' || (r.n + 1), 0, v_saldo);
+      else
+        update hipodromo_billeteras set saldo = saldo + v_pago where usuario = r.usuario returning saldo into v_saldo;
+        insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (r.usuario, null, 'Apuesta ganada', v_pago, v_saldo);
+      end if;
     else
       update hipodromo_apuestas set estado = 'perdida' where id = r.id;
     end if;
@@ -326,7 +356,8 @@ revoke all on function public.hipodromo_saldo() from public, anon;
 grant execute on function public.hipodromo_saldo() to authenticated;
 
 -- Apostar. La cuota la pone el servidor con lo publicado, nunca el cliente. Devuelve { ok, ... } o { ok: false, error }.
-create or replace function public.hipodromo_apostar(p_n integer, p_tipo text, p_sel jsonb, p_monto numeric)
+drop function if exists public.hipodromo_apostar(integer, text, jsonb, numeric);
+create or replace function public.hipodromo_apostar(p_n integer, p_tipo text, p_sel jsonb, p_monto numeric, p_doble boolean default false)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
@@ -338,10 +369,11 @@ declare
   v_ent jsonb;
   v_cuota numeric;
   v_nombres jsonb := '[]';
-  v_a bigint; v_b bigint; v_pa numeric; v_pb numeric; v_raw numeric;
+  v_a bigint; v_b bigint; v_pa numeric; v_pb numeric; v_raw numeric; v_tot numeric; v_gid numeric;
 begin
   if v_uid is null then return jsonb_build_object('ok', false, 'error', 'Hace falta iniciar sesión.'); end if;
-  if p_tipo not in ('ganador', 'podio', 'exacta') then return jsonb_build_object('ok', false, 'error', 'Ese tipo de apuesta no existe.'); end if;
+  if p_tipo not in ('ganador', 'podio', 'exacta', 'pozo') then return jsonb_build_object('ok', false, 'error', 'Ese tipo de apuesta no existe.'); end if;
+  if p_doble and p_tipo <> 'ganador' then return jsonb_build_object('ok', false, 'error', 'El doble solo vale para apuestas a ganador.'); end if;
   if v_monto is null or v_monto < 1 or v_monto > 1000000 then return jsonb_build_object('ok', false, 'error', 'Pon un importe de al menos 1 moneda.'); end if;
   select * into v_prog from hipodromo_programa where n = p_n;
   if not found then return jsonb_build_object('ok', false, 'error', 'Esa carrera no existe.'); end if;
@@ -362,8 +394,15 @@ begin
     if jsonb_typeof(p_sel) <> 'number' then return jsonb_build_object('ok', false, 'error', 'Esa criatura no corre.'); end if;
     v_a := (p_sel #>> '{}')::bigint;
     if not (v_a = any (v_ids)) then return jsonb_build_object('ok', false, 'error', 'Esa criatura no corre.'); end if;
-    select (e->>(case when p_tipo = 'ganador' then 'gan' else 'pod' end))::numeric, jsonb_build_array(e->>'nombre') into v_cuota, v_nombres
+    select (e->>(case when p_tipo = 'podio' then 'pod' else 'gan' end))::numeric, jsonb_build_array(e->>'nombre') into v_cuota, v_nombres
       from jsonb_array_elements(v_prog.publico->'entrantes') e where (e->>'id')::bigint = v_a;
+    if p_tipo = 'pozo' then
+      -- sin cuota fija: la que se guarda es la estimada con lo que hay apostado ahora; el pago real se calcula al liquidar
+      select coalesce(sum(monto), 0), coalesce(sum(monto) filter (where (sel #>> '{}')::bigint = v_a), 0) into v_tot, v_gid
+        from hipodromo_apuestas where n = p_n and tipo = 'pozo' and estado = 'pendiente';
+      v_raw := greatest(v_monto, (v_tot + v_monto + 50) * 0.9 * v_monto / (v_gid + v_monto)) / v_monto;
+      v_cuota := case when v_raw < 10 then round(v_raw, 2) when v_raw < 100 then round(v_raw, 1) else round(v_raw, 0) end;
+    end if;
   end if;
 
   insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
@@ -373,14 +412,22 @@ begin
     return jsonb_build_object('ok', false, 'error', 'Demasiadas apuestas en la misma carrera.');
   end if;
   update hipodromo_billeteras set saldo = saldo - v_monto where usuario = v_uid returning saldo into v_saldo;
-  insert into hipodromo_apuestas (usuario, n, tipo, sel, nombres, carrera, monto, cuota)
-    values (v_uid, p_n, p_tipo, p_sel, v_nombres, v_prog.publico->>'nombre', v_monto, v_cuota);
+  insert into hipodromo_apuestas (usuario, n, tipo, sel, nombres, carrera, monto, cuota, doble)
+    values (v_uid, p_n, p_tipo, p_sel, v_nombres, v_prog.publico->>'nombre', v_monto, v_cuota, coalesce(p_doble, false));
   insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo) values (v_uid, p_n, 'Apuesta: ' || p_tipo || ', carrera ' || p_n, -v_monto, v_saldo);
   return jsonb_build_object('ok', true, 'cuota', v_cuota, 'saldo', v_saldo, 'nombres', v_nombres);
 end;
 $$;
-revoke all on function public.hipodromo_apostar(integer, text, jsonb, numeric) from public, anon;
-grant execute on function public.hipodromo_apostar(integer, text, jsonb, numeric) to authenticated;
+revoke all on function public.hipodromo_apostar(integer, text, jsonb, numeric, boolean) from public, anon;
+grant execute on function public.hipodromo_apostar(integer, text, jsonb, numeric, boolean) to authenticated;
+
+-- Lo que hay apostado ahora a cada criatura en el pozo de cada carrera pendiente (solo sumas, no quién apostó)
+create or replace view public.hipodromo_pozos as
+  select n, (sel #>> '{}')::bigint as criatura_id, sum(monto)::numeric as total, count(*)::integer as apuestas
+    from public.hipodromo_apuestas
+   where tipo = 'pozo' and estado = 'pendiente'
+   group by n, (sel #>> '{}')::bigint;
+grant select on public.hipodromo_pozos to anon, authenticated;
 
 -- Mandar una orden a la cuadra. No se resuelve aquí: la Edge Function la lee en el siguiente minuto, el motor decide si
 -- vale y cuánto cuesta, y el resultado y el cobro se guardan junto al mundo. Devuelve el id de la orden (míralo en hipodromo_ordenes).
