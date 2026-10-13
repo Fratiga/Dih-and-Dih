@@ -8,7 +8,7 @@
 --   * hipodromo_criaturas  : el perfil público de cada criatura (con su dueño y su precio). Lo lee cualquiera.
 --   * hipodromo_programa   : la próxima carrera (inscritos, puertas, pronóstico, cuotas). Lo lee cualquiera.
 --   * hipodromo_carreras   : el resultado de cada carrera. La propia base lo esconde hasta la hora de salida
---                            (la carrera se calcula 30 minutos antes), así no hace falta un reloj exacto en el servidor.
+--                            (la carrera se calcula una hora antes), así no hace falta un reloj exacto en el servidor.
 --   * hipodromo_noticias   : las noticias; se leen cuando su hora ya pasó.
 --   * hipodromo_calendario : las próximas carreras (categoría, distancia, pista, precio de inscribir). Lo lee cualquiera.
 --   * hipodromo_votos      : (opcional) a quién apuesta cada jugador, para enseñar el porcentaje de la comunidad.
@@ -105,7 +105,7 @@ grant select on public.hipodromo_criaturas, public.hipodromo_programa, public.hi
 -- ------------------------------------------------------------------ lo de cada jugador
 create table if not exists public.hipodromo_billeteras (
   usuario uuid primary key,
-  saldo   numeric(12, 2) not null default 1000 check (saldo >= 0),
+  saldo   numeric(12, 2) not null default 0 check (saldo >= 0),   -- nadie empieza con monedas (docs/hipodromo-2_cartas.sql)
   creada  timestamptz not null default now()
 );
 create table if not exists public.hipodromo_movimientos (
@@ -341,7 +341,7 @@ create or replace function public.hipodromo_ahora() returns timestamptz language
 revoke all on function public.hipodromo_ahora() from public;
 grant execute on function public.hipodromo_ahora() to anon, authenticated;
 
--- Crea la billetera del jugador si no existe (1000 monedas) y devuelve el saldo
+-- Crea la billetera del jugador si no existe (empieza en 0) y devuelve el saldo
 create or replace function public.hipodromo_saldo() returns numeric
 language plpgsql security definer set search_path = public as $$
 declare v_uid uuid := auth.uid(); v_saldo numeric;

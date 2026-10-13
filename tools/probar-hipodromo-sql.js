@@ -69,7 +69,8 @@ ok(/permission denied/.test(como(U1, "insert into hipodromo_apuestas (usuario, n
 ok(/Hace falta/.test(anonimo("select hipodromo_saldo();").err || "") || /permission denied/.test(anonimo("select hipodromo_saldo();").err || ""), "un anónimo no tiene billetera");
 
 // billetera y apuestas
-ok(ultima(como(U1, "select hipodromo_saldo();")) === "1000.00" || ultima(como(U1, "select hipodromo_saldo();")) === "1000", "la billetera empieza con 1000 monedas");
+ok(/^0(.00)?$/.test(ultima(como(U1, "select hipodromo_saldo();"))), "la billetera empieza con 0 monedas");
+q(`update hipodromo_billeteras set saldo = 1000 where usuario = '${U1}';`);   // para probar las apuestas se le dan 1000
 const prog = fila.mundo.proxima, ent = prog.entrantes;
 const a = ent[0], b = ent[1];
 let r = como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${a.id}'::jsonb, 100);`);
@@ -110,7 +111,7 @@ function edge(ahora, extra) {
   const ords = JSON.parse(q("select coalesce(json_agg(json_build_object('id', id, 'datos', datos) order by id), '[]') from hipodromo_ordenes where estado = 'pendiente';"));
   const ordenes = ords.map(o => Object.assign({}, o.datos, { oid: o.id }));
   const duenos = [...new Set(ordenes.map(o => o.dueno))], saldos = {};
-  duenos.forEach(d => { saldos[d] = Number(q(`select coalesce((select saldo from hipodromo_billeteras where usuario = '${d}'), 1000);`)); });
+  duenos.forEach(d => { saldos[d] = Number(q(`select coalesce((select saldo from hipodromo_billeteras where usuario = '${d}'), 0);`)); });
   const p = M.paso(f, ahora, Object.assign({ ordenes, saldos, sims: 8 }, extra || {}));
   if (!p) return { sinCambios: true };
   const g = guardar(p.version, p.lote);

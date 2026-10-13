@@ -2,7 +2,7 @@
 
 Estado: está todo hecho y **desplegado en el Supabase real** (tablas, funciones, Edge Function y la tarea de cada minuto). El motor, el SQL y las pruebas están al día. La página (`hipodromo.html`) es solo para admin, como Ostelar o Duelo: sale en el hub de Minijuegos y en el panel de Admin solo para cuentas admin, y quien entre por la dirección vuelve a Minijuegos. Este documento explica cómo funciona, qué se probó y qué falta.
 
-La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se lesionan, se retiran, crían y mueren con o sin ti. Puedes mirarlo y apostar cada 30 minutos (ganador, podio, exacta, pozo y doble), y también tener tu propia cuadra: adoptar o comprar criaturas, inscribirlas, entrenarlas, cuidarlas, marcarles una táctica y cruzarlas.
+La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se lesionan, se retiran, crían y mueren con o sin ti. Puedes mirarlo y apostar cada hora (ganador, podio, exacta, pozo y doble), y también tener tu propia cuadra: adoptar o comprar criaturas, inscribirlas, entrenarlas, cuidarlas, marcarles una táctica y cruzarlas.
 
 ## Qué hay
 
@@ -69,7 +69,7 @@ En todas responde el núcleo de la criatura.
 
 ## Cómo se mueve el mundo
 
-Hay un reloj para todos: la carrera `n` sale a las `t0 + n * 30 min`. Todos los jugadores ven la misma carrera.
+Hay un reloj para todos: la carrera `n` sale a las `t0 + n * 60 min` (`C.MINUTOS`: una carrera cada hora, 24 al día, y cae en la hora en punto). Todos los jugadores ven la misma carrera.
 
 ```
 programar(n)      al terminar la anterior: inscritos, puertas, pronóstico, cuotas, rumores
@@ -80,7 +80,7 @@ hora + 90 s       el servidor aplica el resultado: premios, rating, lesiones, re
                   y programa la siguiente
 ```
 
-El resultado de la carrera `n` se calcula 30 minutos antes de correrse, pero no se aplica al mundo hasta 90 segundos después de la salida. Así no hace falta un servidor puntual al segundo: la propia base de datos oculta la fila de `hipodromo_carreras` hasta su hora (política `hora <= now()`), y la animación en el navegador arranca para todos a la vez.
+El resultado de la carrera `n` se calcula una hora antes de correrse, pero no se aplica al mundo hasta 90 segundos después de la salida. Así no hace falta un servidor puntual al segundo: la propia base de datos oculta la fila de `hipodromo_carreras` hasta su hora (política `hora <= now()`), y la animación en el navegador arranca para todos a la vez.
 
 Todo el azar sale de la semilla del mundo y del número de carrera (`crearRng(semilla, "fase", n)`), no de un estado oculto. Por eso el mundo es un objeto JSON, se puede guardar y reanudar, y ponerse al día de golpe da exactamente lo mismo que ir carrera a carrera (está comprobado, también tras pasar por `jsonb` de Postgres).
 
@@ -153,13 +153,13 @@ Una por carrera (con titulares distintos para la sorpresa, la foto de meta o el 
 
 ## Ritmo: la cuenta que no sale
 
-Hay 48 carreras al día. Eso fija todo lo demás, y las dos cosas que se pidieron chocan: que una criatura corra «cada 2 a 5 carreras» y que se la siga durante meses. Cada criatura hace del orden de 50 salidas en su vida; con las 48 carreras diarias, cuantas menos carreras entre salida y salida, antes se acaba su carrera. Tres ajustes posibles (se cambian con `C.OBJETIVO` y `C.ANIO`, y el resto se reescala solo):
+Hay 24 carreras al día (una por hora). Eso fija todo lo demás, y las dos cosas que se pidieron chocan: que una criatura corra «cada 2 a 5 carreras» y que se la siga durante meses. Cada criatura hace del orden de 50 salidas en su vida; con las 24 carreras diarias, cuantas menos carreras entre salida y salida, antes se acaba su carrera. Todo está medido en carreras, no en horas: pasar de una carrera cada 30 minutos a una cada hora (octubre de 2026) duplicó el tiempo real de todo, y un año de las criaturas pasó de 3 a 6 días. Si se quiere que un año vuelva a ser de 3 días, se baja `C.ANIO` a 72 (y las criaturas correrían la mitad de veces por año). Tres ajustes posibles (se cambian con `C.OBJETIVO` y `C.ANIO`, y el resto se reescala solo):
 
 | ajuste | criaturas vivas | un año del mundo | cada criatura corre | una carrera dura | ejemplo |
 |---|---|---|---|---|---|
-| **Por defecto** | 96 | 144 carreras (3 días) | cada 6 horas | unos 12 días | «Peregrino corre esta noche» |
-| Largo | 288 | 432 carreras (9 días) | cada 18 horas | unos 33 días | tres generaciones en cuatro meses |
-| Frecuente | 40 | 60 carreras (30 horas) | cada 2,5 horas | unos 5 días | todos conocen a todos, pero se renuevan rápido |
+| **Por defecto** | 96 | 144 carreras (6 días) | cada 12 horas | unos 24 días | «Peregrino corre esta noche» |
+| Largo | 288 | 432 carreras (18 días) | cada 36 horas | unos 66 días | tres generaciones en seis meses |
+| Frecuente | 40 | 60 carreras (2,5 días) | cada 5 horas | unos 10 días | todos conocen a todos, pero se renuevan rápido |
 
 Los valores 96 y 288 están medidos en simulaciones de 6 años de mundo (la población se mantiene, la gente nace y se retira al mismo ritmo y las salidas por año son iguales). El «frecuente» no se probó. Elegir uno depende de cuánta gente va a mirar: con poca comunidad, más criaturas significan menos caras conocidas.
 
@@ -169,7 +169,7 @@ Cada jugador puede tener hasta 4 criaturas. Lo que tiene dueño no lo inscriben 
 
 - **Conseguirlas**: **adoptar** una criatura joven de cuerpo corriente de la casa (gratis, una sola vez, a elegir el sexo) o **comprar** otra del mercado (criaturas vivas sin dueño; el precio sale solo de lo público: linaje de las crías, estrellas y palmarés de las demás, de 100 a 3000 monedas). **Vender** a la casa paga el 40 % de lo que costaría ahora y devuelve las inscripciones.
 - **Inscribir** en cualquiera de las próximas 12 carreras (cuesta el 10 % de la bolsa; las inscripciones de una carrera cierran cuando termina la anterior; hasta 3 tuyas por carrera). Si la criatura no puede correr (lesión, cansancio, entrenando) o la carrera se suspende, se devuelve lo pagado. El calendario de las próximas carreras (categoría, distancia, pista y precio) está en `hipodromo_calendario`.
-- **Entrenar** una capacidad: una sesión dura 6 carreras (3 horas), cuesta 30 monedas, la criatura no corre mientras tanto, mejora un poco (más si es joven, menos cuanto más entrenada, con tope de +8) y puede lesionarse.
+- **Entrenar** una capacidad: una sesión dura 6 carreras (6 horas), cuesta 30 monedas, la criatura no corre mientras tanto, mejora un poco (más si es joven, menos cuanto más entrenada, con tope de +8) y puede lesionarse.
 - **Cuidar**: 40 monedas; quita 20 de cansancio y acorta una lesión leve o media un 40 %.
 - **Táctica**: al frente, a media tabla o desde atrás, gratis; ir contra la naturaleza de la criatura cuesta un poco (1,2 % de velocidad por unidad de diferencia).
 - **Bautizar** (25 monedas, una vez), **retirar a la cría** y **cruzar**: una hembra retirada a la cría con un semental también en la cría (la monta cuesta de 60 a 800 monedas y se paga a su dueño si es de otro jugador); la cría nace 12 carreras después y es del dueño de la madre.
@@ -178,6 +178,24 @@ Cada jugador puede tener hasta 4 criaturas. Lo que tiene dueño no lo inscriben 
 - **Economía**: correr todo el tiempo en Novatos y Corriente rinde, de media, alrededor de un 30 % menos de lo gastado (de -90 % a +90 % según la criatura): no regala dinero. Se mide en `tools/probar-hipodromo.js`.
 
 El motor no toca monedas: dice cuánto cuesta cada orden (`costo`), cuánto devuelve (`ingreso`) y los premios (`pagos`), y quien lo llama las cobra.
+
+## Cartas y monedas
+
+En el hipódromo **empiezas sin monedas** (la billetera nace en 0; la criatura de la casa sí es gratis). El dinero entra de tres formas: vendiendo cartas, con los premios de tus criaturas y apostando. Es la única conexión entre la economía de cartas y el hipódromo, y cambia una decisión de `docs/economia-de-cartas.md` («no existe una moneda universal») por una moneda concreta, la del hipódromo, que el DM aprobó el 13 de octubre de 2026. Está en `docs/hipodromo-2_cartas.sql` y en la pestaña **Cartas** de la página (solo en modo servidor; los nombres de las cartas se cargan al abrirla).
+
+- **Vender una carta tuya**: la casa la paga según su rareza y la copia pasa a la **reserva** (la misma a la que vuelven las cartas que se pierden contra la IA). Solo se venden copias libres, no las apostadas ni las que están en un intercambio.
+- **Comprar una carta**: solo de lo que hay en la reserva. No se emite nada nuevo, así que comprar no crea cartas, solo las mueve. Se respeta el límite por jugador y el Side (no se compran cartas del lado que no ves).
+- **Precios por rareza** (en `hipodromo_precios_cartas`, el admin los cambia con `hipodromo_admin_precios`):
+
+| rareza | te pagan | cuesta |
+|---|---|---|
+| Común | 20 | 50 |
+| Infrecuente | 60 | 150 |
+| Rara | 200 | 500 |
+| Limitada | 500 | 1250 |
+| Legendaria | 800 | 2000 |
+
+Comprar cuesta 2,5 veces lo que se paga al vender: vender y recomprar siempre pierde monedas. Todo pasa por `cartas_i_retirar` y `cartas_i_emitir` de la economía de cartas, así que queda en su libro de movimientos (referencias `hipodromo:venta` y `hipodromo:compra`). Una carta común vendida (20) no llega ni a una inscripción en una carrera corriente (80): se pensó para que cambiar cartas por monedas sea una decisión, no un grifo. Los precios se pueden subir o bajar si resulta corto o largo.
 
 ## El servidor
 
@@ -188,11 +206,12 @@ Las monedas, las apuestas y la cuadra son del servidor. Todas las tablas `hipodr
 | `hipodromo_estado` | El mundo entero con lo oculto. Nadie lo lee salvo la función de servicio. |
 | `hipodromo_criaturas`, `_programa`, `_carreras`, `_noticias`, `_calendario` | Lo público. La carrera y las noticias se ven desde su hora (política `hora <= now()`). |
 | `hipodromo_billeteras`, `_movimientos`, `_apuestas`, `_ordenes`, `_avisos`, `_cuadras` | Lo de cada jugador (cada uno ve solo lo suyo). |
-| `hipodromo_saldo()` | Crea la billetera (1000 monedas) y devuelve el saldo. |
+| `hipodromo_saldo()` | Crea la billetera (**empieza en 0**) y devuelve el saldo. |
 | `hipodromo_apostar(n, tipo, sel, monto, doble)` | Comprueba plazo, criatura y saldo, **pone la cuota el servidor** y descuenta. |
 | `hipodromo_ordenar(datos)` | Encola una orden de la cuadra; el dueño es siempre quien la manda. |
 | `hipodromo_guardar(version, lote)` | La llama la Edge Function: guarda el mundo y todo lo demás en una transacción: cobra las órdenes, paga los premios, liquida las apuestas (pozo y doble incluidos) y marca las órdenes. Con una versión vieja falla con 40001 y con un saldo negativo, con 23514: la función repite. |
 | `hipodromo_ahora()` | La hora del servidor, para el reloj de la página. |
+| `hipodromo_vender_carta`, `hipodromo_comprar_carta`, `hipodromo_cartas_reserva`, `hipodromo_admin_precios` | Cambiar cartas por monedas (ver «Cartas y monedas»). |
 
 Una **Edge Function** (`hipodromo-avanzar`) corre cada minuto con `pg_cron`: lee el mundo, las órdenes pendientes y los saldos, llama a `HipodromoMotor.paso()` y guarda con `hipodromo_guardar`. Las órdenes se resuelven en el siguiente minuto y la página espera su resultado. El mundo se crea con 300 carreras de historia por vivir y se pone al día de 20 en 20 (las que quedan atrás se programan con pocas simulaciones). Pasos de despliegue y secretos en `docs/hipodromo-avanzar.ts`; lo desplegado usa los archivos del motor de un commit fijo del repositorio (importados por dirección web), no copias.
 

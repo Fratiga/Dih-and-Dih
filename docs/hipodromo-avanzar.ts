@@ -71,7 +71,7 @@ Deno.serve(async (req: Request) => {
     if (duenos.length) {
       const { data: bs, error: errB } = await sb.from("hipodromo_billeteras").select("usuario, saldo").in("usuario", duenos);
       if (errB) return respuesta(500, { error: errB.message });
-      duenos.forEach((d: any) => { saldos[d] = 1000; });   // quien aún no tiene billetera empieza con 1000
+      duenos.forEach((d: any) => { saldos[d] = 0; });   // quien aún no tiene billetera empieza con 0
       (bs ?? []).forEach((b: any) => { saldos[b.usuario] = Number(b.saldo); });
     }
 

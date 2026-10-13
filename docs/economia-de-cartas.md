@@ -38,6 +38,8 @@ Las fases 1 a 6 del orden de la sección 13 están construidas y aplicadas en Su
 - El mercader empieza vacío: su inventario sale de lo que los jugadores le cambian y de la reserva. El admin puede ponerle ofertas especiales desde la pestaña Mercader de Intercambios.
 - La forja trae tres recetas (fundir comunes, alquimia y contrapeso) que el admin puede cambiar con `cartas_admin_guardar_receta`.
 
+**Decidido el 13 de octubre de 2026: el hipódromo tiene moneda y se cambia por cartas.** Las cartas se pueden vender a la reserva por monedas del hipódromo según su rareza y comprar de la reserva con esas monedas (comprar no emite cartas nuevas y cuesta 2,5 veces lo que se paga al vender). En el hipódromo se empieza con 0 monedas. Es la excepción a «no existe una moneda universal» de la sección 1: la moneda existe solo dentro del hipódromo. Detalle en `docs/hipodromo.md` («Cartas y monedas») y `docs/hipodromo-2_cartas.sql`.
+
 **Todavía sin construir**
 
 - Apuestas y recompensas en Muerte Súbita (sección 10), a la espera de tu decisión.

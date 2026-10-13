@@ -184,13 +184,14 @@ window.HipodromoOnline = (function () {
     setInterval(sincronizarReloj, 5 * 60000);
 
     const en = {
-      est, m, yo, ahora, cache, apostar, ordenar, refrescar, refrescarTodo, guardarFavoritos, leerRetiradas,
+      est, m, yo, supa, ahora, cache, apostar, ordenar, refrescar, refrescarTodo, guardarFavoritos, leerRetiradas,
       perfil: id => cache.get(id) || est.archivo[id] || null,
       pedir: pedirCriaturas,
       perfiles: () => [...cache.values()],
       mias: () => cuadraFilas.map(f => ({ p: cache.get(f.criatura_id), c: f.datos })).filter(x => x.p),
-      calendario: () => calendarioFilas.map(x => Object.assign({}, x, { cierra: x.hora - 30 * 60000 + C.APLICAR_SEG * 1000 })),
+      calendario: () => calendarioFilas.map(x => Object.assign({}, x, { cierra: x.hora - C.MINUTOS * 60000 + C.APLICAR_SEG * 1000 })),
       adoptada: () => adoptada || cuadraFilas.length > 0,
+      refrescarCuenta: async () => { await leerMiCuenta(); alCambiar("cuenta"); },
       parar: () => { parado = true; clearTimeout(temporizador); }
     };
     return { ok: true, en };

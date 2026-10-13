@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hipódromo — Compendio del Mundo</title>
-  <script src="js/dialogos.js?v=20270159"></script>
-  <script src="js/oculto.js?v=20270159"></script>
+  <script src="js/dialogos.js?v=20270160"></script>
+  <script src="js/oculto.js?v=20270160"></script>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270159">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20270159">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20270159">
+  <link rel="stylesheet" href="css/style.css?v=20270160">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270160">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20270160">
 </head>
 <body class="mj-pagina hip-tema" data-fase="abierta">
   <div class="mj-barra">
@@ -50,6 +50,7 @@
     <nav class="hip-pestanas" role="tablist" aria-label="Secciones">
       <button type="button" role="tab" data-pestana="carrera" aria-selected="true">Carrera</button>
       <button type="button" role="tab" data-pestana="cuadra" aria-selected="false">Mi cuadra</button>
+      <button type="button" role="tab" data-pestana="cartas" aria-selected="false">Cartas</button>
       <button type="button" role="tab" data-pestana="criaturas" aria-selected="false">Criaturas</button>
       <button type="button" role="tab" data-pestana="noticias" aria-selected="false">Noticias</button>
       <button type="button" role="tab" data-pestana="apuestas" aria-selected="false">Mis apuestas</button>
@@ -112,6 +113,11 @@
     <!-- MI CUADRA -->
     <div id="hipPanel-cuadra" class="hip-panel hidden">
       <div id="hipCuadra"></div>
+    </div>
+
+    <!-- CARTAS -->
+    <div id="hipPanel-cartas" class="hip-panel hidden">
+      <div id="hipCartas"><p class="hip-vacio">Cambiar cartas por monedas solo se puede en el mundo del servidor: inicia sesión y vuelve.</p></div>
     </div>
 
     <!-- CRIATURAS -->
@@ -182,16 +188,17 @@
     </div>
   </div>
 
-  <script src="data/hipodromo-palabras.js?v=20270159"></script>
-  <script src="js/hipodromo-nombres.js?v=20270159"></script>
-  <script src="js/hipodromo-rasgos.js?v=20270159"></script>
-  <script src="js/hipodromo-motor.js?v=20270159"></script>
-  <script src="js/hipodromo-dibujo.js?v=20270159"></script>
-  <script src="js/hipodromo-pista.js?v=20270159"></script>
-  <script src="js/hipodromo-cuadra.js?v=20270159"></script>
-  <script src="js/fichas-supabase.js?v=20270159"></script>
-  <script src="js/hipodromo-online.js?v=20270159"></script>
-  <script src="js/hipodromo-pagina.js?v=20270159"></script>
-  <script src="js/musica-paginas.js?v=20270159"></script>
+  <script src="data/hipodromo-palabras.js?v=20270160"></script>
+  <script src="js/hipodromo-nombres.js?v=20270160"></script>
+  <script src="js/hipodromo-rasgos.js?v=20270160"></script>
+  <script src="js/hipodromo-motor.js?v=20270160"></script>
+  <script src="js/hipodromo-dibujo.js?v=20270160"></script>
+  <script src="js/hipodromo-pista.js?v=20270160"></script>
+  <script src="js/hipodromo-cartas.js?v=20270160"></script>
+  <script src="js/hipodromo-cuadra.js?v=20270160"></script>
+  <script src="js/fichas-supabase.js?v=20270160"></script>
+  <script src="js/hipodromo-online.js?v=20270160"></script>
+  <script src="js/hipodromo-pagina.js?v=20270160"></script>
+  <script src="js/musica-paginas.js?v=20270160"></script>
 </body>
 </html>

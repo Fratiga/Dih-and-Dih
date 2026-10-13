@@ -1,6 +1,6 @@
 /* =============================================================================
    HIPÓDROMO: motor del mundo de carreras. Reglas puras, sin pantalla y sin reloj propio.
-   Una especie propia de corredores (no caballos), una carrera cada 30 minutos para todo el mundo.
+   Una especie propia de corredores (no caballos), una carrera cada hora para todo el mundo.
    El jugador apuesta y, si quiere, tiene su cuadra: adopta o compra criaturas, las inscribe, las entrena, las cuida,
    les marca una táctica y las cruza (ver «la cuadra» más abajo). Lo que no tiene dueño lo llevan los entrenadores del mundo.
 
@@ -15,7 +15,7 @@
      la fatiga y el rating real. Las cuotas se hacen con la probabilidad real deformada por la reputación
      y por el error del público, así que leer bien el cuerpo y las pistas da una pequeña ventaja.
 
-   Tiempo: AÑO carreras = un año de la criatura. La carrera n corre en t0 + n * 30 min.
+   Tiempo: AÑO carreras = un año de la criatura. La carrera n corre en t0 + n * 60 min.
    Fases de una carrera n:
      programar(): al terminar la anterior se fijan inscritos, puertas, pronóstico y cuotas, y ya se calcula
                   el resultado (secreto, la base de datos lo oculta hasta la hora de salida).
@@ -28,7 +28,7 @@
 
   /* ---------------------------------------------------------------- constantes (los mandos del juego) */
   const C = {
-    MINUTOS: 30,            // una carrera cada 30 minutos
+    MINUTOS: 60,            // una carrera cada hora (24 al día)
     CIERRE_SEG: 60,         // las apuestas cierran 60 s antes de la salida
     DURACION_SEG: 75,       // lo que dura la carrera en pantalla
     APLICAR_SEG: 90,        // el servidor aplica el resultado al mundo pasado este tiempo desde la salida

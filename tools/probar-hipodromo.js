@@ -402,7 +402,7 @@ function cabezaACabeza(a, b, cond, veces) {
 // 4e) Ponerse al día en varias llamadas (lo que hace la Edge Function: no puede calcular todo de golpe)
 { const t = Date.UTC(2026, 0, 1, 12, 0, 0), HIS = 50;
   const crea = () => { const r = M.paso(null, t, { historia: HIS, semilla: "al-dia", sims: 8 }); return { version: 1, mundo: JSON.parse(JSON.stringify(r.lote.mundo)) }; };
-  const ahora = t + (HIS + 3) * 30 * 60000;
+  const ahora = t + (HIS + 3) * C.MINUTOS * 60000;
   let fila = crea(), llamadas = 0, avanzadas = 0, r;
   const trozos = [];
   while ((r = M.paso({ version: fila.version, mundo: fila.mundo }, ahora, { max: 12, rapido: 6, sims: 8 })) && llamadas < 20) { llamadas++; avanzadas += r.avanzadas; trozos.push(r.avanzadas); fila = { version: r.version + 1, mundo: JSON.parse(JSON.stringify(r.lote.mundo)) }; }
@@ -421,7 +421,7 @@ const simsDe = i => ((i + 1) >= CARRERAS / 4 && (i + 1) % 5 === 0 ? C.SIMS : 12)
   m = M.crearMundo("prueba-larga", { calentar: 150, t0, simsCalentar: 20 });
   const m2 = M.crearMundo("prueba-larga", { calentar: 150, t0, simsCalentar: 20 });
   ok(JSON.stringify(m) === JSON.stringify(m2), "el mismo mundo con la misma semilla es idéntico");
-  ok(M.horaDe(m, m.n) - M.horaDe(m, m.n - 1) === 30 * 60000 && M.horaDe(m, m.n) > t0, "una carrera cada 30 minutos");
+  ok(M.horaDe(m, m.n) - M.horaDe(m, m.n - 1) === 60 * 60000 && C.MINUTOS === 60 && M.horaDe(m, m.n) > t0, "una carrera cada hora");
   const todos = new Map();         // todas las criaturas que pasaron por el mundo
   const regis = c => { if (!todos.has(c.id)) todos.set(c.id, c); };
   m.vivos.forEach(regis); m.criadores.forEach(regis);
@@ -541,7 +541,7 @@ const simsDe = i => ((i + 1) >= CARRERAS / 4 && (i + 1) % 5 === 0 ? C.SIMS : 12)
   ok(M.ESPECIE.singular && M.ESPECIE.plural, "la especie tiene nombre (provisional)"); }
 
 // 5c) El paso del servidor: crear el mundo, esperar, avanzar una carrera, ponerse al día
-{ const tramo = 30 * 60000, ahora0 = Date.UTC(2027, 2, 12, 16, 7, 0);
+{ const tramo = C.MINUTOS * 60000, ahora0 = Date.UTC(2027, 2, 12, 16, 7, 0);
   const guarda = (r, fila) => ({ version: (fila ? fila.version : 0) + 1, mundo: JSON.parse(JSON.stringify(r.lote.mundo)) });   // lo que haría la base de datos
   const r0 = M.paso(null, ahora0, { calentar: 40, semilla: "servidor", simsCalentar: 12 });
   ok(r0 && r0.version === 0 && r0.lote.criaturas.length > 100 && r0.lote.programas.length === 1 && r0.lote.carreras.length === 1, "la primera vez crea el mundo, la población y la primera carrera");

@@ -10,7 +10,7 @@
   "use strict";
   const M = window.HipodromoMotor, D = window.HipodromoDibujo;
   if (!M || !D) return;
-  const C = M.C;
+  const C = M.C, POR_DIA = 1440 / C.MINUTOS;   // carreras al día
   const YO = "yo";   // en modo local el único dueño eres tú
   const CLAVE = "hipodromoLocal", CLAVE_OCULTO = "hipodromoOculto", CLAVE_PESTANA = "hipodromoPestana";
   const SALDO_INICIAL = 1000, MAX_NOTICIAS = 200, MAX_ARCHIVO = 250, MAX_RESULTADOS = 12, MAX_HISTORIAL = 80;
@@ -29,7 +29,7 @@
   const poner = (el, html) => { if (el && el._h !== html) { el.innerHTML = html; el._h = html; } };
   const textoDe = (el, t) => { if (el && el._t !== t) { el.textContent = t; el._t = t; } };
 
-  let cuadraUI = null, online = null;
+  let cuadraUI = null, cartasUI = null, online = null;
   let est = null, m = null, pestana = "carrera", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
@@ -475,21 +475,21 @@
     if (online) {
       const ps = online.perfiles(), vivas = ps.filter(x => x.estado === "activo").length, cria = ps.filter(x => x.estado === "criador").length, ley = ps.filter(x => x.leyenda).length;
       poner($("hipMundoDatos"), `<div class="hip-datos">
-        <div><span>Carrera actual</span><strong>n.º ${m.n}</strong><small>${coma(Math.max(0, (m.n - 300) / 48), 1)} días de mundo en vivo</small></div>
+        <div><span>Carrera actual</span><strong>n.º ${m.n}</strong><small>${coma(Math.max(0, (m.n - 300) / POR_DIA), 1)} días de mundo en vivo</small></div>
         <div><span>Criaturas en pista</span><strong>${vivas}</strong><small>${cria} en la cría</small></div>
         <div><span>Leyendas</span><strong>${ley}</strong><small>ganadoras de 14 carreras o 3 Grandes Premios</small></div>
         <div><span>Tu cuadra</span><strong>${online.mias().length}</strong><small>de ${C.MAX_CABALLOS} posibles</small></div></div>
-        <p class="hip-nota">Un año de las criaturas son ${C.ANIO} carreras (${coma(C.ANIO / 48, 1)} días). Hay una carrera cada ${C.MINUTOS} minutos para todo el mundo.</p>`);
+        <p class="hip-nota">Un año de las criaturas son ${C.ANIO} carreras (${coma(C.ANIO / POR_DIA, 1)} días). Hay una carrera cada ${C.MINUTOS} minutos para todo el mundo.</p>`);
       return;
     }
     const s = m.stats, vivas = m.vivos.length;
-    const dias = (m.n - 300) / 48;
+    const dias = (m.n - 300) / POR_DIA;
     poner($("hipMundoDatos"), `<div class="hip-datos">
       <div><span>Carreras corridas</span><strong>${s.carreras}</strong><small>${coma(Math.max(0, dias), 1)} días desde que empezó aquí</small></div>
       <div><span>Criaturas vivas</span><strong>${vivas}</strong><small>${m.criadores.length} en la cría</small></div>
       <div><span>Nacimientos</span><strong>${s.nacidos}</strong><small>${s.retirados} retiros</small></div>
       <div><span>Lesiones</span><strong>${s.lesiones}</strong><small>${s.incidentes} incidentes de establo, ${s.muertes} ${s.muertes === 1 ? "muerte" : "muertes"}</small></div></div>
-      <p class="hip-nota">Semilla: <code>${esc(est.semilla)}</code>. Un año de las criaturas son ${C.ANIO} carreras (${coma(C.ANIO / 48, 1)} días). Con la misma semilla el mundo sale igual.</p>`);
+      <p class="hip-nota">Semilla: <code>${esc(est.semilla)}</code>. Un año de las criaturas son ${C.ANIO} carreras (${coma(C.ANIO / POR_DIA, 1)} días). Con la misma semilla el mundo sale igual.</p>`);
     $("hipOculto").checked = oculto;
   }
 
@@ -504,6 +504,7 @@
     pintarInscritos();
     pintarCriaturas();
     if (cuadraUI) cuadraUI.pintar();
+    if (cartasUI) cartasUI.pintar();
     mostrarPestana(pestana, true);
   }
   function mostrarPestana(id, sinGuardar) {
@@ -513,6 +514,7 @@
     if (!sinGuardar) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
     if (id === "criaturas") pintarCriaturas();
     if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
+    if (id === "cartas" && cartasUI) cartasUI.abrir();
   }
 
   /* ---------------------------------------------------------------- eventos */
@@ -613,6 +615,7 @@
     online = r.en; est = online.est; m = online.m;
     ponerModoServidor();
     if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiOnlineCuadra(), $("hipCuadra"));
+    if (window.HipodromoCartas) cartasUI = window.HipodromoCartas.crear({ supa: online.supa, yo: online.yo, saldo: () => est.saldo, monedas, refrescarCuenta: online.refrescarCuenta }, $("hipCartas"));
     $("hipCargando").classList.add("hidden");
     pintarTodo();
     requestAnimationFrame(ts => { ultimoMarco = ts; bucle(ts); });
