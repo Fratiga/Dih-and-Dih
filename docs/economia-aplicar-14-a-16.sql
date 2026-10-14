@@ -47,6 +47,7 @@ declare
 begin
   select pg_get_functiondef(p.oid) into def from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'cartas_i_juego_terminar_nucleo';
   if def is null then raise exception 'No existe cartas_i_juego_terminar_nucleo'; end if;
+  def := replace(def, chr(13), '');   -- por si el texto se pegó con saltos de línea de Windows
   if position('grupo_t' in def) > 0 then return; end if;   -- ya estaba aplicado
   nuevo := replace(def, E'  pesos jsonb;\n', E'  pesos jsonb;\n  grupo_t jsonb;\n');
   if nuevo = def then raise exception 'No se encontró la declaración de pesos'; end if;
@@ -318,6 +319,7 @@ declare
 begin
   select pg_get_functiondef(p.oid) into def from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'cartas_admin_guardar_juego';
   if def is null then raise exception 'No existe cartas_admin_guardar_juego'; end if;
+  def := replace(def, chr(13), '');   -- por si el texto se pegó con saltos de línea de Windows
   if position('valores' in def) > 0 then return; end if;   -- ya estaba aplicado
   nuevo := replace(def, E'  update cartas_juegos set\n', E'  if p_cfg ? ''valores'' then perform cartas_i_validar_valores(p_juego, p_cfg -> ''valores''); end if;\n  update cartas_juegos set\n');
   if nuevo = def then raise exception 'No se encontró el update de cartas_juegos'; end if;

@@ -20,6 +20,7 @@ declare
 begin
   select pg_get_functiondef(p.oid) into def from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'cartas_i_juego_terminar_nucleo';
   if def is null then raise exception 'No existe cartas_i_juego_terminar_nucleo'; end if;
+  def := replace(def, chr(13), '');   -- por si el texto se pegó con saltos de línea de Windows
   if position('grupo_t' in def) > 0 then return; end if;   -- ya estaba aplicado
   nuevo := replace(def, E'  pesos jsonb;\n', E'  pesos jsonb;\n  grupo_t jsonb;\n');
   if nuevo = def then raise exception 'No se encontró la declaración de pesos'; end if;
