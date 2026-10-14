@@ -1,4 +1,4 @@
--- Economía de cartas: migraciones 14 (forja siempre a la reserva), 15 (probabilidad y cartas por tramo) y 16 (puntaje por rival, editable). Se pueden correr aunque ya hayas corrido la 14 y la 15. Pégalo entero en el editor SQL de Supabase.
+-- Economía de cartas: migraciones 14 a 17 (forja a reserva, probabilidad por tramo, puntaje por rival y los seis rivales de Arquería). Seguro de repetir.
 begin;
 
 -- ===== economia-14_forja_reserva =====
@@ -181,7 +181,7 @@ update cartas_juegos set valores = '{"rivales": {"ocevat": {"gana": 1, "tablas":
   where juego = 'ajedrez' and valores = '{}'::jsonb;
 update cartas_juegos set valores = '{"rivales": {"recluta": {"gana": 1, "tablas": 0, "pierde": 0}, "miliciano": {"gana": 2, "tablas": 0, "pierde": 0}, "caballero": {"gana": 3, "tablas": 0, "pierde": 0}, "adam": {"gana": 4, "tablas": 0, "pierde": 0}, "_otros": {"gana": 1, "tablas": 0, "pierde": 0}}}'::jsonb
   where juego = 'duelo' and valores = '{}'::jsonb;
-update cartas_juegos set valores = '{"rivales": {"hornet": {"gana": 1, "tablas": 0, "pierde": 0}, "garra": {"gana": 2, "tablas": 0, "pierde": 0}, "cassius": {"gana": 3, "tablas": 0, "pierde": 0}, "_otros": {"gana": 1, "tablas": 0, "pierde": 0}}, "bonus": {"puntos": 30, "suma": 1}, "maximo": 4}'::jsonb
+update cartas_juegos set valores = '{"rivales": {"hornet": {"gana": 1, "tablas": 0, "pierde": 0}, "garra": {"gana": 2, "tablas": 0, "pierde": 0}, "cassius": {"gana": 3, "tablas": 0, "pierde": 0}, "torvrena": {"gana": 4, "tablas": 0, "pierde": 0}, "milicia": {"gana": 4, "tablas": 0, "pierde": 0}, "tobi": {"gana": 4, "tablas": 0, "pierde": 0}, "_otros": {"gana": 1, "tablas": 0, "pierde": 0}}, "bonus": {"puntos": 30, "suma": 1}, "maximo": 4}'::jsonb
   where juego = 'arqueria' and valores = '{}'::jsonb;
 update cartas_juegos set valores = '{"por_punto": 1, "maximo": 1000}'::jsonb where juego = 'hooey' and valores = '{}'::jsonb;
 update cartas_juegos set valores = '{"normal": 1, "dificil": 3, "especial": 4}'::jsonb where juego = 'fractura' and valores = '{}'::jsonb;
@@ -329,5 +329,14 @@ begin
   execute nuevo;
 end;
 $$;
+
+
+-- ===== economia-17_rivales_arqueria =====
+-- ECONOMÍA DE CARTAS, parte 17: Arquería tiene seis rivales (Hornet, Garra, Cassius, Torvrena, Miliciano y Tobi) y la configuración solo
+-- conocía tres: los otros contaban como «cualquier otro rival» (1 punto), es decir, cuanto más difícil el rival, menos puntaje.
+-- Se añaden con 4 de puntaje al ganar (el máximo, tramo extraordinario). Lo que ya estuviera configurado NO se pisa. Se puede correr más de una vez.
+update cartas_juegos set valores = jsonb_set(valores, '{rivales}',
+  '{"torvrena": {"gana": 4, "tablas": 0, "pierde": 0}, "milicia": {"gana": 4, "tablas": 0, "pierde": 0}, "tobi": {"gana": 4, "tablas": 0, "pierde": 0}}'::jsonb || (valores -> 'rivales'))
+where juego = 'arqueria' and valores ? 'rivales';
 
 commit;
