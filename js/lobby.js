@@ -107,7 +107,7 @@
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["ritmo.html", "Zarabanda"], ["parranda.html", "Parranda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
-    ["arqueria.html", "Arquería"], ["duelo.html", "Duelo", true], ["cartas.html", "Cartas", true],
+    ["arqueria.html", "Arquería"], ["duelo.html", "Duelo", true], ["cartas.html", "Triunfos"], ["habitacion.html", "Mi habitación"], ["intercambios.html", "Intercambios"],
     ["ostelar.html", "Ostelar", true], ["hipodromo.html", "Hipódromo"], ["admin.html", "Admin", true]
   ];
   const ATAJOS_CLAVE = "lbAtajos";

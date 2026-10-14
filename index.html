@@ -310,8 +310,8 @@
                 <text x="296" y="512" text-anchor="middle" class="lb-etq">AJEDREZ</text>
               </a>
 
-              <!-- Mesa de cartas (solo admin por ahora) -->
-              <a class="lb-spot" data-admin-only href="cartas.html" aria-label="Triunfos">
+              <!-- Mesa de cartas -->
+              <a class="lb-spot" href="cartas.html" aria-label="Triunfos">
                 <g class="lb-forma">
                   <rect x="552" y="432" width="168" height="16" fill="#8d6a45"/>
                   <rect x="560" y="448" width="16" height="44" fill="#6b4a2f"/><rect x="696" y="448" width="16" height="44" fill="#6b4a2f"/>
@@ -324,8 +324,8 @@
                 <text x="636" y="512" text-anchor="middle" class="lb-etq">TRIUNFOS</text>
               </a>
 
-              <!-- Puerta de tu habitación: colección, mazos y corrales (solo admin por ahora, igual que Triunfos) -->
-              <a class="lb-spot" data-admin-only href="habitacion.html" aria-label="Mi habitación: tu colección y tus corrales">
+              <!-- Puerta de tu habitación: colección, mazos y corrales -->
+              <a class="lb-spot" href="habitacion.html" aria-label="Mi habitación: tu colección y tus corrales">
                 <g class="lb-forma">
                   <rect x="22" y="404" width="72" height="104" fill="#4a2f1f"/>
                   <rect x="30" y="412" width="56" height="96" fill="#6b4a2f"/>
@@ -337,7 +337,7 @@
               </a>
 
               <!-- Puesto de intercambios: mercader, trueques y forja (solo admin por ahora, igual que Triunfos) -->
-              <a class="lb-spot" data-admin-only href="intercambios.html" aria-label="Intercambios: trueques, mercader y forja">
+              <a class="lb-spot" href="intercambios.html" aria-label="Intercambios: trueques, mercader y forja">
                 <g class="lb-forma">
                   <rect x="408" y="444" width="112" height="14" fill="#8d6a45"/>
                   <rect x="414" y="458" width="12" height="34" fill="#6b4a2f"/><rect x="502" y="458" width="12" height="34" fill="#6b4a2f"/>
@@ -375,11 +375,6 @@
                 <rect x="888" y="32" width="48" height="64" fill="#8a2f4a"/>
                 <rect x="888" y="88" width="16" height="12" fill="#8a2f4a"/><rect x="920" y="88" width="16" height="12" fill="#8a2f4a"/>
                 <rect x="904" y="48" width="16" height="16" fill="#e8b84a"/><rect x="908" y="44" width="8" height="4" fill="#e8b84a"/><rect x="908" y="64" width="8" height="8" fill="#e8b84a"/>
-                <!-- Barriles y caja donde iría la mesa de cartas -->
-                <rect x="568" y="420" width="56" height="72" fill="#7a5233"/><rect x="568" y="432" width="56" height="6" fill="#3a2a1d"/><rect x="568" y="470" width="56" height="6" fill="#3a2a1d"/>
-                <rect x="574" y="414" width="44" height="8" fill="#9a6a41"/>
-                <rect x="636" y="440" width="48" height="52" fill="#7a5233"/><rect x="636" y="452" width="48" height="6" fill="#3a2a1d"/><rect x="636" y="474" width="48" height="6" fill="#3a2a1d"/>
-                <rect x="690" y="456" width="44" height="36" fill="#9a6a41"/><rect x="690" y="470" width="44" height="4" fill="#6b4a2f"/><rect x="708" y="456" width="4" height="36" fill="#6b4a2f"/>
                 <!-- Alfombra redonda donde iría la trampilla -->
                 <rect x="800" y="464" width="96" height="40" fill="#2f6a4d"/><rect x="792" y="472" width="112" height="24" fill="#2f6a4d"/>
                 <rect x="808" y="472" width="80" height="24" fill="none" stroke="#e8b84a" stroke-width="3"/>
@@ -440,7 +435,7 @@
             <div class="lb-caja-cuerpo lb-lista-links">
               <a href="fichas.html">Mis personajes</a><a href="peticiones.html">Peticiones</a><a href="fanarts.html">Fanarts</a>
               <a href="reglas.html">Reglas</a><a href="armas.html">Armas</a><a href="objetos.html">Objetos</a>
-              <a href="habitacion.html" data-admin-only>Mi habitación</a><a href="economia.html">Economía</a><a href="textos.html">Textos</a><a href="pergaminos.html">Pergaminos</a>
+              <a href="habitacion.html">Mi habitación</a><a href="intercambios.html">Intercambios</a><a href="economia.html">Economía</a><a href="textos.html">Textos</a><a href="pergaminos.html">Pergaminos</a>
             </div>
           </div>
           <div class="lb-caja">
@@ -449,7 +444,7 @@
               <a href="minijuegos.html">Minijuegos</a><a href="ajedrez.html">Ajedrez</a><a href="ritmo.html">Zarabanda</a>
               <a href="rocola.html">Rocola</a><a href="sacrificio.html">Hooey</a>
               <a href="arqueria.html">Arquería</a><a href="duelo.html" data-admin-only>Duelo</a>
-              <a href="cartas.html" data-admin-only>Cartas</a><a href="ostelar.html" data-admin-only>Ostelar</a><a href="hipodromo.html">Hipódromo</a>
+              <a href="cartas.html">Triunfos</a><a href="ostelar.html" data-admin-only>Ostelar</a><a href="hipodromo.html">Hipódromo</a>
             </div>
           </div>
         </section>
@@ -502,7 +497,7 @@
   <script src="js/contenido-servidor.js?v=20270178"></script>
   <script src="data/saludos.js?v=20270178"></script>
   <script src="js/bienvenida.js?v=20270178"></script>
-  <script src="js/lobby.js?v=20270186"></script>
+  <script src="js/lobby.js?v=20270187"></script>
   <script src="js/avisos-admin.js?v=20270178"></script>
   <script src="js/musica-paginas.js?v=20270178"></script>
 </body>
