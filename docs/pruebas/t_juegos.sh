@@ -64,6 +64,40 @@ contiene "pesos con decimales" "$(adm '{"pesos": {"bueno": {"comun": 1.5}}}')" "
 contiene "un jugador no puede cambiar la configuración" "$(como $U1 "select cartas_admin_guardar_juego('arqueria', '{\"prob\": {\"bueno\": 1}}'::jsonb);" 2>&1)" "No autorizado"
 comprobar "nada de lo rechazado se guardó" "0.5" "$(sql "select prob->>'bueno' from cartas_juegos where juego='arqueria'")"
 
+echo "== Puntaje de cada rival: los valores iniciales son los de siempre"
+reiniciar
+val() { sql "select cartas_valor_juego('$1', '$2', '$3', $4)"; }
+comprobar "ajedrez baraja gana = 2" "2" "$(val ajedrez baraja gana 0)"
+comprobar "ajedrez baraja tablas = 1" "1" "$(val ajedrez baraja tablas 0)"
+comprobar "ajedrez perro pierde = 0" "0" "$(val ajedrez perro pierde 0)"
+comprobar "ajedrez contra hooey no da premio" "-1" "$(val ajedrez hooey gana 0)"
+comprobar "ajedrez rival desconocido = 1" "1" "$(val ajedrez desconocido gana 0)"
+comprobar "duelo adam gana = 4" "4" "$(val duelo adam gana 0)"
+comprobar "duelo tablas = 0" "0" "$(val duelo adam tablas 0)"
+comprobar "arqueria cassius gana con 40 puntos = 4 (3 + bonus, máximo 4)" "4" "$(val arqueria cassius gana 40)"
+comprobar "arqueria hornet gana con 30 puntos = 2" "2" "$(val arqueria hornet gana 30)"
+comprobar "arqueria hornet gana con 29 puntos = 1" "1" "$(val arqueria hornet gana 29)"
+comprobar "arqueria pierde = 0" "0" "$(val arqueria cassius pierde 99)"
+comprobar "hooey 7 sacrificios = 7" "7" "$(val hooey hooey gana 7)"
+comprobar "hooey con 5000 sacrificios topa en 1000" "1000" "$(val hooey hooey gana 5000)"
+
+echo "== Cambiar el puntaje de un rival cambia lo que se juega"
+reiniciar
+adm '{"valores": {"rivales": {"hornet": {"gana": 4, "tablas": 0, "pierde": 0}, "garra": {"gana": 2, "tablas": 0, "pierde": 0}, "cassius": {"gana": 3, "tablas": 0, "pierde": 0}, "_otros": {"gana": 1, "tablas": 0, "pierde": 0}}, "bonus": {"puntos": 30, "suma": 0}, "maximo": 4}}' >/dev/null
+comprobar "hornet ahora vale 4" "4" "$(val arqueria hornet gana 0)"
+comprobar "y sin bonus un 40 ya no suma" "3" "$(val arqueria cassius gana 40)"
+sql "update cartas_juegos set prob = '{\"bueno\": 1, \"excelente\": 1, \"extraordinario\": 1}'::jsonb, pesos = '{\"bueno\": {\"comun\": 1}, \"excelente\": {\"comun\": 1}, \"extraordinario\": {\"rara\": 100}}'::jsonb where juego = 'arqueria'" >/dev/null
+contiene "ganar a hornet ahora da el tramo extraordinario (4)" "$(jugar $U1 hornet 0)" '"tramo": "extraordinario"'
+
+echo "== Valores: lo que se rechaza"
+contiene "un puntaje fuera de rango" "$(adm '{"valores": {"maximo": 5000}}')" "van de 0 a 1000"
+contiene "un campo desconocido" "$(adm '{"valores": {"magia": 1}}')" "campo desconocido"
+contiene "un rival con un campo raro" "$(adm '{"valores": {"rivales": {"hornet": {"vence": 1}, "_otros": {"gana": 1}}}}')" "campo desconocido"
+contiene "sin la fila _otros" "$(adm '{"valores": {"rivales": {"hornet": {"gana": 1}}}}')" "_otros"
+contiene "un valor que no es número" "$(adm '{"valores": {"maximo": "mucho"}}')" "solo pueden ser números"
+contiene "un jugador no puede cambiarlo" "$(como $U1 "select cartas_admin_guardar_juego('arqueria', '{\"valores\": {\"maximo\": 4}}'::jsonb);" 2>&1)" "No autorizado"
+comprobar "nada de lo rechazado se guardó" "4" "$(sql "select valores->>'maximo' from cartas_juegos where juego='arqueria'")"
+
 echo "== Y todo sigue cuadrando"
 comprobar "la auditoría está limpia" "0" "$(auditar)"
 

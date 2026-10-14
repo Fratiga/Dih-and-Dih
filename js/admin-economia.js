@@ -427,10 +427,31 @@
   const TIPOS_CARTA = ["Personaje", "Criatura", "Objeto", "Terreno", "Reacción", "Acción", "Entidad"];
   const lista = v => Array.isArray(v) ? v : [];
 
+  /* Puntaje que da cada rival (o cada victoria) en este juego: sale de cartas_juegos.valores */
+  const campoV = (ruta, valor, ancho) => `<input type="number" data-v="${esc(ruta)}" value="${esc(valor ?? 0)}" step="any" style="width:${ancho || 4.5}em">`;
+  function bloqueValores(j) {
+    const v = j.valores || {};
+    if (j.juego === "hooey") {
+      return `<h4>Puntaje por partida</h4><p class="eco-ayuda">Cada sacrificio suma este puntaje, hasta el máximo. Ese puntaje es el que se compara con los umbrales de arriba.</p>
+        <div class="eco-filtros"><label>Puntaje por sacrificio ${campoV("por_punto", v.por_punto)}</label><label>Máximo ${campoV("maximo", v.maximo)}</label></div>`;
+    }
+    if (j.juego === "fractura") {
+      return `<h4>Puntaje por victoria</h4><p class="eco-ayuda">Lo que vale una guerra ganada contra la IA (las de jugador contra jugador no dan nada).</p>
+        <div class="eco-filtros"><label>Victoria normal ${campoV("normal", v.normal)}</label><label>Con dificultad, núcleo o capital ${campoV("dificil", v.dificil)}</label>
+        <label>Primera victoria, leyenda, némesis o tres generaciones ${campoV("especial", v.especial)}</label></div>`;
+    }
+    if (!v.rivales) return "";
+    const tablas = j.juego === "ajedrez";
+    const filasV = Object.entries(v.rivales).map(([rival, r]) => `<tr><td>${esc(rival === "_otros" ? "Cualquier otro rival" : rival)}</td><td>${campoV(`rivales.${rival}.gana`, r.gana)}</td>${tablas ? `<td>${campoV(`rivales.${rival}.tablas`, r.tablas)}</td>` : ""}<td>${campoV(`rivales.${rival}.pierde`, r.pierde)}</td></tr>`).join("");
+    const extra = j.juego === "arqueria" && v.bonus ? `<div class="eco-filtros"><label>Bonus: a partir de estos puntos ${campoV("bonus.puntos", v.bonus.puntos)}</label><label>suma ${campoV("bonus.suma", v.bonus.suma)}</label><label>Puntaje máximo ${campoV("maximo", v.maximo)}</label></div>` : "";
+    return `<h4>Puntaje que da cada rival</h4><p class="eco-ayuda">Al terminar una partida, el rival y el resultado dan un puntaje, y ese puntaje es el que se compara con los umbrales de arriba. Pon -1 para que esa partida no cuente para recompensas.</p>
+      <table class="eco-tabla"><thead><tr><th>Rival</th><th>Gana</th>${tablas ? "<th>Tablas</th>" : ""}<th>Pierde</th></tr></thead><tbody>${filasV}</tbody></table>${extra}`;
+  }
+
   function tarjetaJuego(j) {
     const g = j.grupo || {}, pesos = j.pesos || {}, u = j.umbrales || {};
     const idsTxt = lista(g.ids).join(", ");
-    return `<details class="eco-juego" data-juego="${esc(j.juego)}"${j.activo ? " data-era-activo=\"1\"" : ""} style="margin:.6em 0;padding:.4em .8em;border:1px solid currentColor;border-radius:6px">
+    return `<details class="eco-juego" data-juego="${esc(j.juego)}" data-valores="${esc(JSON.stringify(j.valores || {}))}"${j.activo ? " data-era-activo=\"1\"" : ""} style="margin:.6em 0;padding:.4em .8em;border:1px solid currentColor;border-radius:6px">
       <summary><b>${esc(j.nombre)}</b> · <span class="${j.activo ? "eco-error" : "eco-ok"}">${j.activo ? "da cartas" : "apagado"}</span> · hasta ${esc(j.tope_dia)} al día</summary>
       <div class="eco-filtros">
         <label><input type="checkbox" data-c="activo"${j.activo ? " checked" : ""}> Da cartas</label>
@@ -441,6 +462,7 @@
       <h4>1. Puntaje → tramo</h4>
       <p class="eco-ayuda">El juego informa un puntaje al terminar (en Ajedrez, Duelo, Arquería y La Fractura va de 0 a 4; en Hooey son los sacrificios). Cada tramo empieza en el puntaje que pongas. Por debajo de «Bueno» solo cuenta como participación (sin carta). Tienen que ir de menor a mayor.</p>
       <div class="eco-filtros">${["participacion", "bueno", "excelente", "extraordinario"].map(k => `<label>${k === "participacion" ? "Participación desde" : TRAMOS.find(t => t[0] === k)[1] + " desde"} <input type="number" data-u="${k}" value="${esc(u[k])}" step="any" style="width:5em"></label>`).join("")}</div>
+      ${bloqueValores(j)}
       <h4>2. Cada tramo: probabilidad, rareza y cartas</h4>
       <p class="eco-ayuda">Para cada tramo eliges: la <b>probabilidad</b> de que dé carta (de 0 a 1; 1 = siempre, 0 = nunca, solo sello), los <b>pesos de rareza</b> (relativos, no hace falta que sumen 100; 0 = nunca) y, si quieres, <b>cartas propias</b> (tipos o cartas concretas; vacío = las del juego, más abajo). La probabilidad se multiplica por el factor del día: la primera carta del día ×1, la segunda ×0,5 y la tercera ×0,25. Tras varias partidas buenas sin carta hay una común asegurada (Ajustes generales).</p>
       <table class="eco-tabla"><thead><tr><th>Tramo</th><th>Prob. de carta</th>${RAREZAS_JUEGO.map(r => `<th>${r[1]}</th>`).join("")}<th>Reparto</th><th>Cartas propias del tramo (vacío = las del juego)</th></tr></thead><tbody>${
@@ -541,6 +563,19 @@
           const ids = det.querySelector('[data-g="ids"]').value.split(/[\s,]+/).filter(Boolean);
           const raras = ids.filter(id => !filas.some(c => c.id === id));
           if (raras.length) { estado(`Estas cartas no existen: ${raras.join(", ")}`, true); return; }
+          // Puntaje por rival / por victoria: se parte de lo guardado y se cambian solo los números editados
+          let valores = null;
+          const camposV = det.querySelectorAll("[data-v]");
+          if (camposV.length) {
+            valores = JSON.parse(det.dataset.valores || "{}");
+            for (const i of camposV) {
+              const ruta = i.dataset.v.split("."), n = Number(i.value);
+              if (i.value === "" || !Number.isFinite(n)) { estado("Hay un puntaje vacío o que no es un número.", true); return; }
+              let o = valores;
+              ruta.slice(0, -1).forEach(k => { o = o[k] = o[k] || {}; });
+              o[ruta[ruta.length - 1]] = n;
+            }
+          }
           const pesos = {}, prob = {}, grupos = {};
           for (const tr of det.querySelectorAll("tr[data-tramo]")) {
             const t = tr.dataset.tramo;
@@ -564,6 +599,7 @@
             sellos_por_carta: num('[data-c="sellos_por_carta"]'),
             umbrales: Object.fromEntries([...det.querySelectorAll("[data-u]")].map(i => [i.dataset.u, Number(i.value)])),
             pesos, prob, grupos,
+            ...(valores ? { valores } : {}),
             grupo: {
               tipos: [...det.querySelectorAll("[data-g-tipo]")].filter(i => i.checked).map(i => i.dataset.gTipo),
               afinidades: det.querySelector('[data-g="afinidades"]').value.split(",").map(t => t.trim()).filter(Boolean),
