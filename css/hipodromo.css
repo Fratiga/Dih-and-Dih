@@ -300,3 +300,12 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-tip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hip-tipcaja { position: fixed; z-index: 10000; max-width: 320px; padding: 8px 11px; background: #10231a; color: #f1ecd9; border: 1px solid var(--accent); border-radius: 4px; box-shadow: 0 6px 22px rgba(0, 0, 0, .55); font: 400 .82rem/1.4 sans-serif; text-transform: none; letter-spacing: 0; text-align: left; pointer-events: none; }
 .hip-tipcaja[hidden] { display: none; }
+
+/* Elegir una opción entre dos (sexo al adoptar): botones juntos en vez de un desplegable */
+.hip-sexo { display: inline-flex; align-items: center; gap: 10px; margin-right: 10px; }
+.hip-opcion { padding: 7px 16px; background: transparent; color: var(--text); border: 1px solid var(--border); font: inherit; cursor: pointer; }
+.hip-opcion + .hip-opcion { margin-left: -11px; }
+.hip-opcion:hover { border-color: var(--accent); }
+.hip-opcion.on { background: rgba(232, 196, 70, .2); border-color: var(--accent); color: var(--accent); font-weight: 700; position: relative; }
+.hip-opcion.on::before { content: "✓ "; }
+.hip-opcion:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
