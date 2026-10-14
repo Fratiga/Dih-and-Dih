@@ -1,0 +1,92 @@
+/* Mi habitación (js/habitacion.js): el estilo del lobby aplicado a una escena personal con seis corrales */
+body.hb .lb-pagina { padding-bottom: 60px; }
+.hb-aviso { margin: 12px 0 0; padding: 10px 14px; border: 3px ridge var(--lb-borde); background: var(--lb-caja); color: var(--lb-texto); box-shadow: 4px 4px 0 #000; }
+.hb-aviso.hb-error { color: #ff9a8a; }
+.hb-escena { background: #1a1322; }
+.hb-etq {
+  font: 8px "Press Start 2P", monospace; fill: #fff3d0; paint-order: stroke; stroke: #1c1420; stroke-width: 3px;
+}
+.hb-ayuda { margin: 10px 2px 0; line-height: 1.35; }
+.hb-atajos .lb-boton { text-decoration: none; text-align: center; }
+
+/* Estantería con lomos de colores */
+.hb-escena .hb-lomo { transition: filter .12s steps(2); }
+
+/* Corrales: botones dentro del SVG */
+.hb-corral { cursor: pointer; outline: none; }
+.hb-corral .lb-forma { transition: filter .12s steps(2); }
+.hb-corral:hover .lb-forma, .hb-corral:focus-visible .lb-forma { filter: brightness(1.3); }
+.hb-corral:focus-visible .hb-marco { stroke: var(--lb-acento, #e8b84a); stroke-width: 4px; }
+.hb-marco { fill: none; stroke: #1c1420; stroke-width: 4px; }
+.hb-corral .hb-estado-txt { font: 7px "Press Start 2P", monospace; fill: #cfc3ea; paint-order: stroke; stroke: #1c1420; stroke-width: 3px; }
+.hb-barra-fondo { fill: #1c1420; }
+.hb-barra { fill: #5fa8e8; }
+.hb-lampara { fill: #5b5568; }
+.hb-e-disponible .hb-lampara { fill: #e8b84a; animation: hbPulso 1.2s steps(2) infinite; }
+.hb-e-cria .hb-lampara { fill: #5fa8e8; }
+.hb-e-listo .hb-lampara { fill: #6fe08a; animation: hbPulso .6s steps(2) infinite; }
+.hb-e-listo .hb-barra { fill: #6fe08a; }
+.hb-e-descanso .hb-lampara { fill: #a384e6; }
+.hb-e-descanso .hb-barra { fill: #a384e6; }
+.hb-e-listo .hb-estado-txt { fill: #9ff0b0; }
+.hb-e-vacio .lb-forma { filter: saturate(.55) brightness(.85); }
+.hb-e-vacio:hover .lb-forma { filter: saturate(.8) brightness(1.05); }
+@keyframes hbPulso { 50% { opacity: .35; } }
+.hb-bicho { fill: #f6e7c2; }
+.hb-e-cria .hb-bicho, .hb-e-listo .hb-bicho { animation: hbSalto 1.4s steps(2) infinite; }
+.hb-bicho.hb-b2 { animation-delay: .7s !important; }
+@keyframes hbSalto { 50% { transform: translateY(-3px); } }
+
+/* Resumen y listas de los lados */
+.hb-fila { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3px 0; border-bottom: 1px dotted color-mix(in srgb, var(--lb-borde) 60%, transparent); font-size: 19px; }
+.hb-fila:last-child { border-bottom: 0; }
+.hb-fila b { color: var(--lb-acento); font-weight: normal; }
+.hb-pildora { display: inline-block; padding: 0 6px; font: 8px/1.9 "Press Start 2P", monospace; color: #1a1408; background: var(--lb-acento); }
+.hb-pildora.hb-ok { background: #6fe08a; }
+.hb-pildora.hb-azul { background: #5fa8e8; }
+.hb-pildora.hb-morado { background: #a384e6; }
+.hb-barra-colec { height: 12px; margin: 6px 0 2px; background: #0d0816; border: 2px solid var(--lb-borde); }
+.hb-barra-colec > i { display: block; height: 100%; background: linear-gradient(90deg, var(--lb-acento), #fff3d0); }
+.hb-lista { list-style: none; margin: 0; padding: 0; }
+.hb-lista li { padding: 3px 0; font-size: 19px; line-height: 1.15; }
+.hb-lista small { color: var(--lb-tenue); font-size: 17px; }
+.hb-clic { cursor: pointer; background: none; border: 0; color: var(--lb-acento); font: inherit; padding: 0; text-align: left; text-decoration: underline; }
+
+/* Diálogo de un corral */
+.hb-dialogo { width: min(640px, calc(100% - 24px)); max-height: calc(100vh - 32px); overflow: auto; padding: 0; color: var(--text, #efe6ff); background: var(--panel, #1f1630); border: 4px double var(--accent-soft, #a384e6); box-shadow: 8px 8px 0 #000; }
+.hb-dialogo::backdrop { background: rgba(0, 0, 0, .75); }
+.hb-dialogo header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 14px 16px 10px; background: var(--lb-titulo-a, #5b4690); border-bottom: 3px ridge var(--accent-soft, #a384e6); }
+.hb-dialogo h2 { margin: 0; font: 14px/1.5 "Press Start 2P", monospace; color: #fff; text-shadow: 2px 2px 0 #000; }
+.hb-dialogo .hb-desc { margin: 6px 0 0; font-size: .9rem; color: #e7dcff; max-width: 46ch; line-height: 1.4; }
+.hb-dialogo .hb-cerrar { border: 0; background: none; color: #fff; font-size: 1.6rem; cursor: pointer; line-height: 1; }
+.hb-cuerpo { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.hb-msg { margin: 0; min-height: 1.3em; font-size: .9rem; color: var(--accent, #e8b84a); }
+.hb-msg.hb-error { color: #ff9a8a; }
+.hb-pareja { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border: 1px dashed var(--accent-soft, #a384e6); }
+.hb-fases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.hb-fases li { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; background: rgba(255, 255, 255, .05); border: 1px solid var(--border, #4a3478); }
+.hb-fases .hb-n { width: 26px; height: 26px; display: grid; place-items: center; font: 10px "Press Start 2P", monospace; background: #0d0816; border: 2px solid var(--border, #4a3478); }
+.hb-fases li.hb-hecha .hb-n { background: #2d6b3d; border-color: #6fe08a; color: #fff; }
+.hb-fases li.hb-ahora { border-color: #5fa8e8; background: rgba(95, 168, 232, .12); }
+.hb-fases li.hb-ahora .hb-n { background: #2b5f96; border-color: #5fa8e8; color: #fff; }
+.hb-fases .hb-mini { display: block; height: 6px; margin-top: 5px; background: #0d0816; }
+.hb-fases .hb-mini > i { display: block; height: 100%; background: #5fa8e8; }
+.hb-total { height: 14px; background: #0d0816; border: 2px solid var(--border, #4a3478); }
+.hb-total > i { display: block; height: 100%; background: linear-gradient(90deg, #2b5f96, #5fa8e8); }
+.hb-total.hb-listo > i { background: linear-gradient(90deg, #2d9b52, #6fe08a); }
+.hb-especies { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.hb-especies li { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255, 255, 255, .05); border: 1px solid var(--border, #4a3478); }
+.hb-especies li.hb-no { opacity: .6; }
+.hb-especies .hb-info { flex: 1 1 250px; min-width: 0; line-height: 1.4; font-size: .92rem; }
+.hb-especies small { color: var(--muted, #a99ac9); display: block; }
+.hb-especies .hb-aviso-esp { color: #ffb08a; }
+.hb-especies select { font: inherit; padding: 4px 6px; color: var(--text, #efe6ff); background: rgba(0, 0, 0, .35); border: 1px solid var(--border, #4a3478); color-scheme: dark; }
+.hb-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.hb-nace .ic-carta { width: 220px; margin: 0 auto 10px; }
+@media (max-width: 760px) { .hb-fases li { grid-template-columns: 26px 1fr; } .hb-fases li > :last-child { grid-column: 2; } }
+
+/* Ajustes: los bichos solo se ven con una cría en marcha y los atajos van en una columna */
+.hb-bichos { opacity: 0; }
+.hb-e-cria .hb-bichos, .hb-e-listo .hb-bichos { opacity: 1; }
+.hb-atajos { grid-template-columns: 1fr; width: 100%; }
+.hb-atajos .lb-boton { width: 100%; box-sizing: border-box; }

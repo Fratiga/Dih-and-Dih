@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi habitación</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20270185" data-permite="compendioCartasEditor"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270185">
+  <link rel="stylesheet" href="css/taberna.css?v=20270185">
+  <link rel="stylesheet" href="css/lobby.css?v=20270185">
+  <link rel="stylesheet" href="css/cartas.css?v=20270185">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270185">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270185">
+  <link rel="stylesheet" href="css/habitacion.css?v=20270185">
+  <script src="js/dialogos.js?v=20270185"></script>
+</head>
+<body class="lb hb">
+  <div class="lb-fondo" aria-hidden="true"></div>
+
+  <div class="lb-pagina">
+    <header class="lb-cab">
+      <div class="lb-cab-titulo">
+        <p class="lb-eyebrow">★ SOLO PARA TI ★</p>
+        <h1>Mi habitación</h1>
+        <p class="lb-sub">Tus cartas, tus mazos y los corrales donde crían tus criaturas.</p>
+      </div>
+      <div class="lb-cab-widgets">
+        <a class="lb-boton" href="index.html">← A la taberna</a>
+        <div id="globalLadoWidget" class="global-lado-widget">
+          <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+          <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+        </div>
+        <div id="temaWidget" class="tema-widget">
+          <button id="temaBadge" class="tema-badge" type="button" title="Cambiar tema">Tema</button>
+          <div id="temaPopover" class="tema-popover hidden"></div>
+        </div>
+      </div>
+    </header>
+
+    <p id="hbAviso" class="hb-aviso hidden" role="status"></p>
+
+    <div class="lb-cuerpo" id="hbCuerpo">
+      <!-- Lo tuyo: números y atajos -->
+      <aside class="lb-lado lb-izq">
+        <section class="lb-caja">
+          <h2>Tú</h2>
+          <div class="lb-caja-cuerpo" id="hbTu"><p class="lb-chico">Cargando...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Tu colección</h2>
+          <div class="lb-caja-cuerpo" id="hbColeccion"><p class="lb-chico">Cargando...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Atajos</h2>
+          <div class="lb-caja-cuerpo">
+            <div class="lb-botoncitos hb-atajos">
+              <a class="lb-boton" href="cartas.html">Álbum</a>
+              <a class="lb-boton" href="mazos.html">Mazos</a>
+              <a class="lb-boton" href="batalla.html">Batalla</a>
+              <a class="lb-boton" href="intercambios.html">Intercambios</a>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- La habitación -->
+      <main class="lb-centro">
+        <div class="lb-escena-caja">
+          <div class="lb-escena-scroll">
+            <svg class="lb-escena hb-escena" id="hbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="Tu habitación: la estantería, la mesa de mazos y los seis corrales">
+              <!-- Pared y suelo -->
+              <rect x="0" y="0" width="960" height="330" fill="#2a2036"/>
+              <g id="hbTablones"></g>
+              <rect x="0" y="300" width="960" height="30" fill="#3a2c2a"/>
+              <rect x="0" y="296" width="960" height="6" fill="#1c1420"/>
+              <rect x="0" y="330" width="960" height="210" fill="#5a3d28"/>
+              <g id="hbSuelo"></g>
+              <!-- Alfombra -->
+              <rect x="262" y="186" width="456" height="338" fill="#5a2438"/>
+              <rect x="270" y="194" width="440" height="322" fill="none" stroke="#c9a14a" stroke-width="4"/>
+
+              <!-- Ventana -->
+              <rect x="40" y="46" width="132" height="126" fill="#6b4a2f"/>
+              <rect x="48" y="54" width="116" height="110" id="hbCielo" fill="#27396b"/>
+              <g id="hbAstros"></g>
+              <rect x="104" y="54" width="4" height="110" fill="#6b4a2f"/><rect x="48" y="106" width="116" height="4" fill="#6b4a2f"/>
+              <rect x="34" y="172" width="144" height="8" fill="#8d6a45"/>
+
+              <!-- Estantería: tu colección -->
+              <a class="lb-spot" href="cartas.html" aria-label="Tu colección: el álbum">
+                <g class="lb-forma">
+                  <rect x="760" y="50" width="160" height="246" fill="#6b4a2f"/>
+                  <rect x="768" y="58" width="144" height="230" fill="#3a2517"/>
+                  <rect x="768" y="116" width="144" height="6" fill="#8d6a45"/><rect x="768" y="176" width="144" height="6" fill="#8d6a45"/><rect x="768" y="236" width="144" height="6" fill="#8d6a45"/>
+                  <g id="hbLomos"></g>
+                </g>
+                <text x="840" y="318" text-anchor="middle" class="hb-etq">COLECCIÓN</text>
+              </a>
+
+              <!-- Mesa de mazos -->
+              <a class="lb-spot" href="mazos.html" aria-label="Tus mazos">
+                <g class="lb-forma">
+                  <rect x="40" y="232" width="176" height="18" fill="#8d6a45"/>
+                  <rect x="52" y="250" width="16" height="64" fill="#6b4a2f"/><rect x="188" y="250" width="16" height="64" fill="#6b4a2f"/>
+                  <rect x="64" y="214" width="26" height="18" fill="#f2ead2" transform="rotate(-14 77 223)"/>
+                  <rect x="100" y="210" width="26" height="22" fill="#7a2f4a" transform="rotate(4 113 221)"/>
+                  <rect x="138" y="214" width="26" height="18" fill="#f2ead2" transform="rotate(16 151 223)"/>
+                  <rect x="170" y="218" width="16" height="14" fill="#3b4a8a"/><rect x="174" y="222" width="8" height="6" fill="#e8b84a"/>
+                </g>
+                <text x="128" y="338" text-anchor="middle" class="hb-etq">MAZOS</text>
+              </a>
+
+              <!-- Cama -->
+              <g>
+                <rect x="40" y="396" width="168" height="96" fill="#4a2f1f"/>
+                <rect x="48" y="404" width="152" height="80" fill="#8a3f52"/>
+                <rect x="48" y="404" width="44" height="80" fill="#e9dcc2"/>
+                <rect x="100" y="404" width="100" height="16" fill="#a8546a"/>
+                <rect x="40" y="388" width="8" height="112" fill="#6b4a2f"/>
+              </g>
+
+              <!-- Puerta de vuelta a la taberna -->
+              <a class="lb-spot" href="index.html" aria-label="Volver a la taberna">
+                <g class="lb-forma">
+                  <rect x="866" y="372" width="72" height="128" fill="#4a2f1f"/>
+                  <rect x="874" y="380" width="56" height="120" fill="#6b4a2f"/>
+                  <rect x="880" y="388" width="44" height="104" fill="#7a5638"/>
+                  <rect x="914" y="438" width="6" height="6" fill="#e8b84a"/>
+                </g>
+                <text x="902" y="520" text-anchor="middle" class="hb-etq">TABERNA</text>
+              </a>
+
+              <!-- Antorchas -->
+              <g class="lb-fuego">
+                <rect x="236" y="96" width="8" height="30" fill="#6b4a2f"/>
+                <rect x="232" y="82" width="16" height="16" fill="#f0b038" class="lb-llama"/><rect x="236" y="70" width="8" height="14" fill="#f7dd6a" class="lb-llama lb-l2"/>
+                <circle cx="240" cy="92" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
+                <rect x="716" y="96" width="8" height="30" fill="#6b4a2f"/>
+                <rect x="712" y="82" width="16" height="16" fill="#f0b038" class="lb-llama lb-l2"/><rect x="716" y="70" width="8" height="14" fill="#f7dd6a" class="lb-llama"/>
+                <circle cx="720" cy="92" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
+              </g>
+
+              <!-- Los seis corrales, los dibuja habitacion.js -->
+              <g id="hbCorrales"></g>
+            </svg>
+          </div>
+        </div>
+        <p class="lb-chico hb-ayuda">Cada corral solo funciona con <b>dos copias tuyas de la misma criatura</b>. Pulsa uno para ver qué especies caben y empezar una cría. Las copias llegan jugando, intercambiando o con un poco de suerte.</p>
+      </main>
+
+      <!-- Lo que pasa en los corrales -->
+      <aside class="lb-lado lb-der">
+        <section class="lb-caja">
+          <h2>Tus corrales</h2>
+          <div class="lb-caja-cuerpo" id="hbResumen"><p class="lb-chico">Cargando...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Listas para criar</h2>
+          <div class="lb-caja-cuerpo" id="hbListas"><p class="lb-chico">Cargando...</p></div>
+        </section>
+        <section class="lb-caja">
+          <h2>Últimas crías</h2>
+          <div class="lb-caja-cuerpo" id="hbHistorial"><p class="lb-chico">Cargando...</p></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script src="data/personajes.js?v=20270185"></script>
+  <script src="data/objetos.js?v=20270185"></script>
+  <script src="data/lugares.js?v=20270185"></script>
+  <script src="data/bestiario.js?v=20270185"></script>
+  <script src="js/contenido-servidor.js?v=20270185"></script>
+  <script src="js/temas.js?v=20270185"></script>
+  <script src="js/fichas-supabase.js?v=20270185"></script>
+  <script src="js/interruptores.js?v=20270185"></script>
+  <script src="js/presencia.js?v=20270185"></script>
+  <script src="js/lado.js?v=20270185"></script>
+  <script src="js/cartas-datos.js?v=20270185"></script>
+  <script src="js/cartas-cliente.js?v=20270185"></script>
+  <script src="js/cartas-vista.js?v=20270185"></script>
+  <script src="js/habitacion.js?v=20270185"></script>
+  <script src="js/avisos-admin.js?v=20270185"></script>
+  <script src="js/musica-paginas.js?v=20270185"></script>
+</body>
+</html>

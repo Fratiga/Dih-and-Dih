@@ -41,6 +41,7 @@
         <button type="button" data-vista="apuestas" class="${vista === "apuestas" ? "activo" : ""}">Apuestas y disputas</button>
         <button type="button" data-vista="bloqueos" class="${vista === "bloqueos" ? "activo" : ""}">Bloqueos e incidencias</button>
         <button type="button" data-vista="juegos" class="${vista === "juegos" ? "activo" : ""}">Juegos y recetas</button>
+        <button type="button" data-vista="crianza" class="${vista === "crianza" ? "activo" : ""}">Crianza</button>
       </div>
       <p class="eco-estado" role="status"></p>
       <div id="ecoCuerpo"></div>`;
@@ -59,6 +60,7 @@
     else if (vista === "apuestas") pintarApuestas();
     else if (vista === "bloqueos") pintarBloqueos();
     else if (vista === "juegos") pintarJuegos();
+    else if (vista === "crianza") pintarCrianza();
     else pintarHistorial();
   }
 
@@ -632,6 +634,47 @@
         } catch (e) { estado(`No se pudo guardar${e instanceof SyntaxError ? " (el JSON no es válido)" : ""}: ${e.message || e}`, true); }
       }));
     } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}</p>`; }
+  }
+
+  /* ---------------- crianza: corrales y especies ---------------- */
+  async function pintarCrianza() {
+    const cuerpo = document.getElementById("ecoCuerpo");
+    cuerpo.innerHTML = `<div id="ecoCrRes">Cargando...</div>`;
+    const res = document.getElementById("ecoCrRes");
+    try {
+      const d = await rpc("cartas_admin_crianza");
+      const opciones = h => d.corrales.map(c => `<option value="${esc(c.habitat)}"${c.habitat === h ? " selected" : ""}>${esc(c.nombre)}</option>`).join("");
+      const fecha = t => new Date(t).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      res.innerHTML = `
+        <p class="eco-ayuda">Cada criatura se cría en el corral de su medio. Hace falta una pareja: <b>dos copias del jugador de la misma criatura</b>. La cría pasa por tres fases (cortejo, gestación y cría, con las horas que pongas aquí para esa especie) y después el corral descansa. Al nacer, la copia nueva sale de la reserva o se emite respetando el límite global, el límite por jugador y «En circulación». Si la especie ya llegó a su límite, no nace nada y el jugador ve «sobrepoblación de la especie». Una criatura sin configurar no se puede criar.</p>
+        <h3>Criaturas</h3>
+        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Criatura</th><th>Rareza</th><th>Límite</th><th>Corral</th><th>Cortejo (h)</th><th>Gestación (h)</th><th>Cría (h)</th><th>Descanso (h)</th><th>Se cría</th><th></th></tr></thead><tbody>${
+          d.criaturas.map(c => `<tr data-carta="${esc(c.carta)}"><td><b>${esc(c.nombre)}</b>${c.configurada ? "" : "<small>sin configurar</small>"}${c.en_circulacion ? "" : "<small>fuera de circulación</small>"}</td>
+            <td>${esc(RAREZAS[c.rareza] || c.rareza)}</td><td>${esc(c.limite ?? "—")}</td>
+            <td><select data-k="habitat">${opciones(c.habitat)}</select></td>
+            ${[0, 1, 2].map(i => `<td><input type="number" data-h="${i}" min="0.01" max="720" step="any" value="${esc(c.horas[i])}" style="width:5em"></td>`).join("")}
+            <td><input type="number" data-k="descanso" min="0" max="720" step="any" value="${esc(c.descanso_horas)}" style="width:5em"></td>
+            <td><input type="checkbox" data-k="activa"${c.activa ? " checked" : ""} aria-label="Se puede criar"></td>
+            <td><button type="button" data-guardar-cria>Guardar</button></td></tr>`).join("")
+        }</tbody></table></div>
+        <h3>Crías en curso</h3>
+        ${d.en_curso.length ? `<div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Jugador</th><th>Criatura</th><th>Corral</th><th>Empezó</th><th>Termina</th></tr></thead><tbody>${
+          d.en_curso.map(x => `<tr><td>${esc(x.jugador)}</td><td>${esc((d.criaturas.find(c => c.carta === x.carta) || { nombre: x.carta }).nombre)}</td><td>${esc((d.corrales.find(c => c.habitat === x.habitat) || { nombre: x.habitat }).nombre)}</td><td>${esc(fecha(x.inicio))}</td><td>${esc(fecha(x.fin))}</td></tr>`).join("")
+        }</tbody></table></div>` : `<p class="eco-ayuda">No hay ninguna cría en marcha.</p>`}
+        <h3>Corrales</h3>
+        <ul class="eco-ayuda">${d.corrales.map(c => `<li><b>${esc(c.nombre)}</b>: ${esc(c.descripcion)} Fases: ${esc(c.fases.join(" → "))}.</li>`).join("")}</ul>`;
+      res.querySelectorAll("[data-guardar-cria]").forEach(b => b.addEventListener("click", async () => {
+        const tr = b.closest("tr");
+        const cfg = {
+          habitat: tr.querySelector('[data-k="habitat"]').value,
+          horas: [0, 1, 2].map(i => Number(tr.querySelector(`[data-h="${i}"]`).value)),
+          descanso_horas: Number(tr.querySelector('[data-k="descanso"]').value),
+          activa: tr.querySelector('[data-k="activa"]').checked
+        };
+        try { await rpc("cartas_admin_guardar_cria", { p_carta: tr.dataset.carta, p_cfg: cfg }); estado("Criatura guardada."); pintarCrianza(); }
+        catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
+      }));
+    } catch (e) { res.innerHTML = `<p class="eco-error">No se pudo cargar: ${esc(e.message || e)}. ¿Aplicaste economia-18_crianza.sql?</p>`; }
   }
 
   /* ---------------- arranque ---------------- */

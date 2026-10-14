@@ -79,6 +79,7 @@ ids=""; for k in 1 2 3 4 5; do ids="$ids,'$(dar $U1 comun-$k)'"; done
 poner "'poco-1','poco-2','poco-3','poco-4','poco-5','poco-6'" false
 FS=$(como $U1 "select cartas_forjar('fundir-comunes', array[${ids#,}]::uuid[]);")
 contiene "sin poco comunes en circulación no hay salida y no se consume nada" "$FS" "sin-salida"
+contiene "...y el mensaje lo explica" "$FS" "No se pueden crear más objetos de este calibre"
 comprobar "...las 5 comunes siguen siendo suyas" "5" "$(sql "select count(*) from cartas_ejemplares where propietario='$U1' and estado='poseida'")"
 poner "'poco-3'" true
 FS=$(como $U1 "select cartas_forjar('fundir-comunes', array[${ids#,}]::uuid[]);")
