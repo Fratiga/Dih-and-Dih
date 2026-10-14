@@ -119,16 +119,22 @@ window.HipodromoPista = (function () {
       const az = azar(hash("v" + c.id + res.n));
       // pequeños arranques y flojeras por tramo: valen cero en cada marca de 100 m (y se apagan en el último tramo)
       const ruido = Array.from({ length: c.tramos.length }, (_, s) => (az() * 2 - 1) * (s === c.tramos.length - 1 ? 0.9 : 2.4));
-      return { c, i, el, svg: el.querySelector("svg"), aviso: el.querySelector(".hpx-aviso"), curva: curvaDe(c.tramos), ruido, tFin: c.tramos[c.tramos.length - 1], parado: false, lugar: i + 1, metros: 0, vista: 0 };
+      // ritmo con altibajos: ondas lentas que adelantan y atrasan a cada criatura a lo largo de la carrera y valen cero en la salida y en la meta,
+      // así los puestos cambian de verdad a la vista y el resultado sigue siendo el del motor
+      const onda = { mul: 0.6 + 0.6 * az(), f1: 1.1 + az(), f2: 2.6 + 1.6 * az(), p1: az() * 6.283, p2: az() * 6.283 };
+      return { c, i, el, svg: el.querySelector("svg"), aviso: el.querySelector(".hpx-aviso"), curva: curvaDe(c.tramos), ruido, onda, tFin: c.tramos[c.tramos.length - 1], parado: false, lugar: i + 1, metros: 0, vista: 0 };
     });
+    const AMP = clamp(dist * 0.007, 6, 18);   // cuántos metros se pueden adelantar o atrasar con esas ondas (de unos 3 a 7 cuerpos)
     const metrosDe = (k, T) => {
       let m = k.curva(T);
       if (T > 0 && T < k.tFin) {
         const tr = k.c.tramos; let s = 0; while (s < tr.length && tr[s] <= T) s++;
         const t0 = s === 0 ? 0 : tr[s - 1], t1 = tr[s], u = (T - t0) / Math.max(1e-6, t1 - t0), e = Math.sin(Math.PI * u);
         m += k.ruido[s] * e * e;
+        const v = T / k.tFin, o = k.onda, env = Math.pow(Math.sin(Math.PI * v), 0.8);
+        m += AMP * o.mul * env * (0.65 * Math.sin(6.283 * o.f1 * v + o.p1) + 0.35 * Math.sin(6.283 * o.f2 * v + o.p2));
       }
-      return Math.min(m, dist);
+      return Math.max(0, Math.min(m, dist));
     };
 
     // ---- el paisaje: elementos fijos en el mundo, sembrados con la semilla de la carrera
