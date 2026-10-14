@@ -3877,3 +3877,17 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .aviso-admin-cuerpo h2 { margin: 0; font-size: 1.15rem; color: var(--accent, #fc0); }
 .aviso-admin-cuerpo p { margin: 0; line-height: 1.5; white-space: pre-wrap; }
 .aviso-admin-cerrar { align-self: flex-end; padding: 8px 18px; font: inherit; font-weight: 700; color: #1a1408; background: var(--accent, #fc0); border: 0; cursor: pointer; }
+
+/* --- Ajedrez: relojes de la partida y botón Jugar --- */
+.aj-relojes { display: flex; gap: 8px; margin: 0 0 10px; }
+.aj-reloj-caja { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--panel-2); border: 1px solid var(--border); opacity: .75; }
+.aj-reloj-caja span { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aj-reloj-caja strong { font: 700 1.25rem var(--font-heading), sans-serif; letter-spacing: .03em; font-variant-numeric: tabular-nums; }
+.aj-reloj-caja.activo { opacity: 1; border-color: var(--accent-soft); background: rgba(224, 180, 92, .14); }
+.aj-reloj-caja.urgente strong { color: #e8837b; }
+.aj-reloj-caja.activo.urgente { border-color: #e8837b; animation: ajRelojLatido .6s ease-in-out infinite alternate; }
+.aj-jugar-capa { position: absolute; inset: 0; z-index: 15; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 16px; background: rgba(12, 12, 14, .66); }
+.aj-jugar-rival { margin: 0; font: 700 1.3rem var(--font-heading), sans-serif; letter-spacing: .04em; }
+.aj-jugar-detalle { margin: 0 0 12px; font-size: .85rem; color: var(--muted); }
+.aj-jugar-btn { padding: 14px 34px; font: 700 1.25rem var(--font-heading), sans-serif; letter-spacing: .06em; color: #1b120c; background: #e0b45c; border: 0; cursor: pointer; box-shadow: 0 0 26px rgba(224, 180, 92, .45); }
+.aj-jugar-btn:hover { background: #f0c874; }

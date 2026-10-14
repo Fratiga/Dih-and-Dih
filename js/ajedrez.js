@@ -12,7 +12,7 @@
   const rivalesEl = document.getElementById("ajRivales");
   const rivalActualEl = document.getElementById("ajRivalActual");
   const comentarioEl = document.getElementById("ajComentario");
-  const relojEl = document.getElementById("ajReloj");
+  const jugarCapaEl = document.getElementById("ajJugarCapa");
   const modoMaquinaEl = document.getElementById("ajModoMaquina");
   const modoJugadoresEl = document.getElementById("ajModoJugadores");
   const pvpAvisoEl = document.getElementById("ajPvpAviso");
@@ -46,8 +46,8 @@
      al pensar y unas frases propias para que se sienta que hay alguien enfrente.
      prof = jugadas que mira por adelantado; tiempo = tope de cálculo (ms);
      error = probabilidad de elegir una jugada peor; pausa = [min, max] segundos
-     que "piensa" antes de mover. tiempoMov = segundos que tienes para cada jugada
-     (si se acaban, pierdes la partida; sin valor, no hay reloj). azar = no calcula nada: elige una pieza que pueda
+     que "piensa" antes de mover. tiempoTotal = segundos que tiene cada lado en
+     toda la partida, como en chess.com (quien se queda sin tiempo pierde; sin valor, no hay reloj). azar = no calcula nada: elige una pieza que pueda
      moverse al azar y mueve esa pieza a una casilla legal al azar. sinRanking = la
      partida no suma a récords ni rankings.
      estilo = su forma de jugar, además de cuánto calcula. Son bonos (en centésimas de
@@ -68,25 +68,25 @@
     { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", estilo: { piezas: { p: 12, b: 6, q: -25 }, enroque: 45, jaque: -10, captura: -5 },
       momentos: [
         { id: "determinado", cuando: c => c.material <= -200, estilo: { piezas: { q: 22, n: 14, r: 10 }, jaque: 35, captura: 22, ataqueRey: 14, avance: 5 }, frase: "No pienso rendirme. Que sea lo que tenga que ser." }
-      ], tiempoMov: 60, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
+      ], tiempoTotal: 120, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
       frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
     { id: "baraja", nombre: "Baraja", dificultad: "Media", estilo: { piezas: { q: 18 }, jaque: 30, captura: 14 },
       momentos: [
         { id: "doble", cuando: c => c.material <= -200, estilo: { piezas: { q: 40, r: 16 }, jaque: 70, captura: 40, ataqueRey: 22, avance: 8 }, frase: "Subo la apuesta. Todo o nada." },
         { id: "cobra", cuando: c => c.material >= 300, estilo: { piezas: { p: 10 }, captura: 22, enroque: 45, jaque: -25 }, frase: "Con esto me alcanza. Me quedo con la ganancia." }
-      ], tiempoMov: 45, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
+      ], tiempoTotal: 120, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
       frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
     { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", estilo: { piezas: { p: 8, r: 14 }, centro: 22, avance: 6, enroque: 20 },
       momentos: [
         { id: "asedio", cuando: c => c.material >= 200, estilo: { piezas: { p: 10, r: 18, q: 14 }, captura: 30, jaque: 30, avance: 12, centro: 12, ataqueRey: 14 }, frase: "Es hora de cerrar el cerco." },
         { id: "repliegue", cuando: c => c.material <= -200, estilo: { piezas: { p: 14, b: 8 }, enroque: 50, captura: -10, jaque: -15 }, frase: "Repliego las tropas. La línea se sostiene." }
-      ], tiempoMov: 30, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
+      ], tiempoTotal: 60, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
       frases: { saludo: "Siéntate. Veamos cómo mueves tus tropas.", jaque: "Jaque. Tu flanco quedó abierto.", capturaRival: "Una baja. Habrá más.", capturaJugador: "Un sacrificio. Lo anoto.", gana: "Partida cerrada. La frontera sigue en pie.", pierde: "Bien jugado. Pocos llegan hasta aquí." } },
     { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", estilo: { piezas: { n: 35, b: -6 }, centro: 8 },
       momentos: [
         { id: "furia", cuando: c => c.mias.n === 0, estilo: { piezas: { q: 40, r: 26, b: 16, p: 10 }, jaque: 90, captura: 45, ataqueRey: 32, avance: 12 }, frase: "Mis caballos... Se acabó la paciencia. Ahora voy por ti." },
         { id: "inquieto", cuando: c => c.mias.n === 1, estilo: { piezas: { n: 30, q: 14 }, jaque: 30, captura: 18, ataqueRey: 10, centro: 8 }, frase: "Perdí un caballo. Mal presagio." }
-      ], tiempoMov: 20, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
+      ], tiempoTotal: 60, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
       frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
   ];
 
@@ -96,6 +96,7 @@
   let seleccion = null;
   let ultimaJugada = null;
   let pensando = false;
+  let iniciada = true; // contra la máquina no empieza hasta pulsar Jugar; en línea siempre está en marcha
   let rival = null;
   let partidaId = 0;
   let capturadas = { w: [], b: [] };
@@ -485,7 +486,7 @@
     rivalesEl.innerHTML = RIVALES.map(r => `
       <button type="button" class="aj-rival ${rival && rival.id === r.id ? "activo" : ""}" data-rival="${r.id}">
         <strong>${r.nombre}</strong>
-        <span>${r.dificultad}${r.tiempoMov ? ` · ${r.tiempoMov} s por jugada` : ""}</span>
+        <span>${r.dificultad}${r.tiempoTotal ? ` · ${r.tiempoTotal / 60} min por jugador` : ""}</span>
         <small>${r.sinRanking ? "No cuenta para el ranking" : record[r.id] ? `Victorias: ${record[r.id]}` : "Sin vencer"}</small>
       </button>`).join("");
   }
@@ -539,46 +540,86 @@
     return hecha;
   }
 
-  /* --- Reloj por jugada -----------------------------------------------------
-     Solo corre en tu turno contra la máquina. Si llega a cero, pierdes la partida. */
+  /* --- Relojes de la partida --------------------------------------------------
+     Como en chess.com: cada lado tiene su tiempo total y solo corre el reloj de quien
+     tiene el turno. Empiezan al pulsar Jugar. Quien se queda sin tiempo pierde.
+     Solo contra la máquina (y no con Hooey, que no tiene reloj). */
+  const relojesEl = document.getElementById("ajRelojes");
+  const relojRivalEl = document.getElementById("ajRelojRival");
+  const relojJugadorEl = document.getElementById("ajRelojJugador");
+  let relojes = { w: 0, b: 0 }; // ms que le quedan a cada color
+  let relojColor = null;        // color cuyo reloj corre ahora
+  let relojDesde = 0;
   let relojTimer = null;
-  let relojTurno = -1;
+
+  function restanteDe(color) {
+    return relojes[color] - (relojColor === color ? performance.now() - relojDesde : 0);
+  }
+
+  function textoReloj(ms) {
+    ms = Math.max(0, ms);
+    if (ms < 10000) return `0:0${(ms / 1000).toFixed(1)}`;
+    const seg = Math.ceil(ms / 1000);
+    return `${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, "0")}`;
+  }
+
+  function pintarRelojes() {
+    const aplica = rival && rival.tiempoTotal && !online;
+    relojesEl.classList.toggle("hidden", !aplica);
+    if (!aplica) return;
+    const yo = colorJugador;
+    const el = yo === "w" ? "b" : "w";
+    [[relojRivalEl, el], [relojJugadorEl, yo]].forEach(([nodo, color]) => {
+      const ms = restanteDe(color);
+      nodo.querySelector("strong").textContent = textoReloj(ms);
+      nodo.classList.toggle("activo", relojColor === color);
+      nodo.classList.toggle("urgente", ms < 10000);
+    });
+    relojRivalEl.querySelector("span").textContent = rival.nombre;
+  }
 
   function detenerReloj() {
+    if (relojColor) relojes[relojColor] = Math.max(0, restanteDe(relojColor));
     clearInterval(relojTimer);
     relojTimer = null;
-    relojTurno = -1;
-    relojEl.classList.add("hidden");
-    relojEl.classList.remove("urgente");
+    relojColor = null;
+    pintarRelojes();
   }
 
-  function pintarReloj(restante) {
-    const seg = Math.max(0, Math.ceil(restante / 1000));
-    relojEl.textContent = `Tiempo: ${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, "0")}`;
-    relojEl.classList.toggle("urgente", seg <= 5);
-  }
-
-  function sincronizarReloj() {
-    const aplica = !online && rival && rival.tiempoMov && juego && !terminado && juego.turn() === colorJugador;
-    if (!aplica) { detenerReloj(); return; }
-    const turno = juego.history().length;
-    if (relojTimer && relojTurno === turno) return;
+  function caerBandera(color) {
     detenerReloj();
-    relojTurno = turno;
-    const fin = performance.now() + rival.tiempoMov * 1000;
+    limpiarArrastre();
+    if (color === colorJugador) terminar(`Se te acabó el tiempo. ${rival.nombre} gana.`, "pierde");
+    else terminar(`A ${rival.nombre} se le acabó el tiempo. Ganaste.`, "gana");
+  }
+
+  function correrReloj(color) {
+    if (relojColor === color) return;
+    if (relojColor) relojes[relojColor] = Math.max(0, restanteDe(relojColor));
+    relojColor = color;
+    relojDesde = performance.now();
+    clearInterval(relojTimer);
     const miPartida = partidaId;
-    relojEl.classList.remove("hidden");
-    pintarReloj(rival.tiempoMov * 1000);
     relojTimer = setInterval(() => {
       if (miPartida !== partidaId || terminado) { detenerReloj(); return; }
-      const restante = fin - performance.now();
-      pintarReloj(restante);
-      if (restante <= 0) {
-        detenerReloj();
-        limpiarArrastre();
-        terminar(`Se te acabó el tiempo. ${rival.nombre} gana.`, "pierde");
-      }
-    }, 200);
+      pintarRelojes();
+      if (restanteDe(color) <= 0) caerBandera(color);
+    }, 100);
+    pintarRelojes();
+  }
+
+  /* Pone en marcha el reloj de quien tiene el turno (o lo para si no corresponde). */
+  function sincronizarReloj() {
+    const aplica = !online && rival && rival.tiempoTotal && juego && iniciada && !terminado;
+    if (!aplica) { detenerReloj(); return; }
+    correrReloj(juego.turn());
+  }
+
+  function reiniciarRelojes() {
+    detenerReloj();
+    const t = rival && rival.tiempoTotal ? rival.tiempoTotal * 1000 : 0;
+    relojes = { w: t, b: t };
+    pintarRelojes();
   }
 
   /* Después de mi jugada: la máquina contesta, o se manda al otro jugador. */
@@ -588,20 +629,30 @@
   }
 
   function turnoRival() {
-    if (terminado || juego.turn() === colorJugador) return;
+    if (terminado || !iniciada || juego.turn() === colorJugador) return;
     pensando = true;
     mensaje(`${rival.nombre} piensa...`);
     const miPartida = partidaId;
     const inicio = performance.now();
+    // Con reloj, gasta una parte de lo que le queda en cada jugada: nunca se queda sin tiempo de golpe
+    // y, si va justo, juega más rápido (calcula menos).
+    let cfg = rival;
+    let tope = Infinity;
+    if (rival.tiempoTotal) {
+      const propias = Math.floor(juego.history().length / 2);
+      const presupuesto = Math.max(0, restanteDe(juego.turn())) / Math.max(8, 40 - propias);
+      cfg = { ...rival, tiempo: Math.max(80, Math.min(rival.tiempo, presupuesto * 0.7)) };
+      tope = presupuesto * 0.95;
+    }
     setTimeout(() => {
       if (miPartida !== partidaId) return;
       const legales = juego.moves({ verbose: true });
-      const m = elegirJugada(juego, rival);
+      const m = elegirJugada(juego, cfg);
       // Ritmo humano: tarda más en posiciones abiertas que en apertura, recapturas o jugadas obligadas.
       let [min, max] = rival.pausa;
       const triviales = legales.length === 1 || juego.history().length < 8;
       if (triviales) { min *= 0.35; max *= 0.5; }
-      const objetivo = (min + Math.random() * (max - min)) * 1000;
+      const objetivo = Math.min((min + Math.random() * (max - min)) * 1000, tope);
       const espera = Math.max(0, objetivo - (performance.now() - inicio));
       setTimeout(() => {
         if (miPartida !== partidaId) return;
@@ -624,7 +675,7 @@
   tableroEl.addEventListener("click", ev => {
     if (sinClic) return;
     const b = ev.target.closest("[data-casilla]");
-    if (!b || terminado || pensando || !juego || juego.turn() !== colorJugador) return;
+    if (!b || terminado || pensando || !iniciada || !juego || juego.turn() !== colorJugador) return;
     const casilla = b.dataset.casilla;
     const pieza = juego.get(casilla);
     if (seleccion) {
@@ -663,7 +714,7 @@
   tableroEl.addEventListener("pointerdown", ev => {
     if (ev.button > 0 || arrastre) return;
     const b = ev.target.closest("[data-casilla]");
-    if (!b || terminado || pensando || !juego || juego.turn() !== colorJugador) return;
+    if (!b || terminado || pensando || !iniciada || !juego || juego.turn() !== colorJugador) return;
     const pieza = juego.get(b.dataset.casilla);
     if (!pieza || pieza.color !== colorJugador) return;
     arrastre = { casilla: b.dataset.casilla, id: ev.pointerId, x0: ev.clientX, y0: ev.clientY, activo: false, fantasma: null, sobre: null };
@@ -742,15 +793,32 @@
     capturadas = { w: [], b: [] };
     comentarioEl.textContent = "";
     rivalActualEl.textContent = `Contra ${r.nombre} · ${r.dificultad}`;
-    rendirseEl.disabled = false;
+    // La partida queda preparada, pero no empieza (ni corre el reloj, ni mueve el rival) hasta pulsar Jugar
+    iniciada = false;
+    rendirseEl.disabled = true;
+    reiniciarRelojes();
     pintarRivales();
     refrescarVistas();
     pintarTablero(); pintarLaterales();
-    mensaje(colorJugador === "w" ? "Te toca." : `${r.nombre} empieza.`);
+    const tiempo = r.tiempoTotal ? ` · ${r.tiempoTotal / 60} min por jugador` : " · sin reloj";
+    document.getElementById("ajJugarRival").textContent = `Contra ${r.nombre}`;
+    document.getElementById("ajJugarDetalle").textContent = `${r.dificultad}${tiempo} · juegas con ${colorJugador === "w" ? "blancas" : "negras"}`;
+    jugarCapaEl.classList.remove("hidden");
+    mensaje("Pulsa Jugar cuando estés listo.");
+  }
+
+  /* El botón Jugar: aquí empieza la partida de verdad. */
+  function iniciarPartida() {
+    if (iniciada || !juego || online) return;
+    iniciada = true;
+    jugarCapaEl.classList.add("hidden");
+    rendirseEl.disabled = false;
+    mensaje(colorJugador === "w" ? "Te toca." : `${rival.nombre} empieza.`);
     comentar("saludo");
     sincronizarReloj();
     if (colorJugador === "b") turnoRival();
   }
+  document.getElementById("ajJugarBtn").addEventListener("click", iniciarPartida);
 
   rivalesEl.addEventListener("click", async ev => {
     const b = ev.target.closest("[data-rival]");
@@ -924,6 +992,8 @@
     if (window.MusicaPaginas) MusicaPaginas.partida(f.estado === "en_curso" || f.estado === "activa");
     ocultarVictoria();
     online = { id: f.id, oponente: idOponente(f) };
+    iniciada = true;
+    jugarCapaEl.classList.add("hidden");
     detenerReloj();
     rival = { id: "jugador", nombre: nombreOponente(f), dificultad: "Jugador", frases: null };
     partidaId += 1;
