@@ -89,7 +89,7 @@ limpiar
 ids=""; for k in 1 2 3 4 5; do ids="$ids,'$(dar $U1 comun-$k)'"; done
 FR=$(como $U1 "select cartas_forjar('fundir-comunes', array[${ids#,}]::uuid[]);")
 contiene "5 comunes dan una poco común" "$FR" '"resultado": "carta"'
-comprobar "las 5 comunes se destruyeron" "5" "$(sql "select count(*) from cartas_ejemplares where carta_id like 'comun-%' and estado='destruida'")"
+comprobar "las 5 comunes volvieron a la reserva" "5" "$(sql "select count(*) from cartas_ejemplares where carta_id like 'comun-%' and estado='en_reserva'")"
 comprobar "no se libera hueco de emisión (siguen 5 emitidas)" "5" "$(sql "select count(*) from cartas_ejemplares where carta_id like 'comun-%'")"
 contiene "con cartas de otra rareza falla y no consume nada" "$(como $U1 "select cartas_forjar('fundir-comunes', array[$(for k in 1 2 3 4 5; do printf "'%s'," "$(dar $U1 poco-$k)"; done | sed 's/,$//')]::uuid[]);")" "pide"
 comprobar "...y sus poco comunes siguen siendo suyas (las 5 más la que ganó antes)" "6" "$(sql "select count(*) from cartas_ejemplares where propietario='$U1' and carta_id like 'poco-%' and estado='poseida'")"
@@ -103,7 +103,7 @@ sql "insert into cartas_recetas (id, nombre, entrada, salida, exito, al_fallar, 
 ids3=""; for k in 11 12 1; do ids3="$ids3,'$(dar $U1 comun-$k)'"; done
 FF=$(como $U1 "select cartas_forjar('siempre-falla', array[${ids3#,}]::uuid[]);")
 contiene "una receta que falla devuelve una de las cartas" "$FF" '"devuelta": true'
-comprobar "se destruyeron 2 de las 3" "2" "$(sql "select count(*) from cartas_forja_registro f, jsonb_array_elements(f.entrega) e where f.receta='siempre-falla' and exists (select 1 from cartas_ejemplares x where x.id = (e->>'ejemplar')::uuid and x.estado='destruida')")"
+comprobar "2 de las 3 volvieron a la reserva" "2" "$(sql "select count(*) from cartas_forja_registro f, jsonb_array_elements(f.entrega) e where f.receta='siempre-falla' and exists (select 1 from cartas_ejemplares x where x.id = (e->>'ejemplar')::uuid and x.estado='en_reserva')")"
 comprobar "la auditoría está limpia" "0" "$(auditar)"
 
 echo "== Recompensas (en la copia local se encienden; en producción siguen apagadas)"

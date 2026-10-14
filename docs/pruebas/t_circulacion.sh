@@ -65,6 +65,14 @@ comprobar "...y no se consumió nada" "5" "$(sql "select count(*) from cartas_ej
 OBJ=""; for k in 4 5 6 10 11; do OBJ="$OBJ,'$(dar $U1 comun-$k)'"; done
 contiene "objetos y terrenos sí entran" "$(como $U1 "select cartas_forjar('fundir-comunes', array[${OBJ#,}]::uuid[]);" 2>&1)" '"resultado": "carta"'
 sql "insert into cartas_economia_ajustes (clave, valor) values ('forja_tipos', '[\"Criatura\", \"Objeto\", \"Terreno\", \"Acción\", \"Reacción\", \"Entidad\", \"Personaje\"]') on conflict (clave) do update set valor = excluded.valor" >/dev/null
+echo "== La forja nunca destruye: el destino siempre es la reserva"
+limpiar; todas true
+sql "insert into cartas_recetas (id, nombre, entrada, salida, exito, al_fallar, destino, orden) values ('quemar', 'Quemar', '[{\"rareza\":\"comun\",\"n\":1}]', '{\"rareza\":\"infrecuente\"}', 1, 'perder_todo', 'destruida', 9)" >/dev/null
+comprobar "una receta nueva que pide destruir queda en reserva" "reserva" "$(sql "select destino from cartas_recetas where id='quemar'")"
+sql "update cartas_recetas set destino = 'destruida' where id='quemar'" >/dev/null
+comprobar "y editarla para destruir tampoco funciona" "reserva" "$(sql "select destino from cartas_recetas where id='quemar'")"
+sql "delete from cartas_recetas where id='quemar'" >/dev/null
+comprobar "todas las recetas están en reserva" "0" "$(sql "select count(*) from cartas_recetas where destino <> 'reserva'")"
 echo "== Forja"
 limpiar; todas true
 ids=""; for k in 1 2 3 4 5; do ids="$ids,'$(dar $U1 comun-$k)'"; done

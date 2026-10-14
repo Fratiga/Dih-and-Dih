@@ -54,7 +54,7 @@ comprobar "estado y dueño coherentes en todas las copias" "0" "$(sql "select co
 comprobar "todo bloqueo corresponde a un intercambio abierto" "0" "$(sql "select count(*) from cartas_bloqueos b where not exists (select 1 from cartas_intercambios t where 'trueque:'||t.id::text=b.referencia and t.estado='abierta')")"
 FORJADAS=$(sql "select count(*) from cartas_ejemplares where carta_id like 'poco-%'")
 comprobar "cartas totales = las iniciales + las poco comunes forjadas (nada duplicado ni perdido)" "$((TOTAL_ANTES + FORJADAS))" "$(sql "select count(*) from cartas_ejemplares")"
-comprobar "comunes destruidas = 5 por forja (nada se destruyó de más)" "$((FORJADAS * 5))" "$(sql "select count(*) from cartas_ejemplares where estado='destruida'")"
+comprobar "la forja no destruye nada" "0" "$(sql "select count(*) from cartas_ejemplares where estado='destruida'")"
 comprobar "cada jugador sigue dentro de su límite" "0" "$(sql "select count(*) from (select propietario, carta_id from cartas_ejemplares where estado in ('poseida','bloqueada') group by 1,2 having count(*) > cartas_limite_jugador(carta_id)) x")"
 rm -rf "$TMP" "$TMP.todo"
 echo

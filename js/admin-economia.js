@@ -515,14 +515,14 @@
           <button type="button" id="ecoGuardarAjustes">Guardar ajustes</button>
         </div>
         <h3>Recetas de la forja</h3>
-        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Receta</th><th>Activa</th><th>Entrada (JSON)</th><th>Salida (JSON)</th><th>Éxito (0 a 1)</th><th>Al fallar</th><th>Cartas usadas</th><th></th></tr></thead><tbody>${
+        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Receta</th><th>Activa</th><th>Entrada (JSON)</th><th>Salida (JSON)</th><th>Éxito (0 a 1)</th><th>Al fallar</th><th>Cartas entregadas</th><th></th></tr></thead><tbody>${
           recetas.map(r => `<tr data-receta="${esc(r.id)}"><td><b>${esc(r.nombre)}</b><small>${esc(r.id)}</small></td>
             <td><input type="checkbox" data-r="activa"${r.activa ? " checked" : ""}></td>
             <td><textarea data-r="entrada" rows="3" cols="26">${json(r.entrada)}</textarea></td>
             <td><textarea data-r="salida" rows="3" cols="20">${json(r.salida)}</textarea></td>
             <td><input type="number" data-r="exito" min="0" max="1" step="0.05" value="${r.exito}" style="width:5em"></td>
-            <td><select data-r="al_fallar"><option value="perder_todo"${r.al_fallar === "perder_todo" ? " selected" : ""}>Se pierde todo</option><option value="devolver_una"${r.al_fallar === "devolver_una" ? " selected" : ""}>Devuelve una</option></select></td>
-            <td><select data-r="destino"><option value="destruida"${r.destino === "destruida" ? " selected" : ""}>Se destruyen</option><option value="reserva"${r.destino === "reserva" ? " selected" : ""}>Van a la reserva</option></select></td>
+            <td><select data-r="al_fallar"><option value="perder_todo"${r.al_fallar === "perder_todo" ? " selected" : ""}>Pierdes todas (vuelven a la reserva)</option><option value="devolver_una"${r.al_fallar === "devolver_una" ? " selected" : ""}>Devuelve una</option></select></td>
+            <td>Vuelven a la reserva</td>
             <td><button type="button" data-guardar-receta>Guardar</button></td></tr>`).join("")
         }</tbody></table></div>
         <p class="eco-ayuda">Las recetas piden rarezas <code>comun</code>, <code>infrecuente</code> o <code>rara</code> (la forja nunca usa legendarias ni limitadas). Ejemplo de entrada: <code>[{"rareza":"comun","n":5}]</code>. Salida: <code>{"rareza":"infrecuente"}</code>.</p>`;
@@ -578,8 +578,7 @@
             entrada: JSON.parse(tr.querySelector('[data-r="entrada"]').value),
             salida: JSON.parse(tr.querySelector('[data-r="salida"]').value),
             exito: Number(tr.querySelector('[data-r="exito"]').value),
-            al_fallar: tr.querySelector('[data-r="al_fallar"]').value,
-            destino: tr.querySelector('[data-r="destino"]').value
+            al_fallar: tr.querySelector('[data-r="al_fallar"]').value
           };
           await rpc("cartas_admin_guardar_receta", { p_id: tr.dataset.receta, p_cfg: cfg });
           estado("Receta guardada.");

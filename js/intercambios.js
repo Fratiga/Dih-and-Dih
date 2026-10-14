@@ -206,7 +206,7 @@
     const total = Object.values(necesarias).reduce((s, n) => s + n, 0);
     const res = await BA.elegir({
       titulo: `Forja: ${r.nombre}`, max: total,
-      ayuda: `Entregas ${r.entrada.map(g => `${g.n} ${rarezaN(g.rareza, g.n)}`).join(" + ")}. Se destruyen para siempre; recibes una carta ${rarezaN(r.salida.rareza, 1)} (${Math.round(r.exito * 100)} % de éxito).`,
+      ayuda: `Entregas ${r.entrada.map(g => `${g.n} ${rarezaN(g.rareza, g.n)}`).join(" + ")}. Las cartas que entregas vuelven a la reserva; recibes una carta ${rarezaN(r.salida.rareza, 1)} (${Math.round(r.exito * 100)} % de éxito).`,
       filtro: c => necesarias[c.rareza] > 0 && TIPOS_FORJA.has(c.tipo),
       validar: sel => {
         const mal = Object.entries(necesarias).filter(([ra, n]) => sel.filter(c => c.rareza === ra).length !== n);
@@ -215,11 +215,11 @@
     });
     if (!res) return;
     if (res.error) { estado(res.error, true); return; }
-    if (!(await dialogo.confirmar(`Vas a entregar ${total} cartas, que se destruyen para siempre. ¿Forjar?`, { titulo: "Forja", aceptar: "Forjar", peligro: true }))) return;
+    if (!(await dialogo.confirmar(`Vas a entregar ${total} cartas, que vuelven a la reserva. ¿Forjar?`, { titulo: "Forja", aceptar: "Forjar" }))) return;
     try {
       const out = await rpc("cartas_forjar", { p_receta: id, p_ejemplares: res.ids });
       if (out.resultado === "carta") mostrarCarta("¡La forja funcionó!", out.carta, `Copia ${out.numero}`);
-      else if (out.resultado === "fallo") estado(out.devuelta ? "La forja falló. Te devolvieron una de las cartas." : "La forja falló y las cartas se perdieron.", true);
+      else if (out.resultado === "fallo") estado(out.devuelta ? "La forja falló. Te devolvieron una de las cartas." : "La forja falló y las cartas volvieron a la reserva.", true);
       else estado(out.mensaje || "No hay carta disponible ahora mismo. No se consumió nada.", true);
       await cargarForja();
     } catch (e) { estado(e.message || String(e), true); }
