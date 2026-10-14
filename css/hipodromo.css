@@ -313,3 +313,9 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-pagina select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .hip-pagina select option { background: var(--panel); color: var(--text); }
 .hip-pagina select:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Mientras carga no se enseña nada a medias (paneles vacíos, el reloj en blanco): solo el aviso. Se quita al pintar por primera vez. */
+.hip-pagina.cargando .hip-reloj, .hip-pagina.cargando .hip-pestanas, .hip-pagina.cargando .hip-panel, .hip-pagina.cargando .hip-billetera { display: none; }
+/* La casilla «Doble» del panel de apuesta: una fila con su texto, no apilada en mayúsculas */
+.hip-apuesta label.hip-casilla { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-size: .8rem; line-height: 1.35; color: var(--text); }
+.hip-apuesta input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: var(--accent); flex: none; }

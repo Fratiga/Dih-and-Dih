@@ -50,7 +50,9 @@
     }
   }
   function crear(semilla) {
+    $("hipCargando").textContent = "Creando el mundo, con 300 carreras de historia...";
     $("hipCargando").classList.remove("hidden");
+    document.querySelector(".hip-pagina").classList.add("cargando");
     setTimeout(() => {
       const r = M.paso(null, Date.now(), { calentar: 300, semilla, simsCalentar: 12 });
       const mundo = r.lote.mundo;
@@ -496,6 +498,8 @@
 
   /* ---------------------------------------------------------------- pintar */
   function pintarTodo() {
+    document.querySelector(".hip-pagina").classList.remove("cargando");
+    $("hipCargando").classList.add("hidden");
     pintarReloj();
     pintarApuestas(); pintarNoticias(); pintarMundo();
     if (nUI !== m.proxima.n) {
@@ -607,7 +611,12 @@
   async function iniciarServidor() {
     if (/[?&]local\b/.test(location.search) || !window.HipodromoOnline) return false;
     let r;
-    try { r = await window.HipodromoOnline.conectar(M, alCambiarOnline); } catch (e) { r = { ok: false, motivo: "servidor", detalle: String(e && e.message || e) }; }
+    // si el servidor tarda demasiado se sigue con la prueba local; si responde más tarde, se deja de preguntarle
+    let tarde = false;
+    const intento = window.HipodromoOnline.conectar(M, alCambiarOnline);
+    intento.then(x => { if (tarde && x.ok) x.en.parar(); }, () => {});
+    try { r = await Promise.race([intento, new Promise(ok => setTimeout(() => { tarde = true; ok({ ok: false, motivo: "servidor", detalle: "tardó demasiado" }); }, 15000))]); }
+    catch (e) { r = { ok: false, motivo: "servidor", detalle: String(e && e.message || e) }; }
     if (!r.ok) {
       const nota = $("hipModoNota"), motivos = { sesion: 'Estás en la prueba local: el mundo corre en este navegador. Para entrar al mundo de verdad, <a href="fichas.html">inicia sesión</a> y vuelve.', vacio: "Estás en la prueba local: el servidor todavía no tiene el hipódromo en marcha.", servidor: "Estás en la prueba local: no se pudo hablar con el servidor." };
       if (nota) { nota.innerHTML = motivos[r.motivo] || motivos.servidor; nota.classList.remove("hidden"); }
