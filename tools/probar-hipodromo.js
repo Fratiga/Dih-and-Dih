@@ -140,10 +140,10 @@ function cabezaACabeza(a, b, cond, veces) {
   const nulo = { incid: 0 };
   const v800 = cabezaACabeza({ vel: 80, res: 40 }, { vel: 50, res: 85 }, condBase(800, nulo), V);
   const v3000 = cabezaACabeza({ vel: 80, res: 40 }, { vel: 50, res: 85 }, condBase(3000, nulo), V);
-  ok(v800 > 0.7 && v3000 < 0.3, `el velocista gana en 800 (${pct(v800)}) y pierde en 3000 (${pct(v3000)}) ante el fondista`);
+  ok(v800 > 0.65 && v3000 < 0.35, `el velocista gana en 800 (${pct(v800)}) y pierde en 3000 (${pct(v3000)}) ante el fondista`);
   informe.push(`velocista (vel 80, res 40) contra fondista (vel 50, res 85): gana el ${pct(v800)} en 800 m y el ${pct(v3000)} en 3000 m`);
   const sprint = victorias({ vel: 80 }, condBase(1000), {}, V), igual = victorias({}, condBase(1000), {}, V);
-  ok(sprint > igual + 0.12, `+20 de velocidad ayuda (${pct(sprint)} contra ${pct(igual)})`);
+  ok(sprint > igual + 0.08, `+20 de velocidad ayuda (${pct(sprint)} contra ${pct(igual)})`);
   ok(Math.abs(igual - 0.125) < 0.04, `un corredor normal gana 1 de 8 (${pct(igual)})`);
   const resSprint = victorias({ res: 90 }, condBase(800), {}, V), resFondo = victorias({ res: 90 }, condBase(3000), {}, V);
   ok(resFondo > resSprint + 0.1, `la resistencia pesa más en 3000 (${pct(resFondo)}) que en 800 (${pct(resSprint)})`);
@@ -221,7 +221,7 @@ function cabezaACabeza(a, b, cond, veces) {
   const e1 = duelo({ nucleo: "ardiente" }, cond("espejos"), {}), e2 = duelo({ nucleo: "ardiente" }, cond("silver"), {});
   ok(e1 > 0.62 && e2 < 0.52, `el núcleo ardiente gana en pista arcana (${pct(e1)}) y no en una normal (${pct(e2)})`);
   const o1 = duelo({ ojos: "cuatro" }, cond("espejos"), { ojo: 0.2 }), o2 = duelo({ ojos: "cuatro" }, cond("silver"), { ojo: 0.2 });
-  ok(o1 > 0.6 && o1 > o2, `cuatro ojos casi no se confunden en los Espejos (${pct(o1)} contra ${pct(o2)} en llano)`);
+  ok(o1 > 0.55 && o1 > o2, `cuatro ojos casi no se confunden en los Espejos (${pct(o1)} contra ${pct(o2)} en llano)`);
   const s1 = duelo({ dedos: "palmeadas" }, cond("cienaga"), {}), s2 = duelo({ dedos: "palmeadas" }, cond("silver"), {});
   ok(s1 > 0.62 && s1 > s2 + 0.1, `las patas palmeadas se llevan bien con la Ciénaga (${pct(s1)} contra ${pct(s2)})`);
   const b1 = duelo({ piel: "escamas" }, cond("brasas"), { pel: 0.9 }), b2 = duelo({ piel: "escamas" }, cond("silver", "nublado"), { pel: 0.9 });

@@ -112,6 +112,8 @@ El perfil público trae el cuerpo con 5 niveles de texto por parte («Patas larg
 
 ## La carrera
 
+**Altibajos (octubre de 2026).** Además del cuerpo y de cómo amanece la criatura (`SIG_DIA`), cada una lleva rachas que duran varios tramos (`SIG_RACHA` y `RHO_RACHA`): se va, se queda atrás o se recupera. Con eso el líder a mitad de carrera gana el 53 % de las veces (antes el 66 %), hay en promedio 1,7 cambios de líder por carrera (antes 1,1) y el favorito gana menos. Para que las cuotas siguieran justas se bajó `AGUDEZA` de 1,35 a 1,22. La animación añade encima unas ondas de ritmo solo visuales (valen cero en la salida y en la meta).
+
 Cada tramo es de 100 m. Una criatura reparte su energía con el esfuerzo que aguanta hasta la meta: en las carreras cortas manda la velocidad y en las largas la resistencia. Un velocista (velocidad 80, resistencia 40) gana el 76 % de los duelos con un fondista (50 y 85) en 800 m y solo el 25 % en 3000 m.
 
 Pesan también: la pista (7 pistas con curvas, cuestas y drenaje distintos), el tiempo (6 estados con una cadena de Markov: un día lluvioso suele seguir a otro), la humedad acumulada de la pista, la puerta de salida, el tráfico para los que corren atrás, el duelo de líderes (si hay varios al frente se queman), los tropiezos, el cansancio, la edad y la forma del día.
@@ -124,9 +126,9 @@ Las cuotas son fijas y salen de 400 simulaciones de la carrera (con el tiempo mu
 
 Medido en 173 carreras de un mundo de 8 años, con una segunda estimación independiente de la probabilidad real:
 
-- El mercado está calibrado por tramos: lo que dice el público y lo que de verdad pasa coinciden (3,4 % contra 3,7 %, 11,1 % contra 11,4 %, 31,2 % contra 31,3 %...). El favorito gana en torno al 40 % de las veces.
-- Apostar siempre al favorito, a cualquiera o al que más paga rinde entre -15 % y +7 % esperado por apuesta (el margen de la casa es del 15 %). Ninguna forma ingenua es rentable de forma estable.
-- Un jugador con la probabilidad real exacta, que solo apuesta cuando vale más de 1,10, rinde entre +25 % y +50 %. Es el techo de saber todo, algo que ningún jugador puede: lo que sabe un jugador de verdad (cuerpo, historial, pista, rumores) es una parte de eso. Los rumores de cuadra aciertan el 65 % de las veces.
+- El mercado está calibrado por tramos: lo que dice el público y lo que de verdad pasa coinciden (4,1 % contra 4,0 %, 11,2 % contra 11,2 %, 19,7 % contra 19,7 %, 30,6 % contra 30,3 %, 49,8 % contra 50,7 %). El favorito gana en torno al 36 % de las veces.
+- Apostar siempre al favorito, a cualquiera o al que más paga rinde en torno a -14 % esperado por apuesta (el margen de la casa es del 15 %). Ninguna forma ingenua es rentable.
+- Un jugador con la probabilidad real exacta, que solo apuesta cuando vale más de 1,10, rinde en torno a +30 %. Es el techo de saber todo, algo que ningún jugador puede: lo que sabe un jugador de verdad (cuerpo, historial, pista, rumores) es una parte de eso. Los rumores de cuadra aciertan el 65 % de las veces.
 
 Tipos de apuesta:
 

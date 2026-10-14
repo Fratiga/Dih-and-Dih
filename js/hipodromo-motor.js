@@ -73,10 +73,12 @@
     VEL_K: 0.006,           // m/s que suma cada punto de velocidad
     K_COSTE: 10,             // cuanto mayor, menos se resiente el ritmo por la falta de resistencia
     SD_GENES: 0.14,         // dispersión de los genes de los fundadores
-    SIG_DIA: 0.012,        // cómo de bien o mal amanece cada criatura (fracción de velocidad)
+    SIG_DIA: 0.014,        // cómo de bien o mal amanece cada criatura (fracción de velocidad)
     SIG_TRAMO: 0.008,       // ruido de cada tramo de 100 m
+    SIG_RACHA: 0.012,       // arranques y flojeras que duran varios tramos (la criatura se va o se queda, y se puede recuperar)
+    RHO_RACHA: 0.8,         // cuánto dura una racha: 0 = cada tramo es independiente, cerca de 1 = largas
     ESCALA_REP: 90,         // cuánto pesa el rating en la reputación del público
-    AGUDEZA: 1.35,          // por encima de 1, el público reparte menos por igual (afila el reparto)
+    AGUDEZA: 1.22,          // por encima de 1, el público reparte menos por igual (afila el reparto)
     EXP_VERDAD: 0.65,       // cuánto del conocimiento real entra en las cuotas (0 = solo reputación)
     SIG_MERCADO: 0.11       // error base del público
   };
@@ -326,6 +328,8 @@
       const vmax = (AJUSTE.VEL_BASE + AJUSTE.VEL_K * e.vel) * (1 + dia) * (cond.arcana ? 1 + fx.nucleo : 1) * (e.pen || 1);
       let tanque = 10.5 + 0.075 * e.res;
       const sig = AJUSTE.SIG_TRAMO * (1.5 - e.tem / 100) * (1 + (cond.ruido - 1) * fx.ruido);
+      const sigRacha = AJUSTE.SIG_RACHA * (1.5 - e.tem / 100) * (1 + (cond.ruido - 1) * fx.ruido);
+      let racha = 0;
       const coste = (1 + (cond.costeTramo - 1) * (1 - fx.cuesta)) * (cond.arcana === "sumidero" ? 1.12 * fx.sumidero : 1);
       const lesTramo = rng.f() < probLesion(e, cond) ? rng.i(1, Math.max(1, nSeg - 1)) : -1;
       const trafico = (1 - e.ritmo) * (nE - 1) / 10 * Math.max(0, 1 - e.agi / 130) * rng.f() * 0.008 * (1 - fx.trafico);
@@ -338,7 +342,8 @@
         let ec = clamp(Math.pow(Math.max(0.02, tanque) / ((nSeg - s) * coste), 1 / AJUSTE.K_COSTE), 0.55, 1.0);
         let forma = 1 + 0.06 * (e.ritmo - 0.5) * (1 - 2 * p);
         if (lideres > 1 && e.ritmo > 0.66 && p < 0.4) forma *= 1 + 0.01 * (lideres - 1);   // duelo de líderes
-        let v = vmax * clamp(ec * forma * (1 + rng.norm(0, sig)), 0.5, 1.06);
+        racha = AJUSTE.RHO_RACHA * racha + rng.norm(0, sigRacha);
+        let v = vmax * clamp(ec * forma * (1 + rng.norm(0, sig)) * (1 + racha), 0.5, 1.06);
         if (s < 3) v *= 1 - 0.06 * (1 - e.ace / 100) * (1 - s / 3);
         if (esCurva(s, cond.curvas)) v *= 1 - 0.03 * (1 - e.agi / 100);
         if (p > 0.3 && p < 0.8) v *= 1 - trafico;
