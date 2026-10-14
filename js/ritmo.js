@@ -625,10 +625,10 @@
     mostrar(finEl);
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
-    // El servidor decide el premio con la precisión (en décimas de %) y suma 10000 si no hubo ni un fallo ni una pulsación de más
+    // El servidor decide el premio con los PUNTOS ganados (no con el rango): puntuación = puntos × 10000 + precisión en décimas de %
     if (window.Recompensas && !ajustes.practica && versionJugada !== "prueba") {
-      Recompensas.terminar("zarabanda", completa ? "gana" : "pierde", completa ? Math.round(acc * 1000) + (fallos === 0 && extras === 0 ? 10000 : 0) : 0).then(r => {
-        if (completa && r && r.resultado === "nada" && r.motivo === "sin-premio") document.getElementById("rtFinDatos").insertAdjacentHTML("beforeend", "<br><small>Sin recompensa de cartas esta vez: se piden dificultades altas y mucha precisión.</small>");
+      Recompensas.terminar("zarabanda", completa ? "gana" : "pierde", completa ? Math.round(puntos) * 10000 + Math.round(acc * 1000) : 0).then(r => {
+        if (completa && r && r.resultado === "nada" && r.motivo === "sin-premio") document.getElementById("rtFinDatos").insertAdjacentHTML("beforeend", "<br><small>Sin recompensa de cartas esta vez: se piden dificultades altas y muchos puntos.</small>");
       }).catch(() => {});
     }
     if (completa && !ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada);

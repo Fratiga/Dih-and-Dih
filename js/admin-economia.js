@@ -443,13 +443,13 @@
         <label>Primera victoria, leyenda, némesis o tres generaciones ${campoV("especial", v.especial)}</label></div>`;
     }
     if (j.juego === "zarabanda" || j.juego === "parranda") {
-      const rg = v.rangos || {}, dif = v.dificultades || {};
+      const dif = v.dificultades || {};
       const NOM = { facil: "Fácil", normal: "Normal", dificil: "Difícil", experto: "Experto" };
-      return `<h4>Puntaje por dificultad y rango</h4><p class="eco-ayuda">Al terminar una canción completa (la práctica y las pruebas del editor no cuentan) se mira la dificultad y el rango, que sale de la precisión. Cada casilla es el puntaje que se compara con los umbrales de arriba; -1 = esa partida no da nada. «Sin fallos» se suma si la canción se termina con rango S y sin un solo fallo ni pulsación de más.</p>
-        <div class="eco-filtros"><span>Precisión mínima (%):</span><label>S ${campoV("rangos.S", rg.S)}</label><label>A ${campoV("rangos.A", rg.A)}</label><label>B ${campoV("rangos.B", rg.B)}</label><label>C ${campoV("rangos.C", rg.C)}</label></div>
-        <table class="eco-tabla"><thead><tr><th>Dificultad</th><th>S</th><th>A</th><th>B</th><th>C</th><th>Bonus sin fallos</th></tr></thead><tbody>${Object.keys(NOM).map(d => { const x = dif[d] || {}; return `<tr><td>${NOM[d]}</td>${["S", "A", "B", "C", "sin_fallos"].map(r => `<td>${campoV(`dificultades.${d}.${r}`, x[r])}</td>`).join("")}</tr>`; }).join("")}</tbody></table>`;
+      return `<h4>Puntos necesarios por dificultad</h4><p class="eco-ayuda">El premio sale de los <b>puntos ganados</b> en la canción (no del rango): una canción corta o fácil da pocos puntos, así que no se puede abusar de ella. Solo cuenta una canción completa (la práctica y las pruebas del editor no). Cada casilla es el mínimo de puntos para llegar a ese tramo; <b>-1 = ese tramo no existe</b> en esa dificultad. Referencia en la mesa: la mediana en Difícil es 285.000 puntos y en Experto 350.000; el máximo visto, 1.054.000. Los puntos tienen que subir de «sello» a «extraordinario».</p>
+        <div class="eco-filtros"><label>Precisión mínima (%) <input type="number" data-v="precision_minima" value="${esc(v.precision_minima ?? 0)}" min="0" max="100" step="any" style="width:5em"></label><small class="eco-ayuda">Para que una canción larguísima no se gane a base de puntos con una precisión mediocre. 0 la quita.</small></div>
+        <table class="eco-tabla"><thead><tr><th>Dificultad</th><th>Un sello desde</th><th>Bueno desde</th><th>Excelente desde</th><th>Extraordinario desde</th></tr></thead><tbody>${Object.keys(NOM).map(d => { const x = dif[d] || {}; return `<tr><td>${NOM[d]}</td>${["sello", "bueno", "excelente", "extraordinario"].map(t => `<td>${campoV(`dificultades.${d}.${t}`, x[t] ?? -1, 7)}</td>`).join("")}</tr>`; }).join("")}</tbody></table>`;
     }
-    if (!v.rivales) return "";
+
     const tablas = j.juego === "ajedrez";
     const filasV = Object.entries(v.rivales).map(([rival, r]) => `<tr><td>${esc(rival === "_otros" ? "Cualquier otro rival" : rival)}</td><td>${campoV(`rivales.${rival}.gana`, r.gana)}</td>${tablas ? `<td>${campoV(`rivales.${rival}.tablas`, r.tablas)}</td>` : ""}<td>${campoV(`rivales.${rival}.pierde`, r.pierde)}</td></tr>`).join("");
     const extra = j.juego === "arqueria" && v.bonus ? `<div class="eco-filtros"><label>Bonus: a partir de estos puntos ${campoV("bonus.puntos", v.bonus.puntos)}</label><label>suma ${campoV("bonus.suma", v.bonus.suma)}</label><label>Puntaje máximo ${campoV("maximo", v.maximo)}</label></div>` : "";
