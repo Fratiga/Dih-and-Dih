@@ -14,7 +14,7 @@ window.HipodromoCuadraUI = (function () {
 
   function crear(api, cont) {
     const M = api.M, D = api.D;
-    let sexoAdopcion = "f", msg = { texto: "", clase: "" }, ocupado = false, abiertas = new Set(), hash = "";
+    let msg = { texto: "", clase: "" }, ocupado = false, abiertas = new Set(), hash = "";
     const mon = x => api.monedas(x);
     const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
 
@@ -91,7 +91,7 @@ window.HipodromoCuadraUI = (function () {
         <p class="hip-nota">Aquí eres el dueño. Inscribes a tus criaturas en las carreras que quieras (los entrenadores del mundo no las mueven), las entrenas, las cuidas y, cuando se retiren, las cruzas. Cada carrera paga una bolsa a los cinco primeros y esa bolsa es tuya. Correr cuesta una inscripción y entrenar y cuidar también cuestan: no a todas les sale a cuenta.</p>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p>
         ${!adoptada && !mias.length ? `<div class="hip-adoptar"><h4>Recibe tu primera criatura</h4><p class="hip-nota">La casa te da una criatura joven, de cuerpo corriente, lista para debutar. Es gratis y solo se hace una vez.</p>
-          <div class="hip-sexo" role="radiogroup" aria-label="Sexo"><span>Sexo</span><button type="button" role="radio" aria-checked="${sexoAdopcion === "f"}" class="hip-opcion${sexoAdopcion === "f" ? " on" : ""}" data-sexo="f">Hembra</button><button type="button" role="radio" aria-checked="${sexoAdopcion === "m"}" class="hip-opcion${sexoAdopcion === "m" ? " on" : ""}" data-sexo="m">Macho</button></div> <button type="button" class="hip-boton principal" data-o="adoptar">Adoptar</button></div>` : ""}
+          <label>Sexo <select id="hipAdoptarSexo"><option value="f">Hembra</option><option value="m">Macho</option></select></label> <button type="button" class="hip-boton principal" data-o="adoptar">Adoptar</button></div>` : ""}
         <div class="hip-mias">${mias.map(e => tarjetaMia(e, cal, semental)).join("")}</div></section>
         <section class="hip-tarjeta"><h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar. El precio sale de su palmarés y su linaje, como lo ve todo el mundo. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}</section>
         <section class="hip-tarjeta"><h3>Avisos de la cuadra</h3>${api.avisos().length ? `<ul class="hip-avisos">${api.avisos().slice(0, 25).map(a => `<li><small>n.º ${a.n}</small> ${esc(a.texto)}</li>`).join("")}</ul>` : '<p class="hip-vacio">Todavía no hay avisos.</p>'}</section>`;
@@ -106,10 +106,9 @@ window.HipodromoCuadraUI = (function () {
       if (t.dataset && t.dataset.tactica) mandar({ tipo: "tactica", id: Number(t.dataset.tactica), tactica: t.value || null });
     });
     cont.addEventListener("click", async e => {
-      const sx = e.target.closest("[data-sexo]"); if (sx) { sexoAdopcion = sx.dataset.sexo; pintar(true); return; }
       const b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
       const id = Number(b.dataset.id), tipo = b.dataset.o;
-      if (tipo === "adoptar") return mandar({ tipo, nombre: api.nombreJugador(), sexo: sexoAdopcion });
+      if (tipo === "adoptar") return mandar({ tipo, nombre: api.nombreJugador(), sexo: (cont.querySelector("#hipAdoptarSexo") || {}).value || "f" });
       if (tipo === "inscribir" || tipo === "desinscribir") return mandar({ tipo, id, n: Number(b.dataset.n) });
       if (tipo === "entrenar") return mandar({ tipo, id, stat: (cont.querySelector(`[data-stat="${id}"]`) || {}).value });
       if (tipo === "cuidar") return mandar({ tipo, id });
