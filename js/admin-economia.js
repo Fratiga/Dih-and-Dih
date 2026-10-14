@@ -442,6 +442,13 @@
         <div class="eco-filtros"><label>Victoria normal ${campoV("normal", v.normal)}</label><label>Con dificultad, núcleo o capital ${campoV("dificil", v.dificil)}</label>
         <label>Primera victoria, leyenda, némesis o tres generaciones ${campoV("especial", v.especial)}</label></div>`;
     }
+    if (j.juego === "zarabanda" || j.juego === "parranda") {
+      const rg = v.rangos || {}, dif = v.dificultades || {};
+      const NOM = { facil: "Fácil", normal: "Normal", dificil: "Difícil", experto: "Experto" };
+      return `<h4>Puntaje por dificultad y rango</h4><p class="eco-ayuda">Al terminar una canción completa (la práctica y las pruebas del editor no cuentan) se mira la dificultad y el rango, que sale de la precisión. Cada casilla es el puntaje que se compara con los umbrales de arriba; -1 = esa partida no da nada. «Sin fallos» se suma si la canción se termina con rango S y sin un solo fallo ni pulsación de más.</p>
+        <div class="eco-filtros"><span>Precisión mínima (%):</span><label>S ${campoV("rangos.S", rg.S)}</label><label>A ${campoV("rangos.A", rg.A)}</label><label>B ${campoV("rangos.B", rg.B)}</label><label>C ${campoV("rangos.C", rg.C)}</label></div>
+        <table class="eco-tabla"><thead><tr><th>Dificultad</th><th>S</th><th>A</th><th>B</th><th>C</th><th>Bonus sin fallos</th></tr></thead><tbody>${Object.keys(NOM).map(d => { const x = dif[d] || {}; return `<tr><td>${NOM[d]}</td>${["S", "A", "B", "C", "sin_fallos"].map(r => `<td>${campoV(`dificultades.${d}.${r}`, x[r])}</td>`).join("")}</tr>`; }).join("")}</tbody></table>`;
+    }
     if (!v.rivales) return "";
     const tablas = j.juego === "ajedrez";
     const filasV = Object.entries(v.rivales).map(([rival, r]) => `<tr><td>${esc(rival === "_otros" ? "Cualquier otro rival" : rival)}</td><td>${campoV(`rivales.${rival}.gana`, r.gana)}</td>${tablas ? `<td>${campoV(`rivales.${rival}.tablas`, r.tablas)}</td>` : ""}<td>${campoV(`rivales.${rival}.pierde`, r.pierde)}</td></tr>`).join("");

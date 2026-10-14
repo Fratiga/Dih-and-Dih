@@ -287,6 +287,8 @@
     fallosBloque = [];
     punteroFallos = 0; activas = []; limpiarEntradas(); gracia = 0; puntos = 0; combo = 0; comboMax = 0;
     perfectos = 0; buenos = 0; fallos = 0; extras = 0; vida = 100; caidaEn = null; efectos = [];
+    // Recompensa de cartas: solo canciones de verdad (ni práctica ni prueba del editor). La clave es la dificultad.
+    if (window.Recompensas && !ajustes.practica && versionJugada !== "prueba") Recompensas.iniciar("zarabanda", ajustes.dificultad);
     avatar = { y: CARRILES.abajo.y, carril: "abajo", salto: -10, golpe: -10 };
     flash = { arriba: -10, abajo: -10 };
     mostrar(null);
@@ -623,6 +625,12 @@
     mostrar(finEl);
     finPuntajesEl.innerHTML = "";
     enviarFallos(completa);
+    // El servidor decide el premio con la precisión (en décimas de %) y suma 10000 si no hubo ni un fallo ni una pulsación de más
+    if (window.Recompensas && !ajustes.practica && versionJugada !== "prueba") {
+      Recompensas.terminar("zarabanda", completa ? "gana" : "pierde", completa ? Math.round(acc * 1000) + (fallos === 0 && extras === 0 ? 10000 : 0) : 0).then(r => {
+        if (completa && r && r.resultado === "nada" && r.motivo === "sin-premio") document.getElementById("rtFinDatos").insertAdjacentHTML("beforeend", "<br><small>Sin recompensa de cartas esta vez: se piden dificultades altas y mucha precisión.</small>");
+      }).catch(() => {});
+    }
     if (completa && !ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada);
     else if (completa && ajustes.practica && versionJugada !== "prueba") subirPuntaje(cancionActual.ruta, ajustes.dificultad, puntos, Math.round(acc * 1000) / 10, rango, comboMax, versionJugada, llego);
     else if (completa && versionJugada === "prueba") finPuntajesEl.innerHTML = `<p class="rt-nota">Es una prueba del editor: no cuenta para los puntajes.</p>`;

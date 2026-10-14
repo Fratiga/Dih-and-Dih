@@ -99,6 +99,41 @@ contiene "un valor que no es número" "$(adm '{"valores": {"maximo": "mucho"}}')
 contiene "un jugador no puede cambiarlo" "$(como $U1 "select cartas_admin_guardar_juego('arqueria', '{\"valores\": {\"maximo\": 4}}'::jsonb);" 2>&1)" "No autorizado"
 comprobar "nada de lo rechazado se guardó" "4" "$(sql "select valores->>'maximo' from cartas_juegos where juego='arqueria'")"
 
+echo "== Zarabanda y Parranda: recompensas exigentes"
+reiniciar
+admz() { como $ADMIN "select cartas_admin_guardar_juego('$1', '$2'::jsonb);" 2>&1; }
+for J in zarabanda parranda; do
+  comprobar "$J: Fácil no da nada, ni con una canción perfecta" "-1" "$(val $J facil gana 10990)"
+  comprobar "$J: Normal con rango S solo da un sello (0)" "0" "$(val $J normal gana 960)"
+  comprobar "$J: Normal con rango A no da nada" "-1" "$(val $J normal gana 900)"
+  comprobar "$J: Difícil con rango S = 1" "1" "$(val $J dificil gana 950)"
+  comprobar "$J: Difícil con rango S y sin fallos = 3" "3" "$(val $J dificil gana 10970)"
+  comprobar "$J: Difícil con rango A solo da un sello (0)" "0" "$(val $J dificil gana 890)"
+  comprobar "$J: Difícil con rango B no da nada" "-1" "$(val $J dificil gana 800)"
+  comprobar "$J: Experto con rango S = 3" "3" "$(val $J experto gana 960)"
+  comprobar "$J: Experto con rango S y sin fallos = 4" "4" "$(val $J experto gana 10990)"
+  comprobar "$J: Experto con rango A = 1" "1" "$(val $J experto gana 890)"
+  comprobar "$J: Experto con rango B = 0" "0" "$(val $J experto gana 800)"
+  comprobar "$J: Experto con rango C no da nada" "-1" "$(val $J experto gana 650)"
+  comprobar "$J: sin fallos pero sin rango S no suma el bonus" "1" "$(val $J experto gana 10890)"
+  comprobar "$J: no terminar la canción no da nada" "-1" "$(val $J experto pierde 990)"
+  comprobar "$J: una dificultad inventada no da nada" "-1" "$(val $J imposible gana 990)"
+done
+contiene "rangos que no bajan de S a C" "$(admz zarabanda '{"valores": {"rangos": {"S": 80, "A": 90, "B": 70, "C": 60}}}')" "baja de S a C"
+contiene "una dificultad desconocida" "$(admz parranda '{"valores": {"dificultades": {"locura": {"S": 1}}}}')" "Dificultad desconocida"
+contiene "un campo raro en una dificultad" "$(admz parranda '{"valores": {"dificultades": {"experto": {"Z": 1}}}}')" "campo desconocido"
+contiene "un campo raro arriba" "$(admz zarabanda '{"valores": {"magia": 1}}')" "campo desconocido"
+admz zarabanda '{"activo": true, "prob": {"bueno": 1, "excelente": 1, "extraordinario": 1}}' >/dev/null
+jugarz() {
+  TK=$(como $1 "select cartas_juego_iniciar('zarabanda', '$2');" | tail -1)
+  sql "update cartas_partidas_juego set inicio = now() - interval '5 minutes' where token='$TK'" >/dev/null
+  como $1 "select cartas_juego_terminar('$TK', 'gana', $3);"
+}
+contiene "Experto, rango S y sin un fallo: tramo extraordinario" "$(jugarz $U1 experto 10990)" '"tramo": "extraordinario"'
+contiene "Fácil perfecto: sin recompensa" "$(jugarz $U2 facil 10990)" '"motivo": "sin-premio"'
+TK=$(como $U3 "select cartas_juego_iniciar('zarabanda', 'experto');" | tail -1)
+contiene "una partida de pocos segundos no cuenta" "$(como $U3 "select cartas_juego_terminar('$TK', 'gana', 10990);")" "muy-rapido"
+
 echo "== Y todo sigue cuadrando"
 comprobar "la auditoría está limpia" "0" "$(auditar)"
 

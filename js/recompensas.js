@@ -1,4 +1,4 @@
-/* Recompensas de cartas de los minijuegos contra la casa (ajedrez, duelo, arquería, Hooey).
+/* Recompensas de cartas de los minijuegos contra la casa (ajedrez, duelo, arquería, Hooey, Zarabanda y Parranda).
    Cada juego avisa al empezar (Recompensas.iniciar) y al terminar (Recompensas.terminar); el servidor decide el
    premio con cartas_juego_iniciar / cartas_juego_terminar (scratchpad/economia_3_recompensas.sql) y aquí solo se
    muestra. Sin sesión iniciada no hace nada. Ver docs/economia-de-cartas.md, sección 6. */
@@ -57,7 +57,7 @@ window.Recompensas = (function () {
     document.head.appendChild(l);
   }
 
-  const NOMBRES_JUEGO = { ajedrez: "Ajedrez", duelo: "Duelo", arqueria: "Arquería", hooey: "Hooey" };
+  const NOMBRES_JUEGO = { ajedrez: "Ajedrez", duelo: "Duelo", arqueria: "Arquería", hooey: "Hooey", fractura: "La Fractura", zarabanda: "Zarabanda", parranda: "Parranda" };
   const TRAMOS = { bueno: "Buen resultado", excelente: "Resultado excelente", extraordinario: "Resultado extraordinario", participacion: "Participación" };
 
   function aviso(texto, clase) {
