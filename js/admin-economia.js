@@ -441,12 +441,14 @@
       <h4>1. Puntaje → tramo</h4>
       <p class="eco-ayuda">El juego informa un puntaje al terminar (en Ajedrez, Duelo, Arquería y La Fractura va de 0 a 4; en Hooey son los sacrificios). Cada tramo empieza en el puntaje que pongas. Por debajo de «Bueno» solo cuenta como participación (sin carta). Tienen que ir de menor a mayor.</p>
       <div class="eco-filtros">${["participacion", "bueno", "excelente", "extraordinario"].map(k => `<label>${k === "participacion" ? "Participación desde" : TRAMOS.find(t => t[0] === k)[1] + " desde"} <input type="number" data-u="${k}" value="${esc(u[k])}" step="any" style="width:5em"></label>`).join("")}</div>
-      <h4>2. Tramo → rareza de la carta</h4>
-      <p class="eco-ayuda">Pesos relativos (no hace falta que sumen 100; 0 = nunca). Si ese tramo toca carta, primero se tira la rareza con estos pesos. Que toque carta en una partida concreta depende además del multiplicador del día y de la regla de «partidas buenas sin carta» (en Ajustes generales).</p>
-      <table class="eco-tabla"><thead><tr><th>Tramo</th>${RAREZAS_JUEGO.map(r => `<th>${r[1]}</th>`).join("")}<th>Resultado</th></tr></thead><tbody>${
-        TRAMOS.map(([t, nom]) => `<tr data-tramo="${t}"><td>${nom}</td>${RAREZAS_JUEGO.map(([r]) => `<td><input type="number" data-p="${r}" min="0" max="1000" value="${esc((pesos[t] || {})[r] ?? 0)}" style="width:4.5em"></td>`).join("")}<td class="eco-pct"></td></tr>`).join("")
+      <h4>2. Cada tramo: probabilidad, rareza y cartas</h4>
+      <p class="eco-ayuda">Para cada tramo eliges: la <b>probabilidad</b> de que dé carta (de 0 a 1; 1 = siempre, 0 = nunca, solo sello), los <b>pesos de rareza</b> (relativos, no hace falta que sumen 100; 0 = nunca) y, si quieres, <b>cartas propias</b> (tipos o cartas concretas; vacío = las del juego, más abajo). La probabilidad se multiplica por el factor del día: la primera carta del día ×1, la segunda ×0,5 y la tercera ×0,25. Tras varias partidas buenas sin carta hay una común asegurada (Ajustes generales).</p>
+      <table class="eco-tabla"><thead><tr><th>Tramo</th><th>Prob. de carta</th>${RAREZAS_JUEGO.map(r => `<th>${r[1]}</th>`).join("")}<th>Reparto</th><th>Cartas propias del tramo (vacío = las del juego)</th></tr></thead><tbody>${
+        TRAMOS.map(([t, nom]) => { const gt = (j.grupos || {})[t] || {}; return `<tr data-tramo="${t}"><td>${nom}</td><td><input type="number" data-prob="${t}" min="0" max="1" step="0.05" value="${esc((j.prob || {})[t] ?? 1)}" style="width:4.5em"></td>${RAREZAS_JUEGO.map(([r]) => `<td><input type="number" data-p="${r}" min="0" max="1000" value="${esc((pesos[t] || {})[r] ?? 0)}" style="width:4.5em"></td>`).join("")}<td class="eco-pct"></td>
+          <td>${TIPOS_CARTA.map(tp => `<label style="white-space:nowrap"><input type="checkbox" data-gt-tipo="${esc(tp)}"${lista(gt.tipos).includes(tp) ? " checked" : ""}> ${esc(tp)}</label>`).join(" ")}<br>
+            <input type="text" data-gt-ids placeholder="ids de cartas concretas, separados por coma" list="ecoCartasIds" value="${esc(lista(gt.ids).join(", "))}" style="width:22em"></td></tr>`; }).join("")
       }</tbody></table>
-      <h4>3. Qué cartas puede dar</h4>
+      <h4>3. Cartas del juego (las usan los tramos sin cartas propias y los sellos)</h4>
       <div class="eco-filtros">
         <span>Tipos (ninguno marcado = cualquiera):</span>
         ${TIPOS_CARTA.map(t => `<label><input type="checkbox" data-g-tipo="${esc(t)}"${lista(g.tipos).includes(t) ? " checked" : ""}> ${esc(t)}</label>`).join(" ")}
@@ -539,12 +541,21 @@
           const ids = det.querySelector('[data-g="ids"]').value.split(/[\s,]+/).filter(Boolean);
           const raras = ids.filter(id => !filas.some(c => c.id === id));
           if (raras.length) { estado(`Estas cartas no existen: ${raras.join(", ")}`, true); return; }
-          const pesos = {};
+          const pesos = {}, prob = {}, grupos = {};
           for (const tr of det.querySelectorAll("tr[data-tramo]")) {
+            const t = tr.dataset.tramo;
             const p = {};
             tr.querySelectorAll("[data-p]").forEach(i => { const n = Math.max(0, Math.round(Number(i.value) || 0)); if (n) p[i.dataset.p] = n; });
-            if (!Object.keys(p).length) { estado(`El tramo «${tr.dataset.tramo}» necesita al menos una rareza con peso mayor que 0.`, true); return; }
-            pesos[tr.dataset.tramo] = p;
+            if (!Object.keys(p).length) { estado(`El tramo «${t}» necesita al menos una rareza con peso mayor que 0.`, true); return; }
+            pesos[t] = p;
+            const pr = Number(tr.querySelector("[data-prob]").value);
+            if (!(pr >= 0 && pr <= 1)) { estado(`La probabilidad del tramo «${t}» va de 0 a 1.`, true); return; }
+            prob[t] = pr;
+            const tiposT = [...tr.querySelectorAll("[data-gt-tipo]")].filter(i => i.checked).map(i => i.dataset.gtTipo);
+            const idsT = tr.querySelector("[data-gt-ids]").value.split(/[\s,]+/).filter(Boolean);
+            const malasT = idsT.filter(id => !filas.some(c => c.id === id));
+            if (malasT.length) { estado(`Estas cartas no existen (${t}): ${malasT.join(", ")}`, true); return; }
+            if (tiposT.length || idsT.length) grupos[t] = { ...(tiposT.length ? { tipos: tiposT } : {}), ...(idsT.length ? { ids: idsT } : {}) };
           }
           const cfg = {
             activo: det.querySelector('[data-c="activo"]').checked,
@@ -552,7 +563,7 @@
             min_segundos: num('[data-c="min_segundos"]'),
             sellos_por_carta: num('[data-c="sellos_por_carta"]'),
             umbrales: Object.fromEntries([...det.querySelectorAll("[data-u]")].map(i => [i.dataset.u, Number(i.value)])),
-            pesos,
+            pesos, prob, grupos,
             grupo: {
               tipos: [...det.querySelectorAll("[data-g-tipo]")].filter(i => i.checked).map(i => i.dataset.gTipo),
               afinidades: det.querySelector('[data-g="afinidades"]').value.split(",").map(t => t.trim()).filter(Boolean),

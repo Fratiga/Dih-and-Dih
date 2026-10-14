@@ -1,0 +1,72 @@
+#!/bin/sh
+# Probabilidad de carta y cartas propias por tramo de cada minijuego (docs/economia-15_juegos_por_tramo.sql). Uso: sh docs/pruebas/t_juegos.sh
+. "$(dirname "$0")/lib.sh"
+FALLOS=0
+adm() { como $ADMIN "select cartas_admin_guardar_juego('arqueria', '$1'::jsonb);" 2>&1; }
+# jugar <usuario> <rival> <puntuación>: una partida de Arquería ganada, ya con el tiempo mínimo cumplido
+jugar() {
+  TK=$(como $1 "select cartas_juego_iniciar('arqueria', '$2');" | tail -1)
+  sql "update cartas_partidas_juego set inicio = now() - interval '5 minutes' where token='$TK'" >/dev/null
+  como $1 "select cartas_juego_terminar('$TK', 'gana', $3);"
+}
+reiniciar() {
+  limpiar
+  sql "delete from cartas_recompensas_registro; delete from cartas_progreso;" >/dev/null 2>&1
+  sql "update cartas_juegos set activo = true, grupos = '{}'::jsonb, prob = '{\"bueno\": 0.5, \"excelente\": 0.8, \"extraordinario\": 1}'::jsonb" >/dev/null
+}
+# hornet sin bonus da valor 1 (tramo bueno); cassius sin bonus da 3 (excelente); cassius con 40 puntos da 4 (extraordinario)
+
+echo "== Por defecto"
+reiniciar
+comprobar "bueno 0,5, excelente 0,8 y extraordinario 1" "0.5/0.8/1" "$(sql "select (prob->>'bueno')||'/'||(prob->>'excelente')||'/'||(prob->>'extraordinario') from cartas_juegos where juego='arqueria'")"
+
+echo "== La probabilidad es de cada tramo"
+reiniciar; adm '{"prob": {"bueno": 0}}' >/dev/null
+contiene "con probabilidad 0 en «bueno» no sale carta, solo un sello" "$(jugar $U1 hornet 0)" '"resultado": "sello"'
+comprobar "...y no se emitió ninguna copia" "0" "$(sql "select count(*) from cartas_ejemplares where propietario='$U1'")"
+reiniciar; adm '{"prob": {"bueno": 1}}' >/dev/null
+contiene "con probabilidad 1 en «bueno» sale carta" "$(jugar $U1 hornet 0)" '"resultado": "carta"'
+reiniciar; adm '{"prob": {"extraordinario": 0}}' >/dev/null
+contiene "con probabilidad 0 en «extraordinario» no sale carta" "$(jugar $U1 cassius 40)" '"resultado": "sello"'
+contiene "...y «excelente» sigue dando carta (prob 0,8 solo con el mismo recorte)" "$(adm '{"prob": {"excelente": 1}}' >/dev/null; jugar $U2 cassius 0)" '"resultado": "carta"'
+reiniciar; adm '{"prob": {"bueno": 0.5}}' >/dev/null
+N=0; for i in 1 2 3 4 5 6 7 8; do
+  sql "delete from cartas_recompensas_registro; delete from cartas_progreso;" >/dev/null 2>&1
+  r=$(jugar $U3 hornet 0); case "$r" in *'"resultado": "carta"'*) N=$((N + 1));; esac
+done
+comprobar "con 0,5 salen cartas a veces pero no siempre (hubo $N de 8)" "si" "$( [ "$N" -ge 1 ] && [ "$N" -le 7 ] && echo si || echo no )"
+
+echo "== Cada tramo con sus propias cartas"
+reiniciar
+adm '{"prob": {"bueno": 1, "excelente": 1}, "pesos": {"bueno": {"rara": 100}, "excelente": {"rara": 100}, "extraordinario": {"rara": 100}}, "grupos": {"bueno": {"ids": ["rara-2"]}, "excelente": {"ids": ["rara-3"]}}}' >/dev/null
+contiene "«bueno» da exactamente la carta de su grupo" "$(jugar $U1 hornet 0)" '"carta": "rara-2"'
+contiene "«excelente» da la suya" "$(jugar $U2 cassius 0)" '"carta": "rara-3"'
+contiene "«extraordinario» no tiene grupo propio: usa el del juego (una criatura rara)" "$(jugar $U3 cassius 40)" '"rareza": "rara"'
+comprobar "...y el que no tiene grupo propio puede sacar cualquier rara del grupo del juego, no solo las de otros tramos" "t" "$(sql "select exists (select 1 from cartas_ejemplares where propietario='$U3' and carta_id like 'rara-%')")"
+reiniciar
+adm '{"prob": {"bueno": 1}, "pesos": {"bueno": {"comun": 100}}, "grupos": {"bueno": {"tipos": ["Objeto"]}}}' >/dev/null
+jugar $U1 hornet 0 >/dev/null
+comprobar "un grupo por tipo solo da cartas de ese tipo" "Objeto" "$(sql "select c.tipo from cartas_ejemplares e join cartas_catalogo c on c.id=e.carta_id where e.propietario='$U1'")"
+reiniciar
+adm '{"prob": {"bueno": 1}, "pesos": {"bueno": {"comun": 100}}, "grupos": {"bueno": {"ids": ["comun-1"]}}}' >/dev/null
+sql "update cartas_catalogo set en_circulacion = false where id = 'comun-1'" >/dev/null
+nocontiene "una carta concreta fuera de circulación no sale aunque el tramo la pida" "$(jugar $U1 hornet 0)" '"carta": "comun-1"'
+comprobar "...y nadie recibió esa copia" "0" "$(sql "select count(*) from cartas_ejemplares where carta_id='comun-1'")"
+
+echo "== Lo que se puede guardar"
+reiniciar
+contiene "probabilidad fuera de 0 a 1" "$(adm '{"prob": {"bueno": 1.5}}')" "va de 0 a 1"
+contiene "probabilidad para la participación (nunca da carta)" "$(adm '{"prob": {"participacion": 0.5}}')" "tramo desconocido"
+contiene "carta que no existe en un grupo" "$(adm '{"grupos": {"bueno": {"ids": ["no-existe"]}}}')" "no existen"
+contiene "campo raro en un grupo" "$(adm '{"grupos": {"bueno": {"colores": ["rojo"]}}}')" "campo desconocido"
+contiene "un tramo sin ninguna rareza con peso" "$(adm '{"pesos": {"bueno": {"comun": 0}}}')" "al menos una rareza"
+contiene "pesos con decimales" "$(adm '{"pesos": {"bueno": {"comun": 1.5}}}')" "enteros"
+contiene "un jugador no puede cambiar la configuración" "$(como $U1 "select cartas_admin_guardar_juego('arqueria', '{\"prob\": {\"bueno\": 1}}'::jsonb);" 2>&1)" "No autorizado"
+comprobar "nada de lo rechazado se guardó" "0.5" "$(sql "select prob->>'bueno' from cartas_juegos where juego='arqueria'")"
+
+echo "== Y todo sigue cuadrando"
+comprobar "la auditoría está limpia" "0" "$(auditar)"
+
+echo
+[ "$FALLOS" = 0 ] && echo "TODO BIEN" || echo "$FALLOS comprobación(es) falló(aron)"
+exit "$FALLOS"
