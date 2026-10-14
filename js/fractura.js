@@ -720,10 +720,20 @@
     if (f) { abrirFicha(f.dataset.fichaFin); $("frFicha").addEventListener("close", () => { if (!$("frFin").classList.contains("hidden")) pantallaFin(); }, { once: true }); return; }
     if (t.closest("[data-premio]")) {
       try {
+        // La recompensa pasa por el sistema oficial de cartas: puede ser una carta, un sello (si no había carta que dar o se llegó al
+        // tope del día) o nada (recompensas apagadas: la guerra no se gasta y se podrá reclamar más adelante)
         const r = await Red.pedirPremio(ultimoResumen.guerraId);
-        ultimoResumen.premiado = true;
-        const carta = window.cartaPorId ? window.cartaPorId(r.carta) : null;
-        await dialogo.avisar(`Has ganado la carta ${carta ? carta.nombre : r.carta} (${r.rareza}).`, { titulo: "Premio de la Fractura" });
+        if (r.resultado === "nada") {
+          await dialogo.avisar("Las recompensas de cartas están desactivadas por ahora. Tu victoria queda anotada y podrás reclamar esta carta cuando se activen.", { titulo: "Premio de la Fractura" });
+        } else if (r.resultado === "carta" || (!r.resultado && r.carta)) {   // (sin «resultado» = la versión anterior del servidor)
+          ultimoResumen.premiado = true;
+          const carta = window.cartaPorId ? window.cartaPorId(r.carta) : null;
+          await dialogo.avisar(`Has ganado la carta ${carta ? carta.nombre : r.carta} (${r.rareza}).${r.de_reserva ? " Es una copia que volvió al mercado." : ""}`, { titulo: "Premio de la Fractura" });
+        } else {
+          ultimoResumen.premiado = true;
+          const motivo = r.motivo === "tope-diario" ? "Hoy ya has ganado todas las cartas que se pueden ganar." : "Ahora mismo no hay ninguna carta que puedas recibir.";
+          await dialogo.avisar(`${motivo} Ganas un sello (${r.sellos} de ${r.sellos_meta}): al juntar ${r.sellos_meta} sellos de este juego te llevas una carta.`, { titulo: "Premio de la Fractura" });
+        }
       } catch (e) {
         await dialogo.avisar(`No se pudo dar el premio: ${e.message || e}. ¿Corriste scratchpad/fractura.sql en Supabase?`);
       }

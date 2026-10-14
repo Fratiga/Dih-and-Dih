@@ -14,8 +14,6 @@ nueva_apuesta() {
   SA=$(dar $1 comun-1); SB=$(dar $2 comun-2)
   P=$(como $1 "select cartas_retar('$2', '$MA', '{}'::jsonb, array['$SA']::uuid[]);" | tail -1)
   como $2 "select cartas_responder('$P', true, '$MB', '{}'::jsonb, array['$SB']::uuid[]);" >/dev/null
-  como $1 "select cartas_registrar_motor('$P', '$V');" >/dev/null
-  como $2 "select cartas_registrar_motor('$P', '$V');" >/dev/null
 }
 # ver <partida> <resultado> <motivo> [acciones] [actualizada] [motor]: lo que haría la función del servidor, con los datos de la partida
 ver() {
@@ -24,6 +22,7 @@ ver() {
   servicio "select cartas_i_aplicar_verificacion('$1', '$2', '$3', $n, '$act'::timestamptz, '$motor', 'detalle de prueba');" | tail -1
 }
 limpiar
+sql "update cartas_economia_ajustes set valor = '\"$V\"' where clave = 'motor_version'" >/dev/null   # la versión del motor que fija el servidor
 M1=$(mazo_de $U1); M2=$(mazo_de $U2); M3=$(mazo_de $U3); M4=$(mazo_de $U4)
 
 echo "== Permisos: solo el servidor puede cerrar una apuesta con un veredicto"
@@ -40,7 +39,7 @@ contiene "un abandono no puede ser empate" "$(servicio "select cartas_i_aplicar_
 contiene "una partida que no existe da error claro" "$(servicio "select cartas_i_aplicar_verificacion(gen_random_uuid(), 'j1', 'verificada', 0, now(), '$V');")" "no encontrada"
 
 echo "== Autenticidad del registro: nadie lo puede escribir ni cambiar a mano"
-for col in "acciones = '[]'::jsonb" "semilla = 1" "primero = 1" "mazo1 = '[]'::jsonb" "mazo2 = '[]'::jsonb" "cartas = '{}'::jsonb" "turno = j2" "motor1 = 'otro'" "reporte1 = 'j1'" "estado = 'terminada'" "resultado = 'j1'" "actualizada = now()"; do
+for col in "acciones = '[]'::jsonb" "semilla = 1" "primero = 1" "mazo1 = '[]'::jsonb" "mazo2 = '[]'::jsonb" "cartas = '{}'::jsonb" "turno = j2" "instantanea = '{}'::jsonb" "reporte1 = 'j1'" "estado = 'terminada'" "resultado = 'j1'" "actualizada = now()"; do
   R=$(como $U1 "update cartas_partidas set $col where id = '$PA';")
   contiene "un jugador no puede cambiar ${col%% =*} directamente" "$R" "permission denied"
 done
@@ -59,18 +58,14 @@ contiene "...y una demasiado larga" "$(como $TURNO "select cartas_accion('$PA', 
 nocontiene "el que tiene el turno sí puede jugar" "$(como $TURNO "select cartas_accion('$PA', '{\"t\":\"fin\"}'::jsonb);")" "ERROR"
 comprobar "y entonces el turno pasa al otro, lo decide el servidor" "$OTRO" "$(sql "select turno from cartas_partidas where id='$PA'")"
 
-echo "== Versión del motor: solo se decide si los dos jugaron con la misma que se usa para repetir"
-comprobar "cada navegador registra la suya, y solo la primera vez" "v1|v1" "$(sql "select motor1||'|'||motor2 from cartas_partidas where id='$PA'")"
-como $U1 "select cartas_registrar_motor('$PA', 'v-trampa');" >/dev/null
-comprobar "no se puede cambiar después" "v1" "$(sql "select motor1 from cartas_partidas where id='$PA'")"
-contiene "quien no juega no puede registrar versión" "$(como $U3 "select cartas_registrar_motor('$PA', 'v1');")" "Partida no encontrada"
-contiene "una versión con caracteres raros se rechaza" "$(como $U1 "select cartas_registrar_motor('$PA', 'v1; drop table x');")" "Versión inválida"
-comprobar "con otra versión de motor no se decide nada" "motor" "$(ver $PA j2 verificada "" "" v2)"
-sql "update cartas_partidas set motor2 = null where id='$PA'" >/dev/null
-comprobar "si un jugador no registró versión, tampoco" "motor" "$(ver $PA j2 verificada)"
-sql "update cartas_partidas set motor2 = 'v2' where id='$PA'" >/dev/null
-comprobar "ni si los dos jugaron con versiones distintas" "motor" "$(ver $PA j2 verificada)"
-sql "update cartas_partidas set motor2 = 'v1' where id='$PA'" >/dev/null
+echo "== Versión del motor: la fija el servidor en la instantánea de la partida y solo se decide con esa misma"
+comprobar "la instantánea lleva la versión que fijó el servidor" "v1" "$(sql "select instantanea->>'motor' from cartas_partidas where id='$PA'")"
+contiene "los jugadores no pueden registrar ni cambiar la versión" "$(como $U1 "update cartas_partidas set instantanea = jsonb_set(instantanea, '{motor}', '\"v-trampa\"') where id = '$PA';")" "permission denied"
+comprobar "repetida con otra versión del motor: no se decide nada" "motor" "$(ver $PA j2 verificada "" "" v2)"
+comprobar "...ni con una versión en blanco" "motor" "$(ver $PA j2 verificada "" "" " ")"
+sql "update cartas_economia_ajustes set valor = '\"v9\"' where clave = 'motor_version'" >/dev/null
+comprobar "cambiar el ajuste del servidor después no afecta a la partida ya empezada" "motor" "$(ver $PA j2 verificada "" "" v9)"
+sql "update cartas_economia_ajustes set valor = '\"$V\"' where clave = 'motor_version'" >/dev/null
 comprobar "la apuesta sigue intacta tras todos esos rechazos" "en_curso/activa/-/-" "$(estado_partida $PA)"
 comprobar "...y las dos cartas siguen bloqueadas" "2" "$(bloqueos)"
 

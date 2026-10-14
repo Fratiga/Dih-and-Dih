@@ -44,9 +44,55 @@ if sql "select 1 from information_schema.columns where table_name='cartas_catalo
   if como $U2 "select hipodromo_cartas_reserva();" | grep -q '"carta": "comun-3"'; then nota "hipodromo_cartas_reserva() ENSEÑA las cartas fuera de circulación (la compra falla, pero aparecen en la lista). Lo cambia quien mantiene el Hipódromo."; fi
   sql "update cartas_catalogo set en_circulacion = true where id = 'comun-3'" >/dev/null
   nocontiene "...y puesta en circulación vuelve a poder comprarse" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "ERROR"
-  L=$(dar $U3 legendaria-1)
-  R=$(como $U3 "select hipodromo_vender_carta('$L');")
-  if printf '%s' "$R" | grep -q '"ok": true'; then nota "El Hipódromo compra legendarias (800 monedas) y las vende desde la reserva (2000): una legendaria puede cambiar de manos por monedas, sin pasar por las reglas del mercader (que las excluye)."; fi
+  if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vender_carta(uuid)'::regprocedure)) > 0")" != "t" ]; then
+    L=$(dar $U3 legendaria-1)
+    R=$(como $U3 "select hipodromo_vender_carta('$L');")
+    if printf '%s' "$R" | grep -q '"ok": true'; then nota "El Hipódromo compra legendarias (800 monedas) y las vende desde la reserva (2000): una legendaria puede cambiar de manos por monedas, sin pasar por las reglas del mercader (que las excluye)."; fi
+  fi
+fi
+
+echo "== Hipódromo, opción B: legendarias y limitadas fuera, solo cartas en circulación (llamadas directas al servidor)"
+if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vender_carta(uuid)'::regprocedure)) > 0")" = "t" ]; then
+  limpiar
+  sql "delete from hipodromo_movimientos; delete from hipodromo_billeteras; update cartas_catalogo set en_circulacion = true where id <> 'bufon'" >/dev/null
+  PRECIOS_ANTES=$(sql "select string_agg(rareza||':'||compra||'/'||venta, ',' order by rareza) from hipodromo_precios_cartas")
+  # una legendaria en la reserva y monedas de sobra
+  LEG=$(dar $U4 legendaria-1); sql "select cartas_i_retirar('$LEG', 'reserva', 'prueba');" >/dev/null
+  dar_monedas $U1 5000
+  R=$(como $U1 "select hipodromo_comprar_carta('legendaria-1');")
+  contiene "comprar una legendaria llamando a la función: rechazado" "$R" "legendarias y limitadas no se venden"
+  comprobar "...no se cobra nada" "5000" "$(monedas $U1)"
+  comprobar "...y la legendaria sigue en la reserva" "en_reserva" "$(sql "select estado from cartas_ejemplares where id='$LEG'")"
+  # aunque alguien vuelva a ponerle precio a la limitada, la función sigue rechazándola
+  sql "insert into hipodromo_precios_cartas values ('limitada', 5, 5) on conflict (rareza) do update set compra = 5, venta = 5" >/dev/null
+  sql "update cartas_catalogo set en_circulacion = true where id = 'bufon'" >/dev/null
+  BUF=$(dar $U1 bufon)
+  contiene "vender una limitada llamando a la función: rechazado (aunque tenga precio)" "$(como $U1 "select hipodromo_vender_carta('$BUF');")" "legendarias y limitadas no se compran"
+  comprobar "...la carta sigue siendo del jugador" "$U1/poseida" "$(sql "select propietario::text||'/'||estado from cartas_ejemplares where id='$BUF'")"
+  BUF2=$(dar $U4 bufon); sql "select cartas_i_retirar('$BUF2', 'reserva', 'prueba');" >/dev/null
+  contiene "comprar una limitada de la reserva: rechazado (aunque tenga precio)" "$(como $U1 "select hipodromo_comprar_carta('bufon');")" "legendarias y limitadas no se venden"
+  sql "delete from hipodromo_precios_cartas where rareza = 'limitada'" >/dev/null
+  LEG2=$(dar $U1 legendaria-1)
+  contiene "vender una legendaria que se tiene: rechazado" "$(como $U1 "select hipodromo_vender_carta('$LEG2');")" "legendarias y limitadas no se compran"
+  comprobar "...y sigue siendo suya" "$U1/poseida" "$(sql "select propietario::text||'/'||estado from cartas_ejemplares where id='$LEG2'")"
+  comprobar "ninguna moneda se movió en todo esto" "5000" "$(monedas $U1)"
+  # la lista de la reserva
+  COM=$(dar $U4 comun-1); sql "select cartas_i_retirar('$COM', 'reserva', 'prueba');" >/dev/null
+  COM2=$(dar $U4 comun-2); sql "select cartas_i_retirar('$COM2', 'reserva', 'prueba'); update cartas_catalogo set en_circulacion = false where id = 'comun-2';" >/dev/null
+  LISTA=$(como $U1 "select hipodromo_cartas_reserva();")
+  contiene "la lista enseña una carta común en circulación" "$LISTA" '"carta": "comun-1"'
+  nocontiene "...no enseña la legendaria de la reserva" "$LISTA" 'legendaria-1'
+  nocontiene "...no enseña la limitada de la reserva" "$LISTA" '"bufon"'
+  nocontiene "...no enseña una carta que no está en circulación" "$LISTA" 'comun-2'
+  contiene "comprar una carta fuera de circulación llamando a la función: rechazado" "$(como $U1 "select hipodromo_comprar_carta('comun-2');")" "todavía no está en circulación"
+  comprobar "...sin cobrar" "5000" "$(monedas $U1)"
+  nocontiene "una carta común en circulación sigue pudiéndose comprar" "$(como $U1 "select hipodromo_comprar_carta('comun-1');")" "ERROR"
+  comprobar "...por su precio de siempre (50)" "4950" "$(monedas $U1)"
+  C3=$(dar $U1 comun-3)
+  nocontiene "y vender una común sigue siendo posible" "$(como $U1 "select hipodromo_vender_carta('$C3');")" "ERROR"
+  comprobar "...por su precio de siempre (20)" "4970" "$(monedas $U1)"
+  comprobar "los precios no se tocaron" "$PRECIOS_ANTES" "$(sql "select string_agg(rareza||':'||compra||'/'||venta, ',' order by rareza) from hipodromo_precios_cartas")"
+  comprobar "la auditoría está limpia" "0" "$(auditar)"
 fi
 
 echo "== Hipódromo: dos compradores a la vez por la última copia de la reserva"
@@ -74,18 +120,11 @@ if sql "select 1 from pg_trigger where tgname='perfiles_proteger_trg'" | grep -q
   sql "update perfiles set side = 'A' where user_id='$U1'" >/dev/null
 fi
 
-echo "== La Fractura: su recompensa escribe directamente en la colección"
-limpiar
-sql "update cartas_catalogo set limite = null where id = 'comun-9'" >/dev/null     # la Fractura solo premia cartas SIN límite global
-G=$(sql "insert into fractura_guerras (user_id, titulo, resultado, pvp, logros) values ('$U1', 'Guerra de prueba', 'victoria', false, '[]') returning id")
-R=$(como $U1 "select fractura_recompensa('$G');")
-if printf '%s' "$R" | grep -q '"carta"'; then
-  CARTA=$(printf '%s' "$R" | sed 's/.*"carta": "\([^"]*\)".*/\1/')
-  EJ=$(sql "select count(*) from cartas_ejemplares where propietario='$U1' and carta_id='$CARTA'")
-  COL=$(sql "select coalesce(sum(cantidad), 0) from cartas_coleccion where user_id='$U1' and carta_id='$CARTA'")
-  nota "fractura_recompensa dio $CARTA: la colección dice $COL copia(s) y los ejemplares dicen $EJ. La auditoría sale: $(auditar) problema(s)."
+echo "== La Fractura: su recompensa ya no puede escribir en la colección a mano"
+if [ "$(sql "select pg_get_functiondef('fractura_recompensa(uuid)'::regprocedure) ~* 'insert into cartas_coleccion'")" = "t" ]; then
+  nota "fractura_recompensa (la versión de producción) escribe DIRECTAMENTE en cartas_coleccion: crea copias fantasma. La corrige economia-12 (probada en t_fractura.sh)."
 else
-  nota "fractura_recompensa falló: $(printf '%s' "$R" | head -c 160 | tr '\n' ' ')"
+  comprobar "la función ya no escribe en cartas_coleccion" "f" "$(sql "select pg_get_functiondef('fractura_recompensa(uuid)'::regprocedure) ~* 'insert into cartas_coleccion'")"
 fi
 
 echo

@@ -11,3 +11,6 @@ tools/bufon/
 *.blend
 *.blend1
 assets/cosas/sample-white-cotton-textile.jpg
+
+# Copias externas de la base (traen datos de jugadores en texto plano): nunca al repositorio publico
+respaldos/

@@ -421,27 +421,88 @@
   const nombreCarta = id => (filas.find(f => f.id === id) || { nombre: id }).nombre;
 
   /* ---------------- juegos, ajustes y recetas ---------------- */
+  let perfilesJuego = [];
+  const TRAMOS = [["bueno", "Bueno"], ["excelente", "Excelente"], ["extraordinario", "Extraordinario"]];
+  const RAREZAS_JUEGO = [["comun", "Común"], ["infrecuente", "Poco común"], ["rara", "Rara"]];
+  const TIPOS_CARTA = ["Personaje", "Criatura", "Objeto", "Terreno", "Reacción", "Acción", "Entidad"];
+  const lista = v => Array.isArray(v) ? v : [];
+
+  function tarjetaJuego(j) {
+    const g = j.grupo || {}, pesos = j.pesos || {}, u = j.umbrales || {};
+    const idsTxt = lista(g.ids).join(", ");
+    return `<details class="eco-juego" data-juego="${esc(j.juego)}"${j.activo ? " data-era-activo=\"1\"" : ""} style="margin:.6em 0;padding:.4em .8em;border:1px solid currentColor;border-radius:6px">
+      <summary><b>${esc(j.nombre)}</b> · <span class="${j.activo ? "eco-error" : "eco-ok"}">${j.activo ? "da cartas" : "apagado"}</span> · hasta ${esc(j.tope_dia)} al día</summary>
+      <div class="eco-filtros">
+        <label><input type="checkbox" data-c="activo"${j.activo ? " checked" : ""}> Da cartas</label>
+        <label>Cartas por día <input type="number" data-c="tope_dia" min="0" max="50" value="${esc(j.tope_dia)}"></label>
+        <label>Segundos mínimos de partida <input type="number" data-c="min_segundos" min="0" max="3600" value="${esc(j.min_segundos)}"></label>
+        <label>Sellos por carta <input type="number" data-c="sellos_por_carta" min="1" max="50" value="${esc(j.sellos_por_carta)}"></label>
+      </div>
+      <h4>1. Puntaje → tramo</h4>
+      <p class="eco-ayuda">El juego informa un puntaje al terminar (en Ajedrez, Duelo, Arquería y La Fractura va de 0 a 4; en Hooey son los sacrificios). Cada tramo empieza en el puntaje que pongas. Por debajo de «Bueno» solo cuenta como participación (sin carta). Tienen que ir de menor a mayor.</p>
+      <div class="eco-filtros">${["participacion", "bueno", "excelente", "extraordinario"].map(k => `<label>${k === "participacion" ? "Participación desde" : TRAMOS.find(t => t[0] === k)[1] + " desde"} <input type="number" data-u="${k}" value="${esc(u[k])}" step="any" style="width:5em"></label>`).join("")}</div>
+      <h4>2. Tramo → rareza de la carta</h4>
+      <p class="eco-ayuda">Pesos relativos (no hace falta que sumen 100; 0 = nunca). Si ese tramo toca carta, primero se tira la rareza con estos pesos. Que toque carta en una partida concreta depende además del multiplicador del día y de la regla de «partidas buenas sin carta» (en Ajustes generales).</p>
+      <table class="eco-tabla"><thead><tr><th>Tramo</th>${RAREZAS_JUEGO.map(r => `<th>${r[1]}</th>`).join("")}<th>Resultado</th></tr></thead><tbody>${
+        TRAMOS.map(([t, nom]) => `<tr data-tramo="${t}"><td>${nom}</td>${RAREZAS_JUEGO.map(([r]) => `<td><input type="number" data-p="${r}" min="0" max="1000" value="${esc((pesos[t] || {})[r] ?? 0)}" style="width:4.5em"></td>`).join("")}<td class="eco-pct"></td></tr>`).join("")
+      }</tbody></table>
+      <h4>3. Qué cartas puede dar</h4>
+      <div class="eco-filtros">
+        <span>Tipos (ninguno marcado = cualquiera):</span>
+        ${TIPOS_CARTA.map(t => `<label><input type="checkbox" data-g-tipo="${esc(t)}"${lista(g.tipos).includes(t) ? " checked" : ""}> ${esc(t)}</label>`).join(" ")}
+      </div>
+      <div class="eco-filtros">
+        <label>Afinidades (separadas por coma, vacío = cualquiera) <input type="text" data-g="afinidades" value="${esc(lista(g.afinidades).join(", "))}" style="width:16em"></label>
+      </div>
+      <div class="eco-filtros">
+        <label>Cartas concretas (ids separados por coma; si pones alguna, SOLO se dan esas) <textarea data-g="ids" rows="2" cols="48" list="ecoCartasIds">${esc(idsTxt)}</textarea></label>
+        <small class="eco-ayuda" data-g-nombres>${lista(g.ids).map(id => esc(nombreCarta(id))).join(", ")}</small>
+      </div>
+      <p class="eco-ayuda">Aparte de esto, el servidor solo da cartas publicadas, obtenibles, <b>en circulación</b>, con copias disponibles y que el jugador pueda recibir sin pasar sus límites. Si no queda ninguna, el jugador recibe un sello.</p>
+      <button type="button" data-guardar-juego>Guardar ${esc(j.nombre)}</button>
+      <h4>Últimas recompensas</h4>
+      <div data-monitor>Se carga al abrir este juego...</div>
+    </details>`;
+  }
+
+  function resumenPesos(tr) {
+    const v = [...tr.querySelectorAll("[data-p]")].map(i => [i.dataset.p, Math.max(0, Number(i.value) || 0)]);
+    const tot = v.reduce((a, [, n]) => a + n, 0);
+    tr.querySelector(".eco-pct").textContent = tot ? v.filter(([, n]) => n).map(([r, n]) => `${Math.round(n * 100 / tot)} % ${r}`).join(" · ") : "sin pesos: error";
+  }
+
+  async function monitorJuego(det) {
+    const caja = det.querySelector("[data-monitor]");
+    try {
+      const supabase = await fichasCliente();
+      const { data, error } = await supabase.from("cartas_recompensas_registro").select("creado, user_id, tramo, valor, resultado, carta_id, nota")
+        .eq("juego", det.dataset.juego).order("creado", { ascending: false }).limit(15);
+      if (error) throw error;
+      if (!data.length) { caja.textContent = "Todavía nadie ha jugado esto con las recompensas encendidas."; return; }
+      const quien = id => (perfilesJuego.find(p => p.id === id) || {}).username || String(id).slice(0, 6);
+      caja.innerHTML = `<div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Cuándo</th><th>Jugador</th><th>Puntaje</th><th>Tramo</th><th>Resultado</th><th>Nota</th></tr></thead><tbody>${
+        data.map(r => `<tr><td>${esc(new Date(r.creado).toLocaleString("es"))}</td><td>${esc(quien(r.user_id))}</td><td>${esc(r.valor)}</td><td>${esc(r.tramo)}</td><td>${r.resultado === "carta" ? "<b>" + esc(nombreCarta(r.carta_id)) + "</b>" : esc(r.resultado)}</td><td>${esc(r.nota || "")}</td></tr>`).join("")
+      }</tbody></table></div>`;
+    } catch (e) { caja.textContent = "No se pudo leer el registro: " + (e.message || e); }
+  }
+
   async function pintarJuegos() {
     const cuerpo = document.getElementById("ecoCuerpo");
     cuerpo.innerHTML = `<div id="ecoJgRes">Cargando...</div>`;
     const res = document.getElementById("ecoJgRes");
     try {
       const [datos, recetas] = await Promise.all([rpc("cartas_admin_juegos"), rpc("cartas_admin_recetas")]);
+      if (!filas.length) { try { filas = await rpc("cartas_admin_limites"); } catch (e) { /* sin lista de cartas: el selector de cartas concretas queda sin nombres */ } }
+      try { if (!perfilesJuego.length && typeof adminListarPerfiles === "function") perfilesJuego = await adminListarPerfiles(); } catch (e) { /* sin nombres de jugador */ }
       const todosApagados = datos.juegos.every(j => !j.activo);
       const aj = datos.ajustes || {};
       const json = v => esc(JSON.stringify(v ?? null, null, 1));
       res.innerHTML = `
         <p class="${todosApagados ? "eco-ok" : "eco-error"}">${todosApagados ? "Las recompensas de cartas están APAGADAS: nadie gana cartas jugando." : "Hay juegos con recompensa ENCENDIDA. Mientras el servidor no pueda comprobar el resultado de la partida, un jugador con el navegador modificado puede inventar su resultado (los topes diarios limitan el daño, no lo impiden)."}</p>
-        <h3>Juegos</h3>
-        <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr><th>Juego</th><th>Da cartas</th><th>Tope/día</th><th>Segundos mínimos</th><th>Sellos por carta</th><th>Umbrales (participación, bueno, excelente, extraordinario)</th><th></th></tr></thead><tbody>${
-          datos.juegos.map(j => `<tr data-juego="${esc(j.juego)}"><td><b>${esc(j.nombre)}</b></td>
-            <td><input type="checkbox" data-c="activo"${j.activo ? " checked" : ""} aria-label="Da cartas: ${esc(j.nombre)}"></td>
-            <td><input type="number" data-c="tope_dia" min="0" max="50" value="${j.tope_dia}"></td>
-            <td><input type="number" data-c="min_segundos" min="0" max="3600" value="${j.min_segundos}"></td>
-            <td><input type="number" data-c="sellos_por_carta" min="1" max="50" value="${j.sellos_por_carta}"></td>
-            <td>${["participacion", "bueno", "excelente", "extraordinario"].map(k => `<input type="number" data-u="${k}" value="${j.umbrales[k]}" step="any" title="${k}" style="width:4.5em">`).join(" ")}</td>
-            <td><button type="button" data-guardar-juego>Guardar</button></td></tr>`).join("")
-        }</tbody></table></div>
+        <h3>Minijuegos</h3>
+        <p class="eco-ayuda">Una tarjeta por minijuego: qué puntaje da qué tramo, qué rarezas salen en cada tramo y de qué cartas. Abre una para ver sus últimas recompensas.</p>
+        ${datos.juegos.map(tarjetaJuego).join("")}
+        <datalist id="ecoCartasIds">${filas.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join("")}</datalist>
         <h3>Ajustes generales</h3>
         <div class="eco-filtros" id="ecoAjustes">
           <label>Cartas por día entre todos los juegos <input type="number" data-a="tope_dia_total" min="0" value="${esc(aj.tope_dia_total ?? 6)}"></label>
@@ -449,6 +510,8 @@
           <label>Mejora personal (0,1 = 10 %) <input type="number" data-a="mejora_personal" step="any" min="0" value="${esc(aj.mejora_personal ?? 0.1)}"></label>
           <label>Horas para devolver una apuesta con un solo aviso <input type="number" data-a="apuesta_silencio_horas" min="1" max="720" value="${esc(aj.apuesta_silencio_horas ?? 24)}"></label>
           <label>Horas para devolver una apuesta sin avisos <input type="number" data-a="apuesta_inactividad_horas" min="1" max="720" value="${esc(aj.apuesta_inactividad_horas ?? 72)}"></label>
+          <label>Días para cerrar una disputa sin resolver <input type="number" data-a="disputa_dias" min="1" max="365" value="${esc(aj.disputa_dias ?? 14)}"></label>
+          <label title="Cada partida copia este valor al aceptarse. Súbelo siempre que cambies cartas-motor.js, cartas-efectos.js o cartas-vinculos.js (y la VERSION de cartas-motor.js)">Versión del motor de Triunfos <input type="text" data-a="motor_version" maxlength="40" value="${esc(typeof aj.motor_version === "string" ? aj.motor_version : "")}" style="width:12em"></label>
           <button type="button" id="ecoGuardarAjustes">Guardar ajustes</button>
         </div>
         <h3>Recetas de la forja</h3>
@@ -464,22 +527,46 @@
         }</tbody></table></div>
         <p class="eco-ayuda">Las recetas piden rarezas <code>comun</code>, <code>infrecuente</code> o <code>rara</code> (la forja nunca usa legendarias ni limitadas). Ejemplo de entrada: <code>[{"rareza":"comun","n":5}]</code>. Salida: <code>{"rareza":"infrecuente"}</code>.</p>`;
 
-      res.querySelectorAll("[data-guardar-juego]").forEach(b => b.addEventListener("click", async () => {
-        const tr = b.closest("tr");
-        const cfg = {
-          activo: tr.querySelector('[data-c="activo"]').checked,
-          tope_dia: Number(tr.querySelector('[data-c="tope_dia"]').value),
-          min_segundos: Number(tr.querySelector('[data-c="min_segundos"]').value),
-          sellos_por_carta: Number(tr.querySelector('[data-c="sellos_por_carta"]').value),
-          umbrales: Object.fromEntries([...tr.querySelectorAll("[data-u]")].map(i => [i.dataset.u, Number(i.value)]))
-        };
-        if (cfg.activo && !window.confirm("Vas a encender las recompensas de cartas de este juego. El servidor no puede comprobar el resultado de la partida y los jugadores podrían falsearlo. ¿Seguro?")) return;
-        try { await rpc("cartas_admin_guardar_juego", { p_juego: tr.dataset.juego, p_cfg: cfg }); estado("Juego guardado."); pintarJuegos(); }
-        catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
-      }));
+      res.querySelectorAll("details.eco-juego").forEach(det => {
+        det.querySelectorAll("tr[data-tramo]").forEach(tr => { resumenPesos(tr); tr.addEventListener("input", () => resumenPesos(tr)); });
+        det.addEventListener("toggle", () => { if (det.open && !det.dataset.visto) { det.dataset.visto = "1"; monitorJuego(det); } });
+        det.querySelector('[data-g="ids"]').addEventListener("input", ev => {
+          const ids = ev.target.value.split(/[\s,]+/).filter(Boolean);
+          det.querySelector("[data-g-nombres]").textContent = ids.map(id => filas.some(c => c.id === id) ? nombreCarta(id) : `(${id}: no existe)`).join(", ");
+        });
+        det.querySelector("[data-guardar-juego]").addEventListener("click", async () => {
+          const num = sel => Number(det.querySelector(sel).value);
+          const ids = det.querySelector('[data-g="ids"]').value.split(/[\s,]+/).filter(Boolean);
+          const raras = ids.filter(id => !filas.some(c => c.id === id));
+          if (raras.length) { estado(`Estas cartas no existen: ${raras.join(", ")}`, true); return; }
+          const pesos = {};
+          for (const tr of det.querySelectorAll("tr[data-tramo]")) {
+            const p = {};
+            tr.querySelectorAll("[data-p]").forEach(i => { const n = Math.max(0, Math.round(Number(i.value) || 0)); if (n) p[i.dataset.p] = n; });
+            if (!Object.keys(p).length) { estado(`El tramo «${tr.dataset.tramo}» necesita al menos una rareza con peso mayor que 0.`, true); return; }
+            pesos[tr.dataset.tramo] = p;
+          }
+          const cfg = {
+            activo: det.querySelector('[data-c="activo"]').checked,
+            tope_dia: num('[data-c="tope_dia"]'),
+            min_segundos: num('[data-c="min_segundos"]'),
+            sellos_por_carta: num('[data-c="sellos_por_carta"]'),
+            umbrales: Object.fromEntries([...det.querySelectorAll("[data-u]")].map(i => [i.dataset.u, Number(i.value)])),
+            pesos,
+            grupo: {
+              tipos: [...det.querySelectorAll("[data-g-tipo]")].filter(i => i.checked).map(i => i.dataset.gTipo),
+              afinidades: det.querySelector('[data-g="afinidades"]').value.split(",").map(t => t.trim()).filter(Boolean),
+              ids
+            }
+          };
+          if (cfg.activo && !det.dataset.eraActivo && !window.confirm("Vas a encender las recompensas de cartas de este juego. ¿Seguro?")) return;
+          try { await rpc("cartas_admin_guardar_juego", { p_juego: det.dataset.juego, p_cfg: cfg }); estado("Juego guardado."); pintarJuegos(); }
+          catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
+        });
+      });
       document.getElementById("ecoGuardarAjustes").addEventListener("click", async () => {
         const ajustes = {};
-        document.querySelectorAll("#ecoAjustes [data-a]").forEach(i => { ajustes[i.dataset.a] = Number(i.value); });
+        document.querySelectorAll("#ecoAjustes [data-a]").forEach(i => { ajustes[i.dataset.a] = i.type === "text" ? i.value.trim() : Number(i.value); });
         try { await rpc("cartas_admin_guardar_ajustes", { p_ajustes: ajustes }); estado("Ajustes guardados."); }
         catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
       });

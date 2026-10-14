@@ -288,11 +288,15 @@
     if (!f || f.estado === "pendiente" || f.estado === "rechazada") return;
     fila = f;
     modo = "partida";
-    // Cada navegador anota con qué versión del motor juega (la primera vez): el servidor solo comprueba una partida apostada
-    // volviéndola a jugar si los dos jugaron con la misma versión que él usa (ver js/cartas-verificar.js)
-    if (f.estado === "en_curso" && M.VERSION && (f.j1 === miId ? !f.motor1 : !f.motor2)) {
-      supa.rpc("cartas_registrar_motor", { p_id: f.id, p_version: M.VERSION }).then(() => {}, () => { /* aún sin economia_10 */ });
+    // La partida lleva su instantánea (participantes, cartas, mazos, semilla, vínculos y versión del motor, tomada al aceptar el reto
+    // y que nadie puede cambiar). Se juega con ELLA, no con los vínculos de hoy, y una partida apostada solo se juega con la versión
+    // del motor que fijó el servidor: así los dos navegadores y la comprobación del servidor repiten exactamente lo mismo.
+    const inst = f.instantanea;
+    if (inst && inst.motor && f.apuesta_estado && M.VERSION !== inst.motor) {
+      toast(`Esta partida apostada usa la versión ${inst.motor} del motor y tu navegador tiene la ${M.VERSION}. Recarga la página (Ctrl+F5) y vuelve a abrirla.`);
+      return;
     }
+    if (inst && typeof window.aplicarVinculosServidor === "function") window.aplicarVinculosServidor(inst.vinculos || []);
     primeroDeLaPartida = f.primero;
     const { e, l } = construir(f);
     est = e; lista = l;
@@ -316,6 +320,8 @@
   }
 
   function volverAlLobby() {
+    // Los vínculos de la partida que se cierra (su instantánea) dejan paso a los de hoy para la práctica en solitario
+    if (window.CartasCliente && typeof CartasCliente.cargarVinculos === "function") CartasCliente.cargarVinculos().catch(() => {});
     if (window.MusicaPaginas) MusicaPaginas.partida(false);
     modo = "lobby";
     est = null; fila = null;

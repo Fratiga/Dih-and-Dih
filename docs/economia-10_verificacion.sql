@@ -14,10 +14,14 @@
 -- su turno y que la partida esté en curso; el navegador no tiene permiso de escritura sobre cartas_partidas (economia_8) y la
 -- semilla, los mazos y las cartas de la partida los fija el servidor (economia_7). Aquí se añaden tres seguros más, dentro de la
 -- base de datos y por tanto imposibles de saltar desde la función:
---   1. El registro no pudo cambiar entre que se repitió y que se aplica (mismo número de acciones y, para el abandono, la misma
+--   1. La partida se repite con su INSTANTÁNEA INMUTABLE (economia_7: participantes, cartas, mazos, semilla, vínculos y versión del
+--      motor, tomada al aceptar el reto y protegida por un disparador y por una huella). Editar después una carta, un vínculo o el
+--      motor no cambia retrospectivamente quién ganó. La base comprueba que la huella siga siendo la de entonces.
+--   2. El motor con el que se repite es el que el servidor fijó para esa partida (ajuste motor_version, copiado a la instantánea).
+--      No lo elige ningún jugador: así nadie puede "envenenar" la versión para escapar de la verificación.
+--   3. El registro no pudo cambiar entre que se repitió y que se aplica (mismo número de acciones y, para el abandono, la misma
 --      marca de tiempo de última actividad).
---   2. El motor con el que se repite es el mismo con el que jugaron los dos jugadores (cada navegador registra su versión).
---   3. El plazo de abandono lo mide el reloj de la base de datos, no el de quien llama.
+--   4. El plazo de abandono lo mide el reloj de la base de datos, no el de quien llama.
 
 alter table cartas_partidas drop constraint if exists cartas_partidas_motivo_check;
 alter table cartas_partidas add constraint cartas_partidas_motivo_check
@@ -26,10 +30,6 @@ alter table cartas_partidas add constraint cartas_partidas_motivo_check
 insert into cartas_economia_ajustes (clave, valor) values
   ('apuesta_turno_horas', '48')      -- horas sin actuar quien tiene que hacerlo antes de perder por abandono
 on conflict (clave) do nothing;
-
--- Versión del motor con la que juega cada jugador (la registra su navegador al abrir la partida; la primera vez que lo hace)
-alter table cartas_partidas add column if not exists motor1 text;
-alter table cartas_partidas add column if not exists motor2 text;
 
 alter table cartas_incidencias add column if not exists jugador uuid references auth.users(id) on delete set null;
 create index if not exists cartas_incidencias_jugador_idx on cartas_incidencias (jugador) where jugador is not null;
@@ -47,12 +47,15 @@ begin
   if p_ajustes is null or jsonb_typeof(p_ajustes) <> 'object' then raise exception 'Ajustes inválidos'; end if;
   for k in select jsonb_object_keys(p_ajustes) loop
     if k not in ('tope_dia_total', 'multiplicadores', 'pity', 'mejora_personal', 'apuesta_silencio_horas', 'apuesta_inactividad_horas',
-                 'apuesta_turno_horas', 'disputa_dias') then
+                 'apuesta_turno_horas', 'disputa_dias', 'motor_version') then
       raise exception 'Ajuste desconocido: %', k;
     end if;
     if k in ('apuesta_silencio_horas', 'apuesta_inactividad_horas', 'apuesta_turno_horas') and
        (jsonb_typeof(p_ajustes -> k) <> 'number' or (p_ajustes ->> k)::numeric not between 1 and 720) then
       raise exception 'Las horas van de 1 a 720 (%)', k;
+    end if;
+    if k = 'motor_version' and (jsonb_typeof(p_ajustes -> k) <> 'string' or (p_ajustes ->> k) !~ '^[0-9A-Za-z._-]{1,40}$') then
+      raise exception 'La versión del motor son letras, números, puntos y guiones (hasta 40)';
     end if;
     if k = 'disputa_dias' and (jsonb_typeof(p_ajustes -> k) <> 'number' or (p_ajustes ->> k)::numeric not between 1 and 365) then
       raise exception 'Los días van de 1 a 365 (%)', k;
@@ -64,36 +67,14 @@ end;
 $$;
 grant execute on function cartas_admin_guardar_ajustes(jsonb) to authenticated;
 
--- El navegador de cada jugador registra la versión del motor con la que juega. Solo la primera vez (no se puede cambiar después)
--- y solo los dos jugadores de una partida pendiente o en curso.
-create or replace function cartas_registrar_motor(p_id uuid, p_version text)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  uid uuid := auth.uid();
-  f cartas_partidas%rowtype;
-begin
-  if uid is null then raise exception 'Hay que iniciar sesión'; end if;
-  if p_version is null or p_version !~ '^[0-9A-Za-z._-]{1,40}$' then raise exception 'Versión inválida'; end if;
-  select * into f from cartas_partidas where id = p_id for update;
-  if not found or uid not in (f.j1, f.j2) then raise exception 'Partida no encontrada'; end if;
-  if f.estado not in ('pendiente', 'en_curso') then return; end if;
-  if uid = f.j1 then update cartas_partidas set motor1 = coalesce(motor1, p_version) where id = p_id;
-  else update cartas_partidas set motor2 = coalesce(motor2, p_version) where id = p_id; end if;
-end;
-$$;
-revoke execute on function cartas_registrar_motor(uuid, text) from public, anon;
-grant execute on function cartas_registrar_motor(uuid, text) to authenticated;
-
 -- Cierra una apuesta activa con el veredicto del registro. Solo la puede llamar el servidor (rol de servicio), nunca un jugador.
 --   p_acciones / p_actualizada: lo que valía la partida cuando se repitió (nº de acciones y marca de última actividad).
 --   p_motor: versión del motor con la que se repitió.
 -- Devuelve: 'resuelta' | 'ya-resuelta' (ya estaba cerrada o no tiene apuesta activa: no se mueve nada) | 'cambiada' (el registro cambió
--- mientras se comprobaba) | 'motor' (los dos jugadores no jugaron con la versión con que se repitió) | 'no-vencido' (el plazo de abandono
--- no ha vencido para el reloj de la base de datos) | 'no-aplica' (un abandono solo vale con la partida en curso).
+-- mientras se comprobaba) | 'motor' (se repitió con una versión distinta de la que fijó la partida) | 'sin-instantanea' (la partida no
+-- tiene instantánea: no se decide automáticamente) | 'alterada' (la instantánea no coincide con su huella o con la partida) |
+-- 'no-vencido' (el plazo de abandono no ha vencido para el reloj de la base de datos) | 'no-aplica' (un abandono solo vale con la
+-- partida en curso).
 create or replace function cartas_i_aplicar_verificacion(p_id uuid, p_resultado text, p_motivo text, p_acciones int, p_actualizada timestamptz,
                                                          p_motor text, p_detalle text default '')
 returns text
@@ -118,8 +99,16 @@ begin
 
   -- 1) El registro es el mismo que se repitió
   if jsonb_array_length(f.acciones) is distinct from p_acciones then return 'cambiada'; end if;
-  -- 2) Los dos jugadores jugaron con el motor con que se repite
-  if p_motor is null or f.motor1 is distinct from p_motor or f.motor2 is distinct from p_motor then return 'motor'; end if;
+  -- 2) La instantánea existe, no ha sido tocada y coincide con la partida; y se repite con la versión del motor que ella fija
+  if f.instantanea is null or f.instantanea_hash is null then return 'sin-instantanea'; end if;
+  if md5(f.instantanea::text) is distinct from f.instantanea_hash
+     or f.instantanea -> 'cartas' is distinct from f.cartas
+     or f.instantanea -> 'mazos' -> 0 is distinct from f.mazo1 or f.instantanea -> 'mazos' -> 1 is distinct from f.mazo2
+     or (f.instantanea ->> 'semilla')::int is distinct from f.semilla or (f.instantanea ->> 'primero')::int is distinct from f.primero then
+    insert into cartas_incidencias (tipo, referencia, detalle) values ('instantanea_alterada', 'apuesta:' || p_id::text, 'La instantánea de la partida no coincide con su huella o con la partida: no se decide automáticamente');
+    return 'alterada';
+  end if;
+  if p_motor is null or f.instantanea ->> 'motor' is distinct from p_motor then return 'motor'; end if;
   -- 3) Abandono: la partida sigue en curso, nadie ha actuado desde entonces y el plazo venció según el reloj de la base de datos
   if p_motivo = 'abandono' then
     if f.estado <> 'en_curso' then return 'no-aplica'; end if;

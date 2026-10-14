@@ -22,8 +22,15 @@
 insert into cartas_economia_ajustes (clave, valor) values
   ('apuesta_silencio_horas', '24'),      -- un solo aviso de resultado y el otro calla: pasado este plazo se devuelve la apuesta
   ('apuesta_inactividad_horas', '72'),   -- partida apostada sin ningún aviso ni movimiento: pasado este plazo se devuelve (PROPUESTA, por confirmar)
-  ('disputa_dias', '14')                 -- una disputa que nadie resuelve en estos días se cierra como no resuelta y devuelve las apuestas
+  ('disputa_dias', '14'),                -- una disputa que nadie resuelve en estos días se cierra como no resuelta y devuelve las apuestas
+  ('motor_version', '"2026.10.13-1"')    -- versión del motor de Triunfos que el servidor da por buena: se copia a cada partida al aceptarla
 on conflict (clave) do nothing;
+
+-- Instantánea inmutable de cada partida: quiénes jugaron, con qué cartas y mazos, con qué semilla, con qué vínculos y con qué
+-- versión del motor. Se toma UNA vez, al aceptar el reto. Con ella (y no con nada de lo que cambie después) se repite la partida
+-- para comprobar quién ganó, así que editar una carta, un vínculo o el motor más tarde no cambia retrospectivamente un resultado.
+alter table cartas_partidas add column if not exists instantanea jsonb;
+alter table cartas_partidas add column if not exists instantanea_hash text;
 
 -- Motivos con los que se cierra una partida (economia_10 añade «verificada» y «abandono»)
 alter table cartas_partidas drop constraint if exists cartas_partidas_motivo_check;
@@ -56,8 +63,11 @@ begin
   if not fichas_es_admin() then raise exception 'No autorizado'; end if;
   if p_ajustes is null or jsonb_typeof(p_ajustes) <> 'object' then raise exception 'Ajustes inválidos'; end if;
   for k in select jsonb_object_keys(p_ajustes) loop
-    if k not in ('tope_dia_total', 'multiplicadores', 'pity', 'mejora_personal', 'apuesta_silencio_horas', 'apuesta_inactividad_horas', 'disputa_dias') then
+    if k not in ('tope_dia_total', 'multiplicadores', 'pity', 'mejora_personal', 'apuesta_silencio_horas', 'apuesta_inactividad_horas', 'disputa_dias', 'motor_version') then
       raise exception 'Ajuste desconocido: %', k;
+    end if;
+    if k = 'motor_version' and (jsonb_typeof(p_ajustes -> k) <> 'string' or (p_ajustes ->> k) !~ '^[0-9A-Za-z._-]{1,40}$') then
+      raise exception 'La versión del motor son letras, números, puntos y guiones (hasta 40)';
     end if;
     if k = 'disputa_dias' and (jsonb_typeof(p_ajustes -> k) <> 'number' or (p_ajustes ->> k)::numeric not between 1 and 365) then
       raise exception 'Los días van de 1 a 365 (%)', k;
@@ -456,6 +466,28 @@ end;
 $$;
 revoke all on function cartas_i_devolver_por_tiempo(uuid, text) from public, anon, authenticated;
 
+-- Cierra una partida con un resultado: primero reparte las cartas (o las deja bloqueadas si algo falla) y después marca la partida.
+-- Si el reparto falla, la partida queda en disputa con una incidencia; nunca se marca como terminada una apuesta sin repartir.
+create or replace function cartas_i_cerrar_partida(p_id uuid, p_resultado text, p_motivo text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  repartida text;
+begin
+  perform cartas_i_resolver_apuesta(p_id, p_resultado);
+  select apuesta_estado into repartida from cartas_partidas where id = p_id;
+  if repartida = 'activa' then
+    update cartas_partidas set estado = 'disputa', actualizada = now() where id = p_id;   -- el reparto falló: lo revisa el admin
+  else
+    update cartas_partidas set estado = 'terminada', resultado = p_resultado, motivo = p_motivo, actualizada = now() where id = p_id;
+  end if;
+end;
+$$;
+revoke all on function cartas_i_cerrar_partida(uuid, text, text) from public, anon, authenticated;
+
 -- Una disputa que nadie resuelve en «disputa_dias» (14) se cierra como NO RESUELTA: se devuelven las apuestas, nadie gana y el
 -- historial queda (la partida conserva los dos avisos y la incidencia los repite).
 create or replace function cartas_i_cerrar_disputa_vieja(p_id uuid, p_dias numeric)
@@ -525,8 +557,7 @@ begin
     end;
   end loop;
   if fallo then
-    update cartas_partidas set estado = 'disputa', actualizada = now() where id = p_id;
-    return;
+    return;   -- la apuesta sigue activa y con sus bloqueos: cartas_i_cerrar_partida deja la partida en disputa
   end if;
   perform cartas_i_desbloquear(ref);
   update cartas_partidas set apuesta_estado = 'resuelta' where id = p_id;
@@ -654,6 +685,10 @@ declare
   quien int;
   con_apuesta boolean;
   ref text;
+  nueva_semilla int;
+  cartas_finales jsonb;
+  mazo2_plano jsonb;
+  snap jsonb;
 begin
   if uid is null then raise exception 'Hay que iniciar sesión'; end if;
   select * into previa from cartas_partidas where id = p_id;
@@ -696,20 +731,87 @@ begin
   end if;
 
   quien := case when random() < 0.5 then 0 else 1 end;
+  nueva_semilla := floor(random() * 2147483647)::int;
+  cartas_finales := cartas_i_instantanea(deck) || fila.cartas;     -- A1: lo ya guardado del retador manda; nada de lo que mande el navegador
+  mazo2_plano := cartas_aplanar_mazo(deck);
+  -- Instantánea inmutable: todo lo que hace falta para repetir esta partida exactamente igual, ahora y dentro de un año
+  snap := jsonb_build_object(
+    'formato', 1,
+    'participantes', jsonb_build_array(jsonb_build_object('id', fila.j1, 'nombre', fila.nombre1), jsonb_build_object('id', fila.j2, 'nombre', fila.nombre2)),
+    'cartas', cartas_finales,
+    'mazos', jsonb_build_array(fila.mazo1, mazo2_plano),
+    'semilla', nueva_semilla,
+    'primero', quien,
+    'vinculos', coalesce((select jsonb_agg(jsonb_build_object('id', v.id, 'tipo', v.tipo, 'data', v.data, 'borrado', v.borrado) order by v.id) from cartas_vinculos v), '[]'::jsonb),
+    'motor', cartas_ajuste('motor_version', to_jsonb('2026.10.13-1'::text)),
+    'tomada', now());
   update cartas_partidas
     set estado = 'en_curso',
-        mazo2 = cartas_aplanar_mazo(deck),
-        cartas = cartas_i_instantanea(deck) || cartas,      -- A1: lo ya guardado del retador manda; nada de lo que mande el navegador
-        semilla = floor(random() * 2147483647)::int,
+        mazo2 = mazo2_plano,
+        cartas = cartas_finales,
+        semilla = nueva_semilla,
         primero = quien,
         turno = case when quien = 0 then j1 else j2 end,
         apuesta2 = case when con_apuesta then p_apuesta else '{}' end,
         apuesta2_info = case when con_apuesta then cartas_i_info_apuesta(p_apuesta) else '[]'::jsonb end,
         apuesta_estado = case when con_apuesta then 'activa' else apuesta_estado end,
+        instantanea = snap,
+        instantanea_hash = md5(snap::text),
         actualizada = now()
     where id = p_id;
 end;
 $$;
+
+-- 4b) La partida queda congelada: ni los jugadores, ni las funciones, ni una edición a mano pueden cambiar con qué cartas, mazos,
+--     semilla, apuesta o versión se jugó, ni reescribir un resultado ya cerrado, ni borrar acciones del registro.
+create or replace function cartas_trg_partidas_inmutables()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.j1 is distinct from old.j1 or new.j2 is distinct from old.j2 then
+    raise exception 'Una partida no puede cambiar de jugadores';
+  end if;
+  -- Desde que el reto se acepta (o se cierra), lo que define la partida no se toca
+  if old.estado <> 'pendiente' then
+    if new.nombre1 is distinct from old.nombre1 or new.nombre2 is distinct from old.nombre2
+       or new.mazo1 is distinct from old.mazo1 or new.mazo2 is distinct from old.mazo2
+       or new.cartas is distinct from old.cartas or new.semilla is distinct from old.semilla or new.primero is distinct from old.primero
+       or new.apuesta1 is distinct from old.apuesta1 or new.apuesta2 is distinct from old.apuesta2
+       or new.apuesta1_info is distinct from old.apuesta1_info or new.apuesta2_info is distinct from old.apuesta2_info
+       or new.instantanea is distinct from old.instantanea or new.instantanea_hash is distinct from old.instantanea_hash then
+      raise exception 'La partida ya empezó: sus participantes, cartas, mazos, semilla, apuesta e instantánea no se pueden cambiar';
+    end if;
+  end if;
+  -- El registro de acciones solo crece
+  if jsonb_array_length(new.acciones) < jsonb_array_length(old.acciones) then
+    raise exception 'El registro de acciones de una partida no se puede acortar';
+  end if;
+  -- Un resultado, un motivo o un aviso, una vez puestos, no se reescriben
+  if old.resultado is not null and new.resultado is distinct from old.resultado then raise exception 'El resultado de una partida no se puede cambiar'; end if;
+  if old.motivo is not null and new.motivo is distinct from old.motivo then raise exception 'El motivo de cierre de una partida no se puede cambiar'; end if;
+  if old.reporte1 is not null and new.reporte1 is distinct from old.reporte1 then raise exception 'Un aviso de resultado no se puede cambiar'; end if;
+  if old.reporte2 is not null and new.reporte2 is distinct from old.reporte2 then raise exception 'Un aviso de resultado no se puede cambiar'; end if;
+  -- Una partida cerrada queda cerrada. Lo único que puede moverse después es que la apuesta pase de pendiente/activa a resuelta/devuelta.
+  if old.estado in ('terminada', 'cancelada', 'rechazada') then
+    if new.estado is distinct from old.estado or new.acciones is distinct from old.acciones or new.turno is distinct from old.turno then
+      raise exception 'La partida ya está cerrada';
+    end if;
+  end if;
+  if new.apuesta_estado is distinct from old.apuesta_estado
+     and not ((old.apuesta_estado is null and new.apuesta_estado = 'pendiente')
+              or (old.apuesta_estado in ('pendiente', 'activa') and new.apuesta_estado in ('activa', 'resuelta', 'devuelta'))) then
+    raise exception 'La apuesta de una partida no puede volver atrás';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function cartas_trg_partidas_inmutables() from public, anon, authenticated;
+drop trigger if exists cartas_partidas_inmutables on cartas_partidas;
+create trigger cartas_partidas_inmutables before update on cartas_partidas
+  for each row execute function cartas_trg_partidas_inmutables();
 
 -- 5) Intercambios (A3) -------------------------------------------------------------------------------------------
 create or replace function cartas_aceptar_trueque(p_id uuid, p_ejemplares uuid[])
@@ -819,6 +921,13 @@ begin
   if uid is null then raise exception 'Hay que iniciar sesión'; end if;
   perform cartas_i_candado_jugador(uid);
   perform cartas_i_exigir(uid, p_ejemplares, 'poseida');
+  -- La forja solo acepta cartas que no están vivas (personajes y criaturas no se destruyen: las criaturas se crían en el corral)
+  -- (los tipos que entran son el ajuste forja_tipos de cartas_economia_ajustes; por defecto Objeto, Reacción, Terreno y Acción)
+  if exists (select 1 from cartas_ejemplares x join cartas_catalogo c on c.id = x.carta_id
+             where x.id = any(p_ejemplares)
+               and c.tipo <> all (array(select jsonb_array_elements_text(cartas_ajuste('forja_tipos', '["Objeto", "Reacción", "Terreno", "Acción"]'::jsonb))))) then
+    raise exception 'La forja solo acepta cartas que no están vivas: objetos, reacciones, terrenos y acciones';
+  end if;
   return cartas_i_forjar_nucleo(p_receta, p_ejemplares);
 end;
 $$;

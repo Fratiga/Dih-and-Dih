@@ -45,6 +45,16 @@ aplicar economia-11_en_circulacion.sql
 H_3=$(huella)
 CARTAS_ANTES=$(sql "select count(*) from cartas_ejemplares")
 
+echo "== Etapa 5 (economia-12 La Fractura y economia-13 Hipódromo)"
+sql "select $R.tomar_copia('e3')" >/dev/null
+aplicar economia-12_vias_externas.sql
+aplicar economia-13_hipodromo_cartas.sql
+H_4=$(huella)
+comprobar "la etapa 5 cambia cosas" "distinto" "$( [ "$H_3" != "$H_4" ] && echo distinto || echo igual )"
+sql "select $R.restaurar('e3')" >/dev/null
+cmp_huella "tras restaurar e3 vuelven el Hipódromo y La Fractura de antes (idéntico a la etapa 3 aplicada)" "$H_3" "$(huella)"
+comprobar "la Fractura de antes (escribe en la colección) vuelve a estar" "t" "$(sql "select pg_get_functiondef('fractura_recompensa(uuid)'::regprocedure) ~* 'insert into cartas_coleccion'")"
+
 echo "== Vuelta atrás de la etapa 3 (a la copia e2)"
 RES=$(sql "select $R.restaurar('e2')")
 echo "  $RES"
@@ -64,7 +74,8 @@ contiene "una copia que no existe da un error claro" "$(sql "select $R.restaurar
 
 echo "== Después de volver atrás se puede volver a aplicar"
 aplicar economia-7_integridad.sql; aplicar economia-8_permisos.sql; aplicar economia-9_panel_admin.sql; aplicar economia-10_verificacion.sql; aplicar economia-11_en_circulacion.sql
-cmp_huella "reaplicar todo deja la misma huella que la primera vez" "$H_3" "$(huella)"
+aplicar economia-12_vias_externas.sql; aplicar economia-13_hipodromo_cartas.sql
+cmp_huella "reaplicar todo deja la misma huella que la primera vez" "$H_4" "$(huella)"
 sql "update cartas_catalogo set en_circulacion = true where id <> 'bufon'" >/dev/null
 comprobar "y el sistema funciona (la auditoría está limpia)" "0" "$(auditar)"
 

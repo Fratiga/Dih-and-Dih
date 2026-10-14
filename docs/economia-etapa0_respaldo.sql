@@ -36,7 +36,7 @@ begin
   execute format($f$create table %I.%I as
     select p.oid::regprocedure::text as firma, p.proname::text as nombre, pg_get_functiondef(p.oid) as def,
            coalesce(p.proacl, acldefault('f', p.proowner))::text as acl, now() as copiado
-    from pg_proc p where p.pronamespace = 'public'::regnamespace and (p.proname like 'cartas\_%%' or p.proname in ('fichas_es_admin', 'perfiles_proteger'))$f$, s, 'funciones_' || p_etapa);
+    from pg_proc p where p.pronamespace = 'public'::regnamespace and (p.proname like 'cartas\_%%' or p.proname in ('fichas_es_admin', 'perfiles_proteger', 'fichas_admin_set_side', 'fractura_recompensa', 'hipodromo_comprar_carta', 'hipodromo_vender_carta', 'hipodromo_cartas_reserva'))$f$, s, 'funciones_' || p_etapa);
   execute format($f$create table %I.%I as
     select tablename::text as tabla, policyname::text as nombre, permissive::text as permisiva, roles::text as roles, cmd::text as orden, qual, with_check
     from pg_policies where schemaname = 'public' and (tablename like 'cartas\_%%' or tablename in ('perfiles', 'fichas_admins'))$f$, s, 'politicas_' || p_etapa);
@@ -60,7 +60,7 @@ begin
     n_datos := n_datos + 1;
   end loop;
   return format('Copia %s tomada: %s funciones, %s tablas de datos', p_etapa,
-                (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and (p.proname like 'cartas\_%' or p.proname in ('fichas_es_admin', 'perfiles_proteger'))), n_datos);
+                (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and (p.proname like 'cartas\_%' or p.proname in ('fichas_es_admin', 'perfiles_proteger', 'fichas_admin_set_side', 'fractura_recompensa', 'hipodromo_comprar_carta', 'hipodromo_vender_carta', 'hipodromo_cartas_reserva'))), n_datos);
 end;
 $$;
 
@@ -85,7 +85,12 @@ begin
 
   -- 1) Funciones: cada una vuelve a su texto y a sus permisos de entonces
   for f in execute format('select * from %I.%I order by firma', s, 'funciones_' || p_etapa) loop
-    execute f.def;
+    begin
+      execute f.def;
+    exception when invalid_function_definition then      -- cambió el tipo de retorno: se borra y se vuelve a crear (lo que dependía de ella se repone en los pasos siguientes)
+      execute format('drop function if exists %s cascade', f.firma);
+      execute f.def;
+    end;
     execute format('revoke all on function %s from public, anon, authenticated', f.firma);
     for a in select * from aclexplode(f.acl::aclitem[]) where grantee = 0 or grantee in ('anon'::regrole::oid, 'authenticated'::regrole::oid) loop
       execute format('grant execute on function %s to %s', f.firma, case when a.grantee = 0 then 'public' else a.grantee::regrole::text end);

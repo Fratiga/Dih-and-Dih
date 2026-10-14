@@ -6,6 +6,7 @@
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const BA = window.BatallaApuestas;
   const SIN_TRATO = new Set(["legendaria", "limitada"]);
+  const TIPOS_FORJA = new Set(["Objeto", "Reacción", "Terreno", "Acción"]);   // la forja solo acepta cartas que no están vivas (el servidor lo vuelve a comprobar)
 
   let supa = null, miId = null, esAdmin = false;
   let intercambios = [], mercader = null, forja = null, jugadores = [];
@@ -206,7 +207,7 @@
     const res = await BA.elegir({
       titulo: `Forja: ${r.nombre}`, max: total,
       ayuda: `Entregas ${r.entrada.map(g => `${g.n} ${rarezaN(g.rareza, g.n)}`).join(" + ")}. Se destruyen para siempre; recibes una carta ${rarezaN(r.salida.rareza, 1)} (${Math.round(r.exito * 100)} % de éxito).`,
-      filtro: c => necesarias[c.rareza] > 0,
+      filtro: c => necesarias[c.rareza] > 0 && TIPOS_FORJA.has(c.tipo),
       validar: sel => {
         const mal = Object.entries(necesarias).filter(([ra, n]) => sel.filter(c => c.rareza === ra).length !== n);
         return { ok: !mal.length && sel.length === total, texto: `Elegidas ${sel.length} de ${total}` };

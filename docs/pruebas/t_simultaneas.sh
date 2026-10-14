@@ -15,8 +15,6 @@ nueva_apuesta() {
   SA=$(dar $1 comun-1); SB=$(dar $2 comun-2)
   P=$(como $1 "select cartas_retar('$2', '$MA', '{}'::jsonb, array['$SA']::uuid[]);" | tail -1)
   como $2 "select cartas_responder('$P', true, '$MB', '{}'::jsonb, array['$SB']::uuid[]);" >/dev/null
-  como $1 "select cartas_registrar_motor('$P', '$V');" >/dev/null
-  como $2 "select cartas_registrar_motor('$P', '$V');" >/dev/null
 }
 llamada() {  # <partida> <resultado> <motivo>: la sentencia que lanzaría la función del servidor con los datos actuales
   datos=$(sql "select jsonb_array_length(acciones)||'|'||actualizada from cartas_partidas where id='$1'")
@@ -38,6 +36,7 @@ coherente() {  # <descripción>
   comprobar "$1: la auditoría está limpia" "0" "$(auditar)"
 }
 limpiar
+sql "update cartas_economia_ajustes set valor = '\"$V\"' where clave = 'motor_version'" >/dev/null
 M1=$(mazo_de $U1); M2=$(mazo_de $U2); M3=$(mazo_de $U3); M4=$(mazo_de $U4)
 sql "update cartas_catalogo set limite = 400, limite_jugador = 99 where id in ('comun-1', 'comun-2')" >/dev/null
 nuevo_dia() { sql "update cartas_partidas set creada = creada - interval '2 days' where cardinality(apuesta1) > 0" >/dev/null; }

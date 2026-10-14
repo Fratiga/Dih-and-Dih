@@ -11,9 +11,13 @@ for f in pruebas/00_supabase_simulado.sql pruebas/01_esquema_base.sql pruebas/02
   echo "== $f"; $P -d pruebas < "$DOCS/$f"
 done
 if [ "$HASTA" = "todo" ]; then
-  for f in economia-7_integridad.sql economia-8_permisos.sql economia-9_panel_admin.sql economia-10_verificacion.sql economia-11_en_circulacion.sql; do
+  for f in economia-7_integridad.sql economia-8_permisos.sql economia-9_panel_admin.sql economia-10_verificacion.sql economia-11_en_circulacion.sql economia-12_vias_externas.sql economia-13_hipodromo_cartas.sql; do
     echo "== $f"; $P -d pruebas < "$DOCS/$f"
   done
+fi
+# Las baterías forjan cartas de cualquier tipo (en producción la forja solo acepta las que no están vivas: lo comprueba t_circulacion)
+if [ "$HASTA" = "todo" ]; then
+  docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -c "insert into cartas_economia_ajustes (clave, valor) values ('forja_tipos', '[\"Criatura\", \"Objeto\", \"Terreno\", \"Acción\", \"Reacción\", \"Entidad\", \"Personaje\"]') on conflict (clave) do update set valor = excluded.valor"
 fi
 # Como en producción: las recompensas de cartas están apagadas
 docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -c "update cartas_juegos set activo = false"

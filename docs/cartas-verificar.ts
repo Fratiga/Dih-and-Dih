@@ -9,9 +9,15 @@
 //   * Quien tiene que actuar lleva más de «apuesta_turno_horas» (48 h) sin hacerlo -> pierde por abandono (motivo «abandono»).
 //   * Cualquier otra cosa (sigue en juego, error, versión del motor distinta) -> no cambia nada; valen las reglas de tiempo de economia_7.
 //
+// La partida se repite con su INSTANTÁNEA (cartas_partidas.instantanea: participantes, cartas, mazos, semilla, vínculos y versión del
+// motor, tomada al aceptar el reto y protegida por un disparador y una huella). Nunca con las cartas, los vínculos o el motor de hoy:
+// así modificar algo después no cambia retrospectivamente quién ganó.
+//
 // Seguros (los comprueba también la base de datos, así que no dependen de esta función):
-//   * Solo se decide con la MISMA versión del motor con la que jugaron los dos jugadores (CartasMotor.VERSION, que cada navegador
-//     registra con cartas_registrar_motor). Si falta o no coincide, no se decide nada.
+//   * Solo se decide con la versión del motor que FIJÓ EL SERVIDOR en la instantánea (ajuste motor_version) y que coincide con
+//     CartasMotor.VERSION del commit fijado abajo. Si no coincide, no se decide nada (la partida queda para el admin o para las reglas
+//     de tiempo): nunca se repite con reglas distintas a las de entonces.
+//   * La instantánea no puede haber sido tocada (huella) y coincide con la partida.
 //   * El registro no puede haber cambiado entre que se repite y que se aplica (número de acciones y marca de última actividad).
 //   * El abandono lo mide el reloj de la base de datos y exige que el turno guardado coincida con el de la repetición.
 //
@@ -25,8 +31,10 @@
 //     scripts de navegador y esperan `window`; se importa primero, antes que ellos).
 //   * Cambiar <HASH> de abajo por el hash de un commit del repositorio Fratiga/Dih-and-Dih que tenga estos cuatro archivos tal
 //     como están publicados. Los imports tienen que ser estáticos y de una versión FIJA. IMPORTANTE: cuando cambies
-//     js/cartas-motor.js, js/cartas-efectos.js o js/cartas-vinculos.js, actualiza el hash aquí; si no, la función volvería a jugar
-//     las partidas con reglas distintas a las que vieron los jugadores.
+//     js/cartas-motor.js, js/cartas-efectos.js o js/cartas-vinculos.js (1) sube VERSION en cartas-motor.js, (2) pon la misma en el
+//     ajuste motor_version del panel y (3) actualiza el hash aquí. Las partidas ya empezadas conservan la versión de entonces y esta
+//     función se negará a decidirlas con otra (quedan para el admin): para poder decidirlas hay que desplegar una función con el
+//     commit de esa versión.
 //   * Desplegar con la comprobación de sesión puesta (es lo por defecto):  supabase functions deploy cartas-verificar
 //     (SUPABASE_URL, SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY ya los pone Supabase).
 //   * Probar antes con:  node tools/probar-verificacion.js  (el mismo código del veredicto contra 120 partidas al azar).
@@ -87,8 +95,7 @@ Deno.serve(async (req: Request) => {
       return responder({ estado: "nada", mensaje: "La partida no está abierta con apuesta" });
     }
 
-    // Los vínculos que hay guardados en el servidor cambian las reglas del combate: se aplican igual que en el navegador
-    g.aplicarVinculosServidor(await rest("cartas_vinculos?select=id,tipo,data,borrado"));
+    // (Los vínculos de la partida vienen en su instantánea: analizar() los aplica; no se leen los de hoy.)
     const ajuste = await rest("cartas_economia_ajustes?clave=eq.apuesta_turno_horas&select=valor");
     const horasTurno = Number(ajuste[0]?.valor ?? 48) || 0;
 

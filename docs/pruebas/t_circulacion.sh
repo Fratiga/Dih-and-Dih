@@ -56,6 +56,15 @@ nocontiene "con ninguna carta en circulación no se da carta" "$RW" '"resultado"
 comprobar "...y el jugador no recibió nada" "0" "$(sql "select count(*) from cartas_ejemplares where propietario='$U2'")"
 sql "update cartas_juegos set activo = false" >/dev/null
 
+echo "== Forja: solo cartas que no están vivas"
+limpiar; todas true
+sql "delete from cartas_economia_ajustes where clave = 'forja_tipos'" >/dev/null
+VIVAS="'$(dar $U1 comun-1)'"; for k in 2 3 7 8; do VIVAS="$VIVAS,'$(dar $U1 comun-$k)'"; done
+contiene "una criatura no entra en la forja" "$(como $U1 "select cartas_forjar('fundir-comunes', array[$VIVAS]::uuid[]);" 2>&1)" "no están vivas"
+comprobar "...y no se consumió nada" "5" "$(sql "select count(*) from cartas_ejemplares where propietario='$U1' and estado='poseida'")"
+OBJ=""; for k in 4 5 6 10 11; do OBJ="$OBJ,'$(dar $U1 comun-$k)'"; done
+contiene "objetos y terrenos sí entran" "$(como $U1 "select cartas_forjar('fundir-comunes', array[${OBJ#,}]::uuid[]);" 2>&1)" '"resultado": "carta"'
+sql "insert into cartas_economia_ajustes (clave, valor) values ('forja_tipos', '[\"Criatura\", \"Objeto\", \"Terreno\", \"Acción\", \"Reacción\", \"Entidad\", \"Personaje\"]') on conflict (clave) do update set valor = excluded.valor" >/dev/null
 echo "== Forja"
 limpiar; todas true
 ids=""; for k in 1 2 3 4 5; do ids="$ids,'$(dar $U1 comun-$k)'"; done

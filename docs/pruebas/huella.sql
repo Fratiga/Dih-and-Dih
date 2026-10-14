@@ -12,10 +12,10 @@ union all select 'disparadores', count(*), md5(coalesce(string_agg(x, E'\n' orde
 union all select 'permisos_tablas', count(*), md5(coalesce(string_agg(x, E'\n' order by x), '')) from (
   select table_name||':'||grantee||':'||privilege_type x from information_schema.role_table_grants where table_schema='public' and grantee in ('anon','authenticated') and table_name in (select n from t)) a
 union all select 'permisos_funciones', count(*), md5(coalesce(string_agg(x, E'\n' order by x), '')) from (
-  select p.proname||'('||pg_get_function_identity_arguments(p.oid)||'):'||has_function_privilege('anon',p.oid,'execute')||':'||has_function_privilege('authenticated',p.oid,'execute') x from pg_proc p where p.pronamespace='public'::regnamespace and (p.proname like 'cartas\_%' or p.proname in ('fichas_es_admin', 'perfiles_proteger'))) a
+  select p.proname||'('||pg_get_function_identity_arguments(p.oid)||'):'||has_function_privilege('anon',p.oid,'execute')||':'||has_function_privilege('authenticated',p.oid,'execute') x from pg_proc p where p.pronamespace='public'::regnamespace and (p.proname like 'cartas\_%' or p.proname in ('fichas_es_admin', 'perfiles_proteger', 'fichas_admin_set_side', 'fractura_recompensa', 'hipodromo_comprar_carta', 'hipodromo_vender_carta', 'hipodromo_cartas_reserva'))) a
 union all select 'rls', count(*), md5(coalesce(string_agg(x, E'\n' order by x), '')) from (
   select c.relname||':'||c.relrowsecurity x from pg_class c where c.relnamespace='public'::regnamespace and c.relkind='r' and c.relname in (select n from t)) a
 union all select 'funciones_texto', count(*), md5(coalesce(string_agg(x, E'\n' order by x), '')) from (
   select p.proname||'('||pg_get_function_identity_arguments(p.oid)||')|'||md5(regexp_replace(replace(pg_get_functiondef(p.oid), E'\r', ''), '\s+', ' ', 'g')) x
-  from pg_proc p where p.pronamespace='public'::regnamespace and (p.proname like 'cartas\_%' or p.proname in ('fichas_es_admin', 'perfiles_proteger'))) a
+  from pg_proc p where p.pronamespace='public'::regnamespace and (p.proname like 'cartas\_%' or p.proname in ('fichas_es_admin', 'perfiles_proteger', 'fichas_admin_set_side', 'fractura_recompensa', 'hipodromo_comprar_carta', 'hipodromo_vender_carta', 'hipodromo_cartas_reserva'))) a
 order by 1;
