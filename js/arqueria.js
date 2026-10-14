@@ -45,15 +45,15 @@
     },
     cassius: {
       nombre: "Cassius", color: "#d9a441",
-      radio: 40, vida: 2.2, desliza: 0.3, rapido: 0.25,
-      reaccion: 0.35, veloz: 1750, asentar: 0.11, recarga: 0.3, vuelo: 0.1, ruido: 0.35,
-      precision: 0.92, dist: [0.45, 0.38, 0.17]
+      radio: 39, vida: 2.1, desliza: 0.3, rapido: 0.25,
+      reaccion: 0.28, veloz: 2000, asentar: 0.09, recarga: 0.25, vuelo: 0.1, ruido: 0.27,
+      precision: 0.94, dist: [0.5, 0.36, 0.14]
     },
     torvrena: {
       nombre: "Torvrena", color: "#5fd0c0",
-      radio: 37, vida: 1.95, desliza: 0.4, rapido: 0.3,
-      reaccion: 0.32, veloz: 1900, asentar: 0.09, recarga: 0.3, vuelo: 0.1, ruido: 0.3,
-      precision: 0.94, dist: [0.52, 0.34, 0.14]
+      radio: 36, vida: 1.85, desliza: 0.4, rapido: 0.3,
+      reaccion: 0.25, veloz: 2350, asentar: 0.08, recarga: 0.22, vuelo: 0.09, ruido: 0.2,
+      precision: 0.95, dist: [0.56, 0.32, 0.12]
     },
     milicia: {
       nombre: "Miliciano", color: "#cf6f8f",
