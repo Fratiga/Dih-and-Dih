@@ -36,3 +36,22 @@ body:not(.has-mini-player) .pagmus { bottom: 16px; }
 .mpe-estado.mpe-error { color: #ff8a7a; }
 .mpe-botones { margin-top: 8px; }
 .mpe-guardar { padding: 10px 24px !important; font-weight: 700; background: var(--accent, #fc0) !important; color: #1a1408 !important; border-color: var(--accent, #fc0) !important; }
+
+/* Rocola de fondos (js/musica-fondos.js): dentro del editor y en la pestaña de Admin */
+.mpe-biblioteca { margin: 0 0 14px; border: 1px solid var(--border, #555); padding: 8px 12px; }
+.mpe-biblioteca summary { cursor: pointer; font-size: .9rem; color: var(--accent, #fc0); }
+.mpe-aviso { color: #ffb86b; font-size: .72rem; }
+.mf-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0 4px; }
+.mf-subir { display: inline-block; padding: 6px 14px; cursor: pointer; font-weight: 700; background: var(--accent, #fc0); color: #1a1408; border: 1px solid var(--accent, #fc0); }
+.mf-uso { font-size: .78rem; color: var(--muted, #aaa); }
+.mf-estado { min-height: 1.3em; margin: 4px 0; font-size: .85rem; color: var(--accent, #fc0); }
+.mf-estado.mf-error { color: #ff8a7a; }
+.mf-lista { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mf-lista li { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: rgba(255, 255, 255, .05); flex-wrap: wrap; }
+.mf-lista li.mf-vacia { background: none; color: var(--muted, #999); font-size: .85rem; }
+.mf-nombre { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; font-size: .88rem; line-height: 1.3; }
+.mf-nombre small { color: var(--muted, #999); }
+.mf button { font: inherit; font-size: .82rem; color: var(--text, #eee); background: rgba(255, 255, 255, .08); border: 1px solid var(--border, #555); padding: 4px 10px; cursor: pointer; }
+.mf button:hover { border-color: var(--accent-soft, #aaa); }
+.mf-prev.sonando { background: var(--accent, #fc0) !important; color: #000 !important; }
+.mf-peligro:hover { border-color: #ff8a7a !important; color: #ff8a7a; }

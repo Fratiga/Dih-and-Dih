@@ -77,3 +77,5 @@ SQL: `docs/admin/herramientas_2.sql` (se prueba con `sh docs/admin/probar_herram
 - **Respuestas a peticiones**: `peticiones.respuesta`; `peticiones_estado` ahora devuelve también la respuesta, que sale en «Tus peticiones».
 - **Archivos**: bucket público `archivos` con escritura solo de Admin; copia el enlace de cada archivo para pegarlo en el HTML de una entrada.
 - **En vivo**: usa la presencia de `js/presencia.js`, que ahora anuncia también la página real (vacía si es una escondida) y desde cuándo.
+
+- Rocola de fondos (biblioteca de música de páginas, aparte de la Rocola pública, solo Admin): `docs/admin/musica_fondos.sql` (probado con `sh docs/admin/probar_musica_fondos.sh`), `js/musica-fondos.js`, pestaña «Música de fondo» y desplegable en el editor ⚙.

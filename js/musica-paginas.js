@@ -2,7 +2,8 @@
    MÚSICA DE FONDO POR PÁGINA
    El Admin le pone a cada página una playlist (botón ⚙ junto al ♪, solo se ve con la cuenta de admin) y, en los
    juegos, otra que suena mientras hay una partida. Las listas viven en la tabla musica_paginas
-   (scratchpad/musica_paginas.sql) y salen de las canciones de la Rocola.
+   (scratchpad/musica_paginas.sql) y salen de la Rocola de fondos (js/musica-fondos.js), una biblioteca del Admin aparte de la
+   Rocola pública (docs/admin/musica_fondos.sql).
 
    - "Desde cero": cada vez que entras empieza por la primera canción desde el segundo 0. Si no, sigue por donde iba
      en esa página (se recuerda en este navegador).
@@ -230,6 +231,7 @@
         await cargarScript("js/musica-nube.js");
       }
       if (typeof fichasCliente !== "function") await cargarScript("js/fichas-supabase.js");
+      await cargarScript("js/musica-fondos.js");
       await cargarScript("js/musica-paginas-editor.js");
       window.MusicaPaginasEditor.abrir({ pagina: PAGINA, paginas: PAGINAS, conPartida: CON_PARTIDA.has(PAGINA), etiquetas: ETIQUETAS[PAGINA] || null, config: cfg });
     } catch (e) {
