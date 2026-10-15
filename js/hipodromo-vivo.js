@@ -184,7 +184,7 @@
     return { x0: dist + m.ancho * 0.9, x1: fin - m.ancho * 0.7, salida: fin + m.ancho * 1.6, cam: dist + 0.22 * W / m.gpI };
   }
   function medirPantalla() {
-    dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    dpr = 1;   // los lienzos se redibujan enteros cada cuadro: a resolución normal van mucho más fluidos y el paisaje no pierde nada
     W = Math.max(280, window.innerWidth); H = Math.max(260, window.innerHeight);
     if (grupo) grupo.escenario.medir(W, H, dpr);
     else { [$("hvFondo"), $("hvFrente")].forEach(c => { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }); }
@@ -209,7 +209,7 @@
       dist: prog.dist, lanes: Math.max(2, n), clima: res ? res.clima : prog.climaPrevio, estadoPista: res ? res.estadoPista : "bueno",
       suelo: suelo.suelo, cuestas: suelo.cuestas, arcana: suelo.arcana || null,
       zonas: suelo.arcana ? M.zonasArcanas(suelo.arcana, prog.n || 0, prog.dist / 100) : [],
-      semilla: hash("pista" + prog.n + prog.pista), rayosAzar: true, horizonte: HZ, carrilBase: CBASE, carrilAncho: CANCHO
+      semilla: hash("pista" + prog.n + prog.pista), rayosAzar: true, ligero: true, horizonte: HZ, carrilBase: CBASE, carrilAncho: CANCHO
     });
     g.escenario.medir(W, H, dpr);
     grupo = g;
@@ -577,11 +577,18 @@
     $("hvFundido").classList.add("on");
     cambio = { t: performance.now() + T_FUNDIDO, fn };
   }
-  function bucle(ts) { requestAnimationFrame(bucle); cuadro(ts); }
+  /* En la espera, los resultados y la recuperación no pasa nada deprisa: se dibuja a 30 cuadros por segundo (la mitad de trabajo). La preparación y la carrera, a todo. */
+  let ultimoPintado = 0;
+  function bucle(ts) {
+    requestAnimationFrame(bucle);
+    if ((ultimaFase === "espera" || ultimaFase === "resultados" || ultimaFase === "recuperacion" || ultimaFase === "vacio") && ts - ultimoPintado < 30) return;
+    ultimoPintado = ts; cuadro(ts);
+  }
   function cuadro(ts) {
     const dt = clamp((ts - ultimoMarco) / 1000, 0, 0.1); ultimoMarco = ts;
     if (!fuente) return;
     const ahora = fuente.ahora(), ec = escenaDe(ahora);
+    ultimaFase = ec.fase;
     // qué pista toca: si cambia la carrera, un fundido y la pista nueva
     const deseado = ec.reg ? ec.reg.n : null;
     if (cambio) {

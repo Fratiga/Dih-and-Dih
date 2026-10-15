@@ -301,7 +301,7 @@ window.HipodromoPista = (function () {
       for (let x = xv0 - paso; x < W; x += paso) { gT.fillStyle = "#d8d0b8"; gT.fillRect(x, yv - 4, 6, 24); }
       if (extra) extra({ g: gT, W, H, gp, camGr, ahora, dt });
       // lluvia
-      const gotasN = Math.floor(clima.lluvia);
+      const gotasN = Math.floor(clima.lluvia * (cfg.ligero ? 0.4 : 1));
       if (gotasN > 0) {
         gT.strokeStyle = "rgba(200,220,240,.5)"; gT.lineWidth = 1; gT.beginPath();
         const viento = clima.rayos ? 0.5 : 0.22;
@@ -315,7 +315,8 @@ window.HipodromoPista = (function () {
         gT.stroke();
       }
       // niebla en bandas que se mueven
-      if (clima.niebla > 0.004) for (let i = 0; i < 4; i++) {
+      if (clima.niebla > 0.004 && cfg.ligero) { gT.fillStyle = "rgba(225,230,232," + clima.niebla * 0.3 + ")"; gT.fillRect(0, H * 0.3, W, H * 0.7); }   // versión ligera: una sola capa, sin degradados por cuadro
+      else if (clima.niebla > 0.004) for (let i = 0; i < 4; i++) {
         const y = H * (0.34 + i * 0.16), xo = ((ahora * (10 + i * 5) + i * 300) % (W + 600)) - 300;
         const rg = gT.createLinearGradient(0, y - 40, 0, y + 40); rg.addColorStop(0, "rgba(225,230,232,0)"); rg.addColorStop(0.5, "rgba(225,230,232," + clima.niebla * 0.55 + ")"); rg.addColorStop(1, "rgba(225,230,232,0)");
         gT.fillStyle = rg; gT.fillRect(xo - 400, y - 40, W + 800, 80);
