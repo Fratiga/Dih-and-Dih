@@ -27,10 +27,17 @@
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["arqueria.html", "Arquería"], ["duelo.html", "Duelo"], ["cartas.html", "Triunfos: álbum"], ["mazos.html", "Triunfos: mazos"],
-    ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"], ["fractura.html", "La Fractura"],
+    ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"], ["hipodromo-vivo.html", "Hipódromo en vivo"], ["fractura.html", "La Fractura"],
     ["muerte-subita.html", "Muerte Súbita"], ["encuentro-verdam.html", "Encuentro con Verdam"]
   ];
-  const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html", "fractura.html"]);
+  // Páginas donde la lista de "partida" tiene otro nombre en el editor (aquí: la música suena según la fase de la carrera)
+  const ETIQUETAS = {
+    "hipodromo-vivo.html": {
+      fondo: ["Espera", "Suena mientras no hay carrera en marcha: la espera, los resultados y la recuperación. Cuando termina una canción pasa a la siguiente."],
+      partida: ["Carrera", "Suena desde 30 segundos antes de la salida (la preparación) hasta que cruza la meta la última criatura, para todos a la vez según el reloj de las carreras. Si la dejas vacía, la música no cambia."]
+    }
+  };
+  const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html", "fractura.html", "hipodromo-vivo.html"]);
 
   // Interruptor del panel de Admin: apagada, la música de páginas no suena (ni calla a la propia de cada página)
   const apagada = (() => { try { return (JSON.parse(localStorage.getItem("sitioInterruptores") || "{}") || {}).musica_paginas === false; } catch (e) { return false; } })();
@@ -224,7 +231,7 @@
       }
       if (typeof fichasCliente !== "function") await cargarScript("js/fichas-supabase.js");
       await cargarScript("js/musica-paginas-editor.js");
-      window.MusicaPaginasEditor.abrir({ pagina: PAGINA, paginas: PAGINAS, conPartida: CON_PARTIDA.has(PAGINA), config: cfg });
+      window.MusicaPaginasEditor.abrir({ pagina: PAGINA, paginas: PAGINAS, conPartida: CON_PARTIDA.has(PAGINA), etiquetas: ETIQUETAS[PAGINA] || null, config: cfg });
     } catch (e) {
       alert(`No se pudo abrir el editor de música: ${e.message || e}`);
     }
@@ -276,6 +283,7 @@
     editar: abrirEditor,
     aplicar: (c) => aplicarConfig(c, true),
     detener: () => { audio.pause(); },
+    estado: () => ({ configurada: hayMusica(), sonando: !audio.paused && !audio.ended, silencio, esperaGesto: pendienteGesto }),
     probar: (rutas, volumen) => {                  // para escuchar una lista desde el editor sin guardarla
       const a = new Audio(urlDe(rutas[0] || ""));
       a.volume = volumen ?? 0.5; a.play().catch(() => {});

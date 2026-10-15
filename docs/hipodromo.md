@@ -17,6 +17,7 @@ La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se 
 | `js/hipodromo-glosario.js` | El glosario: ~80 explicaciones de las palabras técnicas (terreno, drenaje, cuota, podio, estilo, núcleo...). Se señalan o se tocan y sale la explicación en una caja flotante. Para añadir una: una línea en `G` y `HipodromoGlosario.tip("clave", "texto")`. |
 | `js/hipodromo-cuadra.js` | La pestaña «Mi cuadra». No sabe de dónde salen los datos: la página le pasa un objeto `api` (servidor o local). |
 | `js/hipodromo-dibujo.js`, `js/hipodromo-pista.js` | El dibujo de las criaturas (SVG) y la pista de la carrera (cámara que sigue al pelotón, clima y terreno, galope animado). |
+| `hipodromo-vivo.html`, `css/hipodromo-vivo.css`, `js/hipodromo-vivo.js`, `js/hipodromo-vida.js` | La página inmersiva para ver las carreras (ver «Hipódromo en vivo»). `hipodromo-vida.js` mueve a las criaturas; `hipodromo-pista.js` aporta el paisaje y los recorridos. |
 | `tools/probar-hipodromo.js` | 247 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |
 | `tools/probar-hipodromo-sql.js` | 62 comprobaciones del SQL contra un PostgreSQL de verdad (Docker, contenedor `cartas-pruebas`), con el motor de verdad. |
 | `docs/hipodromo.sql` | Tablas, permisos y funciones del servidor (guardar, apostar, ordenar, saldo). |
@@ -38,6 +39,37 @@ Pestañas: **Carrera** (la próxima con pista, distancia, bolsa, pronóstico, ru
 ### El dibujo y los rasgos
 
 El dibujo es una silueta en SVG (`HipodromoDibujo.silueta`) con cuatro estilos (plano, caricatura, pixel y elegante; el elegido es el elegante). Dos cosas por separado: la **morfología** (largo de patas, pecho, cadera, cola, torso...) sale de los genes y dice algo de las capacidades; los **rasgos** (cuernos, orejas, cuello, cola, espalda, piel, patas extra, ojos, alas, dedos, patrón de color y núcleo) los decide el motor al nacer, se heredan (46 % del padre, 46 % de la madre y 8 % nuevo) y van en `perfil.rasgos`. El dibujo también muestra la **etapa de la vida** (las crías son pequeñas, de patas cortas y cabeza grande; los veteranos tienen canas en el hocico), las **secuelas** (vendaje en la pata, cicatrices en la grupa, vendaje en el lomo, jadeo, sudor) y las **lesiones de ahora** (vendaje).
+
+## Hipódromo en vivo (`hipodromo-vivo.html`)
+
+Segunda página, aparte de la principal (que sigue con las apuestas, las fichas, las noticias, la cuadra y el mundo): la pista a pantalla completa para vivir las carreras. Se llega desde «▶ Ver las carreras en vivo» en la barra de arriba del hipódromo, y desde ella se vuelve (← Hipódromo), se va a apostar (`hipodromo.html#carrera`) o a los resultados completos (`#noticias`). La página principal entiende esos `#pestaña`.
+
+**Reloj.** No tiene reloj propio: usa el del servidor (`HipodromoOnline`, `ahora()`). Lo que se ve en cada instante sale solo de esa hora y de los datos guardados de la carrera, así que entrar a mitad de carrera, recargar o abrir dos pestañas enseña lo mismo y nunca crea ni cambia un resultado. Cada carrera pasa por cinco fases:
+
+| fase | cuándo | qué se ve |
+|---|---|---|
+| Espera | desde que se cargan las criaturas de la carrera hasta 30 s antes de la salida | criaturas en la zona de salida: pastan, miran alrededor, caminan, se sientan, se echan, se saludan |
+| Preparación | los 30 s antes de la hora | se levantan las que descansan, se orientan hacia la salida, caminan a su puerta (un guion fijo según la hora), se ponen atentas (los nerviosos raspan el suelo) y a 3 s se agachan; cuenta atrás 5…1; la cámara se acerca a las puertas |
+| Carrera | desde la hora hasta que cruza la última (38 a 62 s en pantalla, como siempre) | las puertas suben, galope, la cámara sigue al pelotón; la ganadora brilla y sale su nombre |
+| Resultados | 30 s después de la meta | frenan hasta pararse, la ganadora celebra, jadean; tarjeta con el resultado oficial |
+| Recuperación | 120 s más | descansan en la zona de meta; en los últimos 14 s se van; fundido y aparece la pista de salida con las de la siguiente carrera, que entran caminando |
+
+La duración visual de la carrera no toca el calendario: la siguiente sale a su hora de todos modos.
+
+**De dónde salen las posiciones.** `HipodromoPista.trayectorias(res, carriles)` (la misma pieza que mueve la toma de la página principal, que ahora se hace con ella): cada criatura pasa por cada marca de 100 m exactamente cuando lo dice el resultado guardado. No hay ganador decidido aquí.
+
+**Limitaciones del servidor y cómo se resolvieron** (sin tocar la base de datos ni la Edge Function):
+- El resultado solo se ve desde la hora de salida (RLS). La página lo pide cada 300 ms desde medio segundo antes; mientras llega, las criaturas esperan en la puerta.
+- La carrera siguiente solo se programa 90 s después de la salida, así que durante los resultados y la recuperación la «carrera actual» ya no es la última fila de `hipodromo_programa`. La página guarda las carreras que ha visto y, si entras en ese rato, trae la anterior (`n - 1`) del programa y de las carreras. La recuperación (2 min) acaba mucho después de que se programe la siguiente, así que no hay hueco.
+- Antes de la salida solo se sabe el clima de la carrera anterior (`climaPrevio`): se muestra ese y, al llegar el resultado, cambia poco a poco al de verdad (y el terreno con él).
+
+**Las criaturas.** Se dibujan con el mismo SVG (`HipodromoDibujo.silueta(per, { vivo: true })`), que en ese modo sale en piezas con nombre (patas con muslo y caña, cuello, cabeza, orejas, ojos, cola) y con sus medidas en `data-rig`. `js/hipodromo-vida.js`:
+- **Títere**: cada pata se resuelve con cinemática inversa a partir de dónde tiene que pisar el pie. Las mismas reglas sirven para caminar, trotar, galopar, pastar, echarse y sentarse con las patas que tenga (cuatro, seis, pares dobles delante o detrás). Las patas de atrás, al echarse o sentarse, se pliegan hacia delante bajo el vientre y la articulación queda arriba. Cuernos, espinas, alas, cuello largo y colas especiales se mueven con su pieza.
+- **Actor**: una lista corta de estados (pastar, mirar, caminar, sentar, echar, levantar, acercarse y saludar a otra, preparación, galope, frenar, celebrar, salir). El ángulo de sentada se calcula por criatura para que la grupa quede a ras de suelo y las delanteras sigan apoyadas aunque tengan las patas cortas. Los nerviosos (gen de mirada) descansan menos y raspan el suelo antes de salir. Nada está sincronizado entre criaturas ni entre espectadores, salvo el guion de la preparación y las posiciones de la carrera.
+
+**Música.** Usa el sistema de siempre (`js/musica-paginas.js`, tabla `musica_paginas`): la página es «Hipódromo en vivo» en el ⚙ del admin y tiene dos listas, «Espera» (la de fondo: espera, resultados y recuperación) y «Carrera» (la de «partida»: de 30 s antes de la salida hasta la meta). La página llama a `MusicaPaginas.partida(true/false)` según la fase que marca el reloj global, no según cuándo entraste; si el navegador no deja sonar hasta que toques, sale un aviso. El volumen y el silencio son los de `mj-volumen.js` (la barra de abajo a la derecha) y el ♪; pausar la música no para la carrera.
+
+**Prueba local** (sin sesión o con `?local`): un mundo pequeño en el navegador con botones para saltar a cada fase (`?t=segundos` desde la salida, negativo = antes: `?local&t=-30`). Lo comparte con la página principal solo en el código del motor.
 
 ## Los rasgos tienen efecto (`js/hipodromo-rasgos.js`)
 

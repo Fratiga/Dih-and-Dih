@@ -319,3 +319,7 @@ body.hip-con-ficha { overflow: hidden; }
 /* La casilla «Doble» del panel de apuesta: una fila con su texto, no apilada en mayúsculas */
 .hip-apuesta label.hip-casilla { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-size: .8rem; line-height: 1.35; color: var(--text); }
 .hip-apuesta input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: var(--accent); flex: none; }
+
+/* enlace a la página en vivo, en la barra de arriba */
+.hip-envivo { margin-left: auto; padding: 5px 12px; border: 1px solid var(--accent-soft); color: var(--accent) !important; font-weight: 600; }
+.hip-envivo:hover { border-color: var(--accent); background: rgba(230, 194, 78, .12); }

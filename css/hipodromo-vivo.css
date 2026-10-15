@@ -1,0 +1,163 @@
+/* Hipódromo en vivo (hipodromo-vivo.html): la pista ocupa toda la pantalla y lo demás flota encima, pequeño y discreto.
+   Usa la misma paleta del club de carreras que hipodromo.css (verde de césped, oro viejo, tinta de programa de mano). */
+body.hv {
+  --bg: #0d1a13; --panel: #1f3a2c; --panel-2: #2a4a39; --text: #f2edd5; --muted: #a9bea5;
+  --accent: #e6c24e; --accent-soft: #a08a35; --border: #46705a; --sombra-dura: #07120c; --font-heading: 'Cinzel';
+  --vivo-fondo: rgba(8, 20, 14, .66); --vivo-borde: rgba(230, 194, 78, .38);
+  margin: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh; overflow: hidden; background: #0b140f; color: var(--text);
+  font-family: Karla, sans-serif; user-select: none; -webkit-user-select: none; overscroll-behavior: none;
+}
+
+/* ---------------------------------------------------------------- la escena */
+.hv-escena { position: fixed; inset: 0; overflow: hidden; background: #0b140f; }
+.hv-lienzo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hv-frente { pointer-events: none; z-index: 40000; }
+.hv-capa { position: absolute; inset: 0; z-index: 10; overflow: hidden; }
+.hv-cab { position: absolute; left: 0; top: 0; will-change: transform; pointer-events: auto; cursor: default; }
+.hv-giro { display: block; will-change: transform; }
+.hv-giro svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .25)); overflow: visible; }
+.hv-nombre {
+  position: absolute; left: 50%; top: -6px; transform: translateX(-50%); padding: 1px 7px; white-space: nowrap; pointer-events: none;
+  font: 700 .7rem Karla, sans-serif; letter-spacing: .02em; color: #fff; background: rgba(8, 20, 14, .6); border: 1px solid rgba(255, 255, 255, .22);
+  text-shadow: 0 1px 2px #000; opacity: 0; transition: opacity .35s;
+}
+.hv-nombre b { color: var(--accent); margin-right: 4px; }
+.hv-cab.con-nombre .hv-nombre, .hv-cab:hover .hv-nombre { opacity: 1; }
+.hv-cab.mia .hv-nombre { color: #ffe27a; }
+.hv-cab.ganador .hv-nombre { opacity: 1; background: rgba(120, 90, 10, .85); border-color: #ffe27a; color: #fff7d8; font-size: .8rem; }
+.hv-cab.ganador .hv-giro svg { filter: drop-shadow(0 0 10px rgba(255, 226, 122, .95)) drop-shadow(0 2px 1px rgba(0, 0, 0, .25)); }
+.hv-aviso-cab { position: absolute; left: 50%; top: -28px; transform: translateX(-50%); display: none; font: 700 1.2rem sans-serif; color: #ff5a4a; text-shadow: 0 1px 2px #000; }
+.hv-aviso-cab.on { display: block; animation: hvSalta .5s ease-out; }
+@keyframes hvSalta { from { transform: translate(-50%, 8px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+/* puertas de salida: la reja que sube cuando empieza la carrera */
+.hv-puerta { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform; }
+.hv-puerta i {
+  display: block; width: 100%; height: 100%; transition: transform .45s cubic-bezier(.3, 0, .2, 1), opacity .45s;
+  border-top: 5px solid #cfd3d4; border-left: 3px solid #3b4044; border-right: 3px solid #3b4044;
+  background: repeating-linear-gradient(90deg, #a9b0b3 0 3px, transparent 3px 11px); opacity: .92;
+}
+.hv-puerta.abierta i { transform: translateY(-86%); opacity: .55; }
+
+/* ---------------------------------------------------------------- fundido entre escenas y carga */
+.hv-fundido { position: fixed; inset: 0; z-index: 70000; background: #050a07; opacity: 0; pointer-events: none; transition: opacity .7s ease; }
+.hv-fundido.on { opacity: 1; }
+.hv-cargando {
+  position: fixed; left: 50%; top: 50%; z-index: 80000; margin: 0; transform: translate(-50%, -50%); padding: 12px 22px; background: var(--vivo-fondo);
+  border: 1px solid var(--vivo-borde); color: var(--accent); font: 600 .95rem var(--font-heading), serif; letter-spacing: .1em; text-transform: uppercase;
+}
+.hv-cargando.hidden { display: none; }
+
+/* ---------------------------------------------------------------- la interfaz, encima y pequeña */
+.hv-ui { position: fixed; inset: 0; z-index: 50000; pointer-events: none; }
+.hv-ui > * { pointer-events: auto; }
+.hv-ui > .hv-mensaje, .hv-ui > .hv-aviso, .hv-ui > .hv-sonido, .hv-ui > .hv-progreso { pointer-events: none; }
+.hv-arriba { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 10px 12px; pointer-events: none; }
+.hv-arriba > * { pointer-events: auto; }
+.hv-boton {
+  display: inline-block; font: 500 .85rem Karla, sans-serif; padding: 7px 13px; background: var(--vivo-fondo); color: var(--text); text-decoration: none;
+  border: 1px solid var(--vivo-borde); cursor: pointer; backdrop-filter: blur(3px);
+}
+.hv-boton:hover { border-color: var(--accent); background: rgba(36, 64, 47, .85); }
+.hv-boton:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hv-volver { color: var(--accent); }
+
+.hv-titulo { flex: 1 1 auto; min-width: 0; max-width: 46vw; text-align: center; padding: 5px 16px; background: var(--vivo-fondo); border: 1px solid var(--vivo-borde); backdrop-filter: blur(3px); }
+.hv-num { display: block; font: 600 .68rem Karla, sans-serif; letter-spacing: .24em; text-transform: uppercase; color: var(--accent); }
+.hv-titulo strong { display: block; font: 700 1.1rem var(--font-heading), serif; letter-spacing: .04em; color: #fff7d8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.hv-reloj { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; padding: 5px 14px; background: var(--vivo-fondo); border: 1px solid var(--vivo-borde); backdrop-filter: blur(3px); min-width: 150px; }
+.hv-fase { font: 600 .78rem var(--font-heading), serif; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.hv-cuenta { display: flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; }
+.hv-cuenta i { font: normal .68rem Karla, sans-serif; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.hv-cuenta b { font: 700 1.55rem var(--font-heading), serif; color: #fff7d8; }
+body[data-fase="preparacion"] .hv-cuenta b { color: #ffb347; }
+body[data-fase="carrera"] .hv-fase { color: #ff8a6a; }
+
+.hv-datos { position: absolute; left: 12px; top: 64px; display: flex; flex-direction: column; gap: 3px; max-width: 220px; padding: 7px 11px; background: var(--vivo-fondo); border: 1px solid var(--vivo-borde); font-size: .78rem; color: var(--muted); backdrop-filter: blur(3px); }
+.hv-datos b { color: var(--text); font-weight: 600; }
+.hv-datos:empty { display: none; }
+
+.hv-puestos { position: absolute; right: 12px; top: 64px; width: 188px; max-height: calc(100dvh - 190px); overflow: auto; padding: 7px 10px 8px; background: var(--vivo-fondo); border: 1px solid var(--vivo-borde); backdrop-filter: blur(3px); }
+.hv-puestos h2 { margin: 0 0 4px; font: 600 .66rem Karla, sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
+.hv-puestos ol { margin: 0; padding: 0; list-style: none; }
+.hv-puestos li { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: .8rem; white-space: nowrap; }
+.hv-puestos li b { width: 1.35em; text-align: right; color: var(--accent); font-variant-numeric: tabular-nums; }
+.hv-puestos li i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #0007; flex: none; }
+.hv-puestos li span { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.hv-puestos li em { font-style: normal; color: var(--muted); font-size: .72rem; font-variant-numeric: tabular-nums; }
+.hv-puestos li.mia span { color: #ffe27a; }
+.hv-puestos li.oro span { color: #ffe27a; font-weight: 700; }
+
+.hv-mensaje {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); text-align: center; opacity: 0; transition: opacity .25s; padding: 0 16px; max-width: 90vw;
+  font: 900 clamp(2.6rem, 11vw, 7rem) var(--font-heading), serif; color: #fff; text-shadow: 0 4px 0 #000a, 0 0 28px #000a; letter-spacing: .03em;
+}
+.hv-mensaje.on { opacity: 1; }
+.hv-mensaje.on.pulso { animation: hvPulso .5s ease-out; }
+.hv-mensaje.chico { font-size: clamp(1.4rem, 4.5vw, 2.8rem); color: #ffe27a; top: 30%; }
+@keyframes hvPulso { from { transform: translate(-50%, -50%) scale(1.35); } to { transform: translate(-50%, -50%) scale(1); } }
+.hv-aviso { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); margin: 0; padding: 5px 14px; font-size: .82rem; color: var(--text); background: var(--vivo-fondo); border: 1px solid var(--vivo-borde); text-align: center; max-width: 90vw; }
+.hv-aviso:empty { display: none; }
+.hv-sonido { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); margin: 0; padding: 4px 12px; font-size: .78rem; color: var(--accent); background: var(--vivo-fondo); border: 1px solid var(--vivo-borde); animation: hvLatido 1.6s ease-in-out infinite; }
+.hv-sonido[hidden] { display: none; }
+@keyframes hvLatido { 50% { opacity: .55; } }
+
+.hv-progreso { position: absolute; left: 150px; right: 190px; bottom: 58px; height: 16px; opacity: 0; transition: opacity .4s; }
+body[data-fase="carrera"] .hv-progreso { opacity: 1; }
+.hv-progreso > div { position: absolute; left: 0; right: 36px; top: 6px; height: 4px; background: rgba(255, 255, 255, .35); border-radius: 2px; }
+.hv-progreso > div i { position: absolute; top: -3px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; border: 1px solid #000a; }
+.hv-progreso span { position: absolute; right: 0; top: 1px; font: 700 .62rem sans-serif; color: #fff; text-shadow: 0 1px 2px #000; }
+
+.hv-acciones { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+.hv-resultados {
+  position: absolute; left: 12px; top: 148px; width: min(390px, calc(100vw - 24px)); max-height: calc(100dvh - 230px); overflow: auto;
+  padding: 14px 16px 12px; background: rgba(8, 20, 14, .9); border: 2px solid var(--accent-soft); box-shadow: 5px 5px 0 var(--sombra-dura); backdrop-filter: blur(4px);
+}
+.hv-resultados[hidden] { display: none; }
+.hv-resultados h2 { margin: 0 0 8px; font: 700 1.15rem var(--font-heading), serif; letter-spacing: .06em; color: var(--accent); }
+.hv-cerrar { position: absolute; top: 4px; right: 8px; background: none; border: 0; color: var(--muted); font-size: 1.6rem; cursor: pointer; line-height: 1; }
+.hv-cerrar:hover { color: #fff; }
+.hv-resultados table { width: 100%; border-collapse: collapse; font-size: .84rem; font-variant-numeric: tabular-nums; }
+.hv-resultados th { text-align: left; font: 600 .66rem Karla, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 2px 6px; }
+.hv-resultados td { padding: 3px 6px; border-top: 1px solid rgba(255, 255, 255, .08); }
+.hv-resultados td.n { color: var(--accent); font-weight: 700; width: 2em; }
+.hv-resultados tr.oro td { color: #ffe27a; font-weight: 700; }
+.hv-resultados tr.mia td { color: #ffe27a; }
+.hv-resultados p { margin: 8px 0 0; font-size: .78rem; color: var(--muted); }
+
+.hv-local { position: absolute; left: 12px; bottom: 58px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; max-width: 330px; padding: 6px 8px; background: var(--vivo-fondo); border: 1px dashed var(--vivo-borde); font-size: .7rem; color: var(--muted); }
+.hv-local[hidden] { display: none; }
+.hv-local button { font: 500 .72rem Karla, sans-serif; padding: 3px 7px; background: var(--panel-2); color: var(--text); border: 1px solid var(--accent-soft); cursor: pointer; }
+.hv-local button:hover { border-color: var(--accent); }
+
+/* mientras la carrera corre lo de los lados se aparta: la pista manda */
+body[data-fase="carrera"] .hv-datos { opacity: .55; }
+body[data-fase="carrera"] .hv-datos:hover { opacity: 1; }
+
+@media (max-width: 760px) {
+  .hv-arriba { flex-wrap: wrap; padding: 8px; }
+  .hv-volver { padding: 6px 9px; }
+  .hv-titulo { order: 3; flex-basis: 100%; max-width: none; padding: 3px 10px; }
+  .hv-titulo strong { font-size: .95rem; }
+  .hv-reloj { min-width: 0; padding: 4px 10px; }
+  .hv-cuenta b { font-size: 1.25rem; }
+  .hv-datos { display: none; }
+  .hv-puestos { top: 126px; width: 138px; max-height: 26dvh; padding: 5px 7px 6px; }
+  .hv-puestos li { font-size: .72rem; padding: 1px 0; }
+  .hv-puestos li em { display: none; }
+  .hv-boton { padding: 5px 9px; font-size: .78rem; }
+  .hv-resultados { left: 8px; right: 8px; top: auto; bottom: 110px; width: auto; max-height: 38dvh; }
+  .hv-progreso { left: 12px; right: 12px; bottom: 100px; }
+  .hv-acciones { bottom: 56px; }
+  .hv-local { bottom: 100px; max-width: calc(100vw - 24px); }
+}
+@media (max-height: 520px) {
+  .hv-datos, .hv-puestos { top: 56px; }
+  .hv-puestos { max-height: calc(100dvh - 120px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hv-fundido, .hv-mensaje, .hv-nombre { transition: none; }
+  .hv-sonido { animation: none; }
+}

@@ -34,6 +34,8 @@
   let est = null, m = null, pestana = "carrera", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
+  // la página en vivo manda aquí con #carrera, #noticias... (apostar, resultados completos)
+  { const h = location.hash.slice(1); if (["carrera", "cuadra", "cartas", "criaturas", "noticias", "apuestas", "mundo"].includes(h)) pestana = h; }
 
   /* ---------------------------------------------------------------- guardar y crear */
   function cargar() {

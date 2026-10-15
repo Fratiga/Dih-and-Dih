@@ -58,8 +58,8 @@ window.MusicaPaginasEditor = (function () {
     const nombrePag = p => (st.paginas.find(x => x[0] === p) || [p, p])[1];
     dlg.querySelector(".mpe-cuerpo").innerHTML = `
       <datalist id="mpeCatalogo">${st.catalogo.map(([nombre]) => `<option value="${esc(nombre)}"></option>`).join("")}</datalist>
-      ${seccionHtml("fondo", "Música de fondo", "Suena mientras estás en la página. Cuando termina una canción pasa a la siguiente y, al acabar la lista, vuelve a empezar." + (st.avisoPropia ? " <strong>Esta página ya trae su canción; la dejé en la lista para que la veas. Al guardar, la lista manda y la de fábrica deja de sonar.</strong>" : ""))}
-      ${st.conPartida ? seccionHtml("partida", "Al empezar una partida", "En cuanto empieza una partida suena esta lista en vez de la de fondo, y al terminar vuelve la de fondo. Si la dejas vacía, la música no cambia.") : ""}
+      ${seccionHtml("fondo", st.etiquetas ? st.etiquetas.fondo[0] : "Música de fondo", (st.etiquetas ? st.etiquetas.fondo[1] : "Suena mientras estás en la página. Cuando termina una canción pasa a la siguiente y, al acabar la lista, vuelve a empezar.") + (st.avisoPropia ? " <strong>Esta página ya trae su canción; la dejé en la lista para que la veas. Al guardar, la lista manda y la de fábrica deja de sonar.</strong>" : ""))}
+      ${st.conPartida ? seccionHtml("partida", st.etiquetas ? st.etiquetas.partida[0] : "Al empezar una partida", st.etiquetas ? st.etiquetas.partida[1] : "En cuanto empieza una partida suena esta lista en vez de la de fondo, y al terminar vuelve la de fondo. Si la dejas vacía, la música no cambia.") : ""}
       ${otras.length ? `<div class="mpe-copiar"><label>Copiar la lista de otra página
         <select data-copiar><option value="">Elegir...</option>${otras.map(p => `<option value="${esc(p)}">${esc(nombrePag(p))}</option>`).join("")}</select></label></div>` : ""}
       <p class="mpe-ayuda">Las canciones son las de la Rocola. Para tener más, súbelas allí.${otras.length ? ` Páginas con música ahora: ${otras.map(p => esc(nombrePag(p))).join(", ")}.` : ""}</p>`;
@@ -198,7 +198,7 @@ window.MusicaPaginasEditor = (function () {
       catalogo.push([n, r]);
     });
     catalogo.sort((a, b) => a[0].localeCompare(b[0], "es", { sensitivity: "base" }));
-    st = { pagina: o.pagina, paginas: o.paginas, conPartida: o.conPartida, catalogo,
+    st = { pagina: o.pagina, paginas: o.paginas, conPartida: o.conPartida, etiquetas: o.etiquetas || null, catalogo,
       fondo: nuevaSeccion(o.config), partida: nuevaSeccion(o.config && o.config.partida) };
     // Sin música configurada, la lista arranca con la que suena hoy en esa página (si la página trae una propia)
     if (!(o.config && (o.config.lista || []).length) && propias.length) {

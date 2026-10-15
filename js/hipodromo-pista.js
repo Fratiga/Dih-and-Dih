@@ -9,6 +9,11 @@
    le suman pequeños arranques y flojeras (que valen cero en cada marca y en la meta), para que haya adelantamientos
    y ritmo en vez de una fila que avanza pareja.
 
+   Tres piezas, para que la página inmersiva (hipodromo-vivo.html) use las mismas sin copiarlas:
+   - trayectorias(res, carriles): dónde está cada criatura a cada segundo de la carrera (metros desde la salida).
+   - escenario(canvasFondo, canvasFrente, cfg): el paisaje, el clima y los carriles, con cámara que pone quien lo use.
+   - crear(contenedor, cfg): la toma de televisión de la página principal, hecha con las dos de arriba.
+
    Uso:  const pista = HipodromoPista.crear(contenedor, { res, carriles, ultimo, D, marcadas });
          pista.dibujar(segundosDesdeLaSalida)  ->  { metrosLider, fin, hecho }
 ============================================================================= */
@@ -44,10 +49,12 @@ window.HipodromoPista = (function () {
   const COLOR_ZONA = { ilusion: "180,140,255", corrientes: "255,255,255", sumidero: "40,70,30", brasas: "255,90,30" };
   const HUM = { firme: 0, bueno: 0.12, blando: 0.32, pesado: 0.55 };
 
-  function mezcla(hex, aHex, f) {   // mezcla dos colores #rrggbb
-    const n = parseInt(hex.slice(1), 16), m = parseInt(aHex.slice(1), 16);
-    const c = s => Math.round(((n >> s) & 255) * (1 - f) + ((m >> s) & 255) * f);
-    return "rgb(" + c(16) + "," + c(8) + "," + c(0) + ")";
+  /* Colores: hexadecimales "#rrggbb" o ternas [r,g,b] (las del clima en transición). */
+  const aRgb = h => (Array.isArray(h) ? h : [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  const css = c => "rgb(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]) + ")";
+  function mezcla(hex, aHex, f) {   // mezcla dos colores
+    const a = aRgb(hex), b = aRgb(aHex);
+    return css([0, 1, 2].map(i => a[i] * (1 - f) + b[i] * f));
   }
   const colorDe = id => "hsl(" + (hash("c" + id) % 360) + " 70% 55%)";
 
@@ -73,102 +80,114 @@ window.HipodromoPista = (function () {
     };
   }
 
-  /* ---------------------------------------------------------------- la pista */
-  function crear(cont, cfg) {
-    const { res, carriles, ultimo, D } = cfg;
-    const dist = res.dist, n = carriles.length;
-    const clima = Object.assign({}, CLIMA[res.clima] || CLIMA.despejado);
-    const suelo = SUELO[(cfg.suelo || "hierba")] || SUELO.hierba;
-    const arcana = cfg.arcana || null, zonas = cfg.zonas || [];
-    if (suelo.cielo) clima.cielo = suelo.cielo;   // las pistas arcanas tienen cielo propio
-    const hum = HUM[res.estadoPista] != null ? HUM[res.estadoPista] : 0;
-    const cuestas = clamp(cfg.cuestas || 0, 0, 1);
+  /* Dónde está cada criatura en cada instante. T son los segundos de carrera del motor (no los de pantalla):
+     la pantalla los convierte con factor (= segundos del motor por segundo de pantalla). Salida: { dist, durRace, factor, ultimo,
+     lista: [{ c, tFin, metros(T) }] } con los metros desde la salida de cada una. Es lo mismo que mueve la toma de la página principal. */
+  function trayectorias(res, carriles, ultimo) {
+    const dist = res.dist;
+    if (ultimo == null) ultimo = Math.max.apply(null, res.llegada.map(l => l.t));
     const durRace = duracionCarrera(dist), factor = ultimo / durRace;
-    const semilla = hash("pista" + res.n + res.pista + res.clima);
-    const marcadas = cfg.marcadas || new Set();
-    const incidentes = (res.incidentes || []).slice();
-
-    cont.innerHTML = '<div class="hpx"><canvas class="hpx-fondo"></canvas><div class="hpx-caballos"></div><canvas class="hpx-frente"></canvas>' +
-      '<div class="hpx-hud"><div class="hpx-faltan"><strong id="hpxFaltan"></strong><span id="hpxTiempo"></span></div><ol class="hpx-top" id="hpxTop"></ol></div>' +
-      '<div class="hpx-cuenta" id="hpxCuenta"></div>' +
-      '<div class="hpx-mini"><div class="hpx-mini-barra" id="hpxMini"></div><span class="hpx-mini-meta">META</span></div></div>';
-    const raiz = cont.firstChild, cFondo = raiz.querySelector(".hpx-fondo"), cFrente = raiz.querySelector(".hpx-frente"), capa = raiz.querySelector(".hpx-caballos");
-    const gF = cFondo.getContext("2d"), gT = cFrente.getContext("2d");
-    const elFaltan = raiz.querySelector("#hpxFaltan"), elTiempo = raiz.querySelector("#hpxTiempo"), elTop = raiz.querySelector("#hpxTop"), elCuenta = raiz.querySelector("#hpxCuenta"), elMini = raiz.querySelector("#hpxMini");
-
-    let W = 0, H = 0, dpr = 1;
-    function medir() {
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = Math.max(320, raiz.clientWidth);
-      H = Math.round(clamp(W * 0.36, 300, 470));
-      raiz.style.height = H + "px";
-      [cFondo, cFrente].forEach(c => { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); });
-      gF.setTransform(dpr, 0, 0, dpr, 0, 0); gT.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    medir();
-    const obs = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => medir()) : null;
-    if (obs) obs.observe(raiz);
-
-    // ---- los corredores
-    const cors = carriles.map((c, i) => {
-      const el = document.createElement("div");
-      el.className = "hpx-cab";
-      el.innerHTML = D.silueta(c.per, { clase: "hip-silueta corre", numero: c.puerta }) +
-        '<span class="hpx-nombre' + (marcadas.has(c.id) ? " mia" : "") + '">' + (marcadas.has(c.id) ? "★ " : "") + String(c.nombre).replace(/[<>&]/g, "") + "</span><span class=\"hpx-aviso\"></span>";
-      capa.appendChild(el);
+    const AMP = clamp(dist * 0.007, 6, 18);   // cuántos metros se pueden adelantar o atrasar con esas ondas (de unos 3 a 7 cuerpos)
+    const lista = carriles.map(c => {
       const az = azar(hash("v" + c.id + res.n));
       // pequeños arranques y flojeras por tramo: valen cero en cada marca de 100 m (y se apagan en el último tramo)
       const ruido = Array.from({ length: c.tramos.length }, (_, s) => (az() * 2 - 1) * (s === c.tramos.length - 1 ? 0.9 : 2.4));
       // ritmo con altibajos: ondas lentas que adelantan y atrasan a cada criatura a lo largo de la carrera y valen cero en la salida y en la meta,
       // así los puestos cambian de verdad a la vista y el resultado sigue siendo el del motor
       const onda = { mul: 0.6 + 0.6 * az(), f1: 1.1 + az(), f2: 2.6 + 1.6 * az(), p1: az() * 6.283, p2: az() * 6.283 };
-      return { c, i, el, svg: el.querySelector("svg"), aviso: el.querySelector(".hpx-aviso"), curva: curvaDe(c.tramos), ruido, onda, tFin: c.tramos[c.tramos.length - 1], parado: false, lugar: i + 1, metros: 0, vista: 0 };
+      const curva = curvaDe(c.tramos), tFin = c.tramos[c.tramos.length - 1];
+      const metros = T => {
+        let m = curva(T);
+        if (T > 0 && T < tFin) {
+          const tr = c.tramos; let s = 0; while (s < tr.length && tr[s] <= T) s++;
+          const t0 = s === 0 ? 0 : tr[s - 1], t1 = tr[s], u = (T - t0) / Math.max(1e-6, t1 - t0), e = Math.sin(Math.PI * u);
+          m += ruido[s] * e * e;
+          const v = T / tFin, o = onda, env = Math.pow(Math.sin(Math.PI * v), 0.8);
+          m += AMP * o.mul * env * (0.65 * Math.sin(6.283 * o.f1 * v + o.p1) + 0.35 * Math.sin(6.283 * o.f2 * v + o.p2));
+        }
+        return Math.max(0, Math.min(m, dist));
+      };
+      return { c, tFin, metros };
     });
-    const AMP = clamp(dist * 0.007, 6, 18);   // cuántos metros se pueden adelantar o atrasar con esas ondas (de unos 3 a 7 cuerpos)
-    const metrosDe = (k, T) => {
-      let m = k.curva(T);
-      if (T > 0 && T < k.tFin) {
-        const tr = k.c.tramos; let s = 0; while (s < tr.length && tr[s] <= T) s++;
-        const t0 = s === 0 ? 0 : tr[s - 1], t1 = tr[s], u = (T - t0) / Math.max(1e-6, t1 - t0), e = Math.sin(Math.PI * u);
-        m += k.ruido[s] * e * e;
-        const v = T / k.tFin, o = k.onda, env = Math.pow(Math.sin(Math.PI * v), 0.8);
-        m += AMP * o.mul * env * (0.65 * Math.sin(6.283 * o.f1 * v + o.p1) + 0.35 * Math.sin(6.283 * o.f2 * v + o.p2));
-      }
-      return Math.max(0, Math.min(m, dist));
+    return { dist, durRace, factor, ultimo, lista };
+  }
+
+  /* ---------------------------------------------------------------- el paisaje */
+  /* cfg: { dist, lanes, clima, estadoPista, suelo, cuestas, arcana, zonas, semilla, rayosT, rayosAzar, horizonte, carrilBase, carrilAncho }
+     Dibuja en dos lienzos (el fondo va detrás de las criaturas y el frente, delante). La cámara la pone quien lo usa:
+     fondo(camGr, gp, ahora, extra) con camGr = metro que está en el centro y gp = píxeles por metro del paisaje cercano.
+     extra(ctx) es opcional: dibuja cosas propias en el mundo (ctx trae g, W, H, y0, xm(metro), gp, ahora) justo antes del velo del clima. */
+  function escenario(cFondo, cFrente, cfg) {
+    const gF = cFondo.getContext("2d"), gT = cFrente.getContext("2d");
+    const dist = cfg.dist, lanes = Math.max(1, cfg.lanes), nombreSuelo = cfg.suelo || "hierba";
+    const suelo = SUELO[nombreSuelo] || SUELO.hierba;
+    const arcana = cfg.arcana || null, zonas = cfg.zonas || [];
+    const cuestas = clamp(cfg.cuestas || 0, 0, 1);
+    const HZ = cfg.horizonte != null ? cfg.horizonte : 0.36, CBASE = cfg.carrilBase != null ? cfg.carrilBase : 0.9, CANCHO = cfg.carrilAncho != null ? cfg.carrilAncho : 0.34;
+    let W = 320, H = 300;
+
+    // clima en curso: números que pueden pasar poco a poco de un tiempo a otro (la pista arcana tiene cielo propio y fijo)
+    const climaDe = nombre => {
+      const c = Object.assign({}, CLIMA[nombre] || CLIMA.despejado);
+      c.cielo = (suelo.cielo || c.cielo).map(aRgb);
+      c.rayos = !!c.rayos;
+      return c;
     };
+    let clima = climaDe(cfg.clima), hum = HUM[cfg.estadoPista] != null ? HUM[cfg.estadoPista] : 0, trans = null;
+    function ponerClima(nombre, estadoPista, seg) {
+      const a = climaDe(nombre), h = HUM[estadoPista] != null ? HUM[estadoPista] : hum;
+      if (!seg) { clima = a; hum = h; trans = null; return; }
+      trans = { de: clima, a, hDe: hum, hA: h, t: 0, dur: seg };
+    }
+    function avanzarClima(dt) {
+      if (!trans) return;
+      trans.t += dt;
+      const u = Math.min(1, trans.t / trans.dur), e = u * u * (3 - 2 * u), L = (x, y) => x + (y - x) * e, d = trans.de, a = trans.a;
+      clima = {
+        cielo: [0, 1].map(k => [0, 1, 2].map(i => L(d.cielo[k][i], a.cielo[k][i]))),
+        nubes: L(d.nubes, a.nubes), lluvia: L(d.lluvia, a.lluvia), niebla: L(d.niebla, a.niebla), oscuro: L(d.oscuro, a.oscuro), sol: L(d.sol, a.sol),
+        rayos: e < 0.5 ? d.rayos : a.rayos
+      };
+      hum = L(trans.hDe, trans.hA);
+      if (u >= 1) { clima = a; hum = trans.hA; trans = null; }
+    }
 
     // ---- el paisaje: elementos fijos en el mundo, sembrados con la semilla de la carrera
-    const az0 = azar(semilla);
+    const az0 = azar(cfg.semilla != null ? cfg.semilla : 1);
     const arboles = Array.from({ length: Math.ceil(dist / 22) + 40 }, (_, i) => ({ m: i * 22 + az0() * 18 - 100, t: az0(), h: 0.7 + az0() * 0.7, c: az0() }));
     const colinas = Array.from({ length: 30 }, (_, i) => ({ m: i * 90 - 200, h: 0.45 + az0() * 0.55 + cuestas * 0.4, a: 140 + az0() * 120 }));
     const nubes = Array.from({ length: 16 }, () => ({ m: az0() * 6000, y: 0.04 + az0() * 0.26, w: 70 + az0() * 140, v: 0.2 + az0() * 0.5 }));
     const charcos = Array.from({ length: 70 }, () => ({ m: az0() * (dist + 400) - 150, f: az0(), w: 30 + az0() * 70 }));
-    const gotas = Array.from({ length: clima.lluvia }, () => ({ x: az0(), y: az0(), v: 0.7 + az0() * 0.8, l: 8 + az0() * 12 }));
-    const rayos = clima.rayos ? Array.from({ length: 6 }, () => 6 + az0() * (durRace - 8)) : [];
+    const gotas = Array.from({ length: 280 }, () => ({ x: az0(), y: az0(), v: 0.7 + az0() * 0.8, l: 8 + az0() * 12 }));
+    const rayosT = cfg.rayosDur && clima.rayos ? Array.from({ length: 6 }, () => 6 + az0() * (cfg.rayosDur - 8)) : [];
+    let flash = 0, proximoRayo = 4;
 
-    // ---- cámara
-    let pxM = 12, camG = 0, iniciada = false, ultimoEl = null, flash = 0, reloj = 0;
-    const lanes = n;
-    const laneInfo = i => {            // i = 0 (puerta 1) es el carril más cercano
+    function medir(w, h, dpr) {
+      W = w; H = h;
+      [cFondo, cFrente].forEach(c => { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); });
+      gF.setTransform(dpr, 0, 0, dpr, 0, 0); gT.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    const carril = i => {            // i = 0 (puerta 1) es el carril más cercano
       const f = lanes === 1 ? 0 : i / (lanes - 1);
-      const yPies = H * 0.9 - f * H * 0.34;
-      return { yPies, escala: 1 - f * 0.34, z: 100 - i };
+      const yPies = H * CBASE - f * H * CANCHO;
+      return { yPies, escala: 1 - f * 0.34, z: 100 - i, f };
     };
 
-    function dibujarFondo(camGr, gp, ahora) {
-      const hz = H * 0.36;
+    function fondo(camGr, gp, ahora, extra) {
+      const hz = H * HZ;
       // cielo
       let g = gF.createLinearGradient(0, 0, 0, hz + 10);
-      g.addColorStop(0, clima.cielo[0]); g.addColorStop(1, clima.cielo[1]);
+      g.addColorStop(0, css(clima.cielo[0])); g.addColorStop(1, css(clima.cielo[1]));
       gF.fillStyle = g; gF.fillRect(0, 0, W, hz + 10);
-      if (clima.sol) {   // sol (y su brillo si hace calor)
-        const sx = W * 0.8, sy = hz * 0.35, r = clima.sol === 2 ? 46 : 28;
+      if (clima.sol > 0.03) {   // sol (y su brillo si hace calor)
+        const sx = W * 0.8, sy = hz * 0.35, r = clima.sol > 1.5 ? 46 : 28, al = Math.min(1, clima.sol);
         const rg = gF.createRadialGradient(sx, sy, 2, sx, sy, r * 3.4);
-        rg.addColorStop(0, clima.sol === 2 ? "rgba(255,240,170,.95)" : "rgba(255,255,230,.9)"); rg.addColorStop(0.3, "rgba(255,230,150,.4)"); rg.addColorStop(1, "rgba(255,230,150,0)");
-        gF.fillStyle = rg; gF.beginPath(); gF.arc(sx, sy, r * 3.4, 0, 7); gF.fill();
+        rg.addColorStop(0, clima.sol > 1.5 ? "rgba(255,240,170,.95)" : "rgba(255,255,230,.9)"); rg.addColorStop(0.3, "rgba(255,230,150,.4)"); rg.addColorStop(1, "rgba(255,230,150,0)");
+        gF.globalAlpha = al; gF.fillStyle = rg; gF.beginPath(); gF.arc(sx, sy, r * 3.4, 0, 7); gF.fill(); gF.globalAlpha = 1;
       }
       // nubes que van a su aire
-      nubes.slice(0, clima.nubes).forEach(nb => {
+      const cuantasNubes = Math.round(clima.nubes);
+      nubes.slice(0, cuantasNubes).forEach(nb => {
         const x = ((nb.m - ahora * 8 * nb.v - camGr * gp * 0.02) % (W + 300) + (W + 300)) % (W + 300) - 150, y = hz * nb.y * 2.2;
         gF.fillStyle = "rgba(255,255,255," + (clima.oscuro > 0.15 ? 0.3 : 0.62) + ")";
         for (let k = 0; k < 4; k++) { gF.beginPath(); gF.ellipse(x + k * nb.w * 0.28, y + (k % 2) * 4, nb.w * 0.34, nb.w * 0.16, 0, 0, 7); gF.fill(); }
@@ -182,20 +201,20 @@ window.HipodromoPista = (function () {
       arboles.forEach(a => {
         const x = W / 2 + (a.m - camGr) * gp * 0.32; if (x < -50 || x > W + 50) return;
         const alto = (22 + a.h * 28) * (0.8 + a.t * 0.4), y = hz + 3;
-        if (cfg.suelo === "cristal") {          // cristales que brillan
+        if (nombreSuelo === "cristal") {          // cristales que brillan
           gF.fillStyle = mezcla("#9a86f0", clima.cielo[1], 0.2); gF.beginPath(); gF.moveTo(x - 7, y); gF.lineTo(x - 2, y - alto * 1.05); gF.lineTo(x + 3, y - alto * 0.6); gF.lineTo(x + 8, y); gF.closePath(); gF.fill();
           gF.fillStyle = "rgba(255,255,255,.35)"; gF.beginPath(); gF.moveTo(x - 2, y - alto * 1.05); gF.lineTo(x + 3, y - alto * 0.6); gF.lineTo(x - 1, y - alto * 0.5); gF.closePath(); gF.fill();
-        } else if (cfg.suelo === "nube") {      // islas de nube
+        } else if (nombreSuelo === "nube") {      // islas de nube
           gF.fillStyle = "rgba(255,255,255,.75)"; for (let q = 0; q < 3; q++) { gF.beginPath(); gF.ellipse(x + q * 14 - 14, y - alto * 0.5 - q % 2 * 5, 15, 8, 0, 0, 7); gF.fill(); }
-        } else if (cfg.suelo === "pantano") {   // árboles secos y juncos
+        } else if (nombreSuelo === "pantano") {   // árboles secos y juncos
           gF.strokeStyle = mezcla("#3a2f24", clima.cielo[1], 0.2); gF.lineWidth = 3; gF.beginPath(); gF.moveTo(x, y); gF.lineTo(x, y - alto * 0.9); gF.moveTo(x, y - alto * 0.55); gF.lineTo(x + 9, y - alto * 0.85); gF.moveTo(x, y - alto * 0.7); gF.lineTo(x - 8, y - alto); gF.stroke();
-        } else if (cfg.suelo === "brasa") {     // agujas de roca con la punta al rojo
+        } else if (nombreSuelo === "brasa") {     // agujas de roca con la punta al rojo
           gF.fillStyle = mezcla("#2c1a16", clima.cielo[1], 0.15); gF.beginPath(); gF.moveTo(x - 9, y); gF.lineTo(x - 1, y - alto * 1.1); gF.lineTo(x + 9, y); gF.closePath(); gF.fill();
           gF.fillStyle = "rgba(255,120,40," + (0.55 + 0.3 * Math.sin(ahora * 3 + a.c * 9)) + ")"; gF.beginPath(); gF.moveTo(x - 3.5, y - alto * 0.8); gF.lineTo(x - 1, y - alto * 1.1); gF.lineTo(x + 2.4, y - alto * 0.78); gF.closePath(); gF.fill();
-        } else if (cfg.suelo === "arena") {          // cactus
+        } else if (nombreSuelo === "arena") {          // cactus
           gF.fillStyle = mezcla("#5a8a47", clima.cielo[1], 0.25 + clima.niebla * 0.4);
           gF.fillRect(x - 3, y - alto, 6, alto); gF.fillRect(x - 11, y - alto * 0.65, 5, alto * 0.3); gF.fillRect(x + 6, y - alto * 0.8, 5, alto * 0.3);
-        } else if (cfg.suelo === "arcilla") { // rocas y troncos secos
+        } else if (nombreSuelo === "arcilla") { // rocas y troncos secos
           gF.fillStyle = mezcla("#6a4a3a", clima.cielo[1], 0.25 + clima.niebla * 0.4);
           gF.beginPath(); gF.moveTo(x - 14, y); gF.lineTo(x - 6, y - alto * 0.55); gF.lineTo(x + 4, y - alto * 0.4); gF.lineTo(x + 14, y); gF.closePath(); gF.fill();
         } else {                               // árboles redondos
@@ -212,7 +231,7 @@ window.HipodromoPista = (function () {
       // franjas del cortado (hierba) o surcos (arcilla y arena)
       const anchoFranja = 15 * gp;
       const x0 = ((W / 2 - camGr * gp) % (anchoFranja * 2) + anchoFranja * 2) % (anchoFranja * 2);
-      gF.fillStyle = mezcla(suelo.franja, "#2a1a10", hum * 0.8); gF.globalAlpha = cfg.suelo === "hierba" ? 0.5 : 0.22;
+      gF.fillStyle = mezcla(suelo.franja, "#2a1a10", hum * 0.8); gF.globalAlpha = nombreSuelo === "hierba" ? 0.5 : 0.22;
       for (let x = x0 - anchoFranja * 2; x < W; x += anchoFranja * 2) gF.fillRect(x, y0 + 14, anchoFranja, H - y0);
       gF.globalAlpha = 1;
       // charcos y barro según el estado
@@ -225,7 +244,7 @@ window.HipodromoPista = (function () {
       });
       // líneas de carril que corren con el suelo
       gF.strokeStyle = "rgba(255,255,255,.22)"; gF.lineWidth = 1.3; gF.setLineDash([22, 26]); gF.lineDashOffset = (camGr * gp) % 48;
-      for (let i = 1; i < lanes; i++) { const f = (i - 0.5) / Math.max(1, lanes - 1), y = H * 0.9 - f * H * 0.34 + 4; gF.beginPath(); gF.moveTo(0, y); gF.lineTo(W, y); gF.stroke(); }
+      for (let i = 1; i < lanes; i++) { const f = (i - 0.5) / Math.max(1, lanes - 1), y = H * CBASE - f * H * CANCHO + 4; gF.beginPath(); gF.moveTo(0, y); gF.lineTo(W, y); gF.stroke(); }
       gF.setLineDash([]);
       // valla lejana y marcas de distancia
       gF.fillStyle = "rgba(255,255,255,.8)"; gF.fillRect(0, y0 + 6, W, 2);
@@ -265,50 +284,103 @@ window.HipodromoPista = (function () {
         for (let k = 0; k * 8 < H - y0 + 10; k++) { gF.fillStyle = k % 2 ? "#111" : "#f4f1e6"; gF.fillRect(xf - 3, y0 + k * 8, 6, 8); }
         for (let k = 0; k * 8 < H - y0 + 10; k++) { gF.fillStyle = k % 2 ? "#f4f1e6" : "#111"; gF.fillRect(xf + 3, y0 + k * 8, 6, 8); }
       }
+      if (extra) extra({ g: gF, W, H, y0, hz, xm, gp, camGr, ahora, clima, hum, suelo, carril });
       // calor: ondas sobre la pista
-      if (clima.sol === 2) { gF.fillStyle = "rgba(255,200,120,.12)"; for (let i = 0; i < 5; i++) gF.fillRect(0, y0 + 14 + i * 22 + Math.sin(ahora * 2 + i) * 3, W, 5); }
+      if (clima.sol > 1.5) { gF.fillStyle = "rgba(255,200,120,.12)"; for (let i = 0; i < 5; i++) gF.fillRect(0, y0 + 14 + i * 22 + Math.sin(ahora * 2 + i) * 3, W, 5); }
       // velo de clima
-      if (clima.oscuro) { gF.fillStyle = "rgba(10,14,24," + clima.oscuro + ")"; gF.fillRect(0, 0, W, H); }
+      if (clima.oscuro > 0.005) { gF.fillStyle = "rgba(10,14,24," + clima.oscuro + ")"; gF.fillRect(0, 0, W, H); }
     }
 
-    function dibujarFrente(camGr, gp, ahora, dt, T) {
+    function frente(camGr, gp, ahora, dt, T, extra) {
+      avanzarClima(dt);
       gT.clearRect(0, 0, W, H);
       // valla cercana (pasa más rápido: está más cerca de la cámara)
       const yv = H - 20, paso = 62 * 1.0, dxv = camGr * gp * 1.7, xv0 = ((W / 2 - dxv) % paso + paso) % paso;
       gT.fillStyle = "rgba(0,0,0,.35)"; gT.fillRect(0, yv + 4, W, 16);
       gT.fillStyle = "#e8e2d0"; gT.fillRect(0, yv, W, 4); gT.fillRect(0, yv + 12, W, 3);
       for (let x = xv0 - paso; x < W; x += paso) { gT.fillStyle = "#d8d0b8"; gT.fillRect(x, yv - 4, 6, 24); }
+      if (extra) extra({ g: gT, W, H, gp, camGr, ahora, dt });
       // lluvia
-      if (clima.lluvia) {
+      const gotasN = Math.floor(clima.lluvia);
+      if (gotasN > 0) {
         gT.strokeStyle = "rgba(200,220,240,.5)"; gT.lineWidth = 1; gT.beginPath();
-        const viento = res.clima === "tormenta" ? 0.5 : 0.22;
-        gotas.forEach(g => {
-          g.y += dt * g.v * (res.clima === "tormenta" ? 1.4 : 0.9); g.x -= dt * viento * 0.4;
+        const viento = clima.rayos ? 0.5 : 0.22;
+        for (let i = 0; i < gotasN; i++) {
+          const g = gotas[i];
+          g.y += dt * g.v * (clima.rayos ? 1.4 : 0.9); g.x -= dt * viento * 0.4;
           if (g.y > 1.05) { g.y = -0.05; g.x = Math.random(); }
           if (g.x < -0.05) g.x += 1.1;
           const x = g.x * W, y = g.y * H; gT.moveTo(x, y); gT.lineTo(x - g.l * viento, y + g.l);
-        });
+        }
         gT.stroke();
       }
       // niebla en bandas que se mueven
-      if (clima.niebla) for (let i = 0; i < 4; i++) {
+      if (clima.niebla > 0.004) for (let i = 0; i < 4; i++) {
         const y = H * (0.34 + i * 0.16), xo = ((ahora * (10 + i * 5) + i * 300) % (W + 600)) - 300;
         const rg = gT.createLinearGradient(0, y - 40, 0, y + 40); rg.addColorStop(0, "rgba(225,230,232,0)"); rg.addColorStop(0.5, "rgba(225,230,232," + clima.niebla * 0.55 + ")"); rg.addColorStop(1, "rgba(225,230,232,0)");
         gT.fillStyle = rg; gT.fillRect(xo - 400, y - 40, W + 800, 80);
       }
-      // relámpagos
-      if (rayos.length) {
-        rayos.forEach(t => { if (T >= t && T < t + 0.5 && flash <= 0) flash = 1; });
-        if (flash > 0) { gT.fillStyle = "rgba(255,255,255," + flash * 0.55 + ")"; gT.fillRect(0, 0, W, H); flash -= dt * 3; }
-      }
+      // relámpagos: a horas fijas de la carrera (toma de la página principal) o al azar mientras dure la tormenta (página inmersiva)
+      if (rayosT.length) rayosT.forEach(t => { if (T >= t && T < t + 0.5 && flash <= 0) flash = 1; });
+      else if (cfg.rayosAzar && clima.rayos && ahora >= proximoRayo) { flash = 1; proximoRayo = ahora + 5 + Math.random() * 10; }
+      if (flash > 0) { gT.fillStyle = "rgba(255,255,255," + flash * 0.55 + ")"; gT.fillRect(0, 0, W, H); flash -= dt * 3; }
     }
+
+    return { medir, fondo, frente, carril, ponerClima, estado: () => ({ clima, hum }) };
+  }
+
+  /* ---------------------------------------------------------------- la pista */
+  function crear(cont, cfg) {
+    const { res, carriles, ultimo, D } = cfg;
+    const dist = res.dist, n = carriles.length;
+    const tr = trayectorias(res, carriles, ultimo);
+    const durRace = tr.durRace, factor = tr.factor;
+    const semilla = hash("pista" + res.n + res.pista + res.clima);
+    const marcadas = cfg.marcadas || new Set();
+    const incidentes = (res.incidentes || []).slice();
+
+    cont.innerHTML = '<div class="hpx"><canvas class="hpx-fondo"></canvas><div class="hpx-caballos"></div><canvas class="hpx-frente"></canvas>' +
+      '<div class="hpx-hud"><div class="hpx-faltan"><strong id="hpxFaltan"></strong><span id="hpxTiempo"></span></div><ol class="hpx-top" id="hpxTop"></ol></div>' +
+      '<div class="hpx-cuenta" id="hpxCuenta"></div>' +
+      '<div class="hpx-mini"><div class="hpx-mini-barra" id="hpxMini"></div><span class="hpx-mini-meta">META</span></div></div>';
+    const raiz = cont.firstChild, cFondo = raiz.querySelector(".hpx-fondo"), cFrente = raiz.querySelector(".hpx-frente"), capa = raiz.querySelector(".hpx-caballos");
+    const elFaltan = raiz.querySelector("#hpxFaltan"), elTiempo = raiz.querySelector("#hpxTiempo"), elTop = raiz.querySelector("#hpxTop"), elCuenta = raiz.querySelector("#hpxCuenta"), elMini = raiz.querySelector("#hpxMini");
+
+    const esc = escenario(cFondo, cFrente, {
+      dist, lanes: n, clima: res.clima, estadoPista: res.estadoPista, suelo: cfg.suelo, cuestas: cfg.cuestas, arcana: cfg.arcana || null, zonas: cfg.zonas || [], semilla,
+      rayosDur: durRace   // si hay tormenta, seis relámpagos repartidos por la carrera
+    });
+    let W = 0, H = 0, dpr = 1;
+    function medir() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = Math.max(320, raiz.clientWidth);
+      H = Math.round(clamp(W * 0.36, 300, 470));
+      raiz.style.height = H + "px";
+      esc.medir(W, H, dpr);
+    }
+    medir();
+    const obs = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => medir()) : null;
+    if (obs) obs.observe(raiz);
+
+    // ---- los corredores
+    const cors = tr.lista.map((q, i) => {
+      const c = q.c, el = document.createElement("div");
+      el.className = "hpx-cab";
+      el.innerHTML = D.silueta(c.per, { clase: "hip-silueta corre", numero: c.puerta }) +
+        '<span class="hpx-nombre' + (marcadas.has(c.id) ? " mia" : "") + '">' + (marcadas.has(c.id) ? "★ " : "") + String(c.nombre).replace(/[<>&]/g, "") + "</span><span class=\"hpx-aviso\"></span>";
+      capa.appendChild(el);
+      return Object.assign(q, { mDe: q.metros, i, el, svg: el.querySelector("svg"), aviso: el.querySelector(".hpx-aviso"), parado: false, lugar: i + 1, metros: 0, vista: 0 });
+    });
+
+    // ---- cámara
+    let pxM = 12, camG = 0, iniciada = false, ultimoEl = null;
 
     /* ------------------------------------------------------------ cada cuadro */
     function dibujar(el) {
       const ahora = el, dt = ultimoEl == null ? 0.016 : clamp(el - ultimoEl, 0, 0.12); ultimoEl = el;
       const Tv = Math.max(0, el - PRE), T = Tv * factor;
       // metros de cada criatura
-      cors.forEach(k => { k.metros = metrosDe(k, T); if (Tv > durRace + 0.0001 && k.metros < dist) k.metros = dist; });
+      cors.forEach(k => { k.metros = k.mDe(T); if (Tv > durRace + 0.0001 && k.metros < dist) k.metros = dist; });
       const orden = cors.slice().sort((a, b) => (b.metros - a.metros) || (a.c.pos - b.c.pos));
       // a quien ya cruzó la meta se le ordena por su puesto oficial
       const fin = cors.filter(k => T >= k.tFin).sort((a, b) => a.c.pos - b.c.pos), enCarrera = orden.filter(k => T < k.tFin);
@@ -328,12 +400,12 @@ window.HipodromoPista = (function () {
       const xDe = m => W / 2 + (m - camG) * gp;
       const xLider = xDe(L);
 
-      dibujarFondo(camG, gp, ahora);
+      esc.fondo(camG, gp, ahora);
 
       // los corredores
       const base = Math.min(220, W * 0.2), bw = base, bh = base * 148 / 240;
       cors.forEach(k => {
-        const info = laneInfo(k.i);
+        const info = esc.carril(k.i);
         const mv = k.metros + (T >= k.tFin ? 10 * (1 - Math.exp(-(T - k.tFin) / factor / 1.1)) : 0);
         const x = xLider + (mv - L) * pxM;
         const w = bw * info.escala, h = bh * info.escala;
@@ -361,7 +433,7 @@ window.HipodromoPista = (function () {
           if (inc.tipo !== "lesion") setTimeout(() => { k.aviso.className = "hpx-aviso"; }, 1700);
         }
       });
-      dibujarFrente(camG, gp, ahora, dt, Tv);
+      esc.frente(camG, gp, ahora, dt, Tv);
 
       // marcador: metros que faltan y los 5 primeros
       const falta = Math.max(0, Math.round((dist - lider.metros) / 10) * 10);
@@ -383,5 +455,5 @@ window.HipodromoPista = (function () {
     return { dibujar, destruir, duracion: PRE + durRace + COLA, previa: PRE };
   }
 
-  return { crear, duracionCarrera, PRE, COLA };
+  return { crear, trayectorias, escenario, duracionCarrera, PRE, COLA, CLIMA, SUELO, HUM, colorDe, mezcla, hash, azar, clamp };
 })();

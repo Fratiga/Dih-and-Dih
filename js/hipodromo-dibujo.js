@@ -95,6 +95,9 @@ window.HipodromoDibujo = (function () {
     const s = perfil.silueta || {}, g = k => (typeof s[k] === "number" ? s[k] : 0.5);
     const uid = "hd" + perfil.id + "_" + (++CONTADOR);
     const corre = /(^|\s)corre(\s|$)/.test(opciones.clase || "");   // en la pista: galopa
+    // vivo: la criatura sale en piezas con nombre (patas con rodilla, cuello, cabeza, orejas, ojos, cola) y con sus medidas en
+    // data-rig, para que js/hipodromo-vida.js la mueva cuadro a cuadro (andar, pastar, echarse, galopar). No lleva animación propia.
+    const vivo = !!opciones.vivo, piernas = [];
     const ciclo = (0.5 + (perfil.id % 5) * 0.02).toFixed(2);          // segundos por zancada, distinto en cada criatura
     const base = colorCapa(perfil.capa), oscuro = mezcla(base, -0.45), lejos = mezcla(base, -0.3), claro = mezcla(base, 0.25);
     const seis = R.patas !== "4";
@@ -184,6 +187,12 @@ window.HipodromoDibujo = (function () {
         const t = 0.4, bx = x + kx * (1 - t), by = ym + (yb - 2 - ym) * t, ww = grC + 3.4;
         cana += `<rect x="${f1(bx - ww / 2)}" y="${f1(by - 3.4)}" width="${f1(ww)}" height="6.8" rx="1.2" fill="#f3efe2" stroke="#b9b3a0" stroke-width=".5"/><path d="M ${f1(bx - ww / 2)} ${f1(by - 1)} l ${f1(ww)} 2.4 M ${f1(bx - ww / 2)} ${f1(by + 1.6)} l ${f1(ww)} 2" stroke="#b9b3a0" stroke-width=".5" fill="none"/>`;
       }
+      if (vivo) {
+        piernas.push({ x: +f1(x), y0: +f1(y0), kx: +f1(x + kx), ym: +f1(ym), yb: +f1(yb - 2), lejos: cercana ? 0 : 1, frente: x > (xAtras + xFrente) / 2 ? 1 : 0 });
+        const rr = grC * 0.5 + 0.2, rx = f1(x + kx), ry = f1(ym);
+        const rodilla = (cb ? `<circle cx="${rx}" cy="${ry}" r="${f1(rr + cb)}" fill="${tinta}"/>` : "") + `<circle cx="${rx}" cy="${ry}" r="${f1(rr)}" fill="${pintar}"/>`;
+        return `<g class="r-pata" data-p="${piernas.length - 1}"><g class="r-muslo">${muslo}<g class="r-cana">${rodilla}${cana}</g></g></g>`;
+      }
       if (!corre) return muslo + cana;
       const N = 24, A = m.cojo ? 20 : 36, B = m.cojo ? 24 : 54;
       const giro = (cx, cy2, f) => `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: N + 1 }, (_, i) => f(2 * Math.PI * i / N + fase).toFixed(1) + " " + f1(cx) + " " + f1(cy2)).join(";")}"/>`;
@@ -235,7 +244,7 @@ window.HipodromoDibujo = (function () {
       const a = bez(P0, P1, P2, P3, 0.25), b = bez(P0, P1, P2, P3, 0.9);
       cola += `<path d="M ${f1(a.x)} ${f1(a.y)} L ${f1(a.x + a.nx * -9)} ${f1(a.y + a.ny * -9)} L ${f1(b.x + b.nx * -6)} ${f1(b.y + b.ny * -6)} L ${f1(b.x)} ${f1(b.y)} Z" fill="${lejos}" opacity=".9"/>`;
     }
-    cola = `<g class="hip-cola">${cola}${corre ? `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => (5 * Math.sin(2 * Math.PI * i / 16 - 0.8)).toFixed(2) + " " + f1(P0[0]) + " " + f1(P0[1])).join(";")}"/>` : ""}</g>`;
+    cola = `<g class="${vivo ? "r-cola" : "hip-cola"}">${cola}${corre ? `<animateTransform attributeName="transform" type="rotate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => (5 * Math.sin(2 * Math.PI * i / 16 - 0.8)).toFixed(2) + " " + f1(P0[0]) + " " + f1(P0[1])).join(";")}"/>` : ""}</g>`;
 
     /* ---- alas (detrás del cuerpo) */
     const ax = xFrente - 6, ay = yLomo(xFrente - 6) + 2;
@@ -316,13 +325,13 @@ window.HipodromoDibujo = (function () {
     const boca = `<path d="M ${f1(puntaX * 0.5)} ${f1(cabezaY * 0.5)} q ${f1(puntaX * 0.22)} ${mirada < 0.35 ? 2.4 : 0.7} ${f1(puntaX * 0.42)} ${mirada < 0.35 ? -0.4 : -1.1}" fill="none" stroke="${tinta}" stroke-width=".8" stroke-linecap="round" opacity=".8"/>`;
     const fosa = `<circle cx="${f1(puntaX * 0.88)}" cy="${f1(cabezaY * 0.1)}" r="1" fill="#101010" opacity=".7"/>`;
     const formaCabeza = `<ellipse cx="0" cy="0" rx="${f1(cabezaX * 0.9)}" ry="${f1(cabezaY)}"/>${hocico}`;
-    const orejaEstado = `<g transform="rotate(${f1(-(0.5 - mirada) * 36)} ${f1(ex)} ${f1(ey)})">${oreja}</g>`;
+    const orejaEstado = `<g transform="rotate(${f1(-(0.5 - mirada) * 36)} ${f1(ex)} ${f1(ey)})">${vivo ? `<g class="r-or">${oreja}</g>` : oreja}</g>`;
     const canas = etapa === "veterano" ? `<ellipse cx="${f1(cabezaX * 0.95)}" cy="${f1(cabezaY * 0.22)}" rx="${f1(cabezaX * 0.6)}" ry="${f1(cabezaY * 0.42)}" fill="#e9e6dc" opacity=".55"/>` : "";
     const sudor = secs.includes("tem") ? `<path d="M ${f1(-cabezaX * 0.55)} ${f1(-cabezaY * 1.05)} q 2 3.4 0 5 q -2 -1.6 0 -5 Z M ${f1(-cabezaX * 0.05)} ${f1(-cabezaY * 1.3)} q 1.6 2.8 0 4 q -1.6 -1.2 0 -4 Z" fill="#8fd3ff" opacity=".9"/>` : "";
     const cabeza = `<g transform="translate(${f1(cabX)} ${f1(cabY)}) rotate(18)">` +
       (cb ? `<g fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round">${formaCabeza}</g>` : "") +
       `<g fill="${base}">${formaCabeza}</g>` +
-      marcaCabeza + canas + orejaEstado + cuernos + ojos + boca + fosa + sudor + `</g>`;
+      marcaCabeza + canas + orejaEstado + cuernos + (vivo ? `<g class="r-oj">${ojos}</g>` : ojos) + boca + fosa + sudor + `</g>`;
 
     /* ---- espalda: todo se apoya en el contorno real del lomo */
     const ex0 = xFrente - 3, ex1 = xAtras - rCadera * 0.15;
@@ -406,6 +415,20 @@ window.HipodromoDibujo = (function () {
     const kAncho2 = Math.min(kAncho, (corre ? 196 : 226) / Math.max(60, der - izq));
     const k = escala * Math.min(1, kAlto, kAncho2), cx = (izq + der) / 2;
 
+    if (vivo) {
+      const p2 = q => [+f1(q[0]), +f1(q[1])];
+      const rig = { k: +k.toFixed(3), cx: +f1(cx), s: suelo, cy: +f1(cy), alto: +f1(alto), xa: +f1(xAtras), xf: +f1(xFrente), centro: +f1(centro), lp: +f1(largoPata),
+        n0: p2(N0), n3: p2(N3), co: p2(P0), or: p2([ex, ey]), oj: p2([cabezaX * 0.2, -cabezaY * 0.22]), ca: p2([cabX, cabY]), pt: +f1(puntaX),
+        cw: +f1(cabezaX), ch: +f1(cabezaY), lc: +f1(largoCuello), mir: +mirada.toFixed(2), seis: seis ? 1 : 0, p: piernas };
+      const sombraW = f1(Math.min(100, (der - izq) * 0.45));
+      const bloque = (cb ? `<path d="${cuerpoD}" fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round"/>` : "") +
+        `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + manta + espalda + cola;
+      return `<svg class="${opciones.clase || "hip-silueta"}" viewBox="0 -8 240 148" role="img" aria-label="${(opciones.titulo || perfil.nombre || "Criatura").replace(/"/g, "&quot;")}" xmlns="http://www.w3.org/2000/svg" data-rig='${JSON.stringify(rig)}'>` + defs +
+        `<g transform="translate(120 ${suelo}) scale(${k.toFixed(3)}) translate(${f1(-cx)} ${-suelo})">` + (E.pixel ? `<g filter="url(#${uid}p)">` : "") +
+        `<ellipse class="r-sombra" cx="${f1(cx)}" cy="${suelo}" rx="${sombraW}" ry="3" fill="rgba(0,0,0,.28)"/>` +
+        `<g class="r-b">${alas}</g>` + patasLejos + `<g class="r-b"><g class="r-cu">${cuello}</g></g>` + `<g class="r-b">${bloque}</g>` + patasCerca +
+        `<g class="r-b"><g class="r-cu"><g class="r-cab">${cabeza}</g></g></g>` + (E.pixel ? `</g>` : "") + `</g></svg>`;
+    }
     return `<svg class="${opciones.clase || "hip-silueta"}" viewBox="0 -8 240 148" role="img" aria-label="${(opciones.titulo || perfil.nombre || "Criatura").replace(/"/g, "&quot;")}" xmlns="http://www.w3.org/2000/svg">` + defs +
       `<g transform="translate(${corre ? 133 : 120} ${suelo}) scale(${k.toFixed(3)}) translate(${f1(-cx)} ${-suelo})">` +
       (E.pixel ? `<g filter="url(#${uid}p)">` : "") +

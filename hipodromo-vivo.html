@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Hipódromo en vivo — Compendio del Mundo</title>
+  <script src="js/mj-volumen.js?v=20270197"></script>
+  <script src="js/dialogos.js?v=20270197"></script>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/style.css?v=20270197">
+  <link rel="stylesheet" href="css/hipodromo-vivo.css?v=20270197">
+</head>
+<body class="hv" data-fase="vacio">
+  <div class="hv-escena" id="hvEscena">
+    <canvas id="hvFondo" class="hv-lienzo"></canvas>
+    <div id="hvCapa" class="hv-capa"></div>
+    <canvas id="hvFrente" class="hv-lienzo hv-frente"></canvas>
+  </div>
+  <div class="hv-fundido" id="hvFundido"></div>
+
+  <div class="hv-ui">
+    <header class="hv-arriba">
+      <a class="hv-boton hv-volver" href="hipodromo.html" title="Volver al hipódromo">← Hipódromo</a>
+      <div class="hv-titulo" aria-live="polite">
+        <span id="hvNum" class="hv-num">Carrera</span>
+        <strong id="hvNombre">Conectando con el hipódromo...</strong>
+      </div>
+      <div class="hv-reloj">
+        <span id="hvFase" class="hv-fase">-</span>
+        <span class="hv-cuenta"><i id="hvCuentaTxt">Próxima salida</i><b id="hvCuenta">--:--</b></span>
+      </div>
+    </header>
+
+    <aside class="hv-datos" id="hvDatos" aria-label="Datos de la carrera"></aside>
+    <aside class="hv-puestos" id="hvPuestos" aria-label="Participantes y posiciones">
+      <h2 id="hvPuestosTit">Participantes</h2>
+      <ol id="hvLista"></ol>
+    </aside>
+
+    <div class="hv-mensaje" id="hvMsg" aria-live="assertive"></div>
+    <p class="hv-aviso" id="hvAviso" role="status"></p>
+    <p class="hv-sonido" id="hvSonido" hidden>Toca la pantalla para activar la música</p>
+
+    <div class="hv-progreso" id="hvProgreso" aria-hidden="true"><div id="hvProgBarra"></div><span>META</span></div>
+
+    <nav class="hv-acciones" aria-label="Acciones">
+      <a class="hv-boton" href="hipodromo.html#carrera">Apostar</a>
+      <button type="button" class="hv-boton" id="hvVerRes" hidden>Resultado</button>
+      <a class="hv-boton" href="hipodromo.html#noticias">Resultados completos</a>
+    </nav>
+
+    <section class="hv-resultados" id="hvRes" hidden aria-label="Resultado de la carrera">
+      <button type="button" class="hv-cerrar" id="hvResCerrar" aria-label="Cerrar">×</button>
+      <h2 id="hvResTit">Resultado</h2>
+      <div id="hvResCuerpo"></div>
+    </section>
+
+    <div class="hv-local" id="hvLocal" hidden>
+      <span>Prueba local (reloj adelantable):</span>
+      <button type="button" data-salto="-30">Preparación</button>
+      <button type="button" data-salto="0">Salida</button>
+      <button type="button" data-salto="25">En carrera</button>
+      <button type="button" data-salto="75">Resultados</button>
+      <button type="button" data-salto="120">Recuperación</button>
+      <button type="button" data-salto="215">Siguiente</button>
+      <button type="button" data-salto="3525">+1 h</button>
+    </div>
+  </div>
+
+  <p class="hv-cargando" id="hvCargando" role="status">Conectando con el hipódromo...</p>
+
+  <script src="data/hipodromo-palabras.js?v=20270197"></script>
+  <script src="js/hipodromo-nombres.js?v=20270197"></script>
+  <script src="js/hipodromo-rasgos.js?v=20270197"></script>
+  <script src="js/hipodromo-motor.js?v=20270197"></script>
+  <script src="js/hipodromo-dibujo.js?v=20270197"></script>
+  <script src="js/hipodromo-pista.js?v=20270197"></script>
+  <script src="js/hipodromo-vida.js?v=20270197"></script>
+  <script src="js/fichas-supabase.js?v=20270197"></script>
+  <script src="js/hipodromo-online.js?v=20270197"></script>
+  <script src="js/hipodromo-vivo.js?v=20270197"></script>
+  <script src="js/interruptores.js?v=20270197"></script>
+  <script src="js/avisos-admin.js?v=20270197"></script>
+  <script src="js/musica-paginas.js?v=20270197"></script>
+</body>
+</html>
