@@ -75,8 +75,8 @@
   };
   const PUNTOS_ANILLO = [10, 7, 4];
   // Lo que se lee en la pantalla previa al disparo (antes estaba en una fila de fichas bajo el campo)
-  const REGLAS = ["Un minuto. Los blancos aparecen y se esfuman en segundos.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco."];
-  const REGLAS_VS = ["Un minuto. Los blancos son de los dos: se lo lleva quien dispare primero.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco."];
+  const REGLAS = ["Un minuto. Los blancos aparecen y se esfuman en segundos.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco. Si fallas, la mira tarda medio segundo en recargar."];
+  const REGLAS_VS = ["Un minuto. Los blancos son de los dos: se lo lleva quien dispare primero.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco. Si fallas, la mira tarda medio segundo en recargar."];
 
   // Generador con semilla: los dos jugadores de una partida ven los mismos blancos.
   function generadorConSemilla(semilla) {
@@ -310,7 +310,12 @@
       m.x = x; m.y = y; m.t = relojVisual;
     }
 
+    /* Fallar al aire bloquea tu disparo medio segundo para que no se pueda spamear flechas */
+    const ENFRIAR_FALLO = 500;
+    let bloqueoHasta = 0;
+
     function disparar(x, y) {
+      if (performance.now() < bloqueoHasta) return;
       // El blanco más cercano al frente (el último dibujado) que contenga el tiro
       for (let i = blancos.length - 1; i >= 0; i--) {
         const b = blancos[i];
@@ -344,6 +349,7 @@
         blancos.splice(i, 1);
         return;
       }
+      bloqueoHasta = performance.now() + ENFRIAR_FALLO;
       if (visual) {
         lanzarFlecha(ancho / 2, alto + 14, x, y, "#f1c40f", 0.09);
         efectos.push({ tipo: "polvo", x, y, fase: Math.random() * 6, edad: 0, vida: 0.5 });
@@ -465,6 +471,7 @@
     }
 
     function iniciar() {
+      bloqueoHasta = 0;
       if (!vs) azar = Math.random;
       textoFin = null;
       ia = nuevaIA();
@@ -483,6 +490,7 @@
       compartido.golpes.clear();
       compartido.kMin = 0;
       compartido.miraRival = null;
+      bloqueoHasta = 0;
       textoFin = null; puntaje = 0; puntajeRival = 0; efectos = []; blancos = []; destelloRival = 0; resultado = "";
       tiempo = (performance.now() - t0) / 1000;
       cambiarEstado("jugando");
@@ -634,9 +642,20 @@
     }
 
     function dibujarMira(x, y) {
+      const resto = bloqueoHasta - performance.now();
+      const bloqueada = resto > 0;
       ctx.save();
       ctx.lineCap = "round";
-      for (const [color, ancho] of [["rgba(0,0,0,.6)", 5], ["#ffe08a", 2.5]]) {
+      if (bloqueada) {
+        // Recargando tras un fallo: la mira se apaga y un arco rojo se va llenando
+        ctx.globalAlpha = 0.55;
+        ctx.strokeStyle = "#ff6b5a";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 24, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - resto / ENFRIAR_FALLO));
+        ctx.stroke();
+      }
+      for (const [color, ancho] of [["rgba(0,0,0,.6)", 5], [bloqueada ? "#b9a06a" : "#ffe08a", 2.5]]) {
         ctx.strokeStyle = color;
         ctx.lineWidth = ancho;
         ctx.beginPath();
