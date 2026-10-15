@@ -483,6 +483,21 @@
     }));
     return ok;
   }
+  /* Cómo se emparejan: los entrenadores meten a cada una en un grupo de rivales que corren casi igual (así la carrera es reñida y no salen
+     competidoras sin opción), y la categoría fija de qué parte de la lista de fuerza sale el grupo (0 = las más fuertes, 1 = las más flojas):
+     el Gran Premio sale de la parte de arriba, la Selecta del medio-alto, la Corriente del medio y Novatos de la parte de abajo y las que debutan.
+     compacto: lo que cuesta que el grupo esté repartido en tiempo (menos = se exige que corran más juntas; con muy poco se pierde la categoría). */
+  const EMPAREJA = { zona: { gran: [0, 0.42], selecta: [0.12, 0.6], corriente: [0.25, 0.78], novatos: [0.5, 1] }, borde: 0.06, compacto: 0.008 };
+  /* La fuerza de cada una en esa carrera: lo que tardaría corriendo sola, sin azar (ni el del día ni el de cada tramo), con la pista, la distancia y el
+     clima de verdad de esa carrera. Cuenta forma, fatiga, edad, rasgos, terreno y distancia: lo mismo que cuenta la carrera. Es el criterio de los
+     entrenadores para saber contra quién puede correr cada una. Devuelve los tiempos (menos es más fuerte). */
+  const SIN_AZAR = { norm: () => 0, f: () => 0.5, i: (a) => a };
+  function fuerzas(m, lista, dist, n) {
+    const nn = n == null ? m.n : n;
+    const clima = muestraClima(crearRng(m.semilla, "clima", nn), MARKOV[m.clima.estado]);
+    const cond = condiciones({ pista: pistaDeJornada(m.semilla, Math.floor(nn / C.JORNADA)), mojadoPrevio: (nn % C.JORNADA === 0 && nn > 0) ? m.clima.mojado * 0.5 : m.clima.mojado, dist, n: nn }, clima);
+    return lista.map(c => simular(SIN_AZAR, [efectivo(m, c, cond, 1)], cond)[0].t);
+  }
   function inscribir(m, rng, grado, dist, n) {
     const G = GRADOS[grado];
     const forzadas = n == null ? [] : forzadasPara(m, n, G);
@@ -490,26 +505,22 @@
     if (pool.length < C.CAMPO_MIN + 2) pool = elegibles(m, true);
     const campo = Math.max(Math.min(pool.length + forzadas.length, rng.i(G.campo[0], G.campo[1])), forzadas.length + Math.min(3, pool.length));
     if (campo < 3) { forzadas.forEach(c => c.entradas.filter(en => en.n === n).forEach(en => rechazar(m, c, en, "no hay campo suficiente"))); return []; }
-    const media = pool.reduce((a, c) => a + c.rating, 0) / pool.length;
-    const sd = Math.sqrt(pool.reduce((a, c) => a + (c.rating - media) * (c.rating - media), 0) / pool.length) || 1;
-    const pesos = pool.map(c => {
-      const z = (c.rating - media) / sd;
-      let w = grado === "corriente" ? Math.exp(-0.5 * Math.pow((z + 0.2) / 0.8, 2)) : Math.exp(G.pesoRating * z);
-      if (grado === "novatos") w *= (c.salidas <= 3 ? 5 : 1) * (c.vic === 0 ? 2 : 0.5);
-      const descanso = Math.min(1, (m.n - c.ultima - C.DESCANSO_MIN + 1) / 6);
-      const d = puntos(c.genes.pul) - puntos(c.genes.pat);
-      const idealDist = 1700 + 1100 * clamp(d / 30, -1, 1);
-      const encaje = Math.exp(-Math.pow((dist - idealDist) / 1500, 2));
-      return w * descanso * (1 - c.fatiga / 100) * (0.6 + 0.4 * encaje);
-    });
-    const elegidos = [];
-    const libres = pool.map((c, i) => i);
-    while (elegidos.length < campo - forzadas.length && libres.length) {
-      const total = libres.reduce((a, i) => a + pesos[i], 0);
-      let x = rng.f() * total, k = 0;
-      for (; k < libres.length - 1; k++) { x -= pesos[libres[k]]; if (x < 0) break; }
-      elegidos.push(pool[libres[k]]); libres.splice(k, 1);
+    // cuantil de fuerza de cada una entre las disponibles (0 = la más lenta, 1 = la más rápida) y nivel al que apunta esta carrera
+    // Se ordenan por tiempo y se busca un grupo seguido de ese tamaño que (1) esté al nivel de la categoría y (2) corra muy junto: el nivel se mide en
+    // tiempo, no en puestos, porque arriba del todo unas pocas se despegan del resto y un grupo "parejo" por puestos no lo sería.
+    const tiempos = fuerzas(m, pool, dist, n), orden = pool.map((c, i) => i).sort((a, b) => tiempos[a] - tiempos[b]);   // la más rápida primero
+    const libresN = Math.min(orden.length, Math.max(1, campo - forzadas.length)), t1 = tiempos[orden[0]] || 1;
+    const [zi, zf] = EMPAREJA.zona[grado] || [0, 1], ventanas = [];
+    for (let a = 0; a + libresN <= orden.length; a++) {
+      const span = (tiempos[orden[a + libresN - 1]] - tiempos[orden[a]]) / t1;
+      const centro = (a + (libresN - 1) / 2) / Math.max(1, orden.length - 1), fuera = centro < zi ? zi - centro : centro > zf ? centro - zf : 0;
+      let w = Math.exp(-0.5 * Math.pow(fuera / EMPAREJA.borde, 2)) * Math.exp(-span / EMPAREJA.compacto);
+      if (grado === "novatos") w *= 1 + 0.35 * orden.slice(a, a + libresN).filter(i => pool[i].salidas <= 3).length;
+      ventanas.push(w + 1e-12);
     }
+    let x = rng.f() * ventanas.reduce((t, w) => t + w, 0), a0 = 0;
+    for (; a0 < ventanas.length - 1; a0++) { x -= ventanas[a0]; if (x < 0) break; }
+    const elegidos = orden.slice(a0, a0 + libresN).map(i => pool[i]);
     return rng.baraja(forzadas.concat(elegidos));
   }
   const buscar = (m, id) => m.vivos.find(c => c.id === id) || m.criadores.find(c => c.id === id) || null;
@@ -1255,7 +1266,7 @@
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
     cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores }
+    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);
