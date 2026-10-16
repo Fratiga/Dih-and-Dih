@@ -250,3 +250,40 @@ body.lb::before { display: none; }
 .lb-frase { margin: 1px 0 0 16px; color: var(--lb-tenue); font-size: 17px; line-height: 1.1; }
 .lb-lejos .lb-punto { background: #8a8a8a; box-shadow: none; animation: none; }
 .lb-lejos b { color: var(--lb-tenue); }
+
+/* ---------------------------------------------------------------------------
+   Taberna grande: la portada ocupa más sitio, con salas y una mesa común
+--------------------------------------------------------------------------- */
+body.lb-grande .lb-pagina { width: min(1680px, 98%); }
+body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; gap: 12px; }
+.lb-escena.lb-oculta { display: none; }
+#lbSalas[hidden] { display: none; }
+.lb-etq-fija { opacity: 1 !important; }
+.lb-rotulo-grande { font: 30px "Press Start 2P", monospace; fill: #fff3d0; paint-order: stroke; stroke: #3a1a4a; stroke-width: 6px; stroke-linejoin: round; }
+.lb-deco-fija { pointer-events: none; }
+
+/* Las salas: pestañas para cambiar sin buscar la puerta */
+.lb-salas-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+.lb-chip {
+  padding: 6px 12px; border: 3px outset var(--lb-borde); background: var(--lb-caja); color: var(--lb-texto) !important; text-decoration: none;
+  font: 10px/1.5 "Press Start 2P", monospace;
+}
+.lb-chip:hover { filter: brightness(1.2); }
+.lb-chip-actual { background: var(--lb-titulo-a); color: #fff !important; border-style: inset; }
+.lb-sala-lema { margin: 0 0 8px; min-height: 1.3em; color: var(--lb-tenue); }
+
+/* Los protagonistas sentados a la mesa: sprites PNG de 32x48 dibujados al doble, con píxeles nítidos */
+.lb-pj-mesa image { image-rendering: crisp-edges; image-rendering: pixelated; }
+.lb-pj-mesa { animation: lbRespira 2.6s steps(2) infinite; animation-delay: var(--retraso, 0s); }
+@keyframes lbRespira { 50% { transform: translateY(-2px); } }
+.lb-pj-lejos { opacity: .5; animation: none; }
+.lb-pj-nombre, .lb-mesa-aviso { font: 8px "Press Start 2P", monospace; fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 4px; stroke-linejoin: round; }
+.lb-pj-prov .lb-pj-nombre { fill: #ffe9a8; }
+.lb-pj-prueba .lb-pj-nombre { fill: #8cd9ff; }
+.lb-mesa-aviso { fill: #fff3d0; stroke-width: 3px; }
+@media (prefers-reduced-motion: reduce) { .lb-pj-mesa { animation: none; } }
+
+
+/* En pantallas estrechas la escena se cambia por puertas grandes: las pestañas de salas no hacen falta y la lista de enlaces va abierta */
+@media (max-width: 700px) { body:not(.lb-invitado) .lb-salas-nav, body:not(.lb-invitado) .lb-sala-lema { display: none; } }
+@media (max-width: 1000px) { body.lb-grande .lb-cuerpo { grid-template-columns: minmax(0, 1fr); } }

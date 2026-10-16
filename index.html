@@ -17,12 +17,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20270203">
-  <link rel="stylesheet" href="css/taberna.css?v=20270203">
-  <link rel="stylesheet" href="css/lobby.css?v=20270203">
+  <link rel="stylesheet" href="css/style.css?v=20270205">
+  <link rel="stylesheet" href="css/taberna.css?v=20270205">
+  <link rel="stylesheet" href="css/lobby.css?v=20270205">
 </head>
-<body class="lb lb-invitado">
-  <script src="js/carga.js?v=20270203"></script>
+<body class="lb lb-invitado lb-grande">
+  <script src="js/carga.js?v=20270205"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -97,9 +97,11 @@
           <button type="submit" class="lb-boton">Buscar</button>
         </form>
 
+        <nav class="lb-salas-nav lb-solo-socio" id="lbSalasNav" aria-label="Salas de la taberna"></nav>
+        <p class="lb-sala-lema lb-solo-socio" id="lbSalaLema" role="status"></p>
         <div class="lb-escena-caja">
           <div class="lb-escena-scroll">
-            <svg class="lb-escena" id="lbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="La taberna: elige una puerta o un objeto para ir a esa zona">
+            <svg class="lb-escena" id="lbEscena" viewBox="0 0 1280 700" shape-rendering="crispEdges" role="group" aria-label="La taberna: elige una puerta o un objeto para ir a esa zona">
               <defs>
                 <pattern id="pTablas" width="48" height="16" patternUnits="userSpaceOnUse">
                   <rect width="48" height="16" fill="#2c2038"/>
@@ -127,20 +129,19 @@
                   <rect width="8" height="8" fill="#3a2a1d"/>
                   <rect x="8" y="8" width="8" height="8" fill="#3a2a1d"/>
                 </pattern>
-                <clipPath id="cCuadro"><rect x="600" y="120" width="80" height="64"/></clipPath>
               </defs>
 
               <!-- Pared, suelo y vigas -->
-              <rect width="960" height="372" fill="url(#pTablas)"/>
-              <rect y="372" width="960" height="168" fill="url(#pSuelo)"/>
-              <rect y="368" width="960" height="8" fill="#1c1422"/>
-              <rect width="960" height="24" fill="#1c1422"/>
-              <rect y="24" width="960" height="4" fill="#120d19"/>
-              <rect x="0" y="0" width="16" height="372" fill="#1c1422"/>
-              <rect x="944" y="0" width="16" height="372" fill="#1c1422"/>
+              <rect width="1280" height="380" fill="url(#pTablas)"/>
+              <rect y="380" width="1280" height="320" fill="url(#pSuelo)"/>
+              <rect y="376" width="1280" height="8" fill="#1c1422"/>
+              <rect width="1280" height="24" fill="#1c1422"/>
+              <rect y="24" width="1280" height="4" fill="#120d19"/>
+              <rect x="0" y="0" width="16" height="380" fill="#1c1422"/>
+              <rect x="1264" y="0" width="16" height="380" fill="#1c1422"/>
 
               <!-- Ventana con luna -->
-              <g>
+              <g transform="translate(100 0)">
                 <rect x="404" y="72" width="112" height="104" fill="#3b2a1d"/>
                 <rect x="412" y="80" width="96" height="88" fill="#10163a"/>
                 <rect x="428" y="96" width="4" height="4" fill="#fff"/><rect x="476" y="88" width="4" height="4" fill="#fff"/>
@@ -148,15 +149,14 @@
                 <rect x="460" y="100" width="24" height="24" fill="var(--lb-luna)"/>
                 <rect x="456" y="104" width="4" height="16" fill="var(--lb-luna)"/><rect x="484" y="104" width="4" height="16" fill="var(--lb-luna)"/>
                 <rect x="468" y="96" width="8" height="4" fill="#10163a"/>
-                <rect x="458" y="124" width="4" height="4" fill="#10163a" opacity="0"/>
                 <rect x="458" y="72" width="4" height="104" fill="#3b2a1d"/>
                 <rect x="404" y="120" width="112" height="4" fill="#3b2a1d"/>
-                <polygon points="412,176 508,176 560,372 360,372" style="fill:var(--lb-luna)" fill-opacity=".1" class="lb-haz"/>
+                <polygon points="412,176 508,176 560,376 360,376" style="fill:var(--lb-luna)" fill-opacity=".1" class="lb-haz"/>
               </g>
 
-              <!-- Cartel colgante: Salón de juegos -->
-              <a class="lb-spot" href="minijuegos.html" aria-label="Salón de juegos: minijuegos">
-                <g class="lb-forma">
+              <!-- Cartel colgante: Salón de juegos (la página de Minijuegos) -->
+              <a class="lb-spot" href="minijuegos.html" aria-label="Salón de juegos: todos los minijuegos">
+                <g class="lb-forma" transform="translate(100 0)">
                   <rect x="428" y="24" width="4" height="16" fill="#8d8d99"/><rect x="488" y="24" width="4" height="16" fill="#8d8d99"/>
                   <rect x="392" y="40" width="136" height="28" fill="#7a5233"/>
                   <rect x="396" y="44" width="128" height="20" fill="#9a6a41"/>
@@ -164,7 +164,19 @@
                 </g>
               </a>
 
-              <!-- Biblioteca: el Compendio -->
+              <!-- Decoración: escudo y espadas cruzadas sobre la biblioteca (ya no llevan al duelo) -->
+              <g class="lb-deco-fija" aria-hidden="true">
+                <rect x="84" y="36" width="48" height="56" fill="#8d6a45"/>
+                <rect x="88" y="40" width="40" height="48" fill="#3b4a8a"/>
+                <rect x="88" y="40" width="20" height="24" fill="#b6453f"/><rect x="108" y="64" width="20" height="24" fill="#b6453f"/>
+                <rect x="96" y="92" width="24" height="4" fill="#8d6a45"/><rect x="104" y="96" width="8" height="4" fill="#8d6a45"/>
+                <polygon points="52,36 60,32 156,92 148,100" fill="#c9cdd6"/>
+                <polygon points="164,36 156,32 60,92 68,100" fill="#aeb3bf"/>
+                <rect x="48" y="86" width="24" height="8" fill="#e8b84a" transform="rotate(35 60 90)"/>
+                <rect x="144" y="86" width="24" height="8" fill="#e8b84a" transform="rotate(-35 156 90)"/>
+              </g>
+
+              <!-- Estantería: el Compendio -->
               <a class="lb-spot" href="compendio.html" aria-label="El Compendio: entradas del mundo">
                 <g class="lb-forma">
                   <rect x="32" y="104" width="152" height="272" fill="#4a3220"/>
@@ -177,23 +189,27 @@
                   <rect x="40" y="336" width="136" height="32" fill="#35241a"/>
                   <rect x="96" y="344" width="24" height="16" fill="#e8b84a"/>
                 </g>
-                <text x="108" y="396" text-anchor="middle" class="lb-etq">EL COMPENDIO</text>
+                <text x="108" y="400" text-anchor="middle" class="lb-etq">EL COMPENDIO</text>
               </a>
 
-              <!-- Espadas: Duelo (solo admin por ahora) -->
-              <a class="lb-spot" data-admin-only href="duelo.html" aria-label="Duelo">
+              <!-- Arco de la biblioteca: la sala con cada estante del compendio -->
+              <a class="lb-spot" href="#biblioteca" data-sala="biblioteca" aria-label="Biblioteca: todos los estantes del compendio">
                 <g class="lb-forma">
-                  <polygon points="52,36 60,32 156,92 148,100" fill="#c9cdd6"/>
-                  <polygon points="164,36 156,32 60,92 68,100" fill="#aeb3bf"/>
-                  <rect x="48" y="86" width="24" height="8" fill="#e8b84a" transform="rotate(35 60 90)"/>
-                  <rect x="144" y="86" width="24" height="8" fill="#e8b84a" transform="rotate(-35 156 90)"/>
+                  <rect x="212" y="148" width="80" height="8" fill="#6e6a78"/><rect x="224" y="140" width="56" height="8" fill="#6e6a78"/>
+                  <rect x="204" y="156" width="96" height="224" fill="#6e6a78"/>
+                  <rect x="214" y="164" width="76" height="216" fill="#17101b"/>
+                  <rect x="224" y="176" width="56" height="204" fill="#3a2a1d"/>
+                  <rect x="228" y="184" width="48" height="20" fill="url(#pLibros)"/><rect x="228" y="214" width="48" height="20" fill="url(#pLibros)" transform="translate(5 0)"/>
+                  <rect x="228" y="244" width="48" height="20" fill="url(#pLibros)"/><rect x="228" y="274" width="48" height="20" fill="url(#pLibros)" transform="translate(3 0)"/>
+                  <rect x="226" y="204" width="52" height="4" fill="#6a4a30"/><rect x="226" y="234" width="52" height="4" fill="#6a4a30"/><rect x="226" y="264" width="52" height="4" fill="#6a4a30"/><rect x="226" y="294" width="52" height="4" fill="#6a4a30"/>
+                  <rect x="236" y="330" width="32" height="50" fill="#5a3d28"/><rect x="240" y="336" width="24" height="44" fill="#6b4a2f"/>
                 </g>
-                <text x="108" y="30" text-anchor="middle" class="lb-etq lb-etq-alta">DUELO</text>
+                <text x="252" y="402" text-anchor="middle" class="lb-etq">BIBLIOTECA</text>
               </a>
 
               <!-- Mapa -->
               <a class="lb-spot" href="mapa.html" aria-label="Mapa del mundo">
-                <g class="lb-forma">
+                <g class="lb-forma" transform="translate(116 0)">
                   <rect x="216" y="96" width="4" height="24" fill="#8d6a45"/><rect x="316" y="96" width="4" height="24" fill="#8d6a45"/>
                   <rect x="208" y="112" width="120" height="96" fill="#d9c48f"/>
                   <rect x="208" y="112" width="120" height="6" fill="#bda56c"/><rect x="208" y="202" width="120" height="6" fill="#bda56c"/>
@@ -203,12 +219,12 @@
                   <rect x="248" y="172" width="4" height="4" fill="#b6453f"/><rect x="264" y="172" width="4" height="4" fill="#b6453f"/>
                   <rect x="284" y="164" width="12" height="12" fill="#b6453f"/><rect x="288" y="160" width="4" height="20" fill="#b6453f"/>
                 </g>
-                <text x="268" y="230" text-anchor="middle" class="lb-etq">MAPA</text>
+                <text x="384" y="230" text-anchor="middle" class="lb-etq">MAPA</text>
               </a>
 
               <!-- Rocola -->
               <a class="lb-spot" href="rocola.html" aria-label="Rocola: música">
-                <g class="lb-forma">
+                <g class="lb-forma" transform="translate(100 0)">
                   <rect x="408" y="248" width="104" height="128" fill="#6a2f5a"/>
                   <rect x="416" y="232" width="88" height="16" fill="#6a2f5a"/><rect x="424" y="224" width="72" height="8" fill="#6a2f5a"/>
                   <rect x="416" y="240" width="88" height="128" fill="#8a3d73"/>
@@ -219,11 +235,11 @@
                   <rect x="440" y="328" width="40" height="32" fill="#4a1d40"/>
                   <rect x="448" y="336" width="24" height="16" fill="#e8b84a"/>
                 </g>
-                <text x="460" y="396" text-anchor="middle" class="lb-etq">ROCOLA</text>
+                <text x="560" y="400" text-anchor="middle" class="lb-etq">ROCOLA</text>
               </a>
 
-              <!-- Chimenea con cuadro (fanarts) -->
-              <g>
+              <!-- Chimenea con el cuadro que cicla los fanarts -->
+              <g transform="translate(100 0)">
                 <rect x="568" y="232" width="152" height="144" fill="#6e6a78"/>
                 <rect x="560" y="224" width="168" height="16" fill="#8b8696"/>
                 <rect x="584" y="256" width="120" height="120" fill="#17101b"/>
@@ -237,8 +253,8 @@
                 </g>
                 <circle cx="644" cy="320" r="56" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
               </g>
-              <a class="lb-spot" href="fanarts.html" aria-label="Fanarts: galería de imágenes">
-                <g class="lb-forma">
+              <a class="lb-spot" href="fanarts.html" aria-label="Fanarts: la galería de imágenes">
+                <g class="lb-forma" transform="translate(100 0)">
                   <rect x="592" y="112" width="96" height="80" fill="#8d6a45"/>
                   <rect x="596" y="116" width="88" height="72" fill="#5a3f27"/>
                   <foreignObject x="600" y="120" width="80" height="64">
@@ -248,12 +264,12 @@
                     </div>
                   </foreignObject>
                 </g>
-                <text x="640" y="212" text-anchor="middle" class="lb-etq">FANARTS</text>
+                <text x="740" y="212" text-anchor="middle" class="lb-etq">FANARTS</text>
               </a>
 
-              <!-- Tablón: Peticiones -->
-              <a class="lb-spot" href="peticiones.html" aria-label="Peticiones: tablón de anuncios">
-                <g class="lb-forma">
+              <!-- Tablón de anuncios: las peticiones -->
+              <a class="lb-spot" href="peticiones.html" aria-label="Tablón de anuncios: peticiones">
+                <g class="lb-forma" transform="translate(116 0)">
                   <rect x="744" y="72" width="128" height="104" fill="#6b4a2f"/>
                   <rect x="752" y="80" width="112" height="88" fill="#b78a55"/>
                   <rect x="760" y="88" width="32" height="32" fill="#f2ead2"/><rect x="800" y="92" width="28" height="36" fill="#e9d9a0"/>
@@ -265,24 +281,36 @@
                   <rect x="764" y="96" width="24" height="2" fill="#6b4a2f"/><rect x="764" y="102" width="20" height="2" fill="#6b4a2f"/>
                   <rect x="804" y="102" width="20" height="2" fill="#6b4a2f"/><rect x="804" y="108" width="16" height="2" fill="#6b4a2f"/>
                 </g>
-                <text x="808" y="196" text-anchor="middle" class="lb-etq">PETICIONES</text>
+                <text x="924" y="196" text-anchor="middle" class="lb-etq">TABLÓN</text>
               </a>
 
-              <!-- Diana: Arquería -->
-              <a class="lb-spot" href="arqueria.html" aria-label="Arquería">
+              <!-- Tablón de los últimos fanarts: lo llena js/lobby.js con los cuatro más nuevos -->
+              <a class="lb-spot" href="fanarts.html" id="lbTablonFanarts" aria-label="Últimos fanarts: tablón con los dibujos más nuevos">
                 <g class="lb-forma">
-                  <circle cx="912" cy="76" r="30" fill="#e9dcc0"/>
-                  <circle cx="912" cy="76" r="22" fill="#b6453f"/>
-                  <circle cx="912" cy="76" r="14" fill="#e9dcc0"/>
-                  <circle cx="912" cy="76" r="7" fill="#b6453f"/>
-                  <rect x="916" y="70" width="28" height="4" fill="#8d6a45"/><rect x="940" y="66" width="8" height="12" fill="#c9cdd6"/>
+                  <rect x="1012" y="72" width="128" height="104" fill="#6b4a2f"/>
+                  <rect x="1020" y="80" width="112" height="88" fill="#b78a55"/>
+                  <g id="lbTablonCuadros">
+                    <rect x="1028" y="86" width="48" height="36" fill="#f2ead2"/><rect x="1076" y="88" width="48" height="36" fill="#e9d9a0" transform="translate(4 0)"/>
+                    <rect x="1030" y="126" width="48" height="36" fill="#e9d9a0"/><rect x="1080" y="128" width="48" height="36" fill="#f2ead2"/>
+                  </g>
+                  <rect x="1048" y="82" width="4" height="4" fill="#b6453f"/><rect x="1106" y="84" width="4" height="4" fill="#4f7fb5"/>
+                  <rect x="1050" y="122" width="4" height="4" fill="#4f7fb5"/><rect x="1106" y="124" width="4" height="4" fill="#b6453f"/>
                 </g>
-                <text x="912" y="124" text-anchor="middle" class="lb-etq">ARQUERÍA</text>
+                <text x="1076" y="196" text-anchor="middle" class="lb-etq">FANARTS NUEVOS</text>
               </a>
+
+              <!-- Decoración: la diana de la arquería (el juego está en el Salón de juegos) -->
+              <g class="lb-deco-fija" aria-hidden="true" transform="translate(314 0)">
+                <circle cx="912" cy="76" r="30" fill="#e9dcc0"/>
+                <circle cx="912" cy="76" r="22" fill="#b6453f"/>
+                <circle cx="912" cy="76" r="14" fill="#e9dcc0"/>
+                <circle cx="912" cy="76" r="7" fill="#b6453f"/>
+                <rect x="916" y="70" width="28" height="4" fill="#8d6a45"/><rect x="940" y="66" width="8" height="12" fill="#c9cdd6"/>
+              </g>
 
               <!-- Escritorio: Mis personajes -->
               <a class="lb-spot" href="fichas.html" aria-label="Mis personajes: tus fichas">
-                <g class="lb-forma">
+                <g class="lb-forma" transform="translate(300 0)">
                   <rect x="776" y="296" width="152" height="12" fill="#8d6a45"/>
                   <rect x="784" y="308" width="16" height="68" fill="#6b4a2f"/><rect x="904" y="308" width="16" height="68" fill="#6b4a2f"/>
                   <rect x="800" y="320" width="104" height="40" fill="#5a3f27"/>
@@ -293,27 +321,98 @@
                   <rect x="876" y="236" width="4" height="12" fill="#f0b038" class="lb-llama"/>
                   <rect x="900" y="280" width="12" height="16" fill="#1c1422"/><rect x="904" y="266" width="4" height="14" fill="#e9dcc0"/>
                 </g>
-                <text x="852" y="396" text-anchor="middle" class="lb-etq">MIS PERSONAJES</text>
+                <text x="1152" y="400" text-anchor="middle" class="lb-etq">MIS PERSONAJES</text>
               </a>
 
-              <!-- Mesa de ajedrez -->
-              <a class="lb-spot" href="ajedrez.html" aria-label="Ajedrez">
-                <g class="lb-forma">
-                  <rect x="224" y="424" width="144" height="16" fill="#8d6a45"/>
-                  <rect x="232" y="440" width="16" height="48" fill="#6b4a2f"/><rect x="344" y="440" width="16" height="48" fill="#6b4a2f"/>
-                  <rect x="248" y="396" width="96" height="32" fill="url(#pTablero)"/>
-                  <rect x="248" y="392" width="96" height="4" fill="#3a2a1d"/>
-                  <rect x="260" y="378" width="8" height="18" fill="#f2ead2"/><rect x="258" y="374" width="12" height="6" fill="#f2ead2"/>
-                  <rect x="300" y="382" width="8" height="14" fill="#f2ead2"/>
-                  <rect x="318" y="376" width="8" height="20" fill="#2a2030"/><rect x="316" y="372" width="12" height="6" fill="#2a2030"/>
-                  <rect x="282" y="386" width="8" height="10" fill="#2a2030"/>
+              <!-- Faroles -->
+              <g>
+                <g transform="translate(130 0)">
+                  <rect x="348" y="28" width="4" height="28" fill="#8d8d99"/>
+                  <rect x="340" y="56" width="20" height="24" fill="#e8b84a"/><rect x="344" y="60" width="12" height="16" fill="#fff1b0" class="lb-llama"/>
+                  <circle cx="350" cy="70" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
                 </g>
-                <text x="296" y="512" text-anchor="middle" class="lb-etq">AJEDREZ</text>
+                <g transform="translate(96 0)">
+                  <rect x="738" y="28" width="4" height="20" fill="#8d8d99"/>
+                  <rect x="730" y="48" width="20" height="24" fill="#e8b84a"/><rect x="734" y="52" width="12" height="16" fill="#fff1b0" class="lb-llama lb-l2"/>
+                  <circle cx="740" cy="62" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
+                </g>
+              </g>
+
+              <!-- Puerta de tu habitación -->
+              <a class="lb-spot" href="habitacion.html" aria-label="Mi habitación: tu colección, tus mazos y la forja">
+                <g class="lb-forma">
+                  <rect x="22" y="404" width="72" height="104" fill="#4a2f1f"/>
+                  <rect x="30" y="412" width="56" height="96" fill="#6b4a2f"/>
+                  <rect x="36" y="420" width="44" height="40" fill="#5a3d28"/><rect x="36" y="466" width="44" height="36" fill="#5a3d28"/>
+                  <rect x="76" y="458" width="6" height="6" fill="#e8b84a"/>
+                  <rect x="40" y="392" width="36" height="10" fill="#3b4a8a"/><rect x="44" y="394" width="28" height="6" fill="#e8b84a"/>
+                </g>
+                <text x="58" y="528" text-anchor="middle" class="lb-etq">MI HABITACIÓN</text>
               </a>
 
-              <!-- Mesa de cartas -->
-              <a class="lb-spot" href="cartas.html" aria-label="Triunfos">
+              <!-- Despacho (solo admin): la puerta cerrada con llave -->
+              <a class="lb-spot" data-admin-only href="#despacho" data-sala="despacho" aria-label="Despacho: administración">
                 <g class="lb-forma">
+                  <rect x="110" y="408" width="56" height="100" fill="#2e3b2a"/>
+                  <rect x="116" y="414" width="44" height="94" fill="#3f5236"/>
+                  <rect x="122" y="422" width="32" height="34" fill="#34452c"/><rect x="122" y="462" width="32" height="40" fill="#34452c"/>
+                  <rect x="146" y="458" width="6" height="6" fill="#e8b84a"/>
+                  <rect x="124" y="396" width="28" height="8" fill="#e8b84a"/>
+                </g>
+                <text x="138" y="528" text-anchor="middle" class="lb-etq">DESPACHO</text>
+              </a>
+
+              <!-- Decoración: mesa de ajedrez (el juego está en el Salón de juegos) -->
+              <g class="lb-deco-fija" aria-hidden="true" transform="translate(-52 0)">
+                <rect x="224" y="424" width="144" height="16" fill="#8d6a45"/>
+                <rect x="232" y="440" width="16" height="48" fill="#6b4a2f"/><rect x="344" y="440" width="16" height="48" fill="#6b4a2f"/>
+                <rect x="248" y="396" width="96" height="32" fill="url(#pTablero)"/>
+                <rect x="248" y="392" width="96" height="4" fill="#3a2a1d"/>
+                <rect x="260" y="378" width="8" height="18" fill="#f2ead2"/><rect x="258" y="374" width="12" height="6" fill="#f2ead2"/>
+                <rect x="300" y="382" width="8" height="14" fill="#f2ead2"/>
+                <rect x="318" y="376" width="8" height="20" fill="#2a2030"/><rect x="316" y="372" width="12" height="6" fill="#2a2030"/>
+                <rect x="282" y="386" width="8" height="10" fill="#2a2030"/>
+              </g>
+
+              <!-- Máquina recreativa: la sala con todos los juegos -->
+              <a class="lb-spot" href="#juegos" data-sala="juegos" aria-label="Sala recreativa: todos los juegos, uno por uno">
+                <g class="lb-forma">
+                  <rect x="346" y="392" width="84" height="122" fill="#2d3a78"/>
+                  <rect x="346" y="392" width="84" height="6" fill="#4a5ab0"/>
+                  <rect x="352" y="400" width="72" height="16" fill="#e8b84a"/><rect x="356" y="404" width="64" height="8" fill="#1c1422"/>
+                  <rect x="362" y="406" width="8" height="4" fill="#e8b84a"/><rect x="376" y="406" width="8" height="4" fill="#ff7ac0"/><rect x="390" y="406" width="8" height="4" fill="#5fe0d2"/><rect x="404" y="406" width="8" height="4" fill="#e8b84a"/>
+                  <rect x="354" y="422" width="68" height="48" fill="#0c1a2a"/>
+                  <rect x="362" y="430" width="8" height="30" class="lb-neon lb-n1"/><rect x="376" y="436" width="8" height="24" class="lb-neon lb-n2"/><rect x="390" y="428" width="8" height="32" class="lb-neon lb-n3"/><rect x="404" y="440" width="8" height="20" class="lb-neon lb-n1"/>
+                  <rect x="350" y="474" width="76" height="14" fill="#1c2450"/>
+                  <rect x="358" y="478" width="8" height="6" fill="#b6453f"/><rect x="372" y="478" width="8" height="6" fill="#e8b84a"/><rect x="400" y="476" width="12" height="10" fill="#4f7fb5"/>
+                  <rect x="378" y="494" width="20" height="10" fill="#0c1220"/>
+                </g>
+                <text x="388" y="534" text-anchor="middle" class="lb-etq">SALA RECREATIVA</text>
+              </a>
+
+              <!-- Alfombra y mesa común: aquí se sientan los protagonistas (js/taberna-mesa.js) -->
+              <g>
+                <rect x="428" y="540" width="384" height="152" fill="#6e2f3a" opacity=".92"/>
+                <rect x="436" y="548" width="368" height="136" fill="none" stroke="#e8b84a" stroke-width="3" opacity=".7"/>
+              </g>
+              <g id="lbMesaAtras"></g>
+              <g id="lbMesa">
+                <rect x="486" y="604" width="16" height="40" fill="#4a2f1f"/><rect x="738" y="604" width="16" height="40" fill="#4a2f1f"/>
+                <rect x="462" y="584" width="316" height="22" fill="#6b4a2f"/>
+                <rect x="454" y="566" width="332" height="18" fill="#8d6a45"/><rect x="454" y="566" width="332" height="4" fill="#a8834f"/>
+                <!-- Jarras y pan sobre la mesa -->
+                <rect x="508" y="550" width="12" height="16" fill="#c9a14a"/><rect x="520" y="554" width="4" height="8" fill="#c9a14a"/><rect x="510" y="548" width="8" height="3" fill="#fff1b0"/>
+                <rect x="588" y="552" width="12" height="14" fill="#c9a14a"/><rect x="600" y="556" width="4" height="8" fill="#c9a14a"/><rect x="590" y="550" width="8" height="3" fill="#fff1b0"/>
+                <rect x="640" y="556" width="28" height="10" fill="#d4a24a"/><rect x="646" y="552" width="16" height="6" fill="#e0b660"/>
+                <rect x="712" y="550" width="12" height="16" fill="#c9a14a"/><rect x="724" y="554" width="4" height="8" fill="#c9a14a"/><rect x="714" y="548" width="8" height="3" fill="#fff1b0"/>
+                <rect x="548" y="560" width="6" height="6" fill="#f2ead2"/><rect x="549" y="554" width="4" height="6" fill="#f0b038" class="lb-llama"/>
+              </g>
+              <g id="lbMesaLados"></g>
+              <text id="lbMesaAviso" x="620" y="668" text-anchor="middle" class="lb-mesa-aviso"></text>
+
+              <!-- Mesa de cartas: Triunfos -->
+              <a class="lb-spot" href="cartas.html" aria-label="Triunfos: el álbum y el juego de cartas">
+                <g class="lb-forma" transform="translate(284 0)">
                   <rect x="552" y="432" width="168" height="16" fill="#8d6a45"/>
                   <rect x="560" y="448" width="16" height="44" fill="#6b4a2f"/><rect x="696" y="448" width="16" height="44" fill="#6b4a2f"/>
                   <rect x="560" y="404" width="152" height="28" fill="#5a2438"/>
@@ -322,24 +421,12 @@
                   <rect x="660" y="390" width="24" height="32" fill="#f2ead2" transform="rotate(14 672 406)"/>
                   <rect x="626" y="398" width="8" height="8" fill="#e8b84a" transform="rotate(6 632 408)"/>
                 </g>
-                <text x="636" y="512" text-anchor="middle" class="lb-etq">TRIUNFOS</text>
+                <text x="920" y="514" text-anchor="middle" class="lb-etq">TRIUNFOS</text>
               </a>
 
-              <!-- Puerta de tu habitación: colección, mazos y corrales -->
-              <a class="lb-spot" href="habitacion.html" aria-label="Mi habitación: tu colección y tus corrales">
-                <g class="lb-forma">
-                  <rect x="22" y="404" width="72" height="104" fill="#4a2f1f"/>
-                  <rect x="30" y="412" width="56" height="96" fill="#6b4a2f"/>
-                  <rect x="36" y="420" width="44" height="40" fill="#5a3d28"/><rect x="36" y="466" width="44" height="36" fill="#5a3d28"/>
-                  <rect x="76" y="458" width="6" height="6" fill="#e8b84a"/>
-                  <rect x="40" y="392" width="36" height="10" fill="#3b4a8a"/><rect x="44" y="394" width="28" height="6" fill="#e8b84a"/>
-                </g>
-                <text x="58" y="526" text-anchor="middle" class="lb-etq">MI HABITACIÓN</text>
-              </a>
-
-              <!-- Puesto de intercambios: mercader, trueques y forja (solo admin por ahora, igual que Triunfos) -->
-              <a class="lb-spot" href="intercambios.html" aria-label="Intercambios: trueques, mercader y forja">
-                <g class="lb-forma">
+              <!-- Puesto de intercambios: trueques entre jugadores y el Buhonero -->
+              <a class="lb-spot" href="intercambios.html" aria-label="Intercambios: trueques entre jugadores y el Buhonero">
+                <g class="lb-forma" transform="translate(616 0)">
                   <rect x="408" y="444" width="112" height="14" fill="#8d6a45"/>
                   <rect x="414" y="458" width="12" height="34" fill="#6b4a2f"/><rect x="502" y="458" width="12" height="34" fill="#6b4a2f"/>
                   <rect x="404" y="404" width="120" height="16" fill="#b6453f"/>
@@ -348,52 +435,23 @@
                   <rect x="428" y="428" width="20" height="16" fill="#7a2f4a"/><rect x="468" y="430" width="14" height="14" fill="#3b4a8a"/>
                   <rect x="492" y="436" width="8" height="8" fill="#e8b84a"/>
                 </g>
-                <text x="464" y="512" text-anchor="middle" class="lb-etq">INTERCAMBIOS</text>
+                <text x="1080" y="514" text-anchor="middle" class="lb-etq">INTERCAMBIOS</text>
               </a>
 
-              <!-- Trampilla: Ostelar (solo admin por ahora) -->
-              <a class="lb-spot" data-admin-only href="ostelar.html" aria-label="Ostelar: la arena">
+              <!-- Puerta de los establos: el hipódromo y los corrales -->
+              <a class="lb-spot" href="#establos" data-sala="establos" aria-label="Establos: el hipódromo y los corrales">
                 <g class="lb-forma">
-                  <rect x="776" y="448" width="136" height="64" fill="#2a1d14"/>
-                  <rect x="784" y="456" width="120" height="48" fill="#120c08"/>
-                  <rect x="792" y="464" width="104" height="8" fill="#3a2a1d"/><rect x="800" y="476" width="88" height="8" fill="#2c1f15"/>
-                  <rect x="808" y="488" width="72" height="8" fill="#20160f"/>
-                  <rect x="836" y="452" width="16" height="8" fill="#8d8d99"/>
-                  <circle cx="844" cy="452" r="6" fill="none" stroke="#8d8d99" stroke-width="3"/>
+                  <rect x="1184" y="392" width="76" height="116" fill="#4a2f1f"/>
+                  <rect x="1192" y="400" width="60" height="108" fill="#7a5638"/>
+                  <rect x="1192" y="400" width="60" height="6" fill="#5a3d28"/><rect x="1192" y="452" width="60" height="6" fill="#5a3d28"/>
+                  <polygon points="1196,406 1204,406 1248,454 1240,454" fill="#5a3d28"/><polygon points="1248,406 1240,406 1196,454 1204,454" fill="#5a3d28"/>
+                  <rect x="1196" y="488" width="52" height="20" fill="#d4b24a"/><rect x="1204" y="484" width="12" height="6" fill="#d4b24a"/><rect x="1228" y="482" width="14" height="8" fill="#ecd275"/>
+                  <rect x="1236" y="426" width="6" height="14" fill="#e8b84a"/>
                 </g>
-                <text x="844" y="532" text-anchor="middle" class="lb-etq">OSTELAR</text>
+                <text x="1222" y="528" text-anchor="middle" class="lb-etq">ESTABLOS</text>
               </a>
-
-              <!-- Decoración para quien no ve los juegos escondidos: la escena no se queda con huecos -->
-              <g class="lb-deco">
-                <!-- Escudo sobre la biblioteca -->
-                <rect x="84" y="36" width="48" height="56" fill="#8d6a45"/>
-                <rect x="88" y="40" width="40" height="48" fill="#3b4a8a"/>
-                <rect x="88" y="40" width="20" height="24" fill="#b6453f"/><rect x="108" y="64" width="20" height="24" fill="#b6453f"/>
-                <rect x="96" y="92" width="24" height="4" fill="#8d6a45"/><rect x="104" y="96" width="8" height="4" fill="#8d6a45"/>
-                <!-- Estandarte arriba a la derecha -->
-                <rect x="880" y="28" width="64" height="4" fill="#8d6a45"/>
-                <rect x="888" y="32" width="48" height="64" fill="#8a2f4a"/>
-                <rect x="888" y="88" width="16" height="12" fill="#8a2f4a"/><rect x="920" y="88" width="16" height="12" fill="#8a2f4a"/>
-                <rect x="904" y="48" width="16" height="16" fill="#e8b84a"/><rect x="908" y="44" width="8" height="4" fill="#e8b84a"/><rect x="908" y="64" width="8" height="8" fill="#e8b84a"/>
-                <!-- Alfombra redonda donde iría la trampilla -->
-                <rect x="800" y="464" width="96" height="40" fill="#2f6a4d"/><rect x="792" y="472" width="112" height="24" fill="#2f6a4d"/>
-                <rect x="808" y="472" width="80" height="24" fill="none" stroke="#e8b84a" stroke-width="3"/>
-                <rect x="836" y="476" width="24" height="16" fill="#e8b84a"/>
-              </g>
-
-              <!-- Faroles y alfombra -->
-              <g>
-                <rect x="348" y="28" width="4" height="28" fill="#8d8d99"/>
-                <rect x="340" y="56" width="20" height="24" fill="#e8b84a"/><rect x="344" y="60" width="12" height="16" fill="#fff1b0" class="lb-llama"/>
-                <circle cx="350" cy="70" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
-                <rect x="738" y="28" width="4" height="20" fill="#8d8d99"/>
-                <rect x="730" y="48" width="20" height="24" fill="#e8b84a"/><rect x="734" y="52" width="12" height="16" fill="#fff1b0" class="lb-llama lb-l2"/>
-                <circle cx="740" cy="62" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
-                <rect x="392" y="452" width="176" height="56" fill="#6e2f3a" opacity=".85"/>
-                <rect x="400" y="460" width="160" height="40" fill="none" stroke="#e8b84a" stroke-width="3" opacity=".7"/>
-              </g>
             </svg>
+            <div id="lbSalas" hidden></div>
           </div>
 
           <!-- Bienvenida (solo para quien no ha iniciado sesión) -->
@@ -416,39 +474,14 @@
           <a href="peticiones.html">Peticiones</a>
           <a href="fanarts.html">Fanarts</a>
           <a href="rocola.html">Rocola</a>
-          <a href="ajedrez.html">Ajedrez</a>
           <a href="minijuegos.html">Salón de juegos</a>
+          <a href="intercambios.html">Intercambios</a>
+          <a href="habitacion.html">Mi habitación</a>
         </nav>
 
         <details class="lb-todo lb-solo-socio">
         <summary>Todas las puertas del sitio</summary>
-        <section class="lb-zonas" id="lbZonas">
-          <div class="lb-caja">
-            <h2>Mundo</h2>
-            <div class="lb-caja-cuerpo lb-lista-links">
-              <a href="compendio.html">Compendio</a><a href="mapa.html">Mapa</a><a href="cronologia.html">Cronología</a>
-              <a href="lugares.html">Lugares</a><a href="personajes.html">Personajes</a><a href="bestiario.html">Bestiario</a>
-              <a href="razas.html">Razas</a><a href="religion.html">Religión</a><a href="facciones.html">Facciones</a>
-            </div>
-          </div>
-          <div class="lb-caja">
-            <h2>Tu mesa</h2>
-            <div class="lb-caja-cuerpo lb-lista-links">
-              <a href="fichas.html">Mis personajes</a><a href="peticiones.html">Peticiones</a><a href="fanarts.html">Fanarts</a>
-              <a href="reglas.html">Reglas</a><a href="armas.html">Armas</a><a href="objetos.html">Objetos</a>
-              <a href="habitacion.html">Mi habitación</a><a href="intercambios.html">Intercambios</a><a href="economia.html">Economía</a><a href="textos.html">Textos</a><a href="pergaminos.html">Pergaminos</a>
-            </div>
-          </div>
-          <div class="lb-caja">
-            <h2>Salón de juegos</h2>
-            <div class="lb-caja-cuerpo lb-lista-links">
-              <a href="minijuegos.html">Minijuegos</a><a href="ajedrez.html">Ajedrez</a><a href="ritmo.html">Zarabanda</a>
-              <a href="rocola.html">Rocola</a><a href="sacrificio.html">Hooey</a>
-              <a href="arqueria.html">Arquería</a><a href="duelo.html" data-admin-only>Duelo</a>
-              <a href="cartas.html">Triunfos</a><a href="ostelar.html" data-admin-only>Ostelar</a><a href="hipodromo.html">Hipódromo</a>
-            </div>
-          </div>
-        </section>
+        <section class="lb-zonas" id="lbZonas"></section>
         </details>
       </main>
 
@@ -479,27 +512,30 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20270203"></script>
-  <script src="data/musica.js?v=20270203"></script>
-  <script src="js/musica-nube.js?v=20270203"></script>
-  <script src="js/common.js?v=20270203"></script>
-  <script src="js/temas.js?v=20270203"></script>
-  <script src="js/player.js?v=20270203"></script>
-  <script src="data/jumpscare.js?v=20270203"></script>
-  <script src="data/contrasenas.js?v=20270203"></script>
-  <script src="js/dialogos.js?v=20270203"></script>
-  <script src="js/fichas-supabase.js?v=20270203"></script>
-  <script src="js/interruptores.js?v=20270203"></script>
-  <script src="js/presencia.js?v=20270204"></script>
-  <script src="js/lado.js?v=20270203"></script>
-  <script src="js/slappy.js?v=20270203"></script>
-  <script src="js/peticiones-supabase.js?v=20270203"></script>
-  <script src="data/novedades.js?v=20270204"></script>
-  <script src="js/contenido-servidor.js?v=20270203"></script>
-  <script src="data/saludos.js?v=20270203"></script>
-  <script src="js/bienvenida.js?v=20270203"></script>
-  <script src="js/lobby.js?v=20270203"></script>
-  <script src="js/avisos-admin.js?v=20270203"></script>
-  <script src="js/musica-paginas.js?v=20270204"></script>
+  <script src="data/rotacion.js?v=20270205"></script>
+  <script src="data/musica.js?v=20270205"></script>
+  <script src="js/musica-nube.js?v=20270205"></script>
+  <script src="js/common.js?v=20270205"></script>
+  <script src="js/temas.js?v=20270205"></script>
+  <script src="js/player.js?v=20270205"></script>
+  <script src="data/jumpscare.js?v=20270205"></script>
+  <script src="data/contrasenas.js?v=20270205"></script>
+  <script src="js/dialogos.js?v=20270205"></script>
+  <script src="js/fichas-supabase.js?v=20270205"></script>
+  <script src="js/interruptores.js?v=20270205"></script>
+  <script src="js/presencia.js?v=20270205"></script>
+  <script src="js/lado.js?v=20270205"></script>
+  <script src="js/slappy.js?v=20270205"></script>
+  <script src="js/peticiones-supabase.js?v=20270205"></script>
+  <script src="data/novedades.js?v=20270205"></script>
+  <script src="js/contenido-servidor.js?v=20270205"></script>
+  <script src="data/saludos.js?v=20270205"></script>
+  <script src="js/bienvenida.js?v=20270205"></script>
+  <script src="data/protagonistas.js?v=20270205"></script>
+  <script src="js/taberna-mesa.js?v=20270205"></script>
+  <script src="js/lobby-salas.js?v=20270205"></script>
+  <script src="js/lobby.js?v=20270205"></script>
+  <script src="js/avisos-admin.js?v=20270205"></script>
+  <script src="js/musica-paginas.js?v=20270205"></script>
 </body>
 </html>

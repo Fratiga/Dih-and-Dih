@@ -107,7 +107,7 @@
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["ritmo.html", "Zarabanda"], ["parranda.html", "Parranda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
-    ["arqueria.html", "Arquería"], ["duelo.html", "Duelo", true], ["cartas.html", "Triunfos"], ["habitacion.html", "Mi habitación"], ["intercambios.html", "Intercambios"],
+    ["arqueria.html", "Arquería"], ["duelo.html", "Duelo", true], ["cartas.html", "Triunfos"], ["habitacion.html", "Mi habitación"], ["corrales.html", "Corrales"], ["intercambios.html", "Intercambios"],
     ["ostelar.html", "Ostelar", true], ["hipodromo.html", "Hipódromo"], ["admin.html", "Admin", true]
   ];
   const ATAJOS_CLAVE = "lbAtajos";
@@ -335,9 +335,24 @@
     ver("lbRetos", avisos.join("") || `<p class="lb-chico">Nadie te ha retado. Mueve tú primero.</p>`);
   }
 
+  /* El tablón de fanarts de la taberna: los cuatro más nuevos subidos por el admin y, si faltan, los últimos de la galería fija */
+  const SLOTS_FANARTS = [[1028, 86], [1080, 88], [1030, 126], [1080, 128]];
+  function pintarTablonFanarts(lista) {
+    const cont = $("lbTablonCuadros");
+    if (!cont) return;
+    const fijos = (window.ROTACION || []).slice().reverse().map(src => ({ src, nombre: "Fanart" }));
+    const todas = [...lista, ...fijos.filter(e => !lista.some(l => l.src === e.src))].slice(0, 4);
+    if (!todas.length) return;
+    cont.innerHTML = todas.map((f, i) => {
+      const [x, y] = SLOTS_FANARTS[i];
+      return `<rect x="${x - 2}" y="${y - 2}" width="52" height="40" fill="#f2ead2"/><svg x="${x}" y="${y}" width="48" height="36"><image href="${esc(f.src)}" width="48" height="36" preserveAspectRatio="xMidYMid slice"><title>${esc(f.nombre)}</title></image></svg>`;
+    }).join("");
+  }
+
   async function cargarFanarts(supabase) {
     const { data, error } = await supabase.from("fanarts_subidos").select("src, nombre").order("creada", { ascending: false }).limit(4);
     if (error || !data || !data.length) return;
+    pintarTablonFanarts(data);
     $("lbFanartsCaja").hidden = false;
     ver("lbFanarts", data.map(f => `<a href="fanarts.html" title="${esc(f.nombre)}"><img src="${esc(f.src)}" alt="${esc(f.nombre)}" loading="lazy"></a>`).join(""));
   }
@@ -395,6 +410,7 @@
       return;
     }
     window.Presencia.suscribir(lista => {
+      if (window.TabernaMesa) window.TabernaMesa.fijar(lista);
       ver("lbPresentes", lista.length
         ? lista.map(n => `<div class="lb-presente${n.oculto ? " lb-lejos" : ""}">
             <span class="lb-punto"></span><b>${esc(n.nombre)}</b>${n.id === miId ? ` <span class="lb-chico">(tú)</span>` : ""}
@@ -437,6 +453,7 @@
   });
 
   iniciarEscena();
+  pintarTablonFanarts([]);
   pintarAtajos();
   pintarNovedades();
   contarVisitaGlobal();
