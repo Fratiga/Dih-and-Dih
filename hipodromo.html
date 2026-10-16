@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <link rel="stylesheet" href="css/style.css?v=20270203">
   <link rel="stylesheet" href="css/minijuegos.css?v=20270203">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20270203">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20270204">
 </head>
 <body class="mj-pagina hip-tema" data-fase="abierta">
   <div class="mj-barra">
@@ -101,7 +101,8 @@
             <p id="hipTipoAyuda" class="hip-nota"></p>
             <label><span id="hipSel1Etiqueta">Criatura</span> <select id="hipSel1"></select></label>
             <label id="hipSel2Caja" class="hidden">Segundo <select id="hipSel2"></select></label>
-            <label id="hipDobleCaja" class="hip-casilla"><input type="checkbox" id="hipDoble"> <span class="hip-tip" data-tip-id="doble" tabindex="0">Doble</span>: si acierto, lo ganado pasa solo a ganador al favorito de la siguiente carrera</label>
+            <div id="hipFoto" class="hip-foto" aria-live="polite"></div>
+            <label id="hipDobleCaja" class="hip-casilla hip-interruptor"><input type="checkbox" id="hipDoble"><span class="hip-interruptor-pista" aria-hidden="true"></span><span class="hip-interruptor-texto"><span class="hip-tip" data-tip-id="doble" tabindex="0">Doble</span><small>Si aciertas, lo ganado pasa solo a ganador al favorito de la siguiente carrera.</small></span></label>
             <label>Monedas <input type="number" id="hipMonto" min="1" step="1" value="50" inputmode="numeric"></label>
             <div class="hip-atajos">
               <button type="button" class="hip-boton chico" data-monto="10">10</button>
@@ -110,6 +111,7 @@
               <button type="button" class="hip-boton chico" data-monto="todo">Todo</button>
             </div>
             <dl class="hip-resumen-apuesta"><div><dt><span class="hip-tip" data-tip-id="cuota" tabindex="0">Cuota</span></dt><dd id="hipCuotaApuesta">-</dd></div><div><dt>Si acierta</dt><dd id="hipPosible">-</dd></div></dl>
+            <p id="hipRiesgo" class="hip-riesgo"></p>
             <button type="button" id="hipApostar" class="hip-boton principal">Apostar</button>
             <p id="hipApuestaMsg" class="hip-aviso" role="status" aria-live="polite"></p>
             <div id="hipMias"></div>
@@ -199,19 +201,19 @@
   </div>
 
   <script src="data/hipodromo-palabras.js?v=20270203"></script>
-  <script src="js/hipodromo-nombres.js?v=20270203"></script>
-  <script src="js/hipodromo-rasgos.js?v=20270203"></script>
-  <script src="js/hipodromo-motor.js?v=20270203"></script>
-  <script src="js/hipodromo-dibujo.js?v=20270203"></script>
-  <script src="js/hipodromo-pista.js?v=20270203"></script>
-  <script src="js/hipodromo-glosario.js?v=20270203"></script>
-  <script src="js/hipodromo-cartas.js?v=20270203"></script>
-  <script src="js/hipodromo-cuadra.js?v=20270203"></script>
+  <script src="js/hipodromo-nombres.js?v=20270204"></script>
+  <script src="js/hipodromo-rasgos.js?v=20270204"></script>
+  <script src="js/hipodromo-motor.js?v=20270204"></script>
+  <script src="js/hipodromo-dibujo.js?v=20270204"></script>
+  <script src="js/hipodromo-pista.js?v=20270204"></script>
+  <script src="js/hipodromo-glosario.js?v=20270204"></script>
+  <script src="js/hipodromo-cartas.js?v=20270204"></script>
+  <script src="js/hipodromo-cuadra.js?v=20270204"></script>
   <script src="js/fichas-supabase.js?v=20270203"></script>
-  <script src="js/hipodromo-online.js?v=20270203"></script>
-  <script src="js/hipodromo-pagina.js?v=20270203"></script>
+  <script src="js/hipodromo-online.js?v=20270204"></script>
+  <script src="js/hipodromo-pagina.js?v=20270204"></script>
   <script src="js/interruptores.js?v=20270203"></script>
   <script src="js/avisos-admin.js?v=20270203"></script>
-  <script src="js/musica-paginas.js?v=20270203"></script>
+  <script src="js/musica-paginas.js?v=20270204"></script>
 </body>
 </html>

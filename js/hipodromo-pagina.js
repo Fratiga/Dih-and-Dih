@@ -288,12 +288,48 @@
     const tipo = $("hipTipo").value, a = Number($("hipSel1").value), b = Number($("hipSel2").value);
     return { tipo, sel: tipo === "exacta" ? [a, b] : a };
   }
+  /* El retrato de la criatura (o las dos, en la exacta) a la que se apuesta: dibujo quieto, de qué viene y qué piensa el mercado. Para pensárselo antes de apostar. */
+  function retratoApuesta(id, tipo, orden) {
+    const p = m.proxima, e = p.entrantes.find(x => x.id === id), per = e && perfilDe(id);
+    if (!e || !per) return "";
+    const menor = p.entrantes.reduce((a, x) => (x.gan < a ? x.gan : a), Infinity);
+    const cuota = tipo === "podio" ? e.pod : e.gan, prob = cuota ? Math.min(99, Math.round(100 / cuota)) : null;
+    const mias = est.pendientes.filter(a => a.n === p.n && (a.tipo === "exacta" ? a.sel.includes(id) : a.sel === id)).reduce((t, a) => t + a.monto, 0);
+    const sellos = (e.gan === menor ? '<span class="hip-sello oro">Favorita</span>' : "") + (e.dueno && e.dueno.id === YO ? '<span class="hip-sello">★ Tuya</span>' : "");
+    return `<figure class="hip-retrato">
+      <div class="hip-retrato-fig">${D.silueta(per, { clase: "hip-silueta mediana" })}<span class="hip-retrato-pta" title="Puerta de salida">${e.puerta}</span></div>
+      <figcaption>
+        ${orden ? `<small class="hip-retrato-orden">${orden}</small>` : ""}
+        <strong><button type="button" class="hip-enlace" data-ficha="${id}">${esc(per.nombre)}</button></strong>${sellos}
+        <small>${sexoTxt(per)} · ${T("etapa", esc(per.etapa))} · ${edadTxt(per)}</small>
+        <span class="hip-retrato-datos">${estrellasTxt(per.estrellas)} <span>${per.salidas ? `${per.salidas} salidas · ${per.vic}-${per.seg}-${per.ter}` : "debuta"}</span></span>
+        <span class="hip-retrato-ult">${per.ultimas.slice(0, 5).map(chipPuesto).join("")}</span>
+        ${prob != null && tipo !== "exacta" && tipo !== "pozo" ? `<small>El mercado le da ${prob} % de ${tipo === "podio" ? "llegar entre las tres primeras" : "ganar"}.</small>` : ""}
+        ${mias ? `<small class="hip-retrato-ya">Ya llevas ${monedas(mias)} monedas apostadas con ella.</small>` : ""}
+      </figcaption></figure>`;
+  }
+  function pintarFoto() {
+    const { tipo, sel } = seleccion();
+    poner($("hipFoto"), tipo === "exacta" ? retratoApuesta(sel[0], tipo, "Primero") + retratoApuesta(sel[1], tipo, "Segundo") : retratoApuesta(sel, tipo, ""));
+  }
+  let boletoArmado = null;   // la apuesta grande pide una segunda pulsación
+  const apuestaGrande = monto => monto >= 20 && monto >= est.saldo * 0.3;
+  function desarmarBoleto() { boletoArmado = null; $("hipApostar").classList.remove("armada"); textoDe($("hipApostar"), "Apostar"); }
   function pintarCuotaApuesta() {
     const { tipo, sel } = seleccion(), monto = Math.floor(Number($("hipMonto").value) || 0);
+    pintarFoto();
+    if (boletoArmado) desarmarBoleto();
     const cuota = tipo === "pozo" ? (M.cuotaApuesta(m.proxima, tipo, sel) === null ? null : M.cuotaPozo(pozosAhora(), sel, Math.max(1, monto))) : M.cuotaApuesta(m.proxima, tipo, sel);
     textoDe($("hipCuotaApuesta"), cuota ? (tipo === "pozo" ? "≈ " : "") + M.fmtCuota(cuota) : "-");
     textoDe($("hipPosible"), cuota && monto > 0 ? monedas(monto * cuota) : "-");
     textoDe($("hipTipoAyuda"), M.TIPOS_APUESTA[tipo].texto);
+    // lo que se juega, dicho claro: lo que pierdes, lo que ganas y cuánto es de tus monedas
+    const riesgo = $("hipRiesgo");
+    if (cuota && monto > 0) {
+      const parte = est.saldo > 0 ? Math.round(100 * monto / est.saldo) : 100;
+      riesgo.innerHTML = `Si pierdes, te quedas con <strong>${monedas(Math.max(0, est.saldo - monto))}</strong>. Si aciertas, ganas <strong>+${monedas(monto * cuota - monto)}</strong>.` + (parte >= 30 ? ` <span class="hip-riesgo-aviso">Es el ${Math.min(100, parte)} % de tus monedas.</span>` : "");
+      riesgo.classList.toggle("alto", parte >= 30);
+    } else { riesgo.textContent = ""; riesgo.classList.remove("alto"); }
   }
   async function apostar() {
     const p = m.proxima, f = M.ventana(p, est.virtual), msg = $("hipApuestaMsg");
@@ -306,6 +342,13 @@
     if (cuotaFija === null) return falla(tipo === "exacta" ? "Elige dos criaturas distintas." : "Esa criatura no corre.");
     const cuota = tipo === "pozo" ? M.cuotaPozo(pozosAhora(), sel, monto) : cuotaFija;
     const ids = tipo === "exacta" ? sel : [sel];
+    if ((apuestaGrande(monto) || doble) && boletoArmado !== monto + "/" + tipo + "/" + ids.join()) {
+      boletoArmado = monto + "/" + tipo + "/" + ids.join();
+      $("hipApostar").classList.add("armada"); textoDe($("hipApostar"), `¿Seguro? Pulsa otra vez: ${monedas(monto)} a ${ids.map(nombreDe).join(" y ")}`);
+      clearTimeout(apostar._t); apostar._t = setTimeout(desarmarBoleto, 6000);
+      return;
+    }
+    desarmarBoleto();
     if (online) {
       $("hipApostar").disabled = true;
       const r = await online.apostar(p.n, tipo, sel, monto, doble);
