@@ -1,4 +1,4 @@
-"""Genera assets/protagonistas/_silueta.png: sprite provisional de 32x48 px, fondo transparente, figura sentada de frente.
+"""Genera assets/protagonistas/silueta.png: sprite provisional de 32x48 px, fondo transparente, figura sentada de frente.
 Sirve de recurso de prueba hasta que haya pixel art propio; el ancla es el centro de la base (16, 47)."""
 import os, struct, zlib
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -70,5 +70,5 @@ def png(ruta):
     open(ruta, "wb").write(out)
 
 
-png("assets/protagonistas/_silueta.png")
-print("ok", os.path.getsize("assets/protagonistas/_silueta.png"), "bytes")
+png("assets/protagonistas/silueta.png")
+print("ok", os.path.getsize("assets/protagonistas/silueta.png"), "bytes")

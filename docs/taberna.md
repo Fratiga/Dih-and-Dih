@@ -33,7 +33,7 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
 - Se dibujan al doble (64 x 96 unidades del escenario) con `image-rendering: pixelated`: nada de suavizado ni filtros.
 - Para ponerle sprite a un jugador, añade una entrada en `data/protagonistas.js` con su nombre en minúsculas y sin tildes:
   `"nombre": { sprite: "assets/protagonistas/nombre.png", personaje: "Nombre del personaje" }`.
-- Sin entrada se usa la silueta provisional `assets/protagonistas/_silueta.png`, que se regenera con `tools/silueta_protagonistas.py`.
+- Sin entrada se usa la silueta provisional `assets/protagonistas/silueta.png`, que se regenera con `tools/silueta_protagonistas.py`.
 
 ## Fanarts
 

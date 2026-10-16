@@ -703,16 +703,25 @@
 
   /* ---------------------------------------------------------------- vida del mundo entre carrera y carrera */
   const esLeyenda = c => c.vic >= 14 || c.gp >= 3;
+  const CRIA = { SALIDAS: 6, RATING: 1560, VICTORIAS: 4, MIN_POR_SEXO: 5, TOP_MACHOS: 0.34, TOP_HEMBRAS: 0.4, MAX_CRIAS_MACHO: 14, PESO_CUERPO: 3 };
 
+  /* Cuánto vale una criatura como reproductora: lo que ha demostrado en pista (rating, victorias, grandes premios, podios) y el cuerpo que tiene (velocidad, resistencia y ancas: lo que un criador ve a simple vista). */
+  const merito = c => Math.max(0.1, 1 + (c.rating - C.RATING_INICIAL) / 100 + 0.2 * c.vic + 0.5 * c.gp + 0.03 * (c.seg + c.ter) + CRIA.PESO_CUERPO * (c.genes.pat + c.genes.pul + c.genes.mus - 1.5));
+  /* Solo las mejores pasan a la cría: rating alto o muchas victorias (o una leyenda), con carrera suficiente para haberlo demostrado.
+     Si el mundo se queda sin machos o sin hembras de cría se baja el listón para que el linaje no se apague. */
+  function digna(m, c) {
+    const faltan = ["m", "f"].some(sx => m.criadores.filter(x => !x.dueno && x.sexo === sx).length < CRIA.MIN_POR_SEXO && sx === c.sexo);
+    return faltan ? c.salidas >= 4 && (c.rating >= 1520 || c.vic >= 3) : c.salidas >= CRIA.SALIDAS && (c.rating >= CRIA.RATING || c.vic >= CRIA.VICTORIAS || esLeyenda(c));
+  }
   function retirar(m, c, motivo, ev, rng, quiereCria) {
     const i = m.vivos.indexOf(c); if (i < 0) return;
     m.vivos.splice(i, 1);
-    const criador = quiereCria ? edadAnios(m.n, c) < 12 : c.salidas >= 4 && (c.rating >= 1520 || c.vic >= 3) && !(c.lesion && c.lesion.gravedad === "grave" && rng.f() < 0.5);
+    const criador = quiereCria ? edadAnios(m.n, c) < 12 : digna(m, c) && !(c.lesion && c.lesion.gravedad === "grave" && rng.f() < 0.5);
     c.estado = criador ? "criador" : "retirado";
     c.lesion = null;
     if (criador) {
       m.criadores.push(c);
-      if (m.criadores.length > C.MAX_CRIADORES) { const k = m.criadores.findIndex(x => !x.dueno), viejo = m.criadores.splice(k < 0 ? 0 : k, 1)[0]; viejo.estado = "retirado"; ev.bajas.push(viejo); ev.cambios.add(viejo.id); }
+      if (m.criadores.length > C.MAX_CRIADORES) { let k = -1; m.criadores.forEach((x, j) => { if (!x.dueno && (k < 0 || merito(x) < merito(m.criadores[k]))) k = j; }); const viejo = m.criadores.splice(k < 0 ? 0 : k, 1)[0]; viejo.estado = "retirado"; ev.bajas.push(viejo); ev.cambios.add(viejo.id); }
     } else ev.bajas.push(c);
     m.stats.retirados++;
     ev.cambios.add(c.id);
@@ -755,10 +764,12 @@
 
   function elegirPadres(m, rng) {
     const edad = c => edadAnios(m.n, c);
-    const machos = m.criadores.filter(c => !c.dueno && c.sexo === "m" && edad(c) < 12);
-    const hembras = m.criadores.filter(c => !c.dueno && c.sexo === "f" && edad(c) < 12 && m.n - c.ultimaCria >= C.GESTACION && c.crias < 8);
+    // solo se reproducen los mejores: de los machos disponibles, el tercio de arriba; de las hembras, el 40 % de arriba (y siempre al menos dos de cada)
+    const mejores = (lista, parte) => lista.slice().sort((a, b) => merito(b) - merito(a)).slice(0, Math.max(2, Math.ceil(lista.length * parte)));
+    const machos = mejores(m.criadores.filter(c => !c.dueno && c.sexo === "m" && edad(c) < 12 && c.crias < CRIA.MAX_CRIAS_MACHO), CRIA.TOP_MACHOS);
+    const hembras = mejores(m.criadores.filter(c => !c.dueno && c.sexo === "f" && edad(c) < 12 && m.n - c.ultimaCria >= C.GESTACION && c.crias < 8), CRIA.TOP_HEMBRAS);
     if (!machos.length || !hembras.length) return null;
-    const prestigio = c => Math.pow(Math.max(0.2, (c.rating - 1400) / 100 + c.vic * 0.15 + 1), 1.5);
+    const prestigio = c => Math.pow(merito(c), 2);
     const pick = lista => { const tot = lista.reduce((a, c) => a + prestigio(c), 0); let x = rng.f() * tot; for (const c of lista) { x -= prestigio(c); if (x < 0) return c; } return lista[lista.length - 1]; };
     for (let k = 0; k < 6; k++) {
       const p = pick(machos), q = pick(hembras);

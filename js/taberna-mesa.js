@@ -13,7 +13,7 @@
 (function () {
   const NS = "http://www.w3.org/2000/svg";
   const SPRITE = { w: 32, h: 48, escala: 2 };
-  const SILUETA = "assets/protagonistas/_silueta.png";
+  const SILUETA = "assets/protagonistas/silueta.png";
   // Puestos de la mesa. capa "atras": sentados detrás (la mesa les tapa las piernas); "lados": en las cabeceras, delante de la mesa.
   const PUESTOS = [
     { x: 580, y: 592, capa: "atras" }, { x: 660, y: 592, capa: "atras" }, { x: 500, y: 592, capa: "atras" }, { x: 740, y: 592, capa: "atras" },
@@ -38,7 +38,15 @@
     const g = el("g", { class: "lb-pj-mesa" + (info && info.sprite ? "" : " lb-pj-prov") + (p.prueba ? " lb-pj-prueba" : ""), "data-id": p.id, tabindex: "-1" });
     g.style.setProperty("--retraso", `${(i * 0.37).toFixed(2)}s`);
     const img = el("image", { x: puesto.x - w / 2, y: puesto.y - h, width: w, height: h, href: src, preserveAspectRatio: "xMidYMax meet" });
-    img.addEventListener("error", () => { if (img.getAttribute("href") !== SILUETA) { img.setAttribute("href", SILUETA); g.classList.add("lb-pj-prov"); } });
+    img.addEventListener("error", () => {
+      if (img.getAttribute("href") !== SILUETA) { img.setAttribute("href", SILUETA); g.classList.add("lb-pj-prov"); return; }
+      // Ni siquiera carga la silueta (sin conexión, archivo movido): se dibuja con rectángulos para no enseñar nunca una imagen rota
+      const v = el("g", { transform: `translate(${puesto.x - w / 2} ${puesto.y - h}) scale(${SPRITE.escala})`, class: "lb-pj-vector" });
+      v.innerHTML = `<rect x="8" y="2" width="16" height="14" fill="#4a3868"/><rect x="11" y="7" width="10" height="7" fill="#0d0816"/><rect x="13" y="9" width="2" height="2" fill="#e8b84a"/><rect x="18" y="9" width="2" height="2" fill="#e8b84a"/>
+        <rect x="5" y="15" width="22" height="16" fill="#4a3868"/><rect x="8" y="27" width="16" height="3" fill="#604c84"/><rect x="6" y="31" width="20" height="8" fill="#4a3868"/><rect x="6" y="39" width="7" height="9" fill="#3a2c52"/><rect x="19" y="39" width="7" height="9" fill="#3a2c52"/>`;
+      img.replaceWith(v);
+      g.classList.add("lb-pj-prov");
+    });
     g.append(img);
     const nombre = String(p.nombre || "").slice(0, 11);
     const t = el("text", { x: puesto.x, y: puesto.y - h - 5, "text-anchor": "middle", class: "lb-pj-nombre" });

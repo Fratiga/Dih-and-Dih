@@ -1,6 +1,6 @@
 /* Sprites de los protagonistas que se sientan a la mesa de la taberna (js/taberna-mesa.js).
    Quien está conectado sale en la mesa con su nombre de jugador. Si aquí hay una entrada para ese nombre, se usa su sprite; si no, se
-   dibuja la silueta provisional (assets/protagonistas/_silueta.png).
+   dibuja la silueta provisional (assets/protagonistas/silueta.png).
 
    Formato: la clave es el nombre del jugador en minúsculas y sin tildes; el valor es { sprite, personaje }.
      sprite     ruta de un PNG de 32x48 px con fondo transparente, figura sentada de frente y los pies/asiento en el centro de la base
