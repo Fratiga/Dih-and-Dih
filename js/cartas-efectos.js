@@ -752,7 +752,10 @@
       M.log(c.est, "El contrato queda firmado: el rival no puede jugar cartas de coste 5 o más hasta el final de su próximo turno.");
     } } });
     R("moneda-de-la-suerte", { jugar: { resolver: c => {
-      if (M.entero(c.est, 2) === 0) { c.est.jugadores[c.j].energia = Math.min(M.C.ENERGIA_MAX, c.est.jugadores[c.j].energia + 2); M.log(c.est, "La moneda cae de cara: ganas 2 de energía."); }
+      const cara = M.entero(c.est, 2) === 0;
+      // La interfaz mira est.moneda para animar el lanzamiento (batalla.js, anunciarMoneda)
+      c.est.moneda = { j: c.j, cara, turno: c.est.turno, n: ((c.est.moneda && c.est.moneda.n) || 0) + 1, texto: cara ? "Ganas 2 de energía" : "Robas una carta" };
+      if (cara) { c.est.jugadores[c.j].energia = Math.min(M.C.ENERGIA_MAX, c.est.jugadores[c.j].energia + 2); M.log(c.est, "La moneda cae de cara: ganas 2 de energía."); }
       else { M.log(c.est, "La moneda cae de cruz: robas una carta."); M.robar(c.est, c.j, 1); }
     } } });
     R("cuerno-de-guerra", { jugar: { resolver: c => {

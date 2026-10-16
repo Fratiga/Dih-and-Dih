@@ -883,6 +883,7 @@
     });
     pintarCementerioVista();
     avisarMirada();
+    anunciarMoneda();
     anunciarTurno(false);
     anunciarTerreno();
     anunciarVinculos();
@@ -1208,6 +1209,29 @@
     const motivo = est.motivo === "rendicion" ? "Por rendición." : "";
     el.innerHTML = `<h2>${esc(texto)}</h2><p>${motivo}</p><button type="button" class="cartas-boton cartas-boton-principal" id="btVolver2">Volver al lobby</button>`;
     el.classList.remove("hidden");
+  }
+
+  /* Moneda de la suerte: la moneda sube, gira en el aire y cae de cara o de cruz (est.moneda lo deja anotado el efecto) */
+  let monedaMostrada = 0;
+  function anunciarMoneda() {
+    const m = est.moneda;
+    if (!m || m.turno !== est.turno || m.n === monedaMostrada) return;
+    monedaMostrada = m.n;
+    if (introVisible) return;
+    const quien = local() ? est.jugadores[m.j].nombre : (m.j === indiceYo() ? "Lanzas la moneda" : `${est.jugadores[m.j].nombre} lanza la moneda`);
+    if (sinAnimaciones()) { mostrarBanner(m.cara ? "Cara" : "Cruz", m.texto, "terreno", 2200); return; }
+    const raiz = $("btBanner").parentNode;
+    const viejo = raiz.querySelector(".bt-moneda");
+    if (viejo) viejo.remove();
+    const el = document.createElement("div");
+    el.className = `bt-moneda ${m.cara ? "cara" : "cruz"}`;
+    el.setAttribute("role", "status");
+    el.innerHTML = `<div class="bt-moneda-vuelo"><div class="bt-moneda-disco">
+        <div class="bt-moneda-lado cara"><span>☀</span></div><div class="bt-moneda-lado cruz"><span>♛</span></div>
+      </div></div><div class="bt-moneda-sombra"></div>
+      <div class="bt-moneda-texto"><small>${esc(quien)}</small><strong>${m.cara ? "Cara" : "Cruz"}</strong><span>${esc(m.texto)}</span></div>`;
+    raiz.appendChild(el);
+    setTimeout(() => el.remove(), 4300);
   }
 
   /* El Cuervo del augurio deja ver la carta superior, solo a su dueño */
