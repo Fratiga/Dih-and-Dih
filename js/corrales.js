@@ -176,9 +176,12 @@
   function filaEspecie(e, i, libreCorral) {
     const carta = cartaDe(e.carta), n = e.libres.length;
     const [a, b, c2] = e.horas.map(Number), total = a + b + c2;
-    const puede = n >= 2 && !e.sobrepoblada && e.en_circulacion && libreCorral;
+    // Una criatura con límite global menor que 2 es única: no puede haber pareja (el servidor también lo rechaza)
+    const unica = e.limite != null && Number(e.limite) < 2;
+    const puede = n >= 2 && !unica && !e.sobrepoblada && e.en_circulacion && libreCorral;
     let nota = "";
-    if (e.sobrepoblada) nota = `<p class="co-aviso-esp">Sobrepoblación de la especie: hay que respetar el medio ambiente.</p>`;
+    if (unica) nota = `<p class="co-aviso-esp">Criatura única: solo existe una copia en el mundo, así que no se puede criar.</p>`;
+    else if (e.sobrepoblada) nota = `<p class="co-aviso-esp">Sobrepoblación de la especie: hay que respetar el medio ambiente.</p>`;
     else if (!e.en_circulacion) nota = `<p class="co-aviso-esp">Todavía no está en circulación.</p>`;
     else if (n < 2) nota = `<p class="co-falta">Te ${2 - n === 1 ? "falta 1 copia" : "faltan 2 copias"} para poder criarla.</p>`;
     const selectores = puede && n > 2
@@ -186,7 +189,7 @@
           <select data-b="${i}">${e.libres.map((l, k) => `<option value="${esc(l.id)}"${k === 1 ? " selected" : ""}>n.º ${esc(l.numero)}</option>`).join("")}</select></label>` : "";
     return `<li class="co-especie${puede ? "" : " co-no-puede"}${n ? "" : " co-sin"}" data-carta="${esc(e.carta)}">${token(e.carta)}
       <div class="co-esp-info"><b>${esc(carta ? carta.nombre : e.carta)}</b> <small>${esc(RAREZAS[carta && carta.rareza] || "")}</small>
-        <p class="co-esp-datos"><span title="Copias libres">${n}/2 copias</span><span title="Duración de la cría">cría ${esc(horasTxt(total))}</span><span title="Descanso del corral después">descanso ${esc(horasTxt(Number(e.descanso_horas)))}</span></p>
+        <p class="co-esp-datos"><span title="Copias libres">${unica ? "única" : n + "/2 copias"}</span><span title="Duración de la cría">cría ${esc(horasTxt(total))}</span><span title="Descanso del corral después">descanso ${esc(horasTxt(Number(e.descanso_horas)))}</span></p>
         ${nota}${selectores}</div>
       ${puede ? `<button type="button" class="cartas-boton cartas-boton-principal" data-criar="${i}">Criar</button>` : ""}</li>`;
   }

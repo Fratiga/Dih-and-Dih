@@ -38,6 +38,7 @@ sh docs/pruebas/t_permisos.sh           # una sola batería (recarga antes con c
 | `t_recuperacion.sh` | El procedimiento de vuelta atrás (`economia-etapa0_respaldo.sql`): aplicar etapas, restaurar copias y comprobar que todo queda idéntico y sin perder datos |
 | `t_estres.sh` | Más de 120 operaciones aleatorias simultáneas de cuatro jugadores: sin interbloqueos, sin cartas perdidas ni duplicadas, auditoría limpia |
 | `t_reserva_compartida.sh` | El Buhonero y el Hipódromo reparten del mismo montón (economia-20): lo que se le da al Buhonero llega a la reserva, el Hipódromo lo vende y se prefiere la copia que no está en oferta |
+| `t_crianza_unicas.sh` | Las criaturas únicas (límite global menor que 2) y los mundos con más copias que el límite no pueden criar (economia-21) |
 
 Además, `node tools/probar-verificacion.js` prueba el veredicto en sí (volver a jugar el registro de una partida) con 120 partidas completas al azar y 60 cortadas. Cada batería parte de una base limpia (`correr_todo.sh` la recarga antes de cada una). Las pruebas con dos sesiones usan dos conexiones reales a Postgres, y la primera retiene sus candados unos segundos (una espera dentro de su transacción) para obligar a la segunda a esperar.
 
