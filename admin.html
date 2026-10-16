@@ -14,14 +14,14 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270222">
-  <link rel="stylesheet" href="css/musica-paginas.css?v=20270222">
-  <link rel="stylesheet" href="css/bufon-lab.css?v=20270222">
-  <link rel="stylesheet" href="css/taberna.css?v=20270222">
-  <link rel="stylesheet" href="css/cartas.css?v=20270222">
+  <link rel="stylesheet" href="css/style.css?v=20270223">
+  <link rel="stylesheet" href="css/musica-paginas.css?v=20270223">
+  <link rel="stylesheet" href="css/bufon-lab.css?v=20270223">
+  <link rel="stylesheet" href="css/taberna.css?v=20270223">
+  <link rel="stylesheet" href="css/cartas.css?v=20270223">
 </head>
 <body>
-  <script src="js/carga.js?v=20270222"></script>
+  <script src="js/carga.js?v=20270223"></script>
   <header class="site-header">
    <div class="site-header-inner">
     <div class="header-left">
@@ -141,6 +141,7 @@
         <button type="button" class="admin-tab" data-tab="economia">Economía de cartas <span id="adminEconomiaCount" class="admin-tab-badge" title="Cartas sin límite global"></span></button>
         <button type="button" class="admin-tab" data-tab="sistema">Sistema <span id="adminSistemaCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="contenido">Contenido</button>
+        <button type="button" class="admin-tab" data-tab="balance">Balance</button>
         <button type="button" class="admin-tab" data-tab="envivo">En vivo <span id="adminEnVivoCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="mensajes">Mensajes</button>
         <button type="button" class="admin-tab" data-tab="archivos">Archivos</button>
@@ -226,6 +227,25 @@
         <p class="admin-bufon-banner">Enciende o apaga partes del sitio sin publicar nada. Cada jugador lo nota en la siguiente página que abra.</p>
         <div id="adminInterruptoresLista" class="admin-interruptores"><p class="admin-vacio">Abre esta pestaña para cargar los interruptores.</p></div>
         <p id="adminInterruptoresEstado" class="admin-cartas-estado" role="status"></p>
+      </section>
+
+      <section id="adminPanelBalance" class="admin-panel">
+        <p class="admin-bufon-banner">Cuánto ganan las cartas de Triunfos: con las partidas reales y con un simulador que juega cientos de partidas entre mazos al azar. Úsalo para probar una carta que acabas de crear o de cambiar antes de que nadie la juegue.</p>
+        <p id="adminBalanceEstado" class="admin-cartas-estado" role="status"></p>
+        <h3>Probar una carta</h3>
+        <div class="admin-cartas-form">
+          <label>Carta <select id="adminBalanceCarta"><option value="">Elegir...</option></select></label>
+          <label>Partidas <select id="adminBalancePartidas"><option value="100">100 (rápido, con mucho ruido)</option><option value="300" selected>300</option><option value="1000">1000 (más fiable)</option></select></label>
+          <label>Cartas por mazo <select id="adminBalanceTam"><option value="24" selected>24</option></select></label>
+          <div>
+            <button type="button" id="adminBalanceProbar" class="admin-cuenta-accion">Probar esta carta</button>
+            <button type="button" id="adminBalanceTodas" class="admin-cuenta-accion">Revisar todo el catálogo</button>
+            <button type="button" id="adminBalanceParar" class="admin-cuenta-accion admin-cuenta-peligro" hidden>Parar</button>
+          </div>
+        </div>
+        <div id="adminBalanceSim" class="admin-balance-sim"></div>
+        <h3>Partidas reales</h3>
+        <div id="adminBalanceReal"><p class="admin-vacio">Abre esta pestaña para cargar las partidas.</p></div>
       </section>
 
       <section id="adminPanelCambios" class="admin-panel">
@@ -336,57 +356,58 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="js/dialogos.js?v=20270222"></script>
-  <script src="data/entries.js?v=20270222"></script>
-  <script src="data/personajes.js?v=20270222"></script>
-  <script src="data/lugares.js?v=20270222"></script>
-  <script src="data/facciones.js?v=20270222"></script>
-  <script src="data/pergaminos.js?v=20270222"></script>
-  <script src="data/armas.js?v=20270222"></script>
-  <script src="data/objetos.js?v=20270222"></script>
-  <script src="data/bestiario.js?v=20270222"></script>
-  <script src="data/razas.js?v=20270222"></script>
-  <script src="data/religiones.js?v=20270222"></script>
-  <script src="data/cronologia-a.js?v=20270222"></script>
-  <script src="data/cronologia-b.js?v=20270222"></script>
-  <script src="data/cronologia-arcos.js?v=20270222"></script>
-  <script src="data/reglas.js?v=20270222"></script>
-  <script src="data/economia.js?v=20270222"></script>
-  <script src="data/novedades.js?v=20270222"></script>
-  <script src="data/mapa.js?v=20270222"></script>
-  <script src="js/contenido-servidor.js?v=20270222"></script>
-  <script src="data/rotacion.js?v=20270222"></script>
-  <script src="data/musica.js?v=20270222"></script>
-  <script src="js/musica-nube.js?v=20270222"></script>
-  <script src="js/common.js?v=20270222"></script>
-  <script src="js/temas.js?v=20270222"></script>
-  <script src="js/taberna.js?v=20270222"></script>
-  <script src="js/player.js?v=20270222"></script>
-  <script src="js/modal.js?v=20270222"></script>
-  <script src="data/jumpscare.js?v=20270222"></script>
-  <script src="data/contrasenas.js?v=20270222"></script>
-  <script src="data/fanarts.js?v=20270222"></script>
-  <script src="js/cartas-datos.js?v=20270222"></script>
-  <script src="js/cartas-cliente.js?v=20270222"></script>
-  <script src="js/fichas-supabase.js?v=20270222"></script>
-  <script src="js/interruptores.js?v=20270222"></script>
-  <script src="js/presencia.js?v=20270222"></script>
-  <script src="js/peticiones-supabase.js?v=20270222"></script>
-  <script src="js/bufon-supabase.js?v=20270222"></script>
-  <script src="js/muerte-subita-supabase.js?v=20270222"></script>
-  <script src="js/fanarts-supabase.js?v=20270222"></script>
-  <script src="js/lado.js?v=20270222"></script>
-  <script src="js/slappy.js?v=20270222"></script>
-  <script src="js/busqueda-global.js?v=20270222"></script>
-  <script src="js/header-marquee.js?v=20270222"></script>
-  <script src="data/bufon-ciclos-lista.js?v=20270222"></script>
-  <script src="js/admin.js?v=20270222"></script>
-  <script src="js/admin-contenido.js?v=20270222"></script>
-  <script src="js/musica-fondos.js?v=20270222"></script>
-  <script src="js/admin-herramientas-2.js?v=20270222"></script>
-  <script src="js/admin-herramientas.js?v=20270222"></script>
-  <script src="js/admin-economia.js?v=20270222"></script>
-  <script src="js/bufon-lab-motor.js?v=20270222"></script>
-  <script src="js/bufon-lab.js?v=20270222"></script>
+  <script src="js/dialogos.js?v=20270223"></script>
+  <script src="data/entries.js?v=20270223"></script>
+  <script src="data/personajes.js?v=20270223"></script>
+  <script src="data/lugares.js?v=20270223"></script>
+  <script src="data/facciones.js?v=20270223"></script>
+  <script src="data/pergaminos.js?v=20270223"></script>
+  <script src="data/armas.js?v=20270223"></script>
+  <script src="data/objetos.js?v=20270223"></script>
+  <script src="data/bestiario.js?v=20270223"></script>
+  <script src="data/razas.js?v=20270223"></script>
+  <script src="data/religiones.js?v=20270223"></script>
+  <script src="data/cronologia-a.js?v=20270223"></script>
+  <script src="data/cronologia-b.js?v=20270223"></script>
+  <script src="data/cronologia-arcos.js?v=20270223"></script>
+  <script src="data/reglas.js?v=20270223"></script>
+  <script src="data/economia.js?v=20270223"></script>
+  <script src="data/novedades.js?v=20270223"></script>
+  <script src="data/mapa.js?v=20270223"></script>
+  <script src="js/contenido-servidor.js?v=20270223"></script>
+  <script src="data/rotacion.js?v=20270223"></script>
+  <script src="data/musica.js?v=20270223"></script>
+  <script src="js/musica-nube.js?v=20270223"></script>
+  <script src="js/common.js?v=20270223"></script>
+  <script src="js/temas.js?v=20270223"></script>
+  <script src="js/taberna.js?v=20270223"></script>
+  <script src="js/player.js?v=20270223"></script>
+  <script src="js/modal.js?v=20270223"></script>
+  <script src="data/jumpscare.js?v=20270223"></script>
+  <script src="data/contrasenas.js?v=20270223"></script>
+  <script src="data/fanarts.js?v=20270223"></script>
+  <script src="js/cartas-datos.js?v=20270223"></script>
+  <script src="js/cartas-cliente.js?v=20270223"></script>
+  <script src="js/fichas-supabase.js?v=20270223"></script>
+  <script src="js/interruptores.js?v=20270223"></script>
+  <script src="js/presencia.js?v=20270223"></script>
+  <script src="js/peticiones-supabase.js?v=20270223"></script>
+  <script src="js/bufon-supabase.js?v=20270223"></script>
+  <script src="js/muerte-subita-supabase.js?v=20270223"></script>
+  <script src="js/fanarts-supabase.js?v=20270223"></script>
+  <script src="js/lado.js?v=20270223"></script>
+  <script src="js/slappy.js?v=20270223"></script>
+  <script src="js/busqueda-global.js?v=20270223"></script>
+  <script src="js/header-marquee.js?v=20270223"></script>
+  <script src="data/bufon-ciclos-lista.js?v=20270223"></script>
+  <script src="js/admin.js?v=20270223"></script>
+  <script src="js/admin-contenido.js?v=20270223"></script>
+  <script src="js/musica-fondos.js?v=20270223"></script>
+  <script src="js/admin-balance.js?v=20270223"></script>
+  <script src="js/admin-herramientas-2.js?v=20270223"></script>
+  <script src="js/admin-herramientas.js?v=20270223"></script>
+  <script src="js/admin-economia.js?v=20270223"></script>
+  <script src="js/bufon-lab-motor.js?v=20270223"></script>
+  <script src="js/bufon-lab.js?v=20270223"></script>
 </body>
 </html>

@@ -22,7 +22,7 @@ Reglas comunes:
 | 5 | Editor de reglas y economía | 2 | Hecho. Las estadísticas de combate ya se editan en su página (`docs/estadisticas-edicion.md`) |
 | 4 | Editor de pines del mapa (arrastrar sobre el mapa) | 2 | Hecho |
 | 13 | Anuncios y novedades del lobby | 2 | Hecho (colección «Novedades del lobby») |
-| 6, 7 | Balance y prueba de cartas | 3 | Pendiente |
+| 6, 7 | Balance y prueba de cartas (pestaña Balance: partidas reales y simulador) | 3 | Hecha, sin SQL. El simulador (`js/cartas-simulador.js`) usa el motor real |
 | 8 | Dificultad de los rivales | 3 | Pendiente |
 | 9, 10 | Regalos y eventos, calendario del Hipódromo | 3 | Pendiente (coordinar con las sesiones de Economía e Hipódromo) |
 | 12 | Interruptores del sitio | 4 | Hecho. SQL: `docs/admin/herramientas_2.sql` |
