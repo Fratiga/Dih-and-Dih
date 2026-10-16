@@ -13,9 +13,9 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 
 ## Resumen
 
-- Ataques revisados: 70, coherentes: 58.
-- CD revisadas: 91, coherentes: 78.
-- PV revisados: 51, coherentes: 50.
+- Ataques revisados: 74, coherentes: 62.
+- CD revisadas: 101, coherentes: 88.
+- PV revisados: 54, coherentes: 53.
 - Diferencias en la tabla: 26.
 
 ## Bloques que no se pudieron comprobar
@@ -75,16 +75,19 @@ Generado con `node tools/informe-stats.js`. No se modificó `data/stats.js`.
 | restos-de-ledros-piedra | 32 | 5d6+15 (media 32) | 3 | sí | 5 dados frente a nivel 3 |
 | restos-de-ledros-madera | 32 | 5d6+15 (media 32) | 3 | sí | 5 dados frente a nivel 3 |
 | restos-de-ledros-barro | 42 | 5d10+15 (media 42) | 3 | sí | 5 dados frente a nivel 3 |
-| desollado | 160 | 19d8+76 (media 161) | 5 | sí | 19 dados frente a nivel 5 |
-| acechador-descabezado | 150 | 20d6+80 (media 150) | 5 | sí | 20 dados frente a nivel 5 |
-| mortaja-de-ojos | 142 | 19d6+76 (media 142) | 5 | sí | 19 dados frente a nivel 5 |
-| gigante-velludo | 200 | 21d8+105 (media 199) | 5 | sí | 21 dados frente a nivel 5 |
-| segador-acorazado | 150 | 20d6+80 (media 150) | 5 | sí | 20 dados frente a nivel 5 |
 | callador | 120 | 16d8+48 (media 120) | 5 | sí | 16 dados frente a nivel 5 |
-| miron | 125 | 23d6+46 (media 126) | 5 | sí | 23 dados frente a nivel 5 |
+| acechador-descabezado | 150 | 20d6+80 (media 150) | 5 | sí | 20 dados frente a nivel 5 |
+| segador-acorazado | 150 | 20d6+80 (media 150) | 5 | sí | 20 dados frente a nivel 5 |
+| desollado | 160 | 19d8+76 (media 161) | 5 | sí | 19 dados frente a nivel 5 |
+| carne-triple | 178 | 21d6+105 (media 178) | 5 | sí | 21 dados frente a nivel 5 |
 | colgado | 180 | 19d8+95 (media 180) | 5 | sí | 19 dados frente a nivel 5 |
+| planidera | 115 | 21d6+42 (media 115) | 5 | sí | 21 dados frente a nivel 5 |
 | reptil-indestructible | 230 | 20d8+140 (media 230) | 7 | sí | 20 dados frente a nivel 7 |
 | perseguidor | 190 | 20d6+120 (media 190) | 5 | sí | 20 dados frente a nivel 5 |
+| mortaja-de-ojos | 142 | 19d6+76 (media 142) | 5 | sí | 19 dados frente a nivel 5 |
+| miron | 125 | 23d6+46 (media 126) | 5 | sí | 23 dados frente a nivel 5 |
+| gigante-velludo | 200 | 21d8+105 (media 199) | 5 | sí | 21 dados frente a nivel 5 |
+| tejedor | 130 | 20d6+60 (media 130) | 5 | sí | 20 dados frente a nivel 5 |
 | nurse-harrow | 95 | 10d12+30 (media 95) | 5 | sí | 10 dados frente a nivel 5 |
 | ulis | 126 | 12d10+60 (media 126) | 5 | sí | 12 dados frente a nivel 5 |
 

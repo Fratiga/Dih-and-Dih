@@ -3891,3 +3891,8 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .aj-jugar-detalle { margin: 0 0 12px; font-size: .85rem; color: var(--muted); }
 .aj-jugar-btn { padding: 14px 34px; font: 700 1.25rem var(--font-heading), sans-serif; letter-spacing: .06em; color: #1b120c; background: #e0b45c; border: 0; cursor: pointer; box-shadow: 0 0 26px rgba(224, 180, 92, .45); }
 .aj-jugar-btn:hover { background: #f0c874; }
+
+/* Foto de un enemigo en Estadísticas (campo imagen de data/stats.js): redonda, en la tarjeta y más grande en la ficha */
+.stat-card-foto { float: left; width: 56px; height: 56px; margin: 0 10px 6px 0; border-radius: 50%; object-fit: cover; background: #000; }
+.stat-foto { float: right; width: 160px; height: 160px; margin: 0 0 10px 16px; border-radius: 50%; object-fit: cover; background: #000; }
+@media (max-width: 560px) { .stat-foto { width: 110px; height: 110px; } }

@@ -951,33 +951,36 @@ window.STATS = [
     estrategia: "Se acerca a quien intenta huir y lo va frenando con cada golpe. Pega poco, pero deja a los blancos en el sitio para que los demás lleguen."
   },
   {
-    id: "desollado",
-    nombre: "Harek, el Desollado",
-    rol: "Bruto · Hemorragia",
-    tipo: "Monstruosidad",
-    raza: "Mutante desollado Grande · Caótico malvado",
+    id: "callador",
+    imagen: "assets/enemigos/callador.png",
+    nombre: "Dacre, el Callador",
+    rol: "Control · Silencio",
+    tipo: "Humanoide",
+    raza: "Inquisidor enmascarado · Legal malvado",
     nivel: 5,
-    pv: 160,
-    ca: 15,
-    velocidad: "40 pies",
-    stats: { fue: 20, des: 16, con: 18, int: 4, sab: 10, car: 5 },
+    pv: 120,
+    ca: 16,
+    velocidad: "30 pies",
+    stats: { fue: 10, des: 14, con: 16, int: 16, sab: 16, car: 18 },
     notas: [
-      "Salvaciones: FUE +8, CON +7. Percepción pasiva 10. Competencia +3.",
-      "Resistencia al daño necrótico. Inmunidad a estados: asustado.",
-      "Sangrando: la criatura recibe 1d6 de daño necrótico al inicio de cada uno de sus turnos. Termina cuando alguien usa una acción para vendarla (Medicina CD 12) o cuando recupera PV."
+      "Salvaciones: SAB +6, CAR +7. Habilidades: Percepción +6, Perspicacia +6. Percepción pasiva 16. Competencia +3.",
+      "Inmunidad al daño de trueno y a los efectos que dependan del oído. Ventaja en salvaciones contra hechizado y asustado.",
+      "Silenciada: la criatura no puede hablar ni lanzar conjuros con componente verbal.",
+      "Máscara agrietada: si recibe un golpe crítico, o 25 o más de daño en un solo ataque, la máscara se parte y pierde Aura de Silencio y Tragar Conjuro hasta el final del combate."
     ],
     habilidades: [
-      { nombre: "Frenesí de Sangre (Pasiva)", descripcion: "Ventaja en los ataques contra criaturas Sangrando o con la mitad de sus PV o menos. Mientras él tenga la mitad de sus PV o menos, sus Zarpazos infligen 1d6 de daño necrótico adicional." },
-      { nombre: "Carne Resbaladiza (Pasiva)", descripcion: "Ventaja en pruebas y salvaciones para evitar o romper un agarre o una restricción. Los ataques de oportunidad contra él tienen desventaja." },
-      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Zarpazo Desgarrado." },
-      { nombre: "Zarpazo Desgarrado (Acción)", descripcion: "+8 al impacto, alcance 10 pies, un objetivo. Daño: 2d8+5 cortante. El objetivo hace una salvación de Constitución CD 16 o queda Sangrando." },
-      { nombre: "Látigo de Tiras (Recarga 5-6)", descripcion: "Línea de 20 pies de largo y 5 de ancho. Cada criatura en ella hace una salvación de Destreza CD 16 o recibe 4d8 de daño cortante y queda Sangrando. Si supera la salvación, recibe la mitad y no sangra." },
-      { nombre: "Chupar Sangre (Acción adicional)", descripcion: "Recupera 1d10+5 PV por cada criatura Sangrando a 10 pies o menos de él (máximo 3 criaturas)." }
+      { nombre: "Aura de Silencio (Pasiva)", descripcion: "En un radio de 15 pies a su alrededor no hay sonido. Las criaturas dentro de esa zona no pueden lanzar conjuros con componente verbal y no oyen nada mientras estén dentro." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Dedo en los Labios." },
+      { nombre: "Dedo en los Labios (Acción)", descripcion: "+7 al impacto, alcance 30 pies, un objetivo. Daño: 3d8+4 psíquico. El objetivo queda Silenciada hasta el final de su siguiente turno." },
+      { nombre: "Grito Tragado (Recarga 5-6)", descripcion: "Todas las criaturas a 20 pies que puedan oírlo hacen una salvación de Constitución CD 15 o reciben 5d8 de daño psíquico (mitad si superan). Las que fallan quedan Silenciadas y sordas hasta el final de su siguiente turno." },
+      { nombre: "Tragar Conjuro (Reacción, 1/ronda)", descripcion: "Cuando una criatura a 30 pies o menos lanza un conjuro con componente verbal, la máscara se traga la palabra: hace una salvación de Carisma CD 15 o el conjuro falla y gasta el espacio de conjuro." },
+      { nombre: "Paso Mudo (Acción adicional)", descripcion: "Se mueve hasta 20 pies sin hacer ruido ni provocar ataques de oportunidad." }
     ],
-    estrategia: "No distingue aliados de enemigos, pero huele la sangre: va primero por el más herido y se pega al que sangra. Usa el Látigo cuando hay tres o más en línea. Si nadie sangra, retrocede 20 pies y deja que el Látigo trabaje antes de cerrar distancia otra vez. Vendar a tiempo le quita la curación, y el fuego lo frena en seco."
+    estrategia: "Se mantiene a distancia y calla primero a quien lance conjuros o sane al grupo. Si hay varios sanadores o lanzadores juntos, abre con Grito Tragado. No tiene aguante: en cuerpo a cuerpo es frágil y Paso Mudo es su única salida. Un golpe fuerte en la máscara lo deja sin Aura ni Tragar Conjuro, así que conviene que el más pesado del grupo lo alcance rápido."
   },
   {
     id: "acechador-descabezado",
+    imagen: "assets/enemigos/acechador-descabezado.png",
     nombre: "Bramel, el Acechador Descabezado",
     rol: "Emboscador · Rastreador",
     tipo: "Monstruosidad",
@@ -1006,62 +1009,8 @@ window.STATS = [
     estrategia: "Huye de las luces y se queda quieto entre los árboles hasta que alguien se separa del grupo. Usa Eco Robado para sacar a uno del camino, lo embosca por la espalda y lo pisotea si cae. Si pierde la emboscada y baja de 60 PV, se esconde y vuelve a atacar desde otro ángulo. Mantener al grupo junto y llevar luz le quita casi todo."
   },
   {
-    id: "mortaja-de-ojos",
-    nombre: "Yssel, la Mortaja de Ojos",
-    rol: "Control · Terror psíquico",
-    tipo: "Aberración",
-    raza: "Aberración informe Grande · Caótico malvado",
-    nivel: 5,
-    pv: 142,
-    ca: 15,
-    velocidad: "30 pies, vuelo 30 pies (flota)",
-    stats: { fue: 14, des: 12, con: 18, int: 12, sab: 14, car: 18 },
-    notas: [
-      "Salvaciones: SAB +5, CAR +7. Habilidades: Percepción +5. Percepción pasiva 15. Competencia +3.",
-      "Resistencia al daño necrótico y psíquico, y al contundente, perforante y cortante de ataques no mágicos. Vulnerabilidad al daño radiante. Inmunidad a estados: asustado, cegado.",
-      "Visión en la oscuridad 120 pies."
-    ],
-    habilidades: [
-      { nombre: "Mil Ojos (Pasiva)", descripcion: "Ve a criaturas invisibles a 60 pies, no puede ser sorprendida y tiene ventaja en Percepción basada en la vista." },
-      { nombre: "Cuerpo de Sombra (Pasiva)", descripcion: "Si empieza su turno en luz brillante recibe 1d8 de daño radiante, y mientras la luz le dé, no puede usar Pozo de Sombra." },
-      { nombre: "Multiataque (Acción)", descripcion: "Realiza una Mordida Babosa y un Zarcillo de Sombra." },
-      { nombre: "Mordida Babosa (Acción)", descripcion: "+7 al impacto, alcance 5 pies, un objetivo. Daño: 2d10+2 perforante. El objetivo recibe además 2d6 de daño necrótico." },
-      { nombre: "Zarcillo de Sombra (Acción)", descripcion: "+7 al impacto, alcance 15 pies, un objetivo. Daño: 2d6+2 necrótico. El objetivo queda Agarrado (escapa con una prueba de Fuerza o Destreza CD 13). Solo puede agarrar a una criatura a la vez." },
-      { nombre: "Mirada Múltiple (Recarga 5-6)", descripcion: "Todas las criaturas a 30 pies que puedan ver sus ojos hacen una salvación de Sabiduría CD 15 o reciben 4d8 de daño psíquico y quedan Asustadas hasta el final de su siguiente turno. Si superan la salvación, reciben la mitad. Una criatura que aparta la mirada tiene ventaja en la salvación, pero tiene desventaja en sus ataques contra Yssel hasta el inicio de su siguiente turno." },
-      { nombre: "Pozo de Sombra (Acción adicional)", descripcion: "Apaga toda luz no mágica en un radio de 20 pies a su alrededor hasta el inicio de su siguiente turno. Las luces mágicas de nivel 2 o menor también se apagan." }
-    ],
-    estrategia: "Flota hacia quien más ruido hace. Abre con Mirada Múltiple en cuanto tres o más la ven, agarra con el Zarcillo al que intenta huir y lo acerca para morderlo. La luz brillante la hiere y la obliga a retroceder: si el grupo la tiene, se esconde en la oscuridad y espera. Es mala persiguiendo y peor en espacios abiertos y bien iluminados."
-  },
-  {
-    id: "gigante-velludo",
-    nombre: "Gruvok, el Gigante Velludo",
-    rol: "Bruto · Emboscador",
-    tipo: "Gigante",
-    raza: "Gigante Grande · Neutral",
-    nivel: 5,
-    pv: 200,
-    ca: 15,
-    velocidad: "40 pies",
-    stats: { fue: 23, des: 10, con: 20, int: 6, sab: 12, car: 7 },
-    notas: [
-      "Salvaciones: FUE +9, CON +8. Percepción +4, pasiva 14. Competencia +3.",
-      "Resistencia al daño de frío. Vulnerabilidad al daño de fuego.",
-      "Ardiendo: recibe 1d6 de daño de fuego al inicio de cada uno de sus turnos hasta que use su acción para apagar el pelaje."
-    ],
-    habilidades: [
-      { nombre: "Doble Mirada (Pasiva)", descripcion: "Tiene un ojo en la cabeza y otro en el pecho: no puede ser sorprendido y tiene ventaja en Percepción. Punto ciego: los ataques contra él desde su espalda tienen ventaja y ignoran Ojo del Pecho." },
-      { nombre: "Pelaje Inflamable (Pasiva)", descripcion: "Al recibir daño de fuego queda Ardiendo (ver notas)." },
-      { nombre: "Emboscada del Pilar (Pasiva)", descripcion: "Si empieza el combate oculto tras una columna o una cobertura que lo tape por completo, la primera vez que golpea a una criatura que no lo ve inflige 3d8 de daño contundente adicional." },
-      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Puñetazo Aplastante." },
-      { nombre: "Puñetazo Aplastante (Acción)", descripcion: "+9 al impacto, alcance 10 pies, un objetivo. Daño: 3d8+6 contundente." },
-      { nombre: "Agarrón y Estrujar (Acción)", descripcion: "Un objetivo Grande o menor al que haya golpeado con Puñetazo Aplastante este turno hace una salvación de Fuerza CD 17 o queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 17). Al inicio de cada turno suyo, la criatura Agarrada recibe 2d8+6 de daño contundente." },
-      { nombre: "Lanzar Escombro (Acción)", descripcion: "+9 al impacto, alcance 40/80 pies, un objetivo. Daño: 3d10+6 contundente." },
-      { nombre: "Ojo del Pecho (Reacción, 1/ronda)", descripcion: "Cuando una criatura lo ataca a distancia o lo apunta con un conjuro desde su frente, ese ataque o conjuro tiene desventaja. No funciona contra lo que venga desde su espalda." }
-    ],
-    estrategia: "Se queda tras una columna o un muro y espera a que alguien pase para salirle a golpes. Agarra al más frágil y lo exprime, y lanza escombros a los que se quedan lejos. Si pierde la cobertura, se pone de espaldas a la pared para que nadie le llegue por detrás. Rodearlo y el fuego lo derrumban."
-  },
-  {
     id: "segador-acorazado",
+    imagen: "assets/enemigos/segador-acorazado.png",
     nombre: "Karsk, el Segador Acorazado",
     rol: "Cazador · Carroñero blindado",
     tipo: "Monstruosidad",
@@ -1087,61 +1036,62 @@ window.STATS = [
     estrategia: "Corta el terreno en línea recta y no se detiene por nada. Agarra al primero que alcanza, lo devora y vuelve a repararse. Usa Zancada Segadora cuando hay dos o más alineados y remata a quien cae. Un golpe fuerte de arma contundente le rompe las placas y lo deja mucho más fácil de herir."
   },
   {
-    id: "callador",
-    nombre: "Dacre, el Callador",
-    rol: "Control · Silencio",
-    tipo: "Humanoide",
-    raza: "Inquisidor enmascarado · Legal malvado",
+    id: "desollado",
+    imagen: "assets/enemigos/desollado.png",
+    nombre: "Harek, el Desollado",
+    rol: "Bruto · Hemorragia",
+    tipo: "Monstruosidad",
+    raza: "Mutante desollado Grande · Caótico malvado",
     nivel: 5,
-    pv: 120,
-    ca: 16,
-    velocidad: "30 pies",
-    stats: { fue: 10, des: 14, con: 16, int: 16, sab: 16, car: 18 },
+    pv: 160,
+    ca: 15,
+    velocidad: "40 pies",
+    stats: { fue: 20, des: 16, con: 18, int: 4, sab: 10, car: 5 },
     notas: [
-      "Salvaciones: SAB +6, CAR +7. Habilidades: Percepción +6, Perspicacia +6. Percepción pasiva 16. Competencia +3.",
-      "Inmunidad al daño de trueno y a los efectos que dependan del oído. Ventaja en salvaciones contra hechizado y asustado.",
-      "Silenciada: la criatura no puede hablar ni lanzar conjuros con componente verbal.",
-      "Máscara agrietada: si recibe un golpe crítico, o 25 o más de daño en un solo ataque, la máscara se parte y pierde Aura de Silencio y Tragar Conjuro hasta el final del combate."
+      "Salvaciones: FUE +8, CON +7. Percepción pasiva 10. Competencia +3.",
+      "Resistencia al daño necrótico. Inmunidad a estados: asustado.",
+      "Sangrando: la criatura recibe 1d6 de daño necrótico al inicio de cada uno de sus turnos. Termina cuando alguien usa una acción para vendarla (Medicina CD 12) o cuando recupera PV."
     ],
     habilidades: [
-      { nombre: "Aura de Silencio (Pasiva)", descripcion: "En un radio de 15 pies a su alrededor no hay sonido. Las criaturas dentro de esa zona no pueden lanzar conjuros con componente verbal y no oyen nada mientras estén dentro." },
-      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Dedo en los Labios." },
-      { nombre: "Dedo en los Labios (Acción)", descripcion: "+7 al impacto, alcance 30 pies, un objetivo. Daño: 3d8+4 psíquico. El objetivo queda Silenciada hasta el final de su siguiente turno." },
-      { nombre: "Grito Tragado (Recarga 5-6)", descripcion: "Todas las criaturas a 20 pies que puedan oírlo hacen una salvación de Constitución CD 15 o reciben 5d8 de daño psíquico (mitad si superan). Las que fallan quedan Silenciadas y sordas hasta el final de su siguiente turno." },
-      { nombre: "Tragar Conjuro (Reacción, 1/ronda)", descripcion: "Cuando una criatura a 30 pies o menos lanza un conjuro con componente verbal, la máscara se traga la palabra: hace una salvación de Carisma CD 15 o el conjuro falla y gasta el espacio de conjuro." },
-      { nombre: "Paso Mudo (Acción adicional)", descripcion: "Se mueve hasta 20 pies sin hacer ruido ni provocar ataques de oportunidad." }
+      { nombre: "Frenesí de Sangre (Pasiva)", descripcion: "Ventaja en los ataques contra criaturas Sangrando o con la mitad de sus PV o menos. Mientras él tenga la mitad de sus PV o menos, sus Zarpazos infligen 1d6 de daño necrótico adicional." },
+      { nombre: "Carne Resbaladiza (Pasiva)", descripcion: "Ventaja en pruebas y salvaciones para evitar o romper un agarre o una restricción. Los ataques de oportunidad contra él tienen desventaja." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Zarpazo Desgarrado." },
+      { nombre: "Zarpazo Desgarrado (Acción)", descripcion: "+8 al impacto, alcance 10 pies, un objetivo. Daño: 2d8+5 cortante. El objetivo hace una salvación de Constitución CD 16 o queda Sangrando." },
+      { nombre: "Látigo de Tiras (Recarga 5-6)", descripcion: "Línea de 20 pies de largo y 5 de ancho. Cada criatura en ella hace una salvación de Destreza CD 16 o recibe 4d8 de daño cortante y queda Sangrando. Si supera la salvación, recibe la mitad y no sangra." },
+      { nombre: "Chupar Sangre (Acción adicional)", descripcion: "Recupera 1d10+5 PV por cada criatura Sangrando a 10 pies o menos de él (máximo 3 criaturas)." }
     ],
-    estrategia: "Se mantiene a distancia y calla primero a quien lance conjuros o sane al grupo. Si hay varios sanadores o lanzadores juntos, abre con Grito Tragado. No tiene aguante: en cuerpo a cuerpo es frágil y Paso Mudo es su única salida. Un golpe fuerte en la máscara lo deja sin Aura ni Tragar Conjuro, así que conviene que el más pesado del grupo lo alcance rápido."
+    estrategia: "No distingue aliados de enemigos, pero huele la sangre: va primero por el más herido y se pega al que sangra. Usa el Látigo cuando hay tres o más en línea. Si nadie sangra, retrocede 20 pies y deja que el Látigo trabaje antes de cerrar distancia otra vez. Vendar a tiempo le quita la curación, y el fuego lo frena en seco."
   },
   {
-    id: "miron",
-    nombre: "Pelham, el Mirón",
-    rol: "Acechador · Terror",
+    id: "carne-triple",
+    imagen: "assets/enemigos/carne-triple.png",
+    nombre: "Sennet, la Carne Triple",
+    rol: "Bruto · Multitudes",
     tipo: "Monstruosidad",
-    raza: "Aparición pálida · Caótico malvado",
+    raza: "Amalgama desollada Enorme · Caótico malvado",
     nivel: 5,
-    pv: 125,
-    ca: 16,
+    pv: 178,
+    ca: 15,
     velocidad: "40 pies",
-    stats: { fue: 14, des: 18, con: 14, int: 8, sab: 14, car: 6 },
+    stats: { fue: 20, des: 14, con: 20, int: 6, sab: 12, car: 8 },
     notas: [
-      "Salvaciones: DES +7, SAB +5. Habilidades: Sigilo +10, Percepción +5. Percepción pasiva 15. Competencia +3.",
-      "Visión en la oscuridad 120 pies. Inmunidad a estados: asustado. Resistencia al daño necrótico y psíquico."
+      "Salvaciones: FUE +8, CON +8, SAB +4. Percepción pasiva 11. Competencia +3.",
+      "Resistencia al daño necrótico. Inmunidad a estados: asustado, hechizado.",
+      "Tres torsos desollados sobre un solo cuerpo de cuadrúpedo: cada torso ataca por su cuenta."
     ],
     habilidades: [
-      { nombre: "Ojos Blancos (Pasiva)", descripcion: "La primera vez que una criatura lo ve en un combate, hace una salvación de Sabiduría CD 13 o queda Asustada hasta el final de su siguiente turno. Si supera la salvación, es inmune a esta ventaja durante 24 horas." },
-      { nombre: "Quieto Bajo la Mirada (Pasiva)", descripcion: "Mientras al menos una criatura enemiga que no esté Cegada lo mire de frente a 60 pies o menos, su velocidad baja a 10 pies, no puede usar Aparecer a la Espalda y sus ataques tienen desventaja. Si al inicio de su turno nadie lo mira, se mueve el doble de su velocidad." },
-      { nombre: "Cuerpo Elástico (Pasiva)", descripcion: "Puede pasar por espacios de 6 pulgadas de ancho sin comprimirse. Ventaja en pruebas de Sigilo." },
-      { nombre: "Aparecer a la Espalda (Acción adicional)", descripcion: "Si ninguna criatura lo está mirando, se teletransporta hasta 40 pies a un espacio libre adyacente a una criatura que no lo vea." },
-      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Zarpazo Largo." },
-      { nombre: "Zarpazo Largo (Acción)", descripcion: "+7 al impacto, alcance 10 pies, un objetivo. Daño: 2d8+4 cortante. Si el objetivo no lo estaba mirando, inflige 2d6 de daño cortante adicional." },
-      { nombre: "Sonrisa Rota (Recarga 5-6)", descripcion: "Una criatura a 30 pies que pueda verlo hace una salvación de Sabiduría CD 13 o recibe 4d8 de daño psíquico y queda Asustada y Restringida hasta el final de su siguiente turno (mitad del daño si supera la salvación, y no queda afectada)." },
-      { nombre: "Descoyuntarse (Reacción)", descripcion: "Cuando es agarrado o restringido, se libera sin tirada y se mueve hasta 10 pies sin provocar ataques de oportunidad." }
+      { nombre: "Tres Torsos (Pasiva)", descripcion: "Tiene 3 torsos si le quedan más de 125 PV, 2 si le quedan más de 75 y 1 si le quedan 75 o menos. Ve en todas las direcciones: no puede ser sorprendido ni flanqueado." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza un ataque de Zarpazo Desgarrado por cada torso que conserve." },
+      { nombre: "Zarpazo Desgarrado (Acción)", descripcion: "+8 al impacto, alcance 10 pies, un objetivo. Daño: 2d8+5 cortante." },
+      { nombre: "Abrazo de Carne (Acción adicional)", descripcion: "Un objetivo Mediano o menor al que haya golpeado este turno hace una salvación de Fuerza CD 16 o queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 16). Al inicio de cada turno suyo, la criatura Agarrada recibe 2d6+5 de daño contundente. Solo puede sujetar a una criatura a la vez." },
+      { nombre: "Coro de Gemidos (Recarga 5-6)", descripcion: "Todas las criaturas a 30 pies que puedan oírlo hacen una salvación de Sabiduría CD 16 o reciben 4d8 de daño psíquico y quedan Asustadas hasta el final de su siguiente turno. Si superan la salvación, reciben la mitad y no quedan Asustadas." },
+      { nombre: "Carne Sobrante (Reacción, 1/ronda)", descripcion: "Cuando un ataque lo impacta, un torso se interpone: reduce el daño que recibe en 1d10+5." }
     ],
-    estrategia: "Se queda quieto a plena vista, medio escondido, y cuando alguien parpadea o se da vuelta aparece a la espalda del más débil. Mientras alguien lo mire se arrastra despacio y casi no ataca: lo peor que puede hacer un grupo es dejar de vigilarlo. Con alguien siempre atento y la formación pegada, es manejable. Sin eso, va picando de uno en uno."
+    estrategia: "Carga contra el grupo apiñado y reparte los Zarpazos entre varios blancos: cada torso elige el suyo. Agarra al que quede más cerca con el Abrazo y abre con el Coro de Gemidos si tres o más lo oyen. Cada torso que pierde son menos ataques, así que centrar el daño de golpe lo desarma rápido: con 75 PV o menos casi no pega. No retrocede ni negocia."
   },
   {
     id: "colgado",
+    imagen: "assets/enemigos/colgado.png",
     nombre: "Oswin, el Colgado",
     rol: "Bruto · Ejecutor",
     tipo: "Monstruosidad",
@@ -1153,7 +1103,7 @@ window.STATS = [
     stats: { fue: 22, des: 10, con: 20, int: 5, sab: 10, car: 5 },
     notas: [
       "Salvaciones: FUE +9, CON +8. Percepción pasiva 10. Competencia +3.",
-      "Visión ciega 30 pies (no tiene ojos: huele y oye). Inmunidad a estados: cegado, asustado.",
+      "Visión ciega 30 pies (los ojos están hundidos y cerrados bajo el gancho que le atraviesa el cráneo: huele y oye). Inmunidad a estados: cegado, asustado.",
       "Cadena del gancho: CA 15, 20 PV. Si se destruye, Oswin pierde Cadena del Gancho y Colgar al Intruso hasta el final del combate."
     ],
     habilidades: [
@@ -1168,7 +1118,35 @@ window.STATS = [
     estrategia: "Camina hacia el sonido más cercano y no se detiene. Engancha al que se separa, lo arrastra y lo cuelga; después sigue con el siguiente. No usa tácticas: pega fuerte y despacio. Cortar la cadena libera a la víctima y le quita sus mejores armas, y por la espalda no tiene ojos que lo adviertan."
   },
   {
+    id: "planidera",
+    imagen: "assets/enemigos/planidera.png",
+    nombre: "Ulda, la Plañidera",
+    rol: "Hostigador · Terror psíquico",
+    tipo: "Monstruosidad",
+    raza: "Aparición encorvada Mediana · Caótico malvado",
+    nivel: 5,
+    pv: 115,
+    ca: 16,
+    velocidad: "40 pies, trepar 40 pies",
+    stats: { fue: 14, des: 18, con: 14, int: 8, sab: 14, car: 16 },
+    notas: [
+      "Salvaciones: DES +7, CAR +6. Habilidades: Sigilo +7, Intimidación +6, Percepción +5. Percepción pasiva 15. Competencia +3.",
+      "Visión en la oscuridad 60 pies. Resistencia al daño necrótico y psíquico. Inmunidad a estados: asustado.",
+      "Ojos blancos sin pupila, boca desencajada y una mano siempre sobre la cara."
+    ],
+    habilidades: [
+      { nombre: "Acurrucada (Pasiva)", descripcion: "Si no se movió en su turno anterior, tiene ventaja en las pruebas de Sigilo y en la primera tirada de ataque de su siguiente turno." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Garra Retorcida." },
+      { nombre: "Garra Retorcida (Acción)", descripcion: "+7 al impacto, alcance 5 pies, un objetivo. Daño: 2d6+4 cortante. El objetivo recibe además 1d6 de daño psíquico." },
+      { nombre: "Lamento (Acción, Recarga 5-6)", descripcion: "Cono de 30 pies. Cada criatura en el área hace una salvación de Sabiduría CD 14: si falla, recibe 5d6 de daño psíquico y queda Asustada hasta el final de su siguiente turno; si supera, recibe la mitad y no queda Asustada." },
+      { nombre: "Eco del Dolor (Acción adicional)", descripcion: "Una criatura Asustada a 60 pies hace una salvación de Sabiduría CD 14 o recibe 2d6 de daño psíquico." },
+      { nombre: "Manos al Rostro (Reacción, 1/ronda)", descripcion: "Cuando recibe daño de una criatura que pueda ver, reduce ese daño a la mitad y se mueve hasta 15 pies sin provocar ataques de oportunidad." }
+    ],
+    estrategia: "Espera acurrucada en una esquina o en el techo hasta que alguien se acerca. Abre con el Lamento sobre el grupo y remata con el Eco del Dolor a quien quedó Asustado. En cuerpo a cuerpo pega con las dos garras y se aparta con Manos al Rostro. Si el grupo no se asusta y la rodea, aguanta poco."
+  },
+  {
     id: "reptil-indestructible",
+    imagen: "assets/enemigos/reptil-indestructible.png",
     nombre: "Vharrak, el Reptil Indestructible",
     rol: "Jefe · Adaptación",
     tipo: "Monstruosidad",
@@ -1198,6 +1176,7 @@ window.STATS = [
   },
   {
     id: "perseguidor",
+    imagen: "assets/enemigos/perseguidor.png",
     nombre: "Mordan, el Perseguidor",
     rol: "Bruto · Cazador implacable",
     tipo: "Monstruosidad",
@@ -1221,6 +1200,119 @@ window.STATS = [
       { nombre: "Marca del Cazador (Acción adicional)", descripcion: "Elige a una criatura que pueda ver. Mientras la persigue (hasta que ella muera, salga de su vista durante 1 minuto o se elija otra marca), su velocidad aumenta 10 pies y tiene ventaja en los ataques contra ella." }
     ],
     estrategia: "Elige a la criatura que más daño le ha hecho y la persigue sin tregua, ignorando a los demás salvo que se interpongan. La atrapa con el Tentáculo, la arrastra y la golpea. No negocia, no se asusta y apenas siente el dolor. Para pararlo hay que bloquear el paso o usar a un aliado como señuelo y cortarle el camino con terreno que no pueda atravesar."
+  },
+  {
+    id: "mortaja-de-ojos",
+    imagen: "assets/enemigos/mortaja-de-ojos.png",
+    nombre: "Yssel, la Mortaja de Ojos",
+    rol: "Control · Terror psíquico",
+    tipo: "Aberración",
+    raza: "Aberración informe Grande · Caótico malvado",
+    nivel: 5,
+    pv: 142,
+    ca: 15,
+    velocidad: "30 pies, vuelo 30 pies (flota)",
+    stats: { fue: 14, des: 12, con: 18, int: 12, sab: 14, car: 18 },
+    notas: [
+      "Salvaciones: SAB +5, CAR +7. Habilidades: Percepción +5. Percepción pasiva 15. Competencia +3.",
+      "Resistencia al daño necrótico y psíquico, y al contundente, perforante y cortante de ataques no mágicos. Vulnerabilidad al daño radiante. Inmunidad a estados: asustado, cegado.",
+      "Visión en la oscuridad 120 pies."
+    ],
+    habilidades: [
+      { nombre: "Mil Ojos (Pasiva)", descripcion: "Ve a criaturas invisibles a 60 pies, no puede ser sorprendida y tiene ventaja en Percepción basada en la vista." },
+      { nombre: "Cuerpo de Sombra (Pasiva)", descripcion: "Si empieza su turno en luz brillante recibe 1d8 de daño radiante, y mientras la luz le dé, no puede usar Pozo de Sombra." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza una Mordida Babosa y un Zarcillo de Sombra." },
+      { nombre: "Mordida Babosa (Acción)", descripcion: "+7 al impacto, alcance 5 pies, un objetivo. Daño: 2d10+2 perforante. El objetivo recibe además 2d6 de daño necrótico." },
+      { nombre: "Zarcillo de Sombra (Acción)", descripcion: "+7 al impacto, alcance 15 pies, un objetivo. Daño: 2d6+2 necrótico. El objetivo queda Agarrado (escapa con una prueba de Fuerza o Destreza CD 13). Solo puede agarrar a una criatura a la vez." },
+      { nombre: "Mirada Múltiple (Recarga 5-6)", descripcion: "Todas las criaturas a 30 pies que puedan ver sus ojos hacen una salvación de Sabiduría CD 15 o reciben 4d8 de daño psíquico y quedan Asustadas hasta el final de su siguiente turno. Si superan la salvación, reciben la mitad. Una criatura que aparta la mirada tiene ventaja en la salvación, pero tiene desventaja en sus ataques contra Yssel hasta el inicio de su siguiente turno." },
+      { nombre: "Pozo de Sombra (Acción adicional)", descripcion: "Apaga toda luz no mágica en un radio de 20 pies a su alrededor hasta el inicio de su siguiente turno. Las luces mágicas de nivel 2 o menor también se apagan." }
+    ],
+    estrategia: "Flota hacia quien más ruido hace. Abre con Mirada Múltiple en cuanto tres o más la ven, agarra con el Zarcillo al que intenta huir y lo acerca para morderlo. La luz brillante la hiere y la obliga a retroceder: si el grupo la tiene, se esconde en la oscuridad y espera. Es mala persiguiendo y peor en espacios abiertos y bien iluminados."
+  },
+  {
+    id: "miron",
+    imagen: "assets/enemigos/miron.png",
+    nombre: "Pelham, el Mirón",
+    rol: "Acechador · Terror",
+    tipo: "Monstruosidad",
+    raza: "Aparición pálida · Caótico malvado",
+    nivel: 5,
+    pv: 125,
+    ca: 16,
+    velocidad: "40 pies",
+    stats: { fue: 14, des: 18, con: 14, int: 8, sab: 14, car: 6 },
+    notas: [
+      "Salvaciones: DES +7, SAB +5. Habilidades: Sigilo +10, Percepción +5. Percepción pasiva 15. Competencia +3.",
+      "Visión en la oscuridad 120 pies. Inmunidad a estados: asustado. Resistencia al daño necrótico y psíquico."
+    ],
+    habilidades: [
+      { nombre: "Ojos Blancos (Pasiva)", descripcion: "La primera vez que una criatura lo ve en un combate, hace una salvación de Sabiduría CD 13 o queda Asustada hasta el final de su siguiente turno. Si supera la salvación, es inmune a esta ventaja durante 24 horas." },
+      { nombre: "Quieto Bajo la Mirada (Pasiva)", descripcion: "Mientras al menos una criatura enemiga que no esté Cegada lo mire de frente a 60 pies o menos, su velocidad baja a 10 pies, no puede usar Aparecer a la Espalda y sus ataques tienen desventaja. Si al inicio de su turno nadie lo mira, se mueve el doble de su velocidad." },
+      { nombre: "Cuerpo Elástico (Pasiva)", descripcion: "Puede pasar por espacios de 6 pulgadas de ancho sin comprimirse. Ventaja en pruebas de Sigilo." },
+      { nombre: "Aparecer a la Espalda (Acción adicional)", descripcion: "Si ninguna criatura lo está mirando, se teletransporta hasta 40 pies a un espacio libre adyacente a una criatura que no lo vea." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Zarpazo Largo." },
+      { nombre: "Zarpazo Largo (Acción)", descripcion: "+7 al impacto, alcance 10 pies, un objetivo. Daño: 2d8+4 cortante. Si el objetivo no lo estaba mirando, inflige 2d6 de daño cortante adicional." },
+      { nombre: "Sonrisa Rota (Recarga 5-6)", descripcion: "Una criatura a 30 pies que pueda verlo hace una salvación de Sabiduría CD 13 o recibe 4d8 de daño psíquico y queda Asustada y Restringida hasta el final de su siguiente turno (mitad del daño si supera la salvación, y no queda afectada)." },
+      { nombre: "Descoyuntarse (Reacción)", descripcion: "Cuando es agarrado o restringido, se libera sin tirada y se mueve hasta 10 pies sin provocar ataques de oportunidad." }
+    ],
+    estrategia: "Se queda quieto a plena vista, medio escondido, y cuando alguien parpadea o se da vuelta aparece a la espalda del más débil. Mientras alguien lo mire se arrastra despacio y casi no ataca: lo peor que puede hacer un grupo es dejar de vigilarlo. Con alguien siempre atento y la formación pegada, es manejable. Sin eso, va picando de uno en uno."
+  },
+  {
+    id: "gigante-velludo",
+    imagen: "assets/enemigos/gigante-velludo.png",
+    nombre: "Gruvok, el Gigante Velludo",
+    rol: "Bruto · Emboscador",
+    tipo: "Gigante",
+    raza: "Gigante Grande · Neutral",
+    nivel: 5,
+    pv: 200,
+    ca: 15,
+    velocidad: "40 pies",
+    stats: { fue: 23, des: 10, con: 20, int: 6, sab: 12, car: 7 },
+    notas: [
+      "Salvaciones: FUE +9, CON +8. Percepción +4, pasiva 14. Competencia +3.",
+      "Resistencia al daño de frío. Vulnerabilidad al daño de fuego.",
+      "Ardiendo: recibe 1d6 de daño de fuego al inicio de cada uno de sus turnos hasta que use su acción para apagar el pelaje."
+    ],
+    habilidades: [
+      { nombre: "Doble Mirada (Pasiva)", descripcion: "Tiene un ojo en la cabeza y otro en el pecho: no puede ser sorprendido y tiene ventaja en Percepción. Punto ciego: los ataques contra él desde su espalda tienen ventaja y ignoran Ojo del Pecho." },
+      { nombre: "Pelaje Inflamable (Pasiva)", descripcion: "Al recibir daño de fuego queda Ardiendo (ver notas)." },
+      { nombre: "Emboscada del Pilar (Pasiva)", descripcion: "Si empieza el combate oculto tras una columna o una cobertura que lo tape por completo, la primera vez que golpea a una criatura que no lo ve inflige 3d8 de daño contundente adicional." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques de Puñetazo Aplastante." },
+      { nombre: "Puñetazo Aplastante (Acción)", descripcion: "+9 al impacto, alcance 10 pies, un objetivo. Daño: 3d8+6 contundente." },
+      { nombre: "Agarrón y Estrujar (Acción)", descripcion: "Un objetivo Grande o menor al que haya golpeado con Puñetazo Aplastante este turno hace una salvación de Fuerza CD 17 o queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 17). Al inicio de cada turno suyo, la criatura Agarrada recibe 2d8+6 de daño contundente." },
+      { nombre: "Lanzar Escombro (Acción)", descripcion: "+9 al impacto, alcance 40/80 pies, un objetivo. Daño: 3d10+6 contundente." },
+      { nombre: "Ojo del Pecho (Reacción, 1/ronda)", descripcion: "Cuando una criatura lo ataca a distancia o lo apunta con un conjuro desde su frente, ese ataque o conjuro tiene desventaja. No funciona contra lo que venga desde su espalda." }
+    ],
+    estrategia: "Se queda tras una columna o un muro y espera a que alguien pase para salirle a golpes. Agarra al más frágil y lo exprime, y lanza escombros a los que se quedan lejos. Si pierde la cobertura, se pone de espaldas a la pared para que nadie le llegue por detrás. Rodearlo y el fuego lo derrumban."
+  },
+  {
+    id: "tejedor",
+    imagen: "assets/enemigos/tejedor.png",
+    nombre: "Nesk, el Tejedor",
+    rol: "Control · Emboscador",
+    tipo: "Monstruosidad",
+    raza: "Arácnido esquelético Grande · Neutral malvado",
+    nivel: 5,
+    pv: 130,
+    ca: 16,
+    velocidad: "40 pies, trepar 40 pies",
+    stats: { fue: 14, des: 18, con: 16, int: 12, sab: 14, car: 8 },
+    notas: [
+      "Salvaciones: DES +7, CON +6. Habilidades: Sigilo +7, Percepción +5. Percepción pasiva 15. Competencia +3.",
+      "Visión ciega 30 pies, visión en la oscuridad 60 pies. Vulnerabilidad al daño contundente. Resistencia al daño necrótico y de veneno. Inmunidad a estados: envenenado.",
+      "Cara de calavera sobre un cuerpo de patas largas y hueso, envuelto en jirones negros."
+    ],
+    habilidades: [
+      { nombre: "Telaraña de Hueso (Pasiva)", descripcion: "En un radio de 20 pies a su alrededor hay hilos: ese terreno es difícil para sus enemigos y no para él, y las criaturas dentro tienen desventaja en las pruebas de Sigilo." },
+      { nombre: "Rostro de Calavera (Pasiva)", descripcion: "La primera vez en un combate que una criatura lo ve a 10 pies o menos, hace una salvación de Sabiduría CD 13 o queda Asustada hasta el final de su siguiente turno." },
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza un ataque de Mordida Hueca y uno de Hilo Sepulcral." },
+      { nombre: "Mordida Hueca (Acción)", descripcion: "+7 al impacto, alcance 5 pies, un objetivo. Daño: 2d8+4 perforante. El objetivo recibe además 2d6 de daño de veneno y hace una salvación de Constitución CD 14 o queda Envenenado hasta el final de su siguiente turno." },
+      { nombre: "Hilo Sepulcral (Acción)", descripcion: "+7 al impacto, alcance 40 pies, un objetivo. Daño: 1d8+4 contundente. El objetivo es arrastrado hasta 15 pies hacia él y queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 15). Solo puede sujetar a una criatura a la vez." },
+      { nombre: "Capullo (Acción adicional, Recarga 5-6)", descripcion: "Una criatura Agarrada por él hace una salvación de Fuerza CD 15 o queda Restringida en un capullo de hilo (escapa con una prueba de Fuerza CD 15 o destruyéndolo: CA 10, 15 PV). Mientras esté Restringida, recibe 2d6 de daño necrótico al inicio de cada turno de Nesk." },
+      { nombre: "Descolgarse (Reacción)", descripcion: "Cuando una criatura se mueve a 10 pies o menos de él mientras está colgado del techo o de una pared, baja hasta ella sin provocar ataques de oportunidad y hace un ataque de Mordida Hueca con ventaja." }
+    ],
+    estrategia: "Se cuelga del techo sobre el pasillo y deja que el grupo entre en sus hilos. Engancha al más ligero con el Hilo Sepulcral, lo arrastra y lo envuelve en un Capullo para quitarlo del combate; después baja con Descolgarse sobre quien intente rescatarlo. Los golpes contundentes le quiebran los huesos y el fuego le quema la red. Si pierde la ventaja del techo, se retira trepando."
   },
   {
     id: "nurse-harrow",

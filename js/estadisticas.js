@@ -30,6 +30,7 @@ function statCardHTML(s) {
     <article class="stat-card ${elegida ? "is-selected" : ""}" data-tipo="${htmlSeguro(s.tipo)}" data-stat-id="${htmlSeguro(s.id)}">
       <button type="button" class="stat-card-select" data-select-stat title="Ver junto con otras fichas">${elegida ? "✓ Seleccionada" : "+ Comparar"}</button>
       <div class="stat-card-heading">
+        ${s.imagen ? `<img class="stat-card-foto" src="${htmlSeguro(s.imagen)}" alt="" width="56" height="56" loading="lazy">` : ""}
         <h3>${htmlSeguro(s.nombre)}</h3>
         <p class="stat-card-role">${htmlSeguro(s.rol)}</p>
         ${s.raza ? `<p class="stat-card-race">${htmlSeguro(s.raza)}</p>` : ""}
@@ -133,6 +134,7 @@ function statModalHTML(s, { editable = false } = {}) {
 
   return `
     ${editarHTML}
+    ${s.imagen ? `<img class="stat-foto" src="${htmlSeguro(s.imagen)}" alt="Imagen de ${htmlSeguro(s.nombre)}" width="160" height="160">` : ""}
     <div class="entry-type">Ficha de Combate</div>
     <h2>${htmlSeguro(s.nombre)}</h2>
     <p class="modal-meta">${htmlSeguro([s.rol, s.raza].filter(Boolean).join(" · "))}</p>
