@@ -3930,3 +3930,18 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-bt-der h3 small { color: var(--muted); font-weight: normal; }
 .admin-bt-base { white-space: pre-wrap; padding: 8px; background: rgba(0, 0, 0, .3); font-size: .82rem; }
 @media (max-width: 800px) { .admin-bt { grid-template-columns: 1fr; } }
+
+/* Admin: regalos y eventos */
+.admin-regalos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+.admin-regalos-caja { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 12px; border: 1px solid var(--border); background: var(--panel); }
+.admin-regalos-ancha { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.admin-regalos-ancha legend { grid-column: 1 / -1; }
+.admin-regalos-caja label { display: flex; flex-direction: column; gap: 3px; font-size: .86rem; color: var(--muted); }
+.admin-regalos-caja input, .admin-regalos-caja select { padding: 6px 8px; font: inherit; color: var(--text); background: rgba(0, 0, 0, .35); border: 1px solid var(--border); }
+.admin-regalos-caja .admin-cuenta-accion { align-self: start; }
+
+/* Admin: calendario del Hipódromo */
+.admin-cal-tabla { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.admin-cal-tabla th, .admin-cal-tabla td { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.admin-cal-tabla .admin-cal-dia { background: rgba(0, 0, 0, .3); text-transform: capitalize; color: var(--accent); }
+.admin-cal-pasada { opacity: .55; }

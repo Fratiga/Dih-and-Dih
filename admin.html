@@ -14,14 +14,14 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270225">
-  <link rel="stylesheet" href="css/musica-paginas.css?v=20270225">
-  <link rel="stylesheet" href="css/bufon-lab.css?v=20270225">
-  <link rel="stylesheet" href="css/taberna.css?v=20270225">
-  <link rel="stylesheet" href="css/cartas.css?v=20270225">
+  <link rel="stylesheet" href="css/style.css?v=20270226">
+  <link rel="stylesheet" href="css/musica-paginas.css?v=20270226">
+  <link rel="stylesheet" href="css/bufon-lab.css?v=20270226">
+  <link rel="stylesheet" href="css/taberna.css?v=20270226">
+  <link rel="stylesheet" href="css/cartas.css?v=20270226">
 </head>
 <body>
-  <script src="js/carga.js?v=20270225"></script>
+  <script src="js/carga.js?v=20270226"></script>
   <header class="site-header">
    <div class="site-header-inner">
     <div class="header-left">
@@ -144,6 +144,8 @@
         <button type="button" class="admin-tab" data-tab="balance">Balance</button>
         <button type="button" class="admin-tab" data-tab="rivales">Rivales</button>
         <button type="button" class="admin-tab" data-tab="bufontextos">Bufón: textos</button>
+        <button type="button" class="admin-tab" data-tab="regalos">Regalos y eventos</button>
+        <button type="button" class="admin-tab" data-tab="calendario">Calendario</button>
         <button type="button" class="admin-tab" data-tab="envivo">En vivo <span id="adminEnVivoCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="mensajes">Mensajes</button>
         <button type="button" class="admin-tab" data-tab="archivos">Archivos</button>
@@ -238,6 +240,45 @@
           <div class="admin-bt-izq"><input type="search" id="adminBufonTextosBuscar" placeholder="Buscar por id o por lo que dice..." aria-label="Buscar un texto del Bufón"><ul id="adminBufonTextosLista" class="admin-bt-lista"></ul></div>
           <div id="adminBufonTextosEditor" class="admin-bt-der"><p class="admin-vacio">Abre esta pestaña para cargar los textos.</p></div>
         </div>
+      </section>
+
+      <section id="adminPanelRegalos" class="admin-panel">
+        <p class="admin-bufon-banner">Regala cartas o monedas del Hipódromo a una persona, a un Side o a todos, y crea eventos con fecha de inicio y de fin que salen como aviso en la taberna. Un evento puede llevar un regalo que cada jugador reclama una sola vez. Las cartas respetan los límites de la economía: a quien no le quepa se le salta y aquí te digo quién y por qué.</p>
+        <p id="adminRegalosEstado" class="admin-cartas-estado" role="status"></p>
+        <datalist id="adminRegalosCartas"></datalist>
+        <div class="admin-regalos">
+          <fieldset class="admin-regalos-caja"><legend>Regalar una carta</legend>
+            <label>Carta <input type="text" id="adminRegaloCarta" list="adminRegalosCartas" placeholder="Escribe el nombre..." autocomplete="off"></label>
+            <label>Para <select id="adminRegaloCartaPara"></select></label>
+            <button type="button" id="adminRegaloCartaBoton" class="admin-cuenta-accion">Regalar carta</button>
+            <div id="adminRegaloCartaResultado"></div>
+          </fieldset>
+          <fieldset class="admin-regalos-caja"><legend>Regalar monedas del Hipódromo</legend>
+            <label>Monedas <input type="number" id="adminRegaloMonto" min="1" max="100000" step="1" value="50"></label>
+            <label>Para <select id="adminRegaloMonedasPara"></select></label>
+            <label>Motivo (opcional) <input type="text" id="adminRegaloMotivo" maxlength="80"></label>
+            <button type="button" id="adminRegaloMonedasBoton" class="admin-cuenta-accion">Regalar monedas</button>
+          </fieldset>
+          <fieldset class="admin-regalos-caja admin-regalos-ancha"><legend>Nuevo evento</legend>
+            <label>Título <input type="text" id="adminEventoTitulo" maxlength="80"></label>
+            <label>Texto (al pasar el mouse) <input type="text" id="adminEventoTexto" maxlength="300"></label>
+            <label>Enlace <select id="adminEventoPagina"></select></label>
+            <label>Para <select id="adminEventoSide"><option value="">Todos</option><option value="A">Solo Side A</option><option value="B">Solo Side B</option></select></label>
+            <label>Desde <input type="datetime-local" id="adminEventoDesde"></label>
+            <label>Hasta <input type="datetime-local" id="adminEventoHasta"></label>
+            <label>Regalo: carta (opcional) <input type="text" id="adminEventoCarta" list="adminRegalosCartas" autocomplete="off"></label>
+            <label>Regalo: monedas (opcional) <input type="number" id="adminEventoMonedas" min="1" max="100000" step="1"></label>
+            <button type="button" id="adminEventoCrear" class="admin-cuenta-accion">Crear evento</button>
+          </fieldset>
+        </div>
+        <h3>Eventos</h3>
+        <div id="adminEventosLista"><p class="admin-vacio">Abre esta pestaña para cargar los eventos.</p></div>
+      </section>
+
+      <section id="adminPanelCalendario" class="admin-panel">
+        <p class="admin-bufon-banner">Las próximas carreras del Hipódromo, solo para mirar. El motor genera y corre las carreras por su cuenta (una por hora); no se editan a mano porque podría dejar apuestas y premios sin cuadrar. Las horas salen en tu zona horaria.</p>
+        <p id="adminCalendarioEstado" class="admin-cartas-estado" role="status"></p>
+        <div id="adminCalendarioLista"></div>
       </section>
 
       <section id="adminPanelRivales" class="admin-panel">
@@ -374,60 +415,62 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="js/dialogos.js?v=20270225"></script>
-  <script src="data/entries.js?v=20270225"></script>
-  <script src="data/personajes.js?v=20270225"></script>
-  <script src="data/lugares.js?v=20270225"></script>
-  <script src="data/facciones.js?v=20270225"></script>
-  <script src="data/pergaminos.js?v=20270225"></script>
-  <script src="data/armas.js?v=20270225"></script>
-  <script src="data/objetos.js?v=20270225"></script>
-  <script src="data/bestiario.js?v=20270225"></script>
-  <script src="data/razas.js?v=20270225"></script>
-  <script src="data/religiones.js?v=20270225"></script>
-  <script src="data/cronologia-a.js?v=20270225"></script>
-  <script src="data/cronologia-b.js?v=20270225"></script>
-  <script src="data/cronologia-arcos.js?v=20270225"></script>
-  <script src="data/reglas.js?v=20270225"></script>
-  <script src="data/economia.js?v=20270225"></script>
-  <script src="data/novedades.js?v=20270225"></script>
-  <script src="data/mapa.js?v=20270225"></script>
-  <script src="js/contenido-servidor.js?v=20270225"></script>
-  <script src="data/rotacion.js?v=20270225"></script>
-  <script src="data/musica.js?v=20270225"></script>
-  <script src="js/musica-nube.js?v=20270225"></script>
-  <script src="js/common.js?v=20270225"></script>
-  <script src="js/temas.js?v=20270225"></script>
-  <script src="js/taberna.js?v=20270225"></script>
-  <script src="js/player.js?v=20270225"></script>
-  <script src="js/modal.js?v=20270225"></script>
-  <script src="data/jumpscare.js?v=20270225"></script>
-  <script src="data/contrasenas.js?v=20270225"></script>
-  <script src="data/fanarts.js?v=20270225"></script>
-  <script src="js/cartas-datos.js?v=20270225"></script>
-  <script src="js/cartas-cliente.js?v=20270225"></script>
-  <script src="js/fichas-supabase.js?v=20270225"></script>
-  <script src="js/interruptores.js?v=20270225"></script>
-  <script src="js/presencia.js?v=20270225"></script>
-  <script src="js/peticiones-supabase.js?v=20270225"></script>
-  <script src="js/bufon-supabase.js?v=20270225"></script>
-  <script src="js/muerte-subita-supabase.js?v=20270225"></script>
-  <script src="js/fanarts-supabase.js?v=20270225"></script>
-  <script src="js/lado.js?v=20270225"></script>
-  <script src="js/slappy.js?v=20270225"></script>
-  <script src="js/busqueda-global.js?v=20270225"></script>
-  <script src="js/header-marquee.js?v=20270225"></script>
-  <script src="data/bufon-ciclos-lista.js?v=20270225"></script>
-  <script src="js/admin.js?v=20270225"></script>
-  <script src="js/admin-contenido.js?v=20270225"></script>
-  <script src="js/musica-fondos.js?v=20270225"></script>
-  <script src="js/admin-balance.js?v=20270225"></script>
-  <script src="js/admin-rivales.js?v=20270225"></script>
-  <script src="js/admin-bufon-textos.js?v=20270225"></script>
-  <script src="js/admin-herramientas-2.js?v=20270225"></script>
-  <script src="js/admin-herramientas.js?v=20270225"></script>
-  <script src="js/admin-economia.js?v=20270225"></script>
-  <script src="js/bufon-lab-motor.js?v=20270225"></script>
-  <script src="js/bufon-lab.js?v=20270225"></script>
+  <script src="js/dialogos.js?v=20270226"></script>
+  <script src="data/entries.js?v=20270226"></script>
+  <script src="data/personajes.js?v=20270226"></script>
+  <script src="data/lugares.js?v=20270226"></script>
+  <script src="data/facciones.js?v=20270226"></script>
+  <script src="data/pergaminos.js?v=20270226"></script>
+  <script src="data/armas.js?v=20270226"></script>
+  <script src="data/objetos.js?v=20270226"></script>
+  <script src="data/bestiario.js?v=20270226"></script>
+  <script src="data/razas.js?v=20270226"></script>
+  <script src="data/religiones.js?v=20270226"></script>
+  <script src="data/cronologia-a.js?v=20270226"></script>
+  <script src="data/cronologia-b.js?v=20270226"></script>
+  <script src="data/cronologia-arcos.js?v=20270226"></script>
+  <script src="data/reglas.js?v=20270226"></script>
+  <script src="data/economia.js?v=20270226"></script>
+  <script src="data/novedades.js?v=20270226"></script>
+  <script src="data/mapa.js?v=20270226"></script>
+  <script src="js/contenido-servidor.js?v=20270226"></script>
+  <script src="data/rotacion.js?v=20270226"></script>
+  <script src="data/musica.js?v=20270226"></script>
+  <script src="js/musica-nube.js?v=20270226"></script>
+  <script src="js/common.js?v=20270226"></script>
+  <script src="js/temas.js?v=20270226"></script>
+  <script src="js/taberna.js?v=20270226"></script>
+  <script src="js/player.js?v=20270226"></script>
+  <script src="js/modal.js?v=20270226"></script>
+  <script src="data/jumpscare.js?v=20270226"></script>
+  <script src="data/contrasenas.js?v=20270226"></script>
+  <script src="data/fanarts.js?v=20270226"></script>
+  <script src="js/cartas-datos.js?v=20270226"></script>
+  <script src="js/cartas-cliente.js?v=20270226"></script>
+  <script src="js/fichas-supabase.js?v=20270226"></script>
+  <script src="js/interruptores.js?v=20270226"></script>
+  <script src="js/presencia.js?v=20270226"></script>
+  <script src="js/peticiones-supabase.js?v=20270226"></script>
+  <script src="js/bufon-supabase.js?v=20270226"></script>
+  <script src="js/muerte-subita-supabase.js?v=20270226"></script>
+  <script src="js/fanarts-supabase.js?v=20270226"></script>
+  <script src="js/lado.js?v=20270226"></script>
+  <script src="js/slappy.js?v=20270226"></script>
+  <script src="js/busqueda-global.js?v=20270226"></script>
+  <script src="js/header-marquee.js?v=20270226"></script>
+  <script src="data/bufon-ciclos-lista.js?v=20270226"></script>
+  <script src="js/admin.js?v=20270226"></script>
+  <script src="js/admin-contenido.js?v=20270226"></script>
+  <script src="js/musica-fondos.js?v=20270226"></script>
+  <script src="js/admin-balance.js?v=20270226"></script>
+  <script src="js/admin-rivales.js?v=20270226"></script>
+  <script src="js/admin-bufon-textos.js?v=20270226"></script>
+  <script src="js/admin-regalos.js?v=20270226"></script>
+  <script src="js/admin-calendario.js?v=20270226"></script>
+  <script src="js/admin-herramientas-2.js?v=20270226"></script>
+  <script src="js/admin-herramientas.js?v=20270226"></script>
+  <script src="js/admin-economia.js?v=20270226"></script>
+  <script src="js/bufon-lab-motor.js?v=20270226"></script>
+  <script src="js/bufon-lab.js?v=20270226"></script>
 </body>
 </html>

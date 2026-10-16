@@ -340,6 +340,8 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 .lb-avisos-etq { padding: 4px 8px; background: var(--lb-titulo-a); color: #fff; font: 10px/1.4 "Press Start 2P", monospace; text-shadow: 2px 2px 0 #000; }
 .lb-aviso-chip { padding: 3px 10px; border: 2px solid var(--lb-borde); background: #ffffff10; color: var(--lb-texto) !important; text-decoration: none; font-size: 21px; }
 .lb-aviso-chip:hover { background: #ffffff26; }
+button.lb-aviso-chip { font-family: inherit; cursor: pointer; }
+button.lb-aviso-chip:disabled { opacity: .8; cursor: default; }
 .lb-aviso-chip-fuerte { border-color: var(--lb-acento); color: #ffe9a8 !important; }
 
 /* Guía de la taberna (js/guia-inicial.js) */

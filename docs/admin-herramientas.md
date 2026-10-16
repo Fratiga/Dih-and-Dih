@@ -24,7 +24,8 @@ Reglas comunes:
 | 13 | Anuncios y novedades del lobby | 2 | Hecho (colección «Novedades del lobby») |
 | 6, 7 | Balance y prueba de cartas (pestaña Balance: partidas reales y simulador) | 3 | Hecha, sin SQL. El simulador (`js/cartas-simulador.js`) usa el motor real |
 | 8 | Dificultad de los rivales (pestaña Rivales: Ajedrez, Arquería y Duelo) | 3 | Hecha. SQL: `docs/admin/rivales.sql` |
-| 9, 10 | Regalos y eventos, calendario del Hipódromo | 3 | Pendiente (coordinar con las sesiones de Economía e Hipódromo) |
+| 9 | Regalos y eventos (pestaña Regalos y eventos) | 3 | Hecho. SQL: `docs/admin/regalos_eventos.sql` |
+| 10 | Calendario del Hipódromo (pestaña Calendario) | 3 | Hecho como vista de solo lectura, sin SQL. No se edita a mano: el motor genera y corre las carreras, y cambiarlas puede descuadrar apuestas y premios |
 | 12 | Interruptores del sitio | 4 | Hecho. SQL: `docs/admin/herramientas_2.sql` |
 | 11 | Editor de diálogos del Bufón (pestaña Bufón: textos) | 4 | Hecho. SQL: `docs/admin/bufon_textos.sql` |
 | 14 | Actividad en vivo (pestaña En vivo) | 4 | Hecha (presencia, sin SQL) |
@@ -92,3 +93,16 @@ Las victorias ya registradas contra un rival siguen contando aunque lo hagas má
 SQL: `docs/admin/bufon_textos.sql` (se prueba con `sh docs/admin/probar_bufon_textos.sh`). Pestaña **Bufón: textos**: carga el diálogo de siempre (los mismos `data/bufon-*.js` de `secreto.html`) en un marco invisible y enseña sus nodos y los botones de elección; lo que guardes va a `bufon_textos`
 (`n:<nodo>` = lista de líneas, `o:<elección>:<opción>` = texto del botón) y `secreto.html` lo pone encima al cargar (`js/bufon-textos.js`). Solo cambia texto, no ramas ni condiciones. Los nodos cuyas líneas calcula una función no se pueden editar. `node docs/pruebas-web/bufon_textos.js` comprueba que el diálogo real se puede recorrer y que los textos se aplican sin romperlo.
 Mantén la voz de siempre al escribir (ver la memoria «Bufón voice rules»).
+
+## Regalos y eventos (pestaña Regalos y eventos)
+
+Archivos: `docs/admin/regalos_eventos.sql`, `js/admin-regalos.js`, y los avisos de la taberna en `js/avisos-taberna.js`. Pruebas: `docs/pruebas/t_regalos.sh` (después de `cargar_local.sh todo`).
+
+- **Regalar una carta**: a una persona, a un Side o a todos. Pasa por `cartas_i_emitir` (límite global, límite por jugador, reserva, libro de movimientos). A quien no le cabe se le salta y el panel lista quién y por qué.
+- **Regalar monedas del Hipódromo**: mismo reparto; queda en el libro de la billetera como «Regalo del admin».
+- **Eventos**: título, texto, enlace a una página, Side, fecha de inicio y fin (máximo 120 días), y un regalo opcional (carta y/o monedas). En la taberna sale como chip en la franja de avisos mientras esté en marcha. Si lleva regalo, el chip es un botón «reclama tu regalo» que cada jugador usa una vez (`evento_reclamar`). Si la carta no cabe, el reclamo se deshace y puede volver a intentar. Con reclamos ya hechos no se puede cambiar el regalo (crea otro evento).
+- Quitar un evento borra también sus reclamos.
+
+## Calendario del Hipódromo (pestaña Calendario)
+
+Solo lectura: las próximas 48 carreras de `hipodromo_programa` (hora local, grado, distancia, pista, bolsa y clima más probable). No se edita a propósito.
