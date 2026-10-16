@@ -1,61 +1,163 @@
-/* Corrales (js/corrales.js): un hábitat grande a la vista, una franja con los demás y el panel de cría debajo.
-   Los estados (hb-e-*) son los mismos de siempre; las cajas, listas y el panel de cría vienen de habitacion.css. */
+/* Corrales (js/corrales.js): el corral activo es el foco. Escenario grande sin texto encima, ficha del corral debajo y, tras ella, lo que se puede hacer.
+   Los colores de estado (hb-e-*) y las píldoras (hb-pildora) vienen de habitacion.css. */
 body.co .lb-pagina { padding-bottom: 60px; }
+.co-cuerpo { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 
-/* Vista central: el hábitat elegido */
-.co-vista { position: relative; border: 4px ridge var(--lb-borde); background: #000; box-shadow: 6px 6px 0 #000; overflow: hidden; }
-.co-escena { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; image-rendering: pixelated; }
-.co-rotulo {
-  position: absolute; left: 12px; bottom: 12px; max-width: min(420px, calc(100% - 24px)); padding: 10px 12px;
-  border: 3px ridge var(--lb-borde); background: color-mix(in srgb, var(--lb-caja) 90%, transparent); box-shadow: 4px 4px 0 #000;
+/* Selector de hábitats: seis miniaturas del propio escenario */
+.co-tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.co-tab {
+  position: relative; display: flex; flex-direction: column; gap: 2px; padding: 4px 4px 6px; text-align: left; cursor: pointer; color: var(--lb-texto);
+  font: inherit; border: 3px outset var(--lb-borde); background: var(--lb-caja); transition: transform .12s steps(2);
 }
-.co-rotulo h2 { margin: 0 0 4px; font: 13px/1.5 "Press Start 2P", monospace; color: #fff; text-shadow: 2px 2px 0 #000; }
-.co-desc { margin: 0 0 6px; color: var(--lb-tenue); font-size: 18px; line-height: 1.15; }
-.co-estado { margin: 0 0 6px; min-height: 1.2em; }
-.co-barra-caja { height: 10px; background: #0d0816; border: 2px solid var(--lb-borde); }
-.co-barra-caja > i { display: block; height: 100%; width: 0; background: #5fa8e8; }
-.co-barra-caja.hb-listo > i { background: #6fe08a; }
-.co-barra-caja.hb-descanso > i { background: #a384e6; }
-
-/* Los bichos solo se ven con una cría en marcha */
-.hb-bichos { opacity: 0; }
-.hb-e-cria .hb-bichos, .hb-e-listo .hb-bichos { opacity: 1; }
-.hb-bicho { fill: #f6e7c2; }
-.hb-e-cria .hb-bicho, .hb-e-listo .hb-bicho { animation: hbSalto 1.4s steps(2) infinite; }
-.hb-bicho.hb-b2 { animation-delay: .7s !important; }
-@keyframes hbSalto { 50% { transform: translateY(-3px); } }
-.co-escena.hb-e-vacio { filter: saturate(.6) brightness(.85); }
-
-/* Franja de hábitats: acceso visual a cada uno sin recorrer nada */
-.co-franja { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
-.co-tile {
-  position: relative; display: flex; flex-direction: column; gap: 3px; padding: 4px 4px 6px; text-align: left; cursor: pointer; color: var(--lb-texto);
-  font: inherit; border: 3px outset var(--lb-borde); background: var(--lb-caja);
-}
-.co-tile:hover { filter: brightness(1.15); }
-.co-tile:focus-visible { outline: 3px solid var(--lb-acento); outline-offset: 2px; }
-.co-tile.co-elegido { border-style: inset; border-color: var(--lb-acento); background: color-mix(in srgb, var(--lb-acento) 14%, var(--lb-caja)); }
-.co-tile svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
-.co-tile.hb-e-vacio svg { filter: saturate(.55) brightness(.85); }
-.co-tile b { font: 7px/1.5 "Press Start 2P", monospace; font-weight: normal; color: #fff3d0; text-shadow: 1px 1px 0 #000; overflow-wrap: break-word; }
-.co-tile small { color: var(--lb-tenue); font-size: 16px; line-height: 1.05; }
-.co-lampara { position: absolute; top: 8px; left: 8px; width: 12px; height: 12px; background: #5b5568; border: 2px solid #1c1420; }
+.co-tab:hover { filter: brightness(1.15); transform: translateY(-2px); }
+.co-tab:focus-visible { outline: 3px solid var(--lb-acento); outline-offset: 2px; }
+.co-tab.co-elegido { border-style: inset; border-color: var(--lb-acento); background: color-mix(in srgb, var(--lb-acento) 16%, var(--lb-caja)); transform: none; }
+.co-mini { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; image-rendering: pixelated; pointer-events: none; }
+.co-mini *, .co-mini { animation: none !important; }
+.co-tab.hb-e-vacio .co-mini { filter: saturate(.6) brightness(.85); }
+.co-tab b { font: 7px/1.5 "Press Start 2P", monospace; font-weight: normal; color: #fff3d0; text-shadow: 1px 1px 0 #000; overflow-wrap: break-word; }
+.co-tab small { color: var(--lb-tenue); font-size: 16px; line-height: 1.05; }
+.co-lampara { position: absolute; top: 9px; left: 9px; width: 12px; height: 12px; background: #5b5568; border: 2px solid #1c1420; }
 .hb-e-disponible .co-lampara { background: #e8b84a; animation: hbPulso 1.2s steps(2) infinite; }
 .hb-e-cria .co-lampara { background: #5fa8e8; }
 .hb-e-listo .co-lampara { background: #6fe08a; animation: hbPulso .6s steps(2) infinite; }
 .hb-e-descanso .co-lampara { background: #a384e6; }
-.co-mini { display: block; height: 5px; background: #0d0816; }
-.co-mini > i { display: block; height: 100%; background: #5fa8e8; }
-.hb-e-listo .co-mini > i { background: #6fe08a; }
-.hb-e-descanso .co-mini > i { background: #a384e6; }
+.co-hilo { display: block; height: 4px; background: #0d0816; }
+.co-hilo > i { display: block; height: 100%; background: #5fa8e8; }
+.hb-e-listo .co-hilo > i { background: #6fe08a; }
+.hb-e-descanso .co-hilo > i { background: #a384e6; }
 
-.co-panel { margin-top: 0; }
-.co-atajos { grid-template-columns: 1fr; width: 100%; }
-.co-atajos .lb-boton { width: 100%; box-sizing: border-box; text-align: center; text-decoration: none; }
+/* El escenario: solo dibujo */
+.co-vista { position: relative; border: 4px ridge var(--lb-borde); background: #000; box-shadow: 6px 6px 0 #000; overflow: hidden; }
+.co-escena { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; image-rendering: pixelated; }
+.co-escena.co-entra { animation: coEntra .45s steps(4) both; }
+@keyframes coEntra { from { opacity: 0; filter: brightness(2); } to { opacity: 1; filter: none; } }
+
+/* Las criaturas en sus sitios */
+.co-sombra { fill: #000; opacity: .3; }
+.co-bicho image { image-rendering: crisp-edges; image-rendering: pixelated; }
+.co-bicho-in { animation: coRespira 2.4s steps(2) infinite; animation-delay: var(--d, 0s); }
+@keyframes coRespira { 50% { transform: translateY(-3px); } }
+.co-lista image { filter: drop-shadow(0 0 5px #ffd84a); }
+.co-no image { filter: brightness(0) contrast(.3); opacity: .42; }
+.co-no .co-bicho-in { animation: none; }
+.co-duerme .co-bicho-in { animation-duration: 4.5s; }
+.co-duerme image { filter: saturate(.55) brightness(.8); }
+.co-pareja .co-bicho-in { animation-duration: 1.6s; }
+.co-cria .co-bicho-in { animation: coSalta .9s steps(2) infinite; }
+@keyframes coSalta { 50% { transform: translateY(-12px); } }
+.co-corazon { animation: coCorazon 2.4s steps(6) infinite; }
+@keyframes coCorazon { from { transform: translateY(24px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-36px); opacity: 0; } }
+.co-huevo { animation: coHuevo 1.6s steps(2) infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes coHuevo { 50% { transform: scale(1.06) rotate(2deg); } }
+.co-chispa { animation: coChispa 1.2s steps(2) infinite; }
+@keyframes coChispa { 50% { opacity: .25; } }
+.co-z { font: 18px "Press Start 2P", monospace; fill: #cfe3ff; paint-order: stroke; stroke: #123; stroke-width: 3px; animation: coZ 3s steps(6) infinite; }
+.co-z2 { animation-delay: -1s; } .co-z3 { animation-delay: -2s; }
+@keyframes coZ { from { transform: translate(0, 10px); opacity: 0; } 40% { opacity: 1; } to { transform: translate(8px, -20px); opacity: 0; } }
+
+/* El ambiente de cada bioma */
+.co-hoja { animation: coHoja 10s linear infinite; }
+@keyframes coHoja { from { transform: translate(var(--x, 100px), -20px) rotate(0); } 50% { transform: translate(calc(var(--x, 100px) + 40px), 260px) rotate(180deg); } to { transform: translate(calc(var(--x, 100px) - 20px), 520px) rotate(360deg); } }
+.co-pluma { animation: coPluma 9s linear infinite; }
+@keyframes coPluma { from { transform: translate(var(--x, 100px), 40px); } 50% { transform: translate(calc(var(--x, 100px) + 50px), 250px) rotate(20deg); } to { transform: translate(calc(var(--x, 100px) - 20px), 460px); } }
+.co-vuelo { animation: coVuelo 18s linear infinite; transform: translate(-60px, var(--y, 80px)); }
+@keyframes coVuelo { from { transform: translate(-60px, var(--y, 80px)); } 50% { transform: translate(480px, calc(var(--y, 80px) + 24px)); } to { transform: translate(1020px, var(--y, 80px)); } }
+.co-aleteo { transform-box: fill-box; transform-origin: 50% 100%; animation: coAleteo .5s steps(2) infinite; }
+@keyframes coAleteo { 50% { transform: scaleY(.45); } }
+.co-luciernaga { opacity: 0; animation: coLuciernaga 4s steps(4) infinite; }
+html[data-cielo^="noche"] .co-luciernaga, html[data-cielo^="atardecer"] .co-luciernaga { opacity: 1; }
+@keyframes coLuciernaga { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(14px, -10px); } 50% { transform: translate(4px, -22px); } 75% { transform: translate(-12px, -8px); } }
+.co-rayo { opacity: 0; transition: opacity 1s; }
+html[data-cielo^="dia"] .co-rayo, html[data-cielo^="amanecer"] .co-rayo { opacity: .14; animation: coRayo 7s steps(7) infinite alternate; }
+@keyframes coRayo { from { opacity: .06; } to { opacity: .18; } }
+.co-junco { transform-box: fill-box; transform-origin: 50% 100%; animation: coJunco 3s steps(3) infinite alternate; }
+@keyframes coJunco { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+.co-ola { transform-box: fill-box; transform-origin: 50% 50%; animation: coOla 3.4s steps(4) infinite; }
+@keyframes coOla { from { transform: scale(.4); opacity: .7; } to { transform: scale(1.5); opacity: 0; } }
+.co-burbuja { animation: coBurbuja 5s linear infinite; }
+@keyframes coBurbuja { from { transform: translate(var(--x, 200px), 520px); opacity: .9; } to { transform: translate(calc(var(--x, 200px) + 14px), 330px); opacity: 0; } }
+.co-niebla { animation: coNiebla 26s linear infinite alternate; }
+@keyframes coNiebla { from { transform: translateX(-120px); } to { transform: translateX(0); } }
+.co-nieve { animation: coNieve 8s linear infinite; }
+@keyframes coNieve { from { transform: translate(var(--x, 100px), -10px); } 50% { transform: translate(calc(var(--x, 100px) + 16px), 260px); } to { transform: translate(calc(var(--x, 100px) - 10px), 540px); } }
+.co-brillo { animation: coBrillo 2.2s steps(2) infinite; }
+@keyframes coBrillo { 50% { opacity: .15; } }
+.co-ascua { animation: coAscua 6s linear infinite; }
+@keyframes coAscua { from { transform: translate(var(--x, 100px), 500px); opacity: 1; } to { transform: translate(calc(var(--x, 100px) + 30px), 40px); opacity: 0; } }
+.co-lava { animation: coLava 9s linear infinite; }
+@keyframes coLava { from { transform: translateX(-140px); } to { transform: translateX(1000px); } }
+.co-brasa { animation: coBrasa 2.6s steps(3) infinite alternate; }
+@keyframes coBrasa { from { opacity: .55; } to { opacity: 1; } }
+.co-seta { animation: coSeta 3s steps(3) infinite alternate; }
+@keyframes coSeta { from { opacity: .65; } to { opacity: 1; } }
+.co-mota { animation: coMota 12s linear infinite; opacity: .6; }
+@keyframes coMota { from { transform: translate(var(--x, 100px), 420px); opacity: 0; } 30% { opacity: .7; } to { transform: translate(calc(var(--x, 100px) + 30px), 120px); opacity: 0; } }
+.co-gota { animation: coGota 2.4s linear infinite; }
+@keyframes coGota { from { transform: translateY(0); opacity: 1; } to { transform: translateY(90px); opacity: 0; } }
+
+/* Ficha del corral, fuera del dibujo */
+.co-barra {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 18px; align-items: end; padding: 10px 14px 12px;
+  border: 3px ridge var(--lb-borde); background: var(--lb-caja); box-shadow: 4px 4px 0 #000;
+}
+.co-barra-id h2 { margin: 0 0 4px; font: 14px/1.5 "Press Start 2P", monospace; color: #fff; text-shadow: 2px 2px 0 #000; }
+.co-barra-id p { margin: 0; color: var(--lb-tenue); font-size: 19px; line-height: 1.15; }
+.co-barra-estado { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: 4px 10px; text-align: right; }
+.co-barra-estado b { font-weight: normal; color: var(--lb-acento); font-size: 22px; }
+.co-barra-estado small { flex-basis: 100%; color: var(--lb-tenue); font-size: 17px; }
+.co-barra-prog { grid-column: 1 / -1; height: 8px; background: #0d0816; border: 2px solid var(--lb-borde); }
+.co-barra-prog > i { display: block; height: 100%; width: 0; background: #5fa8e8; }
+.co-barra-prog.hb-e-listo > i { background: #6fe08a; }
+.co-barra-prog.hb-e-descanso > i { background: #a384e6; }
+.co-barra-prog.hb-e-vacio, .co-barra-prog.hb-e-disponible { opacity: .35; }
+
+/* Panel: lo que se puede hacer ahora */
+.co-panel { padding: 12px 14px 16px; border: 3px ridge var(--lb-borde); background: var(--lb-caja); box-shadow: 4px 4px 0 #000; }
+.co-panel h3 { margin: 0 0 2px; font: 11px/1.5 "Press Start 2P", monospace; color: var(--lb-acento); }
+.co-regla, .co-nota { margin: 0 0 10px; color: var(--lb-tenue); font-size: 18px; }
+.co-nota-descanso { color: #c9b3ff; }
+.co-token { width: 64px; height: 64px; flex: none; image-rendering: crisp-edges; image-rendering: pixelated; object-fit: contain; background: #0d0816; border: 2px solid var(--lb-borde); }
+.co-especies { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.co-especie { display: flex; align-items: center; gap: 12px; padding: 8px 10px; background: rgba(255, 255, 255, .05); border: 1px solid var(--lb-borde); }
+.co-especie.co-sin .co-token { filter: brightness(0) contrast(.3); opacity: .5; }
+.co-especie.co-no-puede:not(.co-sin) { opacity: .85; }
+.co-esp-info { flex: 1; min-width: 0; line-height: 1.15; }
+.co-esp-info b { font-weight: normal; color: #ffe9a8; font-size: 22px; }
+.co-esp-info small { color: var(--lb-tenue); font-size: 17px; }
+.co-esp-datos { margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 2px 12px; color: var(--lb-tenue); font-size: 17px; }
+.co-aviso-esp { margin: 2px 0 0; color: #ffb08a; font-size: 17px; }
+.co-falta { margin: 2px 0 0; color: var(--lb-tenue); font-size: 17px; }
+.co-copias { display: block; margin-top: 4px; font-size: 17px; color: var(--lb-tenue); }
+.co-copias select { font: inherit; padding: 2px 4px; color: var(--lb-texto); background: rgba(0, 0, 0, .35); border: 1px solid var(--lb-borde); color-scheme: dark; }
+.co-pareja { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.co-pareja b { font-weight: normal; color: #ffe9a8; font-size: 24px; }
+.co-pareja small { display: block; color: var(--lb-tenue); font-size: 17px; }
+.co-mas { color: var(--lb-acento); font: 16px "Press Start 2P", monospace; }
+.co-fases { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.co-fases li { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; background: rgba(255, 255, 255, .05); border: 1px solid var(--lb-borde); }
+.co-fases li > div { flex: 1; min-width: 0; }
+.co-fases b { display: block; font-weight: normal; font-size: 19px; line-height: 1.1; }
+.co-fases small { color: var(--lb-tenue); font-size: 16px; }
+.co-n { flex: none; width: 24px; height: 24px; display: grid; place-items: center; font: 10px "Press Start 2P", monospace; background: #0d0816; border: 2px solid var(--lb-borde); }
+.co-tira { display: block; height: 6px; margin-top: 4px; background: #0d0816; }
+.co-tira > i { display: block; height: 100%; background: #5fa8e8; }
+.co-fases li.co-hecha .co-n { background: #2d6b3d; border-color: #6fe08a; color: #fff; }
+.co-fases li.co-hecha .co-tira > i { background: #6fe08a; }
+.co-fases li.co-ahora { border-color: #5fa8e8; background: rgba(95, 168, 232, .12); }
+.co-fases li.co-ahora .co-n { background: #2b5f96; border-color: #5fa8e8; color: #fff; }
+.co-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.co-historial { margin: 0 2px; color: var(--lb-tenue); font-size: 18px; line-height: 1.3; }
+.co-historial b { font-weight: normal; color: var(--lb-acento); }
 
 @media (max-width: 760px) {
-  .co-franja { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .co-rotulo { position: static; max-width: none; margin: 0; border-width: 3px 0 0; box-shadow: none; }
-  .co-escena { aspect-ratio: 16 / 10; }
+  .co-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .co-barra { grid-template-columns: minmax(0, 1fr); }
+  .co-barra-estado { justify-content: flex-start; text-align: left; }
+  .co-fases { grid-template-columns: minmax(0, 1fr); }
+  .co-escena { aspect-ratio: 16 / 11; }
 }
-@media (prefers-reduced-motion: reduce) { .hb-bicho, .co-lampara { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .co-bicho-in, .co-cria .co-bicho-in, .co-corazon, .co-huevo, .co-chispa, .co-z, .co-hoja, .co-pluma, .co-vuelo, .co-aleteo, .co-luciernaga, .co-rayo, .co-junco, .co-ola, .co-burbuja, .co-niebla, .co-nieve,
+  .co-brillo, .co-ascua, .co-lava, .co-brasa, .co-seta, .co-mota, .co-gota, .co-escena.co-entra, .co-lampara { animation: none !important; }
+}

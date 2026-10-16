@@ -42,3 +42,14 @@ Las criaturas nuevas del catálogo no se pueden criar hasta configurarlas (apare
 
 - **Inicio (la taberna)**: lo compartido. Hay una puerta a «Mi habitación» y un puesto de Intercambios (los dos, de momento, solo para admin, igual que Triunfos).
 - **Mi habitación**: lo personal. Tu colección (con la estantería que se llena según cuánto del álbum tienes), tus mazos, tus corrales y tus crías. Las cajas laterales usan el mismo estilo que las del inicio.
+
+## La pantalla de Corrales (corrales.html)
+
+El foco es el corral activo. Arriba, seis miniaturas para cambiar de hábitat (con su lámpara de estado); debajo, un escenario grande con el bioma animado y las criaturas de ese
+hábitat en sus sitios (las que tienes, encendidas; las que aún no, en sombra; las listas para criar, con un halo); después, la ficha del corral (nombre, estado y reloj, fuera del
+dibujo) y el panel de lo que se puede hacer: elegir pareja para criar o, con una cría en curso, sus tres fases y el botón de recoger o sacar. Con una cría en curso el escenario
+enseña a la pareja junto al nido y lo que pasa en cada fase (corazones, huevo, cría). Los tres biomas de exterior (aviario, bosque, ciénaga) usan el cielo real (`js/cielo.js`).
+
+- Arte de los biomas, sitios y sitios de la pareja: `js/corrales-arte.js` (`SITIOS` y `PAREJA` por hábitat).
+- Cada criatura se dibuja con `assets/criaturas/<id de la carta>.png` (ver `assets/criaturas/README.md`); hoy son siluetas de prueba que se regeneran con `tools/criaturas_placeholder.py`.
+- La lógica y los datos son los de siempre (`js/corrales-lib.js`, `js/corrales.js`): no cambió ninguna operación.

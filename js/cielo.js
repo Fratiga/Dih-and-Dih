@@ -121,7 +121,7 @@ window.Cielo = (function () {
     const suelo = st.clima === "nieve" ? "#e9f4fa" : { dia: "#6fa86b", amanecer: "#5f8f66", atardecer: "#4f7a52", noche: "#1d3a30" }[st.fase];
     document.querySelectorAll(".cielo-suelo").forEach(e => { e.setAttribute("fill", suelo); e.setAttribute("opacity", st.clima === "lluvia" || st.clima === "tormenta" ? "0.8" : "1"); });
     const t = tinte(st);
-    ["lbTinte", "hbTinte", "salaTinte"].forEach(id => { const e = document.getElementById(id); if (e) { e.setAttribute("fill", t.color); e.setAttribute("opacity", String(t.op)); } });
+    ["lbTinte", "hbTinte", "salaTinte", "coTinte"].forEach(id => { const e = document.getElementById(id); if (e) { e.setAttribute("fill", t.color); e.setAttribute("opacity", String(t.op)); } });
     const haz = document.getElementById("lbHaz");
     if (haz) {
       const claro = st.clima === "despejado";

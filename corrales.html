@@ -8,30 +8,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20270212">
-  <link rel="stylesheet" href="css/taberna.css?v=20270212">
-  <link rel="stylesheet" href="css/lobby.css?v=20270212">
-  <link rel="stylesheet" href="css/cartas.css?v=20270212">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20270212">
-  <link rel="stylesheet" href="css/intercambios.css?v=20270212">
-  <link rel="stylesheet" href="css/habitacion.css?v=20270212">
-  <link rel="stylesheet" href="css/corrales.css?v=20270212">
-  <script src="js/dialogos.js?v=20270212"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270213">
+  <link rel="stylesheet" href="css/taberna.css?v=20270213">
+  <link rel="stylesheet" href="css/lobby.css?v=20270213">
+  <link rel="stylesheet" href="css/cartas.css?v=20270213">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270213">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270213">
+  <link rel="stylesheet" href="css/habitacion.css?v=20270213">
+  <link rel="stylesheet" href="css/cielo.css?v=20270213">
+  <link rel="stylesheet" href="css/corrales.css?v=20270213">
+  <script src="js/dialogos.js?v=20270213"></script>
 </head>
 <body class="lb co">
-  <script src="js/carga.js?v=20270212"></script>
+  <script src="js/carga.js?v=20270213"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
-  <div class="lb-pagina">
+  <div class="lb-pagina co-pagina">
     <header class="lb-cab">
       <div class="lb-cab-titulo">
         <p class="lb-eyebrow">★ EL PATIO ★</p>
         <h1>Corrales</h1>
-        <p class="lb-sub">Seis hábitats donde crían tus criaturas.</p>
+        <p class="lb-sub">Elige un hábitat y cría a tu pareja.</p>
       </div>
       <div class="lb-cab-widgets">
         <a class="lb-boton" href="index.html">← A la taberna</a>
         <a class="lb-boton" href="habitacion.html">Mi habitación</a>
+        <a class="lb-boton" href="cartas.html">Álbum</a>
         <div id="globalLadoWidget" class="global-lado-widget">
           <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
           <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
@@ -45,78 +47,43 @@
 
     <p id="coAviso" class="hb-aviso hidden" role="status"></p>
 
-    <div class="lb-cuerpo co-cuerpo" id="coCuerpo">
-      <!-- Lo tuyo y lo que pasa en los corrales -->
-      <aside class="lb-lado lb-izq">
-        <section class="lb-caja">
-          <h2>Tú</h2>
-          <div class="lb-caja-cuerpo" id="coTu"><p class="lb-chico">Cargando...</p></div>
-        </section>
-        <section class="lb-caja">
-          <h2>Tus corrales</h2>
-          <div class="lb-caja-cuerpo" id="coResumen"><p class="lb-chico">Cargando...</p></div>
-        </section>
-        <section class="lb-caja">
-          <h2>Listas para criar</h2>
-          <div class="lb-caja-cuerpo" id="coListas"><p class="lb-chico">Cargando...</p></div>
-        </section>
-      </aside>
+    <div class="co-cuerpo" id="coCuerpo">
+      <!-- Los seis hábitats: el elegido se ve grande debajo -->
+      <nav class="co-tabs" id="coFranja" role="tablist" aria-label="Hábitats"></nav>
 
-      <!-- El hábitat elegido, la franja de hábitats y su gestión -->
-      <main class="lb-centro">
-        <section class="co-vista" id="coVista" aria-live="polite">
-          <svg class="co-escena hb-e-vacio" id="coEscena" viewBox="0 0 480 400" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" role="img" aria-label="Hábitat elegido"></svg>
-          <div class="co-rotulo">
-            <h2 id="coTitulo">Corrales</h2>
-            <p id="coDesc" class="co-desc"></p>
-            <p id="coEstado" class="co-estado"></p>
-            <div class="co-barra-caja" id="coBarraCaja" aria-hidden="true"><i id="coBarra"></i></div>
-          </div>
-        </section>
+      <!-- El corral activo: solo arte, sin texto encima -->
+      <section class="co-vista" aria-live="polite">
+        <svg class="co-escena" id="coEscena" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" role="img" aria-label="Hábitat elegido"></svg>
+      </section>
 
-        <div class="co-franja" id="coFranja" role="group" aria-label="Elegir hábitat"></div>
+      <!-- La ficha del corral: nombre, estado y reloj, fuera del dibujo -->
+      <section class="co-barra" id="coBarra"></section>
 
-        <section class="lb-caja co-panel" id="coPanel"></section>
-        <p class="lb-chico hb-ayuda">Cada corral solo funciona con <b>dos copias tuyas de la misma criatura</b>. Elige un hábitat y mira qué especies caben. Las copias llegan jugando, intercambiando o con un poco de suerte.</p>
-      </main>
+      <!-- Lo que se puede hacer ahora en este corral -->
+      <section class="co-panel" id="coPanel"></section>
 
-      <!-- La colección no es un hábitat: tiene su propio acceso -->
-      <aside class="lb-lado lb-der">
-        <section class="lb-caja">
-          <h2>Colección</h2>
-          <div class="lb-caja-cuerpo">
-            <p class="lb-chico" style="margin-top:0">Las criaturas que cuidas salen de tu colección de cartas.</p>
-            <div class="lb-botoncitos co-atajos">
-              <a class="lb-boton" href="cartas.html">Álbum</a>
-              <a class="lb-boton" href="mazos.html">Mazos</a>
-              <a class="lb-boton" href="intercambios.html">Intercambios</a>
-            </div>
-          </div>
-        </section>
-        <section class="lb-caja">
-          <h2>Últimas crías</h2>
-          <div class="lb-caja-cuerpo" id="coHistorial"><p class="lb-chico">Cargando...</p></div>
-        </section>
-      </aside>
+      <p class="co-historial" id="coHistorial"></p>
     </div>
   </div>
 
-  <script src="data/personajes.js?v=20270212"></script>
-  <script src="data/objetos.js?v=20270212"></script>
-  <script src="data/lugares.js?v=20270212"></script>
-  <script src="data/bestiario.js?v=20270212"></script>
-  <script src="js/contenido-servidor.js?v=20270212"></script>
-  <script src="js/temas.js?v=20270212"></script>
-  <script src="js/fichas-supabase.js?v=20270212"></script>
-  <script src="js/interruptores.js?v=20270212"></script>
-  <script src="js/presencia.js?v=20270212"></script>
-  <script src="js/lado.js?v=20270212"></script>
-  <script src="js/cartas-datos.js?v=20270212"></script>
-  <script src="js/cartas-cliente.js?v=20270212"></script>
-  <script src="js/cartas-vista.js?v=20270212"></script>
-  <script src="js/corrales-lib.js?v=20270212"></script>
-  <script src="js/corrales.js?v=20270212"></script>
-  <script src="js/avisos-admin.js?v=20270212"></script>
-  <script src="js/musica-paginas.js?v=20270212"></script>
+  <script src="data/personajes.js?v=20270213"></script>
+  <script src="data/objetos.js?v=20270213"></script>
+  <script src="data/lugares.js?v=20270213"></script>
+  <script src="data/bestiario.js?v=20270213"></script>
+  <script src="js/contenido-servidor.js?v=20270213"></script>
+  <script src="js/temas.js?v=20270213"></script>
+  <script src="js/fichas-supabase.js?v=20270213"></script>
+  <script src="js/interruptores.js?v=20270213"></script>
+  <script src="js/presencia.js?v=20270213"></script>
+  <script src="js/lado.js?v=20270213"></script>
+  <script src="js/cartas-datos.js?v=20270213"></script>
+  <script src="js/cartas-cliente.js?v=20270213"></script>
+  <script src="js/cartas-vista.js?v=20270213"></script>
+  <script src="js/cielo.js?v=20270213"></script>
+  <script src="js/corrales-lib.js?v=20270213"></script>
+  <script src="js/corrales-arte.js?v=20270213"></script>
+  <script src="js/corrales.js?v=20270213"></script>
+  <script src="js/avisos-admin.js?v=20270213"></script>
+  <script src="js/musica-paginas.js?v=20270213"></script>
 </body>
 </html>
