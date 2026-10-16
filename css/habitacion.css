@@ -74,3 +74,8 @@ body.hb .lb-pagina { padding-bottom: 60px; }
 @media (max-width: 1000px) { .hb-dos { grid-template-columns: minmax(0, 1fr); } }
 .hb-atajos { grid-template-columns: 1fr; width: 100%; }
 .hb-atajos .lb-boton { width: 100%; box-sizing: border-box; }
+
+/* Los nombres de los objetos solo se ven con el cursor o el teclado (la capa #hbEtiquetas va la última) */
+.hb-etq { opacity: 0; transition: opacity .12s steps(2); pointer-events: none; }
+.hb-etq.hb-etq-ver { opacity: 1; }
+@media (hover: none) { .hb-etq { opacity: .95; } }

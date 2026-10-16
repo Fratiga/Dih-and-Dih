@@ -5,18 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi habitación</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270210">
-  <link rel="stylesheet" href="css/taberna.css?v=20270210">
-  <link rel="stylesheet" href="css/lobby.css?v=20270210">
-  <link rel="stylesheet" href="css/cartas.css?v=20270210">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20270210">
-  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270210">
-  <link rel="stylesheet" href="css/intercambios.css?v=20270210">
-  <link rel="stylesheet" href="css/habitacion.css?v=20270210">
-  <script src="js/dialogos.js?v=20270210"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270211">
+  <link rel="stylesheet" href="css/taberna.css?v=20270211">
+  <link rel="stylesheet" href="css/lobby.css?v=20270211">
+  <link rel="stylesheet" href="css/cartas.css?v=20270211">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270211">
+  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270211">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270211">
+  <link rel="stylesheet" href="css/habitacion.css?v=20270211">
+  <link rel="stylesheet" href="css/cielo.css?v=20270211">
+  <script src="js/dialogos.js?v=20270211"></script>
 </head>
 <body class="lb hb">
-  <script src="js/carga.js?v=20270210"></script>
+  <script src="js/carga.js?v=20270211"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -24,7 +25,7 @@
       <div class="lb-cab-titulo">
         <p class="lb-eyebrow">★ SOLO PARA TI ★</p>
         <h1>Mi habitación</h1>
-        <p class="lb-sub">Tus cartas, tus mazos y la forja. Los corrales están en el patio, por la puerta de la derecha.</p>
+        <p class="lb-sub">Tus cartas, tus mazos y la forja. Los corrales están en el patio, por la puerta de la izquierda.</p>
       </div>
       <div class="lb-cab-widgets">
         <a class="lb-boton" href="index.html">← A la taberna</a>
@@ -70,7 +71,7 @@
       <main class="lb-centro">
         <div class="lb-escena-caja">
           <div class="lb-escena-scroll">
-            <svg class="lb-escena hb-escena" id="hbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="Tu habitación: la estantería, la mesa de mazos, la forja y la puerta de los corrales">
+            <svg class="lb-escena hb-escena" id="hbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="Tu habitación: la cama bajo la ventana, la estantería de tu colección, la mesa de mazos, la forja y las puertas a la taberna y a los corrales">
               <!-- Pared y suelo -->
               <rect x="0" y="0" width="960" height="330" fill="#2a2036"/>
               <g id="hbTablones"></g>
@@ -78,135 +79,146 @@
               <rect x="0" y="296" width="960" height="6" fill="#1c1420"/>
               <rect x="0" y="330" width="960" height="210" fill="#5a3d28"/>
               <g id="hbSuelo"></g>
-              <!-- Alfombra -->
-              <rect x="262" y="186" width="456" height="338" fill="#5a2438"/>
-              <rect x="270" y="194" width="440" height="322" fill="none" stroke="#c9a14a" stroke-width="4"/>
 
-              <!-- Ventana -->
-              <rect x="40" y="46" width="132" height="126" fill="#6b4a2f"/>
-              <rect x="48" y="54" width="116" height="110" id="hbCielo" fill="#27396b"/>
+              <!-- Alfombra a los pies de la cama -->
+              <rect x="330" y="384" width="320" height="130" fill="#5a2438"/>
+              <rect x="338" y="392" width="304" height="114" fill="none" stroke="#c9a14a" stroke-width="4"/>
+              <rect x="350" y="404" width="280" height="90" fill="none" stroke="#c9a14a" stroke-width="1" opacity=".5"/>
+
+              <!-- Ventana sobre la cama: el cielo sigue la hora y el clima (js/cielo.js) -->
+              <rect x="436" y="46" width="112" height="116" fill="#6b4a2f"/>
+              <svg id="hbCieloVentana" class="cielo-ventana" x="446" y="56" width="92" height="96" viewBox="0 0 92 96" shape-rendering="crispEdges"><rect id="hbCielo" width="92" height="96" fill="#27396b"/></svg>
               <g id="hbAstros"></g>
-              <rect x="104" y="54" width="4" height="110" fill="#6b4a2f"/><rect x="48" y="106" width="116" height="4" fill="#6b4a2f"/>
-              <rect x="34" y="172" width="144" height="8" fill="#8d6a45"/>
+              <rect x="488" y="46" width="4" height="116" fill="#6b4a2f"/><rect x="436" y="100" width="112" height="4" fill="#6b4a2f"/>
+              <rect x="430" y="162" width="124" height="8" fill="#8d6a45"/>
+              <rect x="436" y="50" width="16" height="108" fill="#8a2f4a" opacity=".92"/><rect x="532" y="50" width="16" height="108" fill="#8a2f4a" opacity=".92"/>
+              <g class="lb-fuego">
+                <rect x="396" y="108" width="6" height="26" fill="#6b4a2f"/><rect x="392" y="94" width="14" height="14" fill="#f0b038" class="lb-llama"/><rect x="396" y="82" width="6" height="14" fill="#f7dd6a" class="lb-llama lb-l2"/>
+                <circle cx="399" cy="102" r="40" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
+                <rect x="582" y="108" width="6" height="26" fill="#6b4a2f"/><rect x="578" y="94" width="14" height="14" fill="#f0b038" class="lb-llama lb-l2"/><rect x="582" y="82" width="6" height="14" fill="#f7dd6a" class="lb-llama"/>
+                <circle cx="585" cy="102" r="40" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
+              </g>
 
-              <!-- Estantería: tu colección -->
-              <a class="lb-spot" href="cartas.html" aria-label="Tu colección: el álbum">
+              <!-- La cama, con el cabecero contra la pared, dos mesillas con vela y una manta con dibujo -->
+              <g>
+                <rect x="384" y="190" width="212" height="40" fill="#5a3a22"/><rect x="384" y="190" width="212" height="6" fill="#8d6a45"/>
+                <rect x="384" y="228" width="212" height="132" fill="#4a2f1f"/>
+                <rect x="392" y="234" width="196" height="116" fill="#e9dcc2"/>
+                <rect x="402" y="240" width="76" height="30" fill="#f6f0e0"/><rect x="498" y="240" width="76" height="30" fill="#f6f0e0"/><rect x="402" y="262" width="76" height="8" fill="#d9ccb0"/><rect x="498" y="262" width="76" height="8" fill="#d9ccb0"/>
+                <rect x="392" y="274" width="196" height="76" fill="#8a3f52"/><rect x="392" y="274" width="196" height="8" fill="#a8546a"/>
+                <rect x="404" y="292" width="172" height="4" fill="#c9a14a" opacity=".7"/><rect x="404" y="324" width="172" height="4" fill="#c9a14a" opacity=".7"/>
+                <rect x="470" y="298" width="40" height="22" fill="#a8546a"/><rect x="482" y="304" width="16" height="10" fill="#e8b84a"/>
+                <rect x="384" y="352" width="10" height="20" fill="#3a2517"/><rect x="586" y="352" width="10" height="20" fill="#3a2517"/>
+                <rect x="332" y="300" width="38" height="68" fill="#6b4a2f"/><rect x="336" y="304" width="30" height="26" fill="#5a3d28"/><rect x="336" y="334" width="30" height="30" fill="#5a3d28"/>
+                <rect x="348" y="280" width="6" height="20" fill="#f2ead2"/><rect x="349" y="270" width="4" height="10" fill="#f0b038" class="lb-llama"/>
+                <rect x="610" y="300" width="38" height="68" fill="#6b4a2f"/><rect x="614" y="304" width="30" height="26" fill="#5a3d28"/><rect x="614" y="334" width="30" height="30" fill="#5a3d28"/>
+                <rect x="626" y="274" width="14" height="26" fill="#b6453f"/><rect x="624" y="298" width="18" height="4" fill="#8a2f3a"/>
+              </g>
+
+              <!-- Corrales: la puerta del patio, con cristales al exterior, heno en el umbral y una lámpara que avisa -->
+              <a class="lb-spot" href="corrales.html" aria-label="Los corrales: el patio donde crían tus criaturas" id="hbPuertaCorrales">
                 <g class="lb-forma">
-                  <rect x="760" y="50" width="160" height="246" fill="#6b4a2f"/>
-                  <rect x="768" y="58" width="144" height="230" fill="#3a2517"/>
-                  <rect x="768" y="116" width="144" height="6" fill="#8d6a45"/><rect x="768" y="176" width="144" height="6" fill="#8d6a45"/><rect x="768" y="236" width="144" height="6" fill="#8d6a45"/>
-                  <g id="hbLomos"></g>
+                  <rect x="36" y="176" width="96" height="154" fill="#3f2a1c"/>
+                  <rect x="44" y="184" width="80" height="146" fill="#7a5638"/>
+                  <rect x="52" y="192" width="64" height="62" fill="#9fd0f0"/><rect x="52" y="224" width="64" height="30" fill="#6fa86b"/><rect x="52" y="192" width="64" height="10" fill="#cfe8f6"/>
+                  <rect x="82" y="192" width="4" height="62" fill="#5a3d28"/><rect x="52" y="222" width="64" height="4" fill="#5a3d28"/>
+                  <rect x="52" y="264" width="64" height="58" fill="#6b4428"/><rect x="56" y="268" width="56" height="22" fill="#7a5034"/><rect x="56" y="296" width="56" height="22" fill="#7a5034"/>
+                  <rect x="108" y="290" width="6" height="6" fill="#e8b84a"/>
+                  <rect x="30" y="322" width="108" height="14" fill="#d4b24a"/><rect x="38" y="316" width="30" height="8" fill="#d4b24a"/><rect x="96" y="314" width="34" height="10" fill="#ecd275"/>
+                  <rect class="hb-lampara" id="hbLampaCorrales" x="76" y="148" width="16" height="16" stroke="#1c1420" stroke-width="2"/>
+                  <rect x="82" y="164" width="4" height="12" fill="#6b4a2f"/>
                 </g>
-                <text x="840" y="318" text-anchor="middle" class="hb-etq">COLECCIÓN</text>
+                <text x="84" y="364" text-anchor="middle" class="hb-etq">CORRALES</text>
               </a>
 
-              <!-- Mesa de mazos -->
+              <!-- Mesa de mazos y una silla -->
               <a class="lb-spot" href="mazos.html" aria-label="Tus mazos">
-                <g class="lb-forma">
+                <g class="lb-forma" transform="translate(104 0)">
                   <rect x="40" y="232" width="176" height="18" fill="#8d6a45"/>
                   <rect x="52" y="250" width="16" height="64" fill="#6b4a2f"/><rect x="188" y="250" width="16" height="64" fill="#6b4a2f"/>
                   <rect x="64" y="214" width="26" height="18" fill="#f2ead2" transform="rotate(-14 77 223)"/>
                   <rect x="100" y="210" width="26" height="22" fill="#7a2f4a" transform="rotate(4 113 221)"/>
                   <rect x="138" y="214" width="26" height="18" fill="#f2ead2" transform="rotate(16 151 223)"/>
                   <rect x="170" y="218" width="16" height="14" fill="#3b4a8a"/><rect x="174" y="222" width="8" height="6" fill="#e8b84a"/>
+                  <rect x="94" y="268" width="56" height="10" fill="#a8546a"/><rect x="100" y="278" width="8" height="40" fill="#4a2f1f"/><rect x="136" y="278" width="8" height="40" fill="#4a2f1f"/><rect x="98" y="240" width="48" height="30" fill="#6b4a2f" opacity="0"/>
                 </g>
-                <text x="128" y="338" text-anchor="middle" class="hb-etq">MAZOS</text>
+                <text x="232" y="332" text-anchor="middle" class="hb-etq">MAZOS</text>
               </a>
-
-              <!-- Cama -->
-              <g>
-                <rect x="40" y="396" width="168" height="96" fill="#4a2f1f"/>
-                <rect x="48" y="404" width="152" height="80" fill="#8a3f52"/>
-                <rect x="48" y="404" width="44" height="80" fill="#e9dcc2"/>
-                <rect x="100" y="404" width="100" height="16" fill="#a8546a"/>
-                <rect x="40" y="388" width="8" height="112" fill="#6b4a2f"/>
-              </g>
 
               <!-- Puerta de vuelta a la taberna -->
               <a class="lb-spot" href="index.html" aria-label="Volver a la taberna">
                 <g class="lb-forma">
-                  <rect x="866" y="372" width="72" height="128" fill="#4a2f1f"/>
-                  <rect x="874" y="380" width="56" height="120" fill="#6b4a2f"/>
-                  <rect x="880" y="388" width="44" height="104" fill="#7a5638"/>
-                  <rect x="914" y="438" width="6" height="6" fill="#e8b84a"/>
+                  <rect x="668" y="186" width="76" height="144" fill="#4a2f1f"/>
+                  <rect x="676" y="194" width="60" height="136" fill="#6b4a2f"/>
+                  <rect x="684" y="202" width="44" height="52" fill="#5a3d28"/><rect x="684" y="262" width="44" height="60" fill="#5a3d28"/>
+                  <rect x="724" y="258" width="6" height="6" fill="#e8b84a"/>
+                  <rect x="682" y="172" width="48" height="12" fill="#3b4a8a"/><rect x="686" y="175" width="40" height="6" fill="#e8b84a"/>
                 </g>
-                <text x="902" y="520" text-anchor="middle" class="hb-etq">TABERNA</text>
+                <text x="706" y="352" text-anchor="middle" class="hb-etq">TABERNA</text>
               </a>
 
-              <!-- Antorchas -->
-              <g class="lb-fuego">
-                <rect x="236" y="96" width="8" height="30" fill="#6b4a2f"/>
-                <rect x="232" y="82" width="16" height="16" fill="#f0b038" class="lb-llama"/><rect x="236" y="70" width="8" height="14" fill="#f7dd6a" class="lb-llama lb-l2"/>
-                <circle cx="240" cy="92" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
-                <rect x="716" y="96" width="8" height="30" fill="#6b4a2f"/>
-                <rect x="712" y="82" width="16" height="16" fill="#f0b038" class="lb-llama lb-l2"/><rect x="716" y="70" width="8" height="14" fill="#f7dd6a" class="lb-llama"/>
-                <circle cx="720" cy="92" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
-              </g>
+              <!-- Estantería: tu colección (los lomos se llenan según lo que tienes) -->
+              <a class="lb-spot" href="cartas.html" aria-label="Tu colección: el álbum">
+                <g class="lb-forma">
+                  <rect x="776" y="50" width="160" height="246" fill="#6b4a2f"/>
+                  <rect x="784" y="58" width="144" height="230" fill="#3a2517"/>
+                  <rect x="784" y="116" width="144" height="6" fill="#8d6a45"/><rect x="784" y="176" width="144" height="6" fill="#8d6a45"/><rect x="784" y="236" width="144" height="6" fill="#8d6a45"/>
+                  <g id="hbLomos"></g>
+                </g>
+                <text x="856" y="318" text-anchor="middle" class="hb-etq">COLECCIÓN</text>
+              </a>
 
-              <!-- La forja: abre el diálogo de js/forja.js -->
+              <!-- Rincón de la forja, aparte de la zona de dormir: yunque sobre un tocón, brasero y herramientas -->
               <g class="lb-spot hb-forja" id="hbForja" tabindex="0" role="button" aria-label="La forja: entrega cartas y recibe una mejor">
                 <g class="lb-forma">
-                  <rect x="300" y="116" width="140" height="180" fill="#5e5a69"/>
-                  <rect x="292" y="288" width="156" height="14" fill="#8b8696"/>
-                  <rect x="320" y="92" width="100" height="30" fill="#4d4958"/>
-                  <rect x="326" y="176" width="88" height="112" fill="#17101b"/>
-                  <rect x="336" y="186" width="68" height="102" fill="#0d080f"/>
-                  <g class="lb-fuego">
-                    <rect x="344" y="262" width="52" height="22" fill="#e8872a"/>
-                    <rect x="352" y="240" width="36" height="26" fill="#f0b038" class="lb-llama"/>
-                    <rect x="360" y="224" width="20" height="22" fill="#f7dd6a" class="lb-llama lb-l2"/>
-                  </g>
-                  <circle cx="370" cy="250" r="52" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
-                  <!-- Yunque -->
-                  <rect x="338" y="414" width="84" height="14" fill="#6b6e7a"/>
-                  <rect x="326" y="408" width="24" height="10" fill="#6b6e7a"/>
-                  <rect x="358" y="428" width="44" height="22" fill="#4d505c"/>
-                  <rect x="344" y="450" width="72" height="12" fill="#3a3c46"/>
-                  <rect x="436" y="396" width="6" height="44" fill="#8d6a45"/><rect x="428" y="390" width="22" height="12" fill="#8d8d99"/>
+                  <rect x="684" y="388" width="230" height="120" fill="#4d4958"/><rect x="684" y="388" width="230" height="6" fill="#6e6a78"/><rect x="692" y="396" width="214" height="104" fill="none" stroke="#6e6a78" stroke-width="2" opacity=".6"/>
+                  <rect x="716" y="452" width="56" height="44" fill="#6b4a2f"/><rect x="716" y="452" width="56" height="6" fill="#8d6a45"/><rect x="722" y="470" width="44" height="3" fill="#4a2f1f"/>
+                  <rect x="706" y="432" width="76" height="14" fill="#6b6e7a"/><rect x="692" y="426" width="26" height="9" fill="#6b6e7a"/><rect x="722" y="446" width="36" height="8" fill="#4d505c"/>
+                  <rect x="804" y="440" width="44" height="12" fill="#3a3c46"/><rect x="810" y="452" width="6" height="46" fill="#3a3c46"/><rect x="836" y="452" width="6" height="46" fill="#3a3c46"/>
+                  <g class="lb-fuego"><rect x="808" y="428" width="36" height="14" fill="#e8872a"/><rect x="814" y="410" width="24" height="20" fill="#f0b038" class="lb-llama"/><rect x="820" y="398" width="12" height="16" fill="#f7dd6a" class="lb-llama lb-l2"/></g>
+                  <circle cx="826" cy="424" r="46" style="fill:var(--lb-luz)" fill-opacity=".16" class="lb-brillo"/>
+                  <rect x="872" y="410" width="6" height="52" fill="#8d6a45"/><rect x="864" y="404" width="22" height="12" fill="#8d8d99"/>
+                  <rect x="886" y="470" width="20" height="14" fill="#6b4a2f"/><rect x="886" y="466" width="20" height="5" fill="#8d6a45"/><rect x="894" y="474" width="4" height="4" fill="#e8b84a"/>
                 </g>
-                <text x="370" y="484" text-anchor="middle" class="hb-etq">FORJA</text>
+                <text x="780" y="528" text-anchor="middle" class="hb-etq">FORJA</text>
               </g>
 
-              <!-- La puerta de los corrales: el patio es otra pantalla (corrales.html) -->
-              <a class="lb-spot" href="corrales.html" aria-label="Los corrales: el patio donde crían tus criaturas" id="hbPuertaCorrales">
-                <g class="lb-forma">
-                  <rect x="520" y="142" width="170" height="160" fill="#4a2f1f"/>
-                  <rect x="528" y="150" width="74" height="152" fill="#7a5638"/><rect x="608" y="150" width="74" height="152" fill="#7a5638"/>
-                  <rect x="528" y="196" width="74" height="6" fill="#5a3d28"/><rect x="528" y="246" width="74" height="6" fill="#5a3d28"/>
-                  <rect x="608" y="196" width="74" height="6" fill="#5a3d28"/><rect x="608" y="246" width="74" height="6" fill="#5a3d28"/>
-                  <rect x="594" y="214" width="6" height="14" fill="#e8b84a"/><rect x="610" y="214" width="6" height="14" fill="#e8b84a"/>
-                  <rect x="520" y="126" width="170" height="16" fill="#6b4a2f"/>
-                  <rect class="hb-lampara" id="hbLampaCorrales" x="598" y="104" width="14" height="14" stroke="#1c1420" stroke-width="2"/>
-                  <rect x="603" y="118" width="4" height="8" fill="#6b4a2f"/>
-                </g>
-                <text x="605" y="324" text-anchor="middle" class="hb-etq">CORRALES</text>
-              </a>
+              <!-- Un cofre a los pies de la ventana y una planta: ambiente -->
+              <g aria-hidden="true">
+                <rect x="190" y="400" width="86" height="52" fill="#5a3d28"/><rect x="190" y="400" width="86" height="12" fill="#6b4a2f"/><rect x="190" y="424" width="86" height="4" fill="#3a2517"/><rect x="228" y="414" width="10" height="12" fill="#e8b84a"/>
+                <rect x="104" y="436" width="34" height="34" fill="#a8546a"/><rect x="100" y="432" width="42" height="8" fill="#c9707a"/><rect x="118" y="396" width="6" height="38" fill="#3f7a3a"/><rect x="100" y="400" width="22" height="12" fill="#4c8a4f"/><rect x="122" y="388" width="24" height="12" fill="#4c8a4f"/><rect x="108" y="382" width="20" height="10" fill="#6fa86b"/>
+              </g>
+
+              <!-- La luz y el tiempo tiñen la habitación (js/cielo.js); los carteles van arriba (js/habitacion.js) -->
+              <rect id="hbTinte" width="960" height="540" fill="none" opacity="0" pointer-events="none"/>
+              <g id="hbEtiquetas" pointer-events="none"></g>
             </svg>
           </div>
         </div>
-        <p class="lb-chico hb-ayuda">En la <b>forja</b> entregas cartas y sale una mejor. Por la puerta de la derecha se llega a los <a href="corrales.html">corrales</a>, donde crían tus criaturas; si se enciende la lámpara, hay una cría lista.</p>
+        <p class="lb-chico hb-ayuda">En la <b>forja</b> entregas cartas y sale una mejor. La puerta del patio, a la izquierda, lleva a los <a href="corrales.html">corrales</a>, donde crían tus criaturas; si se enciende la lámpara de encima, hay una cría lista.</p>
       </main>
     </div>
   </div>
 
-  <script src="data/personajes.js?v=20270210"></script>
-  <script src="data/objetos.js?v=20270210"></script>
-  <script src="data/lugares.js?v=20270210"></script>
-  <script src="data/bestiario.js?v=20270210"></script>
-  <script src="js/contenido-servidor.js?v=20270210"></script>
-  <script src="js/temas.js?v=20270210"></script>
-  <script src="js/fichas-supabase.js?v=20270210"></script>
-  <script src="js/interruptores.js?v=20270210"></script>
-  <script src="js/presencia.js?v=20270210"></script>
-  <script src="js/lado.js?v=20270210"></script>
-  <script src="js/cartas-datos.js?v=20270210"></script>
-  <script src="js/cartas-cliente.js?v=20270210"></script>
-  <script src="js/cartas-vista.js?v=20270210"></script>
-  <script src="js/batalla-apuestas.js?v=20270210"></script>
-  <script src="js/forja.js?v=20270210"></script>
-  <script src="js/corrales-lib.js?v=20270210"></script>
-  <script src="js/habitacion.js?v=20270210"></script>
-  <script src="js/avisos-admin.js?v=20270210"></script>
-  <script src="js/musica-paginas.js?v=20270210"></script>
+  <script src="data/personajes.js?v=20270211"></script>
+  <script src="data/objetos.js?v=20270211"></script>
+  <script src="data/lugares.js?v=20270211"></script>
+  <script src="data/bestiario.js?v=20270211"></script>
+  <script src="js/contenido-servidor.js?v=20270211"></script>
+  <script src="js/temas.js?v=20270211"></script>
+  <script src="js/fichas-supabase.js?v=20270211"></script>
+  <script src="js/interruptores.js?v=20270211"></script>
+  <script src="js/presencia.js?v=20270211"></script>
+  <script src="js/lado.js?v=20270211"></script>
+  <script src="js/cartas-datos.js?v=20270211"></script>
+  <script src="js/cartas-cliente.js?v=20270211"></script>
+  <script src="js/cartas-vista.js?v=20270211"></script>
+  <script src="js/batalla-apuestas.js?v=20270211"></script>
+  <script src="js/forja.js?v=20270211"></script>
+  <script src="js/corrales-lib.js?v=20270211"></script>
+  <script src="js/cielo.js?v=20270211"></script>
+  <script src="js/habitacion.js?v=20270211"></script>
+  <script src="js/avisos-admin.js?v=20270211"></script>
+  <script src="js/musica-paginas.js?v=20270211"></script>
 </body>
 </html>

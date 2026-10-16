@@ -1,29 +1,33 @@
 /* =============================================================================
    LA MESA DE LA TABERNA
-   Los protagonistas aparecen sentados a la mesa común de la taberna (index.html, grupos #lbMesaAtras y #lbMesaLados dentro del SVG).
-   Salen de los datos reales de presencia (js/presencia.js): quien está conectado se sienta; quien se va, se levanta. Cada uno ocupa
-   un puesto fijo mientras siga conectado, así nadie se mueve cuando llega otro.
+   Los protagonistas aparecen sentados a la mesa común (index.html: #lbMesaAtras, #lbMesaJarras y #lbMesaLados dentro del SVG), que es el foco
+   de la sala. Salen de los datos reales de presencia (js/presencia.js): quien está conectado se sienta; quien se va, se levanta. Cada uno
+   ocupa un puesto fijo mientras siga conectado, así nadie se mueve cuando llega otro. Con tu Side y tú caben seis: cuatro en el banco de
+   atrás y dos en las cabeceras.
 
-   Sprites: PNG de 32x48 px con fondo transparente, figura sentada de frente, ancla en el centro de la base. Se dibujan al doble
-   (64x96 unidades del escenario) con píxeles nítidos. Si un jugador no tiene sprite en data/protagonistas.js se dibuja la silueta
+   Sprites: PNG de 32x48 px con fondo transparente, figura sentada de frente, ancla en el centro de la base. Se dibujan al triple
+   (96x144 unidades del escenario) con píxeles nítidos. Si un jugador no tiene sprite en data/protagonistas.js se dibuja la silueta
    provisional. Para sumar más puestos basta con añadir entradas a PUESTOS.
+   Cada plaza tiene su jarra delante, que de vez en cuando se levanta; el nombre solo se ve al pasar el cursor, enfocar o tocar al personaje.
 
-   Solo para comprobar la composición: index.html?mesa=prueba sienta siete siluetas marcadas «prueba» (no son jugadores).
+   Solo para comprobar la composición: index.html?mesa=prueba sienta tres siluetas «Prueba 1..3» (con &n=6, seis). No son jugadores.
 ============================================================================= */
 (function () {
   const NS = "http://www.w3.org/2000/svg";
-  const SPRITE = { w: 32, h: 48, escala: 2 };
+  const SPRITE = { w: 32, h: 48, escala: 3 };
   const SILUETA = "assets/protagonistas/silueta.png";
-  // Puestos de la mesa. capa "atras": sentados detrás (la mesa les tapa las piernas); "lados": en las cabeceras, delante de la mesa.
+  // Puestos de la mesa, en el orden en que se ocupan. capa "atras": en el banco detrás de la mesa (la mesa les tapa las piernas);
+  // "lados": en las cabeceras, delante de la mesa. jarra: dónde queda la jarra sobre la mesa.
   const PUESTOS = [
-    { x: 580, y: 592, capa: "atras" }, { x: 660, y: 592, capa: "atras" }, { x: 500, y: 592, capa: "atras" }, { x: 740, y: 592, capa: "atras" },
-    { x: 438, y: 618, capa: "lados" }, { x: 802, y: 618, capa: "lados" }
+    { x: 590, y: 598, capa: "atras", jarra: [572, 564] }, { x: 690, y: 598, capa: "atras", jarra: [722, 564] },
+    { x: 490, y: 598, capa: "atras", jarra: [472, 564] }, { x: 790, y: 598, capa: "atras", jarra: [822, 564] },
+    { x: 380, y: 650, capa: "lados", jarra: [424, 564] }, { x: 900, y: 650, capa: "lados", jarra: [846, 564] }
   ];
   const clave = t => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  const modoPrueba = () => /[?&]mesa=prueba\b/.test(location.search);
 
-  let atras = null, lados = null, aviso = null;
-  const sentados = new Map();      // id -> { puesto, nodo }
-  const reducido = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let atras = null, lados = null, jarras = null, aviso = null;
+  const sentados = new Map();      // id -> { puesto, nodo, jarra }
 
   function el(tag, attrs) {
     const e = document.createElementNS(NS, tag);
@@ -31,11 +35,19 @@
     return e;
   }
 
+  function crearJarra(puesto, i) {
+    const [x, y] = puesto.jarra;
+    const g = el("g", { class: "lb-jarra", "aria-hidden": "true" });
+    g.style.setProperty("--retraso", `${(i * 1.7).toFixed(1)}s`);
+    g.innerHTML = `<rect x="${x}" y="${y}" width="16" height="20" fill="#c9a14a"/><rect x="${x + 16}" y="${y + 4}" width="5" height="11" fill="#c9a14a"/><rect x="${x + 2}" y="${y + 3}" width="12" height="3" fill="#8d6a45" opacity=".6"/><rect x="${x + 1}" y="${y - 4}" width="14" height="5" fill="#fff1b0"/>`;
+    return g;
+  }
+
   function crearNodo(p, puesto, i) {
     const info = (window.PROTAGONISTAS || {})[clave(p.nombre)] || null;
     const src = (info && info.sprite) || SILUETA;
     const w = SPRITE.w * SPRITE.escala, h = SPRITE.h * SPRITE.escala;
-    const g = el("g", { class: "lb-pj-mesa" + (info && info.sprite ? "" : " lb-pj-prov") + (p.prueba ? " lb-pj-prueba" : ""), "data-id": p.id, tabindex: "-1" });
+    const g = el("g", { class: "lb-pj-mesa" + (info && info.sprite ? "" : " lb-pj-prov") + (p.prueba ? " lb-pj-prueba" : ""), "data-id": p.id, tabindex: "0", role: "img", "aria-label": `${p.nombre}${p.prueba ? " (prueba)" : ""}` });
     g.style.setProperty("--retraso", `${(i * 0.37).toFixed(2)}s`);
     const img = el("image", { x: puesto.x - w / 2, y: puesto.y - h, width: w, height: h, href: src, preserveAspectRatio: "xMidYMax meet" });
     img.addEventListener("error", () => {
@@ -48,36 +60,50 @@
       g.classList.add("lb-pj-prov");
     });
     g.append(img);
-    const nombre = String(p.nombre || "").slice(0, 11);
-    const t = el("text", { x: puesto.x, y: puesto.y - h - 5, "text-anchor": "middle", class: "lb-pj-nombre" });
+    // El nombre solo aparece con el cursor, el foco o un toque (css/lobby.css)
+    const nombre = String(p.nombre || "").slice(0, 14);
+    const ancho = nombre.length * 9 + 16;
+    const etiqueta = el("g", { class: "lb-pj-etiqueta", "pointer-events": "none" });
+    etiqueta.append(el("rect", { x: puesto.x - ancho / 2, y: puesto.y - h - 20, width: ancho, height: 18, fill: "#120d19", opacity: ".88" }));
+    const t = el("text", { x: puesto.x, y: puesto.y - h - 7, "text-anchor": "middle", class: "lb-mesa-nombre" });
     t.textContent = nombre;
-    g.append(t);
+    etiqueta.append(t);
+    g.append(etiqueta);
     const titulo = el("title", {});
     titulo.textContent = `${p.nombre}${info && info.personaje ? ` · ${info.personaje}` : ""}${p.prueba ? " (recurso de prueba, no es un jugador)" : ""}`;
     g.append(titulo);
+    // Tocar o pulsar lo deja marcado (en el móvil no hay cursor)
+    g.addEventListener("click", () => {
+      const ya = g.classList.contains("lb-pj-activo");
+      document.querySelectorAll(".lb-pj-activo").forEach(x => x.classList.remove("lb-pj-activo"));
+      if (!ya) g.classList.add("lb-pj-activo");
+    });
+    g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); g.dispatchEvent(new Event("click")); } });
     return g;
   }
 
   function fijar(lista) {
-    if (!atras || !lados) return;
+    if (!atras || !lados || !jarras || !aviso) return;
     const presentes = new Map((lista || []).map(p => [p.id, p]));
     // Se levantan los que ya no están
     for (const [id, s] of sentados) {
-      if (!presentes.has(id)) { s.nodo.remove(); sentados.delete(id); }
+      if (!presentes.has(id)) { s.nodo.remove(); s.jarra.remove(); sentados.delete(id); }
     }
     // Se sientan los nuevos en el primer puesto libre
     const ocupados = new Set([...sentados.values()].map(s => s.puesto));
-    let sinSitio = 0, i = sentados.size;
+    let i = sentados.size;
     for (const p of presentes.values()) {
       const ya = sentados.get(p.id);
       if (ya) { ya.nodo.classList.toggle("lb-pj-lejos", !!p.oculto); continue; }
       const libre = PUESTOS.findIndex((_, k) => !ocupados.has(k));
-      if (libre < 0) { sinSitio++; continue; }
+      if (libre < 0) continue;
       ocupados.add(libre);
-      const nodo = crearNodo(p, PUESTOS[libre], i++);
+      const nodo = crearNodo(p, PUESTOS[libre], i), jarra = crearJarra(PUESTOS[libre], i);
+      i++;
       nodo.classList.toggle("lb-pj-lejos", !!p.oculto);
       (PUESTOS[libre].capa === "atras" ? atras : lados).append(nodo);
-      sentados.set(p.id, { puesto: libre, nodo });
+      jarras.append(jarra);
+      sentados.set(p.id, { puesto: libre, nodo, jarra });
     }
     // Quienes llevan más tiempo sentados no se mueven; los que no caben se cuentan aparte
     const total = presentes.size;
@@ -88,13 +114,15 @@
   function iniciar() {
     atras = document.getElementById("lbMesaAtras");
     lados = document.getElementById("lbMesaLados");
+    jarras = document.getElementById("lbMesaJarras");
     aviso = document.getElementById("lbMesaAviso");
-    if (!atras || !lados || !aviso) return;
-    if (/[?&]mesa=prueba\b/.test(location.search)) {
-      fijar(Array.from({ length: 7 }, (_, k) => ({ id: "prueba-" + k, nombre: `Prueba ${k + 1}`, oculto: k === 3, prueba: true })));
+    if (!atras || !lados || !jarras || !aviso) return;
+    if (modoPrueba()) {
+      const n = Math.max(1, Math.min(7, parseInt((location.search.match(/[?&]n=(\d+)/) || [])[1], 10) || 3));
+      fijar(Array.from({ length: n }, (_, k) => ({ id: "prueba-" + k, nombre: `Prueba ${k + 1}`, oculto: false, prueba: true })));
     }
   }
 
-  window.TabernaMesa = { fijar: lista => { if (!/[?&]mesa=prueba\b/.test(location.search)) fijar(lista); }, PUESTOS, SPRITE };
+  window.TabernaMesa = { fijar: lista => { if (!modoPrueba()) fijar(lista); }, PUESTOS, SPRITE };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar); else iniciar();
 })();

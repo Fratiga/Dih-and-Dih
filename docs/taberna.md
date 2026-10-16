@@ -3,15 +3,19 @@
 ## Qué hay
 
 - **Sala principal.** Escenario SVG de 1280 x 700 dentro de `index.html` (`#lbEscena`). La portada es más ancha que antes (`body.lb-grande`).
-  Objetos con enlace: estantería (Compendio), arco de la Biblioteca, mapa, cartel del Salón de juegos (Minijuegos), rocola, cuadro de fanarts (cicla las
-  imágenes), tablón de anuncios (Peticiones), **tablón de últimos fanarts** (los cuatro más nuevos), escritorio (Mis personajes), puerta de Mi habitación,
-  mesa de Triunfos, puesto de Intercambios, máquina de la Sala recreativa, puerta de los Establos y, solo para el admin, la puerta del Despacho.
+  La mesa común es el foco: banco corrido, dos taburetes, jarras delante de cada plaza y los protagonistas al triple de tamaño. En la pared solo hay
+  lo imprescindible, bien separado: la puerta personal de Mi habitación, la estantería (Compendio), el mapa, la ventana al exterior con la rocola, la
+  chimenea con el cuadro que cicla los fanarts, **un solo tablón** (las peticiones, con los cuatro fanarts más nuevos clavados como enlaces a la galería),
+  el escritorio de Mis personajes y la puerta de los Establos. En el suelo: un rincón de juegos (mesa de Triunfos y la máquina que lleva a Minijuegos) a un
+  lado y el puesto de Intercambios al otro. Solo para el admin, la puerta del Despacho bajo el mapa.
 - **Orden de la sala.** Las puertas (Mi habitación, Establos, Despacho, el arco de la Biblioteca) y los muebles altos apoyan en la pared; lo que cuelga (mapa,
   cuadros, tablones, faroles) va más arriba; en el suelo solo hay muebles sueltos y la mesa común. Los carteles con el nombre de cada objeto se pintan en una capa
   superior (`#lbEtiquetas`, la llena `js/lobby-salas.js`) para que ningún mueble los tape. Ojo: GitHub Pages no publica archivos cuyo nombre empieza por `_`.
 - **Decoración sin enlace.** Espadas, escudo, diana y mesa de ajedrez ya no abren nada (`.lb-deco-fija`, `pointer-events: none`). Duelo, Ajedrez y Arquería
   se juegan desde Minijuegos o desde la Sala recreativa.
-- **Salas** (en la misma página, por el hash de la URL): `#biblioteca`, `#juegos`, `#establos` y `#despacho` (solo admin; sin permiso vuelve a la taberna).
+- **Cielo y clima.** Las ventanas (la de la taberna, la de Mi habitación, el exterior de los Establos y la ventana del Despacho) siguen la hora de quien mira y a veces
+  cambian el clima: `js/cielo.js` + `css/cielo.css`. `?hora=21&cielo=tormenta` fuerza hora y clima para probar.
+- **Salas** (en la misma página, por el hash de la URL; se llega a ellas con las pestañas de arriba de la escena): `#biblioteca`, `#juegos`, `#establos` y `#despacho` (solo admin; sin permiso vuelve a la taberna).
   Las dibuja `js/lobby-salas.js` a partir de `MAPA`, que es la única lista de enlaces: de ahí salen también las pestañas de arriba de la escena y la lista
   «Todas las puertas del sitio». En el móvil (menos de 700 px) la escena se cambia por puertas grandes y la lista va abierta.
 - **Hipódromo.** No está en la sala de juegos: vive en los Establos con el Hipódromo en vivo y los Corrales.
@@ -28,12 +32,12 @@
 (`js/presencia.js`: `id`, `nombre`, `oculto`). Cada uno conserva su puesto mientras siga conectado y quien se aleja de la pestaña se ve apagado.
 Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taberna». Para más puestos basta añadir entradas a `PUESTOS`.
 
-`index.html?mesa=prueba` sienta siete siluetas llamadas «Prueba 1...7» solo para comprobar la composición. No son jugadores.
+`index.html?mesa=prueba` sienta tres siluetas llamadas «Prueba 1..3» (con `&n=6`, seis) solo para comprobar la composición. No son jugadores.
 
 ### Sprites
 
 - PNG de **32 x 48 px**, fondo transparente, figura **sentada de frente**, con el asiento en el centro de la base (ancla: 16, 47).
-- Se dibujan al doble (64 x 96 unidades del escenario) con `image-rendering: pixelated`: nada de suavizado ni filtros.
+- Se dibujan al triple (96 x 144 unidades del escenario) con `image-rendering: pixelated`: nada de suavizado ni filtros. El nombre solo aparece al pasar el cursor, enfocar o tocar al personaje.
 - Para ponerle sprite a un jugador, añade una entrada en `data/protagonistas.js` con su nombre en minúsculas y sin tildes:
   `"nombre": { sprite: "assets/protagonistas/nombre.png", personaje: "Nombre del personaje" }`.
 - Sin entrada se usa la silueta provisional `assets/protagonistas/silueta.png`, que se regenera con `tools/silueta_protagonistas.py`.

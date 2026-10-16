@@ -28,13 +28,6 @@
       s.appendChild(el("rect", { x: 0, y, width: 960, height: 2, fill: "#46301f" }));
       for (let x = (k % 2) * 90; x < 960; x += 180) s.appendChild(el("rect", { x, y, width: 2, height: 30, fill: "#46301f" }));
     }
-    // El cielo de la ventana sigue la hora del jugador
-    const h = new Date().getHours(), a = $("hbAstros");
-    const cielo = h >= 7 && h < 18 ? "#6fb4e8" : h >= 18 && h < 21 ? "#c9703a" : "#1b2748";
-    $("hbCielo").setAttribute("fill", cielo);
-    if (h >= 7 && h < 18) a.innerHTML = `<rect x="124" y="66" width="22" height="22" fill="#fff1b0"/><rect x="62" y="84" width="30" height="8" fill="#fff"/><rect x="70" y="78" width="16" height="8" fill="#fff"/>`;
-    else if (h >= 18 && h < 21) a.innerHTML = `<rect x="60" y="130" width="90" height="34" fill="#a04a2a"/><rect x="118" y="112" width="24" height="24" fill="#ffd27a"/>`;
-    else a.innerHTML = `<rect x="124" y="68" width="18" height="18" fill="#f2ead2"/><rect x="130" y="68" width="12" height="18" fill="#1b2748"/><rect x="64" y="80" width="4" height="4" fill="#fff"/><rect x="86" y="128" width="4" height="4" fill="#fff"/><rect x="146" y="116" width="4" height="4" fill="#fff"/><rect x="72" y="150" width="4" height="4" fill="#fff"/>`;
   }
   // Los lomos de la estantería se llenan según cuánto del álbum tienes
   function lomos(pct) {
@@ -44,10 +37,10 @@
     const llenos = Math.round(total * Math.max(0, Math.min(1, pct)));
     let n = 0;
     filas.forEach(([y, alto]) => {
-      let x = 774;
+      let x = 790;
       for (let i = 0; i < porFila; i++, n++) {
         const w = 10 + ((n * 7) % 5), h = alto - 6 - ((n * 5) % 12);
-        if (x + w > 908) break;
+        if (x + w > 922) break;
         g.appendChild(el("rect", { class: "hb-lomo", x, y: y + alto - h, width: w, height: h, fill: n < llenos ? colores[(n * 3) % colores.length] : "#2a1b10", opacity: n < llenos ? 1 : .55 }));
         x += w + 2;
       }
@@ -95,8 +88,23 @@
   }
 
   /* ------------------------------------------------------------------ arranque */
+  /* Los carteles con el nombre de cada objeto van en una capa que se pinta la última y solo se ven con el cursor o el teclado */
+  function capaEtiquetas() {
+    const capa = $("hbEtiquetas");
+    if (!capa) return;
+    document.querySelectorAll("#hbEscena a.lb-spot, #hbEscena .hb-forja").forEach(zona => {
+      const t = zona.querySelector("text.hb-etq");
+      if (!t) return;
+      capa.appendChild(t);
+      const ver = () => t.classList.add("hb-etq-ver"), ocultar = () => t.classList.remove("hb-etq-ver");
+      zona.addEventListener("pointerenter", ver); zona.addEventListener("pointerleave", ocultar);
+      zona.addEventListener("focus", ver); zona.addEventListener("blur", ocultar);
+    });
+  }
+
   async function iniciar() {
     decorar();
+    capaEtiquetas();
     lomos(0);
     const forja = $("hbForja");
     forja.addEventListener("click", () => window.Forja.abrir());

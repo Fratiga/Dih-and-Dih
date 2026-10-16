@@ -24,7 +24,7 @@ const hrefsMapa = new Set();
 Object.values(MAPA).forEach(s => s.grupos.forEach(g => g.enlaces.forEach(e => hrefsMapa.add(e[0]))));
 
 const html = fs.readFileSync(path.join(RAIZ, "index.html"), "utf8");
-const escena = html.slice(html.indexOf('<svg class="lb-escena" id="lbEscena"'), html.indexOf("</svg>", html.indexOf('id="lbEscena"')) + 6);
+const escena = html.slice(html.indexOf('<svg class="lb-escena" id="lbEscena"'), html.indexOf('<div id="lbSalas"'));   // la ventana lleva un <svg> anidado: se corta donde empiezan las salas
 const hrefsEscena = [...escena.matchAll(/<a [^>]*href="([^"]+)"/g)].map(m => m[1]);
 const hrefsPagina = [...html.matchAll(/<a [^>]*href="([^"#][^"]*\.html[^"]*)"/g)].map(m => m[1]);
 
@@ -42,7 +42,7 @@ paginasEscena.forEach(h => comprobar(`el objeto «${h}» de la escena está en e
 salasEscena.forEach(s => comprobar(`la puerta «#${s}» lleva a una sala que existe`, !!MAPA[s]));
 ["duelo.html", "ajedrez.html", "arqueria.html"].forEach(h => comprobar(`${h} ya no es un objeto de la taberna (solo decoración)`, !hrefsEscena.includes(h)));
 ["compendio.html", "minijuegos.html", "peticiones.html", "habitacion.html", "fanarts.html"].forEach(h => comprobar(`${h} sigue siendo un objeto de la taberna`, hrefsEscena.includes(h)));
-comprobar("hay un segundo objeto que lleva a fanarts (el tablón con los últimos)", hrefsEscena.filter(h => h === "fanarts.html").length >= 2);
+comprobar("los fanarts nuevos van dentro del tablón de anuncios (js/lobby.js clava cuatro enlaces a la galería en #lbTablonCuadros)", escena.includes('id="lbTablonCuadros"') && hrefsEscena.includes("peticiones.html"));
 comprobar("el cuadro que cicla los fanarts sigue en la escena", escena.includes('id="rotacionInner"'));
 comprobar("las salas privadas (despacho) solo se enseñan al admin", /<a [^>]*data-admin-only[^>]*href="#despacho"/.test(escena));
 

@@ -336,16 +336,17 @@
   }
 
   /* El tablón de fanarts de la taberna: los cuatro más nuevos subidos por el admin y, si faltan, los últimos de la galería fija */
-  const SLOTS_FANARTS = [[1028, 86], [1080, 88], [1030, 126], [1080, 128]];
+  const SLOTS_FANARTS = [[1048, 72], [1098, 72], [1048, 116], [1098, 116]];
   function pintarTablonFanarts(lista) {
     const cont = $("lbTablonCuadros");
     if (!cont) return;
     const fijos = (window.ROTACION || []).slice().reverse().map(src => ({ src, nombre: "Fanart" }));
     const todas = [...lista, ...fijos.filter(e => !lista.some(l => l.src === e.src))].slice(0, 4);
     if (!todas.length) return;
+    // Cada dibujo clavado en el tablón lleva a la galería
     cont.innerHTML = todas.map((f, i) => {
       const [x, y] = SLOTS_FANARTS[i];
-      return `<rect x="${x - 2}" y="${y - 2}" width="52" height="40" fill="#f2ead2"/><svg x="${x}" y="${y}" width="48" height="36"><image href="${esc(f.src)}" width="48" height="36" preserveAspectRatio="xMidYMid slice"><title>${esc(f.nombre)}</title></image></svg>`;
+      return `<a class="lb-spot" href="fanarts.html" aria-label="Fanart: ${esc(f.nombre)}"><g class="lb-forma"><rect x="${x - 2}" y="${y - 2}" width="52" height="42" fill="#f2ead2"/><svg x="${x}" y="${y}" width="48" height="38"><image href="${esc(f.src)}" width="48" height="38" preserveAspectRatio="xMidYMid slice"><title>${esc(f.nombre)}</title></image></svg><rect x="${x + 21}" y="${y - 6}" width="6" height="6" fill="${["#b6453f", "#4f7fb5", "#4c8a4f", "#e8b84a"][i]}"/></g></a>`;
     }).join("");
   }
 

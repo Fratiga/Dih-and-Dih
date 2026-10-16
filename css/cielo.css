@@ -1,0 +1,14 @@
+/* Animaciones del cielo de las ventanas (js/cielo.js): nubes, lluvia, rayos, nieve y niebla. Todo con pasos, como el resto de la escena. */
+.cielo-titila { animation: cieloTitila 2.4s steps(3) infinite; }
+@keyframes cieloTitila { 50% { opacity: .35; } }
+.cielo-nube { animation: cieloNube 40s linear infinite alternate; }
+@keyframes cieloNube { from { transform: translateX(-14px); } to { transform: translateX(26px); } }
+.cielo-gota { animation: cieloLluvia .65s steps(6) infinite; }
+@keyframes cieloLluvia { from { transform: translateY(-8px); } to { transform: translateY(var(--cae, 96px)); } }
+.cielo-rayo { animation: cieloRayo 9s steps(1) infinite; }
+@keyframes cieloRayo { 0%, 71%, 74%, 78%, 100% { opacity: 0; } 72%, 77% { opacity: .85; } 73% { opacity: .15; } }
+.cielo-copo { animation: cieloCopo 4s linear infinite; }
+@keyframes cieloCopo { from { transform: translate(0, -6px); } 50% { transform: translate(5px, calc(var(--cae, 96px) * .45)); } to { transform: translate(-3px, var(--cae, 96px)); } }
+.cielo-niebla { animation: cieloNiebla 22s linear infinite alternate; }
+@keyframes cieloNiebla { from { transform: translateX(-30px); } to { transform: translateX(20px); } }
+@media (prefers-reduced-motion: reduce) { .cielo-titila, .cielo-nube, .cielo-gota, .cielo-rayo, .cielo-copo, .cielo-niebla { animation: none !important; } }
