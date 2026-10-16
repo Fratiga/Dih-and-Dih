@@ -42,7 +42,11 @@
     } catch (e) { estado(`No se pudieron cargar los intercambios: ${e.message || e}. ¿Corriste economia_5_intercambios.sql?`, true); }
   }
   async function cargarMercader() {
-    try { mercader = await rpc("cartas_mercader_ver"); pintarMercader(); }
+    try {
+      mercader = await rpc("cartas_mercader_ver"); pintarMercader();
+      // Lo que ya viste hoy del Buhonero: la taberna (js/avisos-taberna.js) solo avisa de lo que no
+      try { localStorage.setItem("lbBuhoneroVisto", JSON.stringify({ dia: new Date().toISOString().slice(0, 10), ids: (mercader.ofertas || []).map(o => o.id) })); } catch (e) { /* sin almacenamiento */ }
+    }
     catch (e) { $("icMercaderLista").innerHTML = `<li class="ic-vacio">${esc(e.message || e)}</li>`; }
   }
 
@@ -250,6 +254,7 @@
     try { jugadores = await rpc("cartas_jugadores"); } catch (e) { jugadores = []; }
     $("icPara").innerHTML = `<option value="">Cualquiera (tablón abierto)</option>` + jugadores.map(j => `<option value="${esc(j.user_id)}">${esc(j.username)}</option>`).join("");
     await cargarTodo();
+    if (location.hash === "#buhonero") { const t = document.querySelector('#icPestanas [data-vista="mercader"]'); if (t) t.click(); }
     setInterval(() => { if (!document.hidden && !document.querySelector("dialog[open]")) cargarTodo(); }, 20000);
   }
   iniciar();

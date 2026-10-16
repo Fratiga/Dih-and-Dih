@@ -333,3 +333,11 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 .lb-aviso-apostar[hidden] { display: none; }
 .lb-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .lb-aviso-caballos[data-estado="ya"] .lb-aviso-caballos-crono { animation: none; } }
+
+/* Avisos de la taberna (js/avisos-taberna.js): una franja de enlaces con lo que espera a quien entra */
+.lb-avisos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 12px 0 0; padding: 8px 12px; border: 3px ridge var(--lb-borde); background: var(--lb-caja); box-shadow: 4px 4px 0 #000; }
+.lb-avisos[hidden] { display: none; }
+.lb-avisos-etq { padding: 4px 8px; background: var(--lb-titulo-a); color: #fff; font: 10px/1.4 "Press Start 2P", monospace; text-shadow: 2px 2px 0 #000; }
+.lb-aviso-chip { padding: 3px 10px; border: 2px solid var(--lb-borde); background: #ffffff10; color: var(--lb-texto) !important; text-decoration: none; font-size: 21px; }
+.lb-aviso-chip:hover { background: #ffffff26; }
+.lb-aviso-chip-fuerte { border-color: var(--lb-acento); color: #ffe9a8 !important; }

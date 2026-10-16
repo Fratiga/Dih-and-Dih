@@ -58,3 +58,9 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
 - Los **corrales** tienen su pantalla (`corrales.html`, `js/corrales.js`, `js/corrales-lib.js`): un hábitat grande, una franja con los seis y el panel de cría
   debajo. Se llega por la puerta de Mi habitación y desde los Establos.
 - El Buhonero y el Hipódromo reparten del mismo montón de cartas (`docs/economia-20_reserva_compartida.sql`).
+
+## Avisos de la taberna
+
+`js/avisos-taberna.js` pinta bajo la cinta de novedades (`#lbAvisos`) lo que espera a quien entra, cada cosa con su enlace: crías listas en los corrales, retos de ajedrez y arquería (y partidas donde te toca mover),
+intercambios dirigidos a ti y ofertas nuevas del Buhonero (`intercambios.js` apunta en `lbBuhoneroVisto` lo que ya viste). Se refresca cada 2 minutos y el título de la pestaña lleva el número de avisos.
+Cada fuente falla por separado: si falta una tabla o función, ese aviso no sale. `index.html?avisos=prueba` enseña cuatro avisos de ejemplo.
