@@ -49,11 +49,11 @@ function statsR20Formula(textoFormula, s) {
 const STATS_R20_RE_DADOS = "\\d+d\\d+(?:\\s*[+-]\\s*(?:\\d+|fuerza|destreza|constituci[oó]n|inteligencia|sabidur[ií]a|carisma))*";
 const STATS_R20_TIPOS = "perforante|cortante|contundente|elemental|fuego|fr[ií]o|veneno|[aá]cido|necr[oó]tico|radiante|ps[ií]quico|fuerza|rel[aá]mpago|trueno|el[eé]ctrico|el[eé]ctrica";
 
-/* Devuelve { ataque, danos:[{formula,tipo}], salvaciones:[{atributo,cd}], curacion }
+/* Devuelve { ataque, danos:[{formula,tipo}], salvaciones:[{atributo,cd}], curacion, reduccion }
    con lo que el texto de una habilidad deja leer. */
 function statsR20Leer(texto, s, nombreHab = "") {
   const t = String(texto);
-  const r = { ataque: null, danos: [], salvaciones: [], curacion: null };
+  const r = { ataque: null, danos: [], salvaciones: [], curacion: null, reduccion: null };
 
   // "+N al impacto" siempre es un ataque. "+N al ataque" solo si hay un "Daño:" explícito;
   // si no, suele ser un bono (p. ej. "+2 al ataque y +2d8 al daño" de una marca).
@@ -73,6 +73,12 @@ function statsR20Leer(texto, s, nombreHab = "") {
 
   const mCura = t.match(new RegExp(`(?:recupera|restaura|cura)\\s+(${STATS_R20_RE_DADOS})`, "i"));
   if (mCura) r.curacion = statsR20Formula(mCura[1], s);
+  // Curación fija solo en las regeneraciones ("recupera 5 PV al inicio de su turno")
+  const mCuraFija = !mCura && /regenera/i.test(nombreHab) && t.match(/recupera\s+(\d+)\s+PV\b/i);
+  if (mCuraFija) r.curacion = mCuraFija[1];
+  // "reduce el daño que recibe en 1d10+5" (reacciones que recortan un golpe)
+  const mReduce = t.match(new RegExp(`reduce\\s+el\\s+da[nñ]o[^.]*?\\s+en\\s+(${STATS_R20_RE_DADOS})`, "i"));
+  if (mReduce) r.reduccion = statsR20Formula(mReduce[1], s);
 
   // Daño: lo que sigue a "Daño:" / "recibe" / "reciben" / "inflige" con dados; el primero es el principal.
   const reDano = new RegExp(`(?:Da[nñ]o\\s*:?|recibe[n]?|inflige[n]?|causa[n]?|a[nñ]ade[n]?|CD\\s*\\d+\\s*:)\\s+(?:\\d+\\s*\\()?(${STATS_R20_RE_DADOS})\\)?(?:\\s+(?:de\\s+(?:da[nñ]o\\s+(?:de\\s+)?)?)?(${STATS_R20_TIPOS}))?`, "ig");
@@ -92,7 +98,8 @@ function statsR20Limpiar(nombre) {
 function statsR20ComandoHabilidad(s, hab, modo) {
   const nombre = statsR20Limpiar(hab.nombre);
   const esPasiva = /\(\s*pasiva\s*\)/i.test(hab.nombre);
-  const l = esPasiva ? { ataque: null, danos: [], salvaciones: [], curacion: null } : statsR20Leer(hab.descripcion, s, hab.nombre);
+  // Una pasiva no se tira, salvo la regeneración: su curación sí se puede mandar al chat
+  const l = esPasiva && !/regenera/i.test(hab.nombre) ? { ataque: null, danos: [], salvaciones: [], curacion: null, reduccion: null } : statsR20Leer(hab.descripcion, s, hab.nombre);
   const lineas = [`/em ${s.nombre} usa ${nombre}`];
   let automatizada = false;
 
@@ -107,6 +114,7 @@ function statsR20ComandoHabilidad(s, hab, modo) {
     automatizada = true;
   });
   if (l.curacion) { lineas.push(`Curación: [[${l.curacion}]] PV`); automatizada = true; }
+  if (l.reduccion) { lineas.push(`Reducción de daño: [[${l.reduccion}]]`); automatizada = true; }
   if (!automatizada) lineas.push(`${nombre}: ${hab.descripcion}`);
 
   return { texto: lineas.join("\n"), automatizada, tieneAtaque: l.ataque !== null };

@@ -952,7 +952,7 @@ window.STATS = [
   },
   {
     id: "desollado",
-    nombre: "El Desollado",
+    nombre: "Harek, el Desollado",
     rol: "Bruto · Hemorragia",
     tipo: "Monstruosidad",
     raza: "Mutante desollado Grande · Caótico malvado",
@@ -978,7 +978,7 @@ window.STATS = [
   },
   {
     id: "acechador-descabezado",
-    nombre: "Acechador Descabezado",
+    nombre: "Bramel, el Acechador Descabezado",
     rol: "Emboscador · Rastreador",
     tipo: "Monstruosidad",
     raza: "Cérvido mutado Grande · Neutral malvado",
@@ -1007,7 +1007,7 @@ window.STATS = [
   },
   {
     id: "mortaja-de-ojos",
-    nombre: "La Mortaja de Ojos",
+    nombre: "Yssel, la Mortaja de Ojos",
     rol: "Control · Terror psíquico",
     tipo: "Aberración",
     raza: "Aberración informe Grande · Caótico malvado",
@@ -1027,14 +1027,14 @@ window.STATS = [
       { nombre: "Multiataque (Acción)", descripcion: "Realiza una Mordida Babosa y un Zarcillo de Sombra." },
       { nombre: "Mordida Babosa (Acción)", descripcion: "+7 al impacto, alcance 5 pies, un objetivo. Daño: 2d10+2 perforante. El objetivo recibe además 2d6 de daño necrótico." },
       { nombre: "Zarcillo de Sombra (Acción)", descripcion: "+7 al impacto, alcance 15 pies, un objetivo. Daño: 2d6+2 necrótico. El objetivo queda Agarrado (escapa con una prueba de Fuerza o Destreza CD 13). Solo puede agarrar a una criatura a la vez." },
-      { nombre: "Mirada Múltiple (Recarga 5-6)", descripcion: "Todas las criaturas a 30 pies que puedan ver sus ojos hacen una salvación de Sabiduría CD 15 o reciben 4d8 de daño psíquico y quedan Asustadas hasta el final de su siguiente turno. Si superan la salvación, reciben la mitad. Una criatura que aparta la mirada tiene ventaja en la salvación, pero tiene desventaja en sus ataques contra la Mortaja hasta el inicio de su siguiente turno." },
+      { nombre: "Mirada Múltiple (Recarga 5-6)", descripcion: "Todas las criaturas a 30 pies que puedan ver sus ojos hacen una salvación de Sabiduría CD 15 o reciben 4d8 de daño psíquico y quedan Asustadas hasta el final de su siguiente turno. Si superan la salvación, reciben la mitad. Una criatura que aparta la mirada tiene ventaja en la salvación, pero tiene desventaja en sus ataques contra Yssel hasta el inicio de su siguiente turno." },
       { nombre: "Pozo de Sombra (Acción adicional)", descripcion: "Apaga toda luz no mágica en un radio de 20 pies a su alrededor hasta el inicio de su siguiente turno. Las luces mágicas de nivel 2 o menor también se apagan." }
     ],
     estrategia: "Flota hacia quien más ruido hace. Abre con Mirada Múltiple en cuanto tres o más la ven, agarra con el Zarcillo al que intenta huir y lo acerca para morderlo. La luz brillante la hiere y la obliga a retroceder: si el grupo la tiene, se esconde en la oscuridad y espera. Es mala persiguiendo y peor en espacios abiertos y bien iluminados."
   },
   {
     id: "gigante-velludo",
-    nombre: "Gigante Velludo",
+    nombre: "Gruvok, el Gigante Velludo",
     rol: "Bruto · Emboscador",
     tipo: "Gigante",
     raza: "Gigante Grande · Neutral",
@@ -1062,7 +1062,7 @@ window.STATS = [
   },
   {
     id: "segador-acorazado",
-    nombre: "Segador Acorazado",
+    nombre: "Karsk, el Segador Acorazado",
     rol: "Cazador · Carroñero blindado",
     tipo: "Monstruosidad",
     raza: "Artrópodo Grande · Sin alineamiento",
@@ -1081,14 +1081,14 @@ window.STATS = [
       { nombre: "Multiataque (Acción)", descripcion: "Realiza un ataque de Hoja de la Cabeza y uno de Garra de Tijera." },
       { nombre: "Hoja de la Cabeza (Acción)", descripcion: "+8 al impacto, alcance 10 pies, un objetivo. Daño: 2d10+5 cortante." },
       { nombre: "Garra de Tijera (Acción)", descripcion: "+8 al impacto, alcance 10 pies, un objetivo. Daño: 2d6+5 perforante. El objetivo queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 16). Esa garra no puede atacar a otra criatura mientras sujeta a una." },
-      { nombre: "Devorar (Acción adicional)", descripcion: "Contra una criatura que esté Agarrada por él: recibe 2d8+5 perforante y el Segador recupera 1d10+5 PV. Además repara todas las placas rotas." },
+      { nombre: "Devorar (Acción adicional)", descripcion: "Contra una criatura que esté Agarrada por él: recibe 2d8+5 perforante y Karsk recupera 1d10+5 PV. Además repara todas las placas rotas." },
       { nombre: "Zancada Segadora (Recarga 5-6)", descripcion: "Se mueve hasta 30 pies en línea recta sin provocar ataques de oportunidad. Cada criatura en su camino hace una salvación de Destreza CD 16 o recibe 4d8 de daño cortante y cae Derribada. Si supera la salvación, recibe la mitad y no cae." }
     ],
     estrategia: "Corta el terreno en línea recta y no se detiene por nada. Agarra al primero que alcanza, lo devora y vuelve a repararse. Usa Zancada Segadora cuando hay dos o más alineados y remata a quien cae. Un golpe fuerte de arma contundente le rompe las placas y lo deja mucho más fácil de herir."
   },
   {
     id: "callador",
-    nombre: "El Callador",
+    nombre: "Dacre, el Callador",
     rol: "Control · Silencio",
     tipo: "Humanoide",
     raza: "Inquisidor enmascarado · Legal malvado",
@@ -1115,7 +1115,7 @@ window.STATS = [
   },
   {
     id: "miron",
-    nombre: "El Mirón",
+    nombre: "Pelham, el Mirón",
     rol: "Acechador · Terror",
     tipo: "Monstruosidad",
     raza: "Aparición pálida · Caótico malvado",
@@ -1142,7 +1142,7 @@ window.STATS = [
   },
   {
     id: "colgado",
-    nombre: "El Colgado",
+    nombre: "Oswin, el Colgado",
     rol: "Bruto · Ejecutor",
     tipo: "Monstruosidad",
     raza: "Ejecutor mutante Grande · Caótico malvado",
@@ -1154,7 +1154,7 @@ window.STATS = [
     notas: [
       "Salvaciones: FUE +9, CON +8. Percepción pasiva 10. Competencia +3.",
       "Visión ciega 30 pies (no tiene ojos: huele y oye). Inmunidad a estados: cegado, asustado.",
-      "Cadena del gancho: CA 15, 20 PV. Si se destruye, el Colgado pierde Cadena del Gancho y Colgar al Intruso hasta el final del combate."
+      "Cadena del gancho: CA 15, 20 PV. Si se destruye, Oswin pierde Cadena del Gancho y Colgar al Intruso hasta el final del combate."
     ],
     habilidades: [
       { nombre: "Hombros de Roca (Pasiva)", descripcion: "Reduce en 3 el daño que recibe de ataques con arma. Ventaja en salvaciones contra ser derribado o empujado." },
@@ -1169,7 +1169,7 @@ window.STATS = [
   },
   {
     id: "reptil-indestructible",
-    nombre: "Reptil Indestructible",
+    nombre: "Vharrak, el Reptil Indestructible",
     rol: "Jefe · Adaptación",
     tipo: "Monstruosidad",
     raza: "Reptil colosal Enorme · Caótico malvado",
@@ -1198,7 +1198,7 @@ window.STATS = [
   },
   {
     id: "perseguidor",
-    nombre: "El Perseguidor",
+    nombre: "Mordan, el Perseguidor",
     rol: "Bruto · Cazador implacable",
     tipo: "Monstruosidad",
     raza: "Cuerpo experimental Grande · Neutral malvado",
