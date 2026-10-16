@@ -131,10 +131,16 @@ ids.forEach(id => {
 { const e = partida(); turnoDe(e, 0); const J = e.jugadores[0]; let n0 = J.mano.length; M.ponerUnidad(e, 0, "pescador", true, null); ok(J.mano.length === n0, "Pescador no roba sin terreno");
   e.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null }; const mazo0 = J.mazo.length; M.ponerUnidad(e, 0, "pescador", true, null);
   const sacada = cartas[J.mano[J.mano.length - 1]];
-  ok(J.mano.length === n0 + 1 && J.mazo.length === mazo0 && sacada.afinidad.includes("sombra") && ["comun", "infrecuente", "rara"].includes(sacada.rareza), `Pescador saca una carta de la afinidad del terreno sin tocar el mazo (${sacada.nombre})`);
+  ok(J.mano.length === n0 + 1 && J.mazo.length === mazo0 && sacada.afinidad.includes("sombra") && ["Criatura", "Objeto"].includes(sacada.tipo), `Pescador saca una Criatura u Objeto de la afinidad del terreno sin tocar el mazo (${sacada.nombre})`);
   // Es un sorteo con semilla: la misma partida da la misma carta
   const dist = new Set(); for (let s = 1; s <= 30; s++) { const e2 = partida(); e2.rng = s * 977; turnoDe(e2, 0); e2.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null }; const J2 = e2.jugadores[0]; J2.mano = []; M.ponerUnidad(e2, 0, "pescador", true, null); dist.add(J2.mano[0]); }
-  ok(dist.size > 3, `y no es siempre la misma (${dist.size} distintas en 30 sorteos)`); }
+  ok(dist.size > 3, `y no es siempre la misma (${dist.size} distintas en 30 sorteos)`);
+  // Nunca otro tipo de carta, y las raras salen menos que las comunes
+  const cuenta = { comun: 0, infrecuente: 0, rara: 0, legendaria: 0, limitada: 0 }; let malTipo = 0;
+  for (let s = 1; s <= 1500; s++) { const e3 = partida(); e3.rng = s * 7919; turnoDe(e3, 0); e3.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null }; const J3 = e3.jugadores[0]; J3.mano = []; M.ponerUnidad(e3, 0, "pescador", true, null); const k = cartas[J3.mano[0]]; if (!["Criatura", "Objeto"].includes(k.tipo)) malTipo++; cuenta[k.rareza]++; }
+  const porCarta = r => cuenta[r] / Math.max(1, Object.values(cartas).filter(m => m.rareza === r && ["Criatura", "Objeto"].includes(m.tipo) && m.afinidad.includes("sombra")).length);
+  ok(malTipo === 0, "el Pescador solo saca Criaturas y Objetos");
+  ok(porCarta("comun") > porCarta("infrecuente") && porCarta("infrecuente") > porCarta("rara") && porCarta("rara") > porCarta("legendaria") * 0.9, `y cada carta sale menos cuanto más rara (por carta: ${["comun", "infrecuente", "rara", "legendaria"].map(r => r[0] + " " + porCarta(r).toFixed(1)).join(", ")})`); }
 { const e = partida(); turnoDe(e, 0); const m = poner(e, 0, "minero-de-pozohumo"); M.infligir(e, { u: m.uid }, 2, { tipo: "terreno" }); ok(m.pv === 3, "Minero no recibe daño de terrenos"); M.infligir(e, { u: m.uid }, 2, { tipo: "habilidad" }); ok(m.pv === 1, "pero sí de lo demás"); }
 { const e = partida(); turnoDe(e, 0); const B = e.jugadores[1]; B.mazo = ["kobold", "pocion-de-curacion-menor"]; M.ponerUnidad(e, 0, "ciego-profeta", true, null); ok(B.mazo[B.mazo.length - 1] === "kobold", "Ciego profeta manda una unidad al fondo");
   B.mazo = ["pocion-de-curacion-menor", "kobold"]; M.ponerUnidad(e, 0, "ciego-profeta", true, null); ok(B.mazo[0] === "pocion-de-curacion-menor", "pero no un objeto"); }

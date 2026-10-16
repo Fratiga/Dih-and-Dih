@@ -621,17 +621,21 @@
       M.log(c.est, `${M.nombre(c.est, c.u)} cambia de rumbo y recoge a ${M.nombre(c.est, c.objetivo)}.`);
       M.devolverAMano(c.est, c.objetivo);
     } } });
-    // El Pescador saca algo del agua del terreno: una carta al azar de su afinidad, tenga o no esa carta en el mazo.
+    // El Pescador saca algo del agua del terreno: una Criatura o un Objeto al azar de su afinidad, tenga o no esa carta en el mazo.
+    // Cuanto más rara, menos probable (PESO_PESCA).
     // Sale de las cartas de la partida (est.cartas): por eso la instantánea lleva una reserva si algún mazo lo incluye
     // (CartasCliente.instantanea) y el sorteo es el mismo en los dos navegadores.
     R("pescador", { alEntrar: { resolver: c => {
       if (!c.est.terreno) return;
       const afin = (M.meta(c.est, c.est.terreno.cartaId).afinidad || [])[0];
+      const PESO_PESCA = { comun: 16, infrecuente: 8, rara: 4, legendaria: 1, limitada: 1 };
       const reserva = Object.values(c.est.cartas)
-        .filter(m => m && ["comun", "infrecuente", "rara"].includes(m.rareza) && (m.afinidad || []).includes(afin))
-        .map(m => m.id).sort();
+        .filter(m => m && ["Criatura", "Objeto"].includes(m.tipo) && (m.afinidad || []).includes(afin))
+        .sort((a, b) => (a.id < b.id ? -1 : 1));
       if (!reserva.length) { M.robar(c.est, c.j, 1); return; }
-      const id = reserva[M.entero(c.est, reserva.length)];
+      const total = reserva.reduce((s, m) => s + (PESO_PESCA[m.rareza] || 1), 0);
+      let tirada = M.entero(c.est, total), id = reserva[0].id;
+      for (const m of reserva) { tirada -= PESO_PESCA[m.rareza] || 1; if (tirada < 0) { id = m.id; break; } }
       alMano(c.est, c.j, id);
       M.log(c.est, `${M.nombre(c.est, c.u)} saca ${M.meta(c.est, id).nombre} del agua.`);
     } } });
