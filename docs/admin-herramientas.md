@@ -26,7 +26,7 @@ Reglas comunes:
 | 8 | Dificultad de los rivales (pestaña Rivales: Ajedrez, Arquería y Duelo) | 3 | Hecha. SQL: `docs/admin/rivales.sql` |
 | 9, 10 | Regalos y eventos, calendario del Hipódromo | 3 | Pendiente (coordinar con las sesiones de Economía e Hipódromo) |
 | 12 | Interruptores del sitio | 4 | Hecho. SQL: `docs/admin/herramientas_2.sql` |
-| 11 | Editor de diálogos del Bufón | 4 | Pendiente |
+| 11 | Editor de diálogos del Bufón (pestaña Bufón: textos) | 4 | Hecho. SQL: `docs/admin/bufon_textos.sql` |
 | 14 | Actividad en vivo (pestaña En vivo) | 4 | Hecha (presencia, sin SQL) |
 | 15 | Mensajes a jugadores | 4 | Hecho. SQL: `herramientas_2.sql` |
 | 16 | Suspensión de cuentas | 4 | Hecha (suave: avisa y cierra la sesión). SQL: `herramientas_2.sql` |
@@ -86,3 +86,9 @@ SQL: `docs/admin/rivales.sql` (se prueba con `sh docs/admin/probar_rivales.sh`).
 (`const RIVALES = ...`), así que no hay una segunda lista que se desincronice; lo que escribas se guarda en `rivales_ajustes` (un número o una lista corta por rival y campo) y cada juego lo pone encima al cargar (`js/rivales-ajustes.js`, que se llama justo después de definir `RIVALES`
 en `ajedrez.js`, `arqueria.js` y `duelo.js`). Un valor que no encaja se ignora. Vacío = el de fábrica; «Volver al original» borra los cambios de ese rival. `node docs/pruebas-web/rivales.js` comprueba que el literal de cada juego se sigue pudiendo leer.
 Las victorias ya registradas contra un rival siguen contando aunque lo hagas más fácil.
+
+## Editor de diálogos del Bufón
+
+SQL: `docs/admin/bufon_textos.sql` (se prueba con `sh docs/admin/probar_bufon_textos.sh`). Pestaña **Bufón: textos**: carga el diálogo de siempre (los mismos `data/bufon-*.js` de `secreto.html`) en un marco invisible y enseña sus nodos y los botones de elección; lo que guardes va a `bufon_textos`
+(`n:<nodo>` = lista de líneas, `o:<elección>:<opción>` = texto del botón) y `secreto.html` lo pone encima al cargar (`js/bufon-textos.js`). Solo cambia texto, no ramas ni condiciones. Los nodos cuyas líneas calcula una función no se pueden editar. `node docs/pruebas-web/bufon_textos.js` comprueba que el diálogo real se puede recorrer y que los textos se aplican sin romperlo.
+Mantén la voz de siempre al escribir (ver la memoria «Bufón voice rules»).
