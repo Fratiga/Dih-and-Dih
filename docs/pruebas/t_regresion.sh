@@ -79,7 +79,7 @@ contiene "no acepta legendarias" "$(como $U1 "select cartas_mercader_comprar('$O
 contiene "no se pasa del valor (3 comunes y una poco común suman 5 > 3+2)" "$(como $U1 "select cartas_mercader_comprar('$OP', array['$C1','$C2','$C3','$(dar $U1 poco-2)','$(dar $U1 poco-3)']::uuid[]);")" "Te pasas"
 nocontiene "con 3 comunes (valor 3) se compra" "$(como $U1 "select cartas_mercader_comprar('$OP', array['$C1','$C2','$C3']::uuid[]);")" "ERROR"
 comprobar "recibe la poco común" "$U1/poseida" "$(dueno $P)"
-comprobar "las 3 comunes pasaron al mercader" "3" "$(sql "select count(*) from cartas_ejemplares where id in ('$C1','$C2','$C3') and estado='en_mercader'")"
+comprobar "las 3 comunes pasaron al montón común (reserva), que reparte también el Hipódromo" "3" "$(sql "select count(*) from cartas_ejemplares where id in ('$C1','$C2','$C3') and estado='en_reserva'")"
 contiene "esa oferta ya no está" "$(como $U2 "select cartas_mercader_comprar('$OP', array['$(dar $U2 comun-4)','$(dar $U2 comun-5)','$(dar $U2 comun-6)']::uuid[]);")" "Esa oferta ya no está"
 comprobar "queda registrada la compra" "1" "$(sql "select count(*) from cartas_mercader_registro where user_id='$U1'")"
 comprobar "la auditoría está limpia" "0" "$(auditar)"

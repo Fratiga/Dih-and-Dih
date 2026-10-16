@@ -320,6 +320,142 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-apuesta label.hip-casilla { display: flex; gap: 8px; align-items: flex-start; text-transform: none; letter-spacing: 0; font-size: .8rem; line-height: 1.35; color: var(--text); }
 .hip-apuesta input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: var(--accent); flex: none; }
 
-/* enlace a la página en vivo, en la barra de arriba */
-.hip-envivo { margin-left: auto; padding: 5px 12px; border: 1px solid var(--accent-soft); color: var(--accent) !important; font-weight: 600; }
-.hip-envivo:hover { border-color: var(--accent); background: rgba(230, 194, 78, .12); }
+/* ================================================================== Reorganización (octubre de 2026)
+   Cabecera con la entrada al directo y las monedas; reloj y pestañas en una barra que se queda arriba; inscritas, mercado y boleto
+   como tarjetas; el boleto sube desde abajo en pantallas pequeñas. */
+.hip-pagina { padding-top: 14px; }
+.hip-cabecera { align-items: center; padding: 4px 0 14px; }
+.hip-titular .mj-titulo { line-height: 1; }
+.hip-lema { margin: 6px 0 0; color: var(--muted); font-size: .88rem; }
+.hip-cabecera-der { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; }
+.hip-vivo {
+  display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; color: #231c05 !important; background: linear-gradient(180deg, #f0d56e, var(--accent)); border: 1px solid var(--accent);
+  font: 700 .95rem Karla, sans-serif; letter-spacing: .03em; text-decoration: none; box-shadow: 0 0 0 0 rgba(230, 194, 78, .5); animation: hipLatido 3.2s ease-out infinite;
+}
+.hip-vivo:hover { background: #f6df86; }
+.hip-vivo span { font-size: .8em; }
+@keyframes hipLatido { 0% { box-shadow: 0 0 0 0 rgba(230, 194, 78, .45); } 70%, 100% { box-shadow: 0 0 0 10px rgba(230, 194, 78, 0); } }
+.hip-billetera { min-width: 120px; }
+
+/* ---- la barra que se queda arriba */
+.hip-fija { position: sticky; top: 0; z-index: 30; margin: 0 -24px 18px; padding: 0 24px; background: rgba(22, 41, 31, .96); border-bottom: 1px solid var(--border); box-shadow: 0 6px 16px rgba(0, 0, 0, .28); }
+.hip-reloj { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin: 0; padding: 10px 0 4px; background: none; border: 0; border-left: 0; }
+body[data-fase] .hip-reloj { border-left: 0; }
+.hip-reloj-fase { display: flex; align-items: center; gap: 12px; }
+.hip-fase { display: inline-flex; align-items: center; gap: 8px; padding: 3px 12px; font-size: .74rem; border: 1px solid var(--accent-soft); background: var(--panel); }
+.hip-fase::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-soft); }
+body[data-fase="abierta"] .hip-fase::before { background: var(--hip-verde); box-shadow: 0 0 8px var(--hip-verde); }
+body[data-fase="cerrada"] .hip-fase::before { background: var(--accent); }
+body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); animation: hipParpadeo 1s infinite; }
+@keyframes hipParpadeo { 50% { opacity: .3; } }
+#hipCuenta { font-size: 1.35rem; }
+.hip-reloj-info { grid-column: auto; flex: 1 1 220px; font-size: .8rem; }
+.hip-reloj .hip-nota { flex: 1 0 100%; margin: 0 0 4px; }
+.hip-reloj .hip-nota:empty { display: none; }
+.hip-reloj-prueba { position: relative; font-size: .78rem; color: var(--muted); }
+.hip-reloj-prueba summary { cursor: pointer; padding: 3px 8px; border: 1px dashed var(--border); list-style: none; }
+.hip-reloj-prueba summary::-webkit-details-marker { display: none; }
+.hip-reloj-prueba[open] summary { border-color: var(--accent-soft); color: var(--text); }
+.hip-reloj-prueba .hip-reloj-mandos { position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; width: max-content; max-width: 86vw; padding: 10px; background: var(--panel); border: 1px solid var(--accent-soft); box-shadow: 0 8px 20px rgba(0, 0, 0, .4); flex-direction: column; align-items: stretch; }
+.hip-reloj-prueba .hip-velocidad { justify-content: flex-start; }
+
+.hip-pestanas { margin: 0; gap: 4px; border-bottom: 0; scrollbar-width: none; scroll-snap-type: x proximity; }
+.hip-pestanas::-webkit-scrollbar { display: none; }
+.hip-pestanas button { scroll-snap-align: start; padding: 9px 16px 10px; font-size: .9rem; border-bottom-width: 2px; transition: color .15s, background .15s; }
+.hip-pestanas button:hover { background: rgba(255, 255, 255, .04); }
+.hip-pestanas button[aria-selected="true"] { background: linear-gradient(180deg, transparent, rgba(230, 194, 78, .1)); }
+@media (max-width: 760px) { .hip-fija { margin: 0 -14px 14px; padding: 0 14px; } .hip-lema { display: none; } .hip-vivo { padding: 9px 16px; } }
+
+/* paneles que entran suave al cambiar de pestaña */
+.hip-panel:not(.hidden) { animation: hipEntra .22s ease-out; }
+@keyframes hipEntra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hip-panel:not(.hidden), .hip-vivo { animation: none; } }
+
+/* ---- tarjetas */
+.hip-tarjeta { box-shadow: 3px 3px 0 var(--sombra-dura); }
+.hip-programa { border-top: 3px solid var(--accent); background: linear-gradient(180deg, rgba(230, 194, 78, .07), transparent 140px), var(--panel); }
+
+/* ---- inscritas */
+.hip-insc-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.hip-insc { display: grid; grid-template-columns: 38px 104px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px 10px 8px; background: var(--panel-2); border: 1px solid var(--border); border-left: 4px solid var(--border); transition: border-color .15s, transform .15s; }
+.hip-insc:hover { border-color: var(--accent-soft); transform: translateX(2px); }
+.hip-insc.favorita { border-left-color: var(--accent); background: linear-gradient(90deg, rgba(230, 194, 78, .09), transparent 60%), var(--panel-2); }
+.hip-insc.mia { border-left-color: var(--hip-verde); }
+.hip-insc-pta { width: 32px; height: 32px; display: grid; place-items: center; margin: 0 auto; border-radius: 50%; background: var(--panel); border: 1px solid var(--accent-soft); color: var(--accent); font: 700 1rem var(--font-heading), serif; }
+.hip-insc-fig .hip-mini { width: 100%; }
+.hip-insc-info { display: grid; gap: 3px; min-width: 0; }
+.hip-insc-nombre { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.hip-insc-nombre .hip-enlace { font-size: 1.02rem; }
+.hip-insc-nombre .hip-sello { margin: 0; }
+.hip-insc-info small { color: var(--muted); font-size: .76rem; }
+.hip-insc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: .78rem; color: var(--muted); }
+.hip-insc-ult { display: inline-flex; gap: 2px; }
+.hip-insc-cuota { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 94px; padding: 8px 12px; text-align: center; }
+.hip-insc-cuota span { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.hip-insc-cuota strong { font: 700 1.35rem var(--font-heading), serif; color: var(--accent); line-height: 1.1; }
+.hip-insc-cuota small { font-size: .7rem; color: var(--muted); }
+@media (max-width: 620px) {
+  .hip-insc { grid-template-columns: 30px 76px minmax(0, 1fr); gap: 8px; }
+  .hip-insc-cuota { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; min-width: 0; padding: 8px 14px; }
+  .hip-insc-cuota span::after { content: " ·"; }
+  .hip-insc-pta { width: 26px; height: 26px; font-size: .85rem; }
+}
+
+/* ---- el boleto: pegado a un lado en pantalla ancha; hoja que sube desde abajo en pantalla estrecha */
+@media (min-width: 960px) { .hip-col-lateral { top: 100px; } }
+.hip-apuesta { border-top: 3px solid var(--accent); }
+.hip-apuesta-cab { display: flex; align-items: center; justify-content: space-between; }
+.hip-apuesta-cierra, .hip-apuesta-flota { display: none; }
+@media (max-width: 959px) {
+  .hip-apuesta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; max-height: 84dvh; overflow: auto; margin: 0; padding-bottom: 22px; transform: translateY(105%); visibility: hidden; transition: transform .26s cubic-bezier(.2, .8, .2, 1), visibility 0s .26s; box-shadow: 0 -10px 34px rgba(0, 0, 0, .55); }
+  .hip-apuesta.abierta { transform: none; visibility: visible; transition: transform .26s cubic-bezier(.2, .8, .2, 1); }
+  .hip-apuesta-cierra { display: block; background: none; border: 0; color: var(--muted); font-size: 1.7rem; line-height: 1; cursor: pointer; padding: 0 4px; }
+  .hip-apuesta-flota { display: flex; justify-content: center; gap: 8px; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 60; padding: 13px 16px; background: var(--accent); color: #231c05; border: 1px solid #fff3b0; font: 700 1rem Karla, sans-serif; box-shadow: 0 6px 20px rgba(0, 0, 0, .5); cursor: pointer; }
+  .hip-apuesta-flota span { font-weight: 500; opacity: .8; }
+  body:not([data-pestana="carrera"]) .hip-apuesta-flota { display: none; }
+  body.hip-con-boleto::before { content: ""; position: fixed; inset: 0; z-index: 65; background: rgba(0, 0, 0, .5); }
+  .hip-pagina { padding-bottom: 96px; }
+}
+
+/* ---- mercado de la cuadra */
+.hip-subpestanas { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+.hip-subpestanas button { padding: 8px 16px; background: var(--panel); color: var(--muted); border: 1px solid var(--border); font: 600 .9rem Karla, sans-serif; cursor: pointer; }
+.hip-subpestanas button small { margin-left: 4px; opacity: .7; }
+.hip-subpestanas button:hover { color: var(--text); border-color: var(--accent-soft); }
+.hip-subpestanas button[aria-pressed="true"] { background: var(--accent); color: #231c05; border-color: var(--accent); }
+.hip-nota-cuadra { margin-top: 0; max-width: 70ch; }
+.hip-merc-barra { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 6px 0 12px; }
+.hip-merc-barra label { display: grid; gap: 4px; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hip-merc-barra select { padding: 7px 10px; background: var(--panel-2); color: var(--text); border: 1px solid var(--accent-soft); font: 500 .9rem Karla, sans-serif; text-transform: none; letter-spacing: 0; }
+.hip-mercado { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.hip-merc { display: grid; grid-template-columns: 112px minmax(0, 1fr); grid-template-rows: auto auto; gap: 4px 12px; align-items: center; padding: 12px; background: var(--panel-2); border: 1px solid var(--border); transition: border-color .15s, transform .15s; }
+.hip-merc:hover { border-color: var(--accent-soft); transform: translateY(-2px); }
+.hip-merc-fig { grid-row: 1 / span 2; }
+.hip-merc-fig .hip-silueta.mediana { width: 100%; }
+.hip-merc-info { display: grid; gap: 2px; min-width: 0; }
+.hip-merc-info small { color: var(--muted); font-size: .76rem; }
+.hip-merc-valor { font-size: .84rem; }
+.hip-merc-compra { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 6px; border-top: 1px solid var(--border); }
+.hip-merc-compra strong { font: 700 1.2rem var(--font-heading), serif; color: var(--accent); }
+.hip-merc-mas { text-align: center; margin: 14px 0 0; }
+
+/* ---- criaturas: filtros como barra de herramientas */
+.hip-filtros { padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); }
+.hip-cria { transition: border-color .15s, transform .15s, background .15s; }
+.hip-cria:hover { background: var(--panel-2); }
+@media (max-width: 620px) {
+  .hip-reloj { padding-top: 8px; gap: 2px 12px; }
+  .hip-reloj-info { display: none; }
+  .hip-reloj-fase { flex: 1 1 auto; justify-content: space-between; }
+  #hipCuenta { font-size: 1.15rem; }
+  .hip-datos { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hip-datos > div:first-child, .hip-datos > div:last-child { grid-column: 1 / -1; }
+  .hip-prog-cab h2 { font-size: 1.2rem; }
+}
+@media (max-width: 620px) {
+  .hip-reloj { flex-wrap: nowrap; align-items: center; }
+  .hip-reloj-fase { flex-wrap: nowrap; gap: 8px; min-width: 0; }
+  .hip-fase { font-size: .6rem; padding: 2px 8px; letter-spacing: .08em; white-space: nowrap; }
+  #hipCuenta { font-size: 1rem; white-space: nowrap; }
+  .hip-reloj-prueba summary { padding: 2px 6px; white-space: nowrap; }
+}

@@ -184,6 +184,7 @@
     const saltar = $("hipSaltar");
     textoDe(saltar, f === "abierta" || f === "cerrada" ? "Ir a la salida" : f === "corriendo" ? "Saltar la carrera" : "Siguiente carrera");
     $("hipApostar").disabled = f !== "abierta" || !!p.suspendida;
+    textoDe($("hipApuestaFlotaDato"), f === "abierta" ? "· cierra en " + mmss(p.cierre - est.virtual) : "· cerradas");
     $("hipVelocidad").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.vel) === est.vel)));
     const aviso = (f === "corriendo" || f === "terminada") && est.vel > 10 ? "Durante la carrera el reloj no pasa de 10×." : "";
     textoDe($("hipRelojNota"), aviso);
@@ -223,24 +224,36 @@
 
   function pintarInscritos() {
     const p = m.proxima, sec = p.secreto;
-    const filas = p.entrantes.map((e, k) => {
+    const menor = p.entrantes.reduce((a, e) => (e.gan < a ? e.gan : a), Infinity);
+    const items = p.entrantes.map((e, k) => {
       const per = perfilDe(e.id); if (!per) return "";
-      const fav = est.favoritos.includes(e.id);
-      const real = sec && sec.pReal ? sec.pReal.gan[k] : null;
-      return `<tr>
-        <td class="hip-puerta">${e.puerta}</td>
-        <td><div class="hip-celda-cria">${D.silueta(per, { clase: "hip-mini" })}<div><button type="button" class="hip-enlace" data-ficha="${e.id}">${fav ? "♥ " : ""}${esc(per.nombre)}</button>
+      const fav = est.favoritos.includes(e.id), real = sec && sec.pReal ? sec.pReal.gan[k] : null, mia = e.dueno && e.dueno.id === YO;
+      const sellos = (e.gan === menor ? '<span class="hip-sello oro">Favorita</span>' : "") + (mia ? '<span class="hip-sello">★ Tuya</span>' : e.dueno ? `<span class="hip-sello gris">cuadra de ${esc(e.dueno.nombre || "otro jugador")}</span>` : "");
+      return `<li class="hip-insc${mia ? " mia" : ""}${e.gan === menor ? " favorita" : ""}">
+        <span class="hip-insc-pta" title="Puerta de salida">${e.puerta}</span>
+        <div class="hip-insc-fig">${D.silueta(per, { clase: "hip-mini" })}</div>
+        <div class="hip-insc-info">
+          <div class="hip-insc-nombre"><button type="button" class="hip-enlace" data-ficha="${e.id}">${fav ? "♥ " : ""}${esc(per.nombre)}</button>${sellos}</div>
           <small>${sexoTxt(per)} · ${T("etapa", esc(per.etapa))} · ${edadTxt(per)}${per.arquetipo ? " · " + T("arq_" + norm(per.arquetipo), esc(per.arquetipo)) : ""}</small>
-          ${e.dueno ? `<small class="hip-duena">${e.dueno.id === YO ? "★ tuya" : "cuadra de " + esc(e.dueno.nombre || "otro jugador")}</small>` : ""}
-          <small>${per.salidas ? `${per.salidas} salidas · ${per.vic}-${per.seg}-${per.ter}` : "debuta"}</small></div></div></td>
-        <td class="hip-col-extra">${estrellasTxt(per.estrellas)}</td>
-        <td class="hip-col-extra">${per.ultimas.slice(0, 4).map(chipPuesto).join("") || '<span class="hip-sin">-</span>'}</td>
-        <td class="hip-cuota"><button type="button" class="hip-cuota-btn" data-apostar="${e.id}" aria-label="Apostar a ${esc(per.nombre)}, cuota ${M.fmtCuota(e.gan)}"><strong>${M.fmtCuota(e.gan)}</strong><small>${T("podio", "podio")} ${M.fmtCuota(e.pod)}</small></button></td>
-        ${oculto ? `<td class="hip-oculto-col">${real == null ? "" : coma(real * 100, 1) + " %"}<small>${real == null ? "" : "vale " + coma(real * e.gan, 2)}</small></td>` : ""}
-      </tr>`;
+          <div class="hip-insc-meta">${estrellasTxt(per.estrellas)}<span class="hip-insc-rec">${per.salidas ? `${per.salidas} salidas · ${per.vic}-${per.seg}-${per.ter}` : "debuta"}</span><span class="hip-insc-ult">${per.ultimas.slice(0, 4).map(chipPuesto).join("") || ""}</span></div>
+          ${oculto && real != null ? `<small class="hip-oculto-col">Real ${coma(real * 100, 1)} % · vale ${coma(real * e.gan, 2)}</small>` : ""}
+        </div>
+        <button type="button" class="hip-cuota-btn hip-insc-cuota" data-apostar="${e.id}" aria-label="Apostar a ${esc(per.nombre)}, cuota ${M.fmtCuota(e.gan)}"><span>Ganador</span><strong>${M.fmtCuota(e.gan)}</strong><small>${T("podio", "podio")} ${M.fmtCuota(e.pod)}</small></button>
+      </li>`;
     }).join("");
-    poner($("hipInscritos"), `<table class="hip-tabla"><thead><tr><th>${T("puerta", "Pta.")}</th><th>Criatura</th><th class="hip-col-extra">${T("valoracion", "Valoración")}</th><th class="hip-col-extra">${T("ultimas", "Últimas")}</th><th>${T("cuota", "Cuota")}</th>${oculto ? '<th class="hip-oculto-col">Real</th>' : ""}</tr></thead><tbody>${filas}</tbody></table>`);
+    poner($("hipInscritos"), `<ol class="hip-insc-lista">${items}</ol>`);
   }
+
+  /* boleto de apuesta: junto a las inscritas en pantalla ancha; en pantalla estrecha, una hoja que sube desde abajo */
+  const esMovil = () => window.matchMedia("(max-width: 959px)").matches;
+  function abrirBoleto(si) {
+    $("hipPanelApuesta").classList.toggle("abierta", si);
+    $("hipApuestaFlota").setAttribute("aria-expanded", String(si));
+    document.body.classList.toggle("hip-con-boleto", si && esMovil());
+  }
+
+  // en pantalla estrecha el boleto se cierra solo y la confirmación queda arriba
+  function cerrarBoletoTrasApostar(texto) { if (!esMovil()) return; avisar(texto, "bien"); setTimeout(() => abrirBoleto(false), 1200); }
 
   /* panel de apuestas */
   /* Lo que hay apostado ahora al pozo de la carrera que viene, por criatura: del servidor, o de tus apuestas en modo local */
@@ -301,6 +314,7 @@
       msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(Number(r.cuota))}${doble ? " (doble)" : ""}.`;
       msg.className = "hip-aviso bien";
       pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
+      cerrarBoletoTrasApostar(msg.textContent);
       return;
     }
     est.saldo -= monto;
@@ -309,6 +323,7 @@
     msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(cuota)}${doble ? " (doble)" : ""}.`;
     msg.className = "hip-aviso bien";
     pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
+    cerrarBoletoTrasApostar(msg.textContent);
   }
   function pintarPendientesCarrera() {
     const mias = est.pendientes.filter(a => a.n === m.proxima.n);
@@ -516,6 +531,8 @@
   }
   function mostrarPestana(id, sinGuardar) {
     pestana = id;
+    document.body.dataset.pestana = id;
+    if (id !== "carrera") abrirBoleto(false);
     document.querySelectorAll("[data-pestana]").forEach(b => { const on = b.dataset.pestana === id; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
     document.querySelectorAll(".hip-panel").forEach(p => p.classList.toggle("hidden", p.id !== "hipPanel-" + id));
     if (!sinGuardar) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
@@ -529,6 +546,8 @@
     $("hipVelocidad").innerHTML = VELOCIDADES.map(([v, t]) => `<button type="button" class="hip-boton chico" data-vel="${v}" aria-pressed="false">${t}</button>`).join("");
     $("hipVelocidad").addEventListener("click", e => { const b = e.target.closest("[data-vel]"); if (!b) return; est.vel = Number(b.dataset.vel); guardar(); pintarReloj(); });
     $("hipSaltar").addEventListener("click", saltar);
+    $("hipApuestaFlota").addEventListener("click", () => abrirBoleto(!$("hipPanelApuesta").classList.contains("abierta")));
+    $("hipApuestaCierra").addEventListener("click", () => abrirBoleto(false));
     document.querySelector(".hip-pestanas").addEventListener("click", e => { const b = e.target.closest("[data-pestana]"); if (b) mostrarPestana(b.dataset.pestana); });
     document.querySelector(".hip-pestanas").addEventListener("keydown", e => {
       if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
@@ -538,7 +557,7 @@
     document.addEventListener("click", e => {
       const f = e.target.closest("[data-ficha]"); if (f) { abrirFicha(Number(f.dataset.ficha)); return; }
       const a = e.target.closest("[data-apostar]");
-      if (a) { $("hipSel1").value = a.dataset.apostar; pintarPanelApuesta(false); $("hipPanelApuesta").scrollIntoView({ behavior: "smooth", block: "center" }); $("hipMonto").focus(); return; }
+      if (a) { $("hipSel1").value = a.dataset.apostar; pintarPanelApuesta(false); if (esMovil()) abrirBoleto(true); else { $("hipPanelApuesta").scrollIntoView({ behavior: "smooth", block: "center" }); $("hipMonto").focus(); } return; }
       if (e.target.closest("[data-ir-cuadra]")) { cerrarFicha(); mostrarPestana("cuadra"); return; }
       const fav = e.target.closest("[data-favorito]");
       if (fav) {
@@ -606,7 +625,7 @@
   function ponerModoServidor() {
     oculto = false;
     document.querySelector(".hip-modo").textContent = "Servidor: un mundo para todos, a la hora real";
-    ["hipVelocidad", "hipSaltar"].forEach(id => $(id).classList.add("hidden"));
+    ["hipVelocidad", "hipSaltar", "hipRelojPrueba"].forEach(id => $(id).classList.add("hidden"));
     document.querySelectorAll(".hip-solo-local").forEach(el => el.classList.add("hidden"));
     $("hipRelojNota").textContent = "";
   }
