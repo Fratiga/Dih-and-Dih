@@ -3904,3 +3904,16 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-balance-tabla th, .admin-balance-tabla td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
 .admin-balance-tabla th { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .admin-balance-tabla tr.admin-balance-raro td { color: #ffb86b; font-weight: 700; }
+
+/* Admin: dificultad de los rivales */
+.admin-rivales { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.admin-rival { padding: 10px 12px; border: 1px solid var(--border); background: var(--panel); }
+.admin-rival h3 { margin: 0 0 8px; font-size: 1rem; }
+.admin-rival h3 small { color: var(--muted); font-weight: normal; }
+.admin-rival table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.admin-rival th, .admin-rival td { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+.admin-rival th { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.admin-rival td small { display: block; color: var(--muted); font-size: .72rem; }
+.admin-rival input { width: 100%; box-sizing: border-box; padding: 4px 6px; font: inherit; color: var(--text); background: rgba(0, 0, 0, .35); border: 1px solid var(--border); }
+.admin-rivales-cambiado td { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.admin-rival-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }

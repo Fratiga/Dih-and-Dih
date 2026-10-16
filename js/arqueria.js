@@ -73,6 +73,8 @@
       radio: 38, velocidadBase: 140, zigzag: true
     }
   };
+  // La dificultad de cada rival puede cambiarla el Admin desde su panel (pestaña Rivales, js/rivales-ajustes.js)
+  if (window.RivalesAjustes) RivalesAjustes.aplicar("arqueria", RIVALES);
   const PUNTOS_ANILLO = [10, 7, 4];
   // Lo que se lee en la pantalla previa al disparo (antes estaba en una fila de fichas bajo el campo)
   const REGLAS = ["Un minuto. Los blancos aparecen y se esfuman en segundos.", "Centro 10, medio 7, borde 4. Los dorados, pequeños y fugaces, valen el doble.", "Dispara con clic, o con Z / X sobre el blanco. Si fallas, la mira tarda medio segundo en recargar."];

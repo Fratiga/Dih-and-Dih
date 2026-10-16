@@ -27,6 +27,8 @@
     { id: "caballero", nombre: "Caballero de Brurland", descripcion: "Bloquea, esquiva y contraataca.", hp: 105, dano: [11, 21], reaccion: 0.3, bloqueo: 0.45, esquiva: 0.2, agresion: 0.95, finta: 0.15, castigo: 0.55, aviso: 0.27, arma: 74, color: "#8a9aa6" },
     { id: "adam", nombre: "Adam Kovacs, capitán de los caballeros", descripcion: "Casi no se le puede sorprender.", hp: 140, dano: [13, 26], reaccion: 0.17, bloqueo: 0.55, esquiva: 0.3, agresion: 1.15, finta: 0.3, castigo: 0.85, aviso: 0.2, arma: 84, color: "#c9a14a" }
   ];
+  // La dificultad de cada rival puede cambiarla el Admin desde su panel (pestaña Rivales, js/rivales-ajustes.js)
+  if (window.RivalesAjustes) RivalesAjustes.aplicar("duelo", RIVALES);
 
   // Tiempos del jugador y reglas comunes (segundos)
   const PARADA = 0.14;            // ventana de parada desde que se levanta la guardia

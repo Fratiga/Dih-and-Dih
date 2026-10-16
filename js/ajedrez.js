@@ -89,6 +89,8 @@
       ], tiempoTotal: 60, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
       frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
   ];
+  // La dificultad de cada rival puede cambiarla el Admin desde su panel (pestaña Rivales, js/rivales-ajustes.js)
+  if (window.RivalesAjustes) RivalesAjustes.aplicar("ajedrez", RIVALES);
 
   let Chess = null;
   let juego = null;

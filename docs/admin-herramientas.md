@@ -23,7 +23,7 @@ Reglas comunes:
 | 4 | Editor de pines del mapa (arrastrar sobre el mapa) | 2 | Hecho |
 | 13 | Anuncios y novedades del lobby | 2 | Hecho (colección «Novedades del lobby») |
 | 6, 7 | Balance y prueba de cartas (pestaña Balance: partidas reales y simulador) | 3 | Hecha, sin SQL. El simulador (`js/cartas-simulador.js`) usa el motor real |
-| 8 | Dificultad de los rivales | 3 | Pendiente |
+| 8 | Dificultad de los rivales (pestaña Rivales: Ajedrez, Arquería y Duelo) | 3 | Hecha. SQL: `docs/admin/rivales.sql` |
 | 9, 10 | Regalos y eventos, calendario del Hipódromo | 3 | Pendiente (coordinar con las sesiones de Economía e Hipódromo) |
 | 12 | Interruptores del sitio | 4 | Hecho. SQL: `docs/admin/herramientas_2.sql` |
 | 11 | Editor de diálogos del Bufón | 4 | Pendiente |
@@ -79,3 +79,10 @@ SQL: `docs/admin/herramientas_2.sql` (se prueba con `sh docs/admin/probar_herram
 - **En vivo**: usa la presencia de `js/presencia.js`, que ahora anuncia también la página real (vacía si es una escondida) y desde cuándo.
 
 - Rocola de fondos (biblioteca de música de páginas, aparte de la Rocola pública, solo Admin): `docs/admin/musica_fondos.sql` (probado con `sh docs/admin/probar_musica_fondos.sh`), `js/musica-fondos.js`, pestaña «Música de fondo» y desplegable en el editor ⚙.
+
+## Dificultad de los rivales
+
+SQL: `docs/admin/rivales.sql` (se prueba con `sh docs/admin/probar_rivales.sh`). Pestaña **Rivales**: elige el juego y, por cada rival, cambia sus números (reflejos, precisión, vida, jugadas que mira por adelantado...). Los valores de fábrica se leen del propio archivo de cada juego
+(`const RIVALES = ...`), así que no hay una segunda lista que se desincronice; lo que escribas se guarda en `rivales_ajustes` (un número o una lista corta por rival y campo) y cada juego lo pone encima al cargar (`js/rivales-ajustes.js`, que se llama justo después de definir `RIVALES`
+en `ajedrez.js`, `arqueria.js` y `duelo.js`). Un valor que no encaja se ignora. Vacío = el de fábrica; «Volver al original» borra los cambios de ese rival. `node docs/pruebas-web/rivales.js` comprueba que el literal de cada juego se sigue pudiendo leer.
+Las victorias ya registradas contra un rival siguen contando aunque lo hagas más fácil.
