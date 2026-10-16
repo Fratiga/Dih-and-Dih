@@ -166,11 +166,24 @@ window.CartasCliente = (function () {
   }
 
   /* Sube la foto al bucket y devuelve su URL pública. */
+  /* Los GIF y los WebP animados se suben tal cual: pasarlos por un lienzo los dejaría quietos. Pesan más, así que tienen
+     su propio tope (el del bucket, ver scratchpad/cartas_gif.sql). */
+  const TOPE_ANIMADA = 10 * 1024 * 1024;
+  async function esAnimada(archivo) {
+    if (archivo.type === "image/gif") return true;
+    if (archivo.type !== "image/webp") return false;
+    const cabecera = new Uint8Array(await archivo.slice(0, 4096).arrayBuffer());
+    return new TextDecoder("latin1").decode(cabecera).includes("ANIM");
+  }
+
   async function subirImagen(archivo) {
-    const blob = await prepararImagen(archivo);
+    const animada = await esAnimada(archivo);
+    if (animada && archivo.size > TOPE_ANIMADA) throw new Error("La imagen animada pesa más de 10 MB. Recórtala o bájale los fotogramas.");
+    const tipo = animada ? archivo.type : "image/webp";
+    const blob = animada ? archivo : await prepararImagen(archivo);
     const supabase = await fichasCliente();
-    const ruta = `${crypto.randomUUID()}.webp`;
-    const { error } = await supabase.storage.from("cartas").upload(ruta, blob, { contentType: "image/webp", upsert: false, cacheControl: "31536000" });
+    const ruta = `${crypto.randomUUID()}.${tipo === "image/gif" ? "gif" : "webp"}`;
+    const { error } = await supabase.storage.from("cartas").upload(ruta, blob, { contentType: tipo, upsert: false, cacheControl: "31536000" });
     if (error) throw error;
     return `${window.FICHAS_SUPABASE_URL}${MARCA_BUCKET}${ruta}`;
   }
