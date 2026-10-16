@@ -442,6 +442,398 @@
       atacantes.forEach(h => M.mod(c.est, h.u, -1, 0, c.est.turno, `${M.nombre(c.est, h.u)} avanza cojeando: -1 de ataque este turno.`));
     } } });
 
+    // =====================================================================================================
+    // Lote 2: líderes de facción, NPCs, criaturas, objetos, reacciones y terrenos (js/cartas-datos.js, «Lote 2»)
+    // =====================================================================================================
+    const MANO_MAX = M.C.MANO_MAX, CAMPO_MAX = M.C.CAMPO_MAX;
+    // Último turno del próximo turno de `dueno` (para «hasta el final de su próximo turno»)
+    const proximoDe = (est, dueno) => (est.activo === dueno ? est.turno + 2 : est.turno + 1);
+    const golpe = (c, t, n) => M.infligir(c.est, { u: t.uid }, n, { tipo: "habilidad", dueno: c.j });
+    const barrer = (c, n) => enemigas(c.est, c.j).slice().forEach(t => { if (M.buscar(c.est, t.uid)) golpe(c, t, n); });
+    const mejora = (u, a, p) => { u.atq += a; u.pvMax += p; u.pv += p; };
+    const dar = (u, palabra, hasta) => { u.flags.dadas = u.flags.dadas || {}; u.flags.dadas[palabra] = hasta === undefined ? 9999 : hasta; };
+    const crear = (c, id, n) => { for (let i = 0; i < n; i++) { if (c.est.jugadores[c.j].campo.length >= CAMPO_MAX) return; M.ponerUnidad(c.est, c.j, id, false, null); } };
+    const alMano = (est, j, id) => {
+      const J = est.jugadores[j];
+      if (J.mano.length >= MANO_MAX) { J.descartes.push(id); M.log(est, `${J.nombre} tiene la mano llena: ${M.meta(est, id).nombre} se pierde.`); }
+      else J.mano.push(id);
+    };
+    const masHerida = (est, j) => est.jugadores[j].campo.filter(u => u.pv < u.pvMax).sort((a, b) => a.pv / a.pvMax - b.pv / b.pvMax || a.pv - b.pv)[0] || null;
+    const conMenosVida = (est, j) => est.jugadores[j].campo.slice().sort((a, b) => a.pv - b.pv || a.uid - b.uid)[0] || null;
+    const limpiar = (est, u) => {
+      u.mods = u.mods.filter(m => { if (m.atq < 0) { u.pvMax -= m.pv; return false; } return true; });
+      ["noAtacaHasta", "noBloqueaHasta", "sinProvocarHasta", "sinVolarHasta", "sinCurarHasta"].forEach(k => { u.flags[k] = 0; });
+      if (u.flags.marcadaPor !== null && u.flags.marcadaPor !== u.dueno) { u.flags.marcadaPor = null; u.flags.marcadaHasta = 0; }
+      u.pv = Math.max(1, Math.min(u.pv, u.pvMax));
+    };
+    const descartarPor = (est, j, mejor) => {
+      const J = est.jugadores[j];
+      if (!J.mano.length) return;
+      let k = 0;
+      J.mano.forEach((id, i) => { if (mejor(M.meta(est, id).coste || 0, M.meta(est, J.mano[k]).coste || 0)) k = i; });
+      const carta = J.mano.splice(k, 1)[0];
+      J.descartes.push(carta);
+      M.log(est, `${J.nombre} descarta ${M.meta(est, carta).nombre}.`);
+    };
+    const descartarMasBarata = (est, j) => descartarPor(est, j, (a, b) => a < b);
+    const descartarMasCara = (est, j) => descartarPor(est, j, (a, b) => a > b);
+    // Roba del mazo la primera carta que cumpla el filtro(meta). Devuelve true si había alguna.
+    const robarDelMazo = (est, j, filtro) => {
+      const J = est.jugadores[j];
+      const i = J.mazo.findIndex(id => filtro(M.meta(est, id)));
+      if (i < 0) return false;
+      const id = J.mazo.splice(i, 1)[0];
+      alMano(est, j, id);
+      M.log(est, `${J.nombre} busca en su mazo y roba una carta.`);
+      return true;
+    };
+    // Devuelve a la mano una carta del cementerio (la última, o la de menor coste con cual = "barata")
+    const recuperar = (est, j, filtro, cual) => {
+      const lista = M.enCementerio(est, j, filtro);
+      if (!lista.length) return false;
+      const k = cual === "barata" ? lista.reduce((a, b) => ((M.meta(est, b.id).coste || 0) < (M.meta(est, a.id).coste || 0) ? b : a)) : lista[lista.length - 1];
+      const id = M.exiliar(est, j, k.i);
+      alMano(est, j, id);
+      M.log(est, `${est.jugadores[j].nombre} recupera ${M.meta(est, id).nombre} de su cementerio.`);
+      return true;
+    };
+
+    // Fichas del lote
+    M.registrarFicha("automata", { nombre: "Autómata", afinidad: ["arcano"], atq: 1, pv: 2, habilidad: "Un autómata de Nernib: obedece y no pregunta." });
+    M.registrarFicha("mercenario", { nombre: "Mercenario", tipo: "Personaje", afinidad: ["juramento"], atq: 2, pv: 1, habilidad: "Espada de alquiler: el contrato dura lo que dura el pago." });
+    M.registrarFicha("gusano-de-arena", { nombre: "Gusano de arena", afinidad: ["carne"], atq: 2, pv: 2, habilidad: "Cría de la Madre del Desierto." });
+    M.registrarFicha("cachorro-de-jauria", { nombre: "Cachorro de jauría", afinidad: ["caceria"], atq: 1, pv: 1, habilidad: "Veloz." });
+    M.registrarFicha("emboscado", { nombre: "Emboscado", tipo: "Personaje", afinidad: ["sombra"], atq: 2, pv: 1, habilidad: "Salió de ninguna parte." });
+    M.registrarFicha("recluta", { nombre: "Recluta", tipo: "Personaje", afinidad: ["juramento"], atq: 1, pv: 2, habilidad: "Respondió a la campana con lo que tenía a mano." });
+    R("cachorro-de-jauria", { palabras: ["veloz"] });
+
+    // --- Líderes de facción --------------------------------------------------------------------------
+    R("el-mitrado", { protege: (est, g, t) => t.uid !== g.uid && esDe(est, t, "juramento") });
+    R("la-primera-aurora", { alInicioTurno: c => {
+      const t = masHerida(c.est, c.j);
+      if (!t) return;
+      M.log(c.est, `El amanecer de ${M.nombre(c.est, c.u)} cae sobre ${M.nombre(c.est, t)}.`);
+      M.curar(c.est, { u: t.uid }, 2);
+    } });
+    R("el-primer-juramentado", { alEntrarAliada: c => {
+      if (!esDe(c.est, c.otra, "juramento")) return;
+      c.otra.flags.barrera = true;
+      M.log(c.est, `${M.nombre(c.est, c.otra)} es investido: entra con Barrera.`);
+    } });
+    R("atalaya-de-vardun", { palabras: ["provocar"], alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => M.atqEfectivo(est, t) >= 4, resolver: c => {
+      c.objetivo.flags.noAtacaHasta = Math.max(c.objetivo.flags.noAtacaHasta, proximoDe(c.est, c.objetivo.dueno));
+      M.log(c.est, `${M.nombre(c.est, c.u)} escucha el hielo y detiene a ${M.nombre(c.est, c.objetivo)}: no puede atacar hasta el final del próximo turno de su dueño.`);
+    } } });
+    R("legado-del-aguila", { auraAtq: (est, g, u) => (esDe(est, u, "juramento") ? (cuantas(est, g.dueno, "juramento") >= 3 ? 2 : 1) : 0) });
+    R("senora-de-la-madriguera", { alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => t.pv < t.pvMax, resolver: c => {
+      M.log(c.est, `${M.nombre(c.est, c.u)} captura a ${M.nombre(c.est, c.objetivo)}.`);
+      M.devolverAMano(c.est, c.objetivo);
+    } } });
+    R("el-tiznado", { alEntrar: { resolver: c => { robarDelMazo(c.est, c.j, m => m.tipo === "Objeto"); } } });
+    R("pregonero-de-cambalache", { alEntrar: { resolver: c => {
+      M.log(c.est, `${M.nombre(c.est, c.u)} abre la puja.`);
+      M.robar(c.est, c.j, 1); M.robar(c.est, 1 - c.j, 1);
+      descartarMasBarata(c.est, 1 - c.j);
+    } } });
+    R("primer-engranaje", {
+      auraAtq: (est, g, u) => (u.cartaId === "automata" ? 1 : 0),
+      alEntrar: { resolver: c => crear(c, "automata", 2) }
+    });
+    R("decano-de-los-fundamentos", {
+      costeMod: (est, u, m) => ((m.afinidad || []).includes("arcano") ? -1 : 0),
+      alEntrar: { resolver: c => { robarDelMazo(c.est, c.j, m => (m.afinidad || []).includes("arcano")); } }
+    });
+    R("la-anatomista", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => {
+      const t = c.objetivo, a = t.atq, p = t.pvMax;
+      M.log(c.est, `${M.nombre(c.est, c.u)} diseca a ${M.nombre(c.est, t)}.`);
+      M.morir(c.est, t, { tipo: "habilidad", dueno: c.j });
+      if (M.buscar(c.est, c.u.uid)) mejora(c.u, a, p);
+    } } });
+    R("trazahorizontes", { alEntrar: { resolver: c => { if (!robarDelMazo(c.est, c.j, m => m.tipo === "Terreno")) M.robar(c.est, c.j, 1); } } });
+    R("el-desenterrador", { alEntrar: { resolver: c => { recuperar(c.est, c.j, m => m.tipo === "Objeto" || m.tipo === "Acción"); } } });
+    R("mano-de-oro", { alEntrar: { resolver: c => crear(c, "mercenario", 2) } });
+    R("el-ultimo-matadragones", {
+      palabras: ["desafiante"],
+      bonusAtaque: (est, u, t) => { if (!t) return 0; const m = M.meta(est, t.cartaId); return /drag|draco/i.test(m.nombre) || (m.coste || 0) >= 6 ? 4 : 0; }
+    });
+    R("primer-velo-del-eclipse", { escurridizo: () => true, alEntrar: { resolver: c => descartarAlAzar(c.est, 1 - c.j) } });
+    R("el-anfitrion", { alInicioTurno: c => {
+      if (enemigas(c.est, c.j).length <= c.est.jugadores[c.j].campo.length) return;
+      const J = c.est.jugadores[c.j];
+      J.energia = Math.min(M.C.ENERGIA_MAX, J.energia + 1);
+      M.log(c.est, `${M.nombre(c.est, c.u)} cobra su protección: ${J.nombre} gana 1 de energía.`);
+    } });
+    R("senor-de-las-calas", { alAtacarJugador: c => { M.log(c.est, `${M.nombre(c.est, c.u)} saquea.`); M.robar(c.est, c.j, 1); descartarAlAzar(c.est, 1 - c.j); } });
+    R("ceniza-coronada", {
+      alEntrar: { resolver: c => { M.revivir(c.est, c.j, { cual: "fuerte", pv: 2 }); } },
+      alMorirAliada: c => crear(c, "centinela", 1)
+    });
+    R("magistrada-de-la-colmena", { alEntrar: { resolver: c => {
+      M.vetar(c.est, 1 - c.j, { tipos: ["Objeto", "Acción"], hasta: c.est.turno + 1, texto: "La Magistrada de la Colmena te impide jugar Objetos y Acciones." });
+      M.log(c.est, `La sentencia de ${M.nombre(c.est, c.u)}: el rival no puede jugar Objetos ni Acciones hasta el final de su próximo turno.`);
+    } } });
+    R("portador-del-sello-rojo", { alEntrar: { resolver: c => { M.log(c.est, `${M.nombre(c.est, c.u)} ejecuta un embargo.`); descartarMasCara(c.est, 1 - c.j); } } });
+    R("velador-de-umbrathil", { alEntrar: { resolver: c => {
+      const J = c.est.jugadores[1 - c.j];
+      const arriba = J.mazo.slice(0, 3);
+      if (!arriba.length) return;
+      let k = 0;
+      arriba.forEach((id, i) => { if (M.meta(c.est, id).coste > M.meta(c.est, arriba[k]).coste) k = i; });
+      J.mazo.push(J.mazo.splice(k, 1)[0]);
+      M.log(c.est, `${M.nombre(c.est, c.u)} registra el mazo de ${J.nombre} y manda una carta al fondo.`);
+    } } });
+
+    // --- NPCs genéricos --------------------------------------------------------------------------------
+    R("posadero", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.curar(c.est, { u: c.objetivo.uid }, 3) } });
+    R("herrero-de-aldea", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => {
+      mejora(c.objetivo, 1, 1);
+      M.log(c.est, `${M.nombre(c.est, c.u)} forja algo para ${M.nombre(c.est, c.objetivo)}: +1/+1 para siempre.`);
+    } } });
+    R("boticaria", { alEntrar: { resolver: c => c.est.jugadores[c.j].campo.slice().forEach(u => M.curar(c.est, { u: u.uid }, 2)) } });
+    R("bardo-ambulante", { alEntrar: { resolver: c => {
+      c.est.jugadores[c.j].campo.slice().forEach(u => M.mod(c.est, u, 1, 0, c.est.turno, `${M.nombre(c.est, u)} sigue la canción: +1 de ataque este turno.`));
+    } } });
+    R("mercader-viajero", { alEntrar: { resolver: c => { descartarMasBarata(c.est, c.j); M.robar(c.est, c.j, 2); } } });
+    R("guardia-de-la-ciudad", { palabras: ["provocar"] });
+    R("novicio", { pasivaAtq: (est, u) => Math.min(3, cuantas(est, u.dueno, "juramento") - (esDe(est, u, "juramento") ? 1 : 0)) });
+    R("cazador-de-brurland", { bonusAtaque: (est, u, t) => (t && M.meta(est, t.cartaId).tipo === "Criatura" ? 2 : 0) });
+    R("granjero-con-horca", { alRecibirDano: c => {
+      const f = c.fuente;
+      if (!f || f.tipo !== "combate" || !f.uid) return;
+      const h = M.buscar(c.est, f.uid);
+      if (!h || h.j === c.j) return;
+      M.log(c.est, `${M.nombre(c.est, c.u)} le clava la horca a ${M.nombre(c.est, h.u)}.`);
+      M.infligir(c.est, { u: h.u.uid }, 1, { tipo: "habilidad", dueno: c.j });
+    } });
+    R("ladron-de-bolsillos", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; }, alAtacarJugador: c => M.robar(c.est, c.j, 1) });
+    R("contrabandista", { alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => M.tienePalabra(est, t, "provocar"), resolver: c => {
+      c.objetivo.flags.sinProvocarHasta = Math.max(c.objetivo.flags.sinProvocarHasta, proximoDe(c.est, c.objetivo.dueno));
+      M.log(c.est, `${M.nombre(c.est, c.objetivo)} acepta el soborno: pierde Provocar hasta el final del próximo turno de su dueño.`);
+    } } });
+    R("alquimista-de-nernib", { alEntrar: { objetivo: "unidad", resolver: c => {
+      const t = c.objetivo, a = t.atq, p = t.pv;
+      t.atq = p; t.pvMax = t.pv = Math.max(1, a);
+      t.mods = [];
+      M.log(c.est, `${M.nombre(c.est, c.u)} invierte a ${M.nombre(c.est, t)}: ahora es ${t.atq}/${t.pv}.`);
+    } } });
+    R("aprendiz-de-mago", { alEntrar: { objetivo: "unidadEnemiga", resolver: c => golpe(c, c.objetivo, 1) } });
+    R("capitan-de-barco", { alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => {
+      M.log(c.est, `${M.nombre(c.est, c.u)} cambia de rumbo y recoge a ${M.nombre(c.est, c.objetivo)}.`);
+      M.devolverAMano(c.est, c.objetivo);
+    } } });
+    R("pescador", { alEntrar: { resolver: c => { if (c.est.terreno) M.robar(c.est, c.j, 1); } } });
+    R("minero-de-pozohumo", { reduceDano: (est, u, n, fuente) => (fuente && fuente.tipo === "terreno" ? n : 0) });
+    R("ciego-profeta", { alEntrar: { resolver: c => {
+      const J = c.est.jugadores[1 - c.j];
+      if (!J.mazo.length || !M.esUnidad(M.meta(c.est, J.mazo[0]))) return;
+      J.mazo.push(J.mazo.shift());
+      M.log(c.est, `${M.nombre(c.est, c.u)} ve lo que viene: una carta de ${J.nombre} va al fondo de su mazo.`);
+    } } });
+    R("verdugo", { alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => t.pv * 2 <= t.pvMax, resolver: c => {
+      M.log(c.est, `${M.nombre(c.est, c.u)} ejecuta a ${M.nombre(c.est, c.objetivo)}.`);
+      M.morir(c.est, c.objetivo, { tipo: "habilidad", dueno: c.j });
+    } } });
+    R("escriba-del-contrato", { alEntrar: { resolver: c => {
+      M.vetar(c.est, 1 - c.j, { tipos: ["Reacción"], hasta: c.est.turno, texto: "La letra pequeña te impide jugar Reacciones este turno." });
+      M.log(c.est, `La letra pequeña de ${M.nombre(c.est, c.u)}: el rival no puede jugar Reacciones este turno.`);
+    } } });
+    R("peregrino-del-alba", { alMorir: c => {
+      const t = masHerida(c.est, c.j);
+      if (!t) return;
+      M.log(c.est, `El último consuelo de ${M.nombre(c.est, c.u)} llega a ${M.nombre(c.est, t)}.`);
+      M.curar(c.est, { u: t.uid }, 3);
+    } });
+    R("soldado-balutiano", { palabras: ["duro"] });
+    R("sepulturero", { alEntrar: { resolver: c => { recuperar(c.est, c.j, m => M.esUnidad(m) && !m.token, "barata"); } } });
+
+    // --- Criaturas y titanes ---------------------------------------------------------------------------
+    R("fenix", { alMorir: c => {
+      if (c.u.flags.renacida) return;
+      const n = M.revivir(c.est, c.j, { id: "fenix", pv: 2, silencio: true });
+      if (n) { n.flags.renacida = true; M.log(c.est, "El Fénix renace de sus cenizas con 2 de vida."); }
+    } });
+    R("kirin", { alEntrar: { resolver: c => {
+      c.est.jugadores[c.j].campo.slice().forEach(u => { limpiar(c.est, u); M.curar(c.est, { u: u.uid }, 2); });
+      M.log(c.est, "El Kirin purifica a las unidades de su dueño.");
+    } } });
+    R("manticora", { alEntrar: { resolver: c => { M.log(c.est, "La Manticora lanza sus púas."); barrer(c, 1); } } });
+    R("basilisco", { alRecibirDano: c => {
+      const f = c.fuente;
+      if (!f || f.tipo !== "combate" || !f.uid) return;
+      const h = M.buscar(c.est, f.uid);
+      if (!h || h.j === c.j) return;
+      const hasta = proximoDe(c.est, h.u.dueno);
+      h.u.flags.noAtacaHasta = Math.max(h.u.flags.noAtacaHasta, hasta);
+      h.u.flags.noBloqueaHasta = Math.max(h.u.flags.noBloqueaHasta, hasta);
+      M.log(c.est, `${M.nombre(c.est, h.u)} se queda de piedra: no puede atacar ni bloquear hasta el final del próximo turno de su dueño.`);
+    } });
+    R("medusa", { alEntrar: { resolver: c => {
+      M.log(c.est, "Las serpientes de la Medusa miran al campo rival.");
+      barrer(c, 1);
+      enemigas(c.est, c.j).forEach(t => { t.flags.noAtacaHasta = Math.max(t.flags.noAtacaHasta, proximoDe(c.est, t.dueno)); });
+    } } });
+    R("kelpie", { alEntrar: { objetivo: "unidadEnemiga", filtro: (est, t) => !M.tienePalabra(est, t, "volar"), resolver: c => {
+      c.objetivo.flags.noAtacaHasta = Math.max(c.objetivo.flags.noAtacaHasta, proximoDe(c.est, c.objetivo.dueno));
+      M.log(c.est, `${M.nombre(c.est, c.objetivo)} sube al lomo del Kelpie y se hunde: no puede atacar hasta el final del próximo turno de su dueño.`);
+    } } });
+    R("unicornio", { escurridizo: () => true, alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.curar(c.est, { u: c.objetivo.uid }, c.objetivo.pvMax) } });
+    R("behemoth", { palabras: ["duro"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => { M.log(c.est, "El Behemoth embiste."); golpe(c, c.objetivo, 3); } } });
+    R("leviatan", { alAtacar: c => { M.log(c.est, "La marea del Leviatán barre el campo rival."); barrer(c, 2); } });
+    R("gargola", { palabras: ["duro"], alMorir: c => crear(c, "resto-piedra", 1) });
+    R("pegaso", { palabras: ["volar"], alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => {
+      dar(c.objetivo, "volar", c.est.turno);
+      M.log(c.est, `${M.nombre(c.est, c.objetivo)} monta el Pegaso: Volar hasta el final del turno.`);
+    } } });
+    R("hipogrifo", { palabras: ["volar", "veloz"] });
+    R("grifo", { palabras: ["volar", "temible"] });
+    R("dragon-dorado", { palabras: ["volar"], alEntrar: { resolver: c => { M.log(c.est, "El Dragón Dorado reparte su tesoro."); M.robar(c.est, c.j, 2); } } });
+    R("dragon-de-magma", { palabras: ["arrollar"], alEntrar: { resolver: c => { M.log(c.est, "El aliento de magma cae sobre el campo rival."); barrer(c, 2); } } });
+    R("dragon-ancestral", { palabras: ["volar", "duro"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => golpe(c, c.objetivo, 4) } });
+    R("arbol-ancestral-de-eon", { palabras: ["provocar"], alInicioTurno: c => {
+      if ((c.u.flags.raices || 0) >= 4) return;
+      c.u.flags.raices = (c.u.flags.raices || 0) + 1;
+      mejora(c.u, 1, 1);
+      M.log(c.est, `${M.nombre(c.est, c.u)} echa raíces: +1/+1.`);
+    } });
+    R("lao-shan-lung", { palabras: ["duro"], alAtacar: c => {
+      if (!c.est.terreno) return;
+      M.retirarTerreno(c.est, `${M.nombre(c.est, c.u)} avanza y aplasta ${M.meta(c.est, c.est.terreno.cartaId).nombre}.`);
+      M.sincronizarTerreno(c.est);
+    } });
+    R("borealis-titan-glacial", { palabras: ["duro"], alEntrar: { resolver: c => {
+      M.log(c.est, "Borealis despierta y el frío cae sobre el campo rival.");
+      enemigas(c.est, c.j).forEach(t => { t.flags.noAtacaHasta = Math.max(t.flags.noAtacaHasta, proximoDe(c.est, t.dueno)); });
+    } } });
+    R("rykerd-el-imperdonable", { palabras: ["temible"], alMorirAliada: c => { c.u.atq += 2; M.log(c.est, `${M.nombre(c.est, c.u)} no perdona: +2 de ataque.`); } });
+    R("ekizias-el-recolector", { alMorirEnemiga: c => {
+      if (c.u.flags.cosecha === c.est.turno) return;
+      c.u.flags.cosecha = c.est.turno;
+      M.log(c.est, `${M.nombre(c.est, c.u)} recoge lo que quedó.`);
+      M.robar(c.est, c.j, 1);
+    } });
+    R("la-madre-del-desierto", {
+      alEntrar: { resolver: c => crear(c, "gusano-de-arena", 2) },
+      alInicioTurno: c => crear(c, "gusano-de-arena", 1)
+    });
+    R("mimico", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; }, alMorir: c => descartarAlAzar(c.est, 1 - c.j) });
+    R("cubo-gelatinoso", { alMatar: c => { mejora(c.u, 1, 1); M.log(c.est, `${M.nombre(c.est, c.u)} absorbe lo que queda: +1/+1.`); } });
+    R("ent-mayor", { palabras: ["provocar"], auraAtq: (est, g, u) => (esDe(est, u, "carne") ? 1 : 0) });
+    R("gofiri-la-jauria", { alEntrar: { resolver: c => crear(c, "cachorro-de-jauria", 2) } });
+
+    // --- Objetos y acciones --------------------------------------------------------------------------------
+    const equipo = (id, texto, aplicar, filtro) => R(id, { jugar: { objetivo: "unidadAliada", filtro, resolver: c => {
+      aplicar(c.objetivo);
+      c.objetivo.equipo.push(id);
+      M.log(c.est, `${M.nombre(c.est, c.objetivo)} se equipa: ${texto}.`);
+    } } });
+    equipo("espada-larga", "+2/+0", u => mejora(u, 2, 0));
+    equipo("daga-envenenada", "+1/+0 y Veloz", u => { mejora(u, 1, 0); dar(u, "veloz"); });
+    equipo("arco-largo", "+1/+0 y Volar", u => { mejora(u, 1, 0); dar(u, "volar"); });
+    equipo("lanza-de-caballeria", "+2/+0 y Arrollar", u => { mejora(u, 2, 0); dar(u, "arrollar"); });
+    equipo("armadura-de-malla", "+0/+1 y Duro", u => { mejora(u, 0, 1); dar(u, "duro"); });
+    equipo("anillo-de-invisibilidad", "Escurridizo para siempre", u => { u.flags.escurridizoHasta = 9999; });
+    equipo("capa-elfica", "+0/+1 y Esquivo", u => { mejora(u, 0, 1); dar(u, "esquivo"); });
+    equipo("botas-de-velocidad", "Veloz y puede atacar ya", u => { dar(u, "veloz"); u.entro = 0; });
+    equipo("reliquia-de-asmodeo", "+2/+2 y Barrera", u => { mejora(u, 2, 2); u.flags.barrera = true; }, (est, t) => esDe(est, t, "juramento"));
+    equipo("estandarte-de-brurland", "+1/+2 y Provocar", u => { mejora(u, 1, 2); dar(u, "provocar"); });
+    R("pocion-de-fuerza", { jugar: { objetivo: "unidadAliada", resolver: c => M.mod(c.est, c.objetivo, 3, 0, c.est.turno, `${M.nombre(c.est, c.objetivo)} bebe la poción: +3 de ataque este turno.`) } });
+    R("antidoto", { jugar: { objetivo: "unidadAliada", resolver: c => { limpiar(c.est, c.objetivo); M.curar(c.est, { u: c.objetivo.uid }, 2); } } });
+    R("pergamino-de-bola-de-fuego", { jugar: { resolver: c => { M.log(c.est, "La bola de fuego estalla sobre el campo rival."); barrer(c, 2); } } });
+    R("lampara-de-aceite", { jugar: { resolver: c => M.robar(c.est, c.j, c.est.jugadores[1 - c.j].mano.length >= 5 ? 2 : 1) } });
+    R("cuerda-de-seda", { jugar: { objetivo: "unidadEnemiga", resolver: c => {
+      c.objetivo.flags.sinVolarHasta = Math.max(c.objetivo.flags.sinVolarHasta, proximoDe(c.est, c.objetivo.dueno));
+      M.log(c.est, `${M.nombre(c.est, c.objetivo)} cae enredada: pierde Volar hasta el final del próximo turno de su dueño.`);
+    } } });
+    R("mapa-del-tesoro", { jugar: { resolver: c => M.robar(c.est, c.j, c.est.terreno ? 2 : 1) } });
+    R("cofre-con-trampa", { jugar: { resolver: c => { M.robar(c.est, c.j, 2); M.log(c.est, "La trampa del cofre salta."); M.infligir(c.est, { j: c.j }, 2, { tipo: "habilidad", dueno: c.j }); } } });
+    R("bomba-alquimica-de-nernib", { jugar: { objetivo: "unidadEnemiga", resolver: c => { golpe(c, c.objetivo, 3); M.infligir(c.est, { j: 1 - c.j }, 1, { tipo: "habilidad", dueno: c.j }); } } });
+    R("contrato-firmado", { jugar: { resolver: c => {
+      M.vetar(c.est, 1 - c.j, { costeMin: 5, hasta: c.est.turno + 1, texto: "El contrato firmado te impide jugar cartas de coste 5 o más." });
+      M.log(c.est, "El contrato queda firmado: el rival no puede jugar cartas de coste 5 o más hasta el final de su próximo turno.");
+    } } });
+    R("moneda-de-la-suerte", { jugar: { resolver: c => {
+      if (M.entero(c.est, 2) === 0) { c.est.jugadores[c.j].energia = Math.min(M.C.ENERGIA_MAX, c.est.jugadores[c.j].energia + 2); M.log(c.est, "La moneda cae de cara: ganas 2 de energía."); }
+      else { M.log(c.est, "La moneda cae de cruz: robas una carta."); M.robar(c.est, c.j, 1); }
+    } } });
+    R("cuerno-de-guerra", { jugar: { resolver: c => {
+      M.log(c.est, "El cuerno de guerra suena.");
+      c.est.jugadores[c.j].campo.slice().forEach(u => M.mod(c.est, u, 2, 0, c.est.turno, `${M.nombre(c.est, u)} oye el cuerno: +2 de ataque este turno.`));
+    } } });
+    R("brujula-de-los-cartografos", { jugar: { resolver: c => {
+      M.robar(c.est, c.j, 1);
+      c.est.jugadores[c.j].energia = Math.min(M.C.ENERGIA_MAX, c.est.jugadores[c.j].energia + 1);
+    } } });
+
+    // --- Reacciones -----------------------------------------------------------------------------------------
+    const alAtaque = (id, resolver, puede) => R(id, { reaccion: { cuando: "ataque", puede, resolver } });
+    const contraAtacante = (id, resolver) => R(id, { reaccion: { cuando: "ataque", objetivo: "atacante",
+      valido: (est, u, j) => M.puedeApuntarHabilidad(est, u, j),
+      puede: c => (c.evento.atacantes || []).some(uid => { const h = M.buscar(c.est, uid); return h && M.puedeApuntarHabilidad(c.est, h.u, c.j); }),
+      resolver: c => { const hit = M.buscar(c.est, c.objetivo.u); if (hit) resolver(c, hit.u); } } });
+    const sacarDelAtaque = (c, u) => { if (c.est.combate) c.est.combate.atacantes = c.est.combate.atacantes.filter(uid => uid !== u.uid); };
+    const propias = c => c.est.jugadores[c.j].campo.slice();
+    alAtaque("parada", c => { M.log(c.est, "Parada: las unidades de su dueño ganan Barrera."); propias(c).forEach(u => { u.flags.barrera = true; }); }, c => c.est.jugadores[c.j].campo.length > 0);
+    contraAtacante("contraataque", (c, t) => {
+      const dano = c.est.jugadores[c.j].campo.some(u => esDe(c.est, u, "juramento")) ? 4 : 2;
+      M.log(c.est, `Contraataque sobre ${M.nombre(c.est, t)}.`);
+      M.infligir(c.est, { u: t.uid }, dano, { tipo: "habilidad", dueno: c.j });
+    });
+    alAtaque("emboscada", c => { M.log(c.est, "Emboscada: salen dos emboscados de ninguna parte."); crear(c, "emboscado", 2); }, c => c.est.jugadores[c.j].campo.length < CAMPO_MAX);
+    R("espejo-arcano", { reaccion: { cuando: "jugar",
+      puede: c => ["Objeto", "Acción"].includes(M.meta(c.est, c.evento.carta).tipo),
+      resolver: c => { c.pendiente.cancelado = true; alMano(c.est, c.j, c.pendiente.datos.id); M.log(c.est, "El espejo arcano cancela la carta y se queda con una copia."); } } });
+    R("contrahechizo", { reaccion: { cuando: "jugar",
+      puede: c => ["Objeto", "Acción", "Terreno"].includes(M.meta(c.est, c.evento.carta).tipo),
+      resolver: c => { c.pendiente.cancelado = true; M.log(c.est, "El contrahechizo deshace lo que se iba a jugar."); M.robar(c.est, c.j, 1); } } });
+    contraAtacante("esquiva", (c, t) => M.mod(c.est, t, -3, 0, c.est.turno, `${M.nombre(c.est, t)} pierde el equilibrio: -3 de ataque este turno.`));
+    alAtaque("ultima-voluntad", c => { M.revivir(c.est, c.j, { pv: 1 }); },
+      c => c.est.jugadores[c.j].campo.length < CAMPO_MAX && M.enCementerio(c.est, c.j, m => M.esUnidad(m) && !m.token).length > 0);
+    alAtaque("muro-de-escudos", c => { M.log(c.est, "Muro de escudos: las unidades de su dueño ganan Duro este turno."); propias(c).forEach(u => dar(u, "duro", c.est.turno)); }, c => c.est.jugadores[c.j].campo.length > 0);
+    R("pacto-roto", { reaccion: { cuando: "jugar",
+      puede: c => { const m = M.meta(c.est, c.evento.carta); return M.esUnidad(m) && (m.coste || 0) <= 4; },
+      resolver: c => { c.pendiente.cancelado = true; M.log(c.est, "El pacto se rompe: la unidad se queda fuera."); } } });
+    R("clausula-oculta", { reaccion: { cuando: "jugar",
+      puede: c => (M.meta(c.est, c.evento.carta).coste || 0) >= 5,
+      resolver: c => { c.pendiente.cancelado = true; M.log(c.est, "La cláusula oculta anula la carta."); } } });
+    alAtaque("intervencion-divina", c => {
+      M.log(c.est, "Intervención divina.");
+      propias(c).forEach(u => M.curar(c.est, { u: u.uid }, u.pvMax));
+      M.curar(c.est, { j: c.j }, 4);
+    });
+    contraAtacante("trampa-de-foso", (c, t) => {
+      M.log(c.est, `${M.nombre(c.est, t)} cae al foso.`);
+      sacarDelAtaque(c, t);
+      t.flags.noAtacaHasta = Math.max(t.flags.noAtacaHasta, proximoDe(c.est, t.dueno));
+      M.infligir(c.est, { u: t.uid }, 2, { tipo: "habilidad", dueno: c.j });
+    });
+    alAtaque("rafaga-de-flechas", c => {
+      M.log(c.est, "Una ráfaga de flechas cae sobre los atacantes.");
+      (c.est.combate ? c.est.combate.atacantes.slice() : []).forEach(uid => { const h = M.buscar(c.est, uid); if (h) M.infligir(c.est, { u: uid }, 1, { tipo: "habilidad", dueno: c.j }); });
+    });
+    alAtaque("llamada-a-las-armas", c => { M.log(c.est, "Suena la campana: llegan dos reclutas."); crear(c, "recluta", 2); }, c => c.est.jugadores[c.j].campo.length < CAMPO_MAX);
+    contraAtacante("soborno", (c, t) => { M.log(c.est, `${M.nombre(c.est, t)} acepta el soborno y se queda donde está.`); sacarDelAtaque(c, t); M.robar(c.est, c.j, 1); });
+    alAtaque("huida-estrategica", c => { const u = conMenosVida(c.est, c.j); if (u) { M.log(c.est, `${M.nombre(c.est, u)} se retira.`); M.devolverAMano(c.est, u); } }, c => c.est.jugadores[c.j].campo.length > 0);
+    alAtaque("rezo-del-neravismo", c => { recuperar(c.est, c.j, () => true); }, c => c.est.jugadores[c.j].cementerio.length > 0);
+
+    // --- Terrenos -----------------------------------------------------------------------------------------------
+    RT("geiseres-de-nigredo", { duracion: 3, finTurno: est => {
+      const todas = M.todas(est);
+      if (!todas.length) return;
+      const t = aleatoria(est, todas);
+      M.log(est, `Un géiser de Nigredo estalla bajo ${M.nombre(est, t)}.`);
+      M.infligir(est, { u: t.uid }, 2, { tipo: "terreno" });
+    } });
+    RT("mina-de-pozohumo", { inicioTurno: (est, jIdx) => {
+      if (jIdx !== est.terreno.dueno) return;
+      const J = est.jugadores[jIdx];
+      J.energia = Math.min(M.C.ENERGIA_MAX, J.energia + 1);
+      M.log(est, `La veta de Pozohumo da 1 de energía a ${J.nombre}.`);
+    } });
+    RT("taberna-del-camino", { duracion: 3, inicioTurno: (est, jIdx) => {
+      if (jIdx !== est.terreno.dueno) return;
+      est.jugadores[jIdx].campo.slice().forEach(u => M.curar(est, { u: u.uid }, 2));
+    } });
+
     // --- Terrenos ------------------------------------------------------------
     // Los terrenos con duración (turnos) se quitan solos; los demás duran hasta que entra otro terreno.
     // Los efectos fijos (Puente, Huesos, Vado, Desierto, Catedral, Torre) los aplica el propio motor.

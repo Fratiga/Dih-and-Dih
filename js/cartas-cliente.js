@@ -83,7 +83,9 @@ window.CartasCliente = (function () {
       });
       const publicada = new Map((cat.data || []).map(f => [f.id, f.publicada]));
       for (let i = lista.length - 1; i >= 0; i--) {
-        if (publicada.get(lista[i].id) === false) {
+        // Una carta que está en el código pero todavía no en el catálogo del servidor (su SQL no se ha corrido) tampoco es pública
+        const p = publicada.get(lista[i].id);
+        if (p === false || p === undefined) {
           if (puedeEditar) lista[i].borrador = true; else lista.splice(i, 1);
         }
       }

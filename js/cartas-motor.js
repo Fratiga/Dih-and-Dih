@@ -152,6 +152,8 @@
   function tienePalabra(est, u, palabra) {
     if (palabra === "provocar" && u.flags.sinProvocarHasta >= est.turno) return false;
     if (palabra === "volar" && u.flags.sinVolarHasta >= est.turno) return false;
+    // Palabras que da un efecto o un equipo (flags.dadas = { palabra: último turno en que vale }; 9999 = para siempre)
+    if (u.flags.dadas && u.flags.dadas[palabra] >= est.turno) return true;
     const bv = bonosDe(est, u);
     if (bv.quita.includes(palabra)) return false;
     if (bv.palabras.includes(palabra)) return true;
@@ -716,7 +718,22 @@
     if (terrenoActivo(est, "vado-ceniza")) return false;
     if (t.flags.inmune && t.dueno !== desdeDueno) return false;
     if (esEscurridizo(est, t) && t.dueno !== desdeDueno) return false;
+    // Una aliada que la cubre (efecto.protege(est, g, t), por ejemplo El Mitrado)
+    if (t.dueno !== desdeDueno && est.jugadores[t.dueno].campo.some(g => { const e = efectoDe(est, g); return e.protege && e.protege(est, g, t); })) return false;
     return true;
+  }
+
+  /* --- Vetos: un efecto le prohíbe a un jugador jugar ciertas cartas un tiempo --------------------
+     J.vetos = [{ tipos?, costeMin?, hasta, texto }]. Devuelve el texto del veto que aplica o null. */
+  function vetar(est, jIdx, veto) {
+    const J = est.jugadores[jIdx];
+    J.vetos = (J.vetos || []).filter(v => v.hasta >= est.turno);
+    J.vetos.push(veto);
+  }
+  function motivoVeto(est, jIdx, m) {
+    const v = (est.jugadores[jIdx].vetos || []).find(x => est.turno <= x.hasta
+      && ((x.tipos && x.tipos.includes(m.tipo)) || (x.costeMin !== undefined && (m.coste || 0) >= x.costeMin)));
+    return v ? v.texto : null;
   }
 
   function validosParaObjetivo(est, jIdx, tipo, habilidad, excluirUid, filtro) {
@@ -861,7 +878,7 @@
       if (!esReaccion(est, id)) return;
       const ef = EFECTOS[id];
       if (!ef || !ef.reaccion || ef.reaccion.cuando !== evento.tipo) return;
-      if (costeDe(est, reactor, id) > J.energia) return;
+      if (costeDe(est, reactor, id) > J.energia || motivoVeto(est, reactor, meta(est, id))) return;
       if (ef.reaccion.puede && !ef.reaccion.puede({ est, M, j: reactor, evento })) return;
       lista.push(i);
     });
@@ -933,6 +950,8 @@
     const coste = costeDe(est, jIdx, id);
     if (coste > J.energia) return { error: "No tienes energía suficiente." };
     if (esReaccion(est, id)) return { error: "Una reacción solo se juega como respuesta en el turno del rival." };
+    const veto = motivoVeto(est, jIdx, m);
+    if (veto) return { error: veto };
     if (esUnidad(m) && J.campo.length >= C.CAMPO_MAX) return { error: "Tu campo está lleno." };
     if (esUnidad(m) && huecoPedido !== undefined && huecoPedido !== null) {
       if (!Number.isInteger(huecoPedido) || huecoPedido < 0 || huecoPedido >= C.CAMPO_MAX) return { error: "Ese hueco no existe." };
@@ -1228,7 +1247,7 @@
     const jIdx = est.activo, J = est.jugadores[jIdx], out = [];
     J.mano.forEach((id, i) => {
       const m = meta(est, id);
-      if (costeDe(est, jIdx, id) > J.energia || esReaccion(est, id)) return;
+      if (costeDe(est, jIdx, id) > J.energia || esReaccion(est, id) || motivoVeto(est, jIdx, m)) return;
       if (esUnidad(m) && J.campo.length >= C.CAMPO_MAX) return;
       const req = requisitoDeJugada(est, jIdx, id);
       if (!req) out.push({ t: "jugar", i });
@@ -1291,6 +1310,9 @@
     VERSION, C, TOPE_COPIAS, topeCopias, TOKENS, EFECTOS, TERRENOS,
     registrar: (id, def) => { EFECTOS[id] = def; },
     registrarTerreno: (id, def) => { TERRENOS[id] = def; },
+    // Fichas: unidades que crea una habilidad y que no son cartas (no van al cementerio ni a la mano)
+    registrarFicha: (id, m) => { TOKENS[id] = Object.assign({ id, tipo: "Criatura", rareza: "comun", afinidad: [], coste: 0, habilidad: "", token: true }, m); },
+    vetar, motivoVeto, retirarTerreno,
     registrarVinculos: def => { (def.circulos || []).forEach(c => VINC.circulos.push(c)); (def.rivalidades || []).forEach(r => VINC.rivalidades.push(r)); },
     VINC, bonosDe, vinculosActivos, sincronizarVinculos, devolverAMano, cambiarForma, nombreForma, formasDe,
     crearPartida, aplicar, reproducir, quienActua, reaccionesPosibles, accionesLegales, validarMazo,

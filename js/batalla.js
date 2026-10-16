@@ -839,7 +839,7 @@
       const esReaccion = M.esReaccion(est, id);
       const jugable = est.pendiente
         ? reaccionaYo(idx) && M.reaccionesPosibles(est, idx, est.pendiente.evento).includes(i)
-        : miTurnoDe(idx) && coste <= J.energia && !esReaccion;
+        : miTurnoDe(idx) && coste <= J.energia && !esReaccion && !M.motivoVeto(est, idx, m);
       const vista = Object.assign({}, m, { id, coste, borrador: false, limite: null });
       const giro = ((i - medio) * Math.min(4, 22 / Math.max(n, 1))).toFixed(1);
       const baja = (Math.abs(i - medio) ** 2 * 1.4).toFixed(1);
