@@ -341,3 +341,16 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 .lb-aviso-chip { padding: 3px 10px; border: 2px solid var(--lb-borde); background: #ffffff10; color: var(--lb-texto) !important; text-decoration: none; font-size: 21px; }
 .lb-aviso-chip:hover { background: #ffffff26; }
 .lb-aviso-chip-fuerte { border-color: var(--lb-acento); color: #ffe9a8 !important; }
+
+/* Guía de la taberna (js/guia-inicial.js) */
+.gi-dialogo { width: min(520px, calc(100% - 24px)); padding: 20px 22px; color: var(--lb-texto); background: var(--lb-caja); border: 4px double var(--lb-borde); box-shadow: 6px 6px 0 #000; font-family: "VT323", "Courier New", monospace; }
+.gi-dialogo::backdrop { background: rgba(0, 0, 0, .75); }
+.gi-dialogo h2 { margin: 6px 0 10px; font: 14px/1.6 "Press Start 2P", monospace; color: #fff; text-shadow: 2px 2px 0 #000; }
+.gi-dialogo p { margin: 0 0 12px; font-size: 22px; line-height: 1.25; }
+.gi-puntos { display: flex; justify-content: center; gap: 8px; margin: 4px 0 12px; }
+.gi-puntos i { width: 12px; height: 12px; border: 2px solid var(--lb-borde); background: #0d0816; }
+.gi-puntos i.gi-aqui { background: var(--lb-acento); }
+.gi-botones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gi-botones [hidden] { display: none; }
+.gi-saltar, .gi-enlace { margin-left: auto; padding: 0; border: 0; background: none; color: var(--lb-tenue); font: inherit; text-decoration: underline; cursor: pointer; }
+.gi-enlace { margin-left: 0; color: var(--lb-acento); }
