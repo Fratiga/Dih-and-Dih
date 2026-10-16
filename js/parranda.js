@@ -468,9 +468,16 @@
   }
 
   const MARGEN_EVENTO = 0.1; // lo máximo que se le descuenta a una pulsación por llegar tarde
+  /* A la pulsación se le descuenta lo que tardó el navegador en entregarla. Se fía de la hora del evento solo si es
+     creíble: algunos navegadores con la privacidad al máximo la redondean a 50 o 100 ms (cada pulsación saldría
+     adelantada al azar) y un reloj que no cuadra con el de la página da retrasos imposibles. */
+  const marcasRecientes = [];
   function tiempoDeEvento(ev) {
-    const retraso = Math.max(0, (performance.now() - (ev.timeStamp || performance.now())) / 1000);
-    return tiempoCancion() - Math.min(retraso, MARGEN_EVENTO);
+    const marca = ev.timeStamp;
+    if (marca) { marcasRecientes.push(marca); if (marcasRecientes.length > 4) marcasRecientes.shift(); }
+    const gruesa = marcasRecientes.length === 4 && marcasRecientes.every(m => m % 50 === 0);
+    const retraso = marca && !gruesa ? (performance.now() - marca) / 1000 : 0;
+    return tiempoCancion() - (retraso > 0 && retraso < 0.5 ? Math.min(retraso, MARGEN_EVENTO) : 0);
   }
 
   /* La tecla que se pulsó, como letra. Normalmente es lo que dice el teclado (ev.key). Con otra distribución
