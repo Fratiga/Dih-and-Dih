@@ -8,6 +8,35 @@
    No se carga en las páginas secretas (Bufón, Muerte Súbita) ni dice nada de las
    páginas escondidas: ahí se muestra una frase genérica.
 ============================================================================= */
+/* =============================================================================
+   PRESENCIA SEPARADA POR SIDE
+   Quién está conectado solo se ve dentro del mismo Side: cada Side tiene su propio canal de tiempo real (base-A, base-B o base-sin para quien
+   aún no eligió) y cada persona solo se une al suyo, así los datos del otro Side ni siquiera le llegan. El Admin se une a todos para poder
+   verlos (pestaña En vivo) pero solo se anuncia en el de su Side. El Side y el rol salen de localStorage (lado.js recarga la página si cambian). Vive aquí porque presencia.js está en todas las páginas con presencia.
+   Uso: const p = presenciaPorLado(supabase, "base", miId, alCambiar, () => ({ ...datos }));
+        p.estado() -> { id: [metas] } con todos los que ve esta persona; p.anunciar() vuelve a mandar los datos propios.
+============================================================================= */
+function presenciaPorLado(supabase, base, miId, alCambiar, datos) {
+  let lado = "", admin = false;
+  try { lado = localStorage.getItem("compendioLado") || ""; admin = localStorage.getItem("compendioAdmin") === "1"; } catch (e) { /* sin almacenamiento */ }
+  const propio = base + "-" + (lado === "A" || lado === "B" ? lado : "sin");
+  const nombres = admin ? [base + "-A", base + "-B", base + "-sin"] : [propio];
+  if (!nombres.includes(propio)) nombres.push(propio);
+  const canales = new Map();
+  const mios = typeof datos === "function" ? datos : () => datos;
+  async function anunciar() {
+    const c = canales.get(propio);
+    if (c && c.__listo) { try { await c.track(mios()); } catch (e) { /* sin conexión */ } }
+  }
+  nombres.forEach(nombre => {
+    const c = supabase.channel(nombre, { config: { presence: { key: miId } } });
+    c.on("presence", { event: "sync" }, () => { try { alCambiar(); } catch (e) { /* un oyente roto no frena a los demás */ } });
+    c.subscribe(async estado => { if (estado === "SUBSCRIBED") { c.__listo = true; if (nombre === propio) await anunciar(); } });
+    canales.set(nombre, c);
+  });
+  return { anunciar, estado: () => Object.assign({}, ...[...canales.values()].map(c => c.presenceState())) };
+}
+
 (function () {
   if (typeof fichasCliente !== "function" || typeof fichasSesionActual !== "function") return;
   try { if ((JSON.parse(localStorage.getItem("sitioInterruptores") || "{}") || {}).presencia === false) return; } catch (e) { /* sin almacenamiento */ }   // interruptor del panel de Admin
@@ -79,11 +108,11 @@
 
   const oyentes = new Set();
   let ultimo = [];
-  let canal = null;
+  let presencia = null;   // presenciaPorLado (más arriba): cada Side tiene su canal y solo se ve a los de tu Side (el Admin ve todos)
 
   function leer() {
-    if (!canal) return [];
-    const estado = canal.presenceState();
+    if (!presencia) return [];
+    const estado = presencia.estado();
     return Object.entries(estado).map(([id, metas]) => {
       // si hay varias pestañas de la misma persona, vale la más reciente
       const m = metas.slice().sort((a, b) => (b.ts || 0) - (a.ts || 0))[0] || {};
@@ -113,23 +142,22 @@
     let supabase;
     try { supabase = await fichasCliente(); } catch (e) { return; }
     try {
-      canal = supabase.channel("lobby-presencia", { config: { presence: { key: miId } } });
-      canal.on("presence", { event: "sync" }, avisar);
-      const anunciar = () => canal.track({
+      const datos = () => ({
         nombre, ts: Date.now(),
         // La página real solo se dice si no es de las escondidas (ahí va vacío); lo usa la pestaña En vivo del panel de Admin
         pag: OCULTAS.includes(pagina) ? "" : pagina, desde: entradoEn,
         frase: document.hidden ? otraPestana() : fraseActual,
         oculto: document.hidden
       });
+      presencia = presenciaPorLado(supabase, "lobby-presencia", miId, avisar, datos);
+      const anunciar = () => presencia.anunciar();
       // cada par de minutos en la misma página, una frase distinta
       setInterval(() => {
         if (document.hidden) return;
         fraseActual = nuevaFrase(fraseActual);
-        try { anunciar(); } catch (e) { /* sin conexión */ }
+        anunciar();
       }, 150000);
-      canal.subscribe(async estado => { if (estado === "SUBSCRIBED") await anunciar(); });
-      document.addEventListener("visibilitychange", () => { try { anunciar(); } catch (e) { /* sin conexión */ } });
+      document.addEventListener("visibilitychange", anunciar);
     } catch (e) { /* sin tiempo real: simplemente no hay presencia */ }
   }
   iniciar();

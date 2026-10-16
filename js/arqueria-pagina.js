@@ -653,9 +653,10 @@
       supa.channel("arqueria-partidas")
         .on("postgres_changes", { event: "*", schema: "public", table: "arqueria_partidas" }, programarCarga)
         .subscribe();
-      const pres = supa.channel("arqueria-presencia", { config: { presence: { key: miId } } });
-      pres.on("presence", { event: "sync" }, () => { presentes = new Set(Object.keys(pres.presenceState())); pintarLobby(); })
-        .subscribe(async estado => { if (estado === "SUBSCRIBED") await pres.track({ en: Date.now() }); });
+      // Solo se ve en línea a quien es de tu Side (canal por Side, js/presencia.js); sin ese ayudante no se muestra a nadie
+      if (typeof presenciaPorLado === "function") {
+        const pres = presenciaPorLado(supa, "arqueria-presencia", miId, () => { presentes = new Set(Object.keys(pres.estado())); pintarLobby(); }, () => ({ en: Date.now() }));
+      }
     } catch (err) { /* sin tiempo real: queda la consulta periódica */ }
     setInterval(() => { if (modo === "jugadores" && !vs && !document.hidden) cargarPartidas(); }, 4000);
     document.addEventListener("visibilitychange", () => { if (modo === "jugadores" && !document.hidden) cargarPartidas(); });

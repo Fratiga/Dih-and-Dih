@@ -1071,9 +1071,10 @@
       supa.channel("ajedrez-partidas")
         .on("postgres_changes", { event: "*", schema: "public", table: "ajedrez_partidas" }, programarCarga)
         .subscribe();
-      const pres = supa.channel("ajedrez-presencia", { config: { presence: { key: miId } } });
-      pres.on("presence", { event: "sync" }, () => { presentes = new Set(Object.keys(pres.presenceState())); pintarPvp(); })
-        .subscribe(async estado => { if (estado === "SUBSCRIBED") await pres.track({ en: Date.now() }); });
+      // Solo se ve en línea a quien es de tu Side (canal por Side, js/presencia.js); sin ese ayudante no se muestra a nadie
+      if (typeof presenciaPorLado === "function") {
+        const pres = presenciaPorLado(supa, "ajedrez-presencia", miId, () => { presentes = new Set(Object.keys(pres.estado())); pintarPvp(); }, () => ({ en: Date.now() }));
+      }
     } catch (err) { /* sin tiempo real: queda la consulta periódica */ }
     temporizador = setInterval(() => { if (modo === "jugadores" && !document.hidden) cargarPartidas(); }, 4000);
     document.addEventListener("visibilitychange", () => { if (modo === "jugadores" && !document.hidden) cargarPartidas(); });
