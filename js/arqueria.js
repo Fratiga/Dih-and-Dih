@@ -249,8 +249,8 @@
       if (flecha) lanzarFlecha(x0, y0, x, y, cfg.color, retraso || 0.14);
       const e0 = -retraso;
       const centro = pts === 10 || pts === 20;
-      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * (centro ? 2.1 : 1.5), color: cfg.color, edad: e0, vida: centro ? 0.5 : 0.35 });
-      efectos.push({ tipo: "texto", x, y, texto: centro ? `¡CENTRO! +${pts}` : `+${pts}`, grande: centro, edad: e0, vida: 0.8, color: cfg.color });
+      efectos.push({ tipo: "anillo", x, y, r0: r * 0.4, r1: r * 1.5, color: cfg.color, edad: e0, vida: 0.35 });
+      efectos.push({ tipo: "texto", x, y, texto: `+${pts}`, suave: true, edad: e0, vida: 0.55, color: cfg.color });
       for (let j = 0; j < 5; j++) {
         const a = Math.random() * Math.PI * 2;
         const v = 80 + Math.random() * 140;
@@ -330,7 +330,7 @@
           cal.golpes.set(b.k, { por: "yo", pts, pendiente: !!compartido });
           if (compartido && onGolpe) onGolpe({ blanco: b.k, puntos: pts, x: b.x, y: b.y });
         }
-        efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: anillo === 0 && visual ? `¡CENTRO! +${pts}` : `+${pts}`, grande: anillo === 0, edad: 0, vida: 0.7, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
+        efectos.push({ tipo: "texto", x: b.x, y: b.y, texto: `+${pts}`, grande: anillo === 0, edad: 0, vida: 0.6, color: anillo === 0 ? "#ffd84a" : "#e8e4d0" });
         if (visual) {
           lanzarFlecha(ancho / 2, alto + 14, b.x, b.y, "#f1c40f", 0.09);
           efectos.push({ tipo: "anillo", x: b.x, y: b.y, r0: b.r * 0.4, r1: b.r * (anillo === 0 ? 2.1 : 1.5), color: anillo === 0 ? "#ffe27a" : "#f4ecd2", edad: 0, vida: anillo === 0 ? 0.5 : 0.35 });

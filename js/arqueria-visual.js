@@ -601,16 +601,16 @@
         default: {
           // texto flotante con contorno
           const grande = e.grande;
-          const escala = 1 + (k < 0.15 ? (0.15 - k) * 3 : 0);
-          ctx.globalAlpha = Math.min(1, (1 - k) * 1.5);
+          const escala = e.suave ? 1 : 1 + (k < 0.15 ? (0.15 - k) * 3 : 0);
+          ctx.globalAlpha = Math.min(1, (1 - k) * 1.5) * (e.suave ? 0.7 : 1);
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.save();
           ctx.translate(e.x, e.y);
           ctx.scale(escala, escala);
-          ctx.font = `800 ${grande ? 40 : (e.chico ? 22 : 30)}px ${NUMEROS}`;
+          ctx.font = `800 ${e.suave ? 18 : grande ? 34 : (e.chico ? 22 : 28)}px ${NUMEROS}`;
           ctx.lineJoin = "round";
-          ctx.lineWidth = 6;
+          ctx.lineWidth = e.suave ? 4 : 6;
           ctx.strokeStyle = "rgba(10,10,6,.8)";
           ctx.strokeText(e.texto, 0, 0);
           ctx.fillStyle = e.color;
