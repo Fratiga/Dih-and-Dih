@@ -117,6 +117,9 @@ window.Cielo = (function () {
   function aplicar() {
     const st = estado();
     document.querySelectorAll("svg.cielo-ventana").forEach(e => { const w = parseFloat(e.getAttribute("width")), h = parseFloat(e.getAttribute("height")); if (w && h) pintar(e, w, h, st); });
+    // El suelo que se ve por las ventanas (el patio de la puerta de los corrales) también cambia con la hora y el clima
+    const suelo = st.clima === "nieve" ? "#e9f4fa" : { dia: "#6fa86b", amanecer: "#5f8f66", atardecer: "#4f7a52", noche: "#1d3a30" }[st.fase];
+    document.querySelectorAll(".cielo-suelo").forEach(e => { e.setAttribute("fill", suelo); e.setAttribute("opacity", st.clima === "lluvia" || st.clima === "tormenta" ? "0.8" : "1"); });
     const t = tinte(st);
     ["lbTinte", "hbTinte", "salaTinte"].forEach(id => { const e = document.getElementById(id); if (e) { e.setAttribute("fill", t.color); e.setAttribute("opacity", String(t.op)); } });
     const haz = document.getElementById("lbHaz");
