@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi habitación</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270200">
-  <link rel="stylesheet" href="css/taberna.css?v=20270200">
-  <link rel="stylesheet" href="css/lobby.css?v=20270200">
-  <link rel="stylesheet" href="css/cartas.css?v=20270200">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20270200">
-  <link rel="stylesheet" href="css/intercambios.css?v=20270200">
-  <link rel="stylesheet" href="css/habitacion.css?v=20270200">
-  <script src="js/dialogos.js?v=20270200"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270203">
+  <link rel="stylesheet" href="css/taberna.css?v=20270203">
+  <link rel="stylesheet" href="css/lobby.css?v=20270203">
+  <link rel="stylesheet" href="css/cartas.css?v=20270203">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270203">
+  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270203">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270203">
+  <link rel="stylesheet" href="css/habitacion.css?v=20270203">
+  <script src="js/dialogos.js?v=20270203"></script>
 </head>
 <body class="lb hb">
-  <script src="js/carga.js?v=20270200"></script>
+  <script src="js/carga.js?v=20270203"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -23,7 +24,7 @@
       <div class="lb-cab-titulo">
         <p class="lb-eyebrow">★ SOLO PARA TI ★</p>
         <h1>Mi habitación</h1>
-        <p class="lb-sub">Tus cartas, tus mazos y los corrales donde crían tus criaturas.</p>
+        <p class="lb-sub">Tus cartas, tus mazos y la forja. Los corrales están en el patio, por la puerta de la derecha.</p>
       </div>
       <div class="lb-cab-widgets">
         <a class="lb-boton" href="index.html">← A la taberna</a>
@@ -40,7 +41,7 @@
 
     <p id="hbAviso" class="hb-aviso hidden" role="status"></p>
 
-    <div class="lb-cuerpo" id="hbCuerpo">
+    <div class="lb-cuerpo hb-dos" id="hbCuerpo">
       <!-- Lo tuyo: números y atajos -->
       <aside class="lb-lado lb-izq">
         <section class="lb-caja">
@@ -59,6 +60,7 @@
               <a class="lb-boton" href="mazos.html">Mazos</a>
               <a class="lb-boton" href="batalla.html">Batalla</a>
               <a class="lb-boton" href="intercambios.html">Intercambios</a>
+              <a class="lb-boton" href="corrales.html">Corrales</a>
             </div>
           </div>
         </section>
@@ -68,7 +70,7 @@
       <main class="lb-centro">
         <div class="lb-escena-caja">
           <div class="lb-escena-scroll">
-            <svg class="lb-escena hb-escena" id="hbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="Tu habitación: la estantería, la mesa de mazos y los seis corrales">
+            <svg class="lb-escena hb-escena" id="hbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="Tu habitación: la estantería, la mesa de mazos, la forja y la puerta de los corrales">
               <!-- Pared y suelo -->
               <rect x="0" y="0" width="960" height="330" fill="#2a2036"/>
               <g id="hbTablones"></g>
@@ -141,47 +143,70 @@
                 <circle cx="720" cy="92" r="46" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo lb-b2"/>
               </g>
 
-              <!-- Los seis corrales, los dibuja habitacion.js -->
-              <g id="hbCorrales"></g>
+              <!-- La forja: abre el diálogo de js/forja.js -->
+              <g class="lb-spot hb-forja" id="hbForja" tabindex="0" role="button" aria-label="La forja: entrega cartas y recibe una mejor">
+                <g class="lb-forma">
+                  <rect x="300" y="116" width="140" height="180" fill="#5e5a69"/>
+                  <rect x="292" y="288" width="156" height="14" fill="#8b8696"/>
+                  <rect x="320" y="92" width="100" height="30" fill="#4d4958"/>
+                  <rect x="326" y="176" width="88" height="112" fill="#17101b"/>
+                  <rect x="336" y="186" width="68" height="102" fill="#0d080f"/>
+                  <g class="lb-fuego">
+                    <rect x="344" y="262" width="52" height="22" fill="#e8872a"/>
+                    <rect x="352" y="240" width="36" height="26" fill="#f0b038" class="lb-llama"/>
+                    <rect x="360" y="224" width="20" height="22" fill="#f7dd6a" class="lb-llama lb-l2"/>
+                  </g>
+                  <circle cx="370" cy="250" r="52" style="fill:var(--lb-luz)" fill-opacity=".14" class="lb-brillo"/>
+                  <!-- Yunque -->
+                  <rect x="338" y="414" width="84" height="14" fill="#6b6e7a"/>
+                  <rect x="326" y="408" width="24" height="10" fill="#6b6e7a"/>
+                  <rect x="358" y="428" width="44" height="22" fill="#4d505c"/>
+                  <rect x="344" y="450" width="72" height="12" fill="#3a3c46"/>
+                  <rect x="436" y="396" width="6" height="44" fill="#8d6a45"/><rect x="428" y="390" width="22" height="12" fill="#8d8d99"/>
+                </g>
+                <text x="370" y="484" text-anchor="middle" class="hb-etq">FORJA</text>
+              </g>
+
+              <!-- La puerta de los corrales: el patio es otra pantalla (corrales.html) -->
+              <a class="lb-spot" href="corrales.html" aria-label="Los corrales: el patio donde crían tus criaturas" id="hbPuertaCorrales">
+                <g class="lb-forma">
+                  <rect x="520" y="142" width="170" height="160" fill="#4a2f1f"/>
+                  <rect x="528" y="150" width="74" height="152" fill="#7a5638"/><rect x="608" y="150" width="74" height="152" fill="#7a5638"/>
+                  <rect x="528" y="196" width="74" height="6" fill="#5a3d28"/><rect x="528" y="246" width="74" height="6" fill="#5a3d28"/>
+                  <rect x="608" y="196" width="74" height="6" fill="#5a3d28"/><rect x="608" y="246" width="74" height="6" fill="#5a3d28"/>
+                  <rect x="594" y="214" width="6" height="14" fill="#e8b84a"/><rect x="610" y="214" width="6" height="14" fill="#e8b84a"/>
+                  <rect x="520" y="126" width="170" height="16" fill="#6b4a2f"/>
+                  <rect class="hb-lampara" id="hbLampaCorrales" x="598" y="104" width="14" height="14" stroke="#1c1420" stroke-width="2"/>
+                  <rect x="603" y="118" width="4" height="8" fill="#6b4a2f"/>
+                </g>
+                <text x="605" y="324" text-anchor="middle" class="hb-etq">CORRALES</text>
+              </a>
             </svg>
           </div>
         </div>
-        <p class="lb-chico hb-ayuda">Cada corral solo funciona con <b>dos copias tuyas de la misma criatura</b>. Pulsa uno para ver qué especies caben y empezar una cría. Las copias llegan jugando, intercambiando o con un poco de suerte.</p>
+        <p class="lb-chico hb-ayuda">En la <b>forja</b> entregas cartas y sale una mejor. Por la puerta de la derecha se llega a los <a href="corrales.html">corrales</a>, donde crían tus criaturas; si se enciende la lámpara, hay una cría lista.</p>
       </main>
-
-      <!-- Lo que pasa en los corrales -->
-      <aside class="lb-lado lb-der">
-        <section class="lb-caja">
-          <h2>Tus corrales</h2>
-          <div class="lb-caja-cuerpo" id="hbResumen"><p class="lb-chico">Cargando...</p></div>
-        </section>
-        <section class="lb-caja">
-          <h2>Listas para criar</h2>
-          <div class="lb-caja-cuerpo" id="hbListas"><p class="lb-chico">Cargando...</p></div>
-        </section>
-        <section class="lb-caja">
-          <h2>Últimas crías</h2>
-          <div class="lb-caja-cuerpo" id="hbHistorial"><p class="lb-chico">Cargando...</p></div>
-        </section>
-      </aside>
     </div>
   </div>
 
-  <script src="data/personajes.js?v=20270200"></script>
-  <script src="data/objetos.js?v=20270200"></script>
-  <script src="data/lugares.js?v=20270200"></script>
-  <script src="data/bestiario.js?v=20270200"></script>
-  <script src="js/contenido-servidor.js?v=20270200"></script>
-  <script src="js/temas.js?v=20270200"></script>
-  <script src="js/fichas-supabase.js?v=20270200"></script>
-  <script src="js/interruptores.js?v=20270200"></script>
-  <script src="js/presencia.js?v=20270202"></script>
-  <script src="js/lado.js?v=20270200"></script>
-  <script src="js/cartas-datos.js?v=20270200"></script>
-  <script src="js/cartas-cliente.js?v=20270200"></script>
-  <script src="js/cartas-vista.js?v=20270200"></script>
-  <script src="js/habitacion.js?v=20270200"></script>
-  <script src="js/avisos-admin.js?v=20270200"></script>
-  <script src="js/musica-paginas.js?v=20270202"></script>
+  <script src="data/personajes.js?v=20270203"></script>
+  <script src="data/objetos.js?v=20270203"></script>
+  <script src="data/lugares.js?v=20270203"></script>
+  <script src="data/bestiario.js?v=20270203"></script>
+  <script src="js/contenido-servidor.js?v=20270203"></script>
+  <script src="js/temas.js?v=20270203"></script>
+  <script src="js/fichas-supabase.js?v=20270203"></script>
+  <script src="js/interruptores.js?v=20270203"></script>
+  <script src="js/presencia.js?v=20270203"></script>
+  <script src="js/lado.js?v=20270203"></script>
+  <script src="js/cartas-datos.js?v=20270203"></script>
+  <script src="js/cartas-cliente.js?v=20270203"></script>
+  <script src="js/cartas-vista.js?v=20270203"></script>
+  <script src="js/batalla-apuestas.js?v=20270203"></script>
+  <script src="js/forja.js?v=20270203"></script>
+  <script src="js/corrales-lib.js?v=20270203"></script>
+  <script src="js/habitacion.js?v=20270203"></script>
+  <script src="js/avisos-admin.js?v=20270203"></script>
+  <script src="js/musica-paginas.js?v=20270203"></script>
 </body>
 </html>

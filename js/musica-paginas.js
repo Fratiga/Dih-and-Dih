@@ -26,7 +26,7 @@
     ["religion.html", "Religión"], ["textos.html", "Textos"], ["pergaminos.html", "Pergaminos"], ["armas.html", "Armas"],
     ["objetos.html", "Objetos"], ["bestiario.html", "Bestiario"], ["reglas.html", "Reglas"], ["economia.html", "Economía"],
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
-    ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
+    ["fichas.html", "Mis personajes"], ["habitacion.html", "Mi habitación"], ["corrales.html", "Corrales"], ["intercambios.html", "Intercambios"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["arqueria.html", "Arquería"], ["duelo.html", "Duelo"], ["cartas.html", "Triunfos: álbum"], ["mazos.html", "Triunfos: mazos"],
     ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"], ["hipodromo-vivo.html", "Hipódromo en vivo"], ["fractura.html", "La Fractura"],
     ["muerte-subita.html", "Muerte Súbita"], ["encuentro-verdam.html", "Encuentro con Verdam"]

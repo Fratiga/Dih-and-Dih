@@ -1,0 +1,61 @@
+/* Corrales (js/corrales.js): un hábitat grande a la vista, una franja con los demás y el panel de cría debajo.
+   Los estados (hb-e-*) son los mismos de siempre; las cajas, listas y el panel de cría vienen de habitacion.css. */
+body.co .lb-pagina { padding-bottom: 60px; }
+
+/* Vista central: el hábitat elegido */
+.co-vista { position: relative; border: 4px ridge var(--lb-borde); background: #000; box-shadow: 6px 6px 0 #000; overflow: hidden; }
+.co-escena { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; image-rendering: pixelated; }
+.co-rotulo {
+  position: absolute; left: 12px; bottom: 12px; max-width: min(420px, calc(100% - 24px)); padding: 10px 12px;
+  border: 3px ridge var(--lb-borde); background: color-mix(in srgb, var(--lb-caja) 90%, transparent); box-shadow: 4px 4px 0 #000;
+}
+.co-rotulo h2 { margin: 0 0 4px; font: 13px/1.5 "Press Start 2P", monospace; color: #fff; text-shadow: 2px 2px 0 #000; }
+.co-desc { margin: 0 0 6px; color: var(--lb-tenue); font-size: 18px; line-height: 1.15; }
+.co-estado { margin: 0 0 6px; min-height: 1.2em; }
+.co-barra-caja { height: 10px; background: #0d0816; border: 2px solid var(--lb-borde); }
+.co-barra-caja > i { display: block; height: 100%; width: 0; background: #5fa8e8; }
+.co-barra-caja.hb-listo > i { background: #6fe08a; }
+.co-barra-caja.hb-descanso > i { background: #a384e6; }
+
+/* Los bichos solo se ven con una cría en marcha */
+.hb-bichos { opacity: 0; }
+.hb-e-cria .hb-bichos, .hb-e-listo .hb-bichos { opacity: 1; }
+.hb-bicho { fill: #f6e7c2; }
+.hb-e-cria .hb-bicho, .hb-e-listo .hb-bicho { animation: hbSalto 1.4s steps(2) infinite; }
+.hb-bicho.hb-b2 { animation-delay: .7s !important; }
+@keyframes hbSalto { 50% { transform: translateY(-3px); } }
+.co-escena.hb-e-vacio { filter: saturate(.6) brightness(.85); }
+
+/* Franja de hábitats: acceso visual a cada uno sin recorrer nada */
+.co-franja { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.co-tile {
+  position: relative; display: flex; flex-direction: column; gap: 3px; padding: 4px 4px 6px; text-align: left; cursor: pointer; color: var(--lb-texto);
+  font: inherit; border: 3px outset var(--lb-borde); background: var(--lb-caja);
+}
+.co-tile:hover { filter: brightness(1.15); }
+.co-tile:focus-visible { outline: 3px solid var(--lb-acento); outline-offset: 2px; }
+.co-tile.co-elegido { border-style: inset; border-color: var(--lb-acento); background: color-mix(in srgb, var(--lb-acento) 14%, var(--lb-caja)); }
+.co-tile svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.co-tile.hb-e-vacio svg { filter: saturate(.55) brightness(.85); }
+.co-tile b { font: 7px/1.5 "Press Start 2P", monospace; font-weight: normal; color: #fff3d0; text-shadow: 1px 1px 0 #000; overflow-wrap: break-word; }
+.co-tile small { color: var(--lb-tenue); font-size: 16px; line-height: 1.05; }
+.co-lampara { position: absolute; top: 8px; left: 8px; width: 12px; height: 12px; background: #5b5568; border: 2px solid #1c1420; }
+.hb-e-disponible .co-lampara { background: #e8b84a; animation: hbPulso 1.2s steps(2) infinite; }
+.hb-e-cria .co-lampara { background: #5fa8e8; }
+.hb-e-listo .co-lampara { background: #6fe08a; animation: hbPulso .6s steps(2) infinite; }
+.hb-e-descanso .co-lampara { background: #a384e6; }
+.co-mini { display: block; height: 5px; background: #0d0816; }
+.co-mini > i { display: block; height: 100%; background: #5fa8e8; }
+.hb-e-listo .co-mini > i { background: #6fe08a; }
+.hb-e-descanso .co-mini > i { background: #a384e6; }
+
+.co-panel { margin-top: 0; }
+.co-atajos { grid-template-columns: 1fr; width: 100%; }
+.co-atajos .lb-boton { width: 100%; box-sizing: border-box; text-align: center; text-decoration: none; }
+
+@media (max-width: 760px) {
+  .co-franja { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .co-rotulo { position: static; max-width: none; margin: 0; border-width: 3px 0 0; box-shadow: none; }
+  .co-escena { aspect-ratio: 16 / 10; }
+}
+@media (prefers-reduced-motion: reduce) { .hb-bicho, .co-lampara { animation: none !important; } }

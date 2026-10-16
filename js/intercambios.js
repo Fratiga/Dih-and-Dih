@@ -1,15 +1,14 @@
-/* Intercambios de Triunfos: tablón entre jugadores, mercader y forja.
-   Toda la lógica y los límites viven en el servidor (scratchpad/economia_5_intercambios.sql y economia_6_forja.sql);
+/* Intercambios: tablón entre jugadores y Buhonero (la forja está en Mi habitación, js/forja.js).
+   Toda la lógica y los límites viven en el servidor (scratchpad/economia_5_intercambios.sql);
    esta página escoge cartas y enseña lo que el servidor decide. docs/economia-de-cartas.md, secciones 8 y 11. */
 (function () {
   const $ = id => document.getElementById(id);
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const BA = window.BatallaApuestas;
   const SIN_TRATO = new Set(["legendaria", "limitada"]);
-  const TIPOS_FORJA = new Set(["Objeto", "Reacción", "Terreno", "Acción"]);   // la forja solo acepta cartas que no están vivas (el servidor lo vuelve a comprobar)
 
   let supa = null, miId = null, esAdmin = false;
-  let intercambios = [], mercader = null, forja = null, jugadores = [];
+  let intercambios = [], mercader = null, jugadores = [];
   let ofrezco = null;            // { ids, copias }
   let pido = [];                 // [{ carta, n, nombre }]
   const idPorNombre = new Map();
@@ -45,10 +44,6 @@
   async function cargarMercader() {
     try { mercader = await rpc("cartas_mercader_ver"); pintarMercader(); }
     catch (e) { $("icMercaderLista").innerHTML = `<li class="ic-vacio">${esc(e.message || e)}</li>`; }
-  }
-  async function cargarForja() {
-    try { forja = await rpc("cartas_forja_ver"); pintarForja(); }
-    catch (e) { $("icForjaLista").innerHTML = `<li class="ic-vacio">${esc(e.message || e)}</li>`; }
   }
 
   /* ---------------------------------------------------------------- resultado */
@@ -159,7 +154,7 @@
         <span class="ba-linea">Pide cartas que sumen de ${o.valor_min} a ${o.valor_min + 2} de valor.</span></div>
         <button type="button" class="cartas-boton cartas-boton-principal" data-cambiar="${o.id}">Cambiar</button>
         ${esAdmin ? `<button type="button" class="cartas-boton" data-quitar-oferta="${o.id}">Quitar</button>` : ""}</li>`).join("")
-      : `<li class="ic-vacio">El mercader no tiene nada hoy. Vuelve mañana: su inventario sale de lo que otros jugadores le han cambiado.</li>`;
+      : `<li class="ic-vacio">El mercader no tiene nada hoy. Vuelve mañana: su inventario sale de la reserva común, que llenan los cambios con el Buhonero y las ventas del Hipódromo.</li>`;
     $("icMercaderAdmin").classList.toggle("hidden", !esAdmin);
   }
 
@@ -184,47 +179,6 @@
     } catch (e) { estado(e.message || String(e), true); }
   }
 
-  /* -------------------------------------------------------------------- forja */
-  const PLURAL = { comun: ["común", "comunes"], infrecuente: ["poco común", "poco comunes"], rara: ["rara", "raras"] };
-  const rarezaN = (r, n) => (PLURAL[r] || [r, r])[n === 1 ? 0 : 1];
-  function pintarForja() {
-    if (!forja) return;
-    $("icForjaHoy").textContent = `Forjas de hoy: ${forja.hoy} de ${forja.tope}.`;
-    $("icForjaLista").innerHTML = forja.recetas.map(r => `
-      <li><div><b>${esc(r.nombre)}</b>
-        <span class="ba-linea">${esc(r.descripcion)}</span>
-        <span class="ba-linea">Entregas: ${r.entrada.map(g => `${g.n} ${rarezaN(g.rareza, g.n)}`).join(" + ")} · Recibes: 1 carta ${rarezaN(r.salida.rareza, 1)} · Éxito: ${Math.round(r.exito * 100)} %${r.exito < 1 ? ` · Si falla: ${r.al_fallar === "devolver_una" ? "te devuelven una carta" : "lo pierdes todo"}` : ""}</span></div>
-        <button type="button" class="cartas-boton cartas-boton-principal" data-forjar="${esc(r.id)}">Forjar</button></li>`).join("")
-      || `<li class="ic-vacio">No hay recetas.</li>`;
-  }
-
-  async function forjar(id) {
-    const r = forja.recetas.find(x => x.id === id);
-    if (!r) return;
-    const necesarias = {};
-    r.entrada.forEach(g => { necesarias[g.rareza] = (necesarias[g.rareza] || 0) + g.n; });
-    const total = Object.values(necesarias).reduce((s, n) => s + n, 0);
-    const res = await BA.elegir({
-      titulo: `Forja: ${r.nombre}`, max: total,
-      ayuda: `Entregas ${r.entrada.map(g => `${g.n} ${rarezaN(g.rareza, g.n)}`).join(" + ")}. Las cartas que entregas vuelven a la reserva; recibes una carta ${rarezaN(r.salida.rareza, 1)} (${Math.round(r.exito * 100)} % de éxito).`,
-      filtro: c => necesarias[c.rareza] > 0 && TIPOS_FORJA.has(c.tipo),
-      validar: sel => {
-        const mal = Object.entries(necesarias).filter(([ra, n]) => sel.filter(c => c.rareza === ra).length !== n);
-        return { ok: !mal.length && sel.length === total, texto: `Elegidas ${sel.length} de ${total}` };
-      }
-    });
-    if (!res) return;
-    if (res.error) { estado(res.error, true); return; }
-    if (!(await dialogo.confirmar(`Vas a entregar ${total} cartas, que vuelven a la reserva. ¿Forjar?`, { titulo: "Forja", aceptar: "Forjar" }))) return;
-    try {
-      const out = await rpc("cartas_forjar", { p_receta: id, p_ejemplares: res.ids });
-      if (out.resultado === "carta") mostrarCarta("¡La forja funcionó!", out.carta, `Copia ${out.numero}`);
-      else if (out.resultado === "fallo") estado(out.devuelta ? "La forja falló. Te devolvieron una de las cartas." : "La forja falló y las cartas volvieron a la reserva.", true);
-      else estado(out.mensaje || "No hay carta disponible ahora mismo. No se consumió nada.", true);
-      await cargarForja();
-    } catch (e) { estado(e.message || String(e), true); }
-  }
-
   /* ------------------------------------------------------------------ eventos */
   function resolverCarta(texto) {
     const t = String(texto || "").trim().toLowerCase();
@@ -239,9 +193,8 @@
       const b = ev.target.closest("[data-vista]");
       if (!b) return;
       document.querySelectorAll("#icPestanas button").forEach(x => x.classList.toggle("activa", x === b));
-      ["tablon", "mios", "mercader", "forja"].forEach(v => $("ic" + v[0].toUpperCase() + v.slice(1)).classList.toggle("hidden", v !== b.dataset.vista));
+      ["tablon", "mios", "mercader"].forEach(v => $("ic" + v[0].toUpperCase() + v.slice(1)).classList.toggle("hidden", v !== b.dataset.vista));
       if (b.dataset.vista === "mercader") cargarMercader();
-      if (b.dataset.vista === "forja") cargarForja();
       if (b.dataset.vista === "mios" || b.dataset.vista === "tablon") cargarTodo();
     });
     document.querySelector("main").addEventListener("click", ev => {
@@ -250,7 +203,6 @@
       if (b.dataset.aceptar) aceptar(b.dataset.aceptar);
       else if (b.dataset.cancelar) cancelar(b.dataset.cancelar);
       else if (b.dataset.cambiar) cambiarConMercader(b.dataset.cambiar);
-      else if (b.dataset.forjar) forjar(b.dataset.forjar);
       else if (b.dataset.quitarPido !== undefined) { pido.splice(Number(b.dataset.quitarPido), 1); pintarPido(); }
       else if (b.dataset.quitarOferta) rpc("cartas_admin_mercader_quitar", { p_oferta: b.dataset.quitarOferta }).then(cargarMercader).catch(e => estado(e.message || String(e), true));
     });

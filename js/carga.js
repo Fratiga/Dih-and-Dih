@@ -26,7 +26,7 @@
   const MENSAJES = {
     "index.html": "Abriendo la taberna...", "compendio.html": "Abriendo el compendio...", "mapa.html": "Desenrollando el mapa...",
     "cronologia.html": "Hojeando la cronología...", "fichas.html": "Buscando tus personajes...", "cartas.html": "Buscando tus cartas...",
-    "mazos.html": "Buscando tus cartas...", "batalla.html": "Preparando la mesa...", "intercambios.html": "Preparando la mesa...",
+    "mazos.html": "Buscando tus cartas...", "batalla.html": "Preparando la mesa...", "intercambios.html": "Preparando el puesto...", "habitacion.html": "Entrando a tu habitación...", "corrales.html": "Abriendo los corrales...",
     "estadisticas.html": "Afilando las estadísticas...", "fanarts.html": "Colgando los dibujos...", "rocola.html": "Encendiendo la rocola...",
     "ajedrez.html": "Colocando las piezas...", "arqueria.html": "Tensando el arco...", "minijuegos.html": "Montando la feria...",
     "admin.html": "Abriendo el panel..."

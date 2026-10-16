@@ -1,4 +1,4 @@
-/* Mi habitación (js/habitacion.js): el estilo del lobby aplicado a una escena personal con seis corrales */
+/* Mi habitación (js/habitacion.js): el estilo del lobby aplicado a una escena personal. También da los estilos de las cajas y del diálogo de cría que usa corrales.html */
 body.hb .lb-pagina { padding-bottom: 60px; }
 .hb-aviso { margin: 12px 0 0; padding: 10px 14px; border: 3px ridge var(--lb-borde); background: var(--lb-caja); color: var(--lb-texto); box-shadow: 4px 4px 0 #000; }
 .hb-aviso.hb-error { color: #ff9a8a; }
@@ -12,30 +12,14 @@ body.hb .lb-pagina { padding-bottom: 60px; }
 /* Estantería con lomos de colores */
 .hb-escena .hb-lomo { transition: filter .12s steps(2); }
 
-/* Corrales: botones dentro del SVG */
-.hb-corral { cursor: pointer; outline: none; }
-.hb-corral .lb-forma { transition: filter .12s steps(2); }
-.hb-corral:hover .lb-forma, .hb-corral:focus-visible .lb-forma { filter: brightness(1.3); }
-.hb-corral:focus-visible .hb-marco { stroke: var(--lb-acento, #e8b84a); stroke-width: 4px; }
-.hb-marco { fill: none; stroke: #1c1420; stroke-width: 4px; }
-.hb-corral .hb-estado-txt { font: 7px "Press Start 2P", monospace; fill: #cfc3ea; paint-order: stroke; stroke: #1c1420; stroke-width: 3px; }
-.hb-barra-fondo { fill: #1c1420; }
-.hb-barra { fill: #5fa8e8; }
+/* La forja y la puerta de los corrales */
+.hb-forja { cursor: pointer; outline: none; }
+.hb-forja:focus-visible .lb-forma { filter: brightness(1.3); }
 .hb-lampara { fill: #5b5568; }
-.hb-e-disponible .hb-lampara { fill: #e8b84a; animation: hbPulso 1.2s steps(2) infinite; }
-.hb-e-cria .hb-lampara { fill: #5fa8e8; }
-.hb-e-listo .hb-lampara { fill: #6fe08a; animation: hbPulso .6s steps(2) infinite; }
-.hb-e-listo .hb-barra { fill: #6fe08a; }
-.hb-e-descanso .hb-lampara { fill: #a384e6; }
-.hb-e-descanso .hb-barra { fill: #a384e6; }
-.hb-e-listo .hb-estado-txt { fill: #9ff0b0; }
-.hb-e-vacio .lb-forma { filter: saturate(.55) brightness(.85); }
-.hb-e-vacio:hover .lb-forma { filter: saturate(.8) brightness(1.05); }
+.hb-lampara.hb-e-listo { fill: #6fe08a; animation: hbPulso .6s steps(2) infinite; }
+.hb-lampara.hb-e-cria { fill: #5fa8e8; }
+.hb-lampara.hb-e-disponible { fill: #e8b84a; animation: hbPulso 1.2s steps(2) infinite; }
 @keyframes hbPulso { 50% { opacity: .35; } }
-.hb-bicho { fill: #f6e7c2; }
-.hb-e-cria .hb-bicho, .hb-e-listo .hb-bicho { animation: hbSalto 1.4s steps(2) infinite; }
-.hb-bicho.hb-b2 { animation-delay: .7s !important; }
-@keyframes hbSalto { 50% { transform: translateY(-3px); } }
 
 /* Resumen y listas de los lados */
 .hb-fila { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3px 0; border-bottom: 1px dotted color-mix(in srgb, var(--lb-borde) 60%, transparent); font-size: 19px; }
@@ -85,8 +69,8 @@ body.hb .lb-pagina { padding-bottom: 60px; }
 .hb-nace .ic-carta { width: 220px; margin: 0 auto 10px; }
 @media (max-width: 760px) { .hb-fases li { grid-template-columns: 26px 1fr; } .hb-fases li > :last-child { grid-column: 2; } }
 
-/* Ajustes: los bichos solo se ven con una cría en marcha y los atajos van en una columna */
-.hb-bichos { opacity: 0; }
-.hb-e-cria .hb-bichos, .hb-e-listo .hb-bichos { opacity: 1; }
+/* Dos columnas: lo tuyo a la izquierda y la habitación a la derecha; los atajos van en una columna */
+.hb-dos { grid-template-columns: 240px minmax(0, 1fr); }
+@media (max-width: 1000px) { .hb-dos { grid-template-columns: minmax(0, 1fr); } }
 .hb-atajos { grid-template-columns: 1fr; width: 100%; }
 .hb-atajos .lb-boton { width: 100%; box-sizing: border-box; }
