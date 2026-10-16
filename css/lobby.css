@@ -287,3 +287,6 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 /* En pantallas estrechas la escena se cambia por puertas grandes: las pestañas de salas no hacen falta y la lista de enlaces va abierta */
 @media (max-width: 700px) { body:not(.lb-invitado) .lb-salas-nav, body:not(.lb-invitado) .lb-sala-lema { display: none; } }
 @media (max-width: 1000px) { body.lb-grande .lb-cuerpo { grid-template-columns: minmax(0, 1fr); } }
+
+/* Los carteles de la taberna están en la capa de arriba y se enseñan con el ratón o el teclado sobre el objeto */
+.lb-etq.lb-etq-ver { opacity: 1; }

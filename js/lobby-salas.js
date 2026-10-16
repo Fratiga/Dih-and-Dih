@@ -240,8 +240,24 @@
     cont.innerHTML = cajas.join("");
   }
 
+  /* Los carteles de la taberna (el nombre de cada objeto al pasar el ratón o enfocarlo) se pasan a una capa que se pinta la última:
+     así ningún mueble que esté dibujado después los tapa. */
+  function capaEtiquetas() {
+    const hall = $("lbEscena"), capa = $("lbEtiquetas");
+    if (!hall || !capa) return;
+    hall.querySelectorAll("a.lb-spot").forEach(a => {
+      const t = a.querySelector("text.lb-etq");
+      if (!t) return;
+      capa.appendChild(t);
+      const ver = () => t.classList.add("lb-etq-ver"), ocultar = () => t.classList.remove("lb-etq-ver");
+      a.addEventListener("pointerenter", ver); a.addEventListener("pointerleave", ocultar);
+      a.addEventListener("focus", ver); a.addEventListener("blur", ocultar);
+    });
+  }
+
   window.LobbyMapa = { MAPA, ORDEN };
   function iniciar() {
+    capaEtiquetas();
     pintarZonas();
     // En el móvil la escena no se ve (hay puertas grandes): la lista con todos los enlaces va abierta
     const todo = document.querySelector(".lb-todo");

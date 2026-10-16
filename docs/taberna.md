@@ -6,6 +6,9 @@
   Objetos con enlace: estantería (Compendio), arco de la Biblioteca, mapa, cartel del Salón de juegos (Minijuegos), rocola, cuadro de fanarts (cicla las
   imágenes), tablón de anuncios (Peticiones), **tablón de últimos fanarts** (los cuatro más nuevos), escritorio (Mis personajes), puerta de Mi habitación,
   mesa de Triunfos, puesto de Intercambios, máquina de la Sala recreativa, puerta de los Establos y, solo para el admin, la puerta del Despacho.
+- **Orden de la sala.** Las puertas (Mi habitación, Establos, Despacho, el arco de la Biblioteca) y los muebles altos apoyan en la pared; lo que cuelga (mapa,
+  cuadros, tablones, faroles) va más arriba; en el suelo solo hay muebles sueltos y la mesa común. Los carteles con el nombre de cada objeto se pintan en una capa
+  superior (`#lbEtiquetas`, la llena `js/lobby-salas.js`) para que ningún mueble los tape. Ojo: GitHub Pages no publica archivos cuyo nombre empieza por `_`.
 - **Decoración sin enlace.** Espadas, escudo, diana y mesa de ajedrez ya no abren nada (`.lb-deco-fija`, `pointer-events: none`). Duelo, Ajedrez y Arquería
   se juegan desde Minijuegos o desde la Sala recreativa.
 - **Salas** (en la misma página, por el hash de la URL): `#biblioteca`, `#juegos`, `#establos` y `#despacho` (solo admin; sin permiso vuelve a la taberna).
