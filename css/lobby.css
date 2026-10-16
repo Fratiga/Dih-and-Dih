@@ -316,3 +316,20 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 
 /* Los carteles de la taberna están en la capa de arriba y se enseñan con el ratón o el teclado sobre el objeto */
 .lb-etq.lb-etq-ver { opacity: 1; }
+
+/* Aviso de la carrera del Hipódromo (js/aviso-hipodromo.js): sale con 5 minutos o menos y se quita sola */
+.lb-aviso-caballos {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 12px 0 0; padding: 8px 12px;
+  border: 3px ridge var(--lb-acento); background: linear-gradient(90deg, #3a2a0d, #1d1708); box-shadow: 4px 4px 0 #000;
+}
+.lb-aviso-caballos[hidden] { display: none; }
+.lb-aviso-caballos-etq { padding: 4px 8px; background: var(--lb-acento); color: #1a1408; font: 10px/1.4 "Press Start 2P", monospace; }
+.lb-aviso-caballos-txt { flex: 1 1 220px; color: #ffe9a8; font-size: 22px; }
+.lb-aviso-caballos-crono { font: 18px/1.2 "Press Start 2P", monospace; color: #fff; text-shadow: 2px 2px 0 #000; min-width: 5.2ch; text-align: center; }
+.lb-aviso-caballos[data-estado="ya"] .lb-aviso-caballos-crono { color: #ff9a8a; animation: lbParpadeo 1s steps(2) infinite; }
+.lb-aviso-caballos[data-estado="corre"] { border-color: #6fe08a; background: linear-gradient(90deg, #0d2e19, #08140d); }
+.lb-aviso-caballos[data-estado="corre"] .lb-aviso-caballos-etq { background: #6fe08a; }
+.lb-aviso-apostar { color: var(--lb-acento); }
+.lb-aviso-apostar[hidden] { display: none; }
+.lb-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .lb-aviso-caballos[data-estado="ya"] .lb-aviso-caballos-crono { animation: none; } }

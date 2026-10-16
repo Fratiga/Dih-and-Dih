@@ -19,6 +19,9 @@
   Las dibuja `js/lobby-salas.js` a partir de `MAPA`, que es la única lista de enlaces: de ahí salen también las pestañas de arriba de la escena y la lista
   «Todas las puertas del sitio». En el móvil (menos de 700 px) la escena se cambia por puertas grandes y la lista va abierta.
 - **Hipódromo.** No está en la sala de juegos: vive en los Establos con el Hipódromo en vivo y los Corrales.
+- **Aviso de la carrera.** Con 5 minutos o menos para la salida, la taberna enseña bajo la cinta de novedades una franja con la cuenta atrás, un enlace al Hipódromo en vivo y otro
+  para apostar (mientras no cierren las apuestas). Mientras corre dice que está corriendo y luego se quita sola (`js/aviso-hipodromo.js`; lee `hipodromo_programa` y el reloj
+  `hipodromo_ahora`, nada más). `index.html?caballos=90` simula una carrera que sale en 90 segundos.
 
 ## Añadir una página nueva
 

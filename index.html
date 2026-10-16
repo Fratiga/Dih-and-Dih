@@ -17,13 +17,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20270213">
-  <link rel="stylesheet" href="css/taberna.css?v=20270213">
-  <link rel="stylesheet" href="css/lobby.css?v=20270213">
-  <link rel="stylesheet" href="css/cielo.css?v=20270213">
+  <link rel="stylesheet" href="css/style.css?v=20270214">
+  <link rel="stylesheet" href="css/taberna.css?v=20270214">
+  <link rel="stylesheet" href="css/lobby.css?v=20270214">
+  <link rel="stylesheet" href="css/cielo.css?v=20270214">
 </head>
 <body class="lb lb-invitado lb-grande">
-  <script src="js/carga.js?v=20270213"></script>
+  <script src="js/carga.js?v=20270214"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -57,6 +57,16 @@
     <div class="lb-ticker lb-solo-socio" aria-label="Novedades">
       <span class="lb-ticker-etiqueta lb-parpadeo">NUEVO</span>
       <div class="lb-ticker-ventana"><div class="lb-ticker-pista" id="lbTicker"></div></div>
+    </div>
+
+    <!-- Aviso de la carrera: sale cuando faltan 5 minutos o menos (js/aviso-hipodromo.js) -->
+    <div class="lb-aviso-caballos lb-solo-socio" id="lbAvisoCaballos" hidden role="region" aria-label="Aviso del Hipódromo">
+      <span class="lb-aviso-caballos-etq">HIPÓDROMO</span>
+      <span class="lb-aviso-caballos-txt" id="lbAvisoTxt"></span>
+      <time class="lb-aviso-caballos-crono" id="lbAvisoCrono" aria-hidden="true">00:00</time>
+      <a class="lb-boton" href="hipodromo-vivo.html">Ver a los caballos en vivo</a>
+      <a class="lb-aviso-apostar" id="lbAvisoApostar" href="hipodromo.html">Apostar</a>
+      <span class="lb-lector" id="lbAvisoLector" aria-live="polite"></span>
     </div>
 
 
@@ -458,32 +468,33 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20270213"></script>
-  <script src="data/musica.js?v=20270213"></script>
-  <script src="js/musica-nube.js?v=20270213"></script>
-  <script src="js/common.js?v=20270213"></script>
-  <script src="js/temas.js?v=20270213"></script>
-  <script src="js/player.js?v=20270213"></script>
-  <script src="data/jumpscare.js?v=20270213"></script>
-  <script src="data/contrasenas.js?v=20270213"></script>
-  <script src="js/dialogos.js?v=20270213"></script>
-  <script src="js/fichas-supabase.js?v=20270213"></script>
-  <script src="js/interruptores.js?v=20270213"></script>
-  <script src="js/presencia.js?v=20270213"></script>
-  <script src="js/lado.js?v=20270213"></script>
-  <script src="js/slappy.js?v=20270213"></script>
-  <script src="js/peticiones-supabase.js?v=20270213"></script>
-  <script src="data/novedades.js?v=20270213"></script>
-  <script src="js/contenido-servidor.js?v=20270213"></script>
-  <script src="data/saludos.js?v=20270213"></script>
-  <script src="js/bienvenida.js?v=20270213"></script>
-  <script src="data/protagonistas.js?v=20270213"></script>
-  <script src="js/taberna-mesa.js?v=20270213"></script>
-  <script src="js/cielo.js?v=20270213"></script>
-  <script src="js/lobby-salas-arte.js?v=20270213"></script>
-  <script src="js/lobby-salas.js?v=20270213"></script>
-  <script src="js/lobby.js?v=20270213"></script>
-  <script src="js/avisos-admin.js?v=20270213"></script>
-  <script src="js/musica-paginas.js?v=20270213"></script>
+  <script src="data/rotacion.js?v=20270214"></script>
+  <script src="data/musica.js?v=20270214"></script>
+  <script src="js/musica-nube.js?v=20270214"></script>
+  <script src="js/common.js?v=20270214"></script>
+  <script src="js/temas.js?v=20270214"></script>
+  <script src="js/player.js?v=20270214"></script>
+  <script src="data/jumpscare.js?v=20270214"></script>
+  <script src="data/contrasenas.js?v=20270214"></script>
+  <script src="js/dialogos.js?v=20270214"></script>
+  <script src="js/fichas-supabase.js?v=20270214"></script>
+  <script src="js/interruptores.js?v=20270214"></script>
+  <script src="js/presencia.js?v=20270214"></script>
+  <script src="js/lado.js?v=20270214"></script>
+  <script src="js/slappy.js?v=20270214"></script>
+  <script src="js/peticiones-supabase.js?v=20270214"></script>
+  <script src="data/novedades.js?v=20270214"></script>
+  <script src="js/contenido-servidor.js?v=20270214"></script>
+  <script src="data/saludos.js?v=20270214"></script>
+  <script src="js/bienvenida.js?v=20270214"></script>
+  <script src="data/protagonistas.js?v=20270214"></script>
+  <script src="js/taberna-mesa.js?v=20270214"></script>
+  <script src="js/cielo.js?v=20270214"></script>
+  <script src="js/lobby-salas-arte.js?v=20270214"></script>
+  <script src="js/lobby-salas.js?v=20270214"></script>
+  <script src="js/lobby.js?v=20270214"></script>
+  <script src="js/aviso-hipodromo.js?v=20270214"></script>
+  <script src="js/avisos-admin.js?v=20270214"></script>
+  <script src="js/musica-paginas.js?v=20270214"></script>
 </body>
 </html>
