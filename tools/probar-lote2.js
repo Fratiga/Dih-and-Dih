@@ -129,7 +129,12 @@ ids.forEach(id => {
 { const e = partida(); turnoDe(e, 0); const t = poner(e, 1, "t24"); M.ponerUnidad(e, 0, "aprendiz-de-mago", true, t); ok(t.pv === 3, "Aprendiz: 1 de daño"); }
 { const e = partida(); turnoDe(e, 0); const a = poner(e, 0, "t33"); M.ponerUnidad(e, 0, "capitan-de-barco", true, a); ok(!M.buscar(e, a.uid) && e.jugadores[0].mano.includes("t33"), "Capitán de barco devuelve a otra aliada"); }
 { const e = partida(); turnoDe(e, 0); const J = e.jugadores[0]; let n0 = J.mano.length; M.ponerUnidad(e, 0, "pescador", true, null); ok(J.mano.length === n0, "Pescador no roba sin terreno");
-  e.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null }; M.ponerUnidad(e, 0, "pescador", true, null); ok(J.mano.length === n0 + 1, "y roba con terreno"); }
+  e.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null }; const mazo0 = J.mazo.length; M.ponerUnidad(e, 0, "pescador", true, null);
+  const sacada = cartas[J.mano[J.mano.length - 1]];
+  ok(J.mano.length === n0 + 1 && J.mazo.length === mazo0 && sacada.afinidad.includes("sombra") && ["comun", "infrecuente", "rara"].includes(sacada.rareza), `Pescador saca una carta de la afinidad del terreno sin tocar el mazo (${sacada.nombre})`);
+  // Es un sorteo con semilla: la misma partida da la misma carta
+  const dist = new Set(); for (let s = 1; s <= 30; s++) { const e2 = partida(); e2.rng = s * 977; turnoDe(e2, 0); e2.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null }; const J2 = e2.jugadores[0]; J2.mano = []; M.ponerUnidad(e2, 0, "pescador", true, null); dist.add(J2.mano[0]); }
+  ok(dist.size > 3, `y no es siempre la misma (${dist.size} distintas en 30 sorteos)`); }
 { const e = partida(); turnoDe(e, 0); const m = poner(e, 0, "minero-de-pozohumo"); M.infligir(e, { u: m.uid }, 2, { tipo: "terreno" }); ok(m.pv === 3, "Minero no recibe daño de terrenos"); M.infligir(e, { u: m.uid }, 2, { tipo: "habilidad" }); ok(m.pv === 1, "pero sí de lo demás"); }
 { const e = partida(); turnoDe(e, 0); const B = e.jugadores[1]; B.mazo = ["kobold", "pocion-de-curacion-menor"]; M.ponerUnidad(e, 0, "ciego-profeta", true, null); ok(B.mazo[B.mazo.length - 1] === "kobold", "Ciego profeta manda una unidad al fondo");
   B.mazo = ["pocion-de-curacion-menor", "kobold"]; M.ponerUnidad(e, 0, "ciego-profeta", true, null); ok(B.mazo[0] === "pocion-de-curacion-menor", "pero no un objeto"); }

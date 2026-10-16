@@ -222,8 +222,15 @@ window.CartasCliente = (function () {
 
   /* Copia de los datos de las cartas de un mazo, para guardarla en la partida y que los dos
      jugadores vean lo mismo aunque después se edite una carta. */
+  /* El Pescador saca cartas que quizá no estén en ningún mazo, así que si una partida lo lleva su instantánea añade esta reserva:
+     las Comunes, Infrecuentes y Raras sin lado de ningún tipo y que se pueden ganar. */
+  function reservaDelPescador() {
+    return window.CARTAS.filter(c => !c.borrador && !c.lado && c.obtenible !== false && ["comun", "infrecuente", "rara"].includes(c.rareza)).map(c => c.id);
+  }
+
   function instantanea(ids) {
     const out = {};
+    if (ids.includes("pescador")) ids = ids.concat(reservaDelPescador());
     [...new Set(ids)].forEach(id => {
       const c = window.cartaPorId(id);
       if (!c) return;

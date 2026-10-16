@@ -621,7 +621,20 @@
       M.log(c.est, `${M.nombre(c.est, c.u)} cambia de rumbo y recoge a ${M.nombre(c.est, c.objetivo)}.`);
       M.devolverAMano(c.est, c.objetivo);
     } } });
-    R("pescador", { alEntrar: { resolver: c => { if (c.est.terreno) M.robar(c.est, c.j, 1); } } });
+    // El Pescador saca algo del agua del terreno: una carta al azar de su afinidad, tenga o no esa carta en el mazo.
+    // Sale de las cartas de la partida (est.cartas): por eso la instantánea lleva una reserva si algún mazo lo incluye
+    // (CartasCliente.instantanea) y el sorteo es el mismo en los dos navegadores.
+    R("pescador", { alEntrar: { resolver: c => {
+      if (!c.est.terreno) return;
+      const afin = (M.meta(c.est, c.est.terreno.cartaId).afinidad || [])[0];
+      const reserva = Object.values(c.est.cartas)
+        .filter(m => m && ["comun", "infrecuente", "rara"].includes(m.rareza) && (m.afinidad || []).includes(afin))
+        .map(m => m.id).sort();
+      if (!reserva.length) { M.robar(c.est, c.j, 1); return; }
+      const id = reserva[M.entero(c.est, reserva.length)];
+      alMano(c.est, c.j, id);
+      M.log(c.est, `${M.nombre(c.est, c.u)} saca ${M.meta(c.est, id).nombre} del agua.`);
+    } } });
     R("minero-de-pozohumo", { reduceDano: (est, u, n, fuente) => (fuente && fuente.tipo === "terreno" ? n : 0) });
     R("ciego-profeta", { alEntrar: { resolver: c => {
       const J = c.est.jugadores[1 - c.j];
