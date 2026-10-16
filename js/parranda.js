@@ -623,7 +623,7 @@
     aplauso(tipo, dur);
     const bucleFin = () => {
       if (!celebracion || celebracion.desde !== desde || estado !== "fin") return;
-      dibujar(tiempoCancion());
+      dibujar(tiempoFinal);
       rafFin = requestAnimationFrame(bucleFin);
     };
     rafFin = requestAnimationFrame(bucleFin);
@@ -665,7 +665,9 @@
     fuenteRuido.start(t0); fuenteRuido.stop(t0 + dur);
   }
 
+  let tiempoFinal = 0; // la hora de la canción en que acabó la partida: lo que se ve de fondo se queda quieto ahí
   function terminar(completa) {
+    tiempoFinal = tiempoCancion();
     estado = "fin";
     detenerFuente();
     cancelAnimationFrame(raf);
@@ -2038,7 +2040,7 @@
   document.getElementById("rtContinuar").addEventListener("click", continuar);
   document.getElementById("rtSalir").addEventListener("click", salir);
   document.getElementById("rtReiniciarPausa").addEventListener("click", reiniciar);
-  window.addEventListener("resize", () => { if (estado !== "jugando") dibujar(tiempoCancion()); });
+  window.addEventListener("resize", () => { if (estado !== "jugando") dibujar(estado === "fin" ? tiempoFinal : tiempoCancion()); });
 
   pintarMenu();
   dibujar(0);

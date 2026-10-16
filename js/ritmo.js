@@ -606,7 +606,9 @@
     return acc >= 0.95 ? "S" : acc >= 0.88 ? "A" : acc >= 0.75 ? "B" : acc >= 0.6 ? "C" : "D";
   }
 
+  let tiempoFinal = 0; // la hora de la canción en que acabó la partida: lo que se ve de fondo se queda quieto ahí
   function terminar(completa) {
+    tiempoFinal = tiempoCancion();
     estado = "fin";
     detenerFuente();
     cancelAnimationFrame(raf);
@@ -1571,7 +1573,7 @@
   document.getElementById("rtContinuar").addEventListener("click", continuar);
   document.getElementById("rtSalir").addEventListener("click", salir);
   document.getElementById("rtReiniciarPausa").addEventListener("click", reiniciar);
-  window.addEventListener("resize", () => { if (estado !== "jugando") dibujar(tiempoCancion()); });
+  window.addEventListener("resize", () => { if (estado !== "jugando") dibujar(estado === "fin" ? tiempoFinal : tiempoCancion()); });
 
   pintarMenu();
   dibujar(0);
