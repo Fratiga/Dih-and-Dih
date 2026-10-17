@@ -3946,3 +3946,21 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-cal-tabla .admin-cal-dia { background: rgba(0, 0, 0, .3); text-transform: capitalize; color: var(--accent); }
 .admin-cal-pasada { opacity: .55; }
 .admin-cal-copa td { background: rgba(230, 194, 78, .1); font-weight: 600; }
+
+/* Admin: diálogos de personajes */
+.admin-dlg-pers { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.admin-dlg-pers button { padding: 8px 16px; font: inherit; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); cursor: pointer; }
+.admin-dlg-pers button.activa { color: var(--text); border-color: var(--accent); background: var(--panel); }
+.admin-dlg-donde { margin: 4px 0 12px; color: var(--muted); font-size: .88rem; }
+.admin-dlg-grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; align-items: start; }
+.admin-dlg { padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); }
+.admin-dlg-editado { border-left: 4px solid var(--accent); }
+.admin-dlg header h3 { margin: 0; font-size: .98rem; }
+.admin-dlg header small { color: var(--muted); font-size: .76rem; }
+.admin-dlg-lista { list-style: none; margin: 10px 0 6px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.admin-dlg-lista li { display: flex; gap: 6px; }
+.admin-dlg-lista input { flex: 1; min-width: 0; box-sizing: border-box; padding: 6px 8px; font: inherit; color: var(--text); background: rgba(0, 0, 0, .35); border: 1px solid var(--border); }
+.admin-dlg-quitar { flex: 0 0 auto; width: 32px; font: inherit; color: #ee9d95; background: none; border: 1px solid #7a403b; cursor: pointer; }
+.admin-dlg-prueba { min-height: 1.3em; margin: 4px 0; font-style: italic; color: var(--accent); }
+.admin-dlg-acciones { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 800px) { .admin-dlg-grupos { grid-template-columns: 1fr; } }

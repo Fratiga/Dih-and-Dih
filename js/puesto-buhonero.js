@@ -1,6 +1,7 @@
 /* El Buhonero de Intercambios (pestaña Buhonero de intercambios.html): un mercader encapuchado junto a su carreta, bajo unos faroles, en un callejón de noche.
    Es solo escena y voz: dibuja el SVG, hace que sus ojos sigan al cursor, le da frases (con efecto de máquina de escribir) y enciende tantas velas como
    tratos le quedan a quien lo visita hoy. Lo que se vende y lo que se cobra lo decide el servidor (js/intercambios.js).
+   Sus frases las puede cambiar el Admin (js/dialogos-personajes.js, pestaña Diálogos).
    API: PuestoBuhonero.montar(contenedor), .decir(clave), .velas(hoy, tope). */
 window.PuestoBuhonero = (function () {
   const FRASES = {
@@ -18,6 +19,15 @@ window.PuestoBuhonero = (function () {
     error: ["Eso no cuadra. Yo no hago favores.", "No. Así no se negocia."],
     sinSesion: ["Sin nombre no hay trato. Inicia sesión."]
   };
+  /* Cuándo dice cada grupo (lo enseña el editor de Admin, js/admin-dialogos.js) */
+  const CUANDO = {
+    saludo: "Al abrir la pestaña del Buhonero, si tiene ofertas", vacio: "Al abrir la pestaña si no tiene nada que ofrecer", agotado: "Al abrir la pestaña cuando ya hiciste tus 3 tratos de hoy",
+    comun: "Al pasar el cursor sobre una carta común", infrecuente: "Al pasar el cursor sobre una carta poco común", rara: "Al pasar el cursor sobre una carta rara",
+    legendaria: "Al pasar el cursor sobre una carta legendaria", limitada: "Al pasar el cursor sobre una carta limitada", especial: "Al pasar el cursor sobre una oferta especial",
+    tarda: "Mientras eliges qué entregar", exito: "Al cerrar un trato", error: "Si algo falla en un trato", sinSesion: "Sin sesión iniciada (todavía no se usa)"
+  };
+  const ORIGINALES = JSON.parse(JSON.stringify(FRASES));
+  if (window.DialogosPersonajes) { DialogosPersonajes.aplicar("buhonero", FRASES); DialogosPersonajes.refrescar("buhonero", FRASES); }
   const al = lista => lista[Math.floor(Math.random() * lista.length)];
 
   const ESCENA = `
@@ -146,5 +156,5 @@ window.PuestoBuhonero = (function () {
     caja.querySelector(".pb-velas").setAttribute("aria-label", `Te quedan ${quedan} de ${tope} tratos hoy`);
   }
 
-  return { montar, decir, velas, FRASES };
+  return { montar, decir, velas, FRASES, ORIGINALES, CUANDO };
 })();

@@ -2,6 +2,7 @@
    muñeca y un mazo de madera clara, delante de su horno y su yunque. Es solo escena y voz: dibuja el SVG, deja que el yelmo se incline hacia el cursor,
    le da frases cortas (con efecto de máquina de escribir), enciende tantas brasas como forjas le quedan a quien lo visita hoy y, al forjar, baja el mazo
    sobre el yunque con chispas. Lo que se forja y lo que sale lo decide el servidor (js/forja.js).
+   Sus frases las puede cambiar el Admin (js/dialogos-personajes.js, pestaña Diálogos).
    API: ForjaHerrero.montar(contenedor), .decir(clave), .brasas(hoy, tope), .golpe() -> promesa que se cumple cuando cae el mazo. */
 window.ForjaHerrero = (function () {
   const FRASES = {
@@ -17,6 +18,14 @@ window.ForjaHerrero = (function () {
     error: ["Así no. Mira bien lo que pide.", "No. Otra vez."],
     sinSesion: ["Sin nombre no hay encargo. Inicia sesión."]
   };
+  /* Cuándo dice cada grupo (lo enseña el editor de Admin, js/admin-dialogos.js) */
+  const CUANDO = {
+    saludo: "Al entrar en la forja", elige: "Al abrir el banco y al colocar una pieza", falta: "Si pones una carta que no sirve para el encargo", listo: "Cuando todos los huecos están llenos",
+    golpe: "Al golpear", exito: "Cuando la forja funciona", fallo: "Cuando la forja falla", agotado: "Si ya forjaste 3 veces hoy", vacio: "Si no tienes ninguna carta que sirva",
+    error: "Si el servidor rechaza algo", sinSesion: "Sin sesión iniciada"
+  };
+  const ORIGINALES = JSON.parse(JSON.stringify(FRASES));
+  if (window.DialogosPersonajes) { DialogosPersonajes.aplicar("herrero", FRASES); DialogosPersonajes.refrescar("herrero", FRASES); }
   const al = lista => lista[Math.floor(Math.random() * lista.length)];
 
   /* La cadena de colgar: eslabones alternos, uno de canto y otro de frente */
@@ -216,5 +225,5 @@ window.ForjaHerrero = (function () {
     });
   }
 
-  return { montar, decir, brasas: brasasHoy, golpe, FRASES };
+  return { montar, decir, brasas: brasasHoy, golpe, FRASES, ORIGINALES, CUANDO };
 })();

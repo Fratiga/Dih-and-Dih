@@ -14,14 +14,14 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270301">
-  <link rel="stylesheet" href="css/musica-paginas.css?v=20270301">
-  <link rel="stylesheet" href="css/bufon-lab.css?v=20270301">
-  <link rel="stylesheet" href="css/taberna.css?v=20270301">
-  <link rel="stylesheet" href="css/cartas.css?v=20270301">
+  <link rel="stylesheet" href="css/style.css?v=20270302">
+  <link rel="stylesheet" href="css/musica-paginas.css?v=20270302">
+  <link rel="stylesheet" href="css/bufon-lab.css?v=20270302">
+  <link rel="stylesheet" href="css/taberna.css?v=20270302">
+  <link rel="stylesheet" href="css/cartas.css?v=20270302">
 </head>
 <body>
-  <script src="js/carga.js?v=20270301"></script>
+  <script src="js/carga.js?v=20270302"></script>
   <header class="site-header">
    <div class="site-header-inner">
     <div class="header-left">
@@ -144,6 +144,7 @@
         <button type="button" class="admin-tab" data-tab="balance">Balance</button>
         <button type="button" class="admin-tab" data-tab="rivales">Rivales</button>
         <button type="button" class="admin-tab" data-tab="bufontextos">Bufón: textos</button>
+        <button type="button" class="admin-tab" data-tab="dialogos">Diálogos</button>
         <button type="button" class="admin-tab" data-tab="regalos">Regalos y eventos</button>
         <button type="button" class="admin-tab" data-tab="calendario">Calendario</button>
         <button type="button" class="admin-tab" data-tab="envivo">En vivo <span id="adminEnVivoCount" class="admin-tab-badge"></span></button>
@@ -240,6 +241,14 @@
           <div class="admin-bt-izq"><input type="search" id="adminBufonTextosBuscar" placeholder="Buscar por id o por lo que dice..." aria-label="Buscar un texto del Bufón"><ul id="adminBufonTextosLista" class="admin-bt-lista"></ul></div>
           <div id="adminBufonTextosEditor" class="admin-bt-der"><p class="admin-vacio">Abre esta pestaña para cargar los textos.</p></div>
         </div>
+      </section>
+
+      <section id="adminPanelDialogos" class="admin-panel">
+        <p class="admin-bufon-banner">Cambia lo que dicen el Buhonero y el herrero de la forja. Cada momento (saludar, cerrar un trato, golpear...) tiene su lista de frases: añade, cambia o quita las que quieras y guarda. Cuando el personaje habla en ese momento, elige una al azar. Lo que guardes reemplaza las frases de fábrica de ese momento, y «Volver a las de fábrica» las recupera. Los jugadores lo oyen en su siguiente visita.</p>
+        <p id="adminDialogosEstado" class="admin-cartas-estado" role="status"></p>
+        <div id="adminDialogosPers" class="admin-dlg-pers" role="tablist"><button type="button" class="activa" data-pers="buhonero">El Buhonero</button><button type="button" data-pers="herrero">El herrero gigante</button></div>
+        <p id="adminDialogosDonde" class="admin-dlg-donde"></p>
+        <div id="adminDialogosGrupos" class="admin-dlg-grupos"><p class="admin-vacio">Abre esta pestaña para cargar los diálogos.</p></div>
       </section>
 
       <section id="adminPanelRegalos" class="admin-panel">
@@ -415,62 +424,66 @@
     <article id="modalContent"></article>
   </dialog>
 
-  <script src="js/dialogos.js?v=20270301"></script>
-  <script src="data/entries.js?v=20270301"></script>
-  <script src="data/personajes.js?v=20270301"></script>
-  <script src="data/lugares.js?v=20270301"></script>
-  <script src="data/facciones.js?v=20270301"></script>
-  <script src="data/pergaminos.js?v=20270301"></script>
-  <script src="data/armas.js?v=20270301"></script>
-  <script src="data/objetos.js?v=20270301"></script>
-  <script src="data/bestiario.js?v=20270301"></script>
-  <script src="data/razas.js?v=20270301"></script>
-  <script src="data/religiones.js?v=20270301"></script>
-  <script src="data/cronologia-a.js?v=20270301"></script>
-  <script src="data/cronologia-b.js?v=20270301"></script>
-  <script src="data/cronologia-arcos.js?v=20270301"></script>
-  <script src="data/reglas.js?v=20270301"></script>
-  <script src="data/economia.js?v=20270301"></script>
-  <script src="data/novedades.js?v=20270301"></script>
-  <script src="data/mapa.js?v=20270301"></script>
-  <script src="js/contenido-servidor.js?v=20270301"></script>
-  <script src="data/rotacion.js?v=20270301"></script>
-  <script src="data/musica.js?v=20270301"></script>
-  <script src="js/musica-nube.js?v=20270301"></script>
-  <script src="js/common.js?v=20270301"></script>
-  <script src="js/temas.js?v=20270301"></script>
-  <script src="js/taberna.js?v=20270301"></script>
-  <script src="js/player.js?v=20270301"></script>
-  <script src="js/modal.js?v=20270301"></script>
-  <script src="data/jumpscare.js?v=20270301"></script>
-  <script src="data/contrasenas.js?v=20270301"></script>
-  <script src="data/fanarts.js?v=20270301"></script>
-  <script src="js/cartas-datos.js?v=20270301"></script>
-  <script src="js/cartas-cliente.js?v=20270301"></script>
-  <script src="js/fichas-supabase.js?v=20270301"></script>
-  <script src="js/interruptores.js?v=20270301"></script>
-  <script src="js/presencia.js?v=20270301"></script>
-  <script src="js/peticiones-supabase.js?v=20270301"></script>
-  <script src="js/bufon-supabase.js?v=20270301"></script>
-  <script src="js/muerte-subita-supabase.js?v=20270301"></script>
-  <script src="js/fanarts-supabase.js?v=20270301"></script>
-  <script src="js/lado.js?v=20270301"></script>
-  <script src="js/slappy.js?v=20270301"></script>
-  <script src="js/busqueda-global.js?v=20270301"></script>
-  <script src="js/header-marquee.js?v=20270301"></script>
-  <script src="data/bufon-ciclos-lista.js?v=20270301"></script>
-  <script src="js/admin.js?v=20270301"></script>
-  <script src="js/admin-contenido.js?v=20270301"></script>
-  <script src="js/musica-fondos.js?v=20270301"></script>
-  <script src="js/admin-balance.js?v=20270301"></script>
-  <script src="js/admin-rivales.js?v=20270301"></script>
-  <script src="js/admin-bufon-textos.js?v=20270301"></script>
-  <script src="js/admin-regalos.js?v=20270301"></script>
-  <script src="js/admin-calendario.js?v=20270301"></script>
-  <script src="js/admin-herramientas-2.js?v=20270301"></script>
-  <script src="js/admin-herramientas.js?v=20270301"></script>
-  <script src="js/admin-economia.js?v=20270301"></script>
-  <script src="js/bufon-lab-motor.js?v=20270301"></script>
-  <script src="js/bufon-lab.js?v=20270301"></script>
+  <script src="js/dialogos.js?v=20270302"></script>
+  <script src="data/entries.js?v=20270302"></script>
+  <script src="data/personajes.js?v=20270302"></script>
+  <script src="data/lugares.js?v=20270302"></script>
+  <script src="data/facciones.js?v=20270302"></script>
+  <script src="data/pergaminos.js?v=20270302"></script>
+  <script src="data/armas.js?v=20270302"></script>
+  <script src="data/objetos.js?v=20270302"></script>
+  <script src="data/bestiario.js?v=20270302"></script>
+  <script src="data/razas.js?v=20270302"></script>
+  <script src="data/religiones.js?v=20270302"></script>
+  <script src="data/cronologia-a.js?v=20270302"></script>
+  <script src="data/cronologia-b.js?v=20270302"></script>
+  <script src="data/cronologia-arcos.js?v=20270302"></script>
+  <script src="data/reglas.js?v=20270302"></script>
+  <script src="data/economia.js?v=20270302"></script>
+  <script src="data/novedades.js?v=20270302"></script>
+  <script src="data/mapa.js?v=20270302"></script>
+  <script src="js/contenido-servidor.js?v=20270302"></script>
+  <script src="data/rotacion.js?v=20270302"></script>
+  <script src="data/musica.js?v=20270302"></script>
+  <script src="js/musica-nube.js?v=20270302"></script>
+  <script src="js/common.js?v=20270302"></script>
+  <script src="js/temas.js?v=20270302"></script>
+  <script src="js/taberna.js?v=20270302"></script>
+  <script src="js/player.js?v=20270302"></script>
+  <script src="js/modal.js?v=20270302"></script>
+  <script src="data/jumpscare.js?v=20270302"></script>
+  <script src="data/contrasenas.js?v=20270302"></script>
+  <script src="data/fanarts.js?v=20270302"></script>
+  <script src="js/cartas-datos.js?v=20270302"></script>
+  <script src="js/cartas-cliente.js?v=20270302"></script>
+  <script src="js/fichas-supabase.js?v=20270302"></script>
+  <script src="js/interruptores.js?v=20270302"></script>
+  <script src="js/presencia.js?v=20270302"></script>
+  <script src="js/peticiones-supabase.js?v=20270302"></script>
+  <script src="js/bufon-supabase.js?v=20270302"></script>
+  <script src="js/muerte-subita-supabase.js?v=20270302"></script>
+  <script src="js/fanarts-supabase.js?v=20270302"></script>
+  <script src="js/lado.js?v=20270302"></script>
+  <script src="js/slappy.js?v=20270302"></script>
+  <script src="js/busqueda-global.js?v=20270302"></script>
+  <script src="js/header-marquee.js?v=20270302"></script>
+  <script src="data/bufon-ciclos-lista.js?v=20270302"></script>
+  <script src="js/admin.js?v=20270302"></script>
+  <script src="js/admin-contenido.js?v=20270302"></script>
+  <script src="js/musica-fondos.js?v=20270302"></script>
+  <script src="js/admin-balance.js?v=20270302"></script>
+  <script src="js/admin-rivales.js?v=20270302"></script>
+  <script src="js/admin-bufon-textos.js?v=20270302"></script>
+  <script src="js/dialogos-personajes.js?v=20270302"></script>
+  <script src="js/puesto-buhonero.js?v=20270302"></script>
+  <script src="js/forja-herrero.js?v=20270302"></script>
+  <script src="js/admin-dialogos.js?v=20270302"></script>
+  <script src="js/admin-regalos.js?v=20270302"></script>
+  <script src="js/admin-calendario.js?v=20270302"></script>
+  <script src="js/admin-herramientas-2.js?v=20270302"></script>
+  <script src="js/admin-herramientas.js?v=20270302"></script>
+  <script src="js/admin-economia.js?v=20270302"></script>
+  <script src="js/bufon-lab-motor.js?v=20270302"></script>
+  <script src="js/bufon-lab.js?v=20270302"></script>
 </body>
 </html>

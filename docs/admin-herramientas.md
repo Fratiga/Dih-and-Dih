@@ -106,3 +106,13 @@ Archivos: `docs/admin/regalos_eventos.sql`, `js/admin-regalos.js`, y los avisos 
 ## Calendario del Hipódromo (pestaña Calendario)
 
 Solo lectura: las próximas 48 carreras de `hipodromo_programa` (hora local, grado, distancia, pista, bolsa y clima más probable). No se edita a propósito.
+
+## Diálogos del Buhonero y del herrero (pestaña Diálogos)
+
+SQL: `docs/admin/dialogos_personajes.sql` (se prueba con `sh docs/admin/probar_dialogos.sh` y `node docs/pruebas-web/dialogos_personajes.js`). Archivos: `js/admin-dialogos.js` (el editor),
+`js/dialogos-personajes.js` (lo que aplica las frases guardadas en cada página, con caché local como el Bufón) y los propios personajes, `js/puesto-buhonero.js` y `js/forja-herrero.js`.
+
+- Cada personaje tiene **grupos** de frases según el momento (saludar, cerrar un trato, golpear...). Cada grupo se edita aparte: añadir, cambiar y quitar frases, **Probar una** (enseña una al azar) y **Guardar**.
+- Lo guardado **reemplaza** las frases de fábrica de ese grupo; **Volver a las de fábrica** borra la fila. Si guardas exactamente las de fábrica, tampoco se queda fila.
+- Un grupo necesita al menos una frase (máximo 30, de hasta 240 letras). Los momentos no se pueden inventar: los define el código de cada personaje (`CUANDO` explica cuándo se usa cada uno).
+- Los jugadores lo oyen en su siguiente visita. Si se añade un momento nuevo a un personaje, hay que darle también su texto en `CUANDO` (la prueba de Node lo comprueba).
