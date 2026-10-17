@@ -26,7 +26,7 @@
     taberna: {
       nombre: "Taberna", grupos: [{ titulo: "Taberna", enlaces: [
         ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"],
-        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["habitacion.html", "Mi habitación"]] }]
+        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"]] }]
     },
     biblioteca: {
       nombre: "Biblioteca", lema: "Todo lo que se sabe del mundo, estante por estante.", grupos: [

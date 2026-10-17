@@ -1,0 +1,9 @@
+/* Cartas pequeñas de verdad (js/cartas-mini.js): la carta real de Triunfos a poco tamaño, que crece al pasar el cursor y se abre grande al pulsarla.
+   El tamaño se cambia con --mc-w; los colores del dorso, con --mc-borde y --mc-fondo. Cada página (puesto.css, forja.css) pone lo suyo encima. */
+.mc { position: relative; display: inline-block; width: var(--mc-w, 104px); padding: 0; margin: 0; border: 0; background: none; color: inherit; font: inherit; cursor: zoom-in; transition: transform .16s cubic-bezier(.3, 1.4, .5, 1), filter .16s; }
+.mc .carta { pointer-events: none; transform: none !important; filter: drop-shadow(0 4px 5px #0009); }
+.mc:hover, .mc:focus-visible { z-index: 8; transform: translateY(-10px) scale(1.55) rotate(0deg) !important; outline: none; }
+.mc:focus-visible .carta { outline: 3px solid var(--accent, #fc0); outline-offset: 2px; }
+.mc-n { position: absolute; right: -6px; bottom: -6px; padding: 0 7px; font: 900 .95rem/1.5 "VT323", monospace; font-style: normal; color: #1a0b05; background: var(--mc-chapa, #d9a948); border: 2px solid #1a0b05; border-radius: 10px; }
+.mc-dorso { display: grid; place-items: center; aspect-ratio: 2 / 3; background: repeating-linear-gradient(45deg, var(--mc-fondo, #2a2a2a) 0 6px, #00000022 6px 12px); border: 3px solid var(--mc-borde, #b08d3a); color: var(--mc-borde, #b08d3a); font: 700 2rem Georgia, serif; }
+@media (prefers-reduced-motion: reduce) { .mc { transition: none; } }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La forja</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20270301">
+  <link rel="stylesheet" href="css/taberna.css?v=20270301">
+  <link rel="stylesheet" href="css/lobby.css?v=20270301">
+  <link rel="stylesheet" href="css/cartas.css?v=20270301">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270301">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270301">
+  <link rel="stylesheet" href="css/cartas-mini.css?v=20270301">
+  <link rel="stylesheet" href="css/forja.css?v=20270301">
+  <script src="js/dialogos.js?v=20270301"></script>
+</head>
+<body class="lb fj">
+  <script src="js/carga.js?v=20270301"></script>
+  <div class="lb-fondo" aria-hidden="true"></div>
+
+  <div class="lb-pagina">
+    <header class="lb-cab fj-cab">
+      <div class="lb-cab-titulo">
+        <p class="lb-eyebrow">⚒ LA HERRERÍA DEL FUEGO LENTO ⚒</p>
+        <h1>La forja</h1>
+        <p class="lb-sub">Entregas cartas y sale una mejor. Siempre se pierde valor por el camino y algunos encargos se quiebran.</p>
+      </div>
+      <div class="lb-cab-widgets">
+        <a class="lb-boton" href="index.html">← A la taberna</a>
+        <a class="lb-boton" href="habitacion.html">Mi habitación</a>
+        <a class="lb-boton" href="intercambios.html">Intercambios</a>
+        <div id="globalLadoWidget" class="global-lado-widget">
+          <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+          <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+        </div>
+        <div id="temaWidget" class="tema-widget">
+          <button id="temaBadge" class="tema-badge" type="button" title="Cambiar tema">Tema</button>
+          <div id="temaPopover" class="tema-popover hidden"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="lb-centro fj-centro">
+      <p id="fjAviso" class="cartas-aviso-sesion hidden"></p>
+      <div id="fjEscena" class="fh-escena"></div>
+
+      <div id="fjCuerpo" class="fj-cuerpo">
+        <p id="fjEstado" class="ic-estado fj-estado" role="status"></p>
+
+        <!-- El banco: se abre al elegir un encargo. Las piezas se colocan en los huecos y el herrero golpea -->
+        <section id="fjBanco" class="fj-banco hidden" aria-live="polite"></section>
+
+        <h2 class="fj-titulo">Encargos del herrero</h2>
+        <p class="fj-ayuda">Las cartas que entregas no se pierden: vuelven a la reserva, de donde salen para otros jugadores. Solo acepta cartas que no estén vivas (objetos, reacciones, terrenos y acciones), nunca legendarias ni limitadas. Hasta tres forjas al día.</p>
+        <ul id="fjRecetas" class="fj-recetas"></ul>
+      </div>
+    </main>
+  </div>
+
+  <script src="data/personajes.js?v=20270301"></script>
+  <script src="data/objetos.js?v=20270301"></script>
+  <script src="data/lugares.js?v=20270301"></script>
+  <script src="data/bestiario.js?v=20270301"></script>
+  <script src="js/contenido-servidor.js?v=20270301"></script>
+  <script src="js/temas.js?v=20270301"></script>
+  <script src="js/fichas-supabase.js?v=20270301"></script>
+  <script src="js/interruptores.js?v=20270301"></script>
+  <script src="js/presencia.js?v=20270301"></script>
+  <script src="js/lado.js?v=20270301"></script>
+  <script src="js/cartas-datos.js?v=20270301"></script>
+  <script src="js/cartas-cliente.js?v=20270301"></script>
+  <script src="js/cartas-vista.js?v=20270301"></script>
+  <script src="js/batalla-apuestas.js?v=20270301"></script>
+  <script src="js/cartas-mini.js?v=20270301"></script>
+  <script src="js/forja-herrero.js?v=20270301"></script>
+  <script src="js/forja.js?v=20270301"></script>
+  <script src="js/avisos-admin.js?v=20270301"></script>
+  <script src="js/musica-paginas.js?v=20270301"></script>
+</body>
+</html>

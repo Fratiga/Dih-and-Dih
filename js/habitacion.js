@@ -1,5 +1,5 @@
 /* Mi habitación: tu colección, tus mazos y la forja. Los corrales donde crían tus criaturas viven en su propia pantalla (corrales.html,
-   js/corrales.js); aquí solo se ve, en la lámpara de la puerta, si hay una cría lista. La forja es js/forja.js. */
+   js/corrales.js); aquí solo se ve, en la lámpara de la puerta, si hay una cría lista. La forja tiene su propia página (forja.html, js/forja.js); aquí es solo la puerta. */
 (function () {
   const $ = id => document.getElementById(id);
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -92,7 +92,7 @@
   function capaEtiquetas() {
     const capa = $("hbEtiquetas");
     if (!capa) return;
-    document.querySelectorAll("#hbEscena a.lb-spot, #hbEscena .hb-forja").forEach(zona => {
+    document.querySelectorAll("#hbEscena a.lb-spot").forEach(zona => {
       const t = zona.querySelector("text.hb-etq");
       if (!t) return;
       capa.appendChild(t);
@@ -106,9 +106,6 @@
     decorar();
     capaEtiquetas();
     lomos(0);
-    const forja = $("hbForja");
-    forja.addEventListener("click", () => window.Forja.abrir());
-    forja.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); window.Forja.abrir(); } });
     let sesion = null;
     try { sesion = await fichasSesionActual(); } catch (e) { sesion = null; }
     if (!sesion) {

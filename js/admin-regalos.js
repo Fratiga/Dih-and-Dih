@@ -12,7 +12,7 @@
   const $ = id => document.getElementById(id);
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const PAGINAS = [["", "(sin enlace)"], ["index.html", "La taberna"], ["compendio.html", "Compendio"], ["mapa.html", "Mapa"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"], ["arqueria.html", "Arquería"],
-    ["cartas.html", "Triunfos (álbum)"], ["intercambios.html", "Intercambios"], ["hipodromo.html", "Hipódromo"], ["hipodromo-vivo.html", "Hipódromo en vivo"], ["corrales.html", "Corrales"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"], ["rocola.html", "Rocola"]];
+    ["cartas.html", "Triunfos (álbum)"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["hipodromo.html", "Hipódromo"], ["hipodromo-vivo.html", "Hipódromo en vivo"], ["corrales.html", "Corrales"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"], ["rocola.html", "Rocola"]];
 
   let cartas = [], jugadores = [], nombreCarta = new Map(), listo = false;
   const cliente = () => fichasCliente();

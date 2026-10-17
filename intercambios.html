@@ -7,29 +7,33 @@
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20270228">
-  <link rel="stylesheet" href="css/taberna.css?v=20270228">
-  <link rel="stylesheet" href="css/lobby.css?v=20270228">
-  <link rel="stylesheet" href="css/cartas.css?v=20270228">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20270228">
-  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270228">
-  <link rel="stylesheet" href="css/intercambios.css?v=20270228">
-  <script src="js/dialogos.js?v=20270228"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20270301">
+  <link rel="stylesheet" href="css/taberna.css?v=20270301">
+  <link rel="stylesheet" href="css/lobby.css?v=20270301">
+  <link rel="stylesheet" href="css/cartas.css?v=20270301">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270301">
+  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270301">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270301">
+  <link rel="stylesheet" href="css/cartas-mini.css?v=20270301">
+  <link rel="stylesheet" href="css/puesto.css?v=20270301">
+  <script src="js/dialogos.js?v=20270301"></script>
 </head>
-<body class="lb ic">
-  <script src="js/carga.js?v=20270228"></script>
+<body class="lb ic pu">
+  <script src="js/carga.js?v=20270301"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
-    <header class="lb-cab">
+    <header class="lb-cab pu-cab">
+      <div class="pu-toldo" aria-hidden="true"></div>
       <div class="lb-cab-titulo">
-        <p class="lb-eyebrow">★ EL PUESTO DE LA TABERNA ★</p>
+        <p class="lb-eyebrow">☾ EL MERCADO DE LOS FAROLES ☾</p>
         <h1>Intercambios</h1>
         <p class="lb-sub">Trueques entre jugadores y el Buhonero. Cartas por cartas, sin dinero.</p>
       </div>
       <div class="lb-cab-widgets">
         <a class="lb-boton" href="index.html">← A la taberna</a>
+        <a class="lb-boton" href="forja.html">La forja →</a>
         <div id="globalLadoWidget" class="global-lado-widget">
           <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
           <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
@@ -44,91 +48,99 @@
     <main class="lb-centro ic-centro">
       <p id="icAviso" class="cartas-aviso-sesion hidden"></p>
 
-      <section class="lb-caja">
-        <h2>Trueques y Buhonero</h2>
-        <div class="lb-caja-cuerpo">
-          <div class="ic-pestanas" id="icPestanas" role="tablist">
-            <button type="button" class="activa" data-vista="tablon">Tablón</button>
-            <button type="button" data-vista="mios">Mis intercambios <span id="icMiosN" class="ic-n"></span></button>
-            <button type="button" data-vista="mercader">Buhonero</button>
-          </div>
-          <p id="icEstado" class="ic-estado" role="status"></p>
+      <div class="ic-pestanas pu-letreros" id="icPestanas" role="tablist">
+        <button type="button" class="activa" data-vista="tablon" role="tab"><span class="pu-ico" aria-hidden="true">📌</span> Tablón</button>
+        <button type="button" data-vista="mios" role="tab"><span class="pu-ico" aria-hidden="true">⇄</span> Mis intercambios <span id="icMiosN" class="ic-n"></span></button>
+        <button type="button" data-vista="mercader" role="tab"><span class="pu-ico" aria-hidden="true">✦</span> Buhonero</button>
+      </div>
+      <p id="icEstado" class="ic-estado" role="status"></p>
 
-          <!-- Tablón: ofertas abiertas y crear una -->
-          <section id="icTablon" class="ic-vista">
-            <details class="ic-nueva" id="icNueva">
-              <summary>Ofrecer un intercambio</summary>
-              <div class="ic-form">
-                <div class="ic-campo">
-                  <b>Ofrezco</b>
-                  <span id="icOfrezcoTexto" class="ic-valor">nada todavía</span>
-                  <button type="button" class="cartas-boton" id="icOfrezcoElegir">Elegir mis cartas</button>
-                </div>
-                <div class="ic-campo">
-                  <b>Pido</b>
-                  <div id="icPidoLista" class="ic-chips"></div>
-                  <div class="ic-pido-fila">
-                    <input type="text" id="icPidoCarta" list="icCartas" placeholder="Buscar una carta..." aria-label="Carta que pides">
-                    <input type="number" id="icPidoN" min="1" max="5" value="1" aria-label="Cuántas">
-                    <button type="button" class="cartas-boton" id="icPidoAnadir">Añadir</button>
-                  </div>
-                  <datalist id="icCartas"></datalist>
-                </div>
-                <label class="ic-campo">Para <select id="icPara"><option value="">Cualquiera (tablón abierto)</option></select></label>
-                <label class="ic-campo">Nota (opcional) <input type="text" id="icNota" maxlength="200" placeholder="Busco completar mi mazo de Sombra"></label>
-                <div><button type="button" class="cartas-boton cartas-boton-principal" id="icPublicar">Publicar</button></div>
-                <p class="ic-ayuda">Tus cartas quedan bloqueadas hasta que alguien acepte, lo canceles o pasen 7 días. Quien acepta entrega exactamente lo que pides, y antes de cambiar se comprueba que ninguno de los dos pase su límite de copias.</p>
-              </div>
-            </details>
-            <h2>Ofertas abiertas</h2>
-            <ul id="icLista" class="ic-lista"></ul>
-          </section>
-
-          <!-- Mis intercambios -->
-          <section id="icMios" class="ic-vista hidden">
-            <h2>Para ti</h2>
-            <ul id="icParaMi" class="ic-lista"></ul>
-            <h2>Mis ofertas abiertas</h2>
-            <ul id="icMiasAbiertas" class="ic-lista"></ul>
-            <h2>Historial</h2>
-            <ul id="icHistorial" class="ic-lista"></ul>
-          </section>
-
-          <!-- Buhonero -->
-          <section id="icMercader" class="ic-vista hidden">
-            <p class="ic-ayuda">El <b>Buhonero</b> no usa dinero: cambia cartas por cartas. Cada día enseña unas pocas ofertas con una sola copia. Para llevarte una tienes que entregar cartas cuyo valor sume lo que ella vale más uno (común 1, poco común 2, rara 3), sin pasarte de dos de más. No acepta legendarias ni limitadas, y una carta que le des no te la vende de vuelta hasta mañana. Vende del mismo montón que el Hipódromo: lo que le das puede acabar allí y lo que se vende allí puede acabar aquí.</p>
-            <p id="icMercaderHoy" class="ic-ayuda"></p>
-            <ul id="icMercaderLista" class="ic-lista"></ul>
-            <div id="icMercaderAdmin" class="ic-admin hidden">
-              <h3>Admin: oferta especial</h3>
-              <label>Carta <input type="text" id="icAdmCarta" list="icCartas" placeholder="Buscar una carta..."></label>
-              <label>Valor <input type="number" id="icAdmValor" min="1" max="40" value="4"></label>
-              <button type="button" class="cartas-boton" id="icAdmAnadir">Añadir al mercader</button>
-              <small class="ic-ayuda">Sale de la reserva si hay una copia; si no, se emite una nueva y cuenta contra el límite global.</small>
+      <!-- Tablón: ofertas abiertas, pegadas como notas en un corcho, y crear una -->
+      <section id="icTablon" class="ic-vista pu-vista">
+        <details class="ic-nueva pu-nueva" id="icNueva">
+          <summary><span aria-hidden="true">✒</span> Escribir una oferta nueva</summary>
+          <div class="ic-form pu-form">
+            <div class="pu-lado pu-lado-doy">
+              <h3>Lo que ofreces</h3>
+              <div id="icOfrezcoCartas" class="pu-abanico"><span class="ic-vacio">Todavía no has puesto ninguna carta.</span></div>
+              <button type="button" class="cartas-boton" id="icOfrezcoElegir">Elegir mis cartas</button>
             </div>
-          </section>
-          <p class="ic-ayuda">¿Buscas la forja? Se mudó a <a href="habitacion.html">Mi habitación</a>.</p>
+            <div class="pu-medio" aria-hidden="true">⇄</div>
+            <div class="pu-lado pu-lado-pido">
+              <h3>Lo que pides</h3>
+              <div id="icPidoLista" class="pu-abanico"></div>
+              <div class="ic-pido-fila">
+                <input type="text" id="icPidoCarta" list="icCartas" placeholder="Buscar una carta..." aria-label="Carta que pides" autocomplete="off">
+                <input type="number" id="icPidoN" min="1" max="5" value="1" aria-label="Cuántas">
+                <button type="button" class="cartas-boton" id="icPidoAnadir">Añadir</button>
+              </div>
+              <datalist id="icCartas"></datalist>
+            </div>
+            <div class="pu-pie-form">
+              <label class="ic-campo">Para <select id="icPara"><option value="">Cualquiera (tablón abierto)</option></select></label>
+              <label class="ic-campo">Nota (opcional) <input type="text" id="icNota" maxlength="200" placeholder="Busco completar mi mazo de Sombra"></label>
+              <div><button type="button" class="cartas-boton cartas-boton-principal" id="icPublicar">Clavar en el tablón</button></div>
+              <p class="ic-ayuda">Tus cartas quedan bloqueadas hasta que alguien acepte, lo canceles o pasen 7 días. Quien acepta entrega exactamente lo que pides, y antes de cambiar se comprueba que ninguno de los dos se pase del límite de copias.</p>
+            </div>
+          </div>
+        </details>
+        <div class="pu-corcho-cab">
+          <h2>Ofertas abiertas</h2>
+          <label class="pu-filtro"><input type="checkbox" id="icSoloPosibles"> Solo las que puedo aceptar</label>
+        </div>
+        <ul id="icLista" class="pu-corcho"></ul>
+      </section>
+
+      <!-- Mis intercambios -->
+      <section id="icMios" class="ic-vista pu-vista hidden">
+        <h2 class="pu-titulo">Para ti</h2>
+        <ul id="icParaMi" class="pu-corcho pu-corcho-chico"></ul>
+        <h2 class="pu-titulo">Mis ofertas abiertas</h2>
+        <ul id="icMiasAbiertas" class="pu-corcho pu-corcho-chico"></ul>
+        <h2 class="pu-titulo">Libro de cuentas</h2>
+        <ul id="icHistorial" class="pu-libro"></ul>
+      </section>
+
+      <!-- Buhonero -->
+      <section id="icMercader" class="ic-vista pu-vista pu-buhonero hidden">
+        <div id="icEscena" class="pb-escena"></div>
+        <div class="pu-pano">
+          <div class="pu-pano-cab">
+            <p class="ic-ayuda">El <b>Buhonero</b> no usa dinero. Cambia cartas por cartas, y cada noche saca unas pocas, de una sola copia. Para llevarte una entregas cartas cuyo valor sume lo que él pide.</p>
+            <ul class="pu-valores" aria-label="Valor de cada rareza"><li><i class="pu-ficha pu-f1">1</i> común</li><li><i class="pu-ficha pu-f2">2</i> poco común</li><li><i class="pu-ficha pu-f3">3</i> rara</li></ul>
+          </div>
+          <ul id="icMercaderLista" class="pu-mesa"></ul>
+        </div>
+        <div id="icMercaderAdmin" class="ic-admin pu-admin hidden">
+          <h3>Bajo el mostrador (Admin): oferta especial</h3>
+          <label>Carta <input type="text" id="icAdmCarta" list="icCartas" placeholder="Buscar una carta..."></label>
+          <label>Valor <input type="number" id="icAdmValor" min="1" max="40" value="4"></label>
+          <button type="button" class="cartas-boton" id="icAdmAnadir">Añadir al mercader</button>
+          <small class="ic-ayuda">Sale de la reserva si hay una copia. Si no, se emite una nueva y cuenta contra el límite global.</small>
         </div>
       </section>
+      <p class="ic-ayuda pu-pie">¿Buscas la forja? Tiene su propia herrería: <a href="forja.html">ir a la forja</a>.</p>
     </main>
   </div>
 
-  <script src="data/personajes.js?v=20270228"></script>
-  <script src="data/objetos.js?v=20270228"></script>
-  <script src="data/lugares.js?v=20270228"></script>
-  <script src="data/bestiario.js?v=20270228"></script>
-  <script src="js/contenido-servidor.js?v=20270228"></script>
-  <script src="js/temas.js?v=20270228"></script>
-  <script src="js/fichas-supabase.js?v=20270228"></script>
-  <script src="js/interruptores.js?v=20270228"></script>
-  <script src="js/presencia.js?v=20270228"></script>
-  <script src="js/lado.js?v=20270228"></script>
-  <script src="js/cartas-datos.js?v=20270228"></script>
-  <script src="js/cartas-cliente.js?v=20270228"></script>
-  <script src="js/cartas-vista.js?v=20270228"></script>
-  <script src="js/batalla-apuestas.js?v=20270228"></script>
-  <script src="js/intercambios.js?v=20270228"></script>
-  <script src="js/avisos-admin.js?v=20270228"></script>
-  <script src="js/musica-paginas.js?v=20270228"></script>
+  <script src="data/personajes.js?v=20270301"></script>
+  <script src="data/objetos.js?v=20270301"></script>
+  <script src="data/lugares.js?v=20270301"></script>
+  <script src="data/bestiario.js?v=20270301"></script>
+  <script src="js/contenido-servidor.js?v=20270301"></script>
+  <script src="js/temas.js?v=20270301"></script>
+  <script src="js/fichas-supabase.js?v=20270301"></script>
+  <script src="js/interruptores.js?v=20270301"></script>
+  <script src="js/presencia.js?v=20270301"></script>
+  <script src="js/lado.js?v=20270301"></script>
+  <script src="js/cartas-datos.js?v=20270301"></script>
+  <script src="js/cartas-cliente.js?v=20270301"></script>
+  <script src="js/cartas-vista.js?v=20270301"></script>
+  <script src="js/batalla-apuestas.js?v=20270301"></script>
+  <script src="js/cartas-mini.js?v=20270301"></script>
+  <script src="js/puesto-buhonero.js?v=20270301"></script>
+  <script src="js/intercambios.js?v=20270301"></script>
+  <script src="js/avisos-admin.js?v=20270301"></script>
+  <script src="js/musica-paginas.js?v=20270301"></script>
 </body>
 </html>

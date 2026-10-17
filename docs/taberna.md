@@ -53,8 +53,16 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
 
 ## Intercambios, forja y corrales
 
-- `intercambios.html` es una página de la taberna (ya no cuelga de Triunfos) y solo tiene Tablón, Mis intercambios y Buhonero.
-- La **forja** está en Mi habitación (`js/forja.js`, objeto del escenario).
+- `intercambios.html` (el Mercado de los Faroles) es una página de la taberna (ya no cuelga de Triunfos) y solo tiene Tablón, Mis intercambios y Buhonero. Tiene su propia paleta y
+  tipografía (`css/puesto.css`, todo colgado de `body.pu`): jade de noche, bermellón de farol, latón y corcho, con el título en Almendra. Las cartas se ven como cartas de verdad
+  (`js/cartas-mini.js` + `css/cartas-mini.css`: crecen al pasar el cursor y se abren grandes al pulsarlas). El Tablón son notas clavadas en un corcho con lo que ofrece y lo que pide
+  lado a lado, y marca con «lo tienes» las que puedes aceptar ahora mismo (filtro «solo las que puedo aceptar»). Mis intercambios usa las mismas notas y un libro de cuentas con el historial.
+  En el Buhonero, `js/puesto-buhonero.js` dibuja la escena (un mercader encapuchado junto a su carreta, bajo faroles), mueve sus ojos con el cursor, le da frases y enciende una vela por cada
+  trato que te queda hoy; las ofertas son cartas sobre un paño con una etiqueta de precio colgada (rango de valor y un ejemplo de qué llevarle).
+- La **forja** tiene su propia página, `forja.html` (`js/forja.js`, `css/forja.css`, paleta de hierro, cobre oxidado y brasa; el objeto de Mi habitación es ahora la puerta). El herrero gigante
+  (`js/forja-herrero.js`, inspirado en un yelmo de láminas de cobre y un mazo de madera clara) baja el mazo cuando golpeas y enciende una brasa por cada forja que te queda hoy. Los encargos
+  enseñan cuántas piezas tienes (dorsos encendidos) y el temple (probabilidad de éxito). Al pulsar Forjar se abre el banco: colocas tus cartas reales en los huecos y golpeas. Las reglas
+  siguen siendo las del servidor (`economia-6_forja.sql`, `economia-14_forja_reserva.sql`).
 - Los **corrales** tienen su pantalla (`corrales.html`, `js/corrales.js`, `js/corrales-lib.js`): un hábitat grande, una franja con los seis y el panel de cría
   debajo. Se llega por la puerta de Mi habitación y desde los Establos.
 - El Buhonero y el Hipódromo reparten del mismo montón de cartas (`docs/economia-20_reserva_compartida.sql`).

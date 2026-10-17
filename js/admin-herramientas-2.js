@@ -119,7 +119,7 @@
     "personajes.html": "Personajes", "razas.html": "Razas", "religion.html": "Religión", "textos.html": "Textos", "pergaminos.html": "Pergaminos", "armas.html": "Armas",
     "objetos.html": "Objetos", "bestiario.html": "Bestiario", "reglas.html": "Reglas", "economia.html": "Economía", "estadisticas.html": "Estadísticas",
     "fanarts.html": "Fanarts", "peticiones.html": "Peticiones", "fichas.html": "Mis personajes", "minijuegos.html": "Minijuegos", "ajedrez.html": "Ajedrez",
-    "arqueria.html": "Arquería", "ritmo.html": "Zarabanda", "parranda.html": "Parranda", "rocola.html": "Rocola", "sacrificio.html": "Hooey", "intercambios.html": "Intercambios", "habitacion.html": "Mi habitación", "corrales.html": "Corrales", "fractura.html": "La Fractura"
+    "arqueria.html": "Arquería", "ritmo.html": "Zarabanda", "parranda.html": "Parranda", "rocola.html": "Rocola", "sacrificio.html": "Hooey", "intercambios.html": "Intercambios", "forja.html": "La forja", "habitacion.html": "Mi habitación", "corrales.html": "Corrales", "fractura.html": "La Fractura"
   };
   const hace = ms => { const m = Math.round(ms / 60000); return m < 1 ? "ahora" : m < 60 ? `hace ${m} min` : `hace ${Math.floor(m / 60)} h ${m % 60} min`; };
 
