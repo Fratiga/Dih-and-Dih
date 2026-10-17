@@ -284,67 +284,60 @@ begin
   perform t_check('Práctica: no hay movimientos en el libro', (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%' || pid::text || '%') = 0 and t_saldo_de(u) = 7);
 end $$;
 
-/* ======================================================================== la Última voluntad */
+/* ======================================================================== la Última voluntad (cambiar tu última carta) */
 do $$
-declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; pid uuid; p veintiuna_partidas%rowtype;
+declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; pid uuid;
 begin
   perform t_reset(); perform t_saldo(u, 200);
-  -- Tú tienes 19. El crupier tiene 18 (10 + 8). Con la Última voluntad roba antes de plantarse y se pasa con un rey
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '9c', '8c', 'Kd');
+  -- Tienes 10 + 6 = 16 y el crupier 10 + 8 = 18. Cambias el 6 por la siguiente carta (un as): 10 + as = 21
+  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '6c', '8c', 'Ad');
   pid := (s ->> 'partida')::uuid;
-  perform t_check('Última voluntad: disponible con 19 y con peaje del 85 % (17 con 20)', (s #>> '{acciones,especial,disponible}')::boolean and (s #>> '{acciones,especial,peaje}')::numeric = 17);
+  perform t_check('Última voluntad: disponible desde el reparto, con peaje del 50 % (10 con 20)', (s #>> '{acciones,especial,disponible}')::boolean and (s #>> '{acciones,especial,peaje}')::numeric = 10);
   s := t_act(pid, 'voluntad');
-  perform t_check('Última voluntad: el crupier roba una carta de más con 18 (10 + 8 + rey = 28) y se pasa', s #>> '{resultado,razon}' = 'crupier_se_pasa' and (s #>> '{crupier,total}')::int = 28 and jsonb_array_length(s #> '{crupier,cartas}') = 3);
-  perform t_check('Última voluntad: ganas 20 menos el peaje de 17 (neto 3) y el saldo cuadra (200 - 20 - 17 + 40 = 203)', (s #>> '{resultado,neto}')::numeric = 3 and t_saldo_de(u) = 203);
-  perform t_check('Última voluntad: el peaje queda en el libro y en la mano', (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje de la Última voluntad%' and monto = -17) = 1
-                  and (select mov_peaje from veintiuna_partidas where id = pid) is not null);
-  -- Plantarse sin usarla: el crupier con 18 se planta y no roba
+  perform t_check('Cambia la última carta: el 6 se va y llega el as (siguen siendo dos cartas)', jsonb_array_length(s #> '{jugador,cartas}') = 2 and (s #>> '{jugador,cartas,1,r}')::int = 1 and (s #>> '{jugador,total}')::int = 21);
+  perform t_check('La mano sigue en curso, la regla queda usada y el crupier no ha hecho nada', s ->> 'estado' = 'en_curso' and (s #>> '{regla,usada}')::boolean and jsonb_array_length(s #> '{crupier,cartas}') = 1);
+  perform t_check('El peaje se cobra al cambiar (200 - 20 - 10 = 170) y queda en el libro y en la mano', t_saldo_de(u) = 170 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje de la Última voluntad%' and monto = -10) = 1 and (select mov_peaje from veintiuna_partidas where id = pid) is not null);
+  perform t_check('Con 21 no hay nada más que cambiar: el botón sale deshabilitado y dice por qué', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'ya la usaste');
+  s := t_act(pid, 'plantar');
+  perform t_check('El crupier juega su turno de siempre (18, se planta sin robar) y ganas con 21: neto 20 - 10 = 10 y saldo 210', s #>> '{resultado,tipo}' = 'victoria' and jsonb_array_length(s #> '{crupier,cartas}') = 2 and (s #>> '{resultado,neto}')::numeric = 10 and t_saldo_de(u) = 210);
+  -- La carta nueva puede pasarte de 21: pierdes (no hay Fortuna en esta regla)
   perform t_saldo(u, 200);
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '9c', '8c', 'Kd');
-  s := t_act((s ->> 'partida')::uuid, 'plantar');
-  perform t_check('Sin Última voluntad el crupier se planta con 18 y no roba (19 le gana)', s #>> '{resultado,tipo}' = 'victoria' and jsonb_array_length(s #> '{crupier,cartas}') = 2);
-  -- El crupier roba la carta forzada y luego sigue con su regla: 10 + 4 = 14, forzada 2 = 16, pide otra (5) = 21
+  s := t_reparte(u, 'voluntad', 'apuesta', 20, '9p', '10c', '5c', '7c', '4d', 'Kd');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
+  perform t_check('9 + 5 + 4 = 18', (s #>> '{jugador,total}')::int = 18);
+  s := t_act(pid, 'voluntad');
+  perform t_check('Cambiar el 4 por un rey (9 + 5 + 10 = 24) te pasa y pierdes; el peaje ya estaba pagado', s #>> '{resultado,razon}' = 'te_pasas' and (s #>> '{resultado,peajes}')::numeric = 10 and t_saldo_de(u) = 170);
+  -- Con 21 no se puede
   perform t_saldo(u, 200);
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '9c', '4c', '2d', '5d');
-  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'voluntad');
-  perform t_check('Después de la carta forzada el crupier sigue con su regla (14 + 2 = 16, pide un 5 = 21)', (s #>> '{crupier,total}')::int = 21 and jsonb_array_length(s #> '{crupier,cartas}') = 4 and s #>> '{resultado,tipo}' = 'derrota');
-  -- La carta forzada se roba aunque el crupier ya tuviera 17 o más
-  perform t_saldo(u, 200);
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '9c', '7c', '3d');
-  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'voluntad');
-  perform t_check('Con 17 el crupier roba de más igualmente (10 + 7 + 3 = 20)', (s #>> '{crupier,total}')::int = 20 and jsonb_array_length(s #> '{crupier,cartas}') = 3);
-  -- Si el admin pone un mínimo de puntos, con menos no se puede
-  update cartas_economia_ajustes set valor = '18' where clave = 'veintiuna_voluntad_minimo';
-  perform t_saldo(u, 200);
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '7c', '8c', 'Kd');
-  perform t_check('Con un mínimo de 18, con 17 la Última voluntad no está disponible y dice por qué', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'necesitas 18 o más');
-  begin perform t_act((s ->> 'partida')::uuid, 'voluntad'); perform t_check('Usarla con menos del mínimo se rechaza', false);
-  exception when others then perform t_check('Usarla con menos del mínimo se rechaza (' || sqlerrm || ')', sqlerrm = 'La Última voluntad pide 18 puntos o más.'); end;
+  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '5c', '8c', '6d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
+  perform t_check('10 + 5 + 6 = 21: la Última voluntad no está disponible y dice por qué', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'con 21 no hace falta');
+  begin perform t_act(pid, 'voluntad'); perform t_check('Usarla con 21 se rechaza', false);
+  exception when others then perform t_check('Usarla con 21 se rechaza', sqlerrm = 'Con 21 no hace falta cambiar nada: plántate.'); end;
   perform t_check('Y no se cobró nada', t_saldo_de(u) = 180);
-  update cartas_economia_ajustes set valor = '0' where clave = 'veintiuna_voluntad_minimo';
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '7c', '8c', 'Kd');
-  perform t_check('Con el mínimo en 0 la Última voluntad se puede usar con cualquier mano (17)', (s #>> '{acciones,especial,disponible}')::boolean);
   -- Solo una vez por ronda
   perform t_saldo(u, 200);
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '9c', '8c', '2d', '4d');
+  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '3c', '8c', '2d', '4d');
   pid := (s ->> 'partida')::uuid;
-  update veintiuna_partidas set voluntad_usada = true where id = pid;
-  select veintiuna_i_estado(x, 100) into s from veintiuna_partidas x where x.id = pid;
-  perform t_check('Una vez usada, el estado la marca como usada y no disponible', (s #>> '{regla,usada}')::boolean and (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'ya la usaste');
+  s := t_act(pid, 'voluntad');
   begin perform t_act(pid, 'voluntad'); perform t_check('La Última voluntad solo se usa una vez por ronda', false);
-  exception when others then perform t_check('La Última voluntad solo se usa una vez por ronda', true); end;
-  -- Peaje: sin monedas, no disponible
+  exception when others then perform t_check('La Última voluntad solo se usa una vez por ronda', sqlerrm = 'La Última voluntad no está disponible ahora.'); end;
+  -- Otras reglas no la tienen
+  s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '6c', '8c', 'Ad');
+  begin perform t_act((s ->> 'partida')::uuid, 'voluntad'); perform t_check('En otra regla se rechaza', false);
+  exception when others then perform t_check('En otra regla se rechaza', true); end;
+  -- Sin monedas para el peaje
   perform t_saldo(u, 20);
-  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '9c', '8c');
-  perform t_check('Última voluntad sin monedas para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 17 monedas');
+  s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '6c', '8c');
+  perform t_check('Sin monedas para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 10 monedas');
   begin perform t_act((s ->> 'partida')::uuid, 'voluntad'); perform t_check('Usarla sin monedas se rechaza', false);
   exception when others then perform t_check('Usarla sin monedas se rechaza', true); end;
   perform t_check('Y no se cobró nada', t_saldo_de(u) = 0 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje%' and concepto like '%' || (s ->> 'partida') || '%') = 0);
-  -- En la mesa de práctica no se cobra
+  -- Práctica: gratis
   perform t_saldo(u, 0);
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '9c', '8c', 'Kd');
+  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Ad');
   s := t_act((s ->> 'partida')::uuid, 'voluntad');
-  perform t_check('Práctica: la Última voluntad funciona sin monedas', s #>> '{resultado,tipo}' = 'victoria' and t_saldo_de(u) = 0);
+  perform t_check('Práctica: la Última voluntad funciona sin monedas', (s #>> '{jugador,total}')::int = 21 and t_saldo_de(u) = 0);
 end $$;
 
 /* ======================================================================== idempotencia y concurrencia dentro de una sola sesión */
@@ -496,7 +489,7 @@ begin
   perform t_check('Ganar con cinco cartas sin pasarte da «Cinco cartas sin pasarte»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'cinco_cartas'));
   -- Las tres reglas
   perform t_check('Con solo la Maldición ganada todavía no hay «Las tres voluntades»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_voluntades'));
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '9c', '8c', 'Kd'); s := t_act((s ->> 'partida')::uuid, 'voluntad');
+  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Qd'); s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Ganar usando la Última voluntad da «La última palabra»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_palabra'));
   s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '6d', 'Kd', '9d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'fortuna'); s := t_act(pid, 'plantar');
@@ -512,13 +505,13 @@ do $$
 declare u uuid := '00000000-0000-0000-0000-000000000002'; s jsonb; pid uuid;
 begin
   perform t_reset();
-  -- A la hora de la verdad: ganar con la Última voluntad estando en apuros (16 o menos)
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '9c', '8c', 'Kd');
-  s := t_act((s ->> 'partida')::uuid, 'voluntad');
-  perform t_check('Ganar con la Última voluntad con 19 da «La última palabra» pero NO «A la hora de la verdad»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_palabra') and not exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora'));
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Kd');
-  s := t_act((s ->> 'partida')::uuid, 'voluntad');
-  perform t_check('Ganar con la Última voluntad con 16 da «A la hora de la verdad»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora'));
+  -- Reescribir el destino: ganar con 20 o 21 después de cambiar una carta con la Última voluntad
+  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', '2d');
+  s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('Ganar con 12 tras la Última voluntad da «La última palabra» pero NO «Reescribir el destino»', s #>> '{resultado,tipo}' = 'derrota' or not exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora'));
+  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Ad');
+  s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('Ganar con 21 tras la Última voluntad da «Reescribir el destino»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora') and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_palabra'));
   -- La suerte bien pagada: 21 exactos después de salvar la mano con la Fortuna
   s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '10d', 'Kd', '4c');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'fortuna'); s := t_act(pid, 'pedir');

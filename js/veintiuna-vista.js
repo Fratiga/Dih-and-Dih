@@ -41,12 +41,12 @@
       estado: () => "Activa en toda la ronda"
     },
     voluntad: {
-      id: "voluntad", nombre: "Última voluntad", lema: "Que el crupier juegue una carta más.",
-      resumen: "Paga un peaje: el crupier roba una carta de más.",
+      id: "voluntad", nombre: "Última voluntad", lema: "Reescribe tu última carta.",
+      resumen: "Paga un peaje y cambia tu última carta por la siguiente.",
       detalle: peaje => [
-        "Una vez por ronda, en lugar de plantarte, puedes usar la Última voluntad pagando el peaje (" + peaje + "). Tu mano queda cerrada.",
-        "El crupier revela su carta oculta, roba una carta de más aunque ya tuviera 17 o más, y después sigue con su regla de siempre: pide con 16 o menos y se planta con 17 o más.",
-        "Si el crupier se pasa, ganas. El peaje no se devuelve. En la mesa de práctica el peaje es simbólico."
+        "Una vez por ronda, mientras no tengas 21, puedes pagar el peaje (" + peaje + ") para devolver tu última carta al mazo y recibir la siguiente de la baraja.",
+        "Sirve para cambiar una carta que te estorba, o para jugártela: si la nueva te hace pasar de 21, pierdes (en esta regla no hay Fortuna). Cambiar una carta que dejaba tu mano baja es seguro mientras el resto de tu mano sume 11 o menos.",
+        "Después sigues con tu mano nueva (pedir o plantarte); el crupier juega su turno como siempre. El peaje no se devuelve y en la mesa de práctica es simbólico."
       ],
       estado: (usada) => usada ? "Gastada" : "Disponible"
     }
@@ -92,6 +92,8 @@
       if (c.cartas[0]) partes.push(`El crupier muestra ${nombreCarta(c.cartas[0])}${c.ocultas ? " y tiene una carta oculta" : ""}.`);
     } else if (nuevas.length) {
       partes.push(`Recibes ${lista(nuevas.map(nombreCarta))}. Sumas ${j.total}${j.blando ? " en blando" : ""}.`);
+    } else if (antes.regla.id === "voluntad" && !antes.regla.usada && est.regla.usada) {
+      partes.push(`Cambias tu última carta: ahora tienes ${nombreCarta(j.cartas[j.cartas.length - 1])}. Sumas ${j.total}${j.blando ? " en blando" : ""}.`);
     }
     if (est.fase === "fortuna") partes.push("Te pasaste de 21. Puedes pagar el peaje de la Fortuna para salvar la mano, o aceptar la derrota.");
     if (est.estado === "terminada") {
@@ -120,7 +122,7 @@
     ];
     const e = a.especial;
     if (e && e !== "null" && e.tipo === "voluntad") {
-      botones.push({ id: "voluntad", texto: "Última voluntad", sub: e.disponible ? (est.modo === "practica" ? `peaje simbólico ${monedas(e.peaje)}` : `peaje ${monedas(e.peaje)}`) : e.motivo, habilitado: !!e.disponible, motivo: e.disponible ? "" : "Última voluntad: " + e.motivo + ".", especial: true, tecla: "V" });
+      botones.push({ id: "voluntad", texto: "Última voluntad", sub: e.disponible ? "cambia tu última carta · " + (est.modo === "practica" ? `peaje simbólico ${monedas(e.peaje)}` : `peaje ${monedas(e.peaje)}`) : e.motivo, habilitado: !!e.disponible, motivo: e.disponible ? "" : "Última voluntad: " + e.motivo + ".", especial: true, tecla: "V" });
     }
     return { fase: "mano", botones };
   }
@@ -187,7 +189,7 @@
     pasas: ["Demasiado cerca del fuego.", "Te quemaste."],
     sePasa: ["Me he derretido.", "Me pasé de fuego."],
     fortuna: ["La suerte tiene peaje.", "Salvada, a un precio."],
-    voluntad: ["Última voluntad concedida.", "Como quieras. Una más."],
+    voluntad: ["Última voluntad concedida.", "Reescribe tu suerte, pues.", "Esa carta ya no cuenta."],
     maldicion: ["Esta mano está maldita.", "Las figuras pesan hoy."],
     sinMonedas: ["Sin monedas no hay mesa. La práctica es gratis."]
   };

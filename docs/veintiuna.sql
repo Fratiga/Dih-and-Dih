@@ -19,8 +19,7 @@ insert into cartas_economia_ajustes (clave, valor) values
   ('veintiuna_apuesta_max', '100'),       -- apuesta máxima. La apuesta mediana del Hipódromo es 20 y la máxima 50
   ('veintiuna_apuesta_paso', '10'),       -- las apuestas son múltiplos de esto (así el 3 a 2 del blackjack natural siempre da monedas enteras)
   ('veintiuna_peaje_fortuna', '0.6'),     -- Fortuna: fracción de la apuesta que cuesta salvar la mano
-  ('veintiuna_peaje_voluntad', '0.85'),   -- Última voluntad: fracción de la apuesta que cuesta obligar al crupier a robar
-  ('veintiuna_voluntad_minimo', '0'),     -- Última voluntad: puntos mínimos para poder usarla (0 = cualquier mano)
+  ('veintiuna_peaje_voluntad', '0.5'),   -- Última voluntad: fracción de la apuesta que cuesta cambiar tu última carta por la siguiente
   ('veintiuna_inactividad_min', '30')     -- minutos sin jugar tras los que la mano se cierra sola, plantándose
 on conflict (clave) do nothing;
 
@@ -43,7 +42,7 @@ insert into veintiuna_logros_def (id, orden, nivel, nombre, texto, meta) values
   ('sin_miedo',        6, 'plata',  'Sin miedo',                 'Gana plantándote con 14 puntos o menos.', 1),
   ('tres_velas',       7, 'plata',  'Tres velas seguidas',       'Gana tres manos seguidas. Un empate no rompe la racha.', 3),
   ('tres_voluntades',  8, 'plata',  'Las tres voluntades',       'Gana al menos una mano con cada una de las tres reglas.', 3),
-  ('ultima_hora',      9, 'oro',    'A la hora de la verdad',    'Gana usando la Última voluntad con 16 puntos o menos: cuando de verdad hacía falta.', 1),
+  ('ultima_hora',      9, 'oro',    'Reescribir el destino',     'Gana con 20 o 21 después de cambiar una carta con la Última voluntad.', 1),
   ('cinco_cartas',    10, 'oro',    'Cinco cartas sin pasarte',  'Gana con cinco cartas o más sin pasarte de 21.', 1),
   ('fortuna_veintiuna', 11, 'oro',  'La suerte bien pagada',     'Gana con 21 exactos después de salvar la mano con la Fortuna.', 1)
 on conflict (id) do update set orden = excluded.orden, nivel = excluded.nivel, nombre = excluded.nombre, texto = excluded.texto, meta = excluded.meta;
@@ -249,7 +248,7 @@ as $$
   select coalesce((select saldo from hipodromo_billeteras where usuario = p_uid), 0)
 $$;
 
--- El turno del crupier: si hay Última voluntad roba una carta de más ANTES de nada; después pide con 16 o menos y se planta con 17 o más (también con 17 blando)
+-- El turno del crupier: pide con 16 o menos y se planta con 17 o más (también con 17 blando). p_forzar (robar una carta de más antes de nada) ya no lo usa ninguna regla
 create or replace function veintiuna_i_turno_crupier(p_mazo smallint[], p_repartidas int, p_crupier smallint[], p_figura int, p_forzar boolean, out o_crupier smallint[], out o_repartidas int)
 language plpgsql
 immutable
@@ -293,7 +292,6 @@ declare
   cru_cartas smallint[];
   faltan numeric;
   motivo text;
-  minimo int := (cartas_ajuste('veintiuna_voluntad_minimo', '0'))::text::int;
 begin
   select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, figura);
   cru_cartas := case when terminada then p.crupier else p.crupier[1:1] end;
@@ -306,7 +304,7 @@ begin
       puede_pedir := vj.total < 21;
       if p.regla = 'voluntad' then
         faltan := case when p.modo = 'apuesta' then greatest(peaje - p_saldo, 0) else 0 end;
-        motivo := case when p.voluntad_usada then 'ya la usaste' when vj.total < minimo then 'necesitas ' || minimo || ' o más' when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' monedas' end;
+        motivo := case when p.voluntad_usada then 'ya la usaste' when vj.total >= 21 then 'con 21 no hace falta' when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' monedas' end;
         especial := jsonb_build_object('tipo', 'voluntad', 'disponible', motivo is null, 'motivo', motivo, 'peaje', peaje);
       end if;
     else
@@ -363,7 +361,7 @@ begin
     if p.resultado = 'victoria' and n_cartas > 2 and vj.total = 21 then cont := jsonb_set(cont, '{veintiunas}', to_jsonb(coalesce((cont ->> 'veintiunas')::int, 0) + 1)); end if;
     if p.resultado = 'victoria' and n_cartas >= 5 and vj.total <= 21 then cont := jsonb_set(cont, '{cinco_cartas}', to_jsonb(coalesce((cont ->> 'cinco_cartas')::int, 0) + 1)); end if;
     if p.resultado = 'victoria' and vj.total <= 14 then cont := jsonb_set(cont, '{ganadas_plantado_bajo}', to_jsonb(coalesce((cont ->> 'ganadas_plantado_bajo')::int, 0) + 1)); end if;
-    if p.voluntad_usada and vj.total <= 16 then cont := jsonb_set(cont, '{ganadas_voluntad_bajo}', to_jsonb(coalesce((cont ->> 'ganadas_voluntad_bajo')::int, 0) + 1)); end if;
+    if p.voluntad_usada and vj.total >= 20 then cont := jsonb_set(cont, '{ganadas_voluntad_alto}', to_jsonb(coalesce((cont ->> 'ganadas_voluntad_alto')::int, 0) + 1)); end if;
     if p.fortuna_usada and vj.total = 21 then cont := jsonb_set(cont, '{ganadas_fortuna_21}', to_jsonb(coalesce((cont ->> 'ganadas_fortuna_21')::int, 0) + 1)); end if;
   end if;
   update veintiuna_estadisticas set
@@ -393,7 +391,7 @@ begin
       when 'sin_miedo' then coalesce((est.contadores ->> 'ganadas_plantado_bajo')::int, 0) >= 1
       when 'tres_velas' then est.mejor_racha >= 3
       when 'tres_voluntades' then cardinality(est.reglas_ganadas) >= 3
-      when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_bajo')::int, 0) >= 1
+      when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_alto')::int, 0) >= 1
       when 'cinco_cartas' then coalesce((est.contadores ->> 'cinco_cartas')::int, 0) >= 1
       when 'fortuna_veintiuna' then coalesce((est.contadores ->> 'ganadas_fortuna_21')::int, 0) >= 1
       else false end
@@ -459,7 +457,7 @@ declare
   nueva smallint;
   cru smallint[];
   rep int;
-  forzar boolean := false;
+  n int;
 begin
   select * into p from veintiuna_partidas where id = p_id for update;
   if p.estado <> 'en_curso' then perform veintiuna_i_error('Esa mano ya terminó.', 'mano_terminada'); end if;
@@ -505,11 +503,10 @@ begin
   end if;
 
   if p_accion = 'voluntad' then
+    -- Cambias tu última carta por la siguiente de la baraja (peaje). Si la nueva te pasa de 21, pierdes (no hay Fortuna en esta regla).
     if p.regla <> 'voluntad' or p.fase <> 'jugador' or p.voluntad_usada then perform veintiuna_i_error('La Última voluntad no está disponible ahora.', 'accion_invalida'); end if;
-    if vj.total < (cartas_ajuste('veintiuna_voluntad_minimo', '0'))::text::int then
-      perform veintiuna_i_error('La Última voluntad pide ' || (cartas_ajuste('veintiuna_voluntad_minimo', '0'))::text || ' puntos o más.', 'accion_invalida');
-    end if;
-    fraccion := (cartas_ajuste('veintiuna_peaje_voluntad', '0.85'))::text::numeric;
+    if vj.total >= 21 then perform veintiuna_i_error('Con 21 no hace falta cambiar nada: plántate.', 'accion_invalida'); end if;
+    fraccion := (cartas_ajuste('veintiuna_peaje_voluntad', '0.5'))::text::numeric;
     peaje := round(p.apuesta * fraccion, 2);
     if p.modo = 'apuesta' then
       select saldo into v_saldo from hipodromo_billeteras where usuario = p.user_id for update;
@@ -518,16 +515,24 @@ begin
       insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
         values (p.user_id, null, 'Veintiuna Velas: peaje de la Última voluntad (mano ' || p.id || ')', -peaje, v_saldo) returning id into v_mov;
     end if;
-    update veintiuna_partidas set voluntad_usada = true, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje) where id = p_id returning * into p;
-    forzar := true;
-  elsif p_accion = 'plantar' then
+    n := array_length(p.jugador, 1);
+    nueva := p.mazo[p.repartidas + 1];
+    update veintiuna_partidas set voluntad_usada = true, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje),
+      jugador = p.jugador[1:n - 1] || nueva, repartidas = repartidas + 1, jugador_as1 = array_remove(jugador_as1, n)
+      where id = p_id returning * into p;
+    select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, figura);
+    if vj.total > 21 then perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas'); end if;
+    return;
+  end if;
+
+  if p_accion = 'plantar' then
     if p.fase <> 'jugador' then perform veintiuna_i_error('Ahora no puedes plantarte.', 'accion_invalida'); end if;
   else
     perform veintiuna_i_error('Esa acción no existe.', 'accion_invalida');
   end if;
 
-  -- Plantarse (con o sin Última voluntad): el crupier juega su turno
-  select o_crupier, o_repartidas into cru, rep from veintiuna_i_turno_crupier(p.mazo, p.repartidas, p.crupier, figura, forzar);
+  -- Plantarse: el crupier juega su turno
+  select o_crupier, o_repartidas into cru, rep from veintiuna_i_turno_crupier(p.mazo, p.repartidas, p.crupier, figura, false);
   update veintiuna_partidas set crupier = cru, repartidas = rep where id = p_id;
   select * into vc from veintiuna_i_valor(cru, '{}'::int[], figura);
   if vc.total > 21 then
@@ -602,7 +607,7 @@ begin
         when 'sin_miedo' then coalesce((est.contadores ->> 'ganadas_plantado_bajo')::int, 0)
         when 'tres_velas' then est.mejor_racha
         when 'tres_voluntades' then cardinality(est.reglas_ganadas)
-        when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_bajo')::int, 0)
+        when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_alto')::int, 0)
         when 'cinco_cartas' then coalesce((est.contadores ->> 'cinco_cartas')::int, 0)
         when 'fortuna_veintiuna' then coalesce((est.contadores ->> 'ganadas_fortuna_21')::int, 0)
         else 0 end),
@@ -618,8 +623,7 @@ begin
       'paso', (cartas_ajuste('veintiuna_apuesta_paso', '10'))::text::numeric),
     'peajes', jsonb_build_object(
       'fortuna', (cartas_ajuste('veintiuna_peaje_fortuna', '0.6'))::text::numeric,
-      'voluntad', (cartas_ajuste('veintiuna_peaje_voluntad', '0.85'))::text::numeric),
-    'voluntad_minimo', (cartas_ajuste('veintiuna_voluntad_minimo', '0'))::text::int,
+      'voluntad', (cartas_ajuste('veintiuna_peaje_voluntad', '0.5'))::text::numeric),
     'inactividad_min', (cartas_ajuste('veintiuna_inactividad_min', '30'))::text::numeric,
     'partida', case when p.id is not null then veintiuna_i_estado(p, v_saldo) end,
     'proxima_regla', est.proxima_regla,

@@ -522,7 +522,20 @@
   }
 
   async function continuarMano(est, previo, antes) {
-    const nJ = antes.nJ;
+    let nJ = antes.nJ;
+    // La Última voluntad cambia la última carta: la vieja se retira (vuelve al mazo) y la nueva llega en su lugar
+    if (previo && previo.regla.id === "voluntad" && !previo.regla.usada && est.regla.usada && est.jugador.cartas.length >= nJ) {
+      const viejo = manoEl("jugador").lastElementChild;
+      if (viejo) {
+        decir("voluntad", 0.9);
+        sonar("giro");
+        const z = posicionZapato(), r = viejo.getBoundingClientRect();
+        await animar(viejo, [{ transform: "none", opacity: 1 }, { transform: `translate(${z.x - (r.left + r.width / 2)}px, ${z.y - (r.top + r.height / 2)}px) scale(.5) rotate(18deg)`, opacity: 0 }], { duration: 300 });
+        viejo.remove(); ajustarAbanico(manoEl("jugador"));
+        nJ = nJ - 1;
+        S.pintado.nJ = nJ;
+      }
+    }
     const nuevas = est.jugador.cartas.slice(nJ);
     // La Fortuna cambia una carta que ya estaba: se vuelve a dibujar en su sitio
     const jm = manoEl("jugador");
@@ -541,7 +554,6 @@
     for (const c of nuevas) { await repartirCarta("jugador", c, false, { animar: true }); await esperar(60); }
     S.pintado.nJ = est.jugador.cartas.length;
     if (nuevas.length && est.fase === "fortuna") decir("pasas", 0.8);
-    if (est.regla.id === "voluntad" && est.regla.usada && previo && !previo.regla.usada) decir("voluntad", 0.9);
     pintarTotales(est, { ocultarCrupier: est.estado === "terminada" });
     pintarPlaca(est.regla.id, "actual", est);
     pintarFichasMesa(est);
@@ -783,7 +795,7 @@
 
   function abrirReglas(foco) {
     const m = S.mesa;
-    const pj = m ? Math.round(m.peajes.fortuna * 100) : 60, pv = m ? Math.round(m.peajes.voluntad * 100) : 85;
+    const pj = m ? Math.round(m.peajes.fortuna * 100) : 60, pv = m ? Math.round(m.peajes.voluntad * 100) : 50;
     const lim = m ? m.limites : { min: 10, max: 100, paso: 10 };
     const reglas = ["fortuna", "maldicion", "voluntad"].map(id => {
       const R = V.REGLAS[id];
@@ -822,7 +834,7 @@
     abrir($("vvDlgAtajos"), `${cabeceraDlg("vvDlgAtajosT", "Atajos de teclado")}
       <div class="vv-dlg-cuerpo"><table class="vv-tabla"><tbody>
         <tr><td><kbd>P</kbd></td><td>Pedir carta</td></tr><tr><td><kbd>L</kbd></td><td>Plantarse</td></tr>
-        <tr><td><kbd>V</kbd></td><td>Última voluntad, o salvar la mano con la Fortuna</td></tr><tr><td><kbd>A</kbd></td><td>Aceptar la derrota (cuando la Fortuna te lo ofrece)</td></tr>
+        <tr><td><kbd>V</kbd></td><td>Última voluntad (cambiar tu última carta), o salvar la mano con la Fortuna</td></tr><tr><td><kbd>A</kbd></td><td>Aceptar la derrota (cuando la Fortuna te lo ofrece)</td></tr>
         <tr><td><kbd>Intro</kbd></td><td>Otra mano, cuando termina la anterior</td></tr><tr><td><kbd>Espacio</kbd></td><td>Saltar la animación</td></tr></tbody></table>
       <p>Todos los botones también se manejan con Tab e Intro.</p></div>`);
   }

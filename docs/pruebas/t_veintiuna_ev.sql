@@ -1,6 +1,6 @@
 -- Valor esperado de cada regla jugando miles de manos de verdad contra el servidor, con una estrategia fija (la misma que la simulación de docs/veintiuna.md).
 -- Comprueba que el SQL y la simulación dicen lo mismo: si una regla estuviera mal escrita, saldría un valor esperado muy distinto. Mesa de práctica (sin tocar monedas).
-create or replace function t_ev(p_regla text, p_n int, p_tb int, p_ta int, p_ts int, p_fortuna_min int default 0, p_lv_desde int default null, p_lv_hasta int default null)
+create or replace function t_ev(p_regla text, p_n int, p_tb int, p_ta int, p_ts int, p_fortuna_min int default 0, p_lv_desde int default null, p_lv_hasta int default null, p_lv_ultima int default 5)
 returns table (ev numeric, error numeric, voluntades int, fortunas int)
 language plpgsql as $$
 declare
@@ -20,10 +20,12 @@ begin
       if p.fase = 'fortuna' then
         accion := case when (select total from veintiuna_i_valor(p.jugador, p.jugador_as1 || array_length(p.jugador, 1), figura)) >= p_fortuna_min then 'fortuna' else 'aceptar' end;
         if accion = 'fortuna' then v_for := v_for + 1; end if;
+      elsif p_regla = 'voluntad' and p_lv_desde is not null and not p.voluntad_usada and vj.total < 21 and vj.total between p_lv_desde and p_lv_hasta
+            and (select case when (c % 13) + 1 = 1 then 1 when (c % 13) + 1 >= 10 then 10 else (c % 13) + 1 end from (select p.jugador[array_length(p.jugador, 1)]::int as c) z) <= p_lv_ultima then
+        accion := 'voluntad'; v_vol := v_vol + 1;
       elsif vj.total >= 21 then accion := 'plantar';
       elsif (case when vj.blando then vj.total >= (case when up >= 9 then 19 else p_ts end) else vj.total >= (case when up >= 7 then p_ta else p_tb end) end) then
-        accion := case when p_regla = 'voluntad' and p_lv_desde is not null and vj.total between p_lv_desde and p_lv_hasta and not p.voluntad_usada then 'voluntad' else 'plantar' end;
-        if accion = 'voluntad' then v_vol := v_vol + 1; end if;
+        accion := 'plantar';
       else accion := 'pedir';
       end if;
       perform veintiuna_i_aplicar(p.id, accion);

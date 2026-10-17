@@ -23,22 +23,22 @@ El servidor elige la regla de cada mano. **La de la próxima mano se enseña ant
 |---|---|---|
 | **Fortuna** | Si pides y te pasas de 21, puedes pagar el peaje para que esa carta valga 1 (un as fijo en 1, aunque sea un rey). Una vez por mano. Si no pagas, pierdes. | 60 % de la apuesta |
 | **Maldición** | J, Q y K valen 11 para ti y para el crupier. Dos figuras suman 22 (te pasas al repartir). Rey + 10 es blackjack natural. | ninguno |
-| **Última voluntad** | En lugar de plantarte, pagas y el crupier **roba una carta de más antes de jugar su turno** (aunque ya tuviera 17 o más); después sigue con su regla de siempre. Una vez por mano. Si se pasa, ganas. | 85 % de la apuesta |
+| **Última voluntad** | Una vez por mano, mientras no tengas 21, pagas el peaje y **cambias tu última carta por la siguiente de la baraja**. Si la nueva te pasa de 21, pierdes (no hay Fortuna en esta regla). El crupier juega su turno de siempre. | 50 % de la apuesta |
 
-Los peajes se cobran en el momento de usarlos, no se devuelven y se guardan en el libro de monedas. En la mesa de práctica son simbólicos. Los tres números (60 %, 85 % y un mínimo de puntos para la Última voluntad, 0 = cualquier mano) están en `cartas_economia_ajustes` (`veintiuna_peaje_fortuna`, `veintiuna_peaje_voluntad`, `veintiuna_voluntad_minimo`) y se pueden cambiar sin tocar código.
+Los peajes se cobran en el momento de usarlos, no se devuelven y se guardan en el libro de monedas. En la mesa de práctica son simbólicos. Los dos números (60 % y 50 %) están en `cartas_economia_ajustes` (`veintiuna_peaje_fortuna`, `veintiuna_peaje_voluntad`) y se pueden cambiar sin tocar código.
 
 ### Por qué esos peajes (equilibrio medido)
 
-Sin peaje, las dos reglas activas rompen la mesa: la Fortuna daba al jugador un +14 % y la Última voluntad un +25 % de valor esperado. Se calcularon con una estrategia óptima exacta (programación dinámica, baraja infinita, solo pedir y plantarse) y se comprobaron con simulaciones de millones de manos:
+Sin peaje, las dos reglas activas rompen la mesa: la Fortuna daba al jugador un +14 % y cambiar la última carta un +16 % de valor esperado. Se calcularon con una estrategia óptima exacta (programación dinámica, baraja infinita, solo pedir, plantarse y cambiar) y se comprobaron con simulaciones de millones de manos con la baraja de 52:
 
 | Regla | Valor esperado del jugador con juego óptimo |
 |---|---|
 | Sin regla (blackjack base con estas reglas) | −2,4 % |
 | Maldición | −3,1 % |
 | Fortuna, peaje 60 % | −1,1 % |
-| Última voluntad, peaje 85 % | −1,1 % |
+| Última voluntad (cambiar la última carta), peaje 50 % | −1,9 % exacto, −1,4 % con la baraja de 52 |
 
-Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos que te gustan no da ventaja. El promedio de las tres es parecido al blackjack base. La Última voluntad solo compensa en un puñado de situaciones (sobre todo 13 a 17 contra un 10 del crupier): es un botón de apuro, no un truco constante. El cálculo exacto está en `tools/veintiuna-equilibrio.js` (`node tools/veintiuna-equilibrio.js`); `docs/pruebas/t_veintiuna_ev.sql` juega miles de manos de verdad contra el servidor y comprueba que el SQL coincide con la simulación.
+Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos que te gustan no da ventaja. El promedio de las tres es parecido al blackjack base. La Última voluntad es una herramienta de decisión: conviene sobre todo con 15 o 16 tras una carta pequeña (cambiar un 5 desde 11 nunca pasa de 21) y casi nunca con una mano alta. La versión anterior (el crupier roba una carta de más) era demasiado fuerte para repartir un peaje razonable y sentía como multa, por eso se cambió. El cálculo exacto está en `tools/veintiuna-equilibrio.js` (Fortuna y Maldición) y `tools/veintiuna-voluntad-cambio.js` (la Última voluntad); `docs/pruebas/t_veintiuna_ev.sql` juega miles de manos de verdad contra el servidor y comprueba que el SQL coincide con la simulación.
 
 ## Monedas
 
@@ -65,9 +65,9 @@ El progreso principal son **desafíos** que el servidor comprueba al terminar ca
 
 | Nivel | Desafíos |
 |---|---|
-| Bronce (valor 1, «bueno») | Primera vela (ganar una mano) · Bajo la Maldición · Peaje pagado (ganar tras salvar la mano con la Fortuna) · La última palabra (ganar tras la Última voluntad) |
+| Bronce (valor 1, «bueno») | Primera vela (ganar una mano) · Bajo la Maldición · Peaje pagado (ganar tras salvar la mano con la Fortuna) · La última palabra (ganar tras cambiar una carta con la Última voluntad) |
 | Plata (valor 3, «excelente») | Veintiuna exacta (llegar a 21 pidiendo) · Sin miedo (plantarte con 14 o menos y ganar) · Tres velas seguidas · Las tres voluntades (ganar con cada regla) |
-| Oro (valor 4, «extraordinario») | A la hora de la verdad (ganar con la Última voluntad con 16 o menos) · Cinco cartas sin pasarte · La suerte bien pagada (ganar con 21 exactos tras salvar la mano con la Fortuna) |
+| Oro (valor 4, «extraordinario») | Reescribir el destino (ganar con 20 o 21 tras cambiar una carta con la Última voluntad) · Cinco cartas sin pasarte · La suerte bien pagada (ganar con 21 exactos tras salvar la mano con la Fortuna) |
 
 Reutilizan el sistema oficial de recompensas, sin crear otro: el juego es una fila más de `cartas_juegos` (`veintiuna`) y reclamar cierra una partida de recompensa con `cartas_i_juego_terminar_nucleo`, igual que La Fractura. Heredan por eso los topes diarios, los límites global y por jugador, la etiqueta «En circulación», la reserva compartida, que las legendarias y limitadas nunca salgan y el libro de movimientos. Decisiones propias:
 
@@ -94,7 +94,7 @@ No hay ninguna infraestructura anticipada. Cuando llegue el momento, el sistema 
 - La crupier reacciona: espera, reparte, mira al jugador, juega su turno, gana y pierde. Dice una frase corta y de vez en cuando, nunca un diálogo.
 - Las velas bajo cada mano son el marcador de puntos (veintiuna llamas); se vuelven azules al pasarte.
 - Animaciones: reparto desde el zapato, giro de la carta oculta, el turno del crupier carta a carta, cambio de placa de regla, resultado con brillo (victoria), apagón (derrota), saldo que cuenta, monedas que vuelan. Todas cuentan algo que el servidor ya confirmó, se saltan con un clic, Espacio o Intro, y se apagan con `prefers-reduced-motion`.
-- Teclado: P pedir, L plantarse, V Última voluntad o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
+- Teclado: P pedir, L plantarse, V Última voluntad (cambiar tu última carta) o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
 - Móvil: las cartas y los controles van primero; el dock de acciones se queda pegado abajo.
 
 ## Pruebas

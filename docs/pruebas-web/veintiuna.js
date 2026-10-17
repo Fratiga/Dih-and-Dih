@@ -41,11 +41,11 @@ a = V.acciones(base({ jugador: { cartas: [carta(10, 0), carta(5, 1), carta(6, 2)
 comprobar("con 21 no se puede pedir y dice por qué", [a.botones[0].habilitado, a.botones[0].motivo], [false, "Con 21 no se pide más."]);
 a = V.acciones(base({ regla: { id: "voluntad", usada: false, peaje: 17 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: true, motivo: null, peaje: 17 } } }));
 comprobar("con la Última voluntad aparece su botón con el peaje", a.botones.map(b => b.id), ["pedir", "plantar", "voluntad"]);
-comprobar("y enseña el peaje", a.botones[2].sub, "peaje 17");
+comprobar("y enseña lo que hace y el peaje", a.botones[2].sub, "cambia tu última carta · peaje 17");
 a = V.acciones(base({ regla: { id: "voluntad", usada: false, peaje: 17 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: false, motivo: "te faltan 5 monedas", peaje: 17 } } }));
 comprobar("sin monedas el botón sale deshabilitado, con la razón", [a.botones[2].habilitado, a.botones[2].sub, a.botones[2].motivo], [false, "te faltan 5 monedas", "Última voluntad: te faltan 5 monedas."]);
 a = V.acciones(base({ modo: "practica", regla: { id: "voluntad", usada: false, peaje: 8.5 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: true, motivo: null, peaje: 8.5 } } }));
-comprobar("en la práctica el peaje se llama simbólico", a.botones[2].sub, "peaje simbólico 8,5");
+comprobar("en la práctica el peaje se llama simbólico", a.botones[2].sub, "cambia tu última carta · peaje simbólico 8,5");
 a = V.acciones(base({ fase: "fortuna", jugador: { cartas: [carta(10, 0), carta(6, 1), carta(13, 2)], total: 26, blando: false }, acciones: { pedir: false, plantar: false, especial: { tipo: "fortuna", disponible: true, motivo: null, peaje: 12 } } }));
 comprobar("pasado de 21 con Fortuna: salvar o aceptar", [a.fase, a.botones.map(b => b.id)], ["fortuna", ["fortuna", "aceptar"]]);
 comprobar("la Fortuna enseña su peaje y aceptar no cuesta", [a.botones[0].sub, a.botones[1].sub], ["peaje 12", "sin peaje"]);
@@ -86,6 +86,10 @@ t = V.anuncio(antes, base({ fase: "fortuna", jugador: { cartas: [carta(10, 0), c
 cierto("pasado de 21 con Fortuna lo cuenta y ofrece elegir", /rey de tréboles/.test(t) && /Fortuna/.test(t));
 t = V.anuncio(antes, base({ estado: "terminada", crupier: { cartas: [carta(9, 2), carta(8, 0)], ocultas: 0, total: 17 }, resultado: { tipo: "derrota", razon: "menor", pago: 0, neto: -20, apuesta: 20, peajes: 0 } }));
 cierto("al terminar enseña las cartas del crupier y el resultado", /9 de diamantes y 8 de picas/.test(t) && /Pierdes\./.test(t));
+
+const vol = base({ regla: { id: "voluntad", usada: false, peaje: 10 } });
+t = V.anuncio(vol, base({ regla: { id: "voluntad", usada: true, peaje: 10 }, jugador: { cartas: [carta(10, 0), carta(1, 3)], total: 21, blando: true } }));
+comprobar("al cambiar la última carta con la Última voluntad lo dice", t, "Cambias tu última carta: ahora tienes as de tréboles. Sumas 21 en blando.");
 
 console.log("== Errores con palabras");
 comprobar("sin conexión", /Reintentar/.test(V.mensajeError({ tipo: "red" })), true);

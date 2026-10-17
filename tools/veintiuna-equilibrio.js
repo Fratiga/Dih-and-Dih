@@ -1,4 +1,5 @@
 // Equilibrio de Las Veintiuna Velas: estrategia óptima exacta (baraja infinita, solo pedir y plantarse) y valor esperado de cada regla para unos peajes dados.
+// OJO: la Última voluntad de este archivo es la VERSIÓN ANTERIOR (el crupier roba una carta de más). La vigente está en tools/veintiuna-voluntad-cambio.js.
 // Uso: node tools/veintiuna-equilibrio.js   (imprime el valor esperado del jugador por regla y peaje; unidades: apuesta = 1).
 // Es lo que se usó para fijar los peajes de docs/veintiuna.sql; docs/pruebas/t_veintiuna_ev.sql comprueba que el servidor coincide con la simulación.
 // Estrategia óptima exacta (baraja infinita) y valor esperado por regla, para fijar los peajes con seguridad.

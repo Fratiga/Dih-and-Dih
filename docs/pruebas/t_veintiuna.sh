@@ -49,17 +49,27 @@ comprobar "la billetera sigue en 280 (300 menos la apuesta de 20) aunque se inte
 
 echo "== Dos peticiones a la vez"
 sql "delete from veintiuna_partidas; delete from hipodromo_movimientos; update hipodromo_billeteras set saldo = 300 where usuario in ('$U1', '$U2')" >/dev/null
-C1=$(sql "select gen_random_uuid()"); C2=$(sql "select gen_random_uuid()"); TMP=$(mktemp -d)
-como $U1 "select veintiuna_repartir('$C1', 'apuesta', 20);" 1 > "$TMP/a" &
-como $U1 "select veintiuna_repartir('$C2', 'apuesta', 20);" 1 > "$TMP/b" &
-wait
+TMP=$(mktemp -d)
+# Una mano que termina al repartir (natural de alguien, un 9 % de las veces) no deja nada en curso: en ese caso se repite la prueba con otras cartas
+for intento in 1 2 3 4 5 6; do
+  sql "delete from veintiuna_partidas; delete from hipodromo_movimientos; update hipodromo_billeteras set saldo = 300 where usuario in ('$U1', '$U2')" >/dev/null
+  C1=$(sql "select gen_random_uuid()"); C2=$(sql "select gen_random_uuid()")
+  como $U1 "select veintiuna_repartir('$C1', 'apuesta', 20);" 1 > "$TMP/a" &
+  como $U1 "select veintiuna_repartir('$C2', 'apuesta', 20);" 1 > "$TMP/b" &
+  wait
+  [ "$(sql "select count(*) from veintiuna_partidas where user_id = '$U1' and estado = 'en_curso'")" = 1 ] && [ "$(sql "select count(*) from veintiuna_partidas where user_id = '$U1'")" = 1 ] && break
+done
 comprobar "dos manos a la vez con identificadores distintos: solo una se reparte" "1" "$(sql "select count(*) from veintiuna_partidas where user_id = '$U1'")"
 comprobar "y solo se cobró una apuesta (saldo 280, un movimiento)" "t|1" "$(sql "select saldo = 280 from hipodromo_billeteras where usuario = '$U1'")|$(sql "select count(*) from hipodromo_movimientos where usuario = '$U1'")"
 contiene "la segunda recibe un error claro" "$(cat "$TMP/a" "$TMP/b")" "Ya tienes una mano en curso"
-sql "delete from veintiuna_partidas; update hipodromo_billeteras set saldo = 300 where usuario = '$U1'; delete from hipodromo_movimientos" >/dev/null
-como $U1 "select veintiuna_repartir('$C1', 'apuesta', 20);" 1 > "$TMP/a" &
-como $U1 "select veintiuna_repartir('$C1', 'apuesta', 20);" 1 > "$TMP/b" &
-wait
+for intento in 1 2 3 4 5 6; do
+  sql "delete from veintiuna_partidas; update hipodromo_billeteras set saldo = 300 where usuario = '$U1'; delete from hipodromo_movimientos" >/dev/null
+  como $U1 "select veintiuna_repartir('$C1', 'apuesta', 20);" 1 > "$TMP/a" &
+  como $U1 "select veintiuna_repartir('$C1', 'apuesta', 20);" 1 > "$TMP/b" &
+  wait
+  [ "$(sql "select count(*) from veintiuna_partidas where user_id = '$U1' and estado = 'en_curso'")" = 1 ] && break
+  C1=$(sql "select gen_random_uuid()")
+done
 comprobar "la misma petición dos veces a la vez: una sola mano y una sola apuesta cobrada" "1|t|1" "$(sql "select count(*) from veintiuna_partidas where user_id = '$U1'")|$(sql "select saldo = 280 from hipodromo_billeteras where usuario = '$U1'")|$(sql "select count(*) from hipodromo_movimientos where usuario = '$U1'")"
 PID=$(sql "select id from veintiuna_partidas where user_id = '$U1'")
 como $U1 "select veintiuna_accion('$PID', 0, 'plantar');" 1 > "$TMP/a" &
@@ -131,6 +141,6 @@ comprobar_ev() { # descripción, esperado (en %), margen, argumentos de t_ev
 }
 comprobar_ev "Maldición, estrategia 13/15/18" "-2.92" "'maldicion', $N, 13, 15, 18" 3.2
 comprobar_ev "Fortuna, estrategia 14/17/18 y peaje del 60 %" "-2.16" "'fortuna', $N, 14, 17, 18" 3.2
-comprobar_ev "Última voluntad con 18 o 19 y peaje del 85 %" "-15.43" "'voluntad', $N, 12, 17, 18, 0, 18, 19" 3.2
+comprobar_ev "Última voluntad: cambiar la última carta con 15 o 16 si era un 5 o menos, peaje del 50 %" "-4.17" "'voluntad', $N, 12, 17, 18, 0, 15, 16, 5" 3.2
 
 [ "$FALLOS" -eq 0 ] && echo "Todo bien." || { echo "$FALLOS fallo(s)."; exit 1; }
