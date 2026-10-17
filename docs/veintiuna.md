@@ -61,13 +61,13 @@ Todo está en `docs/veintiuna.sql`. El navegador pide y pinta.
 
 ## Cartas coleccionables: los desafíos
 
-El progreso principal son **desafíos** que el servidor comprueba al terminar cada mano (con o sin apuesta). Cada uno se completa una vez y se reclama una vez; da una carta.
+El progreso principal son **desafíos** que el servidor comprueba al terminar cada mano (con o sin apuesta). Cada uno se completa una vez y se reclama una vez; da una carta. Premian conocer las reglas, adaptarse a ellas y arriesgar, no repetir manos: no hay cuotas de victorias (se quitaron «Maestro de la mesa», seis victorias seguidas y el blackjack natural, que eran repetir o pura suerte).
 
 | Nivel | Desafíos |
 |---|---|
 | Bronce (valor 1, «bueno») | Primera vela (ganar una mano) · Bajo la Maldición · Peaje pagado (ganar tras salvar la mano con la Fortuna) · La última palabra (ganar tras la Última voluntad) |
-| Plata (valor 3, «excelente») | Veintiuna exacta (llegar a 21 pidiendo) · Blackjack natural · Tres velas seguidas · Las tres voluntades (ganar con cada regla) |
-| Oro (valor 4, «extraordinario») | Seis velas seguidas · Cinco cartas sin pasarte · Maestro de la mesa (50 victorias) |
+| Plata (valor 3, «excelente») | Veintiuna exacta (llegar a 21 pidiendo) · Sin miedo (plantarte con 14 o menos y ganar) · Tres velas seguidas · Las tres voluntades (ganar con cada regla) |
+| Oro (valor 4, «extraordinario») | A la hora de la verdad (ganar con la Última voluntad con 16 o menos) · Cinco cartas sin pasarte · La suerte bien pagada (ganar con 21 exactos tras salvar la mano con la Fortuna) |
 
 Reutilizan el sistema oficial de recompensas, sin crear otro: el juego es una fila más de `cartas_juegos` (`veintiuna`) y reclamar cierra una partida de recompensa con `cartas_i_juego_terminar_nucleo`, igual que La Fractura. Heredan por eso los topes diarios, los límites global y por jugador, la etiqueta «En circulación», la reserva compartida, que las legendarias y limitadas nunca salgan y el libro de movimientos. Decisiones propias:
 

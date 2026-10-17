@@ -77,7 +77,7 @@ sql "select t_act((t_reparte('$U1', 'maldicion', 'practica', 0, '10p', '10c', '8
 contiene "el desafío «Primera vela» está completado y sin reclamar" "$(como $U1 "select veintiuna_mesa() -> 'logros' -> 0;")" '"reclamado": null'
 contiene "con el juego apagado reclamar no da nada" "$(como $U1 "select veintiuna_reclamar('primera_vela');")" "juego-inactivo"
 comprobar "y el desafío sigue sin gastar" "" "$(sql "select reclamado from veintiuna_logros where user_id = '$U1' and logro = 'primera_vela'")"
-contiene "un desafío sin completar no se reclama" "$(como $U1 "select veintiuna_reclamar('maestro');")" "todavía no está completado"
+contiene "un desafío sin completar no se reclama" "$(como $U1 "select veintiuna_reclamar('ultima_hora');")" "todavía no está completado"
 contiene "un desafío que no existe tampoco" "$(como $U1 "select veintiuna_reclamar('inventado');")" "no existe"
 sql "update cartas_juegos set activo = true where juego = 'veintiuna'" >/dev/null
 R=$(como $U1 "select veintiuna_reclamar('primera_vela');")
@@ -87,13 +87,13 @@ comprobar "la copia está en la colección de quien reclamó y sale del libro co
 comprobar "el desafío queda reclamado con su carta" "t" "$(sql "select reclamado is not null and carta is not null from veintiuna_logros where user_id = '$U1' and logro = 'primera_vela'")"
 contiene "no se reclama dos veces" "$(como $U1 "select veintiuna_reclamar('primera_vela');")" "Ya reclamaste"
 comprobar "no se duplicó la copia" "1" "$(sql "select count(*) from cartas_ejemplares where propietario = '$U1'")"
-sql "select t_reparte('$U1', 'fortuna', 'practica', 0, 'Ap', '10c', 'Kc', '7c')" >/dev/null
-comprobar "el blackjack natural completó su desafío" "t" "$(sql "select count(*) = 1 from veintiuna_logros where user_id = '$U1' and logro = 'natural' and reclamado is null")"
-R=$(como $U1 "select veintiuna_reclamar('natural');")
+sql "select t_act((t_reparte('$U1', 'fortuna', 'practica', 0, '5p', '10c', '8c', '6c', 'Kd') ->> 'partida')::uuid, 'plantar')" >/dev/null
+comprobar "«Sin miedo» completó su desafío" "t" "$(sql "select count(*) = 1 from veintiuna_logros where user_id = '$U1' and logro = 'sin_miedo' and reclamado is null")"
+R=$(como $U1 "select veintiuna_reclamar('sin_miedo');")
 contiene "el segundo del día no sale (tope de una carta al día en la mesa)" "$R" "tope-diario"
-comprobar "y el desafío sigue guardado" "" "$(sql "select reclamado from veintiuna_logros where user_id = '$U1' and logro = 'natural'")"
+comprobar "y el desafío sigue guardado" "" "$(sql "select reclamado from veintiuna_logros where user_id = '$U1' and logro = 'sin_miedo'")"
 sql "update cartas_recompensas_registro set creado = creado - interval '1 day'" >/dev/null
-R=$(como $U1 "select veintiuna_reclamar('natural');")
+R=$(como $U1 "select veintiuna_reclamar('sin_miedo');")
 contiene "al día siguiente sí" "$R" '"resultado": "carta"'
 contiene "un desafío de plata es de nivel «excelente», sin subir un tramo por la «mejora personal»" "$R" '"tramo": "excelente"'
 comprobar "sin sellos ni restos en el progreso general" "0" "$(sql "select coalesce(sum(sellos), 0) from cartas_progreso where user_id = '$U1' and juego = 'veintiuna'")"

@@ -480,11 +480,13 @@ begin
   s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('La práctica también cuenta para los desafíos: tres seguidas dan «Tres velas»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_velas'));
   perform t_check('Y la práctica no tocó las monedas ganadas (neto solo de manos con apuesta)', (select neto from veintiuna_estadisticas where user_id = u) = 10 + 0 - 10);
-  -- Natural
+  -- Un blackjack natural cuenta como victoria y racha, pero ya no tiene desafío propio (era pura suerte)
   s := t_reparte(u, 'fortuna', 'apuesta', 10, 'Ap', '10c', 'Kc', '7c');
-  perform t_check('Un blackjack natural da el desafío «Blackjack natural»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'natural'));
-  -- Veintiuna exacta pidiendo carta (y que el natural no la dé)
-  perform t_check('El natural no cuenta como «Veintiuna exacta»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'veintiuna_exacta'));
+  perform t_check('Un blackjack natural suma a las estadísticas (naturales) y no completa «Veintiuna exacta»', (select naturales from veintiuna_estadisticas where user_id = u) = 1 and not exists (select 1 from veintiuna_logros where user_id = u and logro = 'veintiuna_exacta'));
+  -- Sin miedo: plantarse con 14 o menos y ganar
+  perform t_check('Todavía no hay «Sin miedo»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'sin_miedo'));
+  s := t_reparte(u, 'fortuna', 'practica', 0, '5p', '10c', '8c', '6c', 'Kd'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('Plantarse con 13 y ganar (el crupier se pasa) da «Sin miedo»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'sin_miedo'));
   s := t_reparte(u, 'maldicion', 'practica', 0, '5p', '10c', '6c', '10d', '10d');
   s := t_act((s ->> 'partida')::uuid, 'pedir'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Llegar a 21 pidiendo y ganar da «Veintiuna exacta»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'veintiuna_exacta'));
@@ -505,14 +507,23 @@ begin
   perform t_check('No hay desafíos reclamados sin que nadie los reclame', not exists (select 1 from veintiuna_logros where reclamado is not null));
 end $$;
 
-/* ======================================================================== seis seguidas y 50 victorias (a base de estadísticas) */
+/* ======================================================================== desafíos de riesgo (los de oro) */
 do $$
-declare u uuid := '00000000-0000-0000-0000-000000000002'; s jsonb; i int;
+declare u uuid := '00000000-0000-0000-0000-000000000002'; s jsonb; pid uuid;
 begin
   perform t_reset();
-  for i in 1..6 loop s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar'); end loop;
-  perform t_check('Seis victorias seguidas dan «Seis velas seguidas»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'seis_velas'));
-  perform t_check('Y 6 victorias todavía no dan «Maestro de la mesa»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'maestro'));
-  for i in 1..44 loop s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar'); end loop;
-  perform t_check('50 victorias dan «Maestro de la mesa»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'maestro') and (select victorias from veintiuna_estadisticas where user_id = u) = 50);
+  -- A la hora de la verdad: ganar con la Última voluntad estando en apuros (16 o menos)
+  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '9c', '8c', 'Kd');
+  s := t_act((s ->> 'partida')::uuid, 'voluntad');
+  perform t_check('Ganar con la Última voluntad con 19 da «La última palabra» pero NO «A la hora de la verdad»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_palabra') and not exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora'));
+  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Kd');
+  s := t_act((s ->> 'partida')::uuid, 'voluntad');
+  perform t_check('Ganar con la Última voluntad con 16 da «A la hora de la verdad»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora'));
+  -- La suerte bien pagada: 21 exactos después de salvar la mano con la Fortuna
+  s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '10d', 'Kd', '4c');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'fortuna'); s := t_act(pid, 'pedir');
+  perform t_check('Tras la Fortuna: 10 + 6 + 1 + 4 = 21', (s #>> '{jugador,total}')::int = 21);
+  s := t_act(pid, 'plantar');
+  perform t_check('Ganar con 21 tras la Fortuna da «La suerte bien pagada» y «Peaje pagado»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'fortuna_veintiuna') and exists (select 1 from veintiuna_logros where user_id = u and logro = 'peaje_pagado'));
+  perform t_check('Los desafíos antiguos (suerte o repetir manos) ya no existen', not exists (select 1 from veintiuna_logros_def where id in ('natural', 'seis_velas', 'maestro')) and (select count(*) from veintiuna_logros_def) = 11);
 end $$;

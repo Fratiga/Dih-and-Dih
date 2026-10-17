@@ -40,13 +40,15 @@ insert into veintiuna_logros_def (id, orden, nivel, nombre, texto, meta) values
   ('peaje_pagado',     3, 'bronce', 'Peaje pagado',              'Gana una mano después de salvarla con la Fortuna.', 1),
   ('ultima_palabra',   4, 'bronce', 'La última palabra',         'Gana una mano después de usar la Última voluntad.', 1),
   ('veintiuna_exacta', 5, 'plata',  'Veintiuna exacta',          'Gana llegando a 21 pidiendo cartas. Un blackjack natural no cuenta.', 1),
-  ('natural',          6, 'plata',  'Blackjack natural',         'Recibe un 21 con tus dos primeras cartas.', 1),
+  ('sin_miedo',        6, 'plata',  'Sin miedo',                 'Gana plantándote con 14 puntos o menos.', 1),
   ('tres_velas',       7, 'plata',  'Tres velas seguidas',       'Gana tres manos seguidas. Un empate no rompe la racha.', 3),
   ('tres_voluntades',  8, 'plata',  'Las tres voluntades',       'Gana al menos una mano con cada una de las tres reglas.', 3),
-  ('seis_velas',       9, 'oro',    'Seis velas seguidas',       'Gana seis manos seguidas. Un empate no rompe la racha.', 6),
+  ('ultima_hora',      9, 'oro',    'A la hora de la verdad',    'Gana usando la Última voluntad con 16 puntos o menos: cuando de verdad hacía falta.', 1),
   ('cinco_cartas',    10, 'oro',    'Cinco cartas sin pasarte',  'Gana con cinco cartas o más sin pasarte de 21.', 1),
-  ('maestro',         11, 'oro',    'Maestro de la mesa',        'Gana 50 manos.', 50)
+  ('fortuna_veintiuna', 11, 'oro',  'La suerte bien pagada',     'Gana con 21 exactos después de salvar la mano con la Fortuna.', 1)
 on conflict (id) do update set orden = excluded.orden, nivel = excluded.nivel, nombre = excluded.nombre, texto = excluded.texto, meta = excluded.meta;
+-- Desafíos de una versión anterior (premiaban repetir manos o la pura suerte): fuera
+delete from veintiuna_logros_def where id in ('natural', 'seis_velas', 'maestro');
 
 create table if not exists veintiuna_estadisticas (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -360,6 +362,9 @@ begin
     if p.voluntad_usada then cont := jsonb_set(cont, '{ganadas_voluntad_usada}', to_jsonb(coalesce((cont ->> 'ganadas_voluntad_usada')::int, 0) + 1)); end if;
     if p.resultado = 'victoria' and n_cartas > 2 and vj.total = 21 then cont := jsonb_set(cont, '{veintiunas}', to_jsonb(coalesce((cont ->> 'veintiunas')::int, 0) + 1)); end if;
     if p.resultado = 'victoria' and n_cartas >= 5 and vj.total <= 21 then cont := jsonb_set(cont, '{cinco_cartas}', to_jsonb(coalesce((cont ->> 'cinco_cartas')::int, 0) + 1)); end if;
+    if p.resultado = 'victoria' and vj.total <= 14 then cont := jsonb_set(cont, '{ganadas_plantado_bajo}', to_jsonb(coalesce((cont ->> 'ganadas_plantado_bajo')::int, 0) + 1)); end if;
+    if p.voluntad_usada and vj.total <= 16 then cont := jsonb_set(cont, '{ganadas_voluntad_bajo}', to_jsonb(coalesce((cont ->> 'ganadas_voluntad_bajo')::int, 0) + 1)); end if;
+    if p.fortuna_usada and vj.total = 21 then cont := jsonb_set(cont, '{ganadas_fortuna_21}', to_jsonb(coalesce((cont ->> 'ganadas_fortuna_21')::int, 0) + 1)); end if;
   end if;
   update veintiuna_estadisticas set
     rondas = rondas + 1,
@@ -385,12 +390,12 @@ begin
       when 'peaje_pagado' then coalesce((est.contadores ->> 'ganadas_fortuna_usada')::int, 0) >= 1
       when 'ultima_palabra' then coalesce((est.contadores ->> 'ganadas_voluntad_usada')::int, 0) >= 1
       when 'veintiuna_exacta' then coalesce((est.contadores ->> 'veintiunas')::int, 0) >= 1
-      when 'natural' then est.naturales >= 1
+      when 'sin_miedo' then coalesce((est.contadores ->> 'ganadas_plantado_bajo')::int, 0) >= 1
       when 'tres_velas' then est.mejor_racha >= 3
       when 'tres_voluntades' then cardinality(est.reglas_ganadas) >= 3
-      when 'seis_velas' then est.mejor_racha >= 6
+      when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_bajo')::int, 0) >= 1
       when 'cinco_cartas' then coalesce((est.contadores ->> 'cinco_cartas')::int, 0) >= 1
-      when 'maestro' then est.victorias >= 50
+      when 'fortuna_veintiuna' then coalesce((est.contadores ->> 'ganadas_fortuna_21')::int, 0) >= 1
       else false end
     on conflict do nothing
     returning logro
@@ -594,12 +599,12 @@ begin
         when 'peaje_pagado' then coalesce((est.contadores ->> 'ganadas_fortuna_usada')::int, 0)
         when 'ultima_palabra' then coalesce((est.contadores ->> 'ganadas_voluntad_usada')::int, 0)
         when 'veintiuna_exacta' then coalesce((est.contadores ->> 'veintiunas')::int, 0)
-        when 'natural' then est.naturales
+        when 'sin_miedo' then coalesce((est.contadores ->> 'ganadas_plantado_bajo')::int, 0)
         when 'tres_velas' then est.mejor_racha
         when 'tres_voluntades' then cardinality(est.reglas_ganadas)
-        when 'seis_velas' then est.mejor_racha
+        when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_bajo')::int, 0)
         when 'cinco_cartas' then coalesce((est.contadores ->> 'cinco_cartas')::int, 0)
-        when 'maestro' then est.victorias
+        when 'fortuna_veintiuna' then coalesce((est.contadores ->> 'ganadas_fortuna_21')::int, 0)
         else 0 end),
       'completado', l.completado, 'reclamado', l.reclamado, 'carta', l.carta) order by d.orden), '[]'::jsonb)
     into logros
