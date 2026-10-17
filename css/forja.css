@@ -60,7 +60,6 @@ body.fj .lb-boton { border-color: #5a4234; }
 @keyframes fhRojo { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
 .fh-brasas-ojos { animation: fhOjos 4s ease-in-out infinite; }
 @keyframes fhOjos { 0%, 100% { opacity: .1; } 50% { opacity: .85; } }
-.fh-luz-borde { animation: fhBrillo 2.8s ease-in-out infinite; }
 .fh-gigante { transform-origin: 330px 560px; animation: fhResp 6.5s ease-in-out infinite; }
 @keyframes fhResp { 50% { transform: translateY(-3px) scale(1.004); } }
 .fh-cabeza { transition: transform .35s ease-out; transform-box: view-box; }

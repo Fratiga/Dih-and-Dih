@@ -173,7 +173,6 @@ window.ForjaHerrero = (function () {
       </g>
     </g>
     <path d="M10 560 L28 404 Q50 332 130 308" fill="none" stroke="#000" stroke-width="2" opacity=".4"/>
-    <path d="M620 420 Q600 330 530 306 L432 294" fill="none" stroke="#ff8a2a" stroke-width="4" opacity=".4" class="fh-luz-borde"/>
   </g>
 
   <!-- brasas que suben y viñeta -->
