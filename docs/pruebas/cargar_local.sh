@@ -11,7 +11,7 @@ for f in pruebas/00_supabase_simulado.sql pruebas/01_esquema_base.sql pruebas/02
   echo "== $f"; $P -d pruebas < "$DOCS/$f"
 done
 if [ "$HASTA" = "todo" ]; then
-  for f in economia-7_integridad.sql economia-8_permisos.sql economia-9_panel_admin.sql economia-10_verificacion.sql economia-11_en_circulacion.sql economia-12_vias_externas.sql economia-13_hipodromo_cartas.sql economia-14_forja_reserva.sql economia-15_juegos_por_tramo.sql economia-16_valores_por_rival.sql economia-17_rivales_arqueria.sql economia-18_crianza.sql economia-19_ritmo_recompensas.sql economia-20_reserva_compartida.sql economia-21_corral_unicas.sql; do
+  for f in economia-7_integridad.sql economia-8_permisos.sql economia-9_panel_admin.sql economia-10_verificacion.sql economia-11_en_circulacion.sql economia-12_vias_externas.sql economia-13_hipodromo_cartas.sql economia-14_forja_reserva.sql economia-15_juegos_por_tramo.sql economia-16_valores_por_rival.sql economia-17_rivales_arqueria.sql economia-18_crianza.sql economia-19_ritmo_recompensas.sql economia-20_reserva_compartida.sql economia-21_corral_unicas.sql veintiuna.sql; do
     echo "== $f"; $P -d pruebas < "$DOCS/$f"
   done
 fi

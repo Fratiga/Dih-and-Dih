@@ -1,0 +1,57 @@
+/* =============================================================================
+   LAS VEINTIUNA VELAS: la conversación con el servidor (docs/veintiuna.sql)
+   Cinco llamadas: mesa, repartir, accion, historial y reclamar. Todas devuelven lo que el servidor confirma o lanzan un ErrorMesa:
+     { tipo: "red" }       no llegó respuesta (sin conexión o tardó demasiado). La petición PUEDE haberse aplicado: repetirla con los mismos
+                           identificadores es seguro (repartir lleva el identificador de la mano y accion lleva el número de paso).
+     { tipo: "servidor" }  el servidor la rechazó; "codigo" es la pista (saldo_insuficiente, mano_en_curso, paso_futuro...) y "mensaje" el texto.
+   Nada de aquí decide un resultado. El navegador solo pide y muestra.
+============================================================================= */
+(function (raiz) {
+  class ErrorMesa extends Error {
+    constructor(tipo, mensaje, codigo) { super(mensaje); this.name = "ErrorMesa"; this.tipo = tipo; this.codigo = codigo || ""; this.mensaje = mensaje; }
+  }
+  const TIEMPO_MAX_MS = 15000;
+
+  function esErrorDeRed(error) {
+    if (!error) return false;
+    if (error.hint || /^P0001$/.test(error.code || "")) return false;           // lo lanzó la función a propósito: es un rechazo, no un corte
+    const t = `${error.message || ""} ${error.details || ""}`;
+    return /fetch|network|failed to|load failed|timeout|abort|offline|conexi/i.test(t) || error.code === "" || error.code === undefined && !error.message;
+  }
+
+  function crear(obtenerCliente, opciones) {
+    const tiempoMax = (opciones && opciones.tiempoMax) || TIEMPO_MAX_MS;
+    async function llamar(nombre, args) {
+      let cliente;
+      try { cliente = await obtenerCliente(); } catch (e) { throw new ErrorMesa("red", "No se pudo abrir la conexión con la mesa.", ""); }
+      let respuesta;
+      try {
+        respuesta = await Promise.race([
+          Promise.resolve(cliente.rpc(nombre, args)),
+          new Promise((_, rechazar) => setTimeout(() => rechazar(new Error("timeout")), tiempoMax))
+        ]);
+      } catch (e) { throw new ErrorMesa("red", "La mesa tardó demasiado en responder.", ""); }
+      if (respuesta && respuesta.error) {
+        const e = respuesta.error;
+        if (esErrorDeRed(e)) throw new ErrorMesa("red", e.message || "Sin conexión.", "");
+        throw new ErrorMesa("servidor", String(e.message || "").replace(/^ERROR:\s*/, ""), e.hint || "");
+      }
+      return respuesta ? respuesta.data : null;
+    }
+    return {
+      mesa: () => llamar("veintiuna_mesa", {}),
+      repartir: (cliente, modo, apuesta) => llamar("veintiuna_repartir", { p_cliente: cliente, p_modo: modo, p_apuesta: modo === "apuesta" ? apuesta : 0 }),
+      accion: (partida, paso, accion) => llamar("veintiuna_accion", { p_partida: partida, p_paso: paso, p_accion: accion }),
+      historial: limite => llamar("veintiuna_historial", { p_limite: limite || 15 }),
+      reclamar: logro => llamar("veintiuna_reclamar", { p_logro: logro })
+    };
+  }
+
+  const nuevoId = () => {
+    if (raiz.crypto && raiz.crypto.randomUUID) return raiz.crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); });
+  };
+
+  const API = { crear, ErrorMesa, esErrorDeRed, nuevoId };
+  if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.VeintiunaApi = API;
+})(typeof window !== "undefined" ? window : globalThis);

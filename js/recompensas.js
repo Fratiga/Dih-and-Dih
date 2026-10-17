@@ -57,7 +57,7 @@ window.Recompensas = (function () {
     document.head.appendChild(l);
   }
 
-  const NOMBRES_JUEGO = { ajedrez: "Ajedrez", duelo: "Duelo", arqueria: "Arquería", hooey: "Hooey", fractura: "La Fractura", zarabanda: "Zarabanda", parranda: "Parranda" };
+  const NOMBRES_JUEGO = { ajedrez: "Ajedrez", duelo: "Duelo", arqueria: "Arquería", hooey: "Hooey", fractura: "La Fractura", veintiuna: "Las Veintiuna Velas", zarabanda: "Zarabanda", parranda: "Parranda" };
   const TRAMOS = { bueno: "Buen resultado", excelente: "Resultado excelente", extraordinario: "Resultado extraordinario", participacion: "Participación" };
 
   function aviso(texto, clase) {
@@ -112,5 +112,5 @@ window.Recompensas = (function () {
     dlg.showModal();
   }
 
-  return { iniciar, terminar };
+  return { iniciar, terminar, mostrar };
 })();

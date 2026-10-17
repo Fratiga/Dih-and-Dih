@@ -62,7 +62,7 @@ window.VeintiunaArte = (function () {
 
   // La cara de una carta (viewBox 100 x 140). c = { r: 1..13, p: 0..3, as1?: true }
   function cara(c) {
-    const color = PALOS[c.p].color === "rojo" ? "vv-rojo" : "vv-negro";
+    const color = PALOS[c.p].color === "rojo" ? "rojo" : "negro";
     const letra = letraRango(c.r);
     const esFigura = c.r >= 11;
     let centro;
@@ -83,8 +83,8 @@ window.VeintiunaArte = (function () {
       <rect x="1" y="1" width="98" height="138" rx="9" class="vv-papel"/>
       <rect x="5" y="5" width="90" height="130" rx="6" fill="none" class="vv-filete"/>
       <g fill="currentColor" class="vv-trazo">
-        <text x="11" y="25" class="vv-indice" font-size="21">${letra}</text>${pip(c.p, 15, 37, 12)}
-        <g transform="rotate(180 50 70)"><text x="11" y="25" class="vv-indice" font-size="21">${letra}</text>${pip(c.p, 15, 37, 12)}</g>
+        <text x="9" y="25" class="vv-indice" font-size="${letra.length > 1 ? 17 : 21}">${letra}</text>${pip(c.p, 15, 37, 12)}
+        <g transform="rotate(180 50 70)"><text x="9" y="25" class="vv-indice" font-size="${letra.length > 1 ? 17 : 21}">${letra}</text>${pip(c.p, 15, 37, 12)}</g>
         ${centro}
       </g>${as1}
     </svg>`;
@@ -169,53 +169,67 @@ window.VeintiunaArte = (function () {
 
   /* ---------------------------------------------------------------- la crupier: Cera, de rostro de cera y corona de velas */
   function crupier() {
+    // Una vela: cuerpo de cera, gotas y llama doble
     const vela = (x, alto, i) => `<g class="vv-cr-vela" style="--i:${i}">
-      <rect x="${x - 4}" y="${96 - alto}" width="8" height="${alto}" rx="1.6" fill="#f3e9cf" stroke="#c9b88c" stroke-width=".8"/>
-      <path d="M${x - 4} ${96 - alto + 4}c1 6 3 8 4 8s2 2 0 6" stroke="#fff8e4" stroke-width="1.6" fill="none" opacity=".8"/>
-      <g class="vv-cr-llama"><use href="#vv-llama" x="${x - 6}" y="${96 - alto - 20}" width="12" height="18" fill="#ffb24a"/><use href="#vv-llama" x="${x - 3}" y="${96 - alto - 14}" width="6" height="11" fill="#fff4c4"/></g>
+      <rect x="${x - 4.5}" y="${92 - alto}" width="9" height="${alto + 6}" rx="2" fill="#f6edd3" stroke="#c9b88c" stroke-width=".8"/>
+      <path d="M${x - 4.5} ${92 - alto + 3}c0 7 2 9 3 9s1 3-1 7M${x + 4.5} ${92 - alto + 3}c0 5-1 7-2 7" stroke="#fffaf0" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".9"/>
+      <g class="vv-cr-llama"><use href="#vv-llama" x="${x - 7}" y="${92 - alto - 23}" width="14" height="21" fill="#ffb24a"/><use href="#vv-llama" x="${x - 3.5}" y="${92 - alto - 15}" width="7" height="12" fill="#fff4c4"/></g>
     </g>`;
     return `<svg class="vv-cr" viewBox="0 0 260 320" role="img" aria-label="Cera, la crupier: una figura de cera con una corona de velas encendidas" focusable="false">
-  <circle class="vv-cr-aura" cx="130" cy="120" r="112" fill="url(#vv-g-brillo)"/>
-  <!-- capa y cuello alto -->
-  <path d="M10 320c4-70 28-112 70-132l50 18 50-18c42 20 66 62 70 132z" fill="url(#vv-g-capa)"/>
-  <path d="M82 190l48 30 48-30 12 22-60 40-60-40z" fill="#150b1a" stroke="url(#vv-g-oro)" stroke-width="2"/>
-  <path d="M102 196l28 24 28-24" fill="none" stroke="#d9a441" stroke-width="1.4" stroke-dasharray="3 4"/>
+  <circle class="vv-cr-aura" cx="130" cy="124" r="118" fill="url(#vv-g-brillo)"/>
+  <!-- capucha y capa -->
+  <path d="M30 320c2-96 26-170 100-200 74 30 98 104 100 200z" fill="#0c0610"/>
+  <path d="M8 320c6-72 30-116 72-134l50 20 50-20c42 18 66 62 72 134z" fill="url(#vv-g-capa)"/>
+  <path d="M60 232c20-22 44-34 70-34s50 12 70 34" fill="none" stroke="#d9a441" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="3 5"/>
+  <!-- cuello alto con filigrana -->
+  <path d="M84 196l46 30 46-30 14 24-60 44-60-44z" fill="#150b1a" stroke="url(#vv-g-oro)" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M96 204l34 24 34-24M104 214l26 19 26-19" fill="none" stroke="#d9a441" stroke-width="1.2" stroke-opacity=".7"/>
+  <circle cx="130" cy="238" r="5" fill="#a8202f" stroke="url(#vv-g-oro)" stroke-width="1.6"/>
   <g class="vv-cr-cabeza">
     <!-- corona de velas -->
-    <path d="M70 100c6-12 28-16 60-16s54 4 60 16" fill="none" stroke="url(#vv-g-oro)" stroke-width="5" stroke-linecap="round"/>
-    ${vela(80, 18, 0)}${vela(105, 30, 1)}${vela(130, 38, 2)}${vela(155, 28, 3)}${vela(180, 17, 4)}
+    <path d="M72 96c8-12 30-17 58-17s50 5 58 17" fill="none" stroke="url(#vv-g-oro)" stroke-width="5.5" stroke-linecap="round"/>
+    <path d="M72 96c8-12 30-17 58-17s50 5 58 17" fill="none" stroke="#fff1bd" stroke-opacity=".5" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1 7"/>
+    ${vela(80, 17, 0)}${vela(105, 29, 1)}${vela(130, 38, 2)}${vela(155, 27, 3)}${vela(180, 16, 4)}
     <!-- rostro de cera -->
-    <ellipse cx="130" cy="150" rx="50" ry="62" fill="url(#vv-g-cera)" stroke="#a89468" stroke-width="1.6"/>
-    <path d="M168 110c8 10 12 26 10 44-2 24-14 44-34 54 22-4 40-26 44-52 3-18-2-34-12-46z" fill="#9b8660" opacity=".28"/>
-    <path d="M96 100c-2 10 0 20 4 26M164 96c3 14 1 28-4 40M118 98c1 8 0 14-3 20" stroke="#fff9e6" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>
-    <path d="M176 118c4 16 5 34 1 50-1 5-5 5-6 0-2-10-2-24 1-36 1-6 3-12 4-14z" fill="#f4ecd2" stroke="#c9b88c" stroke-width="1"/>
-    <path d="M130 150c-3 12-4 22 2 28" stroke="#a89468" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M82 140c0-36 20-56 48-56s48 20 48 56c0 36-14 66-48 74-34-8-48-38-48-74z" fill="url(#vv-g-cera)" stroke="#a89468" stroke-width="1.6"/>
+    <path d="M172 112c6 12 8 30 4 46-5 22-17 40-36 50 24-6 40-28 44-54 3-18-2-32-12-42z" fill="#8f7a52" opacity=".26"/>
+    <path d="M90 118c14-8 28-10 40-10s26 2 40 10" fill="none" stroke="#fffaf0" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+    <!-- gotas de cera que bajan de la corona -->
+    <path d="M97 98c1 9 0 15-3 19-3 3-6 1-5-3 2-5 6-9 8-16z" fill="#fbf4de" stroke="#d6c79c" stroke-width=".8"/>
+    <path d="M168 97c2 7 5 11 6 16 1 4-3 6-6 2-3-5-2-11 0-18z" fill="#fbf4de" stroke="#d6c79c" stroke-width=".8"/>
+    <path d="M131 93c0 7 1 11 0 14-1 3-4 2-4-1 0-5 3-8 4-13z" fill="#fbf4de" stroke="#d6c79c" stroke-width=".8"/>
+    <!-- grieta reparada con oro (kintsugi) -->
+    <path d="M154 106l-9 13 8 9-9 14 6 8" fill="none" stroke="url(#vv-g-oro)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M154 106l-9 13 8 9-9 14 6 8" fill="none" stroke="#fff1bd" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>
+    <!-- nariz y pómulos -->
+    <path d="M130 140c-2 12-5 21-8 26 4 4 12 4 16 0-3-5-6-14-8-26z" fill="#e6d7ae" stroke="#a89468" stroke-width="1.1" stroke-linejoin="round"/>
+    <path d="M122 166c2 2 6 3 8 3s6-1 8-3" fill="none" stroke="#a89468" stroke-width="1.3" stroke-linecap="round"/>
     <!-- cejas -->
-    <g class="vv-cr-cejas" stroke="#3a2a22" stroke-width="3.6" fill="none" stroke-linecap="round">
-      <path class="vv-ce-calma" d="M96 128c8-4 16-4 24 0M140 128c8-4 16-4 24 0"/>
-      <path class="vv-ce-alza" d="M96 124c8-8 16-8 24-2M140 120c8-6 16-6 24 2"/>
-      <path class="vv-ce-baja" d="M96 124c8 2 16 6 24 8M140 132c8-2 16-6 24-8"/>
+    <g class="vv-cr-cejas" stroke="#2e2019" stroke-width="3.6" fill="none" stroke-linecap="round">
+      <path class="vv-ce-calma" d="M98 127c8-4 16-4 24 0M138 127c8-4 16-4 24 0"/>
+      <path class="vv-ce-alza" d="M98 123c8-8 16-8 24-2M138 119c8-6 16-6 24 2"/>
+      <path class="vv-ce-baja" d="M98 123c8 2 16 6 24 8M138 131c8-2 16-6 24-8"/>
     </g>
     <!-- ojos -->
     <g class="vv-cr-ojos">
-      <g class="vv-oj-calma"><path d="M97 142c7-8 17-8 24 0-7 5-17 5-24 0z" fill="#1b1318"/><path d="M139 142c7-8 17-8 24 0-7 5-17 5-24 0z" fill="#1b1318"/><circle cx="110" cy="141" r="2.4" fill="#d9a441"/><circle cx="152" cy="141" r="2.4" fill="#d9a441"/><path d="M97 141h24M139 141h24" stroke="#3a2a22" stroke-width="2.2" opacity=".55"/></g>
-      <g class="vv-oj-atentos"><ellipse cx="109" cy="142" rx="11" ry="9" fill="#fffaf0" stroke="#3a2a22" stroke-width="1.6"/><ellipse cx="151" cy="142" rx="11" ry="9" fill="#fffaf0" stroke="#3a2a22" stroke-width="1.6"/><circle class="vv-pupila" cx="109" cy="143" r="5.2" fill="#1b1318"/><circle class="vv-pupila" cx="151" cy="143" r="5.2" fill="#1b1318"/><circle cx="111" cy="141" r="1.6" fill="#ffd27a"/><circle cx="153" cy="141" r="1.6" fill="#ffd27a"/></g>
-      <g class="vv-oj-sonrisa" fill="none" stroke="#1b1318" stroke-width="4.4" stroke-linecap="round"><path d="M98 146c6-10 16-10 22 0M140 146c6-10 16-10 22 0"/></g>
-      <g class="vv-oj-asombro"><ellipse cx="109" cy="141" rx="12" ry="12" fill="#fffaf0" stroke="#3a2a22" stroke-width="1.6"/><ellipse cx="151" cy="141" rx="12" ry="12" fill="#fffaf0" stroke="#3a2a22" stroke-width="1.6"/><circle cx="109" cy="141" r="3.4" fill="#1b1318"/><circle cx="151" cy="141" r="3.4" fill="#1b1318"/></g>
-      <g class="vv-oj-bajos" fill="none" stroke="#1b1318" stroke-width="3.6" stroke-linecap="round"><path d="M98 142c7 6 17 6 24 0M138 142c7 6 17 6 24 0"/><path d="M102 148c2 3 5 3 8 2M150 150c3 1 6 0 8-2" stroke-width="2" opacity=".5"/></g>
+      <g class="vv-oj-calma"><path d="M99 141c7-8 17-8 24 0-7 5-17 5-24 0z" fill="#1b1318"/><path d="M137 141c7-8 17-8 24 0-7 5-17 5-24 0z" fill="#1b1318"/><circle cx="111" cy="140.5" r="2.6" fill="#d9a441"/><circle cx="149" cy="140.5" r="2.6" fill="#d9a441"/><path d="M98 140h26M136 140h26" stroke="#2e2019" stroke-width="2.4" opacity=".6"/><path d="M123 141l4 2M137 141l-4 2" stroke="#2e2019" stroke-width="1.2" opacity=".5"/></g>
+      <g class="vv-oj-atentos"><ellipse cx="111" cy="141" rx="11.5" ry="9.5" fill="#fffaf0" stroke="#2e2019" stroke-width="1.6"/><ellipse cx="149" cy="141" rx="11.5" ry="9.5" fill="#fffaf0" stroke="#2e2019" stroke-width="1.6"/><circle class="vv-pupila" cx="111" cy="142" r="5.4" fill="#1b1318"/><circle class="vv-pupila" cx="149" cy="142" r="5.4" fill="#1b1318"/><circle cx="113" cy="140" r="1.7" fill="#ffd27a"/><circle cx="151" cy="140" r="1.7" fill="#ffd27a"/></g>
+      <g class="vv-oj-sonrisa" fill="none" stroke="#1b1318" stroke-width="4.6" stroke-linecap="round"><path d="M100 146c6-10 16-10 22 0M138 146c6-10 16-10 22 0"/></g>
+      <g class="vv-oj-asombro"><ellipse cx="111" cy="140" rx="12.5" ry="12.5" fill="#fffaf0" stroke="#2e2019" stroke-width="1.6"/><ellipse cx="149" cy="140" rx="12.5" ry="12.5" fill="#fffaf0" stroke="#2e2019" stroke-width="1.6"/><circle cx="111" cy="140" r="3.6" fill="#1b1318"/><circle cx="149" cy="140" r="3.6" fill="#1b1318"/></g>
+      <g class="vv-oj-bajos" fill="none" stroke="#1b1318" stroke-width="3.8" stroke-linecap="round"><path d="M99 141c7 7 17 7 24 0M137 141c7 7 17 7 24 0"/><path d="M103 148c2 3 5 3 8 2M149 150c3 1 6 0 8-2" stroke-width="2" opacity=".55"/></g>
     </g>
     <!-- boca -->
-    <g class="vv-cr-boca" fill="none" stroke="#6b2a30" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-      <path class="vv-bo-calma" d="M112 184c12 3 24 3 36 0"/>
-      <path class="vv-bo-ladea" d="M112 186c12 4 24 2 38-6"/>
-      <g class="vv-bo-gran"><path d="M108 178c14 16 30 16 44 0z" fill="#3b1218" stroke="#6b2a30"/><path d="M114 180c10 3 22 3 32 0" stroke="#fff4dc" stroke-width="3"/></g>
-      <path class="vv-bo-triste" d="M112 190c12-6 24-6 36 0"/>
-      <ellipse class="vv-bo-o" cx="130" cy="186" rx="7" ry="8" fill="#3b1218"/>
+    <g class="vv-cr-boca" stroke-linecap="round" stroke-linejoin="round">
+      <path class="vv-bo-calma" d="M112 187c6-3 12-3 18-1 6-2 12-2 18 1-5 5-13 7-18 7s-13-2-18-7z" fill="#a8505a" stroke="#6b2a30" stroke-width="1.6"/>
+      <path class="vv-bo-ladea" d="M112 188c6-1 12 0 18 0s14-2 20-8c-1 7-6 14-18 14-9 0-17-2-20-6z" fill="#a8505a" stroke="#6b2a30" stroke-width="1.6"/>
+      <g class="vv-bo-gran"><path d="M108 178c14 18 30 18 44 0z" fill="#3b1218" stroke="#6b2a30" stroke-width="2"/><path d="M113 180c10 4 24 4 34 0v4c-10 4-24 4-34 0z" fill="#fff4dc"/></g>
+      <path class="vv-bo-triste" d="M112 192c12-7 24-7 36 0" fill="none" stroke="#6b2a30" stroke-width="3.4"/>
+      <ellipse class="vv-bo-o" cx="130" cy="187" rx="7.5" ry="9" fill="#3b1218" stroke="#6b2a30" stroke-width="1.6"/>
     </g>
     <!-- mejillas -->
-    <ellipse cx="94" cy="166" rx="9" ry="6" fill="#e4a898" opacity=".35"/><ellipse cx="166" cy="166" rx="9" ry="6" fill="#e4a898" opacity=".35"/>
+    <ellipse cx="94" cy="168" rx="9" ry="6" fill="#e4a898" opacity=".4"/><ellipse cx="166" cy="168" rx="9" ry="6" fill="#e4a898" opacity=".4"/>
   </g>
-  <!-- manos con guantes sobre la mesa -->
+  <!-- manos enguantadas sobre la mesa -->
   <g class="vv-cr-manos">
     <g class="vv-cr-mano-i"><path d="M20 316c0-26 12-48 34-50l30 8c8 4 6 14-4 16l-26 4c-4 14-12 22-34 22z" fill="#f4eee0" stroke="#bfb08a" stroke-width="1.4"/><rect x="8" y="300" width="42" height="16" rx="3" fill="#3a1a2a" stroke="url(#vv-g-oro)" stroke-width="1.4"/></g>
     <g class="vv-cr-mano-d"><path d="M240 316c0-26-12-48-34-50l-30 8c-8 4-6 14 4 16l26 4c4 14 12 22 34 22z" fill="#f4eee0" stroke="#bfb08a" stroke-width="1.4"/><rect x="210" y="300" width="42" height="16" rx="3" fill="#3a1a2a" stroke="url(#vv-g-oro)" stroke-width="1.4"/></g>
@@ -227,29 +241,22 @@ window.VeintiunaArte = (function () {
   function tapete() {
     let velas = "";
     for (let i = 0; i < 21; i++) {
-      const a = (i / 21) * Math.PI * 2 - Math.PI / 2, x = 600 + Math.cos(a) * 150, y = 240 + Math.sin(a) * 150;
+      const a = (i / 21) * Math.PI * 2 - Math.PI / 2, x = 600 + Math.cos(a) * 178, y = 350 + Math.sin(a) * 178;
       velas += `<use href="#vv-llama" x="${(x - 5).toFixed(1)}" y="${(y - 8).toFixed(1)}" width="10" height="15"/>`;
     }
-    return `<svg class="vv-tapete-svg" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    return `<svg class="vv-tapete-svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
       <defs>
-        <path id="vv-arco-alto" d="M170 232C360 150 840 150 1030 232"/>
-        <path id="vv-arco-bajo" d="M150 286C350 372 850 372 1050 286"/>
         <filter id="vv-ruido" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .22 0"/></filter>
         <pattern id="vv-trama" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><path d="M0 0h6" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/></pattern>
       </defs>
-      <rect width="1200" height="520" fill="url(#vv-trama)"/>
-      <rect width="1200" height="520" filter="url(#vv-ruido)"/>
-      <g class="vv-tapete-adorno" fill="none" stroke="#d9a441" stroke-opacity=".34" stroke-width="1.6">
-        <circle cx="600" cy="240" r="150"/><circle cx="600" cy="240" r="118" stroke-dasharray="2 8"/><circle cx="600" cy="240" r="190" stroke-opacity=".16"/>
+      <rect width="1200" height="700" fill="url(#vv-trama)"/>
+      <rect width="1200" height="700" filter="url(#vv-ruido)"/>
+      <g class="vv-tapete-adorno" fill="none" stroke="#d9a441" stroke-opacity=".30" stroke-width="1.6">
+        <circle cx="600" cy="350" r="178"/><circle cx="600" cy="350" r="146" stroke-dasharray="2 8"/><circle cx="600" cy="350" r="222" stroke-opacity=".14"/>
       </g>
-      <g fill="#d9a441" fill-opacity=".30">${velas}</g>
-      <g class="vv-tapete-texto" fill="#d9a441" fill-opacity=".62" font-size="23" letter-spacing="7">
-        <text><textPath href="#vv-arco-alto" startOffset="50%" text-anchor="middle">LA VEINTIUNA PAGA TRES A DOS</textPath></text>
-        <text fill-opacity=".48" font-size="19" letter-spacing="6"><textPath href="#vv-arco-bajo" startOffset="50%" text-anchor="middle">LA CASA SE PLANTA CON DIECISIETE</textPath></text>
-      </g>
-      <g class="vv-tapete-esquinas" fill="none" stroke="#d9a441" stroke-opacity=".4" stroke-width="2">
+      <g fill="#d9a441" fill-opacity=".28">${velas}</g>
+      <g class="vv-tapete-esquinas" fill="none" stroke="#d9a441" stroke-opacity=".34" stroke-width="2">
         <path d="M34 34h70M34 34v70"/><path d="M1166 34h-70M1166 34v70"/>
-        <path d="M34 486h70M34 486v-70"/><path d="M1166 486h-70M1166 486v-70"/>
       </g>
     </svg>`;
   }

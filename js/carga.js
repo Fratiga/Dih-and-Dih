@@ -28,7 +28,7 @@
     "cronologia.html": "Hojeando la cronología...", "fichas.html": "Buscando tus personajes...", "cartas.html": "Buscando tus cartas...",
     "mazos.html": "Buscando tus cartas...", "batalla.html": "Preparando la mesa...", "intercambios.html": "Encendiendo los faroles...", "forja.html": "Avivando el fuego de la forja...", "habitacion.html": "Entrando a tu habitación...", "corrales.html": "Abriendo los corrales...",
     "estadisticas.html": "Afilando las estadísticas...", "fanarts.html": "Colgando los dibujos...", "rocola.html": "Encendiendo la rocola...",
-    "ajedrez.html": "Colocando las piezas...", "arqueria.html": "Tensando el arco...", "minijuegos.html": "Montando la feria...",
+    "ajedrez.html": "Colocando las piezas...", "veintiuna.html": "Encendiendo las velas...", "arqueria.html": "Tensando el arco...", "minijuegos.html": "Montando la feria...",
     "admin.html": "Abriendo el panel..."
   };
   const TOPE_MS = 12000, ESPERA_MS = 250, MINIMO_MS = 400, QUIETO_MS = 350;

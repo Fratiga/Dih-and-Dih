@@ -437,6 +437,11 @@
       return `<h4>Puntaje por partida</h4><p class="eco-ayuda">Cada sacrificio suma este puntaje, hasta el máximo. Ese puntaje es el que se compara con los umbrales de arriba.</p>
         <div class="eco-filtros"><label>Puntaje por sacrificio ${campoV("por_punto", v.por_punto)}</label><label>Máximo ${campoV("maximo", v.maximo)}</label></div>`;
     }
+    if (j.juego === "veintiuna") {
+      const NIV = [["bronce", "Bronce"], ["plata", "Plata"], ["oro", "Oro"]], r = v.rivales || {};
+      return `<h4>Valor de cada nivel de desafío</h4><p class="eco-ayuda">Cada desafío completado se reclama una vez y da una carta. Su nivel decide el tramo: 1 es «bueno», 3 «excelente» y 4 «extraordinario» (con los pesos y grupos de abajo). Desde esta mesa se reclama como mucho el número de cartas por día de arriba. Los desafíos completados esperan mientras el juego esté apagado.</p>
+        <table class="eco-tabla"><thead><tr><th>Nivel</th><th>Valor</th></tr></thead><tbody>${NIV.map(([k, n]) => `<tr><td>${n}</td><td>${campoV(`rivales.${k}.gana`, (r[k] || {}).gana)}</td></tr>`).join("")}</tbody></table>`;
+    }
     if (j.juego === "fractura") {
       return `<h4>Puntaje por victoria</h4><p class="eco-ayuda">Lo que vale una guerra ganada contra la IA (las de jugador contra jugador no dan nada).</p>
         <div class="eco-filtros"><label>Victoria normal ${campoV("normal", v.normal)}</label><label>Con dificultad, núcleo o capital ${campoV("dificil", v.dificil)}</label>
