@@ -70,11 +70,11 @@ body.fj .lb-boton { border-color: #5a4234; }
 .fh-golpeando { animation: fhSacude .9s ease-out; }
 @keyframes fhSacude { 0%, 52% { transform: none; } 56% { transform: translate(-5px, 5px); } 62% { transform: translate(5px, -4px); } 70% { transform: translate(-3px, 2px); } 80% { transform: translate(2px, -1px); } 100% { transform: none; } }
 .fh-golpeando .fh-brazo { animation: fhGolpe .9s cubic-bezier(.5, 0, .9, .4) both; }
-@keyframes fhGolpe { 0% { transform: rotate(0); } 32% { transform: rotate(-9deg) translateY(-8px); } 54% { transform: rotate(19deg) translate(10px, 4px); } 66% { transform: rotate(17deg) translate(8px, 3px); } 100% { transform: rotate(0); } }
+@keyframes fhGolpe { 0% { transform: rotate(0); } 30% { transform: rotate(-7deg); } 54% { transform: rotate(13deg); } 66% { transform: rotate(11deg); } 100% { transform: rotate(0); } }
 .fh-golpeando .fh-cabeza { animation: fhCabeza .9s ease-in-out both; }
 @keyframes fhCabeza { 0%, 100% { transform: none; } 32% { transform: translateY(-5px) rotate(-1.5deg); } 56% { transform: translateY(8px) rotate(2deg); } }
 .fh-golpeando .fh-chispas { animation: fhChispa .9s ease-out both; }
-@keyframes fhChispa { 0%, 50% { opacity: 0; transform: translate(690px, 404px) scale(.2); } 56% { opacity: 1; transform: translate(690px, 404px) scale(1.1); } 100% { opacity: 0; transform: translate(690px, 404px) scale(1.7); } }
+@keyframes fhChispa { 0%, 50% { opacity: 0; transform: translate(735px, 410px) scale(.2); } 56% { opacity: 1; transform: translate(735px, 410px) scale(1.1); } 100% { opacity: 0; transform: translate(735px, 410px) scale(1.7); } }
 .fh-golpeando .fh-rojo { animation: fhRojoGolpe .9s ease-out; }
 @keyframes fhRojoGolpe { 0%, 50% { filter: none; } 56% { filter: brightness(2.2); } 100% { filter: none; } }
 .fh-golpeando .fh-brillo { animation: fhRaya .9s ease-out; }
