@@ -32,7 +32,7 @@ window.Forja = (function () {
       <p><b>${esc(c ? c.nombre : cartaId)}</b>${texto ? `<br><small>${esc(texto)}</small>` : ""}</p>
       <button type="button" class="cartas-boton cartas-boton-principal">Genial</button>`;
     document.body.appendChild(d);
-    d.querySelector("button").addEventListener("click", () => d.close());
+    d.querySelector(".cartas-boton-principal").addEventListener("click", () => d.close());
     d.addEventListener("close", () => d.remove());
     d.showModal();
   }

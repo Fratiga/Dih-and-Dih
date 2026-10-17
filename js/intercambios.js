@@ -60,7 +60,7 @@
       <p><b>${esc(c ? c.nombre : cartaId)}</b>${texto ? `<br><small>${esc(texto)}</small>` : ""}</p>
       <button type="button" class="cartas-boton cartas-boton-principal">Genial</button>`;
     document.body.appendChild(dlg);
-    dlg.querySelector("button").addEventListener("click", () => dlg.close());
+    dlg.querySelector(".cartas-boton-principal").addEventListener("click", () => dlg.close());
     dlg.addEventListener("close", () => dlg.remove());
     dlg.showModal();
   }
