@@ -51,9 +51,11 @@ window.ForjaHerrero = (function () {
     <linearGradient id="fhHierro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3c34"/><stop offset=".5" stop-color="#2a201b"/><stop offset="1" stop-color="#14100d"/></linearGradient>
     <linearGradient id="fhMadera" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a4c32"/><stop offset=".5" stop-color="#6a3624"/><stop offset="1" stop-color="#4a2418"/></linearGradient>
     <linearGradient id="fhMazo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0e2a8"/><stop offset=".6" stop-color="#cdb878"/><stop offset="1" stop-color="#9c8a52"/></linearGradient>
-    <linearGradient id="fhAcero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bcbcb4"/><stop offset=".5" stop-color="#8e8e88"/><stop offset="1" stop-color="#5e5e5a"/></linearGradient>
+    <linearGradient id="fhAcero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a49d92"/><stop offset=".5" stop-color="#8d867c"/><stop offset="1" stop-color="#7a746b"/></linearGradient>
     <linearGradient id="fhCobre" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6a278"/><stop offset=".5" stop-color="#b86c3c"/><stop offset="1" stop-color="#8a4a22"/></linearGradient>
-    <linearGradient id="fhMango" gradientUnits="userSpaceOnUse" x1="162" y1="544" x2="178" y2="576"><stop offset="0" stop-color="#6a4328"/><stop offset=".45" stop-color="#3e2616"/><stop offset="1" stop-color="#22130a"/></linearGradient>
+    <linearGradient id="fhMango" gradientUnits="userSpaceOnUse" x1="192.8" y1="542.9" x2="217.2" y2="584.3"><stop offset="0" stop-color="#6b6048"/><stop offset=".4" stop-color="#4c4237"/><stop offset="1" stop-color="#2f291f"/></linearGradient>
+    <linearGradient id="fhDedo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b4ada1"/><stop offset=".55" stop-color="#8f887c"/><stop offset="1" stop-color="#6c665c"/></linearGradient>
+    <linearGradient id="fhBrazoGris" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a9387"/><stop offset="1" stop-color="#6d665b"/></linearGradient>
     <linearGradient id="fhMano" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3a797"/><stop offset="1" stop-color="#6b5f54"/></linearGradient>
     <linearGradient id="fhLado" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset=".3" stop-color="#000" stop-opacity=".05"/><stop offset=".72" stop-color="#ff6a1a" stop-opacity="0"/><stop offset="1" stop-color="#ff6a1a" stop-opacity=".38"/></linearGradient>
     <filter id="fhGrano" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.3 0 0 0 -.38"/></filter>
@@ -99,10 +101,14 @@ window.ForjaHerrero = (function () {
   </g>
 
   <!-- tablones apilados en primer plano -->
-  <g class="fh-pila" stroke="#cfae72" stroke-width="2.2" stroke-linejoin="round">
-    <rect x="650" y="522" width="104" height="30" rx="3" fill="url(#fhMadera)" transform="rotate(-9 702 537)"/><rect x="740" y="516" width="100" height="30" rx="3" fill="url(#fhMadera)" transform="rotate(7 790 531)"/>
-    <rect x="826" y="520" width="104" height="30" rx="3" fill="url(#fhMadera)" transform="rotate(-6 878 535)"/><rect x="692" y="540" width="108" height="30" rx="3" fill="url(#fhMadera)" transform="rotate(3 746 555)"/>
-    <rect x="796" y="538" width="104" height="30" rx="3" fill="url(#fhMadera)" transform="rotate(-4 848 553)"/>
+  <g class="fh-pila">
+    <g transform="translate(637.5 528.3) rotate(-17)"><rect x="-61.9" y="-18.8" width="123.7" height="37.5" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-54.9" y="-11.8" width="109.7" height="23.5" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
+    <g transform="translate(727.5 515.2) rotate(8)"><rect x="-52.5" y="-17.8" width="105.0" height="35.6" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-45.5" y="-10.8" width="91.0" height="21.6" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
+    <g transform="translate(714.4 546.9) rotate(-4)"><rect x="-70.3" y="-17.8" width="140.6" height="35.6" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-63.3" y="-10.8" width="126.6" height="21.6" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
+    <g transform="translate(808.1 518.9) rotate(-12)"><rect x="-57.2" y="-17.8" width="114.4" height="35.6" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-50.2" y="-10.8" width="100.4" height="21.6" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
+    <g transform="translate(774.4 494.7) rotate(12)"><rect x="-40.3" y="-14.1" width="80.6" height="28.1" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-33.3" y="-7.1" width="66.6" height="14.1" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
+    <g transform="translate(875.6 528.3) rotate(22)"><rect x="-61.9" y="-18.8" width="123.7" height="37.5" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-54.9" y="-11.8" width="109.7" height="23.5" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
+    <g transform="translate(845.6 550.7) rotate(-6)"><rect x="-57.2" y="-18.8" width="114.4" height="37.5" rx="3" fill="#8b4b2c" stroke="#d19a62" stroke-width="2.6"/><rect x="-50.2" y="-11.8" width="100.4" height="23.5" fill="#7a3f24" stroke="#4a2412" stroke-width="1.6"/></g>
   </g>
 
   <!-- el gigante -->
@@ -166,33 +172,38 @@ window.ForjaHerrero = (function () {
     </g>
 
     <!-- el brazo derecho sube desde abajo y empuña un mazo de hierro con placa de cobre; todo el conjunto baja sobre el yunque al golpear -->
-    <g class="fh-brazo" style="transform-origin:170px 556px">
-      <path d="M506 468 L626 420 L694 562 L522 562Z" fill="url(#fhMano)" stroke="#2a221d" stroke-width="3"/>
-      <g fill="none" stroke="#3d342d" stroke-width="2.4" opacity=".5" stroke-linecap="round"><path d="M556 488 L580 556"/><path d="M590 474 L622 556"/></g>
-      <path d="M510 470 L624 424" stroke="#2a221d" stroke-width="10" opacity=".45" stroke-linecap="round"/>
-      <!-- mango de madera oscura, de abajo a la izquierda hasta la cabeza -->
-      <path d="M161.6 544.1 L631.6 294.1 L648.4 325.9 L178.4 575.9Z" fill="url(#fhMango)" stroke="#150a05" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="M166 546 L634 297" stroke="#8a6040" stroke-width="3" opacity=".6" stroke-linecap="round"/>
-      <g stroke="#150a05" stroke-width="2" opacity=".7" stroke-linecap="round"><g transform="translate(335 484) rotate(-28)"><path d="M-9 -10v20 M-3 -10v20 M3 -10v20 M-11 -3h22 M-11 4h22"/></g><g transform="translate(590 348) rotate(-28)"><path d="M-9 -10v20 M-3 -10v20 M3 -10v20 M-11 -3h22 M-11 4h22"/></g></g>
-      <!-- la cabeza: losa de hierro con remaches y una placa de cobre -->
-      <g transform="translate(708 272) rotate(-28)">
-        <rect x="24" y="-122" width="54" height="34" rx="4" fill="#4a4a46" stroke="#1e1e1c" stroke-width="3"/>
-        <rect x="-76" y="-108" width="152" height="216" rx="9" fill="url(#fhAcero)" stroke="#262624" stroke-width="4"/>
-        <rect x="-67" y="-99" width="134" height="198" rx="5" fill="none" stroke="#d6d6cc" stroke-width="2.2" opacity=".5"/>
-        <g fill="#7c7c76" stroke="#262624" stroke-width="2.2"><circle cx="-58" cy="-90" r="4.6"/><circle cx="58" cy="-90" r="4.6"/><circle cx="-58" cy="90" r="4.6"/><circle cx="58" cy="90" r="4.6"/><circle cx="0" cy="-94" r="4.6"/><circle cx="0" cy="94" r="4.6"/><circle cx="-62" cy="0" r="4.6"/><circle cx="62" cy="0" r="4.6"/></g>
-        <rect x="-48" y="-60" width="96" height="120" rx="9" fill="url(#fhCobre)" stroke="#4a240e" stroke-width="3.4"/>
-        <rect x="-41" y="-53" width="82" height="106" rx="5" fill="none" stroke="#f4c8a4" stroke-width="2" opacity=".5"/>
-        <g fill="#7a3d1c" stroke="#3a1c0a" stroke-width="2"><circle cx="-38" cy="-50" r="3.8"/><circle cx="38" cy="-50" r="3.8"/><circle cx="-38" cy="50" r="3.8"/><circle cx="38" cy="50" r="3.8"/></g>
-        <g stroke="#3a3a36" stroke-width="2" opacity=".55" fill="none" stroke-linecap="round"><path d="M-62 -70 l16 22"/><path d="M50 72 l12 18"/><path d="M-70 40 l14 -12"/></g>
+    <g class="fh-brazo" style="transform-origin:205px 564px">
+      <!-- el antebrazo de acero sube desde abajo, con un filo de madera en el borde -->
+      <path d="M528 470 L598 440 L652 508 L662 562 L545 562 L538 520Z" fill="url(#fhBrazoGris)" stroke="#4a4036" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M598 440 L652 508" stroke="#d8a878" stroke-width="3" opacity=".85" stroke-linecap="round"/>
+      <g fill="none" stroke="#66665f" stroke-width="2.2" opacity=".7" stroke-linecap="round"><path d="M548 500 L560 556"/><path d="M575 486 L598 556"/><path d="M600 470 L632 548"/></g>
+      <!-- el mango, de madera oliva oscura, de abajo a la izquierda hasta la cabeza -->
+      <path d="M192.8 542.9 L629.8 285.3 L654.2 326.7 L217.2 584.3Z" fill="url(#fhMango)" stroke="#16140d" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M197 545 L632 289" stroke="#8a8260" stroke-width="3" opacity=".55" stroke-linecap="round"/>
+      <g stroke="#16140d" stroke-width="2" opacity=".75" stroke-linecap="round"><g transform="translate(580 330) rotate(-30.5)"><path d="M-12 -12v24 M-4 -12v24 M4 -12v24 M-14 -4h28 M-14 4h28"/></g><g transform="translate(334 481) rotate(-30.5)"><path d="M-12 -12v24 M-4 -12v24 M4 -12v24 M-14 -4h28 M-14 4h28"/></g></g>
+      <!-- la cabeza: losa de acero con remaches, una placa de cobre y el canto de cobre abajo -->
+      <g transform="translate(710.3 275.4) rotate(-28.5)">
+        <rect x="64" y="-34" width="38" height="78" rx="5" fill="#4e4c3a" stroke="#1e1e1a" stroke-width="3.2"/>
+        <rect x="64" y="-34" width="38" height="9" rx="4" fill="#6a6850" opacity=".7"/>
+        <rect x="-68.5" y="-135.5" width="137" height="271" rx="8" fill="url(#fhAcero)" stroke="#2e2a26" stroke-width="4"/>
+        <rect x="-64.5" y="-131.5" width="129" height="22" rx="5" fill="#d4cdc2" opacity=".5"/>
+        <path d="M-64.5 108 H64.5 V128 Q64.5 131.5 61 131.5 H-61 Q-64.5 131.5 -64.5 128Z" fill="#b57a52" stroke="#6a3a1e" stroke-width="2"/>
+        <g stroke="#3a342e" stroke-width="2.6"><path d="M-68.5 -110 H68.5"/><path d="M-68.5 88 H68.5"/><path d="M-68.5 104 H68.5"/></g>
+        <g fill="#968f84" stroke="#2e2a26" stroke-width="2.2"><circle cx="-54" cy="-80" r="5.4"/><circle cx="0" cy="-80" r="5.4"/><circle cx="54" cy="-80" r="5.4"/><circle cx="-54" cy="70" r="5.4"/><circle cx="0" cy="70" r="5.4"/><circle cx="54" cy="70" r="5.4"/></g>
+        <path d="M-34.8 -56.9 H34.8 L47.8 -43.9 V39.9 L34.8 52.9 H-34.8 L-47.8 39.9 V-43.9Z" fill="url(#fhCobre)" stroke="#6a3a1e" stroke-width="3.2" stroke-linejoin="round"/>
+        <path d="M-30 -51 H30 L41 -40 V37 L30 47 H-30 L-41 37 V-40Z" fill="none" stroke="#f0c09a" stroke-width="1.8" opacity=".4"/>
+        <g fill="#8a4a22" stroke="#4a240e" stroke-width="1.8"><circle cx="-36" cy="-42" r="3.8"/><circle cx="36" cy="-42" r="3.8"/><circle cx="-36" cy="38" r="3.8"/><circle cx="36" cy="38" r="3.8"/></g>
+        <g stroke="#3a342e" stroke-width="2" opacity=".6" fill="none" stroke-linecap="round"><path d="M-60 -96 l14 14"/><path d="M-12 -98 l6 12"/><path d="M54 56 l-8 22"/><path d="M-6 6 l12 6"/><path d="M50 -20 l6 -16"/></g>
       </g>
-      <!-- el puño: cuatro dedos rodean el mango con los nudillos hacia la muñeca -->
-      <g transform="translate(532 366) rotate(-28) scale(1.4)" fill="url(#fhMano)" stroke="#2a221d" stroke-width="2.6">
-        <rect x="-44" y="18" width="88" height="68" rx="20"/>
-        <rect x="-44" y="-30" width="21" height="62" rx="10.5"/><rect x="-22" y="-30" width="21" height="62" rx="10.5"/><rect x="0" y="-30" width="21" height="62" rx="10.5"/><rect x="22" y="-30" width="21" height="62" rx="10.5"/>
-        <g fill="none" stroke="#e0d5c0" stroke-width="2" opacity=".42" stroke-linecap="round"><path d="M-37 -22 v38"/><path d="M-15 -22 v38"/><path d="M7 -22 v38"/><path d="M29 -22 v38"/></g>
-        <g><circle cx="-33.500" cy="27" r="11"/><circle cx="-11.500" cy="29" r="11"/><circle cx="10.500" cy="29" r="11"/><circle cx="32.500" cy="27" r="11"/></g>
-        <g fill="#d8cdbb" stroke="#2a221d" stroke-width="1.6"><ellipse cx="-33.500" cy="-27" rx="6" ry="4"/><ellipse cx="-11.500" cy="-27" rx="6" ry="4"/><ellipse cx="10.500" cy="-27" rx="6" ry="4"/><ellipse cx="32.500" cy="-27" rx="6" ry="4"/></g>
-      </g>
+    <!-- el puño de acero: la palma, cuatro dedos con dos falanges y los nudillos en anillo -->
+      <path d="M486 420 L490.7 446.9 L506.7 464.8 L532.8 476 L560.8 472 L580.9 456.9 L596 436.9 L597.7 417 L584.8 377 L572 372 L520 380 L486 400Z" fill="url(#fhBrazoGris)" stroke="#4a4036" stroke-width="3" stroke-linejoin="round"/>
+      <g fill="none" stroke="#66665f" stroke-width="2.2" opacity=".7" stroke-linecap="round"><path d="M533 409 L549 461"/><path d="M551 405 L573 449"/><path d="M512 418 L520 460"/><path d="M570 392 L588 430"/></g>
+      <g transform="translate(536.8 308.5) rotate(57.5)"><rect x="-15" y="-15" width="100.9" height="30" rx="15" fill="url(#fhDedo)" stroke="#4a4036" stroke-width="2.8"/><path d="M31.9 -11 v22" stroke="#4a4036" stroke-width="2" opacity=".75"/><path d="M-4 -7 H28.4" stroke="#e4e4dc" stroke-width="2.2" opacity=".5" stroke-linecap="round"/></g>
+      <g transform="translate(499.9 329.2) rotate(50.0)"><rect x="-15" y="-15" width="106.0" height="30" rx="15" fill="url(#fhDedo)" stroke="#4a4036" stroke-width="2.8"/><path d="M34.2 -11 v22" stroke="#4a4036" stroke-width="2" opacity=".75"/><path d="M-4 -7 H30.4" stroke="#e4e4dc" stroke-width="2.2" opacity=".5" stroke-linecap="round"/></g>
+      <g transform="translate(487.9 353.2) rotate(54.0)"><rect x="-15" y="-15" width="94.1" height="30" rx="15" fill="url(#fhDedo)" stroke="#4a4036" stroke-width="2.8"/><path d="M28.8 -11 v22" stroke="#4a4036" stroke-width="2" opacity=".75"/><path d="M-4 -7 H25.6" stroke="#e4e4dc" stroke-width="2.2" opacity=".5" stroke-linecap="round"/></g>
+      <g transform="translate(465.5 381.9) rotate(51.3)"><rect x="-15" y="-15" width="81.1" height="30" rx="15" fill="url(#fhDedo)" stroke="#4a4036" stroke-width="2.8"/><path d="M23.0 -11 v22" stroke="#4a4036" stroke-width="2" opacity=".75"/><path d="M-4 -7 H20.5" stroke="#e4e4dc" stroke-width="2.2" opacity=".5" stroke-linecap="round"/></g>
+      <g><circle cx="499.9" cy="426" r="9" fill="#c2bbb0" stroke="#4a4036" stroke-width="2.4"/><circle cx="526.8" cy="406.6" r="9" fill="#c2bbb0" stroke="#4a4036" stroke-width="2.4"/><circle cx="552" cy="388.8" r="9" fill="#c2bbb0" stroke="#4a4036" stroke-width="2.4"/><circle cx="576.8" cy="366" r="9" fill="#c2bbb0" stroke="#4a4036" stroke-width="2.4"/></g>
+      <path d="M499.9 426 L526.8 406.6 L552 388.8 L576.8 366" fill="none" stroke="#4a4036" stroke-width="2" opacity=".8"/>
     </g>
     <path d="M10 560 L28 404 Q50 332 130 308" fill="none" stroke="#000" stroke-width="2" opacity=".4"/>
   </g>
