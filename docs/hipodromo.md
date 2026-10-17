@@ -18,7 +18,7 @@ La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se 
 | `js/hipodromo-cuadra.js` | La pestaña «Mi cuadra». No sabe de dónde salen los datos: la página le pasa un objeto `api` (servidor o local). |
 | `js/hipodromo-dibujo.js`, `js/hipodromo-pista.js` | El dibujo de las criaturas (SVG) y la pista de la carrera (cámara que sigue al pelotón, clima y terreno, galope animado). |
 | `hipodromo-vivo.html`, `css/hipodromo-vivo.css`, `js/hipodromo-vivo.js`, `js/hipodromo-vida.js` | La página inmersiva para ver las carreras (ver «Hipódromo en vivo»). `hipodromo-vida.js` mueve a las criaturas; `hipodromo-pista.js` aporta el paisaje y los recorridos. |
-| `tools/probar-hipodromo.js` | 247 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |
+| `tools/probar-hipodromo.js` | 298 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |
 | `tools/probar-hipodromo-sql.js` | 62 comprobaciones del SQL contra un PostgreSQL de verdad (Docker, contenedor `cartas-pruebas`), con el motor de verdad. |
 | `docs/hipodromo.sql` | Tablas, permisos y funciones del servidor (guardar, apostar, ordenar, saldo). |
 | `docs/hipodromo-avanzar.ts` | La Edge Function de Supabase, la que mueve el mundo cada minuto. |
@@ -102,6 +102,24 @@ Además de las siete pistas normales hay cuatro con reglas propias, que salen la
 
 En todas responde el núcleo de la criatura.
 
+## Las copas (octubre de 2026)
+
+Una vez por semana de cada tipo, a las 23:00 UTC (las 20:00 en Chile y Argentina en horario de verano): el **miércoles la Copa de Bronce**, el **viernes la Copa de Plata** y el **domingo la Copa de Oro**; una de cada cuatro semanas, el domingo es la **Copa de las Leyendas** en lugar de la de Oro. Cada copa ocupa la hora de una carrera normal. Todo está en `HipodromoMotor.GRADOS` (las cuatro entradas con `copa`), `COPAS_SEMANA` y `C.HORA_COPAS` / `C.LEYENDAS_CADA`, y `gradoDe(m, n)` decide la categoría de cada carrera (la copa que toque a esa hora o, si no, el ciclo de 12 de siempre). Solo depende de la hora, así que es igual en el servidor y en el navegador.
+
+| copa | cuándo | quién puede entrar | bolsa | inscribir |
+|---|---|---|---|---|
+| Bronce | miércoles | el 30 % mejor valorado, con 6 salidas o más | 10.000 (el doble que un Gran Premio) | 10 % = 1.000 |
+| Plata | viernes | el 20 % mejor valorado, 8 salidas | 20.000 | 11 % = 2.200 |
+| Oro | domingo | el 15 % mejor valorado, 10 salidas | 40.000 | 12 % = 4.800 |
+| Leyendas | un domingo de cada cuatro | el 10 % mejor valorado, 12 salidas | 100.000 | 14 % = 14.000 |
+
+- **Quién entra.** «Mejor valorado» es por rating (el Elo que sale de los resultados), entre las criaturas activas en edad de correr, las del mundo y las de los jugadores juntas (`clasificadas(m, G)`). El rating no se enseña, así que cada copa del calendario trae `clasifican` (los ids de quienes llegan ahora mismo) y `salidasMin`; la página dice cuáles de tus criaturas llegan. Los corredores del mundo son las clasificadas descansadas (a las copas se les perdona cansancio hasta 90, no lesión) y, si faltan, se invita a las mejor valoradas que haya hasta completar el campo. Después se aplica el emparejamiento de siempre dentro de ese grupo (zona de arriba de la lista, `EMPAREJA.zona`). Medido en 5 semanas del mundo: el rating medio de los corredores es de 1.545 a 1.565 y la mediana del mundo, 1.500; los campos son de 8 a 10.
+- **Inscribirse.** El jugador puede inscribir una copa con **48 carreras de antelación** (`C.ADELANTO_COPA`, dos días) en lugar de las 12 de siempre. Si su criatura no llega al nivel, el motor lo rechaza («no llega»). El calendario que ve la gente (`calendarioVisible(m)`, en `hipodromo_calendario`) son las próximas 12 carreras más las copas que caigan en los próximos dos días. Si al programar la copa la criatura ya no llega, o la inscribió a otra tarifa (la carrera de esa hora era antes otra) y pagó menos, se le devuelve lo pagado y no corre.
+- **Tarifa.** `inscripcionDe(G)` = bolsa por `G.insc`, que sube con el prestigio (10, 11, 12 y 14 %); las carreras normales siguen en el 10 %. Con un campo de 10 el valor esperado de un corredor medio es el 9 % de la bolsa, así que la tarifa de Oro y Leyendas solo sale a cuenta con una criatura mejor que el resto del campo: es la apuesta, no un regalo. Los premios los pone la casa, como en el resto de categorías.
+- **Palmarés.** Ganar una copa suma una **copa** (`copas`, en el perfil y en la ficha) y pesa en el mérito de cría (0,3 por copa). Oro y Leyendas, como el Gran Premio, cuentan además como **gran premio** (`gp`, y con 3 ya es una leyenda). Los titulares de resultado de las copas son propios.
+- **En pantalla.** La carrera lleva ★ y el sello dorado en la página, la tarjeta «Copas de la semana» (debajo de la próxima carrera) lista las que caen en los próximos dos días con su bolsa, su inscripción, lo que piden y cuáles de tus criaturas llegan, y en la tabla de inscripción de Mi cuadra salen marcadas. El panel de Admin → Calendario las resalta.
+- **Desplegar.** Cambia el motor: hay que redesplegar la Edge Function con el commit nuevo. Las carreras ya programadas no cambian. La primera copa sale el domingo 18 de octubre de 2026.
+
 ## Cómo se mueve el mundo
 
 Hay un reloj para todos: la carrera `n` sale a las `t0 + n * 60 min` (`C.MINUTOS`: una carrera cada hora, 24 al día, y cae en la hora en punto). Todos los jugadores ven la misma carrera.
@@ -184,7 +202,7 @@ Tipos de apuesta:
 - **Retiro**: por edad (desde los 5 años, con riesgo creciente, y a los 9 sin remedio), por bajo rendimiento, por secuelas o por lesión grave. Solo pasan a la cría las mejores: con al menos 6 salidas y rating de 1560 o más, 4 victorias o fama de leyenda (si el mundo se queda con menos de 5 machos o de 5 hembras de cría, se baja el listón al de antes para que el linaje no se apague).
 - **Cría**: cada 6 carreras se comprueba cuántas criaturas faltan y nacen las necesarias. **Solo crían los mejores** (octubre de 2026): cada criadora y cada semental tiene un *mérito* (rating, victorias, grandes premios, podios y el cuerpo que tiene: velocidad, resistencia y ancas) y se reproducen solo el tercio de arriba de los machos y el 40 % de arriba de las hembras, con más peso cuanto más mérito (al cuadrado). Un semental no pasa de 14 crías, para no llenar el mundo de hermanos, y cuando hay más criadores de los que caben sale el de menos mérito. En 10 años simulados la suma de los tres genes del cuerpo de la población sube de ~1,55 a ~1,7 (antes se quedaba plana), así que el mundo se vuelve más rápido poco a poco (y algo más frágil: pasan más lesiones). Sin emparentar. Un 15 % de los nacimientos son de otra región, con genes nuevos, para que la población no se agote ni derive hacia un solo cuerpo (en 8 años no se disparó: ningún gen se movió más de 0,08 respecto a uno que no hace nada).
 - **Generaciones y leyendas**: cada cría es de la generación de sus padres más uno. Una leyenda es la que ganó 14 carreras o 3 Grandes Premios. A veces la cría de una leyenda lleva su nombre con un numeral (`Peregrino II`).
-- **Premios**: cada categoría (Gran Premio, Selecta, Corriente, Novatos) tiene su bolsa y la reparte entre los 5 primeros. Los premios no son monedas del jugador, solo el palmarés de la criatura.
+- **Premios**: cada categoría (las copas, Gran Premio, Selecta, Corriente, Novatos) tiene su bolsa y la reparte entre los 5 primeros. Los premios no son monedas del jugador, solo el palmarés de la criatura.
 
 ## Noticias
 
@@ -207,7 +225,7 @@ Los valores 96 y 288 están medidos en simulaciones de 6 años de mundo (la pobl
 Cada jugador puede tener hasta 4 criaturas. Lo que tiene dueño no lo inscriben los entrenadores del mundo: lo decide su dueño.
 
 - **Conseguirlas**: **adoptar** una criatura joven de cuerpo corriente de la casa (gratis, una sola vez, a elegir el sexo) o **comprar** otra del mercado (criaturas vivas sin dueño; el precio sale solo de lo público: linaje de las crías, estrellas y palmarés de las demás, de 100 a 3000 monedas). **Vender** a la casa paga el 40 % de lo que costaría ahora y devuelve las inscripciones.
-- **Inscribir** en cualquiera de las próximas 12 carreras (cuesta el 10 % de la bolsa; las inscripciones de una carrera cierran cuando termina la anterior; hasta 3 tuyas por carrera). Si la criatura no puede correr (lesión, cansancio, entrenando) o la carrera se suspende, se devuelve lo pagado. El calendario de las próximas carreras (categoría, distancia, pista y precio) está en `hipodromo_calendario`.
+- **Inscribir** en cualquiera de las próximas 12 carreras, y en las copas con dos días de antelación (cuesta el 10 % de la bolsa, el 10 al 14 % en las copas; las inscripciones de una carrera cierran cuando termina la anterior; hasta 3 tuyas por carrera). Si la criatura no puede correr (lesión, cansancio, entrenando) o la carrera se suspende, se devuelve lo pagado. El calendario de las próximas carreras (categoría, distancia, pista y precio) está en `hipodromo_calendario`.
 - **Entrenar** una capacidad: una sesión dura 6 carreras (6 horas), cuesta 30 monedas, la criatura no corre mientras tanto, mejora un poco (más si es joven, menos cuanto más entrenada, con tope de +8) y puede lesionarse.
 - **Cuidar**: 40 monedas; quita 20 de cansancio y acorta una lesión leve o media un 40 %.
 - **Táctica**: al frente, a media tabla o desde atrás, gratis; ir contra la naturaleza de la criatura cuesta un poco (1,2 % de velocidad por unidad de diferencia).
@@ -262,7 +280,7 @@ Una **Edge Function** (`hipodromo-avanzar`) corre cada minuto con `pg_cron`: lee
 
 ## Cómo se probó
 
-- `node tools/probar-hipodromo.js` (247 comprobaciones): nombres, genes y cuerpo, la carrera (velocista contra fondista, terreno y clima, cansancio, forma, duelo de líderes, lesiones), **rasgos** (herencia, efectos acotados, y que cada uno gane donde debe: alas en el Cielo Roto, ojos en los Espejos, palmeadas en la Ciénaga...), pistas arcanas, **la cuadra** (adoptar, comprar, inscribir con devolución, entrenar, cuidar, táctica, bautizar, cruzar, montas de otros, premios, reanudar desde JSON, que lo privado no sale en lo público y el rendimiento económico), el pozo y el doble, un mundo de años (población estable, calendario, premios exactos, rating, deriva genética, noticias), cuotas (calibración, margen, exacta, liquidar), el paso del servidor y ponerse al día en varias llamadas.
+- `node tools/probar-hipodromo.js` (298 comprobaciones): nombres, genes y cuerpo, la carrera (velocista contra fondista, terreno y clima, cansancio, forma, duelo de líderes, lesiones), **rasgos** (herencia, efectos acotados, y que cada uno gane donde debe: alas en el Cielo Roto, ojos en los Espejos, palmeadas en la Ciénaga...), pistas arcanas, **la cuadra** (adoptar, comprar, inscribir con devolución, entrenar, cuidar, táctica, bautizar, cruzar, montas de otros, premios, reanudar desde JSON, que lo privado no sale en lo público y el rendimiento económico), el pozo y el doble, un mundo de años (población estable, calendario, premios exactos, rating, deriva genética, noticias), cuotas (calibración, margen, exacta, liquidar), el paso del servidor y ponerse al día en varias llamadas.
 - `node tools/probar-hipodromo-sql.js` (62 comprobaciones, necesita Docker): ejecuta el SQL dos veces, comprueba permisos (anónimo y jugador), apostar con la cuota del servidor (la de la exacta coincide con la del motor), el pozo y el doble repartidos igual que en el motor, las órdenes procesadas por el motor con el cobro junto al mundo, premios y apuestas liquidados, choques de versión y saldos negativos que no dejan nada a medias.
 - **Contra el Supabase real**: se aplicó el SQL, se desplegó la Edge Function, se programó el cron y se comprobó que el mundo se crea y se pone al día. Esto sacó dos cosas que el Postgres local no enseñaba: Supabase exige `WHERE` en todo `DELETE` (pg-safeupdate) y da permisos de escritura por defecto a las vistas nuevas (el SQL los quita). Los imports de la Edge Function tienen que ser estáticos.
 

@@ -56,6 +56,9 @@
     // la cuadra de los jugadores (las monedas son las del jugador; el motor solo dice cuánto cuesta cada cosa)
     MAX_CABALLOS: 4,             // criaturas por jugador
     ADELANTO: 12,                // con cuántas carreras de antelación se puede inscribir
+    ADELANTO_COPA: 48,           // las copas se pueden inscribir con más antelación (dos días)
+    HORA_COPAS: 23,              // hora (UTC) a la que salen las copas de la semana
+    LEYENDAS_CADA: 4,            // una de cada 4 semanas, el domingo es la Copa de las Leyendas en lugar de la de Oro
     MAX_INSC_DUENO: 3,           // inscritas de un mismo jugador en una misma carrera
     INSCRIPCION: 0.10,           // lo que cuesta inscribir: esta fracción de la bolsa
     ENTRENO_COSTE: 30, ENTRENO_CARRERAS: 6, ENTRENO_TOPE: 8,   // una sesión dura 6 carreras (3 h) y ningún entrenamiento pasa de +8
@@ -173,15 +176,30 @@
     gran: { nombre: "Gran Premio", bolsa: 5000, campo: [9, 10], pesoRating: 1.6 },
     selecta: { nombre: "Selecta", bolsa: 2000, campo: [8, 9], pesoRating: 0.8 },
     corriente: { nombre: "Corriente", bolsa: 800, campo: [7, 8], pesoRating: 0 },
-    novatos: { nombre: "Novatos", bolsa: 500, campo: [6, 8], pesoRating: -1.0 }
+    novatos: { nombre: "Novatos", bolsa: 500, campo: [6, 8], pesoRating: -1.0 },
+    /* Las copas, solo para las mejores del mundo. `top`: la parte de la población (por valoración) que puede entrar; `salidas`: lo mínimo que tiene que haber corrido;
+       `insc`: la fracción de la bolsa que cuesta inscribir (sube con el prestigio); `gp`: cuenta como gran premio en el palmarés. */
+    copa_bronce: { nombre: "Copa de Bronce", bolsa: 10000, campo: [8, 10], insc: 0.10, copa: { top: 0.30, salidas: 6 } },
+    copa_plata: { nombre: "Copa de Plata", bolsa: 20000, campo: [9, 10], insc: 0.11, copa: { top: 0.20, salidas: 8 } },
+    copa_oro: { nombre: "Copa de Oro", bolsa: 40000, campo: [10, 10], insc: 0.12, gp: true, copa: { top: 0.15, salidas: 10 } },
+    copa_leyendas: { nombre: "Copa de las Leyendas", bolsa: 100000, campo: [10, 10], insc: 0.14, gp: true, copa: { top: 0.10, salidas: 12 } }
   };
+  GRADOS.gran.gp = true;
   const CICLO = ["gran", "novatos", "corriente", "selecta", "corriente", "novatos", "corriente", "selecta", "corriente", "novatos", "corriente", "corriente"];
   const DISTANCIAS = {
     novatos: [[800, 0.30], [1000, 0.30], [1200, 0.25], [1600, 0.15]],
     corriente: [[1000, 0.15], [1200, 0.25], [1600, 0.30], [2000, 0.20], [2400, 0.10]],
     selecta: [[1200, 0.15], [1600, 0.30], [2000, 0.30], [2400, 0.15], [3000, 0.10]],
-    gran: [[1600, 0.25], [2000, 0.30], [2400, 0.25], [3000, 0.20]]
+    gran: [[1600, 0.25], [2000, 0.30], [2400, 0.25], [3000, 0.20]],
+    copa_bronce: [[1200, 0.15], [1600, 0.30], [2000, 0.35], [2400, 0.20]],
+    copa_plata: [[1600, 0.25], [2000, 0.35], [2400, 0.25], [3000, 0.15]],
+    copa_oro: [[1600, 0.20], [2000, 0.30], [2400, 0.30], [3000, 0.20]],
+    copa_leyendas: [[2000, 0.25], [2400, 0.40], [3000, 0.35]]
   };
+  /* El calendario semanal de las copas (días UTC: 0 domingo, 3 miércoles, 5 viernes), siempre a C.HORA_COPAS. Una de cada C.LEYENDAS_CADA semanas la Copa de Oro
+     del domingo pasa a ser la Copa de las Leyendas. Solo depende de la hora de la carrera, así que es igual en el servidor y en el navegador. */
+  const COPAS_SEMANA = [{ dia: 3, grado: "copa_bronce" }, { dia: 5, grado: "copa_plata" }, { dia: 0, grado: "copa_oro" }];
+  const LUNES0 = Date.UTC(1970, 0, 5), SEMANA_MS = 7 * 24 * 3600000;
   const REPARTO = [0.50, 0.25, 0.12, 0.08, 0.05];   // reparto de la bolsa por puesto
 
   const LESIONES = {
@@ -466,6 +484,24 @@
     return { gana, pago: gana ? redondea(ap.monto * ap.cuota, 2) : 0 };
   }
 
+  /* ---------------------------------------------------------------- las copas */
+  const esCopa = grado => !!(GRADOS[grado] && GRADOS[grado].copa);
+  const inscripcionDe = G => Math.round(G.bolsa * (G.insc || C.INSCRIPCION));
+  /* La copa que sale en la carrera n, o null. La hora se mide desde el minuto en que arrancó el mundo, así que sirve aunque t0 no caiga en punto. */
+  function copaDe(m, n) {
+    const ms = m.t0 + n * C.MINUTOS * 60000 - (m.t0 % 3600000), d = new Date(ms);
+    if (d.getUTCHours() !== C.HORA_COPAS) return null;
+    const e = COPAS_SEMANA.find(x => x.dia === d.getUTCDay()); if (!e) return null;
+    return e.grado === "copa_oro" && Math.floor((ms - LUNES0) / SEMANA_MS) % C.LEYENDAS_CADA === C.LEYENDAS_CADA - 1 ? "copa_leyendas" : e.grado;
+  }
+  const gradoDe = (m, n) => copaDe(m, n) || CICLO[n % C.JORNADA];
+  /* Las que pueden correr una copa: las mejor valoradas (por resultados, el rating) de las que están en edad de correr, con las salidas mínimas. */
+  function clasificadas(m, G) {
+    const aptas = m.vivos.filter(c => c.estado === "activo" && edadAnios(m.n, c) >= C.DEBUT);
+    const k = Math.max(G.campo[1], Math.ceil(aptas.length * G.copa.top));
+    return aptas.filter(c => c.salidas >= G.copa.salidas).sort((a, b) => b.rating - a.rating || a.id - b.id).slice(0, k);
+  }
+
   /* ---------------------------------------------------------------- inscripciones */
   function elegibles(m, relajar) {
     return m.vivos.filter(c => !c.dueno && edadAnios(m.n, c) >= C.DEBUT && !c.lesion && c.fatiga <= (relajar ? 90 : C.FATIGA_MAX) && m.n - c.ultima >= (relajar ? 1 : C.DESCANSO_MIN));
@@ -475,10 +511,10 @@
   let RECHAZADAS = [];
   function rechazar(m, c, en, motivo) { RECHAZADAS.push({ id: c.id, nombre: c.nombre, dueno: c.dueno, monto: en.pago || 0, motivo, n: en.n }); }
   function forzadasPara(m, n, G) {
-    const ok = [];
+    const ok = [], q = G.copa ? new Set(clasificadas(m, G).map(c => c.id)) : null, tarifa = inscripcionDe(G);
     m.vivos.forEach(c => (c.entradas || []).forEach(en => {
       if (en.n !== n) return;
-      const motivo = c.lesion && c.lesion.hasta > n ? "está lesionada" : edadAnios(n, c) < C.DEBUT ? "es demasiado joven" : c.fatiga > 90 ? "está agotada" : c.entreno && c.entreno.hasta > n ? "está entrenando" : ok.length >= G.campo[1] - 3 ? "el campo está completo" : null;
+      const motivo = c.lesion && c.lesion.hasta > n ? "está lesionada" : edadAnios(n, c) < C.DEBUT ? "es demasiado joven" : c.fatiga > 90 ? "está agotada" : c.entreno && c.entreno.hasta > n ? "está entrenando" : q && !q.has(c.id) ? "ya no está entre las mejores del mundo" : q && (en.pago || 0) < tarifa ? "la inscripción de la copa cuesta más" : ok.length >= G.campo[1] - 3 ? "el campo está completo" : null;
       if (motivo) rechazar(m, c, en, motivo); else ok.push(c);
     }));
     return ok;
@@ -487,7 +523,7 @@
      competidoras sin opción), y la categoría fija de qué parte de la lista de fuerza sale el grupo (0 = las más fuertes, 1 = las más flojas):
      el Gran Premio sale de la parte de arriba, la Selecta del medio-alto, la Corriente del medio y Novatos de la parte de abajo y las que debutan.
      compacto: lo que cuesta que el grupo esté repartido en tiempo (menos = se exige que corran más juntas; con muy poco se pierde la categoría). */
-  const EMPAREJA = { zona: { gran: [0, 0.42], selecta: [0.12, 0.6], corriente: [0.25, 0.78], novatos: [0.5, 1] }, borde: 0.06, compacto: 0.008 };
+  const EMPAREJA = { zona: { gran: [0, 0.42], selecta: [0.12, 0.6], corriente: [0.25, 0.78], novatos: [0.5, 1], copa_bronce: [0, 0.6], copa_plata: [0, 0.6], copa_oro: [0, 0.6], copa_leyendas: [0, 0.6] }, borde: 0.06, compacto: 0.008 };
   /* La fuerza de cada una en esa carrera: lo que tardaría corriendo sola, sin azar (ni el del día ni el de cada tramo), con la pista, la distancia y el
      clima de verdad de esa carrera. Cuenta forma, fatiga, edad, rasgos, terreno y distancia: lo mismo que cuenta la carrera. Es el criterio de los
      entrenadores para saber contra quién puede correr cada una. Devuelve los tiempos (menos es más fuerte). */
@@ -501,8 +537,13 @@
   function inscribir(m, rng, grado, dist, n) {
     const G = GRADOS[grado];
     const forzadas = n == null ? [] : forzadasPara(m, n, G);
-    let pool = elegibles(m, false);
+    let pool = elegibles(m, !!G.copa);
     if (pool.length < C.CAMPO_MIN + 2) pool = elegibles(m, true);
+    if (G.copa) {
+      const q = new Set(clasificadas(m, G).map(c => c.id)), buenas = pool.filter(c => q.has(c.id));
+      const faltan = Math.max(0, G.campo[0] - forzadas.length - buenas.length);
+      pool = buenas.concat(pool.filter(c => !q.has(c.id)).sort((a, b) => b.rating - a.rating).slice(0, faltan));
+    }
     const campo = Math.max(Math.min(pool.length + forzadas.length, rng.i(G.campo[0], G.campo[1])), forzadas.length + Math.min(3, pool.length));
     if (campo < 3) { forzadas.forEach(c => c.entradas.filter(en => en.n === n).forEach(en => rechazar(m, c, en, "no hay campo suficiente"))); return []; }
     // cuantil de fuerza de cada una entre las disponibles (0 = la más lenta, 1 = la más rápida) y nivel al que apunta esta carrera
@@ -559,7 +600,7 @@
     opc = opc || {};
     const n = m.n, rng = crearRng(m.semilla, "prog", n);
     const N = raiz.HipodromoNombres;
-    const grado = CICLO[n % C.JORNADA];
+    const grado = gradoDe(m, n);
     const dist = rng.peso(DISTANCIAS[grado]);
     RECHAZADAS = [];
     const cs = inscribir(m, rng, grado, dist, n);
@@ -627,6 +668,7 @@
     if (res.fotoMeta) titulo = elige(rng, [`Foto de meta en ${pista}: ${g.nombre} gana por un hocico`, `${g.nombre} se lleva ${res.nombre} en la foto de meta`]);
     else if (g.cuota >= 12) titulo = elige(rng, [`Sorpresa en ${pista}: ${g.nombre} gana pagando ${cuota}`, `Batacazo: ${g.nombre} (${cuota}) se lleva ${res.nombre}`]);
     else if (fav && fav.pos >= 5 && fav.id !== g.id) titulo = `Se hunde el favorito: ${fav.nombre} llega ${fav.pos}º y gana ${g.nombre}`;
+    else if (GRADOS[res.grado].copa) titulo = elige(rng, [`${g.nombre} levanta la ${res.nombre}`, `${res.nombre}: ${g.nombre} se corona`, `${g.nombre} se lleva la ${res.nombre} y ${GRADOS[res.grado].bolsa / 2} monedas`]);
     else titulo = elige(rng, [`${g.nombre} gana ${res.nombre}`, `${res.nombre}: victoria de ${g.nombre}`, `${g.nombre} se impone en ${pista}`]);
     const texto = `${g.nombre} cruzó primero en ${fmtTiempo(g.t)} sobre ${res.dist} m, con el terreno ${res.estadoPista} y ${CLIMAS[res.clima].texto}. Ganó ${fmtMargen(s.margen)} a ${s.nombre}${t ? `, con ${t.nombre} tercero` : ""}. Pagó ${cuota} a ganador entre ${res.llegada.length} corredores.`;
     return noticia(m, "resultado", titulo, texto, [g.id, s.id], res.n);
@@ -658,7 +700,7 @@
     res.llegada.forEach((l, q) => {
       const c = cs[q]; if (!c) return;
       c.rating += delta[q];
-      c.salidas++; if (q === 0) { c.vic++; if (res.grado === "gran") c.gp++; } else if (q === 1) c.seg++; else if (q === 2) c.ter++;
+      c.salidas++; if (q === 0) { c.vic++; if (GRADOS[res.grado].gp) c.gp++; if (GRADOS[res.grado].copa) c.copas = (c.copas || 0) + 1; } else if (q === 1) c.seg++; else if (q === 2) c.ter++;
       c.racha = q === 0 ? c.racha + 1 : 0;
       c.premios += l.premio;
       if (c.dueno) {
@@ -706,7 +748,7 @@
   const CRIA = { SALIDAS: 6, RATING: 1560, VICTORIAS: 4, MIN_POR_SEXO: 5, TOP_MACHOS: 0.34, TOP_HEMBRAS: 0.4, MAX_CRIAS_MACHO: 14, PESO_CUERPO: 3 };
 
   /* Cuánto vale una criatura como reproductora: lo que ha demostrado en pista (rating, victorias, grandes premios, podios) y el cuerpo que tiene (velocidad, resistencia y ancas: lo que un criador ve a simple vista). */
-  const merito = c => Math.max(0.1, 1 + (c.rating - C.RATING_INICIAL) / 100 + 0.2 * c.vic + 0.5 * c.gp + 0.03 * (c.seg + c.ter) + CRIA.PESO_CUERPO * (c.genes.pat + c.genes.pul + c.genes.mus - 1.5));
+  const merito = c => Math.max(0.1, 1 + (c.rating - C.RATING_INICIAL) / 100 + 0.2 * c.vic + 0.5 * c.gp + 0.3 * (c.copas || 0) + 0.03 * (c.seg + c.ter) + CRIA.PESO_CUERPO * (c.genes.pat + c.genes.pul + c.genes.mus - 1.5));
   /* Solo las mejores pasan a la cría: rating alto o muchas victorias (o una leyenda), con carrera suficiente para haberlo demostrado.
      Si el mundo se queda sin machos o sin hembras de cría se baja el listón para que el linaje no se apague. */
   function digna(m, c) {
@@ -886,7 +928,7 @@
     return {
       id: c.id, nombre: c.nombre, sexo: c.sexo, nac: c.nac, estado: c.estado, etapa: etapaDe(edad, c.estado), gen: c.gen, capa: capaTexto(c),
       cuerpo: cuerpo(c), silueta: silueta(c), arquetipo: arquetipo(c), perfilDist: perfilDistancia(c), estilo: c.salidas >= 3 ? estiloTexto(c.ritmo) : null,
-      salidas: c.salidas, vic: c.vic, seg: c.seg, ter: c.ter, gp: c.gp, premios: c.premios, racha: c.racha, ultima: c.ultima,
+      salidas: c.salidas, vic: c.vic, seg: c.seg, ter: c.ter, gp: c.gp, copas: c.copas || 0, premios: c.premios, racha: c.racha, ultima: c.ultima,
       estrellas: estrellas(c), aptitudes: apt, etiquetas: etiquetas(c, apt), ultimas: c.hist.slice().reverse(), suelos: c.suelos,
       secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)),
       lesion: c.lesion ? { tipo: c.lesion.tipo, gravedad: c.lesion.gravedad, hasta: c.lesion.hasta } : null,
@@ -925,11 +967,19 @@
   function calendario(m, desde, cuantas) {
     const out = [];
     for (let n = desde; n < desde + cuantas; n++) {
-      const grado = CICLO[n % C.JORNADA], dist = crearRng(m.semilla, "prog", n).peso(DISTANCIAS[grado]), G = GRADOS[grado];
+      const grado = gradoDe(m, n), dist = crearRng(m.semilla, "prog", n).peso(DISTANCIAS[grado]), G = GRADOS[grado];
       const ocupadas = m.vivos.reduce((t, c) => t + (c.entradas || []).filter(en => en.n === n).length, 0);
-      out.push({ n, hora: horaDe(m, n), grado, gradoNombre: G.nombre, nombre: raiz.HipodromoNombres.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
-        pista: pistaDeJornada(m.semilla, Math.floor(n / C.JORNADA)), dist, bolsa: G.bolsa, inscripcion: Math.round(G.bolsa * C.INSCRIPCION), plazas: Math.max(0, G.campo[1] - 3 - ocupadas) });
+      out.push(Object.assign({ n, hora: horaDe(m, n), grado, gradoNombre: G.nombre, nombre: raiz.HipodromoNombres.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
+        pista: pistaDeJornada(m.semilla, Math.floor(n / C.JORNADA)), dist, bolsa: G.bolsa, inscripcion: inscripcionDe(G), plazas: Math.max(0, G.campo[1] - 3 - ocupadas) },
+        // en las copas: quién puede entrar ahora mismo (las mejores del mundo, por resultados) y cuánto hay que haber corrido
+        G.copa ? { copa: true, salidasMin: G.copa.salidas, clasifican: clasificadas(m, G).map(c => c.id) } : {}));
     }
+    return out;
+  }
+  /* Lo que se enseña a los jugadores: las próximas 12 carreras y, más allá, las copas que caigan en los próximos dos días (se pueden inscribir con antelación) */
+  function calendarioVisible(m) {
+    const out = calendario(m, m.n + 1, C.ADELANTO);
+    for (let n = m.n + 1 + C.ADELANTO; n <= m.n + C.ADELANTO_COPA; n++) if (copaDe(m, n)) out.push(calendario(m, n, 1)[0]);
     return out;
   }
   const textoForma = f => (f >= 0.8 ? "en un gran momento" : f >= 0.3 ? "en buena forma" : f <= -0.8 ? "de capa caída" : f <= -0.3 ? "algo apagada" : "normal");
@@ -1029,7 +1079,8 @@
       case "inscribir": case "desinscribir": {
         const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
         const n = Math.floor(Number(o.n));
-        if (!(n > m.n && n <= m.n + C.ADELANTO)) return err(`Solo puedes inscribir de la carrera ${m.n + 1} a la ${m.n + C.ADELANTO}.`);
+        const gn = gradoDe(m, n);
+        if (!(n > m.n && n <= m.n + (esCopa(gn) ? C.ADELANTO_COPA : C.ADELANTO))) return err(`Solo puedes inscribir de la carrera ${m.n + 1} a la ${m.n + C.ADELANTO} (las copas, hasta la ${m.n + C.ADELANTO_COPA}).`);
         const ya = (c.entradas || []).find(en => en.n === n);
         if (o.tipo === "desinscribir") {
           if (!ya) return err("No estaba inscrita en esa carrera.");
@@ -1045,6 +1096,7 @@
         if (c.lesion && c.lesion.gravedad === "grave") return err("No volverá a correr.");
         if (c.lesion && c.lesion.hasta > n) return err("Estará lesionada todavía en esa carrera.");
         if (c.entreno && c.entreno.hasta > n) return err("Estará entrenando todavía en esa carrera.");
+        if (esCopa(gn) && !clasificadas(m, GRADOS[gn]).some(x => x.id === c.id)) return err(`${GRADOS[gn].nombre} es solo para el ${Math.round(GRADOS[gn].copa.top * 100)} % mejor valorado del mundo, con al menos ${GRADOS[gn].copa.salidas} salidas. Ahora mismo ${c.nombre} no llega.`);
         const cal = calendario(m, n, 1)[0];
         if (cuadraDe(m, d).reduce((t, x) => t + (x.entradas || []).filter(en => en.n === n).length, 0) >= C.MAX_INSC_DUENO) return err(`Solo puedes tener ${C.MAX_INSC_DUENO} criaturas en la misma carrera.`);
         if (cal.plazas <= 0) return err("El campo de esa carrera está completo.");
@@ -1223,7 +1275,7 @@
   function loteInicial(m) {
     const prog = m.proxima;
     return { mundo: m, criaturas: m.vivos.concat(m.criadores).map(c => filaCriatura(m, perfil(m, c))), programas: [filaPrograma(prog)],
-      carreras: prog.secreto.res ? [{ n: prog.n, hora: prog.hora, resultado: prog.secreto.res }] : [], noticias: [], aplicadas: [], pagos: [], avisos: [], cuadras: [], ordenes: [], calendario: calendario(m, m.n + 1, C.ADELANTO) };
+      carreras: prog.secreto.res ? [{ n: prog.n, hora: prog.hora, resultado: prog.secreto.res }] : [], noticias: [], aplicadas: [], pagos: [], avisos: [], cuadras: [], ordenes: [], calendario: calendarioVisible(m) };
   }
   /* Tras uno o varios avanzar(): las criaturas que cambiaron (la última versión de cada una), las carreras programadas y las noticias */
   function lote(m, eventos, ordenes) {
@@ -1235,7 +1287,7 @@
       carreras: eventos.filter(ev => ev.programada).map(ev => ({ n: ev.programa.n, hora: ev.programa.hora, resultado: ev.programada })),
       noticias: (ordenes ? ordenes.noticias : []).concat(eventos.reduce((a, ev) => a.concat(ev.noticias), [])),
       aplicadas: eventos.filter(ev => ev.aplicada != null).map(ev => ev.aplicada),
-      ordenes: ordenes ? ordenes.resultados : [], calendario: calendario(m, m.n + 1, C.ADELANTO),
+      ordenes: ordenes ? ordenes.resultados : [], calendario: calendarioVisible(m),
       pagos: (ordenes ? ordenes.pagos : []).concat(eventos.reduce((a, ev) => a.concat(ev.pagos), [])),
       avisos: (ordenes ? ordenes.avisos : []).concat(eventos.reduce((a, ev) => a.concat(ev.avisos), [])),
       cuadras: filasCuadra(m) };
@@ -1277,7 +1329,7 @@
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
     cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
+    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);

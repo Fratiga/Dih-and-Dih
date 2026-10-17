@@ -1,7 +1,8 @@
 /* =============================================================================
    PESTAÑA «CALENDARIO» (panel de Admin): las próximas carreras del Hipódromo, solo para mirar.
    Lee hipodromo_programa (el programa público que ya ven los jugadores). No cambia nada: el motor del Hipódromo genera y corre las carreras por su cuenta
-   y editar el programa a mano podría dejar apuestas y premios inconsistentes.
+   Enseña la carrera que ya está programada y las próximas (hipodromo_calendario), con las copas de los próximos dos días marcadas.
+   Editar el programa a mano podría dejar apuestas y premios inconsistentes.
 ============================================================================= */
 (function () {
   const panel = document.getElementById("adminPanelCalendario");
@@ -9,6 +10,7 @@
   const $ = id => document.getElementById(id);
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   let cargado = 0;
+  const GRADOS = { gran: "Gran Premio", selecta: "Selecta", corriente: "Corriente", novatos: "Novatos", copa_bronce: "Copa de Bronce", copa_plata: "Copa de Plata", copa_oro: "Copa de Oro", copa_leyendas: "Copa de las Leyendas" };
 
   const dia = d => d.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
   const hora = d => d.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
@@ -20,17 +22,23 @@
     estado.textContent = "Cargando...";
     try {
       const sb = await fichasCliente();
-      const { data, error } = await sb.from("hipodromo_programa").select("n, hora, publico").gte("hora", new Date(Date.now() - 3600000).toISOString()).order("hora").limit(48);
-      if (error) throw error;
+      const [pr, ca] = await Promise.all([
+        sb.from("hipodromo_programa").select("n, hora, publico").gte("hora", new Date(Date.now() - 3600000).toISOString()).order("hora").limit(48),
+        sb.from("hipodromo_calendario").select("n, datos").order("n").limit(60)]);
+      if (pr.error) throw pr.error;
+      if (ca.error) throw ca.error;
+      // lo ya programado manda; lo que viene en el calendario (aún sin programar) se añade detrás
+      const hechas = new Set((pr.data || []).map(c => c.n));
+      const data = (pr.data || []).concat((ca.data || []).filter(c => !hechas.has(c.n)).map(c => ({ n: c.n, hora: new Date(c.datos.hora).toISOString(), publico: { nombre: c.datos.nombre, grado: c.datos.grado, dist: c.datos.dist, pista: c.datos.pista, bolsa: c.datos.bolsa, inscripcion: c.datos.inscripcion, copa: c.datos.copa, pron: null } })));
       cargado = Date.now();
       const ahora = Date.now();
       let ultimoDia = "";
-      caja.innerHTML = (data || []).length ? `<table class="admin-cal-tabla"><thead><tr><th>Hora</th><th>N.º</th><th>Carrera</th><th>Grado</th><th>Distancia</th><th>Pista</th><th>Bolsa</th><th>Clima más probable</th></tr></thead><tbody>`
+      caja.innerHTML = (data || []).length ? `<table class="admin-cal-tabla"><thead><tr><th>Hora</th><th>N.º</th><th>Carrera</th><th>Grado</th><th>Distancia</th><th>Pista</th><th>Bolsa</th><th>Inscribir</th><th>Clima más probable</th></tr></thead><tbody>`
         + data.map(c => {
           const f = new Date(c.hora), p = c.publico || {}, d = dia(f);
-          const cab = d !== ultimoDia ? `<tr><th colspan="8" class="admin-cal-dia">${esc(d)}</th></tr>` : "";
+          const cab = d !== ultimoDia ? `<tr><th colspan="9" class="admin-cal-dia">${esc(d)}</th></tr>` : "";
           ultimoDia = d;
-          return `${cab}<tr${f.getTime() <= ahora ? ' class="admin-cal-pasada"' : ""}><td>${esc(hora(f))}</td><td>${esc(c.n)}</td><td>${esc(p.nombre || "")}</td><td>${esc(p.grado || "")}</td><td>${p.dist ? esc(p.dist) + " m" : ""}</td><td>${esc(p.pista || "")}</td><td>${p.bolsa != null ? esc(p.bolsa) : ""}</td><td>${esc(clima(p.pron))}</td></tr>`;
+          return `${cab}<tr class="${[f.getTime() <= ahora ? "admin-cal-pasada" : "", /^copa_/.test(p.grado || "") ? "admin-cal-copa" : ""].join(" ").trim()}"><td>${esc(hora(f))}</td><td>${esc(c.n)}</td><td>${esc(p.nombre || "")}</td><td>${esc(GRADOS[p.grado] || p.grado || "")}</td><td>${p.dist ? esc(p.dist) + " m" : ""}</td><td>${esc(p.pista || "")}</td><td>${p.bolsa != null ? esc(p.bolsa) : ""}</td><td>${p.inscripcion != null ? esc(p.inscripcion) : ""}</td><td>${esc(clima(p.pron))}</td></tr>`;
         }).join("") + `</tbody></table>`
         : `<p class="admin-vacio">No hay carreras programadas.</p>`;
       estado.textContent = "";

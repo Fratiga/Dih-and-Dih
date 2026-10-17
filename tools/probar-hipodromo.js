@@ -84,7 +84,7 @@ const T0 = Date.now();
   informe.push(`herencia: ${conF.slice(0, 5).map(x => x.nombre).join(", ")}`);
   // carreras
   const rc = M.crearRng("carreras");
-  ["gran", "selecta", "corriente", "novatos"].forEach(g => { const v = Array.from({ length: 200 }, () => N.nombrarCarrera(rc, g)); ok(v.every(x => x && !/undefined|\bde el\b/.test(x)), `nombres de carrera ${g} bien formados`); informe.push(`carrera ${g}: ${v.slice(0, 3).join(" / ")}`); });
+  ["gran", "selecta", "corriente", "novatos", "copa_bronce", "copa_plata", "copa_oro", "copa_leyendas"].forEach(g => { const v = Array.from({ length: 200 }, () => N.nombrarCarrera(rc, g)); ok(v.every(x => x && !/undefined|\bde el\b/.test(x)), `nombres de carrera ${g} bien formados`); informe.push(`carrera ${g}: ${v.slice(0, 3).join(" / ")}`); });
   // palabras
   const todas = JSON.stringify(P);
   ok(!/[—–]/.test(todas), "las listas de palabras no llevan rayas largas");
@@ -398,6 +398,65 @@ function cabezaACabeza(a, b, cond, veces) {
   ok(M.liquidar({ tipo: "pozo", sel: 10, monto: 10, cuota: 0 }, { llegada: [{ id: 10 }, { id: 11 }] }).gana, "liquidar sabe quién acierta en el pozo");
   const fav = M.favoritoDe({ entrantes: [{ id: 1, nombre: "A", gan: 3.2 }, { id: 2, nombre: "B", gan: 2.1 }, { id: 3, nombre: "C", gan: 9 }] });
   ok(fav.id === 2 && fav.cuota === 2.1 && M.favoritoDe({ suspendida: true, entrantes: [] }) === null, "el doble juega al favorito de la siguiente (el de menor cuota) y se salta una carrera suspendida"); }
+
+// 4f) Las copas: una por semana de cada tipo, solo para las mejores
+{ const mk = () => M.crearMundo("copas", { calentar: 300, t0: Date.UTC(2026, 9, 1, 2), simsCalentar: 8 });
+  const ord = (w, o, saldos) => M.procesarOrdenes(w, [Object.assign({ oid: 1 }, o)], saldos).resultados[0];
+  const w = mk(), G = M.GRADOS, copas = Object.keys(G).filter(k => G[k].copa);
+  // el calendario semanal
+  { const porSemana = {}, n0 = w.n + 1;
+    for (let n = n0; n < n0 + 24 * 7 * 8; n++) { const g = M.gradoDe(w, n); if (!G[g].copa) continue; const d = new Date(M.horaDe(w, n)); ok(d.getUTCHours() === C.HORA_COPAS && d.getUTCMinutes() === 0, "las copas salen a su hora"); const sem = Math.floor((M.horaDe(w, n) - Date.UTC(1970, 0, 5)) / (7 * 24 * 3600000)); (porSemana[sem] = porSemana[sem] || []).push(g + "@" + d.getUTCDay()); }
+    const semanas = Object.keys(porSemana).filter(k => porSemana[k].length === 3);
+    ok(semanas.length >= 6, "hay tres copas cada semana (" + semanas.length + " semanas completas)");
+    ok(semanas.every(k => porSemana[k].some(x => x === "copa_bronce@3") && porSemana[k].some(x => x === "copa_plata@5") && porSemana[k].some(x => /^copa_(oro|leyendas)@0$/.test(x))), "bronce el miércoles, plata el viernes y oro (o leyendas) el domingo");
+    const ley = semanas.filter(k => porSemana[k].some(x => x.startsWith("copa_leyendas")));
+    ok(ley.length >= 1 && ley.length <= Math.ceil(semanas.length / C.LEYENDAS_CADA), "la Copa de las Leyendas sale una de cada " + C.LEYENDAS_CADA + " semanas (" + ley.length + " de " + semanas.length + ")"); }
+  // prestigio: más bolsa y tarifa más cara cuanto mejor es la copa
+  { const orden = ["gran", "copa_bronce", "copa_plata", "copa_oro", "copa_leyendas"];
+    ok(orden.every((g, i) => i === 0 || (G[g].bolsa > G[orden[i - 1]].bolsa && M.inscripcionDe(G[g]) > M.inscripcionDe(G[orden[i - 1]]))), "cada copa paga más y cuesta más inscribir que la anterior");
+    ok(copas.every(g => G[g].bolsa >= 2 * G.gran.bolsa), "todas las copas pagan al menos el doble de un Gran Premio");
+    ok(["copa_bronce", "copa_plata", "copa_oro", "copa_leyendas"].every((g, i, a) => i === 0 || (G[g].insc || 0) > (G[a[i - 1]].insc || 0)), "la tarifa sube también en proporción a la bolsa");
+    ok(["copa_bronce", "copa_plata", "copa_oro", "copa_leyendas"].every((g, i, a) => i === 0 || (G[g].copa.top < G[a[i - 1]].copa.top && G[g].copa.salidas > G[a[i - 1]].copa.salidas)), "cuanto más prestigio, menos criaturas pueden entrar y más tienen que haber corrido"); }
+  // el calendario visible llega a dos días para las copas
+  { const vis = M.calendarioVisible(w), pasadas = vis.filter(x => x.n > w.n + C.ADELANTO);
+    ok(vis.filter(x => x.n <= w.n + C.ADELANTO).length === C.ADELANTO && pasadas.every(x => x.copa && x.n <= w.n + C.ADELANTO_COPA), "el calendario enseña 12 carreras y, más allá, solo las copas de los próximos dos días");
+    const cop = M.calendario(w, w.n + 1, C.ADELANTO_COPA).filter(x => x.copa);
+    ok(cop.every(x => Array.isArray(x.clasifican) && x.clasifican.length >= 5 && x.salidasMin === G[x.grado].copa.salidas && x.inscripcion === M.inscripcionDe(G[x.grado])), "cada copa dice quién puede entrar, cuánto hay que haber corrido y lo que cuesta"); }
+  // el campo: las mejores del mundo, y los jugadores solo si llegan al nivel
+  { const w2 = mk(); ord(w2, { dueno: "u1", tipo: "adoptar", sexo: "f" }); ord(w2, { dueno: "u2", tipo: "adoptar", sexo: "m" });
+    const mala = M.cuadraDe(w2, "u1")[0], buena = M.cuadraDe(w2, "u2")[0];
+    let nCopa = w2.n + 1; while (!M.GRADOS[M.gradoDe(w2, nCopa)].copa) nCopa++;
+    ok(nCopa <= w2.n + C.ADELANTO_COPA, "la próxima copa cae dentro de las 48 carreras de antelación");
+    const gC = M.GRADOS[M.gradoDe(w2, nCopa)], tarifa = M.inscripcionDe(gC);
+    mala.rating = 1380; mala.salidas = 30; buena.rating = 1900; buena.salidas = 40;
+    const r1 = ord(w2, { dueno: "u1", tipo: "inscribir", id: mala.id, n: nCopa }, { u1: 10 * tarifa });
+    ok(!r1.ok && /no llega/.test(r1.error), "una criatura normal no puede inscribirse en una copa (" + r1.error + ")");
+    ok(!ord(w2, { dueno: "u2", tipo: "inscribir", id: buena.id, n: nCopa }, { u2: tarifa - 1 }).ok, "sin monedas para la tarifa de la copa no se inscribe");
+    const r2 = ord(w2, { dueno: "u2", tipo: "inscribir", id: buena.id, n: nCopa }, { u2: tarifa });
+    ok(r2.ok && r2.costo === tarifa && tarifa >= 1000, "una criatura de las mejores se inscribe pagando la tarifa de la copa (" + tarifa + ")");
+    let lejos = w2.n + C.ADELANTO_COPA + 1; while (!M.GRADOS[M.gradoDe(w2, lejos)].copa) lejos++;
+    ok(/Solo puedes inscribir/.test(ord(w2, { dueno: "u2", tipo: "inscribir", id: buena.id, n: lejos }, { u2: 1e6 }).error || ""), "una copa a más de dos días no se puede inscribir todavía");
+    // quien pagó una tarifa menor (la carrera era otra antes) se devuelve
+    mala.entradas = [{ n: nCopa, pago: 10 }]; buena.entradas = [{ n: nCopa, pago: 10 }];
+    const pagos = []; let guardia = 0; while (w2.n < nCopa && guardia++ < 100) M.avanzar(w2, { sims: 8 }).pagos.forEach(q => pagos.push(q));
+    ok(w2.proxima.n === nCopa && w2.proxima.grado === M.gradoDe(w2, nCopa), "llega la copa");
+    ok(pagos.some(q => q.dueno === "u1" && q.monto === 10) && pagos.some(q => q.dueno === "u2" && q.monto === 10) && !w2.proxima.entrantes.some(e => e.id === mala.id || e.id === buena.id), "a quien no cumple, o pagó menos que la tarifa de la copa, no se le deja correr y se le devuelve lo pagado");
+    const campo = w2.proxima.entrantes.map(e => M.buscar(w2, e.id)), todas = w2.vivos.filter(c => c.estado === "activo").map(c => c.rating).sort((a, b) => a - b), mediana = todas[Math.floor(todas.length / 2)];
+    ok(campo.length >= gC.campo[0] - 1 && campo.length <= gC.campo[1], "el campo de la copa tiene entre " + (gC.campo[0] - 1) + " y " + gC.campo[1] + " corredores (" + campo.length + ")");
+    ok(media(campo.map(c => c.rating)) > mediana + 25, "los corredores de la copa son de lo mejor del mundo (rating medio " + Math.round(media(campo.map(c => c.rating))) + " contra mediana " + Math.round(mediana) + ")"); }
+  // el palmarés y las noticias tras un mes del mundo
+  { const evs = [], w3 = mk(); for (let i = 0; i < 24 * 7 * 4; i++) evs.push(M.avanzar(w3, { sims: 8 }));
+    const res = evs.filter(e => e.resultado && G[e.resultado.grado].copa).map(e => e.resultado);
+    ok(res.length >= 10, "en cuatro semanas se corren las copas (" + res.length + ")");
+    ok(res.every(r => r.llegada.length >= 8 && r.bolsa === G[r.grado].bolsa && r.llegada[0].premio === Math.round(r.bolsa * 0.5)), "las copas corren con campo lleno y reparten su bolsa");
+    const ids = new Set(); res.forEach(r => ids.add(r.llegada[0].id));
+    const camps = [...ids].map(id => M.buscar(w3, id) || null).filter(Boolean);
+    ok(camps.length > 0 && camps.every(c => c.copas >= 1 && c.premios > 0), "quien gana una copa suma una copa a su palmarés");
+    const oros = res.filter(r => G[r.grado].gp).map(r => r.llegada[0].id);
+    ok(oros.length === 0 || oros.every(id => { const c = M.buscar(w3, id); return !c || c.gp >= 1; }), "ganar la Copa de Oro o la de las Leyendas cuenta como gran premio");
+    const tit = evs.flatMap(e => e.noticias).filter(nn => nn.tipo === "resultado" && /Copa/.test(nn.titulo + nn.texto));
+    ok(tit.length > 0 && tit.every(x => !/undefined|NaN/.test(x.titulo + x.texto)), "las noticias de las copas salen bien formadas"); }
+}
 
 // 4e) Ponerse al día en varias llamadas (lo que hace la Edge Function: no puede calcular todo de golpe)
 { const t = Date.UTC(2026, 0, 1, 12, 0, 0), HIS = 50;

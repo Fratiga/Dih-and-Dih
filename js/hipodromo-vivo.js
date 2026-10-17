@@ -491,7 +491,7 @@
     document.body.dataset.fase = ec.fase;
     textoDe($("hvFase"), FASES[ec.fase]);
     // cabecera
-    textoDe($("hvNum"), prog ? "Carrera n.º " + prog.n + (prog.grado && M.GRADOS[prog.grado] ? " · " + M.GRADOS[prog.grado].nombre : "") : "Carrera");
+    textoDe($("hvNum"), prog ? "Carrera n.º " + prog.n + (prog.grado && M.GRADOS[prog.grado] ? " · " + (M.GRADOS[prog.grado].copa ? "★ " : "") + M.GRADOS[prog.grado].nombre : "") : "Carrera");
     textoDe($("hvNombre"), prog ? prog.nombre : (fuente ? "Preparando la próxima carrera..." : "Conectando con el hipódromo..."));
     let etiqueta = "Próxima salida", valor = "--:--";
     if (ec.fase === "espera" || ec.fase === "preparacion") { etiqueta = "Salida en"; valor = mmss(ec.falta * 1000); }

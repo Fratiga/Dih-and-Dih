@@ -10,7 +10,7 @@ window.HipodromoCuadraUI = (function () {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const STATS = { vel: "Velocidad", res: "Resistencia", ace: "Arranque", agi: "Agilidad", tem: "Temple" };
   const TACTICAS = { "": "A su aire", frente: "Al frente", media: "A media tabla", atras: "Desde atrás" };
-  const GRADO_CLASE = { gran: "oro", selecta: "plata", corriente: "", novatos: "" };
+  const GRADO_CLASE = { gran: "oro", selecta: "plata", corriente: "", novatos: "", copa_bronce: "copa", copa_plata: "copa", copa_oro: "copa", copa_leyendas: "copa" };
 
   function crear(api, cont) {
     const M = api.M, D = api.D;
@@ -36,11 +36,12 @@ window.HipodromoCuadraUI = (function () {
         const dentro = c.entradas.find(en => en.n === x.n);
         const pista = M.PISTAS[x.pista];
         const cierra = x.cierra ? horaTxt(x.cierra) : "";
-        return `<tr><td>${x.n}</td><td>${horaTxt(x.hora)}</td><td><span class="hip-sello ${GRADO_CLASE[x.grado] || ""}">${T("grado_" + x.grado, esc(x.gradoNombre))}</span> ${esc(x.nombre)}</td><td>${x.dist} m</td><td>${esc(pista ? pista.nombre : x.pista)}${pista && pista.arcana ? ' <span class="hip-sello">${T("arcana", "arcana")}</span>' : ""}</td>
-          <td>${mon(x.inscripcion)}</td><td>${x.plazas > 0 || dentro ? `<button type="button" class="hip-boton chico" data-o="${dentro ? "desinscribir" : "inscribir"}" data-id="${pub.id}" data-n="${x.n}">${dentro ? "Quitar" : "Inscribir"}</button>` : '<span class="hip-sin">completa</span>'}</td></tr>`;
+        const llega = !x.copa || (x.clasifican || []).includes(pub.id);
+        return `<tr${x.copa ? ' class="hip-fila-copa"' : ""}><td>${x.n}</td><td>${x.copa ? new Date(x.hora).toLocaleDateString("es", { weekday: "short" }) + " " : ""}${horaTxt(x.hora)}</td><td><span class="hip-sello ${GRADO_CLASE[x.grado] || ""}">${x.copa ? "★ " : ""}${T("grado_" + x.grado, esc(x.gradoNombre))}</span> ${esc(x.nombre)}${x.copa ? `<small class="hip-copa-req">Bolsa ${mon(x.bolsa)}. Solo las mejores del mundo, con al menos ${x.salidasMin} salidas.</small>` : ""}</td><td>${x.dist} m</td><td>${esc(pista ? pista.nombre : x.pista)}${pista && pista.arcana ? ' <span class="hip-sello">${T("arcana", "arcana")}</span>' : ""}</td>
+          <td>${mon(x.inscripcion)}</td><td>${dentro || (llega && x.plazas > 0) ? `<button type="button" class="hip-boton chico" data-o="${dentro ? "desinscribir" : "inscribir"}" data-id="${pub.id}" data-n="${x.n}">${dentro ? "Quitar" : "Inscribir"}</button>` : !llega ? '<span class="hip-sin" title="Solo corren las criaturas mejor valoradas del mundo">no llega</span>' : '<span class="hip-sin">completa</span>'}</td></tr>`;
       }).join("");
       return `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>n.º</th><th>Hora</th><th>Carrera</th><th>${T("distancia", "Dist.")}</th><th>${T("pista", "Pista")}</th><th>${T("inscribir", "Cuesta")}</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>
-        <p class="hip-nota">Las inscripciones de cada carrera cierran cuando termina la anterior. Inscribir cuesta el 10 % de la bolsa y se devuelve si la carrera no se corre o la criatura no puede salir.</p>`;
+        <p class="hip-nota">Las inscripciones de cada carrera cierran cuando termina la anterior. Inscribir cuesta el 10 % de la bolsa (más en las copas: del 10 al 14 %) y se devuelve si la carrera no se corre o la criatura no puede salir.</p>`;
     }
     function tarjetaMia(e, cal, semental) {
       const p = e.p, c = e.c, ficha = `<button type="button" class="hip-enlace" data-ficha="${p.id}">${esc(p.nombre)}</button>`;

@@ -3945,3 +3945,4 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-cal-tabla th, .admin-cal-tabla td { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
 .admin-cal-tabla .admin-cal-dia { background: rgba(0, 0, 0, .3); text-transform: capitalize; color: var(--accent); }
 .admin-cal-pasada { opacity: .55; }
+.admin-cal-copa td { background: rgba(230, 194, 78, .1); font-weight: 600; }

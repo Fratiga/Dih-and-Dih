@@ -221,6 +221,10 @@
     const en = rng.f() < 0.25;
     switch (grado) {
       case "gran": return en ? `Grand ${rng.pick(["Cup", "Prix", "Stakes"])} of the ${s2}` : `Gran Premio ${delDe(s)}`;
+      case "copa_bronce": return en ? `Bronze Cup of the ${s2}` : `Copa de Bronce ${delDe(s)}`;
+      case "copa_plata": return en ? `Silver Cup of the ${s2}` : `Copa de Plata ${delDe(s)}`;
+      case "copa_oro": return en ? `Golden Cup of the ${s2}` : `Copa de Oro ${delDe(s)}`;
+      case "copa_leyendas": return en ? `${s2} Cup of Legends` : `Copa de las Leyendas ${delDe(s)}`;
       case "selecta": return en ? `${s2} Stakes` : rng.f() < 0.5 ? `Copa ${delDe(s)}` : `Trofeo ${delDe(s)}`;
       case "novatos": return en ? `Maiden ${s2} Dash` : rng.pick([`Debut ${delDe(s)}`, `Novatada ${delDe(s)}`, `Primer Trote ${delDe(s)}`]);
       default: return en ? `${s2} Handicap` : rng.pick([`Premio ${delDe(s)}`, `Carrera ${delDe(s)}`, `Handicap ${delDe(s)}`]);

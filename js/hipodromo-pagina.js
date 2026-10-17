@@ -207,7 +207,7 @@
     const barra = (v, t) => `<span class="hip-barrita" title="${t}: ${Math.round(v * 100)} %"><i style="width:${Math.round(v * 100)}%"></i></span>`;
     poner($("hipPrograma"), `
       <div class="hip-prog-cab">
-        <div><p class="hip-grado">${T("grado_" + p.grado, esc(G.nombre))}</p><h2>${esc(p.nombre)}</h2></div>
+        <div><p class="hip-grado${G.copa ? " copa" : ""}">${G.copa ? "★ " : ""}${T("grado_" + p.grado, esc(G.nombre))}</p><h2>${esc(p.nombre)}</h2></div>
         <div class="hip-prog-hora"><span>n.º ${p.n}</span><strong>${horaTxt(p.hora)}</strong></div>
       </div>
       <div class="hip-datos">
@@ -216,10 +216,29 @@
         <div><span>${T("bolsa", "Bolsa")}</span><strong>${monedas(p.bolsa)}</strong><small>reparto entre los 5 primeros</small></div>
         <div><span>Pista en detalle</span><small class="hip-barras">${T("curvas", "Curvas")} ${barra(pista.curvas, "Curvas")} ${T("cuestas", "Cuestas")} ${barra(pista.cuestas, "Cuestas")} ${T("drenaje", "Drenaje")} ${barra(pista.drenaje, "Drenaje")}</small></div>
       </div>
+      ${G.copa ? `<p class="hip-copa-nota"><strong>${esc(G.nombre)}.</strong> Corren las mejores del mundo (el ${Math.round(G.copa.top * 100)} % mejor valorado) y la bolsa es de ${monedas(p.bolsa)}: ${monedas(Math.round(p.bolsa * 0.5))} para quien gane. Inscribir cuesta ${monedas(M.inscripcionDe(G))}.</p>` : ""}
       ${pista.arcana ? `<p class="hip-arcana"><strong>${T("arcana", "Pista arcana")} · ${esc(M.REGLAS_ARCANAS[pista.arcana].nombre)}.</strong> ${esc(M.REGLAS_ARCANAS[pista.arcana].texto)} Las criaturas con núcleo responden mejor aquí.</p>` : ""}
       <div class="hip-pron"><span>${T("pronostico", "Pronóstico")}</span>${pronosticoTxt(p)}</div>
       ${p.rumores.length ? `<ul class="hip-rumores">${p.rumores.map(r => `<li>${esc(r.texto)}</li>`).join("")}</ul>` : ""}
       ${p.suspendida ? '<p class="hip-vacio">No hay criaturas en condiciones de correr. La carrera se aplaza.</p>' : ""}`);
+  }
+
+  /* Las copas de la semana: las que caen en los próximos dos días, con lo que pide cada una y cuáles de tus criaturas llegan */
+  function pintarCopas() {
+    const el = $("hipCopas"); if (!el) return;
+    let cal = [], mias = [];
+    try { cal = (online ? online.calendario() : apiLocal.calendario()).filter(x => x.copa); mias = online ? online.mias() : apiLocal.mias(); } catch (e) { /* aún sin datos */ }
+    const hora = new Date(Date.UTC(2026, 0, 5, C.HORA_COPAS)).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+    const dia = ms => new Date(ms).toLocaleDateString("es", { weekday: "long", day: "numeric" }) + ", " + horaTxt(ms);
+    const items = cal.map(x => {
+      const G = M.GRADOS[x.grado], llegan = mias.filter(e => (x.clasifican || []).includes(e.p.id));
+      return `<li class="hip-copa-item ${x.grado}"><div class="hip-copa-cab"><span class="hip-sello copa">★ ${esc(x.gradoNombre)}</span><strong>${esc(x.nombre)}</strong></div>
+        <div class="hip-copa-datos"><span>${esc(dia(x.hora))}</span><span>${x.dist} m</span><span>${T("bolsa", "Bolsa")} <b>${monedas(x.bolsa)}</b></span><span>Inscribir <b>${monedas(x.inscripcion)}</b></span></div>
+        <small>Solo el ${Math.round(G.copa.top * 100)} % mejor valorado del mundo, con al menos ${G.copa.salidas} salidas. ${mias.length ? (llegan.length ? `Llegan: ${llegan.map(e => esc(e.p.nombre)).join(", ")}.` : "Ninguna de las tuyas llega ahora mismo.") : ""}</small></li>`;
+    }).join("");
+    poner(el, `<h3>Copas de la semana</h3>
+      <p class="hip-nota">Cada semana: el miércoles la Copa de Bronce, el viernes la de Plata y el domingo la de Oro (una de cada cuatro semanas, la de las Leyendas), a las ${hora} de tu hora. Solo corren las criaturas mejor valoradas del mundo. Pagan mucho más que un Gran Premio y su inscripción es más cara cuanto mayor es la copa. Se pueden inscribir con dos días de antelación desde Mi cuadra.</p>
+      ${items ? `<ul class="hip-copa-lista">${items}</ul>` : '<p class="hip-vacio">No hay ninguna copa en los próximos dos días.</p>'}`);
   }
 
   function pintarInscritos() {
@@ -501,7 +520,7 @@
           <button type="button" class="hip-boton" data-favorito="${p.id}" aria-pressed="${fav}">${fav ? "♥ En favoritas" : "♡ Seguir"}</button></div></div>
       ${lesion}
       <div class="hip-datos"><div><span>Salidas</span><strong>${p.salidas}</strong><small>${p.vic} victorias · ${p.seg} segundos · ${p.ter} terceros</small></div>
-        <div><span>Premios</span><strong>${monedas(p.premios)}</strong><small>${p.gp ? p.gp + (p.gp > 1 ? " Grandes Premios" : " Gran Premio") : "sin Grandes Premios"}</small></div>
+        <div><span>Premios</span><strong>${monedas(p.premios)}</strong><small>${p.gp ? p.gp + (p.gp > 1 ? " Grandes Premios" : " Gran Premio") : "sin Grandes Premios"}${p.copas ? " · " + p.copas + (p.copas > 1 ? " copas" : " copa") : ""}</small></div>
         <div><span>${T("valoracion", "Valoración")}</span><strong>${estrellasTxt(p.estrellas)}</strong><small>${p.estilo ? T("estilo", esc(p.estilo)) : "estilo por conocer"}</small></div>
         <div><span>${T("tipo_dist", "Tipo")}</span><strong>${esc(p.perfilDist)}</strong><small>${p.crias ? p.crias + " crías" : "sin crías"}</small></div></div>
       <section class="hip-ficha-sec"><h3>Cuerpo</h3><ul class="hip-cuerpo">${p.cuerpo.map(x => `<li><span>${T("cuerpo_" + x.clave, esc(x.parte))}</span> ${esc(x.texto)} <i class="hip-nivel" title="nivel ${x.nivel} de 5">${"●".repeat(x.nivel)}${"○".repeat(5 - x.nivel)}</i></li>`).join("")}</ul>
@@ -566,6 +585,7 @@
       nUI = m.proxima.n;
       pintarPrograma(); pintarPanelApuesta(true); pintarPendientesCarrera(); pintarUltimo();
     }
+    pintarCopas();
     pintarInscritos();
     pintarCriaturas();
     if (cuadraUI) cuadraUI.pintar();
@@ -705,7 +725,7 @@
     nombreJugador: () => { try { return localStorage.getItem("compendioUsername") || "Tú"; } catch (e) { return "Tú"; } },
     adoptada: () => !!(m.duenos && m.duenos[YO] && m.duenos[YO].adoptada),
     mias: () => M.cuadraDe(m, YO).map(c => ({ p: conLinaje(M.perfil(m, c)), c: M.perfilCuadra(m, c) })),
-    calendario: () => M.calendario(m, m.n + 1, C.ADELANTO).map(x => Object.assign(x, { cierra: M.horaDe(m, x.n - 1) + C.APLICAR_SEG * 1000 })),
+    calendario: () => M.calendarioVisible(m).map(x => Object.assign(x, { cierra: M.horaDe(m, x.n - 1) + C.APLICAR_SEG * 1000 })),
     mercado: () => M.enVenta(m).map(c => conLinaje(M.perfil(m, c))).sort((a, b) => (a.etapa === "cría" || a.etapa === "potro" ? 0 : 1) - (b.etapa === "cría" || b.etapa === "potro" ? 0 : 1) || a.precio - b.precio).slice(0, 40),
     sementales: () => m.criadores.filter(c => c.sexo === "m" && M.edadAnios(m.n, c) < 12).map(c => conLinaje(M.perfil(m, c))),
     avisos: () => est.avisos,
