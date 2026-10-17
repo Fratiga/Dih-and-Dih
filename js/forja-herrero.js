@@ -148,9 +148,14 @@ window.ForjaHerrero = (function () {
         <rect x="-50" y="436" width="280" height="28" rx="3" fill="url(#fhMadera)"/><rect x="-50" y="466" width="280" height="28" rx="3" fill="url(#fhMadera)"/><rect x="-50" y="496" width="280" height="28" rx="3" fill="url(#fhMadera)"/><rect x="-50" y="526" width="280" height="28" rx="3" fill="url(#fhMadera)"/>
         <g stroke="#e0c488" stroke-width="2.4"><path d="M40 460 v10 M120 460 v10 M60 490 v10 M150 490 v10 M30 520 v10 M110 520 v10"/></g>
       </g>
-      <g fill="none" stroke="#7d7066" stroke-width="3.5"><ellipse cx="198" cy="478" rx="8" ry="5" transform="rotate(30 198 478)"/><ellipse cx="206" cy="494" rx="3" ry="8" transform="rotate(20 206 494)"/><ellipse cx="212" cy="510" rx="8" ry="5" transform="rotate(10 212 510)"/><ellipse cx="215" cy="526" rx="3" ry="8"/><ellipse cx="214" cy="542" rx="8" ry="5" transform="rotate(-10 214 542)"/></g>
-      <path d="M214 526 Q230 484 292 480 L402 488 Q446 494 436 524 Q424 552 380 560 L300 562 Q240 562 214 526Z" fill="url(#fhMano)" stroke="#2a221d" stroke-width="3"/>
-      <g fill="none" stroke="#3d342d" stroke-width="2.6" opacity=".7" stroke-linecap="round"><path d="M296 494 Q340 504 384 498"/><path d="M288 514 Q340 524 404 516"/><path d="M296 536 Q340 546 396 540"/></g>
+      <!-- la cadena: una cuerda oscura con eslabones que se enredan en la muñeca -->
+      <path d="M200 474 Q214 500 218 548" fill="none" stroke="#1a1412" stroke-width="7" stroke-linecap="round"/>
+      <g fill="none" stroke="#8a7d72" stroke-width="3.4"><ellipse cx="203" cy="480" rx="9" ry="5.5" transform="rotate(48 203 480)"/><ellipse cx="209" cy="494" rx="4" ry="9" transform="rotate(24 209 494)"/><ellipse cx="214" cy="508" rx="9" ry="5.5" transform="rotate(14 214 508)"/><ellipse cx="217" cy="522" rx="4" ry="9"/><ellipse cx="218" cy="537" rx="9" ry="5.5" transform="rotate(-8 218 537)"/><ellipse cx="217" cy="551" rx="4" ry="8" transform="rotate(-6 217 551)"/></g>
+      <path d="M200 478 q-16 4 -22 18" fill="none" stroke="#8a7d72" stroke-width="3.4"/>
+      <!-- muñeca y dorso de la mano, anchos y grises, con los tendones marcados -->
+      <path d="M222 498 Q262 474 322 478 L348 492 L352 556 Q290 568 222 552Z" fill="url(#fhMano)" stroke="#2a221d" stroke-width="3"/>
+      <g fill="none" stroke="#3d342d" stroke-width="2.4" opacity=".55" stroke-linecap="round"><path d="M250 500 Q300 486 352 488"/><path d="M246 520 Q304 508 360 512"/><path d="M250 540 Q306 532 362 536"/></g>
+      <path d="M236 500 Q290 482 350 480" fill="none" stroke="#e0d5c0" stroke-width="3" opacity=".35" stroke-linecap="round"/>
       <g class="fh-mazo">
         <path d="M376 508 L406 524 L496 444 L468 420Z" fill="url(#fhMazo)" stroke="#8a7842" stroke-width="2.5"/>
         <g stroke="#9c8a52" stroke-width="1.6" opacity=".7" fill="none"><path d="M390 512 L476 434 M398 518 L486 442"/></g>
@@ -159,9 +164,13 @@ window.ForjaHerrero = (function () {
         <g stroke="#9c8a52" stroke-width="1.8" opacity=".65" fill="none"><path d="M470 412 L574 386 M486 430 L588 410 M500 448 L580 430 M466 396 L540 380"/></g>
         <rect x="456" y="406" width="20" height="56" fill="#5a4a2a" transform="rotate(-31 466 434)" opacity=".5"/>
       </g>
-      <g fill="url(#fhMano)" stroke="#2a221d" stroke-width="2.5"><ellipse cx="402" cy="500" rx="25" ry="10" transform="rotate(-34 402 500)"/><ellipse cx="414" cy="516" rx="26" ry="10.5" transform="rotate(-34 414 516)"/><ellipse cx="424" cy="531" rx="23" ry="10" transform="rotate(-34 424 531)"/></g>
-      <g fill="none" stroke="#e0d5c0" stroke-width="2" opacity=".5" stroke-linecap="round"><path d="M386 494 q12 -8 24 -6"/><path d="M398 510 q12 -8 26 -6"/><path d="M408 525 q12 -8 24 -6"/></g>
-      <ellipse cx="368" cy="494" rx="34" ry="13" transform="rotate(-24 368 494)" fill="#bdb1a1" stroke="#2a221d" stroke-width="2.5"/><ellipse cx="392" cy="486" rx="8" ry="5" transform="rotate(-24 392 486)" fill="#dcd2c2"/>
+      <!-- el puño: cuatro dedos gruesos rodean el mango y el pulgar lo aprieta por arriba -->
+      <g transform="translate(-34 26) rotate(-18 412 490)" fill="url(#fhMano)" stroke="#2a221d" stroke-width="2.6">
+        <rect x="356" y="504" width="112" height="21" rx="10.5"/><rect x="356" y="487" width="112" height="21" rx="10.5"/><rect x="356" y="470" width="112" height="21" rx="10.5"/><rect x="356" y="453" width="112" height="21" rx="10.5"/>
+        <g fill="none" stroke="#e0d5c0" stroke-width="2" opacity=".45" stroke-linecap="round"><path d="M372 507 h70"/><path d="M372 490 h72"/><path d="M372 473 h72"/><path d="M372 456 h70"/></g>
+        <g fill="none" stroke="#2a221d" stroke-width="2" opacity=".7" stroke-linecap="round"><path d="M452 508 q6 6 0 12"/><path d="M452 491 q6 6 0 12"/><path d="M452 474 q6 6 0 12"/><path d="M452 457 q6 6 0 12"/></g>
+      </g>
+      <g transform="translate(414 478) rotate(-52)"><rect x="-32" y="-9.5" width="64" height="19" rx="9.5" fill="url(#fhMano)" stroke="#2a221d" stroke-width="2.6"/><ellipse cx="22" cy="-1" rx="6.5" ry="4.5" fill="#d8cdbb" stroke="#2a221d" stroke-width="1.6"/><path d="M-22 -4 h30" stroke="#e0d5c0" stroke-width="2" opacity=".45" stroke-linecap="round"/></g>
     </g>
     <path d="M10 560 L28 404 Q50 332 130 308" fill="none" stroke="#000" stroke-width="2" opacity=".4"/>
     <path d="M620 420 Q600 330 530 306 L432 294" fill="none" stroke="#ff8a2a" stroke-width="4" opacity=".4" class="fh-luz-borde"/>
