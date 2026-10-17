@@ -190,6 +190,11 @@ window.ForjaHerrero = (function () {
       <div class="fh-voz" role="status" aria-live="polite"><span class="fh-quien">El herrero</span><p class="fh-texto"></p></div>
       <div class="fh-brasero" aria-label="Forjas que te quedan hoy"><span class="fh-brasero-etq">Forjas de hoy</span><span class="fh-brasero-fila"></span></div>`;
     const cabeza = caja.querySelector(".fh-cabeza");
+    // en pantallas pequeñas el herrero va en una franja baja y se enseña entero; en las grandes, recortado por arriba para que llene el cuadro
+    const svg = caja.querySelector(".fh-svg"), estrecha = matchMedia("(max-width: 900px)");
+    const ajustar = () => svg.setAttribute("preserveAspectRatio", estrecha.matches ? "xMidYMid meet" : "xMidYMax slice");
+    ajustar();
+    if (estrecha.addEventListener) estrecha.addEventListener("change", ajustar);
     caja.addEventListener("mousemove", ev => {
       if (!cabeza || caja.classList.contains("fh-golpeando")) return;
       const r = caja.getBoundingClientRect();

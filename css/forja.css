@@ -41,8 +41,11 @@ body.fj .lb-sub { font-family: var(--fj-texto); font-style: italic; font-size: 2
 body.fj .lb-boton { border-color: #5a4234; }
 
 /* ---------------------------------------------------------------- la escena del herrero gigante */
-.fh-escena { position: relative; overflow: hidden; margin-top: 16px; aspect-ratio: 960 / 560; min-height: 280px; border: 6px solid #2f221b; background: #070403; box-shadow: inset 0 0 120px #000, 6px 6px 0 #000; }
-.fh-svg { display: block; width: 100%; height: 100%; }
+/* El herrero a un lado y fijo al hacer scroll, para ver sus frases mientras trabajas en el banco */
+.fj-layout { display: grid; grid-template-columns: minmax(320px, 40%) minmax(0, 1fr); gap: 22px; align-items: start; margin-top: 16px; }
+.fj-lado { position: sticky; top: 12px; align-self: start; }
+.fh-escena { position: relative; overflow: hidden; display: flex; flex-direction: column; border: 6px solid #2f221b; background: #070403; box-shadow: inset 0 0 120px #000, 6px 6px 0 #000; }
+.fh-svg { display: block; width: 100%; height: auto; aspect-ratio: 960 / 560; }
 .fh-brillo { animation: fhBrillo 2.8s ease-in-out infinite; }
 @keyframes fhBrillo { 0%, 100% { opacity: .9; } 30% { opacity: .65; } 55% { opacity: 1; } 80% { opacity: .72; } }
 .fh-fuego { animation: fhBrillo 1.9s ease-in-out infinite; }
@@ -78,9 +81,9 @@ body.fj .lb-boton { border-color: #5a4234; }
 .fh-golpeando .fh-brillo { animation: fhRaya .9s ease-out; }
 @keyframes fhRaya { 0%, 50% { opacity: .9; } 58% { opacity: 1; } 100% { opacity: .9; } }
 
-.fh-voz { position: absolute; right: 14px; top: 14px; max-width: min(40%, 400px); padding: 8px 16px 10px; background: linear-gradient(180deg, #120b08ee, #0a0605ee); border: 2px solid #5a4234; border-left: 6px solid var(--accent); box-shadow: 0 6px 0 #0008, 0 0 24px #ff6a1a22; }
+.fh-voz { position: relative; flex: 0 0 auto; min-height: 98px; padding: 8px 16px 10px; background: linear-gradient(180deg, #170e0a, #0a0605); border-top: 4px solid var(--accent); box-shadow: 0 -6px 18px #ff6a1a22; }
 .fh-quien { display: block; margin-bottom: 2px; font: .72rem "Press Start 2P", monospace; letter-spacing: .06em; color: #d99a5a; }
-.fh-texto { margin: 0; min-height: 1.6em; font: italic 1.55rem/1.1 var(--fj-texto); color: #f3e6cc; }
+.fh-texto { margin: 0; min-height: 2.3em; font: italic 1.55rem/1.1 var(--fj-texto); color: #f3e6cc; }
 .fh-brasero { position: absolute; left: 14px; top: 12px; display: flex; flex-direction: column; gap: 4px; }
 .fh-brasero-etq { font: .62rem "Press Start 2P", monospace; color: #d9c4a8; text-shadow: 1px 1px 0 #000; }
 .fh-brasero-fila { display: flex; gap: 8px; }
@@ -88,7 +91,8 @@ body.fj .lb-boton { border-color: #5a4234; }
 .fh-carbon-vivo { background: radial-gradient(circle at 50% 70%, #fff0b0, #ff8a2a 45%, #8a2a08); box-shadow: 0 0 14px 2px #ff6a1a99, inset 0 0 0 1px #ffd070; animation: fhRojo 1.6s ease-in-out infinite; }
 
 /* ---------------------------------------------------------------- encargos */
-.fj-cuerpo { margin-top: 10px; }
+.fj-cuerpo { margin-top: 0; min-width: 0; }
+.fj-cuerpo > .fj-titulo:first-of-type { margin-top: 0; }
 body.fj .ic-estado { text-align: center; color: var(--accent); font-size: 1.1rem; min-height: 1.4em; }
 .fj-titulo { margin: 20px 0 6px; font-size: 32px; color: #f3e6cc; text-shadow: 0 0 16px #ff6a1a33; }
 .fj-titulo::after { content: ""; display: block; height: 3px; width: 140px; margin-top: 4px; background: linear-gradient(90deg, var(--fj-brasa), transparent); }
@@ -133,10 +137,10 @@ body.fj .ic-estado { text-align: center; color: var(--accent); font-size: 1.1rem
 .fj-banco h2 { margin: 0; font-size: 36px; color: #f3e6cc; }
 .fj-eyebrow { margin: 0; font: .7rem "Press Start 2P", monospace; color: #d99a5a; }
 .fj-banco-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 26px; margin: 14px 0 6px; }
-.fj-huecos { display: flex; flex-wrap: wrap; gap: 14px; }
-.fj-hueco { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 108px; aspect-ratio: 2 / 3; padding: 0; background: repeating-linear-gradient(45deg, #1e1511 0 6px, #140d0a 6px 12px); border: 3px dashed var(--r, #8a6a56); color: var(--r, #cbbfa8); font: 1.05rem "VT323", monospace; text-transform: uppercase; letter-spacing: .08em; cursor: default; }
+.fj-huecos { display: flex; flex-wrap: wrap; gap: 12px; }
+.fj-hueco { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 96px; aspect-ratio: 2 / 3; padding: 0; background: repeating-linear-gradient(45deg, #1e1511 0 6px, #140d0a 6px 12px); border: 3px dashed var(--r, #8a6a56); color: var(--r, #cbbfa8); font: 1.05rem "VT323", monospace; text-transform: uppercase; letter-spacing: .08em; cursor: default; }
 .fj-hueco .fj-gema { animation: fhRojo 2s ease-in-out infinite; }
-.fj-lleno { border: 0; background: none; aspect-ratio: auto; width: auto; --mc-w: 108px; }
+.fj-lleno { border: 0; background: none; aspect-ratio: auto; width: auto; --mc-w: 96px; }
 .fj-sacar { position: absolute; top: -10px; left: calc(50% - 12px); z-index: 9; width: 24px; height: 24px; border: 2px solid #1a0a02; border-radius: 50%; background: var(--accent); color: #1a0a02; font: 700 1.1rem/1 "VT323", monospace; cursor: pointer; }
 .fj-resultado-prev { position: relative; display: flex; align-items: center; gap: 12px; }
 .fj-resultado-prev .fj-dorso { width: 60px; }
@@ -149,7 +153,7 @@ body.fj .ic-estado { text-align: center; color: var(--accent); font-size: 1.1rem
 .fj-sub { margin: 18px 0 2px; font-size: 26px; color: #f3e6cc; }
 .fj-mochila { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 22px 16px; padding: 14px 6px 18px; max-height: 520px; overflow-y: auto; background: #0c0705; border: 2px solid #2a1d17; box-shadow: inset 0 4px 14px #000; }
 .fj-pieza { position: relative; display: flex; justify-content: center; }
-.fj-pieza .mc { --mc-w: 108px; cursor: pointer; }
+.fj-pieza .mc { --mc-w: 100px; cursor: pointer; }
 .fj-lupa { position: absolute; top: -8px; right: 6px; z-index: 9; width: 28px; height: 28px; padding: 0; border: 2px solid #1a0a02; border-radius: 50%; background: #cbbfa8; font-size: .85rem; line-height: 1; cursor: zoom-in; }
 .fj-mochila .fj-vacio { grid-column: 1 / -1; }
 
@@ -174,10 +178,13 @@ body.fj .ba-dialogo { border: 3px double #b5683c; background: linear-gradient(18
 /* ---------------------------------------------------------------- pantallas pequeñas y movimiento reducido */
 @media (max-width: 820px) {
   .fj-cab h1 { font-size: 40px; }
-  .fh-escena { aspect-ratio: auto; min-height: 0; display: flex; flex-direction: column; }
-  .fh-svg { height: 250px; }
-  .fh-voz { position: static; max-width: none; border-width: 2px 0 0; box-shadow: none; }
-  .fh-brasero { top: 8px; }
+  .fj-layout { grid-template-columns: 1fr; gap: 12px; }
+  .fj-lado { top: 0; z-index: 40; margin: 0 -4px; }
+  .fh-escena { border-width: 0 0 4px; }
+  .fh-svg { aspect-ratio: auto; height: 104px; }
+  .fh-voz { min-height: 0; padding: 6px 12px 8px; }
+  .fh-texto { min-height: 2.2em; font-size: 1.3rem; }
+  .fh-brasero { top: 6px; transform: scale(.8); transform-origin: 0 0; }
   .fj-recetas { grid-template-columns: 1fr; }
   .fj-hueco, .fj-lleno { --mc-w: 88px; width: 88px; }
   .fj-pieza .mc { --mc-w: 92px; }

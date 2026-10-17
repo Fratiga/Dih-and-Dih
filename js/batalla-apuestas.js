@@ -9,7 +9,11 @@ window.BatallaApuestas = (function () {
   /* Lista de copias libres del jugador (estado "poseida"): las que se pueden apostar, cambiar o forjar */
   async function copiasLibres() {
     const supabase = await fichasCliente();
-    const { data, error } = await supabase.from("cartas_ejemplares").select("id, carta_id, numero, estado").eq("estado", "poseida");
+    // Solo las copias del propio jugador: la política de lectura deja ver todas al Admin, y sin este filtro le salían las cartas de los demás
+    const sesion = typeof fichasSesionActual === "function" ? await fichasSesionActual().catch(() => null) : null;
+    let consulta = supabase.from("cartas_ejemplares").select("id, carta_id, numero, estado").eq("estado", "poseida");
+    if (sesion && sesion.user) consulta = consulta.eq("propietario", sesion.user.id);
+    const { data, error } = await consulta;
     if (error) throw error;
     return (data || []).map(e => {
       const c = window.cartaPorId && window.cartaPorId(e.carta_id);
