@@ -171,8 +171,6 @@ window.ForjaHerrero = (function () {
         <g fill="none" stroke="#2a221d" stroke-width="2" opacity=".7" stroke-linecap="round"><path d="M-30 15.5 v20 M-4 15.5 v20" opacity=".0"/><path d="M-24 -1.5 q-3 10 0 20"/><path d="M-24 -18.5 q-3 10 0 20"/><path d="M-22 -35.5 q-3 10 0 20"/></g>
         <g fill="#d8cdbb" stroke="#2a221d" stroke-width="1.6"><ellipse cx="44" cy="25.5" rx="6" ry="4.5"/><ellipse cx="46" cy="8.5" rx="6" ry="4.5"/><ellipse cx="46" cy="-8.5" rx="6" ry="4.5"/><ellipse cx="42" cy="-25.5" rx="6" ry="4.5"/></g>
       </g>
-      <!-- el pulgar nace del dorso de la mano y cruza sobre el índice y el corazón, apretando los dedos contra el mango -->
-      <g transform="translate(430 487) rotate(45) scale(1.35)"><rect x="-66" y="-39" width="104" height="25" rx="12.5" fill="url(#fhMano)" stroke="#2a221d" stroke-width="2.6"/><path d="M-50 -33 h70" fill="none" stroke="#e0d5c0" stroke-width="2" opacity=".45" stroke-linecap="round"/><path d="M-12 -39 q-3 12 0 25" fill="none" stroke="#2a221d" stroke-width="2" opacity=".65" stroke-linecap="round"/><ellipse cx="29" cy="-26.5" rx="6.5" ry="6" fill="#d8cdbb" stroke="#2a221d" stroke-width="1.6"/></g>
     </g>
     <path d="M10 560 L28 404 Q50 332 130 308" fill="none" stroke="#000" stroke-width="2" opacity=".4"/>
     <path d="M620 420 Q600 330 530 306 L432 294" fill="none" stroke="#ff8a2a" stroke-width="4" opacity=".4" class="fh-luz-borde"/>
