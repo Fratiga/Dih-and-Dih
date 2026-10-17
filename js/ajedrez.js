@@ -68,7 +68,7 @@
     { id: "ocevat", nombre: "Ocevat", dificultad: "Fácil", estilo: { piezas: { p: 12, b: 6, q: -25 }, enroque: 45, jaque: -10, captura: -5 },
       momentos: [
         { id: "determinado", cuando: c => c.material <= -200, estilo: { piezas: { q: 22, n: 14, r: 10 }, jaque: 35, captura: 22, ataqueRey: 14, avance: 5 }, frase: "No pienso rendirme. Que sea lo que tenga que ser." }
-      ], tiempoTotal: 300, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
+      ], tiempoTotal: 120, prof: 2, tiempo: 500, error: 0.18, pausa: [0.9, 2.2],
       frases: { saludo: "Una partida tranquila. Que gane quien lo merezca.", jaque: "Jaque. Con cuidado, amigo.", capturaRival: "Lo siento, era necesario.", capturaJugador: "Bien tomada. No la vi venir.", gana: "Buena partida. Gracias por jugarla.", pierde: "Me ganaste limpio. Te felicito." } },
     { id: "baraja", nombre: "Baraja", dificultad: "Media", estilo: { piezas: { q: 18 }, jaque: 30, captura: 14 },
       momentos: [
