@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Compendio → Roll20
 // @namespace    https://fratiga.github.io/Dih-and-Dih/
-// @version      2.10.0
+// @version      2.11.0
 // @description  Muestra dentro de Roll20 las tiradas de tus personajes y las habilidades de los enemigos del Compendio, y las manda al chat con un clic.
 // @match        https://app.roll20.net/editor*
 // @match        https://fratiga.github.io/Dih-and-Dih/*
@@ -297,6 +297,9 @@
     #cr20-modal .cr20-texto { white-space: pre-wrap; background: var(--cr-hueco); border: 2px solid var(--cr-borde); padding: 7px 9px; max-height: 160px; overflow-y: auto; }
     #cr20-modal textarea { width: 100%; min-height: 84px; resize: vertical; font: 13px/1.5 'Courier New', monospace; }
     #cr20-modal select { margin-bottom: 6px; }
+    #cr20-modal .cr20-bloque[hidden] { display: none; }
+    #cr20-modal input[type=text] { width: 100%; background: var(--cr-hueco); color: var(--cr-text); border: 3px inset var(--cr-borde);
+      padding: 5px 8px; font: 13px var(--cr-cuerpo); margin: 0; height: auto; }
     #cr20-modal .cr20-botones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 10px; border-top: 3px double var(--cr-borde); }
     #cr20-modal .cr20-ayuda { color: var(--cr-muted); font-size: 11px; margin-top: 4px; }
     #cr20-toast { position: fixed; left: 10px; bottom: 56px; z-index: 100000; background: var(--cr-panel); color: var(--cr-text);
@@ -672,6 +675,10 @@
             ? `<label><input type="checkbox" id="cr20-m-gastar" checked> Gastar 1 (${item.municion.actual} → ${item.municion.actual - 1} de ${item.municion.max})</label>`
             : `<div class="cr20-texto">Sin munición (0 / ${item.municion.max}). Recárgala en tu ficha del Compendio.</div>`}
         </div>` : ""}
+        <div class="cr20-bloque" id="cr20-m-bloque-nombre" hidden>
+          <span class="cr20-etq">Nombre de la tirada (editable)</span>
+          <input type="text" id="cr20-m-nombre" spellcheck="false">
+        </div>
         <div class="cr20-bloque">
           <span class="cr20-etq">Tirada (editable)</span>
           <select id="cr20-m-modo">
@@ -691,7 +698,29 @@
 
     const selModo = fondo.querySelector("#cr20-m-modo");
     const area = fondo.querySelector("#cr20-m-cmd");
-    const poner = modo => { area.value = textoDeEnvio(item, modo); };
+    // El nombre sale de la tirada ("Atletismo: +5" → "Atletismo"). Al cambiarlo se reemplaza en
+    // todo el texto que se manda. Solo se ofrece si ese nombre aparece de verdad en el comando.
+    const nombreBase = String(item.texto || "").split(":")[0].replace(/\s*\(nv\.\s*\d+\)\s*$/, "").trim();
+    const campoNombre = fondo.querySelector("#cr20-m-nombre");
+    let nombreActual = nombreBase;
+    const poner = modo => {
+      let t = textoDeEnvio(item, modo);
+      if (nombreActual !== nombreBase) t = t.split(nombreBase).join(nombreActual);
+      area.value = t;
+    };
+    const aplicarNombre = () => {
+      const nuevo = campoNombre.value.trim();
+      if (!nuevo || nuevo === nombreActual) { campoNombre.value = nombreActual; return; }
+      area.value = area.value.split(nombreActual).join(nuevo);
+      nombreActual = nuevo;
+    };
+    const nombreEnComando = nombreBase && ["normal", "ventaja", "desventaja"].some(m => item.cmd[m] && textoDeEnvio(item, m).includes(nombreBase));
+    if (nombreEnComando) {
+      fondo.querySelector("#cr20-m-bloque-nombre").hidden = false;
+      campoNombre.value = nombreBase;
+      campoNombre.addEventListener("change", aplicarNombre);
+      campoNombre.addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey) { e.preventDefault(); aplicarNombre(); } });
+    }
     selModo.value = item.cmd[estado.modo] ? estado.modo : "normal";
     poner(selModo.value);
     selModo.addEventListener("change", () => poner(selModo.value));
@@ -701,6 +730,7 @@
     if (sinMunicion) { botonLanzar.disabled = true; botonLanzar.style.opacity = ".45"; botonLanzar.style.cursor = "not-allowed"; }
     const lanzarYa = () => {
       if (sinMunicion) return;
+      if (nombreEnComando) aplicarNombre();
       const texto = area.value.trim();
       const gastar = !!fondo.querySelector("#cr20-m-gastar")?.checked;
       cerrarConfirmacion();
