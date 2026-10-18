@@ -10,12 +10,12 @@ Para abrirlo a todos: quitar `oculto.js` de `veintiuna.html`, pasar la tarjeta d
 
 - Baraja de 52 cartas, **barajada de nuevo en cada mano**. Dos cartas para ti, una visible y una oculta para el crupier.
 - As 1 u 11, J, Q y K valen 10 (11 con la Maldición), el resto su número. Sin dividir, doblar, seguro ni rendición.
-- El crupier pide con 16 o menos y **se planta con 17 o más, también con 17 blando**.
+- El crupier pide con 16 o menos y **se planta con 17 o más, también con 17 blando** (con la Vela corta se planta con 16).
 - Blackjack natural: 21 con las dos primeras cartas. Un 21 conseguido pidiendo no lo es.
-- Pagos: victoria 1 a 1, natural 3 a 2, empate devuelve, derrota pierde.
+- Pagos: victoria 1 a 1, natural 3 a 2 (6 a 5 con la Vela corta), empate devuelve, derrota pierde.
 - **Orden al repartir** (decide la mano en el momento, sin que haya que jugarla): 1) te pasas de 21 (solo Maldición: dos figuras suman 22), pierdes; 2) natural de los dos, empate; 3) tu natural, 3 a 2; 4) natural del crupier, pierdes; 5) el crupier se pasa (solo Maldición), ganas. Si la mano sigue, el crupier no tiene natural (es lo que pasa en cualquier mesa donde el crupier mira su carta; la carta oculta en sí no sale del servidor).
 
-## Las tres reglas especiales
+## Las ocho reglas especiales
 
 El servidor elige la regla de cada mano. **La de la próxima mano se enseña antes de apostar** y no cambia hasta repartirla (recargar la página no la cambia).
 
@@ -24,8 +24,13 @@ El servidor elige la regla de cada mano. **La de la próxima mano se enseña ant
 | **Fortuna** | Si pides y te pasas de 21, puedes pagar el peaje para que esa carta valga 1 (un as fijo en 1, aunque sea un rey). Una vez por mano. Si no pagas, pierdes. | 60 % de la apuesta |
 | **Maldición** | J, Q y K valen 11 para ti y para el crupier. Dos figuras suman 22 (te pasas al repartir). Rey + 10 es blackjack natural. | ninguno |
 | **Última voluntad** | Una vez por mano, mientras no tengas 21, pagas el peaje y **cambias tu última carta por la siguiente de la baraja**. Si la nueva te pasa de 21, pierdes (no hay Fortuna en esta regla). El crupier juega su turno de siempre. | 50 % de la apuesta |
+| **Ojo del Tahúr** | Una vez por mano, mientras no tengas 21, pagas el peaje y **ves la siguiente carta de la baraja** (la que sacarías si pides). Solo mira: no cambia nada. | 35 % de la apuesta |
+| **Cartas marcadas** | Una vez por mano pagas el peaje y **ves la carta oculta del crupier**. Solo la ves tú y la carta no cambia. | 18 % de la apuesta |
+| **Trueque con la casa** | Una vez por mano, antes de pedir carta, **tu primera carta y la que el crupier enseña se intercambian** (la oculta no se toca). Si te deja en 21 no es natural. | 100 % de la apuesta |
+| **Vela corta** | El crupier se planta con 16 (pide con 15 o menos; un 17 blando sigue siendo plantarse) y **el natural paga 6 a 5** en lugar de 3 a 2. Sin botón ni peaje. | ninguno |
+| **Pacto del Bufón** | Al repartir, un dado: 1-2 no pasa nada; 3-4 cambia la carta visible del crupier por la siguiente de la baraja; 5-6 cambia tu primera carta. Sin botón ni peaje. Neutral en valor esperado, solo mete caos. | ninguno |
 
-Los peajes se cobran en el momento de usarlos, no se devuelven y se guardan en el libro de monedas. En la mesa de práctica son simbólicos. Los dos números (60 % y 50 %) están en `cartas_economia_ajustes` (`veintiuna_peaje_fortuna`, `veintiuna_peaje_voluntad`) y se pueden cambiar sin tocar código.
+Los peajes se cobran en el momento de usarlos, no se devuelven y se guardan en el libro de monedas. En la mesa de práctica son simbólicos. Los peajes (60, 50, 35, 18 y 100 %) están en `cartas_economia_ajustes` (`veintiuna_peaje_fortuna`, `_voluntad`, `_ojo`, `_marcadas`, `_trueque`) y se pueden cambiar sin tocar código. Si se suben o bajan, repetir el cálculo con `tools/veintiuna-reglas-nuevas.js`.
 
 ### Por qué esos peajes (equilibrio medido)
 
@@ -37,8 +42,15 @@ Sin peaje, las dos reglas activas rompen la mesa: la Fortuna daba al jugador un 
 | Maldición | −3,1 % |
 | Fortuna, peaje 60 % | −1,1 % |
 | Última voluntad (cambiar la última carta), peaje 50 % | −1,9 % exacto, −1,4 % con la baraja de 52 |
+| Ojo del Tahúr, peaje 35 % | −1,9 % |
+| Cartas marcadas, peaje 18 % | −1,85 % |
+| Trueque con la casa, peaje 100 % | −1,5 % |
+| Vela corta (crupier con 16 y natural a 6 a 5) | −1,74 % (con el natural a 3 a 2 sería −0,39 %: el 6 a 5 es lo que la equilibra) |
+| Pacto del Bufón | −2,4 %, igual que el base (cambia una carta al azar: ni ayuda ni estorba de media) |
 
-Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos que te gustan no da ventaja. El promedio de las tres es parecido al blackjack base. La Última voluntad es una herramienta de decisión: conviene sobre todo con 15 o 16 tras una carta pequeña (cambiar un 5 desde 11 nunca pasa de 21) y casi nunca con una mano alta. La versión anterior (el crupier roba una carta de más) era demasiado fuerte para repartir un peaje razonable y sentía como multa, por eso se cambió. El cálculo exacto está en `tools/veintiuna-equilibrio.js` (Fortuna y Maldición) y `tools/veintiuna-voluntad-cambio.js` (la Última voluntad); `docs/pruebas/t_veintiuna_ev.sql` juega miles de manos de verdad contra el servidor y comprueba que el SQL coincide con la simulación.
+Las tres reglas nuevas con peaje se calcularon igual (programación dinámica exacta con baraja infinita, y un simulador de la baraja de 52 con estrategias fijas sencillas para comprobar que el SQL calcula lo mismo). Sin peaje el Ojo daría al jugador cerca de un +17 % y las Cartas marcadas cerca de un +3 %. Por eso el peaje del Ojo es alto (saber la próxima carta decide pedir o plantarse) y el de las Cartas marcadas es bajo (conocer la oculta del crupier ayuda poco).
+
+Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos que te gustan no da ventaja. El promedio de las ocho es parecido al blackjack base. La Última voluntad es una herramienta de decisión: conviene sobre todo con 15 o 16 tras una carta pequeña (cambiar un 5 desde 11 nunca pasa de 21) y casi nunca con una mano alta. La versión anterior (el crupier roba una carta de más) era demasiado fuerte para repartir un peaje razonable y sentía como multa, por eso se cambió. El cálculo exacto está en `tools/veintiuna-equilibrio.js` (Fortuna y Maldición) y `tools/veintiuna-voluntad-cambio.js` (la Última voluntad); `docs/pruebas/t_veintiuna_ev.sql` juega miles de manos de verdad contra el servidor y comprueba que el SQL coincide con la simulación.
 
 ## Monedas
 
@@ -66,7 +78,7 @@ El progreso principal son **desafíos** que el servidor comprueba al terminar ca
 | Nivel | Desafíos |
 |---|---|
 | Bronce (valor 1, «bueno») | Primera vela (ganar una mano) · Bajo la Maldición · Peaje pagado (ganar tras salvar la mano con la Fortuna) · La última palabra (ganar tras cambiar una carta con la Última voluntad) |
-| Plata (valor 3, «excelente») | Veintiuna exacta (llegar a 21 pidiendo) · Sin miedo (plantarte con 14 o menos y ganar) · Tres velas seguidas · Las tres voluntades (ganar con cada regla) |
+| Plata (valor 3, «excelente») | Veintiuna exacta (llegar a 21 pidiendo) · Sin miedo (plantarte con 14 o menos y ganar) · Tres velas seguidas · Tres caras de la mesa (ganar con tres reglas distintas) |
 | Oro (valor 4, «extraordinario») | Reescribir el destino (ganar con 20 o 21 tras cambiar una carta con la Última voluntad) · Cinco cartas sin pasarte · La suerte bien pagada (ganar con 21 exactos tras salvar la mano con la Fortuna) |
 
 Reutilizan el sistema oficial de recompensas, sin crear otro: el juego es una fila más de `cartas_juegos` (`veintiuna`) y reclamar cierra una partida de recompensa con `cartas_i_juego_terminar_nucleo`, igual que La Fractura. Heredan por eso los topes diarios, los límites global y por jugador, la etiqueta «En circulación», la reserva compartida, que las legendarias y limitadas nunca salgan y el libro de movimientos. Decisiones propias:
@@ -94,7 +106,7 @@ No hay ninguna infraestructura anticipada. Cuando llegue el momento, el sistema 
 - La crupier reacciona: espera, reparte, mira al jugador, juega su turno, gana y pierde. Dice una frase corta y de vez en cuando, nunca un diálogo.
 - Las velas bajo cada mano son el marcador de puntos (veintiuna llamas); se vuelven azules al pasarte.
 - Animaciones: reparto desde el zapato, giro de la carta oculta, el turno del crupier carta a carta, cambio de placa de regla, resultado con brillo (victoria), apagón (derrota), saldo que cuenta, monedas que vuelan. Todas cuentan algo que el servidor ya confirmó, se saltan con un clic, Espacio o Intro, y se apagan con `prefers-reduced-motion`.
-- Teclado: P pedir, L plantarse, V Última voluntad (cambiar tu última carta) o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
+- Teclado: P pedir, L plantarse, V la acción de la regla (Última voluntad, Ojo, Cartas marcadas, Trueque) o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
 - Móvil: las cartas y los controles van primero; el dock de acciones se queda pegado abajo.
 
 ## Pruebas
@@ -114,6 +126,7 @@ node docs/pruebas-web/veintiuna.js                                        # text
 | `js/veintiuna-mesa.js` | La mesa: pantalla, animaciones, diálogos, teclado y sonido |
 | `js/veintiuna-arte.js` | Todo el dibujo (SVG) |
 | `js/veintiuna-vista.js` | Textos, acciones y apuestas (puro, probado en Node) |
+| `tools/veintiuna-equilibrio.js`, `veintiuna-voluntad-cambio.js`, `veintiuna-reglas-nuevas.js`, `veintiuna-reglas-nuevas-b.js` | Cálculo exacto del valor esperado de cada regla |
 | `js/veintiuna-api.js` | Las cinco llamadas al servidor y los errores de red (puro) |
 | `docs/veintiuna.sql` | Tablas, reglas del juego, economía y desafíos |
 | `docs/pruebas/t_veintiuna*.sql/.sh`, `docs/pruebas-web/veintiuna.js` | Pruebas |

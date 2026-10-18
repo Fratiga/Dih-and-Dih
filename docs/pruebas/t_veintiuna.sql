@@ -297,7 +297,7 @@ begin
   perform t_check('Cambia la última carta: el 6 se va y llega el as (siguen siendo dos cartas)', jsonb_array_length(s #> '{jugador,cartas}') = 2 and (s #>> '{jugador,cartas,1,r}')::int = 1 and (s #>> '{jugador,total}')::int = 21);
   perform t_check('La mano sigue en curso, la regla queda usada y el crupier no ha hecho nada', s ->> 'estado' = 'en_curso' and (s #>> '{regla,usada}')::boolean and jsonb_array_length(s #> '{crupier,cartas}') = 1);
   perform t_check('El peaje se cobra al cambiar (200 - 20 - 10 = 170) y queda en el libro y en la mano', t_saldo_de(u) = 170 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje de la Última voluntad%' and monto = -10) = 1 and (select mov_peaje from veintiuna_partidas where id = pid) is not null);
-  perform t_check('Con 21 no hay nada más que cambiar: el botón sale deshabilitado y dice por qué', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'ya la usaste');
+  perform t_check('Con 21 no hay nada más que cambiar: el botón sale deshabilitado y dice por qué', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'ya lo usaste');
   s := t_act(pid, 'plantar');
   perform t_check('El crupier juega su turno de siempre (18, se planta sin robar) y ganas con 21: neto 20 - 10 = 10 y saldo 210', s #>> '{resultado,tipo}' = 'victoria' and jsonb_array_length(s #> '{crupier,cartas}') = 2 and (s #>> '{resultado,neto}')::numeric = 10 and t_saldo_de(u) = 210);
   -- La carta nueva puede pasarte de 21: pierdes (no hay Fortuna en esta regla)
@@ -519,4 +519,159 @@ begin
   s := t_act(pid, 'plantar');
   perform t_check('Ganar con 21 tras la Fortuna da «La suerte bien pagada» y «Peaje pagado»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'fortuna_veintiuna') and exists (select 1 from veintiuna_logros where user_id = u and logro = 'peaje_pagado'));
   perform t_check('Los desafíos antiguos (suerte o repetir manos) ya no existen', not exists (select 1 from veintiuna_logros_def where id in ('natural', 'seis_velas', 'maestro')) and (select count(*) from veintiuna_logros_def) = 11);
+end $$;
+
+/* ======================================================================== las cinco reglas nuevas */
+do $$
+declare r text; veces jsonb := '{}'::jsonb; i int; todas boolean := true;
+begin
+  for i in 1..4000 loop r := veintiuna_i_regla_nueva(); veces := jsonb_set(veces, array[r], to_jsonb(coalesce((veces ->> r)::int, 0) + 1)); end loop;
+  perform t_check('La regla nueva sale entre las ocho y con frecuencia pareja (' || veces::text || ')', (select count(*) from jsonb_object_keys(veces)) = 8
+    and not exists (select 1 from jsonb_each_text(veces) where value::int not between 360 and 650));
+end $$;
+
+/* ---- Ojo del Tahúr: pagas y ves la siguiente carta de la baraja */
+do $$
+declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; pid uuid; txt text;
+begin
+  perform t_reset(); perform t_saldo(u, 200);
+  s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '6c', '8c', '5d', 'Kd');
+  pid := (s ->> 'partida')::uuid; txt := s::text;
+  perform t_check('Ojo del Tahúr: disponible desde el reparto, con peaje del 35 % (7 con 20)', (s #>> '{acciones,especial,disponible}')::boolean and (s #>> '{acciones,especial,peaje}')::numeric = 7 and s #>> '{acciones,especial,tipo}' = 'ojo');
+  perform t_check('Antes de pagar la respuesta no lleva la carta que viene (ni la baraja)', s #> '{regla,proxima}' = 'null'::jsonb and position('mazo' in txt) = 0 and position('"r": 5' in txt) = 0);
+  s := t_act(pid, 'ojo');
+  perform t_check('Tras pagar enseña la siguiente carta (el 5 de diamantes) y la mano no cambia', s #>> '{regla,proxima,r}' = '5' and s #>> '{regla,proxima,p}' = '2' and jsonb_array_length(s #> '{jugador,cartas}') = 2 and (s #>> '{regla,usada}')::boolean);
+  perform t_check('El peaje se cobra (200 - 20 - 7 = 173) y queda en el libro y en la mano', t_saldo_de(u) = 173 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje del Ojo del Tahúr%' and monto = -7) = 1 and (select mov_peaje from veintiuna_partidas where id = pid) is not null);
+  perform t_check('Se puede mirar una sola vez', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'ya lo usaste');
+  begin perform t_act(pid, 'ojo'); perform t_check('Mirar dos veces se rechaza', false); exception when others then perform t_check('Mirar dos veces se rechaza', sqlerrm = 'Ya miraste la baraja en esta mano.'); end;
+  s := t_act(pid, 'pedir');
+  perform t_check('Pedir carta da justo la que se había visto (10 + 6 + 5 = 21) y la carta visible ya no se enseña', (s #>> '{jugador,cartas,2,r}')::int = 5 and (s #>> '{jugador,total}')::int = 21 and s #> '{regla,proxima}' = 'null'::jsonb);
+  s := t_act(pid, 'plantar');
+  perform t_check('Con 21 ganas a 18: neto 20 - 7 = 13 y saldo 213', s #>> '{resultado,tipo}' = 'victoria' and (s #>> '{resultado,neto}')::numeric = 13 and t_saldo_de(u) = 213);
+  -- Si te plantas, esa carta es la primera que roba el crupier (así funciona una baraja de verdad)
+  perform t_saldo(u, 200);
+  s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '6c', '5c', '4d', 'Kd');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'ojo'); s := t_act(pid, 'plantar');
+  perform t_check('Si te plantas tras mirar, el crupier roba esa misma carta (10 + 5 + 4 = 19, y se planta)', (s #>> '{crupier,cartas,2,r}')::int = 4 and (s #>> '{crupier,total}')::int = 19 and s #>> '{resultado,tipo}' = 'derrota');
+  -- Con 21 no, sin monedas no, otras reglas no, práctica gratis
+  perform t_saldo(u, 200);
+  s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '5c', '8c', '6d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
+  perform t_check('Con 21 no hay nada que mirar y lo dice', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'con 21 no hace falta');
+  begin perform t_act(pid, 'ojo'); perform t_check('Mirar con 21 se rechaza', false); exception when others then perform t_check('Mirar con 21 se rechaza', sqlerrm = 'Con 21 no hace falta mirar: plántate.'); end;
+  perform t_saldo(u, 20);
+  s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '6c', '8c');
+  perform t_check('Sin monedas para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 7 monedas');
+  begin perform t_act((s ->> 'partida')::uuid, 'ojo'); perform t_check('Mirar sin monedas se rechaza', false); exception when others then perform t_check('Mirar sin monedas se rechaza', true); end;
+  perform t_check('Y no se cobró nada ni se vio nada', t_saldo_de(u) = 0 and (select ojo_pos from veintiuna_partidas where id = (s ->> 'partida')::uuid) is null);
+  s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '8c');
+  begin perform t_act((s ->> 'partida')::uuid, 'ojo'); perform t_check('El Ojo en otra regla se rechaza', false); exception when others then perform t_check('El Ojo en otra regla se rechaza', true); end;
+  s := t_reparte(u, 'ojo', 'practica', 0, '10p', '10c', '6c', '8c', '5d');
+  s := t_act((s ->> 'partida')::uuid, 'ojo');
+  perform t_check('Práctica: se mira sin monedas', s #>> '{regla,proxima,r}' = '5' and t_saldo_de(u) = 0);
+end $$;
+
+/* ---- Cartas marcadas: pagas y ves la carta oculta del crupier */
+do $$
+declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; pid uuid; txt text;
+begin
+  perform t_reset(); perform t_saldo(u, 200);
+  s := t_reparte(u, 'marcadas', 'apuesta', 20, '10p', '10c', '6c', '8c', '5d');
+  pid := (s ->> 'partida')::uuid; txt := s::text;
+  perform t_check('Cartas marcadas: disponible desde el reparto, con peaje del 18 % (3,6 con 20)', (s #>> '{acciones,especial,disponible}')::boolean and (s #>> '{acciones,especial,peaje}')::numeric = 3.6 and s #>> '{acciones,especial,tipo}' = 'marcadas');
+  perform t_check('Antes de pagar la carta oculta no sale de ninguna forma', s #> '{crupier,vista}' = 'null'::jsonb and jsonb_array_length(s #> '{crupier,cartas}') = 1 and (s #>> '{crupier,ocultas}')::int = 1 and position('"r": 8' in txt) = 0);
+  s := t_act(pid, 'marcadas');
+  perform t_check('Tras pagar enseña la carta oculta (el 8 de corazones) sin sacarla de la mano del crupier', s #>> '{crupier,vista,r}' = '8' and s #>> '{crupier,vista,p}' = '1' and jsonb_array_length(s #> '{crupier,cartas}') = 1 and (s #>> '{crupier,ocultas}')::int = 1);
+  perform t_check('El total que se enseña del crupier sigue siendo el de su carta visible (10)', (s #>> '{crupier,total}')::int = 10);
+  perform t_check('El peaje se cobra (200 - 20 - 3,6 = 176,4) y queda en el libro', t_saldo_de(u) = 176.4 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje de las Cartas marcadas%' and monto = -3.6) = 1);
+  begin perform t_act(pid, 'marcadas'); perform t_check('Verla dos veces se rechaza', false); exception when others then perform t_check('Verla dos veces se rechaza', sqlerrm = 'Ya viste la carta oculta en esta mano.'); end;
+  s := t_act(pid, 'plantar');
+  perform t_check('Al plantarte, el crupier se planta con 18 y la mano se resuelve con normalidad (16 pierde)', (s #>> '{crupier,total}')::int = 18 and s #>> '{resultado,tipo}' = 'derrota' and s #> '{crupier,vista}' = 'null'::jsonb);
+  perform t_saldo(u, 10);
+  s := t_reparte(u, 'marcadas', 'apuesta', 10, '10p', '10c', '6c', '8c');
+  perform t_check('Sin monedas para el peaje (te faltan 1,8) no hay carta oculta', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 1.8 monedas' and s #> '{crupier,vista}' = 'null'::jsonb);
+  s := t_reparte(u, 'marcadas', 'practica', 0, '10p', '10c', '6c', '8c');
+  s := t_act((s ->> 'partida')::uuid, 'marcadas');
+  perform t_check('Práctica: se ve gratis', s #>> '{crupier,vista,r}' = '8' and t_saldo_de(u) = 0);
+  begin perform t_act((t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '8c') ->> 'partida')::uuid, 'marcadas'); perform t_check('Las cartas marcadas en otra regla se rechazan', false); exception when others then perform t_check('Las cartas marcadas en otra regla se rechazan', true); end;
+end $$;
+
+/* ---- Trueque con la casa: antes de pedir, cambias tu primera carta por la visible del crupier */
+do $$
+declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; pid uuid;
+begin
+  perform t_reset(); perform t_saldo(u, 200);
+  s := t_reparte(u, 'trueque', 'apuesta', 20, '2p', 'Kc', '3c', '8d', '5d', '9d');
+  pid := (s ->> 'partida')::uuid;
+  perform t_check('Trueque: disponible, con peaje del 100 % (20 con 20)', (s #>> '{acciones,especial,disponible}')::boolean and (s #>> '{acciones,especial,peaje}')::numeric = 20 and s #>> '{acciones,especial,tipo}' = 'trueque');
+  s := t_act(pid, 'trueque');
+  perform t_check('Tu primera carta (el 2) pasa al crupier y su carta visible (el rey) pasa a ti', (s #>> '{jugador,cartas,0,r}')::int = 13 and (s #>> '{jugador,cartas,1,r}')::int = 3 and (s #>> '{crupier,cartas,0,r}')::int = 2 and jsonb_array_length(s #> '{crupier,cartas}') = 1);
+  perform t_check('Ahora sumas 13 y el crupier enseña un 2', (s #>> '{jugador,total}')::int = 13 and (s #>> '{crupier,total}')::int = 2);
+  perform t_check('El peaje se cobra (200 - 20 - 20 = 160) y queda en el libro', t_saldo_de(u) = 160 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje del Trueque con la casa%' and monto = -20) = 1);
+  perform t_check('Es una vez y solo antes de pedir: el botón sale deshabilitado', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'ya lo usaste');
+  begin perform t_act(pid, 'trueque'); perform t_check('Repetir el trueque se rechaza', false); exception when others then perform t_check('Repetir el trueque se rechaza', sqlerrm = 'Ya hiciste el trueque en esta mano.'); end;
+  s := t_act(pid, 'plantar');
+  perform t_check('El crupier juega con su mano nueva (el 2 visible y el 8 oculto: 10 → roba)', jsonb_array_length(s #> '{crupier,cartas}') >= 3 and (s #>> '{crupier,cartas,0,r}')::int = 2 and (s #>> '{crupier,cartas,1,r}')::int = 8);
+  -- Después de pedir carta ya no se puede
+  perform t_saldo(u, 200);
+  s := t_reparte(u, 'trueque', 'apuesta', 20, '4p', '9c', '3c', '8d', '2d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
+  perform t_check('Con tres cartas el trueque no está disponible y dice por qué', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'solo antes de pedir carta');
+  begin perform t_act(pid, 'trueque'); perform t_check('El trueque tras pedir se rechaza', false); exception when others then perform t_check('El trueque tras pedir se rechaza', sqlerrm = 'El trueque solo vale antes de pedir carta.'); end;
+  perform t_check('Y no se cobró nada', t_saldo_de(u) = 180);
+  perform t_saldo(u, 20);
+  s := t_reparte(u, 'trueque', 'apuesta', 20, '2p', 'Kc', '3c', '8d');
+  perform t_check('Sin monedas para el peaje no hay trueque (faltan 20)', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 20 monedas');
+  -- El trueque puede dejarte en 21 (no es blackjack natural: no paga 3 a 2) y no deja pedir más
+  s := t_reparte(u, 'trueque', 'practica', 0, '4p', 'Ac', 'Kc', '8d', '2d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'trueque');
+  perform t_check('Cambiar tu 4 por el as del crupier te deja con as + rey = 21 sin pedir más', (s #>> '{jugador,total}')::int = 21 and (s #>> '{acciones,pedir}')::boolean = false);
+  s := t_act(pid, 'plantar');
+  perform t_check('Ese 21 no es blackjack natural: se paga 1 a 1 (o empata si el crupier llega a 21)', s #>> '{resultado,tipo}' in ('victoria', 'empate'));
+end $$;
+
+/* ---- Vela corta: el crupier se planta con 16 y el blackjack natural paga 6 a 5 */
+do $$
+declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb;
+begin
+  perform t_reset(); perform t_saldo(u, 200);
+  s := t_reparte(u, 'vela', 'apuesta', 20, '10p', '10c', '8c', '6c', '7d', '5d');
+  s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('Vela corta: el crupier se planta con 16 (10 + 6) y no roba', jsonb_array_length(s #> '{crupier,cartas}') = 2 and (s #>> '{crupier,total}')::int = 16 and s #>> '{resultado,tipo}' = 'victoria');
+  s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '8c', '6c', '7d', '5d');
+  s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('En otra regla el crupier con 16 sí roba (10 + 6 + 7 = 23)', jsonb_array_length(s #> '{crupier,cartas}') = 3);
+  s := t_reparte(u, 'vela', 'practica', 0, '10p', '10c', '5c', '5c', '4d', '2d');
+  s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('Con 15 el crupier de la Vela corta sí roba (10 + 5 + 4 = 19)', (s #>> '{crupier,total}')::int = 19);
+  perform t_saldo(u, 200);
+  s := t_reparte(u, 'vela', 'apuesta', 20, 'Ap', '9c', 'Kp', '8c');
+  perform t_check('Vela corta: el blackjack natural paga 6 a 5 (apuesta 20: cobras 44, neto +24)', s #>> '{resultado,tipo}' = 'natural' and (s #>> '{resultado,pago}')::numeric = 44 and (s #>> '{resultado,neto}')::numeric = 24 and t_saldo_de(u) = 224);
+  perform t_saldo(u, 200);
+  s := t_reparte(u, 'fortuna', 'apuesta', 20, 'Ap', '9c', 'Kp', '8c');
+  perform t_check('Con otra regla el natural sigue pagando 3 a 2 (cobras 50)', (s #>> '{resultado,pago}')::numeric = 50);
+end $$;
+
+/* ---- Pacto del Bufón: un dado antes de decidir */
+do $$
+declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; p veintiuna_partidas%rowtype; i int; n_nada int := 0; n_cru int := 0; n_jug int := 0; mal int := 0; m smallint[];
+begin
+  perform t_reset();
+  for i in 1..900 loop
+    m := veintiuna_i_mazo();
+    insert into veintiuna_estadisticas (user_id, proxima_regla) values (u, 'bufon') on conflict (user_id) do update set proxima_regla = 'bufon';
+    s := veintiuna_i_repartir(u, gen_random_uuid(), 'practica', 0, m);
+    select * into p from veintiuna_partidas where id = (s ->> 'partida')::uuid;
+    if p.bufon_evento = 'nada' then n_nada := n_nada + 1; if p.repartidas <> 4 or p.jugador <> array[m[1], m[3]] or p.crupier <> array[m[2], m[4]] then mal := mal + 1; end if;
+    elsif p.bufon_evento = 'crupier' then n_cru := n_cru + 1; if p.repartidas <> 5 or p.crupier[1] <> m[5] or p.crupier[2] <> m[4] or p.jugador <> array[m[1], m[3]] then mal := mal + 1; end if;
+    elsif p.bufon_evento = 'jugador' then n_jug := n_jug + 1; if p.repartidas <> 5 or p.jugador[1] <> m[5] or p.jugador[2] <> m[3] or p.crupier <> array[m[2], m[4]] then mal := mal + 1; end if;
+    else mal := mal + 1; end if;
+    if (s -> 'regla' ->> 'evento') is distinct from p.bufon_evento then mal := mal + 1; end if;
+    delete from veintiuna_partidas where id = p.id;
+  end loop;
+  perform t_check('Bufón: el dado da nada, crupier o jugador con frecuencia pareja (' || n_nada || '/' || n_cru || '/' || n_jug || ' de 900)', n_nada between 230 and 370 and n_cru between 230 and 370 and n_jug between 230 and 370);
+  perform t_check('Bufón: la carta cambiada es siempre la siguiente de la baraja, la oculta no se toca y el estado cuenta lo que pasó', mal = 0);
+  perform t_reset(); perform t_saldo(u, 100);
+  s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '8c');
+  perform t_check('Las demás reglas no tienen evento del Bufón', s #> '{regla,evento}' = 'null'::jsonb);
 end $$;

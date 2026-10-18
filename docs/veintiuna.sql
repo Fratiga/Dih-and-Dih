@@ -20,6 +20,9 @@ insert into cartas_economia_ajustes (clave, valor) values
   ('veintiuna_apuesta_paso', '10'),       -- las apuestas son múltiplos de esto (así el 3 a 2 del blackjack natural siempre da monedas enteras)
   ('veintiuna_peaje_fortuna', '0.6'),     -- Fortuna: fracción de la apuesta que cuesta salvar la mano
   ('veintiuna_peaje_voluntad', '0.5'),   -- Última voluntad: fracción de la apuesta que cuesta cambiar tu última carta por la siguiente
+  ('veintiuna_peaje_ojo', '0.35'),       -- Ojo del Tahúr: fracción de la apuesta que cuesta ver la siguiente carta de la baraja
+  ('veintiuna_peaje_marcadas', '0.18'),   -- Cartas marcadas: fracción de la apuesta que cuesta ver la carta oculta del crupier
+  ('veintiuna_peaje_trueque', '1'),       -- Trueque con la casa: fracción de la apuesta que cuesta cambiar tu primera carta por la visible del crupier
   ('veintiuna_inactividad_min', '30')     -- minutos sin jugar tras los que la mano se cierra sola, plantándose
 on conflict (clave) do nothing;
 
@@ -41,7 +44,7 @@ insert into veintiuna_logros_def (id, orden, nivel, nombre, texto, meta) values
   ('veintiuna_exacta', 5, 'plata',  'Veintiuna exacta',          'Gana llegando a 21 pidiendo cartas. Un blackjack natural no cuenta.', 1),
   ('sin_miedo',        6, 'plata',  'Sin miedo',                 'Gana plantándote con 14 puntos o menos.', 1),
   ('tres_velas',       7, 'plata',  'Tres velas seguidas',       'Gana tres manos seguidas. Un empate no rompe la racha.', 3),
-  ('tres_voluntades',  8, 'plata',  'Las tres voluntades',       'Gana al menos una mano con cada una de las tres reglas.', 3),
+  ('tres_voluntades',  8, 'plata',  'Tres caras de la mesa',      'Gana al menos una mano con tres reglas distintas.', 3),
   ('ultima_hora',      9, 'oro',    'Reescribir el destino',     'Gana con 20 o 21 después de cambiar una carta con la Última voluntad.', 1),
   ('cinco_cartas',    10, 'oro',    'Cinco cartas sin pasarte',  'Gana con cinco cartas o más sin pasarte de 21.', 1),
   ('fortuna_veintiuna', 11, 'oro',  'La suerte bien pagada',     'Gana con 21 exactos después de salvar la mano con la Fortuna.', 1)
@@ -51,7 +54,7 @@ delete from veintiuna_logros_def where id in ('natural', 'seis_velas', 'maestro'
 
 create table if not exists veintiuna_estadisticas (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  proxima_regla text not null default 'maldicion' check (proxima_regla in ('fortuna', 'maldicion', 'voluntad')),   -- la regla de la siguiente mano, ya decidida y visible
+  proxima_regla text not null default 'maldicion',   -- la regla de la siguiente mano, ya decidida y visible
   rondas int not null default 0,
   victorias int not null default 0,
   derrotas int not null default 0,
@@ -83,7 +86,7 @@ create table if not exists veintiuna_partidas (
   modo text not null check (modo in ('apuesta', 'practica')),
   apuesta numeric(12, 2) not null check (apuesta > 0),
   peajes numeric(12, 2) not null default 0,
-  regla text not null check (regla in ('fortuna', 'maldicion', 'voluntad')),
+  regla text not null,
   estado text not null default 'en_curso' check (estado in ('en_curso', 'terminada')),
   fase text not null default 'jugador' check (fase in ('jugador', 'fortuna')),   -- 'fortuna': te pasaste y puedes salvar la mano pagando el peaje
   paso int not null default 0,
@@ -94,6 +97,10 @@ create table if not exists veintiuna_partidas (
   jugador_as1 int[] not null default '{}',                  -- posiciones (desde 1) de las cartas que la Fortuna convirtió en un as de valor 1
   fortuna_usada boolean not null default false,
   voluntad_usada boolean not null default false,
+  ojo_pos int,                                              -- Ojo del Tahúr: cuántas cartas se habían repartido cuando se miró (la carta que se ve es la siguiente)
+  marcadas_usada boolean not null default false,
+  trueque_usado boolean not null default false,
+  bufon_evento text,
   resultado text check (resultado in ('natural', 'victoria', 'empate', 'derrota')),
   razon text,
   pago numeric(12, 2),                                      -- lo que se devuelve a la billetera (apuesta incluida)
@@ -110,6 +117,17 @@ create table if not exists veintiuna_partidas (
 );
 create unique index if not exists veintiuna_una_en_curso on veintiuna_partidas (user_id) where estado = 'en_curso';
 create index if not exists veintiuna_partidas_user_idx on veintiuna_partidas (user_id, creada desc);
+-- Si la mesa ya existía con tres reglas, se amplían las reglas y las columnas (se puede repetir)
+alter table veintiuna_partidas add column if not exists ojo_pos int;
+alter table veintiuna_partidas add column if not exists marcadas_usada boolean not null default false;
+alter table veintiuna_partidas add column if not exists trueque_usado boolean not null default false;
+alter table veintiuna_partidas add column if not exists bufon_evento text;
+alter table veintiuna_partidas drop constraint if exists veintiuna_partidas_regla_check;
+alter table veintiuna_partidas add constraint veintiuna_partidas_regla_check check (regla in ('fortuna', 'maldicion', 'voluntad', 'ojo', 'marcadas', 'trueque', 'vela', 'bufon'));
+alter table veintiuna_partidas drop constraint if exists veintiuna_partidas_bufon_evento_check;
+alter table veintiuna_partidas add constraint veintiuna_partidas_bufon_evento_check check (bufon_evento is null or bufon_evento in ('nada', 'crupier', 'jugador'));
+alter table veintiuna_estadisticas drop constraint if exists veintiuna_estadisticas_proxima_regla_check;
+alter table veintiuna_estadisticas add constraint veintiuna_estadisticas_proxima_regla_check check (proxima_regla in ('fortuna', 'maldicion', 'voluntad', 'ojo', 'marcadas', 'trueque', 'vela', 'bufon'));
 
 alter table veintiuna_logros_def enable row level security;
 alter table veintiuna_estadisticas enable row level security;
@@ -179,7 +197,7 @@ returns text
 language sql
 volatile
 as $$
-  select (array['fortuna', 'maldicion', 'voluntad'])[1 + veintiuna_i_azar(3)]
+  select (array['fortuna', 'maldicion', 'voluntad', 'ojo', 'marcadas', 'trueque', 'vela', 'bufon'])[1 + veintiuna_i_azar(8)]
 $$;
 
 -- Baraja de 52 cartas: 0 a 51. Carta = n: rango (n % 13) + 1 (1 = as, 11 = J, 12 = Q, 13 = K) y palo n / 13 (0 picas, 1 corazones, 2 diamantes, 3 tréboles)
@@ -248,8 +266,9 @@ as $$
   select coalesce((select saldo from hipodromo_billeteras where usuario = p_uid), 0)
 $$;
 
--- El turno del crupier: pide con 16 o menos y se planta con 17 o más (también con 17 blando). p_forzar (robar una carta de más antes de nada) ya no lo usa ninguna regla
-create or replace function veintiuna_i_turno_crupier(p_mazo smallint[], p_repartidas int, p_crupier smallint[], p_figura int, p_forzar boolean, out o_crupier smallint[], out o_repartidas int)
+-- El turno del crupier: pide mientras no llegue a p_limite (17 normalmente, 16 con la Vela corta; también se planta con 17 blando). p_forzar (robar una carta de más antes de nada) ya no lo usa ninguna regla
+drop function if exists veintiuna_i_turno_crupier(smallint[], int, smallint[], int, boolean);
+create or replace function veintiuna_i_turno_crupier(p_mazo smallint[], p_repartidas int, p_crupier smallint[], p_figura int, p_forzar boolean, p_limite int, out o_crupier smallint[], out o_repartidas int)
 language plpgsql
 immutable
 as $$
@@ -264,11 +283,49 @@ begin
   end if;
   loop
     select * into v from veintiuna_i_valor(o_crupier, '{}'::int[], p_figura);
-    exit when v.total >= 17;
+    exit when v.total >= p_limite;
     if o_repartidas >= 52 then raise exception 'La baraja se acabó'; end if;
     o_crupier := o_crupier || p_mazo[o_repartidas + 1];
     o_repartidas := o_repartidas + 1;
   end loop;
+end;
+$$;
+
+-- El peaje de la acción especial de cada regla: una fracción de la apuesta (las reglas sin acción no cobran nada)
+create or replace function veintiuna_i_peaje(p_regla text, p_apuesta numeric)
+returns numeric
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select round(p_apuesta * case p_regla
+    when 'fortuna' then (cartas_ajuste('veintiuna_peaje_fortuna', '0.6'))::text::numeric
+    when 'voluntad' then (cartas_ajuste('veintiuna_peaje_voluntad', '0.5'))::text::numeric
+    when 'ojo' then (cartas_ajuste('veintiuna_peaje_ojo', '0.35'))::text::numeric
+    when 'marcadas' then (cartas_ajuste('veintiuna_peaje_marcadas', '0.18'))::text::numeric
+    when 'trueque' then (cartas_ajuste('veintiuna_peaje_trueque', '1'))::text::numeric
+    else 0 end, 2)
+$$;
+
+-- Cobra el peaje de una acción especial de la billetera (solo en la mesa con apuesta) y lo apunta en el libro. Devuelve el número del movimiento.
+create or replace function veintiuna_i_cobrar(p_user uuid, p_modo text, p_peaje numeric, p_nombre text, p_mano uuid)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_saldo numeric;
+  v_mov bigint;
+begin
+  if p_modo <> 'apuesta' then return null; end if;
+  select saldo into v_saldo from hipodromo_billeteras where usuario = p_user for update;
+  if coalesce(v_saldo, 0) < p_peaje then perform veintiuna_i_error('No te alcanzan las monedas para el peaje ' || p_nombre || ' (' || trim_scale(p_peaje) || ').', 'saldo_insuficiente'); end if;
+  update hipodromo_billeteras set saldo = saldo - p_peaje where usuario = p_user returning saldo into v_saldo;
+  insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
+    values (p_user, null, 'Veintiuna Velas: peaje ' || p_nombre || ' (mano ' || p_mano || ')', -p_peaje, v_saldo) returning id into v_mov;
+  return v_mov;
 end;
 $$;
 
@@ -285,10 +342,10 @@ declare
   vj record;
   vc record;
   terminada boolean := p.estado = 'terminada';
-  fraccion numeric;
-  peaje numeric;
+  peaje numeric := veintiuna_i_peaje(p.regla, p.apuesta);
   puede_pedir boolean := false;
   especial jsonb := 'null'::jsonb;
+  usada boolean;
   cru_cartas smallint[];
   faltan numeric;
   motivo text;
@@ -296,16 +353,19 @@ begin
   select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, figura);
   cru_cartas := case when terminada then p.crupier else p.crupier[1:1] end;
   select * into vc from veintiuna_i_valor(cru_cartas, '{}'::int[], figura);
-  fraccion := (cartas_ajuste(case p.regla when 'fortuna' then 'veintiuna_peaje_fortuna' else 'veintiuna_peaje_voluntad' end, '0.5'))::text::numeric;
-  peaje := round(p.apuesta * fraccion, 2);
+  usada := case p.regla when 'fortuna' then p.fortuna_usada when 'voluntad' then p.voluntad_usada when 'ojo' then p.ojo_pos is not null when 'marcadas' then p.marcadas_usada when 'trueque' then p.trueque_usado else false end;
 
   if not terminada then
     if p.fase = 'jugador' then
       puede_pedir := vj.total < 21;
-      if p.regla = 'voluntad' then
+      if p.regla in ('voluntad', 'ojo', 'marcadas', 'trueque') then
         faltan := case when p.modo = 'apuesta' then greatest(peaje - p_saldo, 0) else 0 end;
-        motivo := case when p.voluntad_usada then 'ya la usaste' when vj.total >= 21 then 'con 21 no hace falta' when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' monedas' end;
-        especial := jsonb_build_object('tipo', 'voluntad', 'disponible', motivo is null, 'motivo', motivo, 'peaje', peaje);
+        motivo := case
+          when usada then 'ya lo usaste'
+          when p.regla in ('voluntad', 'ojo') and vj.total >= 21 then 'con 21 no hace falta'
+          when p.regla = 'trueque' and array_length(p.jugador, 1) <> 2 then 'solo antes de pedir carta'
+          when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' monedas' end;
+        especial := jsonb_build_object('tipo', p.regla, 'disponible', motivo is null, 'motivo', motivo, 'peaje', peaje);
       end if;
     else
       faltan := case when p.modo = 'apuesta' then greatest(peaje - p_saldo, 0) else 0 end;
@@ -319,13 +379,17 @@ begin
     'modo', p.modo,
     'apuesta', p.apuesta,
     'peajes', p.peajes,
-    'regla', jsonb_build_object('id', p.regla, 'usada', case p.regla when 'fortuna' then p.fortuna_usada when 'voluntad' then p.voluntad_usada else false end,
-                                'peaje', case when p.regla = 'maldicion' then null else peaje end),
+    'regla', jsonb_build_object('id', p.regla, 'usada', usada, 'peaje', case when p.regla in ('fortuna', 'voluntad', 'ojo', 'marcadas', 'trueque') then peaje end,
+                                'evento', p.bufon_evento,
+                                -- Ojo del Tahúr: la carta que viene, solo mientras siga siendo la siguiente y solo si ya pagaste el peaje
+                                'proxima', case when not terminada and p.ojo_pos is not null and p.repartidas = p.ojo_pos and p.fase = 'jugador' then veintiuna_i_carta(p.mazo[p.repartidas + 1]) end),
     'estado', p.estado,
     'fase', case when terminada then 'fin' else p.fase end,
     'jugador', jsonb_build_object('cartas', veintiuna_i_mano_json(p.jugador, p.jugador_as1), 'total', vj.total, 'blando', vj.blando),
     'crupier', jsonb_build_object('cartas', veintiuna_i_mano_json(cru_cartas, '{}'::int[]), 'ocultas', case when terminada then 0 else 1 end, 'total', vc.total, 'blando', vc.blando,
-                                  'robadas_desde', case when terminada then 3 else null end),
+                                  'robadas_desde', case when terminada then 3 else null end,
+                                  -- Cartas marcadas: la carta oculta, solo si ya pagaste el peaje
+                                  'vista', case when not terminada and p.marcadas_usada then veintiuna_i_carta(p.crupier[2]) end),
     'acciones', case when terminada then 'null'::jsonb else jsonb_build_object('pedir', puede_pedir, 'plantar', p.fase = 'jugador', 'especial', especial) end,
     'resultado', case when terminada then jsonb_build_object('tipo', p.resultado, 'razon', p.razon, 'pago', p.pago, 'neto', p.neto, 'apuesta', p.apuesta, 'peajes', p.peajes) end,
     'logros_nuevos', to_jsonb(p.logros_nuevos),
@@ -422,7 +486,7 @@ begin
   select * into p from veintiuna_partidas where id = p_id for update;
   if not found then raise exception 'Esa mano no existe'; end if;
   if p.estado = 'terminada' then return; end if;                    -- jamás se liquida dos veces
-  v_pago := case p_resultado when 'natural' then p.apuesta * 2.5 when 'victoria' then p.apuesta * 2 when 'empate' then p.apuesta else 0 end;
+  v_pago := case p_resultado when 'natural' then p.apuesta * case when p.regla = 'vela' then 2.2 else 2.5 end when 'victoria' then p.apuesta * 2 when 'empate' then p.apuesta else 0 end;
   v_neto := v_pago - p.apuesta - p.peajes;
   if p.modo = 'apuesta' and v_pago > 0 then
     update hipodromo_billeteras set saldo = saldo + v_pago where usuario = p.user_id returning saldo into v_saldo;
@@ -525,6 +589,31 @@ begin
     return;
   end if;
 
+  if p_accion in ('ojo', 'marcadas', 'trueque') then
+    if p.regla <> p_accion or p.fase <> 'jugador' then perform veintiuna_i_error('Esa acción no está disponible ahora.', 'accion_invalida'); end if;
+    peaje := veintiuna_i_peaje(p.regla, p.apuesta);
+    if p_accion = 'ojo' then
+      -- Ojo del Tahúr: pagas y ves la siguiente carta de la baraja (será tu próxima carta, o la primera que robe el crupier si te plantas)
+      if p.ojo_pos is not null then perform veintiuna_i_error('Ya miraste la baraja en esta mano.', 'accion_invalida'); end if;
+      if vj.total >= 21 then perform veintiuna_i_error('Con 21 no hace falta mirar: plántate.', 'accion_invalida'); end if;
+      v_mov := veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'del Ojo del Tahúr', p.id);
+      update veintiuna_partidas set ojo_pos = repartidas, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje) where id = p_id;
+    elsif p_accion = 'marcadas' then
+      -- Cartas marcadas: pagas y ves la carta oculta del crupier
+      if p.marcadas_usada then perform veintiuna_i_error('Ya viste la carta oculta en esta mano.', 'accion_invalida'); end if;
+      v_mov := veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'de las Cartas marcadas', p.id);
+      update veintiuna_partidas set marcadas_usada = true, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje) where id = p_id;
+    else
+      -- Trueque con la casa: antes de pedir carta, tu primera carta se cambia por la que el crupier tiene boca arriba
+      if p.trueque_usado then perform veintiuna_i_error('Ya hiciste el trueque en esta mano.', 'accion_invalida'); end if;
+      if array_length(p.jugador, 1) <> 2 then perform veintiuna_i_error('El trueque solo vale antes de pedir carta.', 'accion_invalida'); end if;
+      v_mov := veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'del Trueque con la casa', p.id);
+      update veintiuna_partidas set trueque_usado = true, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje),
+        jugador = array[crupier[1], jugador[2]], crupier = array[jugador[1], crupier[2]] where id = p_id;
+    end if;
+    return;
+  end if;
+
   if p_accion = 'plantar' then
     if p.fase <> 'jugador' then perform veintiuna_i_error('Ahora no puedes plantarte.', 'accion_invalida'); end if;
   else
@@ -532,7 +621,7 @@ begin
   end if;
 
   -- Plantarse: el crupier juega su turno
-  select o_crupier, o_repartidas into cru, rep from veintiuna_i_turno_crupier(p.mazo, p.repartidas, p.crupier, figura, false);
+  select o_crupier, o_repartidas into cru, rep from veintiuna_i_turno_crupier(p.mazo, p.repartidas, p.crupier, figura, false, case when p.regla = 'vela' then 16 else 17 end);
   update veintiuna_partidas set crupier = cru, repartidas = rep where id = p_id;
   select * into vc from veintiuna_i_valor(cru, '{}'::int[], figura);
   if vc.total > 21 then
@@ -623,7 +712,10 @@ begin
       'paso', (cartas_ajuste('veintiuna_apuesta_paso', '10'))::text::numeric),
     'peajes', jsonb_build_object(
       'fortuna', (cartas_ajuste('veintiuna_peaje_fortuna', '0.6'))::text::numeric,
-      'voluntad', (cartas_ajuste('veintiuna_peaje_voluntad', '0.5'))::text::numeric),
+      'voluntad', (cartas_ajuste('veintiuna_peaje_voluntad', '0.5'))::text::numeric,
+      'ojo', (cartas_ajuste('veintiuna_peaje_ojo', '0.35'))::text::numeric,
+      'marcadas', (cartas_ajuste('veintiuna_peaje_marcadas', '0.18'))::text::numeric,
+      'trueque', (cartas_ajuste('veintiuna_peaje_trueque', '1'))::text::numeric),
     'inactividad_min', (cartas_ajuste('veintiuna_inactividad_min', '30'))::text::numeric,
     'partida', case when p.id is not null then veintiuna_i_estado(p, v_saldo) end,
     'proxima_regla', est.proxima_regla,
@@ -660,6 +752,11 @@ declare
   vc record;
   v_res text;
   v_razon text;
+  v_jug smallint[];
+  v_cru smallint[];
+  v_rep int;
+  v_dado int;
+  v_evento text;
 begin
   if uid is null then perform veintiuna_i_error('Hay que iniciar sesión.', 'sin_sesion'); end if;
   if p_cliente is null then perform veintiuna_i_error('Falta el identificador de la mano.', 'peticion_invalida'); end if;
@@ -691,6 +788,17 @@ begin
   update veintiuna_estadisticas set proxima_regla = veintiuna_i_regla_nueva() where user_id = uid;
   figura := case v_regla when 'maldicion' then 11 else 10 end;
   v_mazo := p_mazo;
+  v_jug := array[v_mazo[1], v_mazo[3]];
+  v_cru := array[v_mazo[2], v_mazo[4]];
+  v_rep := 4;
+  -- Pacto del Bufón: tira un dado. 1 o 2, nada; 3 o 4, la carta visible del crupier se cambia por la siguiente de la baraja; 5 o 6, lo mismo con tu primera carta.
+  -- (Es un cambio por una carta al azar, así que no cambia el valor esperado de la mano; solo pone caos antes de que decidas nada.)
+  if v_regla = 'bufon' then
+    v_dado := veintiuna_i_azar(6);
+    v_evento := case when v_dado < 2 then 'nada' when v_dado < 4 then 'crupier' else 'jugador' end;
+    if v_evento = 'crupier' then v_cru[1] := v_mazo[5]; v_rep := 5;
+    elsif v_evento = 'jugador' then v_jug[1] := v_mazo[5]; v_rep := 5; end if;
+  end if;
 
   if p_modo = 'apuesta' then
     insert into hipodromo_billeteras (usuario) values (uid) on conflict (usuario) do nothing;
@@ -704,8 +812,8 @@ begin
   end if;
 
   -- Reparto: jugador, crupier (la carta que se ve), jugador, crupier (la oculta)
-  insert into veintiuna_partidas (id, user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier, mov_cobro)
-    values (v_id, uid, p_cliente, p_modo, v_apuesta, v_regla, v_mazo, 4, array[v_mazo[1], v_mazo[3]], array[v_mazo[2], v_mazo[4]], v_mov)
+  insert into veintiuna_partidas (id, user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier, mov_cobro, bufon_evento)
+    values (v_id, uid, p_cliente, p_modo, v_apuesta, v_regla, v_mazo, v_rep, v_jug, v_cru, v_mov, v_evento)
     returning * into p;
 
   -- Orden de resolución al repartir
@@ -846,7 +954,7 @@ $$;
 /* ================================================================== 7) PERMISOS */
 revoke all on function veintiuna_i_error(text, text), veintiuna_i_azar(int), veintiuna_i_regla_nueva(), veintiuna_i_mazo(),
   veintiuna_i_valor(smallint[], int[], int), veintiuna_i_carta(smallint, boolean), veintiuna_i_mano_json(smallint[], int[]), veintiuna_i_saldo(uuid),
-  veintiuna_i_turno_crupier(smallint[], int, smallint[], int, boolean), veintiuna_i_repartir(uuid, uuid, text, numeric, smallint[]), veintiuna_i_estado(veintiuna_partidas, numeric), veintiuna_i_registrar(veintiuna_partidas),
+  veintiuna_i_turno_crupier(smallint[], int, smallint[], int, boolean, int), veintiuna_i_peaje(text, numeric), veintiuna_i_cobrar(uuid, text, numeric, text, uuid), veintiuna_i_repartir(uuid, uuid, text, numeric, smallint[]), veintiuna_i_estado(veintiuna_partidas, numeric), veintiuna_i_registrar(veintiuna_partidas),
   veintiuna_i_liquidar(uuid, text, text), veintiuna_i_aplicar(uuid, text), veintiuna_i_cerrar_inactiva(uuid) from public, anon, authenticated;
 revoke all on function veintiuna_mesa(), veintiuna_repartir(uuid, text, numeric), veintiuna_accion(uuid, int, text), veintiuna_historial(int), veintiuna_reclamar(text) from public, anon;
 grant execute on function veintiuna_mesa(), veintiuna_repartir(uuid, text, numeric), veintiuna_accion(uuid, int, text), veintiuna_historial(int), veintiuna_reclamar(text) to authenticated;

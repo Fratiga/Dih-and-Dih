@@ -150,7 +150,36 @@ window.VeintiunaArte = (function () {
     voluntad: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#1b1730" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
       <path d="M18 15h28a4 4 0 0 1 4 4v22a5 5 0 0 1-5 5H20a4 4 0 0 0 0-8h-4V19a4 4 0 0 1 2-4z" fill="#efe3c3" stroke="#8a6420" stroke-width="1.4" stroke-linejoin="round"/>
       <path d="M22 24h22M22 29h22M22 34h14" stroke="#7a5a2a" stroke-width="1.6" stroke-linecap="round"/>
-      <circle cx="42" cy="42" r="8" fill="#a8202f" stroke="#5a0f18" stroke-width="1.2"/><path d="M42 37v10M37 42h10" stroke="#f3b6bd" stroke-width="1.6" stroke-linecap="round"/></svg>`
+      <circle cx="42" cy="42" r="8" fill="#a8202f" stroke="#5a0f18" stroke-width="1.2"/><path d="M42 37v10M37 42h10" stroke="#f3b6bd" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+    // Un ojo sobre una carta
+    ojo: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#102a33" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
+      <rect x="20" y="12" width="24" height="34" rx="3" fill="#efe3c3" stroke="#8a6420" stroke-width="1.2" transform="rotate(-8 32 29)"/>
+      <path d="M8 38c6-10 14-15 24-15s18 5 24 15c-6 10-14 15-24 15S14 48 8 38z" fill="#0d1d24" stroke="#f6d98a" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="32" cy="38" r="9" fill="#58c7d6" stroke="#f6d98a" stroke-width="1.4"/><circle cx="32" cy="38" r="4.2" fill="#06161c"/><circle cx="34.4" cy="35.6" r="1.6" fill="#fff"/></svg>`,
+    // Una carta con marcas en el dorso
+    marcadas: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#2b1a0c" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
+      <rect x="19" y="11" width="26" height="38" rx="3.5" fill="#7a1f2b" stroke="#f6d98a" stroke-width="1.4" transform="rotate(7 32 30)"/>
+      <g transform="rotate(7 32 30)" fill="none" stroke="#f6d98a" stroke-width="1.2" stroke-opacity=".8"><rect x="23" y="15" width="18" height="30" rx="2"/><path d="M32 22l5 8-5 8-5-8z"/></g>
+      <path d="M43 45l9 9" stroke="#f6d98a" stroke-width="3" stroke-linecap="round"/><circle cx="37" cy="39" r="9" fill="#ffffff22" stroke="#f6d98a" stroke-width="2.2"/></svg>`,
+    // Dos cartas que se cruzan
+    trueque: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#2a2310" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
+      <rect x="12" y="18" width="19" height="27" rx="3" fill="#efe3c3" stroke="#8a6420" stroke-width="1.2" transform="rotate(-10 21 31)"/>
+      <rect x="33" y="19" width="19" height="27" rx="3" fill="#7a1f2b" stroke="#f6d98a" stroke-width="1.2" transform="rotate(10 43 32)"/>
+      <path d="M22 16c6-6 14-6 20 0M42 49c-6 6-14 6-20 0" fill="none" stroke="#f6d98a" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M42 11l1 6-6-1M22 54l-1-6 6 1" fill="none" stroke="#f6d98a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    // Una vela consumida a medias
+    vela: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#2c1b13" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
+      <path d="M24 36h16l1 16H23z" fill="#efe3c3" stroke="#8a6420" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M24 36c0 5-3 7-3 10s3 3 3-1" fill="#efe3c3" stroke="#8a6420" stroke-width="1.2" stroke-linejoin="round"/>
+      <rect x="19" y="50" width="26" height="4" rx="1.5" fill="#6a4d2a" stroke="#f6d98a" stroke-width="1"/>
+      <path d="M32 36v-5" stroke="#241a14" stroke-width="2" stroke-linecap="round"/>
+      <path d="M32 11c5 6 7 10 7 14a7 7 0 0 1-14 0c0-4 2-8 7-14z" fill="#ffb24a" stroke="#f6d98a" stroke-width="1.2"/><path d="M32 18c2 3 3 5 3 7a3 3 0 0 1-6 0c0-2 1-4 3-7z" fill="#fff3b0"/></svg>`,
+    // Un gorro de bufón con cascabeles
+    bufon: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#241334" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
+      <path d="M12 44c0-14 4-24 12-30 2 6 4 8 8 10 4-2 6-4 8-10 8 6 12 16 12 30z" fill="#6a2fa8" stroke="#f6d98a" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M32 24c-3 6-3 14 0 20 3-6 3-14 0-20z" fill="#d7a62f" stroke="#f6d98a" stroke-width="1"/>
+      <rect x="11" y="43" width="42" height="7" rx="3" fill="#d7a62f" stroke="#7a5a1a" stroke-width="1.2"/>
+      <circle cx="24" cy="13" r="4" fill="#f6d98a" stroke="#7a5a1a" stroke-width="1"/><circle cx="40" cy="13" r="4" fill="#f6d98a" stroke="#7a5a1a" stroke-width="1"/></svg>`
   };
 
   /* ---------------------------------------------------------------- el emblema de la cabecera */

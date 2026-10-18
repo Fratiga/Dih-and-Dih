@@ -36,6 +36,7 @@ contiene "un jugador con sesión reparte una mano" "$R" '"estado": "en_curso"'
 PID=$(sql "select id from veintiuna_partidas where user_id = '$U1'")
 comprobar "un jugador no lee la tabla de manos (lleva la baraja)" "0" "$(como $U1 "select count(*) from veintiuna_partidas;" | tail -1)"
 comprobar "el admin sí puede revisarlas" "1" "$(como $ADMIN "select count(*) from veintiuna_partidas where user_id = '$U1';" | tail -1)"
+RONDAS0=$(sql "select rondas from veintiuna_estadisticas where user_id = '$U1'")
 contiene "otro jugador no puede actuar sobre mi mano" "$(como $U2 "select veintiuna_accion('$PID', 0, 'plantar');")" "No encuentro esa mano"
 contiene "ni verla en su historial" "$(como $U2 "select veintiuna_historial(5);")" "[]"
 for t in "insert into veintiuna_partidas (user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier) values ('$U1', gen_random_uuid(), 'practica', 10, 'fortuna', '{1}', 1, '{1}', '{2}')" \
@@ -72,10 +73,11 @@ for intento in 1 2 3 4 5 6; do
 done
 comprobar "la misma petición dos veces a la vez: una sola mano y una sola apuesta cobrada" "1|t|1" "$(sql "select count(*) from veintiuna_partidas where user_id = '$U1'")|$(sql "select saldo = 280 from hipodromo_billeteras where usuario = '$U1'")|$(sql "select count(*) from hipodromo_movimientos where usuario = '$U1'")"
 PID=$(sql "select id from veintiuna_partidas where user_id = '$U1'")
+RONDAS0=$(sql "select rondas from veintiuna_estadisticas where user_id = '$U1'")
 como $U1 "select veintiuna_accion('$PID', 0, 'plantar');" 1 > "$TMP/a" &
 como $U1 "select veintiuna_accion('$PID', 0, 'plantar');" 1 > "$TMP/b" &
 wait
-comprobar "plantarse dos veces a la vez: la mano se liquida una sola vez" "terminada|1" "$(sql "select estado from veintiuna_partidas where id = '$PID'")|$(sql "select rondas from veintiuna_estadisticas where user_id = '$U1'")"
+comprobar "plantarse dos veces a la vez: la mano se liquida una sola vez" "terminada|1" "$(sql "select estado from veintiuna_partidas where id = '$PID'")|$(sql "select rondas - $RONDAS0 from veintiuna_estadisticas where user_id = '$U1'")"
 comprobar "como mucho un pago en el libro" "t" "$(sql "select count(*) <= 1 from hipodromo_movimientos where usuario = '$U1' and monto > 0")"
 comprobar "el saldo cuadra con el libro" "t" "$(sql "select saldo = 300 + (select sum(monto) from hipodromo_movimientos where usuario = '$U1') from hipodromo_billeteras where usuario = '$U1'")"
 rm -rf "$TMP"
@@ -142,5 +144,18 @@ comprobar_ev() { # descripción, esperado (en %), margen, argumentos de t_ev
 comprobar_ev "Maldición, estrategia 13/15/18" "-2.92" "'maldicion', $N, 13, 15, 18" 3.2
 comprobar_ev "Fortuna, estrategia 14/17/18 y peaje del 60 %" "-2.16" "'fortuna', $N, 14, 17, 18" 3.2
 comprobar_ev "Última voluntad: cambiar la última carta con 15 o 16 si era un 5 o menos, peaje del 50 %" "-4.17" "'voluntad', $N, 12, 17, 18, 0, 15, 16, 5" 3.2
+
+comprobar_ev2() { # descripción, esperado (en %), regla
+  real=$(printf '%s\n' "select round(ev * 100, 2), round(error * 100, 2) from t_ev2('$3', $N);" | sup | head -1)
+  ev=${real%%|*}; err=${real##*|}
+  dentro=$(awk -v e="$ev" -v x="$2" 'BEGIN { d = e - x; if (d < 0) d = -d; print (d <= 3.2) ? 1 : 0 }')
+  comprobar "$1: valor esperado $ev % ± $err (simulación $2 %, margen 3.2)" "1" "$dentro"
+}
+comprobar_ev2 "Vela corta (crupier con 16, natural 6 a 5), estrategia sencilla" "-3.65" vela
+comprobar_ev2 "Pacto del Bufón, estrategia sencilla (debe parecerse al blackjack base)" "-2.16" bufon
+comprobar_ev2 "Ojo del Tahúr, mirar con 12 a 16" "-5.00" ojo
+comprobar_ev2 "Cartas marcadas, mirar siempre al principio" "-15.28" marcadas
+comprobar_ev2 "Trueque con la casa, cuando la visible vale 5 más que tu primera" "-10.09" trueque
+
 
 [ "$FALLOS" -eq 0 ] && echo "Todo bien." || { echo "$FALLOS fallo(s)."; exit 1; }

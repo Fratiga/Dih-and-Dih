@@ -173,6 +173,7 @@ body.vv-tema {
 .vv-placa::before, .vv-placa::after { content: ""; position: absolute; top: 50%; width: 10px; height: 10px; margin-top: -5px; background: var(--vv-oro); transform: rotate(45deg); box-shadow: 0 0 0 2px #1a0f0a, 0 0 0 3px var(--vv-oro-osc); }
 .vv-placa::before { left: -7px; } .vv-placa::after { right: -7px; }
 .vv-placa[data-regla="fortuna"] { --acento: #7fd08a; } .vv-placa[data-regla="maldicion"] { --acento: #f07a8a; } .vv-placa[data-regla="voluntad"] { --acento: #b6a2ff; }
+.vv-placa[data-regla="ojo"] { --acento: #58c7d6; } .vv-placa[data-regla="marcadas"] { --acento: #e6a35a; } .vv-placa[data-regla="trueque"] { --acento: #e8d26a; } .vv-placa[data-regla="vela"] { --acento: #ffb24a; } .vv-placa[data-regla="bufon"] { --acento: #c58cf5; }
 .vv-placa[hidden] { display: none; }
 .vv-placa.cambia { animation: vv-placa-cambia .7s cubic-bezier(.2, .9, .3, 1.2); }
 @keyframes vv-placa-cambia { 0% { transform: perspective(700px) rotateX(-80deg) scale(.9); opacity: 0; } 60% { transform: perspective(700px) rotateX(8deg); opacity: 1; box-shadow: 0 0 0 2px var(--acento), 0 0 38px var(--acento); } 100% { transform: none; } }
@@ -215,6 +216,18 @@ body.vv-tema {
 .vv-zapato-carta { position: absolute; inset: 0; border-radius: 9% / 6.4%; box-shadow: 0 6px 10px #000a; }
 .vv-zapato-carta:nth-child(2) { transform: translate(-4px, -3px); } .vv-zapato-carta:nth-child(3) { transform: translate(-8px, -6px); }
 .vv-zapato-carta svg { display: block; width: 100%; height: 100%; }
+/* La siguiente carta de la baraja (Ojo del Tahúr) asoma junto al zapato */
+.vv-ojo { position: absolute; right: clamp(16px, 4vw, 54px); top: calc(22px + var(--cw) * .62 * 1.4 + 18px); z-index: 2; width: calc(var(--cw) * .62); text-align: center; }
+.vv-ojo[hidden] { display: none; }
+.vv-ojo-etq { display: block; margin-bottom: 4px; font: 400 .66rem var(--vv-serif); letter-spacing: .2em; text-transform: uppercase; color: #58c7d6; text-shadow: 0 1px 2px #000; }
+.vv-ojo-carta { width: 100%; aspect-ratio: 5 / 7; border-radius: 9% / 6.4%; box-shadow: 0 0 0 2px #58c7d6, 0 0 18px #58c7d688; transform: rotate(-4deg); animation: vv-ojo-entra .5s cubic-bezier(.2, .9, .3, 1.2); }
+.vv-ojo-carta svg { display: block; width: 100%; height: 100%; }
+@keyframes vv-ojo-entra { from { transform: translateY(-14px) rotate(-14deg) scale(.7); opacity: 0; } to { transform: rotate(-4deg); opacity: 1; } }
+/* La carta oculta del crupier, vista con las Cartas marcadas: solo la ves tú */
+.vv-vista { position: absolute; inset: 0; border-radius: 9% / 6.4%; overflow: hidden; opacity: .9; box-shadow: 0 0 0 2px #e6a35a, 0 0 16px #e6a35a88; backface-visibility: hidden; animation: vv-ojo-entra .5s ease-out; }
+.vv-vista svg { display: block; width: 100%; height: 100%; }
+.vv-vista::after { content: "solo tú"; position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%); padding: 0 6px; font: 400 .58rem var(--vv-serif); letter-spacing: .12em; text-transform: uppercase; color: #fff3d2; background: #3a1f0acc; border-radius: 6px; }
+.vv-boca-abajo .vv-vista { transform: rotateY(180deg) translateZ(2px); }
 .vv-zapato-lomo { position: absolute; inset: auto -10% -12% -10%; height: 22%; border-radius: 6px; background: linear-gradient(#5a3320, #24120b); box-shadow: 0 4px 8px #000a; }
 .vv-apuesta { display: none; align-items: center; gap: 10px; }
 .vv-apuesta.hay { display: flex; flex-direction: column; align-items: center; }
@@ -336,6 +349,7 @@ body.vv-ocupado .vv-boton { opacity: .6; pointer-events: none; }
 .vv-reglas-lista { display: grid; gap: 12px; }
 .vv-regla-ficha { --acento: #7fd08a; display: grid; grid-template-columns: 64px 1fr; gap: 14px; padding: 12px 14px; background: #1f1526; border: 1px solid var(--border); border-left: 4px solid var(--acento); border-radius: 10px; }
 .vv-regla-ficha[data-regla="maldicion"] { --acento: #f07a8a; } .vv-regla-ficha[data-regla="voluntad"] { --acento: #b6a2ff; }
+.vv-regla-ficha[data-regla="ojo"] { --acento: #58c7d6; } .vv-regla-ficha[data-regla="marcadas"] { --acento: #e6a35a; } .vv-regla-ficha[data-regla="trueque"] { --acento: #e8d26a; } .vv-regla-ficha[data-regla="vela"] { --acento: #ffb24a; } .vv-regla-ficha[data-regla="bufon"] { --acento: #c58cf5; }
 .vv-regla-ficha h3 { margin: 0; color: var(--acento); } .vv-regla-icono svg { display: block; width: 100%; height: auto; }
 .vv-regla-lema { margin: 0; font-style: italic; color: var(--muted); } .vv-regla-ficha.destacada { box-shadow: 0 0 0 2px var(--acento), 0 0 26px color-mix(in srgb, var(--acento) 45%, transparent); }
 .vv-historial { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; }
@@ -381,7 +395,7 @@ body.vv-ocupado .vv-boton { opacity: .6; pointer-events: none; }
   .vv-placa-lado { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
   .vv-placa-efecto { font-size: .86rem; } .vv-placa::before, .vv-placa::after { display: none; }
   .vv-zona-jugador { padding: 0 10px 14px; } .vv-zona-jugador .vv-apuesta { bottom: 8px; right: 10px; transform: scale(.78); transform-origin: bottom right; }
-  .vv-zapato { top: 58px; right: 8px; width: 36px; } .vv-velas { gap: 2px; } .vv-velas i { width: 5px; } .vv-velas i.m17 { margin-left: 4px; }
+  .vv-zapato { top: 58px; right: 8px; width: 36px; } .vv-ojo { top: 112px; right: 6px; width: 42px; } .vv-ojo-etq { font-size: .46rem; letter-spacing: .02em; white-space: nowrap; } .vv-velas { gap: 2px; } .vv-velas i { width: 5px; } .vv-velas i.m17 { margin-left: 4px; }
   .vv-dock { position: sticky; bottom: 0; margin: 8px -4px 0; padding: 10px 10px 12px; border-radius: 14px 14px 0 0; border-width: 1.5px; box-shadow: 0 -10px 30px #000d; }
   .vv-boton { min-height: 56px; min-width: 0; flex: 1 1 130px; padding: 6px 12px; } .vv-boton kbd { display: none; }
   .vv-botones { gap: 8px; } .vv-fin-resumen { text-align: center; width: 100%; }

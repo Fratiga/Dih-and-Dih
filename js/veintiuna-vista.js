@@ -49,7 +49,65 @@
         "Después sigues con tu mano nueva (pedir o plantarte); el crupier juega su turno como siempre. El peaje no se devuelve y en la mesa de práctica es simbólico."
       ],
       estado: (usada) => usada ? "Gastada" : "Disponible"
+    },
+    ojo: {
+      id: "ojo", nombre: "Ojo del Tahúr", lema: "Mira antes de saltar.",
+      resumen: "Paga un peaje y mira la siguiente carta de la baraja.",
+      detalle: peaje => [
+        "Una vez por ronda, mientras no tengas 21, puedes pagar el peaje (" + peaje + ") para ver la siguiente carta de la baraja antes de decidir.",
+        "Es la carta que recibirías si pides. Si te plantas, es la primera que robará el crupier si le hace falta: así funciona una baraja de verdad.",
+        "Solo mira: no cambia nada. El peaje no se devuelve y en la mesa de práctica es simbólico."
+      ],
+      estado: (usada) => usada ? "Gastado" : "Disponible"
+    },
+    marcadas: {
+      id: "marcadas", nombre: "Cartas marcadas", lema: "La casa ya no esconde nada.",
+      resumen: "Paga un peaje y mira la carta oculta del crupier.",
+      detalle: peaje => [
+        "Una vez por ronda puedes pagar el peaje (" + peaje + ") para ver la carta oculta del crupier. Solo la ves tú.",
+        "Sabiendo cuánto suma su mano, sabes cuándo te basta con plantarte y cuándo te toca arriesgar. La carta no cambia ni se mueve: sigue oculta hasta que el crupier juega su turno.",
+        "El peaje no se devuelve y en la mesa de práctica es simbólico."
+      ],
+      estado: (usada) => usada ? "Gastadas" : "Disponibles"
+    },
+    trueque: {
+      id: "trueque", nombre: "Trueque con la casa", lema: "Tu carta por la suya.",
+      resumen: "Cambia tu primera carta por la que el crupier enseña.",
+      detalle: peaje => [
+        "Una vez por ronda, antes de pedir carta, puedes pagar el peaje (" + peaje + ", una apuesta igual) para cambiar tu primera carta por la que el crupier tiene boca arriba. Los dos veis el cambio.",
+        "Con un 2 y un 3 contra un rey, por ejemplo, pasas a tener rey y 3, y el crupier a enseñar un 2. Si el cambio te deja en 21 no es blackjack natural: no paga 3 a 2.",
+        "La carta oculta del crupier no se toca. El peaje no se devuelve y en la mesa de práctica es simbólico."
+      ],
+      estado: (usada) => usada ? "Hecho" : "Disponible antes de pedir"
+    },
+    vela: {
+      id: "vela", nombre: "Vela corta", lema: "La cera se derrite antes.",
+      resumen: "El crupier se planta con 16, pero el natural paga 6 a 5.",
+      detalle: () => [
+        "En esta ronda el crupier se planta con 16 o más, en lugar de 17: pide con 15 o menos. Sigue plantándose con un 17 blando.",
+        "A cambio, un blackjack natural paga 6 a 5 en lugar de 3 a 2 (con 10 de apuesta cobras 22 y no 25).",
+        "No hay botón ni peaje: cambia lo que te conviene hacer con 12 a 16 puntos."
+      ],
+      estado: () => "Activa en toda la ronda"
+    },
+    bufon: {
+      id: "bufon", nombre: "Pacto del Bufón", lema: "Un dado antes de decidir.",
+      resumen: "Al repartir, el Bufón puede cambiar una carta al azar.",
+      detalle: () => [
+        "Al repartir, el Bufón tira un dado: con 1 o 2 no pasa nada; con 3 o 4 cambia la carta visible del crupier por la siguiente de la baraja; con 5 o 6 hace lo mismo con tu primera carta.",
+        "Siempre es por una carta al azar, así que de media ni te ayuda ni te estorba: solo pone caos antes de que decidas nada. La carta oculta nunca se toca.",
+        "No hay botón ni peaje."
+      ],
+      estado: (usada, fase, evento) => evento === "crupier" ? "Cambió la carta del crupier" : evento === "jugador" ? "Cambió tu primera carta" : evento === "nada" ? "El dado no cambió nada" : "El dado decide al repartir"
     }
+  };
+  const ORDEN_REGLAS = ["fortuna", "maldicion", "voluntad", "ojo", "marcadas", "trueque", "vela", "bufon"];
+  // Lo que enseña el botón de la acción especial de cada regla
+  const BOTON_ESPECIAL = {
+    voluntad: ["Última voluntad", "cambia tu última carta"],
+    ojo: ["Ojo del Tahúr", "ver la siguiente carta"],
+    marcadas: ["Cartas marcadas", "ver la carta oculta"],
+    trueque: ["Trueque con la casa", "tu 1.ª carta por la del crupier"]
   };
 
   /* ---------------------------------------------------------------- resultados */
@@ -95,6 +153,14 @@
     } else if (antes.regla.id === "voluntad" && !antes.regla.usada && est.regla.usada) {
       partes.push(`Cambias tu última carta: ahora tienes ${nombreCarta(j.cartas[j.cartas.length - 1])}. Sumas ${j.total}${j.blando ? " en blando" : ""}.`);
     }
+    if (est.regla.evento && (!antes || antes.partida !== est.partida)) {
+      partes.push(est.regla.evento === "nada" ? "El dado del Bufón no cambia nada." : est.regla.evento === "crupier" ? "El Bufón cambia la carta visible del crupier." : "El Bufón cambia tu primera carta.");
+    }
+    if (est.regla.proxima && !(antes && antes.regla.proxima && antes.partida === est.partida)) partes.push(`Miras la baraja: la siguiente carta es ${nombreCarta(est.regla.proxima)}.`);
+    if (c.vista && !(antes && antes.crupier.vista && antes.partida === est.partida)) partes.push(`La carta oculta del crupier es ${nombreCarta(c.vista)}.`);
+    if (antes && antes.partida === est.partida && est.regla.id === "trueque" && est.regla.usada && !antes.regla.usada) {
+      partes.push(`Haces el trueque: ahora tienes ${lista(j.cartas.map(nombreCarta))} y el crupier enseña ${nombreCarta(c.cartas[0])}. Sumas ${j.total}.`);
+    }
     if (est.fase === "fortuna") partes.push("Te pasaste de 21. Puedes pagar el peaje de la Fortuna para salvar la mano, o aceptar la derrota.");
     if (est.estado === "terminada") {
       partes.push(`El crupier enseña ${lista(c.cartas.map(nombreCarta))}, suma ${c.total}.`);
@@ -121,8 +187,9 @@
       { id: "plantar", texto: "Plantarse", sub: "", habilitado: !!a.plantar, motivo: "", principal: true, tecla: "L" }
     ];
     const e = a.especial;
-    if (e && e !== "null" && e.tipo === "voluntad") {
-      botones.push({ id: "voluntad", texto: "Última voluntad", sub: e.disponible ? "cambia tu última carta · " + (est.modo === "practica" ? `peaje simbólico ${monedas(e.peaje)}` : `peaje ${monedas(e.peaje)}`) : e.motivo, habilitado: !!e.disponible, motivo: e.disponible ? "" : "Última voluntad: " + e.motivo + ".", especial: true, tecla: "V" });
+    if (e && e !== "null" && BOTON_ESPECIAL[e.tipo]) {
+      const [texto, efecto] = BOTON_ESPECIAL[e.tipo];
+      botones.push({ id: e.tipo, texto, sub: e.disponible ? efecto + " · " + (est.modo === "practica" ? `peaje simbólico ${monedas(e.peaje)}` : `peaje ${monedas(e.peaje)}`) : e.motivo, habilitado: !!e.disponible, motivo: e.disponible ? "" : texto + ": " + e.motivo + ".", especial: true, tecla: "V" });
     }
     return { fase: "mano", botones };
   }
@@ -191,10 +258,16 @@
     fortuna: ["La suerte tiene peaje.", "Salvada, a un precio."],
     voluntad: ["Última voluntad concedida.", "Reescribe tu suerte, pues.", "Esa carta ya no cuenta."],
     maldicion: ["Esta mano está maldita.", "Las figuras pesan hoy."],
+    ojo: ["Mira, mira. El mazo no guarda secretos.", "Un vistazo no hace daño. Cuesta, eso sí."],
+    marcadas: ["Así que ves mi mano. Qué descaro.", "Las cartas hablan, ¿verdad?"],
+    trueque: ["Trato hecho. Tu carta es mía.", "El trueque, siempre a favor de quien lo paga."],
+    vela: ["Esta vela se apaga antes.", "Hoy me derrito pronto."],
+    bufon: ["¡El Bufón mete la mano!", "Un poquito de caos no le hace mal a nadie."],
+    bufonNada: ["El dado no quiso nada esta vez.", "El Bufón bosteza."],
     sinMonedas: ["Sin monedas no hay mesa. La práctica es gratis."]
   };
   const elegir = (clave, azar) => { const l = DICHOS[clave] || []; return l.length ? l[Math.floor((azar ? azar() : Math.random()) * l.length) % l.length] : ""; };
 
-  const API = { monedas, conSigno, plural, REGLAS, RAZONES, TITULOS, resultado, anuncio, acciones, fichasDisponibles, motivoApuesta, ajustarApuesta, apuestaInicial, mensajeError, NIVELES, estadoLogro, DICHOS, elegir, nombreCarta, nombreRango, lista };
+  const API = { ORDEN_REGLAS, BOTON_ESPECIAL, monedas, conSigno, plural, REGLAS, RAZONES, TITULOS, resultado, anuncio, acciones, fichasDisponibles, motivoApuesta, ajustarApuesta, apuestaInicial, mensajeError, NIVELES, estadoLogro, DICHOS, elegir, nombreCarta, nombreRango, lista };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.VeintiunaVista = API;
 })(typeof window !== "undefined" ? window : globalThis);

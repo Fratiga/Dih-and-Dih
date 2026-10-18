@@ -38,3 +38,51 @@ begin
   ev := suma / p_n; error := sqrt(greatest(suma2 / p_n - (suma / p_n) ^ 2, 0)) / sqrt(p_n); voluntades := v_vol; fortunas := v_for;
   return next;
 end $$;
+
+-- Las cinco reglas nuevas con estrategias fijas sencillas (no son las óptimas: sirven para comprobar que el servidor hace lo mismo que la simulación de referencia)
+--   ojo:      con 12 a 16 puntos paga el peaje y mira; si la carta que viene la pasaría de 21 se planta, si no la pide
+--   marcadas: paga el peaje al principio y ve la oculta; si el crupier ya tiene 17 o más pide hasta superarlo (21 como mucho), si no se planta con 12 o más
+--   trueque:  si la carta visible del crupier vale al menos 5 más que tu primera (as = 11, figura = 10), hace el trueque
+--   vela, bufon: sin acción, juegan con las reglas normales de pedir y plantarse
+create or replace function t_ev2(p_regla text, p_n int)
+returns table (ev numeric, error numeric)
+language plpgsql as $$
+declare
+  u uuid := '00000000-0000-0000-0000-000000000003';
+  s jsonb; p veintiuna_partidas%rowtype; vj record; vn record; vd record; up int; i int; x numeric; suma numeric := 0; suma2 numeric := 0; accion text; r int; rj int; objetivo int; sig smallint;
+begin
+  delete from veintiuna_partidas where user_id = u;
+  for i in 1..p_n loop
+    insert into veintiuna_estadisticas (user_id, proxima_regla) values (u, p_regla) on conflict (user_id) do update set proxima_regla = p_regla;
+    s := veintiuna_i_repartir(u, gen_random_uuid(), 'practica', 0, veintiuna_i_mazo());
+    select * into p from veintiuna_partidas where id = (s ->> 'partida')::uuid;
+    while p.estado = 'en_curso' loop
+      select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, 10);
+      r := (p.crupier[1] % 13) + 1;
+      up := case when r = 1 then 11 when r >= 10 then 10 else r end;
+      rj := (p.jugador[1] % 13) + 1;
+      if vj.total >= 21 then accion := 'plantar';
+      elsif p_regla = 'trueque' and not p.trueque_usado and array_length(p.jugador, 1) = 2 and up - (case when rj = 1 then 11 when rj >= 10 then 10 else rj end) >= 5 then accion := 'trueque';
+      elsif p_regla = 'ojo' and p.ojo_pos is null and vj.total between 12 and 16 then accion := 'ojo';
+      elsif p_regla = 'ojo' and p.ojo_pos is not null and p.ojo_pos = p.repartidas then
+        sig := p.mazo[p.repartidas + 1];
+        select * into vn from veintiuna_i_valor(p.jugador || sig, p.jugador_as1, 10);
+        accion := case when vn.total > 21 then 'plantar' else 'pedir' end;
+      elsif p_regla = 'marcadas' and not p.marcadas_usada then accion := 'marcadas';
+      elsif p_regla = 'marcadas' then
+        select * into vd from veintiuna_i_valor(p.crupier, '{}'::int[], 10);
+        objetivo := case when vd.total >= 17 then least(21, vd.total + 1) else 12 end;
+        accion := case when vj.total >= objetivo then 'plantar' else 'pedir' end;
+      elsif (case when vj.blando then vj.total >= (case when up >= 9 then 19 else 18 end) else vj.total >= (case when up >= 7 then 17 else 12 end) end) then accion := 'plantar';
+      else accion := 'pedir';
+      end if;
+      perform veintiuna_i_aplicar(p.id, accion);
+      select * into p from veintiuna_partidas where id = p.id;
+    end loop;
+    x := p.neto / p.apuesta;
+    suma := suma + x; suma2 := suma2 + x * x;
+    delete from veintiuna_partidas where id = p.id;
+  end loop;
+  ev := suma / p_n; error := sqrt(greatest(suma2 / p_n - (suma / p_n) ^ 2, 0)) / sqrt(p_n);
+  return next;
+end $$;

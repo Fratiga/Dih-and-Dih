@@ -91,6 +91,29 @@ const vol = base({ regla: { id: "voluntad", usada: false, peaje: 10 } });
 t = V.anuncio(vol, base({ regla: { id: "voluntad", usada: true, peaje: 10 }, jugador: { cartas: [carta(10, 0), carta(1, 3)], total: 21, blando: true } }));
 comprobar("al cambiar la última carta con la Última voluntad lo dice", t, "Cambias tu última carta: ahora tienes as de tréboles. Sumas 21 en blando.");
 
+console.log("== Las cinco reglas nuevas");
+comprobar("hay ocho reglas con ficha completa", V.ORDEN_REGLAS.length === 8 && V.ORDEN_REGLAS.every(id => { const R = V.REGLAS[id]; return R && R.nombre && R.lema && R.resumen && R.detalle("10").length >= 2 && typeof R.estado(false, "jugador", null) === "string"; }), true);
+for (const [id, texto, efecto] of [["ojo", "Ojo del Tahúr", "ver la siguiente carta"], ["marcadas", "Cartas marcadas", "ver la carta oculta"], ["trueque", "Trueque con la casa", "tu 1.ª carta por la del crupier"]]) {
+  a = V.acciones(base({ regla: { id, usada: false, peaje: 7 }, acciones: { pedir: true, plantar: true, especial: { tipo: id, disponible: true, motivo: null, peaje: 7 } } }));
+  comprobar("botón de " + id + ": id, texto, efecto, tecla V y peaje", [a.botones[2].id, a.botones[2].texto, a.botones[2].sub.startsWith(efecto), a.botones[2].tecla, /peaje 7/.test(a.botones[2].sub)], [id, texto, true, "V", true]);
+  a = V.acciones(base({ regla: { id, usada: true, peaje: 7 }, acciones: { pedir: true, plantar: true, especial: { tipo: id, disponible: false, motivo: "ya lo usaste", peaje: 7 } } }));
+  comprobar("botón de " + id + " ya gastado: deshabilitado con su razón", [a.botones[2].habilitado, a.botones[2].motivo], [false, texto + ": ya lo usaste."]);
+}
+a = V.acciones(base({ regla: { id: "vela", usada: false }, acciones: { pedir: true, plantar: true, especial: null } }));
+comprobar("Vela corta y Pacto del Bufón no tienen botón especial", a.botones.map(b => b.id), ["pedir", "plantar"]);
+comprobar("el estado del Bufón dice qué hizo el dado", [V.REGLAS.bufon.estado(false, "jugador", "crupier"), V.REGLAS.bufon.estado(false, "jugador", "jugador"), V.REGLAS.bufon.estado(false, "jugador", "nada")], ["Cambió la carta del crupier", "Cambió tu primera carta", "El dado no cambió nada"]);
+comprobar("la Vela corta lo explica con las dos cifras (16 y 6 a 5)", V.REGLAS.vela.detalle().join(" ").includes("16") && V.REGLAS.vela.detalle().join(" ").includes("6 a 5"), true);
+t = V.anuncio(base({ regla: { id: "ojo", usada: false, peaje: 7 } }), base({ regla: { id: "ojo", usada: true, peaje: 7, proxima: carta(13, 1) } }));
+comprobar("el Ojo del Tahúr anuncia la siguiente carta", /la siguiente carta es rey de corazones/.test(t), true);
+t = V.anuncio(base({ regla: { id: "marcadas", usada: false, peaje: 4 } }), base({ regla: { id: "marcadas", usada: true, peaje: 4 }, crupier: { cartas: [carta(9, 2)], ocultas: 1, total: 9, blando: false, vista: carta(7, 0) } }));
+comprobar("las Cartas marcadas anuncian la carta oculta", /La carta oculta del crupier es 7 de picas/.test(t), true);
+t = V.anuncio(base({ regla: { id: "trueque", usada: false, peaje: 20 } }), base({ regla: { id: "trueque", usada: true, peaje: 20 }, jugador: { cartas: [carta(9, 2), carta(5, 1)], total: 14, blando: false }, crupier: { cartas: [carta(10, 0)], ocultas: 1, total: 10, blando: false } }));
+comprobar("el Trueque cuenta cómo quedan las dos manos", /Haces el trueque: ahora tienes 9 de diamantes y 5 de corazones y el crupier enseña 10 de picas/.test(t), true);
+t = V.anuncio(null, base({ regla: { id: "bufon", usada: false, evento: "jugador" } }));
+comprobar("al repartir el Bufón dice si cambió tu carta", /El Bufón cambia tu primera carta/.test(t), true);
+t = V.anuncio(null, base({ regla: { id: "bufon", usada: false, evento: "nada" } }));
+comprobar("y si el dado no cambió nada", /no cambia nada/.test(t), true);
+
 console.log("== Errores con palabras");
 comprobar("sin conexión", /Reintentar/.test(V.mensajeError({ tipo: "red" })), true);
 comprobar("mano en curso", V.mensajeError({ tipo: "servidor", codigo: "mano_en_curso", mensaje: "x" }), "Ya tenías una mano abierta. La recupero.");
@@ -191,7 +214,9 @@ console.log("== Llamadas al servidor");
     ["texto del total sobre su pastilla de oro", "#1a1006", "#d9a441"], ["rojo de los palos sobre el papel de la carta", "#a8202f", "#f4ead2"],
     ["tinta de los palos sobre el papel de la carta", "#1b1722", "#f4ead2"], ["marfil sobre la placa", "#f4ead2", "#1a0f0a"],
     ["verde de la regla Fortuna sobre la placa", "#7fd08a", "#1a0f0a"], ["rosa de la regla Maldición sobre la placa", "#f07a8a", "#1a0f0a"],
-    ["violeta de la regla Última voluntad sobre la placa", "#b6a2ff", "#1a0f0a"], ["texto oscuro de la insignia sobre el oro", "#1a1006", "#d9a441"],
+    ["violeta de la regla Última voluntad sobre la placa", "#b6a2ff", "#1a0f0a"],
+    ["turquesa del Ojo del Tahúr sobre la placa", "#58c7d6", "#1a0f0a"], ["naranja de las Cartas marcadas sobre la placa", "#e6a35a", "#1a0f0a"], ["amarillo del Trueque sobre la placa", "#e8d26a", "#1a0f0a"],
+    ["ámbar de la Vela corta sobre la placa", "#ffb24a", "#1a0f0a"], ["lila del Pacto del Bufón sobre la placa", "#c58cf5", "#1a0f0a"], ["texto oscuro de la insignia sobre el oro", "#1a1006", "#d9a441"],
     ["texto del dicho de la crupier sobre su globo", "#1a1006", "#f4ead2"], ["marfil sobre diálogo", "#f4ead2", "#150e1a"], ["apagado sobre diálogo", "#c9bba0", "#150e1a"]
   ];
   pares.forEach(([nombre, fg, bg]) => { const x = ratio(fg, bg); cierto(`${nombre}: ${x.toFixed(1)}:1 (mínimo 4,5:1)`, x >= 4.5); });

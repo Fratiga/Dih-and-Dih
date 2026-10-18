@@ -34,7 +34,7 @@ begin
   end loop;
   reset role;
   perform t_check('120 manos jugadas por la ruta del navegador, todas terminadas', n_terminadas = 120 and not exists (select 1 from veintiuna_partidas where estado = 'en_curso'));
-  perform t_check('Salieron las tres reglas (' || array_to_string(reglas, ', ') || ')', array_length(reglas, 1) = 3);
+  perform t_check('Salieron las ocho reglas (' || array_to_string(reglas, ', ') || ')', array_length(reglas, 1) = 8);
   perform t_check('Mientras las manos seguían en curso nunca salió más de una carta del crupier ni la baraja', ok_cartas);
   perform t_check('La billetera cuadra con el libro: saldo = inicial + suma de movimientos', (select saldo from hipodromo_billeteras where usuario = u) = saldo0 + (select coalesce(sum(monto), 0) from hipodromo_movimientos where usuario = u));
   perform t_check('Cada movimiento lleva el número de su mano', not exists (select 1 from hipodromo_movimientos where usuario = u and concepto not like '%(mano %'));

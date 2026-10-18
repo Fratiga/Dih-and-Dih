@@ -217,6 +217,7 @@
   }
   function limpiarManos(conBarrido) {
     ["vvManoCrupier", "vvManoJugador"].forEach(id => { const m = $(id); m.innerHTML = ""; ajustarAbanico(m); });
+    $("vvOjo").hidden = true;
   }
   async function barrerMesa() {
     const cartas = [...document.querySelectorAll(".vv-mano .vv-carta")];
@@ -228,6 +229,7 @@
       }));
     }
     limpiarManos();
+    $("vvOjo").hidden = true;
   }
 
   function pintarTotales(est, opciones) {
@@ -254,12 +256,14 @@
     $("vvPlacaIcono").innerHTML = A.ICONOS[reglaId];
     $("vvPlacaEtq").textContent = modoEtiqueta === "proxima" ? "Regla de la próxima mano" : "Regla de esta mano";
     $("vvPlacaNombre").textContent = R.nombre;
+    $("vvLeyendaPaga").textContent = reglaId === "vela" ? "La veintiuna paga seis a cinco" : "La veintiuna paga tres a dos";
+    $("vvLeyendaPlanta").textContent = reglaId === "vela" ? "La casa se planta con dieciséis" : "La casa se planta con diecisiete";
     $("vvPlacaEfecto").textContent = R.resumen;
     const usada = est ? !!est.regla.usada : false;
     const fase = est ? est.fase : "";
     let estado = "";
-    if (modoEtiqueta === "proxima") estado = reglaId === "maldicion" ? "Activa en toda la mano" : "Disponible en la mano";
-    else estado = R.estado(usada, fase);
+    if (modoEtiqueta === "proxima") estado = reglaId === "maldicion" || reglaId === "vela" ? "Activa en toda la mano" : reglaId === "bufon" ? "Un dado al repartir" : "Disponible en la mano";
+    else estado = R.estado(usada, fase, est && est.regla ? est.regla.evento : null);
     const chip = $("vvPlacaEstado");
     chip.textContent = estado;
     chip.className = "vv-placa-estado" + (usada ? " gastada" : fase === "fortuna" ? " urgente" : "");
@@ -268,9 +272,32 @@
       if (!sinMovimiento()) placa.classList.add("cambia");
     }
   }
+  // Lo que solo tú ves: la siguiente carta (Ojo del Tahúr) y la oculta del crupier (Cartas marcadas)
+  function pintarVistas(est) {
+    const ojo = $("vvOjo");
+    const prox = est && est.estado === "en_curso" && est.regla ? est.regla.proxima : null;
+    if (prox) {
+      const el = $("vvOjoCarta");
+      if (el.dataset.k !== prox.r + "-" + prox.p) { el.innerHTML = A.cara(prox); el.dataset.k = prox.r + "-" + prox.p; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; }
+      el.setAttribute("aria-label", "Siguiente carta de la baraja: " + A.nombreCarta(prox));
+      ojo.hidden = false;
+    } else { ojo.hidden = true; $("vvOjoCarta").dataset.k = ""; }
+    const hole = manoEl("crupier").querySelector(".vv-boca-abajo");
+    if (hole) {
+      const v = est && est.estado === "en_curso" ? est.crupier.vista : null;
+      const ya = hole.querySelector(".vv-vista");
+      if (v && !ya) {
+        const s = document.createElement("span");
+        s.className = "vv-vista"; s.setAttribute("aria-hidden", "true"); s.innerHTML = A.cara(v);
+        hole.querySelector(".vv-lado-dorso").after(s);
+        hole.setAttribute("aria-label", "carta oculta, que solo tú ves: " + A.nombreCarta(v));
+        sonar("giro");
+      } else if (!v && ya) { ya.remove(); hole.setAttribute("aria-label", "carta oculta"); }
+    }
+  }
   const peajeTexto = (id) => {
     const m = S.mesa; if (!m) return "";
-    const f = id === "fortuna" ? m.peajes.fortuna : m.peajes.voluntad;
+    const f = m.peajes[id] != null ? m.peajes[id] : 0;
     return `${Math.round(f * 100)} % de la apuesta`;
   };
 
@@ -325,7 +352,7 @@
     const motivo = practica ? "" : V.motivoApuesta(S.apuesta, saldo, lim);
     const sinFondos = !practica && saldo < lim.min;
     const regla = V.REGLAS[m.proxima_regla];
-    const peajeLinea = regla && regla.id !== "maldicion" ? ` Peaje: ${peajeTexto(regla.id)}.` : "";
+    const peajeLinea = regla && m.peajes[regla.id] != null ? ` Peaje: ${peajeTexto(regla.id)}.` : "";
     cuerpo.innerHTML = `
       <div class="vv-apuesta-panel">
         <div class="vv-modos" role="radiogroup" aria-label="Modalidad de la mesa">
@@ -451,7 +478,7 @@
     for (let i = 0; i < est.crupier.cartas.length; i++) await repartirCarta("crupier", est.crupier.cartas[i], false, { animar: false });
     if (est.crupier.ocultas) await repartirCarta("crupier", null, true, { animar: false });
     S.pintado = { partida: est.partida, nJ: est.jugador.cartas.length, nC: est.crupier.cartas.length, terminada: false };
-    pintarTotales(est); pintarPlaca(est.regla.id, "actual", est); pintarFichasMesa(est);
+    pintarTotales(est); pintarPlaca(est.regla.id, "actual", est); pintarFichasMesa(est); pintarVistas(est);
     crupierEstado(est.fase === "fortuna" ? "jugador" : "jugador");
     leer(V.anuncio(null, est));
     musica(true);
@@ -499,7 +526,7 @@
     const placa = est.regla.id;
     pintarPlaca(placa, "actual", est);
     crupierEstado("reparto");
-    decir(placa === "maldicion" ? "maldicion" : "reparto", 0.55);
+    decir(placa === "maldicion" ? "maldicion" : placa === "vela" ? "vela" : "reparto", 0.55);
     pintarFichasMesa(est);
     pintarTotales(null);
     const j = est.jugador.cartas, c = est.crupier.cartas;
@@ -519,10 +546,46 @@
       S.pintado.nC = c.length;
     }
     await esperar(160);
+    if (est.regla.evento) await bufonActua(est);
+  }
+
+  // El Pacto del Bufón ya cambió una carta en el servidor; aquí se cuenta con un destello en la carta afectada
+  async function bufonActua(est) {
+    const ev = est.regla.evento;
+    if (ev === "nada") { decir("bufonNada", 1); tostada("El dado del Bufón no cambia nada esta mano.", { icono: "🎲", ms: 5000 }); return; }
+    const cual = ev === "crupier" ? manoEl("crupier").firstElementChild : manoEl("jugador").firstElementChild;
+    decir("bufon", 1);
+    sonar("giro");
+    tostada(ev === "crupier" ? "El Bufón cambia la carta visible del crupier." : "El Bufón cambia tu primera carta.", { icono: "🎲", ms: 6000 });
+    if (cual) { cual.classList.add("convertida"); setTimeout(() => cual.classList.remove("convertida"), 1400); }
+    await esperar(400);
+  }
+
+  // Trueque con la casa: tu primera carta y la visible del crupier cruzan la mesa y se cambian
+  async function hacerTrueque(est) {
+    const eJ = manoEl("jugador").firstElementChild, eC = manoEl("crupier").firstElementChild;
+    if (!eJ || !eC) return;
+    decir("trueque", 1);
+    sonar("giro");
+    const rJ = eJ.getBoundingClientRect(), rC = eC.getBoundingClientRect();
+    const dx = (rC.left + rC.width / 2) - (rJ.left + rJ.width / 2), dy = (rC.top + rC.height / 2) - (rJ.top + rJ.height / 2);
+    await Promise.all([
+      animar(eJ, [{ transform: "none", zIndex: 5 }, { transform: `translate(${dx}px, ${dy}px) rotate(8deg)`, zIndex: 5 }], { duration: 480 }),
+      animar(eC, [{ transform: "none", zIndex: 5 }, { transform: `translate(${-dx}px, ${-dy}px) rotate(-8deg)`, zIndex: 5 }], { duration: 480 })
+    ]);
+    const cartaJ = est.jugador.cartas[0], cartaC = est.crupier.cartas[0];
+    [[eJ, cartaJ], [eC, cartaC]].forEach(([el, c]) => {
+      el.getAnimations().forEach(a => { try { a.cancel(); } catch (e) { /* ya cancelada */ } });
+      el.querySelector(".vv-lado-cara").innerHTML = A.cara(c);
+      el.setAttribute("aria-label", A.nombreCarta(c));
+      el.dataset.r = c.r; el.dataset.p = c.p;
+      el.classList.add("convertida"); setTimeout(() => el.classList.remove("convertida"), 1400);
+    });
   }
 
   async function continuarMano(est, previo, antes) {
     let nJ = antes.nJ;
+    if (previo && previo.regla.id === "trueque" && !previo.regla.usada && est.regla.usada) await hacerTrueque(est);
     // La Última voluntad cambia la última carta: la vieja se retira (vuelve al mazo) y la nueva llega en su lugar
     if (previo && previo.regla.id === "voluntad" && !previo.regla.usada && est.regla.usada && est.jugador.cartas.length >= nJ) {
       const viejo = manoEl("jugador").lastElementChild;
@@ -557,6 +620,7 @@
     pintarTotales(est, { ocultarCrupier: est.estado === "terminada" });
     pintarPlaca(est.regla.id, "actual", est);
     pintarFichasMesa(est);
+    pintarVistas(est);
     if (est.estado === "terminada") {
       fase("espera");
       crupierEstado("crupier");
@@ -795,11 +859,12 @@
 
   function abrirReglas(foco) {
     const m = S.mesa;
-    const pj = m ? Math.round(m.peajes.fortuna * 100) : 60, pv = m ? Math.round(m.peajes.voluntad * 100) : 50;
+    const por = { fortuna: 60, voluntad: 50, ojo: 35, marcadas: 18, trueque: 100 };
+    const peajeDe = id => (m && m.peajes && m.peajes[id] != null ? Math.round(m.peajes[id] * 100) : por[id]) + " % de la apuesta";
     const lim = m ? m.limites : { min: 10, max: 100, paso: 10 };
-    const reglas = ["fortuna", "maldicion", "voluntad"].map(id => {
+    const reglas = V.ORDEN_REGLAS.map(id => {
       const R = V.REGLAS[id];
-      const lineas = R.detalle(id === "fortuna" ? pj + " % de la apuesta" : pv + " % de la apuesta");
+      const lineas = R.detalle(peajeDe(id));
       return `<article class="vv-regla-ficha" data-regla="${id}" id="vvRegla-${id}"><div class="vv-regla-icono" aria-hidden="true">${A.ICONOS[id]}</div><div><h3>${esc(R.nombre)}</h3><p class="vv-regla-lema">${esc(R.lema)}</p><ul>${lineas.map(l => `<li>${esc(l)}</li>`).join("")}</ul></div></article>`;
     }).join("");
     abrir($("vvDlgReglas"), `${cabeceraDlg("vvDlgReglasT", "Cómo se juega", "Blackjack contra la casa, con una regla especial por mano")}
@@ -808,19 +873,19 @@
           <li>Baraja de 52 cartas, barajada de nuevo en cada mano. Recibes dos cartas; el crupier, una boca arriba y otra oculta.</li>
           <li>El as vale 1 u 11, J, Q y K valen 10 (11 con la Maldición) y el resto, su número. Gana quien más se acerque a 21 sin pasarse.</li>
           <li>Puedes <strong>pedir carta</strong> o <strong>plantarte</strong>. Si pasas de 21, pierdes. No hay dividir, doblar, seguro ni rendición.</li>
-          <li>El crupier pide con 16 o menos y se planta con 17 o más, <strong>también con un 17 blando</strong>.</li>
+          <li>El crupier pide con 16 o menos y se planta con 17 o más, <strong>también con un 17 blando</strong>. Con la Vela corta se planta ya con 16.</li>
           <li>Un <strong>blackjack natural</strong> es un 21 con las dos primeras cartas. Un 21 conseguido pidiendo carta no lo es.</li>
         </ul></section>
         <section><h3>Pagos</h3>
           <table class="vv-tabla"><thead><tr><th>Resultado</th><th>Cobras</th></tr></thead><tbody>
             <tr><td>Victoria</td><td>1 a 1: tu apuesta y otra igual</td></tr>
-            <tr><td>Blackjack natural</td><td>3 a 2: tu apuesta y una vez y media más</td></tr>
+            <tr><td>Blackjack natural</td><td>3 a 2: tu apuesta y una vez y media más (6 a 5 con la Vela corta)</td></tr>
             <tr><td>Empate</td><td>Te devuelven la apuesta</td></tr>
             <tr><td>Derrota</td><td>Pierdes la apuesta</td></tr></tbody></table>
           <p>Apuestas de ${V.monedas(lim.min)} a ${V.monedas(lim.max)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}. Los peajes de las reglas no se devuelven.</p>
           <p><strong>Orden al repartir:</strong> si te pasas de 21 (solo con la Maldición), pierdes; si los dos tenéis blackjack natural, es empate; si lo tienes tú, cobras 3 a 2; si lo tiene el crupier, pierdes; si el crupier se pasa de 21 (solo con la Maldición), ganas. Si la mano sigue, es que el crupier no tiene blackjack natural.</p>
         </section>
-        <section><h3>Las tres reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
+        <section><h3>Las ocho reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
         <section><h3>Mesa de práctica y desafíos</h3><ul>
           <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga monedas. Cuenta para los desafíos.</li>
           <li>Los <strong>desafíos</strong> se comprueban en el servidor. Cada uno que completes se puede reclamar una vez y da una carta del juego de Triunfos, siempre respetando los límites de la colección (como mucho una carta al día desde esta mesa).</li>
@@ -834,7 +899,7 @@
     abrir($("vvDlgAtajos"), `${cabeceraDlg("vvDlgAtajosT", "Atajos de teclado")}
       <div class="vv-dlg-cuerpo"><table class="vv-tabla"><tbody>
         <tr><td><kbd>P</kbd></td><td>Pedir carta</td></tr><tr><td><kbd>L</kbd></td><td>Plantarse</td></tr>
-        <tr><td><kbd>V</kbd></td><td>Última voluntad (cambiar tu última carta), o salvar la mano con la Fortuna</td></tr><tr><td><kbd>A</kbd></td><td>Aceptar la derrota (cuando la Fortuna te lo ofrece)</td></tr>
+        <tr><td><kbd>V</kbd></td><td>La acción de la regla de la mano: Última voluntad, Ojo del Tahúr, Cartas marcadas, Trueque o salvar la mano con la Fortuna</td></tr><tr><td><kbd>A</kbd></td><td>Aceptar la derrota (cuando la Fortuna te lo ofrece)</td></tr>
         <tr><td><kbd>Intro</kbd></td><td>Otra mano, cuando termina la anterior</td></tr><tr><td><kbd>Espacio</kbd></td><td>Saltar la animación</td></tr></tbody></table>
       <p>Todos los botones también se manejan con Tab e Intro.</p></div>`);
   }
