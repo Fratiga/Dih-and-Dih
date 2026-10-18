@@ -55,7 +55,12 @@
   let borradores = leerJson(KEY_BORR, []);
   borradores.forEach(b => { if (b.numero === undefined) b.numero = ""; }); // borradores de antes de que los ciclos tuvieran número
   let borradorActual = borradores.length ? borradores[0].id : null;
+  // Qué está desplegado en el Editor. Se recuerda entre repintados, porque agregar o quitar algo repinta todo.
+  const abiertos = new Set();
   let meta = null;
+  // Los ciclos tal como están en sus archivos, sin los borradores. Si hay un borrador con el mismo id,
+  // "meta" lo usa en lugar del archivo, así que para cargar o comparar con el archivo hay que mirar aquí.
+  let metaArchivos = null;
   let L = null;
   let pg = null;
   let visitas = 0;
@@ -251,6 +256,7 @@
   const pCiclos = pestana("ciclos", "Ciclos");
   async function cargarMeta() {
     meta = await M.leerMeta(borradoresActivos());
+    metaArchivos = borradoresActivos().length ? await M.leerMeta([]) : meta;
     pintarCiclosCtrl();
     return meta;
   }
@@ -326,6 +332,8 @@
       if ((t.cerrar || "").trim()) tc.cerrar = t.cerrar.trim();
       if (lista(t.tras).length) tc.tras = lista(t.tras);
       if (lista(t.hechos).length) tc.hechos = lista(t.hechos);
+      if (lista(t.lados).length) tc.lados = lista(t.lados).map(x => x.toUpperCase());
+      if (t.jugadora) tc.jugadora = t.jugadora;
       tc.intro = { como: t.como === "boton" ? "boton" : "recuerdo", lineas: parseLineas(t.intro) };
       if (t.introAnimacion) tc.intro.animacion = t.introAnimacion.trim();
       const ir = parseInt(t.introRisa, 10); if (ir > 0) tc.intro.risa = ir;
@@ -363,6 +371,7 @@
       id: def.id, numero: def.numero, nombre: def.nombre || def.id, lados: (def.lados || []).join(", "),
       temas: (def.temas || []).map(t => ({
         id: t.id, boton: t.boton, cerrar: t.cerrar || "", tras: (t.tras || []).join(", "), hechos: (t.hechos || []).join(", "),
+        lados: (t.lados || []).join(", "), jugadora: t.jugadora || "",
         como: t.intro && t.intro.como === "boton" ? "boton" : "recuerdo", intro: lineasATexto(t.intro && t.intro.lineas),
         introAnimacion: (t.intro && t.intro.animacion) || "", introRisa: t.intro && t.intro.risa ? String(t.intro.risa) : "",
         preguntas: (t.preguntas || []).map(p => Object.assign({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", cierra: !!p.cierra, fin: !!p.fin, voces: vocesATexto(p.voces), lineas: lineasATexto(p.lineas) }, extrasDesdeConfig(p))),
@@ -412,15 +421,25 @@
   }
 
   async function importarCiclo(id) {
-    if (!meta) await cargarMeta();
-    const def = meta.defs[id];
-    if (!def) { dialogo.avisar("Ese ciclo no se puede cargar en el editor."); return; }
-    if (borradores.some(b => b.id === id) && !(await dialogo.confirmar("Ya tienes un borrador con ese id. ¿Reemplazarlo con el ciclo tal como está en su archivo?", { titulo: "Reemplazar borrador", aceptar: "Reemplazar", peligro: true }))) return;
+    if (!metaArchivos) await cargarMeta();
+    const def = metaArchivos.defs[id];
+    if (!def) { dialogo.avisar("Ese ciclo no existe en los archivos del sitio, así que no hay nada que cargar."); return; }
+    const previo = borradores.find(b => b.id === id);
+    if (previo && !(await dialogo.confirmar("Ya tienes un borrador con ese id. Se cargará el ciclo tal como está en su archivo, y tu borrador actual se guardará aparte (con «_anterior» en el id) para que no pierdas nada. ¿Continuar?", { titulo: "Cargar ciclo", aceptar: "Cargar" }))) return;
+    let respaldo = null;
+    if (previo) {
+      respaldo = id + "_anterior";
+      for (let k = 2; borradores.some(b => b.id === respaldo); k++) respaldo = id + "_anterior" + k;
+      const copia = JSON.parse(JSON.stringify(previo));
+      copia.id = respaldo; copia.nombre = (previo.nombre || id) + " (borrador anterior)";
+      borradores.push(copia);
+    }
     borradores = borradores.filter(b => b.id !== id);
     borradores.push(desdeConfig(def));
     borradorActual = id;
     guardarBorradores();
     mostrar("editor");
+    if (respaldo) dialogo.avisar("Tu borrador anterior quedó guardado como «" + respaldo + "». Elígelo en el selector de borradores si quieres recuperar algo de él.");
   }
 
   /* --- rutas "temas.0.preguntas.1.texto" --- */
@@ -472,7 +491,7 @@
   }
 
   const nuevoBorrador = (id, nombre, numero) => ({ id, numero, nombre, lados: "", temas: [] });
-  const nuevoTema = id => ({ id, boton: "", como: "recuerdo", intro: "", cerrar: "", tras: "", hechos: "", introAnimacion: "", introRisa: "", preguntas: [], grupos: [] });
+  const nuevoTema = id => ({ id, boton: "", como: "recuerdo", intro: "", cerrar: "", tras: "", hechos: "", lados: "", jugadora: "", introAnimacion: "", introRisa: "", preguntas: [], grupos: [] });
   const nuevaPregunta = id => ({ id, texto: "", requiere: "", voz: "", voces: "", tras: "", hechos: "", animacion: "", risa: "", lineas: "" });
   const nuevoGrupo = id => ({ id, requiere: "", opciones: [{ id: "si", texto: "", neutral: false, lineas: "" }, { id: "no", texto: "", neutral: false, lineas: "" }, { id: "nose", texto: "No lo sé.", neutral: true, lineas: "" }] });
   const idValido = s => /^[a-z0-9_]+$/.test(s || "");
@@ -518,6 +537,8 @@
       if (x.voz) e.push("solo si la Voz " + x.voz + " despertó");
       if (lista(x.tras).length) e.push("tras " + lista(x.tras).join("+"));
       if (lista(x.hechos).length) e.push("hechos " + lista(x.hechos).join("+"));
+      if (lista(x.lados).length) e.push("solo lado " + lista(x.lados).join("/"));
+      if (x.jugadora) e.push("solo la jugadora de " + x.jugadora);
       return e.length ? "  [" + e.join("; ") + "]" : "";
     };
     const elems = [];
@@ -553,26 +574,41 @@
     });
   }
 
+  /* Una sección plegable cuyo estado se recuerda en "abiertos". */
+  const clavePlegable = (b, ...partes) => [b.id].concat(partes).join(":");
+  function plegable(clave, clase, resumen, ...hijos) {
+    const d = h("details", { class: clase, open: abiertos.has(clave) ? true : null }, h("summary", null, ...resumen), ...hijos);
+    d.addEventListener("toggle", () => { if (d.open) abiertos.add(clave); else abiertos.delete(clave); });
+    return d;
+  }
+  const etiquetasTema = t => [lista(t.lados).length ? "solo lado " + lista(t.lados).join("/").toUpperCase() : "", t.jugadora ? "solo la jugadora de " + t.jugadora : ""].filter(Boolean);
+  const resumenTema = t => [t.preguntas.length + (t.preguntas.length === 1 ? " pregunta" : " preguntas"), t.grupos.length + (t.grupos.length === 1 ? " grupo" : " grupos")].concat(etiquetasTema(t)).join(" · ");
+
   function formTema(t, ti, b) {
     const base = "temas." + ti;
     const idsPreg = t.preguntas.map(p => p.id);
-    return h("details", { class: "blab-tema", open: true },
-      h("summary", null, "Tema «" + t.id + "»", h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base }, "Quitar tema")),
+    const tema = plegable(clavePlegable(b, "tema", t.id), "blab-tema",
+      [h("span", { class: "blab-titulo" }, "Tema «" + t.id + "»"), h("span", { class: "blab-resumen" }, resumenTema(t) + (t.boton ? "  ·  «" + t.boton + "»" : "")),
+        h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base }, "Quitar tema")],
       cp("Botón del menú principal", entrada(base + ".boton", t.boton, { ph: "Texto que ve el jugador" }), "Aparece cuando el tema ya empezó y se esconde solo al terminarlo."),
       cp("Cómo empieza", h("select", { "data-r": base + ".como" }, h("option", { value: "recuerdo", selected: t.como !== "boton" }, "El Bufón lo trae solo (recuerdo)"), h("option", { value: "boton", selected: t.como === "boton" }, "El botón aparece desde el principio"))),
       cp("Primeras líneas del Bufón", entrada(base + ".intro", t.intro, { area: true, filas: 4, ph: "Una línea por renglón" }), "Una línea por renglón. Para la interjección de una Voz: herida> texto (voces: coartada, testigo, grieta, muralla, hilo, rostro, herida, apetito)."),
-      h("details", { class: "blab-detalle", open: !!((t.tras || "").trim() || (t.hechos || "").trim() || (t.cerrar || "").trim() || (t.introAnimacion || "").trim() || (t.introRisa || "").trim()) },
+      h("details", { class: "blab-detalle", open: !!((t.tras || "").trim() || (t.hechos || "").trim() || (t.lados || "").trim() || t.jugadora || (t.cerrar || "").trim() || (t.introAnimacion || "").trim() || (t.introRisa || "").trim()) },
         h("summary", null, "Condiciones del tema, animación de la intro y texto de salida"),
         h("div", { class: "blab-dos" },
           cp("El tema solo existe si ya se completó...", entrada(base + ".tras", t.tras, { ph: "ids de diálogos, separados por coma" })),
           cp("El tema solo existe si en la mesa pasó...", entrada(base + ".hechos", t.hechos, { ph: "hechos, separados por coma" }))),
         h("div", { class: "blab-dos" },
+          cp("El tema es solo para el lado...", entrada(base + ".lados", t.lados || "", { ph: "A, B (vacío = los dos)" }), "Por ejemplo B. La campaña de quien lo recibe."),
+          cp("El tema es solo para la jugadora de...", h("select", { "data-r": base + ".jugadora" }, h("option", { value: "", selected: !t.jugadora }, "(todos)"), h("option", { value: "laia", selected: t.jugadora === "laia" }, "Laia")), "Se reconoce por el nombre de su cuenta, no por su personaje.")),
+        h("div", { class: "blab-dos" },
           cp("Animación al empezar", h("input", { type: "text", list: "blabAnimaciones", "data-r": base + ".introAnimacion", value: t.introAnimacion || "", placeholder: "(la de siempre)" })),
           cp("Risa al empezar (milisegundos)", entrada(base + ".introRisa", t.introRisa || "", { ph: "por ejemplo 2000" }))),
         cp("Texto del botón de salida del submenú", entrada(base + ".cerrar", t.cerrar || "", { ph: "Ya fue, sigamos con otra cosa." }), "Vuelve al menú principal sin cerrar el tema.")),
       h("h5", null, "Preguntas"),
-      t.preguntas.map((p, pi) => h("div", { class: "blab-sub" },
-        h("div", { class: "blab-sub-top" }, h("strong", null, "Pregunta «" + p.id + "»"), h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".preguntas." + pi }, "Quitar")),
+      t.preguntas.map((p, pi) => plegable(clavePlegable(b, "p", t.id, p.id), "blab-sub",
+        [h("span", { class: "blab-titulo" }, "Pregunta «" + p.id + "»"), h("span", { class: "blab-resumen" }, p.texto || "(sin texto)"),
+          h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".preguntas." + pi }, "Quitar")],
         cp("Texto del botón", entrada(base + ".preguntas." + pi + ".texto", p.texto, { ph: "¿Qué dice el jugador?" })),
         cp("Se destapa tras...", entrada(base + ".preguntas." + pi + ".requiere", p.requiere, { ph: "ids separados por coma" }), idsPreg.length ? "Preguntas de este tema: " + idsPreg.join(", ") : null),
         cp("Respuesta del Bufón", entrada(base + ".preguntas." + pi + ".lineas", p.lineas, { area: true, filas: 6, ph: "Una línea por renglón" })),
@@ -585,8 +621,9 @@
       h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-pregunta", "data-ruta": base }, "+ Pregunta"),
       h("h5", null, "Respuestas excluyentes"),
       h("p", { class: "blab-nota" }, "Al elegir una, las otras desaparecen. Deja siempre una salida neutral («No lo sé»): así el Bufón no obliga a tomar partido para poder seguir. La casilla «salida neutral» solo sirve de recordatorio para el validador, no cambia lo que ve el jugador."),
-      t.grupos.map((g, gi) => h("div", { class: "blab-sub" },
-        h("div", { class: "blab-sub-top" }, h("strong", null, "Grupo «" + g.id + "»"), h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".grupos." + gi }, "Quitar")),
+      t.grupos.map((g, gi) => plegable(clavePlegable(b, "g", t.id, g.id), "blab-sub",
+        [h("span", { class: "blab-titulo" }, "Grupo «" + g.id + "»"), h("span", { class: "blab-resumen" }, g.opciones.map(o => o.texto || o.id).join("  /  ")),
+          h("button", { type: "button", class: "blab-mini peligro", "data-acc": "quitar", "data-ruta": base + ".grupos." + gi }, "Quitar")],
         cp("Aparece tras...", entrada(base + ".grupos." + gi + ".requiere", g.requiere, { ph: "ids de preguntas, separados por coma" })),
         extrasForm(base + ".grupos." + gi, g, "todo el grupo"),
         g.opciones.map((o, oi) => {
@@ -609,12 +646,37 @@
         h("pre", { "data-arbol": String(ti) }, arbolTexto(t))),
       h("div", { class: "blab-botones" },
         h("button", { type: "button", class: "secondary-button", "data-acc": "copiar-tema", "data-ruta": String(ti) }, "Copiar solo este tema")));
+    tema.id = "blabTema" + ti;
+    return tema;
+  }
+
+  /* Índice de temas: salta a uno y lo despliega. */
+  function irATema(ti) {
+    const d = document.getElementById("blabTema" + ti);
+    if (!d) return;
+    d.open = true;
+    d.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function plegarTodo(abrirTemas) {
+    pEditor.querySelectorAll("details.blab-tema, details.blab-sub").forEach(d => { d.open = false; });
+    if (abrirTemas) pEditor.querySelectorAll("details.blab-tema").forEach(d => { d.open = true; });
+  }
+  function indiceDeTemas(b) {
+    if (!b.temas.length) return null;
+    return h("div", { class: "blab-indice" },
+      h("span", { class: "blab-indice-titulo" }, "Ir a"),
+      b.temas.map((t, ti) => h("button", { type: "button", class: "blab-chip", title: (t.boton || "") + (etiquetasTema(t).length ? "  (" + etiquetasTema(t).join(", ") + ")" : ""), onclick: () => irATema(ti) },
+        t.id, etiquetasTema(t).length ? h("small", null, etiquetasTema(t).map(e => e.replace("solo la jugadora de ", "solo ").replace("solo lado ", "")).join(" · ")) : null)),
+      h("button", { type: "button", class: "blab-chip aparte", onclick: () => { const r = document.getElementById("blabRevision"); if (r) r.scrollIntoView({ behavior: "smooth", block: "start" }); } }, "Revisión y publicar"),
+      h("span", { class: "blab-indice-sep" }),
+      h("button", { type: "button", class: "blab-mini", onclick: () => plegarTodo(true) }, "Abrir todos los temas"),
+      h("button", { type: "button", class: "blab-mini", onclick: () => plegarTodo(false) }, "Plegar todo"));
   }
 
   function renderEditor() {
     pEditor.replaceChildren(datalistAnim());
     const b = bActual();
-    const importables = meta ? Object.keys(meta.ciclos).filter(id => meta.defs[id]) : [];
+    const importables = metaArchivos ? Object.keys(metaArchivos.defs).filter(id => metaArchivos.defs[id]) : [];
     const barra = h("div", { class: "blab-barra" },
       h("select", { onchange: e => { borradorActual = e.target.value || null; renderEditor(); programarValidacion(); } },
         h("option", { value: "" }, borradores.length ? "Elige un borrador..." : "(sin borradores)"),
@@ -640,10 +702,10 @@
     pEditor.append(h("p", { class: "blab-nota" }, "Aquí armas un ciclo con formularios y lo pruebas al instante. No se guarda en el sitio: cuando esté listo, copia o descarga el archivo y súbelo (te explico cómo abajo)."));
     if (!b) { pEditor.append(h("p", { class: "blab-vacio" }, "Crea un ciclo nuevo o carga uno existente para empezar.")); return; }
 
-    const def = meta && meta.defs ? meta.defs[b.id] : null;
+    const def = metaArchivos && metaArchivos.defs ? metaArchivos.defs[b.id] : null;
     const notas = avisosDeImportacion(def);
     if (notas.length) pEditor.append(h("p", { class: "blab-error" }, "Ojo: el ciclo original " + notas.join(" y ") + ", y el editor no los maneja. El archivo completo que exportes NO los incluirá. Usa «Copiar solo este tema» y pégalo en tu archivo."));
-    const tieneVisibleSi = !!(meta && meta.conVisibleSi && meta.conVisibleSi[b.id] && meta.conVisibleSi[b.id].length);
+    const tieneVisibleSi = !!(metaArchivos && metaArchivos.conVisibleSi && metaArchivos.conVisibleSi[b.id] && metaArchivos.conVisibleSi[b.id].length);
 
     pEditor.append(h("div", { class: "blab-tarjeta" },
       h("div", { class: "blab-dos" },
@@ -653,10 +715,12 @@
         cp("Número de ciclo", entrada("numero", String(b.numero == null ? "" : b.numero), { ph: "3" }), "3 o más. Debe estar en data/bufon-ciclos-lista.js (con su nombre). Los jugadores lo reciben cuando los mueves a este número desde Progreso del Bufón."),
         cp("Solo para el lado (opcional)", entrada("lados", b.lados, { ph: "A, B (vacío = los dos)" })))));
 
+    const indice = indiceDeTemas(b);
+    if (indice) pEditor.append(indice);
     b.temas.forEach((t, ti) => pEditor.append(formTema(t, ti, b)));
     pEditor.append(h("button", { type: "button", class: "secondary-button blab-agregar", "data-acc": "add-tema" }, "+ Tema nuevo (un personaje o asunto)"));
 
-    pEditor.append(h("h4", null, "Revisión"), cajaValidacion);
+    pEditor.append(h("h4", { id: "blabRevision" }, "Revisión"), cajaValidacion);
     pintarValidacion();
 
     const salida = h("div", { class: "blab-tarjeta" },
@@ -703,19 +767,19 @@
     if (acc === "add-tema") {
       const id = await pedirId("del tema"); if (!id) return;
       if (b.temas.some(t => t.id === id)) { dialogo.avisar("Ya hay un tema con ese id en este ciclo."); return; }
-      b.temas.push(nuevoTema(id)); guardarBorradores(); renderEditor(); return;
+      b.temas.push(nuevoTema(id)); abiertos.add(clavePlegable(b, "tema", id)); guardarBorradores(); renderEditor(); return;
     }
     if (acc === "add-pregunta") {
       const t = porRuta(b, ruta);
       const id = await pedirId("de la pregunta"); if (!id) return;
       if (t.preguntas.concat(t.grupos).some(x => x.id === id)) { dialogo.avisar("Ese id ya se usa en este tema."); return; }
-      t.preguntas.push(nuevaPregunta(id)); guardarBorradores(); renderEditor(); return;
+      t.preguntas.push(nuevaPregunta(id)); abiertos.add(clavePlegable(b, "tema", t.id)); abiertos.add(clavePlegable(b, "p", t.id, id)); guardarBorradores(); renderEditor(); return;
     }
     if (acc === "add-grupo") {
       const t = porRuta(b, ruta);
       const id = await pedirId("del grupo de respuestas"); if (!id) return;
       if (t.preguntas.concat(t.grupos).some(x => x.id === id)) { dialogo.avisar("Ese id ya se usa en este tema."); return; }
-      t.grupos.push(nuevoGrupo(id)); guardarBorradores(); renderEditor(); return;
+      t.grupos.push(nuevoGrupo(id)); abiertos.add(clavePlegable(b, "tema", t.id)); abiertos.add(clavePlegable(b, "g", t.id, id)); guardarBorradores(); renderEditor(); return;
     }
     if (acc === "quitar") {
       if (!(await dialogo.confirmar("¿Quitar esto?", { titulo: "Quitar", aceptar: "Quitar", peligro: true }))) return;

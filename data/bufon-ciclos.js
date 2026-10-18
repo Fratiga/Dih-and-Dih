@@ -40,7 +40,13 @@
          // botón del menú principal. Aparece cuando el tema ya empezó y se
          // esconde solo cuando no queda nada pendiente.
        visibleSi: ctx => true,
-         // opcional: condición extra (hechos, nombres, Voces...).
+         // opcional: condición extra (hechos, nombres, Voces...). Es una función, así
+         // que el Editor del Laboratorio no puede mostrarla ni conservarla al exportar.
+       lados: ["B"],
+         // opcional: el tema solo lo ve esa campaña (A, B, o las dos). El Editor sí lo entiende.
+       jugadora: "laia",
+         // opcional: el tema es solo para la cuenta de esa jugadora (hoy solo "laia").
+         // El Editor también lo entiende. Mejor que escribir un visibleSi a mano.
        intro: {
          como: "recuerdo",          // "recuerdo" = el Bufón lo trae solo la
                                     // primera vez ; "boton" = el botón aparece
@@ -120,6 +126,8 @@
     if (typeof t.boton !== "string" || !t.boton.trim()) fallar(donde + ": falta 'boton' (el texto del menú principal)");
     if (!t.intro) fallar(donde + ": falta 'intro'");
     validarLineas(donde + ", intro", t.intro.lineas);
+    if (t.lados !== undefined && (!Array.isArray(t.lados) || !t.lados.length || t.lados.some(l => l !== "A" && l !== "B"))) fallar(donde + ": 'lados' debe ser una lista con A y/o B");
+    if (t.jugadora !== undefined && t.jugadora !== "laia") fallar(donde + ": 'jugadora' solo puede ser \"laia\"");
 
     const pre = tid + "_";
     const hubId = tid + "_hub";
@@ -199,7 +207,9 @@
     const cierraTema = ctx => preguntas.some(p => (p.cierra || p.fin) && ctx.hasCompletedDialogue(pre + p.id))
       || grupos.some(g => g.opciones.some(o => (o.cierra || o.fin) && ctx.hasCompletedDialogue(marcaGrupoOpcion(g, o))));
     const agotado = ctx => cierraTema(ctx) || (preguntas.every(p => ctx.hasCompletedDialogue(pre + p.id)) && grupos.every(g => grupoHecho(ctx, g)));
-    const extra = ctx => externo(ctx, t) && (!t.visibleSi || t.visibleSi(ctx));
+    const ladoOk = ctx => !t.lados || t.lados.includes(ctx.actualCampaign);
+    const jugadoraOk = ctx => t.jugadora !== "laia" || ctx.esJugadoraDeLaia();
+    const extra = ctx => externo(ctx, t) && ladoOk(ctx) && jugadoraOk(ctx) && (!t.visibleSi || t.visibleSi(ctx));
 
     const decorar = (nodo, src) => {
       if (src.animacion) nodo.animacion = src.animacion;

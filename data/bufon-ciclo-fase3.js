@@ -119,7 +119,7 @@ window.bufonAgregarCiclo({
       id: "dexter",
       boton: "Cuéntame lo de Dexter.",
       hechos: ["conocio_clef"],
-      visibleSi: ctx => ctx.actualCampaign === "B",
+      lados: ["B"],
       intro: {
         como: "recuerdo",
         lineas: [
@@ -165,7 +165,7 @@ window.bufonAgregarCiclo({
       id: "doctores",
       boton: "¿Qué sabes de los tres doctores?",
       hechos: ["conocio_doctores"],
-      visibleSi: ctx => ctx.actualCampaign === "B",
+      lados: ["B"],
       intro: {
         como: "boton",
         lineas: [
@@ -245,7 +245,7 @@ window.bufonAgregarCiclo({
       id: "corona",
       boton: "Lo de la Corona.",
       hechos: ["supo_de_vesalio"],
-      visibleSi: ctx => ctx.actualCampaign === "B",
+      lados: ["B"],
       intro: {
         como: "recuerdo",
         lineas: [
@@ -302,7 +302,8 @@ window.bufonAgregarCiclo({
       id: "cambiantes",
       boton: "Lo de los cambiantes.",
       hechos: ["harrow_ataco_laia"],
-      visibleSi: ctx => ctx.actualCampaign === "B" && ctx.esJugadoraDeLaia(),
+      lados: ["B"],
+      jugadora: "laia",
       intro: {
         como: "recuerdo",
         lineas: [
