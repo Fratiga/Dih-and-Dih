@@ -2,7 +2,9 @@
    Es solo escena y voz: dibuja el SVG, hace que sus ojos sigan al cursor, le da frases (con efecto de máquina de escribir) y enciende tantas velas como
    tratos le quedan a quien lo visita hoy. Lo que se vende y lo que se cobra lo decide el servidor (js/intercambios.js).
    Sus frases las puede cambiar el Admin (js/dialogos-personajes.js, pestaña Diálogos).
-   API: PuestoBuhonero.montar(contenedor), .decir(clave), .velas(hoy, tope). */
+   También atiende en las Cartas del Hipódromo (js/hipodromo-cartas.js), donde paga y cobra en tokens en lugar de cambiar cartas por cartas: allí no hay velas
+   (montar con { velas: false }) y usa los grupos hip*.
+   API: PuestoBuhonero.montar(contenedor, { velas }), .decir(clave), .velas(hoy, tope). */
 window.PuestoBuhonero = (function () {
   const FRASES = {
     saludo: ["Acércate. La luz de los faroles no dura toda la noche.", "Otro que viene a cambiar lo que no sabe que perdió.", "No pregunto de dónde vienes. Tú no preguntes de dónde saqué esto.", "Mira con calma. Todo lo que ves tiene dueño, y ese dueño soy yo."],
@@ -17,14 +19,26 @@ window.PuestoBuhonero = (function () {
     tarda: ["Piénsalo. A mí no me corre prisa.", "Yo no me muevo de aquí."],
     exito: ["Trato hecho. No olvides quién te lo ofreció.", "Un placer. Y un consejo. No mires atrás.", "Buena elección. Que nadie te vea con ella hasta que salgas de aquí."],
     error: ["Eso no cuadra. Yo no hago favores.", "No. Así no se negocia."],
-    sinSesion: ["Sin nombre no hay trato. Inicia sesión."]
+    sinSesion: ["Sin nombre no hay trato. Inicia sesión."],
+    // en el Hipódromo
+    hipSaludo: ["Aquí los faroles son de colores y las monedas, de juego. Tráeme cartas o llévate las mías.", "Los que apuestan acaban buscándome tarde o temprano. Mira lo que tengo, o enséñame lo que traes.", "Tokens por cartas y cartas por tokens. Aquí no se regatea."],
+    hipReservaVacia: ["Mi carreta va vacía. Nadie me ha traído nada.", "No tengo nada que enseñarte. Véndeme algo y vuelve."],
+    hipSinCartas: ["No traes nada. Vuelve cuando tengas cartas.", "Con las manos vacías no hay trato."],
+    hipRecibe: ["Dámela. Aquí tienes tus tokens, cuéntalos si quieres.", "La guardo con las demás. Alguien vendrá a buscarla.", "Hecho. Que el hipódromo te sea ligero."],
+    hipOfrece: ["Es tuya. A mí ya no me vuelve.", "Cuídala. Otros la tuvieron antes que tú.", "Trato hecho. Los tokens bien gastados no se echan de menos."],
+    hipSinTokens: ["Con eso no te alcanza. Apuesta mejor o véndeme algo.", "Te faltan tokens. Yo no fío."],
+    hipLleno: ["Ya llevas todas las que puedes llevar. No insistas.", "No cabe una más en tus manos. Esa se queda aquí."]
   };
   /* Cuándo dice cada grupo (lo enseña el editor de Admin, js/admin-dialogos.js) */
   const CUANDO = {
     saludo: "Al abrir la pestaña del Buhonero, si tiene ofertas", vacio: "Al abrir la pestaña si no tiene nada que ofrecer", agotado: "Al abrir la pestaña cuando ya hiciste tus 3 tratos de hoy",
     comun: "Al pasar el cursor sobre una carta común", infrecuente: "Al pasar el cursor sobre una carta poco común", rara: "Al pasar el cursor sobre una carta rara",
     legendaria: "Al pasar el cursor sobre una carta legendaria", limitada: "Al pasar el cursor sobre una carta limitada", especial: "Al pasar el cursor sobre una oferta especial",
-    tarda: "Mientras eliges qué entregar", exito: "Al cerrar un trato", error: "Si algo falla en un trato", sinSesion: "Sin sesión iniciada (todavía no se usa)"
+    tarda: "Mientras eliges qué entregar", exito: "Al cerrar un trato", error: "Si algo falla en un trato", sinSesion: "Sin sesión iniciada (todavía no se usa)",
+    hipSaludo: "Hipódromo, pestaña Cartas: al abrirla, si hay cartas en su carreta", hipReservaVacia: "Hipódromo, pestaña Cartas: al abrirla, si su carreta está vacía",
+    hipSinCartas: "Hipódromo, pestaña Cartas: al abrirla, si no tienes ninguna carta", hipRecibe: "Hipódromo: cuando le vendes una carta y te paga",
+    hipOfrece: "Hipódromo: cuando le compras una carta", hipSinTokens: "Hipódromo: al pasar el cursor sobre «Comprar» sin tokens suficientes",
+    hipLleno: "Hipódromo: al pasar el cursor sobre «Comprar» una carta de la que ya tienes todas las que puedes tener"
   };
   const ORIGINALES = JSON.parse(JSON.stringify(FRASES));
   if (window.DialogosPersonajes) { DialogosPersonajes.aplicar("buhonero", FRASES); DialogosPersonajes.refrescar("buhonero", FRASES); }
@@ -124,11 +138,12 @@ window.PuestoBuhonero = (function () {
 
   let caja = null, ojos = null, timer = null, ultima = "";
 
-  function montar(contenedor) {
+  function montar(contenedor, opc) {
     caja = contenedor;
+    const conVelas = !opc || opc.velas !== false;
     caja.innerHTML = `${ESCENA}
-      <div class="pb-burbuja" role="status" aria-live="polite"><span class="pb-quien">El Buhonero</span><p class="pb-texto"></p></div>
-      <div class="pb-velas" aria-label="Tratos que te quedan hoy"><span class="pb-velas-etq">Tus tratos de hoy</span><span class="pb-velas-fila"></span></div>`;
+      <div class="pb-burbuja" role="status" aria-live="polite"><span class="pb-quien">El Buhonero</span><p class="pb-texto"></p></div>${conVelas ? `
+      <div class="pb-velas" aria-label="Tratos que te quedan hoy"><span class="pb-velas-etq">Tus tratos de hoy</span><span class="pb-velas-fila"></span></div>` : ""}`;
     ojos = caja.querySelector(".pb-ojos");
     const svg = caja.querySelector(".pb-svg"), estrecha = matchMedia("(max-width: 900px)");
     const ajustar = () => svg.setAttribute("preserveAspectRatio", estrecha.matches ? "xMidYMid meet" : "xMidYMid slice");
@@ -159,7 +174,7 @@ window.PuestoBuhonero = (function () {
   }
 
   function velas(hoy, tope) {
-    if (!caja) return;
+    if (!caja || !caja.querySelector(".pb-velas")) return;
     const quedan = Math.max(0, tope - hoy);
     caja.querySelector(".pb-velas-fila").innerHTML = Array.from({ length: tope }, (_, i) => `<i class="pb-vela${i < quedan ? " pb-vela-viva" : ""}"><b></b></i>`).join("");
     caja.querySelector(".pb-velas").setAttribute("aria-label", `Te quedan ${quedan} de ${tope} tratos hoy`);

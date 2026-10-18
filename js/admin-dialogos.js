@@ -10,7 +10,7 @@
   const $ = id => document.getElementById(id);
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const PERS = {
-    buhonero: { nombre: "El Buhonero", donde: "Intercambios, pestaña Buhonero", mod: () => window.PuestoBuhonero },
+    buhonero: { nombre: "El Buhonero", donde: "Intercambios (pestaña Buhonero) y Hipódromo (pestaña Cartas)", mod: () => window.PuestoBuhonero },
     herrero: { nombre: "El herrero gigante", donde: "La forja", mod: () => window.ForjaHerrero }
   };
   const MAX = 30, LARGO = 240;

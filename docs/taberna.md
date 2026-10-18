@@ -70,7 +70,7 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
   siguen siendo las del servidor (`economia-6_forja.sql`, `economia-14_forja_reserva.sql`).
 - Los **corrales** tienen su pantalla (`corrales.html`, `js/corrales.js`, `js/corrales-lib.js`): un hábitat grande, una franja con los seis y el panel de cría
   debajo. Se llega por la puerta de Mi habitación y desde los Establos.
-- El Buhonero y el Hipódromo reparten del mismo montón de cartas (`docs/economia-20_reserva_compartida.sql`).
+- El Buhonero y el Hipódromo reparten del mismo montón de cartas (`docs/economia-20_reserva_compartida.sql`). En la pestaña Cartas del Hipódromo el Buhonero es quien recibe y ofrece las cartas (con tokens, no cartas por cartas), con su misma escena y voz y sin velas: ver `docs/hipodromo.md`.
 
 ## Avisos de la taberna
 

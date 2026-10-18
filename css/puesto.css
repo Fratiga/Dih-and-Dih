@@ -3,7 +3,7 @@
    La página de Intercambios con personalidad propia, aparte del violeta y dorado de Triunfos y de la taberna: jade de noche, farol de color
    bermellón, latón viejo, corcho y pergamino. Todo cuelga de body.pu, así que el resto del sitio no cambia.
    Los colores del tema (Side A / Side B) se reemplazan aquí a propósito: este rincón siempre es de noche y siempre huele a lámpara de aceite.
-   Las escenas del Buhonero (pb-*) las dibuja js/puesto-buhonero.js y las cartas pequeñas (pu-mc) js/intercambios.js.
+   Las escenas del Buhonero (pb-*, en css/buhonero.css) las dibuja js/puesto-buhonero.js y las cartas pequeñas (pu-mc) js/intercambios.js.
 ============================================================================= */
 body.pu {
   --bg: #0a1512; --panel: #0f211c; --panel-2: #173229; --text: #eaf3e3; --muted: #94b8a8;
@@ -142,44 +142,6 @@ body.pu .ic-pido-fila { display: flex; gap: 6px; flex-wrap: wrap; }
 .pu-buhonero:not(.hidden) { display: grid; grid-template-columns: minmax(320px, 40%) minmax(0, 1fr); gap: 22px; align-items: start; margin-top: 12px; }
 .pu-lado-buho { position: sticky; top: 12px; align-self: start; }
 .pu-buho-cuerpo { min-width: 0; }
-.pb-escena { position: relative; overflow: hidden; display: flex; flex-direction: column; border: 4px solid #1d5a4b; background: #030807; box-shadow: inset 0 0 90px #000, 6px 6px 0 #000; }
-.pb-svg { display: block; width: 100%; height: auto; aspect-ratio: 5 / 4; }
-.pb-orbe, .pb-parpadeo-ojos { transform-box: fill-box; }
-.pb-parpadeo { animation: pbParpadeo 2.4s ease-in-out infinite; }
-@keyframes pbParpadeo { 0%, 100% { opacity: 1; } 22% { opacity: .78; } 38% { opacity: .96; } 61% { opacity: .66; } 80% { opacity: .92; } }
-.pb-farol { animation: pbBalanceo 5.5s ease-in-out infinite; }
-@keyframes pbBalanceo { 0%, 100% { transform: rotate(-1.8deg); } 50% { transform: rotate(1.8deg); } }
-.pb-niebla ellipse:first-child { animation: pbNiebla 28s ease-in-out infinite alternate; }
-.pb-niebla ellipse:last-child { animation: pbNiebla 36s ease-in-out infinite alternate-reverse; }
-@keyframes pbNiebla { from { transform: translateX(-70px); } to { transform: translateX(90px); } }
-.pb-orbe { animation: pbOrbe 3.4s ease-in-out infinite; transform-origin: center; }
-@keyframes pbOrbe { 0%, 100% { opacity: .75; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
-.pb-parpadeo-ojos { animation: pbOjos 6s infinite; transform-origin: center; }
-@keyframes pbOjos { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
-.pb-ojos { transition: transform .2s ease-out; }
-.pb-carta-flota { animation: pbFlota 3.2s ease-in-out infinite; }
-@keyframes pbFlota { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-9px) rotate(3deg); } }
-.pb-cuervo { animation: pbCuervo 7s ease-in-out infinite; }
-@keyframes pbCuervo { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(-9deg); } 86% { transform: rotate(5deg); } }
-.pb-estrellas circle { animation: pbEstrella 3s ease-in-out infinite; }
-.pb-estrellas circle:nth-child(2n) { animation-delay: -1.2s; }
-.pb-estrellas circle:nth-child(3n) { animation-delay: -2.1s; }
-@keyframes pbEstrella { 50% { opacity: .25; } }
-.pb-vent { animation: pbParpadeo 5s infinite; }
-.pb-buhonero { animation: pbRespira 5s ease-in-out infinite; transform-origin: 470px 330px; }
-@keyframes pbRespira { 50% { transform: scale(1.008, 1.012); } }
-
-.pb-burbuja { position: relative; flex: 0 0 auto; min-height: 104px; padding: 10px 16px 12px; background: linear-gradient(180deg, #14100c, #0b0806); color: #f4e8c8; border-top: 4px solid var(--pu-laton); box-shadow: 0 -6px 18px #ff7a4533; }
-.pb-quien { display: block; font: 700 .8rem "Press Start 2P", monospace; letter-spacing: .06em; color: var(--pu-laton); margin-bottom: 6px; }
-.pb-texto { margin: 0; min-height: 2.4em; font: italic 1.4rem/1.15 var(--pu-titulo); }
-.pb-velas { position: absolute; left: 14px; top: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-.pb-velas-etq { font: .62rem "Press Start 2P", monospace; color: #d9c9a0; text-shadow: 1px 1px 0 #000; }
-.pb-velas-fila { display: flex; gap: 12px; align-items: flex-end; }
-.pb-vela { position: relative; display: block; width: 14px; height: 18px; background: linear-gradient(90deg, #cfc4a0, #eee4c2 50%, #bfb48e); border-radius: 2px 2px 1px 1px; box-shadow: 0 2px 0 #000a; }
-.pb-vela-viva { height: 34px; }
-.pb-vela b { position: absolute; left: 3px; top: -13px; width: 8px; height: 14px; border-radius: 50% 50% 40% 40%; background: radial-gradient(ellipse at 50% 80%, #fff4c0, #ffb04a 55%, #ff7a45); box-shadow: 0 0 14px 4px #ff7a4588; transform-origin: 50% 100%; animation: pbLlama .45s ease-in-out infinite alternate; display: none; }
-.pb-vela-viva b { display: block; }
-@keyframes pbLlama { from { transform: scale(1, 1) rotate(-3deg); } to { transform: scale(.9, 1.15) rotate(3deg); } }
 
 /* ---------------------------------------------------------------- la mesa del Buhonero: un paño con cartas y etiquetas con precio */
 .pu-pano {
@@ -248,17 +210,12 @@ html body.pu .ba-dialogo h2 { font-family: var(--pu-titulo) !important; font-siz
   .pu-abanico-in .mc + .mc, .pu-abanico-in .pu-con-quitar + .pu-con-quitar { margin-left: -28px; }
   .pu-buhonero:not(.hidden) { grid-template-columns: 1fr; gap: 12px; }
   .pu-lado-buho { top: 0; z-index: 40; margin: 0 -4px; }
-  .pb-escena { border-width: 0 0 4px; }
-  .pb-svg { aspect-ratio: auto; height: 118px; }
-  .pb-burbuja { min-height: 0; padding: 6px 12px 8px; }
-  .pb-texto { min-height: 2.2em; font-size: 1.2rem; }
-  .pb-velas { top: 6px; left: 8px; transform: scale(.8); transform-origin: 0 0; }
   .pu-mesa { grid-template-columns: 1fr; }
   .pu-puesto { grid-template-columns: 130px minmax(0, 1fr); }
   .pu-expuesta { --mc-w: 122px; }
   .pu-asiento { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pb-svg *, .pb-vela b, .pu-destello::before, .pu-trato .ic-carta, body.pu .ic-pestanas button:hover { animation: none !important; }
+  .pu-destello::before, .pu-trato .ic-carta, body.pu .ic-pestanas button:hover { animation: none !important; }
   .mc, .pu-nota { transition: none; }
 }
