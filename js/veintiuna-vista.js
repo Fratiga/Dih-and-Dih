@@ -121,7 +121,8 @@
     crupier_se_pasa: "El crupier se pasó de 21.",
     mayor: "Tu mano gana a la del crupier.",
     menor: "La mano del crupier gana a la tuya.",
-    igual: "Empate: se devuelve la apuesta."
+    igual: "Empate: se devuelve la apuesta.",
+    abandono: "Te levantaste de la mesa a mitad de ronda: pierdes esa mano."
   };
   const TITULOS = { natural: "Blackjack", victoria: "Ganas", empate: "Empate", derrota: "Pierdes" };
 
@@ -230,7 +231,20 @@
       mano_en_curso: "Ya tenías una mano abierta. La recupero.",
       paso_futuro: "La mesa y tu pantalla no coincidían. La sincronizo.",
       no_encontrada: "No encuentro esa mano. La mesa se recarga.",
-      mano_terminada: "Esa mano ya había terminado."
+      mano_terminada: "Esa mano ya había terminado.",
+      en_mesa: "Estás sentado en una mesa con amigos. Levántate de ella para jugar sola contra la crupier.",
+      ya_sentado: "Ya estás sentado en una mesa. Sal de ella antes de entrar en otra.",
+      mesa_llena: "La mesa está llena. Pide un asiento libre o crea otra.",
+      mesa_no_existe: "No encuentro esa mesa. Revisa el código: son cinco letras o números.",
+      no_es_tu_turno: "Todavía no es tu turno.",
+      fase_invalida: "Eso ya no se puede hacer en esta fase de la ronda.",
+      sin_mesa: "Ya no estás sentado en ninguna mesa.",
+      solo_creador: "Solo quien creó la mesa puede repartir antes de tiempo.",
+      sin_apuestas: "Todavía no ha apostado nadie.",
+      sin_pozo: "Esta mesa no juega con cartas.",
+      carta_invalida: "Esa carta no se puede poner en el pozo.",
+      pozo_desequilibrado: "Las cartas del pozo no pueden diferir en más de una categoría de rareza.",
+      pozo_tope_dia: "Hoy ya has puesto cartas en el pozo demasiadas veces."
     };
     return pistas[e.codigo] || e.mensaje || "Algo falló en la mesa.";
   }
@@ -268,6 +282,98 @@
   };
   const elegir = (clave, azar) => { const l = DICHOS[clave] || []; return l.length ? l[Math.floor((azar ? azar() : Math.random()) * l.length) % l.length] : ""; };
 
-  const API = { ORDEN_REGLAS, BOTON_ESPECIAL, monedas, conSigno, plural, REGLAS, RAZONES, TITULOS, resultado, anuncio, acciones, fichasDisponibles, motivoApuesta, ajustarApuesta, apuestaInicial, mensajeError, NIVELES, estadoLogro, DICHOS, elegir, nombreCarta, nombreRango, lista };
+  /* ---------------------------------------------------------------- mesa con amigos */
+  const FASES_AMIGOS = { apuestas: "Apuestas", jugando: "Se juega", resultado: "Resultado" };
+  const asientoYo = est => (est && est.asientos ? est.asientos.find(a => a.yo) : null) || null;
+  // La mano propia con la forma que espera acciones() (la de la mesa individual)
+  function manoComoPropia(est) {
+    const a = asientoYo(est);
+    if (!a || !a.mano || !est.yo) return null;
+    const m = a.mano;
+    return { estado: m.estado, fase: m.fase, modo: m.modo, regla: est.yo.regla, acciones: est.yo.acciones,
+             jugador: { cartas: m.cartas, total: m.total, blando: m.blando }, partida: est.yo.partida, paso: est.yo.paso };
+  }
+  function listosDeLaMesa(est) {
+    const total = (est.asientos || []).length;
+    const listos = (est.asientos || []).filter(a => a.listo).length;
+    return { total, listos, faltan: total - listos };
+  }
+  const NOMBRE_RESULTADO = { natural: "Blackjack", victoria: "Gana", empate: "Empata", derrota: "Pierde" };
+  // Lo que se lee en la cabecera de cada asiento: { texto, clase }
+  function chipAsiento(est, a) {
+    const m = a.mano;
+    if (est.fase === "apuestas") {
+      if (a.pasa) return { texto: "Pasa esta ronda", clase: "pasa" };
+      if (a.listo) return { texto: a.yo && a.apuesta != null ? (Number(a.apuesta) > 0 ? "Apuesta " + monedas(a.apuesta) : "Sin apostar") : "Listo", clase: "listo" };
+      return { texto: "Apostando", clase: "espera" };
+    }
+    if (!m) return { texto: "Mira la ronda", clase: "pasa" };
+    if (m.estado === "terminada") {
+      if (m.razon === "abandono") return { texto: "Se fue", clase: "derrota" };
+      if (m.razon === "te_pasas" || m.razon === "pasado_al_repartir") return { texto: "Se pasa", clase: "derrota" };
+      const base = NOMBRE_RESULTADO[m.resultado] || "";
+      const neto = m.modo === "apuesta" && est.fase === "resultado" ? " " + conSigno(m.neto) : "";
+      return { texto: base + neto, clase: m.resultado };
+    }
+    if (m.fase === "plantada") return { texto: "Plantado", clase: "plantado" };
+    if (est.fase === "jugando" && est.turno === a.asiento) return { texto: a.yo ? "Tu turno" : "Su turno", clase: "turno" };
+    return { texto: "Espera", clase: "espera" };
+  }
+  function frasePozo(est) {
+    const p = est.pozo;
+    if (!p || !p.activo) return "";
+    if (!p.cartas.length) return "Nadie ha puesto carta todavía. Cada jugador puede poner una; el mejor que gane a la casa se lleva todo el pozo.";
+    const nombres = p.cartas.map(c => c.titulo || c.carta);
+    if (p.estado === "pagado") return `El pozo es para ${p.ganador || p.ganador_nombre_libre || "el ganador"}: ${lista(nombres)}.`;
+    if (p.estado === "devuelto") return "Nadie ganó el pozo: cada carta vuelve a su dueño.";
+    return `En el pozo: ${lista(nombres)}. Se lo lleva el mejor jugador que gane a la casa.`;
+  }
+  // Lo que se anuncia a un lector de pantalla cuando cambia la mesa
+  function anuncioAmigos(antes, est) {
+    const p = [];
+    const yo = asientoYo(est);
+    const nueva = !antes || antes.ronda !== est.ronda || antes.fase !== est.fase;
+    if (!antes || antes.codigo !== est.codigo) p.push(`Mesa ${est.nombre}, código ${est.codigo}. Hay ${est.asientos.length} jugadores.`);
+    if (antes && antes.codigo === est.codigo) {
+      const antesNombres = new Set(antes.asientos.map(a => a.nombre + a.asiento));
+      est.asientos.filter(a => !antesNombres.has(a.nombre + a.asiento)).forEach(a => p.push(`${a.nombre} se sienta a la mesa.`));
+      const ahora = new Set(est.asientos.map(a => a.nombre + a.asiento));
+      antes.asientos.filter(a => !ahora.has(a.nombre + a.asiento)).forEach(a => p.push(`${a.nombre} se levanta de la mesa.`));
+    }
+    if (nueva && est.fase === "apuestas") p.push(`Empiezan las apuestas de la ronda ${est.ronda}. Regla: ${REGLAS[est.regla.id].nombre}.`);
+    if (nueva && est.fase === "jugando" && (!antes || antes.fase !== "jugando")) {
+      p.push(`Reparto. El crupier muestra ${est.crupier.cartas[0] ? nombreCarta(est.crupier.cartas[0]) : "una carta"}.`);
+      if (yo && yo.mano) p.push(`Tus cartas: ${lista(yo.mano.cartas.map(nombreCarta))}. Suman ${yo.mano.total}${yo.mano.blando ? " en blando" : ""}.`);
+    }
+    if (antes && antes.codigo === est.codigo && antes.ronda === est.ronda) {
+      est.asientos.forEach(a => {
+        const previo = antes.asientos.find(x => x.asiento === a.asiento && x.nombre === a.nombre);
+        if (!a.mano || !previo || !previo.mano || a.yo) return;
+        const nuevas = a.mano.cartas.slice(previo.mano.cartas.length);
+        if (nuevas.length) p.push(`${a.nombre} recibe ${lista(nuevas.map(nombreCarta))}. Suma ${a.mano.total}.`);
+      });
+      if (yo && yo.mano) {
+        const previo = antes.asientos.find(x => x.yo);
+        const nuevas = previo && previo.mano ? yo.mano.cartas.slice(previo.mano.cartas.length) : [];
+        if (nuevas.length) p.push(`Recibes ${lista(nuevas.map(nombreCarta))}. Sumas ${yo.mano.total}${yo.mano.blando ? " en blando" : ""}.`);
+      }
+    }
+    if (est.fase === "jugando" && est.turno != null && (!antes || antes.turno !== est.turno || antes.fase !== "jugando")) {
+      const a = est.asientos.find(x => x.asiento === est.turno);
+      if (a) p.push(a.yo ? "Es tu turno." : `Juega ${a.nombre}.`);
+    }
+    if (est.fase === "resultado" && (!antes || antes.fase !== "resultado")) {
+      p.push(`El crupier enseña ${lista(est.crupier.cartas.map(nombreCarta))}, suma ${est.crupier.total}.`);
+      est.asientos.filter(a => a.mano).forEach(a => {
+        const t = chipAsiento(est, a).texto;
+        p.push(`${a.yo ? "Tú" : a.nombre}: ${t.toLowerCase()}.`);
+      });
+      const fp = frasePozo(est);
+      if (fp && est.pozo.cartas.length) p.push(fp);
+    }
+    return p.join(" ");
+  }
+
+  const API = { FASES_AMIGOS, asientoYo, manoComoPropia, listosDeLaMesa, chipAsiento, frasePozo, anuncioAmigos, ORDEN_REGLAS, BOTON_ESPECIAL, monedas, conSigno, plural, REGLAS, RAZONES, TITULOS, resultado, anuncio, acciones, fichasDisponibles, motivoApuesta, ajustarApuesta, apuestaInicial, mensajeError, NIVELES, estadoLogro, DICHOS, elegir, nombreCarta, nombreRango, lista };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.VeintiunaVista = API;
 })(typeof window !== "undefined" ? window : globalThis);

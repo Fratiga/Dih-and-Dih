@@ -1,6 +1,6 @@
 /* =============================================================================
    LAS VEINTIUNA VELAS: la conversación con el servidor (docs/veintiuna.sql)
-   Cinco llamadas: mesa, repartir, accion, historial y reclamar. Todas devuelven lo que el servidor confirma o lanzan un ErrorMesa:
+   Cinco llamadas de la mesa individual (mesa, repartir, accion, historial y reclamar) y las de la mesa con amigos (amigos.*). Todas devuelven lo que el servidor confirma o lanzan un ErrorMesa:
      { tipo: "red" }       no llegó respuesta (sin conexión o tardó demasiado). La petición PUEDE haberse aplicado: repetirla con los mismos
                            identificadores es seguro (repartir lleva el identificador de la mano y accion lleva el número de paso).
      { tipo: "servidor" }  el servidor la rechazó; "codigo" es la pista (saldo_insuficiente, mano_en_curso, paso_futuro...) y "mensaje" el texto.
@@ -43,7 +43,20 @@
       repartir: (cliente, modo, apuesta) => llamar("veintiuna_repartir", { p_cliente: cliente, p_modo: modo, p_apuesta: modo === "apuesta" ? apuesta : 0 }),
       accion: (partida, paso, accion) => llamar("veintiuna_accion", { p_partida: partida, p_paso: paso, p_accion: accion }),
       historial: limite => llamar("veintiuna_historial", { p_limite: limite || 15 }),
-      reclamar: logro => llamar("veintiuna_reclamar", { p_logro: logro })
+      reclamar: logro => llamar("veintiuna_reclamar", { p_logro: logro }),
+      // La mesa con amigos (docs/veintiuna.sql, sección 8). estado(version) devuelve {sin_cambios} si no cambió nada desde esa versión.
+      amigos: {
+        lista: () => llamar("veintiuna_amigos_lista", {}),
+        crear: (nombre, privada, cartas) => llamar("veintiuna_amigos_crear", { p_nombre: nombre || null, p_privada: !!privada, p_cartas: !!cartas }),
+        unirse: codigo => llamar("veintiuna_amigos_unirse", { p_codigo: codigo }),
+        salir: () => llamar("veintiuna_amigos_salir", {}),
+        estado: version => llamar("veintiuna_amigos_estado", { p_version: version == null ? null : version }),
+        misCartas: () => llamar("veintiuna_amigos_mis_cartas", {}),
+        apostar: (apuesta, carta) => llamar("veintiuna_amigos_apostar", { p_apuesta: apuesta, p_carta: carta || null }),
+        pasar: () => llamar("veintiuna_amigos_pasar", {}),
+        repartir: () => llamar("veintiuna_amigos_repartir", {}),
+        accion: (paso, accion) => llamar("veintiuna_amigos_accion", { p_paso: paso, p_accion: accion })
+      }
     };
   }
 

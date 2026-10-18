@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veintiuna con amigos — Compendio del Mundo</title>
+  <meta name="description" content="La mesa de las Veintiuna Velas para jugar con amigos: hasta cinco asientos, una crupier de cera y, si queréis, un pozo de cartas.">
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20270313"></script>
+  <script src="js/dialogos.js?v=20270313"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20270313">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270313">
+  <link rel="stylesheet" href="css/veintiuna.css?v=20270319">
+  <script src="js/mj-volumen.js?v=20270313"></script>
+</head>
+<body class="mj-pagina vv-tema">
+  <script src="js/carga.js?v=20270318"></script>
+  <a class="vv-saltar" href="#vvDock">Ir a los controles de la mesa</a>
+  <div class="mj-barra">
+    <span class="mj-enlaces">
+      <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+      <a href="index.html" class="mj-volver mj-volver-sec">Inicio</a>
+      <a href="veintiuna.html" class="mj-volver mj-volver-sec">Jugar sola contra la crupier</a>
+    </span>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+
+  <div class="vv-escena" id="vvEscena">
+    <div class="vv-fondo" aria-hidden="true">
+      <div class="vv-cortina vv-cortina-i"></div><div class="vv-cortina vv-cortina-d"></div>
+      <div class="vv-candelabro"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="vv-candil vv-candil-i"></div><div class="vv-candil vv-candil-d"></div>
+    </div>
+
+    <main class="vv-sala vva-sala" id="vvSala" data-fase="cargando">
+      <header class="vv-cabecera">
+        <div class="vv-marca">
+          <span class="vv-marca-emblema" id="vvEmblema"></span>
+          <div>
+            <p class="eyebrow">CASA DE JUEGO</p>
+            <h1 class="vv-titulo">Veintiuna con amigos</h1>
+          </div>
+        </div>
+        <div class="vv-herramientas">
+          <div class="vv-saldo" role="group" aria-label="Tus tokens de juego">
+            <svg class="vv-saldo-moneda" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><use href="#vv-moneda"/></svg>
+            <span class="vv-saldo-datos"><strong id="vvSaldo">—</strong><small>tokens de juego</small></span>
+          </div>
+          <button type="button" class="vv-boton-mini" id="vvBtnReglas" aria-haspopup="dialog">Reglas</button>
+          <a class="vv-boton-mini" href="veintiuna.html#desafios">Desafíos</a>
+          <button type="button" class="vv-boton-mini vv-boton-sonido" id="vvBtnSonido" aria-pressed="true" title="Efectos de sonido de la mesa (el volumen general está en el control de abajo a la derecha)"><span aria-hidden="true" id="vvSonidoIcono">♪</span> <span id="vvSonidoTexto">Efectos</span></button>
+        </div>
+      </header>
+
+      <p class="vv-aviso" id="vvAviso" role="status" hidden></p>
+
+      <!-- Antes de sentarte: las mesas abiertas, crear una y entrar con un código -->
+      <section class="vva-lobby" id="vvaLobby" aria-label="Mesas" hidden></section>
+
+      <!-- Sentado en una mesa -->
+      <section class="vv-mesa vva-mesa" id="vvaMesa" aria-label="La mesa" data-estado="espera" hidden>
+        <div class="vva-barra" id="vvaBarra"></div>
+        <div class="vv-madera">
+          <div class="vv-fieltro vva-fieltro" id="vvFieltro">
+            <div class="vv-tapete" id="vvTapete" aria-hidden="true"></div>
+
+            <div class="vv-zona vv-zona-crupier">
+              <figure class="vv-crupier" id="vvCrupier" data-estado="espera">
+                <div class="vv-crupier-retrato" id="vvCrupierArte"></div>
+                <figcaption><strong>Cera</strong><span>crupier de la casa</span></figcaption>
+                <div class="vv-dicho" id="vvDicho" aria-hidden="true"></div>
+              </figure>
+              <div class="vv-lado-mano" id="vvLadoCrupier">
+                <div class="vv-etiqueta"><span class="vv-etiqueta-nombre">Crupier</span><span class="vv-total" id="vvTotalCrupier" aria-hidden="true"></span></div>
+                <div class="vv-mano" id="vvManoCrupier" data-quien="crupier"></div>
+              </div>
+            </div>
+
+            <div class="vv-banda vva-banda">
+              <aside class="vv-placa" id="vvPlaca" data-regla="fortuna" aria-label="Regla especial de la ronda" hidden>
+                <div class="vv-placa-icono" id="vvPlacaIcono" aria-hidden="true"></div>
+                <div class="vv-placa-texto">
+                  <p class="vv-placa-etq" id="vvPlacaEtq">Regla de esta ronda</p>
+                  <h2 class="vv-placa-nombre" id="vvPlacaNombre">—</h2>
+                  <p class="vv-placa-efecto" id="vvPlacaEfecto"></p>
+                </div>
+                <div class="vv-placa-lado">
+                  <span class="vv-placa-estado" id="vvPlacaEstado"></span>
+                  <button type="button" class="vv-enlace" id="vvPlacaMas" aria-haspopup="dialog">Cómo funciona</button>
+                </div>
+              </aside>
+              <p class="vv-leyenda" aria-hidden="true"><span id="vvLeyendaPaga">La veintiuna paga tres a dos</span><i></i><span id="vvLeyendaPlanta">La casa se planta con diecisiete</span></p>
+            </div>
+
+            <div class="vva-pozo" id="vvaPozo" hidden></div>
+
+            <div class="vva-asientos" id="vvaAsientos"></div>
+
+            <div class="vv-zapato" id="vvZapato" aria-hidden="true"></div>
+            <div class="vv-ojo" id="vvOjo" hidden><span class="vv-ojo-etq">Siguiente</span><div class="vv-ojo-carta" id="vvOjoCarta" role="img"></div></div>
+          </div>
+        </div>
+
+        <section class="vv-dock" id="vvDock" tabindex="-1" aria-label="Controles de la mesa" aria-live="off">
+          <div class="vv-dock-cuerpo" id="vvDockCuerpo"></div>
+        </section>
+      </section>
+
+      <p class="vv-pie">Los tokens de juego son los mismos del <a href="hipodromo.html">Hipódromo</a>. La baraja y las reglas viven en el servidor: nadie, ni siquiera quien crea la mesa, puede ver cartas que no le tocan. <button type="button" class="vv-enlace" id="vvAtajosBtn">Atajos de teclado</button></p>
+    </main>
+  </div>
+
+  <div id="vvSr" class="vv-sr" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="vvSrFuerte" class="vv-sr" role="alert" aria-live="assertive" aria-atomic="true"></div>
+  <div class="vv-toasts" id="vvToasts"></div>
+
+  <dialog class="vv-dialogo" id="vvDlgReglas" aria-labelledby="vvDlgReglasT"></dialog>
+  <dialog class="vv-dialogo" id="vvDlgCartas" aria-labelledby="vvDlgCartasT"></dialog>
+  <dialog class="vv-dialogo vv-dialogo-chico" id="vvDlgAtajos" aria-labelledby="vvDlgAtajosT"></dialog>
+
+  <script src="js/temas.js?v=20270313"></script>
+  <script src="js/fichas-supabase.js?v=20270313"></script>
+  <script src="js/interruptores.js?v=20270313"></script>
+  <script src="js/presencia.js?v=20270313"></script>
+  <script src="js/lado.js?v=20270313"></script>
+  <script src="js/veintiuna-arte.js?v=20270316"></script>
+  <script src="js/veintiuna-vista.js?v=20270318"></script>
+  <script src="js/veintiuna-api.js?v=20270318"></script>
+  <script src="js/veintiuna-amigos.js?v=20270319"></script>
+  <script src="js/minijuegos-avisos.js?v=20270313"></script>
+  <script src="js/avisos-admin.js?v=20270313"></script>
+  <script src="js/musica-paginas.js?v=20270318"></script>
+</body>
+</html>

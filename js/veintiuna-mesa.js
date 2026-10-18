@@ -1018,7 +1018,7 @@
     try { sesion = typeof fichasSesionActual === "function" ? await fichasSesionActual() : null; } catch (e) { sesion = null; }
     S.sesion = sesion;
     if (!sesion) { pintarPlaca("maldicion", "proxima", null); $("vvPlaca").hidden = true; fase("sin_sesion"); finCarga(); }
-    else { await cargarMesa(); finCarga(); }
+    else { await cargarMesa(); finCarga(); if (location.hash === "#desafios") abrirDesafios(); }
     if (typeof fichasEnCambioDeSesion === "function") {
       fichasEnCambioDeSesion(ses => {
         if (ses && !S.sesion) { S.sesion = ses; cargarMesa(); }

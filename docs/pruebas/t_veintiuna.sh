@@ -32,7 +32,7 @@ for f in "veintiuna_i_repartir('$U1', '$CLI', 'practica', 0, null)" "veintiuna_i
   contiene "un jugador no puede llamar a la función interna $(printf '%s' "$f" | cut -d'(' -f1)" "$(como $U1 "select $f;")" "permission denied"
 done
 R=$(como $U1 "select veintiuna_repartir('$CLI', 'apuesta', 20);")
-contiene "un jugador con sesión reparte una mano" "$R" '"estado": "en_curso"'
+contiene "un jugador con sesión reparte una mano (con un 9 % de naturales al repartir, puede acabar ya)" "$R" '"modo": "apuesta"'
 PID=$(sql "select id from veintiuna_partidas where user_id = '$U1'")
 comprobar "un jugador no lee la tabla de manos (lleva la baraja)" "0" "$(como $U1 "select count(*) from veintiuna_partidas;" | tail -1)"
 comprobar "el admin sí puede revisarlas" "1" "$(como $ADMIN "select count(*) from veintiuna_partidas where user_id = '$U1';" | tail -1)"
@@ -46,7 +46,7 @@ for t in "insert into veintiuna_partidas (user_id, cliente, modo, apuesta, regla
 done
 comprobar "las estadísticas propias se pueden leer y las ajenas no" "1|0" "$(como $U1 "select count(*) from veintiuna_estadisticas;" | tail -1)|$(como $U2 "select count(*) from veintiuna_estadisticas where user_id = '$U1';" | tail -1)"
 como $U1 "update hipodromo_billeteras set saldo = 9999 where usuario = '$U1';" >/dev/null
-comprobar "la billetera sigue en 280 (300 menos la apuesta de 20) aunque se intente cambiar a mano" "t" "$(sql "select saldo = 280 from hipodromo_billeteras where usuario = '$U1'")"
+comprobar "la billetera sigue como la dejó la mano (300 - 20 + lo que pagó) aunque se intente cambiar a mano" "t" "$(sql "select b.saldo = 300 - p.apuesta + coalesce(p.pago, 0) from hipodromo_billeteras b join veintiuna_partidas p on p.user_id = b.usuario where b.usuario = '$U1'")"
 
 echo "== Dos peticiones a la vez"
 sql "delete from veintiuna_partidas; delete from hipodromo_movimientos; update hipodromo_billeteras set saldo = 300 where usuario in ('$U1', '$U2')" >/dev/null
@@ -126,7 +126,7 @@ como $U1 "select veintiuna_amigos_apostar(20) ->> 'fase';" > "$TMP/a" &
 como $U2 "select veintiuna_amigos_apostar(30) ->> 'fase';" > "$TMP/b" &
 wait
 comprobar "apuestan a la vez: dos manos, una por jugador, y la ronda empezó una sola vez" "2|1|jugando|2" "$(sql "select count(*) from veintiuna_partidas")|$(sql "select count(distinct ronda_id) from veintiuna_partidas")|$(sql "select case when count(*) filter (where fase = 'jugando') + count(*) filter (where fase = 'resultado') = 1 then 'jugando' else 'mal' end from veintiuna_mesas")|$(sql "select count(*) from hipodromo_movimientos where concepto like '%apuesta (mano%'")"
-comprobar "cada apuesta se cobró una vez" "280|270" "$(sql "select saldo from hipodromo_billeteras where usuario = '$U1'" | cut -d. -f1 | sed 's/^$/0/')|$(sql "select saldo from hipodromo_billeteras where usuario = '$U2'" | cut -d. -f1)"
+comprobar "cada apuesta se cobró una vez y cada pago se abonó una sola vez (saldo = 300 - apuesta + pago)" "t|2" "$(sql "select bool_and(b.saldo = 300 - p.apuesta + coalesce(p.pago, 0)) from veintiuna_partidas p join hipodromo_billeteras b on b.usuario = p.user_id where p.modo = 'apuesta'")|$(sql "select count(*) from hipodromo_movimientos where concepto like '%apuesta (mano%'")"
 rm -rf "$TMP"
 como $U1 "select veintiuna_amigos_salir();" >/dev/null; como $U2 "select veintiuna_amigos_salir();" >/dev/null
 sql "select t_reset()" >/dev/null

@@ -114,6 +114,62 @@ comprobar("al repartir el Bufón dice si cambió tu carta", /El Bufón cambia tu
 t = V.anuncio(null, base({ regla: { id: "bufon", usada: false, evento: "nada" } }));
 comprobar("y si el dado no cambió nada", /no cambia nada/.test(t), true);
 
+console.log("== Mesa con amigos: textos y asientos");
+const mesa = (o) => Object.assign({
+  codigo: "ABCDE", nombre: "Los de siempre", ronda: 1, fase: "apuestas", turno: null, cartas: false, privada: false, soy_creador: true, asientos_max: 5, version: 3,
+  regla: { id: "ojo", evento: null }, proxima_regla: "vela", crupier: { cartas: [], ocultas: 0, total: 0, blando: false },
+  asientos: [
+    { asiento: 0, nombre: "Ana", yo: true, listo: false, apuesta: null, pasa: false, con_carta: false, mano: null },
+    { asiento: 1, nombre: "Beto", yo: false, listo: false, apuesta: null, pasa: false, con_carta: false, mano: null }],
+  pozo: { activo: false, cartas: [], estado: null, ganador: null },
+  yo: { asiento: 0, saldo: 100, apuesta: null, listo: false, tu_turno: false }
+}, o || {});
+const mano = (cartas, extra) => Object.assign({ cartas, total: 19, blando: false, estado: "en_curso", fase: "jugador", modo: "apuesta", apuesta: 20, peajes: 0, resultado: null, razon: null, pago: null, neto: null }, extra || {});
+let m = mesa();
+comprobar("sin apostar: «Apostando»; listo: «Listo»; pasa: «Pasa esta ronda»", [V.chipAsiento(m, m.asientos[1]).texto, V.chipAsiento(mesa({ asientos: [{ asiento: 1, nombre: "B", yo: false, listo: true, apuesta: null, pasa: false }] }), { asiento: 1, yo: false, listo: true, apuesta: null, pasa: false }).texto,
+  V.chipAsiento(m, { asiento: 1, yo: false, listo: true, pasa: true, apuesta: null }).texto], ["Apostando", "Listo", "Pasa esta ronda"]);
+comprobar("tu propia apuesta sí se ve en tu chip", V.chipAsiento(m, { asiento: 0, yo: true, listo: true, apuesta: 40, pasa: false }).texto, "Apuesta 40");
+comprobar("listos de la mesa", V.listosDeLaMesa(mesa({ asientos: [{ listo: true }, { listo: false }, { listo: true }] })), { total: 3, listos: 2, faltan: 1 });
+const jug = mesa({ fase: "jugando", turno: 1, asientos: [
+  { asiento: 0, nombre: "Ana", yo: true, listo: true, mano: mano([carta(10, 0), carta(9, 1)]) },
+  { asiento: 1, nombre: "Beto", yo: false, listo: true, mano: mano([carta(5, 0), carta(6, 1)], { total: 11 }) },
+  { asiento: 2, nombre: "Caro", yo: false, listo: true, mano: mano([carta(9, 0), carta(8, 1)], { fase: "plantada", total: 17 }) },
+  { asiento: 3, nombre: "Dani", yo: false, listo: true, mano: mano([carta(10, 0), carta(8, 1), carta(9, 2)], { estado: "terminada", resultado: "derrota", razon: "te_pasas", total: 27 }) },
+  { asiento: 4, nombre: "Eli", yo: false, listo: false, mano: null }] });
+comprobar("durante la ronda: turno, espera, plantado, se pasa y mira la ronda", jug.asientos.map(a => V.chipAsiento(jug, a).texto), ["Espera", "Su turno", "Plantado", "Se pasa", "Mira la ronda"]);
+comprobar("tu turno se dice «Tu turno»", V.chipAsiento(mesa(Object.assign({}, jug, { turno: 0 })), jug.asientos[0]).texto, "Tu turno");
+const res = mesa({ fase: "resultado", crupier: { cartas: [carta(10, 0), carta(6, 1), carta(10, 2)], ocultas: 0, total: 26, blando: false }, asientos: [
+  { asiento: 0, nombre: "Ana", yo: true, listo: true, mano: mano([carta(10, 0), carta(9, 1)], { estado: "terminada", resultado: "victoria", razon: "crupier_se_pasa", neto: 20 }) },
+  { asiento: 1, nombre: "Beto", yo: false, listo: true, mano: mano([carta(1, 0), carta(13, 1)], { estado: "terminada", resultado: "natural", razon: "natural", total: 21, neto: 30 }) },
+  { asiento: 2, nombre: "Caro", yo: false, listo: true, mano: mano([carta(9, 0)], { estado: "terminada", resultado: "empate", razon: "igual", neto: 0 }) },
+  { asiento: 3, nombre: "Dani", yo: false, listo: true, mano: mano([carta(9, 0)], { estado: "terminada", resultado: "derrota", razon: "abandono", neto: -20 }) },
+  { asiento: 4, nombre: "Eli", yo: false, listo: true, mano: mano([carta(9, 0)], { estado: "terminada", resultado: "derrota", razon: "menor", neto: -10 }) }] });
+comprobar("al acabar: resultado con lo que ganó o perdió cada uno", res.asientos.map(a => V.chipAsiento(res, a).texto), ["Gana +20", "Blackjack +30", "Empata 0", "Se fue", "Pierde −10"]);
+comprobar("sin apostar tokens no se enseña cantidad", V.chipAsiento(mesa({ fase: "resultado" }), { asiento: 0, yo: true, mano: mano([carta(9, 0)], { modo: "practica", estado: "terminada", resultado: "victoria", neto: 0 }) }).texto, "Gana");
+const adaptada = V.manoComoPropia(jug);
+comprobar("tu mano se adapta a lo que espera la lista de acciones (en curso, fase, cartas)", [adaptada.estado, adaptada.fase, adaptada.jugador.total], ["en_curso", "jugador", 19]);
+comprobar("quien no tiene mano no tiene acciones", V.manoComoPropia(m), null);
+const conAcc = Object.assign({}, jug, { yo: { asiento: 0, saldo: 100, tu_turno: true, partida: "p", paso: 2, regla: { id: "ojo", usada: false, peaje: 7 }, acciones: { pedir: true, plantar: true, especial: { tipo: "ojo", disponible: true, motivo: null, peaje: 7 } } } });
+comprobar("tu turno ofrece pedir, plantarte y la acción de la regla", V.acciones(V.manoComoPropia(conAcc)).botones.map(b => b.id), ["pedir", "plantar", "ojo"]);
+comprobar("el pozo sin cartas lo explica", /Nadie ha puesto carta/.test(V.frasePozo(mesa({ cartas: true, pozo: { activo: true, cartas: [], estado: null } }))), true);
+comprobar("el pozo abierto dice qué cartas hay", V.frasePozo(mesa({ pozo: { activo: true, cartas: [{ titulo: "Rata", carta: "comun-1" }, { titulo: "Lobo", carta: "comun-2" }], estado: "abierto" } })), "En el pozo: Rata y Lobo. Se lo lleva el mejor jugador que gane a la casa.");
+comprobar("el pozo pagado dice quién se lo lleva", V.frasePozo(mesa({ pozo: { activo: true, cartas: [{ titulo: "Rata" }], estado: "pagado", ganador: "Ana" } })), "El pozo es para Ana: Rata.");
+comprobar("el pozo devuelto lo dice", V.frasePozo(mesa({ pozo: { activo: true, cartas: [{ titulo: "Rata" }], estado: "devuelto" } })), "Nadie ganó el pozo: cada carta vuelve a su dueño.");
+comprobar("una mesa sin pozo no dice nada", V.frasePozo(m), "");
+let tx = V.anuncioAmigos(null, jug);
+  cierto("al entrar se anuncia la mesa con su código y tus cartas", /Mesa Los de siempre, código ABCDE./.test(tx) && /Tus cartas|Reparto/.test(tx));
+tx = V.anuncioAmigos(mesa({ fase: "apuestas" }), jug);
+cierto("al repartir se anuncia el reparto con tus cartas y quién juega", /Reparto\./.test(tx) && /Tus cartas: diez de picas y 9 de corazones\. Suman 19\./.test(tx.replace("10 de picas", "diez de picas")) && /Juega Beto\./.test(tx));
+tx = V.anuncioAmigos(jug, res);
+cierto("al acabar se anuncia el crupier y el resultado de cada uno", /El crupier enseña/.test(tx) && /Tú: gana \+20\./.test(tx) && /Beto: blackjack \+30\./.test(tx));
+const nuevaCarta = JSON.parse(JSON.stringify(jug)); nuevaCarta.asientos[1].mano.cartas.push(carta(7, 0)); nuevaCarta.asientos[1].mano.total = 18;
+tx = V.anuncioAmigos(jug, nuevaCarta);
+cierto("cuando otro pide carta se dice qué recibe y cuánto suma", /Beto recibe 7 de picas\. Suma 18\./.test(tx));
+const sentado = JSON.parse(JSON.stringify(m)); sentado.asientos.push({ asiento: 2, nombre: "Caro", yo: false, listo: false, mano: null });
+cierto("se anuncia quién se sienta y quién se levanta", /Caro se sienta a la mesa\./.test(V.anuncioAmigos(m, sentado)) && /Caro se levanta de la mesa\./.test(V.anuncioAmigos(sentado, m)));
+comprobar("errores de la mesa con palabras", ["mesa_llena", "no_es_tu_turno", "mesa_no_existe", "ya_sentado", "pozo_desequilibrado"].map(c => /\w/.test(V.mensajeError({ tipo: "servidor", codigo: c, mensaje: "x" })) && V.mensajeError({ tipo: "servidor", codigo: c, mensaje: "x" }) !== "x"), [true, true, true, true, true]);
+comprobar("el abandono tiene razón escrita", /levantaste/.test(V.RAZONES.abandono), true);
+
 console.log("== Errores con palabras");
 comprobar("sin conexión", /Reintentar/.test(V.mensajeError({ tipo: "red" })), true);
 comprobar("mano en curso", V.mensajeError({ tipo: "servidor", codigo: "mano_en_curso", mensaje: "x" }), "Ya tenías una mano abierta. La recupero.");
@@ -130,6 +186,15 @@ console.log("== Llamadas al servidor");
     ["veintiuna_repartir", { p_cliente: "id-2", p_modo: "practica", p_apuesta: 0 }], ["veintiuna_accion", { p_partida: "p1", p_paso: 3, p_accion: "pedir" }],
     ["veintiuna_historial", { p_limite: 5 }], ["veintiuna_reclamar", { p_logro: "natural" }]]);
   comprobar("en la práctica nunca se manda un importe", llamadas[2][1].p_apuesta, 0);
+
+  llamadas.length = 0;
+  await api.amigos.lista(); await api.amigos.crear("Mesa", true, false); await api.amigos.crear("", false, true); await api.amigos.unirse("ABCDE"); await api.amigos.salir();
+  await api.amigos.estado(7); await api.amigos.estado(); await api.amigos.misCartas(); await api.amigos.apostar(20, "e1"); await api.amigos.apostar(0); await api.amigos.pasar(); await api.amigos.repartir(); await api.amigos.accion(4, "pedir");
+  comprobar("las llamadas de la mesa con amigos usan las funciones del servidor con sus argumentos", llamadas, [
+    ["veintiuna_amigos_lista", {}], ["veintiuna_amigos_crear", { p_nombre: "Mesa", p_privada: true, p_cartas: false }], ["veintiuna_amigos_crear", { p_nombre: null, p_privada: false, p_cartas: true }],
+    ["veintiuna_amigos_unirse", { p_codigo: "ABCDE" }], ["veintiuna_amigos_salir", {}], ["veintiuna_amigos_estado", { p_version: 7 }], ["veintiuna_amigos_estado", { p_version: null }],
+    ["veintiuna_amigos_mis_cartas", {}], ["veintiuna_amigos_apostar", { p_apuesta: 20, p_carta: "e1" }], ["veintiuna_amigos_apostar", { p_apuesta: 0, p_carta: null }],
+    ["veintiuna_amigos_pasar", {}], ["veintiuna_amigos_repartir", {}], ["veintiuna_amigos_accion", { p_paso: 4, p_accion: "pedir" }]]);
 
   const intenta = async (api, f) => { try { await f(api); return null; } catch (e) { return e; } };
   let e = await intenta(Api.crear(async () => cliente({ data: null, error: { message: "ERROR: No tienes tantos tokens: te faltan 5.", hint: "saldo_insuficiente", code: "P0001" } })), a => a.repartir("x", "apuesta", 50));
@@ -193,6 +258,23 @@ console.log("== Llamadas al servidor");
   cierto("las barras de progreso de los desafíos son progressbar con valores", /role="progressbar"[^`]*aria-valuenow/.test(mesaJs));
   cierto("atajos de teclado documentados y declarados (aria-keyshortcuts)", /aria-keyshortcuts/.test(mesaJs) && /Atajos de teclado/.test(html));
   cierto("la carta oculta del crupier se anuncia como «carta oculta» y no se rellena nunca con datos del servidor", /A\.carta\(null, true\)|repartirCarta\("crupier", null, true/.test(mesaJs));
+
+  console.log("== La página de la mesa con amigos");
+  const htmlA = fs.readFileSync(path.join(RAIZ, "veintiuna-amigos.html"), "utf8");
+  const amigosJs = fs.readFileSync(path.join(RAIZ, "js", "veintiuna-amigos.js"), "utf8");
+  cierto("idioma, título y un solo h1", /<html lang="es">/.test(htmlA) && /<title>Veintiuna con amigos/.test(htmlA) && (htmlA.match(/<h1[ >]/g) || []).length === 1);
+  cierto("enlace para saltar a los controles y zonas de aviso para lectores de pantalla", /class="vv-saltar" href="#vvDock"/.test(htmlA) && /id="vvSr"[^>]*aria-live="polite"/.test(htmlA) && /id="vvSrFuerte"[^>]*aria-live="assertive"/.test(htmlA));
+  cierto("cada diálogo se nombra con aria-labelledby", ["vvDlgReglas", "vvDlgCartas", "vvDlgAtajos"].every(id => new RegExp(`id="${id}"[^>]*aria-labelledby="${id}T"`).test(htmlA)));
+  cierto("la mesa, los controles y las mesas abiertas tienen nombre accesible", /aria-label="La mesa"/.test(htmlA) && /aria-label="Controles de la mesa"/.test(htmlA) && /aria-label="Mesas"/.test(htmlA));
+  cierto("oculto.js va primero (la página se abre solo al admin mientras esté en pruebas) y no hay ninguna imagen que pueda faltar", htmlA.indexOf("oculto.js") < htmlA.indexOf("css/style.css") && !/<img /.test(htmlA));
+  cierto("carga las piezas en orden: arte, vista, api y la mesa", ["veintiuna-arte.js", "veintiuna-vista.js", "veintiuna-api.js", "veintiuna-amigos.js"].map(n => htmlA.indexOf(n)).every((x, i, v) => x > 0 && (i === 0 || x > v[i - 1])));
+  cierto("cada asiento se anuncia con su estado (aria-label)", /el\.setAttribute\("aria-label", `\$\{a\.nombre\}/.test(amigosJs));
+  cierto("las acciones deshabilitadas usan aria-disabled y explican por qué", /aria-disabled="\$\{!b\.habilitado\}"/.test(amigosJs) && /b\.motivo \|\| "Esa acción no está disponible ahora\."/.test(amigosJs));
+  cierto("el selector de cómo juegas es un radiogroup, igual que el de la carta del pozo", (amigosJs.match(/role="radiogroup"/g) || []).length >= 2);
+  cierto("el código de la mesa se lee letra a letra", /aria-label="Código de la mesa: /.test(amigosJs));
+  cierto("se sondea la mesa con la versión que ya se tiene y se baja el ritmo con la pestaña en segundo plano", /api\.amigos\.estado\(S\.version\)/.test(amigosJs) && /document\.hidden \? SONDEO_FONDO_MS/.test(amigosJs));
+  cierto("se respeta prefers-reduced-motion en las cartas que entran", /sinMovimiento\(\)/.test(amigosJs));
+  cierto("la mesa individual enlaza con la de amigos y al revés", /veintiuna-amigos\.html/.test(html) && /veintiuna\.html/.test(htmlA));
 
   console.log("== La hoja de estilos: movimiento reducido, foco y tamaños táctiles");
   cierto("existe un bloque prefers-reduced-motion que apaga animaciones y transiciones", /@media \(prefers-reduced-motion: reduce\)[^}]*animation: none/.test(css) && /transition-duration: \.01s/.test(css));

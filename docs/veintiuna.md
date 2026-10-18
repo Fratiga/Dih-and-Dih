@@ -60,6 +60,36 @@ Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos
 - **Mesa de práctica**: mismas cartas y reglas, apuesta simbólica, no toca la billetera, no da tokens. **No cuenta para los desafíos ni para las rachas** (decisión del 18-oct-2026): sirve para aprender las reglas. Sí suma en rondas, victorias y derrotas de las estadísticas.
 - No se cambia ninguna fuente de ingresos del Hipódromo ni de otros juegos. Esta mesa solo mueve tokens entre la billetera y la casa, y con las reglas de arriba la casa gana de media. Los tokens siguen entrando por las vías de siempre (vender cartas, carreras, regalos del Admin).
 
+## Mesa con amigos (`veintiuna-amigos.html`)
+
+La misma mesa para hasta **cinco jugadores** (`veintiuna_mesa_asientos`). Se entra desde la mesa de blackjack de la taberna (rincón de cartas, abajo a la izquierda, con Cera detrás), desde «Jugar con amigos» en la mesa individual o con un enlace de invitación (`veintiuna-amigos.html?mesa=ABCDE`).
+
+- **Quién juega contra quién:** todos juegan **contra la casa**, no entre sí. Cada uno apuesta sus tokens y cobra o paga solo por su mano; hay **una regla especial por ronda para toda la mesa** (se enseña antes de apostar) y cada jugador usa su acción (peaje incluido) en su turno. Con el Ojo del Tahúr ves la siguiente carta **tú solo**; con las Cartas marcadas, la oculta del crupier **tú solo**; con el Trueque cambia la carta visible del crupier para todos; el dado del Bufón es uno para toda la mesa.
+- **Mesas:** públicas (salen en la lista) o privadas (solo con el código de 5 caracteres). Quien crea la mesa elige si lleva pozo de cartas. Solo se puede estar sentado en una mesa, y sentado no se puede jugar la mano individual.
+- **Baraja:** doble (104 cartas), barajada de nuevo en cada ronda, porque con cinco jugadores una sola podría quedarse corta. El valor esperado cambia una décima de punto como mucho respecto a las cuentas de una baraja.
+- **Una ronda:** apuestas (se reparte cuando todos están listos o 45 s después de que apueste el primero; quien crea la mesa puede repartir ya) → reparto → turnos por asiento (45 s cada uno; si no juegas, el servidor te planta, y si lo dejas pasar dos veces seguidas te levanta de la mesa) → el crupier juega → resultado (10 s) → siguiente ronda. Los naturales se pagan al repartir, igual que en la individual. Se puede **jugar sin apostar** (mano de práctica: no cobra ni paga y no cuenta para desafíos) o **pasar** la ronda.
+- **Salir:** a mitad de ronda pierdes tu mano por abandono (la apuesta ya está pagada). Antes de repartir no cuesta nada. Quien lleva más de 150 s sin dar señales (la página abierta avisa cada pocos segundos) se levanta solo. Si se va quien creó la mesa, pasa al siguiente que se sentó; cuando se va el último, la mesa se cierra.
+- **Desafíos y tokens:** las manos con apuesta cuentan para desafíos, rachas y estadísticas igual que en la individual; el libro de tokens lleva el mismo concepto («Veintiuna Velas: apuesta (mano …)»).
+
+### Pozo de cartas entre jugadores
+
+Solo en las mesas creadas «con pozo de cartas». Es la forma de apostarse cartas entre jugadores y sigue las reglas de la economía de cartas (sección 9 de `docs/economia-de-cartas.md`: el ganador se lleva las cartas, nunca se crean ni se destruyen, el bloqueo es el oficial, se respetan los límites por jugador).
+
+- Antes de repartir, cada jugador puede poner **una** carta suya. Se **bloquea** (`cartas_i_bloquear`) hasta que acaba la ronda y todos ven qué hay en el pozo y de quién es.
+- **Equilibrio:** las cartas del pozo no pueden diferir en más de una categoría de rareza (el mismo criterio de los duelos de Triunfos). Máximo `veintiuna_pozo_max_dia` veces al día por jugador (5).
+- Para que haya pozo tienen que poner carta **al menos dos** de los que juegan la ronda. Si no, la carta vuelve sola a su dueño al repartir y se le avisa.
+- **Quién gana:** entre quienes pusieron carta y **ganaron a la casa** (victoria o natural), se lleva todo el pozo el de mejor mano: un natural vale más que cualquier total y, después, gana el total más alto. Si empatan arriba, o nadie ganó a la casa, cada carta vuelve a su dueño. Quien se levanta a mitad de ronda no puede ganar, pero su carta sigue en juego.
+- Si al ganador ya no le cabe una carta (límite por jugador), esa carta vuelve a su dueño y no hay error. Cada traspaso queda en el libro de cartas (`cartas_movimientos`) y el pozo en `veintiuna_pozos` / `veintiuna_pozo_cartas`.
+- Esta forma de elegir al ganador (18-oct-2026) busca que nadie gane cartas sin ganarle a la casa y que decida la mejor mano; está en `veintiuna_i_pozo_resolver` si hay que cambiarla.
+
+### Cómo está hecha
+
+- Cada jugador sigue teniendo **su mano en `veintiuna_partidas`** (con `mesa`, `asiento` y `ronda_id`): las mismas reglas, peajes, desafíos y libro de tokens. Lo compartido (baraja, posición, cartas del crupier) vive en `veintiuna_mesas` y se copia a las manos en curso después de cada acción.
+- Tablas: `veintiuna_mesas`, `veintiuna_asientos`, `veintiuna_pozos`, `veintiuna_pozo_cartas`. Ninguna se lee ni se escribe desde el navegador (solo el admin puede mirarlas); todo pasa por las funciones `veintiuna_amigos_*` (`lista`, `crear`, `unirse`, `salir`, `estado`, `apostar`, `pasar`, `repartir`, `accion`, `mis_cartas`), que son `security definer` y solo se conceden a `authenticated`.
+- **Sin tiempo real:** el navegador pregunta por `veintiuna_amigos_estado(version)` cada 1,5 s (5 s con la pestaña en segundo plano). Si no cambió nada solo recibe `{sin_cambios}`. Esa llamada es también la señal de que sigues sentado, y quien la hace hace avanzar la mesa si toca (plazos, reparto, siguiente ronda), con un candado por mesa.
+- **Lo que no sale del servidor:** la baraja, la carta oculta del crupier hasta que acaba la ronda, y lo que ve cada uno con el Ojo o las Cartas marcadas. Las manos de todos sí se ven (en una mesa de verdad también).
+- Las apuestas de los demás no se ven hasta que se reparte.
+
 ## Seguridad: la autoridad es el servidor
 
 Todo está en `docs/veintiuna.sql`. El navegador pide y pinta.
@@ -127,9 +157,10 @@ node docs/pruebas-web/veintiuna.js                                        # text
 | `js/veintiuna-arte.js` | Todo el dibujo (SVG) |
 | `js/veintiuna-vista.js` | Textos, acciones y apuestas (puro, probado en Node) |
 | `tools/veintiuna-equilibrio.js`, `veintiuna-voluntad-cambio.js`, `veintiuna-reglas-nuevas.js`, `veintiuna-reglas-nuevas-b.js` | Cálculo exacto del valor esperado de cada regla |
-| `js/veintiuna-api.js` | Las cinco llamadas al servidor y los errores de red (puro) |
+| `js/veintiuna-api.js` | Las llamadas al servidor (la mesa individual y `amigos.*`) y los errores de red (puro) |
+| `veintiuna-amigos.html`, `js/veintiuna-amigos.js` | La mesa con amigos: lobby de mesas, asientos, pozo y turnos |
 | `docs/veintiuna.sql` | Tablas, reglas del juego, economía y desafíos |
-| `docs/pruebas/t_veintiuna*.sql/.sh`, `docs/pruebas-web/veintiuna.js` | Pruebas |
+| `docs/pruebas/t_veintiuna*.sql/.sh` (incluye `t_veintiuna_amigos.sql`), `docs/pruebas-web/veintiuna.js` | Pruebas |
 | `assets/minijuegos/veintiuna.svg` | Ilustración de la tarjeta de Minijuegos |
 
 ## Pendiente

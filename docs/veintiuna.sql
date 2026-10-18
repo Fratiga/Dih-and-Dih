@@ -1329,7 +1329,7 @@ begin
   -- Quién juega: los listos con apuesta. Si no les alcanzan los tokens (los gastaron en otro sitio) se quedan sin jugar esta ronda.
   for a in select * from veintiuna_asientos where mesa = m.id and listo and apuesta is not null order by asiento loop
     if a.apuesta > 0 then
-      select saldo into v_saldo from hipodromo_billeteras where usuario = a.user_id;
+      select saldo into v_saldo from hipodromo_billeteras where usuario = a.user_id for update;      -- la fila queda bloqueada hasta el final: el saldo no puede cambiar entre comprobar y cobrar
       if coalesce(v_saldo, 0) < a.apuesta then
         update veintiuna_asientos set listo = false, apuesta = null, aviso = 'No te alcanzaban los tokens para tu apuesta: te quedas sin jugar esta ronda.' where mesa = m.id and asiento = a.asiento;
         perform veintiuna_i_pozo_soltar(m.ronda_id, a.user_id);
@@ -1619,7 +1619,8 @@ begin
   if mi.partida is not null then
     select * into p from veintiuna_partidas where id = mi.partida;
     est := veintiuna_i_estado(p, v_saldo);
-    yo := yo || jsonb_build_object('partida', p.id, 'paso', p.paso, 'regla', est -> 'regla', 'acciones', est -> 'acciones', 'vista', est #> '{crupier,vista}',
+    yo := yo || jsonb_build_object('partida', p.id, 'paso', p.paso, 'modo', p.modo, 'regla', est -> 'regla', 'acciones', est -> 'acciones', 'vista', est #> '{crupier,vista}',
+                                   'resultado', est -> 'resultado', 'logros_nuevos', est -> 'logros_nuevos',
                                    'tu_turno', m.fase = 'jugando' and m.turno = mi.asiento and p.estado = 'en_curso' and p.fase in ('jugador', 'fortuna'));
   end if;
 
@@ -1665,7 +1666,8 @@ declare
   r jsonb;
 begin
   if uid is null then perform veintiuna_i_error('Hay que iniciar sesión.', 'sin_sesion'); end if;
-  -- limpieza: quien lleva mucho sin dar señales se levanta (cada mesa bajo su candado)
+  -- limpieza: las mesas cerradas hace días se borran y quien lleva mucho sin dar señales se levanta (cada mesa bajo su candado)
+  delete from veintiuna_mesas where estado = 'cerrada' and actividad < now() - interval '2 days';
   for f in select distinct mesa, user_id from veintiuna_asientos where ultima_actividad < now() - make_interval(secs => inactividad) loop
     if pg_try_advisory_xact_lock(hashtextextended('veintiuna_mesa_' || f.mesa::text, 0)) then perform veintiuna_i_amigos_sacar(f.mesa, f.user_id); end if;
   end loop;
@@ -1673,7 +1675,7 @@ begin
       'jugadores', (select coalesce(jsonb_agg(a.nombre order by a.asiento), '[]'::jsonb) from veintiuna_asientos a where a.mesa = m.id),
       'asientos_max', (cartas_ajuste('veintiuna_mesa_asientos', '5'))::text::int) order by m.actividad desc), '[]'::jsonb)
     into r from veintiuna_mesas m where m.estado = 'abierta' and not m.privada and exists (select 1 from veintiuna_asientos a where a.mesa = m.id);
-  return jsonb_build_object('mesas', r, 'sentado', exists (select 1 from veintiuna_asientos where user_id = uid));
+  return jsonb_build_object('mesas', r, 'sentado', exists (select 1 from veintiuna_asientos where user_id = uid), 'saldo', veintiuna_i_saldo(uid));
 end;
 $$;
 

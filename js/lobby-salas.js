@@ -26,7 +26,7 @@
     taberna: {
       nombre: "Taberna", grupos: [{ titulo: "Taberna", enlaces: [
         ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"],
-        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"]] }]
+        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna-amigos.html", "Mesa de blackjack (Veintiuna)", null, true]] }]
     },
     biblioteca: {
       nombre: "Biblioteca", lema: "Todo lo que se sabe del mundo, estante por estante.", grupos: [
@@ -37,7 +37,7 @@
     juegos: {
       nombre: "Sala recreativa", lema: "Cada juego en su máquina. Minijuegos los junta todos.", grupos: [
         { titulo: "Juegos", enlaces: [["ajedrez.html", "Ajedrez", "ajedrez"], ["arqueria.html", "Arquería", "diana"], ["ritmo.html", "Zarabanda", "arcade-ritmo"], ["parranda.html", "Parranda", "arcade-parranda"], ["sacrificio.html", "Hooey", "arcade-hooey"],
-          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura", true], ["veintiuna.html", "Las Veintiuna Velas", "cartas", true]] },
+          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura", true], ["veintiuna.html", "Las Veintiuna Velas", "cartas", true], ["veintiuna-amigos.html", "Veintiuna con amigos", "cartas", true]] },
         { titulo: "Triunfos", enlaces: [["cartas.html", "Álbum", "cartas"], ["mazos.html", "Mazos", "cartas"], ["batalla.html", "Batalla", "cartas"]] }]
     },
     establos: {

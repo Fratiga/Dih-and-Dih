@@ -68,7 +68,7 @@ body.vv-tema {
 .vv-saldo strong.sube { animation: vv-sube .9s ease-out; } .vv-saldo strong.baja { animation: vv-baja .9s ease-out; }
 @keyframes vv-sube { 0% { color: #fff; } 30% { color: #9be39a; } 100% { color: var(--vv-marfil); } }
 @keyframes vv-baja { 0% { color: #fff; } 30% { color: #ff8a8a; } 100% { color: var(--vv-marfil); } }
-.vv-boton-mini { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 12px; font: 500 .98rem var(--vv-serif); letter-spacing: .02em; color: var(--vv-marfil); background: #ffffff0d; border: 1px solid #ffffff26; border-radius: 6px; cursor: pointer; }
+.vv-boton-mini { text-decoration: none; position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 12px; font: 500 .98rem var(--vv-serif); letter-spacing: .02em; color: var(--vv-marfil); background: #ffffff0d; border: 1px solid #ffffff26; border-radius: 6px; cursor: pointer; }
 .vv-boton-mini:hover { border-color: #ffffff66; color: #fff; background: #ffffff1a; }
 .vv-boton-mini.apagado { color: var(--muted); }
 .vv-insignia[hidden] { display: none; }
@@ -420,4 +420,115 @@ body.vv-ocupado .vv-boton { opacity: .6; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
   .vv-tema *, .vv-tema *::before, .vv-tema *::after { animation: none !important; transition-duration: .01s !important; }
   .vv-cr-llama { transform: none; }
+}
+
+/* ------------------------------------------------------------------ veintiuna con amigos (veintiuna-amigos.html) */
+.vva-sala { --cwd: clamp(54px, min(7.4vw, calc((100vh - 560px) / 2.6)), 88px); --cws: clamp(38px, 5vw, 66px); }
+.vva-sala .vv-zona-crupier, .vva-sala .vv-ojo, .vva-sala .vv-zapato { --cw: var(--cwd); }
+.vva-sala .vv-zona-crupier .vv-mano { --cw: var(--cwd); }
+.vva-sala .vv-zapato { width: calc(var(--cwd) * .62); }
+.vva-sala .vv-ojo { top: calc(22px + var(--cwd) * .62 * 1.4 + 18px); width: calc(var(--cwd) * .62); }
+.vva-sin-mesa .vva-barra { display: none; }
+
+/* antes de sentarte */
+.vva-lobby { position: relative; z-index: 2; display: grid; gap: 18px; margin: 0 auto 8px; max-width: 1020px; }
+.vva-lobby[hidden], .vva-mesa[hidden], .vva-pozo[hidden], .vva-asiento[hidden] { display: none; }
+.vva-lobby-intro h2 { margin: 0 0 6px; font: 400 clamp(1.3rem, 2.6vw, 1.8rem) var(--font-heading); letter-spacing: .06em; color: var(--vv-marfil); }
+.vva-lobby-intro p { margin: 0; max-width: 62ch; color: var(--muted); }
+.vva-lobby-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; align-items: start; }
+.vva-lobby-grid .vva-tarjeta:first-child { grid-row: span 2; }
+.vva-tarjeta { padding: 16px 18px; background: #150e18; border: 1px solid #ffffff1f; border-radius: 8px; }
+.vva-tarjeta h3 { margin: 0 0 10px; font: 400 1.05rem var(--font-heading); letter-spacing: .12em; text-transform: uppercase; color: var(--vv-marfil); }
+.vva-mesas { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vva-mesa-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: #ffffff08; border: 1px solid #ffffff1a; border-radius: 6px; }
+.vva-mesa-fila div { display: flex; flex-direction: column; min-width: 0; }
+.vva-mesa-fila strong { font-weight: 600; color: var(--vv-marfil); }
+.vva-mesa-fila span { color: var(--muted); font-size: .9rem; }
+.vva-vacio { margin: 0; color: var(--muted); }
+.vva-form { display: grid; gap: 12px; }
+.vva-form label { display: grid; gap: 4px; color: var(--muted); font-size: .92rem; }
+.vva-form input[type="text"] { min-height: 44px; padding: 8px 12px; font: 500 1.05rem var(--vv-serif); color: var(--vv-marfil); background: #0f0a12; border: 1px solid #ffffff33; border-radius: 6px; }
+.vva-form input[type="text"]:focus-visible { border-color: #fff; }
+.vva-form #vvaCodigo { letter-spacing: .3em; text-transform: uppercase; font-weight: 700; }
+.vva-form label.vva-check { display: flex; align-items: flex-start; gap: 10px; color: var(--vv-marfil); line-height: 1.35; }
+.vva-form input[type="checkbox"] { flex: none; width: 20px; height: 20px; margin-top: 2px; accent-color: #ece5d4; }
+
+/* la mesa */
+.vva-mesa { position: relative; }
+.vva-barra { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; margin: 0 0 10px; }
+.vva-barra h2 { margin: 0; font: 400 1.25rem var(--font-heading); letter-spacing: .08em; color: var(--vv-marfil); }
+.vva-barra p { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
+.vva-codigo { display: inline-block; padding: 1px 10px; font: 700 1.05rem var(--font-heading); letter-spacing: .3em; color: #16121a; background: #ece5d4; border-radius: 4px; }
+.vva-fieltro { display: flex; flex-direction: column; min-height: 0; }
+.vva-fieltro[hidden], .vv-madera[hidden] { display: none; }
+.vva-fieltro .vv-zona-crupier { padding-top: 10px; }
+.vva-fieltro .vv-banda { padding: 2px 0 6px; }
+.vva-fieltro .vv-placa { padding: 6px 14px 6px 10px; }
+
+.vva-pozo { position: relative; z-index: 3; align-self: center; width: min(720px, calc(100% - 32px)); margin: 0 auto 8px; padding: 8px 14px; background: #0a1a16cc; border: 1px solid #ffffff2e; border-radius: 6px; text-align: center; }
+.vva-pozo h3 { margin: 0 0 4px; font: 400 .8rem var(--font-heading); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.vva-pozo ul { list-style: none; margin: 0 0 4px; padding: 0; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.vva-pozo-carta { display: flex; flex-direction: column; padding: 4px 10px; background: #ffffff10; border: 1px solid #ffffff33; border-radius: 4px; line-height: 1.15; text-align: left; }
+.vva-pozo-carta strong { font-weight: 600; font-size: .92rem; color: var(--vv-marfil); }
+.vva-pozo-carta small { font-size: .74rem; color: var(--muted); }
+.vva-pozo-carta.mia { border-color: #ece5d4; }
+.vva-pozo-carta.abandono { opacity: .6; text-decoration: line-through; }
+.vva-pozo p { margin: 0; font-size: .85rem; color: var(--vv-marfil); }
+.vva-pozo[data-estado="pagado"] { border-color: #8fd0a0; }
+
+.vva-asientos { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; padding: 4px clamp(8px, 2vw, 22px) 30px; align-items: start; }
+.vva-asiento { --cw: var(--cws); position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 6px 8px; min-width: 0; background: #06140fb3; border: 1px solid #ffffff22; border-top: 3px solid var(--asiento, #ffffff55); border-radius: 6px; }
+.vva-asiento.yo { background: #0b1f19e6; border-color: #ffffff55; border-top-color: var(--asiento, #fff); }
+.vva-asiento.turno { outline: 2px solid #ece5d4; outline-offset: 2px; }
+.vva-asiento.fuera { opacity: .6; }
+.vva-asiento.vacio { align-items: center; justify-content: center; min-height: 96px; border-style: dashed; border-top-style: dashed; background: transparent; color: #ffffff66; }
+.vva-asiento.vacio p { margin: 0; font-size: .85rem; }
+.vva-asiento-cab { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; }
+.vva-nombre { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 .98rem var(--vv-serif); color: var(--vv-marfil); }
+.vva-chip { padding: 0 9px; font: 500 .76rem var(--vv-serif); letter-spacing: .02em; color: var(--vv-marfil); background: #ffffff14; border: 1px solid #ffffff2e; border-radius: 4px; }
+.vva-chip[data-tipo="turno"] { color: #16121a; background: #ece5d4; border-color: #ece5d4; font-weight: 700; }
+.vva-chip[data-tipo="listo"] { border-color: #8fd0a0; color: #bfe8c8; }
+.vva-chip[data-tipo="natural"], .vva-chip[data-tipo="victoria"] { color: #0d2417; background: #8fd0a0; border-color: #8fd0a0; font-weight: 700; }
+.vva-chip[data-tipo="derrota"] { color: #fff; background: #8c2f3c; border-color: #8c2f3c; }
+.vva-chip[data-tipo="empate"] { color: #16121a; background: #b7b0a2; border-color: #b7b0a2; }
+.vva-chip[data-tipo="pasa"], .vva-chip[data-tipo="espera"], .vva-chip[data-tipo="plantado"] { color: #ffffffb3; }
+.vva-mano { min-height: calc(var(--cws) * 1.4); }
+.vva-asiento-pie { display: flex; align-items: center; justify-content: center; gap: 6px 8px; flex-wrap: wrap; min-height: 28px; }
+.vva-asiento .vv-total { font-size: 1rem; padding: 1px 9px; }
+.vva-apuesta { font: 500 .82rem var(--vv-serif); color: #ffffffcc; }
+.vva-asiento.res-victoria, .vva-asiento.res-natural { border-color: #8fd0a0; }
+.vva-asiento.res-derrota { border-color: #8c2f3c; }
+.vva-entra { animation: vva-entra .45s cubic-bezier(.2, .8, .2, 1); }
+@keyframes vva-entra { from { opacity: 0; transform: translateY(-26px) rotate(-8deg) scale(.8); } to { opacity: 1; transform: none; } }
+
+/* el dock */
+.vva-listo { display: grid; gap: 8px; justify-items: center; text-align: center; width: 100%; }
+.vva-listo-texto { margin: 0; font-size: 1.1rem; color: var(--vv-marfil); }
+.vva-estado-linea { margin: 0; color: var(--muted); font-size: .95rem; }
+.vva-estado-linea strong { color: var(--vv-marfil); font-variant-numeric: tabular-nums; }
+.vva-apuesta-panel .vv-nota-apuesta .vva-estado-linea { display: block; margin-top: 4px; }
+.vva-carta-pozo { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 6px 12px; border: 1px dashed #ffffff40; border-radius: 6px; }
+.vva-carta-pozo small { color: var(--muted); }
+.vva-espera { max-width: 70ch; }
+.vva-espera strong { color: var(--vv-marfil); }
+.vva-siguiente { color: var(--muted); }
+.vva-siguiente strong { color: var(--vv-marfil); font-variant-numeric: tabular-nums; }
+.vva-cartas-lista { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.vva-cartas-lista button { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-height: 56px; padding: 8px 12px; text-align: left; color: var(--vv-marfil); background: #ffffff0d; border: 1px solid #ffffff2e; border-radius: 6px; font: 600 .98rem var(--vv-serif); cursor: pointer; }
+.vva-cartas-lista button:hover { border-color: #ffffff99; }
+.vva-cartas-lista button[aria-checked="true"] { border-color: #ece5d4; background: #ffffff1a; }
+.vva-cartas-lista small { font-weight: 400; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .vva-lobby-grid { grid-template-columns: 1fr; }
+  .vva-lobby-grid .vva-tarjeta:first-child { grid-row: auto; }
+  .vva-asientos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vva-asiento.yo { grid-column: 1 / -1; order: -1; --cw: clamp(48px, 13vw, 70px); }
+  .vva-asiento.yo .vva-mano { min-height: calc(var(--cw) * 1.4); }
+  .vva-asiento.vacio { display: none; }
+  .vva-sala { --cwd: clamp(50px, 14vw, 78px); --cws: clamp(42px, 11vw, 60px); }
+}
+@media (max-width: 720px) {
+  .vva-barra h2 { font-size: 1.05rem; }
+  .vva-pozo { padding: 6px 10px; }
 }

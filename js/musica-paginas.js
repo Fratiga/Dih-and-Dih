@@ -28,7 +28,7 @@
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
     ["fichas.html", "Mis personajes"], ["habitacion.html", "Mi habitación"], ["corrales.html", "Corrales"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["arqueria.html", "Arquería"], ["duelo.html", "Duelo"], ["cartas.html", "Triunfos: álbum"], ["mazos.html", "Triunfos: mazos"],
-    ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"], ["hipodromo-vivo.html", "Hipódromo en vivo"], ["fractura.html", "La Fractura"], ["veintiuna.html", "Las Veintiuna Velas"],
+    ["batalla.html", "Triunfos: batalla"], ["ostelar.html", "Ostelar"], ["hipodromo.html", "Hipódromo"], ["hipodromo-vivo.html", "Hipódromo en vivo"], ["fractura.html", "La Fractura"], ["veintiuna.html", "Las Veintiuna Velas"], ["veintiuna-amigos.html", "Veintiuna con amigos"],
     ["muerte-subita.html", "Muerte Súbita"], ["encuentro-verdam.html", "Encuentro con Verdam"]
   ];
   // Páginas donde la lista de "partida" tiene otro nombre en el editor (aquí: la música suena según la fase de la carrera)
@@ -38,7 +38,7 @@
       partida: ["Carrera", "Suena desde 30 segundos antes de la salida (la preparación) hasta que cruza la meta la última criatura, para todos a la vez según el reloj de las carreras. Si la dejas vacía, la música no cambia."]
     }
   };
-  const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html", "fractura.html", "hipodromo-vivo.html", "veintiuna.html"]);
+  const CON_PARTIDA = new Set(["ajedrez.html", "arqueria.html", "duelo.html", "batalla.html", "ostelar.html", "fractura.html", "hipodromo-vivo.html", "veintiuna.html", "veintiuna-amigos.html"]);
 
   // Interruptor del panel de Admin: apagada, la música de páginas no suena (ni calla a la propia de cada página)
   const apagada = (() => { try { return (JSON.parse(localStorage.getItem("sitioInterruptores") || "{}") || {}).musica_paginas === false; } catch (e) { return false; } })();
