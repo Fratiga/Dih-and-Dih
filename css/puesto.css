@@ -138,9 +138,12 @@ body.pu .ic-pido-fila { display: flex; gap: 6px; flex-wrap: wrap; }
 .pu-roto .pu-asiento-in > i { color: #d46a5a; }
 
 /* ---------------------------------------------------------------- el Buhonero: la escena */
-.pu-buhonero { margin-top: 12px; }
-.pb-escena { position: relative; overflow: hidden; aspect-ratio: 960 / 340; min-height: 250px; border: 4px solid #1d5a4b; border-bottom: 0; background: #030807; box-shadow: inset 0 0 90px #000, 0 -4px 0 #000; }
-.pb-svg { display: block; width: 100%; height: 100%; }
+/* El Buhonero a un lado y fijo al hacer scroll, para verlo (y oírlo) mientras miras sus cartas */
+.pu-buhonero:not(.hidden) { display: grid; grid-template-columns: minmax(320px, 40%) minmax(0, 1fr); gap: 22px; align-items: start; margin-top: 12px; }
+.pu-lado-buho { position: sticky; top: 12px; align-self: start; }
+.pu-buho-cuerpo { min-width: 0; }
+.pb-escena { position: relative; overflow: hidden; display: flex; flex-direction: column; border: 4px solid #1d5a4b; background: #030807; box-shadow: inset 0 0 90px #000, 6px 6px 0 #000; }
+.pb-svg { display: block; width: 100%; height: auto; aspect-ratio: 5 / 4; }
 .pb-orbe, .pb-parpadeo-ojos { transform-box: fill-box; }
 .pb-parpadeo { animation: pbParpadeo 2.4s ease-in-out infinite; }
 @keyframes pbParpadeo { 0%, 100% { opacity: 1; } 22% { opacity: .78; } 38% { opacity: .96; } 61% { opacity: .66; } 80% { opacity: .92; } }
@@ -166,11 +169,10 @@ body.pu .ic-pido-fila { display: flex; gap: 6px; flex-wrap: wrap; }
 .pb-buhonero { animation: pbRespira 5s ease-in-out infinite; transform-origin: 470px 330px; }
 @keyframes pbRespira { 50% { transform: scale(1.008, 1.012); } }
 
-.pb-burbuja { position: absolute; left: 3%; top: 9%; max-width: min(36%, 380px); padding: 10px 16px 12px; background: linear-gradient(180deg, #14100c, #0b0806); color: #f4e8c8; border: 2px solid var(--pu-laton); border-radius: 4px; box-shadow: 0 6px 0 #0008, 0 0 24px #ff7a4533; }
-.pb-burbuja::after { content: ""; position: absolute; right: -14px; top: 38%; border: 8px solid transparent; border-left: 14px solid var(--pu-laton); }
+.pb-burbuja { position: relative; flex: 0 0 auto; min-height: 104px; padding: 10px 16px 12px; background: linear-gradient(180deg, #14100c, #0b0806); color: #f4e8c8; border-top: 4px solid var(--pu-laton); box-shadow: 0 -6px 18px #ff7a4533; }
 .pb-quien { display: block; font: 700 .8rem "Press Start 2P", monospace; letter-spacing: .06em; color: var(--pu-laton); margin-bottom: 6px; }
 .pb-texto { margin: 0; min-height: 2.4em; font: italic 1.4rem/1.15 var(--pu-titulo); }
-.pb-velas { position: absolute; left: 16px; bottom: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.pb-velas { position: absolute; left: 14px; top: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .pb-velas-etq { font: .62rem "Press Start 2P", monospace; color: #d9c9a0; text-shadow: 1px 1px 0 #000; }
 .pb-velas-fila { display: flex; gap: 12px; align-items: flex-end; }
 .pb-vela { position: relative; display: block; width: 14px; height: 18px; background: linear-gradient(90deg, #cfc4a0, #eee4c2 50%, #bfb48e); border-radius: 2px 2px 1px 1px; box-shadow: 0 2px 0 #000a; }
@@ -244,11 +246,13 @@ html body.pu .ba-dialogo h2 { font-family: var(--pu-titulo) !important; font-siz
   .pu-corcho, .pu-corcho-chico { grid-template-columns: 1fr; padding: 28px 12px 20px; }
   .mc { --mc-w: 88px; }
   .pu-abanico-in .mc + .mc, .pu-abanico-in .pu-con-quitar + .pu-con-quitar { margin-left: -28px; }
-  .pb-escena { aspect-ratio: auto; min-height: 0; padding-top: 0; display: flex; flex-direction: column; }
-  .pb-svg { height: 220px; }
-  .pb-burbuja { position: static; max-width: none; margin: 0; border-radius: 0; border-width: 2px 0 0; }
-  .pb-burbuja::after { display: none; }
-  .pb-velas { top: 8px; bottom: auto; left: 8px; }
+  .pu-buhonero:not(.hidden) { grid-template-columns: 1fr; gap: 12px; }
+  .pu-lado-buho { top: 0; z-index: 40; margin: 0 -4px; }
+  .pb-escena { border-width: 0 0 4px; }
+  .pb-svg { aspect-ratio: auto; height: 118px; }
+  .pb-burbuja { min-height: 0; padding: 6px 12px 8px; }
+  .pb-texto { min-height: 2.2em; font-size: 1.2rem; }
+  .pb-velas { top: 6px; left: 8px; transform: scale(.8); transform-origin: 0 0; }
   .pu-mesa { grid-template-columns: 1fr; }
   .pu-puesto { grid-template-columns: 130px minmax(0, 1fr); }
   .pu-expuesta { --mc-w: 122px; }

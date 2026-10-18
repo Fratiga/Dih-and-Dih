@@ -31,7 +31,7 @@ window.PuestoBuhonero = (function () {
   const al = lista => lista[Math.floor(Math.random() * lista.length)];
 
   const ESCENA = `
-<svg class="pb-svg" viewBox="0 0 960 360" preserveAspectRatio="xMidYMax slice" role="img" aria-label="El Buhonero, una figura encapuchada junto a su carreta, bajo faroles en un callejón de noche">
+<svg class="pb-svg" viewBox="0 0 960 360" preserveAspectRatio="xMidYMid slice" role="img" aria-label="El Buhonero, una figura encapuchada junto a su carreta, bajo faroles en un callejón de noche">
   <defs>
     <linearGradient id="pbCielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#030807"/><stop offset=".65" stop-color="#0a2420"/><stop offset="1" stop-color="#123a31"/></linearGradient>
     <radialGradient id="pbLuz"><stop offset="0" stop-color="#ffb04a" stop-opacity=".9"/><stop offset=".4" stop-color="#ff7a3a" stop-opacity=".28"/><stop offset="1" stop-color="#ff7a3a" stop-opacity="0"/></radialGradient>
@@ -106,13 +106,18 @@ window.PuestoBuhonero = (function () {
     <path d="M404 272 L396 312 M536 272 L544 312" stroke="#1d3d35" stroke-width="2" fill="none"/>
     <ellipse cx="470" cy="150" rx="19" ry="25" fill="#010504"/>
     <g class="pb-ojos"><g class="pb-parpadeo-ojos"><ellipse cx="462" cy="148" rx="3.4" ry="2.2" fill="#ffc766"/><ellipse cx="478" cy="148" rx="3.4" ry="2.2" fill="#ffc766"/></g><ellipse cx="462" cy="148" rx="9" ry="6" fill="#ffb04a" opacity=".22"/><ellipse cx="478" cy="148" rx="9" ry="6" fill="#ffb04a" opacity=".22"/></g>
-    <!-- mano abierta con una carta que flota -->
-    <path d="M420 214 Q398 226 394 240 Q392 252 404 252 Q418 250 426 232Z" fill="#0b1c18" stroke="#1d3d35" stroke-width="2"/>
+    <!-- brazo izquierdo: manga ancha y palma abierta bajo una carta que flota -->
+    <path d="M440 170 Q412 186 398 222 L420 234 Q430 206 454 190Z" fill="#0f2621" stroke="#1d3d35" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="404" cy="236" rx="15" ry="9" fill="#173229" stroke="#1d3d35" stroke-width="2.4" transform="rotate(-20 404 236)"/>
+    <g fill="#173229" stroke="#1d3d35" stroke-width="1.8"><ellipse cx="391" cy="230" rx="7" ry="3.2" transform="rotate(-55 391 230)"/><ellipse cx="397" cy="225" rx="7" ry="3.2" transform="rotate(-35 397 225)"/><ellipse cx="406" cy="223" rx="7" ry="3.2" transform="rotate(-12 406 223)"/></g>
     <g class="pb-carta-flota"><rect x="388" y="188" width="26" height="38" rx="3" fill="#e9dfc1" stroke="#ffb04a" stroke-width="2" transform="rotate(-12 401 207)"/><circle cx="401" cy="207" r="6" fill="#7a2230" transform="rotate(-12 401 207)"/><circle cx="401" cy="207" r="34" fill="url(#pbLuz)" opacity=".45"/></g>
     <!-- bastón con farolillo -->
     <line x1="548" y1="124" x2="548" y2="318" stroke="#4a2f1c" stroke-width="5"/><path d="M548 124 q14 -6 20 6" fill="none" stroke="#4a2f1c" stroke-width="5"/>
     <g class="pb-farol" style="transform-origin:568px 130px"><line x1="568" y1="130" x2="568" y2="142" stroke="#2a1a10" stroke-width="2"/><rect x="558" y="142" width="20" height="26" rx="4" fill="#ff7a3a"/><rect x="563" y="147" width="10" height="16" rx="3" fill="#ffd48a"/><circle cx="568" cy="156" r="40" fill="url(#pbLuz)" class="pb-parpadeo"/></g>
-    <path d="M524 214 Q540 218 548 232 L538 244 Q522 238 520 222Z" fill="#0b1c18" stroke="#1d3d35" stroke-width="2"/>
+    <!-- brazo derecho: la misma manga, con el puño cerrado sobre el bastón -->
+    <path d="M500 170 Q528 186 542 222 L520 234 Q510 206 486 190Z" fill="#0f2621" stroke="#1d3d35" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="534" y="219" width="28" height="26" rx="10" fill="#173229" stroke="#1d3d35" stroke-width="2.4" transform="rotate(8 548 232)"/>
+    <g stroke="#0b1c18" stroke-width="1.8" opacity=".75" stroke-linecap="round"><path d="M538 227 h20"/><path d="M538 233 h20"/><path d="M538 239 h18"/></g>
   </g>
   <rect y="330" width="960" height="30" fill="#050e0c" opacity=".55"/>
 </svg>`;
@@ -125,6 +130,10 @@ window.PuestoBuhonero = (function () {
       <div class="pb-burbuja" role="status" aria-live="polite"><span class="pb-quien">El Buhonero</span><p class="pb-texto"></p></div>
       <div class="pb-velas" aria-label="Tratos que te quedan hoy"><span class="pb-velas-etq">Tus tratos de hoy</span><span class="pb-velas-fila"></span></div>`;
     ojos = caja.querySelector(".pb-ojos");
+    const svg = caja.querySelector(".pb-svg"), estrecha = matchMedia("(max-width: 900px)");
+    const ajustar = () => svg.setAttribute("preserveAspectRatio", estrecha.matches ? "xMidYMid meet" : "xMidYMid slice");
+    ajustar();
+    if (estrecha.addEventListener) estrecha.addEventListener("change", ajustar);
     caja.addEventListener("mousemove", ev => {
       if (!ojos) return;
       const r = caja.getBoundingClientRect();

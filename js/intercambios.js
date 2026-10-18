@@ -9,7 +9,7 @@
   const PB = window.PuestoBuhonero;
   const SIN_TRATO = new Set(["legendaria", "limitada"]);
 
-  let supa = null, miId = null, esAdmin = false;
+  let supa = null, miId = null, esAdmin = false, cartasListas = false;
   let intercambios = [], mercader = null, jugadores = [];
   let ofrezco = null;            // { ids, copias }
   let pido = [];                 // [{ carta, n, nombre }]
@@ -254,6 +254,7 @@
       if (!b) return;
       document.querySelectorAll("#icPestanas button").forEach(x => x.classList.toggle("activa", x === b));
       ["tablon", "mios", "mercader"].forEach(v => $("ic" + v[0].toUpperCase() + v.slice(1)).classList.toggle("hidden", v !== b.dataset.vista));
+      if (!cartasListas) return;   // todavía llegan las cartas del servidor: al terminar se pinta la vista abierta
       if (b.dataset.vista === "mercader") cargarMercader(true);
       if (b.dataset.vista === "mios" || b.dataset.vista === "tablon") cargarTodo();
     });
@@ -322,12 +323,16 @@
     const rol = await CartasCliente.verificarRol();
     esAdmin = !!rol.admin;
     await CartasCliente.cargarDefiniciones(rol.puede);
+    cartasListas = true;
     window.CARTAS.filter(c => !c.borrador).forEach(c => idPorNombre.set(c.nombre.toLowerCase(), c.id));
     $("icCartas").innerHTML = window.CARTAS.filter(c => !c.borrador).sort((a, b) => a.nombre.localeCompare(b.nombre, "es")).map(c => `<option value="${esc(c.nombre)}"></option>`).join("");
     try { jugadores = await rpc("cartas_jugadores"); } catch (e) { jugadores = []; }
     $("icPara").innerHTML = `<option value="">Cualquiera (tablón abierto)</option>` + jugadores.map(j => `<option value="${esc(j.user_id)}">${esc(j.username)}</option>`).join("");
     await cargarTodo();
-    if (location.hash === "#buhonero") { const t = document.querySelector('#icPestanas [data-vista="mercader"]'); if (t) t.click(); }
+    // si ya habías abierto el Buhonero mientras cargaba, se pinta ahora con las cartas completas
+    const abierta = document.querySelector("#icPestanas .activa");
+    if (abierta && abierta.dataset.vista === "mercader") await cargarMercader(true);
+    if (location.hash === "#buhonero") { const t = document.querySelector('#icPestanas [data-vista="mercader"]'); if (t && t !== abierta) t.click(); }
     setInterval(() => { if (!document.hidden && !document.querySelector("dialog[open]")) cargarTodo(); }, 20000);
   }
   iniciar();

@@ -8,19 +8,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20270312">
-  <link rel="stylesheet" href="css/taberna.css?v=20270312">
-  <link rel="stylesheet" href="css/lobby.css?v=20270312">
-  <link rel="stylesheet" href="css/cartas.css?v=20270312">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20270312">
-  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270312">
-  <link rel="stylesheet" href="css/intercambios.css?v=20270312">
-  <link rel="stylesheet" href="css/cartas-mini.css?v=20270312">
-  <link rel="stylesheet" href="css/puesto.css?v=20270312">
-  <script src="js/dialogos.js?v=20270312"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270313">
+  <link rel="stylesheet" href="css/taberna.css?v=20270313">
+  <link rel="stylesheet" href="css/lobby.css?v=20270313">
+  <link rel="stylesheet" href="css/cartas.css?v=20270313">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270313">
+  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270313">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270313">
+  <link rel="stylesheet" href="css/cartas-mini.css?v=20270313">
+  <link rel="stylesheet" href="css/puesto.css?v=20270313">
+  <script src="js/dialogos.js?v=20270313"></script>
 </head>
 <body class="lb ic pu">
-  <script src="js/carga.js?v=20270312"></script>
+  <script src="js/carga.js?v=20270313"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -103,7 +103,8 @@
 
       <!-- Buhonero -->
       <section id="icMercader" class="ic-vista pu-vista pu-buhonero hidden">
-        <div id="icEscena" class="pb-escena"></div>
+        <aside class="pu-lado-buho" aria-label="El Buhonero"><div id="icEscena" class="pb-escena"></div></aside>
+        <div class="pu-buho-cuerpo">
         <div class="pu-pano">
           <div class="pu-pano-cab">
             <p class="ic-ayuda">El <b>Buhonero</b> no usa dinero. Cambia cartas por cartas, y cada noche saca unas pocas, de una sola copia. Para llevarte una entregas cartas cuyo valor sume lo que él pide.</p>
@@ -118,30 +119,31 @@
           <button type="button" class="cartas-boton" id="icAdmAnadir">Añadir al mercader</button>
           <small class="ic-ayuda">Sale de la reserva si hay una copia. Si no, se emite una nueva y cuenta contra el límite global.</small>
         </div>
+        </div>
       </section>
       <p class="ic-ayuda pu-pie">¿Buscas la forja? Tiene su propia herrería: <a href="forja.html">ir a la forja</a>.</p>
     </main>
   </div>
 
-  <script src="data/personajes.js?v=20270312"></script>
-  <script src="data/objetos.js?v=20270312"></script>
-  <script src="data/lugares.js?v=20270312"></script>
-  <script src="data/bestiario.js?v=20270312"></script>
-  <script src="js/contenido-servidor.js?v=20270312"></script>
-  <script src="js/temas.js?v=20270312"></script>
-  <script src="js/fichas-supabase.js?v=20270312"></script>
-  <script src="js/interruptores.js?v=20270312"></script>
-  <script src="js/presencia.js?v=20270312"></script>
-  <script src="js/lado.js?v=20270312"></script>
-  <script src="js/cartas-datos.js?v=20270312"></script>
-  <script src="js/cartas-cliente.js?v=20270312"></script>
-  <script src="js/cartas-vista.js?v=20270312"></script>
-  <script src="js/batalla-apuestas.js?v=20270312"></script>
-  <script src="js/cartas-mini.js?v=20270312"></script>
-  <script src="js/dialogos-personajes.js?v=20270312"></script>
-  <script src="js/puesto-buhonero.js?v=20270312"></script>
-  <script src="js/intercambios.js?v=20270312"></script>
-  <script src="js/avisos-admin.js?v=20270312"></script>
-  <script src="js/musica-paginas.js?v=20270312"></script>
+  <script src="data/personajes.js?v=20270313"></script>
+  <script src="data/objetos.js?v=20270313"></script>
+  <script src="data/lugares.js?v=20270313"></script>
+  <script src="data/bestiario.js?v=20270313"></script>
+  <script src="js/contenido-servidor.js?v=20270313"></script>
+  <script src="js/temas.js?v=20270313"></script>
+  <script src="js/fichas-supabase.js?v=20270313"></script>
+  <script src="js/interruptores.js?v=20270313"></script>
+  <script src="js/presencia.js?v=20270313"></script>
+  <script src="js/lado.js?v=20270313"></script>
+  <script src="js/cartas-datos.js?v=20270313"></script>
+  <script src="js/cartas-cliente.js?v=20270313"></script>
+  <script src="js/cartas-vista.js?v=20270313"></script>
+  <script src="js/batalla-apuestas.js?v=20270313"></script>
+  <script src="js/cartas-mini.js?v=20270313"></script>
+  <script src="js/dialogos-personajes.js?v=20270313"></script>
+  <script src="js/puesto-buhonero.js?v=20270313"></script>
+  <script src="js/intercambios.js?v=20270313"></script>
+  <script src="js/avisos-admin.js?v=20270313"></script>
+  <script src="js/musica-paginas.js?v=20270313"></script>
 </body>
 </html>
