@@ -15,7 +15,7 @@ $$;
 create or replace function t_mazo(variadic p_cartas text[]) returns smallint[] language sql volatile as $$
   with dadas as (select t_c(c) as n, i from unnest(p_cartas) with ordinality as x(c, i)),
        resto as (select n::smallint from generate_series(0, 51) n where n not in (select n from dadas))
-  select array_agg(n order by o, k) from (select n, 0 as o, i::text as k from dadas union all select n, 1, gen_random_uuid()::text from resto) z
+  select array_agg(n order by o, ord, k) from (select n, 0 as o, i as ord, ''::text as k from dadas union all select n, 1, 0, gen_random_uuid()::text from resto) z
 $$;
 create or replace function t_saldo(p_uid uuid, p_n numeric) returns void language plpgsql as $$
 begin
@@ -40,6 +40,7 @@ begin
 end $$;
 create or replace function t_reset() returns void language plpgsql as $$
 begin
+  delete from veintiuna_pozo_cartas; delete from veintiuna_pozos; delete from veintiuna_asientos; delete from veintiuna_mesas;
   delete from veintiuna_partidas; delete from veintiuna_logros; delete from veintiuna_estadisticas;
   delete from hipodromo_movimientos; delete from hipodromo_billeteras;
   delete from cartas_ejemplares where false;
@@ -450,6 +451,7 @@ end $$;
 /* ======================================================================== estadísticas y desafíos */
 do $$
 declare u uuid := '00000000-0000-0000-0000-000000000001'; s jsonb; pid uuid; e veintiuna_estadisticas%rowtype;
+  r_ant int; v_ant int; rc_ant int; c_ant jsonb;
   function_logros text;
 begin
   perform t_reset(); perform t_saldo(u, 1000);
@@ -467,31 +469,38 @@ begin
   select * into e from veintiuna_estadisticas where user_id = u;
   perform t_check('Una derrota rompe la racha pero no la mejor racha', e.racha = 0 and e.mejor_racha = 1 and e.derrotas = 1);
   -- Tres seguidas
-  s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
-  s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  s := t_reparte(u, 'maldicion', 'apuesta', 10, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  s := t_reparte(u, 'maldicion', 'apuesta', 10, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Dos victorias seguidas todavía no dan «Tres velas»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_velas'));
+  s := t_reparte(u, 'maldicion', 'apuesta', 10, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  perform t_check('Tres victorias seguidas con apuesta dan «Tres velas»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_velas'));
+  -- La mesa de práctica no cuenta para rachas ni desafíos, pero sí suma en las estadísticas de manos
+  select * into e from veintiuna_estadisticas where user_id = u;
+  r_ant := e.rondas; v_ant := e.victorias; rc_ant := e.racha; c_ant := e.contadores;
   s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
-  perform t_check('La práctica también cuenta para los desafíos: tres seguidas dan «Tres velas»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_velas'));
-  perform t_check('Y la práctica no tocó los tokens ganados (neto solo de manos con apuesta)', (select neto from veintiuna_estadisticas where user_id = u) = 10 + 0 - 10);
+  select * into e from veintiuna_estadisticas where user_id = u;
+  perform t_check('Una victoria en la práctica no suma racha ni contadores de desafíos', e.racha = rc_ant and e.mejor_racha >= 3 and e.contadores = c_ant);
+  perform t_check('...pero sí cuenta como mano y victoria en las estadísticas', e.rondas = r_ant + 1 and e.victorias = v_ant + 1);
+  perform t_check('...y no tocó los tokens ganados (neto solo de manos con apuesta)', e.neto = 0 + 0 + 0 + 0 + 0 + (select coalesce(sum(neto), 0) from veintiuna_partidas where user_id = u and modo = 'apuesta'));
   -- Un blackjack natural cuenta como victoria y racha, pero ya no tiene desafío propio (era pura suerte)
   s := t_reparte(u, 'fortuna', 'apuesta', 10, 'Ap', '10c', 'Kc', '7c');
   perform t_check('Un blackjack natural suma a las estadísticas (naturales) y no completa «Veintiuna exacta»', (select naturales from veintiuna_estadisticas where user_id = u) = 1 and not exists (select 1 from veintiuna_logros where user_id = u and logro = 'veintiuna_exacta'));
   -- Sin miedo: plantarse con 14 o menos y ganar
   perform t_check('Todavía no hay «Sin miedo»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'sin_miedo'));
-  s := t_reparte(u, 'fortuna', 'practica', 0, '5p', '10c', '8c', '6c', 'Kd'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  s := t_reparte(u, 'fortuna', 'apuesta', 10, '5p', '10c', '8c', '6c', 'Kd'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Plantarse con 13 y ganar (el crupier se pasa) da «Sin miedo»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'sin_miedo'));
-  s := t_reparte(u, 'maldicion', 'practica', 0, '5p', '10c', '6c', '10d', '10d');
+  s := t_reparte(u, 'maldicion', 'apuesta', 10, '5p', '10c', '6c', '10d', '10d');
   s := t_act((s ->> 'partida')::uuid, 'pedir'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Llegar a 21 pidiendo y ganar da «Veintiuna exacta»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'veintiuna_exacta'));
   -- Cinco cartas sin pasarte
-  s := t_reparte(u, 'maldicion', 'practica', 0, '2p', '10c', '3c', '7c', '4d', '5d', '6d');
+  s := t_reparte(u, 'maldicion', 'apuesta', 10, '2p', '10c', '3c', '7c', '4d', '5d', '6d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'pedir'); s := t_act(pid, 'pedir'); s := t_act(pid, 'plantar');
   perform t_check('Ganar con cinco cartas sin pasarte da «Cinco cartas sin pasarte»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'cinco_cartas'));
   -- Las tres reglas
   perform t_check('Con solo la Maldición ganada todavía no hay «Las tres voluntades»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_voluntades'));
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Qd'); s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
+  s := t_reparte(u, 'voluntad', 'apuesta', 10, '10p', '10c', '6c', '8c', 'Qd'); s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Ganar usando la Última voluntad da «La última palabra»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_palabra'));
-  s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '6d', 'Kd', '9d');
+  s := t_reparte(u, 'fortuna', 'apuesta', 10, '10p', '10c', '6c', '6d', 'Kd', '9d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'fortuna'); s := t_act(pid, 'plantar');
   perform t_check('Ganar después de salvar la mano con la Fortuna da «Peaje pagado»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'peaje_pagado'));
   perform t_check('Con las tres reglas ganadas llega «Las tres voluntades»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_voluntades'));
@@ -504,16 +513,16 @@ end $$;
 do $$
 declare u uuid := '00000000-0000-0000-0000-000000000002'; s jsonb; pid uuid;
 begin
-  perform t_reset();
+  perform t_reset(); perform t_saldo(u, 1000);
   -- Reescribir el destino: ganar con 20 o 21 después de cambiar una carta con la Última voluntad
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', '2d');
+  s := t_reparte(u, 'voluntad', 'apuesta', 10, '10p', '10c', '6c', '8c', '2d');
   s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Ganar con 12 tras la Última voluntad da «La última palabra» pero NO «Reescribir el destino»', s #>> '{resultado,tipo}' = 'derrota' or not exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora'));
-  s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Ad');
+  s := t_reparte(u, 'voluntad', 'apuesta', 10, '10p', '10c', '6c', '8c', 'Ad');
   s := t_act((s ->> 'partida')::uuid, 'voluntad'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('Ganar con 21 tras la Última voluntad da «Reescribir el destino»', s #>> '{resultado,tipo}' = 'victoria' and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_hora') and exists (select 1 from veintiuna_logros where user_id = u and logro = 'ultima_palabra'));
   -- La suerte bien pagada: 21 exactos después de salvar la mano con la Fortuna
-  s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '10d', 'Kd', '4c');
+  s := t_reparte(u, 'fortuna', 'apuesta', 10, '10p', '10c', '6c', '10d', 'Kd', '4c');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'fortuna'); s := t_act(pid, 'pedir');
   perform t_check('Tras la Fortuna: 10 + 6 + 1 + 4 = 21', (s #>> '{jugador,total}')::int = 21);
   s := t_act(pid, 'plantar');

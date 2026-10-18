@@ -57,7 +57,7 @@ Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos
 - Son los **tokens de juego** del Hipódromo: se usa su billetera (`hipodromo_billeteras`) y su libro (`hipodromo_movimientos`). No hay billetera ni token nuevos.
 - Apuestas de 10 a 100 de 10 en 10 (`veintiuna_apuesta_min`, `_max`, `_paso`). La apuesta mediana del Hipódromo es 20 y la máxima 50; las billeteras reales tienen entre 0 y 100. El paso de 10 hace que el 3 a 2 sea siempre un número entero.
 - La apuesta se cobra al repartir; el pago (apuesta incluida) al terminar. Cada movimiento lleva en el concepto el identificador de la mano («Veintiuna Velas: apuesta (mano …)») y la mano guarda los números de sus movimientos (`mov_cobro`, `mov_peaje`, `mov_pago`).
-- **Mesa de práctica**: mismas cartas y reglas, apuesta simbólica, no toca la billetera, no da tokens. Cuenta para los desafíos, para que la colección no dependa de apostar.
+- **Mesa de práctica**: mismas cartas y reglas, apuesta simbólica, no toca la billetera, no da tokens. **No cuenta para los desafíos ni para las rachas** (decisión del 18-oct-2026): sirve para aprender las reglas. Sí suma en rondas, victorias y derrotas de las estadísticas.
 - No se cambia ninguna fuente de ingresos del Hipódromo ni de otros juegos. Esta mesa solo mueve tokens entre la billetera y la casa, y con las reglas de arriba la casa gana de media. Los tokens siguen entrando por las vías de siempre (vender cartas, carreras, regalos del Admin).
 
 ## Seguridad: la autoridad es el servidor

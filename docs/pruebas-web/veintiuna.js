@@ -198,7 +198,7 @@ console.log("== Llamadas al servidor");
   cierto("existe un bloque prefers-reduced-motion que apaga animaciones y transiciones", /@media \(prefers-reduced-motion: reduce\)[^}]*animation: none/.test(css) && /transition-duration: \.01s/.test(css));
   cierto("el código también lo respeta (WAAPI y esperas)", /prefers-reduced-motion: reduce/.test(mesaJs) && /sinMovimiento\(\)/.test(mesaJs));
   cierto("foco visible y fuerte", /:focus-visible\s*\{[^}]*outline: 3px solid/.test(css));
-  cierto("botones de acción de al menos 56 px de alto y mini de 44", /\.vv-boton \{[^}]*min-height: 58px/.test(css) && /\.vv-boton-mini \{[^}]*min-height: 44px/.test(css) && /\.vv-cerrar \{[^}]*width: 44px; height: 44px/.test(css));
+  cierto("botones de acción de al menos 56 px de alto y mini de 44", /\.vv-boton \{[^}]*min-height: 56px/.test(css) && /\.vv-boton-mini \{[^}]*min-height: 44px/.test(css) && /\.vv-cerrar \{[^}]*width: 44px; height: 44px/.test(css));
   cierto("en móvil el dock queda pegado abajo y los botones no bajan de 56 px", /@media \(max-width: 720px\)[\s\S]*\.vv-dock \{ position: sticky; bottom: 0/.test(css) && /\.vv-boton \{ min-height: 56px/.test(css));
   cierto("las cartas se dimensionan con una variable que baja en pantallas pequeñas pero nunca de 58 px", /--cw: clamp\(58px/.test(css) && /--cw: clamp\(62px, 19vw, 92px\)/.test(css));
   cierto("el atajo de teclado se oculta en pantallas táctiles", /@media \(hover: none\)[^}]*kbd[^}]*display: none/.test(css));

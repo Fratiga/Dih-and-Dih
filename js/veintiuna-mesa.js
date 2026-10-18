@@ -322,6 +322,7 @@
     const cuerpo = $("vvDockCuerpo");
     const dock = $("vvDock");
     dock.dataset.fase = S.fase;
+    dock.dataset.regla = S.est && S.est.regla ? S.est.regla.id : "";
     const m = S.mesa;
     if (S.fase === "cargando") { cuerpo.innerHTML = `<p class="vv-dock-texto">Encendiendo las velas...</p>`; return; }
     if (S.fase === "sin_sesion") {
@@ -357,7 +358,7 @@
       <div class="vv-apuesta-panel">
         <div class="vv-modos" role="radiogroup" aria-label="Modalidad de la mesa">
           <button type="button" role="radio" aria-checked="${!practica}" class="vv-modo${!practica ? " activo" : ""}" data-modo="apuesta"><strong>Con apuesta</strong><small>tokens de juego</small></button>
-          <button type="button" role="radio" aria-checked="${practica}" class="vv-modo${practica ? " activo" : ""}" data-modo="practica"><strong>Mesa de práctica</strong><small>sin tokens, cuenta para los desafíos</small></button>
+          <button type="button" role="radio" aria-checked="${practica}" class="vv-modo${practica ? " activo" : ""}" data-modo="practica"><strong>Mesa de práctica</strong><small>sin tokens, no cuenta para los desafíos</small></button>
         </div>
         <div class="vv-apuesta-centro">
         ${practica ? `
@@ -887,7 +888,7 @@
         </section>
         <section><h3>Las ocho reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
         <section><h3>Mesa de práctica y desafíos</h3><ul>
-          <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga tokens. Cuenta para los desafíos.</li>
+          <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga tokens. No cuenta para los desafíos ni para las rachas: para aprender las reglas.</li>
           <li>Los <strong>desafíos</strong> se comprueban en el servidor. Cada uno que completes se puede reclamar una vez y da una carta del juego de Triunfos, siempre respetando los límites de la colección (como mucho una carta al día desde esta mesa).</li>
           <li>Si dejas una mano a medias, queda guardada. Pasados ${m ? m.inactividad_min : 30} minutos sin jugarla, el servidor se planta por ti.</li>
         </ul></section>

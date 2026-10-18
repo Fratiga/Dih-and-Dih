@@ -82,10 +82,60 @@ comprobar "como mucho un pago en el libro" "t" "$(sql "select count(*) <= 1 from
 comprobar "el saldo cuadra con el libro" "t" "$(sql "select saldo = 300 + (select sum(monto) from hipodromo_movimientos where usuario = '$U1') from hipodromo_billeteras where usuario = '$U1'")"
 rm -rf "$TMP"
 
+echo "== Mesa con amigos: reglas, turnos, pozo de cartas y rondas al azar (SQL)"
+SALIDA=$(docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=0 < "$AQUI/t_veintiuna_amigos.sql" 2>&1)
+printf '%s\n' "$SALIDA" | grep -E 'NOTICE:  (OK|FALLA)' | sed -E 's/NOTICE:  OK   /  OK   /; s/NOTICE:  FALLA /  FALLA /'
+FALLOS=$((FALLOS + $(printf '%s\n' "$SALIDA" | grep -c 'NOTICE:  FALLA')))
+ERRORES=$(printf '%s\n' "$SALIDA" | grep -E 'ERROR' | head -3); [ -n "$ERRORES" ] && { echo "  FALLA errores de SQL: $ERRORES"; FALLOS=$((FALLOS + 1)); }
+
+echo "== Mesa con amigos: permisos y peticiones simultáneas"
+sql "select t_reset()" >/dev/null; limpiar
+sql "insert into hipodromo_billeteras (usuario, saldo) values ('$U1', 300), ('$U2', 300), ('$U3', 300), ('$U4', 300) on conflict (usuario) do update set saldo = 300" >/dev/null
+for f in "veintiuna_amigos_lista()" "veintiuna_amigos_crear('x', true, false)" "veintiuna_amigos_unirse('ABCDE')" "veintiuna_amigos_salir()" "veintiuna_amigos_estado(null)" "veintiuna_amigos_mis_cartas()" "veintiuna_amigos_apostar(10, null)" "veintiuna_amigos_pasar()" "veintiuna_amigos_repartir()" "veintiuna_amigos_accion(0, 'pedir')"; do
+  contiene "sin sesión no se puede llamar a $f" "$(anonimo "select $f;")" "permission denied"
+done
+for f in "veintiuna_i_amigos_repartir('$CLI', null)" "veintiuna_i_amigos_actuar('$CLI', 0, 'pedir', false)" "veintiuna_i_amigos_json('$CLI', '$U1')" "veintiuna_i_pozo_resolver('$CLI')" "veintiuna_i_amigos_sacar('$CLI', '$U1')" "veintiuna_i_amigos_avanzar('$CLI')" "veintiuna_i_mazo_doble()"; do
+  contiene "un jugador no puede llamar a la función interna $(printf '%s' "$f" | cut -d'(' -f1)" "$(como $U1 "select $f;")" "permission denied"
+done
+contiene "con la sesión vacía la función se niega con un mensaje claro" "$(como $U1 "select set_config('request.jwt.claims', '', true); select veintiuna_amigos_lista();")" "Hay que iniciar sesión"
+R=$(como $U1 "select veintiuna_amigos_crear('Permisos', true, false);")
+contiene "un jugador con sesión crea una mesa" "$R" '"nombre": "Permisos"'
+comprobar "un jugador no lee las tablas de mesas ni de asientos (llevan la baraja)" "0|0|0" "$(como $U1 "select count(*) from veintiuna_mesas;" | tail -1)|$(como $U1 "select count(*) from veintiuna_asientos;" | tail -1)|$(como $U1 "select count(*) from veintiuna_pozo_cartas;" | tail -1)"
+comprobar "el admin sí puede revisarlas" "1" "$(como $ADMIN "select count(*) from veintiuna_mesas;" | tail -1)"
+for t in "update veintiuna_mesas set fase = 'resultado'" "delete from veintiuna_mesas" "insert into veintiuna_asientos (mesa, asiento, user_id, nombre) values (gen_random_uuid(), 1, '$U2', 'x')" "update veintiuna_asientos set apuesta = 1000" \
+         "update veintiuna_pozos set estado = 'pagado'" "insert into veintiuna_pozo_cartas (ronda_id, user_id, ejemplar, carta) values (gen_random_uuid(), '$U1', gen_random_uuid(), 'comun-1')"; do
+  contiene "escribir directo en las tablas de la mesa está prohibido: $(printf '%s' "$t" | cut -c1-48)" "$(como $U1 "$t;")" "permission denied"
+done
+como $U1 "select veintiuna_amigos_salir();" >/dev/null
+# Varios entran a la vez en una mesa de tres asientos: entran justo los que caben, cada uno en su asiento
+sql "update cartas_economia_ajustes set valor = '3' where clave = 'veintiuna_mesa_asientos'" >/dev/null
+TMP=$(mktemp -d)
+COD=$(como $U1 "select veintiuna_amigos_crear('Concurrencia', true, false) ->> 'codigo';" | tail -1)
+como $U2 "select veintiuna_amigos_unirse('$COD') ->> 'fase';" > "$TMP/a" &
+como $U3 "select veintiuna_amigos_unirse('$COD') ->> 'fase';" > "$TMP/b" &
+como $U4 "select veintiuna_amigos_unirse('$COD') ->> 'fase';" > "$TMP/c" &
+wait
+comprobar "entran a la vez 3 y la mesa se queda en 3 asientos distintos" "3|3" "$(sql "select count(*) from veintiuna_asientos")|$(sql "select count(distinct asiento) from veintiuna_asientos")"
+contiene "al que no cabía se le dice que está llena" "$(cat "$TMP/a" "$TMP/b" "$TMP/c")" "La mesa está llena"
+sql "update cartas_economia_ajustes set valor = '5' where clave = 'veintiuna_mesa_asientos'; select t_reset()" >/dev/null
+# Dos apuestan a la vez y la mesa reparte una sola vez (cada uno paga su apuesta una vez)
+COD=$(como $U1 "select veintiuna_amigos_crear('Apuestan a la vez', true, false) ->> 'codigo';" | tail -1)
+como $U2 "select veintiuna_amigos_unirse('$COD') ->> 'fase';" >/dev/null
+sql "insert into hipodromo_billeteras (usuario, saldo) values ('$U1', 300), ('$U2', 300) on conflict (usuario) do update set saldo = 300" >/dev/null
+como $U1 "select veintiuna_amigos_apostar(20) ->> 'fase';" > "$TMP/a" &
+como $U2 "select veintiuna_amigos_apostar(30) ->> 'fase';" > "$TMP/b" &
+wait
+comprobar "apuestan a la vez: dos manos, una por jugador, y la ronda empezó una sola vez" "2|1|jugando|2" "$(sql "select count(*) from veintiuna_partidas")|$(sql "select count(distinct ronda_id) from veintiuna_partidas")|$(sql "select case when count(*) filter (where fase = 'jugando') + count(*) filter (where fase = 'resultado') = 1 then 'jugando' else 'mal' end from veintiuna_mesas")|$(sql "select count(*) from hipodromo_movimientos where concepto like '%apuesta (mano%'")"
+comprobar "cada apuesta se cobró una vez" "280|270" "$(sql "select saldo from hipodromo_billeteras where usuario = '$U1'" | cut -d. -f1 | sed 's/^$/0/')|$(sql "select saldo from hipodromo_billeteras where usuario = '$U2'" | cut -d. -f1)"
+rm -rf "$TMP"
+como $U1 "select veintiuna_amigos_salir();" >/dev/null; como $U2 "select veintiuna_amigos_salir();" >/dev/null
+sql "select t_reset()" >/dev/null
+
 echo "== Desafíos y recompensas de cartas"
 sql "select t_reset()" >/dev/null; limpiar
 sql "update cartas_juegos set activo = false where juego = 'veintiuna'" >/dev/null
-sql "select t_act((t_reparte('$U1', 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c') ->> 'partida')::uuid, 'plantar')" >/dev/null
+sql "select t_saldo('$U1', 5000)" >/dev/null
+sql "select t_act((t_reparte('$U1', 'maldicion', 'apuesta', 10, '10p', '10c', '8c', '7c') ->> 'partida')::uuid, 'plantar')" >/dev/null
 contiene "el desafío «Primera vela» está completado y sin reclamar" "$(como $U1 "select veintiuna_mesa() -> 'logros' -> 0;")" '"reclamado": null'
 contiene "con el juego apagado reclamar no da nada" "$(como $U1 "select veintiuna_reclamar('primera_vela');")" "juego-inactivo"
 comprobar "y el desafío sigue sin gastar" "" "$(sql "select reclamado from veintiuna_logros where user_id = '$U1' and logro = 'primera_vela'")"
@@ -99,7 +149,7 @@ comprobar "la copia está en la colección de quien reclamó y sale del libro co
 comprobar "el desafío queda reclamado con su carta" "t" "$(sql "select reclamado is not null and carta is not null from veintiuna_logros where user_id = '$U1' and logro = 'primera_vela'")"
 contiene "no se reclama dos veces" "$(como $U1 "select veintiuna_reclamar('primera_vela');")" "Ya reclamaste"
 comprobar "no se duplicó la copia" "1" "$(sql "select count(*) from cartas_ejemplares where propietario = '$U1'")"
-sql "select t_act((t_reparte('$U1', 'fortuna', 'practica', 0, '5p', '10c', '8c', '6c', 'Kd') ->> 'partida')::uuid, 'plantar')" >/dev/null
+sql "select t_act((t_reparte('$U1', 'fortuna', 'apuesta', 10, '5p', '10c', '8c', '6c', 'Kd') ->> 'partida')::uuid, 'plantar')" >/dev/null
 comprobar "«Sin miedo» completó su desafío" "t" "$(sql "select count(*) = 1 from veintiuna_logros where user_id = '$U1' and logro = 'sin_miedo' and reclamado is null")"
 R=$(como $U1 "select veintiuna_reclamar('sin_miedo');")
 contiene "el segundo del día no sale (tope de una carta al día en la mesa)" "$R" "tope-diario"
