@@ -15,7 +15,7 @@ ERRORES=$(printf '%s\n' "$SALIDA" | grep -E 'ERROR|error:' | head -5)
 FALLOS=$((FALLOS + N_FALLA))
 echo "  ($N_OK comprobaciones correctas)"
 
-echo "== Manos por la ruta del navegador (barajas del servidor) y libro de monedas"
+echo "== Manos por la ruta del navegador (barajas del servidor) y libro de tokens"
 SALIDA=$(docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=0 < "$AQUI/t_veintiuna_api.sql" 2>&1)
 printf '%s\n' "$SALIDA" | grep -E 'NOTICE:  (OK|FALLA)' | sed -E 's/NOTICE:  OK   /  OK   /; s/NOTICE:  FALLA /  FALLA /'
 FALLOS=$((FALLOS + $(printf '%s\n' "$SALIDA" | grep -c 'NOTICE:  FALLA')))

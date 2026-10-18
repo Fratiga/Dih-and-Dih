@@ -3,7 +3,7 @@
    - Servidor (el normal, con sesión): el mundo es uno solo para todos y lo escribe la Edge Function. La página lo lee
      (js/hipodromo-online.js), apuesta y manda órdenes a la cuadra con funciones que comprueban saldo y plazo.
    - Prueba local (sin sesión, sin servidor o con ?local en la dirección): el mundo de js/hipodromo-motor.js corre entero
-     en este navegador y se guarda en localStorage. El reloj es virtual para adelantar el tiempo; las monedas son de aquí.
+     en este navegador y se guarda en localStorage. El reloj es virtual para adelantar el tiempo; los tokens son de aquí.
    Mira docs/hipodromo.md.
 ============================================================================= */
 (function () {
@@ -138,11 +138,11 @@
       const fav = r.gana && ap.doble ? M.favoritoDe(m.proxima) : null;
       if (fav && est.virtual < m.proxima.cierre) {
         nuevas.push({ n: m.proxima.n, tipo: "ganador", sel: fav.id, monto: r.pago, cuota: fav.cuota, nombres: [fav.nombre], carrera: m.proxima.nombre });
-        msgs.push(`Ganaste ${monedas(r.pago)} monedas (${TIPOS_TXT(ap)}): pasan a ${fav.nombre} en la siguiente (doble)`);
+        msgs.push(`Ganaste ${monedas(r.pago)} tokens (${TIPOS_TXT(ap)}): pasan a ${fav.nombre} en la siguiente (doble)`);
         return false;
       }
       est.saldo += r.pago;
-      msgs.push(r.gana ? `Ganaste ${monedas(r.pago)} monedas (${TIPOS_TXT(ap)})` : `Perdiste ${monedas(ap.monto)} monedas (${TIPOS_TXT(ap)})`);
+      msgs.push(r.gana ? `Ganaste ${monedas(r.pago)} tokens (${TIPOS_TXT(ap)})` : `Perdiste ${monedas(ap.monto)} tokens (${TIPOS_TXT(ap)})`);
       return false;
     });
     est.pendientes = est.pendientes.concat(nuevas);
@@ -150,7 +150,7 @@
     ev.pagos.filter(q => q.dueno === YO).forEach(q => { est.saldo += q.monto; });
     est.avisos = ev.avisos.filter(a => a.dueno === YO).reverse().concat(est.avisos).slice(0, 60);
     const premio = ev.pagos.filter(q => q.dueno === YO && q.monto > 0 && /^Premio/.test(q.concepto)).reduce((t, q) => t + q.monto, 0);
-    if (premio) msgs.push(`Tu cuadra cobra ${monedas(premio)} monedas de premios`);
+    if (premio) msgs.push(`Tu cuadra cobra ${monedas(premio)} tokens de premios`);
     est.noticias = ev.noticias.slice().reverse().concat(est.noticias).slice(0, MAX_NOTICIAS);
     ev.perfiles.filter(p => p.estado === "retirado" || p.estado === "fallecido").forEach(p => { est.archivo[p.id] = p; });
     const ids = Object.keys(est.archivo);
@@ -324,7 +324,7 @@
         <span class="hip-retrato-datos">${estrellasTxt(per.estrellas)} <span>${per.salidas ? `${per.salidas} salidas · ${per.vic}-${per.seg}-${per.ter}` : "debuta"}</span></span>
         <span class="hip-retrato-ult">${per.ultimas.slice(0, 5).map(chipPuesto).join("")}</span>
         ${prob != null && tipo !== "exacta" && tipo !== "pozo" ? `<small>El mercado le da ${prob} % de ${tipo === "podio" ? "llegar entre las tres primeras" : "ganar"}.</small>` : ""}
-        ${mias ? `<small class="hip-retrato-ya">Ya llevas ${monedas(mias)} monedas apostadas con ella.</small>` : ""}
+        ${mias ? `<small class="hip-retrato-ya">Ya llevas ${monedas(mias)} tokens apostados con ella.</small>` : ""}
       </figcaption></figure>`;
   }
   function pintarFoto() {
@@ -342,11 +342,11 @@
     textoDe($("hipCuotaApuesta"), cuota ? (tipo === "pozo" ? "≈ " : "") + M.fmtCuota(cuota) : "-");
     textoDe($("hipPosible"), cuota && monto > 0 ? monedas(monto * cuota) : "-");
     textoDe($("hipTipoAyuda"), M.TIPOS_APUESTA[tipo].texto);
-    // lo que se juega, dicho claro: lo que pierdes, lo que ganas y cuánto es de tus monedas
+    // lo que se juega, dicho claro: lo que pierdes, lo que ganas y cuánto es de tus tokens
     const riesgo = $("hipRiesgo");
     if (cuota && monto > 0) {
       const parte = est.saldo > 0 ? Math.round(100 * monto / est.saldo) : 100;
-      riesgo.innerHTML = `Si pierdes, te quedas con <strong>${monedas(Math.max(0, est.saldo - monto))}</strong>. Si aciertas, ganas <strong>+${monedas(monto * cuota - monto)}</strong>.` + (parte >= 30 ? ` <span class="hip-riesgo-aviso">Es el ${Math.min(100, parte)} % de tus monedas.</span>` : "");
+      riesgo.innerHTML = `Si pierdes, te quedas con <strong>${monedas(Math.max(0, est.saldo - monto))}</strong>. Si aciertas, ganas <strong>+${monedas(monto * cuota - monto)}</strong>.` + (parte >= 30 ? ` <span class="hip-riesgo-aviso">Es el ${Math.min(100, parte)} % de tus tokens.</span>` : "");
       riesgo.classList.toggle("alto", parte >= 30);
     } else { riesgo.textContent = ""; riesgo.classList.remove("alto"); }
   }
@@ -355,8 +355,8 @@
     const falla = t => { msg.textContent = t; msg.className = "hip-aviso mal"; };
     if (f !== "abierta") return falla("Las apuestas de esta carrera están cerradas.");
     const { tipo, sel } = seleccion(), monto = Math.floor(Number($("hipMonto").value) || 0);
-    if (!(monto >= 1)) return falla("Pon un importe de al menos 1 moneda.");
-    if (monto > est.saldo) return falla("No tienes tantas monedas.");
+    if (!(monto >= 1)) return falla("Pon un importe de al menos 1 token.");
+    if (monto > est.saldo) return falla("No tienes tantos tokens.");
     const cuotaFija = M.cuotaApuesta(p, tipo, sel), doble = tipo === "ganador" && $("hipDoble").checked;
     if (cuotaFija === null) return falla(tipo === "exacta" ? "Elige dos criaturas distintas." : "Esa criatura no corre.");
     const cuota = tipo === "pozo" ? M.cuotaPozo(pozosAhora(), sel, monto) : cuotaFija;
@@ -373,7 +373,7 @@
       const r = await online.apostar(p.n, tipo, sel, monto, doble);
       $("hipApostar").disabled = false;
       if (!r.ok) return falla(r.error || "No se pudo apostar.");
-      msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(Number(r.cuota))}${doble ? " (doble)" : ""}.`;
+      msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} tokens a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(Number(r.cuota))}${doble ? " (doble)" : ""}.`;
       msg.className = "hip-aviso bien";
       pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
       cerrarBoletoTrasApostar(msg.textContent);
@@ -382,7 +382,7 @@
     est.saldo -= monto;
     est.pendientes.push({ n: p.n, tipo, sel, monto, cuota, nombres: ids.map(nombreDe), carrera: p.nombre, doble });
     guardar();
-    msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} monedas a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(cuota)}${doble ? " (doble)" : ""}.`;
+    msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} tokens a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(cuota)}${doble ? " (doble)" : ""}.`;
     msg.className = "hip-aviso bien";
     pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
     cerrarBoletoTrasApostar(msg.textContent);
@@ -489,9 +489,9 @@
       (con.length ? `<ul class="hip-rasgos-hace">${con.map(x => `<li><strong>${esc(x.texto)}.</strong> ${esc(x.hace)}</li>`).join("")}</ul>` : "");
   }
   function duenoHtml(p) {
-    if (p.dueno) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>De ${esc(p.dueno.nombre || "otro jugador")}${p.dueno.id === YO ? " (es tuya)" : ""}.${p.montaPrecio && p.estado === "criador" ? ` Monta: ${monedas(p.montaPrecio)} monedas.` : ""}</p></section>`;
-    if (p.precio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>Sin dueño. A la venta por ${monedas(p.precio)} monedas. <button type="button" class="hip-boton chico" data-ir-cuadra>Ir al mercado</button></p></section>`;
-    if (p.montaPrecio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>En la cría. Monta: ${monedas(p.montaPrecio)} monedas.</p></section>`;
+    if (p.dueno) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>De ${esc(p.dueno.nombre || "otro jugador")}${p.dueno.id === YO ? " (es tuya)" : ""}.${p.montaPrecio && p.estado === "criador" ? ` Monta: ${monedas(p.montaPrecio)} tokens.` : ""}</p></section>`;
+    if (p.precio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>Sin dueño. A la venta por ${monedas(p.precio)} tokens. <button type="button" class="hip-boton chico" data-ir-cuadra>Ir al mercado</button></p></section>`;
+    if (p.montaPrecio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>En la cría. Monta: ${monedas(p.montaPrecio)} tokens.</p></section>`;
     return "";
   }
   function fichaHtml(p) {
@@ -549,7 +549,7 @@
   }
   function pintarApuestas() {
     const tot = est.historial.reduce((a, h) => ({ ap: a.ap + (h.devuelta ? 0 : h.monto), co: a.co + (h.devuelta ? 0 : h.pago) }), { ap: 0, co: 0 });
-    poner($("hipApuestasResumen"), `<div class="hip-datos"><div><span>Monedas</span><strong>${monedas(est.saldo)}</strong></div><div><span>Apostado</span><strong>${monedas(tot.ap)}</strong></div><div><span>Cobrado</span><strong>${monedas(tot.co)}</strong></div><div><span>${T("rendimiento", "Rendimiento")}</span><strong>${tot.ap ? coma((tot.co / tot.ap - 1) * 100, 1) + " %" : "-"}</strong></div></div>`);
+    poner($("hipApuestasResumen"), `<div class="hip-datos"><div><span>Tokens</span><strong>${monedas(est.saldo)}</strong></div><div><span>Apostado</span><strong>${monedas(tot.ap)}</strong></div><div><span>Cobrado</span><strong>${monedas(tot.co)}</strong></div><div><span>${T("rendimiento", "Rendimiento")}</span><strong>${tot.ap ? coma((tot.co / tot.ap - 1) * 100, 1) + " %" : "-"}</strong></div></div>`);
     poner($("hipApuestasPend"), est.pendientes.length ? `<h3>Pendientes</h3><ul class="hip-lista-apuestas">${est.pendientes.map(a => `<li>n.º ${a.n} · <strong>${esc(M.TIPOS_APUESTA[a.tipo].nombre)}</strong> ${esc(a.nombres.join(" y "))} · ${monedas(a.monto)} a ${M.fmtCuota(a.cuota)}</li>`).join("")}</ul>` : "");
     poner($("hipApuestasHist"), est.historial.length ? `<h3>Historial</h3><table class="hip-tabla"><thead><tr><th>n.º</th><th>Apuesta</th><th>Importe</th><th>Cuota</th><th>Resultado</th></tr></thead><tbody>${est.historial.map(h => `<tr class="${h.devuelta ? "" : h.gana ? "gana" : "pierde"}"><td>${h.n}</td><td>${esc(M.TIPOS_APUESTA[h.tipo].nombre)} a ${esc(h.nombres.join(" y "))}</td><td>${monedas(h.monto)}</td><td>${M.fmtCuota(h.cuota)}</td><td>${h.devuelta ? "devuelta" : h.gana ? "+" + monedas(h.pago - h.monto) : "-" + monedas(h.monto)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-vacio">Todavía no has apostado.</p>');
   }
@@ -646,12 +646,12 @@
     $("hipCriaMas").addEventListener("click", () => { mostrarMas += 48; pintarCriaturas(); });
     $("hipOculto").addEventListener("change", e => { oculto = e.target.checked; try { localStorage.setItem(CLAVE_OCULTO, oculto ? "1" : "0"); } catch (x) { /* sin almacenamiento */ } nUI = -1; pintarTodo(); if (fichaId != null) abrirFicha(fichaId); });
     $("hipReiniciar").addEventListener("click", async () => {
-      const semilla = await dialogo.pedir("Se borra este mundo, tus monedas y tus apuestas, y empieza otro. Escribe una semilla, o déjala vacía para una al azar.", "", { titulo: "Empezar un mundo nuevo", marcador: "mundo-1", aceptar: "Empezar" });
+      const semilla = await dialogo.pedir("Se borra este mundo, tus tokens y tus apuestas, y empieza otro. Escribe una semilla, o déjala vacía para una al azar.", "", { titulo: "Empezar un mundo nuevo", marcador: "mundo-1", aceptar: "Empezar" });
       if (semilla === null) return;
       crear(semilla.trim() || semillaAzar());
     });
     $("hipMonedas").addEventListener("click", async () => {
-      if (!(await dialogo.confirmar(`Vuelves a tener ${SALDO_INICIAL} monedas y se borran tus apuestas pendientes. El mundo sigue igual.`, { titulo: "Reiniciar las monedas", aceptar: "Reiniciar" }))) return;
+      if (!(await dialogo.confirmar(`Vuelves a tener ${SALDO_INICIAL} tokens y se borran tus apuestas pendientes. El mundo sigue igual.`, { titulo: "Reiniciar los tokens", aceptar: "Reiniciar" }))) return;
       est.pendientes = []; est.historial = []; est.saldo = SALDO_INICIAL; guardar(); pintarTodo(); pintarPendientesCarrera();
     });
     window.addEventListener("beforeunload", guardar);
@@ -664,7 +664,7 @@
     if (tipo === "carrera") {
       const liq = est.liquidadas || []; est.liquidadas = [];
       const ganadas = liq.filter(h => h.gana), perdidas = liq.filter(h => !h.gana && !h.devuelta);
-      if (liq.length) avisar([ganadas.length ? `Ganaste ${monedas(ganadas.reduce((t, h) => t + h.pago, 0))} monedas (${ganadas.length} ${ganadas.length === 1 ? "apuesta" : "apuestas"})` : "", perdidas.length ? `Perdiste ${perdidas.length} ${perdidas.length === 1 ? "apuesta" : "apuestas"}` : ""].filter(Boolean).join(" · "), ganadas.length ? "bien" : "mal");
+      if (liq.length) avisar([ganadas.length ? `Ganaste ${monedas(ganadas.reduce((t, h) => t + h.pago, 0))} tokens (${ganadas.length} ${ganadas.length === 1 ? "apuesta" : "apuestas"})` : "", perdidas.length ? `Perdiste ${perdidas.length} ${perdidas.length === 1 ? "apuesta" : "apuestas"}` : ""].filter(Boolean).join(" · "), ganadas.length ? "bien" : "mal");
       nUI = -1; escena = null;
     }
     pintarTodo();

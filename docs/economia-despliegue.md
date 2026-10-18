@@ -8,7 +8,7 @@
 |---|---|
 | Funciones de cartas | 73 funciones (cartas y `fichas_es_admin`). Su huella coincide exactamente con la que usé para probar. Las de `economia-1` a `economia-6` del repositorio son equivalentes (solo difieren en comentarios y en una variable sin usar). Otras 8 solo existen en producción y no están en el repositorio (`cartas_accion`, `cartas_guardar`, `cartas_guardar_mazo`, `cartas_borrar_mazo`, `cartas_jugadores`, `cartas_admin_set_editor`, `cartas_vinculo_guardar`, `cartas_vinculo_restaurar`) |
 | Estructura | Columnas, índices, políticas, seguridad por filas, disparadores y permisos de tablas **idénticos** a mi entorno de pruebas. Una diferencia: producción tiene además la restricción `cartas_ejemplares_check` (estado y dueño siempre concuerdan), que no está en `economia-1`; es más estricta y mis funciones la cumplen. Ya está en el entorno local |
-| Migraciones registradas | Solo 5 (hipódromo, estadísticas, formas de cartas, hipódromo servidor, hipódromo cartas y monedas). **Ninguna de la economía de cartas**: se aplicó pegando SQL |
+| Migraciones registradas | Solo 5 (hipódromo, estadísticas, formas de cartas, hipódromo servidor, hipódromo cartas y tokens). **Ninguna de la economía de cartas**: se aplicó pegando SQL |
 | Recompensas de cartas | Apagadas en los 4 juegos (`cartas_juegos.activo = false`) |
 | Datos | **1 carta real**: el Fulguepardo nº 1 de Frutipep, premio de Hooey del 12 de octubre a las 21:13 (antes de apagar las recompensas). 5 partidas de cartas, ninguna con apuesta. 14 perfiles sin nombres repetidos. La auditoría (`cartas_auditoria()`) devuelve vacío |
 | Funciones del servidor (Edge) | `admin-gestionar-cuenta` y `hipodromo-avanzar`. **Ninguna de cartas** |
@@ -19,11 +19,11 @@
 
 ## 2. Discrepancias que encontré (lo que me hace parar)
 
-### D1. El Hipódromo compra y vende cartas con monedas (otra sesión, ya desplegado)
+### D1. El Hipódromo compra y vende cartas con tokens (otra sesión, ya desplegado)
 `hipodromo_comprar_carta`, `hipodromo_vender_carta` y `hipodromo_cartas_reserva` se desplegaron en la migración `hipodromo_cartas_y_monedas`. Comprar saca una copia **de la reserva**; vender manda una copia **a la reserva** (precios: común 50/20, poco común 150/60, rara 500/200, legendaria 2000/800; compra/venta).
 - **Compatibilidad con mis migraciones: probada** (`docs/pruebas/t_externas.sh`). Usan el núcleo con las mismas firmas y los mismos candados, y funcionan antes y después. Con la etiqueta «En circulación», **comprar una carta no lista falla sin cobrar**.
-- **Hoy**: la página está oculta a jugadores (`oculto.js`) pero las funciones las puede llamar cualquier sesión, y hay 1 billetera con saldo 0, así que no hay monedas con que comprar.
-- **Lo que choca con tus reglas** (decisión tuya, no la toco): (a) es una moneda que cambia por cartas, y en el diseño dijiste que no habría moneda universal; (b) **admite legendarias** (el mercader las excluye): una legendaria puede pasar a la reserva por 800 monedas y comprarse por 2000; (c) `hipodromo_cartas_reserva()` enseña cartas que no están en circulación (la compra falla, pero aparecen).
+- **Hoy**: la página está oculta a jugadores (`oculto.js`) pero las funciones las puede llamar cualquier sesión, y hay 1 billetera con saldo 0, así que no hay tokens con que comprar.
+- **Lo que choca con tus reglas** (decisión tuya, no la toco): (a) es un token que se cambia por cartas, y en el diseño dijiste que no habría un token universal; (b) **admite legendarias** (el mercader las excluye): una legendaria puede pasar a la reserva por 800 tokens y comprarse por 2000; (c) `hipodromo_cartas_reserva()` enseña cartas que no están en circulación (la compra falla, pero aparecen).
 
 ### D2. La recompensa de La Fractura se salta toda la economía
 `fractura_recompensa` (ya existía antes de la economía) **escribe directamente en `cartas_coleccion`** sin crear ejemplares. Probado en local: tras una recompensa la colección dice 1 copia y los ejemplares dicen 0, y la auditoría marca 1 problema. Además ignora límites por jugador, límite global y la etiqueta «En circulación», y esa copia fantasma se pierde en cuanto el jugador reciba un ejemplar real de esa carta (el disparador reescribe la colección desde los ejemplares). Hoy: 0 guerras, la página está oculta, pero la función la puede llamar cualquier sesión. **Propuesta**: desactivarla hasta conectarla bien (`docs/economia-12_vias_externas.sql`, borrador). Encaja con «mantén apagadas las recompensas».

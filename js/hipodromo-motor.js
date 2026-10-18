@@ -53,7 +53,7 @@
     INCIDENTE_ESTABLO: 0.0005,   // por criatura y carrera: entrenamiento, enfermedad, establo, fuga o algo peor
     INMIGRANTES: 0.15,           // de cada 100 nacimientos, los que llegan de otra región con genes nuevos
     HOMENAJE: 0.25,              // probabilidad de que la cría lleve el nombre de un padre que fue leyenda
-    // la cuadra de los jugadores (las monedas son las del jugador; el motor solo dice cuánto cuesta cada cosa)
+    // la cuadra de los jugadores (los tokens son del jugador; el motor solo dice cuánto cuesta cada cosa)
     MAX_CABALLOS: 4,             // criaturas por jugador
     ADELANTO: 12,                // con cuántas carreras de antelación se puede inscribir
     ADELANTO_COPA: 48,           // las copas se pueden inscribir con más antelación (dos días)
@@ -68,7 +68,7 @@
     VENTA: 0.4,                  // lo que paga la casa por una criatura, respecto a lo que costaría comprarla
     CASTIGO_TACTICA: 0.012,      // lo que cuesta ir contra la naturaleza de la criatura (por unidad de diferencia)
     POZO_RETENCION: 0.10,        // el pozo se queda con el 10 % de lo apostado
-    POZO_BOTE: 50                // y la casa le suma 50 monedas a cada pozo para que apostar solo también tenga premio
+    POZO_BOTE: 50                // y la casa le suma 50 tokens a cada pozo para que apostar solo también tenga premio
   };
   const ESPECIE = { singular: "cérvago", plural: "cérvagos", provisional: true };   // nombre de la especie, un solo sitio para cambiarlo
   const AJUSTE = {          // puntos de afinación de la simulación (los calibra tools/probar-hipodromo.js)
@@ -461,7 +461,7 @@
     const bolsa = (total + C.POZO_BOTE) * (1 - C.POZO_RETENCION);
     return lista.map(a => (a.sel === ganadorId ? { id: a.id, pago: redondea(Math.max(a.monto, bolsa * a.monto / base), 2), estado: "ganada" } : { id: a.id, pago: 0, estado: "perdida" }));
   }
-  /* Lo que pagaría ahora una apuesta de `monto` al pozo por la criatura `id`, dado lo que hay apostado (totales = { id: monedas }), como cuota */
+  /* Lo que pagaría ahora una apuesta de `monto` al pozo por la criatura `id`, dado lo que hay apostado (totales = { id: tokens }), como cuota */
   function cuotaPozo(totales, id, monto) {
     const T = Object.keys(totales || {}).reduce((t, k) => t + totales[k], 0), G = (totales && totales[id]) || 0;
     const pago = Math.max(monto, (T + monto + C.POZO_BOTE) * (1 - C.POZO_RETENCION) * monto / (G + monto));
@@ -668,7 +668,7 @@
     if (res.fotoMeta) titulo = elige(rng, [`Foto de meta en ${pista}: ${g.nombre} gana por un hocico`, `${g.nombre} se lleva ${res.nombre} en la foto de meta`]);
     else if (g.cuota >= 12) titulo = elige(rng, [`Sorpresa en ${pista}: ${g.nombre} gana pagando ${cuota}`, `Batacazo: ${g.nombre} (${cuota}) se lleva ${res.nombre}`]);
     else if (fav && fav.pos >= 5 && fav.id !== g.id) titulo = `Se hunde el favorito: ${fav.nombre} llega ${fav.pos}º y gana ${g.nombre}`;
-    else if (GRADOS[res.grado].copa) titulo = elige(rng, [`${g.nombre} levanta la ${res.nombre}`, `${res.nombre}: ${g.nombre} se corona`, `${g.nombre} se lleva la ${res.nombre} y ${GRADOS[res.grado].bolsa / 2} monedas`]);
+    else if (GRADOS[res.grado].copa) titulo = elige(rng, [`${g.nombre} levanta la ${res.nombre}`, `${res.nombre}: ${g.nombre} se corona`, `${g.nombre} se lleva la ${res.nombre} y ${GRADOS[res.grado].bolsa / 2} tokens`]);
     else titulo = elige(rng, [`${g.nombre} gana ${res.nombre}`, `${res.nombre}: victoria de ${g.nombre}`, `${g.nombre} se impone en ${pista}`]);
     const texto = `${g.nombre} cruzó primero en ${fmtTiempo(g.t)} sobre ${res.dist} m, con el terreno ${res.estadoPista} y ${CLIMAS[res.clima].texto}. Ganó ${fmtMargen(s.margen)} a ${s.nombre}${t ? `, con ${t.nombre} tercero` : ""}. Pagó ${cuota} a ganador entre ${res.llegada.length} corredores.`;
     return noticia(m, "resultado", titulo, texto, [g.id, s.id], res.n);
@@ -705,7 +705,7 @@
       c.premios += l.premio;
       if (c.dueno) {
         if (l.premio) ev.pagos.push({ dueno: c.dueno, monto: l.premio, concepto: `Premio: ${c.nombre}, ${l.pos}º en ${res.nombre}`, n: res.n });
-        ev.avisos.push({ dueno: c.dueno, id: c.id, n: res.n, texto: `${c.nombre} llegó ${l.pos}º de ${campo} en ${res.nombre}${l.premio ? ` y cobró ${l.premio} monedas` : ""}.` });
+        ev.avisos.push({ dueno: c.dueno, id: c.id, n: res.n, texto: `${c.nombre} llegó ${l.pos}º de ${campo} en ${res.nombre}${l.premio ? ` y cobró ${l.premio} tokens` : ""}.` });
       }
       c.ultima = res.n;
       c.fatiga = Math.min(100, c.fatiga + 12 + 18 * (res.dist / 3000) + 6 * res.humedad);
@@ -1029,8 +1029,8 @@
   }
 
   /* Aplica (o solo comprueba, con { prueba: true }) una orden de un dueño. Devuelve { ok, error } o
-     { ok, costo, ingreso, pagos, texto, cambios, noticias, id }: costo e ingreso son monedas del dueño de la orden y
-     pagos son monedas para otros dueños (por ejemplo, la monta de un semental ajeno). */
+     { ok, costo, ingreso, pagos, texto, cambios, noticias, id }: costo e ingreso son tokens del dueño de la orden y
+     pagos son tokens para otros dueños (por ejemplo, la monta de un semental ajeno). */
   function ordenar(m, o, opc) {
     const prueba = !!(opc && opc.prueba), d = o && o.dueno;
     const err = t => ({ ok: false, error: t });
@@ -1062,7 +1062,7 @@
         res.costo = precioCompra(m, c);
         if (prueba) return res;
         c.dueno = d; c.entradas = []; c.tactica = null;
-        res.id = c.id; res.cambios.push(c.id); res.texto = `Compras a ${c.nombre} por ${res.costo} monedas.`; res.concepto = `Compra: ${c.nombre}`;
+        res.id = c.id; res.cambios.push(c.id); res.texto = `Compras a ${c.nombre} por ${res.costo} tokens.`; res.concepto = `Compra: ${c.nombre}`;
         return res;
       }
       case "vender": {
@@ -1073,7 +1073,7 @@
         (m.cruces || []).filter(x => x.madre === c.id || x.padre === c.id).forEach(x => res.pagos.push({ dueno: x.dueno, monto: x.pago, concepto: "Cruce cancelado", n: m.n }));
         m.cruces = m.cruces.filter(x => x.madre !== c.id && x.padre !== c.id);
         c.dueno = null; c.tactica = null; c.entreno = null; c.entradas = [];
-        res.id = c.id; res.cambios.push(c.id); res.texto = `Vendes a ${c.nombre} a la casa por ${res.ingreso} monedas.`; res.concepto = `Venta: ${c.nombre}`;
+        res.id = c.id; res.cambios.push(c.id); res.texto = `Vendes a ${c.nombre} a la casa por ${res.ingreso} tokens.`; res.concepto = `Venta: ${c.nombre}`;
         return res;
       }
       case "inscribir": case "desinscribir": {
@@ -1190,7 +1190,7 @@
       default: return err("Orden desconocida.");
     }
   }
-  /* Aplica una lista de órdenes seguidas. saldos = { dueno: monedas } (si no se pasa, no hay límite). Devuelve lo que hay
+  /* Aplica una lista de órdenes seguidas. saldos = { dueno: tokens } (si no se pasa, no hay límite). Devuelve lo que hay
      que cobrar y pagar (pagos), los perfiles que cambiaron, las noticias y el resultado de cada orden. */
   function procesarOrdenes(m, ordenes, saldos) {
     const out = { resultados: [], pagos: [], perfiles: [], noticias: [], avisos: [] };
@@ -1199,7 +1199,7 @@
       const prueba = ordenar(m, o, { prueba: true });
       if (!prueba.ok) { out.resultados.push({ oid: o.oid, ok: false, error: prueba.error }); return; }
       const tiene = saldos && saldos[o.dueno] != null ? saldos[o.dueno] : saldos ? 0 : Infinity;
-      if (prueba.costo > tiene) { out.resultados.push({ oid: o.oid, ok: false, error: `No tienes monedas suficientes (${prueba.costo}).` }); return; }
+      if (prueba.costo > tiene) { out.resultados.push({ oid: o.oid, ok: false, error: `No tienes tokens suficientes (${prueba.costo}).` }); return; }
       const r = ordenar(m, o);
       const mueve = (dueno, monto) => { if (saldos && saldos[dueno] != null) saldos[dueno] += monto; };
       if (r.costo) { out.pagos.push({ dueno: o.dueno, monto: -r.costo, concepto: r.concepto, n: m.n }); mueve(o.dueno, -r.costo); }

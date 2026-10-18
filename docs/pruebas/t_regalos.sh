@@ -27,7 +27,7 @@ contiene "a quien ya tiene el máximo se le salta y se dice por qué" "$R" "lím
 comprobar "y no recibe una segunda copia" "1" "$(duenos $U1 legendaria-1)"
 comprobar "el estado de las copias sigue limpio (nada bloqueado ni huérfano)" "0" "$(sql "select count(*) from cartas_ejemplares where estado='bloqueada'")"
 
-echo "== Regalo directo de monedas"
+echo "== Regalo directo de tokens"
 como $ADMIN "select admin_regalar_monedas(50, '$U1');" >/dev/null
 comprobar "se suman a la billetera" "50" "$(monedas $U1)"
 comprobar "quedan en el libro del Hipódromo" "1" "$(sql "select count(*) from hipodromo_movimientos where usuario='$U1' and monto=50 and concepto like 'Regalo del admin%'")"
@@ -42,8 +42,8 @@ comprobar "el admin crea un evento" "1" "$(sql "select count(*) from eventos_sit
 contiene "un jugador no puede crear eventos" "$(como $U1 "select evento_guardar('{\"titulo\": \"x\", \"hasta\": \"$H30\"}'::jsonb);")" "No autorizado"
 comprobar "cualquiera con sesión ve el evento en marcha" "1" "$(como $U2 "select count(*) from eventos_sitio;" | tail -1)"
 R=$(como $U2 "select evento_reclamar('$EV');")
-contiene "reclamar da la carta y las monedas" "$R" '"monedas": 30'
-comprobar "la carta es suya y las monedas están" "1|30" "$(duenos $U2 comun-7)|$(monedas $U2)"
+contiene "reclamar da la carta y los tokens" "$R" '"monedas": 30'
+comprobar "la carta es suya y los tokens están" "1|30" "$(duenos $U2 comun-7)|$(monedas $U2)"
 contiene "no se puede reclamar dos veces" "$(como $U2 "select evento_reclamar('$EV');")" "Ya reclamaste"
 comprobar "no se duplicó nada" "1|30" "$(duenos $U2 comun-7)|$(monedas $U2)"
 comprobar "cada quien ve solo sus reclamos" "1|0" "$(como $U2 "select count(*) from eventos_reclamos;" | tail -1)|$(como $U1 "select count(*) from eventos_reclamos;" | tail -1)"
@@ -67,7 +67,7 @@ echo "== Si la carta no cabe, el reclamo se deshace"
 sql "update cartas_ejemplares set propietario = '$U4', estado = 'poseida' where carta_id = 'legendaria-1'" >/dev/null   # la única copia pasa a U4
 ER=$(como $ADMIN "select evento_guardar('{\"titulo\": \"Rara\", \"hasta\": \"$H30\", \"regalo_carta\": \"legendaria-1\", \"regalo_monedas\": 7}'::jsonb);" | tail -1)
 contiene "quien ya tiene el máximo no puede reclamarla" "$(como $U4 "select evento_reclamar('$ER');")" "límite por jugador"
-comprobar "el reclamo no quedó registrado ni se pagaron las monedas" "0|10" "$(sql "select count(*) from eventos_reclamos where evento='$ER' and user_id='$U4'")|$(monedas $U4)"
+comprobar "el reclamo no quedó registrado ni se pagaron los tokens" "0|10" "$(sql "select count(*) from eventos_reclamos where evento='$ER' and user_id='$U4'")|$(monedas $U4)"
 como $ADMIN "select evento_quitar('$ER');" >/dev/null
 comprobar "quitar un evento borra también sus reclamos" "0" "$(sql "select count(*) from eventos_sitio where id='$ER'")"
 contiene "un jugador no puede quitar eventos" "$(como $U1 "select evento_quitar('$EV');")" "No autorizado"

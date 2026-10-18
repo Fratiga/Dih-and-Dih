@@ -1,5 +1,5 @@
 #!/bin/sh
-# Compatibilidad con lo que hay en producción y NO es de la economía de cartas: el Hipódromo (compra y venta de cartas con monedas),
+# Compatibilidad con lo que hay en producción y NO es de la economía de cartas: el Hipódromo (compra y venta de cartas con tokens),
 # el cambio de Side desde el panel de admin y la recompensa de La Fractura. Uso: sh docs/pruebas/t_externas.sh
 # Las líneas "NOTA" no son pruebas: son hallazgos que se dejan a la vista para decidir.
 . "$(dirname "$0")/lib.sh"
@@ -25,13 +25,13 @@ comprobar "la copia bloqueada sigue bloqueada" "bloqueada" "$(sql "select estado
 echo "== Hipódromo: comprar una carta de la reserva"
 dar_monedas $U2 50
 R=$(como $U2 "select hipodromo_comprar_carta('comun-3');")
-contiene "se compra con monedas suficientes" "$R" '"ok": true'
+contiene "se compra con tokens suficientes" "$R" '"ok": true'
 comprobar "la copia de la reserva pasa al comprador y se cobran 50" "$U2/poseida|0" "$(sql "select propietario::text||'/'||estado from cartas_ejemplares where id='$C'")|$(monedas $U2)"
 comprobar "no se emitió ninguna copia nueva" "1" "$(sql "select count(*) from cartas_ejemplares where carta_id='comun-3'")"
 dar_monedas $U2 10
-contiene "con pocas monedas no se compra" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "No quedan copias"
+contiene "con pocos tokens no se compra" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "No quedan copias"
 sql "select cartas_i_retirar('$C', 'reserva', 'prueba');" >/dev/null
-contiene "...ni con monedas insuficientes aunque haya reserva" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "No tienes monedas"
+contiene "...ni con tokens insuficientes aunque haya reserva" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "No tienes tokens"
 comprobar "el saldo no cambió" "10" "$(monedas $U2)"
 
 echo "== Hipódromo y la etiqueta «En circulación»"
@@ -47,7 +47,7 @@ if sql "select 1 from information_schema.columns where table_name='cartas_catalo
   if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vender_carta(uuid)'::regprocedure)) > 0")" != "t" ]; then
     L=$(dar $U3 legendaria-1)
     R=$(como $U3 "select hipodromo_vender_carta('$L');")
-    if printf '%s' "$R" | grep -q '"ok": true'; then nota "El Hipódromo compra legendarias (800 monedas) y las vende desde la reserva (2000): una legendaria puede cambiar de manos por monedas, sin pasar por las reglas del mercader (que las excluye)."; fi
+    if printf '%s' "$R" | grep -q '"ok": true'; then nota "El Hipódromo compra legendarias (800 tokens) y las vende desde la reserva (2000): una legendaria puede cambiar de manos por tokens, sin pasar por las reglas del mercader (que las excluye)."; fi
   fi
 fi
 
@@ -56,7 +56,7 @@ if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vende
   limpiar
   sql "delete from hipodromo_movimientos; delete from hipodromo_billeteras; update cartas_catalogo set en_circulacion = true where id <> 'bufon'" >/dev/null
   PRECIOS_ANTES=$(sql "select string_agg(rareza||':'||compra||'/'||venta, ',' order by rareza) from hipodromo_precios_cartas")
-  # una legendaria en la reserva y monedas de sobra
+  # una legendaria en la reserva y tokens de sobra
   LEG=$(dar $U4 legendaria-1); sql "select cartas_i_retirar('$LEG', 'reserva', 'prueba');" >/dev/null
   dar_monedas $U1 5000
   R=$(como $U1 "select hipodromo_comprar_carta('legendaria-1');")
@@ -75,7 +75,7 @@ if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vende
   LEG2=$(dar $U1 legendaria-1)
   contiene "vender una legendaria que se tiene: rechazado" "$(como $U1 "select hipodromo_vender_carta('$LEG2');")" "legendarias y limitadas no se compran"
   comprobar "...y sigue siendo suya" "$U1/poseida" "$(sql "select propietario::text||'/'||estado from cartas_ejemplares where id='$LEG2'")"
-  comprobar "ninguna moneda se movió en todo esto" "5000" "$(monedas $U1)"
+  comprobar "ningún token se movió en todo esto" "5000" "$(monedas $U1)"
   # la lista de la reserva
   COM=$(dar $U4 comun-1); sql "select cartas_i_retirar('$COM', 'reserva', 'prueba');" >/dev/null
   COM2=$(dar $U4 comun-2); sql "select cartas_i_retirar('$COM2', 'reserva', 'prueba'); update cartas_catalogo set en_circulacion = false where id = 'comun-2';" >/dev/null

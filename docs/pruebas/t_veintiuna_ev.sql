@@ -1,5 +1,5 @@
 -- Valor esperado de cada regla jugando miles de manos de verdad contra el servidor, con una estrategia fija (la misma que la simulación de docs/veintiuna.md).
--- Comprueba que el SQL y la simulación dicen lo mismo: si una regla estuviera mal escrita, saldría un valor esperado muy distinto. Mesa de práctica (sin tocar monedas).
+-- Comprueba que el SQL y la simulación dicen lo mismo: si una regla estuviera mal escrita, saldría un valor esperado muy distinto. Mesa de práctica (sin tocar tokens).
 create or replace function t_ev(p_regla text, p_n int, p_tb int, p_ta int, p_ts int, p_fortuna_min int default 0, p_lv_desde int default null, p_lv_hasta int default null, p_lv_ultima int default 5)
 returns table (ev numeric, error numeric, voluntades int, fortunas int)
 language plpgsql as $$

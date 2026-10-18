@@ -99,7 +99,7 @@ window.HipodromoCuadraUI = (function () {
         <button type="button" data-vista="mias" aria-pressed="${vista === "mias"}">Mis criaturas <small>${mias.length}/${max}</small></button>
         <button type="button" data-vista="mercado" aria-pressed="${vista === "mercado"}">Mercado <small>${merc}</small></button>
         <button type="button" data-vista="avisos" aria-pressed="${vista === "avisos"}">Avisos <small>${nAvisos}</small></button></nav>`;
-      const cabecera = `<div class="hip-cuadra-cab"><h3>${T("cuadra", "Mi cuadra")}</h3><p>Monedas: <strong>${mon(api.saldo())}</strong></p></div>
+      const cabecera = `<div class="hip-cuadra-cab"><h3>${T("cuadra", "Mi cuadra")}</h3><p>Tokens: <strong>${mon(api.saldo())}</strong></p></div>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p>`;
       let cuerpo;
       if (vista === "mercado") cuerpo = `<section class="hip-tarjeta"><h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar. El precio sale de su palmarés y su linaje, como lo ve todo el mundo. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}</section>`;
@@ -132,12 +132,12 @@ window.HipodromoCuadraUI = (function () {
       if (tipo === "cuidar") return mandar({ tipo, id });
       if (tipo === "comprar") {
         const p = api.perfil(id);
-        if (!(await dialogo.confirmar(`Comprar a ${p.nombre} por ${mon(p.precio)} monedas.`, { titulo: "Comprar", aceptar: "Comprar" }))) return;
+        if (!(await dialogo.confirmar(`Comprar a ${p.nombre} por ${mon(p.precio)} tokens.`, { titulo: "Comprar", aceptar: "Comprar" }))) return;
         return mandar({ tipo, id });
       }
       if (tipo === "vender") {
         const e2 = api.mias().find(x => x.p.id === id);
-        if (!(await dialogo.confirmar(`La casa te paga ${mon(e2.c.venta)} monedas por ${e2.p.nombre}. Se te devuelven las inscripciones que tenga puestas.`, { titulo: "Vender", aceptar: "Vender" }))) return;
+        if (!(await dialogo.confirmar(`La casa te paga ${mon(e2.c.venta)} tokens por ${e2.p.nombre}. Se te devuelven las inscripciones que tenga puestas.`, { titulo: "Vender", aceptar: "Vender" }))) return;
         return mandar({ tipo, id });
       }
       if (tipo === "retirar") {

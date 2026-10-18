@@ -99,8 +99,8 @@ Mantén la voz de siempre al escribir (ver la memoria «Bufón voice rules»).
 Archivos: `docs/admin/regalos_eventos.sql`, `js/admin-regalos.js`, y los avisos de la taberna en `js/avisos-taberna.js`. Pruebas: `docs/pruebas/t_regalos.sh` (después de `cargar_local.sh todo`).
 
 - **Regalar una carta**: a una persona, a un Side o a todos. Pasa por `cartas_i_emitir` (límite global, límite por jugador, reserva, libro de movimientos). A quien no le cabe se le salta y el panel lista quién y por qué.
-- **Regalar monedas del Hipódromo**: mismo reparto; queda en el libro de la billetera como «Regalo del admin».
-- **Eventos**: título, texto, enlace a una página, Side, fecha de inicio y fin (máximo 120 días), y un regalo opcional (carta y/o monedas). En la taberna sale como chip en la franja de avisos mientras esté en marcha. Si lleva regalo, el chip es un botón «reclama tu regalo» que cada jugador usa una vez (`evento_reclamar`). Si la carta no cabe, el reclamo se deshace y puede volver a intentar. Con reclamos ya hechos no se puede cambiar el regalo (crea otro evento).
+- **Regalar tokens de juego**: mismo reparto; queda en el libro de la billetera como «Regalo del admin».
+- **Eventos**: título, texto, enlace a una página, Side, fecha de inicio y fin (máximo 120 días), y un regalo opcional (carta y/o tokens). En la taberna sale como chip en la franja de avisos mientras esté en marcha. Si lleva regalo, el chip es un botón «reclama tu regalo» que cada jugador usa una vez (`evento_reclamar`). Si la carta no cabe, el reclamo se deshace y puede volver a intentar. Con reclamos ya hechos no se puede cambiar el regalo (crea otro evento).
 - Quitar un evento borra también sus reclamos.
 
 ## Calendario del Hipódromo (pestaña Calendario)

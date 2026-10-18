@@ -1,5 +1,5 @@
 /* =============================================================================
-   HIPÓDROMO: la pestaña «Cartas». Las monedas del hipódromo se cambian por cartas en los dos sentidos:
+   HIPÓDROMO: la pestaña «Cartas». Los tokens de juego se cambian por cartas en los dos sentidos:
    - Vender una carta tuya: la casa te la paga según su rareza y la copia vuelve a la reserva.
    - Comprar una carta de la reserva (las copias que otros jugadores vendieron aquí): cuesta más de lo que se paga al vender.
    Todo lo decide el servidor (docs/hipodromo-2_cartas.sql); esto solo enseña y manda la orden.
@@ -74,11 +74,11 @@ window.HipodromoCartas = (function () {
         const lleno = c.tengo >= c.limite, falta = c.precio > saldo;
         return `<tr><td><b>${esc(nombreCarta(c.carta))}</b> <small>${esc(c.tipo || "")}</small></td><td>${esc(nombreRareza(c.rareza))}</td><td>${c.copias}</td><td>${c.tengo} de ${c.limite}</td>
           <td class="hip-cuota"><strong>${mon(c.precio)}</strong></td>
-          <td><button type="button" class="hip-boton chico" data-comprar="${esc(c.carta)}"${lleno || falta ? " disabled" : ""} title="${lleno ? "Ya tienes todas las que puedes tener" : falta ? "No te alcanzan las monedas" : ""}">Comprar</button></td></tr>`;
+          <td><button type="button" class="hip-boton chico" data-comprar="${esc(c.carta)}"${lleno || falta ? " disabled" : ""} title="${lleno ? "Ya tienes todas las que puedes tener" : falta ? "No te alcanzan los tokens" : ""}">Comprar</button></td></tr>`;
       }).join("");
       const tabla = Object.keys(precios).sort((a, b) => (ORDEN[a] || 0) - (ORDEN[b] || 0)).map(r => `<li><b>${esc(nombreRareza(r))}</b>: te pagan ${mon(precios[r].venta)}, cuesta ${mon(precios[r].compra)}</li>`).join("");
-      cont.innerHTML = `<section class="hip-tarjeta"><div class="hip-cuadra-cab"><h3>Cartas por monedas</h3><p>Monedas: <strong>${mon(saldo)}</strong></p></div>
-        <p class="hip-nota">En el hipódromo empiezas sin monedas: se consiguen vendiendo cartas, con los premios de tus criaturas y apostando. Lo que vendes vuelve a la reserva de cartas, y lo único que se puede comprar es lo que hay en la reserva: comprar no crea cartas nuevas. Comprar cuesta más de lo que se paga al vender.</p>
+      cont.innerHTML = `<section class="hip-tarjeta"><div class="hip-cuadra-cab"><h3>Cartas por tokens</h3><p>Tokens: <strong>${mon(saldo)}</strong></p></div>
+        <p class="hip-nota">En el hipódromo empiezas sin tokens: se consiguen vendiendo cartas, con los premios de tus criaturas y apostando. Lo que vendes vuelve a la reserva de cartas, y lo único que se puede comprar es lo que hay en la reserva: comprar no crea cartas nuevas. Comprar cuesta más de lo que se paga al vender.</p>
         <ul class="hip-avisos">${tabla}</ul>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p></section>
         <section class="hip-tarjeta"><h3>Vender mis cartas</h3>${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te pagan</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas.</p>'}</section>
@@ -101,12 +101,12 @@ window.HipodromoCartas = (function () {
       const v = e.target.closest("[data-vender]"), c = e.target.closest("[data-comprar]");
       if (v) {
         const carta = v.dataset.carta, r = (window.cartaPorId && window.cartaPorId(carta) || {}).rareza, p = precios[r];
-        if (!(await dialogo.confirmar(`Vendes una copia de ${nombreCarta(carta)} por ${mon(p ? p.venta : 0)} monedas. Vuelve a la reserva y otro jugador podrá comprarla.`, { titulo: "Vender carta", aceptar: "Vender" }))) return;
-        operar("hipodromo_vender_carta", { p_ejemplar: v.dataset.vender }, d => `Vendiste ${nombreCarta(d.carta)} por ${mon(d.precio)} monedas.`);
+        if (!(await dialogo.confirmar(`Vendes una copia de ${nombreCarta(carta)} por ${mon(p ? p.venta : 0)} tokens. Vuelve a la reserva y otro jugador podrá comprarla.`, { titulo: "Vender carta", aceptar: "Vender" }))) return;
+        operar("hipodromo_vender_carta", { p_ejemplar: v.dataset.vender }, d => `Vendiste ${nombreCarta(d.carta)} por ${mon(d.precio)} tokens.`);
       } else if (c) {
         const f = reserva.find(x => x.carta === c.dataset.comprar);
-        if (!(await dialogo.confirmar(`Compras ${nombreCarta(c.dataset.comprar)} por ${mon(f ? f.precio : 0)} monedas.`, { titulo: "Comprar carta", aceptar: "Comprar" }))) return;
-        operar("hipodromo_comprar_carta", { p_carta: c.dataset.comprar }, d => `Compraste ${nombreCarta(d.carta)} (copia ${d.numero}) por ${mon(d.precio)} monedas.`);
+        if (!(await dialogo.confirmar(`Compras ${nombreCarta(c.dataset.comprar)} por ${mon(f ? f.precio : 0)} tokens.`, { titulo: "Comprar carta", aceptar: "Comprar" }))) return;
+        operar("hipodromo_comprar_carta", { p_carta: c.dataset.comprar }, d => `Compraste ${nombreCarta(d.carta)} (copia ${d.numero}) por ${mon(d.precio)} tokens.`);
       }
     });
     return { abrir, pintar: () => { if (listo) pintar(); } };

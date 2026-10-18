@@ -30,7 +30,7 @@ El servidor elige la regla de cada mano. **La de la próxima mano se enseña ant
 | **Vela corta** | El crupier se planta con 16 (pide con 15 o menos; un 17 blando sigue siendo plantarse) y **el natural paga 6 a 5** en lugar de 3 a 2. Sin botón ni peaje. | ninguno |
 | **Pacto del Bufón** | Al repartir, un dado: 1-2 no pasa nada; 3-4 cambia la carta visible del crupier por la siguiente de la baraja; 5-6 cambia tu primera carta. Sin botón ni peaje. Neutral en valor esperado, solo mete caos. | ninguno |
 
-Los peajes se cobran en el momento de usarlos, no se devuelven y se guardan en el libro de monedas. En la mesa de práctica son simbólicos. Los peajes (60, 50, 35, 18 y 100 %) están en `cartas_economia_ajustes` (`veintiuna_peaje_fortuna`, `_voluntad`, `_ojo`, `_marcadas`, `_trueque`) y se pueden cambiar sin tocar código. Si se suben o bajan, repetir el cálculo con `tools/veintiuna-reglas-nuevas.js`.
+Los peajes se cobran en el momento de usarlos, no se devuelven y se guardan en el libro de tokens. En la mesa de práctica son simbólicos. Los peajes (60, 50, 35, 18 y 100 %) están en `cartas_economia_ajustes` (`veintiuna_peaje_fortuna`, `_voluntad`, `_ojo`, `_marcadas`, `_trueque`) y se pueden cambiar sin tocar código. Si se suben o bajan, repetir el cálculo con `tools/veintiuna-reglas-nuevas.js`.
 
 ### Por qué esos peajes (equilibrio medido)
 
@@ -52,13 +52,13 @@ Las tres reglas nuevas con peaje se calcularon igual (programación dinámica ex
 
 Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos que te gustan no da ventaja. El promedio de las ocho es parecido al blackjack base. La Última voluntad es una herramienta de decisión: conviene sobre todo con 15 o 16 tras una carta pequeña (cambiar un 5 desde 11 nunca pasa de 21) y casi nunca con una mano alta. La versión anterior (el crupier roba una carta de más) era demasiado fuerte para repartir un peaje razonable y sentía como multa, por eso se cambió. El cálculo exacto está en `tools/veintiuna-equilibrio.js` (Fortuna y Maldición) y `tools/veintiuna-voluntad-cambio.js` (la Última voluntad); `docs/pruebas/t_veintiuna_ev.sql` juega miles de manos de verdad contra el servidor y comprueba que el SQL coincide con la simulación.
 
-## Monedas
+## Tokens
 
-- Son las **monedas del Hipódromo**: se usa su billetera (`hipodromo_billeteras`) y su libro (`hipodromo_movimientos`). No hay billetera ni moneda nuevas.
+- Son los **tokens de juego** del Hipódromo: se usa su billetera (`hipodromo_billeteras`) y su libro (`hipodromo_movimientos`). No hay billetera ni token nuevos.
 - Apuestas de 10 a 100 de 10 en 10 (`veintiuna_apuesta_min`, `_max`, `_paso`). La apuesta mediana del Hipódromo es 20 y la máxima 50; las billeteras reales tienen entre 0 y 100. El paso de 10 hace que el 3 a 2 sea siempre un número entero.
 - La apuesta se cobra al repartir; el pago (apuesta incluida) al terminar. Cada movimiento lleva en el concepto el identificador de la mano («Veintiuna Velas: apuesta (mano …)») y la mano guarda los números de sus movimientos (`mov_cobro`, `mov_peaje`, `mov_pago`).
-- **Mesa de práctica**: mismas cartas y reglas, apuesta simbólica, no toca la billetera, no da monedas. Cuenta para los desafíos, para que la colección no dependa de apostar.
-- No se cambia ninguna fuente de ingresos del Hipódromo ni de otros juegos. Esta mesa solo mueve monedas entre la billetera y la casa, y con las reglas de arriba la casa gana de media. Las monedas siguen entrando por las vías de siempre (vender cartas, carreras, regalos del Admin).
+- **Mesa de práctica**: mismas cartas y reglas, apuesta simbólica, no toca la billetera, no da tokens. Cuenta para los desafíos, para que la colección no dependa de apostar.
+- No se cambia ninguna fuente de ingresos del Hipódromo ni de otros juegos. Esta mesa solo mueve tokens entre la billetera y la casa, y con las reglas de arriba la casa gana de media. Los tokens siguen entrando por las vías de siempre (vender cartas, carreras, regalos del Admin).
 
 ## Seguridad: la autoridad es el servidor
 
@@ -105,7 +105,7 @@ No hay ninguna infraestructura anticipada. Cuando llegue el momento, el sistema 
 - Todo el arte son SVG dibujados en `js/veintiuna-arte.js` (52 caras con su disposición real de símbolos, dorso con 21 llamas, fichas, iconos de reglas, la crupier con seis expresiones, tapete). No hay imágenes que puedan faltar.
 - La crupier reacciona: espera, reparte, mira al jugador, juega su turno, gana y pierde. Dice una frase corta y de vez en cuando, nunca un diálogo.
 - Las velas bajo cada mano son el marcador de puntos (veintiuna llamas); se vuelven azules al pasarte.
-- Animaciones: reparto desde el zapato, giro de la carta oculta, el turno del crupier carta a carta, cambio de placa de regla, resultado con brillo (victoria), apagón (derrota), saldo que cuenta, monedas que vuelan. Todas cuentan algo que el servidor ya confirmó, se saltan con un clic, Espacio o Intro, y se apagan con `prefers-reduced-motion`.
+- Animaciones: reparto desde el zapato, giro de la carta oculta, el turno del crupier carta a carta, cambio de placa de regla, resultado con brillo (victoria), apagón (derrota), saldo que cuenta, tokens que vuelan. Todas cuentan algo que el servidor ya confirmó, se saltan con un clic, Espacio o Intro, y se apagan con `prefers-reduced-motion`.
 - Teclado: P pedir, L plantarse, V la acción de la regla (Última voluntad, Ojo, Cartas marcadas, Trueque) o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
 - Móvil: las cartas y los controles van primero; el dock de acciones se queda pegado abajo.
 

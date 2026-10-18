@@ -252,7 +252,7 @@
       </section>
 
       <section id="adminPanelRegalos" class="admin-panel">
-        <p class="admin-bufon-banner">Regala cartas o monedas del Hipódromo a una persona, a un Side o a todos, y crea eventos con fecha de inicio y de fin que salen como aviso en la taberna. Un evento puede llevar un regalo que cada jugador reclama una sola vez. Las cartas respetan los límites de la economía: a quien no le quepa se le salta y aquí te digo quién y por qué.</p>
+        <p class="admin-bufon-banner">Regala cartas o tokens de juego a una persona, a un Side o a todos, y crea eventos con fecha de inicio y de fin que salen como aviso en la taberna. Un evento puede llevar un regalo que cada jugador reclama una sola vez. Las cartas respetan los límites de la economía: a quien no le quepa se le salta y aquí te digo quién y por qué.</p>
         <p id="adminRegalosEstado" class="admin-cartas-estado" role="status"></p>
         <datalist id="adminRegalosCartas"></datalist>
         <div class="admin-regalos">
@@ -262,11 +262,11 @@
             <button type="button" id="adminRegaloCartaBoton" class="admin-cuenta-accion">Regalar carta</button>
             <div id="adminRegaloCartaResultado"></div>
           </fieldset>
-          <fieldset class="admin-regalos-caja"><legend>Regalar monedas del Hipódromo</legend>
-            <label>Monedas <input type="number" id="adminRegaloMonto" min="1" max="100000" step="1" value="50"></label>
+          <fieldset class="admin-regalos-caja"><legend>Regalar tokens de juego</legend>
+            <label>Tokens <input type="number" id="adminRegaloMonto" min="1" max="100000" step="1" value="50"></label>
             <label>Para <select id="adminRegaloMonedasPara"></select></label>
             <label>Motivo (opcional) <input type="text" id="adminRegaloMotivo" maxlength="80"></label>
-            <button type="button" id="adminRegaloMonedasBoton" class="admin-cuenta-accion">Regalar monedas</button>
+            <button type="button" id="adminRegaloMonedasBoton" class="admin-cuenta-accion">Regalar tokens</button>
           </fieldset>
           <fieldset class="admin-regalos-caja admin-regalos-ancha"><legend>Nuevo evento</legend>
             <label>Título <input type="text" id="adminEventoTitulo" maxlength="80"></label>
@@ -276,7 +276,7 @@
             <label>Desde <input type="datetime-local" id="adminEventoDesde"></label>
             <label>Hasta <input type="datetime-local" id="adminEventoHasta"></label>
             <label>Regalo: carta (opcional) <input type="text" id="adminEventoCarta" list="adminRegalosCartas" autocomplete="off"></label>
-            <label>Regalo: monedas (opcional) <input type="number" id="adminEventoMonedas" min="1" max="100000" step="1"></label>
+            <label>Regalo: tokens (opcional) <input type="number" id="adminEventoMonedas" min="1" max="100000" step="1"></label>
             <button type="button" id="adminEventoCrear" class="admin-cuenta-accion">Crear evento</button>
           </fieldset>
         </div>
@@ -440,7 +440,7 @@
   <script src="data/cronologia-arcos.js?v=20270315"></script>
   <script src="data/reglas.js?v=20270315"></script>
   <script src="data/economia.js?v=20270315"></script>
-  <script src="data/novedades.js?v=20270315"></script>
+  <script src="data/novedades.js?v=20270316"></script>
   <script src="data/mapa.js?v=20270315"></script>
   <script src="js/contenido-servidor.js?v=20270315"></script>
   <script src="data/rotacion.js?v=20270315"></script>
@@ -478,7 +478,7 @@
   <script src="js/puesto-buhonero.js?v=20270315"></script>
   <script src="js/forja-herrero.js?v=20270315"></script>
   <script src="js/admin-dialogos.js?v=20270315"></script>
-  <script src="js/admin-regalos.js?v=20270315"></script>
+  <script src="js/admin-regalos.js?v=20270316"></script>
   <script src="js/admin-calendario.js?v=20270315"></script>
   <script src="js/admin-herramientas-2.js?v=20270315"></script>
   <script src="js/admin-herramientas.js?v=20270315"></script>

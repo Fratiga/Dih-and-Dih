@@ -41,11 +41,11 @@ window.HipodromoGlosario = (function () {
     foto_meta: "Foto de meta: las dos primeras llegaron tan juntas (menos de 6 centésimas de cuerpo) que solo se decide mirando la foto.",
     favorito: "El favorito: la criatura con la cuota más baja, la que el público cree que tiene más posibilidades.",
     /* ---- apuestas */
-    cuota: "Lo que paga la apuesta por cada moneda si aciertas, contando la que apostaste. Con cuota 4,00, apostar 100 devuelve 400 si aciertas. Cuanto más baja, más probable cree el público que es.",
+    cuota: "Lo que paga la apuesta por cada token si aciertas, contando el que apostaste. Con cuota 4,00, apostar 100 devuelve 400 si aciertas. Cuanto más baja, más probable cree el público que es.",
     ganador: "Apuesta a ganador: aciertas si la criatura llega la primera. Cuota fija.",
     podio: "Apuesta a podio: aciertas si la criatura llega entre las tres primeras. Paga menos que ganador.",
     exacta: "Apuesta exacta: aciertas si eliges la primera y la segunda, en ese orden. Paga mucho, pero es difícil.",
-    pozo: "Apuesta al pozo: aciertas si la criatura gana, pero no hay cuota fija. Todo lo apostado al pozo más 50 monedas de la casa, menos un 10 %, se reparte entre quienes aciertan según lo que pusieron. Cuanta menos gente acierta, más paga.",
+    pozo: "Apuesta al pozo: aciertas si la criatura gana, pero no hay cuota fija. Todo lo apostado al pozo más 50 tokens de la casa, menos un 10 %, se reparte entre quienes aciertan según lo que pusieron. Cuanta menos gente acierta, más paga.",
     doble: "Doble: una apuesta a ganador encadenada con la carrera siguiente. Si aciertas, no cobras: lo que habrías cobrado se apuesta solo, a ganador, al favorito de la siguiente carrera. Ejemplo: apuestas 100 a cuota 4 y aciertas (te tocarían 400). Con doble, esos 400 van a la siguiente a cuota 2: si gana, cobras 800; si pierde, no cobras nada. Sirve para buscar un premio mayor arriesgando lo ganado. Si no se puede apostar a la siguiente, cobras normal.",
     rendimiento: "Lo que has ganado o perdido en apuestas, en porcentaje de lo apostado. Con una cuota con margen de la casa, a la larga lo normal es perder un poco.",
     /* ---- la criatura */
@@ -94,12 +94,12 @@ window.HipodromoGlosario = (function () {
     /* ---- la cuadra */
     cuadra: "Tu cuadra: las criaturas que son tuyas. Los entrenadores del mundo no las mueven: las inscribes tú, y los premios son tuyos.",
     inscribir: "Inscribir cuesta el 10 % de la bolsa (del 10 al 14 % en las copas) y se devuelve si la carrera no se corre o la criatura no puede salir. Las inscripciones de cada carrera cierran cuando termina la anterior.",
-    entrenar: "Una sesión dura 6 carreras (6 horas), cuesta 30 monedas y la criatura no corre mientras tanto. Mejora un poco una capacidad (más si es joven, menos cuanto más entrenada; tope +8) y puede lesionarla.",
-    cuidar: "Cuidados veterinarios: quitan 20 de cansancio y acortan una lesión leve o media un 40 %. Cuestan 40 monedas y hay que esperar 6 carreras entre uno y otro.",
+    entrenar: "Una sesión dura 6 carreras (6 horas), cuesta 30 tokens y la criatura no corre mientras tanto. Mejora un poco una capacidad (más si es joven, menos cuanto más entrenada; tope +8) y puede lesionarla.",
+    cuidar: "Cuidados veterinarios: quitan 20 de cansancio y acortan una lesión leve o media un 40 %. Cuestan 40 tokens y hay que esperar 6 carreras entre uno y otro.",
     tactica: "Cómo sale a correr: al frente, a media tabla o desde atrás. Ir contra la naturaleza de la criatura cuesta un poco de velocidad.",
     monta: "La monta es lo que se paga por que un semental críe con una de tus hembras. Si el semental es de otro jugador, el dinero va para él.",
     cruzar: "Cruzar una hembra retirada a la cría con un semental. La cría nace 12 carreras después y es del dueño de la madre.",
-    reserva: "La reserva de cartas: las copias que los jugadores han vendido por monedas. Es lo único que se puede comprar con monedas; comprar no crea cartas nuevas."
+    reserva: "La reserva de cartas: las copias que los jugadores han vendido por tokens. Es lo único que se puede comprar con tokens; comprar no crea cartas nuevas."
   };
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

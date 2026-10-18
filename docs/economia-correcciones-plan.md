@@ -175,7 +175,7 @@ El despliegue se hace por etapas, con copias recuperables y comprobaciones entre
 4. **Cartas nuevas de editores**: sin publicar, sin límite global y no obtenibles hasta que un admin las revise. Los editores no cambian tipo, lado ni parámetros económicos (ni la publicación) de cartas existentes.
 5. **Antes de desplegar la función del servidor**: registro auténtico, versión del motor y operaciones idempotentes. Comprobado y probado (despliegue, sección 5).
 
-Siguen abiertas, por decisión tuya (despliegue, sección 2): **D1** el Hipódromo compra y vende cartas con monedas (incluidas legendarias) y **D2** la recompensa de La Fractura se salta los ejemplares. Y, como antes: la forja que gasta capacidad de emisión, el mercader más barato que la forja y los límites globales provisionales, que no se tocan.
+Siguen abiertas, por decisión tuya (despliegue, sección 2): **D1** el Hipódromo compra y vende cartas con tokens (incluidas legendarias) y **D2** la recompensa de La Fractura se salta los ejemplares. Y, como antes: la forja que gasta capacidad de emisión, el mercader más barato que la forja y los límites globales provisionales, que no se tocan.
 
 ## 9. Cómo se aplicaría en producción (cuando lo apruebes)
 

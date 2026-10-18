@@ -1,4 +1,4 @@
--- Manos de verdad por el mismo camino que usa el navegador (rol «authenticated», baraja del servidor, reglas al azar) y comprobación del libro de monedas.
+-- Manos de verdad por el mismo camino que usa el navegador (rol «authenticated», baraja del servidor, reglas al azar) y comprobación del libro de tokens.
 do $$
 declare
   u uuid := '00000000-0000-0000-0000-000000000002';
@@ -47,7 +47,7 @@ begin
   perform t_check('Nunca hay un saldo negativo en el libro', not exists (select 1 from hipodromo_movimientos where usuario = u and saldo < 0));
   perform t_check('Las estadísticas suman las manos', (select rondas from veintiuna_estadisticas where user_id = u) = 120
                   and (select victorias + derrotas + empates from veintiuna_estadisticas where user_id = u) = 120);
-  perform t_check('Las estadísticas de monedas coinciden con las manos con apuesta', (select neto from veintiuna_estadisticas where user_id = u) = (select coalesce(sum(neto), 0) from veintiuna_partidas where modo = 'apuesta'));
+  perform t_check('Las estadísticas de tokens coinciden con las manos con apuesta', (select neto from veintiuna_estadisticas where user_id = u) = (select coalesce(sum(neto), 0) from veintiuna_partidas where modo = 'apuesta'));
   perform t_check('El historial devuelve las últimas manos con cartas y variación', true);
   perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
   set local role authenticated;

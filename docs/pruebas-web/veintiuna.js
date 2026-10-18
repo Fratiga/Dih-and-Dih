@@ -27,7 +27,7 @@ const base = (o) => Object.assign({
   acciones: { pedir: true, plantar: true, especial: null }, resultado: null, saldo: 80
 }, o || {});
 
-console.log("== Textos con monedas");
+console.log("== Textos con tokens");
 comprobar("20 → «20»", V.monedas(20), "20");
 comprobar("7,5 → «7,5»", V.monedas(7.5), "7,5");
 comprobar("«1000» lleva separador de miles de la configuración regional", V.monedas(1000).replace(/\D/g, ""), "1000");
@@ -42,8 +42,8 @@ comprobar("con 21 no se puede pedir y dice por qué", [a.botones[0].habilitado, 
 a = V.acciones(base({ regla: { id: "voluntad", usada: false, peaje: 17 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: true, motivo: null, peaje: 17 } } }));
 comprobar("con la Última voluntad aparece su botón con el peaje", a.botones.map(b => b.id), ["pedir", "plantar", "voluntad"]);
 comprobar("y enseña lo que hace y el peaje", a.botones[2].sub, "cambia tu última carta · peaje 17");
-a = V.acciones(base({ regla: { id: "voluntad", usada: false, peaje: 17 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: false, motivo: "te faltan 5 monedas", peaje: 17 } } }));
-comprobar("sin monedas el botón sale deshabilitado, con la razón", [a.botones[2].habilitado, a.botones[2].sub, a.botones[2].motivo], [false, "te faltan 5 monedas", "Última voluntad: te faltan 5 monedas."]);
+a = V.acciones(base({ regla: { id: "voluntad", usada: false, peaje: 17 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: false, motivo: "te faltan 5 tokens", peaje: 17 } } }));
+comprobar("sin tokens el botón sale deshabilitado, con la razón", [a.botones[2].habilitado, a.botones[2].sub, a.botones[2].motivo], [false, "te faltan 5 tokens", "Última voluntad: te faltan 5 tokens."]);
 a = V.acciones(base({ modo: "practica", regla: { id: "voluntad", usada: false, peaje: 8.5 }, acciones: { pedir: true, plantar: true, especial: { tipo: "voluntad", disponible: true, motivo: null, peaje: 8.5 } } }));
 comprobar("en la práctica el peaje se llama simbólico", a.botones[2].sub, "cambia tu última carta · peaje simbólico 8,5");
 a = V.acciones(base({ fase: "fortuna", jugador: { cartas: [carta(10, 0), carta(6, 1), carta(13, 2)], total: 26, blando: false }, acciones: { pedir: false, plantar: false, especial: { tipo: "fortuna", disponible: true, motivo: null, peaje: 12 } } }));
@@ -60,7 +60,7 @@ comprobar("apuesta correcta no tiene motivo", V.motivoApuesta(20, 100, lim), "")
 comprobar("por debajo del mínimo", V.motivoApuesta(0, 100, lim), "La apuesta mínima es 10.");
 comprobar("por encima del máximo", V.motivoApuesta(150, 500, lim), "La apuesta máxima es 100.");
 comprobar("que no sea múltiplo del paso", V.motivoApuesta(25, 500, lim), "Se apuesta de 10 en 10.");
-comprobar("sin monedas explica cuántas faltan", V.motivoApuesta(50, 35, lim), "Te faltan 15 monedas para apostar 50 (tienes 35).");
+comprobar("sin tokens explica cuántas faltan", V.motivoApuesta(50, 35, lim), "Te faltan 15 tokens para apostar 50 (tienes 35).");
 comprobar("ajustar a lo que se tiene", [V.ajustarApuesta(100, 35, lim), V.ajustarApuesta(100, 500, lim), V.ajustarApuesta(20, 500, lim)], [30, 100, 20]);
 comprobar("apuesta inicial: la anterior si cabe, si no la mayor que cabe, y sin apuesta anterior ninguna", [V.apuestaInicial(50, 500, lim), V.apuestaInicial(50, 30, lim), V.apuestaInicial(50, 5, lim), V.apuestaInicial(0, 500, lim)], [50, 30, 0, 0]);
 
@@ -72,7 +72,7 @@ comprobar("derrota con peaje cuenta la apuesta y el peaje", r.linea, "Pierdes 32
 r = V.resultado(base({ estado: "terminada", resultado: { tipo: "empate", razon: "igual", pago: 20, neto: 0, apuesta: 20, peajes: 0 } }));
 comprobar("empate devuelve la apuesta", [r.titulo, r.linea, r.empate], ["Empate", "Recuperas tu apuesta de 20.", true]);
 r = V.resultado(base({ modo: "practica", estado: "terminada", resultado: { tipo: "victoria", razon: "mayor", pago: 20, neto: 10, apuesta: 10, peajes: 0 } }));
-comprobar("la práctica no habla de monedas", r.linea, "Mesa de práctica: sin monedas en juego.");
+comprobar("la práctica no habla de tokens", r.linea, "Mesa de práctica: sin tokens en juego.");
 comprobar("sin resultado no hay nada que decir", V.resultado(base()), null);
 
 console.log("== Lo que se anuncia a un lector de pantalla");
@@ -117,7 +117,7 @@ comprobar("y si el dado no cambió nada", /no cambia nada/.test(t), true);
 console.log("== Errores con palabras");
 comprobar("sin conexión", /Reintentar/.test(V.mensajeError({ tipo: "red" })), true);
 comprobar("mano en curso", V.mensajeError({ tipo: "servidor", codigo: "mano_en_curso", mensaje: "x" }), "Ya tenías una mano abierta. La recupero.");
-comprobar("lo que dice el servidor se respeta cuando no hay pista", V.mensajeError({ tipo: "servidor", codigo: "saldo_insuficiente", mensaje: "No tienes tantas monedas: te faltan 20." }), "No tienes tantas monedas: te faltan 20.");
+comprobar("lo que dice el servidor se respeta cuando no hay pista", V.mensajeError({ tipo: "servidor", codigo: "saldo_insuficiente", mensaje: "No tienes tantos tokens: te faltan 20." }), "No tienes tantos tokens: te faltan 20.");
 
 console.log("== Llamadas al servidor");
 (async () => {
@@ -132,8 +132,8 @@ console.log("== Llamadas al servidor");
   comprobar("en la práctica nunca se manda un importe", llamadas[2][1].p_apuesta, 0);
 
   const intenta = async (api, f) => { try { await f(api); return null; } catch (e) { return e; } };
-  let e = await intenta(Api.crear(async () => cliente({ data: null, error: { message: "ERROR: No tienes tantas monedas: te faltan 5.", hint: "saldo_insuficiente", code: "P0001" } })), a => a.repartir("x", "apuesta", 50));
-  comprobar("un rechazo del servidor lleva su pista y su texto sin «ERROR:»", [e && e.tipo, e && e.codigo, e && e.mensaje], ["servidor", "saldo_insuficiente", "No tienes tantas monedas: te faltan 5."]);
+  let e = await intenta(Api.crear(async () => cliente({ data: null, error: { message: "ERROR: No tienes tantos tokens: te faltan 5.", hint: "saldo_insuficiente", code: "P0001" } })), a => a.repartir("x", "apuesta", 50));
+  comprobar("un rechazo del servidor lleva su pista y su texto sin «ERROR:»", [e && e.tipo, e && e.codigo, e && e.mensaje], ["servidor", "saldo_insuficiente", "No tienes tantos tokens: te faltan 5."]);
   e = await intenta(Api.crear(async () => cliente({ data: null, error: { message: "TypeError: Failed to fetch", code: "" } })), a => a.mesa());
   comprobar("un corte de red se distingue de un rechazo", e && e.tipo, "red");
   e = await intenta(Api.crear(async () => cliente(new Error("boom")), { tiempoMax: 50 }), a => a.mesa());
@@ -187,7 +187,7 @@ console.log("== Llamadas al servidor");
     return m && m[1].replace(/<span[^>]*aria-hidden="true"[^>]*>[^<]*<\/span>/g, "").replace(/<[^>]+>/g, "").trim().length > 2;
   }));
   const mesaJs = fs.readFileSync(path.join(RAIZ, "js", "veintiuna-mesa.js"), "utf8");
-  cierto("los botones de fichas y pasos llevan etiqueta", /aria-label="Añadir \$\{f\} monedas"/.test(mesaJs) && /aria-label="Bajar la apuesta/.test(mesaJs) && /aria-label="Subir la apuesta/.test(mesaJs));
+  cierto("los botones de fichas y pasos llevan etiqueta", /aria-label="Añadir \$\{f\} tokens"/.test(mesaJs) && /aria-label="Bajar la apuesta/.test(mesaJs) && /aria-label="Subir la apuesta/.test(mesaJs));
   cierto("las acciones deshabilitadas usan aria-disabled y dicen por qué al pulsarlas", /aria-disabled="\$\{!b\.habilitado\}"/.test(mesaJs) && /b\.motivo \|\| "Esa acción no está disponible ahora\."/.test(mesaJs));
   cierto("el panel de modalidad es un radiogroup con aria-checked", /role="radiogroup"/.test(mesaJs) && /role="radio" aria-checked/.test(mesaJs));
   cierto("las barras de progreso de los desafíos son progressbar con valores", /role="progressbar"[^`]*aria-valuenow/.test(mesaJs));

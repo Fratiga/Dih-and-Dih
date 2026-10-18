@@ -321,7 +321,7 @@ body.hip-con-ficha { overflow: hidden; }
 .hip-apuesta input[type="checkbox"] { width: auto; margin-top: 2px; accent-color: var(--accent); flex: none; }
 
 /* ================================================================== Reorganización (octubre de 2026)
-   Cabecera con la entrada al directo y las monedas; reloj y pestañas en una barra que se queda arriba; inscritas, mercado y boleto
+   Cabecera con la entrada al directo y los tokens; reloj y pestañas en una barra que se queda arriba; inscritas, mercado y boleto
    como tarjetas; el boleto sube desde abajo en pantallas pequeñas. */
 .hip-pagina { padding-top: 14px; }
 .hip-cabecera { align-items: center; padding: 4px 0 14px; }

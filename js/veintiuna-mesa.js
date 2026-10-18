@@ -1,6 +1,6 @@
 /* =============================================================================
    LAS VEINTIUNA VELAS: la mesa (veintiuna.html)
-   Pinta lo que el servidor confirma y le pide lo que el jugador hace. Las reglas, la baraja y las monedas están en docs/veintiuna.sql;
+   Pinta lo que el servidor confirma y le pide lo que el jugador hace. Las reglas, la baraja y los tokens están en docs/veintiuna.sql;
    aquí no se calcula ningún resultado. Cada animación cuenta algo que el servidor YA decidió (reparto, carta pedida, turno del crupier
    ya jugado), y se puede saltar con un clic o una tecla.
    Piezas: veintiuna-arte.js (dibujos), veintiuna-vista.js (textos y acciones), veintiuna-api.js (red).
@@ -325,7 +325,7 @@
     const m = S.mesa;
     if (S.fase === "cargando") { cuerpo.innerHTML = `<p class="vv-dock-texto">Encendiendo las velas...</p>`; return; }
     if (S.fase === "sin_sesion") {
-      cuerpo.innerHTML = `<div class="vv-dock-aviso"><h2>Inicia sesión para sentarte</h2><p>La mesa guarda tus monedas, tus manos y tus desafíos en tu cuenta. Pulsa «Iniciar sesión» arriba a la derecha.</p></div>`;
+      cuerpo.innerHTML = `<div class="vv-dock-aviso"><h2>Inicia sesión para sentarte</h2><p>La mesa guarda tus tokens, tus manos y tus desafíos en tu cuenta. Pulsa «Iniciar sesión» arriba a la derecha.</p></div>`;
       return;
     }
     if (S.fase === "sin_conexion") {
@@ -356,15 +356,15 @@
     cuerpo.innerHTML = `
       <div class="vv-apuesta-panel">
         <div class="vv-modos" role="radiogroup" aria-label="Modalidad de la mesa">
-          <button type="button" role="radio" aria-checked="${!practica}" class="vv-modo${!practica ? " activo" : ""}" data-modo="apuesta"><strong>Con apuesta</strong><small>monedas del Hipódromo</small></button>
-          <button type="button" role="radio" aria-checked="${practica}" class="vv-modo${practica ? " activo" : ""}" data-modo="practica"><strong>Mesa de práctica</strong><small>sin monedas, cuenta para los desafíos</small></button>
+          <button type="button" role="radio" aria-checked="${!practica}" class="vv-modo${!practica ? " activo" : ""}" data-modo="apuesta"><strong>Con apuesta</strong><small>tokens de juego</small></button>
+          <button type="button" role="radio" aria-checked="${practica}" class="vv-modo${practica ? " activo" : ""}" data-modo="practica"><strong>Mesa de práctica</strong><small>sin tokens, cuenta para los desafíos</small></button>
         </div>
         <div class="vv-apuesta-centro">
         ${practica ? `
           <div class="vv-practica"><p>Apuesta simbólica de <strong>${V.monedas(lim.min)}</strong>: no se cobra ni se paga.${esc(peajeLinea)} Las mismas cartas, las mismas reglas.</p></div>`
         : `
           <div class="vv-fichas" role="group" aria-label="Fichas para apostar">
-            ${fichas.map(f => { const ok = !V.motivoApuesta(f, saldo, lim) || (S.apuesta + f <= lim.max && S.apuesta + f <= saldo); const cabe = (S.apuesta + f) <= Math.min(lim.max, saldo); return `<button type="button" class="vv-ficha${cabe ? "" : " sin-fondos"}" data-ficha="${f}" aria-disabled="${!cabe}" aria-label="Añadir ${f} monedas"${cabe ? "" : ` title="${esc(S.apuesta + f > lim.max ? "Pasarías la apuesta máxima de " + V.monedas(lim.max) : "No te alcanzan las monedas")}"`}>${A.ficha(f)}</button>`; }).join("")}
+            ${fichas.map(f => { const ok = !V.motivoApuesta(f, saldo, lim) || (S.apuesta + f <= lim.max && S.apuesta + f <= saldo); const cabe = (S.apuesta + f) <= Math.min(lim.max, saldo); return `<button type="button" class="vv-ficha${cabe ? "" : " sin-fondos"}" data-ficha="${f}" aria-disabled="${!cabe}" aria-label="Añadir ${f} tokens"${cabe ? "" : ` title="${esc(S.apuesta + f > lim.max ? "Pasarías la apuesta máxima de " + V.monedas(lim.max) : "No te alcanzan los tokens")}"`}>${A.ficha(f)}</button>`; }).join("")}
           </div>
           <div class="vv-apuesta-total">
             <button type="button" class="vv-paso" data-paso="-1" aria-label="Bajar la apuesta ${V.monedas(lim.paso)}" ${S.apuesta <= 0 ? 'aria-disabled="true"' : ""}>−</button>
@@ -380,7 +380,7 @@
           ${sinFondos ? `<button type="button" class="vv-boton" data-modo="practica">Jugar en la práctica</button>` : ""}
         </div>
         ${practica ? "" : `<p class="vv-nota-apuesta${motivo && S.apuesta > 0 ? " mal" : ""}" id="vvNotaApuesta">${sinFondos
-            ? `No tienes monedas para la apuesta mínima (${V.monedas(lim.min)}). Puedes vender una carta en el <a href="hipodromo.html#cartas">Hipódromo</a> o jugar en la mesa de práctica.`
+            ? `No tienes tokens para la apuesta mínima (${V.monedas(lim.min)}). Puedes vender una carta en el <a href="hipodromo.html#cartas">Hipódromo</a> o jugar en la mesa de práctica.`
             : motivo && S.apuesta > 0 ? esc(motivo)
             : `De ${V.monedas(lim.min)} a ${V.monedas(lim.max)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}. Victoria 1 a 1, blackjack natural 3 a 2, empate devuelve.${esc(peajeLinea)}`}</p>`}
       </div>`;
@@ -808,18 +808,18 @@
     if (t.dataset.modo) { S.modo = t.dataset.modo; guardado.poner("vvModo", S.modo); pintarDock(); return; }
     if (t.dataset.ficha) {
       const f = Number(t.dataset.ficha), lim = S.mesa.limites, saldo = saldoActual();
-      if (S.apuesta + f > Math.min(lim.max, saldo)) { aviso(S.apuesta + f > lim.max ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan las monedas: tienes ${V.monedas(saldo)}.`, { tipo: "info", cerrar: true }); return; }
+      if (S.apuesta + f > Math.min(lim.max, saldo)) { aviso(S.apuesta + f > lim.max ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan los tokens: tienes ${V.monedas(saldo)}.`, { tipo: "info", cerrar: true }); return; }
       S.apuesta += f; sonar("ficha"); aviso(""); pintarDock(); const f2 = $("vvDockCuerpo").querySelector(`[data-ficha="${f}"]`); if (f2) f2.focus({ preventScroll: true }); return;
     }
     if (t.dataset.paso) {
       const lim = S.mesa.limites, nueva = S.apuesta + Number(t.dataset.paso) * lim.paso;
       S.apuesta = Math.max(0, Math.min(nueva, Math.min(lim.max, Math.floor(saldoActual() / lim.paso) * lim.paso)));
-      if (Number(t.dataset.paso) > 0 && nueva > S.apuesta) aviso(nueva > lim.max ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan las monedas: tienes ${V.monedas(saldoActual())}.`, { tipo: "info", cerrar: true });
+      if (Number(t.dataset.paso) > 0 && nueva > S.apuesta) aviso(nueva > lim.max ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan los tokens: tienes ${V.monedas(saldoActual())}.`, { tipo: "info", cerrar: true });
       sonar("ficha"); pintarDock(); const p = $("vvDockCuerpo").querySelector(`[data-paso="${t.dataset.paso}"]`); if (p) p.focus({ preventScroll: true }); return;
     }
     if ("borrar" in t.dataset) { S.apuesta = 0; aviso(""); pintarDock(); return; }
     if ("repetir" in t.dataset) { S.apuesta = V.ajustarApuesta(S.ultimaApuesta, saldoActual(), S.mesa.limites); pintarDock(); return; }
-    if ("repartir" in t.dataset) { if (t.getAttribute("aria-disabled") === "true") { const m = S.modo === "practica" ? "" : (saldoActual() < S.mesa.limites.min ? "No tienes monedas para la apuesta mínima. Prueba la mesa de práctica." : (V.motivoApuesta(S.apuesta, saldoActual(), S.mesa.limites) || "Elige una apuesta con las fichas.")); if (m) aviso(m, { tipo: "info", cerrar: true }); return; } repartir(); return; }
+    if ("repartir" in t.dataset) { if (t.getAttribute("aria-disabled") === "true") { const m = S.modo === "practica" ? "" : (saldoActual() < S.mesa.limites.min ? "No tienes tokens para la apuesta mínima. Prueba la mesa de práctica." : (V.motivoApuesta(S.apuesta, saldoActual(), S.mesa.limites) || "Elige una apuesta con las fichas.")); if (m) aviso(m, { tipo: "info", cerrar: true }); return; } repartir(); return; }
     if ("otra" in t.dataset) { sonar("ficha"); empezarOtra(); return; }
     if (t.dataset.accion) { intentarAccion(t.dataset.accion, t); }
   }
@@ -887,7 +887,7 @@
         </section>
         <section><h3>Las ocho reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
         <section><h3>Mesa de práctica y desafíos</h3><ul>
-          <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga monedas. Cuenta para los desafíos.</li>
+          <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga tokens. Cuenta para los desafíos.</li>
           <li>Los <strong>desafíos</strong> se comprueban en el servidor. Cada uno que completes se puede reclamar una vez y da una carta del juego de Triunfos, siempre respetando los límites de la colección (como mucho una carta al día desde esta mesa).</li>
           <li>Si dejas una mano a medias, queda guardada. Pasados ${m ? m.inactividad_min : 30} minutos sin jugarla, el servidor se planta por ti.</li>
         </ul></section>
@@ -909,7 +909,7 @@
     try {
       const filas = await api.historial(15);
       const est = S.mesa ? S.mesa.estadisticas : null;
-      const resumen = est ? `<p class="vv-historial-resumen"><strong>${est.rondas}</strong> manos · <strong>${est.victorias}</strong> ganadas · <strong>${est.derrotas}</strong> perdidas · <strong>${est.empates}</strong> empates · mejor racha <strong>${est.mejor_racha}</strong> · monedas ${V.conSigno(est.neto)} en total</p>` : "";
+      const resumen = est ? `<p class="vv-historial-resumen"><strong>${est.rondas}</strong> manos · <strong>${est.victorias}</strong> ganadas · <strong>${est.derrotas}</strong> perdidas · <strong>${est.empates}</strong> empates · mejor racha <strong>${est.mejor_racha}</strong> · tokens ${V.conSigno(est.neto)} en total</p>` : "";
       const mini = cartas => cartas.map(c => `<span class="vv-mini ${A.PALOS[c.p].color === "rojo" ? "rojo" : ""}" title="${esc(A.nombreCarta(c))}"><span>${A.letraRango(c.r)}</span><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#vv-${A.PALOS[c.p].id}"/></svg></span>`).join("");
       const tabla = filas.length ? `<ul class="vv-historial">${filas.map(f => {
         const R = V.REGLAS[f.regla];
@@ -917,7 +917,7 @@
         const cuando = new Date(f.terminada).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
         return `<li class="vv-hist-fila res-${f.resultado}"><div class="vv-hist-cab"><span class="vv-hist-tipo">${esc(t)}</span><span>${esc(R ? R.nombre : f.regla)} · ${f.modo === "practica" ? "práctica" : "con apuesta"}</span><time datetime="${esc(f.terminada)}">${esc(cuando)}</time></div>
           <div class="vv-hist-manos"><span><b>Tú ${f.total_jugador}</b> ${mini(f.jugador)}</span><span><b>Crupier ${f.total_crupier}</b> ${mini(f.crupier)}</span></div>
-          <div class="vv-hist-neto ${Number(f.neto) > 0 ? "sube" : Number(f.neto) < 0 ? "baja" : ""}">${f.modo === "practica" ? "sin monedas" : `${V.conSigno(f.neto)} monedas${Number(f.peajes) ? ` (con peaje de ${V.monedas(f.peajes)})` : ""}`}</div></li>`;
+          <div class="vv-hist-neto ${Number(f.neto) > 0 ? "sube" : Number(f.neto) < 0 ? "baja" : ""}">${f.modo === "practica" ? "sin tokens" : `${V.conSigno(f.neto)} tokens${Number(f.peajes) ? ` (con peaje de ${V.monedas(f.peajes)})` : ""}`}</div></li>`;
       }).join("")}</ul>` : `<p class="vv-dock-texto">Todavía no has terminado ninguna mano.</p>`;
       $("vvDlgHistorial").querySelector(".vv-dlg-cuerpo").innerHTML = resumen + tabla;
     } catch (e) {

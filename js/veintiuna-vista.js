@@ -9,7 +9,7 @@
   const nombreCarta = c => `${nombreRango(c.r)} de ${nombrePalo[c.p]}`;
   const lista = (partes) => partes.length < 2 ? (partes[0] || "") : partes.slice(0, -1).join(", ") + " y " + partes[partes.length - 1];
 
-  /* Monedas sin ceros de sobra: 20, 7,5 */
+  /* Tokens sin ceros de sobra: 20, 7,5 */
   function monedas(n) {
     const x = Number(n);
     if (!Number.isFinite(x)) return "0";
@@ -131,7 +131,7 @@
     const gano = r.tipo === "natural" || r.tipo === "victoria";
     const practica = est.modo === "practica";
     let linea;
-    if (practica) linea = "Mesa de práctica: sin monedas en juego.";
+    if (practica) linea = "Mesa de práctica: sin tokens en juego.";
     else if (r.tipo === "empate") linea = `Recuperas tu apuesta de ${monedas(r.apuesta)}.`;
     else if (gano) linea = `Cobras ${monedas(r.pago)} (${conSigno(r.neto)} contra tu apuesta de ${monedas(r.apuesta)}${Number(r.peajes) > 0 ? " y el peaje de " + monedas(r.peajes) : ""}).`;
     else linea = `Pierdes ${monedas(Number(r.apuesta) + Number(r.peajes || 0))}${Number(r.peajes) > 0 ? " (apuesta y peaje)" : ""}.`;
@@ -206,7 +206,7 @@
     if (cant < limites.min) return `La apuesta mínima es ${monedas(limites.min)}.`;
     if (cant > limites.max) return `La apuesta máxima es ${monedas(limites.max)}.`;
     if (cant % limites.paso !== 0) return `Se apuesta de ${monedas(limites.paso)} en ${monedas(limites.paso)}.`;
-    if (cant > saldo) return `Te faltan ${monedas(cant - saldo)} monedas para apostar ${monedas(cant)} (tienes ${monedas(saldo)}).`;
+    if (cant > saldo) return `Te faltan ${monedas(cant - saldo)} tokens para apostar ${monedas(cant)} (tienes ${monedas(saldo)}).`;
     return "";
   }
   function ajustarApuesta(cant, saldo, limites) {
@@ -264,7 +264,7 @@
     vela: ["Esta vela se apaga antes.", "Hoy me derrito pronto."],
     bufon: ["¡El Bufón mete la mano!", "Un poquito de caos no le hace mal a nadie."],
     bufonNada: ["El dado no quiso nada esta vez.", "El Bufón bosteza."],
-    sinMonedas: ["Sin monedas no hay mesa. La práctica es gratis."]
+    sinMonedas: ["Sin tokens no hay mesa. La práctica es gratis."]
   };
   const elegir = (clave, azar) => { const l = DICHOS[clave] || []; return l.length ? l[Math.floor((azar ? azar() : Math.random()) * l.length) % l.length] : ""; };
 

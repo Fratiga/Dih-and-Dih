@@ -137,7 +137,7 @@ window.VeintiunaArte = (function () {
 
   /* ---------------------------------------------------------------- iconos de las reglas */
   const ICONOS = {
-    // Un trébol de cuatro hojas sobre una moneda
+    // Un trébol de cuatro hojas sobre un token
     fortuna: `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="29" fill="#14301f" stroke="url(#vv-g-oro)" stroke-width="2.4"/>
       <g fill="#8fd18b"><path d="M32 30c-8-12-20-4-14 4 3 4 10 3 14-4z"/><path d="M32 30c8-12 20-4 14 4-3 4-10 3-14-4z"/><path d="M32 34c-8 12-20 4-14-4 3-4 10-3 14 4z"/><path d="M32 34c8 12 20 4 14-4-3-4-10-3-14 4z"/></g>
       <path d="M32 34c0 8 2 13 7 17" stroke="#8fd18b" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`,

@@ -71,8 +71,8 @@ begin
   end if;
   insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
   select saldo into v_saldo from hipodromo_billeteras where usuario = v_uid for update;
-  if v_saldo < v_precio then raise exception 'No tienes monedas suficientes (cuesta %).', v_precio; end if;
-  v_res := cartas_i_emitir(v_uid, p_carta, 'comprada con monedas del hipódromo', 'hipodromo:compra');
+  if v_saldo < v_precio then raise exception 'No tienes tokens suficientes (cuesta %).', v_precio; end if;
+  v_res := cartas_i_emitir(v_uid, p_carta, 'comprada con tokens de juego', 'hipodromo:compra');
   update hipodromo_billeteras set saldo = saldo - v_precio where usuario = v_uid returning saldo into v_saldo;
   insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
     values (v_uid, null, 'Compra de carta: ' || p_carta || ' (' || v_carta.rareza || ')', -v_precio, v_saldo);
@@ -104,7 +104,7 @@ begin
   perform cartas_i_candado(v_ej.carta_id);
   select * into v_ej from cartas_ejemplares where id = p_ejemplar for update;
   if v_ej.propietario is distinct from v_uid or v_ej.estado <> 'poseida' then raise exception 'Esa carta no está libre: puede estar apostada o en un intercambio.'; end if;
-  perform cartas_i_retirar(p_ejemplar, 'reserva', 'vendida por monedas del hipódromo', 'hipodromo:venta');
+  perform cartas_i_retirar(p_ejemplar, 'reserva', 'vendida por tokens de juego', 'hipodromo:venta');
   insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
   update hipodromo_billeteras set saldo = saldo + v_precio where usuario = v_uid returning saldo into v_saldo;
   insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)

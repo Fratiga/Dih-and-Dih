@@ -211,7 +211,7 @@ body.vv-tema {
 @keyframes vv-destello { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: .75; } }
 .res-derrota .vv-tapete { filter: brightness(.7); transition: filter .8s; }
 
-/* ------------------------------------------------------------------ zapato (de dónde salen las cartas), apuesta sobre la mesa y monedas que vuelan */
+/* ------------------------------------------------------------------ zapato (de dónde salen las cartas), apuesta sobre la mesa y tokens que vuelan */
 .vv-zapato { position: absolute; right: clamp(16px, 4vw, 54px); top: 22px; z-index: 2; width: calc(var(--cw) * .62); aspect-ratio: 5 / 7; transform: rotate(7deg); }
 .vv-zapato-carta { position: absolute; inset: 0; border-radius: 9% / 6.4%; box-shadow: 0 6px 10px #000a; }
 .vv-zapato-carta:nth-child(2) { transform: translate(-4px, -3px); } .vv-zapato-carta:nth-child(3) { transform: translate(-8px, -6px); }

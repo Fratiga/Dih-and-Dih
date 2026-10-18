@@ -14,7 +14,7 @@
 --   * hipodromo_votos      : (opcional) a quién apuesta cada jugador, para enseñar el porcentaje de la comunidad.
 --   * hipodromo_billeteras, _movimientos, _apuestas, _ordenes, _avisos y _cuadras: lo de cada jugador. Cada uno lee
 --     solo lo suyo y nadie escribe directamente: todo pasa por las funciones de abajo (security definer).
---   Las monedas son del servidor: apostar y mandar órdenes a la cuadra pasan por funciones que comprueban saldo y plazo.
+--   Los tokens son del servidor: apostar y mandar órdenes a la cuadra pasan por funciones que comprueban saldo y plazo.
 
 -- ------------------------------------------------------------------ estado secreto del mundo
 create table if not exists public.hipodromo_estado (
@@ -105,7 +105,7 @@ grant select on public.hipodromo_criaturas, public.hipodromo_programa, public.hi
 -- ------------------------------------------------------------------ lo de cada jugador
 create table if not exists public.hipodromo_billeteras (
   usuario uuid primary key,
-  saldo   numeric(12, 2) not null default 0 check (saldo >= 0),   -- nadie empieza con monedas (docs/hipodromo-2_cartas.sql)
+  saldo   numeric(12, 2) not null default 0 check (saldo >= 0),   -- nadie empieza con tokens (docs/hipodromo-2_cartas.sql)
   creada  timestamptz not null default now()
 );
 create table if not exists public.hipodromo_movimientos (
@@ -191,7 +191,7 @@ grant select on public.hipodromo_billeteras, public.hipodromo_movimientos, publi
 -- ------------------------------------------------------------------ guardar una tanda (la llama la Edge Function)
 -- p_version: la versión del estado que leyó la función (0 la primera vez). Si otra ejecución se adelantó, falla con
 -- el código 40001 y la función simplemente vuelve a intentarlo desde el estado nuevo. Todo se guarda en una transacción:
--- el mundo, las criaturas, las carreras, las noticias, los pagos de monedas, el resultado de las órdenes, los avisos
+-- el mundo, las criaturas, las carreras, las noticias, los pagos de tokens, el resultado de las órdenes, los avisos
 -- y la liquidación de las apuestas de las carreras que se aplican. Si un pago dejara a alguien con saldo negativo
 -- (alguien apostó entre la lectura y el guardado), falla con 23514 y la función repite con los saldos nuevos.
 -- p_lote: lo que devuelve HipodromoMotor.lote(...) o loteInicial(...)
@@ -258,7 +258,7 @@ begin
       from jsonb_to_recordset(p_lote->'cuadras') as x(dueno text, criatura_id bigint, n integer, datos jsonb);
   end if;
 
-  -- monedas: premios, inscripciones, compras, ventas, montas. Cada pago deja un movimiento.
+  -- tokens: premios, inscripciones, compras, ventas, montas. Cada pago deja un movimiento.
   for r in select x.dueno::uuid as usuario, x.monto, x.concepto, x.n
              from jsonb_to_recordset(coalesce(p_lote->'pagos', '[]'::jsonb)) as x(dueno text, monto numeric, concepto text, n integer)
             where x.monto <> 0 loop
@@ -374,7 +374,7 @@ begin
   if v_uid is null then return jsonb_build_object('ok', false, 'error', 'Hace falta iniciar sesión.'); end if;
   if p_tipo not in ('ganador', 'podio', 'exacta', 'pozo') then return jsonb_build_object('ok', false, 'error', 'Ese tipo de apuesta no existe.'); end if;
   if p_doble and p_tipo <> 'ganador' then return jsonb_build_object('ok', false, 'error', 'El doble solo vale para apuestas a ganador.'); end if;
-  if v_monto is null or v_monto < 1 or v_monto > 1000000 then return jsonb_build_object('ok', false, 'error', 'Pon un importe de al menos 1 moneda.'); end if;
+  if v_monto is null or v_monto < 1 or v_monto > 1000000 then return jsonb_build_object('ok', false, 'error', 'Pon un importe de al menos 1 token.'); end if;
   select * into v_prog from hipodromo_programa where n = p_n;
   if not found then return jsonb_build_object('ok', false, 'error', 'Esa carrera no existe.'); end if;
   if now() >= v_prog.cierre then return jsonb_build_object('ok', false, 'error', 'Las apuestas de esa carrera están cerradas.'); end if;
@@ -407,7 +407,7 @@ begin
 
   insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
   select saldo into v_saldo from hipodromo_billeteras where usuario = v_uid for update;
-  if v_monto > v_saldo then return jsonb_build_object('ok', false, 'error', 'No tienes tantas monedas.'); end if;
+  if v_monto > v_saldo then return jsonb_build_object('ok', false, 'error', 'No tienes tantos tokens.'); end if;
   if (select count(*) from hipodromo_apuestas where usuario = v_uid and n = p_n and estado = 'pendiente') >= 20 then
     return jsonb_build_object('ok', false, 'error', 'Demasiadas apuestas en la misma carrera.');
   end if;

@@ -2,8 +2,8 @@
    PESTAÑA «REGALOS Y EVENTOS» (panel de Admin), SQL en docs/admin/regalos_eventos.sql
    1) Regalar una carta: a una persona, a un Side o a todos. Pasa por la economía de cartas (límites, circulación, reserva): a quien no le cabe se le salta y aquí se
       dice quién y por qué.
-   2) Regalar monedas del Hipódromo, igual de repartido.
-   3) Eventos: un aviso con fecha de inicio y de fin que sale en la taberna (js/avisos-taberna.js), con enlace opcional y, si quieres, un regalo (carta y/o monedas)
+   2) Regalar tokens de juego, igual de repartido.
+   3) Eventos: un aviso con fecha de inicio y de fin que sale en la taberna (js/avisos-taberna.js), con enlace opcional y, si quieres, un regalo (carta y/o tokens)
       que cada jugador reclama una vez desde la taberna.
 ============================================================================= */
 (function () {
@@ -65,7 +65,7 @@
     const ahora = Date.now();
     caja.innerHTML = (data || []).length ? data.map(e => {
       const en = new Date(e.desde) <= ahora && new Date(e.hasta) > ahora, futuro = new Date(e.desde) > ahora;
-      const regalo = [e.regalo_carta ? `la carta ${nombreCarta.get(e.regalo_carta) || e.regalo_carta}` : "", e.regalo_monedas ? `${e.regalo_monedas} monedas` : ""].filter(Boolean).join(" y ");
+      const regalo = [e.regalo_carta ? `la carta ${nombreCarta.get(e.regalo_carta) || e.regalo_carta}` : "", e.regalo_monedas ? `${e.regalo_monedas} tokens` : ""].filter(Boolean).join(" y ");
       return `<div class="admin-cambio${en ? "" : " revertido"}"><div class="admin-cambio-top"><span>${esc(fecha(e.desde))} → ${esc(fecha(e.hasta))}</span><span>${en ? "en marcha" : futuro ? "programado" : "terminado"}</span><span>${e.side ? `Side ${esc(e.side)}` : "todos"}</span></div>
         <div class="admin-cambio-que"><b>${esc(e.titulo)}</b>${e.texto ? `: ${esc(e.texto)}` : ""}${e.enlace ? ` <small>(enlaza a ${esc(e.enlace)})</small>` : ""}${regalo ? `<br><small>Regala ${esc(regalo)}. Reclamado por ${cuenta[e.id] || 0} jugador${(cuenta[e.id] || 0) === 1 ? "" : "es"}.</small>` : ""}</div>
         <button type="button" class="admin-cuenta-accion admin-cuenta-peligro" data-quitar-evento="${esc(e.id)}">Quitar</button></div>`;
@@ -91,7 +91,7 @@
     const monto = Math.round(Number($("adminRegaloMonto").value));
     if (!(monto >= 1 && monto <= 100000)) { estado("El monto va de 1 a 100000.", true); return; }
     const para = $("adminRegaloMonedasPara").value;
-    if (!confirm(`¿Regalar ${monto} monedas del Hipódromo ${textoDestino(para)}?`)) return;
+    if (!confirm(`¿Regalar ${monto} tokens de juego ${textoDestino(para)}?`)) return;
     try {
       const { data, error } = await (await cliente()).rpc("admin_regalar_monedas", Object.assign({ p_monto: monto, p_motivo: $("adminRegaloMotivo").value.trim() }, destino(para)));
       if (error) throw error;

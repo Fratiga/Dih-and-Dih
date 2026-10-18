@@ -69,7 +69,7 @@ ok(/permission denied/.test(como(U1, "insert into hipodromo_apuestas (usuario, n
 ok(/Hace falta/.test(anonimo("select hipodromo_saldo();").err || "") || /permission denied/.test(anonimo("select hipodromo_saldo();").err || ""), "un anónimo no tiene billetera");
 
 // billetera y apuestas
-ok(/^0(.00)?$/.test(ultima(como(U1, "select hipodromo_saldo();"))), "la billetera empieza con 0 monedas");
+ok(/^0(.00)?$/.test(ultima(como(U1, "select hipodromo_saldo();"))), "la billetera empieza con 0 tokens");
 q(`update hipodromo_billeteras set saldo = 1000 where usuario = '${U1}';`);   // para probar las apuestas se le dan 1000
 const prog = fila.mundo.proxima, ent = prog.entrantes;
 const a = ent[0], b = ent[1];
@@ -82,7 +82,7 @@ ok(j.ok && Number(j.cuota) === M.cuotaApuesta(prog, "exacta", [a.id, b.id]), `la
 ok(!JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '99999999'::jsonb, 10);`))).ok, "no se apuesta a una criatura que no corre");
 ok(!JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${a.id}'::jsonb, 100000);`))).ok, "no se apuesta más de lo que se tiene");
 ok(!JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'exacta', '[${a.id}, ${a.id}]'::jsonb, 10);`))).ok, "la exacta pide dos criaturas distintas");
-ok(!JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${a.id}'::jsonb, 0.4);`))).ok, "el importe mínimo es una moneda");
+ok(!JSON.parse(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${a.id}'::jsonb, 0.4);`))).ok, "el importe mínimo es un token");
 ok(Number(ultima(como(U2, "select count(*) from hipodromo_apuestas;"))) === 0 && Number(ultima(como(U1, "select count(*) from hipodromo_apuestas;"))) === 3, "cada jugador solo ve sus apuestas");
 q(`update hipodromo_programa set cierre = now() - interval '1 minute' where n = ${nCarrera};`);
 ok(/cerradas/.test(ultima(como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${a.id}'::jsonb, 10);`))), "pasada la hora de cierre ya no se apuesta");
@@ -142,7 +142,7 @@ q(`insert into hipodromo_billeteras (usuario, saldo) values ('${U2}', 3) on conf
 const idCompra = Number(ordenar(U2, { tipo: "comprar", id: JSON.parse(q("select publico::text from hipodromo_criaturas where dueno is null and estado = 'activo' limit 1;")).id }));
 e = edge(Date.now());
 const resMal = e.paso.ordenes.find(o => o.oid === idMal), resCompra = e.paso.ordenes.find(o => o.oid === idCompra);
-ok(!resMal.ok && !resCompra.ok && /monedas/.test(resCompra.error), "la orden sobre la criatura de otro y la compra sin saldo se rechazan");
+ok(!resMal.ok && !resCompra.ok && /tokens/.test(resCompra.error), "la orden sobre la criatura de otro y la compra sin saldo se rechazan");
 ok(q(`select estado from hipodromo_ordenes where id = ${idMal};`) === "rechazada" && Number(q(`select saldo from hipodromo_billeteras where usuario = '${U2}';`)) === 3, "las rechazadas no cobran nada");
 
 // aplicar la carrera: liquida las apuestas, paga premios y devuelve inscripciones

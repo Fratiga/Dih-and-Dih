@@ -38,7 +38,7 @@ Las fases 1 a 6 del orden de la sección 13 están construidas y aplicadas en Su
 - El mercader empieza vacío: su inventario sale de lo que los jugadores le cambian y de la reserva. El admin puede ponerle ofertas especiales desde la pestaña Mercader de Intercambios.
 - La forja trae tres recetas (fundir comunes, alquimia y contrapeso) que el admin puede cambiar con `cartas_admin_guardar_receta`.
 
-**Decidido el 13 de octubre de 2026: el hipódromo tiene moneda y se cambia por cartas.** Las cartas se pueden vender a la reserva por monedas del hipódromo según su rareza y comprar de la reserva con esas monedas (comprar no emite cartas nuevas y cuesta 2,5 veces lo que se paga al vender). En el hipódromo se empieza con 0 monedas. Es la excepción a «no existe una moneda universal» de la sección 1: la moneda existe solo dentro del hipódromo. Detalle en `docs/hipodromo.md` («Cartas y monedas») y `docs/hipodromo-2_cartas.sql`.
+**Decidido el 13 de octubre de 2026: el hipódromo tiene tokens y se cambian por cartas.** Las cartas se pueden vender a la reserva por tokens de juego según su rareza y comprar de la reserva con esos tokens (comprar no emite cartas nuevas y cuesta 2,5 veces lo que se paga al vender). En el hipódromo se empieza con 0 tokens. Es la excepción a «no existe un token universal» de la sección 1: el token existe solo dentro del hipódromo. Detalle en `docs/hipodromo.md` («Cartas y tokens») y `docs/hipodromo-2_cartas.sql`.
 
 **Todavía sin construir**
 
@@ -53,9 +53,9 @@ Los minijuegos de la página se conectan mediante cartas coleccionables. Las car
 
 - Coleccionables: se consiguen, se guardan y se intercambian.
 - Recursos de juego: se usan en minijuegos, sobre todo en el juego de cartas.
-- Moneda: se pagan, se apuestan y se cambian por otras cartas y servicios.
+- Token: se pagan, se apuestan y se cambian por otras cartas y servicios.
 
-**Decidido.** No existe una moneda universal. No se crean fichas, puntos ni recursos que circulen entre juegos. La economía es cerrada y está hecha solo de cartas. La comunidad es pequeña, unos diez jugadores.
+**Decidido.** No existe un token universal. No se crean fichas, puntos ni recursos que circulen entre juegos. La economía es cerrada y está hecha solo de cartas. La comunidad es pequeña, unos diez jugadores.
 
 **Decidido.** Una carta no tiene que ser buena en combate para tener valor. Puede valer por su utilidad, su rareza, su aspecto, su lugar en una colección o su uso en otro minijuego. Así una carta limitada puede ser muy codiciada sin decidir quién gana los duelos.
 
@@ -228,7 +228,7 @@ Una carta puede estar en el grupo de más de un juego. La regla es que cada jueg
 
 La participación suma «sellos» en un contador **de ese juego**. Con cinco sellos se obtiene una carta común de su grupo y el contador vuelve a cero.
 
-Para no crear una moneda disfrazada, el contador cumple cuatro reglas: es propio de un solo juego, no se puede transferir, no se puede gastar en nada que no sea la recompensa de ese juego y no se acumula más allá de un ciclo.
+Para no crear un token disfrazada, el contador cumple cuatro reglas: es propio de un solo juego, no se puede transferir, no se puede gastar en nada que no sea la recompensa de ese juego y no se acumula más allá de un ciclo.
 
 ### 6.5 Cuando una carta no está disponible (Propuesta)
 
@@ -276,7 +276,7 @@ Una carta agotada sigue valiendo, y mucho. Se consigue por intercambio, apuesta 
 - Una oferta dirigida permite intercambiar cuando el otro jugador no está conectado. Acepta cuando entra.
 - Todo queda en el libro de movimientos.
 
-### 8.2 Cómo valorar sin moneda (Propuesta)
+### 8.2 Cómo valorar sin token (Propuesta)
 
 El mercader no paga con dinero, así que necesita una regla de equivalencia basada solo en cartas.
 
@@ -389,7 +389,7 @@ Un panel de solo lectura para el admin con:
 
 ## 12. Cómo encaja cada juego sin economías paralelas
 
-**Regla de integración.** Todos los juegos usan el mismo inventario y el mismo libro. No hay objetos, monedas ni materiales propios. Lo que un juego necesite guardar (el linaje de una criatura, el equipo de una unidad) vive en los `atributos` del ejemplar, de modo que viaja con la carta si cambia de dueño.
+**Regla de integración.** Todos los juegos usan el mismo inventario y el mismo libro. No hay objetos, tokens ni materiales propios. Lo que un juego necesite guardar (el linaje de una criatura, el equipo de una unidad) vive en los `atributos` del ejemplar, de modo que viaja con la carta si cambia de dueño.
 
 Cada juego ofrece como mínimo tres enganches al sistema central:
 

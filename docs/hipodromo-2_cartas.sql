@@ -1,18 +1,18 @@
--- HIPÓDROMO, parte 2: las monedas del hipódromo y las cartas.
+-- HIPÓDROMO, parte 2: los tokens de juego y las cartas.
 -- Se ejecuta DESPUÉS de docs/hipodromo.sql y de la economía de cartas (economia-1 a economia-9). Se puede repetir.
 --
 -- Qué hace:
---   * Nadie empieza con monedas: la billetera nace con 0. El dinero entra vendiendo cartas, con los premios de una criatura
+--   * Nadie empieza con tokens: la billetera nace con 0. El dinero entra vendiendo cartas, con los premios de una criatura
 --     o con lo que se gana apostando.
 --   * Vender una carta: la copia pasa a la reserva (las copias sin dueño que la economía de cartas reparte antes de emitir ninguna nueva) y
 --     el jugador cobra un precio que depende de la rareza.
 --   * Comprar una carta: solo de lo que hay en la reserva (copias que algún jugador vendió o perdió). No se emite nada
 --     nuevo: comprar no crea cartas, solo las mueve. Cuesta más de lo que se paga al vender (2,5 veces por defecto), así
---     que vender y recomprar siempre pierde monedas y no hay forma de ganar con ese ciclo.
+--     que vender y recomprar siempre pierde tokens y no hay forma de ganar con ese ciclo.
 --   * Todo pasa por las funciones de la economía de cartas (cartas_i_retirar y cartas_i_emitir), así que se respetan los
 --     límites por jugador, los bloqueos y el libro de movimientos. Las cartas de un Side que el jugador no ve no se compran.
 --
--- Esto cambia una decisión de docs/economia-de-cartas.md («no existe una moneda universal»): ahora hay una moneda, la del
+-- Esto cambia una decisión de docs/economia-de-cartas.md («no existe un token universal»): ahora hay un token, el del
 -- hipódromo, que se puede cambiar por cartas en los dos sentidos. Lo decidió el DM el 13 de octubre de 2026.
 
 -- 1) La billetera empieza en 0 --------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ begin
   perform cartas_i_candado(v_ej.carta_id);
   select * into v_ej from cartas_ejemplares where id = p_ejemplar for update;
   if v_ej.propietario is distinct from v_uid or v_ej.estado <> 'poseida' then raise exception 'Esa carta no está libre: puede estar apostada o en un intercambio.'; end if;
-  perform cartas_i_retirar(p_ejemplar, 'reserva', 'vendida por monedas del hipódromo', 'hipodromo:venta');
+  perform cartas_i_retirar(p_ejemplar, 'reserva', 'vendida por tokens de juego', 'hipodromo:venta');
   insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
   update hipodromo_billeteras set saldo = saldo + v_precio where usuario = v_uid returning saldo into v_saldo;
   insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
@@ -133,9 +133,9 @@ begin
   end if;
   insert into hipodromo_billeteras (usuario) values (v_uid) on conflict (usuario) do nothing;
   select saldo into v_saldo from hipodromo_billeteras where usuario = v_uid for update;
-  if v_saldo < v_precio then raise exception 'No tienes monedas suficientes (cuesta %).', v_precio; end if;
+  if v_saldo < v_precio then raise exception 'No tienes tokens suficientes (cuesta %).', v_precio; end if;
   -- respeta el límite por jugador: si ya tiene las que puede tener, aborta y no cobra nada
-  v_res := cartas_i_emitir(v_uid, p_carta, 'comprada con monedas del hipódromo', 'hipodromo:compra');
+  v_res := cartas_i_emitir(v_uid, p_carta, 'comprada con tokens de juego', 'hipodromo:compra');
   update hipodromo_billeteras set saldo = saldo - v_precio where usuario = v_uid returning saldo into v_saldo;
   insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
     values (v_uid, null, 'Compra de carta: ' || p_carta || ' (' || v_carta.rareza || ')', -v_precio, v_saldo);

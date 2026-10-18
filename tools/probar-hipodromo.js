@@ -258,7 +258,7 @@ function cabezaACabeza(a, b, cond, veces) {
     ok(cal.length === 3 && cal[0].n === n1 && cal[0].inscripcion > 0 && cal[0].plazas > 0, "el calendario enseña las próximas carreras con su precio de inscripción");
     ok(!ord(w, { dueno: "u2", tipo: "inscribir", id: c.id, n: n1 }).ok, "no se puede inscribir la criatura de otro");
     ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n }).ok && !ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 40 }).ok, "solo se inscribe en las carreras que vienen, con un margen");
-    ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }, { u1: 1 }).ok, "sin monedas no se inscribe");
+    ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }, { u1: 1 }).ok, "sin tokens no se inscribe");
     const ins = ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }, { u1: 1000 });
     ok(ins.ok && ins.costo === cal[0].inscripcion, "inscribir cuesta lo que dice el calendario");
     ok(!ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: n1 }).ok, "no se inscribe dos veces en la misma");
@@ -285,7 +285,7 @@ function cabezaACabeza(a, b, cond, veces) {
   { const w = mk(); const venta = M.enVenta(w), c = venta.find(x => M.edadAnios(w.n, x) < C.DEBUT) || venta[0];
     ok(venta.length > 20 && venta.every(x => !x.dueno && x.estado === "activo"), "hay criaturas a la venta y ninguna tiene dueño");
     const pr = M.precioCompra(w, c); ok(pr >= 100 && pr <= 3000 && pr % 10 === 0, `el precio es razonable (${pr})`);
-    ok(!ord(w, { dueno: "u1", tipo: "comprar", id: c.id }, { u1: pr - 1 }).ok, "sin monedas no se compra");
+    ok(!ord(w, { dueno: "u1", tipo: "comprar", id: c.id }, { u1: pr - 1 }).ok, "sin tokens no se compra");
     const comp = ord(w, { dueno: "u1", tipo: "comprar", id: c.id }, { u1: pr });
     ok(comp.ok && comp.costo === pr && c.dueno === "u1", "comprar cuesta lo que dice el precio y da la criatura");
     ok(!ord(w, { dueno: "u2", tipo: "comprar", id: c.id }, { u2: 99999 }).ok, "no se compra lo que ya tiene dueño");
@@ -331,7 +331,7 @@ function cabezaACabeza(a, b, cond, veces) {
     ok(ord(w, { dueno: "u1", tipo: "retirar", id: mad.id }).ok && mad.estado === "criador" && w.criadores.includes(mad) && !w.vivos.includes(mad), "el dueño puede retirar a su criatura a la cría");
     const semental = w.criadores.find(x => x.sexo === "m" && !x.dueno && !(mad.padre && x.padre && mad.padre.id === x.padre.id)), pr = M.precioMonta(w, semental);
     ok(pr >= 60 && pr <= 800, `la monta tiene un precio razonable (${pr})`);
-    ok(!ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }, { u1: pr - 1 }).ok, "sin monedas no se cruza");
+    ok(!ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }, { u1: pr - 1 }).ok, "sin tokens no se cruza");
     const cr = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }, { u1: 1000 });
     ok(cr.ok && cr.costo === pr && w.cruces.length === 1, "cruzar cuesta la monta y queda esperando cría");
     ok(!ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: semental.id }).ok, "no se cruza dos veces seguidas");
@@ -431,7 +431,7 @@ function cabezaACabeza(a, b, cond, veces) {
     mala.rating = 1380; mala.salidas = 30; buena.rating = 1900; buena.salidas = 40;
     const r1 = ord(w2, { dueno: "u1", tipo: "inscribir", id: mala.id, n: nCopa }, { u1: 10 * tarifa });
     ok(!r1.ok && /no llega/.test(r1.error), "una criatura normal no puede inscribirse en una copa (" + r1.error + ")");
-    ok(!ord(w2, { dueno: "u2", tipo: "inscribir", id: buena.id, n: nCopa }, { u2: tarifa - 1 }).ok, "sin monedas para la tarifa de la copa no se inscribe");
+    ok(!ord(w2, { dueno: "u2", tipo: "inscribir", id: buena.id, n: nCopa }, { u2: tarifa - 1 }).ok, "sin tokens para la tarifa de la copa no se inscribe");
     const r2 = ord(w2, { dueno: "u2", tipo: "inscribir", id: buena.id, n: nCopa }, { u2: tarifa });
     ok(r2.ok && r2.costo === tarifa && tarifa >= 1000, "una criatura de las mejores se inscribe pagando la tarifa de la copa (" + tarifa + ")");
     let lejos = w2.n + C.ADELANTO_COPA + 1; while (!M.GRADOS[M.gradoDe(w2, lejos)].copa) lejos++;

@@ -266,20 +266,20 @@ begin
   perform t_check('Tras la Fortuna: 10 + 4 + 1 = 15 y puedes seguir pidiendo', (s #>> '{jugador,total}')::int = 15 and (s #>> '{acciones,pedir}')::boolean);
   s := t_act(pid, 'pedir');
   perform t_check('La segunda vez que te pasas ya no hay Fortuna: pierdes', s ->> 'estado' = 'terminada' and s #>> '{resultado,razon}' = 'te_pasas');
-  -- Sin monedas para el peaje
+  -- Sin tokens para el peaje
   perform t_saldo(u, 20);
   s := t_reparte(u, 'fortuna', 'apuesta', 20, '10p', '9c', '6c', '9d', 'Kd');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
-  perform t_check('Sin monedas para el peaje la Fortuna sale como no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 12 monedas');
-  begin perform t_act(pid, 'fortuna'); perform t_check('Salvar la mano sin monedas se rechaza', false);
-  exception when others then perform t_check('Salvar la mano sin monedas se rechaza', true); end;
+  perform t_check('Sin tokens para el peaje la Fortuna sale como no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 12 tokens');
+  begin perform t_act(pid, 'fortuna'); perform t_check('Salvar la mano sin tokens se rechaza', false);
+  exception when others then perform t_check('Salvar la mano sin tokens se rechaza', true); end;
   perform t_check('Y la mano sigue pendiente (nada cambió)', (select fase from veintiuna_partidas where id = pid) = 'fortuna' and t_saldo_de(u) = 0);
   s := t_act(pid, 'aceptar');
   -- La mesa de práctica: el peaje es simbólico y la billetera no se toca
   perform t_saldo(u, 7);
   s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '9c', '6c', '9d', 'Kd');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir'); s := t_act(pid, 'fortuna');
-  perform t_check('Práctica: la Fortuna se puede usar sin monedas y la billetera queda igual', t_saldo_de(u) = 7 and (s #>> '{regla,usada}')::boolean);
+  perform t_check('Práctica: la Fortuna se puede usar sin tokens y la billetera queda igual', t_saldo_de(u) = 7 and (s #>> '{regla,usada}')::boolean);
   s := t_act(pid, 'plantar');
   perform t_check('Práctica: no hay movimientos en el libro', (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%' || pid::text || '%') = 0 and t_saldo_de(u) = 7);
 end $$;
@@ -326,18 +326,18 @@ begin
   s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '6c', '8c', 'Ad');
   begin perform t_act((s ->> 'partida')::uuid, 'voluntad'); perform t_check('En otra regla se rechaza', false);
   exception when others then perform t_check('En otra regla se rechaza', true); end;
-  -- Sin monedas para el peaje
+  -- Sin tokens para el peaje
   perform t_saldo(u, 20);
   s := t_reparte(u, 'voluntad', 'apuesta', 20, '10p', '10c', '6c', '8c');
-  perform t_check('Sin monedas para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 10 monedas');
-  begin perform t_act((s ->> 'partida')::uuid, 'voluntad'); perform t_check('Usarla sin monedas se rechaza', false);
-  exception when others then perform t_check('Usarla sin monedas se rechaza', true); end;
+  perform t_check('Sin tokens para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 10 tokens');
+  begin perform t_act((s ->> 'partida')::uuid, 'voluntad'); perform t_check('Usarla sin tokens se rechaza', false);
+  exception when others then perform t_check('Usarla sin tokens se rechaza', true); end;
   perform t_check('Y no se cobró nada', t_saldo_de(u) = 0 and (select count(*) from hipodromo_movimientos where usuario = u and concepto like '%peaje%' and concepto like '%' || (s ->> 'partida') || '%') = 0);
   -- Práctica: gratis
   perform t_saldo(u, 0);
   s := t_reparte(u, 'voluntad', 'practica', 0, '10p', '10c', '6c', '8c', 'Ad');
   s := t_act((s ->> 'partida')::uuid, 'voluntad');
-  perform t_check('Práctica: la Última voluntad funciona sin monedas', (s #>> '{jugador,total}')::int = 21 and t_saldo_de(u) = 0);
+  perform t_check('Práctica: la Última voluntad funciona sin tokens', (s #>> '{jugador,total}')::int = 21 and t_saldo_de(u) = 0);
 end $$;
 
 /* ======================================================================== idempotencia y concurrencia dentro de una sola sesión */
@@ -387,9 +387,9 @@ begin
   perform t_reset(); perform t_saldo(u, 100);
   insert into veintiuna_estadisticas (user_id, proxima_regla) values (u, 'maldicion') on conflict (user_id) do update set proxima_regla = 'maldicion';
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 5, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta por debajo del mínimo se rechaza', false);
-  exception when others then perform t_check('Una apuesta por debajo del mínimo se rechaza (' || sqlerrm || ')', sqlerrm = 'La apuesta va de 10 a 100 monedas.'); end;
+  exception when others then perform t_check('Una apuesta por debajo del mínimo se rechaza (' || sqlerrm || ')', sqlerrm = 'La apuesta va de 10 a 100 tokens.'); end;
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 150, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta por encima del máximo se rechaza', false);
-  exception when others then perform t_check('Una apuesta por encima del máximo se rechaza', sqlerrm = 'La apuesta va de 10 a 100 monedas.'); end;
+  exception when others then perform t_check('Una apuesta por encima del máximo se rechaza', sqlerrm = 'La apuesta va de 10 a 100 tokens.'); end;
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 25, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta que no es múltiplo del paso se rechaza', false);
   exception when others then perform t_check('Una apuesta que no es múltiplo del paso se rechaza', sqlerrm = 'La apuesta tiene que ser múltiplo de 10.'); end;
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', null, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta vacía se rechaza', false);
@@ -400,15 +400,15 @@ begin
   exception when others then perform t_check('Una modalidad que no existe se rechaza', true); end;
   perform t_saldo(u, 30);
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 50, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Apostar más de lo que tienes se rechaza', false);
-  exception when others then perform t_check('Apostar más de lo que tienes se rechaza y dice cuánto falta (' || sqlerrm || ')', sqlerrm = 'No tienes tantas monedas: te faltan 20.'); end;
+  exception when others then perform t_check('Apostar más de lo que tienes se rechaza y dice cuánto falta (' || sqlerrm || ')', sqlerrm = 'No tienes tantos tokens: te faltan 20.'); end;
   perform t_check('Y no se cobró nada ni quedó una mano a medias', t_saldo_de(u) = 30 and not exists (select 1 from veintiuna_partidas where user_id = u));
-  begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 10, t_mazo('10p', '9c', '8c', '7c')); perform t_check('(apuesta de 10 con 30 monedas)', true);
-  exception when others then perform t_check('(apuesta de 10 con 30 monedas) ' || sqlerrm, false); end;
-  perform t_check('Con 30 monedas sí se puede apostar 10', t_saldo_de(u) = 20);
+  begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 10, t_mazo('10p', '9c', '8c', '7c')); perform t_check('(apuesta de 10 con 30 tokens)', true);
+  exception when others then perform t_check('(apuesta de 10 con 30 tokens) ' || sqlerrm, false); end;
+  perform t_check('Con 30 tokens sí se puede apostar 10', t_saldo_de(u) = 20);
   -- Práctica: no hace falta saldo y no toca nada
   perform t_saldo(u, 0); delete from veintiuna_partidas where user_id = u;
   s := veintiuna_i_repartir(u, gen_random_uuid(), 'practica', 999, t_mazo('10p', '9c', '8c', '7c'));
-  perform t_check('La práctica ignora el importe pedido (la apuesta simbólica es 10) y no necesita monedas', (s ->> 'apuesta')::numeric = 10 and t_saldo_de(u) = 0 and s ->> 'modo' = 'practica');
+  perform t_check('La práctica ignora el importe pedido (la apuesta simbólica es 10) y no necesita tokens', (s ->> 'apuesta')::numeric = 10 and t_saldo_de(u) = 0 and s ->> 'modo' = 'practica');
   s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('La práctica no deja movimientos ni cambia la billetera aunque ganes', t_saldo_de(u) = 0 and not exists (select 1 from hipodromo_movimientos where usuario = u and concepto like '%' || (s ->> 'partida') || '%'));
 end $$;
@@ -472,7 +472,7 @@ begin
   perform t_check('Dos victorias seguidas todavía no dan «Tres velas»', not exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_velas'));
   s := t_reparte(u, 'maldicion', 'practica', 0, '10p', '10c', '8c', '7c'); s := t_act((s ->> 'partida')::uuid, 'plantar');
   perform t_check('La práctica también cuenta para los desafíos: tres seguidas dan «Tres velas»', exists (select 1 from veintiuna_logros where user_id = u and logro = 'tres_velas'));
-  perform t_check('Y la práctica no tocó las monedas ganadas (neto solo de manos con apuesta)', (select neto from veintiuna_estadisticas where user_id = u) = 10 + 0 - 10);
+  perform t_check('Y la práctica no tocó los tokens ganados (neto solo de manos con apuesta)', (select neto from veintiuna_estadisticas where user_id = u) = 10 + 0 - 10);
   -- Un blackjack natural cuenta como victoria y racha, pero ya no tiene desafío propio (era pura suerte)
   s := t_reparte(u, 'fortuna', 'apuesta', 10, 'Ap', '10c', 'Kc', '7c');
   perform t_check('Un blackjack natural suma a las estadísticas (naturales) y no completa «Veintiuna exacta»', (select naturales from veintiuna_estadisticas where user_id = u) = 1 and not exists (select 1 from veintiuna_logros where user_id = u and logro = 'veintiuna_exacta'));
@@ -553,7 +553,7 @@ begin
   s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '6c', '5c', '4d', 'Kd');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'ojo'); s := t_act(pid, 'plantar');
   perform t_check('Si te plantas tras mirar, el crupier roba esa misma carta (10 + 5 + 4 = 19, y se planta)', (s #>> '{crupier,cartas,2,r}')::int = 4 and (s #>> '{crupier,total}')::int = 19 and s #>> '{resultado,tipo}' = 'derrota');
-  -- Con 21 no, sin monedas no, otras reglas no, práctica gratis
+  -- Con 21 no, sin tokens no, otras reglas no, práctica gratis
   perform t_saldo(u, 200);
   s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '5c', '8c', '6d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
@@ -561,14 +561,14 @@ begin
   begin perform t_act(pid, 'ojo'); perform t_check('Mirar con 21 se rechaza', false); exception when others then perform t_check('Mirar con 21 se rechaza', sqlerrm = 'Con 21 no hace falta mirar: plántate.'); end;
   perform t_saldo(u, 20);
   s := t_reparte(u, 'ojo', 'apuesta', 20, '10p', '10c', '6c', '8c');
-  perform t_check('Sin monedas para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 7 monedas');
-  begin perform t_act((s ->> 'partida')::uuid, 'ojo'); perform t_check('Mirar sin monedas se rechaza', false); exception when others then perform t_check('Mirar sin monedas se rechaza', true); end;
+  perform t_check('Sin tokens para el peaje: no disponible y dice cuántas faltan', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 7 tokens');
+  begin perform t_act((s ->> 'partida')::uuid, 'ojo'); perform t_check('Mirar sin tokens se rechaza', false); exception when others then perform t_check('Mirar sin tokens se rechaza', true); end;
   perform t_check('Y no se cobró nada ni se vio nada', t_saldo_de(u) = 0 and (select ojo_pos from veintiuna_partidas where id = (s ->> 'partida')::uuid) is null);
   s := t_reparte(u, 'fortuna', 'practica', 0, '10p', '10c', '6c', '8c');
   begin perform t_act((s ->> 'partida')::uuid, 'ojo'); perform t_check('El Ojo en otra regla se rechaza', false); exception when others then perform t_check('El Ojo en otra regla se rechaza', true); end;
   s := t_reparte(u, 'ojo', 'practica', 0, '10p', '10c', '6c', '8c', '5d');
   s := t_act((s ->> 'partida')::uuid, 'ojo');
-  perform t_check('Práctica: se mira sin monedas', s #>> '{regla,proxima,r}' = '5' and t_saldo_de(u) = 0);
+  perform t_check('Práctica: se mira sin tokens', s #>> '{regla,proxima,r}' = '5' and t_saldo_de(u) = 0);
 end $$;
 
 /* ---- Cartas marcadas: pagas y ves la carta oculta del crupier */
@@ -589,7 +589,7 @@ begin
   perform t_check('Al plantarte, el crupier se planta con 18 y la mano se resuelve con normalidad (16 pierde)', (s #>> '{crupier,total}')::int = 18 and s #>> '{resultado,tipo}' = 'derrota' and s #> '{crupier,vista}' = 'null'::jsonb);
   perform t_saldo(u, 10);
   s := t_reparte(u, 'marcadas', 'apuesta', 10, '10p', '10c', '6c', '8c');
-  perform t_check('Sin monedas para el peaje (te faltan 1,8) no hay carta oculta', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 1.8 monedas' and s #> '{crupier,vista}' = 'null'::jsonb);
+  perform t_check('Sin tokens para el peaje (te faltan 1,8) no hay carta oculta', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 1.8 tokens' and s #> '{crupier,vista}' = 'null'::jsonb);
   s := t_reparte(u, 'marcadas', 'practica', 0, '10p', '10c', '6c', '8c');
   s := t_act((s ->> 'partida')::uuid, 'marcadas');
   perform t_check('Práctica: se ve gratis', s #>> '{crupier,vista,r}' = '8' and t_saldo_de(u) = 0);
@@ -621,7 +621,7 @@ begin
   perform t_check('Y no se cobró nada', t_saldo_de(u) = 180);
   perform t_saldo(u, 20);
   s := t_reparte(u, 'trueque', 'apuesta', 20, '2p', 'Kc', '3c', '8d');
-  perform t_check('Sin monedas para el peaje no hay trueque (faltan 20)', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 20 monedas');
+  perform t_check('Sin tokens para el peaje no hay trueque (faltan 20)', (s #>> '{acciones,especial,disponible}')::boolean = false and s #>> '{acciones,especial,motivo}' = 'te faltan 20 tokens');
   -- El trueque puede dejarte en 21 (no es blackjack natural: no paga 3 a 2) y no deja pedir más
   s := t_reparte(u, 'trueque', 'practica', 0, '4p', 'Ac', 'Kc', '8d', '2d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'trueque');

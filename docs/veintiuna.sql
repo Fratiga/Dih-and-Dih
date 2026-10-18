@@ -4,11 +4,11 @@
 -- Qué hay aquí (el diseño completo está en docs/veintiuna.md):
 --   * La mesa entera vive en el servidor: la baraja se baraja aquí con gen_random_uuid() (aleatoriedad criptográfica del servidor), se guarda aquí y el
 --     navegador solo recibe las cartas que ya se ven. La carta oculta del crupier NO sale del servidor hasta que la ronda termina.
---   * Las monedas son las del Hipódromo: se usa su billetera (hipodromo_billeteras) y su libro (hipodromo_movimientos). No hay billetera nueva. Cada movimiento
+--   * Los tokens son los del Hipódromo: se usa su billetera (hipodromo_billeteras) y su libro (hipodromo_movimientos). No hay billetera nueva. Cada movimiento
 --     lleva en el concepto el identificador de la mano, y la mano guarda los números de sus movimientos.
 --   * Una mano por jugador a la vez (índice único), cada petición lleva un identificador (reintentar no cobra dos veces) y cada acción lleva el número de paso
 --     (repetir una acción ya aplicada devuelve el estado actual en vez de aplicarla otra vez). Una mano abandonada se cierra sola, plantándose, a los 30 minutos.
---   * Mesa de práctica: mismas reglas y mismas cartas, apuesta simbólica, sin tocar la billetera. Cuenta para los desafíos, no da monedas.
+--   * Mesa de práctica: mismas reglas y mismas cartas, apuesta simbólica, sin tocar la billetera. Cuenta para los desafíos, no da tokens.
 --   * Desafíos: logros que el servidor comprueba al terminar cada mano. Cada uno se completa una vez y se reclama una vez. La carta sale del sistema oficial de
 --     recompensas (cartas_juegos 'veintiuna' + cartas_i_juego_terminar_nucleo), con sus topes diarios, límites global y por jugador, circulación y reserva.
 --     El juego nace APAGADO (activo = false): se enciende en Admin → Economía → Juegos y recetas. Apagado, los desafíos se siguen completando y esperan.
@@ -17,7 +17,7 @@
 insert into cartas_economia_ajustes (clave, valor) values
   ('veintiuna_apuesta_min', '10'),        -- apuesta mínima (la apuesta de la mesa de práctica es esta, simbólica)
   ('veintiuna_apuesta_max', '100'),       -- apuesta máxima. La apuesta mediana del Hipódromo es 20 y la máxima 50
-  ('veintiuna_apuesta_paso', '10'),       -- las apuestas son múltiplos de esto (así el 3 a 2 del blackjack natural siempre da monedas enteras)
+  ('veintiuna_apuesta_paso', '10'),       -- las apuestas son múltiplos de esto (así el 3 a 2 del blackjack natural siempre da tokens enteros)
   ('veintiuna_peaje_fortuna', '0.6'),     -- Fortuna: fracción de la apuesta que cuesta salvar la mano
   ('veintiuna_peaje_voluntad', '0.5'),   -- Última voluntad: fracción de la apuesta que cuesta cambiar tu última carta por la siguiente
   ('veintiuna_peaje_ojo', '0.35'),       -- Ojo del Tahúr: fracción de la apuesta que cuesta ver la siguiente carta de la baraja
@@ -64,7 +64,7 @@ create table if not exists veintiuna_estadisticas (
   mejor_racha int not null default 0,
   reglas_ganadas text[] not null default '{}',
   contadores jsonb not null default '{}'::jsonb,
-  neto numeric(12, 2) not null default 0,          -- monedas ganadas o perdidas en manos con apuesta
+  neto numeric(12, 2) not null default 0,          -- tokens ganados o perdidos en manos con apuesta
   actualizado timestamptz not null default now()
 );
 
@@ -321,7 +321,7 @@ declare
 begin
   if p_modo <> 'apuesta' then return null; end if;
   select saldo into v_saldo from hipodromo_billeteras where usuario = p_user for update;
-  if coalesce(v_saldo, 0) < p_peaje then perform veintiuna_i_error('No te alcanzan las monedas para el peaje ' || p_nombre || ' (' || trim_scale(p_peaje) || ').', 'saldo_insuficiente'); end if;
+  if coalesce(v_saldo, 0) < p_peaje then perform veintiuna_i_error('No te alcanzan los tokens para el peaje ' || p_nombre || ' (' || trim_scale(p_peaje) || ').', 'saldo_insuficiente'); end if;
   update hipodromo_billeteras set saldo = saldo - p_peaje where usuario = p_user returning saldo into v_saldo;
   insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
     values (p_user, null, 'Veintiuna Velas: peaje ' || p_nombre || ' (mano ' || p_mano || ')', -p_peaje, v_saldo) returning id into v_mov;
@@ -364,12 +364,12 @@ begin
           when usada then 'ya lo usaste'
           when p.regla in ('voluntad', 'ojo') and vj.total >= 21 then 'con 21 no hace falta'
           when p.regla = 'trueque' and array_length(p.jugador, 1) <> 2 then 'solo antes de pedir carta'
-          when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' monedas' end;
+          when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' tokens' end;
         especial := jsonb_build_object('tipo', p.regla, 'disponible', motivo is null, 'motivo', motivo, 'peaje', peaje);
       end if;
     else
       faltan := case when p.modo = 'apuesta' then greatest(peaje - p_saldo, 0) else 0 end;
-      especial := jsonb_build_object('tipo', 'fortuna', 'disponible', faltan = 0, 'motivo', case when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' monedas' end, 'peaje', peaje);
+      especial := jsonb_build_object('tipo', 'fortuna', 'disponible', faltan = 0, 'motivo', case when faltan > 0 then 'te faltan ' || trim_scale(faltan) || ' tokens' end, 'peaje', peaje);
     end if;
   end if;
 
@@ -550,7 +550,7 @@ begin
     peaje := round(p.apuesta * fraccion, 2);
     if p.modo = 'apuesta' then
       select saldo into v_saldo from hipodromo_billeteras where usuario = p.user_id for update;
-      if coalesce(v_saldo, 0) < peaje then perform veintiuna_i_error('No te alcanzan las monedas para el peaje de la Fortuna (' || trim_scale(peaje) || ').', 'saldo_insuficiente'); end if;
+      if coalesce(v_saldo, 0) < peaje then perform veintiuna_i_error('No te alcanzan los tokens para el peaje de la Fortuna (' || trim_scale(peaje) || ').', 'saldo_insuficiente'); end if;
       update hipodromo_billeteras set saldo = saldo - peaje where usuario = p.user_id returning saldo into v_saldo;
       insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
         values (p.user_id, null, 'Veintiuna Velas: peaje de la Fortuna (mano ' || p.id || ')', -peaje, v_saldo) returning id into v_mov;
@@ -574,7 +574,7 @@ begin
     peaje := round(p.apuesta * fraccion, 2);
     if p.modo = 'apuesta' then
       select saldo into v_saldo from hipodromo_billeteras where usuario = p.user_id for update;
-      if coalesce(v_saldo, 0) < peaje then perform veintiuna_i_error('No te alcanzan las monedas para el peaje de la Última voluntad (' || trim_scale(peaje) || ').', 'saldo_insuficiente'); end if;
+      if coalesce(v_saldo, 0) < peaje then perform veintiuna_i_error('No te alcanzan los tokens para el peaje de la Última voluntad (' || trim_scale(peaje) || ').', 'saldo_insuficiente'); end if;
       update hipodromo_billeteras set saldo = saldo - peaje where usuario = p.user_id returning saldo into v_saldo;
       insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
         values (p.user_id, null, 'Veintiuna Velas: peaje de la Última voluntad (mano ' || p.id || ')', -peaje, v_saldo) returning id into v_mov;
@@ -773,7 +773,7 @@ begin
   if p_modo = 'apuesta' then
     v_apuesta := p_apuesta;
     if v_apuesta is null or v_apuesta < min_a or v_apuesta > max_a then
-      perform veintiuna_i_error('La apuesta va de ' || min_a || ' a ' || max_a || ' monedas.', 'apuesta_invalida');
+      perform veintiuna_i_error('La apuesta va de ' || min_a || ' a ' || max_a || ' tokens.', 'apuesta_invalida');
     end if;
     if v_apuesta <> trunc(v_apuesta / paso_a) * paso_a then
       perform veintiuna_i_error('La apuesta tiene que ser múltiplo de ' || paso_a || '.', 'apuesta_invalida');
@@ -804,7 +804,7 @@ begin
     insert into hipodromo_billeteras (usuario) values (uid) on conflict (usuario) do nothing;
     select saldo into v_saldo from hipodromo_billeteras where usuario = uid for update;
     if v_apuesta > v_saldo then
-      perform veintiuna_i_error('No tienes tantas monedas: te faltan ' || trim_scale(v_apuesta - v_saldo) || '.', 'saldo_insuficiente');
+      perform veintiuna_i_error('No tienes tantos tokens: te faltan ' || trim_scale(v_apuesta - v_saldo) || '.', 'saldo_insuficiente');
     end if;
     update hipodromo_billeteras set saldo = saldo - v_apuesta where usuario = uid returning saldo into v_saldo;
     insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
@@ -878,7 +878,7 @@ begin
 end;
 $$;
 
--- Las últimas manos terminadas (con las cartas, que ya no se esconden) y lo que variaron las monedas
+-- Las últimas manos terminadas (con las cartas, que ya no se esconden) y lo que variaron los tokens
 create or replace function veintiuna_historial(p_limite int default 15)
 returns jsonb
 language sql

@@ -136,7 +136,7 @@
     try {
       const { data, error } = await supa.rpc("evento_reclamar", { p_id: b.dataset.reclamar });
       if (error) throw error;
-      const partes = [data && data.carta ? "una carta nueva en tu álbum" : "", data && data.monedas ? `${data.monedas} monedas del Hipódromo` : ""].filter(Boolean);
+      const partes = [data && data.carta ? "una carta nueva en tu álbum" : "", data && data.monedas ? `${data.monedas} tokens de juego` : ""].filter(Boolean);
       b.textContent = `🎁 Recibiste ${partes.join(" y ") || "tu regalo"}`;
       setTimeout(() => { if (activo) mirar(); }, 4000);
     } catch (e) {
