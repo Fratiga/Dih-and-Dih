@@ -7,6 +7,7 @@
                 (ancla: 16, 47). Se dibuja al doble de tamaño, sin suavizado. Mira docs/taberna.md.
      personaje  (opcional) nombre del personaje, que se ve al pasar el ratón por encima.
      tam        (opcional) [ancho, alto] del PNG si no mide 32x48. alto: (opcional) alto con que se dibuja, en unidades del escenario (por defecto 144).
+     pasea      (opcional) true: de vez en cuando se levanta, da una vuelta por la sala a saltitos, hace un barrel roll y vuelve a sentarse.
      brillo, parpadeo   (opcionales) PNG del mismo tamaño que se superponen por ratos: otro cuadro de los ojos y los ojos cerrados.
 
    Ejemplo (déjalo comentado hasta tener el PNG):
@@ -14,5 +15,7 @@
 */
 window.PROTAGONISTAS = {
   // Cuenta "Gigglinn" (Nacha). Sprite de 77x127 con tres cuadros; el cuerpo asoma sobre la mesa y el resto queda tras ella.
-  "gigglinn": { sprite: "assets/protagonistas/gigglinn.png", brillo: "assets/protagonistas/gigglinn-brillo.png", parpadeo: "assets/protagonistas/gigglinn-parpadeo.png", tam: [77, 127], alto: 165 }
+  "gigglinn": { sprite: "assets/protagonistas/gigglinn.png", brillo: "assets/protagonistas/gigglinn-brillo.png", parpadeo: "assets/protagonistas/gigglinn-parpadeo.png", tam: [77, 127], alto: 165 },
+  // Cuenta "Magoo". Sprite de 114x122 de una sola pose: el movimiento (saltitos, tambaleo, barrel roll) lo pone js/taberna-mesa.js.
+  "magoo": { sprite: "assets/protagonistas/magoo.png", tam: [114, 122], alto: 120, pasea: true }
 };

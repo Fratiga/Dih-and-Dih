@@ -45,6 +45,9 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
   `"nombre": { sprite: "assets/protagonistas/nombre.png", personaje: "Nombre del personaje" }`.
 - Un sprite propio puede medir otra cosa y traer cuadros con vida: `tam: [ancho, alto]`, `alto` (alto dibujado, por defecto 144) y, opcionales, `brillo` y `parpadeo`
   (PNG del mismo tamaño que se superponen por ratos). Ejemplo en uso: la cuenta `gigglinn` (77 x 127, tres cuadros: `gigglinn*.png`).
+- `pasea: true` (ejemplo: la cuenta `magoo`, un sprite de una sola pose): ese protagonista se levanta de vez en cuando, da una vuelta a saltitos y tambaleándose por el suelo libre
+  de detrás de la mesa (`PASEO` en `js/taberna-mesa.js`: entre la máquina de Minijuegos y el puesto de Intercambios, donde no hay nada con enlace), a veces hace un barrel roll y vuelve a su sitio del banco.
+  Mientras camina no recibe clics y va por detrás de la mesa. Un clic estando sentado le hace dar la vuelta. Con «reducir movimiento» no se mueve. `index.html?paseo=rapido` hace que se levante a los 1,5 s.
 - Sin entrada se usa la silueta provisional `assets/protagonistas/silueta.png`, que se regenera con `tools/silueta_protagonistas.py`.
 
 ## Fanarts
