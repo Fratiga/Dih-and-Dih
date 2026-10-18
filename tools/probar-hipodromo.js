@@ -421,7 +421,7 @@ function cabezaACabeza(a, b, cond, veces) {
   { const vis = M.calendarioVisible(w), pasadas = vis.filter(x => x.n > w.n + C.ADELANTO);
     ok(vis.filter(x => x.n <= w.n + C.ADELANTO).length === C.ADELANTO && pasadas.every(x => x.copa && x.n <= w.n + C.ADELANTO_COPA), "el calendario enseña 12 carreras y, más allá, solo las copas de los próximos dos días");
     const cop = M.calendario(w, w.n + 1, C.ADELANTO_COPA).filter(x => x.copa);
-    ok(cop.every(x => Array.isArray(x.clasifican) && x.clasifican.length >= 5 && x.salidasMin === G[x.grado].copa.salidas && x.inscripcion === M.inscripcionDe(G[x.grado])), "cada copa dice quién puede entrar, cuánto hay que haber corrido y lo que cuesta"); }
+    ok(cop.every(x => x.clasifican === undefined && x.salidasMin === G[x.grado].copa.salidas && x.inscripcion === M.inscripcionDe(G[x.grado])), "cada copa dice cuánto hay que haber corrido y lo que cuesta, sin publicar quién clasifica"); }
   // el campo: las mejores del mundo, y los jugadores solo si llegan al nivel
   { const w2 = mk(); ord(w2, { dueno: "u1", tipo: "adoptar", sexo: "f" }); ord(w2, { dueno: "u2", tipo: "adoptar", sexo: "m" });
     const mala = M.cuadraDe(w2, "u1")[0], buena = M.cuadraDe(w2, "u2")[0];
@@ -443,7 +443,20 @@ function cabezaACabeza(a, b, cond, veces) {
     ok(pagos.some(q => q.dueno === "u1" && q.monto === 10) && pagos.some(q => q.dueno === "u2" && q.monto === 10) && !w2.proxima.entrantes.some(e => e.id === mala.id || e.id === buena.id), "a quien no cumple, o pagó menos que la tarifa de la copa, no se le deja correr y se le devuelve lo pagado");
     const campo = w2.proxima.entrantes.map(e => M.buscar(w2, e.id)), todas = w2.vivos.filter(c => c.estado === "activo").map(c => c.rating).sort((a, b) => a - b), mediana = todas[Math.floor(todas.length / 2)];
     ok(campo.length >= gC.campo[0] - 1 && campo.length <= gC.campo[1], "el campo de la copa tiene entre " + (gC.campo[0] - 1) + " y " + gC.campo[1] + " corredores (" + campo.length + ")");
+    ok(campo.filter(c => !c.dueno).every(c => c.fatiga <= C.FATIGA_COPA), "las estrellas del mundo llegan descansadas a la copa (sin esto, quien solo corre copas ganaba por frescura)");
     ok(media(campo.map(c => c.rating)) > mediana + 25, "los corredores de la copa son de lo mejor del mundo (rating medio " + Math.round(media(campo.map(c => c.rating))) + " contra mediana " + Math.round(mediana) + ")"); }
+  // las mejores del mundo no se venden (comprarlas se pagaba solo en la primera copa) y cada dueño sabe a qué copas llega
+  { const w4 = mk(), mejores = M.mejoresDelMundo(w4), venta = M.enVenta(w4);
+    ok(mejores.size >= 10 && venta.length > 20 && venta.every(c => !mejores.has(c.id)), "el mercado no ofrece a las mejores del mundo (" + mejores.size + " fuera, " + venta.length + " a la venta)");
+    const top = w4.vivos.filter(c => mejores.has(c.id) && !c.dueno && c.estado === "activo")[0];
+    ok(M.perfil(w4, top).precio === null && venta.every(c => M.perfil(w4, c).precio > 0), "las mejores salen sin precio y el resto con él");
+    const r = ord(w4, { dueno: "u1", tipo: "comprar", id: top.id }, { u1: 1e6 });
+    ok(!r.ok && /mejores del mundo/.test(r.error) && !top.dueno, "comprar a una de las mejores del mundo se rechaza aunque se mande la orden a mano (" + r.error + ")");
+    const ok1 = ord(w4, { dueno: "u1", tipo: "comprar", id: venta[0].id }, { u1: 1e6 });
+    ok(ok1.ok, "las demás se compran con normalidad");
+    const mia = w4.vivos.find(c => c.dueno === "u1"); mia.rating = 1900; mia.salidas = 40;
+    ok(M.perfilCuadra(w4, mia).copas.length === 4, "el dueño ve a qué copas llega su criatura (a las cuatro con rating alto)");
+    mia.rating = 1300; ok(M.perfilCuadra(w4, mia).copas.length === 0, "y ninguna con rating bajo"); }
   // el palmarés y las noticias tras un mes del mundo
   { const evs = [], w3 = mk(); for (let i = 0; i < 24 * 7 * 4; i++) evs.push(M.avanzar(w3, { sims: 8 }));
     const res = evs.filter(e => e.resultado && G[e.resultado.grado].copa).map(e => e.resultado);

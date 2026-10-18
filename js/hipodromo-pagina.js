@@ -231,7 +231,7 @@
     const hora = new Date(Date.UTC(2026, 0, 5, C.HORA_COPAS)).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
     const dia = ms => new Date(ms).toLocaleDateString("es", { weekday: "long", day: "numeric" }) + ", " + horaTxt(ms);
     const items = cal.map(x => {
-      const G = M.GRADOS[x.grado], llegan = mias.filter(e => (x.clasifican || []).includes(e.p.id));
+      const G = M.GRADOS[x.grado], llegan = mias.filter(e => ((e.c && e.c.copas) || []).includes(x.grado));
       return `<li class="hip-copa-item ${x.grado}"><div class="hip-copa-cab"><span class="hip-sello copa">★ ${esc(x.gradoNombre)}</span><strong>${esc(x.nombre)}</strong></div>
         <div class="hip-copa-datos"><span>${esc(dia(x.hora))}</span><span>${x.dist} m</span><span>${T("bolsa", "Bolsa")} <b>${monedas(x.bolsa)}</b></span><span>Inscribir <b>${monedas(x.inscripcion)}</b></span></div>
         <small>Solo el ${Math.round(G.copa.top * 100)} % mejor valorado del mundo, con al menos ${G.copa.salidas} salidas. ${mias.length ? (llegan.length ? `Llegan: ${llegan.map(e => esc(e.p.nombre)).join(", ")}.` : "Ninguna de las tuyas llega ahora mismo.") : ""}</small></li>`;

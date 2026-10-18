@@ -36,7 +36,7 @@ window.HipodromoCuadraUI = (function () {
         const dentro = c.entradas.find(en => en.n === x.n);
         const pista = M.PISTAS[x.pista];
         const cierra = x.cierra ? horaTxt(x.cierra) : "";
-        const llega = !x.copa || (x.clasifican || []).includes(pub.id);
+        const llega = !x.copa || (c.copas || []).includes(x.grado);
         return `<tr${x.copa ? ' class="hip-fila-copa"' : ""}><td>${x.n}</td><td>${x.copa ? new Date(x.hora).toLocaleDateString("es", { weekday: "short" }) + " " : ""}${horaTxt(x.hora)}</td><td><span class="hip-sello ${GRADO_CLASE[x.grado] || ""}">${x.copa ? "★ " : ""}${T("grado_" + x.grado, esc(x.gradoNombre))}</span> ${esc(x.nombre)}${x.copa ? `<small class="hip-copa-req">Bolsa ${mon(x.bolsa)}. Solo las mejores del mundo, con al menos ${x.salidasMin} salidas.</small>` : ""}</td><td>${x.dist} m</td><td>${esc(pista ? pista.nombre : x.pista)}${pista && pista.arcana ? ' <span class="hip-sello">${T("arcana", "arcana")}</span>' : ""}</td>
           <td>${mon(x.inscripcion)}</td><td>${dentro || (llega && x.plazas > 0) ? `<button type="button" class="hip-boton chico" data-o="${dentro ? "desinscribir" : "inscribir"}" data-id="${pub.id}" data-n="${x.n}">${dentro ? "Quitar" : "Inscribir"}</button>` : !llega ? '<span class="hip-sin" title="Solo corren las criaturas mejor valoradas del mundo">no llega</span>' : '<span class="hip-sin">completa</span>'}</td></tr>`;
       }).join("");
@@ -102,7 +102,7 @@ window.HipodromoCuadraUI = (function () {
       const cabecera = `<div class="hip-cuadra-cab"><h3>${T("cuadra", "Mi cuadra")}</h3><p>Tokens: <strong>${mon(api.saldo())}</strong></p></div>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p>`;
       let cuerpo;
-      if (vista === "mercado") cuerpo = `<section class="hip-tarjeta"><h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar. El precio sale de su palmarés y su linaje, como lo ve todo el mundo. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}</section>`;
+      if (vista === "mercado") cuerpo = `<section class="hip-tarjeta"><h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar (las mejores del mundo no se venden: a esas hay que criarlas y entrenarlas). El precio sale de su palmarés y su linaje, como lo ve todo el mundo. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}</section>`;
       else if (vista === "avisos") cuerpo = `<section class="hip-tarjeta"><h3>Avisos de la cuadra</h3>${nAvisos ? `<ul class="hip-avisos">${api.avisos().slice(0, 25).map(a => `<li><small>n.º ${a.n}</small> ${esc(a.texto)}</li>`).join("")}</ul>` : '<p class="hip-vacio">Todavía no hay avisos.</p>'}</section>`;
       else cuerpo = `<section class="hip-tarjeta"><p class="hip-nota hip-nota-cuadra">Aquí eres el dueño. Inscribes a tus criaturas en las carreras que quieras (los entrenadores del mundo no las mueven), las entrenas, las cuidas y, cuando se retiren, las cruzas. Cada carrera paga una bolsa a los cinco primeros y esa bolsa es tuya. Correr cuesta una inscripción y entrenar y cuidar también cuestan: no a todas les sale a cuenta.</p>
         ${!adoptada && !mias.length ? `<div class="hip-adoptar"><h4>Recibe tu primera criatura</h4><p class="hip-nota">La casa te da una criatura joven, de cuerpo corriente, lista para debutar. Es gratis y solo se hace una vez.</p>

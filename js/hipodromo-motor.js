@@ -58,6 +58,7 @@
     ADELANTO: 12,                // con cuántas carreras de antelación se puede inscribir
     ADELANTO_COPA: 48,           // las copas se pueden inscribir con más antelación (dos días)
     HORA_COPAS: 23,              // hora (UTC) a la que salen las copas de la semana
+    FATIGA_COPA: 20,             // los entrenadores del mundo guardan a sus estrellas para las copas: llegan con, como mucho, este cansancio
     LEYENDAS_CADA: 4,            // una de cada 4 semanas, el domingo es la Copa de las Leyendas en lugar de la de Oro
     MAX_INSC_DUENO: 3,           // inscritas de un mismo jugador en una misma carrera
     INSCRIPCION: 0.10,           // lo que cuesta inscribir: esta fracción de la bolsa
@@ -502,6 +503,16 @@
     return aptas.filter(c => c.salidas >= G.copa.salidas).sort((a, b) => b.rating - a.rating || a.id - b.id).slice(0, k);
   }
 
+  /* Las mejores del mundo (el mismo corte que la Copa de Bronce, la más abierta, sin pedir salidas): no se venden. Las copas pagan mucho más que cualquier
+     precio de compra (que sale del palmarés y tiene tope), así que comprarlas era el negocio de siempre: la criatura se pagaba sola en la primera copa. */
+  function mejoresDelMundo(m) {
+    const G = GRADOS.copa_bronce, aptas = m.vivos.filter(c => c.estado === "activo" && edadAnios(m.n, c) >= C.DEBUT);
+    const k = Math.max(G.campo[1], Math.ceil(aptas.length * G.copa.top));
+    return new Set(aptas.sort((a, b) => b.rating - a.rating || a.id - b.id).slice(0, k).map(c => c.id));
+  }
+  /* A qué copas llega ahora una criatura (se lo cuenta su entrenador al dueño: el rating no se enseña, y publicar quién clasifica lo delataría) */
+  const copasQueCorre = (m, c) => Object.keys(GRADOS).filter(g => GRADOS[g].copa && clasificadas(m, GRADOS[g]).some(x => x.id === c.id));
+
   /* ---------------------------------------------------------------- inscripciones */
   function elegibles(m, relajar) {
     return m.vivos.filter(c => !c.dueno && edadAnios(m.n, c) >= C.DEBUT && !c.lesion && c.fatiga <= (relajar ? 90 : C.FATIGA_MAX) && m.n - c.ultima >= (relajar ? 1 : C.DESCANSO_MIN));
@@ -604,6 +615,8 @@
     const dist = rng.peso(DISTANCIAS[grado]);
     RECHAZADAS = [];
     const cs = inscribir(m, rng, grado, dist, n);
+    // las estrellas del mundo llegan descansadas a una copa (las que tienen dueño llegan como las deje su dueño): sin esto, una criatura que solo corre copas siempre ganaba por frescura
+    if (GRADOS[grado].copa) cs.forEach(c => { if (!c.dueno) c.fatiga = Math.min(c.fatiga, C.FATIGA_COPA); });
     const jornada = Math.floor(n / C.JORNADA);
     const prog = {
       n, hora: horaDe(m, n), cierre: horaDe(m, n) - C.CIERRE_SEG * 1000,
@@ -934,7 +947,7 @@
       lesion: c.lesion ? { tipo: c.lesion.tipo, gravedad: c.lesion.gravedad, hasta: c.lesion.hasta } : null,
       padre: c.padre, madre: c.madre, crias: c.crias, leyenda: esLeyenda(c), muerte: c.muerte,
       dueno: c.dueno ? { id: c.dueno, nombre: nombreDueno(m, c.dueno) } : null,
-      precio: !c.dueno && c.estado === "activo" ? precioCompra(m, c) : null, montaPrecio: c.estado === "criador" ? precioMonta(m, c) : null
+      precio: !c.dueno && c.estado === "activo" && !mejoresDelMundo(m).has(c.id) ? precioCompra(m, c) : null, montaPrecio: c.estado === "criador" ? precioMonta(m, c) : null
     };
   }
 
@@ -960,8 +973,8 @@
   const valorVenta = (m, c) => redondea10(precioCompra(m, c) * C.VENTA);
   /* Las que se pueden comprar: vivas, activas, sin dueño y que no estén ya en la carrera que está programada */
   function enVenta(m) {
-    const en = new Set(m.proxima ? m.proxima.entrantes.map(e => e.id) : []);
-    return m.vivos.filter(c => !c.dueno && c.estado === "activo" && !en.has(c.id));
+    const en = new Set(m.proxima ? m.proxima.entrantes.map(e => e.id) : []), mejores = mejoresDelMundo(m);
+    return m.vivos.filter(c => !c.dueno && c.estado === "activo" && !en.has(c.id) && !mejores.has(c.id));
   }
   /* Lo que se sabe de las carreras que vienen sin haberlas programado todavía (lo fija la semilla) */
   function calendario(m, desde, cuantas) {
@@ -971,8 +984,8 @@
       const ocupadas = m.vivos.reduce((t, c) => t + (c.entradas || []).filter(en => en.n === n).length, 0);
       out.push(Object.assign({ n, hora: horaDe(m, n), grado, gradoNombre: G.nombre, nombre: raiz.HipodromoNombres.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
         pista: pistaDeJornada(m.semilla, Math.floor(n / C.JORNADA)), dist, bolsa: G.bolsa, inscripcion: inscripcionDe(G), plazas: Math.max(0, G.campo[1] - 3 - ocupadas) },
-        // en las copas: quién puede entrar ahora mismo (las mejores del mundo, por resultados) y cuánto hay que haber corrido
-        G.copa ? { copa: true, salidasMin: G.copa.salidas, clasifican: clasificadas(m, G).map(c => c.id) } : {}));
+        // en las copas: cuánto hay que haber corrido (quién llega lo sabe cada dueño por su entrenador: perfilCuadra.copas)
+        G.copa ? { copa: true, salidasMin: G.copa.salidas } : {}));
     }
     return out;
   }
@@ -989,7 +1002,7 @@
     STATS.forEach(k => { cap[k] = r5(b[k]); });
     return { id: c.id, dueno: c.dueno, tactica: c.tactica || null, entreno: c.entreno || null, entradas: (c.entradas || []).map(en => ({ n: en.n, pago: en.pago })),
       forma: textoForma(c.forma), fatiga: Math.round(c.fatiga), capacidades: cap, mejoras: c.perm, venta: valorVenta(m, c), puedeCuidar: m.n - (c.cuidado == null ? -999 : c.cuidado) >= C.CUIDADO_ESPERA,
-      renombrada: !!c.renombrada, cruce: (m.cruces || []).filter(x => x.madre === c.id).map(x => ({ n: x.n, padre: x.padreNombre })) };
+      copas: copasQueCorre(m, c), renombrada: !!c.renombrada, cruce: (m.cruces || []).filter(x => x.madre === c.id).map(x => ({ n: x.n, padre: x.padreNombre })) };
   }
   function terminarEntreno(m, c, ev, rng) {
     const st = c.entreno.stat, a = edadAnios(m.n, c);
@@ -1057,6 +1070,7 @@
         const c = buscar(m, o.id);
         if (!c || c.estado !== "activo" || !m.vivos.includes(c)) return err("Esa criatura no está a la venta.");
         if (c.dueno) return err("Esa criatura ya tiene dueño.");
+        if (mejoresDelMundo(m).has(c.id)) return err("Es de las mejores del mundo y no se vende. Tendrás que criar y entrenar a la tuya.");
         if (enCarrera(c)) return err("Está inscrita en la carrera de ahora; espera a que termine.");
         if (nCuadra >= C.MAX_CABALLOS) return err(`Tu cuadra está llena (${C.MAX_CABALLOS}).`);
         res.costo = precioCompra(m, c);
@@ -1329,7 +1343,7 @@
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
     cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
+    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);
