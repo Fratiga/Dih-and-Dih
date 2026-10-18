@@ -630,7 +630,7 @@
       const afin = (M.meta(c.est, c.est.terreno.cartaId).afinidad || [])[0];
       const PESO_PESCA = { comun: 16, infrecuente: 8, rara: 4, legendaria: 1, limitada: 1 };
       const reserva = Object.values(c.est.cartas)
-        .filter(m => m && ["Criatura", "Objeto"].includes(m.tipo) && (m.afinidad || []).includes(afin))
+        .filter(m => m && !m.token && ["Criatura", "Objeto"].includes(m.tipo) && (m.afinidad || []).includes(afin))
         .sort((a, b) => (a.id < b.id ? -1 : 1));
       if (!reserva.length) { M.robar(c.est, c.j, 1); return; }
       const total = reserva.reduce((s, m) => s + (PESO_PESCA[m.rareza] || 1), 0);

@@ -177,6 +177,7 @@
 .carta-editor-vista small { color: var(--muted); font-size: .72rem; }
 .carta-editor-campos { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .carta-editor-campos label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: var(--muted); min-width: 0; }
+.carta-editor[data-modo="ficha"] .solo-carta { display: none !important; }
 .carta-editor-grupo { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .carta-editor-campos input[type="text"], .carta-editor-campos input[type="number"], .carta-editor-campos textarea, .carta-editor-campos select {
   background: var(--panel-2); color: var(--text); border: 1px solid var(--border); padding: 8px 10px; font: inherit; font-size: .88rem; border-radius: 0; outline: none; width: 100%; box-sizing: border-box; color-scheme: dark;

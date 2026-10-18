@@ -253,5 +253,27 @@ function jugada(reaccion, carta) {
 { const e = partida(); turnoDe(e, 0); const a = poner(e, 0, "t33"); a.pv = 1; const J = e.jugadores[0]; J.mano = ["taberna-del-camino"]; J.energia = 5; M.aplicar(e, { t: "jugar", i: 0 }, 0); M.aplicar(e, { t: "fin" }, 0); M.aplicar(e, { t: "fin" }, 1);
   ok(a.pv === 3, `Taberna: cura 2 a todas al inicio de tu turno (${a.pv})`); }
 
+// 8) Invocaciones editables: la instantánea las lleva con los números de hoy y la partida usa ESOS números
+{ const sb2 = { console, fichasCliente: () => null, esAdmin: () => false, ladoActual: () => null }; sb2.window = sb2; sb2.globalThis = sb2; vm.createContext(sb2);
+  for (const f of ["cartas-datos", "cartas-motor", "cartas-efectos"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js", `${f}.js`), "utf8"), sb2, { filename: f });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js", "cartas-cliente.js"), "utf8"), sb2, { filename: "cartas-cliente" });
+  const CC = sb2.CartasCliente, M2 = sb2.CartasMotor;
+  ok(CC.fichasEditables().some(t => t.id === "resto-barro") && CC.fichasEditables().some(t => t.id === "emboscado") && !CC.fichasEditables().some(t => t.tipo === "Terreno"), "las invocaciones editables incluyen los Restos de Ledros y los Emboscados, no el terreno de Zraith");
+  M2.TOKENS["resto-barro"].atq = 7; M2.TOKENS["resto-barro"].pv = 9; M2.TOKENS["resto-barro"].imagen = "https://x.supabase.co/storage/v1/object/public/cartas/a.webp";
+  const inst = CC.instantanea(["kobold"]);
+  ok(inst["resto-barro"] && inst["resto-barro"].token === true && inst["resto-barro"].atq === 7 && inst["resto-barro"].imagen, "la instantánea lleva las invocaciones con lo editado y marcadas como ficha");
+  const cartas2 = {}; Object.assign(cartas2, JSON.parse(JSON.stringify(inst)));
+  const relleno2 = Array.from({ length: 20 }, () => "kobold");
+  cartas2.kobold = JSON.parse(JSON.stringify(cartas.kobold));
+  const e = M2.crearPartida({ semilla: 3, primero: 0, cartas: cartas2, jugadores: [{ id: "a", nombre: "A", mazo: relleno2 }, { id: "b", nombre: "B", mazo: relleno2 }] });
+  const u = M2.ponerUnidad(e, 0, "resto-barro", false, null);
+  ok(u.atq === 7 && u.pv === 9, "la partida crea la invocación con los números editados");
+  M2.morir(e, u, { tipo: "habilidad" }); ok(!e.jugadores[0].cementerio.includes("resto-barro"), "y sigue siendo ficha: no deja carta en el cementerio");
+  // El Pescador no saca invocaciones
+  const e2 = M2.crearPartida({ semilla: 5, primero: 0, cartas: Object.assign({}, JSON.parse(JSON.stringify(cartas)), cartas2), jugadores: [{ id: "a", nombre: "A", mazo: relleno2 }, { id: "b", nombre: "B", mazo: relleno2 }] });
+  e2.terreno = { cartaId: "los-huesos", dueno: 1, restantes: 3, turnoEntrada: 0, desde: 1, ligadoA: null };
+  let ficha = 0; for (let k = 1; k <= 200; k++) { e2.rng = k * 31; e2.jugadores[0].mano = []; M2.ponerUnidad(e2, 0, "pescador", true, null); const id = e2.jugadores[0].mano[0]; if (id && cartas2[id] && cartas2[id].token) ficha++; }
+  ok(ficha === 0, "el Pescador no saca invocaciones"); }
+
 console.log(fallos.length ? `${fallos.length} fallo(s):\n  ` + fallos.slice(0, 30).join("\n  ") : `OK: ${n} comprobaciones del lote 2.`);
 process.exit(fallos.length ? 1 : 0);

@@ -109,6 +109,7 @@
     document.getElementById("filtroReveladasEtiqueta").classList.toggle("hidden", !puedeEditar);
     document.getElementById("cartaNueva").classList.toggle("hidden", !puedeEditar);
     document.getElementById("vinculosAbrir").classList.toggle("hidden", !puedeEditar);
+    document.getElementById("fichasAbrir").classList.toggle("hidden", !puedeEditar);
   }
 
   function prepararFiltros() {
@@ -291,7 +292,91 @@
     });
   }
 
+  /* ---- Invocaciones: las unidades que crean otras cartas se editan con el mismo editor, sin lo que no les toca ---- */
+  const fichasDialog = document.getElementById("fichasDialog");
+  const fichasGrid = document.getElementById("fichasGrid");
+
+  function abrirFichas() {
+    fichasGrid.innerHTML = CartasCliente.fichasEditables().map(t => htmlCarta(t, true, 0, null)).join("");
+    if (!fichasDialog.open) fichasDialog.showModal();
+  }
+
+  function abrirFicha(id) {
+    const t = CartasCliente.fichasEditables().find(x => x.id === id);
+    if (!t) return;
+    const fotos = [{ nombre: "", imagen: t.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), t.ajuste || {}) }];
+    edActual = { id, nueva: false, ficha: true, fotos, sel: 0, originales: fotos.map(f => f.imagen).filter(Boolean), subidas: [], idManual: true };
+    editorEl.dataset.modo = "ficha";
+    $("edFormaNombre").value = "";
+    $("cartaEditorTitulo").textContent = `Invocación: ${t.nombre}`;
+    campos.id.value = id;
+    campos.id.disabled = true;
+    campos.nombre.value = t.nombre;
+    campos.epiteto.value = "";
+    campos.tipo.value = t.tipo;
+    campos.rareza.value = t.rareza;
+    campos.af1.value = t.afinidad[0];
+    campos.af2.value = t.afinidad[1] || "";
+    campos.coste.value = t.coste || 0;
+    campos.atq.value = t.atq ?? "";
+    campos.pv.value = t.pv ?? "";
+    campos.habilidad.value = t.habilidad || "";
+    campos.descripcion.value = "";
+    campos.fuente.value = "";
+    campos.lado.value = "";
+    campos.limite.value = "";
+    campos.copiasMax.value = "";
+    campos.obtenible.checked = true;
+    campos.publicada.checked = true;
+    $("edBorrar").classList.add("hidden");
+    $("edRestaurar").classList.remove("hidden");
+    $("edEstado").textContent = "";
+    $("edGuardar").disabled = false;
+    fichasDialog.close();
+    pintarVistaPrevia();
+    editorEl.showModal();
+  }
+
+  async function guardarFichaEditor() {
+    const estado = $("edEstado");
+    const f = edActual.fotos[0];
+    const atq = numeroOVacio(campos.atq), pv = numeroOVacio(campos.pv), nombre = campos.nombre.value.trim();
+    if (!nombre) { estado.textContent = "Ponle un nombre."; return; }
+    if (atq === null || pv === null || atq < 0 || pv < 1) { estado.textContent = "Pon ataque (0 o más) y vida (1 o más)."; return; }
+    estado.textContent = "Guardando...";
+    $("edGuardar").disabled = true;
+    try {
+      const datos = { nombre, atq, pv, habilidad: campos.habilidad.value.trim(), imagen: f.imagen, ajuste: f.imagen && !esAjusteNeutro(f.ajuste) ? f.ajuste : null };
+      await CartasCliente.guardarFicha(edActual.id, datos);
+      edActual.originales.filter(u => u !== datos.imagen).forEach(u => CartasCliente.quitarImagen(u));
+      edActual.subidas = [];
+      edActual = null;
+      editorEl.close();
+      abrirFichas();
+    } catch (e) {
+      estado.textContent = `No se pudo guardar: ${e.message || e}`;
+      $("edGuardar").disabled = false;
+    }
+  }
+
+  async function restaurarFichaEditor() {
+    if (!edActual || !edActual.ficha) return;
+    if (!(await dialogo.confirmar("¿Volver a los números, el texto y la foto con los que vino esta invocación?", { titulo: "Restaurar originales", aceptar: "Restaurar" }))) return;
+    try {
+      await CartasCliente.restaurarFicha(edActual.id);
+      edActual.originales.forEach(u => CartasCliente.quitarImagen(u));
+      edActual.subidas.forEach(u => CartasCliente.quitarImagen(u));
+      edActual = null;
+      editorEl.close();
+      abrirFichas();
+    } catch (e) {
+      $("edEstado").textContent = `No se pudo restaurar: ${e.message || e}`;
+    }
+  }
+
   function abrirEditor(id) {
+    delete editorEl.dataset.modo;
+    $("edRestaurar").classList.add("hidden");
     const existente = id ? window.cartaPorId(id) : null;
     const c = existente || { id: "", nombre: "", epiteto: "", tipo: "Personaje", rareza: "comun", afinidad: ["juramento"], coste: 1, atq: 1, pv: 1, habilidad: "", descripcion: "", imagen: null, formas: [], fuente: null, lado: null, obtenible: true, limite: null, copiasMax: null };
     const fotos = [{ nombre: "", imagen: c.imagen || null, ajuste: Object.assign(AJUSTE_NEUTRO(), c.ajuste || {}) }]
@@ -329,14 +414,17 @@
 
   function cerrarEditor() {
     // Cancelar: las fotos subidas en este formulario nunca se guardaron en la carta
+    const eraFicha = !!(edActual && edActual.ficha);
     if (edActual) edActual.subidas.forEach(u => CartasCliente.quitarImagen(u));
     edActual = null;
     if (editorEl.open) editorEl.close();
+    if (eraFicha) abrirFichas();
   }
 
   async function guardarEditor(ev) {
     ev.preventDefault();
     if (!edActual) return;
+    if (edActual.ficha) { guardarFichaEditor(); return; }
     const estado = $("edEstado");
     const datos = cartaDelFormulario();
     const id = edActual.nueva ? datos.id : edActual.id;
@@ -395,6 +483,11 @@
     editorEl.addEventListener("cancel", ev => { ev.preventDefault(); cerrarEditor(); });
     $("cartaEditorForm").addEventListener("submit", guardarEditor);
     $("edBorrar").addEventListener("click", borrarEditor);
+    $("edRestaurar").addEventListener("click", restaurarFichaEditor);
+    $("fichasAbrir").addEventListener("click", abrirFichas);
+    $("fichasCerrar").addEventListener("click", () => fichasDialog.close());
+    fichasGrid.addEventListener("click", ev => { const b = ev.target.closest("[data-id]"); if (b) abrirFicha(b.dataset.id); });
+    fichasDialog.addEventListener("click", ev => { if (ev.target === fichasDialog) fichasDialog.close(); });
     Object.values(campos).forEach(el => el.addEventListener("input", pintarVistaPrevia));
     Object.values(campos).forEach(el => el.addEventListener("change", pintarVistaPrevia));
     // El identificador sigue al nombre hasta que se escribe a mano

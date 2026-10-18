@@ -72,6 +72,7 @@ window.CartasCliente = (function () {
       ]);
       if (defs.error || cat.error) return false;
       await cargarVinculos();
+      await cargarFichas();
       const lista = window.CARTAS;
       (defs.data || []).forEach(f => {
         const i = lista.findIndex(c => c.id === f.id);
@@ -93,6 +94,50 @@ window.CartasCliente = (function () {
     } catch (e) {
       return false;
     }
+  }
+
+  /* --- Invocaciones (fichas): unidades que crean otras cartas. Los números base viven en el motor (TOKENS); lo que edita
+     el Admin o un editor se guarda en la tabla cartas_fichas (scratchpad/cartas_fichas.sql) y se aplica encima. --- */
+  const CAMPOS_FICHA = ["nombre", "atq", "pv", "habilidad", "imagen", "ajuste"];
+  const FICHAS_BASE = {};
+  const tokensDelMotor = () => (window.CartasMotor ? window.CartasMotor.TOKENS : {});
+
+  function guardarBaseDeFichas() {
+    const T = tokensDelMotor();
+    Object.keys(T).forEach(id => { if (!FICHAS_BASE[id]) FICHAS_BASE[id] = JSON.parse(JSON.stringify(T[id])); });
+  }
+  function aplicarFicha(id, data) {
+    const t = tokensDelMotor()[id];
+    if (!t) return;
+    CAMPOS_FICHA.forEach(k => { if (data[k] !== undefined) t[k] = data[k]; });
+  }
+  async function cargarFichas() {
+    guardarBaseDeFichas();
+    try {
+      const supabase = await fichasCliente();
+      const { data, error } = await supabase.from("cartas_fichas").select("id, data");
+      if (error) return false;   // la tabla todavía no existe: se juega con los números base
+      (data || []).forEach(f => aplicarFicha(f.id, f.data || {}));
+      return true;
+    } catch (e) { return false; }
+  }
+  /* Invocaciones que se pueden editar (el terreno de Zraith no es una unidad) */
+  function fichasEditables() {
+    guardarBaseDeFichas();
+    return Object.values(tokensDelMotor()).filter(t => t.tipo !== "Terreno").sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  }
+  async function guardarFicha(id, data) {
+    const supabase = await fichasCliente();
+    const { error } = await supabase.rpc("cartas_guardar_ficha", { p_id: id, p_data: data });
+    if (error) throw error;
+    aplicarFicha(id, data);
+  }
+  async function restaurarFicha(id) {
+    const supabase = await fichasCliente();
+    const { error } = await supabase.rpc("cartas_borrar_ficha", { p_id: id });
+    if (error) throw error;
+    const t = tokensDelMotor()[id], base = FICHAS_BASE[id];
+    if (t && base) CAMPOS_FICHA.forEach(k => { if (base[k] === undefined) delete t[k]; else t[k] = JSON.parse(JSON.stringify(base[k])); });
   }
 
   /* --- Sinergias y rivalidades guardadas en el servidor (tabla cartas_vinculos) ---
@@ -231,6 +276,10 @@ window.CartasCliente = (function () {
   function instantanea(ids) {
     const out = {};
     if (ids.includes("pescador")) ids = ids.concat(reservaDelPescador());
+    // Las invocaciones van siempre, con los números de hoy: así los dos navegadores y el servidor repiten la misma partida
+    Object.values(tokensDelMotor()).forEach(t => {
+      out[t.id] = { id: t.id, nombre: t.nombre, epiteto: "", tipo: t.tipo, rareza: t.rareza, afinidad: t.afinidad, coste: t.coste || 0, atq: t.atq ?? null, pv: t.pv ?? null, habilidad: t.habilidad || "", imagen: t.imagen || null, ajuste: t.ajuste || null, token: true };
+    });
     [...new Set(ids)].forEach(id => {
       const c = window.cartaPorId(id);
       if (!c) return;
@@ -246,5 +295,5 @@ window.CartasCliente = (function () {
   /* Pasa { cartaId: copias } a la lista de ids repetidos */
   const aplanar = cuenta => Object.entries(cuenta).flatMap(([id, n]) => Array(n).fill(id));
 
-  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, cargarVinculos, vinculosGuardados, guardarVinculo, restaurarVinculo, guardar, borrar, subirImagen, quitarImagen, listarMazos, guardarMazo, borrarMazo, instantanea, aplanar };
+  return { visible, coleccion, sesion, editorCacheado, verificarRol, cargarDefiniciones, cargarVinculos, vinculosGuardados, guardarVinculo, restaurarVinculo, guardar, borrar, subirImagen, quitarImagen, listarMazos, guardarMazo, borrarMazo, instantanea, aplanar, cargarFichas, fichasEditables, guardarFicha, restaurarFicha };
 })();
