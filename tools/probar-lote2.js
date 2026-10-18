@@ -162,7 +162,11 @@ ids.forEach(id => {
 { const e = partida(); turnoDe(e, 0); const u = poner(e, 0, "unicornio"), a = poner(e, 0, "t33"); a.pv = 1; ok(M.esEscurridizo(e, u), "Unicornio: Escurridizo"); M.ponerUnidad(e, 0, "unicornio", true, a); ok(a.pv === 3, "y cura al máximo"); }
 { const e = partida(); turnoDe(e, 0); const t = poner(e, 1, "t52"); M.ponerUnidad(e, 0, "behemoth", true, t); ok(!M.buscar(e, t.uid), "Behemoth: 3 de daño al entrar"); }
 { const e = partida(); turnoDe(e, 0); const l = poner(e, 0, "leviatan"); const a = poner(e, 1, "t33"), b = poner(e, 1, "t24"); M.aplicar(e, { t: "atacar", u: [l.uid] }, 0); ok(a.pv === 1 && b.pv === 2, "Leviatán: 2 de daño a todas al atacar"); }
-{ const e = partida(); turnoDe(e, 0); const g = poner(e, 0, "gargola"); M.morir(e, g, { tipo: "habilidad" }); ok(e.jugadores[0].campo.some(u => u.cartaId === "resto-piedra"), "Gárgola deja un Resto de piedra"); }
+{ const e = partida(); turnoDe(e, 0); const g = poner(e, 0, "gargola"); M.morir(e, g, { tipo: "habilidad" }); const frag = e.jugadores[0].campo.find(u => u.cartaId === "fragmento-de-gargola"); ok(!!frag && frag.atq === 2 && frag.pv === 3, "Gárgola deja un Fragmento de gárgola, no un Resto de piedra");
+  M.infligir(e, { u: frag.uid }, 2, { tipo: "habilidad" }); ok(frag.pv === 2, "que reduce 1 de daño");
+  // Ledros no se lleva el fragmento de la Gárgola al morir
+  const e2 = partida(); turnoDe(e2, 0); const g2 = poner(e2, 0, "gargola"); M.morir(e2, g2, { tipo: "habilidad" }); const l = poner(e2, 0, "ledros"); M.morir(e2, l, { tipo: "habilidad" });
+  ok(e2.jugadores[0].campo.some(u => u.cartaId === "fragmento-de-gargola"), "y la muerte de Ledros no lo desvanece"); }
 { const e = partida(); turnoDe(e, 0); const a = poner(e, 0, "t33"); M.ponerUnidad(e, 0, "pegaso", true, a); ok(M.tienePalabra(e, a, "volar"), "Pegaso da Volar este turno"); M.aplicar(e, { t: "fin" }, 0); ok(!M.tienePalabra(e, a, "volar"), "y se acaba"); }
 { const e = partida(); turnoDe(e, 0); const h = poner(e, 0, "hipogrifo"), g = poner(e, 0, "grifo"); ok(M.tienePalabra(e, h, "volar") && M.tienePalabra(e, h, "veloz") && M.tienePalabra(e, g, "temible"), "Hipogrifo y Grifo"); }
 { const e = partida(); turnoDe(e, 0); const n0 = e.jugadores[0].mano.length; M.ponerUnidad(e, 0, "dragon-dorado", true, null); ok(e.jugadores[0].mano.length === n0 + 2, "Dragón Dorado: roba 2"); }

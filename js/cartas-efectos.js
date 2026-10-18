@@ -504,6 +504,8 @@
     M.registrarFicha("gusano-de-arena", { nombre: "Gusano de arena", afinidad: ["carne"], atq: 2, pv: 2, habilidad: "Cría de la Madre del Desierto." });
     M.registrarFicha("cachorro-de-jauria", { nombre: "Cachorro de jauría", afinidad: ["caceria"], atq: 1, pv: 1, habilidad: "Veloz." });
     M.registrarFicha("emboscado", { nombre: "Emboscado", tipo: "Personaje", afinidad: ["sombra"], atq: 2, pv: 1, habilidad: "Salió de ninguna parte." });
+    M.registrarFicha("fragmento-de-gargola", { nombre: "Fragmento de gárgola", afinidad: ["eternidad"], atq: 2, pv: 3, habilidad: "Cuerpo de piedra: reduce en 1 el daño que recibe." });
+    R("fragmento-de-gargola", { reduceDano: () => 1 });
     M.registrarFicha("recluta", { nombre: "Recluta", tipo: "Personaje", afinidad: ["juramento"], atq: 1, pv: 2, habilidad: "Respondió a la campana con lo que tenía a mano." });
     R("cachorro-de-jauria", { palabras: ["veloz"] });
 
@@ -696,7 +698,7 @@
     R("unicornio", { escurridizo: () => true, alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => M.curar(c.est, { u: c.objetivo.uid }, c.objetivo.pvMax) } });
     R("behemoth", { palabras: ["duro"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => { M.log(c.est, "El Behemoth embiste."); golpe(c, c.objetivo, 3); } } });
     R("leviatan", { alAtacar: c => { M.log(c.est, "La marea del Leviatán barre el campo rival."); barrer(c, 2); } });
-    R("gargola", { palabras: ["duro"], alMorir: c => crear(c, "resto-piedra", 1) });
+    R("gargola", { palabras: ["duro"], alMorir: c => crear(c, "fragmento-de-gargola", 1) });
     R("pegaso", { palabras: ["volar"], alEntrar: { objetivo: "unidadAliadaOtra", resolver: c => {
       dar(c.objetivo, "volar", c.est.turno);
       M.log(c.est, `${M.nombre(c.est, c.objetivo)} monta el Pegaso: Volar hasta el final del turno.`);
