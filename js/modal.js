@@ -126,7 +126,7 @@ function datosGMBlock(entry) {
    "content" a propósito, para que no salgan en las búsquedas. */
 function subseccionesBlock(entry) {
   if (!entry.subsecciones || !entry.subsecciones.length) return "";
-  const admin = typeof esAdmin === "function" && esAdmin();
+  const admin = typeof veAmbosLados === "function" ? veAmbosLados() : (typeof esAdmin === "function" && esAdmin());   // Admin o cuenta con la excepción de Side
   const lado = typeof ladoActual === "function" ? ladoActual() : null;
   const visibles = entry.subsecciones.filter(sub => admin || (lado && sub.lado.includes(lado)));
   if (!visibles.length) return "";

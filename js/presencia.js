@@ -11,14 +11,14 @@
 /* =============================================================================
    PRESENCIA SEPARADA POR SIDE
    Quién está conectado solo se ve dentro del mismo Side: cada Side tiene su propio canal de tiempo real (base-A, base-B o base-sin para quien
-   aún no eligió) y cada persona solo se une al suyo, así los datos del otro Side ni siquiera le llegan. El Admin se une a todos para poder
+   aún no eligió) y cada persona solo se une al suyo, así los datos del otro Side ni siquiera le llegan. El Admin (y una cuenta con la excepción de Side) se une a todos para poder
    verlos (pestaña En vivo) pero solo se anuncia en el de su Side. El Side y el rol salen de localStorage (lado.js recarga la página si cambian). Vive aquí porque presencia.js está en todas las páginas con presencia.
    Uso: const p = presenciaPorLado(supabase, "base", miId, alCambiar, () => ({ ...datos }));
         p.estado() -> { id: [metas] } con todos los que ve esta persona; p.anunciar() vuelve a mandar los datos propios.
 ============================================================================= */
 function presenciaPorLado(supabase, base, miId, alCambiar, datos) {
   let lado = "", admin = false;
-  try { lado = localStorage.getItem("compendioLado") || ""; admin = localStorage.getItem("compendioAdmin") === "1"; } catch (e) { /* sin almacenamiento */ }
+  try { lado = localStorage.getItem("compendioLado") || ""; admin = localStorage.getItem("compendioAdmin") === "1" || localStorage.getItem("compendioVeAmbos") === "1"; } catch (e) { /* sin almacenamiento */ }
   const propio = base + "-" + (lado === "A" || lado === "B" ? lado : "sin");
   const nombres = admin ? [base + "-A", base + "-B", base + "-sin"] : [propio];
   if (!nombres.includes(propio)) nombres.push(propio);

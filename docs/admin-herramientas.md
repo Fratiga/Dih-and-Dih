@@ -116,3 +116,7 @@ SQL: `docs/admin/dialogos_personajes.sql` (se prueba con `sh docs/admin/probar_d
 - Lo guardado **reemplaza** las frases de fábrica de ese grupo; **Volver a las de fábrica** borra la fila. Si guardas exactamente las de fábrica, tampoco se queda fila.
 - Un grupo necesita al menos una frase (máximo 30, de hasta 240 letras). Los momentos no se pueden inventar: los define el código de cada personaje (`CUANDO` explica cuándo se usa cada uno).
 - Los jugadores lo oyen en su siguiente visita. Si se añade un momento nuevo a un personaje, hay que darle también su texto en `CUANDO` (la prueba de Node lo comprueba).
+
+## Excepciones de Side
+
+SQL: `docs/admin/side_excepciones.sql` (se prueba con `sh docs/admin/probar_side_excepciones.sh`). Una cuenta de la tabla `side_excepciones` ve también el contenido del otro Side (entradas del compendio, subsecciones, cartas y los jugadores conectados del otro Side) sin ser Admin ni cambiar de Side. El sitio lo pregunta al iniciar sesión (`side_ve_ambos()`) y lo guarda en el navegador (`compendioVeAmbos`, `veAmbosLados()` en `js/lado.js`). Caro queda con la excepción al correr el SQL. Para otra cuenta: `select side_excepcion_dar('<id>', 'motivo');` y para quitarla `select side_excepcion_quitar('<id>');`. No cambia nada de lo que va por Side en el servidor (mensajes, eventos) ni el Bufón.

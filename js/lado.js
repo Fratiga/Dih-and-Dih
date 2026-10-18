@@ -22,6 +22,9 @@
 const LADO_KEY = "compendioLado";
 const ADMIN_KEY = "compendioAdmin";
 const USERNAME_KEY = "compendioUsername";
+/* Excepción por cuenta: quien está en la tabla side_excepciones (docs/admin/side_excepciones.sql) ve también el contenido del otro Side
+   (entradas, subsecciones, cartas y a los jugadores conectados), sin ser Admin. Se cachea aquí como el Side y el rol. */
+const VE_AMBOS_KEY = "compendioVeAmbos";
 
 function ladoActual() {
   return localStorage.getItem(LADO_KEY);
@@ -29,6 +32,11 @@ function ladoActual() {
 
 function esAdmin() {
   return localStorage.getItem(ADMIN_KEY) === "1";
+}
+
+/* Admin o cuenta con la excepción: puede ver los dos Sides */
+function veAmbosLados() {
+  return esAdmin() || localStorage.getItem(VE_AMBOS_KEY) === "1";
 }
 
 /* Distinto de esAdmin(): Admin ya no manda nada a Supabase (ver
@@ -167,7 +175,7 @@ function actualizarElementosAdminOnly() {
 actualizarElementosAdminOnly();
 
 function entryEsVisible(entry) {
-  if (esAdmin()) return true;
+  if (veAmbosLados()) return true;
   if (!entry.lado) return true;
   const lado = ladoActual();
   return !!lado && entry.lado.includes(lado);
@@ -184,11 +192,12 @@ const LADO_RECARGA_KEY = "compendioLadoRecargando";
 
 async function ladoObtenerPerfilYAdmin() {
   const supabase = await fichasCliente();
-  const [{ data: perfil }, { data: esAdminRPC }] = await Promise.all([
+  const [{ data: perfil }, { data: esAdminRPC }, ambos] = await Promise.all([
     supabase.from("perfiles").select("side, username").maybeSingle(),
-    supabase.rpc("fichas_es_admin")
+    supabase.rpc("fichas_es_admin"),
+    supabase.rpc("side_ve_ambos").then(r => r, () => ({ data: null }))   // sin la tabla de excepciones, nadie la tiene
   ]);
-  return { side: perfil?.side || null, username: perfil?.username || "", admin: !!esAdminRPC };
+  return { side: perfil?.side || null, username: perfil?.username || "", admin: !!esAdminRPC, veAmbos: ambos && ambos.data === true };
 }
 
 async function ladoGuardarSide(side) {
@@ -244,11 +253,13 @@ async function ladoSincronizar() {
 
   const ladoCacheado = ladoActual();
   const adminCacheado = esAdmin();
+  const ambosCacheado = localStorage.getItem(VE_AMBOS_KEY) === "1";
 
   if (!session) {
-    if (ladoCacheado || adminCacheado || nombreUsuario()) {
+    if (ladoCacheado || adminCacheado || ambosCacheado || nombreUsuario()) {
       localStorage.removeItem(LADO_KEY);
       localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem(VE_AMBOS_KEY);
       localStorage.removeItem("compendioCartasEditor");
       localStorage.removeItem(USERNAME_KEY);
       recargarSiHaceFalta();
@@ -257,7 +268,7 @@ async function ladoSincronizar() {
   }
 
   try {
-    let { side, username, admin } = await ladoObtenerPerfilYAdmin();
+    let { side, username, admin, veAmbos } = await ladoObtenerPerfilYAdmin();
 
     // Cuenta creada con "confirmar email" activado: el Side/username
     // elegidos en el registro quedaron pendientes porque todavía no había
@@ -283,11 +294,13 @@ async function ladoSincronizar() {
     const cambioLado = (side || null) !== (ladoCacheado || null);
     const cambioAdmin = admin !== adminCacheado;
     const cambioUsername = (username || "") !== nombreUsuario();
+    const cambioAmbos = !!veAmbos !== ambosCacheado;
     if (side) localStorage.setItem(LADO_KEY, side); else localStorage.removeItem(LADO_KEY);
     if (username) localStorage.setItem(USERNAME_KEY, username); else localStorage.removeItem(USERNAME_KEY);
     localStorage.setItem(ADMIN_KEY, admin ? "1" : "0");
+    localStorage.setItem(VE_AMBOS_KEY, veAmbos ? "1" : "0");
     ladoSincronizarEditorCartas();
-    if (cambioLado || cambioAdmin || cambioUsername) recargarSiHaceFalta();
+    if (cambioLado || cambioAdmin || cambioUsername || cambioAmbos) recargarSiHaceFalta();
   } catch (e) {
     // Silencioso: se queda con el último valor bueno cacheado.
   }

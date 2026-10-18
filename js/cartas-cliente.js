@@ -6,7 +6,7 @@
 window.CartasCliente = (function () {
   /* ¿Puede ver este jugador esta carta? Mismo criterio que las entradas. */
   function visible(carta) {
-    if (typeof esAdmin === "function" && esAdmin()) return true;
+    if (typeof veAmbosLados === "function" ? veAmbosLados() : (typeof esAdmin === "function" && esAdmin())) return true;
     if (!carta.lado) return true;
     const lado = typeof ladoActual === "function" ? ladoActual() : null;
     return !!lado && carta.lado.includes(lado);
