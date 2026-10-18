@@ -375,7 +375,11 @@
     if (S.vista === "cargando") { cuerpo.innerHTML = `<p class="vv-dock-texto">Encendiendo las velas...</p>`; return; }
     if (S.vista === "sin_sesion") { cuerpo.innerHTML = `<div class="vv-dock-aviso"><h2>Inicia sesión para sentarte</h2><p>La mesa guarda tus tokens, tus manos y tus desafíos en tu cuenta. Pulsa «Iniciar sesión» arriba a la derecha.</p></div>`; return; }
     if (S.vista === "sin_conexion") { cuerpo.innerHTML = `<div class="vv-dock-aviso"><h2>La mesa no responde</h2><p>No hay conexión con el servidor.</p><button type="button" class="vv-boton vv-boton-principal" data-reintentar><span class="vv-boton-texto">Reintentar</span></button></div>`; return; }
-    if (S.vista === "sin_servidor") { cuerpo.innerHTML = `<div class="vv-dock-aviso"><h2>La mesa todavía no está montada</h2><p>Falta ejecutar <code>docs/veintiuna.sql</code> en Supabase. Cuando se ejecute, recarga esta página.</p></div>`; return; }
+    if (S.vista === "sin_servidor") {
+      const admin = (() => { try { return localStorage.getItem("compendioAdmin") === "1"; } catch (e) { return false; } })();
+      cuerpo.innerHTML = admin ? `<div class="vv-dock-aviso"><h2>La mesa todavía no está montada</h2><p>Falta ejecutar <code>docs/veintiuna.sql</code> en Supabase. Cuando se ejecute, recarga esta página.</p></div>` : `<div class="vv-dock-aviso"><h2>La mesa todavía no está abierta</h2><p>Las velas se están encendiendo. Vuelve en un rato.</p></div>`;
+      return;
+    }
     if (!est) { cuerpo.innerHTML = ""; return; }
     if (est.fase === "apuestas") pintarApuestas(cuerpo, est);
     else if (est.fase === "jugando") pintarTurno(cuerpo, est);

@@ -334,7 +334,8 @@
       return;
     }
     if (S.fase === "sin_servidor") {
-      cuerpo.innerHTML = `<div class="vv-dock-aviso"><h2>La mesa todavía no está montada</h2><p>Falta ejecutar <code>docs/veintiuna.sql</code> en Supabase. Cuando se ejecute, recarga esta página.</p></div>`;
+      const admin = (() => { try { return localStorage.getItem("compendioAdmin") === "1"; } catch (e) { return false; } })();
+      cuerpo.innerHTML = admin ? `<div class="vv-dock-aviso"><h2>La mesa todavía no está montada</h2><p>Falta ejecutar <code>docs/veintiuna.sql</code> en Supabase. Cuando se ejecute, recarga esta página.</p></div>` : `<div class="vv-dock-aviso"><h2>La mesa todavía no está abierta</h2><p>Las velas se están encendiendo. Vuelve en un rato.</p></div>`;
       return;
     }
     if (S.fase === "espera") {

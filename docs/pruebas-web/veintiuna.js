@@ -266,7 +266,7 @@ console.log("== Llamadas al servidor");
   cierto("enlace para saltar a los controles y zonas de aviso para lectores de pantalla", /class="vv-saltar" href="#vvDock"/.test(htmlA) && /id="vvSr"[^>]*aria-live="polite"/.test(htmlA) && /id="vvSrFuerte"[^>]*aria-live="assertive"/.test(htmlA));
   cierto("cada diálogo se nombra con aria-labelledby", ["vvDlgReglas", "vvDlgCartas", "vvDlgAtajos"].every(id => new RegExp(`id="${id}"[^>]*aria-labelledby="${id}T"`).test(htmlA)));
   cierto("la mesa, los controles y las mesas abiertas tienen nombre accesible", /aria-label="La mesa"/.test(htmlA) && /aria-label="Controles de la mesa"/.test(htmlA) && /aria-label="Mesas"/.test(htmlA));
-  cierto("oculto.js va primero (la página se abre solo al admin mientras esté en pruebas) y no hay ninguna imagen que pueda faltar", htmlA.indexOf("oculto.js") < htmlA.indexOf("css/style.css") && !/<img /.test(htmlA));
+  cierto("la página ya es pública (sin oculto.js) y no hay ninguna imagen que pueda faltar", !/oculto.js/.test(htmlA) && !/oculto.js/.test(html) && !/<img /.test(htmlA));
   cierto("carga las piezas en orden: arte, vista, api y la mesa", ["veintiuna-arte.js", "veintiuna-vista.js", "veintiuna-api.js", "veintiuna-amigos.js"].map(n => htmlA.indexOf(n)).every((x, i, v) => x > 0 && (i === 0 || x > v[i - 1])));
   cierto("cada asiento se anuncia con su estado (aria-label)", /el\.setAttribute\("aria-label", `\$\{a\.nombre\}/.test(amigosJs));
   cierto("las acciones deshabilitadas usan aria-disabled y explican por qué", /aria-disabled="\$\{!b\.habilitado\}"/.test(amigosJs) && /b\.motivo \|\| "Esa acción no está disponible ahora\."/.test(amigosJs));

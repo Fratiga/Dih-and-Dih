@@ -2,9 +2,9 @@
 
 Un blackjack contra la casa (`veintiuna.html`) con una regla especial distinta en cada mano. La mesa es una casa de juego a la luz de las velas y la crupier se llama Cera: una figura de cera con una corona de velas.
 
-**Estado (17 de octubre de 2026):** subido pero **oculto a los jugadores**. Solo lo abre la cuenta de admin (`js/oculto.js`, tarjeta en «En pruebas» de Minijuegos y puerta con marca de admin en la sala recreativa). El SQL (`docs/veintiuna.sql`) lo corre el usuario en Supabase; hasta entonces la página sale con el aviso «La mesa todavía no está montada». Las recompensas de cartas nacen apagadas.
+**Estado (18 de octubre de 2026):** **abierto a todos los jugadores** (por orden del usuario): tarjetas en «Para jugar» de Minijuegos, la mesa de blackjack de la taberna (rincón de cartas, abajo a la izquierda) y la sala recreativa. Sigue pendiente que el usuario corra `docs/veintiuna.sql` en Supabase: hasta entonces los jugadores ven «La mesa todavía no está abierta» (el admin ve el aviso técnico). Las recompensas de cartas nacen apagadas.
 
-Para abrirlo a todos: quitar `oculto.js` de `veintiuna.html`, pasar la tarjeta del array `JUEGOS` a las tarjetas normales de `minijuegos.html` y quitar el `true` de su entrada en `MAPA` de `js/lobby-salas.js`.
+Si hubiera que volver a esconderlo: poner `<script src="js/oculto.js">` el primero del `<head>` de `veintiuna.html` y de `veintiuna-amigos.html`, devolver las tarjetas al array `JUEGOS` de `minijuegos.html`, poner el cuarto elemento `true` en sus entradas de `MAPA` (`js/lobby-salas.js`) y `data-admin-only` en el objeto y en el enlace móvil de `index.html`.
 
 ## Reglas
 
