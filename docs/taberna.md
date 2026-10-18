@@ -43,6 +43,8 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
 - Se dibujan al triple (96 x 144 unidades del escenario) con `image-rendering: pixelated`: nada de suavizado ni filtros. El nombre solo aparece al pasar el cursor, enfocar o tocar al personaje.
 - Para ponerle sprite a un jugador, añade una entrada en `data/protagonistas.js` con su nombre en minúsculas y sin tildes:
   `"nombre": { sprite: "assets/protagonistas/nombre.png", personaje: "Nombre del personaje" }`.
+- Un sprite propio puede medir otra cosa y traer cuadros con vida: `tam: [ancho, alto]`, `alto` (alto dibujado, por defecto 144) y, opcionales, `brillo` y `parpadeo`
+  (PNG del mismo tamaño que se superponen por ratos). Ejemplo en uso: la cuenta `gigglinn` (77 x 127, tres cuadros: `gigglinn*.png`).
 - Sin entrada se usa la silueta provisional `assets/protagonistas/silueta.png`, que se regenera con `tools/silueta_protagonistas.py`.
 
 ## Fanarts

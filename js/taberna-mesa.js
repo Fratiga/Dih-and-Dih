@@ -46,10 +46,21 @@
   function crearNodo(p, puesto, i) {
     const info = (window.PROTAGONISTAS || {})[clave(p.nombre)] || null;
     const src = (info && info.sprite) || SILUETA;
-    const w = SPRITE.w * SPRITE.escala, h = SPRITE.h * SPRITE.escala;
+    // Un sprite propio puede traer otro tamaño (tam: [ancho, alto] en píxeles del PNG) y se dibuja con el alto que se pida (alto, en unidades del escenario)
+    const tam = (info && info.sprite && info.tam) || [SPRITE.w, SPRITE.h];
+    const h = (info && info.sprite && info.alto) || SPRITE.h * SPRITE.escala, w = Math.round(tam[0] * h / tam[1]);
     const g = el("g", { class: "lb-pj-mesa" + (info && info.sprite ? "" : " lb-pj-prov") + (p.prueba ? " lb-pj-prueba" : ""), "data-id": p.id, tabindex: "0", role: "img", "aria-label": `${p.nombre}${p.prueba ? " (prueba)" : ""}` });
     g.style.setProperty("--retraso", `${(i * 0.37).toFixed(2)}s`);
     const img = el("image", { x: puesto.x - w / 2, y: puesto.y - h, width: w, height: h, href: src, preserveAspectRatio: "xMidYMax meet" });
+    // Cuadros extra encima del base (mismo tamaño): brillo de los ojos y parpadeo, que se encienden por ratos (css/lobby.css)
+    const extras = [];
+    if (info && info.sprite) [["brillo", "lb-pj-f-brillo"], ["parpadeo", "lb-pj-f-parpadeo"]].forEach(([k, clase]) => {
+      if (!info[k]) return;
+      const f = el("image", { x: puesto.x - w / 2, y: puesto.y - h, width: w, height: h, href: info[k], preserveAspectRatio: "xMidYMax meet", class: clase, "aria-hidden": "true" });
+      f.style.setProperty("--ciclo", `${(5.2 + (i % 3) * 0.7).toFixed(1)}s`);
+      f.addEventListener("error", () => f.remove());
+      extras.push(f);
+    });
     img.addEventListener("error", () => {
       if (img.getAttribute("href") !== SILUETA) { img.setAttribute("href", SILUETA); g.classList.add("lb-pj-prov"); return; }
       // Ni siquiera carga la silueta (sin conexión, archivo movido): se dibuja con rectángulos para no enseñar nunca una imagen rota
@@ -59,7 +70,7 @@
       img.replaceWith(v);
       g.classList.add("lb-pj-prov");
     });
-    g.append(img);
+    g.append(img, ...extras);
     // El nombre solo aparece con el cursor, el foco o un toque (css/lobby.css)
     const nombre = String(p.nombre || "").slice(0, 14);
     const ancho = nombre.length * 9 + 16;

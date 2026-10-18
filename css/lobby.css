@@ -278,6 +278,11 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 @keyframes lbRespira { 50% { transform: translateY(-3px); } }
 .lb-pj-mesa:hover image, .lb-pj-mesa:focus-visible image, .lb-pj-mesa.lb-pj-activo image { filter: brightness(1.18); }
 .lb-pj-lejos { opacity: .5; animation: none; }
+/* Cuadros extra de un sprite con vida propia: el brillo de los ojos cambia dos veces por ciclo y parpadea una vez */
+.lb-pj-f-brillo { opacity: 0; animation: lbPjBrillo var(--ciclo, 5.2s) steps(1) infinite; }
+.lb-pj-f-parpadeo { opacity: 0; animation: lbPjParpadeo var(--ciclo, 5.2s) steps(1) infinite; }
+@keyframes lbPjBrillo { 0%, 18%, 50%, 100% { opacity: 0; } 18.1%, 49.9% { opacity: 1; } }
+@keyframes lbPjParpadeo { 0%, 86%, 91%, 100% { opacity: 0; } 86.1%, 90.9% { opacity: 1; } }
 /* El nombre solo se ve con el cursor, el foco o un toque */
 .lb-pj-etiqueta { opacity: 0; transition: opacity .12s steps(2); }
 .lb-pj-mesa:hover .lb-pj-etiqueta, .lb-pj-mesa:focus .lb-pj-etiqueta, .lb-pj-mesa.lb-pj-activo .lb-pj-etiqueta { opacity: 1; }
@@ -288,7 +293,7 @@ body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; g
 /* La jarra de cada plaza se levanta de vez en cuando hasta la altura de la cara */
 .lb-jarra { animation: lbBrindis 11s steps(1) infinite; animation-delay: var(--retraso, 0s); }
 @keyframes lbBrindis { 0%, 60%, 100% { transform: translateY(0); } 64%, 72% { transform: translateY(-44px); } 76% { transform: translateY(-22px); } }
-@media (prefers-reduced-motion: reduce) { .lb-pj-mesa, .lb-jarra { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lb-pj-mesa, .lb-jarra, .lb-pj-f-brillo, .lb-pj-f-parpadeo { animation: none; } }
 
 /* Ambiente de las salas */
 .lb-placa { font: 6px "Press Start 2P", monospace; fill: #2a1d0a; }
