@@ -26,7 +26,7 @@
     taberna: {
       nombre: "Taberna", grupos: [{ titulo: "Taberna", enlaces: [
         ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"],
-        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna-amigos.html", "Mesa de blackjack (Veintiuna)"]] }]
+        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna.html", "Mesa de blackjack (Las Veintiuna Velas)"]] }]
     },
     biblioteca: {
       nombre: "Biblioteca", lema: "Todo lo que se sabe del mundo, estante por estante.", grupos: [
@@ -37,7 +37,7 @@
     juegos: {
       nombre: "Sala recreativa", lema: "Cada juego en su máquina. Minijuegos los junta todos.", grupos: [
         { titulo: "Juegos", enlaces: [["ajedrez.html", "Ajedrez", "ajedrez"], ["arqueria.html", "Arquería", "diana"], ["ritmo.html", "Zarabanda", "arcade-ritmo"], ["parranda.html", "Parranda", "arcade-parranda"], ["sacrificio.html", "Hooey", "arcade-hooey"],
-          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura", true], ["veintiuna.html", "Las Veintiuna Velas", "cartas"], ["veintiuna-amigos.html", "Veintiuna con amigos", "cartas"]] },
+          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura", true], ["veintiuna.html", "Las Veintiuna Velas", "cartas"]] },
         { titulo: "Triunfos", enlaces: [["cartas.html", "Álbum", "cartas"], ["mazos.html", "Mazos", "cartas"], ["batalla.html", "Batalla", "cartas"]] }]
     },
     establos: {

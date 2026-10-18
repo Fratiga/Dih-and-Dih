@@ -26,13 +26,14 @@ create or replace function t_amigos_estado(p_uid uuid) returns jsonb language pl
 begin perform t_sesion(p_uid); return veintiuna_amigos_estado(null); end $$;
 
 -- Mesa con N jugadores sentados (los primeros N de u1..u4) con 100 tokens cada uno y la regla dada (y la siguiente)
-create or replace function t_amigos_montar(p_n int, p_regla text, p_proxima text default 'ojo', p_cartas boolean default false) returns uuid language plpgsql as $$
+drop function if exists t_amigos_montar(int, text, text, boolean);
+create or replace function t_amigos_montar(p_n int, p_regla text, p_proxima text default 'ojo', p_cartas boolean default false, p_modo text default 'casa') returns uuid language plpgsql as $$
 declare
   u uuid[] := array['00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004']::uuid[];
   s jsonb; v_cod text; v_mesa uuid; i int;
 begin
   perform t_sesion(u[1]);
-  s := veintiuna_amigos_crear('Mesa de prueba', true, p_cartas);
+  s := veintiuna_amigos_crear('Mesa de prueba', true, p_cartas, p_modo);
   v_cod := s ->> 'codigo';
   select id into v_mesa from veintiuna_mesas where codigo = v_cod;
   for i in 2..p_n loop perform t_sesion(u[i]); perform veintiuna_amigos_unirse(v_cod); end loop;
@@ -118,8 +119,12 @@ begin
   perform t_check('El otro jugador ve que ya apostó, pero no cuánto: lo sabrá al repartir', (s2 #>> '{asientos,0,listo}')::boolean and s2 #>> '{asientos,0,apuesta}' is null and not (s2 #>> '{yo,listo}')::boolean);
   begin perform veintiuna_amigos_apostar(25); perform t_check('Una apuesta que no es múltiplo del paso se rechaza', false);
   exception when others then perform t_check('Una apuesta que no es múltiplo del paso se rechaza', sqlerrm like 'La apuesta tiene que ser múltiplo%'); end;
-  begin perform veintiuna_amigos_apostar(500); perform t_check('Una apuesta mayor que el máximo se rechaza', false);
-  exception when others then perform t_check('Una apuesta mayor que el máximo se rechaza', sqlerrm like 'La apuesta va de%'); end;
+  begin perform veintiuna_amigos_apostar(500); perform t_check('Sin máximo, apostar más de lo que tienes se rechaza por falta de tokens', false);
+  exception when others then perform t_check('Sin máximo, apostar más de lo que tienes se rechaza por falta de tokens', sqlerrm like 'No tienes tantos tokens%'); end;
+  update cartas_economia_ajustes set valor = '100' where clave = 'veintiuna_apuesta_max';
+  begin perform veintiuna_amigos_apostar(120); perform t_check('Con un máximo configurado, una apuesta por encima se rechaza', false);
+  exception when others then perform t_check('Con un máximo configurado, una apuesta por encima se rechaza', sqlerrm like 'La apuesta va de%'); end;
+  update cartas_economia_ajustes set valor = '0' where clave = 'veintiuna_apuesta_max';
   begin perform veintiuna_amigos_apostar(10, gen_random_uuid()); perform t_check('Poner una carta en una mesa sin pozo se rechaza', false);
   exception when others then perform t_check('Poner una carta en una mesa sin pozo se rechaza', sqlerrm = 'Esta mesa no juega con cartas.'); end;
   perform t_amigos_listo(u2, 30);                                          -- (para reparar con una baraja conocida)
@@ -597,4 +602,233 @@ begin
   select jsonb_array_length(cartas_auditoria()) into v_audit;
   perform t_check('La auditoría de la economía de cartas sigue limpia', v_audit = 0);
   perform t_reset(); perform t_pozo_limpiar();
+end $$;
+
+/* ======================================================================== todos contra todos (sin crupier: gana el bote la mejor mano) */
+create or replace function t_duelo_montar(p_n int, p_regla text default 'ojo', p_cartas boolean default false) returns uuid language plpgsql as $$
+begin return t_amigos_montar(p_n, p_regla, 'ojo', p_cartas, 'duelo'); end $$;
+
+do $$
+declare
+  u1 uuid := '00000000-0000-0000-0000-000000000001'; u2 uuid := '00000000-0000-0000-0000-000000000002'; u3 uuid := '00000000-0000-0000-0000-000000000003';
+  v_mesa uuid; s jsonb; i int; v_ok boolean := true; v_reglas text[] := '{}'; r text;
+begin
+  -- las reglas que se sortean en este modo
+  for i in 1..300 loop r := veintiuna_i_regla_nueva_duelo(); if not (r = any (v_reglas)) then v_reglas := v_reglas || r; end if; end loop;
+  perform t_check('Todos contra todos solo sortea las reglas que no necesitan crupier (' || array_to_string(v_reglas, ', ') || ')', v_reglas @> array['fortuna', 'maldicion', 'voluntad', 'ojo', 'bufon'] and cardinality(v_reglas) = 5);
+
+  -- T1: la mejor mano se lleva todo el bote
+  perform t_reset();
+  v_mesa := t_duelo_montar(3);
+  perform t_check('La mesa se crea en modo duelo y lo dice', (select modo from veintiuna_mesas where id = v_mesa) = 'duelo');
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 30); perform t_amigos_listo(u3, 50);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '8c', '9c', '7t', 'Kd', 'Qd', '5c');
+  s := t_amigos_estado(u1);
+  perform t_check('Sin crupier: no hay cartas del crupier y se enseña el bote (100)', s ->> 'modo' = 'duelo' and jsonb_array_length(s #> '{crupier,cartas}') = 0 and (s #>> '{crupier,ocultas}')::int = 0 and (s ->> 'bote')::numeric = 100);
+  perform t_check('Cada jugador tiene sus dos cartas y las apuestas salieron de su billetera', s #>> '{asientos,0,mano,total}' = '19' and s #>> '{asientos,1,mano,total}' = '16' and s #>> '{asientos,2,mano,total}' = '18'
+                  and t_saldo_de(u1) = 80 and t_saldo_de(u2) = 70 and t_saldo_de(u3) = 50);
+  perform t_check('Empieza el primer asiento (la primera ronda) y no se paga nada al repartir', (s ->> 'turno')::int = 0 and s ->> 'fase' = 'jugando' and not exists (select 1 from veintiuna_partidas where mesa = v_mesa and estado = 'terminada'));
+  perform t_amigos_act(u1, 'plantar');
+  s := t_amigos_act(u2, 'pedir');
+  perform t_check('Quien se pasa queda fuera pero su mano sigue abierta hasta el final (su apuesta está en el bote)', s #>> '{asientos,1,mano,fase}' = 'pasada' and s #>> '{asientos,1,mano,estado}' = 'en_curso' and (s ->> 'turno')::int = 2);
+  s := t_amigos_act(u3, 'plantar');
+  perform t_check('Al acabar, la mejor mano (19) se lleva el bote entero: 100', s ->> 'fase' = 'resultado' and t_saldo_de(u1) = 180 and t_saldo_de(u2) = 70 and t_saldo_de(u3) = 50);
+  perform t_check('Los resultados: gana el bote, se pasa y pierde ante una mejor mano', s #>> '{asientos,0,mano,resultado}' = 'victoria' and s #>> '{asientos,0,mano,razon}' = 'bote'
+                  and s #>> '{asientos,1,mano,razon}' = 'te_pasas' and s #>> '{asientos,2,mano,razon}' = 'rival_mejor' and (s #>> '{asientos,0,mano,neto}')::numeric = 80);
+  perform t_check('Las fichas se conservan: lo que entra en el bote sale entero', t_saldo_de(u1) + t_saldo_de(u2) + t_saldo_de(u3) = 300);
+  perform t_check('El libro apunta apuesta y bote con el número de la mano', (select count(*) from hipodromo_movimientos where usuario = u1 and concepto like 'Veintiuna Velas: bote ganado (mano %') = 1);
+  perform t_check('Una mano de «todos contra todos» no cuenta para desafíos ni rachas, pero sí para las estadísticas', not exists (select 1 from veintiuna_logros where user_id = u1)
+                  and (select racha from veintiuna_estadisticas where user_id = u1) = 0 and (select rondas from veintiuna_estadisticas where user_id = u1) = 1 and (select victorias from veintiuna_estadisticas where user_id = u1) = 1 and (select neto from veintiuna_estadisticas where user_id = u1) = 80);
+  perform t_check('Ninguna mano queda abierta', not exists (select 1 from veintiuna_partidas where estado = 'en_curso'));
+  -- el primero en jugar rota cada ronda
+  update veintiuna_mesas set fase_limite = now() - interval '1 second' where id = v_mesa;
+  perform t_amigos_estado(u1);
+  perform t_amigos_listo(u1, 10); perform t_amigos_listo(u2, 10); perform t_amigos_listo(u3, 10);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '8c', '9c', '7t', '10c', 'Qd', '5c');
+  s := t_amigos_estado(u1);
+  perform t_check('En la segunda ronda empieza el segundo asiento (el turno rota)', (s ->> 'ronda')::int = 2 and (s ->> 'turno')::int = 1);
+  perform t_amigos_act(u2, 'plantar');
+  s := t_amigos_estado(u1);
+  perform t_check('...y sigue el tercero y luego el primero', (s ->> 'turno')::int = 2);
+  perform t_amigos_act(u3, 'plantar');
+  s := t_amigos_estado(u1);
+  perform t_check('...y por último el primero', (s ->> 'turno')::int = 0);
+  perform t_amigos_act(u1, 'plantar');
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+
+  -- T2: empate arriba: el bote se reparte a partes iguales sin perder ni un céntimo
+  perform t_reset();
+  v_mesa := t_duelo_montar(3);
+  perform t_amigos_listo(u1, 10); perform t_amigos_listo(u2, 20); perform t_amigos_listo(u3, 20);
+  perform t_amigos_reparte(v_mesa, '10p', '10d', '10c', '8c', '8d', '8t');
+  perform t_amigos_act(u1, 'plantar'); perform t_amigos_act(u2, 'plantar'); s := t_amigos_act(u3, 'plantar');
+  perform t_check('Empate de tres con un bote de 50: 16,68 + 16,66 + 16,66, el céntimo sobrante para el primero', t_saldo_de(u1) = 100 - 10 + 16.68 and t_saldo_de(u2) = 100 - 20 + 16.66 and t_saldo_de(u3) = 100 - 20 + 16.66);
+  perform t_check('Las fichas se conservan también al repartir', t_saldo_de(u1) + t_saldo_de(u2) + t_saldo_de(u3) = 300);
+  perform t_check('Quien gana poco por repartirse un bote mayor que su apuesta cuenta como victoria y quien pone más y empata, como derrota', s #>> '{asientos,0,mano,resultado}' = 'victoria' and s #>> '{asientos,1,mano,resultado}' = 'derrota' and s #>> '{asientos,0,mano,razon}' = 'bote_compartido');
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+
+  -- T3: se pasan todos: se devuelven las apuestas
+  perform t_reset();
+  v_mesa := t_duelo_montar(2);
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 30);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '6c', '7t', 'Kd', 'Qd');
+  perform t_amigos_act(u1, 'pedir'); s := t_amigos_act(u2, 'pedir');
+  perform t_check('Si todos se pasan, las apuestas se devuelven', s ->> 'fase' = 'resultado' and t_saldo_de(u1) = 100 and t_saldo_de(u2) = 100 and s #>> '{asientos,0,mano,razon}' = 'todos_se_pasan' and s #>> '{asientos,0,mano,resultado}' = 'empate');
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir();
+
+  -- T4: un natural vale más que cualquier total y se planta solo
+  perform t_reset();
+  v_mesa := t_duelo_montar(2);
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 20);
+  perform t_amigos_reparte(v_mesa, 'Ap', '10d', 'Kc', '9t', '5d');
+  s := t_amigos_estado(u2);
+  perform t_check('Un natural no se paga al repartir: se planta solo y el turno pasa al otro', s #>> '{asientos,0,mano,fase}' = 'plantada' and (s ->> 'turno')::int = 1 and t_saldo_de(u1) = 80);
+  s := t_amigos_act(u2, 'plantar');
+  perform t_check('El natural (21 con dos cartas) gana a un 19 y se lleva el bote de 40', t_saldo_de(u1) = 120 and t_saldo_de(u2) = 80 and s #>> '{asientos,0,mano,resultado}' = 'victoria');
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir();
+
+  -- T5: quien se va a mitad de ronda deja su apuesta en el bote
+  perform t_reset();
+  v_mesa := t_duelo_montar(3);
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 30); perform t_amigos_listo(u3, 50);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '8c', '9c', '7t', 'Kd', 'Qd');
+  perform t_amigos_act(u1, 'plantar');
+  perform t_sesion(u2); perform veintiuna_amigos_salir();
+  perform t_check('Irse en tu turno marca la mano como abandonada pero sigue abierta hasta el final', (select fase from veintiuna_partidas where user_id = u2 and mesa = v_mesa) = 'abandonada'
+                  and (select estado from veintiuna_partidas where user_id = u2 and mesa = v_mesa) = 'en_curso');
+  s := t_amigos_act(u3, 'plantar');
+  perform t_check('La apuesta del que se fue se queda en el bote: gana el 19 (u1) con 100', s ->> 'fase' = 'resultado' and t_saldo_de(u1) = 180 and t_saldo_de(u2) = 70 and t_saldo_de(u3) = 50
+                  and (select razon from veintiuna_partidas where user_id = u2 and mesa = v_mesa) = 'abandono');
+  perform t_check('Ya no queda ninguna mano abierta del que se fue', not exists (select 1 from veintiuna_partidas where estado = 'en_curso'));
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+
+  -- T6: con un solo jugador apostando no hay bote: la ronda se juega sin apostar
+  perform t_reset();
+  v_mesa := t_duelo_montar(2);
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 0);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '9c', '7t');
+  s := t_amigos_estado(u1);
+  perform t_check('Si solo apuesta uno, esa ronda se juega sin apostar y se le avisa', t_saldo_de(u1) = 100 and (select count(*) from veintiuna_partidas where modo = 'practica' and mesa = v_mesa) = 2 and s #>> '{yo,aviso}' like '%al menos dos jugadores%');
+  perform t_amigos_act(u1, 'plantar'); s := t_amigos_act(u2, 'plantar');
+  perform t_check('Sin apostar se compite por la gloria: gana el 19 sin mover tokens', s #>> '{asientos,0,mano,resultado}' = 'victoria' and s #>> '{asientos,1,mano,resultado}' = 'derrota' and t_saldo_de(u1) = 100 and t_saldo_de(u2) = 100);
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir();
+
+  -- T7: el Bufón en este modo
+  perform t_reset();
+  for i in 1..40 loop
+    v_mesa := t_duelo_montar(2, 'bufon');
+    perform t_amigos_listo(u1, 10); perform t_amigos_listo(u2, 10);
+    perform veintiuna_i_amigos_repartir(v_mesa);
+    if not exists (select 1 from veintiuna_mesas m where m.id = v_mesa and m.bufon_evento in ('nada', 'jugador') and cardinality(m.crupier) = 0 and m.pos = 4 + case when m.bufon_evento = 'jugador' then 1 else 0 end) then v_ok := false; end if;
+    if exists (select 1 from veintiuna_partidas p join veintiuna_mesas m on m.id = p.mesa where p.mesa = v_mesa and m.bufon_evento = 'jugador' and (p.bufon_evento = 'jugador') <> (p.asiento = m.bufon_asiento)) then v_ok := false; end if;
+    perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir();
+    perform t_reset();
+  end loop;
+  perform t_check('Bufón en «todos contra todos» (40 repartos): sin crupier, solo puede cambiar la primera carta de un jugador', v_ok);
+end $$;
+
+/* ======================================================================== todos contra todos con pozo de cartas */
+do $$
+declare
+  u1 uuid := '00000000-0000-0000-0000-000000000001'; u2 uuid := '00000000-0000-0000-0000-000000000002'; u3 uuid := '00000000-0000-0000-0000-000000000003';
+  v_mesa uuid; s jsonb; e1 uuid; e2 uuid;
+begin
+  -- gana el pozo la mejor mano de quienes pusieron carta y no se pasaron (aunque no hubiera crupier a quien ganar)
+  perform t_reset(); perform t_pozo_limpiar();
+  e1 := t_dar(u1, 'comun-3'); e2 := t_dar(u2, 'comun-4');
+  v_mesa := t_duelo_montar(3, 'ojo', true);
+  perform t_sesion(u1); perform veintiuna_amigos_apostar(20, e1);
+  perform t_sesion(u2); perform veintiuna_amigos_apostar(20, e2);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '9c', '7t', 'Kd');
+  perform t_amigos_act(u1, 'plantar');
+  perform t_amigos_act(u2, 'plantar');
+  s := t_amigos_estado(u1);
+  perform t_check('En el duelo el pozo de cartas va a la mejor mano de quienes pusieron carta (19 contra 16)', t_dueno(e1) = u1 || '/poseida' and t_dueno(e2) = u1 || '/poseida' and t_pozo_estado(v_mesa) = 'pagado/' || u1);
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+  perform t_reset(); perform t_pozo_limpiar();
+  -- quien se pasa no puede ganar el pozo
+  e1 := t_dar(u1, 'comun-3'); e2 := t_dar(u2, 'comun-4');
+  v_mesa := t_duelo_montar(3, 'ojo', true);
+  perform t_sesion(u1); perform veintiuna_amigos_apostar(20, e1);
+  perform t_sesion(u2); perform veintiuna_amigos_apostar(20, e2);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '6c', '7t', 'Kd');
+  perform t_amigos_act(u1, 'pedir');       -- 16 + rey = 26: se pasa
+  perform t_amigos_act(u2, 'plantar');
+  perform t_check('Quien se pasa pierde su carta ante el que no se pasó', t_dueno(e1) = u2 || '/poseida' and t_dueno(e2) = u2 || '/poseida' and t_pozo_estado(v_mesa) = 'pagado/' || u2);
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+  perform t_reset(); perform t_pozo_limpiar();
+end $$;
+
+/* ======================================================================== muchas rondas al azar en «todos contra todos»: las fichas se conservan */
+do $$
+declare
+  u uuid[] := array['00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003']::uuid[];
+  v_mesa uuid; s jsonb; i int; j int; v_turno int; v_uid uuid; v_acc text; v_total int; v_fase text; v_guard int; v_ap numeric;
+  v_ok boolean := true; v_msg text := ''; v_rondas int := 0; v_total_inicial numeric := 15000; v_peajes numeric; v_saldos numeric;
+begin
+  perform t_reset();
+  v_mesa := t_duelo_montar(3);
+  for i in 1..3 loop perform t_saldo(u[i], 5000); end loop;
+  for j in 1..60 loop
+    for i in 1..3 loop
+      perform t_sesion(u[i]);
+      v_ap := (array[0, 10, 20, 50, 100, 500, 1000])[1 + veintiuna_i_azar(7)];
+      begin
+        if veintiuna_i_azar(10) = 0 then perform veintiuna_amigos_pasar(); else perform veintiuna_amigos_apostar(v_ap); end if;
+      exception when others then
+        if sqlerrm not like 'Ahora no se puede%' and sqlerrm not like 'No tienes tantos tokens%' then v_ok := false; v_msg := v_msg || ' apostar:' || sqlerrm; end if;
+      end;
+    end loop;
+    select fase into v_fase from veintiuna_mesas where id = v_mesa;
+    if v_fase = 'apuestas' then
+      update veintiuna_mesas set fase_limite = now() - interval '1 second' where id = v_mesa;
+      perform t_amigos_estado(u[1]);
+      select fase into v_fase from veintiuna_mesas where id = v_mesa;
+    end if;
+    v_guard := 0;
+    while v_fase = 'jugando' and v_guard < 60 loop
+      v_guard := v_guard + 1;
+      select turno into v_turno from veintiuna_mesas where id = v_mesa;
+      select user_id into v_uid from veintiuna_asientos where mesa = v_mesa and asiento = v_turno;
+      s := t_amigos_estado(v_uid);
+      select (x #>> '{mano,total}')::int into v_total from jsonb_array_elements(s -> 'asientos') x where (x ->> 'asiento')::int = v_turno;
+      if s #>> '{yo,acciones,especial,tipo}' = 'fortuna' then v_acc := (array['fortuna', 'aceptar'])[1 + veintiuna_i_azar(2)];
+      elsif veintiuna_i_azar(4) = 0 and s #>> '{yo,acciones,especial,disponible}' = 'true' then v_acc := s #>> '{yo,acciones,especial,tipo}';
+      elsif veintiuna_i_azar(12) = 0 then
+        update veintiuna_mesas set fase_limite = now() - interval '1 second' where id = v_mesa;
+        perform t_amigos_estado(u[1]);
+        v_acc := null;
+      elsif v_total < 15 then v_acc := 'pedir';
+      else v_acc := 'plantar';
+      end if;
+      if v_acc is not null then
+        begin perform t_amigos_act(v_uid, v_acc);
+        exception when others then
+          begin perform t_amigos_act(v_uid, case when s #>> '{yo,acciones,especial,tipo}' = 'fortuna' then 'aceptar' else 'plantar' end);
+          exception when others then v_ok := false; v_msg := v_msg || ' accion:' || sqlerrm; end;
+        end;
+      end if;
+      select fase into v_fase from veintiuna_mesas where id = v_mesa;
+    end loop;
+    if v_fase = 'jugando' then v_ok := false; v_msg := v_msg || ' la ronda no acabó'; end if;
+    v_rondas := v_rondas + 1;
+    -- en cada ronda: las fichas que hay + lo que se gastó en peajes = lo que había al principio
+    select coalesce(sum(saldo), 0) into v_saldos from hipodromo_billeteras where usuario = any (u);
+    select coalesce(sum(peajes), 0) into v_peajes from veintiuna_partidas where user_id = any (u) and modo = 'apuesta';
+    if v_saldos + v_peajes <> v_total_inicial then v_ok := false; v_msg := v_msg || ' fichas ronda ' || j || ': ' || (v_saldos + v_peajes); exit; end if;
+    update veintiuna_mesas set fase_limite = now() - interval '1 second' where id = v_mesa;
+    perform t_amigos_estado(u[1]);
+    update veintiuna_asientos set perdidos = 0 where mesa = v_mesa;
+    if (select count(*) from veintiuna_asientos where mesa = v_mesa) < 3 then v_ok := false; v_msg := v_msg || ' se levantó alguien'; exit; end if;
+  end loop;
+  perform t_check('60 rondas al azar de «todos contra todos» (apuestas hasta 1000, plazos agotados, todas las reglas): sin errores y las fichas se conservan (' || v_msg || ')', v_ok and v_rondas = 60);
+  perform t_check('Ninguna mano quedó abierta salvo las de la ronda en curso', (select count(*) from veintiuna_partidas where estado = 'en_curso') = (select count(*) from veintiuna_partidas p join veintiuna_mesas m on m.id = p.mesa and m.ronda_id = p.ronda_id where p.estado = 'en_curso'));
+  perform t_check('Hubo manos de verdad, con tokens y sin ellos (' || (select count(*) from veintiuna_partidas) || ')', (select count(*) from veintiuna_partidas where modo = 'apuesta') > 30);
+  perform t_check('Nunca se cobró nada a ningún jugador por encima de lo que tenía (sin saldos negativos)', not exists (select 1 from hipodromo_movimientos where saldo < 0));
+  perform t_check('Cada mano con apuesta cuadra con el libro: cobro + peajes + pago = su neto', not exists (
+    select 1 from veintiuna_partidas p where p.modo = 'apuesta' and p.mesa is not null and p.estado = 'terminada'
+      and coalesce((select sum(m.monto) from hipodromo_movimientos m where m.usuario = p.user_id and m.concepto like '%(mano ' || p.id || ')%'), 0) <> p.neto));
+  perform t_check('Ninguna mano de «todos contra todos» sumó desafíos ni rachas', not exists (select 1 from veintiuna_logros where user_id = any (u)) and not exists (select 1 from veintiuna_estadisticas where user_id = any (u) and racha > 0));
+  for i in 1..3 loop perform t_sesion(u[i]); perform veintiuna_amigos_salir(); end loop;
+  perform t_reset();
 end $$;

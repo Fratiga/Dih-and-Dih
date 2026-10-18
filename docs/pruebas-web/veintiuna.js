@@ -55,6 +55,11 @@ comprobar("mano terminada: ningún botón de juego", a.botones, []);
 console.log("== Apuestas");
 const lim = { min: 10, max: 100, paso: 10 };
 comprobar("fichas a partir de los límites reales", V.fichasDisponibles(lim), [10, 20, 50, 100]);
+const libre = { min: 10, max: null, paso: 10 };
+comprobar("sin máximo hay fichas hasta 1000 y se puede apostar todo lo que se tenga", [V.fichasDisponibles(libre), V.sinTope(libre), V.sinTope({ min: 10, max: 0, paso: 10 }), V.sinTope(lim)], [[10, 20, 50, 100, 500, 1000], true, true, false]);
+comprobar("sin máximo no hay motivo para rechazar una apuesta grande si se tiene", [V.motivoApuesta(50000, 100000, libre), V.motivoApuesta(50000, 400, libre)], ["", "Te faltan 49.600 tokens para apostar 50.000 (tienes 400)."]);
+comprobar("sin máximo ajustar es solo lo que se tiene (múltiplo del paso) y «todo» es lo que cabe", [V.ajustarApuesta(Infinity, 12345, libre), V.ajustarApuesta(5000, 100000, libre)], [12340, 5000]);
+comprobar("los textos de los límites con y sin máximo", [V.textoLimites(libre), V.textoLimites(lim)], ["Desde 10, de 10 en 10, sin máximo.", "De 10 a 100, de 10 en 10."]);
 comprobar("límites 5/50/5 dan 5, 10, 25 y 50", V.fichasDisponibles({ min: 5, max: 50, paso: 5 }), [5, 10, 25, 50]);
 comprobar("apuesta correcta no tiene motivo", V.motivoApuesta(20, 100, lim), "");
 comprobar("por debajo del mínimo", V.motivoApuesta(0, 100, lim), "La apuesta mínima es 10.");
@@ -170,6 +175,23 @@ cierto("se anuncia quién se sienta y quién se levanta", /Caro se sienta a la m
 comprobar("errores de la mesa con palabras", ["mesa_llena", "no_es_tu_turno", "mesa_no_existe", "ya_sentado", "pozo_desequilibrado"].map(c => /\w/.test(V.mensajeError({ tipo: "servidor", codigo: c, mensaje: "x" })) && V.mensajeError({ tipo: "servidor", codigo: c, mensaje: "x" }) !== "x"), [true, true, true, true, true]);
 comprobar("el abandono tiene razón escrita", /levantaste/.test(V.RAZONES.abandono), true);
 
+console.log("== Mesa con amigos: todos contra todos");
+const duelo = mesa({ modo: "duelo", bote: 100, fase: "resultado", asientos: [
+  { asiento: 0, nombre: "Ana", yo: true, listo: true, mano: mano([carta(10, 0), carta(9, 1)], { estado: "terminada", resultado: "victoria", razon: "bote", neto: 80 }) },
+  { asiento: 1, nombre: "Beto", yo: false, listo: true, mano: mano([carta(10, 0), carta(6, 1), carta(10, 2)], { estado: "en_curso", fase: "pasada", total: 26 }) },
+  { asiento: 2, nombre: "Caro", yo: false, listo: true, mano: mano([carta(9, 0), carta(9, 1)], { estado: "terminada", resultado: "derrota", razon: "rival_mejor", neto: -50, total: 18 }) },
+  { asiento: 3, nombre: "Dani", yo: false, listo: true, mano: mano([carta(10, 0), carta(9, 1)], { estado: "terminada", resultado: "victoria", razon: "bote_compartido", neto: 15 }) },
+  { asiento: 4, nombre: "Eli", yo: false, listo: true, mano: mano([carta(9, 0), carta(8, 1)], { estado: "terminada", resultado: "empate", razon: "todos_se_pasan", neto: 0, total: 17 }) }] });
+comprobar("en «todos contra todos» los asientos hablan del bote", duelo.asientos.map(a => V.chipAsiento(duelo, a).texto), ["Gana el bote +80", "Se pasa", "Pierde −50", "Reparte el bote +15", "Recupera"]);
+comprobar("un natural se planta solo y se ve como «Blackjack»", V.chipAsiento(mesa({ fase: "jugando", turno: 0 }), { asiento: 1, yo: false, mano: mano([carta(1, 0), carta(13, 1)], { fase: "plantada", total: 21 }) }).texto, "Blackjack");
+comprobar("se sabe si la mesa es de duelo y los textos del modo existen", [V.esDuelo(duelo), V.esDuelo(m), /bote/.test(V.DUELO.reglaApuestas), V.DUELO.leyendaPaga], [true, false, true, "Todos contra todos"]);
+comprobar("las razones del duelo tienen palabras", ["bote", "bote_compartido", "rival_mejor", "todos_se_pasan", "mejor_mano"].every(k => /\w/.test(V.RAZONES[k])), true);
+comprobar("el pozo de cartas en duelo no habla de la casa", /no se pasa/.test(V.frasePozo(mesa({ modo: "duelo", pozo: { activo: true, cartas: [{ titulo: "Rata" }], estado: "abierto" } }))) && !/casa/.test(V.frasePozo(mesa({ modo: "duelo", pozo: { activo: true, cartas: [{ titulo: "Rata" }], estado: "abierto" } }))), true);
+tx = V.anuncioAmigos(mesa({ fase: "apuestas" }), Object.assign({}, duelo, { fase: "jugando", turno: 1 }));
+cierto("al repartir en duelo se anuncia el bote y no hay crupier", /Todos contra todos: el bote es de 100 tokens\./.test(tx) && !/crupier muestra/.test(tx));
+tx = V.anuncioAmigos(Object.assign({}, duelo, { fase: "jugando", turno: 1 }), duelo);
+cierto("al acabar en duelo no se anuncian las cartas del crupier, pero sí lo que hizo cada uno", !/El crupier enseña/.test(tx) && /Tú: gana el bote \+80\./.test(tx));
+
 console.log("== Errores con palabras");
 comprobar("sin conexión", /Reintentar/.test(V.mensajeError({ tipo: "red" })), true);
 comprobar("mano en curso", V.mensajeError({ tipo: "servidor", codigo: "mano_en_curso", mensaje: "x" }), "Ya tenías una mano abierta. La recupero.");
@@ -188,10 +210,11 @@ console.log("== Llamadas al servidor");
   comprobar("en la práctica nunca se manda un importe", llamadas[2][1].p_apuesta, 0);
 
   llamadas.length = 0;
-  await api.amigos.lista(); await api.amigos.crear("Mesa", true, false); await api.amigos.crear("", false, true); await api.amigos.unirse("ABCDE"); await api.amigos.salir();
+  await api.amigos.lista(); await api.amigos.crear("Mesa", true, false); await api.amigos.crear("", false, true); await api.amigos.crear("Pelea", true, true, "duelo"); await api.amigos.unirse("ABCDE"); await api.amigos.salir();
   await api.amigos.estado(7); await api.amigos.estado(); await api.amigos.misCartas(); await api.amigos.apostar(20, "e1"); await api.amigos.apostar(0); await api.amigos.pasar(); await api.amigos.repartir(); await api.amigos.accion(4, "pedir");
   comprobar("las llamadas de la mesa con amigos usan las funciones del servidor con sus argumentos", llamadas, [
-    ["veintiuna_amigos_lista", {}], ["veintiuna_amigos_crear", { p_nombre: "Mesa", p_privada: true, p_cartas: false }], ["veintiuna_amigos_crear", { p_nombre: null, p_privada: false, p_cartas: true }],
+    ["veintiuna_amigos_lista", {}], ["veintiuna_amigos_crear", { p_nombre: "Mesa", p_privada: true, p_cartas: false, p_modo: "casa" }], ["veintiuna_amigos_crear", { p_nombre: null, p_privada: false, p_cartas: true, p_modo: "casa" }],
+    ["veintiuna_amigos_crear", { p_nombre: "Pelea", p_privada: true, p_cartas: true, p_modo: "duelo" }],
     ["veintiuna_amigos_unirse", { p_codigo: "ABCDE" }], ["veintiuna_amigos_salir", {}], ["veintiuna_amigos_estado", { p_version: 7 }], ["veintiuna_amigos_estado", { p_version: null }],
     ["veintiuna_amigos_mis_cartas", {}], ["veintiuna_amigos_apostar", { p_apuesta: 20, p_carta: "e1" }], ["veintiuna_amigos_apostar", { p_apuesta: 0, p_carta: null }],
     ["veintiuna_amigos_pasar", {}], ["veintiuna_amigos_repartir", {}], ["veintiuna_amigos_accion", { p_paso: 4, p_accion: "pedir" }]]);

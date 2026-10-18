@@ -311,7 +311,7 @@ body.vv-ocupado .vv-boton { opacity: .6; pointer-events: none; }
 .vv-modo small { font: 400 .74rem var(--vv-serif); letter-spacing: 0; text-transform: none; opacity: .85; }
 .vv-modo.activo { color: #16121a; background: #ece5d4; }
 .vv-modo:not(.activo):hover { color: #fff; background: #ffffff12; }
-.vv-fichas { display: flex; gap: clamp(6px, 1.4vw, 14px); flex-wrap: nowrap; justify-content: center; }
+.vv-fichas { display: flex; gap: clamp(6px, 1.4vw, 14px); flex-wrap: wrap; justify-content: center; }
 .vv-ficha { width: clamp(50px, 6vw, 62px); aspect-ratio: 1; padding: 0; background: none; border: 0; border-radius: 50%; cursor: pointer; filter: drop-shadow(0 5px 5px #000b); transition: transform .14s; }
 .vv-ficha:hover { transform: translateY(-5px) rotate(-6deg); } .vv-ficha:active { transform: translateY(1px); }
 .vv-ficha.sin-fondos { opacity: .4; filter: grayscale(.8) drop-shadow(0 5px 5px #000b); cursor: not-allowed; }
@@ -459,12 +459,20 @@ body.vv-ocupado .vv-boton { opacity: .6; pointer-events: none; }
 .vva-barra h2 { margin: 0; font: 400 1.25rem var(--font-heading); letter-spacing: .08em; color: var(--vv-marfil); }
 .vva-barra p { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
 .vva-codigo { display: inline-block; padding: 1px 10px; font: 700 1.05rem var(--font-heading); letter-spacing: .3em; color: #16121a; background: #ece5d4; border-radius: 4px; }
-.vva-fieltro { display: flex; flex-direction: column; min-height: 0; }
+/* Con cinco asientos en fila, la curva ovalada del marco cortaba el de las esquinas: aquí el marco es casi recto por abajo */
+.vva-mesa .vv-madera { border-radius: 30px; }
+.vva-mesa .vv-madera::before { border-radius: 26px; }
+.vva-fieltro { display: flex; flex-direction: column; min-height: 0; border-radius: 22px; }
+.vva-asientos { padding-bottom: 22px; }
 .vva-fieltro[hidden], .vv-madera[hidden] { display: none; }
 .vva-fieltro .vv-zona-crupier { padding-top: 10px; }
 .vva-fieltro .vv-banda { padding: 2px 0 6px; }
 .vva-fieltro .vv-placa { padding: 6px 14px 6px 10px; }
 
+.vva-modos { margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
+.vva-modos legend { padding: 0; margin-bottom: 6px; color: var(--muted); font-size: .92rem; }
+.vva-bote-lado .vv-total { font-size: 1.3rem; }
+.vva-bote-texto { margin: 0; max-width: 34ch; text-align: center; color: var(--muted); font-size: .92rem; }
 .vva-pozo { position: relative; z-index: 3; align-self: center; width: min(720px, calc(100% - 32px)); margin: 0 auto 8px; padding: 8px 14px; background: #0a1a16cc; border: 1px solid #ffffff2e; border-radius: 6px; text-align: center; }
 .vva-pozo h3 { margin: 0 0 4px; font: 400 .8rem var(--font-heading); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
 .vva-pozo ul { list-style: none; margin: 0 0 4px; padding: 0; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }

@@ -121,9 +121,9 @@ window.VeintiunaArte = (function () {
   }
 
   /* ---------------------------------------------------------------- fichas de apuesta */
-  const FICHAS = { 10: ["#2c6b57", "#cfe9de"], 20: ["#7d2331", "#f3d6da"], 50: ["#244a7a", "#d6e4f7"], 100: ["#26202c", "#e6c36a"] };
+  const FICHAS = { 10: ["#2c6b57", "#cfe9de"], 20: ["#7d2331", "#f3d6da"], 50: ["#244a7a", "#d6e4f7"], 100: ["#26202c", "#d8d0bf"], 500: ["#4a2f7a", "#e0d8f3"], 1000: ["#1f5a5a", "#d3eeee"] };
   function ficha(valor) {
-    const [fondo, filo] = FICHAS[valor] || ["#5a4a2a", "#f6e3b0"];
+    const [fondo, filo] = FICHAS[valor] || ["#3a3a46", "#e4e0d6"];
     let marcas = "";
     for (let i = 0; i < 8; i++) marcas += `<rect x="46" y="3" width="8" height="14" rx="1.5" transform="rotate(${i * 45} 50 50)" fill="${filo}"/>`;
     return `<svg class="vv-ficha-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">

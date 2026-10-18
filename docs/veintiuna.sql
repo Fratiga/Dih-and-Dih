@@ -16,7 +16,7 @@
 /* ================================================================== 0) AJUSTES */
 insert into cartas_economia_ajustes (clave, valor) values
   ('veintiuna_apuesta_min', '10'),        -- apuesta mínima (la apuesta de la mesa de práctica es esta, simbólica)
-  ('veintiuna_apuesta_max', '100'),       -- apuesta máxima. La apuesta mediana del Hipódromo es 20 y la máxima 50
+  ('veintiuna_apuesta_max', '0'),         -- apuesta máxima; 0 = sin máximo (se puede apostar todo lo que tengas). Si algún día hace falta un tope, se pone aquí
   ('veintiuna_apuesta_paso', '10'),       -- las apuestas son múltiplos de esto (así el 3 a 2 del blackjack natural siempre da tokens enteros)
   ('veintiuna_peaje_fortuna', '0.6'),     -- Fortuna: fracción de la apuesta que cuesta salvar la mano
   ('veintiuna_peaje_voluntad', '0.5'),   -- Última voluntad: fracción de la apuesta que cuesta cambiar tu última carta por la siguiente
@@ -32,6 +32,8 @@ insert into cartas_economia_ajustes (clave, valor) values
   ('veintiuna_mesa_perdidos_max', '2'),   -- turnos seguidos que puede dejar que se jueguen solos antes de que lo levanten de la mesa
   ('veintiuna_pozo_max_dia', '5')         -- veces al día que un jugador puede poner una carta en el pozo de una mesa
 on conflict (clave) do nothing;
+-- La mesa nació con un máximo de 100; el usuario lo quitó (18-oct-2026). Solo se toca si sigue con el valor de origen.
+update cartas_economia_ajustes set valor = '0' where clave = 'veintiuna_apuesta_max' and valor = '100'::jsonb;
 
 /* ================================================================== 1) TABLAS */
 -- Los desafíos y lo que dan (la lógica de cada uno está en veintiuna_i_registrar y veintiuna_i_progreso)
@@ -205,6 +207,15 @@ language sql
 volatile
 as $$
   select (array['fortuna', 'maldicion', 'voluntad', 'ojo', 'marcadas', 'trueque', 'vela', 'bufon'])[1 + veintiuna_i_azar(8)]
+$$;
+
+-- En «todos contra todos» no hay crupier que juegue: solo valen las reglas que se juegan entre jugadores
+create or replace function veintiuna_i_regla_nueva_duelo()
+returns text
+language sql
+volatile
+as $$
+  select (array['fortuna', 'maldicion', 'voluntad', 'ojo', 'bufon'])[1 + veintiuna_i_azar(5)]
 $$;
 
 -- Baraja de 52 cartas: 0 a 51. Carta = n: rango (n % 13) + 1 (1 = as, 11 = J, 12 = Q, 13 = K) y palo n / 13 (0 picas, 1 corazones, 2 diamantes, 3 tréboles)
@@ -416,7 +427,7 @@ as $$
 declare
   est veintiuna_estadisticas%rowtype;
   gana boolean := p.resultado in ('natural', 'victoria');
-  cuenta boolean := p.modo = 'apuesta';   -- la mesa de práctica no cuenta para rachas ni desafíos
+  cuenta boolean := p.modo = 'apuesta' and not p.duelo;   -- ni la mesa de práctica ni «todos contra todos» cuentan para rachas ni desafíos (así nadie los gana pactando con un amigo)
   n_cartas int := coalesce(array_length(p.jugador, 1), 0);
   vj record;
   cont jsonb;
@@ -547,7 +558,8 @@ begin
         update veintiuna_partidas set fase = 'fortuna' where id = p_id;     -- decide el jugador: salvar la mano pagando el peaje, o aceptar la derrota
         return;
       end if;
-      perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas');
+      if p.duelo then update veintiuna_partidas set fase = 'pasada' where id = p_id;          -- su apuesta ya está en el bote; se cierra al acabar la ronda
+      else perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas'); end if;
     end if;
     return;
   end if;
@@ -570,7 +582,8 @@ begin
 
   if p_accion = 'aceptar' then
     if p.fase <> 'fortuna' then perform veintiuna_i_error('No hay nada que aceptar.', 'accion_invalida'); end if;
-    perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas');
+    if p.duelo then update veintiuna_partidas set fase = 'pasada' where id = p_id;
+    else perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas'); end if;
     return;
   end if;
 
@@ -593,7 +606,10 @@ begin
       jugador = p.jugador[1:n - 1] || nueva, repartidas = repartidas + 1, jugador_as1 = array_remove(jugador_as1, n)
       where id = p_id returning * into p;
     select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, figura);
-    if vj.total > 21 then perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas'); end if;
+    if vj.total > 21 then
+      if p.duelo then update veintiuna_partidas set fase = 'pasada' where id = p_id;
+      else perform veintiuna_i_liquidar(p_id, 'derrota', 'te_pasas'); end if;
+    end if;
     return;
   end if;
 
@@ -722,7 +738,7 @@ begin
     'saldo', v_saldo,
     'limites', jsonb_build_object(
       'min', (cartas_ajuste('veintiuna_apuesta_min', '10'))::text::numeric,
-      'max', (cartas_ajuste('veintiuna_apuesta_max', '100'))::text::numeric,
+      'max', nullif((cartas_ajuste('veintiuna_apuesta_max', '0'))::text::numeric, 0),
       'paso', (cartas_ajuste('veintiuna_apuesta_paso', '10'))::text::numeric),
     'peajes', jsonb_build_object(
       'fortuna', (cartas_ajuste('veintiuna_peaje_fortuna', '0.6'))::text::numeric,
@@ -751,7 +767,7 @@ as $$
 declare
   uid uuid := p_uid;
   min_a numeric := (cartas_ajuste('veintiuna_apuesta_min', '10'))::text::numeric;
-  max_a numeric := (cartas_ajuste('veintiuna_apuesta_max', '100'))::text::numeric;
+  max_a numeric := (cartas_ajuste('veintiuna_apuesta_max', '0'))::text::numeric;
   paso_a numeric := (cartas_ajuste('veintiuna_apuesta_paso', '10'))::text::numeric;
   est veintiuna_estadisticas%rowtype;
   p veintiuna_partidas%rowtype;
@@ -789,8 +805,8 @@ begin
   if p_modo not in ('apuesta', 'practica') then perform veintiuna_i_error('Esa modalidad no existe.', 'peticion_invalida'); end if;
   if p_modo = 'apuesta' then
     v_apuesta := p_apuesta;
-    if v_apuesta is null or v_apuesta < min_a or v_apuesta > max_a then
-      perform veintiuna_i_error('La apuesta va de ' || min_a || ' a ' || max_a || ' tokens.', 'apuesta_invalida');
+    if v_apuesta is null or v_apuesta < min_a or (max_a > 0 and v_apuesta > max_a) then
+      perform veintiuna_i_error(case when max_a > 0 then 'La apuesta va de ' || min_a || ' a ' || max_a || ' tokens.' else 'La apuesta mínima es de ' || min_a || ' tokens.' end, 'apuesta_invalida');
     end if;
     if v_apuesta <> trunc(v_apuesta / paso_a) * paso_a then
       perform veintiuna_i_error('La apuesta tiene que ser múltiplo de ' || paso_a || '.', 'apuesta_invalida');
@@ -1055,7 +1071,12 @@ alter table veintiuna_partidas add column if not exists mesa uuid references vei
 alter table veintiuna_partidas add column if not exists asiento int;
 alter table veintiuna_partidas add column if not exists ronda_id uuid;
 alter table veintiuna_partidas drop constraint if exists veintiuna_partidas_fase_check;
-alter table veintiuna_partidas add constraint veintiuna_partidas_fase_check check (fase in ('jugador', 'fortuna', 'plantada'));
+alter table veintiuna_partidas add constraint veintiuna_partidas_fase_check check (fase in ('jugador', 'fortuna', 'plantada', 'pasada', 'abandonada'));   -- pasada y abandonada: solo en «todos contra todos» (la mano espera al final de la ronda para repartir el bote)
+alter table veintiuna_partidas add column if not exists orden int;                                  -- turno dentro de la ronda (0 es el primero)
+alter table veintiuna_partidas add column if not exists duelo boolean not null default false;       -- mano de una mesa «todos contra todos»: no cuenta para desafíos ni rachas
+alter table veintiuna_mesas add column if not exists modo text not null default 'casa';
+alter table veintiuna_mesas drop constraint if exists veintiuna_mesas_modo_check;
+alter table veintiuna_mesas add constraint veintiuna_mesas_modo_check check (modo in ('casa', 'duelo'));
 create index if not exists veintiuna_partidas_mesa_idx on veintiuna_partidas (mesa, ronda_id) where mesa is not null;
 alter table veintiuna_mesas enable row level security;
 alter table veintiuna_asientos enable row level security;
@@ -1132,6 +1153,46 @@ as $$
     where m.id = p_mesa and p.mesa = m.id and p.ronda_id = m.ronda_id and p.estado = 'en_curso'
 $$;
 
+-- Lo buena que es una mano para comparar entre jugadores: un natural (21 con dos cartas) vale 22 y gana a cualquier otro total
+create or replace function veintiuna_i_calidad(p_jugador smallint[], p_as1 int[], p_figura int)
+returns int
+language sql
+immutable
+as $$
+  select case when coalesce(array_length(p_jugador, 1), 0) = 2 and (select total from veintiuna_i_valor(p_jugador, p_as1, p_figura)) = 21 then 22
+              else (select total from veintiuna_i_valor(p_jugador, p_as1, p_figura)) end
+$$;
+
+-- Cierra una mano pagando lo que se decide (el bote de «todos contra todos»): una sola vez, apunta el movimiento y registra la mano
+create or replace function veintiuna_i_liquidar_pago(p_id uuid, p_pago numeric, p_resultado text, p_razon text, p_concepto text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p veintiuna_partidas%rowtype;
+  v_saldo numeric;
+  v_mov bigint;
+  v_nuevos text[];
+begin
+  select * into p from veintiuna_partidas where id = p_id for update;
+  if not found then raise exception 'Esa mano no existe'; end if;
+  if p.estado = 'terminada' then return; end if;
+  if p.modo = 'apuesta' and p_pago > 0 then
+    update hipodromo_billeteras set saldo = saldo + p_pago where usuario = p.user_id returning saldo into v_saldo;
+    insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
+      values (p.user_id, null, 'Veintiuna Velas: ' || p_concepto || ' (mano ' || p.id || ')', p_pago, v_saldo) returning id into v_mov;
+  end if;
+  update veintiuna_partidas set estado = 'terminada', resultado = p_resultado, razon = p_razon, pago = case when p.modo = 'apuesta' then p_pago else 0 end,
+    neto = case when p.modo = 'apuesta' then p_pago else 0 end - p.apuesta * case when p.modo = 'apuesta' then 1 else 0 end - p.peajes,
+    terminada = now(), mov_pago = v_mov
+    where id = p_id returning * into p;
+  v_nuevos := veintiuna_i_registrar(p);
+  update veintiuna_partidas set logros_nuevos = v_nuevos where id = p_id;
+end;
+$$;
+
 /* ---------------------------------------------------------------- 8.3) POZO DE CARTAS */
 -- Suelta las cartas del pozo de una ronda (de todos, o de un jugador): se desbloquean y vuelven a quien las puso
 create or replace function veintiuna_i_pozo_soltar(p_ronda uuid, p_user uuid default null)
@@ -1174,10 +1235,12 @@ begin
   select count(*) into v_n from veintiuna_pozo_cartas where ronda_id = m.ronda_id;
   if v_n = 0 or not exists (select 1 from veintiuna_pozos where ronda_id = m.ronda_id and estado = 'abierto') then return; end if;
   figura := case m.regla when 'maldicion' then 11 else 10 end;
-  for f in select c.user_id, p.resultado, p.jugador, p.jugador_as1
+  -- Contra la casa compiten los que le ganaron; en «todos contra todos», los que no se pasaron ni se fueron
+  for f in select c.user_id, p.jugador, p.jugador_as1
              from veintiuna_pozo_cartas c join veintiuna_partidas p on p.user_id = c.user_id and p.ronda_id = m.ronda_id and p.mesa = m.id
-            where c.ronda_id = m.ronda_id and not c.abandono and p.resultado in ('natural', 'victoria') loop
-    v_nota := case when f.resultado = 'natural' then 22 else (select total from veintiuna_i_valor(f.jugador, f.jugador_as1, figura)) end;
+            where c.ronda_id = m.ronda_id and not c.abandono
+              and case when m.modo = 'duelo' then p.fase = 'plantada' else p.resultado in ('natural', 'victoria') end loop
+    v_nota := veintiuna_i_calidad(f.jugador, f.jugador_as1, figura);
     if v_nota > v_mejor then v_mejor := v_nota; v_ganador := f.user_id; v_empate := false;
     elsif v_nota = v_mejor then v_empate := true;
     end if;
@@ -1209,7 +1272,8 @@ security definer
 set search_path = public
 as $$
 begin
-  update veintiuna_mesas set ronda = ronda + 1, ronda_id = gen_random_uuid(), regla = proxima_regla, proxima_regla = veintiuna_i_regla_nueva(),
+  update veintiuna_mesas set ronda = ronda + 1, ronda_id = gen_random_uuid(), regla = proxima_regla,
+    proxima_regla = case when modo = 'duelo' then veintiuna_i_regla_nueva_duelo() else veintiuna_i_regla_nueva() end,
     fase = 'apuestas', fase_limite = null, turno = null, mazo = null, pos = 0, crupier = '{}', bufon_evento = null, bufon_asiento = null
     where id = p_mesa;
   update veintiuna_asientos set apuesta = null, listo = false, carta = null, partida = null, aviso = null where mesa = p_mesa;
@@ -1239,7 +1303,9 @@ begin
   select * into m from veintiuna_mesas where id = p_mesa for update;
   figura := case m.regla when 'maldicion' then 11 else 10 end;
   limite := case m.regla when 'vela' then 16 else 17 end;
-  if exists (select 1 from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and estado = 'en_curso') then
+  if m.modo = 'duelo' then
+    perform veintiuna_i_amigos_resolver_duelo(m.id);
+  elsif exists (select 1 from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and estado = 'en_curso') then
     select o_crupier, o_repartidas into cru, rep from veintiuna_i_turno_crupier(m.mazo, m.pos, m.crupier, figura, false, limite);
     update veintiuna_mesas set crupier = cru, pos = rep where id = m.id;
     m.crupier := cru;
@@ -1264,6 +1330,68 @@ begin
 end;
 $$;
 
+-- Todos contra todos: gana el bote (la suma de las apuestas) la mejor mano entre quienes apostaron y no se pasaron ni se fueron. Si empatan, se reparte a partes iguales.
+-- Si ninguno que apostó sigue en pie, se devuelven las apuestas. Quien juega sin apostar compite por la gloria (cuenta como victoria o derrota, sin tokens).
+create or replace function veintiuna_i_amigos_resolver_duelo(p_mesa uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  m veintiuna_mesas%rowtype;
+  r record;
+  figura int;
+  v_bote numeric;
+  v_mejor_ap int;
+  v_mejor_todos int;
+  v_n_ap int;
+  v_n_todos int;
+  v_parte numeric;
+  v_resto numeric;
+  v_pago numeric;
+  v_res text;
+  v_razon text;
+  v_primero boolean := true;
+  v_sin_apuesta_en_pie boolean;
+begin
+  select * into m from veintiuna_mesas where id = p_mesa;
+  figura := case m.regla when 'maldicion' then 11 else 10 end;
+  select coalesce(sum(apuesta), 0) into v_bote from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and modo = 'apuesta';
+  select max(veintiuna_i_calidad(jugador, jugador_as1, figura)), count(*) into v_mejor_ap, v_n_ap from veintiuna_partidas p
+    where mesa = m.id and ronda_id = m.ronda_id and modo = 'apuesta' and fase = 'plantada'
+      and veintiuna_i_calidad(jugador, jugador_as1, figura) = (select max(veintiuna_i_calidad(q.jugador, q.jugador_as1, figura)) from veintiuna_partidas q where q.mesa = m.id and q.ronda_id = m.ronda_id and q.modo = 'apuesta' and q.fase = 'plantada');
+  select max(veintiuna_i_calidad(jugador, jugador_as1, figura)), count(*) into v_mejor_todos, v_n_todos from veintiuna_partidas p
+    where mesa = m.id and ronda_id = m.ronda_id and fase = 'plantada'
+      and veintiuna_i_calidad(jugador, jugador_as1, figura) = (select max(veintiuna_i_calidad(q.jugador, q.jugador_as1, figura)) from veintiuna_partidas q where q.mesa = m.id and q.ronda_id = m.ronda_id and q.fase = 'plantada');
+  if v_n_ap > 0 then
+    v_parte := trunc(v_bote * 100 / v_n_ap) / 100;
+    v_resto := v_bote - v_parte * v_n_ap;
+  end if;
+  for r in select * from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and estado = 'en_curso' order by asiento loop
+    if r.modo = 'apuesta' then
+      if v_n_ap = 0 then
+        perform veintiuna_i_liquidar_pago(r.id, r.apuesta, 'empate', 'todos_se_pasan', 'apuesta devuelta');
+      elsif r.fase = 'plantada' and veintiuna_i_calidad(r.jugador, r.jugador_as1, figura) = v_mejor_ap then
+        v_pago := v_parte + case when v_primero then v_resto else 0 end;
+        v_primero := false;
+        v_res := case when v_pago > r.apuesta then 'victoria' when v_pago = r.apuesta then 'empate' else 'derrota' end;
+        perform veintiuna_i_liquidar_pago(r.id, v_pago, v_res, case when v_n_ap > 1 then 'bote_compartido' else 'bote' end, case when v_n_ap > 1 then 'bote compartido' else 'bote ganado' end);
+      else
+        perform veintiuna_i_liquidar_pago(r.id, 0, 'derrota', case r.fase when 'pasada' then 'te_pasas' when 'abandonada' then 'abandono' else 'rival_mejor' end, 'bote perdido');
+      end if;
+    else
+      if v_n_todos = 0 then v_res := 'empate'; v_razon := 'todos_se_pasan';
+      elsif r.fase = 'plantada' and veintiuna_i_calidad(r.jugador, r.jugador_as1, figura) = v_mejor_todos then
+        v_res := case when v_n_todos > 1 then 'empate' else 'victoria' end; v_razon := case when v_n_todos > 1 then 'igual' else 'mejor_mano' end;
+      else v_res := 'derrota'; v_razon := case r.fase when 'pasada' then 'te_pasas' when 'abandonada' then 'abandono' else 'rival_mejor' end;
+      end if;
+      perform veintiuna_i_liquidar_pago(r.id, 0, v_res, v_razon, 'mano sin apuesta');
+    end if;
+  end loop;
+end;
+$$;
+
 -- Pasa el turno al siguiente asiento que sigue en juego; si no queda nadie, cierra la ronda
 create or replace function veintiuna_i_amigos_turno(p_mesa uuid)
 returns void
@@ -1276,8 +1404,10 @@ declare
   v_next int;
 begin
   select * into m from veintiuna_mesas where id = p_mesa for update;
-  select min(asiento) into v_next from veintiuna_partidas
-    where mesa = m.id and ronda_id = m.ronda_id and estado = 'en_curso' and fase in ('jugador', 'fortuna') and asiento > coalesce(m.turno, -1);
+  select asiento into v_next from veintiuna_partidas
+    where mesa = m.id and ronda_id = m.ronda_id and estado = 'en_curso' and fase in ('jugador', 'fortuna')
+      and orden > coalesce((select orden from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and asiento = m.turno), -1)
+    order by orden limit 1;
   if v_next is null then
     perform veintiuna_i_amigos_cerrar_ronda(m.id);
   else
@@ -1321,9 +1451,13 @@ declare
   v_razon text;
   v_pozo int;
   v_hay boolean;
+  n_apost int;
+  v_f int;
+  v_duelo boolean;
 begin
   select * into m from veintiuna_mesas where id = p_mesa for update;
   if m.fase <> 'apuestas' then return; end if;
+  v_duelo := m.modo = 'duelo';
   figura := case m.regla when 'maldicion' then 11 else 10 end;
 
   -- Quién juega: los listos con apuesta. Si no les alcanzan los tokens (los gastaron en otro sitio) se quedan sin jugar esta ronda.
@@ -1345,6 +1479,15 @@ begin
     perform veintiuna_i_amigos_tocar(m.id);
     return;
   end if;
+  -- Todos contra todos: el bote solo existe si apuestan tokens al menos dos jugadores; si no, esta ronda se juega sin apostar
+  if v_duelo then
+    select count(*) filter (where x > 0) into n_apost from unnest(v_apuestas) x;
+    if n_apost < 2 then
+      update veintiuna_asientos set aviso = 'En «todos contra todos» tienen que apostar tokens al menos dos jugadores: esta ronda se juega sin apostar.'
+        where mesa = m.id and asiento = any (v_ids) and apuesta > 0;
+      v_apuestas := array_fill(0::numeric, array[v_k]);
+    end if;
+  end if;
   -- El pozo de cartas solo vale si pusieron carta al menos dos de los que juegan
   select count(*) into v_pozo from veintiuna_pozo_cartas c where c.ronda_id = m.ronda_id
     and exists (select 1 from veintiuna_asientos s where s.mesa = m.id and s.user_id = c.user_id and s.asiento = any (v_ids));
@@ -1362,6 +1505,16 @@ begin
 
   -- Reparto: una carta a cada jugador (por orden de asiento), la visible del crupier, la segunda de cada jugador y la oculta
   v_mazo := coalesce(p_mazo, veintiuna_i_mazo_doble());
+  if v_duelo then
+    -- Sin crupier: dos cartas a cada jugador y nada más. El Bufón: 1-3 nada; 4-6 cambia la primera carta de un jugador al azar.
+    v_cru := '{}'::smallint[];
+    v_pos := 2 * v_k;
+    if m.regla = 'bufon' then
+      v_dado := veintiuna_i_azar(6);
+      v_evento := case when v_dado < 3 then 'nada' else 'jugador' end;
+      if v_evento = 'jugador' then v_afectado := v_ids[1 + veintiuna_i_azar(v_k)]; end if;
+    end if;
+  else
   v_cru := array[v_mazo[1 + v_k], v_mazo[2 * v_k + 2]];
   v_pos := 2 * v_k + 2;
   if m.regla = 'bufon' then
@@ -1371,12 +1524,15 @@ begin
     if v_evento = 'crupier' then v_cru[1] := v_mazo[v_pos + 1]; v_pos := v_pos + 1;
     elsif v_evento = 'jugador' then v_afectado := v_ids[1 + veintiuna_i_azar(v_k)]; end if;
   end if;
+  end if;
+  -- Quién juega primero: en «todos contra todos» rota cada ronda (el último en jugar ve lo que han hecho los demás)
+  v_f := ((m.ronda - 1) % v_k) + 1;
   update veintiuna_mesas set mazo = v_mazo, pos = v_pos, crupier = v_cru, bufon_evento = v_evento, bufon_asiento = v_afectado where id = m.id;
   select * into vc from veintiuna_i_valor(v_cru, '{}'::int[], figura);
 
   for v_i in 1..v_k loop
     select * into a from veintiuna_asientos where mesa = m.id and asiento = v_ids[v_i];
-    v_jug := array[v_mazo[v_i], v_mazo[v_k + 1 + v_i]];
+    v_jug := case when v_duelo then array[v_mazo[v_i], v_mazo[v_k + v_i]] else array[v_mazo[v_i], v_mazo[v_k + 1 + v_i]] end;
     if v_evento = 'jugador' and v_ids[v_i] = v_afectado then
       v_jug[1] := v_mazo[v_pos + 1]; v_pos := v_pos + 1;
       update veintiuna_mesas set pos = v_pos where id = m.id;
@@ -1391,15 +1547,20 @@ begin
       insert into hipodromo_movimientos (usuario, n, concepto, monto, saldo)
         values (a.user_id, null, 'Veintiuna Velas: apuesta (mano ' || v_id || ')', -v_ap, v_saldo) returning id into v_mov;
     end if;
-    insert into veintiuna_partidas (id, user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier, mov_cobro, bufon_evento, mesa, asiento, ronda_id)
+    insert into veintiuna_partidas (id, user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier, mov_cobro, bufon_evento, mesa, asiento, ronda_id, duelo, orden)
       values (v_id, a.user_id, gen_random_uuid(), v_modo, case when v_modo = 'apuesta' then v_ap else min_a end, m.regla, v_mazo, v_pos, v_jug, v_cru, v_mov,
               case when m.regla <> 'bufon' then null when v_evento = 'crupier' then 'crupier' when v_evento = 'jugador' and v_ids[v_i] = v_afectado then 'jugador' else 'nada' end,
-              m.id, a.asiento, m.ronda_id);
+              m.id, a.asiento, m.ronda_id, v_duelo, case when v_duelo then (v_i - v_f + v_k) % v_k else v_i - 1 end);
     update veintiuna_asientos set partida = v_id where mesa = m.id and asiento = a.asiento;
     -- Orden de resolución al repartir (igual que en la mesa individual)
     select * into vj from veintiuna_i_valor(v_jug, '{}'::int[], figura);
     v_res := null;
-    if vj.total > 21 then v_res := 'derrota'; v_razon := 'pasado_al_repartir';
+    if v_duelo then
+      -- Sin crupier nada se paga al repartir: dos figuras con la Maldición se pasan y un natural se planta solo
+      if vj.total > 21 then update veintiuna_partidas set fase = 'pasada' where id = v_id;
+      elsif vj.total = 21 then update veintiuna_partidas set fase = 'plantada' where id = v_id;
+      end if;
+    elsif vj.total > 21 then v_res := 'derrota'; v_razon := 'pasado_al_repartir';
     elsif vj.total = 21 and vc.total = 21 then v_res := 'empate'; v_razon := 'ambos_natural';
     elsif vj.total = 21 then v_res := 'natural'; v_razon := 'natural';
     elsif vc.total = 21 then v_res := 'derrota'; v_razon := 'natural_crupier';
@@ -1440,7 +1601,7 @@ begin
   else
     update veintiuna_asientos set perdidos = 0 where mesa = p_mesa and asiento = p_asiento;
   end if;
-  if p.estado = 'terminada' or p.fase = 'plantada' then
+  if p.estado = 'terminada' or p.fase in ('plantada', 'pasada', 'abandonada') then
     perform veintiuna_i_amigos_turno(m.id);
   else
     update veintiuna_mesas set fase_limite = now() + make_interval(secs => (cartas_ajuste('veintiuna_mesa_turno_s', '45'))::text::numeric) where id = m.id;
@@ -1471,7 +1632,8 @@ begin
     select * into p from veintiuna_partidas where id = a.partida for update;
     if found and p.estado = 'en_curso' then
       update veintiuna_pozo_cartas set abandono = true where ronda_id = m.ronda_id and user_id = p_uid;
-      perform veintiuna_i_liquidar(p.id, 'derrota', 'abandono');
+      if p.duelo then update veintiuna_partidas set fase = 'abandonada' where id = p.id;     -- su apuesta se queda en el bote
+      else perform veintiuna_i_liquidar(p.id, 'derrota', 'abandono'); end if;
     end if;
   end if;
   delete from veintiuna_asientos where mesa = p_mesa and user_id = p_uid;
@@ -1626,20 +1788,22 @@ begin
 
   resta := case when m.fase_limite is null then null else greatest(0, extract(epoch from (m.fase_limite - now()))) end;
   return jsonb_build_object(
+    'modo', m.modo,
+    'bote', case when m.modo = 'duelo' and m.fase <> 'apuestas' then (select coalesce(sum(apuesta), 0) from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and modo = 'apuesta') end,
     'codigo', m.codigo, 'nombre', m.nombre, 'cartas', m.cartas, 'privada', m.privada, 'creador', (select nombre from veintiuna_asientos a where a.mesa = p_mesa and a.user_id = m.creador),
     'soy_creador', m.creador = p_uid,
     'version', m.version, 'ronda', m.ronda, 'fase', m.fase, 'restante_s', round(resta), 'turno', m.turno,
     'asientos_max', (cartas_ajuste('veintiuna_mesa_asientos', '5'))::text::int,
     'regla', jsonb_build_object('id', m.regla, 'evento', case when m.regla = 'bufon' then m.bufon_evento end, 'asiento_afectado', case when m.regla = 'bufon' then m.bufon_asiento end),
     'proxima_regla', m.proxima_regla,
-    'crupier', jsonb_build_object('cartas', veintiuna_i_mano_json(cru, '{}'::int[]), 'ocultas', case when m.fase = 'jugando' then 1 else 0 end, 'total', vc.total, 'blando', vc.blando),
+    'crupier', jsonb_build_object('cartas', veintiuna_i_mano_json(cru, '{}'::int[]), 'ocultas', case when m.fase = 'jugando' and m.modo = 'casa' then 1 else 0 end, 'total', vc.total, 'blando', vc.blando),
     'asientos', items,
     'pozo', jsonb_build_object('activo', m.cartas, 'cartas', pozo, 'estado', p_pozo.estado, 'ganador', (select nombre from veintiuna_asientos a where a.mesa = p_mesa and a.user_id = p_pozo.ganador),
                                'ganador_nombre_libre', (select veintiuna_i_nombre(p_pozo.ganador))),
     'yo', yo,
     'limites', jsonb_build_object(
       'min', (cartas_ajuste('veintiuna_apuesta_min', '10'))::text::numeric,
-      'max', (cartas_ajuste('veintiuna_apuesta_max', '100'))::text::numeric,
+      'max', nullif((cartas_ajuste('veintiuna_apuesta_max', '0'))::text::numeric, 0),
       'paso', (cartas_ajuste('veintiuna_apuesta_paso', '10'))::text::numeric),
     'peajes', jsonb_build_object(
       'fortuna', (cartas_ajuste('veintiuna_peaje_fortuna', '0.6'))::text::numeric,
@@ -1671,7 +1835,7 @@ begin
   for f in select distinct mesa, user_id from veintiuna_asientos where ultima_actividad < now() - make_interval(secs => inactividad) loop
     if pg_try_advisory_xact_lock(hashtextextended('veintiuna_mesa_' || f.mesa::text, 0)) then perform veintiuna_i_amigos_sacar(f.mesa, f.user_id); end if;
   end loop;
-  select coalesce(jsonb_agg(jsonb_build_object('codigo', m.codigo, 'nombre', m.nombre, 'cartas', m.cartas, 'fase', m.fase, 'ronda', m.ronda,
+  select coalesce(jsonb_agg(jsonb_build_object('codigo', m.codigo, 'nombre', m.nombre, 'cartas', m.cartas, 'modo', m.modo, 'fase', m.fase, 'ronda', m.ronda,
       'jugadores', (select coalesce(jsonb_agg(a.nombre order by a.asiento), '[]'::jsonb) from veintiuna_asientos a where a.mesa = m.id),
       'asientos_max', (cartas_ajuste('veintiuna_mesa_asientos', '5'))::text::int) order by m.actividad desc), '[]'::jsonb)
     into r from veintiuna_mesas m where m.estado = 'abierta' and not m.privada and exists (select 1 from veintiuna_asientos a where a.mesa = m.id);
@@ -1680,7 +1844,8 @@ end;
 $$;
 
 -- Crea una mesa y te sienta en ella
-create or replace function veintiuna_amigos_crear(p_nombre text default null, p_privada boolean default true, p_cartas boolean default false)
+drop function if exists veintiuna_amigos_crear(text, boolean, boolean);
+create or replace function veintiuna_amigos_crear(p_nombre text default null, p_privada boolean default true, p_cartas boolean default false, p_modo text default 'casa')
 returns jsonb
 language plpgsql
 security definer
@@ -1690,17 +1855,21 @@ declare
   uid uuid := auth.uid();
   v_nombre text;
   v_id uuid;
-  v_regla text := veintiuna_i_regla_nueva();
+  v_modo text := coalesce(nullif(p_modo, ''), 'casa');
+  v_regla text;
 begin
   if uid is null then perform veintiuna_i_error('Hay que iniciar sesión.', 'sin_sesion'); end if;
+  if v_modo not in ('casa', 'duelo') then perform veintiuna_i_error('Ese modo de mesa no existe.', 'peticion_invalida'); end if;
+  v_regla := case when v_modo = 'duelo' then veintiuna_i_regla_nueva_duelo() else veintiuna_i_regla_nueva() end;
   perform pg_advisory_xact_lock(hashtextextended('veintiuna_' || uid::text, 0));
   perform veintiuna_i_cerrar_inactiva(uid);
   if exists (select 1 from veintiuna_asientos where user_id = uid) then perform veintiuna_i_error('Ya estás sentado en una mesa. Sal de ella antes de crear otra.', 'ya_sentado'); end if;
   if exists (select 1 from veintiuna_partidas where user_id = uid and estado = 'en_curso') then perform veintiuna_i_error('Termina antes tu mano individual.', 'mano_en_curso'); end if;
   v_nombre := nullif(left(trim(coalesce(p_nombre, '')), 30), '');
   if v_nombre is null then v_nombre := 'Mesa de ' || veintiuna_i_nombre(uid); end if;
-  insert into veintiuna_mesas (codigo, nombre, creador, privada, cartas, regla, proxima_regla)
-    values (veintiuna_i_amigos_codigo(), v_nombre, uid, coalesce(p_privada, true), coalesce(p_cartas, false), v_regla, veintiuna_i_regla_nueva())
+  insert into veintiuna_mesas (codigo, nombre, creador, privada, cartas, regla, proxima_regla, modo)
+    values (veintiuna_i_amigos_codigo(), v_nombre, uid, coalesce(p_privada, true), coalesce(p_cartas, false), v_regla,
+            case when v_modo = 'duelo' then veintiuna_i_regla_nueva_duelo() else veintiuna_i_regla_nueva() end, v_modo)
     returning id into v_id;
   insert into hipodromo_billeteras (usuario) values (uid) on conflict (usuario) do nothing;
   insert into veintiuna_asientos (mesa, asiento, user_id, nombre) values (v_id, 0, uid, veintiuna_i_nombre(uid));
@@ -1827,7 +1996,7 @@ declare
   m veintiuna_mesas%rowtype;
   a veintiuna_asientos%rowtype;
   min_a numeric := (cartas_ajuste('veintiuna_apuesta_min', '10'))::text::numeric;
-  max_a numeric := (cartas_ajuste('veintiuna_apuesta_max', '100'))::text::numeric;
+  max_a numeric := (cartas_ajuste('veintiuna_apuesta_max', '0'))::text::numeric;
   paso_a numeric := (cartas_ajuste('veintiuna_apuesta_paso', '10'))::text::numeric;
   v_saldo numeric;
   v_problema text;
@@ -1847,7 +2016,7 @@ begin
   if m.fase <> 'apuestas' then perform veintiuna_i_error('Ahora no se puede apostar: espera a la siguiente ronda.', 'fase_invalida'); end if;
   if p_apuesta is null or p_apuesta < 0 then perform veintiuna_i_error('Esa apuesta no es válida.', 'apuesta_invalida'); end if;
   if p_apuesta > 0 then
-    if p_apuesta < min_a or p_apuesta > max_a then perform veintiuna_i_error('La apuesta va de ' || min_a || ' a ' || max_a || ' tokens (o 0 para jugar sin apostar).', 'apuesta_invalida'); end if;
+    if p_apuesta < min_a or (max_a > 0 and p_apuesta > max_a) then perform veintiuna_i_error(case when max_a > 0 then 'La apuesta va de ' || min_a || ' a ' || max_a || ' tokens (o 0 para jugar sin apostar).' else 'La apuesta mínima es de ' || min_a || ' tokens (o 0 para jugar sin apostar).' end, 'apuesta_invalida'); end if;
     if p_apuesta <> trunc(p_apuesta / paso_a) * paso_a then perform veintiuna_i_error('La apuesta tiene que ser múltiplo de ' || paso_a || '.', 'apuesta_invalida'); end if;
     v_saldo := veintiuna_i_saldo(uid);
     if p_apuesta > v_saldo then perform veintiuna_i_error('No tienes tantos tokens: te faltan ' || trim_scale(p_apuesta - v_saldo) || '.', 'saldo_insuficiente'); end if;
@@ -1974,8 +2143,9 @@ $$;
 revoke all on function veintiuna_i_mazo_doble(), veintiuna_i_nombre(uuid), veintiuna_i_amigos_codigo(), veintiuna_i_amigos_tocar(uuid), veintiuna_i_amigos_sincronizar(uuid),
   veintiuna_i_pozo_soltar(uuid, uuid), veintiuna_i_pozo_resolver(uuid), veintiuna_i_amigos_nueva_ronda(uuid), veintiuna_i_amigos_cerrar_ronda(uuid), veintiuna_i_amigos_turno(uuid),
   veintiuna_i_amigos_repartir(uuid, smallint[]), veintiuna_i_amigos_actuar(uuid, int, text, boolean), veintiuna_i_amigos_sacar(uuid, uuid), veintiuna_i_amigos_avanzar(uuid),
-  veintiuna_i_amigos_json(uuid, uuid) from public, anon, authenticated;
-revoke all on function veintiuna_amigos_lista(), veintiuna_amigos_crear(text, boolean, boolean), veintiuna_amigos_unirse(text), veintiuna_amigos_salir(), veintiuna_amigos_estado(bigint),
+  veintiuna_i_amigos_json(uuid, uuid), veintiuna_i_amigos_resolver_duelo(uuid), veintiuna_i_calidad(smallint[], int[], int), veintiuna_i_liquidar_pago(uuid, numeric, text, text, text),
+  veintiuna_i_regla_nueva_duelo() from public, anon, authenticated;
+revoke all on function veintiuna_amigos_lista(), veintiuna_amigos_crear(text, boolean, boolean, text), veintiuna_amigos_unirse(text), veintiuna_amigos_salir(), veintiuna_amigos_estado(bigint),
   veintiuna_amigos_mis_cartas(), veintiuna_amigos_apostar(numeric, uuid), veintiuna_amigos_pasar(), veintiuna_amigos_repartir(), veintiuna_amigos_accion(int, text) from public, anon;
-grant execute on function veintiuna_amigos_lista(), veintiuna_amigos_crear(text, boolean, boolean), veintiuna_amigos_unirse(text), veintiuna_amigos_salir(), veintiuna_amigos_estado(bigint),
+grant execute on function veintiuna_amigos_lista(), veintiuna_amigos_crear(text, boolean, boolean, text), veintiuna_amigos_unirse(text), veintiuna_amigos_salir(), veintiuna_amigos_estado(bigint),
   veintiuna_amigos_mis_cartas(), veintiuna_amigos_apostar(numeric, uuid), veintiuna_amigos_pasar(), veintiuna_amigos_repartir(), veintiuna_amigos_accion(int, text) to authenticated;

@@ -47,7 +47,7 @@
       // La mesa con amigos (docs/veintiuna.sql, sección 8). estado(version) devuelve {sin_cambios} si no cambió nada desde esa versión.
       amigos: {
         lista: () => llamar("veintiuna_amigos_lista", {}),
-        crear: (nombre, privada, cartas) => llamar("veintiuna_amigos_crear", { p_nombre: nombre || null, p_privada: !!privada, p_cartas: !!cartas }),
+        crear: (nombre, privada, cartas, modo) => llamar("veintiuna_amigos_crear", { p_nombre: nombre || null, p_privada: !!privada, p_cartas: !!cartas, p_modo: modo === "duelo" ? "duelo" : "casa" }),
         unirse: codigo => llamar("veintiuna_amigos_unirse", { p_codigo: codigo }),
         salir: () => llamar("veintiuna_amigos_salir", {}),
         estado: version => llamar("veintiuna_amigos_estado", { p_version: version == null ? null : version }),

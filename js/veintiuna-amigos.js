@@ -214,8 +214,11 @@
     $("vvPlacaIcono").innerHTML = A.ICONOS[reglaId];
     $("vvPlacaEtq").textContent = "Regla de la ronda " + est.ronda;
     $("vvPlacaNombre").textContent = R.nombre;
-    $("vvLeyendaPaga").textContent = reglaId === "vela" ? "La veintiuna paga seis a cinco" : "La veintiuna paga tres a dos";
-    $("vvLeyendaPlanta").textContent = reglaId === "vela" ? "La casa se planta con dieciséis" : "La casa se planta con diecisiete";
+    if (V.esDuelo(est)) { $("vvLeyendaPaga").textContent = V.DUELO.leyendaPaga; $("vvLeyendaPlanta").textContent = V.DUELO.leyendaPlanta; }
+    else {
+      $("vvLeyendaPaga").textContent = reglaId === "vela" ? "La veintiuna paga seis a cinco" : "La veintiuna paga tres a dos";
+      $("vvLeyendaPlanta").textContent = reglaId === "vela" ? "La casa se planta con dieciséis" : "La casa se planta con diecisiete";
+    }
     $("vvPlacaEfecto").textContent = R.resumen;
     const y = est.yo || {}, usada = !!(y.regla && y.regla.usada);
     let estado;
@@ -252,9 +255,20 @@
 
   /* ---------------------------------------------------------------- el crupier */
   function pintarCrupier(est, antes) {
-    const c = est.crupier;
+    const c = est.crupier, duelo = V.esDuelo(est);
+    $("vvLadoCrupier").classList.toggle("vva-bote-lado", duelo);
+    $("vvLadoCrupier").querySelector(".vv-etiqueta-nombre").textContent = duelo ? "Bote" : "Crupier";
+    $("vvCrupier").querySelector("figcaption span").textContent = duelo ? "reparte, no juega" : "crupier de la casa";
     reconciliar($("vvManoCrupier"), c.cartas, c.ocultas, "c" + est.ronda);
     const tot = $("vvTotalCrupier");
+    if (duelo) {
+      const hay = est.bote != null && est.fase !== "apuestas";
+      tot.textContent = hay ? V.monedas(est.bote) : "";
+      tot.className = "vv-total" + (hay ? "" : "");
+      $("vvManoCrupier").innerHTML = hay ? `<p class="vva-bote-texto">Se lo lleva la mejor mano sin pasarse de 21.</p>` : `<p class="vva-bote-texto">Cera reparte pero no juega. Aquí se verá el bote.</p>`;
+      $("vvManoCrupier").dataset.clave = "duelo";
+      return;
+    }
     if (!c.cartas.length) { tot.textContent = ""; tot.className = "vv-total"; return; }
     const completo = est.fase === "resultado";
     tot.textContent = completo ? textoTotal(c.total, c.blando) : `muestra ${c.total}`;
@@ -340,7 +354,7 @@
         <h2>${esc(est.nombre)}</h2>
         <p><span class="vva-codigo" aria-label="Código de la mesa: ${esc(est.codigo.split("").join(" "))}">${esc(est.codigo)}</span>
           <button type="button" class="vv-enlace" data-copiar="${esc(enlace)}">Copiar enlace para invitar</button>
-          · ${est.asientos.length} de ${est.asientos_max} asientos${est.privada ? " · privada" : ""}${est.cartas ? " · con pozo de cartas" : ""}</p>
+          · ${est.asientos.length} de ${est.asientos_max} asientos · ${V.esDuelo(est) ? "todos contra todos" : "contra la casa"}${est.privada ? " · privada" : ""}${est.cartas ? " · con pozo de cartas" : ""}</p>
       </div>
       <button type="button" class="vv-boton vv-boton-chico vv-boton-fantasma" data-salir>Levantarme</button>`;
   }
@@ -407,10 +421,12 @@
     const apuesta = S.eleccion.apuesta;
     const motivo = sin ? "" : V.motivoApuesta(apuesta, saldo, lim);
     const sinFondos = saldo < lim.min;
-    const nota = sin ? `Juegas la ronda sin apostar tokens: tu mano es de práctica, no cobra ni paga y no cuenta para los desafíos.`
+    const duelo = V.esDuelo(est);
+    const nota = sin ? (duelo ? `Juegas la ronda sin apostar tokens: compites por la gloria, sin tokens en el bote.` : `Juegas la ronda sin apostar tokens: tu mano es de práctica, no cobra ni paga y no cuenta para los desafíos.`)
       : sinFondos ? `No tienes tokens para la apuesta mínima. Puedes jugar sin apostar o vender una carta en el <a href="hipodromo.html#cartas">Hipódromo</a>.`
-      : motivo && apuesta > 0 ? motivo : `De ${V.monedas(lim.min)} a ${V.monedas(lim.max)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}.`;
+      : motivo && apuesta > 0 ? motivo : V.textoLimites(lim);
     const regla = V.REGLAS[est.regla.id];
+    const notaDuelo = duelo ? " Todos contra todos: lo que apostáis forma el bote y se lo lleva la mejor mano. Hace falta que apuesten al menos dos jugadores." : "";
     const peajeNota = est.peajes && est.peajes[est.regla.id] != null ? ` Peaje de ${regla.nombre}: ${Math.round(est.peajes[est.regla.id] * 100)} % de la apuesta.` : "";
     const cartaElegida = S.eleccion.carta;
     cuerpo.innerHTML = `
@@ -422,13 +438,14 @@
         <div class="vv-apuesta-centro">
           ${sin ? `<div class="vv-practica"><p>Tu mano será de práctica.${esc(peajeNota ? " " + peajeNota.trim() : "")}</p></div>` : `
           <div class="vv-fichas" role="group" aria-label="Fichas para apostar">
-            ${fichas.map(f => { const cabe = (apuesta + f) <= Math.min(lim.max, saldo); return `<button type="button" class="vv-ficha${cabe ? "" : " sin-fondos"}" data-ficha="${f}" aria-disabled="${!cabe}" aria-label="Añadir ${V.monedas(f)} a la apuesta">${A.ficha(f)}</button>`; }).join("")}
+            ${fichas.map(f => { const cabe = (apuesta + f) <= Math.min(V.tope(lim), saldo); return `<button type="button" class="vv-ficha${cabe ? "" : " sin-fondos"}" data-ficha="${f}" aria-disabled="${!cabe}" aria-label="Añadir ${V.monedas(f)} a la apuesta">${A.ficha(f)}</button>`; }).join("")}
           </div>
           <div class="vv-apuesta-total">
             <button type="button" class="vv-paso" data-paso="-1" aria-label="Bajar la apuesta ${V.monedas(lim.paso)}" ${apuesta <= 0 ? 'aria-disabled="true"' : ""}>−</button>
             <div class="vv-apuesta-cifra" aria-live="polite"><small>Apuesta</small><strong>${V.monedas(apuesta)}</strong></div>
             <button type="button" class="vv-paso" data-paso="1" aria-label="Subir la apuesta ${V.monedas(lim.paso)}">+</button>
             <button type="button" class="vv-enlace" data-borrar>Quitar fichas</button>
+            <button type="button" class="vv-enlace" data-todo>Todo lo que tengo</button>
           </div>`}
         </div>
         <div class="vv-apuesta-acciones">
@@ -439,7 +456,7 @@
         ${est.cartas ? `<div class="vva-carta-pozo"><span>${cartaElegida ? `Carta en el pozo: <strong>${esc(cartaElegida.nombre || cartaElegida.carta)}</strong> <small>${esc(RAREZAS[cartaElegida.rareza] || "")}</small>` : "Sin carta en el pozo"}</span>
           <button type="button" class="vv-boton vv-boton-chico" data-elegir-carta><span class="vv-boton-texto">${cartaElegida ? "Cambiar carta" : "Poner una carta"}</span></button>
           ${cartaElegida ? `<button type="button" class="vv-enlace" data-quitar-carta>Quitarla</button>` : ""}</div>` : ""}
-        <p class="vv-nota-apuesta${motivo && apuesta > 0 && !sin ? " mal" : ""}">${sin || sinFondos ? nota : esc(nota)}${sin ? "" : esc(peajeNota)} ${quedan}</p>
+        <p class="vv-nota-apuesta${motivo && apuesta > 0 && !sin ? " mal" : ""}">${sin || sinFondos ? nota : esc(nota)}${sin ? "" : esc(peajeNota)}${esc(notaDuelo)} ${quedan}</p>
         ${y.aviso ? `<p class="vv-nota-aviso" role="status">${esc(y.aviso)}</p>` : ""}
       </div>`;
   }
@@ -484,9 +501,9 @@
   function pintarLobby() {
     const el = $("vvaLobby");
     const lista = S.lista || [];
-    const filas = lista.map(m => `<li class="vva-mesa-fila"><div><strong>${esc(m.nombre)}</strong><span>${esc(m.jugadores.join(", "))} · ${m.jugadores.length} de ${m.asientos_max}${m.cartas ? " · pozo de cartas" : ""} · ${esc(V.FASES_AMIGOS[m.fase] || "")}</span></div>
+    const filas = lista.map(m => `<li class="vva-mesa-fila"><div><strong>${esc(m.nombre)}</strong><span>${esc(m.jugadores.join(", "))} · ${m.jugadores.length} de ${m.asientos_max} · ${m.modo === "duelo" ? "todos contra todos" : "contra la casa"}${m.cartas ? " · pozo de cartas" : ""} · ${esc(V.FASES_AMIGOS[m.fase] || "")}</span></div>
       <button type="button" class="vv-boton vv-boton-chico" data-unirse="${esc(m.codigo)}" ${m.jugadores.length >= m.asientos_max ? 'aria-disabled="true"' : ""}><span class="vv-boton-texto">${m.jugadores.length >= m.asientos_max ? "Llena" : "Sentarme"}</span></button></li>`).join("");
-    const previo = { nombre: ($("vvaNombre") || {}).value || "", codigo: ($("vvaCodigo") || {}).value || "", priv: $("vvaPrivada") ? $("vvaPrivada").checked : true, cartas: $("vvaConCartas") ? $("vvaConCartas").checked : false };
+    const previo = { nombre: ($("vvaNombre") || {}).value || "", codigo: ($("vvaCodigo") || {}).value || "", priv: $("vvaPrivada") ? $("vvaPrivada").checked : true, modo: (document.querySelector('input[name="vvaModo"]:checked') || {}).value || "casa", cartas: $("vvaConCartas") ? $("vvaConCartas").checked : false };
     el.innerHTML = `
       <div class="vva-lobby-intro">
         <h2>Sentaos juntos a la mesa</h2>
@@ -501,6 +518,10 @@
           <h3 id="vvaH2">Crear una mesa</h3>
           <form id="vvaFormCrear" class="vva-form">
             <label>Nombre <input id="vvaNombre" type="text" maxlength="30" autocomplete="off" placeholder="Mesa de la taberna" value="${esc(previo.nombre)}"></label>
+            <fieldset class="vva-modos" id="vvaModos"><legend>Modo de la mesa</legend>
+              <label class="vva-check"><input type="radio" name="vvaModo" value="casa" ${previo.modo === "duelo" ? "" : "checked"}> <span><strong>Contra la casa.</strong> Todos jugáis contra la crupier, cada uno con su apuesta.</span></label>
+              <label class="vva-check"><input type="radio" name="vvaModo" value="duelo" ${previo.modo === "duelo" ? "checked" : ""}> <span><strong>Todos contra todos.</strong> Sin crupier: lo apostado forma un bote y se lo lleva la mejor mano.</span></label>
+            </fieldset>
             <label class="vva-check"><input id="vvaPrivada" type="checkbox" ${previo.priv ? "checked" : ""}> Privada: solo entra quien tenga el código</label>
             <label class="vva-check"><input id="vvaConCartas" type="checkbox" ${previo.cartas ? "checked" : ""}> Con pozo de cartas: cada uno puede poner una carta y el mejor se lleva todas</label>
             <button type="submit" class="vv-boton vv-boton-principal"><span class="vv-boton-texto">Crear y sentarme</span></button>
@@ -662,8 +683,8 @@
     }
   }
 
-  async function crearMesa(nombre, privada, cartas) {
-    const r = await ejecutar(async () => { try { return await api.amigos.crear(nombre, privada, cartas); } catch (e) { manejarError(e); return null; } });
+  async function crearMesa(nombre, privada, cartas, modo) {
+    const r = await ejecutar(async () => { try { return await api.amigos.crear(nombre, privada, cartas, modo); } catch (e) { manejarError(e); return null; } });
     if (r) { S.est = null; aplicar(r); programar(SONDEO_MS); }
   }
   async function unirse(codigo) {
@@ -738,8 +759,10 @@
       <div class="vv-dlg-cuerpo">
         <section><h3>La mesa</h3><ul>
           <li>Hasta ${est ? est.asientos_max : 5} asientos y una sola crupier. La baraja es doble y se baraja de nuevo en cada ronda.</li>
-          <li>Todos juegan <strong>contra la casa</strong>, no entre sí. Cada uno apuesta sus propios tokens y cobra o paga solo por su mano.</li>
+          <li><strong>Contra la casa</strong> (el modo normal): todos juegan contra la crupier, no entre sí. Cada uno apuesta sus propios tokens y cobra o paga solo por su mano.</li>
+          <li><strong>Todos contra todos</strong>: no hay crupier que juegue. ${esc(V.DUELO.reglaApuestas)} Quién juega primero rota cada ronda. En este modo solo se sortean las reglas que no necesitan crupier (Fortuna, Maldición, Última voluntad, Ojo del Tahúr y Pacto del Bufón).</li>
           <li>Una ronda: <strong>apuestas</strong> (empieza el reparto cuando todos están listos, o 45 s después de que apueste el primero), <strong>turnos</strong> por asiento (45 s cada uno: si no juegas te plantas solo), el crupier juega y se enseña el <strong>resultado</strong>.</li>
+          <li>No hay apuesta máxima: puedes apostar todo lo que tengas, de 10 en 10.</li>
           <li>Las reglas del blackjack son las de la mesa individual: el crupier se planta con 17 (también blando), el natural paga 3 a 2 y no hay dividir, doblar, seguro ni rendición.</li>
           <li>Todos veis las cartas de todos. La carta oculta del crupier y la baraja las guarda el servidor: nadie las ve hasta que toca.</li>
           <li>Si te levantas a mitad de ronda pierdes tu mano. Quien deja pasar dos turnos seguidos sin jugar, o lleva más de dos minutos y medio sin dar señales, se levanta de la mesa.</li>
@@ -749,7 +772,7 @@
           <li>Solo en las mesas creadas «con pozo de cartas». Antes de repartir, cada jugador puede poner <strong>una</strong> carta suya. Se bloquea hasta que acabe la ronda.</li>
           <li>Para que haya pozo tienen que poner carta al menos dos jugadores. Si no, las cartas vuelven a su dueño.</li>
           <li>Las cartas del pozo no pueden diferir en más de una categoría de rareza. Hay un máximo diario de veces que se puede poner una carta.</li>
-          <li>Al acabar la ronda, entre quienes pusieron carta y <strong>ganaron a la casa</strong>, se lleva todo el pozo el de mejor mano: un blackjack natural vale más que cualquier total y, después, gana el total más alto.</li>
+          <li>Al acabar la ronda, entre quienes pusieron carta y <strong>ganaron a la casa</strong> (en «todos contra todos»: que no se pasaron), se lleva todo el pozo el de mejor mano: un blackjack natural vale más que cualquier total y, después, gana el total más alto.</li>
           <li>Si empatan arriba o nadie ganó a la casa, cada carta vuelve a su dueño. Si te levantas a mitad de ronda no puedes ganar el pozo, pero tu carta sigue en juego.</li>
           <li>Nunca se crean ni se destruyen cartas. Si al ganador ya no le cabe una carta (límite por jugador), esa carta vuelve a su dueño.</li>
         </ul></section>
@@ -777,17 +800,18 @@
     if (t.dataset.modo) { S.eleccion.modo = t.dataset.modo; pintarDock(); return; }
     if (t.dataset.ficha) {
       const f = Number(t.dataset.ficha), lim = S.est.limites, saldo = saldoActual();
-      if (S.eleccion.apuesta + f > Math.min(lim.max, saldo)) { aviso(S.eleccion.apuesta + f > lim.max ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan los tokens: tienes ${V.monedas(saldo)}.`, { tipo: "info", cerrar: true }); return; }
+      if (S.eleccion.apuesta + f > Math.min(V.tope(lim), saldo)) { aviso(S.eleccion.apuesta + f > V.tope(lim) ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan los tokens: tienes ${V.monedas(saldo)}.`, { tipo: "info", cerrar: true }); return; }
       S.eleccion.apuesta += f; sonar("ficha"); aviso(""); pintarDock();
       const f2 = $("vvDockCuerpo").querySelector(`[data-ficha="${f}"]`); if (f2) f2.focus({ preventScroll: true }); return;
     }
     if (t.dataset.paso) {
       const lim = S.est.limites, nueva = S.eleccion.apuesta + Number(t.dataset.paso) * lim.paso;
-      S.eleccion.apuesta = Math.max(0, Math.min(nueva, Math.min(lim.max, Math.floor(saldoActual() / lim.paso) * lim.paso)));
+      S.eleccion.apuesta = Math.max(0, Math.min(nueva, Math.min(V.tope(lim), Math.floor(saldoActual() / lim.paso) * lim.paso)));
       sonar("ficha"); pintarDock();
       const p = $("vvDockCuerpo").querySelector(`[data-paso="${t.dataset.paso}"]`); if (p) p.focus({ preventScroll: true }); return;
     }
     if ("borrar" in t.dataset) { S.eleccion.apuesta = 0; aviso(""); pintarDock(); return; }
+    if ("todo" in t.dataset) { S.eleccion.apuesta = V.ajustarApuesta(Infinity, saldoActual(), S.est.limites); sonar("ficha"); aviso(""); pintarDock(); const f2 = $("vvDockCuerpo").querySelector("[data-todo]"); if (f2) f2.focus({ preventScroll: true }); return; }
     if ("apostar" in t.dataset) { if (t.getAttribute("aria-disabled") === "true") { const m = V.motivoApuesta(S.eleccion.apuesta, saldoActual(), S.est.limites); aviso(S.eleccion.apuesta <= 0 ? "Elige una apuesta con las fichas." : m, { tipo: "info", cerrar: true }); return; } apostar(); return; }
     if ("pasar" in t.dataset) { pasar(); return; }
     if ("cambiar" in t.dataset) { S.editando = true; if (S.est.yo.apuesta != null) { S.eleccion.modo = Number(S.est.yo.apuesta) > 0 ? "apuesta" : "sin"; if (Number(S.est.yo.apuesta) > 0) S.eleccion.apuesta = Number(S.est.yo.apuesta); } pintarDock(); return; }
@@ -847,7 +871,7 @@
     document.addEventListener("click", alClic);
     document.addEventListener("keydown", alTeclear);
     document.addEventListener("submit", ev => {
-      if (ev.target.id === "vvaFormCrear") { ev.preventDefault(); crearMesa($("vvaNombre").value, $("vvaPrivada").checked, $("vvaConCartas").checked); }
+      if (ev.target.id === "vvaFormCrear") { ev.preventDefault(); crearMesa($("vvaNombre").value, $("vvaPrivada").checked, $("vvaConCartas").checked, (document.querySelector('input[name="vvaModo"]:checked') || {}).value); }
       if (ev.target.id === "vvaFormEntrar") { ev.preventDefault(); const c = $("vvaCodigo").value.trim(); if (c) unirse(c); }
     });
     document.addEventListener("input", ev => { if (ev.target.id === "vvaCodigo") ev.target.value = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });

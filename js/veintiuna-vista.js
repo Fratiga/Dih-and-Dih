@@ -122,7 +122,12 @@
     mayor: "Tu mano gana a la del crupier.",
     menor: "La mano del crupier gana a la tuya.",
     igual: "Empate: se devuelve la apuesta.",
-    abandono: "Te levantaste de la mesa a mitad de ronda: pierdes esa mano."
+    abandono: "Te levantaste de la mesa a mitad de ronda: pierdes esa mano.",
+    bote: "Tu mano es la mejor de la mesa: te llevas el bote.",
+    bote_compartido: "Empatas con la mejor mano y os repartís el bote.",
+    rival_mejor: "Otro jugador tiene mejor mano que tú.",
+    todos_se_pasan: "Todos se pasaron de 21: se devuelven las apuestas.",
+    mejor_mano: "Tu mano es la mejor de la mesa."
   };
   const TITULOS = { natural: "Blackjack", victoria: "Ganas", empate: "Empate", derrota: "Pierdes" };
 
@@ -196,8 +201,16 @@
   }
 
   /* ---------------------------------------------------------------- el panel de apuesta */
+  // Sin máximo (max vacío o 0) se puede apostar todo lo que se tenga
+  const sinTope = limites => limites.max == null || Number(limites.max) <= 0;
+  const tope = limites => (sinTope(limites) ? Infinity : Number(limites.max));
+  function textoLimites(limites) {
+    return sinTope(limites) ? `Desde ${monedas(limites.min)}, de ${monedas(limites.paso)} en ${monedas(limites.paso)}, sin máximo.`
+      : `De ${monedas(limites.min)} a ${monedas(limites.max)}, de ${monedas(limites.paso)} en ${monedas(limites.paso)}.`;
+  }
   function fichasDisponibles(limites) {
     const { min, max, paso } = limites;
+    if (sinTope(limites)) return [min, min * 2, min * 5, min * 10, min * 50, min * 100].filter(v => v % paso === 0);
     const base = [min, min * 2, min * 5, min * 10].filter(v => v <= max && v % paso === 0);
     if (!base.includes(max) && max % paso === 0) base.push(max);
     return [...new Set(base)].sort((a, b) => a - b);
@@ -205,14 +218,14 @@
   // Por qué no se puede apostar esa cantidad (texto vacío si se puede)
   function motivoApuesta(cant, saldo, limites) {
     if (cant < limites.min) return `La apuesta mínima es ${monedas(limites.min)}.`;
-    if (cant > limites.max) return `La apuesta máxima es ${monedas(limites.max)}.`;
+    if (cant > tope(limites)) return `La apuesta máxima es ${monedas(limites.max)}.`;
     if (cant % limites.paso !== 0) return `Se apuesta de ${monedas(limites.paso)} en ${monedas(limites.paso)}.`;
     if (cant > saldo) return `Te faltan ${monedas(cant - saldo)} tokens para apostar ${monedas(cant)} (tienes ${monedas(saldo)}).`;
     return "";
   }
   function ajustarApuesta(cant, saldo, limites) {
-    const tope = Math.min(limites.max, Math.floor(saldo / limites.paso) * limites.paso);
-    return Math.max(0, Math.min(cant, tope));
+    const t = Math.min(tope(limites), Math.floor(saldo / limites.paso) * limites.paso);
+    return Math.max(0, Math.min(cant, t));
   }
   // La apuesta que se propone al sentarse o al terminar una mano: la anterior si cabe (o la mayor que cabe), y si es la primera vez, ninguna: se elige con las fichas
   function apuestaInicial(anterior, saldo, limites) {
@@ -308,14 +321,22 @@
       return { texto: "Apostando", clase: "espera" };
     }
     if (!m) return { texto: "Mira la ronda", clase: "pasa" };
+    if (m.fase === "pasada") return { texto: "Se pasa", clase: "derrota" };
+    if (m.fase === "abandonada") return { texto: "Se fue", clase: "derrota" };
     if (m.estado === "terminada") {
       if (m.razon === "abandono") return { texto: "Se fue", clase: "derrota" };
       if (m.razon === "te_pasas" || m.razon === "pasado_al_repartir") return { texto: "Se pasa", clase: "derrota" };
+      if (est.modo === "duelo") {
+        if (m.razon === "todos_se_pasan") return { texto: "Recupera", clase: "empate" };
+        const neto = m.modo === "apuesta" && est.fase === "resultado" ? " " + conSigno(m.neto) : "";
+        if (m.razon === "bote" || m.razon === "bote_compartido" || m.razon === "mejor_mano") return { texto: (m.razon === "bote_compartido" ? "Reparte el bote" : m.modo === "apuesta" ? "Gana el bote" : "Gana") + neto, clase: "victoria" };
+        return { texto: (m.resultado === "empate" ? "Empata" : "Pierde") + neto, clase: m.resultado };
+      }
       const base = NOMBRE_RESULTADO[m.resultado] || "";
       const neto = m.modo === "apuesta" && est.fase === "resultado" ? " " + conSigno(m.neto) : "";
       return { texto: base + neto, clase: m.resultado };
     }
-    if (m.fase === "plantada") return { texto: "Plantado", clase: "plantado" };
+    if (m.fase === "plantada") return { texto: m.cartas.length === 2 && m.total === 21 ? "Blackjack" : "Plantado", clase: "plantado" };
     if (est.fase === "jugando" && est.turno === a.asiento) return { texto: a.yo ? "Tu turno" : "Su turno", clase: "turno" };
     return { texto: "Espera", clase: "espera" };
   }
@@ -326,7 +347,7 @@
     const nombres = p.cartas.map(c => c.titulo || c.carta);
     if (p.estado === "pagado") return `El pozo es para ${p.ganador || p.ganador_nombre_libre || "el ganador"}: ${lista(nombres)}.`;
     if (p.estado === "devuelto") return "Nadie ganó el pozo: cada carta vuelve a su dueño.";
-    return `En el pozo: ${lista(nombres)}. Se lo lleva el mejor jugador que gane a la casa.`;
+    return est.modo === "duelo" ? `En el pozo: ${lista(nombres)}. Se lo lleva la mejor mano de quienes pusieron carta, si no se pasa.` : `En el pozo: ${lista(nombres)}. Se lo lleva el mejor jugador que gane a la casa.`;
   }
   // Lo que se anuncia a un lector de pantalla cuando cambia la mesa
   function anuncioAmigos(antes, est) {
@@ -342,7 +363,7 @@
     }
     if (nueva && est.fase === "apuestas") p.push(`Empiezan las apuestas de la ronda ${est.ronda}. Regla: ${REGLAS[est.regla.id].nombre}.`);
     if (nueva && est.fase === "jugando" && (!antes || antes.fase !== "jugando")) {
-      p.push(`Reparto. El crupier muestra ${est.crupier.cartas[0] ? nombreCarta(est.crupier.cartas[0]) : "una carta"}.`);
+      p.push(est.modo === "duelo" ? `Reparto. Todos contra todos: el bote es de ${monedas(est.bote || 0)} tokens.` : `Reparto. El crupier muestra ${est.crupier.cartas[0] ? nombreCarta(est.crupier.cartas[0]) : "una carta"}.`);
       if (yo && yo.mano) p.push(`Tus cartas: ${lista(yo.mano.cartas.map(nombreCarta))}. Suman ${yo.mano.total}${yo.mano.blando ? " en blando" : ""}.`);
     }
     if (antes && antes.codigo === est.codigo && antes.ronda === est.ronda) {
@@ -363,7 +384,7 @@
       if (a) p.push(a.yo ? "Es tu turno." : `Juega ${a.nombre}.`);
     }
     if (est.fase === "resultado" && (!antes || antes.fase !== "resultado")) {
-      p.push(`El crupier enseña ${lista(est.crupier.cartas.map(nombreCarta))}, suma ${est.crupier.total}.`);
+      if (est.modo !== "duelo") p.push(`El crupier enseña ${lista(est.crupier.cartas.map(nombreCarta))}, suma ${est.crupier.total}.`);
       est.asientos.filter(a => a.mano).forEach(a => {
         const t = chipAsiento(est, a).texto;
         p.push(`${a.yo ? "Tú" : a.nombre}: ${t.toLowerCase()}.`);
@@ -374,6 +395,15 @@
     return p.join(" ");
   }
 
-  const API = { FASES_AMIGOS, asientoYo, manoComoPropia, listosDeLaMesa, chipAsiento, frasePozo, anuncioAmigos, ORDEN_REGLAS, BOTON_ESPECIAL, monedas, conSigno, plural, REGLAS, RAZONES, TITULOS, resultado, anuncio, acciones, fichasDisponibles, motivoApuesta, ajustarApuesta, apuestaInicial, mensajeError, NIVELES, estadoLogro, DICHOS, elegir, nombreCarta, nombreRango, lista };
+  // Los textos que cambian en «todos contra todos»
+  const DUELO = {
+    nombre: "Todos contra todos",
+    leyendaPaga: "Todos contra todos",
+    leyendaPlanta: "Gana el bote la mejor mano sin pasarse de 21",
+    reglaApuestas: "Apostáis tokens contra los demás: lo que apuestan todos forma el bote y se lo lleva la mejor mano (un natural gana a cualquier total) de quienes no se pasan. Si empatan, se reparte. Si se pasan todos, se devuelven las apuestas. Hace falta que apuesten al menos dos jugadores; si no, la ronda se juega sin apostar. No cuenta para desafíos."
+  };
+  const esDuelo = est => !!est && est.modo === "duelo";
+
+  const API = { DUELO, esDuelo, sinTope, tope, textoLimites, FASES_AMIGOS, asientoYo, manoComoPropia, listosDeLaMesa, chipAsiento, frasePozo, anuncioAmigos, ORDEN_REGLAS, BOTON_ESPECIAL, monedas, conSigno, plural, REGLAS, RAZONES, TITULOS, resultado, anuncio, acciones, fichasDisponibles, motivoApuesta, ajustarApuesta, apuestaInicial, mensajeError, NIVELES, estadoLogro, DICHOS, elegir, nombreCarta, nombreRango, lista };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.VeintiunaVista = API;
 })(typeof window !== "undefined" ? window : globalThis);

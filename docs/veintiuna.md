@@ -2,7 +2,7 @@
 
 Un blackjack contra la casa (`veintiuna.html`) con una regla especial distinta en cada mano. La mesa es una casa de juego a la luz de las velas y la crupier se llama Cera: una figura de cera con una corona de velas.
 
-**Estado (18 de octubre de 2026):** **abierto a todos los jugadores** (por orden del usuario): tarjetas en «Para jugar» de Minijuegos, la mesa de blackjack de la taberna (rincón de cartas, abajo a la izquierda) y la sala recreativa. Sigue pendiente que el usuario corra `docs/veintiuna.sql` en Supabase: hasta entonces los jugadores ven «La mesa todavía no está abierta» (el admin ve el aviso técnico). Las recompensas de cartas nacen apagadas.
+**Estado (18 de octubre de 2026):** **abierto a todos los jugadores** (por orden del usuario). Una sola entrada: la tarjeta «Las Veintiuna Velas» de Minijuegos, la mesa de blackjack de la taberna (rincón de cartas, abajo a la izquierda) y la sala recreativa llevan a `veintiuna.html`, y desde ahí el botón «Con amigos» de la cabecera lleva a la mesa con amigos (no tiene tarjeta ni puerta propia). Sigue pendiente que el usuario corra `docs/veintiuna.sql` en Supabase: hasta entonces los jugadores ven «La mesa todavía no está abierta» (el admin ve el aviso técnico). Las recompensas de cartas nacen apagadas.
 
 Si hubiera que volver a esconderlo: poner `<script src="js/oculto.js">` el primero del `<head>` de `veintiuna.html` y de `veintiuna-amigos.html`, devolver las tarjetas al array `JUEGOS` de `minijuegos.html`, poner el cuarto elemento `true` en sus entradas de `MAPA` (`js/lobby-salas.js`) y `data-admin-only` en el objeto y en el enlace móvil de `index.html`.
 
@@ -55,7 +55,7 @@ Ninguna regla es favorable al jugador, así que apostar fuerte solo en las manos
 ## Tokens
 
 - Son los **tokens de juego** del Hipódromo: se usa su billetera (`hipodromo_billeteras`) y su libro (`hipodromo_movimientos`). No hay billetera ni token nuevos.
-- Apuestas de 10 a 100 de 10 en 10 (`veintiuna_apuesta_min`, `_max`, `_paso`). La apuesta mediana del Hipódromo es 20 y la máxima 50; las billeteras reales tienen entre 0 y 100. El paso de 10 hace que el 3 a 2 sea siempre un número entero.
+- Apuestas **sin máximo** (decisión del usuario, 18-oct-2026): desde 10, de 10 en 10, hasta lo que tengas en la billetera. En `cartas_economia_ajustes`, `veintiuna_apuesta_max` en `0` significa «sin tope»; si algún día hace falta uno, se pone ahí (`veintiuna_apuesta_min` y `_paso` siguen siendo 10). El paso de 10 hace que el 3 a 2 sea siempre un número entero. Las fichas llegan a 1000 y hay un botón «Todo lo que tengo».
 - La apuesta se cobra al repartir; el pago (apuesta incluida) al terminar. Cada movimiento lleva en el concepto el identificador de la mano («Veintiuna Velas: apuesta (mano …)») y la mano guarda los números de sus movimientos (`mov_cobro`, `mov_peaje`, `mov_pago`).
 - **Mesa de práctica**: mismas cartas y reglas, apuesta simbólica, no toca la billetera, no da tokens. **No cuenta para los desafíos ni para las rachas** (decisión del 18-oct-2026): sirve para aprender las reglas. Sí suma en rondas, victorias y derrotas de las estadísticas.
 - No se cambia ninguna fuente de ingresos del Hipódromo ni de otros juegos. Esta mesa solo mueve tokens entre la billetera y la casa, y con las reglas de arriba la casa gana de media. Los tokens siguen entrando por las vías de siempre (vender cartas, carreras, regalos del Admin).
@@ -70,6 +70,19 @@ La misma mesa para hasta **cinco jugadores** (`veintiuna_mesa_asientos`). Se ent
 - **Una ronda:** apuestas (se reparte cuando todos están listos o 45 s después de que apueste el primero; quien crea la mesa puede repartir ya) → reparto → turnos por asiento (45 s cada uno; si no juegas, el servidor te planta, y si lo dejas pasar dos veces seguidas te levanta de la mesa) → el crupier juega → resultado (10 s) → siguiente ronda. Los naturales se pagan al repartir, igual que en la individual. Se puede **jugar sin apostar** (mano de práctica: no cobra ni paga y no cuenta para desafíos) o **pasar** la ronda.
 - **Salir:** a mitad de ronda pierdes tu mano por abandono (la apuesta ya está pagada). Antes de repartir no cuesta nada. Quien lleva más de 150 s sin dar señales (la página abierta avisa cada pocos segundos) se levanta solo. Si se va quien creó la mesa, pasa al siguiente que se sentó; cuando se va el último, la mesa se cierra.
 - **Desafíos y tokens:** las manos con apuesta cuentan para desafíos, rachas y estadísticas igual que en la individual; el libro de tokens lleva el mismo concepto («Veintiuna Velas: apuesta (mano …)»).
+
+### Modo «todos contra todos»
+
+Quien crea la mesa elige entre **contra la casa** (el de siempre) y **todos contra todos**: no hay crupier que juegue (Cera solo reparte) y los jugadores se pelean entre sí por un bote.
+
+- **El bote** es la suma de lo que apuesta cada jugador con tokens, y se lo lleva la **mejor mano** de entre quienes apostaron y no se pasaron ni se fueron: un blackjack natural (21 con dos cartas) gana a cualquier total y, después, gana el total más alto. Si empatan arriba, el bote se reparte a partes iguales (el céntimo sobrante, al primero). Si se pasan todos, se devuelven las apuestas. Los peajes de las reglas no entran en el bote: se pagan a la casa.
+- **Hace falta que apuesten tokens al menos dos jugadores**; si no, esa ronda se juega sin apostar y se avisa. Quien juega sin apostar compite por la gloria (cuenta como victoria o derrota en las estadísticas) pero no gana ni pierde tokens.
+- Cada jugador ve las cartas de todos, así que **quién juega primero rota cada ronda** (el último en jugar sabe lo que han hecho los demás).
+- Quien se pasa queda fuera, pero su mano sigue abierta hasta el final de la ronda: su apuesta ya está en el bote. Quien se levanta a mitad de ronda deja su apuesta en el bote y no puede ganar.
+- **Reglas que se sortean:** las que no necesitan crupier (Fortuna, Maldición, Última voluntad, Ojo del Tahúr y Pacto del Bufón; este último solo cambia la primera carta de un jugador al azar, o nada). Trueque, Cartas marcadas y Vela corta no salen.
+- **No cuenta para desafíos ni rachas** (así nadie los gana pactando con un amigo). Sí cuenta en las estadísticas de manos y de tokens.
+- El pozo de cartas funciona igual, pero gana la mejor mano de quienes pusieron carta y **no se pasaron** (no hace falta ganar a la casa porque no hay casa).
+- Tablas y funciones: `veintiuna_mesas.modo`, `veintiuna_partidas.duelo`/`orden`, y `veintiuna_i_amigos_resolver_duelo`, que reparte el bote al acabar la ronda. Las manos pasadas o abandonadas usan las fases `pasada` y `abandonada` hasta ese momento.
 
 ### Pozo de cartas entre jugadores
 

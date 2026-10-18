@@ -388,9 +388,18 @@ begin
   perform t_reset(); perform t_saldo(u, 100);
   insert into veintiuna_estadisticas (user_id, proxima_regla) values (u, 'maldicion') on conflict (user_id) do update set proxima_regla = 'maldicion';
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 5, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta por debajo del mínimo se rechaza', false);
-  exception when others then perform t_check('Una apuesta por debajo del mínimo se rechaza (' || sqlerrm || ')', sqlerrm = 'La apuesta va de 10 a 100 tokens.'); end;
-  begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 150, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta por encima del máximo se rechaza', false);
-  exception when others then perform t_check('Una apuesta por encima del máximo se rechaza', sqlerrm = 'La apuesta va de 10 a 100 tokens.'); end;
+  exception when others then perform t_check('Una apuesta por debajo del mínimo se rechaza (' || sqlerrm || ')', sqlerrm = 'La apuesta mínima es de 10 tokens.'); end;
+  -- sin máximo: se puede apostar todo lo que se tiene
+  perform t_saldo(u, 5000);
+  s := veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 4000, t_mazo('10p', '9c', '8c', '7c'));
+  perform t_check('Sin máximo se puede apostar 4000 de 5000 y se cobra', (s ->> 'apuesta')::numeric = 4000 and t_saldo_de(u) = 1000);
+  perform t_reset(); perform t_saldo(u, 100);
+  insert into veintiuna_estadisticas (user_id, proxima_regla) values (u, 'maldicion') on conflict (user_id) do update set proxima_regla = 'maldicion';
+  -- si el admin pone un máximo, se respeta
+  update cartas_economia_ajustes set valor = '100' where clave = 'veintiuna_apuesta_max';
+  begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 150, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Con un máximo configurado, una apuesta por encima se rechaza', false);
+  exception when others then perform t_check('Con un máximo configurado, una apuesta por encima se rechaza', sqlerrm = 'La apuesta va de 10 a 100 tokens.'); end;
+  update cartas_economia_ajustes set valor = '0' where clave = 'veintiuna_apuesta_max';
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', 25, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta que no es múltiplo del paso se rechaza', false);
   exception when others then perform t_check('Una apuesta que no es múltiplo del paso se rechaza', sqlerrm = 'La apuesta tiene que ser múltiplo de 10.'); end;
   begin perform veintiuna_i_repartir(u, gen_random_uuid(), 'apuesta', null, t_mazo('10p', '9c', '8c', '7c')); perform t_check('Una apuesta vacía se rechaza', false);
