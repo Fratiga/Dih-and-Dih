@@ -70,6 +70,10 @@ window.BUFON_HECHOS_CONOCIDOS = {
     "pet_rescued", "dragon_first_wounded", "refuge_destroyed", "gareth_reencounter",
     "met_ledros", "chose_mask", "cassius_joined", "torvrena_hired",
     "hubert_magnolia_named", "trial_rumors_heard", "eledar_ankle_hurt",
-    "conocio_isa"
+    "conocio_isa",
+    // Laboratorio de Dexter (ciclo 3, "El laboratorio y Teros"). Cada hecho
+    // destapa un tema de ese ciclo; ver data/bufon-ciclo-fase3.js.
+    "conocio_clef", "conocio_doctores", "harrow_ataco_laia",
+    "supo_de_vesalio", "harrow_hablo_de_nigredo"
   ]
 };

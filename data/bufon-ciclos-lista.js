@@ -33,6 +33,6 @@ window.BUFON_LISTA_CICLOS = [
       "bufon_juicio_", "bufon_side_a_eledar_muerte"
     ]
   },
-  { numero: 3, nombre: "Fase 3" },
+  { numero: 3, nombre: "El laboratorio y Teros" },
   // @@CICLOS@@  (nuevo-ciclo agrega los ciclos nuevos justo encima de esta línea)
 ];
