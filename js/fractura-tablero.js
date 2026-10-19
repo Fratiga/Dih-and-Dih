@@ -440,6 +440,25 @@ window.FracturaTablero = (function () {
       }
     }
 
+    /* Niebla que se desplaza y unas pocas motas. Muy sutil y siempre bajo las unidades. */
+    function ambiente(t) {
+      if (REDUCIDO) return;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(ox, oy, ts * est.ancho, ts * est.alto); ctx.clip();
+      ctx.fillStyle = "rgba(226,232,240,.035)";
+      for (let i = 0; i < 5; i++) {
+        const cx = ox + (((t / (11000 + i * 2300) + i * 0.37) % 1.5) - 0.25) * ts * est.ancho, cy = oy + ts * est.alto * (0.12 + 0.19 * i);
+        ctx.beginPath(); ctx.ellipse(cx, cy, ts * (4 + i), ts * (0.8 + 0.25 * i), 0, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = "rgba(240,232,205,.3)";
+      for (let i = 0; i < 12; i++) {
+        const x = ox + ((hash(i, 1, 5) + t / 70000 * (0.4 + hash(i, 2, 5))) % 1) * ts * est.ancho;
+        const y = oy + ((((hash(i, 3, 5) - t / 55000 * (0.5 + hash(i, 4, 5))) % 1) + 1) % 1) * ts * est.alto;
+        ctx.fillRect(x, y, 2, 2);
+      }
+      ctx.restore();
+    }
+
     /* Fronteras de región: un trazo del color de quien manda (o gris si nadie) */
     function dibujarRegiones(vis) {
       ctx.lineWidth = Math.max(2, ts / 14);
@@ -678,6 +697,7 @@ window.FracturaTablero = (function () {
         if (v === 1) { ctx.fillStyle = "rgba(10,8,16,.5)"; ctx.fillRect(px(x), py(y), ts, ts); }
       }
       dibujarRegiones(vis);
+      ambiente(t);
       // Resaltes de movimiento (no mientras se reproduce una animación)
       if (!anim) estado.mover.forEach((n, k) => { const [x, y] = k.split(",").map(Number); ctx.fillStyle = "rgba(125,220,125,.28)"; ctx.fillRect(px(x), py(y), ts, ts); ctx.strokeStyle = "rgba(170,255,170,.75)"; ctx.lineWidth = 1.5; ctx.strokeRect(px(x) + 1.5, py(y) + 1.5, ts - 3, ts - 3); });
       estado.objetivosHab.forEach(k => { const [x, y] = k.split(",").map(Number); ctx.fillStyle = "rgba(150,120,255,.35)"; ctx.fillRect(px(x), py(y), ts, ts); });
@@ -710,6 +730,7 @@ window.FracturaTablero = (function () {
       if (!anim) estado.atacar.forEach(k => { const [x, y] = k.split(",").map(Number); ctx.strokeStyle = "#ff6b5e"; ctx.lineWidth = 3; const m = REDUCIDO ? 0 : Math.sin(t / 220) * 1.5; ctx.strokeRect(px(x) + 2 - m, py(y) + 2 - m, ts - 4 + m * 2, ts - 4 + m * 2); });
       if (estado.previaAtq) { const p = estado.previaAtq; ctx.strokeStyle = "#ffe3a0"; ctx.lineWidth = 3; ctx.setLineDash([6, 4]); ctx.strokeRect(px(p.x) + 3, py(p.y) + 3, ts - 6, ts - 6); ctx.setLineDash([]); }
       if (estado.sel && est.unidades[estado.sel] && !anim) { const u = est.unidades[estado.sel]; ctx.strokeStyle = "#fff2a6"; ctx.lineWidth = 3; ctx.strokeRect(px(u.x) + 1.5, py(u.y) + 1.5, ts - 3, ts - 3); }
+      if (estado.casilla) { ctx.strokeStyle = "#fff2a6"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(px(estado.casilla.x) + 2, py(estado.casilla.y) + 2, ts - 4, ts - 4); ctx.setLineDash([]); }
       if (estado.ciudad && est.ciudades[estado.ciudad]) { const c = est.ciudades[estado.ciudad]; ctx.strokeStyle = "#fff2a6"; ctx.lineWidth = 3; ctx.strokeRect(px(c.x) + 1.5, py(c.y) + 1.5, ts - 3, ts - 3); }
       if (estado.hover && !anim) { ctx.strokeStyle = "rgba(255,255,255,.45)"; ctx.lineWidth = 2; ctx.strokeRect(px(estado.hover.x) + 1, py(estado.hover.y) + 1, ts - 2, ts - 2); }
       dibujarEfectos(ahora);
@@ -739,7 +760,7 @@ window.FracturaTablero = (function () {
 
     return {
       poner(nuevo) { est = nuevo; bandos = null; medir(); },
-      estado(e) { estado = Object.assign({ sel: null, mover: new Map(), atacar: new Set(), ciudad: null, objetivosHab: new Set(), ruta: null, hover: estado.hover, previaAtq: null }, e); pedir(); },
+      estado(e) { estado = Object.assign({ sel: null, mover: new Map(), atacar: new Set(), ciudad: null, casilla: null, objetivosHab: new Set(), ruta: null, hover: estado.hover, previaAtq: null }, e); pedir(); },
       redibujar: pedir,
       instantanea, reproducir, saltar,
       ocupado: () => !!anim,
@@ -751,5 +772,20 @@ window.FracturaTablero = (function () {
     };
   }
 
-  return { crear, figura, coloresBando };
+  /* Retrato de un soldado: su figura en grande sobre un fondo liso del color de su facción */
+  function retrato(canvas, cl, bando, o) {
+    o = o || {};
+    const w = o.w || 96, h = o.h || 112, d = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w * d); canvas.height = Math.round(h * d);
+    canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
+    const c = canvas.getContext("2d");
+    c.setTransform(d, 0, 0, d, 0, 0);
+    c.fillStyle = oscuro(bando.col, 0.74); c.fillRect(0, 0, w, h);
+    c.fillStyle = oscuro(bando.col, 0.58); c.fillRect(0, h * 0.86, w, h * 0.14);
+    const k = cl === "lider" ? 0.6 : cl === "paladin" || cl === "caballero" ? 0.68 : cl === "arcanista" || cl === "archimago" ? 0.66 : 0.72;
+    figura(c, cl, bando, { x: w / 2 + 4, y: h * 0.93, s: h * k, dir: 1, mov: false, fase: 0, sw: 0, cap: o.cap, rango: o.rango || 0, herido: o.herido, luto: o.luto, t: 0 });
+  }
+  const colorFaccion = id => { const f = FACCIONES[id]; return { col: f.color, ban: f.bandera }; };
+
+  return { crear, figura, coloresBando, retrato, colorFaccion };
 })();

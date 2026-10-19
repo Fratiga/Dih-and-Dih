@@ -206,3 +206,18 @@ body.fr-en-guerra #frAviso { position: fixed; z-index: 120; top: 62px; left: 50%
   #frTurno { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .fr-toast, .fr-cartel { animation: none; } }
+
+/* Retratos, casilla inspeccionada, estados de las acciones y registro con iconos */
+.fr-retrato { display: block; flex-shrink: 0; border: 1px solid var(--border); background: #1b1520; }
+.fr-sel-cab { display: flex; gap: 12px; align-items: flex-start; }
+.fr-sel-cab > div { min-width: 0; }
+.fr-sel-cab .fr-h3 { margin-top: 0; }
+.fr-ficha-cab { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 4px; }
+.fr-ficha-cab > div { min-width: 0; flex: 1; }
+.fr-btn.fr-cond { opacity: .7; border-style: dashed; }
+.fr-btn.fr-cond.fr-imposible { opacity: .4; }
+.fr-registro li { display: flex; gap: 8px; align-items: flex-start; }
+.fr-registro li i { font-style: normal; width: 1.2em; text-align: center; color: var(--accent-soft); flex-shrink: 0; }
+.fr-log-muerte i, .fr-log-lider i { color: #e0705f; }
+.fr-log-conquista i, .fr-log-heroico i, .fr-log-reliquia i { color: var(--accent); }
+.fr-log-nucleo i, .fr-log-magia i { color: #8fe3e6; }

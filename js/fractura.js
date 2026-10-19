@@ -297,7 +297,7 @@
   /* =========================================================================
      FICHA DE UN SOLDADO
   ========================================================================= */
-  function abrirFicha(id) {
+  function abrirFicha(id, lectura) {
     const s = ej.soldados[id];
     if (!s) return;
     const rg = rango(s);
@@ -318,8 +318,8 @@
       <p class="fr-sub">${Object.keys(ESPECIALIZACIONES).map(k => `${ESPECIALIZACIONES[k].nombre}: ${ESPECIALIZACIONES[k].texto}`).join(" ")}</p></div>` : "";
     const m = s.muerte;
     $("frFichaCuerpo").innerHTML = `
-      <h2 class="fr-h2">${esc(nombreApodo(s))}</h2>
-      <p class="fr-sub">${s.sexo === "f" ? "Mujer" : "Hombre"} de ${edad(s)} años · ${esc(claseN)} · ${rg.nombre} · ${esc(D.ORIGENES[s.origen] ? D.ORIGENES[s.origen].nombre : s.origen)}${s.reanimado ? " · Reanimado" : ""}${s.renacido ? ` · Renaciente (${s.renacido})` : ""}</p>
+      <div class="fr-ficha-cab"><canvas class="fr-retrato"></canvas><div><h2 class="fr-h2">${esc(nombreApodo(s))}</h2>
+      <p class="fr-sub">${s.sexo === "f" ? "Mujer" : "Hombre"} de ${edad(s)} años · ${esc(claseN)} · ${rg.nombre} · ${esc(D.ORIGENES[s.origen] ? D.ORIGENES[s.origen].nombre : s.origen)}${s.reanimado ? " · Reanimado" : ""}${s.renacido ? ` · Renaciente (${s.renacido})` : ""}</p></div></div>
       ${m ? `<p class="fr-epitafio">${m.natural ? "Murió en paz." : `Cayó en ${esc(m.lugar)}${m.causa && m.causa !== "la Fractura" ? ` a manos de ${esc(m.causa)}` : ""}.`} Año ${m.anio}.</p>` : ""}
       ${s.estado === "establecido" ? `<p class="fr-sub">Establecido: tiene familia.</p>` : ""}
       ${C.convaleciente(ej, s) ? `<p class="fr-sub">Convaleciente de unas heridas graves. No puede ir a la guerra hasta pasadas ${s.herida.hasta - ej.guerras + 1} guerra(s).</p>` : ""}
@@ -337,6 +337,13 @@
       <h3 class="fr-h3">Su historia</h3>
       <ol class="fr-hitos">${s.hitos.slice().reverse().map(h => `<li><b>Año ${h.anio}.</b> ${esc(h.texto)}</li>`).join("") || "<li>Aún sin historia.</li>"}</ol>`;
     $("frFichaCuerpo").dataset.id = id;
+    window.FracturaTablero.retrato($("frFichaCuerpo").querySelector(".fr-retrato"), s.clase, window.FracturaTablero.colorFaccion(ej.faccion), { w: 120, h: 140, cap: s.capitan, rango: S.rangoIndice(s.victorias), luto: !!s.luto, herido: C.convaleciente(ej, s) });
+    if (lectura) {
+      const cuerpo = $("frFichaCuerpo");
+      cuerpo.querySelectorAll("[data-quita],[data-pon-equipo],[data-capitan],[data-quitar-capitan],[data-compania],[data-spec]").forEach(e => e.remove());
+      cuerpo.querySelectorAll(".fr-banner").forEach(e => e.remove());
+      cuerpo.querySelectorAll("h3").forEach(h => { if (h.textContent === "Mando" && h.nextElementSibling) { h.nextElementSibling.remove(); h.remove(); } });
+    }
     if (!$("frFicha").open) $("frFicha").showModal();
   }
   $("frFichaCerrar").addEventListener("click", () => $("frFicha").close());
@@ -459,7 +466,7 @@
   }
 
   function pintarResaltes() {
-    const e = { sel: sel.uid, ciudad: sel.ciudad, mover: new Map(), atacar: new Set(), objetivosHab: new Set(), ruta: rutaPrevia, previaAtq: ataquePrevio };
+    const e = { sel: sel.uid, ciudad: sel.ciudad, mover: new Map(), atacar: new Set(), objetivosHab: new Set(), ruta: rutaPrevia, previaAtq: ataquePrevio, casilla: sel.casilla || null };
     const u = sel.uid && est.unidades[sel.uid];
     if (u && u.dueno === humano() && soyYo()) {
       if (!modo) {
@@ -583,6 +590,8 @@
     const ciudad = FM.ciudadEn(est, x, y);
     if (ciudad && visible) { limpiarPrevia(); sel = { uid: null, ciudad: ciudad.id }; modo = null; lat = "sel"; refrescar(); return; }
     limpiarPrevia();
+    // Una casilla vacía se inspecciona: terreno, región y lo que hay en ella
+    if (est.vision[H][y * est.ancho + x] > 0) { sel = { uid: null, ciudad: null, casilla: { x, y } }; lat = "sel"; modo = null; if (estrecho() && !panelAbierto) { panelAbierto = true; aplicarPanel(); } refrescar(); return; }
     sel = { uid: null, ciudad: null }; modo = null; refrescar();
   }
   function limpiarPreviaVisual() { rutaPrevia = null; ataquePrevio = null; mostrarPrevia(0, 0, null); }
@@ -641,12 +650,27 @@
       <p class="fr-sub">${esc(cl.texto)}</p>`;
   }
 
+  /* Una acción puede estar disponible, condicionada (falta algo que se puede conseguir) o imposible ahora mismo */
+  const estadoAccion = razon => (!razon ? "" : /turno|ya entren|máximo|sitio|no entrena|no es tuya|ya está|huecos|especializ/i.test(razon) ? " fr-cond fr-imposible" : " fr-cond");
+
+  function latCasilla(c, x, y) {
+    const ca = FM.casilla(est, x, y), t = D.TERRENOS[ca.t], rg = est.regiones[ca.region];
+    const quien = rg.dueno === null ? "nadie" : rg.dueno === humano() ? "tuyo" : "del rival";
+    let h = `<h3 class="fr-h3">${esc(t.nombre)}</h3><p class="fr-sub">${esc(rg.nombre)} · fragmento ${rg.tipo} · estabilidad ${rg.estab} · ${quien}</p>
+      <div class="fr-cifras fr-cifras-chicas"><div><b>${t.mov ? t.mov : "—"}</b>coste de paso</div><div><b>+${t.def}</b>defensa</div><div><b>${Object.keys(t.rinde).map(k => `${t.rinde[k]} ${D.RECURSO_NOMBRE[k].toLowerCase()}`).join(", ") || "nada"}</b>rinde a una ciudad cercana</div></div>`;
+    if (!t.mov) h += `<p class="fr-sub">No se puede pisar.</p>`;
+    if (ca.est) h += `<p class="fr-sub"><strong>${esc(D.ESTRUCTURAS[ca.est].nombre)}.</strong> ${ca.est === "costura" ? "Une este fragmento con otro. Pisarla cuesta 1 de movimiento y te lleva al otro extremo." : ca.est === "nucleo" ? `Mantener aquí una unidad ${est.hold} turnos seguidos da la victoria.` : ca.est === "ruinas" ? (ca.saqueada ? "Ya se saquearon." : "Quien las pise se lleva lo que guardan.") : ca.est === "fortaleza" ? "Se toma entrando en ella. Da defensa y vista." : ""}</p>`;
+    if (ca.objetos && ca.objetos.length) h += `<p class="fr-sub"><strong>En el suelo.</strong> ${ca.objetos.map(id => esc((est.reliquias[id] || {}).nombre || "algo")).join(", ")}</p>`;
+    c.innerHTML = h;
+  }
+
   function latSeleccion(c) {
     const H = humano();
     const u = sel.uid && est.unidades[sel.uid];
     if (u) {
       const jug = est.jugadores[u.dueno] || null;
-      let h = `<h3 class="fr-h3">${esc(FM.nombreUnidad(u))}</h3><p class="fr-sub">${esc(CLASES[u.clase].nombre)}${u.s ? ` · ${rango(u.s).nombre}${u.s.spec ? " · " + ESPECIALIZACIONES[u.s.spec].nombre : ""} · ${u.s.victorias + (u.vicG || 0)} victorias` : ""}</p>`;
+      const verFicha = u.s && ej.soldados[u.s.id] ? `<button type="button" class="fr-enlace" data-ver-ficha="${u.s.id}">Ver su ficha</button>` : "";
+      let h = `<div class="fr-sel-cab"><canvas class="fr-retrato" data-ret="1"></canvas><div><h3 class="fr-h3">${esc(FM.nombreUnidad(u))}</h3><p class="fr-sub">${esc(CLASES[u.clase].nombre)}${u.s ? ` · ${rango(u.s).nombre}${u.s.spec ? " · " + ESPECIALIZACIONES[u.s.spec].nombre : ""} · ${u.s.victorias + (u.vicG || 0)} victorias` : ""}</p>${verFicha}</div></div>`;
       h += statsUnidad(u);
       if (u.s) {
         const rels = Object.values(u.s.equipo || {}).map(id => est.reliquias[id]).filter(Boolean);
@@ -667,10 +691,13 @@
         if (modo) h += `<p class="fr-sub">Toca una casilla marcada en violeta.</p>`;
       }
       c.innerHTML = h;
+      const ret = c.querySelector("[data-ret]");
+      if (ret) window.FracturaTablero.retrato(ret, u.clase, window.FracturaTablero.coloresBando(est)[u.dueno >= 0 ? u.dueno : 1], { w: 84, h: 98, cap: !!(u.s && u.s.capitan), rango: u.s ? S.rangoIndice(u.s.victorias + (u.vicG || 0)) : 0, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, luto: !!(u.s && u.s.luto) });
       return;
     }
     const ci = sel.ciudad && est.ciudades[sel.ciudad];
     if (ci) { latCiudad(c, ci); return; }
+    if (sel.casilla) { latCasilla(c, sel.casilla.x, sel.casilla.y); return; }
     // Nada seleccionado: resumen de las unidades propias
     const mias = FM.unidadesDe(est, H);
     c.innerHTML = `<h3 class="fr-h3">Tus unidades (${mias.length})</h3>
@@ -687,11 +714,11 @@
       h += `<h4 class="fr-h4">Entrenar</h4><div class="fr-fila-botones">${FM.clasesDisponibles(est, H).map(cl => {
         const razon = FM.razonNoReclutar(est, H, ci.id, cl);
         const coste = FM.costeReclutar(est, H, cl, ci);
-        return `<button type="button" class="fr-btn fr-btn-chico" data-recluta="${cl}"${razon ? " disabled" : ""} title="${esc(razon || CLASES[cl].texto)}">${esc(CLASES[cl].nombre)} <small>${esc(costeTexto(coste))}</small></button>`;
+        return `<button type="button" class="fr-btn fr-btn-chico${estadoAccion(razon)}" data-recluta="${cl}" data-razon="${esc(razon || "")}" title="${esc(razon || CLASES[cl].texto)}">${esc(CLASES[cl].nombre)} <small>${esc(costeTexto(coste))}</small></button>`;
       }).join("")}</div>
       <h4 class="fr-h4">Construir (${ci.edificios.length}/${ci.nivel + 2} huecos)</h4><div class="fr-fila-botones">${Object.keys(EDIFICIOS).filter(e => !ci.edificios.includes(e)).map(e => {
         const razon = FM.razonNoConstruir(est, H, ci.id, e);
-        return `<button type="button" class="fr-btn fr-btn-chico" data-construye="${e}"${razon ? " disabled" : ""} title="${esc(razon || EDIFICIOS[e].texto)}">${esc(EDIFICIOS[e].nombre)} <small>${esc(costeTexto(EDIFICIOS[e].coste))}</small></button>`;
+        return `<button type="button" class="fr-btn fr-btn-chico${estadoAccion(razon)}" data-construye="${e}" data-razon="${esc(razon || "")}" title="${esc(razon || EDIFICIOS[e].texto)}">${esc(EDIFICIOS[e].nombre)} <small>${esc(costeTexto(EDIFICIOS[e].coste))}</small></button>`;
       }).join("")}</div>
       ${ci.nivel < 5 ? `<h4 class="fr-h4">Crecer</h4><button type="button" class="fr-btn fr-btn-chico" data-mejora="${ci.id}"${FM.puedePagar(est.jugadores[H], { materiales: 4 * ci.nivel, oro: 3 * ci.nivel }) ? "" : " disabled"}>Subir a nivel ${ci.nivel + 1} <small>${4 * ci.nivel} materiales, ${3 * ci.nivel} oro</small></button>` : ""}`;
     }
@@ -715,13 +742,14 @@
         const coste = siguiente ? FM.costeInvestigar(est, H, k) : e.coste;
         const razon = siguiente ? FM.razonNoInvestigar(est, H, k) : null;
         return `<div class="fr-saber ${hecho ? "fr-hecho" : ""}"><div><strong>${["I", "II", "III", "IV"][i]}. ${esc(e.nombre)}</strong><p class="fr-sub">${esc(e.texto)}</p></div>
-          ${hecho ? "<em>Dominado</em>" : siguiente ? `<button type="button" class="fr-btn fr-btn-chico" data-investiga="${k}"${razon || !soyYo() ? " disabled" : ""} title="${esc(razon || "")}">${esc(costeTexto(coste))}</button>` : "<em>Antes, el escalón anterior</em>"}</div>`;
+          ${hecho ? "<em>Dominado</em>" : siguiente ? `<button type="button" class="fr-btn fr-btn-chico${estadoAccion(razon || (!soyYo() ? "No es tu turno." : ""))}" data-investiga="${k}" data-razon="${esc(razon || (!soyYo() ? "No es tu turno." : ""))}" title="${esc(razon || "")}">${esc(costeTexto(coste))}</button>` : "<em>Antes, el escalón anterior</em>"}</div>`;
       }).join("")}`;
     }).join("");
   }
 
+  const ICONO_LOG = { combate: "⚔", muerte: "☠", conquista: "⚑", lider: "☠", heroico: "★", reliquia: "◆", recluta: "＋", obra: "▣", tecnologia: "✎", magia: "✦", nucleo: "◎", hambre: "⚠", suceso: "~", turno: "⏱", fin: "■", botin: "◇", sabotaje: "✂", compania: "⚑" };
   function latRegistro(c) {
-    c.innerHTML = `<h3 class="fr-h3">Registro</h3><ol class="fr-registro">${est.log.slice(-50).reverse().map(l => `<li class="fr-log-${esc(l.tipo)}"><b>${l.t}.</b> ${esc(l.texto)}</li>`).join("")}</ol>`;
+    c.innerHTML = `<h3 class="fr-h3">Registro</h3><ol class="fr-registro">${est.log.slice(-50).reverse().map(l => `<li class="fr-log-${esc(l.tipo)}"><i aria-hidden="true">${ICONO_LOG[l.tipo] || "·"}</i><span><b>T${l.t}</b> ${esc(l.texto)}</span></li>`).join("")}</ol>`;
   }
 
   $("frLateral").addEventListener("click", async ev => {
@@ -729,6 +757,10 @@
     const H = humano();
     const un = t.closest("[data-uid]");
     if (un) { sel = { uid: un.dataset.uid, ciudad: null }; refrescar(); return; }
+    const vf = t.closest("[data-ver-ficha]");
+    if (vf) { abrirFicha(vf.dataset.verFicha, true); return; }
+    const bloqueado = t.closest("[data-razon]");
+    if (bloqueado && bloqueado.dataset.razon) { aviso(bloqueado.dataset.razon, true); return; }
     const ciu = t.closest("[data-ciu]");
     if (ciu) { sel = { uid: null, ciudad: ciu.dataset.ciu }; lat = "sel"; refrescar(); return; }
     if (!soyYo()) return;
