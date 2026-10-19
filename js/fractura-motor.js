@@ -582,7 +582,7 @@
     const dmg = calcularDano(est, a, d);
     const distancia = dist(a, d);
     reg(est, `${nombreUnidad(a)} golpea a ${nombreUnidad(d)} por ${dmg}.`, "combate");
-    est.ev.push({ k: "golpe", de: a.uid, a: d.uid, x: d.x, y: d.y, dmg });
+    est.ev.push({ k: "golpe", de: a.uid, a: d.uid, x: d.x, y: d.y, dmg, dist: distancia });
     d.descanso = false;
     const murio = aplicarDano(est, d, dmg, a);
     // Daño en área de los arcanistas
@@ -600,7 +600,7 @@
     if (!sinRetorno && !murio && est.unidades[d.uid] && distancia <= ef(est, d).alc && est.unidades[a.uid] && CLASES[d.clase].atq > 1) {
       const r = Math.max(1, Math.ceil(calcularDano(est, d, a) * 0.6));
       reg(est, `${nombreUnidad(d)} responde por ${r}.`, "combate");
-      est.ev.push({ k: "golpe", de: d.uid, a: a.uid, x: a.x, y: a.y, dmg: r });
+      est.ev.push({ k: "golpe", de: d.uid, a: a.uid, x: a.x, y: a.y, dmg: r, dist: distancia });
       a.descanso = false;
       aplicarDano(est, a, r, d);
     }
@@ -761,6 +761,7 @@
       ciudad.reclutado = true;
       u.pm = 0;
       est.stats.ciudades[u.dueno]++;
+      est.ev.push({ k: "captura", x, y, dueno: u.dueno });
       const rg = regionDeCasilla(est, x, y);
       reg(est, `${jug.nombre} conquista ${ciudad.nombre}${antes !== null ? " a " + est.jugadores[antes].nombre : ""}.`, "conquista");
       crono(est, "conquista", { ciudad: ciudad.nombre, region: rg.nombre, por: nombreUnidad(u), porId: u.s ? u.s.id : null, dueno: u.dueno, antes, capital: ciudad.capital });
@@ -770,6 +771,7 @@
     const fi = est.fortalezas.findIndex(p => p.x === x && p.y === y);
     if (fi >= 0 && est.fortalezasDueno[fi] !== u.dueno) {
       est.fortalezasDueno[fi] = u.dueno;
+      est.ev.push({ k: "captura", x, y, dueno: u.dueno });
       u.pm = 0;
       reg(est, `${jug.nombre} toma la fortaleza de ${regionDeCasilla(est, x, y).nombre}.`, "conquista");
       crono(est, "fortaleza", { region: regionDeCasilla(est, x, y).nombre, por: nombreUnidad(u), dueno: u.dueno });
@@ -917,6 +919,7 @@
         const u = nuevaUnidad(est, j, s.clase, p.x, p.y, s, { nuevo: true });
         if (ciudad.edificios.includes("arsenal")) u.bonoEq = { atq: 1 };
         u.pm = 0; u.atacado = true;
+        est.ev.push({ k: "nuevo", uid: u.uid, x: u.x, y: u.y });
         ciudad.reclutado = true;
         reg(est, `${jug.nombre} recluta a ${S.nombreCompleto(s)}, ${CLASES[s.clase].nombre.toLowerCase()}.`, "recluta");
         actualizarVision(est, j);
@@ -1003,6 +1006,7 @@
       s.reanimado = true; s.muerte = null; s.equipo = {};
       const n = nuevaUnidad(est, j, t.clase, acc.x, acc.y, s);
       n.hp = Math.max(1, Math.floor(ef(est, n).hpMax / 2)); n.pm = 0; n.atacado = true;
+      est.ev.push({ k: "nuevo", uid: n.uid, x: n.x, y: n.y });
       u.atacado = true; u.pm = 0;
       reg(est, `${nombreCompleto0(s)} se levanta de nuevo al servicio de ${jug.nombre}.`, "magia");
       crono(est, "reanimacion", { nombre: S.nombreConApodo(s), dueno: j });

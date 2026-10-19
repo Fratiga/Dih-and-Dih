@@ -34,6 +34,7 @@
   }
   function mostrar(pantalla) {
     ["frInicio", "frCuartel", "frGuerra", "frFin"].forEach(id => $(id).classList.toggle("hidden", id !== pantalla));
+    document.body.classList.toggle("fr-en-guerra", pantalla === "frGuerra");
     window.scrollTo(0, 0);
   }
   const edad = s => S.edadDe(s, ej.anio);
@@ -397,11 +398,34 @@
   function entrarGuerra() {
     mostrar("frGuerra");
     musicaPartida(est.ganador === null);
-    if (!tablero) tablero = window.FracturaTablero.crear($("frTablero"), { alTocar: tocar });
+    if (!tablero) tablero = window.FracturaTablero.crear($("frTablero"), { alTocar: tocar, alPasar: pasarPor });
+    cronicaVista = est.cronica.length;
+    panelAbierto = window.innerWidth >= 900;
+    aplicarPanel();
     tablero.poner(est);
     refrescar();
     if (est.ganador !== null) terminarGuerraUI();
   }
+
+  /* --- Panel flotante: a la derecha en pantallas anchas, abajo en móvil --- */
+  let panelAbierto = true;
+  const estrecho = () => window.innerWidth < 900;
+  function aplicarPanel() {
+    $("frPanel").classList.toggle("abierto", panelAbierto);
+    $("frPanelAbrir").classList.toggle("hidden", panelAbierto);
+    if (!tablero) return;
+    if (estrecho()) tablero.reservar({ der: 8, abajo: panelAbierto ? Math.round(window.innerHeight * 0.4) : 8 });
+    else tablero.reservar({ der: panelAbierto ? 356 : 8, abajo: 8 });
+  }
+  $("frPanelAbrir").addEventListener("click", () => { panelAbierto = true; aplicarPanel(); });
+  $("frPanelCerrar").addEventListener("click", () => { panelAbierto = false; aplicarPanel(); });
+  window.addEventListener("resize", () => { if (!$("frGuerra").classList.contains("hidden")) aplicarPanel(); });
+  $("frSalir").addEventListener("click", async () => {
+    if (est && est.ganador === null && !pvp && !(await dialogo.confirmar("Vuelves al cuartel. La guerra queda guardada y puedes retomarla desde el cuartel.", { titulo: "Salir de la guerra", aceptar: "Salir" }))) return;
+    if (est && est.ganador === null && !pvp) Red.guardarGuerra(est, cfgGuerraActual);
+    musicaPartida(false); pararSondeo();
+    entrarCuartel("guerra");
+  });
 
   let yoIdx = 0;           // qué lado soy (siempre 0 contra la IA)
   let pvp = null;          // guerra entre jugadores en curso: { id, n, acciones, timer, miUid }
@@ -409,8 +433,10 @@
   const soyYo = () => est.activo === humano() && est.ganador === null;
   /* Toda acción mía pasa por aquí: en una guerra entre jugadores se anota para enviarla al terminar el turno */
   function aplicarYo(acc) {
+    const antes = tablero ? tablero.instantanea() : null;
     const r = FM.aplicar(est, acc);
     if (r.ok && pvp) pvp.acciones.push(acc);
+    if (r.ok && tablero && r.ev && r.ev.length) tablero.reproducir(r.ev, antes);
     return r;
   }
 
@@ -433,7 +459,7 @@
   }
 
   function pintarResaltes() {
-    const e = { sel: sel.uid, ciudad: sel.ciudad, mover: new Map(), atacar: new Set(), objetivosHab: new Set() };
+    const e = { sel: sel.uid, ciudad: sel.ciudad, mover: new Map(), atacar: new Set(), objetivosHab: new Set(), ruta: rutaPrevia, previaAtq: ataquePrevio };
     const u = sel.uid && est.unidades[sel.uid];
     if (u && u.dueno === humano() && soyYo()) {
       if (!modo) {
@@ -451,7 +477,64 @@
   }
 
   /* --- Tocar el tablero --- */
-  async function tocar(x, y) {
+  let rutaPrevia = null, ataquePrevio = null, previaFija = null;
+  const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+  /* Cuánto pegaría y cuánto respondería, con los números reales del motor, y desde dónde atacaría */
+  function previaAtaque(u, t) {
+    const e = FM.ef(est, u);
+    let desde = { x: u.x, y: u.y, rec: u.recorrido || 0 };
+    if (cheb(u, t) > e.alc) {
+      const info = FM.alcanzables(est, u);
+      let mejor = null;
+      info.destinos.forEach(n => { const dd = cheb(n, t); if (dd <= e.alc && dd >= 1 && (!mejor || n.c < mejor.c || (n.c === mejor.c && dd > mejor.dd))) mejor = { x: n.x, y: n.y, c: n.c, dd }; });
+      if (!mejor) return null;
+      desde = { x: mejor.x, y: mejor.y, rec: (u.recorrido || 0) + cheb(u, mejor), mueve: true };
+    }
+    const sx = u.x, sy = u.y, sr = u.recorrido;
+    u.x = desde.x; u.y = desde.y; u.recorrido = desde.rec;
+    const dmg = FM.calcularDano(est, u, t);
+    let ret = 0;
+    if (dmg < t.hp && cheb(desde, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
+    u.x = sx; u.y = sy; u.recorrido = sr;
+    return { dmg, ret, mata: dmg >= t.hp, mueve: !!desde.mueve, hpT: t.hp };
+  }
+
+  function mostrarPrevia(x, y, html) {
+    const el = $("frPrevia");
+    if (!html) { el.classList.add("hidden"); return; }
+    const p = tablero.pantallaDe(x, y);
+    el.innerHTML = html;
+    el.classList.remove("hidden");
+    el.style.left = `${Math.max(8, Math.min(window.innerWidth - 200, p.x - 90))}px`;
+    el.style.top = `${Math.max(64, p.y - 12 - el.offsetHeight)}px`;
+  }
+  function limpiarPrevia() { rutaPrevia = null; ataquePrevio = null; previaFija = null; mostrarPrevia(0, 0, null); }
+
+  /* Ratón encima de una casilla: ruta si es un destino, vista previa del combate si es un enemigo al alcance */
+  function pasarPor(x, y) {
+    rutaPrevia = null; ataquePrevio = null;
+    mostrarPrevia(0, 0, null);
+    const u = sel.uid && est.unidades[sel.uid];
+    if (x >= 0 && u && u.dueno === humano() && soyYo() && !modo && !tablero.ocupado()) calcularPrevia(u, x, y);
+    pintarResaltes();
+  }
+  function calcularPrevia(u, x, y) {
+    const H = humano();
+    const t = FM.unidadEn(est, x, y);
+    if (t && t.dueno !== H && FM.veCasilla(est, H, x, y) && !u.atacado && u.clase !== "sanador") {
+      const p = previaAtaque(u, t);
+      if (!p) { mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span>No llega este turno</span>`); return; }
+      ataquePrevio = { x, y };
+      mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span>${p.mata ? "Lo derribas" : `Le quitas ${p.dmg} de ${p.hpT}`}${p.ret ? ` · responde ${p.ret}` : ""}${p.mueve ? " · avanzas primero" : ""}</span>`);
+    } else if (!t && u.pm > 0) {
+      const info = FM.alcanzables(est, u);
+      const n = info.destinos.get(`${x},${y}`);
+      if (n) { rutaPrevia = FM.camino(info, x, y); mostrarPrevia(x, y, `<span>Cuesta ${n.c} de ${u.pm} de movimiento</span>`); }
+    }
+  }
+
+  async function tocar(x, y, tactil) {
     if (est.ganador !== null || !soyYo()) return;
     const H = humano();
     const u = sel.uid ? est.unidades[sel.uid] : null;
@@ -465,12 +548,14 @@
         return despuesDeAccion();
       }
     }
-    if (enCasilla && enCasilla.dueno === H) { sel = { uid: enCasilla.uid, ciudad: null }; modo = null; lat = "sel"; refrescar(); return; }
+    if (enCasilla && enCasilla.dueno === H) { limpiarPrevia(); sel = { uid: enCasilla.uid, ciudad: null }; modo = null; lat = "sel"; refrescar(); return; }
     if (u && u.dueno === H && enCasilla && enCasilla.dueno !== H && visible) {
       // Atacar: si no llega desde donde está, se acerca primero
       const e = FM.ef(est, u);
       const d = Math.max(Math.abs(enCasilla.x - u.x), Math.abs(enCasilla.y - u.y));
       if (u.atacado) { aviso("Esa unidad ya atacó este turno.", true); return; }
+      if (tactil && !(previaFija && previaFija.x === x && previaFija.y === y)) { previaFija = { x, y }; limpiarPreviaVisual(); calcularPrevia(u, x, y); pintarResaltes(); return; }
+      limpiarPrevia();
       if (d > e.alc) {
         const info = FM.alcanzables(est, u);
         let mejor = null;
@@ -488,25 +573,57 @@
     if (u && u.dueno === H && !enCasilla) {
       const info = FM.alcanzables(est, u);
       if (info.destinos.has(`${x},${y}`) && u.pm > 0) {
+        if (tactil && !(previaFija && previaFija.x === x && previaFija.y === y)) { previaFija = { x, y }; limpiarPreviaVisual(); calcularPrevia(u, x, y); pintarResaltes(); return; }
+        limpiarPrevia();
         const m = aplicarYo({ t: "mover", uid: u.uid, x, y });
         if (!m.ok) aviso(m.error, true);
         return despuesDeAccion();
       }
     }
     const ciudad = FM.ciudadEn(est, x, y);
-    if (ciudad && visible) { sel = { uid: null, ciudad: ciudad.id }; modo = null; lat = "sel"; refrescar(); return; }
+    if (ciudad && visible) { limpiarPrevia(); sel = { uid: null, ciudad: ciudad.id }; modo = null; lat = "sel"; refrescar(); return; }
+    limpiarPrevia();
     sel = { uid: null, ciudad: null }; modo = null; refrescar();
   }
+  function limpiarPreviaVisual() { rutaPrevia = null; ataquePrevio = null; mostrarPrevia(0, 0, null); }
 
   function despuesDeAccion() {
-    (est.ev || []).forEach(e => {
-      if (e.k === "golpe") tablero.efecto(e.x, e.y, `-${e.dmg}`, "#ffd0c8");
-      if (e.k === "muerte") tablero.efecto(e.x, e.y, "✝", "#ffffff");
-    });
+    limpiarPrevia();
     if (sel.uid && !est.unidades[sel.uid]) sel.uid = null;
     refrescar();
     guardarEnCurso();
-    if (est.ganador !== null) setTimeout(terminarGuerraUI, 700);
+    tablero.alTerminar(() => {
+      procesarCronica();
+      if (est.ganador !== null) setTimeout(terminarGuerraUI, 500);
+    });
+  }
+
+  /* --- Avisos de acontecimientos importantes (conquistas, bajas de mando, reliquias...) --- */
+  let cronicaVista = 0;
+  const TOAST = { conquista: ["Conquista", "⚑", "conq"], fortaleza: ["Fortaleza tomada", "⚑", "conq"], lider: ["Cae un líder", "☠", "baja"], heroico: ["Hazaña", "★", "oro"], reliquia: ["Reliquia", "◆", "oro"], nucleo: ["Núcleo del Sueño", "◎", "cian"], reanimacion: ["Vuelve de entre los muertos", "✦", "cian"], tecnologia: ["Conocimiento", "✎", ""] };
+  function procesarCronica() {
+    const nuevos = est.cronica.slice(cronicaVista);
+    cronicaVista = est.cronica.length;
+    nuevos.forEach((e, i) => {
+      let t = TOAST[e.tipo];
+      if (e.tipo === "caida") { if (!(e.capitan || (e.victorias || 0) >= 10)) return; t = [e.capitan ? "Cae un capitán" : "Cae un veterano", "☠", "baja"]; }
+      if (e.tipo === "tecnologia" && e.dueno !== humano()) return;
+      if (e.tipo === "suceso" || e.tipo === "sabotaje" || e.tipo === "fin") return;
+      if (!t) return;
+      const texto = CR.frase(est, e, null, cronicaVista - nuevos.length + i) || "";
+      toast(t[0], texto, t[1], t[2]);
+    });
+  }
+  function toast(titulo, texto, icono, clase) {
+    const cont = $("frToasts");
+    const el = document.createElement("div");
+    el.className = `fr-toast ${clase || ""}`;
+    el.innerHTML = `<i aria-hidden="true">${esc(icono || "")}</i><div><b>${esc(titulo)}</b><span>${esc(texto)}</span></div>`;
+    el.addEventListener("click", () => el.remove());
+    cont.appendChild(el);
+    while (cont.children.length > 4) cont.firstChild.remove();
+    setTimeout(() => el.classList.add("sale"), 4200);
+    setTimeout(() => el.remove(), 4700);
   }
 
   /* --- Panel lateral --- */
@@ -635,6 +752,7 @@
 
   /* --- Fin del turno y turno del rival --- */
   $("frTerminar").addEventListener("click", async () => {
+    if (tablero.ocupado()) { tablero.saltar(); return; }
     if (!soyYo()) return;
     // Aviso si quedan unidades sin mover
     const sinActuar = FM.unidadesDe(est, humano()).filter(u => !u.lider && u.pm > 0 && !u.atacado && u.quieto).length;
@@ -645,16 +763,25 @@
     if (pvp) { await enviarTurnoPvp(); return; }
     if (est.ganador !== null) { terminarGuerraUI(); return; }
     cartel("Turno del rival");
+    const antesSnap = tablero.instantanea();
     setTimeout(() => {
-      const antes = est.log.length;
-      let guard = 0;
-      while (est.ganador === null && est.activo !== humano() && guard++ < 3) IA.turnoCompleto(est, est.activo);
-      void antes;
+      // La IA juega de una vez sobre el estado real; lo que hizo se reproduce después como animación
+      const evs = [];
+      const original = FM.aplicar;
+      FM.aplicar = (e, a) => { const r = original(e, a); if (r && r.ok && r.ev) evs.push(...r.ev); return r; };
+      try {
+        let guard = 0;
+        while (est.ganador === null && est.activo !== humano() && guard++ < 3) IA.turnoCompleto(est, est.activo);
+      } finally { FM.aplicar = original; }
       cartel(null);
       refrescar();
       guardarEnCurso();
-      if (est.ganador !== null) terminarGuerraUI();
-      else if (est.activo === humano()) cartel(`Turno ${est.turno}`, 900);
+      const fin = () => {
+        procesarCronica();
+        if (est.ganador !== null) { setTimeout(terminarGuerraUI, 500); return; }
+        if (est.activo === humano()) { cartel(`Turno ${est.turno}`, 1000); const cap = est.capitales[humano()]; tablero.onda(cap.x, cap.y, "#f0d278"); }
+      };
+      tablero.reproducir(evs, antesSnap, { tope: 5200, alTerminar: fin });
     }, 450);
   });
 

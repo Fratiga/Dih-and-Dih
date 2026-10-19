@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>La Fractura — Compendio del Mundo</title>
-  <script src="js/dialogos.js?v=20270318"></script>
-  <script src="js/oculto.js?v=20270318"></script>
+  <script src="js/dialogos.js?v=20270327"></script>
+  <script src="js/oculto.js?v=20270327"></script>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270318">
-  <link rel="stylesheet" href="css/minijuegos.css?v=20270318">
-  <link rel="stylesheet" href="css/fractura.css?v=20270318">
+  <link rel="stylesheet" href="css/style.css?v=20270327">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270327">
+  <link rel="stylesheet" href="css/fractura.css?v=20270327">
 </head>
 <body class="mj-pagina fractura-tema">
-  <script src="js/carga.js?v=20270318"></script>
+  <script src="js/carga.js?v=20270327"></script>
   <!-- Página aparte a propósito: sin cabecera del sitio ni mini reproductor. -->
   <div class="mj-barra">
     <span class="mj-enlaces">
@@ -61,32 +61,34 @@
       <div id="frVista" class="fr-vista"></div>
     </section>
 
-    <!-- 3. La guerra -->
-    <section id="frGuerra" class="fr-pantalla hidden">
-      <div class="fr-barra-guerra">
-        <div id="frRecursos" class="fr-recursos" aria-label="Recursos"></div>
-        <div class="fr-turno">
-          <span id="frTurno"></span>
-          <button type="button" id="frRendirse" class="fr-btn fr-btn-chico">Rendirse</button>
-          <button type="button" id="frTerminar" class="fr-btn fr-btn-principal">Terminar turno</button>
-        </div>
-      </div>
-      <div class="fr-mesa">
-        <div class="fr-tablero-caja">
-          <canvas id="frTablero" aria-label="Mapa de la Fractura"></canvas>
-          <div id="frCartel" class="fr-cartel hidden"></div>
-        </div>
-        <aside class="fr-lateral">
+    <!-- 3. La guerra: el tablero ocupa toda la pantalla y la interfaz flota encima -->
+    <section id="frGuerra" class="fr-pantalla hidden" aria-label="La guerra">
+      <canvas id="frTablero" aria-label="Mapa de la Fractura"></canvas>
+      <div class="fr-hud">
+        <header class="fr-hud-arriba">
+          <button type="button" id="frSalir" class="fr-boton" title="Volver al cuartel. La guerra queda guardada">← Cuartel</button>
+          <div id="frRecursos" class="fr-recursos" aria-label="Recursos"></div>
+          <div class="fr-turno">
+            <span id="frTurno"></span>
+            <button type="button" id="frRendirse" class="fr-boton">Rendirse</button>
+            <button type="button" id="frTerminar" class="fr-boton fr-boton-principal">Terminar turno</button>
+          </div>
+        </header>
+        <aside id="frPanel" class="fr-hud-lateral abierto" aria-label="Información">
           <nav class="fr-pestanas fr-pestanas-chicas" id="frLatPestanas">
             <button type="button" data-l="sel" class="activa">Selección</button>
             <button type="button" data-l="ciudades">Ciudades</button>
             <button type="button" data-l="saber">Investigar</button>
             <button type="button" data-l="registro">Registro</button>
+            <button type="button" id="frPanelCerrar" class="fr-panel-x" aria-label="Ocultar el panel">×</button>
           </nav>
           <div id="frLateral" class="fr-lateral-cuerpo"></div>
         </aside>
+        <button type="button" id="frPanelAbrir" class="fr-boton fr-panel-abrir" aria-label="Mostrar el panel">Panel</button>
+        <div id="frPrevia" class="fr-previa hidden" role="status"></div>
+        <div id="frToasts" class="fr-toasts" aria-live="polite"></div>
+        <div id="frCartel" class="fr-cartel hidden"></div>
       </div>
-      <p class="fr-ayuda">Toca una unidad para ver adónde llega y a quién alcanza. Toca una casilla marcada para moverla y un enemigo marcado para atacarlo. Las ciudades vacías se toman entrando en ellas.</p>
     </section>
 
     <!-- 4. Fin de la guerra -->
@@ -98,22 +100,22 @@
     <div id="frFichaCuerpo"></div>
   </dialog>
 
-  <script src="js/temas.js?v=20270318"></script>
-  <script src="js/fichas-supabase.js?v=20270318"></script>
-  <script src="js/interruptores.js?v=20270318"></script>
-  <script src="js/presencia.js?v=20270318"></script>
-  <script src="js/lado.js?v=20270318"></script>
-  <script src="js/fractura-datos.js?v=20270318"></script>
-  <script src="js/fractura-soldados.js?v=20270318"></script>
-  <script src="js/fractura-mapa.js?v=20270318"></script>
-  <script src="js/fractura-motor.js?v=20270318"></script>
-  <script src="js/fractura-ia.js?v=20270318"></script>
-  <script src="js/fractura-campana.js?v=20270318"></script>
-  <script src="js/fractura-cronica.js?v=20270318"></script>
-  <script src="js/fractura-red.js?v=20270318"></script>
-  <script src="js/fractura-tablero.js?v=20270318"></script>
-  <script src="js/fractura.js?v=20270318"></script>
-  <script src="js/avisos-admin.js?v=20270318"></script>
-  <script src="js/musica-paginas.js?v=20270318"></script>
+  <script src="js/temas.js?v=20270327"></script>
+  <script src="js/fichas-supabase.js?v=20270327"></script>
+  <script src="js/interruptores.js?v=20270327"></script>
+  <script src="js/presencia.js?v=20270327"></script>
+  <script src="js/lado.js?v=20270327"></script>
+  <script src="js/fractura-datos.js?v=20270327"></script>
+  <script src="js/fractura-soldados.js?v=20270327"></script>
+  <script src="js/fractura-mapa.js?v=20270327"></script>
+  <script src="js/fractura-motor.js?v=20270327"></script>
+  <script src="js/fractura-ia.js?v=20270327"></script>
+  <script src="js/fractura-campana.js?v=20270327"></script>
+  <script src="js/fractura-cronica.js?v=20270327"></script>
+  <script src="js/fractura-red.js?v=20270327"></script>
+  <script src="js/fractura-tablero.js?v=20270327"></script>
+  <script src="js/fractura.js?v=20270327"></script>
+  <script src="js/avisos-admin.js?v=20270327"></script>
+  <script src="js/musica-paginas.js?v=20270327"></script>
 </body>
 </html>
