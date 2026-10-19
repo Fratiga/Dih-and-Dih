@@ -5,19 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi habitación</title>
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
-  <link rel="stylesheet" href="css/style.css?v=20270330">
-  <link rel="stylesheet" href="css/taberna.css?v=20270330">
-  <link rel="stylesheet" href="css/lobby.css?v=20270330">
-  <link rel="stylesheet" href="css/cartas.css?v=20270330">
-  <link rel="stylesheet" href="css/cartas-juego.css?v=20270330">
-  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270330">
-  <link rel="stylesheet" href="css/intercambios.css?v=20270330">
-  <link rel="stylesheet" href="css/habitacion.css?v=20270330">
-  <link rel="stylesheet" href="css/cielo.css?v=20270330">
-  <script src="js/dialogos.js?v=20270330"></script>
+  <link rel="stylesheet" href="css/style.css?v=20270331">
+  <link rel="stylesheet" href="css/taberna.css?v=20270331">
+  <link rel="stylesheet" href="css/lobby.css?v=20270331">
+  <link rel="stylesheet" href="css/cartas.css?v=20270331">
+  <link rel="stylesheet" href="css/cartas-juego.css?v=20270331">
+  <link rel="stylesheet" href="css/batalla-apuestas.css?v=20270331">
+  <link rel="stylesheet" href="css/intercambios.css?v=20270331">
+  <link rel="stylesheet" href="css/habitacion.css?v=20270331">
+  <link rel="stylesheet" href="css/cielo.css?v=20270331">
+  <!-- three.js para el Bufón que baila sobre la cama (js/slappy.js); solo se descarga si el huevo de pascua está prendido -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script src="js/dialogos.js?v=20270331"></script>
 </head>
 <body class="lb hb">
-  <script src="js/carga.js?v=20270330"></script>
+  <script src="js/carga.js?v=20270331"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -72,6 +82,7 @@
       <main class="lb-centro">
         <div class="lb-escena-caja">
           <div class="lb-escena-scroll">
+            <div class="lb-escena-lienzo">
             <svg class="lb-escena hb-escena" id="hbEscena" viewBox="0 0 960 540" shape-rendering="crispEdges" role="group" aria-label="Tu habitación: la cama bajo la ventana, la estantería de tu colección, la mesa de mazos, la forja y las puertas a la taberna y a los corrales">
               <!-- Pared y suelo -->
               <rect x="0" y="0" width="960" height="330" fill="#2a2036"/>
@@ -194,6 +205,9 @@
               <rect id="hbTinte" width="960" height="540" fill="none" opacity="0" pointer-events="none"/>
               <g id="hbEtiquetas" pointer-events="none"></g>
             </svg>
+            <!-- El Bufón (Slappy) baila sobre la cama. No recibe clics. -->
+            <div id="slappyContenedor" class="slappy-contenedor lb-slappy-sitio lb-slappy-cama hidden" aria-hidden="true"></div>
+            </div>
           </div>
         </div>
         <p class="lb-chico hb-ayuda">En la <a href="forja.html">forja</a> entregas cartas y sale una mejor. La puerta del patio, a la izquierda, lleva a los <a href="corrales.html">corrales</a>, donde crían tus criaturas; si se enciende la lámpara de encima, hay una cría lista.</p>
@@ -201,24 +215,25 @@
     </div>
   </div>
 
-  <script src="data/personajes.js?v=20270330"></script>
-  <script src="data/objetos.js?v=20270330"></script>
-  <script src="data/lugares.js?v=20270330"></script>
-  <script src="data/bestiario.js?v=20270330"></script>
-  <script src="js/contenido-servidor.js?v=20270330"></script>
-  <script src="js/temas.js?v=20270330"></script>
-  <script src="js/fichas-supabase.js?v=20270330"></script>
-  <script src="js/interruptores.js?v=20270330"></script>
-  <script src="js/presencia.js?v=20270330"></script>
-  <script src="js/lado.js?v=20270330"></script>
-  <script src="js/cartas-datos.js?v=20270330"></script>
-  <script src="js/cartas-cliente.js?v=20270330"></script>
-  <script src="js/cartas-vista.js?v=20270330"></script>
-  <script src="js/batalla-apuestas.js?v=20270330"></script>
-  <script src="js/corrales-lib.js?v=20270330"></script>
-  <script src="js/cielo.js?v=20270330"></script>
-  <script src="js/habitacion.js?v=20270330"></script>
-  <script src="js/avisos-admin.js?v=20270330"></script>
-  <script src="js/musica-paginas.js?v=20270330"></script>
+  <script src="data/personajes.js?v=20270331"></script>
+  <script src="data/objetos.js?v=20270331"></script>
+  <script src="data/lugares.js?v=20270331"></script>
+  <script src="data/bestiario.js?v=20270331"></script>
+  <script src="js/contenido-servidor.js?v=20270331"></script>
+  <script src="js/temas.js?v=20270331"></script>
+  <script src="js/fichas-supabase.js?v=20270331"></script>
+  <script src="js/interruptores.js?v=20270331"></script>
+  <script src="js/presencia.js?v=20270331"></script>
+  <script src="js/lado.js?v=20270331"></script>
+  <script src="js/cartas-datos.js?v=20270331"></script>
+  <script src="js/cartas-cliente.js?v=20270331"></script>
+  <script src="js/cartas-vista.js?v=20270331"></script>
+  <script src="js/batalla-apuestas.js?v=20270331"></script>
+  <script src="js/corrales-lib.js?v=20270331"></script>
+  <script src="js/cielo.js?v=20270331"></script>
+  <script src="js/habitacion.js?v=20270331"></script>
+  <script src="js/avisos-admin.js?v=20270331"></script>
+  <script src="js/slappy.js?v=20270331"></script>
+  <script src="js/musica-paginas.js?v=20270331"></script>
 </body>
 </html>

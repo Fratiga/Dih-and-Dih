@@ -99,6 +99,13 @@ body.lb {
 /* La escena */
 .lb-escena-caja { position: relative; border: 4px ridge var(--lb-borde); background: #000; box-shadow: 6px 6px 0 #000; }
 .lb-escena-scroll { overflow-x: auto; overflow-y: hidden; }
+/* El lienzo mide lo mismo que el dibujo y lleva encima (sin recibir clics) el Bufón que baila: sus coordenadas son porcentajes del dibujo */
+.lb-escena-lienzo { position: relative; min-width: 640px; }
+.lb-escena-lienzo > .lb-escena { min-width: 0; }
+.lb .slappy-contenedor.lb-slappy-sitio { position: absolute; width: auto; height: auto; margin: 0; border: 0; background: none; overflow: visible; pointer-events: none; z-index: 4; }
+.lb .slappy-contenedor.lb-slappy-taberna { left: 29.7%; top: 44.3%; width: 17.2%; height: 33%; }   /* suelo libre del centro de la taberna (1280 x 700): x 380-600, y 310-540; ningún enlace queda debajo */
+.lb .slappy-contenedor.lb-slappy-cama { left: 40%; top: 24%; width: 22.1%; height: 40.7%; }       /* sobre la cama de Mi habitación (960 x 540): x 384-596, y 130-350 */
+.lb-escena.lb-oculta ~ .lb-slappy-sitio { display: none; }                 /* en las otras salas de la taberna no se ve */
 .lb-escena { display: block; width: 100%; height: auto; min-width: 640px; background: #120d19; image-rendering: pixelated; }
 
 .lb-rotulo { font: 8px "Press Start 2P", monospace; fill: #fff3d0; paint-order: stroke; stroke: #3a2412; stroke-width: 3px; }

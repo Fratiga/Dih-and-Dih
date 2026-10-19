@@ -17,13 +17,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20270330">
-  <link rel="stylesheet" href="css/taberna.css?v=20270330">
-  <link rel="stylesheet" href="css/lobby.css?v=20270330">
-  <link rel="stylesheet" href="css/cielo.css?v=20270330">
+  <link rel="stylesheet" href="css/style.css?v=20270331">
+  <link rel="stylesheet" href="css/taberna.css?v=20270331">
+  <link rel="stylesheet" href="css/lobby.css?v=20270331">
+  <link rel="stylesheet" href="css/cielo.css?v=20270331">
 </head>
 <body class="lb lb-invitado lb-grande">
-  <script src="js/carga.js?v=20270330"></script>
+  <script src="js/carga.js?v=20270331"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -32,7 +32,6 @@
         <p class="lb-eyebrow">★ ARCHIVO DEL MUNDO ★</p>
         <h1>hola pijes</h1>
         <p class="lb-sub">Una taberna para quienes recorren este mundo.<a href="secreto.html" class="huella-oculta" aria-hidden="true" tabindex="-1">.</a></p>
-        <div id="slappyContenedor" class="slappy-contenedor hidden"></div>
       </div>
       <div class="lb-cab-widgets">
         <div id="globalLadoWidget" class="global-lado-widget">
@@ -115,6 +114,7 @@
         <p class="lb-sala-lema lb-solo-socio" id="lbSalaLema" role="status"></p>
         <div class="lb-escena-caja">
           <div class="lb-escena-scroll">
+            <div class="lb-escena-lienzo">
             <svg class="lb-escena" id="lbEscena" viewBox="0 0 1280 700" shape-rendering="crispEdges" role="group" aria-label="La taberna: la mesa común en el centro y, alrededor, las puertas y los objetos que llevan a cada zona">
               <defs>
                 <pattern id="pTablas" width="48" height="16" patternUnits="userSpaceOnUse">
@@ -430,6 +430,9 @@
               <rect id="lbTinte" width="1280" height="700" fill="none" opacity="0" pointer-events="none"/>
               <g id="lbEtiquetas" pointer-events="none"></g>
             </svg>
+            <!-- El Bufón (Slappy) baila sobre el suelo libre del centro de la taberna. No recibe clics, así que no tapa ningún enlace. -->
+            <div id="slappyContenedor" class="slappy-contenedor lb-slappy-sitio lb-slappy-taberna hidden" aria-hidden="true"></div>
+            </div>
             <div id="lbSalas" hidden></div>
           </div>
 
@@ -494,35 +497,35 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20270330"></script>
-  <script src="data/musica.js?v=20270330"></script>
-  <script src="js/musica-nube.js?v=20270330"></script>
-  <script src="js/common.js?v=20270330"></script>
-  <script src="js/temas.js?v=20270330"></script>
-  <script src="js/player.js?v=20270330"></script>
-  <script src="data/jumpscare.js?v=20270330"></script>
-  <script src="data/contrasenas.js?v=20270330"></script>
-  <script src="js/dialogos.js?v=20270330"></script>
-  <script src="js/fichas-supabase.js?v=20270330"></script>
-  <script src="js/interruptores.js?v=20270330"></script>
-  <script src="js/presencia.js?v=20270330"></script>
-  <script src="js/lado.js?v=20270330"></script>
-  <script src="js/slappy.js?v=20270330"></script>
-  <script src="js/peticiones-supabase.js?v=20270330"></script>
-  <script src="data/novedades.js?v=20270330"></script>
-  <script src="js/contenido-servidor.js?v=20270330"></script>
-  <script src="data/saludos.js?v=20270330"></script>
-  <script src="js/bienvenida.js?v=20270330"></script>
-  <script src="data/protagonistas.js?v=20270330"></script>
-  <script src="js/taberna-mesa.js?v=20270330"></script>
-  <script src="js/cielo.js?v=20270330"></script>
-  <script src="js/lobby-salas-arte.js?v=20270330"></script>
-  <script src="js/lobby-salas.js?v=20270330"></script>
-  <script src="js/lobby.js?v=20270330"></script>
-  <script src="js/aviso-hipodromo.js?v=20270330"></script>
-  <script src="js/avisos-taberna.js?v=20270330"></script>
-  <script src="js/guia-inicial.js?v=20270330"></script>
-  <script src="js/avisos-admin.js?v=20270330"></script>
-  <script src="js/musica-paginas.js?v=20270330"></script>
+  <script src="data/rotacion.js?v=20270331"></script>
+  <script src="data/musica.js?v=20270331"></script>
+  <script src="js/musica-nube.js?v=20270331"></script>
+  <script src="js/common.js?v=20270331"></script>
+  <script src="js/temas.js?v=20270331"></script>
+  <script src="js/player.js?v=20270331"></script>
+  <script src="data/jumpscare.js?v=20270331"></script>
+  <script src="data/contrasenas.js?v=20270331"></script>
+  <script src="js/dialogos.js?v=20270331"></script>
+  <script src="js/fichas-supabase.js?v=20270331"></script>
+  <script src="js/interruptores.js?v=20270331"></script>
+  <script src="js/presencia.js?v=20270331"></script>
+  <script src="js/lado.js?v=20270331"></script>
+  <script src="js/slappy.js?v=20270331"></script>
+  <script src="js/peticiones-supabase.js?v=20270331"></script>
+  <script src="data/novedades.js?v=20270331"></script>
+  <script src="js/contenido-servidor.js?v=20270331"></script>
+  <script src="data/saludos.js?v=20270331"></script>
+  <script src="js/bienvenida.js?v=20270331"></script>
+  <script src="data/protagonistas.js?v=20270331"></script>
+  <script src="js/taberna-mesa.js?v=20270331"></script>
+  <script src="js/cielo.js?v=20270331"></script>
+  <script src="js/lobby-salas-arte.js?v=20270331"></script>
+  <script src="js/lobby-salas.js?v=20270331"></script>
+  <script src="js/lobby.js?v=20270331"></script>
+  <script src="js/aviso-hipodromo.js?v=20270331"></script>
+  <script src="js/avisos-taberna.js?v=20270331"></script>
+  <script src="js/guia-inicial.js?v=20270331"></script>
+  <script src="js/avisos-admin.js?v=20270331"></script>
+  <script src="js/musica-paginas.js?v=20270331"></script>
 </body>
 </html>

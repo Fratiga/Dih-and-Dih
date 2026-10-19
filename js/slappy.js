@@ -30,6 +30,7 @@
   let renderer = null;
   let intervaloBaile = null;
   let resizeHandler = null;
+  let observador = null;
 
   function contenedor() {
     return document.getElementById("slappyContenedor");
@@ -160,6 +161,8 @@
       renderer.setSize(w2, h2);
     };
     window.addEventListener("resize", resizeHandler);
+    // también cuando el contenedor cambia de tamaño o pasa de oculto a visible (por ejemplo al volver a la sala de la taberna)
+    if (window.ResizeObserver) { observador = new ResizeObserver(() => { if (cont.clientWidth) resizeHandler(); }); observador.observe(cont); }
   }
 
   function detenerEscena() {
@@ -169,12 +172,14 @@
     }
     if (intervaloBaile) clearInterval(intervaloBaile);
     if (resizeHandler) window.removeEventListener("resize", resizeHandler);
+    if (observador) observador.disconnect();
     const cont = contenedor();
     if (cont) cont.innerHTML = "";
     escenaPromesa = null;
     renderer = null;
     intervaloBaile = null;
     resizeHandler = null;
+    observador = null;
   }
 
   window.toggleSlappy = function () {
