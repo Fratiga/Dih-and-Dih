@@ -13,17 +13,38 @@ create or replace function t_amigos_mesa(p_uid uuid) returns uuid language sql a
 create or replace function t_amigos_reparte(p_mesa uuid, variadic p_cartas text[]) returns void language plpgsql as $$
 begin perform veintiuna_i_amigos_repartir(p_mesa, t_mazo(variadic p_cartas)); end $$;
 
--- Una acción como ese jugador, con el paso que ve su pantalla
-create or replace function t_amigos_act(p_uid uuid, p_accion text) returns jsonb language plpgsql as $$
-declare v_paso int;
+-- Pone en cada asiento la mano tal como la ve su dueño (las de los demás están ocultas hasta que acaba la ronda)
+create or replace function t_pleno(p_s jsonb, p_mesa uuid) returns jsonb language plpgsql as $$
+declare r jsonb := p_s; i int; v_uid uuid; v jsonb;
 begin
-  select p.paso into v_paso from veintiuna_partidas p join veintiuna_asientos a on a.partida = p.id where a.user_id = p_uid;
+  if p_s is null or p_s -> 'asientos' is null then return p_s; end if;
+  for i in 0..jsonb_array_length(p_s -> 'asientos') - 1 loop
+    select user_id into v_uid from veintiuna_asientos where mesa = p_mesa and asiento = (p_s #>> array['asientos', i::text, 'asiento'])::int;
+    if v_uid is not null then
+      v := veintiuna_i_amigos_json(p_mesa, v_uid) #> array['asientos', i::text, 'mano'];
+      r := jsonb_set(r, array['asientos', i::text, 'mano'], coalesce(v, 'null'::jsonb));
+    end if;
+  end loop;
+  return r;
+end $$;
+
+-- Una acción como ese jugador, con el paso que ve su pantalla (devuelve la mesa con todo a la vista; ver t_pleno)
+create or replace function t_amigos_act(p_uid uuid, p_accion text) returns jsonb language plpgsql as $$
+declare v_paso int; v_mesa uuid; s jsonb;
+begin
+  select p.paso, a.mesa into v_paso, v_mesa from veintiuna_partidas p join veintiuna_asientos a on a.partida = p.id where a.user_id = p_uid;
   perform t_sesion(p_uid);
-  return veintiuna_amigos_accion(v_paso, p_accion);
+  s := veintiuna_amigos_accion(v_paso, p_accion);
+  return t_pleno(s, v_mesa);
 end $$;
 
 create or replace function t_amigos_estado(p_uid uuid) returns jsonb language plpgsql as $$
-begin perform t_sesion(p_uid); return veintiuna_amigos_estado(null); end $$;
+declare s jsonb; v_mesa uuid;
+begin
+  select mesa into v_mesa from veintiuna_asientos where user_id = p_uid;
+  perform t_sesion(p_uid); s := veintiuna_amigos_estado(null);
+  return t_pleno(s, v_mesa);
+end $$;
 
 -- Mesa con N jugadores sentados (los primeros N de u1..u4) con 100 tokens cada uno y la regla dada (y la siguiente)
 drop function if exists t_amigos_montar(int, text, text, boolean);
@@ -190,6 +211,58 @@ begin
   perform t_check('Pierden los dos sin natural y el que tiene natural empata (recupera su apuesta)', s #>> '{asientos,0,mano,razon}' = 'natural_crupier' and s #>> '{asientos,1,mano,razon}' = 'natural_crupier'
                   and s #>> '{asientos,2,mano,resultado}' = 'empate' and s #>> '{asientos,2,mano,razon}' = 'ambos_natural' and t_saldo_de(u1) = 80 and t_saldo_de(u2) = 80 and t_saldo_de(u3) = 100);
   perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+end $$;
+
+/* ======================================================================== las cartas de los demás están ocultas hasta que acaba la ronda */
+do $$
+declare
+  u1 uuid := '00000000-0000-0000-0000-000000000001'; u2 uuid := '00000000-0000-0000-0000-000000000002'; u3 uuid := '00000000-0000-0000-0000-000000000003';
+  v_mesa uuid; s1 jsonb; s2 jsonb; i int;
+begin
+  perform t_reset();
+  v_mesa := t_amigos_montar(3, 'ojo');
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 20); perform t_amigos_listo(u3, 20);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '8c', '10c', '8d', '7t', '9p', '6d', 'Kd', '5c');
+  perform t_sesion(u1); s1 := veintiuna_amigos_estado(null);
+  perform t_sesion(u2); s2 := veintiuna_amigos_estado(null);
+  perform t_check('Tus cartas las ves enteras: todas, con el total', jsonb_array_length(s1 #> '{asientos,0,mano,cartas}') = 2 and s1 #>> '{asientos,0,mano,total}' = '18' and (s1 #>> '{asientos,0,mano,oculta}') is null);
+  perform t_check('De los demás solo se ve la primera carta y cuántas llevan', s1 #>> '{asientos,1,mano,oculta}' = 'true' and jsonb_array_length(s1 #> '{asientos,1,mano,cartas}') = 1 and (s1 #>> '{asientos,1,mano,n}')::int = 2
+                  and s1 #>> '{asientos,1,mano,cartas,0,r}' = '9' and jsonb_array_length(s1 #> '{asientos,2,mano,cartas}') = 1);
+  perform t_check('...sin total, sin peajes y sin saber si se pasaron', s1 #> '{asientos,1,mano,total}' is null and s1 #> '{asientos,1,mano,peajes}' is null and s1 #> '{asientos,1,mano,resultado}' is null and s1 #> '{asientos,1,mano,razon}' is null and s1 #> '{asientos,1,mano,blando}' is null);
+  perform t_check('Cada uno ve las suyas y la primera de los otros (la mano del primero, vista por el segundo)', jsonb_array_length(s2 #> '{asientos,1,mano,cartas}') = 2 and s2 #>> '{asientos,0,mano,oculta}' = 'true' and jsonb_array_length(s2 #> '{asientos,0,mano,cartas}') = 1);
+  perform t_check('La segunda carta de los demás no viaja ni escondida en la respuesta (8 de diamantes, 7 de tréboles)', position('"r": 7' in (s1 #> '{asientos,1}')::text) = 0 and position('"r": 9, "p": 0' in (s1 #> '{asientos,2}')::text) = 0
+                  and (s1 #> '{asientos,1}')::text not like '%"p": 3%');
+  -- cuando uno pide y se pasa, los demás solo ven que sigue o ha terminado, nunca que se pasó
+  perform t_amigos_act(u1, 'plantar');
+  perform t_sesion(u2); s2 := veintiuna_amigos_estado(null);
+  perform t_check('Quien se planta aparece como «listo» para los demás, sin más datos', s2 #>> '{asientos,0,mano,fase}' = 'listo' and s2 #> '{asientos,0,mano,total}' is null);
+  perform t_amigos_act(u2, 'pedir');                                    -- 16 + rey = 26: se pasa
+  perform t_sesion(u3); s1 := veintiuna_amigos_estado(null);
+  perform t_check('Quien se pasa tampoco lo enseña a los demás mientras dura la ronda: solo «listo» y una carta más', s1 #>> '{asientos,1,mano,fase}' = 'listo' and (s1 #>> '{asientos,1,mano,n}')::int = 3 and s1 #> '{asientos,1,mano,razon}' is null and s1 #> '{asientos,1,mano,resultado}' is null
+                  and jsonb_array_length(s1 #> '{asientos,1,mano,cartas}') = 1);
+  perform t_amigos_act(u3, 'plantar');
+  perform t_sesion(u1); s1 := veintiuna_amigos_estado(null);
+  perform t_check('Al acabar la ronda se enseña todo: cartas, totales y resultados de todos', s1 ->> 'fase' = 'resultado' and jsonb_array_length(s1 #> '{asientos,1,mano,cartas}') = 3 and s1 #>> '{asientos,1,mano,total}' = '26' and s1 #>> '{asientos,1,mano,razon}' = 'te_pasas'
+                  and s1 #>> '{asientos,2,mano,total}' = '17' and (s1 #>> '{asientos,1,mano,oculta}') is null);
+  -- una regla que cuesta tokens no se nota desde fuera (el peaje queda oculto)
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
+  perform t_reset();
+  v_mesa := t_amigos_montar(2, 'ojo');
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 20);
+  perform t_amigos_reparte(v_mesa, '10p', '9d', '10c', '8d', '7t', '6d', 'Kd', 'Qd');
+  perform t_amigos_act(u1, 'ojo');
+  perform t_sesion(u2); s2 := veintiuna_amigos_estado(null);
+  perform t_check('Si usas el Ojo del Tahúr los demás no ven que has pagado un peaje', s2 #> '{asientos,0,mano,peajes}' is null and s2 #>> '{asientos,0,mano,apuesta}' = '20.00');
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir();
+  perform t_reset();
+  -- un natural pagado al repartir tampoco se nota hasta el final (casa)
+  v_mesa := t_amigos_montar(2, 'ojo');
+  perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 20);
+  perform t_amigos_reparte(v_mesa, 'Ap', '9d', '9c', 'Kc', '7t', '7d');
+  perform t_sesion(u2); s2 := veintiuna_amigos_estado(null);
+  perform t_check('Un natural pagado al repartir se ve como «listo», sin resultado, hasta que acaba la ronda', s2 #>> '{asientos,0,mano,fase}' = 'listo' and s2 #> '{asientos,0,mano,resultado}' is null and s2 #> '{asientos,0,mano,total}' is null);
+  perform t_sesion(u1); perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir();
+  perform t_reset();
 end $$;
 
 /* ======================================================================== turnos que se agotan, jugadores que se van */

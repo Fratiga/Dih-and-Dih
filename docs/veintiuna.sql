@@ -1765,10 +1765,16 @@ begin
       'apuesta', case when m.fase = 'apuestas' and s.user_id <> p_uid then null else s.apuesta end,        -- las apuestas de los demás se ven al repartir, no antes
       'pasa', s.listo and s.apuesta is null,
       'con_carta', s.carta is not null,
-      'mano', case when p.id is null then null else jsonb_build_object(
-        'cartas', veintiuna_i_mano_json(p.jugador, p.jugador_as1), 'total', vj.total, 'blando', vj.blando,
+      -- Las manos de los demás están ocultas hasta que acaba la ronda: solo se ve su primera carta y cuántas llevan. Ni el total, ni los peajes, ni si se pasaron.
+      'mano', case when p.id is null then null
+                   when s.user_id = p_uid or m.fase = 'resultado' then jsonb_build_object(
+        'cartas', veintiuna_i_mano_json(p.jugador, p.jugador_as1), 'n', coalesce(array_length(p.jugador, 1), 0), 'total', vj.total, 'blando', vj.blando,
         'estado', p.estado, 'fase', p.fase, 'modo', p.modo, 'apuesta', p.apuesta, 'peajes', p.peajes,
-        'resultado', p.resultado, 'razon', p.razon, 'pago', p.pago, 'neto', p.neto) end
+        'resultado', p.resultado, 'razon', p.razon, 'pago', p.pago, 'neto', p.neto)
+                   else jsonb_build_object(
+        'cartas', veintiuna_i_mano_json(p.jugador[1:1], '{}'::int[]), 'n', coalesce(array_length(p.jugador, 1), 0), 'oculta', true,
+        'fase', case when p.estado = 'terminada' or p.fase in ('plantada', 'pasada', 'abandonada') then 'listo' else 'jugador' end,
+        'modo', p.modo, 'apuesta', p.apuesta) end
     ));
   end loop;
 

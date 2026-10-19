@@ -472,6 +472,7 @@ body.vv-ocupado .vv-boton { opacity: .6; pointer-events: none; }
 .vva-modos { margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
 .vva-modos legend { padding: 0; margin-bottom: 6px; color: var(--muted); font-size: .92rem; }
 .vva-bote-lado .vv-total { font-size: 1.3rem; }
+.vv-total.oculto { color: #ffffffb3; background: #ffffff18; border: 1px solid #ffffff33; }
 .vva-bote-texto { margin: 0; max-width: 34ch; text-align: center; color: var(--muted); font-size: .92rem; }
 .vva-pozo { position: relative; z-index: 3; align-self: center; width: min(720px, calc(100% - 32px)); margin: 0 auto 8px; padding: 8px 14px; background: #0a1a16cc; border: 1px solid #ffffff2e; border-radius: 6px; text-align: center; }
 .vva-pozo h3 { margin: 0 0 4px; font: 400 .8rem var(--font-heading); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }

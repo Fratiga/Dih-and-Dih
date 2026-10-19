@@ -175,6 +175,19 @@ cierto("se anuncia quién se sienta y quién se levanta", /Caro se sienta a la m
 comprobar("errores de la mesa con palabras", ["mesa_llena", "no_es_tu_turno", "mesa_no_existe", "ya_sentado", "pozo_desequilibrado"].map(c => /\w/.test(V.mensajeError({ tipo: "servidor", codigo: c, mensaje: "x" })) && V.mensajeError({ tipo: "servidor", codigo: c, mensaje: "x" }) !== "x"), [true, true, true, true, true]);
 comprobar("el abandono tiene razón escrita", /levantaste/.test(V.RAZONES.abandono), true);
 
+console.log("== Mesa con amigos: las cartas de los demás, ocultas");
+const oculta = (fase, n) => ({ cartas: [carta(9, 0)], n, oculta: true, fase, modo: "apuesta", apuesta: 20 });
+const ocu = mesa({ fase: "jugando", turno: 1, asientos: [
+  { asiento: 0, nombre: "Ana", yo: true, listo: true, mano: mano([carta(10, 0), carta(9, 1)]) },
+  { asiento: 1, nombre: "Beto", yo: false, listo: true, mano: oculta("jugador", 2) },
+  { asiento: 2, nombre: "Caro", yo: false, listo: true, mano: oculta("listo", 3) }] });
+comprobar("de un asiento ajeno con cartas ocultas: su turno, espera o plantado, nunca el total ni si se pasó", ocu.asientos.map(a => V.chipAsiento(ocu, a).texto), ["Espera", "Su turno", "Plantado"]);
+const nuevaOculta = JSON.parse(JSON.stringify(ocu)); nuevaOculta.asientos[1].mano.n = 3;
+tx = V.anuncioAmigos(ocu, nuevaOculta);
+comprobar("cuando otro pide carta se anuncia que pide, pero nunca cuál recibe", [/Beto pide carta\./.test(tx), /(picas|corazones|diamantes|tréboles)/.test(tx)], [true, false]);
+const amigosJsOc = fs.readFileSync(path.join(RAIZ, "js", "veintiuna-amigos.js"), "utf8");
+cierto("la pantalla dibuja las cartas ocultas de los demás boca abajo y su total como «?»", /m\.oculta \? Math\.max\(0, \(m\.n \|\| m\.cartas\.length\) - m\.cartas\.length\) : 0/.test(amigosJsOc) && /tot\.textContent = "\?"/.test(amigosJsOc));
+
 console.log("== Mesa con amigos: todos contra todos");
 const duelo = mesa({ modo: "duelo", bote: 100, fase: "resultado", asientos: [
   { asiento: 0, nombre: "Ana", yo: true, listo: true, mano: mano([carta(10, 0), carta(9, 1)], { estado: "terminada", resultado: "victoria", razon: "bote", neto: 80 }) },

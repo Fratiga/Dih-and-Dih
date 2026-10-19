@@ -318,10 +318,12 @@
       const chipEl = el.querySelector(".vva-chip");
       chipEl.textContent = chip.texto; chipEl.dataset.tipo = chip.clase;
       const mano = el.querySelector(".vva-mano");
-      if (m) reconciliar(mano, m.cartas, 0, "a" + est.ronda + "-" + a.asiento);
+      // De los demás solo se ve la primera carta y cuántas llevan (boca abajo) hasta que acaba la ronda; las tuyas se ven siempre
+      if (m) reconciliar(mano, m.cartas, m.oculta ? Math.max(0, (m.n || m.cartas.length) - m.cartas.length) : 0, "a" + est.ronda + "-" + a.asiento);
       else { mano.innerHTML = ""; mano.dataset.clave = ""; ajustarAbanico(mano); }
       const tot = el.querySelector(".vv-total");
-      if (m) { tot.textContent = textoTotal(m.total, m.blando); tot.className = "vv-total" + (m.total > 21 ? " pasado" : m.total === 21 ? " veintiuna" : ""); }
+      if (m && m.oculta) { tot.textContent = "?"; tot.className = "vv-total oculto"; }
+      else if (m) { tot.textContent = textoTotal(m.total, m.blando); tot.className = "vv-total" + (m.total > 21 ? " pasado" : m.total === 21 ? " veintiuna" : ""); }
       else { tot.textContent = ""; tot.className = "vv-total"; }
       const ap = el.querySelector(".vva-apuesta");
       let txtAp = "";
@@ -330,7 +332,7 @@
       if (a.con_carta) txtAp += (txtAp ? " · " : "") + "carta en el pozo";
       ap.textContent = txtAp;
       el.classList.toggle("con-carta", !!a.con_carta);
-      el.setAttribute("aria-label", `${a.nombre}${a.yo ? " (tú)" : ""}: ${chip.texto}${m ? `, suma ${m.total}` : ""}${a.con_carta ? ", con una carta en el pozo" : ""}`);
+      el.setAttribute("aria-label", `${a.nombre}${a.yo ? " (tú)" : ""}: ${chip.texto}${m && !m.oculta ? `, suma ${m.total}` : m ? `, lleva ${m.n} cartas boca abajo` : ""}${a.con_carta ? ", con una carta en el pozo" : ""}`);
     });
     // los asientos libres, hasta completar la mesa
     const libres = Math.max(0, est.asientos_max - est.asientos.length);
@@ -764,7 +766,7 @@
           <li>Una ronda: <strong>apuestas</strong> (empieza el reparto cuando todos están listos, o 45 s después de que apueste el primero), <strong>turnos</strong> por asiento (45 s cada uno: si no juegas te plantas solo), el crupier juega y se enseña el <strong>resultado</strong>.</li>
           <li>No hay apuesta máxima: puedes apostar todo lo que tengas, de 10 en 10.</li>
           <li>Las reglas del blackjack son las de la mesa individual: el crupier se planta con 17 (también blando), el natural paga 3 a 2 y no hay dividir, doblar, seguro ni rendición.</li>
-          <li>Todos veis las cartas de todos. La carta oculta del crupier y la baraja las guarda el servidor: nadie las ve hasta que toca.</li>
+          <li>Las cartas de los demás están <strong>boca abajo</strong> (solo ves la primera de cada uno y cuántas llevan) hasta que acaba la ronda y se enseña quién gana y quién pierde. Las tuyas las ves siempre. La carta oculta del crupier y la baraja las guarda el servidor: nadie las ve hasta que toca.</li>
           <li>Si te levantas a mitad de ronda pierdes tu mano. Quien deja pasar dos turnos seguidos sin jugar, o lleva más de dos minutos y medio sin dar señales, se levanta de la mesa.</li>
           <li>Puedes jugar la ronda <strong>sin apostar</strong>: tu mano no cobra ni paga y no cuenta para los desafíos. Las apuestas con tokens sí cuentan.</li>
         </ul></section>

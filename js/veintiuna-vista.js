@@ -321,6 +321,11 @@
       return { texto: "Apostando", clase: "espera" };
     }
     if (!m) return { texto: "Mira la ronda", clase: "pasa" };
+    if (m.oculta) {
+      if (m.fase === "listo") return { texto: "Plantado", clase: "plantado" };
+      if (est.fase === "jugando" && est.turno === a.asiento) return { texto: "Su turno", clase: "turno" };
+      return { texto: "Espera", clase: "espera" };
+    }
     if (m.fase === "pasada") return { texto: "Se pasa", clase: "derrota" };
     if (m.fase === "abandonada") return { texto: "Se fue", clase: "derrota" };
     if (m.estado === "terminada") {
@@ -370,8 +375,8 @@
       est.asientos.forEach(a => {
         const previo = antes.asientos.find(x => x.asiento === a.asiento && x.nombre === a.nombre);
         if (!a.mano || !previo || !previo.mano || a.yo) return;
-        const nuevas = a.mano.cartas.slice(previo.mano.cartas.length);
-        if (nuevas.length) p.push(`${a.nombre} recibe ${lista(nuevas.map(nombreCarta))}. Suma ${a.mano.total}.`);
+        const antesN = previo.mano.n != null ? previo.mano.n : previo.mano.cartas.length, ahoraN = a.mano.n != null ? a.mano.n : a.mano.cartas.length;
+        if (ahoraN > antesN) p.push(a.mano.oculta ? `${a.nombre} pide carta.` : `${a.nombre} recibe ${lista(a.mano.cartas.slice(antesN).map(nombreCarta))}. Suma ${a.mano.total}.`);
       });
       if (yo && yo.mano) {
         const previo = antes.asientos.find(x => x.yo);
