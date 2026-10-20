@@ -249,7 +249,7 @@
     el.classList.remove("hidden");
     const items = ap.slice().reverse().slice(0, 8).map(b => `<li><strong>${esc(b.quien)}</strong> ${monedas(b.monto)} al pozo por <button type="button" class="hip-enlace" data-ficha="${b.sel}">${esc(b.criatura)}</button></li>`).join("");
     poner(el, `<h3>En la tribuna</h3>
-      <p class="hip-nota">Los aficionados y los dueños del hipódromo también juegan al pozo, y lo que ponen cuenta en el reparto igual que lo tuyo. Las apuestas van llegando a lo largo de la hora.</p>
+      <p class="hip-nota">En la tribuna también se juega al pozo. Lo que ponen cuenta en el reparto igual que lo tuyo, y las apuestas van llegando durante la hora.</p>
       ${items ? `<ul class="hip-lista-apuestas hip-tribuna">${items}</ul><p class="hip-nota">${ap.length} ${ap.length === 1 ? "apuesta" : "apuestas"} de la tribuna, ${monedas(tot)} tokens en total.</p>` : '<p class="hip-vacio">Todavía no ha apostado nadie de la tribuna.</p>'}`);
   }
   /* Las cuadras del mundo: quién es cada personaje, qué criaturas tiene y cuánto hay en su caja */
@@ -264,7 +264,7 @@
         <p class="hip-npc-lema">«${esc(P.lema)}»</p><p class="hip-nota">${esc(P.bio)}</p>
         <p class="hip-npc-pie"><span>Caja: <b>${monedas(P.saldo)}</b></span>${P.cuadra ? `<span>${cri.length ? cri.map(p => `<button type="button" class="hip-enlace" data-ficha="${p.id}">${esc(p.nombre)}</button>`).join(", ") : "sin criaturas ahora"}</span>` : "<span>apuesta al pozo</span>"}</p></li>`;
     }).join("");
-    poner(el, `<h3>Las cuadras del mundo</h3><p class="hip-nota">Personajes que corren, compran, venden y apuestan con las mismas reglas que tú. No tienen ventajas: su caja es suya y sus criaturas corren en los campos del mundo como las demás.</p><ul class="hip-npc-lista">${tarjetas}</ul>`);
+    poner(el, `<h3>Las cuadras del mundo</h3><p class="hip-nota">Dueños y aficionados del hipódromo. Cada uno tiene su caja y juega con las mismas reglas que tú. Sus criaturas corren en los mismos campos que las demás.</p><ul class="hip-npc-lista">${tarjetas}</ul>`);
   }
 
   function pintarInscritos() {
@@ -364,13 +364,24 @@
     const { tipo, sel } = seleccion();
     poner($("hipFoto"), tipo === "exacta" ? retratoApuesta(sel[0], tipo, "Primero") + retratoApuesta(sel[1], tipo, "Segundo") : retratoApuesta(sel, tipo, ""));
   }
-  let boletoArmado = null;   // la apuesta grande pide una segunda pulsación
-  const apuestaGrande = monto => monto >= 20 && monto >= est.saldo * 0.3;
-  function desarmarBoleto() { boletoArmado = null; $("hipApostar").classList.remove("armada"); textoDe($("hipApostar"), "Apostar"); }
+  /* Toda apuesta pide confirmación: «Apostar» se cambia por «¿Seguro? Sí / No» en el mismo sitio. Si cambias algo del boleto mientras tanto, se vuelve a pedir. */
+  let confirmando = null;   // la firma de la apuesta que se está confirmando (tipo, criaturas, importe y doble)
+  let temporizadorConfirma = null;
+  const firmaDe = (tipo, sel, monto, doble) => tipo + "/" + (tipo === "exacta" ? sel : [sel]).join() + "/" + monto + "/" + !!doble;
+  function pedirConfirmacion(firma) {
+    confirmando = firma;
+    $("hipApostar").classList.add("hidden"); $("hipConfirma").classList.remove("hidden");
+    $("hipConfirmaSi").focus();
+    clearTimeout(temporizadorConfirma); temporizadorConfirma = setTimeout(cancelarConfirmacion, 10000);
+  }
+  function cancelarConfirmacion() {
+    confirmando = null; clearTimeout(temporizadorConfirma);
+    $("hipConfirma").classList.add("hidden"); $("hipApostar").classList.remove("hidden");
+  }
   function pintarCuotaApuesta() {
     const { tipo, sel } = seleccion(), monto = Math.floor(Number($("hipMonto").value) || 0);
     pintarFoto();
-    if (boletoArmado) desarmarBoleto();
+    if (confirmando && confirmando !== firmaDe(tipo, sel, monto, tipo === "ganador" && $("hipDoble").checked)) cancelarConfirmacion();
     const cuota = tipo === "pozo" ? (M.cuotaApuesta(m.proxima, tipo, sel) === null ? null : M.cuotaPozo(pozosAhora(), sel, Math.max(1, monto))) : M.cuotaApuesta(m.proxima, tipo, sel);
     textoDe($("hipCuotaApuesta"), cuota ? (tipo === "pozo" ? "≈ " : "") + M.fmtCuota(cuota) : "-");
     textoDe($("hipPosible"), cuota && monto > 0 ? monedas(monto * cuota) : "-");
@@ -394,17 +405,12 @@
     if (cuotaFija === null) return falla(tipo === "exacta" ? "Elige dos criaturas distintas." : "Esa criatura no corre.");
     const cuota = tipo === "pozo" ? M.cuotaPozo(pozosAhora(), sel, monto) : cuotaFija;
     const ids = tipo === "exacta" ? sel : [sel];
-    if ((apuestaGrande(monto) || doble) && boletoArmado !== monto + "/" + tipo + "/" + ids.join()) {
-      boletoArmado = monto + "/" + tipo + "/" + ids.join();
-      $("hipApostar").classList.add("armada"); textoDe($("hipApostar"), `¿Seguro? Pulsa otra vez: ${monedas(monto)} a ${ids.map(nombreDe).join(" y ")}`);
-      clearTimeout(apostar._t); apostar._t = setTimeout(desarmarBoleto, 6000);
-      return;
-    }
-    desarmarBoleto();
+    const firma = firmaDe(tipo, sel, monto, doble);
+    if (confirmando !== firma) { pedirConfirmacion(firma); return; }   // primero «¿Seguro?»; con el Sí vuelve aquí y apuesta
+    cancelarConfirmacion();
     if (online) {
-      $("hipApostar").disabled = true;
-      const r = await online.apostar(p.n, tipo, sel, monto, doble);
-      $("hipApostar").disabled = false;
+      window.HipEspera.poner($("hipApostar"), "Apostando...");
+      let r; try { r = await online.apostar(p.n, tipo, sel, monto, doble); } finally { window.HipEspera.quitar($("hipApostar")); }
       if (!r.ok) return falla(r.error || "No se pudo apostar.");
       msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} tokens a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(Number(r.cuota))}${doble ? " (doble)" : ""}.`;
       msg.className = "hip-aviso bien";
@@ -672,6 +678,9 @@
     $("hipMonto").addEventListener("input", pintarCuotaApuesta);
     document.querySelectorAll("[data-monto]").forEach(b => b.addEventListener("click", () => { $("hipMonto").value = b.dataset.monto === "todo" ? Math.floor(est.saldo) : b.dataset.monto; pintarCuotaApuesta(); }));
     $("hipApostar").addEventListener("click", apostar);
+    $("hipConfirmaSi").addEventListener("click", apostar);
+    $("hipConfirmaNo").addEventListener("click", cancelarConfirmacion);
+    $("hipConfirma").addEventListener("keydown", e => { if (e.key === "Escape") cancelarConfirmacion(); });
     $("hipCriaEstado").addEventListener("change", e => {
       filtros.estado = e.target.value; mostrarMas = 48; pintarCriaturas();
       if (online && (filtros.estado === "retiradas" || filtros.estado === "todas" || filtros.estado === "leyendas") && !online.retiradasCargadas) { online.retiradasCargadas = true; online.leerRetiradas().then(pintarCriaturas); }

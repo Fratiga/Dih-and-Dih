@@ -27,7 +27,7 @@ window.HipodromoCartas = (function () {
   }
 
   function crear(api, cont) {
-    let listo = false, cargando = false, mias = [], reserva = [], precios = {}, msg = { texto: "", clase: "" }, ocupado = false, ultimaFila = null, ultimoDicho = 0;
+    let listo = false, cargando = false, mias = [], reserva = [], precios = {}, msg = { texto: "", clase: "" }, ocupado = false, ultimaFila = null, ultimoDicho = 0, enCurso = null;
     const mon = x => api.monedas(x);
     const dice = clave => { const b = PB(); if (b) b.decir(clave); };
 
@@ -102,11 +102,13 @@ window.HipodromoCartas = (function () {
         <section class="hip-tarjeta"><h3>Lo que ofrece el Buhonero</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">Su carreta está vacía ahora mismo. Se llena con las cartas que los jugadores le venden aquí.</p>'}</section>`;
       const cuerpo = marco();
       if (cuerpo._h !== html) { cuerpo.innerHTML = html; cuerpo._h = html; }
+      // la compra o la venta en marcha pone su botón en «cargando» y apaga los demás (el HTML se reescribe en cada dibujo)
+      if (enCurso) cuerpo.querySelectorAll("[data-vender], [data-comprar]").forEach(b => { if ((b.dataset.vender || b.dataset.comprar) === enCurso.clave) window.HipEspera.poner(b, enCurso.texto); else b.disabled = true; });
     }
 
-    async function operar(rpc, args, textoOk, frase) {
+    async function operar(rpc, args, textoOk, frase, clave, texto) {
       if (ocupado) return;
-      ocupado = true; msg = { texto: "Enviando...", clase: "" }; pintar();
+      ocupado = true; enCurso = { clave, texto }; msg = { texto: "Enviando...", clase: "" }; pintar();
       let bien = false;
       try {
         const { data, error } = await api.supa.rpc(rpc, args);
@@ -114,7 +116,7 @@ window.HipodromoCartas = (function () {
         msg = { texto: textoOk(data), clase: "bien" }; bien = true;
         await Promise.all([leer(), api.refrescarCuenta()]);
       } catch (e) { if (!bien) { msg = { texto: e.message || String(e), clase: "mal" }; try { await leer(); } catch (x) { /* se queda lo que había */ } } }
-      ocupado = false; pintar();
+      ocupado = false; enCurso = null; pintar();
       dice(bien ? frase : "error");
     }
 
@@ -135,11 +137,11 @@ window.HipodromoCartas = (function () {
       if (v) {
         const carta = v.dataset.carta, r = (window.cartaPorId && window.cartaPorId(carta) || {}).rareza, p = precios[r];
         if (!(await dialogo.confirmar(`Le das una copia de ${nombreCarta(carta)} al Buhonero y te paga ${mon(p ? p.venta : 0)} tokens. Vuelve a la reserva y otro jugador podrá comprársela.`, { titulo: "Vender carta", aceptar: "Vender" }))) return;
-        operar("hipodromo_vender_carta", { p_ejemplar: v.dataset.vender }, d => `Le vendiste ${nombreCarta(d.carta)} al Buhonero por ${mon(d.precio)} tokens.`, "hipRecibe");
+        operar("hipodromo_vender_carta", { p_ejemplar: v.dataset.vender }, d => `Le vendiste ${nombreCarta(d.carta)} al Buhonero por ${mon(d.precio)} tokens.`, "hipRecibe", v.dataset.vender, "Vendiendo...");
       } else if (c) {
         const f = reserva.find(x => x.carta === c.dataset.comprar);
         if (!(await dialogo.confirmar(`El Buhonero te vende ${nombreCarta(c.dataset.comprar)} por ${mon(f ? f.precio : 0)} tokens.`, { titulo: "Comprar carta", aceptar: "Comprar" }))) return;
-        operar("hipodromo_comprar_carta", { p_carta: c.dataset.comprar }, d => `Le compraste ${nombreCarta(d.carta)} (copia ${d.numero}) al Buhonero por ${mon(d.precio)} tokens.`, "hipOfrece");
+        operar("hipodromo_comprar_carta", { p_carta: c.dataset.comprar }, d => `Le compraste ${nombreCarta(d.carta)} (copia ${d.numero}) al Buhonero por ${mon(d.precio)} tokens.`, "hipOfrece", c.dataset.comprar, "Comprando...");
       }
     });
     return { abrir, pintar: () => { if (listo) pintar(); } };

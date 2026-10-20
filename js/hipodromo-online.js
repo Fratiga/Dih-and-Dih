@@ -159,8 +159,8 @@ window.HipodromoOnline = (function () {
       if (error) return { ok: false, error: error.message };
       // al guardarse la orden la base de datos avisa a la Edge Function (docs/hipodromo-3_ordenes_inmediatas.sql) y contesta en unos 2 a 4 s; si el aviso
       // falla, la procesa su pasada de cada minuto. Se pregunta cada segundo al principio y más espaciado después
-      for (let i = 0; i < 50; i++) {
-        await new Promise(r => setTimeout(r, i < 15 ? 1000 : 3500));
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, i < 20 ? 400 : 3500));
         const { data } = await supa.from("hipodromo_ordenes").select("estado, texto").eq("id", id).maybeSingle();
         if (data && data.estado !== "pendiente") {
           await refrescarTrasOrden();

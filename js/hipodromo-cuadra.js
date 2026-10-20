@@ -18,13 +18,23 @@ window.HipodromoCuadraUI = (function () {
     const mon = x => api.monedas(x);
     const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
 
-    let vista = "mias", mercOrden = "precio", mercMax = 12;
+    let vista = "mias", mercOrden = "precio", mercMax = 12, enCurso = null;
+    const TEXTO_ESPERA = { entrenar: "Entrenando...", cuidar: "Cuidando...", inscribir: "Inscribiendo...", desinscribir: "Quitando...", comprar: "Comprando...", vender: "Vendiendo...", retirar: "Retirando...", nombre: "Bautizando...", cruzar: "Cruzando...", adoptar: "Adoptando..." };
+    /* La orden que se está esperando pone su botón en «cargando» y los demás se apagan. Se llama después de cada dibujo, porque pintar() reescribe todo el HTML. */
+    function marcarEspera() {
+      if (!enCurso) return;
+      const clave = `${enCurso.tipo}|${enCurso.id != null ? enCurso.id : enCurso.madre != null ? enCurso.madre : ""}|${enCurso.n != null ? enCurso.n : ""}`;
+      cont.querySelectorAll("[data-o]").forEach(b => {
+        if (`${b.dataset.o}|${b.dataset.id || ""}|${b.dataset.n || ""}` === clave) window.HipEspera.poner(b, TEXTO_ESPERA[enCurso.tipo]);
+        else b.disabled = true;
+      });
+    }
     async function mandar(o, textoOk) {
       if (ocupado) return;
-      ocupado = true; msg = { texto: "Enviando...", clase: "" }; pintar(true);
+      ocupado = true; enCurso = o; msg = { texto: "Enviando...", clase: "" }; pintar(true);
       let r;
       try { r = await api.ordenar(o); } catch (e) { r = { ok: false, error: "No se pudo enviar la orden." }; }
-      ocupado = false;
+      ocupado = false; enCurso = null;
       msg = r.ok ? { texto: r.texto || textoOk || "Hecho.", clase: "bien" } : { texto: r.error || "No se pudo.", clase: "mal" };
       pintar(true);
     }
@@ -111,6 +121,7 @@ window.HipodromoCuadraUI = (function () {
       const html = `${cabecera}${subpestanas}${cuerpo}`;
       if (!forzar && html === hash) return;
       hash = html; cont.innerHTML = html;
+      marcarEspera();
     }
 
     /* ---------------------------------------------------------------- eventos */

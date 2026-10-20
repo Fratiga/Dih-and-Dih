@@ -30,114 +30,114 @@
   };
 
   /* ---------------------------------------------------------------- el reparto */
-  /* Cada personaje: quién es (nombre, apodo, cuadra, lema, bio), con qué empieza (inicio), cómo juega (reserva, ganas, descanso, fatigaMax, grados, dist, copas,
-     cuida, entrena, stat, tactica, compra, vende, prestamo), cómo apuesta (apuesta) y qué dice (frases). */
+  /* Cada personaje: quién es (nombre, apodo, cuadra, lema, bio), con qué empieza (inicio), cómo juega (reserva, tope, gasto, grados, copas, dist, cuida, entrena,
+     stat, tactica, compra, vende, prestamo), cómo apuesta (apuesta) y qué dice (frases). Los textos, llanos y concretos: sin aforismos ni cierres ingeniosos. */
   const REPARTO = [
     {
       id: "npc:remedios", nombre: "Doña Remedios Calzada", apodo: "la Contadora", cuadra: "Cuadra Calzada e Hijos",
-      lema: "Cada token tiene un trabajo, y el que no trabaja se va.",
-      bio: "Viuda de un tratante de forrajes y dueña de un libro de cuentas que nadie ha visto abierto. Nunca inscribe a una criatura cansada, nunca paga de más y vende en cuanto una deja de dar cuentas. Apuesta poco y casi siempre a la favorita.",
+      lema: "Cada token tiene su trabajo.",
+      bio: "Viuda de un tratante de forrajes. Lo anota todo en un cuaderno que no enseña a nadie. Compra criaturas baratas y vende la que deja de dar cuentas. En el pozo apuesta poco, casi siempre a la favorita.",
       inicio: { saldo: 1500, tipo: "media", n: 2 },
       reserva: 400, tope: 9000, gasto: 1.5, grados: { gran: 0.3, selecta: 0.8, corriente: 1, novatos: 0.2 }, copas: 0.6, dist: null,
       cuida: null, entrena: 0.005, stat: "debil", tactica: "media", compra: { prob: 0.04, criterio: "baratas", tamano: 3 }, vende: true, prestamo: null, hora: 5,
       apuesta: { estilo: "favorita", prob: 0.5, monto: 12, maxCuota: 3.4 },
       frases: {
-        compra: ["Barata y con buenas patas. Eso no lo da cualquiera.", "Lo apunto en el libro: una boca más, pero con dientes de ganadora."],
-        vende: ["Esa ya no me deja cuentas. Cada token tiene que trabajar.", "Se vende. Las que no pagan su avena se buscan otro establo."],
-        gana: ["Ganar está bien. Ganar sin gastar de más es lo que cuenta.", "Anotado. Y cobrado."],
-        ganaApuesta: ["Pequeña, segura y mía."], pierdeApuesta: ["Se pierde algo. Se anota y se sigue."], prestamo: ["Otro préstamo. Lo devolveré con intereses, como siempre."]
+        compra: ["Barata y con buenas patas. Me sirve.", "Una boca más en el libro. Con esta salen las cuentas."],
+        vende: ["Esa ya no me da cuentas. Se va.", "Se vende. La avena cuesta cada semana."],
+        gana: ["Anotado. Y cobrado.", "Ganó sin gastar de más. Así me gusta."],
+        ganaApuesta: ["Poco, pero seguro."], pierdeApuesta: ["Se pierde algo. Se anota."], prestamo: ["Otro préstamo. Lo devuelvo con sus intereses."]
       }
     },
     {
       id: "npc:marques", nombre: "Anselmo de Vallecuervo", apodo: "el Marqués", cuadra: "Casa de Vallecuervo",
-      lema: "Mis criaturas no corren: se dignan.",
-      bio: "Último de una familia que lo perdió casi todo menos el apellido. Solo se mueve entre Grandes Premios y copas, exige que sus criaturas salgan primeras y apuesta siempre por la suya, la gane o no. No vende nada.",
+      lema: "Los Vallecuervo salen siempre primeros.",
+      bio: "Último de una familia que lo perdió casi todo menos el apellido. Solo apunta a sus criaturas a Grandes Premios y copas, y siempre al frente. No vende ninguna. En el pozo apuesta por la suya, gane o no.",
       inicio: { saldo: 9000, tipo: "elite", n: 3 },
       reserva: 800, tope: 20000, gasto: 7, grados: { gran: 1, selecta: 0.5, corriente: 0, novatos: 0 }, copas: 1, dist: "larga",
       cuida: null, entrena: 0.005, stat: "vel", tactica: "frente", compra: { prob: 0.02, criterio: "flechas", tamano: 3 }, vende: false, prestamo: { piso: 1200, monto: 3000 }, hora: 9,
       apuesta: { estilo: "vanidad", prob: 0.85, monto: 40 },
       frases: {
-        compra: ["Tiene porte. Aceptable para mis establos.", "Me recuerda a una que tuvo mi abuelo. Con eso basta."],
+        compra: ["Tiene porte. Servirá en mis establos.", "Me recuerda a una de mi abuelo. Con eso basta."],
         vende: ["Los Vallecuervo no venden. Esto es una cesión."],
-        gana: ["Un trámite. Mis criaturas no corren, se dignan.", "Que conste que no hizo falta esforzarse."],
-        ganaApuesta: ["Naturalmente. Había que apoyarla."], pierdeApuesta: ["Un error de la pista, no de mi criterio."], prestamo: ["Un adelanto de la herencia. Que nadie lo comente."]
+        gana: ["Un trámite.", "Ni siquiera hizo falta esforzarse."],
+        ganaApuesta: ["Naturalmente."], pierdeApuesta: ["Un error de la pista."], prestamo: ["Un adelanto de la herencia. Que nadie lo comente."]
       }
     },
     {
       id: "npc:pez", nombre: "Tano y Berta Pez", apodo: "los Pez", cuadra: "Cuadra Los Pez",
-      lema: "¡Tú inscribe, que ya veremos!",
-      bio: "Dos hermanos que inscriben a todo lo que se tiene en pie, cuidan poco y viven pidiendo préstamos al banco, que ya los conoce por el nombre. Apuestan a las que nadie quiere porque les parece que alguien tiene que hacerlo.",
+      lema: "Tú inscribe, que ya veremos.",
+      bio: "Dos hermanos que inscriben a todo el que se tenga en pie. Cuidan poco a sus criaturas y le deben dinero al banco. Apuestan poco, y a las de cuota alta.",
       inicio: { saldo: 500, tipo: "baja", n: 3 },
       reserva: 60, tope: 2500, gasto: 3, grados: { gran: 0, selecta: 0.1, corriente: 0.7, novatos: 1 }, copas: 0, dist: "corta",
       cuida: null, entrena: 0.003, stat: "debil", tactica: null, compra: { prob: 0.08, criterio: "baratisimas", tamano: 3 }, vende: true, prestamo: { piso: 150, monto: 400 }, hora: 14,
       apuesta: { estilo: "longshots", prob: 0.5, monto: 6, minCuota: 9 },
       frases: {
-        compra: ["¡Qué barata! ¡Nos la llevamos, Berta!", "Esa tiene cara de ganar algún día. Algún día."],
-        vende: ["¡Hay que pagar la luz, Tano!", "Se va. Pero con cariño."],
-        gana: ["¡Ganamos! ¡Que alguien avise al banco!", "¡Lo dijimos! ¿Quién lo dijo? ¡Nosotros!"],
-        ganaApuesta: ["¡La del doce a uno! ¡La del doce a uno!"], pierdeApuesta: ["Otra vez será. Berta, ¿tienes algo suelto?"], prestamo: ["El banco nos quiere mucho. Nos presta otra vez."]
+        compra: ["¡Qué barata! Nos la llevamos, Berta.", "Tiene cara de ganar algún día."],
+        vende: ["Hay que pagar la luz, Tano.", "Se va. Con cariño."],
+        gana: ["¡Ganamos! Que alguien avise al banco.", "¿Quién lo dijo? Nosotros."],
+        ganaApuesta: ["La del doce a uno. Lo dijimos."], pierdeApuesta: ["Otra vez será. Berta, ¿tienes algo suelto?"], prestamo: ["El banco nos presta otra vez."]
       }
     },
     {
       id: "npc:hilda", nombre: "Madre Hilda de la Escarcha", apodo: "la Madre Escarcha", cuadra: "Convento de la Escarcha",
-      lema: "A los hijos no se les vende: se les enseña.",
-      bio: "Priora de un convento de las tierras frías que cría criaturas jóvenes con mucha avena y mucha paciencia. Las cuida a la menor señal de cansancio, las entrena sin descanso y no se separa de ninguna. No apuesta, solo reza.",
+      lema: "Cada una a su paso.",
+      bio: "Priora de un convento de las tierras frías que cría criaturas jóvenes. Las cuida al primer signo de cansancio y las entrena mucho. No vende ninguna y tampoco apuesta.",
       inicio: { saldo: 1800, tipo: "joven", n: 3 },
       reserva: 500, tope: 6000, gasto: 2, grados: { gran: 0, selecta: 0.5, corriente: 1, novatos: 1 }, copas: 0.4, dist: null,
       cuida: 40, entrena: 0.01, stat: "debil", tactica: null, compra: { prob: 0.03, criterio: "jovenes", tamano: 3 }, vende: false, prestamo: null, hora: 20,
       apuesta: null,
       frases: {
         compra: ["Una más para la casa. Se le dará de comer y se le enseñará.", "Llega con frío. Aquí se le quita."],
-        vende: ["Las hijas de este convento no se venden."],
-        gana: ["La avena y la paciencia. No hay más secreto.", "Que se le dé doble ración esta noche."],
-        ganaApuesta: [], pierdeApuesta: [], prestamo: ["La orden ha tenido que pedir limosna al banco."]
+        vende: ["Las del convento no se venden."],
+        gana: ["Doble ración de avena esta noche.", "Lo ha hecho bien."],
+        ganaApuesta: [], pierdeApuesta: [], prestamo: ["La orden tiene que pedir ayuda al banco."]
       }
     },
     {
       id: "npc:cuervo", nombre: "Cuervo Salgado", apodo: "el Tahúr", cuadra: "Cuadra del Cuervo",
-      lema: "La casa siempre gana, salvo la que yo elijo.",
-      bio: "Jugador de oficio con una sola criatura y mucha paciencia. Vive del pozo: mira dónde no mira nadie y apuesta fuerte cuando la cuota le parece mal puesta. Habla poco y nunca explica.",
+      lema: "Yo juego donde nadie mira.",
+      bio: "Jugador de oficio con una sola criatura. Vive del pozo. Apuesta fuerte cuando una cuota le parece mal puesta y el resto del tiempo mira. Habla poco.",
       inicio: { saldo: 1200, tipo: "uno", n: 1 },
       reserva: 120, tope: 5000, gasto: 3, grados: { gran: 0.4, selecta: 1, corriente: 0.6, novatos: 0 }, copas: 0.5, dist: null,
       cuida: null, entrena: 0.01, stat: "debil", tactica: "atras", compra: { prob: 0.01, criterio: "valor", tamano: 2 }, vende: true, prestamo: { piso: 350, monto: 600 }, hora: 2,
       apuesta: { estilo: "valor", prob: 0.7, monto: 30 },
       frases: {
-        compra: ["Me gustó la cara.", "Los números dicen que sí. Los números no se equivocan: se aplazan."],
-        vende: ["Las cuentas no cuadraban. Se vende."],
-        gana: ["La casa siempre gana. Hoy la casa era yo.", "Sin prisa. Esto es un oficio."],
-        ganaApuesta: ["Las cuentas salen cuando miras donde no mira nadie."], pierdeApuesta: ["Perder es el precio de la entrada."], prestamo: ["Una mala racha. Se paga y se sigue."]
+        compra: ["Me gustó la cara.", "Los números dicen que sí."],
+        vende: ["No cuadraban las cuentas. Se vende."],
+        gana: ["Hoy la casa era yo.", "Sin prisa."],
+        ganaApuesta: ["Había que mirar donde nadie mira."], pierdeApuesta: ["Se paga la entrada."], prestamo: ["Mala racha. Se paga y se sigue."]
       }
     },
     {
       id: "npc:ludmila", nombre: "Ludmila Voss", apodo: "la Estratega", cuadra: "Haras Voss",
-      lema: "No se corre contra los demás: se corre contra el trazado.",
-      bio: "Criadora de las tierras altas que lee las pistas como otros leen cartas. Prefiere las distancias largas y las pistas arcanas, entrena la resistencia y apuesta cuando el terreno le da la razón a una criatura.",
+      lema: "Primero se lee la pista.",
+      bio: "Criadora de las tierras altas. Prefiere las distancias largas y las pistas arcanas, entrena la resistencia y compra criaturas de buen pecho. Apuesta cuando el terreno favorece a una.",
       inicio: { saldo: 2500, tipo: "largas", n: 3 },
       reserva: 500, tope: 12000, gasto: 4, grados: { gran: 0.6, selecta: 1, corriente: 0.7, novatos: 0 }, copas: 0.8, dist: "larga",
       cuida: null, entrena: 0.012, stat: "res", tactica: "media", compra: { prob: 0.02, criterio: "largas", tamano: 3 }, vende: true, prestamo: { piso: 500, monto: 900 }, hora: 17,
       apuesta: { estilo: "terreno", prob: 0.5, monto: 15 },
       frases: {
-        compra: ["Larga de pecho. El trazado hará el resto.", "Buenas piernas para las curvas. Eso se enseña. El pulmón, no."],
+        compra: ["Buen pecho. El trazado hará el resto.", "Tiene pulmón. Eso no se enseña."],
         vende: ["No encaja en mi método. Se vende."],
-        gana: ["No se corre contra los demás: se corre contra el trazado.", "Conforme al plan."],
-        ganaApuesta: ["El terreno lo decía. Solo había que leerlo."], pierdeApuesta: ["Un dato no es una garantía. Revisaré el método."], prestamo: ["Inversión en el haras. Con recibo."]
+        gana: ["Conforme al plan.", "Era la pista indicada."],
+        ganaApuesta: ["El terreno lo decía."], pierdeApuesta: ["Un dato no garantiza nada. Reviso el método."], prestamo: ["Inversión en el haras. Con recibo."]
       }
     },
     {
       id: "npc:pocho", nombre: "Pocho Arango", apodo: "el Optimista", cuadra: null,
-      lema: "¡Quien gana una vez, gana dos!",
-      bio: "Aficionado de la grada que cree en las rachas como otros en los santos. Apuesta un poco cada hora a la criatura que viene ganando y, si no hay ninguna, no apuesta, que él no es un aventurero.",
+      lema: "Quien gana una vez, gana dos.",
+      bio: "Aficionado de la grada que cree en las rachas. Cada hora apuesta un poco a la criatura que viene ganando. Si no hay ninguna, no apuesta.",
       inicio: { saldo: 300, tipo: null, n: 0 }, reserva: 0, tope: 700, grados: {}, copas: 0, prestamo: { piso: 20, monto: 60 }, hora: 7,
       apuesta: { estilo: "racha", prob: 0.7, monto: 8 },
-      frases: { ganaApuesta: ["¡Racha, amigos, racha!"], pierdeApuesta: ["La racha solo estaba descansando."], prestamo: ["Mi cuñado me adelanta el sueldo."] }
+      frases: { ganaApuesta: ["¡Racha, amigos!"], pierdeApuesta: ["La racha estaba descansando."], prestamo: ["Mi cuñado me adelanta el sueldo."] }
     },
     {
       id: "npc:pilar", nombre: "Doña Pilar Ferrer", apodo: "la Supersticiosa", cuadra: null,
       lema: "Siempre el siete. Si no hay siete, el tres.",
-      bio: "Vecina de toda la vida que va a la grada con su amuleto y su pañuelo. Apuesta a la puerta de la suerte, siete o, si no la hay, tres, y se santigua antes de que salgan. Lleva años sin que le falle el pañuelo.",
+      bio: "Vecina de toda la vida. Va a la grada con su amuleto y su pañuelo, apuesta a la puerta siete o, si no la hay, a la tres, y se santigua antes de la salida.",
       inicio: { saldo: 250, tipo: null, n: 0 }, reserva: 0, tope: 600, grados: {}, copas: 0, prestamo: { piso: 15, monto: 50 }, hora: 11,
       apuesta: { estilo: "puerta", prob: 0.6, monto: 7, puertas: [7, 3] },
-      frases: { ganaApuesta: ["¡El siete! ¡Siempre el siete!"], pierdeApuesta: ["Alguien me miró mal. Fue eso."], prestamo: ["Vendo unas puntillas y listo."] }
+      frases: { ganaApuesta: ["¡El siete! Siempre el siete."], pierdeApuesta: ["Alguien me miró mal."], prestamo: ["Vendo unas puntillas y listo."] }
     }
   ];
   const PERSONAJE = {}; REPARTO.forEach(p => { PERSONAJE[p.id] = p; });
@@ -246,7 +246,7 @@
     const abiertas = nuevos.map(P => ({ P, n: fundarUna(m, X, P, ev) }));
     const conCuadra = abiertas.filter(x => x.P.cuadra), apostadores = abiertas.filter(x => !x.P.cuadra);
     const nombre = P => P.apodo ? `${P.nombre} (${P.apodo})` : P.nombre;
-    if (primera) ev.noticias.push(X.noticia(m, "cuadra", "Nuevas caras en el hipódromo", `Llegan a las cuadras y a la grada: ${conCuadra.map(x => `${nombre(x.P)} abre ${x.P.cuadra} con ${x.n} ${x.n === 1 ? "criatura" : "criaturas"}`).join("; ")}. Y en la tribuna, ${apostadores.map(x => nombre(x.P)).join(" y ")}. Cada uno juega a su manera.`, []));
+    if (primera) ev.noticias.push(X.noticia(m, "cuadra", "Nuevas caras en el hipódromo", `Llegan a las cuadras y a la grada: ${conCuadra.map(x => `${nombre(x.P)} abre ${x.P.cuadra} con ${x.n} ${x.n === 1 ? "criatura" : "criaturas"}`).join("; ")}. Y en la tribuna, ${apostadores.map(x => nombre(x.P)).join(" y ")}.`, []));
     else abiertas.forEach(x => ev.noticias.push(X.noticia(m, "cuadra", `Llega ${x.P.nombre} al hipódromo`, x.P.cuadra ? `${nombre(x.P)} abre ${x.P.cuadra} con ${x.n} ${x.n === 1 ? "criatura" : "criaturas"}. ${x.P.lema}` : `${nombre(x.P)} se sienta en la grada. ${x.P.lema}`, [])));
   }
   /* Un personaje que el Admin ha quitado: sus criaturas vuelven al mundo y desaparece su cartera */

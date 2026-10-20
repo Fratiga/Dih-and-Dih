@@ -500,9 +500,11 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 .hip-riesgo strong { color: var(--text); }
 .hip-riesgo.alto { border-left-color: var(--hip-rojo); }
 .hip-riesgo-aviso { color: var(--hip-rojo); font-weight: 700; }
-.hip-boton.principal.armada { background: var(--hip-rojo); border-color: var(--hip-rojo); color: #fff; animation: hipLatidoArma .9s ease-in-out infinite; }
-@keyframes hipLatidoArma { 50% { box-shadow: 0 0 0 5px rgba(208, 99, 74, .3); } }
-@media (prefers-reduced-motion: reduce) { .hip-boton.principal.armada { animation: none; } }
+/* La confirmación de la apuesta: ocupa el sitio del botón Apostar */
+.hip-confirma { display: flex; align-items: center; gap: 8px; }
+.hip-confirma span { flex: 1; font-weight: 600; }
+.hip-confirma .hip-boton { min-width: 64px; }
+.hip-confirma.hidden { display: none; }
 @media (max-width: 400px) { .hip-retrato { grid-template-columns: 88px minmax(0, 1fr); } }
 
 /* Las copas de la semana */
@@ -542,3 +544,9 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 .hip-npc-lema { margin: 0; font-style: italic; }
 .hip-npc-pie { margin: 0; display: grid; gap: 4px; font-size: .86rem; color: var(--muted); }
 .hip-npc-pie b { color: var(--text); font-weight: 600; }
+
+/* Botones que esperan (js/hipodromo-espera.js) */
+.hip-espera { cursor: progress; }
+.hip-espera::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .5em; vertical-align: -.1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: hipGira .8s linear infinite; }
+@keyframes hipGira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hip-espera::before { animation: none; border-right-color: currentColor; opacity: .6; } }
