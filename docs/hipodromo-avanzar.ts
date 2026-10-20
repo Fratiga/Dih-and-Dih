@@ -15,7 +15,8 @@
 //   * Crear la función:  supabase functions new hipodromo-avanzar  y poner este archivo como index.ts.
 //   * El motor: o se copian al lado de index.ts, SIN cambiarlos, estos cinco archivos del sitio
 //       data/hipodromo-palabras.js   js/hipodromo-nombres.js   js/hipodromo-rasgos.js   js/hipodromo-npc.js   js/hipodromo-motor.js
-//     o (lo que se hizo al desplegar con el editor de Supabase) se cambian las cinco líneas «import "./...js"» de abajo por
+//     (desde la versión 10 se hace así: jsDelivr ya no sirve commits nuevos del repositorio porque pasa de sus 50 MB)
+//     o (lo que se hizo hasta la versión 9) se cambian las cinco líneas «import "./...js"» de abajo por
 //     la dirección de una versión FIJA del repositorio, con el hash del commit, que nunca cambia:
 //       import "https://cdn.jsdelivr.net/gh/Fratiga/Dih-and-Dih@<hash-del-commit>/js/hipodromo-motor.js";
 //     (los imports tienen que ser estáticos: la Edge Function no admite import() dinámico de direcciones web).
