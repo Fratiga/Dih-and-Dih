@@ -3992,3 +3992,26 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-npc-guardar { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; }
 .admin-npc-editor label.admin-npc-check, .admin-npc-general label.admin-npc-check { display: flex; align-items: center; gap: 8px; }
 .admin-npc-editor label.admin-npc-check input { width: auto; }
+
+/* Admin: menú lateral con grupos (js/admin-menu.js). Los paneles siguen siendo hijos de la misma sección: el menú ocupa la columna izquierda y todo lo demás la derecha */
+#adminContent .content { display: grid; grid-template-columns: 250px minmax(0, 1fr); column-gap: 28px; align-items: start; }
+#adminContent .content > * { grid-column: 2; min-width: 0; }
+#adminContent .content > #adminTabs { grid-column: 1; grid-row: 1 / span 60; position: sticky; top: 12px; display: block; max-height: calc(100vh - 24px); overflow-y: auto; overflow-x: hidden; margin: 0; padding: 8px; border: 1px solid var(--border); background: var(--panel); }
+.admin-buscar { width: 100%; box-sizing: border-box; margin: 0 0 8px; padding: 7px 9px; font: inherit; font-size: .88rem; color: var(--text); background: rgba(0, 0, 0, .3); border: 1px solid var(--border); }
+.admin-grupo + .admin-grupo { margin-top: 4px; }
+.admin-grupo-cab { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; text-align: left; font-family: var(--font-heading), sans-serif; font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); cursor: pointer; }
+.admin-grupo-cab::after { content: "▸"; margin-left: 4px; font-size: .8rem; }
+.admin-grupo.abierto .admin-grupo-cab::after { content: "▾"; }
+.admin-grupo.abierto .admin-grupo-cab { color: var(--text); }
+.admin-grupo-alerta { margin-left: auto; padding: 0 7px; font-size: .72rem; line-height: 1.5; color: var(--bg); background: var(--accent); }
+.admin-grupo-alerta:empty { display: none; }
+.admin-grupo-lista { display: none; padding: 2px 0 6px; }
+.admin-grupo.abierto .admin-grupo-lista { display: block; }
+#adminTabs .admin-tab { width: 100%; justify-content: space-between; gap: 6px; border: 0; border-left: 3px solid transparent; padding: 7px 10px 7px 14px; font-size: .76rem; text-align: left; white-space: nowrap; }
+#adminTabs .admin-tab-badge { flex: 0 1 auto; max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .62rem; }
+#adminTabs .admin-tab:hover { background: var(--panel-2); }
+#adminTabs .admin-tab.active { color: var(--text); background: var(--panel-2); border-left-color: var(--accent); }
+@media (max-width: 900px) {
+  #adminContent .content { display: block; }
+  #adminContent .content > #adminTabs { position: static; max-height: none; margin-bottom: 16px; }
+}
