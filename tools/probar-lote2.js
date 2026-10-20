@@ -279,5 +279,19 @@ function jugada(reaccion, carta) {
   let ficha = 0; for (let k = 1; k <= 200; k++) { e2.rng = k * 31; e2.jugadores[0].mano = []; M2.ponerUnidad(e2, 0, "pescador", true, null); const id = e2.jugadores[0].mano[0]; if (id && cartas2[id] && cartas2[id].token) ficha++; }
   ok(ficha === 0, "el Pescador no saca invocaciones"); }
 
+// 9) Avisos visuales que deja el motor para animar las palabras clave (est.fx)
+{ const ultimo = (e, t) => (e.fx || []).filter(x => x.t === t).pop();
+  { const e = partida(); turnoDe(e, 0); const u = poner(e, 1, "t33", { barrera: true }); const n0 = e.fxN; M.infligir(e, { u: u.uid }, 3, { tipo: "habilidad" });
+    ok(e.fxN === n0 + 1 && ultimo(e, "barrera") && ultimo(e, "barrera").u === u.uid, "romper una Barrera deja un aviso 'barrera'"); }
+  { const e = partida(); turnoDe(e, 0); const d = poner(e, 1, "soldado-balutiano"); M.infligir(e, { u: d.uid }, 3, { tipo: "habilidad" }); ok(ultimo(e, "duro") && ultimo(e, "duro").u === d.uid, "Duro deja un aviso 'duro'");
+    const m = poner(e, 1, "minero-de-pozohumo"); M.infligir(e, { u: m.uid }, 2, { tipo: "terreno" }); ok(ultimo(e, "duro").u === m.uid, "y también una reducción de daño por habilidad"); }
+  { const e = partida(); turnoDe(e, 0); const q = poner(e, 1, "capa-elfica-dummy" in cartas ? "t33" : "t33"); q.flags.dadas = { esquivo: 9999 }; M.infligir(e, { u: q.uid }, 3, { tipo: "combate", uid: 999 }); ok(ultimo(e, "esquivo") && ultimo(e, "esquivo").u === q.uid, "Esquivo deja un aviso 'esquivo'"); }
+  { const e = partida(); turnoDe(e, 0); const a = poner(e, 0, "t52"); a.flags.dadas = { arrollar: 9999 }; const b = poner(e, 1, "t11"); e.jugadores[1].campo.forEach(u => { if (u !== b) u.flags.noBloqueaHasta = 0; });
+    M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1);
+    const ar = ultimo(e, "arrollar"); ok(ar && ar.u === a.uid && ar.j === 1 && ar.v === 4, `Arrollar avisa del exceso que pasa al jugador (${ar && ar.v})`); }
+  { const e = partida(); turnoDe(e, 0); const a = poner(e, 0, "t33"); a.flags.dadas = { veloz: 9999 }; const b = poner(e, 1, "t24");
+    M.aplicar(e, { t: "atacar", u: [a.uid] }, 0); M.aplicar(e, { t: "bloquear", b: [[a.uid, b.uid]] }, 1); ok(ultimo(e, "veloz") && ultimo(e, "veloz").u === a.uid, "Veloz avisa de quién golpea primero"); }
+  ok(JSON.parse(JSON.stringify(partida())).fxN === 0, "el estado con avisos sigue siendo JSON y arranca vacío"); }
+
 console.log(fallos.length ? `${fallos.length} fallo(s):\n  ` + fallos.slice(0, 30).join("\n  ") : `OK: ${n} comprobaciones del lote 2.`);
 process.exit(fallos.length ? 1 : 0);

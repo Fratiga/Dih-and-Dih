@@ -31,6 +31,7 @@
   let desafiosSel = {};          // desafíos elegidos al preparar el ataque: { uidAtacante: uidDefensor }
   let bloqueoPid = 0;            // ventana de bloqueo a la que pertenecen
   let combateVisto = 0;          // último combate ya animado
+  let fxVisto = 0;               // último aviso visual del motor (est.fx) ya animado
   let animCombate = null;        // { hasta, datos } mientras se anima cómo salió un combate
   let pvPrevios = new Map();
   let ultimoTurno = 0;         // para saber cuándo cambió el turno y avisarlo
@@ -260,6 +261,7 @@
     reveladoPila = null;
     atacantesSel = new Set(); bloqueosTmp = {}; desafiosSel = {}; bloqueoPid = 0; animCombate = null;
     combateVisto = est && est.ultimoCombate ? est.ultimoCombate.id : 0;
+    fxVisto = est ? (est.fxN || 0) : 0;
     pvPrevios = new Map();
     ultimoTurno = 0;
     ultimoTerreno = "";
@@ -422,6 +424,57 @@
   const PALABRAS = {};
   ((window.TRIUNFOS_GUIA || {}).palabras || []).forEach(p => { PALABRAS[p.id] = { nombre: p.nombre, texto: p.resumen }; });
   const infoPalabra = k => PALABRAS[k] || { nombre: k, texto: "" };
+  /* Cada palabra clave tiene su icono (trazo fino, se tiñe con el color de la palabra) */
+  const svg = d => `<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const ICONOS = {
+    volar: svg('<path d="M2 9l6-5 6 5M2 13l6-5 6 5"/>'),
+    arrollar: svg('<path d="M2 8h9M8 4l4 4-4 4"/><path d="M14.5 3v10" stroke-dasharray="1.5 2"/>'),
+    barrera: svg('<path d="M8 1.5l5.5 2v4.2c0 3.2-2.4 5.6-5.5 6.8-3.1-1.2-5.5-3.6-5.5-6.8V3.5z"/>'),
+    provocar: svg('<path d="M2 6.5h3l6-3.5v10l-6-3.5H2z"/><path d="M13.5 6.5v3"/>'),
+    escurridizo: svg('<circle cx="8" cy="8" r="5.5" stroke-dasharray="2 2"/>'),
+    duro: svg('<path d="M8 1.5l5.5 3.2v6.6L8 14.5l-5.5-3.2V4.7z"/><circle cx="8" cy="8" r="1.2"/>'),
+    esquivo: svg('<path d="M2 12c0-6 5-8 9-6M9 2.5l2.5 3.3-3.8 1.4"/>'),
+    veloz: svg('<path d="M2 5h5M1 8h8M3 11h5M10 4l4 4-4 4"/>'),
+    temible: svg('<path d="M2 12l2-8 2.5 5L8 3l1.5 6L12 4l2 8z"/>'),
+    desafiante: svg('<path d="M3 3l10 10M13 3L3 13"/>'),
+    noBloquea: svg('<path d="M8 1.5l5.5 2v4.2c0 3.2-2.4 5.6-5.5 6.8-3.1-1.2-5.5-3.6-5.5-6.8V3.5z"/><path d="M3 3l10 10"/>'),
+    marcada: svg('<circle cx="8" cy="8" r="4"/><path d="M8 1v4M8 11v4M1 8h4M11 8h4"/>')
+  };
+  // Las que además dibujan algo alrededor de la carta mientras la unidad las tiene
+  const CON_AURA = ["barrera", "duro", "provocar", "volar", "escurridizo", "veloz", "esquivo"];
+
+  /* Efectos al activarse (los avisa el motor en est.fx): barrera que se rompe, daño que resta Duro, golpe esquivado,
+     Veloz que golpea primero y Arrollar que pasa al jugador. Se pegan a la unidad que los sufre o los causa. */
+  function reproducirFx() {
+    const nuevos = (est.fx || []).filter(e => e.n > fxVisto);
+    if (!nuevos.length) return;
+    fxVisto = est.fxN || 0;
+    if (introVisible || sinAnimaciones() || document.hidden) return;
+    const idx = indiceYo();
+    nuevos.forEach((e, k) => {
+      const dest = document.querySelector(`[data-fx-uid="${e.u}"]`);
+      if (!dest) return;
+      const el = document.createElement("span");
+      el.className = `bt-fx fx-${e.t}`;
+      el.style.setProperty("--d", `${Math.min(k, 6) * 0.1}s`);
+      const rotulo = t => `<b class="fx-rotulo">${t}</b>`;
+      if (e.t === "barrera") {
+        el.innerHTML = '<i class="aro"></i>' + Array.from({ length: 8 }, (_, i) => `<i class="esquirla" style="--a:${i * 45 + 14}deg"></i>`).join("") + rotulo("Barrera");
+      } else if (e.t === "duro") {
+        el.innerHTML = Array.from({ length: 7 }, (_, i) => `<i class="chispa" style="--a:${-70 + i * 23}deg"></i>`).join("") + rotulo("Duro");
+      } else if (e.t === "esquivo") {
+        el.innerHTML = '<i class="fantasma"></i>' + rotulo("Esquiva");
+      } else if (e.t === "veloz") {
+        el.innerHTML = '<i class="raya r1"></i><i class="raya r2"></i><i class="raya r3"></i>' + rotulo("Veloz");
+      } else if (e.t === "arrollar") {
+        el.style.setProperty("--dir", e.j === idx ? 1 : -1);
+        el.innerHTML = `<i class="flecha"></i>${rotulo(`Arrolla ${e.v}`)}`;
+      }
+      dest.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    });
+  }
+
   function palabrasDe(u) {
     const out = ["desafiante", "provocar", "volar", "temible", "veloz", "arrollar", "duro", "esquivo", "noBloquea"].filter(k => M.tienePalabra(est, u, k));
     if (M.esEscurridizo(est, u)) out.push("escurridizo");
@@ -459,20 +512,22 @@
     let html = htmlCarta(vistaUnidad(u), true, 0, null);
     if (u.pv < u.pvMax) html = html.replace('class="carta-stat pv"', 'class="carta-stat pv herida"');
     if (M.atqEfectivo(est, u) > u.atqBase) html = html.replace('class="carta-stat atq"', 'class="carta-stat atq sube"');
-    const chips = palabrasDe(u).map(k => infoPalabra(k).nombre);
-    if (u.flags.inmune) chips.push("Protegida");
-    if (u.flags.noAtacaHasta >= est.turno) chips.push("No ataca");
-    if (u.entro === est.turno && u.dueno === est.activo) chips.push("Recién llegada");
+    const claves = palabrasDe(u);
+    const chips = claves.map(k => `<span class="kw kw-${k}" title="${esc(infoPalabra(k).texto)}">${ICONOS[k] || ""}${esc(infoPalabra(k).nombre)}</span>`);
+    if (u.flags.inmune) chips.push(`<span class="kw kw-barrera" title="Las habilidades enemigas no pueden elegirla.">${ICONOS.barrera}Protegida</span>`);
+    if (u.flags.noAtacaHasta >= est.turno) chips.push("<span>No ataca</span>");
+    if (u.entro === est.turno && u.dueno === est.activo) chips.push("<span>Recién llegada</span>");
     const nForma = M.nombreForma(est, u);
-    if (nForma) chips.unshift(nForma);
+    if (nForma) chips.unshift(`<span>${esc(nForma)}</span>`);
+    const auras = claves.filter(k => CON_AURA.includes(k)).map(k => `<span class="bt-aura kw-${k}" aria-hidden="true"></span>`).join("");
     const vinc = M.vinculosActivos(est, u);
     const chipsVinc = vinc.map(v => `<span class="${v.tipo === "rivalidad" ? "rivalidad" : "vinculo"}" title="${esc(v.nombre)}">${v.tipo === "rivalidad" ? "Rivalidad" : "Unidos"}</span>`);
     const listo = u.dueno === miIdx && miTurnoDe(miIdx) && M.unidadPuedeAtacar(est, u);
     const bloquea = bloqueoVigente(miIdx) && u.dueno === miIdx && puedeBloquearAlguno(u);
-    const clases = [listo ? "lista" : "", atacantesSel.has(u.uid) ? "en-ataque" : "", bloquea ? "puede-bloquear" : "", sel && sel.uid === u.uid ? "elegida" : ""].filter(Boolean).join(" ");
-    return `<div class="bt-unidad ${clases}" data-uid="${u.uid}" title="${esc(m.nombre)}">
-      ${html}
-      <div class="bt-chips">${chips.map(c => `<span>${c}</span>`).join("")}${chipsVinc.join("")}</div>
+    const clases = [listo ? "lista" : "", atacantesSel.has(u.uid) ? "en-ataque" : "", bloquea ? "puede-bloquear" : "", sel && sel.uid === u.uid ? "elegida" : "", ...claves.map(k => `kw-${k}`)].filter(Boolean).join(" ");
+    return `<div class="bt-unidad ${clases}" data-uid="${u.uid}" data-fx-uid="${u.uid}" title="${esc(m.nombre)}">
+      ${html}${auras}
+      <div class="bt-chips">${chips.join("")}${chipsVinc.join("")}</div>
     </div>`;
   }
 
@@ -730,9 +785,9 @@
       const uc = animCombate.datos;
       html = uc.pares.map((par, k) => {
         const sideA = lado(par.a.dueno), sideB = par.b ? lado(par.b.dueno) : (sideA === "abajo" ? "arriba" : "abajo");
-        const celdaA = `<div class="bt-snap atacante ${par.aMuere ? "cae" : ""}" style="--k:${k}">${htmlSnap(par.a)}${par.dB > 0 ? `<b class="bt-dano">−${par.dB}</b>` : ""}</div>`;
+        const celdaA = `<div class="bt-snap atacante ${par.aMuere ? "cae" : ""}" data-fx-uid="${par.a.uid}" style="--k:${k}">${htmlSnap(par.a)}${par.dB > 0 ? `<b class="bt-dano">−${par.dB}</b>` : ""}</div>`;
         const celdaB = par.b
-          ? `<div class="bt-snap bloqueador ${par.bMuere ? "cae" : ""}" style="--k:${k}">${htmlSnap(par.b)}${par.dA > 0 ? `<b class="bt-dano">−${par.dA}</b>` : ""}</div>`
+          ? `<div class="bt-snap bloqueador ${par.bMuere ? "cae" : ""}" data-fx-uid="${par.b.uid}" style="--k:${k}">${htmlSnap(par.b)}${par.dA > 0 ? `<b class="bt-dano">−${par.dA}</b>` : ""}</div>`
           : `<div class="bt-golpe-jugador" style="--k:${k}"><span>${par.jugador > 0 ? `−${par.jugador}` : "¡Golpe!"}</span><small>${esc(est.jugadores[uc.atacante === idx ? 1 - idx : idx].nombre)}</small></div>`;
         const arriba = sideA === "arriba" ? celdaA : celdaB, abajo = sideA === "abajo" ? celdaA : celdaB;
         return carril(null, arriba, abajo, "resolviendo", `data-sentido="${sideA}"`);
@@ -862,6 +917,7 @@
       }
       pvPrevios.set(u.uid, u.pv);
     }));
+    reproducirFx();
 
     const turnoEl = $("btTurno");
     const reactor = est.pendiente ? est.jugadores[est.pendiente.reactor].nombre : "";
@@ -1189,7 +1245,7 @@
             : `<p class="bt-nota">Esta unidad no puede atacar ahora.</p>`;
         }
         extra += `<p class="bt-nota">Vida ${hit.u.pv}/${hit.u.pvMax} · Ataque ${c.atq}</p>`;
-        extra += palabrasDe(hit.u).map(k => `<p class="bt-nota"><b>${infoPalabra(k).nombre}.</b> ${infoPalabra(k).texto}</p>`).join("");
+        extra += palabrasDe(hit.u).map(k => `<p class="bt-nota kw kw-${k}"><b>${ICONOS[k] || ""}${infoPalabra(k).nombre}.</b> ${infoPalabra(k).texto}</p>`).join("");
         extra += M.vinculosActivos(est, hit.u).map(v => `<p class="bt-nota bt-vinculo ${v.tipo === "rivalidad" ? "rivalidad" : ""}"><b>${v.tipo === "rivalidad" ? "Rivalidad" : v.tipo === "lazo" ? "Lazo" : "Vínculo"}: ${esc(v.nombre)}.</b> ${esc(v.texto)}${v.completo ? " <em>¡Completo!</em>" : ""}</p>`).join("");
       }
     }

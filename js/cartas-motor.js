@@ -93,6 +93,15 @@
     if (est.log.length > 300) est.log.splice(0, est.log.length - 300);
   }
 
+  /* Avisos para la pantalla (no cambian nada del juego): cada uno lleva un número que sube y la interfaz anima los que
+     todavía no ha visto. tipos: 'barrera' (se rompe), 'duro' (resta daño), 'esquivo', 'veloz' (golpea primero), 'arrollar' (v = exceso). */
+  function fx(est, tipo, datos) {
+    est.fxN = (est.fxN || 0) + 1;
+    if (!est.fx) est.fx = [];
+    est.fx.push(Object.assign({ n: est.fxN, t: tipo }, datos));
+    if (est.fx.length > 40) est.fx.splice(0, est.fx.length - 40);
+  }
+
   function buscar(est, uid) {
     for (let j = 0; j < 2; j++) {
       const u = est.jugadores[j].campo.find(x => x.uid === uid);
@@ -641,6 +650,7 @@
     }
     if (u.flags.barrera) {
       u.flags.barrera = false;
+      fx(est, "barrera", { u: u.uid });
       log(est, `La barrera de ${nombre(est, u)} absorbe el golpe y se rompe.`);
       return 0;
     }
@@ -649,10 +659,11 @@
     // Esquivo: en combate esquiva parte del golpe (recibe la mitad, redondeando hacia abajo)
     if (fuente && fuente.tipo === "combate" && tienePalabra(est, u, "esquivo")) {
       n = Math.floor(n / 2);
+      fx(est, "esquivo", { u: u.uid });
       if (n <= 0) { log(est, `${nombre(est, u)} esquiva el golpe.`); return 0; }
     }
-    if (tienePalabra(est, u, "duro")) n -= 1;
-    if (ef.reduceDano) n -= ef.reduceDano(est, u, n, fuente) || 0;
+    if (tienePalabra(est, u, "duro")) { n -= 1; fx(est, "duro", { u: u.uid }); }
+    if (ef.reduceDano) { const r = ef.reduceDano(est, u, n, fuente) || 0; if (r > 0) fx(est, "duro", { u: u.uid }); n -= r; }
     n -= bonosDe(est, u).reduce;
     n = Math.max(0, n);
     if (fuente && fuente.tipo === "habilidad" && terrenoActivo(est, "catedral-del-juramento")) n = Math.max(0, Math.min(n, u.pv - 1));
@@ -1141,6 +1152,7 @@
       if (esAtacante && tienePalabra(est, de, "arrollar")) {
         const exceso = dano - pvAntes;
         if (exceso > 0 && est.ganador === null) {
+          fx(est, "arrollar", { u: de.uid, j: D, v: exceso });
           par.jugador += infligir(est, { j: D }, exceso, { tipo: "combate", uid: de.uid });
           const ef = efectoDe(est, de);
           if (ef.alAtacarJugador && buscar(est, de.uid)) ef.alAtacarJugador({ est, M, u: de, j: A });
@@ -1152,11 +1164,13 @@
       if (!b) return;
       const vA = tienePalabra(est, a, "veloz"), vB = tienePalabra(est, b, "veloz");
       if (vA && !vB) {
+        fx(est, "veloz", { u: a.uid });
         const pvB = b.pv;
         golpe(a, b, par.dA, pvB, true, par);
         if (buscar(est, b.uid)) golpe(b, a, par.dB, a.pv, false, par);
         else log(est, `${nombre(est, b)} cae antes de poder golpear.`);
       } else if (vB && !vA) {
+        fx(est, "veloz", { u: b.uid });
         const pvA = a.pv;
         golpe(b, a, par.dB, pvA, false, par);
         if (buscar(est, a.uid)) golpe(a, b, par.dA, b.pv, true, par);
@@ -1274,7 +1288,7 @@
         id: j.id, nombre: j.nombre, vida: C.VIDA, energia: 0, energiaMax: 0,
         mazo: j.mazo.slice(), mano: [], campo: [], cementerio: [], descartes: [], fatiga: 0, costeMenos: 0, malus: null
       })),
-      terreno: null, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0, vinc: {},
+      terreno: null, fx: [], fxN: 0, siguienteUid: 1, ganador: null, motivo: "", log: [], pendiente: null, pendienteN: 0, vinc: {},
       combate: null, atacado: 0, combateN: 0, ultimoCombate: null
     };
     est.jugadores.forEach(J => barajar(est, J.mazo));
