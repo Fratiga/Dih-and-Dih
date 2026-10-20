@@ -153,6 +153,7 @@ pintarHero();
     const cifras = [[ej.guerras, pl(ej.guerras, "guerra", "guerras")], [ej.ganadas, pl(ej.ganadas, "victoria", "victorias")], [filas.length, "en filas"], [nCaidos, pl(nCaidos, "caído", "caídos")], [nRel, pl(nRel, "reliquia", "reliquias")], [nCasas, pl(nCasas, "casa", "casas")]];
     const cenizas = Array.from({ length: 16 }, (_, i) => `<i style="left:${(i * 37 + 11) % 96}%;animation-delay:-${((i * 1.3) % 9).toFixed(1)}s;animation-duration:${8 + (i % 4)}s;--dx:${((i * 53) % 60) - 30}px;width:${2 + (i % 3)}px;height:${2 + (i % 3)}px"></i>`).join("");
     $("frHero").innerHTML = `<div class="fr-hero" style="--c:${fac.color};--b:${fac.bandera}">
+      <i class="fr-esq"></i><i class="fr-esq"></i><i class="fr-esq"></i><i class="fr-esq"></i>
       <span class="fr-hero-banda"></span>
       <div class="fr-hero-ceniza" aria-hidden="true">${cenizas}</div>
       <div class="fr-hero-ret">${estrella ? retr(estrella, 170, true) : retrFaccion(ej.faccion, 170, true)}
@@ -819,7 +820,7 @@ pintarHero();
       c.innerHTML = h;
       const ret = c.querySelector("[data-ret]");
       if (ret && u.s && FR) {
-        ret.dataset.w = 96; ret.style.width = "96px"; ret.style.height = "125px";
+        ret.dataset.w = 96; ret.style.width = "96px"; ret.style.height = "122px";
         FR.animar(ret, u.s, { faccion: est.jugadores[u.dueno >= 0 ? u.dueno : 1].faccion, anio: ej ? ej.anio : 1, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, w: 96 });
       } else if (ret) window.FracturaTablero.retrato(ret, u.clase, window.FracturaTablero.coloresBando(est)[u.dueno >= 0 ? u.dueno : 1], { w: 84, h: 98, cap: !!(u.s && u.s.capitan), rango: u.s ? S.rangoIndice(u.s.victorias + (u.vicG || 0)) : 0, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, luto: !!(u.s && u.s.luto) });
       return;

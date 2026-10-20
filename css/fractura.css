@@ -399,3 +399,95 @@ body.fr-en-cuartel .fr-contenido { padding-top: 14px; }
 .fr-fin-cab p { margin: 0; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .fr-fin-cab { animation: none; } }
 
+/* =============================================================================
+   FANTASÍA OSCURA: metal, viñeta, marcos dobles y títulos dorados (el estilo de la maqueta aprobada).
+   Va al final para pisar el tema anterior del cuartel y de la portada.
+============================================================================= */
+body.fractura-tema {
+  --bg: #0b090a; --panel: #131216; --panel-2: #1b1713; --text: #e9dec6; --muted: #9a8f80; --accent: #d4af37; --accent-soft: #8b6a2a; --border: #3a2f25;
+  background-color: #0b090a;
+  background-image: radial-gradient(circle at 50% 0%, rgba(139, 0, 0, .16) 0, transparent 55%), radial-gradient(circle at 90% 90%, rgba(212, 175, 55, .05) 0, transparent 50%);
+  background-attachment: fixed;
+}
+.fractura-tema .mj-titulo, .fr-h2 { background: linear-gradient(180deg, #fff2c5 0%, #d4af37 52%, #8f6510 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.fr-ret { aspect-ratio: 300 / 380; background: #000; }
+.fr-ret[data-w="40"], .fr-av .fr-ret { width: 38px; }
+
+/* --- Portada: las seis casas --- */
+.fr-ejercito { background: linear-gradient(160deg, #17171b 0%, #0c0c10 100%); border: 1px solid rgba(197, 160, 89, .3); box-shadow: 0 10px 26px rgba(0, 0, 0, .75); }
+.fr-ejercito:hover { border-color: rgba(212, 175, 55, .75); }
+.fr-ejercito::after { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(197, 160, 89, .13); pointer-events: none; }
+.fr-ejercito h3 { font-family: var(--font-heading); letter-spacing: .06em; }
+.fr-ejercito-ret .fr-ret { border: 1px solid rgba(139, 100, 40, .5); }
+.fr-ejercito:not(.fr-fundado) .fr-ejercito-ret .fr-ret { filter: saturate(.6) brightness(.8); }
+
+/* --- Cabecera del cuartel --- */
+.fr-hero { background: rgba(12, 10, 12, .92); border: 1px solid rgba(139, 100, 40, .4); }
+.fr-hero::before { background: none; }
+.fr-hero::after { opacity: .07; }
+.fr-esq { position: absolute; z-index: 2; width: 26px; height: 26px; border: 0 solid rgba(197, 160, 89, .65); pointer-events: none; }
+.fr-esq:nth-of-type(1) { left: 0; top: 0; border-width: 2px 0 0 2px; } .fr-esq:nth-of-type(2) { right: 0; top: 0; border-width: 2px 2px 0 0; }
+.fr-esq:nth-of-type(3) { left: 0; bottom: 0; border-width: 0 0 2px 2px; } .fr-esq:nth-of-type(4) { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
+.fr-hero-sobre { color: #b3342c; font-weight: 700; }
+.fr-hero-nombre { background: linear-gradient(180deg, #fff2c5 0%, #d4af37 52%, #8f6510 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 900; letter-spacing: .05em; }
+.fr-hero-faccion { color: var(--muted); font-style: italic; }
+.fr-hero-cifras div { background: rgba(20, 17, 16, .85); border: 1px solid rgba(139, 100, 40, .32); border-top: 1px solid rgba(139, 100, 40, .32); }
+.fr-hero-cifras b { font-family: var(--font-heading); color: #e8d5a2; }
+.fr-hero-cifras div:nth-child(2) b { color: #6fcf97; } .fr-hero-cifras div:nth-child(3) b { color: #d4a24a; } .fr-hero-cifras div:nth-child(4) b { color: #d9534f; } .fr-hero-cifras div:nth-child(5) b { color: #b8862b; }
+.fr-hero-ret .fr-ret { border: 1px solid rgba(139, 100, 40, .5); }
+
+/* --- Pestañas --- */
+.fr-pestanas { border-bottom: 1px solid rgba(80, 64, 50, .7); }
+.fr-pestanas button { font-family: var(--font-heading); font-weight: 600; font-size: .84rem; letter-spacing: .05em; border: 1px solid transparent; border-bottom-width: 1px; }
+.fr-pestanas button:hover { background: #17130f; color: #eadfc6; }
+.fr-pestanas button.activa { color: #f0d58a; background: rgba(90, 50, 10, .4); border-color: rgba(190, 130, 40, .5); font-weight: 600; }
+
+/* --- Cartas de soldado --- */
+.fr-carta { background: linear-gradient(160deg, #17171b 0%, #0c0c10 100%); border: 1px solid rgba(197, 160, 89, .28); box-shadow: 0 10px 26px rgba(0, 0, 0, .75); transition: transform .3s cubic-bezier(.25, 1, .5, 1), border-color .3s, box-shadow .3s; }
+.fr-carta::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(197, 160, 89, .14); pointer-events: none; z-index: 3; }
+.fr-carta:hover, .fr-carta:focus-visible { transform: translateY(-7px); border-color: rgba(212, 175, 55, .75); box-shadow: 0 20px 38px rgba(0, 0, 0, .9), 0 0 24px rgba(139, 0, 0, .32); }
+.fr-carta.sel { border-color: rgba(212, 175, 55, .85); }
+.fr-carta-marco { border-bottom: 1px solid rgba(139, 100, 40, .4); line-height: 0; overflow: hidden; }
+.fr-carta.sel .fr-carta-marco { border-bottom-color: rgba(212, 175, 55, .6); }
+.fr-carta-info { line-height: normal; }
+.fr-carta-info strong { font-family: var(--font-heading); color: #f2ead8; transition: color .2s; }
+.fr-carta:hover .fr-carta-info strong { color: #f0d58a; }
+.fr-carta-info em { color: #b8862b; }
+.fr-carta-clase { color: #a99b88; }
+.fr-carta-marcas i { background: rgba(8, 6, 6, .88); border-color: rgba(190, 130, 40, .5); color: #f0d58a; font-family: var(--font-heading); }
+.fr-carta-accion { background: rgba(120, 118, 20, .0); background: #8a6a1a; color: #fff3cc; font-family: var(--font-heading); }
+.fr-carta-accion.fr-quita { background: rgba(110, 16, 16, .92); color: #f1d9d6; }
+.fr-carta-ficha { background: rgba(8, 6, 6, .88); border-color: rgba(190, 130, 40, .5); color: #f0d58a; }
+.fr-carta-stats i { background: #1d1814; border-color: #2c241d; }
+.fr-carta-stats i b { background: linear-gradient(0deg, #8b0000 0%, #d4af37 100%); }
+.fr-carta.fr-caido { border-style: solid; border-color: rgba(120, 100, 80, .4); }
+.fr-carta.fr-caido .fr-ret { filter: grayscale(1) brightness(.7); }
+.fr-slot-vacio { border: 1px dashed rgba(197, 160, 89, .25); background: rgba(10, 8, 8, .5); }
+
+/* --- Contingente y mesa de misión --- */
+.fr-cuenta { background: rgba(212, 175, 55, .14); color: #e8c15a; border: 1px solid rgba(212, 175, 55, .4); font-family: ui-monospace, monospace; }
+.fr-chips span { background: rgba(26, 21, 17, .9); border-color: #3a2f25; border-left-color: #8b6a2a; }
+.fr-mision { background: linear-gradient(160deg, #15130f, #0b0a0c); border: 1px solid rgba(197, 160, 89, .3); border-top: 1px solid rgba(197, 160, 89, .3); }
+.fr-mision::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(197, 160, 89, .13); pointer-events: none; }
+.fr-mision .fr-h3 { color: #f1e2b8; }
+.fr-opcion { background: rgba(26, 21, 17, .9); border: 1px solid #3a2f25; color: #d8c8aa; }
+.fr-opcion:hover { border-color: #8b6a2a; }
+.fr-opcion.sel { border-color: #d4af37; background: rgba(60, 38, 10, .55); color: #f6e7bb; }
+.fr-opcion.sel::after { border-top-color: #d4af37; }
+.fr-rival { border-left: 1px solid #3a2f25; }
+.fr-rival.sel { border-left-color: #d4af37; }
+.fr-rival-ret .fr-ret { border: 1px solid #000; }
+.fr-rival-azar { background: #0c0a0e; }
+.fr-empezar { color: #f3e2b0; background: linear-gradient(180deg, #5c1010, #330808); border: 1px solid #a8392f; }
+.fr-empezar span { letter-spacing: .14em; }
+.fr-empezar small { color: #d9a9a4; opacity: 1; }
+.fr-empezar:hover { background: linear-gradient(180deg, #6e1414, #3d0a0a); border-color: #d4af37; color: #fff3cc; }
+.fr-nemesis { background: rgba(26, 21, 17, .9); }
+
+/* --- Ficha y final de la guerra --- */
+.fr-ficha { background: #0a090b; border: 2px solid rgba(190, 130, 40, .6); }
+.fr-ficha::backdrop { background: rgba(4, 3, 4, .86); backdrop-filter: blur(6px); }
+.fr-ficha-ret .fr-ret { border: 1px solid rgba(190, 130, 40, .4); }
+.fr-fin-cab { background: rgba(12, 10, 12, .92); border: 1px solid rgba(139, 100, 40, .4); }
+.fr-fin-titulo { background: linear-gradient(180deg, #fff2c5 0%, #d4af37 52%, #8f6510 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.fr-carta-stats i small { font-size: .5rem; letter-spacing: 0; }

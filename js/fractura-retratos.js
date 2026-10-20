@@ -1,714 +1,432 @@
 /* =============================================================================
-   LA FRACTURA: retratos de los soldados. Un busto distinto para cada uno, dibujado en un canvas con
-   formas planas: la cara, el pelo, la barba, las cicatrices y la edad salen del id del soldado (siempre el
-   mismo rostro), y el yelmo, la capucha o la corona salen de su clase y su facción. Los retratos con
-   animación parpadean, respiran y los ojos siguen el cursor. Sin degradados ni resplandores.
-   Uso: FracturaRetratos.dibujar(canvas, soldado, { faccion, anio, herido, w, anim })
+   LA FRACTURA: retratos de los soldados, en estilo de fantasía oscura. Un busto por soldado dibujado en
+   canvas: la silueta (yelmo, capucha, máscara, calavera, corona) sale de su clase, los colores de su
+   facción, y el metal, el penacho, las cicatrices y el pelaje de su id (siempre el mismo). Casi nadie
+   enseña la cara: ojos encendidos en la sombra. Los animados respiran, sus ojos brillan y suben brasas.
+   Uso: FracturaRetratos.dibujar(canvas, soldado, { faccion, herido, w }) / animar(...) / generico(...)
 ============================================================================= */
 window.FracturaRetratos = (function () {
   "use strict";
   const D = window.FRACTURA_DATOS;
   const FACCIONES = D.FACCIONES, RANGOS = D.RANGOS;
   const REDUCIDO = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const CX = 50, CY = 54;
-  const ACERO = "#b9c0c8", ACERO2 = "#8f969e", MADERA = "#7a5632", HUESO = "#e9e2cf", ORO = "#f0cf6a";
+const W = 300, H = 380;
+/* ---------- colores ---------- */
+const nn = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const mix = (a, b, t) => { const x = nn(a), y = nn(b); return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
+const osc = (c, t) => mix(c, "#000000", t), cla = (c, t) => mix(c, "#ffffff", t);
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-  /* --- Colores --- */
-  const num = c => {
-    if (c[0] === "#") { const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
-    const m = c.match(/[\d.]+/g); return [+m[0], +m[1], +m[2]];
-  };
-  const mez = (a, b, t) => { const x = num(a), y = num(b); return "rgb(" + x.map((v, i) => Math.round(v + (y[i] - v) * t)).join(",") + ")"; };
-  const osc = (c, t) => mez(c, "#000000", t), cla = (c, t) => mez(c, "#ffffff", t);
 
-  /* --- Semilla --- */
-  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-  function rng(seed) {
-    let a = seed >>> 0;
-    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+/* ---------- pinceles ---------- */
+const P2 = d => new Path2D(d);
+function relleno(c, d, fill, trazo, lw) { const p = P2(d); c.fillStyle = fill; c.fill(p); if (trazo) { c.strokeStyle = trazo; c.lineWidth = lw || 1.5; c.lineJoin = "round"; c.stroke(p); } }
+function metal(c, x0, y0, x1, y1, base) {
+  const g = c.createLinearGradient(x0, y0, x1, y1);
+  g.addColorStop(0, cla(base, 0.32)); g.addColorStop(0.3, base); g.addColorStop(0.55, osc(base, 0.5)); g.addColorStop(0.78, mix(base, "#000000", 0.18)); g.addColorStop(1, osc(base, 0.78));
+  return g;
+}
+function cuero(c, x0, y0, x1, y1, base) { const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, cla(base, 0.12)); g.addColorStop(0.5, base); g.addColorStop(1, osc(base, 0.6)); return g; }
+function linea(c, col, w, x1, y1, x2, y2) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = "round"; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); }
+function disco(c, col, x, y, r) { c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
+const NEGRO = "#050405";
+function ojo(S, x, y, rx, ry, col) { const k = S.k || 1, ky = S.ky || 1; S.ojos.push({ x: 150 + (x - 150) * k, y: 226 + (y - 226) * ky, rx: rx * Math.min(k, 1.15), ry: ry * ky, col: S.ojoOrigen || col || S.ojoCol }); }
+/* cuánto se ensancha cada cabeza (se dibujó angosta): más los yelmos y la calavera, menos lo que ya tiene vuelo */
+const ANCHO = { paladin: 1.24, caballero: 1.22, guerrero: 1.22, ballestero: 1.2, lider: 1.22, esqueleto: 1.2, mercenario: 1.18, picaro: 1.14, cazador: 1.12, salvaje: 1.14, arcanista: 1.08, sanador: 1.1, eco: 1.1, archimago: 1.1 };
+/* alto de la cabeza (los yelmos se achatan un poco para que no parezcan cajas altas) y ancho del cuerpo: los hombros llegan casi al borde */
+const ALTO = { paladin: 0.92, caballero: 0.94, guerrero: 0.94, ballestero: 0.94, lider: 0.94, esqueleto: 0.96, mercenario: 0.97 };
+const CUERPO_ANCHO = { paladin: 1.3, caballero: 1.3, guerrero: 1.28, ballestero: 1.26, lider: 1.22, mercenario: 1.24, cazador: 1.2, picaro: 1.2, salvaje: 1.14, esqueleto: 1.16, arcanista: 1.1, archimago: 1.1, sanador: 1.1, eco: 1.1 };
+/* filo de luz: línea fina clara sobre el borde de una pieza */
+function filo(c, d, col, lw) { c.strokeStyle = col || "rgba(255,244,214,.35)"; c.lineWidth = lw || 1.2; c.lineCap = "round"; c.stroke(P2(d)); }
+
+/* ---------- fondo ---------- */
+function escena(c, S) {
+  const g = c.createRadialGradient(150, 130, 10, 150, 170, 320);
+  g.addColorStop(0, mix(S.col, "#000000", 0.58)); g.addColorStop(0.55, mix(S.col, "#000000", 0.88)); g.addColorStop(1, "#030203");
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  const grupo = S.grupo, oscuro = "#07060a";
+  c.fillStyle = oscuro;
+  if (grupo === "ruinas") {
+    c.fillRect(0, 300, W, 80);
+    relleno(c, "M0 300 L0 190 Q30 150 60 190 L60 300 Z M240 300 L240 170 Q270 120 300 170 L300 300 Z", "#0a090c");
+    relleno(c, "M70 300 L70 230 L100 230 L100 300 Z M196 300 L196 215 L226 215 L226 300 Z", "#08070a");
+    relleno(c, "M62 70 L66 70 L66 300 L62 300 Z", "#1a1410");
+    relleno(c, "M66 74 L112 82 L104 104 L112 128 L66 118 Z", mix(S.ban, "#000000", 0.35));
+  } else if (grupo === "bosque") {
+    for (let i = 0; i < 9; i++) { const x = 10 + i * 36 + (i % 2) * 8, h = 120 + (i * 53) % 80; relleno(c, `M${x} 330 L${x + 22} ${330 - h} L${x + 44} 330 Z`, i % 2 ? "#07090a" : "#0a0c0c"); }
+    c.fillStyle = "rgba(210,220,205,.10)"; c.beginPath(); c.arc(235, 70, 24, 0, 7); c.fill(); c.fillStyle = "rgba(210,220,205,.06)"; c.beginPath(); c.arc(235, 70, 36, 0, 7); c.fill();
+  } else if (grupo === "arcano") {
+    c.fillStyle = "rgba(190,175,255,.07)"; c.beginPath(); c.arc(150, 130, 120, 0, 7); c.fill(); c.fillStyle = "rgba(190,175,255,.05)"; c.beginPath(); c.arc(150, 130, 150, 0, 7); c.fill();
+    relleno(c, "M30 340 L48 170 L66 340 Z M236 340 L258 120 L280 340 Z M84 340 L96 230 L108 340 Z", "#0b0a12");
+    const r = S.r; c.fillStyle = "rgba(200,190,255,.55)"; for (let i = 0; i < 22; i++) { c.beginPath(); c.arc(r() * W, r() * 260, 0.6 + r() * 1.2, 0, 7); c.fill(); }
+  } else {
+    relleno(c, "M0 380 L0 150 Q20 120 38 150 L50 380 Z M262 380 L274 140 Q290 110 300 150 L300 380 Z", "#08070a");
+    c.strokeStyle = "#0b0a0c"; c.lineWidth = 7; c.lineCap = "round"; for (let i = 0; i < 5; i++) { c.beginPath(); c.moveTo(20 + i * 60, 380); c.quadraticCurveTo(40 + i * 60, 250, 20 + i * 60 + (i % 2 ? 40 : -30), 170); c.stroke(); }
   }
-  const PIELES = ["#f3d8bd", "#e8c39d", "#d8a87d", "#c08a62", "#9c6a49", "#765038", "#573828"];
-  const PELOS = ["#1d1713", "#3a2a1e", "#5a3b24", "#7a5230", "#a8793a", "#d2b46a", "#2b2f3a", "#8f3a22"];
-  const IRIS = ["#3b5f8a", "#4f7a45", "#7a5230", "#2a2a30", "#6a8f9a", "#8a6a30"];
-  const ESTILO_M = [0, 1, 1, 2, 2, 4, 6, 7], ESTILO_F = [1, 2, 3, 3, 4, 5, 6, 3];
-  const OJOS = [[3.3, 2.3], [3.7, 1.7], [3.4, 2.8]];
+  // haz de luz de lado
+  const hz = c.createLinearGradient(0, 0, 260, 300);
+  hz.addColorStop(0, "rgba(255,230,180,.13)"); hz.addColorStop(1, "rgba(255,230,180,0)");
+  c.fillStyle = hz; c.beginPath(); c.moveTo(0, 0); c.lineTo(120, 0); c.lineTo(300, 320); c.lineTo(190, 380); c.lineTo(0, 120); c.closePath(); c.fill();
+}
 
-  /* --- Primitivas --- */
-  function P(c, col, pts) { c.fillStyle = col; c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.fill(); }
-  function E(c, col, x, y, rx, ry, rot) { c.fillStyle = col; c.beginPath(); c.ellipse(x, y, rx, ry, rot || 0, 0, 7); c.fill(); }
-  function L(c, col, w, x1, y1, x2, y2) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = "round"; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); }
-
-  /* =========================================================================
-     RASGOS: salen del id. Se guardan para no recalcularlos en cada fotograma.
-  ========================================================================= */
-  const cacheRasgos = new Map();
-  function rasgos(s, anio) {
-    const clave = [s.id, anio, s.clase, s.cicatrices || 0, s.origen, s.reanimado ? 1 : 0, s.estado === "nino" ? 1 : 0, s.sexo].join("|");
-    if (cacheRasgos.has(clave)) return cacheRasgos.get(clave);
-    const r = rng(hashStr(String(s.id)));
-    const f = s.sexo === "f";
-    const edad = Math.max(0, anio - (s.nacimiento === undefined ? anio - 22 : s.nacimiento));
-    const nino = s.estado === "nino" || edad < 15;
-    const R = { f, edad, nino };
-    R.piel = PIELES[Math.floor(r() * PIELES.length)];
-    const peloBase = PELOS[Math.floor(r() * PELOS.length)];
-    const indiceEstilo = Math.floor(r() * 8);
-    R.estilo = (f ? ESTILO_F : ESTILO_M)[indiceEstilo];
-    R.rx = 15.5 + r() * 3.5 - (f ? 0.9 : 0) - (nino ? 1.6 : 0);
-    R.ry = 19.8 + r() * 2.8 - (nino ? 1.8 : 0);
-    const mand = r();
-    R.cj = 4 + (f ? mand * 3.5 : 2 + mand * 5.5);
-    R.ojo = Math.floor(r() * 3);
-    R.iris = IRIS[Math.floor(r() * IRIS.length)];
-    R.ceja = Math.floor(r() * 4);
-    R.cejaG = 1.1 + r() * 1.3;
-    R.nariz = 5 + r() * 3;
-    R.narizAncho = 1.6 + r() * 1.7;
-    R.boca = Math.floor(r() * 3);
-    const bR = r();
-    R.barba = f || nino ? 0 : bR < 0.36 ? 0 : bR < 0.52 ? 1 : bR < 0.74 ? 2 : bR < 0.9 ? 3 : 4;
-    R.pecas = r() < 0.24;
-    const parcheR = r();
-    R.cicTipos = [Math.floor(r() * 4), Math.floor(r() * 4), Math.floor(r() * 4)];
-    R.sepOjos = r();
-    R.ladoParche = r() < 0.5 ? -1 : 1;
-    const nCic = Math.min(3, s.cicatrices || 0);
-    R.nCic = nCic;
-    R.parche = !nino && (nCic >= 3 ? parcheR < 0.65 : nCic >= 2 ? parcheR < 0.3 : s.clase === "mercenario" ? parcheR < 0.34 : false);
-    // edad: pelo gris y arrugas
-    const gris = Math.max(0, Math.min(1, (edad - 42) / 24));
-    R.pelo = gris > 0 ? mez(peloBase, "#c4c4cb", gris) : peloBase;
-    R.arrugas = edad >= 38 ? (edad >= 52 ? 2 : 1) : 0;
-    // orígenes y estados
-    R.piel0 = R.piel;
-    if (s.origen === "criatura") { R.piel = mez(R.piel, "#8fae92", 0.42); R.puntiagudas = true; R.iris = "#d6b13a"; R.rendija = true; }
-    if (s.origen === "eco") { R.piel = mez(R.piel, "#cfe6ee", 0.32); R.iris = "#7fd6dc"; }
-    if (s.reanimado) { R.piel = mez(R.piel, "#a3b3a0", 0.5); R.sutura = true; R.iris = "#cfe0cf"; }
-    if (s.clase === "archimago" && !f) { R.barba = 3; if (R.pelo === peloBase) R.pelo = mez(peloBase, "#d8d8e0", 0.6); }
-    if (s.clase === "mercenario" && R.barba === 0 && !f) R.barba = 1;
-    if (s.clase === "eco") R.piel = "#cfe3ea";
-    R.pelaje = ["#5a4a52", "#6b5640", "#4c5560", "#7a4b3a"][hashStr(String(s.id)) % 4];
-    R.ex = R.rx * 0.46 + (R.sepOjos - 0.5) * 1.3;
-    cacheRasgos.set(clave, R);
-    if (cacheRasgos.size > 800) cacheRasgos.delete(cacheRasgos.keys().next().value);
-    return R;
+/* ---------- cuerpos ---------- */
+function hombrerasPlaca(c, S, base, pesadas) {
+  const m = metal(c, 40, 200, 260, 380, base), m2 = metal(c, 260, 200, 40, 380, base);
+  relleno(c, "M96 232 L150 266 L204 232 L214 380 L86 380 Z", metal(c, 90, 230, 210, 380, osc(base, 0.1)), "#0c0c0f", 2);
+  relleno(c, `M${pesadas ? 28 : 44} 270 C${pesadas ? 26 : 42} ${pesadas ? 196 : 210} 94 196 112 240 L102 336 L${pesadas ? 22 : 34} 316 Z`, m, "#0b0b0e", 2);
+  relleno(c, `M${pesadas ? 272 : 256} 270 C${pesadas ? 274 : 258} ${pesadas ? 196 : 210} 206 196 188 240 L198 336 L${pesadas ? 278 : 266} 316 Z`, m2, "#0b0b0e", 2);
+  filo(c, `M${pesadas ? 34 : 50} 262 C ${pesadas ? 40 : 56} 214 92 208 108 242`, "rgba(255,244,214,.4)");
+  filo(c, `M${pesadas ? 266 : 250} 262 C ${pesadas ? 260 : 244} 214 208 208 192 242`, "rgba(255,244,214,.18)");
+  c.strokeStyle = S.oro; c.lineWidth = 2.2; c.stroke(P2("M104 240 L104 330")); c.stroke(P2("M196 240 L196 330"));
+  linea(c, "#0c0c0f", 3, 150, 266, 150, 380);
+  [[120, 316], [180, 316], [126, 346], [174, 346]].forEach(p => disco(c, S.oro, p[0], p[1], 2.4));
+  // rasguños
+  c.strokeStyle = "rgba(0,0,0,.55)"; c.lineWidth = 1.6; c.stroke(P2(`M${pesadas ? 52 : 60} 262 l22 24 M${pesadas ? 60 : 68} 258 l16 18`));
+}
+function tabardo(c, S, ancho) {
+  const a = ancho || 22;
+  relleno(c, `M${150 - a} 262 L${150 + a} 262 L${156 + a} 380 L${144 - a} 380 Z`, cuero(c, 0, 262, 0, 380, mix(S.ban, "#000000", 0.2)), "#120505", 1.5);
+  c.strokeStyle = S.oro; c.lineWidth = 1.4; c.stroke(P2(`M${150 - a + 4} 270 L${150 - a + 6} 380 M${150 + a - 4} 270 L${150 + a - 2} 380`));
+}
+function cuerpoCuero(c, S, base) {
+  relleno(c, "M52 262 Q150 226 248 262 L270 380 L30 380 Z", cuero(c, 40, 230, 260, 380, base), "#0a0705", 2);
+  relleno(c, "M92 246 L150 268 L208 246 L218 380 L82 380 Z", cuero(c, 80, 240, 220, 380, osc(base, 0.3)), "#0a0705", 2);
+  linea(c, osc(base, 0.7), 9, 70, 258, 226, 346); linea(c, "rgba(255,230,180,.12)", 1.5, 70, 253, 226, 341);
+  disco(c, S.oro, 146, 296, 6.5); disco(c, osc(S.oro, 0.5), 146, 296, 3);
+  filo(c, "M52 262 Q150 226 248 262", "rgba(255,244,214,.18)");
+}
+function cuerpoTunica(c, S, base, pliegues) {
+  relleno(c, "M64 256 Q150 232 236 256 L274 380 L26 380 Z", cuero(c, 40, 230, 260, 380, base), "#08070a", 2);
+  relleno(c, "M110 252 L150 300 L190 252 L204 380 L96 380 Z", cuero(c, 90, 250, 210, 380, osc(base, 0.35)), null);
+  c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 2; for (let i = 0; i < pliegues; i++) { const x = 56 + i * (190 / pliegues); c.beginPath(); c.moveTo(x, 270); c.lineTo(x - 8 + (i % 2) * 10, 380); c.stroke(); }
+  linea(c, S.oro, 2, 112, 252, 150, 300); linea(c, S.oro, 2, 188, 252, 150, 300);
+  relleno(c, "M150 296 L158 308 L150 322 L142 308 Z", S.oro, "#000", 1);
+}
+function cuerpoPiel(c, S, base) {
+  relleno(c, "M44 270 C44 214 100 198 150 226 C200 198 256 214 256 270 L274 380 L26 380 Z", cuero(c, 40, 210, 260, 380, base), "#070506", 2);
+  c.fillStyle = cla(base, 0.16); for (let i = 0; i < 18; i++) { const x = 46 + i * 12; c.beginPath(); c.moveTo(x, 232 + Math.abs(i - 9) * 3.5); c.lineTo(x + 6, 252 + Math.abs(i - 9) * 3.5); c.lineTo(x + 12, 232 + Math.abs(i - 9) * 3.5); c.fill(); }
+}
+function cuerpoHueso(c, S) {
+  const hueso = "#cfc6ae";
+  relleno(c, "M46 296 Q150 262 254 296 L272 380 L28 380 Z", cuero(c, 40, 260, 260, 380, mix(S.ban, "#000000", 0.2)), "#060506", 2);
+  // hombreras oxidadas, una a cada lado, sobre la articulación
+  relleno(c, "M22 306 C20 266 70 252 100 284 L90 326 L26 326 Z", metal(c, 22, 256, 100, 326, "#6b5a4a"), "#0a0806", 2);
+  relleno(c, "M278 306 C280 266 230 252 200 284 L210 326 L274 326 Z", metal(c, 278, 256, 200, 326, "#5a4a3c"), "#0a0806", 2);
+  linea(c, "#8a4a22", 1.6, 44, 280, 62, 300); linea(c, "rgba(255,230,190,.25)", 1, 40, 276, 66, 296);
+  // clavículas y bolas de los hombros
+  c.strokeStyle = hueso; c.lineWidth = 6; c.lineCap = "round";
+  c.beginPath(); c.moveTo(150, 266); c.quadraticCurveTo(110, 262, 76, 288); c.stroke();
+  c.beginPath(); c.moveTo(150, 266); c.quadraticCurveTo(190, 262, 224, 288); c.stroke();
+  disco(c, hueso, 72, 290, 9); disco(c, hueso, 228, 290, 9);
+  // columna: el cuello son cuatro vértebras que suben hasta la mandíbula
+  for (let i = 0; i < 4; i++) { const y = 228 + i * 10; relleno(c, `M${142 - i} ${y} L${158 + i} ${y} L${159 + i} ${y + 8.5} L${141 - i} ${y + 8.5} Z`, metal(c, 142, y, 158, y + 9, "#d8d0b8"), "#12100c", 1); }
+  for (let i = 0; i < 12; i++) { const y = 268 + i * 10; relleno(c, `M143 ${y} L157 ${y} L158 ${y + 8.5} L142 ${y + 8.5} Z`, metal(c, 142, y, 158, y + 9, "#d8d0b8"), "#12100c", 1); }
+  for (let i = 0; i < 5; i++) {
+    const y = 292 + i * 16, r = 52 - i * 5;
+    c.strokeStyle = hueso; c.lineWidth = 5; c.beginPath(); c.arc(150, y, r, Math.PI * 0.1, Math.PI * 0.9); c.stroke();
+    c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 1.4; c.beginPath(); c.arc(150, y + 3, r, Math.PI * 0.1, Math.PI * 0.9); c.stroke();
   }
+}
 
-  /* =========================================================================
-     CARA
-  ========================================================================= */
-  function trazoCara(c, R) {
-    const { rx, ry, cj } = R;
-    c.beginPath();
-    c.moveTo(CX - rx, CY - 3);
-    c.bezierCurveTo(CX - rx, CY - ry - 5, CX + rx, CY - ry - 5, CX + rx, CY - 3);
-    c.bezierCurveTo(CX + rx, CY + ry * 0.55, CX + cj + 5, CY + ry, CX + cj, CY + ry);
-    c.lineTo(CX - cj, CY + ry);
-    c.bezierCurveTo(CX - cj - 5, CY + ry, CX - rx, CY + ry * 0.55, CX - rx, CY - 3);
-    c.closePath();
-  }
-
-  function cuello(K) {
-    const { c, R } = K;
-    E(c, osc(K.piel, 0.22), CX, CY + R.ry + 3, R.cj + 3, 3.6);
-    P(c, osc(K.piel, 0.14), [[CX - 6.5, CY + R.ry - 8], [CX + 6.5, CY + R.ry - 8], [CX + 8.5, 100], [CX - 8.5, 100]]);
-  }
-
-  function orejas(K) {
-    const { c, R } = K;
-    [-1, 1].forEach(l => {
-      if (R.puntiagudas) P(c, K.piel, [[CX + l * (R.rx - 1), CY - 2], [CX + l * (R.rx + 10), CY - 10], [CX + l * (R.rx + 1), CY + 9]]);
-      else { E(c, K.piel, CX + l * (R.rx + 0.4), CY + 3, 2.7, 4.3); E(c, osc(K.piel, 0.16), CX + l * (R.rx + 0.6), CY + 3.4, 1.2, 2.5); }
-    });
-  }
-
-  function cara(K) {
-    const { c, R } = K;
-    trazoCara(c, R); c.fillStyle = K.piel; c.fill();
-    c.save(); trazoCara(c, R); c.clip();
-    c.fillStyle = osc(K.piel, 0.1); c.fillRect(CX + R.rx * 0.38, 0, 40, 130);          // sombra plana a la derecha
-    c.fillStyle = osc(K.piel, 0.07); c.fillRect(0, CY + R.ry - 5, 100, 12);            // bajo la mandíbula
+/* ---------- cabezas: cada una ocupa una silueta distinta, sin cara humana entera ---------- */
+const CABEZA = {
+  paladin(c, S) {
+    const a = S.acero;
+    relleno(c, "M106 100 Q106 60 150 56 Q194 60 194 100 L194 194 Q194 216 150 224 Q106 216 106 194 Z", metal(c, 100, 60, 200, 224, a), "#09090b", 2.5);
+    relleno(c, "M106 112 L194 112 L194 124 L106 124 Z", S.oro, "#3a2a06", 1);
+    relleno(c, "M112 134 L188 134 L188 146 L112 146 Z", NEGRO); relleno(c, "M144 134 L156 134 L156 188 L144 188 Z", NEGRO);
+    [[172, 168], [178, 176], [172, 184], [178, 192]].forEach(p => disco(c, NEGRO, p[0], p[1], 2));
+    ojo(S, 130, 140, 8, 2.6); ojo(S, 170, 140, 8, 2.6);
+    filo(c, "M112 100 Q112 66 150 62", "rgba(255,244,214,.45)", 1.6);
+    relleno(c, "M150 58 C120 18 86 20 64 42 C98 38 122 52 138 74 Z", cuero(c, 60, 20, 150, 70, S.ban), "#120406", 1.5);
+  },
+  caballero(c, S) {
+    const a = S.acero;
+    relleno(c, "M108 136 Q108 54 150 50 Q192 54 192 136 Z", metal(c, 100, 50, 200, 140, a), "#09090b", 2.5);
+    relleno(c, "M106 128 L194 128 L184 188 L150 238 L116 188 Z", metal(c, 106, 128, 194, 238, osc(a, 0.12)), "#09090b", 2.5);
+    linea(c, "rgba(0,0,0,.6)", 2.5, 150, 56, 150, 236); linea(c, "rgba(255,244,214,.3)", 1, 152, 62, 152, 226);
+    relleno(c, "M120 142 L144 150 L144 158 L122 154 Z M180 142 L156 150 L156 158 L178 154 Z", NEGRO);
+    [[166, 176], [170, 188], [166, 200], [162, 212]].forEach(p => disco(c, NEGRO, p[0], p[1], 1.8));
+    ojo(S, 132, 152, 8, 2.4); ojo(S, 168, 152, 8, 2.4);
+    relleno(c, "M110 120 L190 120 L192 132 L108 132 Z", S.oro, "#2c2006", 1);
+    relleno(c, "M150 50 C136 4 176 -18 222 2 C192 12 180 34 170 56 Z", cuero(c, 140, 0, 220, 50, S.ban), "#120406", 1.5);
+  },
+  guerrero(c, S) {
+    const a = S.acero;
+    relleno(c, "M104 164 L196 164 L208 238 Q150 266 92 238 Z", cuero(c, 90, 164, 210, 250, "#3a3e44"), "#08080a", 2);
+    c.strokeStyle = "rgba(0,0,0,.5)"; c.lineWidth = 1; for (let i = 0; i < 6; i++) { c.beginPath(); c.moveTo(100 + i * 4, 176 + i * 11); c.lineTo(200 - i * 4, 176 + i * 11); c.stroke(); }
+    relleno(c, "M118 150 L182 150 L176 208 Q150 228 124 208 Z", "#0a0807");
+    ojo(S, 136, 160, 6, 2.2); ojo(S, 164, 160, 6, 2.2);
+    relleno(c, "M146 150 L154 150 L153 214 L147 214 Z", metal(c, 140, 150, 160, 214, a), "#08080a", 1);
+    relleno(c, "M104 158 Q102 66 150 62 Q198 66 196 158 L196 172 L104 172 Z", metal(c, 98, 60, 202, 174, a), "#08080a", 2.5);
+    relleno(c, "M104 148 L196 148 L196 162 L104 162 Z", S.oro, "#2c2006", 1);
+    filo(c, "M110 150 Q110 74 150 68", "rgba(255,244,214,.45)", 1.6);
+    disco(c, osc(S.oro, 0.4), 116, 155, 2.2); disco(c, osc(S.oro, 0.4), 184, 155, 2.2);
+  },
+  cazador(c, S) {
+    relleno(c, "M88 226 C74 120 116 66 150 14 C184 66 226 120 212 226 C190 252 110 252 88 226 Z", cuero(c, 80, 20, 220, 250, mix(S.ban, "#1a140e", 0.55)), "#080605", 2.5);
+    relleno(c, "M110 210 C102 130 126 94 150 72 C174 94 198 130 190 210 Q150 232 110 210 Z", "#060505");
+    relleno(c, "M130 118 Q150 100 170 118 L162 158 L150 222 L138 158 Z", metal(c, 130, 100, 170, 222, "#d9d0b8"), "#1a1408", 1.5);
+    linea(c, "rgba(0,0,0,.5)", 1.5, 150, 108, 150, 218);
+    relleno(c, "M134 124 a7 8 0 1 0 0.1 0 Z", NEGRO); relleno(c, "M166 124 a7 8 0 1 0 0.1 0 Z", NEGRO);
+    ojo(S, 135, 128, 4, 4); ojo(S, 165, 128, 4, 4);
+    for (let i = 0; i < 3; i++) relleno(c, `M${84 - i * 8} ${70 + i * 22} C${70 - i * 8} ${96 + i * 22} ${74 - i * 8} ${128 + i * 22} ${96} ${150 + i * 18} C${92 - i * 4} ${124 + i * 20} ${90 - i * 4} ${96 + i * 20} ${84 - i * 8} ${70 + i * 22} Z`, i === 1 ? S.ban : "#17130e", "#050403", 1);
+    filo(c, "M120 90 C130 60 142 40 150 22", "rgba(255,244,214,.22)", 1.4);
+  },
+  arcanista(c, S) {
+    c.strokeStyle = "rgba(170,150,255,.35)"; c.lineWidth = 1.4; c.beginPath(); c.arc(150, 150, 104, 0, 7); c.stroke();
+    c.setLineDash([2, 9]); c.strokeStyle = "rgba(170,150,255,.5)"; c.lineWidth = 3; c.beginPath(); c.arc(150, 150, 114, 0, 7); c.stroke(); c.setLineDash([]);
+    relleno(c, "M84 230 C80 124 118 72 150 10 C182 72 220 124 216 230 C190 256 110 256 84 230 Z", cuero(c, 80, 10, 220, 250, mix(S.ban, "#0c0a14", 0.3)), "#060509", 2.5);
+    relleno(c, "M112 208 C106 130 130 98 150 84 C170 98 194 130 188 208 Q150 230 112 208 Z", "#030208");
+    ojo(S, 136, 152, 7, 2.6, "#8fe8ff"); ojo(S, 164, 152, 7, 2.6, "#8fe8ff");
+    filo(c, "M96 200 C94 130 122 84 150 24", "rgba(200,190,255,.3)", 1.5);
+    relleno(c, "M150 40 L154 46 L150 52 L146 46 Z", "#cfc6ff", null);
+  },
+  picaro(c, S) {
+    relleno(c, "M86 224 C82 114 116 74 150 70 C184 74 218 114 214 224 Q150 254 86 224 Z", cuero(c, 80, 70, 220, 250, "#18221b"), "#030504", 2.5);
+    relleno(c, "M114 132 L186 132 L184 160 L116 160 Z", "#2a2018");
+    relleno(c, "M108 150 L192 150 L184 214 L150 240 L116 214 Z", cuero(c, 108, 150, 192, 240, "#26301f"), "#050705", 2);
+    linea(c, "#0c130e", 2, 150, 152, 150, 236);
+    [[128, 172], [172, 172], [134, 198], [166, 198]].forEach(p => disco(c, "#6b7c6c", p[0], p[1], 2.1));
+    relleno(c, "M110 126 L190 126 L186 138 L114 138 Z", "#030403");
+    ojo(S, 135, 146, 6, 2.1, "#a8f0d6"); ojo(S, 165, 146, 6, 2.1, "#a8f0d6");
+    filo(c, "M96 200 C94 120 122 84 150 78", "rgba(200,255,220,.18)", 1.4);
+  },
+  esqueleto(c, S) {
+    relleno(c, "M102 150 C102 78 198 78 198 150 C198 172 186 182 180 198 L174 226 L126 226 L120 198 C114 182 102 172 102 150 Z", metal(c, 100, 80, 200, 226, "#d8d0b8"), "#12100c", 2.5);
+    relleno(c, "M112 138 C112 120 140 118 142 144 C142 164 116 166 112 138 Z M188 138 C188 120 160 118 158 144 C158 164 184 166 188 138 Z", NEGRO);
+    ojo(S, 128, 146, 4.5, 4.5, "#ff7a2a"); ojo(S, 172, 146, 4.5, 4.5, "#ff7a2a");
+    relleno(c, "M150 160 L140 184 L160 184 Z", NEGRO);
+    c.fillStyle = "#0a0908"; c.fillRect(128, 200, 44, 20); c.fillStyle = "#d8d0b8"; c.fillRect(130, 202, 40, 16); c.strokeStyle = "#2a251c"; c.lineWidth = 1; for (let i = 1; i < 6; i++) { c.beginPath(); c.moveTo(130 + i * 6.7, 202); c.lineTo(130 + i * 6.7, 218); c.stroke(); }
+    linea(c, "#5c5546", 1.4, 170, 92, 178, 128); linea(c, "#5c5546", 1.4, 178, 128, 170, 142);
+    relleno(c, "M96 150 C96 66 150 54 150 54 L150 116 L96 134 Z", metal(c, 96, 54, 150, 140, "#6b5240"), "#0a0705", 2);
+    linea(c, "#8a4a22", 1.6, 112, 90, 126, 104); relleno(c, "M150 54 L146 24 L158 54 Z", metal(c, 140, 24, 160, 54, "#6b5240"), "#0a0705", 1);
+  },
+  archimago(c, S) {
+    relleno(c, "M112 118 C112 108 188 108 188 118 L186 196 C172 220 128 220 114 196 Z", "#040307");
+    ojo(S, 136, 150, 6, 2.2, "#d6e8ff"); ojo(S, 164, 150, 6, 2.2, "#d6e8ff");
+    relleno(c, "M110 176 C106 232 128 292 150 334 C172 292 194 232 190 176 C172 202 128 202 110 176 Z", metal(c, 110, 176, 190, 334, "#e6e2da"), "#1a1814", 1.5);
+    c.strokeStyle = "rgba(0,0,0,.2)"; c.lineWidth = 1; for (let i = 0; i < 6; i++) { c.beginPath(); c.moveTo(126 + i * 9, 196 + (i % 2) * 6); c.lineTo(146 + (i - 3) * 2, 300 - Math.abs(i - 2.5) * 8); c.stroke(); }
+    relleno(c, "M42 116 C60 98 240 98 258 116 C240 140 60 140 42 116 Z", cuero(c, 40, 98, 260, 140, mix(S.ban, "#0b0914", 0.45)), "#050408", 2);
+    relleno(c, "M94 112 C108 74 128 38 164 -14 C184 8 196 28 182 52 C200 72 208 92 206 112 Z", cuero(c, 90, -10, 210, 112, mix(S.ban, "#0b0914", 0.4)), "#050408", 2);
+    relleno(c, "M96 104 L204 104 L206 116 L94 116 Z", S.oro, "#2c2006", 1);
+    [[150, 60], [166, 30], [136, 84]].forEach(p => relleno(c, `M${p[0]} ${p[1] - 5} L${p[0] + 3} ${p[1]} L${p[0]} ${p[1] + 5} L${p[0] - 3} ${p[1]} Z`, S.oro));
+  },
+  ballestero(c, S) {
+    const a = S.acero;
+    relleno(c, "M98 156 C98 70 202 70 202 156 L210 200 L194 238 L150 248 L106 238 L90 200 Z", metal(c, 90, 70, 210, 248, a), "#08080a", 2.5);
+    relleno(c, "M110 142 L190 142 L190 156 L110 156 Z", NEGRO); ojo(S, 134, 149, 7, 2, "#ffcf6a"); ojo(S, 166, 149, 7, 2, "#ffcf6a");
+    linea(c, "rgba(0,0,0,.55)", 2, 150, 160, 150, 244); for (let i = 0; i < 4; i++) linea(c, "rgba(0,0,0,.4)", 1.6, 112 + i * 4, 176 + i * 14, 188 - i * 4, 176 + i * 14);
+    relleno(c, "M92 140 L208 140 L214 152 L86 152 Z", S.oro, "#2c2006", 1);
+    filo(c, "M108 138 C106 82 146 74 150 74", "rgba(255,244,214,.4)", 1.6);
+  },
+  mercenario(c, S) {
+    // capucha de cuero ajustada que cae sobre el cuello
+    relleno(c, "M92 158 C90 82 118 62 150 62 C182 62 210 82 208 158 C210 190 214 208 218 226 Q150 262 82 226 C86 208 90 190 92 158 Z", cuero(c, 88, 62, 212, 250, "#4a3422"), "#0a0705", 2.5);
+    filo(c, "M100 150 C98 90 122 70 150 68", "rgba(255,230,190,.3)", 1.5);
+    // el trozo de cara que queda a la vista: un óvalo bajo el pañuelo
+    relleno(c, "M108 146 C108 118 192 118 192 146 C192 172 174 182 150 182 C126 182 108 172 108 146 Z", cuero(c, 108, 118, 192, 184, "#5a3d2c"), "#150c07", 1.5);
+    // ojo izquierdo con ceja y cicatriz; el derecho tapado por un parche redondo con su correa
+    relleno(c, "M117 140 Q132 134 146 141 Q132 150 117 144 Z", "#0a0705"); ojo(S, 132, 142, 6, 2.2, "#ffd24a");
+    linea(c, "#2a1810", 3, 116, 132, 146, 134);
+    linea(c, "#b0584c", 1.8, 122, 128, 134, 158); linea(c, "rgba(0,0,0,.5)", 0.8, 124, 128, 136, 158);
+    c.strokeStyle = "#140d0a"; c.lineWidth = 2.2; c.beginPath(); c.moveTo(108, 124); c.quadraticCurveTo(150, 118, 192, 132); c.stroke();
+    c.fillStyle = "#090606"; c.beginPath(); c.ellipse(168, 144, 15, 13, 0.25, 0, 7); c.fill();
+    c.strokeStyle = "rgba(255,230,190,.14)"; c.lineWidth = 1; c.beginPath(); c.ellipse(168, 144, 15, 13, 0.25, Math.PI * 1.1, Math.PI * 1.7); c.stroke();
+    // pañuelo sobre nariz y boca
+    relleno(c, "M104 166 C124 156 176 156 196 166 C196 190 190 212 184 226 Q150 246 116 226 C110 212 104 190 104 166 Z", cuero(c, 104, 156, 196, 244, "#2e2622"), "#080605", 2);
+    c.strokeStyle = "rgba(0,0,0,.5)"; c.lineWidth = 1.4; c.beginPath(); c.moveTo(122, 172); c.quadraticCurveTo(150, 186, 178, 172); c.stroke();
+    c.beginPath(); c.moveTo(130, 200); c.quadraticCurveTo(150, 210, 170, 200); c.stroke();
+    // pañuelo de cabeza rojo, siguiendo la curva del cráneo, con el nudo cayendo a un lado
+    relleno(c, "M90 126 C104 90 196 90 210 126 L208 140 C190 122 110 122 92 140 Z", cuero(c, 90, 90, 210, 140, "#9a2e26"), "#1a0505", 1.5);
+    filo(c, "M100 112 C120 98 180 98 200 112", "rgba(255,200,180,.3)", 1.3);
+    relleno(c, "M96 128 C80 128 66 138 60 156 C76 152 88 150 100 142 Z", "#7a2019", "#1a0505", 1.2);
+    relleno(c, "M98 132 C90 150 86 166 90 180 C98 168 104 154 106 138 Z", "#7a2019", "#1a0505", 1.2);
+  },
+  sanador(c, S) {
+    c.strokeStyle = "rgba(240,210,120,.5)"; c.lineWidth = 2; c.beginPath(); c.arc(150, 142, 100, 0, 7); c.stroke();
+    relleno(c, "M88 228 C82 112 118 60 150 52 C182 60 218 112 212 228 Q150 256 88 228 Z", cuero(c, 80, 50, 220, 250, "#d9d2c0"), "#1c1810", 2.5);
+    relleno(c, "M124 108 Q150 88 176 108 L174 170 Q150 218 126 170 Z", metal(c, 124, 90, 176, 214, "#d6b25a"), "#2a1f08", 1.5);
+    relleno(c, "M132 138 Q142 132 146 142 Q140 148 132 144 Z M168 138 Q158 132 154 142 Q160 148 168 144 Z", "#150f06");
+    ojo(S, 139, 141, 3, 1.4, "#ffe9a6"); ojo(S, 161, 141, 3, 1.4, "#ffe9a6");
+    linea(c, "#2a1f08", 1.4, 150, 148, 148, 168); relleno(c, "M142 182 Q150 187 158 182 Q150 190 142 182 Z", "#4a2e0a");
+    disco(c, S.ban, 150, 112, 3);
+    filo(c, "M98 200 C94 124 124 72 150 60", "rgba(255,255,255,.35)", 1.5);
+  },
+  eco(c, S) {
+    c.save(); c.globalAlpha = 0.72;
+    relleno(c, "M88 228 C82 116 118 64 150 56 C182 64 218 116 212 228 C196 250 176 238 160 256 C146 244 126 262 110 244 C100 244 92 238 88 228 Z", cuero(c, 80, 56, 220, 260, "#8fb8c8"), "rgba(200,240,255,.4)", 1.5);
+    relleno(c, "M112 206 C106 134 130 100 150 88 C170 100 194 134 188 206 Q150 226 112 206 Z", "#04141a");
     c.restore();
+    ojo(S, 136, 152, 7, 3, "#e9fbff"); ojo(S, 164, 152, 7, 3, "#e9fbff");
+    c.strokeStyle = "rgba(190,235,255,.35)"; c.lineWidth = 1.4; for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(150, 238, 60 + i * 24, 12 + i * 5, 0, 0, 7); c.stroke(); }
+  },
+  lider(c, S) {
+    const a = S.acero;
+    relleno(c, "M104 104 Q104 72 150 68 Q196 72 196 104 L196 196 Q196 218 150 226 Q104 218 104 196 Z", metal(c, 98, 70, 202, 226, a), "#09090b", 2.5);
+    relleno(c, "M110 128 L190 128 L190 142 L110 142 Z", NEGRO); relleno(c, "M110 142 L124 142 L150 186 L176 142 L190 142 L152 196 L148 196 Z", NEGRO);
+    ojo(S, 130, 135, 8, 2.4, "#ff5a3a"); ojo(S, 170, 135, 8, 2.4, "#ff5a3a");
+    relleno(c, "M102 98 L198 98 L198 112 L102 112 Z", S.oro, "#2c2006", 1);
+    relleno(c, "M102 98 L108 54 L124 88 L138 40 L150 84 L162 40 L176 88 L192 54 L198 98 Z", metal(c, 100, 40, 200, 100, S.oro), "#2c2006", 1.5);
+    [[108, 54], [138, 40], [162, 40], [192, 54]].forEach(p => disco(c, S.ban, p[0], p[1] + 2, 2.4));
+    relleno(c, "M104 96 C84 70 84 34 108 12 C98 40 106 66 118 84 Z M196 96 C216 70 216 34 192 12 C202 40 194 66 182 84 Z", metal(c, 80, 10, 220, 96, "#6b5a46"), "#0a0705", 1.5);
+  },
+  salvaje(c, S) {
+    const pel = S.pelaje;
+    relleno(c, "M104 98 L96 36 L142 76 Z M196 98 L204 36 L158 76 Z", osc(pel, 0.3), "#050304", 2);
+    relleno(c, "M94 158 C88 88 120 62 150 62 C180 62 212 88 206 158 C202 202 178 236 150 244 C122 236 98 202 94 158 Z", cuero(c, 90, 62, 210, 244, pel), "#050304", 2.5);
+    relleno(c, "M118 176 C118 160 182 160 182 176 C184 210 166 234 150 238 C134 234 116 210 118 176 Z", cuero(c, 118, 160, 182, 238, cla(pel, 0.18)), "#080506", 1.5);
+    relleno(c, "M138 176 L162 176 L158 190 L142 190 Z", NEGRO);
+    relleno(c, "M122 130 L144 142 L142 150 L120 138 Z M178 130 L156 142 L158 150 L180 138 Z", NEGRO);
+    ojo(S, 133, 141, 8, 2.8, "#ffd24a"); ojo(S, 167, 141, 8, 2.8, "#ffd24a");
+    relleno(c, "M128 214 L134 192 L140 214 Z M160 214 L166 192 L172 214 Z", "#efe6cf", "#0a0806", 1);
+    linea(c, "rgba(0,0,0,.5)", 1.5, 150, 190, 150, 226);
+    linea(c, "rgba(255,244,214,.14)", 1.2, 108, 120, 120, 90);
   }
+};
+const CUERPO = {
+  guerrero(c, S) { cuerpoPiel(c, S, "#463a2e"); hombrerasPlaca(c, S, S.acero, false); },
+  paladin(c, S) { hombrerasPlaca(c, S, S.acero, true); tabardo(c, S, 24); },
+  caballero(c, S) { hombrerasPlaca(c, S, S.acero, true); tabardo(c, S, 14); },
+  lider(c, S) { relleno(c, "M16 380 L28 250 C70 214 230 214 272 250 L284 380 Z", cuero(c, 20, 220, 280, 380, osc(S.ban, 0.2)), "#0a0305", 2); hombrerasPlaca(c, S, S.acero, true); cuerpoPielCuello(c, S); },
+  cazador(c, S) { cuerpoCuero(c, S, "#4a3722"); },
+  picaro(c, S) { cuerpoCuero(c, S, "#202a22"); relleno(c, "M108 262 L122 262 L126 308 L104 308 Z", metal(c, 104, 262, 126, 308, "#6a6e72"), "#050505", 1); relleno(c, "M178 262 L192 262 L196 308 L174 308 Z", metal(c, 174, 262, 196, 308, "#6a6e72"), "#050505", 1); },
+  ballestero(c, S) { cuerpoCuero(c, S, "#3a3d33"); hombrerasPlaca(c, S, S.acero, false); },
+  mercenario(c, S) { cuerpoCuero(c, S, "#4d3a28"); relleno(c, "M40 270 C38 224 88 214 106 244 L98 330 L32 312 Z", metal(c, 36, 214, 106, 330, S.acero), "#0a0a0c", 2); linea(c, "#8a2a24", 12, 64, 258, 232, 350); },
+  arcanista(c, S) { cuerpoTunica(c, S, mix(S.ban, "#0c0a16", 0.25), 7); },
+  archimago(c, S) { cuerpoTunica(c, S, mix(S.ban, "#0c0a16", 0.3), 9); },
+  sanador(c, S) { cuerpoTunica(c, S, "#cfc8b4", 7); },
+  eco(c, S) { c.save(); c.globalAlpha = 0.6; cuerpoTunica(c, S, "#7ea0b2", 6); c.restore(); },
+  esqueleto(c, S) { cuerpoHueso(c, S); },
+  salvaje(c, S) { cuerpoPiel(c, S, S.pelaje); }
+};
+function cuerpoPielCuello(c, S) { c.fillStyle = "#e8e2d0"; for (let i = 0; i < 9; i++) { const x = 70 + i * 20; c.beginPath(); c.moveTo(x, 236 + Math.abs(i - 4) * 4); c.lineTo(x + 10, 262 + Math.abs(i - 4) * 4); c.lineTo(x + 20, 236 + Math.abs(i - 4) * 4); c.fill(); } }
 
-  function ojos(K) {
-    const { c, R } = K;
-    const dim = OJOS[R.ojo], k = R.nino ? 1.2 : 1;
-    [-1, 1].forEach(l => {
-      if (K.parche === l) return;
-      const ex = CX + l * R.ex, ey = CY + 1, orx = dim[0] * k, ory = dim[1] * k, ab = Math.max(0.06, 1 - K.parp);
-      // cuenca suave
-      E(c, osc(K.piel, 0.08), ex, ey + 0.4, orx + 1.8, ory + 1.6);
-      if (K.parp > 0.8) { L(c, osc(K.piel, 0.5), 1.5, ex - orx, ey + 0.4, ex + orx, ey + 0.6); }
-      else {
-        E(c, K.cl === "eco" ? "#e9fbff" : "#f4efe6", ex, ey, orx, ory * ab);
-        if (K.cl !== "eco") {
-          c.save(); c.beginPath(); c.ellipse(ex, ey, orx, ory * ab, 0, 0, 7); c.clip();
-          const ix = ex + K.mx * 1.2, iy = ey + K.my * 0.8;
-          E(c, R.iris, ix, iy, ory * 0.95, ory * 0.95);
-          if (R.rendija) E(c, "#15110f", ix, iy, 0.7, ory); else E(c, "#15110f", ix, iy, ory * 0.46, ory * 0.46);
-          E(c, "#ffffff", ix - 0.7, iy - 0.8, 0.55, 0.55);
-          c.restore();
-        }
-        c.strokeStyle = osc(K.piel, 0.58); c.lineWidth = 1.1; c.beginPath(); c.ellipse(ex, ey, orx, ory * ab, 0, Math.PI * 1.04, Math.PI * 1.96); c.stroke();
-        if (R.f) { L(c, osc(K.piel, 0.6), 1, ex + l * orx, ey - 0.4, ex + l * (orx + 1.7), ey - 1.6); }
-      }
-    });
-  }
+const GRUPO = { guerrero: "ruinas", caballero: "ruinas", paladin: "ruinas", lider: "ruinas", mercenario: "ruinas", ballestero: "ruinas", cazador: "bosque", picaro: "bosque", salvaje: "bosque", arcanista: "arcano", archimago: "arcano", sanador: "arcano", eco: "arcano", esqueleto: "cripta" };
+const ACEROS = ["#8a939e", "#7b8791", "#8f8d86", "#6f7d7a", "#948873"];
+const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
 
-  function cejas(K) {
-    const { c, R } = K;
-    const col = osc(K.pelo, 0.12), g = R.cejaG * (R.f ? 0.72 : 1), by = CY - 5.6;
-    [-1, 1].forEach(l => {
-      if (K.parche === l) return;
-      const x1 = CX + l * (R.ex - 4.7), x2 = CX + l * (R.ex + 4.6);
-      let y1 = by, y2 = by - 0.2, ym = by - 0.8;
-      if (R.ceja === 1) { y1 = by + 1.3; y2 = by - 1.1; ym = by - 0.4; }
-      else if (R.ceja === 2) { y1 = by + 0.4; y2 = by + 0.6; ym = by - 2.2; }
-      else if (R.ceja === 3) { y1 = by - 0.9; y2 = by + 1.3; ym = by - 1; }
-      c.strokeStyle = col; c.lineWidth = g; c.lineCap = "round";
-      c.beginPath(); c.moveTo(x1, y1); c.quadraticCurveTo((x1 + x2) / 2, ym, x2, y2); c.stroke();
-    });
-  }
-
-  function nariz(K) {
-    const { c, R } = K;
-    const ny = CY + 1 + R.nariz, na = R.narizAncho;
-    L(c, osc(K.piel, 0.15), 1.1, CX + 1.4, CY + 2, CX + 1.7, ny - 0.6);
-    c.strokeStyle = osc(K.piel, 0.28); c.lineWidth = 1.1; c.lineCap = "round";
-    c.beginPath(); c.moveTo(CX - na, ny + 0.2); c.quadraticCurveTo(CX, ny + 2.3, CX + na, ny + 0.2); c.stroke();
-    E(c, cla(K.piel, 0.1), CX - 0.4, ny - 1.4, 1.1, 0.9);
-  }
-
-  function barba(K) {
-    const { c, R } = K;
-    if (!R.barba || K.sinBarba) return;
-    const col = osc(K.pelo, 0.05), my = CY + R.ry * 0.62;
-    const borde = [[CX - R.rx - 2, CY + 2], [CX - R.rx * 0.7, CY + 10], [CX - 6.8, my - 2.2], [CX - 3.2, my - 4.4], [CX, my - 3.1], [CX + 3.2, my - 4.4], [CX + 6.8, my - 2.2], [CX + R.rx * 0.7, CY + 10], [CX + R.rx + 2, CY + 2]];
-    if (R.barba === 1) {
-      c.save(); trazoCara(c, R); c.clip(); c.globalAlpha = 0.3; c.fillStyle = col; c.fillRect(0, CY + 8, 100, 40); c.restore();
-    } else if (R.barba === 2) {
-      c.save(); trazoCara(c, R); c.clip(); P(c, col, borde.concat([[CX + R.rx + 2, CY + R.ry + 10], [CX - R.rx - 2, CY + R.ry + 10]])); c.restore();
-    } else if (R.barba === 3) {
-      P(c, col, borde.concat([[CX + R.rx + 1.5, CY + R.ry * 0.5], [CX + R.cj + 4, CY + R.ry + 8], [CX, CY + R.ry + 14], [CX - R.cj - 4, CY + R.ry + 8], [CX - R.rx - 1.5, CY + R.ry * 0.5]]));
-    } else {
-      [-1, 1].forEach(l => P(c, col, [[CX, my - 4.6], [CX + l * 8.5, my - 2.4], [CX + l * 7.4, my + 0.6], [CX, my - 2.2]]));
-      P(c, col, [[CX - 3, my + 3], [CX + 3, my + 3], [CX + 1.6, CY + R.ry + 5], [CX - 1.6, CY + R.ry + 5]]);
-    }
-  }
-
-  function boca(K) {
-    const { c, R } = K;
-    if (K.sinBoca) return;
-    const my = CY + R.ry * 0.62, col = osc(mez(K.piel, "#8a3030", 0.5), 0.4);
-    if (R.barba >= 2) E(c, mez(K.piel, "#c58a7a", 0.4), CX, my + 0.5, 4.6, 1.8);
-    if (R.f) E(c, mez(K.piel, "#b23a4a", 0.58), CX, my + 0.3, 3.7, 1.55);
-    c.strokeStyle = col; c.lineWidth = 1.35; c.lineCap = "round"; c.beginPath();
-    if (R.boca === 0) { c.moveTo(CX - 3.8, my); c.lineTo(CX + 3.8, my); }
-    else if (R.boca === 1) { c.moveTo(CX - 4, my + 0.1); c.quadraticCurveTo(CX + 1, my + 1.3, CX + 4.4, my - 1.2); }
-    else { c.moveTo(CX - 4, my + 0.7); c.quadraticCurveTo(CX, my - 0.5, CX + 4, my + 0.7); }
-    c.stroke();
-  }
-
-  function detalles(K) {
-    const { c, R } = K;
-    const ny = CY + 1 + R.nariz, my = CY + R.ry * 0.62;
-    if (R.arrugas) {
-      c.strokeStyle = osc(K.piel, 0.17); c.lineWidth = 0.9; c.lineCap = "round";
-      [-1, 1].forEach(l => { c.beginPath(); c.moveTo(CX + l * 4, ny + 1); c.quadraticCurveTo(CX + l * 7.6, my - 3, CX + l * 6.2, my + 2); c.stroke(); });
-      if (R.arrugas > 1) [-1, 1].forEach(l => L(c, osc(K.piel, 0.14), 0.8, CX + l * (R.ex + 3), CY + 6, CX + l * (R.ex + 6), CY + 9));
-    }
-    if (R.pecas) { c.fillStyle = osc(K.piel, 0.2); [[-9, 8], [-6, 10], [-3, 7], [3, 7], [6, 10], [9, 8], [-7, 6], [7, 6]].forEach(p => { c.beginPath(); c.arc(CX + p[0], CY + p[1], 0.55, 0, 7); c.fill(); }); }
-    if (R.sutura) {
-      L(c, "#2a2228", 0.9, CX + 3, CY - 15, CX + 9, CY - 2);
-      for (let i = 0; i < 4; i++) L(c, "#2a2228", 0.8, CX + 3 + i * 1.6 - 1.4, CY - 13 + i * 3.3, CX + 3 + i * 1.6 + 1.4, CY - 12.2 + i * 3.3);
-    }
-  }
-
-  function cicatrices(K) {
-    const { c, R } = K;
-    const col = mez(K.piel, "#d9928a", 0.55);
-    for (let i = 0; i < R.nCic; i++) {
-      let x1, y1, x2, y2;
-      switch (R.cicTipos[i]) {
-        case 0: x1 = CX - R.rx * 0.62; y1 = CY - 9; x2 = CX - R.rx * 0.28; y2 = CY + 4; break;
-        case 1: x1 = CX + R.rx * 0.28; y1 = CY + 5; x2 = CX + R.rx * 0.82; y2 = CY + 14; break;
-        case 2: x1 = CX - 3; y1 = CY + R.ry - 9; x2 = CX + 1.5; y2 = CY + R.ry - 1; break;
-        default: x1 = CX - 9; y1 = CY + 5; x2 = CX + 9; y2 = CY + 8.5;
-      }
-      L(c, col, 1.5, x1, y1, x2, y2);
-      const dx = x2 - x1, dy = y2 - y1, n = Math.hypot(dx, dy);
-      for (let t = 0.2; t < 0.9; t += 0.22) { const px = x1 + dx * t, py = y1 + dy * t; L(c, osc(col, 0.25), 0.8, px - dy / n * 1.8, py + dx / n * 1.8, px + dy / n * 1.8, py - dx / n * 1.8); }
-    }
-  }
 
   /* =========================================================================
-     PELO
+     UN RETRATO. Tres capas: fondo, figura (respira) y velo final (viñeta, grano, marco, galones y cinta).
+     Entre la figura y el velo se pintan lo que se mueve: niebla, ojos encendidos y brasas.
   ========================================================================= */
-  function flequillo(c, R, col, ctrl, asim, e) {
-    c.fillStyle = col; c.beginPath();
-    c.moveTo(CX - R.rx - 1.2 - e, CY + 2);
-    c.bezierCurveTo(CX - R.rx - 2.4 - e, CY - R.ry - 7 - e, CX + R.rx + 2.4 + e, CY - R.ry - 7 - e, CX + R.rx + 1.2 + e, CY + 2);
-    c.lineTo(CX + R.rx - 0.2, CY - 1); c.lineTo(CX + R.rx - 1.4, CY - 6);
-    c.quadraticCurveTo(CX + asim, CY - ctrl, CX - R.rx + 1.4, CY - 6);
-    c.lineTo(CX - R.rx + 0.2, CY - 1);
-    c.closePath(); c.fill();
-  }
+  const RANGO_COL = ["#5b4660", "#8f8498", "#c4c9d2", "#e0b24c", "#f0cf6a"];
+  const OJO_ORIGEN = { eco: "#8fe8ff", criatura: "#a6e36a" };
 
-  function peloAtras(K) {
-    const { c, R } = K;
-    if (K.cub >= 3 || (R.estilo !== 3 && R.estilo !== 4)) return;
-    if (R.estilo === 3) P(c, osc(K.pelo, 0.08), [[CX - R.rx - 3, CY - 8], [CX - R.rx - 9, CY + R.ry + 24], [CX + R.rx + 9, CY + R.ry + 24], [CX + R.rx + 3, CY - 8]]);
-    else { P(c, osc(K.pelo, 0.08), [[CX - R.rx - 1, CY - 8], [CX - R.rx - 10, CY + 4], [CX - R.rx - 8, CY + 22], [CX - R.rx - 4.5, CY + 8], [CX - R.rx + 1, CY]]); L(c, K.ban, 2.2, CX - R.rx - 8.2, CY + 5, CX - R.rx - 6.3, CY + 7); }
-  }
-
-  function peloFrente(K) {
-    const { c, R } = K;
-    if (K.cub >= 2) return;
-    const p = K.pelo;
-    switch (R.estilo) {
-      case 0: break;
-      case 1: flequillo(c, R, p, 17, 0, 0); break;
-      case 2:
-        flequillo(c, R, p, 22, 0, 0);
-        [-6, 0, 6].forEach(x => L(c, osc(p, 0.28), 0.9, CX + x, CY - 19, CX + x * 1.5, CY - R.ry - 6));
-        break;
-      case 3:
-        flequillo(c, R, p, 13, -4, 0);
-        [-1, 1].forEach(l => P(c, p, [[CX + l * (R.rx + 2), CY - 3], [CX + l * (R.rx - 3), CY - 6], [CX + l * (R.rx - 2.5), CY + R.ry - 6], [CX + l * (R.rx + 3), CY + R.ry + 4]]));
-        break;
-      case 4: flequillo(c, R, p, 17, 3, 0); break;
-      case 5:
-        flequillo(c, R, p, 17, 0, 0);
-        E(c, p, CX, CY - R.ry - 8, 6.6, 6); L(c, osc(p, 0.3), 1, CX - 6, CY - R.ry - 4, CX + 6, CY - R.ry - 4);
-        break;
-      case 6: {
-        flequillo(c, R, p, 15, 0, 1);
-        for (let a = Math.PI * 1.02; a < Math.PI * 2; a += 0.28) E(c, p, CX + Math.cos(a) * (R.rx + 2.4), CY - 3 + Math.sin(a) * (R.ry + 4), 4.6, 4.6);
-        break;
-      }
-      default:
-        c.save(); c.globalAlpha = 0.28; flequillo(c, R, p, 17, 0, 0); c.restore();
-        P(c, p, [[CX - 6, CY - R.ry + 2], [CX - 3.4, CY - R.ry - 11], [CX + 3, CY - R.ry - 14], [CX + 6, CY - R.ry + 2]]);
-    }
-  }
-
-  /* =========================================================================
-     CAPUCHAS Y CASCOS (los comparten varias clases)
-  ========================================================================= */
-  function capucha(K, color, fase) {
-    const { c, R } = K;
-    const arco = () => { c.moveTo(CX - R.rx - 8, CY + 30); c.bezierCurveTo(CX - R.rx - 11, CY - R.ry - 14, CX + R.rx + 11, CY - R.ry - 14, CX + R.rx + 8, CY + 30); c.closePath(); };
-    if (fase === "atras") {
-      c.fillStyle = color; c.beginPath(); arco(); c.fill();
-      E(c, osc(color, 0.6), CX, CY + 4, R.rx + 2, R.ry + 1);
-    } else {
-      c.fillStyle = color; c.beginPath(); arco();
-      c.moveTo(CX + R.rx + 0.6, CY + 5); c.ellipse(CX, CY + 5, R.rx + 0.6, R.ry * 0.88, 0, 0, Math.PI * 2);
-      c.fill("evenodd");
-      c.strokeStyle = osc(color, 0.32); c.lineWidth = 1.2; c.beginPath(); c.ellipse(CX, CY + 5, R.rx + 0.6, R.ry * 0.88, 0, Math.PI * 1.05, Math.PI * 1.95); c.stroke();
-    }
-  }
-
-  /* Cúpula de metal o tela que cubre la parte alta. borde: y de su borde inferior; lado: cuánto baja por los lados */
-  function cupula(K, color, borde, lado) {
-    const { c, R } = K;
-    c.fillStyle = color; c.beginPath();
-    c.moveTo(CX - R.rx - 2.6, CY + lado);
-    c.bezierCurveTo(CX - R.rx - 3.8, CY - R.ry - 9, CX + R.rx + 3.8, CY - R.ry - 9, CX + R.rx + 2.6, CY + lado);
-    c.lineTo(CX + R.rx - 0.4, CY + lado); c.lineTo(CX + R.rx - 0.4, borde); c.lineTo(CX - R.rx + 0.4, borde); c.lineTo(CX - R.rx + 0.4, CY + lado);
-    c.closePath(); c.fill();
-    L(c, osc(color, 0.28), 2.6, CX - R.rx - 1.6, borde, CX + R.rx + 1.6, borde);
-  }
-
-  function hombros(c, color) {
-    c.fillStyle = color; c.beginPath();
-    c.moveTo(4, 131); c.lineTo(8, 110); c.quadraticCurveTo(12, 98, 32, 95); c.lineTo(68, 95); c.quadraticCurveTo(88, 98, 92, 110); c.lineTo(96, 131); c.closePath(); c.fill();
-    c.save(); c.clip(); c.fillStyle = "rgba(0,0,0,.17)"; c.fillRect(63, 90, 40, 45); c.restore();
-  }
-
-  /* =========================================================================
-     CLASES: lo que cambia de una a otra. cub: 0 nada, 1 adorno (se ve el pelo), 2 cubre la parte alta
-     (solo asoma el pelo largo), 3 cubre todo.
-  ========================================================================= */
-  const CLASE = {
-    guerrero: {
-      cub: 2,
-      atras(K) { const c = K.c; E(c, osc(K.col, 0.35), 85, 106, 15, 15); c.strokeStyle = ACERO; c.lineWidth = 2; c.beginPath(); c.arc(85, 106, 14, 0, 7); c.stroke(); E(c, K.ban, 85, 106, 5.5, 5.5); },
-      cuerpo(K) {
-        const c = K.c; hombros(c, K.col);
-        P(c, osc(K.col, 0.28), [[36, 95], [64, 95], [60, 131], [40, 131]]);
-        L(c, "#5a4026", 5, 16, 99, 76, 131);
-        E(c, ACERO, 17, 103, 12.5, 7, -0.3); L(c, ACERO2, 1.4, 8, 102, 24, 99);
-        [[12, 103], [22, 100]].forEach(p => E(c, "#e8e2d0", p[0], p[1], 0.9, 0.9));
-      },
-      collar(K) { const c = K.c; for (let i = 0; i < 3; i++) E(c, i % 2 ? ACERO2 : "#a5adb6", CX, 94 + i * 1.8, 13 - i * 1.3, 4.6); },
-      casco(K, fase) {
-        if (fase !== "frente") return;
-        const { c, R } = K; cupula(K, ACERO, CY - 8, 5);
-        P(c, ACERO2, [[CX - 1.5, CY - 8], [CX + 1.5, CY - 8], [CX + 1.2, CY + 9], [CX - 1.2, CY + 9]]);
-        [-1, 1].forEach(l => E(c, "#e8e2d0", CX + l * (R.rx + 0.4), CY - 8, 0.9, 0.9));
-        L(c, claro3(ACERO), 1.2, CX - 8, CY - R.ry - 4, CX - 2, CY - R.ry - 6);
-      }
-    },
-    cazador: {
-      cub: 3,
-      atras(K) {
-        const c = K.c; c.strokeStyle = MADERA; c.lineWidth = 2.8; c.lineCap = "round"; c.beginPath(); c.moveTo(80, 18); c.quadraticCurveTo(99, 74, 80, 130); c.stroke();
-        L(c, "#e8e2d0", 0.8, 80, 18, 80, 130);
-        P(c, MADERA, [[14, 80], [22, 76], [30, 102], [22, 106]]);
-        [[15, 77], [19, 76], [23, 75]].forEach((p, i) => { L(c, "#d8c9a6", 1.2, p[0] - 1, p[1] + 4, p[0] - 2 + i, p[1] - 8); P(c, K.ban, [[p[0] - 2 + i, p[1] - 9], [p[0] - 5 + i, p[1] - 5], [p[0] + 1 + i, p[1] - 6]]); });
-      },
-      cuerpo(K) {
-        const c = K.c; hombros(c, osc(K.col, 0.45));
-        P(c, K.col, [[14, 100], [34, 92], [66, 92], [86, 100], [92, 131], [8, 131]]);
-        L(c, "#8a6a3c", 5, 14, 98, 70, 131); L(c, osc("#8a6a3c", 0.3), 1, 14, 98, 70, 131);
-      },
-      casco(K, fase) { capucha(K, K.col, fase); if (fase === "frente") P(K.c, K.ban, [[CX + K.R.rx - 4, CY - K.R.ry - 4], [CX + K.R.rx + 12, CY - K.R.ry - 16], [CX + K.R.rx + 4, CY - K.R.ry - 1]]); }
-    },
-    arcanista: {
-      cub: 1,
-      atras(K) { const c = K.c; L(c, MADERA, 3, 85, 14, 85, 131); c.strokeStyle = "#cfe9f5"; c.lineWidth = 1.2; c.beginPath(); c.arc(85, 11, 6.6, 0, 7); c.stroke(); E(c, "#8fd8ff", 85, 11, 5, 5); E(c, "#ffffff", 83.4, 9.4, 1.5, 1.5); },
-      cuerpo(K) {
-        const c = K.c; hombros(c, K.col);
-        P(c, cla(K.col, 0.12), [[24, 98], [34, 78], [42, 96]]); P(c, cla(K.col, 0.12), [[76, 98], [66, 78], [58, 96]]);
-        P(c, K.ban, [[40, 98], [60, 98], [50, 118]]);
-        P(c, ORO, [[50, 104], [53, 108], [50, 112], [47, 108]]);
-      },
-      casco(K, fase) {
-        if (fase !== "frente") return; const { c, R } = K;
-        c.strokeStyle = ORO; c.lineWidth = 2.1; c.lineCap = "round"; c.beginPath(); c.moveTo(CX - R.rx, CY - 8); c.quadraticCurveTo(CX, CY - 5, CX + R.rx, CY - 8); c.stroke();
-        E(c, "#8fd8ff", CX, CY - 6.4, 1.9, 2.3);
-      }
-    },
-    paladin: {
-      cub: 2,
-      atras(K) { const c = K.c; c.strokeStyle = ORO; c.lineWidth = 1.3; c.beginPath(); c.arc(CX, 58, 37, 0, 7); c.stroke(); c.lineWidth = 0.8; c.beginPath(); c.arc(CX, 58, 41, 0, 7); c.stroke(); },
-      cuerpo(K) {
-        const c = K.c; hombros(c, "#aeb5bd");
-        E(c, "#c3cad2", 16, 102, 14, 8.5, -0.35); E(c, "#c3cad2", 84, 102, 14, 8.5, 0.35); L(c, K.col, 2, 6, 106, 26, 98); L(c, K.col, 2, 94, 106, 74, 98);
-        P(c, K.col, [[40, 96], [60, 96], [62, 131], [38, 131]]);
-        P(c, K.ban, [[48.4, 101], [51.6, 101], [51.6, 125], [48.4, 125]]); P(c, K.ban, [[42, 108], [58, 108], [58, 111], [42, 111]]);
-      },
-      collar(K) { E(K.c, ACERO2, CX, 95, 14, 5.6); },
-      casco(K, fase) {
-        const { c, R } = K;
-        if (fase === "atras") { P(c, "#c0463c", [[CX - 3, CY - R.ry - 8], [CX + 16, CY - R.ry - 18], [CX + 10, CY - R.ry - 2], [CX + 4, CY - R.ry - 5]]); return; }
-        cupula(K, ACERO, CY - 7, 11);
-        P(c, ACERO2, [[CX - 1.6, CY - 7], [CX + 1.6, CY - 7], [CX + 1.2, CY + 10], [CX - 1.2, CY + 10]]);
-        L(c, ORO, 1.4, CX - R.rx - 2, CY - 12, CX + R.rx + 2, CY - 12);
-      }
-    },
-    picaro: {
-      cub: 3, sinBoca: true, sinBarba: true,
-      atras(K) {
-        const c = K.c;
-        [[18, 1], [82, -1]].forEach(([x, l]) => { L(c, MADERA, 3.4, x, 98, x - l * 2, 84); L(c, ACERO2, 3, x - l * 6, 83, x + l * 2, 83); E(c, "#c0a050", x - l * 2.2, 81.5, 2, 2); });
-      },
-      cuerpo(K) { const c = K.c; hombros(c, "#3a3342"); L(c, "#6a5a46", 4.4, 12, 100, 70, 131); L(c, "#6a5a46", 3, 88, 102, 36, 131); L(c, K.col, 2.4, 10, 108, 30, 102); },
-      casco(K, fase) {
-        capucha(K, osc(K.col, 0.4), fase);
-        if (fase === "frente") {
-          const { c, R } = K;
-          P(c, osc(K.col, 0.58), [[CX - R.rx - 0.6, CY + 2.5], [CX - 3, CY + 7], [CX, CY + 4.2], [CX + 3, CY + 7], [CX + R.rx + 0.6, CY + 2.5], [CX + R.cj + 4, CY + R.ry - 1], [CX, CY + R.ry + 4], [CX - R.cj - 4, CY + R.ry - 1]]);
-          L(c, osc(K.col, 0.75), 1, CX - 4, CY + R.ry - 3, CX + 4, CY + R.ry - 3);
-        }
-      }
-    },
-    caballero: {
-      cub: 2,
-      atras(K) { const c = K.c; L(c, MADERA, 2.8, 88, 0, 88, 131); P(c, K.ban, [[88, 6], [88, 26], [64, 16]]); P(c, K.col, [[88, 11], [88, 17], [74, 14]]); },
-      cuerpo(K) {
-        const c = K.c; hombros(c, "#aab1ba");
-        E(c, "#c6ccd4", 15, 103, 15, 9.5, -0.4); E(c, "#c6ccd4", 85, 103, 15, 9.5, 0.4);
-        L(c, K.col, 2.6, 4, 108, 26, 99); L(c, K.col, 2.6, 96, 108, 74, 99);
-        L(c, osc("#aab1ba", 0.3), 1.5, CX, 96, CX, 131); L(c, K.col, 2.4, 30, 100, 40, 108); L(c, K.col, 2.4, 70, 100, 60, 108);
-      },
-      collar(K) { E(K.c, ACERO2, CX, 95, 14.5, 6); },
-      casco(K, fase) {
-        const { c, R } = K;
-        if (fase === "atras") { P(c, K.col, [[CX - 2, CY - R.ry - 7], [CX - 24, CY - R.ry - 2], [CX - 27, CY - R.ry + 16], [CX - 9, CY - R.ry + 3], [CX + 5, CY - R.ry - 4]]); return; }
-        cupula(K, ACERO, CY - 8, 15);
-        P(c, cla(ACERO, 0.2), [[CX - R.rx + 1, CY - 9], [CX + R.rx - 1, CY - 9], [CX + R.rx - 4, CY - 18], [CX - R.rx + 4, CY - 18]]);
-        L(c, osc(ACERO, 0.45), 1.1, CX - R.rx + 4, CY - 13.5, CX + R.rx - 4, CY - 13.5);
-        P(c, ACERO2, [[CX - 1.6, CY - 8], [CX + 1.6, CY - 8], [CX + 1.2, CY + 11], [CX - 1.2, CY + 11]]);
-      }
-    },
-    esqueleto: {
-      cub: 0, total(K) {
-        const c = K.c;
-        hombros(c, osc(K.col, 0.25));
-        for (let i = 0; i < 3; i++) { c.strokeStyle = HUESO; c.lineWidth = 2; c.beginPath(); c.arc(CX, 100 + i * 7, 18 - i * 1.5, Math.PI * 0.12, Math.PI * 0.88); c.stroke(); }
-        L(c, HUESO, 3.4, CX, 94, CX, 131);
-        E(c, HUESO, 17, 102, 8, 5, -0.3); E(c, HUESO, 83, 102, 8, 5, 0.3);
-        [0, 1, 2].forEach(i => L(c, "#d3cbb4", 2.2, CX, 74 + i * 6.5, CX, 77.5 + i * 6.5));
-        E(c, HUESO, CX, CY - 2, 18.5, 20); P(c, HUESO, [[CX - 13, CY + 10], [CX + 13, CY + 10], [CX + 9.5, CY + 24], [CX - 9.5, CY + 24]]);
-        c.save(); c.beginPath(); c.ellipse(CX, CY - 2, 18.5, 20, 0, 0, 7); c.clip(); c.fillStyle = "rgba(0,0,0,.1)"; c.fillRect(CX + 6, 0, 30, 100); c.restore();
-        [-1, 1].forEach(l => { E(c, "#1c1620", CX + l * 8, CY, 5.4, 6.4); E(c, "#e8742a", CX + l * 8 + K.mx, CY + 0.5 + K.my * 0.6, 1.3, 1.3); });
-        P(c, "#1c1620", [[CX, CY + 6], [CX - 3, CY + 13], [CX + 3, CY + 13]]);
-        c.fillStyle = "#1c1620"; c.fillRect(CX - 9, CY + 16, 18, 6.2); c.fillStyle = HUESO; c.fillRect(CX - 8.2, CY + 16.8, 16.4, 4.6);
-        for (let i = -3; i <= 3; i++) L(c, "#4a4438", 0.8, CX + i * 2.3, CY + 16.5, CX + i * 2.3, CY + 21);
-        L(c, "#6d6657", 1, CX + 7, CY - 21, CX + 11, CY - 11); L(c, "#6d6657", 1, CX + 11, CY - 11, CX + 8.6, CY - 7);
-        c.save(); c.beginPath(); c.rect(0, 0, CX, 130); c.clip();
-        c.fillStyle = "#6b6a66"; c.beginPath(); c.moveTo(CX - 20, CY + 2); c.bezierCurveTo(CX - 22, CY - 34, CX + 4, CY - 36, CX + 6, CY - 14); c.lineTo(CX, CY - 8); c.lineTo(CX - 20, CY - 8); c.closePath(); c.fill();
-        L(c, "#4e4d4a", 1.4, CX - 20, CY - 8, CX, CY - 8); L(c, "#8a5a3a", 1, CX - 12, CY - 22, CX - 8, CY - 16);
-        c.restore();
-      }
-    },
-    archimago: {
-      cub: 2,
-      atras(K) { const c = K.c; c.strokeStyle = K.ban; c.lineWidth = 1.2; c.beginPath(); c.arc(CX, 62, 34, 0, 7); c.stroke(); c.setLineDash([2.5, 4]); c.beginPath(); c.arc(CX, 62, 39, 0, 7); c.stroke(); c.setLineDash([]); },
-      cuerpo(K) {
-        const c = K.c; hombros(c, K.col);
-        P(c, cla(K.col, 0.15), [[22, 99], [33, 70], [42, 96]]); P(c, cla(K.col, 0.15), [[78, 99], [67, 70], [58, 96]]);
-        P(c, K.ban, [[38, 98], [62, 98], [50, 128]]);
-        [[50, 104], [46, 110], [54, 110]].forEach(p => P(c, ORO, [[p[0], p[1] - 2.4], [p[0] + 1.8, p[1]], [p[0], p[1] + 2.4], [p[0] - 1.8, p[1]]]));
-      },
-      casco(K, fase) {
-        if (fase !== "frente") return; const { c, R } = K;
-        E(c, osc(K.col, 0.35), CX, CY - 12, R.rx + 14, 6.5);
-        P(c, osc(K.col, 0.25), [[CX - R.rx - 1, CY - 12], [CX + R.rx + 1, CY - 12], [CX + 7, CY - R.ry - 14], [CX + 15, CY - R.ry - 26], [CX + 8, CY - R.ry - 29], [CX - 2, CY - R.ry - 14]]);
-        P(c, K.ban, [[CX - R.rx - 1, CY - 12], [CX + R.rx + 1, CY - 12], [CX + R.rx + 0.4, CY - 18], [CX - R.rx - 0.4, CY - 18]]);
-        P(c, ORO, [[CX - 2.4, CY - 18.4], [CX + 2.4, CY - 18.4], [CX + 2.4, CY - 11.6], [CX - 2.4, CY - 11.6]]); P(c, osc(K.ban, 0.3), [[CX - 1, CY - 17], [CX + 1, CY - 17], [CX + 1, CY - 13], [CX - 1, CY - 13]]);
-        [[CX + 1, CY - R.ry - 4], [CX + 9, CY - R.ry - 17]].forEach(p => P(c, ORO, [[p[0], p[1] - 2.6], [p[0] + 1.8, p[1]], [p[0], p[1] + 2.6], [p[0] - 1.8, p[1]]]));
-      }
-    },
-    ballestero: {
-      cub: 2,
-      atras(K) { const c = K.c; L(c, MADERA, 4, 62, 116, 96, 88); c.strokeStyle = ACERO; c.lineWidth = 2.4; c.beginPath(); c.moveTo(76, 90); c.quadraticCurveTo(88, 100, 84, 114); c.stroke(); L(c, "#e8e2d0", 0.8, 76, 90, 84, 114); },
-      cuerpo(K) {
-        const c = K.c; hombros(c, K.col);
-        for (let x = 24; x <= 76; x += 8) L(c, osc(K.col, 0.22), 1, x, 100, x, 131);
-        L(c, "#6a4a2c", 6, 12, 98, 70, 131);
-        for (let i = 0; i < 6; i++) { const t = i / 5; L(c, ACERO, 1.4, 18 + t * 44, 101 + t * 26, 18 + t * 44 + 1.5, 95 + t * 26); }
-      },
-      casco(K, fase) {
-        if (fase !== "frente") return; const { c, R } = K;
-        E(c, ACERO, CX, CY - 9, R.rx + 15, 5.6); cupula(K, ACERO, CY - 9, 1);
-        L(c, claro3(ACERO), 1.2, CX - R.rx - 8, CY - 10.4, CX - R.rx + 2, CY - 12);
-      }
-    },
-    mercenario: {
-      cub: 2,
-      cuerpo(K) {
-        const c = K.c; hombros(c, "#6a5a46");
-        for (let r = 0; r < 3; r++) for (let i = 0; i < 6; i++) E(c, "#b3a58a", 22 + i * 11 + (r % 2) * 5, 104 + r * 8, 1, 1);
-        E(c, ACERO, 16, 103, 13, 7.5, -0.3); L(c, "#c0463c", 6, 12, 108, 68, 131);
-      },
-      casco(K, fase) {
-        if (fase !== "frente") return; const { c, R } = K;
-        cupula(K, "#b8453a", CY - 6.5, 0);
-        P(c, "#b8453a", [[CX - R.rx - 1, CY - 8], [CX - R.rx - 10, CY - 3], [CX - R.rx - 7, CY + 3], [CX - R.rx - 1, CY - 3]]);
-      }
-    },
-    sanador: {
-      cub: 3,
-      atras(K) {
-        const c = K.c; L(c, MADERA, 3, 84, 30, 84, 131);
-        c.strokeStyle = MADERA; c.lineWidth = 1.4; c.beginPath(); c.arc(84, 24, 3, Math.PI, 0); c.stroke();
-        P(c, "#ffe9a6", [[80, 24], [88, 24], [87, 34], [81, 34]]); L(c, MADERA, 1.2, 80, 24, 88, 24); L(c, MADERA, 1.2, 81, 34, 87, 34);
-      },
-      cuerpo(K) {
-        const c = K.c; hombros(c, cla(K.col, 0.4));
-        P(c, K.ban, [[48.4, 102], [51.6, 102], [51.6, 120], [48.4, 120]]); P(c, K.ban, [[42, 109], [58, 109], [58, 112.2], [42, 112.2]]);
-        L(c, MADERA, 3, 16, 98, 68, 131);
-      },
-      casco(K, fase) { capucha(K, cla(K.col, 0.45), fase); }
-    },
-    eco: {
-      cub: 1, ghost: true,
-      atras(K) { const c = K.c; c.strokeStyle = "#bfe9f2"; c.lineWidth = 1; [24, 34, 44].forEach(r => { c.globalAlpha = 0.65 - r / 90; c.beginPath(); c.ellipse(CX, 120, r + 14, r * 0.34, 0, 0, 7); c.stroke(); }); c.globalAlpha = 1; },
-      cuerpo(K) { const c = K.c; hombros(c, mez(K.col, "#bfe9f2", 0.62)); L(c, "#e6c6ff", 1.4, 20, 108, 80, 108); },
-      casco() { }
-    },
-    lider: {
-      cub: 1,
-      atras(K) {
-        const c = K.c;
-        P(c, osc(K.ban, 0.1), [[4, 131], [10, 100], [32, 92], [68, 92], [90, 100], [96, 131]]);
-        [[6, 26], [74, 94]].forEach(([a, b]) => { P(c, K.ban, [[a, 0], [b, 0], [b, 58], [(a + b) / 2, 50], [a, 58]]); E(c, K.col, (a + b) / 2, 20, 5, 5); });
-      },
-      cuerpo(K) {
-        const c = K.c; hombros(c, "#b3bac3");
-        E(c, "#c6ccd4", 15, 103, 14, 8.5, -0.35); E(c, "#c6ccd4", 85, 103, 14, 8.5, 0.35); L(c, ORO, 2.2, 5, 108, 26, 99); L(c, ORO, 2.2, 95, 108, 74, 99);
-        P(c, "#ece5d2", [[22, 97], [34, 90], [40, 99], [46, 90], [50, 99], [54, 90], [60, 99], [66, 90], [78, 97], [78, 106], [22, 106]]);
-        L(c, K.ban, 2.4, 50, 106, 50, 112); E(c, ORO, 50, 115, 4.2, 4.2); E(c, K.ban, 50, 115, 1.7, 1.7);
-      },
-      casco(K, fase) {
-        if (fase !== "frente") return; const { c, R } = K;
-        P(c, ORO, [[CX - R.rx + 1, CY - 9], [CX + R.rx - 1, CY - 9], [CX + R.rx - 1, CY - 15], [CX - R.rx + 1, CY - 15]]);
-        P(c, ORO, [[CX - R.rx + 1, CY - 15], [CX - R.rx + 3, CY - 25], [CX - R.rx * 0.5, CY - 18], [CX, CY - 28], [CX + R.rx * 0.5, CY - 18], [CX + R.rx - 3, CY - 25], [CX + R.rx - 1, CY - 15]]);
-        [[CX - R.rx + 3, CY - 25], [CX, CY - 28], [CX + R.rx - 3, CY - 25]].forEach(p => E(c, K.ban, p[0], p[1], 1.5, 1.5));
-        [-6, 0, 6].forEach(x => E(c, K.ban, CX + x, CY - 12, 1.3, 1.3));
-      }
-    },
-    salvaje: {
-      cub: 0, total(K) {
-        const { c, R } = K, pel = R.pelaje;
-        hombros(c, pel);
-        P(c, osc(pel, 0.25), [[16, 100], [24, 90], [30, 102], [38, 90], [44, 104], [56, 104], [62, 90], [70, 102], [76, 90], [84, 100], [84, 112], [16, 112]]);
-        P(c, pel, [[CX - 21, CY - 10], [CX - 15, CY - 31], [CX - 6, CY - 17]]); P(c, pel, [[CX + 21, CY - 10], [CX + 15, CY - 31], [CX + 6, CY - 17]]);
-        P(c, osc(pel, 0.4), [[CX - 17, CY - 12], [CX - 14, CY - 24], [CX - 9, CY - 16]]); P(c, osc(pel, 0.4), [[CX + 17, CY - 12], [CX + 14, CY - 24], [CX + 9, CY - 16]]);
-        E(c, pel, CX, CY + 2, 23, 21);
-        c.save(); c.beginPath(); c.ellipse(CX, CY + 2, 23, 21, 0, 0, 7); c.clip(); c.fillStyle = "rgba(0,0,0,.14)"; c.fillRect(CX + 6, 0, 40, 100); c.restore();
-        E(c, cla(pel, 0.16), CX, CY + 12, 12.5, 9.5); E(c, "#1c1418", CX, CY + 5.5, 4.6, 3.2);
-        L(c, osc(pel, 0.5), 1.5, CX, CY + 8, CX, CY + 14); c.strokeStyle = osc(pel, 0.5); c.lineWidth = 1.4; c.beginPath(); c.moveTo(CX - 7, CY + 16); c.quadraticCurveTo(CX, CY + 12.5, CX + 7, CY + 16); c.stroke();
-        [-1, 1].forEach(l => {
-          P(c, "#eee6d2", [[CX + l * 10, CY + 17], [CX + l * 6.4, CY + 17], [CX + l * 8.4, CY + 7]]);
-          E(c, "#ffd36a", CX + l * 10, CY - 3, 3.6, 2.2, l * 0.35);
-          L(c, "#15110f", 1.1, CX + l * 10 + K.mx * 0.8, CY - 4.8, CX + l * 10 + K.mx * 0.8, CY - 1.2);
-          L(c, osc(pel, 0.55), 2, CX + l * 14, CY - 7.5, CX + l * 6, CY - 5);
-        });
-      }
-    }
-  };
-  function claro3(c) { return cla(c, 0.35); }
-
-  /* =========================================================================
-     FONDO Y MARCOS
-  ========================================================================= */
-  const GRUPO = { guerrero: 0, caballero: 0, paladin: 0, mercenario: 0, ballestero: 0, lider: 0, arcanista: 1, archimago: 1, eco: 1, sanador: 1, cazador: 2, picaro: 2, salvaje: 2, esqueleto: 2 };
-  function fondo(K, s) {
-    const { c } = K;
-    let base = osc(K.col, 0.74);
-    if (s.origen === "eco" || K.cl === "eco") base = mez(base, "#2f6a7a", 0.4);
-    else if (s.origen === "criatura") base = mez(base, "#2f5a34", 0.34);
-    else if (s.origen === "mercenario") base = mez(base, "#5a4426", 0.3);
-    c.fillStyle = base; c.fillRect(0, 0, 100, 130);
-    const g = GRUPO[K.cl] === undefined ? 0 : GRUPO[K.cl];
-    const t1 = mez(base, K.col, 0.17), t2 = mez(base, K.col, 0.3);
-    if (g === 0) { P(c, t1, [[-10, 74], [110, 14], [110, 38], [-10, 98]]); P(c, t2, [[-10, 100], [110, 40], [110, 48], [-10, 108]]); }
-    else if (g === 1) { E(c, t1, CX, 60, 47, 47); E(c, t2, CX, 60, 35, 35); }
-    else { P(c, t1, [[-10, 130], [30, 20], [60, 130]]); P(c, t2, [[40, 130], [80, 36], [110, 130]]); P(c, t1, [[70, 130], [100, 70], [110, 130]]); }
-    c.fillStyle = K.ban; c.fillRect(0, 0, 4, 130);
-    c.fillStyle = osc(K.col, 0.55); c.fillRect(4, 0, 1.4, 130);
-  }
-
-  function marco(K) {
-    const { c } = K;
-    const col = ["#5b4660", "#8f8498", "#c4c9d2", "#e0b24c", "#f0cf6a"][K.rango] || "#5b4660";
-    c.strokeStyle = col; c.lineWidth = K.rango >= 3 ? 3 : 2; c.strokeRect(1.5, 1.5, 97, 127);
-    if (K.rango >= 4) { c.lineWidth = 0.9; c.strokeRect(5, 5, 90, 120); [[5, 5], [95, 5], [5, 125], [95, 125]].forEach(p => E(c, ORO, p[0], p[1], 2.4, 2.4)); }
-    // galones del rango
-    c.strokeStyle = ORO; c.lineWidth = 2.3; c.lineCap = "round"; c.lineJoin = "round";
-    for (let i = 0; i < K.rango; i++) { const y = 123 - i * 5.6; c.beginPath(); c.moveTo(8, y + 3); c.lineTo(14, y); c.lineTo(20, y + 3); c.stroke(); }
-    if (K.cap) {
-      P(c, K.ban, [[88, 0], [100, 0], [100, 0], [100, 26], [94, 21], [88, 26]]);
-      c.fillStyle = "#f4ecd8"; c.font = "bold 9px Cinzel, Georgia, serif"; c.textAlign = "center"; c.textBaseline = "middle";
-      c.fillText(["", "I", "II", "III"][K.cap] || "C", 94, 11);
-    }
-  }
-
-  function venda(K) {
-    const { c, R } = K;
-    P(c, "#e9e2cf", [[CX - R.rx - 1.4, CY - 14], [CX + R.rx + 1.4, CY - 8.5], [CX + R.rx + 1.4, CY - 2.5], [CX - R.rx - 1.4, CY - 8]]);
-    L(c, "#c9c0a8", 0.8, CX - R.rx - 1, CY - 11, CX + R.rx + 1, CY - 5.5);
-    E(c, "#9a2a22", CX + 6, CY - 5.8, 2.6, 2.1);
-  }
-
-  function parche(K) {
-    const { c, R } = K, l = K.parche, ex = CX + l * R.ex, ey = CY + 1;
-    L(c, "#1c1c20", 1.4, CX - R.rx - 1, CY - 7, CX + R.rx + 1, CY - 9.4);
-    E(c, "#1c1c20", ex, ey + 0.2, 4.6, 4.2); L(c, "#3a3a44", 0.8, ex - 3, ey - 2, ex + 2.5, ey + 2.4);
-  }
-
-  /* =========================================================================
-     DIBUJAR
-  ========================================================================= */
-  const puntero = { x: -1, y: -1, ok: false };
-  window.addEventListener("pointermove", e => { puntero.x = e.clientX; puntero.y = e.clientY; puntero.ok = true; }, { passive: true });
-
-  function dibujar(canvas, s, o) {
-    o = o || {};
-    const wpx = o.w || +canvas.dataset.w || 100, hpx = Math.round(wpx * 1.3), d = Math.min(window.devicePixelRatio || 1, 2);
-    const bw = Math.round(wpx * d), bh = Math.round(hpx * d);
+  function construir(canvas, s, o) {
+    const wpx = o.w || +canvas.dataset.w || 170;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const bw = Math.round(wpx * dpr), bh = Math.round(bw * H / W), esc = bw / W;
     if (canvas.width !== bw || canvas.height !== bh) { canvas.width = bw; canvas.height = bh; }
-    const c = canvas.getContext("2d");
-    c.setTransform(bw / 100, 0, 0, bh / 130, 0, 0);
-    c.clearRect(0, 0, 100, 130);
+    const mk = () => { const k = document.createElement("canvas"); k.width = bw; k.height = bh; const x = k.getContext("2d"); x.setTransform(esc, 0, 0, esc, 0, 0); return [k, x]; };
+    const [kb, cb] = mk(), [kf, cf] = mk(), [ko, co] = mk();
     const fac = FACCIONES[o.faccion] || FACCIONES[Object.keys(FACCIONES)[0]];
-    const anio = o.anio === undefined ? 1 : o.anio;
-    const R = rasgos(s, anio);
-    const t = o.t || 0;
-    const cl = s.clase && CLASE[s.clase] ? s.clase : "guerrero", cls = CLASE[cl];
-    // parpadeo y mirada
-    const sem = (hashStr(String(s.id)) % 1000) / 1000;
-    const ciclo = 3.4 + sem * 2.2, fasep = (t + sem * 7) % ciclo;
-    const parp = fasep < 0.16 ? Math.sin(fasep / 0.16 * Math.PI) : 0;
-    let mx = 0.3, my = 0.1;
-    if (puntero.ok && o.anim) {
-      const r = canvas.getBoundingClientRect();
-      mx = Math.max(-1, Math.min(1, (puntero.x - (r.left + r.width / 2)) / 260)); my = Math.max(-1, Math.min(1, (puntero.y - (r.top + r.height / 2)) / 260));
-    }
-    const rangoIdx = RANGOS.indexOf(RANGOS.slice().reverse().find(x => (s.victorias || 0) >= x.desde) || RANGOS[0]);
-    const K = {
-      c, cl, R, col: fac.color, ban: fac.bandera, piel: R.piel, pelo: R.pelo, cub: cls.cub,
-      sinBoca: !!cls.sinBoca, sinBarba: !!cls.sinBarba, parp, mx, my, rango: Math.max(0, rangoIdx),
-      cap: s.capitan ? (s.compania || 1) : 0, parche: R.parche ? R.ladoParche : 0
+    const r = rng(hashStr(String(s.id)));
+    const cl = CABEZA[s.clase] ? s.clase : "guerrero";
+    const victorias = s.victorias || 0;
+    let rango = 0; RANGOS.forEach((x, i) => { if (victorias >= x.desde) rango = i; });
+    const S = {
+      col: fac.color, ban: fac.bandera, oro: mix(fac.color, "#6b5010", 0.35), cl, grupo: GRUPO[cl] || "ruinas", ojos: [], r,
+      ojoCol: OJOS[cl] || "#ffcf6a", ojoOrigen: s.reanimado ? "#c9f0c9" : OJO_ORIGEN[s.origen] || null,
+      acero: ACEROS[Math.floor(r() * ACEROS.length)], pelaje: ["#4a3c40", "#5a4630", "#3c4650", "#5a3a30"][Math.floor(r() * 4)], fase: r() * 6
     };
-    if (K.cl === "mercenario" && o.faccion !== "compania-dorada") K.col = mezcolMerc(fac.color);
-    fondo(K, s);
-    c.save();
-    if (o.anim && !REDUCIDO) c.translate(0, Math.sin(t * 1.7 + sem * 6) * 0.55);
-    if (cls.ghost) c.globalAlpha = 0.86;
-    if (cls.total) { cls.total(K); }
-    else {
-      if (cls.atras) cls.atras(K);
-      peloAtras(K);
-      c.save(); c.translate(0, -6);
-      cls.cuerpo(K);
-      cuello(K);
-      if (cls.collar) cls.collar(K);
-      c.restore();
-      if (cls.casco) cls.casco(K, "atras");
-      orejas(K);
-      cara(K);
-      detalles(K);
-      ojos(K);
-      cejas(K);
-      nariz(K);
-      barba(K);
-      boca(K);
-      peloFrente(K);
-      if (cls.casco) cls.casco(K, "frente");
+    if (cl === "esqueleto") S.ban = "#4a3a30";
+    escena(cb, S);
+    const kcu = CUERPO_ANCHO[cl] || 1.2;
+    cf.save(); cf.translate(150, 0); cf.scale(kcu, 1); cf.translate(-150, 0);
+    (CUERPO[cl] || CUERPO.guerrero)(cf, S);
+    cf.restore();
+    S.k = ANCHO[cl] || 1.15; S.ky = ALTO[cl] || 1;
+    cf.save(); cf.translate(150, 226); cf.scale(S.k, S.ky); cf.translate(-150, -226);
+    (CABEZA[cl] || CABEZA.guerrero)(cf, S);
+    cf.restore();
+    // cicatrices: marcas en el yelmo o la capucha
+    const nCic = Math.min(4, s.cicatrices || 0);
+    for (let i = 0; i < nCic; i++) {
+      const x = 118 + r() * 64, y = 92 + r() * 90;
+      cf.lineCap = "round"; cf.strokeStyle = "rgba(0,0,0,.55)"; cf.lineWidth = 1.8; cf.beginPath(); cf.moveTo(x, y); cf.lineTo(x + 14, y + 18); cf.stroke();
+      cf.strokeStyle = "rgba(255,240,210,.35)"; cf.lineWidth = 0.8; cf.beginPath(); cf.moveTo(x + 1.5, y); cf.lineTo(x + 15.5, y + 18); cf.stroke();
     }
-    c.globalAlpha = 1;
-    if (!cls.total) cicatrices(K);
-    if (K.parche && !cls.total) parche(K);
-    if (o.herido) venda(K);
-    if (s.luto) { P(c, "#0f0c12", [[8, 108], [22, 100], [25, 108], [11, 117]]); L(c, "#3a3440", 0.9, 10, 110, 23, 104); }
-    c.restore();
-    marco(K);
+    // herido: un trapo blanco cruzado sobre el pecho con la sangre calada
+    if (o.herido) {
+      relleno(cf, "M58 262 L108 250 L150 300 L128 322 Z", "#d9d2bf", "#2a241a", 1.4);
+      cf.strokeStyle = "rgba(0,0,0,.25)"; cf.lineWidth = 1; cf.beginPath(); cf.moveTo(70, 266); cf.lineTo(132, 314); cf.moveTo(84, 258); cf.lineTo(142, 306); cf.stroke();
+      cf.fillStyle = "#7a1212"; cf.beginPath(); cf.ellipse(112, 292, 9, 12, 0.6, 0, 7); cf.fill();
+      cf.fillStyle = "rgba(122,18,18,.5)"; cf.beginPath(); cf.ellipse(120, 312, 4, 10, 0.4, 0, 7); cf.fill();
+    }
+    // luto: brazalete negro con hilo dorado sobre el hombro
+    if (s.luto) {
+      relleno(cf, "M16 300 L74 272 L82 294 L22 324 Z", "#0d0b0e", "#000", 1);
+      cf.strokeStyle = S.oro; cf.lineWidth = 1.4; cf.beginPath(); cf.moveTo(22, 306); cf.lineTo(76, 280); cf.stroke();
+    }
+    // velo final: viñeta, grano, marco con el color del rango, galones y cinta de capitán
+    const vg = co.createRadialGradient(150, 170, 90, 150, 190, 270); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.82)");
+    co.fillStyle = vg; co.fillRect(0, 0, W, H);
+    co.fillStyle = "rgba(255,255,255,.035)"; for (let i = 0; i < 1100; i++) co.fillRect(r() * W, r() * H, 1, 1);
+    const colMarco = rango >= 3 ? RANGO_COL[rango] : fac.color;
+    co.strokeStyle = colMarco; co.globalAlpha = rango >= 3 ? 0.85 : 0.42; co.lineWidth = rango >= 3 ? 2.6 : 1.5; co.strokeRect(5, 5, W - 10, H - 10);
+    co.globalAlpha = rango >= 4 ? 0.7 : 0.18; co.lineWidth = 1; co.strokeRect(11, 11, W - 22, H - 22); co.globalAlpha = 1;
+    if (rango >= 4) [[11, 11], [W - 11, 11], [11, H - 11], [W - 11, H - 11]].forEach(p => { co.fillStyle = RANGO_COL[4]; co.beginPath(); co.arc(p[0], p[1], 5, 0, 7); co.fill(); });
+    co.strokeStyle = RANGO_COL[Math.max(2, rango)]; co.lineWidth = 5; co.lineCap = "round"; co.lineJoin = "round";
+    for (let i = 0; i < rango; i++) { const y = H - 26 - i * 15; co.beginPath(); co.moveTo(22, y + 8); co.lineTo(40, y); co.lineTo(58, y + 8); co.stroke(); }
+    if (s.capitan) {
+      relleno(co, "M236 0 L284 0 L284 76 L260 62 L236 76 Z", S.ban, "#050303", 2);
+      co.strokeStyle = S.oro; co.lineWidth = 1.5; co.strokeRect(241, 4, 38, 62);
+      co.fillStyle = "#f4ecd8"; co.font = "bold 24px Cinzel, Georgia, serif"; co.textAlign = "center"; co.textBaseline = "middle"; co.fillText(["", "I", "II", "III"][s.compania] || "C", 260, 34);
+    }
+    const embers = Array.from({ length: 12 }, () => ({ x: r() * W, y: r() * H, v: 6 + r() * 12, f: r() * 6 }));
+    const c = canvas.getContext("2d");
+    return function cuadro(t) {
+      const anim = !!o.anim && !REDUCIDO;
+      c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, bw, bh);
+      const resp = anim ? Math.sin(t * 1.5 + S.fase) * 1.8 * esc : 0;
+      c.drawImage(kb, 0, 0);
+      c.drawImage(kf, 0, resp);
+      c.setTransform(esc, 0, 0, esc, 0, 0);
+      if (anim) {
+        c.fillStyle = "rgba(150,160,170,.07)";
+        for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(((t * (8 + i * 5) + i * 120) % (W + 240)) - 120, 330 + i * 18, 120, 22, 0, 0, 7); c.fill(); }
+      }
+      S.ojos.forEach((e, i) => {
+        const f = anim ? 0.78 + 0.22 * Math.sin(t * 3.1 + i * 1.7 + S.fase) : 1, y = e.y + resp / esc;
+        const g = c.createRadialGradient(e.x, y, 0, e.x, y, e.rx * 3.6); g.addColorStop(0, e.col + "aa"); g.addColorStop(1, e.col + "00");
+        c.globalAlpha = f; c.fillStyle = g; c.beginPath(); c.arc(e.x, y, e.rx * 3.6, 0, 7); c.fill(); c.globalAlpha = 1;
+        c.fillStyle = e.col; c.beginPath(); c.ellipse(e.x, y, e.rx * 0.62, e.ry * 0.8, 0, 0, 7); c.fill();
+        c.fillStyle = "#fff"; c.globalAlpha = f * 0.8; c.beginPath(); c.ellipse(e.x, y, e.rx * 0.28, e.ry * 0.36, 0, 0, 7); c.fill(); c.globalAlpha = 1;
+      });
+      if (anim) embers.forEach(e => { const y = (e.y - t * e.v) % H, yy = y < 0 ? y + H : y, a = 0.15 + 0.35 * Math.abs(Math.sin(t + e.f)); c.fillStyle = `rgba(255,170,70,${a})`; c.fillRect(e.x + Math.sin(t * 0.8 + e.f) * 6, yy, 1.6, 1.6); });
+      c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(ko, 0, 0);
+    };
   }
-  const mezcolMerc = col => col;
 
-  /* =========================================================================
-     ANIMACIÓN: un solo bucle para todos los retratos animados que se ven
-  ========================================================================= */
+  /* --- Estático: se pinta una vez --- */
+  function dibujar(canvas, s, o) { o = o || {}; registro.delete(canvas); construir(canvas, s, o)(0); }
+
+  /* --- Animado: un solo bucle para todos los que se ven --- */
   const registro = new Map();
-  let bucle = 0, visibles = null;
+  let bucle = 0, ultimo = 0, visibles = null;
   if (window.IntersectionObserver) visibles = new IntersectionObserver(es => es.forEach(e => { e.target.__fvis = e.isIntersecting; }), { rootMargin: "80px" });
-
   function animar(canvas, s, o) {
     o = Object.assign({}, o, { anim: true });
-    o.t0 = performance.now();
-    dibujar(canvas, s, Object.assign({}, o, { t: 0 }));
+    const f = construir(canvas, s, o);
+    f(0);
     if (REDUCIDO) return;
-    registro.set(canvas, { s, o });
+    registro.set(canvas, { f, t0: performance.now() });
     canvas.__fvis = true;
     if (visibles) visibles.observe(canvas);
     if (!bucle) bucle = requestAnimationFrame(paso);
   }
-  let ultimo = 0;
   function paso(ahora) {
     bucle = 0;
     if (!registro.size) return;
-    if (ahora - ultimo >= 55) {
+    if (ahora - ultimo >= 66) {
       ultimo = ahora;
       registro.forEach((v, canvas) => {
         if (!canvas.isConnected) { registro.delete(canvas); if (visibles) visibles.unobserve(canvas); return; }
         if (canvas.__fvis === false) return;
-        dibujar(canvas, v.s, Object.assign({}, v.o, { t: (ahora - v.o.t0) / 1000 }));
+        v.f((ahora - v.t0) / 1000);
       });
     }
     bucle = requestAnimationFrame(paso);
