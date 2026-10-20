@@ -105,6 +105,7 @@ body.lb {
 .lb .slappy-contenedor.lb-slappy-sitio { position: absolute; width: auto; height: auto; margin: 0; border: 0; background: none; overflow: visible; pointer-events: none; z-index: 4; }
 .lb .slappy-contenedor.lb-slappy-taberna { left: 29.7%; top: 44.3%; width: 17.2%; height: 33%; }   /* suelo libre del centro de la taberna (1280 x 700): x 380-600, y 310-540; ningún enlace queda debajo */
 .lb .slappy-contenedor.lb-slappy-cama { left: 40%; top: 24%; width: 22.1%; height: 40.7%; }       /* sobre la cama de Mi habitación (960 x 540): x 384-596, y 130-350 */
+.lb .slappy-contenedor.lb-slappy-sitio { transition: opacity .45s; }
 .lb-escena.lb-oculta ~ .lb-slappy-sitio { display: none; }                 /* en las otras salas de la taberna no se ve */
 .lb-escena { display: block; width: 100%; height: auto; min-width: 640px; background: #120d19; image-rendering: pixelated; }
 

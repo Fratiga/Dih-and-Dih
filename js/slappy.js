@@ -197,6 +197,29 @@
     }
   };
 
+  /* Varios sitios donde puede salir: el contenedor trae data-spawns='[[izquierda, arriba, ancho, alto], ...]' (porcentajes del dibujo). Aparece en uno al azar y,
+     cada minuto o así, se desvanece y reaparece en otro. Sin data-spawns (o con uno solo) se queda donde lo pone la hoja de estilos. */
+  function iniciarSpawns() {
+    const cont = contenedor();
+    if (!cont) return;
+    let lista = [];
+    try { lista = JSON.parse(cont.dataset.spawns || "[]"); } catch (e) { lista = []; }
+    if (!Array.isArray(lista) || lista.length < 2) return;
+    let actual = Math.floor(Math.random() * lista.length);
+    const colocar = n => { const [l, t, w, h] = lista[n]; cont.style.left = l + "%"; cont.style.top = t + "%"; cont.style.width = w + "%"; cont.style.height = h + "%"; };
+    colocar(actual);
+    const saltar = () => {
+      cont.style.opacity = "0";
+      setTimeout(() => {
+        let n; do { n = Math.floor(Math.random() * lista.length); } while (n === actual);
+        actual = n; colocar(n); cont.style.opacity = "1";
+      }, 500);
+      setTimeout(saltar, 35000 + Math.random() * 55000);
+    };
+    setTimeout(saltar, 35000 + Math.random() * 55000);
+  }
+  iniciarSpawns();
+
   // Si ya estaba prendido de una carga anterior, arranca solo.
   if (localStorage.getItem(SLAPPY_KEY) === "1") {
     mostrarContenedor(true);
