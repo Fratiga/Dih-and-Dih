@@ -9,6 +9,7 @@
   const $ = id => document.getElementById(id);
   const esc = t => String(t === undefined || t === null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const ROM = ["", "I", "II", "III"];
+  const FR = window.FracturaRetratos;
   const SLOT_NOMBRE = { arma: "Arma", armadura: "Armadura", accesorio: "Accesorio", estandarte: "Estandarte" };
   const STAT_NOMBRE = { FUE: "Fuerza", CON: "Constitución", VEL: "Velocidad", INT: "Inteligencia", VOL: "Voluntad", MAG: "Aptitud mágica" };
 
@@ -24,6 +25,29 @@
   let tablero = null;
   let ultimoResumen = null;
 
+  /* --- Retratos: un canvas por soldado, que se pinta después de poner el HTML --- */
+  const retr = (s, w, anim, ejf) => `<canvas class="fr-ret" data-retr="${s.id}" data-w="${w}"${ejf ? ` data-ejf="${ejf}"` : ""}${anim ? " data-anim" : ""}></canvas>`;
+  const retrGen = (clase, id, faccion, w, anim, sexo) => `<canvas class="fr-ret" data-gen="${clase}|${id}|${faccion}|${sexo || "m"}" data-w="${w}"${anim ? " data-anim" : ""}></canvas>`;
+  // Quién representa a cada facción cuando aún no hay nadie que mostrar
+  const REP = { "caballeros-del-reino": ["lider", "m"], "academia-arcana-de-dolbred": ["archimago", "m"], "trono-de-ceniza": ["esqueleto", "m"], "compania-dorada": ["lider", "f"], "hijos-del-acero": ["cazador", "m"], "peregrinos-del-alba": ["sanador", "f"] };
+  const retrFaccion = (f, w, anim) => { const r = REP[f] || ["lider", "m"]; return retrGen(r[0], f, f, w, anim, r[1]); };
+  function pintarRetratos(raiz) {
+    if (!FR) return;
+    raiz.querySelectorAll("canvas[data-retr]").forEach(cv => {
+      const E = cv.dataset.ejf ? ejercitos[cv.dataset.ejf] : ej;
+      const s = E && E.soldados[cv.dataset.retr];
+      if (!s) return;
+      const o = { faccion: E.faccion, anio: E.anio, herido: C.convaleciente(E, s), w: +cv.dataset.w };
+      if (cv.hasAttribute("data-anim")) FR.animar(cv, s, o); else FR.dibujar(cv, s, o);
+    });
+    raiz.querySelectorAll("canvas[data-gen]").forEach(cv => {
+      const [cl, id, fac, sexo] = cv.dataset.gen.split("|");
+      const o = { faccion: fac, anio: 1, w: +cv.dataset.w };
+      const g = FR.generico(cl, id, sexo);
+      if (cv.hasAttribute("data-anim")) FR.animar(cv, g, o); else FR.dibujar(cv, g, o);
+    });
+  }
+
   /* --- Utilidades --- */
   function aviso(t, error) {
     const a = $("frAviso");
@@ -35,6 +59,7 @@
   function mostrar(pantalla) {
     ["frInicio", "frCuartel", "frGuerra", "frFin"].forEach(id => $(id).classList.toggle("hidden", id !== pantalla));
     document.body.classList.toggle("fr-en-guerra", pantalla === "frGuerra");
+    document.body.classList.toggle("fr-en-cuartel", pantalla === "frCuartel");
     window.scrollTo(0, 0);
   }
   const edad = s => S.edadDe(s, ej.anio);
@@ -60,19 +85,26 @@
     const enCurso = Red.cargarGuerra();
     const banner = enCurso && ejercitos[enCurso.cfg.faccion]
       ? `<div class="fr-banner"><p>Tienes una guerra en curso con <strong>${esc(ejercitos[enCurso.cfg.faccion].nombre)}</strong>, en el turno ${enCurso.est.turno}.</p><button type="button" class="fr-btn fr-btn-principal" data-retomar>Retomar la guerra</button></div>` : "";
-    $("frEjercitos").innerHTML = banner + Object.keys(FACCIONES).map(f => {
+    $("frEjercitos").innerHTML = banner + Object.keys(FACCIONES).map((f, i) => {
       const fac = FACCIONES[f], e = ejercitos[f];
       const filas = e ? C.enFila(e).length : 0;
-      return `<article class="fr-ejercito" style="--c:${fac.color};--b:${fac.bandera}">
-        <div class="fr-ejercito-banda"></div>
-        <h3>${esc(fac.nombre)}</h3>
-        <p class="fr-ejercito-resumen">${esc(fac.resumen)}</p>
-        <p class="fr-ejercito-ventaja"><strong>Ventaja.</strong> ${esc(fac.ventaja)}</p>
-        ${e ? `<p class="fr-ejercito-datos">${esc(e.nombre)} · ${e.guerras} guerra${e.guerras === 1 ? "" : "s"} (${e.ganadas} ganadas) · ${filas} soldado${filas === 1 ? "" : "s"} en filas · año ${e.anio}</p>
-          <button type="button" class="fr-btn fr-btn-principal" data-entrar="${f}">Entrar al cuartel</button>`
-          : `<button type="button" class="fr-btn" data-fundar="${f}">Fundar este ejército</button>`}
+      const estrella = e ? C.enFila(e).slice().sort((a, b) => b.victorias - a.victorias || a.nacimiento - b.nacimiento)[0] : null;
+      return `<article class="fr-ejercito${e ? " fr-fundado" : ""}" style="--c:${fac.color};--b:${fac.bandera};--i:${i}">
+        <span class="fr-pendon"></span>
+        <div class="fr-ejercito-ret">${estrella ? retr(estrella, 132, true, f) : retrFaccion(f, 132, true)}</div>
+        <div class="fr-ejercito-cuerpo">
+          <h3>${esc(fac.nombre)}</h3>
+          <p class="fr-ejercito-titulo">${esc(fac.lider.titulo)}</p>
+          <p class="fr-ejercito-resumen">${esc(fac.resumen)}</p>
+          <p class="fr-ejercito-ventaja"><strong>Ventaja.</strong> ${esc(fac.ventaja)}</p>
+          ${e ? `<p class="fr-ejercito-datos">${esc(e.nombre)} · ${e.guerras} guerra${e.guerras === 1 ? "" : "s"} (${e.ganadas} ganadas) · ${filas} en filas · año ${e.anio}</p>
+            <button type="button" class="fr-btn fr-btn-principal" data-entrar="${f}">Entrar al cuartel</button>`
+            : `<button type="button" class="fr-btn" data-fundar="${f}">Fundar este ejército</button>`}
+        </div>
       </article>`;
     }).join("");
+    $("frEjercitos").classList.add("fr-entra");
+    pintarRetratos($("frEjercitos"));
   }
 
   $("frEjercitos").addEventListener("click", async ev => {
@@ -97,92 +129,178 @@
     pestana = p || pestana || "guerra";
     est = null;
     mostrar("frCuartel");
-    $("frNombreEjercito").textContent = ej.nombre;
-    const fac = FACCIONES[ej.faccion];
-    $("frResumenEjercito").innerHTML = `${esc(fac.nombre)} · año ${ej.anio} de la Fractura · ${ej.guerras} guerra${ej.guerras === 1 ? "" : "s"}, ${ej.ganadas} ganadas · ${C.enFila(ej).length} en filas`;
-    document.querySelectorAll("#frPestanas button").forEach(b => b.classList.toggle("activa", b.dataset.p === pestana));
+pintarHero();
+        document.querySelectorAll("#frPestanas button").forEach(b => b.classList.toggle("activa", b.dataset.p === pestana));
     pintarVista();
   }
-  $("frAtras").addEventListener("click", pantallaInicio);
-  $("frRenombrar").addEventListener("click", async () => {
-    const n = await dialogo.pedir("Nuevo nombre del ejército", ej.nombre);
-    if (n === null) return;
-    C.renombrarEjercito(ej, n); await guardar(); entrarCuartel();
+  $("frHero").addEventListener("click", async ev => {
+    if (ev.target.closest("[data-atras]")) { pantallaInicio(); return; }
+    if (ev.target.closest("[data-renombrar]")) {
+      const n = await dialogo.pedir("Nuevo nombre del ejército", ej.nombre);
+      if (n === null) return;
+      C.renombrarEjercito(ej, n); await guardar(); entrarCuartel();
+    }
   });
   $("frPestanas").addEventListener("click", ev => { const b = ev.target.closest("button[data-p]"); if (b) entrarCuartel(b.dataset.p); });
+
+  /* La cabecera del ejército: su soldado más condecorado, las cifras y la ceniza que sube */
+  function pintarHero() {
+    const fac = FACCIONES[ej.faccion];
+    const filas = C.enFila(ej);
+    const estrella = filas.slice().sort((a, b) => b.victorias - a.victorias || a.nacimiento - b.nacimiento)[0];
+    const pl = (n, uno, varios) => (n === 1 ? uno : varios);
+    const nCaidos = C.caidos(ej).length, nRel = C.reliquiasDe(ej).length, nCasas = C.casas(ej).length;
+    const cifras = [[ej.guerras, pl(ej.guerras, "guerra", "guerras")], [ej.ganadas, pl(ej.ganadas, "victoria", "victorias")], [filas.length, "en filas"], [nCaidos, pl(nCaidos, "caído", "caídos")], [nRel, pl(nRel, "reliquia", "reliquias")], [nCasas, pl(nCasas, "casa", "casas")]];
+    const cenizas = Array.from({ length: 16 }, (_, i) => `<i style="left:${(i * 37 + 11) % 96}%;animation-delay:-${((i * 1.3) % 9).toFixed(1)}s;animation-duration:${8 + (i % 4)}s;--dx:${((i * 53) % 60) - 30}px;width:${2 + (i % 3)}px;height:${2 + (i % 3)}px"></i>`).join("");
+    $("frHero").innerHTML = `<div class="fr-hero" style="--c:${fac.color};--b:${fac.bandera}">
+      <span class="fr-hero-banda"></span>
+      <div class="fr-hero-ceniza" aria-hidden="true">${cenizas}</div>
+      <div class="fr-hero-ret">${estrella ? retr(estrella, 170, true) : retrFaccion(ej.faccion, 170, true)}
+        <span>${estrella ? `${esc(nombre(estrella))}, ${estrella.victorias} victoria${estrella.victorias === 1 ? "" : "s"}` : "Sin soldados"}</span></div>
+      <div class="fr-hero-texto">
+        <p class="fr-hero-sobre">Año ${ej.anio} de la Fractura</p>
+        <h2 class="fr-hero-nombre">${esc(ej.nombre)}</h2>
+        <p class="fr-hero-faccion">${esc(fac.nombre)} · ${esc(fac.lider.titulo)}</p>
+        <div class="fr-hero-cifras">${cifras.map(([n, t]) => `<div><b>${n}</b>${t}</div>`).join("")}</div>
+      </div>
+      <div class="fr-hero-botones"><button type="button" class="fr-btn" data-atras>← Ejércitos</button><button type="button" class="fr-btn fr-btn-chico" data-renombrar>Renombrar</button></div>
+    </div>`;
+    pintarRetratos($("frHero"));
+  }
 
   function pintarVista() {
     const v = $("frVista");
     const fn = { guerra: vistaGuerra, duelos: vistaDuelos, soldados: vistaSoldados, casas: vistaCasas, reliquias: vistaReliquias, salon: vistaSalon, cronicas: vistaCronicas, mundo: vistaMundo }[pestana];
-    fn(v);
+    fn(v, true);
   }
 
-  /* --- Tarjeta pequeña de soldado --- */
-  function tarjetaSoldado(s, extra) {
-    const rg = rango(s);
-    const claseN = CLASES[s.clase] ? CLASES[s.clase].nombre : s.clase;
-    const etiquetas = [];
-    if (s.capitan) etiquetas.push(`Capitán ${ROM[s.compania]}`);
-    else if (s.compania) etiquetas.push(`${ROM[s.compania]} compañía`);
-    if (s.estado === "establecido") etiquetas.push("Establecido");
-    if (s.estado === "nino") etiquetas.push(`Niño de ${edad(s)} años`);
-    if (C.convaleciente(ej, s)) etiquetas.push("Herido");
-    if (s.ascensoPendiente) etiquetas.push("Ascenso pendiente");
-    if (s.luto) etiquetas.push("De luto");
-    return `<button type="button" class="fr-soldado ${s.estado === "caido" ? "fr-caido" : ""}" data-ficha="${s.id}">
-      <span class="fr-soldado-nombre">${esc(nombreApodo(s))}</span>
-      <span class="fr-soldado-meta">${esc(claseN)} · ${rg.nombre} · ${s.victorias} victorias · ${edad(s)} años</span>
-      ${etiquetas.length ? `<span class="fr-etiquetas">${etiquetas.map(t => `<i>${esc(t)}</i>`).join("")}</span>` : ""}
-      ${extra || ""}
-    </button>`;
+  /* --- Carta de soldado: su retrato, su nombre, lo que ha vivido y sus seis características --- */
+  const STATS_ORDEN = ["FUE", "CON", "VEL", "INT", "VOL", "MAG"];
+  /* o: { pon: "quita" | "lleva" (se puede cambiar de sitio al tocarla), ver (abre la ficha), caido, bloq, extra, i, attr } */
+  function carta(s, o) {
+    o = o || {};
+    const rg = rango(s), claseN = CLASES[s.clase] ? CLASES[s.clase].nombre : s.clase;
+    const herido = C.convaleciente(ej, s);
+    const marcas = [];
+    if (s.estado === "nino") marcas.push(`Niño de ${edad(s)}`);
+    if (herido) marcas.push("Herido");
+    if (s.ascensoPendiente) marcas.push("Ascenso");
+    if (s.luto) marcas.push("De luto");
+    if (s.estado === "establecido") marcas.push("Con familia");
+    const barras = STATS_ORDEN.map(k => `<i title="${STAT_NOMBRE[k]} ${s.stats[k]}"><b style="height:${s.stats[k] * 10}%"></b><small>${k}</small></i>`).join("");
+    const clases = ["fr-carta", o.pon === "quita" ? "sel" : "", o.caido || s.estado === "caido" ? "fr-caido" : "", o.bloq ? "bloq" : ""].filter(Boolean).join(" ");
+    const attr = o.pon ? `data-pon="${s.id}" tabindex="0" role="button"` : o.ver ? `${o.attr || "data-ficha"}="${s.id}" tabindex="0" role="button"` : "";
+    const accion = o.pon === "quita" ? `<span class="fr-carta-accion fr-quita">Quitar</span>` : o.pon === "lleva" ? `<span class="fr-carta-accion">Llevar a la guerra</span>` : "";
+    return `<div class="${clases}" ${attr} style="--i:${Math.min(o.i || 0, 14)}">
+      <div class="fr-carta-marco">${retr(s, 170, true)}
+        ${marcas.length ? `<span class="fr-carta-marcas">${marcas.slice(0, 2).map(t => `<i>${esc(t)}</i>`).join("")}</span>` : ""}
+        ${accion}
+        ${o.pon ? `<button type="button" class="fr-carta-ficha" data-ficha="${s.id}" aria-label="Ver la ficha de ${esc(nombre(s))}" title="Ver ficha">i</button>` : ""}
+      </div>
+      <div class="fr-carta-info">
+        <strong>${esc(s.nombre)} ${esc(s.casa)}</strong>
+        ${s.apodo ? `<em>«${esc(s.apodo)}»</em>` : ""}
+        <span class="fr-carta-clase">${esc(claseN)} · ${rg.nombre}${s.capitan ? ` · Capitán ${ROM[s.compania]}` : s.compania ? ` · ${ROM[s.compania]} compañía` : ""}</span>
+        <span class="fr-carta-meta">${s.victorias} victoria${s.victorias === 1 ? "" : "s"} · ${edad(s)} años</span>
+        <span class="fr-carta-stats">${barras}</span>
+        ${o.extra || ""}
+      </div>
+    </div>`;
   }
 
   /* --- Pestaña: Guerra (preparar) --- */
-  function vistaGuerra(v) {
+  const DESC_DIF = { facil: "El rival duda y se equivoca a menudo.", normal: "El rival juega con cabeza.", dificil: "El rival no se equivoca y recibe un 25 % más de recursos." };
+  function barraTerreno(t) {
+    if (t === "azar") return `<span class="fr-barra-terreno">${["#8a9a4b", "#a39c8a", "#3f6b3a", "#8f5bc4", "#c9a96a", "#3b6a9c"].map(c => `<i style="flex:1;background:${c}"></i>`).join("")}</span>`;
+    const T = TIPOS_FRACTURA[t].terrenos;
+    return `<span class="fr-barra-terreno">${Object.keys(T).filter(k => T[k] > 0).map(k => `<i style="flex:${T[k]};background:${D.TERRENOS[k] ? D.TERRENOS[k].color : "#222"}"></i>`).join("")}</span>`;
+  }
+
+  function vistaGuerra(v, primera) {
+    v.classList.toggle("fr-entra", !!primera);
     const lim = C.limiteContingente(ej);
     const disp = C.disponibles(ej);
     if (!ajustesGuerra.ids) ajustesGuerra.ids = C.elegirContingenteAuto(ej);
     ajustesGuerra.ids = ajustesGuerra.ids.filter(id => ej.soldados[id] && disp.includes(ej.soldados[id])).slice(0, lim);
     const pend = C.pendientesDeAscenso(ej);
     const heridos = C.enFila(ej).filter(s => C.convaleciente(ej, s));
+    const elegidos = ajustesGuerra.ids.map(id => ej.soldados[id]);
+    const reserva = disp.filter(s => !ajustesGuerra.ids.includes(s.id)).sort((a, b) => b.victorias - a.victorias);
+    // lo que lleva el contingente, de un vistazo
+    const porClase = {};
+    elegidos.forEach(s => { porClase[s.clase] = (porClase[s.clase] || 0) + 1; });
+    const caps = elegidos.filter(s => s.capitan).map(s => ROM[s.compania]);
+    const chips = Object.keys(porClase).map(k => `<span>${porClase[k]} × ${esc(CLASES[k].nombre)}</span>`)
+      .concat([`<span>${elegidos.reduce((a, s) => a + s.victorias, 0)} victorias entre todos</span>`], caps.length ? [`<span>Capitanes: ${caps.join(", ")}</span>`] : []).join("");
+    let n = 0;
+    const slots = Array.from({ length: lim }, (_, i) => elegidos[i]
+      ? carta(elegidos[i], { pon: "quita", i: n++ })
+      : `<div class="fr-slot-vacio" style="--i:${Math.min(n++, 14)}"><span>+</span><small>Libre</small></div>`).join("");
+    const tipos = ["azar"].concat(Object.keys(TIPOS_FRACTURA));
+    const rivales = ["azar"].concat(Object.keys(FACCIONES).filter(f => f !== ej.faccion));
+    const tipoTexto = ajustesGuerra.tipo === "azar" ? "Cada guerra cae en un tipo distinto." : TIPOS_FRACTURA[ajustesGuerra.tipo].texto;
+    const rivalFac = ajustesGuerra.rival !== "azar" ? FACCIONES[ajustesGuerra.rival] : null;
     v.innerHTML = `
       ${pend.length ? `<div class="fr-banner"><p><strong>${pend.length} veterano${pend.length === 1 ? "" : "s"} esperan una especialización.</strong> Elígela en su ficha antes de partir.</p>
         <div class="fr-fila">${pend.map(s => `<button type="button" class="fr-btn fr-btn-chico" data-ficha="${s.id}">${esc(nombre(s))}</button>`).join("")}</div></div>` : ""}
-      <div class="fr-dos">
-        <div>
-          <h3 class="fr-h3">Contingente (${ajustesGuerra.ids.length} de ${lim})</h3>
-          <p class="fr-sub">Solo los que van a la guerra pueden ganar experiencia, o morir. Sube el máximo ganando guerras.</p>
-          <div class="fr-fila"><button type="button" class="fr-btn fr-btn-chico" data-auto>Elegir los mejores</button><button type="button" class="fr-btn fr-btn-chico" data-ninguno>Vaciar</button></div>
-          <div class="fr-lista fr-lista-marcar">${disp.map(s => `<label class="fr-marcar"><input type="checkbox" data-pon="${s.id}"${ajustesGuerra.ids.includes(s.id) ? " checked" : ""}>${tarjetaSoldadoLinea(s)}</label>`).join("") || `<p class="fr-vacio">No hay nadie disponible. Si no llevas a nadie, la compañía recibe reclutas para llegar a seis.</p>`}</div>
-          ${heridos.length ? `<p class="fr-sub">Convalecientes (no pueden ir): ${heridos.map(s => esc(nombre(s))).join(", ")}.</p>` : ""}
+      <div class="fr-preparar">
+        <div class="fr-prep-col">
+          <section class="fr-formacion">
+            <div class="fr-seccion-cab">
+              <h3 class="fr-h3">Contingente <b class="fr-cuenta">${elegidos.length} / ${lim}</b></h3>
+              <div class="fr-fila"><button type="button" class="fr-btn fr-btn-chico" data-auto>Elegir los mejores</button><button type="button" class="fr-btn fr-btn-chico" data-ninguno>Vaciar</button></div>
+            </div>
+            <p class="fr-sub">Solo los que van a la guerra pueden ganar experiencia, o morir. Toca una carta para sacarla o meterla. Sube el máximo ganando guerras.</p>
+            <div class="fr-slots">${slots}</div>
+            <div class="fr-chips">${chips}</div>
+            ${elegidos.length ? "" : `<p class="fr-sub">Si no llevas a nadie, la compañía recibe reclutas para llegar a seis.</p>`}
+          </section>
+          <section class="fr-reserva">
+            <h3 class="fr-h3">En reserva (${reserva.length})</h3>
+            <div class="fr-cartas fr-cartas-chicas">${reserva.map((s, i) => carta(s, { pon: "lleva", i: i + lim })).join("") || `<p class="fr-vacio">${disp.length ? "Todos van a la guerra." : "No hay nadie disponible."}</p>`}</div>
+            ${heridos.length ? `<h3 class="fr-h3">Convalecientes (${heridos.length})</h3><p class="fr-sub">No pueden ir hasta que se recuperen.</p>
+              <div class="fr-cartas fr-cartas-chicas">${heridos.map((s, i) => carta(s, { ver: true, bloq: true, i })).join("")}</div>` : ""}
+          </section>
         </div>
-        <div>
+        <aside class="fr-mision">
           <h3 class="fr-h3">La guerra</h3>
-          <label class="fr-campo">Tipo de Fractura
-            <select data-aj="tipo">${["azar"].concat(Object.keys(TIPOS_FRACTURA)).map(t => `<option value="${t}"${ajustesGuerra.tipo === t ? " selected" : ""}>${t === "azar" ? "Al azar" : TIPOS_FRACTURA[t].nombre}</option>`).join("")}</select></label>
-          <p class="fr-sub" id="frTextoTipo">${ajustesGuerra.tipo === "azar" ? "Cada guerra cae en un tipo distinto." : esc(TIPOS_FRACTURA[ajustesGuerra.tipo].texto)}</p>
-          <label class="fr-campo">Rival
-            <select data-aj="rival">${["azar"].concat(Object.keys(FACCIONES).filter(f => f !== ej.faccion)).map(f => `<option value="${f}"${ajustesGuerra.rival === f ? " selected" : ""}>${f === "azar" ? "Al azar" : FACCIONES[f].nombre}</option>`).join("")}</select></label>
-          <label class="fr-campo">Dificultad
-            <select data-aj="dificultad">${Object.keys(DIFICULTADES).map(d => `<option value="${d}"${ajustesGuerra.dificultad === d ? " selected" : ""}>${DIFICULTADES[d].nombre}</option>`).join("")}</select></label>
-          ${ej.nemesis.length ? `<p class="fr-sub"><strong>Némesis.</strong> ${ej.nemesis.map(n => esc(`${n.nombre} ${n.casa}`)).join(", ")} te espera${ej.nemesis.length === 1 ? "" : "n"} en alguna parte.</p>` : ""}
-          <button type="button" class="fr-btn fr-btn-principal fr-btn-grande" data-empezar>Empezar la guerra</button>
-        </div>
+          <div class="fr-mision-bloque">
+            <h4 class="fr-h4">Lugar de la Fractura</h4>
+            <div class="fr-opciones">${tipos.map((t, i) => `<button type="button" class="fr-opcion${ajustesGuerra.tipo === t ? " sel" : ""}" data-aj="tipo" data-v="${t}" style="--i:${i}"><strong>${t === "azar" ? "Al azar" : esc(TIPOS_FRACTURA[t].nombre)}</strong>${barraTerreno(t)}</button>`).join("")}</div>
+            <p class="fr-sub" id="frTextoTipo">${esc(tipoTexto)}</p>
+          </div>
+          <div class="fr-mision-bloque">
+            <h4 class="fr-h4">Rival</h4>
+            <div class="fr-opciones">${rivales.map((f, i) => f === "azar"
+              ? `<button type="button" class="fr-opcion fr-rival${ajustesGuerra.rival === f ? " sel" : ""}" data-aj="rival" data-v="azar" style="--i:${i}"><span class="fr-rival-azar">?</span><strong>Al azar</strong></button>`
+              : `<button type="button" class="fr-opcion fr-rival${ajustesGuerra.rival === f ? " sel" : ""}" data-aj="rival" data-v="${f}" style="--c:${FACCIONES[f].color};--b:${FACCIONES[f].bandera};--i:${i}"><span class="fr-rival-ret">${retrFaccion(f, 44)}</span><strong>${esc(FACCIONES[f].corto)}</strong></button>`).join("")}</div>
+            ${rivalFac ? `<p class="fr-sub">${esc(rivalFac.resumen)}</p>` : `<p class="fr-sub">Cada guerra te toca contra un bando distinto.</p>`}
+          </div>
+          <div class="fr-mision-bloque">
+            <h4 class="fr-h4">Dificultad</h4>
+            <div class="fr-segmentos">${Object.keys(DIFICULTADES).map(d => `<button type="button" class="fr-opcion${ajustesGuerra.dificultad === d ? " sel" : ""}" data-aj="dificultad" data-v="${d}">${DIFICULTADES[d].nombre}</button>`).join("")}</div>
+            <p class="fr-sub">${esc(DESC_DIF[ajustesGuerra.dificultad] || "")}</p>
+          </div>
+          ${ej.nemesis.length ? `<p class="fr-nemesis"><strong>Némesis.</strong> ${ej.nemesis.map(x => esc(`${x.nombre} ${x.casa}`)).join(", ")} te espera${ej.nemesis.length === 1 ? "" : "n"} en alguna parte.</p>` : ""}
+          <button type="button" class="fr-empezar" data-empezar><span>Empezar la guerra</span><small>${elegidos.length} de ${lim} soldados · ${DIFICULTADES[ajustesGuerra.dificultad].nombre}</small></button>
+        </aside>
       </div>`;
+    pintarRetratos(v);
   }
-  const tarjetaSoldadoLinea = s => `<span class="fr-linea"><b>${esc(nombreApodo(s))}</b> <small>${esc(CLASES[s.clase].nombre)} · ${rango(s).nombre} · ${s.victorias}v${s.capitan ? ` · Capitán ${ROM[s.compania]}` : ""}</small></span>`;
 
-  $("frVista").addEventListener("change", ev => {
-    const pon = ev.target.closest("[data-pon]");
-    if (pon) {
-      const id = pon.dataset.pon;
-      const lista = ajustesGuerra.ids.filter(x => x !== id);
-      if (pon.checked) { if (lista.length >= C.limiteContingente(ej)) { pon.checked = false; aviso(`El contingente es de ${C.limiteContingente(ej)} como máximo.`, true); return; } lista.push(id); }
-      ajustesGuerra.ids = lista;
-      vistaGuerra($("frVista"));
+  function alternarContingente(id) {
+    const lim = C.limiteContingente(ej);
+    const lista = ajustesGuerra.ids.filter(x => x !== id);
+    if (lista.length === ajustesGuerra.ids.length) {
+      if (lista.length >= lim) { aviso(`El contingente es de ${lim} como máximo. Saca a alguien antes.`, true); return; }
+      lista.push(id);
     }
-    const aj = ev.target.closest("[data-aj]");
-    if (aj) { ajustesGuerra[aj.dataset.aj] = aj.value; vistaGuerra($("frVista")); }
+    ajustesGuerra.ids = lista;
+    vistaGuerra($("frVista"));
+  }
+
+  $("frVista").addEventListener("keydown", ev => {
+    if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches && ev.target.matches(".fr-carta[tabindex]")) { ev.preventDefault(); ev.target.click(); }
   });
 
   $("frVista").addEventListener("click", async ev => {
@@ -192,6 +310,10 @@
     if (t.closest("[data-empezar]")) { empezarGuerra(); return; }
     const f = t.closest("[data-ficha]");
     if (f) { abrirFicha(f.dataset.ficha); return; }
+    const pon = t.closest("[data-pon]");
+    if (pon) { alternarContingente(pon.dataset.pon); return; }
+    const aj = t.closest("[data-aj]");
+    if (aj) { ajustesGuerra[aj.dataset.aj] = aj.dataset.v; vistaGuerra($("frVista")); return; }
     const casa = t.closest("[data-casa]");
     if (casa) { const el = casa.nextElementSibling; if (el && el.classList.contains("fr-arbol")) el.classList.toggle("hidden"); return; }
     const cr = t.closest("[data-cronica]");
@@ -206,26 +328,31 @@
   });
 
   /* --- Pestaña: Soldados --- */
-  function vistaSoldados(v) {
+  function vistaSoldados(v, primera) {
+    v.classList.toggle("fr-entra", !!primera);
+    let i = 0;
     const grupos = [["En filas", C.enFila(ej)], ["Niños de las casas", C.ninos(ej)], ["Retirados", C.retirados(ej)]];
-    v.innerHTML = grupos.map(([t, l]) => l.length ? `<h3 class="fr-h3">${t} (${l.length})</h3><div class="fr-lista">${l.slice().sort((a, b) => b.victorias - a.victorias).map(s => tarjetaSoldado(s)).join("")}</div>` : "").join("") || `<p class="fr-vacio">Sin soldados.</p>`;
+    v.innerHTML = grupos.map(([t, l]) => l.length ? `<h3 class="fr-h3">${t} (${l.length})</h3><div class="fr-cartas">${l.slice().sort((a, b) => b.victorias - a.victorias).map(s => carta(s, { ver: true, i: i++ })).join("")}</div>` : "").join("") || `<p class="fr-vacio">Sin soldados.</p>`;
+    pintarRetratos(v);
   }
 
   /* --- Pestaña: Casas --- */
-  function vistaCasas(v) {
+  function vistaCasas(v, primera) {
+    v.classList.toggle("fr-entra", !!primera);
     const casas = C.casas(ej);
-    v.innerHTML = `<p class="fr-sub">Las casas se forman solas cuando los soldados tienen hijos. Cada hijo lleva el apellido de su padre.</p>` + casas.map(c => {
+    v.innerHTML = `<p class="fr-sub">Las casas se forman solas cuando los soldados tienen hijos. Cada hijo lleva el apellido de su padre.</p>` + casas.map((c, i) => {
       const vivos = c.miembros.filter(s => s.estado !== "caido").length;
-      return `<article class="fr-casa">
+      return `<article class="fr-casa" style="--i:${Math.min(i, 12)}">
         <button type="button" class="fr-casa-cab" data-casa="${esc(c.casa)}"><strong>Casa ${esc(c.casa)}</strong>
           <span>${c.miembros.length} miembro${c.miembros.length === 1 ? "" : "s"} (${vivos} vivos) · ${c.generaciones} generación${c.generaciones === 1 ? "" : "es"} · ${c.victorias} victorias</span></button>
         <div class="fr-arbol hidden">${arbolHtml(C.arbolDeCasa(ej, c.casa), 0)}
           <p class="fr-sub">Los ${esc(c.casa)} han servido durante ${Math.max(1, c.anios)} año${c.anios === 1 ? "" : "s"}.</p></div>
       </article>`;
     }).join("");
+    pintarRetratos(v);
   }
   function arbolHtml(nodos, nivel) {
-    return `<ul class="fr-arbol-lista">${nodos.map(n => `<li><button type="button" class="fr-enlace ${n.s.estado === "caido" ? "fr-caido" : ""}" data-ficha="${n.s.id}">${esc(nombreApodo(n.s))}</button>
+    return `<ul class="fr-arbol-lista">${nodos.map(n => `<li><span class="fr-av">${retr(n.s, 40)}</span><button type="button" class="fr-enlace ${n.s.estado === "caido" ? "fr-caido" : ""}" data-ficha="${n.s.id}">${esc(nombreApodo(n.s))}</button>
       <small>${n.s.nacimiento}${n.s.estado === "caido" && n.s.muerte ? ` – ${n.s.muerte.anio}` : ""} · ${esc(CLASES[n.s.clase].nombre)} · ${n.s.victorias}v</small>${n.hijos.length ? arbolHtml(n.hijos, nivel + 1) : ""}</li>`).join("")}</ul>`;
   }
 
@@ -250,18 +377,17 @@
   }
 
   /* --- Pestaña: Salón de los Caídos --- */
-  function vistaSalon(v) {
+  function vistaSalon(v, primera) {
+    v.classList.toggle("fr-entra", !!primera);
     const caidos = C.caidos(ej);
     if (!caidos.length) { v.innerHTML = `<p class="fr-vacio">El Salón de los Caídos está vacío. Por ahora.</p>`; return; }
-    v.innerHTML = `<p class="fr-sub">${caidos.length} nombre${caidos.length === 1 ? "" : "s"} grabado${caidos.length === 1 ? "" : "s"} en la piedra.</p><div class="fr-lista">${caidos.map(s => {
+    v.innerHTML = `<p class="fr-sub">${caidos.length} nombre${caidos.length === 1 ? "" : "s"} grabado${caidos.length === 1 ? "" : "s"} en la piedra.</p><div class="fr-cartas">${caidos.map((s, i) => {
       const m = s.muerte || {};
       const serv = Math.max(1, (m.anio || ej.anio) - s.ingreso);
-      return `<button type="button" class="fr-soldado fr-caido" data-ficha="${s.id}">
-        <span class="fr-soldado-nombre">${esc(nombreApodo(s))}</span>
-        <span class="fr-soldado-meta">${esc(CLASES[s.clase].nombre)} · ${s.victorias} victorias${s.capitan ? ` · Capitán de la ${ROM[s.compania] || ""} Compañía` : ""} · ${serv} año${serv === 1 ? "" : "s"} de servicio</span>
-        <span class="fr-soldado-meta">${m.natural ? "Murió en paz." : `Cayó en ${esc(m.lugar || "la Fractura")}${m.causa && m.causa !== "la Fractura" ? ` a manos de ${esc(m.causa)}` : ""}.`}</span>
-      </button>`;
+      const epitafio = `${m.natural ? "Murió en paz." : `Cayó en ${esc(m.lugar || "la Fractura")}${m.causa && m.causa !== "la Fractura" ? ` a manos de ${esc(m.causa)}` : ""}.`} ${serv} año${serv === 1 ? "" : "s"} de servicio.`;
+      return carta(s, { ver: true, i, caido: true, extra: `<span class="fr-carta-epitafio">${epitafio}</span>` });
     }).join("")}</div>`;
+    pintarRetratos(v);
   }
 
   /* --- Pestaña: Crónicas propias --- */
@@ -318,7 +444,7 @@
       <p class="fr-sub">${Object.keys(ESPECIALIZACIONES).map(k => `${ESPECIALIZACIONES[k].nombre}: ${ESPECIALIZACIONES[k].texto}`).join(" ")}</p></div>` : "";
     const m = s.muerte;
     $("frFichaCuerpo").innerHTML = `
-      <div class="fr-ficha-cab"><canvas class="fr-retrato"></canvas><div><h2 class="fr-h2">${esc(nombreApodo(s))}</h2>
+      <div class="fr-ficha-cab"><div class="fr-ficha-ret">${retr(s, 170, true)}</div><div><h2 class="fr-h2">${esc(nombreApodo(s))}</h2>
       <p class="fr-sub">${s.sexo === "f" ? "Mujer" : "Hombre"} de ${edad(s)} años · ${esc(claseN)} · ${rg.nombre} · ${esc(D.ORIGENES[s.origen] ? D.ORIGENES[s.origen].nombre : s.origen)}${s.reanimado ? " · Reanimado" : ""}${s.renacido ? ` · Renaciente (${s.renacido})` : ""}</p></div></div>
       ${m ? `<p class="fr-epitafio">${m.natural ? "Murió en paz." : `Cayó en ${esc(m.lugar)}${m.causa && m.causa !== "la Fractura" ? ` a manos de ${esc(m.causa)}` : ""}.`} Año ${m.anio}.</p>` : ""}
       ${s.estado === "establecido" ? `<p class="fr-sub">Establecido: tiene familia.</p>` : ""}
@@ -337,7 +463,7 @@
       <h3 class="fr-h3">Su historia</h3>
       <ol class="fr-hitos">${s.hitos.slice().reverse().map(h => `<li><b>Año ${h.anio}.</b> ${esc(h.texto)}</li>`).join("") || "<li>Aún sin historia.</li>"}</ol>`;
     $("frFichaCuerpo").dataset.id = id;
-    window.FracturaTablero.retrato($("frFichaCuerpo").querySelector(".fr-retrato"), s.clase, window.FracturaTablero.colorFaccion(ej.faccion), { w: 120, h: 140, cap: s.capitan, rango: S.rangoIndice(s.victorias), luto: !!s.luto, herido: C.convaleciente(ej, s) });
+    pintarRetratos($("frFichaCuerpo"));
     if (lectura) {
       const cuerpo = $("frFichaCuerpo");
       cuerpo.querySelectorAll("[data-quita],[data-pon-equipo],[data-capitan],[data-quitar-capitan],[data-compania],[data-spec]").forEach(e => e.remove());
@@ -692,7 +818,10 @@
       }
       c.innerHTML = h;
       const ret = c.querySelector("[data-ret]");
-      if (ret) window.FracturaTablero.retrato(ret, u.clase, window.FracturaTablero.coloresBando(est)[u.dueno >= 0 ? u.dueno : 1], { w: 84, h: 98, cap: !!(u.s && u.s.capitan), rango: u.s ? S.rangoIndice(u.s.victorias + (u.vicG || 0)) : 0, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, luto: !!(u.s && u.s.luto) });
+      if (ret && u.s && FR) {
+        ret.dataset.w = 96; ret.style.width = "96px"; ret.style.height = "125px";
+        FR.animar(ret, u.s, { faccion: est.jugadores[u.dueno >= 0 ? u.dueno : 1].faccion, anio: ej ? ej.anio : 1, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, w: 96 });
+      } else if (ret) window.FracturaTablero.retrato(ret, u.clase, window.FracturaTablero.coloresBando(est)[u.dueno >= 0 ? u.dueno : 1], { w: 84, h: 98, cap: !!(u.s && u.s.capitan), rango: u.s ? S.rangoIndice(u.s.victorias + (u.vicG || 0)) : 0, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, luto: !!(u.s && u.s.luto) });
       return;
     }
     const ci = sel.ciudad && est.ciudades[sel.ciudad];
@@ -862,15 +991,33 @@
     mostrar("frFin");
     const premio = resumen.gano && ultimoResumen.guerraId && !ultimoResumen.premiado && !ultimoResumen.pvp;
     const pend = C.pendientesDeAscenso(ej);
+    $("frFin").classList.add("fr-entra");
     $("frFin").innerHTML = `
-      <p class="eyebrow">${resumen.gano ? "VICTORIA" : resumen.perdio ? "DERROTA" : "TABLAS"}</p>
-      <h2 class="fr-h2">${esc(narr.titulo)}</h2>
+      <div class="fr-fin-cab ${resumen.gano ? "gano" : resumen.perdio ? "perdio" : "tablas"}">
+        <span class="fr-fin-sello">${resumen.gano ? "Victoria" : resumen.perdio ? "Derrota" : "Tablas"}</span>
+        <h2 class="fr-fin-titulo">${esc(narr.titulo)}</h2>
+        <p>${esc(FACCIONES[ej.faccion].corto)} contra ${esc(FACCIONES[reg.rival] ? FACCIONES[reg.rival].corto : String(reg.rival || ""))} · ${reg.turnos} turno${reg.turnos === 1 ? "" : "s"}</p>
+      </div>
       <div class="fr-cronica-texto">${narr.parrafos.map(p => `<p>${esc(p)}</p>`).join("")}</div>
+      ${paseDeLista(resumen)}
       ${pend.length ? `<div class="fr-banner"><p><strong>Veterano${pend.length === 1 ? "" : "s"} listo${pend.length === 1 ? "" : "s"} para especializarse.</strong></p><div class="fr-fila">${pend.map(s => `<button type="button" class="fr-btn fr-btn-chico" data-ficha-fin="${s.id}">${esc(nombre(s))}</button>`).join("")}</div></div>` : ""}
       ${premio ? `<div class="fr-banner"><p>Ganar esta guerra merece una carta de Triunfos.</p><button type="button" class="fr-btn fr-btn-principal" data-premio>Reclamar la carta</button></div>` : ""}
       ${resumen.gano && !ultimoResumen.guerraId ? `<p class="fr-sub">Inicia sesión antes de la próxima guerra para guardar la historia y ganar cartas.</p>` : ""}
       <div class="fr-fila"><button type="button" class="fr-btn fr-btn-principal" data-volver>Volver al cuartel</button></div>`;
     finHecho = false;
+    pintarRetratos($("frFin"));
+  }
+
+  /* Los que han marcado esta guerra: ascensos, caídos, heridos y reclutas nuevos, con su retrato */
+  function paseDeLista(resumen) {
+    const vistos = new Set(), filas = [];
+    const poner = (s, texto) => { if (!s || vistos.has(s.id) || !ej.soldados[s.id]) return; vistos.add(s.id); filas.push({ s, texto }); };
+    resumen.ascensos.forEach(a => poner(a.s, `Asciende a ${a.rango}`));
+    resumen.muertos.forEach(s => poner(s, "Cae en la Fractura"));
+    resumen.heridos.forEach(s => poner(s, "Herido de gravedad"));
+    resumen.alistados.forEach(s => poner(s, "Se une a las filas"));
+    if (!filas.length) return "";
+    return `<h3 class="fr-h3">Pase de lista</h3><div class="fr-cartas fr-cartas-chicas fr-pase">${filas.slice(0, 12).map(({ s, texto }, i) => carta(s, { ver: true, attr: "data-ficha-fin", i, extra: `<span class="fr-carta-epitafio">${esc(texto)}</span>` })).join("")}</div>`;
   }
   $("frFin").addEventListener("click", async ev => {
     const t = ev.target;

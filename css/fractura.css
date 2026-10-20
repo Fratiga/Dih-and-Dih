@@ -221,3 +221,181 @@ body.fr-en-guerra #frAviso { position: fixed; z-index: 120; top: 62px; left: 50%
 .fr-log-muerte i, .fr-log-lider i { color: #e0705f; }
 .fr-log-conquista i, .fr-log-heroico i, .fr-log-reliquia i { color: var(--accent); }
 .fr-log-nucleo i, .fr-log-magia i { color: #8fe3e6; }
+
+/* =============================================================================
+   ANTES DE LA GUERRA: portadas de los ejércitos, cabecera del cuartel, cartas de soldado con retrato,
+   formación del contingente y mesa de misión. Todo plano, sin resplandores ni sombras de volumen.
+============================================================================= */
+.fr-contenido { max-width: 1320px; }
+.fr-ret { display: block; width: 100%; height: auto; aspect-ratio: 100 / 130; background: #1b1520; }
+.fr-ret[data-w="40"], .fr-av .fr-ret { width: 38px; }
+
+/* Entrada escalonada: solo cuando se abre una pantalla, no cada vez que se marca algo */
+.fr-entra .fr-carta, .fr-entra .fr-slot-vacio, .fr-entra .fr-opcion, .fr-entra .fr-mision-bloque, .fr-entra .fr-ejercito, .fr-entra .fr-casa, .fr-entra .fr-empezar {
+  animation: frAparece .42s ease-out both; animation-delay: calc(var(--i, 0) * 45ms);
+}
+.fr-entra .fr-mision-bloque { animation-delay: .1s; }
+@keyframes frAparece { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* --- Portadas: las seis casas --- */
+.fr-ejercitos { grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 20px; }
+.fr-ejercito { position: relative; flex-direction: row; gap: 0; padding: 0; overflow: hidden; border-width: 2px; transition: border-color .15s, transform .15s; }
+.fr-ejercito:hover { border-color: var(--c); transform: translateY(-3px); }
+.fr-ejercito::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--c); border-right: 3px solid var(--b); }
+.fr-ejercito-ret { width: 150px; flex-shrink: 0; padding: 18px 0 18px 24px; }
+.fr-ejercito-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 18px 54px 18px 18px; }
+.fr-ejercito h3 { margin: 0; font-size: 1.15rem; }
+.fr-ejercito-titulo { margin: 0 !important; color: var(--accent) !important; font-size: .74rem !important; letter-spacing: .16em; text-transform: uppercase; }
+.fr-ejercito .fr-ejercito-cuerpo p { margin: 0; }
+.fr-ejercito .fr-ejercito-cuerpo .fr-btn { margin: auto 0 0; align-self: flex-start; }
+.fr-ejercito-datos { padding: 6px 10px; background: var(--panel-2); border-left: 3px solid var(--c); }
+.fr-pendon { position: absolute; top: 0; right: 14px; width: 26px; height: 62px; background: var(--c); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%); }
+.fr-pendon::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: var(--b); }
+.fr-ejercito:not(.fr-fundado) .fr-ejercito-ret .fr-ret { filter: saturate(.55) brightness(.85); }
+
+/* --- Cabecera del cuartel --- */
+.fr-hero { position: relative; display: flex; align-items: flex-end; gap: 28px; flex-wrap: wrap; min-height: 250px; margin: 6px 0 18px; padding: 24px 28px 24px 40px; background: var(--panel); border: 2px solid var(--border); overflow: hidden; }
+.fr-hero::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(115deg, transparent 0 54px, rgba(255, 255, 255, .022) 54px 108px); pointer-events: none; }
+.fr-hero::after { content: ""; position: absolute; right: -30px; top: 0; bottom: 0; width: 42%; background: var(--c); opacity: .1; clip-path: polygon(34% 0, 100% 0, 100% 100%, 0 100%); pointer-events: none; }
+.fr-hero-banda { position: absolute; left: 0; top: 0; bottom: 0; width: 12px; background: var(--c); border-right: 4px solid var(--b); }
+.fr-hero-ceniza { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fr-hero-ceniza i { position: absolute; bottom: -8px; background: var(--c); opacity: 0; animation: frCeniza 9s linear infinite; }
+@keyframes frCeniza { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: .75; } 100% { transform: translate(var(--dx, 0), -300px); opacity: 0; } }
+.fr-hero-ret { position: relative; z-index: 1; width: 170px; flex-shrink: 0; }
+.fr-hero-ret span { display: block; margin-top: 6px; text-align: center; font-size: .74rem; color: var(--muted); line-height: 1.3; }
+.fr-hero-texto { position: relative; z-index: 1; flex: 1; min-width: 280px; align-self: center; }
+.fr-hero-sobre { margin: 0 0 4px; color: var(--accent); font-size: .78rem; letter-spacing: .22em; text-transform: uppercase; }
+.fr-hero-nombre { margin: 0; color: var(--text); font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.1; letter-spacing: .03em; }
+.fr-hero-faccion { margin: 6px 0 16px; color: var(--c); font-size: 1rem; }
+.fr-hero-cifras { display: flex; flex-wrap: wrap; gap: 8px; }
+.fr-hero-cifras div { min-width: 82px; padding: 8px 12px; background: rgba(23, 18, 27, .82); border: 1px solid var(--border); border-top: 3px solid var(--c); font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.fr-hero-cifras b { display: block; font-size: 1.6rem; line-height: 1.1; color: var(--text); letter-spacing: 0; }
+.fr-hero-botones { position: relative; z-index: 1; align-self: flex-start; display: flex; flex-direction: column; gap: 8px; margin-left: auto; }
+
+/* --- Pestañas --- */
+.fr-pestanas button { font-size: .96rem; letter-spacing: .04em; transition: color .12s; }
+
+/* --- Cartas de soldado --- */
+.fr-cartas { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 16px; margin: 10px 0 18px; }
+.fr-cartas-chicas { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 12px; }
+.fr-carta { position: relative; display: flex; flex-direction: column; text-align: left; background: var(--panel); border: 2px solid var(--border); color: var(--text); cursor: pointer; transition: transform .14s ease-out, border-color .14s; min-width: 0; }
+.fr-carta:hover, .fr-carta:focus-visible { transform: translateY(-5px); border-color: var(--accent-soft); outline: none; }
+.fr-carta.sel { border-color: var(--accent); }
+.fr-carta-marco { position: relative; border-bottom: 2px solid var(--border); }
+.fr-carta.sel .fr-carta-marco { border-bottom-color: var(--accent); }
+.fr-carta-marcas { position: absolute; left: 6px; top: 8px; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.fr-carta-marcas i { font-style: normal; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; background: #15101a; color: var(--text); border: 1px solid var(--accent-soft); }
+.fr-carta-accion { position: absolute; left: 0; right: 0; bottom: 0; padding: 5px 0; text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; background: var(--accent); color: #1a1408; opacity: 0; transform: translateY(100%); transition: opacity .14s, transform .14s; }
+.fr-carta-accion.fr-quita { background: #7e2f2a; color: #f6e3df; }
+.fr-carta:hover .fr-carta-accion, .fr-carta:focus-visible .fr-carta-accion { opacity: 1; transform: none; }
+.fr-carta-ficha { position: absolute; right: 6px; bottom: 6px; width: 24px; height: 24px; padding: 0; font: italic 700 .9rem Georgia, serif; line-height: 1; color: var(--text); background: #15101a; border: 1px solid var(--border); cursor: pointer; z-index: 2; }
+.fr-carta-ficha:hover { border-color: var(--accent); color: var(--accent); }
+.fr-carta-info { display: flex; flex-direction: column; gap: 2px; padding: 9px 10px 10px; min-width: 0; }
+.fr-carta-info strong { font-size: .95rem; line-height: 1.2; overflow-wrap: anywhere; }
+.fr-carta-info em { font-size: .8rem; color: var(--accent); font-style: normal; }
+.fr-carta-clase { font-size: .78rem; color: #e6d9c4; }
+.fr-carta-meta { font-size: .74rem; color: var(--muted); }
+.fr-carta-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin-top: 7px; }
+.fr-carta-stats i { position: relative; display: block; height: 30px; background: var(--panel-2); border: 1px solid var(--border); }
+.fr-carta-stats i b { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent-soft); }
+.fr-carta-stats i small { position: absolute; left: 0; right: 0; bottom: -14px; text-align: center; font-size: .56rem; letter-spacing: .02em; color: var(--muted); }
+.fr-carta-info .fr-carta-stats { margin-bottom: 14px; }
+.fr-carta-epitafio { margin-top: 4px; padding-top: 6px; border-top: 1px dashed var(--border); font-size: .76rem; line-height: 1.35; color: var(--muted); }
+.fr-cartas-chicas .fr-carta-info { padding: 7px 8px 8px; }
+.fr-cartas-chicas .fr-carta-info strong { font-size: .82rem; }
+.fr-cartas-chicas .fr-carta-stats i { height: 22px; }
+.fr-cartas-chicas .fr-carta-meta { display: none; }
+.fr-carta.fr-caido { border-style: dashed; opacity: 1; }
+.fr-carta.fr-caido .fr-ret { filter: grayscale(1) brightness(.78); }
+.fr-carta.bloq { cursor: default; }
+.fr-carta.bloq:hover { transform: none; border-color: var(--border); }
+.fr-carta.bloq .fr-ret { filter: saturate(.5) brightness(.8); }
+.fr-pase { margin-bottom: 20px; }
+
+/* --- Preparar la guerra --- */
+.fr-preparar { display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 32px; align-items: start; }
+.fr-seccion-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.fr-seccion-cab .fr-h3 { margin: 0; }
+.fr-cuenta { margin-left: 10px; padding: 2px 10px; background: var(--accent); color: #1a1408; font-size: .95rem; letter-spacing: .04em; }
+.fr-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; margin: 10px 0 12px; }
+.fr-slot-vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 250px; border: 2px dashed var(--border); color: var(--muted); }
+.fr-slot-vacio span { font-size: 2.4rem; line-height: 1; opacity: .6; }
+.fr-slot-vacio small { letter-spacing: .16em; text-transform: uppercase; font-size: .72rem; }
+.fr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.fr-chips span { padding: 4px 10px; background: var(--panel-2); border: 1px solid var(--border); border-left: 3px solid var(--accent-soft); font-size: .8rem; }
+.fr-reserva .fr-h3 { margin-top: 26px; }
+
+.fr-mision { position: sticky; top: 12px; display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 20px; background: var(--panel); border: 2px solid var(--border); border-top: 6px solid var(--accent); }
+.fr-mision .fr-h3 { margin: 0 0 6px; }
+.fr-mision-bloque { margin: 6px 0 4px; }
+.fr-mision .fr-h4 { margin: 8px 0 6px; color: var(--muted); }
+.fr-mision .fr-sub { margin: 6px 0 0; font-size: .82rem; }
+.fr-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.fr-opcion { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; padding: 9px 10px; text-align: left; font: inherit; font-size: .83rem; line-height: 1.25; color: var(--text); background: var(--panel-2); border: 2px solid var(--border); cursor: pointer; transition: border-color .12s, background .12s; }
+.fr-opcion:hover { border-color: var(--accent-soft); }
+.fr-opcion.sel { border-color: var(--accent); background: #3a2d42; }
+.fr-opcion.sel::after { content: ""; position: absolute; right: 0; top: 0; width: 0; height: 0; border-top: 16px solid var(--accent); border-left: 16px solid transparent; }
+.fr-opcion strong { font-weight: 700; }
+.fr-barra-terreno { display: flex; height: 7px; background: #0f0b14; }
+.fr-barra-terreno i { display: block; height: 100%; }
+.fr-rival { flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px; padding: 6px 8px 6px 6px; border-left: 6px solid var(--c, var(--border)); }
+.fr-rival-ret { width: 38px; flex-shrink: 0; }
+.fr-rival-azar { display: flex; align-items: center; justify-content: center; width: 38px; height: 49px; flex-shrink: 0; background: #15101a; color: var(--muted); font-size: 1.5rem; }
+.fr-rival strong { font-size: .8rem; }
+.fr-segmentos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.fr-segmentos .fr-opcion { align-items: center; text-align: center; font-weight: 700; }
+.fr-nemesis { margin: 10px 0 0; padding: 8px 10px; border-left: 4px solid #c0463c; background: var(--panel-2); font-size: .84rem; line-height: 1.4; }
+.fr-empezar { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; margin-top: 16px; padding: 16px 12px; font: inherit; color: #1a1408; background: var(--accent); border: 2px solid var(--accent); cursor: pointer; transition: background .12s; }
+.fr-empezar span { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.fr-empezar small { font-size: .78rem; opacity: .8; }
+.fr-empezar:hover { background: #f0c45e; }
+
+/* --- Ficha y casas --- */
+.fr-ficha { width: min(880px, calc(100% - 20px)); }
+.fr-ficha-ret { width: 170px; flex-shrink: 0; }
+.fr-av { display: inline-block; width: 38px; flex-shrink: 0; }
+.fr-arbol-lista li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.fr-arbol-lista li > ul { flex-basis: 100%; }
+.fr-arbol-lista small { margin-left: 0; }
+.fr-casa { transition: border-color .12s; }
+.fr-casa:hover { border-color: var(--accent-soft); }
+
+@media (max-width: 1100px) {
+  .fr-preparar { grid-template-columns: 1fr; }
+  .fr-mision { position: static; }
+}
+@media (max-width: 720px) {
+  .fr-ejercitos { grid-template-columns: 1fr; }
+  .fr-ejercito-ret { width: 108px; padding: 14px 0 14px 18px; }
+  .fr-ejercito-cuerpo { padding-right: 44px; }
+  .fr-hero { padding: 20px 16px 20px 28px; gap: 18px; }
+  .fr-hero-ret { width: 128px; }
+  .fr-hero-botones { flex-direction: row; margin-left: 0; }
+  .fr-cartas, .fr-slots { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .fr-slot-vacio { min-height: 220px; }
+  .fr-ficha-cab { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-entra .fr-carta, .fr-entra .fr-slot-vacio, .fr-entra .fr-opcion, .fr-entra .fr-mision-bloque, .fr-entra .fr-ejercito, .fr-entra .fr-casa, .fr-entra .fr-empezar { animation: none; }
+  .fr-hero-ceniza { display: none; }
+  .fr-carta, .fr-ejercito { transition: none; }
+}
+
+/* En el cuartel la cabecera del ejército ya hace de título: se quita el de la página para que las cartas queden a la vista */
+body.fr-en-cuartel .eyebrow, body.fr-en-cuartel .mj-titulo, body.fr-en-cuartel .fr-lead { display: none; }
+body.fr-en-cuartel .fr-contenido { padding-top: 14px; }
+.fr-hero { min-height: 220px; }
+.fr-ficha-cab > .fr-ficha-ret { flex: 0 0 170px; width: 170px; }
+
+/* Final de la guerra */
+.fr-fin-cab { position: relative; margin: 6px 0 18px; padding: 26px 28px 24px 40px; background: var(--panel); border: 2px solid var(--border); overflow: hidden; animation: frAparece .5s ease-out both; }
+.fr-fin-cab::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 12px; background: var(--accent); }
+.fr-fin-cab.perdio::before { background: #c0463c; }
+.fr-fin-cab.tablas::before { background: #8f8498; }
+.fr-fin-sello { display: inline-block; padding: 3px 14px; background: var(--accent); color: #1a1408; font-size: .8rem; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; }
+.fr-fin-cab.perdio .fr-fin-sello { background: #c0463c; color: #fff4f1; }
+.fr-fin-cab.tablas .fr-fin-sello { background: #8f8498; color: #17121b; }
+.fr-fin-titulo { margin: 12px 0 6px; color: var(--text); font-size: clamp(1.6rem, 3.4vw, 2.5rem); line-height: 1.12; letter-spacing: .03em; }
+.fr-fin-cab p { margin: 0; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .fr-fin-cab { animation: none; } }
+
