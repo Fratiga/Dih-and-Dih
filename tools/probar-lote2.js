@@ -36,7 +36,7 @@ ids.forEach(id => {
   const c = sb.cartaPorId(id);
   ok(!!c, `${id} existe en cartas-datos.js`);
   if (!c) return;
-  ok(c.habilidad && c.descripcion, `${id} tiene habilidad y descripción`);
+  ok(c.habilidad && (c.descripcion || (c.fuente && c.fuente.data)), `${id} tiene habilidad y descripción (propia o de su entrada del compendio)`);
   if (M.esUnidad(c)) ok(Number.isFinite(c.atq) && Number.isFinite(c.pv) && c.coste >= 0, `${id}: ataque y vida`);
   const sinEfecto = !M.EFECTOS[id] && !M.TERRENOS[id];
   ok(!sinEfecto, `${id} tiene su efecto programado`);
