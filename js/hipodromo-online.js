@@ -157,17 +157,20 @@ window.HipodromoOnline = (function () {
     async function ordenar(o) {
       const { data: id, error } = await supa.rpc("hipodromo_ordenar", { p_datos: o });
       if (error) return { ok: false, error: error.message };
-      // la Edge Function procesa las órdenes cada minuto: se espera su resultado
-      for (let i = 0; i < 40; i++) {
-        await new Promise(r => setTimeout(r, i < 5 ? 2500 : 4000));
+      // al guardarse la orden la base de datos avisa a la Edge Function (docs/hipodromo-3_ordenes_inmediatas.sql) y contesta en unos 2 a 4 s; si el aviso
+      // falla, la procesa su pasada de cada minuto. Se pregunta cada segundo al principio y más espaciado después
+      for (let i = 0; i < 50; i++) {
+        await new Promise(r => setTimeout(r, i < 15 ? 1000 : 3500));
         const { data } = await supa.from("hipodromo_ordenes").select("estado, texto").eq("id", id).maybeSingle();
         if (data && data.estado !== "pendiente") {
-          await refrescarTodo();
+          await refrescarTrasOrden();
           return data.estado === "hecha" ? { ok: true, texto: data.texto } : { ok: false, error: data.texto || "No se pudo." };
         }
       }
       return { ok: true, texto: "La orden sigue en cola; se aplicará en cuanto el servidor la procese." };
     }
+    /* Tras una orden solo cambia lo mío: las criaturas que han cambiado y mi cuenta (cuadra, saldo, avisos). No hace falta releer carrera, noticias ni resultados */
+    async function refrescarTrasOrden() { ultimaCriatura = Math.max(-1, ultimaCriatura - 1); await Promise.all([leerCriaturas(), leerMiCuenta()]); alCambiar("datos"); }
     async function refrescarTodo() { ultimaCriatura = Math.max(-1, ultimaCriatura - 1); ultimoN = -1; await refrescar(); }
     function guardarFavoritos() { try { localStorage.setItem("hipodromoFavoritosServidor", JSON.stringify(est.favoritos)); } catch (e) { /* sin almacenamiento */ } }
 
