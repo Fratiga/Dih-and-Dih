@@ -517,6 +517,7 @@
     if (u.flags.inmune) chips.push(`<span class="kw kw-barrera" title="Las habilidades enemigas no pueden elegirla.">${ICONOS.barrera}Protegida</span>`);
     if (u.flags.noAtacaHasta >= est.turno) chips.push("<span>No ataca</span>");
     if (u.entro === est.turno && u.dueno === est.activo) chips.push("<span>Recién llegada</span>");
+    if (u.flags.alfa || u.cartaId === "gofiri-la-jauria") chips.unshift("<span>Alfa</span>");
     const nForma = M.nombreForma(est, u);
     if (nForma) chips.unshift(`<span>${esc(nForma)}</span>`);
     const auras = claves.filter(k => CON_AURA.includes(k)).map(k => `<span class="bt-aura kw-${k}" aria-hidden="true"></span>`).join("");

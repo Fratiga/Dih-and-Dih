@@ -502,12 +502,28 @@
     M.registrarFicha("automata", { nombre: "Autómata", afinidad: ["arcano"], atq: 1, pv: 2, habilidad: "Un autómata de Nernib: obedece y no pregunta." });
     M.registrarFicha("mercenario", { nombre: "Mercenario", tipo: "Personaje", afinidad: ["juramento"], atq: 2, pv: 1, habilidad: "Espada de alquiler: el contrato dura lo que dura el pago." });
     M.registrarFicha("gusano-de-arena", { nombre: "Gusano de arena", afinidad: ["carne"], atq: 2, pv: 2, habilidad: "Cría de la Madre del Desierto." });
-    M.registrarFicha("cachorro-de-jauria", { nombre: "Cachorro de jauría", afinidad: ["caceria"], atq: 1, pv: 1, habilidad: "Veloz." });
+    M.registrarFicha("hiena-de-la-jauria", { nombre: "Hiena de la Jauría", afinidad: ["caceria"], atq: 1, pv: 1, habilidad: "Veloz. Lazo sináptico: +1 de ataque por cada otro miembro de La Jauría en tu campo (hasta +2). Si es el Alfa, tiene Desafiante." });
     M.registrarFicha("emboscado", { nombre: "Emboscado", tipo: "Personaje", afinidad: ["sombra"], atq: 2, pv: 1, habilidad: "Salió de ninguna parte." });
     M.registrarFicha("fragmento-de-gargola", { nombre: "Fragmento de gárgola", afinidad: ["eternidad"], atq: 2, pv: 3, habilidad: "Cuerpo de piedra: reduce en 1 el daño que recibe." });
     R("fragmento-de-gargola", { reduceDano: () => 1 });
     M.registrarFicha("recluta", { nombre: "Recluta", tipo: "Personaje", afinidad: ["juramento"], atq: 1, pv: 2, habilidad: "Respondió a la campana con lo que tenía a mano." });
-    R("cachorro-de-jauria", { palabras: ["veloz"] });
+    // La Jauría (Gofiri y sus hienas): el lazo sináptico las hace más fuertes juntas y, cuando cae el Alfa, a otra le crece la cresta negra
+    const JAURIA = ["gofiri-la-jauria", "hiena-de-la-jauria"];
+    const coronar = c => {
+      const hiena = c.est.jugadores[c.j].campo.filter(u => u.cartaId === "hiena-de-la-jauria" && !u.flags.alfa).sort((a, b) => a.uid - b.uid)[0];
+      if (!hiena) return;
+      hiena.flags.alfa = true;
+      hiena.atq = Math.max(hiena.atq, 2);
+      hiena.pvMax = Math.max(hiena.pvMax, 3);
+      hiena.pv = hiena.pvMax;
+      dar(hiena, "desafiante");
+      M.log(c.est, "Le crece la cresta negra a una hiena de La Jauría: es el nuevo Alfa.");
+    };
+    R("hiena-de-la-jauria", {
+      palabras: ["veloz"],
+      pasivaAtq: (est, u) => Math.min(2, est.jugadores[u.dueno].campo.filter(o => o.uid !== u.uid && JAURIA.includes(o.cartaId)).length),
+      alMorir: c => { if (c.u.flags.alfa) coronar(c); }
+    });
 
     // --- Líderes de facción --------------------------------------------------------------------------
     R("el-mitrado", { protege: (est, g, t) => t.uid !== g.uid && esDe(est, t, "juramento") });
@@ -737,7 +753,7 @@
     R("mimico", { alCrear: (est, u) => { u.flags.escurridizoHasta = est.turno + 1; }, alMorir: c => descartarAlAzar(c.est, 1 - c.j) });
     R("cubo-gelatinoso", { alMatar: c => { mejora(c.u, 1, 1); M.log(c.est, `${M.nombre(c.est, c.u)} absorbe lo que queda: +1/+1.`); } });
     R("ent-mayor", { palabras: ["provocar"], auraAtq: (est, g, u) => (esDe(est, u, "carne") ? 1 : 0) });
-    R("gofiri-la-jauria", { alEntrar: { resolver: c => crear(c, "cachorro-de-jauria", 2) } });
+    R("gofiri-la-jauria", { palabras: ["desafiante"], alEntrar: { resolver: c => crear(c, "hiena-de-la-jauria", 2) }, alMorir: coronar });
 
     // --- Objetos y acciones --------------------------------------------------------------------------------
     const equipo = (id, texto, aplicar, filtro) => R(id, { jugar: { objetivo: "unidadAliada", filtro, resolver: c => {

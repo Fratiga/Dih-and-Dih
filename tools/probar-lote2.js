@@ -184,7 +184,17 @@ ids.forEach(id => {
 { const e = partida(); turnoDe(e, 0); const m = M.ponerUnidad(e, 0, "mimico", false, null); ok(M.esEscurridizo(e, m), "Mímico: Escurridizo al entrar"); const B = e.jugadores[1]; B.mano = ["t11"]; M.morir(e, m, { tipo: "habilidad" }); ok(B.mano.length === 0, "y el rival descarta al morir"); }
 { const e = partida(); turnoDe(e, 0); const c = poner(e, 0, "cubo-gelatinoso"); const v = poner(e, 1, "t11"); M.infligir(e, { u: v.uid }, 5, { tipo: "combate", uid: c.uid }); ok(c.atq === 3 && c.pvMax === 6, `Cubo gelatinoso absorbe (${c.atq}/${c.pvMax})`); }
 { const e = partida(); turnoDe(e, 0); poner(e, 0, "ent-mayor"); const a = poner(e, 0, "t33"), p = poner(e, 0, "bull"); ok(M.atqEfectivo(e, a) === 4 && M.atqEfectivo(e, p) === 4 - 1, "Ent Mayor: +1 a las de Carne (t33 es Carne, Bull no)"); }
-{ const e = partida(); turnoDe(e, 0); M.ponerUnidad(e, 0, "gofiri-la-jauria", true, null); const c = e.jugadores[0].campo.filter(u => u.cartaId === "cachorro-de-jauria"); ok(c.length === 2 && M.tienePalabra(e, c[0], "veloz"), "Gofiri crea 2 cachorros Veloz"); }
+{ const e = partida(); turnoDe(e, 0); const g = M.ponerUnidad(e, 0, "gofiri-la-jauria", true, null); const h = () => e.jugadores[0].campo.filter(u => u.cartaId === "hiena-de-la-jauria");
+  ok(h().length === 2 && M.tienePalabra(e, h()[0], "veloz") && M.tienePalabra(e, g, "desafiante") && g.pv === 3, "Gofiri entra con Desafiante y crea 2 hienas Veloz");
+  ok(M.atqEfectivo(e, h()[0]) === 3, `el lazo sináptico: cada hiena con otras dos del grupo tiene +2 (${M.atqEfectivo(e, h()[0])})`);
+  M.morir(e, h()[1], { tipo: "habilidad" }); ok(M.atqEfectivo(e, h()[0]) === 2, "con una hiena menos, el lazo baja a +1");
+  M.morir(e, g, { tipo: "habilidad" });
+  const alfa = h().find(u => u.flags.alfa); ok(alfa && alfa.atq === 2 && alfa.pvMax === 3 && M.tienePalabra(e, alfa, "desafiante"), "cuando muere Gofiri, la hiena que queda es el nuevo Alfa 2/3 con Desafiante");
+  M.morir(e, alfa, { tipo: "habilidad" }); ok(h().length === 0, "y si no quedan más hienas, se acaba");
+  const e2 = partida(); turnoDe(e2, 0); const g2 = M.ponerUnidad(e2, 0, "gofiri-la-jauria", true, null); const H = () => e2.jugadores[0].campo.filter(u => u.cartaId === "hiena-de-la-jauria");
+  poner(e2, 0, "hiena-de-la-jauria"); poner(e2, 0, "hiena-de-la-jauria");
+  M.morir(e2, g2, { tipo: "habilidad" }); M.morir(e2, H().find(u => u.flags.alfa), { tipo: "habilidad" });
+  ok(H().filter(u => u.flags.alfa).length === 1 && H().length === 3, "mientras queden hienas, el relevo del Alfa se repite"); }
 
 // 5) Objetos y acciones
 { const e = partida(); turnoDe(e, 0); const a = poner(e, 0, "t33"); jugar(e, 0, "espada-larga"); ok(a.atq === 5, "Espada larga +2"); }
