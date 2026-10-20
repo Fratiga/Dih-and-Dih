@@ -110,11 +110,11 @@ begin
     raise exception 'Los valores solo pueden ser números';
   end if;
   for k in select jsonb_object_keys(p_valores) loop
-    if p_juego in ('ajedrez', 'duelo', 'arqueria') and k not in ('rivales', 'bonus', 'maximo') then raise exception 'Valores de %: campo desconocido (%)', p_juego, k; end if;
+    if p_juego in ('ajedrez', 'duelo', 'arqueria', 'veintiuna') and k not in ('rivales', 'bonus', 'maximo') then raise exception 'Valores de %: campo desconocido (%)', p_juego, k; end if;
     if p_juego = 'hooey' and k not in ('por_punto', 'maximo') then raise exception 'Valores de hooey: campo desconocido (%)', k; end if;
     if p_juego = 'fractura' and k not in ('normal', 'dificil', 'especial') then raise exception 'Valores de fractura: campo desconocido (%)', k; end if;
     if p_juego in ('zarabanda', 'parranda') and k not in ('precision_minima', 'dificultades') then raise exception 'Valores de %: campo desconocido (%)', p_juego, k; end if;
-    if p_juego not in ('ajedrez', 'duelo', 'arqueria', 'hooey', 'fractura', 'zarabanda', 'parranda') then raise exception 'Este juego no tiene valores configurables'; end if;
+    if p_juego not in ('ajedrez', 'duelo', 'arqueria', 'veintiuna', 'hooey', 'fractura', 'zarabanda', 'parranda') then raise exception 'Este juego no tiene valores configurables'; end if;
   end loop;
   if p_juego in ('zarabanda', 'parranda') then
     if p_valores ? 'precision_minima' and (jsonb_typeof(p_valores -> 'precision_minima') <> 'number' or (p_valores ->> 'precision_minima')::numeric not between 0 and 100) then

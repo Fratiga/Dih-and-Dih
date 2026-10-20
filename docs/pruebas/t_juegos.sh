@@ -142,6 +142,32 @@ contiene "Experto con una canción de pocos puntos: sin recompensa" "$(jugarz $U
 TK=$(como $U3 "select cartas_juego_iniciar('zarabanda', 'experto');" | tail -1)
 contiene "una partida de pocos segundos no cuenta" "$(como $U3 "select cartas_juego_terminar('$TK', 'gana', $(pz 900000 900));")" "muy-rapido"
 
+echo "== Perder ya no da sellos; Veintiuna menos generosa (migración 22)"
+reiniciar
+M22() { docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../economia-22_menos_sellos_gratis.sql" 2>&1 | grep -v NOTICE | head -3; }
+sql "delete from cartas_juegos where juego = 'veintiuna'" >/dev/null
+sql "insert into cartas_juegos (juego, nombre, activo, umbrales, tope_dia, min_segundos, sellos_por_carta, pesos, valores, prob) values ('veintiuna', 'Veintiuna', false, '{\"participacion\": 0, \"bueno\": 1, \"excelente\": 3, \"extraordinario\": 4}', 2, 0, 5, '{\"bueno\": {\"comun\": 100}}', '{\"rivales\": {\"oro\": {\"gana\": 4, \"tablas\": 0, \"pierde\": 0}, \"_otros\": {\"gana\": 1, \"tablas\": 0, \"pierde\": 0}}}', '{\"bueno\": 1, \"excelente\": 1, \"extraordinario\": 1}')" >/dev/null
+comprobar "antes: perder contra Cassius valía 0 (un sello)" "0" "$(val arqueria cassius pierde 0)"
+M22; M22
+comprobar "perder en Ajedrez ya no cuenta" "-1" "$(val ajedrez baraja pierde 0)"
+comprobar "tablas sin mérito (contra Ocevat) tampoco" "-1" "$(val ajedrez ocevat tablas 0)"
+comprobar "tablas contra Baraja sí valen (1)" "1" "$(val ajedrez baraja tablas 0)"
+comprobar "ganar sigue igual (Baraja = 2)" "2" "$(val ajedrez baraja gana 0)"
+comprobar "contra Hooey sigue sin premio" "-1" "$(val ajedrez hooey gana 0)"
+comprobar "perder en Arquería ya no cuenta" "-1" "$(val arqueria cassius pierde 0)"
+comprobar "ganar en Arquería sigue igual (Garra = 2)" "2" "$(val arqueria garra gana 0)"
+comprobar "perder en Duelo ya no cuenta" "-1" "$(val duelo adam pierde 0)"
+comprobar "ganar en Duelo sigue igual" "4" "$(val duelo adam gana 0)"
+TK=$(como $U1 "select cartas_juego_iniciar('arqueria', 'cassius');" | tail -1)
+sql "update cartas_partidas_juego set inicio = now() - interval '5 minutes' where token='$TK'" >/dev/null
+contiene "una partida de Arquería perdida no da ni un sello" "$(como $U1 "select cartas_juego_terminar('$TK', 'pierde', 0);")" '"motivo": "sin-premio"'
+comprobar "...y no suma sellos" "0" "$(sql "select count(*) from cartas_progreso where user_id='$U1' and sellos > 0")"
+comprobar "Veintiuna: probabilidad del tramo bueno" "0.5" "$(sql "select prob->>'bueno' from cartas_juegos where juego='veintiuna'")"
+comprobar "Veintiuna: el tramo extraordinario sigue seguro" "1" "$(sql "select prob->>'extraordinario' from cartas_juegos where juego='veintiuna'")"
+comprobar "Veintiuna: una partida tiene que durar 30 s" "30" "$(sql "select min_segundos from cartas_juegos where juego='veintiuna'")"
+comprobar "Veintiuna: perder ya no cuenta" "-1" "$(sql "select cartas_valor_juego('veintiuna', 'oro', 'pierde', 0)")"
+sql "delete from cartas_juegos where juego = 'veintiuna'" >/dev/null
+
 echo "== Y todo sigue cuadrando"
 comprobar "la auditoría está limpia" "0" "$(auditar)"
 
