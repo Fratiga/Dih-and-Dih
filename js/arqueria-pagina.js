@@ -202,7 +202,7 @@
       const vencido = venciste(r.id);
       return `
       <button type="button" class="arq-rival ${activo ? "activo" : ""}" data-rival="${r.id}" aria-pressed="${activo}" style="--rc: ${r.color}" title="${esc(r.nota)}${vencido ? " Ya la venciste." : ""}">
-        <span class="arq-rival-icono" aria-hidden="true">${r.nombre[0]}${vencido ? '<i class="arq-vencido">✓</i>' : ""}</span>
+        <span class="arq-rival-icono" aria-hidden="true"><img src="assets/minijuegos/arqueria/${r.id}.jpg" alt="" width="44" height="44" draggable="false">${vencido ? '<i class="arq-vencido">✓</i>' : ""}</span>
         <span class="arq-rival-cab"><strong>${r.nombre}</strong><span class="arq-nivel" aria-label="Dificultad ${r.dificultad}">${r.dificultad}</span>${vencido ? '<span class="arq-sr"> Ya la venciste.</span>' : ""}</span>
         <small>${r.corta}</small>
       </button>`;
