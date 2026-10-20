@@ -127,7 +127,8 @@
     }
     // el pozo se reparte entre todas las apuestas al pozo de esa carrera (aquí, solo las tuyas más el bote)
     const pozoPagos = new Map(), enPozo = est.pendientes.filter(ap => ap.n === n && ap.tipo === "pozo");
-    if (res && enPozo.length) M.pagarPozo(enPozo.map((ap, i) => ({ id: i, sel: ap.sel, monto: ap.monto })), res.llegada[0].id).forEach((x, i) => pozoPagos.set(enPozo[i], x.pago));
+    const tribuna = (prog.tribuna || []).map(b => ({ id: "npc", sel: b.sel, monto: b.monto }));
+    if (res && enPozo.length) M.pagarPozo(enPozo.map((ap, i) => ({ id: i, sel: ap.sel, monto: ap.monto })).concat(tribuna), res.llegada[0].id).slice(0, enPozo.length).forEach((x, i) => pozoPagos.set(enPozo[i], x.pago));
     const nuevas = [];
     est.pendientes = est.pendientes.filter(ap => {
       if (ap.n !== n) return true;
@@ -241,6 +242,32 @@
       ${items ? `<ul class="hip-copa-lista">${items}</ul>` : '<p class="hip-vacio">No hay ninguna copa en los próximos dos días.</p>'}`);
   }
 
+  function pintarTribuna() {
+    const el = $("hipTribuna"); if (!el) return;
+    const NPC = window.HipodromoNPC, ap = tribunaVisible(), tot = ap.reduce((t, b) => t + b.monto, 0);
+    if (!NPC || !m.proxima || !m.proxima.tribuna) { poner(el, ""); el.classList.add("hidden"); return; }
+    el.classList.remove("hidden");
+    const items = ap.slice().reverse().slice(0, 8).map(b => `<li><strong>${esc(b.quien)}</strong> ${monedas(b.monto)} al pozo por <button type="button" class="hip-enlace" data-ficha="${b.sel}">${esc(b.criatura)}</button></li>`).join("");
+    poner(el, `<h3>En la tribuna</h3>
+      <p class="hip-nota">Los aficionados y los dueños del hipódromo también juegan al pozo, y lo que ponen cuenta en el reparto igual que lo tuyo. Las apuestas van llegando a lo largo de la hora.</p>
+      ${items ? `<ul class="hip-lista-apuestas hip-tribuna">${items}</ul><p class="hip-nota">${ap.length} ${ap.length === 1 ? "apuesta" : "apuestas"} de la tribuna, ${monedas(tot)} tokens en total.</p>` : '<p class="hip-vacio">Todavía no ha apostado nadie de la tribuna.</p>'}`);
+  }
+  /* Las cuadras del mundo: quién es cada personaje, qué criaturas tiene y cuánto hay en su caja */
+  function pintarCuadrasNpc() {
+    const el = $("hipCuadrasNpc"); if (!el) return;
+    const NPC = window.HipodromoNPC, vivo = (m.proxima && m.proxima.cuadrasNpc) || [];
+    if (!NPC || !vivo.length) { poner(el, ""); el.classList.add("hidden"); return; }
+    el.classList.remove("hidden");
+    const tarjetas = NPC.REPARTO.map(P => {
+      const v = vivo.find(x => x.id === P.id); if (!v) return "";
+      const cri = v.criaturas.map(id => perfilDe(id)).filter(Boolean);
+      return `<li class="hip-npc"><div class="hip-npc-cab"><strong>${esc(P.nombre)}</strong><small>${esc(P.apodo)}${P.cuadra ? " · " + esc(P.cuadra) : " · de la grada"}</small></div>
+        <p class="hip-npc-lema">«${esc(P.lema)}»</p><p class="hip-nota">${esc(P.bio)}</p>
+        <p class="hip-npc-pie"><span>Caja: <b>${monedas(v.saldo)}</b></span>${P.cuadra ? `<span>${cri.length ? cri.map(p => `<button type="button" class="hip-enlace" data-ficha="${p.id}">${esc(p.nombre)}</button>`).join(", ") : "sin criaturas ahora"}</span>` : "<span>apuesta al pozo</span>"}</p></li>`;
+    }).join("");
+    poner(el, `<h3>Las cuadras del mundo</h3><p class="hip-nota">Personajes que corren, compran, venden y apuestan con las mismas reglas que tú. No tienen ventajas: su caja es suya y sus criaturas corren en los campos del mundo como las demás.</p><ul class="hip-npc-lista">${tarjetas}</ul>`);
+  }
+
   function pintarInscritos() {
     const p = m.proxima, sec = p.secreto;
     const menor = p.entrantes.reduce((a, e) => (e.gan < a ? e.gan : a), Infinity);
@@ -276,9 +303,16 @@
 
   /* panel de apuestas */
   /* Lo que hay apostado ahora al pozo de la carrera que viene, por criatura: del servidor, o de tus apuestas en modo local */
+  /* Las apuestas que ya ha hecho la tribuna (los personajes del hipódromo, js/hipodromo-npc.js): van llegando a lo largo de la hora, cada una a su hora */
+  function tribunaVisible() {
+    const t = (m.proxima && m.proxima.tribuna) || [], ahora = online ? online.ahora() : est.virtual;
+    return t.filter(b => b.hora <= ahora);
+  }
   function pozosAhora() {
-    if (online && est.pozos) return est.pozos;
-    const t = {}; est.pendientes.filter(a => a.n === m.proxima.n && a.tipo === "pozo").forEach(a => { t[a.sel] = (t[a.sel] || 0) + a.monto; });
+    const t = {};
+    if (online && est.pozos) Object.keys(est.pozos).forEach(k => { t[k] = est.pozos[k]; });
+    else est.pendientes.filter(a => a.n === m.proxima.n && a.tipo === "pozo").forEach(a => { t[a.sel] = (t[a.sel] || 0) + a.monto; });
+    tribunaVisible().forEach(b => { t[b.sel] = (t[b.sel] || 0) + b.monto; });
     return t;
   }
   function opcionesApuesta(tipo, quitar) {
@@ -587,6 +621,8 @@
     }
     pintarCopas();
     pintarInscritos();
+    pintarTribuna();
+    pintarCuadrasNpc();
     pintarCriaturas();
     if (cuadraUI) cuadraUI.pintar();
     if (cartasUI) cartasUI.pintar();

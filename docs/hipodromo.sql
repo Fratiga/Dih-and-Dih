@@ -207,7 +207,7 @@ declare
   v_saldo numeric;
   v_orden bigint[];
   v_gana boolean;
-  v_base numeric; v_total numeric; v_pago numeric; v_next hipodromo_programa%rowtype; v_fav jsonb;
+  v_base numeric; v_total numeric; v_pago numeric; v_next hipodromo_programa%rowtype; v_fav jsonb; v_npc jsonb; v_npc_total numeric; v_npc_base numeric;
 begin
   if p_version = 0 then
     insert into hipodromo_estado (id, version, mundo) values (1, 1, p_lote->'mundo') on conflict (id) do nothing;
@@ -293,8 +293,12 @@ begin
     select array(select (e->>'id')::bigint from jsonb_array_elements(r.resultado->'llegada') with ordinality t(e, i) order by i) into v_orden;
     if r.tipo = 'pozo' then
       -- el pozo: lo apostado por todos más el bote, menos la retención, entre quienes aciertan (nunca menos de lo apostado)
-      select sum(monto) into v_total from hipodromo_apuestas where n = r.n and tipo = 'pozo';
-      select coalesce(sum(monto), 0) into v_base from hipodromo_apuestas where n = r.n and tipo = 'pozo' and (sel #>> '{}')::bigint = v_orden[1];
+      -- además de los jugadores, apuesta la tribuna (los personajes del hipódromo, js/hipodromo-npc.js): sus apuestas van en el programa publicado (publico->pozoNpc, por criatura)
+      select coalesce(publico->'pozoNpc', '{}'::jsonb) into v_npc from hipodromo_programa where n = r.n;
+      select coalesce(sum(value::numeric), 0) into v_npc_total from jsonb_each_text(coalesce(v_npc, '{}'::jsonb));
+      v_npc_base := coalesce((v_npc ->> v_orden[1]::text)::numeric, 0);
+      select coalesce(sum(monto), 0) + v_npc_total into v_total from hipodromo_apuestas where n = r.n and tipo = 'pozo';
+      select coalesce(sum(monto), 0) + v_npc_base into v_base from hipodromo_apuestas where n = r.n and tipo = 'pozo' and (sel #>> '{}')::bigint = v_orden[1];
       v_gana := (r.sel #>> '{}')::bigint = v_orden[1];
       v_pago := case when v_gana then round(greatest(r.monto, (v_total + 50) * 0.9 * r.monto / v_base), 2) else 0 end;
     else
@@ -400,6 +404,9 @@ begin
       -- sin cuota fija: la que se guarda es la estimada con lo que hay apostado ahora; el pago real se calcula al liquidar
       select coalesce(sum(monto), 0), coalesce(sum(monto) filter (where (sel #>> '{}')::bigint = v_a), 0) into v_tot, v_gid
         from hipodromo_apuestas where n = p_n and tipo = 'pozo' and estado = 'pendiente';
+      -- y lo que la tribuna (los personajes) ya ha apostado a estas horas
+      select v_tot + coalesce(sum((b->>'monto')::numeric), 0), v_gid + coalesce(sum((b->>'monto')::numeric) filter (where (b->>'sel')::bigint = v_a), 0) into v_tot, v_gid
+        from jsonb_array_elements(coalesce(v_prog.publico->'tribuna', '[]'::jsonb)) b where (b->>'hora')::bigint <= (extract(epoch from now()) * 1000)::bigint;
       v_raw := greatest(v_monto, (v_tot + v_monto + 50) * 0.9 * v_monto / (v_gid + v_monto)) / v_monto;
       v_cuota := case when v_raw < 10 then round(v_raw, 2) when v_raw < 100 then round(v_raw, 1) else round(v_raw, 0) end;
     end if;

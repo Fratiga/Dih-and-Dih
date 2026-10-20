@@ -506,14 +506,14 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 @media (max-width: 400px) { .hip-retrato { grid-template-columns: 88px minmax(0, 1fr); } }
 
 /* Las copas de la semana */
-.hip-grado.copa { color: #f6dc8a; text-shadow: 0 0 12px rgba(230, 194, 78, .45); }
-.hip-sello.copa { background: linear-gradient(135deg, #f3d77a, #c99a2a); border-color: #c99a2a; color: #231c05; font-weight: 700; }
+.hip-grado.copa { color: #f0d98a; }
+.hip-sello.copa { background: #d8b24a; border-color: #b8923a; color: #231c05; font-weight: 700; }
 .hip-copa-nota { margin: 10px 0 0; padding: 8px 12px; border-left: 3px solid var(--accent); background: rgba(230, 194, 78, .08); font-size: .86rem; line-height: 1.5; }
 .hip-copas { border-top: 3px solid #c99a2a; }
 .hip-copa-lista { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; }
 .hip-copa-item { padding: 10px 12px; border: 1px solid var(--border); background: rgba(230, 194, 78, .05); display: grid; gap: 4px; }
 .hip-copa-item.copa_oro, .hip-copa-item.copa_leyendas { border-color: #c99a2a; background: rgba(230, 194, 78, .1); }
-.hip-copa-item.copa_leyendas { box-shadow: 0 0 0 1px #c99a2a inset; }
+.hip-copa-item.copa_leyendas { border-width: 2px; }
 .hip-copa-cab { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .hip-copa-cab .hip-sello { margin: 0; }
 .hip-copa-datos { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); }
@@ -526,9 +526,19 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 .hip-cartas-marco { display: grid; grid-template-columns: minmax(280px, 36%) minmax(0, 1fr); gap: 18px; align-items: start; }
 .hip-cartas-marco.sin-buhonero { grid-template-columns: 1fr; }
 .hip-buho-lado { position: sticky; top: 132px; align-self: start; }
-.hip-buho-lado .pb-escena { box-shadow: inset 0 0 70px #000, 4px 4px 0 #000; }
+.hip-buho-lado .pb-escena { box-shadow: none; }
 .hip-cartas-cuerpo { min-width: 0; }
 @media (max-width: 960px) {
   .hip-cartas-marco { grid-template-columns: 1fr; gap: 12px; }
   .hip-buho-lado { position: static; margin: 0 -4px; }
 }
+
+/* La tribuna y las cuadras del mundo (js/hipodromo-npc.js) */
+.hip-tribuna li { padding: 3px 0; }
+.hip-npc-lista { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.hip-npc { padding: 12px 14px; border: 1px solid var(--border); display: grid; gap: 6px; align-content: start; }
+.hip-npc-cab { display: grid; gap: 1px; }
+.hip-npc-cab small { color: var(--muted); }
+.hip-npc-lema { margin: 0; font-style: italic; }
+.hip-npc-pie { margin: 0; display: grid; gap: 4px; font-size: .86rem; color: var(--muted); }
+.hip-npc-pie b { color: var(--text); font-weight: 600; }

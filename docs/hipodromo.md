@@ -11,6 +11,7 @@ La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se 
 | `data/hipodromo-palabras.js` | Las listas de palabras de los nombres, en español (con género) y en inglés. |
 | `js/hipodromo-nombres.js` | El generador de nombres: gramática, concordancia, herencia, homenajes y nombres de carrera. |
 | `js/hipodromo-rasgos.js` | Los rasgos de las criaturas (cuernos, alas, piel, ojos, patas extra, núcleo...): las tablas de frecuencia, la herencia, los textos y **lo que hace cada uno en la carrera**. Lo comparten el motor y el dibujo. |
+| `js/hipodromo-npc.js` | Los personajes del mundo (octubre de 2026): ocho NPC con nombre y carácter. Seis tienen cuadra y dos solo apuestan desde la grada. Ver «Los personajes». Se carga antes que el motor, que lo llama en tres puntos. |
 | `js/hipodromo-motor.js` | El mundo: genes, cuerpo, rasgos, carrera, pistas (con las arcanas), cuotas, apuestas (con pozo y doble), vida, la cuadra de los jugadores, noticias, perfil público y el paso del servidor. Reglas puras, sin pantalla ni reloj propio. |
 | `hipodromo.html`, `css/hipodromo.css`, `js/hipodromo-pagina.js` | La página, con dos modos: servidor (el normal, con sesión) y prueba local. |
 | `js/hipodromo-online.js` | El modo servidor de la página: lee el mundo compartido de Supabase, apuesta y manda órdenes con las funciones del servidor. |
@@ -18,8 +19,8 @@ La idea, en una frase: un mundo de criaturas corredoras que nacen, compiten, se 
 | `js/hipodromo-cuadra.js` | La pestaña «Mi cuadra». No sabe de dónde salen los datos: la página le pasa un objeto `api` (servidor o local). |
 | `js/hipodromo-dibujo.js`, `js/hipodromo-pista.js` | El dibujo de las criaturas (SVG) y la pista de la carrera (cámara que sigue al pelotón, clima y terreno, galope animado). |
 | `hipodromo-vivo.html`, `css/hipodromo-vivo.css`, `js/hipodromo-vivo.js`, `js/hipodromo-vida.js` | La página inmersiva para ver las carreras (ver «Hipódromo en vivo»). `hipodromo-vida.js` mueve a las criaturas; `hipodromo-pista.js` aporta el paisaje y los recorridos. |
-| `tools/probar-hipodromo.js` | 298 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |
-| `tools/probar-hipodromo-sql.js` | 62 comprobaciones del SQL contra un PostgreSQL de verdad (Docker, contenedor `cartas-pruebas`), con el motor de verdad. |
+| `tools/probar-hipodromo.js` | 325 comprobaciones y un informe de equilibrio. `node tools/probar-hipodromo.js` (un minuto) o `--rapido`. |
+| `tools/probar-hipodromo-sql.js` | 62 comprobaciones (octubre de 2026: se arreglaron las que habían quedado desfasadas con las copas y con las billeteras que empiezan en 0, y se añadió el reparto del pozo con la tribuna) del SQL contra un PostgreSQL de verdad (Docker, contenedor `cartas-pruebas`), con el motor de verdad. |
 | `docs/hipodromo.sql` | Tablas, permisos y funciones del servidor (guardar, apostar, ordenar, saldo). |
 | `docs/hipodromo-avanzar.ts` | La Edge Function de Supabase, la que mueve el mundo cada minuto. |
 
@@ -120,6 +121,37 @@ Una vez por semana de cada tipo, a las 23:00 UTC (las 20:00 en Chile y Argentina
 - **En pantalla.** La carrera lleva ★ y el sello dorado en la página, la tarjeta «Copas de la semana» (debajo de la próxima carrera) lista las que caen en los próximos dos días con su bolsa, su inscripción, lo que piden y cuáles de tus criaturas llegan, y en la tabla de inscripción de Mi cuadra salen marcadas. El panel de Admin → Calendario las resalta.
 - **Dos huecos que se cerraron el 18 de octubre de 2026** (medidos con una simulación de un jugador que compra a las 4 mejores y las mete en todas las copas: +29.000 a +94.000 tokens netos en 4 semanas por unos 1.800 de compra). (1) **Las mejores del mundo no se venden**: el precio de compra sale del palmarés y tiene tope en 3.000, y una copa paga de 5.000 a 50.000, así que comprarlas se pagaba sola en la primera copa. El corte es el de la Copa de Bronce (el 30 % mejor valorado, sin pedir salidas) y vale para el mercado, el precio del perfil y la orden de comprar (`mejoresDelMundo`). (2) **Las estrellas del mundo llegaban cansadas a la copa** (cansancio de 75 a 84 frente a 0 de una criatura de dueño que solo corre copas), así que quien corría solo copas ganaba 10 de 12 aunque no fuera de las mejores. Ahora llegan con 20 como mucho. Con las dos reglas, repetir la simulación da entre -2.000 y +1.500 netos. Lo que sigue siendo ganancia de verdad es criar y entrenar una criatura hasta las copas.
 - **Desplegar.** Cambia el motor: hay que redesplegar la Edge Function con el commit nuevo. Las carreras ya programadas no cambian. La primera copa sale el domingo 18 de octubre de 2026.
+
+## Los personajes (octubre de 2026)
+
+Ocho NPC con nombre, manías y carácter, para que el hipódromo tenga rivales y vida aunque haya pocos jugadores. Están en `js/hipodromo-npc.js` (`REPARTO`: quién es, con qué empieza, cómo juega, cómo apuesta y qué dice). Se fundan solos cuando el mundo ya ha corrido 200 carreras: reparten criaturas del mundo según lo que cada uno busca y abren sus carteras.
+
+| personaje | quién es | cómo juega |
+|---|---|---|
+| **Doña Remedios Calzada**, la Contadora | viuda de un tratante de forrajes, ahorradora | corre en Corriente y Selecta, compra barato y vende en cuanto una deja de dar cuentas; apuesta poco y a la favorita |
+| **Anselmo de Vallecuervo**, el Marqués | último de una familia arruinada con apellido | solo Grandes Premios y copas, distancias largas, táctica «al frente», no vende; apuesta siempre por su mejor criatura |
+| **Tano y Berta Pez**, los Pez | dos hermanos que lo inscriben todo | Novatos y Corriente, distancias cortas, viven de préstamos; apuestan pequeño a las de cuota alta |
+| **Madre Hilda de la Escarcha**, la Madre Escarcha | priora que cría jóvenes | las cuida y entrena más que nadie, no vende, no apuesta («solo reza») |
+| **Cuervo Salgado**, el Tahúr | jugador de oficio con una sola criatura | Selecta sobre todo; apuesta fuerte donde cree que la cuota está mal puesta |
+| **Ludmila Voss**, la Estratega | criadora de las tierras altas | distancias largas, entrena resistencia, compra Maratonistas y Tanques; apuesta cuando el terreno le da la razón a una criatura |
+| **Pocho Arango**, el Optimista | aficionado de la grada | solo apuesta, a la criatura que lleva racha |
+| **Doña Pilar Ferrer**, la Supersticiosa | vecina de toda la vida | solo apuesta, a la puerta siete (o la tres) |
+
+**Reglas de oro** (están comprobadas en las pruebas):
+- **Las mismas reglas que un jugador.** Compran, venden, entrenan y cuidan con las mismas órdenes (`ordenar` / `procesarOrdenes`) y pagan lo mismo. Su cartera es suya: `m.duenos["npc:..."].saldo`, dentro del mundo guardado, nunca en las tablas de jugadores. Gastan en mantener a sus criaturas (`gasto` por criatura y carrera), tienen un `tope` de caja y, si se quedan sin nada, piden un préstamo (con noticia) a su hora del día.
+- **Sus criaturas corren como las del mundo.** Esto salió de medirlo: al principio los NPC inscribían a sus criaturas ellos mismos y se llevaban el 31 a 43 % de las carreras. La causa es que las criaturas del mundo salen con 55 a 65 de cansancio y las de un dueño que las gestiona, con 20 o menos (`FATIGA_COPA` ya resolvía lo mismo en las copas). Ahora las de un NPC entran en el reparto de campos del mundo (`elegibles` en el motor, con `delMundo`): mismo cansancio y mismo emparejamiento. Su dueño solo decide a qué categorías y distancias las apunta (`acepta`: el Marqués no las mete en Novatos, los Pez huyen de las largas). Así ganan una parte razonable de las carreras (15 a 22 % en un mes, con unas 15 criaturas de unas 110) y ninguno domina.
+- **Solo saben lo público.** Apuestan con las cuotas, las estrellas, las últimas, las etiquetas del terreno y los rumores. Nunca miran el resultado ya calculado: sus apuestas salen idénticas cambiando el resultado oculto (prueba incluida).
+- **No quitan sitio ni dinero a los jugadores.** No inscriben (no ocupan plazas), no compran las mejores del mundo (no se venden), y lo suyo no sale en los pagos, avisos ni cuadras que van al servidor: allí todo dueño es un jugador. Las criaturas de un NPC no se compran (ya tienen dueño). Una que se retira vuelve al mundo y, si vale, a la cría.
+- **Es determinista.** Todo su azar sale de `crearRng(semilla, "npc", ...)`, así que el servidor y el navegador dan lo mismo y el mundo con personajes se guarda y se reanuda igual.
+
+**La tribuna (las apuestas).** Solo van al **pozo**, que es el único mercado donde el volumen cambia lo que cobran los demás (en ganador, podio y exacta la cuota es fija). Cada personaje con ganas decide, al programarse la carrera, a quién apostar y cuánto (de 6 a 40 tokens), y la apuesta lleva una hora repartida dentro de la hora de apuestas: la página enseña solo las que ya han llegado (tarjeta «En la tribuna») y el pozo estimado las cuenta. Entran en el reparto como las de un jugador: lo apostado por todos más el bote de la casa, menos la retención del 10 %, entre quienes aciertan. Hay unos 40 tokens por carrera entre todos. Efecto: el bote de 50 de la casa se reparte entre más gente (a un jugador que apuesta solo le toca menos de ese regalo) y quien sepa leer sus manías (la racha de Pocho, el siete de Pilar) puede sacar algo. En el servidor:
+- La liquidación (`hipodromo_guardar`) suma al pozo lo que dice `hipodromo_programa.publico->pozoNpc`; la cuota estimada al apostar (`hipodromo_apostar`) cuenta las apuestas de la tribuna cuya hora ya ha pasado.
+- Los personajes cobran su parte dentro del motor (`liquidar`), con lo que apostaron los jugadores, que la Edge Function lee de `hipodromo_pozos` y pasa en `cfg.pozos`. Si en una puesta al día falta ese dato, cuentan solo entre ellos y el bote.
+- `programa.publico` lleva `tribuna`, `pozoNpc` y `cuadrasNpc` (quién tiene qué criaturas y cuánto hay en su caja), que enseñan la página (Carrera y Mundo → «Las cuadras del mundo»).
+
+**Noticias.** Salen como mucho una por carrera, de los fichajes y ventas, los préstamos, las victorias en Gran Premio y copas (y una parte de las demás) y las apuestas gordas. Cada personaje tiene sus frases.
+
+**Mandos** (`HipodromoNPC.AJUSTE` y `REPARTO`): `FUNDAR_DESDE`, `ESCALA_APUESTAS` (0 apaga la tribuna), `MAX_NOTICIAS`, y por personaje `gasto`, `tope`, `grados`, `copas`, `dist`, `compra`, `entrena`, `cuida`, `prestamo` y `apuesta`. Para añadir uno, una entrada nueva en `REPARTO` (con un `id` «npc:...»).
 
 ## Cómo se mueve el mundo
 
@@ -283,7 +315,7 @@ Una **Edge Function** (`hipodromo-avanzar`) corre cada minuto con `pg_cron`: lee
 
 ## Cómo se probó
 
-- `node tools/probar-hipodromo.js` (298 comprobaciones): nombres, genes y cuerpo, la carrera (velocista contra fondista, terreno y clima, cansancio, forma, duelo de líderes, lesiones), **rasgos** (herencia, efectos acotados, y que cada uno gane donde debe: alas en el Cielo Roto, ojos en los Espejos, palmeadas en la Ciénaga...), pistas arcanas, **la cuadra** (adoptar, comprar, inscribir con devolución, entrenar, cuidar, táctica, bautizar, cruzar, montas de otros, premios, reanudar desde JSON, que lo privado no sale en lo público y el rendimiento económico), el pozo y el doble, un mundo de años (población estable, calendario, premios exactos, rating, deriva genética, noticias), cuotas (calibración, margen, exacta, liquidar), el paso del servidor y ponerse al día en varias llamadas.
+- `node tools/probar-hipodromo.js` (325 comprobaciones): nombres, genes y cuerpo, la carrera (velocista contra fondista, terreno y clima, cansancio, forma, duelo de líderes, lesiones), **rasgos** (herencia, efectos acotados, y que cada uno gane donde debe: alas en el Cielo Roto, ojos en los Espejos, palmeadas en la Ciénaga...), pistas arcanas, **la cuadra** (adoptar, comprar, inscribir con devolución, entrenar, cuidar, táctica, bautizar, cruzar, montas de otros, premios, reanudar desde JSON, que lo privado no sale en lo público y el rendimiento económico), el pozo y el doble, un mundo de años (población estable, calendario, premios exactos, rating, deriva genética, noticias), cuotas (calibración, margen, exacta, liquidar), el paso del servidor y ponerse al día en varias llamadas.
 - `node tools/probar-hipodromo-sql.js` (62 comprobaciones, necesita Docker): ejecuta el SQL dos veces, comprueba permisos (anónimo y jugador), apostar con la cuota del servidor (la de la exacta coincide con la del motor), el pozo y el doble repartidos igual que en el motor, las órdenes procesadas por el motor con el cobro junto al mundo, premios y apuestas liquidados, choques de versión y saldos negativos que no dejan nada a medias.
 - **Contra el Supabase real**: se aplicó el SQL, se desplegó la Edge Function, se programó el cron y se comprobó que el mundo se crea y se pone al día. Esto sacó dos cosas que el Postgres local no enseñaba: Supabase exige `WHERE` en todo `DELETE` (pg-safeupdate) y da permisos de escritura por defecto a las vistas nuevas (el SQL los quita). Los imports de la Edge Function tienen que ser estáticos.
 

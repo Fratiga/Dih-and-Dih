@@ -13,9 +13,9 @@
 // Preparación (una sola vez):
 //   * Ejecutar docs/hipodromo.sql en el editor SQL.
 //   * Crear la función:  supabase functions new hipodromo-avanzar  y poner este archivo como index.ts.
-//   * El motor: o se copian al lado de index.ts, SIN cambiarlos, estos cuatro archivos del sitio
-//       data/hipodromo-palabras.js   js/hipodromo-nombres.js   js/hipodromo-rasgos.js   js/hipodromo-motor.js
-//     o (lo que se hizo al desplegar con el editor de Supabase) se cambian las cuatro líneas «import "./...js"» de abajo por
+//   * El motor: o se copian al lado de index.ts, SIN cambiarlos, estos cinco archivos del sitio
+//       data/hipodromo-palabras.js   js/hipodromo-nombres.js   js/hipodromo-rasgos.js   js/hipodromo-npc.js   js/hipodromo-motor.js
+//     o (lo que se hizo al desplegar con el editor de Supabase) se cambian las cinco líneas «import "./...js"» de abajo por
 //     la dirección de una versión FIJA del repositorio, con el hash del commit, que nunca cambia:
 //       import "https://cdn.jsdelivr.net/gh/Fratiga/Dih-and-Dih@<hash-del-commit>/js/hipodromo-motor.js";
 //     (los imports tienen que ser estáticos: la Edge Function no admite import() dinámico de direcciones web).
@@ -44,6 +44,7 @@ import "./ventana.ts";
 import "./hipodromo-palabras.js";
 import "./hipodromo-nombres.js";
 import "./hipodromo-rasgos.js";
+import "./hipodromo-npc.js";      // los personajes del mundo (cuadras y apostadores); va antes que el motor
 import "./hipodromo-motor.js";
 const Motor = (globalThis as any).HipodromoMotor;
 
@@ -75,7 +76,17 @@ Deno.serve(async (req: Request) => {
       (bs ?? []).forEach((b: any) => { saldos[b.usuario] = Number(b.saldo); });
     }
 
-    const paso = Motor.paso(fila, Date.now(), { ...cfg, ordenes, saldos });
+    // lo que han apostado los jugadores al pozo de la carrera que se va a aplicar: los personajes del hipódromo cobran del mismo pozo y su reparto lo necesita
+    const pozos: Record<number, Record<number, number>> = {};
+    if (fila) {
+      const nAplicar = fila.mundo.n;
+      const { data: pz, error: errPz } = await sb.from("hipodromo_pozos").select("criatura_id, total").eq("n", nAplicar);
+      if (errPz) return respuesta(500, { error: errPz.message });
+      pozos[nAplicar] = {};
+      (pz ?? []).forEach((x: any) => { pozos[nAplicar][x.criatura_id] = Number(x.total); });
+    }
+
+    const paso = Motor.paso(fila, Date.now(), { ...cfg, ordenes, saldos, pozos });
     if (!paso) return respuesta(200, { avanzadas: 0 });
 
     const { data: version, error } = await sb.rpc("hipodromo_guardar", { p_version: paso.version, p_lote: paso.lote });

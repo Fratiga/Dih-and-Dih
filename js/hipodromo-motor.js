@@ -25,6 +25,8 @@
 (function (raiz) {
   "use strict";
   const HR = raiz.HipodromoRasgos;   // js/hipodromo-rasgos.js, se carga antes que el motor
+  const esNpcId = id => typeof id === "string" && id.indexOf("npc:") === 0;
+  const delMundo = c => !c.dueno || esNpcId(c.dueno);   // las de un NPC juegan con las reglas del mundo (mismo cansancio y mismo emparejamiento): su dueño solo decide a qué categorías y distancias las apunta   // los dueños virtuales de js/hipodromo-npc.js (que, si no está, simplemente no hay)
 
   /* ---------------------------------------------------------------- constantes (los mandos del juego) */
   const C = {
@@ -514,8 +516,8 @@
   const copasQueCorre = (m, c) => Object.keys(GRADOS).filter(g => GRADOS[g].copa && clasificadas(m, GRADOS[g]).some(x => x.id === c.id));
 
   /* ---------------------------------------------------------------- inscripciones */
-  function elegibles(m, relajar) {
-    return m.vivos.filter(c => !c.dueno && edadAnios(m.n, c) >= C.DEBUT && !c.lesion && c.fatiga <= (relajar ? 90 : C.FATIGA_MAX) && m.n - c.ultima >= (relajar ? 1 : C.DESCANSO_MIN));
+  function elegibles(m, relajar, grado, dist, n) {
+    return m.vivos.filter(c => delMundo(c) && (!esNpcId(c.dueno) || npcAcepta(m, c, grado, dist, n)) && edadAnios(m.n, c) >= C.DEBUT && !c.lesion && c.fatiga <= (relajar ? 90 : C.FATIGA_MAX) && m.n - c.ultima >= (relajar ? 1 : C.DESCANSO_MIN));
   }
   /* Los entrenadores meten a cada criatura en la categoría que le toca (por rating), descansada y con la distancia que le va */
   /* Las criaturas que sus dueños inscribieron en la carrera n y que de verdad pueden correr; el resto se devuelve (con su pago) */
@@ -548,8 +550,8 @@
   function inscribir(m, rng, grado, dist, n) {
     const G = GRADOS[grado];
     const forzadas = n == null ? [] : forzadasPara(m, n, G);
-    let pool = elegibles(m, !!G.copa);
-    if (pool.length < C.CAMPO_MIN + 2) pool = elegibles(m, true);
+    let pool = elegibles(m, !!G.copa, grado, dist, n);
+    if (pool.length < C.CAMPO_MIN + 2) pool = elegibles(m, true, grado, dist, n);
     if (G.copa) {
       const q = new Set(clasificadas(m, G).map(c => c.id)), buenas = pool.filter(c => q.has(c.id));
       const faltan = Math.max(0, G.campo[0] - forzadas.length - buenas.length);
@@ -616,7 +618,7 @@
     RECHAZADAS = [];
     const cs = inscribir(m, rng, grado, dist, n);
     // las estrellas del mundo llegan descansadas a una copa (las que tienen dueño llegan como las deje su dueño): sin esto, una criatura que solo corre copas siempre ganaba por frescura
-    if (GRADOS[grado].copa) cs.forEach(c => { if (!c.dueno) c.fatiga = Math.min(c.fatiga, C.FATIGA_COPA); });
+    if (GRADOS[grado].copa) cs.forEach(c => { if (delMundo(c)) c.fatiga = Math.min(c.fatiga, C.FATIGA_COPA); });
     const jornada = Math.floor(n / C.JORNADA);
     const prog = {
       n, hora: horaDe(m, n), cierre: horaDe(m, n) - C.CIERRE_SEG * 1000,
@@ -771,6 +773,7 @@
   function retirar(m, c, motivo, ev, rng, quiereCria) {
     const i = m.vivos.indexOf(c); if (i < 0) return;
     m.vivos.splice(i, 1);
+    if (esNpcId(c.dueno)) { c.dueno = null; c.entradas = []; c.entreno = null; c.tactica = null; }   // la que se retira de una cuadra virtual vuelve al mundo y, si vale, a la cría
     const criador = quiereCria ? edadAnios(m.n, c) < 12 : digna(m, c) && !(c.lesion && c.lesion.gravedad === "grave" && rng.f() < 0.5);
     c.estado = criador ? "criador" : "retirado";
     c.lesion = null;
@@ -873,7 +876,7 @@
       const a = edadAnios(m.n, c);
       let h = 0;
       if (a > 5) h += 0.0012 * porAnio * Math.pow(a - 5, 1.5);
-      if (c.salidas >= 14 && c.rating < 1400 && !c.dueno) h += 0.01 * porAnio;   // el que tiene dueño solo se retira por salud o edad, o porque su dueño quiere
+      if (c.salidas >= 14 && c.rating < 1400 && delMundo(c)) h += 0.01 * porAnio;   // el que tiene dueño solo se retira por salud o edad, o porque su dueño quiere
       const perm = -(c.perm.vel + c.perm.res + c.perm.ace + c.perm.agi + c.perm.tem);
       if (perm >= 9) h += 0.02 * porAnio;
       if (a >= 9) h = 1;
@@ -1256,12 +1259,17 @@
   /* Aplica la carrera programada (ya corrida en programar) y deja programada la siguiente. */
   function avanzar(m, opc) {
     const prog = m.proxima, res = prog && prog.secreto && prog.secreto.res;
-    const ev = { n: m.n, resultado: res, noticias: [], cambios: new Set(), bajas: [], retirarPor: new Map(), nacidos: [], pagos: [], avisos: [] };
+    const ev = { n: m.n, resultado: res, noticias: [], cambios: new Set(), bajas: [], retirarPor: new Map(), nacidos: [], pagos: [], avisos: [],
+      pozoReal: (opc && opc.pozos && opc.pozos[m.n]) || {} };   // lo apostado por los jugadores al pozo de esta carrera, por criatura (lo trae el servidor; sin él, solo cuenta la tribuna)
+    const NPC = raiz.HipodromoNPC, X = NPC ? npcX() : null;
     if (res) aplicarResultado(m, prog, res, ev);
+    if (res && NPC) NPC.liquidar(m, X, prog, res, ev);
     else ev.noticias.push(noticia(m, "suspendida", "Jornada suspendida", `No hay criaturas en condiciones de correr ${prog ? prog.nombre : "esta carrera"}. Se aplaza.`, []));
     cicloVital(m, ev);
     m.n++;
+    if (NPC) { NPC.iniciar(m, X, ev); NPC.turno(m, X, ev); }   // las órdenes de las cuadras virtuales, antes de fijar el campo de la carrera que toca
     const sig = programar(m, opc);
+    if (NPC) { NPC.apuestas(m, X, sig); sig.cuadrasNpc = NPC.publico(m); }   // la tribuna apuesta con lo que ya es público
     // lo que los dueños pagaron por correr y no pudo ser se les devuelve; las inscripciones ya pasadas se borran
     ((sig.secreto && sig.secreto.rechazadas) || []).forEach(r => {
       ev.pagos.push({ dueno: r.dueno, monto: r.monto, concepto: `Inscripción devuelta: ${r.nombre}`, n: sig.n });
@@ -1270,11 +1278,14 @@
     });
     m.vivos.forEach(c => { if (c.entradas && c.entradas.length) c.entradas = c.entradas.filter(en => en.n > m.n); });
     if (sig.secreto) sig.secreto.rechazadas = [];
+    if (NPC) NPC.cerrar(m, ev);   // lo de los dueños virtuales se queda en su cartera: no sale en los pagos ni en los avisos que van al servidor
     ev.aplicada = res ? res.n : null;
     sig.rumores.forEach(r => { const nt = noticia(m, "rumor", "Rumores de cuadra", r.texto, [r.id], sig.n); nt.hora = horaDe(m, sig.n - 1) + C.APLICAR_SEG * 1000; ev.noticias.push(nt); });   // salen al programar, no a la hora de la carrera
+    // las que entran o salen del grupo de las mejores del mundo cambian de precio (las mejores no se venden): su perfil público se vuelve a publicar
+    { const mej = mejoresDelMundo(m), antes = new Set(m.mejores || []); mej.forEach(id => { if (!antes.has(id)) ev.cambios.add(id); }); antes.forEach(id => { if (!mej.has(id)) ev.cambios.add(id); }); m.mejores = [...mej]; }
     // perfiles públicos de todo lo que cambió en esta carrera (incluye retirados y recién nacidos)
     ev.perfiles = [...ev.cambios].map(id => buscar(m, id) || ev.bajas.find(b => b.id === id)).filter(Boolean).map(c => perfil(m, c));
-    delete ev.cambios; delete ev.retirarPor;
+    delete ev.cambios; delete ev.retirarPor; delete ev.pozoReal;
     ev.programa = programaPublico(sig);
     ev.programada = sig.secreto && sig.secreto.res;
     return ev;
@@ -1283,7 +1294,7 @@
   const filaCriatura = (m, p) => ({ id: p.id, nombre: p.nombre, sexo: p.sexo, estado: p.estado, nac: p.nac, gen: p.gen, padre_id: p.padre ? p.padre.id : null, madre_id: p.madre ? p.madre.id : null,
     salidas: p.salidas, victorias: p.vic, premios: p.premios, leyenda: p.leyenda, dueno: p.dueno ? p.dueno.id : null, n: m.n, publico: p });
   /* Lo privado de cada dueño: sus criaturas con las órdenes, el cansancio y las capacidades que le cuenta su entrenador */
-  const filasCuadra = m => m.vivos.concat(m.criadores).filter(c => c.dueno).map(c => ({ dueno: c.dueno, criatura_id: c.id, n: m.n, datos: perfilCuadra(m, c) }));
+  const filasCuadra = m => m.vivos.concat(m.criadores).filter(c => c.dueno && !esNpcId(c.dueno)).map(c => ({ dueno: c.dueno, criatura_id: c.id, n: m.n, datos: perfilCuadra(m, c) }));
   const filaPrograma = prog => ({ n: prog.n, hora: prog.hora, cierre: prog.cierre, publico: programaPublico(prog) });
   /* Primera vez: toda la población, la carrera programada y su resultado (que la base de datos oculta hasta la hora de salida) */
   function loteInicial(m) {
@@ -1313,7 +1324,7 @@
     while (ahora >= horaDe(m, m.n) + C.APLICAR_SEG * 1000 && out.length < ((opc && opc.max) || 200)) {
       // al ponerse al día, las carreras que ya van a quedar atrás se programan con pocas simulaciones; la última, con todas
       const sigue = ahora >= horaDe(m, m.n + 1) + C.APLICAR_SEG * 1000;
-      out.push(avanzar(m, sigue && opc && opc.rapido ? { sims: opc.rapido } : opc));
+      out.push(avanzar(m, sigue && opc && opc.rapido ? { sims: opc.rapido, pozos: opc.pozos } : opc));
     }
     return out;
   }
@@ -1335,15 +1346,21 @@
     const m = fila.mundo;
     // primero las órdenes de los jugadores (cfg.ordenes, con los saldos de cfg.saldos), después las carreras que ya tocan
     const rOrd = cfg.ordenes && cfg.ordenes.length ? procesarOrdenes(m, cfg.ordenes, cfg.saldos) : null;
-    const eventos = avanzarHasta(m, ahora, { max: cfg.max || 48, sims: cfg.sims, rapido: cfg.rapido });
+    const eventos = avanzarHasta(m, ahora, { max: cfg.max || 48, sims: cfg.sims, rapido: cfg.rapido, pozos: cfg.pozos });
     return eventos.length || rOrd ? { version: fila.version, lote: lote(m, eventos, rOrd), avanzadas: eventos.length, ordenes: rOrd ? rOrd.resultados : [] } : null;
+  }
+
+  /* Las piezas del motor que usa js/hipodromo-npc.js (un personaje juega con las mismas órdenes que un jugador y solo mira lo público) */
+  const npcAcepta = (m, c, grado, dist, n) => { const NPC = raiz.HipodromoNPC; return !NPC || NPC.acepta(m, npcX(), c, grado, dist, n); };   // ¿acepta su dueño virtual esa categoría y distancia?
+  function npcX() {
+    return { C, GRADOS, STATS, PISTAS, EMPAREJA, crearRng, edadAnios, buscar, perfil, perfilCuadra, procesarOrdenes, calendarioVisible, clasificadas, enVenta, cuadraDe, noticia, horaDe, programaPublico, etiquetaPista };
   }
 
   raiz.HipodromoMotor = {
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
     cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, TACTICAS, _interno: { pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
+    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);

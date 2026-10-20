@@ -8,7 +8,7 @@ const RAIZ = path.join(__dirname, "..");
 const CONTENEDOR = "cartas-pruebas", BASE = "hipodromo_pruebas";
 
 const sb = { console }; sb.window = sb; sb.globalThis = sb; vm.createContext(sb);
-for (const f of ["data/hipodromo-palabras.js", "js/hipodromo-nombres.js", "js/hipodromo-rasgos.js", "js/hipodromo-motor.js"]) vm.runInContext(fs.readFileSync(path.join(RAIZ, f), "utf8"), sb, { filename: f });
+for (const f of ["data/hipodromo-palabras.js", "js/hipodromo-nombres.js", "js/hipodromo-rasgos.js", "js/hipodromo-npc.js", "js/hipodromo-motor.js"]) vm.runInContext(fs.readFileSync(path.join(RAIZ, f), "utf8"), sb, { filename: f });
 const M = sb.HipodromoMotor, C = M.C;
 
 const fallos = []; let n = 0;
@@ -62,7 +62,7 @@ const nCarrera = fila.mundo.proxima.n;
 ok(anonimo("select count(*) from hipodromo_estado;").err && /permission denied/.test(anonimo("select count(*) from hipodromo_estado;").err), "un anónimo no lee el estado secreto");
 ok(Number(ultima(anonimo("select count(*) from hipodromo_criaturas;"))) > 90, "un anónimo sí lee las criaturas públicas");
 ok(Number(ultima(anonimo("select count(*) from hipodromo_carreras;"))) === 0, "la carrera futura no se ve antes de su hora");
-ok(Number(ultima(anonimo("select count(*) from hipodromo_calendario;"))) === C.ADELANTO, "el calendario de las próximas carreras es público");
+ok(Number(ultima(anonimo("select count(*) from hipodromo_calendario;"))) >= C.ADELANTO, "el calendario de las próximas carreras (las 12 siguientes y las copas de los próximos dos días) es público");
 ok(/permission denied/.test(como(U1, "select hipodromo_guardar(1, '{}'::jsonb);").err || ""), "un jugador no puede llamar a guardar");
 ok(/permission denied/.test(como(U1, "update hipodromo_billeteras set saldo = 99999;").err || "") && /permission denied/.test(como(U1, "insert into hipodromo_ordenes (usuario, datos) values ('" + U1 + "', '{}');").err || ""), "un jugador no escribe en su billetera ni en las órdenes a mano");
 ok(/permission denied/.test(como(U1, "insert into hipodromo_apuestas (usuario, n, tipo, sel, monto, cuota) values ('" + U1 + "', 1, 'ganador', '1', 100, 99);").err || ""), "ni se apuesta a mano con la cuota que uno quiera");
@@ -71,6 +71,7 @@ ok(/Hace falta/.test(anonimo("select hipodromo_saldo();").err || "") || /permiss
 // billetera y apuestas
 ok(/^0(.00)?$/.test(ultima(como(U1, "select hipodromo_saldo();"))), "la billetera empieza con 0 tokens");
 q(`update hipodromo_billeteras set saldo = 1000 where usuario = '${U1}';`);   // para probar las apuestas se le dan 1000
+q(`insert into hipodromo_billeteras (usuario, saldo) values ('${U2}', 1000) on conflict (usuario) do update set saldo = 1000;`);   // y al segundo jugador también
 const prog = fila.mundo.proxima, ent = prog.entrantes;
 const a = ent[0], b = ent[1];
 let r = como(U1, `select hipodromo_apostar(${nCarrera}, 'ganador', '${a.id}'::jsonb, 100);`);
@@ -139,11 +140,15 @@ ok(Number(q(`select count(*) from hipodromo_movimientos where usuario = '${U1}' 
 // una orden que falla no cobra: la criatura de otro, y falta de saldo
 const idMal = Number(ordenar(U2, { tipo: "inscribir", id: idMia, n: objetivo.n }));
 q(`insert into hipodromo_billeteras (usuario, saldo) values ('${U2}', 3) on conflict (usuario) do update set saldo = 3;`);
-const idCompra = Number(ordenar(U2, { tipo: "comprar", id: JSON.parse(q("select publico::text from hipodromo_criaturas where dueno is null and estado = 'activo' limit 1;")).id }));
+const idCompra = Number(ordenar(U2, { tipo: "comprar", id: JSON.parse(q("select publico::text from hipodromo_criaturas where dueno is null and estado = 'activo' and publico->>'precio' is not null order by (publico->>'precio')::numeric limit 1;")).id }));
 e = edge(Date.now());
 const resMal = e.paso.ordenes.find(o => o.oid === idMal), resCompra = e.paso.ordenes.find(o => o.oid === idCompra);
 ok(!resMal.ok && !resCompra.ok && /tokens/.test(resCompra.error), "la orden sobre la criatura de otro y la compra sin saldo se rechazan");
 ok(q(`select estado from hipodromo_ordenes where id = ${idMal};`) === "rechazada" && Number(q(`select saldo from hipodromo_billeteras where usuario = '${U2}';`)) === 3, "las rechazadas no cobran nada");
+
+// la tribuna (los personajes del hipódromo) también apuesta al pozo de esta carrera: sus apuestas van en el programa publicado y cuentan al repartirlo
+const npcPozo = {}; npcPozo[a.id] = 40; npcPozo[c3.id] = 60;
+q(`update hipodromo_programa set publico = publico || jsonb_build_object('pozoNpc', '${JSON.stringify(npcPozo)}'::jsonb, 'tribuna', '[{"npc":"npc:pilar","sel":${a.id},"monto":40,"hora":1},{"npc":"npc:cuervo","sel":${c3.id},"monto":60,"hora":1}]'::jsonb) where n = ${nCarrera};`);
 
 // aplicar la carrera: liquida las apuestas, paga premios y devuelve inscripciones
 const horaN = fila.mundo.proxima.hora;
@@ -160,8 +165,9 @@ ok(Math.abs(Number(q(`select saldo from hipodromo_billeteras where usuario = '${
 ok(Number(q(`select count(*) from hipodromo_apuestas where n = ${nCarrera} and estado = 'pendiente';`)) === 0, "no queda ninguna apuesta de esa carrera sin liquidar");
 // el pozo, como lo reparte el motor
 { const filas = JSON.parse(q(`select json_agg(json_build_object('id', id, 'sel', sel, 'monto', monto, 'e', estado, 'p', pago) order by id) from hipodromo_apuestas where n = ${nCarrera} and tipo = 'pozo';`));
-  const esperado = M.pagarPozo(filas.map(x => ({ id: x.id, sel: x.sel, monto: Number(x.monto) })), orden[0]);
-  ok(filas.length === 2 && filas.every((x, i) => x.e === esperado[i].estado && Math.abs(Number(x.p) - esperado[i].pago) < 0.011), "el pozo se reparte en la base igual que en el motor: " + filas.map(x => x.e + " " + x.p).join(", "));
+  // con lo que apostó la tribuna: los personajes entran en el reparto (lo que apostaron y, si aciertan, lo que cobran) como un jugador más
+  const esperado = M.pagarPozo(filas.map(x => ({ id: x.id, sel: x.sel, monto: Number(x.monto) })).concat([{ id: "npc-a", sel: a.id, monto: 40 }, { id: "npc-c3", sel: c3.id, monto: 60 }]), orden[0]);
+  ok(filas.length === 2 && filas.every((x, i) => x.e === esperado[i].estado && Math.abs(Number(x.p) - esperado[i].pago) < 0.011), "el pozo se reparte en la base igual que en el motor, con la tribuna dentro: " + filas.map(x => x.e + " " + x.p).join(", "));
   // el doble: la apuesta que ganó (una de las ocho) abre otra a ganador al favorito de la carrera siguiente, con lo cobrado
   const ganadora = JSON.parse(q(`select json_agg(json_build_object('id', id, 'p', pago)) from hipodromo_apuestas where n = ${nCarrera} and doble and estado = 'ganada';`));
   ok(ganadora && ganadora.length === 1, "de las ocho apuestas dobles, una gana");

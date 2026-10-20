@@ -3,7 +3,7 @@
 const vm = require("vm"), fs = require("fs"), path = require("path");
 const rapido = process.argv.includes("--rapido");
 const sb = { console }; sb.window = sb; sb.globalThis = sb; vm.createContext(sb);
-for (const f of ["data/hipodromo-palabras.js", "js/hipodromo-nombres.js", "js/hipodromo-rasgos.js", "js/hipodromo-motor.js"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", f), "utf8"), sb, { filename: f });
+for (const f of ["data/hipodromo-palabras.js", "js/hipodromo-nombres.js", "js/hipodromo-rasgos.js", "js/hipodromo-npc.js", "js/hipodromo-motor.js"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "..", f), "utf8"), sb, { filename: f });
 const M = sb.HipodromoMotor, N = sb.HipodromoNombres, P = sb.HIPODROMO_PALABRAS, I = M._interno, C = M.C;
 const fallos = []; let n = 0;
 const ok = (c, msg) => { n++; if (!c) fallos.push(msg); };
@@ -469,6 +469,80 @@ function cabezaACabeza(a, b, cond, veces) {
     ok(oros.length === 0 || oros.every(id => { const c = M.buscar(w3, id); return !c || c.gp >= 1; }), "ganar la Copa de Oro o la de las Leyendas cuenta como gran premio");
     const tit = evs.flatMap(e => e.noticias).filter(nn => nn.tipo === "resultado" && /Copa/.test(nn.titulo + nn.texto));
     ok(tit.length > 0 && tit.every(x => !/undefined|NaN/.test(x.titulo + x.texto)), "las noticias de las copas salen bien formadas"); }
+}
+
+// 4g) Los personajes: cuadras con dueño virtual y apostadores de la tribuna
+{ const NPC = sb.HipodromoNPC, esNpc = M.esNpcId, mk = () => M.crearMundo("personajes", { calentar: 300, t0: Date.UTC(2026, 9, 1, 2), simsCalentar: 8 });
+  const w = mk();
+  // fundación
+  ok(!!w.npc && NPC.REPARTO.every(P => w.duenos[P.id] && w.duenos[P.id].npc), "al ir corriendo el mundo se fundan las cuadras y llegan todos los personajes");
+  const cuadras = NPC.REPARTO.filter(P => P.cuadra);
+  ok(cuadras.every(P => M.cuadraDe(w, P.id).length >= 1 && M.cuadraDe(w, P.id).length <= C.MAX_CABALLOS) && NPC.REPARTO.filter(P => !P.cuadra).every(P => M.cuadraDe(w, P.id).length === 0), "cada cuadra tiene sus criaturas (sin pasar del máximo) y los apostadores de la grada no tienen ninguna");
+  ok(new Set(w.vivos.filter(c => esNpc(c.dueno)).map(c => c.id)).size === w.vivos.filter(c => esNpc(c.dueno)).length, "ninguna criatura tiene dos dueños");
+  const personajes = JSON.stringify(NPC.REPARTO.map(P => [P.nombre, P.apodo, P.cuadra, P.lema, P.bio, JSON.stringify(P.frases)]));
+  ok(NPC.REPARTO.length >= 8 && !/[—–]|undefined|NaN/.test(personajes) && !/\b(tenés|podés|sabés|querés|vos)\b/i.test(personajes), "hay al menos ocho personajes, con textos sin rayas largas ni voseo");
+  ok(new Set(NPC.REPARTO.map(P => P.id)).size === NPC.REPARTO.length && NPC.REPARTO.every(P => /^npc:/.test(P.id)), "cada personaje tiene un identificador propio que no se confunde con el de un jugador");
+  // un mes de vida: la cartera, lo que sale al servidor y quién corre dónde
+  const evs = [], apuestas = [], corrieron = {}; let negativo = false, topeApuesta = true, tribunaMax = 0, noticiasNpc = [];
+  for (let i = 0; i < 24 * 7 * 4; i++) {
+    // quién corre en cada categoría, con el dueño que tenía al armarse el campo (más tarde pueden cambiar de manos)
+    w.proxima.entrantes.forEach(e => { if (e.dueno && esNpc(e.dueno.id)) (corrieron[e.dueno.id] = corrieron[e.dueno.id] || new Set()).add(w.proxima.grado); });
+    const ev = M.avanzar(w, { sims: 8 }); evs.push(ev);
+    NPC.REPARTO.forEach(P => { if (w.duenos[P.id].saldo < 0) negativo = true; });
+    const t = w.proxima.tribuna || []; tribunaMax = Math.max(tribunaMax, t.reduce((a, b) => a + b.monto, 0));
+    t.forEach(b => { apuestas.push(b); const P = NPC.PERSONAJE[b.npc]; if (!P || b.monto > Math.ceil(P.apuesta.monto * 1.3) || b.monto < 1) topeApuesta = false; });
+    ev.noticias.filter(x => x.tipo === "cuadra" || x.tipo === "tribuna").forEach(x => noticiasNpc.push(x));
+  }
+  ok(!negativo, "ninguna cartera de personaje se queda en negativo");
+  const lt = M.lote(w, evs.slice(-5), null);
+  ok(evs.every(e => e.pagos.every(p => !esNpc(p.dueno)) && e.avisos.every(a => !esNpc(a.dueno))) && lt.cuadras.every(c => !esNpc(c.dueno)) && lt.pagos.every(p => !esNpc(p.dueno)), "lo de los personajes no sale en los pagos, avisos ni cuadras que van al servidor (allí todo dueño es un jugador)");
+  ok(w.criadores.every(c => !esNpc(c.dueno)), "las criaturas de un personaje que se retiran vuelven al mundo (no quedan criadores con dueño virtual)");
+  ok(apuestas.length > 500 && topeApuesta && tribunaMax <= 160, "la tribuna apuesta con regularidad y poco: ninguna apuesta pasa de lo suyo y el máximo por carrera es " + tribunaMax + " tokens (" + apuestas.length + " apuestas en el mes)");
+  ok(apuestas.every(b => b.hora >= M.horaDe(w, 0) && typeof b.hora === "number") && apuestas.every((b, i) => i === 0 || true), "las apuestas llevan la hora a la que se hacen");
+  const ganadores = evs.map(e => e.resultado).filter(Boolean).filter(r => { const c = M.buscar(w, r.llegada[0].id); return c && esNpc(c.dueno); }).length, total = evs.filter(e => e.resultado).length;
+  ok(ganadores / total > 0.05 && ganadores / total < 0.35, "las criaturas de los personajes ganan una parte razonable de las carreras (" + pct(ganadores / total) + ")");
+  // categorías: cada personaje solo mete a las suyas donde le gusta
+  const corre = (id, grado) => !!(corrieron[id] && corrieron[id].has(grado));
+  ok(!corre("npc:marques", "novatos") && !corre("npc:marques", "corriente") && !corre("npc:hilda", "gran"), "el Marqués no corre en Novatos ni en Corriente y la Madre Escarcha no corre Grandes Premios");
+  ok(NPC.REPARTO.filter(P => P.cuadra).every(P => evs.some(e => e.resultado && e.resultado.llegada.some(l => { const c = M.buscar(w, l.id) || {}; return c.dueno === P.id; }))), "todas las cuadras corren de verdad");
+  // noticias
+  ok(noticiasNpc.length > 30 && noticiasNpc.length < total / 2 && noticiasNpc.every(x => x.titulo && x.texto && !/undefined|NaN|\[object|[—–]/.test(x.titulo + x.texto) && !/\b(tenés|podés|sabés|querés)\b/i.test(x.texto)), "los personajes salen en las noticias sin llenarlas (" + noticiasNpc.length + " en " + total + " carreras) y bien formadas");
+  // jugadores: las criaturas de un personaje no se compran ni se meten en el mercado
+  { const npcCri = w.vivos.find(c => esNpc(c.dueno)); const r = M.procesarOrdenes(w, [{ oid: 1, dueno: "u1", tipo: "comprar", id: npcCri.id }], { u1: 1e6 }).resultados[0];
+    ok(!r.ok && /dueño/.test(r.error) && !M.enVenta(w).some(c => esNpc(c.dueno)) && M.perfil(w, npcCri).dueno.id === npcCri.dueno && M.perfil(w, npcCri).precio === null, "las criaturas de un personaje no se pueden comprar ni salen en el mercado, y la ficha dice de qué cuadra son"); }
+  // el mundo con personajes se guarda y se reanuda igual
+  { const a = JSON.parse(JSON.stringify(w)), b = JSON.parse(JSON.stringify(w));
+    for (let i = 0; i < 30; i++) { M.avanzar(a, { sims: 8 }); } const b2 = JSON.parse(JSON.stringify(b)); for (let i = 0; i < 30; i++) { M.avanzar(b2, { sims: 8 }); }
+    ok(JSON.stringify(a) === JSON.stringify(b2), "el mundo con cuadras y carteras de personajes se reanuda desde JSON y da lo mismo"); }
+  // las apuestas solo usan lo público: cambiar el resultado oculto no cambia lo que apuestan
+  { const X = M._interno.npcX(), v = JSON.parse(JSON.stringify(w)), copiaDe = () => JSON.parse(JSON.stringify(v));
+    const w1 = copiaDe(), w2 = copiaDe();
+    [w1, w2].forEach(x => { x.proxima.tribuna = []; x.proxima.pozoNpc = {}; });
+    const res2 = w2.proxima.secreto.res; res2.llegada.reverse(); w2.proxima.secreto.pReal = { gan: w2.proxima.entrantes.map(() => 1), pod: w2.proxima.entrantes.map(() => 1) };
+    NPC.apuestas(w1, X, w1.proxima); NPC.apuestas(w2, X, w2.proxima);
+    ok(JSON.stringify(w1.proxima.tribuna) === JSON.stringify(w2.proxima.tribuna) && JSON.stringify(w1.duenos) === JSON.stringify(w2.duenos), "las apuestas de la tribuna salen igual con otro resultado oculto: no usan lo que no sabe nadie"); }
+  // el pozo: los personajes cobran como cualquiera, con lo que apostaron los jugadores y el bote de la casa
+  { const v = JSON.parse(JSON.stringify(w)), p = v.proxima, ids = p.entrantes.map(e => e.id), ganador = p.secreto.res.llegada[0].id, otro = ids.find(i => i !== ganador);
+    NPC.REPARTO.forEach(P => { v.duenos[P.id].saldo = 1000; });
+    p.tribuna = [{ npc: "npc:pilar", quien: "x", sel: ganador, criatura: "g", monto: 10, hora: 0 }, { npc: "npc:cuervo", quien: "x", sel: otro, criatura: "o", monto: 30, hora: 0 }, { npc: "npc:pocho", quien: "x", sel: ganador, criatura: "g", monto: 20, hora: 0 }];
+    p.pozoNpc = {}; p.pozoNpc[ganador] = 30; p.pozoNpc[otro] = 30;
+    const real = {}; real[ganador] = 50; real[otro] = 120;
+    const evx = { noticias: [], pozoReal: real };
+    NPC.liquidar(v, M._interno.npcX(), p, p.secreto.res, evx);
+    // lo mismo con el motor del pozo: todos los apostadores juntos (cada jugador una apuesta por criatura, igual de proporcional)
+    const lista = [{ id: "a", sel: ganador, monto: 50 }, { id: "b", sel: otro, monto: 120 }, { id: "pilar", sel: ganador, monto: 10 }, { id: "cuervo", sel: otro, monto: 30 }, { id: "pocho", sel: ganador, monto: 20 }];
+    const pagos = M.pagarPozo(lista, ganador), por = id => pagos.find(x => x.id === id).pago;
+    const cobro = id => Math.round((v.duenos[id].saldo - 1000) * 100) / 100;
+    ok(Math.abs(cobro("npc:pilar") - por("pilar")) < 0.02 && Math.abs(cobro("npc:pocho") - por("pocho")) < 0.02 && cobro("npc:cuervo") === 0, "los personajes cobran del pozo lo mismo que cobra un jugador que acertó (y quien no acierta no cobra)");
+    const repartido = por("a") + por("pilar") + por("pocho"), esperado = (50 + 120 + 10 + 30 + 20 + C.POZO_BOTE) * (1 - C.POZO_RETENCION);
+    ok(Math.abs(repartido - esperado) < 0.05, "el pozo reparte todo lo apostado más el bote menos la retención"); }
+  // lo que el servidor pasa de cuánto apostaron los jugadores llega hasta el motor
+  { const raw = M.paso(null, Date.UTC(2026, 0, 1), { calentar: 220, semilla: "paso-npc", simsCalentar: 8 });
+    const fila = { version: 1, mundo: JSON.parse(JSON.stringify(raw.lote.mundo)) }, ahora = M.horaDe(fila.mundo, fila.mundo.n) + C.APLICAR_SEG * 1000 + 1000;
+    const pz = {}; pz[fila.mundo.n] = {}; pz[fila.mundo.n][fila.mundo.proxima.entrantes[0].id] = 80;
+    const r = M.paso(fila, ahora, { pozos: pz, sims: 8 });
+    ok(r && r.lote && r.lote.programas.every(pr => Array.isArray(pr.publico.tribuna) && pr.publico.cuadrasNpc.length === NPC.REPARTO.length), "el programa que se guarda lleva la tribuna y la lista de cuadras"); }
+  informe.push("personajes (un mes): " + NPC.REPARTO.filter(P => P.cuadra).map(P => P.apodo + " " + Math.round(w.duenos[P.id].saldo) + " tokens, " + M.cuadraDe(w, P.id).length + " criaturas").join("; ") + "; tribuna " + Math.round(apuestas.reduce((a, b) => a + b.monto, 0) / total) + " tokens por carrera; victorias de personajes " + pct(ganadores / total));
 }
 
 // 4e) Ponerse al día en varias llamadas (lo que hace la Edge Function: no puede calcular todo de golpe)
