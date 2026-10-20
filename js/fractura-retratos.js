@@ -33,10 +33,10 @@ function disco(c, col, x, y, r) { c.fillStyle = col; c.beginPath(); c.arc(x, y, 
 const NEGRO = "#050405";
 function ojo(S, x, y, rx, ry, col) { const k = S.k || 1, ky = S.ky || 1; S.ojos.push({ x: 150 + (x - 150) * k, y: 226 + (y - 226) * ky, rx: rx * Math.min(k, 1.15), ry: ry * ky, col: S.ojoOrigen || col || S.ojoCol }); }
 /* cuánto se ensancha cada cabeza (se dibujó angosta): más los yelmos y la calavera, menos lo que ya tiene vuelo */
-const ANCHO = { paladin: 1.24, caballero: 1.22, guerrero: 1.22, ballestero: 1.2, lider: 1.22, esqueleto: 1.2, mercenario: 1.18, picaro: 1.14, cazador: 1.12, salvaje: 1.14, arcanista: 1.08, sanador: 1.1, eco: 1.1, archimago: 1.1 };
+const ANCHO = { paladin: 1.24, caballero: 1.22, guerrero: 1.22, ballestero: 1.2, lider: 1.22, esqueleto: 1.06, mercenario: 1.18, picaro: 1.14, cazador: 1.12, salvaje: 1.14, arcanista: 1.08, sanador: 1.1, eco: 1.1, archimago: 1.1 };
 /* alto de la cabeza (los yelmos se achatan un poco para que no parezcan cajas altas) y ancho del cuerpo: los hombros llegan casi al borde */
-const ALTO = { paladin: 0.92, caballero: 0.94, guerrero: 0.94, ballestero: 0.94, lider: 0.94, esqueleto: 0.96, mercenario: 0.97 };
-const CUERPO_ANCHO = { paladin: 1.3, caballero: 1.3, guerrero: 1.28, ballestero: 1.26, lider: 1.22, mercenario: 1.24, cazador: 1.2, picaro: 1.2, salvaje: 1.14, esqueleto: 1.16, arcanista: 1.1, archimago: 1.1, sanador: 1.1, eco: 1.1 };
+const ALTO = { paladin: 0.92, caballero: 0.94, guerrero: 0.94, ballestero: 0.94, lider: 0.94, mercenario: 0.97 };
+const CUERPO_ANCHO = { paladin: 1.3, caballero: 1.3, guerrero: 1.28, ballestero: 1.26, lider: 1.22, mercenario: 1.24, cazador: 1.2, picaro: 1.2, salvaje: 1.14, esqueleto: 1.0, arcanista: 1.1, archimago: 1.1, sanador: 1.1, eco: 1.1 };
 /* filo de luz: línea fina clara sobre el borde de una pieza */
 function filo(c, d, col, lw) { c.strokeStyle = col || "rgba(255,244,214,.35)"; c.lineWidth = lw || 1.2; c.lineCap = "round"; c.stroke(P2(d)); }
 
@@ -108,25 +108,40 @@ function cuerpoPiel(c, S, base) {
   c.fillStyle = cla(base, 0.16); for (let i = 0; i < 18; i++) { const x = 46 + i * 12; c.beginPath(); c.moveTo(x, 232 + Math.abs(i - 9) * 3.5); c.lineTo(x + 6, 252 + Math.abs(i - 9) * 3.5); c.lineTo(x + 12, 232 + Math.abs(i - 9) * 3.5); c.fill(); }
 }
 function cuerpoHueso(c, S) {
-  const hueso = "#cfc6ae";
-  relleno(c, "M46 296 Q150 262 254 296 L272 380 L28 380 Z", cuero(c, 40, 260, 260, 380, mix(S.ban, "#000000", 0.2)), "#060506", 2);
-  // hombreras oxidadas, una a cada lado, sobre la articulación
-  relleno(c, "M22 306 C20 266 70 252 100 284 L90 326 L26 326 Z", metal(c, 22, 256, 100, 326, "#6b5a4a"), "#0a0806", 2);
-  relleno(c, "M278 306 C280 266 230 252 200 284 L210 326 L274 326 Z", metal(c, 278, 256, 200, 326, "#5a4a3c"), "#0a0806", 2);
-  linea(c, "#8a4a22", 1.6, 44, 280, 62, 300); linea(c, "rgba(255,230,190,.25)", 1, 40, 276, 66, 296);
-  // clavículas y bolas de los hombros
-  c.strokeStyle = hueso; c.lineWidth = 6; c.lineCap = "round";
-  c.beginPath(); c.moveTo(150, 266); c.quadraticCurveTo(110, 262, 76, 288); c.stroke();
-  c.beginPath(); c.moveTo(150, 266); c.quadraticCurveTo(190, 262, 224, 288); c.stroke();
-  disco(c, hueso, 72, 290, 9); disco(c, hueso, 228, 290, 9);
-  // columna: el cuello son cuatro vértebras que suben hasta la mandíbula
-  for (let i = 0; i < 4; i++) { const y = 228 + i * 10; relleno(c, `M${142 - i} ${y} L${158 + i} ${y} L${159 + i} ${y + 8.5} L${141 - i} ${y + 8.5} Z`, metal(c, 142, y, 158, y + 9, "#d8d0b8"), "#12100c", 1); }
-  for (let i = 0; i < 12; i++) { const y = 268 + i * 10; relleno(c, `M143 ${y} L157 ${y} L158 ${y + 8.5} L142 ${y + 8.5} Z`, metal(c, 142, y, 158, y + 9, "#d8d0b8"), "#12100c", 1); }
+  const carne = "#7a8670", hueso = "#d6cdb4", tela = mix(S.ban, "#08080a", 0.45), tela2 = mix(S.ban, "#08080a", 0.62);
+  // capa hecha jirones, con el borde roto
+  relleno(c, "M14 380 L24 292 C50 254 100 244 150 250 C200 244 250 254 276 292 L286 380 L268 358 L252 380 L234 354 L216 380 L198 356 L182 380 L150 360 L118 380 L102 356 L84 380 L66 354 L48 380 L32 358 Z", cuero(c, 20, 250, 280, 380, tela), "#050506", 2);
+  linea(c, "rgba(0,0,0,.45)", 1.6, 60, 290, 52, 372); linea(c, "rgba(0,0,0,.45)", 1.6, 240, 290, 250, 372);
+  // pecho: la túnica se abre y deja ver la carne gris y las costillas
+  relleno(c, "M112 262 Q150 254 188 262 L180 380 L120 380 Z", metal(c, 112, 254, 188, 380, carne), "#0b0d09", 1.5);
+  c.save(); c.beginPath(); c.moveTo(112, 262); c.quadraticCurveTo(150, 254, 188, 262); c.lineTo(180, 380); c.lineTo(120, 380); c.closePath(); c.clip();
+  c.fillStyle = "rgba(0,0,0,.28)"; c.fillRect(150, 250, 50, 140);
   for (let i = 0; i < 5; i++) {
-    const y = 292 + i * 16, r = 52 - i * 5;
-    c.strokeStyle = hueso; c.lineWidth = 5; c.beginPath(); c.arc(150, y, r, Math.PI * 0.1, Math.PI * 0.9); c.stroke();
-    c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 1.4; c.beginPath(); c.arc(150, y + 3, r, Math.PI * 0.1, Math.PI * 0.9); c.stroke();
+    const y = 276 + i * 20;
+    c.strokeStyle = "rgba(0,0,0,.55)"; c.lineWidth = 6; c.beginPath(); c.moveTo(150, y - 4); c.quadraticCurveTo(122, y - 8, 112, y + 14); c.moveTo(150, y - 4); c.quadraticCurveTo(178, y - 8, 188, y + 14); c.stroke();
+    c.strokeStyle = hueso; c.lineWidth = 3.6; c.beginPath(); c.moveTo(150, y - 4); c.quadraticCurveTo(122, y - 8, 112, y + 14); c.moveTo(150, y - 4); c.quadraticCurveTo(178, y - 8, 188, y + 14); c.stroke();
   }
+  linea(c, hueso, 4.5, 150, 262, 150, 380);
+  c.restore();
+  // paneles de la túnica, rasgados en el borde
+  relleno(c, "M70 270 L112 262 L120 380 L58 380 L66 340 L60 312 Z", cuero(c, 60, 262, 120, 380, tela2), "#050506", 1.6);
+  relleno(c, "M230 270 L188 262 L180 380 L242 380 L234 340 L240 312 Z", cuero(c, 240, 262, 180, 380, tela2), "#050506", 1.6);
+  linea(c, "rgba(0,0,0,.5)", 1.4, 92, 272, 86, 372); linea(c, "rgba(0,0,0,.5)", 1.4, 208, 272, 214, 372);
+  // cuello flaco con tendones y una venda sucia
+  relleno(c, "M132 226 L168 226 L176 268 L124 268 Z", metal(c, 124, 226, 176, 268, carne), "#0b0d09", 1.5);
+  linea(c, "rgba(0,0,0,.4)", 2, 140, 232, 136, 264); linea(c, "rgba(0,0,0,.4)", 2, 160, 232, 164, 264);
+  relleno(c, "M126 246 L174 242 L175 252 L125 256 Z", "#b8ad92", "#2a251c", 1); relleno(c, "M128 258 L176 256 L174 264 L127 267 Z", "#a79c82", "#2a251c", 1);
+  // clavículas que asoman
+  c.strokeStyle = hueso; c.lineWidth = 5; c.lineCap = "round"; c.beginPath(); c.moveTo(148, 270); c.quadraticCurveTo(118, 262, 92, 278); c.moveTo(152, 270); c.quadraticCurveTo(182, 262, 208, 278); c.stroke();
+  // hombro izquierdo: hombrera oxidada con pinchos
+  relleno(c, "M28 318 C24 270 78 246 116 280 L102 336 L34 336 Z", metal(c, 28, 250, 116, 336, "#6b5240"), "#0a0705", 2.2);
+  [[48, 276, 40, 244, 62, 270], [74, 262, 72, 232, 92, 266]].forEach(p => relleno(c, `M${p[0]} ${p[1]} L${p[2]} ${p[3]} L${p[4]} ${p[5]} Z`, metal(c, p[2], p[3], p[4], p[5], "#8a6a52"), "#0a0705", 1.2));
+  linea(c, "#9a4a22", 1.8, 44, 300, 62, 318); linea(c, "rgba(255,230,190,.25)", 1.2, 40, 292, 70, 268);
+  [[52, 316], [84, 322]].forEach(p => disco(c, "#b3a58a", p[0], p[1], 2.2));
+  // hombro derecho: sin armadura, carne gris y hueso a la vista
+  relleno(c, "M272 316 C276 272 226 250 188 282 L200 330 L266 330 Z", metal(c, 188, 250, 272, 330, carne), "#0b0d09", 2);
+  linea(c, "rgba(0,0,0,.4)", 1.6, 214, 296, 232, 314); linea(c, "rgba(214,205,180,.55)", 2.2, 236, 300, 252, 318);
+  linea(c, "rgba(0,0,0,.4)", 1.6, 230, 318, 240, 332);
 }
 
 /* ---------- cabezas: cada una ocupa una silueta distinta, sin cara humana entera ---------- */
@@ -194,14 +209,40 @@ const CABEZA = {
     filo(c, "M96 200 C94 120 122 84 150 78", "rgba(200,255,220,.18)", 1.4);
   },
   esqueleto(c, S) {
-    relleno(c, "M102 150 C102 78 198 78 198 150 C198 172 186 182 180 198 L174 226 L126 226 L120 198 C114 182 102 172 102 150 Z", metal(c, 100, 80, 200, 226, "#d8d0b8"), "#12100c", 2.5);
-    relleno(c, "M112 138 C112 120 140 118 142 144 C142 164 116 166 112 138 Z M188 138 C188 120 160 118 158 144 C158 164 184 166 188 138 Z", NEGRO);
-    ojo(S, 128, 146, 4.5, 4.5, "#ff7a2a"); ojo(S, 172, 146, 4.5, 4.5, "#ff7a2a");
-    relleno(c, "M150 160 L140 184 L160 184 Z", NEGRO);
-    c.fillStyle = "#0a0908"; c.fillRect(128, 200, 44, 20); c.fillStyle = "#d8d0b8"; c.fillRect(130, 202, 40, 16); c.strokeStyle = "#2a251c"; c.lineWidth = 1; for (let i = 1; i < 6; i++) { c.beginPath(); c.moveTo(130 + i * 6.7, 202); c.lineTo(130 + i * 6.7, 218); c.stroke(); }
-    linea(c, "#5c5546", 1.4, 170, 92, 178, 128); linea(c, "#5c5546", 1.4, 178, 128, 170, 142);
-    relleno(c, "M96 150 C96 66 150 54 150 54 L150 116 L96 134 Z", metal(c, 96, 54, 150, 140, "#6b5240"), "#0a0705", 2);
-    linea(c, "#8a4a22", 1.6, 112, 90, 126, 104); relleno(c, "M150 54 L146 24 L158 54 Z", metal(c, 140, 24, 160, 54, "#6b5240"), "#0a0705", 1);
+    const hueso = "#d6cdb4", carne = "#7a8670", tela = mix(S.ban, "#08080a", 0.35);
+    // capucha rota: el borde de abajo y los costados son tiras de tela
+    relleno(c, "M80 236 C70 150 94 90 150 36 C206 90 230 150 220 236 L210 252 L200 234 L190 256 L176 238 L164 258 L150 240 L136 258 L124 238 L110 256 L100 234 L90 252 Z", cuero(c, 80, 36, 220, 256, tela), "#050506", 2.5);
+    relleno(c, "M74 214 L62 250 L84 230 Z M226 214 L240 252 L216 230 Z", tela, "#050506", 1.4);
+    filo(c, "M92 190 C88 126 112 80 150 46", "rgba(255,244,214,.16)", 1.5);
+    c.strokeStyle = "rgba(0,0,0,.5)"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(184, 70); c.lineTo(194, 120); c.moveTo(112, 86); c.lineTo(104, 128); c.stroke();
+    // hueco oscuro de la capucha y la cara chupada dentro
+    relleno(c, "M108 204 C100 130 122 94 150 76 C178 94 200 130 192 204 Q150 230 108 204 Z", "#040306");
+    relleno(c, "M117 150 C117 108 183 108 183 150 C183 178 177 196 168 216 L132 216 C123 196 117 178 117 150 Z", metal(c, 117, 108, 183, 216, carne), "#0b0d09", 1.6);
+    c.fillStyle = "rgba(0,0,0,.32)"; c.beginPath(); c.ellipse(127, 180, 8, 20, 0.15, 0, 7); c.fill(); c.beginPath(); c.ellipse(173, 180, 8, 20, -0.15, 0, 7); c.fill();
+    // hueso a la vista: la frente rota y el pómulo derecho
+    relleno(c, "M119 140 C121 114 142 108 156 112 L150 124 L142 130 L148 142 L132 148 Z", metal(c, 119, 110, 156, 148, hueso), "#1a1810", 1.2);
+    linea(c, "#5c5546", 1.2, 128, 118, 140, 136); linea(c, "#5c5546", 1.2, 140, 128, 150, 132);
+    relleno(c, "M170 176 L184 154 L184 196 L172 212 L166 198 Z", metal(c, 166, 154, 184, 212, hueso), "#1a1810", 1.2);
+    // cuencas hundidas con el brillo enfermizo
+    relleno(c, "M122 150 C122 134 150 132 152 152 C152 166 124 168 122 150 Z", "#030205");
+    relleno(c, "M154 152 C156 136 180 136 180 152 C180 164 156 166 154 152 Z", "#030205");
+    ojo(S, 136, 152, 6, 6, "#c9f25a"); ojo(S, 167, 153, 4.6, 4.8, "#c9f25a");
+    linea(c, "#0b0d09", 3, 120, 138, 152, 144); linea(c, "#0b0d09", 3, 156, 144, 182, 138);
+    // sin nariz: un hueco, y la boca abierta con la mandíbula colgando
+    relleno(c, "M150 168 L142 188 L150 183 L158 188 Z", "#030205");
+    relleno(c, "M130 198 Q150 192 170 198 L168 222 Q150 244 132 222 Z", "#030205");
+    c.fillStyle = hueso; for (let i = 0; i < 6; i++) { c.fillRect(132 + i * 6.4, 198 + Math.abs(i - 2.5) * 0.6, 4.6, 8 - Math.abs(i - 2.5)); }
+    relleno(c, "M130 224 Q150 256 170 224 L166 240 Q150 258 134 240 Z", metal(c, 130, 224, 170, 258, hueso), "#1a1810", 1.4);
+    c.fillStyle = hueso; for (let i = 0; i < 4; i++) c.fillRect(137 + i * 7.5, 216, 4.2, 6);
+    // cicatriz cosida en la mejilla
+    linea(c, "#0b0d09", 1.6, 124, 172, 140, 190);
+    for (let i = 0; i < 4; i++) linea(c, "#0b0d09", 1.3, 127 + i * 4.6 - 3, 176 + i * 4.8 + 2, 127 + i * 4.6 + 3, 176 + i * 4.8 - 2);
+    // mechones ralos que se escapan de la capucha
+    c.strokeStyle = "#9a948a"; c.lineWidth = 1.3; c.lineCap = "round";
+    [[118, 134, 104, 168, 108, 206], [122, 128, 110, 160, 118, 196], [182, 138, 196, 170, 192, 204]].forEach(p => { c.beginPath(); c.moveTo(p[0], p[1]); c.quadraticCurveTo(p[2], p[3], p[4], p[5]); c.stroke(); });
+    // los bordes de la capucha caen delante, sombreando la frente
+    relleno(c, "M110 124 C112 100 134 84 150 80 C130 92 118 106 118 128 Z M190 124 C188 100 166 84 150 80 C170 92 182 106 182 128 Z", tela, "#050506", 1);
+    relleno(c, "M114 118 Q150 94 186 118 L186 104 Q150 78 114 104 Z", "rgba(0,0,0,.55)");
   },
   archimago(c, S) {
     relleno(c, "M112 118 C112 108 188 108 188 118 L186 196 C172 220 128 220 114 196 Z", "#040307");

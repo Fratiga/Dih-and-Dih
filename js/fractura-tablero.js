@@ -184,18 +184,27 @@ window.FracturaTablero = (function () {
     },
     esqueleto(c, K) {
       K.hueso = true;
-      piernas(c, K, HUESO);
-      poli(c, K, oscuro(K.col, 0.45), [[-5, -14], [5, -14], [3.5, -8], [-3.5, -7]]);
-      c.fillStyle = F(K, HUESO); c.fillRect(-4, -26, 8, 12);
-      for (let i = 0; i < 3; i++) trazo(c, K, "#2a2620", 1.1, -4, -24 + i * 3.4, 4, -24 + i * 3.4);
-      disco(c, K, HUESO, 0, -30.5, 5.3);
-      disco(c, K, NEGRO, -1.6, -31, 1.5); disco(c, K, NEGRO, 2.3, -31, 1.5);
-      ojoL(c, K, -1.6, -31, "#ff7a2a"); ojoL(c, K, 2.3, -31, "#ff7a2a");
-      c.fillStyle = F(K, NEGRO); c.fillRect(-1.6, -27.4, 3.4, 1.4);
-      poli(c, K, "#6b5240", [[-5.6, -30], [-0.5, -37], [0.5, -33], [-5.4, -28]]);
+      const carne = "#7a8670", tela = oscuro(K.ban, 0.3);
+      piernas(c, K, "#6e7660");
+      // capa a jirones por detrás
+      poli(c, K, tela, [[-6, -27], [4, -27], [7, -14], [9, -6], [6, -9], [4, -3], [1, -8], [-2, -3], [-5, -8], [-9, -4], [-8, -14]]);
+      // pecho al aire: carne gris y costillas
+      poli(c, K, carne, [[-3.6, -26], [3.6, -26], [3, -14], [-3, -14]]);
+      for (let i = 0; i < 3; i++) trazo(c, K, "#d6cdb4", 1.1, -3, -23 + i * 3.4, 3, -23 + i * 3.4);
+      poli(c, K, oscuro(K.ban, 0.5), [[-6, -26], [-3.6, -26], [-3, -14], [-7, -13]]);
+      // hombrera oxidada con pinchos
+      poli(c, K, "#6b5240", [[-8.5, -27], [-2, -28.5], [-3, -22.5], [-9, -23.5]]);
+      poli(c, K, "#8a6a52", [[-7, -27], [-6.3, -32], [-4.6, -28]]); poli(c, K, "#8a6a52", [[-4.2, -28], [-3.2, -33], [-2, -28.5]]);
+      // capucha rota con el rostro hueco
+      poli(c, K, tela, [[-6.5, -26], [-3, -38], [0.5, -43], [6, -31], [5, -25], [3, -23.5], [1, -25], [-1.5, -23.5], [-4, -25]]);
+      poli(c, K, "#040306", [[-1.5, -35], [5, -33], [5, -27], [-1, -27]]);
+      poli(c, K, carne, [[-0.8, -33.5], [4.6, -32.2], [4.4, -28], [-0.6, -28]]);
+      poli(c, K, "#d6cdb4", [[1, -28.2], [4.4, -28.6], [3.8, -25.6], [1.4, -25.2]]);
+      ojoL(c, K, 1.6, -31.2, "#c9f25a"); ojoL(c, K, 4, -30.6, "#c9f25a");
       const h = manoArma(K, { x: 4, y: -23 }, 7);
-      trazo(c, K, HUESO, 2, 4, -23, h.x, h.y);
-      trazo(c, K, "#6a5546", 2.6, h.x, h.y, h.x + Math.cos(h.ang - 0.1) * 12, h.y + Math.sin(h.ang - 0.1) * 12);
+      trazo(c, K, carne, 2.4, 4, -23, h.x, h.y);
+      trazo(c, K, "#2a2018", 3.4, h.x, h.y, h.x + Math.cos(h.ang - 0.1) * 12, h.y + Math.sin(h.ang - 0.1) * 12);
+      trazo(c, K, "#8a6a52", 2.2, h.x, h.y, h.x + Math.cos(h.ang - 0.1) * 12, h.y + Math.sin(h.ang - 0.1) * 12);
     },
     archimago(c, K) {
       poli(c, K, metal(K, mezcla(K.ban, "#0c0a16", 0.3), -9, -14, 9, 0), [[-5, -15], [5, -15], [9.5, 0], [-9.5, 0]]);
