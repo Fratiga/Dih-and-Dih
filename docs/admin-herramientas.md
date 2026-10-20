@@ -26,6 +26,7 @@ Reglas comunes:
 | 8 | Dificultad de los rivales (pestaña Rivales: Ajedrez, Arquería y Duelo) | 3 | Hecha. SQL: `docs/admin/rivales.sql` |
 | 9 | Regalos y eventos (pestaña Regalos y eventos) | 3 | Hecho. SQL: `docs/admin/regalos_eventos.sql` |
 | 10 | Calendario del Hipódromo (pestaña Calendario) | 3 | Hecho como vista de solo lectura, sin SQL. No se edita a mano: el motor genera y corre las carreras, y cambiarlas puede descuadrar apuestas y premios |
+| 23 | Personajes del Hipódromo (pestaña Personajes: ajustes, pausar, órdenes y personajes nuevos) | 4 | Hecho. SQL: `docs/admin/hipodromo_personajes.sql` (se prueba con `sh docs/admin/probar_hipodromo_personajes.sh`). Ver `docs/hipodromo.md`, «Los personajes» |
 | 12 | Interruptores del sitio | 4 | Hecho. SQL: `docs/admin/herramientas_2.sql` |
 | 11 | Editor de diálogos del Bufón (pestaña Bufón: textos) | 4 | Hecho. SQL: `docs/admin/bufon_textos.sql` |
 | 14 | Actividad en vivo (pestaña En vivo) | 4 | Hecha (presencia, sin SQL) |
@@ -106,6 +107,10 @@ Archivos: `docs/admin/regalos_eventos.sql`, `js/admin-regalos.js`, y los avisos 
 ## Calendario del Hipódromo (pestaña Calendario)
 
 Solo lectura: las próximas 48 carreras de `hipodromo_programa` (hora local, grado, distancia, pista, bolsa y clima más probable). No se edita a propósito.
+
+## Personajes del Hipódromo (pestaña Personajes)
+
+Maneja a los ocho personajes del hipódromo (cuadras NPC y apostadores de la grada): interruptor general, escala de las apuestas, noticias por carrera; pausar, editar y volver a los de fábrica a cada uno; órdenes puntuales (caja, dar y quitar criaturas, vender, soltar, préstamo, reiniciar); crear y borrar personajes nuevos. Todo con detalle en `docs/hipodromo.md`, sección «Los personajes». Archivos: `js/admin-hipodromo-npc.js`, `js/hipodromo-npc.js` (lo que comparten el panel y el motor: valores de fábrica y `sanear`) y `docs/admin/hipodromo_personajes.sql`.
 
 ## Diálogos del Buhonero y del herrero (pestaña Diálogos)
 

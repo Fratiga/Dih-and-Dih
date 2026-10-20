@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20270334">
+  <link rel="stylesheet" href="css/style.css?v=20270336">
   <link rel="stylesheet" href="css/musica-paginas.css?v=20270334">
   <link rel="stylesheet" href="css/bufon-lab.css?v=20270334b">
   <link rel="stylesheet" href="css/taberna.css?v=20270334">
@@ -147,6 +147,7 @@
         <button type="button" class="admin-tab" data-tab="dialogos">Diálogos</button>
         <button type="button" class="admin-tab" data-tab="regalos">Regalos y eventos</button>
         <button type="button" class="admin-tab" data-tab="calendario">Calendario</button>
+        <button type="button" class="admin-tab" data-tab="personajes">Personajes</button>
         <button type="button" class="admin-tab" data-tab="envivo">En vivo <span id="adminEnVivoCount" class="admin-tab-badge"></span></button>
         <button type="button" class="admin-tab" data-tab="mensajes">Mensajes</button>
         <button type="button" class="admin-tab" data-tab="archivos">Archivos</button>
@@ -288,6 +289,20 @@
         <p class="admin-bufon-banner">Las próximas carreras del Hipódromo, solo para mirar. El motor genera y corre las carreras por su cuenta (una por hora); no se editan a mano porque podría dejar apuestas y premios sin cuadrar. Las horas salen en tu zona horaria.</p>
         <p id="adminCalendarioEstado" class="admin-cartas-estado" role="status"></p>
         <div id="adminCalendarioLista"></div>
+      </section>
+
+      <section id="adminPanelPersonajes" class="admin-panel">
+        <p class="admin-bufon-banner">Los personajes del Hipódromo: cuadras que compran, venden, entrenan y corren, y apostadores de la grada. Aquí los pausas, cambias su carácter, su dinero y sus apuestas, les das o quitas tokens y criaturas, y creas personajes nuevos. Lo que cambies se queda guardado solo como diferencia con los valores de fábrica. Se nota en menos de un minuto.</p>
+        <p id="adminNpcEstado" class="admin-cartas-estado" role="status"></p>
+        <h3>Ajustes generales</h3>
+        <div id="adminNpcGeneral" class="admin-npc-general"></div>
+        <h3>Personajes</h3>
+        <div id="adminNpcLista" class="admin-npc-lista"></div>
+        <div id="adminNpcEditor" class="admin-npc-editor"></div>
+        <h3>Nuevo personaje</h3>
+        <div id="adminNpcNuevo"></div>
+        <h3>Órdenes recientes</h3>
+        <div id="adminNpcOrdenes"></div>
       </section>
 
       <section id="adminPanelRivales" class="admin-panel">
@@ -480,6 +495,8 @@
   <script src="js/admin-dialogos.js?v=20270334"></script>
   <script src="js/admin-regalos.js?v=20270334"></script>
   <script src="js/admin-calendario.js?v=20270334"></script>
+  <script src="js/hipodromo-npc.js?v=20270336"></script>
+  <script src="js/admin-hipodromo-npc.js?v=20270336"></script>
   <script src="js/admin-herramientas-2.js?v=20270334"></script>
   <script src="js/admin-herramientas.js?v=20270334"></script>
   <script src="js/admin-economia.js?v=20270334"></script>

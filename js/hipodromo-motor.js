@@ -1343,11 +1343,20 @@
       const m = crearMundo(cfg.semilla || "hipodromo", { calentar, t0: inicio - (historia || calentar) * tramo, simsCalentar: cfg.simsCalentar });
       return { version: 0, lote: loteInicial(m), avanzadas: 0 };
     }
-    const m = fila.mundo;
-    // primero las órdenes de los jugadores (cfg.ordenes, con los saldos de cfg.saldos), después las carreras que ya tocan
+    const m = fila.mundo, NPC = raiz.HipodromoNPC;
+    // lo que el Admin ha cambiado de los personajes (cfg.npc.ajustes) y sus órdenes puntuales (cfg.npcOrdenes): se aplican antes que nada
+    if (NPC && cfg.npc && cfg.npc.ajustes) NPC.configurar(m, cfg.npc.ajustes);
+    const rNpc = NPC && cfg.npcOrdenes && cfg.npcOrdenes.length ? NPC.ordenes(m, npcX(), cfg.npcOrdenes) : null;
+    // después las órdenes de los jugadores (cfg.ordenes, con los saldos de cfg.saldos), y por último las carreras que ya tocan
     const rOrd = cfg.ordenes && cfg.ordenes.length ? procesarOrdenes(m, cfg.ordenes, cfg.saldos) : null;
     const eventos = avanzarHasta(m, ahora, { max: cfg.max || 48, sims: cfg.sims, rapido: cfg.rapido, pozos: cfg.pozos });
-    return eventos.length || rOrd ? { version: fila.version, lote: lote(m, eventos, rOrd), avanzadas: eventos.length, ordenes: rOrd ? rOrd.resultados : [] } : null;
+    if (!eventos.length && !rOrd && !rNpc) return null;
+    const L = lote(m, eventos, rOrd);
+    if (rNpc) {   // las criaturas que cambiaron de manos por una orden del Admin salen en el lote, y el resultado de cada orden va aparte (lo marca la Edge Function)
+      const cri = new Map(L.criaturas.map(f => [f.id, f])); rNpc.perfiles.forEach(p => cri.set(p.id, filaCriatura(m, p)));
+      L.criaturas = [...cri.values()]; L.npcOrdenes = rNpc.resultados;
+    }
+    return { version: fila.version, lote: L, avanzadas: eventos.length, ordenes: rOrd ? rOrd.resultados : [] };
   }
 
   /* Las piezas del motor que usa js/hipodromo-npc.js (un personaje juega con las mismas órdenes que un jugador y solo mira lo público) */

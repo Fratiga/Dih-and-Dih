@@ -258,12 +258,11 @@
     const NPC = window.HipodromoNPC, vivo = (m.proxima && m.proxima.cuadrasNpc) || [];
     if (!NPC || !vivo.length) { poner(el, ""); el.classList.add("hidden"); return; }
     el.classList.remove("hidden");
-    const tarjetas = NPC.REPARTO.map(P => {
-      const v = vivo.find(x => x.id === P.id); if (!v) return "";
-      const cri = v.criaturas.map(id => perfilDe(id)).filter(Boolean);
-      return `<li class="hip-npc"><div class="hip-npc-cab"><strong>${esc(P.nombre)}</strong><small>${esc(P.apodo)}${P.cuadra ? " · " + esc(P.cuadra) : " · de la grada"}</small></div>
+    const tarjetas = vivo.map(P => {
+      const cri = P.criaturas.map(id => perfilDe(id)).filter(Boolean);
+      return `<li class="hip-npc"><div class="hip-npc-cab"><strong>${esc(P.nombre)}</strong><small>${esc(P.apodo)}${P.cuadra ? " · " + esc(P.cuadra) : " · de la grada"}${P.activo === false ? " · descansando" : ""}</small></div>
         <p class="hip-npc-lema">«${esc(P.lema)}»</p><p class="hip-nota">${esc(P.bio)}</p>
-        <p class="hip-npc-pie"><span>Caja: <b>${monedas(v.saldo)}</b></span>${P.cuadra ? `<span>${cri.length ? cri.map(p => `<button type="button" class="hip-enlace" data-ficha="${p.id}">${esc(p.nombre)}</button>`).join(", ") : "sin criaturas ahora"}</span>` : "<span>apuesta al pozo</span>"}</p></li>`;
+        <p class="hip-npc-pie"><span>Caja: <b>${monedas(P.saldo)}</b></span>${P.cuadra ? `<span>${cri.length ? cri.map(p => `<button type="button" class="hip-enlace" data-ficha="${p.id}">${esc(p.nombre)}</button>`).join(", ") : "sin criaturas ahora"}</span>` : "<span>apuesta al pozo</span>"}</p></li>`;
     }).join("");
     poner(el, `<h3>Las cuadras del mundo</h3><p class="hip-nota">Personajes que corren, compran, venden y apuestan con las mismas reglas que tú. No tienen ventajas: su caja es suya y sus criaturas corren en los campos del mundo como las demás.</p><ul class="hip-npc-lista">${tarjetas}</ul>`);
   }

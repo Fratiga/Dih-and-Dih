@@ -87,12 +87,25 @@ Deno.serve(async (req: Request) => {
       (pz ?? []).forEach((x: any) => { pozos[nAplicar][x.criatura_id] = Number(x.total); });
     }
 
-    const paso = Motor.paso(fila, Date.now(), { ...cfg, ordenes, saldos, pozos });
+    // lo que el Admin ha cambiado de los personajes y sus órdenes puntuales (docs/admin/hipodromo_personajes.sql); si esas tablas todavía no existen, se sigue sin ellas
+    let npc: any = undefined, npcOrdenes: any[] = [];
+    {
+      const { data: aj, error: errAj } = await sb.from("hipodromo_npc_ajustes").select("clave, datos");
+      if (!errAj) { npc = { ajustes: {} }; (aj ?? []).forEach((a: any) => { npc.ajustes[a.clave] = a.datos; }); }
+      const { data: po, error: errPo } = await sb.from("hipodromo_npc_ordenes").select("id, datos").eq("estado", "pendiente").order("id").limit(40);
+      if (!errPo) npcOrdenes = (po ?? []).map((o: any) => ({ ...o.datos, id: o.id }));
+    }
+
+    const paso = Motor.paso(fila, Date.now(), { ...cfg, ordenes, saldos, pozos, npc, npcOrdenes });
     if (!paso) return respuesta(200, { avanzadas: 0 });
 
     const { data: version, error } = await sb.rpc("hipodromo_guardar", { p_version: paso.version, p_lote: paso.lote });
     if (error && (error.code === "40001" || error.code === "23514")) continue;   // otra ejecución se adelantó o cambió un saldo: releer y repetir
     if (error) return respuesta(500, { error: error.message });
+    // el resultado de cada orden del Admin (el motor apunta hasta cuál llegó, así que si esto fallara no se repetirían)
+    for (const r of (paso.lote.npcOrdenes ?? [])) {
+      await sb.from("hipodromo_npc_ordenes").update({ estado: r.ok ? "hecha" : "rechazada", texto: (r.ok ? r.texto : r.error) ?? "", resuelta: new Date().toISOString() }).eq("id", r.oid).eq("estado", "pendiente");
+    }
     return respuesta(200, { avanzadas: paso.avanzadas, ordenes: (paso.ordenes ?? []).length, version, carrera: paso.lote.mundo.n });
   }
   return respuesta(409, { error: "demasiados choques de versión" });

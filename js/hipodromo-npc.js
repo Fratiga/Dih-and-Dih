@@ -11,6 +11,9 @@
    - Sus apuestas son pequeñas y solo van al pozo (el único mercado donde el volumen cambia lo que cobran los demás). Lo apostado y lo cobrado por ellos es
      dinero de su cartera; en el servidor entran en el reparto del pozo igual que el de un jugador (docs/hipodromo.sql).
    Lo que el servidor y los jugadores ven de ellos: el dueño de las criaturas (cuadra de X), las noticias, las apuestas de la tribuna y la lista de cuadras.
+   El Admin los maneja desde su panel (pestaña Personajes, js/admin-hipodromo-npc.js, SQL en docs/admin/hipodromo_personajes.sql): lo que escribe va encima de los valores de
+   fábrica de REPARTO (ajustes por personaje y generales, y personajes nuevos) y las órdenes puntuales (dar o quitar tokens o criaturas...) las procesa el motor con
+   ordenes(). La Edge Function lee las tablas y se lo pasa al motor en paso(); el motor lo guarda en el mundo (m.npcCfg), así que todo sigue siendo determinista.
 ============================================================================= */
 (function (raiz) {
   "use strict";
@@ -139,6 +142,67 @@
   ];
   const PERSONAJE = {}; REPARTO.forEach(p => { PERSONAJE[p.id] = p; });
 
+  /* ---------------------------------------------------------------- lo que cambia el Admin: ajustes encima de los valores de fábrica */
+  const ENUMS = {
+    dist: [null, "larga", "corta"], tactica: [null, "frente", "media", "atras"], stat: ["debil", "vel", "res", "ace", "agi", "tem"],
+    criterio: ["baratas", "baratisimas", "flechas", "jovenes", "largas", "valor"], estilo: ["favorita", "vanidad", "longshots", "valor", "racha", "puerta", "terreno"],
+    inicio: [null, "elite", "media", "baja", "joven", "uno", "largas"]
+  };
+  const FRASES_TIPOS = ["compra", "vende", "gana", "ganaApuesta", "pierdeApuesta", "prestamo"];
+  const ID_NPC = /^npc:[a-z0-9-]{2,24}$/;
+  const num = (v, a, b, def) => { v = Number(v); return Number.isFinite(v) ? Math.min(b, Math.max(a, v)) : def; };
+  const txt = (v, max, def) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : def);
+  const uno = (v, lista, def) => (lista.indexOf(v) >= 0 ? v : def);
+  /* Pone en orden una descripción de personaje (los ajustes del Admin pueden traer cualquier cosa): lo que no vale se cambia por el valor por defecto */
+  function sanear(P) {
+    const g = P.grados || {}, i = P.inicio || {}, c = P.compra, a = P.apuesta, p = P.prestamo, f = {};
+    FRASES_TIPOS.forEach(k => { const l = P.frases && P.frases[k]; f[k] = Array.isArray(l) ? l.filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 240)).slice(0, 12) : []; });
+    return {
+      id: P.id, nuevo: !!P.nuevo, activo: P.activo !== false,
+      nombre: txt(P.nombre, 40, "Sin nombre"), apodo: txt(P.apodo, 30, ""), cuadra: txt(P.cuadra, 40, null), lema: txt(P.lema, 120, ""), bio: txt(P.bio, 400, ""),
+      inicio: { saldo: num(i.saldo, 0, 100000, 500), tipo: uno(i.tipo, ENUMS.inicio, null), n: Math.round(num(i.n, 0, 4, 0)) },
+      reserva: num(P.reserva, 0, 100000, 0), tope: num(P.tope, 0, 1000000, 0), gasto: num(P.gasto, 0, 100, 0), hora: Math.round(num(P.hora, 0, 23, 0)),
+      prestamo: p && typeof p === "object" ? { piso: num(p.piso, 0, 100000, 0), monto: num(p.monto, 0, 1000000, 0) } : null,
+      grados: { gran: num(g.gran, 0, 1, 1), selecta: num(g.selecta, 0, 1, 1), corriente: num(g.corriente, 0, 1, 1), novatos: num(g.novatos, 0, 1, 1) },
+      copas: num(P.copas, 0, 1, 0), dist: uno(P.dist, ENUMS.dist, null), tactica: uno(P.tactica, ENUMS.tactica, null),
+      cuida: P.cuida == null ? null : num(P.cuida, 0, 100, null), entrena: num(P.entrena, 0, 0.2, 0), stat: uno(P.stat, ENUMS.stat, "debil"),
+      compra: c && typeof c === "object" ? { prob: num(c.prob, 0, 0.3, 0.02), criterio: uno(c.criterio, ENUMS.criterio, "baratas"), tamano: Math.round(num(c.tamano, 1, 4, 3)) } : null,
+      vende: !!P.vende,
+      apuesta: a && typeof a === "object" ? { estilo: uno(a.estilo, ENUMS.estilo, "favorita"), prob: num(a.prob, 0, 1, 0.5), monto: num(a.monto, 1, 200, 10), maxCuota: num(a.maxCuota, 1, 500, 3.4), minCuota: num(a.minCuota, 1, 500, 9),
+        puertas: Array.isArray(a.puertas) ? a.puertas.map(x => Math.round(num(x, 1, 20, 7))).slice(0, 4) : [7, 3] } : null,
+      frases: f
+    };
+  }
+  /* Los valores de fábrica con los ajustes del Admin por encima (los objetos anidados se mezclan campo a campo; las frases, grupo a grupo) */
+  function mezcla(base, over) {
+    const P = JSON.parse(JSON.stringify(base || {}));
+    Object.keys(over || {}).forEach(k => {
+      const v = over[k];
+      if ((k === "grados" || k === "inicio" || k === "frases") && v && typeof v === "object" && P[k] && typeof P[k] === "object") Object.assign(P[k], v);
+      else if ((k === "compra" || k === "apuesta" || k === "prestamo") && v && typeof v === "object" && P[k] && typeof P[k] === "object") P[k] = Object.assign({}, P[k], v);
+      else P[k] = v;
+    });
+    return P;
+  }
+  /* Un personaje tal como juega de verdad: fábrica + ajustes, en orden. Para el panel de Admin (que lo enseña antes de guardar) y para el motor. */
+  const efectiva = (id, over) => sanear(Object.assign(mezcla(PERSONAJE[id], over), { id }));
+  /* Lo que el Admin ha puesto en el mundo (m.npcCfg: { global: {...}, "npc:...": {...} }) lo trae la Edge Function en cada paso (configurar) */
+  function configurar(m, ajustes) { if (ajustes && typeof ajustes === "object" && !Array.isArray(ajustes)) m.npcCfg = JSON.parse(JSON.stringify(ajustes)); }
+  let memoria = { m: null, cfg: null, lista: null };
+  function lista(m) {
+    if (memoria.m === m && memoria.cfg === m.npcCfg && memoria.lista) return memoria.lista;
+    const cfg = m.npcCfg || {};
+    const ids = REPARTO.map(p => p.id).concat(Object.keys(cfg).filter(k => k !== "global" && !PERSONAJE[k] && ID_NPC.test(k) && cfg[k] && typeof cfg[k] === "object" && cfg[k].nuevo));   // los nuevos que ha creado el Admin
+    memoria = { m, cfg: m.npcCfg, lista: ids.map(id => efectiva(id, cfg[id])) };
+    return memoria.lista;
+  }
+  const persona = (m, id) => lista(m).find(P => P.id === id) || null;
+  /* Los ajustes generales: interruptor de todos, escala de las apuestas de la tribuna y noticias por carrera */
+  function general(m) {
+    const g = (m.npcCfg && m.npcCfg.global) || {};
+    return { activo: g.activo !== false, apuestas: num(g.apuestas, 0, 3, 1), noticias: Math.round(num(g.noticias, 0, 3, AJUSTE.MAX_NOTICIAS)) };
+  }
+
   /* ---------------------------------------------------------------- utilidades */
   const frase = (P, tipo, rng) => { const l = P.frases && P.frases[tipo]; return l && l.length ? "«" + rng.pick(l) + "»" : ""; };
   const nombreCorto = P => P.apodo ? P.apodo.charAt(0).toUpperCase() + P.apodo.slice(1) : P.nombre;
@@ -151,50 +215,65 @@
   }
 
   /* ---------------------------------------------------------------- fundar las cuadras */
-  /* Se hace una sola vez, cuando el mundo ya ha corrido lo suficiente para saber qué criaturas son buenas. Reparte criaturas del mundo y abre las carteras. */
-  function iniciar(m, X, ev) {
-    if (m.npc || !m.proxima || m.stats.carreras < AJUSTE.FUNDAR_DESDE) return;
-    m.npc = { v: 1, fundadas: m.n };
-    if (!m.duenos) m.duenos = {};
-    const rng = X.crearRng(m.semilla, "npc", "fundar");
-    const lista = [];
-    REPARTO.forEach(P => {
-      m.duenos[P.id] = { nombre: P.nombre, npc: true, adoptada: true, saldo: P.inicio.saldo, cuadra: P.cuadra || null };
-      const k = P.inicio.n; if (!k) return;
-      const pool = libres(m, X), adultas = pool.filter(c => X.edadAnios(m.n, c) >= X.C.DEBUT);
-      let elegidas = [];
-      const porRating = lst => lst.slice().sort((a, b) => b.rating - a.rating);
-      switch (P.inicio.tipo) {
-        case "elite": elegidas = porRating(adultas.filter(c => c.salidas >= 6)).slice(0, k); break;
-        case "media": { const o = porRating(adultas.filter(c => c.salidas >= 4)); const a = Math.floor(o.length * 0.35); elegidas = o.slice(a, a + k); break; }
-        case "baja": { const o = porRating(adultas.filter(c => c.salidas >= 2)); elegidas = o.slice(Math.max(0, o.length - k - 4), o.length - 4); break; }
-        case "joven": elegidas = pool.filter(c => X.edadAnios(m.n, c) < 2).sort((a, b) => X.edadAnios(m.n, a) - X.edadAnios(m.n, b)).slice(0, k); break;
-        case "uno": { const o = porRating(adultas.filter(c => c.salidas >= 6)); const a = Math.floor(o.length * 0.3); elegidas = o.slice(a, a + k); break; }
-        case "largas": elegidas = adultas.slice().sort((a, b) => b.genes.pul - a.genes.pul).slice(0, k); break;
-        default: break;
-      }
-      elegidas.forEach(c => { c.dueno = P.id; c.entradas = []; c.tactica = P.tactica || null; ev.cambios.add(c.id); });
-      lista.push(`${P.nombre} (${P.apodo}) abre ${P.cuadra} con ${elegidas.length} ${elegidas.length === 1 ? "criatura" : "criaturas"}`);
-    });
-    const apostadores = REPARTO.filter(P => !P.cuadra).map(P => `${P.nombre} (${P.apodo})`);
-    ev.noticias.push(X.noticia(m, "cuadra", "Nuevas caras en el hipódromo", `Llegan a las cuadras y a la grada: ${lista.join("; ")}. Y en la tribuna, ${apostadores.join(" y ")}. Cada uno juega a su manera.`, []));
+  /* Abre la cuadra de un personaje: su cartera y las criaturas del mundo que busca (según lo que dice su `inicio`). Devuelve cuántas se llevó. */
+  function fundarUna(m, X, P, ev) {
+    m.duenos[P.id] = { nombre: P.nombre, npc: true, adoptada: true, saldo: P.inicio.saldo, cuadra: P.cuadra || null };
+    const k = P.inicio.n; if (!k || !P.cuadra) return 0;
+    const pool = libres(m, X), adultas = pool.filter(c => X.edadAnios(m.n, c) >= X.C.DEBUT);
+    let elegidas = [];
+    const porRating = lst => lst.slice().sort((a, b) => b.rating - a.rating);
+    switch (P.inicio.tipo) {
+      case "elite": elegidas = porRating(adultas.filter(c => c.salidas >= 6)).slice(0, k); break;
+      case "media": { const o = porRating(adultas.filter(c => c.salidas >= 4)); const a = Math.floor(o.length * 0.35); elegidas = o.slice(a, a + k); break; }
+      case "baja": { const o = porRating(adultas.filter(c => c.salidas >= 2)); elegidas = o.slice(Math.max(0, o.length - k - 4), o.length - 4); break; }
+      case "joven": elegidas = pool.filter(c => X.edadAnios(m.n, c) < 2).sort((a, b) => X.edadAnios(m.n, a) - X.edadAnios(m.n, b)).slice(0, k); break;
+      case "uno": { const o = porRating(adultas.filter(c => c.salidas >= 6)); const a = Math.floor(o.length * 0.3); elegidas = o.slice(a, a + k); break; }
+      case "largas": elegidas = adultas.slice().sort((a, b) => b.genes.pul - a.genes.pul).slice(0, k); break;
+      default: break;
+    }
+    elegidas.forEach(c => { c.dueno = P.id; c.entradas = []; c.tactica = P.tactica || null; ev.cambios.add(c.id); });
+    return elegidas.length;
   }
+  /* Se hace cuando el mundo ya ha corrido lo suficiente para saber qué criaturas son buenas: la primera vez abre todas las cuadras y, después, las de los
+     personajes nuevos que cree el Admin. */
+  function iniciar(m, X, ev) {
+    if (!m.proxima || m.stats.carreras < AJUSTE.FUNDAR_DESDE || !general(m).activo) return;
+    if (!m.duenos) m.duenos = {};
+    const nuevos = lista(m).filter(P => !m.duenos[P.id]);
+    if (!nuevos.length) return;
+    const primera = !m.npc;
+    if (!m.npc) m.npc = { v: 1, fundadas: m.n, ultimaOrden: 0 };
+    const abiertas = nuevos.map(P => ({ P, n: fundarUna(m, X, P, ev) }));
+    const conCuadra = abiertas.filter(x => x.P.cuadra), apostadores = abiertas.filter(x => !x.P.cuadra);
+    const nombre = P => P.apodo ? `${P.nombre} (${P.apodo})` : P.nombre;
+    if (primera) ev.noticias.push(X.noticia(m, "cuadra", "Nuevas caras en el hipódromo", `Llegan a las cuadras y a la grada: ${conCuadra.map(x => `${nombre(x.P)} abre ${x.P.cuadra} con ${x.n} ${x.n === 1 ? "criatura" : "criaturas"}`).join("; ")}. Y en la tribuna, ${apostadores.map(x => nombre(x.P)).join(" y ")}. Cada uno juega a su manera.`, []));
+    else abiertas.forEach(x => ev.noticias.push(X.noticia(m, "cuadra", `Llega ${x.P.nombre} al hipódromo`, x.P.cuadra ? `${nombre(x.P)} abre ${x.P.cuadra} con ${x.n} ${x.n === 1 ? "criatura" : "criaturas"}. ${x.P.lema}` : `${nombre(x.P)} se sienta en la grada. ${x.P.lema}`, [])));
+  }
+  /* Un personaje que el Admin ha quitado: sus criaturas vuelven al mundo y desaparece su cartera */
+  function limpiar(m, ev) {
+    const vivos = new Set(lista(m).map(P => P.id));
+    Object.keys(m.duenos || {}).forEach(id => {
+      if (!m.duenos[id].npc || vivos.has(id)) return;
+      m.vivos.concat(m.criadores).forEach(c => { if (c.dueno === id) { soltar(c); ev.cambios.add(c.id); } });
+      delete m.duenos[id];
+    });
+  }
+  function soltar(c) { c.dueno = null; c.entradas = []; c.entreno = null; c.tactica = null; }
 
   /* ---------------------------------------------------------------- el turno de cada personaje: órdenes antes de programar la carrera */
   function turno(m, X, ev) {
     if (!m.npc) return;
     const C = X.C, cal = X.calendarioVisible(m).filter(x => x.n > m.n);
-    const ratings = m.vivos.filter(c => c.estado === "activo" && X.edadAnios(m.n, c) >= C.DEBUT).map(c => c.rating);
-    const puesto = c => ratings.filter(r => r > c.rating).length / Math.max(1, ratings.length);   // 0 = la mejor del mundo, 1 = la peor
-    const tomadas = {};          // plazas que los NPC se han llevado en este turno, para dejar sitio a los jugadores aunque varios elijan la misma carrera
+    const G = general(m); if (!G.activo) return;       // el interruptor general del Admin: nadie hace nada
+    limpiar(m, ev);
     let noticias = 0;
-    REPARTO.forEach(P => {
-      const d = m.duenos[P.id]; if (!d) return;
+    lista(m).forEach(P => {
+      const d = m.duenos[P.id]; if (!d || !P.activo) return;
       const rng = X.crearRng(m.semilla, "npc", P.id, m.n);
       // préstamo: una vez al día (a la hora que le toca a cada uno) si la cartera está por debajo de su mínimo
       if (P.prestamo && m.n % 24 === P.hora && d.saldo < P.prestamo.piso) {
         d.saldo += P.prestamo.monto;
-        if (noticias < AJUSTE.MAX_NOTICIAS && rng.f() < AJUSTE.PROB_NOTICIA_PRESTAMO) { noticias++; ev.noticias.push(X.noticia(m, "cuadra", `${P.nombre} pide otro préstamo`, `${nombreCorto(P)} se ha quedado sin tokens y el banco le adelanta ${P.prestamo.monto}. ${frase(P, "prestamo", rng)}`, [])); }
+        if (noticias < G.noticias && rng.f() < AJUSTE.PROB_NOTICIA_PRESTAMO) { noticias++; ev.noticias.push(X.noticia(m, "cuadra", `${P.nombre} pide otro préstamo`, `${nombreCorto(P)} se ha quedado sin tokens y el banco le adelanta ${P.prestamo.monto}. ${frase(P, "prestamo", rng)}`, [])); }
       }
       d.saldo = Math.max(0, redondea(d.saldo - (P.gasto || 0) * X.cuadraDe(m, P.id).length, 2));   // la avena, los mozos y el herrero, cada carrera
       if (P.tope && d.saldo > P.tope) d.saldo = P.tope;        // lo que pasa de ahí se les va en salarios, deudas viejas y caprichos
@@ -239,7 +318,7 @@
       out.resultados.forEach(r => {
         const o = ordenes[r.oid];
         if (r.criatura != null) ev.cambios.add(r.criatura);
-        if (!r.ok || noticias >= AJUSTE.MAX_NOTICIAS) return;
+        if (!r.ok || noticias >= G.noticias) return;
         const c = o.id != null ? X.buscar(m, o.id) : null; if (!c) return;
         if (o.tipo === "comprar") { noticias++; ev.noticias.push(X.noticia(m, "cuadra", `${nombreCorto(P)} ficha a ${c.nombre}`, `${P.nombre} se lleva a ${c.nombre} para ${P.cuadra} por ${r.costo} tokens. ${frase(P, "compra", rng)}`, [c.id])); }
         else if (o.tipo === "vender") { noticias++; ev.noticias.push(X.noticia(m, "cuadra", `${nombreCorto(P)} se desprende de ${c.nombre}`, `${P.nombre} vende a ${c.nombre} a la casa por ${r.ingreso} tokens. ${frase(P, "vende", rng)}`, [c.id])); }
@@ -250,7 +329,7 @@
   /* Los entrenadores del mundo arman cada campo con las criaturas de su nivel; las de un personaje entran en ese reparto si su dueño acepta la categoría y la
      distancia (el Marqués no mete a las suyas en Novatos; los Pez huyen de las distancias largas). Una preferencia de 0,6 es «aceptarla 6 de cada 10 veces». */
   function acepta(m, X, c, grado, dist, n) {
-    const P = PERSONAJE[c.dueno]; if (!P || !grado) return true;
+    const P = persona(m, c.dueno); if (!P || !grado) return true;
     const G = X.GRADOS[grado];
     let w = G && G.copa ? P.copas : (P.grados && P.grados[grado] != null ? P.grados[grado] : 1);
     if (w == null) w = 1;
@@ -280,18 +359,19 @@
   }
   function apuestas(m, X, sig) {
     sig.tribuna = []; sig.pozoNpc = {};
-    if (!m.npc || sig.suspendida || !AJUSTE.ESCALA_APUESTAS) return;
+    const G = general(m), escala = AJUSTE.ESCALA_APUESTAS * G.apuestas;
+    if (!m.npc || sig.suspendida || !escala || !G.activo) return;
     const pub = X.programaPublico(sig);                 // solo lo público: sin el resultado ni las probabilidades reales
     const perfiles = {}; pub.entrantes.forEach(e => { const c = X.buscar(m, e.id); if (c) perfiles[e.id] = X.perfil(m, c); });
     const abre = X.horaDe(m, sig.n - 1) + X.C.APLICAR_SEG * 1000, cierra = sig.cierre;
-    REPARTO.forEach(P => {
-      const d = m.duenos[P.id]; if (!P.apuesta || !d) return;
+    lista(m).forEach(P => {
+      const d = m.duenos[P.id]; if (!P.apuesta || !d || !P.activo) return;
       const rng = X.crearRng(m.semilla, "npc", "apuesta", P.id, sig.n);
       if (rng.f() > P.apuesta.prob) return;
       let sel = elegir(P, pub, perfiles, m, X);
       if (Array.isArray(sel)) sel = rng.pick(sel);
       if (!sel) return;
-      const monto = Math.floor(P.apuesta.monto * AJUSTE.ESCALA_APUESTAS * (0.7 + 0.6 * rng.f()));
+      const monto = Math.floor(P.apuesta.monto * escala * (0.7 + 0.6 * rng.f()));
       if (monto < 1 || d.saldo - monto < (P.reserva || 0)) return;
       d.saldo = redondea(d.saldo - monto, 2);
       const hora = Math.round(abre + rng.f() * Math.max(1000, cierra - abre - 20000));
@@ -307,10 +387,11 @@
     const rng = X.crearRng(m.semilla, "npc", "resultado", res.n);
     const ganador = res.llegada[0].id;
     let noticias = 0;
+    const MAXN = general(m).noticias;
     // victorias de las criaturas de los personajes
-    const gc = X.buscar(m, ganador), PG = gc && PERSONAJE[gc.dueno];
+    const gc = X.buscar(m, ganador), PG = gc && persona(m, gc.dueno);
     const grande = X.GRADOS[res.grado] && (X.GRADOS[res.grado].copa || res.grado === "gran");
-    if (PG && PG.cuadra && (grande || rng.f() < AJUSTE.PROB_NOTICIA_VICTORIA)) { noticias++; ev.noticias.push(X.noticia(m, "cuadra", `Gana la cuadra de ${nombreCorto(PG)}`, `${gc.nombre}, de ${PG.cuadra}, se lleva ${res.nombre}. ${frase(PG, "gana", rng)}`, [gc.id], res.n)); }
+    if (PG && PG.cuadra && noticias < MAXN && (grande || rng.f() < AJUSTE.PROB_NOTICIA_VICTORIA)) { noticias++; ev.noticias.push(X.noticia(m, "cuadra", `Gana la cuadra de ${nombreCorto(PG)}`, `${gc.nombre}, de ${PG.cuadra}, se lleva ${res.nombre}. ${frase(PG, "gana", rng)}`, [gc.id], res.n)); }
     // el pozo: lo apostado por los jugadores (ev.pozoReal, que lo trae el servidor) y por la tribuna, más el bote de la casa, menos la retención, entre quienes aciertan
     const tribuna = prog.tribuna || []; if (!tribuna.length) return;
     const real = ev.pozoReal || {}, npc = prog.pozoNpc || {};
@@ -327,8 +408,8 @@
     // una noticia como mucho: la apuesta más gorda ganada, o la más gorda perdida si nadie acertó
     mayores.sort((a, b) => (b.ganada - a.ganada) || Math.abs(b.neto) - Math.abs(a.neto));
     const top = mayores[0];
-    if (top && noticias < AJUSTE.MAX_NOTICIAS && (top.ganada ? top.neto >= 35 && rng.f() < 0.3 : top.b.monto >= 25 && rng.f() < 0.15)) {
-      const P = PERSONAJE[top.b.npc];
+    const P = top && persona(m, top.b.npc);
+    if (top && P && noticias < MAXN && (top.ganada ? top.neto >= 35 && rng.f() < 0.3 : top.b.monto >= 25 && rng.f() < 0.15)) {
       if (top.ganada) ev.noticias.push(X.noticia(m, "tribuna", `${nombreCorto(P)} acierta en el pozo`, `${P.nombre} puso ${top.b.monto} tokens a ${top.b.criatura} en ${res.nombre} y se lleva ${redondea(top.neto + top.b.monto, 0)}. ${frase(P, "ganaApuesta", rng)}`, [top.b.sel], res.n));
       else ev.noticias.push(X.noticia(m, "tribuna", `${nombreCorto(P)} pierde su apuesta`, `${P.nombre} había puesto ${top.b.monto} tokens a ${top.b.criatura} en el pozo de ${res.nombre}. ${frase(P, "pierdeApuesta", rng)}`, [top.b.sel], res.n));
     }
@@ -347,12 +428,85 @@
     ev.avisos = ev.avisos.filter(a => !esNpc(a.dueno));
   }
 
-  /* Lo que se enseña de ellos en cada programa: quién tiene qué criaturas y cuánto hay en su cartera */
+  /* Lo que se enseña de ellos en cada programa: quién es cada uno (puede haberlo cambiado el Admin), qué criaturas tiene y cuánto hay en su cartera */
   function publico(m) {
     if (!m.npc) return [];
-    return REPARTO.map(P => { const d = m.duenos[P.id]; return d ? { id: P.id, saldo: Math.round(d.saldo), criaturas: m.vivos.concat(m.criadores).filter(c => c.dueno === P.id).map(c => c.id) } : null; }).filter(Boolean);
+    return lista(m).map(P => {
+      const d = m.duenos[P.id]; if (!d) return null;
+      return { id: P.id, nombre: P.nombre, apodo: P.apodo, cuadra: P.cuadra, lema: P.lema, bio: P.bio, activo: P.activo && general(m).activo, saldo: Math.round(d.saldo),
+        criaturas: m.vivos.concat(m.criadores).filter(c => c.dueno === P.id).map(c => c.id) };
+    }).filter(Boolean);
   }
 
-  raiz.HipodromoNPC = { REPARTO, PERSONAJE, AJUSTE, esNpc, iniciar, turno, acepta, apuestas, liquidar, cerrar, publico };
+  /* ---------------------------------------------------------------- las órdenes del Admin (dar o quitar tokens o criaturas, vender, préstamo, reiniciar) */
+  /* Cada orden lleva el id de la fila de la tabla (crece siempre): m.npc.ultimaOrden recuerda hasta cuál se aplicó, así que repetir el paso no las repite. */
+  function ordenes(m, X, pendientes) {
+    const out = { resultados: [], perfiles: [] };
+    if (!pendientes || !pendientes.length) return out;
+    const ev = { cambios: new Set(), noticias: [] };
+    pendientes.slice().sort((a, b) => a.id - b.id).forEach(o => {
+      const res = { oid: o.id };
+      const falla = t => { res.ok = false; res.error = t; out.resultados.push(res); };
+      const bien = t => { res.ok = true; res.texto = t; out.resultados.push(res); };
+      const ultima = (m.npc && m.npc.ultimaOrden) || 0;
+      if (o.id <= ultima) return bien("Ya estaba aplicada.");
+      if (!m.npc) return falla("Los personajes todavía no han llegado al hipódromo.");
+      const P = persona(m, o.npc), d = P && m.duenos[P.id];
+      if (!P) return falla("Ese personaje no existe.");
+      if (!d) return falla("Ese personaje todavía no ha llegado al hipódromo.");
+      const suyas = () => X.cuadraDe(m, P.id);
+      const soltarlas = lista_ => { lista_.forEach(c => { soltar(c); ev.cambios.add(c.id); }); return lista_.length; };
+      const monto = Number(o.monto);
+      try {
+        switch (o.tipo) {
+          case "caja": {
+            if (!Number.isFinite(monto)) return falla("Falta el importe.");
+            const antes = d.saldo; d.saldo = redondea(num(o.modo === "fijar" ? monto : d.saldo + monto, 0, 10000000, d.saldo), 2);
+            m.npc.ultimaOrden = o.id; return bien(`La caja de ${P.nombre} pasa de ${redondea(antes, 0)} a ${redondea(d.saldo, 0)} tokens.`);
+          }
+          case "dar": {
+            const c = X.buscar(m, Number(o.criatura));
+            if (!c || m.vivos.indexOf(c) < 0 || c.estado !== "activo") return falla("Esa criatura no está en pista.");
+            if (c.dueno) return falla("Esa criatura ya tiene dueño.");
+            if (suyas().length >= X.C.MAX_CABALLOS) return falla(`${P.nombre} ya tiene ${X.C.MAX_CABALLOS} criaturas.`);
+            c.dueno = P.id; c.entradas = []; c.tactica = P.tactica || null; ev.cambios.add(c.id);
+            m.npc.ultimaOrden = o.id; return bien(`${c.nombre} pasa a la cuadra de ${P.nombre}.`);
+          }
+          case "quitar": {
+            const c = suyas().find(x => x.id === Number(o.criatura));
+            if (!c) return falla("Esa criatura no es suya.");
+            soltarlas([c]); m.npc.ultimaOrden = o.id; return bien(`${c.nombre} vuelve al mundo.`);
+          }
+          case "soltar": { const n = soltarlas(suyas()); m.npc.ultimaOrden = o.id; return bien(`${n} ${n === 1 ? "criatura vuelve" : "criaturas vuelven"} al mundo.`); }
+          case "vender": {
+            const c = suyas().find(x => x.id === Number(o.criatura));
+            if (!c) return falla("Esa criatura no es suya.");
+            if (m.proxima && m.proxima.entrantes.some(e => e.id === c.id)) return falla("Está inscrita en la carrera de ahora; espera a que termine.");
+            const saldos = {}; saldos[P.id] = d.saldo;
+            const r = X.procesarOrdenes(m, [{ oid: 1, dueno: P.id, tipo: "vender", id: c.id }], saldos);
+            if (!r.resultados[0].ok) return falla(r.resultados[0].error);
+            d.saldo = redondea(saldos[P.id], 2); ev.cambios.add(c.id);
+            m.npc.ultimaOrden = o.id; return bien(`${P.nombre} vende a ${c.nombre} a la casa por ${r.resultados[0].ingreso} tokens.`);
+          }
+          case "prestamo": {
+            if (!P.prestamo) return falla("Ese personaje no pide préstamos (no tiene préstamo configurado).");
+            d.saldo = redondea(d.saldo + P.prestamo.monto, 2); m.npc.ultimaOrden = o.id; return bien(`El banco adelanta ${P.prestamo.monto} tokens a ${P.nombre}.`);
+          }
+          case "reiniciar": {
+            const n0 = soltarlas(suyas()); delete m.duenos[P.id];
+            const n1 = fundarUna(m, X, P, ev);
+            m.npc.ultimaOrden = o.id; return bien(`${P.nombre} empieza de nuevo: caja de ${P.inicio.saldo} tokens y ${n1} ${n1 === 1 ? "criatura" : "criaturas"} (soltó ${n0}).`);
+          }
+          default: return falla("Esa orden no existe.");
+        }
+      } catch (e) { return falla("No se pudo aplicar: " + (e && e.message || e)); }
+    });
+    // la última orden vista cuenta aunque haya fallado (para no volver a intentarla en el siguiente paso)
+    if (m.npc) m.npc.ultimaOrden = Math.max(m.npc.ultimaOrden || 0, ...pendientes.map(o => o.id));
+    [...ev.cambios].forEach(id => { const c = X.buscar(m, id); if (c) out.perfiles.push(X.perfil(m, c)); });
+    return out;
+  }
+
+  raiz.HipodromoNPC = { REPARTO, PERSONAJE, AJUSTE, ENUMS, FRASES_TIPOS, ID_NPC, esNpc, sanear, mezcla, efectiva, configurar, lista, persona, general, iniciar, turno, acepta, apuestas, liquidar, cerrar, publico, ordenes };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoNPC;
 })(typeof window !== "undefined" ? window : globalThis);

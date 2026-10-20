@@ -545,6 +545,79 @@ function cabezaACabeza(a, b, cond, veces) {
   informe.push("personajes (un mes): " + NPC.REPARTO.filter(P => P.cuadra).map(P => P.apodo + " " + Math.round(w.duenos[P.id].saldo) + " tokens, " + M.cuadraDe(w, P.id).length + " criaturas").join("; ") + "; tribuna " + Math.round(apuestas.reduce((a, b) => a + b.monto, 0) / total) + " tokens por carrera; victorias de personajes " + pct(ganadores / total));
 }
 
+// 4h) El Admin maneja a los personajes: ajustes encima de los de fábrica, interruptores, personajes nuevos y órdenes puntuales
+{ const NPC = sb.HipodromoNPC, esNpc = M.esNpcId, mk = () => M.crearMundo("admin-personajes", { calentar: 300, t0: Date.UTC(2026, 9, 1, 2), simsCalentar: 8 });
+  const avanza = (w, k) => { const evs = []; for (let i = 0; i < k; i++) evs.push(M.avanzar(w, { sims: 8 })); return evs; };
+  // ajustes y limpieza
+  { const w = mk();
+    NPC.configurar(w, { "npc:marques": { nombre: "Anselmo II", reserva: -50, grados: { gran: 9, novatos: "mucho" }, dist: "volando", apuesta: { monto: 5000, estilo: "inventado" }, frases: { gana: ["Otra más.", 7, ""] } }, global: { apuestas: 99, noticias: 9 } });
+    const P = NPC.persona(w, "npc:marques"), base = NPC.PERSONAJE["npc:marques"], G = NPC.general(w);
+    ok(P.nombre === "Anselmo II" && P.apodo === base.apodo && P.cuadra === base.cuadra, "lo que cambia el Admin va encima de los valores de fábrica y lo demás se queda como estaba");
+    ok(P.reserva === 0 && P.grados.gran === 1 && P.grados.novatos === 1 && P.grados.selecta === base.grados.selecta && P.dist === null && P.apuesta.monto === 200 && P.apuesta.estilo === "favorita" && P.frases.gana.length === 1 && P.frases.gana[0] === "Otra más.", "los valores absurdos se ajustan a lo posible (sin negativos, sin pasarse de tope, sin opciones inventadas, sin frases que no son texto)");
+    ok(G.apuestas === 3 && G.noticias === 3 && G.activo === true, "los ajustes generales también se ajustan (apuestas de 0 a 3, noticias de 0 a 3)");
+    ok(JSON.stringify(NPC.lista(w).map(x => x.id)) === JSON.stringify(NPC.REPARTO.map(x => x.id)), "sin personajes nuevos la lista es la de fábrica");
+    const e = NPC.efectiva("npc:pez", { apuesta: { monto: 12 }, grados: { gran: 0.5 } });
+    ok(e.apuesta.monto === 12 && e.apuesta.estilo === "longshots" && e.grados.gran === 0.5 && e.grados.novatos === 1, "efectiva() mezcla campo a campo (sirve al panel para enseñar el resultado antes de guardar)");
+    NPC.configurar(w, "esto no es un objeto"); ok(NPC.persona(w, "npc:marques").nombre === "Anselmo II", "unos ajustes que no son un objeto se ignoran"); }
+  // pausar a uno, a todos, apagar las apuestas y las noticias
+  { const w = mk(); avanza(w, 3);
+    NPC.configurar(w, { "npc:remedios": { activo: false } });
+    const ev1 = avanza(w, 60);
+    ok(ev1.every(e => (w.proxima.tribuna || []).every(b => b.npc !== "npc:remedios")) && !ev1.some(e => e.noticias.some(x => /Contadora|Remedios/.test(x.titulo) && x.tipo === "cuadra" && /ficha|desprende|préstamo/.test(x.titulo))), "un personaje pausado no apuesta ni compra ni vende");
+    ok(M.cuadraDe(w, "npc:remedios").length >= 1, "pausado no es retirado: sus criaturas siguen en su cuadra y corren como las del mundo");
+    NPC.configurar(w, { global: { activo: false } });
+    const evs = avanza(w, 40);
+    ok(evs.every(() => (w.proxima.tribuna || []).length === 0) && !evs.some(e => e.noticias.some(x => x.tipo === "tribuna")), "con el interruptor general apagado la tribuna se queda en silencio");
+    NPC.configurar(w, { global: { apuestas: 0 } }); avanza(w, 3); ok((w.proxima.tribuna || []).length === 0, "con la escala de apuestas en 0 no apuesta nadie");
+    NPC.configurar(w, { global: { apuestas: 2 } }); const dobles = []; for (let i = 0; i < 40; i++) { avanza(w, 1); dobles.push((w.proxima.tribuna || []).reduce((t, b) => t + b.monto, 0)); }
+    NPC.configurar(w, { global: { apuestas: 1 } }); const simples = []; for (let i = 0; i < 40; i++) { avanza(w, 1); simples.push((w.proxima.tribuna || []).reduce((t, b) => t + b.monto, 0)); }
+    ok(media(dobles) > media(simples) * 1.4, "con la escala de apuestas en 2 se apuesta bastante más (" + media(dobles).toFixed(0) + " contra " + media(simples).toFixed(0) + " tokens por carrera)");
+    NPC.configurar(w, { global: { noticias: 0 } }); const sin = avanza(w, 80);
+    ok(!sin.some(e => e.noticias.some(x => x.tipo === "tribuna" || x.tipo === "cuadra")), "con noticias en 0 los personajes no salen en las noticias"); }
+  // un personaje nuevo, y quitarlo
+  { const w = mk(); avanza(w, 2);
+    const nuevo = { nuevo: true, nombre: "Tomasa Brea", apodo: "la Curtida", cuadra: "Cuadra Brea", lema: "A caballo regalado no se le mira el diente.", bio: "Curtida en mil ferias.", inicio: { saldo: 900, tipo: "media", n: 2 }, reserva: 200, tope: 4000, gasto: 2, grados: { gran: 0, selecta: 0.5, corriente: 1, novatos: 1 }, compra: { prob: 0.05, criterio: "baratas", tamano: 3 }, vende: true };
+    const cfg = { "npc:brea": nuevo, "npc:malo": { nuevo: true, nombre: "x" }, "otra-cosa": { nuevo: true, nombre: "no vale el id" } };
+    NPC.configurar(w, cfg); const evs = avanza(w, 3);
+    ok(NPC.lista(w).some(P => P.id === "npc:brea") && !NPC.lista(w).some(P => P.id === "otra-cosa"), "los personajes nuevos que crea el Admin entran en la lista (si su identificador es de personaje)");
+    ok(w.duenos["npc:brea"] && w.duenos["npc:brea"].saldo > 0 && M.cuadraDe(w, "npc:brea").length === 2 && evs.some(e => e.noticias.some(x => /Tomasa Brea/.test(x.titulo))), "el personaje nuevo abre su cuadra con su caja y sus criaturas y sale una noticia de su llegada");
+    const pub = w.proxima.cuadrasNpc.find(x => x.id === "npc:brea"); ok(pub && pub.nombre === "Tomasa Brea" && pub.lema && pub.activo === true, "el programa público lleva quién es cada personaje (también los nuevos)");
+    avanza(w, 80); ok(w.proxima.entrantes.length > 0 && w.vivos.some(c => c.dueno === "npc:brea"), "y corre en el mundo como los demás");
+    NPC.configurar(w, {}); const ids = M.cuadraDe(w, "npc:brea").map(c => c.id); avanza(w, 2);
+    ok(!w.duenos["npc:brea"] && M.cuadraDe(w, "npc:brea").length === 0 && ids.every(id => !((M.buscar(w, id) || {}).dueno)), "al quitarlo, sus criaturas vuelven al mundo y desaparece su cartera"); }
+  // órdenes puntuales, a través de paso() como las manda la Edge Function
+  { const raw = M.paso(null, Date.UTC(2026, 0, 1), { calentar: 230, semilla: "orden-admin", simsCalentar: 8 });
+    const fila = { version: 1, mundo: JSON.parse(JSON.stringify(raw.lote.mundo)) }, w = fila.mundo, ahora = M.horaDe(w, w.n);
+    const P = "npc:hilda", cajaIni = Math.round(w.duenos[P].saldo), suyas0 = M.cuadraDe(w, P).length;
+    const libre = w.vivos.find(c => !c.dueno && c.estado === "activo" && !w.proxima.entrantes.some(e => e.id === c.id) && !M.mejoresDelMundo(w).has(c.id));
+    const mia = M.cuadraDe(w, P)[0];
+    const ordenes = [{ id: 1, npc: P, tipo: "caja", modo: "sumar", monto: 500 }, { id: 2, npc: P, tipo: "caja", modo: "sumar", monto: -9999999 }, { id: 3, npc: P, tipo: "caja", modo: "fijar", monto: 777 },
+      { id: 4, npc: "npc:nadie", tipo: "caja", modo: "fijar", monto: 1 }, { id: 5, npc: P, tipo: "magia" }, { id: 6, npc: P, tipo: "dar", criatura: libre.id }, { id: 7, npc: P, tipo: "dar", criatura: libre.id },
+      { id: 8, npc: P, tipo: "quitar", criatura: libre.id }, { id: 9, npc: P, tipo: "prestamo" }, { id: 10, npc: "npc:pocho", tipo: "dar", criatura: mia.id }];
+    const r = M.paso(fila, ahora, { npcOrdenes: ordenes, sims: 8 });
+    ok(r && r.avanzadas === 0 && Array.isArray(r.lote.npcOrdenes) && r.lote.npcOrdenes.length === ordenes.length, "solo con órdenes del Admin el paso devuelve su resultado sin avanzar carreras");
+    const R = id => r.lote.npcOrdenes.find(x => x.oid === id);
+    ok(R(1).ok && /pasa de/.test(R(1).texto) && R(2).ok && R(3).ok && Math.round(w.duenos[P].saldo) === 777 , "dar, quitar y fijar tokens de la caja (sin bajar nunca de cero)");
+    ok(!R(4).ok && /no existe/.test(R(4).error) && !R(5).ok && /no existe/.test(R(5).error), "un personaje o una orden que no existen se rechazan con su motivo");
+    ok(R(6).ok && !R(7).ok && /ya tiene dueño/.test(R(7).error) && R(8).ok && !libre.dueno, "dar una criatura libre a un personaje y devolverla al mundo; no se da una que ya tiene dueño");
+    ok(r.lote.criaturas.some(f => f.id === libre.id) && r.lote.criaturas.find(f => f.id === libre.id).dueno === null, "las criaturas que cambian de manos salen en el lote para publicarse");
+    ok(R(9).ok === !!NPC.persona(w, P).prestamo && (R(9).ok || /préstamo/.test(R(9).error)), "el préstamo solo se da a quien tiene uno configurado");
+    ok(!R(10).ok && /ya tiene dueño|no ha llegado|no existe|no está/.test(R(10).error), "no se le da una criatura ajena a otro personaje");
+    // repetir el mismo paso con las mismas órdenes no las repite
+    const caja2 = w.duenos[P].saldo, r2 = M.paso({ version: 2, mundo: w }, ahora, { npcOrdenes: ordenes, sims: 8 });
+    ok(r2.lote.npcOrdenes.every(x => x.ok && /Ya estaba aplicada/.test(x.texto)) && w.duenos[P].saldo === caja2, "una orden ya aplicada no se vuelve a aplicar aunque la función repita el paso");
+    // vender, soltar y reiniciar
+    const r3 = M.paso({ version: 3, mundo: w }, ahora, { npcOrdenes: [{ id: 11, npc: P, tipo: "vender", criatura: M.cuadraDe(w, P)[0].id }, { id: 12, npc: P, tipo: "soltar" }], sims: 8 });
+    ok(r3.lote.npcOrdenes.find(x => x.oid === 12).ok && M.cuadraDe(w, P).length === 0, "soltar a todas devuelve las criaturas al mundo");
+    const r4 = M.paso({ version: 4, mundo: w }, ahora, { npcOrdenes: [{ id: 13, npc: P, tipo: "reiniciar" }], sims: 8 });
+    ok(r4.lote.npcOrdenes[0].ok && Math.round(w.duenos[P].saldo) === NPC.PERSONAJE[P].inicio.saldo && M.cuadraDe(w, P).length >= 1, "reiniciar deja al personaje con su caja inicial y criaturas nuevas del mundo");
+    ok(r4.lote.npcOrdenes.length === 1 && M.cuadraDe(w, P).every(c => esNpc(c.dueno)), "y todo es del personaje"); }
+  // el mundo con ajustes del Admin se reanuda igual
+  { const w = mk(); NPC.configurar(w, { "npc:cuervo": { apuesta: { monto: 60 } }, global: { apuestas: 1.5 } });
+    const a = JSON.parse(JSON.stringify(w)), b = JSON.parse(JSON.stringify(w)); avanza(a, 40); const b2 = JSON.parse(JSON.stringify(b)); avanza(b2, 40);
+    ok(JSON.stringify(a) === JSON.stringify(b2) && a.npcCfg && a.npcCfg.global.apuestas === 1.5, "el mundo con ajustes del Admin se guarda y se reanuda igual"); }
+}
+
 // 4e) Ponerse al día en varias llamadas (lo que hace la Edge Function: no puede calcular todo de golpe)
 { const t = Date.UTC(2026, 0, 1, 12, 0, 0), HIS = 50;
   const crea = () => { const r = M.paso(null, t, { historia: HIS, semilla: "al-dia", sims: 8 }); return { version: 1, mundo: JSON.parse(JSON.stringify(r.lote.mundo)) }; };

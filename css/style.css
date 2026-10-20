@@ -3964,3 +3964,31 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
 .admin-dlg-prueba { min-height: 1.3em; margin: 4px 0; font-style: italic; color: var(--accent); }
 .admin-dlg-acciones { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 800px) { .admin-dlg-grupos { grid-template-columns: 1fr; } }
+
+/* Pestaña Personajes del panel de Admin (js/admin-personajes.js): superficies planas, sin degradados */
+.admin-npc-general { display: grid; gap: 10px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); max-width: 760px; }
+.admin-npc-fila { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: end; }
+.admin-npc-fila small, .admin-npc-ayuda { color: var(--muted); font-size: .84rem; }
+.admin-npc-ayuda { margin: 0 0 8px; }
+.admin-npc-check { display: flex; gap: 8px; align-items: flex-start; }
+.admin-npc-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.admin-npc { padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); display: grid; gap: 6px; align-content: start; }
+.admin-npc-abierto { border-color: var(--accent); }
+.admin-npc header { display: grid; gap: 2px; }
+.admin-npc header h3 { margin: 0; font-size: 1rem; }
+.admin-npc header small { color: var(--muted); }
+.admin-npc-datos { margin: 0; font-size: .9rem; line-height: 1.5; }
+.admin-npc-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-npc-chip { justify-self: start; padding: 1px 8px; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--border); color: var(--muted); }
+.admin-npc-chip.bien { border-color: #5aa67a; color: #7bd0a0; }
+.admin-npc-editor { margin: 14px 0; }
+.admin-npc-editor:not(:empty) { padding: 14px 16px; background: var(--panel); border: 1px solid var(--accent); }
+.admin-npc-editor h3 small { color: var(--muted); font-weight: 400; font-size: .8rem; }
+.admin-npc-editor fieldset { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--border); }
+.admin-npc-editor legend { padding: 0 6px; color: var(--accent); }
+.admin-npc-editor label { display: grid; gap: 3px; font-size: .88rem; }
+.admin-npc-editor input[type="text"], .admin-npc-editor input[type="number"], .admin-npc-editor select, .admin-npc-editor textarea { width: 100%; box-sizing: border-box; }
+.admin-npc-rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px 14px; align-items: end; }
+.admin-npc-guardar { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; }
+.admin-npc-editor label.admin-npc-check, .admin-npc-general label.admin-npc-check { display: flex; align-items: center; gap: 8px; }
+.admin-npc-editor label.admin-npc-check input { width: auto; }
