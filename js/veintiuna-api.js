@@ -44,6 +44,12 @@
       accion: (partida, paso, accion) => llamar("veintiuna_accion", { p_partida: partida, p_paso: paso, p_accion: accion }),
       historial: limite => llamar("veintiuna_historial", { p_limite: limite || 15 }),
       reclamar: logro => llamar("veintiuna_reclamar", { p_logro: logro }),
+      // La Última Vela, el reto de Muerte Súbita contra Cera (docs/veintiuna-reto.sql). repartir lleva cuántas manos había repartidas y accion el paso de la mano: repetirlas es seguro.
+      reto: {
+        estado: intento => llamar("veintiuna_reto_estado", { p_intento: intento }),
+        repartir: (intento, manos) => llamar("veintiuna_reto_repartir", { p_intento: intento, p_manos: manos }),
+        accion: (intento, paso, accion) => llamar("veintiuna_reto_accion", { p_intento: intento, p_paso: paso, p_accion: accion })
+      },
       // La mesa con amigos (docs/veintiuna.sql, sección 8). estado(version) devuelve {sin_cambios} si no cambió nada desde esa versión.
       amigos: {
         lista: () => llamar("veintiuna_amigos_lista", {}),

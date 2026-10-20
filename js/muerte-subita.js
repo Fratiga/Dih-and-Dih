@@ -93,7 +93,10 @@
     if (!intentos.length) { intentosEl.innerHTML = ""; return; }
     const filas = intentos.map(i => {
       const marcado = i.estado === "perdido" && i.veredicto !== "anulado" && i.veredicto !== "perdonado";
-      return `<li class="${marcado ? "ms-marcado" : ""}">${marcado ? "☠ " : ""}${escapar(i.personaje_nombre)} · ${escapar(i.desafio)} · ${escapar(textoEstado(i))}${i.veredicto === "anulado" ? " (anulado)" : i.veredicto === "perdonado" ? " (marca quitada)" : ""}</li>`;
+      // Un reto que vive en el servidor se puede retomar donde se dejó
+      const d = window.MUERTE_SUBITA.find(x => x.id === i.desafio);
+      const retomar = i.estado === "en_curso" && !i.veredicto && d && d.retomable ? ` · <a href="${escapar(d.pagina)}?i=${encodeURIComponent(i.id)}">Retomar</a>` : "";
+      return `<li class="${marcado ? "ms-marcado" : ""}">${marcado ? "☠ " : ""}${escapar(i.personaje_nombre)} · ${escapar(i.desafio)} · ${escapar(textoEstado(i))}${i.veredicto === "anulado" ? " (anulado)" : i.veredicto === "perdonado" ? " (marca quitada)" : ""}${retomar}</li>`;
     }).join("");
     intentosEl.innerHTML = `<div class="ms-intentos-lista"><h4>Tus intentos</h4><ul>${filas}</ul></div>`;
   }

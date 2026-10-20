@@ -17,7 +17,17 @@ window.MUERTE_SUBITA = [
     texto: "Un cazador que no falla. Ya te estaba apuntando antes de que llegaras.",
     recompensa: "Una reliquia de Verdam, a criterio del DM."
   },
-  { id: "estrategia", categoria: "Estrategia", bloqueado: true },
+  {
+    id: "cera-veintiuna",
+    rival: "Cera",
+    categoria: "Estrategia",
+    prueba: "La Última Vela",
+    arte: "velas",
+    retomable: true,
+    pagina: "ultima-vela.html",
+    texto: "Blackjack a tres de cinco manos. Cera enseña sus dos cartas y no se planta hasta el dieciocho. Un solo intento.",
+    recompensa: "A criterio del DM."
+  },
   { id: "azar", categoria: "Azar", bloqueado: true },
   { id: "voluntad", categoria: "Voluntad", bloqueado: true }
 ];

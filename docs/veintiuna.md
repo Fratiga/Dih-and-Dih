@@ -152,11 +152,41 @@ No hay ninguna infraestructura anticipada. Cuando llegue el momento, el sistema 
 - Teclado: P pedir, L plantarse, V la acción de la regla (Última voluntad, Ojo, Cartas marcadas, Trueque) o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
 - Móvil: las cartas y los controles van primero; el dock de acciones se queda pegado abajo.
 
+## La Última Vela (Muerte Súbita contra Cera)
+
+Un desafío de Muerte Súbita (`ultima-vela.html`, carta «Cera · Estrategia» de `muerte-subita.html`) que reutiliza la baraja, los valores y el reparto de esta mesa. Aprobado por el usuario el 19 de octubre de 2026. **No mueve tokens ni cartas, no toca estadísticas, desafíos ni rachas y no mata a nadie**: el servidor solo anota el resultado y el DM resuelve con el veredicto de siempre (confirmar, anular o perdonar).
+
+**Reglas fijas (las que se simularon, sin añadir más hasta probar el modo con jugadores reales):**
+- Blackjack contra Cera, sin reglas especiales de ronda, sin doblar ni dividir. Baraja de 52 nueva en cada mano.
+- **El testigo:** Cera enseña sus dos cartas desde que se reparte.
+- **Cera exigente:** Cera pide hasta llegar a 18 (en la mesa normal se planta con 17), también con 17 blando.
+- **Ganar 3 de 5 manos.** El reto acaba en cuanto se llega a 3 victorias o a 3 derrotas. Un empate repite la mano, hasta dos veces; el **tercer empate seguido cuenta como derrota** de esa mano.
+- **Un solo intento por personaje**, con el nivel 4 que ya pide Muerte Súbita (`ms_iniciar`). Una vez repartida la primera mano, recargar o desconectarse no da otro: `veintiuna_reto_estado` devuelve la mano en curso con las mismas cartas. El modo de práctica de la mesa normal sigue libre y aparte (con las reglas normales, no estas).
+
+**Lo que midió la simulación** (`node tools/veintiuna-ultima-vela.js`, 250.000 manos por escenario; probabilidad de superar el reto de 3 de 5 con empates repetidos):
+
+| Jugador | Una mano (gana / empata / pierde) | Reto |
+|---|---|---|
+| Novato (pide hasta 17) | 41,0 % / 8,0 % / 51,0 % | 39,8 % |
+| Estrategia básica | 45,0 % / 7,3 % / 47,7 % | 47,3 % |
+| Informado (usa lo que ve de Cera, estrategia perfecta) | 50,6 % / 7,1 % / 42,3 % | 58,4 % |
+
+El 58,4 % es un techo teórico (juego perfecto con baraja infinita), no lo que se espera de un jugador. No se ajusta la dificultad hasta probarla en manos reales. Pendiente de observar: si el jugador entiende que Cera le da información que puede aprovechar y no siente que es solo suerte. Descartadas por ahora: «La cera recuerda» (ver la siguiente carta: 67 % para el informado, demasiado) y la carta que reaparece (sin simular).
+
+**Cómo está hecha** (`docs/veintiuna-reto.sql`, se corre en Supabase después de `veintiuna.sql` y de Muerte Súbita; se puede repetir):
+- Tablas `veintiuna_retos` (una por intento: ganadas, perdidas, empates seguidos, manos repartidas) y `veintiuna_reto_manos` (una por mano, con la baraja entera: solo la lee el admin). Nadie escribe en ellas desde el navegador.
+- Funciones públicas `veintiuna_reto_estado(intento)`, `veintiuna_reto_repartir(intento, manos)` y `veintiuna_reto_accion(intento, paso, 'pedir' | 'plantar')`. Repartir lleva cuántas manos había repartidas y la acción el paso de la mano: un clic repetido o una petición que llega tarde no gasta una mano ni pide otra carta. Todo bajo un candado por intento.
+- Al llegar a 3 victorias o 3 derrotas el servidor cierra el intento de Muerte Súbita como `ganado` o `perdido` (puntaje = manos ganadas, puntaje_rival = manos perdidas) y deja el veredicto vacío para el DM. Una derrota marca al personaje en «Mis personajes» como cualquier otra derrota de Muerte Súbita.
+- `ms_finalizar` (el cierre con puntajes que manda el navegador, usado por Verdam) se niega a cerrar este desafío: el resultado lo decide solo el servidor.
+- La página no calcula nada: pinta lo que el servidor confirma. Retomar un intento sin terminar: enlace «Retomar» en la lista de intentos de Muerte Súbita.
+- **Comprobado que el servidor juega lo mismo que la simulación:** `tools/veintiuna-ultima-vela-verificar.js` reparte las mismas barajas en la simulación y en el servidor (novato y básico) y compara cada mano. 3.000 de 3.000 iguales; con una regla distinta (Cera con 17) la misma comprobación detecta las diferencias.
+
 ## Pruebas
 
 ```bash
 sh docs/pruebas/cargar_local.sh todo && sh docs/pruebas/t_veintiuna.sh    # reglas, reglas especiales, carta oculta, economía, permisos, concurrencia, desafíos y recompensas
 node docs/pruebas-web/veintiuna.js                                        # textos, acciones, llamadas al servidor, cartas, accesibilidad y contraste
+node docs/pruebas-web/ultima-vela.js                                      # La Última Vela: velas, textos, botones y la página
 ```
 
 `VEINTIUNA_EV_MANOS=3000 sh docs/pruebas/t_veintiuna.sh` acorta las partidas de valor esperado (por defecto 12.000 por regla, unos 15 minutos en total).
@@ -173,6 +203,8 @@ node docs/pruebas-web/veintiuna.js                                        # text
 | `js/veintiuna-api.js` | Las llamadas al servidor (la mesa individual y `amigos.*`) y los errores de red (puro) |
 | `veintiuna-amigos.html`, `js/veintiuna-amigos.js` | La mesa con amigos: lobby de mesas, asientos, pozo y turnos |
 | `docs/veintiuna.sql` | Tablas, reglas del juego, economía y desafíos |
+| `ultima-vela.html`, `js/ultima-vela.js`, `js/ultima-vela-vista.js`, `css/ultima-vela.css`, `docs/veintiuna-reto.sql` | La Última Vela: página, controlador, textos (puro), estilos y servidor |
+| `tools/veintiuna-ultima-vela.js`, `tools/veintiuna-ultima-vela-verificar.js`, `docs/pruebas/t_veintiuna_reto.sql`, `docs/pruebas-web/ultima-vela.js` | Simulación de las reglas candidatas, comprobación contra el servidor y pruebas |
 | `docs/pruebas/t_veintiuna*.sql/.sh` (incluye `t_veintiuna_amigos.sql`), `docs/pruebas-web/veintiuna.js` | Pruebas |
 | `assets/minijuegos/veintiuna.svg` | Ilustración de la tarjeta de Minijuegos |
 
@@ -181,3 +213,5 @@ node docs/pruebas-web/veintiuna.js                                        # text
 - Correr `docs/veintiuna.sql` en Supabase (después de la economía de cartas y del Hipódromo; se puede repetir).
 - Probar con una sesión real de Supabase (aquí se probó contra un Postgres local con el mismo esquema y una pasarela que ejecuta las funciones de verdad como un jugador).
 - Elegir música para la página y encender las recompensas cuando se decida abrirlo.
+- Correr `docs/veintiuna-reto.sql` en Supabase para abrir La Última Vela (necesita Muerte Súbita ya instalada). Hasta entonces la página dice que el reto no está instalado.
+- Idea sin hacer: una práctica con las reglas del reto (testigo y Cera exigente), aparte del intento, para que el jugador aprenda a usar lo que ve de Cera.

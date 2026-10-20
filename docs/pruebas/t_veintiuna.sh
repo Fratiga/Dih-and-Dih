@@ -208,4 +208,65 @@ comprobar_ev2 "Cartas marcadas, mirar siempre al principio" "-15.28" marcadas
 comprobar_ev2 "Trueque con la casa, cuando la visible vale 5 más que tu primera" "-10.09" trueque
 
 
+echo "== La Última Vela (reto de Muerte Súbita contra Cera): reglas, repetir y recuperar, de quién es cada intento (SQL)"
+docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$AQUI/../veintiuna-reto.sql" >/dev/null 2>&1 || { echo "  FALLA docs/veintiuna-reto.sql no se pudo cargar (¿está cargada pruebas/05_muerte_subita_simulado.sql?)"; FALLOS=$((FALLOS + 1)); }
+SALIDA=$(docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=0 < "$AQUI/t_veintiuna_reto.sql" 2>&1)
+printf '%s
+' "$SALIDA" | grep -E 'NOTICE:  (OK|FALLA)' | sed -E 's/NOTICE:  OK   /  OK   /; s/NOTICE:  FALLA /  FALLA /'
+FALLOS=$((FALLOS + $(printf '%s
+' "$SALIDA" | grep -c 'NOTICE:  FALLA')))
+ERRORES=$(printf '%s
+' "$SALIDA" | grep -E 'ERROR' | head -3); [ -n "$ERRORES" ] && { echo "  FALLA errores de SQL: $ERRORES"; FALLOS=$((FALLOS + 1)); }
+
+echo "== La Última Vela: permisos"
+sql "select t_r_limpiar(); select t_reset()" >/dev/null
+INT=$(sql "select t_r_intento('$U1')")
+INT2=$(sql "select t_r_intento('$U2')")
+for f in "veintiuna_reto_estado('$INT')" "veintiuna_reto_repartir('$INT', 0)" "veintiuna_reto_accion('$INT', 0, 'pedir')" "ms_finalizar('$INT', 1, 0)"; do
+  contiene "sin sesión no se puede llamar a $(printf '%s' "$f" | cut -d'(' -f1)" "$(anonimo "select $f;")" "permission denied"
+done
+for f in "veintiuna_i_reto_repartir('$U1', '$INT', 0, null)" "veintiuna_i_reto_cerrar_mano(gen_random_uuid(), 'victoria', 'x')" "veintiuna_i_reto_plantar(gen_random_uuid())" "veintiuna_i_reto_json('$INT')" "veintiuna_i_reto_intento('$U1', '$INT')" "veintiuna_i_reto_const('ganar')"; do
+  contiene "un jugador no puede llamar a la función interna $(printf '%s' "$f" | cut -d'(' -f1)" "$(como $U1 "select $f;")" "permission denied"
+done
+R=$(como $U1 "select veintiuna_reto_repartir('$INT', 0) -> 'mano' ->> 'fase';")
+case "$R" in *jugador*|*terminada*) ok "un jugador con sesión reparte la primera mano de su reto";; *) mal "un jugador con sesión reparte la primera mano de su reto (salida: $R)";; esac
+comprobar "un jugador no lee la tabla de manos (lleva la baraja)" "0" "$(como $U1 "select count(*) from veintiuna_reto_manos;" | tail -1)"
+comprobar "el admin sí puede revisarlas" "1" "$(como $ADMIN "select count(*) from veintiuna_reto_manos where intento = '$INT';" | tail -1)"
+comprobar "cada jugador ve su fila del reto y no la de otro" "1|0" "$(como $U1 "select count(*) from veintiuna_retos;" | tail -1)|$(como $U2 "select count(*) from veintiuna_retos where intento = '$INT';" | tail -1)"
+for t in "insert into veintiuna_retos (intento, user_id) values ('$INT2', '$U2')" "update veintiuna_retos set ganadas = 3" "delete from veintiuna_retos"          "update veintiuna_reto_manos set resultado = 'victoria'" "delete from veintiuna_reto_manos" "insert into veintiuna_reto_manos (intento, orden, numero, mazo, repartidas, jugador, cera) values ('$INT', 99, 1, '{1}', 1, '{1}', '{2}')"; do
+  contiene "escribir directo en las tablas del reto está prohibido: $(printf '%s' "$t" | cut -c1-48)" "$(como $U1 "$t;")" "permission denied"
+done
+sql "select t_r_limpiar()" >/dev/null
+
+echo "== La Última Vela: dos peticiones a la vez"
+TMP=$(mktemp -d)
+sql "select t_r_limpiar()" >/dev/null
+INT=$(sql "select t_r_intento('$U1')")
+como $U1 "select veintiuna_reto_repartir('$INT', 0) ->> 'repartidas';" 1 > "$TMP/a" &
+como $U1 "select veintiuna_reto_repartir('$INT', 0) ->> 'repartidas';" 1 > "$TMP/b" &
+wait
+comprobar "repartir dos veces a la vez la primera mano: se reparte una sola" "1" "$(sql "select count(*) from veintiuna_reto_manos where intento = '$INT'")"
+comprobar "y el contador de manos del reto cuadra" "1" "$(sql "select manos from veintiuna_retos where intento = '$INT'")"
+if [ "$(sql "select estado from veintiuna_reto_manos where intento = '$INT'")" = "en_curso" ]; then
+  como $U1 "select veintiuna_reto_accion('$INT', 0, 'plantar') -> 'mano' ->> 'resultado';" 1 > "$TMP/a" &
+  como $U1 "select veintiuna_reto_accion('$INT', 0, 'plantar') -> 'mano' ->> 'resultado';" 1 > "$TMP/b" &
+  wait
+  comprobar "plantarse dos veces a la vez: la mano se cuenta una sola vez para el reto" "1" "$(sql "select ganadas + perdidas + empates_seguidos from veintiuna_retos where intento = '$INT'")"
+  comprobar "y las dos respuestas dicen lo mismo" "1" "$(cat "$TMP/a" "$TMP/b" | grep -v '^$' | sort -u | wc -l | tr -d ' ')"
+else
+  ok "(la primera mano acabó al repartir, un natural: no hay nada que plantar; se repite en la próxima tanda)"
+fi
+rm -rf "$TMP"
+sql "select t_r_limpiar()" >/dev/null
+
+echo "== La Última Vela: el servidor juega las mismas reglas que la simulación (misma baraja, misma estrategia, mismo resultado)"
+if command -v node >/dev/null 2>&1; then
+  N_BARAJAS="${VEINTIUNA_RETO_BARAJAS:-1500}"
+  RES=$(node "$AQUI/../../tools/veintiuna-ultima-vela-verificar.js" "$N_BARAJAS" | docker exec -i cartas-pruebas psql -U postgres -d pruebas -tA -q -v ON_ERROR_STOP=0 2>&1 | sort | uniq -c | tr -s ' ' | tr '\n' ' ' | sed 's/^ *//;s/ *$//')
+  comprobar "$((N_BARAJAS * 2)) manos (novato y básico) dan el mismo resultado en el servidor y en la simulación" "$((N_BARAJAS * 2)) t" "$RES"
+else
+  echo "  (sin node no se puede comparar con la simulación: se omite)"
+fi
+sql "select t_r_limpiar(); select t_reset()" >/dev/null
+
 [ "$FALLOS" -eq 0 ] && echo "Todo bien." || { echo "$FALLOS fallo(s)."; exit 1; }

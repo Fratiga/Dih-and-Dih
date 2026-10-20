@@ -123,3 +123,5 @@
 .ms-vol-boton { background: none; border: 0; color: #c084fc; cursor: pointer; padding: 2px; display: flex; }
 .ms-vol-boton:hover { color: #f0abfc; }
 .ms-vol-rango { width: 96px; accent-color: #a855f7; cursor: pointer; }
+
+.ms-intentos-lista a { color: #e9d5ff; }

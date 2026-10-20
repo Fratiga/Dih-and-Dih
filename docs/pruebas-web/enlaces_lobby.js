@@ -11,7 +11,7 @@ const mal = t => { console.log("  FALLA " + t); fallos++; };
 const comprobar = (t, cond, extra) => (cond ? ok(t) : mal(t + (extra ? ` (${extra})` : "")));
 
 // Páginas que no se enlazan a propósito: la propia portada y las secretas
-const EXCLUIDAS = new Set(["index.html", "secreto.html", "muerte-subita.html", "encuentro-verdam.html", "veintiuna-amigos.html"]);   // la mesa con amigos solo se entra desde Las Veintiuna Velas
+const EXCLUIDAS = new Set(["index.html", "secreto.html", "muerte-subita.html", "encuentro-verdam.html", "veintiuna-amigos.html", "ultima-vela.html"]);   // la mesa con amigos solo se entra desde Las Veintiuna Velas y La Última Vela desde Muerte Súbita
 
 // El mapa del lobby: se ejecuta lobby-salas.js sin navegador, con la página «sin cargar» para que no dibuje nada
 const ventana = {};
