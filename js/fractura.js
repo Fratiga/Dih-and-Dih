@@ -358,21 +358,27 @@ pintarHero();
   }
 
   /* --- Pestaña: Reliquias --- */
+  const ICONO_RELIQUIA = {
+    arma: '<svg viewBox="0 0 40 40"><path d="M30 5 L35 5 L35 10 L17 28 L12 23 Z" fill="#cfd6de"/><path d="M12 23 L17 28 L11 34 L6 29 Z" fill="#8a6a1a"/><path d="M9 26 L14 31" stroke="#2a1c08" stroke-width="2"/></svg>',
+    armadura: '<svg viewBox="0 0 40 40"><path d="M8 8 L20 4 L32 8 L31 24 C30 30 25 34 20 36 C15 34 10 30 9 24 Z" fill="#aab1ba" stroke="#2a2c30" stroke-width="1.5"/><path d="M20 6 L20 35" stroke="#2a2c30" stroke-width="1.5"/><path d="M12 16 L28 16" stroke="#d4af37" stroke-width="2"/></svg>',
+    accesorio: '<svg viewBox="0 0 40 40"><circle cx="20" cy="23" r="9" fill="none" stroke="#d4af37" stroke-width="4"/><path d="M20 8 L24 13 L20 18 L16 13 Z" fill="#b98cff" stroke="#2a1840" stroke-width="1"/></svg>',
+    estandarte: '<svg viewBox="0 0 40 40"><path d="M10 4 L10 37" stroke="#b9a56e" stroke-width="2.5"/><path d="M10 6 L32 9 L26 16 L32 23 L10 20 Z" fill="#9a2e26" stroke="#1a0505" stroke-width="1"/></svg>'
+  };
   function vistaReliquias(v) {
     const rels = C.reliquiasDe(ej);
-    if (!rels.length) { v.innerHTML = `<p class="fr-vacio">Todavía no hay reliquias. Se encuentran en ruinas, en fortalezas custodiadas y en las manos de los enemigos caídos.</p>`; return; }
+    if (!rels.length) { v.innerHTML = `<div class="fr-vacio fr-vacio-grande"><b>Reliquiario vacío</b><p>Todavía no hay reliquias. Se encuentran en ruinas, en fortalezas custodiadas y en las manos de los enemigos caídos.</p></div>`; return; }
     const libres = new Set(C.reliquiasLibres(ej).map(r => r.id));
     v.innerHTML = `<p class="fr-sub">Pocas y con nombre. Cuando alguien cae, lo suyo no desaparece: tú decides quién la recibe.</p>` + rels.map(r => {
       const dueno = C.todos(ej).find(s => s.estado !== "caido" && Object.values(s.equipo || {}).includes(r.id));
       const hist = r.propietarios.map((p, i) => `${i + 1}. ${esc(p.nombre)}${p.heredada ? " (heredada)" : ""}${p.cae ? " (cayó con ella)" : ""}`).join(" · ");
       const elegibles = C.enFila(ej).filter(s => r.slot !== "estandarte" || s.capitan);
       return `<article class="fr-reliquia ${r.estado === "perdida" ? "fr-caido" : ""}">
-        <h4>${esc(r.nombre)} <small>${SLOT_NOMBRE[r.slot]}</small></h4>
+        <span class="fr-rel-icono">${ICONO_RELIQUIA[r.slot] || ""}</span><div class="fr-rel-cuerpo"><h4>${esc(r.nombre)} <small>${SLOT_NOMBRE[r.slot]}</small></h4>
         <p>${esc(r.texto)}</p>
         <p class="fr-sub">${r.estado === "perdida" ? "Perdida en la Fractura." : dueno ? `La lleva ${esc(nombreApodo(dueno))}.` : "Sin dueño, en el reliquiario."} ${r.origen ? esc(r.origen) + "." : ""}</p>
         ${hist ? `<p class="fr-sub"><strong>Propietarios conocidos.</strong> ${hist}</p>` : ""}
         ${r.estado !== "perdida" ? `<div class="fr-fila"><select data-sel-reliquia="${r.id}"><option value="">Dársela a...</option>${elegibles.map(s => `<option value="${s.id}">${esc(nombre(s))}</option>`).join("")}</select><button type="button" class="fr-btn fr-btn-chico" data-equipar="${r.id}">Entregar</button></div>` : ""}
-      </article>`;
+      </div></article>`;
     }).join("");
     void libres;
   }
@@ -381,7 +387,7 @@ pintarHero();
   function vistaSalon(v, primera) {
     v.classList.toggle("fr-entra", !!primera);
     const caidos = C.caidos(ej);
-    if (!caidos.length) { v.innerHTML = `<p class="fr-vacio">El Salón de los Caídos está vacío. Por ahora.</p>`; return; }
+    if (!caidos.length) { v.innerHTML = `<div class="fr-vacio fr-vacio-grande"><b>El Salón de los Caídos</b><p>Está vacío. Por ahora.</p></div>`; return; }
     v.innerHTML = `<p class="fr-sub">${caidos.length} nombre${caidos.length === 1 ? "" : "s"} grabado${caidos.length === 1 ? "" : "s"} en la piedra.</p><div class="fr-cartas">${caidos.map((s, i) => {
       const m = s.muerte || {};
       const serv = Math.max(1, (m.anio || ej.anio) - s.ingreso);
@@ -394,8 +400,8 @@ pintarHero();
   /* --- Pestaña: Crónicas propias --- */
   function vistaCronicas(v) {
     const h = ej.historia.slice().reverse();
-    if (!h.length) { v.innerHTML = `<p class="fr-vacio">Aún no hay guerras que contar.</p>`; return; }
-    v.innerHTML = h.map(g => `<article class="fr-cronica">
+    if (!h.length) { v.innerHTML = `<div class="fr-vacio fr-vacio-grande"><b>Sin crónicas</b><p>Aún no hay guerras que contar.</p></div>`; return; }
+    v.innerHTML = h.map((g, i) => `<article class="fr-cronica ${/vic|gan/i.test(String(g.resultado)) ? "gano" : /derr|perd/i.test(String(g.resultado)) ? "perdio" : "tablas"}" style="--i:${Math.min(i, 12)}">
       <button type="button" class="fr-casa-cab" data-cronica="1"><strong>${esc(g.titulo || `Guerra ${g.n}`)}</strong>
         <span>Año ${g.anio} · ${g.resultado} contra ${esc(FACCIONES[g.rival] ? FACCIONES[g.rival].corto : g.rival)} · ${g.turnos} turnos</span></button>
       <div class="fr-arbol hidden">${(g.parrafos || [g.razon || ""]).map(p => `<p>${esc(p)}</p>`).join("")}</div>
@@ -406,7 +412,7 @@ pintarHero();
   async function vistaMundo(v) {
     v.innerHTML = `<p class="fr-sub">Cargando...</p>`;
     const guerras = await Red.historiaDelMundo(300);
-    if (!guerras.length) { v.innerHTML = `<p class="fr-vacio">La historia del mundo se guarda en el servidor. Inicia sesión y juega una guerra para empezar a escribirla.</p>`; return; }
+    if (!guerras.length) { v.innerHTML = `<div class="fr-vacio fr-vacio-grande"><b>Historia del mundo</b><p>La historia del mundo se guarda en el servidor. Inicia sesión y juega una guerra para empezar a escribirla.</p></div>`; return; }
     const h = CR.historiaDelMundo(guerras);
     const facs = Object.keys(h.porFaccion).sort((a, b) => h.porFaccion[b].guerras - h.porFaccion[a].guerras);
     v.innerHTML = `<div class="fr-historia">
@@ -1058,7 +1064,7 @@ pintarHero();
   async function vistaDuelos(v) {
     v.innerHTML = `<p class="fr-sub">Cargando...</p>`;
     const s = await Red.sesion();
-    if (!s) { v.innerHTML = `<p class="fr-vacio">Las guerras entre jugadores necesitan iniciar sesión. Se juegan por turnos, cada quien cuando puede.</p>`; return; }
+    if (!s) { v.innerHTML = `<div class="fr-vacio fr-vacio-grande"><b>Duelos</b><p>Las guerras entre jugadores necesitan iniciar sesión. Se juegan por turnos, cada quien cuando puede.</p></div>`; return; }
     let partidas = [], jugadores = [];
     try { [partidas, jugadores] = await Promise.all([Red.pvpListar(), Red.pvpJugadores().catch(() => [])]); }
     catch (e) { v.innerHTML = `<p class="fr-vacio">No se pudieron leer las guerras. ¿Corriste scratchpad/fractura_pvp.sql en Supabase? (${esc(e.message || e)})</p>`; return; }
@@ -1068,24 +1074,42 @@ pintarHero();
     const activas = partidas.filter(p => p.estado === "activa");
     const terminadas = partidas.filter(p => p.estado === "terminada").slice(0, 5);
     const rival = p => (p.j1 === yo ? p.nombre2 : p.nombre1);
-    const faccionDe = p => (p.j1 === yo ? p.f1 : p.f2);
+    const fac = FACCIONES[ej.faccion];
+    const estrella = C.enFila(ej).slice().sort((a, b) => b.victorias - a.victorias)[0];
+    const rivalFac = p => (p.j1 === yo ? p.f2 : p.f1);
+    const col = f => (FACCIONES[f] ? FACCIONES[f].color : "#8f8498"), ban = f => (FACCIONES[f] ? FACCIONES[f].bandera : "#3a2f25");
+    const tipoNombre = t => (TIPOS_FRACTURA[t] ? TIPOS_FRACTURA[t].nombre : t);
+    const tarjeta = (p, estado, extra) => `<article class="fr-duelo ${estado}" style="--c:${col(rivalFac(p))};--b:${ban(rivalFac(p))}">
+        <span class="fr-duelo-vs">VS</span>
+        <div class="fr-duelo-texto"><strong>${esc(rival(p))}</strong><span>Con ${esc(nombreFaccion(rivalFac(p)))} · ${esc(tipoNombre(p.tipo))}</span></div>${extra}</article>`;
     v.innerHTML = `
       <p class="fr-sub">Cada quien lleva su contingente y su ejército. Si alguien cae, cae de verdad. Estas guerras quedan en la historia, pero no dan cartas.</p>
-      <div class="fr-dos"><div>
-        <h3 class="fr-h3">Retar</h3>
-        <p class="fr-sub">Llevarás a tu contingente actual (${(ajustesGuerra.ids || []).length} soldados). Cámbialo en la pestaña Guerra.</p>
-        <label class="fr-campo">Jugador<select data-pvp="rival"><option value="">Elige a alguien</option>${jugadores.map(j => `<option value="${j.user_id}">${esc(j.username)}</option>`).join("")}</select></label>
-        <label class="fr-campo">Tipo de Fractura<select data-pvp="tipo">${Object.keys(TIPOS_FRACTURA).map(t => `<option value="${t}">${esc(TIPOS_FRACTURA[t].nombre)}</option>`).join("")}</select></label>
-        <button type="button" class="fr-btn fr-btn-principal" data-pvp-retar>Enviar el reto</button>
-      </div><div>
-        ${recibidos.length ? `<h3 class="fr-h3">Retos recibidos</h3>${recibidos.map(p => `<div class="fr-soldado"><span class="fr-soldado-nombre">${esc(p.nombre1)} te reta</span><span class="fr-soldado-meta">Con ${esc(nombreFaccion(p.f1))} · ${esc(TIPOS_FRACTURA[p.tipo] ? TIPOS_FRACTURA[p.tipo].nombre : p.tipo)}</span>
-          <span class="fr-fila"><button type="button" class="fr-btn fr-btn-chico fr-btn-principal" data-pvp-acepta="${p.id}">Aceptar con mi contingente</button><button type="button" class="fr-btn fr-btn-chico" data-pvp-rechaza="${p.id}">Rechazar</button></span></div>`).join("")}` : ""}
-        ${enviados.length ? `<h3 class="fr-h3">Retos enviados</h3>${enviados.map(p => `<div class="fr-soldado"><span class="fr-soldado-nombre">${esc(p.nombre2)}</span><span class="fr-soldado-meta">Esperando respuesta</span></div>`).join("")}` : ""}
-        <h3 class="fr-h3">En curso</h3>
-        ${activas.length ? activas.map(p => `<button type="button" class="fr-soldado" data-pvp-abre="${p.id}"><span class="fr-soldado-nombre">Contra ${esc(rival(p))}</span><span class="fr-soldado-meta">${(p.j1 === yo ? p.activo === 0 : p.activo === 1) ? "Es tu turno" : "Turno del rival"}</span></button>`).join("") : `<p class="fr-vacio">Ninguna.</p>`}
-        ${terminadas.length ? `<h3 class="fr-h3">Terminadas</h3>${terminadas.map(p => `<div class="fr-soldado"><span class="fr-soldado-nombre">Contra ${esc(rival(p))}</span><span class="fr-soldado-meta">${p.ganador === "empate" ? "Tablas" : Number(p.ganador) === (p.j1 === yo ? 0 : 1) ? "Ganada" : "Perdida"}${p.razon ? ` · ${esc(p.razon)}` : ""}</span></div>`).join("")}` : ""}
-      </div></div>`;
+      <div class="fr-preparar">
+        <div class="fr-prep-col">
+          <section class="fr-reto" style="--c:${fac.color};--b:${fac.bandera}">
+            <span class="fr-pendon"></span>
+            <h3 class="fr-h3">Lanzar un reto</h3>
+            <div class="fr-reto-vs">
+              <div class="fr-reto-lado">${estrella ? retr(estrella, 120, true) : retrFaccion(ej.faccion, 120, true)}<b>${esc(ej.nombre)}</b><small>${esc(fac.corto)}</small></div>
+              <span class="fr-vs">VS</span>
+              <div class="fr-reto-lado fr-reto-lado-vacio"><span class="fr-reto-sombra">?</span><b>Un rival</b><small>a tu elección</small></div>
+            </div>
+            <p class="fr-sub">Llevarás a tu contingente actual (${(ajustesGuerra.ids || []).length} soldados). Cámbialo en la pestaña Guerra.</p>
+            <label class="fr-campo">Jugador<select data-pvp="rival"><option value="">Elige a alguien</option>${jugadores.map(j => `<option value="${j.user_id}">${esc(j.username)}</option>`).join("")}</select></label>
+            <label class="fr-campo">Tipo de Fractura<select data-pvp="tipo">${Object.keys(TIPOS_FRACTURA).map(t => `<option value="${t}">${esc(TIPOS_FRACTURA[t].nombre)}</option>`).join("")}</select></label>
+            <button type="button" class="fr-empezar" data-pvp-retar><span>Enviar el reto</span><small>${esc(fac.corto)} · ${(ajustesGuerra.ids || []).length} soldados</small></button>
+          </section>
+        </div>
+        <aside class="fr-duelos-lista">
+          ${recibidos.length ? `<h3 class="fr-h3">Retos recibidos</h3>${recibidos.map(p => tarjeta(p, "turno", `<span class="fr-fila"><button type="button" class="fr-btn fr-btn-chico fr-btn-principal" data-pvp-acepta="${p.id}">Aceptar</button><button type="button" class="fr-btn fr-btn-chico" data-pvp-rechaza="${p.id}">Rechazar</button></span>`)).join("")}` : ""}
+          ${enviados.length ? `<h3 class="fr-h3">Retos enviados</h3>${enviados.map(p => tarjeta(p, "", `<span class="fr-pill">Esperando</span>`)).join("")}` : ""}
+          <h3 class="fr-h3">En curso</h3>
+          ${activas.length ? activas.map(p => { const mio = p.j1 === yo ? p.activo === 0 : p.activo === 1; return tarjeta(p, mio ? "turno" : "", `<button type="button" class="fr-btn fr-btn-chico ${mio ? "fr-btn-principal" : ""}" data-pvp-abre="${p.id}">${mio ? "Es tu turno" : "Abrir"}</button>`); }).join("") : `<p class="fr-vacio">Ninguna guerra en curso.</p>`}
+          ${terminadas.length ? `<h3 class="fr-h3">Terminadas</h3>${terminadas.map(p => { const r = p.ganador === "empate" ? "Tablas" : Number(p.ganador) === (p.j1 === yo ? 0 : 1) ? "Ganada" : "Perdida"; return tarjeta(p, "fin " + (r === "Ganada" ? "gano" : r === "Perdida" ? "perdio" : "tablas"), `<span class="fr-pill ${r === "Ganada" ? "gano" : r === "Perdida" ? "perdio" : ""}">${r}</span>`); }).join("")}` : ""}
+        </aside>
+      </div>`;
     v.dataset.yo = yo;
+    pintarRetratos(v);
   }
 
   $("frVista").addEventListener("click", async ev => {

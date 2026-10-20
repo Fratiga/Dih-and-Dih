@@ -491,3 +491,70 @@ body.fractura-tema {
 .fr-fin-cab { background: rgba(12, 10, 12, .92); border: 1px solid rgba(139, 100, 40, .4); }
 .fr-fin-titulo { background: linear-gradient(180deg, #fff2c5 0%, #d4af37 52%, #8f6510 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .fr-carta-stats i small { font-size: .5rem; letter-spacing: 0; }
+
+/* =============================================================================
+   RESTO DE PESTAÑAS: duelos, reliquias, crónicas, historia del mundo, casas y estados vacíos
+============================================================================= */
+.fractura-tema select { background: #17130f; border: 1px solid #3a2f25; color: #e9dec6; font-family: inherit; }
+.fractura-tema select:focus { outline: none; border-color: #8b6a2a; }
+
+/* Estados vacíos */
+.fr-vacio-grande { max-width: 560px; margin: 26px auto; padding: 34px 28px; text-align: center; border: 1px dashed rgba(197, 160, 89, .3); background: rgba(10, 8, 8, .55); }
+.fr-vacio-grande b { display: block; margin-bottom: 8px; font: 700 1.05rem var(--font-heading); letter-spacing: .16em; text-transform: uppercase; color: #d4af37; }
+.fr-vacio-grande b::before { content: "✦"; display: block; margin-bottom: 8px; font-size: 1.1rem; color: #8b6a2a; letter-spacing: 0; }
+.fr-vacio-grande p { margin: 0; color: var(--muted); line-height: 1.5; }
+
+/* Duelos */
+.fr-reto { position: relative; padding: 20px 22px 24px; background: linear-gradient(160deg, #15130f, #0b0a0c); border: 1px solid rgba(197, 160, 89, .3); }
+.fr-reto::after { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(197, 160, 89, .13); pointer-events: none; }
+.fr-reto::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: var(--c); border-right: 3px solid var(--b); }
+.fr-reto .fr-h3 { margin-top: 0; }
+.fr-reto-vs { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 12px 0 14px; }
+.fr-reto-lado { width: 124px; text-align: center; }
+.fr-reto-lado .fr-ret { border: 1px solid rgba(139, 100, 40, .5); }
+.fr-reto-lado b { display: block; margin-top: 8px; font: 700 .86rem var(--font-heading); color: #f2ead8; }
+.fr-reto-lado small { color: var(--muted); font-size: .72rem; }
+.fr-reto-sombra { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 300 / 380; font: 700 3rem var(--font-heading); color: #3a2f25; background: #08060a; border: 1px dashed rgba(139, 100, 40, .4); }
+.fr-vs { font: 900 1.7rem var(--font-heading); color: #b3342c; letter-spacing: .05em; }
+.fr-reto .fr-pendon { right: 20px; }
+.fr-duelos-lista .fr-h3:first-child { margin-top: 0; }
+.fr-duelo { position: relative; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 8px 0; padding: 12px 16px 12px 20px; background: linear-gradient(160deg, #17171b, #0c0c10); border: 1px solid rgba(197, 160, 89, .25); }
+.fr-duelo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--c); border-right: 2px solid var(--b); }
+.fr-duelo.turno { border-color: rgba(212, 175, 55, .7); }
+.fr-duelo.fin.gano::before { background: #3f8a34; border-right-color: #1c3d17; }
+.fr-duelo.fin.perdio::before { background: #8a1f18; border-right-color: #3d0d0a; }
+.fr-duelo-vs { font: 900 .9rem var(--font-heading); color: #b3342c; }
+.fr-duelo-texto { flex: 1; min-width: 150px; display: flex; flex-direction: column; }
+.fr-duelo-texto strong { font-family: var(--font-heading); color: #f2ead8; }
+.fr-duelo-texto span { font-size: .78rem; color: var(--muted); }
+.fr-pill { padding: 3px 10px; font: 700 .68rem var(--font-heading); letter-spacing: .12em; text-transform: uppercase; color: #cfc4b0; background: #1d1814; border: 1px solid #3a2f25; }
+.fr-pill.gano { color: #b6f0a8; border-color: #3f8a34; } .fr-pill.perdio { color: #f2b5ab; border-color: #8a1f18; }
+
+/* Reliquias */
+.fr-reliquia { display: flex; gap: 16px; align-items: flex-start; padding: 14px 18px; background: linear-gradient(160deg, #17171b, #0c0c10); border: 1px solid rgba(197, 160, 89, .28); position: relative; }
+.fr-reliquia::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(197, 160, 89, .12); pointer-events: none; }
+.fr-rel-icono { flex-shrink: 0; width: 64px; height: 64px; padding: 10px; background: #08060a; border: 1px solid rgba(190, 130, 40, .45); }
+.fr-rel-icono svg { display: block; width: 100%; height: 100%; }
+.fr-rel-cuerpo { flex: 1; min-width: 0; }
+.fr-reliquia h4 { font-family: var(--font-heading); color: #f0d58a; font-size: 1.05rem; }
+.fr-reliquia.fr-caido { opacity: .6; }
+.fr-reliquia.fr-caido .fr-rel-icono { filter: grayscale(1); }
+
+/* Crónicas e historia del mundo */
+.fr-cronica, .fr-casa { background: linear-gradient(160deg, #17171b, #0c0c10); border: 1px solid rgba(197, 160, 89, .25); position: relative; }
+.fr-cronica { border-left: 5px solid #8f8498; }
+.fr-cronica.gano { border-left-color: #3f8a34; } .fr-cronica.perdio { border-left-color: #8a1f18; }
+.fr-cronica .fr-casa-cab strong, .fr-casa .fr-casa-cab strong { font-family: var(--font-heading); color: #f0d58a; font-size: 1.05rem; }
+.fr-cronica .fr-arbol p:first-child::first-letter { float: left; margin: 2px 8px 0 0; font: 900 2.6rem/0.9 var(--font-heading); color: #d4af37; }
+.fr-historia { padding: 16px 20px; background: rgba(12, 10, 12, .9); border: 1px solid rgba(139, 100, 40, .4); border-left: 5px solid #d4af37; }
+.fr-historia strong { color: #f0d58a; font-family: var(--font-heading); }
+.fr-soldado { background: linear-gradient(160deg, #17171b, #0c0c10); border: 1px solid rgba(197, 160, 89, .22); }
+.fr-soldado-nombre { font-family: var(--font-heading); color: #f2ead8; }
+.fr-cronica-texto { background: rgba(12, 10, 12, .9); border: 1px solid rgba(139, 100, 40, .4); }
+.fr-banner { background: rgba(26, 21, 17, .9); border: 1px solid rgba(197, 160, 89, .3); border-left: 5px solid #d4af37; }
+.fr-btn { background: #1b1713; border: 1px solid #3a2f25; font-family: var(--font-heading); font-weight: 600; letter-spacing: .03em; }
+.fr-btn:hover:not(:disabled) { border-color: #8b6a2a; }
+.fr-btn-principal { background: #8a6a1a; color: #fff3cc; border-color: #d4af37; }
+.fr-btn-principal:hover:not(:disabled) { background: #a07d22; }
+@media (prefers-reduced-motion: reduce) { .fr-cronica { animation: none; } }
+.fr-entra .fr-cronica, .fr-entra .fr-reliquia, .fr-entra .fr-duelo { animation: frAparece .42s ease-out both; animation-delay: calc(var(--i, 0) * 45ms); }
