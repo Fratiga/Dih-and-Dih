@@ -109,7 +109,7 @@ declare v_clave text;
 begin
   begin
     select clave into v_clave from hipodromo_secreto where id = 1;
-    if v_clave is not null then
+    if v_clave is not null and v_clave not like '<%' then      -- el marcador de docs/hipodromo-3_ordenes_inmediatas.sql no es una clave
       perform net.http_post(
         url := 'https://ilicqboqelrjuvtslaxd.supabase.co/functions/v1/hipodromo-avanzar',
         headers := jsonb_build_object('Content-Type', 'application/json', 'x-hipodromo-clave', v_clave),

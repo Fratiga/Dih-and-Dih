@@ -4,7 +4,9 @@
 -- (pg_net, después de confirmar la orden) y la respuesta llega en 2 a 4 segundos. El cron de cada minuto sigue ahí como red de seguridad.
 -- Solo para producción: necesita pg_net (no está en el Postgres de pruebas), por eso va aparte de docs/hipodromo.sql.
 -- La clave es la misma que usa el cron (x-hipodromo-clave); se guarda en una tabla que nadie puede leer salvo la función de servicio.
--- Antes de ejecutarlo, cambia <LA MISMA CLAVE> por la de la Edge Function (en docs/hipodromo-avanzar.ts y en el cron).
+-- Antes de ejecutarlo la PRIMERA vez, cambia <LA MISMA CLAVE> por la de la Edge Function (la del cron). Volver a ejecutarlo ya no pisa la clave guardada: el insert
+-- no sobrescribe una fila que ya existe (se sobrescribió una vez con el marcador y los avisos inmediatos daban 401 en silencio: las órdenes esperaban al cron).
+-- Si algún día hay que cambiar la clave: update public.hipodromo_secreto set clave = '<la nueva>' where id = 1;
 
 create table if not exists public.hipodromo_secreto (
   id    integer primary key default 1 check (id = 1),
@@ -12,14 +14,14 @@ create table if not exists public.hipodromo_secreto (
 );
 alter table public.hipodromo_secreto enable row level security;                  -- sin políticas: solo service_role y las funciones security definer
 revoke all on public.hipodromo_secreto from anon, authenticated;
-insert into public.hipodromo_secreto (id, clave) values (1, '<LA MISMA CLAVE>') on conflict (id) do update set clave = excluded.clave;
+insert into public.hipodromo_secreto (id, clave) values (1, '<LA MISMA CLAVE>') on conflict (id) do nothing;
 
 create or replace function public.hipodromo_avisar_orden() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare v_clave text;
 begin
   select clave into v_clave from hipodromo_secreto where id = 1;
-  if v_clave is not null then
+  if v_clave is not null and v_clave not like '<%' then      -- el marcador del archivo no es una clave
     begin
       perform net.http_post(
         url := 'https://ilicqboqelrjuvtslaxd.supabase.co/functions/v1/hipodromo-avanzar',

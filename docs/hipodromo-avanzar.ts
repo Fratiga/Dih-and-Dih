@@ -49,6 +49,7 @@ import "./hipodromo-npc.js";      // los personajes del mundo (cuadras y apostad
 import "./hipodromo-motor.js";
 const Motor = (globalThis as any).HipodromoMotor;
 
+const vacio = { data: [] as any[], error: null };
 const respuesta = (estado: number, cuerpo: unknown) =>
   new Response(JSON.stringify(cuerpo), { status: estado, headers: { "Content-Type": "application/json" } });
 
@@ -61,40 +62,35 @@ Deno.serve(async (req: Request) => {
   const cfg = { semilla: Deno.env.get("HIPODROMO_SEMILLA") ?? "hipodromo", historia: 300, max: 20, rapido: 12 };
 
   for (let intento = 0; intento < 4; intento++) {
-    const { data: fila, error: errLeer } = await sb.from("hipodromo_estado").select("version, mundo").eq("id", 1).maybeSingle();
-    if (errLeer) return respuesta(500, { error: errLeer.message });
-
-    // las órdenes de los jugadores y lo que tiene cada uno en la billetera
-    const { data: pend, error: errOrd } = await sb.from("hipodromo_ordenes").select("id, datos").eq("estado", "pendiente").order("id").limit(60);
-    if (errOrd) return respuesta(500, { error: errOrd.message });
-    const ordenes = (pend ?? []).map((o: any) => ({ ...o.datos, oid: o.id }));
-    const saldos: Record<string, number> = {};
+    // Todo lo que hace falta leer, a la vez: cada consulta por separado costaba unos 0,3 s y las órdenes de la cuadra esperaban esa suma.
+    // El mundo, las órdenes de los jugadores y, del Admin, los ajustes de los personajes y sus órdenes (si esas tablas todavía no existen, se sigue sin ellas).
+    const [rEstado, rOrd, rAj, rNpcOrd] = await Promise.all([
+      sb.from("hipodromo_estado").select("version, mundo").eq("id", 1).maybeSingle(),
+      sb.from("hipodromo_ordenes").select("id, datos").eq("estado", "pendiente").order("id").limit(60),
+      sb.from("hipodromo_npc_ajustes").select("clave, datos"),
+      sb.from("hipodromo_npc_ordenes").select("id, datos").eq("estado", "pendiente").order("id").limit(40)
+    ]);
+    if (rEstado.error) return respuesta(500, { error: rEstado.error.message });
+    if (rOrd.error) return respuesta(500, { error: rOrd.error.message });
+    const fila = rEstado.data;
+    const ordenes = (rOrd.data ?? []).map((o: any) => ({ ...o.datos, oid: o.id }));
     const duenos = [...new Set(ordenes.map((o: any) => o.dueno))];
-    if (duenos.length) {
-      const { data: bs, error: errB } = await sb.from("hipodromo_billeteras").select("usuario, saldo").in("usuario", duenos);
-      if (errB) return respuesta(500, { error: errB.message });
-      duenos.forEach((d: any) => { saldos[d] = 0; });   // quien aún no tiene billetera empieza con 0
-      (bs ?? []).forEach((b: any) => { saldos[b.usuario] = Number(b.saldo); });
-    }
 
-    // lo que han apostado los jugadores al pozo de la carrera que se va a aplicar: los personajes del hipódromo cobran del mismo pozo y su reparto lo necesita
+    // y, con lo anterior ya a mano, lo que dependía de ello: lo que tiene en la billetera quien mandó órdenes y lo que han apostado los jugadores al pozo de la carrera que se va a aplicar
+    const [rBill, rPozo] = await Promise.all([
+      duenos.length ? sb.from("hipodromo_billeteras").select("usuario, saldo").in("usuario", duenos) : Promise.resolve(vacio),
+      fila ? sb.from("hipodromo_pozos").select("criatura_id, total").eq("n", fila.mundo.n) : Promise.resolve(vacio)
+    ]);
+    if (rBill.error) return respuesta(500, { error: rBill.error.message });
+    if (rPozo.error) return respuesta(500, { error: rPozo.error.message });
+    const saldos: Record<string, number> = {};
+    duenos.forEach((d: any) => { saldos[d] = 0; });   // quien aún no tiene billetera empieza con 0
+    (rBill.data ?? []).forEach((b: any) => { saldos[b.usuario] = Number(b.saldo); });
     const pozos: Record<number, Record<number, number>> = {};
-    if (fila) {
-      const nAplicar = fila.mundo.n;
-      const { data: pz, error: errPz } = await sb.from("hipodromo_pozos").select("criatura_id, total").eq("n", nAplicar);
-      if (errPz) return respuesta(500, { error: errPz.message });
-      pozos[nAplicar] = {};
-      (pz ?? []).forEach((x: any) => { pozos[nAplicar][x.criatura_id] = Number(x.total); });
-    }
-
-    // lo que el Admin ha cambiado de los personajes y sus órdenes puntuales (docs/admin/hipodromo_personajes.sql); si esas tablas todavía no existen, se sigue sin ellas
-    let npc: any = undefined, npcOrdenes: any[] = [];
-    {
-      const { data: aj, error: errAj } = await sb.from("hipodromo_npc_ajustes").select("clave, datos");
-      if (!errAj) { npc = { ajustes: {} }; (aj ?? []).forEach((a: any) => { npc.ajustes[a.clave] = a.datos; }); }
-      const { data: po, error: errPo } = await sb.from("hipodromo_npc_ordenes").select("id, datos").eq("estado", "pendiente").order("id").limit(40);
-      if (!errPo) npcOrdenes = (po ?? []).map((o: any) => ({ ...o.datos, id: o.id }));
-    }
+    if (fila) { pozos[fila.mundo.n] = {}; (rPozo.data ?? []).forEach((x: any) => { pozos[fila.mundo.n][x.criatura_id] = Number(x.total); }); }
+    let npc: any = undefined;
+    if (!rAj.error) { npc = { ajustes: {} }; (rAj.data ?? []).forEach((a: any) => { npc.ajustes[a.clave] = a.datos; }); }
+    const npcOrdenes: any[] = rNpcOrd.error ? [] : (rNpcOrd.data ?? []).map((o: any) => ({ ...o.datos, id: o.id }));
 
     const paso = Motor.paso(fila, Date.now(), { ...cfg, ordenes, saldos, pozos, npc, npcOrdenes });
     if (!paso) return respuesta(200, { avanzadas: 0 });
