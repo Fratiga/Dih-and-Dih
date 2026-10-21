@@ -8,6 +8,8 @@
    - "Desde cero": cada vez que entras empieza por la primera canción desde el segundo 0. Si no, sigue por donde iba
      en esa página (se recuerda en este navegador).
    - Los juegos avisan con MusicaPaginas.partida(true) al empezar una partida y partida(false) al terminarla.
+   - Opción "continua" (config.continua): la canción no se interrumpe al empezar ni al terminar una partida. Sigue sonando la
+     música de fondo sin cambiar de lista (la de partida no se usa; si la página solo tiene lista de partida, esa suena siempre).
    - Si la página tiene música configurada, la música propia de la página (el ♪ de los minijuegos, la del Dominio) y
      la de la Rocola se pausan: suena una sola cosa a la vez. Si alguien pulsa play en la Rocola, esta se pausa.
    - Los navegadores no dejan sonar hasta que se toca algo: arranca con el primer toque o tecla.
@@ -75,6 +77,12 @@
       });
       if (!rocola.paused && !silencio && lista.length) rocola.pause();
     }
+  }
+  // Qué lista toca ahora: con "continua" no depende de si hay partida o no
+  function modoActual() {
+    const hayF = !!(cfg && (cfg.lista || []).length), hayP = !!(cfg && cfg.partida && (cfg.partida.lista || []).length);
+    if (cfg && cfg.continua) return hayF ? "fondo" : (hayP ? "partida" : "fondo");
+    return enPartida && hayP ? "partida" : "fondo";
   }
   const hayMusica = () => !apagada && !!(cfg && ((cfg.lista || []).length || (cfg.partida && (cfg.partida.lista || []).length)));
   const urlDe = r => { try { return encodeURI(decodeURI(r)); } catch (e) { return encodeURI(r); } };
@@ -248,7 +256,7 @@
       escribirJson(localStorage, CLAVE_CACHE, todo);
     }
     if (cfg) apartarOtrasMusicas();
-    modo = enPartida && cfg && cfg.partida && (cfg.partida.lista || []).length ? "partida" : "fondo";
+    modo = modoActual();
     iniciarLista(false);
     if (document.body) pintarBoton();
   }
@@ -271,7 +279,7 @@
     if (si === enPartida) return;
     if (firma) guardarEstado();
     enPartida = si;
-    const nuevo = enPartida && cfg && cfg.partida && (cfg.partida.lista || []).length ? "partida" : "fondo";
+    const nuevo = modoActual();
     if (nuevo === modo) return;
     modo = nuevo;
     firma = "";                  // fuerza a cargar la lista del modo nuevo (la de fondo se retoma según "desde cero")

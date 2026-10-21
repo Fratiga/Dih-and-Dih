@@ -1,8 +1,10 @@
 -- Música de fondo por página (la configura el Admin desde la propia página, botón ⚙ al lado del ♪).
 -- Cada fila es una página (por ejemplo 'compendio.html') y su config en JSON:
 --   { "lista": [rutas de canciones], "desdeCero": true, "mezclar": false, "volumen": 0.5,
---     "partida": { "lista": [...], "desdeCero": true, "mezclar": false, "volumen": 0.5 } }
+--     "partida": { "lista": [...], "desdeCero": true, "mezclar": false, "volumen": 0.5 },
+--     "continua": false }
 -- "partida" es la lista que suena mientras hay una partida en marcha (solo en páginas de juegos).
+-- "continua" (opcional, true/false): si es true la canción no cambia ni se interrumpe al empezar o terminar una partida (no hace falta tocar nada en esta tabla: la config es libre).
 -- Corre esto en el SQL Editor de Supabase. Se puede correr más de una vez.
 
 create table if not exists musica_paginas (
