@@ -37,7 +37,7 @@ window.HipodromoCartas = (function () {
       const m = (document.querySelector('script[src*="hipodromo-cartas.js"]') || {}).src || "";
       const v = (/[?&]v=(d+)/.exec(m) || [])[1];
       // el Buhonero es solo escena y voz: si no carga, las tablas funcionan igual
-      if (!window.PuestoBuhonero) { try { for (const s of SCRIPTS_BUHONERO) await cargarScript(s, v); } catch (e) { /* sin Buhonero */ } }
+      if (!window.PuestoBuhonero && !opc.sinEscena) { try { for (const s of SCRIPTS_BUHONERO) await cargarScript(s, v); } catch (e) { /* sin Buhonero */ } }
       if (window.CARTAS && window.cartaPorId) return;
       for (const s of SCRIPTS) await cargarScript(s, v);
       if (window.CartasCliente) await window.CartasCliente.cargarDefiniciones(false);

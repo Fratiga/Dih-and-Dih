@@ -386,7 +386,7 @@
           ${sinFondos ? `<button type="button" class="vv-boton" data-modo="practica">Jugar en la práctica</button>` : ""}
         </div>
         ${practica ? "" : `<p class="vv-nota-apuesta${motivo && S.apuesta > 0 ? " mal" : ""}" id="vvNotaApuesta">${sinFondos
-            ? `No tienes tokens para la apuesta mínima (${V.monedas(lim.min)}). Puedes vender una carta en el <a href="hipodromo.html#cartas">Hipódromo</a> o jugar en la mesa de práctica.`
+            ? `No tienes tokens para la apuesta mínima (${V.monedas(lim.min)}). Puedes vender una carta al <a href="hipodromo.html#cartas" data-buhonero>Buhonero</a> o jugar en la mesa de práctica.`
             : motivo && S.apuesta > 0 ? esc(motivo)
             : `${V.textoLimites(lim)} Victoria 1 a 1, blackjack natural 3 a 2, empate devuelve.${esc(peajeLinea)}`}</p>`}
       </div>`;
@@ -1014,6 +1014,9 @@
     $("vvPlacaMas").addEventListener("click", () => abrirReglas(($("vvPlaca").dataset.regla)));
     $("vvBtnDesafios").addEventListener("click", abrirDesafios);
     $("vvBtnHistorial").addEventListener("click", abrirHistorial);
+    window.VeintiunaBuhonero.iniciar({ abrir, cabecera: cabeceraDlg, dlg: $("vvDlgBuhonero"), supa: () => fichasCliente(), yo: () => S.sesion.user.id, alCambiar: () => cargarMesa({ soloDatos: true, animarSaldo: true }) });
+    // al cerrar al Buhonero, el panel de la apuesta cuenta con los tokens nuevos
+    $("vvDlgBuhonero").addEventListener("close", () => { if (S.fase === "apuesta" && S.mesa) { S.apuesta = V.ajustarApuesta(S.apuesta, saldoActual(), S.mesa.limites); pintarDock(); } });
     $("vvAtajosBtn").addEventListener("click", abrirAtajos);
     $("vvBtnSonido").addEventListener("click", () => { S.efectos = !S.efectos; guardado.poner("vvEfectos", S.efectos ? "1" : "0"); pintarSonidoBoton(); if (S.efectos) sonar("ficha"); });
     window.addEventListener("resize", ajustarVolumen);

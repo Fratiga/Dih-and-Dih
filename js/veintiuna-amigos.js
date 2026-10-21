@@ -425,7 +425,7 @@
     const sinFondos = saldo < lim.min;
     const duelo = V.esDuelo(est);
     const nota = sin ? (duelo ? `Juegas la ronda sin apostar tokens: compites por la gloria, sin tokens en el bote.` : `Juegas la ronda sin apostar tokens: tu mano es de práctica, no cobra ni paga y no cuenta para los desafíos.`)
-      : sinFondos ? `No tienes tokens para la apuesta mínima. Puedes jugar sin apostar o vender una carta en el <a href="hipodromo.html#cartas">Hipódromo</a>.`
+      : sinFondos ? `No tienes tokens para la apuesta mínima. Puedes jugar sin apostar o vender una carta al <a href="hipodromo.html#cartas" data-buhonero>Buhonero</a>.`
       : motivo && apuesta > 0 ? motivo : V.textoLimites(lim);
     const regla = V.REGLAS[est.regla.id];
     const notaDuelo = duelo ? " Todos contra todos: lo que apostáis forma el bote y se lo lleva la mejor mano. Hace falta que apuesten al menos dos jugadores." : "";
@@ -882,6 +882,9 @@
       if (ev.target.id === "vvAvisoCerrar") aviso("");
     });
     $("vvBtnReglas").addEventListener("click", () => abrirReglas());
+    window.VeintiunaBuhonero.iniciar({ abrir, cabecera: cabeceraDlg, dlg: $("vvDlgBuhonero"), supa: () => fichasCliente(), yo: () => S.sesion.user.id, alCambiar: saldo => pintarSaldo(saldo) });
+    // al cerrar al Buhonero, el panel de la apuesta cuenta con los tokens nuevos
+    $("vvDlgBuhonero").addEventListener("close", () => { try { pintarDockSinFoco(); } catch (e) { /* se pinta en el siguiente sondeo */ } });
     $("vvPlacaMas").addEventListener("click", () => abrirReglas($("vvPlaca").dataset.regla));
     $("vvAtajosBtn").addEventListener("click", abrirAtajos);
     $("vvBtnSonido").addEventListener("click", () => { S.efectos = !S.efectos; guardado.poner("vvEfectos", S.efectos ? "1" : "0"); pintarSonidoBoton(); if (S.efectos) sonar("ficha"); });
