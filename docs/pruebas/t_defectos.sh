@@ -3,7 +3,7 @@
 . "$(dirname "$0")/lib.sh"
 FALLOS=0
 limpiar
-nueva() { sql "delete from cartas_catalogo where id = '$1'; insert into cartas_catalogo (id, rareza, tipo, limite, limite_jugador, obtenible, publicada) values ('$1', '$2', 'Objeto', ${3:-null}, ${4:-null}, true, false)" >/dev/null; }
+nueva() { sql "delete from cartas_catalogo where id = '$1'; insert into cartas_catalogo (id, rareza, tipo, limite, limite_jugador, obtenible, publicada) values ('$1', '$2', '${5:-Objeto}', ${3:-null}, ${4:-null}, true, false)" >/dev/null; }
 publicar() { sql "update cartas_catalogo set publicada = true where id = '$1'" >/dev/null; }
 lims() { sql "select coalesce(limite::text, '-') || '/' || coalesce(limite_jugador::text, '-') from cartas_catalogo where id = '$1'"; }
 
@@ -65,6 +65,29 @@ dar $U1 t-unica >/dev/null
 contiene "la única solo se emite una vez" "$(sql "select cartas_i_emitir('$U2', 't-unica', 'prueba', '', null, false);" 2>&1)" "AGOTADA"
 comprobar "y un jugador no puede tener dos" "1" "$(sql "select cartas_limite_jugador('t-unica')")"
 contiene "una carta con varias copias emitidas no puede pasar a única" "$(como $ADMIN "select cartas_admin_guardar_limites('[{\"id\": \"t-emitida\", \"limite\": 1, \"limite_jugador\": 1}]'::jsonb);" 2>&1)" "Ya se emitieron"
+
+echo "== Ajuste de límites de todo el catálogo (migración 24)"
+M24() { docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../economia-24_ajuste_de_limites.sql" 2>&1 | grep -v NOTICE | head -3; }
+nueva el-tiznado rara 1 1 Personaje; sql "update cartas_catalogo set limite = null, limite_jugador = null where id = 'el-tiznado'" >/dev/null
+nueva el-bufon limitada 5 null Entidad
+nueva garra comun 35 5 Personaje; dar $U1 garra >/dev/null; dar $U2 garra >/dev/null
+nueva zz-obj comun 50 10
+for u in $U1 $U2 $U3; do for i in 1 2 3 4 5 6 7 8; do dar $u zz-obj >/dev/null; done; done; dar $U1 zz-obj >/dev/null
+nueva zz-terr infrecuente 8 null Terreno
+nueva zz-cria rara 5 3 Criatura
+nueva zz-reac comun null null Reacción
+nueva zz-leg legendaria 3 1 Criatura
+M24; M24
+comprobar "un líder sin nombre de líder (El Tiznado) queda único" "1/1" "$(lims el-tiznado)"
+comprobar "El Bufón queda único" "1/1" "$(lims el-bufon)"
+comprobar "una única con dos copias ya emitidas se salta" "35/5" "$(lims garra)"
+comprobar "un objeto común con 25 copias emitidas: el global no baja de lo emitido y el de por jugador no baja de lo que ya tiene el que más tiene" "25/9" "$(lims zz-obj)"
+comprobar "terreno infrecuente: 12 y 3" "12/3" "$(lims zz-terr)"
+comprobar "criatura rara: 9 y 3 (con 3 por jugador se puede criar)" "9/3" "$(lims zz-cria)"
+comprobar "reacción común sin límites: 30 y 6" "30/6" "$(lims zz-reac)"
+comprobar "una legendaria que no está en la lista no se toca" "3/1" "$(lims zz-leg)"
+M24
+comprobar "correrlo otra vez no cambia nada" "25/9" "$(lims zz-obj)"
 
 echo "== Y todo sigue cuadrando"
 sql "delete from cartas_catalogo where id like 't-%' and not exists (select 1 from cartas_ejemplares e where e.carta_id = cartas_catalogo.id)" >/dev/null 2>&1
