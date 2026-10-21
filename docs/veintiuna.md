@@ -116,7 +116,7 @@ Todo está en `docs/veintiuna.sql`. El navegador pide y pinta.
 
 ## Cartas coleccionables: los desafíos
 
-El progreso principal son **desafíos** que el servidor comprueba al terminar cada mano (con o sin apuesta). Cada uno se completa una vez y se reclama una vez; da una carta. Premian conocer las reglas, adaptarse a ellas y arriesgar, no repetir manos: no hay cuotas de victorias (se quitaron «Maestro de la mesa», seis victorias seguidas y el blackjack natural, que eran repetir o pura suerte).
+El progreso principal son **desafíos** que el servidor comprueba al terminar cada mano (con o sin apuesta). Cada uno se completa y se reclama una vez **al día**; da una carta. **Se reinician cada día a las 00:00 UTC** (el mismo día que usan los topes de cartas; ocurre al mirar la mesa, al terminar una mano o al reclamar, con `veintiuna_i_dia_logros`): lo completado se borra, se puede completar de nuevo, y lo completado pero sin reclamar antes del reinicio se pierde. Las estadísticas de siempre (rondas, victorias, mejor racha) no se tocan: el progreso del día va aparte, en `veintiuna_estadisticas.contadores` (`victorias_dia`, `racha_dia`, `mejor_racha_dia`, `reglas_dia`) y la columna `dia_logros`. La mesa devuelve `logros_reinician` con el próximo reinicio. Premian conocer las reglas, adaptarse a ellas y arriesgar, no repetir manos: no hay cuotas de victorias (se quitaron «Maestro de la mesa», seis victorias seguidas y el blackjack natural, que eran repetir o pura suerte).
 
 | Nivel | Desafíos |
 |---|---|

@@ -76,6 +76,8 @@ create table if not exists veintiuna_estadisticas (
   neto numeric(12, 2) not null default 0,          -- tokens ganados o perdidos en manos con apuesta
   actualizado timestamptz not null default now()
 );
+-- Los desafíos se reinician cada día (a las 00:00 UTC, el mismo día que usan los topes de cartas): dia_logros es el día al que pertenece el progreso de hoy
+alter table veintiuna_estadisticas add column if not exists dia_logros date not null default ((now() at time zone 'utc')::date);
 
 create table if not exists veintiuna_logros (
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -418,6 +420,22 @@ $$;
 
 /* ================================================================== 4) FIN DE LA MANO: cobro, estadísticas y desafíos */
 -- Registra la mano en las estadísticas y completa los desafíos. Devuelve los desafíos que acaban de completarse.
+/* Reinicio diario de los desafíos: si el progreso guardado es de un día anterior, se borra (contadores del día, racha del día, reglas ganadas del día) y se quitan los
+   desafíos de ayer, hayan sido reclamados o no. Lo completado y no reclamado ayer se apaga: hay que volver a completarlo hoy. Las estadísticas de siempre (rondas, victorias,
+   mejor racha...) no se tocan. Se llama al empezar a registrar una mano, al mirar la mesa y al reclamar. */
+create or replace function veintiuna_i_dia_logros(p_uid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update veintiuna_estadisticas set dia_logros = (now() at time zone 'utc')::date, contadores = '{}'::jsonb
+  where user_id = p_uid and dia_logros < (now() at time zone 'utc')::date;
+  if found then delete from veintiuna_logros where user_id = p_uid; end if;
+end;
+$$;
+
 create or replace function veintiuna_i_registrar(p veintiuna_partidas)
 returns text[]
 language plpgsql
@@ -434,9 +452,21 @@ declare
   nuevos text[];
 begin
   insert into veintiuna_estadisticas (user_id, proxima_regla) values (p.user_id, veintiuna_i_regla_nueva()) on conflict do nothing;
+  perform veintiuna_i_dia_logros(p.user_id);
   select * into est from veintiuna_estadisticas where user_id = p.user_id for update;
   select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, case p.regla when 'maldicion' then 11 else 10 end);
   cont := est.contadores;
+  if cuenta then
+    -- lo que cuenta para los desafíos de HOY (se borra con el reinicio diario): victorias, racha y reglas ganadas del día
+    if gana then
+      cont := jsonb_set(cont, '{victorias_dia}', to_jsonb(coalesce((cont ->> 'victorias_dia')::int, 0) + 1));
+      cont := jsonb_set(cont, '{racha_dia}', to_jsonb(coalesce((cont ->> 'racha_dia')::int, 0) + 1));
+      cont := jsonb_set(cont, '{mejor_racha_dia}', to_jsonb(greatest(coalesce((cont ->> 'mejor_racha_dia')::int, 0), coalesce((cont ->> 'racha_dia')::int, 0))));
+      if not (coalesce(cont -> 'reglas_dia', '[]'::jsonb) ? p.regla) then cont := jsonb_set(cont, '{reglas_dia}', coalesce(cont -> 'reglas_dia', '[]'::jsonb) || to_jsonb(p.regla::text)); end if;
+    elsif p.resultado = 'derrota' then
+      cont := jsonb_set(cont, '{racha_dia}', '0'::jsonb);
+    end if;
+  end if;
   if gana and cuenta then
     if p.regla = 'maldicion' then cont := jsonb_set(cont, '{ganadas_maldicion}', to_jsonb(coalesce((cont ->> 'ganadas_maldicion')::int, 0) + 1)); end if;
     if p.fortuna_usada then cont := jsonb_set(cont, '{ganadas_fortuna_usada}', to_jsonb(coalesce((cont ->> 'ganadas_fortuna_usada')::int, 0) + 1)); end if;
@@ -466,14 +496,14 @@ begin
     insert into veintiuna_logros (user_id, logro)
     select p.user_id, d.id from veintiuna_logros_def d
     where cuenta and case d.id
-      when 'primera_vela' then est.victorias >= 1
+      when 'primera_vela' then coalesce((est.contadores ->> 'victorias_dia')::int, 0) >= 1
       when 'bajo_maldicion' then coalesce((est.contadores ->> 'ganadas_maldicion')::int, 0) >= 1
       when 'peaje_pagado' then coalesce((est.contadores ->> 'ganadas_fortuna_usada')::int, 0) >= 1
       when 'ultima_palabra' then coalesce((est.contadores ->> 'ganadas_voluntad_usada')::int, 0) >= 1
       when 'veintiuna_exacta' then coalesce((est.contadores ->> 'veintiunas')::int, 0) >= 1
       when 'sin_miedo' then coalesce((est.contadores ->> 'ganadas_plantado_bajo')::int, 0) >= 1
-      when 'tres_velas' then est.mejor_racha >= 3
-      when 'tres_voluntades' then cardinality(est.reglas_ganadas) >= 3
+      when 'tres_velas' then coalesce((est.contadores ->> 'mejor_racha_dia')::int, 0) >= 3
+      when 'tres_voluntades' then jsonb_array_length(coalesce(est.contadores -> 'reglas_dia', '[]'::jsonb)) >= 3
       when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_alto')::int, 0) >= 1
       when 'cinco_cartas' then coalesce((est.contadores ->> 'cinco_cartas')::int, 0) >= 1
       when 'fortuna_veintiuna' then coalesce((est.contadores ->> 'ganadas_fortuna_21')::int, 0) >= 1
@@ -708,6 +738,7 @@ begin
   insert into hipodromo_billeteras (usuario) values (uid) on conflict (usuario) do nothing;
   insert into veintiuna_estadisticas (user_id, proxima_regla) values (uid, veintiuna_i_regla_nueva()) on conflict do nothing;
   perform veintiuna_i_cerrar_inactiva(uid);
+  perform veintiuna_i_dia_logros(uid);
   select * into est from veintiuna_estadisticas where user_id = uid;
   select saldo into v_saldo from hipodromo_billeteras where usuario = uid;
   select * into p from veintiuna_partidas where user_id = uid and estado = 'en_curso' and mesa is null;
@@ -718,14 +749,14 @@ begin
   select coalesce(jsonb_agg(jsonb_build_object(
       'id', d.id, 'nivel', d.nivel, 'nombre', d.nombre, 'texto', d.texto, 'meta', d.meta,
       'progreso', least(d.meta, case d.id
-        when 'primera_vela' then est.victorias
+        when 'primera_vela' then coalesce((est.contadores ->> 'victorias_dia')::int, 0)
         when 'bajo_maldicion' then coalesce((est.contadores ->> 'ganadas_maldicion')::int, 0)
         when 'peaje_pagado' then coalesce((est.contadores ->> 'ganadas_fortuna_usada')::int, 0)
         when 'ultima_palabra' then coalesce((est.contadores ->> 'ganadas_voluntad_usada')::int, 0)
         when 'veintiuna_exacta' then coalesce((est.contadores ->> 'veintiunas')::int, 0)
         when 'sin_miedo' then coalesce((est.contadores ->> 'ganadas_plantado_bajo')::int, 0)
-        when 'tres_velas' then est.mejor_racha
-        when 'tres_voluntades' then cardinality(est.reglas_ganadas)
+        when 'tres_velas' then coalesce((est.contadores ->> 'mejor_racha_dia')::int, 0)
+        when 'tres_voluntades' then jsonb_array_length(coalesce(est.contadores -> 'reglas_dia', '[]'::jsonb))
         when 'ultima_hora' then coalesce((est.contadores ->> 'ganadas_voluntad_alto')::int, 0)
         when 'cinco_cartas' then coalesce((est.contadores ->> 'cinco_cartas')::int, 0)
         when 'fortuna_veintiuna' then coalesce((est.contadores ->> 'ganadas_fortuna_21')::int, 0)
@@ -752,6 +783,7 @@ begin
     'estadisticas', jsonb_build_object('rondas', est.rondas, 'victorias', est.victorias, 'derrotas', est.derrotas, 'empates', est.empates, 'naturales', est.naturales,
                                        'racha', est.racha, 'mejor_racha', est.mejor_racha, 'neto', est.neto),
     'logros', logros,
+    'logros_reinician', ((((now() at time zone 'utc')::date) + 1)::timestamp at time zone 'utc'),   -- cuándo se reinician los desafíos (siguiente 00:00 UTC)
     'recompensas', jsonb_build_object('activas', coalesce(cfg.activo, false), 'hoy', hoy_juego, 'tope_dia', coalesce(cfg.tope_dia, 1), 'tope_total_agotado', hoy_total >= (cartas_ajuste('tope_dia_total', '6'))::text::int)
   );
 end;
@@ -933,7 +965,7 @@ as $$
 $$;
 
 -- Reclamar la carta de un desafío completado. Pasa por el sistema oficial de recompensas; si no hay carta que dar (apagado, tope del día, agotado)
--- NO se gasta el desafío y se puede reclamar más tarde.
+-- NO se gasta el desafío y se puede reclamar más tarde, pero solo el mismo día: a las 00:00 UTC los desafíos se reinician y lo no reclamado se apaga.
 create or replace function veintiuna_reclamar(p_logro text)
 returns jsonb
 language plpgsql
@@ -956,6 +988,8 @@ begin
   perform pg_advisory_xact_lock(hashtextextended('veintiuna_' || uid::text, 0));
   select * into d from veintiuna_logros_def where id = p_logro;
   if not found then perform veintiuna_i_error('Ese desafío no existe.', 'no_encontrado'); end if;
+  insert into veintiuna_estadisticas (user_id, proxima_regla) values (uid, veintiuna_i_regla_nueva()) on conflict do nothing;
+  perform veintiuna_i_dia_logros(uid);   -- lo completado ayer y sin reclamar ya no vale
   select * into l from veintiuna_logros where user_id = uid and logro = p_logro for update;
   if not found then perform veintiuna_i_error('Ese desafío todavía no está completado.', 'no_completado'); end if;
   if l.reclamado is not null then perform veintiuna_i_error('Ya reclamaste este desafío.', 'ya_reclamado'); end if;

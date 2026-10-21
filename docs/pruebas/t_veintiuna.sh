@@ -173,6 +173,26 @@ contiene "con todos los límites globales agotados tampoco sale nada" "$R" '"res
 comprobar "y no se emitió ninguna copia nueva (la auditoría sigue limpia)" "0" "$(auditar)"
 comprobar "el desafío sigue sin gastar" "" "$(sql "select reclamado from veintiuna_logros where user_id = '$U1' and logro = 'bajo_maldicion'")"
 sql "update cartas_catalogo set limite = 20 where id like 'comun-%'; update cartas_catalogo set limite = 12 where id like 'poco-%'; update cartas_catalogo set limite = 5 where id like 'rara-%'; update cartas_catalogo set limite = 1 where id = 'legendaria-1'" >/dev/null
+# Los desafíos se reinician cada día: lo completado ayer (reclamado o no) se borra y se puede completar otra vez; lo no reclamado se apaga
+comprobar "antes de pasar el día hay desafíos de hoy guardados (dos reclamados y uno sin reclamar)" "3" "$(sql "select count(*) from veintiuna_logros where user_id = '$U1'")"
+sql "update veintiuna_estadisticas set dia_logros = dia_logros - 1 where user_id = '$U1'" >/dev/null
+M=$(como $U1 "select veintiuna_mesa();")
+comprobar "al día siguiente todos los desafíos vuelven a empezar (ninguno completado)" "0" "$(sql "select count(*) from veintiuna_logros where user_id = '$U1'")"
+contiene "y su progreso del día es 0" "$(printf '%s' "$M" | tr -d '
+ ' | grep -o '"id":"primera_vela"[^}]*' | head -1)" '"progreso":0'
+comprobar "las estadísticas de siempre se conservan (victorias, mejor racha)" "t" "$(sql "select victorias >= 2 from veintiuna_estadisticas where user_id = '$U1'")"
+comprobar "y el reinicio fija el día de hoy" "t" "$(sql "select dia_logros = (now() at time zone 'utc')::date from veintiuna_estadisticas where user_id = '$U1'")"
+contiene "lo completado ayer ya no se puede reclamar" "$(como $U1 "select veintiuna_reclamar('primera_vela');")" "todavía no está completado"
+contiene "la mesa dice cuándo se reinician" "$M" '"logros_reinician"'
+sql "select t_act((t_reparte('$U1', 'maldicion', 'apuesta', 10, '10p', '10c', '8c', '7c') ->> 'partida')::uuid, 'plantar')" >/dev/null
+comprobar "ganando hoy, «Primera vela» se completa de nuevo (y sin reclamar)" "t" "$(sql "select count(*) = 1 from veintiuna_logros where user_id = '$U1' and logro = 'primera_vela' and reclamado is null")"
+comprobar "el contador del día cuenta solo la victoria de hoy" "1" "$(sql "select coalesce((contadores ->> 'victorias_dia')::int, 0) from veintiuna_estadisticas where user_id = '$U1'")"
+# un desafío completado y sin reclamar al acabar el día se apaga
+sql "update veintiuna_estadisticas set dia_logros = dia_logros - 1 where user_id = '$U1'" >/dev/null
+contiene "lo completado y sin reclamar de ayer no se puede reclamar hoy" "$(como $U1 "select veintiuna_reclamar('primera_vela');")" "todavía no está completado"
+como $U1 "select veintiuna_mesa();" >/dev/null
+comprobar "y desaparece al reiniciar" "0" "$(sql "select count(*) from veintiuna_logros where user_id = '$U1'")"
+
 # El editor de Admin guarda el juego (valida los valores de los desafíos)
 GUARDAR='{"valores": {"rivales": {"bronce": {"gana": 1, "tablas": 0, "pierde": 0}, "plata": {"gana": 3, "tablas": 0, "pierde": 0}, "oro": {"gana": 4, "tablas": 0, "pierde": 0}, "_otros": {"gana": 1, "tablas": 0, "pierde": 0}}}}'
 nocontiene "el editor de Juegos y recetas acepta los valores de este juego" "$(como $ADMIN "select cartas_admin_guardar_juego('veintiuna', '$GUARDAR'::jsonb);")" "ERROR"

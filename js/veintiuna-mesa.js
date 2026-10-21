@@ -895,7 +895,7 @@
         <section><h3>Las ocho reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
         <section><h3>Mesa de práctica y desafíos</h3><ul>
           <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga tokens. No cuenta para los desafíos ni para las rachas: para aprender las reglas.</li>
-          <li>Los <strong>desafíos</strong> se comprueban en el servidor. Cada uno que completes se puede reclamar una vez y da una carta del juego de Triunfos, siempre respetando los límites de la colección (como mucho una carta al día desde esta mesa).</li>
+          <li>Los <strong>desafíos</strong> se comprueban en el servidor. Cada uno que completes se puede reclamar una vez y da una carta del juego de Triunfos, siempre respetando los límites de la colección (como mucho una carta al día desde esta mesa). Los desafíos se reinician cada día: puedes completarlos de nuevo, y lo que no reclames antes del reinicio se pierde.</li>
           <li>Si dejas una mano a medias, queda guardada. Pasados ${m ? m.inactividad_min : 30} minutos sin jugarla, el servidor se planta por ti.</li>
         </ul></section>
       </div>`);
@@ -932,6 +932,13 @@
     }
   }
 
+  /* Cuándo se reinician los desafíos (cada día a las 00:00 UTC): lo completado y sin reclamar se pierde, y todo se puede volver a completar */
+  function textoReinicio(m) {
+    const fin = m && m.logros_reinician ? Date.parse(m.logros_reinician) : NaN;
+    if (!isFinite(fin)) return "Los desafíos se reinician cada día.";
+    const min = Math.max(0, Math.round((fin - Date.now()) / 60000)), h = Math.floor(min / 60);
+    return `Los desafíos se reinician cada día: dentro de ${h ? h + " h " : ""}${min % 60} min. Lo que no reclames antes se pierde, y después puedes completarlos de nuevo.`;
+  }
   function abrirDesafios() {
     const m = S.mesa;
     if (!m) return;
@@ -950,7 +957,8 @@
     abrir($("vvDlgDesafios"), `${cabeceraDlg("vvDlgDesafiosT", "Desafíos de la mesa", "Se comprueban en el servidor y valen lo mismo con o sin apuesta")}
       <div class="vv-dlg-cuerpo">
         <p class="vv-nota-aviso vv-dlg-estado" id="vvDesafiosEstado" role="status" aria-live="polite"${S.mensajeDesafios ? "" : " hidden"}>${esc(S.mensajeDesafios || "")}</p>
-        ${apagado ? `<p class="vv-nota-aviso">Las cartas de esta mesa todavía no se reparten. Tus desafíos se siguen completando y quedan guardados para cuando se enciendan.</p>` : ""}
+        ${apagado ? `<p class="vv-nota-aviso">Las cartas de esta mesa todavía no se reparten. Tus desafíos se siguen completando y quedan guardados hasta el reinicio del día.</p>` : ""}
+        <p class="vv-nota-aviso">${textoReinicio(m)}</p>
         <p>Cada desafío que completes se puede reclamar <strong>una sola vez</strong> y da una carta de Triunfos. Los de plata y oro dan cartas mejores. Desde esta mesa se reclama como mucho una carta al día${m.recompensas.hoy ? " (hoy ya has reclamado una)" : ""}, y la carta siempre respeta los límites de la colección.</p>
         ${["bronce", "plata", "oro"].map(n => `<section class="vv-logros-nivel" data-nivel="${n}"><h3>${V.NIVELES[n]}</h3><ul class="vv-logros">${nivel(n).map(tarjeta).join("")}</ul></section>`).join("")}
       </div>`);
@@ -967,7 +975,7 @@
         if (window.Recompensas && window.Recompensas.mostrar) await window.Recompensas.mostrar("veintiuna", r);
         tostada("Carta añadida a tu colección.", { icono: "🂡", clase: "oro" });
       } else {
-        const motivos = { "juego-inactivo": "Las cartas de esta mesa todavía no se reparten. Tu desafío sigue guardado.", "tope-diario": "Hoy ya reclamaste la carta de la mesa. Vuelve mañana: el desafío sigue guardado.", agotado: "Ahora mismo no queda ninguna carta disponible para este premio. El desafío sigue guardado." };
+        const motivos = { "juego-inactivo": "Las cartas de esta mesa todavía no se reparten. Tu desafío sigue guardado hasta el reinicio del día.", "tope-diario": "Hoy ya reclamaste la carta de la mesa. El desafío sigue guardado hasta el reinicio del día; mañana puedes completarlo de nuevo.", agotado: "Ahora mismo no queda ninguna carta disponible para este premio. El desafío sigue guardado hasta el reinicio del día." };
         mensajeReclamo = motivos[r && r.motivo] || "No se pudo entregar la carta ahora. El desafío sigue guardado.";
         tostada(mensajeReclamo, { icono: "🕯" });
       }
