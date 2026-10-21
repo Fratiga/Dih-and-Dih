@@ -25,10 +25,11 @@ create table if not exists public.hipodromo_precios_cartas (
   compra integer not null check (compra >= venta)   -- lo que cobra al vender una carta de la reserva
 );
 insert into public.hipodromo_precios_cartas (rareza, venta, compra) values
-  ('comun', 20, 50), ('infrecuente', 60, 150), ('rara', 200, 500), ('legendaria', 800, 2000)
+  ('comun', 20, 50), ('infrecuente', 60, 150), ('rara', 200, 500)
 on conflict (rareza) do nothing;
--- Las limitadas no se compran ni se venden en el hipódromo: solo las da el DM. Sin precio, las funciones las rechazan y no salen en la lista.
-delete from public.hipodromo_precios_cartas where rareza = 'limitada';
+-- Las limitadas y las legendarias no se compran ni se venden en el hipódromo (decisión del 13-oct-2026): solo las da el DM o salen jugando. Sin precio, las
+-- funciones las rechazan y no salen en la lista. Si vuelves a poner un precio a mano, esto lo quita al repetir el archivo.
+delete from public.hipodromo_precios_cartas where rareza in ('limitada', 'legendaria');
 alter table public.hipodromo_precios_cartas enable row level security;
 drop policy if exists "hipodromo_precios_cartas se lee" on public.hipodromo_precios_cartas;
 create policy "hipodromo_precios_cartas se lee" on public.hipodromo_precios_cartas for select using (true);
@@ -96,7 +97,7 @@ begin
     from (select carta_id, count(*)::int as copias from cartas_ejemplares where estado = 'en_reserva' group by carta_id) r
     join cartas_catalogo c on c.id = r.carta_id
     join hipodromo_precios_cartas p on p.rareza = c.rareza
-    where c.publicada and (c.lado is null or (v_lado is not null and v_lado = any (c.lado)))
+    where c.publicada and c.en_circulacion and (c.lado is null or (v_lado is not null and v_lado = any (c.lado)))
   ), '[]'::jsonb);
 end;
 $$;
@@ -121,6 +122,7 @@ begin
   if v_uid is null then raise exception 'Hace falta iniciar sesión.'; end if;
   select * into v_carta from cartas_catalogo where id = p_carta and publicada;
   if not found then raise exception 'Esa carta no existe.'; end if;
+  if not v_carta.en_circulacion then raise exception 'Esa carta todavía no está disponible.'; end if;
   select side into v_lado from perfiles where user_id = v_uid;
   if v_carta.lado is not null and (v_lado is null or not (v_lado = any (v_carta.lado))) then raise exception 'Esa carta no está disponible para ti.'; end if;
   select compra into v_precio from hipodromo_precios_cartas where rareza = v_carta.rareza;

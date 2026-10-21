@@ -127,6 +127,12 @@ else
   comprobar "la función ya no escribe en cartas_coleccion" "f" "$(sql "select pg_get_functiondef('fractura_recompensa(uuid)'::regprocedure) ~* 'insert into cartas_coleccion'")"
 fi
 
+echo "== Volver a correr docs/hipodromo-2_cartas.sql no quita las reglas de cartas (opción B)"
+docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../hipodromo-2_cartas.sql" >/dev/null 2>&1
+comprobar "las legendarias y las limitadas siguen sin precio (no se compran ni se venden)" "0" "$(sql "select count(*) from hipodromo_precios_cartas where rareza in ('legendaria', 'limitada')")"
+comprobar "la reserva solo enseña cartas en circulación" "t" "$(sql "select position('c.en_circulacion' in pg_get_functiondef('hipodromo_cartas_reserva()'::regprocedure)) > 0")"
+comprobar "comprar una carta que no está en circulación se rechaza antes de cobrar" "t" "$(sql "select position('en_circulacion' in pg_get_functiondef('hipodromo_comprar_carta(text)'::regprocedure)) > 0")"
+
 echo
 [ "$FALLOS" = 0 ] && echo "TODO BIEN" || echo "$FALLOS comprobación(es) falló(aron)"
 exit "$FALLOS"
