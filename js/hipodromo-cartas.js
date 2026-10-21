@@ -29,7 +29,7 @@ window.HipodromoCartas = (function () {
 
   function crear(api, cont, opc) {
     opc = opc || {};
-    let listo = false, cargando = false, mias = [], reserva = [], precios = {}, msg = { texto: "", clase: "" }, ocupado = false, ultimaFila = null, ultimoDicho = 0, enCurso = null;
+    let listo = false, cargando = false, mias = [], reserva = [], precios = {}, pv = null, deseos = null, ocultarLlenas = (() => { try { return localStorage.getItem("hipOcultarLlenas") === "1"; } catch (e) { return false; } })(), msg = { texto: "", clase: "" }, ocupado = false, ultimaFila = null, ultimoDicho = 0, enCurso = null;
     const mon = x => api.monedas(x);
     const dice = clave => { const b = PB(); if (b) b.decir(clave); };
 
@@ -43,14 +43,17 @@ window.HipodromoCartas = (function () {
       if (window.CartasCliente) await window.CartasCliente.cargarDefiniciones(false);
     }
     async function leer() {
-      const [ej, re, pr] = await Promise.all([
+      const [ej, re, pr, pm, de] = await Promise.all([
         api.supa.from("cartas_ejemplares").select("id, carta_id, numero, estado").eq("propietario", api.yo),
         api.supa.rpc("hipodromo_cartas_reserva"),
-        api.supa.from("hipodromo_precios_cartas").select("rareza, venta, compra")
+        api.supa.from("hipodromo_precios_cartas").select("rareza, venta, compra"),
+        api.supa.rpc("hipodromo_precios_mis_cartas"),
+        api.supa.rpc("hipodromo_deseos_ver")
       ]);
       if (ej.error) throw ej.error;
       if (re.error) throw re.error;
       mias = ej.data || []; reserva = re.data || [];
+      pv = !pm.error && pm.data ? pm.data : null; deseos = !de.error && de.data ? de.data : null;
       precios = {}; (pr.data || []).forEach(p => { precios[p.rareza] = p; });
     }
     async function abrir() {
@@ -76,6 +79,32 @@ window.HipodromoCartas = (function () {
       return cont.querySelector(".hip-cartas-cuerpo");
     }
 
+    const precioVenta = carta => {
+      const r = (window.cartaPorId && window.cartaPorId(carta) || {}).rareza;
+      if (pv && pv.cartas) { const x = pv.cartas[carta]; return x ? x.venta : null; }
+      return precios[r] ? precios[r].venta : null;
+    };
+    const idPorNombre = () => { const m = new Map(); (window.CARTAS || []).filter(c => !c.borrador).forEach(c => m.set(String(c.nombre).toLowerCase(), c.id)); return m; };
+    function avisoBuscadas() {
+      const hay = (deseos || []).filter(d => d.copias > 0 && d.tengo < d.limite);
+      return hay.length ? `<p class="hip-aviso bien">★ El Buhonero tiene lo que buscabas: ${hay.map(d => esc(nombreCarta(d.carta))).join(", ")}.</p>` : "";
+    }
+    function seccionDeseos() {
+      if (!deseos) return "";
+      const filas = deseos.map(d => {
+        const lleno = d.tengo >= d.limite;
+        const estado = lleno ? "ya tienes todas las que puedes tener" : d.copias > 0 ? `${d.copias} en la reserva, cuesta ${mon(d.precio)} tokens` : "todavía no la tiene";
+        return `<li><span><b>${esc(nombreCarta(d.carta))}</b> <small>${estado}</small></span>
+          <span>${d.copias > 0 && !lleno ? `<button type="button" class="hip-boton chico" data-comprar="${esc(d.carta)}">Comprar</button> ` : ""}<button type="button" class="hip-boton chico" data-deseo-quitar="${esc(d.carta)}">Quitar</button></span></li>`;
+      }).join("");
+      const opciones = (window.CARTAS || []).filter(c => !c.borrador && ["comun", "infrecuente", "rara"].includes(c.rareza)).sort((a, b) => a.nombre.localeCompare(b.nombre, "es")).map(c => `<option value="${esc(c.nombre)}"></option>`).join("");
+      return `<section class="hip-tarjeta"><h3>Lo que buscas</h3>
+        <p class="hip-nota">Apunta hasta 12 cartas que te faltan: aquí verás cuándo el Buhonero las tiene en la reserva.</p>
+        ${filas ? `<ul class="hip-avisos hip-buscas">${filas}</ul>` : '<p class="hip-vacio">No has apuntado ninguna.</p>'}
+        <div class="hip-deseo-form"><input type="text" id="hipDeseoTxt" list="hipDeseoLista" placeholder="Buscar una carta..." aria-label="Carta que buscas"><datalist id="hipDeseoLista">${opciones}</datalist>
+        <button type="button" class="hip-boton chico" data-deseo-poner>Apuntar</button></div></section>`;
+    }
+
     function pintar() {
       const catalogo = id => (window.cartaPorId && window.cartaPorId(id)) || { id, nombre: id, rareza: "comun" };
       const rarezaDe = id => catalogo(id).rareza;
@@ -85,14 +114,15 @@ window.HipodromoCartas = (function () {
       const orden = (a, b) => (ORDEN[rarezaDe(b.carta)] || 0) - (ORDEN[rarezaDe(a.carta)] || 0) || nombreCarta(a.carta).localeCompare(nombreCarta(b.carta), "es");
       const filasVender = [...grupos.values()].sort(orden).map(g => {
         const r = rarezaDe(g.carta), p = precios[r], libres = g.libres.slice().sort((a, b) => b.numero - a.numero);
+        const precioV = precioVenta(g.carta), sinTope = !!(pv && pv.tope > 0 && pv.hoy >= pv.tope);
         return `<tr data-rareza="${esc(r)}"><td><b>${esc(nombreCarta(g.carta))}</b></td><td>${esc(nombreRareza(r))}</td><td>${libres.length}${g.bloqueadas ? ` <small>(+${g.bloqueadas} en uso)</small>` : ""}</td>
-          <td class="hip-cuota"><strong>${p ? mon(p.venta) : "-"}</strong></td>
-          <td>${p && libres.length ? `<button type="button" class="hip-boton chico" data-vender="${libres[0].id}" data-carta="${esc(g.carta)}">Vender una</button>` : '<span class="hip-sin">no se puede</span>'}</td></tr>`;
+          <td class="hip-cuota"><strong>${precioV != null ? mon(precioV) : "-"}</strong></td>
+          <td>${precioV != null && libres.length && !sinTope ? `<button type="button" class="hip-boton chico" data-vender="${libres[0].id}" data-carta="${esc(g.carta)}">Vender una</button>` : `<span class="hip-sin"${precioV == null ? ' title="Las cartas únicas, legendarias y limitadas no se compran ni se venden aquí"' : ""}>${precioV == null ? "no se compra" : sinTope ? "tope de hoy" : "no se puede"}</span>`}</td></tr>`;
       }).join("");
       const saldo = api.saldo();
-      const filasComprar = reserva.slice().sort((a, b) => (ORDEN[b.rareza] || 0) - (ORDEN[a.rareza] || 0) || nombreCarta(a.carta).localeCompare(nombreCarta(b.carta), "es")).map(c => {
+      const filasComprar = reserva.filter(c => !(ocultarLlenas && c.tengo >= c.limite)).sort((a, b) => (ORDEN[b.rareza] || 0) - (ORDEN[a.rareza] || 0) || nombreCarta(a.carta).localeCompare(nombreCarta(b.carta), "es")).map(c => {
         const lleno = c.tengo >= c.limite, falta = c.precio > saldo;
-        return `<tr data-rareza="${esc(c.rareza)}"><td><b>${esc(nombreCarta(c.carta))}</b> <small>${esc(c.tipo || "")}</small></td><td>${esc(nombreRareza(c.rareza))}</td><td>${c.copias}</td><td>${c.tengo} de ${c.limite}</td>
+        return `<tr data-rareza="${esc(c.rareza)}"><td>${c.buscada ? "★ " : ""}<b>${esc(nombreCarta(c.carta))}</b> <small>${esc(c.tipo || "")}</small></td><td>${esc(nombreRareza(c.rareza))}</td><td>${c.copias}</td><td>${c.tengo} de ${c.limite}</td>
           <td class="hip-cuota"><strong>${mon(c.precio)}</strong></td>
           <td${lleno ? ' data-dice="hipLleno"' : falta ? ' data-dice="hipSinTokens"' : ""}><button type="button" class="hip-boton chico" data-comprar="${esc(c.carta)}"${lleno || falta ? " disabled" : ""} title="${lleno ? "Ya tienes todas las que puedes tener" : falta ? "No te alcanzan los tokens" : ""}">Comprar</button></td></tr>`;
       }).join("");
@@ -101,15 +131,17 @@ window.HipodromoCartas = (function () {
         <p class="hip-nota">${opc.fuera
           ? "Además de cambiar cartas por cartas, el Buhonero paga y cobra en los tokens de juego del Hipódromo. Se consiguen vendiéndole cartas, con los premios de tus criaturas y apostando. Lo que le vendes vuelve a la reserva de cartas, y lo único que te puede ofrecer es lo que hay en la reserva: comprar no crea cartas nuevas. Te cobra más de lo que paga."
           : "Aquí el Buhonero no cambia cartas por cartas como en el Mercado de los Faroles: paga y cobra en tokens. En el hipódromo empiezas sin tokens: se consiguen vendiéndole cartas, con los premios de tus criaturas y apostando. Lo que le vendes vuelve a la reserva de cartas, y lo único que te puede ofrecer es lo que hay en la reserva: comprar no crea cartas nuevas. Te cobra más de lo que paga."}</p>
-        <ul class="hip-avisos">${tabla}</ul>
+        <ul class="hip-avisos">${tabla}</ul>${avisoBuscadas()}
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p></section>
-        <section class="hip-tarjeta"><h3>Dárselas al Buhonero</h3>${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te paga</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas que enseñarle.</p>'}</section>
-        <section class="hip-tarjeta"><h3>Lo que ofrece el Buhonero</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">Su carreta está vacía ahora mismo. Se llena con las cartas que los jugadores le venden aquí.</p>'}</section>`;
+        <section class="hip-tarjeta"><h3>Dárselas al Buhonero</h3>${pv ? `<p class="hip-nota">Ventas de hoy: <strong>${pv.hoy}</strong>${pv.tope > 0 ? ` de ${pv.tope}` : ""}. Paga más cuantas menos copias puede haber de una carta, y no compra las únicas.</p>` : ""}${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te paga</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas que enseñarle.</p>'}</section>
+        <section class="hip-tarjeta"><h3>Lo que ofrece el Buhonero</h3><label class="hip-filtro"><input type="checkbox" data-ocultar${ocultarLlenas ? " checked" : ""}> Ocultar las que ya tengo al máximo</label>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">Su carreta está vacía ahora mismo. Se llena con las cartas que los jugadores le venden aquí.</p>'}</section>`;
       const cuerpo = marco();
+      const escrito = (cuerpo.querySelector("#hipDeseoTxt") || {}).value || "";
+      const htmlTodo = html + seccionDeseos();
       // La clave incluye la operación en marcha: si no, al acabar una venta el HTML puede ser igual al del dibujo anterior (la página repinta la
       // pestaña mientras refresca la cuenta), no se vuelve a dibujar y los botones se quedan apagados.
-      const clave = (enCurso ? enCurso.clave + "|" : "") + html;
-      if (cuerpo._h !== clave) { cuerpo.innerHTML = html; cuerpo._h = clave; }
+      const clave = (enCurso ? enCurso.clave + "|" : "") + htmlTodo;
+      if (cuerpo._h !== clave) { cuerpo.innerHTML = htmlTodo; cuerpo._h = clave; const t = cuerpo.querySelector("#hipDeseoTxt"); if (t && escrito) t.value = escrito; }
       // la compra o la venta en marcha pone su botón en «cargando» y apaga los demás (el HTML se reescribe en cada dibujo)
       if (enCurso) cuerpo.querySelectorAll("[data-vender], [data-comprar]").forEach(b => { if ((b.dataset.vender || b.dataset.comprar) === enCurso.clave) window.HipEspera.poner(b, enCurso.texto); else b.disabled = true; });
     }
@@ -141,16 +173,31 @@ window.HipodromoCartas = (function () {
     cont.addEventListener("mouseleave", () => { ultimaFila = null; });
 
     cont.addEventListener("click", async e => {
+      const dp = e.target.closest("[data-deseo-poner]"), dq = e.target.closest("[data-deseo-quitar]");
+      if (dp) {
+        const txt = (cont.querySelector("#hipDeseoTxt") || {}).value || "", id = idPorNombre().get(txt.trim().toLowerCase());
+        if (!id) { msg = { texto: "No encuentro esa carta: elígela de la lista.", clase: "mal" }; pintar(); return; }
+        operar("hipodromo_deseo_poner", { p_carta: id }, () => `Apuntada: ${nombreCarta(id)}. El Buhonero te dirá cuándo la tenga.`, "hipSaludo", id, "Apuntando...");
+        return;
+      }
+      if (dq) { operar("hipodromo_deseo_quitar", { p_carta: dq.dataset.deseoQuitar }, () => "Quitada de lo que buscas.", "hipSaludo", dq.dataset.deseoQuitar, "Quitando..."); return; }
       const v = e.target.closest("[data-vender]"), c = e.target.closest("[data-comprar]");
       if (v) {
-        const carta = v.dataset.carta, r = (window.cartaPorId && window.cartaPorId(carta) || {}).rareza, p = precios[r];
-        if (!(await dialogo.confirmar(`Le das una copia de ${nombreCarta(carta)} al Buhonero y te paga ${mon(p ? p.venta : 0)} tokens. Vuelve a la reserva y otro jugador podrá comprársela.`, { titulo: "Vender carta", aceptar: "Vender" }))) return;
+        const carta = v.dataset.carta, pagan = precioVenta(carta);
+        if (!(await dialogo.confirmar(`Le das una copia de ${nombreCarta(carta)} al Buhonero y te paga ${mon(pagan || 0)} tokens. Vuelve a la reserva y otro jugador podrá comprársela.`, { titulo: "Vender carta", aceptar: "Vender" }))) return;
         operar("hipodromo_vender_carta", { p_ejemplar: v.dataset.vender }, d => `Le vendiste ${nombreCarta(d.carta)} al Buhonero por ${mon(d.precio)} tokens.`, "hipRecibe", v.dataset.vender, "Vendiendo...");
       } else if (c) {
         const f = reserva.find(x => x.carta === c.dataset.comprar);
         if (!(await dialogo.confirmar(`El Buhonero te vende ${nombreCarta(c.dataset.comprar)} por ${mon(f ? f.precio : 0)} tokens.`, { titulo: "Comprar carta", aceptar: "Comprar" }))) return;
         operar("hipodromo_comprar_carta", { p_carta: c.dataset.comprar }, d => `Le compraste ${nombreCarta(d.carta)} (copia ${d.numero}) al Buhonero por ${mon(d.precio)} tokens.`, "hipOfrece", c.dataset.comprar, "Comprando...");
       }
+    });
+    cont.addEventListener("change", e => {
+      const o = e.target.closest("[data-ocultar]");
+      if (!o) return;
+      ocultarLlenas = o.checked;
+      try { localStorage.setItem("hipOcultarLlenas", o.checked ? "1" : "0"); } catch (x) { /* sin almacenamiento */ }
+      pintar();
     });
     return { abrir, pintar: () => { if (listo) pintar(); }, recargar: async () => { if (!listo || ocupado) return; try { await leer(); pintar(); } catch (e) { /* se queda lo que había */ } } };
   }

@@ -38,7 +38,7 @@ echo "== Hipódromo y la etiqueta «En circulación»"
 if sql "select 1 from information_schema.columns where table_name='cartas_catalogo' and column_name='en_circulacion'" | grep -q 1; then
   dar_monedas $U2 100
   sql "update cartas_catalogo set en_circulacion = false where id = 'comun-3'" >/dev/null
-  contiene "una carta fuera de circulación no se puede comprar aunque esté en la reserva" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "todavía no está en circulación"
+  contiene "una carta fuera de circulación no se puede comprar aunque esté en la reserva" "$(como $U2 "select hipodromo_comprar_carta('comun-3');")" "todavía no está disponible"
   comprobar "...y no se cobra nada" "100" "$(monedas $U2)"
   comprobar "...y la copia sigue en la reserva" "en_reserva" "$(sql "select estado from cartas_ejemplares where id='$C'")"
   if como $U2 "select hipodromo_cartas_reserva();" | grep -q '"carta": "comun-3"'; then nota "hipodromo_cartas_reserva() ENSEÑA las cartas fuera de circulación (la compra falla, pero aparecen en la lista). Lo cambia quien mantiene el Hipódromo."; fi
@@ -60,20 +60,20 @@ if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vende
   LEG=$(dar $U4 legendaria-1); sql "select cartas_i_retirar('$LEG', 'reserva', 'prueba');" >/dev/null
   dar_monedas $U1 5000
   R=$(como $U1 "select hipodromo_comprar_carta('legendaria-1');")
-  contiene "comprar una legendaria llamando a la función: rechazado" "$R" "legendarias y limitadas no se venden"
+  contiene "comprar una legendaria llamando a la función: rechazado" "$R" "no vende esa carta"
   comprobar "...no se cobra nada" "5000" "$(monedas $U1)"
   comprobar "...y la legendaria sigue en la reserva" "en_reserva" "$(sql "select estado from cartas_ejemplares where id='$LEG'")"
   # aunque alguien vuelva a ponerle precio a la limitada, la función sigue rechazándola
   sql "insert into hipodromo_precios_cartas values ('limitada', 5, 5) on conflict (rareza) do update set compra = 5, venta = 5" >/dev/null
   sql "update cartas_catalogo set en_circulacion = true where id = 'bufon'" >/dev/null
   BUF=$(dar $U1 bufon)
-  contiene "vender una limitada llamando a la función: rechazado (aunque tenga precio)" "$(como $U1 "select hipodromo_vender_carta('$BUF');")" "legendarias y limitadas no se compran"
+  contiene "vender una limitada llamando a la función: rechazado (aunque tenga precio)" "$(como $U1 "select hipodromo_vender_carta('$BUF');")" "no compra esa carta"
   comprobar "...la carta sigue siendo del jugador" "$U1/poseida" "$(sql "select propietario::text||'/'||estado from cartas_ejemplares where id='$BUF'")"
   BUF2=$(dar $U4 bufon); sql "select cartas_i_retirar('$BUF2', 'reserva', 'prueba');" >/dev/null
-  contiene "comprar una limitada de la reserva: rechazado (aunque tenga precio)" "$(como $U1 "select hipodromo_comprar_carta('bufon');")" "legendarias y limitadas no se venden"
+  contiene "comprar una limitada de la reserva: rechazado (aunque tenga precio)" "$(como $U1 "select hipodromo_comprar_carta('bufon');")" "no vende esa carta"
   sql "delete from hipodromo_precios_cartas where rareza = 'limitada'" >/dev/null
   LEG2=$(dar $U1 legendaria-1)
-  contiene "vender una legendaria que se tiene: rechazado" "$(como $U1 "select hipodromo_vender_carta('$LEG2');")" "legendarias y limitadas no se compran"
+  contiene "vender una legendaria que se tiene: rechazado" "$(como $U1 "select hipodromo_vender_carta('$LEG2');")" "no compra esa carta"
   comprobar "...y sigue siendo suya" "$U1/poseida" "$(sql "select propietario::text||'/'||estado from cartas_ejemplares where id='$LEG2'")"
   comprobar "ningún token se movió en todo esto" "5000" "$(monedas $U1)"
   # la lista de la reserva
@@ -84,7 +84,7 @@ if [ "$(sql "select position('legendaria' in pg_get_functiondef('hipodromo_vende
   nocontiene "...no enseña la legendaria de la reserva" "$LISTA" 'legendaria-1'
   nocontiene "...no enseña la limitada de la reserva" "$LISTA" '"bufon"'
   nocontiene "...no enseña una carta que no está en circulación" "$LISTA" 'comun-2'
-  contiene "comprar una carta fuera de circulación llamando a la función: rechazado" "$(como $U1 "select hipodromo_comprar_carta('comun-2');")" "todavía no está en circulación"
+  contiene "comprar una carta fuera de circulación llamando a la función: rechazado" "$(como $U1 "select hipodromo_comprar_carta('comun-2');")" "todavía no está disponible"
   comprobar "...sin cobrar" "5000" "$(monedas $U1)"
   nocontiene "una carta común en circulación sigue pudiéndose comprar" "$(como $U1 "select hipodromo_comprar_carta('comun-1');")" "ERROR"
   comprobar "...por su precio de siempre (50)" "4950" "$(monedas $U1)"
@@ -128,7 +128,7 @@ else
 fi
 
 echo "== Volver a correr docs/hipodromo-2_cartas.sql no quita las reglas de cartas (opción B)"
-docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../hipodromo-2_cartas.sql" >/dev/null 2>&1
+docker exec -i cartas-pruebas psql -U postgres -d "${BD:-pruebas}" -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../hipodromo-2_cartas.sql" >/dev/null 2>&1
 comprobar "las legendarias y las limitadas siguen sin precio (no se compran ni se venden)" "0" "$(sql "select count(*) from hipodromo_precios_cartas where rareza in ('legendaria', 'limitada')")"
 comprobar "la reserva solo enseña cartas en circulación" "t" "$(sql "select position('c.en_circulacion' in pg_get_functiondef('hipodromo_cartas_reserva()'::regprocedure)) > 0")"
 comprobar "comprar una carta que no está en circulación se rechaza antes de cobrar" "t" "$(sql "select position('en_circulacion' in pg_get_functiondef('hipodromo_comprar_carta(text)'::regprocedure)) > 0")"

@@ -144,7 +144,7 @@ contiene "una partida de pocos segundos no cuenta" "$(como $U3 "select cartas_ju
 
 echo "== Perder ya no da sellos; Veintiuna no se toca (migración 22)"
 reiniciar
-M22() { docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../economia-22_menos_sellos_gratis.sql" 2>&1 | grep -v NOTICE | head -3; }
+M22() { docker exec -i cartas-pruebas psql -U postgres -d "${BD:-pruebas}" -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../economia-22_menos_sellos_gratis.sql" 2>&1 | grep -v NOTICE | head -3; }
 sql "delete from cartas_juegos where juego = 'veintiuna'" >/dev/null
 sql "insert into cartas_juegos (juego, nombre, activo, umbrales, tope_dia, min_segundos, sellos_por_carta, pesos, valores, prob) values ('veintiuna', 'Veintiuna', false, '{\"participacion\": 0, \"bueno\": 1, \"excelente\": 3, \"extraordinario\": 4}', 2, 0, 5, '{\"bueno\": {\"comun\": 100}}', '{\"rivales\": {\"oro\": {\"gana\": 4, \"tablas\": 0, \"pierde\": 0}, \"_otros\": {\"gana\": 1, \"tablas\": 0, \"pierde\": 0}}}', '{\"bueno\": 1, \"excelente\": 1, \"extraordinario\": 1}')" >/dev/null
 comprobar "antes: perder contra Cassius valía 0 (un sello)" "0" "$(val arqueria cassius pierde 0)"

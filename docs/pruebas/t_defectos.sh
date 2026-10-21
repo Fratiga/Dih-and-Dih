@@ -67,7 +67,7 @@ comprobar "y un jugador no puede tener dos" "1" "$(sql "select cartas_limite_jug
 contiene "una carta con varias copias emitidas no puede pasar a única" "$(como $ADMIN "select cartas_admin_guardar_limites('[{\"id\": \"t-emitida\", \"limite\": 1, \"limite_jugador\": 1}]'::jsonb);" 2>&1)" "Ya se emitieron"
 
 echo "== Ajuste de límites de todo el catálogo (migración 24)"
-M24() { docker exec -i cartas-pruebas psql -U postgres -d pruebas -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../economia-24_ajuste_de_limites.sql" 2>&1 | grep -v NOTICE | head -3; }
+M24() { docker exec -i cartas-pruebas psql -U postgres -d "${BD:-pruebas}" -q -v ON_ERROR_STOP=1 < "$(dirname "$0")/../economia-24_ajuste_de_limites.sql" 2>&1 | grep -v NOTICE | head -3; }
 nueva el-tiznado rara 1 1 Personaje; sql "update cartas_catalogo set limite = null, limite_jugador = null where id = 'el-tiznado'" >/dev/null
 nueva el-bufon limitada 5 null Entidad
 nueva garra comun 35 5 Personaje; dar $U1 garra >/dev/null; dar $U2 garra >/dev/null

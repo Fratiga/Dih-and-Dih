@@ -9,7 +9,7 @@ U3=00000000-0000-0000-0000-000000000003
 U4=00000000-0000-0000-0000-000000000004
 
 # psql como superusuario (preparar datos y mirar resultados)
-sup() { docker exec -i cartas-pruebas psql -U postgres -d pruebas -tA -v ON_ERROR_STOP=0 -q "$@"; }
+sup() { docker exec -i cartas-pruebas psql -U postgres -d "${BD:-pruebas}" -tA -v ON_ERROR_STOP=0 -q "$@"; }
 sql() { printf '%s\n' "$1" | sup; }
 
 # Ejecuta SQL como un jugador (rol authenticated con sesión simulada). Uso: como <uid> "sql" [segundos de espera al final, con los candados puestos]
