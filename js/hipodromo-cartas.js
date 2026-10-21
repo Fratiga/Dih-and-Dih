@@ -106,7 +106,10 @@ window.HipodromoCartas = (function () {
         <section class="hip-tarjeta"><h3>Dárselas al Buhonero</h3>${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te paga</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas que enseñarle.</p>'}</section>
         <section class="hip-tarjeta"><h3>Lo que ofrece el Buhonero</h3>${filasComprar ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>${T("reserva", "En la reserva")}</th><th>Tienes</th><th>Cuesta</th><th></th></tr></thead><tbody>${filasComprar}</tbody></table></div>` : '<p class="hip-vacio">Su carreta está vacía ahora mismo. Se llena con las cartas que los jugadores le venden aquí.</p>'}</section>`;
       const cuerpo = marco();
-      if (cuerpo._h !== html) { cuerpo.innerHTML = html; cuerpo._h = html; }
+      // La clave incluye la operación en marcha: si no, al acabar una venta el HTML puede ser igual al del dibujo anterior (la página repinta la
+      // pestaña mientras refresca la cuenta), no se vuelve a dibujar y los botones se quedan apagados.
+      const clave = (enCurso ? enCurso.clave + "|" : "") + html;
+      if (cuerpo._h !== clave) { cuerpo.innerHTML = html; cuerpo._h = clave; }
       // la compra o la venta en marcha pone su botón en «cargando» y apaga los demás (el HTML se reescribe en cada dibujo)
       if (enCurso) cuerpo.querySelectorAll("[data-vender], [data-comprar]").forEach(b => { if ((b.dataset.vender || b.dataset.comprar) === enCurso.clave) window.HipEspera.poner(b, enCurso.texto); else b.disabled = true; });
     }
