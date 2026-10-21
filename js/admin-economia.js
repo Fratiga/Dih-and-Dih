@@ -16,6 +16,7 @@
   const seleccion = new Set();
   let filtro = { texto: "", tipo: "", rareza: "", soloPendientes: false, soloSinLimite: false, soloFuera: false };
   let vista = "limites";
+  let defectos = null;           // límites predeterminados al publicar (economia-23); null si el servidor aún no los tiene
 
   async function rpc(nombre, args) {
     const supabase = await fichasCliente();
@@ -69,6 +70,7 @@
     estado("Cargando...");
     try {
       filas = await rpc("cartas_admin_limites");
+      try { defectos = await rpc("cartas_admin_defectos"); } catch (e) { defectos = null; }
       estado("");
       const sin = filas.filter(f => f.limite === null).length;
       const badge = document.getElementById("adminEconomiaCount");
@@ -108,6 +110,14 @@
       </div>
       <div class="eco-resumen">${filas.length} cartas · ${emitidas} copias emitidas de ${total} posibles · ${filas.filter(f => f.limite === null).length} sin límite global${conCirc() ? ` · ${filas.filter(f => valorPend(f, "en_circulacion")).length} en circulación` : ""}</div>
       ${conCirc() ? `<div class="eco-ayuda"><p><b>En circulación</b>: una carta que no lo está no sale por ninguna vía automática (recompensas, forja, reserva, escaparate del mercader), aunque esté publicada y sea ganable. Tú sí puedes regalarla a mano. Quitarla de circulación no quita copias a nadie. Las cartas nuevas nacen fuera de circulación.</p></div>` : ""}
+      ${defectos ? `<div class="eco-lote" id="ecoDefectos">
+        <span><b>Al publicar una carta sin límites</b> se le pone:</span>
+        <label>Global <input type="number" id="ecoDefGlobal" min="1" max="999" value="${esc(defectos.global)}"></label>
+        <label>Por jugador <input type="number" id="ecoDefJugador" min="1" max="99" value="${esc(defectos.jugador)}"></label>
+        <button type="button" id="ecoDefGuardar">Guardar predeterminados</button>
+        <button type="button" id="ecoDefAplicar" ${defectos.publicadas_sin_limite ? "" : "disabled"}>Ponerlo a las publicadas sin límite global (${esc(defectos.publicadas_sin_limite)})</button>
+        <small class="eco-ayuda">Nunca pisa un límite que ya esté puesto. Las legendarias nacen únicas (1 y 1) y las limitadas con 1 por jugador. Si la carta ya tiene más copias, sube a lo que ya hay.</small>
+      </div>` : ""}
       <div class="eco-filtros">
         <input type="search" id="ecoTexto" placeholder="Buscar carta..." aria-label="Buscar carta" value="${esc(filtro.texto)}">
         <select id="ecoTipo" aria-label="Tipo"><option value="">Todos los tipos</option>${tipos.map(t => `<option${filtro.tipo === t ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>
@@ -121,12 +131,13 @@
         <label>Global <input type="number" id="ecoLoteGlobal" min="1" max="999" placeholder="sin cambio"></label>
         <label>Por jugador <input type="number" id="ecoLoteJugador" min="1" max="99" placeholder="sin cambio"></label>
         <button type="button" id="ecoLoteAplicar">Aplicar a la selección</button>
+        <button type="button" id="ecoLoteUnica" title="Una sola copia en todo el mundo y una por jugador${conCirc() ? ", y la pone en circulación" : ""}">Dejar como única</button>
         ${conCirc() ? `<button type="button" id="ecoLoteEntra">Poner en circulación</button><button type="button" id="ecoLoteSale">Sacar de circulación</button>` : ""}
       </div>
       <div class="eco-tabla-caja"><table class="eco-tabla"><thead><tr>
         <th><input type="checkbox" id="ecoTodas" aria-label="Seleccionar las visibles"></th>
         <th>Carta</th><th>Emitidas</th><th>Límite global</th><th>Límite por jugador</th>${conCirc() ? `<th title="Sin esta marca la carta no sale por recompensas, forja ni mercader">En circulación</th>` : ""}
-        <th title="Sin dueño, se reparte antes de emitir">Reserva</th><th>Con jugadores</th><th>Bloqueadas</th><th>Destruidas</th><th title="Copias por mazo (se cambia en el editor de cartas)">Por mazo</th>
+        <th title="Una sola copia en todo el mundo y una por jugador">Única</th><th title="Sin dueño, se reparte antes de emitir">Reserva</th><th>Con jugadores</th><th>Bloqueadas</th><th>Destruidas</th><th title="Copias por mazo (se cambia en el editor de cartas)">Por mazo</th>
       </tr></thead><tbody id="ecoFilas"></tbody></table></div>
       <div class="eco-guardar">
         <button type="button" id="ecoGuardar" class="admin-cuenta-accion" ${pendientes.size ? "" : "disabled"}>Guardar cambios (${pendientes.size})</button>
@@ -150,12 +161,23 @@
         <td><input type="number" data-campo="limite" min="${Math.max(1, f.emitidas)}" max="999" value="${g ?? ""}" placeholder="sin definir" class="${g === null ? "eco-sin" : ""}${bajo ? " eco-mal" : ""}" aria-label="Límite global de ${esc(f.nombre)}"></td>
         <td><input type="number" data-campo="limite_jugador" min="1" max="99" value="${j ?? ""}" placeholder="${f.limite_jugador_efectivo}" aria-label="Límite por jugador de ${esc(f.nombre)}"></td>
         ${conCirc() ? `<td><input type="checkbox" data-campo="en_circulacion"${valorPend(f, "en_circulacion") ? " checked" : ""} aria-label="En circulación: ${esc(f.nombre)}"></td>` : ""}
+        <td><button type="button" data-unica class="eco-unica"${esUnica(f) ? " disabled" : ""} title="Una sola copia en todo el mundo y una por jugador${conCirc() ? ", y en circulación" : ""}">${esUnica(f) ? "Única ✓" : "Única"}</button></td>
         <td>${f.reserva || ""}</td><td>${f.poseidas || ""}</td><td>${f.bloqueadas || ""}</td><td>${f.destruidas || ""}</td><td>${f.copias_max ?? ""}</td></tr>`;
-    }).join("") || `<tr><td colspan="11" class="eco-vacia">Ninguna carta coincide.</td></tr>`;
+    }).join("") || `<tr><td colspan="12" class="eco-vacia">Ninguna carta coincide.</td></tr>`;
     const todas = document.getElementById("ecoTodas");
     if (todas) todas.checked = visibles.length > 0 && visibles.every(f => seleccion.has(f.id));
     const n = document.getElementById("ecoSelN");
     if (n) n.textContent = String(seleccion.size);
+  }
+
+  // Única: 1 copia en toda la página y 1 por jugador (y en circulación). Con más de una copia ya emitida no se puede.
+  const esUnica = f => valorPend(f, "limite") === 1 && [1, null].includes(valorPend(f, "limite_jugador")) && (!conCirc() || valorPend(f, "en_circulacion") === true);
+  function hacerUnica(f) {
+    if (f.emitidas > 1) return false;
+    apuntar(f.id, "limite", 1);
+    apuntar(f.id, "limite_jugador", 1);
+    if (conCirc()) apuntar(f.id, "en_circulacion", true);
+    return true;
   }
 
   function apuntar(id, campo, valor) {
@@ -214,6 +236,34 @@
     const entra = document.getElementById("ecoLoteEntra"), sale = document.getElementById("ecoLoteSale");
     if (entra) entra.addEventListener("click", circLote(true));
     if (sale) sale.addEventListener("click", circLote(false));
+    document.getElementById("ecoFilas").addEventListener("click", ev => {
+      const b = ev.target.closest("[data-unica]");
+      if (!b) return;
+      const f = filas.find(x => x.id === b.closest("tr[data-id]").dataset.id);
+      if (!hacerUnica(f)) { estado(`${f.nombre}: ya hay ${f.emitidas} copias emitidas, no puede ser única.`, true); return; }
+      estado(`${f.nombre} queda como única${conCirc() ? " y en circulación" : ""}. Falta guardar.`);
+      pintarLimites();
+    });
+    document.getElementById("ecoLoteUnica").addEventListener("click", () => {
+      if (!seleccion.size) { estado("Selecciona alguna carta primero.", true); return; }
+      const elegidas = filas.filter(f => seleccion.has(f.id));
+      const hechas = elegidas.filter(hacerUnica).length;
+      estado(`${hechas} carta${hechas === 1 ? "" : "s"} como única${hechas === 1 ? "" : "s"}${hechas < elegidas.length ? ` (${elegidas.length - hechas} no, porque ya tienen más de una copia emitida)` : ""}. Falta guardar.`, hechas < elegidas.length && !hechas);
+      pintarLimites();
+    });
+    const defGuardar = document.getElementById("ecoDefGuardar"), defAplicar = document.getElementById("ecoDefAplicar");
+    if (defGuardar) defGuardar.addEventListener("click", async () => {
+      try {
+        await rpc("cartas_admin_guardar_defectos", { p_global: Math.round(Number(document.getElementById("ecoDefGlobal").value)), p_jugador: Math.round(Number(document.getElementById("ecoDefJugador").value)) });
+        estado("Predeterminados guardados. Se usan al publicar una carta que no tenga límites.");
+        await cargar();
+      } catch (e) { estado(`No se pudo guardar: ${e.message || e}`, true); }
+    });
+    if (defAplicar) defAplicar.addEventListener("click", async () => {
+      if (!window.confirm(`Esto pone el límite global (${defectos.global}) y el de por jugador (${defectos.jugador}) a las ${defectos.publicadas_sin_limite} cartas publicadas que no tienen límite global. No cambia ningún límite que ya esté puesto. ¿Seguir?`)) return;
+      try { const n = await rpc("cartas_admin_aplicar_defectos"); await cargar(); estado(`Predeterminados puestos en ${n} carta${n === 1 ? "" : "s"}.`); }
+      catch (e) { estado(`No se pudo aplicar: ${e.message || e}`, true); }
+    });
     document.getElementById("ecoDescartar").addEventListener("click", () => { pendientes.clear(); pintarLimites(); });
     document.getElementById("ecoRecargar").addEventListener("click", cargar);
     document.getElementById("ecoGuardar").addEventListener("click", guardar);
