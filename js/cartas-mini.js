@@ -5,14 +5,20 @@ window.CartasMini = (function () {
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const nombreRareza = r => (window.CARTAS_RAREZAS && window.CARTAS_RAREZAS[r] ? window.CARTAS_RAREZAS[r].nombre : r);
 
+  /* El dibujo de la carta (un div), sin el botón que la envuelve */
+  function cuerpo(info) {
+    const c = window.cartaPorId && window.cartaPorId(info.carta);
+    return c && window.CartasVista
+      ? window.CartasVista.htmlCarta(c, true, 1, info.numero ? [info.numero] : null).replace(/^\s*<button type="button"/, "<div").replace(/<\/button>\s*$/, "</div>")
+      : `<div class="carta mc-dorso carta-rareza-${esc(info.rareza || "comun")}"><b>?</b></div>`;
+  }
+
   function html(info, extra) {
     const c = window.cartaPorId && window.cartaPorId(info.carta);
     const n = info.n && info.n > 1 ? `<i class="mc-n">×${info.n}</i>` : "";
-    const cuerpo = c && window.CartasVista
-      ? window.CartasVista.htmlCarta(c, true, 1, info.numero ? [info.numero] : null).replace(/^\s*<button type="button"/, "<div").replace(/<\/button>\s*$/, "</div>")
-      : `<div class="carta mc-dorso carta-rareza-${esc(info.rareza || "comun")}"><b>?</b></div>`;
+    const cuerpo_ = cuerpo(info);
     const nombre = info.nombre || (c ? c.nombre : info.carta);
-    return `<button type="button" class="mc${extra ? " " + extra : ""}" data-ver="${esc(info.carta)}" data-numero="${esc(info.numero || "")}" title="${esc(nombre)} · ${esc(nombreRareza(info.rareza || (c && c.rareza)))}">${cuerpo}${n}</button>`;
+    return `<button type="button" class="mc${extra ? " " + extra : ""}" data-ver="${esc(info.carta)}" data-numero="${esc(info.numero || "")}" title="${esc(nombre)} · ${esc(nombreRareza(info.rareza || (c && c.rareza)))}">${cuerpo_}${n}</button>`;
   }
 
   function abrir(cartaId, numero, texto) {
@@ -29,5 +35,5 @@ window.CartasMini = (function () {
     dlg.showModal();
   }
 
-  return { html, abrir };
+  return { html, cuerpo, abrir };
 })();

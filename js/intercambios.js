@@ -15,6 +15,7 @@
   let ofrezco = null;            // { ids, copias }
   let pido = [];                 // [{ carta, n, nombre }]
   let tengo = new Map();         // carta -> copias libres que tengo (para marcar las ofertas que puedo aceptar)
+  let tengoTodas = new Map();    // carta -> copias que tengo en el álbum (libres o no), para marcarlas en el catálogo al pedir
   const idPorNombre = new Map();
 
   function estado(t, error) {
@@ -51,13 +52,14 @@
       const copias = await BA.copiasLibres();
       tengo = new Map();
       copias.forEach(c => tengo.set(c.carta, (tengo.get(c.carta) || 0) + 1));
+      try { const col = await CartasCliente.coleccion(); tengoTodas = new Map(col.cartas || []); } catch (e) { tengoTodas = new Map(tengo); }
     } catch (e) { tengo = new Map(); }
   }
   async function cargarTodo() {
     try {
       await rpc("cartas_refrescar").catch(() => {});
       await Promise.all([cargarIntercambios(), cargarMias()]);
-      pintarTablon(); pintarMios();
+      pintarTablon(); pintarMios(); estadoFormulario();
     } catch (e) { estado(`No se pudieron cargar los intercambios: ${e.message || e}. ¿Corriste economia_5_intercambios.sql?`, true); }
   }
   async function leerSaldo() {
@@ -178,10 +180,22 @@
   function pintarOfrezco() {
     $("icOfrezcoCartas").innerHTML = ofrezco && ofrezco.copias.length ? abanico(ofrezco.copias.map(c => ({ carta: c.carta, nombre: c.nombre, rareza: c.rareza, numero: c.numero })))
       : `<span class="ic-vacio">Todavía no has puesto ninguna carta.</span>`;
+    estadoFormulario();
   }
   function pintarPido() {
-    $("icPidoLista").innerHTML = pido.length ? `<span class="pu-abanico-in">${pido.map((p, i) => `<span class="pu-con-quitar">${miniCarta({ carta: p.carta, nombre: p.nombre, rareza: (window.cartaPorId(p.carta) || {}).rareza, n: p.n }, "pu-pedida")}<button type="button" class="pu-quitar" data-quitar-pido="${i}" aria-label="Quitar ${esc(p.nombre)}">×</button></span>`).join("")}</span>`
+    $("icPidoLista").innerHTML = pido.length ? `<span class="pu-abanico-in pu-abanico-ctrl">${pido.map((p, i) => `<span class="pu-con-quitar">${miniCarta({ carta: p.carta, nombre: p.nombre, rareza: (window.cartaPorId(p.carta) || {}).rareza }, "pu-pedida")}<button type="button" class="pu-quitar" data-quitar-pido="${i}" aria-label="Quitar ${esc(p.nombre)}">×</button><span class="pu-cant"><button type="button" data-pido-menos="${i}" aria-label="Una menos">−</button><b>${p.n}</b><button type="button" data-pido-mas="${i}" aria-label="Una más">+</button></span></span>`).join("")}</span>`
       : `<span class="ic-vacio">Todavía no has pedido nada.</span>`;
+    estadoFormulario();
+  }
+  /* Los contadores («2 de 5») y el motivo por el que todavía no se puede publicar, siempre a la vista */
+  function estadoFormulario() {
+    const nPido = pido.reduce((s, p) => s + p.n, 0), nDoy = ofrezco ? ofrezco.copias.length : 0;
+    $("icOfrezcoCuenta").textContent = nDoy ? `${nDoy} de 5` : "";
+    $("icPidoCuenta").textContent = nPido ? `${nPido} de 5` : "";
+    const abiertas = intercambios.filter(i => i.estado === "abierta" && i.de === miId).length;
+    const motivo = !nDoy ? "Elige al menos una carta que ofreces." : !nPido ? "Elige al menos una carta que pides." : abiertas >= 5 ? "Ya tienes 5 ofertas abiertas. Retira alguna para publicar otra." : "";
+    $("icPublicar").disabled = !!motivo;
+    $("icPublicarMotivo").textContent = motivo;
   }
 
   async function publicar() {
@@ -280,6 +294,14 @@
       else if (b.dataset.cambiar) cambiarConMercader(b.dataset.cambiar);
       else if (b.dataset.ver) window.CartasMini.abrir(b.dataset.ver, b.dataset.numero);
       else if (b.dataset.quitarPido !== undefined) { pido.splice(Number(b.dataset.quitarPido), 1); pintarPido(); }
+      else if (b.dataset.pidoMas !== undefined || b.dataset.pidoMenos !== undefined) {
+        const i = Number(b.dataset.pidoMas ?? b.dataset.pidoMenos), d = b.dataset.pidoMas !== undefined ? 1 : -1, p = pido[i];
+        if (!p) return;
+        if (d > 0 && pido.reduce((s, x) => s + x.n, 0) >= 5) { estado("Se pueden pedir como mucho 5 cartas.", true); return; }
+        p.n += d;
+        if (p.n < 1) pido.splice(i, 1);
+        pintarPido();
+      }
       else if (b.dataset.quitarOferta) rpc("cartas_admin_mercader_quitar", { p_oferta: b.dataset.quitarOferta }).then(cargarMercader).catch(e => estado(e.message || String(e), true));
     });
     // el Buhonero comenta lo que miras en su mesa
@@ -290,20 +312,28 @@
       PB.decir(p.dataset.especial === "1" ? "especial" : p.dataset.rareza in PB.FRASES ? p.dataset.rareza : "comun");
     });
     $("icOfrezcoElegir").addEventListener("click", async () => {
-      const r = await BA.elegir({ titulo: "Cartas que ofreces", max: 5, ayuda: "Elige de 1 a 5 cartas. Quedan bloqueadas hasta que alguien acepte, lo canceles o pasen 7 días." });
+      let copias;
+      try { copias = await BA.copiasLibres(); } catch (e) { estado("No se pudieron leer tus cartas.", true); return; }
+      if (!copias.length) { estado("No tienes cartas libres para ofrecer.", true); return; }
+      const R = window.CARTAS_RAREZAS || {};
+      const items = copias.map(c => { const d = window.cartaPorId(c.carta) || {}; return { clave: c.id, carta: c.carta, nombre: c.nombre, rareza: c.rareza, tipo: c.tipo || d.tipo, afinidad: d.afinidad || [], numero: c.numero }; })
+        .sort((a, b) => ((R[b.rareza] || {}).orden || 0) - ((R[a.rareza] || {}).orden || 0) || a.nombre.localeCompare(b.nombre, "es") || a.numero - b.numero);
+      const r = await window.SelectorCartas.abrir({ titulo: "Lo que ofreces", ayuda: "Pulsa las copias que quieres ofrecer, de 1 a 5. Quedan bloqueadas hasta que alguien acepte, la retires o pasen 7 días.", items, max: 5, maxPorCarta: 1,
+        seleccion: ofrezco ? ofrezco.ids.map(id => ({ clave: id, n: 1 })) : [] });
       if (!r) return;
-      if (r.error) { estado(r.error, true); return; }
-      ofrezco = r;
+      ofrezco = r.length ? { ids: r.map(x => x.clave), copias: r.map(x => ({ id: x.clave, carta: x.item.carta, nombre: x.item.nombre, rareza: x.item.rareza, numero: x.item.numero })) } : null;
       pintarOfrezco();
     });
-    $("icPidoAnadir").addEventListener("click", () => {
-      const id = resolverCarta($("icPidoCarta").value);
-      const n = Math.max(1, Math.min(5, Math.round(Number($("icPidoN").value) || 1)));
-      if (!id) { estado("No encuentro esa carta. Elige una de la lista.", true); return; }
-      if (pido.some(p => p.carta === id)) { estado("Esa carta ya está en lo que pides. Para cambiar la cantidad, quítala y añádela otra vez.", true); return; }
-      if (pido.reduce((s, p) => s + p.n, 0) + n > 5) { estado("Se pueden pedir como mucho 5 cartas.", true); return; }
-      pido.push({ carta: id, n, nombre: nombreCarta(id) });
-      $("icPidoCarta").value = ""; $("icPidoN").value = "1";
+    // pido: el catálogo entero con filtros; las que ya tienes salen marcadas
+    $("icPidoElegir").addEventListener("click", async () => {
+      const visible = window.CartasCliente && CartasCliente.visible ? c => CartasCliente.visible(c) : () => true;
+      const R = window.CARTAS_RAREZAS || {};
+      const items = window.CARTAS.filter(c => !c.borrador && visible(c)).map(c => ({ clave: c.id, carta: c.id, nombre: c.nombre, rareza: c.rareza, tipo: c.tipo, afinidad: c.afinidad || [], tengo: tengoTodas.get(c.id) || 0 }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, "es") || ((R[a.rareza] || {}).orden || 0) - ((R[b.rareza] || {}).orden || 0));
+      const r = await window.SelectorCartas.abrir({ titulo: "Lo que pides", ayuda: "Pulsa las cartas que quieres recibir. Con − y + eliges cuántas de cada una, hasta 5 en total. Quien acepte te entrega exactamente eso.", items, max: 5, maxPorCarta: 5, filtroTengo: true,
+        seleccion: pido.map(p => ({ clave: p.carta, n: p.n })) });
+      if (!r) return;
+      pido = r.map(x => ({ carta: x.clave, n: x.n, nombre: x.item.nombre }));
       pintarPido();
     });
     $("icPublicar").addEventListener("click", publicar);
