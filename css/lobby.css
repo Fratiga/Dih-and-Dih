@@ -264,6 +264,8 @@ body.lb::before { display: none; }
 --------------------------------------------------------------------------- */
 body.lb-grande .lb-pagina { width: min(1680px, 98%); }
 body.lb-grande .lb-cuerpo { grid-template-columns: 210px minmax(0, 1fr) 270px; gap: 12px; }
+/* Sin sesión (y mientras se comprueba) solo hay la columna del centro: la bienvenida va encima de la escena, no en la columna estrecha de la izquierda */
+body.lb-grande.lb-invitado .lb-cuerpo { grid-template-columns: minmax(0, 1060px); justify-content: center; }
 .lb-escena.lb-oculta { display: none; }
 #lbSalas[hidden] { display: none; }
 .lb-etq-fija { opacity: 1 !important; }
