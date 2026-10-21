@@ -26,6 +26,7 @@
   const BUFONES_PARA_REBOTAR = 3;
   const VUELTA_TPOSE = 2.6; // segundos por vuelta de los Slappy en T-pose
   const BUFONES_PARA_SALIR = 4; // desde aquí rebotan por toda la ventana, no solo dentro del juego
+  const MAX_BUFONES = 14;       // con rachas muy largas no salen más: cada uno es un esqueleto animado y el juego se arrastraba
 
   let contenedor = null;
   let cargaPromesa = null;
@@ -35,7 +36,7 @@
   let clasico = false;
   // Calidad adaptativa: si los cuadros tardan demasiado, se baja la resolución
   // del lienzo de los bufones y, como último recurso, se limita a 30 cuadros/s.
-  const NIVELES_RESOLUCION = [1, 0.6, 0.45];
+  const NIVELES_RESOLUCION = [1, 0.75, 0.6, 0.45, 0.35];
   let resolucionBase = 1;
   let nivelCalidad = 0;
   let limite30 = false;
@@ -56,6 +57,7 @@
   let bufones = [];
   let tposes = [];
   let generacion = 0;
+  let numeroDeCuadro = 0;
 
   function pausa() {
     return new Promise(resolve => setTimeout(resolve, 0));
@@ -74,10 +76,16 @@
   // El lienzo cubre toda la ventana (fijo, sin capturar clics). Los bufones se
   // mueven dentro de la caja del juego hasta que son 4; entonces se sueltan y
   // rebotan contra los bordes de la ventana.
-  let escenarioEl = null;
+  let escenarioEl = null, cajaCache = null, cajaMarca = 0, medidasSucias = true;
+  window.addEventListener("scroll", () => { medidasSucias = true; }, { passive: true });
+  window.addEventListener("resize", () => { medidasSucias = true; });
   function cajaEscenario() {
+    const ahora = performance.now();
+    if (cajaCache && !medidasSucias && ahora - cajaMarca < 200) return cajaCache;
     if (!escenarioEl) escenarioEl = document.querySelector(".sacrificio-escenario");
-    return escenarioEl ? escenarioEl.getBoundingClientRect() : { left: 0, top: 0, width: ancho, height: alto };
+    cajaCache = escenarioEl ? escenarioEl.getBoundingClientRect() : { left: 0, top: 0, width: ancho, height: alto };
+    cajaMarca = ahora; medidasSucias = false;
+    return cajaCache;
   }
 
   function tamanoBufon() {
@@ -301,7 +309,9 @@
 
   function actualizarTposes(dt) {
     for (const t of tposes) {
-      const r = t.banner.getBoundingClientRect();
+      const ahora = performance.now();
+      if (!t.rect || t.marca === undefined || ahora - t.marca > 200 || medidasSucias) { t.rect = t.banner.getBoundingClientRect(); t.marca = ahora; }
+      const r = t.rect;
       // En pantallas angostas los banners no se muestran
       t.grupo.visible = r.width > 0;
       if (!r.width) continue;
@@ -318,11 +328,11 @@
     if (intervalo > 250) return; // pausa o cambio de pestaña, no cuenta
     cuadrosMedidos += 1;
     tiempoMedido += intervalo;
-    if (cuadrosMedidos < 90) return;
+    if (cuadrosMedidos < 45) return;
     const promedio = tiempoMedido / cuadrosMedidos;
     cuadrosMedidos = 0;
     tiempoMedido = 0;
-    if (promedio < (clasico ? 45 : 26)) return; // fluido (el modo clásico ya va a ~30 cuadros/s)
+    if (promedio < (clasico ? 40 : 22)) return; // fluido (el modo clásico ya va a ~30 cuadros/s)
     if (nivelCalidad < NIVELES_RESOLUCION.length - 1) {
       nivelCalidad += 1;
       renderer.setPixelRatio(Math.min(resolucionBase, NIVELES_RESOLUCION[nivelCalidad]));
@@ -342,8 +352,13 @@
     if (!limite30) medirRendimiento(ahora);
     const dt = Math.min(0.05, reloj.getDelta());
     const caja = cajaEscenario();
+    numeroDeCuadro += 1;
+    const salto = bufones.length > 9 ? 3 : bufones.length > 4 ? 2 : 1;   // con muchos bufones, cada uno mueve su esqueleto cada 2 o 3 cuadros (a este tamaño no se nota)
+    let i = 0;
     for (const b of bufones) {
-      b.mixer.update(dt);
+      b.acumulado = (b.acumulado || 0) + dt;
+      if (salto === 1 || (numeroDeCuadro + i) % salto === 0) { b.mixer.update(b.acumulado); b.acumulado = 0; }
+      i += 1;
       b.cambio -= dt;
       if (b.cambio <= 0) cambiarAnimacion(b, false);
       const m = b.lado / 2;
@@ -390,6 +405,7 @@
     if (miGeneracion !== generacion) return;
 
     const suelta = cantidad >= BUFONES_PARA_SALIR;
+    cantidad = Math.min(cantidad, MAX_BUFONES);
     while (bufones.length < cantidad) bufones.push(crearBufon(bufones.length, suelta));
     if (bufones.length >= BUFONES_PARA_REBOTAR) bufones.forEach(b => { if (!b.rebota) { b.rebota = true; b.cambio = 0; } });
     if (suelta) {
