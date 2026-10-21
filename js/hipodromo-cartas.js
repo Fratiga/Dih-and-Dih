@@ -6,6 +6,7 @@
    Todo lo decide el servidor (docs/hipodromo-2_cartas.sql); esto solo enseña y manda la orden.
    Los nombres de las cartas salen del catálogo (js/cartas-datos.js y los datos del compendio, unos 1,3 MB), así que
    solo se cargan cuando se abre esta pestaña (y el Buhonero, que es pequeño, con ellos).
+   También se monta en Intercambios, debajo de la mesa del Buhonero (opc.sinEscena: la escena ya está en la página; opc.fuera: el texto no habla del hipódromo).
 ============================================================================= */
 window.HipodromoCartas = (function () {
   "use strict";
@@ -26,7 +27,8 @@ window.HipodromoCartas = (function () {
     });
   }
 
-  function crear(api, cont) {
+  function crear(api, cont, opc) {
+    opc = opc || {};
     let listo = false, cargando = false, mias = [], reserva = [], precios = {}, msg = { texto: "", clase: "" }, ocupado = false, ultimaFila = null, ultimoDicho = 0, enCurso = null;
     const mon = x => api.monedas(x);
     const dice = clave => { const b = PB(); if (b) b.decir(clave); };
@@ -67,7 +69,8 @@ window.HipodromoCartas = (function () {
     function marco() {
       let cuerpo = cont.querySelector(".hip-cartas-cuerpo");
       if (cuerpo) return cuerpo;
-      const b = PB();
+      const b = opc.sinEscena ? null : PB();
+      if (opc.sinEscena) { cont.innerHTML = '<div class="hip-cartas-marco sin-buhonero"><div class="hip-cartas-cuerpo"></div></div>'; return cont.querySelector(".hip-cartas-cuerpo"); }
       cont.innerHTML = `<div class="hip-cartas-marco${b ? "" : " sin-buhonero"}">${b ? '<aside class="hip-buho-lado" aria-label="El Buhonero"><div class="pb-escena"></div></aside>' : ""}<div class="hip-cartas-cuerpo"></div></div>`;
       if (b) b.montar(cont.querySelector(".pb-escena"), { velas: false });
       return cont.querySelector(".hip-cartas-cuerpo");
@@ -95,7 +98,9 @@ window.HipodromoCartas = (function () {
       }).join("");
       const tabla = Object.keys(precios).sort((a, b) => (ORDEN[a] || 0) - (ORDEN[b] || 0)).map(r => `<li><b>${esc(nombreRareza(r))}</b>: te paga ${mon(precios[r].venta)}, te cobra ${mon(precios[r].compra)}</li>`).join("");
       const html = `<section class="hip-tarjeta"><div class="hip-cuadra-cab"><h3>Cartas por tokens</h3><p>Tokens: <strong>${mon(saldo)}</strong></p></div>
-        <p class="hip-nota">Aquí el Buhonero no cambia cartas por cartas como en el Mercado de los Faroles: paga y cobra en tokens. En el hipódromo empiezas sin tokens: se consiguen vendiéndole cartas, con los premios de tus criaturas y apostando. Lo que le vendes vuelve a la reserva de cartas, y lo único que te puede ofrecer es lo que hay en la reserva: comprar no crea cartas nuevas. Te cobra más de lo que paga.</p>
+        <p class="hip-nota">${opc.fuera
+          ? "Además de cambiar cartas por cartas, el Buhonero paga y cobra en los tokens de juego del Hipódromo. Se consiguen vendiéndole cartas, con los premios de tus criaturas y apostando. Lo que le vendes vuelve a la reserva de cartas, y lo único que te puede ofrecer es lo que hay en la reserva: comprar no crea cartas nuevas. Te cobra más de lo que paga."
+          : "Aquí el Buhonero no cambia cartas por cartas como en el Mercado de los Faroles: paga y cobra en tokens. En el hipódromo empiezas sin tokens: se consiguen vendiéndole cartas, con los premios de tus criaturas y apostando. Lo que le vendes vuelve a la reserva de cartas, y lo único que te puede ofrecer es lo que hay en la reserva: comprar no crea cartas nuevas. Te cobra más de lo que paga."}</p>
         <ul class="hip-avisos">${tabla}</ul>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p></section>
         <section class="hip-tarjeta"><h3>Dárselas al Buhonero</h3>${filasVender ? `<div class="hip-tabla-ancha"><table class="hip-tabla"><thead><tr><th>Carta</th><th>Rareza</th><th>Libres</th><th>Te paga</th><th></th></tr></thead><tbody>${filasVender}</tbody></table></div>` : '<p class="hip-vacio">No tienes cartas que enseñarle.</p>'}</section>
@@ -144,7 +149,7 @@ window.HipodromoCartas = (function () {
         operar("hipodromo_comprar_carta", { p_carta: c.dataset.comprar }, d => `Le compraste ${nombreCarta(d.carta)} (copia ${d.numero}) al Buhonero por ${mon(d.precio)} tokens.`, "hipOfrece", c.dataset.comprar, "Comprando...");
       }
     });
-    return { abrir, pintar: () => { if (listo) pintar(); } };
+    return { abrir, pintar: () => { if (listo) pintar(); }, recargar: async () => { if (!listo || ocupado) return; try { await leer(); pintar(); } catch (e) { /* se queda lo que había */ } } };
   }
   return { crear };
 })();

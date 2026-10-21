@@ -11,6 +11,7 @@
 
   let supa = null, miId = null, esAdmin = false, cartasListas = false;
   let intercambios = [], mercader = null, jugadores = [];
+  let tokens = null, saldoTokens = 0;   // las cartas por tokens (js/hipodromo-cartas.js): la misma pieza del Hipódromo, con la billetera de allí
   let ofrezco = null;            // { ids, copias }
   let pido = [];                 // [{ carta, n, nombre }]
   let tengo = new Map();         // carta -> copias libres que tengo (para marcar las ofertas que puedo aceptar)
@@ -59,7 +60,19 @@
       pintarTablon(); pintarMios();
     } catch (e) { estado(`No se pudieron cargar los intercambios: ${e.message || e}. ¿Corriste economia_5_intercambios.sql?`, true); }
   }
+  async function leerSaldo() {
+    const { data } = await supa.from("hipodromo_billeteras").select("saldo").eq("usuario", miId).maybeSingle();
+    saldoTokens = data ? Number(data.saldo) : 0;
+  }
+  function montarTokens() {
+    if (tokens || !window.HipodromoCartas || !$("icTokens")) return;
+    const monedas = x => (Math.round(x * 100) / 100).toLocaleString("es", { maximumFractionDigits: 2 });
+    tokens = window.HipodromoCartas.crear({ supa, yo: miId, saldo: () => saldoTokens, monedas, refrescarCuenta: async () => { await leerSaldo(); await cargarMercader(); await cargarMias(); } }, $("icTokens"), { sinEscena: true, fuera: true });
+    leerSaldo().then(() => tokens.abrir());
+  }
   async function cargarMercader(primera) {
+    if (!tokens) montarTokens();
+    else leerSaldo().then(() => tokens.recargar());
     try {
       mercader = await rpc("cartas_mercader_ver"); pintarMercader(primera);
       // Lo que ya viste hoy del Buhonero: la taberna (js/avisos-taberna.js) solo avisa de lo que no

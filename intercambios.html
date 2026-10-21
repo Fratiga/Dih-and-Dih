@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="css/intercambios.css?v=20270341">
   <link rel="stylesheet" href="css/cartas-mini.css?v=20270341">
   <link rel="stylesheet" href="css/buhonero.css?v=20270341">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20270342">
   <link rel="stylesheet" href="css/puesto.css?v=20270341">
   <script src="js/dialogos.js?v=20270341"></script>
 </head>
@@ -30,7 +31,7 @@
       <div class="lb-cab-titulo">
         <p class="lb-eyebrow">☾ EL MERCADO DE LOS FAROLES ☾</p>
         <h1>Intercambios</h1>
-        <p class="lb-sub">Trueques entre jugadores y el Buhonero. Cartas por cartas, sin dinero.</p>
+        <p class="lb-sub">Trueques entre jugadores y el Buhonero. Cartas por cartas, y con él también por tokens.</p>
       </div>
       <div class="lb-cab-widgets">
         <a class="lb-boton" href="index.html">← A la taberna</a>
@@ -108,11 +109,12 @@
         <div class="pu-buho-cuerpo">
         <div class="pu-pano">
           <div class="pu-pano-cab">
-            <p class="ic-ayuda">El <b>Buhonero</b> no usa dinero. Cambia cartas por cartas, y cada noche saca unas pocas, de una sola copia. Para llevarte una entregas cartas cuyo valor sume lo que él pide.</p>
+            <p class="ic-ayuda">El <b>Buhonero</b> cambia cartas por cartas, y cada noche saca unas pocas, de una sola copia. Para llevarte una entregas cartas cuyo valor sume lo que él pide. Más abajo también compra y vende por tokens de juego.</p>
             <ul class="pu-valores" aria-label="Valor de cada rareza"><li><i class="pu-ficha pu-f1">1</i> común</li><li><i class="pu-ficha pu-f2">2</i> poco común</li><li><i class="pu-ficha pu-f3">3</i> rara</li></ul>
           </div>
           <ul id="icMercaderLista" class="pu-mesa"></ul>
         </div>
+        <div id="icTokens" class="ic-tokens"></div>
         <div id="icMercaderAdmin" class="ic-admin pu-admin hidden">
           <h3>Bajo el mostrador (Admin): oferta especial</h3>
           <label>Carta <input type="text" id="icAdmCarta" list="icCartas" placeholder="Buscar una carta..."></label>
@@ -143,7 +145,9 @@
   <script src="js/cartas-mini.js?v=20270341"></script>
   <script src="js/dialogos-personajes.js?v=20270341"></script>
   <script src="js/puesto-buhonero.js?v=20270341"></script>
-  <script src="js/intercambios.js?v=20270341"></script>
+  <script src="js/hipodromo-espera.js?v=20270342"></script>
+  <script src="js/hipodromo-cartas.js?v=20270342"></script>
+  <script src="js/intercambios.js?v=20270342"></script>
   <script src="js/avisos-admin.js?v=20270341"></script>
   <script src="js/musica-paginas.js?v=20270341"></script>
 </body>
