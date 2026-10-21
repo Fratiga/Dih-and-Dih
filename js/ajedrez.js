@@ -74,19 +74,19 @@
       momentos: [
         { id: "doble", cuando: c => c.material <= -200, estilo: { piezas: { q: 40, r: 16 }, jaque: 70, captura: 40, ataqueRey: 22, avance: 8 }, frase: "Subo la apuesta. Todo o nada." },
         { id: "cobra", cuando: c => c.material >= 300, estilo: { piezas: { p: 10 }, captura: 22, enroque: 45, jaque: -25 }, frase: "Con esto me alcanza. Me quedo con la ganancia." }
-      ], tiempoTotal: 120, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
+      ], tiempoTotal: 180, prof: 3, tiempo: 900, error: 0.08, pausa: [1.2, 3.0],
       frases: { saludo: "Adelante, tú primero.", jaque: "Jaque. Tranquilo.", capturaRival: "Gracias por la pieza.", capturaJugador: "Una carta menos. Nada grave.", gana: "Así se juega la última mano.", pierde: "Esta vez te tocó a ti." } },
     { id: "ilyth", nombre: "General Ilyth", dificultad: "Difícil", estilo: { piezas: { p: 8, r: 14 }, centro: 22, avance: 6, enroque: 20 },
       momentos: [
         { id: "asedio", cuando: c => c.material >= 200, estilo: { piezas: { p: 10, r: 18, q: 14 }, captura: 30, jaque: 30, avance: 12, centro: 12, ataqueRey: 14 }, frase: "Es hora de cerrar el cerco." },
         { id: "repliegue", cuando: c => c.material <= -200, estilo: { piezas: { p: 14, b: 8 }, enroque: 50, captura: -10, jaque: -15 }, frase: "Repliego las tropas. La línea se sostiene." }
-      ], tiempoTotal: 60, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
+      ], tiempoTotal: 120, prof: 4, tiempo: 1500, error: 0.02, pausa: [1.5, 3.6],
       frases: { saludo: "Siéntate. Veamos cómo mueves tus tropas.", jaque: "Jaque. Tu flanco quedó abierto.", capturaRival: "Una baja. Habrá más.", capturaJugador: "Un sacrificio. Lo anoto.", gana: "Partida cerrada. La frontera sigue en pie.", pierde: "Bien jugado. Pocos llegan hasta aquí." } },
     { id: "perro", nombre: "El perro sabio", dificultad: "Muy difícil", estilo: { piezas: { n: 35, b: -6 }, centro: 8 },
       momentos: [
         { id: "furia", cuando: c => c.mias.n === 0, estilo: { piezas: { q: 40, r: 26, b: 16, p: 10 }, jaque: 90, captura: 45, ataqueRey: 32, avance: 12 }, frase: "Mis caballos... Se acabó la paciencia. Ahora voy por ti." },
         { id: "inquieto", cuando: c => c.mias.n === 1, estilo: { piezas: { n: 30, q: 14 }, jaque: 30, captura: 18, ataqueRey: 10, centro: 8 }, frase: "Perdí un caballo. Mal presagio." }
-      ], tiempoTotal: 60, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
+      ], tiempoTotal: 90, prof: 5, tiempo: 2600, error: 0, pausa: [2.0, 4.5],
       frases: { saludo: "Veamos qué sabes.", jaque: "Jaque. Con calma.", capturaRival: "Gracias por la pieza.", capturaJugador: "Interesante.", gana: "Todavía te falta aprender.", pierde: "Buena partida. Aprendí algo." } }
   ];
   // La dificultad de cada rival puede cambiarla el Admin desde su panel (pestaña Rivales, js/rivales-ajustes.js)
@@ -263,6 +263,9 @@
   }
 
   /* --- Interfaz ---------------------------------------------------------- */
+  // 240 -> "4 min", 90 -> "1,5 min"
+  function minutos(segundos) { return `${String(segundos / 60).replace(".", ",")} min`; }
+
   function casillaNombre(f, c) { return "abcdefgh"[c] + (8 - f); }
 
   function pintarTablero() {
@@ -488,7 +491,7 @@
     rivalesEl.innerHTML = RIVALES.map(r => `
       <button type="button" class="aj-rival ${rival && rival.id === r.id ? "activo" : ""}" data-rival="${r.id}">
         <strong>${r.nombre}</strong>
-        <span>${r.dificultad}${r.tiempoTotal ? ` · ${r.tiempoTotal / 60} min por jugador` : ""}</span>
+        <span>${r.dificultad}${r.tiempoTotal ? ` · ${minutos(r.tiempoTotal)} por jugador` : ""}</span>
         <small>${r.sinRanking ? "No cuenta para el ranking" : record[r.id] ? `Victorias: ${record[r.id]}` : "Sin vencer"}</small>
       </button>`).join("");
   }
@@ -802,7 +805,7 @@
     pintarRivales();
     refrescarVistas();
     pintarTablero(); pintarLaterales();
-    const tiempo = r.tiempoTotal ? ` · ${r.tiempoTotal / 60} min por jugador` : " · sin reloj";
+    const tiempo = r.tiempoTotal ? ` · ${minutos(r.tiempoTotal)} por jugador` : " · sin reloj";
     document.getElementById("ajJugarRival").textContent = `Contra ${r.nombre}`;
     document.getElementById("ajJugarDetalle").textContent = `${r.dificultad}${tiempo} · juegas con ${colorJugador === "w" ? "blancas" : "negras"}`;
     jugarCapaEl.classList.remove("hidden");
