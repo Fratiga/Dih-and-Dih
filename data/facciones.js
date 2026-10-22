@@ -71,7 +71,7 @@ window.FACCIONES = [
     tipo: "Orden Militar",
     region: "Brurland, Derrovia, Gylas",
     ideologia: "El honor de un caballero se mide por lo que defiende, no por lo que conquista; recuperar Broneland es la prueba que todavía tienen pendiente.",
-    miembrosConocidos: [],
+    miembrosConocidos: ["adam-kovacs"],
     relaciones: [
       { id: "mortismo", signo: "Fe oficial de la orden" },
       { id: "osses", signo: "Enemigo declarado" },

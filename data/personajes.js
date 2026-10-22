@@ -278,20 +278,20 @@ window.PERSONAJES = [
     id: "adam-kovacs",
     title: "Adam Kovacs",
     category: "Personajes",
-    tags: ["npc", "guardia-real", "kigan"],
-    summary: "Capitán de la Guardia Real, reconocido por su fuerza y agradecido con los protagonistas por su ayuda durante el ataque del dragón.",
+    tags: ["npc", "caballeros-del-reino", "kigan"],
+    summary: "Capitán de los Caballeros del Reino, reconocido por su fuerza y agradecido con los protagonistas por su ayuda durante el ataque del dragón.",
     retrato: "",
-    titulo: "Capitán de la Guardia Real",
+    titulo: "Capitán de los Caballeros del Reino",
     raza: "",
     tipo: "NPC",
     lugarOrigen: "",
-    ocupacion: "Capitán de la Guardia Real",
-    faccion: "",
+    ocupacion: "Capitán de los Caballeros del Reino",
+    faccion: "caballeros-del-reino",
     primeraAparicion: "Los Calabozos de Kigan",
     lado: ["B"],
     relacionesConocidas: [],
     content: `
-      <p>Capitán de la Guardia Real, reconocido por su fuerza incluso entre sus propios
+      <p>Capitán de los Caballeros del Reino, reconocido por su fuerza incluso entre sus propios
       soldados. Se encontraba en alta mar cuando el dragón atacó Brurland, y desde
       entonces está agradecido con los protagonistas por la ayuda que prestaron durante
       el ataque.</p>
