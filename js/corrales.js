@@ -162,12 +162,13 @@
           ? `<button type="button" class="cartas-boton cartas-boton-principal" data-recoger="${esc(cr.id)}">Recoger la cría</button>`
           : `<button type="button" class="cartas-boton" data-sacar="${esc(cr.id)}">Sacar a la pareja (no nace nada)</button>`}</div>`;
     } else {
-      const especies = ver().especies.filter(e => e.habitat === c.habitat);
+      // Solo se ofrecen las criaturas de las que tienes algún ejemplar libre. Las únicas (límite global menor que 2) no se pueden criar nunca, así que no salen
+      const especies = ver().especies.filter(e => e.habitat === c.habitat && e.libres.length > 0 && !(e.limite != null && Number(e.limite) < 2));
       const libreCorral = est.tipo !== "descanso";
       cuerpo = (est.tipo === "descanso" ? `<p class="co-nota co-nota-descanso">El corral descansa después del último nacimiento: ${esc(est.texto.replace("Descansa ", "libre en "))}.</p>` : "")
         + (especies.length
           ? `<h3>¿A quién crías?</h3><p class="co-regla">Hacen falta dos copias libres de la misma criatura.</p><ul class="co-especies">${especies.map((e, i) => filaEspecie(e, i, libreCorral)).join("")}</ul>`
-          : `<p class="co-nota">Todavía no hay especies asignadas a este corral.</p>`);
+          : `<p class="co-nota">No tienes ninguna criatura que se críe en este corral.</p>`);
     }
     $("coPanel").innerHTML = `<p class="hb-msg" id="coMsg"></p>${cuerpo}`;
     refrescarTiempo();
@@ -176,12 +177,9 @@
   function filaEspecie(e, i, libreCorral) {
     const carta = cartaDe(e.carta), n = e.libres.length;
     const [a, b, c2] = e.horas.map(Number), total = a + b + c2;
-    // Una criatura con límite global menor que 2 es única: no puede haber pareja (el servidor también lo rechaza)
-    const unica = e.limite != null && Number(e.limite) < 2;
-    const puede = n >= 2 && !unica && !e.sobrepoblada && e.en_circulacion && libreCorral;
+    const puede = n >= 2 && !e.sobrepoblada && e.en_circulacion && libreCorral;
     let nota = "";
-    if (unica) nota = `<p class="co-aviso-esp">Criatura única: solo existe una copia en el mundo, así que no se puede criar.</p>`;
-    else if (e.sobrepoblada) nota = `<p class="co-aviso-esp">Sobrepoblación de la especie: hay que respetar el medio ambiente.</p>`;
+    if (e.sobrepoblada) nota = `<p class="co-aviso-esp">Sobrepoblación de la especie: hay que respetar el medio ambiente.</p>`;
     else if (!e.en_circulacion) nota = `<p class="co-aviso-esp">Todavía no está en circulación.</p>`;
     else if (n < 2) nota = `<p class="co-falta">Te ${2 - n === 1 ? "falta 1 copia" : "faltan 2 copias"} para poder criarla.</p>`;
     const selectores = puede && n > 2
@@ -189,7 +187,7 @@
           <select data-b="${i}">${e.libres.map((l, k) => `<option value="${esc(l.id)}"${k === 1 ? " selected" : ""}>n.º ${esc(l.numero)}</option>`).join("")}</select></label>` : "";
     return `<li class="co-especie${puede ? "" : " co-no-puede"}${n ? "" : " co-sin"}" data-carta="${esc(e.carta)}">${token(e.carta)}
       <div class="co-esp-info"><b>${esc(carta ? carta.nombre : e.carta)}</b> <small>${esc(RAREZAS[carta && carta.rareza] || "")}</small>
-        <p class="co-esp-datos"><span title="Copias libres">${unica ? "única" : n + "/2 copias"}</span><span title="Duración de la cría">cría ${esc(horasTxt(total))}</span><span title="Descanso del corral después">descanso ${esc(horasTxt(Number(e.descanso_horas)))}</span></p>
+        <p class="co-esp-datos"><span title="Copias libres">${n}/2 copias</span><span title="Duración de la cría">cría ${esc(horasTxt(total))}</span><span title="Descanso del corral después">descanso ${esc(horasTxt(Number(e.descanso_horas)))}</span></p>
         ${nota}${selectores}</div>
       ${puede ? `<button type="button" class="cartas-boton cartas-boton-principal" data-criar="${i}">Criar</button>` : ""}</li>`;
   }
