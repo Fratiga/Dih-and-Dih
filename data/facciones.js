@@ -294,25 +294,22 @@ window.FACCIONES = [
     id: "fundacion-dexter",
     title: "Instituto Vesalio",
     category: "Facciones",
-    tags: ["investigación", "secreta", "balutia"],
+    tags: ["investigación", "secreta", "brurland"],
     summary: "Una institución médica dirigida por Dexter y financiada por Brurland, con propósitos poco claros.",
     tipo: "Investigación",
-    region: "Imperio de Balutia, Kretor, Sindra",
+    region: "Brurland",
     ideologia: "",
     miembrosConocidos: ["coronel-tobi", "baltasar-sorel", "elias-morcant", "nico", "clef"],
-    relaciones: [
-      { id: "el-semillero", signo: "Fuente de sujetos de estudio no declarados" },
-      { id: "guardia-imperial-balutiana", signo: "Financiamiento indirecto de la Corona" }
-    ],
+    relaciones: [],
     content: `
       <p>Una institución médica dirigida por Dexter y financiada por Brurland. Oficialmente investiga
       enfermedades, mutaciones y métodos para prolongar la vida útil de un soldado
       en campaña. Muy pocos conocen lo que realmente ocurre en sus instalaciones, y
       quienes lo saben rara vez lo repiten dos veces.</p>
       <p>Corren rumores, nunca confirmados ni desmentidos con la fuerza suficiente
-      para acabar con ellos, de que el Instituto recibe algo más que informes desde
-      El Semillero, y de que no todos los huérfanos que desaparecen de sus
-      registros terminan efectivamente en una legión. La Corona de Brurland, cuando se le
+      para acabar con ellos, de que el Instituto recibe sujetos de estudio que
+      nadie declara, y de que no todos los niños que desaparecen de los registros
+      del reino terminan donde se dice. La Corona de Brurland, cuando se le
       pregunta directamente, siempre da la misma respuesta, que la guerra exige
       sacrificios que no siempre pueden explicarse en público.</p>
     `

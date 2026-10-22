@@ -239,7 +239,7 @@ window.bufonAgregarCiclo({
       ]
     },
 
-    /* LA CORONA (solo Side B). Sarcasmo sobre la Corona de Balutia, que
+    /* LA CORONA (solo Side B). Sarcasmo sobre la Corona de Brurland, que
        financia el Instituto Vesalio. Insinúa, no afirma. */
     {
       id: "corona",
@@ -250,7 +250,7 @@ window.bufonAgregarCiclo({
         como: "recuerdo",
         lineas: [
           "Instituto Vesalio. Qué nombre tan limpio.",
-          "Lo financia la Corona de Balutia. Eso sí que me sorprende.",
+          "Lo financia la Corona de Brurland. Eso sí que me sorprende.",
           "No ha pasado nada. Ni una carta, ni un inspector, ni una ceja levantada.",
           "Qué despistada tiene que estar la Corona."
         ]
