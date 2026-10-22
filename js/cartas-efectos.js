@@ -721,8 +721,8 @@
     } } });
     R("hipogrifo", { palabras: ["volar", "veloz"] });
     R("grifo", { palabras: ["volar", "temible"] });
-    R("dragon-dorado", { palabras: ["volar"], alEntrar: { resolver: c => { M.log(c.est, "El Dragón Dorado reparte su tesoro."); M.robar(c.est, c.j, 2); } } });
-    R("dragon-de-magma", { palabras: ["arrollar"], alEntrar: { resolver: c => { M.log(c.est, "El aliento de magma cae sobre el campo rival."); barrer(c, 2); } } });
+    R("dragon-dorado", { palabras: ["volar", "duro"] });
+    R("dragon-de-magma", { palabras: ["arrollar"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => { M.log(c.est, "El Dragón de Magma escupe su aliento."); golpe(c, c.objetivo, 2); } } });
     R("dragon-ancestral", { palabras: ["volar", "duro"], alEntrar: { objetivo: "unidadEnemiga", resolver: c => golpe(c, c.objetivo, 4) } });
     R("arbol-ancestral-de-eon", { palabras: ["provocar"], alInicioTurno: c => {
       if ((c.u.flags.raices || 0) >= 4) return;
