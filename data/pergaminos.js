@@ -2490,8 +2490,8 @@ window.PERGAMINOS = [
       <p>Algunas Escuelas desaparecieron junto a sus fundadores y solo sobreviven
       unos pocos pergaminos. De todas ellas, Matadragones es la única cuya
       existencia puede confirmarse con certeza.</p>
-      <p><strong>Matadragones</strong> — Artes creadas por antiguos cazadores de
-      dragones.<br>
+      <p><strong>Matadragones</strong> — Un único pergamino, creado por antiguos
+      cazadores de dragones, que no enseña a pelear.<br>
       <strong>Las demás</strong> — Se sabe que existieron otras escuelas
       igual de perdidas, pero nadie las ha visto en años. Quienes aseguran haber
       encontrado una rara vez viven para contar qué aprendieron.</p>

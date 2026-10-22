@@ -1127,11 +1127,12 @@ window.FACCIONES = [
       fuego termine de formarse, una plaga que solo cede ante un componente que
       ningún otro monstruo puede proveer. Matan cuando de verdad no queda
       alternativa, sin que la edad del dragón cambie esa decisión.</p>
-      <p>Sus técnicas descienden de la Escuela Matadragones, una de las pocas
-      artes legendarias que sobrevivió, aunque fragmentada, a la desaparición de
-      sus fundadores originales, y cada Cazador pasa años completando el
-      entrenamiento antes de que sus maestros lo consideren listo para un encargo
-      real. El Culto al Pozo de la Eternidad los mira con un respeto incómodo:
+      <p>Sus técnicas son las que la Orden enseña desde hace generaciones. De la
+      Escuela Matadragones, una de las pocas artes legendarias que sobrevivió a la
+      desaparición de sus fundadores originales, solo se conserva un pergamino, y
+      los Cazadores no hablan de lo que contiene. Cada Cazador pasa años
+      completando el entrenamiento antes de que sus maestros lo consideren listo
+      para un encargo real. El Culto al Pozo de la Eternidad los mira con un respeto incómodo:
       reconoce que matar un dragón por necesidad no es lo mismo que profanar su
       descanso, pero tampoco olvida que cada Cazador exitoso deja un cadáver que
       nunca llegará al Pozo por su propio pie.</p>
