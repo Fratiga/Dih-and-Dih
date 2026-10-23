@@ -774,21 +774,13 @@ function cabezaACabeza(a, b, cond, veces) {
     const auto2 = M.precioMonta(w2, sem2); sem2.montaCfg = C.MONTA_MIN;
     const c2 = ord(w2, { dueno: "u1", tipo: "cruzar", madre: mad2.id, padre: sem2.id }, { u1: 5000 });
     ok(c2.ok && c2.costo === auto2 && auto2 >= 60, `con un semental propio no sirve ponerse un precio bajo (se paga ${c2.costo})`); }
-  // el vuelco a JSON y la previa
+  // el vuelco a JSON
   { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
     const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);
     ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
     const a = JSON.parse(JSON.stringify(w)), b = JSON.parse(JSON.stringify(w)); avanza(a, C.CRUCE_ESPERA + 3); avanza(b, C.CRUCE_ESPERA + 3);
     ok(JSON.stringify(a) === JSON.stringify(b), "una camada nace igual desde el mismo mundo guardado");
-    const pre = HR.previaCruce(M.perfil(w, mad), M.perfil(w, sem));
-    ok(pre.parentesco === 0 && !pre.riesgo && pre.camada.length === 3 && Math.abs(pre.camada.reduce((t, x) => t + x.p, 0) - 1) < 1e-9 && pre.nueva.grande > 0 && pre.nueva.pequena > pre.nueva.grande, "la previa del cruce da el parentesco, las camadas y la probabilidad de mutaciones nuevas");
-    const hermanos = HR.previaCruce({ id: 1, padre: { id: 5 }, madre: { id: 6 }, rasgos: {} }, { id: 2, padre: { id: 5 }, madre: { id: 6 }, rasgos: {} });
-    ok(hermanos.riesgo && hermanos.parentesco === 0.5 && hermanos.nueva.grande > pre.nueva.grande && hermanos.nueva.taraEntreLasPequenas > pre.nueva.taraEntreLasPequenas, "la previa avisa del riesgo de los hermanos con más mutaciones y más taras");
-    const pm = { id: 1, rasgos: { ojos: "tres", alas: "no" }, mut: ["pulmon", "cristal"], manias: ["lluvia"] }, pp = { id: 2, rasgos: { ojos: "dos", alas: "no" }, mut: ["pulmon"], manias: ["lluvia"] };
-    const pr = HR.previaCruce(pm, pp);
-    ok(pr.rasgos.some(x => x.clave === "ojos" && x.opciones.length === 2 && x.opciones.every(o => o.p === 0.46)), "la previa enseña de qué padre puede salir cada rasgo distinto");
-    ok(Math.abs(pr.mut.find(x => x.id === "pulmon").p - (1 - 0.65 * 0.65)) < 1e-9 && pr.mut.find(x => x.id === "cristal").p === 0.5, "y la probabilidad de heredar cada mutación (mayor si la traen los dos)");
-    ok(pr.manias.find(x => x.id === "lluvia").p === 0.64, "y la de cada manía"); }
+  }
 }
 
 // 5) Un mundo largo

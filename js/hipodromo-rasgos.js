@@ -227,28 +227,6 @@ window.HipodromoRasgos = (function () {
   const CAMADA = [[1, 50], [2, 35], [3, 15]];
   const tamanoCamada = rng => rng.peso(CAMADA);
 
-  /* ---------------------------------------------------------------- previa de un cruce: lo que se puede ver antes de pagar, con los perfiles públicos de la madre y el semental */
-  function previaCruce(pm, pp) {
-    const r = parentesco(pm, pp), A = pp.rasgos || {}, B = pm.rasgos || {};
-    const rasgos = [];
-    CLAVES.forEach(k => {
-      if (!A[k] || !B[k]) return;
-      const t = v => (NOMBRES[k] && NOMBRES[k][v]) || null;
-      if (!t(A[k]) && !t(B[k])) return;
-      const op = A[k] === B[k] ? [{ valor: A[k], p: 0.92 }] : [{ valor: A[k], p: 0.46 }, { valor: B[k], p: 0.46 }];
-      rasgos.push({ clave: k, opciones: op.map(o => ({ valor: o.valor, texto: t(o.valor) || "Común", p: o.p })), nuevo: 0.08 });
-    });
-    const pasa = (id, a, b) => { const h = MUT[id].g ? HEREDA_GRANDE : HEREDA_PEQ; return a.includes(id) && b.includes(id) ? 1 - (1 - h) * (1 - h) : h; };
-    const ma1 = pm.mut || [], pa1 = pp.mut || [], mut = [];
-    pa1.concat(ma1).forEach(id => { if (MUT[id] && !mut.some(x => x.id === id)) mut.push({ id, p: pasa(id, pa1, ma1) }); });
-    const mn1 = pm.manias || [], pn1 = pp.manias || [], manias = [];
-    pn1.concat(mn1).forEach(id => { if (MANIAS[id] && !manias.some(x => x.id === id)) manias.push({ id, p: pn1.includes(id) && mn1.includes(id) ? 0.64 : 0.4 }); });
-    const pesos = mutPesos(false, r), total = pesos.reduce((t, x) => t + x[1], 0);
-    const pTara = pesos.filter(x => MUT[x[0]].t === "tara").reduce((t, x) => t + x[1], 0) / total;
-    return { parentesco: r, parentescoTexto: textoParentesco(r), riesgo: r >= 0.2, camada: CAMADA.map(x => ({ n: x[0], p: x[1] / 100 })), rasgos, mut, manias,
-      nueva: { pequena: probMutPeq(r), grande: probMutGrande(r), taraEntreLasPequenas: pTara } };
-  }
-
   /* ---------------------------------------------------------------- textos */
   const NOMBRES = {
     patas: { hex: "Seis patas", del: "Seis patas, delanteras dobles y fuertes", fina: "Seis patas, el par extra más fino", tras: "Seis patas, traseras dobles", aux: "Seis patas, un par fino en medio" },
@@ -292,6 +270,6 @@ window.HipodromoRasgos = (function () {
   }
 
   return { TABLAS, CLAVES, EFECTOS, NOMBRES, QUE_HACE, ADORNO, sortear, heredar, completo, efectos, lista,
-    MUT, MANIAS, MUT_MAX, MANIAS_MAX, heredarMut, sortearMut, maniasFx, sortearManias, heredarManias, parentesco, linajeDe, textoParentesco, tamanoCamada, CAMADA, previaCruce, probMutPeq, probMutGrande };
+    MUT, MANIAS, MUT_MAX, MANIAS_MAX, heredarMut, sortearMut, maniasFx, sortearManias, heredarManias, parentesco, linajeDe, textoParentesco, tamanoCamada, CAMADA, probMutPeq, probMutGrande };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = window.HipodromoRasgos;
