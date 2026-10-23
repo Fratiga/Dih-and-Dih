@@ -6,7 +6,7 @@
 //   3. Se lo pasa todo a HipodromoMotor.paso(), que decide si hay que crear el mundo, aplicar las órdenes (cuánto cuestan y
 //      si valen), ponerlo al día con las carreras que ya tocan o no hacer nada.
 //   4. Guarda el resultado con la función SQL hipodromo_guardar, que comprueba la versión: si otra llamada se adelantó,
-//      falla con 40001 y aquí se vuelve a leer y a intentar. Si un pago dejaría un saldo negativo (alguien apostó entre
+//      falla con 23514 (no con 40001: PostgREST reintenta sin fin ese código) y aquí se vuelve a leer y a intentar. Si un pago dejaría un saldo negativo (alguien apostó entre
 //      la lectura y el guardado) falla con 23514 y también se repite con los saldos nuevos. En la misma transacción se
 //      cobran las órdenes, se pagan los premios y se liquidan las apuestas de las carreras que se aplican.
 //

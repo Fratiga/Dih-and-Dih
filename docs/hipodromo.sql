@@ -209,16 +209,17 @@ declare
   v_gana boolean;
   v_base numeric; v_total numeric; v_pago numeric; v_next hipodromo_programa%rowtype; v_fav jsonb; v_npc jsonb; v_npc_total numeric; v_npc_base numeric;
 begin
+  -- (el choque de versión usa 23514 y no 40001: PostgREST reintenta sin fin lo que falla con 40001 y una versión vieja nunca acierta)
   if p_version = 0 then
     insert into hipodromo_estado (id, version, mundo) values (1, 1, p_lote->'mundo') on conflict (id) do nothing;
-    if not found then raise exception 'version' using errcode = '40001'; end if;
+    if not found then raise exception 'version' using errcode = '23514'; end if;
     v_nueva := 1;
   else
     update hipodromo_estado
        set mundo = p_lote->'mundo', version = version + 1, actualizado = now()
      where id = 1 and version = p_version
      returning version into v_nueva;
-    if v_nueva is null then raise exception 'version' using errcode = '40001'; end if;
+    if v_nueva is null then raise exception 'version' using errcode = '23514'; end if;
   end if;
 
   insert into hipodromo_criaturas (id, nombre, sexo, estado, nac, gen, padre_id, madre_id, salidas, victorias, premios, leyenda, dueno, n, publico)

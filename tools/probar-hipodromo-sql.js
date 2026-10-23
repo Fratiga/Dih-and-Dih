@@ -52,7 +52,7 @@ q(sqlHip); ok(psql(sqlHip).ok, "el SQL se puede ejecutar dos veces seguidas");
 const ahora0 = Date.now();
 const raw = M.paso(null, ahora0, { calentar: 40, semilla: "sql-pruebas", simsCalentar: 8 });
 ok(guardar(0, raw.lote).ok, "se guarda el mundo por primera vez");
-ok(guardar(0, raw.lote).err && errCodigo(guardar(0, raw.lote)) === "40001", "una segunda primera vez choca (40001)");
+ok(guardar(0, raw.lote).err && errCodigo(guardar(0, raw.lote)) === "23514", "una segunda primera vez choca (23514)");
 const leerMundo = () => { const v = q("select version from hipodromo_estado;"), m = q("select mundo::text from hipodromo_estado;"); return { version: Number(v), mundo: JSON.parse(m) }; };
 let fila = leerMundo();
 ok(fila.version === 1 && fila.mundo.proxima.n === raw.lote.mundo.proxima.n, "el estado guardado es el mundo que se mandó");
@@ -185,7 +185,7 @@ ok(Number(ultima(anonimo(`select count(*) from hipodromo_carreras where n = ${nC
 // ---------------------------------------------------------------- choques y saldos negativos
 fila = leerMundo();
 const v0 = fila.version;
-ok(errCodigo(guardar(v0 - 1, { mundo: fila.mundo })) === "40001", "guardar con una versión vieja falla con 40001");
+ok(errCodigo(guardar(v0 - 1, { mundo: fila.mundo })) === "23514", "guardar con una versión vieja falla con 23514");
 const antesNeg = Number(q(`select saldo from hipodromo_billeteras where usuario = '${U1}';`));
 const neg = guardar(v0, { mundo: fila.mundo, pagos: [{ dueno: U1, monto: -9999999, concepto: "prueba", n: 1 }] });
 ok(errCodigo(neg) === "23514", "un pago que dejaría el saldo negativo falla con 23514");
