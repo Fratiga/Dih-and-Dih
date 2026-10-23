@@ -57,6 +57,14 @@ window.HipodromoDibujo = (function () {
     return out;
   }
 
+  /* Mutaciones y manías de una criatura (perfil.mut y perfil.manias): [{ id, texto, hace, tipo, grande }] */
+  function mutacionesDetalle(perfil) {
+    return (perfil.mut || []).filter(id => HR.MUT[id]).map(id => ({ id, texto: HR.MUT[id].n, hace: HR.MUT[id].h, tipo: HR.MUT[id].t, grande: !!HR.MUT[id].g }));
+  }
+  function maniasDetalle(perfil) {
+    return (perfil.manias || []).filter(id => HR.MANIAS[id]).map(id => ({ id, texto: HR.MANIAS[id].n, hace: HR.MANIAS[id].h, tipo: HR.MANIAS[id].t }));
+  }
+
   /* ---------------------------------------------------------------- geometría de ayuda */
   function bez(p0, p1, p2, p3, t) {   // punto y normal de una curva de Bézier cúbica
     const u = 1 - t;
@@ -398,6 +406,42 @@ window.HipodromoDibujo = (function () {
       const nx = xFrente - rPecho * 0.2, ny = cy + ryP * 0.1;
       return `<g clip-path="url(#${uid}c)"><circle cx="${f1(nx)}" cy="${f1(ny)}" r="${f1(nv[1] * 2.2)}" fill="${nv[2]}" opacity="${(nv[0] * 0.28).toFixed(2)}"/><circle cx="${f1(nx)}" cy="${f1(ny)}" r="${nv[1]}" fill="${nv[2]}" opacity="${nv[0]}">${R.nucleo !== "latente" ? `<animate attributeName="opacity" dur="${R.nucleo === "ardiente" ? 0.9 : 1.8}s" repeatCount="indefinite" values="${nv[0]};${(nv[0] * 0.55).toFixed(2)};${nv[0]}"/>` : ""}</circle></g>`;
     })() : "";
+    // mutaciones grandes: se ven. Dentro del cuerpo (recortado), sobre el lomo y en el suelo. Las pequeñas no se dibujan: se leen en la ficha.
+    const mutVis = (() => {
+      const gr = (perfil.mut || []).filter(id => HR.MUT[id] && HR.MUT[id].g);
+      if (!gr.length) return { dentro: "", fuera: "", suelo: "" };
+      let dentro = "", fuera = "", sombra = "";
+      const az = azar(hashTxt("mutvis:" + perfil.id)), ancho = xFrente - xAtras;
+      gr.forEach(id => {
+        if (id === "estrellas") {
+          for (let i = 0; i < 11; i++) { const px = xAtras - rCadera * 0.3 + az() * (ancho + rCadera * 0.3 + rPecho * 0.6), py = cy - alto * 0.42 + az() * alto * 0.84, rr = 0.7 + az() * 1.1;
+            dentro += `<circle cx="${f1(px)}" cy="${f1(py)}" r="${f1(rr)}" fill="#fff6c9" opacity="${(0.55 + az() * 0.4).toFixed(2)}"/>`; }
+        } else if (id === "brasa") {
+          for (let i = 0; i < 3; i++) { const y0 = cy - alto * 0.3 + i * alto * 0.3, d = `M ${f1(xAtras - rCadera * 0.6)} ${f1(y0)} q ${f1(ancho * 0.25)} ${f1(-5 - az() * 4)} ${f1(ancho * 0.5)} 0 t ${f1(ancho * 0.6)} ${f1(2 + az() * 3)}`;
+            dentro += `<path d="${d}" fill="none" stroke="#ff5a2d" stroke-width="1.6" stroke-linecap="round" opacity=".6"/><path d="${d}" fill="none" stroke="#ffd27a" stroke-width=".6" stroke-linecap="round" opacity=".7"/>`; }
+        } else if (id === "ceniza") {
+          dentro += `<rect x="${f1(xAtras - rCadera - 4)}" y="${f1(cy - alto)}" width="${f1(ancho + rCadera + rPecho + 8)}" height="${f1(alto * 2)}" fill="#8d8d8d" opacity=".34"/>`;
+          for (let i = 0; i < 8; i++) dentro += `<circle cx="${f1(xAtras + az() * ancho)}" cy="${f1(cy - alto * 0.4 + az() * alto * 0.8)}" r="${f1(0.6 + az() * 0.9)}" fill="#3b3b3b" opacity=".55"/>`;
+        } else if (id === "corazones") {
+          [[0.1, 0.05], [-0.38, 0.22]].forEach(([dx, dy], k) => { const px = xFrente - rPecho * (0.2 - dx * 0.0), py = cy + ryP * dy, qx = px + dx * 38;
+            dentro += `<circle cx="${f1(qx)}" cy="${f1(py)}" r="${k ? 3 : 3.4}" fill="#ff4d6d" opacity=".85"><animate attributeName="r" dur="${k ? 0.9 : 1.1}s" repeatCount="indefinite" values="${k ? 3 : 3.4};${k ? 4.4 : 4.9};${k ? 3 : 3.4}"/></circle><circle cx="${f1(qx)}" cy="${f1(py)}" r="7" fill="#ff4d6d" opacity=".2"/>`; });
+        } else if (id === "hueco") {
+          dentro += `<rect x="${f1(xAtras - rCadera - 4)}" y="${f1(cy - alto)}" width="${f1(ancho + rCadera + rPecho + 8)}" height="${f1(alto * 2)}" fill="#e8f4ff" opacity=".30"/>` +
+            `<path d="M ${f1(xAtras)} ${f1(cy - alto * 0.15)} L ${f1(xFrente)} ${f1(cy - alto * 0.15)} M ${f1(xAtras)} ${f1(cy + alto * 0.12)} L ${f1(xFrente)} ${f1(cy + alto * 0.12)}" stroke="#ffffff" stroke-width=".7" stroke-dasharray="3 3" opacity=".55"/>`;
+        } else if (id === "resorte") {
+          for (let i = 0; i < 3; i++) dentro += `<path d="M ${f1(xAtras - rCadera * 0.2)} ${f1(cy + ryC * (0.1 + i * 0.22))} q 5 -4 10 0 t 10 0 t 10 0" fill="none" stroke="#ffe08a" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>`;
+        } else if (id === "cristal") {
+          for (let i = 0; i < 6; i++) { const px = xAtras + ancho * (0.08 + 0.17 * i), py = yLomo(px), h = 8 + (i % 2) * 4 + az() * 2;
+            fuera += `<polygon points="${f1(px - 3.2)},${f1(py + 1.5)} ${f1(px + az() * 2 - 1)},${f1(py - h)} ${f1(px + 3.2)},${f1(py + 1.5)}" fill="#c9ecff" stroke="#6fb7e6" stroke-width=".7" stroke-linejoin="round" opacity=".92"/>`; }
+        } else if (id === "aura") {
+          fuera += `<ellipse cx="${f1(centro)}" cy="${f1(cy)}" rx="${f1(ancho * 0.75 + rCadera)}" ry="${f1(alto * 1.05)}" fill="#8fd3ff" opacity=".13"><animate attributeName="opacity" dur="2.4s" repeatCount="indefinite" values=".08;.2;.08"/></ellipse>`;
+        } else if (id === "sombra") {
+          dentro += `<rect x="${f1(xAtras - rCadera - 4)}" y="${f1(cy + alto * 0.1)}" width="${f1(ancho + rCadera + rPecho + 8)}" height="${f1(alto)}" fill="#000" opacity=".42"/>`;
+          sombra += `<path d="M ${f1(xAtras)} ${suelo} L ${f1(xAtras - 46)} ${suelo + 1} L ${f1(xFrente + 4)} ${suelo + 1} Z" fill="#000" opacity=".5"/>`;
+        }
+      });
+      return { dentro: dentro ? `<g clip-path="url(#${uid}c)">${dentro}</g>` : "", fuera: sombra + fuera };
+    })();
     // manta de carrera: el color es el de la familia; en la pista lleva el número de puerta
     const mantaY = yLomo(centro) + 0.6;
     const manta = (numero !== null || corre) ? `<path d="M ${f1(centro - 10)} ${f1(mantaY)} h 20 v 11 q 0 2 -2 2 h -16 q -2 0 -2 -2 Z" fill="${famil}" stroke="${tinta}" stroke-width=".7"/>` +
@@ -422,7 +466,7 @@ window.HipodromoDibujo = (function () {
         cw: +f1(cabezaX), ch: +f1(cabezaY), lc: +f1(largoCuello), mir: +mirada.toFixed(2), seis: seis ? 1 : 0, p: piernas };
       const sombraW = f1(Math.min(100, (der - izq) * 0.45));
       const bloque = (cb ? `<path d="${cuerpoD}" fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round"/>` : "") +
-        `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + manta + espalda + cola;
+        `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + mutVis.dentro + manta + espalda + mutVis.fuera + cola;
       return `<svg class="${opciones.clase || "hip-silueta"}" viewBox="0 -8 240 148" role="img" aria-label="${(opciones.titulo || perfil.nombre || "Criatura").replace(/"/g, "&quot;")}" xmlns="http://www.w3.org/2000/svg" data-rig='${JSON.stringify(rig)}'>` + defs +
         `<g transform="translate(120 ${suelo}) scale(${k.toFixed(3)}) translate(${f1(-cx)} ${-suelo})">` + (E.pixel ? `<g filter="url(#${uid}p)">` : "") +
         `<ellipse class="r-sombra" cx="${f1(cx)}" cy="${suelo}" rx="${sombraW}" ry="3" fill="rgba(0,0,0,.28)"/>` +
@@ -438,7 +482,7 @@ window.HipodromoDibujo = (function () {
       (corre ? `<g><animateTransform attributeName="transform" type="translate" dur="${ciclo}s" repeatCount="indefinite" values="${Array.from({ length: 17 }, (_, i) => { const t = 2 * Math.PI * i / 16; return "0 " + (-(2.4 * Math.max(0, Math.sin(t)) + 0.9 * Math.max(0, Math.sin(2 * t + 1)))).toFixed(2); }).join(";")}"/>` : "") +
       alas + patasLejos + cabeceoG(cuello) +
       (cb ? `<path d="${cuerpoD}" fill="${tinta}" stroke="${tinta}" stroke-width="${f1(cb * 2)}" stroke-linejoin="round"/>` : "") +
-      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + manta + espalda + cola +
+      `<path d="${cuerpoD}" fill="${relleno}"/>` + sobreCuerpo + volumen + nucleo + mutVis.dentro + manta + espalda + mutVis.fuera + cola +
       patasCerca + cabeceoG(cabeza) +
       (corre ? `</g>` : "") +
       `</g>` + (E.pixel ? `</g>` : "") + `</g></svg>`;
@@ -453,5 +497,5 @@ window.HipodromoDibujo = (function () {
     if (activo) svg.unpauseAnimations(); else { svg.setCurrentTime(0); svg.pauseAnimations(); }
   }
 
-  return { silueta, colorCapa, registrar, rasgos, rasgosDetalle, galope, ponerEstilo, estilos: Object.keys(ESTILOS) };
+  return { silueta, colorCapa, registrar, rasgos, rasgosDetalle, mutacionesDetalle, maniasDetalle, galope, ponerEstilo, estilos: Object.keys(ESTILOS) };
 })();

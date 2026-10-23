@@ -510,7 +510,7 @@
       <strong>${fav ? "♥ " : ""}${esc(p.nombre)}</strong>
       <small>${sexoTxt(p)} · ${T("etapa", esc(p.etapa))} · ${T("generacion", "gen.")} ${p.gen}</small>
       <span class="hip-cria-record">${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</span>
-      ${estrellasTxt(p.estrellas)}<span class="hip-sellos">${etiquetasEstado(p)}</span></button>`;
+      ${estrellasTxt(p.estrellas)}<span class="hip-sellos">${etiquetasEstado(p)}</span>${(p.mut || []).some(id => window.HipodromoRasgos.MUT[id] && window.HipodromoRasgos.MUT[id].g) ? '<span class="hip-sello oro" title="Trae una mutación grande">✦ mutación</span>' : ""}</button>`;
   }
   function pintarCriaturas() {
     const l = listaCriaturas();
@@ -521,11 +521,18 @@
 
   /* Rasgos de la criatura: los que hacen algo en la carrera llevan su efecto escrito; los demás son adorno */
   function rasgosHtml(p) {
-    const lista = D.rasgosDetalle(p);
-    if (!lista.length) return "";
+    const lista = D.rasgosDetalle(p), mu = D.mutacionesDetalle(p), ma = D.maniasDetalle(p);
     const con = lista.filter(x => x.hace);
-    return `<p class="hip-rasgos">${lista.map(x => `<span class="hip-rasgo${x.hace ? " activo" : ""}" ${x.hace ? `title="${esc(x.hace)}"` : ""}>${esc(x.texto)}</span>`).join(" ")}</p>` +
+    let h = "";
+    if (lista.length) h += `<p class="hip-rasgos">${lista.map(x => `<span class="hip-rasgo${x.hace ? " activo" : ""}" ${x.hace ? `title="${esc(x.hace)}"` : ""}>${esc(x.texto)}</span>`).join(" ")}</p>` +
       (con.length ? `<ul class="hip-rasgos-hace">${con.map(x => `<li><strong>${esc(x.texto)}.</strong> ${esc(x.hace)}</li>`).join("")}</ul>` : "");
+    // mutaciones (✦ las grandes) y carácter: de los padres o nuevas; lo que hacen, escrito
+    if (mu.length || ma.length || p.consanguinea) {
+      const ficha = (x, clase) => `<span class="${clase} ${x.tipo}${x.grande ? " grande" : ""}" title="${esc(x.hace)}">${x.grande ? "✦ " : ""}${esc(x.texto)}</span>`;
+      h += `<p class="hip-chips">${mu.map(x => ficha(x, "hip-mut")).concat(ma.map(x => ficha(x, "hip-mania"))).join(" ")}${p.consanguinea ? ' <span class="hip-mut tara" title="Sus padres eran parientes cercanos">consanguínea</span>' : ""}</p>` +
+        `<ul class="hip-rasgos-hace">${mu.concat(ma).map(x => `<li><strong>${esc(x.texto)}.</strong> ${esc(x.hace)}</li>`).join("")}</ul>`;
+    }
+    return h;
   }
   function duenoHtml(p) {
     if (p.dueno) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>De ${esc(p.dueno.nombre || "otro jugador")}${p.dueno.id === YO ? " (es tuya)" : ""}.${p.montaPrecio && p.estado === "criador" ? ` Monta: ${monedas(p.montaPrecio)} tokens.` : ""}</p></section>`;

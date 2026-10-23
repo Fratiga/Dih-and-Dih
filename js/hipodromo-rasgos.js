@@ -89,8 +89,8 @@ window.HipodromoRasgos = (function () {
   const MULTIPLICAN = ["tropiezo", "temp", "ruido", "ilusion", "sumidero"];
   const memo = new Map();
   /* Suma de los efectos de todos los rasgos de una criatura. Se guarda por combinación: se pide miles de veces. */
-  function efectos(r) {
-    const clave = CLAVES.map(k => (r && r[k]) || "").join("|");
+  function efectos(r, mut) {
+    const clave = CLAVES.map(k => (r && r[k]) || "").join("|") + (mut && mut.length ? "#" + mut.join(",") : "");
     let fx = memo.get(clave);
     if (fx) return fx;
     fx = { vel: 0, res: 0, ace: 0, agi: 0, tem: 0, frag: 0, trafico: 0, cuesta: 0, tropiezo: 1, pref: 0, temp: 1, ruido: 1, meta: 0, corriente: 0, ilusion: 1, sumidero: 1, nucleo: 0 };
@@ -102,9 +102,151 @@ window.HipodromoRasgos = (function () {
       if (e.trafico) fx.trafico = 1 - (1 - fx.trafico) * (1 - e.trafico);   // se combinan sin pasar de 1
       if (e.cuesta) fx.cuesta = 1 - (1 - fx.cuesta) * (1 - e.cuesta);
     });
+    (mut || []).forEach(id => {
+      const e = MUT[id] && MUT[id].fx;
+      if (!e) return;
+      SUMAN.forEach(c => { if (e[c]) fx[c] += e[c]; });
+      MULTIPLICAN.forEach(c => { if (e[c] != null) fx[c] *= e[c]; });
+    });
     Object.freeze(fx);
     memo.set(clave, fx);
     return fx;
+  }
+
+  /* ---------------------------------------------------------------- mutaciones
+     Lo que sale de un cruce además de los rasgos. Las pequeñas son frecuentes y casi siempre tienen precio (algo mejor y algo peor, o solo peor: taras); las grandes son raras,
+     fuertes y con un coste serio, y se ven en el dibujo. g = 1 es grande. t = buena, mixta o tara. p = peso al sortear. fx = como los efectos de los rasgos.
+     Cada una se hereda: un 35 % (pequeña) o un 50 % (grande) de cada padre, y se pueden sumar nuevas. Cuanto más parientes son los padres, más salen y más son taras. */
+  const MUT = {
+    pulmon: { n: "Pulmón ancho", g: 0, t: "buena", p: 5, fx: { res: 3 }, h: "Algo más de resistencia." },
+    oido: { n: "Oído fino", g: 0, t: "buena", p: 5, fx: { tem: 3 }, h: "Más temple." },
+    corazon: { n: "Corazón vivo", g: 0, t: "buena", p: 3, fx: { vel: 2 }, h: "Un poco más de velocidad punta." },
+    frio: { n: "Sangre fría", g: 0, t: "buena", p: 4, fx: { temp: 0.8 }, h: "Nota menos el frío y el calor." },
+    nervio: { n: "Arranque nervioso", g: 0, t: "mixta", p: 5, fx: { ace: 3, tem: -2 }, h: "Sale mejor, pero se altera más." },
+    zancada: { n: "Zancada corta y viva", g: 0, t: "mixta", p: 5, fx: { agi: 3, vel: -1 }, h: "Más ágil en las curvas, algo más lenta en la recta." },
+    huesos: { n: "Huesos densos", g: 0, t: "mixta", p: 5, fx: { frag: -0.10, vel: -1 }, h: "Se lesiona menos, pero pesa." },
+    tendon: { n: "Tendón elástico", g: 0, t: "mixta", p: 4, fx: { ace: 2, frag: 0.05 }, h: "Más arranque y algo más frágil." },
+    manto: { n: "Manto espeso", g: 0, t: "mixta", p: 4, fx: { temp: 0.85, vel: -1 }, h: "Aguanta el clima, pero pesa un poco." },
+    vista: { n: "Vista corta", g: 0, t: "tara", p: 4, fx: { tem: -3, ruido: 1.1 }, h: "Menos temple y la niebla la desordena más." },
+    rodilla: { n: "Rodilla floja", g: 0, t: "tara", p: 4, fx: { frag: 0.12 }, h: "Se lesiona más." },
+    resuello: { n: "Resuello corto", g: 0, t: "tara", p: 4, fx: { res: -3 }, h: "Aguanta menos." },
+    paso: { n: "Paso desigual", g: 0, t: "tara", p: 4, fx: { agi: -3 }, h: "Peor en las curvas." },
+    corazones: { n: "Doble corazón", g: 1, t: "mixta", p: 3, fx: { res: 6, ace: -2, frag: 0.12 }, h: "Aguanta mucho más, pero arranca peor y se lesiona más." },
+    cristal: { n: "Lomo de cristal", g: 1, t: "mixta", p: 3, fx: { vel: 3, frag: 0.20 }, h: "Más velocidad punta, pero se rompe con facilidad." },
+    ceniza: { n: "Piel de ceniza", g: 1, t: "mixta", p: 3, fx: { temp: 0.5, vel: -2, res: 2 }, h: "Casi no nota el clima y aguanta algo más, pero es más lenta." },
+    estrellas: { n: "Manto de estrellas", g: 1, t: "buena", p: 2, fx: { tem: 5, ruido: 0.85 }, h: "Mucho temple y la niebla apenas la desordena." },
+    brasa: { n: "Sangre de brasa", g: 1, t: "mixta", p: 3, fx: { ace: 6, res: -3, frag: 0.10 }, h: "Sale como un rayo, pero se apaga pronto y se lesiona más." },
+    sombra: { n: "Sombra propia", g: 1, t: "mixta", p: 3, fx: { tem: 3, tropiezo: 0.8, vel: -2 }, h: "Tropieza menos y mantiene la calma, pero pierde algo de velocidad." },
+    resorte: { n: "Patas de resorte", g: 1, t: "mixta", p: 3, fx: { ace: 7, agi: -2, frag: 0.15 }, h: "Un arranque enorme, pero gira peor y se lesiona más." },
+    hueco: { n: "Cuerpo hueco", g: 1, t: "tara", p: 2, fx: { vel: 3, res: -6, frag: 0.25 }, h: "Muy ligera y rápida un rato, pero no aguanta y se rompe." },
+    aura: { n: "Aura inquieta", g: 1, t: "mixta", p: 3, fx: { nucleo: 0.010, tem: -2, frag: 0.05 }, h: "Responde bien en las pistas arcanas, pero se altera y se lesiona algo más." }
+  };
+  const MUT_IDS = Object.keys(MUT), MUT_MAX = 3;
+  const mutPesos = (grande, r) => MUT_IDS.filter(id => !!MUT[id].g === grande).map(id => [id, MUT[id].p * (MUT[id].t === "tara" ? 1 + 6 * r : 1)]);
+  /* Probabilidad de que una cría salga con una mutación nueva, pequeña o grande, según el parentesco de los padres (r, de 0 a 0,5) */
+  const probMutPeq = r => Math.min(0.5, 0.14 * (1 + 4 * r));
+  const probMutGrande = r => Math.min(0.12, 0.018 * (1 + 8 * r));
+  const HEREDA_PEQ = 0.35, HEREDA_GRANDE = 0.5;
+  /* De una cría: las de los padres (se heredan o no) y, con la suerte, una nueva */
+  function heredarMut(rng, pa, ma, r) {
+    const out = [];
+    [pa || [], ma || []].forEach(l => l.forEach(id => { const u = rng.f(); if (MUT[id] && u < (MUT[id].g ? HEREDA_GRANDE : HEREDA_PEQ) && !out.includes(id)) out.push(id); }));
+    const ug = rng.f(), up = rng.f();
+    if (ug < probMutGrande(r) && !out.some(id => MUT[id].g)) out.push(rng.peso(mutPesos(true, r)));
+    else if (up < probMutPeq(r)) { const id = rng.peso(mutPesos(false, r)); if (!out.includes(id)) out.push(id); }
+    out.sort((a, b) => MUT[b].g - MUT[a].g);
+    // solo una grande: si de los padres llegan dos, se queda la primera
+    return out.filter((id, i) => !MUT[id].g || i === 0).slice(0, MUT_MAX);
+  }
+  /* Una criatura sin padres conocidos: casi nunca trae mutaciones */
+  function sortearMut(rng) {
+    const ug = rng.f(), up = rng.f();
+    return ug < 0.006 ? [rng.peso(mutPesos(true, 0))] : up < 0.06 ? [rng.peso(mutPesos(false, 0))] : [];
+  }
+
+  /* ---------------------------------------------------------------- manías: el carácter. Pesan poco y solo cuando se dan sus condiciones (cond = las de la carrera) */
+  const MANIAS = {
+    lluvia: { n: "Odia la lluvia", t: "mala", h: "Con lluvia o tormenta rinde peor.", cuando: c => c.clima === "lluvia" || c.clima === "tormenta", fx: { vel: -3, tem: -2 } },
+    barro: { n: "Le encanta el barro", t: "buena", h: "Con la pista pesada rinde más.", cuando: c => c.hum > 0.55, fx: { vel: 3 } },
+    publico: { n: "Se crece con público", t: "buena", h: "En las copas y los Grandes Premios tiene más temple y arranque.", cuando: c => !!c.alto, fx: { tem: 3, ace: 1 } },
+    dormilona: { n: "Se duerme en la salida", t: "mixta", h: "Arranca peor, pero se reserva y aguanta algo más.", cuando: () => true, fx: { ace: -3, res: 2 } },
+    niebla: { n: "Miedo a la niebla", t: "mala", h: "Con niebla se descontrola.", cuando: c => c.clima === "niebla", fx: { tem: -4 } },
+    largas: { n: "Nacida para las largas", t: "buena", h: "En las distancias largas aguanta más; en las cortas pierde algo de velocidad.", cuando: () => true, fxDist: d => (d >= 2400 ? { res: 3 } : d <= 1400 ? { vel: -1 } : {}) },
+    arcana: { n: "Nerviosa en las pistas raras", t: "mala", h: "En las pistas arcanas se altera.", cuando: c => !!c.arcana, fx: { tem: -3 } },
+    sol: { n: "Se cría con sol", t: "buena", h: "Con calor o cielo despejado corre más.", cuando: c => c.clima === "calor" || c.clima === "despejado", fx: { vel: 2 } },
+    terca: { n: "Terca como una mula", t: "mixta", h: "Se achica menos en el tumulto, pero gira peor.", cuando: () => true, fx: { tem: 2, agi: -1 } }
+  };
+  const MANIAS_IDS = Object.keys(MANIAS);
+  const MANIAS_MAX = 2;
+  /* Lo que suman las manías de una criatura en unas condiciones: { vel, res, ace, agi, tem } */
+  function maniasFx(lista, cond) {
+    const o = { vel: 0, res: 0, ace: 0, agi: 0, tem: 0 };
+    (lista || []).forEach(id => {
+      const M = MANIAS[id]; if (!M || !M.cuando(cond || {})) return;
+      const e = M.fxDist ? M.fxDist((cond || {}).dist || 0) : M.fx || {};
+      Object.keys(e).forEach(k => { o[k] = (o[k] || 0) + e[k]; });
+    });
+    return o;
+  }
+  /* Sin padres: ninguna (30 %), una (50 %) o dos (20 %). Con padres: 40 % de cada manía de cada padre y un 10 % de una nueva al azar */
+  function sortearManias(rng) {
+    const u = rng.f(), n = u < 0.3 ? 0 : u < 0.8 ? 1 : 2, out = [];
+    for (let i = 0; i < n; i++) { const id = MANIAS_IDS[Math.floor(rng.f() * MANIAS_IDS.length)]; if (!out.includes(id)) out.push(id); }
+    return out;
+  }
+  function heredarManias(rng, pa, ma) {
+    const out = [];
+    [pa || [], ma || []].forEach(l => l.forEach(id => { if (rng.f() < 0.4 && MANIAS[id] && !out.includes(id)) out.push(id); }));
+    const un = rng.f(), cual = rng.f();
+    if (un < 0.10 && out.length < MANIAS_MAX) { const id = MANIAS_IDS[Math.floor(cual * MANIAS_IDS.length)]; if (!out.includes(id)) out.push(id); }
+    return out.slice(0, MANIAS_MAX);
+  }
+
+  /* ---------------------------------------------------------------- parentesco (endogamia)
+     anc = [[padre, madre], [los cuatro abuelos], [los ocho bisabuelos]] (ids; lo que no se sabe falta). El parentesco es la suma, por cada antepasado común,
+     de 0,5 elevado a la suma de las generaciones que lo separan de cada uno: hermanos de padre y madre 0,5; padre e hijo 0,5; medio hermanos 0,25; primos 0,125. */
+  const ancDe = p => {
+    const g = p && p.anc ? p.anc.map(l => (l || []).filter(x => x != null)) : [];
+    if (!g.length && p) { const l = []; if (p.padre && p.padre.id != null) l.push(p.padre.id); if (p.madre && p.madre.id != null) l.push(p.madre.id); g.push(l); }
+    return g;
+  };
+  function parentesco(a, b) {
+    if (!a || !b) return 0;
+    const la = [[a.id]].concat(ancDe(a)), lb = [[b.id]].concat(ancDe(b));
+    let r = 0;
+    la.forEach((ga, i) => ga.forEach(x => lb.forEach((gb, j) => gb.forEach(y => { if (x === y) r += Math.pow(0.5, i + j); }))));
+    return Math.min(0.5, r);
+  }
+  /* El árbol de una cría de dos padres */
+  function linajeDe(pa, ma) {
+    const A = ancDe(pa), B = ancDe(ma);
+    return [[pa.id, ma.id], (A[0] || []).concat(B[0] || []), (A[1] || []).concat(B[1] || [])];
+  }
+  const textoParentesco = r => (r >= 0.45 ? "Son padre e hijo o hermanos" : r >= 0.2 ? "Son parientes muy cercanos (medios hermanos, tío y sobrina o abuelo)" : r >= 0.1 ? "Son primos" : r > 0 ? "Tienen algún antepasado en común" : "No son parientes");
+  /* Cuántas crías: una (50 %), dos (35 %) o tres (15 %) */
+  const CAMADA = [[1, 50], [2, 35], [3, 15]];
+  const tamanoCamada = rng => rng.peso(CAMADA);
+
+  /* ---------------------------------------------------------------- previa de un cruce: lo que se puede ver antes de pagar, con los perfiles públicos de la madre y el semental */
+  function previaCruce(pm, pp) {
+    const r = parentesco(pm, pp), A = pp.rasgos || {}, B = pm.rasgos || {};
+    const rasgos = [];
+    CLAVES.forEach(k => {
+      if (!A[k] || !B[k]) return;
+      const t = v => (NOMBRES[k] && NOMBRES[k][v]) || null;
+      if (!t(A[k]) && !t(B[k])) return;
+      const op = A[k] === B[k] ? [{ valor: A[k], p: 0.92 }] : [{ valor: A[k], p: 0.46 }, { valor: B[k], p: 0.46 }];
+      rasgos.push({ clave: k, opciones: op.map(o => ({ valor: o.valor, texto: t(o.valor) || "Común", p: o.p })), nuevo: 0.08 });
+    });
+    const pasa = (id, a, b) => { const h = MUT[id].g ? HEREDA_GRANDE : HEREDA_PEQ; return a.includes(id) && b.includes(id) ? 1 - (1 - h) * (1 - h) : h; };
+    const ma1 = pm.mut || [], pa1 = pp.mut || [], mut = [];
+    pa1.concat(ma1).forEach(id => { if (MUT[id] && !mut.some(x => x.id === id)) mut.push({ id, p: pasa(id, pa1, ma1) }); });
+    const mn1 = pm.manias || [], pn1 = pp.manias || [], manias = [];
+    pn1.concat(mn1).forEach(id => { if (MANIAS[id] && !manias.some(x => x.id === id)) manias.push({ id, p: pn1.includes(id) && mn1.includes(id) ? 0.64 : 0.4 }); });
+    const pesos = mutPesos(false, r), total = pesos.reduce((t, x) => t + x[1], 0);
+    const pTara = pesos.filter(x => MUT[x[0]].t === "tara").reduce((t, x) => t + x[1], 0) / total;
+    return { parentesco: r, parentescoTexto: textoParentesco(r), riesgo: r >= 0.2, camada: CAMADA.map(x => ({ n: x[0], p: x[1] / 100 })), rasgos, mut, manias,
+      nueva: { pequena: probMutPeq(r), grande: probMutGrande(r), taraEntreLasPequenas: pTara } };
   }
 
   /* ---------------------------------------------------------------- textos */
@@ -149,6 +291,7 @@ window.HipodromoRasgos = (function () {
     return out;
   }
 
-  return { TABLAS, CLAVES, EFECTOS, NOMBRES, QUE_HACE, ADORNO, sortear, heredar, completo, efectos, lista };
+  return { TABLAS, CLAVES, EFECTOS, NOMBRES, QUE_HACE, ADORNO, sortear, heredar, completo, efectos, lista,
+    MUT, MANIAS, MUT_MAX, MANIAS_MAX, heredarMut, sortearMut, maniasFx, sortearManias, heredarManias, parentesco, linajeDe, textoParentesco, tamanoCamada, CAMADA, previaCruce, probMutPeq, probMutGrande };
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = window.HipodromoRasgos;

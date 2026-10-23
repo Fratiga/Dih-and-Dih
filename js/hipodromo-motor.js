@@ -56,7 +56,8 @@
     INMIGRANTES: 0.15,           // de cada 100 nacimientos, los que llegan de otra región con genes nuevos
     HOMENAJE: 0.25,              // probabilidad de que la cría lleve el nombre de un padre que fue leyenda
     // la cuadra de los jugadores (los tokens son del jugador; el motor solo dice cuánto cuesta cada cosa)
-    MAX_CABALLOS: 4,             // criaturas por jugador
+    MAX_CABALLOS: 4,             // criaturas por jugador (las camadas pueden pasarlo un tiempo: hay que vender o soltar antes de comprar o cruzar)
+    MONTA_MIN: 40, MONTA_MAX: 2000,   // entre qué precios puede fijar un dueño la monta de su semental
     ADELANTO: 12,                // con cuántas carreras de antelación se puede inscribir
     ADELANTO_COPA: 48,           // las copas se pueden inscribir con más antelación (dos días)
     HORA_COPAS: 23,              // hora (UTC) a la que salen las copas de la semana
@@ -259,6 +260,8 @@
   const fragilidad = c => 0.6 + 2.0 * Math.max(0, c.genes.pat + c.genes.pul + c.genes.mus - 1.5);
   /* Los rasgos: si el mundo es de antes de que existieran, salen del id (siempre los mismos) */
   const rasgosDe = c => c.rasgos || (c.rasgos = HR.sortear(crearRng(c.id, "rasgos")));
+  /* El carácter (manías): si el mundo es de antes de que existieran, salen del id (siempre las mismas) */
+  const maniasDe = c => c.manias || (c.manias = HR.sortearManias(crearRng(c.id, "manias")));
   const edadAnios = (n, c) => (n - c.nac) / C.ANIO;
   const edadMult = a => (a < 1 ? 0.86 : a < 2.5 ? 0.93 + 0.07 * (a - 1) / 1.5 : a <= 5 ? 1 : Math.max(0.8, 1 - 0.045 * (a - 5)));
   function statsBase(c) {
@@ -291,6 +294,13 @@
     const h = padres.length ? padres.reduce((x, p) => x + p.ritmo, 0) / padres.length : 0.5;
     c.ritmo = clamp(0.5 + 0.35 * (genes.mus - genes.pul) + 0.3 * (h - 0.5) + rng.norm(0, 0.22), 0, 1);
     c.rasgos = padres.length === 2 ? HR.heredar(rng, padres[0].rasgos, padres[1].rasgos) : HR.sortear(rng);
+    // mutaciones, manías y árbol: con un azar propio de esta criatura, para no cambiar el del resto del mundo
+    const rm = crearRng(m.semilla, "mut", c.id);
+    if (padres.length === 2) {
+      c.mut = HR.heredarMut(rm, padres[0].mut, padres[1].mut, HR.parentesco(padres[0], padres[1]));
+      c.manias = HR.heredarManias(rm, maniasDe(padres[0]), maniasDe(padres[1]));
+      c.anc = HR.linajeDe(padres[0], padres[1]);
+    } else { c.mut = HR.sortearMut(rm); c.manias = HR.sortearManias(rm); c.anc = []; }
     return c;
   }
 
@@ -300,25 +310,26 @@
     const base = prog.mojadoPrevio * 0.7 + cl.aporte;
     const hum = clamp((base + (pista.humedad || 0)) * (1 - 0.5 * pista.drenaje), 0, 1);
     return { clima: w, base, hum, temp: pista.calor != null ? Math.max(cl.temp, pista.calor) : cl.temp, ruido: cl.ruido, incid: cl.incid, dist: prog.dist, nSeg: prog.dist / 100,
-      curvas: pista.curvas, costeTramo: 1 + 0.15 * pista.cuestas, estadoPista: etiquetaPista(hum), arcana: pista.arcana || null, n: prog.n };
+      curvas: pista.curvas, costeTramo: 1 + 0.15 * pista.cuestas, estadoPista: etiquetaPista(hum), arcana: pista.arcana || null, n: prog.n,
+      alto: !!(prog.grado && (esCopa(prog.grado) || prog.grado === "gran")) };
   }
   /* Valores de una criatura ese día (en puntos de 25 a 100) */
   const TACTICAS = { frente: 0.85, media: 0.5, atras: 0.15 };
   function efectivo(m, c, cond, puerta) {
     const b = statsBase(c), em = edadMult(edadAnios(m.n, c));
     const exp = Math.min(1, c.salidas / 16);
-    const fx = HR.efectos(rasgosDe(c));
+    const fx = HR.efectos(rasgosDe(c), c.mut), mf = HR.maniasFx(maniasDe(c), cond);
     const tac = c.tactica && TACTICAS[c.tactica] != null ? TACTICAS[c.tactica] : null;
     const pref = (c.genes.pez - 0.5) * 2 + fx.pref, abrigo = (c.genes.pel - 0.5) * 2;
     const terreno = 16 * pref * (cond.hum - 0.3) / 0.6;
     const clima = -15 * abrigo * cond.temp * fx.temp;
     return {
       id: c.id, puerta, fx,
-      vel: b.vel * em - 0.35 * c.fatiga + 12 * c.forma + terreno + clima + fx.vel,
-      res: b.res * em - 0.35 * c.fatiga + 6 * c.forma + 0.8 * clima + fx.res,
-      ace: b.ace * em - 0.20 * c.fatiga + 4 * c.forma + fx.ace,
-      agi: b.agi * em - 0.15 * c.fatiga + fx.agi,
-      tem: b.tem + 10 * exp + fx.tem,
+      vel: b.vel * em - 0.35 * c.fatiga + 12 * c.forma + terreno + clima + fx.vel + mf.vel,
+      res: b.res * em - 0.35 * c.fatiga + 6 * c.forma + 0.8 * clima + fx.res + mf.res,
+      ace: b.ace * em - 0.20 * c.fatiga + 4 * c.forma + fx.ace + mf.ace,
+      agi: b.agi * em - 0.15 * c.fatiga + fx.agi + mf.agi,
+      tem: b.tem + 10 * exp + fx.tem + mf.tem,
       ritmo: tac == null ? c.ritmo : tac, pen: tac == null ? 1 : 1 - C.CASTIGO_TACTICA * Math.abs(tac - c.ritmo), frag: fragilidad(c) + fx.frag, fatiga: c.fatiga
     };
   }
@@ -541,10 +552,10 @@
      clima de verdad de esa carrera. Cuenta forma, fatiga, edad, rasgos, terreno y distancia: lo mismo que cuenta la carrera. Es el criterio de los
      entrenadores para saber contra quién puede correr cada una. Devuelve los tiempos (menos es más fuerte). */
   const SIN_AZAR = { norm: () => 0, f: () => 0.5, i: (a) => a };
-  function fuerzas(m, lista, dist, n) {
+  function fuerzas(m, lista, dist, n, grado) {
     const nn = n == null ? m.n : n;
     const clima = muestraClima(crearRng(m.semilla, "clima", nn), MARKOV[m.clima.estado]);
-    const cond = condiciones({ pista: pistaDeJornada(m.semilla, Math.floor(nn / C.JORNADA)), mojadoPrevio: (nn % C.JORNADA === 0 && nn > 0) ? m.clima.mojado * 0.5 : m.clima.mojado, dist, n: nn }, clima);
+    const cond = condiciones({ pista: pistaDeJornada(m.semilla, Math.floor(nn / C.JORNADA)), mojadoPrevio: (nn % C.JORNADA === 0 && nn > 0) ? m.clima.mojado * 0.5 : m.clima.mojado, dist, n: nn, grado }, clima);
     return lista.map(c => simular(SIN_AZAR, [efectivo(m, c, cond, 1)], cond)[0].t);
   }
   function inscribir(m, rng, grado, dist, n) {
@@ -562,7 +573,7 @@
     // cuantil de fuerza de cada una entre las disponibles (0 = la más lenta, 1 = la más rápida) y nivel al que apunta esta carrera
     // Se ordenan por tiempo y se busca un grupo seguido de ese tamaño que (1) esté al nivel de la categoría y (2) corra muy junto: el nivel se mide en
     // tiempo, no en puestos, porque arriba del todo unas pocas se despegan del resto y un grupo "parejo" por puestos no lo sería.
-    const tiempos = fuerzas(m, pool, dist, n), orden = pool.map((c, i) => i).sort((a, b) => tiempos[a] - tiempos[b]);   // la más rápida primero
+    const tiempos = fuerzas(m, pool, dist, n, grado), orden = pool.map((c, i) => i).sort((a, b) => tiempos[a] - tiempos[b]);   // la más rápida primero
     const libresN = Math.min(orden.length, Math.max(1, campo - forzadas.length)), t1 = tiempos[orden[0]] || 1;
     const [zi, zf] = EMPAREJA.zona[grado] || [0, 1], ventanas = [];
     for (let a = 0; a + libresN <= orden.length; a++) {
@@ -946,11 +957,12 @@
       cuerpo: cuerpo(c), silueta: silueta(c), arquetipo: arquetipo(c), perfilDist: perfilDistancia(c), estilo: c.salidas >= 3 ? estiloTexto(c.ritmo) : null,
       salidas: c.salidas, vic: c.vic, seg: c.seg, ter: c.ter, gp: c.gp, copas: c.copas || 0, premios: c.premios, racha: c.racha, ultima: c.ultima,
       estrellas: estrellas(c), aptitudes: apt, etiquetas: etiquetas(c, apt), ultimas: c.hist.slice().reverse(), suelos: c.suelos,
-      secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)),
+      secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)), mut: c.mut || [], manias: maniasDe(c), anc: c.anc || [], consanguinea: !!c.consanguinea,
       lesion: c.lesion ? { tipo: c.lesion.tipo, gravedad: c.lesion.gravedad, hasta: c.lesion.hasta } : null,
       padre: c.padre, madre: c.madre, crias: c.crias, leyenda: esLeyenda(c), muerte: c.muerte,
       dueno: c.dueno ? { id: c.dueno, nombre: nombreDueno(m, c.dueno) } : null,
-      precio: !c.dueno && c.estado === "activo" && !mejoresDelMundo(m).has(c.id) ? precioCompra(m, c) : null, montaPrecio: c.estado === "criador" ? precioMonta(m, c) : null
+      precio: !c.dueno && c.estado === "activo" && !mejoresDelMundo(m).has(c.id) ? precioCompra(m, c) : null, montaPrecio: c.estado === "criador" ? precioMonta(m, c) : null,
+      montaBase: c.estado === "criador" ? precioMontaBase(m, c) : null, montaCfg: c.montaCfg != null ? c.montaCfg : null
     };
   }
 
@@ -972,7 +984,9 @@
     const e = estrellas(c), edadF = a <= 3 ? 1 : Math.max(0.35, 1 - 0.12 * (a - 3));
     return Math.min(3000, redondea10((140 + 70 * ((e == null ? 3 : e) - 3) + 20 * c.vic + 100 * c.gp + 0.02 * c.premios) * edadF));
   }
-  const precioMonta = (m, c) => Math.min(800, Math.max(60, redondea10(60 + 3 * Math.max(0, c.rating - 1450) + 12 * c.vic)));
+  const precioMontaBase = (m, c) => Math.min(800, Math.max(60, redondea10(60 + 3 * Math.max(0, c.rating - 1450) + 12 * c.vic)));
+  /* Lo que cuesta montar a un semental: el precio que le puso su dueño (de 40 a 2000) o, si no puso ninguno, el que sale de su palmarés */
+  const precioMonta = (m, c) => (c.montaCfg != null ? c.montaCfg : precioMontaBase(m, c));
   const valorVenta = (m, c) => redondea10(precioCompra(m, c) * C.VENTA);
   /* Las que se pueden comprar: vivas, activas, sin dueño y que no estén ya en la carrera que está programada */
   function enVenta(m) {
@@ -1034,12 +1048,26 @@
         ev.avisos.push({ dueno: x.dueno, id: x.madre, n: m.n, texto: "El cruce no pudo hacerse y se te devuelve la monta." });
         return;
       }
-      const c = nuevaCriatura(m, rng, { nac: m.n, padres: [padre, madre], media: 0.5 });
-      c.dueno = x.dueno;
-      m.vivos.push(c); m.stats.nacidos++;
-      madre.crias++; padre.crias++; ev.cambios.add(c.id); ev.cambios.add(madre.id); ev.cambios.add(padre.id); ev.nacidos.push(c.id);
-      ev.noticias.push(noticia(m, "nacimiento", `Nace ${c.nombre}, de la cuadra de ${nombreDueno(m, x.dueno) || "un criador"}`, `${c.nombre}, ${c.sexo === "f" ? "hija" : "hijo"} de ${padre.nombre} y ${madre.nombre}, llega al mundo con ${CUERPO.pat.niveles[nivelDe(c.genes.pat) - 1].toLowerCase()} y ${CUERPO.pul.niveles[nivelDe(c.genes.pul) - 1].toLowerCase()}.`, [c.id]));
-      ev.avisos.push({ dueno: x.dueno, id: c.id, n: m.n, texto: `Ha nacido ${c.nombre}, cría de ${madre.nombre} y ${padre.nombre}. Puedes ponerle otro nombre.` });
+      // una camada de una a tres crías: cada una con sus genes, rasgos, mutaciones y manías
+      const k = HR.tamanoCamada(crearRng(m.semilla, "camada", madre.id, x.n));
+      const camada = [];
+      for (let i = 0; i < k; i++) {
+        const h = nuevaCriatura(m, rng, { nac: m.n, padres: [padre, madre], media: 0.5 });
+        h.dueno = x.dueno; if (x.riesgo) h.consanguinea = true;
+        m.vivos.push(h); m.stats.nacidos++; camada.push(h);
+        ev.cambios.add(h.id); ev.nacidos.push(h.id);
+      }
+      madre.crias++; padre.crias += k; ev.cambios.add(madre.id); ev.cambios.add(padre.id);
+      const c = camada[0];
+      const dn = nombreDueno(m, x.dueno) || "un criador", nombres = camada.map(h => h.nombre);
+      const lista = nombres.length > 1 ? nombres.slice(0, -1).join(", ") + " y " + nombres[nombres.length - 1] : nombres[0];
+      ev.noticias.push(noticia(m, "nacimiento", k > 1 ? `Camada de ${k} en la cuadra de ${dn}: ${lista}` : `Nace ${c.nombre}, de la cuadra de ${dn}`,
+        camada.map(h => `${h.nombre}, ${h.sexo === "f" ? "hija" : "hijo"} de ${padre.nombre} y ${madre.nombre}, llega al mundo con ${CUERPO.pat.niveles[nivelDe(h.genes.pat) - 1].toLowerCase()} y ${CUERPO.pul.niveles[nivelDe(h.genes.pul) - 1].toLowerCase()}.`).join(" "), camada.map(h => h.id)));
+      camada.forEach(h => {
+        const grande = (h.mut || []).map(id => HR.MUT[id]).find(u => u && u.g);
+        ev.avisos.push({ dueno: x.dueno, id: h.id, n: m.n, texto: `Ha nacido ${h.nombre}, cría de ${madre.nombre} y ${padre.nombre}.${grande ? ` Trae una mutación fuera de lo común: ${grande.n}.` : ""} Puedes ponerle otro nombre.` });
+      });
+      if (cuadraDe(m, x.dueno).length > C.MAX_CABALLOS) ev.avisos.push({ dueno: x.dueno, id: c.id, n: m.n, texto: `Tu cuadra pasa del límite (${C.MAX_CABALLOS}): vende o suelta a alguna antes de comprar o cruzar.` });
     });
     m.cruces = quedan;
   }
@@ -1173,6 +1201,17 @@
         res.id = c.id; res.cambios.push(c.id); res.texto = `${viejo} pasa a llamarse ${nombre}.`; res.concepto = `Nuevo nombre: ${nombre}`;
         return res;
       }
+      case "monta": {
+        const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
+        if (c.sexo !== "m" || c.estado !== "criador") return err("Solo un semental en la cría tiene precio de monta.");
+        const precio = o.precio == null || o.precio === "" ? null : Math.round(Number(o.precio));
+        if (precio != null && !(precio >= C.MONTA_MIN && precio <= C.MONTA_MAX)) return err(`El precio de monta va de ${C.MONTA_MIN} a ${C.MONTA_MAX} tokens.`);
+        if (prueba) return res;
+        if (precio == null) delete c.montaCfg; else c.montaCfg = precio;
+        res.id = c.id; res.cambios.push(c.id);
+        res.texto = precio == null ? `${c.nombre} vuelve al precio de siempre (${precioMontaBase(m, c)} tokens).` : `${c.nombre} cobrará ${precio} tokens por monta.`; res.concepto = "Precio de monta";
+        return res;
+      }
       case "retirar": {
         const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
         if (c.estado !== "activo" || !m.vivos.includes(c)) return err("Ya no corre.");
@@ -1193,13 +1232,16 @@
         if (edadAnios(m.n, madre) >= 12 || edadAnios(m.n, padre) >= 12) return err("Alguno de los dos es demasiado mayor.");
         if (m.n - madre.ultimaCria < C.GESTACION || madre.crias >= 8) return err("La madre necesita descansar más antes de otra cría.");
         if ((m.cruces || []).some(x => x.madre === madre.id)) return err("Ya espera cría.");
-        const parientes = (madre.padre && padre.padre && madre.padre.id === padre.padre.id) || (madre.madre && padre.madre && madre.madre.id === padre.madre.id) || (madre.padre && madre.padre.id === padre.id) || (padre.madre && padre.madre.id === madre.id) || (padre.padre && padre.padre.id === madre.id);
-        if (parientes) return err("Son parientes cercanos.");
-        const precio = padre.dueno === d ? 0 : precioMonta(m, padre);
+        const parentesco = HR.parentesco(madre, padre);
+        if (parentesco >= 0.2 && o.riesgo !== true) return err(`${HR.textoParentesco(parentesco)}: la cría sale con muchas más mutaciones y casi siempre con taras. Si quieres arriesgarte, confirma que asumes el riesgo.`);
+        const pendientes = (m.cruces || []).filter(x => x.dueno === d).length;
+        if (nCuadra + pendientes >= C.MAX_CABALLOS) return err(`No hay sitio en tu cuadra para la cría (${C.MAX_CABALLOS}): vende o suelta a alguna antes de cruzar.`);
+        // el semental de otra cuadra cobra lo que haya puesto su dueño; con uno propio se paga el precio de siempre a la casa (criar no es gratis)
+        const precio = padre.dueno === d ? precioMontaBase(m, padre) : precioMonta(m, padre);
         res.costo = precio;
         if (padre.dueno && padre.dueno !== d && precio) res.pagos.push({ dueno: padre.dueno, monto: precio, concepto: `Monta de ${padre.nombre}`, n: m.n });
         if (prueba) return res;
-        m.cruces.push({ madre: madre.id, padre: padre.id, padreNombre: padre.nombre, dueno: d, n: m.n + C.CRUCE_ESPERA, pago: precio });
+        m.cruces.push({ madre: madre.id, padre: padre.id, padreNombre: padre.nombre, dueno: d, n: m.n + C.CRUCE_ESPERA, pago: precio, riesgo: parentesco >= 0.2 });
         madre.ultimaCria = m.n;
         res.id = madre.id; res.cambios.push(madre.id); res.texto = `${madre.nombre} espera una cría de ${padre.nombre} para dentro de ${C.CRUCE_ESPERA} carreras.`; res.concepto = `Monta de ${padre.nombre}`;
         return res;
@@ -1283,6 +1325,8 @@
     sig.rumores.forEach(r => { const nt = noticia(m, "rumor", "Rumores de cuadra", r.texto, [r.id], sig.n); nt.hora = horaDe(m, sig.n - 1) + C.APLICAR_SEG * 1000; ev.noticias.push(nt); });   // salen al programar, no a la hora de la carrera
     // las que entran o salen del grupo de las mejores del mundo cambian de precio (las mejores no se venden): su perfil público se vuelve a publicar
     { const mej = mejoresDelMundo(m), antes = new Set(m.mejores || []); mej.forEach(id => { if (!antes.has(id)) ev.cambios.add(id); }); antes.forEach(id => { if (!mej.has(id)) ev.cambios.add(id); }); m.mejores = [...mej]; }
+    // una sola vez en cada mundo: las mutaciones, el carácter y el árbol son nuevos en el perfil público, así que se vuelven a publicar todas las criaturas vivas (las que se retiraron ya no cambian)
+    if (!m.perfilesCria) { m.perfilesCria = 1; m.vivos.concat(m.criadores).forEach(c => ev.cambios.add(c.id)); }
     // perfiles públicos de todo lo que cambió en esta carrera (incluye retirados y recién nacidos)
     ev.perfiles = [...ev.cambios].map(id => buscar(m, id) || ev.bajas.find(b => b.id === id)).filter(Boolean).map(c => perfil(m, c));
     delete ev.cambios; delete ev.retirarPor; delete ev.pozoReal;

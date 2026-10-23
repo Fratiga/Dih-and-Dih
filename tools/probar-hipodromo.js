@@ -631,6 +631,166 @@ function cabezaACabeza(a, b, cond, veces) {
   ok(fila.mundo.proxima.hora > ahora - 60000 && fila.mundo.proxima.entrantes.length >= 3, "al final la carrera programada es la que viene");
   ok(r === null, "cuando ya está al día no hay nada más que hacer"); }
 
+// 4i) La cría dirigida: mutaciones, manías, camadas, parentesco, precio de monta
+{ const HR = sb.HipodromoRasgos, mk = () => M.crearMundo("cria", { calentar: 30, t0: Date.UTC(2026, 0, 1), simsCalentar: 8 });
+  const avanza = (w, k, evs) => { for (let i = 0; i < k; i++) { const ev = M.avanzar(w, { sims: 8 }); if (evs) evs.push(ev); } };
+  const ord = (w, o, saldos) => M.procesarOrdenes(w, [Object.assign({ oid: 1 }, o)], saldos).resultados[0];
+  // parentesco
+  { const A = { id: 1, padre: { id: 10 }, madre: { id: 11 } }, B = { id: 2, padre: { id: 10 }, madre: { id: 11 } }, Cc = { id: 3, padre: { id: 10 }, madre: { id: 12 } };
+    ok(HR.parentesco(A, B) === 0.5, "hermanos de padre y madre: parentesco 0,5");
+    ok(HR.parentesco(Cc, A) === 0.25, "medio hermanos: 0,25");
+    ok(HR.parentesco({ id: 10 }, A) === 0.5 && HR.parentesco(A, { id: 10 }) === 0.5, "padre e hijo: 0,5 (da igual el orden)");
+    ok(HR.parentesco({ id: 5, anc: [[1, 2], [3, 4, 5, 6]] }, { id: 7, anc: [[8, 9], [3, 4, 11, 12]] }) === 0.125, "primos con dos abuelos en común: 0,125");
+    ok(HR.parentesco({ id: 1, padre: { id: 2 }, madre: { id: 3 } }, { id: 9, padre: { id: 8 }, madre: { id: 7 } }) === 0, "sin antepasados en común no hay parentesco");
+    ok(HR.parentesco(null, A) === 0, "sin datos no hay parentesco");
+    const hijo = { id: 20, anc: HR.linajeDe({ id: 10, anc: [[1, 2], [3, 4, 5, 6]] }, { id: 11, anc: [[7, 8], [9, 13, 14, 15]] }) };
+    ok(hijo.anc[0].join() === "10,11" && hijo.anc[1].join() === "1,2,7,8" && hijo.anc[2].join() === "3,4,5,6,9,13,14,15", "el árbol de la cría tiene a los padres, los abuelos y los bisabuelos"); }
+  // las mutaciones: equilibrio de cada una y frecuencias
+  { const puntos = fx => (fx.vel || 0) + (fx.res || 0) + (fx.ace || 0) + (fx.agi || 0) + (fx.tem || 0) + (1 - (fx.temp == null ? 1 : fx.temp)) * 10 + (1 - (fx.ruido == null ? 1 : fx.ruido)) * 10 + (1 - (fx.tropiezo == null ? 1 : fx.tropiezo)) * 10 + (fx.nucleo || 0) * 500 - (fx.frag || 0) * 20;
+    const ids = Object.keys(HR.MUT), peq = ids.filter(i => !HR.MUT[i].g), gr = ids.filter(i => HR.MUT[i].g);
+    ok(peq.length >= 12 && gr.length >= 8, `hay mutaciones pequeñas (${peq.length}) y grandes (${gr.length})`);
+    ok(ids.every(i => HR.MUT[i].n && HR.MUT[i].h && ["buena", "mixta", "tara"].includes(HR.MUT[i].t) && HR.MUT[i].p > 0), "cada mutación tiene nombre, explicación, tipo y peso");
+    ok(ids.filter(i => HR.MUT[i].t === "buena").every(i => puntos(HR.MUT[i].fx) > 0), "las mutaciones buenas suman");
+    ok(ids.filter(i => HR.MUT[i].t === "tara").every(i => puntos(HR.MUT[i].fx) < 0), "las taras restan");
+    const lado = fx => { const o = { arriba: 0, abajo: 0 }; ["vel", "res", "ace", "agi", "tem"].forEach(k => { if (fx[k] > 0) o.arriba++; if (fx[k] < 0) o.abajo++; }); if (fx.frag > 0) o.abajo++; if (fx.frag < 0) o.arriba++; if (fx.temp != null) fx.temp < 1 ? o.arriba++ : o.abajo++; if (fx.ruido != null) fx.ruido < 1 ? o.arriba++ : o.abajo++; if (fx.tropiezo != null) fx.tropiezo < 1 ? o.arriba++ : o.abajo++; if (fx.nucleo) o.arriba++; return o; };
+    ok(ids.filter(i => HR.MUT[i].t === "mixta").every(i => { const l = lado(HR.MUT[i].fx); return l.arriba >= 1 && l.abajo >= 1; }), "las mixtas tienen algo bueno y algo malo");
+    ok(gr.every(i => Math.abs(puntos(HR.MUT[i].fx)) <= 12) && peq.every(i => Math.abs(puntos(HR.MUT[i].fx)) <= 5), "las mutaciones pequeñas pesan hasta 5 puntos y las grandes hasta 12");
+    const fx = HR.efectos({}, ["corazones", "vista"]);
+    ok(fx.res === 6 && fx.ace === -2 && Math.abs(fx.frag - 0.12) < 1e-9 && fx.tem === -3 && Math.abs(fx.ruido - 1.1) < 1e-9, "los efectos de las mutaciones se suman a los del cuerpo");
+    ok(HR.efectos({}, []) === HR.efectos({}) || JSON.stringify(HR.efectos({}, [])) === JSON.stringify(HR.efectos({})), "sin mutaciones los efectos son los de siempre");
+    const tasa = (r, veces) => { const rng = M.crearRng("mut-tasa", r); let g = 0, p = 0, t = 0; for (let i = 0; i < veces; i++) { const l = HR.heredarMut(rng, [], [], r); if (l.some(x => HR.MUT[x].g)) g++; else if (l.length) { p++; if (l.some(x => HR.MUT[x].t === "tara")) t++; } } return { g: g / veces, p: p / veces, t: t / Math.max(1, p) }; };
+    const t0 = tasa(0, 20000), t1 = tasa(0.125, 20000), t2 = tasa(0.5, 20000);
+    ok(t0.g > 0.010 && t0.g < 0.026 && t0.p > 0.10 && t0.p < 0.18, `sin parentesco: grandes ${pct(t0.g)} y pequeñas ${pct(t0.p)}`);
+    ok(t2.g > 0.06 && t2.g < 0.12 && t2.p > 0.28 && t2.p < 0.46, `hermanos: grandes ${pct(t2.g)} y pequeñas ${pct(t2.p)}`);
+    ok(t0.g < t1.g && t1.g < t2.g && t0.p < t1.p && t1.p < t2.p && t0.t < t1.t && t1.t < t2.t, `cuanto más parientes, más mutaciones y más taras (taras entre las pequeñas: ${pct(t0.t)}, ${pct(t1.t)}, ${pct(t2.t)})`);
+    { const rng = M.crearRng("mut-hered"); let pas = 0, pasG = 0; for (let i = 0; i < 4000; i++) { const l = HR.heredarMut(rng, ["pulmon", "cristal"], [], 0); if (l.includes("pulmon")) pas++; if (l.includes("cristal")) pasG++; }
+      ok(Math.abs(pas / 4000 - 0.35) < 0.04 && Math.abs(pasG / 4000 - 0.5) < 0.04, `una mutación pequeña pasa a la cría el 35 % y una grande el 50 % (${pct(pas / 4000)}, ${pct(pasG / 4000)})`); }
+    ok((() => { const rng = M.crearRng("mut-max"); for (let i = 0; i < 3000; i++) { const l = HR.heredarMut(rng, ["pulmon", "oido", "corazon", "cristal"], ["frio", "nervio", "ceniza"], 0.5); if (l.length > HR.MUT_MAX || l.filter(x => HR.MUT[x].g).length > 1 || new Set(l).size !== l.length) return false; } return true; })(), "una cría trae como mucho 3 mutaciones, solo una grande y ninguna repetida");
+    const camadas = M.crearRng("camada"), cuenta = { 1: 0, 2: 0, 3: 0 }; for (let i = 0; i < 6000; i++) cuenta[HR.tamanoCamada(camadas)]++;
+    ok(Math.abs(cuenta[1] / 6000 - 0.5) < 0.03 && Math.abs(cuenta[2] / 6000 - 0.35) < 0.03 && Math.abs(cuenta[3] / 6000 - 0.15) < 0.03, "las camadas son de 1 (50 %), 2 (35 %) o 3 (15 %)"); }
+  // manías
+  { const ids = Object.keys(HR.MANIAS);
+    ok(ids.length >= 8 && ids.every(i => HR.MANIAS[i].n && HR.MANIAS[i].h), "hay manías, cada una con nombre y explicación");
+    const f = (l, c) => HR.maniasFx(l, c), cero = { vel: 0, res: 0, ace: 0, agi: 0, tem: 0 };
+    ok(f(["lluvia"], { clima: "lluvia" }).vel === -3 && JSON.stringify(f(["lluvia"], { clima: "despejado" })) === JSON.stringify(cero), "odia la lluvia: solo se nota con lluvia");
+    ok(f(["barro"], { hum: 0.8 }).vel === 3 && f(["barro"], { hum: 0.2 }).vel === 0, "le encanta el barro: solo con la pista pesada");
+    ok(f(["publico"], { alto: true }).tem === 3 && f(["publico"], { alto: false }).tem === 0, "se crece con público: solo en copas y Grandes Premios");
+    ok(f(["largas"], { dist: 3000 }).res === 3 && f(["largas"], { dist: 1200 }).vel === -1 && f(["largas"], { dist: 1800 }).res === 0, "nacida para las largas: aguanta más en las largas y pierde algo en las cortas");
+    ok(f(["lluvia", "niebla"], { clima: "niebla" }).tem === -4 && f([], { clima: "lluvia" }).vel === 0 && f(["inventada"], {}).vel === 0, "las manías suman, y una desconocida o ninguna no hace nada");
+    ok(Object.keys(HR.MANIAS).every(i => { const e = HR.MANIAS[i].fx || HR.MANIAS[i].fxDist(3000); return Object.values(e).every(v => Math.abs(v) <= 4); }), "ninguna manía pesa más de 4 puntos");
+    const rng = M.crearRng("manias"), cuenta = [0, 0, 0]; for (let i = 0; i < 6000; i++) cuenta[HR.sortearManias(rng).length]++;
+    ok(cuenta[0] / 6000 > 0.25 && cuenta[0] / 6000 < 0.35 && cuenta[2] / 6000 < 0.2, "sin padres: el 30 % no tiene manías y pocas tienen dos");
+    ok(Array.from({ length: 2000 }, () => HR.heredarManias(rng, ["lluvia", "barro", "sol"], ["niebla", "arcana", "terca"])).every(l => l.length <= HR.MANIAS_MAX), "una cría no tiene más de dos manías"); }
+  // en la carrera
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0];
+    const cond = I.condiciones({ pista: "silver", dist: 1600, mojadoPrevio: 0.1, n: 5 }, "despejado");
+    c.mut = []; c.manias = []; const base = I.efectivo(w, c, cond, 1);
+    c.mut = ["pulmon"]; ok(I.efectivo(w, c, cond, 1).res === base.res + 3, "una mutación cambia la capacidad en la carrera");
+    c.mut = ["rodilla"]; ok(Math.abs(I.efectivo(w, c, cond, 1).frag - base.frag - 0.12) < 1e-9, "una tara de fragilidad la hace más frágil");
+    c.mut = []; c.manias = ["barro"]; const seca = I.efectivo(w, c, Object.assign({}, cond, { hum: 0.1 }), 1), mojada = I.efectivo(w, c, Object.assign({}, cond, { hum: 0.8 }), 1);
+    c.manias = []; const sinManiaMojada = I.efectivo(w, c, Object.assign({}, cond, { hum: 0.8 }), 1);
+    ok(Math.abs(mojada.vel - sinManiaMojada.vel - 3) < 1e-9 && Math.abs(seca.vel - I.efectivo(w, c, Object.assign({}, cond, { hum: 0.1 }), 1).vel) < 1e-9, "la manía del barro suma 3 de velocidad en barro y nada en seco");
+    // criaturas de antes de que existieran las manías: salen del id y siempre las mismas
+    const vieja = M.cuadraDe(w, "u1")[0]; delete vieja.manias; delete vieja.mut; delete vieja.anc;
+    const p1 = M.perfil(w, vieja), p2 = M.perfil(w, vieja);
+    ok(Array.isArray(p1.mut) && Array.isArray(p1.manias) && Array.isArray(p1.anc) && JSON.stringify(p1.manias) === JSON.stringify(p2.manias), "una criatura de antes de las mutaciones tiene perfil y sus manías no cambian entre una llamada y otra");
+    ok(!/"genes"|talento/.test(JSON.stringify(p1)), "el perfil con mutaciones sigue sin enseñar genes ni talento"); }
+  // los nacidos del mundo traen mutaciones, manías y árbol
+  { const w = mk(); avanza(w, 80);
+    const jovenes = w.vivos.filter(x => x.padre && x.madre);
+    ok(jovenes.length >= 5 && jovenes.every(x => Array.isArray(x.mut) && Array.isArray(x.manias) && x.anc && x.anc[0].length === 2 && x.anc[0][0] === x.padre.id && x.anc[0][1] === x.madre.id), `las crías del mundo traen mutaciones, manías y árbol (${jovenes.length})`);
+    ok(jovenes.every(x => x.mut.length <= HR.MUT_MAX && x.manias.length <= HR.MANIAS_MAX), "y dentro de los límites"); }
+  // cruzar: coste, camada, parentesco, sitio
+  { const w = mk();
+    ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
+    const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0), base = M.precioMonta(w, sem);
+    const cr = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
+    ok(cr.ok && cr.costo === base, "cruzar con un semental de la casa cuesta su precio de siempre");
+    const evs = []; avanza(w, C.CRUCE_ESPERA + 1, evs);
+    const camada = w.vivos.filter(x => x.madre && x.madre.id === mad.id && x.padre && x.padre.id === sem.id);
+    ok(camada.length >= 1 && camada.length <= 3 && camada.every(x => x.dueno === "u1" && x.gen > 1 && !x.consanguinea && x.anc[0].join() === `${sem.id},${mad.id}`), `nace una camada de ${camada.length} cría(s), todas del dueño de la madre y con su árbol`);
+    ok(new Set(camada.map(x => x.id)).size === camada.length && new Set(camada.map(x => x.nombre)).size === camada.length, "cada cría de la camada tiene su id y su nombre");
+    const avisos = evs.reduce((a, e) => a.concat(e.avisos), []).filter(x => x.dueno === "u1" && /Ha nacido/.test(x.texto));
+    ok(avisos.length === camada.length, "el dueño recibe un aviso por cada cría");
+    ok(evs.reduce((a, e) => a.concat(e.noticias), []).filter(x => x.tipo === "nacimiento" && (x.ids || []).includes(camada[0].id)).length === 1, "y la camada sale en una sola noticia");
+    ok(camada.length === 1 || evs.some(e => e.noticias.some(x => /^Camada de/.test(x.titulo))), "una camada de varias crías se titula como camada");
+    ok(w.vivos.filter(x => x.dueno === "u1").length >= 1, "las crías cuentan en la cuadra"); }
+  { // se cruzan semental y madre propios: cuesta el precio de la casa y no hay pagos a nadie
+    const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
+    const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0); sem.dueno = "u1";
+    const r = M.procesarOrdenes(w, [{ oid: 1, dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }], { u1: 5000 });
+    ok(r.resultados[0].ok && r.resultados[0].costo === M.precioMonta(w, sem) && r.resultados[0].costo >= 60, `con un semental propio también se paga la monta (${r.resultados[0].costo})`);
+    ok(r.pagos.every(q => q.monto < 0), "y el dinero no va a ningún jugador, solo se cobra"); }
+  { // parentesco: primos pasan, medio hermanos y hermanos necesitan confirmar el riesgo
+    const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
+    const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);
+    mad.padre = { id: 9001, nombre: "P" }; mad.madre = { id: 9002, nombre: "M" }; sem.padre = { id: 9001, nombre: "P" }; sem.madre = { id: 9002, nombre: "M" }; mad.anc = [[9001, 9002]]; sem.anc = [[9001, 9002]];
+    const s1 = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
+    ok(!s1.ok && /riesgo/.test(s1.error) && /hermanos/.test(s1.error), "hermanos: no se cruzan sin asumir el riesgo y el aviso lo explica");
+    ok(w.cruces.length === 0, "y no queda nada a medias");
+    const s2 = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id, riesgo: true }, { u1: 5000 });
+    ok(s2.ok && w.cruces.length === 1 && w.cruces[0].riesgo === true, "con riesgo confirmado sí se cruzan y la orden lo recuerda");
+    avanza(w, C.CRUCE_ESPERA + 1);
+    const cs = w.vivos.filter(x => x.madre && x.madre.id === mad.id && x.padre && x.padre.id === sem.id);
+    ok(cs.length >= 1 && cs.every(x => x.consanguinea === true && M.perfil(w, x).consanguinea === true), "las crías de hermanos quedan marcadas como consanguíneas");
+    mad.ultimaCria = -999; mad.crias = 0; w.cruces = [];
+    sem.padre = { id: 9001, nombre: "P" }; sem.madre = { id: 9777, nombre: "X" }; sem.anc = [[9001, 9777]];
+    const s3 = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
+    ok(!s3.ok && /riesgo/.test(s3.error), "medio hermanos también piden confirmar el riesgo");
+    sem.padre = { id: 8001, nombre: "A" }; sem.madre = { id: 8002, nombre: "B" }; sem.anc = [[8001, 8002], [9001, 5, 6, 7]]; mad.anc = [[9001, 9002], [9001, 1, 2, 3]];
+    ok(HR.parentesco(mad, sem) < 0.2 && ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 }).ok, "primos lejanos se cruzan sin pedir nada"); }
+  { // sitio en la cuadra
+    const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
+    const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);
+    const otras = w.vivos.filter(x => !x.dueno && x.estado === "activo").slice(0, C.MAX_CABALLOS - 1); otras.forEach(x => { x.dueno = "u1"; });
+    const lleno = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
+    ok(M.cuadraDe(w, "u1").length === C.MAX_CABALLOS && !lleno.ok && /sitio/.test(lleno.error), "con la cuadra llena no se cruza: no habría sitio para la cría");
+    otras[0].dueno = null;
+    ok(ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 }).ok, "al liberar un sitio, sí");
+    const evs = []; avanza(w, C.CRUCE_ESPERA + 1, evs);
+    const nuevas = w.vivos.filter(x => x.madre && x.madre.id === mad.id);
+    ok(nuevas.length >= 1 && M.cuadraDe(w, "u1").length === C.MAX_CABALLOS - 1 + nuevas.length, "la camada entra en la cuadra aunque pase del límite");
+    const pasa = M.cuadraDe(w, "u1").length > C.MAX_CABALLOS;
+    ok(!pasa || evs.some(e => e.avisos.some(x => x.dueno === "u1" && /pasa del límite/.test(x.texto))), "si pasa del límite, el dueño recibe el aviso de que tiene que vender o soltar");
+    if (pasa) ok(!ord(w, { dueno: "u1", tipo: "comprar", id: w.vivos.find(x => !x.dueno && x.estado === "activo" && !M.mejoresDelMundo(w).has(x.id)).id }, { u1: 5000 }).ok, "pasado el límite no se puede comprar hasta vender o soltar"); }
+  // el precio de monta que pone el dueño
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "m" }); ord(w, { dueno: "u2", tipo: "adoptar", sexo: "f" });
+    const sem = M.cuadraDe(w, "u1")[0], mad = M.cuadraDe(w, "u2")[0];
+    ok(!ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: 500 }).ok, "un semental que aún corre no tiene precio de monta");
+    ord(w, { dueno: "u1", tipo: "retirar", id: sem.id }); ord(w, { dueno: "u2", tipo: "retirar", id: mad.id });
+    const auto = M.precioMonta(w, sem);
+    ok(!ord(w, { dueno: "u1", tipo: "monta", id: mad.id, precio: 500 }).ok && !ord(w, { dueno: "u2", tipo: "monta", id: sem.id, precio: 500 }).ok, "solo su dueño pone el precio y solo a un macho");
+    ok(!ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: C.MONTA_MIN - 1 }).ok && !ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: C.MONTA_MAX + 1 }).ok && !ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: "mucho" }).ok, "el precio va de 40 a 2000");
+    const p = ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: 500 });
+    ok(p.ok && M.precioMonta(w, sem) === 500 && M.perfil(w, sem).montaPrecio === 500, "el dueño fija el precio y se ve en el perfil público");
+    const r = M.procesarOrdenes(w, [{ oid: 1, dueno: "u2", tipo: "cruzar", madre: mad.id, padre: sem.id }], { u2: 5000, u1: 0 });
+    ok(r.resultados[0].ok && r.resultados[0].costo === 500 && r.pagos.some(q => q.dueno === "u1" && q.monto === 500), "quien monta paga ese precio y se le abona al dueño");
+    ok(M.precioMonta(w, sem) === 500, "el precio se queda puesto");
+    ok(ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: null }).ok && M.precioMonta(w, sem) === auto && M.perfil(w, sem).montaPrecio === auto, "quitar el precio vuelve al de siempre");
+    ok(ord(w, { dueno: "u1", tipo: "monta", id: sem.id, precio: C.MONTA_MIN }).ok, "el mínimo es válido");
+    // con un semental propio no sirve ponerse el precio a 40: se paga el de siempre
+    const w2 = mk(); ord(w2, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad2 = M.cuadraDe(w2, "u1")[0]; ord(w2, { dueno: "u1", tipo: "retirar", id: mad2.id });
+    const sem2 = w2.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad2, x) === 0); sem2.dueno = "u1";
+    const auto2 = M.precioMonta(w2, sem2); sem2.montaCfg = C.MONTA_MIN;
+    const c2 = ord(w2, { dueno: "u1", tipo: "cruzar", madre: mad2.id, padre: sem2.id }, { u1: 5000 });
+    ok(c2.ok && c2.costo === auto2 && auto2 >= 60, `con un semental propio no sirve ponerse un precio bajo (se paga ${c2.costo})`); }
+  // el vuelco a JSON y la previa
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
+    const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);
+    ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
+    const a = JSON.parse(JSON.stringify(w)), b = JSON.parse(JSON.stringify(w)); avanza(a, C.CRUCE_ESPERA + 3); avanza(b, C.CRUCE_ESPERA + 3);
+    ok(JSON.stringify(a) === JSON.stringify(b), "una camada nace igual desde el mismo mundo guardado");
+    const pre = HR.previaCruce(M.perfil(w, mad), M.perfil(w, sem));
+    ok(pre.parentesco === 0 && !pre.riesgo && pre.camada.length === 3 && Math.abs(pre.camada.reduce((t, x) => t + x.p, 0) - 1) < 1e-9 && pre.nueva.grande > 0 && pre.nueva.pequena > pre.nueva.grande, "la previa del cruce da el parentesco, las camadas y la probabilidad de mutaciones nuevas");
+    const hermanos = HR.previaCruce({ id: 1, padre: { id: 5 }, madre: { id: 6 }, rasgos: {} }, { id: 2, padre: { id: 5 }, madre: { id: 6 }, rasgos: {} });
+    ok(hermanos.riesgo && hermanos.parentesco === 0.5 && hermanos.nueva.grande > pre.nueva.grande && hermanos.nueva.taraEntreLasPequenas > pre.nueva.taraEntreLasPequenas, "la previa avisa del riesgo de los hermanos con más mutaciones y más taras");
+    const pm = { id: 1, rasgos: { ojos: "tres", alas: "no" }, mut: ["pulmon", "cristal"], manias: ["lluvia"] }, pp = { id: 2, rasgos: { ojos: "dos", alas: "no" }, mut: ["pulmon"], manias: ["lluvia"] };
+    const pr = HR.previaCruce(pm, pp);
+    ok(pr.rasgos.some(x => x.clave === "ojos" && x.opciones.length === 2 && x.opciones.every(o => o.p === 0.46)), "la previa enseña de qué padre puede salir cada rasgo distinto");
+    ok(Math.abs(pr.mut.find(x => x.id === "pulmon").p - (1 - 0.65 * 0.65)) < 1e-9 && pr.mut.find(x => x.id === "cristal").p === 0.5, "y la probabilidad de heredar cada mutación (mayor si la traen los dos)");
+    ok(pr.manias.find(x => x.id === "lluvia").p === 0.64, "y la de cada manía"); }
+}
+
 // 5) Un mundo largo
 const AÑOS = rapido ? 3 : 8, CARRERAS = AÑOS * C.ANIO;
 let m;
