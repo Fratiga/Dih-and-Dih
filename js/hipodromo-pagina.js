@@ -743,11 +743,16 @@
     let tarde = false;
     const intento = window.HipodromoOnline.conectar(M, alCambiarOnline);
     intento.then(x => { if (tarde && x.ok) x.en.parar(); }, () => {});
-    try { r = await Promise.race([intento, new Promise(ok => setTimeout(() => { tarde = true; ok({ ok: false, motivo: "servidor", detalle: "tardó demasiado" }); }, 15000))]); }
+    try { r = await Promise.race([intento, new Promise(ok => setTimeout(() => { tarde = true; ok({ ok: false, motivo: "servidor", detalle: "tardó demasiado en pedir " + window.HipodromoOnline.paso() }); }, 40000))]); }
     catch (e) { r = { ok: false, motivo: "servidor", detalle: String(e && e.message || e) }; }
     if (!r.ok) {
       const nota = $("hipModoNota"), motivos = { sesion: 'Estás en la prueba local: el mundo corre en este navegador. Para entrar al mundo de verdad, <a href="fichas.html">inicia sesión</a> y vuelve.', vacio: "Estás en la prueba local: el servidor todavía no tiene el hipódromo en marcha.", servidor: "Estás en la prueba local: no se pudo hablar con el servidor." };
-      if (nota) { nota.innerHTML = motivos[r.motivo] || motivos.servidor; nota.classList.remove("hidden"); }
+      if (r.motivo === "servidor") console.warn("Hipódromo: no se pudo conectar:", r.detalle);
+      if (nota) {
+        nota.innerHTML = (motivos[r.motivo] || motivos.servidor) + (r.motivo === "servidor" ? ' <button type="button" class="hip-boton chico" id="hipReintentar">Reintentar</button>' : "");
+        nota.classList.remove("hidden");
+        const re = $("hipReintentar"); if (re) re.addEventListener("click", () => { window.HipEspera.poner(re, "Conectando..."); location.reload(); });
+      }
       return false;
     }
     online = r.en; est = online.est; m = online.m;

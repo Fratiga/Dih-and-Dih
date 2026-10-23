@@ -7,15 +7,18 @@
 window.HipodromoOnline = (function () {
   "use strict";
   const MAX_NOTICIAS = 80, MAX_RESULTADOS = 12, MAX_HISTORIAL = 100;
+  let ultimoPaso = "";   // lo último que se estaba pidiendo al servidor: si la conexión se alarga, la página dice dónde se quedó
 
   /* Intenta conectar. Devuelve { ok: true, en } o { ok: false, motivo: "sesion" | "servidor" | "vacio", detalle } */
   async function conectar(M, alCambiar) {
     const C = M.C;
     if (typeof fichasCliente !== "function" || typeof fichasSesionActual !== "function") return { ok: false, motivo: "servidor", detalle: "Esta página no carga el cliente del servidor." };
     let ses = null;
+    ultimoPaso = "tu sesión";
     try { ses = await fichasSesionActual(); } catch (e) { /* sin sesión */ }
     if (!ses || !ses.user) return { ok: false, motivo: "sesion" };
     let supa;
+    ultimoPaso = "el cliente del servidor";
     try { supa = await fichasCliente(); } catch (e) { return { ok: false, motivo: "servidor", detalle: "No se pudo cargar el cliente del servidor." }; }
     const yo = ses.user.id;
 
@@ -106,21 +109,23 @@ window.HipodromoOnline = (function () {
     }
 
     /* ---------------------------------------------------------------- ciclo de actualización */
-    async function refrescar() {
+    async function refrescar(previa) {
       if (enCurso || parado) return; enCurso = true;
       try {
-        const prog = await leerPrograma();
+        const prog = previa || await leerPrograma();
         if (!prog) { enCurso = false; return; }
         const cambio = prog.n !== ultimoN;
-        await leerPozos(prog.n);
+        // cada ida y vuelta al servidor cuesta: lo que no depende de lo demás se pide a la vez
         if (cambio) {
-          await leerCriaturas();
-          await Promise.all([leerNoticias(), leerResultados(), leerMiCuenta()]);
+          ultimoPaso = "las criaturas, las noticias y tu cuenta";
+          await Promise.all([leerPozos(prog.n), leerCriaturas(), leerNoticias(), leerResultados(), leerMiCuenta()]);
           resultadoDe = null;
-        } else if (ahora() >= prog.hora) {
-          await Promise.all([leerCriaturas(), leerMiCuenta()]);
+        } else {
+          await leerPozos(prog.n);
+          if (ahora() >= prog.hora) await Promise.all([leerCriaturas(), leerMiCuenta()]);
         }
         if (cambio || !m.proxima) {
+          ultimoPaso = "las criaturas de la carrera";
           await pedirCriaturas(prog.entrantes.map(e => e.id));
           est.liquidadas = est.liquidadas || [];
         }
@@ -175,12 +180,14 @@ window.HipodromoOnline = (function () {
     function guardarFavoritos() { try { localStorage.setItem("hipodromoFavoritosServidor", JSON.stringify(est.favoritos)); } catch (e) { /* sin almacenamiento */ } }
 
     // ---- arranque
-    await sincronizarReloj();
-    const hay = await leerPrograma();
+    ultimoPaso = "el reloj, el programa y tu saldo";
+    const [, hay] = await Promise.all([
+      sincronizarReloj(),
+      leerPrograma(),
+      supa.rpc("hipodromo_saldo").then(({ error }) => avisoError("saldo", error))
+    ]);
     if (!hay) return { ok: false, motivo: "vacio" };
-    const { error: errSaldo } = await supa.rpc("hipodromo_saldo");
-    avisoError("saldo", errSaldo);
-    await refrescar();
+    await refrescar(hay);
     if (!m.proxima) return { ok: false, motivo: "vacio" };
     ciclo();
     document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescar(); });
@@ -199,5 +206,5 @@ window.HipodromoOnline = (function () {
     };
     return { ok: true, en };
   }
-  return { conectar };
+  return { paso: () => ultimoPaso, conectar };
 })();
