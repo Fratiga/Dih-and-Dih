@@ -1387,7 +1387,7 @@ window.STATS = [
     stats: { fue: 20, des: 16, con: 20, int: 8, sab: 10, car: 14 },
     notas: [
       "Salvaciones: FUE +8, CON +8. Habilidades: Atletismo +8, Percepción +3, Intimidación +5. Percepción pasiva 13. Competencia +3.",
-      "Resistencia al daño necrótico. Visión en la oscuridad 60 pies.",
+      "Resistencia al daño necrótico. Inmunidad al estado Dormido y a cualquier efecto de sueño, mágico o de sedantes (el conjuro Sueño, canciones de cuna, dardos tranquilizantes, gas somnífero). Visión en la oscuridad 60 pies.",
       "Tiene una acción y una acción adicional por turno. No usa dos veces en el mismo turno una habilidad con recarga.",
       "Enfoque de estudio: regeneración. El compuesto de troll hace que su cuerpo se reconstruya solo; el Nigredo hace que se reconstruya mal, más rápido y con más cosas.",
       "Es un chico del laboratorio que no entiende que lo que hace hace daño. Para él es un juego contra Morado, y los demás son el escenario."
@@ -1395,6 +1395,7 @@ window.STATS = [
     habilidades: [
       { nombre: "Regeneración de troll (Pasiva)", descripcion: "Al inicio de su turno recupera 10 PV si tiene al menos 1 PV. Si desde su último turno recibió daño de fuego, ácido o radiante, no se regenera ese turno." },
       { nombre: "Rebrote (Pasiva, 1/combate)", descripcion: "Cuando queda a 0 PV y no recibió fuego, ácido ni radiante desde su último turno, no cae: al inicio de su siguiente turno se levanta con 25 PV y deja un Resto Palpitante en el sitio donde cayó. Si el golpe que lo derribó fue de fuego, ácido o radiante, muere." },
+      { nombre: "Sangre sin sueño (Pasiva)", descripcion: "Los compuestos del laboratorio le quitaron el sueño: es inmune al estado Dormido y a cualquier efecto de sueño, sea magia o sedante, y no se duerme aunque esté agotado. Tiene ventaja en las salvaciones contra conjuros y otros efectos mágicos que le causen un estado (Hechizado, Asustado, Paralizado, Aturdido, Cegado o Restringido)." },
       { nombre: "Rivalidad (Pasiva)", descripcion: "Al inicio de su turno, si Morado está consciente a 60 pies o menos, se mueve hacia él y lo ataca antes que a nadie. Solo ataca a otra criatura si alguien le hizo daño desde su último turno, o si Morado está fuera de su alcance y no puede llegar a él." },
       { nombre: "Daño colateral (Pasiva)", descripcion: "Cuando Rojo o Morado golpean al otro, todas las criaturas a 10 pies del objetivo (menos ellos dos) hacen una salvación de Destreza CD 14 o reciben 2d6 contundente por los escombros y la onda del golpe. Una vez por ronda." },
       { nombre: "Multiataque (Acción)", descripcion: "Realiza dos ataques, que pueden ser de Puñetazo o uno de Puñetazo y uno de Mordisco." },
@@ -1418,7 +1419,7 @@ window.STATS = [
     stats: { fue: 22, des: 12, con: 22, int: 8, sab: 10, car: 12 },
     notas: [
       "Salvaciones: FUE +9, CON +9. Habilidades: Atletismo +9, Percepción +3, Intimidación +4. Percepción pasiva 13. Competencia +3.",
-      "Resistencia al daño necrótico. Visión en la oscuridad 60 pies.",
+      "Resistencia al daño necrótico. Inmunidad al estado Dormido y a cualquier efecto de sueño, mágico o de sedantes (el conjuro Sueño, canciones de cuna, dardos tranquilizantes, gas somnífero). Visión en la oscuridad 60 pies.",
       "Tiene una acción y una acción adicional por turno. No usa dos veces en el mismo turno una habilidad con recarga.",
       "Enfoque de estudio: inmortalidad. El compuesto de orco hace que su cuerpo se niegue a caer; el Nigredo lo recorre en forma de descargas moradas que le salen por las venas.",
       "Es el otro chico del laboratorio. Tampoco entiende que lo que hace hace daño. Para él es un juego contra Rojo, y los demás son el escenario."
@@ -1427,6 +1428,7 @@ window.STATS = [
       { nombre: "Aguante de orco (Pasiva, 1/combate)", descripcion: "Cuando un ataque o efecto lo dejaría a 0 PV, queda en cambio a 1 PV y obtiene 25 PV temporales. Si el golpe fue de daño radiante, no funciona." },
       { nombre: "Sangre que cierra (Pasiva)", descripcion: "Al inicio de su turno, si tiene menos de la mitad de sus PV, recupera 8 PV. No funciona si desde su último turno recibió daño de fuego o radiante." },
       { nombre: "Furia de orco (Pasiva)", descripcion: "Mientras tenga menos de la mitad de sus PV, sus ataques cuerpo a cuerpo infligen 1d6 de daño adicional y tiene ventaja en salvaciones de Constitución." },
+      { nombre: "Sangre sin sueño (Pasiva)", descripcion: "Los compuestos del laboratorio le quitaron el sueño: es inmune al estado Dormido y a cualquier efecto de sueño, sea magia o sedante, y no se duerme aunque esté agotado. Tiene ventaja en las salvaciones contra conjuros y otros efectos mágicos que le causen un estado (Hechizado, Asustado, Paralizado, Aturdido, Cegado o Restringido)." },
       { nombre: "Rivalidad (Pasiva)", descripcion: "Al inicio de su turno, si Rojo está consciente a 60 pies o menos, se mueve hacia él y lo ataca antes que a nadie. Solo ataca a otra criatura si alguien le hizo daño desde su último turno, o si Rojo está fuera de su alcance y no puede llegar a él." },
       { nombre: "Daño colateral (Pasiva)", descripcion: "Cuando Rojo o Morado golpean al otro, todas las criaturas a 10 pies del objetivo (menos ellos dos) hacen una salvación de Destreza CD 14 o reciben 2d6 contundente por los escombros y la onda del golpe. Una vez por ronda." },
       { nombre: "Agresivo (Acción adicional)", descripcion: "Se mueve hasta su velocidad hacia una criatura hostil que pueda ver." },
