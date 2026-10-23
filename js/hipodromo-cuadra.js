@@ -56,7 +56,7 @@ window.HipodromoCuadraUI = (function () {
       const por = id => pre.mut.find(x => x.id === id).p, pman2 = id => pre.manias.find(x => x.id === id).p;
       const filas = pre.rasgos.slice(0, 8).map(r => `<li><strong>${esc(NOMBRE_RASGO[r.clave] || r.clave)}:</strong> ${r.opciones.map(o => `${esc(o.texto.toLowerCase())} (${pc(o.p)})`).join(" o ")}, o uno nuevo (${pc(r.nuevo)}).</li>`).join("");
       return `<div class="hip-previa${pre.riesgo ? " riesgo" : ""}">
-        <p class="hip-previa-par"><strong>${esc(pre.parentescoTexto)}.</strong>${pre.riesgo ? " La cría sale con muchas más mutaciones y casi todas son taras." : pre.parentesco > 0 ? " Algo más de mutaciones de lo normal." : ""}</p>
+        <p class="hip-previa-par"><strong>${esc(pre.parentescoTexto)}.</strong>${pre.riesgo ? " Salen muchas más mutaciones y muchas son taras." : pre.parentesco > 0 ? " Algo más de mutaciones de lo normal." : ""}</p>
         <p>${esc(p.nombre)}${p.arquetipo ? ` (${esc(p.arquetipo)})` : ""} y ${esc(sp.nombre)}${sp.arquetipo ? ` (${esc(sp.arquetipo)})` : ""}. El cuerpo sale de una mezcla de los dos con algo de azar.</p>
         <p><strong>${T("camada", "Camada")}:</strong> ${pre.camada.map(x => `${x.n} ${x.n === 1 ? "cría" : "crías"} (${pc(x.p)})`).join(", ")}. Cada cría es distinta.</p>
         ${filas ? `<ul class="hip-previa-lista">${filas}</ul>` : ""}

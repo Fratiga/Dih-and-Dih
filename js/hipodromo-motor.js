@@ -1233,7 +1233,7 @@
         if (m.n - madre.ultimaCria < C.GESTACION || madre.crias >= 8) return err("La madre necesita descansar más antes de otra cría.");
         if ((m.cruces || []).some(x => x.madre === madre.id)) return err("Ya espera cría.");
         const parentesco = HR.parentesco(madre, padre);
-        if (parentesco >= 0.2 && o.riesgo !== true) return err(`${HR.textoParentesco(parentesco)}: la cría sale con muchas más mutaciones y casi siempre con taras. Si quieres arriesgarte, confirma que asumes el riesgo.`);
+        if (parentesco >= 0.2 && o.riesgo !== true) return err(`${HR.textoParentesco(parentesco)}: salen muchas más mutaciones y muchas son taras. Si quieres arriesgarte, confirma que asumes el riesgo.`);
         const pendientes = (m.cruces || []).filter(x => x.dueno === d).length;
         if (nCuadra + pendientes >= C.MAX_CABALLOS) return err(`No hay sitio en tu cuadra para la cría (${C.MAX_CABALLOS}): vende o suelta a alguna antes de cruzar.`);
         // el semental de otra cuadra cobra lo que haya puesto su dueño; con uno propio se paga el precio de siempre a la casa (criar no es gratis)
