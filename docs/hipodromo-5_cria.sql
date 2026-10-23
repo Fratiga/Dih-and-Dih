@@ -1,6 +1,6 @@
 -- HIPÓDROMO, parte 5: la cría dirigida (mutaciones, camadas, parentesco y precio de monta).
 -- Cambia una sola función que ya existe, sin tocar tablas ni datos (se puede ejecutar más de una vez): hipodromo_ordenar acepta la orden nueva «monta»
--- (el dueño de un semental pone lo que cobra por montarlo) y dos campos más: «precio» y «riesgo» (confirmar que se cruzan parientes cercanos).
+-- (el dueño de un semental pone lo que cobra por montarlo) y un campo más: «precio».
 -- Antes de ejecutarlo, despliega la Edge Function con el motor nuevo; si no, la orden nueva llegaría y el motor la rechazaría como desconocida.
 create or replace function public.hipodromo_ordenar(p_datos jsonb) returns bigint
 language plpgsql security definer set search_path = public as $$
@@ -27,9 +27,8 @@ begin
     'padre', case when p_datos ? 'padre' then (p_datos->>'padre')::bigint end,
     'stat', left(p_datos->>'stat', 8), 'tactica', left(p_datos->>'tactica', 8), 'sexo', left(p_datos->>'sexo', 1),
     'nombre', left(p_datos->>'nombre', 28),
-    -- el precio de monta de un semental (sin precio = el de siempre) y la confirmación del riesgo al cruzar parientes
-    'precio', case when jsonb_typeof(p_datos->'precio') = 'number' then round((p_datos->>'precio')::numeric)::integer end,
-    'riesgo', case when p_datos->>'riesgo' = 'true' then true end));
+    -- el precio de monta de un semental (sin precio = el de siempre)
+    'precio', case when jsonb_typeof(p_datos->'precio') = 'number' then round((p_datos->>'precio')::numeric)::integer end));
   insert into hipodromo_ordenes (usuario, datos) values (v_uid, v_d) returning id into v_id;
   return v_id;
 end;

@@ -80,7 +80,7 @@ window.HipodromoGlosario = (function () {
     mutacion: "Un cambio que sale en una cría además de los rasgos, de un padre o nuevo. Las pequeñas son frecuentes y casi siempre tienen precio; las grandes (✦) son raras, fuertes y se ven en el dibujo. Verde: buena. Dorado: algo bueno y algo malo. Rojo: tara.",
     manias: "El carácter de la criatura. Se hereda y solo se nota cuando se dan sus condiciones (lluvia, niebla, barro, copas, distancias largas...). Pesan poco: son una pista para elegir en qué carrera inscribirla.",
     camada: "Cada cruce da una camada de una a tres crías, cada una distinta. Si tu cuadra se pasa del límite, vende o suelta a alguna antes de comprar o cruzar.",
-    parentesco: "Lo emparentadas que están dos criaturas. Cruzar parientes cercanos es arriesgado: salen más mutaciones y muchas son taras.",
+    parentesco: "Lo emparentadas que están dos criaturas. Cruzar parientes cercanos da más mutaciones y muchas son taras.",
     monta: "Lo que cobra el dueño de un semental por montarlo, de 40 a 2000 tokens. Sin precio puesto, sale de su palmarés. Con tus propias hembras se paga siempre el precio de siempre, a la casa.",
     criador: "En la cría: ya no corre y pasa a tener crías. Las hembras las tienen, los machos son sementales.",
     retirada: "Retirada: ya no corre. Se retira por edad, por lesión grave o porque su dueño lo decide.",

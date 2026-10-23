@@ -20,7 +20,7 @@ window.HipodromoCuadraUI = (function () {
     const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
 
     let vista = "mias", mercOrden = "precio", mercMax = 12, enCurso = null;
-    const semSel = {}, riesgoOk = new Set(), montaTxt = {};   // lo que se ha elegido en cada cruce (semental, riesgo confirmado) y lo escrito en el precio de monta: sobreviven a repintar
+    const semSel = {}, montaTxt = {};   // el semental elegido en cada cruce y lo escrito en el precio de monta: sobreviven a repintar
     const TEXTO_ESPERA = { entrenar: "Entrenando...", cuidar: "Cuidando...", inscribir: "Inscribiendo...", desinscribir: "Quitando...", comprar: "Comprando...", vender: "Vendiendo...", retirar: "Retirando...", nombre: "Bautizando...", cruzar: "Cruzando...", adoptar: "Adoptando...", monta: "Guardando..." };
     /* La orden que se está esperando pone su botón en «cargando» y los demás se apagan. Se llama después de cada dibujo, porque pintar() reescribe todo el HTML. */
     function marcarEspera() {
@@ -48,8 +48,6 @@ window.HipodromoCuadraUI = (function () {
       const ma = D.maniasDetalle(p).map(x => `<span class="hip-mania ${x.tipo}" title="${esc(x.hace)}">${esc(x.texto)}</span>`);
       return mu.concat(ma).join(" ") + (p.consanguinea ? ' <span class="hip-mut tara" title="Sus padres eran parientes cercanos">consanguínea</span>' : "");
     };
-    /* Antes de pagar un cruce solo se avisa del parentesco cuando hay riesgo: lo demás (qué sale, con qué probabilidad) se descubre criando */
-    const avisoParentesco = r => (r >= 0.2 ? `<p class="hip-previa-par${r >= 0.2 ? " riesgo" : ""}"><strong>${esc(HR.textoParentesco(r))}.</strong>${r >= 0.2 ? " Es arriesgado: salen más mutaciones y muchas son taras." : ""}</p>` : "");
     const barra = (v, max, clase) => `<span class="hip-barrita ${clase || ""}" title="${Math.round(v)}"><i style="width:${Math.max(0, Math.min(100, (v / max) * 100)).toFixed(0)}%"></i></span>`;
     function calendarioHtml(c, pub, cal) {
       const filas = cal.map(x => {
@@ -87,14 +85,11 @@ window.HipodromoCuadraUI = (function () {
       fila += `<button type="button" class="hip-boton chico" data-o="vender" data-id="${p.id}">Vender (${mon(c.venta)})</button></div>`;
       if (p.estado === "criador" && p.sexo === "f" && !(c.cruce && c.cruce.length)) {
         const sel = semSel[p.id] != null && semental.some(s => s.id === semSel[p.id]) ? semSel[p.id] : (semental[0] ? semental[0].id : null);
-        const sp = sel != null ? api.perfil(sel) : null, parentesco = sp ? HR.parentesco(p, sp) : 0, riesgo = parentesco >= 0.2;
+        const sp = sel != null ? api.perfil(sel) : null;
         const propio = sp && sp.dueno && api.mias().some(x => x.p.id === sp.id), coste = sp ? (propio && sp.montaBase != null ? sp.montaBase : sp.montaPrecio) : 0;
-        const falta = riesgo && !riesgoOk.has(p.id);
         acciones += `<details data-d="cr${p.id}"${abierta("cr" + p.id)}><summary>${T("cruzar", "Cruzar")}</summary><p class="hip-nota">Elige un semental en la cría. La cría nace en ${M.C.CRUCE_ESPERA} carreras (puede ser una camada) y será tuya. Si el semental es de otra cuadra, la monta se paga a su dueño; con uno tuyo se paga el precio de siempre a la casa. Necesitas sitio en la cuadra.</p>
           <select data-semental="${p.id}">${semental.map(s => `<option value="${s.id}"${s.id === sel ? " selected" : ""}>${esc(s.nombre)} · ${s.vic} victorias · ${mon(s.montaPrecio)}${s.dueno ? " · de " + esc(s.dueno.nombre || "otra cuadra") : ""}</option>`).join("") || '<option value="">No hay sementales</option>'}</select>
-          ${avisoParentesco(parentesco)}
-          ${riesgo ? `<label class="hip-riesgo"><input type="checkbox" data-riesgo="${p.id}"${riesgoOk.has(p.id) ? " checked" : ""}> Asumo el riesgo de cruzar parientes cercanos</label>` : ""}
-          <button type="button" class="hip-boton chico" data-o="cruzar" data-id="${p.id}"${sp && !falta ? "" : " disabled"}>Cruzar${sp ? ` (${mon(coste)})` : ""}</button></details>`;
+          <button type="button" class="hip-boton chico" data-o="cruzar" data-id="${p.id}"${sp ? "" : " disabled"}>Cruzar${sp ? ` (${mon(coste)})` : ""}</button></details>`;
       }
       if (p.estado === "criador" && p.sexo === "m") {
         const actual = montaTxt[p.id] != null ? montaTxt[p.id] : p.montaPrecio;
@@ -153,8 +148,7 @@ window.HipodromoCuadraUI = (function () {
       const t = e.target;
       if (t.dataset && t.dataset.mercorden) { mercOrden = t.value; mercMax = 12; pintar(true); return; }
       if (t.dataset && t.dataset.tactica) mandar({ tipo: "tactica", id: Number(t.dataset.tactica), tactica: t.value || null });
-      if (t.dataset && t.dataset.semental) { semSel[t.dataset.semental] = Number(t.value); riesgoOk.delete(Number(t.dataset.semental)); pintar(true); return; }
-      if (t.dataset && t.dataset.riesgo) { const id = Number(t.dataset.riesgo); if (t.checked) riesgoOk.add(id); else riesgoOk.delete(id); pintar(true); return; }
+      if (t.dataset && t.dataset.semental) { semSel[t.dataset.semental] = Number(t.value); pintar(true); return; }
     });
     cont.addEventListener("input", e => {
       const t = e.target;
@@ -193,8 +187,7 @@ window.HipodromoCuadraUI = (function () {
       if (tipo === "cruzar") {
         const padre = Number((cont.querySelector(`[data-semental="${id}"]`) || {}).value);
         if (!padre) return;
-        const o = { tipo, madre: id, padre }; if (riesgoOk.has(id)) o.riesgo = true;
-        return mandar(o, "Cruce hecho.");
+        return mandar({ tipo, madre: id, padre }, "Cruce hecho.");
       }
       if (tipo === "monta") {
         const reset = !!b.dataset.reset, valor = (cont.querySelector(`[data-montaprecio="${id}"]`) || {}).value;

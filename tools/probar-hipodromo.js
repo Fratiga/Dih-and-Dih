@@ -721,24 +721,23 @@ function cabezaACabeza(a, b, cond, veces) {
     const r = M.procesarOrdenes(w, [{ oid: 1, dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }], { u1: 5000 });
     ok(r.resultados[0].ok && r.resultados[0].costo === M.precioMonta(w, sem) && r.resultados[0].costo >= 60, `con un semental propio también se paga la monta (${r.resultados[0].costo})`);
     ok(r.pagos.every(q => q.monto < 0), "y el dinero no va a ningún jugador, solo se cobra"); }
-  { // parentesco: primos pasan, medio hermanos y hermanos necesitan confirmar el riesgo
+  { // parentesco: se puede cruzar con cualquier pariente, y las crías de los cercanos quedan marcadas
     const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
     const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);
     mad.padre = { id: 9001, nombre: "P" }; mad.madre = { id: 9002, nombre: "M" }; sem.padre = { id: 9001, nombre: "P" }; sem.madre = { id: 9002, nombre: "M" }; mad.anc = [[9001, 9002]]; sem.anc = [[9001, 9002]];
     const s1 = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
-    ok(!s1.ok && /riesgo/.test(s1.error) && /hermanos/.test(s1.error), "hermanos: no se cruzan sin asumir el riesgo y el aviso lo explica");
-    ok(w.cruces.length === 0, "y no queda nada a medias");
-    const s2 = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id, riesgo: true }, { u1: 5000 });
-    ok(s2.ok && w.cruces.length === 1 && w.cruces[0].riesgo === true, "con riesgo confirmado sí se cruzan y la orden lo recuerda");
+    ok(s1.ok && w.cruces.length === 1 && w.cruces[0].cercanos === true, "hermanos: se pueden cruzar sin confirmar nada y la orden recuerda que son cercanos");
     avanza(w, C.CRUCE_ESPERA + 1);
     const cs = w.vivos.filter(x => x.madre && x.madre.id === mad.id && x.padre && x.padre.id === sem.id);
     ok(cs.length >= 1 && cs.every(x => x.consanguinea === true && M.perfil(w, x).consanguinea === true), "las crías de hermanos quedan marcadas como consanguíneas");
     mad.ultimaCria = -999; mad.crias = 0; w.cruces = [];
     sem.padre = { id: 9001, nombre: "P" }; sem.madre = { id: 9777, nombre: "X" }; sem.anc = [[9001, 9777]];
     const s3 = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
-    ok(!s3.ok && /riesgo/.test(s3.error), "medio hermanos también piden confirmar el riesgo");
+    ok(s3.ok && w.cruces[0].cercanos === true, "medio hermanos también se cruzan, marcados como cercanos");
     sem.padre = { id: 8001, nombre: "A" }; sem.madre = { id: 8002, nombre: "B" }; sem.anc = [[8001, 8002], [9001, 5, 6, 7]]; mad.anc = [[9001, 9002], [9001, 1, 2, 3]];
-    ok(HR.parentesco(mad, sem) < 0.2 && ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 }).ok, "primos lejanos se cruzan sin pedir nada"); }
+    mad.ultimaCria = -999; mad.crias = 0; w.cruces = [];
+    const lejos = ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 });
+    ok(HR.parentesco(mad, sem) < 0.2 && lejos.ok && w.cruces[0].cercanos === false, "primos lejanos se cruzan y no se marcan como cercanos"); }
   { // sitio en la cuadra
     const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "retirar", id: mad.id });
     const sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);

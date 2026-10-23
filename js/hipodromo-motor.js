@@ -1053,7 +1053,7 @@
       const camada = [];
       for (let i = 0; i < k; i++) {
         const h = nuevaCriatura(m, rng, { nac: m.n, padres: [padre, madre], media: 0.5 });
-        h.dueno = x.dueno; if (x.riesgo) h.consanguinea = true;
+        h.dueno = x.dueno; if (x.cercanos) h.consanguinea = true;
         m.vivos.push(h); m.stats.nacidos++; camada.push(h);
         ev.cambios.add(h.id); ev.nacidos.push(h.id);
       }
@@ -1233,7 +1233,6 @@
         if (m.n - madre.ultimaCria < C.GESTACION || madre.crias >= 8) return err("La madre necesita descansar más antes de otra cría.");
         if ((m.cruces || []).some(x => x.madre === madre.id)) return err("Ya espera cría.");
         const parentesco = HR.parentesco(madre, padre);
-        if (parentesco >= 0.2 && o.riesgo !== true) return err(`${HR.textoParentesco(parentesco)}: salen muchas más mutaciones y muchas son taras. Si quieres arriesgarte, confirma que asumes el riesgo.`);
         const pendientes = (m.cruces || []).filter(x => x.dueno === d).length;
         if (nCuadra + pendientes >= C.MAX_CABALLOS) return err(`No hay sitio en tu cuadra para la cría (${C.MAX_CABALLOS}): vende o suelta a alguna antes de cruzar.`);
         // el semental de otra cuadra cobra lo que haya puesto su dueño; con uno propio se paga el precio de siempre a la casa (criar no es gratis)
@@ -1241,7 +1240,7 @@
         res.costo = precio;
         if (padre.dueno && padre.dueno !== d && precio) res.pagos.push({ dueno: padre.dueno, monto: precio, concepto: `Monta de ${padre.nombre}`, n: m.n });
         if (prueba) return res;
-        m.cruces.push({ madre: madre.id, padre: padre.id, padreNombre: padre.nombre, dueno: d, n: m.n + C.CRUCE_ESPERA, pago: precio, riesgo: parentesco >= 0.2 });
+        m.cruces.push({ madre: madre.id, padre: padre.id, padreNombre: padre.nombre, dueno: d, n: m.n + C.CRUCE_ESPERA, pago: precio, cercanos: parentesco >= 0.2 });
         madre.ultimaCria = m.n;
         res.id = madre.id; res.cambios.push(madre.id); res.texto = `${madre.nombre} espera una cría de ${padre.nombre} para dentro de ${C.CRUCE_ESPERA} carreras.`; res.concepto = `Monta de ${padre.nombre}`;
         return res;

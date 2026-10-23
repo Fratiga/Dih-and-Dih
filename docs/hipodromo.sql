@@ -464,9 +464,8 @@ begin
     'padre', case when p_datos ? 'padre' then (p_datos->>'padre')::bigint end,
     'stat', left(p_datos->>'stat', 8), 'tactica', left(p_datos->>'tactica', 8), 'sexo', left(p_datos->>'sexo', 1),
     'nombre', left(p_datos->>'nombre', 28),
-    -- el precio de monta de un semental (sin precio = el de siempre) y la confirmación del riesgo al cruzar parientes
-    'precio', case when jsonb_typeof(p_datos->'precio') = 'number' then round((p_datos->>'precio')::numeric)::integer end,
-    'riesgo', case when p_datos->>'riesgo' = 'true' then true end));
+    -- el precio de monta de un semental (sin precio = el de siempre)
+    'precio', case when jsonb_typeof(p_datos->'precio') = 'number' then round((p_datos->>'precio')::numeric)::integer end));
   insert into hipodromo_ordenes (usuario, datos) values (v_uid, v_d) returning id into v_id;
   return v_id;
 end;

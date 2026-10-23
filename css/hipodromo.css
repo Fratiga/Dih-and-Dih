@@ -551,21 +551,15 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 @keyframes hipGira { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .hip-espera::before { animation: none; border-right-color: currentColor; opacity: .6; } }
 
-/* Mutaciones, carácter y la previa de un cruce (la cría dirigida) */
+/* Mutaciones y carácter (la cría dirigida) */
 .hip-chips { margin: 4px 0 6px; line-height: 1.8; }
 .hip-mut, .hip-mania { display: inline-block; padding: 0 7px; margin: 1px 4px 1px 0; border: 1px solid var(--border); font-size: .72rem; color: var(--text); cursor: help; }
 .hip-mut.buena, .hip-mania.buena { border-color: var(--hip-verde); color: var(--hip-verde); }
 .hip-mut.tara, .hip-mania.mala { border-color: var(--hip-rojo); color: var(--hip-rojo); }
 .hip-mut.mixta, .hip-mania.mixta { border-color: var(--accent-soft); color: var(--accent); }
 .hip-mut.grande { border-width: 2px; font-weight: 700; }
-.hip-previa { margin: 8px 0; padding: 10px 12px; border: 1px dashed var(--border); font-size: .84rem; }
-.hip-previa.riesgo { border-color: var(--hip-rojo); }
-.hip-previa p { margin: 4px 0; }
-.hip-previa-lista { margin: 4px 0; padding-left: 18px; }
-.hip-riesgo { display: block; margin: 8px 0; font-size: .85rem; color: var(--hip-rojo); }
 
-/* Campo de número (el precio de monta) y la casilla del riesgo, con el mismo diseño que los desplegables */
+/* Campo de número (el precio de monta), con el mismo diseño que los desplegables */
 .hip-pagina input[type="number"] { border-radius: 0; width: 8em; padding: 7px 10px; background-color: var(--panel-2); color: var(--text); border: 1px solid var(--accent-soft); font: 500 .92rem Karla, sans-serif; }
 .hip-pagina input[type="number"]:hover { border-color: var(--accent); }
 .hip-pagina input[type="number"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.hip-riesgo input[type="checkbox"] { accent-color: var(--hip-rojo); margin-right: 6px; }
