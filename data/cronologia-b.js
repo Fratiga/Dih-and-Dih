@@ -188,7 +188,7 @@ window.CRONOLOGIA_B = [
 
       <p>Mientras esperaban que se fijara fecha para su audiencia, los encerraron en los
       calabozos de Kigan, entre piedra húmeda y guardias que evitaban mirarlos a los
-      ojos. Ahí descubrieron que uno de los carceleros les debía un favor. Temían que el
+      ojos. Ahí descubrieron que uno de los carceleros les debía un favor del escape. Temían que el
       rey ya hubiera decidido su ejecución antes de escucharlos, y con ese miedo
       empezaron a planear una fuga.</p>
 
@@ -584,7 +584,7 @@ window.CRONOLOGIA_B = [
 
       <p>Torvrena ató a Harrow a una silla y la interrogaron. La enfermera acabó
       contándoles para qué servía aquel lugar. Era una parte del Instituto Vesalio, y
-      la Corona balutiana lo financiaba con dinero y con sujetos. Esa sección se
+      la corona de Brurland lo financiaba con dinero y con sujetos. Esa sección se
       dedicaba sobre todo a experimentar con Nigredo en personas, en especial con la
       inmortalidad y con la naturaleza misma del Nigredo.</p>
 
