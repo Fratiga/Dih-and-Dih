@@ -9,7 +9,7 @@ const ok = (c, t) => { console.log(`  ${c ? "OK  " : "FALLA"} ${t}`); if (!c) fa
 const sql = fs.readFileSync(path.join(__dirname, "../docs/cronica-1_base.sql"), "utf8");
 const tipos = [...sql.matchAll(/^\s*\('([a-z_]+)', '[a-z]+', (?:true|false),/gm)].map(m => m[1]);
 ok(tipos.length === 15, `el SQL siembra 15 tipos (hay ${tipos.length})`);
-tipos.filter(t => t !== "partida_dificil").forEach(t => ok(typeof C.FRASES[t] === "function", `el tipo ${t} tiene frase`));
+tipos.forEach(t => ok(typeof C.FRASES[t] === "function", `el tipo ${t} tiene frase`));
 ok(C.linea({ id: 1, tipo: "tipo_que_no_existe", datos: {} }) === null, "un tipo desconocido no rompe: se salta");
 ok(C.linea({ id: 1, tipo: "nota", datos: {} }) === null, "una noticia vacía no sale");
 
@@ -25,6 +25,7 @@ const casos = [
   { id: 12, tipo: "record_ritmo", user: "Ana", datos: { cancion: "Cancion Rara", dificultad: "normal", puntos: 7000, anterior: "Beto" } },
   { id: 13, tipo: "record_parranda", user: "Caro", datos: { cancion: "Tema", dificultad: "experto", puntos: 9000 } },
   { id: 14, tipo: "record_minijuego", user: "Dani", datos: { juego: "arqueria", victorias: 8, anterior: "Ana" } },
+  { id: 15, tipo: "partida_dificil", user: "Ana", datos: { juego: "ajedrez", rival: "el General Ilyth" } },
   { id: 9, tipo: "ultima_vela", user: "Ana", datos: { resultado: "ganado", ganadas: 3, perdidas: 1 } },
   { id: 10, tipo: "ultima_vela", user: "Beto", datos: { resultado: "perdido", ganadas: 1, perdidas: 3 } },
   { id: 8, tipo: "copa_hipodromo", user: "Ana", datos: { criatura: "Brasa", copa: "Copa de Oro", premio: 40000 } }

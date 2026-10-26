@@ -60,6 +60,10 @@
       if (d.activa === false) return `La racha de ${quien(s)} en Las Veintiuna Velas terminó en ${d.racha} victorias.` + (d.record ? " Fue la mejor de la mesa." : "");
       return `${quien(s)} lleva ${d.racha} victorias seguidas en Las Veintiuna Velas.` + (d.record ? " Es la mejor racha de la mesa." : "");
     },
+    partida_dificil: s => {
+      const d = s.datos || {};
+      return `${quien(s)} le ganó por primera vez a ${d.rival} en ${d.juego === "arqueria" ? "Arquería" : "Ajedrez"}.`;
+    },
     record_hooey: s => {
       const d = s.datos || {};
       return `${quien(s)} tiene ahora la mejor racha de Hooey, ${num(d.racha)}.` + (d.anterior ? ` Le quitó el primer puesto a ${d.anterior}.` : "");
@@ -92,7 +96,7 @@
     },
     nota: s => String((s.datos || {}).texto || "")
   };
-  const ICONOS = { carta_ganada: "🃏", intercambio: "⇄", cria_nacida: "🐣", apuesta_hipodromo: "🐎", apuesta_veintiuna: "🕯", racha_veintiuna: "🕯", logro_oro_veintiuna: "🕯", ultima_vela: "🕯", record_hooey: "🏅", record_ritmo: "🏅", record_parranda: "🏅", record_minijuego: "🏅", copa_hipodromo: "🏆", nota: "📜" };
+  const ICONOS = { carta_ganada: "🃏", intercambio: "⇄", cria_nacida: "🐣", apuesta_hipodromo: "🐎", apuesta_veintiuna: "🕯", racha_veintiuna: "🕯", logro_oro_veintiuna: "🕯", ultima_vela: "🕯", record_hooey: "🏅", partida_dificil: "🏅", record_ritmo: "🏅", record_parranda: "🏅", record_minijuego: "🏅", copa_hipodromo: "🏆", nota: "📜" };
 
   function linea(s) {
     const f = FRASES[s && s.tipo];

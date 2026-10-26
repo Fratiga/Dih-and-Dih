@@ -37,7 +37,7 @@ Orden en Supabase: `docs/cronica-1_base.sql` y después `docs/cronica-2_disparad
 | `logro_oro_veintiuna` | se completa un desafío de nivel oro (`veintiuna_logros`) | todos los de oro; como se reinician cada día, puede volver a salir mañana | con nombre |
 | `copa_hipodromo` | se publica una carrera de copa o Gran Premio en `hipodromo_carreras` | solo criaturas con dueño humano | con nombre |
 | `nota` | el Admin la escribe (`cronica_publicar`) | sin umbral | el DM |
-| `partida_dificil` | (apagado) ganar a un rival difícil | esas partidas contra una IA las informa el navegador y sería falsificable | |
+| `partida_dificil` | cambia `victorias` en `mj_estadisticas` y es la primera contra ese rival (la clave es el identificador del rival) | solo los rivales de la lista `rivales` de los umbrales: Ajedrez (el General Ilyth, el perro sabio) y Arquería (Cassius, Torvrena, el Miliciano, Tobi) | con nombre |
 
 Los disparadores observan tablas de resultados que ya existen, así que **ninguna función de los juegos se ha tocado** y volver a correr un SQL antiguo no los quita. Cada uno atrapa sus errores: un fallo de la crónica nunca rompe el juego (hay una prueba que renombra la tabla para comprobarlo).
 
@@ -64,7 +64,6 @@ Los disparadores observan tablas de resultados que ya existen, así que **ningun
 
 ## No hecho todavía
 
-- Ganar a un rival difícil de ajedrez queda apagado hasta que el servidor confirme el resultado.
 - Los récords (Hooey, Zarabanda, Parranda, Ajedrez, Arquería) leen tablas que no están definidas en `docs/` (viven en `scratchpad/*.sql`, que no se publica) y sus puntajes los informa el navegador: un récord falso puede colarse. El Admin puede ocultar una línea o apagar el tipo. Si una columna cambia de nombre, el disparador de ese récord falla en silencio (y el SQL solo avisa al crearlo).
 - Los juegos ocultos (Duelo, Ostelar, La Fractura, Estocatta) no anotan nada hasta que se publiquen. La Fractura ya tiene `titulo` y `cronica` en `fractura_guerras`.
 - Avisar por Discord: ver las ideas enviadas a la sesión del bot.

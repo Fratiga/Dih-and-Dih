@@ -16,6 +16,7 @@
 --   record_hooey            hooey_puntajes              cuando alguien pasa a tener la mejor racha
 --   record_ritmo            ritmo_puntajes              cuando alguien toma el primer puesto de una canción
 --   record_parranda         parranda_puntajes           igual, por dificultad y versión del mapa
+--   partida_dificil         mj_estadisticas             la primera victoria contra un rival difícil de Ajedrez o Arquería
 --   record_minijuego        mj_estadisticas             cuando alguien pasa a liderar las victorias de Ajedrez o Arquería
 --   ultima_vela             veintiuna_retos             cuando el desafío de La Última Vela pasa a «ganado» o «perdido»
 --   copa_hipodromo          hipodromo_carreras          al publicarse el resultado de una copa o un Gran Premio (se enseña cuando acaba la carrera)
@@ -421,6 +422,33 @@ begin
 end;
 $$;
 
+-- La primera victoria contra un rival difícil (la clave de mj_estadisticas es el identificador del rival: ilyth, perro, cassius...).
+-- Los rivales difíciles salen de cronica_tipos.config -> rivales, así el Admin puede cambiarlos. Esos resultados los informa el navegador.
+create or replace function public.cronica_t_partida_dificil()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t cronica_tipos%rowtype;
+  v_rival text;
+begin
+  begin
+    if new.juego not in ('ajedrez', 'arqueria') or new.victorias < 1 then return new; end if;
+    if tg_op = 'UPDATE' and old.victorias >= 1 then return new; end if;   -- solo la primera
+    select * into t from cronica_tipos where tipo = 'partida_dificil';
+    if not found or not t.activo then return new; end if;
+    v_rival := t.config -> 'rivales' -> new.juego ->> new.clave;
+    if v_rival is null then return new; end if;
+    perform cronica_i_anotar('partida_dificil', new.user_id, null, null, jsonb_build_object('juego', new.juego, 'rival', v_rival, 'clave', new.clave),
+      'dificil:' || new.juego || ':' || new.user_id || ':' || new.clave, new.juego || '.html');
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
 /* ================================================================== LA ÚLTIMA VELA */
 create or replace function public.cronica_t_ultima_vela()
 returns trigger
@@ -480,6 +508,7 @@ revoke all on function public.cronica_t_racha() from public, anon, authenticated
 revoke all on function public.cronica_t_oro() from public, anon, authenticated;
 revoke all on function public.cronica_t_ultima_vela() from public, anon, authenticated;
 revoke all on function public.cronica_t_record_hooey() from public, anon, authenticated;
+revoke all on function public.cronica_t_partida_dificil() from public, anon, authenticated;
 revoke all on function public.cronica_t_record_ritmo() from public, anon, authenticated;
 revoke all on function public.cronica_t_record_parranda() from public, anon, authenticated;
 revoke all on function public.cronica_t_record_minijuego() from public, anon, authenticated;
@@ -549,6 +578,9 @@ begin
   end;
   begin
     if to_regclass('public.mj_estadisticas') is not null then
+      drop trigger if exists cronica_partida_dificil on public.mj_estadisticas;
+      create trigger cronica_partida_dificil after insert or update of victorias on public.mj_estadisticas for each row
+        when (new.juego in ('ajedrez', 'arqueria')) execute function public.cronica_t_partida_dificil();
       drop trigger if exists cronica_record_minijuego on public.mj_estadisticas;
       create trigger cronica_record_minijuego after insert or update of victorias on public.mj_estadisticas for each row
         when (new.juego in ('ajedrez', 'arqueria')) execute function public.cronica_t_record_minijuego();

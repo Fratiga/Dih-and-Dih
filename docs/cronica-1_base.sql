@@ -72,11 +72,14 @@ insert into public.cronica_tipos (tipo, juego, activo, config, descripcion) valu
     'Se completa un desafío de nivel oro de Veintiuna.'),
   ('copa_hipodromo', 'hipodromo', true, '{}',
     'Una criatura con dueño gana una copa o un Gran Premio del Hipódromo.'),
-  ('partida_dificil', 'ajedrez', false, '{}',
-    'Ganar a un rival difícil. Apagado: esas partidas las informa el navegador y la crónica anotaría algo falsificable.'),
+  ('partida_dificil', 'ajedrez', true, '{"rivales": {"ajedrez": {"ilyth": "el General Ilyth", "perro": "el perro sabio"}, "arqueria": {"cassius": "Cassius", "torvrena": "Torvrena", "milicia": "el Miliciano", "tobi": "Tobi"}}}',
+    'Alguien gana por primera vez a un rival difícil de Ajedrez (el General Ilyth, el perro sabio) o de Arquería (Cassius, Torvrena, el Miliciano, Tobi). La lista de rivales es el campo rivales de los umbrales: la clave es el identificador del rival.'),
   ('nota', 'campana', true, '{"dias": 60}',
     'Noticias que escribe el Admin.')
 on conflict (tipo) do update set juego = excluded.juego, descripcion = excluded.descripcion;
+
+-- La primera versión sembró este tipo apagado y sin rivales: si nadie lo ha tocado, se enciende ahora (no pisa lo que el Admin ya haya cambiado)
+update public.cronica_tipos set activo = true, config = '{"rivales": {"ajedrez": {"ilyth": "el General Ilyth", "perro": "el perro sabio"}, "arqueria": {"cassius": "Cassius", "torvrena": "Torvrena", "milicia": "el Miliciano", "tobi": "Tobi"}}}'::jsonb where tipo = 'partida_dificil' and activo = false and config = '{}'::jsonb;
 
 /* ================================================================== 3) FUNCIONES INTERNAS */
 -- Orden de las rarezas, para comparar umbrales

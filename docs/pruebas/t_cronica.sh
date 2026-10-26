@@ -26,7 +26,7 @@ cargar cronica-2_disparadores.sql
 
 n() { sql "select count(*) from cronica_sucesos where $1"; }
 ver() { como "$1" "select jsonb_array_length(cronica_ver(${2:-100}) -> 'sucesos');" | tail -1; }
-vaciar() { sql "truncate cronica_sucesos restart identity" >/dev/null; sql "update cronica_tipos set activo = (tipo <> 'partida_dificil')" >/dev/null; }
+vaciar() { sql "truncate cronica_sucesos restart identity" >/dev/null; sql "update cronica_tipos set activo = true" >/dev/null; }
 NOM() { sql "select username from perfiles where user_id = '$1'"; }
 # Lo que ve un jugador en el primer suceso: usuario | otro | anónimo
 ANON() { como "$1" "select coalesce(s->>'user', '-') || '|' || coalesce(s->>'otro', '-') || '|' || (s->>'anonimo') from jsonb_array_elements(cronica_ver(${2:-5})->'sucesos') s;" | tail -1; }
@@ -41,10 +41,12 @@ limpiar; vaciar
 sql "truncate hipodromo_apuestas, hipodromo_carreras, hipodromo_criaturas, veintiuna_estadisticas, veintiuna_logros, veintiuna_partidas, hooey_puntajes, ritmo_puntajes, parranda_puntajes, mj_estadisticas cascade" >/dev/null
 
 echo "== Instalación"
-comprobar "los catorce disparadores están puestos" "14" "$(sql "select count(*) from pg_trigger where tgname ~ '^cronica_' and not tgisinternal")"
+comprobar "los quince disparadores están puestos" "15" "$(sql "select count(*) from pg_trigger where tgname ~ '^cronica_' and not tgisinternal")"
 comprobar "los quince tipos están sembrados" "15" "$(sql "select count(*) from cronica_tipos")"
 comprobar "volver a correr los archivos no duplica los tipos" "15" "$(sql "select count(*) from cronica_tipos")"
-comprobar "la partida difícil nace apagada" "f" "$(sql "select activo from cronica_tipos where tipo = 'partida_dificil'")"
+sql "update cronica_tipos set activo = false, config = '{}'::jsonb where tipo = 'partida_dificil'" >/dev/null
+cargar cronica-1_base.sql
+comprobar "una instalación anterior (apagado y sin rivales) se enciende sola" "t|el General Ilyth" "$(sql "select activo from cronica_tipos where tipo = 'partida_dificil'")|$(sql "select config->'rivales'->'ajedrez'->>'ilyth' from cronica_tipos where tipo = 'partida_dificil'")"
 
 echo "== Permisos"
 contiene "sin sesión no se lee" "$(anonimo "select cronica_ver(5);")" "permission denied"
@@ -301,6 +303,22 @@ comprobar "el Duelo (oculto) no cuenta" "1" "$(n "tipo = 'record_minijuego'")"
 mj $U3 arqueria pvp 4; mj $U4 arqueria pvp 5
 comprobar "Arquería también, con su propio marcador" "2" "$(n "tipo = 'record_minijuego'")"
 comprobar "el filtro «records» enseña todos los récords" "2|0" "$(como $ADMIN "select jsonb_array_length(cronica_ver(20, null, 'records')->'sucesos');" | tail -1)|$(como $ADMIN "select jsonb_array_length(cronica_ver(20, null, 'cartas')->'sucesos');" | tail -1)"
+vaciar
+
+echo "== Primera victoria contra un rival difícil"
+sql "truncate mj_estadisticas" >/dev/null
+mj $U1 ajedrez ocevat 1
+comprobar "ganar a un rival fácil no cuenta" "0" "$(n "tipo = 'partida_dificil'")"
+mj $U1 ajedrez j-otro 1
+comprobar "ni una partida entre jugadores" "0" "$(n "tipo = 'partida_dificil'")"
+mj $U1 ajedrez ilyth 1
+comprobar "la primera victoria contra el General Ilyth sale, con el nombre del rival" "1|el General Ilyth|ajedrez" "$(n "tipo = 'partida_dificil'")|$(sql "select datos->>'rival' from cronica_sucesos where tipo = 'partida_dificil'")|$(sql "select datos->>'juego' from cronica_sucesos where tipo = 'partida_dificil'")"
+mj $U1 ajedrez ilyth 2
+comprobar "las siguientes no" "1" "$(n "tipo = 'partida_dificil'")"
+mj $U2 arqueria tobi 1
+comprobar "en Arquería también, con sus rivales" "2" "$(n "tipo = 'partida_dificil'")"
+mj $U3 duelo ilyth 1
+comprobar "el Duelo (oculto) no" "2" "$(n "tipo = 'partida_dificil'")"
 vaciar
 
 echo "== La Última Vela"
