@@ -5,10 +5,10 @@
 ## Cómo está construida la web
 
 - Sitio estático de varias páginas (48 HTML) en GitHub Pages. Unas 62.000 líneas de JavaScript en scripts clásicos, sin npm, sin build y sin TypeScript. La caché se rompe con `?v=NNNNNNNN` en cada etiqueta.
-- La regla del proyecto es que se abra con solo servir los archivos, sin pasos de instalación. Cualquier librería nueva va por CDN con versión fija o como archivo dentro del repositorio.
+- Desde el 26-oct-2026 la web puede dejar de ser estática si lo que se añade es gratis y los jugadores no tienen que hacer nada (entran por la URL). Las páginas actuales no se tocan: lo nuevo puede compilarse aparte.
 - Supabase pone las cuentas, la economía de cartas, el Hipódromo, la Veintiuna, el ajedrez, la arquería y la presencia. Las reglas sensibles viven en funciones SQL.
 - Three.js 0.180 (build WebGPU, que cae a WebGL2) por importmap, solo en Slappy, el sacrificio de bufones y la habitación. Los demás juegos dibujan con canvas 2D, SVG o CSS.
-- No hay Phaser ni WebAssembly. WebAssembly no se puede cargar abriendo el archivo directamente con `file://`, así que cualquier uso futuro exige servir la web.
+- No hay Phaser ni WebAssembly. WebAssembly no carga con `file://`, pero sí desde la web publicada.
 
 ## Estado de los proyectos
 
