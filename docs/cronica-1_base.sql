@@ -47,15 +47,15 @@ revoke all on public.cronica_tipos, public.cronica_sucesos from public, anon, au
 /* ================================================================== 2) LOS TIPOS Y SUS UMBRALES (el Admin los cambia desde su panel) */
 insert into public.cronica_tipos (tipo, juego, activo, config, descripcion) values
   ('carta_ganada', 'cartas', true, '{"min_rareza": "rara", "max_por_dia": 3, "numero_copia": true}',
-    'Alguien gana una carta rara o mejor jugando, forjando o con los sellos. No cuenta lo que se compra al Buhonero ni lo que regala el Admin, y las crías van por su tipo.'),
+    'Alguien gana una carta rara o mejor jugando, forjando, con los sellos, en el pozo de Veintiuna o en una apuesta de cartas. No cuenta lo que se compra al Buhonero ni lo que regala el Admin, y las crías van por su tipo.'),
   ('intercambio', 'cartas', true, '{"anonimo": true, "min_rareza": "rara", "min_cartas": 3}',
     'Se cierra un intercambio donde alguna carta es rara o mejor, o suman 3 cartas o más. Sin nombres.'),
   ('cria_nacida', 'cartas', true, '{"anonimo": true, "min_rareza": "rara", "primera_especie": true}',
     'Nace una cría rara o mejor, o la primera de su especie en el mundo. Sin nombres.'),
   ('apuesta_hipodromo', 'hipodromo', true, '{"ratio": 4, "min_pago": 200}',
-    'Una apuesta del Hipódromo paga al menos 4 veces lo apostado y al menos 200 tokens de juego.'),
+    'Una apuesta del Hipódromo paga al menos 4 veces lo apostado y al menos 200 tokens de juego, o un premio de 1000 tokens o más (config pago_siempre).'),
   ('apuesta_veintiuna', 'veintiuna', true, '{"ratio": 4, "min_pago": 200}',
-    'Una mano o una mesa de Veintiuna con apuesta paga al menos 4 veces lo apostado y al menos 200 tokens de juego.'),
+    'Una mano o una mesa de Veintiuna con apuesta paga al menos 4 veces lo apostado y al menos 200 tokens de juego, o un premio de 1000 tokens o más (config pago_siempre).'),
   ('racha_veintiuna', 'veintiuna', true, '{"min": 4}',
     'Una racha de más de 3 victorias seguidas en Veintiuna. Una sola línea que se actualiza mientras dura y se cierra cuando se pierde.'),
   ('logro_oro_veintiuna', 'veintiuna', true, '{}',

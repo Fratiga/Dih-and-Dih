@@ -23,13 +23,18 @@ vaciar() { sql "truncate cronica_sucesos restart identity" >/dev/null; sql "upda
 NOM() { sql "select username from perfiles where user_id = '$1'"; }
 # Lo que ve un jugador en el primer suceso: usuario | otro | anónimo
 ANON() { como "$1" "select coalesce(s->>'user', '-') || '|' || coalesce(s->>'otro', '-') || '|' || (s->>'anonimo') from jsonb_array_elements(cronica_ver(${2:-5})->'sucesos') s;" | tail -1; }
+# Ayudantes de las pruebas de apuestas (Hipódromo y Veintiuna)
+ap() { sql "insert into hipodromo_apuestas (usuario, n, tipo, sel, nombres, carrera, monto, cuota, doble, origen) values ('$1', ${2:-1}, 'ganador', '1', '[\"Rayo\"]', 'Gran Premio', $3, 5, ${4:-false}, ${5:-null}) returning id" | head -1; }
+gana() { sql "update hipodromo_apuestas set estado = 'ganada', pago = $2 where id = $1" >/dev/null; }
+vp() { sql "insert into veintiuna_partidas (user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier) values ('$1', gen_random_uuid(), '$2', $3, 'maldicion', '{1,2,3}', 4, '{1,2}', '{3,4}') returning id" | head -1; }
+cierra() { sql "update veintiuna_partidas set estado = 'terminada', resultado = 'victoria', pago = $2 where id = '$1'" >/dev/null; }
 sql "update perfiles set side = 'A' where user_id in ('$U1', '$U2'); update perfiles set side = 'B' where user_id in ('$U3', '$U4');" >/dev/null
 sql "update cartas_catalogo set en_circulacion = true where id <> 'bufon';" >/dev/null 2>&1
 limpiar; vaciar
 sql "truncate hipodromo_apuestas, hipodromo_carreras, hipodromo_criaturas, veintiuna_estadisticas, veintiuna_logros, veintiuna_partidas cascade" >/dev/null
 
 echo "== Instalación"
-comprobar "los ocho disparadores están puestos" "8" "$(sql "select count(*) from pg_trigger where tgname ~ '^cronica_' and not tgisinternal")"
+comprobar "los nueve disparadores están puestos" "9" "$(sql "select count(*) from pg_trigger where tgname ~ '^cronica_' and not tgisinternal")"
 comprobar "los diez tipos están sembrados" "10" "$(sql "select count(*) from cronica_tipos")"
 comprobar "volver a correr los archivos no duplica los tipos" "10" "$(sql "select count(*) from cronica_tipos")"
 comprobar "la partida difícil nace apagada" "f" "$(sql "select activo from cronica_tipos where tipo = 'partida_dificil'")"
@@ -107,6 +112,33 @@ R=$(como $U1 "select cronica_ver(20) -> 'sucesos' -> 0 ->> 'user';" | tail -1)
 comprobar "las cartas ganadas sí llevan nombre" "$(NOM $U1)" "$R"
 vaciar
 
+echo "== Cartas ganadas a otro jugador (pozo de Veintiuna y apuestas de cartas)"
+limpiar; vaciar
+mov() { sql "insert into cartas_movimientos (ejemplar, carta_id, tipo, de, a, motivo, referencia) values ('$1', '$2', 'transferencia', '$3', '$4', '$5', 'x')" >/dev/null; }
+EJ=$(dar $U1 rara-1); mov $EJ rara-1 $U1 $U2 "apuesta ganada"
+comprobar "ganar una rara en una apuesta de cartas se anota, con el nombre del ganador" "1|apuesta|$U2" "$(n "tipo = 'carta_ganada'")|$(sql "select datos->>'origen' from cronica_sucesos where tipo = 'carta_ganada'")|$(sql "select user_id from cronica_sucesos where tipo = 'carta_ganada'")"
+EJL=$(dar $U1 legendaria-1); mov $EJL legendaria-1 $U1 $U3 "pozo ganado en Las Veintiuna Velas"
+comprobar "el pozo de Veintiuna también, con el número de copia" "pozo|1" "$(sql "select datos->>'origen' from cronica_sucesos where user_id = '$U3'")|$(sql "select datos->>'numero' from cronica_sucesos where user_id = '$U3'")"
+EJC=$(dar $U1 comun-1); mov $EJC comun-1 $U1 $U2 "apuesta ganada"
+comprobar "una carta común ganada así no" "2" "$(n "tipo = 'carta_ganada'")"
+EJ2=$(dar $U1 rara-2); mov $EJ2 rara-2 $U1 $U2 "intercambio"
+mov $EJ2 rara-2 $U2 $U1 "regalo del admin"
+comprobar "ni un intercambio ni un regalo: esos tienen su propio tipo o no cuentan" "2" "$(n "tipo = 'carta_ganada'")"
+vaciar
+
+echo "== Premios grandes por sí solos"
+I=$(ap $U1 1 1000); gana $I 1500
+comprobar "una apuesta de Hipódromo que paga 1500 se anota aunque sea solo 1,5 veces" "1" "$(n "tipo = 'apuesta_hipodromo'")"
+I=$(ap $U1 2 800); gana $I 900
+comprobar "900 por 800 no (ni 4 veces ni 1000)" "1" "$(n "tipo = 'apuesta_hipodromo'")"
+V=$(vp $U1 apuesta 600); cierra $V 1200
+comprobar "una mesa de Veintiuna que paga 1200 se anota aunque sea 2 veces" "1" "$(n "tipo = 'apuesta_veintiuna'")"
+sql "update cronica_tipos set config = '{\"ratio\": 4, \"min_pago\": 200, \"pago_siempre\": 5000}' where tipo = 'apuesta_hipodromo'" >/dev/null
+I=$(ap $U1 3 1000); gana $I 1500
+comprobar "el umbral se cambia desde el Admin (pago_siempre)" "1" "$(n "tipo = 'apuesta_hipodromo'")"
+sql "update cronica_tipos set config = '{\"ratio\": 4, \"min_pago\": 200}' where tipo = 'apuesta_hipodromo'" >/dev/null
+vaciar
+
 echo "== Intercambios (anónimos)"
 X=$(dar $U1 rara-1); Y=$(dar $U2 rara-2)
 T=$(como $U1 "select cartas_ofrecer(null, array['$X']::uuid[], '[{\"carta\":\"rara-2\",\"n\":1}]'::jsonb, '');" | tail -1)
@@ -145,8 +177,6 @@ comprobar "no dice de quién es" "-|-|true" "$(ANON $EDITOR 1)"
 vaciar
 
 echo "== Apuestas del Hipódromo"
-ap() { sql "insert into hipodromo_apuestas (usuario, n, tipo, sel, nombres, carrera, monto, cuota, doble, origen) values ('$1', ${2:-1}, 'ganador', '1', '[\"Rayo\"]', 'Gran Premio', $3, 5, ${4:-false}, ${5:-null}) returning id" | head -1; }
-gana() { sql "update hipodromo_apuestas set estado = 'ganada', pago = $2 where id = $1" >/dev/null; }
 I=$(ap $U1 1 100); gana $I 450
 comprobar "450 por 100 (4,5 veces y más de 200) se anota" "1" "$(n "tipo = 'apuesta_hipodromo'")"
 comprobar "con el múltiplo" "4.5" "$(sql "select datos->>'mult' from cronica_sucesos where tipo = 'apuesta_hipodromo'")"
@@ -214,8 +244,6 @@ comprobar "pero otro día sí puede volver a salir" "2" "$(n "tipo = 'logro_oro_
 vaciar
 
 echo "== Apuestas grandes de Veintiuna"
-vp() { sql "insert into veintiuna_partidas (user_id, cliente, modo, apuesta, regla, mazo, repartidas, jugador, crupier) values ('$1', gen_random_uuid(), '$2', $3, 'maldicion', '{1,2,3}', 4, '{1,2}', '{3,4}') returning id" | head -1; }
-cierra() { sql "update veintiuna_partidas set estado = 'terminada', resultado = 'victoria', pago = $2 where id = '$1'" >/dev/null; }
 V=$(vp $U1 apuesta 100); cierra $V 250
 comprobar "una mano individual que paga 2,5 veces no llega a 4" "0" "$(n "tipo = 'apuesta_veintiuna'")"
 V=$(vp $U1 apuesta 100); cierra $V 450

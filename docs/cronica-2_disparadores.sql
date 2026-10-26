@@ -6,6 +6,7 @@
 --
 --   Suceso                  Tabla observada             Momento
 --   carta_ganada            cartas_registro             al entrar una carta a un jugador jugando, forjando o con sellos
+--   carta_ganada            cartas_movimientos          al ganar una carta de otro jugador: el pozo de Veintiuna o una apuesta de cartas de Triunfos
 --   intercambio             cartas_intercambios         cuando una oferta pasa a «aceptada»
 --   cria_nacida             cartas_crias                cuando una cría pasa a «nacida» (al recogerla del corral)
 --   apuesta_hipodromo       hipodromo_apuestas          cuando una apuesta pasa a «ganada»
@@ -15,8 +16,9 @@
 --   copa_hipodromo          hipodromo_carreras          al publicarse el resultado de una copa o un Gran Premio (se enseña cuando acaba la carrera)
 
 /* ================================================================== CARTAS GANADAS */
-create or replace function public.cronica_t_carta()
-returns trigger
+-- La lógica común de «alguien ganó una carta»: rareza mínima, nombre, número de copia y tope diario (pasado el tope, las demás se juntan en una línea).
+create or replace function public.cronica_i_carta(p_user uuid, p_carta text, p_origen text, p_clave text, p_enlace text, p_ejemplar uuid default null)
+returns void
 language plpgsql
 security definer
 set search_path = public
@@ -25,41 +27,78 @@ declare
   t cronica_tipos%rowtype;
   v_rareza text;
   v_nombre text;
-  v_origen text;
   v_numero int;
   v_hoy int;
   v_extras int;
   v_max int;
+  v_clave_resumen text := 'carta:resumen:' || p_user || ':' || to_char(now() at time zone 'utc', 'YYYYMMDD');
+begin
+  select * into t from cronica_tipos where tipo = 'carta_ganada';
+  if not found or not t.activo then return; end if;
+  select rareza into v_rareza from cartas_catalogo where id = p_carta;
+  if cronica_i_rango(v_rareza) < cronica_i_rango(coalesce(t.config ->> 'min_rareza', 'rara')) then return; end if;
+  v_nombre := coalesce((select data ->> 'nombre' from cartas_definiciones where id = p_carta), p_carta);
+  if cronica_i_rango(v_rareza) >= 4 and coalesce((t.config ->> 'numero_copia')::boolean, false) then
+    if p_ejemplar is not null then
+      select numero into v_numero from cartas_ejemplares where id = p_ejemplar;
+    else
+      select e.numero into v_numero from cartas_movimientos m join cartas_ejemplares e on e.id = m.ejemplar
+       where m.carta_id = p_carta and m.a = p_user order by m.id desc limit 1;
+    end if;
+  end if;
+  v_max := coalesce((t.config ->> 'max_por_dia')::int, 3);
+  select count(*) into v_hoy from cronica_sucesos
+   where tipo = 'carta_ganada' and user_id = p_user and creado > now() - interval '24 hours' and not (datos ? 'resumen');
+  if v_hoy < v_max then
+    perform cronica_i_anotar('carta_ganada', p_user, null, null,
+      jsonb_build_object('carta_id', p_carta, 'nombre', v_nombre, 'rareza', v_rareza, 'origen', p_origen, 'numero', v_numero), p_clave, p_enlace);
+  else
+    -- Pasado el tope del día, las demás se juntan en una sola línea: «ganó N cartas hoy»
+    select coalesce((datos ->> 'extras')::int, 0) into v_extras from cronica_sucesos where clave = v_clave_resumen;
+    v_extras := coalesce(v_extras, 0) + 1;
+    perform cronica_i_anotar('carta_ganada', p_user, null, null, jsonb_build_object('resumen', true, 'extras', v_extras, 'n', v_max + v_extras), v_clave_resumen, 'cartas.html', true);
+  end if;
+end;
+$$;
+
+-- Carta ganada jugando, forjando o con sellos (la fila que deja cartas_i_emitir en cartas_registro)
+create or replace function public.cronica_t_carta()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_origen text;
 begin
   begin
     -- Solo lo que se gana jugando. Compras al Buhonero y regalos del Admin no cuentan, y las crías tienen su propio tipo (anónimo): si no, delatarían a quien las recogió.
     if new.origen is distinct from 'juego' or coalesce(new.detalle, '') = 'mercader' or coalesce(new.detalle, '') like 'cria:%' then return new; end if;
-    select * into t from cronica_tipos where tipo = 'carta_ganada';
-    if not found or not t.activo then return new; end if;
-    select rareza into v_rareza from cartas_catalogo where id = new.carta_id;
-    if cronica_i_rango(v_rareza) < cronica_i_rango(coalesce(t.config ->> 'min_rareza', 'rara')) then return new; end if;
-    v_nombre := coalesce((select data ->> 'nombre' from cartas_definiciones where id = new.carta_id), new.carta_id);
     v_origen := case when coalesce(new.detalle, '') like 'sellos:%' then 'sellos' when coalesce(new.detalle, '') like 'forja:%' then 'forja' else 'juego' end;
-    if cronica_i_rango(v_rareza) >= 4 and coalesce((t.config ->> 'numero_copia')::boolean, false) then
-      select e.numero into v_numero from cartas_movimientos m join cartas_ejemplares e on e.id = m.ejemplar
-       where m.carta_id = new.carta_id and m.a = new.user_id order by m.id desc limit 1;
+    perform cronica_i_carta(new.user_id, new.carta_id, v_origen, 'carta:' || new.id, case v_origen when 'forja' then 'forja.html' else 'cartas.html' end);
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+-- Carta ganada a otro jugador: el pozo de cartas de Las Veintiuna Velas y las apuestas de cartas de Triunfos (los dos pasan por cartas_i_transferir)
+create or replace function public.cronica_t_movimiento()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_origen text;
+begin
+  begin
+    if new.a is null or new.tipo <> 'transferencia' then return new; end if;
+    if new.motivo like 'pozo ganado%' then v_origen := 'pozo';
+    elsif new.motivo = 'apuesta ganada' then v_origen := 'apuesta';
+    else return new;
     end if;
-    v_max := coalesce((t.config ->> 'max_por_dia')::int, 3);
-    select count(*) into v_hoy from cronica_sucesos
-     where tipo = 'carta_ganada' and user_id = new.user_id and creado > now() - interval '24 hours' and not (datos ? 'resumen');
-    if v_hoy < v_max then
-      perform cronica_i_anotar('carta_ganada', new.user_id, null, null,
-        jsonb_build_object('carta_id', new.carta_id, 'nombre', v_nombre, 'rareza', v_rareza, 'origen', v_origen, 'numero', v_numero),
-        'carta:' || new.id, case v_origen when 'forja' then 'forja.html' else 'cartas.html' end);
-    else
-      -- Pasado el tope del día, las demás se juntan en una sola línea: «ganó N cartas hoy»
-      select coalesce((datos ->> 'extras')::int, 0) into v_extras from cronica_sucesos
-       where clave = 'carta:resumen:' || new.user_id || ':' || to_char(now() at time zone 'utc', 'YYYYMMDD');
-      v_extras := coalesce(v_extras, 0) + 1;
-      perform cronica_i_anotar('carta_ganada', new.user_id, null, null,
-        jsonb_build_object('resumen', true, 'extras', v_extras, 'n', v_max + v_extras),
-        'carta:resumen:' || new.user_id || ':' || to_char(now() at time zone 'utc', 'YYYYMMDD'), 'cartas.html', true);
-    end if;
+    perform cronica_i_carta(new.a, new.carta_id, v_origen, 'mov:' || new.id, case v_origen when 'pozo' then 'veintiuna.html' else 'cartas.html' end, new.ejemplar);
   exception when others then null;
   end;
   return new;
@@ -155,7 +194,10 @@ begin
       exit when not found;
       v_monto := v_fila.monto; v_origen := v_fila.origen; v_pasos := v_pasos + 1;
     end loop;
-    if v_monto <= 0 or new.pago < coalesce((t.config ->> 'min_pago')::numeric, 200) or new.pago < v_monto * coalesce((t.config ->> 'ratio')::numeric, 4) then return new; end if;
+    -- Cuenta si paga 4 veces lo apostado y al menos 200 tokens, o si el premio es grande por sí solo (config.pago_siempre, 1000 por defecto)
+    if v_monto <= 0 then return new; end if;
+    if not ((new.pago >= coalesce((t.config ->> 'min_pago')::numeric, 200) and new.pago >= v_monto * coalesce((t.config ->> 'ratio')::numeric, 4))
+            or new.pago >= coalesce((t.config ->> 'pago_siempre')::numeric, 1000)) then return new; end if;
     perform cronica_i_anotar('apuesta_hipodromo', new.usuario, null, null,
       jsonb_build_object('apuesta', new.tipo, 'criaturas', new.nombres, 'carrera', new.carrera, 'monto', v_monto, 'pago', new.pago, 'mult', round(new.pago / v_monto, 1),
         'cadena', v_pasos > 0),
@@ -180,7 +222,9 @@ begin
     if new.pago is null or new.apuesta is null or new.apuesta <= 0 then return new; end if;
     select * into t from cronica_tipos where tipo = 'apuesta_veintiuna';
     if not found or not t.activo then return new; end if;
-    if new.pago < coalesce((t.config ->> 'min_pago')::numeric, 200) or new.pago < new.apuesta * coalesce((t.config ->> 'ratio')::numeric, 4) then return new; end if;
+    -- Cuenta si paga 4 veces lo apostado y al menos 200 tokens, o si el premio es grande por sí solo (config.pago_siempre, 1000 por defecto)
+    if not ((new.pago >= coalesce((t.config ->> 'min_pago')::numeric, 200) and new.pago >= new.apuesta * coalesce((t.config ->> 'ratio')::numeric, 4))
+            or new.pago >= coalesce((t.config ->> 'pago_siempre')::numeric, 1000)) then return new; end if;
     perform cronica_i_anotar('apuesta_veintiuna', new.user_id, null, null,
       jsonb_build_object('apuesta', new.apuesta, 'pago', new.pago, 'mult', round(new.pago / new.apuesta, 1), 'regla', new.regla),
       'v21:apuesta:' || new.id, 'veintiuna.html');
@@ -280,7 +324,9 @@ end;
 $$;
 
 /* ================================================================== PERMISOS Y DISPARADORES */
+revoke all on function public.cronica_i_carta(uuid, text, text, text, text, uuid) from public, anon, authenticated;
 revoke all on function public.cronica_t_carta() from public, anon, authenticated;
+revoke all on function public.cronica_t_movimiento() from public, anon, authenticated;
 revoke all on function public.cronica_t_trueque() from public, anon, authenticated;
 revoke all on function public.cronica_t_cria() from public, anon, authenticated;
 revoke all on function public.cronica_t_apuesta_hipodromo() from public, anon, authenticated;
@@ -294,6 +340,11 @@ begin
   if to_regclass('public.cartas_registro') is not null then
     drop trigger if exists cronica_carta on public.cartas_registro;
     create trigger cronica_carta after insert on public.cartas_registro for each row execute function public.cronica_t_carta();
+  end if;
+  if to_regclass('public.cartas_movimientos') is not null then
+    drop trigger if exists cronica_movimiento on public.cartas_movimientos;
+    create trigger cronica_movimiento after insert on public.cartas_movimientos for each row
+      when (new.tipo = 'transferencia' and new.a is not null) execute function public.cronica_t_movimiento();
   end if;
   if to_regclass('public.cartas_intercambios') is not null then
     drop trigger if exists cronica_trueque on public.cartas_intercambios;
