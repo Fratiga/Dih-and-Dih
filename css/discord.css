@@ -1,0 +1,29 @@
+/* Tablón de Discord (discord.html). Superficies planas con los colores del tema activo (variables de style.css): sin degradados ni brillos. */
+.dc-tablon { max-width: 720px; }
+.dc-intro { margin: 0 0 18px; line-height: 1.55; color: var(--text); }
+
+.dc-caja { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radio-tarjeta); padding: 18px 20px; display: grid; gap: 12px; }
+.dc-estado { margin: 0; font-family: var(--font-heading), sans-serif; text-transform: uppercase; letter-spacing: .08em; font-size: 14px; color: var(--muted); }
+.dc-estado.dc-ok { color: var(--accent); }
+.dc-mensaje { margin: 0; line-height: 1.5; color: var(--text); }
+.dc-mensaje.dc-error { color: #e0a090; }
+.dc-pasos { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text); }
+.dc-acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+.dc-acciones .secondary-button { width: auto; padding: 10px 24px; }
+
+.dc-codigo-caja { background: var(--panel-2); border: 1px solid var(--border); padding: 16px; display: grid; gap: 10px; justify-items: start; }
+.dc-etiqueta { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.dc-codigo { margin: 0; font-family: "Consolas", "Courier New", monospace; font-size: clamp(26px, 8vw, 38px); letter-spacing: .22em; color: var(--accent); user-select: all; }
+.dc-codigo.dc-caducado { color: var(--muted); text-decoration: line-through; }
+.dc-reloj { margin: 0; font-size: 13px; color: var(--muted); }
+
+.dc-invitacion { margin: 14px 0 0; }
+.dc-invitacion .secondary-button { display: inline-block; width: auto; padding: 10px 24px; text-decoration: none; }
+.dc-ayuda { margin-top: 18px; color: var(--text); }
+.dc-ayuda summary { cursor: pointer; color: var(--accent); }
+.dc-ayuda ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.dc-tablon .hidden { display: none; }
+
+@media (max-width: 520px) {
+  .dc-caja { padding: 14px; }
+}

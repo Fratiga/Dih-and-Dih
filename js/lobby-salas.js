@@ -25,7 +25,7 @@
   const MAPA = {
     taberna: {
       nombre: "Taberna", grupos: [{ titulo: "Taberna", enlaces: [
-        ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"],
+        ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"], ["discord.html", "Tablón de Discord"],
         ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna.html", "Mesa de blackjack (Las Veintiuna Velas)"]] }]
     },
     biblioteca: {
