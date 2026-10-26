@@ -7,62 +7,58 @@ window.CRONOLOGIA_B = [
     fecha: "Primeros días en Brurland",
     content: `
       <p>Todo empezó con una puerta que se abrió y un salón que olía a cerveza rancia
-      y madera húmeda. Así entraron los forasteros a La Taberna del Gigante, uno de
-      esos lugares que Brurland ofrece a quien busca trabajo, rumores o simplemente
-      un techo, frecuentado por igual por aventureros de paso, mercaderes cansados
-      del camino y mercenarios que cobran por no hacer preguntas.</p>
+      y madera húmeda. Así entraron los forasteros a La Taberna del Gigante. Brurland
+      ofrece lugares así a quien busca trabajo, rumores o un techo, y este lo
+      frecuentaban aventureros de paso, mercaderes cansados del camino y mercenarios
+      que cobran por no hacer preguntas.</p>
 
       <p>La noche transcurría con su ritmo habitual. Risas en una mesa, una partida de
       dados en otra, el tabernero limpiando jarras que ya estaban limpias. Entonces la
       puerta volvió a abrirse, esta vez con menos discreción. Las Comadrejas entraron
-      arrastrando una jaula grande, cubierta con una lona que apenas lograba silenciar
-      lo que había dentro. Bull cerraba la marcha como quien custodia algo que vale
-      más de lo que aparenta; Garra se abrió paso apartando curiosos con la mirada antes
-      que con las manos; Baraja, siempre el más hablador de los tres, ya buscaba con
-      quién negociar.</p>
+      arrastrando una jaula grande, cubierta con una lona que apenas silenciaba lo que
+      había dentro. Bull cerraba la marcha y vigilaba la jaula como quien custodia algo
+      que vale más de lo que aparenta. Garra apartaba a los curiosos con la mirada antes
+      que con las manos. Baraja, el más hablador de los tres, ya buscaba con quién
+      negociar.</p>
 
       <p>Bajo la lona había un grifón, apenas una cría, todavía con las plumas del nido y
-      los ojos demasiado grandes para el miedo que sentía. Contrabando, sin duda. Un
-      animal así no se compra en ningún mercado legal, y separado tan joven de los suyos
-      no tenía forma de ocultar lo que era: una presa asustada, no una mercancía.</p>
+      los ojos demasiado grandes para el miedo que sentía. Era contrabando, sin duda. Un
+      animal así no se compra en ningún mercado legal, y tan joven no podía ocultar lo
+      que era. Parecía una presa asustada.</p>
 
       <p>Lo que ocurrió después dependió, como casi todo en Brurland, de quién estaba
-      mirando y qué estaba dispuesto a hacer. Hubo quien prefirió no involucrarse. Hubo
-      quien intentó comprar la libertad de la criatura, y quien decidió simplemente
-      tomarla. Las voces subieron de tono, las mesas se movieron, y por un momento La
-      Taberna del Gigante estuvo más cerca de vivir su nombre de lo que a su tabernero le
-      hubiera gustado. Fue él quien puso fin al altercado antes de que se convirtiera en
-      algo peor, echando a Las Comadrejas a la calle o, según se cuente la historia,
-      calmando los ánimos con la autoridad de quien ya ha visto demasiadas peleas de
-      taberna.</p>
+      mirando y qué estaba dispuesto a hacer. Unos prefirieron no involucrarse. Otros
+      intentaron comprar la libertad de la criatura, y alguno decidió simplemente
+      tomarla. Las voces subieron de tono, las mesas se movieron y la taberna estuvo más
+      cerca de vivir su nombre de lo que a su tabernero le habría gustado. Fue él quien
+      puso fin al altercado antes de que se volviera algo peor. Según quién cuente la
+      historia, echó a Las Comadrejas a la calle o calmó los ánimos con la autoridad de
+      quien ya ha visto demasiadas peleas de taberna.</p>
 
       <p>Nadie en aquella sala sabía que sería la última noche tranquila que la ciudad
       tendría en mucho tiempo.</p>
 
       <h4>El ataque del dragón</h4>
 
-      <p>El rugido llegó antes que la luz del amanecer. No fue un sonido que se
-      escuchara tanto como uno que se sintiera, en los cristales, en los cimientos, en
-      el pecho de cada persona que dormía en Brurland esa noche. Las ventanas temblaron.
-      Después llegó el pánico, y después, al alzar la vista, la razón de ambos: una
-      sombra descomunal cruzando el cielo sobre la ciudad, con alas que apagaban las
-      estrellas a su paso.</p>
+      <p>El rugido llegó antes que la luz del amanecer. Se sentía más de lo que se oía,
+      en los cristales, en los cimientos, en el pecho de cada persona que dormía en
+      Brurland esa noche. Las ventanas temblaron. Llegó el pánico y después, al alzar la
+      vista, la razón de ambos. Una sombra descomunal cruzaba el cielo sobre la ciudad,
+      con alas que apagaban las estrellas a su paso.</p>
 
-      <p>Un dragón había llegado a Brurland. Y no venía solo. Bandas de kobolds y
-      dragartos brotaron por distintos sectores de la ciudad, todos a la vez,
-      sembrando el caos entre calles que minutos antes dormían en paz.</p>
+      <p>Un dragón había llegado a Brurland y no venía solo. Bandas de kobolds y
+      dragartos brotaron por distintos sectores de la ciudad, todos a la vez, y
+      sembraron el caos entre calles que minutos antes dormían en paz.</p>
 
-      <p>En medio de ese desorden, los forasteros de la noche anterior se encontraron
-      cruzando la misma ciudad que apenas conocían, ahora en llamas. El camino hacia el
-      refugio no fue una línea recta: hubo civiles que sacar de edificios que ya no eran
-      seguros, incendios que apagar antes de que se llevaran una manzana entera, escombros
-      que mover para que otros pudieran pasar. No fue una noche de héroes deliberados,
-      sino de gente que, estando en el lugar equivocado en el momento peor, eligió no
-      mirar hacia otro lado.</p>
+      <p>En medio de ese desorden, los forasteros de la noche anterior cruzaron una
+      ciudad que apenas conocían, ahora en llamas. El camino hacia el refugio no fue una
+      línea recta. Hubo civiles que sacar de edificios que ya no eran seguros, incendios
+      que apagar antes de que se llevaran una manzana entera y escombros que mover para
+      que otros pudieran pasar. Nada de eso era heroísmo deliberado. Eran gente en el lugar
+      equivocado en el peor momento, y eligieron no mirar hacia otro lado.</p>
 
-      <p>Así se recuerda el primer capítulo de esta historia en Brurland: una jaula
-      robada, un grifón asustado, y una ciudad que ardió antes de que nadie tuviera
-      tiempo de preguntar por qué.</p>
+      <p>Así empezó esta historia en Brurland, con una jaula robada y un grifón asustado.
+      La ciudad ardió antes de que nadie tuviera tiempo de preguntar por qué.</p>
     `
   },
   {
@@ -72,50 +68,48 @@ window.CRONOLOGIA_B = [
     title: "El Refugio",
     fecha: "La noche que Brurland resistió",
     content: `
-      <p>El refugio era una improvisación desesperada, levantada
-      con lo que la ciudad tuvo tiempo de reunir: vigas apiladas, carros volcados, puertas
-      arrancadas de sus goznes para tapar cada hueco por el que pudiera colarse el
-      desastre. Dentro se apretaban cientos de personas que horas antes dormían
-      tranquilas, y ahora se preguntaban si volverían a hacerlo.</p>
+      <p>El refugio fue una improvisación desesperada, levantada con lo que la ciudad
+      tuvo tiempo de reunir. Había vigas apiladas, carros volcados y puertas arrancadas
+      de sus goznes para tapar cada hueco por el que pudiera colarse el desastre. Dentro
+      se apretaban cientos de personas que horas antes dormían tranquilas y ahora se
+      preguntaban si volverían a hacerlo.</p>
 
-      <p>Al frente de la defensa estaba Eklino. No era un soldado, ni un héroe de los que
-      cantan los juglares. Era, simplemente, alguien que no se movió cuando todos los
-      demás querían hacerlo. A su lado se reunieron aldeanos armados con lo que
-      encontraron: herramientas de labranza, lanzas improvisadas, antorchas que servían
-      tanto para ver como para asustar. No era un ejército. Era una ciudad entera
-      decidiendo, barricada por barricada, que no pensaba rendirse.</p>
+      <p>Al frente de la defensa estaba Eklino, que no era soldado ni héroe de los que
+      cantan los juglares. Simplemente no se movió cuando todos los demás querían
+      hacerlo. A su lado se reunieron aldeanos armados con lo que encontraron, con
+      herramientas de labranza, lanzas improvisadas y antorchas que servían tanto para
+      ver como para asustar. Era una ciudad entera decidiendo, barricada por barricada,
+      que no pensaba rendirse.</p>
 
-      <p>La primera oleada llegó como un rumor que se convirtió en certeza: kobolds,
-      decenas de ellos, arrojándose contra las barricadas con la insistencia de quien no
-      teme morir porque hay muchos más detrás. La segunda trajo algo peor. Un dragarto,
-      cuya sola presencia bastó para que más de un aldeano soltara el arma y retrocediera.
-      La tercera, la que todos temían, llegó con tres dragartos abriéndose paso entre una
-      marea de kobolds que no parecía tener fin.</p>
+      <p>La primera oleada llegó como un rumor que se volvió certeza. Eran kobolds,
+      decenas de ellos, que se arrojaban contra las barricadas con la insistencia de
+      quien no teme morir porque hay muchos más detrás. La segunda trajo algo peor, un
+      dragarto, y su sola presencia hizo que más de un aldeano soltara el arma y
+      retrocediera. La tercera, la que todos temían, llegó con tres dragartos que se
+      abrían paso entre una marea de kobolds sin fin.</p>
 
-      <p>Algunos de los que defendieron el refugio esa noche cayeron en la barricada que
-      juraron no abandonar, sin llegar a ver el amanecer. Otros, presa del pánico,
-      hicieron lo que cualquiera habría hecho frente a algo tan grande como un dragarto, y
-      no siempre eso bastó para salvarlos. El objetivo nunca fue exterminar lo que
-      atacaba. Nadie en el refugio tenía esa fuerza. El objetivo era, simplemente, seguir
-      en pie cuando saliera el sol.</p>
+      <p>Algunos defensores cayeron en la barricada que habían jurado no abandonar y no
+      llegaron a ver el amanecer. Otros, presa del pánico, hicieron lo que cualquiera
+      habría hecho frente a un dragarto, y no siempre eso los salvó. El refugio no
+      tenía fuerza para exterminar a lo que atacaba. El objetivo era seguir en pie
+      cuando saliera el sol.</p>
 
-      <p>Cuando el último de los tres dragartos cayó y por un instante pareció que el
-      refugio había resistido lo peor, el cielo se abrió una vez más. No era un simple
-      centinela: un protodraco descendió sobre las barricadas, y su aliento, una lengua
-      de fuego que no distinguía entre defensor y muro, barrió de golpe una franja
-      entera de la línea. Ryn quedó directamente en su camino, sin tiempo ni espacio para
-      apartarse.</p>
+      <p>Cuando cayó el último de los tres dragartos y por un instante pareció que el
+      refugio había resistido lo peor, el cielo se abrió una vez más. Un protodraco
+      descendió sobre las barricadas. Su aliento, una lengua de fuego que no distinguía
+      entre defensor y muro, barrió de golpe una franja entera de la línea. Ryn quedó
+      directamente en su camino, sin tiempo ni espacio para apartarse.</p>
 
-      <p>Coach sí lo tuvo, y no lo usó para sí mismo. Se interpuso entre el aliento del
-      protodraco y Ryn, y pagó por esa decisión lo único que no se puede recuperar. Ella
-      vivió esa noche gracias a él.</p>
+      <p>Coach sí tuvo tiempo, y no lo usó para sí mismo. Se interpuso entre el aliento
+      del protodraco y Ryn, y pagó por esa decisión lo único que no se puede recuperar.
+      Ella vivió esa noche gracias a él.</p>
 
-      <p>Lo lograron. A duras penas, con el precio grabado en cada rostro que quedó para
-      contarlo: el refugio resistió, pero no sin pérdidas. Entre los que no sobrevivieron
-      esa noche estaban Eklino, que no se apartó de la barricada hasta el final, y Coach,
-      que eligió el fuego de un protodraco antes que dejarlo caer sobre Ryn. Sus nombres,
-      los aldeanos los siguieron repitiendo mucho después de que el sol volviera a salir
-      sobre Brurland.</p>
+      <p>Lo lograron a duras penas, con el precio grabado en cada rostro que quedó para
+      contarlo. El refugio resistió, pero con pérdidas. Entre los que no sobrevivieron
+      esa noche estaban Eklino, que no se apartó de la barricada hasta el final, y
+      Coach, que prefirió el fuego del protodraco antes que dejarlo caer sobre Ryn. Los
+      aldeanos siguieron repitiendo sus nombres mucho después de que el sol volviera a
+      salir sobre Brurland.</p>
     `
   },
   {
@@ -126,53 +120,52 @@ window.CRONOLOGIA_B = [
     fecha: "El precio de la victoria",
     content: `
       <p>Ocevat y Verdam llegaron cuando el refugio ya daba la última oleada por
-      perdida. Bastaron unos minutos para que ambos derribaran a lo que quedaba de
-      kobolds y dragartos, y se hicieran cargo de una defensa que hasta entonces se
-      sostenía a fuerza de voluntad. Ocevat no perdió tiempo en agradecimientos:
-      ordenó a los protagonistas partir de inmediato hacia el castillo para informar
-      al rey. Verdam no dijo una palabra. Se quedó observando el refugio y a los
-      refugiados con una atención que nadie supo interpretar por completo.</p>
+      perdida. En unos minutos derribaron a lo que quedaba de kobolds y dragartos y se
+      hicieron cargo de una defensa que hasta entonces se sostenía a fuerza de
+      voluntad. Ocevat no perdió tiempo en agradecimientos. Ordenó a los protagonistas
+      partir de inmediato hacia el castillo para informar al rey. Verdam no dijo una
+      palabra. Se quedó observando el refugio y a los refugiados con una atención que
+      nadie supo interpretar del todo.</p>
 
-      <p>El castillo seguía bajo asedio cuando llegaron. El dragón se enfrentaba a
-      los caballeros reales en un combate que ya llevaba demasiado tiempo sin un
-      vencedor claro, y los protagonistas se sumaron a la defensa sin más plan que
-      sobrevivir el tiempo suficiente para que sirviera de algo.</p>
+      <p>El castillo seguía bajo asedio cuando llegaron. El dragón se enfrentaba a los
+      caballeros reales en un combate que ya duraba demasiado sin un vencedor claro. Los
+      protagonistas se sumaron a la defensa sin más plan que sobrevivir el tiempo
+      suficiente para que sirviera de algo.</p>
 
       <h4>La herida</h4>
 
-      <p>En medio del combate, los protagonistas lograron abrirse paso hasta una
-      atalaya del castillo donde todavía quedaba una vieja balista de asedio,
-      pensada para murallas enemigas y no para algo que volaba. Cargarla a tiempo
-      les llevó todo lo que tenían, pero el impacto bastó para herir al dragón por
-      primera vez en su vida. El dolor, algo que la criatura no parecía esperar,
-      bastó para espantarla. Se alejó de Brurland dejando atrás una victoria a
-      medias, tan incompleta como cualquier otra esa noche.</p>
+      <p>En medio del combate lograron abrirse paso hasta una atalaya del castillo donde
+      todavía quedaba una vieja balista de asedio, pensada para murallas enemigas y no
+      para algo que volaba. Cargarla a tiempo les llevó todo lo que tenían. El impacto
+      hirió al dragón por primera vez en su vida. El dolor, que la criatura no parecía
+      esperar, la espantó. Se alejó de Brurland y dejó atrás una victoria a medias, tan
+      incompleta como cualquier otra esa noche.</p>
 
       <p>Fue en esa misma atalaya donde se les unió Sigismund, un paladín humano y
       antiguo discípulo de Ocevat, que ayudó a cargar la balista sin que nadie se lo
       pidiera. No volvió a separarse del grupo desde entonces.</p>
 
-      <p>El rey celebró. Por un momento, antes de que nadie tuviera tiempo de pensar
-      en el costo, hubo alivio genuino en el castillo. Los protagonistas informaron
-      que Ocevat y Verdam seguían defendiendo el refugio, y con esa noticia todavía
-      sostenida por la esperanza, emprendieron el regreso.</p>
+      <p>El rey celebró. Por un momento, antes de que nadie pensara en el costo, hubo un
+      alivio genuino en el castillo. Los protagonistas informaron que Ocevat y Verdam
+      seguían defendiendo el refugio y, con esa noticia y algo de esperanza,
+      emprendieron el regreso.</p>
 
       <h4>La masacre</h4>
 
       <p>No había sonidos. No había supervivientes. Solo cuerpos.</p>
 
       <p>Verdam estaba allí, arrojando cuerpo tras cuerpo a una pira que ya llevaba un
-      buen rato ardiendo. No dijo una palabra al verlos llegar ni se detuvo un
-      segundo en lo que hacía. En cuanto oyó las botas de los soldados acercándose,
-      desapareció entre las sombras del refugio sin dejar rastro.</p>
+      buen rato ardiendo. No dijo una palabra al verlos llegar ni se detuvo en lo que
+      hacía. En cuanto oyó las botas de los soldados que se acercaban, desapareció entre
+      las sombras del refugio sin dejar rastro.</p>
 
-      <p>Los soldados encontraron a los protagonistas de pie junto a la pira,
-      rodeados de cadáveres y sin nadie más a quien señalar salvo ellos mismos. No
-      hizo falta una acusación. Bastó con estar ahí.</p>
+      <p>Los soldados encontraron a los protagonistas de pie junto a la pira, rodeados de
+      cadáveres y sin nadie más a quien señalar. No hizo falta una acusación. Estar ahí
+      era suficiente.</p>
 
-      <p>Las autoridades no escucharon explicaciones. Los héroes del reino tenían
-      más credibilidad que unos aventureros desconocidos, y esa diferencia bastó
-      para decidir cómo terminaría esa noche.</p>
+      <p>Las autoridades no escucharon explicaciones. Los héroes del reino tenían más
+      credibilidad que unos aventureros desconocidos, y esa diferencia decidió cómo
+      terminaría esa noche.</p>
     `
   },
   {
@@ -183,74 +176,71 @@ window.CRONOLOGIA_B = [
     fecha: "Los días de espera en Kigan",
     content: `
       <p>La masacre del refugio dejó a Brurland con más preguntas que cadáveres para
-      enterrar, y las miradas de la ciudad no tardaron en posarse sobre los forasteros
-      que habían sobrevivido a las tres oleadas. Con la evidencia circunstancial
-      señalándolos como responsables, los protagonistas tomaron una decisión que
-      sorprendió incluso a quienes los acusaban: no huyeron de Brurland. Se entregaron
-      por voluntad propia, decididos a demostrar su inocencia ante el rey y a obligar a
-      la corona a investigar lo que de verdad había ocurrido esa noche. Sigismund se
-      entregó junto a ellos, sin que nadie se lo pidiera ni se lo discutiera.</p>
+      enterrar. Las miradas de la ciudad no tardaron en posarse sobre los forasteros que
+      habían sobrevivido a las tres oleadas. La evidencia circunstancial los señalaba
+      como responsables, y los protagonistas tomaron una decisión que sorprendió incluso
+      a quienes los acusaban. No huyeron de Brurland. Se entregaron por voluntad propia,
+      decididos a demostrar su inocencia ante el rey y a obligar a la corona a investigar
+      lo que de verdad había ocurrido esa noche. Sigismund se entregó junto a ellos sin
+      que nadie se lo pidiera ni se lo discutiera.</p>
 
       <h4>Escena 1: Los calabozos de Kigan</h4>
 
       <p>Mientras esperaban que se fijara fecha para su audiencia, los encerraron en los
       calabozos de Kigan, entre piedra húmeda y guardias que evitaban mirarlos a los
-      ojos. Ahí descubrieron que uno de los carceleros les debía un favor del escape, y el
-      miedo a que el rey ya hubiera decidido su ejecución antes de escucharlos bastó
-      para que empezaran a planear una fuga.</p>
+      ojos. Ahí descubrieron que uno de los carceleros les debía un favor. Temían que el
+      rey ya hubiera decidido su ejecución antes de escucharlos, y con ese miedo
+      empezaron a planear una fuga.</p>
 
-      <p>El plan avanzó lo suficiente como para sumar a otros prisioneros a la causa. La
-      idea era simple sobre el papel: aprovechar el cambio de guardia, abrir varias
-      celdas a la vez y escapar entre la confusión antes de que la fortaleza pudiera
-      organizar una respuesta.</p>
+      <p>El plan avanzó lo suficiente como para sumar a otros prisioneros. Sobre el papel
+      era simple. Aprovecharían el cambio de guardia, abrirían varias celdas a la vez y
+      escaparían entre la confusión antes de que la fortaleza pudiera organizar una
+      respuesta.</p>
 
       <h5>La visita de Adam</h5>
 
       <p>Antes de que la fuga se pusiera en marcha, Adam bajó a los calabozos a hablar
-      con ellos. No prometió clemencia ni fingió estar convencido de su inocencia. Se
-      limitó a recordarles algo mucho más simple, que escapar no los salvaría de nada,
-      solo confirmaría ante todo el reino la versión de sus acusadores. Dejarían de ser
-      sospechosos para convertirse, a ojos de Brurland, en asesinos que habían confesado
-      con los pies.</p>
+      con ellos. No prometió clemencia ni fingió estar convencido de su inocencia. Les
+      recordó algo más simple. Escapar no los salvaría de nada y solo confirmaría ante
+      todo el reino la versión de sus acusadores. Dejarían de ser sospechosos y pasarían
+      a ser, a ojos de Brurland, asesinos que habían confesado con los pies.</p>
 
-      <p>Sus palabras alcanzaron para que el grupo reconsiderara el plan. Decidieron
-      permanecer bajo custodia y afrontar el juicio, aun sabiendo que la corona podía
-      condenarlos antes de escuchar una sola palabra en su defensa.</p>
+      <p>Sus palabras hicieron que el grupo reconsiderara el plan. Decidieron permanecer
+      bajo custodia y afrontar el juicio, aun sabiendo que la corona podía condenarlos
+      antes de escuchar una sola palabra en su defensa.</p>
 
       <h4>Escena 2: La fuga sin ellos</h4>
 
       <p>La decisión llegó demasiado tarde para detener lo que ya estaba en marcha. El
-      carcelero comprometido y varios reclusos siguieron adelante sin ellos. Cuando el
-      motín estalló, las celdas se abrieron en cadena, los corredores se llenaron de
+      carcelero comprometido y varios reclusos siguieron adelante sin ellos. Cuando
+      estalló el motín, las celdas se abrieron en cadena, los corredores se llenaron de
       enfrentamientos y una parte de los presos corrió a buscar cualquier salida que la
       fortaleza todavía no hubiera cerrado.</p>
 
-      <p>Los protagonistas sabían que los fugitivos pasarían frente a su celda, y que
-      podían intentar liberarlos, tomarlos como rehenes o arrastrarlos a la revuelta por
-      la fuerza. Para mantenerse al margen, se encerraron por dentro y atravesaron un
+      <p>Los protagonistas sabían que los fugitivos pasarían frente a su celda. Podían
+      intentar liberarlos, tomarlos como rehenes o arrastrarlos a la revuelta por la
+      fuerza. Para mantenerse al margen se encerraron por dentro y atravesaron un
       camastro contra la puerta.</p>
 
       <p>Mientras el caos recorría los calabozos, el grupo se quedó adentro. No ayudó a
-      los guardias a sofocar el motín, pero tampoco aprovechó la oportunidad para
-      escapar. Su única acción esa noche fue impedir que la revuelta entrara a la
-      celda.</p>
+      los guardias a sofocar el motín y tampoco aprovechó para escapar. Su única acción
+      esa noche fue impedir que la revuelta entrara a la celda.</p>
 
       <h5>La llegada de los guardias</h5>
 
       <p>Cuando los refuerzos recuperaron el control del nivel, encontraron a los
-      protagonistas todavía encerrados, con un camastro trabando la puerta desde adentro.
-      La escena bastó para librarlos de la acusación inmediata de haber intentado huir,
+      protagonistas todavía encerrados, con un camastro trabando la puerta desde
+      adentro. La escena los libró de la acusación inmediata de haber intentado huir,
       pero abrió sospechas nuevas y más difíciles de responder.</p>
 
       <p>Los guardias exigieron saber por qué habían bloqueado la entrada, por qué no se
-      sumaron a la fuga que tenían al alcance de la mano, y sobre todo cómo sabían que
-      debían protegerse antes de que los reclusos llegaran hasta ellos. Nadie descartó la
-      posibilidad de que conocieran el plan de antemano, o de que hubieran participado en
-      organizarlo.</p>
+      sumaron a una fuga que tenían al alcance de la mano y cómo sabían que debían
+      protegerse antes de que los reclusos llegaran hasta ellos. Cabía la posibilidad de que
+      conocieran el plan de antemano, o incluso de que hubieran participado en organizarlo.</p>
 
       <p>El desorden general y la cercanía del juicio dejaron el interrogatorio sin
-      resolver esa misma noche. Las preguntas no desaparecieron: pasaron a formar parte
-      del proceso, y esperan ahora una respuesta frente al rey.</p>
+      resolver esa misma noche. Las preguntas no desaparecieron. Pasaron a formar parte
+      del proceso y esperan ahora una respuesta frente al rey.</p>
     `
   },
   {
@@ -260,37 +250,34 @@ window.CRONOLOGIA_B = [
     title: "La Sentencia Aplazada",
     fecha: "El día del juicio",
     content: `
-      <p>El juicio se extendió mucho más de lo que nadie en la sala esperaba.
-      Los protagonistas pelearon cada acusación con uñas y dientes, sin ceder
-      terreno en nada que pudieran rebatir. El rey Julius Goldenside terminó
-      arrinconado por su propia lógica: condenar a quienes se habían entregado
-      por voluntad propia, y que además habían frenado un motín desde dentro de
-      su propia celda, resultaba mucho más difícil de justificar ante la corte
-      de lo que había previsto. Sentenciar en el acto ya no era una opción
-      viable.</p>
+      <p>El juicio se extendió mucho más de lo que nadie en la sala esperaba. Los
+      protagonistas pelearon cada acusación con uñas y dientes y no cedieron terreno en
+      nada que pudieran rebatir. El rey Julius Goldenside terminó arrinconado por su
+      propia lógica. Condenar a quienes se habían entregado por voluntad propia, y que
+      además habían frenado un motín desde dentro de su celda, resultaba mucho más
+      difícil de justificar ante la corte de lo que había previsto. Sentenciar en el
+      acto ya no era una opción viable.</p>
 
-      <p>La salida se la ofreció su propio hijo. El príncipe Leonard Goldenside
-      sugirió postergar la sentencia mediante el derecho de reparación por
-      armas: en lugar de un veredicto, una misión. Los protagonistas partirían
-      al norte a matar al dragón, y solo entonces se decidiría su destino. El
-      rey aceptó la salida sin demasiado disimulo de alivio.</p>
+      <p>La salida se la ofreció su propio hijo. El príncipe Leonard Goldenside sugirió
+      postergar la sentencia mediante el derecho de reparación por armas. En lugar de un
+      veredicto habría una misión. Los protagonistas partirían al norte a matar al
+      dragón, y solo entonces se decidiría su destino. El rey aceptó sin demasiado
+      disimulo de su alivio.</p>
 
       <h4>La Taberna del Gigante, otra vez</h4>
 
-      <p>Adam se quedó con ellos mientras decidían qué necesitaban para el
-      viaje. Terminaron en La Taberna del Gigante, el mismo lugar donde todo
-      había empezado, conversando y negociando con los clientes mientras Adam
-      compraba raciones para el camino. Detrás de la barra atendía Gareth, el
-      semigigante dueño del lugar, tan fuerte como de mal humor. Su taberna había
-      sobrevivido al ataque del dragón casi de milagro, y desde entonces no le
-      faltaba clientela.</p>
+      <p>Adam se quedó con ellos mientras decidían qué necesitaban para el viaje.
+      Terminaron en La Taberna del Gigante, el mismo lugar donde todo había empezado,
+      conversando y negociando con los clientes mientras Adam compraba raciones para el
+      camino. Detrás de la barra atendía Gareth, el semigigante dueño del lugar, tan
+      fuerte como de mal humor. Su taberna había sobrevivido al ataque del dragón casi
+      de milagro y desde entonces no le faltaba clientela.</p>
 
-      <p>Laia se encontró ahí con el prisionero que había conocido en los
-      calabozos, Isa, con quien había quedado de verse. Era tan apuesto como él
-      mismo se jactaba de ser. Ryn, por su parte, conversó con un muchacho
-      llamado Sett, y quedaron en volver a verse en Wolfmere. Hooey se dedicó a
-      hacer fuerza frente a quien quisiera apostar, y terminó la noche unas
-      cuantas monedas más rico.</p>
+      <p>Laia se encontró ahí con el prisionero que había conocido en los calabozos, Isa,
+      con quien había quedado de verse. Era tan apuesto como él mismo se jactaba de ser.
+      Ryn conversó con un muchacho llamado Sett y quedaron en volver a verse en
+      Wolfmere. Hooey se dedicó a hacer fuerza frente a quien quisiera apostar y terminó
+      la noche con unas cuantas monedas más.</p>
     `
   },
   {
@@ -300,64 +287,59 @@ window.CRONOLOGIA_B = [
     title: "El Vaquero",
     fecha: "Antes de partir al norte",
     content: `
-      <p>Con el juicio resuelto y la ruta hacia el norte decidida, quedaba
-      todavía una ciudad entera de la que despedirse, y no todos en Kigan
-      estaban dispuestos a dejarlos ir sin hablar primero.</p>
+      <p>Con el juicio resuelto y la ruta hacia el norte decidida, quedaba una ciudad
+      entera de la que despedirse, y no todos en Kigan estaban dispuestos a dejarlos ir
+      sin hablar primero.</p>
 
       <h4>Los rumores de la taberna</h4>
 
-      <p>Eledar se movió entre las mesas hasta encontrar a un grupo de
-      aventureros que bebían sin demasiado disimulo, y no tardó en sacarles más
-      de lo que ellos mismos pensaban que sabían. Verdam, decían, se había
-      instalado en algún punto de la Espesura, el bosque al norte de la ciudad.
-      También coincidían en algo más incómodo: alguien andaba repartiendo
-      detalles del juicio por Kigan, detalles que ninguno de los presentes
-      debería haber conocido con tanta precisión. Nadie supo decir quién, pero
-      el rumor bastó para que el grupo trazara su ruta con algo más de cuidado
-      del que hubieran usado sin esa advertencia.</p>
+      <p>Eledar se movió entre las mesas hasta encontrar a un grupo de aventureros que
+      bebían sin demasiado disimulo, y no tardó en sacarles más de lo que ellos mismos
+      pensaban que sabían. Decían que Verdam se había instalado en algún punto de la
+      Espesura, el bosque al norte de la ciudad. También coincidían en algo más
+      incómodo. Alguien andaba repartiendo detalles del juicio por Kigan, detalles que
+      ninguno de los presentes debería haber conocido con tanta precisión. Los presentes no supieron
+      decir quién. El rumor hizo que el grupo trazara su ruta con más cuidado del que
+      habría usado sin esa advertencia.</p>
 
       <h4>La casa de baños</h4>
 
-      <p>Terminados los asuntos de la taberna, el grupo se dirigió a una casa de
-      baños antes de partir. Adam se bañó junto a ellos, y entre el vapor
-      intentaron convencerlo de sumarse al viaje hacia el norte. Sus
-      obligaciones como capitán se lo impedían, y terminó admitiendo, sin
-      demasiada vergüenza, que la excursión a los baños no había sido más que
-      una excusa suya para escaparse un rato del trabajo.</p>
+      <p>Terminados los asuntos de la taberna, el grupo fue a una casa de baños antes de
+      partir. Adam se bañó junto a ellos y, entre el vapor, intentaron convencerlo de
+      sumarse al viaje hacia el norte. Sus obligaciones como capitán se lo impedían.
+      Terminó admitiendo, sin demasiada vergüenza, que la excursión a los baños era una
+      excusa suya para escaparse un rato del trabajo.</p>
 
-      <p>Mientras el resto seguía adentro, un desconocido se acercó a Hooey y lo
-      llamó por un nombre que él nunca había usado: Hubert Magnolia. El extraño
-      insinuó que ese nombre le pertenecía de verdad, y que una explosión, de la
-      que Hooey tampoco tenía memoria alguna, era la razón de que su cabeza
-      funcionara como funcionaba. No dio más detalles, y desapareció antes de
-      que nadie pudiera pedírselos.</p>
+      <p>Mientras el resto seguía adentro, un desconocido se acercó a Hooey y lo llamó
+      por un nombre que él nunca había usado, Hubert Magnolia. El extraño insinuó que ese
+      nombre le pertenecía de verdad y que una explosión, de la que Hooey tampoco tenía
+      memoria, explicaba por qué su cabeza funcionaba como funcionaba. No dio más
+      detalles y desapareció antes de que nadie pudiera pedírselos.</p>
 
       <h4>Torvrena</h4>
 
-      <p>Ya afuera de la ciudad, el grupo se encontró con Torvrena, la cazadora
-      de monstruos que habían contratado antes de partir. Grande, cubierta de
-      cicatrices y de pocas palabras, se sumó a la marcha sin necesitar mucha
-      presentación. Para eso ya estaba pagada.</p>
+      <p>Ya afuera de la ciudad, el grupo se encontró con Torvrena, la cazadora de
+      monstruos que habían contratado antes de partir. Era grande, estaba cubierta de
+      cicatrices y hablaba poco. Se sumó a la marcha sin necesitar mucha presentación,
+      porque ya estaba pagada.</p>
 
       <h4>Caras conocidas, por las malas</h4>
 
-      <p>El camino los llevó por un barrio bastante más descuidado que el resto
-      de Kigan, y ahí, sin buscarlo, volvieron a cruzarse con tres caras que ya
-      conocían de la taberna: Billy, Voss y Victor. El reencuentro no fue
-      amistoso. Los tres atacaron sin previo aviso, y el grupo tuvo que
-      defenderse, hasta el punto de estar terminando de apalear al último cuando
-      alguien más apareció en la escena a saludar, como si el resto de la pelea
-      no hubiera pasado.</p>
+      <p>El camino los llevó por un barrio más descuidado que el resto de Kigan. Ahí, sin
+      buscarlo, volvieron a cruzarse con tres caras que ya conocían de la taberna,
+      Billy, Voss y Victor. El reencuentro no fue amistoso. Los tres atacaron sin previo
+      aviso y el grupo tuvo que defenderse. Estaba terminando de apalear al último
+      cuando apareció alguien más a saludar con toda naturalidad.</p>
 
-      <p>El recién llegado resultó ser el jefe de esos tres criminales de poca
-      monta: un charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con
-      un carisma que parecía compensarle ambas cosas más de lo necesario. Sus
-      razones para presentarse eran menos nobles de lo que sugería su entrada.
-      Cassius arrastraba sus propias deudas sin pagar, y unirse a un grupo
-      camino al norte empezaba a sonarle a la salida más rentable disponible. Se presentó como Cassius Coldgrave, y por el módico precio de
-      dos piezas de oro y seis piezas de cobre, que los protagonistas le pagaron
-      ahí mismo, el vaquero mercenario se comprometió a acompañarlos hasta el
-      dragón. O hasta que decidiera huir, lo que llegara antes.</p>
+      <p>El recién llegado era el jefe de esos tres criminales de poca monta, un
+      charlatán criado en Vado Ceniza, cobarde y codicioso, aunque con un carisma que
+      parecía compensarle ambas cosas más de lo necesario. Sus razones para presentarse
+      eran menos nobles de lo que sugería su entrada. Cassius arrastraba deudas sin
+      pagar, y unirse a un grupo camino al norte empezaba a sonarle a la salida más
+      rentable disponible. Se presentó como Cassius Coldgrave. Por el módico precio de
+      dos piezas de oro y seis de cobre, que los protagonistas le pagaron ahí mismo, el
+      vaquero mercenario se comprometió a acompañarlos hasta el dragón. O hasta que
+      decidiera huir, lo que llegara antes.</p>
     `
   },
   {
@@ -569,9 +551,68 @@ window.CRONOLOGIA_B = [
       <p>Pasadas unas horas llegaron a otras instalaciones, bastante más sofisticadas
       que las anteriores, y ahí se encontraron con la enfermera Harrow.</p>
 
-      <p>Harrow se interesó en Laia y quiso quedarse con Laia para estudiar en persona
-      lo que era. Laia se negó, y la negativa terminó en combate. En medio de la pelea
-      volvió a aparecer Ulis.</p>
+      <p>Harrow se interesó en Laia y quiso quedarse con ella para estudiar en persona
+      lo que era. Laia se negó. El grupo intentó irse, y entonces Harrow le ordenó a
+      Ulis que les cortara el paso. Ulis había vuelto a aparecer.</p>
+
+      <h4>La pelea</h4>
+
+      <p>Al principio los protagonistas intentaron no pelear. Se defendieron, retrocedieron
+      y buscaron la forma de pasar sin herir a nadie. La situación se volvió insostenible
+      y tuvieron que contraatacar.</p>
+
+      <p>El combate se alargó. Los conjuros del grupo no dejaban de sonar, y eso irritó a
+      otro de los sujetos que había por ahí, un inquisidor enmascarado al que
+      apodaron el Silenciador. Su silencio ahogó la magia de los protagonistas y volvió
+      la pelea mucho más difícil. Eledar estuvo a un golpe de morir, otra vez, y el
+      grupo logró impedirlo.</p>
+
+      <p>Entonces Harrow hizo sonar una alarma. Respondió Tobi, que se había vuelto a
+      levantar de unas heridas que debieron ser fatales. Seguía debilitado y dio pelea
+      igual. El grupo quedó repartido en tres frentes. Torvrena y Darian apenas lograban
+      retener a Ulis. Eledar y Laia se encargaban del Silenciador. Hooey y Ryn luchaban
+      a muerte contra Tobi y contra la propia Harrow.</p>
+
+      <p>Cada frente se resolvió a su manera. Cuando ya nadie más se interponía, el
+      grupo pudo centrarse en Harrow y en Tobi. Darian había perdido un brazo y buena
+      parte de su voluntad. Aun así lograron tumbar a todos.</p>
+
+      <p>Cuando ya no quedaba peligro, Ryn se aseguró de que Tobi no volviera a levantarse. Le
+      clavó una daga en el centro de la cabeza y la giró.</p>
+
+      <h4>El interrogatorio</h4>
+
+      <p>Torvrena ató a Harrow a una silla y la interrogaron. La enfermera acabó
+      contándoles para qué servía aquel lugar. Era una parte del Instituto Vesalio, y
+      la Corona balutiana lo financiaba con dinero y con sujetos. Esa sección se
+      dedicaba sobre todo a experimentar con Nigredo en personas, en especial con la
+      inmortalidad y con la naturaleza misma del Nigredo.</p>
+
+      <p>Todos quedaron asqueados. Cassius intentó matar a Harrow, y Tobi, que parecía
+      muerto, juntó fuerzas una vez más y se levantó para impedirlo. Eso dejó claras
+      dos cosas. Casi todos los sujetos eran inmortales, y a pesar de lo que les habían
+      hecho querían a quienes los habían convertido en eso.</p>
+
+      <p>El grupo se retiró con el ánimo golpeado y con las indicaciones que Harrow les
+      dio para llegar hasta Dexter. Era el único que podía darle sentido a todo aquello
+      y sacarlos de ahí de paso.</p>
+    `
+  },
+  {
+    id: "capitulo-12",
+    orden: 12,
+    numero: "Capítulo XII",
+    title: "El Basurero",
+    fecha: "Camino a Dexter",
+    content: `
+      <p>Durmieron en unos ductos de basura y al despertar siguieron las indicaciones de
+      Harrow. Estas los llevaron hasta una especie de basurero. Había carne esparcida por todos
+      lados y celdas a los costados. En medio, dos chicos se peleaban de una manera
+      violenta y descerebrada, uno de piel roja y otro morado.</p>
+
+      <p>El grupo intentó pasar sin que lo notaran. No funcionó. Uno de los golpes lanzó
+      al chico de piel roja contra Eledar, y al caer se dio cuenta de que estaban ahí.
+      Otra pelea empezó.</p>
     `
   }
 ];
