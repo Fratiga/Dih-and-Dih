@@ -1,6 +1,6 @@
 # Discord: el bot «The great mice» y la web
 
-Estado (26 de octubre de 2026): **Etapa A y los comandos de la Etapa B están hechos y probados en local. Nada está desplegado todavía**: faltan los pasos manuales de abajo (crear la aplicación de Discord, ejecutar el SQL y desplegar la función). Las notificaciones automáticas, las inscripciones y el panel completo de la taberna son las etapas siguientes y **no están hechas**.
+Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras está listo pero **sin desplegar** (ver «Avisos de carreras»). Las inscripciones, el panel completo de la taberna y la búsqueda general en el compendio **no están hechos**.
 
 La aplicación se llama **D&D** y el bot **The great mice**.
 
@@ -77,9 +77,39 @@ Así queda demostrado que la persona controla **las dos** cuentas, sin OAuth y s
 
 Los roles de Discord se siguen administrando a mano: no hay sincronización.
 
+## Avisos de carreras (hecho, sin desplegar)
+
+El bot publica en un canal elegido un aviso cuando una carrera del Hipódromo sale en 2 minutos o menos (cada hora, que es lo que corren). Se puede pausar sin perder el canal.
+
+| Archivo | Para qué |
+|---|---|
+| `docs/discord-avisos.sql` | Tablas `discord_canales` (dónde publicar) y `discord_cola` (la cola de salida) y sus funciones. Solo crea cosas nuevas; se puede repetir |
+| `docs/discord-avisos/index.ts` | La segunda Edge Function, `discord-avisos`. La llama el cron de cada minuto |
+| `docs/discord-avisos/avisos.js` | Su lógica: encola, publica, reintenta |
+| `docs/pruebas/t_discord_avisos.sh` | 36 comprobaciones SQL (Docker local) |
+| `tools/probar-discord-avisos.js` | 37 comprobaciones de la función (sin Discord) |
+
+**Cómo funciona.** El cron llama cada minuto a `discord-avisos` con una clave propia. La función le pide a la base de datos que mire `hipodromo_programa` (la misma tabla que usa el aviso de la taberna) y apunte en la cola una carrera que salga en los próximos 2 minutos. La cola tiene una restricción única por carrera, así que nunca se avisa dos veces de la misma. Después toma lo pendiente (reservándolo, para que dos llamadas a la vez no lo tomen) y lo publica con el token del bot. Discord recibe además un `nonce` con `enforce_nonce`, que evita el doble mensaje aunque falle el apuntar el resultado. Si Discord falla se reintenta hasta 5 veces (respetando el «espera N segundos» de Discord); si tarda tanto que la carrera ya salió, el aviso caduca y no se manda. Una carrera suspendida no avisa. Un fallo de Discord solo afecta a esta cola.
+
+**El mensaje** lleva solo datos públicos de la carrera: nombre, grado, pista, distancia, bolsa y las horas (cada persona las ve en su zona horaria), con enlaces a verla en vivo y a apostar. Nunca resultados, favoritas ni cuotas. No menciona a nadie.
+
+**Pasos manuales** (también están en la cabecera de `docs/discord-avisos.sql`):
+
+1. Ejecuta `docs/discord-avisos.sql` en el SQL Editor de Supabase.
+2. Copia el ID del canal (Modo desarrollador > clic derecho en el canal > Copiar ID del canal) y ejecuta:
+   `insert into discord_canales (evento, canal_id) values ('carrera', '<ID DEL CANAL>') on conflict (evento) do update set canal_id = excluded.canal_id, activo = true, actualizado = now();`
+3. Crea la función `discord-avisos` con `index.ts` y `avisos.js` de `docs/discord-avisos/`, **sin comprobar JWT**, y pon sus secretos: `DISCORD_BOT_TOKEN` (el del bot) y `DISCORD_AVISOS_CLAVE` (una clave larga que inventas tú).
+4. Programa la tarea con el SQL del final de `docs/discord-avisos.sql`, con la misma clave.
+5. Dale al bot, en ese canal, los permisos «Ver canal», «Enviar mensajes» e «Insertar enlaces».
+
+Para pausar: `update discord_canales set activo = false where evento = 'carrera';`. Para quitar la tarea: `select cron.unschedule('discord-avisos');`.
+
+Esta cola está pensada para más avisos (récords, torneos, novedades) sin tocar la lógica de cada juego: basta con otra fuente que apunte en `discord_cola` y su mensaje en `avisos.js`.
+
 ## Lo que sigue (no hecho)
 
-- **Etapa B, notificaciones.** Una cola `discord_cola` con identificador único (para no publicar dos veces), un `pg_cron` que llame cada minuto a una segunda función que publique con el token del bot (reintentos y límites de Discord). Fuentes ya existentes que se leerían sin tocar las reglas de los juegos: `hipodromo_noticias`, `hipodromo_programa`, récords en `*_puntajes`, `eventos_sitio`. Los canales se configurarían en una tabla, no en el código de cada juego. **Hay que decidir qué canales y qué eventos**: un anuncio en un canal lo ven los dos Sides, así que solo deberían salir cosas neutrales.
+- **Más notificaciones.** La cola ya existe; faltan las fuentes: récords en `*_puntajes`, `eventos_sitio`, torneos. **Hay que decidir qué canales y qué eventos**: un anuncio en un canal lo ven los dos Sides, así que solo deberían salir cosas neutrales.
+- **Consultar cualquier cosa desde Discord** (petición del 26-oct-2026). Hoy solo hay cartas, perfil, clasificaciones y eventos. Falta una búsqueda sobre el compendio (textos, personajes, lugares, facciones, bestiario, objetos, armas...) que respete el Side de cada jugador.
 - **Etapa C, inscripciones.** No existe un sistema de inscripciones: hay que diseñarlo (tabla de inscritos con restricción única, plazas, estados, funciones con bloqueo para las carreras simultáneas) y luego exponerlo en la web y en un comando. Conviene decidir primero qué tipo de eventos serán (torneos de blackjack, carreras del Hipódromo...).
 - **Etapa D, panel de la taberna.** Hoy el Tablón solo vincula. Falta lo visual: próximos eventos, anuncios, clasificaciones destacadas y accesos directos.
 - **Etapa E, Bufón y ARG.** Nada se ha adelantado: las notificaciones narrativas tendrán su propia cola y su propio interruptor para poder pausarlas sin tocar el bot general.
