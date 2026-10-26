@@ -392,3 +392,4 @@ a.lb-cronica-fila:hover { background: #ffffff10; }
 .lb-cronica-tu { color: #ffe9a8; }
 .lb-cronica-mas { margin-top: 6px; width: 100%; padding: 3px 8px; border: 2px outset var(--lb-borde); background: var(--lb-caja); color: var(--lb-texto); font: 19px "VT323", "Courier New", monospace; cursor: pointer; }
 .lb-cronica-mas:disabled { opacity: .6; cursor: default; }
+.lb-cronica-todo { display: block; margin-top: 8px; text-align: center; font-size: 19px; }

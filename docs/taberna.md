@@ -80,7 +80,7 @@ Cada fuente falla por separado: si falta una tabla o función, ese aviso no sale
 
 ## La crónica del mundo
 
-El Tablón tiene dos pestañas, Novedades (los cambios del sitio, `data/novedades.js`) y Crónica (lo que hacen los jugadores: cartas raras ganadas, intercambios y crías anónimos, apuestas grandes, rachas y desafíos de oro de Veintiuna, copas). Las pestañas solo salen con sesión y si la función `cronica_ver` responde. La ficha «La taberna: N novedades» sale en los avisos. Todo en `docs/cronica.md`.
+El Tablón tiene dos pestañas, Novedades (los cambios del sitio, `data/novedades.js`) y Crónica (lo que hacen los jugadores: cartas raras ganadas, intercambios y crías anónimos, apuestas grandes, rachas y desafíos de oro de Veintiuna, copas). Las pestañas solo salen con sesión y si la función `cronica_ver` responde. La ficha «La taberna: N novedades» sale en los avisos y los dos últimos sucesos van en la cinta de arriba. La lista completa está en `cronica.html` (El Registro, en la sala Taberna del mapa). Todo en `docs/cronica.md`.
 
 ## Guía de la taberna
 

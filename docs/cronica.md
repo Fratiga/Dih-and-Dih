@@ -1,6 +1,6 @@
 # La crónica del mundo
 
-Una lista corta de lo que pasa en la taberna, escrita por el servidor y leída por todos: cartas raras ganadas, intercambios y crías (sin nombres), apuestas que pagan mucho, rachas y desafíos de oro de Veintiuna, copas del Hipódromo y las noticias que escribe el Admin. Sale en la pestaña **Crónica** del Tablón de la taberna (`index.html`), y una ficha en los avisos dice cuántas novedades hay desde la última vez que la abriste.
+Una lista corta de lo que pasa en la taberna, escrita por el servidor y leída por todos: cartas raras ganadas, intercambios y crías (sin nombres), apuestas que pagan mucho, rachas y desafíos de oro de Veintiuna, copas del Hipódromo y las noticias que escribe el Admin. Sale en la pestaña **Crónica** del Tablón de la taberna (`index.html`), en la cinta de arriba (los dos últimos sucesos junto a las Novedades) y completa en **El Registro** (`cronica.html`). Una ficha en los avisos dice cuántas novedades hay desde la última vez que abriste la pestaña.
 
 No sustituye a nada que ya existía: los **avisos** son personales (lo que te espera a ti), las **Novedades** son los cambios del sitio escritos a mano, `eventos_sitio` son los eventos con fechas del Admin y `hipodromo_noticias` cuenta el mundo de las criaturas. La crónica trata de lo que hacen los jugadores.
 
@@ -11,10 +11,11 @@ No sustituye a nada que ya existía: los **avisos** son personales (lo que te es
 | `docs/cronica-1_base.sql` | Tablas `cronica_sucesos` y `cronica_tipos`, la función interna `cronica_i_anotar`, la lectura (`cronica_ver`, `cronica_contar`) y las funciones de Admin |
 | `docs/cronica-2_disparadores.sql` | Ocho disparadores que anotan los sucesos solos. Cada uno se crea solo si su tabla existe |
 | `js/cronica.js` | Las frases de cada tipo (plantillas con varias formas) y «hace 5 min» |
-| `js/cronica-taberna.js` | La pestaña Crónica del Tablón |
+| `js/cronica-taberna.js` | La pestaña Crónica del Tablón y los dos sucesos de la cinta de arriba |
+| `cronica.html`, `js/cronica-pagina.js`, `css/cronica.css` | El Registro: la lista completa con filtro por juego, «Ver más» y un cuadro con lo más alto (mejor racha, premio más grande, quién más cartas raras y copas). Enlazado desde el mapa de la taberna y desde la pestaña |
 | `js/avisos-taberna.js` | La ficha «La taberna: N novedades» (fuente `cronica()`) |
 | `js/admin-cronica.js` | Pestaña «Crónica» del Admin (grupo «Contenido del sitio») |
-| `docs/pruebas/t_cronica.sh` | 96 comprobaciones del SQL |
+| `docs/pruebas/t_cronica.sh` | 104 comprobaciones del SQL |
 | `tools/probar-cronica.js` | Comprobaciones de las frases |
 
 Orden en Supabase: `docs/cronica-1_base.sql` y después `docs/cronica-2_disparadores.sql` (después de la economía de cartas, el Hipódromo y Veintiuna; lo que falte se salta y se corre el archivo otra vez cuando exista). Se pueden repetir.
@@ -23,11 +24,11 @@ Orden en Supabase: `docs/cronica-1_base.sql` y después `docs/cronica-2_disparad
 
 | Tipo | Se anota cuando | Umbral (editable en Admin) | Nombre |
 |---|---|---|---|
-| `carta_ganada` | entra una fila en `cartas_registro` con origen `juego` (recompensas, sellos, forja) | rara o superior; 3 por jugador y día y el resto se junta en «ganó N cartas hoy». No cuentan compras al Buhonero, regalos del Admin ni crías | con nombre |
+| `carta_ganada` | entra una fila en `cartas_registro` con origen `juego` (recompensas, sellos, forja), o se transfiere una carta como premio en el pozo de Veintiuna o en una apuesta de cartas de Triunfos (`cartas_movimientos`) | rara o superior; 3 por jugador y día y el resto se junta en «ganó N cartas hoy». No cuentan compras al Buhonero, regalos del Admin ni crías | con nombre |
 | `intercambio` | una oferta de `cartas_intercambios` pasa a `aceptada` | alguna carta rara o superior, o 3 cartas o más en total | anónimo |
 | `cria_nacida` | una cría de `cartas_crias` pasa a `nacida` (al recogerla del corral) | rara o superior, o la primera de su especie en el mundo | anónimo |
-| `apuesta_hipodromo` | una apuesta de `hipodromo_apuestas` pasa a `ganada` | paga 4 veces o más lo apostado y 200 tokens o más. Con «doble» solo cuenta el último eslabón, medido contra la apuesta inicial | con nombre |
-| `apuesta_veintiuna` | una mano o mesa con apuesta termina en `veintiuna_partidas` | igual (4 veces y 200 tokens). Una mano individual paga como máximo 2,5 veces, así que solo salta en mesas con amigos de 4 o más | con nombre |
+| `apuesta_hipodromo` | una apuesta de `hipodromo_apuestas` pasa a `ganada` | paga 4 veces o más lo apostado y 200 tokens o más, **o un premio de 1000 tokens o más** por sí solo (`pago_siempre`). Con «doble» solo cuenta el último eslabón, medido contra la apuesta inicial | con nombre |
+| `apuesta_veintiuna` | una mano o mesa con apuesta termina en `veintiuna_partidas` | igual (4 veces y 200 tokens, o 1000 de golpe). Una mano individual paga como máximo 2,5 veces, así que el criterio de las 4 veces solo salta en mesas con amigos de 4 o más | con nombre |
 | `racha_veintiuna` | cambia `racha` en `veintiuna_estadisticas` | desde la 4.ª victoria seguida y hasta que pierde: **una sola línea viva** que se actualiza y se cierra al perder. Si supera la mejor racha de todos, es récord | con nombre |
 | `logro_oro_veintiuna` | se completa un desafío de nivel oro (`veintiuna_logros`) | todos los de oro; como se reinician cada día, puede volver a salir mañana | con nombre |
 | `copa_hipodromo` | se publica una carrera de copa o Gran Premio en `hipodromo_carreras` | solo criaturas con dueño humano | con nombre |
@@ -59,8 +60,7 @@ Los disparadores observan tablas de resultados que ya existen, así que **ningun
 
 ## No hecho todavía
 
-- La cinta de arriba de la taberna (`#lbTicker`) no mezcla sucesos con las novedades.
-- La página completa `cronica.html` (El Registro: rivalidades, récords y campeones).
 - Ganar a un rival difícil de ajedrez queda apagado hasta que el servidor confirme el resultado.
-- Cartas ganadas en el pozo de Veintiuna o en apuestas de cartas entre jugadores (pasan por `cartas_movimientos`, no por `cartas_registro`).
-- Avisar por Discord: ver las ideas en la propuesta de integración con el bot.
+- Los récords de Hooey, Ritmo, Parranda, Ajedrez y Arquería no entran: sus tablas (`hooey_puntajes`, `ritmo_puntajes`, `parranda_puntajes`, `mj_estadisticas`) no están definidas en `docs/` y los resultados los informa el navegador.
+- Los juegos ocultos (Duelo, Ostelar, La Fractura, Última Vela) no anotan nada hasta que se publiquen. La Fractura ya tiene `titulo` y `cronica` en `fractura_guerras`.
+- Avisar por Discord: ver las ideas enviadas a la sesión del bot.

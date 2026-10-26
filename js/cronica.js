@@ -24,6 +24,8 @@
       if (d.resumen) return `${quien(s)} ha ganado ${num(d.n)} cartas raras hoy.`;
       const c = (d.nombre || "una carta") + (d.numero ? ` (copia n.º ${d.numero})` : "");
       if (d.origen === "forja") return elegir(s.id, [`${quien(s)} forjó ${c}.`, `${c} salió de la forja de ${quien(s)}.`]);
+      if (d.origen === "pozo") return elegir(s.id, [`${quien(s)} se llevó ${c} del pozo de Las Veintiuna Velas.`, `${c} salió del pozo de Las Veintiuna Velas y es de ${quien(s)}.`]);
+      if (d.origen === "apuesta") return elegir(s.id, [`${quien(s)} ganó ${c} en una apuesta de cartas.`, `${quien(s)} se quedó con ${c} tras una apuesta de cartas.`]);
       if (d.origen === "sellos") return elegir(s.id, [`${quien(s)} cambió sus sellos por ${c}.`, `${quien(s)} ganó ${c} con sus sellos.`]);
       return elegir(s.id, [`${quien(s)} ganó ${c}.`, `${quien(s)} se hizo con ${c}.`, `${c} tiene dueño nuevo: ${quien(s)}.`]);
     },

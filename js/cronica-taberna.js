@@ -30,7 +30,17 @@
   function pintar() {
     const filas = sucesos.map(fila).filter(Boolean).join("");
     caja.innerHTML = (filas || `<p class="lb-chico">Todavía no ha pasado nada que contar.</p>`)
-      + (hayMas && sucesos.length ? `<button type="button" class="lb-cronica-mas" id="lbCronicaMas">Ver más</button>` : "");
+      + (hayMas && sucesos.length ? `<button type="button" class="lb-cronica-mas" id="lbCronicaMas">Ver más</button>` : "")
+      + (sucesos.length ? `<a class="lb-cronica-todo" href="cronica.html">Ver el Registro completo</a>` : "");
+  }
+  /* La cinta de arriba (#lbTicker, la llena js/lobby.js con las Novedades): se le suman al principio los dos últimos sucesos de la crónica */
+  function cinta() {
+    const pista = document.getElementById("lbTicker");
+    if (!pista) return;
+    pista.querySelectorAll("[data-cronica]").forEach(x => x.remove());
+    const html = sucesos.map(s => ({ s, l: Cronica.linea(s) })).filter(x => x.l).slice(0, 2).map(({ s, l }) =>
+      `<span data-cronica><b>[${esc(Cronica.hace(s.actualizado))}]</b> ${esc(l.icono)} ${l.enlace ? `<a href="${esc(l.enlace)}">${esc(l.texto)}</a>` : esc(l.texto)}</span>`).join("");
+    if (html) pista.insertAdjacentHTML("afterbegin", html);
   }
   function insignia() {
     const n = nuevas(), b = document.getElementById("lbCronicaN");
@@ -60,7 +70,7 @@
       hayMas = !PRUEBA && nuevos.length === POR_PAGINA;
       cargado = true;
       pestanas.hidden = false;
-      pintar(); insignia();
+      pintar(); insignia(); cinta();
     } catch (e) {
       // Sin la función en Supabase (o sin red): el Tablón se queda con las Novedades de siempre
       if (!cargado) pestanas.hidden = true;
