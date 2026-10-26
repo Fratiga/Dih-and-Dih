@@ -1,0 +1,104 @@
+/* Estocatta: la arena ocupa casi toda la pantalla, el HUD es una franja fina encima y los
+   controles táctiles quedan debajo del lienzo para no tapar a los luchadores.
+   Superficies planas con filetes finos; sin degradados ni brillos. */
+
+.est-tema .est-contenido { max-width: 1320px; }
+.est-objetivo { margin: 6px 0 14px; color: #d9cfe6; max-width: 60ch; line-height: 1.45; }
+
+.est-escenario {
+  position: relative; width: 100%; margin: 0 auto; background: #05030a; border: 1px solid #5a4a72;
+  outline: 3px solid #1d1628; outline-offset: 0; overflow: hidden; touch-action: none; user-select: none;
+}
+.est-escenario:fullscreen { display: flex; align-items: center; justify-content: center; border: 0; outline: 0; }
+.est-escenario:fullscreen .est-campo { max-height: 100vh; }
+
+.est-campo {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; max-height: 80vh; margin: 0 auto;
+  image-rendering: pixelated; image-rendering: crisp-edges; background: #05030a;
+}
+
+/* ---------- HUD ---------- */
+.est-hud {
+  position: absolute; left: 0; right: 0; top: 0; padding: 6px 10px 0; display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: start; gap: 8px; pointer-events: none; font-family: var(--font-heading), sans-serif;
+}
+.est-hud-j { display: flex; align-items: center; gap: 8px; min-width: 0; color: #fff; text-shadow: 0 1px 2px #000; }
+.est-hud-j1 { justify-content: flex-end; }
+.est-hud-j b { font-size: clamp(.78rem, 1.7vw, 1.05rem); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.est-hud-j em { font-style: normal; min-width: 1.6em; text-align: center; padding: 1px 6px; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .25); font-size: clamp(.8rem, 1.7vw, 1.05rem); }
+.est-punto { width: 10px; height: 10px; flex: none; }
+.est-hud-j0 .est-punto { background: #c4452f; }
+.est-hud-j1 .est-punto { background: #2f7fa8; }
+.est-hud-centro { text-align: center; color: #fff; text-shadow: 0 1px 2px #000; line-height: 1.1; }
+.est-hud-centro strong { display: block; font-size: clamp(1rem, 2.4vw, 1.5rem); letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.est-hud-centro small { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: #d9cfe6; }
+.est-hud-centro small[data-ventaja="0"] { color: #ffb59f; }
+.est-hud-centro small[data-ventaja="1"] { color: #a8dcff; }
+
+/* franja de la pista: dónde está cada uno y quién lleva la ventaja */
+.est-pista { grid-column: 1 / -1; position: relative; height: 10px; margin: 2px 0 0; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .25); }
+.est-sal { position: absolute; top: 0; bottom: 0; width: 3%; }
+.est-sal0 { right: 0; background: #e8c872; }
+.est-sal1 { left: 0; background: #7fd0ff; }
+.est-marca { position: absolute; top: -3px; width: 8px; height: 14px; margin-left: -4px; border: 1px solid #000; }
+.est-marca0 { background: #c4452f; }
+.est-marca1 { background: #2f7fa8; }
+.est-marca.muerto { opacity: .35; }
+.est-marca.ventaja { outline: 2px solid #fff; }
+.est-red { grid-column: 1 / -1; justify-self: end; font-size: .7rem; color: #d9cfe6; text-shadow: 0 1px 2px #000; letter-spacing: .04em; }
+
+.est-banda {
+  position: absolute; left: 50%; top: 22%; transform: translateX(-50%); max-width: 90%; padding: 6px 14px; text-align: center;
+  background: rgba(10, 6, 20, .88); border: 1px solid #7a68a0; color: #fff; font-size: .9rem; z-index: 3;
+}
+
+/* ---------- Capas (menú, sala, fin) ---------- */
+.est-capa {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: 18px; text-align: center; background: rgba(8, 5, 16, .86); z-index: 2; overflow: auto;
+}
+.est-capa h2 { margin: 0; font-size: clamp(1.3rem, 3.4vw, 2rem); color: #fff; }
+.est-ayuda { margin: 0; max-width: 56ch; color: #d9cfe6; line-height: 1.5; font-size: .95rem; }
+.est-opciones { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+.est-boton {
+  padding: 11px 20px; background: #3a2f5e; color: #fff; border: 1px solid #8a78b8; border-bottom-width: 3px; font: inherit; font-weight: 600;
+  letter-spacing: .03em; cursor: pointer; min-height: 44px;
+}
+.est-boton:hover:not(:disabled) { background: #4a3c78; }
+.est-boton:disabled { opacity: .5; cursor: not-allowed; }
+.est-boton-sec { background: #1d1628; border-color: #5a4a72; }
+.est-enlace { background: none; border: 0; color: #cbb8f0; text-decoration: underline; cursor: pointer; font: inherit; padding: 6px 8px; }
+.est-enlace:hover { color: #fff; }
+.est-unir { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.est-campo-texto { padding: 10px 12px; min-width: 12ch; background: #120d1f; color: #fff; border: 1px solid #5a4a72; font: inherit; text-transform: uppercase; letter-spacing: .12em; text-align: center; }
+.est-codigo { padding: 2px 10px; background: #120d1f; border: 1px solid #8a78b8; letter-spacing: .2em; }
+.est-jugadores { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; min-width: min(360px, 90%); }
+.est-jugadores li { padding: 8px 12px; background: #120d1f; border: 1px solid #3a2f5e; color: #fff; }
+.est-jugadores li.listo { border-color: #7fd08a; }
+.est-jugadores li.libre { color: #a595c4; border-style: dashed; }
+.est-guardado { margin: 0; min-height: 1.2em; font-size: .85rem; color: #bfb2d8; }
+
+.est-barra-juego { display: flex; gap: 12px; justify-content: flex-end; margin: 8px auto 0; }
+
+/* ---------- Controles táctiles: debajo del lienzo ---------- */
+.est-tactil { display: none; gap: 14px; justify-content: space-between; margin: 10px auto 0; touch-action: none; }
+.est-tactil-izq, .est-tactil-der { display: grid; gap: 8px; }
+.est-tactil-izq { grid-template-columns: repeat(2, minmax(64px, 1fr)); }
+.est-tactil-der { grid-template-columns: repeat(2, minmax(78px, 1fr)); }
+.est-tactil button {
+  min-height: 52px; padding: 6px; background: #231a38; color: #fff; border: 1px solid #5a4a72; border-bottom-width: 3px; font: inherit; font-size: .85rem;
+  touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.est-tactil button.activo { background: #4a3c78; border-color: #cbb8f0; }
+@media (pointer: coarse), (max-width: 820px) { .est-tactil { display: flex; } }
+
+/* ---------- Controles ---------- */
+.est-tabla { border-collapse: collapse; margin: 8px 0 12px; min-width: min(480px, 100%); }
+.est-tabla th, .est-tabla td { padding: 6px 12px; border-bottom: 1px solid #3a2f5e; text-align: left; color: #e9e1f5; }
+.est-tabla th { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: #bfb2d8; }
+
+@media (max-width: 640px) {
+  .est-hud { padding: 4px 6px 0; gap: 4px; }
+  .est-capa { gap: 8px; padding: 10px; }
+  .est-boton { padding: 10px 14px; }
+}

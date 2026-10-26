@@ -1,0 +1,13 @@
+{
+  "name": "estocatta-servidor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor autoritativo de Estocatta, el juego de esgrima del compendio.",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js",
+    "test": "node --test --test-timeout=15000"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": { "ws": "8.18.0" }
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estocatta — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/oculto.js?v=20271038"></script>
+  <link rel="stylesheet" href="css/style.css?v=20271038">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20271038">
+  <link rel="stylesheet" href="css/mj-temas.css?v=20271038">
+  <link rel="stylesheet" href="css/estocatta.css?v=20271038">
+  <script src="js/mj-volumen.js?v=20271038"></script>
+</head>
+<body class="mj-pagina est-tema">
+  <script src="js/carga.js?v=20271038"></script>
+  <!-- Página aparte a propósito: sin cabecera del sitio, sin mini reproductor ni escenas 3D. -->
+  <div class="mj-barra">
+    <span class="mj-enlaces">
+      <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+      <a href="index.html" class="mj-volver mj-volver-sec">Inicio</a>
+      <a href="compendio.html" class="mj-volver mj-volver-sec">Compendio</a>
+    </span>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+  <main class="mj-contenido est-contenido">
+    <p class="eyebrow">PASATIEMPOS · EN PRUEBAS</p>
+    <h1 class="mj-titulo">Estocatta</h1>
+    <p class="est-objetivo">Esgrima de un golpe. Atraviesa al rival, cruza la pista y llega a su salida antes de que él llegue a la tuya.</p>
+
+    <div class="est-escenario" id="estEscenario">
+      <canvas id="estCampo" class="est-campo" width="480" height="270" aria-label="Arena de Estocatta"></canvas>
+
+      <div class="est-hud hidden" id="estHud">
+        <div class="est-hud-j est-hud-j0"><span class="est-punto"></span><b id="estN0">Jugador 1</b><em id="estB0">0</em></div>
+        <div class="est-hud-centro"><strong id="estReloj">3:00</strong><small id="estEstado"></small></div>
+        <div class="est-hud-j est-hud-j1"><em id="estB1">0</em><b id="estN1">Jugador 2</b><span class="est-punto"></span></div>
+        <div class="est-pista" id="estPista" aria-hidden="true"><i class="est-sal est-sal0"></i><i class="est-sal est-sal1"></i><i class="est-marca est-marca0" id="estM0"></i><i class="est-marca est-marca1" id="estM1"></i></div>
+        <div class="est-red" id="estRed"></div>
+      </div>
+
+      <div class="est-banda hidden" id="estBanda" role="status"></div>
+
+      <div class="est-capa" id="estMenu">
+        <h2>Elige cómo jugar</h2>
+        <div class="est-opciones">
+          <button type="button" class="est-boton" id="estLocal">Dos jugadores en este navegador</button>
+          <button type="button" class="est-boton" id="estEnLinea">Jugar en línea</button>
+        </div>
+        <p class="est-ayuda" id="estMenuAyuda">En línea hace falta tener la sesión iniciada. El combate lo decide un servidor, no tu navegador.</p>
+      </div>
+
+      <div class="est-capa hidden" id="estLinea">
+        <h2>Jugar en línea</h2>
+        <p class="est-ayuda" id="estLineaEstado">Conectando...</p>
+        <div class="est-opciones" id="estLineaAcciones">
+          <button type="button" class="est-boton" id="estCrear">Crear sala privada</button>
+          <form class="est-unir" id="estUnirForm" autocomplete="off">
+            <input id="estCodigo" class="est-campo-texto" maxlength="8" placeholder="Código de la sala" aria-label="Código de la sala" spellcheck="false">
+            <button type="submit" class="est-boton">Unirme</button>
+          </form>
+        </div>
+        <button type="button" class="est-enlace" id="estLineaVolver">← Volver</button>
+      </div>
+
+      <div class="est-capa hidden" id="estSala">
+        <h2>Sala <span id="estSalaCodigo" class="est-codigo"></span></h2>
+        <p class="est-ayuda">Pasa el código a tu rival. Empieza cuando los dos estén listos.</p>
+        <ul class="est-jugadores" id="estSalaJugadores"></ul>
+        <div class="est-opciones">
+          <button type="button" class="est-boton" id="estListo">Estoy listo</button>
+          <button type="button" class="est-boton est-boton-sec" id="estSalaSalir">Salir de la sala</button>
+        </div>
+      </div>
+
+      <div class="est-capa hidden" id="estFin">
+        <h2 id="estFinTitulo"></h2>
+        <p id="estFinTexto" class="est-ayuda"></p>
+        <p id="estFinGuardado" class="est-guardado"></p>
+        <div class="est-opciones">
+          <button type="button" class="est-boton" id="estRevancha">Revancha</button>
+          <button type="button" class="est-boton est-boton-sec" id="estFinMenu">Salir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="est-barra-juego">
+      <button type="button" class="est-enlace" id="estPantalla">Pantalla completa</button>
+      <button type="button" class="est-enlace" id="estAyudaBtn">Controles</button>
+    </div>
+
+    <div class="est-tactil" id="estTactil" aria-label="Controles táctiles">
+      <div class="est-tactil-izq">
+        <button type="button" data-a="izq" aria-label="Izquierda">◀</button>
+        <button type="button" data-a="der" aria-label="Derecha">▶</button>
+        <button type="button" data-a="salto" aria-label="Saltar">Saltar</button>
+        <button type="button" data-a="agachar" aria-label="Agacharse">Agachar</button>
+        <button type="button" data-a="correr" data-mantener="1" aria-label="Correr">Correr</button>
+      </div>
+      <div class="est-tactil-der">
+        <button type="button" data-a="alt+" aria-label="Subir la espada">Espada ▲</button>
+        <button type="button" data-a="alt-" aria-label="Bajar la espada">Espada ▼</button>
+        <button type="button" data-a="estocada">Estocada</button>
+        <button type="button" data-a="tajo">Tajo</button>
+        <button type="button" data-a="finta">Finta</button>
+        <button type="button" data-a="guardia" aria-label="Guardia (mantén)">Guardia</button>
+        <button type="button" data-a="parada">Parada</button>
+      </div>
+    </div>
+
+    <section class="est-controles hidden" id="estControles">
+      <h2 class="mj-subtitulo">Controles</h2>
+      <p class="mj-nota">La espada tiene tres alturas (alta, media y baja). Una estocada alcanza solo la altura en que la lleves; la guardia solo cubre esa misma altura. La parada es un golpe de tiempo: si el rival ataca justo dentro de su ventana, queda aturdido.</p>
+      <table class="est-tabla" id="estTabla"></table>
+      <p class="mj-nota">Dos jugadores en el mismo navegador: el primero usa A D W S, Mayús izq., Q E, F G H, R y T. El segundo usa las flechas, Mayús der., U O, J K L, I y P. Aquí puedes cambiar solo las teclas del modo en línea y del primer jugador.</p>
+      <button type="button" class="est-enlace" id="estRestablecer">Restablecer teclas</button>
+    </section>
+  </main>
+  <script src="js/estocatta-config.js?v=20271038"></script>
+  <script src="js/temas.js?v=20271038"></script>
+  <script src="js/dialogos.js?v=20271038"></script>
+  <script src="js/fichas-supabase.js?v=20271038"></script>
+  <script src="js/interruptores.js?v=20271038"></script>
+  <script src="js/presencia.js?v=20271038"></script>
+  <script src="js/lado.js?v=20271038"></script>
+  <script src="servidor/estocatta/estocatta-sim.js?v=20271038"></script>
+  <script src="js/estocatta-sprites.js?v=20271038"></script>
+  <script src="js/estocatta-cliente.js?v=20271038"></script>
+  <script src="js/avisos-admin.js?v=20271038"></script>
+  <script src="js/musica-paginas.js?v=20271038"></script>
+</body>
+</html>
