@@ -327,16 +327,36 @@ begin
 end;
 $$;
 
+-- /buscar: qué puede ver esa cuenta del compendio. Sin cuenta vinculada: solo lo que no es de un lado. Con cuenta: su Side, y todo si es admin o
+-- tiene la excepción de Side (las mismas reglas que js/lado.js). No devuelve nada más de la persona.
+create or replace function public.discord_i_acceso(p_discord_id text)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := discord_i_usuario(p_discord_id);
+begin
+  if uid is null then return jsonb_build_object('vinculado', false, 'side', null, 've_ambos', false); end if;
+  return jsonb_build_object(
+    'vinculado', true,
+    'side', (select side from perfiles where user_id = uid),
+    've_ambos', exists (select 1 from side_excepciones where user_id = uid) or exists (select 1 from fichas_admins where user_id = uid));
+end;
+$$;
+
 -- Permisos: las funciones del servidor solo para service_role; las de la página solo para quien tenga sesión.
 revoke all on function
   public.discord_estado(), public.discord_crear_codigo(), public.discord_desvincular(),
   public.discord_i_normalizar(text), public.discord_i_usuario(text), public.discord_i_es_admin(uuid), public.discord_i_ve_lado(uuid, text[]),
   public.discord_i_vincular(text, text, text), public.discord_i_desvincular(text), public.discord_i_perfil(text),
-  public.discord_i_clasificacion(text), public.discord_i_cartas(text, text), public.discord_i_eventos(text)
+  public.discord_i_clasificacion(text), public.discord_i_cartas(text, text), public.discord_i_eventos(text), public.discord_i_acceso(text)
   from public, anon, authenticated;
 grant execute on function public.discord_estado(), public.discord_crear_codigo(), public.discord_desvincular() to authenticated;
 grant execute on function
   public.discord_i_normalizar(text), public.discord_i_usuario(text), public.discord_i_es_admin(uuid), public.discord_i_ve_lado(uuid, text[]),
   public.discord_i_vincular(text, text, text), public.discord_i_desvincular(text), public.discord_i_perfil(text),
-  public.discord_i_clasificacion(text), public.discord_i_cartas(text, text), public.discord_i_eventos(text)
+  public.discord_i_clasificacion(text), public.discord_i_cartas(text, text), public.discord_i_eventos(text), public.discord_i_acceso(text)
   to service_role;

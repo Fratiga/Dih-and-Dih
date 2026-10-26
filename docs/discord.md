@@ -1,6 +1,6 @@
 # Discord: el bot «The great mice» y la web
 
-Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras está listo pero **sin desplegar** (ver «Avisos de carreras»). Las inscripciones, el panel completo de la taberna y la búsqueda general en el compendio **no están hechos**.
+Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras está listo pero **sin desplegar** (ver «Avisos de carreras»). La búsqueda general en el compendio (`/buscar`) también está hecha y probada en local, sin desplegar (ver «Buscar en el compendio»). Las inscripciones y el panel completo de la taberna **no están hechos**.
 
 La aplicación se llama **D&D** y el bot **The great mice**.
 
@@ -106,10 +106,44 @@ Para pausar: `update discord_canales set activo = false where evento = 'carrera'
 
 Esta cola está pensada para más avisos (récords, torneos, novedades) sin tocar la lógica de cada juego: basta con otra fuente que apunte en `discord_cola` y su mensaje en `avisos.js`.
 
+## Buscar en el compendio (`/buscar`, hecho, sin desplegar)
+
+Petición del usuario (26-oct-2026): poder consultar cualquier cosa del sitio desde Discord.
+
+`/buscar consulta:<texto> [categoria:<tipo>]` busca en textos, personajes, lugares, facciones, pergaminos, armas, bestiario, razas, religión, objetos, reglas, economía y las cronologías (1.095 entradas). Mientras se escribe, Discord sugiere títulos (autocompletado). Si el título coincide con claridad, enseña el detalle (resumen, texto, datos como daño, precio o región, y las subsecciones de lugares que ese Side puede ver); si no, una lista de hasta 8 resultados con el fragmento donde aparece lo buscado. Todo con enlace a la página del sitio. **Siempre en privado.**
+
+**De dónde salen los datos.** Los archivos `data/*.js` se pasan a texto plano con `node tools/generar-indice-discord.js`, que escribe `data/discord-indice.json` (2,5 MB, sin etiquetas HTML). La Edge Function lo baja del sitio (lo guarda 10 minutos) y le aplica encima lo editado desde el panel de Admin (tabla `contenido_servidor`, con 1 minuto de caché). Se hizo así porque la Edge Function no puede ejecutar los archivos de datos (no admite `eval`). **Cada vez que cambies algo de `data/*.js`, vuelve a correr ese comando y sube el JSON**; `node tools/probar-discord-buscar.js` falla si está desactualizado, para que no se olvide. Lo que se edite desde el panel de Admin no necesita regenerar nada (salvo los datos sueltos de una entrada como el daño o el precio, que sí vienen del archivo).
+
+**Quién ve qué** (las mismas reglas que la web):
+
+- Una entrada sin lado la ve cualquiera, incluso quien no ha vinculado su cuenta.
+- Una entrada de un Side solo la ve ese Side, quien tiene la excepción de Side y los admin. Sin cuenta vinculada no sale nada de un Side.
+- Ni los títulos de otro Side salen en las sugerencias del autocompletado. Un `id:...` escrito a mano de otro Side contesta «no encontré esa entrada» sin revelar el título.
+- Las subsecciones de un lugar se enseñan solo en el detalle y a su Side, y no se buscan (igual que en la web).
+- Los campos solo para el GM (`datosGM`) nunca llegan al índice, y una prueba lo comprueba.
+- Las cronologías de cada Side llevan su identificador propio (`cron-a-...`, `cron-b-...`): los dos Sides repiten los mismos números de capítulo y sin eso un Side podría abrir el del otro.
+- `stats.js` (las fichas de enemigos) y las cartas no están en el índice: las cartas tienen su propio `/cartas`.
+
+| Archivo | Para qué |
+|---|---|
+| `tools/generar-indice-discord.js` | Genera `data/discord-indice.json` |
+| `data/discord-indice.json` | El índice (generado; se sube con el resto) |
+| `docs/discord/texto.js` | HTML a texto, normalizar, extractos |
+| `docs/discord/buscar.js` | Carga del índice, parches de Admin, visibilidad por Side, orden, mensajes |
+| `docs/discord.sql` | `discord_i_acceso`: el Side de quien pregunta y si lo ve todo |
+| `tools/probar-discord-buscar.js` | 85 comprobaciones |
+
+**Para ponerlo en marcha** (si ya hiciste los pasos de arriba, son cuatro cosas):
+
+1. Vuelve a ejecutar `docs/discord.sql` en el SQL Editor (añade `discord_i_acceso`; se puede repetir).
+2. En la función `discord`, añade los archivos `buscar.js` y `texto.js` y actualiza `index.ts`, `servidor.js` y `comandos.js` con los de `docs/discord/`. Vuelve a desplegar.
+3. Registra los comandos otra vez para que aparezca `/buscar`: `node --env-file=docs/discord/.env docs/discord/registrar.js`.
+4. Espera a que GitHub Pages publique `data/discord-indice.json` (lo hace con el siguiente despliegue del sitio).
+
 ## Lo que sigue (no hecho)
 
 - **Más notificaciones.** La cola ya existe; faltan las fuentes: récords en `*_puntajes`, `eventos_sitio`, torneos. **Hay que decidir qué canales y qué eventos**: un anuncio en un canal lo ven los dos Sides, así que solo deberían salir cosas neutrales.
-- **Consultar cualquier cosa desde Discord** (petición del 26-oct-2026). Hoy solo hay cartas, perfil, clasificaciones y eventos. Falta una búsqueda sobre el compendio (textos, personajes, lugares, facciones, bestiario, objetos, armas...) que respete el Side de cada jugador.
+- **Más cosas consultables** (petición del 26-oct-2026, «cualquier cosa»). `/buscar` ya cubre el compendio. Faltan por añadir según quieras: las fichas de enemigos (`stats.js`, hoy solo admin), el mapa y sus pines, los pergaminos de cada Escuela, las novedades del lobby, y más datos personales (colección de cartas con nombres, mazos, historial de partidas). Cada cosa se añade como función SQL o como colección del índice, con su regla de visibilidad.
 - **Etapa C, inscripciones.** No existe un sistema de inscripciones: hay que diseñarlo (tabla de inscritos con restricción única, plazas, estados, funciones con bloqueo para las carreras simultáneas) y luego exponerlo en la web y en un comando. Conviene decidir primero qué tipo de eventos serán (torneos de blackjack, carreras del Hipódromo...).
 - **Etapa D, panel de la taberna.** Hoy el Tablón solo vincula. Falta lo visual: próximos eventos, anuncios, clasificaciones destacadas y accesos directos.
 - **Etapa E, Bufón y ARG.** Nada se ha adelantado: las notificaciones narrativas tendrán su propia cola y su propio interruptor para poder pausarlas sin tocar el bot general.

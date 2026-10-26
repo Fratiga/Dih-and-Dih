@@ -8,22 +8,28 @@
 //   * Nunca se acepta el nombre de otra persona: /perfil siempre es el de quien escribe el comando.
 //   * Los errores técnicos no se enseñan: solo los mensajes que escribimos nosotros en SQL (código P0001) o aquí.
 // Es JavaScript normal: corre en Deno (Edge Function) y en Node (pruebas).
+import { buscar, embedDetalle, embedLista, entradaVisible, porId, sugerencias } from "./buscar.js";
 
 const COLOR = 0x8a6d3b;
 const EFIMERO = 64;
 const SIN_MENCIONES = { parse: [] };   // nada de lo que venga de la base de datos puede mencionar a nadie
 
 export const COMANDOS = [
-  { name: "ayuda", type: 1, description: "Qué puede hacer este bot", dm_permission: false },
-  { name: "vincular", type: 1, description: "Vincula tu cuenta de la web con tu cuenta de Discord", dm_permission: false,
-    options: [{ type: 3, name: "codigo", description: "El código que te da la web (Tablón de Discord)", required: true, min_length: 4, max_length: 20 }] },
-  { name: "desvincular", type: 1, description: "Quita la vinculación de tu cuenta de la web con Discord", dm_permission: false },
+  { name: "ayuda", type: 1, description: "Qué hace el botsiño", dm_permission: false },
+  { name: "vincular", type: 1, description: "Vincula tu cuenta de la pagina con tu cuenta de Discord", dm_permission: false,
+    options: [{ type: 3, name: "codigo", description: "El código que esta en el Tablón de Discord", required: true, min_length: 4, max_length: 20 }] },
+  { name: "desvincular", type: 1, description: "Quita la vinculación de tu cuenta de la web con Discord (Si quieres supongo jaaj...)", dm_permission: false },
   { name: "perfil", type: 1, description: "Tus estadísticas y tu colección (solo lo ves tú)", dm_permission: false },
-  { name: "clasificacion", type: 1, description: "Las mejores marcas de un juego", dm_permission: false,
+  { name: "clasificacion", type: 1, description: "Las mejores marcas de los jueguiños", dm_permission: false,
     options: [
       { type: 3, name: "juego", description: "Qué juego", required: true,
         choices: [{ name: "Hooey", value: "hooey" }, { name: "Ajedrez", value: "ajedrez" }, { name: "Arquería", value: "arqueria" }] },
       { type: 5, name: "publico", description: "Enseñarla a todos en el canal (por defecto solo la ves tú)" }] },
+  { name: "buscar", type: 1, description: "Busca en el compendio: lugares, personajes, bestiario, reglas, precios... (solo lo ves tú)", dm_permission: false,
+    options: [
+      { type: 3, name: "consulta", description: "Qué buscas. Mientras escribes salen sugerencias", required: true, autocomplete: true, min_length: 2, max_length: 80 },
+      { type: 3, name: "categoria", description: "Limitar a un tipo de entrada",
+        choices: ["Lugares", "Bestiario", "Personajes", "Razas", "Facciones", "Textos", "Religión", "Pergaminos", "Armas", "Objetos", "Reglas", "Economía", "Cronología"].map(n => ({ name: n, value: n })) }] },
   { name: "cartas", type: 1, description: "Busca una carta de Triunfos por nombre (solo lo ves tú)", dm_permission: false,
     options: [{ type: 3, name: "nombre", description: "Parte del nombre", required: true, min_length: 2, max_length: 40 }] },
   { name: "eventos", type: 1, description: "Avisos del sitio y próximas carreras", dm_permission: false,
@@ -46,14 +52,15 @@ function enlace(sitio, pagina) { return sitio.replace(/\/+$/, "") + "/" + pagina
 
 async function ayuda(ctx) {
   return embed({
-    title: "The great mice",
+    title: "THE GREAT MICE",
     description: "El bot del compendio. Casi todo lo que responde lo ves solo tú.",
     fields: [
       { name: "/vincular  /desvincular", value: "Une tu cuenta de la web con tu Discord. Genera el código en el Tablón de Discord de la web." },
       { name: "/perfil", value: "Tus estadísticas, tus tokens y tu colección." },
       { name: "/clasificacion", value: "Las mejores marcas de Hooey, Ajedrez y Arquería." },
+      { name: "/buscar", value: "Busca en el compendio: lugares, personajes, bestiario, reglas, precios... Solo ves lo de tu Side." },
       { name: "/cartas", value: "Busca una carta de Triunfos." },
-      { name: "/eventos", value: "Avisos del sitio y próximas carreras del Hipódromo." }],
+      { name: "/eventos", value: "Avisos del sitio y próximas carreras de los caballinhos." }],
     url: enlace(ctx.sitio, "index.html")
   });
 }
@@ -99,7 +106,7 @@ async function clasificacion(inter, ctx) {
 
 async function cartas(inter, ctx) {
   const lista = await ctx.rpc("discord_i_cartas", { p_discord_id: quien(inter).id, p_texto: String(opcion(inter, "nombre") ?? "") });
-  if (!lista?.length) return privado("No encontré ninguna carta con ese nombre (o no puedes verla).");
+  if (!lista?.length) return privado("No encontré ninguna carta con ese nombre (o esta PROHIBIDA).");
   const c = lista[0];
   const stats = [];
   if (c.coste != null) stats.push(`Coste ${c.coste}`);
@@ -118,7 +125,6 @@ async function cartas(inter, ctx) {
 
 async function eventos(inter, ctx) {
   const publico = opcion(inter, "publico") === true;
-  // En público se pide sin identificador: solo lo que ve cualquiera, nada de un Side.
   const r = await ctx.rpc("discord_i_eventos", { p_discord_id: publico ? null : quien(inter).id });
   const campos = [];
   for (const ev of r?.eventos || []) {
@@ -133,13 +139,57 @@ async function eventos(inter, ctx) {
   return embed({ title: "Eventos y próximas carreras", description: campos.length ? undefined : "No hay avisos ni carreras próximas.", fields: campos.slice(0, 10), url: enlace(ctx.sitio, "index.html") }, { publico });
 }
 
-const MANEJADORES = { ayuda: (i, c) => ayuda(c), vincular, desvincular, perfil, clasificacion, cartas, eventos };
+/* Qué puede ver esa persona del compendio (su Side, o todo). Se recuerda un minuto para no preguntar a la base de datos en cada tecla del autocompletado. */
+const accesos = new Map();
+async function accesoDe(ctx, id) {
+  const hit = accesos.get(id), t = Date.now();
+  if (hit && t - hit.t < 60000) return hit.v;
+  const r = await ctx.rpc("discord_i_acceso", { p_discord_id: id });
+  const v = { vinculado: !!r?.vinculado, side: r?.side === "A" || r?.side === "B" ? r.side : null, veAmbos: !!r?.ve_ambos };
+  if (accesos.size > 500) accesos.clear();
+  accesos.set(id, { t, v });
+  return v;
+}
+export function olvidarAccesos() { accesos.clear(); }
 
-/* Punto de entrada. `ctx` = { rpc(nombre, args) -> datos (lanza si falla), sitio, log(mensaje) }.
+async function buscarEnCompendio(inter, ctx) {
+  const consulta = String(opcion(inter, "consulta") ?? "").slice(0, 80);
+  const categoria = opcion(inter, "categoria");
+  const [acceso, entradas] = await Promise.all([accesoDe(ctx, quien(inter).id), ctx.indice()]);
+  // Una sugerencia del autocompletado llega como «id:<id>»: es esa entrada exacta (si esa persona puede verla; si no, es como si no existiera).
+  if (consulta.startsWith("id:")) {
+    const e = porId(entradas, consulta.slice(3));
+    if (!e || !entradaVisible(e, acceso)) return privado("No encontré esa entrada (o no puedes verla).");
+    const otros = buscar(entradas, e.t, acceso, { limite: 4 }).filter(h => h.e.id !== e.id).slice(0, 3);
+    return embed(embedDetalle(e, acceso, ctx.sitio, otros));
+  }
+  if (consulta.trim().length < 2) return privado("Escribe al menos 2 letras de lo que buscas.");
+  const hallados = buscar(entradas, consulta, acceso, { categoria, limite: 8 });
+  if (!hallados.length) return privado(`No encontré nada para «${corta(consulta, 60)}»${categoria ? ` en ${categoria}` : ""}. Prueba con otra palabra o sin la categoría.`);
+  // Si el primero coincide con el título entero y es claramente el mejor, se enseña su detalle; si no, la lista.
+  if (hallados[0].puntos >= 800 && (hallados.length === 1 || hallados[0].puntos - hallados[1].puntos >= 150))
+    return embed(embedDetalle(hallados[0].e, acceso, ctx.sitio, hallados.slice(1, 4)));
+  return embed(embedLista(hallados, consulta, ctx.sitio));
+}
+
+/* Autocompletado de /buscar: hasta 25 títulos que esa persona puede ver. Nunca sugiere algo de otro Side. */
+async function autocompletar(inter, ctx) {
+  const foco = (inter.data?.options || []).find(o => o.focused);
+  if (inter.data?.name !== "buscar" || !foco || foco.name !== "consulta") return { type: 8, data: { choices: [] } };
+  const texto = String(foco.value ?? "").slice(0, 80);
+  if (texto.trim().length < 2) return { type: 8, data: { choices: [] } };
+  const [acceso, entradas] = await Promise.all([accesoDe(ctx, quien(inter).id), ctx.indice()]);
+  return { type: 8, data: { choices: sugerencias(entradas, texto, acceso, opcion(inter, "categoria")) } };
+}
+
+const MANEJADORES = { ayuda: (i, c) => ayuda(c), vincular, desvincular, perfil, clasificacion, buscar: buscarEnCompendio, cartas, eventos };
+
+/* Punto de entrada. `ctx` = { rpc(nombre, args) -> datos (lanza si falla), indice() -> entradas del compendio, sitio, log(mensaje) }.
    Devuelve siempre algo que se puede mandar a Discord; nunca lanza. */
 export async function responder(inter, ctx) {
   try {
     if (inter?.type === 1) return { type: 1 };   // PING (así comprueba Discord la dirección)
+    if (inter?.type === 4) { if (!quien(inter).id) return { type: 8, data: { choices: [] } }; try { return await autocompletar(inter, ctx); } catch (e) { return { type: 8, data: { choices: [] } }; } }   // autocompletado: si algo falla, sin sugerencias
     if (inter?.type !== 2) return privado("No sé qué hacer con eso.");
     const manejar = MANEJADORES[inter.data?.name];
     if (!manejar) return privado("No conozco ese comando.");

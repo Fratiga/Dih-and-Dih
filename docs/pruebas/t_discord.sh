@@ -117,6 +117,15 @@ contiene "una búsqueda de una letra se rechaza" "$(servicio "select discord_i_c
 contiene "los comodines del texto no devuelven todo" "$(servicio "select discord_i_cartas('$D1', '%%');")" "al menos 2 letras"
 comprobar "el nombre exacto sale primero" "Rata gris" "$(servicio "select discord_i_cartas('$D1', 'rata gris') -> 0 ->> 'nombre'" | tail -1)"
 
+echo "== /buscar: qué puede ver cada cuenta"
+comprobar "sin vincular: nada de lado ni de ver todo" "f||f" "$(servicio "select (discord_i_acceso('999999999999999999') ->> 'vinculado') || '|' || coalesce(discord_i_acceso('999999999999999999') ->> 'side', '') || '|' || (discord_i_acceso('999999999999999999') ->> 've_ambos')" | tail -1 | sed 's/^false|/f|/; s/|false$/|f/')"
+comprobar "una cuenta vinculada del Side A" "t|A|f" "$(servicio "select (discord_i_acceso('$D1') ->> 'vinculado') || '|' || (discord_i_acceso('$D1') ->> 'side') || '|' || (discord_i_acceso('$D1') ->> 've_ambos')" | tail -1 | sed 's/^true|/t|/; s/|false$/|f/')"
+sql "delete from side_excepciones; insert into side_excepciones (user_id, motivo) values ('$U3', 'prueba')" >/dev/null
+comprobar "con la excepción de Side ve ambos" "true" "$(servicio "select discord_i_acceso('$D3') ->> 've_ambos'" | tail -1)"
+contiene "un jugador no puede llamar a la función" "$(como $U1 "select discord_i_acceso('$D1');")" "permission denied"
+contiene "ni sin sesión" "$(anonimo "select discord_i_acceso('$D1');")" "permission denied"
+nocontiene "no devuelve datos personales (solo vinculado, side y ve_ambos)" "$(servicio "select discord_i_acceso('$D1')")" "Uno"
+
 echo "== /eventos"
 H1=$(date -u -d '+1 day' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v+1d +%Y-%m-%dT%H:%M:%SZ)
 sql "delete from eventos_reclamos; delete from eventos_sitio;
