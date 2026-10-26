@@ -9,6 +9,8 @@
 //   * Los errores técnicos no se enseñan: solo los mensajes que escribimos nosotros en SQL (código P0001) o aquí.
 // Es JavaScript normal: corre en Deno (Edge Function) y en Node (pruebas).
 import { buscar, embedDetalle, embedLista, entradaVisible, porId, sugerencias } from "./buscar.js";
+import "./cronica.js";   // las frases de la crónica (copia sin cambios de js/cronica.js); deja el objeto en globalThis.Cronica
+const Cronica = globalThis.Cronica;
 
 const COLOR = 0x8a6d3b;
 const EFIMERO = 64;
@@ -32,6 +34,11 @@ export const COMANDOS = [
         choices: ["Lugares", "Bestiario", "Personajes", "Razas", "Facciones", "Textos", "Religión", "Pergaminos", "Armas", "Objetos", "Reglas", "Economía", "Cronología"].map(n => ({ name: n, value: n })) }] },
   { name: "cartas", type: 1, description: "Busca una carta de Triunfos por nombre (solo lo ves tú)", dm_permission: false,
     options: [{ type: 3, name: "nombre", description: "Parte del nombre", required: true, min_length: 2, max_length: 40 }] },
+  { name: "cronica", type: 1, description: "Lo último que pasó en la taberna (solo lo que ve tu Side)", dm_permission: false },
+  { name: "racha", type: 1, description: "Tu racha en Las Veintiuna Velas", dm_permission: false },
+  { name: "desafios", type: 1, description: "Tus desafíos de hoy en Las Veintiuna Velas", dm_permission: false },
+  { name: "carrera", type: 1, description: "La próxima carrera del Hipódromo y sus favoritas", dm_permission: false },
+  { name: "saldo", type: 1, description: "Tus tokens de juego", dm_permission: false },
   { name: "eventos", type: 1, description: "Avisos del sitio y próximas carreras", dm_permission: false,
     options: [{ type: 5, name: "publico", description: "Enseñarlos a todos en el canal (solo los avisos de todos)" }] }
 ];
@@ -60,6 +67,9 @@ async function ayuda(ctx) {
       { name: "/clasificacion", value: "Las mejores marcas de Hooey, Ajedrez y Arquería." },
       { name: "/buscar", value: "Busca en el compendio: lugares, personajes, bestiario, reglas, precios... Solo ves lo de tu Side." },
       { name: "/cartas", value: "Busca una carta de Triunfos." },
+      { name: "/cronica", value: "Lo último que pasó en la taberna, solo lo que ve tu Side." },
+      { name: "/racha  /desafios  /saldo", value: "Tu racha y tus desafíos de Las Veintiuna Velas, y tus tokens." },
+      { name: "/carrera", value: "La próxima carrera del Hipódromo y sus favoritas." },
       { name: "/eventos", value: "Avisos del sitio y próximas carreras de los caballinhos." }],
     url: enlace(ctx.sitio, "index.html")
   });
@@ -182,7 +192,60 @@ async function autocompletar(inter, ctx) {
   return { type: 8, data: { choices: sugerencias(entradas, texto, acceso, opcion(inter, "categoria")) } };
 }
 
-const MANEJADORES = { ayuda: (i, c) => ayuda(c), vincular, desvincular, perfil, clasificacion, buscar: buscarEnCompendio, cartas, eventos };
+/* Los textos de la crónica no vienen escapados (js/cronica.js lo avisa): los nombres de jugadores pueden llevar símbolos de Markdown. */
+const escapar = t => String(t ?? "").replace(/([\\*_~`|>[\]<])/g, "\\$1");
+
+async function cronica(inter, ctx) {
+  const lista = await ctx.rpc("discord_i_cronica", { p_discord_id: quien(inter).id, p_limite: 10 });
+  const lineas = [];
+  for (const sc of lista || []) {
+    const l = Cronica.linea({ id: sc.id, tipo: sc.tipo, user: sc.user, otro: sc.otro, yo: sc.yo, datos: sc.datos, enlace: sc.enlace });
+    if (!l) continue;
+    lineas.push(`${l.icono} ${escapar(l.texto)}${l.mio ? " **(te toca)**" : ""} · <t:${unix(Date.parse(sc.actualizado))}:R>`);
+  }
+  return embed({ title: "Crónica del mundo", description: corta(lineas.length ? lineas.join("\n\n") : "Todavía no ha pasado nada que contar.", 3800), url: enlace(ctx.sitio, "cronica.html"),
+                 footer: { text: "Solo ves lo de tu Side. En los intercambios y las crías no se dice quién fue." } });
+}
+
+async function racha(inter, ctx) {
+  const v = await ctx.rpc("discord_i_veintiuna", { p_discord_id: quien(inter).id });
+  const viva = Number(v.racha) > 0;
+  return embed({ title: "Tu racha en Las Veintiuna Velas",
+    description: viva ? `Llevas **${num(v.racha)}** victorias seguidas.` : "Ahora mismo no llevas ninguna victoria seguida.",
+    fields: [{ name: "Mejor racha", value: num(v.mejor_racha), inline: true }, { name: "Victorias", value: `${num(v.victorias)} de ${num(v.rondas)} rondas`, inline: true }],
+    url: enlace(ctx.sitio, "veintiuna.html") });
+}
+
+const MARCAS = { reclamado: "✅", completado: "☑️", pendiente: "▫️" };
+async function desafios(inter, ctx) {
+  const v = await ctx.rpc("discord_i_veintiuna", { p_discord_id: quien(inter).id });
+  const grupos = { bronce: [], plata: [], oro: [] };
+  for (const d of v.desafios || []) (grupos[d.nivel] || (grupos[d.nivel] = [])).push(`${MARCAS[d.estado] || "▫️"} ${corta(d.nombre, 60)}`);
+  const hechos = (v.desafios || []).filter(d => d.estado !== "pendiente").length;
+  const campos = Object.entries(grupos).filter(([, l]) => l.length).map(([n, l]) => ({ name: n.charAt(0).toUpperCase() + n.slice(1), value: corta(l.join("\n"), 1000), inline: true }));
+  return embed({ title: "Tus desafíos de hoy", description: `Completados: **${hechos}** de ${(v.desafios || []).length}. Se reinician <t:${v.reinicia}:R> (00:00 UTC) y lo completado sin reclamar se pierde.`,
+    fields: campos, footer: { text: "✅ reclamado · ☑️ completado, sin reclamar · ▫️ pendiente" }, url: enlace(ctx.sitio, "veintiuna.html") });
+}
+
+async function carrera(inter, ctx) {
+  const c = await ctx.rpc("discord_i_carrera", { p_discord_id: quien(inter).id });
+  if (!c?.hay) return privado("No hay ninguna carrera programada ahora mismo.");
+  const entrantes = (c.entrantes || []).map((e, i) => `**${i + 1}.** ${corta(escapar(e.nombre), 60)} (puerta ${e.puerta}) · ganador x${e.gan} · podio x${e.pod}${e.dueno ? ` · de ${corta(escapar(e.dueno), 40)}` : ""}`);
+  return embed({ title: corta(`🏇 Carrera ${c.n}: ${c.nombre || ""}`, 250),
+    description: c.suspendida ? "Esta carrera está suspendida." : `Sale <t:${c.hora}:R> (<t:${c.hora}:t>). Las apuestas cierran <t:${c.cierre}:R>.`,
+    fields: [
+      ...(entrantes.length ? [{ name: "Favoritas", value: corta(entrantes.join("\n"), 1000) }] : []),
+      ...(c.bolsa != null ? [{ name: "Bolsa", value: `${num(c.bolsa)} tokens`, inline: true }] : []),
+      ...(c.dist != null ? [{ name: "Distancia", value: `${num(c.dist)} m`, inline: true }] : [])],
+    url: enlace(ctx.sitio, "hipodromo.html") });
+}
+
+async function saldo(inter, ctx) {
+  const t = await ctx.rpc("discord_i_saldo", { p_discord_id: quien(inter).id });
+  return privado(`💰 Tienes **${num(t)}** tokens de juego.`);
+}
+
+const MANEJADORES = { ayuda: (i, c) => ayuda(c), vincular, desvincular, perfil, clasificacion, buscar: buscarEnCompendio, cartas, cronica, racha, desafios, carrera, saldo, eventos };
 
 /* Punto de entrada. `ctx` = { rpc(nombre, args) -> datos (lanza si falla), indice() -> entradas del compendio, sitio, log(mensaje) }.
    Devuelve siempre algo que se puede mandar a Discord; nunca lanza. */

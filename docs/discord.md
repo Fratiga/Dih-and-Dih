@@ -1,6 +1,6 @@
 # Discord: el bot «The great mice» y la web
 
-Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras está listo pero **sin desplegar** (ver «Avisos de carreras»). La búsqueda general en el compendio (`/buscar`) también está hecha y probada en local, sin desplegar (ver «Buscar en el compendio»). Las inscripciones y el panel completo de la taberna **no están hechos**.
+Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras **ya está desplegado y funcionando** (la función `discord-avisos`, el canal y el cron los puso el usuario). La búsqueda general en el compendio (`/buscar`) también está hecha y probada en local, sin desplegar (ver «Buscar en el compendio»). También están hechos y probados en local, sin desplegar, `/cronica`, `/racha`, `/desafios`, `/carrera`, `/saldo` y los anuncios de la crónica por Side (ver «Crónica del mundo, Veintiuna, carrera y saldo»). Las inscripciones y el panel completo de la taberna **no están hechos**.
 
 La aplicación se llama **D&D** y el bot **The great mice**.
 
@@ -140,9 +140,54 @@ Petición del usuario (26-oct-2026): poder consultar cualquier cosa del sitio de
 3. Registra los comandos otra vez para que aparezca `/buscar`: `node --env-file=docs/discord/.env docs/discord/registrar.js`.
 4. Espera a que GitHub Pages publique `data/discord-indice.json` (lo hace con el siguiente despliegue del sitio).
 
+## Crónica del mundo, Veintiuna, carrera y saldo (hecho, sin desplegar)
+
+Idea de la sesión «Crónica del mundo» (26-oct-2026), hecha con las reglas que ella pedía: nada de Side cruzado en canales compartidos, los intercambios y las crías siguen siendo anónimos y los juegos ocultos no salen. Todo esto vive en `docs/discord-2_consultas.sql` (se ejecuta después de `docs/discord.sql`, `docs/discord-avisos.sql` y `docs/cronica-1_base.sql`).
+
+**Comandos nuevos** (siempre en privado, y todos piden tener la cuenta vinculada):
+
+| Comando | Qué hace |
+|---|---|
+| `/cronica` | Los últimos 10 sucesos de la crónica que tu Side puede ver, con las mismas frases que enseña la web. En intercambios y crías no se dice quién fue, ni a un admin (en Discord se lee en un canal) |
+| `/racha` | Tu racha actual en Las Veintiuna Velas, la mejor y tus victorias |
+| `/desafios` | Tus desafíos de hoy por nivel (✅ reclamado, ☑️ completado sin reclamar, ▫️ pendiente) y cuándo se reinician |
+| `/carrera` | La próxima carrera, cuándo sale y cierran las apuestas, y las 3 favoritas por cuota (la web ya enseña esas cuotas) |
+| `/saldo` | Tus tokens de juego |
+
+**Anuncios en canales.** El mismo cron de cada minuto apunta en la cola los sucesos fuertes de los últimos 30 minutos (para que al encender un canal no salga lo antiguo). Se anuncia: cartas legendarias o limitadas, copas del Hipódromo, apuestas de 1000 tokens o más, rachas récord de Veintiuna ya terminadas, La Última Vela, récords (Hooey, Zarabanda, Parranda, Ajedrez, Arquería) y la primera cría de una especie. **No** se anuncian solos los intercambios, los desafíos de oro, las rachas vivas ni las noticias del Admin. Lo que se anuncia está en la función `discord_i_cronica_fuerte`; para cambiarlo se cambia esa función.
+
+Cada suceso va al canal de su Side. Se configuran en la tabla `discord_canales`, igual que el de las carreras:
+
+| Evento | Qué recibe |
+|---|---|
+| `cronica_a` | Los sucesos del Side A, y solo esos |
+| `cronica_b` | Los del Side B, y solo esos |
+| `cronica_general` | Los que ven los dos Sides (intercambios entre Sides, noticias para todos) |
+| `veintiuna` | El recordatorio de las 23:50 UTC: «los desafíos se reinician a las 00:00 UTC y lo no reclamado se pierde» |
+
+Sin canal configurado para un evento, no se anuncia nada de ese tipo. Los canales de Side tienen que ser canales que solo lea ese Side: el bot no lo comprueba. Ejemplo:
+
+```sql
+insert into discord_canales (evento, canal_id) values ('cronica_a', '<ID>'), ('cronica_b', '<ID>'), ('cronica_general', '<ID>'), ('veintiuna', '<ID>')
+on conflict (evento) do update set canal_id = excluded.canal_id, activo = true, actualizado = now();
+```
+
+**Una noticia del Admin a Discord.** `select discord_admin_anunciar(<id del suceso>)` (solo admin) manda esa noticia al canal de su Side. Es lo que usaría una casilla «publicar también en Discord» en `js/admin-cronica.js` (no se ha tocado: es de la sesión de la crónica). Anunciarla dos veces no la duplica.
+
+**Las copias de `js/cronica.js`.** Las frases de la crónica salen del mismo archivo que usa la web. La Edge Function no puede cargarlo desde el sitio, así que hay una copia sin cambios en `docs/discord/cronica.js` y otra en `docs/discord-avisos/cronica.js`. `node tools/probar-discord-cronica.js` falla si dejan de ser idénticas a `js/cronica.js` (si cambias las frases, copia el archivo a los dos sitios).
+
+**Para ponerlo en marcha:**
+
+1. Ejecuta `docs/discord-2_consultas.sql` en el SQL Editor.
+2. Actualiza la función `discord` (añade `cronica.js`; actualiza `comandos.js` e `index.ts`) y la función `discord-avisos` (añade `cronica.js`; actualiza `avisos.js`). Vuelve a desplegar las dos.
+3. Registra los comandos otra vez (aparecen los 5 nuevos): `node --env-file=docs/discord/.env docs/discord/registrar.js`.
+4. Configura en `discord_canales` los canales que quieras (arriba).
+
+Pruebas: `docs/pruebas/t_discord_cronica.sh` (SQL) y `tools/probar-discord-cronica.js`.
+
 ## Lo que sigue (no hecho)
 
-- **Más notificaciones.** La cola ya existe; faltan las fuentes: récords en `*_puntajes`, `eventos_sitio`, torneos. **Hay que decidir qué canales y qué eventos**: un anuncio en un canal lo ven los dos Sides, así que solo deberían salir cosas neutrales.
+- **Más notificaciones.** La cola ya existe y ya anuncia carreras, la crónica y el recordatorio de Veintiuna. Faltan fuentes como `eventos_sitio` y los torneos, y los avisos personales por mensaje privado (cría lista, intercambio dirigido a ti, reto de ajedrez; opcionales, solo para quien los active), que necesitan una tabla de preferencias.
 - **Más cosas consultables** (petición del 26-oct-2026, «cualquier cosa»). `/buscar` ya cubre el compendio. Faltan por añadir según quieras: las fichas de enemigos (`stats.js`, hoy solo admin), el mapa y sus pines, los pergaminos de cada Escuela, las novedades del lobby, y más datos personales (colección de cartas con nombres, mazos, historial de partidas). Cada cosa se añade como función SQL o como colección del índice, con su regla de visibilidad.
 - **Etapa C, inscripciones.** No existe un sistema de inscripciones: hay que diseñarlo (tabla de inscritos con restricción única, plazas, estados, funciones con bloqueo para las carreras simultáneas) y luego exponerlo en la web y en un comando. Conviene decidir primero qué tipo de eventos serán (torneos de blackjack, carreras del Hipódromo...).
 - **Etapa D, panel de la taberna.** Hoy el Tablón solo vincula. Falta lo visual: próximos eventos, anuncios, clasificaciones destacadas y accesos directos.

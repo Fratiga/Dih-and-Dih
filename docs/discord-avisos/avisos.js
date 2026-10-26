@@ -4,6 +4,9 @@
 //   enviar(canalId, cuerpo, nonce)     -> { estado: <código HTTP>, reintentoSeg?: n, error?: texto }   (no lanza)
 // Un fallo de Discord solo deja el aviso en la cola para reintentarlo: nunca toca las carreras ni las apuestas.
 
+import "./cronica.js";   // las frases de la crónica (copia sin cambios de js/cronica.js); deja el objeto en globalThis.Cronica
+const Cronica = globalThis.Cronica;
+
 const COLOR = 0x8a6d3b;
 const GRADOS = { gran: "Gran Premio", selecta: "Selecta", corriente: "Corriente", novatos: "Novatos", copa_bronce: "Copa de Bronce", copa_plata: "Copa de Plata", copa_oro: "Copa de Oro", copa_leyendas: "Copa de las Leyendas" };
 const PISTAS = { pesares: "Pradera de los Tres Pesares", charco: "El Charco Dorado", impuesto: "Cuesta del Impuesto", ceniza: "Valle de Ceniza", mapache: "Anillo del Mapache", silver: "Silver Mile", hollow: "Hollow Oak Park", espejos: "Corredor de los Espejos", cielo: "Cielo Roto", cienaga: "Ciénaga Susurrante", brasas: "Cuenca de Brasas" };
@@ -24,7 +27,7 @@ export function mensajeCarrera(c, sitio) {
   return {
     embeds: [{
       color: COLOR,
-      title: corta(`🏇 La carrera ${c.n ?? ""} sale en 2 minutos`, 250),
+      title: corta(`${/^(gran|copa_)/.test(c.grado || "") ? "🏆" : "🏇"} La carrera ${c.n ?? ""} sale en 2 minutos`, 250),
       description: corta(c.nombre || "", 300),
       fields: campos,
       timestamp: new Date(Number(c.hora) * 1000).toISOString()
@@ -33,8 +36,30 @@ export function mensajeCarrera(c, sitio) {
   };
 }
 
+/* Los textos de la crónica no vienen escapados: un nombre de jugador puede llevar símbolos de Markdown. */
+const escapar = t => String(t ?? "").replace(/([\\*_~`|>[\]<])/g, "\\$1");
+
+/* Un suceso de la crónica del mundo, con la misma frase que enseña la web. Si no se sabe contar ese tipo, no se publica nada. */
+export function mensajeCronica(c, sitio) {
+  const l = Cronica.linea({ id: c.id, tipo: c.tipo, user: c.user, datos: c.datos, enlace: c.enlace });
+  if (!l) return null;
+  const ver = c.enlace && /^[a-z0-9_-]+\.html(#[A-Za-z0-9_-]*)?$/.test(c.enlace) ? `\n[Ver en el sitio](${enlace(sitio, c.enlace)})` : "";
+  return { embeds: [{ color: COLOR, description: corta(`${l.icono} ${escapar(l.texto)}${ver}`, 1500), footer: { text: "Crónica del mundo" } }], allowed_mentions: { parse: [] } };
+}
+
+/* El recordatorio de que los desafíos de Las Veintiuna Velas se reinician. */
+export function mensajeRecordatorio(c, sitio) {
+  if (c.tipo !== "veintiuna_reinicio") return null;
+  return {
+    embeds: [{ color: COLOR, title: "🕯 Los desafíos de Las Veintiuna Velas se reinician", description: `Será <t:${Number(c.hora)}:R> (00:00 UTC). Lo que hayas completado y no hayas reclamado se pierde.\n[Ir a la mesa](${enlace(sitio, "veintiuna.html")})` }],
+    allowed_mentions: { parse: [] }
+  };
+}
+
 function mensajeDe(fila, sitio) {
   if (fila.origen === "carrera") return mensajeCarrera(fila.contenido || {}, sitio);
+  if (fila.origen === "cronica") return mensajeCronica(fila.contenido || {}, sitio);
+  if (fila.origen === "recordatorio") return mensajeRecordatorio(fila.contenido || {}, sitio);
   return null;
 }
 
@@ -43,6 +68,9 @@ export async function procesar({ rpc, enviar, sitio, log = () => {}, max = 10 })
   const resumen = { encoladas: 0, enviadas: 0, reintentos: 0, fallidas: 0 };
   try { resumen.encoladas = Number(await rpc("discord_i_encolar_carreras", {})) || 0; }
   catch (e) { log(`no pude mirar las carreras: ${e?.code || ""} ${String(e?.message || e).slice(0, 150)}`); }
+  // La crónica y el recordatorio de Veintiuna van aparte: si todavía no está su SQL (docs/discord-2_consultas.sql), solo se apunta en el registro y las carreras siguen.
+  try { resumen.encoladas += Number(await rpc("discord_i_encolar_cronica", {})) || 0; }
+  catch (e) { log(`no pude mirar la crónica: ${e?.code || ""} ${String(e?.message || e).slice(0, 150)}`); }
 
   let filas = [];
   try { filas = (await rpc("discord_i_tomar_cola", { p_max: max })) || []; }

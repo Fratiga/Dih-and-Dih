@@ -7,7 +7,7 @@
 //
 // Preparación (una sola vez; pasos completos en docs/discord.md):
 //   * Ejecutar docs/discord-avisos.sql, elegir el canal (discord_canales) y programar la tarea.
-//   * Crear la función «discord-avisos» y copiar dentro, SIN cambiarlos, estos dos archivos de docs/discord-avisos/:   index.ts   avisos.js
+//   * Crear la función «discord-avisos» y copiar dentro, SIN cambiarlos, estos tres archivos de docs/discord-avisos/:   index.ts   avisos.js   cronica.js
 //   * Secretos (Edge Functions > Secrets):
 //       DISCORD_BOT_TOKEN      el token del bot (es secreto: solo aquí y en tu .env, nunca en el repositorio ni en un chat)
 //       DISCORD_AVISOS_CLAVE   una clave larga al azar que inventas tú; la misma que lleva la tarea del cron

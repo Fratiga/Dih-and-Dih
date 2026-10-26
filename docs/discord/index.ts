@@ -9,8 +9,8 @@
 //
 // Preparación (una sola vez; los pasos completos están en docs/discord.md):
 //   * Ejecutar docs/discord.sql en el editor SQL de Supabase.
-//   * Crear la función:  supabase functions new discord  y copiar dentro de supabase/functions/discord/ estos seis archivos de docs/discord/,
-//     SIN cambiarlos:   index.ts   servidor.js   comandos.js   firma.js   buscar.js   texto.js
+//   * Crear la función:  supabase functions new discord  y copiar dentro de supabase/functions/discord/ estos siete archivos de docs/discord/,
+//     SIN cambiarlos:   index.ts   servidor.js   comandos.js   firma.js   buscar.js   texto.js   cronica.js
 //   * Secretos (el token del bot NO va aquí: esta función no lo necesita, solo el script de registrar comandos):
 //       supabase secrets set DISCORD_PUBLIC_KEY=<clave pública de la aplicación> DISCORD_APP_ID=<id de la aplicación> DISCORD_GUILD_ID=<id del servidor>
 //       supabase secrets set SITIO_URL=https://fratiga.github.io/Dih-and-Dih/        (opcional; es el valor por defecto)

@@ -93,7 +93,7 @@ const mide = (r, desc) => {
   return !mal;
 };
 {
-  ok(COMANDOS.length === 8 && COMANDOS.every(c => /^[a-z]{3,32}$/.test(c.name) && c.description.length <= 100), "los 8 comandos tienen nombre y descripción válidos para Discord");
+  ok(COMANDOS.length === 13 && COMANDOS.every(c => /^[a-z]{3,32}$/.test(c.name) && c.description.length <= 100), "los 13 comandos tienen nombre y descripción válidos para Discord");
   ok(COMANDOS.every(c => c.dm_permission === false), "ninguno funciona por mensaje directo");
   ok((await responder({ type: 1 }, ctx)).type === 1, "PING");
   ok((await responder(cmd("no-existe"), ctx)).data.flags === 64, "un comando desconocido se contesta en privado");
