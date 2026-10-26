@@ -16,6 +16,10 @@
   </script>
   <link rel="stylesheet" href="css/style.css?v=20271035">
   <link rel="stylesheet" href="css/taberna.css?v=20271035">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almendra+SC&family=Almendra:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap">
+  <link rel="stylesheet" href="css/mapa-vectorial.css?v=20271063">
 </head>
 <body>
   <script src="js/carga.js?v=20271035"></script>
@@ -119,52 +123,99 @@
             <div id="mapaSugerencias" class="mapa-suggestions hidden"></div>
           </div>
 
-          <div id="mapaViewport" class="mapa-viewport">
-            <div id="mapaContainer" class="mapa-container">
-              <img src="assets/mapa/Boes_2026-03-26-23-45.png" alt="Mapa del mundo" class="mapa-image">
+          <div id="mvMarco" class="mv-marco" tabindex="0" aria-label="Mapa del mundo. Arrastra para moverte, usa la rueda o los botones para acercarte; flechas y + - con el teclado.">
+            <div id="mvLienzo" class="mv-lienzo">
+              <div id="mvMovil" class="mv-movil"><svg id="mvSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapa del mundo"></svg></div>
             </div>
+            <div id="mvCarga" class="mv-carga" role="status">Trazando el mundo…</div>
+            <div class="mv-controles">
+              <button id="mvMas" class="mv-boton" type="button" title="Acercar" aria-label="Acercar">+</button>
+              <button id="mvMenos" class="mv-boton" type="button" title="Alejar" aria-label="Alejar">−</button>
+              <button id="mvInicio" class="mv-boton" type="button" title="Ver el mundo entero" aria-label="Ver el mundo entero"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><ellipse cx="8" cy="8" rx="2.6" ry="6"/><path d="M2 8h12M3 4.8h10M3 11.2h10" opacity=".7"/></svg></button>
+              <button id="mvPantalla" class="mv-boton" type="button" title="Pantalla completa" aria-label="Pantalla completa"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4"/><path d="M5.5 5.5 2 2M10.5 5.5 14 2M5.5 10.5 2 14M10.5 10.5 14 14" opacity=".55"/></svg></button>
+              <button id="mvExportar" class="mv-boton hidden" type="button" title="Exportar el mapa" aria-label="Exportar el mapa" aria-expanded="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.8 7 8 10.2 11.2 7"/><path d="M2.5 11v2.5h11V11"/></svg></button>
+              <button id="mvRegla" class="mv-boton hidden" type="button" title="Regla de viaje" aria-label="Regla de viaje" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M1.5 11.5 11.5 1.5l3 3-10 10z"/><path d="M4 9l1.3 1.3M6 7l1.8 1.8M8 5l1.3 1.3M10 3l1.8 1.8" stroke-linecap="round"/></svg></button>
+              <button id="mvEditar" class="mv-boton hidden" data-admin-only type="button" title="Editar el mapa (Admin)" aria-label="Editar el mapa" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5 13.5 5 6 12.5 2.5 13.5 3.5 10Z"/><path d="M9.5 4 12 6.5"/></svg></button>
+              <button id="mvCapasBoton" class="mv-boton" type="button" title="Capas" aria-label="Capas del mapa" aria-expanded="false" aria-controls="mvCapas"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 2 1.5 5.5 8 9l6.5-3.5Z"/><path d="m1.5 8.5 6.5 3.5 6.5-3.5"/><path d="m1.5 11.2 6.5 3.3 6.5-3.3" opacity=".6"/></svg></button>
+            </div>
+            <div id="mvCapas" class="mv-capas" hidden>
+              <h3>Capas</h3>
+              <label><input type="checkbox" data-capa="relieve" checked> Relieve</label>
+              <label><input type="checkbox" data-capa="rios" checked> Ríos</label>
+              <label><input type="checkbox" data-capa="caminos" checked> Caminos</label>
+              <label><input type="checkbox" data-capa="rutas" checked> Rutas marítimas</label>
+              <label><input type="checkbox" data-capa="fronteras" checked> Fronteras</label>
+              <label><input type="checkbox" data-capa="hielo" checked> Hielo</label>
+              <label><input type="checkbox" data-capa="etiquetas" checked> Nombres</label>
+              <label><input type="checkbox" data-capa="lugares" checked> Lugares</label>
+              <div id="mvCapasExtra" class="hidden">
+                <hr>
+                <label class="mv-opcion">Colorear por
+                  <select id="mvModoColor"><option value="politico">Reinos</option><option value="religion">Religión predominante</option><option value="region">Región</option><option value="continente">Continente</option></select>
+                </label>
+                <label class="mv-opcion">Época
+                  <select id="mvEpoca"><option value="">El presente</option></select>
+                  <small id="mvEpocaNota"></small>
+                </label>
+              </div>
+              <hr>
+              <label><input type="checkbox" data-capa="referencia"> Mapa original encima</label>
+              <label class="mv-ref">Opacidad <input id="mvRefOpacidad" type="range" min="10" max="100" value="55" disabled></label>
+            </div>
+            <div id="mvEscala" class="mv-escala" aria-hidden="true"><span class="mv-escala-texto"></span><span class="mv-escala-barra"></span></div>
+            <svg class="mv-rosa" viewBox="-50 -50 100 100" aria-hidden="true">
+  <circle r="30" fill="none" stroke="#f3eee1" stroke-opacity=".7" stroke-width="1"/><circle r="26" fill="none" stroke="#f3eee1" stroke-opacity=".45" stroke-width=".6" stroke-dasharray="1.5 2"/>
+  <g fill="#f3eee1" stroke="#2b3446" stroke-width=".8" stroke-linejoin="round">
+    <path d="M0 -46 L6 -6 L0 0 Z" /><path d="M0 -46 L-6 -6 L0 0 Z" fill="#2b3446"/>
+    <path d="M0 46 L-6 6 L0 0 Z" /><path d="M0 46 L6 6 L0 0 Z" fill="#2b3446"/>
+    <path d="M46 0 L6 6 L0 0 Z" /><path d="M46 0 L6 -6 L0 0 Z" fill="#2b3446"/>
+    <path d="M-46 0 L-6 -6 L0 0 Z" /><path d="M-46 0 L-6 6 L0 0 Z" fill="#2b3446"/>
+    <path d="M24 -24 L3 -6 L0 0 Z" opacity=".85"/><path d="M-24 24 L-3 6 L0 0 Z" opacity=".85"/><path d="M24 24 L6 3 L0 0 Z" opacity=".85"/><path d="M-24 -24 L-6 -3 L0 0 Z" opacity=".85"/>
+  </g>
+  <text y="-37" text-anchor="middle" font-family="Almendra SC, Georgia, serif" font-size="11" fill="#2b3446" stroke="#f3eee1" stroke-width="2.4" paint-order="stroke" dy="-12">N</text>
+</svg>
+            <p class="mv-ayuda">Arrastra para moverte · rueda para acercarte · pulsa un lugar para abrir su ficha</p>
+            <div id="mvTooltip" class="mv-tooltip" role="tooltip"></div>
           </div>
-          <p class="mapa-hint">Deaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah</p>
+          <p class="mapa-hint">Mapa vectorial reconstruido a partir del mapa de Azgaar. Iconos de Azgaar Fantasy Map Generator (licencia MIT).</p>
 
-          <div id="mapaFiltros" class="mapa-legend">
+          <div id="mapaFiltros" class="mapa-legend mv-leyenda">
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="region" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--region"></span>
               <span>Región</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="reino" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--reino"></span>
               <span>Reino</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="capital" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--capital"></span>
+              <svg viewBox="-6 -11 12 12" aria-hidden="true"><use href="#b-castle" x="-5" y="-10" width="10" height="10"/></svg>
               <span>Capital</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="ciudad" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--ciudad"></span>
+              <svg viewBox="-6 -11 12 12" aria-hidden="true"><use href="#b-burgh" x="-5" y="-10" width="10" height="10"/></svg>
               <span>Ciudad</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="fortaleza" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--fortaleza"></span>
+              <svg viewBox="-6 -11 12 12" aria-hidden="true"><use href="#b-fort" x="-5" y="-10" width="10" height="10"/></svg>
               <span>Fortaleza / Torre</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="catedral" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--catedral"></span>
+              <svg viewBox="-6 -11 12 12" aria-hidden="true"><use href="#b-abbey" x="-5" y="-10" width="10" height="10"/></svg>
               <span>Catedral</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="aldea" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--aldea"></span>
+              <svg viewBox="-6 -11 12 12" aria-hidden="true"><use href="#b-casa" x="-5" y="-10" width="10" height="10"/></svg>
               <span>Pueblo</span>
             </label>
             <label class="mapa-legend-item">
               <input type="checkbox" data-filtro-tipo="naturaleza" checked>
-              <span class="mapa-pin-sample mapa-pin-sample--naturaleza"></span>
+              <svg viewBox="-6 -11 12 12" aria-hidden="true"><circle cx="0" cy="-5" r="4.8" fill="#e9dcbd" stroke="#6d5a3c" stroke-width=".5"/><use href="#r-deciduous-1" x="-3.8" y="-9" width="7.6" height="7.6"/></svg>
               <span>Naturaleza</span>
             </label>
           </div>
@@ -208,7 +259,8 @@
   <script src="js/slappy.js?v=20271035"></script>
   <script src="js/busqueda-global.js?v=20271035"></script>
   <script src="js/header-marquee.js?v=20271035"></script>
-  <script src="js/mapa.js?v=20271035"></script>
+  <script>window.MAPA_VECTORIAL_V = "20271063"; window.MAPA_VECTORIAL_RUTAS = {"datos":"data/mapa-mundo.json","iconos":"assets/mapa/iconos.svg","mar":"assets/mapa/mar.png","editorJs":"js/mapa-editor.js","editorCss":"css/mapa-editor.css"};</script>
+  <script src="js/mapa-vectorial.js?v=20271063"></script>
   <script src="js/avisos-admin.js?v=20271035"></script>
   <script src="js/musica-paginas.js?v=20271035"></script>
 </body>

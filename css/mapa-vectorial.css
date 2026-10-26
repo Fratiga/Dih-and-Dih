@@ -1,0 +1,246 @@
+/* Mapa vectorial del mundo */
+.mv-marco {
+  --mv-tinta: #33323f;
+  --mv-borde: #2b3446;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #5b78a6;
+  box-shadow: 0 0 0 1px rgba(20, 28, 44, .55), 0 0 0 5px #e9e1cf, 0 0 0 6px rgba(20, 28, 44, .45), 0 10px 30px rgba(10, 16, 30, .35);
+  margin: 6px;
+  width: calc(100% - 12px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+.mv-marco:focus-visible { box-shadow: 0 0 0 1px rgba(20, 28, 44, .55), 0 0 0 5px #e9e1cf, 0 0 0 7px #c58b3c, 0 10px 30px rgba(10, 16, 30, .35); }
+.mv-marco.mv-arrastrando { cursor: grabbing; }
+.mv-lienzo { position: relative; width: 100%; height: clamp(420px, calc(100vh - 140px), 1100px); overflow: hidden; }
+.mv-pantalla { margin: 0; width: 100%; border-radius: 0; }
+.mv-pantalla .mv-lienzo { height: 100vh; }
+.mv-movil { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; contain: strict; }
+#mvSvg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .5s ease; overflow: hidden; }
+#mvSvg.mv-moviendo .mv-lugar, #mvSvg.mv-moviendo .mv-region-clic, #mvSvg.mv-moviendo .mv-etiqueta { pointer-events: none; }
+.mv-listo #mvSvg { opacity: 1; }
+.mv-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Carga y errores */
+.mv-carga {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #eef3fb; font: italic 1rem "Almendra", Georgia, serif; letter-spacing: .02em;
+  background: radial-gradient(ellipse at center, rgba(120, 150, 196, .3), rgba(40, 56, 88, .3));
+  transition: opacity .4s ease; pointer-events: none; z-index: 5;
+}
+.mv-carga::before { content: ""; width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(238, 243, 251, .35); border-top-color: #eef3fb; animation: mv-giro 1s linear infinite; }
+.mv-carga.mv-error::before { display: none; }
+.mv-carga.mv-error { background: rgba(60, 30, 30, .55); align-items: flex-end; padding-bottom: 14px; }
+.mv-carga.mv-oculto { opacity: 0; }
+@keyframes mv-giro { to { transform: rotate(360deg); } }
+.mv-plan-b { cursor: default; }
+.mv-plan-b .mapa-image { width: 100%; height: auto; display: block; }
+
+/* ----- Capas ----- */
+.mv-capa-rutas path { fill: none; stroke: #f2f6fc; stroke-width: .75; stroke-opacity: .62; stroke-dasharray: .2 2.1; stroke-linecap: round; }
+.mv-estado { stroke: none; }
+.mv-neutral { fill: url(#mvHieloGrad); }
+.mv-papel { pointer-events: none; }
+.mv-region-clic { cursor: pointer; }
+.mv-resalte { fill: #fff; fill-opacity: .1; stroke: #fff8e8; stroke-opacity: .9; stroke-width: 1.3; stroke-linejoin: round; pointer-events: none; }
+.mv-lago { fill: #a3bde3; stroke: #5d7aa6; stroke-width: .55; stroke-opacity: .7; }
+.mv-hielo { fill: #f7fbfe; fill-opacity: .82; stroke: #b9cfdf; stroke-width: .5; pointer-events: none; }
+.mv-capa-rios path { fill: none; stroke: #4e70a0; stroke-opacity: .85; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.mv-capa-caminos path { fill: none; stroke: #b4653a; stroke-width: .75; stroke-opacity: .75; stroke-dasharray: .1 1.8; stroke-linecap: round; pointer-events: none; }
+.mv-frontera-fondo { fill: none; stroke: #fff; stroke-opacity: .32; stroke-width: 2.4; stroke-linejoin: round; pointer-events: none; }
+.mv-frontera { fill: none; stroke: #3d3a4a; stroke-opacity: .7; stroke-width: .85; stroke-dasharray: 1.6 1.3; stroke-linejoin: round; pointer-events: none; }
+.mv-costa-sombra { fill: none; stroke: #23314b; stroke-opacity: .18; stroke-width: 2.6; stroke-linejoin: round; pointer-events: none; }
+.mv-costa { fill: none; stroke: #39414f; stroke-opacity: .85; stroke-width: .7; stroke-linejoin: round; pointer-events: none; }
+.mv-orilla { fill: none; stroke: #4f6c96; stroke-opacity: .65; stroke-width: .55; pointer-events: none; }
+.mv-capa-relieve use { pointer-events: none; }
+.mv-capa-referencia { pointer-events: none; }
+
+/* Etiquetas */
+.mv-etiqueta text {
+  font-family: "Almendra SC", "Almendra", Georgia, serif;
+  fill: var(--mv-tinta); letter-spacing: .02em;
+  paint-order: stroke; stroke: #f6f1e4; stroke-opacity: .38; stroke-width: .11em; stroke-linejoin: round;
+}
+.mv-z3 .mv-etiqueta-estado text { opacity: .42; }
+.mv-z3 .mv-etiqueta-provincia text { opacity: .6; }
+.mv-etiqueta-provincia text { fill: #4b3e3e; fill-opacity: .88; letter-spacing: .06em; }
+.mv-etiqueta[data-lugar-id] { cursor: pointer; }
+.mv-etiqueta[data-lugar-id]:hover text, .mv-etiqueta[data-lugar-id]:focus-visible text { fill: #6a2d14; stroke-opacity: .85; }
+.mv-etiqueta:focus { outline: none; }
+.mv-capa-etiquetas.mv-oculto-tipo { display: none; }
+
+/* Lugares */
+.mv-lugar { cursor: pointer; outline: none; }
+.mv-lugar-escala { transform: scale(var(--mk, 1)); transform-box: view-box; }
+.mv-lugar-suelo { fill: #1f2433; opacity: .2; }
+.mv-lugar-icono { }
+.mv-lugar-disco circle { fill: #e9dcbd; stroke: #6d5a3c; stroke-width: 1; }
+.mv-glifo-lago { fill: #7ea0cf; stroke: #3d5f8f; stroke-width: .8; }
+.mv-glifo-rio { fill: none; stroke: #3d6aa3; stroke-width: 1.5; stroke-linecap: round; }
+.mv-lugar-ancla { opacity: .9; }
+.mv-lugar-nombre {
+  font: 600 11px "Almendra", Georgia, serif; fill: #262433; letter-spacing: .02em;
+  paint-order: stroke; stroke: #f8f3e6; stroke-width: 3px; stroke-linejoin: round; stroke-opacity: .9;
+  opacity: 0; pointer-events: none;
+}
+.mv-z3 :is(.mv-lugar-capital, .mv-lugar-ciudad, .mv-lugar-fortaleza, .mv-lugar-catedral) .mv-lugar-nombre { opacity: 1; }
+.mv-z4 .mv-lugar-nombre { opacity: 1; }
+.mv-z2 .mv-lugar-capital .mv-lugar-nombre { opacity: 1; }
+.mv-lugar:hover .mv-lugar-nombre, .mv-lugar:focus-visible .mv-lugar-nombre, .mv-lugar.mv-sel .mv-lugar-nombre { opacity: 1; }
+.mv-lugar:hover .mv-lugar-escala, .mv-lugar:focus-visible .mv-lugar-escala { transform: scale(calc(var(--mk, 1) * 1.28)); }
+.mv-lugar:focus-visible .mv-lugar-suelo, .mv-lugar.mv-sel .mv-lugar-suelo { fill: #c58b3c; opacity: .9; }
+.mv-lugar-aldea { opacity: .95; }
+.mv-punto { fill: #f4ecd9; stroke: #3a3328; stroke-width: 1.4; }
+.mv-lugar-aldea .mv-lugar-icono, .mv-lugar-aldea .mv-lugar-suelo { display: none; }
+.mv-z2 .mv-lugar-aldea .mv-lugar-icono, .mv-z2 .mv-lugar-aldea .mv-lugar-suelo { display: inline; }
+.mv-z2 .mv-lugar-aldea .mv-punto { display: none; }
+.mv-lugar-texto text {
+  font: italic 13px "Almendra", Georgia, serif; fill: #2a3550; fill-opacity: .55; letter-spacing: .35em; text-transform: uppercase;
+  paint-order: stroke; stroke: #fff; stroke-opacity: .25; stroke-width: 2px;
+}
+.mv-lugar-texto:hover text, .mv-lugar:focus-visible .mv-lugar-texto text { fill-opacity: .9; }
+.mv-oculto-tipo { display: none; }
+.mv-buscando .mv-lugar:not(.mv-coincide) { opacity: .25; }
+.mv-buscando .mv-lugar.mv-coincide .mv-lugar-nombre { opacity: 1; }
+.mv-destello .mv-lugar-escala, .mv-destello text { animation: mv-destello 2.3s ease-out; }
+@keyframes mv-destello {
+  0%, 40%, 80% { filter: drop-shadow(0 0 1.5px #ffd27a) drop-shadow(0 0 3px #ffb43c); }
+  20%, 60%, 100% { filter: none; }
+}
+
+/* Tooltip */
+.mv-tooltip {
+  position: absolute; z-index: 6; transform: translate(-50%, calc(-100% - 10px)); max-width: 250px;
+  background: #f7f1e3; color: #2d2a26; border: 1px solid #8a7653; border-radius: 4px; padding: 7px 10px;
+  font: .8rem/1.3 "EB Garamond", Georgia, serif; box-shadow: 0 6px 18px rgba(20, 16, 10, .3);
+  pointer-events: none; opacity: 0; transition: opacity .15s ease;
+}
+.mv-tooltip.visible { opacity: 1; }
+.mv-tooltip strong { display: block; font: 1rem "Almendra SC", Georgia, serif; color: #3b2a19; }
+.mv-tooltip span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: #8a6a3c; margin-bottom: 2px; }
+.mv-tooltip em { display: block; color: #4a4338; }
+.mv-tooltip::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px; background: #f7f1e3; border-right: 1px solid #8a7653; border-bottom: 1px solid #8a7653; transform: translateX(-50%) rotate(45deg); }
+
+/* Controles */
+.mv-controles { position: absolute; top: 10px; right: 10px; z-index: 4; display: flex; flex-direction: column; gap: 4px; }
+.mv-boton {
+  width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid #8a7653; border-radius: 4px;
+  background: #f4ecd9; color: #3b2a19; cursor: pointer; font: 600 1.05rem/1 Georgia, serif; padding: 0;
+  box-shadow: 0 2px 6px rgba(15, 20, 35, .25); transition: background .15s ease, transform .1s ease;
+}
+.mv-boton:hover { background: #fff8e8; }
+.mv-boton:active { transform: translateY(1px); }
+.mv-boton:focus-visible { outline: 2px solid #c58b3c; outline-offset: 1px; }
+.mv-boton svg { width: 16px; height: 16px; }
+.mv-boton[aria-expanded="true"] { background: #e7d6ae; }
+.mv-capas {
+  position: absolute; top: 10px; right: 50px; z-index: 4; width: 210px; padding: 10px 12px;
+  background: #f7f1e3; color: #2d2a26; border: 1px solid #8a7653; border-radius: 5px;
+  font: .82rem/1.35 "EB Garamond", Georgia, serif; box-shadow: 0 8px 22px rgba(15, 20, 35, .3); cursor: default;
+}
+.mv-capas[hidden] { display: none; }
+.mv-capas h3 { margin: 0 0 6px; font: 1rem "Almendra SC", Georgia, serif; color: #3b2a19; }
+.mv-capas label { display: flex; align-items: center; gap: 8px; padding: 2px 0; cursor: pointer; }
+.mv-capas input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; width: 15px; height: 15px; margin: 0; border: 1px solid #8a7653; border-radius: 3px;
+  background: #fffaf0; display: grid; place-items: center; cursor: pointer; flex: none;
+}
+.mv-capas input[type="checkbox"]:checked { background: #6b4f2a; border-color: #6b4f2a; }
+.mv-capas input[type="checkbox"]:checked::after { content: ""; width: 7px; height: 4px; border-left: 2px solid #fff8e8; border-bottom: 2px solid #fff8e8; transform: translateY(-1px) rotate(-45deg); }
+.mv-capas input[type="checkbox"]:focus-visible { outline: 2px solid #c58b3c; outline-offset: 1px; }
+.mv-capas hr { border: 0; border-top: 1px solid rgba(138, 118, 83, .4); margin: 8px 0; }
+.mv-capas .mv-ref { display: block; }
+.mv-capas input[type="range"] { width: 100%; accent-color: #6b4f2a; }
+.mv-capas input[type="range"]:disabled { opacity: .4; }
+
+/* Escala y rosa de los vientos */
+.mv-escala {
+  position: absolute; right: 14px; bottom: 12px; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  font: 600 .72rem "EB Garamond", Georgia, serif; color: #26303f; pointer-events: none;
+  text-shadow: 0 0 3px rgba(255, 255, 255, .8), 0 0 1px #fff;
+}
+.mv-escala-barra { height: 5px; border: 1.5px solid #2b3446; border-top: 0; background: repeating-linear-gradient(90deg, rgba(43, 52, 70, .85) 0 25%, rgba(255, 255, 255, .85) 25% 50%); transition: width .2s ease; }
+.mv-rosa { position: absolute; left: 12px; bottom: 10px; width: 64px; height: 64px; z-index: 3; pointer-events: none; opacity: .85; }
+.mv-ayuda {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 3; pointer-events: none;
+  font: italic .78rem "EB Garamond", Georgia, serif; color: #f2f6fc; text-shadow: 0 1px 2px rgba(10, 20, 40, .7);
+  opacity: .85; transition: opacity .6s ease;
+}
+.mv-marco.mv-usado .mv-ayuda { opacity: 0; }
+
+/* Leyenda con los iconos de verdad */
+.mv-leyenda .mapa-legend-item svg { width: 18px; height: 18px; flex: none; }
+.mv-leyenda .mv-leyenda-texto { font: italic .8rem "Almendra", Georgia, serif; }
+
+@media (max-width: 640px) {
+  .mv-rosa { width: 44px; height: 44px; }
+  .mv-capas { right: 48px; width: 180px; }
+  .mv-ayuda { display: none; }
+}
+
+/* Más tipos de nombres (los pone el editor) */
+.mv-etiqueta-mar text { font-family: "Almendra", Georgia, serif; font-style: italic; fill: #2c4a78; fill-opacity: .8; letter-spacing: .28em; stroke: #dfe9f6; stroke-opacity: .35; }
+.mv-etiqueta-accidente text { font-family: "Almendra", Georgia, serif; font-style: italic; fill: #3f3a33; letter-spacing: .08em; }
+.mv-etiqueta-region text { fill: #2a3550; fill-opacity: .7; letter-spacing: .3em; }
+.mv-boton[aria-pressed="true"] { background: #5a3d1c; color: #fff8e8; border-color: #3f2a12; }
+.mv-boton.mv-esperando { cursor: progress; opacity: .6; }
+
+.mv-boton[hidden] { display: none; }
+
+.mv-boton.hidden { display: none; }
+
+/* Medidor de FPS (?fps en la dirección) */
+.mv-fps { position: absolute; left: 10px; top: 10px; z-index: 10; padding: 6px 9px; border-radius: 5px; background: rgba(12, 16, 26, .82); color: #e8f0ff; font: 12px/1.35 ui-monospace, Consolas, monospace; pointer-events: none; white-space: pre; }
+.mv-fps b { color: #9fe39f; } .mv-fps b.mal { color: #ff9a8a; }
+
+/* Opciones extra del panel de capas (solo Admin mientras no se publiquen) */
+.mv-capas .mv-opcion { display: grid; gap: 3px; margin: 4px 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: #8a6a3c; cursor: default; }
+.mv-capas .mv-opcion.hidden, .mv-capas .hidden { display: none; }
+.mv-capas select { appearance: none; -webkit-appearance: none; width: 100%; font: .86rem "EB Garamond", Georgia, serif; text-transform: none; letter-spacing: 0; color: #2d2a26; background: #fffaf0; border: 1px solid #b9a37a; border-radius: 4px; padding: 4px 24px 4px 7px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, #6b4f2a 50%), linear-gradient(135deg, #6b4f2a 50%, transparent 50%); background-position: calc(100% - 13px) 55%, calc(100% - 8px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+.mv-capas select:focus-visible { outline: 2px solid #c58b3c; outline-offset: 1px; }
+.mv-capas small { text-transform: none; letter-spacing: 0; font-style: italic; color: #6b5a3c; }
+.mv-boton.hidden { display: none; }
+
+/* Leyenda de los modos de color */
+.mv-leyenda-color { position: absolute; left: 12px; bottom: 82px; z-index: 4; max-width: 230px; max-height: 45%; overflow: auto; padding: 8px 10px; background: rgba(247, 241, 227, .95); border: 1px solid #8a7653; border-radius: 5px; box-shadow: 0 6px 18px rgba(15, 20, 35, .25); font: .8rem/1.3 "EB Garamond", Georgia, serif; color: #2d2a26; display: grid; gap: 3px; cursor: default; }
+.mv-leyenda-color strong { font: .95rem "Almendra SC", Georgia, serif; color: #3b2a19; margin-bottom: 2px; }
+.mv-leyenda-color span { display: flex; align-items: center; gap: 7px; }
+.mv-leyenda-color i { width: 14px; height: 10px; border-radius: 2px; border: 1px solid rgba(60, 50, 30, .35); flex: none; }
+.mv-estado-oculto { fill: #e3dccb; pointer-events: none; }
+.mv-restringido { stroke: #6a2d14; stroke-width: 1; stroke-dasharray: 3 2; stroke-opacity: .55; }
+
+/* Regla de viaje */
+.mv-midiendo, .mv-midiendo .mv-lugar, .mv-midiendo .mv-region-clic, .mv-midiendo .mv-etiqueta { cursor: crosshair !important; }
+.mv-medida-linea { fill: none; stroke: #7a1f12; stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-dasharray: 7 5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.mv-medida-punto { fill: #fff5e0; stroke: #7a1f12; stroke-width: 1.6px; vector-effect: non-scaling-stroke; pointer-events: none; }
+.mv-medida-punto.inicio { fill: #7a1f12; }
+.mv-medida-caja { position: absolute; left: 12px; top: 10px; z-index: 6; width: 250px; padding: 8px 12px 10px; background: rgba(247, 241, 227, .97); border: 1px solid #8a7653; border-radius: 6px; box-shadow: 0 8px 22px rgba(15, 20, 35, .3); font: .84rem/1.35 "EB Garamond", Georgia, serif; color: #2d2a26; cursor: default; }
+.mv-medida-cab { display: flex; justify-content: space-between; align-items: center; }
+.mv-medida-cab strong { font: 1rem "Almendra SC", Georgia, serif; color: #3b2a19; }
+.mv-medida-cab button { background: none; border: 0; font-size: 1.3rem; line-height: 1; color: #5a3d1c; cursor: pointer; }
+.mv-medida-caja p { margin: 4px 0; }
+.mv-medida-km { font: 1.35rem "Almendra SC", Georgia, serif; color: #7a1f12; }
+.mv-medida-km small { font: .8rem "EB Garamond", Georgia, serif; color: #6b5a3c; }
+.mv-medida-caja table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+.mv-medida-caja td { padding: 2px 0; border-bottom: 1px dotted rgba(138, 118, 83, .45); }
+.mv-medida-caja td:last-child { text-align: right; font-weight: 600; white-space: nowrap; }
+.mv-medida-nota { font-size: .72rem; font-style: italic; color: #6b5a3c; }
+.mv-medida-botones { display: flex; gap: 6px; margin-top: 6px; }
+.mv-medida-botones button { font: 600 .78rem "EB Garamond", Georgia, serif; color: #3b2a19; background: #f4ecd9; border: 1px solid #8a7653; border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+.mv-medida-botones button:disabled { opacity: .45; cursor: default; }
+.mv-midiendo .mv-ayuda { display: none; }
+
+/* Exportar */
+.mv-exportar { top: 10px; right: 50px; width: 240px; }
+.mv-exportar .mv-exportar-nota { margin: 6px 0; font-size: .74rem; font-style: italic; color: #6b5a3c; }
+.mv-exportar-boton { width: 100%; margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font: 600 .86rem "EB Garamond", Georgia, serif; color: #fff8e8; background: #5a3d1c; border: 1px solid #3f2a12; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+.mv-exportar-boton:hover:not(:disabled) { background: #6e4b23; }
+.mv-exportar-boton:disabled { opacity: .7; cursor: progress; }
+.mv-giro-mini { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent; animation: mv-giro .8s linear infinite; display: inline-block; }
