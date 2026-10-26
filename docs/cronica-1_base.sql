@@ -58,6 +58,16 @@ insert into public.cronica_tipos (tipo, juego, activo, config, descripcion) valu
     'Una mano o una mesa de Veintiuna con apuesta paga al menos 4 veces lo apostado y al menos 200 tokens de juego, o un premio de 1000 tokens o más (config pago_siempre).'),
   ('racha_veintiuna', 'veintiuna', true, '{"min": 4}',
     'Una racha de más de 3 victorias seguidas en Veintiuna. Una sola línea que se actualiza mientras dura y se cierra cuando se pierde.'),
+  ('record_hooey', 'hooey', true, '{}',
+    'Alguien pasa a tener la mejor racha de Hooey. Solo cuando cambia quién va primero.'),
+  ('record_ritmo', 'ritmo', true, '{"min_jugadores": 2}',
+    'Alguien toma el primer puesto de una canción de Zarabanda (por dificultad), si ya hay otro jugador con puntaje en ella.'),
+  ('record_parranda', 'parranda', true, '{"min_jugadores": 2}',
+    'Alguien toma el primer puesto de una canción de Parranda (por dificultad y versión del mapa), si ya hay otro jugador con puntaje en ella.'),
+  ('record_minijuego', 'ajedrez', true, '{"min_victorias": 3}',
+    'Alguien pasa a liderar las victorias de Ajedrez o de Arquería (con al menos 3). Solo cuando cambia quién va primero.'),
+  ('ultima_vela', 'veintiuna', true, '{}',
+    'Alguien termina el desafío de La Última Vela contra Cera: gana o pierde. Lo decide el servidor; el veredicto del DM no cambia la línea.'),
   ('logro_oro_veintiuna', 'veintiuna', true, '{}',
     'Se completa un desafío de nivel oro de Veintiuna.'),
   ('copa_hipodromo', 'hipodromo', true, '{}',
@@ -176,7 +186,7 @@ begin
         from cronica_i_visibles() s
         left join cronica_tipos t on t.tipo = s.tipo
        where (p_antes is null or s.actualizado < p_antes)
-         and (p_juego is null or s.juego = p_juego)
+         and (p_juego is null or s.juego = p_juego or (p_juego = 'records' and left(s.tipo, 7) = 'record_'))
        order by s.actualizado desc, s.id desc
        limit least(greatest(coalesce(p_limite, 20), 1), 100)
     ) x;

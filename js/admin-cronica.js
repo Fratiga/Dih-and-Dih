@@ -12,7 +12,7 @@
   const PAGINAS = [["", "(sin enlace)"], ["compendio.html", "Compendio"], ["mapa.html", "Mapa"], ["cronologia.html", "Cronología"], ["personajes.html", "Personajes"], ["lugares.html", "Lugares"],
     ["facciones.html", "Facciones"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["hipodromo.html", "Hipódromo"], ["veintiuna.html", "Las Veintiuna Velas"], ["minijuegos.html", "Minijuegos"]];
   const NOMBRES = { carta_ganada: "Carta ganada", intercambio: "Intercambio", cria_nacida: "Cría nacida", apuesta_hipodromo: "Apuesta grande (Hipódromo)", apuesta_veintiuna: "Apuesta grande (Veintiuna)",
-    racha_veintiuna: "Racha de Veintiuna", logro_oro_veintiuna: "Desafío de oro de Veintiuna", copa_hipodromo: "Copa del Hipódromo", partida_dificil: "Partida difícil", nota: "Noticia del Admin" };
+    racha_veintiuna: "Racha de Veintiuna", logro_oro_veintiuna: "Desafío de oro de Veintiuna", ultima_vela: "La Última Vela", record_hooey: "Récord de Hooey", record_ritmo: "Récord de Zarabanda", record_parranda: "Récord de Parranda", record_minijuego: "Líder de Ajedrez o Arquería", copa_hipodromo: "Copa del Hipódromo", partida_dificil: "Partida difícil", nota: "Noticia del Admin" };
 
   let listo = false;
   const cliente = () => fichasCliente();

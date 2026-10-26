@@ -60,6 +60,28 @@
       if (d.activa === false) return `La racha de ${quien(s)} en Las Veintiuna Velas terminó en ${d.racha} victorias.` + (d.record ? " Fue la mejor de la mesa." : "");
       return `${quien(s)} lleva ${d.racha} victorias seguidas en Las Veintiuna Velas.` + (d.record ? " Es la mejor racha de la mesa." : "");
     },
+    record_hooey: s => {
+      const d = s.datos || {};
+      return `${quien(s)} tiene ahora la mejor racha de Hooey, ${num(d.racha)}.` + (d.anterior ? ` Le quitó el primer puesto a ${d.anterior}.` : "");
+    },
+    record_ritmo: s => {
+      const d = s.datos || {};
+      return `${quien(s)} tomó el primer puesto de «${d.cancion}» (${d.dificultad}) en Zarabanda con ${num(d.puntos)} puntos.` + (d.anterior ? ` Antes lo tenía ${d.anterior}.` : "");
+    },
+    record_parranda: s => {
+      const d = s.datos || {};
+      return `${quien(s)} tomó el primer puesto de «${d.cancion}» (${d.dificultad}) en Parranda con ${num(d.puntos)} puntos.` + (d.anterior ? ` Antes lo tenía ${d.anterior}.` : "");
+    },
+    record_minijuego: s => {
+      const d = s.datos || {};
+      const juego = d.juego === "arqueria" ? "Arquería" : "Ajedrez";
+      return `${quien(s)} pasó a liderar las victorias de ${juego} con ${num(d.victorias)}.` + (d.anterior ? ` Antes lo hacía ${d.anterior}.` : "");
+    },
+    ultima_vela: s => {
+      const d = s.datos || {};
+      if (d.resultado === "ganado") return `${quien(s)} le ganó a Cera en La Última Vela, ${d.ganadas} manos a ${d.perdidas}.`;
+      return `${quien(s)} cayó ante Cera en La Última Vela (${d.ganadas} a ${d.perdidas}).`;
+    },
     logro_oro_veintiuna: s => `${quien(s)} completó el desafío «${(s.datos || {}).nombre}» en Las Veintiuna Velas.`,
     copa_hipodromo: s => {
       const d = s.datos || {};
@@ -70,7 +92,7 @@
     },
     nota: s => String((s.datos || {}).texto || "")
   };
-  const ICONOS = { carta_ganada: "🃏", intercambio: "⇄", cria_nacida: "🐣", apuesta_hipodromo: "🐎", apuesta_veintiuna: "🕯", racha_veintiuna: "🕯", logro_oro_veintiuna: "🕯", copa_hipodromo: "🏆", nota: "📜" };
+  const ICONOS = { carta_ganada: "🃏", intercambio: "⇄", cria_nacida: "🐣", apuesta_hipodromo: "🐎", apuesta_veintiuna: "🕯", racha_veintiuna: "🕯", logro_oro_veintiuna: "🕯", ultima_vela: "🕯", record_hooey: "🏅", record_ritmo: "🏅", record_parranda: "🏅", record_minijuego: "🏅", copa_hipodromo: "🏆", nota: "📜" };
 
   function linea(s) {
     const f = FRASES[s && s.tipo];

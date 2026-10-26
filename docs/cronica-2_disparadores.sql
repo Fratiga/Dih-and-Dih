@@ -13,6 +13,11 @@
 --   apuesta_veintiuna       veintiuna_partidas          cuando una mano o mesa con apuesta termina y paga mucho
 --   racha_veintiuna         veintiuna_estadisticas      cuando sube o se corta la racha de victorias
 --   logro_oro_veintiuna     veintiuna_logros            al completar un desafío de oro
+--   record_hooey            hooey_puntajes              cuando alguien pasa a tener la mejor racha
+--   record_ritmo            ritmo_puntajes              cuando alguien toma el primer puesto de una canción
+--   record_parranda         parranda_puntajes           igual, por dificultad y versión del mapa
+--   record_minijuego        mj_estadisticas             cuando alguien pasa a liderar las victorias de Ajedrez o Arquería
+--   ultima_vela             veintiuna_retos             cuando el desafío de La Última Vela pasa a «ganado» o «perdido»
 --   copa_hipodromo          hipodromo_carreras          al publicarse el resultado de una copa o un Gran Premio (se enseña cuando acaba la carrera)
 
 /* ================================================================== CARTAS GANADAS */
@@ -295,6 +300,146 @@ begin
 end;
 $$;
 
+/* ================================================================== RÉCORDS (Hooey, Zarabanda, Parranda, Ajedrez y Arquería)
+   Solo cuando CAMBIA quién va primero: quien ya era el primero y mejora su marca no vuelve a salir. Hace falta que haya al menos otro jugador.
+   Ojo: estos puntajes los informa el navegador (el servidor los valida por rango, no los reproduce), así que un récord falso puede colarse. El Admin puede ocultar
+   cualquier línea desde su pestaña Crónica y apagar un tipo entero. */
+create or replace function public.cronica_t_record_hooey()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t cronica_tipos%rowtype;
+  v_max int;
+  v_otros int;
+  v_prev text;
+begin
+  begin
+    select * into t from cronica_tipos where tipo = 'record_hooey';
+    if not found or not t.activo then return new; end if;
+    select max(mejor_racha), count(*) into v_max, v_otros from hooey_puntajes where user_id <> new.user_id;
+    if v_otros = 0 or new.mejor_racha <= coalesce(v_max, 0) then return new; end if;
+    if tg_op = 'UPDATE' and old.mejor_racha > v_max then return new; end if;   -- ya era el primero y solo mejora su marca
+    select username into v_prev from hooey_puntajes where user_id <> new.user_id and mejor_racha = v_max order by updated_at limit 1;
+    perform cronica_i_anotar('record_hooey', new.user_id, null, null, jsonb_build_object('racha', new.mejor_racha, 'anterior', v_prev),
+      'hooey:' || new.user_id || ':' || new.mejor_racha, 'sacrificio.html');
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+create or replace function public.cronica_t_record_ritmo()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t cronica_tipos%rowtype;
+  v_max int;
+  v_otros int;
+  v_prev text;
+begin
+  begin
+    select * into t from cronica_tipos where tipo = 'record_ritmo';
+    if not found or not t.activo then return new; end if;
+    select max(puntos), count(*) into v_max, v_otros from ritmo_puntajes where cancion = new.cancion and dificultad = new.dificultad and user_id <> new.user_id;
+    if v_otros + 1 < coalesce((t.config ->> 'min_jugadores')::int, 2) or new.puntos <= coalesce(v_max, 0) then return new; end if;
+    if tg_op = 'UPDATE' and old.puntos > v_max then return new; end if;
+    select username into v_prev from ritmo_puntajes where cancion = new.cancion and dificultad = new.dificultad and user_id <> new.user_id and puntos = v_max order by updated_at limit 1;
+    perform cronica_i_anotar('record_ritmo', new.user_id, null, null,
+      jsonb_build_object('cancion', regexp_replace(regexp_replace(new.cancion, '^.*/', ''), '\.[A-Za-z0-9]{1,5}$', ''), 'dificultad', new.dificultad, 'puntos', new.puntos, 'rango', new.rango, 'anterior', v_prev),
+      'ritmo:' || md5(new.cancion) || ':' || new.dificultad || ':' || new.user_id || ':' || new.puntos, 'ritmo.html');
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+create or replace function public.cronica_t_record_parranda()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t cronica_tipos%rowtype;
+  v_max int;
+  v_otros int;
+  v_prev text;
+begin
+  begin
+    select * into t from cronica_tipos where tipo = 'record_parranda';
+    if not found or not t.activo then return new; end if;
+    select max(puntos), count(*) into v_max, v_otros from parranda_puntajes
+     where cancion = new.cancion and dificultad = new.dificultad and mapa_version = new.mapa_version and user_id <> new.user_id;
+    if v_otros + 1 < coalesce((t.config ->> 'min_jugadores')::int, 2) or new.puntos <= coalesce(v_max, 0) then return new; end if;
+    if tg_op = 'UPDATE' and old.puntos > v_max then return new; end if;
+    select username into v_prev from parranda_puntajes
+     where cancion = new.cancion and dificultad = new.dificultad and mapa_version = new.mapa_version and user_id <> new.user_id and puntos = v_max order by updated_at limit 1;
+    perform cronica_i_anotar('record_parranda', new.user_id, null, null,
+      jsonb_build_object('cancion', regexp_replace(regexp_replace(new.cancion, '^.*/', ''), '\.[A-Za-z0-9]{1,5}$', ''), 'dificultad', new.dificultad, 'puntos', new.puntos, 'rango', new.rango, 'anterior', v_prev),
+      'parranda:' || md5(new.cancion) || ':' || new.dificultad || ':' || new.mapa_version || ':' || new.user_id || ':' || new.puntos, 'parranda.html');
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+create or replace function public.cronica_t_record_minijuego()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t cronica_tipos%rowtype;
+  v_tot int;
+  v_antes int;
+  v_max int;
+  v_otros int;
+  v_prev text;
+begin
+  begin
+    if new.juego not in ('ajedrez', 'arqueria') then return new; end if;
+    select * into t from cronica_tipos where tipo = 'record_minijuego';
+    if not found or not t.activo then return new; end if;
+    select coalesce(sum(victorias), 0) into v_tot from mj_estadisticas where user_id = new.user_id and juego = new.juego;
+    v_antes := v_tot - (new.victorias - case when tg_op = 'UPDATE' then old.victorias else 0 end);
+    select max(x.total), count(*) into v_max, v_otros from (select sum(victorias) as total from mj_estadisticas where juego = new.juego and user_id <> new.user_id group by user_id) x;
+    if v_otros = 0 or v_tot < coalesce((t.config ->> 'min_victorias')::int, 3) or v_tot <= coalesce(v_max, 0) or v_antes > v_max then return new; end if;
+    select max(e.username) into v_prev from mj_estadisticas e where e.juego = new.juego and e.user_id <> new.user_id
+       and e.user_id in (select user_id from mj_estadisticas where juego = new.juego and user_id <> new.user_id group by user_id having sum(victorias) = v_max);
+    perform cronica_i_anotar('record_minijuego', new.user_id, null, null, jsonb_build_object('juego', new.juego, 'victorias', v_tot, 'anterior', v_prev),
+      'mj:' || new.juego || ':' || new.user_id || ':' || v_tot, new.juego || '.html');
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+/* ================================================================== LA ÚLTIMA VELA */
+create or replace function public.cronica_t_ultima_vela()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  begin
+    -- Lo decide el servidor (veintiuna_reto_*): ganó 3 manos o perdió 3. El veredicto del DM (confirmar, anular o perdonar) es aparte y no cambia esta línea.
+    perform cronica_i_anotar('ultima_vela', new.user_id, null, null,
+      jsonb_build_object('resultado', new.estado, 'ganadas', new.ganadas, 'perdidas', new.perdidas),
+      'v21:reto:' || new.intento, 'ultima-vela.html');
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
 /* ================================================================== COPAS DEL HIPÓDROMO */
 create or replace function public.cronica_t_copa()
 returns trigger
@@ -333,6 +478,11 @@ revoke all on function public.cronica_t_apuesta_hipodromo() from public, anon, a
 revoke all on function public.cronica_t_apuesta_veintiuna() from public, anon, authenticated;
 revoke all on function public.cronica_t_racha() from public, anon, authenticated;
 revoke all on function public.cronica_t_oro() from public, anon, authenticated;
+revoke all on function public.cronica_t_ultima_vela() from public, anon, authenticated;
+revoke all on function public.cronica_t_record_hooey() from public, anon, authenticated;
+revoke all on function public.cronica_t_record_ritmo() from public, anon, authenticated;
+revoke all on function public.cronica_t_record_parranda() from public, anon, authenticated;
+revoke all on function public.cronica_t_record_minijuego() from public, anon, authenticated;
 revoke all on function public.cronica_t_copa() from public, anon, authenticated;
 
 do $$
@@ -374,6 +524,41 @@ begin
   if to_regclass('public.veintiuna_logros') is not null then
     drop trigger if exists cronica_oro on public.veintiuna_logros;
     create trigger cronica_oro after insert on public.veintiuna_logros for each row execute function public.cronica_t_oro();
+  end if;
+  -- Los récords leen tablas definidas fuera de docs/: cada disparador se crea aparte y un fallo (una columna que no exista) solo avisa, nunca corta el resto
+  begin
+    if to_regclass('public.hooey_puntajes') is not null then
+      drop trigger if exists cronica_record_hooey on public.hooey_puntajes;
+      create trigger cronica_record_hooey after insert or update of mejor_racha on public.hooey_puntajes for each row execute function public.cronica_t_record_hooey();
+    end if;
+  exception when others then raise notice 'No se pudo poner el disparador de Hooey: %', sqlerrm;
+  end;
+  begin
+    if to_regclass('public.ritmo_puntajes') is not null then
+      drop trigger if exists cronica_record_ritmo on public.ritmo_puntajes;
+      create trigger cronica_record_ritmo after insert or update of puntos on public.ritmo_puntajes for each row execute function public.cronica_t_record_ritmo();
+    end if;
+  exception when others then raise notice 'No se pudo poner el disparador de Zarabanda: %', sqlerrm;
+  end;
+  begin
+    if to_regclass('public.parranda_puntajes') is not null then
+      drop trigger if exists cronica_record_parranda on public.parranda_puntajes;
+      create trigger cronica_record_parranda after insert or update of puntos on public.parranda_puntajes for each row execute function public.cronica_t_record_parranda();
+    end if;
+  exception when others then raise notice 'No se pudo poner el disparador de Parranda: %', sqlerrm;
+  end;
+  begin
+    if to_regclass('public.mj_estadisticas') is not null then
+      drop trigger if exists cronica_record_minijuego on public.mj_estadisticas;
+      create trigger cronica_record_minijuego after insert or update of victorias on public.mj_estadisticas for each row
+        when (new.juego in ('ajedrez', 'arqueria')) execute function public.cronica_t_record_minijuego();
+    end if;
+  exception when others then raise notice 'No se pudo poner el disparador de Ajedrez y Arquería: %', sqlerrm;
+  end;
+  if to_regclass('public.veintiuna_retos') is not null then
+    drop trigger if exists cronica_ultima_vela on public.veintiuna_retos;
+    create trigger cronica_ultima_vela after update of estado on public.veintiuna_retos for each row
+      when (new.estado in ('ganado', 'perdido') and old.estado is distinct from new.estado) execute function public.cronica_t_ultima_vela();
   end if;
   if to_regclass('public.hipodromo_carreras') is not null then
     drop trigger if exists cronica_copa on public.hipodromo_carreras;

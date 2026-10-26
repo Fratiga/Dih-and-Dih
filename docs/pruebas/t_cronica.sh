@@ -12,6 +12,13 @@ cargar() { $PSQL < "$DOCS/$1" >/dev/null || { echo "No corrió $1"; exit 1; }; }
 # La base local no trae las tablas del Hipódromo ni la excepción de Side: se cargan aquí
 cargar hipodromo.sql
 cargar admin/side_excepciones.sql
+# Tablas de puntajes (en producción las crean scratchpad/hooey_ranking.sql, ritmo_puntajes.sql, parranda.sql y minijuegos_estadisticas.sql; aquí, con las mismas columnas)
+$PSQL >/dev/null <<'SQLX'
+create table if not exists hooey_puntajes (user_id uuid primary key references auth.users(id) on delete cascade, username text not null, total bigint not null default 0, mejor_racha int not null default 0, updated_at timestamptz not null default now());
+create table if not exists ritmo_puntajes (user_id uuid not null references auth.users(id) on delete cascade, cancion text not null, dificultad text not null, username text not null, puntos int not null default 0, precision numeric(5,1) not null default 0, rango text not null default 'D', combo_max int not null default 0, jugadas int not null default 1, updated_at timestamptz not null default now(), primary key (user_id, cancion, dificultad));
+create table if not exists parranda_puntajes (user_id uuid not null references auth.users(id) on delete cascade, cancion text not null, dificultad text not null, mapa_version text not null default 'auto', username text not null, puntos int not null default 0, precision numeric(5,1) not null default 0, rango text not null default 'D', combo_max int not null default 0, jugadas int not null default 1, updated_at timestamptz not null default now(), primary key (user_id, cancion, dificultad, mapa_version));
+create table if not exists mj_estadisticas (user_id uuid not null references auth.users(id) on delete cascade, juego text not null check (juego in ('duelo', 'ajedrez', 'arqueria')), clave text not null, username text not null, partidas int not null default 0, victorias int not null default 0, derrotas int not null default 0, tablas int not null default 0, updated_at timestamptz not null default now(), primary key (user_id, juego, clave));
+SQLX
 cargar cronica-1_base.sql
 cargar cronica-2_disparadores.sql
 cargar cronica-1_base.sql          # se puede repetir sin romper nada
@@ -31,12 +38,12 @@ cierra() { sql "update veintiuna_partidas set estado = 'terminada', resultado = 
 sql "update perfiles set side = 'A' where user_id in ('$U1', '$U2'); update perfiles set side = 'B' where user_id in ('$U3', '$U4');" >/dev/null
 sql "update cartas_catalogo set en_circulacion = true where id <> 'bufon';" >/dev/null 2>&1
 limpiar; vaciar
-sql "truncate hipodromo_apuestas, hipodromo_carreras, hipodromo_criaturas, veintiuna_estadisticas, veintiuna_logros, veintiuna_partidas cascade" >/dev/null
+sql "truncate hipodromo_apuestas, hipodromo_carreras, hipodromo_criaturas, veintiuna_estadisticas, veintiuna_logros, veintiuna_partidas, hooey_puntajes, ritmo_puntajes, parranda_puntajes, mj_estadisticas cascade" >/dev/null
 
 echo "== Instalación"
-comprobar "los nueve disparadores están puestos" "9" "$(sql "select count(*) from pg_trigger where tgname ~ '^cronica_' and not tgisinternal")"
-comprobar "los diez tipos están sembrados" "10" "$(sql "select count(*) from cronica_tipos")"
-comprobar "volver a correr los archivos no duplica los tipos" "10" "$(sql "select count(*) from cronica_tipos")"
+comprobar "los catorce disparadores están puestos" "14" "$(sql "select count(*) from pg_trigger where tgname ~ '^cronica_' and not tgisinternal")"
+comprobar "los quince tipos están sembrados" "15" "$(sql "select count(*) from cronica_tipos")"
+comprobar "volver a correr los archivos no duplica los tipos" "15" "$(sql "select count(*) from cronica_tipos")"
 comprobar "la partida difícil nace apagada" "f" "$(sql "select activo from cronica_tipos where tipo = 'partida_dificil'")"
 
 echo "== Permisos"
@@ -86,7 +93,7 @@ comprobar "encendido otra vez, sí" "t" "$(sql "select cronica_i_anotar('nota', 
 comprobar "la misma clave no se anota dos veces" "1" "$(sql "select cronica_i_anotar('nota', null, null, null, '{}', 'k1'); select count(*) from cronica_sucesos where clave = 'k1'" | tail -1)"
 contiene "una configuración que no es un objeto se rechaza" "$(como $ADMIN "select cronica_tipo_guardar('nota', true, '[1]'::jsonb);")" "objeto JSON"
 contiene "un tipo que no existe se avisa" "$(como $ADMIN "select cronica_tipo_guardar('nada', true, '{}'::jsonb);")" "no existe"
-comprobar "el panel del admin lista los tipos" "10" "$(como $ADMIN "select jsonb_array_length(cronica_admin_tipos());" | tail -1)"
+comprobar "el panel del admin lista los tipos" "15" "$(como $ADMIN "select jsonb_array_length(cronica_admin_tipos());" | tail -1)"
 vaciar
 
 echo "== Cartas ganadas"
@@ -241,6 +248,78 @@ comprobar "repetirlo el mismo día no duplica la línea" "1" "$(n "tipo = 'logro
 sql "update cronica_sucesos set clave = replace(clave, to_char(now() at time zone 'utc', 'YYYYMMDD'), '20200101') where tipo = 'logro_oro_veintiuna'" >/dev/null
 sql "delete from veintiuna_logros where user_id = '$U1'; insert into veintiuna_logros (user_id, logro) values ('$U1', 'cinco_cartas')" >/dev/null
 comprobar "pero otro día sí puede volver a salir" "2" "$(n "tipo = 'logro_oro_veintiuna'")"
+vaciar
+
+echo "== Récord de Hooey"
+sql "insert into hooey_puntajes (user_id, username, total, mejor_racha) values ('$U1', 'Uno', 50, 5)" >/dev/null
+comprobar "el primer jugador no es récord (no hay otro)" "0" "$(n "tipo = 'record_hooey'")"
+sql "insert into hooey_puntajes (user_id, username, total, mejor_racha) values ('$U2', 'Dos', 10, 3)" >/dev/null
+comprobar "uno que entra por debajo tampoco" "0" "$(n "tipo = 'record_hooey'")"
+sql "update hooey_puntajes set mejor_racha = 7 where user_id = '$U2'" >/dev/null
+comprobar "quien pasa al primero sale, con el nombre del anterior" "1|7|Uno" "$(n "tipo = 'record_hooey'")|$(sql "select datos->>'racha' from cronica_sucesos where tipo = 'record_hooey'")|$(sql "select datos->>'anterior' from cronica_sucesos where tipo = 'record_hooey'")"
+sql "update hooey_puntajes set mejor_racha = 9 where user_id = '$U2'" >/dev/null
+comprobar "quien ya iba primero y mejora no vuelve a salir" "1" "$(n "tipo = 'record_hooey'")"
+sql "update hooey_puntajes set mejor_racha = 12 where user_id = '$U1'" >/dev/null
+comprobar "pero si el otro le devuelve el puesto, sí" "2" "$(n "tipo = 'record_hooey'")"
+vaciar
+
+echo "== Récords de Zarabanda y Parranda"
+rp() { sql "insert into ritmo_puntajes (user_id, cancion, dificultad, username, puntos, rango) values ('$1', '$2', '$3', 'N$1', $4, 'A') on conflict (user_id, cancion, dificultad) do update set puntos = excluded.puntos" >/dev/null; }
+rp $U1 "musica/rock/Cancion Rara.mp3" normal 5000
+comprobar "con un solo jugador no es récord" "0" "$(n "tipo = 'record_ritmo'")"
+rp $U2 "musica/rock/Cancion Rara.mp3" normal 4000
+comprobar "entrar por debajo no es récord" "0" "$(n "tipo = 'record_ritmo'")"
+rp $U2 "musica/rock/Cancion Rara.mp3" normal 6000
+comprobar "tomar el primer puesto sale, con la canción sin carpeta ni extensión" "1|Cancion Rara|6000" "$(n "tipo = 'record_ritmo'")|$(sql "select datos->>'cancion' from cronica_sucesos where tipo = 'record_ritmo'")|$(sql "select datos->>'puntos' from cronica_sucesos where tipo = 'record_ritmo'")"
+rp $U2 "musica/rock/Cancion Rara.mp3" normal 7000
+comprobar "mejorar el propio primer puesto no repite" "1" "$(n "tipo = 'record_ritmo'")"
+rp $U1 "musica/rock/Cancion Rara.mp3" experto 100
+comprobar "otra dificultad es otro marcador" "1" "$(n "tipo = 'record_ritmo'")"
+pp() { sql "insert into parranda_puntajes (user_id, cancion, dificultad, mapa_version, username, puntos, rango) values ('$1', 'p/Tema.ogg', 'normal', '$2', 'N$1', $3, 'S') on conflict (user_id, cancion, dificultad, mapa_version) do update set puntos = excluded.puntos" >/dev/null; }
+pp $U1 auto 3000; pp $U2 v2 9000
+comprobar "en Parranda cada versión del mapa es otro marcador: sin rival en la misma versión no hay récord" "0" "$(n "tipo = 'record_parranda'")"
+pp $U2 auto 3500
+comprobar "en la misma versión sí" "1|Tema" "$(n "tipo = 'record_parranda'")|$(sql "select datos->>'cancion' from cronica_sucesos where tipo = 'record_parranda'")"
+sql "update cronica_tipos set config = '{\"min_jugadores\": 3}' where tipo = 'record_ritmo'" >/dev/null
+rp $U3 "otra/Cancion B.mp3" facil 100; rp $U4 "otra/Cancion B.mp3" facil 200
+comprobar "el mínimo de jugadores se cambia desde el Admin" "1" "$(n "tipo = 'record_ritmo'")"
+sql "update cronica_tipos set config = '{\"min_jugadores\": 2}' where tipo = 'record_ritmo'" >/dev/null
+vaciar
+
+echo "== Líder de Ajedrez y Arquería"
+mj() { sql "insert into mj_estadisticas (user_id, juego, clave, username, partidas, victorias) values ('$1', '$2', '$3', 'N$1', $4, $4) on conflict (user_id, juego, clave) do update set victorias = excluded.victorias, partidas = excluded.partidas" >/dev/null; }
+mj $U1 ajedrez ilyth 5
+comprobar "sin otro jugador no hay líder que cambiar" "0" "$(n "tipo = 'record_minijuego'")"
+mj $U2 ajedrez pvp 2
+comprobar "con menos de 3 victorias o sin pasar al primero, nada" "0" "$(n "tipo = 'record_minijuego'")"
+mj $U2 ajedrez pvp 6
+comprobar "pasar al primero con 6 victorias sale" "1|6" "$(n "tipo = 'record_minijuego'")|$(sql "select datos->>'victorias' from cronica_sucesos where tipo = 'record_minijuego'")"
+mj $U2 ajedrez pvp 8
+comprobar "seguir ganando siendo el primero no repite" "1" "$(n "tipo = 'record_minijuego'")"
+mj $U1 duelo ilyth 40; mj $U2 duelo pvp 1
+comprobar "el Duelo (oculto) no cuenta" "1" "$(n "tipo = 'record_minijuego'")"
+mj $U3 arqueria pvp 4; mj $U4 arqueria pvp 5
+comprobar "Arquería también, con su propio marcador" "2" "$(n "tipo = 'record_minijuego'")"
+comprobar "el filtro «records» enseña todos los récords" "2|0" "$(como $ADMIN "select jsonb_array_length(cronica_ver(20, null, 'records')->'sucesos');" | tail -1)|$(como $ADMIN "select jsonb_array_length(cronica_ver(20, null, 'cartas')->'sucesos');" | tail -1)"
+vaciar
+
+echo "== La Última Vela"
+sql "delete from muerte_subita_intentos" >/dev/null
+intento() { sql "insert into muerte_subita_intentos (user_id, username, personaje_id, personaje_nombre, desafio) values ('$1', 'x', 'pj-$2', 'PJ $2', 'ultima-vela') returning id" | head -1; }
+IN=$(intento $U1 1)
+sql "insert into veintiuna_retos (intento, user_id) values ('$IN', '$U1')" >/dev/null
+comprobar "mientras el reto está en curso no se anota nada" "0" "$(n "tipo = 'ultima_vela'")"
+sql "update veintiuna_retos set ganadas = 2, perdidas = 1 where intento = '$IN'" >/dev/null
+comprobar "ni con manos sueltas" "0" "$(n "tipo = 'ultima_vela'")"
+sql "update veintiuna_retos set estado = 'ganado', ganadas = 3 where intento = '$IN'" >/dev/null
+comprobar "ganar el reto se anota, con el nombre y el marcador" "1|ganado|3|1" "$(n "tipo = 'ultima_vela' and user_id = '$U1'")|$(sql "select datos->>'resultado' from cronica_sucesos where tipo = 'ultima_vela'")|$(sql "select datos->>'ganadas' from cronica_sucesos where tipo = 'ultima_vela'")|$(sql "select datos->>'perdidas' from cronica_sucesos where tipo = 'ultima_vela'")"
+sql "update veintiuna_retos set actualizado = now() where intento = '$IN'" >/dev/null
+comprobar "tocar la fila después no lo repite" "1" "$(n "tipo = 'ultima_vela'")"
+IN2=$(intento $U2 2)
+sql "insert into veintiuna_retos (intento, user_id, estado, ganadas, perdidas) values ('$IN2', '$U2', 'en_curso', 1, 2)" >/dev/null
+sql "update veintiuna_retos set estado = 'perdido', perdidas = 3 where intento = '$IN2'" >/dev/null
+comprobar "perderlo también" "2|perdido" "$(n "tipo = 'ultima_vela'")|$(sql "select datos->>'resultado' from cronica_sucesos where tipo = 'ultima_vela' and user_id = '$U2'")"
+comprobar "lo ve todo su Side" "2|2|0" "$(ver $U1)|$(ver $U2)|$(ver $U3)"
 vaciar
 
 echo "== Apuestas grandes de Veintiuna"

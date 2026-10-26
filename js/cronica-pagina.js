@@ -10,7 +10,7 @@
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const PRUEBA = new URLSearchParams(location.search).get("prueba") === "1";
   const POR_PAGINA = 30;
-  const FILTROS = [["", "Todo"], ["cartas", "Cartas"], ["hipodromo", "Hipódromo"], ["veintiuna", "Las Veintiuna Velas"], ["campana", "Noticias"]];
+  const FILTROS = [["", "Todo"], ["cartas", "Cartas"], ["hipodromo", "Hipódromo"], ["veintiuna", "Las Veintiuna Velas"], ["records", "Récords"], ["campana", "Noticias"]];
 
   let supa = null, juego = "", sucesos = [], hayMas = false, cargando = false;
   const num = n => Number(n || 0).toLocaleString("es");

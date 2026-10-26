@@ -15,7 +15,7 @@ No sustituye a nada que ya existía: los **avisos** son personales (lo que te es
 | `cronica.html`, `js/cronica-pagina.js`, `css/cronica.css` | El Registro: la lista completa con filtro por juego, «Ver más» y un cuadro con lo más alto (mejor racha, premio más grande, quién más cartas raras y copas). Enlazado desde el mapa de la taberna y desde la pestaña |
 | `js/avisos-taberna.js` | La ficha «La taberna: N novedades» (fuente `cronica()`) |
 | `js/admin-cronica.js` | Pestaña «Crónica» del Admin (grupo «Contenido del sitio») |
-| `docs/pruebas/t_cronica.sh` | 104 comprobaciones del SQL |
+| `docs/pruebas/t_cronica.sh` | Comprobaciones del SQL (las tablas de puntajes se crean ahí con las mismas columnas que en producción) |
 | `tools/probar-cronica.js` | Comprobaciones de las frases |
 
 Orden en Supabase: `docs/cronica-1_base.sql` y después `docs/cronica-2_disparadores.sql` (después de la economía de cartas, el Hipódromo y Veintiuna; lo que falte se salta y se corre el archivo otra vez cuando exista). Se pueden repetir.
@@ -30,6 +30,10 @@ Orden en Supabase: `docs/cronica-1_base.sql` y después `docs/cronica-2_disparad
 | `apuesta_hipodromo` | una apuesta de `hipodromo_apuestas` pasa a `ganada` | paga 4 veces o más lo apostado y 200 tokens o más, **o un premio de 1000 tokens o más** por sí solo (`pago_siempre`). Con «doble» solo cuenta el último eslabón, medido contra la apuesta inicial | con nombre |
 | `apuesta_veintiuna` | una mano o mesa con apuesta termina en `veintiuna_partidas` | igual (4 veces y 200 tokens, o 1000 de golpe). Una mano individual paga como máximo 2,5 veces, así que el criterio de las 4 veces solo salta en mesas con amigos de 4 o más | con nombre |
 | `racha_veintiuna` | cambia `racha` en `veintiuna_estadisticas` | desde la 4.ª victoria seguida y hasta que pierde: **una sola línea viva** que se actualiza y se cierra al perder. Si supera la mejor racha de todos, es récord | con nombre |
+| `record_hooey` | cambia `mejor_racha` en `hooey_puntajes` | alguien pasa a tener la mejor racha (solo cuando cambia quién va primero; hace falta otro jugador) | con nombre |
+| `record_ritmo` / `record_parranda` | cambia `puntos` en `ritmo_puntajes` o `parranda_puntajes` | alguien toma el primer puesto de una canción (por dificultad; en Parranda también por versión del mapa) si ya hay otro jugador con puntaje (`min_jugadores`) | con nombre |
+| `record_minijuego` | cambia `victorias` en `mj_estadisticas` (Ajedrez y Arquería; el Duelo no) | alguien pasa a liderar las victorias, con al menos 3 (`min_victorias`) | con nombre |
+| `ultima_vela` | el desafío de La Última Vela (`veintiuna_retos`) pasa a `ganado` o `perdido` | sin umbral: lo decide el servidor; el veredicto del DM no cambia la línea | con nombre |
 | `logro_oro_veintiuna` | se completa un desafío de nivel oro (`veintiuna_logros`) | todos los de oro; como se reinician cada día, puede volver a salir mañana | con nombre |
 | `copa_hipodromo` | se publica una carrera de copa o Gran Premio en `hipodromo_carreras` | solo criaturas con dueño humano | con nombre |
 | `nota` | el Admin la escribe (`cronica_publicar`) | sin umbral | el DM |
@@ -61,6 +65,6 @@ Los disparadores observan tablas de resultados que ya existen, así que **ningun
 ## No hecho todavía
 
 - Ganar a un rival difícil de ajedrez queda apagado hasta que el servidor confirme el resultado.
-- Los récords de Hooey, Ritmo, Parranda, Ajedrez y Arquería no entran: sus tablas (`hooey_puntajes`, `ritmo_puntajes`, `parranda_puntajes`, `mj_estadisticas`) no están definidas en `docs/` y los resultados los informa el navegador.
-- Los juegos ocultos (Duelo, Ostelar, La Fractura, Última Vela) no anotan nada hasta que se publiquen. La Fractura ya tiene `titulo` y `cronica` en `fractura_guerras`.
+- Los récords (Hooey, Zarabanda, Parranda, Ajedrez, Arquería) leen tablas que no están definidas en `docs/` (viven en `scratchpad/*.sql`, que no se publica) y sus puntajes los informa el navegador: un récord falso puede colarse. El Admin puede ocultar una línea o apagar el tipo. Si una columna cambia de nombre, el disparador de ese récord falla en silencio (y el SQL solo avisa al crearlo).
+- Los juegos ocultos (Duelo, Ostelar, La Fractura, Estocatta) no anotan nada hasta que se publiquen. La Fractura ya tiene `titulo` y `cronica` en `fractura_guerras`.
 - Avisar por Discord: ver las ideas enviadas a la sesión del bot.
