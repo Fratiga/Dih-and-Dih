@@ -32,15 +32,17 @@
    esos bloques en secreto.html antes de asumir que el puntaje sale solo
    de las filas de aquí abajo.
 ============================================================================= */
+// "icono": un SVG plano de 24 px en assets/voces/, con el color de la Voz. Se dibuja
+// junto al nombre solo cuando la Voz ya tiene nombre (Despertar o más), igual que el color.
 window.BUFON_VOCES_INFO = {
-  coartada: { nombre: "LA COARTADA", color: "#D6B84C" },
-  testigo:  { nombre: "EL TESTIGO",  color: "#6DBBEF" },
-  grieta:   { nombre: "LA GRIETA",   color: "#B274E8" },
-  muralla:  { nombre: "LA MURALLA",  color: "#9AA8B7" },
-  hilo:     { nombre: "EL HILO",     color: "#55CDBD" },
-  rostro:   { nombre: "EL ROSTRO",   color: "#E783C1" },
-  herida:   { nombre: "LA HERIDA",   color: "#E96D6D" },
-  apetito:  { nombre: "EL APETITO",  color: "#ED964B" }
+  coartada: { nombre: "LA COARTADA", color: "#D6B84C", icono: "assets/voces/coartada.svg" },
+  testigo:  { nombre: "EL TESTIGO",  color: "#6DBBEF", icono: "assets/voces/testigo.svg" },
+  grieta:   { nombre: "LA GRIETA",   color: "#B274E8", icono: "assets/voces/grieta.svg" },
+  muralla:  { nombre: "LA MURALLA",  color: "#9AA8B7", icono: "assets/voces/muralla.svg" },
+  hilo:     { nombre: "EL HILO",     color: "#55CDBD", icono: "assets/voces/hilo.svg" },
+  rostro:   { nombre: "EL ROSTRO",   color: "#E783C1", icono: "assets/voces/rostro.svg" },
+  herida:   { nombre: "LA HERIDA",   color: "#E96D6D", icono: "assets/voces/herida.svg" },
+  apetito:  { nombre: "EL APETITO",  color: "#ED964B", icono: "assets/voces/apetito.svg" }
 };
 
 window.BUFON_VOCES_UMBRALES = {
