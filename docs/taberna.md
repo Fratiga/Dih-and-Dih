@@ -78,6 +78,10 @@ Hay seis puestos (`PUESTOS`); si hay más gente se escribe «+N más en la taber
 intercambios dirigidos a ti y ofertas nuevas del Buhonero (`intercambios.js` apunta en `lbBuhoneroVisto` lo que ya viste). Se refresca cada 2 minutos y el título de la pestaña lleva el número de avisos.
 Cada fuente falla por separado: si falta una tabla o función, ese aviso no sale. `index.html?avisos=prueba` enseña cuatro avisos de ejemplo.
 
+## La crónica del mundo
+
+El Tablón tiene dos pestañas, Novedades (los cambios del sitio, `data/novedades.js`) y Crónica (lo que hacen los jugadores: cartas raras ganadas, intercambios y crías anónimos, apuestas grandes, rachas y desafíos de oro de Veintiuna, copas). Las pestañas solo salen con sesión y si la función `cronica_ver` responde. La ficha «La taberna: N novedades» sale en los avisos. Todo en `docs/cronica.md`.
+
 ## Guía de la taberna
 
 `js/guia-inicial.js`: diálogo de tres pasos (crear personaje, recorrer la taberna, probar un juego). Sale solo la primera vez que alguien con sesión abre la taberna y es una de sus dos primeras visitas;

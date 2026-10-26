@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20271035">
   <link rel="stylesheet" href="css/taberna.css?v=20271035">
-  <link rel="stylesheet" href="css/lobby.css?v=20271035">
+  <link rel="stylesheet" href="css/lobby.css?v=20271060">
   <link rel="stylesheet" href="css/cielo.css?v=20271035">
 </head>
 <body class="lb lb-invitado lb-grande">
@@ -479,9 +479,14 @@
           <h2>Retos y partidas</h2>
           <div class="lb-caja-cuerpo" id="lbRetos"><p class="lb-chico">Cargando...</p></div>
         </section>
-        <section class="lb-caja">
+        <section class="lb-caja" id="lbTablonCaja">
           <h2>Tablón</h2>
-          <div class="lb-caja-cuerpo" id="lbNovedades"></div>
+          <div class="lb-pestanas" id="lbPestanas" role="tablist" hidden>
+            <button type="button" role="tab" class="activa" id="lbPestNovedades" data-pest="novedades" aria-selected="true" aria-controls="lbNovedades">Novedades</button>
+            <button type="button" role="tab" id="lbPestCronica" data-pest="cronica" aria-selected="false" aria-controls="lbCronica">Crónica <span class="lb-pest-n" id="lbCronicaN" hidden></span></button>
+          </div>
+          <div class="lb-caja-cuerpo" id="lbNovedades" role="tabpanel"></div>
+          <div class="lb-caja-cuerpo" id="lbCronica" role="tabpanel" aria-labelledby="lbPestCronica" hidden></div>
         </section>
         <section class="lb-caja" id="lbFanartsCaja" hidden>
           <h2>Fanarts nuevos</h2>
@@ -523,7 +528,9 @@
   <script src="js/lobby-salas.js?v=20271051"></script>
   <script src="js/lobby.js?v=20271035"></script>
   <script src="js/aviso-hipodromo.js?v=20271035"></script>
-  <script src="js/avisos-taberna.js?v=20271035"></script>
+  <script src="js/cronica.js?v=20271060"></script>
+  <script src="js/cronica-taberna.js?v=20271060"></script>
+  <script src="js/avisos-taberna.js?v=20271060"></script>
   <script src="js/guia-inicial.js?v=20271035"></script>
   <script src="js/avisos-admin.js?v=20271035"></script>
   <script src="js/musica-paginas.js?v=20271035"></script>

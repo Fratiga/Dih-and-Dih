@@ -13,7 +13,7 @@
   const GRUPOS = [
     ["Pendientes", ["peticiones", "fanarts", "muerte", "mensajes", "envivo"]],
     ["Jugadores", ["cuentas", "personajes", "historial", "regalos"]],
-    ["Contenido del sitio", ["contenido", "archivos", "musicafondos", "ocultos"]],
+    ["Contenido del sitio", ["contenido", "archivos", "musicafondos", "ocultos", "cronica"]],
     ["Triunfos y economía", ["cartas", "economia", "balance", "calendario"]],
     ["Bufón", ["bufon", "lab", "bufontextos", "dialogos"]],
     ["Juegos", ["rivales"]],

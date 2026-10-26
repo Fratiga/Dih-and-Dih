@@ -4015,3 +4015,13 @@ details.admin-sistema-fila > summary::-webkit-details-marker { display: none; }
   #adminContent .content { display: block; }
   #adminContent .content > #adminTabs { position: static; max-height: none; margin-bottom: 16px; }
 }
+
+/* Admin: pestaña Crónica (js/admin-cronica.js) */
+.admin-cronica-tipos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.admin-cronica-tipo { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); background: var(--panel); }
+.admin-cronica-tipo label { display: flex; flex-direction: column; gap: 3px; font-size: .86rem; color: var(--muted); }
+.admin-cronica-titulo { flex-direction: row !important; align-items: center; gap: 8px !important; color: var(--text) !important; }
+.admin-cronica-desc { margin: 0; font-size: .84rem; color: var(--muted); }
+.admin-cronica-tabla { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.admin-cronica-tabla th, .admin-cronica-tabla td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.admin-cronica-oculto td { opacity: .5; }

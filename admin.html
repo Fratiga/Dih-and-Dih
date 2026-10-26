@@ -14,7 +14,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/style.css?v=20271035">
+  <link rel="stylesheet" href="css/style.css?v=20271060">
   <link rel="stylesheet" href="css/musica-paginas.css?v=20271035">
   <link rel="stylesheet" href="css/bufon-lab.css?v=20271035b">
   <link rel="stylesheet" href="css/taberna.css?v=20271035">
@@ -146,6 +146,7 @@
         <button type="button" class="admin-tab" data-tab="bufontextos">Bufón: textos</button>
         <button type="button" class="admin-tab" data-tab="dialogos">Diálogos</button>
         <button type="button" class="admin-tab" data-tab="regalos">Regalos y eventos</button>
+        <button type="button" class="admin-tab" data-tab="cronica">Crónica</button>
         <button type="button" class="admin-tab" data-tab="calendario">Calendario</button>
         <button type="button" class="admin-tab" data-tab="personajes">Personajes</button>
         <button type="button" class="admin-tab" data-tab="envivo">En vivo <span id="adminEnVivoCount" class="admin-tab-badge"></span></button>
@@ -250,6 +251,21 @@
         <div id="adminDialogosPers" class="admin-dlg-pers" role="tablist"><button type="button" class="activa" data-pers="buhonero">El Buhonero</button><button type="button" data-pers="herrero">El herrero gigante</button></div>
         <p id="adminDialogosDonde" class="admin-dlg-donde"></p>
         <div id="adminDialogosGrupos" class="admin-dlg-grupos"><p class="admin-vacio">Abre esta pestaña para cargar los diálogos.</p></div>
+      </section>
+
+      <section id="adminPanelCronica" class="admin-panel">
+        <p class="admin-bufon-banner">La crónica es la lista de lo que pasa en la taberna: cartas raras ganadas, intercambios y crías (sin nombres), apuestas grandes, rachas y desafíos de oro de Veintiuna, copas del Hipódromo. Sale en la pestaña Crónica del Tablón. Aquí escribes noticias propias, ajustas los umbrales de cada tipo y revisas lo anotado.</p>
+        <p id="adminCronicaEstado" class="admin-cartas-estado" role="status"></p>
+        <fieldset class="admin-regalos-caja"><legend>Escribir una noticia</legend>
+          <label>Texto (hasta 240 caracteres) <textarea id="adminCronicaTexto" rows="2" maxlength="240" placeholder="Algo que pasó en el mundo y que los jugadores deberían saber..."></textarea></label>
+          <label>Para <select id="adminCronicaSide"><option value="">Los dos Sides</option><option value="A">Solo el Side A</option><option value="B">Solo el Side B</option></select></label>
+          <label>Enlace (opcional) <select id="adminCronicaPagina"></select></label>
+          <button type="button" id="adminCronicaPublicar" class="admin-cuenta-accion">Publicar</button>
+        </fieldset>
+        <h3>Tipos de suceso</h3>
+        <div id="adminCronicaTipos" class="admin-cronica-tipos"></div>
+        <h3>Lo anotado (lo más reciente primero)</h3>
+        <div id="adminCronicaLista"><p class="admin-vacio">Abre esta pestaña para cargar la crónica.</p></div>
       </section>
 
       <section id="adminPanelRegalos" class="admin-panel">
@@ -494,6 +510,8 @@
   <script src="js/forja-herrero.js?v=20271035"></script>
   <script src="js/admin-dialogos.js?v=20271035"></script>
   <script src="js/admin-regalos.js?v=20271035"></script>
+  <script src="js/cronica.js?v=20271060"></script>
+  <script src="js/admin-cronica.js?v=20271060"></script>
   <script src="js/admin-calendario.js?v=20271035"></script>
   <script src="js/hipodromo-npc.js?v=20271035"></script>
   <script src="js/admin-hipodromo-npc.js?v=20271035"></script>

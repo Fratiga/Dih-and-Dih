@@ -373,3 +373,22 @@ button.lb-aviso-chip:disabled { opacity: .8; cursor: default; }
 .gi-botones [hidden] { display: none; }
 .gi-saltar, .gi-enlace { margin-left: auto; padding: 0; border: 0; background: none; color: var(--lb-tenue); font: inherit; text-decoration: underline; cursor: pointer; }
 .gi-enlace { margin-left: 0; color: var(--lb-acento); }
+
+/* Crónica del mundo: pestaña del Tablón (js/cronica-taberna.js) */
+.lb-pestanas { display: flex; gap: 4px; padding: 6px 8px 0; border-bottom: 3px ridge var(--lb-borde); background: #00000030; }
+.lb-pestanas[hidden] { display: none; }
+.lb-pestanas button { padding: 3px 10px 2px; border: 2px solid var(--lb-borde); border-bottom: 0; background: #ffffff0c; color: var(--lb-tenue); font: 20px/1.2 "VT323", "Courier New", monospace; cursor: pointer; }
+.lb-pestanas button:hover { color: var(--lb-texto); }
+.lb-pestanas button.activa { background: var(--lb-caja); color: #ffe9a8; margin-bottom: -3px; padding-bottom: 5px; }
+.lb-pest-n { display: inline-block; min-width: 18px; padding: 0 5px; background: var(--lb-acento); color: #000; text-align: center; font-size: 17px; }
+.lb-pest-n[hidden] { display: none; }
+.lb-cronica-fila { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px dotted #ffffff22; color: var(--lb-texto); text-decoration: none; }
+.lb-cronica-fila:last-of-type { border-bottom: 0; }
+a.lb-cronica-fila:hover { background: #ffffff10; }
+.lb-cronica-ico { flex: 0 0 24px; text-align: center; font-size: 20px; line-height: 1.2; }
+.lb-cronica-fila p { margin: 0; font-size: 19px; line-height: 1.15; }
+.lb-cronica-fila time { display: block; color: var(--lb-tenue); font-size: 16px; }
+.lb-cronica-mio { border-left: 3px solid var(--lb-acento); padding-left: 6px; }
+.lb-cronica-tu { color: #ffe9a8; }
+.lb-cronica-mas { margin-top: 6px; width: 100%; padding: 3px 8px; border: 2px outset var(--lb-borde); background: var(--lb-caja); color: var(--lb-texto); font: 19px "VT323", "Courier New", monospace; cursor: pointer; }
+.lb-cronica-mas:disabled { opacity: .6; cursor: default; }

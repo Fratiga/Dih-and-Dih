@@ -6,6 +6,7 @@
      • ofertas de trueque dirigidas a ti                  (cartas_intercambios)
      • ofertas nuevas del Buhonero desde la última vez que lo miraste (cartas_mercader_ver; intercambios.js apunta lo que ya viste)
      • eventos del Admin en marcha (eventos_sitio): aviso con enlace opcional y, si llevan regalo, un botón para reclamarlo una vez (evento_reclamar)
+     • novedades de la crónica del mundo desde la última vez que abriste su pestaña (cronica_contar; js/cronica-taberna.js apunta lbCronicaVista)
    Cada fuente falla por separado: si una tabla o función no existe, ese aviso simplemente no sale. Se vuelve a mirar cada 2 minutos y al
    volver a la pestaña, y el título de la pestaña lleva el número de avisos para que se note sin tenerla delante.
    index.html?avisos=prueba enseña avisos de ejemplo (para ver cómo quedan; no cuenta nada de verdad).
@@ -92,8 +93,22 @@
     } catch (e) { return []; }
   }
 
+  /* Sucesos de la crónica desde la última vez que abriste su pestaña: una ficha de resumen y, si alguno te toca a ti, otra destacada. Llevan a la pestaña (data-accion). */
+  async function cronica() {
+    try {
+      let desde = "";
+      try { desde = localStorage.getItem("lbCronicaVista") || ""; } catch (e) { /* sin almacenamiento */ }
+      const { data, error } = await supa.rpc("cronica_contar", { p_desde: desde || new Date(Date.now() - 86400000).toISOString() });
+      if (error || !data || !data.n) return [];
+      const out = [{ icono: "📜", texto: data.n === 1 ? "La taberna: 1 novedad" : `La taberna: ${data.n} novedades`, accion: "cronica" }];
+      if (data.mios) out.push({ icono: "★", texto: data.mios === 1 ? "Algo de la crónica te toca" : `${data.mios} cosas de la crónica te tocan`, accion: "cronica", urgente: true });
+      return out;
+    } catch (e) { return []; }
+  }
+
   function chip(a) {
     const clase = `lb-aviso-chip${a.urgente ? " lb-aviso-chip-fuerte" : ""}`, cuerpo = `<span aria-hidden="true">${esc(a.icono)}</span> ${esc(a.texto)}`, ayuda = a.detalle ? ` title="${esc(a.detalle)}"` : "";
+    if (a.accion) return `<button type="button" class="${clase}" data-accion="${esc(a.accion)}"${ayuda}>${cuerpo}</button>`;
     if (a.reclamar) return `<button type="button" class="${clase}" data-reclamar="${esc(a.reclamar)}"${ayuda}>${cuerpo}</button>`;
     if (!a.href) return `<span class="${clase}"${ayuda}>${cuerpo}</span>`;
     return `<a class="${clase}" href="${esc(a.href)}"${ayuda}>${cuerpo}</a>`;
@@ -111,10 +126,11 @@
       if (PRUEBA) {
         pintar([{ icono: "🐣", texto: "Tu cría del corral está lista", href: "corrales.html", urgente: true }, { icono: "♞", texto: "Ajedrez: 2 retos sin responder", href: "ajedrez.html" },
           { icono: "⇄", texto: "1 intercambio te espera", href: "intercambios.html", urgente: true }, { icono: "✦", texto: "El Buhonero tiene 3 ofertas nuevas", href: "intercambios.html#buhonero" },
-          { icono: "🎁", texto: "Torneo de otoño: reclama tu regalo", detalle: "Evento de ejemplo", reclamar: "prueba", urgente: true }, { icono: "🎁", texto: "Noche de bardos en la taberna", href: "" }]);
+          { icono: "🎁", texto: "Torneo de otoño: reclama tu regalo", detalle: "Evento de ejemplo", reclamar: "prueba", urgente: true }, { icono: "🎁", texto: "Noche de bardos en la taberna", href: "" },
+          { icono: "📜", texto: "La taberna: 3 novedades", accion: "cronica" }]);
         return;
       }
-      const grupos = await Promise.all([crias(), trueques(), ajedrez(), arqueria(), buhonero(), eventos()]);
+      const grupos = await Promise.all([crias(), trueques(), ajedrez(), arqueria(), buhonero(), eventos(), cronica()]);
       if (activo) pintar(grupos.flat());
     } finally { leyendo = false; }
   }
@@ -145,6 +161,8 @@
       if (!/Ya reclamaste/.test(m)) b.disabled = false;
     }
   });
+  // Al abrir la pestaña Crónica se apunta la hora: la ficha de resumen se quita sin esperar a los dos minutos
+  window.addEventListener("cronica-vista", () => { if (activo && !PRUEBA) mirar(); });
   function parar() { activo = false; clearInterval(temporizador); pintar([]); }
 
   if (PRUEBA) { activo = true; mirar(); }
