@@ -17,3 +17,6 @@ respaldos/
 
 # Integración con Discord: configuración local con el token del bot
 docs/discord/.env
+
+# Dependencias de app/ (el resultado compilado app/dist si se sube)
+app/node_modules/

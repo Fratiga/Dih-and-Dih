@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taberna, prueba 2D — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="../../assets/cosas/gorro-bufon.png">
+  <style>:root{--fondo:#0e0a08;--panel:#1a1310;--borde:#5a4326;--oro:#d8b04a;--texto:#f0e3c8;--apagado:#a8967a}*{box-sizing:border-box}html,body{background:var(--fondo);height:100%;color:var(--texto);margin:0;font-family:Georgia,Times New Roman,serif}body{flex-direction:column;display:flex}.barra{border-bottom:1px solid var(--borde);background:var(--panel);justify-content:space-between;align-items:center;gap:16px;padding:10px 16px;font-size:14px;display:flex}.barra a{color:var(--oro);text-decoration:none}.barra a:hover{text-decoration:underline}.barra .titulo{color:var(--apagado)}#fps{color:var(--apagado);font-variant-numeric:tabular-nums;text-align:right;min-width:64px}.escena{flex:1;min-height:0;position:relative}#juego{position:absolute;inset:0}#juego canvas{image-rendering:pixelated;display:block}.superior{pointer-events:none;flex-direction:column;align-items:center;gap:8px;padding:0 16px;display:flex;position:absolute;bottom:14px;left:0;right:0}.oculto{display:none!important}#aviso{background:var(--panel);border:1px solid var(--borde);color:var(--oro);padding:6px 12px;font-size:14px}#dialogo{background:var(--panel);border:1px solid var(--borde);width:100%;max-width:520px;padding:10px 14px}#dialogoNombre{color:var(--oro);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;font-size:13px}#dialogoTexto{font-size:16px;line-height:1.4}.ayuda{text-align:center;color:var(--apagado);pointer-events:none;padding:0 16px;font-size:13px;position:absolute;top:10px;left:0;right:0}</style>
+  <script type="module" crossorigin src="./assets/index-8_ZOsscV.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/phaser-B_vcVLyb.js">
+</head>
+<body>
+  <div class="barra">
+    <a href="../../minijuegos.html">← Minijuegos</a>
+    <span class="titulo">Taberna · prueba 2D con Phaser</span>
+    <span id="fps">— FPS</span>
+  </div>
+  <div class="escena">
+    <div id="juego"></div>
+    <p class="ayuda">WASD o flechas para moverte · E para interactuar · clic para ir a un punto</p>
+    <div class="superior">
+      <div id="aviso" class="oculto" role="status"></div>
+      <div id="dialogo" class="oculto" role="status">
+        <div id="dialogoNombre"></div>
+        <div id="dialogoTexto"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

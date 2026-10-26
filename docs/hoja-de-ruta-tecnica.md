@@ -8,7 +8,7 @@
 - Desde el 26-oct-2026 la web puede dejar de ser estática si lo que se añade es gratis y los jugadores no tienen que hacer nada (entran por la URL). Las páginas actuales no se tocan: lo nuevo puede compilarse aparte.
 - Supabase pone las cuentas, la economía de cartas, el Hipódromo, la Veintiuna, el ajedrez, la arquería y la presencia. Las reglas sensibles viven en funciones SQL.
 - Three.js 0.180 (build WebGPU, que cae a WebGL2) por importmap, solo en Slappy, el sacrificio de bufones y la habitación. Los demás juegos dibujan con canvas 2D, SVG o CSS.
-- No hay Phaser ni WebAssembly. WebAssembly no carga con `file://`, pero sí desde la web publicada.
+- No hay WebAssembly. Phaser solo existe en `app/` (ver más abajo). WebAssembly no carga con `file://`, pero sí desde la web publicada.
 
 ## Estado de los proyectos
 
@@ -45,7 +45,7 @@ Niveles: 1 mejora ligera, 2 estructural localizada, 3 funcionalidad avanzada, 4 
 
 4. **Duelo (nivel 2).** Decidir si debe ser online. Si lo es, se separa lógica de dibujo y se reutiliza el patrón de la arquería (canal de Supabase para la mira, semilla compartida, validación en el servidor). Los sprites pixel art dependen de tener arte.
 5. **Hipódromo, pulido visual (nivel 1 y 2).** Posiciones, resultados y transición de apuestas sobre el canvas actual. Sin WebGL salvo que se mida un problema.
-6. **Taberna, sala piloto explorable (nivel 3).** Una sola sala con personajes y puntos de interacción. Se compara Phaser contra un canvas propio solo si la prueba 2D lo justifica.
+6. **Taberna, sala piloto explorable (nivel 3).** La prueba 2D ya está hecha (ver Prototipos). Siguiente: arte propio, más salas y presencia de otros jugadores.
 
 ### Futura
 
@@ -56,6 +56,20 @@ Niveles: 1 mejora ligera, 2 estructural localizada, 3 funcionalidad avanzada, 4 
 ### Experimental (nivel 4)
 
 Emulación, recompilación y ports quedan fuera del repositorio publicado hasta que demuestren utilidad: en `scratchpad/` (ignorado por git) o en un repositorio aparte. Todo lo del repositorio se publica en GitHub Pages. Un prototipo solo se hace con una pregunta concreta y un criterio de éxito.
+
+## Proyecto compilado (`app/`)
+
+Desde el 26-oct-2026 existe `app/`, un proyecto con Vite 8, TypeScript y Phaser 4 para lo nuevo. El resultado compilado (`app/dist`) se sube al repositorio, así que GitHub Pages sigue sirviendo `main` sin acciones ni cambios de configuración. Cómo usarlo: `app/README.md`.
+
+## Prototipos
+
+**Prueba 2D: Taberna con Phaser** (`app/`, solo admin; tarjeta en Minijuegos > En pruebas)
+- Pregunta: ¿Phaser da una sala explorable con controles, animación y luz que funcione bien en el navegador y con un coste de carga razonable?
+- Criterio de éxito: se mueve por teclado y por clic, colisiona, interactúa con un NPC y una puerta, sin errores en consola y cerca de 60 FPS.
+- Resultado: la sala funciona. Probé el clic para ir a un punto y hablar con el tabernero, y el movimiento con teclado. La consola solo muestra el aviso de versión de Phaser (4.2.1, WebGL). El contador de FPS marcó entre 46 y 55 con el panel de pruebas oculto, así que no es una medida fiable.
+- Coste: Phaser pesa 1.367 KB (357 KB comprimido) y el código propio 11 KB (4,3 KB comprimido). Solo se carga en esa página.
+- No comprobado: móvil y táctil, y el rendimiento en un portátil sin tarjeta gráfica.
+- Decisión: mantenerlo y ampliarlo cuando haya arte propio.
 
 ## Decisiones tomadas
 

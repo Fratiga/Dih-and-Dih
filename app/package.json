@@ -1,0 +1,19 @@
+{
+  "name": "compendio-app",
+  "private": true,
+  "type": "module",
+  "description": "Partes nuevas del compendio que se compilan con Vite (Phaser, TypeScript). Las paginas de la raiz no pasan por aqui.",
+  "scripts": {
+    "dev": "vite",
+    "check": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}
