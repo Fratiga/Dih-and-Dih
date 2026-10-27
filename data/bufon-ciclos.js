@@ -47,6 +47,15 @@
        jugadora: "laia",
          // opcional: el tema es solo para la cuenta de esa jugadora (hoy solo "laia").
          // El Editor también lo entiende. Mejor que escribir un visibleSi a mano.
+       vocesMin: { rostro: 2, herida: 2 },
+         // opcional (también en preguntas y grupos): solo si esas Voces están en esa etapa o más
+         // (0 Dormida, 1 Murmullo, 2 Despertar, 3 Influencia, 4 Presencia fuerte).
+       vocesDespiertas: 2,
+         // opcional (también en preguntas y grupos): solo si al menos N Voces están en Despertar o más.
+         // Úsalo en las escenas donde las Voces conversan: así quien las ve entiende la conversación.
+       // Una pregunta o una respuesta de grupo puede llevar voz: "rostro" (una opción FIRMADA por esa Voz, con su
+       // nombre y color). Solo se ve si esa Voz está en la etapa pedida: 3 por defecto (exclusiva, abre algo nuevo)
+       // o vozEtapa: 2 (un consejo: lo mismo que ofrece otra opción, con la firma de una Voz ya despierta).
        intro: {
          como: "recuerdo",          // "recuerdo" = el Bufón lo trae solo la
                                     // primera vez ; "boton" = el botón aparece
@@ -179,6 +188,16 @@
     };
     const revisarCamposExtra = (donde2, x) => {
       listaDeIds(donde2, x, "tras"); listaDeIds(donde2, x, "hechos");
+      if (x.vocesMin !== undefined) {
+        if (!x.vocesMin || typeof x.vocesMin !== "object" || Array.isArray(x.vocesMin)) fallar(donde2 + ": 'vocesMin' debe ser { voz: etapa }");
+        Object.keys(x.vocesMin).forEach(v => {
+          if (!voces[v]) fallar(donde2 + ': en vocesMin, la Voz "' + v + '" no existe (' + Object.keys(voces).join(", ") + ")");
+          if (!Number.isInteger(x.vocesMin[v]) || x.vocesMin[v] < 1 || x.vocesMin[v] > 4) fallar(donde2 + ': en vocesMin, la etapa de "' + v + '" debe ser un entero de 1 a 4');
+        });
+      }
+      if (x.vocesDespiertas !== undefined && !(Number.isInteger(x.vocesDespiertas) && x.vocesDespiertas >= 1 && x.vocesDespiertas <= Object.keys(voces).length)) fallar(donde2 + ": 'vocesDespiertas' debe ser un entero de 1 a " + Object.keys(voces).length);
+      if (x.voz !== undefined && !voces[x.voz]) fallar(donde2 + ': la Voz "' + x.voz + '" no existe (' + Object.keys(voces).join(", ") + ")");
+      if (x.vozEtapa !== undefined && ![2, 3, 4].includes(x.vozEtapa)) fallar(donde2 + ": 'vozEtapa' debe ser 2 (Despertar), 3 (Influencia) o 4 (Presencia fuerte)");
       if (x.risa !== undefined && !(Number.isFinite(x.risa) && x.risa > 0)) fallar(donde2 + ": 'risa' son milisegundos (un número mayor que 0)");
       if (x.animacion !== undefined && typeof x.animacion !== "string") fallar(donde2 + ": 'animacion' es el nombre de una animación");
     };
@@ -200,13 +219,23 @@
       ? ctx.hasCompletedDialogue(pre + r)
       : grupoHecho(ctx, grupos.find(g => g.id === r));
     // tras: ids de diálogos ya completados (de cualquier tema). hechos: hechos de la mesa (hasFact).
-    const externo = (ctx, x) => (x.tras || []).every(i => ctx.hasCompletedDialogue(i)) && (x.hechos || []).every(h => ctx.hasFact(h));
+    // vocesMin: { rostro: 2 } pide esa Voz en esa etapa o más. vocesDespiertas: N pide al menos N Voces en Despertar o más.
+    const vocesOk = (ctx, x) => (!x.vocesMin || Object.keys(x.vocesMin).every(v => ctx.voiceStage(v) >= x.vocesMin[v]))
+      && (!x.vocesDespiertas || Object.keys(voces).filter(v => ctx.voiceStage(v) >= 2).length >= x.vocesDespiertas);
+    const externo = (ctx, x) => (x.tras || []).every(i => ctx.hasCompletedDialogue(i)) && (x.hechos || []).every(h => ctx.hasFact(h)) && vocesOk(ctx, x);
+    // Una opción firmada ("voz") solo se ve si esa Voz ya está en la etapa pedida: 3 (Influencia) por defecto, la de las
+    // opciones exclusivas que abren algo nuevo, o 2 (Despertar) para un consejo que no abre nada que otra opción no abra.
+    const firmaOk = (ctx, x) => !x.voz || ctx.voiceStage(x.voz) >= (x.vozEtapa || 3);
     const requisitosOk = (ctx, x) => externo(ctx, x) && (x.requiere || []).every(r => cumple(ctx, r));
     // Una pregunta o respuesta con cierra:true termina el tema para siempre: lo que quede pendiente ya no se ofrece.
     // Con fin:true además la conversación termina ahí mismo (sin volver al menú) y el tema queda cerrado.
     const cierraTema = ctx => preguntas.some(p => (p.cierra || p.fin) && ctx.hasCompletedDialogue(pre + p.id))
       || grupos.some(g => g.opciones.some(o => (o.cierra || o.fin) && ctx.hasCompletedDialogue(marcaGrupoOpcion(g, o))));
-    const agotado = ctx => cierraTema(ctx) || (preguntas.every(p => ctx.hasCompletedDialogue(pre + p.id)) && grupos.every(g => grupoHecho(ctx, g)));
+    // Lo que este jugador todavía no puede ver (un hecho que no pasó, una Voz que no despertó) no cuenta como pendiente:
+    // si no, el tema se quedaría abierto para siempre con el submenú vacío. Si más tarde se cumple, el tema reaparece.
+    const agotado = ctx => cierraTema(ctx)
+      || (preguntas.filter(p => externo(ctx, p) && firmaOk(ctx, p)).every(p => ctx.hasCompletedDialogue(pre + p.id))
+        && grupos.filter(g => externo(ctx, g) && g.opciones.some(o => firmaOk(ctx, o))).every(g => grupoHecho(ctx, g)));
     const ladoOk = ctx => !t.lados || t.lados.includes(ctx.actualCampaign);
     const jugadoraOk = ctx => t.jugadora !== "laia" || ctx.esJugadoraDeLaia();
     const extra = ctx => externo(ctx, t) && ladoOk(ctx) && jugadoraOk(ctx) && (!t.visibleSi || t.visibleSi(ctx));
@@ -236,15 +265,19 @@
     preguntas.forEach(p => {
       const op = {
         id: pre + p.id, texto: p.texto, next: "bufon_" + pre + p.id,
-        visible: ctx => ctx.cicloAbierto(cid) && !cierraTema(ctx) && requisitosOk(ctx, p) && !ctx.hasCompletedDialogue(pre + p.id)
+        visible: ctx => ctx.cicloAbierto(cid) && !cierraTema(ctx) && requisitosOk(ctx, p) && firmaOk(ctx, p) && !ctx.hasCompletedDialogue(pre + p.id)
       };
       if (p.voz) op.voz = p.voz;
       opciones.push(op);
     });
-    grupos.forEach(g => g.opciones.forEach(o => opciones.push({
-      id: marcaGrupoOpcion(g, o), texto: o.texto, next: "bufon_" + pre + g.id + "_" + o.id,
-      visible: ctx => ctx.cicloAbierto(cid) && !cierraTema(ctx) && requisitosOk(ctx, g) && !grupoHecho(ctx, g)
-    })));
+    grupos.forEach(g => g.opciones.forEach(o => {
+      const op = {
+        id: marcaGrupoOpcion(g, o), texto: o.texto, next: "bufon_" + pre + g.id + "_" + o.id,
+        visible: ctx => ctx.cicloAbierto(cid) && !cierraTema(ctx) && requisitosOk(ctx, g) && firmaOk(ctx, o) && !grupoHecho(ctx, g)
+      };
+      if (o.voz) op.voz = o.voz;
+      opciones.push(op);
+    }));
     opciones.push({ id: pre + "cerrar", texto: t.cerrar || "Ya fue, sigamos con otra cosa.", next: "intro_reason_sin_recuerdo" });
     D.elecciones[hubId] = { opciones };
 

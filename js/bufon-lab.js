@@ -313,15 +313,36 @@
     return o;
   }
   const vocesATexto = o => Object.keys(o || {}).map(v => v + " " + (o[v] > 0 ? "+" : "") + o[v]).join(", ");
+  // "herida 2, rostro 2" <-> { herida: 2, rostro: 2 }: la etapa mínima de cada Voz (entera, de 1 a 4).
+  function parseVocesMin(txt) {
+    const o = {};
+    Object.entries(parseVoces(txt)).forEach(([v, n]) => { const e = Math.round(n); if (e >= 1) o[v] = e; });
+    return o;
+  }
+  const vocesMinATexto = o => Object.keys(o || {}).map(v => v + " " + o[v]).join(", ");
+  const VOCES_IDS = ["coartada", "testigo", "grieta", "muralla", "hilo", "rostro", "herida", "apetito"];
+  const VOCES_NOMBRE = { coartada: "La Coartada", testigo: "El Testigo", grieta: "La Grieta", muralla: "La Muralla", hilo: "El Hilo", rostro: "El Rostro", herida: "La Herida", apetito: "El Apetito" };
+  // Condiciones por Voces: se escriben solo si tienen algo. Valen para temas, preguntas y grupos.
+  function vocesCondAConfig(x, o) {
+    const vm = parseVocesMin(x.vocesMin); if (Object.keys(vm).length) o.vocesMin = vm;
+    const vd = parseInt(x.vocesDespiertas, 10); if (vd > 0) o.vocesDespiertas = vd;
+    return o;
+  }
+  // Firma de una Voz en una opción: la Voz y la etapa desde la que se ve (3 es lo normal y no se escribe).
+  function firmaAConfig(x, o) {
+    if (x.voz) { o.voz = x.voz; const ve = parseInt(x.vozEtapa, 10); if (ve === 2 || ve === 4) o.vozEtapa = ve; }
+    return o;
+  }
   // Campos que comparten temas, preguntas y respuestas: se escriben solo si tienen algo.
   function extrasAConfig(x, o) {
     if (lista(x.tras).length) o.tras = lista(x.tras);
     if (lista(x.hechos).length) o.hechos = lista(x.hechos);
+    vocesCondAConfig(x, o);
     if (x.animacion) o.animacion = x.animacion.trim();
     const r = parseInt(x.risa, 10); if (r > 0) o.risa = r;
     return o;
   }
-  const extrasDesdeConfig = x => ({ tras: (x.tras || []).join(", "), hechos: (x.hechos || []).join(", "), animacion: x.animacion || "", risa: x.risa ? String(x.risa) : "" });
+  const extrasDesdeConfig = x => ({ tras: (x.tras || []).join(", "), hechos: (x.hechos || []).join(", "), vocesMin: vocesMinATexto(x.vocesMin), vocesDespiertas: x.vocesDespiertas ? String(x.vocesDespiertas) : "", animacion: x.animacion || "", risa: x.risa ? String(x.risa) : "" });
   const lineasATexto = arr => (arr || []).map(l => typeof l === "string" ? l : l.voz + "> " + l.texto).join("\n");
 
   function aConfig(b) {
@@ -334,13 +355,14 @@
       if (lista(t.hechos).length) tc.hechos = lista(t.hechos);
       if (lista(t.lados).length) tc.lados = lista(t.lados).map(x => x.toUpperCase());
       if (t.jugadora) tc.jugadora = t.jugadora;
+      vocesCondAConfig(t, tc);
       tc.intro = { como: t.como === "boton" ? "boton" : "recuerdo", lineas: parseLineas(t.intro) };
       if (t.introAnimacion) tc.intro.animacion = t.introAnimacion.trim();
       const ir = parseInt(t.introRisa, 10); if (ir > 0) tc.intro.risa = ir;
       tc.preguntas = t.preguntas.map(p => {
         const o = { id: p.id, texto: p.texto };
         if (lista(p.requiere).length) o.requiere = lista(p.requiere);
-        if (p.voz) o.voz = p.voz;
+        firmaAConfig(p, o);
         if (p.cierra) o.cierra = true;
         if (p.fin) o.fin = true;
         if (lista(p.voces).length) o.voces = parseVoces(p.voces);
@@ -354,6 +376,7 @@
         go.opciones = g.opciones.map(o => {
           const x = { id: o.id, texto: o.texto };
           if (o.neutral) x.neutral = true; if (o.cierra) x.cierra = true; if (o.fin) x.fin = true;
+          firmaAConfig(o, x);
           if (lista(o.voces).length) x.voces = parseVoces(o.voces);
           const r = parseInt(o.risa, 10); if (o.animacion) x.animacion = o.animacion.trim(); if (r > 0) x.risa = r;
           x.lineas = parseLineas(o.lineas);
@@ -372,10 +395,11 @@
       temas: (def.temas || []).map(t => ({
         id: t.id, boton: t.boton, cerrar: t.cerrar || "", tras: (t.tras || []).join(", "), hechos: (t.hechos || []).join(", "),
         lados: (t.lados || []).join(", "), jugadora: t.jugadora || "",
+        vocesMin: vocesMinATexto(t.vocesMin), vocesDespiertas: t.vocesDespiertas ? String(t.vocesDespiertas) : "",
         como: t.intro && t.intro.como === "boton" ? "boton" : "recuerdo", intro: lineasATexto(t.intro && t.intro.lineas),
         introAnimacion: (t.intro && t.intro.animacion) || "", introRisa: t.intro && t.intro.risa ? String(t.intro.risa) : "",
-        preguntas: (t.preguntas || []).map(p => Object.assign({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", cierra: !!p.cierra, fin: !!p.fin, voces: vocesATexto(p.voces), lineas: lineasATexto(p.lineas) }, extrasDesdeConfig(p))),
-        grupos: (t.grupos || []).map(g => Object.assign({ id: g.id, requiere: (g.requiere || []).join(", "), opciones: (g.opciones || []).map(o => Object.assign({ id: o.id, texto: o.texto, neutral: !!o.neutral, cierra: !!o.cierra, fin: !!o.fin, voces: vocesATexto(o.voces), lineas: lineasATexto(o.lineas) }, extrasDesdeConfig(o))) }, extrasDesdeConfig(g)))
+        preguntas: (t.preguntas || []).map(p => Object.assign({ id: p.id, texto: p.texto, requiere: (p.requiere || []).join(", "), voz: p.voz || "", vozEtapa: p.vozEtapa ? String(p.vozEtapa) : "", cierra: !!p.cierra, fin: !!p.fin, voces: vocesATexto(p.voces), lineas: lineasATexto(p.lineas) }, extrasDesdeConfig(p))),
+        grupos: (t.grupos || []).map(g => Object.assign({ id: g.id, requiere: (g.requiere || []).join(", "), opciones: (g.opciones || []).map(o => Object.assign({ id: o.id, texto: o.texto, voz: o.voz || "", vozEtapa: o.vozEtapa ? String(o.vozEtapa) : "", neutral: !!o.neutral, cierra: !!o.cierra, fin: !!o.fin, voces: vocesATexto(o.voces), lineas: lineasATexto(o.lineas) }, extrasDesdeConfig(o))) }, extrasDesdeConfig(g)))
       }))
     };
   }
@@ -514,14 +538,38 @@
     "Rumba", "SillyDance", "Twerk", "Twist", "Swag", "Gangnam"];
   const datalistAnim = () => h("datalist", { id: "blabAnimaciones" }, ANIMACIONES.map(a => h("option", { value: a })));
 
+  // Condiciones por Voces (valen para el tema, una pregunta o un grupo) y selectores de firma.
+  function condicionesDeVoces(base, x) {
+    return h("div", { class: "blab-dos" },
+      cp("Solo si estas Voces están en etapa...", entrada(base + ".vocesMin", x.vocesMin || "", { ph: "rostro 2, herida 2" }), "Etapa mínima de cada Voz: 1 Murmullo, 2 Despertar, 3 Influencia, 4 Presencia fuerte."),
+      cp("Solo si hay al menos N Voces despiertas", entrada(base + ".vocesDespiertas", x.vocesDespiertas || "", { ph: "por ejemplo 2" }), "Cuenta las Voces en Despertar o más. Sirve para las escenas donde las Voces conversan: quien las ve, las entiende."));
+  }
+  function selectorVoz(ruta, valor) {
+    return h("select", { "data-r": ruta },
+      h("option", { value: "", selected: !valor }, "(ninguna)"),
+      VOCES_IDS.map(v => h("option", { value: v, selected: valor === v }, VOCES_NOMBRE[v])));
+  }
+  function selectorEtapaVoz(ruta, valor) {
+    return h("select", { "data-r": ruta },
+      h("option", { value: "", selected: !valor || valor === "3" }, "3 · Influencia (exclusiva: abre algo nuevo)"),
+      h("option", { value: "2", selected: valor === "2" }, "2 · Despertar (consejo: no abre nada nuevo)"),
+      h("option", { value: "4", selected: valor === "4" }, "4 · Presencia fuerte"));
+  }
+  function firmaDeVoz(ruta, x) {
+    return h("div", { class: "blab-dos" },
+      cp("Opción firmada por la Voz...", selectorVoz(ruta + ".voz", x.voz || ""), "Pone el nombre, el color y el icono de la Voz en el botón. Solo se ve si esa Voz está en la etapa de la derecha."),
+      cp("Se ve desde la etapa...", selectorEtapaVoz(ruta + ".vozEtapa", x.vozEtapa || ""), "Una exclusiva (3) abre algo que ninguna opción normal abre. Un consejo (2) lleva lo mismo que otra opción, con la firma de una Voz ya despierta."));
+  }
+
   // Campos opcionales (condiciones, animación, risa) plegados para no llenar la pantalla.
   function extrasForm(base, x, que) {
-    const hayAlgo = (x.tras || "").trim() || (x.hechos || "").trim() || (x.animacion || "").trim() || (x.risa || "").trim();
+    const hayAlgo = (x.tras || "").trim() || (x.hechos || "").trim() || (x.vocesMin || "").trim() || (x.vocesDespiertas || "").trim() || (x.animacion || "").trim() || (x.risa || "").trim();
     return h("details", { class: "blab-detalle", open: !!hayAlgo },
       h("summary", null, "Condiciones, animación y risa" + (que ? " (" + que + ")" : "")),
       h("div", { class: "blab-dos" },
         cp("Solo si ya se completó...", entrada(base + ".tras", x.tras, { ph: "ids de diálogos, separados por coma" }), "Por ejemplo teros_final. Los ids de las preguntas de un tema son <tema>_<pregunta>."),
         cp("Solo si en la mesa pasó...", entrada(base + ".hechos", x.hechos, { ph: "hechos, separados por coma" }), "Hechos de data/bufon-evidencia.js, por ejemplo mattei_se_unio.")),
+      condicionesDeVoces(base, x),
       h("div", { class: "blab-dos" },
         cp("Animación del Bufón", h("input", { type: "text", list: "blabAnimaciones", "data-r": base + ".animacion", value: x.animacion || "", placeholder: "(la de siempre)" })),
         cp("Risa del Bufón (milisegundos)", entrada(base + ".risa", x.risa || "", { ph: "por ejemplo 2000" }))));
@@ -534,7 +582,9 @@
       if (x.cierra && !x.fin) e.push("cierra el tema");
       if (x.fin) e.push("termina la conversación");
       if (x.voces && lista(x.voces).length) e.push("Voces: " + x.voces);
-      if (x.voz) e.push("solo si la Voz " + x.voz + " despertó");
+      if (x.voz) e.push("firmada por " + x.voz + " (desde la etapa " + (parseInt(x.vozEtapa, 10) || 3) + ")");
+      if (lista(x.vocesMin).length) e.push("Voces en etapa " + lista(x.vocesMin).join("+"));
+      if (parseInt(x.vocesDespiertas, 10) > 0) e.push("con " + parseInt(x.vocesDespiertas, 10) + " Voces despiertas");
       if (lista(x.tras).length) e.push("tras " + lista(x.tras).join("+"));
       if (lista(x.hechos).length) e.push("hechos " + lista(x.hechos).join("+"));
       if (lista(x.lados).length) e.push("solo lado " + lista(x.lados).join("/"));
@@ -593,7 +643,7 @@
       cp("Botón del menú principal", entrada(base + ".boton", t.boton, { ph: "Texto que ve el jugador" }), "Aparece cuando el tema ya empezó y se esconde solo al terminarlo."),
       cp("Cómo empieza", h("select", { "data-r": base + ".como" }, h("option", { value: "recuerdo", selected: t.como !== "boton" }, "El Bufón lo trae solo (recuerdo)"), h("option", { value: "boton", selected: t.como === "boton" }, "El botón aparece desde el principio"))),
       cp("Primeras líneas del Bufón", entrada(base + ".intro", t.intro, { area: true, filas: 4, ph: "Una línea por renglón" }), "Una línea por renglón. Para la interjección de una Voz: herida> texto (voces: coartada, testigo, grieta, muralla, hilo, rostro, herida, apetito)."),
-      h("details", { class: "blab-detalle", open: !!((t.tras || "").trim() || (t.hechos || "").trim() || (t.lados || "").trim() || t.jugadora || (t.cerrar || "").trim() || (t.introAnimacion || "").trim() || (t.introRisa || "").trim()) },
+      h("details", { class: "blab-detalle", open: !!((t.tras || "").trim() || (t.hechos || "").trim() || (t.lados || "").trim() || t.jugadora || (t.vocesMin || "").trim() || (t.vocesDespiertas || "").trim() || (t.cerrar || "").trim() || (t.introAnimacion || "").trim() || (t.introRisa || "").trim()) },
         h("summary", null, "Condiciones del tema, animación de la intro y texto de salida"),
         h("div", { class: "blab-dos" },
           cp("El tema solo existe si ya se completó...", entrada(base + ".tras", t.tras, { ph: "ids de diálogos, separados por coma" })),
@@ -601,6 +651,7 @@
         h("div", { class: "blab-dos" },
           cp("El tema es solo para el lado...", entrada(base + ".lados", t.lados || "", { ph: "A, B (vacío = los dos)" }), "Por ejemplo B. La campaña de quien lo recibe."),
           cp("El tema es solo para la jugadora de...", h("select", { "data-r": base + ".jugadora" }, h("option", { value: "", selected: !t.jugadora }, "(todos)"), h("option", { value: "laia", selected: t.jugadora === "laia" }, "Laia")), "Se reconoce por el nombre de su cuenta, no por su personaje.")),
+        condicionesDeVoces(base, t),
         h("div", { class: "blab-dos" },
           cp("Animación al empezar", h("input", { type: "text", list: "blabAnimaciones", "data-r": base + ".introAnimacion", value: t.introAnimacion || "", placeholder: "(la de siempre)" })),
           cp("Risa al empezar (milisegundos)", entrada(base + ".introRisa", t.introRisa || "", { ph: "por ejemplo 2000" }))),
@@ -613,6 +664,7 @@
         cp("Se destapa tras...", entrada(base + ".preguntas." + pi + ".requiere", p.requiere, { ph: "ids separados por coma" }), idsPreg.length ? "Preguntas de este tema: " + idsPreg.join(", ") : null),
         cp("Respuesta del Bufón", entrada(base + ".preguntas." + pi + ".lineas", p.lineas, { area: true, filas: 6, ph: "Una línea por renglón" })),
         cp("Voces que suben al elegirla", entrada(base + ".preguntas." + pi + ".voces", p.voces || "", { ph: "herida +1, rostro +2" }), "Puntos para las Voces cuando el jugador elige esta pregunta. Déjalo vacío si no suma nada. Voces: coartada, testigo, grieta, muralla, hilo, rostro, herida, apetito."),
+        firmaDeVoz(base + ".preguntas." + pi, p),
         extrasForm(base + ".preguntas." + pi, p, "esta pregunta"),
         h("label", { class: "blab-casilla" }, h("input", { type: "checkbox", "data-r": base + ".preguntas." + pi + ".cierra", checked: p.cierra }),
           h("span", null, "Cierra el tema. ", h("small", null, "Tras esta respuesta el Bufón vuelve al menú principal y el tema ya no sigue avanzando (lo pendiente desaparece). Úsalo para «No me interesa»."))),
@@ -634,6 +686,7 @@
             cp("Texto del botón", entrada(ob + ".texto", o.texto)),
             cp("Reacción del Bufón", entrada(ob + ".lineas", o.lineas, { area: true, filas: 3 })),
             cp("Voces que suben al elegirla", entrada(ob + ".voces", o.voces || "", { ph: "herida +1, rostro +2" })),
+            firmaDeVoz(ob, o),
             h("details", { class: "blab-detalle", open: !!((o.animacion || "").trim() || (o.risa || "").trim()) },
               h("summary", null, "Animación y risa de esta reacción"),
               h("div", { class: "blab-dos" },
