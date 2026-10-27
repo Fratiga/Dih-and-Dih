@@ -104,8 +104,8 @@ comprobar "una limitada sí" "t" "$(fuerte carta_ganada '{"rareza": "limitada"}'
 comprobar "una rara no" "f" "$(fuerte carta_ganada '{"rareza": "rara"}')"
 comprobar "el resumen «ganó N cartas hoy» no" "f" "$(fuerte carta_ganada '{"resumen": true, "rareza": "legendaria"}')"
 comprobar "una copa sí" "t" "$(fuerte copa_hipodromo '{}')"
-comprobar "una apuesta de 1000 tokens sí" "t" "$(fuerte apuesta_hipodromo '{"pago": 1000}')"
-comprobar "una de 999 no" "f" "$(fuerte apuesta_hipodromo '{"pago": 999}')"
+comprobar "una apuesta de 5000 tokens sí (Hipódromo y Veintiuna)" "t|t" "$(fuerte apuesta_hipodromo '{"pago": 5000}')|$(fuerte apuesta_veintiuna '{"pago": 5000}')"
+comprobar "una de 4999 no, ni una de 1000 como las de antes" "f|f|f" "$(fuerte apuesta_hipodromo '{"pago": 4999}')|$(fuerte apuesta_veintiuna '{"pago": 4999}')|$(fuerte apuesta_veintiuna '{"pago": 1000}')"
 comprobar "una racha récord ya terminada sí" "t" "$(fuerte racha_veintiuna '{"activa": false, "record": true}')"
 comprobar "una racha viva no (se actualizaría cada victoria)" "f" "$(fuerte racha_veintiuna '{"activa": true, "record": true}')"
 comprobar "una racha terminada que no fue récord no" "f" "$(fuerte racha_veintiuna '{"activa": false, "record": false}')"
@@ -145,6 +145,30 @@ sql "insert into cronica_tipos (tipo, juego, activo, config) values ('cria_nacid
 suceso cartas cria_nacida "'$U3'" null "'B'" '{"nombre": "Hidra", "primera": true}' "1 minute" >/dev/null
 servicio "select discord_i_encolar_cronica();" >/dev/null
 comprobar "un suceso anónimo se apunta sin el nombre de nadie" "null" "$(sql "select coalesce(contenido ->> 'user', 'null') from discord_cola where contenido ->> 'tipo' = 'cria_nacida'")"
+
+echo "== Apuestas: como mucho un anuncio por jugador cada 30 minutos"
+sql "truncate cronica_sucesos restart identity; truncate discord_cola restart identity; delete from discord_canales; insert into discord_canales (evento, canal_id) values ('cronica_a', '$CA'), ('cronica_b', '$CB')" >/dev/null
+apuesta() { suceso veintiuna apuesta_veintiuna "'$1'" null "'$2'" "{\"apuesta\": 1000, \"pago\": $3, \"mult\": 2}" "${4:-1 minute}"; }
+apuesta "$U1" A 6000 "3 minutes" >/dev/null
+apuesta "$U1" A 7000 "2 minutes" >/dev/null
+apuesta "$U1" A 8000 "1 minute" >/dev/null
+apuesta "$U2" A 6000 "1 minute" >/dev/null
+apuesta "$U1" A 100 "30 seconds" >/dev/null
+comprobar "de tres apuestas grandes seguidas del mismo jugador solo se anuncia la primera; la de otro jugador también, y la pequeña (100) ninguna" "2" "$(servicio "select discord_i_encolar_cronica();" | tail -1)"
+comprobar "las que se apuntan son la 1.ª (jugador 1) y la 4.ª (jugador 2)" "1,4" "$(sql "select string_agg(substr(clave, 9), ',' order by id) from discord_cola where estado = 'pendiente'")"
+comprobar "las otras dos del mismo jugador quedan marcadas como limitadas (no se enviarán nunca)" "2,3" "$(sql "select string_agg(substr(clave, 9), ',' order by id) from discord_cola where ultimo_error = 'limitado por jugador'")"
+comprobar "y están en estado caducado" "caducado" "$(sql "select distinct estado from discord_cola where ultimo_error = 'limitado por jugador'")"
+comprobar "volver a mirar no cambia nada" "0|4" "$(servicio "select discord_i_encolar_cronica();" | tail -1)|$(sql "select count(*) from discord_cola")"
+comprobar "no se toma nada de lo limitado al enviar" "2" "$(servicio "select count(*) from discord_i_tomar_cola(10);" | tail -1)"
+# Pasa la espera: lo limitado de antes NO sale (ya está resuelto) y una apuesta nueva sí
+sql "update discord_cola set creado = now() - interval '40 minutes'" >/dev/null
+apuesta "$U1" A 9000 "20 seconds" >/dev/null
+comprobar "pasados 30 minutos, una apuesta nueva del mismo jugador se anuncia" "1" "$(servicio "select discord_i_encolar_cronica();" | tail -1)"
+comprobar "y las que se limitaron antes no salen tarde" "5" "$(sql "select count(*) from discord_cola")"
+apuesta "$U1" A 9500 "10 seconds" >/dev/null
+comprobar "pero justo después vuelve a limitarse" "0" "$(servicio "select discord_i_encolar_cronica();" | tail -1)"
+comprobar "el límite cuenta también a las apuestas de Hipódromo (aunque sean de otro juego)" "t" "$(suceso hipodromo apuesta_hipodromo "'$U2'" null "'A'" '{"monto": 100, "pago": 6000, "mult": 60, "criaturas": ["x"]}' "5 seconds" >/dev/null; servicio "select discord_i_encolar_cronica();" | tail -1 | sed 's/^0$/t/')"
+comprobar "una carta legendaria del mismo jugador no se limita (solo las apuestas)" "1" "$(suceso cartas carta_ganada "'$U1'" null "'A'" '{"nombre": "Dragón", "rareza": "legendaria"}' "5 seconds" >/dev/null; servicio "select discord_i_encolar_cronica();" | tail -1)"
 
 echo "== Recordatorio de los desafíos de Veintiuna"
 sql "truncate discord_cola restart identity; truncate cronica_sucesos restart identity; delete from discord_canales" >/dev/null

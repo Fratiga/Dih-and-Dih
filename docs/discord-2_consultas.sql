@@ -122,7 +122,7 @@ $$;
 
 -- === Anuncios (cola de docs/discord-avisos.sql) =================================================================
 
--- ¿Merece un anuncio en un canal este suceso de la crónica? Solo lo fuerte: cartas legendarias o limitadas, copas, apuestas de 1000 tokens o más, rachas
+-- ¿Merece un anuncio en un canal este suceso de la crónica? Solo lo fuerte: cartas legendarias o limitadas, copas, apuestas de 5000 tokens o más (y como mucho una por jugador cada 30 minutos, ver discord_i_encolar_cronica), rachas
 -- récord ya terminadas, La Última Vela, récords y la primera cría de una especie. Los intercambios, los desafíos de oro, las rachas vivas y las
 -- noticias del Admin NO se anuncian solos (las noticias, con discord_admin_anunciar). Para cambiar lo que se anuncia, se cambia esta función.
 create or replace function public.discord_i_cronica_fuerte(s cronica_sucesos)
@@ -133,8 +133,8 @@ as $$
   select case s.tipo
     when 'carta_ganada' then coalesce((s.datos ->> 'resumen')::boolean, false) = false and (s.datos ->> 'rareza') in ('legendaria', 'limitada')
     when 'copa_hipodromo' then true
-    when 'apuesta_hipodromo' then coalesce((s.datos ->> 'pago')::numeric, 0) >= 1000
-    when 'apuesta_veintiuna' then coalesce((s.datos ->> 'pago')::numeric, 0) >= 1000
+    when 'apuesta_hipodromo' then coalesce((s.datos ->> 'pago')::numeric, 0) >= 5000
+    when 'apuesta_veintiuna' then coalesce((s.datos ->> 'pago')::numeric, 0) >= 5000
     when 'racha_veintiuna' then coalesce((s.datos ->> 'activa')::boolean, true) = false and coalesce((s.datos ->> 'record')::boolean, false)
     when 'ultima_vela' then true
     when 'record_hooey' then true
@@ -200,6 +200,17 @@ begin
     if not discord_i_cronica_fuerte(s) then continue; end if;
     select canal_id into canal from discord_canales where evento = discord_i_cronica_evento(s.side) and activo;
     if canal is null then continue; end if;
+    -- Apuestas: como mucho un anuncio por jugador cada 30 minutos (da igual el juego). Las demás manos o apuestas de esa media hora se apuntan como
+    -- «limitadas» (estado caducado) para que no vuelvan a salir cuando pase la espera; la crónica de la web sigue enseñándolas todas.
+    if s.tipo in ('apuesta_hipodromo', 'apuesta_veintiuna') and s.user_id is not null and exists (
+         select 1 from discord_cola c join cronica_sucesos s2 on c.clave = 'cronica:' || s2.id
+          where c.origen = 'cronica' and s2.user_id = s.user_id and s2.tipo in ('apuesta_hipodromo', 'apuesta_veintiuna') and s2.id <> s.id
+            and c.creado > now() - interval '30 minutes' and c.ultimo_error is distinct from 'limitado por jugador') then
+      insert into discord_cola (origen, clave, canal_id, contenido, caduca, estado, ultimo_error)
+      values ('cronica', 'cronica:' || s.id, canal, jsonb_build_object('id', s.id, 'tipo', s.tipo), ahora, 'caducado', 'limitado por jugador')
+      on conflict (origen, clave) do nothing;
+      continue;
+    end if;
     total := total + discord_i_encolar_suceso(s, canal);
   end loop;
 

@@ -154,7 +154,7 @@ Idea de la sesión «Crónica del mundo» (26-oct-2026), hecha con las reglas qu
 | `/carrera` | La próxima carrera, cuándo sale y cierran las apuestas, y las 3 favoritas por cuota (la web ya enseña esas cuotas) |
 | `/saldo` | Tus tokens de juego |
 
-**Anuncios en canales.** El mismo cron de cada minuto apunta en la cola los sucesos fuertes de los últimos 30 minutos (para que al encender un canal no salga lo antiguo). Se anuncia: cartas legendarias o limitadas, copas del Hipódromo, apuestas de 1000 tokens o más, rachas récord de Veintiuna ya terminadas, La Última Vela, récords (Hooey, Zarabanda, Parranda, Ajedrez, Arquería) y la primera cría de una especie. **No** se anuncian solos los intercambios, los desafíos de oro, las rachas vivas ni las noticias del Admin. Lo que se anuncia está en la función `discord_i_cronica_fuerte`; para cambiarlo se cambia esa función.
+**Anuncios en canales.** El mismo cron de cada minuto apunta en la cola los sucesos fuertes de los últimos 30 minutos (para que al encender un canal no salga lo antiguo). Se anuncia: cartas legendarias o limitadas, copas del Hipódromo, apuestas de 5000 tokens o más (y como mucho **una por jugador cada 30 minutos**: si juega varias manos seguidas, sale la primera y las demás no; sigue saliendo todo en la crónica de la web), rachas récord de Veintiuna ya terminadas, La Última Vela, récords (Hooey, Zarabanda, Parranda, Ajedrez, Arquería) y la primera cría de una especie. **No** se anuncian solos los intercambios, los desafíos de oro, las rachas vivas ni las noticias del Admin. Lo que se anuncia está en la función `discord_i_cronica_fuerte`; para cambiarlo se cambia esa función.
 
 Cada suceso va al canal de su Side. Se configuran en la tabla `discord_canales`, igual que el de las carreras:
 
