@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Página escondida: por ahora solo la abre el admin (y el servidor también lo comprueba). Para abrirla a todos, quita este script y mira docs/pozo-dragon.md. -->
+  <script src="js/oculto.js?v=20271101"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Pozo del Dragón — Compendio del Mundo</title>
+  <meta name="description" content="Juego de dados con apuestas junto al tesoro de un dragón: duelos entre dos jugadores y mesas compartidas de dos a seis.">
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <script src="js/dialogos.js?v=20270331"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20270331">
+  <link rel="stylesheet" href="css/minijuegos.css?v=20270331">
+  <link rel="stylesheet" href="css/pozo-dragon.css?v=20271101">
+  <script src="js/mj-volumen.js?v=20270331"></script>
+</head>
+<body class="mj-pagina pz-tema">
+  <script src="js/carga.js?v=20270331"></script>
+  <a class="pz-saltar" href="#pzDock">Ir a los controles de la mesa</a>
+  <div class="mj-barra">
+    <span class="mj-enlaces">
+      <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
+      <a href="index.html" class="mj-volver mj-volver-sec">Inicio</a>
+      <a href="hipodromo.html#cartas" class="mj-volver mj-volver-sec">Hipódromo (tokens)</a>
+    </span>
+    <div id="globalLadoWidget" class="global-lado-widget">
+      <button id="globalLadoBadge" class="global-lado-badge" type="button">Iniciar sesión</button>
+      <div id="globalLadoPopover" class="global-lado-popover hidden"></div>
+    </div>
+  </div>
+
+  <div class="pz-escena" id="pzEscena">
+    <canvas class="pz-brasas" id="pzBrasas" aria-hidden="true"></canvas>
+    <div class="pz-fondo-dragon" id="pzFondoDragon" aria-hidden="true"></div>
+
+    <main class="pz-sala" id="pzSala" data-vista="cargando">
+      <header class="pz-cabecera">
+        <div class="pz-marca">
+          <span class="pz-marca-emblema" id="pzEmblema"></span>
+          <div>
+            <p class="eyebrow">CASA DE JUEGO</p>
+            <h1 class="pz-titulo">El Pozo del Dragón</h1>
+          </div>
+        </div>
+        <div class="pz-herramientas">
+          <div class="pz-saldo" role="group" aria-label="Tus tokens de juego">
+            <span id="pzSaldoMoneda"></span>
+            <span class="pz-saldo-datos"><strong id="pzSaldo">—</strong><small>tokens de juego</small></span>
+          </div>
+          <button type="button" class="pz-boton-mini" id="pzBtnReglas" aria-haspopup="dialog">Reglas</button>
+          <button type="button" class="pz-boton-mini" id="pzBtnAtajos" aria-haspopup="dialog">Atajos</button>
+          <button type="button" class="pz-boton-mini" id="pzBtnSonido" aria-pressed="true" title="Efectos de sonido de la mesa (desactivados si prefieres silencio)"><span aria-hidden="true" id="pzSonidoIcono">♪</span> <span id="pzSonidoTexto">Efectos</span></button>
+        </div>
+      </header>
+
+      <div id="pzAviso" role="status" hidden></div>
+
+      <!-- Antes de sentarte: las dos modalidades, las mesas abiertas y entrar con un código -->
+      <section id="pzLobby" aria-label="Elegir mesa" hidden></section>
+      <!-- Sala de espera: condiciones, jugadores, cartas y confirmación -->
+      <section id="pzSalaEspera" aria-label="Sala" hidden></section>
+      <!-- Partida en curso y resultado -->
+      <section id="pzMesa" aria-label="La mesa" hidden></section>
+    </main>
+  </div>
+
+  <div id="pzSr" class="pz-sr" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="pzSrFuerte" class="pz-sr" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <dialog class="pz-dialogo" id="pzDlgReglas" aria-labelledby="pzDlgReglasT"></dialog>
+  <dialog class="pz-dialogo" id="pzDlgCartas" aria-labelledby="pzDlgCartasT"></dialog>
+  <dialog class="pz-dialogo pz-dialogo-chico" id="pzDlgAtajos" aria-labelledby="pzDlgAtajosT"></dialog>
+
+  <script src="js/temas.js?v=20270331"></script>
+  <script src="js/fichas-supabase.js?v=20270331"></script>
+  <script src="js/interruptores.js?v=20270331"></script>
+  <script src="js/presencia.js?v=20270331"></script>
+  <script src="js/lado.js?v=20270331"></script>
+  <script src="js/pozo-dragon-arte.js?v=20271101"></script>
+  <script src="js/pozo-dragon-vista.js?v=20271101"></script>
+  <script src="js/veintiuna-api.js?v=20271101"></script>
+  <script src="js/pozo-dragon.js?v=20271101"></script>
+  <script src="js/avisos-admin.js?v=20270331"></script>
+  <script src="js/musica-paginas.js?v=20271031"></script>
+</body>
+</html>

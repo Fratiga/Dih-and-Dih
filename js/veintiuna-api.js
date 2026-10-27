@@ -50,6 +50,22 @@
         repartir: (intento, manos) => llamar("veintiuna_reto_repartir", { p_intento: intento, p_manos: manos }),
         accion: (intento, paso, accion) => llamar("veintiuna_reto_accion", { p_intento: intento, p_paso: paso, p_accion: accion })
       },
+      // El Pozo del Dragón (docs/pozo-dragon.sql). Las acciones de turno llevan el paso de la mesa que veía el jugador: repetirlas es seguro.
+      pozo: {
+        lista: () => llamar("pozo_lista", {}),
+        crear: (modo, privada, nombre, dinero, cartas, max) => llamar("pozo_crear", { p_modo: modo, p_privada: !!privada, p_nombre: nombre || null, p_dinero: dinero || 0, p_cartas: cartas || 0, p_max: max || null }),
+        unirse: codigo => llamar("pozo_unirse", { p_codigo: codigo }),
+        cerrarInscripcion: () => llamar("pozo_cerrar_inscripcion", {}),
+        ofrecer: cartas => llamar("pozo_ofrecer", { p_cartas: cartas }),
+        confirmar: cond => llamar("pozo_confirmar", { p_cond: cond }),
+        retirarConfirmacion: () => llamar("pozo_retirar_confirmacion", {}),
+        salir: () => llamar("pozo_salir", {}),
+        tirar: paso => llamar("pozo_tirar", { p_paso: paso }),
+        cobrar: paso => llamar("pozo_cobrar", { p_paso: paso }),
+        continuar: paso => llamar("pozo_continuar", { p_paso: paso }),
+        estado: version => llamar("pozo_estado", { p_version: version == null ? null : version }),
+        misCartas: () => llamar("pozo_mis_cartas", {})
+      },
       // La mesa con amigos (docs/veintiuna.sql, sección 8). estado(version) devuelve {sin_cambios} si no cambió nada desde esa versión.
       amigos: {
         lista: () => llamar("veintiuna_amigos_lista", {}),
