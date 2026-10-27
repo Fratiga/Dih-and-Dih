@@ -75,7 +75,8 @@
       else s += bicho(carta, { x: mx, y: my + 6, s: f === 3 ? 0.7 : 0.55 }, 2, "co-cria", `Cría de ${nombre}`, false) + (f === 3 ? `<g class="co-chispas" transform="translate(${mx} ${my - 130})">${[-50, -16, 18, 52].map((dx, k) => `<g class="co-chispa" style="animation-delay:${-k * 0.5}s"><rect x="${dx}" y="0" width="6" height="6" fill="#fff1b0"/><rect x="${dx - 5}" y="2" width="16" height="2" fill="#fff1b0"/><rect x="${dx + 2}" y="-5" width="2" height="16" fill="#fff1b0"/></g>`).join("")}</g>` : "");
     } else {
       // Las criaturas de este hábitat en sus sitios: encendidas las que tienes, apagadas las que aún no
-      const especies = ver().especies.filter(e => e.habitat === c.habitat).slice(0, sitios.length);
+      // En orden alfabético para que cada criatura tenga siempre el mismo sitio, tenga o no tenga copias
+      const especies = ver().especies.filter(e => e.habitat === c.habitat).sort((a, b) => (a.carta < b.carta ? -1 : 1)).slice(0, sitios.length);
       especies.forEach((e, i) => {
         const lib = e.libres.length, nombre = nombreCarta(e.carta);
         const clase = `${lib >= 2 && !e.sobrepoblada && e.en_circulacion ? "co-lista" : lib >= 1 ? "co-tengo" : "co-no"}${est.tipo === "descanso" ? " co-duerme" : ""}`;

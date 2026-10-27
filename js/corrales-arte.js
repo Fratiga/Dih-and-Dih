@@ -5,7 +5,7 @@
    de hielo, cubil) no.
    Cada escena trae un grupo vacío <g class="co-capa"> donde js/corrales.js coloca las criaturas (entre el fondo y los objetos de delante, para
    que los pies queden detrás de la valla o la hierba) y deja marcados los sitios donde van:
-     SITIOS[habitat]   hasta seis puestos {x, y, s}: los pies en (x, y) y s de escala (el fondo, más pequeño)
+     SITIOS[habitat]   hasta diez puestos {x, y, s}: los pies en (x, y) y s de escala (el fondo, más pequeño)
      PAREJA[habitat]   los dos puestos de la pareja que está criando (junto al nido, el tocón, la cámara...)
    Las criaturas se dibujan con assets/criaturas/<id de la carta>.png (ver assets/criaturas/README.md).
 ============================================================================= */
@@ -20,12 +20,15 @@ window.CorralesArte = (function () {
   const tinte = `<rect id="coTinte" width="960" height="540" fill="none" opacity="0" pointer-events="none"/>`;
 
   const SITIOS = {
-    aviario: [{ x: 210, y: 304, s: .82 }, { x: 380, y: 236, s: .8 }, { x: 560, y: 336, s: .9 }, { x: 730, y: 254, s: .8 }, { x: 850, y: 372, s: .95 }, { x: 330, y: 470, s: 1.1 }],
-    bosque: [{ x: 180, y: 410, s: .95 }, { x: 330, y: 380, s: .88 }, { x: 490, y: 432, s: 1.1 }, { x: 650, y: 396, s: .92 }, { x: 800, y: 446, s: 1.15 }, { x: 905, y: 400, s: .9 }],
+    aviario: [{ x: 210, y: 304, s: .82 }, { x: 380, y: 236, s: .8 }, { x: 560, y: 336, s: .9 }, { x: 730, y: 254, s: .8 }, { x: 850, y: 372, s: .95 }, { x: 330, y: 470, s: 1.1 },
+      { x: 90, y: 372, s: .85 }, { x: 470, y: 404, s: .95 }, { x: 660, y: 470, s: 1.1 }, { x: 880, y: 470, s: 1.05 }],
+    bosque: [{ x: 180, y: 410, s: .95 }, { x: 330, y: 380, s: .88 }, { x: 490, y: 432, s: 1.1 }, { x: 650, y: 396, s: .92 }, { x: 800, y: 446, s: 1.15 }, { x: 905, y: 400, s: .9 },
+      { x: 110, y: 354, s: .78 }, { x: 420, y: 352, s: .76 }, { x: 740, y: 350, s: .78 }, { x: 250, y: 492, s: 1.15 }],
     madriguera: [{ x: 190, y: 470, s: .9 }, { x: 500, y: 372, s: 1 }, { x: 790, y: 456, s: .9 }, { x: 250, y: 216, s: .78 }, { x: 800, y: 196, s: .78 }, { x: 495, y: 486, s: .85 }],
     pantano: [{ x: 190, y: 430, s: .95 }, { x: 360, y: 388, s: .85 }, { x: 520, y: 452, s: 1.1 }, { x: 690, y: 402, s: .9 }, { x: 830, y: 470, s: 1.1 }, { x: 905, y: 384, s: .85 }],
     glaciar: [{ x: 190, y: 470, s: 1 }, { x: 330, y: 424, s: .85 }, { x: 640, y: 474, s: 1.15 }, { x: 770, y: 430, s: .9 }, { x: 880, y: 478, s: 1.1 }, { x: 500, y: 410, s: .75 }],
-    cubil: [{ x: 160, y: 402, s: .95 }, { x: 330, y: 330, s: .85 }, { x: 640, y: 424, s: 1 }, { x: 760, y: 350, s: .88 }, { x: 860, y: 428, s: 1 }, { x: 600, y: 246, s: .78 }]
+    cubil: [{ x: 160, y: 402, s: .95 }, { x: 330, y: 330, s: .85 }, { x: 640, y: 424, s: 1 }, { x: 760, y: 350, s: .88 }, { x: 860, y: 428, s: 1 }, { x: 600, y: 246, s: .78 },
+      { x: 250, y: 474, s: 1.08 }, { x: 480, y: 476, s: 1.1 }, { x: 470, y: 356, s: .82 }]
   };
   const PAREJA = {
     aviario: [{ x: 430, y: 478, s: 1.2 }, { x: 560, y: 478, s: 1.2 }],

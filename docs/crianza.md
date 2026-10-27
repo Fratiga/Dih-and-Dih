@@ -20,14 +20,16 @@ El total se reparte 20 % / 55 % / 25 % entre las tres fases y el descanso es la 
 
 | Corral | Especies (horas totales) |
 |---|---|
-| Aviario | Cuervo del augurio 12, Halcón Linire 18, Aeromanta 36, Guiverno 60, Zraith 96 |
-| Corral del bosque | Colmillo Gris 24, Lopus 24, Perro sabio 24, Fulguepardo 36, Guillotina 48 |
+| Aviario | Cuervo del augurio 12, Halcón Linire 18, Aeromanta 36, Guiverno 60, Zraith 96, Fénix 96, Pegaso 36, Hipogrifo 36, Grifo 60 |
+| Corral del bosque | Colmillo Gris 24, Lopus 24, Perro sabio 24, Fulguepardo 36, Guillotina 48, Kirin 60, Unicornio 60, Manticora 72, Behemoth 96 |
 | Madriguera | Rata 6, Kobold 12 |
-| Ciénaga | Sapo Beluto 12, Hidra 72, Kraken 96 |
+| Ciénaga | Sapo Beluto 12, Hidra 72, Kraken 96, Kelpie 36, Leviatán 96, Cubo gelatinoso 24 |
 | Cámara de hielo | Gelifante 72 |
-| Cubil | Cocatriz 24, Dragarto 72, Protodraco 72, Draco 96 |
+| Cubil | Cocatriz 24, Dragarto 72, Protodraco 72, Draco 96, Dragón Dorado 72, Dragón de Magma 72, Dragón Ancestral 96, Basilisco 72 |
 
-Las criaturas nuevas del catálogo no se pueden criar hasta configurarlas (aparecen en el panel como «sin configurar»).
+Las criaturas del segundo lote (Fénix, Pegaso, Kirin, Dragón Dorado...) entran con `docs/economia-27_corrales_ampliados.sql` (solo las que existan ya en el catálogo del servidor). Las demás criaturas nuevas del catálogo no se pueden criar hasta configurarlas (aparecen en el panel como «sin configurar»).
+
+La pantalla de corrales solo ofrece criar las criaturas de las que el jugador tiene algún ejemplar libre, y nunca las únicas (límite global menor que 2). En el dibujo, cada hábitat tiene hasta diez sitios (`SITIOS` en `js/corrales-arte.js`), asignados por orden alfabético del id de la carta.
 
 ## Piezas
 

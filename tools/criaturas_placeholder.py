@@ -1,6 +1,7 @@
 """Genera los PNG provisionales de las criaturas de los corrales: assets/criaturas/<id de la carta>.png (32 x 32, fondo transparente,
 mirando a la derecha, con los pies en la base) y assets/criaturas/generica.png. Cada habitat tiene su silueta (ave, cuadrupedo, roedor, rana,
 mamut, dragon) y cada especie su color. Son recursos de prueba: se sustituyen por el pixel art propio con el mismo nombre de archivo.
+Solo crea los archivos que faltan: nunca pisa un PNG que ya exista (salvo generica.png).
 Uso: python tools/criaturas_placeholder.py"""
 import colorsys, os, struct, zlib
 
@@ -9,15 +10,17 @@ SALIDA = os.path.join(RAIZ, "assets", "criaturas")
 N = 32
 CONTORNO = (20, 16, 28, 255)
 
-# Las especies que traen hoy los corrales (docs/economia-18_crianza.sql) y su habitat
+# Las especies que traen los corrales (docs/economia-18_crianza.sql y docs/economia-27_corrales_ampliados.sql) y su habitat
 ESPECIES = {
-    "aviario": ["cuervo-del-augurio", "halcon-linire", "manta-del-cielo", "guiverno", "zraith"],
-    "bosque": ["colmillo-gris", "lobo", "perro-sabio", "felino-veloz-mistico", "guillotina"],
+    "aviario": ["cuervo-del-augurio", "halcon-linire", "manta-del-cielo", "guiverno", "zraith", "fenix", "pegaso", "hipogrifo", "grifo"],
+    "bosque": ["colmillo-gris", "lobo", "perro-sabio", "felino-veloz-mistico", "guillotina", "kirin", "unicornio", "manticora", "behemoth"],
     "madriguera": ["rata", "kobold"],
-    "pantano": ["sapo-beluto", "hidra", "kraken"],
+    "pantano": ["sapo-beluto", "hidra", "kraken", "kelpie", "leviatan", "cubo-gelatinoso"],
     "glaciar": ["mamut-gelido"],
-    "cubil": ["cocatriz", "dragarto", "protodraco", "draco"],
+    "cubil": ["cocatriz", "dragarto", "protodraco", "draco", "dragon-dorado", "dragon-de-magma", "dragon-ancestral", "basilisco"],
 }
+# Las que no llevan la silueta de su habitat
+FORMA_ESPECIE = {"leviatan": "pez", "cubo-gelatinoso": "cubo", "kelpie": "cuadrupedo"}
 FORMA = {"aviario": "ave", "bosque": "cuadrupedo", "madriguera": "roedor", "pantano": "rana", "glaciar": "mamut", "cubil": "dragon"}
 
 
@@ -96,7 +99,19 @@ def dragon(l, c, s, k):
     l.rect(10, 22, 3, 6, s); l.rect(18, 22, 3, 6, s); ojo(l, 27, 7)
 
 
-FORMAS = {"ave": ave, "cuadrupedo": cuadrupedo, "roedor": roedor, "rana": rana, "mamut": mamut, "dragon": dragon}
+def pez(l, c, s, k):
+    l.rect(2, 12, 5, 8, s); l.rect(5, 14, 4, 4, c); l.rect(8, 10, 17, 14, c); l.rect(9, 19, 15, 5, k); l.rect(14, 6, 5, 5, s)
+    l.rect(24, 13, 6, 8, c); l.rect(29, 16, 2, 3, k); l.rect(11, 24, 4, 4, s); l.rect(19, 24, 4, 3, s); ojo(l, 25, 14)
+    for x in (11, 15, 19):
+        l.rect(x, 12, 1, 5, s)
+
+
+def cubo(l, c, s, k):
+    l.rect(5, 12, 22, 16, c); l.rect(8, 9, 16, 4, c); l.rect(5, 23, 22, 5, k); l.rect(9, 15, 3, 3, s); l.rect(19, 19, 4, 4, s); l.rect(14, 12, 2, 2, k)
+    ojo(l, 10, 17); ojo(l, 18, 17)
+
+
+FORMAS = {"ave": ave, "pez": pez, "cubo": cubo, "cuadrupedo": cuadrupedo, "roedor": roedor, "rana": rana, "mamut": mamut, "dragon": dragon}
 
 
 def escribir(ruta, lienzo):
@@ -111,18 +126,21 @@ def escribir(ruta, lienzo):
 
 
 def hacer(id_, forma, base):
+    # No pisa el pixel art propio que ya esté puesto: solo crea los que faltan (la genérica sí se regenera)
+    if id_ != "generica" and os.path.exists(os.path.join(SALIDA, f"{id_}.png")):
+        return False
     l = Lienzo()
     c, s, k = base, tuple(max(0, v - 45) for v in base[:3]) + (255,), tuple(min(255, v + 40) for v in base[:3]) + (255,)
     FORMAS[forma](l, c, s, k)
     l.contorno()
     escribir(os.path.join(SALIDA, f"{id_}.png"), l)
+    return True
 
 
 os.makedirs(SALIDA, exist_ok=True)
 total = 0
 for habitat, ids in ESPECIES.items():
     for id_ in ids:
-        hacer(id_, FORMA[habitat], color(id_))
-        total += 1
+        total += 1 if hacer(id_, FORMA_ESPECIE.get(id_, FORMA[habitat]), color(id_)) else 0
 hacer("generica", "cuadrupedo", (130, 126, 140, 255))
-print(f"{total} criaturas y la genérica en {SALIDA}")
+print(f"{total} criaturas nuevas y la genérica en {SALIDA}")
