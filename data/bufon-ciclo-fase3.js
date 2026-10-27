@@ -179,7 +179,7 @@ window.bufonAgregarCiclo({
             "No, la verdad, nunca lo he visto, y ustedes tampoco.",
             "...",
             "No me pidas más. Tengo dos recuerdos de Dexter y se llevan a patadas.",
-            { voz: "grieta", texto: "Dos recuerdos que se pelean. Pregunta cuál ganó." }
+            { voz: "grieta", texto: "Dos recuerdos que se pelean. Pregúntale cuál ganó apenas puedas." }
           ]
         },
         {
@@ -194,7 +194,7 @@ window.bufonAgregarCiclo({
             "Dexter y el Nigredo en la misma frase me da una comezón. Como una canción que se me pegó hace tiempo.",
             "Algo oscuro que se te mete por una ventana. Eso lo recuerdo. De quién era la ventana, no, la verdad.",
             "Hablo de ventanas, que quede claro.",
-            { voz: "hilo", texto: "Una ventana y algo oscuro que entra. Tira de ese hilo." }
+            { voz: "hilo", texto: "Una ventana y algo oscuro que entra. Tira de ahí." }
           ]
         }
       ],
@@ -213,7 +213,7 @@ window.bufonAgregarCiclo({
         lineas: [
           "Los doctores. Sí.",
           "Tres, ¿no? Uno viejo, uno joven y uno pequeño.",
-          { voz: "testigo", texto: "Baltasar Sorel, Elías Morcant y Nico. Así aparecieron." },
+          { voz: "testigo", texto: "Baltasar Sorel, Elías Morcant y Nico." },
           "Huelen a cloro y a decisiones que tomó otro.",
           "Pregúntame por el que quieras."
         ]
@@ -239,7 +239,7 @@ window.bufonAgregarCiclo({
             "Anota cómo reacciona la gente. Con cuaderno. Con entusiasmo.",
             "Y mira a Sorel con la devoción de un alumno que quiere su nota.",
             "Lo peor es que se nota lo bien que lo pasa hasta a través de la máscara.",
-            { voz: "rostro", texto: "Una máscara no esconde lo que la cara quiere decir." }
+            { voz: "rostro", texto: "Claramente, una máscara no esconde lo que la cara quiere decir." }
           ]
         },
         {
@@ -253,7 +253,7 @@ window.bufonAgregarCiclo({
             "Alguien tendría que haberle explicado la diferencia. Nadie lo hizo.",
             "...",
             "Se asustó mucho cuando Sorel no se estaba levantando.",
-            { voz: "herida", texto: "Tenía miedo y nadie le preguntó si estaba bien." }
+            { voz: "herida", texto: "Tenía miedo y nadie le preguntó si estaba bien. Tal vez se lo merece." }
           ]
         },
         {
@@ -266,7 +266,7 @@ window.bufonAgregarCiclo({
             "Al menos el Comerciante espera a que terminen de vivir.",
             "Ellos son mucho menos pacientes.",
             "Entre un ladrón de cadáveres y alguien que lo hace con el dueño aún vivo, prefiero al ladrón. Que ya es decir.",
-            { voz: "apetito", texto: "Los dos se alimentan de otros. Solo cambia cuándo muerden." }
+            { voz: "apetito", texto: "Los dos se alimentan de otros. Solo cambia cuándo muerden, el perro se come al perro." }
           ]
         }
       ],
@@ -341,7 +341,7 @@ window.bufonAgregarCiclo({
             "Digo que cuando alguien pregunta, la respuesta es siempre la misma. La guerra exige sacrificios.",
             "La guerra más servicial que ha tenido la Corona.",
             "Y los sacrificios, siempre de los mismos. Qué casualidad.",
-            { voz: "grieta", texto: "No contestó a lo que preguntaste. Insiste." }
+            { voz: "grieta", texto: "No contestó a lo que preguntaste. Insiste apenas te deje." }
           ]
         }
       ],
@@ -414,7 +414,7 @@ window.bufonAgregarCiclo({
             "Las dos cosas. A la vez.",
             "Siempre intentan diferenciarlas, te juro que algunos no saben leer.",
             "Si alguien te dice cuál es la buena, desconfía.",
-            { voz: "hilo", texto: "Dos explicaciones que se pisan. Algo las une." }
+            { voz: "hilo", texto: "¿¿Dos explicaciones que se pisan??" }
           ]
         },
         {
