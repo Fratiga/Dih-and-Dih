@@ -1,4 +1,5 @@
--- EL POZO DEL DRAGÓN: juego de dados con apuestas de tokens y cartas entre jugadores (pozo-dragon.html). Dos modalidades en un mismo motor:
+-- EL POZO DEL DRAGÓN: juego de dados con apuestas de tokens y cartas (pozo-dragon.html). Tres modalidades que comparten los dados, la clasificación y el dinero:
+--   * Solitario (sección 12): tú contra el Dragón, solo dinero; paga la casa, con tributo del 5 % y bonos a un cuarto para que no se cree dinero sin respaldo.
 --   * Duelo de Dragones: dos jugadores, mejor de tres rondas ganadas (gana quien llega a 2), límite de 5 rondas.
 --   * El Pozo Compartido: de 2 a 6 jugadores que tiran por turnos, deciden cuándo cobrar y se reparten el pozo en proporción a su peso.
 -- Corre esto en el SQL Editor de Supabase DESPUÉS de la economía de cartas (economia-1 a economia-21) y del Hipódromo (docs/hipodromo.sql). Se puede repetir.
@@ -985,7 +986,7 @@ begin
   select coalesce(jsonb_agg(jsonb_build_object('codigo', m.codigo, 'nombre', m.nombre, 'modo', m.modo, 'dinero', m.dinero, 'cartas', m.cartas, 'max', m.max_jugadores,
       'jugadores', (select coalesce(jsonb_agg(j.nombre order by j.asiento), '[]'::jsonb) from pozo_jugadores j where j.mesa = m.id and j.activo)) order by m.creada desc), '[]'::jsonb)
     into r from pozo_mesas m where m.estado = 'abierta' and not m.privada and exists (select 1 from pozo_jugadores j where j.mesa = m.id and j.activo);
-  return jsonb_build_object('mesas', r, 'mia', pozo_i_mesa_de(uid) is not null, 'saldo', pozo_i_saldo(uid),
+  return jsonb_build_object('mesas', r, 'mia', pozo_i_mesa_de(uid) is not null, 'saldo', pozo_i_saldo(uid), 'solo', pozo_i_solo_reglas(),
     'ajustes', jsonb_build_object('apuesta_min', (cartas_ajuste('pozo_apuesta_min', '10'))::text::numeric, 'apuesta_paso', (cartas_ajuste('pozo_apuesta_paso', '10'))::text::numeric,
       'apuesta_max', (cartas_ajuste('pozo_apuesta_max', '0'))::text::numeric, 'cartas_max', (cartas_ajuste('pozo_cartas_max', '3'))::text::int,
       'min_compartido', 2, 'max_compartido', 6));
@@ -1014,6 +1015,7 @@ begin
   perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
   if p_modo not in ('duelo', 'compartido') then perform pozo_i_error('Esa modalidad no existe.', 'peticion_invalida'); end if;
   if exists (select 1 from pozo_jugadores where user_id = uid and activo) then perform pozo_i_error('Ya estás en una mesa. Sal de ella antes de crear otra.', 'ya_en_mesa'); end if;
+  if exists (select 1 from pozo_solo where user_id = uid and estado = 'en_curso') then perform pozo_i_error('Tienes una partida en solitario en curso. Termínala antes de sentarte a una mesa.', 'solo_en_curso'); end if;
   if v_dinero < 0 or (v_dinero > 0 and (v_dinero < min_a or (max_a > 0 and v_dinero > max_a))) then
     perform pozo_i_error(case when max_a > 0 then 'La apuesta va de ' || min_a || ' a ' || max_a || ' tokens.' else 'La apuesta mínima es de ' || min_a || ' tokens.' end, 'apuesta_invalida');
   end if;
@@ -1056,6 +1058,7 @@ begin
   select * into m from pozo_mesas where id = v_id;
   if exists (select 1 from pozo_jugadores where mesa = v_id and user_id = uid and activo) then return pozo_i_json(v_id, uid); end if;
   if exists (select 1 from pozo_jugadores where user_id = uid and activo) then perform pozo_i_error('Ya estás en otra mesa. Sal de ella antes de entrar en esta.', 'ya_en_mesa'); end if;
+  if exists (select 1 from pozo_solo where user_id = uid and estado = 'en_curso') then perform pozo_i_error('Tienes una partida en solitario en curso. Termínala antes de sentarte a una mesa.', 'solo_en_curso'); end if;
   if m.estado <> 'abierta' then perform pozo_i_error('Esa mesa ya no admite jugadores.', 'mesa_cerrada'); end if;
   select count(*) into v_n from pozo_jugadores where mesa = v_id and activo;
   if v_n >= m.max_jugadores then perform pozo_i_error('La mesa está llena.', 'mesa_llena'); end if;
@@ -1341,3 +1344,288 @@ revoke all on function pozo_lista(), pozo_crear(text, boolean, text, numeric, in
   pozo_retirar_confirmacion(), pozo_salir(), pozo_tirar(int), pozo_cobrar(int), pozo_continuar(int), pozo_estado(bigint), pozo_mis_cartas() from public, anon;
 grant execute on function pozo_lista(), pozo_crear(text, boolean, text, numeric, int, int), pozo_unirse(text), pozo_cerrar_inscripcion(), pozo_ofrecer(uuid[]), pozo_confirmar(int),
   pozo_retirar_confirmacion(), pozo_salir(), pozo_tirar(int), pozo_cobrar(int), pozo_continuar(int), pozo_estado(bigint), pozo_mis_cartas() to authenticated;
+
+/* ================================================================== 12) MODO SOLITARIO: tú contra el Dragón
+   Apuestas dinero, tiras tres dados y decides si cobrar o seguir. Aquí NO hay otros jugadores: paga la casa, así que el juego crea tokens cuando ganas y los destruye cuando pierdes.
+   Para que no se creen tokens sin respaldo la tabla tiene una ventaja de la casa calculada (tools/pozo-dragon-solo.js):
+     - Premio = apuesta × (1 − tributo) × (1 + bonos), con un tributo VISIBLE del 5 % y los bonos a un cuarto de la tabla propuesta (pareja 6,25 %, escalera 18,75 %, triple 37,5 %, triple seis 100 %).
+     - Con la mejor estrategia posible el jugador recupera de media el 97,49 % (ventaja de la casa 2,51 %); con la tabla propuesta sin tributo recuperaría el 171 %.
+   Solo dinero: no hay cartas, porque la casa no puede entregar cartas sin salirse de los límites y la reserva de la economía de cartas.
+   Una partida por jugador a la vez. El inicio lleva un identificador del cliente (repetirlo devuelve la misma partida, sin cobrar dos veces) y cada acción lleva el paso. El pago se hace una sola vez,
+   al pasar la partida a 'terminada' bajo su candado. Una partida abandonada se cierra sola: sin tiradas se devuelve la apuesta entera; con tiradas se cobra lo que lleve (retirada segura). */
+insert into cartas_economia_ajustes (clave, valor) values
+  ('pozo_solo_tributo', '5'),              -- % que el Dragón retiene del premio (visible antes de apostar)
+  ('pozo_solo_bono_pareja', '6.25'),       -- bonos en % de la apuesta (antes del tributo)
+  ('pozo_solo_bono_escalera', '18.75'),
+  ('pozo_solo_bono_triple', '37.5'),
+  ('pozo_solo_bono_triple_seis', '100'),
+  ('pozo_solo_apuesta_max', '0'),          -- apuesta máxima; 0 = sin máximo (como Las Veintiuna Velas). Si algún día hace falta un tope, se pone aquí
+  ('pozo_solo_abandono_s', '120')          -- segundos sin actuar tras los que una partida abandonada se cierra sola
+on conflict (clave) do nothing;
+
+create table if not exists pozo_solo (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  cliente uuid not null,                                            -- identificador de la petición de empezar: repetirla devuelve esta misma partida
+  apuesta numeric(12, 2) not null check (apuesta > 0),
+  tributo numeric(5, 2) not null,                                   -- % de tributo con el que empezó (un cambio de ajustes no toca partidas en curso)
+  bonos jsonb not null,                                             -- fracciones por combinación con las que empezó
+  estado text not null default 'en_curso' check (estado in ('en_curso', 'terminada')),
+  fase text not null default 'tirar' check (fase in ('tirar', 'decidir')),
+  tiradas int not null default 0,
+  bono numeric(10, 4) not null default 0,                           -- suma de los bonos de las tiradas, en fracciones de la apuesta
+  paso int not null default 0,
+  resultado text check (resultado in ('ruina', 'cobro', 'cobro_automatico', 'devuelta')),
+  pago numeric(12, 2),
+  neto numeric(12, 2),
+  descartada boolean not null default false,
+  creada timestamptz not null default now(),
+  ultima_accion timestamptz not null default now(),
+  terminada timestamptz,
+  unique (user_id, cliente),
+  check ((estado = 'terminada') = (resultado is not null))
+);
+create unique index if not exists pozo_solo_una_en_curso on pozo_solo (user_id) where estado = 'en_curso';
+create index if not exists pozo_solo_user_idx on pozo_solo (user_id, creada desc);
+
+create table if not exists pozo_solo_tiradas (
+  id bigint generated always as identity primary key,
+  solo uuid not null references pozo_solo(id) on delete cascade,
+  n int not null,
+  d1 smallint not null check (d1 between 1 and 6),
+  d2 smallint not null check (d2 between 1 and 6),
+  d3 smallint not null check (d3 between 1 and 6),
+  categoria text not null,
+  bono_despues numeric(10, 4) not null,
+  creada timestamptz not null default now()
+);
+create index if not exists pozo_solo_tiradas_idx on pozo_solo_tiradas (solo, id);
+
+alter table pozo_solo enable row level security;
+alter table pozo_solo_tiradas enable row level security;
+drop policy if exists "pozo_solo_admin" on pozo_solo;
+create policy "pozo_solo_admin" on pozo_solo for select using (fichas_es_admin());
+drop policy if exists "pozo_solo_tiradas_admin" on pozo_solo_tiradas;
+create policy "pozo_solo_tiradas_admin" on pozo_solo_tiradas for select using (fichas_es_admin());
+revoke all on pozo_solo, pozo_solo_tiradas from anon, authenticated;
+grant select on pozo_solo, pozo_solo_tiradas to authenticated;
+
+-- Lo que se cobraría ahora: apuesta × (1 − tributo) × (1 + bonos), céntimos hacia abajo (a favor de la casa, menos de un céntimo)
+create or replace function pozo_i_solo_premio(p_apuesta numeric, p_tributo numeric, p_bono numeric)
+returns numeric
+language sql
+immutable
+as $$ select trunc(p_apuesta * (1 - p_tributo / 100) * (1 + p_bono), 2) $$;
+
+create or replace function pozo_i_solo_json(p_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  s pozo_solo%rowtype;
+  v_hist jsonb;
+begin
+  select * into s from pozo_solo where id = p_id;
+  select coalesce(jsonb_agg(jsonb_build_object('n', t.n, 'dados', jsonb_build_array(t.d1, t.d2, t.d3), 'categoria', t.categoria, 'bono_despues', t.bono_despues, 'id', t.id) order by t.id), '[]'::jsonb)
+    into v_hist from pozo_solo_tiradas t where t.solo = p_id;
+  return jsonb_build_object(
+    'id', s.id, 'apuesta', s.apuesta, 'tributo', s.tributo, 'bonos', s.bonos, 'estado', s.estado, 'fase', s.fase, 'tiradas', s.tiradas,
+    'tiradas_max', (cartas_ajuste('pozo_tiradas_max', '5'))::text::int, 'bono', s.bono, 'paso', s.paso,
+    'premio', pozo_i_solo_premio(s.apuesta, s.tributo, s.bono),                          -- lo que cobrarías ahora (el premio provisional)
+    'base', pozo_i_solo_premio(s.apuesta, s.tributo, 0),
+    'resultado', s.resultado, 'pago', s.pago, 'neto', s.neto, 'historial', v_hist, 'saldo', pozo_i_saldo(s.user_id),
+    'restante_s', case when s.estado = 'en_curso' then round(greatest(0, (cartas_ajuste('pozo_solo_abandono_s', '120'))::text::numeric - extract(epoch from (now() - s.ultima_accion)))) end);
+end;
+$$;
+
+-- Cierra la partida UNA vez: paga (o no) y anota el libro. Quien llama ya tiene el candado del jugador.
+create or replace function pozo_i_solo_cerrar(p_id uuid, p_resultado text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s pozo_solo%rowtype;
+  v_pago numeric;
+begin
+  select * into s from pozo_solo where id = p_id for update;
+  if not found or s.estado <> 'en_curso' then return; end if;                       -- ya se cerró: no se paga dos veces
+  v_pago := case p_resultado when 'ruina' then 0 when 'devuelta' then s.apuesta else pozo_i_solo_premio(s.apuesta, s.tributo, s.bono) end;
+  if v_pago > 0 then
+    perform pozo_i_abonar(s.user_id, v_pago, case p_resultado when 'devuelta' then 'El Pozo del Dragón (solo): apuesta devuelta' else 'El Pozo del Dragón (solo): premio' end || ' (partida ' || s.id || ')');
+  end if;
+  update pozo_solo set estado = 'terminada', resultado = p_resultado, pago = v_pago, neto = v_pago - apuesta, terminada = now(), paso = paso + 1, ultima_accion = now() where id = p_id;
+end;
+$$;
+
+-- Una partida abandonada se resuelve sola: sin tiradas se devuelve la apuesta; con tiradas se cobra lo que lleve
+create or replace function pozo_i_solo_avanzar(p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s pozo_solo%rowtype;
+begin
+  select * into s from pozo_solo where id = p_id for update;
+  if not found or s.estado <> 'en_curso' then return; end if;
+  if s.ultima_accion >= now() - make_interval(secs => (cartas_ajuste('pozo_solo_abandono_s', '120'))::text::numeric) then return; end if;
+  perform pozo_i_solo_cerrar(p_id, case when s.tiradas = 0 then 'devuelta' else 'cobro_automatico' end);
+end;
+$$;
+
+-- La partida de ese jugador: la que tiene en curso o la última terminada que aún no cerró (diez minutos)
+create or replace function pozo_i_solo_de(p_uid uuid)
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select id from pozo_solo where user_id = p_uid and (estado = 'en_curso' or (not descartada and terminada > now() - interval '10 minutes')) order by (estado = 'en_curso') desc, creada desc limit 1
+$$;
+
+create or replace function pozo_solo_estado()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  v_id uuid;
+begin
+  perform pozo_i_acceso();
+  perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
+  v_id := pozo_i_solo_de(uid);
+  if v_id is null then return jsonb_build_object('sin_partida', true, 'saldo', pozo_i_saldo(uid), 'reglas', pozo_i_solo_reglas()); end if;
+  perform pozo_i_solo_avanzar(v_id);
+  v_id := pozo_i_solo_de(uid);
+  if v_id is null then return jsonb_build_object('sin_partida', true, 'saldo', pozo_i_saldo(uid), 'reglas', pozo_i_solo_reglas()); end if;
+  return pozo_i_solo_json(v_id);
+end;
+$$;
+
+create or replace function pozo_i_solo_reglas()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object('tributo', (cartas_ajuste('pozo_solo_tributo', '5'))::text::numeric,
+    'bonos', jsonb_build_object('pareja', (cartas_ajuste('pozo_solo_bono_pareja', '6.25'))::text::numeric / 100, 'escalera', (cartas_ajuste('pozo_solo_bono_escalera', '18.75'))::text::numeric / 100,
+                                'triple', (cartas_ajuste('pozo_solo_bono_triple', '37.5'))::text::numeric / 100, 'triple_seis', (cartas_ajuste('pozo_solo_bono_triple_seis', '100'))::text::numeric / 100),
+    'tiradas_max', (cartas_ajuste('pozo_tiradas_max', '5'))::text::int, 'apuesta_min', (cartas_ajuste('pozo_apuesta_min', '10'))::text::numeric,
+    'apuesta_paso', (cartas_ajuste('pozo_apuesta_paso', '10'))::text::numeric, 'apuesta_max', (cartas_ajuste('pozo_solo_apuesta_max', '0'))::text::numeric,
+    'abandono_s', (cartas_ajuste('pozo_solo_abandono_s', '120'))::text::int)
+$$;
+
+create or replace function pozo_solo_empezar(p_cliente uuid, p_apuesta numeric)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  min_a numeric := (cartas_ajuste('pozo_apuesta_min', '10'))::text::numeric;
+  max_a numeric := (cartas_ajuste('pozo_solo_apuesta_max', '0'))::text::numeric;
+  paso_a numeric := (cartas_ajuste('pozo_apuesta_paso', '10'))::text::numeric;
+  s pozo_solo%rowtype;
+  v_id uuid := gen_random_uuid();
+begin
+  perform pozo_i_acceso();
+  perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
+  if p_cliente is null then perform pozo_i_error('Falta el identificador de la partida.', 'peticion_invalida'); end if;
+  select * into s from pozo_solo where user_id = uid and cliente = p_cliente;
+  if found then return pozo_i_solo_json(s.id) || jsonb_build_object('repetida', true); end if;     -- la misma petición otra vez: la misma partida, sin cobrar de nuevo
+  select id into v_id from pozo_solo where user_id = uid and estado = 'en_curso';
+  if found then perform pozo_i_solo_avanzar(v_id); end if;
+  if exists (select 1 from pozo_solo where user_id = uid and estado = 'en_curso') then perform pozo_i_error('Ya tienes una partida en solitario en curso. Termínala antes de empezar otra.', 'solo_en_curso'); end if;
+  if exists (select 1 from pozo_jugadores where user_id = uid and activo) then perform pozo_i_error('Estás en una mesa. Sal de ella antes de jugar en solitario.', 'ya_en_mesa'); end if;
+  if p_apuesta is null or p_apuesta < min_a or (max_a > 0 and p_apuesta > max_a) then
+    perform pozo_i_error(case when max_a > 0 then 'La apuesta va de ' || min_a || ' a ' || max_a || ' tokens.' else 'La apuesta mínima es de ' || min_a || ' tokens.' end, 'apuesta_invalida');
+  end if;
+  if p_apuesta <> trunc(p_apuesta / paso_a) * paso_a then perform pozo_i_error('La apuesta tiene que ser múltiplo de ' || paso_a || '.', 'apuesta_invalida'); end if;
+  v_id := gen_random_uuid();
+  perform pozo_i_debitar(uid, p_apuesta, 'El Pozo del Dragón (solo): apuesta (partida ' || v_id || ')');            -- el saldo disponible ya no la cuenta; si no alcanza, nada queda a medias
+  insert into pozo_solo (id, user_id, cliente, apuesta, tributo, bonos)
+    values (v_id, uid, p_cliente, p_apuesta, (cartas_ajuste('pozo_solo_tributo', '5'))::text::numeric, pozo_i_solo_reglas() -> 'bonos');
+  return pozo_i_solo_json(v_id);
+end;
+$$;
+
+-- Tirar (la primera vez y cada vez que decides seguir) o cobrar. p_paso: el paso de la partida que veía el jugador.
+create or replace function pozo_i_solo_accion(p_id uuid, p_paso int, p_accion text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  s pozo_solo%rowtype;
+  d int[];
+  v_cat text;
+  v_bono numeric;
+begin
+  perform pozo_i_acceso();
+  perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
+  select * into s from pozo_solo where id = p_id and user_id = uid for update;
+  if not found then perform pozo_i_error('No encuentro esa partida.', 'no_encontrada'); end if;
+  perform pozo_i_solo_avanzar(p_id);
+  select * into s from pozo_solo where id = p_id;
+  if s.estado = 'terminada' or p_paso < s.paso then return pozo_i_solo_json(p_id) || jsonb_build_object('repetida', true); end if;
+  if p_paso > s.paso then perform pozo_i_error('La partida y tu pantalla no coinciden. Recarga la página.', 'paso_futuro'); end if;
+
+  if p_accion = 'cobrar' then
+    if s.fase <> 'decidir' then perform pozo_i_error('Todavía no has tirado: no hay nada que cobrar.', 'fuera_de_turno'); end if;
+    perform pozo_i_solo_cerrar(p_id, 'cobro');
+  elsif p_accion = 'tirar' then
+    d := array[pozo_i_dado(), pozo_i_dado(), pozo_i_dado()]::int[];
+    v_cat := pozo_i_clasificar(d[1], d[2], d[3]);
+    v_bono := s.bono + case v_cat when 'pareja' then (s.bonos ->> 'pareja')::numeric when 'escalera' then (s.bonos ->> 'escalera')::numeric
+                                  when 'triple' then (s.bonos ->> 'triple')::numeric when 'triple_seis' then (s.bonos ->> 'triple_seis')::numeric else 0 end;
+    insert into pozo_solo_tiradas (solo, n, d1, d2, d3, categoria, bono_despues) values (p_id, s.tiradas + 1, d[1], d[2], d[3], v_cat, case when v_cat = 'ruina' then s.bono else v_bono end);
+    update pozo_solo set tiradas = tiradas + 1, ultima_accion = now() where id = p_id;
+    if v_cat = 'ruina' then
+      perform pozo_i_solo_cerrar(p_id, 'ruina');                                     -- pierdes el premio provisional y se acaba
+    else
+      update pozo_solo set bono = v_bono, fase = 'decidir', paso = paso + 1 where id = p_id;
+      if s.tiradas + 1 >= (cartas_ajuste('pozo_tiradas_max', '5'))::text::int then perform pozo_i_solo_cerrar(p_id, 'cobro'); end if;   -- en la última tirada sin Ruina cobras solo
+    end if;
+  else
+    perform pozo_i_error('Esa acción no existe.', 'accion_invalida');
+  end if;
+  return pozo_i_solo_json(p_id);
+end;
+$$;
+create or replace function pozo_solo_tirar(p_id uuid, p_paso int) returns jsonb language sql security definer set search_path = public as $$ select pozo_i_solo_accion(p_id, p_paso, 'tirar') $$;
+create or replace function pozo_solo_cobrar(p_id uuid, p_paso int) returns jsonb language sql security definer set search_path = public as $$ select pozo_i_solo_accion(p_id, p_paso, 'cobrar') $$;
+
+-- Cerrar la pantalla del resultado
+create or replace function pozo_solo_descartar()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+begin
+  perform pozo_i_acceso();
+  update pozo_solo set descartada = true where user_id = uid and estado = 'terminada' and not descartada;
+  return jsonb_build_object('sin_partida', true, 'saldo', pozo_i_saldo(uid), 'reglas', pozo_i_solo_reglas());
+end;
+$$;
+
+revoke all on function pozo_i_solo_premio(numeric, numeric, numeric), pozo_i_solo_json(uuid), pozo_i_solo_cerrar(uuid, text), pozo_i_solo_avanzar(uuid), pozo_i_solo_de(uuid),
+  pozo_i_solo_reglas(), pozo_i_solo_accion(uuid, int, text) from public, anon, authenticated;
+revoke all on function pozo_solo_estado(), pozo_solo_empezar(uuid, numeric), pozo_solo_tirar(uuid, int), pozo_solo_cobrar(uuid, int), pozo_solo_descartar() from public, anon;
+grant execute on function pozo_solo_estado(), pozo_solo_empezar(uuid, numeric), pozo_solo_tirar(uuid, int), pozo_solo_cobrar(uuid, int), pozo_solo_descartar() to authenticated;

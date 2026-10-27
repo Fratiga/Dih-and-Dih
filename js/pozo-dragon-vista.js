@@ -146,6 +146,10 @@
       if (c === "ruina") efecto = "Ruina: queda eliminado y su apuesta se queda en el pozo.";
       else if (c === "ceniza") efecto = "No cambia su peso.";
       else efecto = `Su peso sube ${pct(bonos[c] || 0)} de la apuesta.`;
+    } else if (modo === "solo") {
+      if (c === "ruina") efecto = "Ruina: pierdes el premio y se acaba la partida.";
+      else if (c === "ceniza") efecto = "No cambia tu premio.";
+      else efecto = `Tu premio sube ${pct(bonos[c] || 0)} de tu apuesta.`;
     } else {
       efecto = CATEGORIAS[c] ? CATEGORIAS[c].corta : "";
     }
@@ -235,7 +239,70 @@
     return ERRORES[e.codigo] || e.mensaje || "La mesa rechazó la petición.";
   }
 
-  const API = { CATEGORIAS, ORDEN_MEJOR_A_PEOR, CASOS, clasificar, fuerza, comparar, nombreCategoria, num, pct, plural, textoApuesta, tipoApuesta, reglasDuelo, reglasCompartido, REGLAS_COMUNES,
+  /* ---------------------------------------------------------------- modo solitario: tú contra el Dragón */
+  // Los valores de origen del servidor (docs/pozo-dragon.sql, sección 12); la pantalla usa los que el servidor manda en cada partida
+  const SOLO_BONOS = { pareja: 0.0625, escalera: 0.1875, triple: 0.375, triple_seis: 1 };
+  const SOLO_TRIBUTO = 5;
+  const premioSolo = (apuesta, tributo, bono) => Math.floor(Number(apuesta) * (1 - Number(tributo) / 100) * (1 + Number(bono)) * 100 + 1e-9) / 100;
+
+  function reglasSolo(r) {
+    r = r || {};
+    const b = r.bonos || SOLO_BONOS, t = r.tributo != null ? r.tributo : SOLO_TRIBUTO, max = r.tiradas_max || 5;
+    return [
+      `Tú contra el Dragón. Apuestas una cantidad de tokens de juego, lanzas los tres dados y, después de cada tirada que no sea Ruina, decides si cobrar o seguir tirando.`,
+      `Tu premio provisional empieza en tu apuesta menos el tributo del Dragón (${num(t)} %). Cada tirada sin Ruina le suma un bono, en % de tu apuesta antes del tributo: pareja +${num(b.pareja * 100)} %, escalera +${num(b.escalera * 100)} %, triple +${num(b.triple * 100)} % y triple seis +${num(b.triple_seis * 100)} %. La ceniza no cambia el premio.`,
+      `Premio = apuesta × ${num(1 - t / 100)} × (1 + suma de bonos). El tributo del ${num(t)} % es lo único que retiene el Dragón y se ve antes de apostar: no hay otras comisiones.`,
+      `Ruina (suma de 3 a 5): pierdes el premio provisional y la partida termina. Es una probabilidad de 10 entre 216 (4,63 %) en cada tirada.`,
+      `Puedes cobrar después de cualquier tirada sin Ruina. Hay un máximo de ${max} tiradas: si llegas a la última sin Ruina, cobras automáticamente.`,
+      `Aquí no hay otros jugadores y paga la casa: por eso el juego tiene una ventaja del Dragón. Jugando lo mejor posible recuperas de media un 97,5 % de lo apostado. Solo se apuesta dinero, no cartas.`,
+      `Si recargas la página la partida sigue donde estaba. Si te vas y no vuelves, a los ${r.abandono_s || 120} segundos se cierra sola: sin tiradas se te devuelve la apuesta entera, y con tiradas cobras lo que lleves.`
+    ];
+  }
+
+  // En solitario «continuar» es simplemente tirar otra vez
+  function accionesSolo(s) {
+    if (!s || s.estado !== "en_curso") return { tipo: "ninguna", botones: [] };
+    if (s.fase === "decidir") {
+      return { tipo: "decidir", botones: [
+        { id: "cobrar", texto: "Cobrar", sub: `recibes ${num(s.premio)} tokens`, principal: true, tecla: "C" },
+        { id: "tirar", texto: "Seguir tirando", sub: `${pct(10 / 216)} de Ruina y pierdes ${num(s.premio)}`, tecla: "T" }
+      ] };
+    }
+    return { tipo: "tirar", botones: [{ id: "tirar", texto: "Tirar los dados", sub: "", principal: true, tecla: "T" }] };
+  }
+
+  // Lo que pasaría con cada resultado de la siguiente tirada, para decidir con la tabla delante
+  function perspectivaSolo(s) {
+    if (!s || s.estado !== "en_curso" || s.fase !== "decidir") return null;
+    const b = s.bonos || SOLO_BONOS, t = s.tributo;
+    const fila = (nombre, cat) => ({ nombre, premio: premioSolo(s.apuesta, t, Number(s.bono) + (b[cat] || 0)) });
+    return { ahora: s.premio, riesgo: 10 / 216, filas: [fila("Ceniza", "ceniza"), fila("Pareja", "pareja"), fila("Escalera", "escalera"), fila("Triple", "triple"), fila("Triple seis", "triple_seis")], quedan: (s.tiradas_max - s.tiradas) };
+  }
+
+  function resumenSolo(s) {
+    if (!s || s.estado !== "terminada") return null;
+    const neto = Number(s.neto) || 0;
+    if (s.resultado === "ruina") return { clase: "pierde", titulo: "Ruina: el Dragón se queda con tu apuesta", texto: `Pierdes ${num(s.apuesta)} tokens de juego.`, neto };
+    if (s.resultado === "devuelta") return { clase: "empate", titulo: "Apuesta devuelta", texto: `La partida se cerró sin ninguna tirada. Recuperas tus ${num(s.apuesta)} tokens.`, neto: 0 };
+    const auto = s.resultado === "cobro_automatico" ? "Se cerró sola por inactividad y se cobró lo que llevabas. " : (s.tiradas >= s.tiradas_max ? "Llegaste a la última tirada sin Ruina y cobras. " : "");
+    const clase = neto > 0 ? "gana" : neto < 0 ? "pierde" : "empate";
+    return { clase, titulo: neto > 0 ? "Cobras del pozo" : neto < 0 ? "Cobras menos de lo apostado" : "Recuperas tu apuesta", texto: `${auto}Recibes ${num(s.pago)} tokens (apostaste ${num(s.apuesta)}): ${neto > 0 ? "ganas" : neto < 0 ? "pierdes" : "quedas igual"} ${neto === 0 ? "" : num(Math.abs(neto)) + " tokens"}`.trim() + ".", neto };
+  }
+
+  function anuncioSolo(antes, s) {
+    if (!s || s.sin_partida) return "";
+    const p = [];
+    const ultima = s.historial && s.historial.length ? s.historial[s.historial.length - 1] : null;
+    const vistaAntes = antes && antes.historial ? antes.historial.length : 0;
+    if (ultima && s.historial.length > vistaAntes) {
+      p.push(`Sacas ${dadosTexto(ultima.dados)}: ${nombreCategoria(ultima.categoria)}.`);
+      if (ultima.categoria !== "ruina" && s.estado === "en_curso") p.push(`Tu premio provisional es ${num(s.premio)} tokens. Cobra o sigue tirando.`);
+    }
+    if (s.estado === "terminada" && (!antes || antes.estado !== "terminada")) { const r = resumenSolo(s); if (r) p.push(`${r.titulo}. ${r.texto}`); }
+    return p.join(" ");
+  }
+
+  const API = { SOLO_BONOS, SOLO_TRIBUTO, premioSolo, reglasSolo, accionesSolo, perspectivaSolo, resumenSolo, anuncioSolo, CATEGORIAS, ORDEN_MEJOR_A_PEOR, CASOS, clasificar, fuerza, comparar, nombreCategoria, num, pct, plural, textoApuesta, tipoApuesta, reglasDuelo, reglasCompartido, REGLAS_COMUNES,
     vista, jugadorYo, jugadorEn, rival, estadoJugador, estadoSala, acciones, dadosTexto, frasesTirada, resumenFinal, anuncio, mensajeError };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.PozoVista = API;
 })(typeof window !== "undefined" ? window : globalThis);

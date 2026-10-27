@@ -64,7 +64,15 @@
         cobrar: paso => llamar("pozo_cobrar", { p_paso: paso }),
         continuar: paso => llamar("pozo_continuar", { p_paso: paso }),
         estado: version => llamar("pozo_estado", { p_version: version == null ? null : version }),
-        misCartas: () => llamar("pozo_mis_cartas", {})
+        misCartas: () => llamar("pozo_mis_cartas", {}),
+        // El modo solitario: empezar lleva un identificador nuevo por partida (repetirlo devuelve la misma, sin cobrar dos veces) y tirar/cobrar el paso de la partida
+        solo: {
+          estado: () => llamar("pozo_solo_estado", {}),
+          empezar: (cliente, apuesta) => llamar("pozo_solo_empezar", { p_cliente: cliente, p_apuesta: apuesta }),
+          tirar: (id, paso) => llamar("pozo_solo_tirar", { p_id: id, p_paso: paso }),
+          cobrar: (id, paso) => llamar("pozo_solo_cobrar", { p_id: id, p_paso: paso }),
+          descartar: () => llamar("pozo_solo_descartar", {})
+        }
       },
       // La mesa con amigos (docs/veintiuna.sql, sección 8). estado(version) devuelve {sin_cambios} si no cambió nada desde esa versión.
       amigos: {

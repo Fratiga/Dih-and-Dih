@@ -122,11 +122,70 @@ cierto("todos los identificadores que usa el controlador están en la página", 
 const rodarFn = js.slice(js.indexOf("async function rodar("), js.indexOf("function efectosDeCategoria"));
 cierto("el controlador solo pide acciones y nunca manda dados ni resultados: lo único al azar con dados es la cara que se enseña mientras ruedan", js.includes("api.pozo.tirar(paso)") && js.split("Math.floor(Math.random() * 6)").length === 2 && rodarFn.includes("Math.floor(Math.random() * 6)") && !js.includes("p_dados") && !js.includes("dados: ["));
 cierto("las animaciones de los dados usan caras al azar solo mientras ruedan y acaban en las del servidor", /cont\.innerHTML = dados\.map\(/.test(js));
-cierto("las acciones llevan el paso de la mesa y un reintento repite la misma petición", /const paso = est\.paso/.test(js) && /manejarError\(e, \(\) => ejecutar\(fn, null\)\)/.test(js));
+cierto("las acciones llevan el paso de la mesa y un reintento repite la misma petición", js.includes("const paso = est.paso") && js.includes("manejarError(e, () => ejecutar(fn, null, cuando))"));
 cierto("el movimiento reducido se respeta en el controlador y en la hoja de estilos", /prefers-reduced-motion/.test(js) && /prefers-reduced-motion: reduce/.test(css));
 cierto("los botones del juego son planos: sin degradados dorados, brillos ni sombras en la regla de .pz-boton", !/\.pz-boton[^{]*\{[^}]*(gradient|box-shadow|text-shadow)/.test(css));
 cierto("hay un aviso de error con rol de alerta para el lector de pantalla", /pzSrFuerte/.test(html) && /role="alert"/.test(html));
 cierto("el simulador de la API tiene las trece llamadas del juego", ["lista", "crear", "unirse", "cerrarInscripcion", "ofrecer", "confirmar", "retirarConfirmacion", "salir", "tirar", "cobrar", "continuar", "estado", "misCartas"].every(n => new RegExp(`\\b${n}:`).test(leer("js", "veintiuna-api.js").match(/pozo: \{[\s\S]*?\n      \},/)[0])));
+
+console.log("== Modo solitario: reglas, textos y botones");
+const reglasS = { tributo: 5, bonos: { pareja: 0.0625, escalera: 0.1875, triple: 0.375, triple_seis: 1 }, tiradas_max: 5, abandono_s: 120 };
+const rs = V.reglasSolo(reglasS).join(" ");
+cierto("las reglas dicen el tributo del 5 %, los bonos, la Ruina, el máximo de cinco tiradas, que paga la casa y que no hay cartas", /tributo del Dragón \(5 %\)/.test(rs) && /pareja \+6,25 %/.test(rs) && /escalera \+18,75 %/.test(rs) && /triple \+37,5 %/.test(rs) && /triple seis \+100 %/.test(rs) && /Ruina/.test(rs) && /máximo de 5 tiradas/.test(rs) && /paga la casa/.test(rs) && /no cartas/.test(rs) && /no hay otras comisiones/.test(rs));
+cierto("explica qué pasa si te vas: sin tiradas se devuelve la apuesta, con tiradas se cobra", /sin tiradas se te devuelve la apuesta entera, y con tiradas cobras lo que lleves/.test(rs));
+comprobar("premio = apuesta × 0,95 × (1 + bonos), céntimos hacia abajo", [V.premioSolo(100, 5, 0), V.premioSolo(100, 5, 0.375), V.premioSolo(10, 5, 0.0625), V.premioSolo(30, 5, 1)], [95, 130.62, 10.09, 57]);
+const solo = (o) => Object.assign({ id: "s1", apuesta: 100, tributo: 5, bonos: reglasS.bonos, estado: "en_curso", fase: "tirar", tiradas: 0, tiradas_max: 5, bono: 0, paso: 0, premio: 95, base: 95, resultado: null, pago: null, neto: null, historial: [], saldo: 400 }, o || {});
+comprobar("antes de tirar solo hay un botón: tirar", V.accionesSolo(solo()).botones.map(b => b.id), ["tirar"]);
+const decS = V.accionesSolo(solo({ fase: "decidir", tiradas: 1, bono: 0.375, premio: 130.62 }));
+comprobar("tras una tirada sin Ruina: cobrar (con lo que recibes) o seguir tirando (con el riesgo y lo que pierdes)", [decS.botones.map(b => b.id), decS.botones.map(b => b.tecla), /130,62/.test(decS.botones[0].sub), /4,63 %/.test(decS.botones[1].sub) && /130,62/.test(decS.botones[1].sub)], [["cobrar", "tirar"], ["C", "T"], true, true]);
+comprobar("con la partida terminada no hay botones", V.accionesSolo(solo({ estado: "terminada" })).botones, []);
+const pe = V.perspectivaSolo(solo({ fase: "decidir", tiradas: 2, bono: 0.25, premio: 118.75 }));
+comprobar("la perspectiva enseña el premio de cada resultado posible con el bono acumulado", [pe.riesgo === 10 / 216, pe.filas.map(x => x.premio), pe.quedan], [true, [118.75, 124.68, 136.56, 154.37, 213.75].map(x => x), 3]);
+cierto("no hay perspectiva antes de la primera tirada ni al terminar", V.perspectivaSolo(solo()) === null && V.perspectivaSolo(solo({ estado: "terminada" })) === null);
+const finS = (o) => V.resumenSolo(solo(Object.assign({ estado: "terminada", fase: "decidir", tiradas: 2 }, o)));
+comprobar("final: Ruina, cobro con ganancia, cobro con pérdida, devuelta", [finS({ resultado: "ruina", pago: 0, neto: -100 }).clase, finS({ resultado: "cobro", pago: 130.62, neto: 30.62 }).clase, finS({ resultado: "cobro", pago: 95, neto: -5 }).clase, finS({ resultado: "devuelta", pago: 100, neto: 0 }).clase], ["pierde", "gana", "pierde", "empate"]);
+cierto("el final dice cuánto recibes y cuánto ganas o pierdes, y avisa del cobro automático", /Recibes 130,62 tokens \(apostaste 100\): ganas 30,62 tokens/.test(finS({ resultado: "cobro", pago: 130.62, neto: 30.62 }).texto) && /Se cerró sola por inactividad/.test(finS({ resultado: "cobro_automatico", pago: 95, neto: -5 }).texto) && /Llegaste a la última tirada sin Ruina y cobras/.test(finS({ resultado: "cobro", tiradas: 5, tiradas_max: 5, pago: 95, neto: -5 }).texto));
+cierto("una apuesta devuelta dice que no hubo tiradas", /sin ninguna tirada/.test(finS({ resultado: "devuelta", tiradas: 0, pago: 100, neto: 0 }).texto));
+const fr = V.frasesTirada({ dados: [3, 3, 5], categoria: "pareja" }, "solo", reglasS.bonos);
+cierto("la frase de una tirada en solitario dice cuánto sube el premio", fr.nombre === "Pareja" && /sube 6,25 %/.test(fr.efecto) && /pierdes el premio/.test(V.frasesTirada({ dados: [1, 1, 2], categoria: "ruina" }, "solo", reglasS.bonos).efecto));
+const a1 = solo({ historial: [] }), a2 = solo({ fase: "decidir", tiradas: 1, bono: 0.0625, premio: 100.93, historial: [{ id: 3, n: 1, dados: [3, 3, 5], categoria: "pareja" }] });
+cierto("el lector de pantalla oye la tirada y el premio provisional", /Sacas 3-3-5: Pareja\./.test(V.anuncioSolo(a1, a2)) && /Tu premio provisional es 100,93 tokens/.test(V.anuncioSolo(a1, a2)));
+
+console.log("== Modo solitario: el SQL");
+const iS = sql.indexOf("12) MODO SOLITARIO");
+const sqlS = sql.slice(iS);
+cierto("el tributo y los bonos de origen son los calculados (5 % y 6,25 / 18,75 / 37,5 / 100)", /pozo_solo_tributo', '5'/.test(sqlS) && /pozo_solo_bono_pareja', '6\.25'/.test(sqlS) && /pozo_solo_bono_escalera', '18\.75'/.test(sqlS) && /pozo_solo_bono_triple', '37\.5'/.test(sqlS) && /pozo_solo_bono_triple_seis', '100'/.test(sqlS));
+["pozo_solo_estado", "pozo_solo_empezar", "pozo_solo_descartar", "pozo_i_solo_accion"].forEach(n => {
+  const i = sqlS.indexOf(`create or replace function ${n}(`), j = sqlS.indexOf("\n$$;", i);
+  cierto(`${n} empieza comprobando que el juego esté abierto o que seas admin`, i > 0 && /perform pozo_i_acceso\(\)/.test(sqlS.slice(i, j)));
+});
+cierto("tirar y cobrar son envoltorios de la acción comprobada", /function pozo_solo_tirar\(p_id uuid, p_paso int\)[\s\S]*pozo_i_solo_accion\(p_id, p_paso, 'tirar'\)/.test(sqlS) && /function pozo_solo_cobrar\(p_id uuid, p_paso int\)[\s\S]*pozo_i_solo_accion\(p_id, p_paso, 'cobrar'\)/.test(sqlS));
+cierto("empezar es idempotente: el identificador del cliente es único y repetirlo devuelve la misma partida sin cobrar", /unique \(user_id, cliente\)/.test(sqlS) && /where user_id = uid and cliente = p_cliente;\s*if found then return pozo_i_solo_json\(s\.id\) \|\| jsonb_build_object\('repetida', true\)/.test(sqlS));
+cierto("solo hay una partida en curso por jugador (índice único) y no se mezcla con las mesas", /create unique index if not exists pozo_solo_una_en_curso on pozo_solo \(user_id\) where estado = 'en_curso'/.test(sqlS) && /solo_en_curso/.test(sql.slice(0, iS)) && /Estás en una mesa/.test(sqlS));
+cierto("la apuesta se descuenta ANTES de crear la partida y en la misma transacción", sqlS.indexOf("perform pozo_i_debitar(uid, p_apuesta") > 0 && sqlS.indexOf("perform pozo_i_debitar(uid, p_apuesta") < sqlS.indexOf("insert into pozo_solo (id, user_id, cliente, apuesta, tributo, bonos)"));
+const cierre = sqlS.slice(sqlS.indexOf("function pozo_i_solo_cerrar"), sqlS.indexOf("function pozo_i_solo_avanzar"));
+cierto("el pago se hace una sola vez: solo si la partida sigue en curso, y la deja terminada en el mismo paso", /if not found or s\.estado <> 'en_curso' then return; end if;/.test(cierre) && (cierre.match(/pozo_i_abonar\(/g) || []).length === 1 && /update pozo_solo set estado = 'terminada'/.test(cierre));
+cierto("Ruina no paga, devuelta paga la apuesta entera, cobrar paga el premio con tributo", /when 'ruina' then 0 when 'devuelta' then s\.apuesta else pozo_i_solo_premio\(s\.apuesta, s\.tributo, s\.bono\)/.test(cierre));
+cierto("una partida abandonada se cierra sola: sin tiradas se devuelve, con tiradas se cobra", /case when s\.tiradas = 0 then 'devuelta' else 'cobro_automatico' end/.test(sqlS));
+cierto("la quinta tirada sin Ruina cobra automáticamente", /s\.tiradas \+ 1 >= \(cartas_ajuste\('pozo_tiradas_max', '5'\)\)::text::int then perform pozo_i_solo_cerrar\(p_id, 'cobro'\)/.test(sqlS));
+cierto("no se puede cobrar antes de tirar", /if s\.fase <> 'decidir' then perform pozo_i_error\('Todavía no has tirado/.test(sqlS));
+cierto("el servidor saca los dados del solitario con el mismo generador y la misma clasificación que las mesas", /d := array\[pozo_i_dado\(\), pozo_i_dado\(\), pozo_i_dado\(\)\]::int\[\];\s*v_cat := pozo_i_clasificar/.test(sqlS));
+cierto("las funciones públicas del solitario se cierran a quien no ha iniciado sesión y las internas a todos", /revoke all on function pozo_solo_estado\(\)[\s\S]*from public, anon;/.test(sqlS) && /revoke all on function pozo_i_solo_premio[\s\S]*pozo_i_solo_accion\(uuid, int, text\) from public, anon, authenticated;/.test(sqlS));
+cierto("las tablas del solitario no se escriben ni se leen directamente", /revoke all on pozo_solo, pozo_solo_tiradas from anon, authenticated;/.test(sqlS));
+cierto("el solitario no mueve cartas (solo dinero)", !/cartas_i_/.test(sqlS));
+cierto("la interfaz y el SQL usan los mismos bonos y tributo de origen del solitario", V.SOLO_TRIBUTO === 5 && V.SOLO_BONOS.pareja === 0.0625 && V.SOLO_BONOS.escalera === 0.1875 && V.SOLO_BONOS.triple === 0.375 && V.SOLO_BONOS.triple_seis === 1);
+cierto("la API del navegador tiene las cinco llamadas del solitario con sus argumentos", ["estado", "empezar", "tirar", "cobrar", "descartar"].every(n => new RegExp(`\\b${n}: `).test(leer("js", "veintiuna-api.js").match(/solo: \{[\s\S]*?\n        \}/)[0])));
+cierto("el controlador reutiliza el mismo identificador en los reintentos de empezar", /const cliente = window\.VeintiunaApi\.nuevoId\(\);[\s\S]*api\.pozo\.solo\.empezar\(cliente, dinero\)/.test(js));
+cierto("la página tiene su sección del solitario", /id="pzSolo"/.test(html));
+
+console.log("== Modo solitario: economía (cálculo exacto)");
+const rsolo = spawnSync(process.execPath, [path.join(RAIZ, "tools", "pozo-dragon-solo.js"), "20000"], { encoding: "utf8", timeout: 120000 });
+const ssolo = rsolo.stdout || "";
+cierto("la herramienta termina bien", rsolo.status === 0);
+cierto("con la tabla propuesta (×1) el juego óptimo devolvería más del 100 %: dinero creado de la nada", /×1 .*\|\s+171\.42 %/.test(ssolo));
+cierto("con bonos ×0,25 y tributo del 5 % el RTP óptimo es 97,49 %: la casa gana al menos un 2,5 %", /RTP final: óptimo 97\.49 % \(ventaja de la casa 2\.51 %\)/.test(ssolo));
+cierto("ninguna estrategia fija supera el 100 % con el tributo", [...ssolo.matchAll(/cobrar tras la tirada \d: RTP ([\d.]+) % \(con tributo\)/g)].every(m => Number(m[1]) < 100));
+cierto("el pago máximo posible está acotado (6× antes del tributo)", /Pago máximo posible: 6\.0×/.test(ssolo));
 
 (async () => {
   console.log("== Llamadas al servidor");

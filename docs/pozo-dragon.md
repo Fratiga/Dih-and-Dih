@@ -1,6 +1,6 @@
 # El Pozo del Dragón
 
-Juego de dados con apuestas de tokens y cartas entre jugadores (`pozo-dragon.html`). Dos modalidades en un mismo motor: **Duelo de Dragones** (dos jugadores) y **El Pozo Compartido** (de dos a seis).
+Juego de dados con apuestas de tokens y cartas entre jugadores (`pozo-dragon.html`). Tres modalidades en un mismo motor de dados: **Solo contra el Dragón**, **Duelo de Dragones** (dos jugadores) y **El Pozo Compartido** (de dos a seis).
 
 **Estado (27 de octubre de 2026): OCULTO.** Solo lo ve y lo juega el admin, por orden del usuario, hasta que diga lo contrario. Y el SQL **no se ha ejecutado todavía contra Postgres**: se comprobó la sintaxis con el analizador real de PostgreSQL y se revisó la lógica a mano, pero faltan sus pruebas con Docker (ver «Qué falta»).
 
@@ -69,6 +69,41 @@ Ajuste, pues, de la tabla: **todos los bonos a la mitad**. Se guardan en `cartas
 
 Una consecuencia que conviene saber: **el pozo central no crece**, es la suma de las apuestas. Lo que crece durante la partida es el peso de cada jugador y, con él, «su parte hoy» (se enseña en cada asiento y en el botón de cobrar).
 
+## Solo contra el Dragón
+
+Tercera modalidad, con el mismo motor de dados, la misma clasificación y el mismo dinero (`hipodromo_*`) que las otras dos, pero con reglas de partida propias (sección 12 del SQL).
+
+- Apuestas una cantidad de tokens, tiras los tres dados y, tras cada tirada que no sea Ruina, **cobras o sigues**. Máximo cinco tiradas: en la quinta sin Ruina **cobras solo**.
+- **Ruina:** pierdes el premio provisional y termina la partida. Ceniza: no cambia el premio. Pareja, escalera, triple y triple seis: lo suben.
+- **Premio = apuesta × (1 − tributo) × (1 + suma de bonos)**, céntimos hacia abajo. Tributo del Dragón **5 %**, visible antes de apostar y sin otras comisiones. Bonos: pareja **+6,25 %**, escalera **+18,75 %**, triple **+37,5 %**, triple seis **+100 %** (la cuarta parte de la tabla propuesta).
+- Solo dinero. No hay cartas: la casa no puede entregar cartas sin salirse de los límites y de la reserva de la economía de cartas.
+- Una partida a la vez por jugador, y no se puede estar a la vez en una mesa. Recargar recupera la partida. Si te vas, a los 120 s se cierra sola: **sin tiradas se te devuelve la apuesta entera; con tiradas cobras lo que lleves**.
+
+### Quién financia el premio (y por qué no se usó la tabla tal cual)
+
+En solitario **paga la casa**: no hay otros jugadores, así que el juego crea tokens cuando ganas y los destruye cuando pierdes. Para que eso no sean recompensas sin respaldo, la tabla tiene que dejar a la casa una ventaja con la **mejor estrategia posible**. Cálculo exacto por programación dinámica (`node tools/pozo-dragon-solo.js`):
+
+| Bonos | Tributo | RTP con juego óptimo | Cobrando siempre en la 1.ª tirada |
+|---|---|---:|---:|
+| Tabla propuesta (×1: 25/75/150/400 %) | 0 | **171,4 %** | 117,7 % |
+| ×0,5 | 0 | 125,3 % | 106,5 % |
+| ×0,25 (los del juego) | 0 | 102,6 % | 101,0 % |
+| ×0,2 | 0 | 99,8 % | 99,8 % |
+| **×0,25** | **5 %** | **97,49 %** | **95,91 %** |
+
+- Con la tabla propuesta la casa regalaría de media un 71 % de la apuesta en cada partida: dinero creado de la nada.
+- Solo con bonos habría que bajarlos a un 3 % (pareja 0,7 %, escalera 2,1 %...) para dejar un 4 % a la casa, y el pozo prácticamente no crecería. Por eso se combina un tributo visible con bonos a la cuarta parte.
+- **Resultado:** ventaja mínima de la casa del **2,51 %** (con juego perfecto); 3 a 4 % para quien juega por intuición. Ninguna estrategia fija supera el 100 % (96–97 % con tributo). La estrategia óptima es seguir mientras el bono acumulado sea de hasta el 18,75 % y cobrar con el 25 % o más: hay decisión real.
+- El pago máximo posible es **6×** la apuesta antes del tributo (cinco triples seis seguidos, probabilidad 2e-12).
+- Todos los valores están en `cartas_economia_ajustes` (`pozo_solo_*`) para poder cambiarlos sin tocar código. La interfaz muestra los que manda el servidor en cada partida.
+
+### Contra pagos duplicados
+
+- **Empezar** lleva un identificador nuevo por partida (`unique (user_id, cliente)`): repetirlo (doble clic, reintento tras un corte) devuelve la misma partida sin descontar otra vez. La apuesta se descuenta antes de crear la partida y en la misma transacción.
+- **Tirar y cobrar** llevan el **paso** de la partida: una petición repetida no tira dos veces ni cobra dos veces.
+- **El pago** lo hace `pozo_i_solo_cerrar`, que solo actúa si la partida sigue `en_curso` y la deja `terminada` en la misma transacción, bajo el candado del jugador. Una partida cerrada no se puede pagar otra vez.
+- Un índice único deja **una sola partida en curso** por jugador.
+
 ## Dinero y cartas
 
 - **Dinero:** los tokens del Hipódromo (`hipodromo_billeteras` / `hipodromo_movimientos`). La apuesta se **descuenta al confirmar** (el saldo disponible ya no la cuenta) y se abona al liquidar o devolver. Cada movimiento queda en el libro con el código de la mesa.
@@ -84,7 +119,8 @@ Una consecuencia que conviene saber: **el pozo central no crece**, es la suma de
 |---|---|
 | Tablas `pozo_mesas`, `pozo_jugadores`, `pozo_tiradas`, `pozo_rondas` (nadie las lee ni escribe desde el navegador; solo el admin puede mirarlas) | `docs/pozo-dragon.sql` |
 | Dados (`gen_random_uuid`), clasificación, fuerza, turnos, reservas, liquidación, plazos | `docs/pozo-dragon.sql` |
-| Funciones públicas: `pozo_lista`, `pozo_crear`, `pozo_unirse`, `pozo_cerrar_inscripcion`, `pozo_ofrecer`, `pozo_confirmar`, `pozo_retirar_confirmacion`, `pozo_salir`, `pozo_tirar`, `pozo_cobrar`, `pozo_continuar`, `pozo_estado`, `pozo_mis_cartas` | `docs/pozo-dragon.sql` |
+| Funciones públicas del solitario: `pozo_solo_estado`, `pozo_solo_empezar`, `pozo_solo_tirar`, `pozo_solo_cobrar`, `pozo_solo_descartar` (tablas `pozo_solo` y `pozo_solo_tiradas`) | `docs/pozo-dragon.sql`, sección 12 |
+| Funciones públicas de las mesas: `pozo_lista`, `pozo_crear`, `pozo_unirse`, `pozo_cerrar_inscripcion`, `pozo_ofrecer`, `pozo_confirmar`, `pozo_retirar_confirmacion`, `pozo_salir`, `pozo_tirar`, `pozo_cobrar`, `pozo_continuar`, `pozo_estado`, `pozo_mis_cartas` | `docs/pozo-dragon.sql` |
 | Llamadas del navegador (`api.pozo.*`) | `js/veintiuna-api.js` |
 | Textos, reglas y decisiones de pantalla (puro, probado en Node) | `js/pozo-dragon-vista.js` |
 | Dibujos (dados, ojo del dragón, monedas) | `js/pozo-dragon-arte.js` |
@@ -101,19 +137,20 @@ Una consecuencia que conviene saber: **el pozo central no crece**, es la suma de
 ## Pruebas
 
 ```bash
-node docs/pruebas-web/pozo_dragon.js     # 80 comprobaciones sin base de datos
-node tools/pozo-dragon-simulacion.js     # combinaciones y economía (opcional: nº de mesas)
+node docs/pruebas-web/pozo_dragon.js     # 120 comprobaciones sin base de datos
+node tools/pozo-dragon-simulacion.js     # combinaciones y economía de las mesas (opcional: nº de mesas)
+node tools/pozo-dragon-solo.js           # economía exacta del modo solitario (opcional: nº de partidas)
 ```
 
 `pozo_dragon.js` comprueba: las 216 combinaciones y sus probabilidades, la jerarquía del Duelo (antisimetría sobre las 216 × 216 parejas), que el SQL tenga las mismas reglas que la interfaz, que **cada función pública del SQL empiece por el cierre «oculto»**, los textos, las vistas, la página y el controlador, y que la simulación termine bien con la suma pagada igual a la apostada.
 
-El SQL se comprobó con el analizador de PostgreSQL (`libpg-query`): 72 sentencias y 47 cuerpos plpgsql sin errores de sintaxis.
+El SQL se comprobó con el analizador de PostgreSQL (`libpg-query`): 101 sentencias y 59 cuerpos plpgsql sin errores de sintaxis.
 
 La interfaz se probó en el navegador contra un servidor simulado con estados de ejemplo (lobby, sala, confirmación, mesa compartida, decisión, duelo, final, Ruina y cancelada): sin errores en consola, dados que ruedan y se asientan, y ningún elemento que se salga de la pantalla a 375 px de ancho.
 
 ## Qué falta
 
-- **Ejecutar el SQL con Docker** (`sh docs/pruebas/cargar_local.sh todo`, que ya carga `pozo-dragon.sql`) y escribir `docs/pruebas/t_pozo_dragon.sql`. Lo más importante que probar: reserva y devolución de dinero y cartas, una carta que no se puede comprometer en dos partidas, transferencias que topan con un límite, doble clic y peticiones simultáneas, fuera de turno, desconexión, recarga, cancelaciones, abandono y la suma pagada igual a la apostada con partidas al azar. Hasta que eso pase, **no abrirlo a jugadores**.
+- **Ejecutar el SQL con Docker** (incluido el modo solitario: que el pago sale una sola vez, que repetir «empezar» no cobra dos veces, el cierre por inactividad, la quinta tirada y el cruce con las mesas) (`sh docs/pruebas/cargar_local.sh todo`, que ya carga `pozo-dragon.sql`) y escribir `docs/pruebas/t_pozo_dragon.sql`. Lo más importante que probar: reserva y devolución de dinero y cartas, una carta que no se puede comprometer en dos partidas, transferencias que topan con un límite, doble clic y peticiones simultáneas, fuera de turno, desconexión, recarga, cancelaciones, abandono y la suma pagada igual a la apostada con partidas al azar. Hasta que eso pase, **no abrirlo a jugadores**.
 - Probarlo con una sesión real de Supabase y dos cuentas.
 - El selector de cartas es una lista sencilla (nombre, rareza, número), no la carta ilustrada del álbum.
 - Sin sala pública para elegir rival en el duelo más allá de las mesas públicas y el código/enlace; sin chat ni clasificaciones (fuera de alcance).

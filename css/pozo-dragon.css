@@ -262,3 +262,9 @@ body.pz-tema {
   .pz-tema.pz-ruina .pz-escena::after { animation: none; }
   .pz-brasas { display: none; }
 }
+
+/* Modo solitario: la tabla de lo que pasaría con la siguiente tirada */
+.pz-perspectiva { width: 100%; font-size: .98rem; }
+.pz-perspectiva caption { text-align: left; padding-bottom: 6px; color: var(--pz-gris); overflow-wrap: anywhere; }
+.pz-perspectiva th, .pz-perspectiva td, .pz-perspectiva td.pz-num { white-space: normal; padding: 4px 6px; }
+.pz-modos .pz-form [data-resumen-solo] { min-height: 3.2em; }

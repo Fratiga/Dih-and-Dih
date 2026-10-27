@@ -37,7 +37,10 @@
     limite: { t0: 0, s: null },
     sondeo: null,
     timerLista: null,
-    animando: false
+    animando: false,
+    solo: null,               // la partida en solitario (si hay)
+    vistoSolo: 0,
+    reglasSolo: null
   };
 
   /* ---------------------------------------------------------------- movimiento */
@@ -149,17 +152,19 @@
   function abrirReglas(modo) {
     const est = S.est, r = est && est.reglas ? est.reglas : {};
     const bonos = r.bonos || { pareja: 0.125, escalera: 0.375, triple: 0.75, triple_seis: 2 };
+    const solo = reglasSoloVigentes();
     const filas = V.ORDEN_MEJOR_A_PEOR.map(c => {
       const k = V.CATEGORIAS[c], casos = V.CASOS[c];
-      return `<tr><td>${A.ejemplo(c)}</td><th scope="row">${esc(k.nombre)}</th><td>${esc(k.texto)}</td><td class="pz-num">${casos}/216 · ${V.num(casos / 216 * 100)} %</td><td class="pz-num">${c === "ruina" ? "eliminado" : c === "ceniza" ? "—" : "+" + V.pct(bonos[c])}</td></tr>`;
+      return `<tr><td>${A.ejemplo(c)}</td><th scope="row">${esc(k.nombre)}</th><td>${esc(k.texto)}</td><td class="pz-num">${casos}/216 · ${V.num(casos / 216 * 100)} %</td><td class="pz-num">${c === "ruina" ? "eliminado" : c === "ceniza" ? "—" : "+" + V.pct(bonos[c])}</td><td class="pz-num">${c === "ruina" ? "lo pierdes todo" : c === "ceniza" ? "—" : "+" + V.pct((solo.bonos || V.SOLO_BONOS)[c])}</td></tr>`;
     }).join("");
     const lista = xs => `<ul>${xs.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
     abrir($("pzDlgReglas"), `${cabeceraDlg("pzDlgReglasT", "Cómo se juega", "Tres dados, un pozo y la decisión de cuánto arriesgar")}
       <div class="pz-dlg-cuerpo">
         <section><h3>Las combinaciones</h3>
-          <table class="pz-tabla"><thead><tr><th scope="col">Ejemplo</th><th scope="col">Nombre</th><th scope="col">Cómo sale</th><th scope="col">Probabilidad</th><th scope="col">Bono (Compartido)</th></tr></thead><tbody>${filas}</tbody></table>
-          <p class="pz-ayuda">Son 216 resultados posibles con tres dados normales. La Ruina manda sobre cualquier otra combinación: 1-1-2 es Ruina aunque tenga una pareja. La columna de bono solo cuenta en El Pozo Compartido.</p></section>
-        <section${modo === "compartido" ? "" : ""}><h3>Duelo de Dragones</h3>${lista(V.reglasDuelo(r))}</section>
+          <table class="pz-tabla"><thead><tr><th scope="col">Ejemplo</th><th scope="col">Nombre</th><th scope="col">Cómo sale</th><th scope="col">Probabilidad</th><th scope="col">Bono (Compartido)</th><th scope="col">Bono (Solo)</th></tr></thead><tbody>${filas}</tbody></table>
+          <p class="pz-ayuda">Son 216 resultados posibles con tres dados normales. La Ruina manda sobre cualquier otra combinación: 1-1-2 es Ruina aunque tenga una pareja. Las columnas de bono cuentan solo en El Pozo Compartido y en el modo Solo (cada uno con sus porcentajes).</p></section>
+        <section><h3>Solo contra el Dragón</h3>${lista(V.reglasSolo(solo))}</section>
+        <section><h3>Duelo de Dragones</h3>${lista(V.reglasDuelo(r))}</section>
         <section><h3>El Pozo Compartido</h3>${lista(V.reglasCompartido(Object.assign({ bonos }, r)))}</section>
         <section><h3>En las dos modalidades</h3>${lista(V.REGLAS_COMUNES)}</section>
       </div>`);
@@ -201,6 +206,7 @@
     $("pzLobby").hidden = vista !== "lobby";
     $("pzSalaEspera").hidden = vista !== "sala";
     $("pzMesa").hidden = !(vista === "mesa" || vista === "fin");
+    $("pzSolo").hidden = vista !== "solo";
     if (vista === "sin_sesion" || vista === "oculto" || vista === "sin_conexion" || vista === "cargando") {
       $("pzLobby").hidden = false;
       $("pzLobby").innerHTML = `<p class="pz-lema" role="status">${{
@@ -252,6 +258,13 @@
           <button type="button" class="pz-boton" data-abrir-form="compartido">Crear una mesa</button>
           ${formModo("compartido")}
         </article>
+        <article class="pz-modo" data-modo-tarjeta="solo">
+          <div class="pz-modo-arte" aria-hidden="true">${A.dado(4)}<span class="pz-modo-vs">y</span>${A.ojo()}</div>
+          <h2>Solo contra el Dragón</h2>
+          <p>Apuestas, tiras tres dados y decides después de cada tirada: cobrar o seguir. El premio crece con cada combinación y la Ruina lo pierde todo.</p>
+          <ul><li>Hasta cinco tiradas; en la quinta cobras solo.</li><li>Paga la casa: tributo del Dragón visible antes de apostar.</li><li>Solo dinero, sin cartas.</li></ul>
+          ${formSolo()}
+        </article>
       </div>
       <div class="pz-lobby-pie">
         <div class="pz-caja"><h3>Mesas abiertas</h3><div class="pz-mesas" id="pzMesasLista"></div></div>
@@ -263,6 +276,7 @@
     S.lobbyArmado = true;
     pintarMesasLista();
     document.querySelectorAll("[data-form]").forEach(actualizarResumen);
+    document.querySelectorAll("[data-form-solo]").forEach(actualizarResumenSolo);
   }
   function pintarMesasLista() {
     const el = $("pzMesasLista"); if (!el) return;
@@ -458,6 +472,97 @@
     }
   }
 
+  /* ---------------------------------------------------------------- modo solitario: tú contra el Dragón */
+  function reglasSoloVigentes() { return (S.solo && S.solo.reglas) || (S.lista && S.lista.solo) || S.reglasSolo || {}; }
+
+  function formSolo() {
+    const r = reglasSoloVigentes(), aj = (S.lista && S.lista.ajustes) || { apuesta_min: 10, apuesta_paso: 10 };
+    const b = r.bonos || { pareja: 0.0625, escalera: 0.1875, triple: 0.375, triple_seis: 1 }, t = r.tributo != null ? r.tributo : 5;
+    return `<form class="pz-form" data-form-solo novalidate>
+        <label class="pz-campo"><span>Apuesta de dinero</span><input type="number" data-f="dinero" min="0" step="${aj.apuesta_paso}" value="${aj.apuesta_min}" inputmode="numeric"></label>
+        <p class="pz-ayuda" data-resumen-solo></p>
+        <p class="pz-ayuda">Bonos por tirada: pareja +${V.num(b.pareja * 100)} %, escalera +${V.num(b.escalera * 100)} %, triple +${V.num(b.triple * 100)} %, triple seis +${V.num(b.triple_seis * 100)} %. Tributo del Dragón: ${V.num(t)} %, sin otras comisiones.</p>
+        <button type="submit" class="pz-boton pz-boton-principal">Jugar en solitario</button>
+      </form>`;
+  }
+  function actualizarResumenSolo(f) {
+    const el = f.querySelector("[data-resumen-solo]"); if (!el) return;
+    const r = reglasSoloVigentes(), t = r.tributo != null ? r.tributo : 5, d = Number(f.querySelector('[data-f="dinero"]').value) || 0;
+    el.textContent = d <= 0 ? "Hay que apostar dinero." : `Apuestas ${V.num(d)} tokens. Tu premio provisional empieza en ${V.num(V.premioSolo(d, t, 0))} (la apuesta menos el tributo) y sube con cada tirada. Nada se descuenta hasta que pulses «Jugar en solitario».`;
+  }
+
+  function filaPerspectiva(s) {
+    const p = V.perspectivaSolo(s); if (!p) return "";
+    return `<table class="pz-tabla pz-perspectiva"><caption>Si sigues tirando (te quedan ${V.plural(p.quedan, "tirada", "tiradas")})</caption><thead><tr><th scope="col">Sale</th><th scope="col" class="pz-num">Probabilidad</th><th scope="col" class="pz-num">Tu premio pasa a</th></tr></thead><tbody>
+      <tr><th scope="row">Ruina</th><td class="pz-num">${V.pct(10 / 216)}</td><td class="pz-num">0 (lo pierdes todo)</td></tr>
+      ${[["Ceniza", "ceniza", 96], ["Pareja", "pareja", 81], ["Escalera", "escalera", 24], ["Triple", "triple", 4], ["Triple seis", "triple_seis", 1]].map(([n, c, k], i) => `<tr><th scope="row">${n}</th><td class="pz-num">${V.pct(k / 216)}</td><td class="pz-num">${V.num(p.filas[i].premio)}</td></tr>`).join("")}
+      </tbody></table>`;
+  }
+
+  function pintarSolo(s) {
+    const fin = s.estado === "terminada", r = V.resumenSolo(s), plan = V.accionesSolo(s);
+    const ult = s.historial.length ? s.historial[s.historial.length - 1] : null;
+    const f = ult ? V.frasesTirada({ dados: ult.dados, categoria: ult.categoria }, "solo", s.bonos) : null;
+    const puntos = Array.from({ length: s.tiradas_max }, (_, i) => `<span class="pz-ronda-punto" data-g="${i < s.tiradas ? 1 : 0}"></span>`).join("");
+    const dock = fin ? `<section class="pz-fin" data-c="${r.clase}"><h2>${esc(r.titulo)}</h2><p>${esc(r.texto)}</p>
+        <div class="pz-acciones"><button type="button" class="pz-boton pz-boton-principal" data-solo-nueva id="pzDock" tabindex="-1">Jugar otra vez</button><button type="button" class="pz-boton" data-solo-lobby>Volver a las mesas</button></div></section>`
+      : `<section class="pz-dock" id="pzDock" tabindex="-1" aria-label="Controles de la partida"><p class="pz-dock-texto">${s.fase === "decidir" ? `Tu premio provisional es <strong>${V.num(s.premio)}</strong> tokens (apostaste ${V.num(s.apuesta)}). ` : `Apuestas ${V.num(s.apuesta)} tokens. `}Si te vas, la partida se cierra sola en <span class="pz-reloj" data-reloj></span> ${s.tiradas === 0 ? "y se te devuelve la apuesta" : "y cobras lo que lleves"}.</p>
+        <div class="pz-dock-botones">${plan.botones.map(b => `<button type="button" class="pz-boton${b.principal ? " pz-boton-principal" : ""}" data-accion="${b.id}" aria-keyshortcuts="${b.tecla}">${esc(b.texto)}${b.sub ? `<span class="pz-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`).join("")}</div></section>`;
+    $("pzSolo").innerHTML = `
+      <div class="pz-barra"><div><span class="pz-codigo">Solo</span></div><div class="pz-barra-sub">Tú contra el Dragón · apuesta ${V.num(s.apuesta)} tokens de juego</div></div>
+      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div>
+        <div class="pz-pozo"><div class="pz-pozo-fila">${A.monton(Math.round(3 + (Number(fin ? s.pago : s.premio) / Math.max(1, s.apuesta)) * 4))}<div><p class="pz-pozo-etq">${fin ? "Premio cobrado" : "Tu premio provisional"}</p><p class="pz-pozo-cifra" data-pozo>${V.num(fin ? s.pago : s.premio)}</p></div></div>
+          <p class="pz-pozo-sub">apuesta ${V.num(s.apuesta)} · el Dragón retiene un ${V.num(s.tributo)} % (premio base ${V.num(s.base)}) · ${V.pct(s.bono)} de bonos acumulados</p></div>
+        <div class="pz-bandeja" data-dados-solo aria-label="Última tirada">${ult ? filaDados(ult) : `<p class="pz-sin-tirar">Todavía no has tirado</p>`}</div>
+        <div class="pz-veredicto" data-c="${ult ? esc(ult.categoria) : ""}"><p class="pz-veredicto-quien">Tirada ${s.tiradas} de ${s.tiradas_max}</p><p class="pz-veredicto-nombre">${f ? esc(f.nombre) : "&nbsp;"}</p><p class="pz-veredicto-efecto">${f ? esc(f.dados + " · " + f.efecto) : ""}</p></div>
+        <div class="pz-rondas" aria-label="${s.tiradas} de ${s.tiradas_max} tiradas">${puntos}</div>
+        ${fin ? "" : filaPerspectiva(s)}
+      </div>${dock}</div>`;
+  }
+
+  async function animarSolo(s, antes) {
+    const ult = s.historial.length ? s.historial[s.historial.length - 1] : null;
+    if (!ult) return;
+    const visto = S.vistoSolo || 0;
+    if (ult.id <= visto) return;
+    S.vistoSolo = ult.id;
+    if (S.primerPintado) return;
+    const cont = document.querySelector("[data-dados-solo]");
+    if (cont) { await rodar(cont, ult.dados, ult.categoria); efectosDeCategoria(ult.categoria, true); }
+    const p = document.querySelector("[data-pozo]"); if (p) { p.classList.add("pz-pozo-cambia"); setTimeout(() => p.classList.remove("pz-pozo-cambia"), 800); }
+  }
+
+  function aplicarSolo(s) {
+    if (!s) return;
+    if (s.reglas) S.reglasSolo = s.reglas;
+    if (s.sin_partida) {
+      const habia = S.solo; S.solo = null;
+      if (s.saldo != null) pintarSaldo(s.saldo);
+      if (S.vista === "solo" || habia) irALobby();
+      return;
+    }
+    const antes = S.solo; S.solo = s; S.est = null;
+    if (s.saldo != null) pintarSaldo(s.saldo);
+    fijarLimite(s.restante_s);
+    if (S.vista !== "solo") mostrar("solo");
+    pintarSolo(s); animarSolo(s, antes); pintarReloj();
+    const frase = V.anuncioSolo(antes, s); if (frase) leer(frase);
+    if (s.estado === "terminada" && (!antes || antes.estado !== "terminada") && !S.primerPintado) { const r = V.resumenSolo(s); if (r) sonar(r.clase === "gana" ? "premio" : r.clase === "pierde" ? "pierde" : "moneda"); }
+    S.primerPintado = false;
+  }
+
+  function empezarSolo(f, boton) {
+    const dinero = Number(f.querySelector('[data-f="dinero"]').value) || 0;
+    const cliente = window.VeintiunaApi.nuevoId();                    // el mismo identificador en cada reintento: la partida no se abre dos veces ni se cobra dos veces
+    return ejecutar(() => api.pozo.solo.empezar(cliente, dinero), boton, aplicarSolo);
+  }
+  function hacerSolo(accion, boton) {
+    const s = S.solo; if (!s || s.estado !== "en_curso") return;
+    const paso = s.paso, id = s.id;
+    return ejecutar(() => (accion === "cobrar" ? api.pozo.solo.cobrar(id, paso) : api.pozo.solo.tirar(id, paso)), boton, aplicarSolo);
+  }
+  const cerrarSolo = () => ejecutar(() => api.pozo.solo.descartar(), null, aplicarSolo);
+
   /* ---------------------------------------------------------------- aplicar lo que dice el servidor */
   function aplicar(est) {
     if (!est) return;
@@ -492,19 +597,27 @@
     aviso(V.mensajeError(e), { tipo: "error", reintentar: !!reintento && (!e || e.tipo === "red"), cerrar: true });
     S.reintento = reintento || null;
   }
-  async function ejecutar(fn, boton) {
+  async function ejecutar(fn, boton, cuando) {
     if (S.ocupado) return;
     S.ocupado = true; if (boton) boton.classList.add("pz-esperando");
     try {
       const r = await fn();
       aviso(""); S.reintento = null;
-      if (r) aplicar(r);
+      if (r) (cuando || aplicar)(r);
     } catch (e) {
-      manejarError(e, () => ejecutar(fn, null));
+      manejarError(e, () => ejecutar(fn, null, cuando));
       if (e && e.tipo === "servidor" && (e.codigo === "paso_futuro" || e.codigo === "condiciones_cambiadas")) refrescar();
+      if (e && e.tipo === "servidor" && e.codigo === "solo_en_curso") refrescar();
     } finally { S.ocupado = false; if (boton) boton.classList.remove("pz-esperando"); }
   }
-  async function refrescar() { try { aplicar(await api.pozo.estado(null)); } catch (e) { /* el sondeo reintenta */ } }
+  async function refrescar() {
+    try {
+      const m = await api.pozo.estado(null);
+      if (m && !m.sin_mesa) { aplicar(m); return; }
+      const s = await api.pozo.solo.estado();
+      if (s && !s.sin_partida) aplicarSolo(s); else if (m) aplicar(m);
+    } catch (e) { /* el sondeo reintenta */ }
+  }
 
   function irALobby() {
     mostrar("lobby");
@@ -525,6 +638,10 @@
   function programar(ms) { clearTimeout(S.sondeo); S.sondeo = setTimeout(sondear, ms); }
   async function sondear() {
     if (!S.sesion) return;
+    if (S.vista === "solo") {
+      try { const r = await api.pozo.solo.estado(); if (r.sin_partida || !S.solo || r.paso !== S.solo.paso || r.estado !== S.solo.estado) aplicarSolo(r); else { fijarLimite(r.restante_s); pintarReloj(); } } catch (e) { /* se reintenta */ }
+      programar(SONDEO_FONDO_MS); return;
+    }
     try {
       const r = await api.pozo.estado(S.version);
       if (r && r.sin_cambios) { if (r.restante_s !== undefined) fijarLimite(r.restante_s); pintarReloj(); }
@@ -549,6 +666,7 @@
   }
   async function cerrarMesaTerminada() { await ejecutar(async () => { const r = await api.pozo.salir(); S.est = null; S.version = null; return r; }); }
   function hacer(accion, boton) {
+    if (S.vista === "solo") return hacerSolo(accion, boton);
     const est = S.est; if (!est || est.estado !== "jugando") return;
     const paso = est.paso;
     const fn = { tirar: () => api.pozo.tirar(paso), cobrar: () => api.pozo.cobrar(paso), continuar: () => api.pozo.continuar(paso) }[accion];
@@ -591,6 +709,7 @@
     if (d.unirse) { unirse(d.unirse, t); return; }
     if ("salir" in d) { salir(); return; }
     if ("cerrarMesa" in d) { cerrarMesaTerminada(); return; }
+    if ("soloNueva" in d || "soloLobby" in d) { cerrarSolo(); return; }
     if (d.copiar) { copiar(d.copiar); return; }
     if (d.reglas) { abrirReglas(d.reglas); return; }
     if ("elegirCartas" in d) { abrirCartas(); return; }
@@ -612,9 +731,11 @@
       pintarDialogoCartas(k); return;
     }
     const f = t.closest && t.closest("[data-form]"); if (f) actualizarResumen(f);
+    const fs2 = t.closest && t.closest("[data-form-solo]"); if (fs2) actualizarResumenSolo(fs2);
   }
   function alEnviar(ev) {
     const f = ev.target;
+    if (f.matches && f.matches("[data-form-solo]")) { ev.preventDefault(); empezarSolo(f, f.querySelector("button[type=submit]")); return; }
     if (f.matches && f.matches("[data-form]")) { ev.preventDefault(); crear(f.dataset.form, f.querySelector("button[type=submit]")); return; }
     if (f.id === "pzFormEntrar") { ev.preventDefault(); const c = $("pzCodigo").value.trim(); if (c) unirse(c, f.querySelector("button")); }
   }
@@ -628,8 +749,9 @@
     if (document.querySelector("dialog[open]")) return;
     const t = ev.target;
     if (t && (t.matches("input, textarea, select") || t.isContentEditable)) return;
-    const est = S.est; if (!est || est.estado !== "jugando") return;
     const k = ev.key.length === 1 ? ev.key.toUpperCase() : ev.key;
+    if (S.vista === "solo") { const sb = V.accionesSolo(S.solo).botones.find(x => x.tecla === k); if (sb) { ev.preventDefault(); hacerSolo(sb.id, document.querySelector(`[data-accion="${sb.id}"]`)); } return; }
+    const est = S.est; if (!est || est.estado !== "jugando") return;
     const b = V.acciones(est).botones.find(x => x.tecla === k);
     if (b) { ev.preventDefault(); hacer(b.id, document.querySelector(`[data-accion="${b.id}"]`)); }
   }
@@ -646,7 +768,13 @@
     try {
       const r = await api.pozo.estado(null);
       if (r && !r.sin_mesa) { aplicar(r); programar(SONDEO_MS); }
-      else { if (r && r.saldo != null) pintarSaldo(r.saldo); S.lista = null; irALobby(); programar(SONDEO_MS * 2);
+      else {
+        if (r && r.saldo != null) pintarSaldo(r.saldo);
+        let solo = null;
+        try { solo = await api.pozo.solo.estado(); } catch (e) { if (e && e.tipo === "red") throw e; /* sin el modo solitario instalado se sigue con las mesas */ }
+        if (solo && !solo.sin_partida) { aplicarSolo(solo); programar(SONDEO_FONDO_MS); return; }
+        if (solo && solo.reglas) S.reglasSolo = solo.reglas;
+        S.lista = null; irALobby(); programar(SONDEO_MS * 2);
         // enlace de invitación: pozo-dragon.html?mesa=ABCDE
         const cod = (new URLSearchParams(location.search).get("mesa") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5);
         if (cod.length === 5) { history.replaceState(null, "", location.pathname); await unirse(cod, null); }
