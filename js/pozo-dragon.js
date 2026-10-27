@@ -238,45 +238,55 @@
       </form>`;
   }
   function pintarLobby() {
-    const aj = (S.lista && S.lista.ajustes) || {};
+    const aj = (S.lista && S.lista.ajustes) || { apuesta_min: 10, apuesta_paso: 10, apuesta_max: 0 };
+    const min = Number(aj.apuesta_min) || 10;
+    const fichas = [min, min * 2, min * 5, min * 10, min * 50];
     $("pzLobby").innerHTML = `
-      <p class="pz-lema">Tres dados, un tesoro y un dragón que se lleva a quien se pasa de listo. Juega un duelo contra un amigo o siéntate a una mesa de hasta seis. Se apuestan tokens de juego, cartas de tu colección o las dos cosas, y todo se acuerda y se confirma antes de tirar.</p>
-      <div class="pz-modos">
-        <article class="pz-modo" data-modo-tarjeta="duelo">
-          <div class="pz-modo-arte" aria-hidden="true">${A.dado(6)}<span class="pz-modo-vs">contra</span>${A.dado(5)}</div>
-          <h2>Duelo de Dragones</h2>
-          <p>Dos jugadores, una mesa y un pozo de dos apuestas. Gana quien primero se lleve dos rondas, comparando sus tiradas.</p>
-          <ul><li>Mejor de tres rondas ganadas, con un máximo de cinco.</li><li>Los empates no dan ronda a nadie.</li><li>Se llevan todo: el dinero y las cartas del que pierde.</li></ul>
+      <section class="pz-heroe" id="pzHeroe" aria-label="Solo contra el Dragón">
+        <div class="pz-heroe-arte" id="pzHeroeArte" aria-hidden="true">${A.dragonHeroe()}</div>
+        <div class="pz-heroe-cuerpo">
+          <p class="eyebrow">CASA DE JUEGO</p>
+          <p class="pz-heroe-titulo" aria-hidden="true">El Pozo del Dragón</p>
+          <p class="pz-heroe-lema">Tres dados. Un tesoro. Una criatura que espera que te equivoques.</p>
+          <form class="pz-solo" data-form-solo novalidate>
+            <div class="pz-solo-cab"><span class="pz-solo-icono" aria-hidden="true">${A.ojo()}</span><div><h2>Solo contra el Dragón</h2><p>Aumenta el premio y decide cuándo retirarte.</p></div></div>
+            <div class="pz-solo-apuesta">
+              <label class="pz-campo"><span>Tu apuesta, en tokens</span><input type="number" data-f="dinero" min="0" step="${aj.apuesta_paso}" value="${min}" inputmode="numeric"></label>
+              <div class="pz-fichas" role="group" aria-label="Apuestas rápidas">${fichas.map(n => `<button type="button" class="pz-ficha" data-ficha="${n}">${V.num(n)}</button>`).join("")}</div>
+            </div>
+            <p class="pz-riesgo" data-resumen-solo></p>
+            <button type="submit" class="pz-boton pz-boton-principal pz-boton-grande">Jugar en solitario</button>
+          </form>
+        </div>
+      </section>
+      <div class="pz-otros">
+        <article class="pz-modo-mini" data-modo-tarjeta="duelo">
+          <div class="pz-modo-mini-arte" aria-hidden="true">${A.dado(6)}${A.dado(5)}</div>
+          <div class="pz-modo-mini-texto"><h2>Duelo de Dragones</h2><p>Desafía a otro jugador.</p></div>
           <button type="button" class="pz-boton" data-abrir-form="duelo">Crear un duelo</button>
-          ${formModo("duelo")}
         </article>
-        <article class="pz-modo" data-modo-tarjeta="compartido">
-          <div class="pz-modo-arte" aria-hidden="true"><div class="pz-modo-puestos">${A.ojo()}${A.ojo()}${A.ojo()}${A.ojo()}${A.ojo()}${A.ojo()}</div></div>
-          <h2>El Pozo Compartido</h2>
-          <p>De dos a seis jugadores ponen la misma apuesta. Tiras, sumas peso y decides si cobras o sigues. La Ruina te deja sin nada; el pozo se reparte según el peso.</p>
-          <ul><li>Hasta cinco tiradas por jugador.</li><li>Cobrar es una decisión válida, no una derrota.</li><li>No se crea dinero: el pozo son las apuestas.</li></ul>
+        <article class="pz-modo-mini" data-modo-tarjeta="compartido">
+          <div class="pz-modo-mini-arte pz-ojos" aria-hidden="true">${A.ojo()}${A.ojo()}${A.ojo()}</div>
+          <div class="pz-modo-mini-texto"><h2>Pozo Compartido</h2><p>Todos arriesgan por el tesoro.</p></div>
           <button type="button" class="pz-boton" data-abrir-form="compartido">Crear una mesa</button>
-          ${formModo("compartido")}
-        </article>
-        <article class="pz-modo" data-modo-tarjeta="solo">
-          <div class="pz-modo-arte" aria-hidden="true">${A.dado(4)}<span class="pz-modo-vs">y</span>${A.ojo()}</div>
-          <h2>Solo contra el Dragón</h2>
-          <p>Apuestas, tiras tres dados y decides después de cada tirada: cobrar o seguir. El premio crece con cada combinación y la Ruina lo pierde todo.</p>
-          <ul><li>Hasta cinco tiradas; en la quinta cobras solo.</li><li>Paga la casa: tributo del Dragón visible antes de apostar.</li><li>Solo dinero, sin cartas.</li></ul>
-          ${formSolo()}
         </article>
       </div>
+      <div class="pz-panel-form" id="pzPanelForm" ${S.form.abierto ? "" : "hidden"}>${formModo("duelo")}${formModo("compartido")}</div>
       <div class="pz-lobby-pie">
         <div class="pz-caja"><h3>Mesas abiertas</h3><div class="pz-mesas" id="pzMesasLista"></div></div>
         <div class="pz-caja"><h3>Entrar con un código</h3>
           <form id="pzFormEntrar" class="pz-form" novalidate><label class="pz-campo"><span>Código de la mesa</span><input type="text" id="pzCodigo" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label>
-            <button type="submit" class="pz-boton">Entrar</button></form>
-          <p class="pz-ayuda">Tu saldo: ${V.num(S.saldo)} tokens de juego${aj.apuesta_max > 0 ? `. Apuesta máxima: ${V.num(aj.apuesta_max)}` : ". Sin apuesta máxima"}.</p></div>
-      </div>`;
+            <button type="submit" class="pz-boton">Entrar</button></form></div>
+      </div>
+      <p class="pz-pie-reglas"><button type="button" class="pz-boton-mini" data-reglas="todas">Cómo se juega, las combinaciones y lo que se apuesta</button></p>`;
     S.lobbyArmado = true;
     pintarMesasLista();
     document.querySelectorAll("[data-form]").forEach(actualizarResumen);
     document.querySelectorAll("[data-form-solo]").forEach(actualizarResumenSolo);
+    // Si hay una imagen propia del dragón en assets/cosas/pozo-dragon-heroe.webp, se usa en lugar del dibujo
+    const img = new Image();
+    img.onload = () => { const a = $("pzHeroeArte"); if (a) { a.style.backgroundImage = `url("${img.src}")`; a.classList.add("con-imagen"); } };
+    img.src = "assets/cosas/pozo-dragon-heroe.webp";
   }
   function pintarMesasLista() {
     const el = $("pzMesasLista"); if (!el) return;
@@ -423,7 +433,7 @@
         <div class="pz-barra-sub">${est.modo === "duelo" ? "Duelo de Dragones" : "El Pozo Compartido"} · apuesta ${esc(V.textoApuesta(est.reglas))}</div>
         ${fin ? "" : `<button type="button" class="pz-boton-mini" data-salir>${est.modo === "duelo" ? "Abandonar el duelo" : "Retirarme de la mesa"}</button>`}
       </div>
-      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div>${tapete}</div>
+      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div><div class="pz-vigia" id="pzVigia" data-e="espera" aria-hidden="true">${A.ojoVigia()}</div>${tapete}</div>
         ${fin ? pintarFin(est) : `<section class="pz-dock" id="pzDock" tabindex="-1" aria-label="Controles de la mesa">${pintarDockMesa(est)}</section>`}</div>`;
   }
 
@@ -446,8 +456,12 @@
     await esperar(430);
     S.animando = false;
   }
+  // El ojo del dragón reacciona a lo que pasa en la mesa: se estrecha cuando te toca a ti, se enciende con una Ruina o con un premio grande
+  function vigiaEstado(e) { const v = $("pzVigia"); if (v) v.dataset.e = e; }
+  function vigiaReaccion(e) { const v = $("pzVigia"); if (!v) return; const antes = v.dataset.e === "ruina" || v.dataset.e === "premio" ? "espera" : v.dataset.e; v.dataset.e = e; setTimeout(() => { if ($("pzVigia") === v) v.dataset.e = antes; }, 1600); }
   function efectosDeCategoria(c, soyYo) {
     const tapete = $("pzTapete");
+    if (c === "ruina") vigiaReaccion("ruina"); else if (c === "triple_seis" || c === "triple") vigiaReaccion("premio");
     if (c === "ruina") {
       document.body.classList.add("pz-ruina"); setTimeout(() => document.body.classList.remove("pz-ruina"), 1200);
       if (tapete && !sinMovimiento()) { tapete.classList.add("pz-sacude"); setTimeout(() => tapete.classList.remove("pz-sacude"), 600); }
@@ -487,8 +501,9 @@
   }
   function actualizarResumenSolo(f) {
     const el = f.querySelector("[data-resumen-solo]"); if (!el) return;
-    const r = reglasSoloVigentes(), t = r.tributo != null ? r.tributo : 5, d = Number(f.querySelector('[data-f="dinero"]').value) || 0;
-    el.textContent = d <= 0 ? "Hay que apostar dinero." : `Apuestas ${V.num(d)} tokens. Tu premio provisional empieza en ${V.num(V.premioSolo(d, t, 0))} (la apuesta menos el tributo) y sube con cada tirada. Nada se descuenta hasta que pulses «Jugar en solitario».`;
+    const r = reglasSoloVigentes(), t = r.tributo != null ? r.tributo : 5, d = Number(f.querySelector('[data-f="dinero"]').value) || 0, max = r.tiradas_max || 5;
+    el.innerHTML = d <= 0 ? "Hay que apostar dinero." : `Premio inicial <strong>${V.num(V.premioSolo(d, t, 0))}</strong> · Ruina <strong>${V.pct(10 / 216)}</strong> por tirada · hasta ${max} tiradas · tributo del Dragón ${V.num(t)} %`;
+    f.querySelectorAll("[data-ficha]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.ficha) === d)));
   }
 
   function filaPerspectiva(s) {
@@ -510,7 +525,7 @@
         <div class="pz-dock-botones">${plan.botones.map(b => `<button type="button" class="pz-boton${b.principal ? " pz-boton-principal" : ""}" data-accion="${b.id}" aria-keyshortcuts="${b.tecla}">${esc(b.texto)}${b.sub ? `<span class="pz-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`).join("")}</div></section>`;
     $("pzSolo").innerHTML = `
       <div class="pz-barra"><div><span class="pz-codigo">Solo</span></div><div class="pz-barra-sub">Tú contra el Dragón · apuesta ${V.num(s.apuesta)} tokens de juego</div></div>
-      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div>
+      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div><div class="pz-vigia" id="pzVigia" data-e="espera" aria-hidden="true">${A.ojoVigia()}</div>
         <div class="pz-pozo"><div class="pz-pozo-fila">${A.monton(Math.round(3 + (Number(fin ? s.pago : s.premio) / Math.max(1, s.apuesta)) * 4))}<div><p class="pz-pozo-etq">${fin ? "Premio cobrado" : "Tu premio provisional"}</p><p class="pz-pozo-cifra" data-pozo>${V.num(fin ? s.pago : s.premio)}</p></div></div>
           <p class="pz-pozo-sub">apuesta ${V.num(s.apuesta)} · el Dragón retiene un ${V.num(s.tributo)} % (premio base ${V.num(s.base)}) · ${V.pct(s.bono)} de bonos acumulados</p></div>
         <div class="pz-bandeja" data-dados-solo aria-label="Última tirada">${ult ? filaDados(ult) : `<p class="pz-sin-tirar">Todavía no has tirado</p>`}</div>
@@ -545,7 +560,7 @@
     if (s.saldo != null) pintarSaldo(s.saldo);
     fijarLimite(s.restante_s);
     if (S.vista !== "solo") mostrar("solo");
-    pintarSolo(s); animarSolo(s, antes); pintarReloj();
+    pintarSolo(s); animarSolo(s, antes); pintarReloj(); vigiaEstado(s.estado === "en_curso" ? "mira" : "espera");
     const frase = V.anuncioSolo(antes, s); if (frase) leer(frase);
     if (s.estado === "terminada" && (!antes || antes.estado !== "terminada") && !S.primerPintado) { const r = V.resumenSolo(s); if (r) sonar(r.clase === "gana" ? "premio" : r.clase === "pierde" ? "pierde" : "moneda"); }
     S.primerPintado = false;
@@ -553,6 +568,7 @@
 
   function empezarSolo(f, boton) {
     const dinero = Number(f.querySelector('[data-f="dinero"]').value) || 0;
+    const heroe = $("pzHeroe"); if (heroe) heroe.classList.add("encendido");
     const cliente = window.VeintiunaApi.nuevoId();                    // el mismo identificador en cada reintento: la partida no se abre dos veces ni se cobra dos veces
     return ejecutar(() => api.pozo.solo.empezar(cliente, dinero), boton, aplicarSolo);
   }
@@ -580,7 +596,7 @@
     const vista = V.vista(est);
     if (S.vista !== vista) { mostrar(vista); }
     if (vista === "sala") pintarSala(est);
-    else { pintarMesa(est); animarNuevas(est, antes); }
+    else { pintarMesa(est); animarNuevas(est, antes); vigiaEstado(est.estado === "jugando" && est.yo && est.yo.tu_turno ? "mira" : "espera"); }
     pintarReloj();
     const frase = V.anuncio(antes, est);
     if (frase) leer(frase);
@@ -705,7 +721,8 @@
     const d = t.dataset;
     if ("reintentar" in d) { const f = S.reintento; aviso(""); if (f) f(); else sondear(); return; }
     if ("cerrarAviso" in d) { aviso(""); return; }
-    if (d.abrirForm) { S.form.abierto = S.form.abierto === d.abrirForm ? null : d.abrirForm; document.querySelectorAll("[data-form]").forEach(f => { f.hidden = f.dataset.form !== S.form.abierto; }); const f = document.querySelector(`[data-form="${S.form.abierto}"]`); if (f) { const i = f.querySelector("input[type=text]"); if (i) i.focus({ preventScroll: true }); } return; }
+    if (d.abrirForm) { S.form.abierto = S.form.abierto === d.abrirForm ? null : d.abrirForm; document.querySelectorAll("[data-form]").forEach(f => { f.hidden = f.dataset.form !== S.form.abierto; }); const panel = $("pzPanelForm"); if (panel) panel.hidden = !S.form.abierto; const f = document.querySelector(`[data-form="${S.form.abierto}"]`); if (f) { const i = f.querySelector("input[type=text]"); if (i) i.focus({ preventScroll: true }); } return; }
+    if (d.ficha) { const f = t.closest("[data-form-solo]"); if (f) { f.querySelector('[data-f="dinero"]').value = d.ficha; actualizarResumenSolo(f); } return; }
     if (d.unirse) { unirse(d.unirse, t); return; }
     if ("salir" in d) { salir(); return; }
     if ("cerrarMesa" in d) { cerrarMesaTerminada(); return; }
@@ -785,7 +802,14 @@
       manejarError(e, arrancarConSesion); mostrar("sin_conexion"); programar(5000);
     }
   }
+  function seguirConLaMirada(ev) {
+    const h = $("pzHeroeArte"); if (!h || sinMovimiento()) return;
+    const r = h.getBoundingClientRect(); if (!r.width) return;
+    const dx = Math.max(-1, Math.min(1, (ev.clientX - (r.left + r.width / 2)) / (r.width / 2))), dy = Math.max(-1, Math.min(1, (ev.clientY - (r.top + r.height * 0.5)) / (r.height / 2)));
+    h.querySelectorAll(".pz-heroe-pupila").forEach(g => { g.style.transform = `translate(${(dx * 7).toFixed(1)}px, ${(dy * 4).toFixed(1)}px)`; });
+  }
   async function iniciar() {
+    document.addEventListener("pointermove", seguirConLaMirada, { passive: true });
     $("pzEmblema").innerHTML = A.emblema();
     $("pzSaldoMoneda").innerHTML = A.moneda();
     $("pzFondoDragon").innerHTML = A.dragon();

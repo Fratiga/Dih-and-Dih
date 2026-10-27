@@ -86,5 +86,51 @@ window.PozoArte = (function () {
     return `<span class="pz-ejemplo" aria-hidden="true">${(EJEMPLOS[cat] || []).map(v => dado(v, "pz-mini")).join("")}</span>`;
   }
 
-  return { dado, ojo, emblema, moneda, monton, dragon, ejemplo, EJEMPLOS };
+  // La cara del dragón de frente, grande: cresta, cuernos, alas a los lados, ojos de brasa y colmillos con luz de fuego dentro. Está dibujada mitad y mitad (la izquierda se refleja)
+  // para que sea simétrica. Los ojos llevan la clase pz-heroe-pupila: el controlador los mueve hacia el cursor.
+  function dragonHeroe() {
+    const mitad = `
+      <path d="M392 270 C300 190 150 120 -20 70 L-10 200 C80 214 190 250 300 330 Z" class="pz-dh-ala"/>
+      <path d="M300 330 C200 250 90 214 -10 200 M330 300 C230 232 120 196 20 182" class="pz-dh-nervio" fill="none"/>
+      <path d="M400 40 L368 52 L340 112 L312 168 L318 250 L346 330 L376 392 L400 404 Z" class="pz-dh-cabeza"/>
+      <path d="M338 118 L246 14 L226 110 L298 154 Z" class="pz-dh-cuerno"/>
+      <path d="M306 172 L186 104 L204 192 L292 216 Z" class="pz-dh-cuerno"/>
+      <path d="M292 218 L196 196 L226 262 L300 262 Z" class="pz-dh-cuerno"/>
+      <path d="M400 46 L388 -22 L372 56 Z M372 58 L350 -14 L338 78 Z M338 82 L304 2 L298 104 Z M302 106 L262 36 L262 130 Z" class="pz-dh-pua"/>
+      <path d="M316 262 L258 292 L292 304 L330 292 Z M330 292 L284 332 L322 336 L350 318 Z M350 322 L316 362 L350 360 L368 340 Z" class="pz-dh-pua"/>
+      <path d="M392 236 L360 254 L350 304 L368 352 L400 366 Z" class="pz-dh-hocico"/>
+      <ellipse cx="372" cy="292" rx="9" ry="14" class="pz-dh-nariz"/>
+      <path d="M392 366 L346 346 L336 318 M392 366 L352 372 L326 356" class="pz-dh-boca" fill="none"/>
+      <path d="M394 362 L388 346 L380 364 Z M378 362 L370 344 L362 362 Z M360 360 L352 344 L346 358 Z M346 354 L336 338 L334 354 Z" class="pz-dh-colmillo"/>
+      <path d="M316 214 Q336 196 358 204" class="pz-dh-ceja" fill="none"/>
+      <ellipse cx="332" cy="222" rx="30" ry="14" transform="rotate(-16 332 222)" class="pz-dh-ojo-cuenca"/>
+      <ellipse cx="332" cy="222" rx="24" ry="10" transform="rotate(-16 332 222)" class="pz-dh-iris"/>`;
+    return `<svg class="pz-dragon-heroe" viewBox="0 0 800 420" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Un dragón negro de frente, con los ojos encendidos" focusable="false">
+      <defs>
+        <radialGradient id="pzHumo" cx=".5" cy="1" r=".75"><stop offset="0" stop-color="#e07a2c" stop-opacity=".85"/><stop offset=".45" stop-color="#8a3a18" stop-opacity=".45"/><stop offset="1" stop-color="#1a0f0a" stop-opacity="0"/></radialGradient>
+        <radialGradient id="pzIris" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a"/><stop offset=".6" stop-color="#f0a22c"/><stop offset="1" stop-color="#8a3a10"/></radialGradient>
+        <radialGradient id="pzLuz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb03a" stop-opacity=".7"/><stop offset="1" stop-color="#ffb03a" stop-opacity="0"/></radialGradient>
+        <g id="pzDhMitad">${mitad}</g>
+      </defs>
+      <ellipse cx="400" cy="430" rx="420" ry="150" fill="url(#pzHumo)"/>
+      <use href="#pzDhMitad"/>
+      <use href="#pzDhMitad" transform="translate(800 0) scale(-1 1)"/>
+      <circle cx="332" cy="222" r="44" fill="url(#pzLuz)" class="pz-dh-luz"/><circle cx="468" cy="222" r="44" fill="url(#pzLuz)" class="pz-dh-luz"/>
+      <g class="pz-heroe-pupila"><ellipse cx="332" cy="222" rx="4" ry="10" transform="rotate(-16 332 222)" class="pz-dh-pupila"/></g>
+      <g class="pz-heroe-pupila"><ellipse cx="468" cy="222" rx="4" ry="10" transform="rotate(16 468 222)" class="pz-dh-pupila"/></g>
+      <ellipse cx="400" cy="362" rx="46" ry="14" fill="#ff9a2a" opacity=".35" class="pz-dh-fuego"/>
+    </svg>`;
+  }
+
+  // El ojo del dragón que vigila la mesa mientras juegas: se estrecha cuando es tu turno y se enciende con una Ruina o un premio grande (la clase la pone el controlador)
+  function ojoVigia() {
+    return `<svg class="pz-vigia-ojo" viewBox="0 0 240 110" focusable="false" aria-hidden="true">
+      <path d="M6 55 C50 6 190 6 234 55 C190 104 50 104 6 55 Z" class="pz-vi-parpado"/>
+      <circle cx="120" cy="55" r="38" class="pz-vi-iris"/><circle cx="120" cy="55" r="32" class="pz-vi-iris2"/>
+      <ellipse cx="120" cy="55" rx="9" ry="34" class="pz-vi-pupila"/>
+      <circle cx="105" cy="38" r="5" class="pz-vi-brillo"/>
+    </svg>`;
+  }
+
+  return { dado, ojo, emblema, moneda, monton, dragon, dragonHeroe, ojoVigia, ejemplo, EJEMPLOS };
 })();

@@ -134,6 +134,18 @@ En solitario **paga la casa**: no hay otros jugadores, así que el juego crea to
 - Las animaciones de los dados enseñan un resultado ya decidido (las caras al azar solo se ven mientras ruedan). Se respeta `prefers-reduced-motion`; el sonido es opcional y está apagable.
 - Superficies planas, sin degradados dorados en los botones (ver la preferencia anotada).
 
+## La presentación del lobby
+
+Es solo presentación. La lógica, las apuestas y los tres modos son los de siempre.
+
+- **El dragón es el protagonista.** `PozoArte.dragonHeroe()` dibuja su cara de frente, grande y simétrica (una mitad y su reflejo), con las alas abiertas y los ojos de brasa. Sus pupilas siguen al cursor (`seguirConLaMirada`) y se encienden al empezar una partida en solitario. Con `prefers-reduced-motion` no se mueven.
+- **El solitario es el héroe:** título, lema («Tres dados. Un tesoro. Una criatura que espera que te equivoques.»), apuesta con cinco fichas rápidas (1, 2, 5, 10 y 50 veces la apuesta mínima), el riesgo en una línea (premio inicial, Ruina por tirada, tiradas y tributo) y un botón grande, «Jugar en solitario».
+- **Duelo y Pozo Compartido van debajo, más pequeños.** Cada uno tiene una frase y un botón que abre su formulario en un panel común (`#pzPanelForm`).
+- **Las reglas completas están en un panel** (botón «Reglas»), no en la pantalla.
+- **En la mesa** hay un ojo vigía (`#pzVigia`) encima del tapete: se estrecha cuando te toca, se pone rojo con una Ruina y dorado con un triple o un triple seis.
+- **Foto propia opcional:** si existe `assets/cosas/pozo-dragon-heroe.webp`, sustituye al dibujo del dragón (el navegador lo busca al abrir el lobby; si no está, se queda el dibujo y ya). No se ha copiado ningún fondo de terceros.
+- Fondo con grano de piedra y viñeta, sombras hondas en los paneles y botones planos (los efectos se reservan para los dados, el pozo y las acciones importantes).
+
 ## Pruebas
 
 ```bash

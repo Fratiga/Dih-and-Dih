@@ -13,7 +13,7 @@ const comprobar = (t, real, esperado) => {
   bien ? ok++ : fallos++;
 };
 const cierto = (t, cond) => comprobar(t, !!cond, true);
-const leer = (...p) => fs.readFileSync(path.join(RAIZ, ...p), "utf8");
+const leer = (...p) => fs.readFileSync(path.join(RAIZ, ...p), "utf8").replace(/\r\n/g, "\n");
 
 global.window = global;
 const V = require(path.join(RAIZ, "js", "pozo-dragon-vista.js"));
@@ -118,7 +118,7 @@ cierto("errores: sin conexión, oculto y el texto del servidor", /reintenta/.tes
 console.log("== La página y el controlador");
 const js = leer("js", "pozo-dragon.js"), css = leer("css", "pozo-dragon.css");
 cierto("cada script y hoja de estilos de la página existe y lleva su versión (?v=)", [...html.matchAll(/(?:src|href)="((?:js|css)\/[^"]+)"/g)].every(m => /\?v=\d{8}$/.test(m[1]) && fs.existsSync(path.join(RAIZ, m[1].split("?")[0]))));
-cierto("todos los identificadores que usa el controlador están en la página", [...js.matchAll(/\$\("([A-Za-z]+)"\)/g)].map(m => m[1]).filter(id => !["pzCodigo", "pzMesasLista", "pzTapete", "pzDestello", "pzDlgReglas"].includes(id) || id === "pzDlgReglas").every(id => new RegExp(`id="${id}"`).test(html) || ["pzCodigo", "pzMesasLista", "pzTapete", "pzDestello", "pzDock", "pzFormEntrar"].includes(id)));
+cierto("todos los identificadores que usa el controlador están en la página", [...js.matchAll(/\$\("([A-Za-z]+)"\)/g)].map(m => m[1]).filter(id => !["pzCodigo", "pzMesasLista", "pzTapete", "pzDestello", "pzDlgReglas"].includes(id) || id === "pzDlgReglas").every(id => new RegExp(`id="${id}"`).test(html) || ["pzCodigo", "pzMesasLista", "pzTapete", "pzDestello", "pzDock", "pzFormEntrar", "pzHeroe", "pzHeroeArte", "pzPanelForm", "pzVigia"].includes(id)));
 const rodarFn = js.slice(js.indexOf("async function rodar("), js.indexOf("function efectosDeCategoria"));
 cierto("el controlador solo pide acciones y nunca manda dados ni resultados: lo único al azar con dados es la cara que se enseña mientras ruedan", js.includes("api.pozo.tirar(paso)") && js.split("Math.floor(Math.random() * 6)").length === 2 && rodarFn.includes("Math.floor(Math.random() * 6)") && !js.includes("p_dados") && !js.includes("dados: ["));
 cierto("las animaciones de los dados usan caras al azar solo mientras ruedan y acaban en las del servidor", /cont\.innerHTML = dados\.map\(/.test(js));
