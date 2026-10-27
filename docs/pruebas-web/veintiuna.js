@@ -288,6 +288,7 @@ console.log("== Llamadas al servidor");
     return m && m[1].replace(/<span[^>]*aria-hidden="true"[^>]*>[^<]*<\/span>/g, "").replace(/<[^>]+>/g, "").trim().length > 2;
   }));
   const mesaJs = fs.readFileSync(path.join(RAIZ, "js", "veintiuna-mesa.js"), "utf8");
+  cierto("mientras la mano de la crupier sigue oculta (te plantas, o hay un natural al repartir) las velas y el «muestra» cuentan solo su carta visible, no el total final", mesaJs.includes("o.ocultarCrupier && c.cartas.length ? valorDeMano(c.cartas.slice(0, 1), est) : c.total") && mesaJs.includes('velas($("vvVelasCrupier"), visible') && mesaJs.includes("`muestra ${visible}`"));
   cierto("los botones de fichas y pasos llevan etiqueta", /aria-label="Añadir \$\{f\} tokens"/.test(mesaJs) && /aria-label="Bajar la apuesta/.test(mesaJs) && /aria-label="Subir la apuesta/.test(mesaJs));
   cierto("las acciones deshabilitadas usan aria-disabled y dicen por qué al pulsarlas", /aria-disabled="\$\{!b\.habilitado\}"/.test(mesaJs) && /b\.motivo \|\| "Esa acción no está disponible ahora\."/.test(mesaJs));
   cierto("el panel de modalidad es un radiogroup con aria-checked", /role="radiogroup"/.test(mesaJs) && /role="radio" aria-checked/.test(mesaJs));

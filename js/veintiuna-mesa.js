@@ -243,9 +243,11 @@
     velas($("vvVelasJugador"), j ? j.total : null, { oculto: !j });
     if (!c) { $("vvTotalCrupier").textContent = ""; velas($("vvVelasCrupier"), null, { oculto: true }); return; }
     const completo = est.estado === "terminada" && !o.ocultarCrupier;
-    $("vvTotalCrupier").textContent = completo ? (c.blando && c.total <= 21 ? `${c.total} blando` : String(c.total)) : `muestra ${c.total}`;
+    // Mientras su mano sigue oculta (te acabas de plantar, o se repartió un natural) solo cuenta la carta que se ve: el total de la respuesta ya es el final
+    const visible = o.ocultarCrupier && c.cartas.length ? valorDeMano(c.cartas.slice(0, 1), est) : c.total;
+    $("vvTotalCrupier").textContent = completo ? (c.blando && c.total <= 21 ? `${c.total} blando` : String(c.total)) : `muestra ${visible}`;
     $("vvTotalCrupier").className = "vv-total" + (completo && c.total > 21 ? " pasado" : completo && c.total === 21 ? " veintiuna" : "");
-    velas($("vvVelasCrupier"), c.total, { oculto: false });
+    velas($("vvVelasCrupier"), visible, { oculto: false });
   }
 
   /* ---------------------------------------------------------------- la placa de la regla */
