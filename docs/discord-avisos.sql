@@ -104,6 +104,7 @@ end;
 $$;
 
 -- Anota cómo salió un envío. Si falló: se reintenta tras p_espera_seg segundos; al 5.º intento fallido se da por perdido.
+-- p_espera_seg = 0 significa «no insistas»: se da por perdido ya (por ejemplo, alguien que no acepta mensajes privados).
 create or replace function public.discord_i_marcar_cola(p_id bigint, p_ok boolean, p_error text default null, p_espera_seg int default 60)
 returns void
 language plpgsql
@@ -116,7 +117,7 @@ begin
   if not found or c.estado <> 'pendiente' then return; end if;
   if p_ok then
     update discord_cola set estado = 'enviado', enviado = now(), reservado_hasta = null, ultimo_error = null where discord_cola.id = p_id;
-  elsif c.intentos >= 5 then
+  elsif c.intentos >= 5 or p_espera_seg = 0 then
     update discord_cola set estado = 'fallido', reservado_hasta = null, ultimo_error = left(coalesce(p_error, 'sin detalle'), 200) where discord_cola.id = p_id;
   else
     update discord_cola set reservado_hasta = null, proximo_intento = now() + make_interval(secs => greatest(5, least(coalesce(p_espera_seg, 60), 900))),
@@ -134,7 +135,9 @@ set search_path = public
 as $$
 declare filas int;
 begin
-  delete from discord_cola where estado <> 'pendiente' and creado < now() - interval '7 days';
+  -- Lo resuelto de hace más de una semana (las novedades se guardan 60 días para no volver a anunciar lo mismo)
+  delete from discord_cola where estado <> 'pendiente'
+    and creado < now() - case when origen in ('novedad', 'entradas') then interval '60 days' else interval '7 days' end;
   get diagnostics filas = row_count;
   return filas;
 end;

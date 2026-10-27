@@ -39,6 +39,12 @@ export const COMANDOS = [
   { name: "desafios", type: 1, description: "Tus desafíos de hoy en Las Veintiuna Velas", dm_permission: false },
   { name: "carrera", type: 1, description: "La próxima carrera del Hipódromo y sus favoritas", dm_permission: false },
   { name: "saldo", type: 1, description: "Tus tokens de juego", dm_permission: false },
+  { name: "ficha", type: 1, description: "Un resumen de tu personaje de Mis personajes (solo lo ves tú)", dm_permission: false,
+    options: [{ type: 3, name: "nombre", description: "Cuál de tus personajes (si tienes uno solo, no hace falta)", autocomplete: true, max_length: 80 }] },
+  { name: "avisos", type: 1, description: "Elige qué avisos te mando por mensaje privado", dm_permission: false,
+    options: [
+      { type: 5, name: "cria", description: "Avisarme cuando una cría esté lista" },
+      { type: 5, name: "carrera", description: "Avisarme 2 minutos antes de que corra una criatura mía" }] },
   { name: "eventos", type: 1, description: "Avisos del sitio y próximas carreras", dm_permission: false,
     options: [{ type: 5, name: "publico", description: "Enseñarlos a todos en el canal (solo los avisos de todos)" }] }
 ];
@@ -69,6 +75,8 @@ async function ayuda(ctx) {
       { name: "/cartas", value: "Busca una carta de Triunfos." },
       { name: "/cronica", value: "Lo último que pasó en la taberna, solo lo que ve tu Side." },
       { name: "/racha  /desafios  /saldo", value: "Tu racha y tus desafíos de Las Veintiuna Velas, y tus tokens." },
+      { name: "/ficha", value: "Un resumen de tu personaje de Mis personajes." },
+      { name: "/avisos", value: "Elige si quieres un mensaje privado cuando una cría esté lista o una criatura tuya vaya a correr." },
       { name: "/carrera", value: "La próxima carrera del Hipódromo y sus favoritas." },
       { name: "/eventos", value: "Avisos del sitio y próximas carreras de los caballinhos." }],
     url: enlace(ctx.sitio, "index.html")
@@ -183,8 +191,17 @@ async function buscarEnCompendio(inter, ctx) {
 }
 
 /* Autocompletado de /buscar: hasta 25 títulos que esa persona puede ver. Nunca sugiere algo de otro Side. */
+async function autocompletarFicha(inter, ctx, texto) {
+  const r = await ctx.rpc("discord_i_fichas", { p_discord_id: quien(inter).id, p_nombre: null });
+  const t = texto.trim().toLowerCase();
+  const choices = (r?.lista || []).filter(f => !t || String(f.nombre).toLowerCase().includes(t)).slice(0, 25)
+    .map(f => ({ name: corta(`${f.nombre}${f.clase ? ` (${f.clase}${f.nivel != null ? ` ${f.nivel}` : ""})` : ""}`, 100), value: corta(f.nombre, 100) }));
+  return { type: 8, data: { choices } };
+}
+
 async function autocompletar(inter, ctx) {
   const foco = (inter.data?.options || []).find(o => o.focused);
+  if (inter.data?.name === "ficha" && foco && foco.name === "nombre") return autocompletarFicha(inter, ctx, String(foco.value ?? "").slice(0, 80));
   if (inter.data?.name !== "buscar" || !foco || foco.name !== "consulta") return { type: 8, data: { choices: [] } };
   const texto = String(foco.value ?? "").slice(0, 80);
   if (texto.trim().length < 2) return { type: 8, data: { choices: [] } };
@@ -245,7 +262,53 @@ async function saldo(inter, ctx) {
   return privado(`💰 Tienes **${num(t)}** tokens de juego.`);
 }
 
-const MANEJADORES = { ayuda: (i, c) => ayuda(c), vincular, desvincular, perfil, clasificacion, buscar: buscarEnCompendio, cartas, cronica, racha, desafios, carrera, saldo, eventos };
+const firmado = n => (n >= 0 ? "+" : "−") + Math.abs(n);
+
+async function ficha(inter, ctx) {
+  const nombre = String(opcion(inter, "nombre") ?? "").slice(0, 80).trim();
+  const r = await ctx.rpc("discord_i_fichas", { p_discord_id: quien(inter).id, p_nombre: nombre || null });
+  const lista = r?.lista || [];
+  if (!lista.length) return privado("Todavía no tienes ningún personaje en Mis personajes.");
+  const f = r.ficha;
+  if (!f) {
+    const nombres = lista.slice(0, 15).map(x => `• **${escapar(corta(x.nombre, 60))}**${x.clase ? ` · ${escapar(corta(x.clase, 40))}${x.nivel != null ? ` ${x.nivel}` : ""}` : ""}`).join("\n");
+    return embed({ title: "Tus personajes", description: corta(`${nombre ? `No encontré ninguno que se llame «${escapar(corta(nombre, 40))}». ` : ""}${nombres}\n\nUsa /ficha y elige uno.`, 3000), url: enlace(ctx.sitio, "fichas.html") });
+  }
+  const linea1 = [f.nivel != null ? `Nivel ${f.nivel}` : null, f.clase ? `${f.clase}${f.subclase ? ` (${f.subclase})` : ""}` : null, f.raza].filter(Boolean).join(" · ");
+  const linea2 = [f.trasfondo, f.alineamiento, f.campania].filter(Boolean).join(" · ");
+  const campos = [];
+  if (f.pv != null || f.pv_max != null) campos.push({ name: "Vida", value: `${num(f.pv)} / ${num(f.pv_max)}${f.pv_temp ? ` (+${num(f.pv_temp)} temporales)` : ""}`, inline: true });
+  if (f.ca != null) campos.push({ name: "CA", value: num(f.ca), inline: true });
+  if (f.iniciativa != null) campos.push({ name: "Iniciativa", value: firmado(f.iniciativa), inline: true });
+  if (f.velocidad) campos.push({ name: "Velocidad", value: corta(escapar(f.velocidad), 40), inline: true });
+  if (f.competencia != null) campos.push({ name: "Competencia", value: firmado(f.competencia), inline: true });
+  const nombresAtr = { fue: "FUE", des: "DES", con: "CON", int: "INT", sab: "SAB", car: "CAR" };
+  const atr = Object.entries(nombresAtr).filter(([k]) => f.atributos?.[k]?.punt != null).map(([k, n]) => `**${n}** ${f.atributos[k].punt} (${firmado(f.atributos[k].mod)})`);
+  if (atr.length) campos.push({ name: "Atributos", value: atr.join(" · ") });
+  for (const [k, etiqueta] of [["condiciones", "Condiciones"], ["resistencias", "Resistencias"], ["inmunidades", "Inmunidades"], ["vulnerabilidades", "Vulnerabilidades"]])
+    if (f[k]) campos.push({ name: etiqueta, value: corta(escapar(f[k]), 300), inline: true });
+  if (Array.isArray(f.ataques) && f.ataques.length) campos.push({ name: "Ataques", value: corta(f.ataques.map(a => escapar(a)).join(" · "), 1000) });
+  const m = f.monedas || {};
+  if (m.oro != null || m.plata != null || m.cobre != null) campos.push({ name: "Monedas", value: `${num(m.oro)} oro · ${num(m.plata)} plata · ${num(m.cobre)} cobre`, inline: true });
+  if (f.n_rasgos || f.n_hechizos) campos.push({ name: "Anotados", value: [f.n_rasgos ? `${f.n_rasgos} rasgos` : null, f.n_hechizos ? `${f.n_hechizos} hechizos` : null].filter(Boolean).join(" · "), inline: true });
+  const e = { title: corta(escapar(f.nombre), 250), description: corta([f.fallecido ? "☠️ **Fallecido**" : "", escapar(linea1), escapar(linea2)].filter(Boolean).join("\n"), 1000) || "—",
+    fields: campos.slice(0, 25), url: enlace(ctx.sitio, "fichas.html"), footer: { text: "Solo lo ves tú. Se actualiza cuando guardas cambios en la web." } };
+  if (f.actualizada && !isNaN(Date.parse(f.actualizada))) e.timestamp = new Date(f.actualizada).toISOString();
+  return embed(e);
+}
+
+async function avisos(inter, ctx) {
+  const cria = opcion(inter, "cria"), carrera = opcion(inter, "carrera");
+  const r = await ctx.rpc("discord_i_avisos", { p_discord_id: quien(inter).id, p_cria: typeof cria === "boolean" ? cria : null, p_carrera: typeof carrera === "boolean" ? carrera : null });
+  const cambio = typeof cria === "boolean" || typeof carrera === "boolean";
+  const estado = b => (b ? "✅ Activado" : "▫️ Apagado");
+  return embed({ title: cambio ? "Listo, avisos actualizados" : "Tus avisos por mensaje privado",
+    description: "Te escribo por mensaje privado, solo si lo activas aquí. Para que llegue, en Discord tienes que permitir mensajes directos de los miembros de este servidor (Ajustes del servidor > Privacidad). Si no llegan, no insisto.",
+    fields: [{ name: "Cría lista", value: estado(r.cria), inline: true }, { name: "Tu criatura corre pronto", value: estado(r.carrera), inline: true }],
+    footer: { text: "Cambia uno con /avisos cria:sí o /avisos carrera:no" } });
+}
+
+const MANEJADORES = { ayuda: (i, c) => ayuda(c), vincular, desvincular, perfil, clasificacion, buscar: buscarEnCompendio, cartas, cronica, racha, desafios, carrera, saldo, ficha, avisos, eventos };
 
 /* Punto de entrada. `ctx` = { rpc(nombre, args) -> datos (lanza si falla), indice() -> entradas del compendio, sitio, log(mensaje) }.
    Devuelve siempre algo que se puede mandar a Discord; nunca lanza. */

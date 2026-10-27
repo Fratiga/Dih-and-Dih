@@ -56,21 +56,129 @@ export function mensajeRecordatorio(c, sitio) {
   };
 }
 
+const RAREZAS = { comun: "Común", infrecuente: "Infrecuente", rara: "Rara", legendaria: "Legendaria", limitada: "Limitada" };
+const enlaceSeguro = e => (typeof e === "string" && /^[a-z0-9_-]+\.html(#[A-Za-z0-9_%.=-]*)?$/.test(e) ? e : null);
+
+/* El resumen de la semana de un canal: la mejor racha de Veintiuna, la apuesta más pagada del Hipódromo y las cartas más raras. Solo sale lo que hubo. */
+export function mensajeResumen(c, sitio) {
+  const campos = [];
+  if (c.racha && c.racha.racha != null) campos.push({ name: "Mejor racha de Las Veintiuna Velas", value: corta(`${escapar(c.racha.user)}: ${num(c.racha.racha)} victorias seguidas`, 1000) });
+  if (c.apuesta && c.apuesta.pago != null) {
+    const cria = Array.isArray(c.apuesta.criaturas) ? c.apuesta.criaturas.join(", ") : c.apuesta.criaturas;
+    campos.push({ name: "Apuesta más pagada del Hipódromo", value: corta(`${escapar(c.apuesta.user)} apostó ${num(c.apuesta.monto)} tokens${cria ? ` por ${escapar(cria)}` : ""} y cobró ${num(c.apuesta.pago)}${c.apuesta.mult ? ` (${String(c.apuesta.mult).replace(".", ",")} veces)` : ""}`, 1000) });
+  }
+  if (Array.isArray(c.cartas) && c.cartas.length) {
+    const lineas = c.cartas.map(x => `${escapar(x.nombre || "Una carta")} (${RAREZAS[x.rareza] || escapar(x.rareza || "carta")}), de ${escapar(x.user)}`);
+    campos.push({ name: `Cartas más raras (${num(c.total_cartas)} ganadas en total)`, value: corta(lineas.join("\n"), 1000) });
+  }
+  if (!campos.length) return null;
+  return { embeds: [{ color: COLOR, title: "📅 La semana en la taberna", description: "Lo más destacado de los últimos 7 días.", fields: campos, footer: { text: "Crónica del mundo" } }], allowed_mentions: { parse: [] } };
+}
+
+/* Una novedad del sitio (data/novedades.js o la que escribe el Admin), con su enlace. */
+export function mensajeNovedad(c, sitio) {
+  if (!c.titulo) return null;
+  const e = enlaceSeguro(c.enlace);
+  return {
+    embeds: [{ color: COLOR, title: corta(`🆕 ${c.titulo}`, 250), description: corta(`${escapar(c.texto || "")}${e ? `\n[Verlo en el sitio](${enlace(sitio, e)})` : ""}`, 1500), footer: { text: "Novedades del sitio" } }],
+    allowed_mentions: { parse: [] }
+  };
+}
+
+/* Entradas nuevas del compendio: hasta 8 títulos con su enlace y cuántas hay en total. */
+export function mensajeEntradas(c, sitio) {
+  const items = Array.isArray(c.items) ? c.items : [];
+  if (!items.length) return null;
+  const lineas = items.map(i => {
+    const titulo = escapar(corta(i.t, 100));
+    const e = enlaceSeguro(i.p);
+    return `• ${e ? `[${titulo}](${enlace(sitio, e)})` : titulo}${i.c ? ` · ${escapar(corta(i.c, 40))}` : ""}`;
+  });
+  const resto = Number(c.total) - items.length;
+  return {
+    embeds: [{ color: COLOR, title: Number(c.total) === 1 ? "📖 Una entrada nueva en el compendio" : `📖 ${num(c.total)} entradas nuevas en el compendio`,
+      description: corta(lineas.join("\n") + (resto > 0 ? `\ny ${num(resto)} más.` : ""), 3000), footer: { text: "Compendio" } }],
+    allowed_mentions: { parse: [] }
+  };
+}
+
+/* Mensaje privado: tu criatura corre en 2 minutos. */
+export function mensajeDmCarrera(c, sitio) {
+  const lista = Array.isArray(c.criaturas) ? c.criaturas : [];
+  if (!lista.length) return null;
+  const nombres = lista.map(x => `${escapar(corta(x.nombre, 60))}${x.puerta ? ` (puerta ${escapar(x.puerta)})` : ""}`).join(", ");
+  return {
+    embeds: [{ color: COLOR, title: lista.length === 1 ? "🏇 Tu criatura corre en 2 minutos" : "🏇 Tus criaturas corren en 2 minutos",
+      description: corta(`${nombres} en la carrera ${escapar(c.n)}: ${escapar(corta(c.nombre, 100))}.\nSale <t:${Number(c.hora)}:R>.\n[Verla en vivo](${enlace(sitio, "hipodromo-vivo.html")})`, 1500),
+      footer: { text: "Puedes apagar estos avisos con /avisos" } }],
+    allowed_mentions: { parse: [] }
+  };
+}
+
+/* Mensaje privado: tu cría está lista. */
+export function mensajeDmCria(c, sitio) {
+  return {
+    embeds: [{ color: COLOR, title: "🥚 Tu cría está lista", description: corta(`La cría de ${escapar(corta(c.cria || "tu criatura", 80))} ya se puede recoger en el corral.\n[Ir a los corrales](${enlace(sitio, "corrales.html")})`, 1000),
+      footer: { text: "Puedes apagar estos avisos con /avisos" } }],
+    allowed_mentions: { parse: [] }
+  };
+}
+
 function mensajeDe(fila, sitio) {
   if (fila.origen === "carrera") return mensajeCarrera(fila.contenido || {}, sitio);
   if (fila.origen === "cronica") return mensajeCronica(fila.contenido || {}, sitio);
   if (fila.origen === "recordatorio") return mensajeRecordatorio(fila.contenido || {}, sitio);
+  if (fila.origen === "resumen") return mensajeResumen(fila.contenido || {}, sitio);
+  if (fila.origen === "novedad") return mensajeNovedad(fila.contenido || {}, sitio);
+  if (fila.origen === "entradas") return mensajeEntradas(fila.contenido || {}, sitio);
+  if (fila.origen === "dm") {
+    const c = fila.contenido || {};
+    return c.tipo === "dm_carrera" ? mensajeDmCarrera(c, sitio) : c.tipo === "dm_cria" ? mensajeDmCria(c, sitio) : null;
+  }
   return null;
 }
 
+/* Las novedades del sitio y las entradas nuevas del compendio salen del índice de búsqueda (data/discord-indice.json). Se mira como mucho una vez cada
+   10 minutos (lo decide la base de datos, así que no depende de que esta función siga encendida) y solo si hay un canal «novedades» encendido. */
+export async function revisarIndice({ rpc, obtener, sitio, log = () => {} }) {
+  let toca = false;
+  try { toca = (await rpc("discord_i_indice_toca", {})) === true; } catch (e) { log(`no pude saber si toca mirar el índice: ${e?.code || ""}`); return 0; }
+  if (!toca) return 0;
+  let idx;
+  try {
+    const r = await obtener(enlace(sitio, "data/discord-indice.json"));
+    if (!r.ok) throw new Error("índice " + r.status);
+    idx = await r.json();
+  } catch (e) { log(`no pude bajar el índice del compendio: ${String(e?.message || e).slice(0, 100)}`); return 0; }
+  let n = 0;
+  for (const nv of (Array.isArray(idx.novedades) ? idx.novedades : []).slice(0, 30)) {
+    n += Number(await rpc("discord_i_encolar_novedad", { p_clave: nv.clave, p_titulo: nv.titulo, p_texto: nv.texto ?? "", p_enlace: nv.enlace ?? null, p_fecha: nv.fecha })) || 0;
+  }
+  const entradas = Array.isArray(idx.entradas) ? idx.entradas : [];
+  if (entradas.length) {
+    const nuevas = new Set((await rpc("discord_i_indice_nuevas", { p_ids: entradas.map(e => e.id).filter(Boolean) })) || []);
+    // Solo las que no son de un Side: un canal lo leen los dos (las de un Side se pueden buscar con /buscar, pero no se anuncian)
+    const items = entradas.filter(e => nuevas.has(e.id) && (!e.l || !e.l.length)).map(e => ({ id: e.id, t: e.t, c: e.c, p: e.p }));
+    if (items.length) n += Number(await rpc("discord_i_encolar_entradas", { p_items: items })) || 0;
+  }
+  return n;
+}
+
 /* Una pasada completa: encola lo nuevo y publica lo pendiente. Devuelve un resumen sin datos privados. */
-export async function procesar({ rpc, enviar, sitio, log = () => {}, max = 10 }) {
+export async function procesar({ rpc, enviar, sitio, log = () => {}, max = 10, obtener = (u) => fetch(u) }) {
   const resumen = { encoladas: 0, enviadas: 0, reintentos: 0, fallidas: 0 };
   try { resumen.encoladas = Number(await rpc("discord_i_encolar_carreras", {})) || 0; }
   catch (e) { log(`no pude mirar las carreras: ${e?.code || ""} ${String(e?.message || e).slice(0, 150)}`); }
   // La crónica y el recordatorio de Veintiuna van aparte: si todavía no está su SQL (docs/discord-2_consultas.sql), solo se apunta en el registro y las carreras siguen.
   try { resumen.encoladas += Number(await rpc("discord_i_encolar_cronica", {})) || 0; }
   catch (e) { log(`no pude mirar la crónica: ${e?.code || ""} ${String(e?.message || e).slice(0, 150)}`); }
+  // Cada cosa aparte: si falta el SQL de una (docs/discord-3_extras.sql) no impide las demás.
+  for (const [nombre, que] of [["discord_i_encolar_resumen", "el resumen semanal"], ["discord_i_encolar_novedades_admin", "las novedades del Admin"], ["discord_i_encolar_personales", "los avisos personales"]]) {
+    try { resumen.encoladas += Number(await rpc(nombre, {})) || 0; }
+    catch (e) { log(`no pude mirar ${que}: ${e?.code || ""} ${String(e?.message || e).slice(0, 150)}`); }
+  }
+  try { resumen.encoladas += await revisarIndice({ rpc, obtener, sitio, log }); }
+  catch (e) { log(`no pude revisar el índice del compendio: ${e?.code || ""} ${String(e?.message || e).slice(0, 150)}`); }
 
   let filas = [];
   try { filas = (await rpc("discord_i_tomar_cola", { p_max: max })) || []; }
@@ -87,6 +195,7 @@ export async function procesar({ rpc, enviar, sitio, log = () => {}, max = 10 })
         if (r.estado >= 200 && r.estado < 300) ok = true;
         else if (r.estado === 429) { error = "Discord pide esperar (429)"; espera = Math.ceil(r.reintentoSeg || 30); }
         else if (r.estado >= 500 || r.estado === 0) { error = `Discord no contesta (${r.estado})`; espera = 30; }
+        else if (r.codigo === 50007 || r.codigo === 10013) { error = "La persona no acepta mensajes privados del bot (o ya no está en Discord)"; espera = 0; }   // 0 = no insistas
         else { error = `Discord rechazó el aviso (${r.estado}${r.error ? ": " + r.error : ""}). Revisa el canal y los permisos del bot.`; espera = 300; }
       }
     } catch (e) { error = "fallo al enviar: " + String(e?.message || e).slice(0, 100); }
@@ -109,7 +218,7 @@ const iguales = (a, b) => {   // comparación de claves sin atajos por el primer
 };
 
 /* La entrada HTTP: solo el cron (que lleva la clave en x-discord-clave) puede llamarla. */
-export async function atender(req, { entorno, rpc, enviar, log = () => {} }) {
+export async function atender(req, { entorno, rpc, enviar, log = () => {}, obtener }) {
   const json = (estado, cuerpo) => new Response(JSON.stringify(cuerpo), { status: estado, headers: { "Content-Type": "application/json" } });
   if (req.method !== "POST") return json(405, { error: "Solo POST" });
   const clave = entorno("DISCORD_AVISOS_CLAVE");
@@ -117,5 +226,5 @@ export async function atender(req, { entorno, rpc, enviar, log = () => {} }) {
   if (!iguales(req.headers.get("x-discord-clave") ?? "", clave)) return json(401, { error: "clave" });
   if (!entorno("DISCORD_BOT_TOKEN")) { log("Falta DISCORD_BOT_TOKEN"); return json(500, { error: "sin configurar" }); }
   const sitio = entorno("SITIO_URL") || "https://fratiga.github.io/Dih-and-Dih/";
-  return json(200, await procesar({ rpc, enviar, sitio, log }));
+  return json(200, await procesar({ rpc, enviar, sitio, log, obtener }));
 }

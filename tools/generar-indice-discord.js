@@ -1,7 +1,7 @@
 // Genera data/discord-indice.json: el índice de búsqueda que usa el comando /buscar del bot de Discord.
 // Parte de los mismos archivos data/*.js que lee la web, los pasa a texto plano y guarda para cada entrada su título, categoría, etiquetas, resumen,
 // datos sueltos (daño, precio, región...), texto completo, el lado al que pertenece (A, B o ninguno) y sus subsecciones por lado.
-// Nunca copia los campos solo para el GM (datosGM). El Side se aplica después, en la Edge Function, con las mismas reglas que la web.
+// También guarda las novedades del lobby (data/novedades.js) para que el bot las anuncie. Nunca copia los campos solo para el GM (datosGM). El Side se aplica después, en la Edge Function, con las mismas reglas que la web.
 //
 // Uso (cada vez que cambie algo de data/*.js que quieras que el bot conozca):
 //   node tools/generar-indice-discord.js
@@ -13,7 +13,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { aTexto } from "../docs/discord/texto.js";
 
 const RAIZ = fileURLToPath(new URL("..", import.meta.url));
-const ARCHIVOS = ["entries", "personajes", "lugares", "facciones", "pergaminos", "armas", "bestiario", "razas", "religiones", "objetos", "reglas", "economia", "cronologia-a", "cronologia-b"];
+const ARCHIVOS = ["entries", "personajes", "lugares", "facciones", "pergaminos", "armas", "bestiario", "razas", "religiones", "objetos", "reglas", "economia", "cronologia-a", "cronologia-b", "novedades"];
 
 export function cargarDatos() {
   const ctx = { window: {} }; ctx.window.window = ctx.window; vm.createContext(ctx);
@@ -80,7 +80,9 @@ export function construirIndice(w) {
   }
   for (const e of w.ECONOMIA || [])
     entradas.push({ id: "eco-" + slug(e.categoria + "-" + e.nombre), t: e.nombre, c: "Economía", g: [e.categoria].filter(Boolean), r: [e.categoria, e.precio].filter(Boolean).join(" · "), l: null, x: e.nota || "", d: [["Precio", e.precio || ""]].filter(d => d[1]), p: "economia.html" });
-  return { generado: new Date().toISOString(), entradas };
+  // Las novedades del lobby (data/novedades.js): el bot anuncia las de los últimos 2 días. La clave es la misma que usa el panel de Admin (fecha|título).
+  const novedades = (w.NOVEDADES || []).filter(n => n && n.fecha && n.titulo).map(n => ({ clave: `${n.fecha}|${n.titulo}`, fecha: n.fecha, titulo: n.titulo, texto: aTexto(n.texto || ""), enlace: n.enlace || null }));
+  return { generado: new Date().toISOString(), novedades, entradas };
 }
 
 // Solo se escribe el archivo cuando se ejecuta este script, no cuando lo importan las pruebas.

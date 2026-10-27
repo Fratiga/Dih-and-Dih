@@ -13,7 +13,7 @@ console.log("== Las copias de js/cronica.js");
   const original = leer("js/cronica.js");
   ok(leer("docs/discord/cronica.js") === original, "la copia de docs/discord/ es idéntica a js/cronica.js (si falla: copia js/cronica.js ahí)");
   ok(leer("docs/discord-avisos/cronica.js") === original, "y la de docs/discord-avisos/ también");
-  ok(COMANDOS.length === 13, "hay 13 comandos registrables", String(COMANDOS.length));
+  ok(COMANDOS.length === 15, "hay 15 comandos registrables", String(COMANDOS.length));
   ok(COMANDOS.every(c => /^[a-z]{3,32}$/.test(c.name) && c.description.length <= 100 && c.dm_permission === false), "todos con nombre y descripción válidos para Discord y sin mensajes directos");
   ok(new Set(COMANDOS.map(c => c.name)).size === COMANDOS.length, "ningún nombre se repite");
 }
@@ -124,7 +124,7 @@ console.log("== Los anuncios de la crónica y el recordatorio");
     { id: 1, origen: "cronica", clave: "cronica:5", canal_id: "444444444444444441", contenido: { id: 5, tipo: "copa_hipodromo", user: "Ana", datos: { criatura: "Brasa", copa: "La Copa" } }, intentos: 1 },
     { id: 2, origen: "recordatorio", clave: "veintiuna:reinicio:2026-10-26", canal_id: "444444444444444443", contenido: { tipo: "veintiuna_reinicio", hora: 1793000000 }, intentos: 1 },
     { id: 3, origen: "cronica", clave: "cronica:9", canal_id: "444444444444444441", contenido: { id: 9, tipo: "inventado", datos: {} }, intentos: 1 }];
-  const rpc = async (n, a) => { if (n === "discord_i_tomar_cola") return filas; if (n === "discord_i_marcar_cola") marcas.push(a); if (n === "discord_i_encolar_cronica") return 2; return 1; };
+  const rpc = async (n, a) => { if (n === "discord_i_tomar_cola") return filas; if (n === "discord_i_marcar_cola") marcas.push(a); if (n === "discord_i_encolar_cronica") return 2; if (n === "discord_i_encolar_carreras") return 1; return 0; };
   const r = await procesar({ rpc, enviar: async (canal, cuerpo, nonce) => { envios.push({ canal, nonce }); return { estado: 200 }; }, sitio: "https://s.test/" });
   ok(envios.length === 2 && envios[0].canal === "444444444444444441" && envios[1].canal === "444444444444444443", "cada aviso va a su canal");
   ok(r.encoladas === 3 && r.enviadas === 2, "el resumen cuenta lo apuntado (carreras y crónica) y lo enviado", JSON.stringify(r));

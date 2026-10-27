@@ -1,6 +1,6 @@
 # Discord: el bot «The great mice» y la web
 
-Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras **ya está desplegado y funcionando** (la función `discord-avisos`, el canal y el cron los puso el usuario). La búsqueda general en el compendio (`/buscar`) también está hecha y probada en local, sin desplegar (ver «Buscar en el compendio»). También están hechos y probados en local, sin desplegar, `/cronica`, `/racha`, `/desafios`, `/carrera`, `/saldo` y los anuncios de la crónica por Side (ver «Crónica del mundo, Veintiuna, carrera y saldo»). Las inscripciones y el panel completo de la taberna **no están hechos**.
+Estado (26 de octubre de 2026): **Etapa A, los comandos de la Etapa B y el aviso de «la carrera sale en 2 minutos» están hechos y probados en local.** La aplicación, el SQL de la vinculación y la función `discord` ya están en marcha (los puso el usuario). El aviso de carreras **ya está desplegado y funcionando** (la función `discord-avisos`, el canal y el cron los puso el usuario). La búsqueda general en el compendio (`/buscar`) también está hecha y probada en local, sin desplegar (ver «Buscar en el compendio»). También están hechos y probados en local, sin desplegar, `/cronica`, `/racha`, `/desafios`, `/carrera`, `/saldo` y los anuncios de la crónica por Side (ver «Crónica del mundo, Veintiuna, carrera y saldo»). También están hechos y probados en local, sin desplegar, `/ficha`, `/avisos` (avisos personales por mensaje privado), el resumen semanal y las novedades del sitio (ver «/ficha, resumen semanal, novedades y avisos personales»). Las inscripciones y el panel completo de la taberna **no están hechos**.
 
 La aplicación se llama **D&D** y el bot **The great mice**.
 
@@ -185,9 +185,49 @@ on conflict (evento) do update set canal_id = excluded.canal_id, activo = true, 
 
 Pruebas: `docs/pruebas/t_discord_cronica.sh` (SQL) y `tools/probar-discord-cronica.js`.
 
+## /ficha, resumen semanal, novedades y avisos personales (hecho, sin desplegar)
+
+Cuatro ideas más del 27-oct-2026. Todo está en `docs/discord-3_extras.sql` (se ejecuta después de `docs/discord-2_consultas.sql`).
+
+**`/ficha [nombre]`** (privado). Un resumen de uno de tus personajes de Mis personajes: nivel, clase, raza, vida, CA, iniciativa, competencia, atributos con su modificador, condiciones y resistencias, ataques y monedas. Sin nombre da la lista de tus personajes; con el campo `nombre` hay autocompletado (solo con los tuyos). Solo salen las fichas de la cuenta vinculada y no las archivadas. **No** sale la historia, la descripción física, las notas ni el correo. La CA, la competencia, la iniciativa y los modificadores se calculan en SQL con las mismas cuentas que `js/fichas-calc.js`: `tools/ficha-paridad.js` compara las dos en 14 fichas de ejemplo, para que no se desvíen si alguien cambia las cuentas en un solo sitio.
+
+**Resumen semanal.** Cada domingo entre las 20:00 y las 23:00 UTC (17:00 en Chile) se apunta un resumen por canal de la crónica (`cronica_a`, `cronica_b`, `cronica_general`): la mejor racha de Las Veintiuna Velas, la apuesta más pagada del Hipódromo y las tres cartas más raras ganadas esa semana, con el total. Sale de la crónica, así que solo cuenta lo que ya se consideró digno de anotar (una apuesta de 650 tokens, por ejemplo, no está si no pasó los umbrales). Cada canal resume lo de su Side y lo de los dos; el general, solo lo de los dos. Una semana sin nada no publica nada, y no se repite en la misma semana.
+
+**Novedades del sitio** (canal `novedades` en `discord_canales`):
+
+- Las del lobby (`data/novedades.js`) llegan por el índice: `tools/generar-indice-discord.js` ahora guarda también las novedades en `data/discord-indice.json`. Se anuncian las de los últimos 2 días, una sola vez.
+- Las que escribes desde el panel de Admin (colección `NOVEDADES` de `contenido_servidor`) se anuncian si las editaste en el último día.
+- **Entradas nuevas del compendio.** Cuando el índice trae identificadores que no estaban, se anuncian en un solo aviso (hasta 8 títulos con enlace y cuántas más hay). La primera vez solo se guardan los existentes: no se anuncia todo el compendio. Solo salen las que no son de un Side (un canal lo leen los dos Sides); esas se encuentran con `/buscar` pero no se anuncian.
+- No se anuncian las **ediciones** de entradas que ya existían: no hay forma fiable de saber qué cambió, y sería ruido. Para algo importante, escribe una novedad.
+- El índice se baja como mucho una vez cada 10 minutos (lo decide la base de datos con `discord_i_indice_toca`, así que no depende de que la función siga encendida) y solo si hay un canal `novedades` encendido.
+- **Importante:** como todo sale del índice, hay que regenerarlo (`node tools/generar-indice-discord.js`) y subirlo con cada cambio de `data/*.js`, y esperar a que GitHub Pages lo publique.
+
+**Avisos personales por mensaje privado.** Son opcionales y están apagados por defecto: cada persona los activa con `/avisos cria:sí carrera:sí` (y los apaga con `no`).
+
+- **Cría lista:** cuando una cría en curso de tus corrales llega a su hora (y no han pasado más de 24 horas).
+- **Tu criatura corre pronto:** 2 minutos antes de una carrera en la que corra una criatura tuya (un solo aviso aunque corran varias, con la puerta de cada una).
+- Van por mensaje privado del bot. Para que lleguen, la persona tiene que permitir mensajes directos de los miembros del servidor. Si Discord dice que no los acepta, **no se insiste** (el aviso se da por perdido a la primera) y no se vuelve a intentar con ese aviso. Cada persona solo recibe lo suyo.
+
+| Archivo | Para qué |
+|---|---|
+| `docs/discord-3_extras.sql` | Preferencias, `/ficha`, el resumen, las novedades, las entradas nuevas y los avisos personales |
+| `docs/discord-avisos.sql` | Cambia `discord_i_marcar_cola` (espera 0 = no insistas) y la limpieza (60 días para novedades) |
+| `docs/discord-avisos/avisos.js`, `index.ts` | Los mensajes nuevos y el envío por mensaje privado |
+| `docs/discord/comandos.js` | `/ficha` y `/avisos` (ya son 15 comandos) |
+| `tools/generar-indice-discord.js` | Ahora guarda también las novedades |
+| `tools/ficha-paridad.js` | Compara las cuentas de la ficha con `js/fichas-calc.js` |
+| `docs/pruebas/t_discord_extras.sh`, `tools/probar-discord-extras.js` | 123 comprobaciones SQL y 65 de la función |
+
+**Para ponerlo en marcha:**
+
+1. Ejecuta `docs/discord-avisos.sql` (cambia dos funciones; se puede repetir) y después `docs/discord-3_extras.sql`.
+2. Actualiza la función `discord` (cambia `comandos.js`) y la función `discord-avisos` (cambian `avisos.js` e `index.ts`). Vuelve a desplegar las dos. Los archivos de `docs/discord-avisos/` son tres: `index.ts`, `avisos.js` y `cronica.js`.
+3. Registra los comandos otra vez (aparecen `/ficha` y `/avisos`): `node --env-file=docs/discord/.env docs/discord/registrar.js`.
+4. Para las novedades, añade el canal: `insert into discord_canales (evento, canal_id) values ('novedades', '<ID>') on conflict (evento) do update set canal_id = excluded.canal_id, activo = true, actualizado = now();`. El resumen semanal usa los mismos canales de la crónica.
+
 ## Lo que sigue (no hecho)
 
-- **Más notificaciones.** La cola ya existe y ya anuncia carreras, la crónica y el recordatorio de Veintiuna. Faltan fuentes como `eventos_sitio` y los torneos, y los avisos personales por mensaje privado (cría lista, intercambio dirigido a ti, reto de ajedrez; opcionales, solo para quien los active), que necesitan una tabla de preferencias.
+- **Más notificaciones.** La cola ya existe y ya anuncia carreras, la crónica y el recordatorio de Veintiuna. Faltan fuentes como `eventos_sitio` y los torneos, y más avisos personales por mensaje privado (intercambio dirigido a ti, reto de ajedrez, ofertas del Buhonero). Los de cría lista y criatura que corre pronto ya existen (`/avisos`).
 - **Más cosas consultables** (petición del 26-oct-2026, «cualquier cosa»). `/buscar` ya cubre el compendio. Faltan por añadir según quieras: las fichas de enemigos (`stats.js`, hoy solo admin), el mapa y sus pines, los pergaminos de cada Escuela, las novedades del lobby, y más datos personales (colección de cartas con nombres, mazos, historial de partidas). Cada cosa se añade como función SQL o como colección del índice, con su regla de visibilidad.
 - **Etapa C, inscripciones.** No existe un sistema de inscripciones: hay que diseñarlo (tabla de inscritos con restricción única, plazas, estados, funciones con bloqueo para las carreras simultáneas) y luego exponerlo en la web y en un comando. Conviene decidir primero qué tipo de eventos serán (torneos de blackjack, carreras del Hipódromo...).
 - **Etapa D, panel de la taberna.** Hoy el Tablón solo vincula. Falta lo visual: próximos eventos, anuncios, clasificaciones destacadas y accesos directos.
