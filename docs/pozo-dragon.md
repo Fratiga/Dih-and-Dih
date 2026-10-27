@@ -2,7 +2,7 @@
 
 Juego de dados con apuestas de tokens y cartas entre jugadores (`pozo-dragon.html`). Tres modalidades en un mismo motor de dados: **Solo contra el Dragón**, **Duelo de Dragones** (dos jugadores) y **El Pozo Compartido** (de dos a seis).
 
-**Estado (27 de octubre de 2026): OCULTO.** Solo lo ve y lo juega el admin, por orden del usuario, hasta que diga lo contrario. Y el SQL **no se ha ejecutado todavía contra Postgres**: se comprobó la sintaxis con el analizador real de PostgreSQL y se revisó la lógica a mano, pero faltan sus pruebas con Docker (ver «Qué falta»).
+**Estado (27 de octubre de 2026): OCULTO.** Solo lo ve y lo juega el admin, por orden del usuario, hasta que diga lo contrario. El SQL está **probado contra Postgres local** (Docker, 142 comprobaciones más las peticiones simultáneas y los permisos, ver «Pruebas»), pero todavía no con una sesión real de Supabase.
 
 ## Cómo está escondido
 
@@ -144,13 +144,31 @@ node tools/pozo-dragon-solo.js           # economía exacta del modo solitario (
 
 `pozo_dragon.js` comprueba: las 216 combinaciones y sus probabilidades, la jerarquía del Duelo (antisimetría sobre las 216 × 216 parejas), que el SQL tenga las mismas reglas que la interfaz, que **cada función pública del SQL empiece por el cierre «oculto»**, los textos, las vistas, la página y el controlador, y que la simulación termine bien con la suma pagada igual a la apostada.
 
-El SQL se comprobó con el analizador de PostgreSQL (`libpg-query`): 101 sentencias y 59 cuerpos plpgsql sin errores de sintaxis.
+```bash
+sh docs/pruebas/cargar_local.sh todo && sh docs/pruebas/t_pozo_dragon.sh   # el SQL contra Postgres local: reglas, dinero, cartas, plazos, permisos y peticiones simultáneas
+```
+
+`t_pozo_dragon.sql` (142 comprobaciones) usa una cola de dados que solo existe en las pruebas para guionizar tiradas y comprobar los pagos al céntimo. Cubre:
+
+- Las 216 combinaciones y la jerarquía del Duelo con las 216 × 216 parejas; que los dados salen parejos.
+- **Oculto:** un jugador normal no puede llamar a ninguna función (lista, crear, unirse, mirar, tirar, solitario) mientras `pozo_dragon_publico` sea `false`, y no se descuenta ni se crea nada; el admin sí entra; abierto, entra todo el mundo.
+- **Duelo:** crear, unirse, ofrecer cartas, confirmar (versión de condiciones, reserva atómica, devolución si el rival cambia sus cartas), fuera de turno, peticiones repetidas, ronda por ronda hasta el ganador, empate al límite, más rondas al límite, abandono por tres turnos perdidos, salir en pleno duelo, mesa abandonada, y **una carta que no se puede entregar por el límite del jugador vuelve a su dueño**.
+- **Pozo Compartido:** reparto por peso al céntimo (81,81 / 218,19 de 300), Ruina, botín de cartas al superviviente de mayor peso, todos en Ruina, quien sale sin tirar, el jugador que sigue solo hasta la quinta tirada (105,89 / 94,11 de 200), tiempo agotado al decidir y mesa abandonada.
+- **Salas:** cancelar, vencer, salir (reinicia confirmaciones y pasa el mando), inactividad, saldo que ya no alcanza, carta que dejó de ser tuya, tope de cambios y validaciones de apuesta.
+- **Solitario:** empezar idempotente, apuesta descontada una vez, pareja y escalera, cobrar una sola vez, clic doble, Ruina, cobro automático en la quinta, abandono (devuelta o cobro automático, una sola vez) y 3.000 partidas al azar (retorno 95,9–96,0 % cobrando siempre en la primera tirada, igual que la fórmula; la billetera cuadra con la suma de los netos).
+- **Al azar:** 125 mesas compartidas de 2 a 6 jugadores y 60 duelos con cobros, Ruinas y tiempos agotados: el dinero total y las cartas cuadran siempre y no queda nada bloqueado ni sin liquidar.
+
+`t_pozo_dragon.sh` añade los **permisos** (sin sesión no se llama a nada; las funciones internas y las tablas, ni leerlas ni escribirlas) y las **peticiones simultáneas** reales con varias sesiones: empezar dos veces, abrir dos partidas distintas, cobrar dos veces, tirar dos veces con el mismo paso, tres jugadores entrando a un duelo de dos, confirmar dos veces y tirar a la vez con el rival fuera de turno.
+
+**Lo que encontraron las pruebas:** `pozo_crear` llamaba a `make_interval(mins => ...)` con un número decimal y habría fallado en cualquier creación de mesa. Está corregido. Lo demás eran errores de las propias pruebas.
+
+Además, el SQL pasa el analizador de sintaxis de PostgreSQL (`libpg-query`): 101 sentencias y 59 cuerpos plpgsql.
 
 La interfaz se probó en el navegador contra un servidor simulado con estados de ejemplo (lobby, sala, confirmación, mesa compartida, decisión, duelo, final, Ruina y cancelada): sin errores en consola, dados que ruedan y se asientan, y ningún elemento que se salga de la pantalla a 375 px de ancho.
 
 ## Qué falta
 
-- **Ejecutar el SQL con Docker** (incluido el modo solitario: que el pago sale una sola vez, que repetir «empezar» no cobra dos veces, el cierre por inactividad, la quinta tirada y el cruce con las mesas) (`sh docs/pruebas/cargar_local.sh todo`, que ya carga `pozo-dragon.sql`) y escribir `docs/pruebas/t_pozo_dragon.sql`. Lo más importante que probar: reserva y devolución de dinero y cartas, una carta que no se puede comprometer en dos partidas, transferencias que topan con un límite, doble clic y peticiones simultáneas, fuera de turno, desconexión, recarga, cancelaciones, abandono y la suma pagada igual a la apostada con partidas al azar. Hasta que eso pase, **no abrirlo a jugadores**.
+- **Correr `docs/pozo-dragon.sql` en Supabase** y probarlo con una sesión real y dos cuentas (admin): lo que no cubre Postgres local es el inicio de sesión, PostgREST y Realtime. Con eso hecho, el juego está listo para abrirse cuando el usuario lo diga.
 - Probarlo con una sesión real de Supabase y dos cuentas.
 - El selector de cartas es una lista sencilla (nombre, rareza, número), no la carta ilustrada del álbum.
 - Sin sala pública para elegir rival en el duelo más allá de las mesas públicas y el código/enlace; sin chat ni clasificaciones (fuera de alcance).

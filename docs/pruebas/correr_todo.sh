@@ -5,7 +5,7 @@ D="$(cd "$(dirname "$0")" && pwd)"
 export VEINTIUNA_EV_MANOS="${VEINTIUNA_EV_MANOS:-3000}"   # partidas de valor esperado de Las Veintiuna Velas (más = más preciso y más lento)
 MODO="${1:-todo}"
 TOTAL=0
-for t in t_concurrencia t_permisos t_apuestas t_topes t_regresion t_explotacion t_verificacion t_instantanea t_simultaneas t_circulacion t_externas t_buhonero t_fractura t_juegos t_crianza t_defectos t_veintiuna t_estres; do
+for t in t_concurrencia t_permisos t_apuestas t_topes t_regresion t_explotacion t_verificacion t_instantanea t_simultaneas t_circulacion t_externas t_buhonero t_fractura t_juegos t_crianza t_defectos t_veintiuna t_pozo_dragon t_estres; do
   [ -f "$D/$t.sh" ] || continue
   sh "$D/cargar_local.sh" "$MODO" >/dev/null 2>&1
   echo "######## $t ($MODO)"

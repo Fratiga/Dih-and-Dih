@@ -1,6 +1,6 @@
 // Pruebas de El Pozo del Dragón que no necesitan base de datos: las 216 combinaciones y la jerarquía del Duelo (pozo-dragon-vista.js), los textos y las vistas,
 // la página y el controlador, y que el SQL (docs/pozo-dragon.sql) lleve el cierre «oculto» en cada función pública y las mismas reglas que la interfaz.
-// El SQL en sí se comprueba con el analizador de PostgreSQL y con docs/pruebas/t_pozo_dragon.sql (necesita Docker, ver docs/pozo-dragon.md).
+// El SQL en sí se prueba contra Postgres con docs/pruebas/t_pozo_dragon.sh (necesita Docker, ver docs/pozo-dragon.md).
 // Uso (desde la raíz del proyecto):  node docs/pruebas-web/pozo_dragon.js
 const fs = require("fs");
 const path = require("path");

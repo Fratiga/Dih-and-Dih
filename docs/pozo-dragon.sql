@@ -1029,7 +1029,7 @@ begin
   if v_nombre is null then v_nombre := case when p_modo = 'duelo' then 'Duelo de ' else 'Pozo de ' end || pozo_i_nombre(uid); end if;
   insert into pozo_mesas (codigo, modo, nombre, privada, creador, dinero, cartas, min_jugadores, max_jugadores, vence)
     values (pozo_i_codigo(), p_modo, v_nombre, coalesce(p_privada, true), uid, v_dinero, v_cartas, 2, v_max,
-            now() + make_interval(mins => (cartas_ajuste('pozo_sala_min', '30'))::text::numeric))
+            now() + make_interval(mins => (cartas_ajuste('pozo_sala_min', '30'))::text::int))
     returning id into v_id;
   insert into pozo_jugadores (mesa, asiento, user_id, nombre) values (v_id, 0, uid, pozo_i_nombre(uid));
   return pozo_i_json(v_id, uid);
