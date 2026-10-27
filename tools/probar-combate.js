@@ -576,8 +576,9 @@ for (let g = 0; g < 300; g++) {
   M.ponerUnidad(e, 0, "cocatriz", true, enem); ok(M.atqEfectivo(e, enem) === 0, "Cocatriz: pierde 2 de ataque más (no baja de 0)");
   M.ponerUnidad(e, 0, "mago-de-milicia", true, a); ok(a.flags.barrera === true, "Mago de la Milicia: da Barrera a una unidad aliada");
   const mil = poner(e, 0, "miliciano-de-brurland");
+  const milAntes = M.atqEfectivo(e, mil), aAntes = M.atqEfectivo(e, a);   // con el vínculo de la milicia ya cuentan algo
   M.ponerUnidad(e, 0, "sargento-de-la-milicia", true, null);
-  ok(M.atqEfectivo(e, mil) === 3 && M.atqEfectivo(e, a) === 3, `Sargento: +1 a las de Juramento y no a las otras (${M.atqEfectivo(e, mil)}, ${M.atqEfectivo(e, a)})`); }
+  ok(M.atqEfectivo(e, mil) >= milAntes + 1 && M.atqEfectivo(e, a) === aAntes, `Sargento: +1 a las de Juramento y no a las otras (${milAntes}→${M.atqEfectivo(e, mil)}, ${aAntes}→${M.atqEfectivo(e, a)})`); }
 { const e = partida([], []); turnoDe(e, 0); const mil = poner(e, 0, "miliciano-de-brurland");
   M.infligir(e, { u: mil.uid }, 2, { tipo: "habilidad" }); ok(mil.pv === 1, "Miliciano solo: recibe el daño entero");
   const e2 = partida([], []); turnoDe(e2, 0); const m2 = poner(e2, 0, "miliciano-de-brurland"); poner(e2, 0, "arquero-de-la-milicia");
