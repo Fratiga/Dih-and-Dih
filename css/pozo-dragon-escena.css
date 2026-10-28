@@ -18,28 +18,27 @@
 .pz-dragon-marco { position: relative; display: block; margin: 0 auto; }
 .pz-dragon-heroe { width: min(100%, 900px); aspect-ratio: 800 / 460; }
 .pz-dragon-cara { width: 100%; aspect-ratio: 448 / 410; }
-.pz-dragon-cuerpo, .pz-dragon-ojos { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.pz-dragon-cuerpo { transform-origin: 50% 100%; will-change: transform; animation: pz-respira 6s ease-in-out infinite; }
-@keyframes pz-respira { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+.pz-dragon-ojos { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+
 .pz-dh-luz { opacity: .55; transition: opacity .3s; transform-box: fill-box; transform-origin: center; }
 .pz-dh-luz-roja, .pz-dh-iris-roja { opacity: 0; transition: opacity .25s; transform-box: fill-box; transform-origin: center; }
-.pz-dh-fuego { opacity: 0; transition: opacity .3s; }
+
 .pz-dh-pupila { transform-box: fill-box; transform-origin: center; transition: transform .35s ease-out; }
 .pz-dh-parpado { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .35s ease-in; animation: pz-parpadeo 7.5s infinite; }
 @keyframes pz-parpadeo { 0%, 91%, 100% { transform: scaleY(0); } 94% { transform: scaleY(1); } }
 .pz-heroe-pupila, .pz-heroe-iris { transition: transform .25s ease-out; will-change: transform; }
 /* data-e: espera (tranquilo), mira (te toca: pupilas estrechas), ruina (rojo de golpe), premio, gran (triple seis) y cobro (cierra los ojos) */
-.pz-dragon-marco[data-e="mira"] .pz-dh-pupila { transform: scaleX(.65); } .pz-dragon-marco[data-e="mira"] .pz-dh-luz { opacity: .85; } .pz-dragon-marco[data-e="mira"] .pz-dh-fuego { opacity: .1; }
+.pz-dragon-marco[data-e="mira"] .pz-dh-pupila { transform: scaleX(.65); } .pz-dragon-marco[data-e="mira"] .pz-dh-luz { opacity: .85; }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-luz { opacity: 0; } .pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja, .pz-dragon-marco[data-e="ruina"] .pz-dh-iris-roja { opacity: 1; }
-.pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scaleX(2.4) scaleY(.85); } .pz-dragon-marco[data-e="ruina"] .pz-dh-fuego { opacity: .95; }
-.pz-dragon-marco[data-e="ruina"] .pz-dragon-cuerpo { animation: pz-rugido .6s ease-out; }
-@keyframes pz-rugido { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.05) translateX(-4px); } 35% { transform: scale(1.04) translateX(4px); } 60% { transform: scale(1.02) translateX(-2px); } }
+
+
 .pz-dragon-marco[data-e="premio"] .pz-dh-luz, .pz-dragon-marco[data-e="gran"] .pz-dh-luz { opacity: 1; transform: scale(1.35); }
 .pz-dragon-marco[data-e="premio"] .pz-dh-pupila, .pz-dragon-marco[data-e="gran"] .pz-dh-pupila { transform: scaleX(.45); }
-.pz-dragon-marco[data-e="premio"] .pz-dh-fuego, .pz-dragon-marco[data-e="gran"] .pz-dh-fuego { opacity: .85; }
+
 .pz-dragon-marco[data-e="gran"] .pz-dh-luz { animation: pz-latido .5s ease-in-out 3; }
 @keyframes pz-latido { 50% { transform: scale(1.7); } }
-.pz-dragon-marco[data-e="cobro"] .pz-dh-parpado { animation: none; transform: scaleY(1); } .pz-dragon-marco[data-e="cobro"] .pz-dh-luz { opacity: .15; } .pz-dragon-marco[data-e="cobro"] .pz-dh-fuego { opacity: .1; }
+.pz-dragon-marco[data-e="cobro"] .pz-dh-parpado { animation: none; transform: scaleY(1); } .pz-dragon-marco[data-e="cobro"] .pz-dh-luz { opacity: .15; }
 
 /* En la mesa el dragón mira desde arriba, en un marco pequeño integrado en el tapete */
 .pz-vigia { display: block; width: min(300px, 64%); margin: -4px auto -6px; pointer-events: none; }
@@ -151,7 +150,7 @@
   .pz-delta { left: auto; right: 0; top: -22px; margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pz-escena::after, .pz-dragon-cuerpo, .pz-dh-parpado, .pz-dragon-marco .pz-dh-luz, .pz-veredicto.revela .pz-veredicto-nombre, .pz-disco-g.pz-disco-nuevo, .pz-delta, .pz-recibe { animation: none !important; }
+  .pz-escena::after, .pz-dh-parpado, .pz-dragon-marco .pz-dh-luz, .pz-veredicto.revela .pz-veredicto-nombre, .pz-disco-g.pz-disco-nuevo, .pz-delta, .pz-recibe { animation: none !important; }
   .pz-dh-parpado { transform: scaleY(0); }
   .pz-moneda-vuela { display: none; }
 }
@@ -161,10 +160,10 @@
 .pz-veredicto-lado { min-height: 3.6em; } .pz-veredicto-lado .pz-veredicto-nombre { font-size: 1.2rem; } .pz-veredicto-lado[data-c="ruina"] .pz-veredicto-nombre { font-size: 1.45rem; } .pz-veredicto-lado .pz-veredicto-efecto { font-size: .95rem; }
 
 /* ------------------------------------------------------------------ del dragón solo se ven los ojos: el cuerpo es una sombra casi invisible que se insinúa un instante con la Ruina o el triple seis */
-.pz-dragon-cuerpo { opacity: .02; transition: opacity .35s ease-out; }
-.pz-dragon-marco[data-e="premio"] .pz-dragon-cuerpo { opacity: .08; }
-.pz-dragon-marco[data-e="gran"] .pz-dragon-cuerpo { opacity: .34; }
-.pz-dragon-marco[data-e="ruina"] .pz-dragon-cuerpo { opacity: .5; }
+
+
+
+
 /* el resplandor de los ojos respira despacio (solo en reposo y atento; en los demás estados manda el estado) */
 .pz-dragon-marco[data-e="espera"] .pz-dh-luz { --b0: .4; --b1: .68; animation: pz-brilla 4.6s ease-in-out infinite; }
 .pz-dragon-marco[data-e="mira"] .pz-dh-luz { --b0: .72; --b1: 1; animation: pz-brilla 3.2s ease-in-out infinite; }
@@ -195,3 +194,66 @@
   .pz-dragon-marco .pz-dh-luz, .pz-bocanada, .pz-vineta.activa, .pz-vineta-luz.activa { animation: none !important; }
   .pz-bocanada, .pz-vineta, .pz-vineta-luz { display: none; }
 }
+
+/* ------------------------------------------------------------------ aprovechar el espacio: lo importante y los botones caben sin bajar */
+/* El dragón es solo la franja de los ojos: ocupa poco y no hay nada que sobresalga */
+.pz-dragon-heroe { width: min(100%, 520px); aspect-ratio: 400 / 190; }
+.pz-dragon-cara { aspect-ratio: 340 / 160; }
+.pz-heroe-arte { padding: 10px 12px 0; overflow: hidden; }
+.pz-dragon-marco, .pz-dragon-ojos { overflow: visible; }
+.pz-vigia { width: min(300px, 60%); margin: 0 auto; }
+/* en las vistas de juego la cabecera se reduce a las herramientas */
+#pzSala[data-vista="solo"] .pz-marca-emblema, #pzSala[data-vista="solo"] .pz-marca .eyebrow, #pzSala[data-vista="mesa"] .pz-marca-emblema, #pzSala[data-vista="mesa"] .pz-marca .eyebrow, #pzSala[data-vista="fin"] .pz-marca-emblema, #pzSala[data-vista="fin"] .pz-marca .eyebrow { display: none; }
+#pzSala[data-vista="solo"] .pz-titulo, #pzSala[data-vista="mesa"] .pz-titulo, #pzSala[data-vista="fin"] .pz-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#pzSala[data-vista="solo"] .pz-cabecera, #pzSala[data-vista="mesa"] .pz-cabecera, #pzSala[data-vista="fin"] .pz-cabecera { justify-content: flex-end; margin-bottom: 8px; }
+.pz-tapete { padding: 12px; gap: 10px; }
+.pz-bandeja { min-height: calc(var(--dado) + 70px); padding: 34px 18px 22px; }
+.pz-veredicto { min-height: 4.6em; }
+.pz-tesoro .pz-monton { width: clamp(56px, 9vw, 80px); height: clamp(56px, 9vw, 80px); }
+.pz-tesoro .pz-pozo-cifra { font-size: clamp(2rem, 6vw, 3rem); }
+
+@media (min-width: 980px) {
+  /* lobby: los ojos arriba y, debajo, el título a un lado y la apuesta al otro */
+  .pz-heroe-cuerpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); column-gap: 30px; align-content: center; align-items: center; padding: 4px 28px 26px; }
+  .pz-heroe-cuerpo { grid-template-rows: 1fr auto auto auto 1fr; row-gap: 10px; }
+  .pz-heroe-cuerpo > .eyebrow { grid-column: 1; grid-row: 2; }
+  .pz-heroe-cuerpo > .pz-heroe-titulo { grid-column: 1; grid-row: 3; }
+  .pz-heroe-cuerpo > .pz-heroe-lema { grid-column: 1; grid-row: 4; }
+  .pz-heroe-cuerpo > .pz-solo { grid-column: 2; grid-row: 1 / span 5; width: 100%; }
+  .pz-solo-apuesta { grid-template-columns: minmax(100px, 120px) minmax(0, 1fr); }
+  .pz-fichas { gap: 6px; flex-wrap: nowrap; } .pz-ficha { min-width: 46px; padding: 6px 8px; }
+  .pz-heroe-titulo { font-size: clamp(1.8rem, 3.2vw, 2.7rem); }
+  /* partida: la mesa a la izquierda y, a la derecha, la decisión que te acompaña al bajar */
+  #pzSala[data-vista="solo"], #pzSala[data-vista="mesa"], #pzSala[data-vista="fin"] { max-width: 1280px; }
+  .pz-mesa { grid-template-columns: minmax(0, 1fr) 400px; column-gap: 16px; align-items: start; }
+  .pz-mesa > .pz-tapete { grid-column: 1; grid-row: 1 / span 3; }
+  .pz-mesa > .pz-dock, .pz-mesa > .pz-fin { grid-column: 2; grid-row: 1; position: sticky; top: 12px; }
+  .pz-mesa > .pz-prob { grid-column: 2; grid-row: 2; }
+  .pz-mesa .pz-decision { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 979px) {
+  /* en pantallas estrechas los botones se quedan pegados abajo mientras haya partida */
+  .pz-mesa > .pz-dock { position: sticky; bottom: 0; z-index: 6; background: var(--pz-piedra); border-color: var(--pz-oro-osc); }
+  .pz-mesa .pz-dec-texto { display: none; }
+  .pz-mesa .pz-opcion-dec { padding: 10px 12px; gap: 4px; }
+  .pz-mesa .pz-dec-cifra { font-size: 1.35rem; }
+  .pz-vigia { width: min(240px, 58%); }
+}
+
+/* ------------------------------------------------------------------ los ojos: forma, tamaño y estado. Sin cuerpo: lo único que hay en la oscuridad son los dos ojos. */
+.pz-ojo-g { transform-box: fill-box; transform-origin: center; transition: transform .14s cubic-bezier(.2, 2.2, .4, 1); }
+.pz-ojo-g[data-lado="i"] { --lado: 1; } .pz-ojo-g[data-lado="d"] { --lado: -1; }
+.pz-dh-venas { opacity: 0; transition: opacity .2s; }
+/* Ruina (por defecto, la versión B): los ojos se abren de golpe, se agrandan, se inclinan con furia y la pupila se hace una rendija */
+.pz-dragon-marco[data-e="ruina"] .pz-ojo-g { transform: rotate(calc(var(--lado) * 17deg)) scale(1.7, 2.1); }
+.pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scaleX(.35) scaleY(1.1); }
+.pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja { transform: scale(.62); }
+@keyframes pz-temblor { 0% { transform: translate(0, 0); } 50% { transform: translate(-2px, 1.5px); } 100% { transform: translate(2px, -1.5px); } }
+/* variantes de prueba (data-r en el marco) */
+.pz-dragon-marco[data-e="ruina"][data-r="a"] .pz-ojo-g { transform: scale(1.5, 2.7); }
+.pz-dragon-marco[data-e="ruina"][data-r="a"] .pz-dh-pupila { transform: scaleX(.3) scaleY(1.15); }
+.pz-dragon-marco[data-e="ruina"][data-r="c"] .pz-ojo-g { transform: scale(1.2, 3); }
+.pz-dragon-marco[data-e="ruina"][data-r="c"] .pz-dh-pupila { transform: scale(.32); }
+.pz-dragon-marco[data-e="ruina"][data-r="c"] .pz-dh-venas { opacity: .9; }
+.pz-dragon-marco[data-e="ruina"][data-r="d"] .pz-ojo-g { transform: rotate(calc(var(--lado) * 20deg)) scale(1.9, 2.3); }
+.pz-dragon-marco[data-e="ruina"][data-r="d"] .pz-dragon-ojos { animation: pz-temblor .07s steps(2) 14; }

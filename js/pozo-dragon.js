@@ -206,6 +206,7 @@
 
   /* ---------------------------------------------------------------- vistas */
   function mostrar(vista) {
+    const antes = S.vista;
     S.vista = vista;
     $("pzSala").dataset.vista = vista;
     $("pzLobby").hidden = vista !== "lobby";
@@ -221,6 +222,10 @@
         sin_conexion: "No hay conexión con la mesa. Se reintentará sola."
       }[vista]}</p>`;
       S.lobbyArmado = false;
+    }
+    // Al empezar una partida o sentarte, la mesa sube hasta quedar a la vista para no tener que bajar a por los botones
+    if (antes !== vista && (vista === "solo" || vista === "mesa")) {
+      requestAnimationFrame(() => { const t = $("pzSala").getBoundingClientRect().top + window.scrollY - 60; window.scrollTo({ top: Math.max(0, t), behavior: sinMovimiento() ? "auto" : "smooth" }); });
     }
   }
 
