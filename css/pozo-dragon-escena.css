@@ -244,16 +244,8 @@
 .pz-ojo-g { transform-box: fill-box; transform-origin: center; transition: transform .14s cubic-bezier(.2, 2.2, .4, 1); }
 .pz-ojo-g[data-lado="i"] { --lado: 1; } .pz-ojo-g[data-lado="d"] { --lado: -1; }
 .pz-dh-venas { opacity: 0; transition: opacity .2s; }
-/* Ruina (por defecto, la versión B): los ojos se abren de golpe, se agrandan, se inclinan con furia y la pupila se hace una rendija */
-.pz-dragon-marco[data-e="ruina"] .pz-ojo-g { transform: rotate(calc(var(--lado) * 17deg)) scale(1.7, 2.1); }
-.pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scaleX(.35) scaleY(1.1); }
+/* Ruina: los ojos se desorbitan de golpe: se agrandan hasta quedar casi redondos y muy altos, se llenan de venas rojas y la pupila se queda en un punto */
+.pz-dragon-marco[data-e="ruina"] .pz-ojo-g { transform: scale(1.2, 3); }
+.pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scale(.32); }
+.pz-dragon-marco[data-e="ruina"] .pz-dh-venas { opacity: .9; }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja { transform: scale(.62); }
-@keyframes pz-temblor { 0% { transform: translate(0, 0); } 50% { transform: translate(-2px, 1.5px); } 100% { transform: translate(2px, -1.5px); } }
-/* variantes de prueba (data-r en el marco) */
-.pz-dragon-marco[data-e="ruina"][data-r="a"] .pz-ojo-g { transform: scale(1.5, 2.7); }
-.pz-dragon-marco[data-e="ruina"][data-r="a"] .pz-dh-pupila { transform: scaleX(.3) scaleY(1.15); }
-.pz-dragon-marco[data-e="ruina"][data-r="c"] .pz-ojo-g { transform: scale(1.2, 3); }
-.pz-dragon-marco[data-e="ruina"][data-r="c"] .pz-dh-pupila { transform: scale(.32); }
-.pz-dragon-marco[data-e="ruina"][data-r="c"] .pz-dh-venas { opacity: .9; }
-.pz-dragon-marco[data-e="ruina"][data-r="d"] .pz-ojo-g { transform: rotate(calc(var(--lado) * 20deg)) scale(1.9, 2.3); }
-.pz-dragon-marco[data-e="ruina"][data-r="d"] .pz-dragon-ojos { animation: pz-temblor .07s steps(2) 14; }
