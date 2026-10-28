@@ -1,0 +1,161 @@
+/* =============================================================================
+   EL POZO DEL DRAGÓN: la escena de la partida (se carga después de pozo-dragon.css y manda sobre él).
+   Cada tirada es una pequeña secuencia: decisión, lanzamiento, revelación, resolución y elección (la orquesta pozo-dragon.js con pozo-dragon-escena.js).
+   Fondo limpio con humo y brasas discretos; el grano y el relieve se reservan para el tablero, el dragón y el tesoro. Los botones siguen planos.
+   Todo movimiento se apaga con prefers-reduced-motion.
+============================================================================= */
+
+/* ------------------------------------------------------------------ fondo: oscuro y limpio, con humo lento */
+.pz-escena::before { background: radial-gradient(ellipse 80% 60% at 50% -8%, #26170f 0%, #130c09 46%, #070504 100%); }
+.pz-escena::after { left: -20%; right: -20%; bottom: -10%; height: 72%; z-index: -1; will-change: transform;
+  background: radial-gradient(ellipse 38% 48% at 18% 82%, #5a241099, transparent 70%), radial-gradient(ellipse 42% 52% at 80% 92%, #4a1c0e88, transparent 70%), radial-gradient(ellipse 30% 40% at 50% 104%, #7a3214aa, transparent 70%);
+  animation: pz-humo 38s ease-in-out infinite alternate; }
+@keyframes pz-humo { from { transform: translate3d(-3%, 0, 0) scale(1); } to { transform: translate3d(3%, -4%, 0) scale(1.08); } }
+.pz-tema.pz-ruina .pz-escena::after { animation: pz-humo 38s ease-in-out infinite alternate, pz-apagon 1.1s ease-out; }
+@keyframes pz-apagon { 0% { opacity: .1; } 100% { opacity: 1; } }
+
+/* ------------------------------------------------------------------ el dragón: cuerpo quieto y ojos vivos */
+.pz-dragon-marco { position: relative; display: block; margin: 0 auto; }
+.pz-dragon-heroe { width: min(100%, 900px); aspect-ratio: 800 / 460; }
+.pz-dragon-cara { width: 100%; aspect-ratio: 448 / 410; }
+.pz-dragon-cuerpo, .pz-dragon-ojos { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pz-dragon-cuerpo { transform-origin: 50% 100%; will-change: transform; animation: pz-respira 6s ease-in-out infinite; }
+@keyframes pz-respira { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+.pz-dh-luz { opacity: .55; transition: opacity .3s; transform-box: fill-box; transform-origin: center; }
+.pz-dh-luz-roja, .pz-dh-iris-roja { opacity: 0; transition: opacity .25s; transform-box: fill-box; transform-origin: center; }
+.pz-dh-fuego { opacity: .25; transition: opacity .3s; }
+.pz-dh-pupila { transform-box: fill-box; transform-origin: center; transition: transform .35s ease-out; }
+.pz-dh-parpado { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .35s ease-in; animation: pz-parpadeo 7.5s infinite; }
+@keyframes pz-parpadeo { 0%, 91%, 100% { transform: scaleY(0); } 94% { transform: scaleY(1); } }
+.pz-heroe-pupila, .pz-heroe-iris { transition: transform .25s ease-out; will-change: transform; }
+/* data-e: espera (tranquilo), mira (te toca: pupilas estrechas), ruina (rojo de golpe), premio, gran (triple seis) y cobro (cierra los ojos) */
+.pz-dragon-marco[data-e="mira"] .pz-dh-pupila { transform: scaleX(.65); } .pz-dragon-marco[data-e="mira"] .pz-dh-luz { opacity: .85; } .pz-dragon-marco[data-e="mira"] .pz-dh-fuego { opacity: .45; }
+.pz-dragon-marco[data-e="ruina"] .pz-dh-luz { opacity: 0; } .pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja, .pz-dragon-marco[data-e="ruina"] .pz-dh-iris-roja { opacity: 1; }
+.pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scaleX(2.4) scaleY(.85); } .pz-dragon-marco[data-e="ruina"] .pz-dh-fuego { opacity: .95; }
+.pz-dragon-marco[data-e="ruina"] .pz-dragon-cuerpo { animation: pz-rugido .6s ease-out; }
+@keyframes pz-rugido { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.05) translateX(-4px); } 35% { transform: scale(1.04) translateX(4px); } 60% { transform: scale(1.02) translateX(-2px); } }
+.pz-dragon-marco[data-e="premio"] .pz-dh-luz, .pz-dragon-marco[data-e="gran"] .pz-dh-luz { opacity: 1; transform: scale(1.35); }
+.pz-dragon-marco[data-e="premio"] .pz-dh-pupila, .pz-dragon-marco[data-e="gran"] .pz-dh-pupila { transform: scaleX(.45); }
+.pz-dragon-marco[data-e="premio"] .pz-dh-fuego, .pz-dragon-marco[data-e="gran"] .pz-dh-fuego { opacity: .85; }
+.pz-dragon-marco[data-e="gran"] .pz-dh-luz { animation: pz-latido .5s ease-in-out 3; }
+@keyframes pz-latido { 50% { transform: scale(1.7); } }
+.pz-dragon-marco[data-e="cobro"] .pz-dh-parpado { animation: none; transform: scaleY(1); } .pz-dragon-marco[data-e="cobro"] .pz-dh-luz { opacity: .15; } .pz-dragon-marco[data-e="cobro"] .pz-dh-fuego { opacity: .1; }
+
+/* En la mesa el dragón mira desde arriba, en un marco pequeño integrado en el tapete */
+.pz-vigia { display: block; width: min(300px, 64%); margin: -4px auto -6px; pointer-events: none; }
+.pz-solo-icono .pz-ojo { width: 44px; height: 44px; flex: none; }
+
+/* ------------------------------------------------------------------ los dados: cubos de hueso que ruedan, chocan y rebotan */
+.pz-d3 { --d: var(--dado); position: relative; width: var(--d); height: var(--d); flex: none; }
+.pz-d3-salto { position: absolute; inset: 0; transform-style: preserve-3d; perspective: 520px; }
+.pz-d3-cubo { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(var(--tx)) rotateY(var(--ty)) rotateX(var(--rx)) rotateY(var(--ry)); }
+.pz-d3-cara { position: absolute; inset: 0; display: block; border-radius: 15%; background-color: var(--cara, #e8ddc3); background-repeat: no-repeat; background-position: center; background-size: 100% 100%;
+  box-shadow: inset 0 0 0 2px #2a1d12, inset 0 0 0 5px #00000014; }
+.pz-d3-cara.c1 { --cara: #eee4ca; transform: translateZ(calc(var(--d) / 2)); } .pz-d3-cara.c6 { --cara: #e0d5ba; transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+.pz-d3-cara.c2 { --cara: #d9cdb0; transform: rotateY(90deg) translateZ(calc(var(--d) / 2)); } .pz-d3-cara.c5 { --cara: #cfc3a5; transform: rotateY(-90deg) translateZ(calc(var(--d) / 2)); }
+.pz-d3-cara.c3 { --cara: #f6edd6; transform: rotateX(90deg) translateZ(calc(var(--d) / 2)); } .pz-d3-cara.c4 { --cara: #bdb092; transform: rotateX(-90deg) translateZ(calc(var(--d) / 2)); }
+/* Los puntos de cada cara van como imagen de fondo (un <svg> en línea por cara: sin archivos que puedan faltar) */
+.pz-d3-cara.c1 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='13' fill='%23b6382f'/></svg>"); }
+.pz-d3-cara.c2 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='9.5' fill='%231a130e'/><circle cx='72' cy='72' r='9.5' fill='%231a130e'/></svg>"); }
+.pz-d3-cara.c3 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='9.5' fill='%231a130e'/><circle cx='50' cy='50' r='9.5' fill='%231a130e'/><circle cx='72' cy='72' r='9.5' fill='%231a130e'/></svg>"); }
+.pz-d3-cara.c4 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='9.5' fill='%231a130e'/><circle cx='72' cy='28' r='9.5' fill='%231a130e'/><circle cx='28' cy='72' r='9.5' fill='%231a130e'/><circle cx='72' cy='72' r='9.5' fill='%231a130e'/></svg>"); }
+.pz-d3-cara.c5 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='9.5' fill='%231a130e'/><circle cx='72' cy='28' r='9.5' fill='%231a130e'/><circle cx='50' cy='50' r='9.5' fill='%231a130e'/><circle cx='28' cy='72' r='9.5' fill='%231a130e'/><circle cx='72' cy='72' r='9.5' fill='%231a130e'/></svg>"); }
+.pz-d3-cara.c6 { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='28' cy='28' r='9.5' fill='%231a130e'/><circle cx='72' cy='28' r='9.5' fill='%231a130e'/><circle cx='28' cy='50' r='9.5' fill='%231a130e'/><circle cx='72' cy='50' r='9.5' fill='%231a130e'/><circle cx='28' cy='72' r='9.5' fill='%231a130e'/><circle cx='72' cy='72' r='9.5' fill='%231a130e'/></svg>"); }
+.pz-d3-sombra { position: absolute; left: 6%; right: 6%; bottom: -16%; height: 16%; border-radius: 50%; background: radial-gradient(#000, transparent 72%); opacity: .55; }
+/* cada combinación tiñe los dados: la Ruina es roja, la ceniza apagada, el triple seis de oro */
+.pz-d3.cat-ruina .pz-d3-cara { --cara: #8a3a30; } .pz-d3.cat-ruina .pz-d3-cara.c4 { --cara: #5e231c; }
+.pz-d3.cat-ceniza .pz-d3-cara { filter: saturate(.55) brightness(.8); }
+.pz-d3.cat-pareja .pz-d3-cara.c1, .pz-d3.cat-pareja .pz-d3-cara.c2, .pz-d3.cat-pareja .pz-d3-cara.c3, .pz-d3.cat-pareja .pz-d3-cara.c4, .pz-d3.cat-pareja .pz-d3-cara.c5, .pz-d3.cat-pareja .pz-d3-cara.c6 { box-shadow: inset 0 0 0 2px #2a1d12, inset 0 0 0 6px #c2a25b66; }
+.pz-d3.cat-escalera .pz-d3-cara { --cara: #e4d2a6; box-shadow: inset 0 0 0 2px #2a1d12, inset 0 0 0 6px #d8993f88; }
+.pz-d3.cat-triple .pz-d3-cara { --cara: #ecd596; box-shadow: inset 0 0 0 2px #5a4720, inset 0 0 0 6px #c2a25bcc; }
+.pz-d3.cat-triple_seis .pz-d3-cara { --cara: #f0cd6c; box-shadow: inset 0 0 0 2px #5a4720, inset 0 0 0 7px #fff0b0aa; }
+
+/* La mesa de dados: fieltro oscuro hundido; los dados vuelan por encima del resto del tapete */
+.pz-bandeja { position: relative; z-index: 3; gap: clamp(20px, 5vw, 46px); min-height: calc(var(--dado) + 96px); padding: 46px 18px 30px; background: radial-gradient(ellipse 70% 90% at 50% 38%, #2b1b13 0%, #160e0a 72%); border: 1px solid #3a2c22; box-shadow: inset 0 20px 44px #000b; }
+.pz-tema { --dado: clamp(58px, 9vw, 84px); }
+.pz-duelo-lado .pz-bandeja-lado { gap: clamp(12px, 3vw, 24px); min-height: calc(var(--dado) * .72 + 56px); padding-top: 28px; position: relative; z-index: 3; }
+.pz-duelo-lado .pz-d3 { --d: calc(var(--dado) * .72); }
+
+/* ------------------------------------------------------------------ el veredicto: cada combinación tiene su propia presencia */
+.pz-veredicto { position: relative; min-height: 5.4em; align-content: start; }
+.pz-veredicto-nombre { transform-origin: center; }
+.pz-veredicto.revela .pz-veredicto-nombre { animation: pz-golpe .55s cubic-bezier(.2, 1.3, .4, 1) both; }
+@keyframes pz-golpe { 0% { transform: scale(2.3); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+.pz-veredicto::after { content: ""; display: block; height: 3px; width: var(--nivel, 0%); max-width: 320px; margin: 6px auto 0; border-radius: 2px; background: var(--tono, transparent); transition: width .5s ease-out; }
+.pz-veredicto[data-c="ruina"] { --nivel: 100%; --tono: #b6382f; } .pz-veredicto[data-c="ceniza"] { --nivel: 16%; --tono: #6f675a; } .pz-veredicto[data-c="pareja"] { --nivel: 34%; --tono: #c2a25b; }
+.pz-veredicto[data-c="escalera"] { --nivel: 56%; --tono: #d8993f; } .pz-veredicto[data-c="triple"] { --nivel: 78%; --tono: #f0cd6c; } .pz-veredicto[data-c="triple_seis"] { --nivel: 100%; --tono: #fff0b0; }
+.pz-veredicto[data-c="ruina"] .pz-veredicto-nombre { color: #ff8a7c; font-size: clamp(1.8rem, 5.4vw, 2.7rem); text-shadow: 0 0 26px #b6382fcc; }
+.pz-veredicto[data-c="ceniza"] .pz-veredicto-nombre { color: #8f8676; font-weight: 500; }
+.pz-veredicto[data-c="pareja"] .pz-veredicto-nombre { color: #e6d29a; }
+.pz-veredicto[data-c="escalera"] .pz-veredicto-nombre { color: #f0b96b; letter-spacing: .2em; }
+.pz-veredicto[data-c="triple"] .pz-veredicto-nombre { color: #ffd98a; letter-spacing: .24em; font-size: clamp(1.6rem, 4.8vw, 2.4rem); }
+.pz-veredicto[data-c="triple_seis"] .pz-veredicto-nombre { color: #fff4cc; letter-spacing: .28em; font-size: clamp(1.8rem, 5.6vw, 2.9rem); text-shadow: 0 0 30px #f0cd6cdd; }
+
+/* ------------------------------------------------------------------ el tesoro: monedas que caen, un contador que sube y un número que flota */
+.pz-tesoro { display: flex; align-items: flex-end; justify-content: center; gap: 18px; flex-wrap: wrap; }
+.pz-tesoro-datos { display: grid; gap: 2px; justify-items: start; position: relative; text-align: left; }
+.pz-tesoro .pz-pozo-cifra { font-size: clamp(2.3rem, 8vw, 3.6rem); }
+.pz-tesoro .pz-monton { width: clamp(72px, 14vw, 104px); height: clamp(72px, 14vw, 104px); }
+.pz-pozo-fila { position: relative; }
+.pz-disco-g.pz-disco-nuevo { transform-box: fill-box; animation: pz-disco-cae .5s cubic-bezier(.3, 1.5, .5, 1) both; }
+@keyframes pz-disco-cae { 0% { transform: translateY(-30px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.pz-disco-g:nth-last-child(2).pz-disco-nuevo { animation-delay: .08s; } .pz-disco-g:nth-last-child(3).pz-disco-nuevo { animation-delay: .16s; }
+.pz-disco-ardiendo .pz-disco { fill: #8a2f28; } .pz-disco-ardiendo .pz-disco-tapa { fill: #d8642c; stroke: #8a2f28; }
+.pz-delta { position: absolute; left: 100%; top: 0; margin-left: 10px; font: 700 1.3rem var(--pz-serif); white-space: nowrap; pointer-events: none; animation: pz-flota 1.4s ease-out both; }
+.pz-delta.sube { color: #c9f5a4; } .pz-delta.baja { color: #ff8a7c; }
+@keyframes pz-flota { 0% { transform: translateY(8px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-34px); opacity: 0; } }
+.pz-pozo-cambia { animation: pz-pozo .7s ease-out; }
+.pz-recibe { animation: pz-recibe .9s ease-out; }
+@keyframes pz-recibe { 0% { border-color: var(--pz-oro-claro); transform: scale(1.12); } 100% { transform: none; } }
+.pz-moneda-vuela { position: fixed; left: 0; top: 0; width: 24px; height: 24px; z-index: 80; pointer-events: none; will-change: transform; }
+.pz-moneda-vuela svg { width: 24px; height: 24px; display: block; }
+.pz-moneda-vuela.roja .pz-moneda-cuerpo { fill: #b6382f; } .pz-moneda-vuela.roja .pz-moneda-aro, .pz-moneda-vuela.roja .pz-moneda-marca { stroke: #5a1812; }
+
+/* ------------------------------------------------------------------ la elección: lo que ganas y lo que arriesgas, lado a lado */
+.pz-decision { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pz-opcion-dec { display: grid; gap: 6px; align-content: start; padding: 12px 14px; background: #150f0c; border: 1px solid var(--pz-borde); border-radius: 12px; }
+.pz-opcion-dec[data-t="cobrar"] { border-color: #4c7a48; } .pz-opcion-dec[data-t="seguir"] { border-color: #8a3a30; }
+.pz-dec-etq { margin: 0; font: 600 .8rem var(--font-heading); letter-spacing: .22em; text-transform: uppercase; color: var(--pz-gris); }
+.pz-dec-cifra { margin: 0; font: 700 1.7rem/1.1 var(--pz-serif); font-variant-numeric: tabular-nums; }
+.pz-opcion-dec[data-t="cobrar"] .pz-dec-cifra { color: #c9f5a4; } .pz-opcion-dec[data-t="seguir"] .pz-dec-cifra { color: #ff9c8e; }
+.pz-dec-texto { margin: 0; font-size: 1rem; line-height: 1.35; color: var(--pz-gris); }
+.pz-dec-texto strong { color: var(--pz-marfil); }
+.pz-medidor { height: 7px; border-radius: 4px; background: #2e2520; overflow: hidden; } .pz-medidor i { display: block; height: 100%; min-width: 3px; background: #b6382f; }
+.pz-boton-riesgo { color: #ffd6d0; border-color: #8a3a30; background: #2b1210; } .pz-boton-riesgo:hover { background: #3d1814; border-color: #b6382f; }
+.pz-dock-botones .pz-boton { width: 100%; }
+.pz-opcion-dec .pz-dock-botones { display: block; }
+.pz-observa { margin: 0; padding: 16px 8px; text-align: center; color: var(--pz-gris); letter-spacing: .08em; }
+
+/* El panel plegable de probabilidades: a mano, pero fuera de la vista mientras juegas */
+.pz-prob { border: 1px solid var(--pz-piedra-3); border-radius: 10px; background: #120d0a; }
+.pz-prob > summary { cursor: pointer; padding: 10px 14px; min-height: 44px; display: flex; align-items: center; gap: 8px; font: 600 .9rem var(--font-heading); letter-spacing: .16em; text-transform: uppercase; color: var(--pz-gris); list-style: none; }
+.pz-prob > summary::-webkit-details-marker { display: none; }
+.pz-prob > summary::before { content: "+"; display: inline-block; width: 1em; text-align: center; color: var(--pz-oro); }
+.pz-prob[open] > summary::before { content: "−"; }
+.pz-prob-cuerpo { padding: 0 14px 12px; display: grid; gap: 8px; }
+.pz-prob .pz-tabla { font-size: .98rem; } .pz-prob .pz-tabla td.pz-num, .pz-prob .pz-tabla th { white-space: normal; }
+.pz-prob .pz-ayuda { margin: 0; }
+
+/* La pista para saltar la escena */
+.pz-pista-saltar { position: absolute; right: 16px; bottom: 8px; z-index: 4; margin: 0; font: 600 .72rem var(--font-heading); letter-spacing: .2em; text-transform: uppercase; color: var(--pz-gris); opacity: .8; pointer-events: none; }
+.pz-tapete[data-teatro="1"] { cursor: pointer; }
+
+@media (max-width: 640px) {
+  .pz-tema { --dado: clamp(52px, 16vw, 74px); }
+  .pz-bandeja { padding: 38px 10px 24px; gap: clamp(14px, 5vw, 26px); }
+  .pz-duelo-lado .pz-bandeja-lado { gap: 10px; flex-wrap: nowrap; padding-top: 24px; }
+  .pz-duelo-lado .pz-d3 { --d: calc(var(--dado) * .62); }
+  .pz-decision { grid-template-columns: minmax(0, 1fr); }
+  .pz-vigia { width: min(240px, 70%); }
+  .pz-tesoro { gap: 10px; } .pz-tesoro-datos { justify-items: center; text-align: center; }
+  .pz-delta { left: auto; right: 0; top: -22px; margin: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pz-escena::after, .pz-dragon-cuerpo, .pz-dh-parpado, .pz-dragon-marco .pz-dh-luz, .pz-veredicto.revela .pz-veredicto-nombre, .pz-disco-g.pz-disco-nuevo, .pz-delta, .pz-recibe { animation: none !important; }
+  .pz-dh-parpado { transform: scaleY(0); }
+  .pz-moneda-vuela { display: none; }
+}
+.pz-fondo-dragon { display: none; }
+.pz-centrado { text-align: center; margin: 10px 0 0; }
+.pz-d3-inerte { opacity: .5; }
+.pz-veredicto-lado { min-height: 3.6em; } .pz-veredicto-lado .pz-veredicto-nombre { font-size: 1.2rem; } .pz-veredicto-lado[data-c="ruina"] .pz-veredicto-nombre { font-size: 1.45rem; } .pz-veredicto-lado .pz-veredicto-efecto { font-size: .95rem; }

@@ -302,7 +302,28 @@
     return p.join(" ");
   }
 
-  const API = { SOLO_BONOS, SOLO_TRIBUTO, premioSolo, reglasSolo, accionesSolo, perspectivaSolo, resumenSolo, anuncioSolo, CATEGORIAS, ORDEN_MEJOR_A_PEOR, CASOS, clasificar, fuerza, comparar, nombreCategoria, num, pct, plural, textoApuesta, tipoApuesta, reglasDuelo, reglasCompartido, REGLAS_COMUNES,
+  /* ---------------------------------------------------------------- la tensión de la elección y las tablas de probabilidad (solo cifras: la pantalla las dibuja) */
+  const P_RUINA = 10 / 216;
+  // Lo que cobras, lo que pierdes y lo mejor que podría salir si sigues (solitario)
+  function tensionSolo(s) {
+    if (!s || s.estado !== "en_curso") return null;
+    const b = s.bonos || SOLO_BONOS;
+    return { fase: s.fase, premio: Number(s.premio), apuesta: Number(s.apuesta), pRuina: P_RUINA, quedan: s.tiradas_max - s.tiradas, mejor: premioSolo(s.apuesta, s.tributo, (Number(s.bono) || 0) + (b.triple_seis || 0)) };
+  }
+  // Cada combinación con su probabilidad, su bono y el premio que dejaría la siguiente tirada (solitario). La Ruina deja 0; la ceniza, el premio de ahora.
+  function tablaSolo(s) {
+    if (!s) return null;
+    const b = s.bonos || SOLO_BONOS, t = s.tributo != null ? Number(s.tributo) : SOLO_TRIBUTO, bono = Number(s.bono) || 0;
+    const filas = ORDEN_MEJOR_A_PEOR.map(c => { const suma = c === "ruina" || c === "ceniza" ? 0 : (b[c] || 0); return { cat: c, nombre: nombreCategoria(c), casos: CASOS[c], p: CASOS[c] / 216, bono: suma, premio: c === "ruina" ? 0 : premioSolo(s.apuesta, t, bono + suma) }; });
+    return { base: premioSolo(s.apuesta, t, 0), premio: Number(s.premio), tributo: t, filas };
+  }
+  // Pozo Compartido: la parte que cobrarías ahora y el riesgo de seguir
+  function tensionCompartido(est) {
+    const yo = est && est.estado === "jugando" ? jugadorYo(est) : null; if (!yo) return null;
+    return { parte: yo.parte != null ? Number(yo.parte) : null, peso: Number(yo.peso) || 0, quedan: est.reglas.tiradas_max - yo.tiradas, pRuina: P_RUINA, apuesta: Number(est.reglas.dinero) || 0 };
+  }
+
+  const API = { SOLO_BONOS, SOLO_TRIBUTO, P_RUINA, premioSolo, reglasSolo, accionesSolo, perspectivaSolo, tensionSolo, tablaSolo, tensionCompartido, resumenSolo, anuncioSolo, CATEGORIAS, ORDEN_MEJOR_A_PEOR, CASOS, clasificar, fuerza, comparar, nombreCategoria, num, pct, plural, textoApuesta, tipoApuesta, reglasDuelo, reglasCompartido, REGLAS_COMUNES,
     vista, jugadorYo, jugadorEn, rival, estadoJugador, estadoSala, acciones, dadosTexto, frasesTirada, resumenFinal, anuncio, mensajeError };
   if (typeof module !== "undefined" && module.exports) module.exports = API; else raiz.PozoVista = API;
 })(typeof window !== "undefined" ? window : globalThis);

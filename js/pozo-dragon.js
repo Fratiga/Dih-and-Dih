@@ -6,7 +6,7 @@
    Piezas: pozo-dragon-arte.js (dibujos), pozo-dragon-vista.js (textos y reglas), veintiuna-api.js (red).
 ============================================================================= */
 (function () {
-  const A = window.PozoArte, V = window.PozoVista;
+  const A = window.PozoArte, V = window.PozoVista, E = window.PozoEscena;
   const $ = id => document.getElementById(id);
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const api = window.VeintiunaApi.crear(() => fichasCliente());
@@ -38,6 +38,10 @@
     sondeo: null,
     timerLista: null,
     animando: false,
+    teatro: false,            // una tirada se está enseñando: mientras dura, lo nuevo que llegue del servidor espera en cola
+    cola: null,
+    vigiaBase: "espera",
+    rapido: guardado.leer("pzRapido", "0") === "1",
     solo: null,               // la partida en solitario (si hay)
     vistoSolo: 0,
     reglasSolo: null
@@ -347,10 +351,52 @@
   }
 
   /* ---- Mesa en juego y final ---- */
-  function filaDados(ult, extra) {
-    if (!ult) return `<p class="pz-sin-tirar">Aún no ha tirado</p>`;
-    return ult.dados.map(v => A.dado(v, (extra || "") + (ult.categoria === "ruina" ? " es-ruina" : ult.categoria === "triple_seis" ? " es-triple-seis" : ""))).join("");
+  const REPOSO = [2, 5, 4];                      // las caras de unos dados que todavía no se han tirado
+  // Los dados de una tirada como cubos; sin tirada, tres cubos quietos y apagados
+  const cubos = ult => (ult ? E.dados(ult.dados, "cat-" + ult.categoria) : E.dados(REPOSO, "pz-d3-inerte"));
+  const botonAccion = (b, extra) => `<button type="button" class="pz-boton${b.principal ? " pz-boton-principal" : ""}${extra ? " " + extra : ""}" data-accion="${b.id}" aria-keyshortcuts="${b.tecla}">${esc(b.texto)}${b.sub ? `<span class="pz-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`;
+  const montonDe = (n, nuevos) => A.monton(n, nuevos);
+  const discosSolo = (premio, apuesta) => Math.round(3 + (Number(premio) / Math.max(1, Number(apuesta))) * 4);
+  const firmado = n => (Number(n) > 0 ? "+" : Number(n) < 0 ? "−" : "") + V.num(Math.abs(Number(n)));
+
+  // Las probabilidades, plegadas: a mano, pero fuera de la vista mientras juegas
+  function detalleProbabilidades(cuerpo) {
+    return `<details class="pz-prob"><summary>Probabilidades</summary><div class="pz-prob-cuerpo">${cuerpo}</div></details>`;
   }
+  function probabilidadesMesa(est) {
+    const r = est.reglas, filas = V.ORDEN_MEJOR_A_PEOR.map(c => {
+      const efecto = est.modo === "compartido" ? (c === "ruina" ? "Eliminado: su apuesta se queda en el pozo" : c === "ceniza" ? "Su peso no cambia" : `Su peso sube ${V.pct((r.bonos || {})[c] || 0)} de la apuesta`) : V.CATEGORIAS[c].corta;
+      return `<tr><th scope="row">${V.nombreCategoria(c)}</th><td class="pz-num">${V.pct(V.CASOS[c] / 216)}</td><td>${esc(efecto)}</td></tr>`;
+    }).join("");
+    return detalleProbabilidades(`<table class="pz-tabla"><caption class="pz-sr">Probabilidad de cada combinación con tres dados</caption><thead><tr><th scope="col">Sale</th><th scope="col" class="pz-num">Probabilidad</th><th scope="col">${est.modo === "compartido" ? "Efecto" : "Qué es"}</th></tr></thead><tbody>${filas}</tbody></table>`);
+  }
+
+  // Un veredicto: la combinación con su nombre, su efecto y su tratamiento propio (el color y la barra salen de data-c)
+  function mostrarVeredicto(el, ult, modo, bonos, quien) {
+    const f = V.frasesTirada(ult, modo, bonos || {});
+    if (!el || !f) return;
+    el.dataset.c = ult.categoria;
+    const n = el.querySelector(".pz-veredicto-nombre"), e = el.querySelector(".pz-veredicto-efecto"), q = el.querySelector(".pz-veredicto-quien");
+    if (n) n.textContent = f.nombre;
+    if (e) e.textContent = f.dados + " · " + f.efecto;
+    if (q && quien != null) q.textContent = quien;
+    el.classList.remove("revela"); void el.offsetWidth; el.classList.add("revela");
+  }
+  const veredictoHtml = (ult, modo, bonos, quien) => {
+    const f = ult ? V.frasesTirada(ult, modo, bonos || {}) : null;
+    return `<div class="pz-veredicto" data-c="${ult ? esc(ult.categoria) : ""}" data-veredicto>${quien != null ? `<p class="pz-veredicto-quien">${esc(quien)}</p>` : ""}<p class="pz-veredicto-nombre">${f ? esc(f.nombre) : "&nbsp;"}</p><p class="pz-veredicto-efecto">${f ? esc(f.dados + " · " + f.efecto) : ""}</p></div>`;
+  };
+
+  // La decisión: lo que cobras a un lado y lo que arriesgas al otro, para que seguir tirando se note
+  function decisionHtml(botones, cobra, riesgo) {
+    const cobrar = botones.find(b => b.id === "cobrar"), seguir = botones.find(b => b.id !== "cobrar");
+    return `<div class="pz-decision">
+      <div class="pz-opcion-dec" data-t="cobrar"><p class="pz-dec-etq">Cobrar ahora</p><p class="pz-dec-cifra">${cobra.cifra}</p><p class="pz-dec-texto">${cobra.texto}</p><div class="pz-dock-botones">${cobrar ? botonAccion(cobrar) : ""}</div></div>
+      <div class="pz-opcion-dec" data-t="seguir"><p class="pz-dec-etq">Seguir tirando</p><p class="pz-dec-cifra">${riesgo.cifra}</p><div class="pz-medidor" aria-hidden="true"><i style="width:${(V.P_RUINA * 100).toFixed(2)}%"></i></div><p class="pz-dec-texto">${riesgo.texto}</p><div class="pz-dock-botones">${seguir ? botonAccion(seguir, "pz-boton-riesgo") : ""}</div></div>
+    </div>`;
+  }
+
+  function filaDados(ult) { return cubos(ult); }
   const claseResultadoDuelo = (est, asiento) => {
     const r = (est.rondas || []).slice(-1)[0];
     return r && r.ganador === asiento ? "gano" : "";
@@ -364,13 +410,12 @@
       return `<li data-r="${resultado}">Ronda ${h.ronda}: ${resultado === "gano" ? "ganas" : resultado === "perdio" ? "pierdes" : "empate"}</li>`;
     }).join("");
     const ladoHtml = j => {
-      const f = V.frasesTirada(j.ultima, "duelo", est.reglas.bonos);
       const puntos = Array.from({ length: est.reglas.victorias }, (_, i) => `<span class="pz-ronda-punto" data-g="${i < j.victorias ? 1 : 0}"></span>`).join("");
       return `<article class="pz-duelo-lado" data-yo="${j.yo ? 1 : 0}" data-turno="${turno.asiento === j.asiento ? 1 : 0}" data-asiento="${j.asiento}">
         <div class="pz-asiento-cab"><span class="pz-asiento-nombre">${esc(j.yo ? j.nombre + " (tú)" : j.nombre)}</span>${turno.asiento === j.asiento ? `<span class="pz-chip pz-turno-marca">Su turno</span>` : ""}</div>
         <div class="pz-rondas" aria-label="${j.victorias} de ${est.reglas.victorias} rondas ganadas">${puntos}</div>
-        <div class="pz-bandeja-lado" data-dados-main="${j.asiento}">${filaDados(j.ultima)}</div>
-        <p class="pz-veredicto-efecto">${f ? `${esc(f.nombre)} (${esc(f.dados)})` : "&nbsp;"}</p>
+        <div class="pz-bandeja-lado" data-dados-main="${j.asiento}">${cubos(j.ultima)}</div>
+        ${veredictoHtml(j.ultima, "duelo", est.reglas.bonos, null).replace('class="pz-veredicto"', 'class="pz-veredicto pz-veredicto-lado"')}
         ${est.reglas.cartas > 0 ? listaCartas(j.oferta) : ""}
       </article>`;
     };
@@ -378,7 +423,7 @@
     return `<div class="pz-duelo">${lados[0] ? ladoHtml(lados[0]) : ""}
       <div class="pz-duelo-centro">
         <p class="pz-duelo-ronda">Ronda ${est.ronda} de ${est.reglas.rondas_max}</p>
-        <div class="pz-pozo-fila">${A.monton(est.reglas.dinero > 0 ? 8 : 2)}</div>
+        <div class="pz-pozo-fila">${montonDe(est.reglas.dinero > 0 ? 8 : 2)}</div>
         <p class="pz-pozo-cifra" data-pozo>${V.num(est.pozo.dinero)}</p>
         <p class="pz-pozo-sub">${est.reglas.cartas > 0 ? `+ ${V.plural(est.reglas.cartas * 2, "carta", "cartas")} en juego` : "tokens en juego"}</p>
         ${ultimaRonda ? `<p class="pz-pozo-sub">${ultimaRonda.ganador == null ? "La última ronda empató" : ultimaRonda.ganador === (yo && yo.asiento) ? "Ganaste la última ronda" : "Perdiste la última ronda"}</p>` : ""}
@@ -388,15 +433,13 @@
   function pintarCompartido(est) {
     const turno = est.turno || {}, r = est.reglas;
     const ult = est.jugadores.filter(j => j.ultima).sort((a, b) => b.ultima.id - a.ultima.id)[0] || null;
-    const f = ult ? V.frasesTirada(ult.ultima, "compartido", r.bonos) : null;
     const maxPeso = Math.max(1, ...est.jugadores.map(j => Number(j.peso) || 0));
-    const quien = ult ? (ult.yo ? "Tu tirada" : `Tirada de ${esc(ult.nombre)}`) : "";
-    return `<div class="pz-pozo"><div class="pz-pozo-fila">${A.monton(Math.round(2 + est.pozo.dinero / Math.max(1, r.dinero) * 1.2))}
+    const quien = ult ? (ult.yo ? "Tu tirada" : `Tirada de ${ult.nombre}`) + (ult.ultima.auto ? " (automática)" : "") : "Todavía nadie ha tirado";
+    return `<div class="pz-pozo"><div class="pz-pozo-fila">${montonDe(Math.round(2 + est.pozo.dinero / Math.max(1, r.dinero) * 1.2))}
         <div><p class="pz-pozo-etq">El pozo</p><p class="pz-pozo-cifra" data-pozo>${V.num(est.pozo.dinero)}</p></div></div>
         <p class="pz-pozo-sub">${r.dinero > 0 ? "tokens de juego" : "solo cartas"}${r.cartas > 0 ? ` · ${V.plural(r.cartas * est.jugadores.length, "carta", "cartas")} en juego` : ""} · se reparte por peso entre quienes no caigan en Ruina</p></div>
-      <div class="pz-bandeja" data-dados-main="${ult ? ult.asiento : ""}" aria-label="Última tirada">${ult ? filaDados(ult.ultima) : `<p class="pz-sin-tirar">Todavía nadie ha tirado</p>`}</div>
-      <div class="pz-veredicto" data-c="${ult ? esc(ult.ultima.categoria) : ""}"><p class="pz-veredicto-quien">${quien}${ult && ult.ultima.auto ? " (automática)" : ""}</p>
-        <p class="pz-veredicto-nombre">${f ? esc(f.nombre) : "&nbsp;"}</p><p class="pz-veredicto-efecto">${f ? esc(f.dados + " · " + f.efecto) : ""}</p></div>
+      <div class="pz-bandeja" data-dados-main="${ult ? ult.asiento : ""}" aria-label="Última tirada">${cubos(ult ? ult.ultima : null)}</div>
+      ${veredictoHtml(ult ? ult.ultima : null, "compartido", r.bonos, quien)}
       <div class="pz-jugadores">${est.jugadores.map(j => `
         <article class="pz-jugador" data-e="${esc(j.estado)}" data-turno="${turno.asiento === j.asiento && est.estado === "jugando" ? 1 : 0}" data-asiento="${j.asiento}">
           <div class="pz-asiento-cab"><span class="pz-asiento-nombre">${esc(j.yo ? j.nombre + " (tú)" : j.nombre)}</span><span class="pz-chip${turno.asiento === j.asiento && est.estado === "jugando" ? " pz-turno-marca" : ""}" data-e="${esc(j.estado)}">${turno.asiento === j.asiento && est.estado === "jugando" ? "Su turno" : esc(V.estadoJugador(j))}</span></div>
@@ -407,14 +450,20 @@
           ${r.cartas > 0 ? listaCartas(j.oferta) : ""}
         </article>`).join("")}</div>`;
   }
-  function pintarDockMesa(est) {
+  function pintarDockMesa(est, op) {
     const plan = V.acciones(est), yo = V.jugadorYo(est), t = est.turno || {};
+    if (op && op.observa) return `<p class="pz-observa" role="status">El Dragón observa los dados…</p>`;
     if (plan.tipo === "espera") {
       const j = V.jugadorEn(est, t.asiento);
       return `<p class="pz-espera-turno" role="status">Le toca a <strong>${esc(j ? j.nombre : "otro jugador")}</strong> <span class="pz-reloj" data-reloj></span></p>${yo && yo.estado !== "activo" ? `<p class="pz-espera-turno">${yo.estado === "ruina" ? "Has caído en Ruina. Sigue la partida desde aquí." : yo.estado === "retirado" ? "Ya has cobrado: tu peso queda fijo hasta que acabe la mesa." : ""}</p>` : ""}`;
     }
-    const parte = yo && yo.parte != null ? `<p class="pz-dock-texto">${t.fase === "decidir" ? `Si cobraras ahora y todos los demás también, recibirías <strong>${V.num(yo.parte)}</strong> tokens (apostaste ${V.num(est.reglas.dinero)}). Tu tirada sumó a tu peso; ${est.reglas.tiradas_max - yo.tiradas > 0 ? `te quedan ${V.plural(est.reglas.tiradas_max - yo.tiradas, "tirada", "tiradas")}` : "era tu última tirada"}. ` : ""}Tiempo: <span class="pz-reloj" data-reloj></span></p>` : `<p class="pz-dock-texto">Tu turno. Tiempo: <span class="pz-reloj" data-reloj></span></p>`;
-    return `${parte}<div class="pz-dock-botones">${plan.botones.map(b => `<button type="button" class="pz-boton${b.principal ? " pz-boton-principal" : ""}" data-accion="${b.id}" aria-keyshortcuts="${b.tecla}">${esc(b.texto)}${b.sub ? `<span class="pz-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`).join("")}</div>`;
+    const tc = V.tensionCompartido(est);
+    if (plan.tipo === "decidir" && tc) {
+      const cobra = { cifra: tc.parte != null ? V.num(tc.parte) : "—", texto: `Si cobras y todos los demás también, recibirías <strong>${tc.parte != null ? V.num(tc.parte) : "—"}</strong> tokens (apostaste ${V.num(tc.apuesta)}). Tu peso queda fijo en <strong>${V.pct(tc.peso)}</strong>.` };
+      const riesgo = { cifra: `${V.pct(tc.pRuina)} de Ruina`, texto: `Si sale Ruina quedas eliminado y tu apuesta se queda en el pozo. ${tc.quedan > 0 ? `Te quedan ${V.plural(tc.quedan, "tirada", "tiradas")}` : "Era tu última tirada"}.` };
+      return `${decisionHtml(plan.botones, cobra, riesgo)}<p class="pz-ayuda pz-centrado">Tiempo: <span class="pz-reloj" data-reloj></span></p>`;
+    }
+    return `<p class="pz-dock-texto">Tu turno. Tiempo: <span class="pz-reloj" data-reloj></span></p><div class="pz-dock-botones">${plan.botones.map(b => botonAccion(b)).join("")}</div>`;
   }
   function pintarFin(est) {
     const r = V.resumenFinal(est);
@@ -424,7 +473,8 @@
     return `<section class="pz-fin" data-c="${r.clase}"><h2>${esc(r.titulo)}</h2><p>${esc(r.texto)}</p>${liq ? `<ul class="pz-liquidacion" aria-label="Liquidación">${liq}</ul>` : ""}
       <div class="pz-acciones"><button type="button" class="pz-boton pz-boton-principal" data-cerrar-mesa id="pzDock" tabindex="-1">Volver a las mesas</button></div></section>`;
   }
-  function pintarMesa(est) {
+  const dragonMesaHtml = () => `<div class="pz-vigia" id="pzVigia" aria-hidden="true">${A.dragonCara()}</div>`;
+  function pintarMesa(est, op) {
     const fin = est.estado !== "jugando";
     const tapete = est.modo === "duelo" ? pintarDuelo(est) : pintarCompartido(est);
     $("pzMesa").innerHTML = `
@@ -433,57 +483,125 @@
         <div class="pz-barra-sub">${est.modo === "duelo" ? "Duelo de Dragones" : "El Pozo Compartido"} · apuesta ${esc(V.textoApuesta(est.reglas))}</div>
         ${fin ? "" : `<button type="button" class="pz-boton-mini" data-salir>${est.modo === "duelo" ? "Abandonar el duelo" : "Retirarme de la mesa"}</button>`}
       </div>
-      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div><div class="pz-vigia" id="pzVigia" data-e="espera" aria-hidden="true">${A.ojoVigia()}</div>${tapete}</div>
-        ${fin ? pintarFin(est) : `<section class="pz-dock" id="pzDock" tabindex="-1" aria-label="Controles de la mesa">${pintarDockMesa(est)}</section>`}</div>`;
+      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div>${dragonMesaHtml()}${tapete}</div>
+        ${fin ? pintarFin(est) : `<section class="pz-dock" id="pzDock" tabindex="-1" aria-label="Controles de la mesa">${pintarDockMesa(est, op)}</section>`}
+        ${probabilidadesMesa(est)}</div>`;
   }
 
-  /* ---------------------------------------------------------------- dados que ruedan (el resultado ya lo decidió el servidor) */
-  async function rodar(cont, dados, categoria) {
-    if (!cont) return;
-    const els = [...cont.querySelectorAll(".pz-dado")];
-    if (!els.length || sinMovimiento()) return;
-    S.animando = true;
-    sonar("dados");
-    els.forEach(e => e.classList.add("rodando"));
-    const t0 = Date.now();
-    while (Date.now() - t0 < 640) {
-      els.forEach((e, i) => { const v = 1 + Math.floor(Math.random() * 6); e.outerHTML = A.dado(v, "rodando"); });
-      await esperar(80);
-      els.splice(0, els.length, ...cont.querySelectorAll(".pz-dado"));
-    }
-    cont.innerHTML = dados.map(v => A.dado(v, "cae" + (categoria === "ruina" ? " es-ruina" : categoria === "triple_seis" ? " es-triple-seis" : ""))).join("");
-    sonar("cae");
-    await esperar(430);
-    S.animando = false;
+  /* ---------------------------------------------------------------- el dragón de la mesa y los efectos de cada combinación */
+  // El dragón reacciona a lo que pasa: se estrecha cuando te toca, se enciende con una Ruina o un premio, cierra los ojos al cobrar
+  function marcoVigia() { const v = $("pzVigia"); return v ? v.querySelector(".pz-dragon-marco") : null; }
+  function vigiaEstado(e) { S.vigiaBase = e; const m = marcoVigia(); if (m) m.dataset.e = e; }
+  function vigiaReaccion(e, ms) {
+    const m = marcoVigia(); if (!m) return;
+    m.dataset.e = e;
+    setTimeout(() => { const n = marcoVigia(); if (n === m && m.dataset.e === e) m.dataset.e = S.vigiaBase || "espera"; }, ms);
   }
-  // El ojo del dragón reacciona a lo que pasa en la mesa: se estrecha cuando te toca a ti, se enciende con una Ruina o con un premio grande
-  function vigiaEstado(e) { const v = $("pzVigia"); if (v) v.dataset.e = e; }
-  function vigiaReaccion(e) { const v = $("pzVigia"); if (!v) return; const antes = v.dataset.e === "ruina" || v.dataset.e === "premio" ? "espera" : v.dataset.e; v.dataset.e = e; setTimeout(() => { if ($("pzVigia") === v) v.dataset.e = antes; }, 1600); }
   function efectosDeCategoria(c, soyYo) {
     const tapete = $("pzTapete");
-    if (c === "ruina") vigiaReaccion("ruina"); else if (c === "triple_seis" || c === "triple") vigiaReaccion("premio");
     if (c === "ruina") {
+      vigiaReaccion("ruina", 2000);
       document.body.classList.add("pz-ruina"); setTimeout(() => document.body.classList.remove("pz-ruina"), 1200);
       if (tapete && !sinMovimiento()) { tapete.classList.add("pz-sacude"); setTimeout(() => tapete.classList.remove("pz-sacude"), 600); }
       sonar("ruina");
     } else if (c === "triple_seis") {
+      vigiaReaccion("gran", 2600);
       const d = $("pzDestello"); if (d && !sinMovimiento()) { d.classList.add("activo"); setTimeout(() => d.classList.remove("activo"), 1000); }
       Brasas.estallido(60); sonar("grande");
-    } else if (c === "triple") { Brasas.estallido(24); sonar("premio"); }
-    else if (c === "escalera" || c === "pareja") sonar("moneda");
+    } else if (c === "triple") { vigiaReaccion("premio", 1800); Brasas.estallido(24); sonar("premio"); }
+    else if (c === "escalera") { vigiaReaccion("premio", 1400); sonar("moneda"); }
+    else if (c === "pareja") { vigiaReaccion("premio", 900); sonar("moneda"); }
   }
-  async function animarNuevas(est, antes) {
-    for (const j of est.jugadores) {
-      if (!j.ultima) continue;
-      const visto = S.vistoTirada[j.asiento] || 0;
-      if (j.ultima.id <= visto) continue;
-      S.vistoTirada[j.asiento] = j.ultima.id;
-      if (S.primerPintado) continue;
-      const cont = document.querySelector(`[data-dados-main="${j.asiento}"]`);
-      if (cont) { await rodar(cont, j.ultima.dados, j.ultima.categoria); efectosDeCategoria(j.ultima.categoria, j.yo); }
-      const parte = document.querySelector(`[data-parte="${j.asiento}"]`);
-      if (parte) { parte.classList.add("pz-pozo-cambia"); setTimeout(() => parte.classList.remove("pz-pozo-cambia"), 800); }
+  // Pone la tirada en su sitio ya lanzada: tiñe los dados, enseña la combinación y suelta los efectos
+  function revelarTirada(cont, ult, veredicto, modo, bonos, quien, soyYo) {
+    if (cont) cont.querySelectorAll(".pz-d3").forEach(d => { d.className = "pz-d3 cat-" + ult.categoria; });
+    mostrarVeredicto(veredicto, ult, modo, bonos, quien);
+    efectosDeCategoria(ult.categoria, soyYo);
+  }
+  // Mientras los dados ruedan, el veredicto de la tirada anterior se apaga
+  function apagarVeredicto(el) {
+    if (!el) return;
+    el.dataset.c = ""; el.classList.remove("revela");
+    const n = el.querySelector(".pz-veredicto-nombre"), e = el.querySelector(".pz-veredicto-efecto");
+    if (n) n.innerHTML = "&nbsp;"; if (e) e.textContent = "";
+  }
+  // Un número que flota junto al contador: lo que acabas de ganar o de perder
+  function numeroFlota(cifra, delta) {
+    const padre = cifra && cifra.parentElement; if (!padre || sinMovimiento() || !delta) return;
+    const el = document.createElement("span");
+    el.className = "pz-delta " + (delta > 0 ? "sube" : "baja"); el.textContent = firmado(delta); el.setAttribute("aria-hidden", "true");
+    padre.appendChild(el); setTimeout(() => el.remove(), 1500);
+  }
+
+  /* ---------------------------------------------------------------- la secuencia de cada tirada:
+     decisión (ya hecha) → lanzamiento → revelación → resolución → elección.
+     El servidor ya decidió el resultado: aquí solo se enseña. Se puede saltar (clic, espacio, Intro o Escape) y acelerar (botón «Rápido»). */
+  const puedeTeatro = () => !S.primerPintado && !document.hidden && !sinMovimiento();
+  async function teatro(paso) {
+    S.teatro = true; E.nueva();
+    const tap = $("pzTapete");
+    if (tap) { tap.dataset.teatro = "1"; tap.insertAdjacentHTML("beforeend", `<p class="pz-pista-saltar" aria-hidden="true">Toca para saltar</p>`); }
+    const guarda = setTimeout(() => E.saltar(), 9000);     // si algo se atasca, la escena se salta sola
+    try { await paso(); } catch (e) { /* una escena rota no debe dejar la mesa colgada: se pinta el cuadro final igualmente */ }
+    finally {
+      clearTimeout(guarda); S.teatro = false;
+      const t2 = $("pzTapete"); if (t2) { t2.removeAttribute("data-teatro"); const p = t2.querySelector(".pz-pista-saltar"); if (p) p.remove(); }
+      const c = S.cola; S.cola = null; if (c) c();
     }
+  }
+  const saltarEscena = () => { if (S.teatro) E.saltar(); };
+
+  // Las tiradas que el servidor ha hecho desde la última vez que se enseñó algo, de la más antigua a la más nueva
+  function tiradasNuevas(est) {
+    const out = [];
+    for (const j of est.jugadores) if (j.ultima && j.ultima.id > (S.vistoTirada[j.asiento] || 0)) out.push({ j, ult: j.ultima });
+    return out.sort((a, b) => a.ult.id - b.ult.id);
+  }
+  function marcarVistas(est) { for (const j of est.jugadores) if (j.ultima) S.vistoTirada[j.asiento] = Math.max(S.vistoTirada[j.asiento] || 0, j.ultima.id); }
+
+  // Al terminar una mesa: el oro vuela al saldo si hay premio y es devorado por el dragón si se pierde
+  async function liquidacionVisual(est) {
+    const r = V.resumenFinal(est); if (!r) return;
+    const fila = document.querySelector("#pzMesa .pz-pozo-fila"), caja = $("pzSaldo") && $("pzSaldo").closest(".pz-saldo"), nuevo = est.yo && est.yo.saldo != null ? Number(est.yo.saldo) : null;
+    if (r.clase === "pierde") {
+      vigiaEstado("ruina"); sonar("pierde");
+      await Promise.all([E.devorar(fila), E.volar(fila, $("pzVigia"), 8, { clase: "roja", apaga: true })]);
+    } else {
+      vigiaEstado("cobro"); sonar(r.clase === "gana" ? "premio" : "moneda");
+      await E.volar(fila, caja, 12);
+      if (nuevo != null) { await E.contar($("pzSaldo"), saldoActualVisible(), nuevo, 800, V.num); E.pulso(caja, "pz-recibe"); }
+    }
+  }
+  const saldoActualVisible = () => (Number.isFinite(S.saldo) ? S.saldo : 0);
+
+  async function teatroMesa(est, antes, nuevas) {
+    pintarMesa(antes, { observa: true }); vigiaEstado("mira"); pintarReloj();
+    await teatro(async () => {
+      for (const { j, ult } of nuevas) {
+        const cont = est.modo === "duelo" ? document.querySelector(`[data-dados-main="${j.asiento}"]`) : document.querySelector("#pzMesa .pz-bandeja");
+        if (!cont) continue;
+        cont.querySelectorAll(".pz-d3").forEach(d => { d.className = "pz-d3"; });
+        const ved = est.modo === "duelo" ? cont.closest(".pz-duelo-lado").querySelector(".pz-veredicto") : document.querySelector("#pzMesa .pz-veredicto");
+        apagarVeredicto(ved);
+        await E.lanzar(cont, ult.dados, { alEmpezar: () => sonar("dados"), alCaer: () => sonar("cae") });
+        await E.esperar(120);
+        revelarTirada(cont, ult, ved, est.modo, est.reglas.bonos, est.modo === "duelo" ? null : (j.yo ? "Tu tirada" : `Tirada de ${j.nombre}`) + (ult.auto ? " (automática)" : ""), j.yo);
+        if (est.estado !== "jugando") S.vigiaBase = "espera";
+        await E.esperar(700);
+      }
+      // el cuadro final: lo que dice el servidor ahora
+      S.est = est; S.version = est.version;
+      pintarMesa(est); pintarReloj();
+      const finDeMesa = est.estado !== "jugando";
+      if (est.yo && est.yo.saldo != null && !finDeMesa) pintarSaldo(est.yo.saldo);
+      vigiaEstado(!finDeMesa && est.yo && est.yo.tu_turno ? "mira" : "espera");
+      for (const j of est.jugadores) {
+        const antesJ = antes.jugadores.find(x => x.asiento === j.asiento), el = document.querySelector(`[data-parte="${j.asiento}"]`);
+        if (el && antesJ && antesJ.parte != null && j.parte != null && Number(antesJ.parte) !== Number(j.parte)) { E.contar(el, Number(antesJ.parte), Number(j.parte), 700, V.num); E.pulso(el, "pz-pozo-cambia"); }
+      }
+      if (finDeMesa) { await E.esperar(300); await liquidacionVisual(est); if (est.yo && est.yo.saldo != null) pintarSaldo(est.yo.saldo); vigiaEstado("espera"); }
+      despuesDePintar(est, antes, true);
+    });
   }
 
   /* ---------------------------------------------------------------- modo solitario: tú contra el Dragón */
@@ -506,49 +624,103 @@
     f.querySelectorAll("[data-ficha]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.ficha) === d)));
   }
 
-  function filaPerspectiva(s) {
-    const p = V.perspectivaSolo(s); if (!p) return "";
-    return `<table class="pz-tabla pz-perspectiva"><caption>Si sigues tirando (te quedan ${V.plural(p.quedan, "tirada", "tiradas")})</caption><thead><tr><th scope="col">Sale</th><th scope="col" class="pz-num">Probabilidad</th><th scope="col" class="pz-num">Tu premio pasa a</th></tr></thead><tbody>
-      <tr><th scope="row">Ruina</th><td class="pz-num">${V.pct(10 / 216)}</td><td class="pz-num">0 (lo pierdes todo)</td></tr>
-      ${[["Ceniza", "ceniza", 96], ["Pareja", "pareja", 81], ["Escalera", "escalera", 24], ["Triple", "triple", 4], ["Triple seis", "triple_seis", 1]].map(([n, c, k], i) => `<tr><th scope="row">${n}</th><td class="pz-num">${V.pct(k / 216)}</td><td class="pz-num">${V.num(p.filas[i].premio)}</td></tr>`).join("")}
-      </tbody></table>`;
+  // El panel plegable del solitario: la tabla de lo que pasaría con la siguiente tirada, con el bono de cada combinación y el premio que dejaría
+  function probabilidadesSolo(s) {
+    const tb = V.tablaSolo(s); if (!tb) return "";
+    const quedan = s.tiradas_max - s.tiradas;
+    const filas = tb.filas.map(f => `<tr><th scope="row">${f.nombre}</th><td class="pz-num">${V.pct(f.p)}</td><td class="pz-num">${f.cat === "ruina" ? "pierdes todo" : f.bono > 0 ? "+" + V.pct(f.bono) : "—"}</td><td class="pz-num">${f.cat === "ruina" ? "0" : V.num(f.premio)}</td></tr>`).join("");
+    return detalleProbabilidades(`<table class="pz-tabla pz-perspectiva"><caption>${s.estado === "en_curso" && s.tiradas > 0 ? `Si sigues tirando (te quedan ${V.plural(quedan, "tirada", "tiradas")}). ` : "Con cada tirada. "}Tu premio ahora: <strong>${V.num(tb.premio)}</strong>.</caption>
+      <thead><tr><th scope="col">Sale</th><th scope="col" class="pz-num">Probabilidad</th><th scope="col" class="pz-num">Bono</th><th scope="col" class="pz-num">Premio resultante</th></tr></thead><tbody>${filas}</tbody></table>
+      <p class="pz-ayuda">El premio base es <strong>${V.num(tb.base)}</strong> (tu apuesta menos el tributo del ${V.num(tb.tributo)} %). Cada bono es un porcentaje de ese base y se acumula tirada a tirada. La ceniza deja el premio como está y la Ruina lo pierde todo.</p>`);
+  }
+  const ultimaSolo = s => (s && s.historial && s.historial.length ? s.historial[s.historial.length - 1] : null);
+
+  function decisionSoloHtml(s, plan) {
+    const t = V.tensionSolo(s); if (!t) return "";
+    if (s.fase === "decidir") {
+      const cobra = { cifra: V.num(t.premio), texto: `Es tuyo ahora: se suma a tu saldo y la partida termina. Apostaste ${V.num(t.apuesta)}, así que ${t.premio >= t.apuesta ? `ganas <strong>${V.num(t.premio - t.apuesta)}</strong>` : `pierdes <strong>${V.num(t.apuesta - t.premio)}</strong>`}.` };
+      const riesgo = { cifra: `${V.pct(t.pRuina)} de Ruina`, texto: `Si sale, pierdes <strong>${V.num(t.premio)}</strong>. Con un triple seis tu premio subiría a <strong>${V.num(t.mejor)}</strong>. Te quedan ${V.plural(t.quedan, "tirada", "tiradas")}.` };
+      return `${decisionHtml(plan.botones, cobra, riesgo)}<p class="pz-ayuda pz-centrado">Si te vas, la partida se cierra sola en <span class="pz-reloj" data-reloj></span> y cobras lo que lleves.</p>`;
+    }
+    return `<p class="pz-dock-texto">Apuestas <strong>${V.num(t.apuesta)}</strong> tokens. Primera tirada: <strong>${V.pct(t.pRuina)}</strong> de Ruina y lo pierdes. Si te vas, la partida se cierra sola en <span class="pz-reloj" data-reloj></span> y se te devuelve la apuesta.</p>
+      <div class="pz-dock-botones">${plan.botones.map(b => botonAccion(b)).join("")}</div>`;
   }
 
-  function pintarSolo(s) {
+  function pintarSolo(s, op) {
     const fin = s.estado === "terminada", r = V.resumenSolo(s), plan = V.accionesSolo(s);
-    const ult = s.historial.length ? s.historial[s.historial.length - 1] : null;
-    const f = ult ? V.frasesTirada({ dados: ult.dados, categoria: ult.categoria }, "solo", s.bonos) : null;
+    const ult = ultimaSolo(s);
     const puntos = Array.from({ length: s.tiradas_max }, (_, i) => `<span class="pz-ronda-punto" data-g="${i < s.tiradas ? 1 : 0}"></span>`).join("");
     const dock = fin ? `<section class="pz-fin" data-c="${r.clase}"><h2>${esc(r.titulo)}</h2><p>${esc(r.texto)}</p>
         <div class="pz-acciones"><button type="button" class="pz-boton pz-boton-principal" data-solo-nueva id="pzDock" tabindex="-1">Jugar otra vez</button><button type="button" class="pz-boton" data-solo-lobby>Volver a las mesas</button></div></section>`
-      : `<section class="pz-dock" id="pzDock" tabindex="-1" aria-label="Controles de la partida"><p class="pz-dock-texto">${s.fase === "decidir" ? `Tu premio provisional es <strong>${V.num(s.premio)}</strong> tokens (apostaste ${V.num(s.apuesta)}). ` : `Apuestas ${V.num(s.apuesta)} tokens. `}Si te vas, la partida se cierra sola en <span class="pz-reloj" data-reloj></span> ${s.tiradas === 0 ? "y se te devuelve la apuesta" : "y cobras lo que lleves"}.</p>
-        <div class="pz-dock-botones">${plan.botones.map(b => `<button type="button" class="pz-boton${b.principal ? " pz-boton-principal" : ""}" data-accion="${b.id}" aria-keyshortcuts="${b.tecla}">${esc(b.texto)}${b.sub ? `<span class="pz-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`).join("")}</div></section>`;
+      : `<section class="pz-dock" id="pzDock" tabindex="-1" aria-label="Controles de la partida">${op && op.observa ? `<p class="pz-observa" role="status">El Dragón observa los dados…</p>` : decisionSoloHtml(s, plan)}</section>`;
+    const premio = fin ? s.pago : s.premio;
     $("pzSolo").innerHTML = `
       <div class="pz-barra"><div><span class="pz-codigo">Solo</span></div><div class="pz-barra-sub">Tú contra el Dragón · apuesta ${V.num(s.apuesta)} tokens de juego</div></div>
-      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div><div class="pz-vigia" id="pzVigia" data-e="espera" aria-hidden="true">${A.ojoVigia()}</div>
-        <div class="pz-pozo"><div class="pz-pozo-fila">${A.monton(Math.round(3 + (Number(fin ? s.pago : s.premio) / Math.max(1, s.apuesta)) * 4))}<div><p class="pz-pozo-etq">${fin ? "Premio cobrado" : "Tu premio provisional"}</p><p class="pz-pozo-cifra" data-pozo>${V.num(fin ? s.pago : s.premio)}</p></div></div>
+      <div class="pz-mesa"><div class="pz-tapete" id="pzTapete"><div class="pz-destello" id="pzDestello" aria-hidden="true"></div>${dragonMesaHtml()}
+        <div class="pz-pozo"><div class="pz-tesoro"><div class="pz-pozo-fila">${montonDe(discosSolo(premio, s.apuesta))}</div><div class="pz-tesoro-datos"><p class="pz-pozo-etq">${fin ? "Premio cobrado" : "Tu premio provisional"}</p><p class="pz-pozo-cifra" data-pozo>${V.num(premio)}</p></div></div>
           <p class="pz-pozo-sub">apuesta ${V.num(s.apuesta)} · el Dragón retiene un ${V.num(s.tributo)} % (premio base ${V.num(s.base)}) · ${V.pct(s.bono)} de bonos acumulados</p></div>
-        <div class="pz-bandeja" data-dados-solo aria-label="Última tirada">${ult ? filaDados(ult) : `<p class="pz-sin-tirar">Todavía no has tirado</p>`}</div>
-        <div class="pz-veredicto" data-c="${ult ? esc(ult.categoria) : ""}"><p class="pz-veredicto-quien">Tirada ${s.tiradas} de ${s.tiradas_max}</p><p class="pz-veredicto-nombre">${f ? esc(f.nombre) : "&nbsp;"}</p><p class="pz-veredicto-efecto">${f ? esc(f.dados + " · " + f.efecto) : ""}</p></div>
+        <div class="pz-bandeja" data-dados-solo aria-label="Última tirada">${cubos(ult)}</div>
+        ${veredictoHtml(ult ? { dados: ult.dados, categoria: ult.categoria } : null, "solo", s.bonos, ult ? `Tirada ${s.tiradas} de ${s.tiradas_max}` : "Todavía no has tirado")}
         <div class="pz-rondas" aria-label="${s.tiradas} de ${s.tiradas_max} tiradas">${puntos}</div>
-        ${fin ? "" : filaPerspectiva(s)}
-      </div>${dock}</div>`;
+      </div>${dock}${fin ? "" : probabilidadesSolo(s)}</div>`;
   }
 
-  async function animarSolo(s, antes) {
-    const ult = s.historial.length ? s.historial[s.historial.length - 1] : null;
-    if (!ult) return;
-    const visto = S.vistoSolo || 0;
-    if (ult.id <= visto) return;
-    S.vistoSolo = ult.id;
-    if (S.primerPintado) return;
-    const cont = document.querySelector("[data-dados-solo]");
-    if (cont) { await rodar(cont, ult.dados, ult.categoria); efectosDeCategoria(ult.categoria, true); }
-    const p = document.querySelector("[data-pozo]"); if (p) { p.classList.add("pz-pozo-cambia"); setTimeout(() => p.classList.remove("pz-pozo-cambia"), 800); }
+  // El premio cambia tras la tirada: sube con monedas que caen, se queda quieto con una ceniza o se consume con una Ruina
+  async function resolverPremioSolo(s, antes, ult) {
+    const fila = document.querySelector("#pzSolo .pz-pozo-fila"), cifra = document.querySelector("#pzSolo [data-pozo]");
+    const p0 = Number(antes.premio), p1 = ult.categoria === "ruina" ? 0 : Number(s.estado === "terminada" ? s.pago : s.premio);
+    if (ult.categoria === "ruina") {
+      numeroFlota(cifra, -p0);
+      await Promise.all([E.devorar(fila), E.volar(fila, $("pzVigia"), 8, { clase: "roja", apaga: true }), E.contar(cifra, p0, 0, 650, V.num)]);
+    } else if (p1 > p0 + 1e-9) {
+      numeroFlota(cifra, p1 - p0); sonar("moneda");
+      E.actualizarMonton(fila, discosSolo(p1, s.apuesta));
+      await E.contar(cifra, p0, p1, 700, V.num);
+      E.pulso(cifra, "pz-pozo-cambia");
+    }
+  }
+  // El cierre de una partida cobrada: el dragón cierra los ojos y el oro viaja al saldo
+  async function cierreSolo(s, ult) {
+    if (ult && ult.categoria === "ruina") return;
+    const pago = Number(s.pago) || 0, caja = $("pzSaldo") && $("pzSaldo").closest(".pz-saldo");
+    if (pago <= 0) return;
+    vigiaEstado("cobro"); sonar("premio");
+    await E.volar(document.querySelector("#pzSolo .pz-pozo-fila"), caja, 12);
+    if (s.saldo != null) { await E.contar($("pzSaldo"), saldoActualVisible(), Number(s.saldo), 800, V.num); E.pulso(caja, "pz-recibe"); }
+  }
+
+  async function teatroSolo(s, antes, rodo, ult) {
+    pintarSolo(antes, { observa: true }); vigiaEstado("mira"); pintarReloj();
+    await teatro(async () => {
+      if (rodo) {
+        const cont = document.querySelector("[data-dados-solo]");
+        cont.querySelectorAll(".pz-d3").forEach(d => { d.className = "pz-d3"; });
+        apagarVeredicto(document.querySelector("#pzSolo .pz-veredicto"));
+        await E.lanzar(cont, ult.dados, { alEmpezar: () => sonar("dados"), alCaer: () => sonar("cae") });
+        await E.esperar(120);
+        revelarTirada(cont, ult, document.querySelector("#pzSolo .pz-veredicto"), "solo", s.bonos, `Tirada ${s.tiradas} de ${s.tiradas_max}`, true);
+        if (s.estado === "terminada") S.vigiaBase = "espera";
+        await E.esperar(560);
+        await resolverPremioSolo(s, antes, ult);
+        await E.esperar(380);
+      }
+      if (s.estado === "terminada") await cierreSolo(s, ult);
+      // el cuadro final: lo que dice el servidor ahora
+      S.solo = s;
+      if (s.saldo != null) pintarSaldo(s.saldo);
+      pintarSolo(s); pintarReloj(); vigiaEstado(s.estado === "en_curso" ? "mira" : "espera");
+      finDeSolo(s, antes, true);
+    });
+  }
+  function finDeSolo(s, antes, yaSono) {
+    const frase = V.anuncioSolo(antes, s); if (frase) leer(frase);
+    if (!yaSono && s.estado === "terminada" && (!antes || antes.estado !== "terminada") && !S.primerPintado) { const r = V.resumenSolo(s); if (r) sonar(r.clase === "gana" ? "premio" : r.clase === "pierde" ? "pierde" : "moneda"); }
+    S.primerPintado = false;
   }
 
   function aplicarSolo(s) {
     if (!s) return;
+    if (S.teatro) { S.cola = () => aplicarSolo(s); return; }
     if (s.reglas) S.reglasSolo = s.reglas;
     if (s.sin_partida) {
       const habia = S.solo; S.solo = null;
@@ -556,32 +728,46 @@
       if (S.vista === "solo" || habia) irALobby();
       return;
     }
-    const antes = S.solo; S.solo = s; S.est = null;
-    if (s.saldo != null) pintarSaldo(s.saldo);
+    const antes = S.solo, ult = ultimaSolo(s);
+    const rodo = !!(ult && ult.id > (S.vistoSolo || 0)), cierra = s.estado === "terminada" && !!antes && antes.estado === "en_curso";
+    if (ult) S.vistoSolo = Math.max(S.vistoSolo || 0, ult.id);
+    S.solo = s; S.est = null;
     fijarLimite(s.restante_s);
     if (S.vista !== "solo") mostrar("solo");
-    pintarSolo(s); animarSolo(s, antes); pintarReloj(); vigiaEstado(s.estado === "en_curso" ? "mira" : "espera");
-    const frase = V.anuncioSolo(antes, s); if (frase) leer(frase);
-    if (s.estado === "terminada" && (!antes || antes.estado !== "terminada") && !S.primerPintado) { const r = V.resumenSolo(s); if (r) sonar(r.clase === "gana" ? "premio" : r.clase === "pierde" ? "pierde" : "moneda"); }
-    S.primerPintado = false;
+    if (puedeTeatro() && antes && antes.estado === "en_curso" && (rodo || cierra)) { teatroSolo(s, antes, rodo, ult); return; }
+    if (s.saldo != null) pintarSaldo(s.saldo);
+    pintarSolo(s); pintarReloj(); vigiaEstado(s.estado === "en_curso" ? "mira" : "espera");
+    finDeSolo(s, antes, false);
   }
 
   function empezarSolo(f, boton) {
     const dinero = Number(f.querySelector('[data-f="dinero"]').value) || 0;
-    const heroe = $("pzHeroe"); if (heroe) heroe.classList.add("encendido");
+    const marco = document.querySelector("#pzHeroe .pz-dragon-marco"); if (marco) marco.dataset.e = "mira";
     const cliente = window.VeintiunaApi.nuevoId();                    // el mismo identificador en cada reintento: la partida no se abre dos veces ni se cobra dos veces
     return ejecutar(() => api.pozo.solo.empezar(cliente, dinero), boton, aplicarSolo);
   }
   function hacerSolo(accion, boton) {
-    const s = S.solo; if (!s || s.estado !== "en_curso") return;
+    const s = S.solo; if (!s || s.estado !== "en_curso" || S.teatro) return;
     const paso = s.paso, id = s.id;
     return ejecutar(() => (accion === "cobrar" ? api.pozo.solo.cobrar(id, paso) : api.pozo.solo.tirar(id, paso)), boton, aplicarSolo);
   }
   const cerrarSolo = () => ejecutar(() => api.pozo.solo.descartar(), null, aplicarSolo);
 
   /* ---------------------------------------------------------------- aplicar lo que dice el servidor */
+  // Lo que se hace después de pintar una mesa: anuncio para lectores de pantalla, sonido de turno y de final
+  function despuesDePintar(est, antes, yaSono) {
+    const vista = V.vista(est);
+    const frase = V.anuncio(antes, est);
+    if (frase) leer(frase);
+    if (est.turno && est.yo && est.yo.tu_turno && (!antes || !antes.turno || antes.turno.asiento !== est.turno.asiento || antes.turno.fase !== est.turno.fase) && !S.primerPintado) sonar("turno");
+    if (!yaSono && vista === "fin" && (!antes || V.vista(antes) !== "fin") && !S.primerPintado) {
+      const r = V.resumenFinal(est); if (r) sonar(r.clase === "gana" ? "premio" : r.clase === "pierde" ? "pierde" : "moneda");
+    }
+    S.primerPintado = false;
+  }
   function aplicar(est) {
     if (!est) return;
+    if (S.teatro) { S.cola = () => aplicar(est); return; }
     if (est.sin_mesa) {
       const antes = S.est; S.est = null; S.version = null;
       if (est.saldo != null) pintarSaldo(est.saldo);
@@ -589,22 +775,19 @@
       else if (antes) irALobby();
       return;
     }
-    const antes = S.est;
+    const antes = S.est, vista = V.vista(est);
+    const nuevas = vista !== "sala" ? tiradasNuevas(est) : [];
+    const teatral = puedeTeatro() && !!antes && antes.codigo === est.codigo && antes.estado === "jugando" && vista !== "sala" && (nuevas.length > 0 || est.estado !== "jugando");
+    marcarVistas(est);
     S.est = est; S.version = est.version;
-    if (est.yo && est.yo.saldo != null) pintarSaldo(est.yo.saldo);
     fijarLimite(est.turno ? est.turno.restante_s : est.restante_s);
-    const vista = V.vista(est);
     if (S.vista !== vista) { mostrar(vista); }
+    if (teatral) { teatroMesa(est, antes, nuevas); return; }
+    if (est.yo && est.yo.saldo != null) pintarSaldo(est.yo.saldo);
     if (vista === "sala") pintarSala(est);
-    else { pintarMesa(est); animarNuevas(est, antes); vigiaEstado(est.estado === "jugando" && est.yo && est.yo.tu_turno ? "mira" : "espera"); }
+    else { pintarMesa(est); vigiaEstado(est.estado === "jugando" && est.yo && est.yo.tu_turno ? "mira" : "espera"); }
     pintarReloj();
-    const frase = V.anuncio(antes, est);
-    if (frase) leer(frase);
-    if (est.turno && est.yo && est.yo.tu_turno && (!antes || !antes.turno || antes.turno.asiento !== est.turno.asiento || antes.turno.fase !== est.turno.fase) && !S.primerPintado) sonar("turno");
-    if (vista === "fin" && (!antes || V.vista(antes) !== "fin") && !S.primerPintado) {
-      const r = V.resumenFinal(est); if (r) sonar(r.clase === "gana" ? "premio" : r.clase === "pierde" ? "pierde" : "moneda");
-    }
-    S.primerPintado = false;
+    despuesDePintar(est, antes, false);
   }
 
   /* ---------------------------------------------------------------- hablar con el servidor */
@@ -682,6 +865,7 @@
   }
   async function cerrarMesaTerminada() { await ejecutar(async () => { const r = await api.pozo.salir(); S.est = null; S.version = null; return r; }); }
   function hacer(accion, boton) {
+    if (S.teatro) return;
     if (S.vista === "solo") return hacerSolo(accion, boton);
     const est = S.est; if (!est || est.estado !== "jugando") return;
     const paso = est.paso;
@@ -716,6 +900,7 @@
 
   /* ---------------------------------------------------------------- eventos */
   function alClic(ev) {
+    if (S.teatro && ev.target.closest("#pzTapete")) { saltarEscena(); return; }
     const t = ev.target.closest("button, a");
     if (!t) return;
     const d = t.dataset;
@@ -764,6 +949,7 @@
   function alTeclear(ev) {
     if (ev.defaultPrevented || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     if (document.querySelector("dialog[open]")) return;
+    if (S.teatro && [" ", "Enter", "Escape"].includes(ev.key)) { ev.preventDefault(); saltarEscena(); return; }
     const t = ev.target;
     if (t && (t.matches("input, textarea, select") || t.isContentEditable)) return;
     const k = ev.key.length === 1 ? ev.key.toUpperCase() : ev.key;
@@ -802,13 +988,32 @@
       manejarError(e, arrancarConSesion); mostrar("sin_conexion"); programar(5000);
     }
   }
+  // Los ojos de los dragones visibles siguen al cursor: la pupila viaja más que el iris para dar profundidad. Una sola escritura por fotograma.
+  const mirada = { espera: false };
+  const entre = v => Math.max(-1, Math.min(1, v));
   function seguirConLaMirada(ev) {
-    const h = $("pzHeroeArte"); if (!h || sinMovimiento()) return;
-    const r = h.getBoundingClientRect(); if (!r.width) return;
-    const dx = Math.max(-1, Math.min(1, (ev.clientX - (r.left + r.width / 2)) / (r.width / 2))), dy = Math.max(-1, Math.min(1, (ev.clientY - (r.top + r.height * 0.5)) / (r.height / 2)));
-    h.querySelectorAll(".pz-heroe-pupila").forEach(g => { g.style.transform = `translate(${(dx * 7).toFixed(1)}px, ${(dy * 4).toFixed(1)}px)`; });
+    if (mirada.espera || sinMovimiento()) return;
+    const marcos = [...document.querySelectorAll(".pz-dragon-marco")].filter(m => m.offsetParent !== null);
+    if (!marcos.length) return;
+    mirada.espera = true;
+    const x = ev.clientX, y = ev.clientY;
+    requestAnimationFrame(() => {
+      mirada.espera = false;
+      for (const m of marcos) {
+        const r = m.getBoundingClientRect(); if (!r.width) continue;
+        const dx = entre((x - (r.left + r.width / 2)) / (r.width / 2)), dy = entre((y - (r.top + r.height * 0.48)) / (r.height / 2));
+        m.querySelectorAll(".pz-heroe-pupila").forEach(g => { g.style.transform = `translate(${(dx * 9).toFixed(1)}px, ${(dy * 5).toFixed(1)}px)`; });
+        m.querySelectorAll(".pz-heroe-iris").forEach(g => { g.style.transform = `translate(${(dx * 4).toFixed(1)}px, ${(dy * 2.5).toFixed(1)}px)`; });
+      }
+    });
+  }
+  function pintarRapidoBoton() {
+    const b = $("pzBtnRapido"); if (!b) return;
+    b.setAttribute("aria-pressed", String(S.rapido)); b.classList.toggle("apagado", !S.rapido);
   }
   async function iniciar() {
+    document.body.insertAdjacentHTML("afterbegin", A.defs());
+    E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton();
     document.addEventListener("pointermove", seguirConLaMirada, { passive: true });
     $("pzEmblema").innerHTML = A.emblema();
     $("pzSaldoMoneda").innerHTML = A.moneda();
@@ -822,6 +1027,7 @@
     document.addEventListener("keydown", alTeclear);
     document.addEventListener("input", ev => { if (ev.target.id === "pzCodigo") ev.target.value = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
     $("pzBtnReglas").addEventListener("click", () => abrirReglas());
+    $("pzBtnRapido").addEventListener("click", () => { S.rapido = !S.rapido; guardado.poner("pzRapido", S.rapido ? "1" : "0"); E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton(); });
     $("pzBtnAtajos").addEventListener("click", abrirAtajos);
     $("pzBtnSonido").addEventListener("click", () => { S.efectos = !S.efectos; guardado.poner("pzEfectos", S.efectos ? "1" : "0"); pintarSonidoBoton(); if (S.efectos) sonar("moneda"); });
     window.addEventListener("online", () => { aviso("Volvió la conexión.", { tipo: "info", cerrar: true }); sondear(); });

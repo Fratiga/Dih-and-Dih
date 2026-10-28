@@ -296,16 +296,13 @@ body.pz-tema { font-size: 1.14rem; }
 .pz-heroe::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, transparent 30%, #000000aa 100%); }
 .pz-heroe-arte { position: relative; display: flex; justify-content: center; align-items: flex-end; padding: 22px 12px 0; background: center top / cover no-repeat; }
 .pz-heroe-arte.con-imagen .pz-dragon-heroe { display: none; }
-.pz-dragon-heroe { display: block; width: min(100%, 900px); height: auto; aspect-ratio: 800 / 420; }
-.pz-dh-ala { fill: #1a1310; stroke: #6a4a34; stroke-width: 2.5; } .pz-dh-nervio { stroke: #4a3425; stroke-width: 3; }
-.pz-dh-cabeza { fill: #241a15; stroke: #7a5640; stroke-width: 2.5; } .pz-dh-cuerno { fill: #3a2a20; stroke: #8a6446; stroke-width: 2.5; } .pz-dh-pua { fill: #32241b; stroke: #7a5640; stroke-width: 2; }
-.pz-dh-hocico { fill: #1f1612; stroke: #3d2d22; stroke-width: 1.5; } .pz-dh-nariz { fill: #070403; } .pz-dh-boca { stroke: #b4631f; stroke-width: 3; stroke-linecap: round; }
-.pz-dh-colmillo { fill: #e8a23a; } .pz-dh-ceja { stroke: #4a382b; stroke-width: 6; stroke-linecap: round; }
-.pz-dh-ojo-cuenca { fill: #0a0604; } .pz-dh-iris { fill: url(#pzIris); } .pz-dh-pupila { fill: #090403; } .pz-dh-luz { opacity: .55; } .pz-dh-fuego { opacity: .3; }
-.pz-heroe-pupila { transition: transform .25s ease-out; }
+.pz-heroe-arte { overflow: visible; }
+.pz-dragon-heroe { display: block; overflow: visible; width: min(100%, 900px); height: auto; aspect-ratio: 800 / 460; }
+.pz-dh-luz { opacity: .6; } .pz-dh-fuego { opacity: .3; }
+.pz-heroe-pupila, .pz-heroe-iris { transition: transform .25s ease-out; will-change: transform; }
 .pz-heroe.encendido .pz-dh-luz { opacity: 1; transition: opacity .4s; } .pz-heroe.encendido .pz-dh-fuego { opacity: .75; transition: opacity .4s; }
-.pz-heroe-cuerpo { position: relative; display: grid; justify-items: center; gap: 8px; margin-top: -54px; padding: 70px 22px 26px; text-align: center; background: linear-gradient(transparent, #0a0706e6 30%, #0a0706 100%); }
-.pz-heroe-titulo { margin: 0; font: 700 clamp(2rem, 6.6vw, 4rem)/1 var(--font-heading); letter-spacing: .14em; text-transform: uppercase; color: var(--pz-oro-claro); text-shadow: 0 4px 26px #000; }
+.pz-heroe-cuerpo { position: relative; display: grid; justify-items: center; gap: 8px; padding: 6px 22px 26px; text-align: center; background: linear-gradient(#0a070600, #0a0706 22%); }
+.pz-heroe-titulo { margin: 0; font: 700 clamp(1.8rem, 5vw, 3.1rem)/1.05 var(--font-heading); letter-spacing: .14em; text-transform: uppercase; color: var(--pz-oro-claro); text-shadow: 0 4px 26px #000; }
 .pz-heroe-lema { margin: 0 0 6px; max-width: 640px; font-size: clamp(1.15rem, 2.6vw, 1.45rem); line-height: 1.35; color: #e8dcc4; text-shadow: 0 2px 14px #000; }
 .pz-solo { width: min(620px, 100%); display: grid; gap: 12px; padding: 18px 20px 20px; text-align: left; background: #120d0aeb; border: 1px solid #7d6633; border-radius: 14px; box-shadow: 0 18px 44px #000c; }
 .pz-solo-cab { display: flex; align-items: center; gap: 12px; }
@@ -313,7 +310,7 @@ body.pz-tema { font-size: 1.14rem; }
 .pz-solo h2 { margin: 0; font: 600 1.3rem var(--font-heading); letter-spacing: .08em; color: var(--pz-marfil); text-transform: uppercase; }
 .pz-solo-cab p { margin: 2px 0 0; color: var(--pz-gris); font-size: 1.05rem; }
 .pz-solo-apuesta { display: grid; grid-template-columns: minmax(120px, 170px) 1fr; gap: 12px; align-items: end; }
-.pz-solo-apuesta .pz-campo input { font-size: 1.25rem; font-weight: 700; min-height: 52px; }
+.pz-solo-apuesta > * { min-width: 0; } .pz-solo-apuesta .pz-campo input { width: 100%; min-width: 0; box-sizing: border-box; font-size: 1.25rem; font-weight: 700; min-height: 52px; }
 .pz-fichas { display: flex; gap: 8px; flex-wrap: wrap; }
 .pz-ficha { min-width: 52px; min-height: 52px; padding: 6px 12px; font: 700 1.05rem var(--pz-serif); color: var(--pz-marfil); background: var(--pz-piedra-3); border: 1.5px solid var(--pz-borde); border-radius: 999px; cursor: pointer; font-variant-numeric: tabular-nums; }
 .pz-ficha:hover { background: #ffffff1c; border-color: #ffffff66; } .pz-ficha[aria-pressed="true"] { color: #1a130e; background: var(--pz-oro-claro); border-color: var(--pz-oro-claro); }
@@ -342,6 +339,6 @@ body.pz-tema { font-size: 1.14rem; }
 @media (max-width: 700px) {
   .pz-otros { grid-template-columns: minmax(0, 1fr); }
   .pz-solo-apuesta { grid-template-columns: minmax(0, 1fr); }
-  .pz-heroe-arte { padding: 14px 4px 0; } .pz-heroe-cuerpo { margin-top: -34px; padding-top: 46px; }
+  .pz-heroe-arte { padding: 14px 4px 0; }
 }
 @media (prefers-reduced-motion: reduce) { .pz-heroe-pupila, .pz-vi-pupila, .pz-vi-iris2, .pz-heroe.encendido .pz-dh-luz { transition: none; } }

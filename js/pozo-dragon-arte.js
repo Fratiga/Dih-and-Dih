@@ -61,14 +61,14 @@ window.PozoArte = (function () {
   }
 
   // El montón del pozo: más monedas cuanto más pozo (de 1 a 14 discos), siempre del mismo ancho
-  function monton(n) {
+  function monton(n, nuevos) {
     const k = Math.max(1, Math.min(14, n));
     let h = "";
     for (let i = 0; i < k; i++) {
       const y = 92 - i * 6, dx = (i % 3) * 3 - 3;
-      h += `<ellipse cx="${50 + dx}" cy="${y}" rx="38" ry="9" class="pz-disco"/><ellipse cx="${50 + dx}" cy="${y - 3}" rx="38" ry="9" class="pz-disco-tapa"/>`;
+      h += `<g class="pz-disco-g${i >= k - (nuevos || 0) ? " pz-disco-nuevo" : ""}"><ellipse cx="${50 + dx}" cy="${y}" rx="38" ry="9" class="pz-disco"/><ellipse cx="${50 + dx}" cy="${y - 3}" rx="38" ry="9" class="pz-disco-tapa"/></g>`;
     }
-    return `<svg class="pz-monton" viewBox="0 0 100 100" aria-hidden="true" focusable="false">${h}</svg>`;
+    return `<svg class="pz-monton" viewBox="0 0 100 100" data-n="${k}" aria-hidden="true" focusable="false">${h}</svg>`;
   }
 
   // Un dragón dormido sobre su tesoro: silueta del fondo de la mesa (decorativa)
@@ -86,41 +86,93 @@ window.PozoArte = (function () {
     return `<span class="pz-ejemplo" aria-hidden="true">${(EJEMPLOS[cat] || []).map(v => dado(v, "pz-mini")).join("")}</span>`;
   }
 
-  // La cara del dragón de frente, grande: cresta, cuernos, alas a los lados, ojos de brasa y colmillos con luz de fuego dentro. Está dibujada mitad y mitad (la izquierda se refleja)
-  // para que sea simétrica. Los ojos llevan la clase pz-heroe-pupila: el controlador los mueve hacia el cursor.
-  function dragonHeroe() {
-    const mitad = `
-      <path d="M392 270 C300 190 150 120 -20 70 L-10 200 C80 214 190 250 300 330 Z" class="pz-dh-ala"/>
-      <path d="M300 330 C200 250 90 214 -10 200 M330 300 C230 232 120 196 20 182" class="pz-dh-nervio" fill="none"/>
-      <path d="M400 40 L368 52 L340 112 L312 168 L318 250 L346 330 L376 392 L400 404 Z" class="pz-dh-cabeza"/>
-      <path d="M338 118 L246 14 L226 110 L298 154 Z" class="pz-dh-cuerno"/>
-      <path d="M306 172 L186 104 L204 192 L292 216 Z" class="pz-dh-cuerno"/>
-      <path d="M292 218 L196 196 L226 262 L300 262 Z" class="pz-dh-cuerno"/>
-      <path d="M400 46 L388 -22 L372 56 Z M372 58 L350 -14 L338 78 Z M338 82 L304 2 L298 104 Z M302 106 L262 36 L262 130 Z" class="pz-dh-pua"/>
-      <path d="M316 262 L258 292 L292 304 L330 292 Z M330 292 L284 332 L322 336 L350 318 Z M350 322 L316 362 L350 360 L368 340 Z" class="pz-dh-pua"/>
-      <path d="M392 236 L360 254 L350 304 L368 352 L400 366 Z" class="pz-dh-hocico"/>
-      <ellipse cx="372" cy="292" rx="9" ry="14" class="pz-dh-nariz"/>
-      <path d="M392 366 L346 346 L336 318 M392 366 L352 372 L326 356" class="pz-dh-boca" fill="none"/>
-      <path d="M394 362 L388 346 L380 364 Z M378 362 L370 344 L362 362 Z M360 360 L352 344 L346 358 Z M346 354 L336 338 L334 354 Z" class="pz-dh-colmillo"/>
-      <path d="M316 214 Q336 196 358 204" class="pz-dh-ceja" fill="none"/>
-      <ellipse cx="332" cy="222" rx="30" ry="14" transform="rotate(-16 332 222)" class="pz-dh-ojo-cuenca"/>
-      <ellipse cx="332" cy="222" rx="24" ry="10" transform="rotate(-16 332 222)" class="pz-dh-iris"/>`;
-    return `<svg class="pz-dragon-heroe" viewBox="0 0 800 420" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Un dragón negro de frente, con los ojos encendidos" focusable="false">
-      <defs>
-        <radialGradient id="pzHumo" cx=".5" cy="1" r=".75"><stop offset="0" stop-color="#e07a2c" stop-opacity=".85"/><stop offset=".45" stop-color="#8a3a18" stop-opacity=".45"/><stop offset="1" stop-color="#1a0f0a" stop-opacity="0"/></radialGradient>
-        <radialGradient id="pzIris" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd98a"/><stop offset=".6" stop-color="#f0a22c"/><stop offset="1" stop-color="#8a3a10"/></radialGradient>
-        <radialGradient id="pzLuz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb03a" stop-opacity=".7"/><stop offset="1" stop-color="#ffb03a" stop-opacity="0"/></radialGradient>
-        <g id="pzDhMitad">${mitad}</g>
-      </defs>
-      <ellipse cx="400" cy="430" rx="420" ry="150" fill="url(#pzHumo)"/>
-      <use href="#pzDhMitad"/>
-      <use href="#pzDhMitad" transform="translate(800 0) scale(-1 1)"/>
-      <circle cx="332" cy="222" r="44" fill="url(#pzLuz)" class="pz-dh-luz"/><circle cx="468" cy="222" r="44" fill="url(#pzLuz)" class="pz-dh-luz"/>
-      <g class="pz-heroe-pupila"><ellipse cx="332" cy="222" rx="4" ry="10" transform="rotate(-16 332 222)" class="pz-dh-pupila"/></g>
-      <g class="pz-heroe-pupila"><ellipse cx="468" cy="222" rx="4" ry="10" transform="rotate(16 468 222)" class="pz-dh-pupila"/></g>
-      <ellipse cx="400" cy="362" rx="46" ry="14" fill="#ff9a2a" opacity=".35" class="pz-dh-fuego"/>
-    </svg>`;
+  // ---------------------------------------------------------------------------------------------------------------------
+  // EL DRAGÓN. Dibujado por capas a partir de la ilustración de referencia y pensado para pintarse barato:
+  //  - Los degradados, el patrón de escamas y la mitad izquierda de la cara viven una sola vez en un <svg> oculto (defs()). Cada dragón de la página es solo un <use> de ahí.
+  //  - Cada dragón son dos capas: el cuerpo, que no se anima nunca, y los ojos (resplandor, iris, pupila rasgada, párpados), que son lo único que se mueve. Así, seguir al cursor o parpadear
+  //    solo repinta un par de formas pequeñas y no toda la cara.
+  //  - Sin filtros ni desenfoques: el brillo son degradados radiales.
+  // El color de los ojos, el cierre de los párpados y el tamaño de la pupila salen de data-e en el marco (espera, mira, ruina, premio, cobro) y los pone el CSS (pozo-dragon-escena.css).
+  // ---------------------------------------------------------------------------------------------------------------------
+  const CY = 205;
+  const MITAD_DRAGON = `
+      <path d="M-700 28 L0 50 C90 66 170 108 232 158 L278 308 C200 250 100 198 0 172 L-700 150 Z" fill="url(#pzAla)"/>
+      <path d="M-700 28 L0 50 C90 66 170 108 232 158 L278 308 C200 250 100 198 0 172 L-700 150 Z" fill="url(#pzEscama)" opacity=".5"/>
+      <path d="M-700 90 L0 118 C90 132 180 176 250 238 M-700 60 L0 86 C80 100 160 140 236 196 M-700 120 L0 148 C90 164 170 200 262 270" fill="none" stroke="#6b4a30" stroke-width="1.6" opacity=".8"/>
+      <path d="M-700 28 L0 50 C90 66 170 108 232 158" fill="none" stroke="#d99a45" stroke-width="2.2"/>
+      <path d="M-700 150 L0 172 C100 198 200 250 278 308" fill="none" stroke="#a8742f" stroke-width="1.4"/>
+      <path d="M222 104 C222 70 232 36 246 10 C262 36 280 62 292 86 Z M284 82 C288 50 296 24 304 4 C316 30 326 50 334 72 Z M328 72 C334 54 340 38 348 22 C356 36 364 50 372 66 Z M366 64 C370 52 376 44 382 34 C388 46 394 56 398 70 Z M400 0 L384 54 L400 68 Z" fill="url(#pzCuerno)" stroke="#c48a3c" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M400 4 L388 30 L372 60 L340 76 L300 100 L262 150 L226 182 L248 238 L290 294 L320 340 L352 390 L378 420 L400 444 Z" fill="url(#pzPiel)"/>
+      <path d="M400 4 L388 30 L372 60 L340 76 L300 100 L262 150 L226 182 L248 238 L290 294 L320 340 L352 390 L378 420 L400 444 Z" fill="url(#pzEscama)" opacity=".55"/>
+      <path d="M296 126 C262 108 226 98 196 90 C214 118 236 150 272 180 Z M284 180 C254 178 228 180 206 184 C226 206 254 224 288 234 Z M292 238 C274 246 260 254 244 262 C262 278 282 288 302 292 Z M306 294 C290 302 278 308 266 316 C282 328 300 334 320 334 Z M322 342 C310 352 302 362 296 374 C310 378 326 376 342 368 Z M330 118 C316 110 302 104 288 98 C296 126 308 146 322 160 Z" fill="url(#pzCuerno)" stroke="#c48a3c" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M400 96 L378 120 M400 128 L370 156 M400 160 L364 188 M400 196 L374 214" fill="none" stroke="#b98040" stroke-width="1.6" opacity=".7"/>
+      <path d="M352 232 L346 300 L372 346 L400 372 L400 232 Z" fill="url(#pzHocico)" stroke="#8a5e30" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M400 372 L372 382 L388 418 L400 444 Z" fill="url(#pzPiel)" stroke="#c48a3c" stroke-width="1.2" stroke-linejoin="round"/>
+      <ellipse cx="371" cy="296" rx="15" ry="20" fill="#060302" stroke="#9a6a34" stroke-width="1.4"/>
+      <ellipse cx="371" cy="302" rx="7" ry="11" fill="#2a1308" opacity=".8"/>
+      <path d="M344 330 L336 354 L356 348 Z M358 346 L354 370 L372 356 Z M374 354 L374 376 L388 360 Z M390 360 L392 380 L400 364 Z" fill="url(#pzDiente)" stroke="#ffe29a" stroke-width=".8" stroke-linejoin="round"/>`;
+  const BRASAS_DRAGON = [[70, 330, 2.2], [150, 410, 1.8], [210, 90, 1.6], [90, 200, 1.4], [330, 440, 1.6], [250, 360, 1.4], [40, 260, 1.6]]
+    .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/><circle cx="${800 - x}" cy="${y + 14}" r="${r * 0.9}"/>`).join("");
+
+  // El <svg> oculto con lo que comparten todos los dragones. Va una sola vez en la página (no puede estar en display:none: Chrome no pinta degradados de un svg oculto así).
+  function defs() {
+    return `<svg id="pzDefsDragon" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>
+      <radialGradient id="pzHumo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a2c" stop-opacity=".55"/><stop offset=".55" stop-color="#8a3a18" stop-opacity=".25"/><stop offset="1" stop-color="#1a0f0a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="pzIris" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff0b0"/><stop offset=".45" stop-color="#ffb93a"/><stop offset="1" stop-color="#b3560f"/></radialGradient>
+      <radialGradient id="pzIrisRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd0b8"/><stop offset=".45" stop-color="#e8442a"/><stop offset="1" stop-color="#6a0f0a"/></radialGradient>
+      <radialGradient id="pzLuz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb03a" stop-opacity=".6"/><stop offset="1" stop-color="#ffb03a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="pzLuzRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff3a22" stop-opacity=".75"/><stop offset="1" stop-color="#ff3a22" stop-opacity="0"/></radialGradient>
+      <radialGradient id="pzBoca" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf6a" stop-opacity=".95"/><stop offset=".6" stop-color="#e0801f" stop-opacity=".5"/><stop offset="1" stop-color="#e0801f" stop-opacity="0"/></radialGradient>
+      <linearGradient id="pzPiel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2c22"/><stop offset=".5" stop-color="#1a130f"/><stop offset="1" stop-color="#0b0806"/></linearGradient>
+      <linearGradient id="pzCuerno" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a4d36"/><stop offset=".55" stop-color="#2a1e16"/><stop offset="1" stop-color="#0f0b08"/></linearGradient>
+      <linearGradient id="pzAla" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2c2018"/><stop offset="1" stop-color="#0a0706"/></linearGradient>
+      <linearGradient id="pzHocico" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#241a14"/><stop offset="1" stop-color="#4a3626"/></linearGradient>
+      <linearGradient id="pzDiente" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe6a0"/><stop offset="1" stop-color="#e08a22"/></linearGradient>
+      <linearGradient id="pzParp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".75"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+      <pattern id="pzEscama" width="18" height="12" patternUnits="userSpaceOnUse"><path d="M0 6 Q9 -1 18 6 M-9 12 Q0 5 9 12 M9 12 Q18 5 27 12" fill="none" stroke="#9a6c42" stroke-width="1" opacity=".5"/></pattern>
+      <g id="pzDhMitad">${MITAD_DRAGON}</g>
+      <g id="pzDhCuerpo">
+        <ellipse cx="130" cy="430" rx="190" ry="60" fill="url(#pzHumo)"/><ellipse cx="670" cy="432" rx="190" ry="60" fill="url(#pzHumo)"/><ellipse cx="400" cy="452" rx="260" ry="50" fill="url(#pzHumo)"/>
+        <use href="#pzDhMitad"/><use href="#pzDhMitad" transform="translate(800 0) scale(-1 1)"/>
+        <path d="M400 4 L400 444" stroke="#d99a45" stroke-width="1.8" opacity=".85" fill="none"/>
+        <g fill="#ffb03a" opacity=".75">${BRASAS_DRAGON}</g>
+      </g>
+    </defs></svg>`;
   }
+
+  // Un ojo: resplandor (ámbar y rojo), cuenca, párpado superior, iris recortado por el párpado, pupila rasgada y el párpado que se cierra. d = 1 el izquierdo, -1 el derecho.
+  let ojosN = 0;
+  function ojoDib(cx, d, id) {
+    const x = n => (cx + n * d).toFixed(1);
+    const almendra = `M${x(-29)} ${CY - 10} Q${x(0)} ${CY - 20} ${x(29)} ${CY + 8} Q${x(-3)} ${CY + 20} ${x(-29)} ${CY - 10} Z`;
+    return `
+      <clipPath id="${id}"><path d="${almendra}"/></clipPath>
+      <circle cx="${cx}" cy="${CY}" r="50" fill="url(#pzLuz)" class="pz-dh-luz"/>
+      <circle cx="${cx}" cy="${CY}" r="56" fill="url(#pzLuzRoja)" class="pz-dh-luz-roja"/>
+      <path d="M${x(-40)} ${CY - 4} L${x(-8)} ${CY - 32} L${x(36)} ${CY - 2} Q${x(0)} ${CY - 14} ${x(-40)} ${CY - 4} Z" fill="#1b1410" stroke="#b98040" stroke-width="1" stroke-linejoin="round"/>
+      <path d="${almendra}" fill="#0a0604"/>
+      <g clip-path="url(#${id})">
+        <g class="pz-heroe-iris"><ellipse cx="${cx}" cy="${CY}" rx="27" ry="17" fill="url(#pzIris)"/><ellipse cx="${cx}" cy="${CY}" rx="27" ry="17" fill="url(#pzIrisRoja)" class="pz-dh-iris-roja"/></g>
+        <g class="pz-heroe-pupila"><g transform="rotate(${14 * d} ${cx} ${CY})"><ellipse cx="${cx}" cy="${CY}" rx="3.4" ry="12" fill="#080302" class="pz-dh-pupila"/></g></g>
+        <rect x="${cx - 36}" y="${CY - 24}" width="72" height="20" fill="url(#pzParp)"/>
+        <rect x="${cx - 36}" y="${CY - 24}" width="72" height="48" fill="#17100c" class="pz-dh-parpado"/>
+      </g>
+      <path d="${almendra}" fill="none" stroke="#f3b95a" stroke-width="1.3" stroke-linejoin="round"/>`;
+  }
+
+  // El marco del dragón: cuerpo + ojos. vb es el trozo del dibujo que se ve (la cara entera con las alas, o solo la cabeza); clase la pone quien lo usa.
+  function marcoDragon(vb, clase, etiqueta) {
+    const n = ++ojosN;
+    return `<div class="pz-dragon-marco ${clase}" data-e="espera" role="img" aria-label="${etiqueta}">
+      <svg class="pz-dragon-cuerpo" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" overflow="visible"><use href="#pzDhCuerpo"/></svg>
+      <svg class="pz-dragon-ojos" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" overflow="visible">
+        ${ojoDib(324, 1, "pzOjoI" + n)}${ojoDib(476, -1, "pzOjoD" + n)}
+        <ellipse cx="400" cy="364" rx="30" ry="9" fill="#ff9a2a" class="pz-dh-fuego"/>
+      </svg>
+    </div>`;
+  }
+  const dragonHeroe = () => marcoDragon("0 0 800 460", "pz-dragon-heroe", "Un dragón negro de frente, con las alas abiertas y los ojos encendidos");
+  const dragonCara = () => marcoDragon("176 0 448 410", "pz-dragon-cara", "El Dragón te mira desde el otro lado de la mesa");
 
   // El ojo del dragón que vigila la mesa mientras juegas: se estrecha cuando es tu turno y se enciende con una Ruina o un premio grande (la clase la pone el controlador)
   function ojoVigia() {
@@ -132,5 +184,5 @@ window.PozoArte = (function () {
     </svg>`;
   }
 
-  return { dado, ojo, emblema, moneda, monton, dragon, dragonHeroe, ojoVigia, ejemplo, EJEMPLOS };
+  return { dado, ojo, emblema, moneda, monton, dragon, defs, dragonHeroe, dragonCara, ojoVigia, ejemplo, EJEMPLOS };
 })();

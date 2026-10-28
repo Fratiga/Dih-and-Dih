@@ -119,9 +119,57 @@ console.log("== La página y el controlador");
 const js = leer("js", "pozo-dragon.js"), css = leer("css", "pozo-dragon.css");
 cierto("cada script y hoja de estilos de la página existe y lleva su versión (?v=)", [...html.matchAll(/(?:src|href)="((?:js|css)\/[^"]+)"/g)].every(m => /\?v=\d{8}$/.test(m[1]) && fs.existsSync(path.join(RAIZ, m[1].split("?")[0]))));
 cierto("todos los identificadores que usa el controlador están en la página", [...js.matchAll(/\$\("([A-Za-z]+)"\)/g)].map(m => m[1]).filter(id => !["pzCodigo", "pzMesasLista", "pzTapete", "pzDestello", "pzDlgReglas"].includes(id) || id === "pzDlgReglas").every(id => new RegExp(`id="${id}"`).test(html) || ["pzCodigo", "pzMesasLista", "pzTapete", "pzDestello", "pzDock", "pzFormEntrar", "pzHeroe", "pzHeroeArte", "pzPanelForm", "pzVigia"].includes(id)));
-const rodarFn = js.slice(js.indexOf("async function rodar("), js.indexOf("function efectosDeCategoria"));
-cierto("el controlador solo pide acciones y nunca manda dados ni resultados: lo único al azar con dados es la cara que se enseña mientras ruedan", js.includes("api.pozo.tirar(paso)") && js.split("Math.floor(Math.random() * 6)").length === 2 && rodarFn.includes("Math.floor(Math.random() * 6)") && !js.includes("p_dados") && !js.includes("dados: ["));
-cierto("las animaciones de los dados usan caras al azar solo mientras ruedan y acaban en las del servidor", /cont\.innerHTML = dados\.map\(/.test(js));
+const escenaJs = leer("js", "pozo-dragon-escena.js"), escenaCss = leer("css", "pozo-dragon-escena.css"), arteJs = leer("js", "pozo-dragon-arte.js");
+cierto("el controlador solo pide acciones y nunca manda dados ni resultados, y no saca ningún dado al azar", js.includes("api.pozo.tirar(paso)") && !/Math\.floor\(Math\.random\(\) \* 6\)/.test(js) && !/Math\.floor\(Math\.random\(\) \* 6\)/.test(escenaJs) && !js.includes("p_dados") && !js.includes("dados: ["));
+cierto("la escena lanza los dados con los valores del servidor: la cara final sale de ORIENTACION[valor] y no de ningún azar", /poner\(d, valores\[i\]\)/.test(escenaJs) && /ORIENTACION\[limitar\(Math\.round\(Number\(valores\[i\]\)\)/.test(escenaJs));
+
+console.log("== La escena de cada tirada: dados 3D, dragón y tesoro");
+// El giro que deja cada cara de frente, comprobado con las matrices que usa CSS (rotateX(a) rotateY(b) = Rx·Ry; el eje y de CSS apunta hacia abajo)
+{
+  const vm = require("vm"), ctx = { window: {}, document: { createElement() { return {}; } } }; ctx.window.matchMedia = () => ({ matches: false });
+  vm.createContext(ctx); vm.runInContext(escenaJs.replace(/\r\n/g, "\n"), ctx);
+  const E = ctx.window.PozoEscena;
+  const rx = (v, a) => { const c = Math.cos(a * Math.PI / 180), s2 = Math.sin(a * Math.PI / 180); return [v[0], v[1] * c - v[2] * s2, v[1] * s2 + v[2] * c]; };
+  const ry = (v, a) => { const c = Math.cos(a * Math.PI / 180), s2 = Math.sin(a * Math.PI / 180); return [v[0] * c + v[2] * s2, v[1], -v[0] * s2 + v[2] * c]; };
+  const normal = { 1: [0, 0, 1], 6: [0, 0, -1], 2: [1, 0, 0], 5: [-1, 0, 0], 3: [0, -1, 0], 4: [0, 1, 0] };     // hacia dónde mira cada cara en reposo (las caras 3 y 4 son arriba y abajo)
+  const ok = [1, 2, 3, 4, 5, 6].every(v => { const [a1, b1] = E.ORIENTACION[v], r = rx(ry(normal[v], b1), a1); return Math.abs(r[0]) < 1e-9 && Math.abs(r[1]) < 1e-9 && Math.abs(r[2] - 1) < 1e-9; });
+  cierto("para cada valor del 1 al 6 el giro del cubo deja de frente justo esa cara", ok);
+  cierto("las caras opuestas suman siete (1-6, 2-5, 3-4)", [[1, 6], [2, 5], [3, 4]].every(([x, y]) => normal[x].every((n, i) => n === -normal[y][i])));
+  cierto("un dado tiene seis caras y lleva su valor para lectores de pantalla", (E.dado(4).match(/pz-d3-cara/g) || []).length === 6 && /aria-label="Dado: 4"/.test(E.dado(4)) && /data-v="4"/.test(E.dado(4)));
+  cierto("un valor fuera de rango queda entre 1 y 6", /data-v="1"/.test(E.dado(0)) && /data-v="6"/.test(E.dado(99)));
+}
+cierto("los puntos de las seis caras son imágenes en línea (no hay archivos que puedan faltar)", [1, 2, 3, 4, 5, 6].every(n => new RegExp("\\.pz-d3-cara\\.c" + n + " \\{ background-image: url\\(\"data:image/svg\\+xml").test(escenaCss)));
+cierto("la página carga la escena y su hoja de estilos antes del controlador", html.indexOf("pozo-dragon-escena.js") > html.indexOf("pozo-dragon-arte.js") && html.indexOf("pozo-dragon-escena.js") < html.indexOf("js/pozo-dragon.js") && /css\/pozo-dragon-escena\.css\?v=\d{8}/.test(html));
+cierto("el dragón no usa filtros ni desenfoques (son lo que más pesa al pintar): el brillo son degradados", !/<filter|feGaussianBlur|filter:\s*blur|drop-shadow/.test(arteJs) && !/<filter|feGaussianBlur|filter:\s*blur|drop-shadow/.test(escenaCss));
+cierto("los degradados y las escamas del dragón están una sola vez en un svg oculto (width 0) y no en display:none", /id="pzDefsDragon" width="0" height="0"/.test(arteJs) && !/pzDefsDragon[^>]*display:\s*none/.test(arteJs) && /document\.body\.insertAdjacentHTML\("afterbegin", A\.defs\(\)\)/.test(js));
+cierto("cada dragón son dos capas: el cuerpo quieto y los ojos (solo los ojos llevan pupilas e iris que se mueven)", /class="pz-dragon-cuerpo"/.test(arteJs) && /class="pz-dragon-ojos"/.test(arteJs) && (arteJs.match(/class="pz-heroe-pupila"/g) || []).length === 1 && /ojoDib\(324, 1,/.test(arteJs) && /ojoDib\(476, -1,/.test(arteJs));
+cierto("el seguimiento de la mirada escribe una sola vez por fotograma y mueve pupila e iris", /requestAnimationFrame\(\(\) => \{\s*mirada\.espera = false;/.test(js) && /pz-heroe-iris/.test(js) && /pz-heroe-pupila/.test(js));
+cierto("el dragón de la mesa reacciona: ruina, triple seis (gran), premio y cobro (cierra los ojos)", ["ruina", "gran", "premio", "cobro"].every(e => new RegExp('data-e="' + e + '"').test(escenaCss)) && /vigiaReaccion\("gran"/.test(js) && /vigiaEstado\("cobro"\)/.test(js));
+cierto("cada combinación tiene su propio tratamiento visual (color y barra) y sus dados se tiñen", ["ruina", "ceniza", "pareja", "escalera", "triple", "triple_seis"].every(c => new RegExp('\\.pz-veredicto\\[data-c="' + c + '"\\]').test(escenaCss) && new RegExp("\\.pz-d3\\.cat-" + c + " ").test(escenaCss)));
+cierto("la partida se enseña en una secuencia: lanzamiento, revelación, resolución y elección, y el cuadro final es el del servidor", /await E\.lanzar\(cont, ult\.dados/.test(js) && /revelarTirada\(/.test(js) && /resolverPremioSolo\(/.test(js) && /pintarSolo\(s\); pintarReloj\(\)/.test(js));
+cierto("mientras se enseña una tirada lo nuevo que llega del servidor espera en cola y no pisa la escena", /if \(S\.teatro\) \{ S\.cola = \(\) => aplicarSolo\(s\)/.test(js) && /if \(S\.teatro\) \{ S\.cola = \(\) => aplicar\(est\)/.test(js) && /const c = S\.cola; S\.cola = null; if \(c\) c\(\)/.test(js));
+cierto("no se pueden pulsar acciones mientras se enseña una tirada y no hay botones en pantalla (el dragón observa)", /if \(S\.teatro\) return;/.test(js) && /El Dragón observa los dados/.test(js));
+cierto("la escena se puede saltar con clic, Espacio, Intro o Escape, acelerar con «Rápido» y se salta sola si se atasca", /saltarEscena\(\)/.test(js) && /\[" ", "Enter", "Escape"\]/.test(js) && /id="pzBtnRapido"/.test(html) && /E\.ritmo\(S\.rapido \? 0\.55 : 1\)/.test(js) && /setTimeout\(\(\) => E\.saltar\(\), 9000\)/.test(js));
+cierto("con prefers-reduced-motion no se anima nada: la escena lo comprueba y el CSS apaga sus animaciones", /prefers-reduced-motion: reduce/.test(escenaJs) && /prefers-reduced-motion: reduce/.test(escenaCss) && /puedeTeatro = \(\) => .*sinMovimiento\(\)/.test(js));
+cierto("las animaciones y los contadores tienen límite de tiempo: una pestaña en segundo plano no deja la mesa colgada", /limite = new Promise/.test(escenaJs) && /setTimeout\(fin, T \+ 400\)/.test(escenaJs));
+cierto("la escena solo se enseña si ya había un cuadro anterior de la misma mesa o partida y la pestaña se ve (no al recargar)", /puedeTeatro\(\) && !!antes && antes\.codigo === est\.codigo && antes\.estado === "jugando"/.test(js) && /puedeTeatro\(\) && antes && antes\.estado === "en_curso"/.test(js) && /!S\.primerPintado && !document\.hidden/.test(js));
+cierto("las probabilidades van plegadas (details cerrado) y no dominan la partida", /<details class="pz-prob"><summary>Probabilidades<\/summary>/.test(js) && !/<details class="pz-prob" open/.test(js));
+cierto("la elección enseña lo que cobras y lo que arriesgas lado a lado, con el riesgo de Ruina", /data-t="cobrar"/.test(js) && /data-t="seguir"/.test(js) && /pz-medidor/.test(js) && /V\.pct\(t\.pRuina\)/.test(js));
+cierto("el oro viaja al saldo al cobrar y el dragón se lo come en la Ruina; el saldo del servidor se enseña al final", /E\.volar\(document\.querySelector\("#pzSolo \.pz-pozo-fila"\), caja, 12\)/.test(js) && /E\.devorar\(fila\)/.test(js) && /clase: "roja"/.test(js));
+
+console.log("== La tensión y la tabla de probabilidades del solitario");
+{
+  const st = { estado: "en_curso", fase: "decidir", apuesta: 10, tributo: 5, bono: 0.0625, premio: 10.09, tiradas: 1, tiradas_max: 5 };
+  const t = V.tensionSolo(st), tb = V.tablaSolo(st);
+  cierto("lo que cobras es el premio provisional y lo que pierdes con una Ruina es ese mismo premio", t.premio === 10.09 && Math.abs(t.pRuina - 10 / 216) < 1e-12 && t.quedan === 4);
+  cierto("el mejor caso es el del triple seis sumado a los bonos que ya llevas", t.mejor === V.premioSolo(10, 5, 0.0625 + 1));
+  cierto("el premio de la tabla tras una Pareja (10,09 → 10,68) coincide con la fórmula del servidor: base 9,5 × (1 + 0,0625 + 0,0625)", tb.filas.find(x => x.cat === "pareja").premio === 10.68 && tb.base === 9.5);
+  cierto("la tabla tiene las seis combinaciones, suma 216 casos y la Ruina deja 0 y la ceniza deja el premio de ahora", tb.filas.length === 6 && tb.filas.reduce((n, x) => n + x.casos, 0) === 216 && tb.filas.find(x => x.cat === "ruina").premio === 0 && tb.filas.find(x => x.cat === "ceniza").premio === 10.09);
+  cierto("sin partida en curso no hay tensión", V.tensionSolo({ estado: "terminada" }) === null && V.tensionSolo(null) === null);
+  const comp = { estado: "jugando", modo: "compartido", reglas: { dinero: 100, tiradas_max: 5 }, yo: { asiento: 1 }, jugadores: [{ asiento: 1, yo: true, peso: 1.125, parte: 112.5, tiradas: 2 }] };
+  const tcm = V.tensionCompartido(comp);
+  cierto("en el compartido la tensión es la parte que cobrarías y el riesgo de Ruina", tcm && tcm.parte === 112.5 && tcm.peso === 1.125 && tcm.quedan === 3 && Math.abs(tcm.pRuina - 10 / 216) < 1e-12);
+}
 cierto("las acciones llevan el paso de la mesa y un reintento repite la misma petición", js.includes("const paso = est.paso") && js.includes("manejarError(e, () => ejecutar(fn, null, cuando))"));
 cierto("el movimiento reducido se respeta en el controlador y en la hoja de estilos", /prefers-reduced-motion/.test(js) && /prefers-reduced-motion: reduce/.test(css));
 cierto("los botones del juego son planos: sin degradados dorados, brillos ni sombras en la regla de .pz-boton", !/\.pz-boton[^{]*\{[^}]*(gradient|box-shadow|text-shadow)/.test(css));

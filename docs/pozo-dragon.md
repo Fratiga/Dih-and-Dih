@@ -134,17 +134,41 @@ En solitario **paga la casa**: no hay otros jugadores, así que el juego crea to
 - Las animaciones de los dados enseñan un resultado ya decidido (las caras al azar solo se ven mientras ruedan). Se respeta `prefers-reduced-motion`; el sonido es opcional y está apagable.
 - Superficies planas, sin degradados dorados en los botones (ver la preferencia anotada).
 
-## La presentación del lobby
+## La presentación y la escena de cada tirada
 
-Es solo presentación. La lógica, las apuestas y los tres modos son los de siempre.
+Es solo presentación: la lógica, las apuestas, el servidor y los tres modos son los de siempre. Los resultados los decide el servidor; todo lo que se anima los enseña.
 
-- **El dragón es el protagonista.** `PozoArte.dragonHeroe()` dibuja su cara de frente, grande y simétrica (una mitad y su reflejo), con las alas abiertas y los ojos de brasa. Sus pupilas siguen al cursor (`seguirConLaMirada`) y se encienden al empezar una partida en solitario. Con `prefers-reduced-motion` no se mueven.
-- **El solitario es el héroe:** título, lema («Tres dados. Un tesoro. Una criatura que espera que te equivoques.»), apuesta con cinco fichas rápidas (1, 2, 5, 10 y 50 veces la apuesta mínima), el riesgo en una línea (premio inicial, Ruina por tirada, tiradas y tributo) y un botón grande, «Jugar en solitario».
-- **Duelo y Pozo Compartido van debajo, más pequeños.** Cada uno tiene una frase y un botón que abre su formulario en un panel común (`#pzPanelForm`).
-- **Las reglas completas están en un panel** (botón «Reglas»), no en la pantalla.
-- **En la mesa** hay un ojo vigía (`#pzVigia`) encima del tapete: se estrecha cuando te toca, se pone rojo con una Ruina y dorado con un triple o un triple seis.
-- **Foto propia opcional:** si existe `assets/cosas/pozo-dragon-heroe.webp`, sustituye al dibujo del dragón (el navegador lo busca al abrir el lobby; si no está, se queda el dibujo y ya). No se ha copiado ningún fondo de terceros.
-- Fondo con grano de piedra y viñeta, sombras hondas en los paneles y botones planos (los efectos se reservan para los dados, el pozo y las acciones importantes).
+### El dragón
+- Se dibuja por capas en `js/pozo-dragon-arte.js`, a partir de una ilustración de referencia (no se ha copiado ninguna imagen de terceros). Los degradados, las escamas y la mitad izquierda de la cara viven **una sola vez** en un `<svg>` oculto (`A.defs()`, no puede ser `display:none`) y cada dragón de la página es un `<use>` de ahí.
+- Cada dragón son **dos capas**: el cuerpo, que nunca se anima, y los ojos (resplandor, iris, pupila rasgada, párpados), que son lo único que se mueve. Seguir al cursor o parpadear no repinta la cara.
+- **Sin filtros ni desenfoques** (es lo que más pesa al pintar): el brillo son degradados radiales. Una prueba comprueba que no aparecen `<filter`, `feGaussianBlur`, `blur()` ni `drop-shadow`.
+- Sus ojos siguen al cursor (pupila y iris con distinto recorrido, una sola escritura por fotograma). Con `prefers-reduced-motion` no se mueven.
+- Dos tamaños: el grande del lobby (`A.dragonHeroe()`, con las alas abiertas) y la cara pequeña de la mesa (`A.dragonCara()`), encima del tapete.
+- En la mesa **reacciona** (`data-e` del marco): *espera* (tranquilo, parpadea), *mira* (te toca: pupilas estrechas), *ruina* (ojos rojos de golpe, ruge), *premio* (ojos más vivos con una pareja, escalera o triple), *gran* (triple seis: late tres veces) y *cobro* (cierra los ojos mientras el oro viaja al saldo).
+
+### Cada tirada es una secuencia de cinco momentos
+1. **Decisión:** el jugador pulsa; mientras dura la escena no hay botones en pantalla («El Dragón observa los dados…»).
+2. **Lanzamiento (~1,3 s):** tres cubos 3D de hueso (CSS 3D, sin librerías) caen desde arriba, chocan, rebotan tres veces y giran cada vez más despacio hasta quedar en su cara. Los puntos de cada cara son imágenes en línea.
+3. **Revelación:** la combinación aparece con su propio tratamiento (nombre, color, barra de intensidad y dados teñidos: la Ruina es roja, la ceniza apagada, el triple seis dorado) y el dragón reacciona.
+4. **Resolución:** el contador del premio sube o baja con suavidad, aparece un «+17,81» flotando y los discos del montón caen (o, con una Ruina, arden y suben hacia el dragón con monedas rojas).
+5. **Elección:** vuelven los botones. Al cobrar, el dragón cierra los ojos, 12 monedas vuelan al saldo y el saldo cuenta hasta su valor.
+
+La orquesta `pozo-dragon.js` (`teatro`, `teatroSolo`, `teatroMesa`) y las piezas están en `js/pozo-dragon-escena.js`. Funciona igual en los tres modos: el solitario, el duelo (cada lado tira sus dados) y el pozo compartido (cada tirada nueva, en orden).
+
+- Se pinta primero el cuadro anterior, se anima y al final se pinta el del servidor: la animación nunca decide nada y siempre acaba en lo que dice el servidor.
+- Lo que llegue del servidor mientras dura la escena espera en cola (`S.cola`) y se aplica al terminar. Si algo se atasca, a los 9 s la escena se salta sola; las animaciones y los contadores tienen además su propio límite de tiempo (una pestaña en segundo plano no deja la mesa colgada).
+- **Se puede saltar** (clic en la mesa, Espacio, Intro o Escape) **y acelerar** (botón «Rápido», se recuerda). Con `prefers-reduced-motion`, o al recargar la página, no se anima nada y se pinta el cuadro final.
+- Medido en el navegador: ~7 ms por fotograma en reposo, durante la tirada y moviendo el ratón sobre el dragón.
+
+### La elección enseña el riesgo
+- **Solitario:** dos tarjetas lado a lado. *Cobrar ahora* (lo que recibes y lo que ganas o pierdes respecto a tu apuesta) y *Seguir tirando* (4,63 % de Ruina con un medidor, lo que perderías, el premio con un triple seis y las tiradas que quedan).
+- **Pozo compartido:** lo mismo con la parte que cobrarías ahora y tu peso.
+- Las **probabilidades** van en un panel plegable (`<details>`, cerrado). En el solitario la tabla lleva ahora una columna «Bono» y otra «Premio resultante», y explica que el premio base es la apuesta menos el tributo y que cada bono es un porcentaje de ese base (p. ej. 10,09 → 10,68 con una pareja: 9,5 × (1 + 0,0625 + 0,0625)). `V.tablaSolo` y `V.tensionSolo` están probadas contra la fórmula del servidor.
+
+### El lobby y el fondo
+- El solitario es el héroe (lema, apuesta con cinco fichas rápidas, riesgo en una línea y un botón grande). Duelo y Pozo Compartido quedan debajo, más pequeños, y abren su formulario en un panel común. Las reglas completas están en el panel de Reglas.
+- Fondo oscuro y limpio con humo lento y brasas discretas; el grano y el relieve se reservan para el dragón, el tablero y el tesoro. Botones planos.
+- **Foto propia opcional:** si existe `assets/cosas/pozo-dragon-heroe.webp`, sustituye al dibujo del dragón del lobby (si no está, se queda el dibujo).
 
 ## Pruebas
 
