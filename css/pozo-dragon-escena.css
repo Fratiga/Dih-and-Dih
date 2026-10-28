@@ -249,3 +249,8 @@
 .pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scale(.32); }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-venas { opacity: .9; }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja { transform: scale(.62); }
+
+/* ojos que vagan: se fijan en un sitio y se desplazan un poco, despacio */
+.pz-dragon-ojos { transition: transform 1.6s ease-in-out; }
+.pz-dragon-marco.pz-vaga .pz-heroe-pupila, .pz-dragon-marco.pz-vaga .pz-heroe-iris { transition: transform .5s ease-in-out; }
+@media (prefers-reduced-motion: reduce) { .pz-dragon-ojos { transition: none; } }

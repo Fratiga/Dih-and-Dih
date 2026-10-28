@@ -1018,11 +1018,14 @@
     }
   }
   // Los ojos de los dragones visibles siguen al cursor: la pupila viaja más que el iris para dar profundidad. Una sola escritura por fotograma.
-  const mirada = { espera: false, ultimo: Date.now(), reposo: false };
+  const mirada = { espera: false, ultimo: Date.now(), reposo: false, vaga: false };
   const entre = v => Math.max(-1, Math.min(1, v));
   function seguirConLaMirada(ev) {
     mirada.ultimo = Date.now();
-    if (mirada.reposo) { mirada.reposo = false; document.querySelectorAll(".pz-dragon-marco.pz-reposo").forEach(m => m.classList.remove("pz-reposo")); }
+    if (mirada.reposo || mirada.vaga) {
+      mirada.reposo = false; mirada.vaga = false;
+      document.querySelectorAll(".pz-dragon-marco.pz-reposo, .pz-dragon-marco.pz-vaga").forEach(m => { m.classList.remove("pz-reposo", "pz-vaga"); const o = m.querySelector(".pz-dragon-ojos"); if (o) o.style.transform = ""; });
+    }
     if (mirada.espera || sinMovimiento()) return;
     const marcos = [...document.querySelectorAll(".pz-dragon-marco")].filter(m => m.offsetParent !== null);
     if (!marcos.length) return;
@@ -1047,6 +1050,20 @@
       m.querySelectorAll(".pz-dh-parpado").forEach(p => animar(p, [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { duration: 280, easing: "ease-in-out", fill: "none" }));
     }
   }
+  // Cuando nadie mueve el cursor los ojos miran a su aire: cada pocos segundos se fijan en otro sitio (a veces con un parpadeo) y el par entero se desplaza un poco, para que no sean una imagen quieta en la oscuridad
+  function vagar() {
+    if (document.hidden || sinMovimiento() || Date.now() - mirada.ultimo < 3000) return;
+    for (const m of document.querySelectorAll(".pz-dragon-marco")) {
+      if (m.offsetParent === null || m.dataset.e === "ruina" || m.dataset.e === "cobro") continue;
+      const dx = Math.random() * 2 - 1, dy = (Math.random() * 2 - 1) * 0.8;
+      m.classList.add("pz-vaga"); mirada.vaga = true;
+      m.querySelectorAll(".pz-heroe-pupila").forEach(g => { g.style.transform = `translate(${(dx * 9).toFixed(1)}px, ${(dy * 5).toFixed(1)}px)`; });
+      m.querySelectorAll(".pz-heroe-iris").forEach(g => { g.style.transform = `translate(${(dx * 4).toFixed(1)}px, ${(dy * 2.5).toFixed(1)}px)`; });
+      const o = m.querySelector(".pz-dragon-ojos"); if (o) o.style.transform = `translate(${(dx * 5).toFixed(1)}px, ${(dy * 3).toFixed(1)}px)`;
+      if (Math.random() < 0.3) m.querySelectorAll(".pz-dh-parpado").forEach(p => animar(p, [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { duration: 260, easing: "ease-in-out", fill: "none" }));
+    }
+  }
+  const programarVagar = () => setTimeout(() => { vagar(); programarVagar(); }, 1800 + Math.random() * 3800);
   function pintarRapidoBoton() {
     const b = $("pzBtnRapido"); if (!b) return;
     b.setAttribute("aria-pressed", String(S.rapido)); b.classList.toggle("apagado", !S.rapido);
@@ -1056,6 +1073,7 @@
     E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton();
     document.body.insertAdjacentHTML("beforeend", '<div class="pz-vineta" id="pzVineta" aria-hidden="true"></div><div class="pz-vineta-luz" id="pzVinetaLuz" aria-hidden="true"></div>');
     setInterval(() => { if (!document.hidden && !mirada.reposo && Date.now() - mirada.ultimo > 5000) { mirada.reposo = true; mirarAlCentro(); } }, 800);
+    programarVagar();
     document.addEventListener("pointermove", seguirConLaMirada, { passive: true });
     $("pzEmblema").innerHTML = A.emblema();
     $("pzSaldoMoneda").innerHTML = A.moneda();

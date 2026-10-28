@@ -177,6 +177,7 @@ cierto("los efectos nuevos se apagan con prefers-reduced-motion", /@media \(pref
   cierto("el rojo de la Ruina y el verde de ganar no cambiaron con la paleta", v("pz-rojo").toLowerCase() === "#b6382f" && v("pz-verde").toLowerCase() === "#78b472");
 }
 
+cierto("los ojos no están quietos: cuando nadie mueve el cursor miran a su aire cada pocos segundos (pupila, iris y el par entero se desplazan un poco) y a veces parpadean; al mover el cursor manda el cursor", /function vagar\(\) \{\s*if \(document\.hidden \|\| sinMovimiento\(\) \|\| Date\.now\(\) - mirada\.ultimo < 3000\) return;/.test(js) && /programarVagar\(\);/.test(js) && /mirada\.vaga = false/.test(js) && /\.pz-dragon-marco\.pz-vaga \.pz-heroe-pupila/.test(escenaCss));
 console.log("== La tensión y la tabla de probabilidades del solitario");
 {
   const st = { estado: "en_curso", fase: "decidir", apuesta: 10, tributo: 5, bono: 0.0625, premio: 10.09, tiradas: 1, tiradas_max: 5 };
