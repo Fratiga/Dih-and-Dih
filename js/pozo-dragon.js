@@ -104,7 +104,7 @@
     function nueva(y) { return { x: Math.random() * w, y: y == null ? Math.random() * h : y, v: 6 + Math.random() * 16, r: 0.7 + Math.random() * 1.6, f: Math.random() * 6.28, a: 0.25 + Math.random() * 0.5 }; }
     function cuadro(t) {
       raf = requestAnimationFrame(cuadro);
-      if (t - ultimo < 40) return;
+      if (t - ultimo < 50) return;
       const dt = Math.min(0.1, (t - ultimo) / 1000 || 0); ultimo = t;
       cx.clearRect(0, 0, w, h);
       for (const p of parts) {
@@ -121,7 +121,7 @@
         cv = $("pzBrasas"); if (!cv || sinMovimiento()) return;
         try { cx = cv.getContext("2d"); } catch (e) { return; }
         medir(); addEventListener("resize", medir);
-        parts = Array.from({ length: 46 }, () => nueva());
+        parts = Array.from({ length: 28 }, () => nueva());
         activo = true; raf = requestAnimationFrame(cuadro);
         document.addEventListener("visibilitychange", () => { if (document.hidden) { cancelAnimationFrame(raf); } else if (activo) raf = requestAnimationFrame(cuadro); });
       },
@@ -355,10 +355,6 @@
     pintarMesasLista();
     document.querySelectorAll("[data-form]").forEach(actualizarResumen);
     document.querySelectorAll("[data-form-solo]").forEach(actualizarResumenSolo);
-    // Si hay una imagen propia del dragón en assets/cosas/pozo-dragon-heroe.webp, se usa en lugar del dibujo
-    const img = new Image();
-    img.onload = () => { const a = $("pzHeroeArte"); if (a) { a.style.backgroundImage = `url("${img.src}")`; a.classList.add("con-imagen"); } };
-    img.src = "assets/cosas/pozo-dragon-heroe.webp";
   }
   function pintarMesasLista() {
     const el = $("pzMesasLista"); if (!el) return;
@@ -1092,15 +1088,16 @@
   }
   // Los ojos de los dragones visibles siguen al cursor: la pupila viaja más que el iris para dar profundidad. Una sola escritura por fotograma.
   const mirada = { espera: false, ultimo: Date.now(), reposo: false, vaga: false };
+  const marcosVisibles = () => document.querySelectorAll(S.vista === "lobby" ? "#pzLobby .pz-dragon-marco" : "#pzSolo .pz-dragon-marco, #pzMesa .pz-dragon-marco");
   const entre = v => Math.max(-1, Math.min(1, v));
   function seguirConLaMirada(ev) {
     mirada.ultimo = Date.now();
     if (mirada.reposo || mirada.vaga) {
       mirada.reposo = false; mirada.vaga = false;
-      document.querySelectorAll(".pz-dragon-marco.pz-reposo, .pz-dragon-marco.pz-vaga").forEach(m => { m.classList.remove("pz-reposo", "pz-vaga"); const o = m.querySelector(".pz-dragon-ojos"); if (o) o.style.transform = ""; });
+      document.querySelectorAll(".pz-dragon-marco.pz-reposo, .pz-dragon-marco.pz-vaga").forEach(m => { m.classList.remove("pz-reposo", "pz-vaga"); m.querySelectorAll(".pz-dragon-ojos, .pz-dragon-brillo").forEach(o => { o.style.transform = ""; }); });
     }
     if (mirada.espera || sinMovimiento()) return;
-    const marcos = [...document.querySelectorAll(".pz-dragon-marco")].filter(m => m.offsetParent !== null);
+    const marcos = marcosVisibles();
     if (!marcos.length) return;
     mirada.espera = true;
     const x = ev.clientX, y = ev.clientY;
@@ -1116,8 +1113,7 @@
   }
   // Sin cursor durante 5 s: los ojos vuelven despacio al centro y parpadean una vez
   function mirarAlCentro() {
-    for (const m of document.querySelectorAll(".pz-dragon-marco")) {
-      if (m.offsetParent === null) continue;
+    for (const m of marcosVisibles()) {
       m.classList.add("pz-reposo");
       m.querySelectorAll(".pz-heroe-pupila, .pz-heroe-iris").forEach(g => { g.style.transform = "translate(0px, 0px)"; });
       m.querySelectorAll(".pz-dh-parpado").forEach(p => animar(p, [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { duration: 280, easing: "ease-in-out", fill: "none" }));
@@ -1126,16 +1122,19 @@
   // Cuando nadie mueve el cursor los ojos miran a su aire: cada pocos segundos se fijan en otro sitio (a veces con un parpadeo) y el par entero se desplaza un poco, para que no sean una imagen quieta en la oscuridad
   function vagar() {
     if (document.hidden || sinMovimiento() || Date.now() - mirada.ultimo < 3000) return;
-    for (const m of document.querySelectorAll(".pz-dragon-marco")) {
-      if (m.offsetParent === null || m.dataset.e === "ruina" || m.dataset.e === "cobro") continue;
+    for (const m of marcosVisibles()) {
+      if (m.dataset.e === "ruina" || m.dataset.e === "cobro") continue;
       const dx = Math.random() * 2 - 1, dy = (Math.random() * 2 - 1) * 0.8;
       m.classList.add("pz-vaga"); mirada.vaga = true;
       m.querySelectorAll(".pz-heroe-pupila").forEach(g => { g.style.transform = `translate(${(dx * 9).toFixed(1)}px, ${(dy * 5).toFixed(1)}px)`; });
       m.querySelectorAll(".pz-heroe-iris").forEach(g => { g.style.transform = `translate(${(dx * 4).toFixed(1)}px, ${(dy * 2.5).toFixed(1)}px)`; });
-      const o = m.querySelector(".pz-dragon-ojos"); if (o) o.style.transform = `translate(${(dx * 5).toFixed(1)}px, ${(dy * 3).toFixed(1)}px)`;
+      m.querySelectorAll(".pz-dragon-ojos, .pz-dragon-brillo").forEach(o => { o.style.transform = `translate(${(dx * 5).toFixed(1)}px, ${(dy * 3).toFixed(1)}px)`; });
       if (Math.random() < 0.3) m.querySelectorAll(".pz-dh-parpado").forEach(p => animar(p, [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { duration: 260, easing: "ease-in-out", fill: "none" }));
     }
   }
+  // Parpadeo ocasional (cada 3,5 a 8 s) con un único movimiento de los párpados: no hay ninguna animación infinita repintando el dibujo a cada fotograma
+  function parpadear(m) { m.querySelectorAll(".pz-dh-parpado").forEach(p => animar(p, [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { duration: 260, easing: "ease-in-out", fill: "none" })); }
+  const programarParpadeo = () => setTimeout(() => { if (!document.hidden && !sinMovimiento()) for (const m of marcosVisibles()) if (m.dataset.e !== "cobro") parpadear(m); programarParpadeo(); }, 3500 + Math.random() * 4500);
   const programarVagar = () => setTimeout(() => { vagar(); programarVagar(); }, 1800 + Math.random() * 3800);
   // El botón «Animaciones» solo sale cuando el sistema pide reducir el movimiento (el caso de los dados que «no se ven rodar»)
   function pintarMovimientoBoton() {
@@ -1156,7 +1155,7 @@
     if (reducir.addEventListener) reducir.addEventListener("change", pintarMovimientoBoton);
     document.body.insertAdjacentHTML("beforeend", '<div class="pz-vineta" id="pzVineta" aria-hidden="true"></div><div class="pz-vineta-luz" id="pzVinetaLuz" aria-hidden="true"></div>');
     setInterval(() => { if (!document.hidden && !mirada.reposo && Date.now() - mirada.ultimo > 5000) { mirada.reposo = true; mirarAlCentro(); } }, 800);
-    programarVagar();
+    programarVagar(); programarParpadeo();
     document.addEventListener("pointermove", seguirConLaMirada, { passive: true });
     $("pzEmblema").innerHTML = A.emblema();
     $("pzSaldoMoneda").innerHTML = A.moneda();

@@ -7,11 +7,10 @@
 
 /* ------------------------------------------------------------------ fondo: oscuro y limpio, con humo lento */
 .pz-escena::before { background: radial-gradient(ellipse 80% 60% at 50% -8%, #231216 0%, #120a0c 46%, #070504 100%); }
-.pz-escena::after { left: -20%; right: -20%; bottom: -10%; height: 72%; z-index: -1; will-change: transform;
-  background: radial-gradient(ellipse 38% 48% at 18% 82%, #4c1e2a99, transparent 70%), radial-gradient(ellipse 42% 52% at 80% 92%, #3f192388, transparent 70%), radial-gradient(ellipse 30% 40% at 50% 104%, #662838aa, transparent 70%);
-  animation: pz-humo 38s ease-in-out infinite alternate; }
+.pz-escena::after { left: -20%; right: -20%; bottom: -10%; height: 72%; z-index: -1;
+  background: radial-gradient(ellipse 38% 48% at 18% 82%, #4c1e2a99, transparent 70%), radial-gradient(ellipse 42% 52% at 80% 92%, #3f192388, transparent 70%), radial-gradient(ellipse 30% 40% at 50% 104%, #662838aa, transparent 70%); }
 @keyframes pz-humo { from { transform: translate3d(-3%, 0, 0) scale(1); } to { transform: translate3d(3%, -4%, 0) scale(1.08); } }
-.pz-tema.pz-ruina .pz-escena::after { animation: pz-humo 38s ease-in-out infinite alternate, pz-apagon 1.1s ease-out; }
+.pz-tema.pz-ruina .pz-escena::after { animation: pz-apagon 1.1s ease-out; }
 @keyframes pz-apagon { 0% { opacity: .1; } 100% { opacity: 1; } }
 
 /* ------------------------------------------------------------------ el dragón: cuerpo quieto y ojos vivos */
@@ -21,13 +20,12 @@
 .pz-dragon-ojos { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 
-.pz-dh-luz { opacity: .55; transition: opacity .3s; transform-box: fill-box; transform-origin: center; }
+.pz-dh-luz { opacity: .75; transition: opacity .3s; transform-box: fill-box; transform-origin: center; }
 .pz-dh-luz-roja, .pz-dh-iris-roja { opacity: 0; transition: opacity .25s; transform-box: fill-box; transform-origin: center; }
 
 .pz-dh-pupila { transform-box: fill-box; transform-origin: center; transition: transform .35s ease-out; }
-.pz-dh-parpado { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .35s ease-in; animation: pz-parpadeo 7.5s infinite; }
-@keyframes pz-parpadeo { 0%, 91%, 100% { transform: scaleY(0); } 94% { transform: scaleY(1); } }
-.pz-heroe-pupila, .pz-heroe-iris { transition: transform .25s ease-out; will-change: transform; }
+.pz-dh-parpado { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .35s ease-in; }
+.pz-heroe-pupila, .pz-heroe-iris { transition: transform .25s ease-out; }
 /* data-e: espera (tranquilo), mira (te toca: pupilas estrechas), ruina (rojo de golpe), premio, gran (triple seis) y cobro (cierra los ojos) */
 .pz-dragon-marco[data-e="mira"] .pz-dh-pupila { transform: scaleX(.65); } .pz-dragon-marco[data-e="mira"] .pz-dh-luz { opacity: .85; }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-luz { opacity: 0; } .pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja, .pz-dragon-marco[data-e="ruina"] .pz-dh-iris-roja { opacity: 1; }
@@ -150,7 +148,7 @@
   .pz-delta { left: auto; right: 0; top: -22px; margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pz-escena::after, .pz-dh-parpado, .pz-dragon-marco .pz-dh-luz, .pz-veredicto.revela .pz-veredicto-nombre, .pz-disco-g.pz-disco-nuevo, .pz-delta, .pz-recibe { animation: none !important; }
+  .pz-escena::after, .pz-dragon-brillo, .pz-dragon-marco .pz-dh-luz, .pz-veredicto.revela .pz-veredicto-nombre, .pz-disco-g.pz-disco-nuevo, .pz-delta, .pz-recibe { animation: none !important; }
   .pz-dh-parpado { transform: scaleY(0); }
   .pz-moneda-vuela { display: none; }
 }
@@ -165,9 +163,11 @@
 
 
 /* el resplandor de los ojos respira despacio (solo en reposo y atento; en los demás estados manda el estado) */
-.pz-dragon-marco[data-e="espera"] .pz-dh-luz { --b0: .4; --b1: .68; animation: pz-brilla 4.6s ease-in-out infinite; }
-.pz-dragon-marco[data-e="mira"] .pz-dh-luz { --b0: .72; --b1: 1; animation: pz-brilla 3.2s ease-in-out infinite; }
-@keyframes pz-brilla { 0%, 100% { opacity: var(--b0); } 50% { opacity: var(--b1); } }
+.pz-dragon-brillo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; will-change: opacity; }
+.pz-dragon-marco[data-e="espera"] .pz-dragon-brillo { animation: pz-brilla 4.6s ease-in-out infinite; }
+.pz-dragon-marco[data-e="mira"] .pz-dragon-brillo { animation: pz-brilla 3.2s ease-in-out infinite; }
+@keyframes pz-brilla { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }      /* el pulso es la opacidad de una capa entera: lo hace la tarjeta gráfica sin repintar nada */
+.pz-brillo-g { transform-box: fill-box; transform-origin: center; transition: transform .14s cubic-bezier(.2, 2.2, .4, 1); }
 /* sin movimiento del cursor los ojos vuelven despacio al centro */
 .pz-dragon-marco.pz-reposo .pz-heroe-pupila, .pz-dragon-marco.pz-reposo .pz-heroe-iris { transition: transform 1.4s ease-in-out; }
 
@@ -191,7 +191,7 @@
 .pz-tapete, .pz-dock, .pz-jugador, .pz-duelo-lado, .pz-opcion-dec, .pz-caja { box-shadow: inset 0 0 0 1px #00000066, inset 0 3px 22px #000a; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pz-dragon-marco .pz-dh-luz, .pz-bocanada, .pz-vineta.activa, .pz-vineta-luz.activa { animation: none !important; }
+  .pz-dragon-marco .pz-dh-luz, .pz-dragon-brillo, .pz-bocanada, .pz-vineta.activa, .pz-vineta-luz.activa { animation: none !important; }
   .pz-bocanada, .pz-vineta, .pz-vineta-luz { display: none; }
 }
 
@@ -246,14 +246,15 @@
 .pz-dh-venas { opacity: 0; transition: opacity .2s; }
 /* Ruina: los ojos se desorbitan de golpe: se agrandan hasta quedar casi redondos y muy altos, se llenan de venas rojas y la pupila se queda en un punto */
 .pz-dragon-marco[data-e="ruina"] .pz-ojo-g { transform: scale(1.2, 3); }
+.pz-dragon-marco[data-e="ruina"] .pz-brillo-g { transform: scale(1.2, 3); }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-pupila { transform: scale(.32); }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-venas { opacity: .9; }
 .pz-dragon-marco[data-e="ruina"] .pz-dh-luz-roja { transform: scale(.62); }
 
 /* ojos que vagan: se fijan en un sitio y se desplazan un poco, despacio */
-.pz-dragon-ojos { transition: transform 1.6s ease-in-out; }
+.pz-dragon-ojos, .pz-dragon-brillo { transition: transform 1.6s ease-in-out; }
 .pz-dragon-marco.pz-vaga .pz-heroe-pupila, .pz-dragon-marco.pz-vaga .pz-heroe-iris { transition: transform .5s ease-in-out; }
-@media (prefers-reduced-motion: reduce) { .pz-dragon-ojos { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .pz-dragon-ojos, .pz-dragon-brillo { transition: none; } }
 
 .pz-ficha-todo { letter-spacing: .08em; text-transform: uppercase; font-size: .9rem; }
 

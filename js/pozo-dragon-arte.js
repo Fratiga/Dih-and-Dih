@@ -115,16 +115,16 @@ window.PozoArte = (function () {
     return `<path d="${p}" class="pz-dh-venas" fill="none" stroke="#e2402a" stroke-width="1" stroke-linecap="round"/>`;
   }
 
-  // Un ojo. d = 1 el izquierdo, -1 el derecho.
+  // Un ojo. d = 1 el izquierdo, -1 el derecho. Devuelve dos trozos: el resplandor, que va en su propia capa (así pulsar solo cuesta opacidad y no repinta el dibujo) y el ojo.
   let ojosN = 0;
   function ojoDib(cx, d, id) {
     const x = n => (cx + n * d).toFixed(1);
     const almendra = `M${x(-29)} ${CY - 10} Q${x(0)} ${CY - 20} ${x(29)} ${CY + 8} Q${x(-3)} ${CY + 20} ${x(-29)} ${CY - 10} Z`;
-    return `
+    const lado = d > 0 ? "i" : "d";
+    const brillo = `<g class="pz-brillo-g" data-lado="${lado}"><circle cx="${cx}" cy="${CY}" r="50" fill="url(#pzLuz)" class="pz-dh-luz"/><circle cx="${cx}" cy="${CY}" r="56" fill="url(#pzLuzRoja)" class="pz-dh-luz-roja"/></g>`;
+    const ojo = `
       <clipPath id="${id}"><path d="${almendra}"/></clipPath>
-      <g class="pz-ojo-g" data-lado="${d > 0 ? "i" : "d"}">
-        <circle cx="${cx}" cy="${CY}" r="50" fill="url(#pzLuz)" class="pz-dh-luz"/>
-        <circle cx="${cx}" cy="${CY}" r="56" fill="url(#pzLuzRoja)" class="pz-dh-luz-roja"/>
+      <g class="pz-ojo-g" data-lado="${lado}">
         <path d="${almendra}" fill="#070304"/>
         <g clip-path="url(#${id})">
           <g class="pz-heroe-iris"><ellipse cx="${cx}" cy="${CY}" rx="27" ry="17" fill="url(#pzIris)"/><ellipse cx="${cx}" cy="${CY}" rx="27" ry="17" fill="url(#pzIrisRoja)" class="pz-dh-iris-roja"/>${venasDib(cx)}</g>
@@ -134,13 +134,15 @@ window.PozoArte = (function () {
         </g>
         <path d="${almendra}" fill="none" stroke="#f3b95a" stroke-width="1.3" stroke-linejoin="round"/>
       </g>`;
+    return { brillo, ojo };
   }
 
-  // El marco del dragón: los dos ojos. vb es el trozo del dibujo que se ve (la franja de los ojos); clase la pone quien lo usa.
+  // El marco del dragón: el resplandor y los dos ojos, en dos capas. vb es el trozo del dibujo que se ve (la franja de los ojos); clase la pone quien lo usa.
   function marcoDragon(vb, clase, etiqueta) {
-    const n = ++ojosN;
+    const n = ++ojosN, i = ojoDib(324, 1, "pzOjoI" + n), d = ojoDib(476, -1, "pzOjoD" + n);
     return `<div class="pz-dragon-marco ${clase}" data-e="espera" data-vb="${vb}" role="img" aria-label="${etiqueta}">
-      <svg class="pz-dragon-ojos" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">${ojoDib(324, 1, "pzOjoI" + n)}${ojoDib(476, -1, "pzOjoD" + n)}</svg>
+      <svg class="pz-dragon-brillo" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">${i.brillo}${d.brillo}</svg>
+      <svg class="pz-dragon-ojos" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">${i.ojo}${d.ojo}</svg>
     </div>`;
   }
   const dragonHeroe = () => marcoDragon("200 130 400 190", "pz-dragon-heroe", "Los ojos de un dragón que te vigila en la oscuridad");
