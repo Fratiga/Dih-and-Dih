@@ -252,8 +252,8 @@
       `Tú contra el Dragón. Apuestas una cantidad de tokens de juego, lanzas los tres dados y, después de cada tirada que no sea Ruina, decides si cobrar o seguir tirando.`,
       `Tu premio provisional empieza en tu apuesta menos el tributo del Dragón (${num(t)} %). Cada tirada sin Ruina le suma un bono, en % de tu apuesta antes del tributo: pareja +${num(b.pareja * 100)} %, escalera +${num(b.escalera * 100)} %, triple +${num(b.triple * 100)} % y triple seis +${num(b.triple_seis * 100)} %. La ceniza no cambia el premio.`,
       `Premio = apuesta × ${num(1 - t / 100)} × (1 + suma de bonos). El tributo del ${num(t)} % es lo único que retiene el Dragón y se ve antes de apostar: no hay otras comisiones.`,
-      `Ruina (suma de 3 a 5): pierdes el premio provisional y la partida termina. Es una probabilidad de 10 entre 216 (4,63 %) en cada tirada.`,
-      `Puedes cobrar después de cualquier tirada sin Ruina. Hay un máximo de ${max} tiradas: si llegas a la última sin Ruina, cobras automáticamente.`,
+      `Ruina (suma de 3 a 5): pierdes el premio provisional y la partida termina. Es una probabilidad de 10 entre 216 (4,63 %) en cada una de las primeras ${max} tiradas.`,
+      `Puedes cobrar después de cualquier tirada sin Ruina. Las ${max} primeras tiradas tienen siempre el mismo riesgo. Después puedes seguir tirando, pero ahí el Dragón no dice cuánto arriesgas.`,
       `Aquí no hay otros jugadores y paga la casa: por eso el juego tiene una ventaja del Dragón. Jugando lo mejor posible recuperas de media un 97,5 % de lo apostado. Solo se apuesta dinero, no cartas.`,
       `Si recargas la página la partida sigue donde estaba. Si te vas y no vuelves, a los ${r.abandono_s || 120} segundos se cierra sola: sin tiradas se te devuelve la apuesta entera, y con tiradas cobras lo que lleves.`
     ];
@@ -265,7 +265,7 @@
     if (s.fase === "decidir") {
       return { tipo: "decidir", botones: [
         { id: "cobrar", texto: "Cobrar", sub: `recibes ${num(s.premio)} tokens`, principal: true, tecla: "C" },
-        { id: "tirar", texto: "Seguir tirando", sub: `${pct(10 / 216)} de Ruina y pierdes ${num(s.premio)}`, tecla: "T" }
+        { id: "tirar", texto: "Seguir tirando", sub: s.tiradas >= s.tiradas_max ? `si te alcanza, pierdes ${num(s.premio)}` : `${pct(10 / 216)} de Ruina y pierdes ${num(s.premio)}`, tecla: "T" }
       ] };
     }
     return { tipo: "tirar", botones: [{ id: "tirar", texto: "Tirar los dados", sub: "", principal: true, tecla: "T" }] };
@@ -284,7 +284,7 @@
     const neto = Number(s.neto) || 0;
     if (s.resultado === "ruina") return { clase: "pierde", titulo: "Ruina: el Dragón se queda con tu apuesta", texto: `Pierdes ${num(s.apuesta)} tokens de juego.`, neto };
     if (s.resultado === "devuelta") return { clase: "empate", titulo: "Apuesta devuelta", texto: `La partida se cerró sin ninguna tirada. Recuperas tus ${num(s.apuesta)} tokens.`, neto: 0 };
-    const auto = s.resultado === "cobro_automatico" ? "Se cerró sola por inactividad y se cobró lo que llevabas. " : (s.tiradas >= s.tiradas_max ? "Llegaste a la última tirada sin Ruina y cobras. " : "");
+    const auto = s.resultado === "cobro_automatico" ? "Se cerró sola por inactividad y se cobró lo que llevabas. " : "";
     const clase = neto > 0 ? "gana" : neto < 0 ? "pierde" : "empate";
     return { clase, titulo: neto > 0 ? "Cobras del pozo" : neto < 0 ? "Cobras menos de lo apostado" : "Recuperas tu apuesta", texto: `${auto}Recibes ${num(s.pago)} tokens (apostaste ${num(s.apuesta)}): ${neto > 0 ? "ganas" : neto < 0 ? "pierdes" : "quedas igual"} ${neto === 0 ? "" : num(Math.abs(neto)) + " tokens"}`.trim() + ".", neto };
   }
@@ -308,7 +308,7 @@
   function tensionSolo(s) {
     if (!s || s.estado !== "en_curso") return null;
     const b = s.bonos || SOLO_BONOS;
-    return { fase: s.fase, premio: Number(s.premio), apuesta: Number(s.apuesta), pRuina: P_RUINA, quedan: s.tiradas_max - s.tiradas, mejor: premioSolo(s.apuesta, s.tributo, (Number(s.bono) || 0) + (b.triple_seis || 0)) };
+    return { fase: s.fase, premio: Number(s.premio), apuesta: Number(s.apuesta), pRuina: P_RUINA, quedan: s.tiradas_max - s.tiradas, fuera: s.tiradas >= s.tiradas_max, mejor: premioSolo(s.apuesta, s.tributo, (Number(s.bono) || 0) + (b.triple_seis || 0)) };
   }
   // Cada combinación con su probabilidad, su bono y el premio que dejaría la siguiente tirada (solitario). La Ruina deja 0; la ceniza, el premio de ahora.
   function tablaSolo(s) {

@@ -3,7 +3,7 @@
    Uso:  node tools/pozo-dragon-solo.js [partidas por estrategia, por defecto 400000]
 
    Reglas del modo (docs/pozo-dragon.sql, pozo_solo_*): apuestas S y el premio provisional empieza en S. Cada tirada sin Ruina suma al premio un bono (% de S) según la
-   combinación; la ceniza no suma; la Ruina pierde todo y termina la partida. Tras cada tirada sin Ruina puedes cobrar o seguir. Máximo cinco tiradas: en la quinta cobras solo.
+   combinación; la ceniza no suma; la Ruina pierde todo y termina la partida. Tras cada tirada sin Ruina puedes cobrar o seguir. Las cinco primeras tiradas son «seguras» (solo el riesgo de los dados); después se puede seguir, pero el Dragón carga los dados con una Ruina forzada que se multiplica por tirada (ver el final del archivo).
    Aquí paga la CASA (no hay otros jugadores), así que el juego crea tokens cuando ganas y los destruye cuando pierdes. Para que no se creen tokens sin respaldo, la tabla
    tiene que dejar a la casa una ventaja: el retorno al jugador (RTP) con la MEJOR estrategia posible tiene que ser menor que el 100 %.
    1) Programación dinámica exacta: el valor esperado del juego óptimo para cada factor de la tabla (×1 es la tabla propuesta: 25/75/150/400 %).
@@ -91,3 +91,39 @@ for (const e of [1, 2, 3, 4, 5]) {
 }
 console.log(`   Pago máximo posible: ${(1 + 5 * 4 * KJ).toFixed(1)}× la apuesta (cinco triples seis seguidos, probabilidad ${(1 / 216 ** 5).toExponential(1)}).`);
 console.log(`   Con la tabla original (×1) el RTP óptimo sería ${(filas[0][1].rtp * 100).toFixed(1)} %: la casa pagaría de media ${((filas[0][1].rtp - 1) * 100).toFixed(1)} % de más en cada partida, dinero creado de la nada.`);
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------
+// Más allá de la quinta tirada: el Dragón carga los dados (docs/pozo-dragon.sql, pozo_solo_peligro_*). Antes de la tirada n (n > 5) hay una Ruina forzada de
+// min(tope, inicial × factor^(n − 6)) % y, si no se fuerza, sale lo de siempre (que también puede ser Ruina por los dados). Aquí se comprueba que seguir tirando después
+// de la quinta NUNCA conviene al jugador (así el RTP óptimo sigue siendo el de las cinco tiradas y la casa no pierde nada con la regla nueva).
+const PELIGRO = { inicial: 0.08, factor: 2, tope: 0.95 };
+const HORIZONTE = 14;
+function optimoExtendido(k) {
+  const memo = new Map();
+  const forzada = r => Math.min(PELIGRO.tope, PELIGRO.inicial * PELIGRO.factor ** (r - MAX));   // Ruina forzada antes de la tirada r + 1 (r ya tiradas, r >= MAX)
+  function v(r, b) {
+    if (r >= HORIZONTE) return { valor: 1 + b, sigue: false, ganancia: 0 };
+    const clave = r + "|" + b.toFixed(6);
+    if (memo.has(clave)) return memo.get(clave);
+    const e = r >= MAX ? forzada(r) : 0;
+    let seguir = 0;
+    for (const c of Object.keys(CASOS)) { if (c === "ruina") continue; seguir += (1 - e) * CASOS[c] / 216 * v(r + 1, b + BASE[c] * k).valor; }
+    const res = { valor: Math.max(seguir, 1 + b), sigue: seguir > 1 + b, ganancia: seguir - (1 + b) };
+    memo.set(clave, res); return res;
+  }
+  let inicio = 0;
+  for (const c of Object.keys(CASOS)) { if (c === "ruina") continue; inicio += CASOS[c] / 216 * v(1, BASE[c] * k).valor; }
+  return { rtp: inicio, v };
+}
+{
+  const ext = optimoExtendido(KJ);
+  console.log("\n== Más allá de la quinta tirada (Ruina forzada: " + [0, 1, 2, 3, 4, 5].map(i => (Math.min(PELIGRO.tope, PELIGRO.inicial * PELIGRO.factor ** i) * 100).toFixed(0) + " %").join(", ") + "...)");
+  let mejor = -Infinity;
+  const posibles = new Set([0]);
+  const gen = (rr, b) => { if (rr === MAX) { posibles.add(+b.toFixed(6)); return; } for (const c of ["ceniza", "pareja", "escalera", "triple", "triple_seis"]) gen(rr + 1, b + BASE[c] * KJ); };
+  gen(0, 0);
+  for (const b of posibles) { const g = ext.v(MAX, b).ganancia; if (g > mejor) mejor = g; }
+  console.log("   Tras la quinta tirada, la mejor ganancia esperada por seguir (sobre cobrar) entre todos los bonos posibles es " + (mejor * 100).toFixed(2) + " % de la apuesta" + (mejor < 0 ? ": seguir nunca conviene." : ": ¡a veces conviene seguir!"));
+  console.log("   RTP óptimo con tiradas extra permitidas: " + (ext.rtp * (1 - TRIBUTO) * 100).toFixed(2) + " %  (sin tiradas extra: " + (oj.rtp * (1 - TRIBUTO) * 100).toFixed(2) + " %)");
+  if (mejor >= 0 || Math.abs(ext.rtp - oj.rtp) > 1e-9) { console.error("ERROR: la regla de las tiradas extra cambia el retorno óptimo del juego"); process.exitCode = 1; }
+}

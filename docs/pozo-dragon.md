@@ -73,7 +73,7 @@ Una consecuencia que conviene saber: **el pozo central no crece**, es la suma de
 
 Tercera modalidad, con el mismo motor de dados, la misma clasificación y el mismo dinero (`hipodromo_*`) que las otras dos, pero con reglas de partida propias (sección 12 del SQL).
 
-- Apuestas una cantidad de tokens, tiras los tres dados y, tras cada tirada que no sea Ruina, **cobras o sigues**. Máximo cinco tiradas: en la quinta sin Ruina **cobras solo**.
+- Apuestas una cantidad de tokens, tiras los tres dados y, tras cada tirada que no sea Ruina, **cobras o sigues**. Las cinco primeras tiradas son «seguras» (solo el riesgo de los dados, 4,63 %). **Después de la quinta se puede seguir tirando**, pero el Dragón carga los dados (ver «Más allá de la quinta tirada»).
 - **Ruina:** pierdes el premio provisional y termina la partida. Ceniza: no cambia el premio. Pareja, escalera, triple y triple seis: lo suben.
 - **Premio = apuesta × (1 − tributo) × (1 + suma de bonos)**, céntimos hacia abajo. Tributo del Dragón **5 %**, visible antes de apostar y sin otras comisiones. Bonos: pareja **+6,25 %**, escalera **+18,75 %**, triple **+37,5 %**, triple seis **+100 %** (la cuarta parte de la tabla propuesta).
 - Solo dinero. No hay cartas: la casa no puede entregar cartas sin salirse de los límites y de la reserva de la economía de cartas.
@@ -97,12 +97,45 @@ En solitario **paga la casa**: no hay otros jugadores, así que el juego crea to
 - El pago máximo posible es **6×** la apuesta antes del tributo (cinco triples seis seguidos, probabilidad 2e-12).
 - Todos los valores están en `cartas_economia_ajustes` (`pozo_solo_*`) para poder cambiarlos sin tocar código. La interfaz muestra los que manda el servidor en cada partida.
 
+### Más allá de la quinta tirada
+Se puede seguir tirando todo lo que quieras, pero **el peligro sube de forma exponencial** y **la pantalla no lo dice** (a propósito: se aprende jugando).
+- Antes de cada tirada extra el servidor sortea una **Ruina forzada**: 8 % en la sexta, 16 % en la séptima, 32 %, 64 % y un tope del 95 % (ajustes `pozo_solo_peligro_inicial`, `pozo_solo_peligro_factor` y `pozo_solo_peligro_max`). Si sale, los dados enseñan una tirada de Ruina corriente (suma de 3 a 5, una de las diez posibles, al azar). Si no, se tiran normalmente (con su 4,63 % de siempre).
+- **No hay información de más:** el estado del servidor no incluye el peligro, la tabla de probabilidades se oculta después de la quinta, la elección dice «El Dragón no avisa» en vez de un porcentaje y las reglas solo dicen que después de la quinta el Dragón no cuenta cuánto arriesgas. Los puntos de tiradas siguen creciendo y la etiqueta pasa de «Tirada 5 de 5» a «Tirada 6».
+- **Economía:** `node tools/pozo-dragon-solo.js` lo comprueba con programación dinámica: tras la quinta tirada, seguir pierde valor esperado con cualquier bono acumulado (−7,1 % de la apuesta en el mejor caso), así que **el retorno óptimo sigue siendo el de las cinco tiradas (97,49 %)** y la casa no pierde nada con la regla.
+- Después de la quinta ya no se cobra solo: se cobra cuando tú decides (o por abandono, como siempre).
+
+### Sin tope de apuesta
+El servidor no impone máximo en ninguna modalidad (`pozo_solo_apuesta_max` y `pozo_apuesta_max` valen 0 = sin máximo). Solo hay un mínimo, múltiplos de 10 y el saldo que tengas. Para que no parezca que hay un techo, las fichas rápidas llegan hasta 100 veces el mínimo y hay una ficha **Todo** que pone todo tu saldo (redondeado a múltiplos de 10).
+
 ### Contra pagos duplicados
 
 - **Empezar** lleva un identificador nuevo por partida (`unique (user_id, cliente)`): repetirlo (doble clic, reintento tras un corte) devuelve la misma partida sin descontar otra vez. La apuesta se descuenta antes de crear la partida y en la misma transacción.
 - **Tirar y cobrar** llevan el **paso** de la partida: una petición repetida no tira dos veces ni cobra dos veces.
 - **El pago** lo hace `pozo_i_solo_cerrar`, que solo actúa si la partida sigue `en_curso` y la deja `terminada` en la misma transacción, bajo el candado del jugador. Una partida cerrada no se puede pagar otra vez.
 - Un índice único deja **una sola partida en curso** por jugador.
+
+## Desafíos: cartas por jugar
+Mismo sistema que Las Veintiuna Velas (`docs/veintiuna.md`): el servidor cuenta lo que haces, cada desafío se completa y se reclama **una vez al día** y da una carta de Triunfos. Se reinician a las 00:00 UTC (lo completado y sin reclamar se pierde). Reutilizan el sistema oficial de recompensas: una fila en `cartas_juegos` (`pozo_dragon`, **encendida y con 2 cartas al día como máximo**, igual que Veintiuna hoy), `cartas_i_juego_terminar_nucleo` y los mismos topes, límites, circulación y reserva. Si no hay carta que dar, el desafío **no se gasta**. Bronce vale 1 («bueno»), plata 3 («excelente») y oro 4 («extraordinario»).
+
+| Nivel | Desafío | Qué hay que hacer |
+|---|---|---|
+| Bronce | Una más | Tirar después de la quinta tirada en el solitario |
+| Bronce | El diezmo del Dragón | Perder 500 tokens en Ruinas del solitario en un día |
+| Bronce | Mala racha | Caer en Ruina tres veces seguidas en el solitario |
+| Plata | Doble o nada | Cobrar un premio de al menos el doble de tu apuesta |
+| Plata | Mil tokens al fuego | Apostar 1.000 tokens en total en un día en el solitario |
+| Plata | Seis, seis, seis | Sacar un triple seis en el solitario |
+| Plata | Sin red | Hacer tres tiradas después de la quinta en un día |
+| Plata | Duelo limpio | Ganar un duelo 2 a 0 con dinero en juego |
+| Oro | Todo o nada | Apostar el 90 % de tu saldo (mínimo 100) en una partida y cobrarla |
+| Oro | Hasta el fondo | Cobrar después de ocho tiradas o más |
+| Oro | Remontada imposible | Ganar un duelo con dinero en juego tras perder la primera ronda |
+| Oro | Último en pie | Cobrar en una mesa compartida con dinero en juego en la que caen en Ruina al menos otros dos jugadores |
+
+- **Cuenta solo con dinero en juego** (los duelos y mesas compartidas, con la apuesta mínima como mínimo) para que nadie los gane pactando gratis con un amigo; una partida en solitario devuelta sin tiradas no cuenta.
+- Progreso en `pozo_progreso.contadores` (por día) y completados en `pozo_logros`; la definición en `pozo_logros_def`. Los ganchos están al cerrar una partida (`pozo_i_solo_cerrar`) y al terminar un duelo o una mesa compartida, protegidos para que un fallo de los desafíos nunca estropee un pago.
+- En la página: botón **Desafíos** (con una insignia con los que puedes reclamar), un diálogo por niveles con barras de progreso y la misma pantalla de carta ganada que Las Veintiuna Velas (`js/recompensas.js`).
+- Funciones públicas: `pozo_desafios()` y `pozo_reclamar(logro)`. Se pueden apagar o ajustar en Admin → Economía → Juegos y recetas.
 
 ## Dinero y cartas
 
@@ -203,7 +236,7 @@ sh docs/pruebas/cargar_local.sh todo && sh docs/pruebas/t_pozo_dragon.sh   # el 
 - **Duelo:** crear, unirse, ofrecer cartas, confirmar (versión de condiciones, reserva atómica, devolución si el rival cambia sus cartas), fuera de turno, peticiones repetidas, ronda por ronda hasta el ganador, empate al límite, más rondas al límite, abandono por tres turnos perdidos, salir en pleno duelo, mesa abandonada, y **una carta que no se puede entregar por el límite del jugador vuelve a su dueño**.
 - **Pozo Compartido:** reparto por peso al céntimo (81,81 / 218,19 de 300), Ruina, botín de cartas al superviviente de mayor peso, todos en Ruina, quien sale sin tirar, el jugador que sigue solo hasta la quinta tirada (105,89 / 94,11 de 200), tiempo agotado al decidir y mesa abandonada.
 - **Salas:** cancelar, vencer, salir (reinicia confirmaciones y pasa el mando), inactividad, saldo que ya no alcanza, carta que dejó de ser tuya, tope de cambios y validaciones de apuesta.
-- **Solitario:** empezar idempotente, apuesta descontada una vez, pareja y escalera, cobrar una sola vez, clic doble, Ruina, cobro automático en la quinta, abandono (devuelta o cobro automático, una sola vez) y 3.000 partidas al azar (retorno 95,9–96,0 % cobrando siempre en la primera tirada, igual que la fórmula; la billetera cuadra con la suma de los netos).
+- **Solitario:** empezar idempotente, apuesta descontada una vez, pareja y escalera, cobrar una sola vez, clic doble, Ruina, ya no hay cobro automático en la quinta (se puede seguir), la Ruina forzada creciente (determinista al 100 % y estadística al 8 % y 16 %), desafíos (los doce, el reinicio diario, duelo y compartido) y reclamar cartas (tope de dos al día), abandono (devuelta o cobro automático, una sola vez) y 3.000 partidas al azar (retorno 95,9–96,0 % cobrando siempre en la primera tirada, igual que la fórmula; la billetera cuadra con la suma de los netos).
 - **Al azar:** 125 mesas compartidas de 2 a 6 jugadores y 60 duelos con cobros, Ruinas y tiempos agotados: el dinero total y las cartas cuadran siempre y no queda nada bloqueado ni sin liquidar.
 
 `t_pozo_dragon.sh` añade los **permisos** (sin sesión no se llama a nada; las funciones internas y las tablas, ni leerlas ni escribirlas) y las **peticiones simultáneas** reales con varias sesiones: empezar dos veces, abrir dos partidas distintas, cobrar dos veces, tirar dos veces con el mismo paso, tres jugadores entrando a un duelo de dos, confirmar dos veces y tirar a la vez con el rival fuera de turno.

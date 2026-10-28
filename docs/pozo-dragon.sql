@@ -545,6 +545,7 @@ begin
   update pozo_jugadores set activo = false where mesa = p_mesa and activo;
   update pozo_mesas set estado = 'terminada', terminada = now(), motivo = p_motivo, turno = null, turno_fase = null, turno_limite = null, paso = paso + 1,
     resultado = jsonb_build_object('modo', 'duelo', 'ganador', p_ganador, 'motivo', p_motivo, 'jugadores', v_res) where id = p_mesa;
+  begin perform pozo_i_logros_duelo(p_mesa, p_ganador); exception when others then null; end;
   perform pozo_i_tocar(p_mesa);
 end;
 $$;
@@ -623,6 +624,7 @@ begin
   update pozo_jugadores set activo = false where mesa = p_mesa and activo;
   update pozo_mesas set estado = 'terminada', terminada = now(), motivo = p_motivo, turno = null, turno_fase = null, turno_limite = null, paso = paso + 1,
     resultado = jsonb_build_object('modo', 'compartido', 'motivo', p_motivo, 'pozo', v_pozo, 'jugadores', v_res) where id = p_mesa;
+  begin perform pozo_i_logros_compartido(p_mesa); exception when others then null; end;
   perform pozo_i_tocar(p_mesa);
 end;
 $$;
@@ -1351,6 +1353,10 @@ grant execute on function pozo_lista(), pozo_crear(text, boolean, text, numeric,
      - Premio = apuesta × (1 − tributo) × (1 + bonos), con un tributo VISIBLE del 5 % y los bonos a un cuarto de la tabla propuesta (pareja 6,25 %, escalera 18,75 %, triple 37,5 %, triple seis 100 %).
      - Con la mejor estrategia posible el jugador recupera de media el 97,49 % (ventaja de la casa 2,51 %); con la tabla propuesta sin tributo recuperaría el 171 %.
    Solo dinero: no hay cartas, porque la casa no puede entregar cartas sin salirse de los límites y la reserva de la economía de cartas.
+   Tiradas seguras y más allá: las cinco primeras tiradas (pozo_tiradas_max) tienen solo el riesgo de los dados (4,63 %). Después de la quinta se puede seguir tirando, pero el Dragón carga los dados:
+   antes de cada tirada extra hay una probabilidad de Ruina forzada que empieza en pozo_solo_peligro_inicial % y se multiplica por pozo_solo_peligro_factor en cada tirada, con tope pozo_solo_peligro_max %
+   (8, 16, 32, 64, 95... por defecto). Cuando se fuerza, los dados enseñan una tirada de Ruina corriente (suma de 3 a 5). NADA de esto se dice en la pantalla: se aprende jugando.
+   Con la mejor estrategia posible nadie sigue después de la quinta (cada tirada extra pierde valor esperado), así que el retorno máximo sigue siendo el de las cinco tiradas (tools/pozo-dragon-solo.js lo comprueba).
    Una partida por jugador a la vez. El inicio lleva un identificador del cliente (repetirlo devuelve la misma partida, sin cobrar dos veces) y cada acción lleva el paso. El pago se hace una sola vez,
    al pasar la partida a 'terminada' bajo su candado. Una partida abandonada se cierra sola: sin tiradas se devuelve la apuesta entera; con tiradas se cobra lo que lleve (retirada segura). */
 insert into cartas_economia_ajustes (clave, valor) values
@@ -1360,7 +1366,10 @@ insert into cartas_economia_ajustes (clave, valor) values
   ('pozo_solo_bono_triple', '37.5'),
   ('pozo_solo_bono_triple_seis', '100'),
   ('pozo_solo_apuesta_max', '0'),          -- apuesta máxima; 0 = sin máximo (como Las Veintiuna Velas). Si algún día hace falta un tope, se pone aquí
-  ('pozo_solo_abandono_s', '120')          -- segundos sin actuar tras los que una partida abandonada se cierra sola
+  ('pozo_solo_abandono_s', '120'),         -- segundos sin actuar tras los que una partida abandonada se cierra sola
+  ('pozo_solo_peligro_inicial', '8'),      -- % de Ruina forzada en la primera tirada después de las seguras (la sexta)
+  ('pozo_solo_peligro_factor', '2'),       -- por cuánto se multiplica en cada tirada siguiente (exponencial)
+  ('pozo_solo_peligro_max', '95')          -- tope de la Ruina forzada, en %
 on conflict (clave) do nothing;
 
 create table if not exists pozo_solo (
@@ -1459,6 +1468,7 @@ begin
     perform pozo_i_abonar(s.user_id, v_pago, case p_resultado when 'devuelta' then 'El Pozo del Dragón (solo): apuesta devuelta' else 'El Pozo del Dragón (solo): premio' end || ' (partida ' || s.id || ')');
   end if;
   update pozo_solo set estado = 'terminada', resultado = p_resultado, pago = v_pago, neto = v_pago - apuesta, terminada = now(), paso = paso + 1, ultima_accion = now() where id = p_id;
+  begin perform pozo_i_logros_solo(p_id); exception when others then null; end;                  -- los desafíos nunca pueden estropear un pago
 end;
 $$;
 
@@ -1539,6 +1549,7 @@ declare
   paso_a numeric := (cartas_ajuste('pozo_apuesta_paso', '10'))::text::numeric;
   s pozo_solo%rowtype;
   v_id uuid := gen_random_uuid();
+  v_saldo_antes numeric;
 begin
   perform pozo_i_acceso();
   perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
@@ -1554,9 +1565,10 @@ begin
   end if;
   if p_apuesta <> trunc(p_apuesta / paso_a) * paso_a then perform pozo_i_error('La apuesta tiene que ser múltiplo de ' || paso_a || '.', 'apuesta_invalida'); end if;
   v_id := gen_random_uuid();
+  v_saldo_antes := pozo_i_saldo(uid);
   perform pozo_i_debitar(uid, p_apuesta, 'El Pozo del Dragón (solo): apuesta (partida ' || v_id || ')');            -- el saldo disponible ya no la cuenta; si no alcanza, nada queda a medias
-  insert into pozo_solo (id, user_id, cliente, apuesta, tributo, bonos)
-    values (v_id, uid, p_cliente, p_apuesta, (cartas_ajuste('pozo_solo_tributo', '5'))::text::numeric, pozo_i_solo_reglas() -> 'bonos');
+  insert into pozo_solo (id, user_id, cliente, apuesta, tributo, bonos, saldo_antes)
+    values (v_id, uid, p_cliente, p_apuesta, (cartas_ajuste('pozo_solo_tributo', '5'))::text::numeric, pozo_i_solo_reglas() -> 'bonos', v_saldo_antes);
   return pozo_i_solo_json(v_id);
 end;
 $$;
@@ -1574,6 +1586,9 @@ declare
   d int[];
   v_cat text;
   v_bono numeric;
+  v_max int := (cartas_ajuste('pozo_tiradas_max', '5'))::text::int;
+  v_peligro numeric;
+  v_forzada boolean := false;
 begin
   perform pozo_i_acceso();
   perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
@@ -1588,7 +1603,18 @@ begin
     if s.fase <> 'decidir' then perform pozo_i_error('Todavía no has tirado: no hay nada que cobrar.', 'fuera_de_turno'); end if;
     perform pozo_i_solo_cerrar(p_id, 'cobro');
   elsif p_accion = 'tirar' then
-    d := array[pozo_i_dado(), pozo_i_dado(), pozo_i_dado()]::int[];
+    -- Más allá de las tiradas seguras el Dragón carga los dados: una probabilidad de Ruina forzada que crece de forma exponencial (en % con dos decimales)
+    if s.tiradas >= v_max then
+      v_peligro := least((cartas_ajuste('pozo_solo_peligro_max', '95'))::text::numeric,
+                         (cartas_ajuste('pozo_solo_peligro_inicial', '8'))::text::numeric * power((cartas_ajuste('pozo_solo_peligro_factor', '2'))::text::numeric, s.tiradas - v_max));
+      v_forzada := pozo_i_azar(10000) < round(v_peligro * 100);
+    end if;
+    if v_forzada then
+      -- una de las diez tiradas de Ruina, al azar: se ve como cualquier Ruina
+      select array[a, b, c]::int[] into d from (values (1,1,1),(1,1,2),(1,2,1),(2,1,1),(1,1,3),(1,3,1),(3,1,1),(1,2,2),(2,1,2),(2,2,1)) v(a, b, c) offset pozo_i_azar(10) limit 1;
+    else
+      d := array[pozo_i_dado(), pozo_i_dado(), pozo_i_dado()]::int[];
+    end if;
     v_cat := pozo_i_clasificar(d[1], d[2], d[3]);
     v_bono := s.bono + case v_cat when 'pareja' then (s.bonos ->> 'pareja')::numeric when 'escalera' then (s.bonos ->> 'escalera')::numeric
                                   when 'triple' then (s.bonos ->> 'triple')::numeric when 'triple_seis' then (s.bonos ->> 'triple_seis')::numeric else 0 end;
@@ -1597,8 +1623,7 @@ begin
     if v_cat = 'ruina' then
       perform pozo_i_solo_cerrar(p_id, 'ruina');                                     -- pierdes el premio provisional y se acaba
     else
-      update pozo_solo set bono = v_bono, fase = 'decidir', paso = paso + 1 where id = p_id;
-      if s.tiradas + 1 >= (cartas_ajuste('pozo_tiradas_max', '5'))::text::int then perform pozo_i_solo_cerrar(p_id, 'cobro'); end if;   -- en la última tirada sin Ruina cobras solo
+      update pozo_solo set bono = v_bono, fase = 'decidir', paso = paso + 1 where id = p_id;                       -- se puede cobrar o seguir tirando, también después de la quinta
     end if;
   else
     perform pozo_i_error('Esa acción no existe.', 'accion_invalida');
@@ -1629,3 +1654,293 @@ revoke all on function pozo_i_solo_premio(numeric, numeric, numeric), pozo_i_sol
   pozo_i_solo_reglas(), pozo_i_solo_accion(uuid, int, text) from public, anon, authenticated;
 revoke all on function pozo_solo_estado(), pozo_solo_empezar(uuid, numeric), pozo_solo_tirar(uuid, int), pozo_solo_cobrar(uuid, int), pozo_solo_descartar() from public, anon;
 grant execute on function pozo_solo_estado(), pozo_solo_empezar(uuid, numeric), pozo_solo_tirar(uuid, int), pozo_solo_cobrar(uuid, int), pozo_solo_descartar() to authenticated;
+
+/* ================================================================== 13) DESAFÍOS: cartas por jugar (los de aquí son para valientes)
+   Misma mecánica que Las Veintiuna Velas (docs/veintiuna.md): el servidor cuenta lo que haces, cada desafío se completa y se reclama una vez AL DÍA y da una carta.
+   Se reinician a las 00:00 UTC. Reutilizan el sistema oficial de recompensas (una fila en cartas_juegos y cartas_i_juego_terminar_nucleo), con sus topes diarios, límites, circulación y reserva.
+   Dos cartas al día como mucho desde aquí (tope_dia 2, como Las Veintiuna Velas hoy). Si no hay carta que dar el desafío NO se gasta: queda guardado y se puede reclamar más tarde, pero el mismo día.
+   Nace ENCENDIDO (activo = true, igual que Las Veintiuna Velas); se apaga en Admin → Economía → Juegos y recetas.
+   Qué cuenta: las partidas en solitario, los duelos y las mesas compartidas con apuesta de dinero (para que nadie los gane pactando gratis con un amigo). */
+create table if not exists pozo_logros_def (
+  id text primary key,
+  orden int not null,
+  nivel text not null check (nivel in ('bronce', 'plata', 'oro')),   -- bronce vale 1 (resultado bueno), plata 3 (excelente) y oro 4 (extraordinario) en cartas_juegos.valores
+  nombre text not null,
+  texto text not null,
+  contador text not null,                                           -- qué contador del día mide el progreso
+  meta int not null default 1 check (meta >= 1)
+);
+insert into pozo_logros_def (id, orden, nivel, nombre, texto, contador, meta) values
+  ('una_mas',        1, 'bronce', 'Una más',                   'Tira los dados después de la quinta tirada en una partida en solitario.', 'extra', 1),
+  ('diezmo',         2, 'bronce', 'El diezmo del Dragón',      'Pierde 500 tokens en Ruinas del solitario en un mismo día.', 'perdido', 500),
+  ('mala_racha',     3, 'bronce', 'Mala racha',                'Cae en Ruina tres veces seguidas en el solitario.', 'mejor_ruinas_seguidas', 3),
+  ('doble_o_nada',   4, 'plata',  'Doble o nada',              'Cobra en el solitario un premio de al menos el doble de tu apuesta.', 'mult_max', 200),
+  ('mil_al_fuego',   5, 'plata',  'Mil tokens al fuego',       'Apuesta 1.000 tokens en total en el solitario en un mismo día.', 'apostado', 1000),
+  ('seis_seis_seis', 6, 'plata',  'Seis, seis, seis',          'Saca un triple seis en el solitario.', 'triples_seis', 1),
+  ('sin_red',        7, 'plata',  'Sin red',                   'Haz tres tiradas después de la quinta en un mismo día.', 'extra', 3),
+  ('duelo_limpio',   8, 'plata',  'Duelo limpio',              'Gana un duelo por 2 a 0 con dinero en juego.', 'duelos_2a0', 1),
+  ('todo_o_nada',    9, 'oro',    'Todo o nada',               'Apuesta al menos el 90 % de tu saldo (y no menos de 100 tokens) en una partida en solitario y cóbrala.', 'todo_o_nada', 1),
+  ('hasta_el_fondo', 10, 'oro',   'Hasta el fondo',            'Cobra una partida en solitario después de ocho tiradas o más.', 'serie_max', 8),
+  ('remontada',      11, 'oro',   'Remontada imposible',       'Gana un duelo con dinero en juego después de perder la primera ronda.', 'duelos_remontada', 1),
+  ('ultimo_en_pie',  12, 'oro',   'Último en pie',             'Cobra en una mesa compartida con dinero en juego en la que caigan en Ruina al menos otros dos jugadores.', 'ultimo_en_pie', 1)
+on conflict (id) do update set orden = excluded.orden, nivel = excluded.nivel, nombre = excluded.nombre, texto = excluded.texto, contador = excluded.contador, meta = excluded.meta;
+
+-- El progreso del día de cada jugador (los contadores se reinician cada día) y lo que ha completado y reclamado hoy
+create table if not exists pozo_progreso (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  dia date not null default ((now() at time zone 'utc')::date),
+  contadores jsonb not null default '{}'::jsonb
+);
+create table if not exists pozo_logros (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  logro text not null references pozo_logros_def(id) on delete cascade,
+  completado timestamptz not null default now(),
+  reclamado timestamptz,
+  carta text,
+  numero int,
+  primary key (user_id, logro)
+);
+-- El saldo con el que empezó cada partida en solitario (para «Todo o nada»)
+alter table pozo_solo add column if not exists saldo_antes numeric(12, 2);
+
+alter table pozo_progreso enable row level security;
+alter table pozo_logros enable row level security;
+alter table pozo_logros_def enable row level security;
+drop policy if exists "pozo_progreso_admin" on pozo_progreso;
+create policy "pozo_progreso_admin" on pozo_progreso for select using (fichas_es_admin());
+drop policy if exists "pozo_logros_admin" on pozo_logros;
+create policy "pozo_logros_admin" on pozo_logros for select using (fichas_es_admin());
+drop policy if exists "pozo_logros_def_admin" on pozo_logros_def;
+create policy "pozo_logros_def_admin" on pozo_logros_def for select using (fichas_es_admin());
+revoke all on pozo_progreso, pozo_logros, pozo_logros_def from anon, authenticated;
+grant select on pozo_progreso, pozo_logros, pozo_logros_def to authenticated;
+
+-- Una fila en cartas_juegos y el cierre oficial de la recompensa, igual que Las Veintiuna Velas. Bronce vale 1, plata 3 y oro 4; la probabilidad de cada tramo es 1.
+insert into cartas_juegos (juego, nombre, activo, umbrales, tope_dia, min_segundos, sellos_por_carta, grupo, pesos, prob, grupos, valores) values
+  ('pozo_dragon', 'El Pozo del Dragón', true, '{"participacion": 0, "bueno": 1, "excelente": 3, "extraordinario": 4}', 2, 0, 5, '{}',
+   '{"bueno": {"comun": 80, "infrecuente": 20}, "excelente": {"infrecuente": 60, "rara": 40}, "extraordinario": {"rara": 100}}',
+   '{"bueno": 1, "excelente": 1, "extraordinario": 1}', '{}',
+   '{"rivales": {"bronce": {"gana": 1, "tablas": 0, "pierde": 0}, "plata": {"gana": 3, "tablas": 0, "pierde": 0}, "oro": {"gana": 4, "tablas": 0, "pierde": 0}, "_otros": {"gana": 1, "tablas": 0, "pierde": 0}}}')
+on conflict (juego) do nothing;
+
+-- El editor de Juegos y recetas guarda «valores»; el validador tiene que conocer este juego (mismo formato que Ajedrez y Veintiuna: rivales con gana/tablas/pierde).
+do $$
+declare
+  d text := pg_get_functiondef('public.cartas_i_validar_valores(text,jsonb)'::regprocedure);
+begin
+  if position('pozo_dragon' in d) > 0 then return; end if;                         -- ya parcheada
+  if position($a$'ajedrez', 'duelo', 'arqueria', 'veintiuna'$a$ in d) = 0 then
+    raise exception 'cartas_i_validar_valores ha cambiado: añade el juego pozo_dragon a mano a sus dos listas de juegos con «rivales»';
+  end if;
+  execute replace(d, $a$'ajedrez', 'duelo', 'arqueria', 'veintiuna'$a$, $b$'ajedrez', 'duelo', 'arqueria', 'veintiuna', 'pozo_dragon'$b$);
+end $$;
+
+-- A las 00:00 UTC lo del día anterior desaparece: lo completado y sin reclamar se pierde
+create or replace function pozo_i_dia(p_uid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into pozo_progreso (user_id) values (p_uid) on conflict do nothing;
+  update pozo_progreso set dia = (now() at time zone 'utc')::date, contadores = '{}'::jsonb where user_id = p_uid and dia < (now() at time zone 'utc')::date;
+  if found then delete from pozo_logros where user_id = p_uid; end if;
+end;
+$$;
+
+-- Contadores del día: sumar, quedarse con el máximo o fijar un valor
+create or replace function pozo_i_contar(p_uid uuid, p_clave text, p_modo text, p_valor numeric)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_ahora numeric;
+begin
+  select coalesce((contadores ->> p_clave)::numeric, 0) into v_ahora from pozo_progreso where user_id = p_uid;
+  update pozo_progreso set contadores = jsonb_set(contadores, array[p_clave], to_jsonb(case p_modo when 'suma' then v_ahora + p_valor when 'maximo' then greatest(v_ahora, p_valor) else p_valor end), true)
+    where user_id = p_uid;
+end;
+$$;
+
+-- Apunta los desafíos que el contador de hoy ya cumple
+create or replace function pozo_i_comprobar(p_uid uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into pozo_logros (user_id, logro)
+  select p_uid, d.id from pozo_logros_def d join pozo_progreso p on p.user_id = p_uid
+   where coalesce((p.contadores ->> d.contador)::numeric, 0) >= d.meta
+  on conflict do nothing
+$$;
+
+-- Una partida en solitario terminada
+create or replace function pozo_i_logros_solo(p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s pozo_solo%rowtype;
+  v_max int := (cartas_ajuste('pozo_tiradas_max', '5'))::text::int;
+  v_seis int;
+  v_ruinas numeric;
+begin
+  select * into s from pozo_solo where id = p_id;
+  if not found or s.estado <> 'terminada' or s.resultado = 'devuelta' then return; end if;                      -- una partida devuelta sin tiradas no cuenta
+  perform pozo_i_dia(s.user_id);
+  perform pozo_i_contar(s.user_id, 'apostado', 'suma', s.apuesta);
+  perform pozo_i_contar(s.user_id, 'extra', 'suma', greatest(0, s.tiradas - v_max));
+  select count(*) into v_seis from pozo_solo_tiradas where solo = p_id and categoria = 'triple_seis';
+  if v_seis > 0 then perform pozo_i_contar(s.user_id, 'triples_seis', 'suma', v_seis); end if;
+  if s.resultado = 'ruina' then
+    perform pozo_i_contar(s.user_id, 'perdido', 'suma', s.apuesta);
+    select coalesce((contadores ->> 'ruinas_seguidas')::numeric, 0) + 1 into v_ruinas from pozo_progreso where user_id = s.user_id;
+    perform pozo_i_contar(s.user_id, 'ruinas_seguidas', 'poner', v_ruinas);
+    perform pozo_i_contar(s.user_id, 'mejor_ruinas_seguidas', 'maximo', v_ruinas);
+  else
+    perform pozo_i_contar(s.user_id, 'ruinas_seguidas', 'poner', 0);
+    perform pozo_i_contar(s.user_id, 'mult_max', 'maximo', round(s.pago / s.apuesta * 100));
+    perform pozo_i_contar(s.user_id, 'serie_max', 'maximo', s.tiradas);
+    if s.apuesta >= 100 and s.saldo_antes is not null and s.apuesta >= s.saldo_antes * 0.9 then perform pozo_i_contar(s.user_id, 'todo_o_nada', 'poner', 1); end if;
+  end if;
+  perform pozo_i_comprobar(s.user_id);
+end;
+$$;
+
+-- Un duelo terminado (solo cuenta con dinero en juego y si lo ganó alguien por rondas)
+create or replace function pozo_i_logros_duelo(p_mesa uuid, p_ganador int)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  m pozo_mesas%rowtype;
+  g pozo_jugadores%rowtype;
+  v_victorias int := (cartas_ajuste('pozo_duelo_victorias', '2'))::text::int;
+  v_rival_victorias int;
+  v_primera int;
+begin
+  if p_ganador is null then return; end if;
+  select * into m from pozo_mesas where id = p_mesa;
+  if m.dinero < (cartas_ajuste('pozo_apuesta_min', '10'))::text::numeric then return; end if;
+  select * into g from pozo_jugadores where mesa = p_mesa and asiento = p_ganador;
+  if g.victorias < v_victorias then return; end if;                                                  -- ganó porque el otro se fue: no cuenta
+  select coalesce(max(victorias), 0) into v_rival_victorias from pozo_jugadores where mesa = p_mesa and asiento <> p_ganador;
+  select ganador into v_primera from pozo_rondas where mesa = p_mesa and ronda = 1;
+  perform pozo_i_dia(g.user_id);
+  if v_rival_victorias = 0 then perform pozo_i_contar(g.user_id, 'duelos_2a0', 'suma', 1); end if;
+  if v_primera is not null and v_primera <> p_ganador then perform pozo_i_contar(g.user_id, 'duelos_remontada', 'suma', 1); end if;
+  perform pozo_i_comprobar(g.user_id);
+end;
+$$;
+
+-- Una mesa compartida terminada
+create or replace function pozo_i_logros_compartido(p_mesa uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  m pozo_mesas%rowtype;
+  r pozo_jugadores%rowtype;
+  v_ruinas int;
+begin
+  select * into m from pozo_mesas where id = p_mesa;
+  if m.dinero < (cartas_ajuste('pozo_apuesta_min', '10'))::text::numeric then return; end if;
+  select count(*) into v_ruinas from pozo_jugadores where mesa = p_mesa and estado = 'ruina';
+  if v_ruinas < 2 then return; end if;
+  for r in select * from pozo_jugadores where mesa = p_mesa and estado = 'retirado' loop
+    perform pozo_i_dia(r.user_id);
+    perform pozo_i_contar(r.user_id, 'ultimo_en_pie', 'suma', 1);
+    perform pozo_i_comprobar(r.user_id);
+  end loop;
+end;
+$$;
+
+-- Lo que ves: los desafíos de hoy con tu progreso y, si ya reclamaste, la carta que te tocó
+create or replace function pozo_desafios()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  cfg cartas_juegos%rowtype;
+  p pozo_progreso%rowtype;
+begin
+  perform pozo_i_acceso();
+  perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
+  perform pozo_i_dia(uid);
+  select * into p from pozo_progreso where user_id = uid;
+  select * into cfg from cartas_juegos where juego = 'pozo_dragon';
+  return jsonb_build_object('activo', coalesce(cfg.activo, false),
+    'reinicia_en_s', round(extract(epoch from (date_trunc('day', now() at time zone 'utc') + interval '1 day' - (now() at time zone 'utc')))),
+    'desafios', coalesce((select jsonb_agg(jsonb_build_object('id', d.id, 'nivel', d.nivel, 'nombre', d.nombre, 'texto', d.texto, 'meta', d.meta,
+        'progreso', least(d.meta, coalesce((p.contadores ->> d.contador)::numeric, 0)),
+        'completado', l.user_id is not null, 'reclamado', l.reclamado is not null, 'carta', l.carta) order by d.orden)
+      from pozo_logros_def d left join pozo_logros l on l.user_id = uid and l.logro = d.id), '[]'::jsonb));
+end;
+$$;
+
+-- Reclamar la carta de un desafío completado. Pasa por el sistema oficial de recompensas; si no hay carta que dar (apagado, tope del día, agotado)
+-- NO se gasta el desafío y se puede reclamar más tarde, pero solo el mismo día.
+create or replace function pozo_reclamar(p_logro text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  l pozo_logros%rowtype;
+  d pozo_logros_def%rowtype;
+  cfg cartas_juegos%rowtype;
+  hoy_total int;
+  hoy_juego int;
+  tope_total int := (cartas_ajuste('tope_dia_total', '6'))::text::int;
+  v_token uuid;
+  r jsonb := '{}'::jsonb;
+begin
+  perform pozo_i_acceso();
+  perform cartas_i_candado_jugador(uid);
+  perform pg_advisory_xact_lock(hashtextextended('pozo_u_' || uid::text, 0));
+  select * into d from pozo_logros_def where id = p_logro;
+  if not found then perform pozo_i_error('Ese desafío no existe.', 'no_encontrado'); end if;
+  perform pozo_i_dia(uid);                                                          -- lo completado ayer y sin reclamar ya no vale
+  select * into l from pozo_logros where user_id = uid and logro = p_logro for update;
+  if not found then perform pozo_i_error('Ese desafío todavía no está completado.', 'no_completado'); end if;
+  if l.reclamado is not null then perform pozo_i_error('Ya reclamaste este desafío.', 'ya_reclamado'); end if;
+  select * into cfg from cartas_juegos where juego = 'pozo_dragon';
+  if not found or not cfg.activo then return jsonb_build_object('resultado', 'nada', 'motivo', 'juego-inactivo'); end if;
+  select count(*) into hoy_total from cartas_recompensas_registro where user_id = uid and resultado = 'carta' and creado >= date_trunc('day', now());
+  select count(*) into hoy_juego from cartas_recompensas_registro where user_id = uid and resultado = 'carta' and juego = 'pozo_dragon' and creado >= date_trunc('day', now());
+  if hoy_total >= tope_total or hoy_juego >= cfg.tope_dia then return jsonb_build_object('resultado', 'nada', 'motivo', 'tope-diario'); end if;
+  -- «Mejora personal» del sistema general sube un tramo al superar tu mejor puntaje; aquí no hay puntajes sino niveles de desafío: se deja sin efecto
+  insert into cartas_progreso (user_id, juego, mejor) values (uid, 'pozo_dragon', 1000) on conflict (user_id, juego) do update set mejor = 1000;
+  begin
+    insert into cartas_partidas_juego (user_id, juego, clave, inicio) values (uid, 'pozo_dragon', d.nivel, now() - interval '1 hour') returning token into v_token;
+    r := cartas_i_juego_terminar_nucleo(v_token, 'gana', 0);
+    if r ->> 'resultado' is distinct from 'carta' then
+      raise exception 'sin carta' using errcode = 'VE001';                          -- deshace todo lo que hizo el cierre: el desafío sigue guardado
+    end if;
+  exception when sqlstate 'VE001' then
+    return jsonb_build_object('resultado', 'nada', 'motivo', coalesce(nullif(r ->> 'motivo', ''), 'agotado'), 'nota', r ->> 'nota');
+  end;
+  update pozo_logros set reclamado = now(), carta = r ->> 'carta', numero = (r ->> 'numero')::int where user_id = uid and logro = p_logro;
+  return r || jsonb_build_object('logro', d.nombre, 'nivel', d.nivel,
+    'cantidad', (select count(*) from cartas_ejemplares where propietario = uid and carta_id = r ->> 'carta' and estado in ('poseida', 'bloqueada')));
+end;
+$$;
+
+revoke all on function pozo_i_dia(uuid), pozo_i_contar(uuid, text, text, numeric), pozo_i_comprobar(uuid), pozo_i_logros_solo(uuid), pozo_i_logros_duelo(uuid, int), pozo_i_logros_compartido(uuid) from public, anon, authenticated;
+revoke all on function pozo_desafios(), pozo_reclamar(text) from public, anon;
+grant execute on function pozo_desafios(), pozo_reclamar(text) to authenticated;

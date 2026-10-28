@@ -65,6 +65,9 @@
         continuar: paso => llamar("pozo_continuar", { p_paso: paso }),
         estado: version => llamar("pozo_estado", { p_version: version == null ? null : version }),
         misCartas: () => llamar("pozo_mis_cartas", {}),
+        // Los desafíos del día (cartas): ver el progreso y reclamar la carta de uno completado
+        desafios: () => llamar("pozo_desafios", {}),
+        reclamar: logro => llamar("pozo_reclamar", { p_logro: logro }),
         // El modo solitario: empezar lleva un identificador nuevo por partida (repetirlo devuelve la misma, sin cobrar dos veces) y tirar/cobrar el paso de la partida
         solo: {
           estado: () => llamar("pozo_solo_estado", {}),

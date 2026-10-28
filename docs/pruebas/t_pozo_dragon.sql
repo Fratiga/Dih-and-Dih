@@ -27,7 +27,7 @@ create or replace function t_dados(variadic p_v int[]) returns void language sql
 create or replace function t_u(n int) returns uuid language sql immutable as $$ select ('00000000-0000-0000-0000-00000000000' || n)::uuid $$;
 create or replace function t_pz_reset() returns void language plpgsql as $$
 begin
-  delete from t_dados;
+  delete from t_dados; delete from pozo_logros; delete from pozo_progreso;
   delete from pozo_solo_tiradas; delete from pozo_solo; delete from pozo_rondas; delete from pozo_tiradas; delete from pozo_jugadores; delete from pozo_mesas;
   truncate cartas_ejemplares, cartas_movimientos, cartas_bloqueos, cartas_mercader_ofertas, cartas_mercader_registro, cartas_intercambios, cartas_partidas, cartas_coleccion, cartas_numeradas,
            cartas_registro, cartas_forja_registro, cartas_mazos, cartas_partidas_juego, cartas_recompensas_registro, cartas_progreso restart identity cascade;
@@ -505,11 +505,32 @@ begin
   perform t_check('Ruina: pierdes el premio y la partida termina; no se paga nada', s ->> 'estado' = 'terminada' and s ->> 'resultado' = 'ruina' and (s ->> 'pago')::numeric = 0 and (s ->> 'neto')::numeric = -100 and t_saldo_de(v_u) = 918.75);
   perform t_check('Tras la Ruina no se puede cobrar ni tirar', (pozo_solo_cobrar(v_id, 1) ->> 'repetida') = 'true' and t_saldo_de(v_u) = 918.75);
   perform pozo_solo_descartar();
-  -- cinco tiradas sin Ruina: cobra solo
+  -- cinco tiradas sin Ruina: la partida sigue (ya no se cobra sola) y se puede cobrar
   s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid;
   for n in 1..5 loop perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int); end loop;
-  perform t_check('En la quinta tirada sin Ruina cobra solo (ceniza cinco veces: el premio base 95)', s ->> 'estado' = 'terminada' and s ->> 'resultado' = 'cobro' and (s ->> 'pago')::numeric = 95 and (s ->> 'tiradas')::int = 5 and t_saldo_de(v_u) = 918.75 - 100 + 95);
+  perform t_check('Después de la quinta tirada sin Ruina la partida sigue en curso, lista para decidir (ceniza cinco veces: premio base 95)', s ->> 'estado' = 'en_curso' and s ->> 'fase' = 'decidir' and (s ->> 'premio')::numeric = 95 and (s ->> 'tiradas')::int = 5 and (s ->> 'tiradas_max')::int = 5);
+  perform t_check('El estado no enseña nada del peligro creciente (ni la probabilidad ni los ajustes)', s::text not like '%peligro%' and pozo_solo_estado()::text not like '%peligro%' and pozo_i_solo_reglas()::text not like '%peligro%');
+  s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int);
+  perform t_check('Se puede cobrar después de la quinta tirada: 95', s ->> 'resultado' = 'cobro' and (s ->> 'pago')::numeric = 95 and t_saldo_de(v_u) = 918.75 - 100 + 95);
   perform pozo_solo_descartar();
+  -- más allá de la quinta: con el peligro al 100 % la sexta tirada es siempre una Ruina corriente (suma de 3 a 5) aunque la cola de dados diga otra cosa
+  update cartas_economia_ajustes set valor = '100' where clave in ('pozo_solo_peligro_inicial', 'pozo_solo_peligro_max');
+  s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid;
+  for n in 1..5 loop perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int); end loop;
+  perform t_dados(6, 6, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int);
+  perform t_check('Con el peligro al 100 % la sexta tirada es Ruina aunque iban a salir 6-6-6 (la cola de dados ni se toca)', s ->> 'resultado' = 'ruina' and (s ->> 'pago')::numeric = 0 and (select t.categoria from pozo_solo_tiradas t where t.solo = v_id and t.n = 6) = 'ruina'
+                  and (select t.d1 + t.d2 + t.d3 from pozo_solo_tiradas t where t.solo = v_id and t.n = 6) <= 5 and (select count(*) from t_dados) = 3);
+  delete from t_dados; perform pozo_solo_descartar();
+  -- con el peligro a 0 las tiradas extra son normales
+  update cartas_economia_ajustes set valor = '0' where clave in ('pozo_solo_peligro_inicial');
+  s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid;
+  for n in 1..7 loop perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int); end loop;
+  perform t_check('Con el peligro a 0 se puede seguir tirando sin límite normal: siete cenizas seguidas y sigue en curso', s ->> 'estado' = 'en_curso' and (s ->> 'tiradas')::int = 7 and (s ->> 'premio')::numeric = 95);
+  s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); perform pozo_solo_descartar();
+  -- los valores por defecto
+  update cartas_economia_ajustes set valor = '8' where clave = 'pozo_solo_peligro_inicial';
+  update cartas_economia_ajustes set valor = '95' where clave = 'pozo_solo_peligro_max';
+  v_dinero := t_saldo_de(v_u);
   -- validaciones de la apuesta
   v_dinero := t_saldo_de(v_u);
   perform t_check('Apuesta por debajo del mínimo, que no es múltiplo o mayor que el saldo: se rechaza sin descontar ni abrir nada', t_pz_error('select pozo_solo_empezar(gen_random_uuid(), 5)') like '%| apuesta_invalida' and t_pz_error('select pozo_solo_empezar(gen_random_uuid(), 25)') like '%múltiplo%'
@@ -531,6 +552,113 @@ begin
   perform pozo_solo_descartar();
   -- el solitario no mueve cartas ni toca mesas
   perform t_check('El solitario no toca ninguna carta', not exists (select 1 from cartas_movimientos) and not exists (select 1 from pozo_mesas));
+end $$;
+
+/* ======================================================================== Solitario: el peligro crece de forma exponencial después de la quinta tirada */
+do $$
+declare
+  v_u uuid := t_u(1); s jsonb; v_id uuid; i int; n int; v_ini numeric; v_vivas int := 0; v_ruina6 int := 0; v_ruina7 int := 0; v_vivas7 int := 0; v_total int := 1000;
+begin
+  perform t_pz_reset(); perform t_saldo(v_u, 10000000); perform t_sesion(v_u);
+  for i in 1..v_total loop
+    s := pozo_solo_empezar(gen_random_uuid(), 10); v_id := (s ->> 'id')::uuid;
+    for n in 1..5 loop perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int); end loop;       -- cinco cenizas: llega viva a la sexta
+    perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int);                                      -- sexta: 8 % forzado (la cola dice ceniza)
+    if s ->> 'resultado' = 'ruina' then v_ruina6 := v_ruina6 + 1;
+    else
+      v_vivas7 := v_vivas7 + 1;
+      perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int);                                    -- séptima: 16 % forzado
+      if s ->> 'resultado' = 'ruina' then v_ruina7 := v_ruina7 + 1; else s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); end if;
+    end if;
+    if s ->> 'estado' = 'en_curso' then s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); end if;
+    perform pozo_solo_descartar();
+    delete from t_dados;
+  end loop;
+  perform t_check('La sexta tirada se carga ' || round(v_ruina6::numeric / v_total * 100, 2) || ' % de las veces (8 % esperado)', v_ruina6::numeric / v_total between 0.05 and 0.11);
+  perform t_check('La séptima se carga ' || round(v_ruina7::numeric / v_vivas7 * 100, 2) || ' % de las veces (16 % esperado: se duplica, y es exponencial)', v_ruina7::numeric / v_vivas7 between 0.12 and 0.20);
+  perform t_check('La séptima es claramente más peligrosa que la sexta', v_ruina7::numeric / v_vivas7 > v_ruina6::numeric / v_total * 1.4);
+end $$;
+
+/* ======================================================================== Desafíos de cartas */
+create or replace function t_pz_tiene(p_uid uuid, p_logro text) returns boolean language sql as $$ select exists (select 1 from pozo_logros where user_id = p_uid and logro = p_logro) $$;
+do $$
+declare
+  v_a uuid := t_u(1); v_b uuid := t_u(2); v_c uuid := t_u(3); v_d uuid := t_u(4); s jsonb; v_id uuid; k int; d jsonb; v_cod text; v_g uuid;
+begin
+  perform t_pz_reset();
+  for k in 1..4 loop perform t_saldo(t_u(k), 100000); end loop;
+  update cartas_economia_ajustes set valor = '0' where clave = 'pozo_solo_peligro_inicial';              -- sin peligro: las tiradas extra son normales
+  perform t_check('Hay doce desafíos: tres de bronce, cinco de plata y cuatro de oro', (select count(*) from pozo_logros_def) = 12 and (select count(*) from pozo_logros_def where nivel = 'bronce') = 3
+                  and (select count(*) from pozo_logros_def where nivel = 'plata') = 5 and (select count(*) from pozo_logros_def where nivel = 'oro') = 4);
+  perform t_check('El juego está en cartas_juegos con el mismo tope que Las Veintiuna Velas: encendido y dos cartas al día', (select activo and tope_dia = 2 from cartas_juegos where juego = 'pozo_dragon'));
+  perform t_check('El editor de Juegos y recetas acepta los valores de este juego (el validador conoce pozo_dragon)', pg_get_functiondef('public.cartas_i_validar_valores(text,jsonb)'::regprocedure) like '%pozo_dragon%');
+  perform t_sesion(v_a);
+  -- ocho cenizas y cobrar: Una más, Sin red (tres tiradas extra) y Hasta el fondo
+  s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid;
+  for k in 1..8 loop perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int); end loop;
+  s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); perform pozo_solo_descartar();
+  perform t_check('Ocho tiradas y cobrar completan «Una más», «Sin red» y «Hasta el fondo», y nada más', t_pz_tiene(v_a, 'una_mas') and t_pz_tiene(v_a, 'sin_red') and t_pz_tiene(v_a, 'hasta_el_fondo')
+                  and (select count(*) from pozo_logros where user_id = v_a) = 3);
+  -- tres Ruinas seguidas de 200: Mala racha y El diezmo del Dragón (600 perdidos)
+  for k in 1..3 loop s := pozo_solo_empezar(gen_random_uuid(), 200); v_id := (s ->> 'id')::uuid; perform t_dados(1, 1, 2); s := pozo_solo_tirar(v_id, 0); perform pozo_solo_descartar(); end loop;
+  perform t_check('Tres Ruinas seguidas completan «Mala racha» y «El diezmo del Dragón»', t_pz_tiene(v_a, 'mala_racha') and t_pz_tiene(v_a, 'diezmo'));
+  -- 6-6-6 y dos parejas: Seis, seis, seis y Doble o nada (95 × 2,125 = 201,87)
+  s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid;
+  perform t_dados(6, 6, 6); s := pozo_solo_tirar(v_id, 0);
+  perform t_dados(3, 3, 5); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int);
+  perform t_dados(3, 3, 5); s := pozo_solo_tirar(v_id, (s ->> 'paso')::int);
+  s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); perform pozo_solo_descartar();
+  perform t_check('Cobrar 201,87 con 100 apostados completa «Doble o nada», y el triple seis completa «Seis, seis, seis»', (s ->> 'pago')::numeric = 201.87 and t_pz_tiene(v_a, 'doble_o_nada') and t_pz_tiene(v_a, 'seis_seis_seis'));
+  perform t_check('«Mil tokens al fuego» todavía no (se han apostado 800)', not t_pz_tiene(v_a, 'mil_al_fuego') and (select (contadores ->> 'apostado')::numeric from pozo_progreso where user_id = v_a) = 800);
+  s := pozo_solo_empezar(gen_random_uuid(), 200); v_id := (s ->> 'id')::uuid; perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, 0); s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); perform pozo_solo_descartar();
+  perform t_check('Con 200 más son 1.000 apostados: «Mil tokens al fuego»', t_pz_tiene(v_a, 'mil_al_fuego'));
+  perform t_check('«Todo o nada» todavía no: nunca apostaste casi todo tu saldo', not t_pz_tiene(v_a, 'todo_o_nada'));
+  perform t_saldo(v_a, 100);
+  s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid; perform t_dados(2, 4, 6); s := pozo_solo_tirar(v_id, 0); s := pozo_solo_cobrar(v_id, (s ->> 'paso')::int); perform pozo_solo_descartar();
+  perform t_check('Apostar todo el saldo (100 de 100) y cobrar completa «Todo o nada»', t_pz_tiene(v_a, 'todo_o_nada'));
+  d := pozo_desafios();
+  perform t_check('pozo_desafios enseña los doce con su progreso, topado en la meta, y cuándo se reinician (menos de un día)', jsonb_array_length(d -> 'desafios') = 12 and (d ->> 'reinicia_en_s')::int between 0 and 86400 and (d ->> 'activo') = 'true'
+                  and (select (x ->> 'progreso')::numeric from jsonb_array_elements(d -> 'desafios') x where x ->> 'id' = 'diezmo') = 500
+                  and (select (x ->> 'completado')::boolean from jsonb_array_elements(d -> 'desafios') x where x ->> 'id' = 'una_mas')
+                  and not (select (x ->> 'completado')::boolean from jsonb_array_elements(d -> 'desafios') x where x ->> 'id' = 'duelo_limpio'));
+  perform t_check('No se cuenta nada que no sea de este jugador', (select count(*) from pozo_progreso) = 1);
+  -- las partidas sin tiradas (apuesta devuelta) no cuentan
+  perform t_saldo(v_a, 100000);
+  s := pozo_solo_empezar(gen_random_uuid(), 100); v_id := (s ->> 'id')::uuid;
+  update pozo_solo set ultima_accion = now() - interval '1000 seconds' where id = v_id; s := pozo_solo_estado();
+  perform t_check('Una partida devuelta sin tiradas no suma ni a lo apostado', s ->> 'resultado' = 'devuelta' and (select (contadores ->> 'apostado')::numeric from pozo_progreso where user_id = v_a) = 1100);
+  perform pozo_solo_descartar();
+  -- a las 00:00 UTC todo se reinicia: lo completado y sin reclamar se pierde
+  update pozo_progreso set dia = dia - 1;
+  d := pozo_desafios();
+  perform t_check('Al día siguiente los contadores y lo completado vuelven a cero', (select count(*) from pozo_logros where user_id = v_a) = 0 and (select contadores from pozo_progreso where user_id = v_a) = '{}'::jsonb
+                  and not exists (select 1 from jsonb_array_elements(d -> 'desafios') x where (x ->> 'completado')::boolean));
+  -- duelo 2 a 0 con dinero en juego
+  perform t_pz_reset(); for k in 1..4 loop perform t_saldo(t_u(k), 1000); end loop;
+  v_cod := t_pz_montar('duelo', 2, 100, '{}');
+  perform t_pz_jugar(v_cod, '{"0": [{"d": [6,6,6]}, {"d": [6,6,6]}], "1": [{"d": [2,4,6]}, {"d": [2,4,6]}]}'::jsonb);
+  select user_id into v_g from pozo_jugadores where mesa = t_pz_mesa_id(v_cod) and asiento = 0;
+  perform t_check('Ganar un duelo por 2 a 0 completa «Duelo limpio» (y no la remontada)', t_pz_tiene(v_g, 'duelo_limpio') and not t_pz_tiene(v_g, 'remontada') and (select count(*) from pozo_logros) = 1);
+  -- duelo ganado tras perder la primera ronda
+  perform t_pz_reset(); for k in 1..4 loop perform t_saldo(t_u(k), 1000); end loop;
+  v_cod := t_pz_montar('duelo', 2, 100, '{}');
+  perform t_pz_jugar(v_cod, '{"0": [{"d": [2,4,6]}, {"d": [6,6,6]}, {"d": [6,6,6]}], "1": [{"d": [6,6,6]}, {"d": [2,4,6]}, {"d": [2,4,6]}]}'::jsonb);
+  select user_id into v_g from pozo_jugadores where mesa = t_pz_mesa_id(v_cod) and asiento = 0;
+  perform t_check('Ganar un duelo 2 a 1 tras perder la primera ronda completa «Remontada imposible» (y no el 2 a 0)', t_pz_tiene(v_g, 'remontada') and not t_pz_tiene(v_g, 'duelo_limpio'));
+  perform t_check('El perdedor del duelo no recibe nada', (select count(*) from pozo_logros where user_id <> v_g) = 0);
+  -- mesa compartida de cuatro: dos caen en Ruina, dos cobran
+  perform t_pz_reset(); for k in 1..4 loop perform t_saldo(t_u(k), 1000); end loop;
+  v_cod := t_pz_montar('compartido', 4, 100, '{}');
+  perform t_pz_jugar(v_cod, '{"0": [{"d": [2,4,6], "a": "cobrar"}], "1": [{"d": [1,1,2]}], "2": [{"d": [1,1,2]}], "3": [{"d": [2,4,6], "a": "cobrar"}]}'::jsonb);
+  perform t_check('Cobrar en una mesa compartida en la que caen dos jugadores completa «Último en pie» para los dos que cobran y para nadie más',
+                  (select count(*) from pozo_logros where logro = 'ultimo_en_pie') = 2
+                  and not exists (select 1 from pozo_logros l join pozo_jugadores j on j.user_id = l.user_id and j.mesa = t_pz_mesa_id(v_cod) where l.logro = 'ultimo_en_pie' and j.estado = 'ruina'));
+  -- con solo una Ruina no cuenta
+  perform t_pz_reset(); for k in 1..4 loop perform t_saldo(t_u(k), 1000); end loop;
+  v_cod := t_pz_montar('compartido', 3, 100, '{}');
+  perform t_pz_jugar(v_cod, '{"0": [{"d": [2,4,6], "a": "cobrar"}], "1": [{"d": [1,1,2]}], "2": [{"d": [2,4,6], "a": "cobrar"}]}'::jsonb);
+  perform t_check('Con una sola Ruina en la mesa no cuenta', (select count(*) from pozo_logros) = 0);
+  update cartas_economia_ajustes set valor = '8' where clave = 'pozo_solo_peligro_inicial';
 end $$;
 
 /* ======================================================================== Solitario: millares de partidas al azar contra la fórmula */

@@ -221,7 +221,7 @@
   .pz-heroe-cuerpo > .pz-heroe-lema { grid-column: 1; grid-row: 4; }
   .pz-heroe-cuerpo > .pz-solo { grid-column: 2; grid-row: 1 / span 5; width: 100%; }
   .pz-solo-apuesta { grid-template-columns: minmax(100px, 120px) minmax(0, 1fr); }
-  .pz-fichas { gap: 6px; flex-wrap: nowrap; } .pz-ficha { min-width: 46px; padding: 6px 8px; }
+  .pz-fichas { gap: 6px; flex-wrap: wrap; } .pz-ficha { min-width: 46px; padding: 6px 8px; }
   .pz-heroe-titulo { font-size: clamp(1.8rem, 3.2vw, 2.7rem); }
   /* partida: la mesa a la izquierda y, a la derecha, la decisión que te acompaña al bajar */
   #pzSala[data-vista="solo"], #pzSala[data-vista="mesa"], #pzSala[data-vista="fin"] { max-width: 1280px; }
@@ -254,3 +254,20 @@
 .pz-dragon-ojos { transition: transform 1.6s ease-in-out; }
 .pz-dragon-marco.pz-vaga .pz-heroe-pupila, .pz-dragon-marco.pz-vaga .pz-heroe-iris { transition: transform .5s ease-in-out; }
 @media (prefers-reduced-motion: reduce) { .pz-dragon-ojos { transition: none; } }
+
+.pz-ficha-todo { letter-spacing: .08em; text-transform: uppercase; font-size: .9rem; }
+
+/* ------------------------------------------------------------------ desafíos: cartas por jugar */
+.pz-insignia { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; margin-left: 8px; padding: 0 6px; border-radius: 999px; background: var(--pz-oro-claro); color: var(--pz-tinta); font: 700 .78rem var(--pz-serif); }
+.pz-logros-nivel h3 { margin: 4px 0 8px; }
+.pz-logros-nivel[data-nivel="bronce"] h3 { color: var(--pz-brasa); } .pz-logros-nivel[data-nivel="plata"] h3 { color: var(--pz-gris); } .pz-logros-nivel[data-nivel="oro"] h3 { color: var(--pz-oro-claro); }
+.pz-logros { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pz-logro { display: grid; gap: 6px; padding: 10px 12px; background: var(--pz-noche); border: 1px solid var(--pz-piedra-3); border-left: 3px solid var(--pz-borde); border-radius: 10px; }
+.pz-logro[data-nivel="bronce"] { border-left-color: var(--pz-brasa); } .pz-logro[data-nivel="plata"] { border-left-color: var(--pz-gris); } .pz-logro[data-nivel="oro"] { border-left-color: var(--pz-oro); }
+.pz-logro.listo { border-color: var(--pz-oro); } .pz-logro.reclamado { opacity: .62; }
+.pz-logro-cab { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.pz-logro-estado { font-size: .9rem; color: var(--pz-gris); white-space: nowrap; font-variant-numeric: tabular-nums; } .pz-logro.listo .pz-logro-estado { color: var(--pz-verde); }
+.pz-logro p { margin: 0; line-height: 1.35; color: var(--pz-gris); }
+.pz-barra-logro { height: 6px; border-radius: 3px; background: var(--pz-piedra-3); overflow: hidden; } .pz-barra-logro i { display: block; height: 100%; background: var(--pz-oro); }
+.pz-boton-chico { min-height: 40px; min-width: 0; padding: 6px 16px; font-size: .95rem; justify-self: start; }
+.pz-logro-carta { color: var(--pz-oro-claro); }

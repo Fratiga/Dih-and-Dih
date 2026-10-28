@@ -26,12 +26,12 @@ sql "select t_pz_reset()" >/dev/null
 sql "update cartas_economia_ajustes set valor = 'true' where clave = 'pozo_dragon_publico'; insert into hipodromo_billeteras (usuario, saldo) values ('$U1', 1000), ('$U2', 1000), ('$U3', 1000), ('$U4', 1000) on conflict (usuario) do update set saldo = 1000" >/dev/null
 for f in "pozo_lista()" "pozo_crear('duelo', true, null, 50, 0, null)" "pozo_unirse('ABCDE')" "pozo_cerrar_inscripcion()" "pozo_ofrecer('{}')" "pozo_confirmar(1)" "pozo_retirar_confirmacion()" "pozo_salir()" \
          "pozo_tirar(0)" "pozo_cobrar(0)" "pozo_continuar(0)" "pozo_estado(null)" "pozo_mis_cartas()" "pozo_solo_estado()" "pozo_solo_empezar(gen_random_uuid(), 10)" "pozo_solo_tirar(gen_random_uuid(), 0)" \
-         "pozo_solo_cobrar(gen_random_uuid(), 0)" "pozo_solo_descartar()"; do
+         "pozo_solo_cobrar(gen_random_uuid(), 0)" "pozo_solo_descartar()" "pozo_desafios()" "pozo_reclamar('una_mas')"; do
   contiene "sin sesión no se puede llamar a $(printf '%s' "$f" | cut -d'(' -f1)" "$(anonimo "select $f;")" "permission denied"
 done
 for f in "pozo_i_tirar(gen_random_uuid(), 0, null, false)" "pozo_i_json(gen_random_uuid(), '$U1')" "pozo_i_terminar_duelo(gen_random_uuid(), 0, 'x')" "pozo_i_terminar_compartido(gen_random_uuid(), 'x')" "pozo_i_abonar('$U1', 1000, 'regalo')" \
          "pozo_i_debitar('$U1', 1, 'x')" "pozo_i_dado()" "pozo_i_pagar(gen_random_uuid(), 0, 100, 'x')" "pozo_i_devolver(gen_random_uuid(), 0, 'x')" "pozo_i_empezar(gen_random_uuid())" "pozo_i_avanzar(gen_random_uuid())" \
-         "pozo_i_solo_cerrar(gen_random_uuid(), 'cobro')" "pozo_i_solo_accion(gen_random_uuid(), 0, 'tirar')" "pozo_i_solo_premio(100, 5, 1)" "pozo_i_acceso()"; do
+         "pozo_i_solo_cerrar(gen_random_uuid(), 'cobro')" "pozo_i_solo_accion(gen_random_uuid(), 0, 'tirar')" "pozo_i_solo_premio(100, 5, 1)" "pozo_i_acceso()" "pozo_i_logros_solo(gen_random_uuid())" "pozo_i_logros_duelo(gen_random_uuid(), 0)" "pozo_i_logros_compartido(gen_random_uuid())" "pozo_i_contar('$U1', 'x', 'suma', 1)" "pozo_i_comprobar('$U1')" "pozo_i_dia('$U1')"; do
   contiene "un jugador no puede llamar a la función interna $(printf '%s' "$f" | cut -d'(' -f1)" "$(como $U1 "select $f;")" "permission denied"
 done
 R=$(como $U1 "select pozo_crear('compartido', false, 'Permisos', 50, 0, 3) ->> 'codigo';" | tail -1)
@@ -45,6 +45,34 @@ done
 como $U1 "update hipodromo_billeteras set saldo = 999999 where usuario = '$U1';" >/dev/null
 comprobar "nadie puede cambiar su saldo a mano (el saldo sigue en 1000)" "1000" "$(sql "select saldo::int from hipodromo_billeteras where usuario = '$U1'")"
 sql "update hipodromo_billeteras set saldo = 1000 where usuario = '$U1'; select t_pz_reset()" >/dev/null
+sql "update cartas_economia_ajustes set valor = 'true' where clave = 'pozo_dragon_publico'; insert into hipodromo_billeteras (usuario, saldo) values ('$U1', 1000), ('$U2', 1000), ('$U3', 1000), ('$U4', 1000) on conflict (usuario) do update set saldo = 1000" >/dev/null
+
+echo "== Desafíos y recompensas de cartas"
+sql "select t_pz_reset()" >/dev/null
+sql "insert into hipodromo_billeteras (usuario, saldo) values ('$U1', 1000) on conflict (usuario) do update set saldo = 1000; update cartas_juegos set activo = false where juego = 'pozo_dragon'" >/dev/null
+sql "insert into pozo_progreso (user_id) values ('$U1') on conflict do nothing; insert into pozo_logros (user_id, logro) values ('$U1', 'una_mas')" >/dev/null
+contiene "los desafíos de hoy salen con el de «Una más» completado y sin reclamar" "$(como $U1 "select pozo_desafios() -> 'desafios' -> 0;")" '"completado": true'
+contiene "con el juego apagado reclamar no da nada" "$(como $U1 "select pozo_reclamar('una_mas');")" "juego-inactivo"
+comprobar "y el desafío sigue sin gastar" "" "$(sql "select reclamado from pozo_logros where user_id = '$U1' and logro = 'una_mas'")"
+contiene "un desafío sin completar no se reclama" "$(como $U1 "select pozo_reclamar('remontada');")" "todavía no está completado"
+contiene "un desafío que no existe tampoco" "$(como $U1 "select pozo_reclamar('inventado');")" "no existe"
+sql "update cartas_juegos set activo = true where juego = 'pozo_dragon'" >/dev/null
+R=$(como $U1 "select pozo_reclamar('una_mas');")
+contiene "encendido el juego, reclamar da una carta" "$R" '"resultado": "carta"'
+contiene "de nivel «bueno» (bronce)" "$R" '"tramo": "bueno"'
+comprobar "la copia está en la colección de quien reclamó y sale del libro como minijuego" "1|1" "$(sql "select count(*) from cartas_ejemplares where propietario = '$U1'")|$(sql "select count(*) from cartas_movimientos where a = '$U1' and motivo like 'minijuego%pozo_dragon%'")"
+contiene "no se reclama dos veces" "$(como $U1 "select pozo_reclamar('una_mas');")" "Ya reclamaste"
+sql "insert into pozo_logros (user_id, logro) values ('$U1', 'diezmo'), ('$U1', 'doble_o_nada') on conflict do nothing" >/dev/null
+R=$(como $U1 "select pozo_reclamar('diezmo');")
+contiene "la segunda carta del día sí sale (tope de dos al día, como Las Veintiuna Velas)" "$R" '"resultado": "carta"'
+R=$(como $U1 "select pozo_reclamar('doble_o_nada');")
+contiene "la tercera no sale: tope diario" "$R" "tope-diario"
+comprobar "y ese desafío sigue guardado" "" "$(sql "select reclamado from pozo_logros where user_id = '$U1' and logro = 'doble_o_nada'")"
+sql "update cartas_recompensas_registro set creado = creado - interval '1 day'" >/dev/null
+R=$(como $U1 "select pozo_reclamar('doble_o_nada');")
+contiene "al día siguiente sí, y un desafío de plata es de nivel «excelente»" "$R" '"tramo": "excelente"'
+comprobar "sin sellos ni restos en el progreso general" "0" "$(sql "select coalesce(sum(sellos), 0) from cartas_progreso where user_id = '$U1' and juego = 'pozo_dragon'")"
+sql "select t_pz_reset()" >/dev/null
 sql "update cartas_economia_ajustes set valor = 'true' where clave = 'pozo_dragon_publico'; insert into hipodromo_billeteras (usuario, saldo) values ('$U1', 1000), ('$U2', 1000), ('$U3', 1000), ('$U4', 1000) on conflict (usuario) do update set saldo = 1000" >/dev/null
 
 echo "== Peticiones simultáneas"
