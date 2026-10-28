@@ -168,7 +168,7 @@ window.PozoArte = (function () {
       <svg class="pz-dragon-cuerpo" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" overflow="visible"><use href="#pzDhCuerpo"/></svg>
       <svg class="pz-dragon-ojos" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" overflow="visible">
         ${ojoDib(324, 1, "pzOjoI" + n)}${ojoDib(476, -1, "pzOjoD" + n)}
-        <ellipse cx="400" cy="364" rx="30" ry="9" fill="#f48135" class="pz-dh-fuego"/>
+        <ellipse cx="400" cy="366" rx="52" ry="18" fill="url(#pzBoca)" class="pz-dh-fuego"/>
       </svg>
     </div>`;
   }
