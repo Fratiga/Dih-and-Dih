@@ -11,11 +11,13 @@
   const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const api = window.VeintiunaApi.crear(() => fichasCliente());
   const reducir = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false, addEventListener() {} };
-  const sinMovimiento = () => reducir.matches;
   const guardado = {
     leer(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
     poner(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) { /* sin almacenamiento */ } }
   };
+  // Si el sistema pide reducir el movimiento el juego no anima nada, salvo que el jugador active «Animaciones» a mano (se recuerda)
+  let forzarMovimiento = guardado.leer("pzMovimiento", "0") === "1";
+  const sinMovimiento = () => reducir.matches && !forzarMovimiento;
   const SONDEO_MS = 1500, SONDEO_FONDO_MS = 5000, LISTA_MS = 4000;
   const RAREZAS = { comun: "Común", infrecuente: "Poco común", rara: "Rara", legendaria: "Legendaria", limitada: "Limitada" };
 
@@ -1135,6 +1137,14 @@
     }
   }
   const programarVagar = () => setTimeout(() => { vagar(); programarVagar(); }, 1800 + Math.random() * 3800);
+  // El botón «Animaciones» solo sale cuando el sistema pide reducir el movimiento (el caso de los dados que «no se ven rodar»)
+  function pintarMovimientoBoton() {
+    const b = $("pzBtnMovimiento"); if (!b) return;
+    b.hidden = !reducir.matches;
+    b.setAttribute("aria-pressed", String(forzarMovimiento)); b.classList.toggle("apagado", !forzarMovimiento);
+    b.textContent = forzarMovimiento ? "Animaciones: sí" : "Animaciones: no";
+    document.body.classList.toggle("pz-mov", forzarMovimiento && reducir.matches);
+  }
   function pintarRapidoBoton() {
     const b = $("pzBtnRapido"); if (!b) return;
     b.setAttribute("aria-pressed", String(S.rapido)); b.classList.toggle("apagado", !S.rapido);
@@ -1142,6 +1152,8 @@
   async function iniciar() {
     document.body.insertAdjacentHTML("afterbegin", A.defs());
     E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton();
+    E.forzar(forzarMovimiento); pintarMovimientoBoton();
+    if (reducir.addEventListener) reducir.addEventListener("change", pintarMovimientoBoton);
     document.body.insertAdjacentHTML("beforeend", '<div class="pz-vineta" id="pzVineta" aria-hidden="true"></div><div class="pz-vineta-luz" id="pzVinetaLuz" aria-hidden="true"></div>');
     setInterval(() => { if (!document.hidden && !mirada.reposo && Date.now() - mirada.ultimo > 5000) { mirada.reposo = true; mirarAlCentro(); } }, 800);
     programarVagar();
@@ -1159,6 +1171,7 @@
     document.addEventListener("input", ev => { if (ev.target.id === "pzCodigo") ev.target.value = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
     $("pzBtnReglas").addEventListener("click", () => abrirReglas());
     $("pzBtnDesafios").addEventListener("click", abrirDesafios);
+    $("pzBtnMovimiento").addEventListener("click", () => { forzarMovimiento = !forzarMovimiento; guardado.poner("pzMovimiento", forzarMovimiento ? "1" : "0"); E.forzar(forzarMovimiento); pintarMovimientoBoton(); });
     $("pzBtnRapido").addEventListener("click", () => { S.rapido = !S.rapido; guardado.poner("pzRapido", S.rapido ? "1" : "0"); E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton(); });
     $("pzBtnAtajos").addEventListener("click", abrirAtajos);
     $("pzBtnSonido").addEventListener("click", () => { S.efectos = !S.efectos; guardado.poner("pzEfectos", S.efectos ? "1" : "0"); pintarSonidoBoton(); if (S.efectos) sonar("moneda"); });

@@ -10,8 +10,9 @@ window.PozoEscena = (function () {
   const INCLINACION = [[-22, -28], [-26, 24], [-20, 32]];
   const CARAS = [1, 2, 3, 4, 5, 6].map(n => `<i class="pz-d3-cara c${n}"></i>`).join("");
 
-  const R = { factor: 1, saltando: false, animaciones: new Set(), esperas: new Set() };
-  const reducido = () => !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const R = { factor: 1, saltando: false, forzar: false, animaciones: new Set(), esperas: new Set() };
+  // Con «reducir movimiento» en el sistema no se anima nada, salvo que el jugador lo pida a mano (forzar): los dados que ruedan son lo esencial del juego
+  const reducido = () => !R.forzar && !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const ms = n => (R.saltando ? 0 : Math.round(n * R.factor));
   const limitar = (v, a, b) => Math.min(b, Math.max(a, v));
   const aleatorio = (a, b) => a + Math.random() * (b - a);
@@ -41,6 +42,7 @@ window.PozoEscena = (function () {
     R.esperas.forEach(fin => fin());
   }
   const nueva = () => { R.saltando = false; };
+  const forzar = v => { R.forzar = !!v; };
   const ritmo = f => { R.factor = limitar(Number(f) || 1, 0.3, 2); };
   const animando = () => R.animaciones.size > 0 || R.esperas.size > 0;
 
@@ -170,5 +172,5 @@ window.PozoEscena = (function () {
     setTimeout(() => el.classList.remove(clase), duracion || 800);
   }
 
-  return { dado, dados, poner, lanzar, contar, actualizarMonton, devorar, volar, pulso, esperar, animar, saltar, nueva, ritmo, animando, ORIENTACION };
+  return { dado, dados, poner, lanzar, contar, actualizarMonton, devorar, volar, pulso, esperar, animar, saltar, nueva, ritmo, animando, forzar, ORIENTACION };
 })();

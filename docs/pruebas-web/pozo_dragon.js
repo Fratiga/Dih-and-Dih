@@ -196,6 +196,8 @@ console.log("== Desafíos de cartas, fichas sin tope");
   cierto("no hay tope de apuesta: el servidor lo deja a 0 (sin máximo), las fichas llegan a 100 veces el mínimo y hay una ficha «Todo» con todo el saldo", /\('pozo_solo_apuesta_max', '0'\)/.test(sqlD) && /\('pozo_apuesta_max', '0'\)/.test(sqlD) && /const fichas = \[min, min \* 5, min \* 10, min \* 50, min \* 100\];/.test(js) && /data-ficha-todo/.test(js) && /Math\.floor\(saldoActual\(\) \/ paso\) \* paso/.test(js));
 }
 
+cierto("si el sistema pide reducir el movimiento no ruedan los dados, y hay un botón «Animaciones» (solo visible entonces, se recuerda) que lo activa a mano: la escena lo respeta con forzar()", /let forzarMovimiento = guardado\.leer\("pzMovimiento", "0"\) === "1";/.test(js) && /const sinMovimiento = \(\) => reducir\.matches && !forzarMovimiento;/.test(js) && /b\.hidden = !reducir\.matches;/.test(js) && /id="pzBtnMovimiento"[^>]*hidden/.test(html) && /const reducido = \(\) => !R\.forzar && /.test(escenaJs) && /forzar = v => \{ R\.forzar = !!v; \}/.test(escenaJs) && /E\.forzar\(forzarMovimiento\)/.test(js));
+cierto("con las animaciones forzadas vuelven también los efectos de cada tirada que el CSS apaga con reducir movimiento (body.pz-mov)", ["pz-golpe", "pz-disco-cae", "pz-flota", "pz-bocanada", "pz-vineta-pierde"].every(a => new RegExp("body\\.pz-mov [^{]*\\{[^}]*" + a).test(escenaCss)) && /body\.pz-mov \.pz-moneda-vuela \{ display: block !important; \}/.test(escenaCss));
 console.log("== La tensión y la tabla de probabilidades del solitario");
 {
   const st = { estado: "en_curso", fase: "decidir", apuesta: 10, tributo: 5, bono: 0.0625, premio: 10.09, tiradas: 1, tiradas_max: 5 };

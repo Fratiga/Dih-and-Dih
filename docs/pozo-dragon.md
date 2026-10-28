@@ -202,7 +202,7 @@ La orquesta `pozo-dragon.js` (`teatro`, `teatroSolo`, `teatroMesa`) y las piezas
 - **Viñeta:** al perder los bordes de la pantalla se oscurecen de golpe y se aclaran despacio; al ganar (triple, triple seis, cobrar) se ilumina un poco el centro.
 - **Temblor** de la mesa con la Ruina y ahora también con el triple seis. **Sonido:** un gruñido grave acompaña a la Ruina.
 - **Paneles tallados en la oscuridad:** filete interior y sombra hundida, y algo de transparencia para que se vea el humo del fondo. Sin `backdrop-filter` ni desenfoques: lagean en móviles.
-- Todo se apaga con `prefers-reduced-motion`.
+- Todo se apaga con `prefers-reduced-motion`. **Ojo con los jugadores a los que «no se ve rodar los dados»:** casi siempre es que su sistema pide reducir el movimiento (Windows con las animaciones desactivadas, macOS/iOS «reducir movimiento», Android «quitar animaciones», modo ahorro...). Para ellos hay un botón **«Animaciones: sí/no»** en la cabecera (solo aparece cuando el sistema lo pide, se recuerda) que fuerza la escena de cada tirada y los efectos que dependen de ella (`body.pz-mov`).
 
 ### La paleta: Vino y oro
 Se probaron cinco paletas (Obsidiana y hielo, Esmeralda y latón, Vino y oro, Violeta arcano y Carbón y oro) y se eligió **Vino y oro**: fondos burdeos casi negros, oro y crema, ojos ámbar. El rojo de la Ruina, el verde de ganar y los colores de rareza no cambian. Una prueba comprueba que los fondos son vino (tono 330°–360°) y no marrón, y que el acento sigue siendo oro. Los colores están como variables en `body.pz-tema` (`css/pozo-dragon.css`), aunque muchos tonos del dibujo y de los efectos están escritos directamente en las hojas de estilo y en `pozo-dragon-arte.js`.
