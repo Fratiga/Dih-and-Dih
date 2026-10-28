@@ -65,8 +65,8 @@ cierto("rondas: se gana con 2, máximo 5, 2 turnos perdidos tolerados", /pozo_du
 cierto("el pozo se reparte por peso, a céntimos hacia abajo, y los céntimos sobrantes van a uno solo", /trunc\(v_pozo \* s\.peso \/ v_peso, 2\)/.test(sql) && /v_pozo - v_suma/.test(sql));
 cierto("un jugador sin tirar recupera su apuesta y no entra en el reparto", /sales sin tirar, apuesta devuelta/.test(sql));
 
-console.log("== Oculto hasta que se diga lo contrario");
-cierto("el juego nace oculto: pozo_dragon_publico = false", /'pozo_dragon_publico', 'false'/.test(sql));
+console.log("== Abierto, con interruptor para volver a esconderlo");
+cierto("una instalación nueva nace cerrada (pozo_dragon_publico = false) y el interruptor está documentado", /'pozo_dragon_publico', 'false'/.test(sql) && /INTERRUPTOR/.test(sql));
 const publicas = ["pozo_lista", "pozo_crear", "pozo_unirse", "pozo_cerrar_inscripcion", "pozo_ofrecer", "pozo_confirmar", "pozo_retirar_confirmacion", "pozo_salir", "pozo_i_accion", "pozo_estado", "pozo_mis_cartas"];
 publicas.forEach(n => {
   const i = sql.indexOf(`create or replace function ${n}(`), j = sql.indexOf("\n$$;", i);
@@ -77,9 +77,9 @@ cierto("las funciones públicas se cierran a quien no ha iniciado sesión y las 
 cierto("las tablas no se escriben ni se leen directamente (solo el admin puede mirarlas)", /revoke all on pozo_mesas, pozo_jugadores, pozo_tiradas, pozo_rondas from anon, authenticated;/.test(sql) && /create policy "pozo_mesas_admin" on pozo_mesas for select using \(fichas_es_admin\(\)\)/.test(sql));
 cierto("no se usa el código de error 40001 (PostgREST lo reintenta sin fin)", !/40001/.test(sql));
 const html = leer("pozo-dragon.html");
-cierto("la página lleva js/oculto.js el primero del <head>", /<head>\s*(<!--[\s\S]*?-->)?\s*<script src="js\/oculto\.js/.test(html));
+cierto("la página ya no lleva js/oculto.js: está abierta a todos los jugadores (el servidor sigue teniendo su interruptor)", !/oculto\.js/.test(html));
 const mj = leer("minijuegos.html");
-cierto("solo aparece en «En pruebas» de Minijuegos (la lista que ve el admin), no como tarjeta pública", /\["pozo-dragon\.html", "El Pozo del Dragón"/.test(mj) && !/<a class="mj-tarjeta" href="pozo-dragon\.html"/.test(mj));
+cierto("es una tarjeta normal de Minijuegos y ya no está en «En pruebas»", /<a class="mj-tarjeta" href="pozo-dragon\.html"/.test(mj) && !/\["pozo-dragon\.html", "El Pozo del Dragón"/.test(mj));
 cierto("tiene su ilustración", fs.existsSync(path.join(RAIZ, "assets", "minijuegos", "pozo-dragon.svg")));
 
 console.log("== Textos y vistas");

@@ -2,20 +2,17 @@
 
 Juego de dados con apuestas de tokens y cartas entre jugadores (`pozo-dragon.html`). Tres modalidades en un mismo motor de dados: **Solo contra el Dragón**, **Duelo de Dragones** (dos jugadores) y **El Pozo Compartido** (de dos a seis).
 
-**Estado (27 de octubre de 2026): OCULTO.** Solo lo ve y lo juega el admin, por orden del usuario, hasta que diga lo contrario. El SQL está **probado contra Postgres local** (Docker, 142 comprobaciones más las peticiones simultáneas y los permisos, ver «Pruebas»), pero todavía no con una sesión real de Supabase.
+**Estado (28-10-2026): ABIERTO a todos los jugadores**, por orden del usuario. El SQL está instalado en Supabase y probado contra Postgres local (Docker, ver «Pruebas»). En Minijuegos es una tarjeta normal. **Pendiente en producción:** instalar el SQL nuevo ( entero, es idempotente) para activar los desafíos de cartas y el solitario sin tope de tiradas; hasta entonces el servidor es el anterior (la quinta tirada se cobra sola y la página esconde el botón de Desafíos).
 
-## Cómo está escondido
+## Cómo se esconde (por si hay que cerrarlo otra vez)
 
-- `pozo-dragon.html` lleva `js/oculto.js` el primero del `<head>`: quien no sea admin vuelve a Minijuegos.
-- Solo aparece en «En pruebas» de Minijuegos (tarjeta «Solo admin»). No está en el lobby, ni en la taberna, ni como tarjeta pública.
-- **El servidor también lo cierra:** cada función pública empieza con `pozo_i_acceso()`, que exige sesión y, mientras el ajuste `pozo_dragon_publico` sea `false`, que quien llama sea admin.
+El juego se abrió quitando `js/oculto.js` de `pozo-dragon.html`, pasando su tarjeta a las tarjetas normales de `minijuegos.html` y poniendo `pozo_dragon_publico` a `true`. Para esconderlo de nuevo, en este orden:
 
-Para abrirlo a todos (solo cuando el usuario lo diga):
+1. `update cartas_economia_ajustes set valor = 'false' where clave = 'pozo_dragon_publico';` (desde ese momento **el servidor** solo responde al admin: cada función pública empieza con `pozo_i_acceso()`).
+2. Volver a poner `<script src="js/oculto.js...">` el primero del `<head>` de `pozo-dragon.html` y la tarjeta en la lista `JUEGOS` («En pruebas») de `minijuegos.html`.
+3. Subir la versión (`?v=`) de lo que se toque.
 
-1. Correr `docs/pozo-dragon.sql` en Supabase y probarlo con dos cuentas (admin).
-2. `update cartas_economia_ajustes set valor = 'true' where clave = 'pozo_dragon_publico';`
-3. Quitar `<script src="js/oculto.js...">` de `pozo-dragon.html`, pasar la tarjeta de `JUEGOS` (en «En pruebas») a una tarjeta normal de `minijuegos.html` y, si se quiere, ponerlo en el lobby (`js/lobby-salas.js`).
-4. Subir la versión (`?v=`) de lo que se toque.
+Las partidas en curso no se pierden: al reabrirlo siguen donde estaban.
 
 ## Las combinaciones (tres dados, 216 resultados)
 

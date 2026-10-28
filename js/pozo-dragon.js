@@ -186,7 +186,9 @@
   }
   async function cargarDesafios() {
     if (!S.sesion) return;
-    try { S.desafios = await api.pozo.desafios(); pintarInsignia(); } catch (e) { /* los desafíos son un extra: si no cargan, el juego sigue */ }
+    const b = $("pzBtnDesafios");
+    try { S.desafios = await api.pozo.desafios(); if (b) b.hidden = false; pintarInsignia(); }
+    catch (e) { S.desafios = null; if (b) b.hidden = true; }              // los desafíos son un extra: si el servidor aún no los tiene o no cargan, no hay botón y el juego sigue
   }
   function textoReinicioDesafios(d) {
     const min = Math.max(0, Math.round((Number(d.reinicia_en_s) || 0) / 60)), h = Math.floor(min / 60);

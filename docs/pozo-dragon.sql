@@ -5,8 +5,8 @@
 -- Corre esto en el SQL Editor de Supabase DESPUÉS de la economía de cartas (economia-1 a economia-21) y del Hipódromo (docs/hipodromo.sql). Se puede repetir.
 -- El diseño, las reglas y las simulaciones están en docs/pozo-dragon.md.
 --
--- ESTÁ OCULTO: mientras el ajuste 'pozo_dragon_publico' sea false, cada función pública solo responde al admin (fichas_es_admin()). Para abrirlo a todos:
---   update cartas_economia_ajustes set valor = 'true' where clave = 'pozo_dragon_publico';   (y quitar js/oculto.js de pozo-dragon.html; ver docs/pozo-dragon.md)
+-- INTERRUPTOR: mientras el ajuste 'pozo_dragon_publico' sea false, cada función pública solo responde al admin (fichas_es_admin()). Una instalación nueva nace cerrada;
+--   en producción se abrió con: update cartas_economia_ajustes set valor = 'true' where clave = 'pozo_dragon_publico';   (ver docs/pozo-dragon.md, «Cómo se esconde»)
 --
 -- Qué hay aquí:
 --   * Todo lo decide el servidor: los dados (aleatoriedad del servidor), la clasificación, el orden de los turnos, las reservas, el pozo y los pagos. El navegador solo pide

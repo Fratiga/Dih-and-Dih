@@ -3,6 +3,7 @@
    mano: pon lo más nuevo primero. fecha en formato AAAA-MM-DD. enlace es opcional.
    La cinta usa las 5 primeras; el tablón muestra las 6 primeras. */
 window.NOVEDADES = [
+  { fecha: "2026-10-28", titulo: "El Pozo del Dragón ya está abierto", texto: "Tres dados, un tesoro y un dragón que te vigila en la oscuridad. Juega en solitario, en duelo o en mesas compartidas con tokens y cartas.", enlace: "pozo-dragon.html" },
   { fecha: "2026-10-23", titulo: "Criar en el hipódromo tiene mutaciones", texto: "Cada cruce da una camada de una a tres crías, con mutaciones raras y un carácter heredado.", enlace: "hipodromo.html" },
   { fecha: "2026-10-17", titulo: "Copas semanales en el hipódromo", texto: "Cada semana hay tres copas solo para las criaturas mejor valoradas del mundo: Bronce el miércoles, Plata el viernes y Oro el domingo (una de cada cuatro semanas, la de las Leyendas). Pagan mucho más que un Gran Premio y su inscripción es más cara cuanto mayor es la copa. Se pueden inscribir con dos días de antelación.", enlace: "hipodromo.html" },
   { fecha: "2026-10-15", titulo: "Mira las carreras en vivo", texto: "El hipódromo tiene una pista a pantalla completa: las criaturas pastan, se echan y se saludan mientras esperan, se preparan en las puertas los últimos 30 segundos y corren a su hora, igual para todos. Con su propia música de espera y de carrera.", enlace: "hipodromo-vivo.html" },
