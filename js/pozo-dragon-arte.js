@@ -96,14 +96,15 @@ window.PozoArte = (function () {
   // ---------------------------------------------------------------------------------------------------------------------
   const CY = 205;
   const MITAD_DRAGON = `
-      <path d="M-700 28 L0 50 C90 66 170 108 232 158 L278 308 C200 250 100 198 0 172 L-700 150 Z" fill="url(#pzAla)"/>
-      <path d="M-700 28 L0 50 C90 66 170 108 232 158 L278 308 C200 250 100 198 0 172 L-700 150 Z" fill="url(#pzEscama)" opacity=".5"/>
-      <path d="M-700 90 L0 118 C90 132 180 176 250 238 M-700 60 L0 86 C80 100 160 140 236 196 M-700 120 L0 148 C90 164 170 200 262 270" fill="none" stroke="#6b4a30" stroke-width="1.6" opacity=".8"/>
-      <path d="M-700 28 L0 50 C90 66 170 108 232 158" fill="none" stroke="#d99a45" stroke-width="2.2"/>
-      <path d="M-700 150 L0 172 C100 198 200 250 278 308" fill="none" stroke="#a8742f" stroke-width="1.4"/>
+      <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150 Q-600 210 -500 200 Q-400 270 -300 260 Q-200 330 -100 320 Q100 300 380 220 Z" fill="url(#pzAla)"/>
+      <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150 Q-600 210 -500 200 Q-400 270 -300 260 Q-200 330 -100 320 Q100 300 380 220 Z" fill="url(#pzEscama)" opacity=".4"/>
+      <path d="M380 220 C200 110 -100 80 -650 100 M380 220 Q50 160 -500 200 M380 220 Q100 260 -300 260 M380 220 Q150 290 -100 320" fill="none" stroke="#7a5638" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150" fill="none" stroke="#c48a3c" stroke-width="1.6"/>
+      <path d="M222 104 C222 70 232 36 246 10 C262 36 280 62 292 86 Z M284 82 C288 50 296 24 304 4 C316 30 326 50 334 72 Z M328 72 C334 54 340 38 348 22 C356 36 364 50 372 66 Z M366 64 C370 52 376 44 382 34 C388 46 394 56 398 70 Z M400 0 L384 54 L400 68 Z" fill="#000" opacity=".4" transform="translate(4 6)"/>
       <path d="M222 104 C222 70 232 36 246 10 C262 36 280 62 292 86 Z M284 82 C288 50 296 24 304 4 C316 30 326 50 334 72 Z M328 72 C334 54 340 38 348 22 C356 36 364 50 372 66 Z M366 64 C370 52 376 44 382 34 C388 46 394 56 398 70 Z M400 0 L384 54 L400 68 Z" fill="url(#pzCuerno)" stroke="#c48a3c" stroke-width="1.3" stroke-linejoin="round"/>
       <path d="M400 4 L388 30 L372 60 L340 76 L300 100 L262 150 L226 182 L248 238 L290 294 L320 340 L352 390 L378 420 L400 444 Z" fill="url(#pzPiel)"/>
       <path d="M400 4 L388 30 L372 60 L340 76 L300 100 L262 150 L226 182 L248 238 L290 294 L320 340 L352 390 L378 420 L400 444 Z" fill="url(#pzEscama)" opacity=".55"/>
+      <path d="M296 126 C262 108 226 98 196 90 C214 118 236 150 272 180 Z M284 180 C254 178 228 180 206 184 C226 206 254 224 288 234 Z M292 238 C274 246 260 254 244 262 C262 278 282 288 302 292 Z M306 294 C290 302 278 308 266 316 C282 328 300 334 320 334 Z M322 342 C310 352 302 362 296 374 C310 378 326 376 342 368 Z M330 118 C316 110 302 104 288 98 C296 126 308 146 322 160 Z" fill="#000" opacity=".4" transform="translate(5 7)"/>
       <path d="M296 126 C262 108 226 98 196 90 C214 118 236 150 272 180 Z M284 180 C254 178 228 180 206 184 C226 206 254 224 288 234 Z M292 238 C274 246 260 254 244 262 C262 278 282 288 302 292 Z M306 294 C290 302 278 308 266 316 C282 328 300 334 320 334 Z M322 342 C310 352 302 362 296 374 C310 378 326 376 342 368 Z M330 118 C316 110 302 104 288 98 C296 126 308 146 322 160 Z" fill="url(#pzCuerno)" stroke="#c48a3c" stroke-width="1.4" stroke-linejoin="round"/>
       <path d="M400 96 L378 120 M400 128 L370 156 M400 160 L364 188 M400 196 L374 214" fill="none" stroke="#b98040" stroke-width="1.6" opacity=".7"/>
       <path d="M352 232 L346 300 L372 346 L400 372 L400 232 Z" fill="url(#pzHocico)" stroke="#8a5e30" stroke-width="1.2" stroke-linejoin="round"/>
@@ -125,7 +126,7 @@ window.PozoArte = (function () {
       <radialGradient id="pzBoca" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf6a" stop-opacity=".95"/><stop offset=".6" stop-color="#e0801f" stop-opacity=".5"/><stop offset="1" stop-color="#e0801f" stop-opacity="0"/></radialGradient>
       <linearGradient id="pzPiel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2c22"/><stop offset=".5" stop-color="#1a130f"/><stop offset="1" stop-color="#0b0806"/></linearGradient>
       <linearGradient id="pzCuerno" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a4d36"/><stop offset=".55" stop-color="#2a1e16"/><stop offset="1" stop-color="#0f0b08"/></linearGradient>
-      <linearGradient id="pzAla" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2c2018"/><stop offset="1" stop-color="#0a0706"/></linearGradient>
+      <linearGradient id="pzAla" x1="400" y1="200" x2="-700" y2="200" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2a1f18"/><stop offset="1" stop-color="#140e0b"/></linearGradient>
       <linearGradient id="pzHocico" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#241a14"/><stop offset="1" stop-color="#4a3626"/></linearGradient>
       <linearGradient id="pzDiente" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe6a0"/><stop offset="1" stop-color="#e08a22"/></linearGradient>
       <linearGradient id="pzParp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".75"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
