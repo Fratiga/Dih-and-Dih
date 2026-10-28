@@ -142,7 +142,7 @@ Es solo presentación: la lógica, las apuestas, el servidor y los tres modos so
 - Se dibuja por capas en `js/pozo-dragon-arte.js`, a partir de una ilustración de referencia (no se ha copiado ninguna imagen de terceros). Los degradados, las escamas y la mitad izquierda de la cara viven **una sola vez** en un `<svg>` oculto (`A.defs()`, no puede ser `display:none`) y cada dragón de la página es un `<use>` de ahí.
 - Cada dragón son **dos capas**: el cuerpo, que nunca se anima, y los ojos (resplandor, iris, pupila rasgada, párpados), que son lo único que se mueve. Seguir al cursor o parpadear no repinta la cara.
 - **Sin filtros ni desenfoques** (es lo que más pesa al pintar): el brillo son degradados radiales. Una prueba comprueba que no aparecen `<filter`, `feGaussianBlur`, `blur()` ni `drop-shadow`.
-- Sus ojos siguen al cursor (pupila y iris con distinto recorrido, una sola escritura por fotograma). Con `prefers-reduced-motion` no se mueven.
+- Sus ojos siguen al cursor (pupila y iris con distinto recorrido, una sola escritura por fotograma). Con `prefers-reduced-motion` no se mueven. El cuerpo apenas se ve (ver más abajo).
 - Dos tamaños: el grande del lobby (`A.dragonHeroe()`, con las alas abiertas) y la cara pequeña de la mesa (`A.dragonCara()`), encima del tapete.
 - En la mesa **reacciona** (`data-e` del marco): *espera* (tranquilo, parpadea), *mira* (te toca: pupilas estrechas), *ruina* (ojos rojos de golpe, ruge), *premio* (ojos más vivos con una pareja, escalera o triple), *gran* (triple seis: late tres veces) y *cobro* (cierra los ojos mientras el oro viaja al saldo).
 
@@ -164,6 +164,18 @@ La orquesta `pozo-dragon.js` (`teatro`, `teatroSolo`, `teatroMesa`) y las piezas
 - **Solitario:** dos tarjetas lado a lado. *Cobrar ahora* (lo que recibes y lo que ganas o pierdes respecto a tu apuesta) y *Seguir tirando* (4,63 % de Ruina con un medidor, lo que perderías, el premio con un triple seis y las tiradas que quedan).
 - **Pozo compartido:** lo mismo con la parte que cobrarías ahora y tu peso.
 - Las **probabilidades** van en un panel plegable (`<details>`, cerrado). En el solitario la tabla lleva ahora una columna «Bono» y otra «Premio resultante», y explica que el premio base es la apuesta menos el tributo y que cada bono es un porcentaje de ese base (p. ej. 10,09 → 10,68 con una pareja: 9,5 × (1 + 0,0625 + 0,0625)). `V.tablaSolo` y `V.tensionSolo` están probadas contra la fórmula del servidor.
+
+### Solo se ven los ojos, y el ambiente
+- **El cuerpo del dragón es una sombra casi invisible** (opacidad 0,02 en reposo): a plena vista solo se ven los ojos brillando en la oscuridad. La silueta se insinúa un instante con una Ruina (0,5), un triple seis (0,34) o un premio (0,08). La cara de la mesa y el dragón del lobby se comportan igual.
+- **Los ojos respiran:** el resplandor late despacio (más rápido cuando te toca). Tras 5 s sin mover el cursor vuelven despacio al centro y parpadean; al mover el cursor siguen otra vez.
+- **Humo de las fosas** al perder (con una Ruina o al perder una mesa): seis bocanadas que suben y se deshacen, hechas con círculos de degradado radial (sin filtros) y colocadas con el encuadre del dibujo (`data-vb`).
+- **Viñeta:** al perder los bordes de la pantalla se oscurecen de golpe y se aclaran despacio; al ganar (triple, triple seis, cobrar) se ilumina un poco el centro.
+- **Temblor** de la mesa con la Ruina y ahora también con el triple seis. **Sonido:** un gruñido grave acompaña a la Ruina.
+- **Paneles tallados en la oscuridad:** filete interior y sombra hundida, y algo de transparencia para que se vea el humo del fondo. Sin `backdrop-filter` ni desenfoques: lagean en móviles.
+- Todo se apaga con `prefers-reduced-motion`.
+
+### La paleta: Vino y oro
+Se probaron cinco paletas (Obsidiana y hielo, Esmeralda y latón, Vino y oro, Violeta arcano y Carbón y oro) y se eligió **Vino y oro**: fondos burdeos casi negros, oro y crema, ojos ámbar. El rojo de la Ruina, el verde de ganar y los colores de rareza no cambian. Una prueba comprueba que los fondos son vino (tono 330°–360°) y no marrón, y que el acento sigue siendo oro. Los colores están como variables en `body.pz-tema` (`css/pozo-dragon.css`), aunque muchos tonos del dibujo y de los efectos están escritos directamente en las hojas de estilo y en `pozo-dragon-arte.js`.
 
 ### El lobby y el fondo
 - El solitario es el héroe (lema, apuesta con cinco fichas rápidas, riesgo en una línea y un botón grande). Duelo y Pozo Compartido quedan debajo, más pequeños, y abren su formulario en un panel común. Las reglas completas están en el panel de Reglas.

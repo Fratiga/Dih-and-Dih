@@ -157,6 +157,24 @@ cierto("las probabilidades van plegadas (details cerrado) y no dominan la partid
 cierto("la elección enseña lo que cobras y lo que arriesgas lado a lado, con el riesgo de Ruina", /data-t="cobrar"/.test(js) && /data-t="seguir"/.test(js) && /pz-medidor/.test(js) && /V\.pct\(t\.pRuina\)/.test(js));
 cierto("el oro viaja al saldo al cobrar y el dragón se lo come en la Ruina; el saldo del servidor se enseña al final", /E\.volar\(document\.querySelector\("#pzSolo \.pz-pozo-fila"\), caja, 12\)/.test(js) && /E\.devorar\(fila\)/.test(js) && /clase: "roja"/.test(js));
 
+console.log("== Solo los ojos, efectos de ambiente y paleta");
+cierto("del dragón solo se ven los ojos: el cuerpo tiene una opacidad de reposo de 0,05 o menos y se insinúa solo con la Ruina o el triple seis", (() => { const m = escenaCss.match(/\.pz-dragon-cuerpo \{ opacity: ([\d.]+)/); return m && Number(m[1]) <= 0.05; })() && /data-e="ruina"\] \.pz-dragon-cuerpo \{ opacity: \.5/.test(escenaCss) && /data-e="gran"\] \.pz-dragon-cuerpo \{ opacity:/.test(escenaCss));
+cierto("el resplandor de la boca está apagado en reposo (no se ve nada que no sean los ojos)", /\.pz-dh-fuego \{ opacity: 0;/.test(escenaCss));
+cierto("los ojos respiran (el resplandor late), vuelven al centro tras 5 s sin cursor y parpadean", /@keyframes pz-brilla/.test(escenaCss) && /function mirarAlCentro\(\)/.test(js) && /Date\.now\(\) - mirada\.ultimo > 5000/.test(js) && /\.pz-dragon-marco\.pz-reposo/.test(escenaCss));
+cierto("el humo de las fosas sale solo al perder, con círculos de degradado radial y sin filtros, y se coloca con el encuadre del dibujo (data-vb)", /function humoDeFosas\(marco\)/.test(js) && /humoDeFosas\(marcoVigia\(\)\)/.test(js) && /data-vb="\$\{vb\}"/.test(arteJs) && /\.pz-bocanada \{[^}]*radial-gradient/.test(escenaCss));
+cierto("la viñeta oscurece los bordes de golpe al perder y ilumina el centro al ganar", /function vineta\(tipo\)/.test(js) && /vineta\("perdio"\)/.test(js) && /vineta\("gano"\)/.test(js) && /@keyframes pz-vineta-pierde/.test(escenaCss) && /@keyframes pz-vineta-gana/.test(escenaCss));
+cierto("el triple seis también hace temblar la mesa y la Ruina suena con un gruñido grave", /c === "triple_seis"[\s\S]{0,400}pz-sacude/.test(js) && /grunido\(\) \{ tono\(55/.test(js) && /sonar\("grunido"\)/.test(js));
+cierto("nada de desenfoque de fondo (backdrop-filter) ni de blur: los paneles solo son un poco translúcidos", !/backdrop-filter|blur\(/.test(css + escenaCss + arteJs));
+cierto("los efectos nuevos se apagan con prefers-reduced-motion", /@media \(prefers-reduced-motion: reduce\) \{\s*\.pz-dragon-marco \.pz-dh-luz, \.pz-bocanada, \.pz-vineta\.activa/.test(escenaCss) && /function humoDeFosas\(marco\) \{\s*if \(!marco \|\| sinMovimiento\(\)\) return;/.test(js));
+{
+  // La paleta es Vino y oro: los fondos son burdeos casi negros (tono entre 330° y 360°), no marrón (15° a 50°)
+  const tono = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return 0; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360; };
+  const v = n => css.match(new RegExp("--" + n + ": (#[0-9a-fA-F]{6})"))[1];
+  cierto("los fondos de la paleta son vino (tono entre 330 y 360), no marrón", ["pz-noche", "pz-piedra", "pz-piedra-2", "pz-piedra-3"].every(n => { const t = tono(v(n)); return t >= 330 && t <= 360; }));
+  cierto("el acento sigue siendo oro (tono entre 38 y 52)", ["pz-oro", "pz-oro-claro"].every(n => { const t = tono(v(n)); return t >= 38 && t <= 52; }));
+  cierto("el rojo de la Ruina y el verde de ganar no cambiaron con la paleta", v("pz-rojo").toLowerCase() === "#b6382f" && v("pz-verde").toLowerCase() === "#78b472");
+}
+
 console.log("== La tensión y la tabla de probabilidades del solitario");
 {
   const st = { estado: "en_curso", fase: "decidir", apuesta: 10, tributo: 5, bono: 0.0625, premio: 10.09, tiradas: 1, tiradas_max: 5 };

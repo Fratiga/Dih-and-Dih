@@ -88,7 +88,8 @@
       premio() { [523, 659, 784, 1047].forEach((f, i) => tono(f, 0.26, "sine", 0.09, i * 0.08)); },
       grande() { [392, 523, 659, 784, 1047, 1319].forEach((f, i) => tono(f, 0.34, "triangle", 0.09, i * 0.07)); },
       turno() { tono(660, 0.1, "sine", 0.07); tono(880, 0.14, "sine", 0.06, 0.09); },
-      pierde() { tono(233, 0.4, "sawtooth", 0.05); tono(175, 0.55, "sawtooth", 0.05, 0.2); }
+      pierde() { tono(233, 0.4, "sawtooth", 0.05); tono(175, 0.55, "sawtooth", 0.05, 0.2); },
+      grunido() { tono(55, 1.1, "sawtooth", 0.07); tono(82, 0.9, "triangle", 0.05, 0.12); ruido(0.9, 170, 0.22, 0.05); }
     };
   })();
   const sonar = nombre => { try { Sonido[nombre](); } catch (e) { /* sin audio */ } };
@@ -107,7 +108,7 @@
         p.y -= p.v * dt; p.f += dt * 2.2; p.x += Math.sin(p.f) * 0.25;
         if (p.y < -4) Object.assign(p, nueva(h + 4));
         cx.globalAlpha = p.a * (0.55 + 0.45 * Math.abs(Math.sin(p.f)));
-        cx.fillStyle = p.r > 1.7 ? "#ffb24a" : "#d8642c";
+        cx.fillStyle = p.r > 1.7 ? "#ebc35e" : "#cf7335";
         cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.28); cx.fill();
       }
       cx.globalAlpha = 1;
@@ -497,18 +498,41 @@
     m.dataset.e = e;
     setTimeout(() => { const n = marcoVigia(); if (n === m && m.dataset.e === e) m.dataset.e = S.vigiaBase || "espera"; }, ms);
   }
+  // El humo de las fosas del dragón (al perder): bocanadas que suben y se deshacen. Se colocan según el encuadre del dibujo (data-vb).
+  const FOSAS = [[371, 300], [429, 300]];
+  function humoDeFosas(marco) {
+    if (!marco || sinMovimiento()) return;
+    const vb = (marco.dataset.vb || "0 0 800 460").split(" ").map(Number);
+    for (const [x, y] of FOSAS) {
+      for (let i = 0; i < 3; i++) {
+        const p = document.createElement("span");
+        p.className = "pz-bocanada"; p.setAttribute("aria-hidden", "true");
+        p.style.left = ((x - vb[0]) / vb[2] * 100).toFixed(2) + "%"; p.style.top = ((y - vb[1]) / vb[3] * 100).toFixed(2) + "%";
+        p.style.animationDelay = (i * 0.28 + Math.random() * 0.12).toFixed(2) + "s"; p.style.setProperty("--dx", ((Math.random() - 0.5) * 36).toFixed(0) + "%");
+        marco.appendChild(p); setTimeout(() => p.remove(), 2800);
+      }
+    }
+  }
+  // La viñeta: oscurece los bordes de golpe al perder, ilumina un poco el centro al ganar
+  function vineta(tipo) {
+    if (sinMovimiento()) return;
+    const el = $(tipo === "perdio" ? "pzVineta" : "pzVinetaLuz"); if (!el) return;
+    el.classList.remove("activa"); void el.offsetWidth; el.classList.add("activa");
+  }
   function efectosDeCategoria(c, soyYo) {
     const tapete = $("pzTapete");
     if (c === "ruina") {
       vigiaReaccion("ruina", 2000);
       document.body.classList.add("pz-ruina"); setTimeout(() => document.body.classList.remove("pz-ruina"), 1200);
       if (tapete && !sinMovimiento()) { tapete.classList.add("pz-sacude"); setTimeout(() => tapete.classList.remove("pz-sacude"), 600); }
-      sonar("ruina");
+      humoDeFosas(marcoVigia()); vineta("perdio");
+      sonar("ruina"); sonar("grunido");
     } else if (c === "triple_seis") {
       vigiaReaccion("gran", 2600);
       const d = $("pzDestello"); if (d && !sinMovimiento()) { d.classList.add("activo"); setTimeout(() => d.classList.remove("activo"), 1000); }
-      Brasas.estallido(60); sonar("grande");
-    } else if (c === "triple") { vigiaReaccion("premio", 1800); Brasas.estallido(24); sonar("premio"); }
+      if (tapete && !sinMovimiento()) { tapete.classList.add("pz-sacude"); setTimeout(() => tapete.classList.remove("pz-sacude"), 600); }
+      vineta("gano"); Brasas.estallido(60); sonar("grande");
+    } else if (c === "triple") { vigiaReaccion("premio", 1800); vineta("gano"); Brasas.estallido(24); sonar("premio"); }
     else if (c === "escalera") { vigiaReaccion("premio", 1400); sonar("moneda"); }
     else if (c === "pareja") { vigiaReaccion("premio", 900); sonar("moneda"); }
   }
@@ -564,10 +588,10 @@
     const r = V.resumenFinal(est); if (!r) return;
     const fila = document.querySelector("#pzMesa .pz-pozo-fila"), caja = $("pzSaldo") && $("pzSaldo").closest(".pz-saldo"), nuevo = est.yo && est.yo.saldo != null ? Number(est.yo.saldo) : null;
     if (r.clase === "pierde") {
-      vigiaEstado("ruina"); sonar("pierde");
+      vigiaEstado("ruina"); sonar("pierde"); sonar("grunido"); humoDeFosas(marcoVigia()); vineta("perdio");
       await Promise.all([E.devorar(fila), E.volar(fila, $("pzVigia"), 8, { clase: "roja", apaga: true })]);
     } else {
-      vigiaEstado("cobro"); sonar(r.clase === "gana" ? "premio" : "moneda");
+      vigiaEstado("cobro"); sonar(r.clase === "gana" ? "premio" : "moneda"); if (r.clase === "gana") vineta("gano");
       await E.volar(fila, caja, 12);
       if (nuevo != null) { await E.contar($("pzSaldo"), saldoActualVisible(), nuevo, 800, V.num); E.pulso(caja, "pz-recibe"); }
     }
@@ -684,7 +708,7 @@
     if (ult && ult.categoria === "ruina") return;
     const pago = Number(s.pago) || 0, caja = $("pzSaldo") && $("pzSaldo").closest(".pz-saldo");
     if (pago <= 0) return;
-    vigiaEstado("cobro"); sonar("premio");
+    vigiaEstado("cobro"); sonar("premio"); vineta("gano");
     await E.volar(document.querySelector("#pzSolo .pz-pozo-fila"), caja, 12);
     if (s.saldo != null) { await E.contar($("pzSaldo"), saldoActualVisible(), Number(s.saldo), 800, V.num); E.pulso(caja, "pz-recibe"); }
   }
@@ -989,9 +1013,11 @@
     }
   }
   // Los ojos de los dragones visibles siguen al cursor: la pupila viaja más que el iris para dar profundidad. Una sola escritura por fotograma.
-  const mirada = { espera: false };
+  const mirada = { espera: false, ultimo: Date.now(), reposo: false };
   const entre = v => Math.max(-1, Math.min(1, v));
   function seguirConLaMirada(ev) {
+    mirada.ultimo = Date.now();
+    if (mirada.reposo) { mirada.reposo = false; document.querySelectorAll(".pz-dragon-marco.pz-reposo").forEach(m => m.classList.remove("pz-reposo")); }
     if (mirada.espera || sinMovimiento()) return;
     const marcos = [...document.querySelectorAll(".pz-dragon-marco")].filter(m => m.offsetParent !== null);
     if (!marcos.length) return;
@@ -1007,6 +1033,15 @@
       }
     });
   }
+  // Sin cursor durante 5 s: los ojos vuelven despacio al centro y parpadean una vez
+  function mirarAlCentro() {
+    for (const m of document.querySelectorAll(".pz-dragon-marco")) {
+      if (m.offsetParent === null) continue;
+      m.classList.add("pz-reposo");
+      m.querySelectorAll(".pz-heroe-pupila, .pz-heroe-iris").forEach(g => { g.style.transform = "translate(0px, 0px)"; });
+      m.querySelectorAll(".pz-dh-parpado").forEach(p => animar(p, [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }, { transform: "scaleY(0)" }], { duration: 280, easing: "ease-in-out", fill: "none" }));
+    }
+  }
   function pintarRapidoBoton() {
     const b = $("pzBtnRapido"); if (!b) return;
     b.setAttribute("aria-pressed", String(S.rapido)); b.classList.toggle("apagado", !S.rapido);
@@ -1014,6 +1049,8 @@
   async function iniciar() {
     document.body.insertAdjacentHTML("afterbegin", A.defs());
     E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton();
+    document.body.insertAdjacentHTML("beforeend", '<div class="pz-vineta" id="pzVineta" aria-hidden="true"></div><div class="pz-vineta-luz" id="pzVinetaLuz" aria-hidden="true"></div>');
+    setInterval(() => { if (!document.hidden && !mirada.reposo && Date.now() - mirada.ultimo > 5000) { mirada.reposo = true; mirarAlCentro(); } }, 800);
     document.addEventListener("pointermove", seguirConLaMirada, { passive: true });
     $("pzEmblema").innerHTML = A.emblema();
     $("pzSaldoMoneda").innerHTML = A.moneda();

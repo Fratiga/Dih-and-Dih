@@ -98,45 +98,45 @@ window.PozoArte = (function () {
   const MITAD_DRAGON = `
       <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150 Q-600 210 -500 200 Q-400 270 -300 260 Q-200 330 -100 320 Q100 300 380 220 Z" fill="url(#pzAla)"/>
       <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150 Q-600 210 -500 200 Q-400 270 -300 260 Q-200 330 -100 320 Q100 300 380 220 Z" fill="url(#pzEscama)" opacity=".4"/>
-      <path d="M380 220 C200 110 -100 80 -650 100 M380 220 Q50 160 -500 200 M380 220 Q100 260 -300 260 M380 220 Q150 290 -100 320" fill="none" stroke="#7a5638" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150" fill="none" stroke="#c48a3c" stroke-width="1.6"/>
+      <path d="M380 220 C200 110 -100 80 -650 100 M380 220 Q50 160 -500 200 M380 220 Q100 260 -300 260 M380 220 Q150 290 -100 320" fill="none" stroke="#6c464f" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M380 220 C250 120 100 90 -100 80 C-250 100 -400 160 -700 150" fill="none" stroke="#d2a32e" stroke-width="1.6"/>
       <path d="M222 104 C222 70 232 36 246 10 C262 36 280 62 292 86 Z M284 82 C288 50 296 24 304 4 C316 30 326 50 334 72 Z M328 72 C334 54 340 38 348 22 C356 36 364 50 372 66 Z M366 64 C370 52 376 44 382 34 C388 46 394 56 398 70 Z M400 0 L384 54 L400 68 Z" fill="#000" opacity=".4" transform="translate(4 6)"/>
-      <path d="M222 104 C222 70 232 36 246 10 C262 36 280 62 292 86 Z M284 82 C288 50 296 24 304 4 C316 30 326 50 334 72 Z M328 72 C334 54 340 38 348 22 C356 36 364 50 372 66 Z M366 64 C370 52 376 44 382 34 C388 46 394 56 398 70 Z M400 0 L384 54 L400 68 Z" fill="url(#pzCuerno)" stroke="#c48a3c" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M222 104 C222 70 232 36 246 10 C262 36 280 62 292 86 Z M284 82 C288 50 296 24 304 4 C316 30 326 50 334 72 Z M328 72 C334 54 340 38 348 22 C356 36 364 50 372 66 Z M366 64 C370 52 376 44 382 34 C388 46 394 56 398 70 Z M400 0 L384 54 L400 68 Z" fill="url(#pzCuerno)" stroke="#d2a32e" stroke-width="1.3" stroke-linejoin="round"/>
       <path d="M400 4 L388 30 L372 60 L340 76 L300 100 L262 150 L226 182 L248 238 L290 294 L320 340 L352 390 L378 420 L400 444 Z" fill="url(#pzPiel)"/>
       <path d="M400 4 L388 30 L372 60 L340 76 L300 100 L262 150 L226 182 L248 238 L290 294 L320 340 L352 390 L378 420 L400 444 Z" fill="url(#pzEscama)" opacity=".55"/>
       <path d="M296 126 C262 108 226 98 196 90 C214 118 236 150 272 180 Z M284 180 C254 178 228 180 206 184 C226 206 254 224 288 234 Z M292 238 C274 246 260 254 244 262 C262 278 282 288 302 292 Z M306 294 C290 302 278 308 266 316 C282 328 300 334 320 334 Z M322 342 C310 352 302 362 296 374 C310 378 326 376 342 368 Z M330 118 C316 110 302 104 288 98 C296 126 308 146 322 160 Z" fill="#000" opacity=".4" transform="translate(5 7)"/>
-      <path d="M296 126 C262 108 226 98 196 90 C214 118 236 150 272 180 Z M284 180 C254 178 228 180 206 184 C226 206 254 224 288 234 Z M292 238 C274 246 260 254 244 262 C262 278 282 288 302 292 Z M306 294 C290 302 278 308 266 316 C282 328 300 334 320 334 Z M322 342 C310 352 302 362 296 374 C310 378 326 376 342 368 Z M330 118 C316 110 302 104 288 98 C296 126 308 146 322 160 Z" fill="url(#pzCuerno)" stroke="#c48a3c" stroke-width="1.4" stroke-linejoin="round"/>
-      <path d="M400 96 L378 120 M400 128 L370 156 M400 160 L364 188 M400 196 L374 214" fill="none" stroke="#b98040" stroke-width="1.6" opacity=".7"/>
-      <path d="M352 232 L346 300 L372 346 L400 372 L400 232 Z" fill="url(#pzHocico)" stroke="#8a5e30" stroke-width="1.2" stroke-linejoin="round"/>
-      <path d="M400 372 L372 382 L388 418 L400 444 Z" fill="url(#pzPiel)" stroke="#c48a3c" stroke-width="1.2" stroke-linejoin="round"/>
-      <ellipse cx="371" cy="296" rx="15" ry="20" fill="#060302" stroke="#9a6a34" stroke-width="1.4"/>
-      <ellipse cx="371" cy="302" rx="7" ry="11" fill="#2a1308" opacity=".8"/>
-      <path d="M344 330 L336 354 L356 348 Z M358 346 L354 370 L372 356 Z M374 354 L374 376 L388 360 Z M390 360 L392 380 L400 364 Z" fill="url(#pzDiente)" stroke="#ffe29a" stroke-width=".8" stroke-linejoin="round"/>`;
+      <path d="M296 126 C262 108 226 98 196 90 C214 118 236 150 272 180 Z M284 180 C254 178 228 180 206 184 C226 206 254 224 288 234 Z M292 238 C274 246 260 254 244 262 C262 278 282 288 302 292 Z M306 294 C290 302 278 308 266 316 C282 328 300 334 320 334 Z M322 342 C310 352 302 362 296 374 C310 378 326 376 342 368 Z M330 118 C316 110 302 104 288 98 C296 126 308 146 322 160 Z" fill="url(#pzCuerno)" stroke="#d2a32e" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M400 96 L378 120 M400 128 L370 156 M400 160 L364 188 M400 196 L374 214" fill="none" stroke="#c59c34" stroke-width="1.6" opacity=".7"/>
+      <path d="M352 232 L346 300 L372 346 L400 372 L400 232 Z" fill="url(#pzHocico)" stroke="#937427" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M400 372 L372 382 L388 418 L400 444 Z" fill="url(#pzPiel)" stroke="#d2a32e" stroke-width="1.2" stroke-linejoin="round"/>
+      <ellipse cx="371" cy="296" rx="15" ry="20" fill="#060302" stroke="#a4822a" stroke-width="1.4"/>
+      <ellipse cx="371" cy="302" rx="7" ry="11" fill="#240e14" opacity=".8"/>
+      <path d="M344 330 L336 354 L356 348 Z M358 346 L354 370 L372 356 Z M374 354 L374 376 L388 360 Z M390 360 L392 380 L400 364 Z" fill="url(#pzDiente)" stroke="#f4dea5" stroke-width=".8" stroke-linejoin="round"/>`;
   const BRASAS_DRAGON = [[70, 330, 2.2], [150, 410, 1.8], [210, 90, 1.6], [90, 200, 1.4], [330, 440, 1.6], [250, 360, 1.4], [40, 260, 1.6]]
     .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/><circle cx="${800 - x}" cy="${y + 14}" r="${r * 0.9}"/>`).join("");
 
   // El <svg> oculto con lo que comparten todos los dragones. Va una sola vez en la página (no puede estar en display:none: Chrome no pinta degradados de un svg oculto así).
   function defs() {
     return `<svg id="pzDefsDragon" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>
-      <radialGradient id="pzHumo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a2c" stop-opacity=".55"/><stop offset=".55" stop-color="#8a3a18" stop-opacity=".25"/><stop offset="1" stop-color="#1a0f0a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="pzHumo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#d77635" stop-opacity=".55"/><stop offset=".55" stop-color="#84471e" stop-opacity=".25"/><stop offset="1" stop-color="#180c0f" stop-opacity="0"/></radialGradient>
       <radialGradient id="pzIris" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff0b0"/><stop offset=".45" stop-color="#ffb93a"/><stop offset="1" stop-color="#b3560f"/></radialGradient>
-      <radialGradient id="pzIrisRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd0b8"/><stop offset=".45" stop-color="#e8442a"/><stop offset="1" stop-color="#6a0f0a"/></radialGradient>
+      <radialGradient id="pzIrisRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e4ddd3"/><stop offset=".45" stop-color="#df7834"/><stop offset="1" stop-color="#6a0f0a"/></radialGradient>
       <radialGradient id="pzLuz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb03a" stop-opacity=".6"/><stop offset="1" stop-color="#ffb03a" stop-opacity="0"/></radialGradient>
       <radialGradient id="pzLuzRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff3a22" stop-opacity=".75"/><stop offset="1" stop-color="#ff3a22" stop-opacity="0"/></radialGradient>
-      <radialGradient id="pzBoca" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf6a" stop-opacity=".95"/><stop offset=".6" stop-color="#e0801f" stop-opacity=".5"/><stop offset="1" stop-color="#e0801f" stop-opacity="0"/></radialGradient>
-      <linearGradient id="pzPiel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2c22"/><stop offset=".5" stop-color="#1a130f"/><stop offset="1" stop-color="#0b0806"/></linearGradient>
-      <linearGradient id="pzCuerno" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a4d36"/><stop offset=".55" stop-color="#2a1e16"/><stop offset="1" stop-color="#0f0b08"/></linearGradient>
-      <linearGradient id="pzAla" x1="400" y1="200" x2="-700" y2="200" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2a1f18"/><stop offset="1" stop-color="#140e0b"/></linearGradient>
-      <linearGradient id="pzHocico" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#241a14"/><stop offset="1" stop-color="#4a3626"/></linearGradient>
-      <linearGradient id="pzDiente" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe6a0"/><stop offset="1" stop-color="#e08a22"/></linearGradient>
+      <radialGradient id="pzBoca" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb93a" stop-opacity=".95"/><stop offset=".6" stop-color="#ff9a2a" stop-opacity=".5"/><stop offset="1" stop-color="#ff9a2a" stop-opacity="0"/></radialGradient>
+      <linearGradient id="pzPiel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b2228"/><stop offset=".5" stop-color="#1a0f12"/><stop offset="1" stop-color="#0b0607"/></linearGradient>
+      <linearGradient id="pzCuerno" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#613f47"/><stop offset=".55" stop-color="#29171b"/><stop offset="1" stop-color="#0f080a"/></linearGradient>
+      <linearGradient id="pzAla" x1="400" y1="200" x2="-700" y2="200" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2a181c"/><stop offset="1" stop-color="#140b0d"/></linearGradient>
+      <linearGradient id="pzHocico" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#241418"/><stop offset="1" stop-color="#492730"/></linearGradient>
+      <linearGradient id="pzDiente" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b0"/><stop offset="1" stop-color="#ffb93a"/></linearGradient>
       <linearGradient id="pzParp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".75"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
-      <pattern id="pzEscama" width="18" height="12" patternUnits="userSpaceOnUse"><path d="M0 6 Q9 -1 18 6 M-9 12 Q0 5 9 12 M9 12 Q18 5 27 12" fill="none" stroke="#9a6c42" stroke-width="1" opacity=".5"/></pattern>
+      <pattern id="pzEscama" width="18" height="12" patternUnits="userSpaceOnUse"><path d="M0 6 Q9 -1 18 6 M-9 12 Q0 5 9 12 M9 12 Q18 5 27 12" fill="none" stroke="#a38539" stroke-width="1" opacity=".5"/></pattern>
       <g id="pzDhMitad">${MITAD_DRAGON}</g>
       <g id="pzDhCuerpo">
         <ellipse cx="130" cy="430" rx="190" ry="60" fill="url(#pzHumo)"/><ellipse cx="670" cy="432" rx="190" ry="60" fill="url(#pzHumo)"/><ellipse cx="400" cy="452" rx="260" ry="50" fill="url(#pzHumo)"/>
         <use href="#pzDhMitad"/><use href="#pzDhMitad" transform="translate(800 0) scale(-1 1)"/>
-        <path d="M400 4 L400 444" stroke="#d99a45" stroke-width="1.8" opacity=".85" fill="none"/>
-        <g fill="#ffb03a" opacity=".75">${BRASAS_DRAGON}</g>
+        <path d="M400 4 L400 444" stroke="#e6b538" stroke-width="1.8" opacity=".85" fill="none"/>
+        <g fill="#e9be50" opacity=".75">${BRASAS_DRAGON}</g>
       </g>
     </defs></svg>`;
   }
@@ -150,25 +150,25 @@ window.PozoArte = (function () {
       <clipPath id="${id}"><path d="${almendra}"/></clipPath>
       <circle cx="${cx}" cy="${CY}" r="50" fill="url(#pzLuz)" class="pz-dh-luz"/>
       <circle cx="${cx}" cy="${CY}" r="56" fill="url(#pzLuzRoja)" class="pz-dh-luz-roja"/>
-      <path d="M${x(-40)} ${CY - 4} L${x(-8)} ${CY - 32} L${x(36)} ${CY - 2} Q${x(0)} ${CY - 14} ${x(-40)} ${CY - 4} Z" fill="#1b1410" stroke="#b98040" stroke-width="1" stroke-linejoin="round"/>
-      <path d="${almendra}" fill="#0a0604"/>
+      <path d="M${x(-40)} ${CY - 4} L${x(-8)} ${CY - 32} L${x(36)} ${CY - 2} Q${x(0)} ${CY - 14} ${x(-40)} ${CY - 4} Z" fill="#1b1013" fill-opacity=".3" stroke="#c59c34" stroke-opacity=".08" stroke-width="1" stroke-linejoin="round"/>
+      <path d="${almendra}" fill="#090506"/>
       <g clip-path="url(#${id})">
         <g class="pz-heroe-iris"><ellipse cx="${cx}" cy="${CY}" rx="27" ry="17" fill="url(#pzIris)"/><ellipse cx="${cx}" cy="${CY}" rx="27" ry="17" fill="url(#pzIrisRoja)" class="pz-dh-iris-roja"/></g>
         <g class="pz-heroe-pupila"><g transform="rotate(${14 * d} ${cx} ${CY})"><ellipse cx="${cx}" cy="${CY}" rx="3.4" ry="12" fill="#080302" class="pz-dh-pupila"/></g></g>
         <rect x="${cx - 36}" y="${CY - 24}" width="72" height="20" fill="url(#pzParp)"/>
-        <rect x="${cx - 36}" y="${CY - 24}" width="72" height="48" fill="#17100c" class="pz-dh-parpado"/>
+        <rect x="${cx - 36}" y="${CY - 24}" width="72" height="48" fill="#170c0f" class="pz-dh-parpado"/>
       </g>
-      <path d="${almendra}" fill="none" stroke="#f3b95a" stroke-width="1.3" stroke-linejoin="round"/>`;
+      <path d="${almendra}" fill="none" stroke="#ecc461" stroke-width="1.3" stroke-linejoin="round"/>`;
   }
 
   // El marco del dragón: cuerpo + ojos. vb es el trozo del dibujo que se ve (la cara entera con las alas, o solo la cabeza); clase la pone quien lo usa.
   function marcoDragon(vb, clase, etiqueta) {
     const n = ++ojosN;
-    return `<div class="pz-dragon-marco ${clase}" data-e="espera" role="img" aria-label="${etiqueta}">
+    return `<div class="pz-dragon-marco ${clase}" data-e="espera" data-vb="${vb}" role="img" aria-label="${etiqueta}">
       <svg class="pz-dragon-cuerpo" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" overflow="visible"><use href="#pzDhCuerpo"/></svg>
       <svg class="pz-dragon-ojos" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false" overflow="visible">
         ${ojoDib(324, 1, "pzOjoI" + n)}${ojoDib(476, -1, "pzOjoD" + n)}
-        <ellipse cx="400" cy="364" rx="30" ry="9" fill="#ff9a2a" class="pz-dh-fuego"/>
+        <ellipse cx="400" cy="364" rx="30" ry="9" fill="#f48135" class="pz-dh-fuego"/>
       </svg>
     </div>`;
   }
