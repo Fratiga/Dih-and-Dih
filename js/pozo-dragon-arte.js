@@ -60,15 +60,19 @@ window.PozoArte = (function () {
     </svg>`;
   }
 
-  // El montón del pozo: más monedas cuanto más pozo (de 1 a 14 discos), siempre del mismo ancho
+  // El tesoro: un montón de oro que crece con el pozo. Cada «disco» es una pila de dos monedas colocada en un montículo (la primera en el centro de abajo, y luego se van
+  // sumando a los lados y hacia arriba), de 1 a 14 pilas. Cuanto más hay, más luz cálida da por detrás y más destellos tiene. Las pilas nuevas llevan pz-disco-nuevo (caen con un rebote).
+  const PILAS = [[70, 90], [45, 90], [95, 90], [57, 75], [83, 75], [20, 90], [120, 90], [32, 75], [108, 75], [70, 60], [44, 60], [96, 60], [57, 45], [83, 45]];
+  const DESTELLOS = [[38, 66, 6], [104, 62, 10], [70, 34, 14]];       // x, y y desde cuántas pilas aparece cada destello
   function monton(n, nuevos) {
-    const k = Math.max(1, Math.min(14, n));
-    let h = "";
-    for (let i = 0; i < k; i++) {
-      const y = 92 - i * 6, dx = (i % 3) * 3 - 3;
-      h += `<g class="pz-disco-g${i >= k - (nuevos || 0) ? " pz-disco-nuevo" : ""}"><ellipse cx="${50 + dx}" cy="${y}" rx="38" ry="9" class="pz-disco"/><ellipse cx="${50 + dx}" cy="${y - 3}" rx="38" ry="9" class="pz-disco-tapa"/></g>`;
-    }
-    return `<svg class="pz-monton" viewBox="0 0 100 100" data-n="${k}" aria-hidden="true" focusable="false">${h}</svg>`;
+    const k = Math.max(1, Math.min(14, n)), nv = nuevos || 0;
+    const luz = (0.3 + 0.7 * (k - 1) / 13).toFixed(2);
+    const pilas = PILAS.slice(0, k).map(([x, y], i) => ({ x, y, i })).sort((p, q) => p.y - q.y || p.x - q.x).map(({ x, y, i }) => {
+      const nueva = i >= k - nv;
+      return `<g class="pz-disco-g${nueva ? " pz-disco-nuevo" : ""}"${nueva ? ` style="animation-delay:${((i - (k - nv)) * 0.09).toFixed(2)}s"` : ""}><ellipse cx="${x}" cy="${y + 4}" rx="17" ry="5.6" class="pz-disco"/><ellipse cx="${x}" cy="${y}" rx="17" ry="5.6" class="pz-disco"/><ellipse cx="${x}" cy="${y - 3.5}" rx="17" ry="5.6" class="pz-disco-tapa"/><ellipse cx="${x - 3}" cy="${y - 4.6}" rx="8" ry="1.5" class="pz-disco-brillo"/></g>`;
+    }).join("");
+    const destellos = DESTELLOS.filter(d => k >= d[2]).map(([x, y]) => `<path d="M${x} ${y - 6} L${x + 1.5} ${y - 1.5} L${x + 6} ${y} L${x + 1.5} ${y + 1.5} L${x} ${y + 6} L${x - 1.5} ${y + 1.5} L${x - 6} ${y} L${x - 1.5} ${y - 1.5} Z" class="pz-destello-oro"/>`).join("");
+    return `<svg class="pz-monton" viewBox="0 0 140 100" data-n="${k}" aria-hidden="true" focusable="false"><ellipse cx="70" cy="72" rx="78" ry="42" fill="url(#pzOroLuz)" opacity="${luz}"/>${pilas}${destellos}</svg>`;
   }
 
   // Un dragón dormido sobre su tesoro: silueta del fondo de la mesa (decorativa)
@@ -101,6 +105,7 @@ window.PozoArte = (function () {
       <radialGradient id="pzIrisRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd0b8"/><stop offset=".45" stop-color="#e8442a"/><stop offset="1" stop-color="#6a0f0a"/></radialGradient>
       <radialGradient id="pzLuz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb03a" stop-opacity=".6"/><stop offset="1" stop-color="#ffb03a" stop-opacity="0"/></radialGradient>
       <radialGradient id="pzLuzRoja" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff3a22" stop-opacity=".75"/><stop offset="1" stop-color="#ff3a22" stop-opacity="0"/></radialGradient>
+      <radialGradient id="pzOroLuz" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd27a" stop-opacity=".75"/><stop offset=".5" stop-color="#e0a23a" stop-opacity=".28"/><stop offset="1" stop-color="#e0a23a" stop-opacity="0"/></radialGradient>
       <linearGradient id="pzParp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".75"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
     </defs></svg>`;
   }

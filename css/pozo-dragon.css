@@ -140,7 +140,7 @@ body.pz-tema {
 .pz-tapete { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 16px; background: #120a0c; border: 2px solid var(--pz-borde); border-radius: 16px; outline: 1px solid var(--pz-oro-osc); outline-offset: -8px; }
 .pz-pozo { display: grid; justify-items: center; gap: 2px; text-align: center; }
 .pz-pozo-fila { display: flex; align-items: flex-end; justify-content: center; gap: 14px; }
-.pz-monton { width: 84px; height: 84px; flex: none; }
+.pz-monton { width: 120px; height: auto; aspect-ratio: 140 / 100; flex: none; overflow: visible; }
 .pz-pozo-etq { margin: 0; font: 600 .78rem var(--font-heading); letter-spacing: .3em; text-transform: uppercase; color: var(--pz-gris); }
 .pz-pozo-cifra { margin: 0; font: 700 clamp(2rem, 7vw, 3.2rem)/1 var(--pz-serif); color: var(--pz-oro-claro); font-variant-numeric: tabular-nums; }
 .pz-pozo-sub { margin: 0; color: var(--pz-gris); font-size: .95rem; }
@@ -255,7 +255,7 @@ body.pz-tema {
   .pz-jugadores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pz-jugador-datos { flex-wrap: wrap; }
   .pz-asiento-nombre, .pz-pozo-sub { overflow-wrap: anywhere; }
-  .pz-monton { width: 64px; height: 64px; }
+  .pz-monton { width: 96px; height: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   .pz-dado.rodando, .pz-dado.cae, .pz-pozo-cambia, .pz-tapete.pz-sacude, .pz-destello.activo, .pz-esperando::after { animation: none !important; }

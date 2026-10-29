@@ -92,11 +92,10 @@
 .pz-tesoro { display: flex; align-items: flex-end; justify-content: center; gap: 18px; flex-wrap: wrap; }
 .pz-tesoro-datos { display: grid; gap: 2px; justify-items: start; position: relative; text-align: left; }
 .pz-tesoro .pz-pozo-cifra { font-size: clamp(2.3rem, 8vw, 3.6rem); }
-.pz-tesoro .pz-monton { width: clamp(72px, 14vw, 104px); height: clamp(72px, 14vw, 104px); }
+.pz-tesoro .pz-monton { width: clamp(120px, 20vw, 190px); height: auto; }
 .pz-pozo-fila { position: relative; }
 .pz-disco-g.pz-disco-nuevo { transform-box: fill-box; animation: pz-disco-cae .5s cubic-bezier(.3, 1.5, .5, 1) both; }
 @keyframes pz-disco-cae { 0% { transform: translateY(-30px); opacity: 0; } 100% { transform: none; opacity: 1; } }
-.pz-disco-g:nth-last-child(2).pz-disco-nuevo { animation-delay: .08s; } .pz-disco-g:nth-last-child(3).pz-disco-nuevo { animation-delay: .16s; }
 .pz-disco-ardiendo .pz-disco { fill: #8a2f28; } .pz-disco-ardiendo .pz-disco-tapa { fill: #cf7335; stroke: #8a2f28; }
 .pz-delta { position: absolute; left: 100%; top: 0; margin-left: 10px; font: 700 1.3rem var(--pz-serif); white-space: nowrap; pointer-events: none; animation: pz-flota 1.4s ease-out both; }
 .pz-delta.sube { color: #c9f5a4; } .pz-delta.baja { color: #ff8a7c; }
@@ -209,7 +208,7 @@
 .pz-tapete { padding: 12px; gap: 10px; }
 .pz-bandeja { min-height: calc(var(--dado) + 70px); padding: 34px 18px 22px; }
 .pz-veredicto { min-height: 4.6em; }
-.pz-tesoro .pz-monton { width: clamp(56px, 9vw, 80px); height: clamp(56px, 9vw, 80px); }
+.pz-tesoro .pz-monton { width: clamp(110px, 17vw, 170px); height: auto; }
 .pz-tesoro .pz-pozo-cifra { font-size: clamp(2rem, 6vw, 3rem); }
 
 @media (min-width: 980px) {
@@ -284,3 +283,8 @@ body.pz-mov .pz-bocanada { display: block !important; animation: pz-bocanada 1.9
 body.pz-mov .pz-vineta.activa { animation: pz-vineta-pierde 2.8s ease-out both !important; }
 body.pz-mov .pz-vineta-luz.activa { animation: pz-vineta-gana 2s ease-out both !important; }
 body.pz-mov .pz-vineta, body.pz-mov .pz-vineta-luz { display: block !important; }
+
+/* el tesoro: monedas con un destello en la tapa y estrellitas fijas cuando el montón es grande */
+.pz-disco-brillo { fill: #fff3c4; opacity: .55; }
+.pz-destello-oro { fill: #fff3c4; opacity: .9; }
+.pz-disco-ardiendo .pz-disco-brillo { fill: #ffb08a; }
