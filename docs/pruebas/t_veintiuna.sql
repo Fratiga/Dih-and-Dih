@@ -113,21 +113,21 @@ begin
   s := t_act(pid, 'plantar');
   perform t_check('Al plantarte el natural de la crupier gana incluso a tu 21 de tres cartas: pierdes y no cobras nada', s #>> '{resultado,tipo}' = 'derrota' and s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80
                   and (s #>> '{crupier,ocultas}')::int = 0 and s #>> '{crupier,total}' = '21');
-  -- con Fortuna y con Última voluntad los peajes salen gratis mientras la crupier tiene su 21 (la mano ya está decidida)
+  -- los peajes de las reglas especiales se cobran como siempre, también con el natural de la crupier
   perform t_saldo(u, 100);
   s := t_reparte(u, 'voluntad', 'apuesta', 20, '9p', 'Ac', '7c', 'Kd', '2d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'voluntad');
-  perform t_check('Con el natural de la crupier la Última voluntad no cobra peaje (el saldo sigue en 80)', t_saldo_de(u) = 80 and (s #>> '{jugador,total}')::int = 11 and s ->> 'estado' = 'en_curso');
+  perform t_check('Con el natural de la crupier la Última voluntad cobra su peaje normal (10 de 20: el saldo baja a 70)', t_saldo_de(u) = 70 and (s #>> '{jugador,total}')::int = 11 and s ->> 'estado' = 'en_curso');
   s := t_act(pid, 'plantar');
-  perform t_check('Y la mano acaba en derrota por el natural de la crupier, sin peajes en el libro', s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80 and (s ->> 'peajes')::numeric = 0);
+  perform t_check('Y la mano acaba en derrota por el natural de la crupier, con el peaje de 10 anotado', s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 70 and (s ->> 'peajes')::numeric = 10);
   perform t_saldo(u, 100);
   s := t_reparte(u, 'fortuna', 'apuesta', 20, '10p', 'Ac', '8c', 'Kd', '9d');
   pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
   perform t_check('Te pasas (27) con el natural de la crupier: se te ofrece la Fortuna', s ->> 'estado' = 'en_curso' and s ->> 'fase' = 'fortuna');
   s := t_act(pid, 'fortuna');
-  perform t_check('La Fortuna sale gratis (el saldo sigue en 80) y vuelves a jugar con 19 (la carta que te pasó cuenta como 1)', t_saldo_de(u) = 80 and s ->> 'estado' = 'en_curso' and (s #>> '{jugador,total}')::int = 19);
+  perform t_check('La Fortuna cobra su peaje normal (12 de 20: el saldo baja a 68) y vuelves a jugar con 19 (la carta que te pasó cuenta como 1)', t_saldo_de(u) = 68 and s ->> 'estado' = 'en_curso' and (s #>> '{jugador,total}')::int = 19);
   s := t_act(pid, 'plantar');
-  perform t_check('Y pierdes igualmente por el natural: sin peaje pagado', s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80);
+  perform t_check('Y pierdes igualmente por el natural de la crupier', s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 68);
   -- si te pasas de 21 sin Fortuna, pierdes como siempre
   perform t_saldo(u, 100);
   s := t_reparte(u, 'maldicion', 'apuesta', 20, '10p', 'Ac', '8c', 'Kd', '9d');

@@ -892,7 +892,7 @@
             <tr><td>Empate</td><td>Te devuelven la apuesta</td></tr>
             <tr><td>Derrota</td><td>Pierdes la apuesta</td></tr></tbody></table>
           <p>${V.sinTope(lim) ? `Apuestas desde ${V.monedas(lim.min)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}, sin máximo: puedes apostar todo lo que tengas.` : `Apuestas de ${V.monedas(lim.min)} a ${V.monedas(lim.max)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}.`} Los peajes de las reglas no se devuelven.</p>
-          <p><strong>Orden al repartir:</strong> si te pasas de 21 (solo con la Maldición), pierdes; si los dos tenéis blackjack natural, es empate; si lo tienes tú, cobras 3 a 2; si el crupier se pasa de 21 (solo con la Maldición), ganas. Si la mano sigue, se juega con normalidad. Un blackjack natural del crupier no corta la mano: la juegas igual, pero su natural gana a cualquier 21 que no sea natural, y mientras lo tenga los peajes de las reglas especiales salen gratis.</p>
+          <p><strong>Orden al repartir:</strong> si te pasas de 21 (solo con la Maldición), pierdes; si los dos tenéis blackjack natural, es empate; si lo tienes tú, cobras 3 a 2; si el crupier se pasa de 21 (solo con la Maldición), ganas. Si la mano sigue, se juega con normalidad. Un blackjack natural del crupier no corta la mano: la juegas igual, pero su natural gana a cualquier 21 que no sea natural.</p>
         </section>
         <section><h3>Las ocho reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
         <section><h3>Mesa de práctica y desafíos</h3><ul>
