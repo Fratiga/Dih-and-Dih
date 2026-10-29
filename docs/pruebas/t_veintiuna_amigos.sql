@@ -188,7 +188,7 @@ end $$;
 do $$
 declare
   u1 uuid := '00000000-0000-0000-0000-000000000001'; u2 uuid := '00000000-0000-0000-0000-000000000002'; u3 uuid := '00000000-0000-0000-0000-000000000003';
-  v_mesa uuid; s jsonb;
+  v_mesa uuid; s jsonb; i int;
 begin
   perform t_reset();
   -- Un natural del jugador (A + K) contra 9 + 7 se paga 3 a 2 al repartir; el otro sigue jugando
@@ -207,9 +207,16 @@ begin
   perform t_amigos_listo(u1, 20); perform t_amigos_listo(u2, 20); perform t_amigos_listo(u3, 20);
   perform t_amigos_reparte(v_mesa, '10p', 'Kd', 'Ac', 'Ad', '8c', '9c', 'Qd', 'Kc');
   s := t_amigos_estado(u1);
-  perform t_check('Con natural del crupier la ronda acaba al repartir, sin turnos', s ->> 'fase' = 'resultado' and (s #>> '{crupier,ocultas}')::int = 0 and s #>> '{crupier,total}' = '21' and jsonb_array_length(s #> '{crupier,cartas}') = 2);
-  perform t_check('Pierden los dos sin natural y el que tiene natural empata (recupera su apuesta)', s #>> '{asientos,0,mano,razon}' = 'natural_crupier' and s #>> '{asientos,1,mano,razon}' = 'natural_crupier'
-                  and s #>> '{asientos,2,mano,resultado}' = 'empate' and s #>> '{asientos,2,mano,razon}' = 'ambos_natural' and t_saldo_de(u1) = 80 and t_saldo_de(u2) = 80 and t_saldo_de(u3) = 100);
+  perform t_check('Con natural del crupier la ronda NO acaba al repartir: se juega con turnos y su carta oculta sigue oculta', s ->> 'fase' = 'jugando' and (s #>> '{crupier,ocultas}')::int = 1 and jsonb_array_length(s #> '{crupier,cartas}') = 1);
+  perform t_check('Quien también tiene natural empata ya al repartir (recupera su apuesta) y los otros dos siguen jugando', s #>> '{asientos,2,mano,resultado}' = 'empate' and s #>> '{asientos,2,mano,razon}' = 'ambos_natural' and t_saldo_de(u3) = 100 and t_saldo_de(u1) = 80 and t_saldo_de(u2) = 80);
+  for i in 1..4 loop
+    exit when t_amigos_estado(u1) ->> 'fase' = 'resultado';
+    if (t_amigos_estado(u1) #>> '{yo,tu_turno}')::boolean then perform t_amigos_act(u1, 'plantar');
+    elsif (t_amigos_estado(u2) #>> '{yo,tu_turno}')::boolean then perform t_amigos_act(u2, 'plantar'); end if;
+  end loop;
+  s := t_amigos_estado(u1);
+  perform t_check('Cuando se plantan, la ronda acaba y el natural de la crupier gana a los dos sin natural', s ->> 'fase' = 'resultado' and s #>> '{crupier,total}' = '21' and (s #>> '{crupier,ocultas}')::int = 0 and s #>> '{asientos,0,mano,razon}' = 'natural_crupier' and s #>> '{asientos,1,mano,razon}' = 'natural_crupier'
+                  and s #>> '{asientos,2,mano,razon}' = 'ambos_natural' and t_saldo_de(u1) = 80 and t_saldo_de(u2) = 80 and t_saldo_de(u3) = 100);
   perform veintiuna_amigos_salir(); perform t_sesion(u2); perform veintiuna_amigos_salir(); perform t_sesion(u3); perform veintiuna_amigos_salir();
 end $$;
 

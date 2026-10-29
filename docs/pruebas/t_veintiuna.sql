@@ -102,10 +102,37 @@ begin
   s := t_reparte(u, 'fortuna', 'apuesta', 20, 'Ap', 'Kc', 'Qp', 'Ad');
   perform t_check('Natural de los dos: empate', s #>> '{resultado,tipo}' = 'empate' and s #>> '{resultado,razon}' = 'ambos_natural');
   perform t_check('Natural de los dos: la apuesta se devuelve (saldo 100)', t_saldo_de(u) = 100);
-  -- Solo el crupier: pierdes sin poder jugar
+  -- Solo el crupier: la mano se juega igual (puedes pedir y plantarte) y al final su natural gana
   perform t_saldo(u, 100);
-  s := t_reparte(u, 'fortuna', 'apuesta', 20, '9p', 'Ac', '7c', 'Kd');
-  perform t_check('Natural del crupier: pierdes sin jugar', s #>> '{resultado,tipo}' = 'derrota' and s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80);
+  s := t_reparte(u, 'fortuna', 'apuesta', 20, '9p', 'Ac', '7c', 'Kd', '5d');
+  pid := (s ->> 'partida')::uuid;
+  perform t_check('Natural del crupier: la mano NO se cierra al repartir, sigue en curso y puedes pedir y plantarte', s ->> 'estado' = 'en_curso' and (s #>> '{acciones,pedir}')::boolean and (s #>> '{acciones,plantar}')::boolean and t_saldo_de(u) = 80);
+  perform t_check('Su carta oculta sigue oculta mientras juegas (no se ve que tiene 21)', (s #>> '{crupier,ocultas}')::int = 1 and jsonb_array_length(s #> '{crupier,cartas}') = 1);
+  s := t_act(pid, 'pedir');
+  perform t_check('Puedes pedir carta: 9 + 7 + 5 = 21 con tres cartas', (s #>> '{jugador,total}')::int = 21 and s ->> 'estado' = 'en_curso');
+  s := t_act(pid, 'plantar');
+  perform t_check('Al plantarte el natural de la crupier gana incluso a tu 21 de tres cartas: pierdes y no cobras nada', s #>> '{resultado,tipo}' = 'derrota' and s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80
+                  and (s #>> '{crupier,ocultas}')::int = 0 and s #>> '{crupier,total}' = '21');
+  -- con Fortuna y con Última voluntad los peajes salen gratis mientras la crupier tiene su 21 (la mano ya está decidida)
+  perform t_saldo(u, 100);
+  s := t_reparte(u, 'voluntad', 'apuesta', 20, '9p', 'Ac', '7c', 'Kd', '2d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'voluntad');
+  perform t_check('Con el natural de la crupier la Última voluntad no cobra peaje (el saldo sigue en 80)', t_saldo_de(u) = 80 and (s #>> '{jugador,total}')::int = 11 and s ->> 'estado' = 'en_curso');
+  s := t_act(pid, 'plantar');
+  perform t_check('Y la mano acaba en derrota por el natural de la crupier, sin peajes en el libro', s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80 and (s ->> 'peajes')::numeric = 0);
+  perform t_saldo(u, 100);
+  s := t_reparte(u, 'fortuna', 'apuesta', 20, '10p', 'Ac', '8c', 'Kd', '9d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
+  perform t_check('Te pasas (27) con el natural de la crupier: se te ofrece la Fortuna', s ->> 'estado' = 'en_curso' and s ->> 'fase' = 'fortuna');
+  s := t_act(pid, 'fortuna');
+  perform t_check('La Fortuna sale gratis (el saldo sigue en 80) y vuelves a jugar con 19 (la carta que te pasó cuenta como 1)', t_saldo_de(u) = 80 and s ->> 'estado' = 'en_curso' and (s #>> '{jugador,total}')::int = 19);
+  s := t_act(pid, 'plantar');
+  perform t_check('Y pierdes igualmente por el natural: sin peaje pagado', s #>> '{resultado,razon}' = 'natural_crupier' and t_saldo_de(u) = 80);
+  -- si te pasas de 21 sin Fortuna, pierdes como siempre
+  perform t_saldo(u, 100);
+  s := t_reparte(u, 'maldicion', 'apuesta', 20, '10p', 'Ac', '8c', 'Kd', '9d');
+  pid := (s ->> 'partida')::uuid; s := t_act(pid, 'pedir');
+  perform t_check('Si te pasas de 21 con el natural de la crupier pierdes por pasarte, como siempre', s #>> '{resultado,razon}' = 'te_pasas' and t_saldo_de(u) = 80);
   -- Un 21 con tres cartas NO es natural
   perform t_saldo(u, 100);
   s := t_reparte(u, 'fortuna', 'apuesta', 20, '7p', '9c', '7c', '8d', '7d');

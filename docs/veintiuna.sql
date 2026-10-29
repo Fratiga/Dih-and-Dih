@@ -571,11 +571,15 @@ declare
   cru smallint[];
   rep int;
   n int;
+  v_cn boolean;
 begin
   select * into p from veintiuna_partidas where id = p_id for update;
   if p.estado <> 'en_curso' then perform veintiuna_i_error('Esa mano ya terminó.', 'mano_terminada'); end if;
   figura := case p.regla when 'maldicion' then 11 else 10 end;
   select * into vj from veintiuna_i_valor(p.jugador, p.jugador_as1, figura);
+  -- Si la crupier tiene un 21 natural la mano se juega igual, pero está decidida: mientras lo tenga, las reglas de pago (peajes) salen gratis para que nadie pague por jugarla
+  select * into vc from veintiuna_i_valor(p.crupier, '{}'::int[], figura);
+  v_cn := vc.total = 21 and array_length(p.crupier, 1) = 2;
 
   if p_accion = 'pedir' then
     if p.fase <> 'jugador' then perform veintiuna_i_error('Ahora no puedes pedir carta.', 'accion_invalida'); end if;
@@ -597,8 +601,8 @@ begin
   if p_accion = 'fortuna' then
     if p.regla <> 'fortuna' or p.fase <> 'fortuna' or p.fortuna_usada then perform veintiuna_i_error('La Fortuna no está disponible ahora.', 'accion_invalida'); end if;
     fraccion := (cartas_ajuste('veintiuna_peaje_fortuna', '0.6'))::text::numeric;
-    peaje := round(p.apuesta * fraccion, 2);
-    if p.modo = 'apuesta' then
+    peaje := case when v_cn then 0 else round(p.apuesta * fraccion, 2) end;
+    if p.modo = 'apuesta' and peaje > 0 then
       select saldo into v_saldo from hipodromo_billeteras where usuario = p.user_id for update;
       if coalesce(v_saldo, 0) < peaje then perform veintiuna_i_error('No te alcanzan los tokens para el peaje de la Fortuna (' || trim_scale(peaje) || ').', 'saldo_insuficiente'); end if;
       update hipodromo_billeteras set saldo = saldo - peaje where usuario = p.user_id returning saldo into v_saldo;
@@ -622,8 +626,8 @@ begin
     if p.regla <> 'voluntad' or p.fase <> 'jugador' or p.voluntad_usada then perform veintiuna_i_error('La Última voluntad no está disponible ahora.', 'accion_invalida'); end if;
     if vj.total >= 21 then perform veintiuna_i_error('Con 21 no hace falta cambiar nada: plántate.', 'accion_invalida'); end if;
     fraccion := (cartas_ajuste('veintiuna_peaje_voluntad', '0.5'))::text::numeric;
-    peaje := round(p.apuesta * fraccion, 2);
-    if p.modo = 'apuesta' then
+    peaje := case when v_cn then 0 else round(p.apuesta * fraccion, 2) end;
+    if p.modo = 'apuesta' and peaje > 0 then
       select saldo into v_saldo from hipodromo_billeteras where usuario = p.user_id for update;
       if coalesce(v_saldo, 0) < peaje then perform veintiuna_i_error('No te alcanzan los tokens para el peaje de la Última voluntad (' || trim_scale(peaje) || ').', 'saldo_insuficiente'); end if;
       update hipodromo_billeteras set saldo = saldo - peaje where usuario = p.user_id returning saldo into v_saldo;
@@ -645,23 +649,23 @@ begin
 
   if p_accion in ('ojo', 'marcadas', 'trueque') then
     if p.regla <> p_accion or p.fase <> 'jugador' then perform veintiuna_i_error('Esa acción no está disponible ahora.', 'accion_invalida'); end if;
-    peaje := veintiuna_i_peaje(p.regla, p.apuesta);
+    peaje := case when v_cn then 0 else veintiuna_i_peaje(p.regla, p.apuesta) end;
     if p_accion = 'ojo' then
       -- Ojo del Tahúr: pagas y ves la siguiente carta de la baraja (será tu próxima carta, o la primera que robe el crupier si te plantas)
       if p.ojo_pos is not null then perform veintiuna_i_error('Ya miraste la baraja en esta mano.', 'accion_invalida'); end if;
       if vj.total >= 21 then perform veintiuna_i_error('Con 21 no hace falta mirar: plántate.', 'accion_invalida'); end if;
-      v_mov := veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'del Ojo del Tahúr', p.id);
+      v_mov := case when peaje > 0 then veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'del Ojo del Tahúr', p.id) else null end;
       update veintiuna_partidas set ojo_pos = repartidas, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje) where id = p_id;
     elsif p_accion = 'marcadas' then
       -- Cartas marcadas: pagas y ves la carta oculta del crupier
       if p.marcadas_usada then perform veintiuna_i_error('Ya viste la carta oculta en esta mano.', 'accion_invalida'); end if;
-      v_mov := veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'de las Cartas marcadas', p.id);
+      v_mov := case when peaje > 0 then veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'de las Cartas marcadas', p.id) else null end;
       update veintiuna_partidas set marcadas_usada = true, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje) where id = p_id;
     else
       -- Trueque con la casa: antes de pedir carta, tu primera carta se cambia por la que el crupier tiene boca arriba
       if p.trueque_usado then perform veintiuna_i_error('Ya hiciste el trueque en esta mano.', 'accion_invalida'); end if;
       if array_length(p.jugador, 1) <> 2 then perform veintiuna_i_error('El trueque solo vale antes de pedir carta.', 'accion_invalida'); end if;
-      v_mov := veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'del Trueque con la casa', p.id);
+      v_mov := case when peaje > 0 then veintiuna_i_cobrar(p.user_id, p.modo, peaje, 'del Trueque con la casa', p.id) else null end;
       update veintiuna_partidas set trueque_usado = true, peajes = peajes + peaje, mov_peaje = coalesce(v_mov, mov_peaje),
         jugador = array[crupier[1], jugador[2]], crupier = array[jugador[1], crupier[2]] where id = p_id;
     end if;
@@ -684,7 +688,9 @@ begin
   select o_crupier, o_repartidas into cru, rep from veintiuna_i_turno_crupier(p.mazo, p.repartidas, p.crupier, figura, false, case when p.regla = 'vela' then 16 else 17 end);
   update veintiuna_partidas set crupier = cru, repartidas = rep where id = p_id;
   select * into vc from veintiuna_i_valor(cru, '{}'::int[], figura);
-  if vc.total > 21 then
+  if vc.total = 21 and array_length(cru, 1) = 2 and not (array_length(p.jugador, 1) = 2 and vj.total = 21) then
+    perform veintiuna_i_liquidar(p_id, 'derrota', 'natural_crupier');                  -- el blackjack natural de la crupier gana a cualquier 21 que no lo sea
+  elsif vc.total > 21 then
     perform veintiuna_i_liquidar(p_id, 'victoria', 'crupier_se_pasa');
   elsif vj.total > vc.total then
     perform veintiuna_i_liquidar(p_id, 'victoria', 'mayor');
@@ -887,7 +893,6 @@ begin
   if vj.total > 21 then v_res := 'derrota'; v_razon := 'pasado_al_repartir';                  -- solo con la Maldición: dos figuras suman 22
   elsif vj.total = 21 and vc.total = 21 then v_res := 'empate'; v_razon := 'ambos_natural';
   elsif vj.total = 21 then v_res := 'natural'; v_razon := 'natural';
-  elsif vc.total = 21 then v_res := 'derrota'; v_razon := 'natural_crupier';
   elsif vc.total > 21 then v_res := 'victoria'; v_razon := 'crupier_pasado_al_repartir';       -- solo con la Maldición
   end if;
   if v_res is not null then perform veintiuna_i_liquidar(v_id, v_res, v_razon); end if;
@@ -1347,7 +1352,8 @@ begin
     for r in select * from veintiuna_partidas where mesa = m.id and ronda_id = m.ronda_id and estado = 'en_curso' order by asiento loop
       update veintiuna_partidas set crupier = cru where id = r.id;
       select * into vj from veintiuna_i_valor(r.jugador, r.jugador_as1, figura);
-      if vc.total > 21 then v_res := 'victoria'; v_razon := 'crupier_se_pasa';
+      if vc.total = 21 and array_length(cru, 1) = 2 and not (array_length(r.jugador, 1) = 2 and vj.total = 21) then v_res := 'derrota'; v_razon := 'natural_crupier';      -- el natural de la crupier gana a cualquier 21 que no lo sea
+      elsif vc.total > 21 then v_res := 'victoria'; v_razon := 'crupier_se_pasa';
       elsif vj.total > vc.total then v_res := 'victoria'; v_razon := 'mayor';
       elsif vj.total < vc.total then v_res := 'derrota'; v_razon := 'menor';
       else v_res := 'empate'; v_razon := 'igual';
@@ -1597,7 +1603,6 @@ begin
     elsif vj.total > 21 then v_res := 'derrota'; v_razon := 'pasado_al_repartir';
     elsif vj.total = 21 and vc.total = 21 then v_res := 'empate'; v_razon := 'ambos_natural';
     elsif vj.total = 21 then v_res := 'natural'; v_razon := 'natural';
-    elsif vc.total = 21 then v_res := 'derrota'; v_razon := 'natural_crupier';
     elsif vc.total > 21 then v_res := 'victoria'; v_razon := 'crupier_pasado_al_repartir';
     end if;
     if v_res is not null then perform veintiuna_i_liquidar(v_id, v_res, v_razon); end if;
