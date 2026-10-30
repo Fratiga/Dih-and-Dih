@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/buhonero.css?v=20271111">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20271120">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20271191">
   <link rel="stylesheet" href="css/hipodromo-criadero.css?v=20271190">
   <script>if (/[?&]cuadra(&|$)/.test(location.search)) document.documentElement.classList.add("hip-pleno");</script>
 </head>
@@ -68,6 +68,7 @@
         <button type="button" role="tab" data-pestana="noticias" aria-selected="false">Noticias</button>
         <button type="button" role="tab" data-pestana="apuestas" aria-selected="false">Mis apuestas</button>
         <button type="button" role="tab" data-pestana="mundo" aria-selected="false">Mundo</button>
+        <button type="button" role="tab" data-pestana="novedades" aria-selected="false">Novedades<span id="hipNovedadesNuevo" class="hip-nuevo hidden">nuevo</span></button>
       </nav>
     </div>
 
@@ -177,6 +178,26 @@
       <div id="hipNoticiasLista" class="hip-noticias"></div>
     </div>
 
+    <!-- NOVEDADES: lo último que se añadió y dónde está. Lo más nuevo, primero; al añadir una fecha nueva, cambia también NOVEDADES_ULTIMA en js/hipodromo-pagina.js -->
+    <div id="hipPanel-novedades" class="hip-panel hip-novedades hidden">
+      <p class="hip-nota">Lo último que se añadió al hipódromo y dónde encontrarlo.</p>
+      <section>
+        <h3>30 de octubre</h3>
+        <ul>
+          <li><strong>Mi cuadra, a pantalla completa.</strong> La pestaña «Mi cuadra» te lleva a una pantalla propia con tu criadero. Tiene sitio para 6 criaturas, un panel lateral (Criaturas, Mercado, Objetos y Avisos) y una barra de enlaces arriba para volver a la carrera, las cartas o el mundo. <a href="hipodromo.html?cuadra">Abrir Mi cuadra</a></li>
+          <li><strong>Objetos del criadero.</strong> En Mi cuadra, botón «Objetos» del panel lateral. Se compran con tokens y aparecen en la escena. Cada uno dice lo que aporta, y si lo quitas te devuelven la mitad.</li>
+          <li><strong>Árbol genealógico y ficha.</strong> En Mi cuadra, pulsa una criatura para abrir su ficha: ahí están su árbol genealógico, sus últimas carreras y su historia.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>23 de octubre</h3>
+        <ul>
+          <li><strong>Criar.</strong> En la ficha de una criatura de Mi cuadra: «Cruzar» en las hembras y «Precio de monta» en los machos, para cobrar a quien los use.</li>
+          <li><strong>El Buhonero, también fuera del hipódromo.</strong> Cartas por tokens en la pestaña «Buhonero» de <a href="intercambios.html">Intercambios</a> y en el botón de la cabecera de <a href="veintiuna.html">Las Veintiuna Velas</a>. En el hipódromo sigue en la pestaña «Cartas».</li>
+        </ul>
+      </section>
+    </div>
+
     <!-- APUESTAS -->
     <div id="hipPanel-apuestas" class="hip-panel hidden">
       <div id="hipApuestasResumen"></div>
@@ -226,7 +247,7 @@
   <script src="js/hipodromo-cuadra.js?v=20271190"></script>
   <script src="js/fichas-supabase.js?v=20271111"></script>
   <script src="js/hipodromo-online.js?v=20271111"></script>
-  <script src="js/hipodromo-pagina.js?v=20271180"></script>
+  <script src="js/hipodromo-pagina.js?v=20271191"></script>
   <script src="js/interruptores.js?v=20271111"></script>
   <script src="js/avisos-admin.js?v=20271111"></script>
   <script src="js/musica-paginas.js?v=20271111"></script>

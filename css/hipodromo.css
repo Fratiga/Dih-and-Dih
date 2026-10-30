@@ -563,3 +563,12 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 .hip-pagina input[type="number"] { border-radius: 0; width: 8em; padding: 7px 10px; background-color: var(--panel-2); color: var(--text); border: 1px solid var(--accent-soft); font: 500 .92rem Karla, sans-serif; }
 .hip-pagina input[type="number"]:hover { border-color: var(--accent); }
 .hip-pagina input[type="number"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Novedades: lo último que se añadió y dónde está */
+.hip-nuevo { margin-left: 7px; padding: 1px 6px; font: 700 .62rem Karla, sans-serif; letter-spacing: .08em; text-transform: uppercase; background: var(--hip-verde); color: #10281a; vertical-align: 2px; }
+.hip-novedades { max-width: 760px; }
+.hip-novedades section { margin: 18px 0; padding-top: 12px; border-top: 1px solid var(--border); }
+.hip-novedades h3 { margin: 0 0 8px; font: 600 .85rem var(--font-heading), serif; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.hip-novedades ul { margin: 0; padding-left: 18px; display: grid; gap: 9px; }
+.hip-novedades li { line-height: 1.5; }
+.hip-novedades a { color: var(--accent); }

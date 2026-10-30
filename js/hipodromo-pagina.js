@@ -35,7 +35,14 @@
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
   // la página en vivo manda aquí con #carrera, #noticias... (apostar, resultados completos)
-  { const h = location.hash.slice(1); if (["carrera", "cuadra", "cartas", "criaturas", "noticias", "apuestas", "mundo"].includes(h)) pestana = h; }
+  { const h = location.hash.slice(1); if (["carrera", "cuadra", "cartas", "criaturas", "noticias", "novedades", "apuestas", "mundo"].includes(h)) pestana = h; }
+  /* El aviso «nuevo» de la pestaña Novedades: se apaga al abrirla (se acuerda en el navegador de cuál fue la última que se vio) */
+  const NOVEDADES_ULTIMA = "2026-10-30", CLAVE_NOVEDADES = "hipodromoNovedadesVista";
+  function marcaNovedades(vista) {
+    let v = null; try { if (vista) localStorage.setItem(CLAVE_NOVEDADES, NOVEDADES_ULTIMA); v = localStorage.getItem(CLAVE_NOVEDADES); } catch (e) { /* sin almacenamiento */ }
+    const n = document.getElementById("hipNovedadesNuevo"); if (n) n.classList.toggle("hidden", v === NOVEDADES_ULTIMA);
+  }
+  marcaNovedades(false);
   // la cuadra tiene su propia pantalla completa (hipodromo.html?cuadra): las entradas antiguas con #cuadra y la pestaña guardada llevan allí o a la carrera
   const PLENO = /[?&]cuadra\b/.test(location.search);
   const LOCAL = /[?&]local\b/.test(location.search) ? "&local" : "";   // la prueba local se conserva al ir y volver de la cuadra
@@ -653,6 +660,7 @@
     document.querySelectorAll("[data-pestana]").forEach(b => { const on = b.dataset.pestana === id; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
     document.querySelectorAll(".hip-panel").forEach(p => p.classList.toggle("hidden", p.id !== "hipPanel-" + id));
     if (!sinGuardar && !PLENO) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
+    if (id === "novedades") marcaNovedades(true);
     if (id === "criaturas") pintarCriaturas();
     if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
     if (id === "cartas" && cartasUI) cartasUI.abrir();
