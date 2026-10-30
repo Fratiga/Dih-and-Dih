@@ -19,6 +19,8 @@ window.HipodromoCuadraUI = (function () {
     // el criadero: la escena donde viven mis criaturas (js/hipodromo-criadero.js). Es una sola pieza viva que se recoloca tras cada dibujo; elegir una criatura enseña su ficha debajo
     // pleno: el criadero a pantalla completa (hipodromo.html?cuadra): la escena lo llena todo y lo demás flota encima (barra de arriba, panel lateral con la ficha, el mercado o los avisos)
     const pleno = !!(opcPleno && opcPleno.pleno);
+    // lo que está haciendo la criatura elegida se escribe en su ficha (sin repintarla) y no sobre la escena
+    setInterval(() => { const s = cont.querySelector("[data-ahora]"); if (s && escena) { const t = escena.actividad(Number(s.dataset.ahora)); if (s.textContent !== t) s.textContent = t; } }, 1000);
     let selId = null, panel = !pleno || window.innerWidth >= 700;
     const escena = window.HipodromoCriadero && window.HipodromoVida ? window.HipodromoCriadero.crear(api, { alSeleccionar: id => { selId = id; vista = "mias"; if (pleno) panel = true; pintar(true); } }) : null;
     const mon = x => api.monedas(x);
@@ -106,7 +108,7 @@ window.HipodromoCuadraUI = (function () {
       }
       return `<article class="hip-mia"><div class="hip-mia-cab">${D.silueta(p, { clase: "hip-silueta mediana" })}<div><h4>${ficha}</h4>
         <p class="hip-nota">${p.sexo === "f" ? "Hembra" : "Macho"} · ${esc(p.etapa)} · ${api.edadTxt(p)} · ${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</p>
-        <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}${temperamentoHtml(p)}</div></div>
+        <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}${temperamentoHtml(p)}<p class="hip-nota">Ahora mismo: <span data-ahora="${p.id}"></span></p></div></div>
         <div class="hip-caps"><div class="hip-cap"><span>${T("cansancio", "Cansancio")}</span>${barra(c.fatiga, 100, c.fatiga > 55 ? "mal" : "")}<b>${c.fatiga}</b></div><p class="hip-nota">${T("forma", "Forma")}: ${esc(c.forma)}.</p>${cap}<p class="hip-nota">Tu entrenador estima las ${T("capacidades", "capacidades")} de cinco en cinco. La suerte del día no sale ahí.</p></div>
         ${fila}<p class="hip-cuidar-nota">Cuidar (${M.C.CUIDADO_COSTE}): quita 20 de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? " y acorta la lesión un 40 %" : ""}. Se puede cada ${M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${historiaHtml(p)}</article>`;
     }

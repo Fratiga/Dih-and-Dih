@@ -68,7 +68,6 @@
 @keyframes hcVuelo1 { 0% { transform: translate(8vw, 60%); } 25% { transform: translate(30vw, 36%); } 50% { transform: translate(52vw, 64%); } 75% { transform: translate(70vw, 42%); } 100% { transform: translate(8vw, 60%); } }
 @keyframes hcVuelo2 { 0% { transform: translate(86vw, 50%); } 30% { transform: translate(60vw, 70%); } 60% { transform: translate(34vw, 46%); } 100% { transform: translate(86vw, 50%); } }
 .hc-rueda { transform-box: fill-box; transform-origin: 50% 50%; }
-.hc-nombre small { font-weight: 500; color: #cfe6c9; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { .hc-mata, .hc-copa, .hc-nube, .hc-hoja, .hc-mariposa, .hc-alas { animation: none; } }
 
 /* ---------------------------------------------------------------- La cuadra a pantalla completa (hipodromo.html?cuadra): la escena lo llena todo, lo demás flota encima */

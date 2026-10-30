@@ -433,8 +433,6 @@ window.HipodromoCriadero = (function () {
         // iconos de estado: lesión o cansancio, solo cuando es de verdad
         const ic = w.p.lesion ? "✚" : (w.fatiga > 60 && (a.estado === "echar" || a.estado === "sentar")) ? "z" : "";
         if (w.ico.textContent !== ic) { w.ico.textContent = ic; w.ico.className = "hc-icono" + (ic === "✚" ? " lesion" : ic ? " sueno" : ""); }
-        // el nombre de la elegida dice lo que está haciendo
-        if (w.el.classList.contains("sel")) { const t = w.p.nombre + "|" + textoDe(w); if (w.rotulo !== t) { w.rotulo = t; w.nom.innerHTML = esc(w.p.nombre) + ' <small>' + esc(textoDe(w)) + "</small>"; } } else if (w.rotulo) { w.rotulo = null; w.nom.textContent = w.p.nombre; }
       });
     }
 
@@ -456,7 +454,8 @@ window.HipodromoCriadero = (function () {
     function simular(seg) { medidas(); for (let t = 0; t < seg; t += 1 / 30) actualizar(1 / 30); }
     function forzar(id, obj) { const w = ids.get(id); if (!w) return; soltarPlan(w); const O = OBJ[obj], spot = O.spots[0]; w.plan = { obj, fase: "ir", spot, accion: { comedero: "pastar", bebedero: "pastar", refugio: "echar", heno: "echar", rascador: "mirar", pelota: "jugar" }[obj], dur: 12, t: 0, patada: 0 }; objetos[obj].usando++; }
     const estados = () => Array.from(ids.values()).map(w => ({ id: w.p.id, estado: w.a.estado, x: +w.a.x.toFixed(1), f: +w.a.f.toFixed(2), plan: w.plan ? w.plan.obj + ":" + w.plan.fase : null, dest: w.a.dest ? [+w.a.dest.x.toFixed(1), +w.a.dest.f.toFixed(2)] : null }));
-    const api2 = { forzar, estados, nodo, sincronizar, activar, seleccionar, destacar, efecto, medidas, simular, seleccionada: () => sel, estaEn: id => ids.has(id) };
+    const actividad = id => { const w = ids.get(id); return w ? textoDe(w) : ""; };   // lo que hace ahora (la ficha lo enseña; la escena no lo escribe)
+    const api2 = { forzar, estados, actividad, nodo, sincronizar, activar, seleccionar, destacar, efecto, medidas, simular, seleccionada: () => sel, estaEn: id => ids.has(id) };
     HipodromoCriaderoUltima = api2;
     return api2;
   }
