@@ -109,3 +109,28 @@ html.hip-pleno .hip-criadero { flex: none; width: min(100vw, calc(100vh * 2.05))
   .hcp-pestana:not(.abierto) { bottom: 8px; }
   .hcp-aviso { bottom: auto; top: 96px; }
 }
+
+/* Objetos de pago: columpio, patos y la tienda */
+.hc-usando .hc-balanceo { animation: hcColumpio 2s ease-in-out infinite; }
+@keyframes hcColumpio { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+.hc-pato { transform-box: fill-box; animation: hcPato 16s ease-in-out infinite; }
+@keyframes hcPato { 0%, 100% { transform: translateX(-10px); } 50% { transform: translateX(22px); } }
+.hip-tienda-grupo { margin: 14px 0 6px; font: 600 .75rem Karla, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.hip-tienda { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.hip-tienda li { display: grid; grid-template-columns: 84px 1fr auto; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--border); background: rgba(0, 0, 0, .12); }
+.hip-tienda li.tengo { border-color: var(--hip-verde); }
+.hip-tienda-dib { display: flex; align-items: flex-end; justify-content: center; height: 54px; overflow: hidden; }
+.hip-tienda-dib svg { width: 100%; height: 100%; }
+.hip-tienda strong { display: block; font-size: .9rem; }
+.hip-tienda small { color: var(--muted); }
+.hip-tienda-der { text-align: right; font-size: .8rem; }
+.hip-tienda-der b { display: block; color: var(--accent); margin-bottom: 4px; }
+.hip-arbol, .hip-arbol ul { list-style: none; margin: 0; padding-left: 16px; border-left: 1px solid var(--border); }
+.hip-arbol { padding-left: 0; border-left: 0; font-size: .82rem; }
+.hip-arbol li { margin: 3px 0; position: relative; }
+.hip-arbol li::before { content: ""; position: absolute; left: -16px; top: .8em; width: 12px; border-top: 1px solid var(--border); }
+.hip-arbol > li::before { display: none; }
+.hip-arbol .repetido > .hip-enlace, .hip-arbol .repetido > span { color: var(--hip-rojo); }
+.hip-arbol small { color: var(--muted); margin-left: 4px; }
+.hip-carreras { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.hip-carreras td { padding: 3px 6px; border-top: 1px dashed var(--border); }

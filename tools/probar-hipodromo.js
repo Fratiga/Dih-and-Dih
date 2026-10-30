@@ -782,6 +782,42 @@ function cabezaACabeza(a, b, cond, veces) {
   }
 }
 
+// 4j) Los objetos del criadero (de pago) y la biografía de cada criatura
+{ const mk = () => M.crearMundo("objetos", { calentar: 30, t0: Date.UTC(2026, 0, 1), simsCalentar: 8 });
+  const avanza = (w, k, evs) => { for (let i = 0; i < k; i++) { const ev = M.avanzar(w, { sims: 8 }); if (evs) evs.push(ev); } };
+  const ord = (w, o, saldos) => M.procesarOrdenes(w, [Object.assign({ oid: 1 }, o)], saldos).resultados[0];
+  const OB = M.OBJETOS_CRIADERO, claves = Object.keys(OB);
+  ok(claves.length >= 11 && claves.every(k => OB[k].nombre && OB[k].precio > 0 && ["zona", "juguete", "natural"].includes(OB[k].grupo) && OB[k].texto), `hay ${claves.length} objetos de pago con nombre, grupo, precio y texto`);
+  ok(claves.filter(k => OB[k].grupo === "zona").length === 2 && claves.filter(k => OB[k].grupo === "juguete").length >= 3 && claves.filter(k => OB[k].grupo === "natural").length >= 5, "dos zonas, juguetes y elementos naturales");
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); ord(w, { dueno: "u2", tipo: "adoptar" }); const c1 = M.cuadraDe(w, "u1")[0], c2 = M.cuadraDe(w, "u2")[0];
+    const a = ord(w, { dueno: "u1", tipo: "objeto", objeto: "charca" }, { u1: 1000 });
+    ok(a.ok && a.costo === OB.charca.precio && w.duenos.u1.objetos.includes("charca"), "comprar un objeto cuesta su precio y queda en el criadero");
+    ok(!ord(w, { dueno: "u1", tipo: "objeto", objeto: "charca" }, { u1: 1000 }).ok, "no se compra dos veces");
+    ok(!ord(w, { dueno: "u1", tipo: "objeto", objeto: "inventado" }, { u1: 1000 }).ok, "un objeto que no existe se rechaza");
+    ok(!ord(w, { dueno: "u1", tipo: "objeto", objeto: "parterre" }, { u1: OB.parterre.precio - 1 }).ok && !(w.duenos.u1.objetos || []).includes("parterre"), "sin tokens no se compra y no queda nada a medias");
+    ok(M.perfilCuadra(w, c1).objetos.includes("charca") && !M.perfilCuadra(w, c2).objetos.includes("charca"), "los objetos son de su dueño y salen en lo privado de su cuadra");
+    const q = ord(w, { dueno: "u1", tipo: "objeto", objeto: "charca", quitar: true });
+    ok(q.ok && q.ingreso === Math.round(OB.charca.precio * 0.5) && !w.duenos.u1.objetos.includes("charca"), "quitarlo devuelve la mitad");
+    ok(!ord(w, { dueno: "u1", tipo: "objeto", objeto: "charca", quitar: true }).ok, "no se quita lo que no se tiene");
+    const antes = JSON.stringify(w.duenos); ord(w, { dueno: "u1", tipo: "objeto", objeto: "rocas_musgo" }, { u1: 1000 }); const prueba = M.ordenar(w, { dueno: "u1", tipo: "objeto", objeto: "parterre" }, { prueba: true });
+    ok(prueba.ok && !(w.duenos.u1.objetos || []).includes("parterre"), "la comprobación en seco no cambia nada");
+    const r = M.procesarOrdenes(w, [{ oid: 7, dueno: "u1", tipo: "objeto", objeto: "tronco_hueco" }], { u1: 5000 });
+    ok(r.resultados[0].ok && r.pagos.some(p => p.dueno === "u1" && p.monto === -OB.tronco_hueco.precio), "el cobro del objeto sale en los pagos"); }
+  // la biografía
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0];
+    ok(mad.bio && /Entra en la cuadra/.test(mad.bio[0].t), "al adoptarla, la biografía empieza con la entrada en la cuadra");
+    ord(w, { dueno: "u1", tipo: "retirar", id: mad.id }); ok(mad.bio.some(b => /Se retira/.test(b.t)), "al retirarla queda escrito");
+    const HR = sb.HipodromoRasgos, sem = w.criadores.find(x => x.sexo === "m" && !x.dueno && HR.parentesco(mad, x) === 0);
+    ord(w, { dueno: "u1", tipo: "cruzar", madre: mad.id, padre: sem.id }, { u1: 5000 }); avanza(w, M.C.CRUCE_ESPERA + 1);
+    const cria = w.vivos.find(x => x.madre && x.madre.id === mad.id);
+    ok(cria && /^Nace de /.test(cria.bio[0].t), "la cría nace con su biografía");
+    ok(mad.bio.some(b => /camada|cría/.test(b.t)) && sem.bio.some(b => /padre/.test(b.t)), "y sus padres anotan la camada");
+    ok(M.perfil(w, cria).bio.length >= 1 && M.perfil(w, cria).bio.every(b => typeof b.n === "number" && b.t), "la biografía sale en el perfil público"); }
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0];
+    for (let i = 0; i < 40; i++) { c.fatiga = 0; if (!(c.entradas || []).length && !c.lesion) ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 2 }, { u1: 99999 }); avanza(w, 1); }
+    ok(c.salidas >= 1 && c.bio.some(b => /^Primera carrera/.test(b.t)), `la primera carrera queda en su biografía (corrió ${c.salidas})`);
+    ok(c.bio.length <= 16 && c.bio.every(b => b.n <= w.n), "la biografía no pasa de 16 entradas ni inventa fechas futuras"); } }
+
 // 5) Un mundo largo
 const AÑOS = rapido ? 3 : 8, CARRERAS = AÑOS * C.ANIO;
 let m;

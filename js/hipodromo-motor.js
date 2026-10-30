@@ -261,6 +261,13 @@
   const fragilidad = c => 0.6 + 2.0 * Math.max(0, c.genes.pat + c.genes.pul + c.genes.mus - 1.5);
   /* Los rasgos: si el mundo es de antes de que existieran, salen del id (siempre los mismos) */
   const rasgosDe = c => c.rasgos || (c.rasgos = HR.sortear(crearRng(c.id, "rasgos")));
+  /* La biografía de una criatura: lo que de verdad le ha pasado (nacer, la primera carrera, la primera victoria, ganar una copa, un récord, una lesión, la retirada, una camada).
+     Se guarda como mucho 16 entradas (las dos primeras y las últimas) y sale en su perfil público. */
+  function bio(m, c, texto) {
+    const l = c.bio || (c.bio = []);
+    l.push({ n: m.n, t: texto });
+    if (l.length > 16) l.splice(2, l.length - 16);
+  }
   /* El carácter (manías): si el mundo es de antes de que existieran, salen del id (siempre las mismas) */
   const maniasDe = c => c.manias || (c.manias = HR.sortearManias(crearRng(c.id, "manias")));
   const edadAnios = (n, c) => (n - c.nac) / C.ANIO;
@@ -301,6 +308,9 @@
       c.mut = HR.heredarMut(rm, padres[0].mut, padres[1].mut, HR.parentesco(padres[0], padres[1]));
       c.manias = HR.heredarManias(rm, maniasDe(padres[0]), maniasDe(padres[1]));
       c.anc = HR.linajeDe(padres[0], padres[1]);
+      bio(m, c, `Nace de ${padres[0].nombre} y ${padres[1].nombre}.`);
+      const grande = (c.mut || []).map(id => HR.MUT[id]).find(u => u && u.g);
+      if (grande) bio(m, c, `Trae una mutación fuera de lo común: ${grande.n}.`);
     } else { c.mut = HR.sortearMut(rm); c.manias = HR.sortearManias(rm); c.anc = []; }
     return c;
   }
@@ -738,6 +748,8 @@
       c.fatiga = Math.min(100, c.fatiga + 12 + 18 * (res.dist / 3000) + 6 * res.humedad);
       c.hist.push({ n: res.n, pos: l.pos, campo, cuota: l.cuota, pista: res.pista, dist: res.dist, clima: res.clima, estadoPista: res.estadoPista, t: l.t });
       if (c.hist.length > C.HISTORIAL) c.hist.shift();
+      if (c.salidas === 1) bio(m, c, `Primera carrera: ${l.pos}º de ${campo} en ${res.nombre}.`);
+      if (q === 0) { if (c.vic === 1) bio(m, c, `Primera victoria, en ${res.nombre}.`); else if (GRADOS[res.grado].copa || GRADOS[res.grado].gp) bio(m, c, `Gana ${res.nombre}.`); }
       const sl = c.suelos[res.estadoPista] || (c.suelos[res.estadoPista] = [0, 0, 0]);
       sl[0]++; if (q === 0) sl[1]++; if (q < 3) sl[2]++;
       ev.cambios.add(c.id);
@@ -755,6 +767,7 @@
     const clave = `${res.pista}|${res.dist}`, gt = res.llegada[0].t, ant = m.records[clave];
     if (!ant || gt < ant.t) {
       if (ant && ant.t - gt >= 0.05) ev.noticias.push(noticia(m, "record", `Récord en ${PISTAS[res.pista].nombre}`, `${res.llegada[0].nombre} corre los ${res.dist} m en ${fmtTiempo(gt)}, por debajo de los ${fmtTiempo(ant.t)} de ${ant.nombre}.`, [res.llegada[0].id], res.n));
+      if (ant && ant.t - gt >= 0.05 && cs[0]) bio(m, cs[0], `Récord en ${PISTAS[res.pista].nombre}: ${res.dist} m en ${fmtTiempo(gt)}.`);
       m.records[clave] = { t: gt, id: res.llegada[0].id, nombre: res.llegada[0].nombre, n: res.n };
     }
     // lesiones durante la carrera
@@ -762,6 +775,7 @@
       const c = buscar(m, i.id); if (!c || c.lesion) return;
       const L = elegirLesion(rng, c, res.n);
       m.stats.lesiones++;
+      bio(m, c, `Se lesiona en ${PISTAS[res.pista].nombre}: ${L.tipo} (${L.gr}).`);
       const dur = L.gr === "grave" ? "y no volverá a correr" : `y estará fuera unas ${L.dur} carreras`;
       ev.noticias.push(noticia(m, "lesion", `Se lesiona ${c.nombre}`, `${c.nombre} sufre ${L.tipo} (${L.gr}) en ${PISTAS[res.pista].nombre} ${dur}.${L.permanente ? " Los veterinarios temen que le quede secuela." : ""}`, [c.id], res.n));
       if (L.gr === "grave") ev.retirarPor.set(c.id, "lesión grave");
@@ -796,6 +810,7 @@
     m.stats.retirados++;
     ev.cambios.add(c.id);
     const palmares = c.salidas ? `tras ${c.salidas} salidas y ${c.vic} victorias` : "sin llegar a debutar";
+    bio(m, c, `Se retira ${palmares}.`);
     const leyenda = esLeyenda(c);
     ev.noticias.push(noticia(m, "retiro", leyenda ? `Fin de una era: se retira ${c.nombre}` : `Se retira ${c.nombre}`, `${c.nombre} deja las pistas ${palmares}${c.gp ? `, con ${c.gp} Gran${c.gp > 1 ? "des" : ""} Premio${c.gp > 1 ? "s" : ""}` : ""}${motivo ? ` (${motivo})` : ""}.${criador ? " Pasa a la cría." : ""}`, [c.id]));
   }
@@ -958,7 +973,7 @@
       cuerpo: cuerpo(c), silueta: silueta(c), arquetipo: arquetipo(c), perfilDist: perfilDistancia(c), estilo: c.salidas >= 3 ? estiloTexto(c.ritmo) : null,
       salidas: c.salidas, vic: c.vic, seg: c.seg, ter: c.ter, gp: c.gp, copas: c.copas || 0, premios: c.premios, racha: c.racha, ultima: c.ultima,
       estrellas: estrellas(c), aptitudes: apt, etiquetas: etiquetas(c, apt), ultimas: c.hist.slice().reverse(), suelos: c.suelos,
-      secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)), mut: c.mut || [], manias: maniasDe(c), anc: c.anc || [], consanguinea: !!c.consanguinea,
+      secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)), mut: c.mut || [], manias: maniasDe(c), bio: c.bio || [], anc: c.anc || [], consanguinea: !!c.consanguinea,
       lesion: c.lesion ? { tipo: c.lesion.tipo, gravedad: c.lesion.gravedad, hasta: c.lesion.hasta } : null,
       padre: c.padre, madre: c.madre, crias: c.crias, leyenda: esLeyenda(c), muerte: c.muerte,
       dueno: c.dueno ? { id: c.dueno, nombre: nombreDueno(m, c.dueno) } : null,
@@ -985,6 +1000,21 @@
     const e = estrellas(c), edadF = a <= 3 ? 1 : Math.max(0.35, 1 - 0.12 * (a - 3));
     return Math.min(3000, redondea10((140 + 70 * ((e == null ? 3 : e) - 3) + 20 * c.vic + 100 * c.gp + 0.02 * c.premios) * edadF));
   }
+  /* Lo que se puede comprar para el criadero: zonas, juguetes y elementos naturales que salen en la escena de «Mi cuadra» (js/hipodromo-criadero.js). Solo cambian lo que se ve y lo que
+     hacen las criaturas en la escena; no tocan carreras, genética ni economía. Quitarlos devuelve la mitad. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) no se compran. */
+  const OBJETOS_CRIADERO = {
+    recinto_crias: { nombre: "Recinto de crías", grupo: "zona", precio: 350, texto: "Un corral con arena donde juegan las crías." },
+    rincon_tranquilo: { nombre: "Rincón tranquilo", grupo: "zona", precio: 350, texto: "Un rincón vallado con paja y sombra para las que descansan o se recuperan." },
+    neumatico: { nombre: "Neumático", grupo: "juguete", precio: 140, texto: "Para saltar y dar brincos." },
+    cuerda: { nombre: "Cuerda para tirar", grupo: "juguete", precio: 110, texto: "Tiran de ella con los dientes." },
+    columpio: { nombre: "Columpio de tronco", grupo: "juguete", precio: 220, texto: "Lo empujan con el hocico y se balancea." },
+    charca: { nombre: "Charca con patos", grupo: "natural", precio: 300, texto: "Beben, chapotean y miran a los patos." },
+    arbol_sombra: { nombre: "Árbol de sombra", grupo: "natural", precio: 260, texto: "Se echan a su sombra." },
+    arbusto_bayas: { nombre: "Arbusto de bayas", grupo: "natural", precio: 170, texto: "Comen las bayas con el cuello estirado." },
+    rocas_musgo: { nombre: "Rocas con musgo", grupo: "natural", precio: 100, texto: "Las husmean y se sientan junto a ellas." },
+    parterre: { nombre: "Parterre de flores", grupo: "natural", precio: 90, texto: "Las huelen despacio." },
+    tronco_hueco: { nombre: "Tronco hueco", grupo: "natural", precio: 130, texto: "Meten el hocico a ver qué hay dentro." }
+  };
   const precioMontaBase = (m, c) => Math.min(800, Math.max(60, redondea10(60 + 3 * Math.max(0, c.rating - 1450) + 12 * c.vic)));
   /* Lo que cuesta montar a un semental: el precio que le puso su dueño (de 40 a 2000) o, si no puso ninguno, el que sale de su palmarés */
   const precioMonta = (m, c) => (c.montaCfg != null ? c.montaCfg : precioMontaBase(m, c));
@@ -1020,6 +1050,7 @@
     STATS.forEach(k => { cap[k] = r5(b[k]); });
     return { id: c.id, dueno: c.dueno, tactica: c.tactica || null, entreno: c.entreno || null, entradas: (c.entradas || []).map(en => ({ n: en.n, pago: en.pago })),
       forma: textoForma(c.forma), fatiga: Math.round(c.fatiga), capacidades: cap, mejoras: c.perm, venta: valorVenta(m, c), puedeCuidar: m.n - (c.cuidado == null ? -999 : c.cuidado) >= C.CUIDADO_ESPERA,
+      objetos: ((m.duenos && m.duenos[c.dueno] && m.duenos[c.dueno].objetos) || []).slice(),
       copas: copasQueCorre(m, c), renombrada: !!c.renombrada, cruce: (m.cruces || []).filter(x => x.madre === c.id).map(x => ({ n: x.n, padre: x.padreNombre })) };
   }
   function terminarEntreno(m, c, ev, rng) {
@@ -1059,6 +1090,8 @@
         ev.cambios.add(h.id); ev.nacidos.push(h.id);
       }
       madre.crias++; padre.crias += k; ev.cambios.add(madre.id); ev.cambios.add(padre.id);
+      bio(m, madre, k > 1 ? `Tiene una camada de ${k} crías con ${padre.nombre}.` : `Tiene una cría con ${padre.nombre}.`);
+      bio(m, padre, k > 1 ? `Es padre de una camada de ${k} crías con ${madre.nombre}.` : `Es padre de una cría con ${madre.nombre}.`);
       const c = camada[0];
       const dn = nombreDueno(m, x.dueno) || "un criador", nombres = camada.map(h => h.nombre);
       const lista = nombres.length > 1 ? nombres.slice(0, -1).join(", ") + " y " + nombres[nombres.length - 1] : nombres[0];
@@ -1095,6 +1128,7 @@
         du.nombre = String(o.nombre || du.nombre || "").replace(/[<>&"]/g, "").trim().slice(0, 24); du.adoptada = true;
         const c = nuevaCriatura(m, crearRng(m.semilla, "adoptar", d), { nac: m.n - Math.round((C.DEBUT + 0.05) * C.ANIO), media: 0.5, sexo: o.sexo === "f" || o.sexo === "m" ? o.sexo : undefined });
         c.dueno = d; m.vivos.push(c);
+        bio(m, c, `Entra en la cuadra de ${nombreDueno(m, d) || "un jugador"}.`);
         res.id = c.id; res.cambios.push(c.id); res.texto = `La casa te entrega a ${c.nombre}.`; res.concepto = "Criatura de la casa";
         return res;
       }
@@ -1108,6 +1142,7 @@
         res.costo = precioCompra(m, c);
         if (prueba) return res;
         c.dueno = d; c.entradas = []; c.tactica = null;
+        bio(m, c, `Pasa a la cuadra de ${nombreDueno(m, d) || "un jugador"}.`);
         res.id = c.id; res.cambios.push(c.id); res.texto = `Compras a ${c.nombre} por ${res.costo} tokens.`; res.concepto = `Compra: ${c.nombre}`;
         return res;
       }
@@ -1211,6 +1246,25 @@
         if (precio == null) delete c.montaCfg; else c.montaCfg = precio;
         res.id = c.id; res.cambios.push(c.id);
         res.texto = precio == null ? `${c.nombre} vuelve al precio de siempre (${precioMontaBase(m, c)} tokens).` : `${c.nombre} cobrará ${precio} tokens por monta.`; res.concepto = "Precio de monta";
+        return res;
+      }
+      case "objeto": {
+        const id = String(o.objeto || ""), def = OBJETOS_CRIADERO[id];
+        if (!def) return err("Ese objeto no existe.");
+        const du = m.duenos[d] || (m.duenos[d] = {}), lista = du.objetos || (du.objetos = []), tiene = lista.includes(id);
+        if (o.quitar) {
+          if (!tiene) return err("No lo tienes.");
+          res.ingreso = Math.round(def.precio * 0.5);
+          if (prueba) return res;
+          du.objetos = lista.filter(x => x !== id);
+          res.texto = `Quitas ${def.nombre.toLowerCase()} del criadero y la casa te devuelve ${res.ingreso} tokens.`; res.concepto = `Criadero: quitas ${def.nombre.toLowerCase()}`;
+          return res;
+        }
+        if (tiene) return err("Ya lo tienes en el criadero.");
+        res.costo = def.precio;
+        if (prueba) return res;
+        lista.push(id);
+        res.texto = `Pones ${def.nombre.toLowerCase()} en el criadero por ${def.precio} tokens.`; res.concepto = `Criadero: ${def.nombre.toLowerCase()}`;
         return res;
       }
       case "retirar": {
@@ -1412,7 +1466,7 @@
   raiz.HipodromoMotor = {
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
-    cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
+    OBJETOS_CRIADERO, cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
     zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
