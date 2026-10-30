@@ -56,7 +56,8 @@
     INMIGRANTES: 0.15,           // de cada 100 nacimientos, los que llegan de otra región con genes nuevos
     HOMENAJE: 0.25,              // probabilidad de que la cría lleve el nombre de un padre que fue leyenda
     // la cuadra de los jugadores (los tokens son del jugador; el motor solo dice cuánto cuesta cada cosa)
-    MAX_CABALLOS: 4,             // criaturas por jugador (las camadas pueden pasarlo un tiempo: hay que vender o soltar antes de comprar o cruzar)
+    MAX_CABALLOS: 6,             // criaturas por jugador (6 desde el 2026-10-30; las camadas pueden pasarlo un tiempo: hay que vender o soltar antes de comprar o cruzar)
+    MAX_NPC: 4,                  // criaturas por personaje de la tribuna (no sube con el límite de los jugadores)
     MONTA_MIN: 40, MONTA_MAX: 2000,   // entre qué precios puede fijar un dueño la monta de su semental
     ADELANTO: 12,                // con cuántas carreras de antelación se puede inscribir
     ADELANTO_COPA: 48,           // las copas se pueden inscribir con más antelación (dos días)

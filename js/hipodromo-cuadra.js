@@ -13,12 +13,14 @@ window.HipodromoCuadraUI = (function () {
   const HR = window.HipodromoRasgos;
   const GRADO_CLASE = { gran: "oro", selecta: "plata", corriente: "", novatos: "", copa_bronce: "copa", copa_plata: "copa", copa_oro: "copa", copa_leyendas: "copa" };
 
-  function crear(api, cont) {
+  function crear(api, cont, opcPleno) {
     const M = api.M, D = api.D;
     let msg = { texto: "", clase: "" }, ocupado = false, abiertas = new Set(), hash = "";
     // el criadero: la escena donde viven mis criaturas (js/hipodromo-criadero.js). Es una sola pieza viva que se recoloca tras cada dibujo; elegir una criatura enseña su ficha debajo
-    let selId = null;
-    const escena = window.HipodromoCriadero && window.HipodromoVida ? window.HipodromoCriadero.crear(api, { alSeleccionar: id => { selId = id; pintar(true); } }) : null;
+    // pleno: el criadero a pantalla completa (hipodromo.html?cuadra): la escena lo llena todo y lo demás flota encima (barra de arriba, panel lateral con la ficha, el mercado o los avisos)
+    const pleno = !!(opcPleno && opcPleno.pleno);
+    let selId = null, panel = !pleno || window.innerWidth >= 700;
+    const escena = window.HipodromoCriadero && window.HipodromoVida ? window.HipodromoCriadero.crear(api, { alSeleccionar: id => { selId = id; vista = "mias"; if (pleno) panel = true; pintar(true); } }) : null;
     const mon = x => api.monedas(x);
     const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
 
@@ -72,6 +74,7 @@ window.HipodromoCuadraUI = (function () {
       if (c.entreno) sellos.push(`<span class="hip-sello">entrena ${esc(STATS[c.entreno.stat].toLowerCase())} hasta la n.º ${c.entreno.hasta}</span>`);
       if (p.estado === "criador") sellos.push(`<span class="hip-sello">${T("criador", "en la cría")}</span>`);
       if (c.cruce && c.cruce.length) sellos.push(`<span class="hip-sello oro">espera cría de ${esc(c.cruce[0].padre)} (n.º ${c.cruce[0].n})</span>`);
+      if (c.entradas && c.entradas.length) sellos.push(`<a class="hip-sello" href="hipodromo.html#carrera" title="Ir a la carrera">inscrita en la n.º ${c.entradas.map(en => en.n).join(", ")}</a>`);
       const cap = M.STATS.map(k => `<div class="hip-cap"><span>${T("cap_" + k, STATS[k])}</span>${barra(c.capacidades[k], 100)}<b>${c.capacidades[k]}</b>${c.mejoras[k] ? `<small class="${c.mejoras[k] > 0 ? "sube" : "baja"}">${c.mejoras[k] > 0 ? "+" : ""}${(Math.round(c.mejoras[k] * 10) / 10)}</small>` : ""}</div>`).join("");
       const abierta = id => (abiertas.has(id) ? " open" : "");
       const corre = p.estado === "activo";
@@ -146,7 +149,38 @@ window.HipodromoCuadraUI = (function () {
     }
 
     /* ---------------------------------------------------------------- pintar */
+    /* ---- la pantalla completa: la escena detrás de todo y, encima, la barra con los enlaces de la cuadra y un panel lateral */
+    function pintarPleno(forzar) {
+      if (api.listo && !api.listo()) return;
+      const mias = api.mias(), cal = api.calendario(), max = M.C.MAX_CABALLOS, adoptada = api.adoptada(), semental = api.sementales();
+      if (!mias.some(e => e.p.id === selId)) selId = mias[0] ? mias[0].p.id : null;
+      const elegida = mias.find(e => e.p.id === selId), nAvisos = api.avisos().length, merc = api.mercado().length;
+      let lateral;
+      if (vista === "mercado") lateral = `<h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar (las mejores del mundo no se venden: a esas hay que criarlas y entrenarlas). El precio sale de su palmarés y su linaje. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}`;
+      else if (vista === "avisos") lateral = `<h3>Avisos de la cuadra</h3>${nAvisos ? `<ul class="hip-avisos">${api.avisos().slice(0, 40).map(a => `<li><small>n.º ${a.n}</small> ${esc(a.texto)}</li>`).join("")}</ul>` : '<p class="hip-vacio">Todavía no hay avisos.</p>'}`;
+      else lateral = `${!adoptada && !mias.length ? `<div class="hip-adoptar"><h4>Recibe tu primera criatura</h4><p class="hip-nota">La casa te da una criatura joven, de cuerpo corriente, lista para debutar. Es gratis y solo se hace una vez.</p>
+          <label>Sexo <select id="hipAdoptarSexo"><option value="f">Hembra</option><option value="m">Macho</option></select></label> <button type="button" class="hip-boton principal" data-o="adoptar">Adoptar</button></div>` : ""}
+        ${mias.length > 1 ? `<div class="hip-criadero-tira">${mias.map(e => `<button type="button" data-sel="${e.p.id}" aria-pressed="${e.p.id === selId}">${esc(e.p.nombre)}<small>${esc(e.p.etapa)}</small></button>`).join("")}</div>` : ""}
+        <div class="hip-mias">${elegida ? tarjetaMia(elegida, cal, semental) : ""}</div>`;
+      const boton = (v, t, n) => `<button type="button" data-vista="${v}" aria-pressed="${vista === v}">${t}${n != null ? ` <small>${n}</small>` : ""}</button>`;
+      const modo = (document.querySelector(".hip-modo") || {}).textContent || "", pl = /[?&]local\b/.test(location.search) ? "?local" : "";
+      const html = `<div class="hcp-escena-hueco"></div>
+        <header class="hcp-barra"><a class="hcp-volver" href="hipodromo.html${pl}">← Hipódromo</a><h2>${T("cuadra", "Mi cuadra")}</h2><span class="hcp-tokens">Tokens <strong>${mon(api.saldo())}</strong></span>
+          <nav class="hcp-enlaces" aria-label="Tu cuadra">${boton("mias", "Criaturas", mias.length + "/" + max)}${boton("mercado", "Mercado", merc)}${boton("avisos", "Avisos", nAvisos)}
+            <a href="hipodromo.html${pl}#carrera">Próxima carrera</a><a href="hipodromo.html${pl}#cartas" title="Vende cartas para tener tokens">Cartas por tokens</a><a href="hipodromo.html${pl}#criaturas">Criaturas del mundo</a><a href="hipodromo-vivo.html">▶ Ver en vivo</a></nav></header>
+        <aside class="hcp-lateral${panel ? "" : " cerrado"}" aria-label="Panel de la cuadra"><div class="hcp-lateral-cuerpo">${lateral}</div></aside>
+        <button type="button" class="hcp-pestana${panel ? " abierto" : ""}" data-panel aria-expanded="${panel}" aria-label="${panel ? "Esconder el panel" : "Enseñar el panel"}">${panel ? "▸" : "◂ Ficha"}</button>
+        <p class="hip-aviso hcp-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p>${/local/i.test(modo) ? '<span class="hcp-modo">Prueba local</span>' : ""}`;
+      if (!forzar && html === hash) return;
+      hash = html;
+      const antes = cont.querySelector(".hcp-lateral-cuerpo"), top = antes ? antes.scrollTop : 0, mismaVista = antes && antes.dataset.v === vista + ":" + selId;
+      cont.innerHTML = html;
+      const cuerpo = cont.querySelector(".hcp-lateral-cuerpo"); if (cuerpo) { cuerpo.dataset.v = vista + ":" + selId; if (mismaVista) cuerpo.scrollTop = top; }
+      if (escena) { cont.querySelector(".hcp-escena-hueco").appendChild(escena.nodo); escena.sincronizar(mias); escena.seleccionar(selId, false); escena.activar(true); }
+      marcarEspera();
+    }
     function pintar(forzar) {
+      if (pleno) { pintarPleno(forzar); return; }
       if (api.listo && !api.listo()) return;
       const mias = api.mias(), cal = api.calendario(), max = M.C.MAX_CABALLOS, adoptada = api.adoptada();
       const semental = api.sementales();
@@ -190,11 +224,12 @@ window.HipodromoCuadraUI = (function () {
       if (t.dataset && t.dataset.montaprecio) montaTxt[t.dataset.montaprecio] = t.value;
     });
     cont.addEventListener("click", async e => {
+      if (e.target.closest("[data-panel]")) { panel = !panel; pintar(true); return; }
       const v = e.target.closest("[data-vista]");
       if (v) { vista = v.dataset.vista; pintar(true); return; }
       if (e.target.closest("[data-mercmas]")) { mercMax += 12; pintar(true); return; }
       const sl = e.target.closest("[data-sel]");
-      if (sl) { const id = Number(sl.dataset.sel); selId = id; if (escena) { escena.seleccionar(id, false); escena.destacar(id); } pintar(true); return; }
+      if (sl) { const id = Number(sl.dataset.sel); selId = id; vista = "mias"; if (pleno) panel = true; if (escena) { escena.seleccionar(id, false); escena.destacar(id); } pintar(true); return; }
       const b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
       const id = Number(b.dataset.id), tipo = b.dataset.o;
       if (tipo === "adoptar") return mandar({ tipo, nombre: api.nombreJugador(), sexo: (cont.querySelector("#hipAdoptarSexo") || {}).value || "f" });

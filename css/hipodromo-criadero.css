@@ -70,3 +70,43 @@
 .hc-rueda { transform-box: fill-box; transform-origin: 50% 50%; }
 .hc-nombre small { font-weight: 500; color: #cfe6c9; margin-left: 2px; }
 @media (prefers-reduced-motion: reduce) { .hc-mata, .hc-copa, .hc-nube, .hc-hoja, .hc-mariposa, .hc-alas { animation: none; } }
+
+/* ---------------------------------------------------------------- La cuadra a pantalla completa (hipodromo.html?cuadra): la escena lo llena todo, lo demás flota encima */
+html.hip-pleno, html.hip-pleno body { height: 100%; overflow: hidden; }
+html.hip-pleno .mj-barra, html.hip-pleno .hip-cabecera, html.hip-pleno #hipModoNota, html.hip-pleno .hip-fija, html.hip-pleno #hipAviso, html.hip-pleno .hip-panel:not(#hipPanel-cuadra) { display: none !important; }
+html.hip-pleno .hip-pagina { max-width: none; width: 100%; padding: 0; margin: 0; }
+html.hip-pleno .hip-pagina:not(.cargando) #hipPanel-cuadra { display: block !important; position: fixed; inset: 0; z-index: 20; }
+html.hip-pleno #hipCuadra { position: absolute; inset: 0; }
+html.hip-pleno #hipCargando { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 30; margin: 0; }
+.hcp-escena-hueco { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(#7fbcc4 0, #bfe0d2 40%, #3f7438 40.5%, #3f7438 100%); }
+html.hip-pleno .hip-criadero { flex: none; width: min(100vw, calc(100vh * 2.05)); height: auto; max-height: none; aspect-ratio: 2.05 / 1; margin: 0; border: 0; }
+.hcp-barra { position: absolute; left: 0; right: 0; top: 0; z-index: 6000; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; padding: 9px 14px; background: rgba(10, 22, 16, .86); border-bottom: 1px solid rgba(230, 194, 78, .3); }
+.hcp-volver { color: var(--accent); text-decoration: none; font: 600 .85rem Karla, sans-serif; }
+.hcp-volver:hover { text-decoration: underline; }
+.hcp-barra h2 { margin: 0; font: 600 1.05rem var(--font-heading), serif; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.hcp-tokens { color: var(--muted); font-size: .85rem; }
+.hcp-tokens strong { color: var(--text); font-size: 1rem; margin-left: 4px; }
+.hcp-enlaces { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.hcp-enlaces a, .hcp-enlaces button { font: 600 .8rem Karla, sans-serif; padding: 5px 12px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); text-decoration: none; cursor: pointer; }
+.hcp-enlaces a:hover, .hcp-enlaces button:hover { border-color: var(--accent); }
+.hcp-enlaces button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.hcp-enlaces small { color: var(--muted); margin-left: 3px; }
+.hcp-lateral { position: absolute; right: 0; top: 54px; bottom: 0; width: min(440px, 94vw); z-index: 6500; display: flex; flex-direction: column; background: rgba(18, 38, 28, .95); border-left: 1px solid var(--border); transition: transform .25s ease; }
+.hcp-lateral.cerrado { transform: translateX(104%); }
+.hcp-lateral-cuerpo { flex: 1; overflow: auto; padding: 12px 14px 28px; }
+.hcp-lateral h3 { margin: 0 0 8px; }
+.hcp-pestana { position: absolute; right: min(440px, 94vw); top: 66px; z-index: 6600; padding: 8px 10px; background: rgba(18, 38, 28, .95); color: var(--accent); border: 1px solid var(--border); border-right: 0; font: 600 .8rem Karla, sans-serif; cursor: pointer; transition: right .25s ease; }
+.hcp-pestana:not(.abierto) { right: 0; }
+.hcp-aviso { position: absolute; left: 14px; bottom: 14px; z-index: 6200; max-width: min(520px, 60vw); margin: 0; padding: 6px 12px; background: rgba(10, 22, 16, .88); border-left: 3px solid var(--accent-soft); }
+.hcp-aviso:empty { display: none; }
+.hcp-modo { position: absolute; left: 14px; top: 58px; z-index: 6100; padding: 2px 8px; font-size: .72rem; color: var(--muted); background: rgba(10, 22, 16, .7); border: 1px dashed var(--border); }
+@media (max-aspect-ratio: 1 / 1) { html.hip-pleno .hip-criadero { width: 100vw; aspect-ratio: 1.15 / 1; } }
+@media (max-width: 700px) {
+  .hcp-barra h2 { display: none; }
+  .hcp-enlaces { margin-left: 0; }
+  .hcp-lateral { top: auto; height: 62vh; width: 100%; border-left: 0; border-top: 1px solid var(--border); }
+  .hcp-lateral.cerrado { transform: translateY(104%); }
+  .hcp-pestana, .hcp-pestana:not(.abierto) { right: 8px; top: auto; bottom: calc(62vh + 6px); border: 1px solid var(--border); }
+  .hcp-pestana:not(.abierto) { bottom: 8px; }
+  .hcp-aviso { bottom: auto; top: 96px; }
+}

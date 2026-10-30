@@ -201,7 +201,8 @@ window.HipodromoCriadero = (function () {
       const { el, o } = objetos[k], esc = 1 - o.f * ESC_F, wpx = W * o.w / 100 * (0.7 + 0.3 * esc);
       const ys = H * (Y0 - o.f * (Y0 - Y1)), alto = el.firstChild.viewBox.baseVal.height / el.firstChild.viewBox.baseVal.width * wpx;
       el.style.width = wpx.toFixed(1) + "px"; el.style.transform = "translate(" + (W * o.x / 100 - wpx / 2).toFixed(1) + "px," + (ys - alto * 0.94 - (alzado || 0)).toFixed(1) + "px)";
-      el.style.zIndex = 2 * (1000 - Math.round(o.f * 900)) + 1;
+      // la cama de heno queda por debajo de las criaturas que se echan encima; lo demás, justo por encima de las que están en su mismo plano
+      el.style.zIndex = 2 * (1000 - Math.round(o.f * 900)) + (k === "heno" ? -1 : 1);
     }
     function medidas() {
       const r = nodo.getBoundingClientRect(); W = Math.max(200, r.width); H = Math.max(160, r.height);
@@ -415,7 +416,11 @@ window.HipodromoCriadero = (function () {
       if (pob.rueda) pob.rueda.style.transform = "rotate(" + bola.giro.toFixed(0) + "deg)";
       lista.forEach(w => {
         const a = w.a, f = a.f, escala = (1 - f * ESC_F) * w.esc, wpx = W * ANCHO_BASE * escala, hpx = wpx * 148 / 240;
-        const xs = W * a.x / 100, ys = H * (Y0 - f * (Y0 - Y1));
+        // echada sobre la cama de heno: sube a la altura de la manta (y se coloca justo en su sitio) en vez de quedar delante
+        const enCama = w.plan && w.plan.obj === "heno" && w.plan.fase === "hacer" && (a.estado === "echar" || a.estado === "levantar");
+        if (enCama && !w.enCama) { a.x = w.plan.spot.x; a.f = w.plan.spot.f; }
+        w.enCama = enCama; w.alza = acerca(w.alza || 0, enCama ? W * 0.021 * (1 - f * ESC_F) : 0, 5, dt);
+        const xs = W * a.x / 100, ys = H * (Y0 - f * (Y0 - Y1)) - w.alza;
         const ctx = { dt, pxPorUnidad: wpx / 240 * a.titere.R.k, vPx: w.vm * W / 100, modo: w.modo, ant: 0, rasca: null, omitir: false, inclina: 0, cuExtra: 0, cabExtra: 0 };
         if (w.rasca && a.estado === "mirar") { ctx.inclina = 4 * Math.sin(tReloj * 5 + a.semilla); ctx.cuExtra = 6 * Math.sin(tReloj * 5 + 1); } else w.rasca = 0;
         // comer, beber y pastar: nunca con la cabeza clavada en una postura; baja, muerde, sube a masticar y de vez en cuando mira alrededor

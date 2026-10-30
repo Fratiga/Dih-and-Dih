@@ -36,6 +36,11 @@
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
   // la página en vivo manda aquí con #carrera, #noticias... (apostar, resultados completos)
   { const h = location.hash.slice(1); if (["carrera", "cuadra", "cartas", "criaturas", "noticias", "apuestas", "mundo"].includes(h)) pestana = h; }
+  // la cuadra tiene su propia pantalla completa (hipodromo.html?cuadra): las entradas antiguas con #cuadra y la pestaña guardada llevan allí o a la carrera
+  const PLENO = /[?&]cuadra\b/.test(location.search);
+  const LOCAL = /[?&]local\b/.test(location.search) ? "&local" : "";   // la prueba local se conserva al ir y volver de la cuadra
+  if (!PLENO && location.hash === "#cuadra") location.replace("hipodromo.html?cuadra" + LOCAL);
+  if (PLENO) pestana = "cuadra"; else if (pestana === "cuadra") pestana = "carrera";
 
   /* ---------------------------------------------------------------- guardar y crear */
   function cargar() {
@@ -641,12 +646,13 @@
     mostrarPestana(pestana, true);
   }
   function mostrarPestana(id, sinGuardar) {
+    if (id === "cuadra" && !PLENO) { location.href = "hipodromo.html?cuadra" + LOCAL; return; }
     pestana = id;
     document.body.dataset.pestana = id;
     if (id !== "carrera") abrirBoleto(false);
     document.querySelectorAll("[data-pestana]").forEach(b => { const on = b.dataset.pestana === id; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
     document.querySelectorAll(".hip-panel").forEach(p => p.classList.toggle("hidden", p.id !== "hipPanel-" + id));
-    if (!sinGuardar) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
+    if (!sinGuardar && !PLENO) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
     if (id === "criaturas") pintarCriaturas();
     if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
     if (id === "cartas" && cartasUI) cartasUI.abrir();
@@ -764,7 +770,7 @@
     }
     online = r.en; est = online.est; m = online.m;
     ponerModoServidor();
-    if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiOnlineCuadra(), $("hipCuadra"));
+    if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiOnlineCuadra(), $("hipCuadra"), { pleno: PLENO });
     if (window.HipodromoCartas) cartasUI = window.HipodromoCartas.crear({ supa: online.supa, yo: online.yo, saldo: () => est.saldo, monedas, refrescarCuenta: online.refrescarCuenta }, $("hipCartas"));
     $("hipCargando").classList.add("hidden");
     pintarTodo();
@@ -801,7 +807,7 @@
   async function iniciar() {
     iniciarEventos();
     if (await iniciarServidor()) return;
-    if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiLocal, $("hipCuadra"));
+    if (window.HipodromoCuadraUI) cuadraUI = window.HipodromoCuadraUI.crear(apiLocal, $("hipCuadra"), { pleno: PLENO });
     est = cargar();
     if (est) {
       m = est.mundo; est.vel = est.vel == null ? 10 : est.vel;

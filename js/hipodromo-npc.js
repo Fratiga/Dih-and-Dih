@@ -468,7 +468,7 @@
             const c = X.buscar(m, Number(o.criatura));
             if (!c || m.vivos.indexOf(c) < 0 || c.estado !== "activo") return falla("Esa criatura no está en pista.");
             if (c.dueno) return falla("Esa criatura ya tiene dueño.");
-            if (suyas().length >= X.C.MAX_CABALLOS) return falla(`${P.nombre} ya tiene ${X.C.MAX_CABALLOS} criaturas.`);
+            const tope = X.C.MAX_NPC || X.C.MAX_CABALLOS; if (suyas().length >= tope) return falla(`${P.nombre} ya tiene ${tope} criaturas.`);
             c.dueno = P.id; c.entradas = []; c.tactica = P.tactica || null; ev.cambios.add(c.id);
             m.npc.ultimaOrden = o.id; return bien(`${c.nombre} pasa a la cuadra de ${P.nombre}.`);
           }
