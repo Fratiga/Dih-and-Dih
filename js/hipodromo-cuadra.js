@@ -16,6 +16,9 @@ window.HipodromoCuadraUI = (function () {
   function crear(api, cont) {
     const M = api.M, D = api.D;
     let msg = { texto: "", clase: "" }, ocupado = false, abiertas = new Set(), hash = "";
+    // el criadero: la escena donde viven mis criaturas (js/hipodromo-criadero.js). Es una sola pieza viva que se recoloca tras cada dibujo; elegir una criatura enseña su ficha debajo
+    let selId = null;
+    const escena = window.HipodromoCriadero && window.HipodromoVida ? window.HipodromoCriadero.crear(api, { alSeleccionar: id => { selId = id; pintar(true); } }) : null;
     const mon = x => api.monedas(x);
     const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
 
@@ -38,6 +41,7 @@ window.HipodromoCuadraUI = (function () {
       try { r = await api.ordenar(o); } catch (e) { r = { ok: false, error: "No se pudo enviar la orden." }; }
       ocupado = false; enCurso = null;
       msg = r.ok ? { texto: r.texto || textoOk || "Hecho.", clase: "bien" } : { texto: r.error || "No se pudo.", clase: "mal" };
+      if (r.ok && o.tipo === "cuidar" && escena) escena.efecto(o.id, "cuidar");
       pintar(true);
     }
 
@@ -101,7 +105,25 @@ window.HipodromoCuadraUI = (function () {
         <p class="hip-nota">${p.sexo === "f" ? "Hembra" : "Macho"} · ${esc(p.etapa)} · ${api.edadTxt(p)} · ${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</p>
         <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}</div></div>
         <div class="hip-caps"><div class="hip-cap"><span>${T("cansancio", "Cansancio")}</span>${barra(c.fatiga, 100, c.fatiga > 55 ? "mal" : "")}<b>${c.fatiga}</b></div><p class="hip-nota">${T("forma", "Forma")}: ${esc(c.forma)}.</p>${cap}<p class="hip-nota">Tu entrenador estima las ${T("capacidades", "capacidades")} de cinco en cinco. La suerte del día no sale ahí.</p></div>
-        ${fila}${acciones}</article>`;
+        ${fila}<p class="hip-cuidar-nota">Cuidar (${M.C.CUIDADO_COSTE}): quita 20 de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? " y acorta la lesión un 40 %" : ""}. Se puede cada ${M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${historiaHtml(p)}</article>`;
+    }
+    /* La familia de una criatura: padres, hermanos y crías. Si viven en mi criadero, el nombre la elige y la señala en la escena; si no, abre su ficha. */
+    function familiaHtml(p) {
+      const mias = api.mias().map(x => x.p), estan = id => mias.some(x => x.id === id);
+      const enlace = (id, nombre) => estan(id) ? `<button type="button" class="hip-enlace" data-sel="${id}" title="Señalar en el criadero">${esc(nombre)}</button>` : `<button type="button" class="hip-enlace" data-ficha="${id}">${esc(nombre)}</button>`;
+      const lineas = [];
+      const padres = [p.padre, p.madre].filter(Boolean).map(x => enlace(x.id, x.nombre));
+      if (padres.length) lineas.push(`<strong>Padres</strong> ${padres.join(" y ")}`);
+      const hermanos = mias.filter(x => x.id !== p.id && ((x.padre && p.padre && x.padre.id === p.padre.id) || (x.madre && p.madre && x.madre.id === p.madre.id)));
+      if (hermanos.length) lineas.push(`<strong>Hermanos</strong> ${hermanos.map(x => enlace(x.id, x.nombre)).join(", ")}`);
+      const crias = mias.filter(x => (x.padre && x.padre.id === p.id) || (x.madre && x.madre.id === p.id));
+      if (crias.length) lineas.push(`<strong>Crías</strong> ${crias.map(x => enlace(x.id, x.nombre)).join(", ")}`);
+      return lineas.length ? `<p class="hip-familia">${lineas.join("<br>")}</p>` : "";
+    }
+    /* Lo que le ha pasado a esta criatura, de los avisos reales de la cuadra */
+    function historiaHtml(p) {
+      const l = api.avisos().filter(a => a.id === p.id).slice(0, 4);
+      return l.length ? `<ul class="hip-historia">${l.map(a => `<li><small>n.º ${a.n}</small>${esc(a.texto)}</li>`).join("")}</ul>` : "";
     }
     const ORDENES = { precio: ["Precio, de menor a mayor", (a, b) => a.precio - b.precio], caro: ["Precio, de mayor a menor", (a, b) => b.precio - a.precio],
       valor: ["Mejor valoración", (a, b) => (b.estrellas || 0) - (a.estrellas || 0) || a.precio - b.precio], vic: ["Más victorias", (a, b) => b.vic - a.vic || a.precio - b.precio], jovenes: ["Más jóvenes", (a, b) => b.nac - a.nac || a.precio - b.precio] };
@@ -122,6 +144,8 @@ window.HipodromoCuadraUI = (function () {
       if (api.listo && !api.listo()) return;
       const mias = api.mias(), cal = api.calendario(), max = M.C.MAX_CABALLOS, adoptada = api.adoptada();
       const semental = api.sementales();
+      if (!mias.some(e => e.p.id === selId)) selId = mias[0] ? mias[0].p.id : null;
+      const elegida = mias.find(e => e.p.id === selId);
       const nAvisos = api.avisos().length, merc = api.mercado().length;
       const subpestanas = `<nav class="hip-subpestanas" aria-label="Secciones de la cuadra">
         <button type="button" data-vista="mias" aria-pressed="${vista === "mias"}">Mis criaturas <small>${mias.length}/${max}</small></button>
@@ -135,10 +159,15 @@ window.HipodromoCuadraUI = (function () {
       else cuerpo = `<section class="hip-tarjeta"><p class="hip-nota hip-nota-cuadra">Aquí eres el dueño. Inscribes a tus criaturas en las carreras que quieras (los entrenadores del mundo no las mueven), las entrenas, las cuidas y, cuando se retiren, las cruzas. Cada carrera paga una bolsa a los cinco primeros y esa bolsa es tuya. Correr cuesta una inscripción y entrenar y cuidar también cuestan: no a todas les sale a cuenta.</p>
         ${!adoptada && !mias.length ? `<div class="hip-adoptar"><h4>Recibe tu primera criatura</h4><p class="hip-nota">La casa te da una criatura joven, de cuerpo corriente, lista para debutar. Es gratis y solo se hace una vez.</p>
           <label>Sexo <select id="hipAdoptarSexo"><option value="f">Hembra</option><option value="m">Macho</option></select></label> <button type="button" class="hip-boton principal" data-o="adoptar">Adoptar</button></div>` : ""}
-        <div class="hip-mias">${mias.map(e => tarjetaMia(e, cal, semental)).join("")}</div></section>`;
-      const html = `${cabecera}${subpestanas}${cuerpo}`;
+        ${mias.length > 1 ? `<div class="hip-criadero-tira">${mias.map(e => `<button type="button" data-sel="${e.p.id}" aria-pressed="${e.p.id === selId}">${esc(e.p.nombre)}<small>${esc(e.p.etapa)}</small></button>`).join("")}</div>` : ""}
+        <div class="hip-mias">${elegida ? tarjetaMia(elegida, cal, semental) : ""}</div></section>`;
+      const html = `${cabecera}${subpestanas}${vista === "mias" && escena ? '<div class="hip-esc-hueco"></div>' : ""}${cuerpo}`;
       if (!forzar && html === hash) return;
       hash = html; cont.innerHTML = html;
+      if (escena) {
+        const hueco = cont.querySelector(".hip-esc-hueco");
+        if (hueco) { hueco.appendChild(escena.nodo); escena.sincronizar(mias); escena.seleccionar(selId, false); escena.activar(true); } else escena.activar(false);
+      }
       marcarEspera();
     }
 
@@ -158,12 +187,19 @@ window.HipodromoCuadraUI = (function () {
       const v = e.target.closest("[data-vista]");
       if (v) { vista = v.dataset.vista; pintar(true); return; }
       if (e.target.closest("[data-mercmas]")) { mercMax += 12; pintar(true); return; }
+      const sl = e.target.closest("[data-sel]");
+      if (sl) { const id = Number(sl.dataset.sel); selId = id; if (escena) { escena.seleccionar(id, false); escena.destacar(id); } pintar(true); return; }
       const b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
       const id = Number(b.dataset.id), tipo = b.dataset.o;
       if (tipo === "adoptar") return mandar({ tipo, nombre: api.nombreJugador(), sexo: (cont.querySelector("#hipAdoptarSexo") || {}).value || "f" });
       if (tipo === "inscribir" || tipo === "desinscribir") return mandar({ tipo, id, n: Number(b.dataset.n) });
       if (tipo === "entrenar") return mandar({ tipo, id, stat: (cont.querySelector(`[data-stat="${id}"]`) || {}).value });
-      if (tipo === "cuidar") return mandar({ tipo, id });
+      if (tipo === "cuidar") {
+        const e2 = api.mias().find(x => x.p.id === id);
+        const efecto = e2 ? `Quita 20 de cansancio (ahora ${e2.c.fatiga})${e2.p.lesion && e2.p.lesion.gravedad !== "grave" ? " y acorta su lesión un 40 %" : ""}.` : "";
+        if (!(await dialogo.confirmar(`Cuidados veterinarios${e2 ? " para " + e2.p.nombre : ""}. ${efecto} Cuestan ${mon(M.C.CUIDADO_COSTE)} tokens.`, { titulo: "Cuidar", aceptar: "Cuidar" }))) return;
+        return mandar({ tipo, id });
+      }
       if (tipo === "comprar") {
         const p = api.perfil(id);
         if (!(await dialogo.confirmar(`Comprar a ${p.nombre} por ${mon(p.precio)} tokens.`, { titulo: "Comprar", aceptar: "Comprar" }))) return;
