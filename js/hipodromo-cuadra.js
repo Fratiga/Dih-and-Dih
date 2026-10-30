@@ -195,7 +195,7 @@ window.HipodromoCuadraUI = (function () {
       return `<div class="hip-ar" style="width:${ANCHO}px;height:${alto}px"><svg class="hip-ar-lineas" width="${ANCHO}" height="${alto}" viewBox="0 0 ${ANCHO} ${alto}" aria-hidden="true">${svg}</svg>${nodos.map(n => tarjeta(n)).join("")}${hijosHtml}</div>`;
     }
     function arbolHtml(p) {
-      if (!p.padre && !p.madre && !(api.todas && api.todas().some(c => (c.padre && c.padre.id === p.id) || (c.madre && c.madre.id === p.id)))) return "";
+      if (!p.padre && !p.madre && !(api.todas && api.todas().some(c => (c.padre && c.padre.id === p.id) || (c.madre && c.madre.id === p.id)))) return `<p class="hip-nota">Árbol genealógico: aún sin familia conocida. Saldrá cuando tenga padres o crías.</p>`;
       if (pleno) return `<p><button type="button" class="hip-boton chico" data-arbol="${p.id}">Árbol genealógico</button></p>`;
       return `<details data-d="arb${p.id}"${abiertas.has("arb" + p.id) ? " open" : ""}><summary>Árbol genealógico</summary><div class="hip-ar-caja">${arbolVista(p)}</div></details>`;
     }
