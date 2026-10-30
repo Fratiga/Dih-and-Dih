@@ -47,3 +47,26 @@
 .hip-cuidar-nota { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
 @media (max-width: 640px) { .hip-criadero { aspect-ratio: 4 / 3.4; } .hc-cartel { font-size: .5rem; padding: 0 6px; } }
 @media (prefers-reduced-motion: reduce) { .hc-icono.sueno, .hc-pelota.bota svg, .hc-pelota.bota .hc-rueda { animation: none; } }
+
+/* Segunda pasada: primer plano, viento y detalles del ambiente */
+.hc-frente { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 5000; }
+.hc-mata, .hc-copa { transform-box: fill-box; transform-origin: 50% 100%; }
+.hc-mata { animation: hcMeceo 3.8s ease-in-out infinite; }
+.hc-copa { animation: hcCopa 7s ease-in-out infinite; }
+.hc-nube { animation: hcNube linear infinite; }
+@keyframes hcMeceo { 0%, 100% { transform: skewX(-2.5deg); } 50% { transform: skewX(3deg); } }
+@keyframes hcCopa { 0%, 100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.3deg); } }
+@keyframes hcNube { from { transform: translateX(-30px); } to { transform: translateX(60px); } }
+.hc-aire { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 4900; }
+.hc-hoja { position: absolute; top: -6%; width: 9px; height: 5px; background: #6aa14b; border-radius: 80% 0 80% 0; opacity: .85; animation: hcHoja linear infinite; }
+.hc-hoja:nth-child(3n) { background: #c9873a; } .hc-hoja:nth-child(4n) { background: #4f8a3e; }
+@keyframes hcHoja { 0% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(24px, 28vh) rotate(160deg); } 50% { transform: translate(-6px, 52vh) rotate(300deg); } 75% { transform: translate(30px, 74vh) rotate(460deg); } 100% { transform: translate(8px, 105vh) rotate(620deg); } }
+.hc-mariposa { position: absolute; width: 16px; height: auto; left: 0; top: 0; animation: hcVuelo1 24s ease-in-out infinite; }
+.hc-mariposa.m1 { animation: hcVuelo2 31s ease-in-out infinite; animation-delay: -9s; }
+.hc-alas { transform-box: fill-box; transform-origin: 50% 50%; animation: hcAletea .22s ease-in-out infinite alternate; }
+@keyframes hcAletea { from { transform: scaleX(1); } to { transform: scaleX(.35); } }
+@keyframes hcVuelo1 { 0% { transform: translate(8vw, 60%); } 25% { transform: translate(30vw, 36%); } 50% { transform: translate(52vw, 64%); } 75% { transform: translate(70vw, 42%); } 100% { transform: translate(8vw, 60%); } }
+@keyframes hcVuelo2 { 0% { transform: translate(86vw, 50%); } 30% { transform: translate(60vw, 70%); } 60% { transform: translate(34vw, 46%); } 100% { transform: translate(86vw, 50%); } }
+.hc-rueda { transform-box: fill-box; transform-origin: 50% 50%; }
+.hc-nombre small { font-weight: 500; color: #cfe6c9; margin-left: 2px; }
+@media (prefers-reduced-motion: reduce) { .hc-mata, .hc-copa, .hc-nube, .hc-hoja, .hc-mariposa, .hc-alas { animation: none; } }

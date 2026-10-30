@@ -103,9 +103,15 @@ window.HipodromoCuadraUI = (function () {
       }
       return `<article class="hip-mia"><div class="hip-mia-cab">${D.silueta(p, { clase: "hip-silueta mediana" })}<div><h4>${ficha}</h4>
         <p class="hip-nota">${p.sexo === "f" ? "Hembra" : "Macho"} · ${esc(p.etapa)} · ${api.edadTxt(p)} · ${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</p>
-        <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}</div></div>
+        <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}${temperamentoHtml(p)}</div></div>
         <div class="hip-caps"><div class="hip-cap"><span>${T("cansancio", "Cansancio")}</span>${barra(c.fatiga, 100, c.fatiga > 55 ? "mal" : "")}<b>${c.fatiga}</b></div><p class="hip-nota">${T("forma", "Forma")}: ${esc(c.forma)}.</p>${cap}<p class="hip-nota">Tu entrenador estima las ${T("capacidades", "capacidades")} de cinco en cinco. La suerte del día no sale ahí.</p></div>
         ${fila}<p class="hip-cuidar-nota">Cuidar (${M.C.CUIDADO_COSTE}): quita 20 de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? " y acorta la lesión un 40 %" : ""}. Se puede cada ${M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${historiaHtml(p)}</article>`;
+    }
+    /* El temperamento que se le nota en el criadero (js/hipodromo-criadero.js): solo presentación */
+    function temperamentoHtml(p) {
+      if (!window.HipodromoCriadero) return "";
+      const t = window.HipodromoCriadero.temperamento(p).texto;
+      return t.length ? `<p class="hip-nota">En el criadero se la ve ${t.join(", ")}.</p>` : "";
     }
     /* La familia de una criatura: padres, hermanos y crías. Si viven en mi criadero, el nombre la elige y la señala en la escena; si no, abre su ficha. */
     function familiaHtml(p) {

@@ -76,13 +76,13 @@ window.HipodromoCriadero = (function () {
   function fondoSvg() {
     const r = azar(7), W = 1000, H = 500, partes = [];
     const arbol = (x, y, k, tono) => `<g transform="translate(${x} ${y}) scale(${k})"><ellipse cx="0" cy="2" rx="34" ry="6" fill="#0b2a14" opacity=".28"/><path d="M-5 0 L-3 -46 H3 L5 0 Z" fill="#5a3a22"/>
-      <circle cx="-16" cy="-62" r="26" fill="${tono[0]}"/><circle cx="14" cy="-66" r="28" fill="${tono[1]}"/><circle cx="0" cy="-86" r="26" fill="${tono[2]}"/><circle cx="-8" cy="-92" r="10" fill="#fff" opacity=".07"/></g>`;
+      <g class="hc-copa" style="animation-delay:-${(x % 7).toFixed(1)}s"><circle cx="-16" cy="-62" r="26" fill="${tono[0]}"/><circle cx="14" cy="-66" r="28" fill="${tono[1]}"/><circle cx="0" cy="-86" r="26" fill="${tono[2]}"/><circle cx="-8" cy="-92" r="10" fill="#fff" opacity=".07"/></g></g>`;
     partes.push(`<defs><linearGradient id="hcCielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fbcc4"/><stop offset=".6" stop-color="#bfe0d2"/><stop offset="1" stop-color="#e5ecd0"/></linearGradient>
       <linearGradient id="hcPrado" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d9a52"/><stop offset=".55" stop-color="#4f8a46"/><stop offset="1" stop-color="#3f7438"/></linearGradient>
       <radialGradient id="hcSombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#0b2a14" stop-opacity=".34"/><stop offset="1" stop-color="#0b2a14" stop-opacity="0"/></radialGradient></defs>
       <rect width="${W}" height="${H}" fill="url(#hcCielo)"/>`);
     // nubes
-    [[150, 70, 1], [520, 46, 1.2], [820, 88, .9]].forEach(([x, y, k]) => partes.push(`<g transform="translate(${x} ${y}) scale(${k})" fill="#fff" opacity=".8"><ellipse cx="0" cy="0" rx="46" ry="12"/><ellipse cx="26" cy="-9" rx="28" ry="12"/><ellipse cx="-24" cy="-6" rx="24" ry="10"/></g>`));
+    [[150, 70, 1], [520, 46, 1.2], [820, 88, .9]].forEach(([x, y, k]) => partes.push(`<g class="hc-nube" style="animation-duration:${70 + x % 50}s;animation-delay:-${x % 40}s"><g transform="translate(${x} ${y}) scale(${k})" fill="#fff" opacity=".8"><ellipse cx="0" cy="0" rx="46" ry="12"/><ellipse cx="26" cy="-9" rx="28" ry="12"/><ellipse cx="-24" cy="-6" rx="24" ry="10"/></g></g>`));
     // colinas lejanas y bosque
     partes.push(`<path d="M0 232 C120 188 220 206 330 196 C450 186 540 214 650 198 C770 182 880 206 1000 190 V300 H0 Z" fill="#7aa88a"/>
       <path d="M0 252 C100 226 240 244 360 232 C500 220 600 250 740 236 C860 226 940 244 1000 236 V310 H0 Z" fill="#5f9570"/>`);
@@ -116,6 +116,30 @@ window.HipodromoCriadero = (function () {
     return `<svg class="hc-fondo" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${partes.join("")}</svg>`;
   }
 
+  /* El primer plano: matas de hierba altas que tapan un poco los pies de las criaturas de delante, arbustos en las esquinas y una rama arriba. Encuadra la escena y le da profundidad. */
+  function frenteSvg() {
+    const r = azar(113), W = 1000, H = 500, p = [];
+    const mata = (x, y, k, tono, retraso) => {
+      let d = "";
+      for (let i = 0; i < 7; i++) { const dx = (i - 3) * 4.2 * k, alto = (22 + r() * 16) * k, curva = (r() * 2 - 1) * 7 * k; d += `M${(x + dx).toFixed(1)} ${y} Q${(x + dx + curva).toFixed(1)} ${(y - alto * 0.6).toFixed(1)} ${(x + dx + curva * 1.6).toFixed(1)} ${(y - alto).toFixed(1)} `; }
+      return `<g class="hc-mata" style="animation-delay:-${retraso.toFixed(1)}s"><path d="${d}" fill="none" stroke="${tono}" stroke-width="${(2.6 * k).toFixed(1)}" stroke-linecap="round"/></g>`;
+    };
+    for (let i = 0; i < 30; i++) { const x = 6 + i * 33 + r() * 20, y = 486 + r() * 18; p.push(mata(x, y, 1 + (y - 486) / 18 * 0.5, r() < 0.5 ? "#2f6a3a" : "#3f7d44", r() * 5)); }
+    ["#f2f0e0", "#e86f8a", "#f2c14e", "#a98ae0"].forEach((c, i) => { for (let j = 0; j < 4; j++) { const x = r() * W, y = 484 + r() * 14; p.push(`<g class="hc-mata" style="animation-delay:-${(r() * 4).toFixed(1)}s"><path d="M${x.toFixed(0)} ${y.toFixed(0)} V${(y - 22).toFixed(0)}" stroke="#2f6a3a" stroke-width="2"/><circle cx="${x.toFixed(0)}" cy="${(y - 24).toFixed(0)}" r="5" fill="${c}"/><circle cx="${x.toFixed(0)}" cy="${(y - 24).toFixed(0)}" r="1.8" fill="#7a4a1a"/></g>`); } });
+    const arbusto = (x, y, k) => `<g class="hc-mata" transform="translate(${x} ${y}) scale(${k})" style="animation-delay:-1.5s"><circle cx="-34" cy="-6" r="30" fill="#2c6137"/><circle cx="0" cy="-22" r="38" fill="#357a42"/><circle cx="36" cy="-8" r="30" fill="#2c6137"/><circle cx="-10" cy="-30" r="14" fill="#4a9356" opacity=".6"/><circle cx="26" cy="-22" r="9" fill="#4a9356" opacity=".5"/></g>`;
+    p.push(arbusto(-6, 520, 1.25), arbusto(1010, 524, 1.15));
+    // rama que cuelga arriba a la izquierda
+    p.push(`<g class="hc-mata" style="animation-delay:-2.2s"><path d="M-10 -6 C90 18 160 6 230 40" fill="none" stroke="#4a2f1b" stroke-width="9" stroke-linecap="round"/>${[[60, 20], [110, 24], [160, 22], [205, 38], [90, 32], [140, 32]].map(([x, y]) => `<ellipse cx="${x}" cy="${y + 12}" rx="22" ry="11" fill="#357a42" transform="rotate(${(x % 40) - 20} ${x} ${y + 12})"/>`).join("")}</g>`);
+    return `<svg class="hc-frente" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${p.join("")}</svg>`;
+  }
+  /* Detalles del ambiente: hojas que caen y mariposas (solo CSS; se paran si el sistema pide menos movimiento) */
+  function ambienteHtml() {
+    const r = azar(77); let h = '<div class="hc-aire" aria-hidden="true">';
+    for (let i = 0; i < 7; i++) h += `<i class="hc-hoja" style="left:${(5 + r() * 90).toFixed(0)}%;animation-duration:${(11 + r() * 9).toFixed(1)}s;animation-delay:-${(r() * 18).toFixed(1)}s"></i>`;
+    for (let i = 0; i < 2; i++) h += `<svg class="hc-mariposa m${i}" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg"><g class="hc-alas"><ellipse cx="7" cy="7" rx="6.5" ry="5.5" fill="${i ? "#f2c14e" : "#a98ae0"}"/><ellipse cx="17" cy="7" rx="6.5" ry="5.5" fill="${i ? "#f2c14e" : "#a98ae0"}"/></g><rect x="11.2" y="2" width="1.6" height="12" rx=".8" fill="#2a1d12"/></svg>`;
+    return h + "</div>";
+  }
+
   /* ---------------------------------------------------------------- la edad en las proporciones: las crías tienen patas cortas y cabeza grande */
   const JUVENIL = { "cría": 1, "potro": 0.7, "joven": 0.28 };
   function perfilSegunEdad(p) {
@@ -127,15 +151,27 @@ window.HipodromoCriadero = (function () {
     return { p: Object.assign({}, p, { silueta: s }), j };
   }
 
-  /* Lo que le gusta hacer a cada una: pesos para elegir adónde ir. Salen de su carácter (manías), de su edad y de su estado real. */
+  /* El temperamento que se nota en la escena. Sale de datos que ya existen (las manías y la mirada del cuerpo) y de la edad; no cambia nada del juego.
+     tímida: se aparta de las demás; curiosa: va a mirar los objetos; juguetona: vuelve a la pelota; perezosa: pasa más tiempo descansando;
+     sociable: se tumba junto a otras; territorial: se queda cerca del poste. */
+  function temperamento(p) {
+    const man = p.manias || [], en = id => man.includes(id), mir = p.silueta && p.silueta.mirada != null ? p.silueta.mirada : 0.5, joven = (JUVENIL[p.etapa] || 0) > 0.5;
+    const f = { timida: mir < 0.4 || en("niebla") || en("arcana"), curiosa: mir > 0.62, juguetona: joven || en("sol") || en("barro"), perezosa: en("dormilona"), sociable: en("publico"), territorial: en("terca") };
+    if (f.timida) f.sociable = false;
+    const nombres = { timida: "tímida", curiosa: "curiosa", juguetona: "juguetona", perezosa: "perezosa", sociable: "sociable", territorial: "territorial" };
+    return { f, texto: Object.keys(f).filter(k => f[k]).map(k => nombres[k]) };
+  }
+
+  /* Lo que le gusta hacer a cada una: pesos para elegir adónde ir. Salen de su temperamento, de su edad y de su estado real. */
   function pesosDePlan(w) {
-    const p = w.p, man = p.manias || [], joven = w.j > 0.5, lesion = !!p.lesion, fat = w.fatiga || 0, en = id => man.includes(id) ? 1 : 0;
+    const p = w.p, man = p.manias || [], joven = w.j > 0.5, lesion = !!p.lesion, fat = w.fatiga || 0, en = id => man.includes(id) ? 1 : 0, T = w.temp.f, b = k => (T[k] ? 1 : 0);
     const pes = {
-      comedero: 10, bebedero: 7, refugio: 5 + 9 * en("dormilona") + 7 * en("lluvia") + 5 * en("niebla") - 3 * en("sol"), rascador: 4 + 9 * en("terca") + 5 * en("barro"),
-      pelota: joven ? 22 : 2 + 4 * en("sol"), heno: lesion ? 40 : fat > 60 ? 12 : 0, seguir: joven && w.madre ? 18 : 0
+      comedero: 10, bebedero: 7, refugio: 5 + 12 * b("perezosa") + 6 * b("timida") + 7 * en("lluvia") + 5 * en("niebla") - 3 * en("sol"), rascador: 4 + 12 * b("territorial") + 7 * b("curiosa"),
+      pelota: joven ? 22 : 1 + 15 * b("juguetona"), heno: lesion ? 40 : fat > 60 ? 12 : 0, seguir: joven && w.madre ? 18 : 0, juntarse: 2 + 18 * b("sociable")
     };
-    if (lesion) { pes.refugio += 6; pes.pelota = 0; pes.rascador *= 0.3; }
+    if (lesion) { pes.refugio += 6; pes.pelota = 0; pes.rascador *= 0.3; pes.juntarse *= 0.3; }
     if (fat > 60) { pes.refugio += 8; pes.pelota *= 0.2; }
+    if (T.timida) pes.juntarse = 0;
     Object.keys(pes).forEach(k => { pes[k] = Math.max(0, pes[k]); });
     return pes;
   }
@@ -145,10 +181,10 @@ window.HipodromoCriadero = (function () {
     opc = opc || {};
     const nodo = document.createElement("div");
     nodo.className = "hip-criadero";
-    nodo.innerHTML = `${fondoSvg()}<div class="hc-capa"></div><p class="hc-vacio hidden">Tu cuadra está vacía. Adopta o compra una criatura y vivirá aquí.</p>`;
+    nodo.innerHTML = `${fondoSvg()}<div class="hc-capa"></div>${frenteSvg()}${ambienteHtml()}<p class="hc-vacio hidden">Tu cuadra está vacía. Adopta o compra una criatura y vivirá aquí.</p>`;
     const capa = nodo.querySelector(".hc-capa"), vacio = nodo.querySelector(".hc-vacio");
     const rngG = azar(31), ids = new Map();   // id -> actor de pantalla
-    const objetos = {};
+    const objetos = {}, bola = { x: 49, f: 0.14, vx: 0, vf: 0, giro: 0 };
     let W = 800, H = 400, activa = false, visible = true, sel = null, tPrev = 0, tReloj = 0, raf = 0, primera = true;
     const mundo = { x0: 4, x1: 96, vPaso: 5.4, ancho: 13, otros: [], cansado: 0, salida: 400 };
 
@@ -156,19 +192,20 @@ window.HipodromoCriadero = (function () {
     Object.keys(OBJ).forEach(k => {
       const o = OBJ[k], el = document.createElement("div");
       el.className = "hc-obj hc-" + k; el.innerHTML = SVG[k]; capa.appendChild(el);
-      objetos[k] = { el, o, usando: 0 };
+      objetos[k] = { el, o: Object.assign({}, o), usando: 0, rueda: el.querySelector(".hc-rueda") };
       if (o.cartel) { const c = document.createElement("span"); c.className = "hc-cartel"; c.textContent = o.cartel; el.appendChild(c); }
     });
 
+    /* Coloca un objeto según su sitio (x, f) y el tamaño de la escena; alzado = píxeles que se despega del suelo (la pelota al botar) */
+    function colocar(k, alzado) {
+      const { el, o } = objetos[k], esc = 1 - o.f * ESC_F, wpx = W * o.w / 100 * (0.7 + 0.3 * esc);
+      const ys = H * (Y0 - o.f * (Y0 - Y1)), alto = el.firstChild.viewBox.baseVal.height / el.firstChild.viewBox.baseVal.width * wpx;
+      el.style.width = wpx.toFixed(1) + "px"; el.style.transform = "translate(" + (W * o.x / 100 - wpx / 2).toFixed(1) + "px," + (ys - alto * 0.94 - (alzado || 0)).toFixed(1) + "px)";
+      el.style.zIndex = 2 * (1000 - Math.round(o.f * 900)) + 1;
+    }
     function medidas() {
       const r = nodo.getBoundingClientRect(); W = Math.max(200, r.width); H = Math.max(160, r.height);
-      Object.keys(objetos).forEach(k => {
-        const { el, o } = objetos[k], esc = 1 - o.f * ESC_F, wpx = W * o.w / 100 * (0.7 + 0.3 * esc);
-        const ys = H * (Y0 - o.f * (Y0 - Y1)), alto = el.firstChild.viewBox.baseVal.height / el.firstChild.viewBox.baseVal.width * wpx;
-        el.style.width = wpx.toFixed(1) + "px"; el.style.transform = "translate(" + (W * o.x / 100 - wpx / 2).toFixed(1) + "px," + (ys - alto * 0.94).toFixed(1) + "px)";
-        el.style.zIndex = 2 * (1000 - Math.round(o.f * 900)) + 1;
-        // los carteles van dentro de cada objeto
-      });
+      Object.keys(objetos).forEach(k => colocar(k, 0));
     }
 
     /* ---- las criaturas */
@@ -178,7 +215,7 @@ window.HipodromoCriadero = (function () {
       el.innerHTML = `<div class="hc-giro">${D.silueta(pd, { clase: "hc-sil", vivo: true, titulo: p.nombre })}</div><span class="hc-nombre">${esc(p.nombre)}</span><span class="hc-icono"></span><i class="hc-anillo"></i>`;
       capa.appendChild(el);
       const tit = V.crearTitere(el.querySelector("svg")), a = V.crearActor({ id: p.id, titere: tit, semilla: hash("c" + p.id) % 100000 + 1 });
-      const w = { a, el, giro: el.firstChild, nom: el.querySelector(".hc-nombre"), ico: el.querySelector(".hc-icono"), p, c, j, esc: 1 - 0.34 * j, modo: "quieto", vm: 0, flipPrev: 99, visible: true, cd: 3 + rngG() * 9, plan: null, madre: p.madre ? p.madre.id : null, fatiga: c ? c.fatiga : 0, wAncho: 0, ts: 0 };
+      const w = { a, el, giro: el.firstChild, nom: el.querySelector(".hc-nombre"), ico: el.querySelector(".hc-icono"), p, c, j, esc: 1 - 0.34 * j, modo: "quieto", vm: 0, flipPrev: 99, visible: true, cd: 3 + rngG() * 9, plan: null, temp: temperamento(p), alertaT: 0, reaccCd: 4 + rngG() * 6, rotulo: null, madre: p.madre ? p.madre.id : null, fatiga: c ? c.fatiga : 0, wAncho: 0, ts: 0 };
       ids.set(p.id, w);
       const rng = azar(hash("pos" + p.id));
       a.f = 0.1 + rng() * 0.75; a.dir = rng() < 0.5 ? -1 : 1; a.flip = a.dir; a.cojo = !!p.lesion;
@@ -201,7 +238,7 @@ window.HipodromoCriadero = (function () {
         const w = ids.get(e.p.id);
         if (!w) { nuevo(e, !primera); return; }
         const cambiaEtapa = w.p.etapa !== e.p.etapa || w.p.estado !== e.p.estado;
-        w.p = e.p; w.c = e.c; w.fatiga = e.c ? e.c.fatiga : 0; w.a.cojo = !!e.p.lesion;
+        w.p = e.p; w.temp = temperamento(e.p); w.c = e.c; w.fatiga = e.c ? e.c.fatiga : 0; w.a.cojo = !!e.p.lesion;
         if (cambiaEtapa) { const { p: pd, j } = perfilSegunEdad(e.p); w.j = j; w.esc = 1 - 0.34 * j; /* el dibujo ya hecho se queda: la próxima visita lo rehace */ }
         w.nom.textContent = e.p.nombre;
       });
@@ -219,65 +256,78 @@ window.HipodromoCriadero = (function () {
     function destacar(id) { const w = ids.get(id); if (!w) return; w.el.classList.remove("pulsa"); void w.el.offsetWidth; w.el.classList.add("pulsa"); }
 
     /* ---- qué hace cada una: va a un objeto y lo usa */
+    const recientes = {};   // cuándo se eligió por última vez cada plan: para que no hagan todas lo mismo a la vez
     function elegirPlan(w) {
-      const pes = pesosDePlan(w), tot = Object.values(pes).reduce((s, x) => s + x, 0);
+      const pes = pesosDePlan(w), a = w.a;
+      Object.keys(pes).forEach(k => {
+        if (objetos[k] && objetos[k].usando > 0 && k !== "pelota") pes[k] *= 0.3;
+        if (recientes[k] != null && tReloj - recientes[k] < 24) pes[k] *= 0.4;
+      });
+      const tot = Object.values(pes).reduce((s, x) => s + x, 0);
       if (tot <= 0) return null;
-      let r = w.a.rng() * tot, eleg = "comedero";
+      let r = a.rng() * tot, eleg = "comedero";
       for (const k of Object.keys(pes)) { r -= pes[k]; if (r < 0) { eleg = k; break; } }
-      const a = w.a;
+      recientes[eleg] = tReloj;
       if (eleg === "seguir") { const m = ids.get(w.madre); if (!m || m.a.estado === "fuera") return null; return { obj: "seguir", fase: "ir", dur: 14 + a.rng() * 12, t: 0, madre: m }; }
-      const O = OBJ[eleg], spot = O.spots[Math.floor(a.rng() * O.spots.length)], ob = objetos[eleg];
-      if (ob.usando >= O.spots.length && eleg !== "pelota") return null;    // el sitio está lleno
+      if (eleg === "juntarse") {
+        const otras = Array.from(ids.values()).filter(o => o !== w && o.a.estado !== "fuera").sort((p, q) => Math.abs(p.a.x - a.x) - Math.abs(q.a.x - a.x));
+        const o = otras[0]; if (!o) return null;
+        const lado = o.a.x >= a.x ? -1 : 1;
+        return { obj: "juntarse", fase: "ir", spot: { x: o.a.x + lado * 9, f: o.a.f + 0.03, dir: -lado }, accion: a.rng() < 0.5 ? "sentar" : "echar", dur: 20 + a.rng() * 25, t: 0 };
+      }
+      const O = objetos[eleg].o, spot = O.spots ? O.spots[Math.floor(a.rng() * O.spots.length)] : { x: O.x, f: O.f, dir: 1 }, ob = objetos[eleg];
+      if (O.spots && ob.usando >= O.spots.length && eleg !== "pelota") return null;    // el sitio está lleno
       const accion = { comedero: "pastar", bebedero: "pastar", refugio: a.rng() < 0.55 ? "echar" : "sentar", heno: "echar", rascador: "mirar", pelota: "jugar" }[eleg];
-      const dur = { pastar: 9 + a.rng() * 9, echar: 26 + a.rng() * 40, sentar: 18 + a.rng() * 22, mirar: 7 + a.rng() * 4, jugar: 14 + a.rng() * 12 }[accion];
+      const dur = { pastar: 10 + a.rng() * 10, echar: 26 + a.rng() * 40, sentar: 18 + a.rng() * 22, mirar: 7 + a.rng() * 4, jugar: 16 + a.rng() * 12 }[accion];
       ob.usando++;
-      return { obj: eleg, fase: "ir", spot, accion, dur, t: 0, pasoJuego: 0 };
+      return { obj: eleg, fase: "ir", spot, accion, dur, t: 0, patada: 0 };
     }
-    function soltarPlan(w) { if (w.plan && w.plan.obj !== "seguir" && objetos[w.plan.obj]) objetos[w.plan.obj].usando = Math.max(0, objetos[w.plan.obj].usando - 1); w.plan = null; w.rasca = 0; }
+    function soltarPlan(w) { if (w.plan && objetos[w.plan.obj]) objetos[w.plan.obj].usando = Math.max(0, objetos[w.plan.obj].usando - 1); w.plan = null; w.rasca = 0; }
     function lleva(w, dest) {
       const a = w.a, tumbada = a.w.echada > 0.15 || a.w.sentada > 0.15;
       if (tumbada) { if (a.estado !== "levantar") V.entrar(a, "levantar", mundo); return; }
       if (a.estado !== "caminar") V.entrar(a, "caminar", mundo);
       a.dest = { x: clamp(dest.x, mundo.x0, mundo.x1), f: clamp(dest.f, 0.02, 0.98) };
     }
+    const distA = (a, d) => Math.hypot(d.x - a.x, (d.f - a.f) * 45);
     function planear(w, dt) {
       const a = w.a;
       if (!w.plan) {
         w.cd -= dt;
-        if (w.cd <= 0) { w.cd = 12 + a.rng() * 26 * (w.p.lesion ? 0.6 : 1); if (!a.socio && a.estado !== "saludo" && a.estado !== "acercar" && a.estado !== "recibir") w.plan = elegirPlan(w); }
+        if (w.cd <= 0) { w.cd = (10 + a.rng() * 24) * (w.p.lesion ? 1.3 : 1) * (w.temp.f.curiosa ? 0.65 : 1) * (w.temp.f.perezosa ? 1.4 : 1); if (!a.socio && !["saludo", "acercar", "recibir"].includes(a.estado)) w.plan = elegirPlan(w); }
         return;
       }
       const pl = w.plan; pl.t += dt;
       if (a.socio || a.estado === "saludo" || a.estado === "recibir" || a.estado === "acercar") { soltarPlan(w); return; }
       if (pl.fase === "ir") {
-        const dest = pl.obj === "seguir" ? { x: pl.madre.a.x - 7 * pl.madre.a.dir, f: pl.madre.a.f } : pl.spot;
+        const dest = pl.obj === "seguir" ? { x: pl.madre.a.x - 7 * pl.madre.a.dir, f: pl.madre.a.f } : pl.obj === "pelota" ? { x: bola.x - (bola.x < 50 ? 1 : -1) * 7, f: bola.f } : pl.spot;
         if (pl.t > 40) { soltarPlan(w); return; }
-        const d = Math.hypot(dest.x - a.x, (dest.f - a.f) * 45);
-        if (d < 1.6) {
+        if (distA(a, dest) < 1.6) {
           if (pl.obj === "seguir") { pl.fase = "seguir"; pl.t = 0; return; }
-          pl.fase = "hacer"; pl.t = 0; a.dir = pl.spot.dir; a.flip = a.dir;
-          if (pl.accion === "jugar") { V.entrar(a, "celebrar", mundo); a.dur = 3; pl.pasoJuego = 0; }
-          else { V.entrar(a, pl.accion, mundo); a.dur = pl.dur; if (pl.accion === "mirar") a.dur = pl.dur + 2; }
-          a.dir = pl.spot.dir; a.flip = a.dir;
+          pl.fase = "hacer"; pl.t = 0;
+          if (pl.obj === "pelota") { a.dir = bola.x >= a.x ? 1 : -1; V.entrar(a, "mirar", mundo); a.dur = 2; return; }
+          a.dir = pl.spot.dir; V.entrar(a, pl.accion, mundo); a.dur = pl.accion === "mirar" ? pl.dur + 2 : pl.dur; a.dir = pl.spot.dir; a.flip = a.dir;
         } else lleva(w, dest);
       } else if (pl.fase === "seguir") {
         const m = pl.madre;
         if (!ids.has(m.p.id) || pl.t > pl.dur) { soltarPlan(w); return; }
         const dest = { x: m.a.x - 7 * m.a.dir, f: m.a.f + 0.04 };
-        if (Math.hypot(dest.x - a.x, (dest.f - a.f) * 45) > 5) lleva(w, dest);
+        if (distA(a, dest) > 5) lleva(w, dest);
+      } else if (pl.obj === "pelota") {
+        // corre tras la pelota y le da una patada con un brinco; la pelota rueda y vuelve a ir tras ella
+        pl.patada -= dt;
+        const lejos = distA(a, bola) > 8.5, quieta = Math.hypot(bola.vx, bola.vf) < 5;
+        if (a.estado === "celebrar") { if (a.t > 1.1) { pl.golpeado = false; lleva(w, { x: bola.x, f: bola.f }); } return; }
+        if (lejos) lleva(w, { x: bola.x - (bola.x < 50 ? 1 : -1) * 7, f: bola.f });
+        else if (quieta && pl.patada <= 0) {
+          const s = bola.x >= a.x ? 1 : -1;
+          a.dir = s; V.entrar(a, "celebrar", mundo); a.dur = 1.3; pl.patada = 1.6;
+          bola.vx = s * (15 + a.rng() * 10); bola.vf = (a.rng() * 2 - 1) * 9;
+        } else if (!lejos && a.estado !== "mirar") { V.entrar(a, "mirar", mundo); a.dur = 1.5; }
+        if (pl.t > pl.dur) soltarPlan(w);
       } else {   // hacer
-        if (pl.accion === "jugar") {
-          // brinca junto a la pelota y de vez en cuando corre a otro punto de al lado
-          if (a.estado !== "celebrar" && a.estado !== "caminar" && a.estado !== "levantar") V.entrar(a, "celebrar", mundo);
-          if (a.estado === "celebrar" && a.t > 3) { pl.pasoJuego++; const O = OBJ.pelota; lleva(w, { x: O.x + (a.rng() * 2 - 1) * 9, f: clamp(O.f + (a.rng() * 2 - 1) * 0.12, 0.05, 0.4) }); }
-          else if (a.estado === "caminar") { const d = a.dest ? Math.hypot(a.dest.x - a.x, (a.dest.f - a.f) * 45) : 0; if (d < 1.6) { V.entrar(a, "celebrar", mundo); a.dur = 3; }
-          }
-          objetos.pelota.el.classList.toggle("bota", a.estado === "celebrar");
-          if (pl.t > pl.dur) { objetos.pelota.el.classList.remove("bota"); soltarPlan(w); }
-        } else {
-          if (pl.accion === "mirar") w.rasca = 1;
-          if (a.estado !== pl.accion || pl.t > pl.dur + 3) { if (pl.accion === "pastar" || pl.t > pl.dur + 1 || a.estado !== pl.accion) soltarPlan(w); }
-        }
+        if (pl.accion === "mirar") w.rasca = 1;
+        if (a.estado !== pl.accion || pl.t > pl.dur + 3) soltarPlan(w);
       }
     }
 
@@ -288,28 +338,88 @@ window.HipodromoCriadero = (function () {
       const dt = tPrev ? Math.min(0.05, (ts - tPrev) / 1000) : 0.016; tPrev = ts;
       actualizar(dt);
     }
+    function textoDe(w) {
+      const a = w.a, pl = w.plan, f = w.fatiga;
+      if (pl && pl.fase === "hacer") {
+        if (pl.obj === "comedero") return "comiendo"; if (pl.obj === "bebedero") return "bebiendo"; if (pl.obj === "heno") return "descansando en la cama de heno";
+        if (pl.obj === "refugio") return a.estado === "echar" ? "durmiendo a la sombra" : "descansando a la sombra"; if (pl.obj === "rascador") return "rascándose en el poste";
+        if (pl.obj === "pelota") return "jugando con la pelota"; if (pl.obj === "juntarse") return "descansando junto a otra"; if (pl.obj === "alejarse") return "apartada, tranquila";
+      }
+      if (pl && pl.fase === "seguir") return "siguiendo a su madre";
+      if (pl && pl.fase === "ir") return { comedero: "va al comedero", bebedero: "va a beber", refugio: "va al refugio", heno: "va a la cama de heno", rascador: "va al poste", pelota: "va a por la pelota", juntarse: "se acerca a otra", alejarse: "se aparta", seguir: "busca a su madre" }[pl.obj] || "paseando";
+      return { pastar: "pastando", mirar: "mirando a su alrededor", caminar: "paseando", sentar: "sentada", echar: f > 60 || w.p.lesion ? "descansando" : "echada", saludo: "saludando a otra", acercar: "se acerca a saludar", recibir: "espera un saludo", levantar: "se levanta" }[a.estado] || "";
+    }
+    /* El ciclo de comer: bajar la cabeza (al comedero, al agua o a la hierba), morder, subir a masticar con la mandíbula y el cuello en movimiento, y a veces mirar a un lado
+       con las orejas tiesas. Cada criatura lleva su propio ritmo (duraciones al azar). up es cuánto levanta la cabeza respecto a la de pastar: 0 en la hierba, más en el comedero. */
+    function animarComida(w, a, ctx, dt) {
+      const base = a.titere.cuPasto, plan = w.plan && w.plan.fase === "hacer" ? w.plan.obj : null, ts = tReloj + a.semilla, beber = plan === "bebedero";
+      const baja = plan === "comedero" ? 0.28 : beber ? 0.16 : 0;
+      let c = w.comer;
+      if (!c) c = w.comer = { fase: "bajar", t: 0, dur: 0.7 + a.rng() * 0.6, up: 0.75, alto: 0.7, lado: 1 };
+      c.t += dt;
+      let upT = baja;
+      if (c.fase === "bajar") { if (c.t > c.dur) { c.fase = "morder"; c.t = 0; c.dur = beber ? 2 + a.rng() * 2.4 : 0.9 + a.rng() * 1.1; } }
+      else if (c.fase === "morder") { upT = baja + (beber ? 0 : 0.05 * Math.sin(ts * 11)); if (c.t > c.dur) { c.fase = "subir"; c.t = 0; c.dur = 0.5 + a.rng() * 0.3; c.alto = 0.58 + a.rng() * 0.24; } }
+      else if (c.fase === "subir") { upT = c.alto; if (c.t > c.dur) { c.fase = "masticar"; c.t = 0; c.dur = beber ? 1 + a.rng() : 1.6 + a.rng() * 2; } }
+      else if (c.fase === "masticar") {
+        upT = c.alto - 0.04 * Math.sin(ts * 1.3);
+        if (c.t > c.dur) { c.t = 0; if (a.rng() < 0.4) { c.fase = "mirar"; c.dur = 0.9 + a.rng() * 1.6; c.lado = a.rng() < 0.5 ? -1 : 1; } else { c.fase = "bajar"; c.dur = 0.7 + a.rng() * 0.5; } }
+      } else { upT = 0.88; if (c.t > c.dur) { c.fase = "bajar"; c.t = 0; c.dur = 0.8 + a.rng() * 0.6; } }
+      c.up = acerca(c.up, upT, c.fase === "morder" ? 9 : 3.6, dt);
+      ctx.cuExtra = -base * c.up;
+      ctx.cabExtra = (c.fase === "masticar" ? (beber ? 2.5 : 5.5) * Math.sin(ts * 8.5) : 0) + (c.fase === "mirar" ? 9 * c.lado * Math.sin(Math.min(1, c.t / c.dur) * Math.PI) : 0)
+        + (c.fase === "morder" ? (beber ? 2 * Math.sin(ts * 2.4) : 3 * Math.sin(ts * 12)) : 0);
+      ctx.inclina = (ctx.inclina || 0) + 1.4 * Math.sin(ts * 0.5);   // cambia el peso de un lado a otro
+      if (c.fase === "mirar") ctx.orExtra = 10;
+    }
     function actualizar(dt) {
       tReloj += dt;
       const lista = Array.from(ids.values());
       mundo.otros = lista.map(w => w.a);
       lista.forEach(w => {
-        const a = w.a, lesionada = !!w.p.lesion;
+        const a = w.a, lesionada = !!w.p.lesion, juega = w.plan && w.plan.obj === "pelota" && w.plan.fase === "hacer";
         mundo.cansado = clamp(Math.max(w.fatiga / 100, lesionada ? 0.7 : 0), 0, 1);
-        mundo.vPaso = (w.j > 0.5 ? 7.4 : 5.4) * (w.p.etapa === "joven" ? 1.1 : 1);
+        mundo.vPaso = (w.j > 0.5 ? 7.4 : 5.4) * (w.p.etapa === "joven" ? 1.1 : 1) * (juega ? 1.7 : 1);
         mundo.ancho = ANCHO_BASE * 100 * 0.75 * (1 - 0.3 * w.j);
+        w.alertaT = Math.max(0, (w.alertaT || 0) - dt); w.reaccCd = Math.max(0, (w.reaccCd || 0) - dt); a.obj.alerta = w.alertaT > 0 ? 1 : 0;
         planear(w, dt);
         const r = V.pensarLibre(a, dt, mundo); w.modo = r.modo; w.vm = Math.abs(r.v);
+        if (juega && w.modo === "paso") w.modo = "trote";
       });
       // que no se atraviesen: las que van casi en el mismo sitio se separan un poco en profundidad
       for (let i = 0; i < lista.length; i++) for (let j = i + 1; j < lista.length; j++) {
-        const p = lista[i].a, q = lista[j].a;
+        const wp = lista[i], wq = lista[j], p = wp.a, q = wq.a;
         if (Math.abs(p.x - q.x) < mundo.ancho * 0.6 && Math.abs(p.f - q.f) * 45 < 6 && p.socio !== q && q.socio !== p) { const d = (p.f >= q.f ? 1 : -1) * 0.3 * dt; p.f = clamp(p.f + d, 0, 1); q.f = clamp(q.f - d, 0, 1); }
+        // reacciones al cruzarse: levantan la cabeza y miran; la tímida se aparta
+        const de_pie = x => x.a.w.echada < 0.2 && x.a.w.sentada < 0.2;
+        if (wp.reaccCd <= 0 && wq.reaccCd <= 0 && de_pie(wp) && de_pie(wq) && !p.socio && !q.socio && Math.abs(p.x - q.x) < mundo.ancho * 1.05 && Math.abs(p.f - q.f) * 45 < 11) {
+          [[wp, wq], [wq, wp]].forEach(([u, v]) => {
+            u.alertaT = 1.1 + u.a.rng() * 0.8; u.reaccCd = 8 + u.a.rng() * 8;
+            if (u.a.estado === "pastar" || u.a.estado === "mirar") { u.a.dir = v.a.x >= u.a.x ? 1 : -1; u.a.mirar.cuT = -3; }
+            if (u.temp.f.timida && !u.plan && !u.p.lesion) {
+              const cands = [{ x: 8, f: 0.2 }, { x: 8, f: 0.78 }, { x: 46, f: 0.9 }, { x: 94, f: 0.2 }].sort((m, n) => distA(v.a, n) - distA(v.a, m));
+              const c = cands[0]; u.plan = { obj: "alejarse", fase: "ir", spot: { x: c.x, f: c.f, dir: c.x < 50 ? 1 : -1 }, accion: "pastar", dur: 10 + u.a.rng() * 8, t: 0 };
+            }
+          });
+        }
       }
+      // la pelota rueda y rebota en los bordes
+      bola.x += bola.vx * dt; bola.f += bola.vf * dt / 45;
+      const fr = Math.exp(-1.5 * dt); bola.vx *= fr; bola.vf *= fr;
+      if (bola.x < 8) { bola.x = 8; bola.vx = Math.abs(bola.vx) * 0.7; } else if (bola.x > 92) { bola.x = 92; bola.vx = -Math.abs(bola.vx) * 0.7; }
+      if (bola.f < 0.04) { bola.f = 0.04; bola.vf = Math.abs(bola.vf) * 0.7; } else if (bola.f > 0.5) { bola.f = 0.5; bola.vf = -Math.abs(bola.vf) * 0.7; }
+      const vb = Math.hypot(bola.vx, bola.vf);
+      bola.giro += (bola.vx * 0.9) * dt * 8;
+      const pob = objetos.pelota; pob.o.x = bola.x; pob.o.f = bola.f;
+      colocar("pelota", vb > 3 ? Math.abs(Math.sin(tReloj * 11)) * Math.min(1, vb / 14) * H * 0.03 : 0);
+      if (pob.rueda) pob.rueda.style.transform = "rotate(" + bola.giro.toFixed(0) + "deg)";
       lista.forEach(w => {
-        const a = w.a, f = a.f, esc = (1 - f * ESC_F) * w.esc, wpx = W * ANCHO_BASE * esc, hpx = wpx * 148 / 240;
+        const a = w.a, f = a.f, escala = (1 - f * ESC_F) * w.esc, wpx = W * ANCHO_BASE * escala, hpx = wpx * 148 / 240;
         const xs = W * a.x / 100, ys = H * (Y0 - f * (Y0 - Y1));
-        const ctx = { dt, pxPorUnidad: wpx / 240 * a.titere.R.k, vPx: w.vm * W / 100, modo: w.modo, ant: 0, rasca: null, omitir: false, inclina: 0, cuExtra: 0 };
-        if (w.rasca && a.estado === "mirar") { ctx.inclina = 4 * Math.sin(tReloj * 5 + a.semilla); ctx.cuExtra = 6 * Math.sin(tReloj * 5 + 1); a.dir = a.dir; } else w.rasca = 0;
+        const ctx = { dt, pxPorUnidad: wpx / 240 * a.titere.R.k, vPx: w.vm * W / 100, modo: w.modo, ant: 0, rasca: null, omitir: false, inclina: 0, cuExtra: 0, cabExtra: 0 };
+        if (w.rasca && a.estado === "mirar") { ctx.inclina = 4 * Math.sin(tReloj * 5 + a.semilla); ctx.cuExtra = 6 * Math.sin(tReloj * 5 + 1); } else w.rasca = 0;
+        // comer, beber y pastar: nunca con la cabeza clavada en una postura; baja, muerde, sube a masticar y de vez en cuando mira alrededor
+        if (a.estado === "pastar") animarComida(w, a, ctx, dt); else w.comer = null;
         V.pintarActor(a, ctx);
         if (Math.abs(w.wAncho - wpx) > 0.5) { w.el.style.width = wpx.toFixed(1) + "px"; w.wAncho = wpx; }
         w.el.style.transform = "translate(" + (xs - wpx / 2).toFixed(1) + "px," + (ys - hpx * 0.919).toFixed(1) + "px)";
@@ -318,6 +428,8 @@ window.HipodromoCriadero = (function () {
         // iconos de estado: lesión o cansancio, solo cuando es de verdad
         const ic = w.p.lesion ? "✚" : (w.fatiga > 60 && (a.estado === "echar" || a.estado === "sentar")) ? "z" : "";
         if (w.ico.textContent !== ic) { w.ico.textContent = ic; w.ico.className = "hc-icono" + (ic === "✚" ? " lesion" : ic ? " sueno" : ""); }
+        // el nombre de la elegida dice lo que está haciendo
+        if (w.el.classList.contains("sel")) { const t = w.p.nombre + "|" + textoDe(w); if (w.rotulo !== t) { w.rotulo = t; w.nom.innerHTML = esc(w.p.nombre) + ' <small>' + esc(textoDe(w)) + "</small>"; } } else if (w.rotulo) { w.rotulo = null; w.nom.textContent = w.p.nombre; }
       });
     }
 
@@ -337,11 +449,11 @@ window.HipodromoCriadero = (function () {
     setTimeout(medidas, 0);
     // para probar sin reloj de pantalla: avanza la escena `seg` segundos de golpe
     function simular(seg) { medidas(); for (let t = 0; t < seg; t += 1 / 30) actualizar(1 / 30); }
-    function forzar(id, obj) { const w = ids.get(id); if (!w) return; soltarPlan(w); const O = OBJ[obj], spot = O.spots[0]; w.plan = { obj, fase: "ir", spot, accion: { comedero: "pastar", bebedero: "pastar", refugio: "echar", heno: "echar", rascador: "mirar", pelota: "jugar" }[obj], dur: 12, t: 0, pasoJuego: 0 }; objetos[obj].usando++; }
+    function forzar(id, obj) { const w = ids.get(id); if (!w) return; soltarPlan(w); const O = OBJ[obj], spot = O.spots[0]; w.plan = { obj, fase: "ir", spot, accion: { comedero: "pastar", bebedero: "pastar", refugio: "echar", heno: "echar", rascador: "mirar", pelota: "jugar" }[obj], dur: 12, t: 0, patada: 0 }; objetos[obj].usando++; }
     const estados = () => Array.from(ids.values()).map(w => ({ id: w.p.id, estado: w.a.estado, x: +w.a.x.toFixed(1), f: +w.a.f.toFixed(2), plan: w.plan ? w.plan.obj + ":" + w.plan.fase : null, dest: w.a.dest ? [+w.a.dest.x.toFixed(1), +w.a.dest.f.toFixed(2)] : null }));
     const api2 = { forzar, estados, nodo, sincronizar, activar, seleccionar, destacar, efecto, medidas, simular, seleccionada: () => sel, estaEn: id => ids.has(id) };
     HipodromoCriaderoUltima = api2;
     return api2;
   }
-  return { crear, OBJ, ultima: () => HipodromoCriaderoUltima };
+  return { crear, OBJ, temperamento, ultima: () => HipodromoCriaderoUltima };
 })();
