@@ -739,6 +739,7 @@
         .sort((a, b) => (a.etapa === "cría" || a.etapa === "potro" ? 0 : 1) - (b.etapa === "cría" || b.etapa === "potro" ? 0 : 1) || a.precio - b.precio).slice(0, 40),
       sementales: () => online.perfiles().filter(x => x.estado === "criador" && x.sexo === "m" && x.montaPrecio).map(lineaje),
       avisos: () => est.avisos,
+      todas: () => online.perfiles(),   // todas las criaturas que se conocen (para los descendientes del árbol)
       objetos: () => { const l = online.mias(); return (l[0] && l[0].c && l[0].c.objetos) || []; },   // los objetos del criadero viajan en lo privado de cada criatura mía
       clave: () => "s" + online.yo,
       ordenar: o => online.ordenar(o)
@@ -793,6 +794,7 @@
     mercado: () => M.enVenta(m).map(c => conLinaje(M.perfil(m, c))).sort((a, b) => (a.etapa === "cría" || a.etapa === "potro" ? 0 : 1) - (b.etapa === "cría" || b.etapa === "potro" ? 0 : 1) || a.precio - b.precio).slice(0, 40),
     sementales: () => m.criadores.filter(c => c.sexo === "m" && M.edadAnios(m.n, c) < 12).map(c => conLinaje(M.perfil(m, c))),
     avisos: () => est.avisos,
+    todas: () => m.vivos.concat(m.criadores).map(c => M.perfil(m, c)),
     objetos: () => ((m.duenos && m.duenos[YO] && m.duenos[YO].objetos) || []),
     clave: () => "local",
     async ordenar(o) {

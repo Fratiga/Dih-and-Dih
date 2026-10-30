@@ -21,6 +21,7 @@ window.HipodromoCuadraUI = (function () {
     const pleno = !!(opcPleno && opcPleno.pleno);
     // lo que está haciendo la criatura elegida se escribe en su ficha (sin repintarla) y no sobre la escena
     setInterval(() => { const s = cont.querySelector("[data-ahora]"); if (s && escena) { const t = escena.actividad(Number(s.dataset.ahora)); if (s.textContent !== t) s.textContent = t; } }, 1000);
+    let arbolId = null;   // el árbol genealógico abierto (pantalla completa): de qué criatura
     let selId = null, panel = !pleno || window.innerWidth >= 700;
     const escena = window.HipodromoCriadero && window.HipodromoVida ? window.HipodromoCriadero.crear(api, { alSeleccionar: id => { selId = id; vista = "mias"; if (pleno) panel = true; pintar(true); } }) : null;
     const mon = x => api.monedas(x);
@@ -146,20 +147,57 @@ window.HipodromoCuadraUI = (function () {
       const pistaDe = id => (M.PISTAS && M.PISTAS[id] ? M.PISTAS[id].nombre : id);
       return `<details data-d="car${p.id}"${abiertas.has("car" + p.id) ? " open" : ""}><summary>Últimas carreras (${l.length})</summary><table class="hip-carreras"><tbody>${l.map(h => `<tr><td>n.º ${h.n}</td><td><b>${h.pos}º</b> de ${h.campo}</td><td>${h.dist} m</td><td>${esc(pistaDe(h.pista))}</td></tr>`).join("")}</tbody></table></details>`;
     }
-    /* Su árbol genealógico: padres, abuelos y bisabuelos que se conocen, con los nombres que salen en lo público. Un antepasado que se repite sale en rojo (los padres eran parientes). */
-    function arbolHtml(p) {
-      const mias = new Set(api.mias().map(x => x.p.id)), vistos = new Map();
-      const cuenta = (id, g) => { if (id == null || g > 3) return; vistos.set(id, (vistos.get(id) || 0) + 1); const q = api.perfil(id); if (q) { if (q.padre) cuenta(q.padre.id, g + 1); if (q.madre) cuenta(q.madre.id, g + 1); } };
-      if (p.padre) cuenta(p.padre.id, 1); if (p.madre) cuenta(p.madre.id, 1);
-      const nodo = (ref, g, rol) => {
-        if (!ref) return `<li><span class="hip-sin">${rol}: desconocido</span></li>`;
-        const q = api.perfil(ref.id), nombre = ref.nombre || (q && q.nombre) || "?", rep = vistos.get(ref.id) > 1;
-        const enlace = mias.has(ref.id) ? `<button type="button" class="hip-enlace" data-sel="${ref.id}" title="Señalar en el criadero">${esc(nombre)}</button>` : `<button type="button" class="hip-enlace" data-ficha="${ref.id}">${esc(nombre)}</button>`;
-        const hijos = g < 3 && q && (q.padre || q.madre) ? `<ul>${nodo(q.padre, g + 1, "Padre")}${nodo(q.madre, g + 1, "Madre")}</ul>` : "";
-        return `<li class="${rep ? "repetido" : ""}"><small>${rol}</small> ${enlace}${rep ? " <small>(se repite)</small>" : ""}${hijos}</li>`;
+    /* El árbol genealógico, a la manera de un árbol de familia: el elegido abajo, sus padres, abuelos y bisabuelos arriba (los que se conocen), con una línea que baja de cada
+       pareja a su cría (con un corazón donde se unen), y debajo sus descendientes. Cada uno lleva su retrato. Un antepasado que sale más de una vez (los padres eran parientes) se marca
+       en rojo y se une con una línea discontinua. Pulsar a alguien centra el árbol en él. */
+    function arbolVista(foco) {
+      const NW = 98, NH = 128, G = 3, ANCHO = 108 * 8, FILA = 168, mias = new Set(api.mias().map(x => x.p.id));
+      const nodos = [], lineas = [], vistos = new Map();
+      const xDe = (g, i) => (g ? (i + 0.5) * (ANCHO / Math.pow(2, g)) : ANCHO / 2), yDe = g => (G - g) * FILA;
+      const subir = (ref, g, i) => {
+        const q = ref.id === foco.id ? foco : api.perfil(ref.id), n = { ref, q, g, x: xDe(g, i), y: yDe(g) }, idx = nodos.push(n) - 1;
+        (vistos.get(ref.id) || vistos.set(ref.id, []).get(ref.id)).push(idx);
+        if (g < G && q && (q.padre || q.madre)) {
+          const pa = q.padre ? subir(q.padre, g + 1, 2 * i) : null, ma = q.madre ? subir(q.madre, g + 1, 2 * i + 1) : null;
+          lineas.push({ hijo: idx, pa, ma });
+        }
+        return idx;
       };
-      if (!p.padre && !p.madre) return "";
-      return `<details data-d="arb${p.id}"${abiertas.has("arb" + p.id) ? " open" : ""}><summary>Árbol genealógico</summary><ul class="hip-arbol">${nodo(p.padre, 1, "Padre")}${nodo(p.madre, 1, "Madre")}</ul></details>`;
+      subir({ id: foco.id, nombre: foco.nombre }, 0, 0);
+      const todas = api.todas ? api.todas() : [];
+      const hijos = todas.filter(c => (c.padre && c.padre.id === foco.id) || (c.madre && c.madre.id === foco.id)).slice(0, 8);
+      const filaH = yDe(0) + FILA, alto = (hijos.length ? filaH : yDe(0)) + NH + 12;
+      const sexoSim = q => (q ? (q.sexo === "f" ? "♀" : "♂") : "");
+      const rol = (g, q) => (g === 0 ? "" : ["", q && q.sexo === "f" ? "Madre" : q && q.sexo === "m" ? "Padre" : "Padre o madre", q && q.sexo === "f" ? "Abuela" : q && q.sexo === "m" ? "Abuelo" : "Abuelo/a", q && q.sexo === "f" ? "Bisabuela" : q && q.sexo === "m" ? "Bisabuelo" : "Bisabuelo/a"][g]);
+      const fantasma = '<svg viewBox="0 0 100 70" class="hip-ar-sil" aria-hidden="true"><path d="M22 52 C20 34 34 24 50 26 C66 24 80 34 78 52 L72 52 L70 40 L62 40 L60 52 L40 52 L38 40 L30 40 L28 52 Z" fill="#1c3226" stroke="#46705a" stroke-width="2" stroke-dasharray="4 3"/></svg>';
+      const tarjeta = (n, extra) => {
+        const { ref, q } = n, rep = vistos.get(ref.id) && vistos.get(ref.id).length > 1, grande = q && (q.mut || []).some(id => window.HipodromoRasgos.MUT[id] && window.HipodromoRasgos.MUT[id].g);
+        const clases = ["hip-ar-n", q ? (q.sexo === "f" ? "hembra" : "macho") : "", mias.has(ref.id) ? "mia" : "", rep ? "rep" : "", n.g === 0 ? "foco" : ""].filter(Boolean).join(" ");
+        const fig = q ? D.silueta(q, { clase: "hip-ar-sil", titulo: ref.nombre }) : fantasma;
+        const cuerpo = `<span class="hip-ar-fig">${fig}</span><b>${esc(ref.nombre || (q && q.nombre) || "?")}</b><small>${[rol(n.g, q) || (n.g === 0 ? "Elegida" : ""), sexoSim(q), q ? (q.gen ? "gen. " + q.gen : "") : "no se conoce", grande ? "✦" : ""].filter(Boolean).join(" · ")}</small>${extra || ""}`;
+        const boton = q && n.g !== 0 ? `<button type="button" class="hip-ar-b" data-arbol-ir="${ref.id}" title="Centrar el árbol aquí">${cuerpo}</button>` : `<div class="hip-ar-b">${cuerpo}</div>`;
+        return `<div class="${clases}" style="left:${(n.x - NW / 2).toFixed(0)}px;top:${n.y}px;width:${NW}px">${boton}${q ? `<button type="button" class="hip-ar-ficha" data-ficha="${ref.id}" title="Abrir su ficha">ficha</button>` : ""}${rep ? `<i class="hip-ar-rep">×${vistos.get(ref.id).length}</i>` : ""}</div>`;
+      };
+      let svg = "";
+      const corazon = (x, y) => `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"><circle r="9" fill="#2a1a22" stroke="#c9566e" stroke-width="1.6"/><path d="M0 4 C-7 -1 -5 -6 0 -3 C5 -6 7 -1 0 4 Z" fill="#e8708a"/></g>`;
+      lineas.forEach(l => {
+        const h = nodos[l.hijo], A = l.pa != null ? nodos[l.pa] : null, B = l.ma != null ? nodos[l.ma] : null, yBar = h.y - 30, base = (A || B).y + NH;
+        if (A && B) { svg += `<path d="M${A.x} ${base} V${yBar} H${B.x} V${base} M${h.x} ${yBar} V${h.y}" fill="none" stroke="#6f9b82" stroke-width="2"/>` + corazon(h.x, yBar); }
+        else { const P = A || B; svg += `<path d="M${P.x} ${base} V${yBar} H${h.x} V${h.y}" fill="none" stroke="#6f9b82" stroke-width="2"/>`; }
+      });
+      vistos.forEach(l => { for (let k = 1; k < l.length; k++) { const a = nodos[l[0]], b = nodos[l[k]], ya = a.y + NH / 2, yb = b.y + NH / 2, dx = a.x < b.x ? 70 : -70; svg += `<path d="M${a.x + (a.x < b.x ? NW / 2 : -NW / 2)} ${ya} C${a.x + dx} ${ya}, ${b.x - dx} ${yb}, ${b.x + (a.x < b.x ? -NW / 2 : NW / 2)} ${yb}" fill="none" stroke="#d0634a" stroke-width="2" stroke-dasharray="6 5"/>`; } });
+      let hijosHtml = "";
+      hijos.forEach((c, k) => {
+        const x = (k + 0.5) * (ANCHO / hijos.length), yBar = filaH - 30, otro = c.padre && c.padre.id === foco.id ? c.madre : c.padre;
+        svg += `<path d="M${ANCHO / 2} ${yDe(0) + NH} V${yBar} H${x.toFixed(0)} V${filaH}" fill="none" stroke="#6f9b82" stroke-width="2"/>` + corazon(x, yBar);
+        hijosHtml += tarjeta({ ref: { id: c.id, nombre: c.nombre }, q: c, g: -1, x, y: filaH }, otro ? `<small class="hip-ar-con">con ${esc(otro.nombre)}</small>` : "");
+      });
+      return `<div class="hip-ar" style="width:${ANCHO}px;height:${alto}px"><svg class="hip-ar-lineas" width="${ANCHO}" height="${alto}" viewBox="0 0 ${ANCHO} ${alto}" aria-hidden="true">${svg}</svg>${nodos.map(n => tarjeta(n)).join("")}${hijosHtml}</div>`;
+    }
+    function arbolHtml(p) {
+      if (!p.padre && !p.madre && !(api.todas && api.todas().some(c => (c.padre && c.padre.id === p.id) || (c.madre && c.madre.id === p.id)))) return "";
+      if (pleno) return `<p><button type="button" class="hip-boton chico" data-arbol="${p.id}">Árbol genealógico</button></p>`;
+      return `<details data-d="arb${p.id}"${abiertas.has("arb" + p.id) ? " open" : ""}><summary>Árbol genealógico</summary><div class="hip-ar-caja">${arbolVista(p)}</div></details>`;
     }
     const ORDENES = { precio: ["Precio, de menor a mayor", (a, b) => a.precio - b.precio], caro: ["Precio, de mayor a menor", (a, b) => b.precio - a.precio],
       valor: ["Mejor valoración", (a, b) => (b.estrellas || 0) - (a.estrellas || 0) || a.precio - b.precio], vic: ["Más victorias", (a, b) => b.vic - a.vic || a.precio - b.precio], jovenes: ["Más jóvenes", (a, b) => b.nac - a.nac || a.precio - b.precio] };
@@ -189,6 +227,11 @@ window.HipodromoCuadraUI = (function () {
       return `<h3>Objetos del criadero</h3><p class="hip-nota">Aparecen en la escena y las criaturas los usan. No cambian las carreras: son para el criadero. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) ya los tienes.</p>
         ${grupos.map(([g, t]) => `<p class="hip-tienda-grupo">${t}</p><ul class="hip-tienda">${Object.keys(cat).filter(id => cat[id].grupo === g).map(fila).join("")}</ul>`).join("")}`;
     }
+    function arbolPanelHtml() {
+      const fp = api.perfil(arbolId);
+      if (!fp) return "";
+      return `<section class="hcp-arbol${panel ? " con-panel" : ""}" aria-label="Árbol genealógico"><header><h3>Árbol de ${esc(fp.nombre)}</h3><p class="hip-nota">Pulsa a alguien para centrar el árbol en él. ♥ une a la pareja; en rojo, un antepasado que se repite (los padres eran parientes).</p><button type="button" class="hcp-arbol-cierra" data-arbol-cierra aria-label="Cerrar el árbol">×</button></header><div class="hcp-arbol-cuerpo">${arbolVista(fp)}</div></section>`;
+    }
     /* ---- la pantalla completa: la escena detrás de todo y, encima, la barra con los enlaces de la cuadra y un panel lateral */
     function pintarPleno(forzar) {
       if (api.listo && !api.listo()) return;
@@ -210,13 +253,16 @@ window.HipodromoCuadraUI = (function () {
         <header class="hcp-barra"><a class="hcp-volver" href="hipodromo.html${pl}">← Hipódromo</a><h2>${T("cuadra", "Mi cuadra")}</h2><span class="hcp-tokens">Tokens <strong>${mon(api.saldo())}</strong></span>
           <nav class="hcp-enlaces" aria-label="Tu cuadra">${boton("mias", "Criaturas", mias.length + "/" + max)}${boton("mercado", "Mercado", merc)}${boton("objetos", "Objetos")}${boton("avisos", "Avisos", nAvisos)}
             <a href="hipodromo.html${pl}#carrera">Próxima carrera</a><a href="hipodromo.html${pl}#cartas" title="Vende cartas para tener tokens">Cartas por tokens</a><a href="hipodromo.html${pl}#criaturas">Criaturas del mundo</a><a href="hipodromo-vivo.html">▶ Ver en vivo</a></nav></header>
+        ${arbolId != null ? arbolPanelHtml() : ""}
         <aside class="hcp-lateral${panel ? "" : " cerrado"}" aria-label="Panel de la cuadra"><div class="hcp-lateral-cuerpo">${lateral}</div></aside>
         <button type="button" class="hcp-pestana${panel ? " abierto" : ""}" data-panel aria-expanded="${panel}" aria-label="${panel ? "Esconder el panel" : "Enseñar el panel"}">${panel ? "▸" : "◂ Ficha"}</button>
         <p class="hip-aviso hcp-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p>${/local/i.test(modo) ? '<span class="hcp-modo">Prueba local</span>' : ""}`;
       if (!forzar && html === hash) return;
       hash = html;
+      const arAntes = cont.querySelector(".hcp-arbol-cuerpo"), arTop = arAntes ? arAntes.scrollTop : 0, arIzq = arAntes ? arAntes.scrollLeft : 0, arId = arAntes ? arAntes.dataset.id : null;
       const antes = cont.querySelector(".hcp-lateral-cuerpo"), top = antes ? antes.scrollTop : 0, mismaVista = antes && antes.dataset.v === vista + ":" + selId;
       cont.innerHTML = html;
+      const arNuevo = cont.querySelector(".hcp-arbol-cuerpo"); if (arNuevo) { arNuevo.dataset.id = String(arbolId); if (arId === String(arbolId)) { arNuevo.scrollTop = arTop; arNuevo.scrollLeft = arIzq; } else arNuevo.scrollLeft = Math.max(0, (arNuevo.scrollWidth - arNuevo.clientWidth) / 2); }
       const cuerpo = cont.querySelector(".hcp-lateral-cuerpo"); if (cuerpo) { cuerpo.dataset.v = vista + ":" + selId; if (mismaVista) cuerpo.scrollTop = top; }
       if (escena) { cont.querySelector(".hcp-escena-hueco").appendChild(escena.nodo); escena.setObjetos(api.objetos ? api.objetos() : []); escena.sincronizar(mias); escena.seleccionar(selId, false); escena.activar(true); }
       marcarEspera();
@@ -254,6 +300,7 @@ window.HipodromoCuadraUI = (function () {
     }
 
     /* ---------------------------------------------------------------- eventos */
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && arbolId != null && !document.querySelector("dialog[open], .hip-ficha:not(.hidden)")) { arbolId = null; pintar(true); } });
     cont.addEventListener("toggle", e => { const d = e.target.closest && e.target.closest("details[data-d]"); if (d) { if (d.open) abiertas.add(d.dataset.d); else abiertas.delete(d.dataset.d); } }, true);
     cont.addEventListener("change", e => {
       const t = e.target;
@@ -267,6 +314,9 @@ window.HipodromoCuadraUI = (function () {
     });
     cont.addEventListener("click", async e => {
       if (e.target.closest("[data-panel]")) { panel = !panel; pintar(true); return; }
+      const ab = e.target.closest("[data-arbol]"); if (ab) { arbolId = Number(ab.dataset.arbol); pintar(true); return; }
+      const ir = e.target.closest("[data-arbol-ir]"); if (ir) { arbolId = Number(ir.dataset.arbolIr); pintar(true); return; }
+      if (e.target.closest("[data-arbol-cierra]")) { arbolId = null; pintar(true); return; }
       const v = e.target.closest("[data-vista]");
       if (v) { vista = v.dataset.vista; pintar(true); return; }
       if (e.target.closest("[data-mercmas]")) { mercMax += 12; pintar(true); return; }

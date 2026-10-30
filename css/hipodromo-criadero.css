@@ -134,3 +134,33 @@ html.hip-pleno .hip-criadero { flex: none; width: min(100vw, calc(100vh * 2.05))
 .hip-arbol small { color: var(--muted); margin-left: 4px; }
 .hip-carreras { width: 100%; border-collapse: collapse; font-size: .8rem; }
 .hip-carreras td { padding: 3px 6px; border-top: 1px dashed var(--border); }
+
+/* El árbol genealógico (retratos, líneas por pareja con corazón, antepasados repetidos en rojo) */
+.hcp-arbol { position: absolute; left: 0; right: 0; top: 54px; bottom: 0; z-index: 6300; display: flex; flex-direction: column; background: rgba(12, 26, 19, .97); }
+.hcp-arbol.con-panel { right: min(440px, 94vw); }
+.hcp-arbol header { position: relative; padding: 10px 52px 4px 18px; }
+.hcp-arbol header h3 { margin: 0; font: 600 1rem var(--font-heading), serif; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.hcp-arbol header .hip-nota { margin: 2px 0 0; }
+.hcp-arbol-cierra { position: absolute; right: 12px; top: 8px; width: 32px; height: 32px; font-size: 1.3rem; line-height: 1; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); cursor: pointer; }
+.hcp-arbol-cuerpo { flex: 1; overflow: auto; padding: 10px 18px 30px; }
+.hip-ar { position: relative; margin: 0 auto; }
+.hip-ar-lineas { position: absolute; left: 0; top: 0; pointer-events: none; }
+.hip-ar-n { position: absolute; text-align: center; }
+.hip-ar-b { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; padding: 4px 3px 5px; background: #1b3225; border: 1px solid var(--border); color: var(--text); font: 500 .74rem Karla, sans-serif; cursor: default; }
+button.hip-ar-b { cursor: pointer; }
+button.hip-ar-b:hover { border-color: var(--accent); }
+.hip-ar-n.macho .hip-ar-b { border-color: #4f86a6; }
+.hip-ar-n.hembra .hip-ar-b { border-color: #b3607a; }
+.hip-ar-n.mia .hip-ar-b { background: #24402f; }
+.hip-ar-n.foco .hip-ar-b { border-width: 2px; border-color: var(--accent); }
+.hip-ar-n.rep .hip-ar-b { border-color: var(--hip-rojo); border-style: dashed; }
+.hip-ar-fig { display: block; width: 100%; height: 62px; }
+.hip-ar-sil { display: block; width: 100%; height: 100%; }
+.hip-ar-b b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.hip-ar-b small { color: var(--muted); font-size: .66rem; line-height: 1.25; }
+.hip-ar-con { display: block; color: #e8708a; }
+.hip-ar-ficha { position: absolute; right: 2px; top: 2px; padding: 0 5px; font: 600 .6rem Karla, sans-serif; background: rgba(0, 0, 0, .45); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
+.hip-ar-ficha:hover { color: var(--accent); border-color: var(--accent); }
+.hip-ar-rep { position: absolute; left: 3px; top: 3px; padding: 0 5px; font: 700 .64rem Karla, sans-serif; font-style: normal; background: var(--hip-rojo); color: #fff; }
+.hip-ar-caja { overflow-x: auto; padding: 6px 0; }
+@media (max-width: 700px) { .hcp-arbol.con-panel { right: 0; } }
