@@ -261,3 +261,68 @@ Abiertas, con mi valor por defecto:
 - Los nombres inventados (Don Ottavio Umbral, Capitana Dientesal, Zaphar, Legada Orsa Valcarón, El Vigilante, y los de los Colegios) se pueden cambiar.
 - Las estadísticas de las exclusivas nuevas y de los héroes son provisionales y se ajustan con las simulaciones.
 - Selenia y Behemoth podrían ser jefes neutrales en algún tipo de Fractura más adelante. No entra en este plan.
+
+## 11. Retención y bucle entre guerras
+
+Ideas aprobadas el 30-oct-2026. Todas son plan, nada está programado. Objetivo: que cada guerra deje algo que contar y una decisión que tomar, y que el jugador quiera «una guerra más».
+
+**Los premios en cartas quedan fuera por ahora.** Nada de esta sección da cartas. El premio actual por ganar contra la IA no cambia. Cómo ganar cartas con estos sistemas se decide más adelante.
+
+### Bucle de después de la guerra
+
+1. **Un momento garantizado.** Al cerrar cada guerra, el soldado con más peso narrativo (más guerras, heridas y vínculos) vive algo concreto: salva a otro, sobrevive por poco, hereda una reliquia, es ascendido. No es al azar puro. Los textos deben ser llanos y concretos, sin tono grandilocuente, y se revisan a mano.
+2. **Una decisión con coste.** Ejemplo: un veterano queda convaleciente y eliges entre retirarlo a la reserva, forzarlo a volver (riesgo de morir) o darle el mando de una compañía (sube pero no combate). Se suman a las que ya existen (especialización del veterano, quién hereda una reliquia, capitanes).
+3. **Evaluación S/A/B** de cada guerra, según bajas sufridas, eficiencia y turnos usados. Hay que definir bien qué mide para que no se pueda «cultivar».
+
+### Némesis activo
+
+- **Tablón de caza:** lista visible de tus némesis vivos, con nombre, facción, dónde aparecieron y qué te quitaron. Cada uno lleva una recompensa (una reliquia, oro o un rasgo para quien lo mate).
+- **Deuda de sangre:** si un némesis mata a 3 de los tuyos, sube de rango y pasa a ser un mini jefe con botín garantizado.
+- **El ciclo:** al matar a uno, su hijo o hermano aparece más tarde con +1.
+
+### Botín y descubrimientos
+
+- **Pity visible en las ruinas:** cada ruina saqueada sin reliquia suma un 5 % a la siguiente, y el contador se ve. Persiste entre guerras en el ejército y entra en la configuración de la guerra al empezar.
+- **Casi narrado:** cuando sale un recurso en vez de una reliquia, el texto lo cuenta («entre los escombros ves el hueco vacío de un pedestal»). Solo en el texto de las ruinas, no en los premios de cartas.
+- **Un hallazgo con nombre por guerra:** una reliquia, una criatura con nombre propio y trofeo (enlazada con el bestiario), una región secreta o un suceso único.
+
+### Antes de la guerra: contratos
+
+La pantalla de preparar ofrece 3 contratos con riesgo y recompensa crecientes:
+
+| Contrato | Condición | Recompensa |
+|---|---|---|
+| Seguro | Sin riesgo añadido | Una reliquia garantizada |
+| Arriesgado | Los heridos no se curan entre guerras | Doble de botín |
+| De sangre | Sin reclutas de relleno | Invocas al héroe sin cumplir los requisitos de partida (sigues pagando su coste). No vale para Rykerd |
+
+Las recompensas de los contratos no son cartas.
+
+### Dentro de la partida
+
+- **Rachas:** una unidad que mata a 2 enemigos en un mismo turno gana +1 de ataque hasta el final de su próximo turno, y con 3 gana +2 (tope). Es por unidad, no por ejército, y va acompañada de un efecto visual y sonoro.
+- **Remontada explícita («la Fractura se apiada de los caídos»):** si un bando va muy por detrás en puntuación, recibe una vez por guerra una ayuda a elegir entre tres (una unidad extra con la mitad de estadísticas junto a su capital, Ánima o curar a todos). Se activa por diferencia de puntos, no por turno, así que no borra las curvas de poder de cada ejército. Es la regla más delicada del plan: las simulaciones tienen que confirmar que no aplana las diferencias entre ejércitos, y si lo hace se endurece o se quita.
+
+### Apego y progresión de cuenta
+
+- **Herencia con rasgo:** si el hijo hereda la reliquia de su padre, gana +1 a una característica (respetando el tope de 10) o un rasgo único.
+- **Prestigio de casa:** con 3 generaciones, la casa recibe un título y un estandarte propio. Con 20 victorias de la casa, +1 al máximo del contingente (con tope de +2 en total entre todas las casas).
+- **Renombrar:** se puede renombrar a un soldado una vez, o ponerle un apodo propio.
+- **Códice:** siluetas de las reliquias no halladas, bestiario con las criaturas aún sin matar y árbol de casas con huecos, con porcentaje de completado.
+- **Logros con barra de progreso** (50 guerras, 10 casas, 5 némesis muertos, primera Leyenda, 3 generaciones…). Ninguno binario.
+
+### Retención diaria y social
+
+- **Fractura del día:** una guerra al día con semilla fija. Mismo mapa, mismo rival y un ejército preparado igual para todos, un solo intento. Hay ranking diario. Como el motor corre en el navegador, la clasificación es fácil de falsear. Para que valga hay que **comprobarla en el servidor** reproduciendo las acciones con el mismo motor (el Hipódromo ya usa una función de servidor con el código fijado a una versión). Requiere SQL y esa función.
+- **Liga de duelos:** temporadas de 2 semanas. El ascenso y descenso de división solo tiene sentido con 8 jugadores o más. Con menos, una sola clasificación de temporada por victorias.
+- **Avisos por Discord:** el bot ya envía avisos. Se añaden «es tu turno en tu duelo» y «tu soldado ha vuelto herido», y un resumen semanal de la crónica del mundo (el bot ya tiene uno hecho, sin desplegar).
+
+### Cuándo se hace cada cosa
+
+| Grupo | Qué incluye | Depende de |
+|---|---|---|
+| R1, sin cambiar reglas | Tablón de némesis, Códice y logros, renombrar, S/A/B, avisos de Discord, momento y decisión de después de la guerra | Nada. Se puede hacer en paralelo con la base común |
+| R2, cambia reglas | Pity, contratos, rachas, remontada, herencia con rasgo, prestigio de casa | La **versión de reglas** del plan, para no romper partidas guardadas |
+| R3, necesita servidor | Fractura del día y liga | SQL y la función de servidor. Y que haya jugadores suficientes para que merezca la pena |
+
+La interfaz de cada una espera al rediseño visual que está en otra sesión.

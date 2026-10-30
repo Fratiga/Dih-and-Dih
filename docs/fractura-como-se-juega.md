@@ -576,6 +576,20 @@ El reloj de 35 turnos es común a todos. Los ejércitos tardíos deben alcanzar 
 
 Aparte, hay una **tarea de rediseño visual** que va en paralelo y en otra sesión: recursos con iconos y desglose, rejilla del tablero más tenue con fronteras de región reforzadas, panel de ciudad con ranuras de edificios y hueco para el botón de héroe, árbol visual de investigación y resumen de fin de turno. No cambia ninguna regla.
 
+### 15.1 Bucle entre guerras y retención **[Plan]**
+
+Además de los ejércitos y los héroes, hay un conjunto de ideas aprobadas para que cada guerra deje algo que contar y el jugador quiera «una guerra más». Los detalles están en la sección 11 de `docs/fractura-expansion.md`.
+
+- **Después de cada guerra:** un momento memorable garantizado para un soldado, una decisión con coste (por ejemplo, qué hacer con un veterano herido) y una nota S/A/B.
+- **Némesis activo:** un tablón de caza con tus enemigos vivos, recompensa por matarlos y deuda de sangre si matan a tres de los tuyos.
+- **Botín:** contador visible que sube la probabilidad de reliquia en cada ruina, y un hallazgo con nombre garantizado por guerra.
+- **Contratos** antes de salir: seguro, arriesgado o de sangre, con riesgo y recompensa crecientes.
+- **Dentro de la partida:** rachas de bajas y una ayuda de remontada, a probar con simulaciones.
+- **Apego:** herencia con rasgo, prestigio de casa, renombrar soldados, Códice y logros con barra.
+- **Social:** Fractura del día con ranking comprobado en servidor, liga de duelos y avisos por Discord.
+
+Nada de esto da cartas por ahora. Cómo ganar cartas con estos sistemas se decide más adelante.
+
 ---
 
 # PARTE C. Referencia rápida
