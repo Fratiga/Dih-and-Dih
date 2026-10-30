@@ -102,7 +102,7 @@ Cada mecánica tiene una regla de una línea para que no quede ambigua.
 | Fortalezas fuertes | Brurland | Las fortalezas dan +1 de defensa extra. La escuela arcana tiene techo en el escalón 2 (no hay Eco ni archimagos) |
 | Investigación barata | Dolbred | Investigar cuesta un 25 % menos de maná |
 | Ánima | Osses | Sin comida. Cada baja deja Ánima extra. Las ciudades dan 1 de oro menos |
-| Oro | Compañía | +3 de oro por ciudad y 12 de oro inicial. Los mercenarios no necesitan edificio |
+| Oro | Compañía | +3 de oro por ciudad y 12 de oro extra al empezar. Los mercenarios no necesitan edificio |
 | Caza mayor | Hijos del Acero | +2 de ataque contra monstruos y criaturas salvajes |
 | Consagración | Santos de Asmodeo | Una casilla consagrada (la ciudad y un anillo alrededor) da +1 de defensa a los aliados y cura 1 más por turno. Consagrar cuesta un turno de un Consagrador |
 | Noche eterna | Nikaalia | Los rivales ven una casilla menos. Una unidad escondida no se puede seleccionar ni atacar hasta que un enemigo esté a 1 casilla. Los sobornos cuestan oro y cambian de bando a una criatura salvaje 2 turnos |
