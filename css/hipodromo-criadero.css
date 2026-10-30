@@ -164,3 +164,6 @@ button.hip-ar-b:hover { border-color: var(--accent); }
 .hip-ar-rep { position: absolute; left: 3px; top: 3px; padding: 0 5px; font: 700 .64rem Karla, sans-serif; font-style: normal; background: var(--hip-rojo); color: #fff; }
 .hip-ar-caja { overflow-x: auto; padding: 6px 0; }
 @media (max-width: 700px) { .hcp-arbol.con-panel { right: 0; } }
+
+.hip-tienda-ben { display: block; margin-top: 3px; font: 600 .74rem Karla, sans-serif; color: var(--hip-verde); }
+.hip-tienda-ben.deco { color: var(--muted); font-weight: 400; }

@@ -803,6 +803,20 @@ function cabezaACabeza(a, b, cond, veces) {
     ok(prueba.ok && !(w.duenos.u1.objetos || []).includes("parterre"), "la comprobación en seco no cambia nada");
     const r = M.procesarOrdenes(w, [{ oid: 7, dueno: "u1", tipo: "objeto", objeto: "tronco_hueco" }], { u1: 5000 });
     ok(r.resultados[0].ok && r.pagos.some(p => p.dueno === "u1" && p.monto === -OB.tronco_hueco.precio), "el cobro del objeto sale en los pagos"); }
+  // los beneficios pequeños de algunos objetos
+  ok(["rocas_musgo", "parterre", "tronco_hueco"].every(k => !OB[k].efecto && !OB[k].ben) && claves.filter(k => OB[k].efecto).every(k => OB[k].ben), "los objetos con efecto lo explican en una frase corta y los de adorno no tienen ninguno");
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0], pc = () => M.perfilCuadra(w, c);
+    ok(pc().costeCuidar === M.C.CUIDADO_COSTE && pc().costeEntrenar === M.C.ENTRENO_COSTE && pc().quitaFatiga === 20 && pc().quitaLesion === 40, "sin objetos, el cuidado y el entrenamiento cuestan lo de siempre");
+    ord(w, { dueno: "u1", tipo: "objeto", objeto: "rincon_tranquilo" }, { u1: 5000 }); ord(w, { dueno: "u1", tipo: "objeto", objeto: "arbol_sombra" }, { u1: 5000 });
+    ord(w, { dueno: "u1", tipo: "objeto", objeto: "columpio" }, { u1: 5000 }); ord(w, { dueno: "u1", tipo: "objeto", objeto: "arbusto_bayas" }, { u1: 5000 }); ord(w, { dueno: "u1", tipo: "objeto", objeto: "charca" }, { u1: 5000 });
+    ok(pc().costeCuidar === M.C.CUIDADO_COSTE - 12 && pc().costeEntrenar === M.C.ENTRENO_COSTE - 2 && pc().quitaFatiga === 25 && pc().quitaLesion === 50, `con objetos baja el coste (cuidar ${pc().costeCuidar}, entrenar ${pc().costeEntrenar}) y cuidar rinde más`);
+    c.fatiga = 60; c.cuidado = -999; const pr = M.ordenar(w, { dueno: "u1", tipo: "cuidar", id: c.id }, { prueba: true });
+    ok(pr.ok && pr.costo === pc().costeCuidar, "el cobro de cuidar es el que anuncia el perfil");
+    ord(w, { dueno: "u1", tipo: "cuidar", id: c.id }, { u1: 5000 }); ok(c.fatiga === 35, `cuidar quita 25 de cansancio con el arbusto (queda ${c.fatiga})`);
+    const vacio = M.crearMundo("objetos", { calentar: 30, t0: Date.UTC(2026, 0, 1), simsCalentar: 8 }); ord(vacio, { dueno: "u1", tipo: "adoptar" }); const c0 = M.cuadraDe(vacio, "u1")[0]; c0.fatiga = 60;
+    ord(vacio, { dueno: "u1", tipo: "cuidar", id: c0.id }, { u1: 5000 }); ok(c0.fatiga === 40, "sin arbusto quita 20");
+    ord(w, { dueno: "u1", tipo: "objeto", objeto: "recinto_crias" }, { u1: 5000 }); c.nace = w.n - 2; const joven = pc().costeEntrenar;
+    ok(joven <= M.C.ENTRENO_COSTE - 2 && joven >= 15, `el entrenamiento nunca baja de 15 (cuesta ${joven})`); }
   // la biografía
   { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0];
     ok(mad.bio && /Entra en la cuadra/.test(mad.bio[0].t), "al adoptarla, la biografía empieza con la entrada en la cuadra");

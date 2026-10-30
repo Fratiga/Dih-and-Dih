@@ -84,12 +84,12 @@ window.HipodromoCuadraUI = (function () {
       let acciones = "";
       if (corre) {
         acciones += `<details data-d="ins${p.id}"${abierta("ins" + p.id)}><summary>${T("inscribir", "Inscribir en carreras")}${c.entradas.length ? ` (${c.entradas.length})` : ""}</summary>${calendarioHtml(c, p, cal)}</details>`;
-        acciones += `<details data-d="ent${p.id}"${abierta("ent" + p.id)}><summary>${T("entrenar", "Entrenar")}</summary><p class="hip-nota">Una sesión dura ${M.C.ENTRENO_CARRERAS} carreras y mientras dura no corre. Mejora una capacidad un poco (más en las jóvenes, menos cuanto más entrenada) y puede lesionarla. Cuesta ${mon(M.C.ENTRENO_COSTE)}.</p>
+        acciones += `<details data-d="ent${p.id}"${abierta("ent" + p.id)}><summary>${T("entrenar", "Entrenar")}</summary><p class="hip-nota">Una sesión dura ${M.C.ENTRENO_CARRERAS} carreras y mientras dura no corre. Mejora una capacidad un poco (más en las jóvenes, menos cuanto más entrenada) y puede lesionarla. Cuesta ${mon(c.costeEntrenar != null ? c.costeEntrenar : M.C.ENTRENO_COSTE)}.</p>
           <select data-stat="${p.id}">${M.STATS.map(k => `<option value="${k}">${STATS[k]}</option>`).join("")}</select> <button type="button" class="hip-boton chico" data-o="entrenar" data-id="${p.id}"${c.entreno || p.lesion ? " disabled" : ""}>Entrenar</button></details>`;
       }
       let fila = `<div class="hip-fila-acc">`;
       if (corre || p.estado === "criador") fila += `<label>${T("tactica", "Táctica")} <select data-tactica="${p.id}">${Object.keys(TACTICAS).map(k => `<option value="${k}"${(c.tactica || "") === k ? " selected" : ""}>${TACTICAS[k]}</option>`).join("")}</select></label>`;
-      fila += `<button type="button" class="hip-boton chico" data-o="cuidar" data-id="${p.id}"${c.puedeCuidar && (c.fatiga > 5 || p.lesion) ? "" : " disabled"} title="Quita 20 de cansancio y acorta una lesión">Cuidar (${M.C.CUIDADO_COSTE})</button>`;
+      fila += `<button type="button" class="hip-boton chico" data-o="cuidar" data-id="${p.id}"${c.puedeCuidar && (c.fatiga > 5 || p.lesion) ? "" : " disabled"} title="Quita ${c.quitaFatiga || 20} de cansancio y acorta una lesión">Cuidar (${c.costeCuidar != null ? c.costeCuidar : M.C.CUIDADO_COSTE})</button>`;
       if (!c.renombrada) fila += `<button type="button" class="hip-boton chico" data-o="nombre" data-id="${p.id}">Bautizar (${M.C.NOMBRE_COSTE})</button>`;
       if (corre) fila += `<button type="button" class="hip-boton chico" data-o="retirar" data-id="${p.id}">Retirar a la cría</button>`;
       fila += `<button type="button" class="hip-boton chico" data-o="vender" data-id="${p.id}">Vender (${mon(c.venta)})</button></div>`;
@@ -111,7 +111,7 @@ window.HipodromoCuadraUI = (function () {
         <p class="hip-nota">${p.sexo === "f" ? "Hembra" : "Macho"} · ${esc(p.etapa)} · ${api.edadTxt(p)} · ${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</p>
         <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}${temperamentoHtml(p)}<p class="hip-nota">Ahora mismo: <span data-ahora="${p.id}"></span></p></div></div>
         <div class="hip-caps"><div class="hip-cap"><span>${T("cansancio", "Cansancio")}</span>${barra(c.fatiga, 100, c.fatiga > 55 ? "mal" : "")}<b>${c.fatiga}</b></div><p class="hip-nota">${T("forma", "Forma")}: ${esc(c.forma)}.</p>${cap}<p class="hip-nota">Tu entrenador estima las ${T("capacidades", "capacidades")} de cinco en cinco. La suerte del día no sale ahí.</p></div>
-        ${fila}<p class="hip-cuidar-nota">Cuidar (${M.C.CUIDADO_COSTE}): quita 20 de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? " y acorta la lesión un 40 %" : ""}. Se puede cada ${M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${arbolHtml(p)}${carrerasHtml(p)}${historiaHtml(p)}</article>`;
+        ${fila}<p class="hip-cuidar-nota">Cuidar (${c.costeCuidar != null ? c.costeCuidar : M.C.CUIDADO_COSTE}): quita ${c.quitaFatiga || 20} de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? ` y acorta la lesión un ${c.quitaLesion || 40} %` : ""}. Se puede cada ${M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${arbolHtml(p)}${carrerasHtml(p)}${historiaHtml(p)}</article>`;
     }
     /* El temperamento que se le nota en el criadero (js/hipodromo-criadero.js): solo presentación */
     function temperamentoHtml(p) {
@@ -220,11 +220,11 @@ window.HipodromoCuadraUI = (function () {
       const grupos = [["zona", "Zonas"], ["juguete", "Juguetes"], ["natural", "Elementos naturales"]];
       const fila = id => {
         const o = cat[id], tiene = tengo.has(id), icono = window.HipodromoCriadero ? window.HipodromoCriadero.icono(id) : "";
-        return `<li class="${tiene ? "tengo" : ""}"><div class="hip-tienda-dib" aria-hidden="true">${icono}</div><div><strong>${esc(o.nombre)}</strong><small>${esc(o.texto)}</small></div>
+        return `<li class="${tiene ? "tengo" : ""}"><div class="hip-tienda-dib" aria-hidden="true">${icono}</div><div><strong>${esc(o.nombre)}</strong><small>${esc(o.texto)}</small>${o.ben ? `<span class="hip-tienda-ben">${esc(o.ben)}</span>` : `<span class="hip-tienda-ben deco">solo decoración</span>`}</div>
           <div class="hip-tienda-der"><b>${mon(o.precio)}</b>${tiene ? `<button type="button" class="hip-boton chico" data-o="objeto" data-objeto="${id}" data-quitar="1">Quitar (+${mon(Math.round(o.precio * 0.5))})</button>`
             : `<button type="button" class="hip-boton chico" data-o="objeto" data-objeto="${id}"${o.precio > saldo ? " disabled" : ""}>Comprar</button>`}</div></li>`;
       };
-      return `<h3>Objetos del criadero</h3><p class="hip-nota">Aparecen en la escena y las criaturas los usan. No cambian las carreras: son para el criadero. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) ya los tienes.</p>
+      return `<h3>Objetos del criadero</h3><p class="hip-nota">Aparecen en la escena y las criaturas los usan. No cambian las carreras. Algunos abaratan un poco el cuidado o el entrenamiento. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) ya los tienes.</p>
         ${grupos.map(([g, t]) => `<p class="hip-tienda-grupo">${t}</p><ul class="hip-tienda">${Object.keys(cat).filter(id => cat[id].grupo === g).map(fila).join("")}</ul>`).join("")}`;
     }
     function arbolPanelHtml() {
@@ -329,8 +329,8 @@ window.HipodromoCuadraUI = (function () {
       if (tipo === "entrenar") return mandar({ tipo, id, stat: (cont.querySelector(`[data-stat="${id}"]`) || {}).value });
       if (tipo === "cuidar") {
         const e2 = api.mias().find(x => x.p.id === id);
-        const efecto = e2 ? `Quita 20 de cansancio (ahora ${e2.c.fatiga})${e2.p.lesion && e2.p.lesion.gravedad !== "grave" ? " y acorta su lesión un 40 %" : ""}.` : "";
-        if (!(await dialogo.confirmar(`Cuidados veterinarios${e2 ? " para " + e2.p.nombre : ""}. ${efecto} Cuestan ${mon(M.C.CUIDADO_COSTE)} tokens.`, { titulo: "Cuidar", aceptar: "Cuidar" }))) return;
+        const efecto = e2 ? `Quita ${e2.c.quitaFatiga || 20} de cansancio (ahora ${e2.c.fatiga})${e2.p.lesion && e2.p.lesion.gravedad !== "grave" ? ` y acorta su lesión un ${e2.c.quitaLesion || 40} %` : ""}.` : "";
+        if (!(await dialogo.confirmar(`Cuidados veterinarios${e2 ? " para " + e2.p.nombre : ""}. ${efecto} Cuestan ${mon(e2 && e2.c.costeCuidar != null ? e2.c.costeCuidar : M.C.CUIDADO_COSTE)} tokens.`, { titulo: "Cuidar", aceptar: "Cuidar" }))) return;
         return mandar({ tipo, id });
       }
       if (tipo === "comprar") {
@@ -341,7 +341,7 @@ window.HipodromoCuadraUI = (function () {
       if (tipo === "objeto") {
         const id = b.dataset.objeto, o = (M.OBJETOS_CRIADERO || {})[id]; if (!o) return;
         const quitar = !!b.dataset.quitar;
-        if (!(await dialogo.confirmar(quitar ? `Quitas ${o.nombre.toLowerCase()} del criadero y la casa te devuelve ${mon(Math.round(o.precio * 0.5))} tokens.` : `${o.nombre} cuesta ${mon(o.precio)} tokens. ${o.texto}`, { titulo: quitar ? "Quitar del criadero" : "Comprar para el criadero", aceptar: quitar ? "Quitar" : "Comprar" }))) return;
+        if (!(await dialogo.confirmar(quitar ? `Quitas ${o.nombre.toLowerCase()} del criadero y la casa te devuelve ${mon(Math.round(o.precio * 0.5))} tokens.` : `${o.nombre} cuesta ${mon(o.precio)} tokens. ${o.texto}${o.ben ? " Beneficio: " + o.ben + "." : ""}`, { titulo: quitar ? "Quitar del criadero" : "Comprar para el criadero", aceptar: quitar ? "Quitar" : "Comprar" }))) return;
         return mandar(quitar ? { tipo, objeto: id, quitar: true } : { tipo, objeto: id });
       }
       if (tipo === "vender") {

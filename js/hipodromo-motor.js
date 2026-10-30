@@ -1000,21 +1000,31 @@
     const e = estrellas(c), edadF = a <= 3 ? 1 : Math.max(0.35, 1 - 0.12 * (a - 3));
     return Math.min(3000, redondea10((140 + 70 * ((e == null ? 3 : e) - 3) + 20 * c.vic + 100 * c.gp + 0.02 * c.premios) * edadF));
   }
-  /* Lo que se puede comprar para el criadero: zonas, juguetes y elementos naturales que salen en la escena de «Mi cuadra» (js/hipodromo-criadero.js). Solo cambian lo que se ve y lo que
-     hacen las criaturas en la escena; no tocan carreras, genética ni economía. Quitarlos devuelve la mitad. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) no se compran. */
+  /* Lo que se puede comprar para el criadero: zonas, juguetes y elementos naturales que salen en la escena de «Mi cuadra» (js/hipodromo-criadero.js). Cambian lo que se ve y lo que
+     hacen las criaturas en la escena, y los más útiles dan un descuento pequeño al cuidar o entrenar (efecto); no tocan carreras ni genética. Quitarlos devuelve la mitad. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) no se compran. */
   const OBJETOS_CRIADERO = {
-    recinto_crias: { nombre: "Recinto de crías", grupo: "zona", precio: 350, texto: "Un corral con arena donde juegan las crías." },
-    rincon_tranquilo: { nombre: "Rincón tranquilo", grupo: "zona", precio: 350, texto: "Un rincón vallado con paja y sombra para las que descansan o se recuperan." },
-    neumatico: { nombre: "Neumático", grupo: "juguete", precio: 140, texto: "Para saltar y dar brincos." },
-    cuerda: { nombre: "Cuerda para tirar", grupo: "juguete", precio: 110, texto: "Tiran de ella con los dientes." },
-    columpio: { nombre: "Columpio de tronco", grupo: "juguete", precio: 220, texto: "Lo empujan con el hocico y se balancea." },
-    charca: { nombre: "Charca con patos", grupo: "natural", precio: 300, texto: "Beben, chapotean y miran a los patos." },
-    arbol_sombra: { nombre: "Árbol de sombra", grupo: "natural", precio: 260, texto: "Se echan a su sombra." },
-    arbusto_bayas: { nombre: "Arbusto de bayas", grupo: "natural", precio: 170, texto: "Comen las bayas con el cuello estirado." },
+    recinto_crias: { nombre: "Recinto de crías", grupo: "zona", precio: 350, efecto: { joven: -2 }, ben: "−2 coste de entrenar a las jóvenes", texto: "Un corral con arena donde juegan las crías." },
+    rincon_tranquilo: { nombre: "Rincón tranquilo", grupo: "zona", precio: 350, efecto: { cuidar: -8 }, ben: "−8 coste de cuidar", texto: "Un rincón vallado con paja y sombra para las que descansan o se recuperan." },
+    neumatico: { nombre: "Neumático", grupo: "juguete", precio: 140, efecto: { entrenar: -1 }, ben: "−1 coste de entrenar", texto: "Para saltar y dar brincos." },
+    cuerda: { nombre: "Cuerda para tirar", grupo: "juguete", precio: 110, efecto: { entrenar: -1 }, ben: "−1 coste de entrenar", texto: "Tiran de ella con los dientes." },
+    columpio: { nombre: "Columpio de tronco", grupo: "juguete", precio: 220, efecto: { entrenar: -2 }, ben: "−2 coste de entrenar", texto: "Lo empujan con el hocico y se balancea." },
+    charca: { nombre: "Charca con patos", grupo: "natural", precio: 300, efecto: { lesion: -0.1 }, ben: "cuidar acorta más las lesiones", texto: "Beben, chapotean y miran a los patos." },
+    arbol_sombra: { nombre: "Árbol de sombra", grupo: "natural", precio: 260, efecto: { cuidar: -4 }, ben: "−4 coste de cuidar", texto: "Se echan a su sombra." },
+    arbusto_bayas: { nombre: "Arbusto de bayas", grupo: "natural", precio: 170, efecto: { fatiga: 5 }, ben: "cuidar quita +5 de cansancio", texto: "Comen las bayas con el cuello estirado." },
     rocas_musgo: { nombre: "Rocas con musgo", grupo: "natural", precio: 100, texto: "Las husmean y se sientan junto a ellas." },
     parterre: { nombre: "Parterre de flores", grupo: "natural", precio: 90, texto: "Las huelen despacio." },
     tronco_hueco: { nombre: "Tronco hueco", grupo: "natural", precio: 130, texto: "Meten el hocico a ver qué hay dentro." }
   };
+  /* Lo que suman los objetos del dueño al cuidar y entrenar: coste de cuidar y de entrenar (con suelo), cansancio que se quita y qué parte de la lesión queda */
+  function efectosCriadero(m, dueno, c) {
+    const lista = (m.duenos && m.duenos[dueno] && m.duenos[dueno].objetos) || [], e = { cuidar: 0, entrenar: 0, fatiga: 0, lesion: 0 };
+    lista.forEach(id => {
+      const f = OBJETOS_CRIADERO[id] && OBJETOS_CRIADERO[id].efecto; if (!f) return;
+      e.cuidar += f.cuidar || 0; e.entrenar += f.entrenar || 0; e.fatiga += f.fatiga || 0; e.lesion += f.lesion || 0;
+      if (f.joven && c && edadAnios(m.n, c) < 2) e.entrenar += f.joven;
+    });
+    return { costeCuidar: Math.max(20, C.CUIDADO_COSTE + e.cuidar), costeEntrenar: Math.max(15, C.ENTRENO_COSTE + e.entrenar), quitaFatiga: 20 + e.fatiga, quedaLesion: Math.max(0.3, 0.6 + e.lesion) };
+  }
   const precioMontaBase = (m, c) => Math.min(800, Math.max(60, redondea10(60 + 3 * Math.max(0, c.rating - 1450) + 12 * c.vic)));
   /* Lo que cuesta montar a un semental: el precio que le puso su dueño (de 40 a 2000) o, si no puso ninguno, el que sale de su palmarés */
   const precioMonta = (m, c) => (c.montaCfg != null ? c.montaCfg : precioMontaBase(m, c));
@@ -1049,6 +1059,7 @@
     const b = statsBase(c), r5 = x => Math.round(x / 5) * 5, cap = {};
     STATS.forEach(k => { cap[k] = r5(b[k]); });
     return { id: c.id, dueno: c.dueno, tactica: c.tactica || null, entreno: c.entreno || null, entradas: (c.entradas || []).map(en => ({ n: en.n, pago: en.pago })),
+      costeCuidar: efectosCriadero(m, c.dueno, c).costeCuidar, costeEntrenar: efectosCriadero(m, c.dueno, c).costeEntrenar, quitaFatiga: efectosCriadero(m, c.dueno, c).quitaFatiga, quitaLesion: Math.round((1 - efectosCriadero(m, c.dueno, c).quedaLesion) * 100),
       forma: textoForma(c.forma), fatiga: Math.round(c.fatiga), capacidades: cap, mejoras: c.perm, venta: valorVenta(m, c), puedeCuidar: m.n - (c.cuidado == null ? -999 : c.cuidado) >= C.CUIDADO_ESPERA,
       objetos: ((m.duenos && m.duenos[c.dueno] && m.duenos[c.dueno].objetos) || []).slice(),
       copas: copasQueCorre(m, c), renombrada: !!c.renombrada, cruce: (m.cruces || []).filter(x => x.madre === c.id).map(x => ({ n: x.n, padre: x.padreNombre })) };
@@ -1197,7 +1208,7 @@
         if (edadAnios(m.n, c) < 0.5) return err("Es demasiado pequeña para entrenar.");
         if ((c.entradas || []).some(en => en.n <= m.n + C.ENTRENO_CARRERAS)) return err("Tiene inscripciones en las próximas carreras: cancélalas antes.");
         if (c.perm[o.stat] >= C.ENTRENO_TOPE) return err("Ya no puede mejorar más en eso.");
-        res.costo = C.ENTRENO_COSTE;
+        res.costo = efectosCriadero(m, d, c).costeEntrenar;
         if (prueba) return res;
         c.entreno = { stat: o.stat, hasta: m.n + 1 + C.ENTRENO_CARRERAS };
         res.id = c.id; res.cambios.push(c.id); res.texto = `${c.nombre} empieza a entrenar ${NOMBRE_STAT[o.stat]}: ${C.ENTRENO_CARRERAS} carreras.`; res.concepto = `Entrenamiento: ${c.nombre}`;
@@ -1208,10 +1219,11 @@
         if (c.estado !== "activo" && c.estado !== "criador") return err("Ya no está.");
         if (m.n - (c.cuidado == null ? -999 : c.cuidado) < C.CUIDADO_ESPERA) return err(`Se la cuidó hace poco: espera ${C.CUIDADO_ESPERA} carreras entre cuidados.`);
         if (!(c.fatiga > 5) && !(c.lesion && c.lesion.gravedad !== "grave" && c.lesion.tipo !== "desaparecido")) return err("No necesita cuidados.");
-        res.costo = C.CUIDADO_COSTE;
+        const ef = efectosCriadero(m, d, c);
+        res.costo = ef.costeCuidar;
         if (prueba) return res;
-        c.fatiga = Math.max(0, c.fatiga - 20); c.cuidado = m.n;
-        if (c.lesion && c.lesion.gravedad !== "grave" && c.lesion.tipo !== "desaparecido") c.lesion.hasta = m.n + Math.max(1, Math.ceil((c.lesion.hasta - m.n) * 0.6));
+        c.fatiga = Math.max(0, c.fatiga - ef.quitaFatiga); c.cuidado = m.n;
+        if (c.lesion && c.lesion.gravedad !== "grave" && c.lesion.tipo !== "desaparecido") c.lesion.hasta = m.n + Math.max(1, Math.ceil((c.lesion.hasta - m.n) * ef.quedaLesion));
         res.id = c.id; res.cambios.push(c.id); res.texto = `Cuidados veterinarios para ${c.nombre}.`; res.concepto = `Cuidados: ${c.nombre}`;
         return res;
       }
@@ -1466,7 +1478,7 @@
   raiz.HipodromoMotor = {
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
-    OBJETOS_CRIADERO, cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
+    OBJETOS_CRIADERO, efectosCriadero, cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
     zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
