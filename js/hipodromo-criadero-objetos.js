@@ -45,16 +45,16 @@ window.HipodromoCriaderoObjetos = (function () {
   /* Dónde va cada uno en la escena: x en % del ancho, f de 0 (cerca) a 1 (lejos), w en % del ancho; spots = dónde se ponen las criaturas para usarlo (dir: hacia dónde miran);
      clave del motor a la que pertenece (el recinto y el rincón son dos piezas cada uno). */
   const UBIC = {
-    recinto: { clave: "recinto_crias", x: 49, f: 0.22, w: 27 }, recinto_f: { clave: "recinto_crias", x: 49, f: 0.115, w: 27 },
-    rincon: { clave: "rincon_tranquilo", x: 89, f: 0.52, w: 19 }, rincon_f: { clave: "rincon_tranquilo", x: 89, f: 0.43, w: 19 },
-    neumatico: { clave: "neumatico", x: 63, f: 0.34, w: 7, spots: [{ x: 57, f: 0.34, dir: 1 }, { x: 69, f: 0.34, dir: -1 }] },
-    cuerda: { clave: "cuerda", x: 73, f: 0.17, w: 8, spots: [{ x: 66.5, f: 0.17, dir: 1 }] },
-    columpio: { clave: "columpio", x: 75, f: 0.4, w: 12, spots: [{ x: 68, f: 0.38, dir: 1 }] },
-    charca: { clave: "charca", x: 24, f: 0.16, w: 17, spots: [{ x: 15, f: 0.16, dir: 1 }, { x: 33, f: 0.16, dir: -1 }] },
+    recinto: { clave: "recinto_crias", x: 50, f: 0.22, w: 20 }, recinto_f: { clave: "recinto_crias", x: 50, f: 0.115, w: 20 },
+    rincon: { clave: "rincon_tranquilo", x: 90, f: 0.52, w: 17 }, rincon_f: { clave: "rincon_tranquilo", x: 90, f: 0.43, w: 17 },
+    neumatico: { clave: "neumatico", x: 66, f: 0.3, w: 6, spots: [{ x: 60.5, f: 0.3, dir: 1 }] },
+    cuerda: { clave: "cuerda", x: 74, f: 0.14, w: 8, spots: [{ x: 67.5, f: 0.14, dir: 1 }] },
+    columpio: { clave: "columpio", x: 79, f: 0.42, w: 11, spots: [{ x: 72.5, f: 0.4, dir: 1 }] },
+    charca: { clave: "charca", x: 22, f: 0.13, w: 16, spots: [{ x: 13.5, f: 0.13, dir: 1 }, { x: 30.5, f: 0.13, dir: -1 }] },
     arbol_sombra: { clave: "arbol_sombra", x: 52, f: 0.86, w: 21, spots: [{ x: 46, f: 0.76, dir: 1 }, { x: 58, f: 0.78, dir: -1 }] },
-    arbusto_bayas: { clave: "arbusto_bayas", x: 32, f: 0.62, w: 10, spots: [{ x: 25, f: 0.6, dir: 1 }, { x: 39, f: 0.6, dir: -1 }] },
-    rocas_musgo: { clave: "rocas_musgo", x: 8, f: 0.28, w: 9, spots: [{ x: 14.5, f: 0.28, dir: -1 }] },
-    parterre: { clave: "parterre", x: 42, f: 0.5, w: 12, spots: [{ x: 35.5, f: 0.5, dir: 1 }, { x: 48.5, f: 0.5, dir: -1 }] },
+    arbusto_bayas: { clave: "arbusto_bayas", x: 27, f: 0.64, w: 9, spots: [{ x: 21, f: 0.62, dir: 1 }, { x: 33, f: 0.62, dir: -1 }] },
+    rocas_musgo: { clave: "rocas_musgo", x: 6.5, f: 0.26, w: 8, spots: [{ x: 12, f: 0.26, dir: -1 }] },
+    parterre: { clave: "parterre", x: 41, f: 0.66, w: 10, spots: [{ x: 35, f: 0.66, dir: 1 }, { x: 47, f: 0.66, dir: -1 }] },
     tronco_hueco: { clave: "tronco_hueco", x: 6, f: 0.56, w: 10, spots: [{ x: 12.5, f: 0.56, dir: -1 }] }
   };
 

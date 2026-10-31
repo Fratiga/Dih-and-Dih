@@ -24,11 +24,11 @@ window.HipodromoCriadero = (function () {
      dir: hacia dónde miran al llegar (1 derecha, -1 izquierda). */
   const OBJ = {
     comedero: { x: 17, f: 0.42, w: 12, spots: [{ x: 8.2, f: 0.42, dir: 1 }, { x: 25.8, f: 0.42, dir: -1 }], cartel: "Alimentación" },
-    bebedero: { x: 36, f: 0.34, w: 11, spots: [{ x: 27.5, f: 0.34, dir: 1 }, { x: 44.5, f: 0.34, dir: -1 }] },
+    bebedero: { x: 31, f: 0.38, w: 10, spots: [{ x: 23.5, f: 0.38, dir: 1 }, { x: 38.5, f: 0.38, dir: -1 }] },
     refugio: { x: 78, f: 0.9, w: 30, spots: [{ x: 68, f: 0.84, dir: 1 }, { x: 78, f: 0.86, dir: -1 }], cartel: "Refugio" },
-    heno: { x: 88, f: 0.5, w: 15, spots: [{ x: 87, f: 0.5, dir: -1 }], cartel: "Recuperación" },
+    heno: { x: 90, f: 0.5, w: 14, spots: [{ x: 89, f: 0.5, dir: -1 }], cartel: "Recuperación" },
     rascador: { x: 62, f: 0.6, w: 6, spots: [{ x: 56, f: 0.6, dir: 1 }, { x: 68, f: 0.6, dir: -1 }] },
-    pelota: { x: 49, f: 0.14, w: 5, spots: [{ x: 49, f: 0.14, dir: 1 }], cartel: "Crías" }
+    pelota: { x: 50, f: 0.15, w: 5, spots: [{ x: 50, f: 0.15, dir: 1 }], cartel: "Crías" }
   };
   const ESC_F = 0.34;                                   // cuánto se encoge una criatura al irse al fondo
   const Y0 = 0.935, Y1 = 0.50;                           // altura (fracción del alto) del primer plano y del fondo de la pradera
@@ -209,7 +209,7 @@ window.HipodromoCriadero = (function () {
       tiene.clear(); (lista || []).forEach(x => tiene.add(x));
       Object.keys(objetos).forEach(k => { const ob = objetos[k]; if (ob.o.clave) { ob.activo = tiene.has(ob.o.clave); ob.el.style.display = ob.activo ? "" : "none"; if (!ob.activo) ob.usando = 0; } });
       ids.forEach(w => { if (w.plan && objetos[w.plan.obj] && !objetos[w.plan.obj].activo) soltarPlan(w); });
-      const rec = tiene.has("recinto_crias"); if (rec) { bola.x = clamp(bola.x, 39, 60); bola.f = clamp(bola.f, 0.13, 0.31); }
+      const rec = tiene.has("recinto_crias"); if (rec) { bola.x = clamp(bola.x, 42, 58); bola.f = clamp(bola.f, 0.13, 0.31); }
       medidas();
     }
     function objetos_toggle() { Object.keys(objetos).forEach(k => { const ob = objetos[k]; if (ob.activo) { const u = ob.usando > 0; if (ob.uso !== u) { ob.uso = u; ob.el.classList.toggle("hc-usando", u); } } }); }
@@ -478,7 +478,7 @@ window.HipodromoCriadero = (function () {
         }
       }
       // la pelota rueda y rebota en los bordes (dentro del recinto si lo hay)
-      const lim = tiene.has("recinto_crias") ? { x0: 39, x1: 60, f0: 0.13, f1: 0.31 } : { x0: 8, x1: 92, f0: 0.04, f1: 0.5 };
+      const lim = tiene.has("recinto_crias") ? { x0: 42, x1: 58, f0: 0.13, f1: 0.31 } : { x0: 8, x1: 92, f0: 0.04, f1: 0.5 };
       bola.x += bola.vx * dt; bola.f += bola.vf * dt / 45;
       const fr = Math.exp(-1.5 * dt); bola.vx *= fr; bola.vf *= fr;
       if (bola.x < lim.x0) { bola.x = lim.x0; bola.vx = Math.abs(bola.vx) * 0.7; } else if (bola.x > lim.x1) { bola.x = lim.x1; bola.vx = -Math.abs(bola.vx) * 0.7; }

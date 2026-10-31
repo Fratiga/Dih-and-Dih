@@ -935,7 +935,9 @@ const simsDe = i => ((i + 1) >= CARRERAS / 4 && (i + 1) % 5 === 0 ? C.SIMS : 12)
 // 5b) Vida fuera de la pista, generaciones, nombres de homenaje y perfil ampliado
 { const rng = M.crearRng("homenaje"), usados = { peregrino: 1 };
   const a = N.nombrar(rng, { sexo: "m", homenaje: "Peregrino", usados }), b = N.nombrar(rng, { sexo: "f", homenaje: "Peregrino", usados }), c2 = N.nombrar(rng, { sexo: "m", homenaje: "Peregrino II", usados });
-  ok(a.nombre === "Peregrino II" && b.nombre === "Peregrino III" && c2.nombre === "Peregrino IV", `los homenajes llevan numeral (${a.nombre}, ${b.nombre}, ${c2.nombre})`);
+  ok([a, b, c2].every(x => x.nombre.toLowerCase() !== "peregrino" && !/ (?:[IVX]+|\d+)$/.test(x.nombre)) && new Set([a.nombre, b.nombre, c2.nombre]).size === 3, `los homenajes no repiten el nombre con un numeral (${a.nombre}, ${b.nombre}, ${c2.nombre})`);
+  { const r2 = M.crearRng("homenaje-2"), u2 = { "suspicious alibi": 1 }, hs = []; for (let i = 0; i < 12; i++) hs.push(N.nombrar(r2, { sexo: i % 2 ? "f" : "m", homenaje: "Suspicious Alibi", usados: u2 }).nombre);
+    ok(new Set(hs).size === 12 && hs.filter(x => /^Suspicious Alibi/.test(x)).length === 0 && hs.filter(x => /Suspicious|Alibi/.test(x)).length >= 6, `doce hijos de la misma leyenda: nombres distintos que conservan una palabra (${hs.slice(0, 5).join(", ")}...)`); }
   ok(["cría", "potro", "joven", "adulto", "veterano", "retirado", "fallecido"].join() === [M.etapaDe(0.2, "activo"), M.etapaDe(0.8, "activo"), M.etapaDe(2, "activo"), M.etapaDe(4, "activo"), M.etapaDe(6, "activo"), M.etapaDe(6, "criador"), M.etapaDe(3, "fallecido")].join(), "las etapas de la vida siguen la edad y el estado");
   const w = M.crearMundo("vida", { calentar: 0, t0: 0 });
   const x = w.vivos[0], y = w.vivos[1];

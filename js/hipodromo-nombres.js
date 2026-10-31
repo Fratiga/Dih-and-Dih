@@ -197,14 +197,17 @@
     const padres = opc.padres || [];
     const usados = opc.usados || null;
     let ultimo = null;
-    if (opc.homenaje) ultimo = { nombre: opc.homenaje.replace(/ (?:[IVX]+|\d+)$/, ""), plantilla: "homenaje", idioma: "homenaje" };   // "Peregrino II" hereda de "Peregrino"
-    for (let k = 0; k < 16 && !opc.homenaje; k++) {
-      const r = generar(rng, sexo, padres);
+    /* La cría de una leyenda hereda una palabra de su nombre y estrena el resto ("Suspicious Alibi" -> "Suspicious Pigeon"), en vez de repetirlo con un numeral */
+    const base = opc.homenaje ? opc.homenaje.replace(/ (?:[IVX]+|\d+)$/, "") : null;
+    for (let k = 0; k < 16; k++) {
+      let r = null;
+      const fr = base ? fragmento(rng, [base]) : null;
+      if (fr) { r = desdeFragmento(rng, fr, sexo); r.plantilla = "homenaje"; }
+      if (!r) r = generar(rng, sexo, padres);
       if (r.nombre.length > LARGO_MAX && k < 15) continue;
       ultimo = r;
       if (!usados || !usados[r.nombre.toLowerCase()]) break;
     }
-    if (opc.homenaje && !usados) ultimo.nombre += " II";
     if (usados) {
       let nombre = ultimo.nombre, k = 1;
       while (usados[nombre.toLowerCase()]) { k++; nombre = `${ultimo.nombre} ${k <= 20 ? romano(k) : k}`; }
