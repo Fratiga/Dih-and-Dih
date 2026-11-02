@@ -1,11 +1,8 @@
 import type { Pantalla, Shell } from "../shell.ts";
 import { boton, h, modal } from "./base.ts";
-import { medir, rectSalaPantalla } from "../escenas/medidas.ts";
 import { personaje } from "../datos/roster.ts";
 import { JEFES } from "../datos/campana.ts";
-import { ESTRELLAS_SALA, estrellasTotales } from "../estado.ts";
 import { MUEBLES } from "../arte/escenarios.ts";
-import { SALAS_MAX } from "../arte/torre.ts";
 import { sonido } from "../audio/audio.ts";
 import { urlJefe, urlRetrato } from "./puzzle.ts";
 import { cabeceraMansion } from "./cabecera.ts";
@@ -32,7 +29,6 @@ function icono(svg: string): HTMLElement {
 export function pantallaMenu(shell: Shell): Pantalla {
   const e = shell.estado;
   const raiz = shell.ui;
-  const estrellas = estrellasTotales(e);
   const proximo = Math.min(JEFES.length - 1, e.jefesSuperados.length);
   const j = JEFES[proximo];
 
@@ -77,34 +73,39 @@ export function pantallaMenu(shell: Shell): Pantalla {
     grande("Equipo", ICONO.equipo, () => void shell.ir("equipo"), "der"),
   );
 
-  /* --- las habitaciones de la torre --- */
-  const zona = h("div", { clase: "pt-hots pt-nada" });
-  const hots: HTMLElement[] = [];
-  for (let i = 0; i < SALAS_MAX; i++) {
-    const hab = e.habitaciones[i];
-    const b = h("button", { type: "button", clase: `pt-hot-sala ${hab ? "" : "cerrada"}`, "aria-label": hab ? `Habitación ${i + 1}` : `Habitación ${i + 1}, cerrada` });
-    const falta = Math.max(0, ESTRELLAS_SALA[i] - estrellas);
-    b.append(h("span", { clase: "pt-cartel-sala" }, hab ? h("b", {}, `Habitación ${i + 1}`) : h("b", {}, `Faltan ${falta} ★`), hab ? h("small", {}, `${hab.residentes.length} residentes`) : h("small", {}, `${ESTRELLAS_SALA[i]} estrellas`)));
-    b.addEventListener("pointerenter", () => shell.juego?.events.emit("pt:hover", `sala${i}`));
-    b.addEventListener("pointerleave", () => shell.juego?.events.emit("pt:hover", null));
-    b.addEventListener("focus", () => shell.juego?.events.emit("pt:hover", `sala${i}`));
-    b.addEventListener("blur", () => shell.juego?.events.emit("pt:hover", null));
-    b.addEventListener("click", () => {
-      if (!hab) { sonido.invalido(); shell.avisar(`Necesitas ${ESTRELLAS_SALA[i]} estrellas para abrir esta habitación. Tienes ${estrellas}.`); return; }
-      sonido.clic();
-      void shell.ir("habitaciones", { indice: i }, "centro");
-    });
-    zona.append(b);
-    hots.push(b);
-  }
-  const colocar = () => {
-    const m = medir(window.innerWidth, window.innerHeight);
-    hots.forEach((el, i) => { const r = rectSalaPantalla(i, m); el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px`; });
+  /* --- la mansion: flechas para girar, pisos y un indicador --- */
+  const emitir = (ev: string, d?: unknown): void => { shell.juego?.events.emit(ev, d); };
+  const flecha = (txt: string, dir: number, clase: string, tip: string): HTMLElement => { const b = boton(txt, () => emitir("pt:girar", dir), { icono: true, color: "amarillo", tip }); b.classList.add("pt-flecha", clase); return b; };
+  const bIzq = flecha("◀", -1, "izq", "Girar a la izquierda (←)");
+  const bDer = flecha("▶", 1, "der", "Girar a la derecha (→)");
+  const bSube = boton("▲", () => emitir("pt:piso", 1), { chico: true, icono: true, color: "violeta", tip: "Piso de arriba (↑)" });
+  const bBaja = boton("▼", () => emitir("pt:piso", -1), { chico: true, icono: true, color: "violeta", tip: "Piso de abajo (↓)" });
+  const indTitulo = h("b", {}, "");
+  const indSub = h("small", {}, "");
+  const puntos = h("span", { clase: "pt-sectores" });
+  const indicador = h("div", { clase: "pt-ind-mansion" }, bBaja, h("div", { clase: "pt-ind-centro" }, indTitulo, puntos, indSub), bSube);
+  const alEstado = (d: unknown): void => {
+    const x = d as { piso: number; pisos: number; sector: number; sectores: number; k: number; abierta: boolean; faltan: number; nombre: string };
+    indTitulo.textContent = `Piso ${x.piso + 1} de ${x.pisos} · ${x.nombre}`;
+    indSub.textContent = x.abierta ? "Pulsa la habitación de en medio para entrar" : `Se abre con ${x.k} estrellas (te faltan ${x.faltan})`;
+    puntos.replaceChildren(...Array.from({ length: x.sectores }, (_v, i) => h("i", { clase: i === x.sector ? "on" : "" })));
+    bBaja.disabled = x.piso === 0;
+    bSube.disabled = x.piso >= x.pisos - 1;
   };
-  colocar();
-  window.addEventListener("resize", colocar);
+  shell.juego?.events.on("pt:mansion", alEstado);
+  const teclas = (ev: KeyboardEvent): void => {
+    if (document.querySelector(".pt-velo")) return;
+    const t = ev.target as HTMLElement | null;
+    if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) return;
+    if (ev.key === "ArrowLeft") { ev.preventDefault(); emitir("pt:girar", -1); }
+    else if (ev.key === "ArrowRight") { ev.preventDefault(); emitir("pt:girar", 1); }
+    else if (ev.key === "ArrowUp") { ev.preventDefault(); emitir("pt:piso", 1); }
+    else if (ev.key === "ArrowDown") { ev.preventDefault(); emitir("pt:piso", -1); }
+    else if (ev.key === "Enter") { emitir("pt:entrar-frente"); }
+  };
+  document.addEventListener("keydown", teclas);
 
-  raiz.append(bar, izquierda, derecha, zona, nav, h("div", { clase: "pt-ayuda" }, "F pantalla completa · M música"));
+  raiz.append(bar, izquierda, derecha, bIzq, bDer, indicador, nav, h("div", { clase: "pt-ayuda" }, "F pantalla completa · M música"));
 
   /* --- ventanas --- */
   function abrirRegalo(): void {
@@ -129,11 +130,11 @@ export function pantallaMenu(shell: Shell): Pantalla {
 
   function abrirAyuda(): void {
     const m = modal(shell.raiz, "La mansión", h("div", { clase: "pt-pausa" },
-      h("p", {}, "Cada piso de la torre es una habitación donde viven tus personajes. Pulsa una para entrar y decorarla."),
+      h("p", {}, "La mansión es redonda. Arrastra con el ratón, o usa las flechas, para girar el piso que miras. Con ↑ ↓ o la rueda cambias de piso. Pulsa la habitación de en medio para entrar y decorarla."),
       h("p", {}, "Con «¡Batalla!» eliges un jefe. Con «Colección» ves a tus personajes y con «Equipo» eliges a los dos que juegan juntos."),
-      h("p", {}, "Las habitaciones nuevas se abren con estrellas. Cada día puedes abrir un regalo."),
+      h("p", {}, "Cada estrella que ganas abre una habitación nueva. Cada día puedes abrir un regalo."),
     ), { botones: [boton("Entendido", () => m.cerrar(), { color: "amarillo" })] });
   }
 
-  return { desmontar() { window.removeEventListener("resize", colocar); } };
+  return { desmontar() { document.removeEventListener("keydown", teclas); shell.juego?.events.off("pt:mansion", alEstado); shell.ui.classList.remove("saliendo"); } };
 }

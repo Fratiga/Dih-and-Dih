@@ -36,7 +36,7 @@ export function pantallaHabitaciones(shell: Shell, datos: unknown): Pantalla {
   btnReg.classList.add("pt-ancho");
   const btnCon = boton("👥", () => convivir(), { icono: true, color: "turquesa", tip: "Convivir|Elige quién vive en esta habitación (hasta 2)" });
   btnCon.classList.add("pt-redondo");
-  const btnVolver = boton("◀ Volver", () => void shell.ir("menu", undefined, "centro"), { color: "amarillo" });
+  const btnVolver = boton("◀ Volver", () => void shell.ir("menu", { desde: indice }, "rapida"), { color: "amarillo" });
   const btnRedec = boton("Redecorar", () => alternarEdicion(), { color: "rosa" });
   btnRedec.classList.add("pt-gigante-hab");
   const btnCambiar = boton("Cambiar", () => cambiarHabitacion(), { color: "amarillo", tip: "Pasa a la siguiente habitación" });

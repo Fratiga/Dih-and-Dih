@@ -51,6 +51,8 @@ export interface Estado {
   regaloDia: string;
   /** El personaje que se ve en el menu (se elige en la habitacion con la estrella). */
   favorito: string;
+  /** Donde se quedo la mansion: el piso que se mira y el sector que mira al frente en cada piso. */
+  mansion: { piso: number; sector: number[] };
   actualizado: number;
 }
 
@@ -75,6 +77,7 @@ export function estadoInicial(): Estado {
     vistos: [],
     regaloDia: "",
     favorito: "",
+    mansion: { piso: 0, sector: new Array(PISOS).fill(0) },
     actualizado: 0,
   };
 }
@@ -128,23 +131,30 @@ export function desbloquearPorJefe(e: Estado, jefeId: string): string[] {
   return nuevos;
 }
 
-/* Estrellas que hacen falta para abrir cada habitacion (la primera esta abierta desde el principio). */
-export const ESTRELLAS_SALA = [0, 4, 10];
+/* La mansion: 4 pisos de 6 sectores (24 habitaciones). La habitacion k es el piso k/6, sector k%6. La primera esta abierta y cada estrella abre otra. */
+export const SECTORES = 6;
+export const PISOS = 4;
+export const TOTAL_SALAS = SECTORES * PISOS;
 const TEMAS = ["rombos", "verde", "mandarina", "noche"];
 
+export const estrellasParaSala = (k: number): number => k;
+export function salasAbiertas(e: Estado): number {
+  return Math.min(TOTAL_SALAS, 1 + estrellasTotales(e));
+}
+
 export function asegurarHabitaciones(e: Estado): boolean {
-  const total = estrellasTotales(e);
   let cambio = false;
   // Los fondos antiguos pasan al primer tema; hay como mucho 2 residentes por habitacion
   for (const h of e.habitaciones) {
     if (!TEMAS.includes(h.fondo)) { h.fondo = "rombos"; cambio = true; }
     if (h.residentes.length > 2) { h.residentes = h.residentes.slice(0, 2); cambio = true; }
   }
-  for (let i = e.habitaciones.length; i < ESTRELLAS_SALA.length; i++) {
-    if (total < ESTRELLAS_SALA[i]) break;
-    e.habitaciones.push({ fondo: TEMAS[i % TEMAS.length], muebles: [], residentes: e.desbloqueados.filter((id) => !e.habitaciones.some((h) => h.residentes.includes(id))).slice(0, 2) });
+  const objetivo = salasAbiertas(e);
+  for (let k = e.habitaciones.length; k < objetivo; k++) {
+    e.habitaciones.push({ fondo: TEMAS[k % TEMAS.length], muebles: [], residentes: e.desbloqueados.filter((id) => !e.habitaciones.some((h) => h.residentes.includes(id))).slice(0, 2) });
     cambio = true;
   }
+  if (!e.mansion || !Array.isArray(e.mansion.sector) || e.mansion.sector.length !== PISOS) { e.mansion = { piso: 0, sector: new Array(PISOS).fill(0) }; cambio = true; }
   return cambio;
 }
 

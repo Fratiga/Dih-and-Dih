@@ -22,7 +22,7 @@ function nuevo(w: number, h: number, k = K): [HTMLCanvasElement, CanvasRendering
   return [cv, c];
 }
 
-function ladrillos(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, semilla: number): void {
+export function ladrillos(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, semilla: number): void {
   const r = azar(semilla);
   rr(c, x, y, w, h, 6, "#fbeed8", 6);
   const alto = 34;
@@ -36,12 +36,12 @@ function ladrillos(c: CanvasRenderingContext2D, x: number, y: number, w: number,
 }
 
 /* Faldon naranja con dientes de sierra, el que cuelga bajo cada piso. */
-function faldon(c: CanvasRenderingContext2D, x: number, y: number, w: number): void {
+export function faldon(c: CanvasRenderingContext2D, x: number, y: number, w: number): void {
   rr(c, x, y, w, 22, 6, "#fbeed8", 6);
   for (let xx = x + 4; xx < x + w - 14; xx += 28) poligono(c, [[xx, y + 22], [xx + 24, y + 22], [xx + 12, y + 40]], "#e8a468", 4);
 }
 
-function tejado(c: CanvasRenderingContext2D, ancho: number): void {
+export function tejado(c: CanvasRenderingContext2D, ancho: number): void {
   const cx = ancho / 2;
   // chimeneas
   for (const x of [cx - 250, cx + 190]) {
