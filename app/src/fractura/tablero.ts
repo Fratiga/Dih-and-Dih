@@ -22,6 +22,9 @@ export interface Tablero {
   reservar(r: { arriba?: number; abajo?: number; izq?: number; der?: number }): void;
   pantallaDe(x: number, y: number): { x: number; y: number; ts: number };
   ajustar(): void;
+  zoom(factor: number): void;
+  centrar(): void;
+  verTodo(): void;
 }
 
 /* Phaser 4 exige elegir el renderizador cuando se le da un canvas propio. */
@@ -63,6 +66,9 @@ function crear(canvas: HTMLCanvasElement, ganchos: Ganchos): Tablero {
     reservar: r => escena.cuando(() => escena.reservar(r)),
     pantallaDe: (x, y) => escena.pantallaDe(x, y),
     ajustar: medir,
+    zoom: f => escena.zoom(f),
+    centrar: () => escena.centrar(),
+    verTodo: () => escena.verTodo(),
   };
   return api;
 }

@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <link rel="stylesheet" href="css/style.css?v=20271111">
   <link rel="stylesheet" href="css/minijuegos.css?v=20271111">
-  <link rel="stylesheet" href="css/fractura.css?v=20271111">
+  <link rel="stylesheet" href="css/fractura.css?v=20271115">
 </head>
 <body class="mj-pagina fractura-tema">
   <script src="js/carga.js?v=20271111"></script>
@@ -78,6 +78,13 @@
           <div id="frLateral" class="fr-lateral-cuerpo"></div>
         </aside>
         <button type="button" id="frPanelAbrir" class="fr-boton fr-panel-abrir" aria-label="Mostrar el panel">Panel</button>
+        <div id="frVistaMapa" class="fr-vista hidden" role="group" aria-label="Vista del mapa">
+          <button type="button" class="fr-boton" data-vista="mas" title="Acercar (también con la rueda o pellizcando)" aria-label="Acercar">+</button>
+          <button type="button" class="fr-boton" data-vista="menos" title="Alejar" aria-label="Alejar">−</button>
+          <button type="button" class="fr-boton" data-vista="tropas" title="Centrar en tus tropas" aria-label="Centrar en tus tropas">◎</button>
+          <button type="button" class="fr-boton" data-vista="todo" title="Ver el mapa entero" aria-label="Ver el mapa entero">▢</button>
+          <button type="button" class="fr-boton" data-vista="pantalla" id="frPantallaCompleta" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+        </div>
         <div id="frPrevia" class="fr-previa hidden" role="status"></div>
         <div id="frToasts" class="fr-toasts" aria-live="polite"></div>
         <div id="frCartel" class="fr-cartel hidden"></div>
@@ -107,9 +114,9 @@
   <script src="js/fractura-cronica.js?v=20271111"></script>
   <script src="js/fractura-red.js?v=20271111"></script>
   <script src="js/fractura-retratos.js?v=20271111"></script>
-  <script src="js/fractura-tablero.js?v=20271114"></script>
-  <script type="module" src="app/dist/fractura/tablero.js?v=20271114"></script>
-  <script src="js/fractura.js?v=20271114"></script>
+  <script src="js/fractura-tablero.js?v=20271115"></script>
+  <script type="module" src="app/dist/fractura/tablero.js?v=20271115"></script>
+  <script src="js/fractura.js?v=20271116"></script>
   <script src="js/avisos-admin.js?v=20271111"></script>
   <script src="js/musica-paginas.js?v=20271111"></script>
 </body>

@@ -555,6 +555,8 @@ pintarHero();
     mostrar("frGuerra");
     musicaPartida(est.ganador === null);
     if (!tablero) tablero = crearTablero();
+    $("frVistaMapa").classList.toggle("hidden", !(tablero && tablero.zoom));
+    $("frPantallaCompleta").classList.toggle("hidden", !document.documentElement.requestFullscreen);
     cronicaVista = est.cronica.length;
     panelAbierto = window.innerWidth >= 900;
     aplicarPanel();
@@ -574,6 +576,20 @@ pintarHero();
     else tablero.reservar({ der: panelAbierto ? 356 : 8, abajo: 8 });
   }
   $("frPanelAbrir").addEventListener("click", () => { panelAbierto = true; aplicarPanel(); });
+  $("frVistaMapa").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-vista]");
+    if (!b || !tablero) return;
+    const v = b.dataset.vista;
+    if (v === "mas") tablero.zoom(1.4);
+    else if (v === "menos") tablero.zoom(1 / 1.4);
+    else if (v === "tropas") tablero.centrar();
+    else if (v === "todo") tablero.verTodo();
+    else if (v === "pantalla") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen().catch(() => {});
+    }
+  });
+  document.addEventListener("fullscreenchange", () => { const b = $("frPantallaCompleta"); if (b) b.textContent = document.fullscreenElement ? "✕" : "⛶"; });
   $("frPanelCerrar").addEventListener("click", () => { panelAbierto = false; aplicarPanel(); });
   window.addEventListener("resize", () => { if (!$("frGuerra").classList.contains("hidden")) aplicarPanel(); });
   $("frSalir").addEventListener("click", async () => {

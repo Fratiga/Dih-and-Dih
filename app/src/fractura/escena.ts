@@ -15,8 +15,10 @@ import {
 export interface Ganchos { alTocar: (x: number, y: number, tactil: boolean) => void; alPasar?: (x: number, y: number) => void; }
 
 const W: any = window;
-const BASE = 96;            // tamano de las texturas de casilla
-const FIG = 96;             // tamano de referencia de las figuras (una casilla)
+const BASE = 128;           // tamano de las texturas de casilla (nitidas hasta acercarse bastante)
+const FIG = 128;            // tamano de referencia de las figuras (una casilla)
+const CASILLA_VISTA = 84;   // tamano de casilla (px CSS) con el que se abre la guerra
+const CASILLA_MAX = 190;    // casilla mas grande que deja el zoom (px CSS)
 const REDUCIDO = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 const PALETA_BANDOS = ["#c0463c", "#3b7fd1", "#4fa84f", "#d1a23a", "#9a5bd1", "#2fb5a8", "#d1602f", "#8a8f98"];
 const POSES: Record<string, { mov: boolean; fase: number; sw: number }> = {
@@ -37,6 +39,11 @@ export class EscenaGuerra extends Phaser.Scene {
   private bandos: Array<{ col: string; ban: string }> = [];
   private ts = 40; private ox = 0; private oy = 0;
   private reserva = { arriba: 58, abajo: 8, izq: 8, der: 8 };
+  // vista: zoom y centro (en pixeles del mundo). El mundo se dibuja siempre a tamano de ajuste total y la camara acerca.
+  private vz = 1; private cx = 0; private cy = 0;
+  private vistaPendiente = true;
+  private toque: { id: number; x: number; y: number; cx: number; cy: number; mov: boolean; tactil: boolean } | null = null;
+  private pinza: { dist: number } | null = null;
   private ui: any = { sel: null, mover: new Map(), atacar: new Set(), ciudad: null, casilla: null, objetivosHab: new Set(), ruta: null, hover: null, previaAtq: null };
   private anim: any = null;
   private firmaGlobal = "";
@@ -80,21 +87,43 @@ export class EscenaGuerra extends Phaser.Scene {
     for (let i = 0; i < 5; i++) this.neblinas.push(this.add.image(0, 0, "brillo").setDepth(6).setAlpha(0.05).setTint(0xdfe6ee));
     for (let i = 0; i < 12; i++) this.motas.push(this.add.rectangle(0, 0, 2, 2, 0xf0e8cd, 0.3).setDepth(6));
 
-    const puntero = (p: Phaser.Input.Pointer): { x: number; y: number; dentro: boolean } => {
-      const x = Math.floor((p.x - this.ox) / this.ts), y = Math.floor((p.y - this.oy) / this.ts);
+    this.cameras.main.setBackgroundColor(0x050304);
+    this.input.addPointer(1);
+    const casillaEn = (sx: number, sy: number): { x: number; y: number; dentro: boolean } => {
+      const m = this.aMundo(sx, sy);
+      const x = Math.floor((m.x - this.ox) / this.ts), y = Math.floor((m.y - this.oy) / this.ts);
       return { x, y, dentro: !!this.est && x >= 0 && y >= 0 && x < this.est.ancho && y < this.est.alto };
     };
+    const umbral = 8 * this.dpr;
     let tactil = 0;
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       if (!this.est) return;
       if (p.wasTouch) tactil = Date.now();
       if (this.anim) { this.saltar(); return; }
-      const c = puntero(p);
-      if (c.dentro) this.ganchos.alTocar(c.x, c.y, !!p.wasTouch);
+      const dos = this.input.pointer1.isDown && this.input.pointer2.isDown;
+      if (dos) {
+        this.pinza = { dist: Math.hypot(this.input.pointer1.x - this.input.pointer2.x, this.input.pointer1.y - this.input.pointer2.y) };
+        if (this.toque) this.toque.mov = true;
+        return;
+      }
+      this.toque = { id: p.id, x: p.x, y: p.y, cx: this.cx, cy: this.cy, mov: false, tactil: !!p.wasTouch };
     });
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
-      if (!this.est || Date.now() - tactil < 800) return;
-      const c = puntero(p);
+      if (!this.est) return;
+      if (this.pinza && this.input.pointer1.isDown && this.input.pointer2.isDown) {
+        const a = this.input.pointer1, b = this.input.pointer2, dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (this.pinza.dist > 0 && dist > 0) this.acercar(dist / this.pinza.dist, (a.x + b.x) / 2, (a.y + b.y) / 2);
+        this.pinza.dist = dist;
+        return;
+      }
+      const t = this.toque;
+      if (t && t.id === p.id && p.isDown) {
+        if (!t.mov && Math.hypot(p.x - t.x, p.y - t.y) > umbral) t.mov = true;
+        if (t.mov) { this.cx = t.cx - (p.x - t.x) / this.vz; this.cy = t.cy - (p.y - t.y) / this.vz; this.aplicarCamara(); }
+        return;
+      }
+      if (Date.now() - tactil < 800) return;
+      const c = casillaEn(p.x, p.y);
       const nuevo = c.dentro ? { x: c.x, y: c.y } : null;
       const h = this.ui.hover;
       if (!h !== !nuevo || (nuevo && h && (nuevo.x !== h.x || nuevo.y !== h.y))) {
@@ -102,7 +131,19 @@ export class EscenaGuerra extends Phaser.Scene {
         if (this.ganchos.alPasar) this.ganchos.alPasar(nuevo ? nuevo.x : -1, nuevo ? nuevo.y : -1);
       }
     });
-    this.input.on("gameout", () => { this.ui.hover = null; if (this.ganchos.alPasar) this.ganchos.alPasar(-1, -1); });
+    const soltar = (p: Phaser.Input.Pointer): void => {
+      if (this.pinza && !(this.input.pointer1.isDown && this.input.pointer2.isDown)) this.pinza = null;
+      const t = this.toque;
+      if (!t || t.id !== p.id) return;
+      this.toque = null;
+      if (t.mov || this.pinza || !this.est || this.anim) return;
+      const c = casillaEn(p.x, p.y);
+      if (c.dentro) this.ganchos.alTocar(c.x, c.y, t.tactil);
+    };
+    this.input.on("pointerup", soltar);
+    this.input.on("pointerupoutside", soltar);
+    this.input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => { if (this.est) this.acercar(Math.exp(-dy * 0.0014), p.x, p.y); });
+    this.input.on("gameout", () => { this.toque = null; this.ui.hover = null; if (this.ganchos.alPasar) this.ganchos.alPasar(-1, -1); });
     document.addEventListener("keydown", ev => { if (this.anim && (ev.key === " " || ev.key === "Enter" || ev.key === "Escape")) this.saltar(); });
 
     this.listo = true;
@@ -150,6 +191,7 @@ export class EscenaGuerra extends Phaser.Scene {
     this.estr.forEach(l => l.forEach(o => { this.tweens.killTweensOf(o); o.destroy(); })); this.estr.clear(); this.firmaEstr = [];
     this.unidades.forEach(u => u.spr.destroy()); this.unidades.clear();
     this.firmaGlobal = "";
+    this.vistaPendiente = true; this.toque = null; this.pinza = null;
     for (let i = 0; i < est.ancho * est.alto; i++) {
       this.tiles.push(this.add.image(0, 0, this.texTerreno("llanura", 0, 0)).setOrigin(0).setDepth(0));
       this.tipoTile.push(""); this.firmaTile.push(""); this.firmaEstr.push("");
@@ -162,25 +204,84 @@ export class EscenaGuerra extends Phaser.Scene {
     this.sincronizar(false);
   }
 
-  reservar(r: any): void { this.reserva = Object.assign(this.reserva, r); this.medir(); }
+  /* El mapa se dibuja en toda la pantalla. La reserva (barra de arriba, panel) solo decide donde esta el centro de la vista. */
+  reservar(r: any): void { this.reserva = Object.assign(this.reserva, r); if (this.est) { this.limitarVista(); this.aplicarCamara(); } }
+
+  private libre(): { x: number; y: number; w: number; h: number } {
+    const R = this.reserva, d = this.dpr, w = this.scale.width, h = this.scale.height;
+    const x = R.izq * d, y = R.arriba * d;
+    return { x, y, w: Math.max(80, w - x - R.der * d), h: Math.max(80, h - y - R.abajo * d) };
+  }
+  private aMundo(sx: number, sy: number): { x: number; y: number } {
+    const L = this.libre();
+    return { x: this.cx + (sx - (L.x + L.w / 2)) / this.vz, y: this.cy + (sy - (L.y + L.h / 2)) / this.vz };
+  }
+  private zoomMin(): number {
+    const L = this.libre();
+    return Math.min(1, Math.min(L.w / (this.ts * this.est.ancho), L.h / (this.ts * this.est.alto)));
+  }
+  private zoomMax(): number { return Math.max(2, (CASILLA_MAX * this.dpr) / this.ts); }
+  private limitarVista(): void {
+    const est = this.est;
+    this.vz = Math.max(this.zoomMin(), Math.min(this.zoomMax(), this.vz));
+    this.cx = Math.max(this.ox - this.ts, Math.min(this.ox + this.ts * (est.ancho + 1), this.cx));
+    this.cy = Math.max(this.oy - this.ts, Math.min(this.oy + this.ts * (est.alto + 1), this.cy));
+  }
+  private aplicarCamara(): void {
+    const cam = this.cameras.main, L = this.libre();
+    this.limitarVista();
+    cam.setZoom(this.vz);
+    cam.centerOn(this.cx + (this.scale.width / 2 - (L.x + L.w / 2)) / this.vz, this.cy + (this.scale.height / 2 - (L.y + L.h / 2)) / this.vz);
+  }
+  /* Cambia el zoom dejando quieto el punto de pantalla (sx, sy) */
+  private acercar(factor: number, sx?: number, sy?: number): void {
+    const L = this.libre();
+    const px = sx === undefined ? L.x + L.w / 2 : sx, py = sy === undefined ? L.y + L.h / 2 : sy;
+    const antes = this.aMundo(px, py);
+    this.vz = Math.max(this.zoomMin(), Math.min(this.zoomMax(), this.vz * factor));
+    const despues = this.aMundo(px, py);
+    this.cx += antes.x - despues.x; this.cy += antes.y - despues.y;
+    this.aplicarCamara();
+  }
+  zoom(factor: number): void { this.cuando(() => { if (this.est) this.acercar(factor); }); }
+  /* Mapa entero en la pantalla */
+  verTodo(): void {
+    this.cuando(() => {
+      if (!this.est) return;
+      this.vz = this.zoomMin(); this.cx = this.ox + this.ts * this.est.ancho / 2; this.cy = this.oy + this.ts * this.est.alto / 2;
+      this.aplicarCamara();
+    });
+  }
+  /* Acerca la vista a las tropas propias */
+  centrar(): void {
+    this.cuando(() => {
+      if (!this.est) return;
+      const H = this.humano(), mias = Object.values(this.est.unidades).filter((u: any) => u.dueno === H) as any[];
+      let tx = this.est.ancho / 2, ty = this.est.alto / 2;
+      if (mias.length) { tx = mias.reduce((a, u) => a + u.x, 0) / mias.length + 0.5; ty = mias.reduce((a, u) => a + u.y, 0) / mias.length + 0.5; }
+      this.vz = (CASILLA_VISTA * this.dpr) / this.ts;
+      this.cx = this.ox + tx * this.ts; this.cy = this.oy + ty * this.ts;
+      this.aplicarCamara();
+    });
+  }
 
   private medir(): void {
     const w = this.scale.width, h = this.scale.height, d = this.dpr;
-    if (this.fondo) {
-      if (this.textures.exists("fondo")) this.textures.remove("fondo");
-      const [c, g] = lienzo(w, h);
-      const gr = g.createRadialGradient(w / 2, h * 0.45, 40, w / 2, h / 2, Math.max(w, h) * 0.75);
-      gr.addColorStop(0, "#1a1218"); gr.addColorStop(0.6, "#0d0a0d"); gr.addColorStop(1, "#050304");
-      g.fillStyle = gr; g.fillRect(0, 0, w, h);
-      this.textures.addCanvas("fondo", c);
-      this.fondo.setTexture("fondo").setVisible(true).setPosition(0, 0);
-    }
     if (!this.est) return;
-    const R = this.reserva;
-    const libreW = w - (R.izq + R.der) * d, libreH = h - (R.arriba + R.abajo) * d;
-    this.ts = Math.max(24 * d, Math.floor(Math.min(libreW / this.est.ancho, libreH / this.est.alto)));
-    this.ox = Math.round(R.izq * d + (libreW - this.ts * this.est.ancho) / 2);
-    this.oy = Math.round(R.arriba * d + (libreH - this.ts * this.est.alto) / 2);
+    const foco = this.ts > 0 && this.vz ? { x: (this.cx - this.ox) / this.ts, y: (this.cy - this.oy) / this.ts } : null;
+    this.ts = Math.max(24 * d, Math.floor(Math.min(w / this.est.ancho, h / this.est.alto)));
+    this.ox = Math.round((w - this.ts * this.est.ancho) / 2);
+    this.oy = Math.round((h - this.ts * this.est.alto) / 2);
+    if (foco && !this.vistaPendiente) { this.cx = this.ox + foco.x * this.ts; this.cy = this.oy + foco.y * this.ts; }
+    if (!this.textures.exists("fondo")) {
+      const [c, g] = lienzo(256, 256);
+      const gr = g.createRadialGradient(128, 118, 10, 128, 128, 180);
+      gr.addColorStop(0, "#1c141b"); gr.addColorStop(0.6, "#0d0a0d"); gr.addColorStop(1, "#050304");
+      g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+      this.textures.addCanvas("fondo", c);
+    }
+    const mx = this.ts * 8;
+    this.fondo.setTexture("fondo").setVisible(true).setPosition(this.ox - mx, this.oy - mx).setDisplaySize(this.ts * this.est.ancho + mx * 2, this.ts * this.est.alto + mx * 2);
     const ts = this.ts;
     this.tiles.forEach((im, i) => { const x = i % this.est.ancho, y = Math.floor(i / this.est.ancho); im.setPosition(this.px(x), this.py(y)).setDisplaySize(ts + 0.5, ts + 0.5); });
     // vineta del mapa
@@ -202,6 +303,7 @@ export class EscenaGuerra extends Phaser.Scene {
     this.estr.forEach(l => l.forEach(o => { this.tweens.killTweensOf(o); o.destroy(); })); this.estr.clear(); this.firmaEstr = this.firmaEstr.map(() => "");
     this.firmaTile = this.firmaTile.map(() => "");
     this.sincronizar(true);
+    if (this.vistaPendiente) { this.vistaPendiente = false; this.centrar(); } else this.aplicarCamara();
   }
 
   /* ===================================================================== sincronizar con el estado del juego */
@@ -668,8 +770,9 @@ export class EscenaGuerra extends Phaser.Scene {
   }
 
   pantallaDe(x: number, y: number): { x: number; y: number; ts: number } {
-    const r = this.game.canvas.getBoundingClientRect(), d = this.dpr;
-    return { x: r.left + (this.px(x) + this.ts / 2) / d, y: r.top + this.py(y) / d, ts: this.ts / d };
+    const r = this.game.canvas.getBoundingClientRect(), d = this.dpr, L = this.libre();
+    const sx = (this.px(x) + this.ts / 2 - this.cx) * this.vz + L.x + L.w / 2, sy = (this.py(y) - this.cy) * this.vz + L.y + L.h / 2;
+    return { x: r.left + sx / d, y: r.top + sy / d, ts: (this.ts * this.vz) / d };
   }
 
   /* ===================================================================== bucle */
