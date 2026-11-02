@@ -20,3 +20,8 @@ docs/discord/.env
 
 # Dependencias de app/ (el resultado compilado app/dist si se sube)
 app/node_modules/
+
+# Instaladores de otros juegos (referencias personales): nunca al repositorio publico
+*.apk
+*.xapk
+*.obb
