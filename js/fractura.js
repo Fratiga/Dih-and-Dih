@@ -535,10 +535,26 @@ pintarHero();
     entrarGuerra();
   }
 
+  /* El tablero se dibuja con Phaser (app/dist/fractura/tablero.js). Si no carga, o con ?renderer=canvas,
+     se usa el de canvas de siempre. Phaser toma el contexto del canvas, asi que el de respaldo recibe uno nuevo. */
+  function crearTablero() {
+    var ganchos = { alTocar: tocar, alPasar: pasarPor };
+    var quiereCanvas = /[?&]renderer=canvas/.test(location.search);
+    if (!quiereCanvas && window.FracturaTableroPhaser) {
+      try { return window.FracturaTableroPhaser.crear($("frTablero"), ganchos); }
+      catch (e) {
+        if (window.console) console.warn("Phaser no arranco, uso el canvas de siempre", e);
+        var viejo = $("frTablero"), nuevo = viejo.cloneNode(false);
+        viejo.parentNode.replaceChild(nuevo, viejo);
+      }
+    }
+    return window.FracturaTablero.crear($("frTablero"), ganchos);
+  }
+
   function entrarGuerra() {
     mostrar("frGuerra");
     musicaPartida(est.ganador === null);
-    if (!tablero) tablero = window.FracturaTablero.crear($("frTablero"), { alTocar: tocar, alPasar: pasarPor });
+    if (!tablero) tablero = crearTablero();
     cronicaVista = est.cronica.length;
     panelAbierto = window.innerWidth >= 900;
     aplicarPanel();
