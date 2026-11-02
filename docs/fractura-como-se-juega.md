@@ -597,9 +597,10 @@ Las secciones 12 y 13 de `docs/fractura-expansion.md` detallan esto.
 - **Duelos entre jugadores:** rivalidades cara a cara, prisioneros con rescate, estandarte del campeón, revancha o mejor de tres, guerra igualada (sin consecuencias) o a muerte, crónica compartida y torneo de la mesa. Los némesis siguen siendo solo contra la IA.
 - **Guerras de 2 a 8 bandos**, todos contra todos o por equipos, con la IA llenando huecos. Mapas que crecen con el número de bandos y un espacio de salida parecido para cada uno.
 - **Tiempo por turno:** 1 día por defecto, editable al crear la partida. Si se agota, el turno se salta, y tras 3 saltos seguidos la IA toma el control (editable).
-- **Eliminación:** quien pierde su capital queda eliminado y sus tropas quedan neutrales, salvo que tenga un Refugio. Habrá ejércitos irrefugiables (pendiente de concretar).
+- **Eliminación:** quien pierde su capital queda eliminado y sus tropas quedan neutrales, salvo que tenga un Refugio. Los ejércitos irrefugiables no pueden construirlo y, al caer su capital, su ejército se disuelve.
 - **Victoria:** el último en pie, el Núcleo 6 turnos seguidos, o puntos al acabar el tiempo.
-- **La IA** ataca por defecto al enemigo cercano más débil, da prioridad a quien va muy por delante, guarda rencor y no pacta. Pendiente de confirmar.
+- **Traición:** se puede romper una alianza una vez por guerra. Cuesta una porción del ejército (25 % por defecto): esas unidades se retiran y se pierden. Pueden reaparecer como reclutas de otros jugadores, y todas las IA guardan rencor al traidor.
+- **La IA** sigue una lógica común (ataca al cercano más débil, da prioridad a quien va muy por delante, guarda rencor) y además se comporta según el lore de su ejército. Cada uno tiene su perfil de a quién prefiere atacar y cuánto se inclina a traicionar.
 
 ---
 

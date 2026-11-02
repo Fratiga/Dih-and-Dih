@@ -370,7 +370,7 @@ Decisiones del 2-nov-2026. Todo plan. Es un trabajo de la talla de la propia exp
 ### Eliminación y refugios
 - Quien pierde su capital **queda eliminado**, y sus tropas **quedan neutrales** (se vuelven criaturas sin dueño).
 - Un **Refugio** es una construcción que cambia eso: una ciudad con Refugio actúa como capital de reserva. Si cae la capital, el jugador sigue en la guerra desde el refugio.
-- Hay ejércitos **irrefugiables** (según tu idea, parecidos a la Herejía de Age of Empires II). **Pendiente de confirmar** cómo funcionan exactamente. Mi lectura: no pueden construir refugios, y a cambio, al caer su capital, su ejército **se disuelve** en vez de quedar neutral para otros. Lo dejo por confirmar hasta que me lo digas.
+- Hay ejércitos **irrefugiables**, con un efecto parecido a la Herejía de Age of Empires II. No pueden construir refugios, y a cambio, al caer su capital, su ejército **se disuelve** en vez de quedar neutral para otros. Confirmado el 3-nov-2026. Qué ejércitos lo son se decide más adelante, a partir de su lore (candidatos naturales: Osses y Mravec).
 
 ### Victoria
 - **Todos contra todos:** gana el último bando en pie, o quien mantenga el Núcleo del Sueño **6 turnos seguidos** (cualquier otro bando que lo ocupe reinicia el contador), o quien tenga más puntos al acabar el tiempo. El límite de turnos crece con el número de bandos (35 más 5 por cada bando extra, provisional).
@@ -382,13 +382,43 @@ Decisiones del 2-nov-2026. Todo plan. Es un trabajo de la talla de la propia exp
 - Las partidas se guardan con una **lista de participantes**, no solo dos jugadores, y eso necesita un cambio en el servidor (SQL).
 - Las guerras de varios bandos usan la **versión de reglas** nueva. Las de 2 bandos ya guardadas se reproducen igual que antes.
 
+### Alianzas y traición
+
+- **Equipos:** los aliados son fijos. Comparten visión y no se atacan.
+- **Todos contra todos:** los jugadores pueden proponerse **pactos**: alianza temporal con visión compartida y sin ataques entre ellos. Es una propuesta mía, por confirmar.
+- **Traicionar** es una acción que se puede hacer una vez por guerra y no durante la tregua inicial. Reglas:
+  1. **Coste:** una porción de tu ejército **se retira y lo pierdes**. Por defecto el 25 % de tus unidades (redondeado hacia arriba, mínimo 1), sin contar al Líder ni al héroe. El porcentaje se puede cambiar al crear la partida.
+  2. **Quién se va:** las unidades más cercanas a las de tus aliados, porque se niegan a combatir contra sus antiguos compañeros. Así traicionar también tiene un coste táctico.
+  3. **Efecto:** la alianza termina al instante para ti. Dejas de compartir visión y quedas como bando independiente, en guerra con todos. Tus antiguos aliados conservan la alianza entre ellos.
+  4. **Los desertores:** las unidades que se retiran no desaparecen. Quedan en una reserva de la guerra. Cuando **otro jugador** (el traicionado o cualquier otro, nunca el traidor) entrena una unidad de la misma clase, hay un 50 % de que sea un desertor en vez de un recluta nuevo, con su nombre, su rango y su historia. Lo que no se aprovecha se pierde al terminar la guerra.
+  5. **En la campaña:** en guerras **a muerte**, los soldados que desertan salen para siempre del ejército del traidor, con una nota en su diario («Desertó de…»). Si aparecen como reclutas de otro jugador y están entre los cinco que más destacaron, **pasan a su ejército**. En guerras **igualadas** no hay efecto en la campaña.
+  6. **Reputación:** el traidor queda marcado en la crónica. Todas las IA le guardan rencor y no hacen pactos con él el resto de la guerra.
+- **La IA de reemplazo** (la que toma el control de un humano ausente) **nunca traiciona**.
+
 ### La IA con varios rivales
-Decisiones propuestas (se confirman con el usuario):
-1. **A quién ataca:** por defecto, al enemigo más cercano que sea más débil. Si un bando va muy por delante en puntos, la IA le da prioridad (así no se escapa el líder).
-2. **Rencor:** recuerda quién la atacó y lo pondera al elegir objetivo.
-3. **Pactos:** la IA no pacta con otros jugadores. En equipos respeta a sus aliados y coordina la visión compartida.
-4. **IA que toma el control de un humano ausente:** juega a la defensiva (mantiene ciudades, no emprende conquistas) para no destrozar la partida de otro.
-5. **Dificultad** configurable por cada bando de IA.
+
+Decisiones confirmadas el 3-nov-2026: la IA se comporta **según el lore de cada ejército**, además de lo que sea lógico para ganar. Cada ejército tiene un perfil que modifica sus reglas básicas:
+
+- **Reglas básicas (lógica común):** ataca al enemigo cercano más débil, da prioridad a quien va muy por delante en puntos (para que el líder no se escape), recuerda quién la atacó y respeta a sus aliados en equipos.
+- **El perfil de ejército** cambia a quién prefiere atacar, cómo trata los pactos y cuánto se inclina a traicionar.
+
+| Ejército | Prefiere atacar | Pactos y traición | Rencor |
+|---|---|---|---|
+| Brurland | A quien invade su territorio. Prioridad a Osses (la ocupación de Broneland) | Leal. Nunca traiciona | Alto contra Osses |
+| Dolbred | Solo cuando ya tiene ventaja de tecnología. Atiende primero a quien amenaza sus ciudades de investigación. Algo más de prioridad a Nernib | Pacta con facilidad si lo dejan investigar. Traiciona muy rara vez | Bajo |
+| Osses | Expansión. Prioridad a Brurland. Ataca a los débiles para acumular Ánima | No pacta, o solo por interés. Puede traicionar si le conviene | Medio |
+| Compañía Dorada | A quien paga o tiene más oro | Se alía con el más fuerte y traiciona al aliado que va ganando por mucho | Bajo (es negocio) |
+| Hijos del Acero | Monstruos y criaturas salvajes, y los ejércitos que los usan (Osses, Okran, Mravec) | Cumplen su palabra. Nunca traicionan | Medio |
+| Santos de Asmodeo | Ejércitos no humanos primero (Mravec, Okran, Osses, Nernib, Pelgiria) | Se alían con humanos y traicionan a un aliado no humano en cuanto les estorba | Alto |
+| Nikaalia | Al vecino débil, para cobrar «protección». Evita los combates abiertos | Pacta y traiciona con facilidad cuando le sale rentable | Medio |
+| Seosan | Al más fuerte de su entorno, por honor. Solo responde a quien la atacó o la retó | Cumple. Nunca traiciona | Alto, y lo cobra en duelo |
+| Okran | Al más fuerte cercano. Solo respeta la fuerza | Rompe la alianza con un aliado que ve débil | Alto |
+| Pelgiria | A los débiles con costa o agua cerca. Saquea | Pacta por comercio y traiciona de forma oportunista | Bajo |
+| Mravec | Al que tenga más comida y más ejército cerca, para devorarlo | Sin alianzas por voluntad propia. Solo en equipos | Bajo |
+| Nernib | Lo que amenaza sus talleres. Prioridad a Mravec (los Mirmeción nacieron contra las hormigas) | Pacta si le conviene el comercio. Traiciona con poca frecuencia | Bajo |
+| Balutia | Al vecino débil más cercano, para absorberlo con el Tributo | Mide a los aliados por utilidad: traiciona al que deja de serle útil | Medio |
+
+Las cifras exactas (probabilidades de traicionar, pesos de preferencia) se ajustan con las simulaciones. Cada ejército de IA también puede usar la dificultad que se elija para él.
 
 ### Orden de trabajo
 1. Pasar el motor de 2 a N jugadores **sin cambiar el comportamiento de las guerras de 2**. Se comprueba repitiendo guerras ya guardadas.
