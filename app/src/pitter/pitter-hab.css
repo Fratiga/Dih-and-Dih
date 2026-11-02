@@ -1,0 +1,39 @@
+/* La habitacion, con los controles como en el original: placa con el nombre arriba, diorama en el centro y una fila de botones abajo. */
+
+.pt-raiz { --dw: min(121.5vh, 96vw); }
+
+.pt-placa { position: absolute; left: 50%; top: 13.4vh; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; width: calc(var(--dw) * 0.96); padding: 8px 22px 10px; border: 5px solid var(--tinta); border-radius: 22px; background: linear-gradient(180deg, #ffb36b, #ff8a2a); box-shadow: var(--sombra-dura); color: #fff; pointer-events: none; z-index: 16; }
+.pt-placa b { font: 400 clamp(22px, 2.3vw, 38px) var(--titulo); letter-spacing: 0.03em; text-shadow: 0 3px 0 var(--tinta); }
+.pt-placa-res { margin-left: auto; display: flex; gap: 10px; }
+.pt-placa .res { display: inline-flex; align-items: center; gap: 6px; padding: 2px 14px 3px 3px; border: 4px solid var(--tinta); border-radius: 999px; background: var(--col, var(--crema)); font: 400 clamp(15px, 1.3vw, 20px) var(--titulo); text-shadow: 0 2px 0 var(--tinta); }
+.pt-placa .res img { width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 3px solid var(--tinta); object-fit: contain; }
+
+.pt-hab-fila { position: absolute; left: 50%; bottom: 1.6vh; transform: translateX(-50%); display: flex; align-items: flex-end; justify-content: center; gap: clamp(8px, 1.1vw, 18px); width: calc(var(--dw) * 0.96); z-index: 16; }
+.pt-hab-fila .pt-btn { font-size: clamp(18px, 1.7vw, 28px); min-height: clamp(54px, 7.4vh, 78px); padding-left: clamp(14px, 1.6vw, 28px); padding-right: clamp(14px, 1.6vw, 28px); }
+.pt-hab-fila .pt-redondo { width: clamp(58px, 5.2vw, 84px); min-height: clamp(58px, 5.2vw, 84px); padding: 0; border-radius: 50%; font-size: clamp(26px, 2.4vw, 38px); }
+.pt-hab-fila .pt-ancho { flex: 0 1 clamp(140px, 14vw, 240px); }
+.pt-hab-fila .pt-gigante-hab { flex: 1 1 clamp(200px, 22vw, 380px); min-height: clamp(70px, 9.6vh, 104px); font-size: clamp(26px, 2.7vw, 44px); }
+.pt-hab-fila .pt-btn:not(.pt-gigante-hab):not(.pt-redondo) { flex: 0 1 clamp(120px, 11vw, 190px); }
+
+.pt-lat { position: absolute; top: 19vh; bottom: 14vh; width: calc((100vw - var(--dw)) / 2 - 20px); min-width: 200px; max-width: 340px; display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 14px; border: 5px solid var(--tinta); border-radius: 24px; background: rgba(255, 246, 229, 0.96); box-shadow: var(--sombra-dura); overflow: auto; z-index: 15; }
+.pt-lat[hidden] { display: none; }
+.pt-lat.izq { left: 10px; }
+.pt-lat.der { right: 10px; }
+.pt-lat > small { font: 400 18px var(--titulo); color: var(--rosa-sombra); }
+.pt-lat .ayuda { margin: 0; font-size: 13px; color: var(--tinta-2); }
+.pt-lat .pt-mueble { width: 100%; }
+.pt-tema { display: grid; gap: 4px; padding: 6px; border: 4px solid var(--tinta); border-radius: 16px; background: #fff; cursor: pointer; font: 400 15px var(--titulo); color: var(--tinta); }
+.pt-tema span { height: 58px; border-radius: 10px; background: linear-gradient(135deg, var(--a) 0 50%, var(--b) 50%); border-bottom: 12px solid var(--c); }
+.pt-tema i { font-style: normal; }
+.pt-tema.sel { outline: 5px solid var(--amarillo); outline-offset: 1px; }
+.pt-tema:hover { transform: translateY(-3px); }
+
+.pt-tira { position: absolute; left: 50%; top: 40vh; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; width: var(--dw); min-height: clamp(110px, 17vh, 190px); padding: clamp(24px, 4vh, 40px) clamp(24px, 3vw, 54px); background: linear-gradient(90deg, #d9507c, #ff7fa8 40%, #d9507c); background-size: 200% 100%; color: #fff; z-index: 30; pointer-events: none; }
+.pt-tira[hidden] { display: none; }
+.pt-tira.entra { animation: pt-tira 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.pt-tira img { height: clamp(110px, 20vh, 220px); margin: -6vh 0; border-radius: 50%; background: #fff; border: 5px solid var(--tinta); object-fit: contain; }
+.pt-tira span { display: grid; gap: 2px; }
+.pt-tira small { font: 400 clamp(14px, 1.3vw, 20px) var(--titulo); letter-spacing: 0.05em; opacity: 0.9; }
+.pt-tira b { font: 400 clamp(26px, 3vw, 52px) var(--titulo); text-shadow: 0 4px 0 var(--tinta); line-height: 1.05; }
+@keyframes pt-tira { 0% { transform: translateX(-50%) translateX(-80vw); opacity: 0; } 14% { transform: translateX(-50%); opacity: 1; } 84% { transform: translateX(-50%); opacity: 1; } 100% { transform: translateX(-50%) translateX(80vw); opacity: 0; } }
+@media (max-width: 1100px) { .pt-placa-res { display: none; } .pt-lat { display: none; } }

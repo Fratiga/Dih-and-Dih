@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Pagina escondida: por ahora solo la abre el admin (ver src/pitter/main.ts). Para abrirla a todos hay que quitar esa comprobacion. -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pitter-Patter — Compendio del Mundo</title>
+  <meta name="description" content="Puzzle de fichas con los personajes de la campaña: equipos de dos, habilidades, combos y habitaciones.">
+  <link rel="icon" type="image/png" href="../../assets/cosas/gorro-bufon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Los datos de la campaña son globales clasicos, igual que en el resto del sitio -->
+  <script src="../../data/personajes.js"></script>
+  <script src="../../data/bestiario.js"></script>
+  <script src="../../js/cartas-datos.js"></script>
+  <script type="module" crossorigin src="./assets/pitter-CnF2Xyvm.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="./assets/phaser-B_vcVLyb.js">
+  <link rel="stylesheet" crossorigin href="./assets/pitter-gLp2X5Or.css">
+</head>
+<body>
+  <div id="pt-raiz" class="pt-raiz" data-pantalla="carga">
+    <div id="pt-juego" class="pt-juego"></div>
+    <div id="pt-ui" class="pt-ui"></div>
+    <div id="pt-cortina" class="pt-cortina" aria-hidden="true"></div>
+    <div id="pt-carga" class="pt-carga" role="status">
+      <div class="pt-carga-marca">PITTER<span>-</span>PATTER</div>
+      <div class="pt-carga-barra"><i id="pt-carga-relleno"></i></div>
+      <p id="pt-carga-texto">Preparando el salón…</p>
+    </div>
+    <noscript><p style="color:#fff;padding:2rem">Este juego necesita JavaScript.</p></noscript>
+  </div>
+</body>
+</html>

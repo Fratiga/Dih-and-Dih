@@ -21,6 +21,7 @@
 | Mapa | PNG de 1494×748 con 362 pines en porcentaje (`data/mapa.js`). La reconstrucción vectorial por capas ya está acordada y en curso en local (`scratchpad/mapa-vectorial/`). **Esta hoja de ruta no la toca.** | PNG, DOM |
 | Compendio, cartas y demás | HTML, CSS y SVG. Funcionan bien con eso. | DOM |
 | Ostelar | Oculto. Combate por casillas en canvas 2D. | Canvas 2D |
+| Pitter-Patter | Oculto (solo admin). Puzzle de fichas con una mansión en corte, habitaciones decorables, equipo de dos, 16 habilidades y 8 jefes. Motor puro con pruebas en Node. SQL escrito y sin ejecutar. Ver `docs/pitter.md`. | Phaser 4 + TypeScript (`app/`), HTML para los paneles |
 
 ## Lo que he medido
 

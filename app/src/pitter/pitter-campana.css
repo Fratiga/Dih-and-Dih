@@ -1,0 +1,37 @@
+/* Eleccion de rival: un camino con un jefe por parada y su ficha a la derecha. */
+.pt-campana { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 460px); gap: clamp(12px, 2vw, 32px); padding: 90px clamp(12px, 2vw, 34px) clamp(12px, 2vh, 24px); pointer-events: none; }
+.pt-campana > * { pointer-events: auto; }
+.pt-mapa { position: relative; min-height: 0; border: 5px solid var(--tinta); border-radius: 34px; background: rgba(255, 246, 229, 0.18); box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.12); backdrop-filter: blur(2px); }
+.pt-mapa-camino { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pt-mapa-camino .camino { fill: none; stroke: var(--crema); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 0.1 4.2; vector-effect: non-scaling-stroke; stroke-width: 10px; opacity: 0.9; }
+.pt-nodo { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 4px; width: clamp(96px, 10.5vw, 170px); padding: 0; border: 0; background: transparent; cursor: pointer; transition: transform 0.2s var(--rebote); }
+.pt-nodo:hover { transform: translate(-50%, -54%) scale(1.06); }
+.pt-nodo.sel { transform: translate(-50%, -56%) scale(1.14); z-index: 3; }
+.pt-nodo-img { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border: 5px solid var(--tinta); border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff, var(--crema-2)); box-shadow: 0 7px 0 var(--tinta), 0 16px 22px rgba(0, 0, 0, 0.3); overflow: hidden; }
+.pt-nodo-img img { width: 88%; height: 88%; object-fit: contain; animation: pt-respira 2.8s ease-in-out infinite; }
+.pt-nodo-img b { font-size: 38px; }
+.pt-nodo.sel .pt-nodo-img { border-color: var(--amarillo); box-shadow: 0 7px 0 var(--tinta), 0 0 0 7px var(--rosa), 0 16px 22px rgba(0, 0, 0, 0.3); animation: pt-late 1.2s ease-in-out infinite; }
+.pt-nodo.bloqueado .pt-nodo-img { filter: grayscale(1) brightness(0.8); }
+.pt-nodo.superado .pt-nodo-img { background: radial-gradient(circle at 50% 35%, #fff, #c9f7d4); }
+.pt-nodo-nombre { padding: 2px 12px 4px; border: 3px solid var(--tinta); border-radius: 12px; background: var(--crema); font-family: var(--titulo); font-size: clamp(14px, 1.2vw, 19px); white-space: nowrap; }
+.pt-nodo-est { display: flex; gap: 1px; color: #d9ccee; font-size: clamp(16px, 1.4vw, 22px); -webkit-text-stroke: 1.5px var(--tinta); paint-order: stroke fill; }
+.pt-nodo-est i { font-style: normal; }
+.pt-nodo-est .on { color: var(--amarillo); }
+.pt-detalle-jefe { display: grid; align-content: start; gap: 10px; min-height: 0; padding: 16px 20px 20px; border: 5px solid var(--tinta); border-radius: 30px; background: var(--crema); box-shadow: 0 8px 0 var(--tinta), 0 18px 26px rgba(0, 0, 0, 0.3); overflow: auto; }
+.pt-detalle-img { display: grid; place-items: center; height: clamp(120px, 22vh, 240px); border: 4px solid var(--tinta); border-radius: 24px; background: radial-gradient(circle at 50% 40%, #fff, var(--crema-2)); }
+.pt-detalle-img img { max-height: 92%; max-width: 70%; object-fit: contain; animation: pt-respira 2.8s ease-in-out infinite; }
+.pt-detalle-jefe h2 { margin: 0; font-family: var(--titulo); font-weight: 400; font-size: clamp(28px, 2.6vw, 44px); color: var(--rosa); -webkit-text-stroke: 2.5px var(--tinta); paint-order: stroke fill; }
+.pt-detalle-frase { margin: 0; font-size: 16px; color: var(--tinta-2); }
+.pt-detalle-datos { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pt-detalle-datos li { flex: 1; display: grid; justify-items: center; padding: 4px 6px 6px; border: 4px solid var(--tinta); border-radius: 16px; background: #fff; }
+.pt-detalle-datos small { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--tinta-2); }
+.pt-detalle-datos b { font-family: var(--titulo); font-weight: 400; font-size: 22px; }
+.pt-detalle-ataques { margin: 0; font-size: 14px; color: var(--tinta-2); }
+.pt-camp-equipo { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border: 4px solid var(--tinta); border-radius: 18px; background: #fff; }
+.pt-camp-duo { display: flex; margin-left: 6px; }
+.pt-camp-duo img { height: 58px; margin-left: -14px; }
+.pt-camp-equipo b { display: block; font-family: var(--titulo); font-weight: 400; font-size: 17px; }
+.pt-camp-equipo small.sin { font-size: 13px; color: var(--tinta-2); }
+.pt-camp-equipo small.sin.especial { color: var(--rosa-sombra); font-weight: 800; }
+.pt-detalle-jefe > .pt-btn { width: 100%; font-size: 26px; }
+@media (max-width: 1100px) { .pt-campana { grid-template-columns: minmax(0, 1fr) 280px; } }
