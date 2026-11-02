@@ -590,6 +590,17 @@ Además de los ejércitos y los héroes, hay un conjunto de ideas aprobadas para
 
 Nada de esto da cartas por ahora. Cómo ganar cartas con estos sistemas se decide más adelante.
 
+### 15.2 Duelos y guerras de varios bandos **[Plan]**
+
+Las secciones 12 y 13 de `docs/fractura-expansion.md` detallan esto.
+
+- **Duelos entre jugadores:** rivalidades cara a cara, prisioneros con rescate, estandarte del campeón, revancha o mejor de tres, guerra igualada (sin consecuencias) o a muerte, crónica compartida y torneo de la mesa. Los némesis siguen siendo solo contra la IA.
+- **Guerras de 2 a 8 bandos**, todos contra todos o por equipos, con la IA llenando huecos. Mapas que crecen con el número de bandos y un espacio de salida parecido para cada uno.
+- **Tiempo por turno:** 1 día por defecto, editable al crear la partida. Si se agota, el turno se salta, y tras 3 saltos seguidos la IA toma el control (editable).
+- **Eliminación:** quien pierde su capital queda eliminado y sus tropas quedan neutrales, salvo que tenga un Refugio. Habrá ejércitos irrefugiables (pendiente de concretar).
+- **Victoria:** el último en pie, el Núcleo 6 turnos seguidos, o puntos al acabar el tiempo.
+- **La IA** ataca por defecto al enemigo cercano más débil, da prioridad a quien va muy por delante, guarda rencor y no pacta. Pendiente de confirmar.
+
 ---
 
 # PARTE C. Referencia rápida

@@ -326,3 +326,85 @@ Las recompensas de los contratos no son cartas.
 | R3, necesita servidor | Fractura del día y liga | SQL y la función de servidor. Y que haya jugadores suficientes para que merezca la pena |
 
 La interfaz de cada una espera al rediseño visual que está en otra sesión.
+
+## 12. Duelos entre jugadores y rivalidades
+
+Ideas aprobadas el 2-nov-2026. Todo plan. Objetivo: que pelear contra otro jugador tenga un atractivo parecido al de los némesis contra la IA.
+
+**Los némesis solo funcionan contra la IA.** En un duelo no se crean ni aparecen, porque el rival decide a quién lleva. Para los duelos hay estas piezas:
+
+- **Rivalidades:** historial cara a cara entre dos jugadores y entre sus casas. Se anota «el soldado X de tal jugador mató a tu soldado Y», y si lo matas tú después, queda «cobrada», con apodo o título.
+- **Prisioneros:** el ganador de un duelo puede capturar a un soldado enemigo en vez de matarlo. Su dueño puede pagar un rescate o jugar un duelo de rescate con ese objetivo.
+- **Estandarte del campeón:** una pieza única que lleva quien ganó el último duelo del grupo. Los demás la retan.
+- **Revancha inmediata o mejor de tres,** con los lados cambiados.
+- **Guerra igualada o a muerte.** Igualada usa ejércitos estandarizados y no deja consecuencias en la campaña. A muerte es como ahora: quien cae, cae de verdad.
+- **Crónica compartida:** el mismo duelo contado desde cada bando.
+- **Torneo de la mesa:** cuadro de eliminatorias entre los jugadores.
+
+Las recompensas son de juego (títulos, apodos, estandartes). Nunca materiales (reliquias, oro, rasgos) ni cartas, porque dos amigos podrían ponerse de acuerdo para repartírselos.
+
+## 13. Guerras de varios bandos (2 a 8)
+
+Decisiones del 2-nov-2026. Todo plan. Es un trabajo de la talla de la propia expansión: el motor da hoy por hecho que hay dos jugadores.
+
+### Modos
+- **Todos contra todos** y **por equipos** (2 contra 2, 3 contra 3, 4 contra 4 y otras composiciones). En equipos los aliados son fijos: comparten visión y no se atacan.
+- Hasta **8 bandos**. Los huecos que no cubra un jugador los llena la IA.
+
+### Mapa
+- El mapa crece con el número de bandos. Tamaños provisionales: 13x13 para 2, 17x17 para 3 o 4, 21x21 para 5 o 6, 25x25 para 7 u 8.
+- Con 2 bandos se mantiene la simetría de giro de 180 grados, y con 4, la de 90. Para 3, 5, 6, 7 y 8 no hay simetría exacta. Cada bando recibe **un espacio de salida parecido** (terreno, recursos, distancia a los vecinos), que se comprueba al generar el mapa y se descarta si salen muy desiguales.
+- Hay un Núcleo del Sueño en el centro.
+
+### Inicio
+- Cada uno tiene un espacio en el que asentarse y preparar su primera jugada. **Explorar o afirmar lo que ya tienes es decisión de cada uno.**
+- No hay compensación de oro para quien mueve después. Solo se mantiene la actual (+4 de oro y +2 de comida al segundo) en las guerras de 2.
+- **Tregua inicial** (propuesta mía, editable): los primeros 3 turnos no se pueden atacar unidades de otros bandos.
+- El orden de turnos se sortea al empezar y se queda fijo.
+
+### Tiempo por turno (guerras asíncronas)
+- Por defecto, **1 día** para jugar cada turno. **Se puede cambiar al crear la partida** (de 1 hora a 7 días).
+- Si se agota el tiempo, el turno **se salta**: las unidades no actúan y la economía sigue funcionando.
+- **Por defecto, tras 3 turnos saltados seguidos la IA toma el control** de ese bando. Es una propuesta mía y también se puede cambiar o desactivar.
+
+### Eliminación y refugios
+- Quien pierde su capital **queda eliminado**, y sus tropas **quedan neutrales** (se vuelven criaturas sin dueño).
+- Un **Refugio** es una construcción que cambia eso: una ciudad con Refugio actúa como capital de reserva. Si cae la capital, el jugador sigue en la guerra desde el refugio.
+- Hay ejércitos **irrefugiables** (según tu idea, parecidos a la Herejía de Age of Empires II). **Pendiente de confirmar** cómo funcionan exactamente. Mi lectura: no pueden construir refugios, y a cambio, al caer su capital, su ejército **se disuelve** en vez de quedar neutral para otros. Lo dejo por confirmar hasta que me lo digas.
+
+### Victoria
+- **Todos contra todos:** gana el último bando en pie, o quien mantenga el Núcleo del Sueño **6 turnos seguidos** (cualquier otro bando que lo ocupe reinicia el contador), o quien tenga más puntos al acabar el tiempo. El límite de turnos crece con el número de bandos (35 más 5 por cada bando extra, provisional).
+- **Por equipos:** gana el equipo del que quede algún miembro cuando el resto estén eliminados. El Núcleo y los puntos cuentan por equipo.
+
+### Qué cambia en las reglas
+- «El rival» pasa a ser **cualquier bando que no sea tú ni tu aliado**. Los efectos de facción que hablaban de un rival (Noche eterna, el Tributo, la Furia contra heridos…) se reescriben para que valgan contra cualquiera.
+- La niebla de guerra es por bando (con visión compartida entre aliados). El Núcleo, las bajas y los puntos son contadores por bando.
+- Las partidas se guardan con una **lista de participantes**, no solo dos jugadores, y eso necesita un cambio en el servidor (SQL).
+- Las guerras de varios bandos usan la **versión de reglas** nueva. Las de 2 bandos ya guardadas se reproducen igual que antes.
+
+### La IA con varios rivales
+Decisiones propuestas (se confirman con el usuario):
+1. **A quién ataca:** por defecto, al enemigo más cercano que sea más débil. Si un bando va muy por delante en puntos, la IA le da prioridad (así no se escapa el líder).
+2. **Rencor:** recuerda quién la atacó y lo pondera al elegir objetivo.
+3. **Pactos:** la IA no pacta con otros jugadores. En equipos respeta a sus aliados y coordina la visión compartida.
+4. **IA que toma el control de un humano ausente:** juega a la defensiva (mantiene ciudades, no emprende conquistas) para no destrozar la partida de otro.
+5. **Dificultad** configurable por cada bando de IA.
+
+### Orden de trabajo
+1. Pasar el motor de 2 a N jugadores **sin cambiar el comportamiento de las guerras de 2**. Se comprueba repitiendo guerras ya guardadas.
+2. 3 o 4 bandos con la IA completando huecos, en un mapa con simetría de giro.
+3. Equipos y alianzas fijas.
+4. De 6 a 8 bandos con mapas grandes y los límites de tiempo.
+
+Esto va **antes** de los bloques de ejércitos y justo después de la base común. Las mecánicas nuevas de cada ejército se escriben pensando en «cualquier rival», y reescribirlas después sale más caro.
+
+## 14. Dirección visual (resumen)
+
+Va en una sesión aparte, en paralelo, y no cambia reglas. El encargo completo está en la ficha del rediseño. Lo esencial:
+
+- **Recursos:** barra con iconos, cantidad y balance por turno, con desglose al tocar.
+- **Tablero:** rejilla de casillas más tenue, fronteras de región más claras y terreno con más continuidad.
+- **Paneles:** ciudad con ranuras de edificios, reclutamiento y hueco para invocar héroes, e investigación como árbol visual de las tres escuelas.
+- **Fin de turno:** resumen breve de lo que ha pasado.
+- **Preparado para varios bandos:** el diseño debe funcionar igual con 2 que con 8: paleta de 8 bandos, orden de turnos, fronteras con varios dueños y un tamaño de mapa que se lea de la guerra.
+- **Criterio de éxito:** una captura de la guerra se ve claramente mejor y menos «herramienta de administración» que hoy, con las reglas intactas.
