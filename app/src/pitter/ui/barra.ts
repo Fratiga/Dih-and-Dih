@@ -1,6 +1,7 @@
 import type { Shell } from "../shell.ts";
 import { boton, h } from "./base.ts";
 import { abrirAjustes } from "./ajustes.ts";
+import { alternarAdmin, esAdmin } from "./admin.ts";
 
 export interface OpcionesBarra {
   /** null = muestra el logo; si no, un titulo de pantalla con boton de volver. */
@@ -22,6 +23,7 @@ export function barra(shell: Shell, o: OpcionesBarra): HTMLElement {
   }
   const der = h("div", { clase: "der" });
   if (o.extra) der.append(...o.extra);
+  if (esAdmin()) der.append(boton("🛠", () => alternarAdmin(shell), { chico: true, icono: true, color: "amarillo", tip: "Admin|Ver todo y hacer pruebas (F2)" }));
   der.append(
     boton("⚙", () => abrirAjustes(shell), { chico: true, icono: true, color: "violeta", tip: "Ajustes|Volumen, calidad y progreso" }),
     (() => {

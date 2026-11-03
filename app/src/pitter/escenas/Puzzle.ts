@@ -3,6 +3,7 @@ import { N, REGLAS, TOTAL, Tablero, type Celda, type Paso } from "../motor/table
 import { borrarTodoDe, usarHabilidad } from "../motor/habilidades.ts";
 import { MotorLider, type Efecto } from "../motor/lider.ts";
 import { liderDe } from "../datos/lideres.ts";
+import { adm } from "../ui/admin.ts";
 import { juntarPasivas, type ModificadoresPasivos } from "../datos/pasivas.ts";
 import { JEFES, type Jefe } from "../datos/campana.ts";
 import { personaje, personajesVisibles, type Personaje } from "../datos/roster.ts";
@@ -169,6 +170,7 @@ export class Puzzle extends Phaser.Scene {
     this.layout();
     this.configurarEntrada();
     this.alEscuchar("pt:habilidad", (slot) => void this.pedirHabilidad(slot as 0 | 1));
+    this.alEscuchar("pt:admin", (d) => void this.accionAdmin(d as { accion: string; valor?: { clave: string; valor: boolean } }));
     this.alEscuchar("pt:pausa", () => this.pausar(true));
     this.alEscuchar("pt:reanudar", () => this.pausar(false));
     this.scale.on("resize", this.alRedimensionar, this);
@@ -706,7 +708,7 @@ export class Puzzle extends Phaser.Scene {
   private golpearJefe(dano: number, combo: number): void {
     if (dano <= 0 || this.terminada) return;
     if (this.fase === "rush") { this.puntos += Math.round(dano * 2); this.hud.puntos(this.puntos); return; }
-    dano *= this.liderAtaque;
+    dano *= this.liderAtaque * (adm.danoX10 ? 10 : 1);
     this.vida = Math.max(0, this.vida - dano);
     this.puntos += Math.round(dano) + combo * 3;
     this.hud.vida(this.vida, this.vidaMax);
@@ -981,6 +983,7 @@ export class Puzzle extends Phaser.Scene {
     if (this.fase === "pausa" || this.terminada) return;
     const dt = dtMs / 1000;
     this.tickLider(dt);
+    if (adm.cargaInfinita) this.llenarMedidores();
     if (this.fase === "stand") {
       this.standT -= dt;
       this.hudAcum += dt;
@@ -995,7 +998,7 @@ export class Puzzle extends Phaser.Scene {
     }
     this.tiempoJugado += dt;
     // Tiempo
-    this.t -= dt;
+    if (!adm.relojParado) this.t -= dt;
     if (this.t <= 10 && this.t > 0) { this.relojAcum += dt; if (this.relojAcum >= 1) { this.relojAcum = 0; sonido.reloj(); } }
     this.hudAcum += dt;
     if (this.hudAcum > 0.1) {
@@ -1014,7 +1017,7 @@ export class Puzzle extends Phaser.Scene {
     if (this.furiaT > 0) { this.furiaT -= dt; }
     if (this.silencioT > 0) { this.silencioT -= dt; if (this.silencioT <= 0) this.hud.silencio(false); }
     if (this.aturdirT > 0) { this.aturdirT -= dt; }
-    else if (!this.agotando) this.jefe.fases.forEach((f, i) => {
+    else if (!this.agotando && !adm.sinAtaques) this.jefe.fases.forEach((f, i) => {
       this.temporizadoresJefe[i] += dt;
       if (this.temporizadoresJefe[i] >= f.cada) { this.temporizadoresJefe[i] = 0; this.atacarJefe(i); }
     });
@@ -1058,6 +1061,46 @@ export class Puzzle extends Phaser.Scene {
         break;
       default:
         break;
+    }
+  }
+
+  /* ---------- herramientas de admin ---------- */
+  private llenarMedidores(): void {
+    for (const slot of [0, 1] as const) {
+      if (this.cargas[slot] >= this.cargaMax[slot]) continue;
+      this.cargas[slot] = this.cargaMax[slot];
+      this.hud.carga(slot, 1, 0);
+    }
+  }
+
+  private async accionAdmin(d: { accion: string; valor?: { clave: string; valor: boolean } }): Promise<void> {
+    if (this.terminada) return;
+    const t = this.tablero;
+    switch (d.accion) {
+      case "interruptor": if (d.valor && d.valor.clave === "cargaInfinita" && d.valor.valor) this.llenarMedidores(); break;
+      case "cargar": this.llenarMedidores(); break;
+      case "stand": this.stand = 1; this.hud.stand(1, false, 0); this.revisarStand(); break;
+      case "tiempo": this.t = this.t + 30; this.tMax = Math.max(this.tMax, this.t); this.hud.tiempo(this.t, this.tMax); break;
+      case "combo": t.combo += 10; this.armarCombo(); break;
+      case "jefe10": this.vida = this.vidaMax * 0.1; this.hud.vida(this.vida, this.vidaMax); break;
+      case "curar": this.vida = this.vidaMax; this.hud.vida(this.vida, this.vidaMax); break;
+      case "matar": this.vida = 0; this.hud.vida(0, this.vidaMax); void this.ganar(); break;
+      case "perder": this.t = 0; break;
+      case "ataque": if (this.jefe.fases.length) this.atacarJefe(0); else this.hud.banner("Este jefe no ataca", "aviso"); break;
+      case "bloques": this.pendientesJefe.push(() => [t.ponerBloques(3, 2)]); void this.ejecutarPendientesJefe(); break;
+      case "hielo": this.pendientesJefe.push(() => [t.ponerEstado(4, "congelada")]); void this.ejecutarPendientesJefe(); break;
+      case "tinta": this.pendientesJefe.push(() => [t.ponerEstado(4, "tinta")]); void this.ejecutarPendientesJefe(); break;
+      case "caja": {
+        const cand = t.indicesDe((c) => c.bloque === 0 && !c.caja && !c.stand);
+        if (!cand.length) break;
+        const i = cand[Math.floor(Math.random() * cand.length)];
+        t.celdas[i].caja = true;
+        t.celdas[i].reforzada = false;
+        await this.reproducir([{ k: "crear", cajas: [{ id: t.celdas[i].id, idx: i }] }]);
+        break;
+      }
+      case "limpiar": await this.reproducir(t.limpiarParaRush()); break;
+      default: break;
     }
   }
 }

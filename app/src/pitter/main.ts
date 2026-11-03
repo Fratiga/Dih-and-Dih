@@ -5,6 +5,8 @@ import "./pitter-campana.css";
 import "./pitter-album.css";
 import "./pitter-torre.css";
 import "./pitter-hab.css";
+import "./pitter-admin.css";
+import { alternarAdmin, esAdmin } from "./ui/admin.ts";
 import Phaser from "phaser";
 import { todosLosPersonajes } from "./datos/roster.ts";
 import { arteGlobal, crearArte } from "./arte/chibis.ts";
@@ -58,6 +60,8 @@ async function arrancar(): Promise<void> {
   shell.registrar("equipo", pantallaEquipo, "Fondo", "calma");
   shell.registrar("progreso", pantallaProgreso, "Fondo", "calma");
   shell.registrar("habitaciones", pantallaHabitaciones, "Habitaciones", "habitaciones");
+  // F2 abre o cierra las herramientas del admin
+  document.addEventListener("keydown", (ev) => { if (ev.key === "F2" && esAdmin()) { ev.preventDefault(); alternarAdmin(shell); } });
   const juego = new Phaser.Game({
     type: Phaser.AUTO,
     parent: "pt-juego",

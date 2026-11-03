@@ -4,6 +4,7 @@ import { JEFES } from "../datos/campana.ts";
 import { personajesVisibles } from "../datos/roster.ts";
 import { estrellasTotales, nivelMansion } from "../estado.ts";
 import { abrirAjustes } from "./ajustes.ts";
+import { alternarAdmin, esAdmin } from "./admin.ts";
 
 /* La cabecera de la mansion: el nivel, las cuentas y los botones de siempre. La usan el menu y las habitaciones, como en el original. */
 export function cabeceraMansion(shell: Shell, extra: HTMLElement[] = []): HTMLElement {
@@ -18,6 +19,7 @@ export function cabeceraMansion(shell: Shell, extra: HTMLElement[] = []): HTMLEl
     h("div", { clase: "pt-cuentas" }, cuenta("★", `${estrellas} / ${JEFES.length * 3}`), cuenta("☺", `${e.desbloqueados.length} / ${personajesVisibles().length}`)),
     h("div", { clase: "pt-menu-top-der" },
       ...extra,
+      ...(esAdmin() ? [boton("🛠", () => alternarAdmin(shell), { chico: true, icono: true, color: "amarillo", tip: "Admin|Ver todo y hacer pruebas (F2)" })] : []),
       boton("⚙", () => abrirAjustes(shell), { chico: true, icono: true, color: "violeta", tip: "Ajustes" }),
       (() => { const b = boton(shell.enPantallaCompleta ? "⤡" : "⤢", () => void shell.pantallaCompleta(), { chico: true, icono: true, color: "turquesa", tip: "Pantalla completa (F)" }); b.dataset.pc = "1"; return b; })(),
       h("a", { clase: "pt-btn chico icono azul", href: "../../minijuegos.html", "data-tip": "Volver a la web", "aria-label": "Volver a la web" }, "⌂"),

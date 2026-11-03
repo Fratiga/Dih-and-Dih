@@ -1,6 +1,7 @@
 /* El armazon del juego: pantallas, transiciones entre escenas, pantalla completa, avisos y guardado.
    Todo ocurre en una sola pagina sin recargas, asi la partida se conserva al cambiar de pantalla o de modo. */
 
+import { refrescarAdmin } from "./ui/admin.ts";
 import type Phaser from "phaser";
 import { aviso as mostrarAviso, esperar, iniciarTooltips } from "./ui/base.ts";
 import { sonido, type Escena } from "./audio/audio.ts";
@@ -183,6 +184,7 @@ export class Shell {
       if (reg.musica) sonido.musica(reg.musica);
       await esperar(90);
       await this.abrirCortina(tipo);
+      refrescarAdmin(this);
     } finally {
       this.ocupado = false;
     }

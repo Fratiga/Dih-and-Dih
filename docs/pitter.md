@@ -58,6 +58,14 @@ Basadas en la [JoJo Wiki](https://jojowiki.com/JoJo's_Pitter-Patter_Pop!) y en e
 - Los jefes (`datos/campana.ts`) son criaturas del bestiario público, no los enemigos de las fichas del DM. Cada uno estropea el tablero a su manera: bloques (como las piezas Box), fichas congeladas y fichas con tinta (como DeBuff).
 - **Lo que aún no está:** las piezas especiales del original que no se pueden deducir de los nombres (Crystal, Shabon, Elemental, Power) y las bombas con forma. La Caja de 6 o más hace de bomba. Los números son a ojo, no los del original.
 
+## Herramientas de admin
+
+Con `localStorage.compendioAdmin = "1"` aparece un botón 🛠 en la cabecera (o la tecla **F2**) que abre un panel flotante que no tapa el juego (`ui/admin.ts`).
+
+- **Progreso** (cambia la partida guardada, hay que pulsarlo a propósito): desbloquear a todos los personajes, superar los 8 jefes con 3 estrellas (abre las 24 habitaciones y da los muebles), abrir las 24 habitaciones sin dar los jefes por superados, todos los muebles, personajes al nivel 10 y repetir el regalo de hoy.
+- **Combate a elegir:** cualquier jefe con cualquier pareja de personajes, sin tenerlos abiertos.
+- **En la partida:** habilidades llenas, Stand Up lleno, +30 s, combo +10, jefe al 10 % o curado o derrotado, perder, ataque del jefe ahora, poner una Caja, bloques, hielo o tinta, limpiar obstáculos. Y cuatro interruptores: reloj parado, el jefe no ataca, habilidades siempre llenas y daño ×10.
+
 ## Quién ve qué
 
 Cada Side ve a los personajes compartidos y a los suyos (`puedeVer` en `roster.ts`, con las mismas claves de `localStorage` que el resto del sitio). El admin los ve todos. Los jefes y los muebles no dependen del Side.

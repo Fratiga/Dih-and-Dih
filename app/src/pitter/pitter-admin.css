@@ -1,0 +1,16 @@
+/* Panel de herramientas del admin: flotante, a un lado, para poder probar sin tapar el juego. */
+
+.pt-admin { position: absolute; right: 10px; bottom: 10px; top: 76px; width: 250px; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 12px; overflow-y: auto; border: 4px solid var(--tinta); border-radius: 18px; background: rgba(255, 246, 229, 0.97); box-shadow: var(--sombra-dura); z-index: 60; pointer-events: auto; }
+.pt-admin header { display: flex; align-items: center; justify-content: space-between; }
+.pt-admin header b { font: 400 20px var(--titulo); color: var(--rosa-sombra); }
+.pt-admin section { display: grid; gap: 5px; padding-top: 6px; border-top: 3px dashed rgba(42, 21, 69, 0.25); }
+.pt-admin h3 { margin: 0; font: 400 15px var(--titulo); color: var(--tinta-2); letter-spacing: 0.04em; }
+.pt-adm-b { min-height: 30px; padding: 3px 10px 5px; border: 3px solid var(--tinta); border-radius: 10px; background: #fff; color: var(--tinta); font: 700 13px var(--texto); text-align: left; cursor: pointer; }
+.pt-adm-b:hover { background: #ffe9c4; }
+.pt-adm-b:active { transform: translateY(2px); }
+.pt-adm-i::after { content: "no"; float: right; opacity: 0.55; }
+.pt-adm-i.on { background: var(--turquesa); }
+.pt-adm-i.on::after { content: "sí"; opacity: 1; }
+.pt-adm-s { min-height: 30px; padding: 2px 8px; border: 3px solid var(--tinta); border-radius: 10px; background: #fff; color: var(--tinta); font: 700 13px var(--texto); }
+.pt-adm-x { width: 28px; height: 28px; border: 3px solid var(--tinta); border-radius: 8px; background: var(--amarillo); color: var(--tinta); font: 700 14px var(--texto); cursor: pointer; }
+.pt-adm-nota { margin: 0; font-size: 13px; color: var(--tinta-2); }
