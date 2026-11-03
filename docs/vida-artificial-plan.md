@@ -262,7 +262,7 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 - **Prueba que separe la conducta causal del control apareado**: un coste que solo pague el margen de acercarse frente a quedarse (una placa conocida en el camino).
 - **Temperatura** como necesidad y entornos distintos.
 - **Supabase**: tablas de criaturas, memoria, eventos y relaciones, y funciones del servidor que validen genética y recompensas. Se dejó fuera a propósito: hace falta decidir qué valida el servidor y no se quiso añadir infraestructura en este prototipo.
-- **Un segundo recinto** para criar a los gemelos por separado desde el juego (hoy conviven en una sala; para separarlos hay que elegir qué objetos hay y a quién se premia o asusta).
+- **Los gemelos son solo del estado de pruebas.** El caso 13, la copia exacta de un genoma (`clonarGenoma` como gemelo) y criarlos por separado sirven para el laboratorio y no deben trasladarse a la versión final. Un segundo recinto para criar gemelos desde el juego queda descartado. En la versión final cada criatura tiene un genoma propio, y `cruzar` es la única forma de que dos se parezcan.
 - **Probar en un portátil sin tarjeta gráfica** y en pantalla completa real: no se ha podido probar desde aquí.
 - **Más herramientas** (marcadores, barreras, sonidos como estímulo).
 
