@@ -338,11 +338,79 @@ Condición técnica. La identidad de una criatura es permanente, esté o no cone
 
 Cada etapa llega con su caso en el laboratorio, con control y semillas múltiples, como el resto.
 
+## Caso propuesto 15: el monstruo y el sacrificio
+
+Todavía no está construido. Se registra aquí con las condiciones y lo que falta en el código para poder hacerlo. Pone a prueba a la vez reconocer una amenaza, interpretar el peligro de otras, decidir intervenir asumiendo un riesgo y conservar un recuerdo social de lo ocurrido.
+
+### Principios
+
+- La defensora no es una criatura programada para proteger. Es una criatura corriente que, por su genética, su carácter, sus experiencias y sus vínculos, acaba tomando esa decisión. La misma criatura, en otras circunstancias, huye.
+- La hostil no lleva ninguna marca de hostil. Se cría con el sistema normal, en un entorno donde perseguir y atacar le ha dado resultados, no ha tenido consecuencias malas y ha vuelto su carácter impulsivo y poco sociable. Su aspecto comunica peligro, pero tiene que serlo de verdad (puede herir gravemente o matar), no solo parecerlo. Y esa hostilidad tiene que aparecer también en situaciones normales, no solo en este experimento.
+- No se añade ninguna conducta de protección de grupo, ninguna recompensa llamada sacrificio o heroísmo ni ninguna memoria de "esta criatura me salvó". No se introducen esos conceptos en la memoria. Las demás recuerdan episodios concretos y, con el tiempo, asociaciones emocionales (reconocer a la defensora, apego, angustia ante su ausencia, buscarla, acercarse más a ella, reaccionar distinto si la vuelven a ver en peligro).
+- Una criatura no necesita comprender el sacrificio para que su comportamiento pueda leerse como uno. Si se queda, arriesga su vida y deja que otras escapen, el hecho es significativo aunque pierda.
+
+### Montaje
+
+Cuatro criaturas en una sala. La hostil, la defensora y dos observadoras con relaciones distintas con la defensora. Las tres que no son hostiles pueden huir.
+
+- **15a, el sacrificio.** El monstruo entra con las otras tres presentes. Se mira si alguna se interpone o se acerca a él, quién, y qué recuerdan las observadoras de lo ocurrido (la defensora se acercó durante el peligro, sufrió, lo detuvo, murió o dejó de responder, el peligro terminó después de que interviniera). Las observadoras se evalúan por separado.
+- **15b, el peligro individual.** Misma criatura hostil, misma sala y mismas condiciones, pero la futura defensora está sola. Lo esperado es que huya. Si huye, demuestra que la intervención del 15a depende del contexto social y no es una orden de combatir toda amenaza.
+
+### Qué se separa
+
+No se resume en un solo porcentaje.
+
+| Capacidad | Evidencia |
+|---|---|
+| Reconocimiento de amenaza | Evita al monstruo antes de recibir daño |
+| Reconocimiento social del peligro | Percibe la angustia de otras criaturas |
+| Intervención | Se aproxima o se interpone ante el monstruo |
+| Evaluación del riesgo | Interviene más cuando hay alguien a quien proteger |
+| Memoria episódica | Conserva información del enfrentamiento |
+| Memoria social | Reconoce después a quien intervino |
+| Persistencia | El recuerdo afecta a su conducta pasado un tiempo |
+| Diferenciación contextual | Interviene acompañada y huye sola |
+
+### Controles
+
+| Control | Qué descarta |
+|---|---|
+| La defensora está, pero huye enseguida | Que las observadoras se apeguen por su mera presencia |
+| La defensora se acerca y no consigue detenerlo | Que solo recuerden a quien venció |
+| El monstruo ataca con la defensora ausente | Que reaccionen igual a cualquier peligro |
+| La defensora se enfrenta al monstruo sin otras criaturas | Que la intervención sea solo una respuesta individual a la amenaza |
+
+### Prueba posterior
+
+Pasado un tiempo y con las criaturas separadas, las observadoras se vuelven a encontrar con la defensora. No hay monstruo, peligro ni recompensa. Pueden acercarse, evitarla, buscarla o ignorarla. Después, una situación de peligro nueva con otra criatura amenazada, para ver si intervienen, buscan a la antigua defensora, huyen o se comportan como antes. Esto último es exploratorio, no un requisito para aprobar.
+
+### Criterio
+
+No se exige que la defensora gane ni que todas la quieran después. Se considera un resultado interesante si hay una criatura que interviene sin regla de protección ante una amenaza colectiva, esa misma criatura prefiere escapar sola, las observadoras recuerdan quién intervino aunque perdiera, los recuerdos y conductas posteriores difieren según lo que presenciaron, y todo se mantiene con varias semillas y criaturas criadas de formas distintas. Que intervenga en 4 de 20 semillas no rompe nada, puede ser una conducta rara. El caso no se juzga con el 80 % de semillas de los demás. Lo que sí se exige para que valga son comprobaciones previas. El monstruo hiere de verdad, las observadoras del control huyen de él y la hostilidad aparece fuera del experimento.
+
+### Lo que falta en el código
+
+Nada de esto existe hoy.
+
+- **Agresión real entre criaturas.** El rasgo `agresividad` solo cambia lo bien recibida que es una aproximación (`acciones.ts`). No hay acción de atacar o perseguir, ni daño de una criatura a otra, ni una competencia por recursos que haga que atacar compense. Sin eso no se puede criar una hostil por el sistema normal. Es la misma pieza que piden los casos 09 a 12 (depredador).
+- **Intervenir contra un tercero.** La cadena es más larga que la del 08b. Hay que aprender que acercarse al agresor hace que cese lo que sufre otra, no que la angustia de esa otra baje porque uno se quede a su lado. Con un solo encuentro y sin historia previa es probable que no aparezca. Habrá que decidir qué historia previa lo hace posible sin que equivalga a escribir la regla.
+- **Atribuir lo que pasa a lo que hace otra.** Para recordar quién intervino, la observadora tiene que vincular el fin del peligro con la acción de la defensora. Es el mismo mecanismo que falta para que el 07 sea aprendizaje por observación (el estado propio o ajeno cambia después de la acción de otro) y que el canal de alivio ya mide para las acciones propias.
+- **Memoria episódica** de quién estaba, qué hizo y con qué consecuencia. Hoy hay vínculos con afecto por individuo, avistamientos y notas.
+
+### Orden razonable
+
+1. Agresión y daño entre criaturas con competencia por recursos, y criar una hostil sin marca. Es útil por sí sola (casos 09 a 12) y permite el 15b, que es la parte sencilla.
+2. Atribución de efectos a las acciones de otras, comprobada primero en el 07 (que la imitación persista) y en el 08c.
+3. Después el 15a, con la prueba posterior.
+
+El experimento se hace en el laboratorio con réplicas, no con criaturas reales de jugadores, porque la hostil puede matar.
+
 ## Recomendación para la siguiente fase
 
 1. **Aprendizaje por observación.** El 07b separa la facilitación del aprendizaje y dice que hoy solo hay facilitación. Es el siguiente resultado a conseguir antes de añadir criaturas.
 2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
-5. Después, las etapas 1 a 5 del espacio de convivencia entre propietarios (arriba), empezando por el reconocimiento persistente (etapa 2), que es lo que más reutiliza lo ya medido en los casos 06 y 08b.
-6. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
+5. El caso 15 (arriba) depende de la agresión entre criaturas y de la atribución de efectos a otras. Puede ir en paralelo a las etapas de convivencia, empezando por la agresión.
+6. Después, las etapas 1 a 5 del espacio de convivencia entre propietarios (arriba), empezando por el reconocimiento persistente (etapa 2), que es lo que más reutiliza lo ya medido en los casos 06 y 08b.
+7. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
