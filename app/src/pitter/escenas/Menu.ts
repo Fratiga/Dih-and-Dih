@@ -5,7 +5,7 @@ import { ANCHO_HUECO, BASE_H, PASO_PISO, PISOS, SECTORES, TECHO_ALTO } from "../
 import { sonido } from "../audio/audio.ts";
 import { estrellasParaSala, type Habitacion } from "../estado.ts";
 import type { Shell } from "../shell.ts";
-import { Corona3D, Cuarto3D, bordePiso, centroFrontal, fijarCamara, semiancho } from "./cuarto3d.ts";
+import { Corona3D, Cuarto3D, bordePiso, centroFrontal, fijarCamara, ojoY, placa, semiancho } from "./cuarto3d.ts";
 import { medir, type Medida } from "./medidas.ts";
 import { SalaVista, tema } from "./salaVista.ts";
 
@@ -37,6 +37,7 @@ export class Menu extends Phaser.Scene {
   private base!: Corona3D;
   private paneles: Panel[] = [];
   private guia!: Phaser.GameObjects.Graphics;
+  private placas: Phaser.GameObjects.Graphics[] = [];
   private th: number[] = [];
   private vel: number[] = [];
   private obj: number[] = [];
@@ -56,6 +57,7 @@ export class Menu extends Phaser.Scene {
     this.shell = this.registry.get("shell") as Shell;
     this.desde = datos?.desde ?? -1;
     this.paneles = [];
+    this.placas = [];
     this.drag = null;
     this.hover = -1;
     this.entrando = false;
@@ -81,6 +83,8 @@ export class Menu extends Phaser.Scene {
     this.mundo.add([this.techo.malla, this.base.malla]);
     const hab = e.habitaciones;
     for (let f = 0; f < PISOS; f++) for (let i = 0; i < SECTORES; i++) this.paneles.push(this.crearPanel(f, i, hab[f * SECTORES + i]));
+    // Las losas entre pisos: se ven cuando un anillo gira distinto del de al lado
+    for (let b = 1; b < PISOS; b++) { const g = this.add.graphics(); this.placas.push(g); this.mundo.add(g); }
     this.guia = this.add.graphics().setDepth(1000);
     this.mundo.add(this.guia);
     this.add.particles(0, 0, "fx:punto", { x: { min: 0, max: this.scale.width }, y: { min: this.scale.height * 0.5, max: this.scale.height }, scale: { start: 0.25, end: 0.7 }, alpha: { start: 0, end: 0.5 }, speedY: { min: -26, max: -6 }, speedX: { min: -14, max: 14 }, lifespan: 5000, frequency: 220, blendMode: "ADD", tint: 0xfff2a8 }).setScrollFactor(0).setDepth(3);
@@ -160,9 +164,52 @@ export class Menu extends Phaser.Scene {
       p.cuarto.grupo.setDepth(p.f * 10 + cos * 8);
       if (p.cuarto.actualizar(phi, luz, yMin, yMax)) p.sala?.proyectar();
     }
+    this.dibujarPlacas();
     this.techo.actualizar(this.th[PISOS - 1], this.luz[PISOS - 1]);
     this.base.actualizar(this.th[0], this.luz[0]);
     this.mundo.sort("depth");
+  }
+
+  /* Entre dos pisos hay una losa. Con la camara por encima se ve la terraza del anillo de abajo; por debajo, la parte inferior del de arriba.
+     Si los dos anillos estan girados distinto, es lo que se ve donde uno sobresale del otro. */
+  private dibujarPlacas(): void {
+    const ojo = ojoY();
+    for (let b = 1; b < PISOS; b++) {
+      const g = this.placas[b - 1];
+      const y = b * PASO_PISO;
+      g.clear();
+      if (Math.abs(ojo - y) < 2) continue;
+      const arriba = ojo > y;
+      const f = arriba ? b - 1 : b;
+      const pts = placa(this.th[f], y);
+      const k = acotar(this.luz[f], 0, 1);
+      const color = (r: number, gg: number, bb: number): number => (Math.round(r * k) << 16) | (Math.round(gg * k) << 8) | Math.round(bb * k);
+      g.setDepth(arriba ? (b - 1) * 10 + 9 : (b - 1) * 10 + 1);
+      const trazo = (escala: number): void => {
+        g.beginPath();
+        for (let i = 0; i < SECTORES; i++) {
+          const cx = (pts[0] + pts[SECTORES]) / 2, cy = (pts[1] + pts[SECTORES + 1]) / 2;
+          const x = cx + (pts[i * 2] - cx) * escala, yy = cy + (pts[i * 2 + 1] - cy) * escala;
+          if (i) g.lineTo(x, yy); else g.moveTo(x, yy);
+        }
+        g.closePath();
+      };
+      g.fillStyle(arriba ? color(232, 164, 104) : color(138, 74, 38), 1);
+      trazo(1);
+      g.fillPath();
+      if (arriba) {
+        // terraza: un borde de piedra mas claro y un panel hundido
+        g.fillStyle(color(251, 238, 216), 1);
+        trazo(0.88);
+        g.fillPath();
+        g.lineStyle(3, 0x2a1545, 0.35);
+        trazo(0.88);
+        g.strokePath();
+      }
+      g.lineStyle(6, 0x2a1545, 1);
+      trazo(1);
+      g.strokePath();
+    }
   }
 
   private sala(): void {

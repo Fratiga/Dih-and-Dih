@@ -359,3 +359,20 @@ export class Corona3D {
     this.malla.setVisible(I.length > 0);
   }
 }
+
+/** Altura de la camara en el mundo. */
+export function ojoY(): number {
+  return EYw;
+}
+
+/** Las esquinas en pantalla (x0, y0, x1, y1...) de la losa octogonal de un anillo girado th, a la altura y del mundo. */
+export function placa(th: number, y: number): number[] {
+  const paso = (Math.PI * 2) / SECTORES;
+  const pts: number[] = [];
+  for (let k = 0; k < SECTORES; k++) {
+    const a = th + (k + 0.5) * paso;
+    const o = proyectar(RADIO_ESQUINA * Math.sin(a), y, RADIO_ESQUINA * Math.cos(a));
+    pts.push(o[0], o[1]);
+  }
+  return pts;
+}
