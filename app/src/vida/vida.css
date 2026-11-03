@@ -235,3 +235,7 @@ button { font: inherit; color: inherit; }
 .va-lengueta-pie { min-height: 28px; padding: 2px 14px; font-size: 12px; letter-spacing: 0.12em; background: var(--panel); border-radius: 3px 3px 0 0; border-bottom: 0; margin-bottom: -6px; }
 .va-pie.plegada { transform: translate(-50%, calc(100% - 34px)); }
 .va-pie.plegada .va-lengueta-pie { margin-bottom: 0; }
+
+/* Al arrastrar un objeto de la sala hasta la bandeja, esta avisa de que ahi se quita */
+.va-pie.recibe .va-bandeja { border-color: var(--coral); background: rgba(42, 16, 16, 0.85); }
+.va-pie.recibe .va-bandeja-ayuda { color: var(--coral); }

@@ -145,28 +145,48 @@ export class Laboratorio extends Phaser.Scene {
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => this.alPulsar(p));
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => this.alMover(p));
     this.input.on("pointerup", (p: Phaser.Input.Pointer) => this.alSoltar(p));
-    // Rueda sobre la sala (no sobre la interfaz): hacia arriba se acerca (sala, seguir, cerca) y hacia abajo vuelve a la vista de la sala
+    // Rueda sobre la sala (no sobre la interfaz): hacia arriba se acerca (sala, seguir, cerca) y hacia abajo se aleja, un paso por gesto.
+    // Se escucha en la ventana (no en el lienzo de Phaser) para que funcione igual con cualquier raton o panel tactil.
     let ultimaRueda = 0;
-    this.input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
-      if (this.enTitulo || dy === 0) return;
-      if (!(p.event?.target instanceof HTMLCanvasElement)) return;
-      const modo = this.juego.ajustes.camara;
-      if (dy > 0) { if (modo !== "panorama") this.juego.fijarCamara("panorama"); return; }
-      // Un paso por cada gesto de la rueda, para que no se salte un nivel
+    const rueda = (e: WheelEvent): void => {
+      if (this.enTitulo || e.deltaY === 0) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest?.(".va-panel, .va-pie, .va-barra, .va-modal, .va-titulo, .va-lengueta, .va-puertas")) return;
       const ahora = performance.now();
-      if (ahora - ultimaRueda < 320) return;
+      if (ahora - ultimaRueda < 220) return;
       ultimaRueda = ahora;
-      if (modo === "panorama") this.juego.fijarCamara("seguir");
-      else if (modo === "seguir") this.juego.fijarCamara("cercano");
-    });
+      const orden = ["panorama", "seguir", "cercano"] as const;
+      const i = orden.indexOf(this.juego.ajustes.camara);
+      const n = Math.max(0, Math.min(orden.length - 1, i + (e.deltaY < 0 ? 1 : -1)));
+      if (n !== i) this.juego.fijarCamara(orden[n]);
+    };
+    window.addEventListener("wheel", rueda, { passive: true });
+    this.events.once("shutdown", () => window.removeEventListener("wheel", rueda));
     this.juego.on("simNueva", () => this.reiniciar());
     this.juego.on("premio", (id) => this.efectoPremio(id as number));
     this.juego.on("susto", (id) => this.efectoSusto(id as number));
     this.scale.on("resize", () => { this.zoomActual = this.zoomObjetivo(); });
     // Donde esta el raton y si esta sobre la sala (y no sobre un panel), para el atajo de quitar objetos
-    const seguir = (e: PointerEvent): void => { this.raton = { x: e.clientX, y: e.clientY, enSala: e.target instanceof HTMLCanvasElement }; };
+    const sobreBandeja = (e: PointerEvent): boolean => !!(document.elementFromPoint(e.clientX, e.clientY)?.closest(".va-pie")) || e.clientY > window.innerHeight - 40;
+    const seguir = (e: PointerEvent): void => {
+      this.raton = { x: e.clientX, y: e.clientY, enSala: e.target instanceof HTMLCanvasElement };
+      if (this.arrastre?.id == null) return;
+      // El objeto sigue al raton aunque pase por encima de la interfaz, y la bandeja avisa de que ahi se quita
+      const w = this.cameras.main.getWorldPoint(e.clientX, e.clientY);
+      this.juego.mover(this.arrastre.id, unidades(w.x));
+      document.querySelector(".va-pie")?.classList.toggle("recibe", sobreBandeja(e));
+    };
+    const soltar = (e: PointerEvent): void => {
+      const a = this.arrastre;
+      if (!a || a.id == null) return;
+      document.querySelector(".va-pie")?.classList.remove("recibe");
+      this.arrastre = null;
+      this.input.setDefaultCursor("default");
+      if (sobreBandeja(e)) { this.juego.quitar(a.id); this.juego.emit("quitadoConArrastre"); } else this.juego.guardar();
+    };
     window.addEventListener("pointermove", seguir);
-    this.events.once("shutdown", () => window.removeEventListener("pointermove", seguir));
+    window.addEventListener("pointerup", soltar);
+    this.events.once("shutdown", () => { window.removeEventListener("pointermove", seguir); window.removeEventListener("pointerup", soltar); });
     this.lista = true;
   }
 
@@ -559,15 +579,8 @@ export class Laboratorio extends Phaser.Scene {
     this.input.setDefaultCursor(sobre ? "pointer" : "default");
   }
 
-  private alSoltar(p: Phaser.Input.Pointer): void {
-    if (this.arrastre?.id != null) {
-      // Arrastrar un objeto hasta la bandeja lo retira
-      const abajo = p.y > this.scale.height - 120;
-      if (abajo) this.juego.quitar(this.arrastre.id);
-      else this.juego.guardar();
-      this.arrastre = null;
-      this.input.setDefaultCursor("default");
-    }
+  private alSoltar(_p: Phaser.Input.Pointer): void {
+    // Soltar un objeto de la sala se resuelve en el listener de ventana (ver create), porque sobre la bandeja el lienzo no recibe el raton
   }
 
   /** Atajo: quita el objeto que hay bajo el raton (o el que se esta arrastrando). Devuelve si habia alguno. */

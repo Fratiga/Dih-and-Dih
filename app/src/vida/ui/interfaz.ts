@@ -190,6 +190,7 @@ export class Interfaz {
     j.on("velocidad", () => this.refrescarControles());
     j.on("observar", () => { this.raiz.classList.toggle("observando", j.observar); this.refrescarControles(); });
     j.on("sonido", () => this.refrescarControles());
+    j.on("quitadoConArrastre", () => aviso(this.raiz, "Objeto quitado.", 1000));
     j.on("colocado", () => this.bandeja.querySelectorAll(".activa").forEach((q) => q.classList.remove("activa")));
     this.refrescarControles();
     this.refrescar();
