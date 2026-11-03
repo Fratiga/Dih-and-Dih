@@ -227,6 +227,21 @@ export class Criatura {
     else this.vx = 0;
   }
 
+  /** Para meter una criatura ya vivida en una sala nueva cuyo reloj empieza en 0: lo que depende del reloj anterior (a quien miraba, lo que esperaba, lo reciente) se borra. Lo aprendido se queda. */
+  reiniciarReloj(): void {
+    this.atencion = null;
+    this.ultimoImpacto = null;
+    this.trazas = [];
+    this.habito = {};
+    this.expuesto = {};
+    this.ayuda = null;
+    this.ultimoDano = -99;
+    this.ultimoContagio = -99;
+    this.proxDecision = 0;
+    this.espera = 0;
+    this.acumOlvido = 0;
+  }
+
   private decidir(env: Entorno): void {
     const cands = candidatas(this, this.percibidos, env);
     const c = elegir(this, cands);
@@ -466,7 +481,7 @@ export class Criatura {
       }
       if (!o.ultimoImpacto) continue;
       const u = o.ultimoImpacto;
-      if (u.t <= (this.atencion?.t ?? -1) || env.t - u.t > 1) continue;
+      if (u.t <= (this.atencion?.t ?? -1) || env.t - u.t > 1 || env.t < u.t) continue;
       if (Math.abs(o.x - this.x) > AJ.vista * this.genoma.vista * 1.3) continue;
       const ob = env.mundo.obj(u.obj);
       if (!ob) continue;

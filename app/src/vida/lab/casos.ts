@@ -328,6 +328,7 @@ export function perfil(c: Criatura, semilla: number, variante: number): number[]
     const s = nuevaSim({ semilla: mezclar(semilla, 900, variante, r), objetos, criaturas: [{ genoma: clonarGenoma(c.genoma), x: 800 }], comedero: null });
     const t = Criatura.desde({ ...c.estado(), x: 800, accion: null, id: 1 }, mezclar(semilla, 901, variante, r));
     t.azar.s = mezclar(semilla, 902, variante, r);
+    t.reiniciarReloj();
     t.habito = {};
     t.capRegistro = 100000;
     t.nec = [hambre, 0.2, 0, 0.6, 0.3];
@@ -565,6 +566,7 @@ export const caso07: Caso = {
       if (conExperta) {
         const e = Criatura.desde({ ...estadoExperta, id: 2, x: 520, accion: null }, mezclar(semilla, 73, k));
         e.azar.s = mezclar(semilla, 74, k);
+        e.reiniciarReloj();
         e.capRegistro = 100000;
         e.nec[0] = 0.55;
         s.criaturas.push(e);
@@ -743,6 +745,7 @@ export const caso07b: Caso = {
       if (conExperta) {
         const e = Criatura.desde({ ...estadoExperta, id: 2, x: 520, accion: null }, mezclar(semilla, 76, k));
         e.azar.s = mezclar(semilla, 77, k);
+        e.reiniciarReloj();
         e.capRegistro = 100000;
         e.nec[0] = 0.55;
         s.criaturas.push(e);

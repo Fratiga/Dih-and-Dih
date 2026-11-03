@@ -3,7 +3,7 @@ import { Simulacion } from "../src/vida/nucleo/simulacion.ts";
 import { genomaNuevo, clonarGenoma, cruzar } from "../src/vida/nucleo/genoma.ts";
 import { AJ } from "../src/vida/nucleo/ajustes.ts";
 import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
-import { NI } from "../src/vida/nucleo/criatura.ts";
+import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
 import { C, NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
 import { ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
@@ -247,6 +247,29 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(hijo.generacion === 1 && pa.generacion === 0, "y su generacion es una mas que la de sus padres");
   const s2 = Simulacion.restaurar(JSON.parse(JSON.stringify(s.serializar())));
   afirma(s2.criaturas[2].padres.join() === hijo.padres.join(), "los padres se guardan");
+}
+
+// 7b. Meter una criatura vivida en una sala nueva: lo que mira no puede venir del reloj anterior
+{
+  const semilla = 61;
+  const g = genomaNuevo(semilla);
+  const vieja = nuevaSim({ semilla, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: g, x: 300 }], comedero: null });
+  vieja.criaturas[0].nec[0] = 0.5;
+  vieja.avanzar(600);
+  const est = vieja.criaturas[0].estado();
+  const mirada = (limpiar: boolean): number => {
+    const s = nuevaSim({ semilla: semilla + 1, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: genomaNuevo(semilla + 1), x: 300 }], comedero: null });
+    s.criaturas[0].nec[0] = 0.5;
+    const e = Criatura.desde({ ...est, id: 2, x: 520, accion: null }, 5);
+    if (limpiar) e.reiniciarReloj();
+    // Una huella de la experta con tiempo del futuro, como si viniera de una sala con 600 s vividos
+    else e.ultimoImpacto = { obj: 1, v: "empujar", t: 599, quien: 2 };
+    s.criaturas.push(e);
+    s.avanzar(120);
+    return s.criaturas[0].atencion?.t ?? 0;
+  };
+  afirma(mirada(false) < 130, "una atencion con tiempo futuro no se queda fijada en la criatura que mira (queda como mucho al reloj de la sala)");
+  afirma(mirada(true) < 130, "tras reiniciarReloj no queda nada del reloj anterior");
 }
 
 // 8. Los casos de exito del documento de diseno, con varias semillas y control

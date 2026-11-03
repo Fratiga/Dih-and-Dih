@@ -164,7 +164,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       let u = utilidad(res, p.dist, A.conf, p.esCriatura);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
       const at = c.atencion;
-      if (at && at.obj === p.id && at.v === v && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz) * (1 - AJ.habituacionMax * c.cansancioDe(p.id));
+      if (at && at.obj === p.id && at.v === v && env.t >= at.t && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz) * (1 - AJ.habituacionMax * c.cansancioDe(p.id));
       if (p.recordado) u -= 0.03 + 0.01 * (env.t - (c.mem.avist.find((a) => a.id === p.id)?.t ?? env.t)) / 60;
       if (act && act.v === v && act.obj === p.id) u += persistir;
       // Regla escrita a mano (apagable): ver sufrir a alguien con quien hay un vinculo hace acercarse a el, mas cuanto mas afecto
