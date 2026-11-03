@@ -165,6 +165,9 @@ export class Interfaz {
     for (const it of BANDEJA) this.bandeja.append(this.celdaBandeja(it));
     const ayuda = h("p", { clase: "va-bandeja-ayuda" }, "Arrastra un objeto a la sala. Para quitarlo, arrástralo de vuelta aquí abajo.");
     const pie = h("div", { clase: "va-pie" }, ayuda, this.bandeja);
+    // La bandeja tambien se pliega: la lengueta va dentro y se queda a la vista cuando el resto baja
+    const lenguetaPie = boton("Objetos", () => { const p_ = pie.classList.toggle("plegada"); lenguetaPie.classList.toggle("activa", !p_); }, { clase: "va-lengueta-pie activa", tip: "Mostrar u ocultar la lista de objetos" });
+    pie.prepend(lenguetaPie);
 
     // Lenguetas para plegar cada panel y dejar la sala despejada (en pantallas pequenas la memoria empieza plegada)
     const lengueta = (clase: string, texto: string, panel: HTMLElement, plegada: boolean): HTMLButtonElement => {

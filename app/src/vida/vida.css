@@ -230,3 +230,8 @@ button { font: inherit; color: inherit; }
 .va-ficha:not(.plegada) ~ .va-lengueta.izq { left: clamp(270px, 22vw, 350px); margin-left: 14px; }
 .va-memoria:not(.plegada) ~ .va-lengueta.der { right: clamp(270px, 22vw, 350px); margin-right: 14px; }
 .observando .va-lengueta { opacity: 0; pointer-events: none; }
+
+/* La bandeja de objetos tambien se pliega: baja y deja a la vista solo su lengueta */
+.va-lengueta-pie { min-height: 28px; padding: 2px 14px; font-size: 12px; letter-spacing: 0.12em; background: var(--panel); border-radius: 3px 3px 0 0; border-bottom: 0; margin-bottom: -6px; }
+.va-pie.plegada { transform: translate(-50%, calc(100% - 34px)); }
+.va-pie.plegada .va-lengueta-pie { margin-bottom: 0; }
