@@ -338,6 +338,44 @@ Condición técnica. La identidad de una criatura es permanente, esté o no cone
 
 Cada etapa llega con su caso en el laboratorio, con control y semillas múltiples, como el resto.
 
+## Casos propuestos 16 y 17: reconocimiento persistente y relaciones asimétricas
+
+Todavía no están construidos. Van antes del caso 15, que necesita que las criaturas recuerden a individuos concretos y no solo asocien algo grande con miedo.
+
+### Identidad y reconocimiento son cosas distintas
+
+- La **identidad global** es infraestructura. Dice qué criatura es, esté donde esté. Hoy los identificadores son números locales de cada sala (1000 más el id), así que hará falta uno global antes de llevar criaturas de una sala a otra o a Supabase.
+- El **reconocimiento** es conducta. Que otra criatura la haya aprendido a identificar por sus experiencias. Tener un identificador no regala familiaridad, apego ni confianza. Solo permite que los recuerdos mantengan su continuidad. El afecto, la preferencia y el rechazo se siguen ganando viviendo.
+
+Una observación sobre el código. Los vínculos y avistamientos se guardan hoy por identificador, que es una etiqueta perfecta. Una impostora de aspecto parecido nunca se confundiría con la original por esa vía. El caso 16 tiene que decir si el reconocimiento va solo por la etiqueta o también por lo que se percibe (aspecto, olor, voz), que es lo que se espera de un fenómeno de conducta.
+
+### Caso 16: rostros que regresan
+
+| Fase | Experimento |
+|---|---|
+| Convivencia | Dos criaturas de propietarios distintos se conocen |
+| Separación | Una abandona el entorno |
+| Intermedio | La que se queda convive con otras criaturas |
+| Reencuentro | Regresa la original, en la misma sala o en otra |
+| Control | Aparece una desconocida de aspecto parecido |
+
+Se mide el tiempo hasta acercarse o evitarla, la diferencia de conducta entre conocida y desconocida, la recuperación de asociaciones anteriores (lo que la conocida le hizo ganar o perder), la persistencia tras distintos periodos de separación y qué pasa si regresa a otro espacio. También el caso inverso. Que reconozca a alguien con quien tuvo una relación mala, para que el sistema no aprenda solo a recordar amistades.
+
+Se hace en el laboratorio, simulando el cambio de propietario y de sala, sin Supabase ni espacios públicos reales.
+
+### Caso 17: relaciones asimétricas
+
+Criaturas de propietarios distintos que desarrollan relaciones desiguales (A busca a B y B apenas presta atención a A), preferencias y rechazos aprendidos por individuo. Es la etapa 3 y 4 del espacio de convivencia.
+
+### Orden
+
+1. Caso 16, reconocimiento persistente.
+2. Caso 17, relaciones asimétricas.
+3. Caso 15, amenaza colectiva, intervención y memoria del enfrentamiento.
+4. Espacios públicos, con criaturas de historias independientes.
+
+Antes de nada, y sin ser requisito para seguir, queda la prueba de la placa dañina en el camino para el 08c, con varios niveles de daño y sin cambiar los pesos de decisión. Mide si la asociación aprendida puede imponerse a un coste real, no si hay comprensión causal.
+
 ## Caso propuesto 15: el monstruo y el sacrificio
 
 Todavía no está construido. Se registra aquí con las condiciones y lo que falta en el código para poder hacerlo. Pone a prueba a la vez reconocer una amenaza, interpretar el peligro de otras, decidir intervenir asumiendo un riesgo y conservar un recuerdo social de lo ocurrido.
@@ -411,6 +449,6 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
-5. El caso 15 (arriba) depende de la agresión entre criaturas y de la atribución de efectos a otras. Puede ir en paralelo a las etapas de convivencia, empezando por la agresión.
-6. Después, las etapas 1 a 5 del espacio de convivencia entre propietarios (arriba), empezando por el reconocimiento persistente (etapa 2), que es lo que más reutiliza lo ya medido en los casos 06 y 08b.
+5. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
+6. El caso 15 después, porque necesita esos recuerdos de individuos, la agresión entre criaturas y la atribución de efectos a otras. La agresión puede prepararse en paralelo.
 7. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
