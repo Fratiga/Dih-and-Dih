@@ -108,8 +108,8 @@ export class Interfaz {
       (v) => this.juego.fijarCamara(v as "panorama" | "seguir" | "cercano"),
       this.camaras,
     );
-    this.btnObservar = boton("Observar", () => this.alternarObservar(), { clase: "va-btn-lleno", tip: "Observar sin intervenir|Esconde los paneles y sigue a la criatura. Tecla O." });
-    this.btnSonido = boton("Sonido", () => this.juego.alternarSilencio(), { clase: "va-btn-ico", tip: "Sonido|Activa o silencia el audio. Tecla M." });
+    this.btnObservar = boton("Observar", () => this.alternarObservar(), { clase: "va-btn-lleno", tip: "Observar sin intervenir|Esconde los paneles y sigue a la criatura. Tecla D." });
+    this.btnSonido = boton("Sonido", () => this.juego.alternarSilencio(), { clase: "va-btn-ico", tip: "Sonido|Activa o silencia el audio. Tecla G." });
     const btnPantalla = boton("Pantalla", () => void this.pantallaCompleta(), { clase: "va-btn-ico", tip: "Pantalla completa|Tecla F." });
     const btnSalir = boton("Salir", () => { sonido.atras(); window.location.href = "../../minijuegos.html"; }, { clase: "va-btn-ico", tip: "Volver a los minijuegos", silencioso: true });
     const barra = h("header", { clase: "va-barra" },
@@ -134,7 +134,7 @@ export class Interfaz {
     this.tags = h("div", { clase: "va-tags" });
     this.radar = h("canvas", { clase: "va-radar", width: 440, height: 380 });
     const acciones = h("div", { clase: "va-acciones" },
-      boton("Premiar", () => this.premiar(), { clase: "va-btn-lleno", tip: "Premiar|Una caricia: lo último que hizo se le vuelve más agradable. Tecla P." }),
+      boton("Premiar", () => this.premiar(), { clase: "va-btn-lleno", tip: "Premiar|Una caricia: lo último que hizo se le vuelve más agradable. Tecla A." }),
       boton("Asustar", () => this.asustar(), { clase: "va-btn-alerta", tip: "Asustar|Un susto: lo último que hizo se le vuelve más desagradable. Tecla S." }),
     );
     this.ficha = h("aside", { clase: "va-panel va-ficha" },
@@ -274,12 +274,14 @@ export class Interfaz {
     else if (k === "1") this.velocidad(1);
     else if (k === "2") this.velocidad(4);
     else if (k === "3") this.velocidad(16);
-    else if (k === "o") this.alternarObservar();
-    else if (k === "m") j.alternarSilencio();
+    else if (k === "d") this.alternarObservar();
+    else if (k === "g") j.alternarSilencio();
     else if (k === "f") void this.pantallaCompleta();
     else if (k === "c") j.fijarCamara(j.ajustes.camara === "panorama" ? "seguir" : j.ajustes.camara === "seguir" ? "cercano" : "panorama");
-    else if (k === "tab") { e.preventDefault(); j.siguiente(); }
-    else if (k === "p") this.premiar();
+    else if (k === "e") j.siguiente();
+    else if (k === "q") j.anterior();
+    else if (k === "tab") { e.preventDefault(); if (e.shiftKey) j.anterior(); else j.siguiente(); }
+    else if (k === "a") this.premiar();
     else if (k === "s") this.asustar();
     else if (k === "escape") { this.escena.colocando = null; this.bandeja.querySelectorAll(".activa").forEach((q) => q.classList.remove("activa")); if (j.observar) j.alternarObservar(); }
   }
@@ -307,7 +309,7 @@ export class Interfaz {
     // Selector de criatura
     if (this.selector.childElementCount !== j.sim.criaturas.length) {
       this.selector.replaceChildren(...j.sim.criaturas.map((q) => {
-        const b = boton(h("span", {}, h("i", { clase: "va-punto", style: `background:hsl(${Math.round(q.huella * 360)},68%,58%)` }), q.nombre), () => j.seleccionar(q.id), { clase: "va-chip", silencioso: true, tip: "Ver a esta criatura|Tab cambia entre las dos." });
+        const b = boton(h("span", {}, h("i", { clase: "va-punto", style: `background:hsl(${Math.round(q.huella * 360)},68%,58%)` }), q.nombre), () => j.seleccionar(q.id), { clase: "va-chip", silencioso: true, tip: "Ver a esta criatura|Q y E (o Tab) cambian de criatura." });
         b.dataset.id = String(q.id);
         return b;
       }));

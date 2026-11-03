@@ -56,6 +56,11 @@ export class Juego {
     this.emit("seleccion", id);
   }
 
+  anterior(): void {
+    const ids = this.sim.criaturas.map((c) => c.id);
+    this.seleccionar(ids[(ids.indexOf(this.seleccion) - 1 + ids.length) % ids.length]);
+  }
+
   siguiente(): void {
     const ids = this.sim.criaturas.map((c) => c.id);
     this.seleccionar(ids[(ids.indexOf(this.seleccion) + 1) % ids.length]);
