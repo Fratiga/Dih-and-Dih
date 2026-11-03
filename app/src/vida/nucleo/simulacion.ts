@@ -54,6 +54,8 @@ export interface Legado {
   base: number[];
   episodios: string[];
   hijos: number;
+  padres: number[];
+  generacion: number;
 }
 
 export interface ResumenFueraDeLinea {
@@ -114,7 +116,7 @@ export class Simulacion {
     this.legado.push({
       id: c.id, nombre: c.nombre, dia: Math.floor(this.t / 1800) + 1, edadDias: Math.floor(c.edad / 1800) + 1, causa: c.causa || "de causas naturales",
       genoma: JSON.parse(JSON.stringify(c.genoma)), rasgos: c.rasgos.slice(), base: c.base.slice(),
-      episodios: c.mem.episodios.slice().sort((a, b) => Math.abs(b.val) - Math.abs(a.val)).slice(0, 4).map((e) => e.texto), hijos: 0,
+      episodios: c.mem.episodios.slice().sort((a, b) => Math.abs(b.val) - Math.abs(a.val)).slice(0, 4).map((e) => e.texto), hijos: 0, padres: c.padres.slice(), generacion: c.generacion,
     });
   }
 
@@ -134,6 +136,7 @@ export class Simulacion {
     hijo.mortalidad = this.mortalidad;
     hijo.capRegistro = a.capRegistro;
     hijo.padres = [a.id, b.id];
+    hijo.generacion = Math.max(a.generacion, b.generacion) + 1;
     this.criaturas.push(hijo);
     return hijo;
   }

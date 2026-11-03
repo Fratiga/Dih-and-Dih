@@ -22,9 +22,12 @@ export interface Cand {
 const M_LEJOS = [0, 0, 0, 0, 0, 1, 1, 0.4, 0, 0];
 const M_TODO = new Array<number>(D).fill(1);
 
-export function featuresCriatura(o: Criatura): number[] {
+/** Lo que se ve de otra criatura. El ruido y la postura de angustia (gritos, temblor, estar tendida) entran como el rasgo de "sonido":
+    es lo unico que se percibe de su estado, no su miedo ni su dolor reales. */
+export function featuresCriatura(o: Criatura, conAngustia = false): number[] {
   const t = o.genoma.cuerpo.tono;
-  return [0.6, o.genoma.cuerpo.tamano * 0.5, 0.5, acota(1 - (t - 100) / 160, 0.05, 0.95), acota((t - 100) / 160, 0.05, 0.95), 0.3, 0, acota(Math.abs(o.vx) / 140), 1, o.huella];
+  const angustia = !conAngustia ? 0 : acota(Math.max(o.emo[E.miedo], o.nec[N.dolor], o.incap >= 0 ? 1 : 0, o.t - o.ultimoDano < 3 ? 0.8 : 0));
+  return [0.6, o.genoma.cuerpo.tamano * 0.5, 0.5, acota(1 - (t - 100) / 160, 0.05, 0.95), acota((t - 100) / 160, 0.05, 0.95), 0.3, angustia, acota(Math.abs(o.vx) / 140), 1, o.huella];
 }
 
 export function featuresObjeto(o: { tipo: string; vx: number; vz: number }): number[] {
@@ -57,7 +60,7 @@ export function percibir(c: Criatura, env: Entorno): Percepto[] {
     if (o === c || !o.vivo) continue;
     const dist = Math.abs(o.x - c.x);
     if (dist > vista * 1.3) continue;
-    out.push({ id: 1000 + o.id, nombre: o.nombre, tipo: "criatura", esCriatura: true, x: o.x, dist, f: featuresCriatura(o), m: M_TODO, cerca: dist < 130, recordado: false });
+    out.push({ id: 1000 + o.id, nombre: o.nombre, tipo: "criatura", esCriatura: true, x: o.x, dist, f: featuresCriatura(o, c.estadosAjenos), m: M_TODO, cerca: dist < 130, recordado: false });
   }
   // Lo que recuerda y ahora no ve
   for (const a of c.mem.avist) {
@@ -163,9 +166,9 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (at && at.obj === p.id && at.v === v && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz);
       if (p.recordado) u -= 0.03 + 0.01 * (env.t - (c.mem.avist.find((a) => a.id === p.id)?.t ?? env.t)) / 60;
       if (act && act.v === v && act.obj === p.id) u += persistir;
-      // Ver sufrir a alguien con quien hay un vinculo hace acercarse a el (cuanto mas afecto, mas)
+      // Regla escrita a mano (apagable): ver sufrir a alguien con quien hay un vinculo hace acercarse a el, mas cuanto mas afecto
       const ay = c.ayuda;
-      if (ay && p.esCriatura && p.id === 1000 + ay.quien && env.t - ay.t < 12) {
+      if (c.ayudaInnata && ay && p.esCriatura && p.id === 1000 + ay.quien && env.t - ay.t < 12) {
         const af = c.mem.vinculos.find((q) => q.id === p.id)?.afecto ?? 0;
         u += (0.1 + 1.2 * af) * (1 - (env.t - ay.t) / 12) * (1 - 0.5 * miedoRaz);
       }

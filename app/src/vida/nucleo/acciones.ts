@@ -50,8 +50,23 @@ function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
     const otro = env.criaturas.find((o) => 1000 + o.id === a.obj);
     let calidad = 0.7;
     if (otro) calidad = acota(0.45 + 0.5 * otro.rasgos[R.sociabilidad] - 0.5 * Math.max(0, otro.rasgos[R.agresividad] - 0.55) - (otro.dormido ? 0.3 : 0));
+    // La compania de alguien conocido pesa mas que la de un extrano, y mucho mas cuando se esta alterado: acercarse a un amigo calma (amortiguacion social)
+    const afecto = c.mem.vinculos.find((q) => q.id === a.obj)?.afecto ?? 0;
     const res = resCero();
-    res[C.compania] = acota(a.comp * calidad);
+    if (!c.estadosAjenos) res[C.compania] = acota(a.comp * calidad);
+    else {
+    calidad = acota(calidad * (0.6 + 0.8 * afecto));
+    const alterada = Math.max(0, c.emo[E.miedo] - 0.1);
+    // Consolar a alguien querido que lo esta pasando mal tambien se vive como mas compania (una recompensa innata, no una orden)
+    const angustiaOtra = otro ? featuresCriatura(otro, true)[6] : 0;
+    res[C.compania] = acota(a.comp * calidad * (1 + 2 * alterada + (afecto > 0.2 ? 2.5 * angustiaOtra : 0)));
+    if (otro && afecto > 0.2 && alterada > 0.05) {
+      // Y consuela a los dos: el miedo baja en quien se acerca y en quien estaba mal
+      c.emo[E.miedo] *= 0.55;
+      otro.emo[E.miedo] *= 0.7;
+      otro.nec[N.dolor] *= 0.85;
+    }
+    }
     if (calidad < 0.25) { res[C.dano] = 0.1; res[C.susto] = 0.3; }
     c.experimentar(a, res, true, env);
     const v = c.mem.vinculo(a.obj, a.nombre);
@@ -119,7 +134,7 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
       }
       if (a.v === "acercarse") {
         const otro = env.criaturas.find((o) => 1000 + o.id === a.obj);
-        if (otro) a.f = featuresCriatura(otro);
+        if (otro) a.f = featuresCriatura(otro, c.estadosAjenos);
       }
     } else {
       const moviendo = objetivo && Math.abs(objetivo.vx) > 30;

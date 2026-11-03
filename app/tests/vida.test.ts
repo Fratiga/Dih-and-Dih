@@ -244,6 +244,7 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(pa.mem.protos.length > 0 && hijo.mem.protos.length === 0 && hijo.mem.episodios.length === 0, "el hijo nace sin recuerdos aunque los padres tengan muchos");
   afirma(JSON.stringify(hijo.rasgos) === JSON.stringify(hijo.genoma.rasgos), "y con el caracter de su genoma, no con el que los padres desarrollaron");
   afirma(hijo.padres.length === 2 && s.criaturas.length === 3, "nace en la sala con sus padres anotados");
+  afirma(hijo.generacion === 1 && pa.generacion === 0, "y su generacion es una mas que la de sus padres");
   const s2 = Simulacion.restaurar(JSON.parse(JSON.stringify(s.serializar())));
   afirma(s2.criaturas[2].padres.join() === hijo.padres.join(), "los padres se guardan");
 }

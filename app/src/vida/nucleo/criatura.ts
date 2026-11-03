@@ -87,6 +87,7 @@ export interface EstadoCriatura {
   causa: string;
   mortalidad: Mortalidad;
   padres: number[];
+  generacion: number;
   espera: number;
   proxDecision: number;
   forzar: boolean;
@@ -94,6 +95,9 @@ export interface EstadoCriatura {
   expuesto: Record<number, number>;
   atencion: Atencion | null;
   ultimoImpacto: Atencion | null;
+  ultimoContagio: number;
+  ayudaInnata: boolean;
+  estadosAjenos: boolean;
   ayuda: { quien: number; t: number } | null;
 }
 
@@ -142,7 +146,11 @@ export class Criatura {
   atencion: Atencion | null = null;
   /** Lo ultimo que hizo yo con un objeto, para que lo vean los demas. */
   ultimoImpacto: Atencion | null = null;
-  /** La ultima criatura que vio hacerse dano (para acercarse a ella si le importa). */
+  ultimoContagio = -99;
+  /** Regla escrita a mano: ver sufrir a alguien querido hace acercarse a el. Se puede apagar para probar si la conducta se aprende sola. */
+  ayudaInnata = true;
+  /** Experimental (caso 08b): percibe la angustia de otras criaturas como senal, se alarma con ella, y consolar a alguien querido se vive como mas compania. */
+  estadosAjenos = false;
   ayuda: { quien: number; t: number } | null = null;
   registro: Registro[] = [];
   capRegistro = 600;
@@ -154,6 +162,8 @@ export class Criatura {
   causa = "";
   /** De quien nacio (vacio si nacio del laboratorio). */
   padres: number[] = [];
+  /** 0 si nacio del laboratorio, y una mas que la de sus padres si nacio de una cria. */
+  generacion = 0;
   /** Ultimo vistazo a lo que penso al decidir, para mostrarlo. */
   ultimaDecision: { v: Verbo; tipo: string; u: number }[] = [];
 
@@ -419,10 +429,17 @@ export class Criatura {
   private mirarAOtros(env: Entorno): void {
     for (const o of env.criaturas) {
       if (o === this || !o.vivo) continue;
-      // Si otra criatura acaba de hacerse dano y esta a la vista, lo nota (el contagio del susto depende de su sensibilidad)
-      if (env.t - o.ultimoDano < 1.5 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3 && (!this.ayuda || this.ayuda.quien !== o.id || env.t - this.ayuda.t > 3)) {
-        this.ayuda = { quien: o.id, t: env.t };
+      // Contagio del susto: ver a otra criatura hacerse dano inquieta un poco (mas a quien es sensible). Es una reaccion biologica, no una conducta:
+      // lo que se hace con ese susto (acercarse, huir, ignorar) se aprende.
+      if (env.t - o.ultimoDano < 1.5 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3 && env.t - this.ultimoContagio > 3) {
+        this.ultimoContagio = env.t;
+        if (this.ayudaInnata) this.ayuda = { quien: o.id, t: env.t };
         this.emo[E.miedo] = acota(this.emo[E.miedo] + 0.06 + 0.1 * this.rasgos[R.sensibilidad]);
+        // Un sobresalto ajeno despierta la necesidad de compania (mas en quien se apega): es una necesidad, no una orden de acercarse a nadie
+        if (this.estadosAjenos) {
+          const cercania = this.mem.vinculos.find((q) => q.id === 1000 + o.id)?.afecto ?? 0;
+          this.nec[N.soledad] = acota(this.nec[N.soledad] + (0.05 + 0.25 * this.rasgos[R.apego]) + 0.35 * cercania);
+        }
         this.forzar = true;
       }
       if (!o.ultimoImpacto) continue;
@@ -608,8 +625,8 @@ export class Criatura {
       JSON.stringify({
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
-        dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ayuda: this.ayuda,
+        dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -636,6 +653,7 @@ export class Criatura {
     c.causa = e.causa ?? "";
     c.mortalidad = e.mortalidad ?? "protegida";
     c.padres = e.padres ? e.padres.slice() : [];
+    c.generacion = e.generacion ?? 0;
     c.espera = e.espera;
     c.proxDecision = e.proxDecision;
     c.forzar = e.forzar;
@@ -643,6 +661,9 @@ export class Criatura {
     c.expuesto = { ...e.expuesto };
     c.atencion = e.atencion ? { ...e.atencion } : null;
     c.ultimoImpacto = e.ultimoImpacto ? { ...e.ultimoImpacto } : null;
+    c.ultimoContagio = e.ultimoContagio ?? -99;
+    c.ayudaInnata = e.ayudaInnata ?? true;
+    c.estadosAjenos = e.estadosAjenos ?? false;
     c.ayuda = e.ayuda ? { ...e.ayuda } : null;
     return c;
   }

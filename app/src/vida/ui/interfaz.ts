@@ -154,7 +154,7 @@ export class Interfaz {
 
     /* --- Memoria --- */
     const pestanas = h("div", { clase: "va-pestanas" });
-    for (const [id, txt] of [["historia", "Historia"], ["sabe", "Lo que sabe"], ["conducta", "Conducta"], ["legado", "Legado"]] as const) {
+    for (const [id, txt] of [["historia", "Historia"], ["sabe", "Lo que sabe"], ["conducta", "Conducta"], ["linaje", "Linaje"], ["legado", "Legado"]] as const) {
       const b = boton(txt, () => { this.pestana = id; this.clavesMem = ""; pestanas.querySelectorAll("button").forEach((q) => q.classList.toggle("activa", q === b)); this.refrescarMemoria(true); }, { clase: id === "historia" ? "va-pest activa" : "va-pest" });
       pestanas.append(b);
     }
@@ -465,6 +465,25 @@ export class Interfaz {
           h("span", { clase: "va-ep-hora" }, `Día ${r.dia} · ${r.hora}`),
           h("p", {}, e.texto, e.n > 1 ? h("b", {}, ` ×${e.n}`) : null)));
       }
+    } else if (this.pestana === "linaje") {
+      // Arbol genealogico: las que nacieron del laboratorio arriba y sus crias debajo, con lo que heredaron
+      type Nodo = { id: number; nombre: string; gen: number; padres: number[]; viva: boolean; sens: number; cur: number };
+      const nodos = new Map<number, Nodo>();
+      for (const q of this.juego.sim.criaturas) nodos.set(q.id, { id: q.id, nombre: q.nombre, gen: q.generacion, padres: q.padres, viva: q.vivo, sens: q.genoma.rasgos[7], cur: q.genoma.rasgos[0] });
+      for (const l of this.juego.sim.legado) if (!nodos.has(l.id)) nodos.set(l.id, { id: l.id, nombre: l.nombre, gen: l.generacion, padres: l.padres, viva: false, sens: l.genoma.rasgos[7], cur: l.genoma.rasgos[0] });
+      const hijosDe = (id: number): Nodo[] => [...nodos.values()].filter((n) => n.padres[0] === id);
+      const raices = [...nodos.values()].filter((n) => !n.padres.length || !nodos.has(n.padres[0]));
+      const barra = (nombre: string, v: number): HTMLElement => h("div", { clase: "va-pensar" }, h("span", {}, nombre), h("div", { clase: "va-cap fino" }, h("i", { style: `--v:${Math.max(0.03, v)}` })));
+      const pintar = (n: Nodo, prof: number): void => {
+        const otro = n.padres.length > 1 ? nodos.get(n.padres[1])?.nombre : null;
+        lista.append(h("div", { clase: `va-ep ${n.viva ? "bueno" : "malo"}`, style: `margin-left:${prof * 16}px` },
+          h("span", { clase: "va-ep-hora" }, `Generación ${n.gen}${n.viva ? "" : " · murió"}`),
+          h("p", {}, n.padres.length ? `${n.nombre}, cría de ${nodos.get(n.padres[0])?.nombre ?? "?"}${otro ? ` y ${otro}` : ""}.` : `${n.nombre}, del laboratorio.`),
+          barra("Sensibilidad heredada", n.sens), barra("Curiosidad heredada", n.cur)));
+        for (const h_ of hijosDe(n.id)) pintar(h_, prof + 1);
+      };
+      if (nodos.size <= 1 && !this.juego.sim.criaturas.some((q) => q.padres.length)) lista.append(h("p", { clase: "va-vacio" }, "Todavía no ha nacido ninguna cría. Con el botón Criar, dos criaturas tienen una hija que hereda un poco de cada una, con alguna mutación pequeña."));
+      for (const r of raices) pintar(r, 0);
     } else if (this.pestana === "legado") {
       const leg = this.juego.sim.legado;
       if (!leg.length) lista.append(h("p", { clase: "va-vacio" }, "Todavía no ha muerto nadie. Con la mortalidad permanente, o si una criatura tendida no recibe cuidados, aquí queda lo que dejó."));
