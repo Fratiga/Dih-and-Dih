@@ -1,6 +1,8 @@
 import Phaser from "phaser";
-import { N, TOTAL, Tablero, type Celda, type Paso } from "../motor/tablero.ts";
+import { N, REGLAS, TOTAL, Tablero, type Celda, type Paso } from "../motor/tablero.ts";
 import { usarHabilidad } from "../motor/habilidades.ts";
+import { MotorLider, type Efecto } from "../motor/lider.ts";
+import { liderDe } from "../datos/lideres.ts";
 import { JEFES, type Jefe } from "../datos/campana.ts";
 import { personaje, personajesVisibles, type Personaje } from "../datos/roster.ts";
 import { fondoJefe } from "../arte/escenarios.ts";
@@ -12,6 +14,10 @@ import type { Hud } from "../ui/puzzle.ts";
 import { sinergia, type Sinergia } from "../datos/sinergias.ts";
 
 const DEPTH_TABLERO = 10;
+/** Cuanto hay que arrastrar (en casillas) para que la direccion quede fijada a una fila o a una columna. */
+const LANE_LOCK = 0.28;
+/** Lo que pierde por segundo el medidor del Stand Up cuando no se esta borrando nada. */
+const STAND_ROT = 0.012;
 
 export interface DatosPuzzle {
   jefe: number;
@@ -69,7 +75,16 @@ export class Puzzle extends Phaser.Scene {
   private hudAcum = 0;
   private temporizadoresJefe: number[] = [];
   private pendientesJefe: Array<() => Paso[]> = [];
-  private drag: { id: number; idx: number; ox: number; oy: number } | null = null;
+  private drag: { id: number; idx: number; ox: number; oy: number; px0: number; py0: number; cx0: number; cy0: number; lock: "h" | "v" | null } | null = null;
+  /** Ventana del combo: segundos que quedan para que el siguiente grupo lo siga sumando. */
+  private comboT = 0;
+  private comboVentana = 3;
+  private lider!: MotorLider;
+  private liderAtaque = 1;
+  private liderCarga = 1;
+  /** Bloques grandes que se quedan de pie durante el Stand Up Time, por id de ficha. */
+  private bloques = new Map<number, Phaser.GameObjects.Container>();
+  private standMax = 14;
   private ocupado = 0;
   private habilidades = 0;
   private standUsados = 0;
@@ -128,6 +143,11 @@ export class Puzzle extends Phaser.Scene {
     this.stand = 0; this.standT = 0; this.furiaT = 0; this.silencioT = 0; this.aturdirT = 0; this.rushT = 0;
     this.tiempoJugado = 0; this.habilidades = 0; this.standUsados = 0; this.fichasBorradas = 0;
     this.temporizadoresJefe = this.jefe.fases.map((f) => f.cada * 0.75);
+    this.comboT = 0;
+    this.lider = new MotorLider(liderDe(this.pj[0].id));
+    this.liderAtaque = 1;
+    this.liderCarga = 1;
+    this.bloques = new Map();
 
     this.panel = this.add.graphics().setDepth(DEPTH_TABLERO - 2);
     this.rayos = this.add.graphics().setDepth(DEPTH_TABLERO + 40);
@@ -146,12 +166,14 @@ export class Puzzle extends Phaser.Scene {
     this.events.once("shutdown", () => this.limpiar());
     this.hud.vida(this.vida, this.vidaMax);
     this.hud.tiempo(this.t, this.tMax);
-    this.hud.combo(0, 1);
+    this.hud.combo(0, 1, 0);
     this.hud.puntos(0);
-    this.hud.carga(0, 0);
-    this.hud.carga(1, 0);
+    this.hud.carga(0, 0, Math.ceil(this.cargaMax[0]));
+    this.hud.carga(1, 0, Math.ceil(this.cargaMax[1]));
     this.hud.stand(0, false, 0);
     this.hud.banner(this.jefe.nombre, "aviso", this.jefe.frase);
+    const l = this.lider.lider;
+    this.hud.lider(l ? l.nombre : "", l ? l.texto : "");
     this.fase = "jugando";
   }
 
@@ -316,7 +338,7 @@ export class Puzzle extends Phaser.Scene {
       if (!this.tablero.puedeMover(idx)) { sonido.invalido(); this.sacudir(c.id); return; }
       const s = this.sprites.get(c.id);
       if (!s) return;
-      this.drag = { id: c.id, idx, ox: s.cont.x - p.x, oy: s.cont.y - p.y };
+      this.drag = { id: c.id, idx, ox: s.cont.x - p.x, oy: s.cont.y - p.y, px0: p.x, py0: p.y, cx0: s.cont.x, cy0: s.cont.y, lock: null };
       s.cont.setDepth(DEPTH_TABLERO + 60);
       this.tweens.add({ targets: s.cont, scale: 1.14, duration: 90, ease: "Back.easeOut" });
       sonido.agarrar();
@@ -326,9 +348,23 @@ export class Puzzle extends Phaser.Scene {
       if (!d) return;
       const s = this.sprites.get(d.id);
       if (!s) return;
+      // Hasta que se recorre un poco, la ficha apenas se mueve. Despues queda atada a su fila o a su columna.
+      const dx = p.x - d.px0, dy = p.y - d.py0;
+      if (!d.lock && Math.max(Math.abs(dx), Math.abs(dy)) > this.celda * LANE_LOCK) d.lock = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
       const lim = this.celda * 0.4;
-      s.cont.setPosition(Phaser.Math.Clamp(p.x + d.ox, this.ox - lim, this.ox + this.lado + lim), Phaser.Math.Clamp(p.y + d.oy, this.oy - lim, this.oy + this.lado + lim));
-      const objetivo = this.celdaEn(p.x, p.y, true);
+      const fila = Math.floor(d.idx / N), col = d.idx % N;
+      let objetivo: number;
+      if (d.lock === "h") {
+        s.cont.setPosition(Phaser.Math.Clamp(p.x + d.ox, this.ox - lim, this.ox + this.lado + lim), this.centro(d.idx).y);
+        objetivo = fila * N + Phaser.Math.Clamp(Math.floor((p.x - this.ox) / this.celda), 0, N - 1);
+      } else if (d.lock === "v") {
+        s.cont.setPosition(this.centro(d.idx).x, Phaser.Math.Clamp(p.y + d.oy, this.oy - lim, this.oy + this.lado + lim));
+        objetivo = Phaser.Math.Clamp(Math.floor((p.y - this.oy) / this.celda), 0, N - 1) * N + col;
+      } else {
+        const q = this.centro(d.idx);
+        s.cont.setPosition(q.x + Phaser.Math.Clamp(dx, -this.celda * 0.25, this.celda * 0.25), q.y + Phaser.Math.Clamp(dy, -this.celda * 0.25, this.celda * 0.25));
+        return;
+      }
       let guard = 0;
       while (objetivo !== d.idx && guard++ < 8) {
         const cx = d.idx % N, cy = Math.floor(d.idx / N), tx = objetivo % N, ty = Math.floor(objetivo / N);
@@ -370,9 +406,7 @@ export class Puzzle extends Phaser.Scene {
     if (this.fase === "pausa" || this.terminada) return;
     const pasos = this.tablero.resolver(this.furiaT > 0 ? 1.5 : 1);
     if (pasos.length) await this.reproducir(pasos);
-    else this.tablero.reiniciarCombo(), this.hud.combo(0, 1);
-    this.tablero.reiniciarCombo();
-    this.hud.combo(0, 1);
+    this.armarCombo();
     this.despuesDeResolver();
   }
 
@@ -388,9 +422,15 @@ export class Puzzle extends Phaser.Scene {
     const pasos = this.tablero.tocarCaja(idx);
     await this.reproducir(pasos);
     this.ocupado--;
-    this.tablero.reiniciarCombo();
-    this.hud.combo(0, 1);
+    this.armarCombo();
     this.despuesDeResolver();
+  }
+
+  /* El combo sigue vivo mientras haya tiempo en su ventana. Cada grupo la reinicia. */
+  private armarCombo(): void {
+    const t = this.tablero;
+    if (t.combo > 0) { this.comboVentana = t.ventanaCombo(); this.comboT = this.comboVentana; }
+    this.hud.combo(t.combo, t.multCombo(), t.combo > 0 ? 1 : 0);
   }
 
   private async reproducir(pasos: Paso[]): Promise<void> {
@@ -512,50 +552,42 @@ export class Puzzle extends Phaser.Scene {
   private async pasoBorrar(p: Extract<Paso, { k: "borrar" }>): Promise<void> {
     const mayor = p.grupos.reduce((m, g) => Math.max(m, g.celdas.length), 0);
     this.mejorCombo = Math.max(this.mejorCombo, p.combo);
-    this.hud.combo(p.combo, p.mult);
+    this.hud.combo(p.combo, p.mult, 1);
+    this.comboT = this.comboVentana = Math.max(1.7, 3 - p.combo * 0.07);
+    for (const g of p.grupos) this.lider.alGrupo(g.celdas.length);
     // Cargas de las habilidades y del Stand Up
     let n = 0;
     for (const [tipo, k] of Object.entries(p.cargas)) {
       const t = Number(tipo);
       n += k;
-      for (const slot of [0, 1] as const) this.cargas[slot] = Math.min(this.cargaMax[slot], this.cargas[slot] + (t === slot ? k : k * 0.34));
+      for (const slot of [0, 1] as const) this.cargas[slot] = Math.min(this.cargaMax[slot], this.cargas[slot] + (t === slot ? k : k * REGLAS.cargaAjena) * this.liderCarga);
     }
     this.fichasBorradas += n;
-    this.cargas.forEach((c, i) => this.hud.carga(i as 0 | 1, c / this.cargaMax[i]));
+    this.cargas.forEach((c, i) => this.hud.carga(i as 0 | 1, c / this.cargaMax[i], Math.ceil(this.cargaMax[i] - c)));
     if (this.fase !== "stand") this.stand = Math.min(1, this.stand + (n / 42) * this.sin.stand);
     this.hud.stand(this.stand, this.fase === "stand", this.standT);
+    if (p.combo >= 2) this.texto(`${p.combo} combo`, this.ox + this.lado / 2, this.oy + this.celda * 0.4, p.combo >= 10 ? "#ffd23f" : "#ff4f9a", 0.9 + Math.min(0.9, p.combo * 0.05), true);
 
     if (this.fase === "stand" || this.tablero.modoStand) {
-      // En Stand Up Time las fichas no se borran: se levantan y se quedan en el tablero.
+      // En Stand Up Time las fichas no se borran: los grupos se juntan en un bloque grande y se quedan de pie.
       sonido.borrar(p.combo, mayor);
-      for (const id of p.golpeados) {
-        const idx = this.idxDe(id);
-        if (idx < 0) continue;
-        this.refrescar(this.tablero.celdas[idx]);
-        const s = this.sprites.get(id);
-        if (s) this.tweens.add({ targets: s.cont, scale: { from: 1.3, to: 1 }, angle: { from: -12, to: 0 }, duration: 260, ease: "Back.easeOut" });
-      }
+      this.standT = Math.min(this.standMax, this.standT + 0.9 * p.grupos.length);
+      const pliegues = p.grupos.map((g) => this.plegar(g, true));
       this.hud.banner(`Pozo ${Math.round(this.tablero.pozoStand)}`, "stand", `Cuadrados: ${this.tablero.cuadradosStand()}`);
-      await this.espera(240);
+      await Promise.all(pliegues);
       return;
     }
 
     sonido.borrar(p.combo, mayor);
-    // Resalte de los grupos antes de borrar
     const cuerpo: Promise<void>[] = [];
-    for (const g of p.grupos) {
-      const col = this.pj[g.tipo]?.color ?? "#ffffff";
-      const em = this.emisores[g.tipo];
-      let cx = 0, cy = 0;
-      g.ids.forEach((id) => { const s = this.sprites.get(id); if (s) { cx += s.cont.x; cy += s.cont.y; } });
-      cx /= g.ids.length; cy /= g.ids.length;
-      void col;
-      g.ids.forEach((id) => { const s = this.sprites.get(id); if (s && em) em.explode(3, s.cont.x, s.cont.y); });
-      if (g.celdas.length >= 4) this.texto(`${g.celdas.length}`, cx, cy, g.celdas.length >= 6 ? "#ffd23f" : "#ffffff", 0.5 + Math.min(0.5, g.celdas.length * 0.05));
-    }
+    for (const g of p.grupos) cuerpo.push(this.plegar(g, false));
+    // Lo que no es de un grupo (bloques rotos, fichas borradas por una habilidad) desaparece sin mas
+    const enGrupo = new Set(p.grupos.flatMap((g) => g.ids));
     for (const id of p.ids) {
+      if (enGrupo.has(id)) continue;
       const s = this.sprites.get(id);
       if (!s) continue;
+      this.emisores[Phaser.Math.Between(0, this.emisores.length - 1)]?.explode(3, s.cont.x, s.cont.y);
       cuerpo.push(this.tween({ targets: s.cont, scale: { from: 1.15, to: 0 }, angle: Phaser.Math.Between(-90, 90), alpha: 0, duration: 230, ease: "Back.easeIn" }));
     }
     for (const id of p.golpeados) {
@@ -568,7 +600,7 @@ export class Puzzle extends Phaser.Scene {
       const idx = this.idxDe(cj.id);
       if (idx >= 0) this.refrescar(this.tablero.celdas[idx]);
       const s = this.sprites.get(cj.id);
-      if (s) cuerpo.push(this.tween({ targets: s.cont, scale: { from: 1.6, to: 1 }, duration: 330, ease: "Bounce.easeOut" }));
+      if (s) cuerpo.push(this.tween({ targets: s.cont, scale: { from: 1.6, to: 1 }, duration: 330, ease: "Bounce.easeOut", delay: 380 }));
       sonido.caja();
     }
     if (mayor >= 6) this.cameras.main.shake(110, 0.004);
@@ -578,14 +610,79 @@ export class Puzzle extends Phaser.Scene {
     if (this.vida <= 0) return;
   }
 
+  /* ---------- bloques grandes ---------- */
+  private numColor(c: string): number {
+    return parseInt(c.slice(1), 16);
+  }
+
+  /** Las fichas del grupo se pliegan hacia su centro y una pieza grande las sustituye. Si no se queda, el bloque sale disparado hacia el jefe. */
+  private async plegar(g: Extract<Paso, { k: "borrar" }>["grupos"][number], quedarse: boolean): Promise<void> {
+    const col = this.pj[g.tipo]?.color ?? "#ffffff";
+    const cj = g.caja;
+    let cx = 0, cy = 0;
+    if (g.rect) { cx = this.ox + ((cj.x0 + cj.x1 + 1) / 2) * this.celda; cy = this.oy + ((cj.y0 + cj.y1 + 1) / 2) * this.celda; }
+    else { for (const i of g.celdas) { const q = this.centro(i); cx += q.x; cy += q.y; } cx /= g.celdas.length; cy /= g.celdas.length; }
+    const w = g.rect ? (cj.x1 - cj.x0 + 1) * this.celda : Math.sqrt(g.celdas.length) * this.celda * 1.04;
+    const h = g.rect ? (cj.y1 - cj.y0 + 1) * this.celda : w;
+    this.emisores[g.tipo]?.explode(4, cx, cy);
+    await Promise.all(g.ids.map((id) => {
+      const s = this.sprites.get(id);
+      if (!s) return Promise.resolve();
+      return this.tween({ targets: s.cont, x: cx, y: cy, scale: 0.7, duration: 150, ease: "Quad.easeIn" });
+    }));
+    const bloque = this.crearBloque(g.tipo, col, w, h, cx, cy);
+    if (quedarse) {
+      for (const id of g.ids) { const s = this.sprites.get(id); if (s) s.cont.setAlpha(0); this.bloques.set(id, bloque); }
+      return;
+    }
+    await this.espera(110);
+    await this.lanzarBloque(bloque, g.tipo);
+  }
+
+  private crearBloque(tipo: number, color: string, w: number, h: number, x: number, y: number): Phaser.GameObjects.Container {
+    const c = this.numColor(color);
+    const fondo = this.add.graphics();
+    fondo.fillStyle(c, 1); fondo.fillRoundedRect(-w / 2, -h / 2, w, h, Math.min(w, h) * 0.12);
+    fondo.fillStyle(0xffffff, 0.28); fondo.fillRoundedRect(-w / 2 + 6, -h / 2 + 6, w - 12, h * 0.32, Math.min(w, h) * 0.1);
+    fondo.lineStyle(7, 0x2a1545, 1); fondo.strokeRoundedRect(-w / 2, -h / 2, w, h, Math.min(w, h) * 0.12);
+    const aura = this.add.image(0, 0, "fx:brillo").setBlendMode(Phaser.BlendModes.ADD).setTint(c).setAlpha(0.8);
+    aura.setDisplaySize(w * 1.7, h * 1.7);
+    const clave = `chibi:${this.ids[tipo]}:poder`;
+    const arte = this.add.image(0, h * 0.05, this.textures.exists(clave) ? clave : `ficha:${this.ids[tipo]}`);
+    arte.setScale((Math.min(w, h) * 0.9) / Math.max(arte.width, arte.height));
+    const cont = this.add.container(x, y, [aura, fondo, arte]).setDepth(DEPTH_TABLERO + 45).setScale(0.55).setData("tipo", tipo);
+    this.tweens.add({ targets: cont, scale: 1, duration: 230, ease: "Back.easeOut" });
+    this.tweens.add({ targets: aura, alpha: { from: 0.5, to: 0.95 }, duration: 520, yoyo: true, repeat: -1 });
+    return cont;
+  }
+
+  private posJefe(): { x: number; y: number } {
+    const el = document.querySelector<HTMLElement>(".pt-jefe-retrato img");
+    if (el) { const r = el.getBoundingClientRect(); if (r.width > 0) return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+    return { x: this.ox + this.lado / 2, y: this.oy - this.celda };
+  }
+
+  /** El bloque grande se encoge y una bola de su color vuela hacia el jefe. */
+  private async lanzarBloque(bloque: Phaser.GameObjects.Container, tipo: number): Promise<void> {
+    const dest = this.posJefe();
+    const c = this.numColor(this.pj[tipo]?.color ?? "#ffffff");
+    const bola = this.add.image(bloque.x, bloque.y, "fx:brillo").setBlendMode(Phaser.BlendModes.ADD).setTint(c).setDepth(DEPTH_TABLERO + 55);
+    bola.setDisplaySize(this.celda * 1.1, this.celda * 1.1);
+    this.tweens.add({ targets: bloque, scale: 1.25, alpha: 0, duration: 240, ease: "Quad.easeOut", onComplete: () => bloque.destroy() });
+    await this.tween({ targets: bola, x: dest.x, y: dest.y, scale: bola.scale * 0.45, duration: 300, ease: "Quad.easeIn" });
+    this.emisores[tipo]?.explode(8, dest.x, dest.y);
+    bola.destroy();
+    this.hud.jefeGolpe();
+  }
+
   private golpearJefe(dano: number, combo: number): void {
     if (dano <= 0 || this.terminada) return;
     if (this.fase === "rush") { this.puntos += Math.round(dano * 2); this.hud.puntos(this.puntos); return; }
+    dano *= this.liderAtaque;
     this.vida = Math.max(0, this.vida - dano);
     this.puntos += Math.round(dano) + combo * 3;
     this.hud.vida(this.vida, this.vidaMax);
     this.hud.puntos(this.puntos);
-    this.hud.jefeGolpe();
     this.texto(`-${Math.round(dano)}`, this.ox + this.lado * (0.2 + Math.random() * 0.6), this.oy + this.celda * 0.2, "#ffffff", 0.7, true);
   }
 
@@ -598,24 +695,25 @@ export class Puzzle extends Phaser.Scene {
   private async pasoEstallar(p: Extract<Paso, { k: "estallar" }>): Promise<void> {
     sonido.estalla();
     this.destello(0xffffff, 0.8, 280);
+    const grandes = [...new Set(this.bloques.values())];
+    for (const b of grandes) this.tweens.add({ targets: b, scale: 1.2, duration: 120, yoyo: true });
     for (const id of p.ids) {
       const s = this.sprites.get(id);
-      if (!s) continue;
-      const idx = this.idxDe(id);
-      void idx;
-      this.tweens.add({ targets: s.cont, scale: 1.3, duration: 120, yoyo: true });
+      if (s && s.cont.alpha > 0) this.tweens.add({ targets: s.cont, scale: 1.3, duration: 120, yoyo: true });
     }
     await this.espera(260);
     const todos: Promise<void>[] = [];
     for (const id of p.ids) {
       const s = this.sprites.get(id);
       if (!s) continue;
-      this.emisores[Phaser.Math.Between(0, this.emisores.length - 1)]?.explode(4, s.cont.x, s.cont.y);
+      if (s.cont.alpha > 0) this.emisores[Phaser.Math.Between(0, this.emisores.length - 1)]?.explode(4, s.cont.x, s.cont.y);
       todos.push(this.tween({ targets: s.cont, scale: 0, alpha: 0, angle: Phaser.Math.Between(-180, 180), duration: 300, ease: "Back.easeIn" }));
     }
+    grandes.forEach((b, i) => { todos.push(this.espera(i * 90).then(() => this.lanzarBloque(b, b.getData("tipo") as number))); });
+    this.bloques.clear();
     this.cameras.main.shake(380, 0.012);
     this.golpearJefe(p.dano, 0);
-    this.texto(`¡${Math.round(p.dano)}!`, this.ox + this.lado / 2, this.oy + this.lado / 2, "#ffd23f", 1.6, true);
+    this.texto(`¡${Math.round(p.dano * this.liderAtaque)}!`, this.ox + this.lado / 2, this.oy + this.lado / 2, "#ffd23f", 1.6, true);
     if (p.cuadrados > 0) this.texto(`×${(1 + p.cuadrados * 0.5).toFixed(1)} cuadrados`, this.ox + this.lado / 2, this.oy + this.lado * 0.62, "#1ed7c8", 0.8);
     await Promise.all(todos);
     for (const id of p.ids) { this.sprites.get(id)?.cont.destroy(); this.sprites.delete(id); }
@@ -656,7 +754,7 @@ export class Puzzle extends Phaser.Scene {
     if (this.silencioT > 0) { sonido.invalido(); this.hud.banner("Silenciado", "aviso"); return; }
     const p = this.pj[slot];
     this.cargas[slot] = 0;
-    this.hud.carga(slot, 0);
+    this.hud.carga(slot, 0, Math.ceil(this.cargaMax[slot]));
     this.habilidades++;
     this.ocupado++;
     this.hud.habilidad(slot, p.nombre, p.habilidad.nombre);
@@ -669,12 +767,11 @@ export class Puzzle extends Phaser.Scene {
     if (e.furia) this.furiaT = e.furia.segundos;
     if (e.stand) this.stand = Math.min(1, this.stand + e.stand / 100);
     if (e.aturdir) this.aturdirT = e.aturdir;
-    if (e.combo) { this.tablero.combo += e.combo; this.hud.combo(this.tablero.combo, 1 + this.tablero.combo * 0.06); }
+    if (e.combo) { this.tablero.combo += e.combo; this.armarCombo(); }
     this.hud.stand(this.stand, false, 0);
     this.ocupado--;
     await this.reproducir(e.pasos);
-    this.tablero.reiniciarCombo();
-    this.hud.combo(0, 1);
+    this.armarCombo();
     this.hud.expresion(slot, "idle");
     this.despuesDeResolver();
   }
@@ -713,8 +810,7 @@ export class Puzzle extends Phaser.Scene {
     sonido.musica("puzzle");
     const pasos = this.tablero.salirStand();
     await this.reproducir(pasos);
-    this.tablero.reiniciarCombo();
-    this.hud.combo(0, 1);
+    this.armarCombo();
     if (this.fase === "resolviendo") this.fase = "jugando";
     this.despuesDeResolver();
   }
@@ -808,6 +904,7 @@ export class Puzzle extends Phaser.Scene {
   update(_t: number, dtMs: number): void {
     if (this.fase === "pausa" || this.terminada) return;
     const dt = dtMs / 1000;
+    this.tickLider(dt);
     if (this.fase === "stand") {
       this.standT -= dt;
       this.hudAcum += dt;
@@ -825,7 +922,19 @@ export class Puzzle extends Phaser.Scene {
     this.t -= dt;
     if (this.t <= 10 && this.t > 0) { this.relojAcum += dt; if (this.relojAcum >= 1) { this.relojAcum = 0; sonido.reloj(); } }
     this.hudAcum += dt;
-    if (this.hudAcum > 0.1) { this.hudAcum = 0; this.hud.tiempo(Math.max(0, this.t), this.tMax); }
+    if (this.hudAcum > 0.1) {
+      this.hudAcum = 0;
+      this.hud.tiempo(Math.max(0, this.t), this.tMax);
+      if (this.comboT > 0) this.hud.combo(this.tablero.combo, this.tablero.multCombo(), Math.max(0, this.comboT / this.comboVentana));
+      if (this.stand < 1 && this.stand > 0) this.hud.stand(this.stand, false, 0);
+    }
+    // La ventana del combo corre mientras no se esta resolviendo nada
+    if (this.comboT > 0 && this.ocupado === 0) {
+      this.comboT -= dt;
+      if (this.comboT <= 0) { this.comboT = 0; this.tablero.reiniciarCombo(); this.hud.combo(0, 1, 0); }
+    }
+    // El medidor del Stand Up se va perdiendo si nadie lo alimenta
+    if (this.stand > 0 && this.stand < 1 && this.comboT <= 0 && this.ocupado === 0) this.stand = Math.max(0, this.stand - dt * STAND_ROT);
     if (this.furiaT > 0) { this.furiaT -= dt; }
     if (this.silencioT > 0) { this.silencioT -= dt; if (this.silencioT <= 0) this.hud.silencio(false); }
     if (this.aturdirT > 0) { this.aturdirT -= dt; }
@@ -834,5 +943,45 @@ export class Puzzle extends Phaser.Scene {
       if (this.temporizadoresJefe[i] >= f.cada) { this.temporizadoresJefe[i] = 0; this.atacarJefe(i); }
     });
     if (this.t <= 0 && this.ocupado === 0 && !this.drag) { this.t = 0; void this.perder(); }
+  }
+
+  /* ---------- habilidad de lider ---------- */
+  private tickLider(dt: number): void {
+    const l = this.lider.lider;
+    if (!l) return;
+    const r = this.lider.actualizar(dt, { puntos: this.puntos, combo: this.tablero.combo, vidaFrac: this.vida / this.vidaMax, tiempoRestante: this.t, tiempoJugado: this.tiempoJugado, stand: this.fase === "stand" });
+    this.liderAtaque = r.ataque;
+    this.liderCarga = r.cargaMult;
+    if (r.recienActivo) this.hud.banner(l.nombre, "aviso", l.texto);
+    for (const e of r.unicos) this.aplicarEfectoLider(e);
+  }
+
+  private aplicarEfectoLider(e: Efecto): void {
+    const l = this.lider.lider;
+    if (!l) return;
+    this.hud.banner(l.nombre, "aviso", l.texto);
+    sonido.cargada();
+    switch (e.t) {
+      case "carga":
+        for (const slot of [0, 1] as const) { this.cargas[slot] = Math.min(this.cargaMax[slot], this.cargas[slot] + this.cargaMax[slot] * e.pct); this.hud.carga(slot, this.cargas[slot] / this.cargaMax[slot], Math.ceil(this.cargaMax[slot] - this.cargas[slot])); }
+        break;
+      case "tiempo":
+        this.t = Math.max(1, Math.min(this.tMax + 15, this.t + e.s));
+        this.hud.tiempo(this.t, this.tMax);
+        break;
+      case "stand":
+        if (this.fase !== "stand") { this.stand = Math.min(1, this.stand + e.pct); this.hud.stand(this.stand, false, 0); }
+        break;
+      case "combo":
+        this.tablero.combo += e.n;
+        this.armarCombo();
+        break;
+      case "convertir":
+        this.pendientesJefe.push(() => usarHabilidad(this.tablero, "convertirAzar", e.n, 0, l.nombre).pasos);
+        void this.ejecutarPendientesJefe();
+        break;
+      default:
+        break;
+    }
   }
 }

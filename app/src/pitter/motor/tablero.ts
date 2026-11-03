@@ -5,7 +5,9 @@
    - Tablero de 6x6 con fichas de personaje. Un grupo son fichas iguales que se tocan por un lado.
    - Un grupo de 4 o mas se borra. Un grupo de 6 o mas deja una Caja (tocarla borra cinco fichas en cruz).
    - Las fichas de arriba caen y las que faltan entran desde arriba. Cada borrado seguido sube el combo.
-   - El jugador arrastra una ficha: las que pisa se desplazan un hueco (se intercambian con ella). */
+   - El jugador arrastra una ficha por su fila o su columna: las que pisa se desplazan un hueco (se intercambian con ella).
+   - El combo vive en una ventana de tiempo: cada grupo la reinicia y cuando se acaba el combo se rompe.
+   - Un grupo hace mas dano cuanto mas grande es. Las fichas del grupo se juntan en un bloque grande (lo dibuja la escena). */
 
 export const N = 6;
 export const TOTAL = N * N;
@@ -15,8 +17,14 @@ export const REGLAS = {
   minCaja: 6,
   danoBase: 12,
   danoEquipo: 2, // por punto de ataque, solo en fichas del equipo
-  multPorCombo: 0.06,
-  multMaxCombo: 3,
+  multPorCombo: 0.07,
+  multMaxCombo: 3.2,
+  /** Segundos que dura la ventana del combo tras un grupo: baja un poco cuanto mas largo es el combo. */
+  ventanaBase: 3,
+  ventanaMin: 1.7,
+  ventanaPorCombo: 0.07,
+  /** Multiplicador del dano de un grupo segun su tamaño (indice = fichas del grupo). */
+  porTamano: [0, 0, 0, 0, 1, 1.18, 1.42, 1.7, 2, 2.35, 2.7],
   reforzada: 1.6,
   cargaAjena: 0.34,
   cargaReforzada: 1.5,
@@ -41,6 +49,10 @@ export interface Grupo {
   tipo: number;
   celdas: number[]; // indices
   ids: number[];
+  /** Rectangulo que envuelve al grupo: columnas y filas, inclusive. */
+  caja: { x0: number; y0: number; x1: number; y1: number };
+  /** Cierto si el grupo llena su rectangulo entero (es un bloque cuadrado o rectangular de verdad). */
+  rect: boolean;
 }
 
 export type Paso =
@@ -159,7 +171,10 @@ export class Tablero {
       }
       if (celdas.length >= REGLAS.minGrupo) {
         celdas.sort((p, q) => p - q);
-        out.push({ tipo: c.tipo, celdas, ids: celdas.map((k) => this.celdas[k].id) });
+        const xs = celdas.map((k) => k % N), ys = celdas.map((k) => Math.floor(k / N));
+        const caja = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+        const rect = (caja.x1 - caja.x0 + 1) * (caja.y1 - caja.y0 + 1) === celdas.length;
+        out.push({ tipo: c.tipo, celdas, ids: celdas.map((k) => this.celdas[k].id), caja, rect });
       }
     }
     return out;
@@ -186,8 +201,25 @@ export class Tablero {
     return d;
   }
 
-  private multCombo(): number {
+  multCombo(): number {
     return Math.min(REGLAS.multMaxCombo, 1 + this.combo * REGLAS.multPorCombo);
+  }
+
+  /** Cuanto dura la ventana del combo en este momento. */
+  ventanaCombo(): number {
+    return Math.max(REGLAS.ventanaMin, REGLAS.ventanaBase - this.combo * REGLAS.ventanaPorCombo);
+  }
+
+  /** Multiplicador por el tamaño de un grupo. */
+  multTamano(n: number): number {
+    const t = REGLAS.porTamano;
+    return t[Math.min(n, t.length - 1)] || 1;
+  }
+
+  private danoGrupo(g: Grupo, mult: number, furia: number): number {
+    let d = 0;
+    for (const i of g.celdas) d += this.danoDe(this.celdas[i]);
+    return d * this.multTamano(g.celdas.length) * mult * furia;
   }
 
   /** Borra todos los grupos, deja caer y rellena, y repite hasta que no quede ninguno. Devuelve los pasos para dibujarlos. */
@@ -212,9 +244,9 @@ export class Tablero {
     const ids: number[] = [];
     const cargas: Record<number, number> = {};
     for (const g of gs) {
+      dano += this.danoGrupo(g, mult, furia);
       for (const i of g.celdas) {
         const c = this.celdas[i];
-        dano += this.danoDe(c) * mult * furia;
         c.stand = true;
         ids.push(c.id);
         cargas[c.tipo] = (cargas[c.tipo] ?? 0) + (c.reforzada ? REGLAS.cargaReforzada : 1);
@@ -233,9 +265,9 @@ export class Tablero {
     const aBorrar = new Set<number>();
     const cajas: { id: number; idx: number }[] = [];
     for (const g of gs) {
+      dano += this.danoGrupo(g, mult, furia);
       for (const i of g.celdas) {
         const c = this.celdas[i];
-        dano += this.danoDe(c) * mult * furia;
         cargas[c.tipo] = (cargas[c.tipo] ?? 0) + (c.reforzada ? REGLAS.cargaReforzada : 1);
         aBorrar.add(i);
       }

@@ -42,14 +42,18 @@ Para verlo en local se sirve la raíz del repositorio (los datos se cargan con `
 
 ## Reglas del puzzle
 
-Verificadas en la [JoJo Wiki](https://jojowiki.com/JoJo's_Pitter-Patter_Pop!) y en Wikipedia. Todo está en `REGLAS` (`motor/tablero.ts`) para poder ajustarlo.
+Basadas en la [JoJo Wiki](https://jojowiki.com/JoJo's_Pitter-Patter_Pop!) y en el estudio de la estructura del juego original. Ver `docs/pitter-reglas-originales.md` para lo que se sabe, lo que se infiere y lo que no se puede saber. Los números están en `REGLAS` (`motor/tablero.ts`) y en `datos/lideres.ts` para poder ajustarlos.
 
-- Tablero de 6×6. Se arrastra una ficha y las que pisa se apartan un hueco. Al soltar, los grupos de **4 o más** fichas iguales que se tocan desaparecen. Las demás caen y entran fichas nuevas. Cada grupo seguido sube el combo.
+- Tablero de 6×6. Se arrastra una ficha y **en cuanto te mueves un poco queda atada a su fila o a su columna** (`LANE_LOCK` en `Puzzle.ts`). Las que pisa se apartan un hueco. Al soltar, los grupos de **4 o más** fichas iguales que se tocan se juntan y desaparecen.
+- **Bloque grande.** Las fichas de un grupo se pliegan hacia su centro y una sola pieza grande con el personaje las sustituye (rectángulo si el grupo lo llena, cuadrado equivalente si no). Después sale una bola hacia el jefe.
+- **Tamaño.** Un grupo grande hace más daño (`REGLAS.porTamano`).
+- **Combo con ventana de tiempo.** Cada grupo suma al combo y reinicia una barra (`REGLAS.ventanaBase`, baja un poco con el combo, mínimo `ventanaMin`). Si se acaba, el combo se rompe. La barra solo corre cuando no se está resolviendo nada.
 - Un grupo de **6 o más** deja una Caja: al tocarla borra cinco fichas en cruz.
-- Cada personaje tiene una habilidad (16 hechas a mano, `datos/roster.ts` y `motor/habilidades.ts`) que se carga con sus fichas.
-- **Stand Up Time:** cuando el medidor se llena, el tiempo se para y los grupos se quedan de pie en el tablero. Al acabar estallan todos juntos, y cada cuadrado de 2×2 de fichas de pie multiplica el daño.
+- **Habilidad activa.** Cada personaje del equipo tiene una (16 hechas a mano, `datos/roster.ts` y `motor/habilidades.ts`). Se carga con las fichas **de ese personaje** que se borran (las de otros cargan menos) y se lanza **con el botón** (Q y W). Junto a cada medidor pone cuántas fichas faltan.
+- **Habilidad de líder.** La del primero del equipo salta **sola** al cumplirse su condición (`motor/lider.ts`, `datos/lideres.ts`). Hay condiciones que se mantienen (siempre, durante el Stand Up, poco tiempo, jefe herido) y otras que saltan una vez (al empezar, cada cierto tiempo, cada tantos puntos, al llegar a un combo, con un grupo grande). Los efectos son subir el daño, cargar los medidores, ganar tiempo, subir el Stand Up, sumar combo o convertir fichas.
+- **Stand Up Time.** El medidor se llena al borrar fichas y **se va perdiendo** si nadie lo alimenta. Al llenarse empieza solo. El reloj se para. Los grupos **no desaparecen**: se quedan de pie como bloques grandes y cada uno da unos segundos más (`standMax`). Al acabar atacan todos a la vez, y cada cuadrado de 2×2 multiplica el daño.
 - Los jefes (`datos/campana.ts`) son criaturas del bestiario público, no los enemigos de las fichas del DM. Cada uno estropea el tablero a su manera: bloques, fichas congeladas o fichas con tinta.
-- **No está comprobado:** la regla exacta de movimiento del original. Las fuentes dicen que se puede coger cualquier ficha y moverla libremente, pero no cómo se desplazan las demás. Se eligió el arrastre con desplazamiento (como en Puzzle & Dragons). Es lo primero que conviene afinar si no se parece.
+- **Lo que aún no está:** habilidad pasiva de cada personaje, el Rush final, piezas especiales (bombas con forma, burbujas, cristales) y mover mientras el tablero aún está resolviendo. Los números son a ojo, no los del original.
 
 ## Quién ve qué
 

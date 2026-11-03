@@ -40,7 +40,7 @@ function borrarIndices(t: Tablero, idxs: number[]): Paso[] {
   const unicos = [...new Set(idxs)].filter((i) => t.celdas[i]);
   if (!unicos.length) return [];
   t.combo += 1;
-  const mult = Math.min(REGLAS.multMaxCombo, 1 + t.combo * REGLAS.multPorCombo);
+  const mult = t.multCombo();
   let dano = 0;
   const ids: number[] = [];
   const rotos: number[] = [];

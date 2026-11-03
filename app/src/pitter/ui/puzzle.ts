@@ -1,6 +1,6 @@
 import type { Pantalla, Shell } from "../shell.ts";
 import { boton, h, modal, esperar } from "./base.ts";
-import { AFINIDADES, RAREZAS, personaje, type Personaje } from "../datos/roster.ts";
+import { AFINIDADES, personaje, type Personaje } from "../datos/roster.ts";
 import { JEFES, type Jefe } from "../datos/campana.ts";
 import { arteGlobal, EXPRESIONES, type Expresion } from "../arte/chibis.ts";
 import { sonido } from "../audio/audio.ts";
@@ -25,9 +25,12 @@ export interface Resultado {
 export interface Hud {
   tiempo(s: number, max: number): void;
   vida(hp: number, max: number): void;
-  combo(n: number, mult: number): void;
+  /** frac es lo que queda de la ventana del combo (de 0 a 1). */
+  combo(n: number, mult: number, frac?: number): void;
   puntos(p: number): void;
-  carga(slot: 0 | 1, frac: number): void;
+  /** restan: cuantas fichas del personaje faltan para llenar el medidor. */
+  carga(slot: 0 | 1, frac: number, restan?: number): void;
+  lider(nombre: string, texto: string): void;
   stand(frac: number, activo: boolean, restante: number): void;
   banner(texto: string, tipo: "stand" | "aviso" | "rush" | "victoria" | "derrota", sub?: string): void;
   silencio(activo: boolean): void;
@@ -70,23 +73,24 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
   raiz.append(barra(shell, { titulo: null, extra: [h("span", { clase: "pt-chip" }, `Jefe ${datos.jefe + 1} de ${JEFES.length}`)] }));
 
   /* --- el equipo, en una fila bajo el tablero como en el original --- */
-  const cartas: { el: HTMLElement; img: HTMLImageElement; carga: HTMLElement[]; btn: HTMLButtonElement }[] = [];
+  const cartas: { el: HTMLElement; img: HTMLImageElement; carga: HTMLElement[]; btn: HTMLButtonElement; restan: HTMLElement }[] = [];
   const equipoFila = h("div", { clase: "pt-equipo-fila" });
   equipo.forEach((p, i) => {
     const img = h("img", { src: urlChibi(p.id), alt: p.nombre, clase: "chibi" });
     const segs = [h("i"), h("i"), h("i")];
+    const restan = h("span", { clase: "pt-restan", "data-tip": "Fichas de este personaje que faltan para llenar el medidor" }, "");
     const btn = boton(h("span", {}, "¡", p.habilidad.nombre, "!"), () => { shell.juego?.events.emit("pt:habilidad", i); }, { color: i === 0 ? "rosa" : "turquesa", deshabilitado: true, silencioso: true, tip: `${p.habilidad.nombre}|${p.habilidad.texto}` });
     btn.append(h("kbd", {}, i === 0 ? "Q" : "W"));
     const el = h("div", { clase: `pt-eq-carta slot${i}`, style: `--col:${p.color}` },
       h("div", { clase: "pt-eq-retrato" }, img, h("span", { clase: "pt-eq-afin", "data-tip": `${AFINIDADES[p.afinidad].nombre}|${AFINIDADES[p.afinidad].texto}` }, AFINIDADES[p.afinidad].nombre)),
       h("div", { clase: "pt-eq-col" },
-        h("div", { clase: "pt-eq-nombre" }, h("b", {}, p.nombre), h("span", { clase: "rareza" }, RAREZAS[p.rareza].nombre)),
+        h("div", { clase: "pt-eq-nombre" }, h("b", {}, p.nombre), restan),
         h("div", { clase: "pt-medidor", "aria-label": "Carga de la habilidad" }, ...segs),
         btn,
       ),
     );
     equipoFila.append(el);
-    cartas.push({ el, img, carga: segs, btn });
+    cartas.push({ el, img, carga: segs, btn, restan });
   });
 
   /* --- centro, de arriba abajo como en el original: el jefe, el reloj, el tablero (hueco que dibuja el lienzo) y el equipo --- */
@@ -108,14 +112,19 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
   const puntosNum = h("b", {}, "0");
   const comboNum = h("b", {}, "0");
   const comboMult = h("small", {}, "×1,0");
+  const comboBarraI = h("i");
+  const comboBarra = h("div", { clase: "pt-combo-barra", "aria-label": "Tiempo que le queda al combo" }, comboBarraI);
+  const liderNombre = h("b", {}, "");
+  const liderTexto = h("p", {}, "");
   const standRelleno = h("i");
   const standTexto = h("small", {}, "Llénalo borrando fichas");
   const silenciado = h("div", { clase: "pt-silencio", hidden: true }, "Silenciado");
   const centro = h("main", { clase: "pt-puz-centro pt-nada" }, jefeCard, reloj, h("div", { id: "pt-zona-tablero", clase: "pt-zona pt-nada" }), equipoFila);
   const izq = h("aside", { clase: "pt-puz-izq" },
     h("div", { clase: "pt-card pt-marcador" }, h("small", {}, "Puntos"), puntosNum),
-    h("div", { clase: "pt-card pt-combo" }, h("small", {}, "Combo"), comboNum, comboMult),
-    h("div", { clase: "pt-card pt-objetivo" }, h("small", {}, "Cómo se juega"), h("p", {}, "Arrastra una ficha y las demás se apartan. Junta 4 o más iguales; con 6 o más sale una Caja.")),
+    h("div", { clase: "pt-card pt-combo" }, h("small", {}, "Combo"), comboNum, comboMult, comboBarra),
+    h("div", { clase: "pt-card pt-lider" }, h("small", {}, "Habilidad de líder"), liderNombre, liderTexto),
+    h("div", { clase: "pt-card pt-objetivo" }, h("small", {}, "Cómo se juega"), h("p", {}, "Arrastra una ficha por su fila o su columna. Junta 4 o más iguales; con 6 o más sale una Caja.")),
   );
   const der = h("aside", { clase: "pt-puz-der" },
     h("div", { clase: "pt-card pt-stand" }, h("div", { clase: "pt-stand-cab" }, h("b", {}, "Stand Up Time"), standTexto), h("div", { clase: "pt-stand-barra" }, standRelleno)),
@@ -150,9 +159,11 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
 
   function ayuda(): void {
     const m = modal(shell.raiz, "Cómo se juega", h("div", { clase: "pt-pausa" },
-      h("p", {}, "Arrastra una ficha por el tablero: las demás se apartan a su paso. Al soltarla, los grupos de 4 o más fichas iguales que se tocan desaparecen y hacen daño al jefe."),
+      h("p", {}, "Arrastra una ficha: en cuanto te mueves un poco queda atada a su fila o a su columna, y las demás se apartan a su paso. Al soltarla, los grupos de 4 o más fichas iguales que se tocan se juntan en un bloque grande y le hacen daño al jefe. Cuanto más grande es el grupo, más daño."),
+      h("p", {}, "Cada grupo seguido sube el combo y reinicia su tiempo. Si la barra se acaba, el combo se rompe."),
       h("p", {}, "Los grupos de 6 o más dejan una Caja. Tócala para borrar cinco fichas en cruz."),
-      h("p", {}, "Cada personaje del equipo tiene una habilidad que se carga con sus propias fichas (Q y W). Cuando el Stand Up Time se llena, el tiempo se para y las fichas que juntes se quedan de pie: los cuadrados de 2×2 multiplican el estallido final."),
+      h("p", {}, "Cada personaje del equipo tiene una habilidad que se carga con sus propias fichas. Cuando está lista, púlsala (Q y W). La habilidad de líder, la del primero del equipo, salta sola al cumplirse su condición."),
+      h("p", {}, "Cuando el medidor del Stand Up Time se llena, empieza solo. El tiempo se para y los grupos no desaparecen: se quedan de pie, y cada uno da unos segundos más. Al acabar atacan todos a la vez. Los cuadrados de 2×2 multiplican el daño."),
     ), { botones: [boton("Entendido", () => m.cerrar(), { color: "amarillo" })] });
   }
 
@@ -175,7 +186,8 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
       vidaRelleno.style.width = `${Math.max(0, (hp / max) * 100)}%`;
       vidaTexto.textContent = `${Math.ceil(hp)} / ${max}`;
     },
-    combo(n, mult) {
+    combo(n, mult, frac = 1) {
+      comboBarraI.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
       comboNum.textContent = String(n);
       comboMult.textContent = `×${mult.toFixed(1).replace(".", ",")}`;
       comboNum.parentElement?.classList.toggle("activo", n > 0);
@@ -183,8 +195,14 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
       comboPrev = n;
     },
     puntos(p) { puntosNum.textContent = String(Math.round(p)); },
-    carga(slot, frac) {
+    lider(nombre, texto) {
+      liderNombre.textContent = nombre;
+      liderTexto.textContent = texto;
+      liderNombre.parentElement?.classList.toggle("vacio", !nombre);
+    },
+    carga(slot, frac, restan) {
       const c = cartas[slot];
+      if (restan !== undefined) c.restan.textContent = frac >= 0.999 ? "¡Lista!" : `faltan ${restan}`;
       const f = Math.max(0, Math.min(1, frac));
       c.carga.forEach((s, i) => { s.style.setProperty("--p", `${Math.max(0, Math.min(1, f * 3 - i)) * 100}%`); });
       const lista = f >= 0.999;
