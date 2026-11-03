@@ -207,9 +207,17 @@ export class SalaVista {
     this.scene.tweens.add({ targets: t, y: t.y - 30, alpha: 0, duration: 900, delay: 1100, onComplete: () => t.destroy() });
   }
 
+  /* En la pantalla de habitacion (dialogos) los personajes no sueltan frases por su cuenta: solo hablan cuando se entra en ella (hablar).
+     En el menu no hay ni globos. */
   private tira(g: Habitante, texto: string): void {
-    if (this.dialogos) this.emitir?.("pt:tira", { id: g.id, texto });
-    else this.globo(g, texto);
+    if (this.dialogos) return;
+    this.globo(g, texto);
+  }
+
+  /** Una frase suelta de un residente. lado es 0 si el retrato va a la izquierda y 1 si va a la derecha. */
+  hablar(id: string, texto: string): void {
+    const lado = Math.max(0, this.gente.findIndex((g) => g.id === id)) % 2;
+    this.emitir?.("pt:tira", { id, texto, lado });
   }
 
   private de(tipo: DefMueble["interaccion"]): Pieza[] {

@@ -42,26 +42,38 @@ export function pantallaHabitaciones(shell: Shell, datos: unknown): Pantalla {
   const btnCambiar = boton("Cambiar", () => cambiarHabitacion(), { color: "amarillo", tip: "Pasa a la siguiente habitación" });
   const fila = h("div", { clase: "pt-hab-fila" }, btnVolver, btnFav, btnReg, btnRedec, btnCon, btnCambiar);
 
-  /* --- tira de dialogo, con los dientes de sierra del original --- */
+  /* --- tira de dialogo: una cinta de papel rasgado, algo torcida, con el retrato asomando por un lado --- */
   const tira = h("div", { clase: "pt-tira", hidden: true });
   let tiraT = 0;
-  const dientes = (n: number): string => {
+  /* Un borde rasgado distinto cada vez: puntos a lo largo de arriba y de abajo con un pequeño desplazamiento al azar. */
+  const rasgado = (): string => {
+    const n = 34;
     const arriba: string[] = [], abajo: string[] = [];
-    for (let i = 0; i <= n; i++) { const x = (i / n) * 100; arriba.push(`${x}% ${i % 2 ? 0 : 14}%`); abajo.push(`${100 - x}% ${i % 2 ? 100 : 86}%`); }
-    return `polygon(${arriba.join(",")},${abajo.join(",")})`;
+    for (let i = 0; i <= n; i++) {
+      const x = (i / n) * 100;
+      arriba.push(`${x.toFixed(1)}% ${(Math.random() * 9 + 1).toFixed(1)}%`);
+      abajo.push(`${(100 - x).toFixed(1)}% ${(100 - Math.random() * 9 - 1).toFixed(1)}%`);
+    }
+    return `polygon(0% 12%,${arriba.join(",")},100% 88%,${abajo.join(",")})`;
   };
-  tira.style.clipPath = dientes(40);
   const mostrarTira = (d: unknown): void => {
-    const { id, texto } = d as { id: string; texto: string };
+    const { id, texto, lado } = d as { id: string; texto: string; lado?: number };
     const p = personaje(id);
     if (!p) return;
-    tira.replaceChildren(h("img", { src: urlRetrato(id), alt: "" }), h("span", {}, h("small", {}, p.nombre), h("b", {}, texto)));
+    const cinta = h("div", { clase: "pt-cinta" }, h("small", {}, p.nombre), h("b", {}, texto));
+    cinta.style.clipPath = rasgado();
+    const retrato = h("img", { clase: "pt-tira-retrato", src: urlRetrato(id), alt: "" });
+    tira.className = `pt-tira ${lado === 1 ? "der" : "izq"}`;
+    tira.style.setProperty("--giro", `${(lado === 1 ? 1 : -1) * (1 + Math.random() * 1.5)}deg`);
+    tira.replaceChildren(cinta, retrato);
     tira.hidden = false;
+    const dur = Math.min(6500, 2400 + texto.length * 55);
+    tira.style.setProperty("--dur", `${dur}ms`);
     tira.classList.remove("entra");
     tira.getBoundingClientRect();
     tira.classList.add("entra");
     window.clearTimeout(tiraT);
-    tiraT = window.setTimeout(() => { tira.hidden = true; }, 2600);
+    tiraT = window.setTimeout(() => { tira.hidden = true; }, dur);
   };
   shell.juego?.events.on("pt:tira", mostrarTira);
 

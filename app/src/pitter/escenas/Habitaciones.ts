@@ -7,6 +7,8 @@ import { sonido } from "../audio/audio.ts";
 import type { Shell } from "../shell.ts";
 import { medir } from "./medidas.ts";
 import { SalaVista, type Pieza } from "./salaVista.ts";
+import { fraseDeEntrada } from "../datos/dialogos.ts";
+import { personaje } from "../datos/roster.ts";
 
 /* La pantalla de una habitacion, como en el original: el mismo edificio visto de cerca, con la habitacion en perspectiva en el centro.
    Los personajes viven aqui, y al decorar se pueden arrastrar los muebles. */
@@ -43,6 +45,7 @@ export class Habitaciones extends Phaser.Scene {
     this.guia = this.add.graphics().setDepth(520);
     this.chispas = this.add.particles(0, 0, "fx:estrella", { emitting: false, speed: { min: 60, max: 220 }, scale: { start: 0.3, end: 0 }, alpha: { start: 1, end: 0 }, lifespan: 600, gravityY: 120, blendMode: "ADD" }).setDepth(600);
     this.montar();
+    this.saludar();
     this.alEscuchar("pt:hab", (cfg) => this.configurar(cfg as { indice?: number; editar?: boolean; refrescar?: boolean }));
     this.alEscuchar("pt:hab-nuevo", (id) => this.anadir(String(id)));
     this.alEscuchar("pt:foto", () => this.foto());
@@ -72,8 +75,26 @@ export class Habitaciones extends Phaser.Scene {
     this.aplicarEdicion();
   }
 
+  /* Al entrar en una habitacion habla uno solo de sus residentes, una vez. */
+  private saludar(): void {
+    const hab = this.hab();
+    const ids = hab.residentes.filter((id) => personaje(id));
+    if (!ids.length) return;
+    const quien = ids[Math.floor(Math.random() * ids.length)];
+    const p = personaje(quien);
+    const otroId = ids.find((id) => id !== quien);
+    const otro = otroId ? personaje(otroId) : undefined;
+    if (!p) return;
+    const texto = fraseDeEntrada({
+      hablante: { id: quien, nombre: p.nombre.split(" ")[0] },
+      otro: otro ? { id: otro.id, nombre: otro.nombre.split(" ")[0] } : undefined,
+      muebles: hab.muebles.map((m) => m.id),
+    });
+    this.time.delayedCall(900, () => { if (this.sala) this.sala.hablar(quien, texto); });
+  }
+
   private configurar(c: { indice?: number; editar?: boolean; refrescar?: boolean }): void {
-    if (c.indice !== undefined) { this.indice = Math.max(0, Math.min(this.shell.estado.habitaciones.length - 1, c.indice)); this.editando = false; this.montar(); }
+    if (c.indice !== undefined) { this.indice = Math.max(0, Math.min(this.shell.estado.habitaciones.length - 1, c.indice)); this.editando = false; this.montar(); this.saludar(); }
     if (c.refrescar) this.montar();
     if (c.editar !== undefined) { this.editando = c.editar; this.sala?.pausarVida(this.editando); this.aplicarEdicion(); }
   }
