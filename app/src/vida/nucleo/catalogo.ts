@@ -37,6 +37,7 @@ export interface TipoObjeto {
 export const CATALOGO: Record<string, TipoObjeto> = {
   fruta: { id: "fruta", nombre: "fruta azul", gen: "f", f: [0.75, 0.35, 0.45, 0.15, 0.35, 0.75, 0], masa: 0.6, nutri: 0.55, toxico: 0, porciones: 2, efecto: 0.1 },
   baya: { id: "baya", nombre: "baya roja", gen: "f", f: [0.6, 0.25, 0.5, 0.85, 0.1, 0.55, 0], masa: 0.5, nutri: 0.2, toxico: 0.3, porciones: 1, efecto: 0.1 },
+  pelota_pesada: { id: "pelota_pesada", nombre: "pelota pesada", gen: "f", f: [0.95, 0.45, 0.6, 0.5, 0.65, 0.05, 0.1], masa: 1.6, nutri: 0, toxico: 0, porciones: 0, efecto: 0.55 },
   pelota: { id: "pelota", nombre: "pelota", gen: "f", f: [0.95, 0.45, 0.6, 0.5, 0.65, 0.05, 0.1], masa: 0.6, nutri: 0, toxico: 0, porciones: 0, efecto: 0.55 },
   bola_fija: { id: "bola_fija", nombre: "bola atornillada", gen: "f", f: [0.95, 0.45, 0.6, 0.5, 0.65, 0.05, 0], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0 },
   palanca: { id: "palanca", nombre: "palanca", gen: "f", f: [0.1, 0.7, 0.7, 0.55, 0.3, 0, 0.2], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.3, maquina: { retardo: 1.5, produce: "granulo", enfria: 6, distancia: 80 } },

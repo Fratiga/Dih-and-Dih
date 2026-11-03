@@ -156,6 +156,7 @@ export function crearObjetos(): Record<string, Sprite> {
     fruta: fruta(),
     baya: baya(),
     pelota: pelota(),
+    pelota_pesada: pelota(),
     bola_fija: bolaFija(),
     palanca: palancaCuerpo(false),
     palanca_rota: palancaCuerpo(true),

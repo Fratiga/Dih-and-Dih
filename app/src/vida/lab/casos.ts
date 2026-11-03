@@ -412,9 +412,9 @@ export const caso13: Caso = {
 /* ---------------------------------------------------------------------------------------------------------------- */
 
 /** Pulsaciones sobre la pelota, ordenadas en el tiempo, con quien las hizo. */
-function empujones(cs: { id: number; registro: Registro[] }[], desde: number): { t: number; id: number }[] {
+function empujones(cs: { id: number; registro: Registro[] }[], desde: number, tipo = "pelota"): { t: number; id: number }[] {
   const out: { t: number; id: number }[] = [];
-  for (const c of cs) for (const r of c.registro) if (r.kind === "impacto" && r.v === "empujar" && r.tipo === "pelota" && r.t >= desde) out.push({ t: r.t, id: c.id });
+  for (const c of cs) for (const r of c.registro) if (r.kind === "impacto" && r.v === "empujar" && r.tipo === tipo && r.t >= desde) out.push({ t: r.t, id: c.id });
   return out.sort((a, b) => a.t - b.t);
 }
 
@@ -430,6 +430,19 @@ export function turnos(seq: { t: number; id: number }[], ventana = 8): { alterna
     if (seq[i].id !== seq[i - 1].id) { alternan++; racha++; mejor = Math.max(mejor, racha); } else racha = 0;
   }
   return { alternan, pares, racha: mejor };
+}
+
+/** Cuanto tarda una en empujar tras un empujon de la otra (mediana, en s) y cuantos turnos seguidos dura cada racha de alternancia. */
+export function ritmo(seq: { t: number; id: number }[], ventana = 8): { latencia: number; rachas: number[] } {
+  const lat: number[] = [];
+  const rachas: number[] = [];
+  let n = 0;
+  for (let i = 1; i < seq.length; i++) {
+    const dt = seq[i].t - seq[i - 1].t;
+    if (dt <= ventana && seq[i].id !== seq[i - 1].id) { lat.push(dt); n++; } else { if (n > 0) rachas.push(n); n = 0; }
+  }
+  if (n > 0) rachas.push(n);
+  return { latencia: lat.length ? mediana(lat) : ventana, rachas };
 }
 
 /** Cuanto se responden: cuantas veces un empujon de una cae poco después de uno de la otra. */
@@ -485,6 +498,56 @@ export const caso05: Caso = {
       "hay rachas de al menos 3 turnos seguidos": T.racha >= 3,
       "sin posibilidad de responder, no pasa (z < 2)": zC < 2,
     }, { empujones: seq.length, alternan: T.alternan, pares: T.pares, racha: T.racha, z, zControl: zC }, juntas.criaturas[0], 1500);
+  },
+};
+
+
+/** El partido con variaciones: distancia entre las dos, tipo y numero de pelotas y sociabilidad. Cada variante se mide contra el azar de sus propios tiempos
+    (permutacion circular), no solo contra el aislamiento del caso 05. Informativo: sirve para ver cuando el partido se rompe. */
+export const caso05b: Caso = {
+  id: "05b",
+  titulo: "El partido con variaciones",
+  hipotesis: "El juego alternado del caso 05 no depende de una distancia, una pelota o una sociabilidad concretas. Se repite con ellas cerca o lejos, con una pelota pesada o dos pelotas, y es mayor en criaturas muy sociables que en poco sociables. Se mide la alternancia, su ritmo (latencia entre empujones) y la duración de las rachas.",
+  minimo: 0.5,
+  ejecutar(semilla) {
+    const g1 = genomaDe(semilla, 51);
+    const g2 = genomaDe(semilla, 52);
+    type V = { nombre: string; x1: number; x2: number; objetos: { tipo: string; x: number }[]; soc?: number; tipo: string };
+    const variantes: V[] = [
+      { nombre: "base", x1: 300, x2: 1300, objetos: [{ tipo: "pelota", x: 800 }], tipo: "pelota" },
+      { nombre: "cerca", x1: 650, x2: 950, objetos: [{ tipo: "pelota", x: 800 }], tipo: "pelota" },
+      { nombre: "lejos", x1: 100, x2: 1500, objetos: [{ tipo: "pelota", x: 800 }], tipo: "pelota" },
+      { nombre: "pelota pesada", x1: 300, x2: 1300, objetos: [{ tipo: "pelota_pesada", x: 800 }], tipo: "pelota_pesada" },
+      { nombre: "dos pelotas", x1: 300, x2: 1300, objetos: [{ tipo: "pelota", x: 650 }, { tipo: "pelota", x: 950 }], tipo: "pelota" },
+      { nombre: "poco sociables", x1: 300, x2: 1300, objetos: [{ tipo: "pelota", x: 800 }], soc: 0.1, tipo: "pelota" },
+      { nombre: "muy sociables", x1: 300, x2: 1300, objetos: [{ tipo: "pelota", x: 800 }], soc: 0.9, tipo: "pelota" },
+    ];
+    const criterios: Record<string, boolean> = {};
+    const metricas: Record<string, number> = {};
+    const zs: Record<string, number> = {};
+    let primera: Criatura | null = null;
+    for (const v of variantes) {
+      const ga = clonarGenoma(g1), gb = clonarGenoma(g2);
+      if (v.soc !== undefined) { ga.rasgos[1] = v.soc; gb.rasgos[1] = v.soc; }
+      const s = nuevaSim({ semilla, objetos: v.objetos, criaturas: [{ genoma: ga, x: v.x1 }, { genoma: gb, x: v.x2 }], comedero: { cada: 80, max: 3, tipo: "fruta" } });
+      s.avanzar(1500);
+      primera ??= s.criaturas[0];
+      const seq = empujones(s.criaturas, 300, v.tipo);
+      const ambas = [1, 2].every((id) => seq.filter((q) => q.id === id).length >= 8);
+      const z = ambas ? casualidad(seq, 300, 1500, semilla).z : 0;
+      const r = ritmo(seq);
+      const T = turnos(seq);
+      zs[v.nombre] = z;
+      criterios[`${v.nombre}: juegan las dos y alternan más que el azar (z > 2)`] = ambas && z > 2;
+      metricas[`${v.nombre} z`] = z;
+      metricas[`${v.nombre} empujones`] = seq.length;
+      metricas[`${v.nombre} alternancia`] = T.pares ? T.alternan / T.pares : 0;
+      metricas[`${v.nombre} latencia`] = r.latencia;
+      metricas[`${v.nombre} racha media`] = r.rachas.length ? media(r.rachas) : 0;
+      metricas[`${v.nombre} racha max`] = r.rachas.length ? Math.max(...r.rachas) : 0;
+    }
+    criterios["las muy sociables alternan más (z) que las poco sociables"] = zs["muy sociables"] > zs["poco sociables"];
+    return resultado(semilla, criterios, metricas, primera, 1500);
   },
 };
 
@@ -546,8 +609,8 @@ export const caso06: Caso = {
 
 export const caso07: Caso = {
   id: "07",
-  titulo: "El aprendiz",
-  hipotesis: "Una criatura que nunca ha tocado una palanca empieza a usarla antes si convive con otra que ya sabe, sin haber recibido ningún entrenamiento propio.",
+  titulo: "El aprendiz (facilitación social)",
+  hipotesis: "Una criatura que nunca ha tocado una palanca la usa más veces si convive con otra que ya sabe, sin haber recibido ningún entrenamiento propio. El 07b separa qué es: hoy es facilitación mientras la otra está presente, no aprendizaje que permanezca.",
   minimo: 0.8,
   ejecutar(semilla) {
     const gE = genomaDe(semilla, 71);
@@ -728,8 +791,8 @@ export const caso08b: Caso = {
 
 export const caso07b: Caso = {
   id: "07b",
-  titulo: "El aprendiz, por partes",
-  hipotesis: "Separa lo que podria estar midiendo el caso 07. A: con la palanca estropeada (se mueve pero no suelta nada), ¿usarla mas junto a la experta es solo facilitacion social? B: tras convivir con la experta, ¿sigue usandola mas cuando ella se va, o solo la usaba mientras estaba?",
+  titulo: "El aprendiz, por fases",
+  hipotesis: "Separa lo que mide el caso 07 en tres tramos de 200 s: dos con compañía y uno con la palanca sola. Controles: palanca estropeada (se mueve y no suelta nada, para aislar la facilitación), una compañera novata que no sabe nada (para separar imitar de simplemente estar acompañada) y la aprendiz sola. Mide cuántas veces la pulsa en cada tramo, cuántos gránulos come y si lo que hace cuando la experta se va supera lo que hace quien exploró sola.",
   minimo: 0.5,
   ejecutar(semilla) {
     const gE = genomaDe(semilla, 71);
@@ -738,40 +801,52 @@ export const caso07b: Caso = {
     X.criaturas[0].nec[0] = 0.5;
     X.avanzar(1200);
     const estadoExperta = X.criaturas[0].estado();
-    const montar = (tipo: string, conExperta: boolean, k: number): { s: Simulacion; obs: Criatura } => {
-      const s = nuevaSim({ semilla: mezclar(semilla, 75, k, conExperta ? 1 : 0), objetos: [{ tipo, x: 800 }], criaturas: [{ genoma: gO, x: 300 }], comedero: null });
+    type Compania = "experta" | "novata" | "nadie";
+    /** Tres tramos de 200 s. En el tercero la compañera se va, la comida suelta se retira y el hambre vuelve a 0,5 para que todas partan igual. */
+    const fases = (tipo: string, compania: Compania, k: number): { f1: number; f2: number; f3: number; granulos: number } => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 75, k, compania === "nadie" ? 0 : 1), objetos: [{ tipo, x: 800 }], criaturas: [{ genoma: gO, x: 300 }], comedero: null });
       const obs = s.criaturas[0];
       obs.nec[0] = 0.5;
-      if (conExperta) {
+      if (compania === "experta") {
         const e = Criatura.desde({ ...estadoExperta, id: 2, x: 520, accion: null }, mezclar(semilla, 76, k));
         e.azar.s = mezclar(semilla, 77, k);
         e.reiniciarReloj();
         e.capRegistro = 100000;
         e.nec[0] = 0.55;
         s.criaturas.push(e);
+      } else if (compania === "novata") {
+        const e = nuevaSim({ semilla: mezclar(semilla, 78, k), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 79), x: 520 }], comedero: null }).criaturas[0];
+        e.id = 2;
+        e.nec[0] = 0.55;
+        s.criaturas.push(e);
       }
-      return { s, obs };
-    };
-    // A: sin recompensa, solo se ve a la otra usar algo
-    const fa = [0, 1, 2, 3].map((k) => { const { s, obs } = montar("palanca_rota", true, k); s.avanzar(300); return manip(obs, "palanca_rota"); });
-    const sa = [0, 1, 2, 3].map((k) => { const { s, obs } = montar("palanca_rota", false, k); s.avanzar(300); return manip(obs, "palanca_rota"); });
-    // B: la experta se va y se mide lo que hace la aprendiz sola con la palanca que funciona
-    const pb = (conExperta: boolean): number[] => [0, 1, 2, 3].map((k) => {
-      const { s, obs } = montar("palanca", conExperta, k);
-      s.avanzar(300);
-      if (conExperta) s.criaturas.splice(1, 1);
-      for (const o of [...s.mundo.objetos]) if (o.tipo !== "palanca") s.mundo.quitar(o.id);
-      const antes = manip(obs, "palanca");
+      s.avanzar(200);
+      const a = manip(obs, tipo);
+      s.avanzar(200);
+      const b = manip(obs, tipo);
+      const granulos = impactos(obs, "probar", "granulo");
+      if (compania !== "nadie") s.criaturas.splice(1, 1);
+      for (const o of [...s.mundo.objetos]) if (o.tipo !== tipo) s.mundo.quitar(o.id);
       obs.nec[0] = 0.5;
       s.avanzar(200);
-      return manip(obs, "palanca") - antes;
-    });
-    const conB = pb(true), solaB = pb(false);
-    const mFa = mediana(fa), mSa = mediana(sa), mCb = mediana(conB), mSb = mediana(solaB);
+      return { f1: a, f2: b - a, f3: manip(obs, tipo) - b, granulos };
+    };
+    const reps = (tipo: string, c: Compania) => [0, 1, 2, 3].map((k) => fases(tipo, c, k));
+    const med = (r: ReturnType<typeof reps>, campo: "f1" | "f2" | "f3" | "granulos") => mediana(r.map((x) => x[campo]));
+    const rotaExp = reps("palanca_rota", "experta"), rotaNov = reps("palanca_rota", "novata"), rotaSola = reps("palanca_rota", "nadie");
+    const funExp = reps("palanca", "experta"), funSola = reps("palanca", "nadie");
+    const dentro = (r: ReturnType<typeof reps>) => med(r, "f1") + med(r, "f2");
     return resultado(semilla, {
-      "A: con la palanca estropeada, junto a la experta la usa mas que sola (facilitacion social)": mFa > mSa,
-      "B: cuando la experta se va, sigue usando la palanca mas que quien exploro sola (aprendizaje)": mCb > mSb,
-    }, { estropeadaConExperta: mFa, estropeadaSola: mSa, sinExpertaTrasConvivir: mCb, sinExpertaExploroSola: mSb }, null, 300);
+      "A: con la palanca estropeada, junto a la experta la usa mas que sola (facilitacion social)": dentro(rotaExp) > dentro(rotaSola),
+      "A2: y mas que junto a una novata que no sabe nada (imitar no es solo estar acompañada)": dentro(rotaExp) > dentro(rotaNov),
+      "B: cuando la experta se va, sigue usando la palanca mas que quien exploro sola (aprendizaje)": med(funExp, "f3") > med(funSola, "f3"),
+    }, {
+      rotaExperta1: med(rotaExp, "f1"), rotaExperta2: med(rotaExp, "f2"), rotaExperta3: med(rotaExp, "f3"),
+      rotaNovata1: med(rotaNov, "f1"), rotaNovata2: med(rotaNov, "f2"),
+      rotaSola1: med(rotaSola, "f1"), rotaSola2: med(rotaSola, "f2"),
+      funcionaExperta1: med(funExp, "f1"), funcionaExperta2: med(funExp, "f2"), funcionaExperta3: med(funExp, "f3"), granulosConExperta: med(funExp, "granulos"),
+      funcionaSola1: med(funSola, "f1"), funcionaSola2: med(funSola, "f2"), funcionaSola3: med(funSola, "f3"), granulosSola: med(funSola, "granulos"),
+    }, null, 600);
   },
 };
 
@@ -865,5 +940,5 @@ export const caso14: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso06, caso07, caso08, caso08b, caso07b, caso14];
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso07b, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
