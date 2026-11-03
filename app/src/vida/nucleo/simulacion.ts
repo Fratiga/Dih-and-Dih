@@ -20,7 +20,7 @@ export interface ConfigSim {
   objetos: { tipo: string; x: number; activo?: boolean; porciones?: number }[];
   criaturas: ConfigCriatura[];
   /** Un dispensador que deja fruta de vez en cuando para que la criatura pueda vivir sola. */
-  comedero?: { cada: number; max: number; tipo: string } | null;
+  comedero?: { cada: number; max: number; tipo: string; activo?: boolean } | null;
   protegida?: boolean;
   ancho?: number;
 }
@@ -32,7 +32,7 @@ export interface EstadoSim {
   mundo: EstadoMundo;
   criaturas: EstadoCriatura[];
   azar: number;
-  comedero: { cada: number; max: number; tipo: string } | null;
+  comedero: { cada: number; max: number; tipo: string; activo?: boolean } | null;
   proxComedero: number;
   protegida: boolean;
 }
@@ -51,7 +51,8 @@ export class Simulacion {
   mundo: Mundo;
   criaturas: Criatura[] = [];
   azar: Azar;
-  comedero: { cada: number; max: number; tipo: string } | null;
+  /** `activo: false` lo apaga (la criatura solo come lo que el jugador ponga). */
+  comedero: { cada: number; max: number; tipo: string; activo?: boolean } | null;
   proxComedero = 0;
   protegida: boolean;
   /** Se llama tras cada paso (el laboratorio lo usa para medir). */
@@ -88,7 +89,7 @@ export class Simulacion {
 
   private alimentar(): void {
     const cm = this.comedero;
-    if (!cm || this.t < this.proxComedero) return;
+    if (!cm || cm.activo === false || this.t < this.proxComedero) return;
     this.proxComedero = this.t + cm.cada;
     const hay = this.mundo.objetos.filter((o) => CATALOGO[o.tipo].nutri > 0.3 && CATALOGO[o.tipo].porciones > 0).length;
     if (hay >= cm.max) return;

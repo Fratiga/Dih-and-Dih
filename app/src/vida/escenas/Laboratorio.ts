@@ -44,6 +44,8 @@ interface SprObjeto {
   nace: number;
   rot: number;
   ultX: number;
+  ultPx: number;
+  squash: number;
   aterrizo: boolean;
   chispa: number;
 }
@@ -56,7 +58,7 @@ export class Laboratorio extends Phaser.Scene {
   private arte: Record<string, Sprite> = {};
   private acc = 0;
   private prevC = new Map<number, number>();
-  private prevO = new Map<number, number>();
+  private prevO = new Map<number, { x: number; z: number; vz: number }>();
   private autoguardado = 0;
   private noche?: Phaser.GameObjects.Rectangle;
   private luces: { img: Phaser.GameObjects.Image; base: number; fase: number; vel: number }[] = [];
@@ -64,6 +66,7 @@ export class Laboratorio extends Phaser.Scene {
   private chispas?: Phaser.GameObjects.Particles.ParticleEmitter;
   private migas?: Phaser.GameObjects.Particles.ParticleEmitter;
   private premios?: Phaser.GameObjects.Particles.ParticleEmitter;
+  private polvo?: Phaser.GameObjects.Particles.ParticleEmitter;
   private zoomActual = 0.5;
   private margen = 40;
   private raton = { x: 0, y: 0, enSala: false };
@@ -129,6 +132,7 @@ export class Laboratorio extends Phaser.Scene {
     }
     this.add.particles(0, 0, "v:punto", { x: { min: 80, max: MUNDO_W - 80 }, y: { min: 200, max: SUELO_Y }, speedY: { min: -10, max: -3 }, speedX: { min: -6, max: 6 }, scale: { start: 0.1, end: 0.28 }, alpha: { start: 0, end: 0.3 }, lifespan: 7000, frequency: 160, blendMode: "ADD", tint: 0xbfeaf2 }).setDepth(155);
     this.chispas = this.add.particles(0, 0, "v:punto", { emitting: false, speed: { min: 120, max: 460 }, scale: { start: 0.35, end: 0 }, alpha: { start: 1, end: 0 }, lifespan: 420, gravityY: 900, blendMode: "ADD", tint: 0xfff0a0 }).setDepth(120);
+    this.polvo = this.add.particles(0, 0, "v:punto", { emitting: false, speed: { min: 20, max: 90 }, speedY: { min: -60, max: -10 }, scale: { start: 0.45, end: 0.9 }, alpha: { start: 0.35, end: 0 }, lifespan: 520, tint: 0x9db3b4 }).setDepth(26);
     this.premios = this.add.particles(0, 0, "v:punto", { emitting: false, speed: { min: 40, max: 200 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, lifespan: 1500, gravityY: -120, blendMode: "ADD", tint: 0x7cf0e8 }).setDepth(125);
     this.migas = this.add.particles(0, 0, "v:punto", { emitting: false, speed: { min: 60, max: 240 }, scale: { start: 0.25, end: 0 }, alpha: { start: 1, end: 0 }, lifespan: 480, gravityY: 800, tint: 0x7fb6ff }).setDepth(120);
 
@@ -289,7 +293,7 @@ export class Laboratorio extends Phaser.Scene {
     } else if (o.tipo.startsWith("foco")) {
       extra.push(this.add.image(0, 0, "v:halo").setBlendMode(Phaser.BlendModes.ADD).setTint(o.tipo === "foco_azul" ? 0x46d9e8 : 0xff5a4d).setAlpha(0.3).setScale(3.2).setDepth(160));
     }
-    return { img, sombra, extra, tipo: o.tipo, nace: this.tiempoReal, rot: 0, ultX: o.x, aterrizo: o.z <= 0, chispa: 0 };
+    return { img, sombra, extra, tipo: o.tipo, nace: this.tiempoReal, rot: 0, ultX: o.x, ultPx: px(o.x), squash: 0, aterrizo: o.z <= 0, chispa: 0 };
   }
 
   private actualizarObjetos(alpha: number, dt: number): void {
@@ -298,28 +302,41 @@ export class Laboratorio extends Phaser.Scene {
     for (const o of mundo.objetos) {
       vivos.add(o.id);
       let s = this.objs.get(o.id);
-      if (!s) { s = this.crearObjeto(o); this.objs.set(o.id, s); this.prevO.set(o.id, o.x); }
+      if (!s) { if (o.z > 300 && (o.tipo === "fruta" || o.tipo === "granulo")) this.destelloTecho(px(o.x)); s = this.crearObjeto(o); this.objs.set(o.id, s); this.prevO.set(o.id, { x: o.x, z: o.z, vz: o.vz }); }
       const def = CATALOGO[o.tipo];
-      const prev = this.prevO.get(o.id) ?? o.x;
-      const x = px(prev + (o.x - prev) * alpha);
+      const pv = this.prevO.get(o.id) ?? { x: o.x, z: o.z, vz: o.vz };
+      const x = px(pv.x + (o.x - pv.x) * alpha);
       const a = this.arte[o.tipo === "placa" ? (o.activo ? "placa_on" : "placa_off") : o.tipo] ?? this.arte.fruta;
-      const z = Math.max(0, o.z) * ESCALA;
+      // La altura se interpola con la caida real (parabola), no en linea recta entre pasos: cae de forma suave y rebota donde toca
+      const tau = alpha * DT;
+      const rebote = pv.vz * o.vz < 0 || (pv.z <= 0 && o.z > 0);
+      const zU = (o.z > 0 || pv.z > 0) && !rebote ? Math.max(0, pv.z + pv.vz * tau - 350 * tau * tau) : pv.z + (o.z - pv.z) * alpha;
+      const z = Math.max(0, zU) * ESCALA;
       const edad = this.tiempoReal - s.nace;
       const pop = Math.min(1, 0.4 + edad * 4);
       let y: number;
       if (o.tipo === "pelota") {
         const r = a.cv.height * 0.45;
         y = PIES - r - z;
-        s.rot += ((o.x - s.ultX) * ESCALA) / r;
+        s.rot += (x - s.ultPx) / r;
         s.img.setRotation(s.rot);
-      } else y = PIES - z;
+      } else {
+        y = PIES - z;
+        // Lo que cae se balancea un poco en el aire
+        if (z > 6 && o.tipo !== "placa" && def.masa > 0) s.img.setRotation(Math.sin(edad * 7 + o.id) * 0.14);
+        else if (o.tipo !== "placa" && def.masa > 0) s.img.setRotation(s.img.rotation * 0.8);
+      }
       s.ultX = o.x;
+      s.ultPx = x;
       if (o.tipo === "placa") s.img.setTexture(o.activo ? "o:placa_on" : "o:placa_off");
-      s.img.setPosition(x, y).setScale(pop);
+      s.squash *= Math.exp(-dt * 14);
+      s.img.setPosition(x, y).setScale(pop * (1 + 0.14 * s.squash), pop * (1 - 0.2 * s.squash));
       const alto = a.cv.height * a.ay;
       s.sombra.setPosition(x, PIES + 4).setScale((def.peligro ? 2.6 : 1.2 + alto / 220) * (1 - Math.min(0.5, z / 700)), 1.6).setAlpha(0.7 * (1 - Math.min(0.7, z / 500)));
       if (!s.aterrizo && o.z <= 0 && edad > 0.2) {
         s.aterrizo = true;
+        s.squash = 1;
+        this.polvo?.explode(6, x, PIES + 4);
         sonido.bote(this.pan(x), o.tipo === "fruta" ? 0.1 : 0.06);
       }
       // Rasgos propios de cada objeto
@@ -352,6 +369,13 @@ export class Laboratorio extends Phaser.Scene {
       s.img.destroy(); s.sombra.destroy(); s.extra.forEach((q) => q.destroy());
       this.objs.delete(id); this.prevO.delete(id);
     }
+  }
+
+  /** Una trampilla del techo que se abre un instante donde cae algo del dispensador. */
+  private destelloTecho(x: number): void {
+    const h = this.add.image(x, 168, "v:halo").setBlendMode(Phaser.BlendModes.ADD).setTint(0xbfeaf2).setAlpha(0.8).setScale(1.6, 0.8).setDepth(160);
+    this.tweens.add({ targets: h, alpha: 0, scaleX: 3, duration: 520, ease: "Quad.easeOut", onComplete: () => h.destroy() });
+    sonido.fruta(this.pan(x));
   }
 
   /* ---------- Un fotograma ---------- */
@@ -389,7 +413,7 @@ export class Laboratorio extends Phaser.Scene {
   /** Posiciones justo antes del ultimo paso: sirven para suavizar el movimiento entre pasos de la simulacion. */
   private instantanea(): void {
     for (const c of this.juego.sim.criaturas) this.prevC.set(c.id, c.x);
-    for (const o of this.juego.sim.mundo.objetos) this.prevO.set(o.id, o.x);
+    for (const o of this.juego.sim.mundo.objetos) this.prevO.set(o.id, { x: o.x, z: o.z, vz: o.vz });
   }
 
   private pintar(c: Criatura, alpha: number, dtAnim: number, dtR: number): void {
@@ -534,13 +558,19 @@ export class Laboratorio extends Phaser.Scene {
     return { x: w.x, y: w.y };
   }
 
+  /** El objeto que hay en ese punto. La zona para agarrarlo es todo su sprite (con un margen), y como minimo un cuadro comodo para los pequenos. */
   private objetoEn(wx: number, wy: number): number | null {
     let mejor: number | null = null;
     let prof = -1;
     for (const [id, s] of this.objs) {
-      if (s.tipo === "placa") { if (Math.abs(wx - s.img.x) < 120 && wy > PIES - 70 && wy < PIES + 24) { if (prof < 0) { mejor = id; } } continue; }
-      const b = s.img.getBounds();
-      if (wx >= b.x - 10 && wx <= b.right + 10 && wy >= b.y - 10 && wy <= b.bottom + 10 && s.img.depth > prof) { mejor = id; prof = s.img.depth; }
+      const im = s.img;
+      const w = Math.max(im.displayWidth, 96) + 28;
+      const h = Math.max(im.displayHeight, 96) + 28;
+      const cx = im.x - im.displayWidth * (im.originX - 0.5);
+      const cy = im.y - im.displayHeight * (im.originY - 0.5);
+      if (Math.abs(wx - cx) > w / 2 || Math.abs(wy - cy) > h / 2) continue;
+      // Entre varios, el que esta por delante (la placa, que va por el suelo, pierde)
+      if (im.depth > prof) { mejor = id; prof = im.depth; }
     }
     return mejor;
   }

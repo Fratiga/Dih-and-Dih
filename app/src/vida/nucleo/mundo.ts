@@ -112,14 +112,15 @@ export class Mundo {
         if (Math.abs(o.vx) < 2) o.vx = 0;
         if (o.x < 20) { o.x = 20; o.vx = Math.abs(o.vx) * 0.6; }
         if (o.x > this.ancho - 20) { o.x = this.ancho - 20; o.vx = -Math.abs(o.vx) * 0.6; }
-        if (o.z > 0 || o.vz > 0) {
-          o.vz -= 700 * dt;
-          o.z += o.vz * dt;
-          if (o.z <= 0) {
-            o.z = 0;
-            o.vz = Math.abs(o.vz) > 60 ? -o.vz * 0.4 : 0;
-            if (Math.abs(o.vx) > 25) this.sonar(o.x, 0.12);
-          }
+      }
+      // Todo cae, tenga masa o no (una palanca soltada en el aire llega al suelo y se queda). Solo lo que se mueve rebota.
+      if (o.z > 0 || o.vz > 0) {
+        o.vz -= 700 * dt;
+        o.z += o.vz * dt;
+        if (o.z <= 0) {
+          o.z = 0;
+          o.vz = def.masa > 0 && Math.abs(o.vz) > 60 ? -o.vz * 0.4 : 0;
+          if (def.masa > 0 && Math.abs(o.vx) > 25) this.sonar(o.x, 0.12);
         }
       }
       if (def.peligro && o.activo) {

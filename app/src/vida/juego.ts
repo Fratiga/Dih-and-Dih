@@ -127,6 +127,20 @@ export class Juego {
     this.emit("camara", m);
   }
 
+  /** Enciende o apaga el dispensador automatico de fruta. */
+  alternarComedero(): boolean {
+    const c = this.sim.comedero;
+    if (!c) return false;
+    c.activo = c.activo === false;
+    this.emit("comedero", c.activo !== false);
+    this.guardar(true);
+    return c.activo !== false;
+  }
+
+  get comederoActivo(): boolean {
+    return !!this.sim.comedero && this.sim.comedero.activo !== false;
+  }
+
   alternarObservar(): void {
     this.observar = !this.observar;
     if (this.observar && this.ajustes.camara === "panorama") this.fijarCamara("seguir");

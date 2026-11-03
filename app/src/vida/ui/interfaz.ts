@@ -13,7 +13,7 @@ import { aviso, boton, h } from "./base.ts";
 
 const BANDEJA: { tipo: string; nombre: string; ayuda: string }[] = [
   { tipo: "fruta", nombre: "Fruta", ayuda: "Fruta azul|Quita el hambre. Huele bien." },
-  { tipo: "baya", nombre: "Baya", ayuda: "Baya roja|Sienta mal. Casi no alimenta." },
+  { tipo: "baya", nombre: "Baya", ayuda: "Baya roja|Sienta mal, pero algo alimenta. Solo se la come quien no tiene otra cosa." },
   { tipo: "pelota", nombre: "Pelota", ayuda: "Pelota|Rueda y rebota cuando se empuja." },
   { tipo: "bola_fija", nombre: "Bola fija", ayuda: "Bola atornillada|Se ve igual que la pelota pero no se mueve." },
   { tipo: "palanca", nombre: "Palanca", ayuda: "Palanca|Al tocarla suelta un gránulo de comida poco después." },
@@ -168,7 +168,17 @@ export class Interfaz {
     const pie = h("div", { clase: "va-pie" }, ayuda, this.bandeja);
     // La bandeja tambien se pliega: la lengueta va dentro y se queda a la vista cuando el resto baja
     const lenguetaPie = boton("Objetos", () => { const p_ = pie.classList.toggle("plegada"); lenguetaPie.classList.toggle("activa", !p_); this.ajustarMargen(); }, { clase: "va-lengueta-pie activa", tip: "Mostrar u ocultar la lista de objetos" });
-    pie.prepend(lenguetaPie);
+    const toggleComedero = boton("", () => { j.alternarComedero(); }, { clase: "va-toggle", tip: "Comedero automático|Deja caer fruta de vez en cuando. Apágalo para que solo coma lo que tú pongas. Con mucha hambre y sin otra cosa, se comerá hasta las bayas." });
+    const pintarToggle = (): void => {
+      const on = j.comederoActivo;
+      toggleComedero.replaceChildren(h("i", { clase: "va-interruptor" }), `Comedero automático: ${on ? "sí" : "no"}`);
+      toggleComedero.setAttribute("aria-pressed", on ? "true" : "false");
+      toggleComedero.classList.toggle("activa", on);
+    };
+    pintarToggle();
+    j.on("comedero", pintarToggle);
+    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero);
+    pie.prepend(cab);
     this.pie = pie;
 
     // Lenguetas para plegar cada panel y dejar la sala despejada (en pantallas pequenas la memoria empieza plegada)

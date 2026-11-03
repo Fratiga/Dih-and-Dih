@@ -137,12 +137,25 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     return u;
   };
 
+  // Con mucha hambre y nada sano que comer, lo que sienta mal pero alimenta deja de dar tanto miedo (ultimo recurso)
+  const crit = acota((hambre - 0.72) / 0.28);
+  let ultimoRecurso = 0;
+  if (crit > 0) {
+    const sana = ps.some((p) => {
+      if (p.esCriatura) return false;
+      const r = esperar(c, p, "probar", env);
+      return r[C.sacia] >= 0.25 && r[C.dano] < 0.2;
+    });
+    if (!sana) ultimoRecurso = crit * 0.9;
+  }
+  const comestible = (p: Percepto): boolean => !p.esCriatura && c.mem.predecir("probar", p.f, p.m, p.x / ancho).res[C.sacia] > 0.05;
   for (const p of ps) {
     const verbos: readonly Verbo[] = p.esCriatura ? ["acercarse"] : (["probar", "empujar", "tocar"] as const);
     for (const v of verbos) {
       if (!VERBOS_OBJETO.includes(v)) continue;
       const A = c.mem.predecir(v, p.f, p.m, p.x / ancho);
       const res = esperar(c, p, v, env);
+      if (ultimoRecurso > 0 && v === "probar" && comestible(p)) res[C.dano] *= 1 - ultimoRecurso;
       res[C.dano] = Math.max(res[C.dano], peligroDelTrayecto(c, c.x, p.x, ancho) * 0.9);
       let u = utilidad(res, p.dist, A.conf, p.esCriatura);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
@@ -154,7 +167,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     }
     // Alejarse de lo que sabe que hace dano
     const P = c.mem.predecir("presencia", p.f, p.m, p.x / ancho);
-    const amenaza = Math.max(P.res[C.dano], P.res[C.susto] * 0.8) * P.conf;
+    const amenaza = Math.max(P.res[C.dano], P.res[C.susto] * 0.8) * P.conf * (ultimoRecurso > 0 && comestible(p) ? 1 - ultimoRecurso : 1);
     if (amenaza > 0.12 && !p.recordado) {
       const cerca = acota(1 - (p.dist - 40) / 320, 0.08, 1);
       let u = amenaza * (1.1 + miedoRaz + ras[R.miedo]) * cerca * (1 - 0.3 * hambre);
