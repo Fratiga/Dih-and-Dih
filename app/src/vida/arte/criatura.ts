@@ -233,24 +233,25 @@ function mano(c: CanvasRenderingContext2D, x: number, y: number, dir: number, la
   c.fillStyle = col.pielOsc; c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.fill();
 }
 
-/** Una oreja blanda y caida, con forma de hoja. Se levanta un poco cuando esta atenta y se pega hacia atras con miedo. */
+/** Una oreja blanda: sale de la nuca hacia arriba y atras y se dobla hacia abajo por la punta, sin cruzar la cara. Con atencion se levanta
+    y con miedo se pega hacia atras. */
 function oreja(c: CanvasRenderingContext2D, bx: number, by: number, atencion: number, largo: number, col: Colores, t: number, fase: number, lejos: boolean): void {
-  // atencion: -1 pegada hacia atras, 0 caida, 1 alzada
-  const a0 = Math.PI * 0.62 - atencion * 0.9 + Math.sin(t * 1.6 + fase) * 0.06;
-  const a1 = a0 + 0.5 - atencion * 0.25;
-  const mx = bx + Math.cos(a0) * largo * 0.55, my = by + Math.sin(a0) * largo * 0.55;
+  // atencion: -1 pegada hacia atras, 0 en reposo, 1 alzada. Los angulos van en sentido de canvas (pi es "hacia atras", 1.5 pi "hacia arriba")
+  const a0 = Math.PI * (1.2 + 0.14 * atencion) + Math.sin(t * 1.6 + fase) * 0.05;
+  const doblez = 1.15 - 0.45 * (atencion + 1) / 2;
+  const a1 = a0 - doblez;
+  const mx = bx + Math.cos(a0) * largo * 0.5, my = by + Math.sin(a0) * largo * 0.5;
   const tx = mx + Math.cos(a1) * largo * 0.5, ty = my + Math.sin(a1) * largo * 0.5;
-  const ancho = largo * 0.24;
+  const ancho = largo * 0.22;
   const nx = -Math.sin(a0), ny = Math.cos(a0);
   const hoja = (esc: number): void => {
     c.beginPath();
-    c.moveTo(bx + nx * ancho * 0.35 * esc, by + ny * ancho * 0.35 * esc);
+    c.moveTo(bx + nx * ancho * 0.45 * esc, by + ny * ancho * 0.45 * esc);
     c.quadraticCurveTo(mx + nx * ancho * esc, my + ny * ancho * esc, tx, ty);
-    c.quadraticCurveTo(mx - nx * ancho * esc, my - ny * ancho * esc, bx - nx * ancho * 0.35 * esc, by - ny * ancho * 0.35 * esc);
+    c.quadraticCurveTo(mx - nx * ancho * esc, my - ny * ancho * esc, bx - nx * ancho * 0.45 * esc, by - ny * ancho * 0.45 * esc);
     c.closePath();
   };
   hoja(1); c.fillStyle = lejos ? col.lejos : col.pielOsc; c.fill(); c.strokeStyle = col.linea; c.lineWidth = 3; c.stroke();
-  // Interior mas claro
   hoja(0.5); c.fillStyle = lejos ? col.piel : col.pielClara; c.globalAlpha = 0.7; c.fill(); c.globalAlpha = 1;
   c.fillStyle = col.luz; c.globalAlpha = 0.8; c.beginPath(); c.arc(tx, ty, 3.6, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
 }
@@ -281,8 +282,8 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
   c.scale(cu.tamanoCabeza, cu.tamanoCabeza);
   // Orejas caidas: la de atras mas oscura (la cercana se dibuja despues, por delante del craneo)
   const aten = p.orejas * (0.6 + 0.4 * cu.caidaOrejas) - (1 - cu.caidaOrejas) * 0.3;
-  const lo = 78 + g.cuerpo.orejas * 40;
-  oreja(c, -26, -30, aten - 0.1, lo * 0.92, col, v.t, 1.3, true);
+  const lo = 66 + g.cuerpo.orejas * 34;
+  oreja(c, -34, -26, aten - 0.15, lo * 0.9, col, v.t, 1.3, true);
   // Craneo y hocico
   const gr = c.createRadialGradient(-12, -14, 6, 0, 0, 62);
   gr.addColorStop(0, col.pielClara); gr.addColorStop(1, col.piel);
@@ -303,11 +304,10 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
   // Ojos grandes: el de atras un poco mas pequeno
   const abierto = p.ojos * (v.parpadeo > 0 ? Math.abs(1 - v.parpadeo * 2) : 1);
   const eo = escalaOjo * cu.tamanoOjos;
-  ojo(c, -6, -8, 15 * eo, 18 * eo, abierto, v.mira, col, p.pupila);
-  ojo(c, 22, -8, 18 * eo, 22 * eo, abierto, v.mira, col, p.pupila);
+  ojo(c, 16, -8, 19 * eo, 23 * eo, abierto, v.mira, col, p.pupila);
   // Mejillas luminosas
   c.fillStyle = col.luz2; c.globalAlpha = 0.18 + 0.2 * p.sonrisa; c.beginPath(); c.ellipse(34, 18, 12, 6, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
-  oreja(c, -6, -34, aten + 0.1, lo, col, v.t, 0, false);
+  oreja(c, -22, -32, aten + 0.1, lo, col, v.t, 0, false);
   c.restore();
 }
 
@@ -404,6 +404,36 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
     c.beginPath(); c.moveTo(cuelloX - 10, cuelloY + 24); c.quadraticCurveTo(mid[0], mid[1], hx - 8, hy + 8); c.stroke();
   }
 
+  // Cresta dorsal: nace del propio contorno del lomo (las mismas curvas del cuerpo) y se dibuja por detras, con la base tapada por el cuerpo
+  const lomo: [number, number][][] = [
+    [[-82, cyC + 6], [-80, cyC - 54], [-20, cyC - 62], [36, cyC - 54]],
+    [[36, cyC - 54], [88, cyC - 46], [98, cyC + 18], [66, cyC + 46]],
+  ];
+  const sobre = (k: number, t: number): [number, number, number, number] => {
+    const [p0, p1, p2, p3] = lomo[k];
+    const u = 1 - t;
+    const x = u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0];
+    const y = u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1];
+    const dx = 3 * u * u * (p1[0] - p0[0]) + 6 * u * t * (p2[0] - p1[0]) + 3 * t * t * (p3[0] - p2[0]);
+    const dy = 3 * u * u * (p1[1] - p0[1]) + 6 * u * t * (p2[1] - p1[1]) + 3 * t * t * (p3[1] - p2[1]);
+    const l = Math.hypot(dx, dy) || 1;
+    return [x, y, dy / l, -dx / l]; // normal hacia fuera del cuerpo
+  };
+  const puntosLomo: [number, number, number, number, number][] = [];
+  for (let i = 0; i < 7; i++) puntosLomo.push([...sobre(0, 0.3 + (i / 6) * 0.65), 1]);
+  for (let i = 0; i < 2; i++) puntosLomo.push([...sobre(1, 0.12 + i * 0.16), 0.7]);
+  c.fillStyle = col.pielOsc; c.strokeStyle = col.linea; c.lineWidth = 2.5;
+  for (const [x, y, nx, ny, esc] of puntosLomo) {
+    const alto = (11 + 5 * Math.sin(((x + 82) / 180) * Math.PI)) * esc;
+    const tx = -ny, ty = nx; // tangente
+    const base = 8 * esc;
+    c.beginPath();
+    c.moveTo(x - tx * base - nx * 6, y - ty * base - ny * 6);
+    c.lineTo(x + nx * alto + tx * 3, y + ny * alto + ty * 3);
+    c.lineTo(x + tx * base - nx * 6, y + ty * base - ny * 6);
+    c.closePath(); c.fill(); c.stroke();
+  }
+
   // Cuerpo: blando, mas hondo en el pecho que en la grupa
   const gr = c.createLinearGradient(0, cyC - 60, 0, cyC + 60);
   gr.addColorStop(0, col.piel); gr.addColorStop(0.6, col.pielClara); gr.addColorStop(1, col.pielClara);
@@ -418,14 +448,6 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   // Costillas muy suaves
   c.strokeStyle = "rgba(20,40,50,0.16)"; c.lineWidth = 3;
   for (let i = 0; i < 5; i++) { c.beginPath(); c.moveTo(-34 + i * 17, cyC + 14); c.quadraticCurveTo(-30 + i * 17, cyC + 38, -22 + i * 17, cyC + 52); c.stroke(); }
-  // Cresta dorsal
-  c.fillStyle = col.pielOsc; c.strokeStyle = col.linea; c.lineWidth = 2;
-  for (let i = 0; i < 9; i++) {
-    const t_ = i / 8;
-    const bx = -70 + t_ * 130, by = cyC - 50 - Math.sin(t_ * Math.PI) * 7 + (t_ > 0.85 ? 8 : 0);
-    const alto = 10 + Math.sin(t_ * Math.PI) * 10;
-    c.beginPath(); c.moveTo(bx - 7, by + 2); c.lineTo(bx + 1, by - alto); c.lineTo(bx + 8, by + 2); c.closePath(); c.fill(); c.stroke();
-  }
   // Motas luminosas (bioluminiscencia): su numero y sitio salen del genoma
   const ra = new Azar(Math.floor(huella * 1e6) + 7);
   const nM = 4 + Math.floor(g.cuerpo.motas * 6);

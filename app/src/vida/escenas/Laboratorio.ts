@@ -143,6 +143,12 @@ export class Laboratorio extends Phaser.Scene {
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => this.alPulsar(p));
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => this.alMover(p));
     this.input.on("pointerup", (p: Phaser.Input.Pointer) => this.alSoltar(p));
+    // Rueda hacia abajo con el raton sobre la sala (no sobre la interfaz): se quita el zoom y vuelve la vista de la sala
+    this.input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
+      if (this.enTitulo || dy <= 0 || this.juego.ajustes.camara === "panorama") return;
+      if (!(p.event?.target instanceof HTMLCanvasElement)) return;
+      this.juego.fijarCamara("panorama");
+    });
     this.juego.on("simNueva", () => this.reiniciar());
     this.juego.on("premio", (id) => this.efectoPremio(id as number));
     this.juego.on("susto", (id) => this.efectoSusto(id as number));

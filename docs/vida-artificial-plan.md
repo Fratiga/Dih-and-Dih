@@ -60,7 +60,7 @@ npx vite build --config vite.vida.config.ts   # solo Vida Artificial, a app/dist
 
 Para verlo en local se sirve `app/dist` (o `app/dist-vida`) y se abre `vida.html` con `localStorage.compendioAdmin = "1"`. En el navegador, `window.vida` da acceso a `juego`, `escena` y `game` para saltar a cualquier situación (`window.vida.juego.sim.avanzar(600)`, `window.vida.juego.fijarVelocidad(16)`). El panel "Laboratorio de pruebas" del título ejecuta los mismos casos con los mismos resultados.
 
-Teclas: espacio pausa, 1 2 3 velocidades, O observar, C cámara, Tab cambia de criatura, P premiar, S asustar, M sonido, F pantalla completa.
+Rueda del ratón hacia abajo sobre la sala (no sobre un panel): quita el zoom y vuelve a la vista de la sala. Teclas: espacio pausa, 1 2 3 velocidades, O observar, C cámara, Tab cambia de criatura, P premiar, S asustar, M sonido, F pantalla completa.
 
 ## Resultados de los casos (10 semillas, 1 a 10)
 
