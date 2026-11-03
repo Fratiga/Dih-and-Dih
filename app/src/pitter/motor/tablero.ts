@@ -182,7 +182,7 @@ export class Tablero {
 
   puedeMover(idx: number): boolean {
     const c = this.celdas[idx];
-    return c.bloque === 0 && !c.congelada;
+    return c.bloque === 0 && !c.congelada && !c.stand;
   }
 
   /** Cambia dos celdas de sitio (lo que pasa cuando arrastras una ficha sobre otra). */

@@ -3,6 +3,7 @@ import { N, REGLAS, TOTAL, Tablero, type Celda, type Paso } from "../motor/table
 import { usarHabilidad } from "../motor/habilidades.ts";
 import { MotorLider, type Efecto } from "../motor/lider.ts";
 import { liderDe } from "../datos/lideres.ts";
+import { juntarPasivas, type ModificadoresPasivos } from "../datos/pasivas.ts";
 import { JEFES, type Jefe } from "../datos/campana.ts";
 import { personaje, personajesVisibles, type Personaje } from "../datos/roster.ts";
 import { fondoJefe } from "../arte/escenarios.ts";
@@ -85,7 +86,9 @@ export class Puzzle extends Phaser.Scene {
   /** Bloques grandes que se quedan de pie durante el Stand Up Time, por id de ficha. */
   private bloques = new Map<number, Phaser.GameObjects.Container>();
   private standMax = 14;
+  private pas!: ModificadoresPasivos;
   private ocupado = 0;
+  private cola: Promise<void> = Promise.resolve();
   private habilidades = 0;
   private standUsados = 0;
   private fichasBorradas = 0;
@@ -124,6 +127,7 @@ export class Puzzle extends Phaser.Scene {
     this.sprites = new Map();
     this.drag = null;
     this.ocupado = 0;
+    this.cola = Promise.resolve();
     this.pendientesJefe = [];
     this.timers = [];
     this.escuchas = [];
@@ -131,8 +135,9 @@ export class Puzzle extends Phaser.Scene {
 
   create(): void {
     const semilla = (Date.now() ^ (this.jefe.id.length * 7919)) >>> 0;
-    this.tablero = new Tablero({ semilla, tipos: this.ids.length, equipo: [0, 1], atqEquipo: [this.pj[0].atq, this.pj[1].atq] });
-    this.tMax = this.jefe.tiempo;
+    this.pas = juntarPasivas([this.pj[0].id, this.pj[1].id]);
+    this.tablero = new Tablero({ semilla, tipos: this.ids.length, equipo: [0, 1], atqEquipo: [this.pj[0].atq * (1 + this.pas.ataquePropio[0]), this.pj[1].atq * (1 + this.pas.ataquePropio[1])] });
+    this.tMax = this.jefe.tiempo + this.pas.tiempoInicial;
     this.t = this.tMax;
     this.vidaMax = this.vida = this.jefe.vida;
     this.puntos = 0;
@@ -327,17 +332,31 @@ export class Puzzle extends Phaser.Scene {
     return (this.fase === "jugando" || this.fase === "stand" || this.fase === "rush") && this.ocupado === 0 && !this.terminada;
   }
 
+  /* Se puede agarrar una ficha aunque aun se este animando una cascada, siempre que esa ficha ya este quieta en su sitio. */
+  private puedeAgarrar(): boolean {
+    return (this.fase === "jugando" || this.fase === "resolviendo" || this.fase === "stand" || this.fase === "rush") && !this.terminada;
+  }
+
+  private fichaQuieta(idx: number): FichaSprite | null {
+    const c = this.tablero.celdas[idx];
+    if (!c) return null;
+    const s = this.sprites.get(c.id);
+    if (!s || this.tweens.isTweening(s.cont) || s.cont.alpha < 0.99) return null;
+    const q = this.centro(idx);
+    return Math.hypot(s.cont.x - q.x, s.cont.y - q.y) < this.celda * 0.2 ? s : null;
+  }
+
   private configurarEntrada(): void {
     const inp = this.input;
     inp.on("pointerdown", (p: Phaser.Input.Pointer) => {
-      if (!this.puedeJugar() || this.drag) return;
+      if (!this.puedeAgarrar() || this.drag) return;
       const idx = this.celdaEn(p.x, p.y);
       if (idx < 0) return;
       const c = this.tablero.celdas[idx];
+      const s = this.fichaQuieta(idx);
+      if (!s) return;
       if (c.caja) { void this.tocarCaja(idx); return; }
       if (!this.tablero.puedeMover(idx)) { sonido.invalido(); this.sacudir(c.id); return; }
-      const s = this.sprites.get(c.id);
-      if (!s) return;
       this.drag = { id: c.id, idx, ox: s.cont.x - p.x, oy: s.cont.y - p.y, px0: p.x, py0: p.y, cx0: s.cont.x, cy0: s.cont.y, lock: null };
       s.cont.setDepth(DEPTH_TABLERO + 60);
       this.tweens.add({ targets: s.cont, scale: 1.14, duration: 90, ease: "Back.easeOut" });
@@ -370,9 +389,11 @@ export class Puzzle extends Phaser.Scene {
         const cx = d.idx % N, cy = Math.floor(d.idx / N), tx = objetivo % N, ty = Math.floor(objetivo / N);
         const paso = Math.abs(tx - cx) >= Math.abs(ty - cy) ? cy * N + cx + Math.sign(tx - cx) : (cy + Math.sign(ty - cy)) * N + cx;
         const otro = this.tablero.celdas[paso];
-        if (!this.tablero.intercambiar(d.idx, paso)) break;
-        const so = this.sprites.get(otro.id);
-        if (so) { const q = this.centro(d.idx); this.tweens.killTweensOf(so.cont); this.tweens.add({ targets: so.cont, x: q.x, y: q.y, duration: 90, ease: "Quad.easeOut" }); }
+        // Si la de al lado aun se esta moviendo (cae de una cascada) no se la puede apartar
+        const so = this.fichaQuieta(paso);
+        if (!so || !this.tablero.intercambiar(d.idx, paso)) break;
+        void otro;
+        { const q = this.centro(d.idx); this.tweens.add({ targets: so.cont, x: q.x, y: q.y, duration: 90, ease: "Quad.easeOut" }); }
         d.idx = paso;
         sonido.mover();
       }
@@ -429,21 +450,28 @@ export class Puzzle extends Phaser.Scene {
   /* El combo sigue vivo mientras haya tiempo en su ventana. Cada grupo la reinicia. */
   private armarCombo(): void {
     const t = this.tablero;
-    if (t.combo > 0) { this.comboVentana = t.ventanaCombo(); this.comboT = this.comboVentana; }
+    if (t.combo > 0) { this.comboVentana = t.ventanaCombo() + this.pas.ventanaCombo; this.comboT = this.comboVentana; }
     this.hud.combo(t.combo, t.multCombo(), t.combo > 0 ? 1 : 0);
   }
 
-  private async reproducir(pasos: Paso[]): Promise<void> {
+  /* Las animaciones van en cola: se puede mover una ficha mientras aun se anima la cascada anterior, y lo que salga de ahi se
+     reproduce cuando acabe la anterior. El tablero ya esta resuelto por dentro desde el primer momento. */
+  private reproducir(pasos: Paso[]): Promise<void> {
     this.ocupado++;
-    const faseAntes = this.fase;
-    if (this.fase === "jugando") this.fase = "resolviendo";
-    for (const p of pasos) {
-      await this.paso(p);
-      if (this.terminada) break;
-    }
-    this.ocupado--;
-    if (this.fase === "resolviendo") this.fase = faseAntes === "resolviendo" ? "jugando" : faseAntes;
-    if (this.vida <= 0 && !this.terminada) await this.ganar();
+    const correr = async (): Promise<void> => {
+      const faseAntes = this.fase;
+      if (this.fase === "jugando") this.fase = "resolviendo";
+      for (const p of pasos) {
+        await this.paso(p);
+        if (this.terminada) break;
+      }
+      this.ocupado--;
+      if (this.fase === "resolviendo" && this.ocupado === 0) this.fase = faseAntes === "resolviendo" ? "jugando" : faseAntes;
+      if (this.vida <= 0 && !this.terminada) await this.ganar();
+    };
+    const siguiente = this.cola.then(correr, correr);
+    this.cola = siguiente.catch(() => undefined);
+    return siguiente;
   }
 
   private espera(ms: number): Promise<void> {
@@ -465,7 +493,8 @@ export class Puzzle extends Phaser.Scene {
         const ts = p.mov.map((m) => {
           const s = this.sprites.get(m.id);
           if (!s) return Promise.resolve();
-          const q = this.centro(m.a);
+          const j = this.idxDe(m.id);
+          const q = this.centro(j >= 0 ? j : m.a);
           return this.tween({ targets: s.cont, x: q.x, y: q.y, duration: 300, ease: "Bounce.easeOut" });
         });
         sonido.caer();
@@ -474,13 +503,13 @@ export class Puzzle extends Phaser.Scene {
       }
       case "entrar": {
         const ts = p.nuevas.map((n) => {
-          const c = this.tablero.celdas[n.idx];
-          const col = n.idx % N;
+          const idx = this.idxDe(n.id);
+          if (idx < 0) return Promise.resolve();
+          const c = this.tablero.celdas[idx];
           const fila = Math.floor(n.desde / N);
           const y0 = this.oy + (fila + 0.5) * this.celda;
-          void col;
-          const s = this.crearSprite(c, n.idx, false, y0);
-          const q = this.centro(n.idx);
+          const s = this.crearSprite(c, idx, false, y0);
+          const q = this.centro(idx);
           return this.tween({ targets: s.cont, y: q.y, duration: 340, ease: "Bounce.easeOut", delay: 25 * (n.idx % N) });
         });
         await Promise.all(ts);
@@ -507,7 +536,8 @@ export class Puzzle extends Phaser.Scene {
         await Promise.all(p.mov.map((m) => {
           const s = this.sprites.get(m.id);
           if (!s) return Promise.resolve();
-          const q = this.centro(m.a);
+          const j = this.idxDe(m.id);
+          const q = this.centro(j >= 0 ? j : m.a);
           return this.tween({ targets: s.cont, x: q.x, y: q.y, angle: 360, duration: 480, ease: "Cubic.easeInOut", onComplete: () => s.cont.setAngle(0) });
         }));
         return;
@@ -553,18 +583,18 @@ export class Puzzle extends Phaser.Scene {
     const mayor = p.grupos.reduce((m, g) => Math.max(m, g.celdas.length), 0);
     this.mejorCombo = Math.max(this.mejorCombo, p.combo);
     this.hud.combo(p.combo, p.mult, 1);
-    this.comboT = this.comboVentana = Math.max(1.7, 3 - p.combo * 0.07);
+    this.comboT = this.comboVentana = this.tablero.ventanaCombo() + this.pas.ventanaCombo;
     for (const g of p.grupos) this.lider.alGrupo(g.celdas.length);
     // Cargas de las habilidades y del Stand Up
     let n = 0;
     for (const [tipo, k] of Object.entries(p.cargas)) {
       const t = Number(tipo);
       n += k;
-      for (const slot of [0, 1] as const) this.cargas[slot] = Math.min(this.cargaMax[slot], this.cargas[slot] + (t === slot ? k : k * REGLAS.cargaAjena) * this.liderCarga);
+      for (const slot of [0, 1] as const) this.cargas[slot] = Math.min(this.cargaMax[slot], this.cargas[slot] + (t === slot ? k * (1 + this.pas.cargaPropia[slot]) : k * REGLAS.cargaAjena) * this.liderCarga);
     }
     this.fichasBorradas += n;
     this.cargas.forEach((c, i) => this.hud.carga(i as 0 | 1, c / this.cargaMax[i], Math.ceil(this.cargaMax[i] - c)));
-    if (this.fase !== "stand") this.stand = Math.min(1, this.stand + (n / 42) * this.sin.stand);
+    if (this.fase !== "stand") this.stand = Math.min(1, this.stand + (n / 42) * this.sin.stand * (1 + this.pas.standGana));
     this.hud.stand(this.stand, this.fase === "stand", this.standT);
     if (p.combo >= 2) this.texto(`${p.combo} combo`, this.ox + this.lado / 2, this.oy + this.celda * 0.4, p.combo >= 10 ? "#ffd23f" : "#ff4f9a", 0.9 + Math.min(0.9, p.combo * 0.05), true);
 
@@ -749,7 +779,7 @@ export class Puzzle extends Phaser.Scene {
 
   /* ---------- habilidades ---------- */
   private async pedirHabilidad(slot: 0 | 1): Promise<void> {
-    if (!this.puedeJugar() || this.fase === "rush" || this.fase === "stand") return;
+    if (!this.puedeJugar() || this.drag || this.fase === "rush" || this.fase === "stand") return;
     if (this.cargas[slot] < this.cargaMax[slot] - 0.001) { sonido.invalido(); this.hud.banner("Todavía no está cargada", "aviso"); return; }
     if (this.silencioT > 0) { sonido.invalido(); this.hud.banner("Silenciado", "aviso"); return; }
     const p = this.pj[slot];
@@ -835,8 +865,23 @@ export class Puzzle extends Phaser.Scene {
   }
 
   /* ---------- final ---------- */
-  private async ganar(): Promise<void> {
+  /* Al caer el jefe empieza el Rush: unos segundos en los que se sigue juntando fichas y los puntos valen doble. */
+  private async ganar(final = false): Promise<void> {
     if (this.terminada) return;
+    if (!final) {
+      if (this.fase === "rush") return;
+      this.fase = "rush";
+      this.rushT = 5;
+      this.pintarPanelStand(false);
+      this.hud.stand(0, false, 0);
+      this.hud.banner("¡RUSH!", "rush", "El jefe cae. Sigue juntando fichas, valen doble.");
+      this.hud.jefeCae();
+      this.hud.expresion(0, "poder"); this.hud.expresion(1, "poder");
+      sonido.standUp();
+      this.destello(0xff4f9a, 0.6, 500);
+      this.cameras.main.shake(260, 0.008);
+      return;
+    }
     this.terminada = true;
     this.pintarPanelStand(false);
     sonido.parar();
@@ -914,7 +959,7 @@ export class Puzzle extends Phaser.Scene {
     }
     if (this.fase === "rush") {
       this.rushT -= dt;
-      if (this.rushT <= 0 && this.ocupado === 0) { this.terminada = true; this.cerrar(true); }
+      if (this.rushT <= 0 && this.ocupado === 0 && !this.drag) void this.ganar(true);
       return;
     }
     this.tiempoJugado += dt;

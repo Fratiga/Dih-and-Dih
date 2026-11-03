@@ -1,6 +1,7 @@
 import type { Pantalla, Shell } from "../shell.ts";
 import { boton, h, modal, esperar } from "./base.ts";
 import { AFINIDADES, personaje, type Personaje } from "../datos/roster.ts";
+import { pasivaDe } from "../datos/pasivas.ts";
 import { JEFES, type Jefe } from "../datos/campana.ts";
 import { arteGlobal, EXPRESIONES, type Expresion } from "../arte/chibis.ts";
 import { sonido } from "../audio/audio.ts";
@@ -82,7 +83,7 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
     const btn = boton(h("span", {}, "¡", p.habilidad.nombre, "!"), () => { shell.juego?.events.emit("pt:habilidad", i); }, { color: i === 0 ? "rosa" : "turquesa", deshabilitado: true, silencioso: true, tip: `${p.habilidad.nombre}|${p.habilidad.texto}` });
     btn.append(h("kbd", {}, i === 0 ? "Q" : "W"));
     const el = h("div", { clase: `pt-eq-carta slot${i}`, style: `--col:${p.color}` },
-      h("div", { clase: "pt-eq-retrato" }, img, h("span", { clase: "pt-eq-afin", "data-tip": `${AFINIDADES[p.afinidad].nombre}|${AFINIDADES[p.afinidad].texto}` }, AFINIDADES[p.afinidad].nombre)),
+      h("div", { clase: "pt-eq-retrato", "data-tip": pasivaDe(p.id) ? `Pasiva, ${pasivaDe(p.id)?.nombre}|${pasivaDe(p.id)?.texto}` : "" }, img, h("span", { clase: "pt-eq-afin", "data-tip": `${AFINIDADES[p.afinidad].nombre}|${AFINIDADES[p.afinidad].texto}` }, AFINIDADES[p.afinidad].nombre)),
       h("div", { clase: "pt-eq-col" },
         h("div", { clase: "pt-eq-nombre" }, h("b", {}, p.nombre), restan),
         h("div", { clase: "pt-medidor", "aria-label": "Carga de la habilidad" }, ...segs),

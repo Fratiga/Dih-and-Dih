@@ -90,4 +90,4 @@ El motor actual (por turnos, 6×6, arrastre libre) se queda corto en esto: tiemp
 
 ## Qué se ha hecho ya
 
-Bloqueo de eje al arrastrar, ventana de tiempo del combo, tamaño de grupo, bloque grande al agrupar (también de pie en el Stand Up), medidor del Stand Up que se pierde y da tiempo por grupo, habilidades con botón y contador de fichas que faltan, y habilidad de líder por condición (`docs/pitter.md`). Falta: pasiva, Rush, piezas especiales y mover durante la resolución.
+Bloqueo de eje al arrastrar, ventana de tiempo del combo, tamaño de grupo, bloque grande al agrupar (también de pie en el Stand Up), medidor del Stand Up que se pierde y da tiempo por grupo, habilidades con botón y contador de fichas que faltan, y habilidad de líder por condición (`docs/pitter.md`). También hecho: habilidad pasiva (`datos/pasivas.ts`), Rush al caer el jefe (interpretación, el trigger real es desconocido) y mover durante la cascada con las animaciones en cola. Falta: piezas especiales cuyo comportamiento no se deduce de los nombres (Crystal, Shabon, Elemental, Power).
