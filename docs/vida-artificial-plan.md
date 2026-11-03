@@ -192,6 +192,21 @@ Resultados con 20 semillas:
 
 Qué falta para separar la conducta. Hace falta una prueba en la que el margen de acercarse frente a quedarse sea lo único que pague un coste concreto. La más directa es poner entre ambas algo que hace daño (una placa conocida) y ver si quien tiene un margen alto la cruza y el control apareado no. Todavía no se ha hecho.
 
+### Experimento de capacidad: la red no es el límite
+
+Se probó si los resultados flojos (07b, 08b, 05) dependen del tamaño de la red. Se cambiaron las neuronas ocultas (`AJ.ocultas`, hoy 12) a 6, 24 y 48 y se repitieron los casos con 20 semillas (semillas 1 a 20). Para saber cuánto cambia el resultado solo por el conjunto de semillas, se repitió también con 12 neuronas y las semillas 21 a 40. Se ejecuta con `OCULTAS=24 DESDE=1 N=20 node tests/vida-lab.ts 05 07 07b 08b`.
+
+| Caso (semillas aprobadas de 20) | 6 | 12 | 24 | 48 | 12, semillas 21 a 40 |
+|---|---|---|---|---|---|
+| 05 | 18 | 16 | 16 | 15 | 17 |
+| 07 | 16 | 16 | 16 | 16 | 19 |
+| 08b | 15 | 16 | 16 | 15 | **11** |
+| 07b, criterio B (aprendizaje que permanece) | 7 | 5 | 4 | 5 | 9 |
+
+Lectura. Entre 6 y 48 neuronas, un factor 8, no hay ninguna tendencia. Las diferencias son menores que las que aparecen al cambiar de conjunto de semillas. El 07b B sigue en el 20 a 45 % con cualquier tamaño. La capacidad de la red no es lo que impide el aprendizaje por observación, y lo que falta son entradas y una forma de atribuir lo que le pasa a otra a lo que hizo (ver "Lo que falta en el código" del caso 15).
+
+Dato incómodo. El 08b pasa 16 de 20 con las semillas 1 a 20 y solo 11 de 20 con las 21 a 40. En ese segundo conjunto el criterio que falla es el del margen de alivio (acercarse frente a quedarse), igual que en el primero. Lo que se puede afirmar del 08b es que hay una señal, no que sea estable al 80 %. Sigue informativo y cualquier cifra suya hay que leerla con semillas distintas.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
