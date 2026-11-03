@@ -80,6 +80,7 @@ Rueda del ratón sobre la sala (no sobre un panel): hacia arriba se acerca (sala
 | 07b Aprendiz por fases (informativo) | **2/10** | Tres tramos de 200 s y cinco condiciones. A: con la palanca estropeada, junto a la experta la usa 2 a 4 veces más que sola (10 de 10 semillas). A2: una novata que no sabe nada produce casi lo mismo (7 de 10). B: cuando la compañera se va, quien convivió con la experta pulsa lo mismo que quien exploró sola (3 de 10). **No hay aprendizaje que permanezca, solo facilitación.** |
 | 08b Protector aprendido (informativo) | **8/10** (16/20 con 1 a 20) | Canal propio de alivio. Acercarse alivia más que quedarse (+0,3 de media), mucho más que en el control apareado (+0,08), no aprende si no puede acercarse ni si la angustia no baja, y no generaliza a una desconocida nueva. Ver abajo. |
 | 05b Partido con variaciones (informativo) | 7 variantes, 20 semillas | El z > 2 se cumple en 15 a 20 de 20 según la variante. Ver abajo. |
+| 08c Consuelo con costes y con otra compañera (informativo) | 2/20 | Con el hambre subiendo (0,45 a 0,9) y la comida al otro lado, quien aprendió a consolar sigue yendo (0,69 de media frente a 0,04 si nunca vio sufrir). **El control apareado va igual** (0,68, igual dentro de 0,05 en 14 de 20 semillas). Se traslada a una tercera criatura vinculada que nunca vio sufrir en 15 de 20 semillas (0,50 frente a 0,04). |
 | 03b La palanca que se agota | 9/10 | Habituación: dos criaturas bien alimentadas pulsan la palanca entre 15 y 90 veces cada 5 minutos (antes 100 a 200), el cansancio se va tras 2 minutos de descanso y una sola criatura con hambre la sigue usando para comer. |
 
 Una semilla de 04b no aprueba porque esa criatura, con poco miedo de nacimiento, apenas distingue los focos: es una diferencia individual, no un fallo de la prueba. En 20 semillas, 18 aprueban.
@@ -171,6 +172,26 @@ Resultados (10 semillas, y con 1 a 20 entre paréntesis):
 
 Se deja como informativo porque está justo en el 80 % con 20 semillas.
 
+### Consuelo con costes y con una tercera criatura (08c)
+
+Pregunta del 08b que quedaba abierta. ¿Lo aprendido se nota en lo que decide cuando ir con la otra cuesta cada vez más, y sirve con otra criatura? Tres criaturas conviven 1500 s. La del medio entrena 24 episodios con la primera (igual que el 08b, con y sin control apareado). Después se prueba con cuatro niveles de hambre (0,45, 0,6, 0,75 y 0,9, con la comida al otro lado) ante la misma criatura que sufre o ante la tercera, que nunca la vio sufrir. Sin exploración forzada ni episodio de angustia previo, con 120 s de calma antes.
+
+Resultados con 20 semillas:
+
+| Condición | Puntuación media (0 no llega, 0,75 llega enseguida) |
+|---|---|
+| Entrenada, ante la criatura con la que entrenó | 0,69 |
+| Control apareado, ante la misma | 0,68 |
+| Nunca vio sufrir, ante la misma | 0,04 |
+| Entrenada, ante la tercera (nunca la vio sufrir) | 0,50 |
+| Nunca vio sufrir, ante la tercera | 0,04 |
+
+- Ir con quien sufre cuando cuesta no depende de nada que no sea haber visto sufrir y aliviarse: 20 de 20.
+- **La conducta no separa a la que consuela del control apareado.** En 14 de 20 semillas son iguales dentro de 0,05, también con el hambre más alta. Hay que leer esto con el 08b: la diferencia que sí existe está en los valores aprendidos (acercarse vale más que quedarse), pero no basta para cambiar lo que decide. Mi lectura, no medida: el control apareado también ve alivio real después de acercarse, así que acercarse sigue valiendo mucho en términos absolutos y la comparación con quedarse (el margen de +0,08) pesa poco frente al coste que se le pone. Lo que se ha demostrado es una asociación entre estar cerca de una compañera angustiada y verla mejorar, no una inferencia de que lo cause su acción.
+- **Se traslada a una tercera criatura vinculada** en 15 de 20 semillas (0,50 de media, hasta 0,75). Los vínculos con las dos eran parecidos. Falla del todo en algunas (0 en 3 semillas).
+
+Qué falta para separar la conducta. Hace falta una prueba en la que el margen de acercarse frente a quedarse sea lo único que pague un coste concreto. La más directa es poner entre ambas algo que hace daño (una placa conocida) y ver si quien tiene un margen alto la cruza y el control apareado no. Todavía no se ha hecho.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
@@ -237,7 +258,8 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 - **Casos 09 a 12** (perro guardián, depredador, recolector, solución imprevista): necesitan herramientas de entrenamiento más finas (recompensar por estar en una zona y no solo por una acción, marcadores, barreras) y transporte de objetos.
 - **Estados ajenos más allá de la angustia**: el 08b ya aprende el efecto de lo que hace sobre la angustia de otra. Falta que estime lo que quiere o teme (un modelo pequeño de la otra) y el resto de los casos 19 a 38 (`docs/vida-artificial-casos-extremos.md`): piden planificación, memoria de trabajo, señales aprendidas y transmisión cultural.
 - **Aprendizaje por observación de verdad** (el 07b dice que hoy no lo hay): la compañera enseña la palanca y el efecto se mantiene al irse. Hace falta que lo que ve hacer a otra produzca un recuerdo asociado a lo que consigue, no solo a su atención.
-- **Generalización del consuelo** a una desconocida nueva y a otras causas de angustia: hoy no generaliza (el 08b da 0 con una extraña).
+- **Generalización del consuelo**: se traslada a una tercera criatura vinculada (08c, 15 de 20) pero no a una desconocida (08b, 0) ni se ha probado con otras causas de angustia.
+- **Prueba que separe la conducta causal del control apareado**: un coste que solo pague el margen de acercarse frente a quedarse (una placa conocida en el camino).
 - **Temperatura** como necesidad y entornos distintos.
 - **Supabase**: tablas de criaturas, memoria, eventos y relaciones, y funciones del servidor que validen genética y recompensas. Se dejó fuera a propósito: hace falta decidir qué valida el servidor y no se quiso añadir infraestructura en este prototipo.
 - **Un segundo recinto** para criar a los gemelos por separado desde el juego (hoy conviven en una sala; para separarlos hay que elegir qué objetos hay y a quién se premia o asusta).
@@ -319,7 +341,7 @@ Cada etapa llega con su caso en el laboratorio, con control y semillas múltiple
 ## Recomendación para la siguiente fase
 
 1. **Aprendizaje por observación.** El 07b separa la facilitación del aprendizaje y dice que hoy solo hay facilitación. Es el siguiente resultado a conseguir antes de añadir criaturas.
-2. **Generalización del consuelo.** Que lo aprendido con una compañera sirva con otra criatura vinculada y con otras formas de angustia. El canal de alivio ya existe para eso.
+2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
 5. Después, las etapas 1 a 5 del espacio de convivencia entre propietarios (arriba), empezando por el reconocimiento persistente (etapa 2), que es lo que más reutiliza lo ya medido en los casos 06 y 08b.

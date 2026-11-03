@@ -854,6 +854,120 @@ export const caso08b: Caso = {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
+export const caso08c: Caso = {
+  id: "08c",
+  titulo: "El consuelo, con costes y con otra compañera",
+  hipotesis: "Lo aprendido en el 08b se nota en lo que decide cuando ir con la otra cuesta cada vez más (hambre creciente con la comida al otro lado), y se traslada a una tercera criatura vinculada que nunca ha visto sufrir. En el control apareado, que ve el mismo alivio sin causarlo, el punto en que deja de ir es más bajo.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const g1 = genomaDe(semilla, 81);
+    const g2 = genomaDe(semilla, 82);
+    const g3 = genomaDe(semilla, 86);
+    const EP = 24;
+    const REP = 8;
+    const TOPE = 12;
+    const HAMBRES = [0.45, 0.6, 0.75, 0.9];
+    const juntos = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: g1, x: 500 }, { genoma: g2, x: 700 }, { genoma: g3, x: 600 }], comedero: { cada: 110, max: 3, tipo: "fruta" } });
+    for (const c of juntos.criaturas) { c.ayudaInnata = false; c.estadosAjenos = true; }
+    juntos.avanzar(1500);
+    const vinculoCon = (b: Criatura, a: Criatura): number => b.mem.vinculos.find((q) => q.id === 1000 + a.id)?.afecto ?? 0;
+    const afectoA = vinculoCon(juntos.criaturas[1], juntos.criaturas[0]);
+    const afectoC = vinculoCon(juntos.criaturas[1], juntos.criaturas[2]);
+    for (const o of [...juntos.mundo.objetos]) juntos.mundo.quitar(o.id);
+    juntos.comedero = null;
+    const base = juntos.serializar();
+
+    type Guion = { miedo: number; dolor: number }[];
+    const restaurar = (k: number): Simulacion => {
+      const r = Simulacion.restaurar(base);
+      r.azar.s = mezclar(semilla, 193, k);
+      for (const c of r.criaturas) { c.azar.s = mezclar(semilla, 194, c.id, k); c.capRegistro = 100000; }
+      return r;
+    };
+    /** Una descarga a `a` delante de `b`. En la prueba, `b` tiene el hambre indicada con la comida al otro lado, y `a` se queda donde esta.
+        Devuelve lo que tarda `b` en estar a menos de 180 de ella (TOPE si no llega) y la angustia de `a` segundo a segundo. */
+    const episodio = (s: Simulacion, a: Criatura, b: Criatura, prueba: boolean, hambre: number, guion?: Guion, forzado: Verbo | null = null): { latencia: number; guion: Guion } => {
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      if (prueba) s.mundo.agregar("fruta", 300, { porciones: 6 });
+      a.x = 1000; b.x = 600; a.accion = null; b.accion = null;
+      for (const c of [a, b]) { c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; c.nec[4] = prueba ? 0.02 : 0.25; c.emo[1] = prueba ? 0.2 : 0.4; }
+      b.nec[0] = prueba ? hambre : 0.1;
+      a.atrapada = prueba;
+      b.verboForzado = forzado;
+      let latencia = TOPE;
+      const t0 = s.t;
+      const grabado: Guion = [];
+      const g = () => {
+        const k = Math.round((s.t - t0) / 0.25) - 1;
+        if (guion) { const q = guion[Math.min(guion.length - 1, Math.max(0, k))]; a.emo[0] = q.miedo; a.nec[2] = q.dolor; }
+        else grabado.push({ miedo: a.emo[0], dolor: a.nec[2] });
+        if (latencia === TOPE && Math.abs(a.x - b.x) < 180) latencia = s.t - t0;
+      };
+      s.ganchos.push(g);
+      a.sufrir(0.7, -1, null, 0.5);
+      s.avanzar(prueba ? TOPE : 20);
+      s.ganchos.splice(s.ganchos.indexOf(g), 1);
+      a.atrapada = false;
+      b.verboForzado = null;
+      return { latencia, guion: grabado };
+    };
+    const forzadoEn = (i: number): Verbo | null => (i < 18 ? (["acercarse", "descansar", "evitar"] as const)[i % 3] : null);
+    interface Entrenada { s: Simulacion; guiones: Guion[] }
+    /** Entrena a B (la del medio) con A. C no esta. Con `guiones` es el control apareado. */
+    const entrenar = (guiones?: Guion[], k = 0): Entrenada => {
+      const r = restaurar(k);
+      const [A, B] = r.criaturas;
+      r.criaturas = [A, B];
+      A.inconsolable = !!guiones;
+      const grabados: Guion[] = [];
+      for (let i = 0; i < EP; i++) { grabados.push(episodio(r, A, B, false, 0.1, guiones ? guiones[(i + 4) % EP] : undefined, forzadoEn(i)).guion); r.avanzar(8); }
+      A.inconsolable = false; A.emo[0] = 0; A.nec[2] = 0;
+      return { s: r, guiones: grabados };
+    };
+    /** La entrenada con A, probada ante A (`ante` = 0) o ante C (`ante` = 2, que no vio sufrir nunca). Devuelve la media por nivel de hambre. */
+    const curva = (e: Entrenada | null, ante: 0 | 2): number[] => HAMBRES.map((h) => {
+      const v: number[] = [];
+      for (let k = 0; k < REP; k++) {
+        let r: Simulacion, quien: Criatura, B: Criatura;
+        if (e) {
+          r = replica(e.s, k);
+          B = r.criaturas[1];
+          if (ante === 2) {
+            // C viene de la misma convivencia, con su vinculo intacto
+            quien = restaurar(50 + k).criaturas[2];
+            r.criaturas = [quien, B];
+          } else quien = r.criaturas[0];
+        } else {
+          r = restaurar(100 + k);
+          quien = r.criaturas[ante];
+          B = r.criaturas[1];
+          r.criaturas = [quien, B];
+        }
+        for (const o of [...r.mundo.objetos]) r.mundo.quitar(o.id);
+        r.avanzar(120);
+        v.push(1 - episodio(r, quien, B, true, h).latencia / TOPE);
+      }
+      return media(v);
+    });
+    const consuela = entrenar();
+    const apareada = entrenar(consuela.guiones, 2);
+    const cA = curva(consuela, 0), cC = curva(consuela, 2), aA = curva(apareada, 0), iA = curva(null, 0), iC = curva(null, 2);
+    const m = media;
+    return resultado(semilla, {
+      "ha creado vínculo con las dos (afecto > 0,2 con A y con C)": afectoA > 0.2 && afectoC > 0.2,
+      "con la comida más tentadora sigue yendo con ella más que si nunca la vio sufrir (+0,1, media de los cuatro niveles)": m(cA) > m(iA) + 0.1,
+      "y más que el control apareado, que vio el mismo alivio sin causarlo (+0,1)": m(cA) > m(aA) + 0.1,
+      "ante la tercera, que nunca vio sufrir, va más que quien nunca vio sufrir a nadie (+0,1): lo aprendido se traslada": m(cC) > m(iC) + 0.1,
+    }, {
+      afectoA, afectoC,
+      consuelaA: m(cA), consuelaC: m(cC), apareadaA: m(aA), ingenuaA: m(iA), ingenuaC: m(iC),
+      consuelaA_h90: cA[3], apareadaA_h90: aA[3], ingenuaA_h90: iA[3], consuelaC_h90: cC[3],
+    }, juntos.criaturas[0], 1500);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
 export const caso07b: Caso = {
   id: "07b",
   titulo: "El aprendiz, por fases",
@@ -1005,5 +1119,5 @@ export const caso14: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso07b, caso14];
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
