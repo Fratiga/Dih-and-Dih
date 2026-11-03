@@ -14,8 +14,8 @@ El alcance de este prototipo es solo la inteligencia: una habitación, dos criat
 6. **Mortalidad "protegida" por ahora**: la salud nunca baja de un mínimo. Las otras modalidades (recuperable, permanente) quedan para la fase de mundo compartido.
 7. **Guardado en el navegador** (`localStorage`, clave `vidaArtificialEstado`). Se guarda el estado completo y la hora; al volver se simula el tiempo pasado en pasos de 1 s con un tope de 8 horas y se muestra un resumen. El modelo de Supabase queda para otra fase.
 8. **Un día de las criaturas son 30 minutos de simulación** (`DIA = 1800`). Un reloj de laboratorio muestra "Día 3 · 14:20" y de noche (20 h a 6 h) la sala se oscurece.
-9. **Arte dibujado en código**, sin archivos de imagen, con la estética de las inspiraciones: un corte lateral de laboratorio (como *Creatures*) con un rincón cálido (nido, planta, ventana redonda, lámpara ámbar) a la izquierda, una ventana de observación en el centro y tubos de contención verdes y cian a la derecha. Las criaturas son pálidas y translúcidas, de extremidades largas y finas, manos de dedos largos, ojos grandes y orejas como plumas con la punta luminosa. Cada una lleva un collar de color propio (sale de su huella) para distinguir a los gemelos.
-10. **Interfaz plana y oscura**, con filetes finos, un cian frío para lo vivo y un ámbar cálido para lo acogedor. Sin degradados dorados ni sombras en relieve. Todos los controles llevan el estilo de la página, y toda espera de más de 250 ms se ve en el propio botón.
+9. **Arte dibujado en código**, sin archivos de imagen, con la estética de las inspiraciones: un corte lateral de laboratorio (como *Creatures*) con un rincón cálido (nido, planta, ventana redonda, lámpara ámbar) a la izquierda, una ventana de observación en el centro y tubos de contención verdes y cian a la derecha. Las criaturas son pálidas y translúcidas, de cuatro patas curvas y gruesas, zarpas blandas, cabeza grande, ojos grandes y orejas caídas con la punta luminosa (la primera versión tenía orejas con barbas y dedos largos y se leía como un insecto). El aspecto sale de un genoma visual (`Cuerpo` en `nucleo/genoma.ts`: tono, tamaño, longitud y grosor de las patas, caída de las orejas, tamaño de cabeza y de ojos, motas), así que una mutación cambia el dibujo cambiando números. La expresión se mezcla con la postura: las pupilas se abren con la curiosidad y se cierran con el miedo, las orejas se levantan con la atención y se pegan hacia atrás con miedo, y una luz en el collar cambia de color con el ánimo (azul asustado, rojo frustrado, verde contento, ámbar curioso). Cada una lleva un collar de color propio (sale de su huella) para distinguir a los gemelos.
+10. **Interfaz plana y oscura**, con filetes finos, un cian frío para lo vivo y un ámbar cálido para lo acogedor. Sin degradados dorados ni sombras en relieve. Todos los controles llevan el estilo de la página, y toda espera de más de 250 ms se ve en el propio botón. Los dos paneles se pliegan con una lengüeta (en pantallas de menos de 1500 px de ancho la memoria empieza plegada) y "Observar" los esconde todos.
 
 ## Reparto en módulos
 
@@ -72,15 +72,17 @@ Teclas: espacio pausa, 1 2 3 velocidades, O observar, C cámara, Tab cambia de c
 | 04 Peligro | 10/10 | Placa que no descarga: no se evita. Se evita la zona sin la placa y también la placa apagada. |
 | 04b Generalización | 9/10 | Quien no recibió la descarga no tiene preferencia por el foco azul sobre el rojo nuevo. Los focos rojos se parecen (semejanza 0,70) y el azul no (0,0006). |
 | 13 Gemelos | 10/10 | Dos gemelos criados igual se parecen mucho más entre sí que dos criados en habitaciones distintas (distancia de conducta 0,01 a 0,13 frente a 0,75 a 1,2). |
-| 05 Partido | **0/10, no aprobado** | Preparado (ver abajo). Informativo. |
+| 05 Partido | 9/10 (16/20 con las semillas 1 a 20) | Cada criatura en su sala con su pelota: sin posibilidad de responder, no hay turnos por encima del azar (en 2 de 20 semillas el control sale por encima de z = 2, lo esperable con ese umbral). |
 
 Una semilla de 04b no aprueba porque esa criatura, con poco miedo de nacimiento, apenas distingue los focos: es una diferencia individual, no un fallo de la prueba. En 20 semillas, 18 aprueban.
 
-### Caso 05, partido improvisado (preparado, no aprobado)
+### Caso 05, partido improvisado
 
-El experimento está montado: dos criaturas, una pelota, 25 minutos, control con cada criatura en su sala con su pelota, y dos medidas de reciprocidad (turnos alternados con rachas, y una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar). Ambas juegan mucho (80 a 120 empujones), pero **no hay reciprocidad por encima del azar** (la proporción de turnos alternados es de alrededor de 0,5, lo que daría el azar con esos repartos; z entre -1 y 2 salvo alguna semilla). Se probó que compartir diversión cuente como compañía y una habituación por objeto (cansarse un rato de lo que acaba de hacer, para dejárselo al otro): lo segundo debilitaba el caso 13 y no producía turnos, así que se quitó.
+Dos criaturas, una pelota, 25 minutos y dos medidas de reciprocidad: turnos alternados con rachas y una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar.
 
-Lo que falta es que cada criatura **perciba y responda a lo que hace la otra**: la pelota que viene hacia ella es un estímulo distinto de la que está quieta, y el compañero que acaba de empujarla debe contar como parte de la situación. Es la base de la Fase 3 (interacción social, juego, aprendizaje por observación).
+Sin percepción del otro no había reciprocidad (0/10: ambas jugaban mucho, 80 a 120 empujones, pero la proporción de turnos alternados era de 0,5, lo que daría el azar). Se añadió que **cada criatura perciba lo que hace la otra**: si una criatura que ve acaba de empujar o tocar algo, se fija en ello (sube la curiosidad y la excitación), le deja un recuerdo suave de que eso entretiene y la cosa gana atractivo unos 8 s (más cuanto más sociable es). No hay ninguna regla de "devolver la pelota". Con eso la proporción de turnos alternados sube a 0,6 a 0,8 y hay rachas de hasta 16 turnos seguidos.
+
+Es el resultado menos sólido de los casos: 9/10 con las semillas 1 a 10 y 16/20 con 1 a 20. Antes se probó que compartir diversión cuente como compañía y una habituación por objeto; esto último debilitaba el caso 13 y se quitó.
 
 ## Números ajustables
 
@@ -111,8 +113,8 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 
 ## Pendiente
 
-- **Caso 05** (reciprocidad): necesita percepción de las acciones del otro. Después: 06 (compañía), 07 (aprendiz), 08 (protector), 09 (perro guardián), 10 a 12.
-- **Reproducción y herencia** (Fase 4): hoy solo hay genoma, sin cruce ni mutación. Los hijos deben heredar predisposiciones y no recuerdos (ya está preparado: el cerebro y la memoria nacen de nuevo).
+- **Casos sociales y de entrenamiento**: 06 (compañía), 07 (aprendiz), 08 (protector), 09 (perro guardián), 10 a 12. El 05 ya tiene la base (percepción de lo que hace el otro); el 07 puede apoyarse en el recuerdo suave que deja verlo.
+- **Reproducción y herencia** (Fase 4): hoy solo hay genoma, sin cruce ni mutación. Los hijos deben heredar predisposiciones y no recuerdos (ya está preparado: el cerebro y la memoria nacen de nuevo). El genoma visual ya es heredable: falta el cruce y la mutación.
 - **Mortalidad** recuperable y permanente, y legado.
 - **Estados ajenos y comunicación** (casos 19 a 38): ver `docs/vida-artificial-casos-extremos.md`.
 - **Temperatura** como necesidad y entornos distintos.
@@ -124,7 +126,7 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 
 ## Recomendación para la siguiente fase
 
-1. **Percepción del otro.** Que lo que hace otra criatura (empujar la pelota hacia mí, comer, asustarse) entre como estímulo y como consecuencia. Con eso el 05 debería poder pasar sin reglas nuevas, y se abren 06, 07 y 08.
+1. **Ampliar la percepción del otro.** Hoy solo se percibe que otra criatura empujó o tocó algo. Falta que entren comer, asustarse y su estado (casos 06, 07, 08 y los de estados ajenos).
 2. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, como se hizo aquí.
 3. **Aprendizaje por observación (caso 07)** antes de la reproducción: es lo que separa "heredan predisposiciones" de "heredan costumbres".
 4. **Después, genética** (Fase 4), con los casos 14 y 15, y solo entonces el hábitat compartido.

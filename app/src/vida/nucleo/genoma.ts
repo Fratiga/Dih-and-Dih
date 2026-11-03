@@ -13,6 +13,21 @@ export interface Cuerpo {
   patas: number;
   ojos: number;
   motas: number;
+  /** 1 es lo normal. Las patas largas dan una criatura mas esbelta. */
+  longitudPata?: number;
+  grosorPata?: number;
+  /** 0 orejas muy caidas, 1 mas erguidas. */
+  caidaOrejas?: number;
+  tamanoCabeza?: number;
+  tamanoOjos?: number;
+}
+
+export type CuerpoCompleto = Required<Cuerpo>;
+
+/** El cuerpo con todos sus campos (los genomas guardados antes de ampliarlo no traen los nuevos). */
+export function cuerpoDe(g: Genoma): CuerpoCompleto {
+  const c = g.cuerpo;
+  return { ...c, longitudPata: c.longitudPata ?? 1, grosorPata: c.grosorPata ?? 1, caidaOrejas: c.caidaOrejas ?? 0.7, tamanoCabeza: c.tamanoCabeza ?? 1.05, tamanoOjos: c.tamanoOjos ?? 1.05 };
 }
 
 export interface Genoma {
@@ -51,7 +66,7 @@ export function genomaNuevo(semilla: number, linaje = "L"): Genoma {
     fuerza: u(0.9, 1.1),
     velocidad: u(0.9, 1.1),
     priorOlor: u(0.14, 0.24),
-    cuerpo: { tono: u(150, 230), tamano: u(0.92, 1.08), orejas: r.next(), cola: r.next(), patas: u(0.4, 0.9), ojos: u(0.5, 1), motas: r.next() },
+    cuerpo: { tono: u(150, 230), tamano: u(0.92, 1.08), orejas: r.next(), cola: r.next(), patas: u(0.4, 0.9), ojos: u(0.5, 1), motas: r.next(), longitudPata: u(0.9, 1.1), grosorPata: u(0.95, 1.2), caidaOrejas: u(0.45, 0.95), tamanoCabeza: u(1, 1.18), tamanoOjos: u(1, 1.15) },
   };
 }
 

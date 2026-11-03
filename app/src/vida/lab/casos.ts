@@ -441,4 +441,4 @@ export const caso05: Caso = {
 };
 
 export const CASOS: Caso[] = [caso01, caso02, caso03, caso04, caso04b, caso13, caso05];
-export const CASOS_OBLIGATORIOS = ["01", "02", "03", "04", "04b", "13"];
+export const CASOS_OBLIGATORIOS = ["01", "02", "03", "04", "04b", "13", "05"];

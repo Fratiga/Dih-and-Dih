@@ -145,6 +145,9 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       const res = esperar(c, p, v, env);
       res[C.dano] = Math.max(res[C.dano], peligroDelTrayecto(c, c.x, p.x, ancho) * 0.9);
       let u = utilidad(res, p.dist, A.conf, p.esCriatura);
+      // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
+      const at = c.atencion;
+      if (at && at.obj === p.id && at.v === v && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz);
       if (p.recordado) u -= 0.03 + 0.01 * (env.t - (c.mem.avist.find((a) => a.id === p.id)?.t ?? env.t)) / 60;
       if (act && act.v === v && act.obj === p.id) u += persistir;
       cand.push({ v, p, dest: p.x, u, cambia: true, espera: res });

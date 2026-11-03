@@ -88,6 +88,16 @@ export interface EstadoCriatura {
   forzar: boolean;
   acumOlvido: number;
   expuesto: Record<number, number>;
+  atencion: Atencion | null;
+  ultimoImpacto: Atencion | null;
+}
+
+/** Lo que otra criatura acaba de hacer con algo, visto desde aqui. */
+export interface Atencion {
+  obj: number;
+  v: Verbo;
+  t: number;
+  quien: number;
 }
 
 export class Criatura {
@@ -123,6 +133,10 @@ export class Criatura {
   percibidos: Percepto[] = [];
   acumOlvido = 0;
   expuesto: Record<number, number> = {};
+  /** Lo ultimo que vio hacer a otra criatura con un objeto (dura unos segundos). */
+  atencion: Atencion | null = null;
+  /** Lo ultimo que hizo yo con un objeto, para que lo vean los demas. */
+  ultimoImpacto: Atencion | null = null;
   registro: Registro[] = [];
   capRegistro = 600;
   t = 0;
@@ -162,6 +176,7 @@ export class Criatura {
     }
     this.percibidos = percibir(this, env);
     this.notarApariciones(env);
+    this.mirarAOtros(env);
     this.observar(env, dt);
     this.resolverTrazas(env);
     if (this.espera > 0) this.espera -= dt;
@@ -311,6 +326,7 @@ export class Criatura {
     this.red.avanzar(entrada);
     this.red.entrenar(entrada, res, this.lr, inmediatos);
     m.contar(`${acc.v}:${acc.tipo}`);
+    if (acc.obj >= 0 && !acc.esCriatura && (acc.v === "empujar" || acc.v === "tocar")) this.ultimoImpacto = { obj: acc.obj, v: acc.v, t: env.t, quien: this.id };
     this.registrar({ t: env.t, kind: "impacto", v: acc.v, tipo: acc.tipo, obj: acc.obj, res: res.slice() });
 
     const gus = res[C.sacia] + res[C.diversion] + res[C.compania];
@@ -346,6 +362,25 @@ export class Criatura {
       this.trazas.push({ t: env.t, v: acc.v, f: acc.f.slice(), lug, tipo: acc.tipo, nombre: acc.nombre, cred: 0, entrada, obj: acc.obj });
     }
     this.escribir(acc, res, efecto, env);
+  }
+
+  /** Percibe lo que hacen los demas: si otra criatura que ve acaba de empujar o tocar algo, se fija en ello. Le despierta curiosidad,
+      y lo que le vio hacer (y el resultado que se ve) le deja un recuerdo suave de que eso entretiene. */
+  private mirarAOtros(env: Entorno): void {
+    for (const o of env.criaturas) {
+      if (o === this || !o.vivo || !o.ultimoImpacto) continue;
+      const u = o.ultimoImpacto;
+      if (u.t <= (this.atencion?.t ?? -1) || env.t - u.t > 1) continue;
+      if (Math.abs(o.x - this.x) > AJ.vista * this.genoma.vista * 1.3) continue;
+      const ob = env.mundo.obj(u.obj);
+      if (!ob) continue;
+      this.atencion = { obj: u.obj, v: u.v, t: u.t, quien: o.id };
+      this.emo[E.curiosidad] = acota(this.emo[E.curiosidad] + 0.12);
+      this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.1);
+      const def = CATALOGO[ob.tipo];
+      this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5, 0.1, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5);
+      this.forzar = true;
+    }
   }
 
   /** Si algo aparece poco despues de tocar una maquina, la accion se queda con el valor de lo que salio (lo que cree que le sentara cada cosa). */
@@ -516,7 +551,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto,
       }),
     ) as EstadoCriatura;
   }
@@ -544,6 +579,8 @@ export class Criatura {
     c.forzar = e.forzar;
     c.acumOlvido = e.acumOlvido;
     c.expuesto = { ...e.expuesto };
+    c.atencion = e.atencion ? { ...e.atencion } : null;
+    c.ultimoImpacto = e.ultimoImpacto ? { ...e.ultimoImpacto } : null;
     return c;
   }
 }

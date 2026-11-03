@@ -357,8 +357,8 @@ export class Laboratorio extends Phaser.Scene {
     s.x = x;
     const foco = this.enfoque(c);
     actualizarVista(v, c, dtAnim, foco);
-    // Cada criatura se redibuja una de cada dos veces (30 por segundo): se nota igual de fluido y cuesta la mitad
-    if ((this.cuadro + c.id) % 2 === 0) { pintarCriatura(s.ctx, v, c.genoma, c.huella); s.tex.refresh(); }
+    // Cada criatura se redibuja una de cada dos veces (30 por segundo): se nota igual de fluido y cuesta la mitad (y dormida, un cuarto)
+    if ((this.cuadro + c.id) % (v.pose.dormido > 0.9 ? 4 : 2) === 0) { pintarCriatura(s.ctx, v, c.genoma, c.huella); s.tex.refresh(); }
     const profundo = (c.id % 2) * 8;
     s.img.setPosition(x, PIES + profundo);
     s.sombra.setPosition(x, PIES + 6 + profundo).setScale(4 - v.pose.agacha * 0.3, 2.3).setAlpha(0.7);

@@ -4,7 +4,7 @@
    orejas, ojos, cola...) que se mezcla con suavidad con la anterior, asi un paso, un olfateo y un susto pueden ocurrir a la vez. */
 
 import type { Criatura } from "../nucleo/criatura.ts";
-import type { Genoma } from "../nucleo/genoma.ts";
+import { cuerpoDe, type Genoma } from "../nucleo/genoma.ts";
 import { E, N } from "../nucleo/tipos.ts";
 import { Azar } from "../nucleo/azar.ts";
 import { ESCALA } from "./medidas.ts";
@@ -22,6 +22,8 @@ export interface Pose {
   inclina: number;
   dormido: number;
   sonrisa: number;
+  /** 0 pupila pequena, 1 muy abierta (curiosidad). */
+  pupila: number;
 }
 
 export interface Vista {
@@ -37,13 +39,15 @@ export interface Vista {
   vel: number;
   ultimaVida: number;
   ultDano: number;
+  /** Color de la lucecita del collar: azul asustado, rojo frustrado, verde contento, ambar curioso. */
+  animo: string;
 }
 
 export const lienzoCriatura = { w: 700, h: 600, ox: 320, oy: 530, res: 1.1 };
 
 export function nuevaVista(semilla: number): Vista {
   return {
-    pose: { agacha: 0, cabezaBaja: 0.1, orejas: 0.6, ojos: 1, boca: 0, tembl: 0, alcance: 0, colaAmp: 0.3, colaVel: 2, inclina: 0, dormido: 0, sonrisa: 0 },
+    pose: { agacha: 0, cabezaBaja: 0.1, orejas: 0.6, ojos: 1, boca: 0, tembl: 0, alcance: 0, colaAmp: 0.3, colaVel: 2, inclina: 0, dormido: 0, sonrisa: 0, pupila: 0.4 },
     dir: 1,
     fase: 0,
     t: 0,
@@ -55,6 +59,7 @@ export function nuevaVista(semilla: number): Vista {
     vel: 0,
     ultimaVida: 0,
     ultDano: -99,
+    animo: "#46d9e8",
   };
 }
 
@@ -84,6 +89,7 @@ export function actualizarVista(v: Vista, c: Criatura, dt: number, mira: [number
     inclina: 0,
     dormido: 0,
     sonrisa: acota(exc * 0.8 + (1 - c.nec[N.hambre]) * 0.1 - miedo),
+    pupila: acota(0.35 + 0.6 * cur - 0.6 * miedo + 0.2 * exc),
   };
   if (v.vel > 90) obj.inclina = 0.12 + Math.min(0.1, (v.vel - 90) / 800);
   if (c.nec[N.dolor] > 0.2) { obj.ojos = Math.min(obj.ojos, 0.7); obj.agacha += c.nec[N.dolor] * 0.25; }
@@ -134,6 +140,8 @@ export function actualizarVista(v: Vista, c: Criatura, dt: number, mira: [number
   p.inclina += (obj.inclina - p.inclina) * k(5);
   p.dormido += (obj.dormido - p.dormido) * k(3);
   p.sonrisa += (obj.sonrisa - p.sonrisa) * k(4);
+  p.pupila += (obj.pupila - p.pupila) * k(5);
+  v.animo = miedo > 0.4 ? "#5aa8ff" : frus > 0.4 ? "#ff6a5c" : exc > 0.45 ? "#7cf08a" : cur > 0.5 ? "#ffb35c" : "#46d9e8";
 
   // Mirada y giro
   v.dir += (c.dir - v.dir) * k(9);
@@ -191,58 +199,63 @@ function colores(g: Genoma, huella: number): Colores {
   };
 }
 
+/** Una pata o brazo con la forma de una curva que se afina hacia el final (no dos palos). */
 function miembro(c: CanvasRenderingContext2D, pts: [number, number][], anchos: number[], relleno: string, linea: string): void {
-  for (const pasada of [0, 1]) {
-    for (let i = 0; i < pts.length - 1; i++) {
-      c.strokeStyle = pasada === 0 ? linea : relleno;
-      c.lineWidth = anchos[i] + (pasada === 0 ? 5 : 0);
-      c.beginPath(); c.moveTo(pts[i][0], pts[i][1]); c.lineTo(pts[i + 1][0], pts[i + 1][1]); c.stroke();
-    }
+  const [a, k, f] = pts;
+  const puntos: [number, number, number][] = [];
+  const N = 16;
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const cx = 2 * k[0] - (a[0] + f[0]) / 2;
+    const cy = 2 * k[1] - (a[1] + f[1]) / 2;
+    const x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * cx + t * t * f[0];
+    const y = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * cy + t * t * f[1];
+    // Mas gruesa arriba, con una rodilla redondeada y fina al final
+    const w = anchos[0] * (1 - t) + anchos[1] * t + Math.sin(t * Math.PI) * 4;
+    puntos.push([x, y, w]);
   }
-  for (let i = 1; i < pts.length - 1; i++) {
-    c.fillStyle = relleno; c.beginPath(); c.arc(pts[i][0], pts[i][1], anchos[i] * 0.55, 0, Math.PI * 2); c.fill();
+  for (const pasada of [0, 1]) {
+    c.fillStyle = pasada === 0 ? linea : relleno;
+    for (const [x, y, w] of puntos) { c.beginPath(); c.arc(x, y, w / 2 + (pasada === 0 ? 2.6 : 0), 0, Math.PI * 2); c.fill(); }
   }
 }
 
+/** Una zarpa blanda: tres deditos cortos y redondeados con una almohadilla, en vez de dedos largos. */
 function mano(c: CanvasRenderingContext2D, x: number, y: number, dir: number, largo: number, col: Colores, rizo: number): void {
   c.lineCap = "round";
   for (let i = -1; i <= 1; i++) {
-    const a = dir + i * 0.32 + rizo * 0.25;
-    const ex = x + Math.cos(a) * largo * (i === 0 ? 1.1 : 0.92);
-    const ey = y + Math.sin(a) * largo * (i === 0 ? 1.1 : 0.92) + 3;
-    const mx = x + Math.cos(a - 0.2) * largo * 0.55, my = y + Math.sin(a - 0.2) * largo * 0.55;
-    c.strokeStyle = col.linea; c.lineWidth = 8; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(mx, my, ex, ey); c.stroke();
-    c.strokeStyle = col.pielOsc; c.lineWidth = 4.5; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(mx, my, ex, ey); c.stroke();
+    const a = dir + i * 0.4 + rizo * 0.2;
+    const ex = x + Math.cos(a) * largo * (i === 0 ? 1 : 0.85);
+    const ey = y + Math.sin(a) * largo * (i === 0 ? 1 : 0.85) + 2;
+    c.strokeStyle = col.linea; c.lineWidth = 13; c.beginPath(); c.moveTo(x, y); c.lineTo(ex, ey); c.stroke();
+    c.strokeStyle = col.pielOsc; c.lineWidth = 8.5; c.beginPath(); c.moveTo(x, y); c.lineTo(ex, ey); c.stroke();
   }
+  c.fillStyle = col.pielOsc; c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.fill();
 }
 
-function oreja(c: CanvasRenderingContext2D, bx: number, by: number, ang: number, largo: number, col: Colores, t: number, fase: number, lejos: boolean): void {
-  const pts: [number, number][] = [[bx, by]];
-  let a = ang, x = bx, y = by;
-  const n = 6;
-  for (let i = 0; i < n; i++) {
-    a += 0.16 + 0.1 * Math.sin(t * 2 + fase + i * 0.7);
-    x += Math.cos(a) * (largo / n);
-    y += Math.sin(a) * (largo / n);
-    pts.push([x, y]);
-  }
-  c.strokeStyle = col.linea; c.lineWidth = 11; c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.stroke();
-  c.strokeStyle = lejos ? col.lejos : col.pielOsc; c.lineWidth = 6; c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.stroke();
-  // Barbas, como las de una pluma
-  for (let i = 1; i < pts.length; i++) {
-    const [px_, py_] = pts[i];
-    const ang2 = Math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0]);
-    for (const s of [-1, 1]) {
-      c.strokeStyle = lejos ? col.lejos : col.pielClara; c.lineWidth = 3;
-      const bl = (14 - i * 1.6) * (lejos ? 0.9 : 1);
-      c.beginPath(); c.moveTo(px_, py_); c.lineTo(px_ + Math.cos(ang2 + s * 1.1) * bl, py_ + Math.sin(ang2 + s * 1.1) * bl); c.stroke();
-    }
-  }
-  const [lx, ly] = pts[pts.length - 1];
-  c.fillStyle = col.luz; c.globalAlpha = 0.9; c.beginPath(); c.arc(lx, ly, 4.5, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+/** Una oreja blanda y caida, con forma de hoja. Se levanta un poco cuando esta atenta y se pega hacia atras con miedo. */
+function oreja(c: CanvasRenderingContext2D, bx: number, by: number, atencion: number, largo: number, col: Colores, t: number, fase: number, lejos: boolean): void {
+  // atencion: -1 pegada hacia atras, 0 caida, 1 alzada
+  const a0 = Math.PI * 0.62 - atencion * 0.9 + Math.sin(t * 1.6 + fase) * 0.06;
+  const a1 = a0 + 0.5 - atencion * 0.25;
+  const mx = bx + Math.cos(a0) * largo * 0.55, my = by + Math.sin(a0) * largo * 0.55;
+  const tx = mx + Math.cos(a1) * largo * 0.5, ty = my + Math.sin(a1) * largo * 0.5;
+  const ancho = largo * 0.24;
+  const nx = -Math.sin(a0), ny = Math.cos(a0);
+  const hoja = (esc: number): void => {
+    c.beginPath();
+    c.moveTo(bx + nx * ancho * 0.35 * esc, by + ny * ancho * 0.35 * esc);
+    c.quadraticCurveTo(mx + nx * ancho * esc, my + ny * ancho * esc, tx, ty);
+    c.quadraticCurveTo(mx - nx * ancho * esc, my - ny * ancho * esc, bx - nx * ancho * 0.35 * esc, by - ny * ancho * 0.35 * esc);
+    c.closePath();
+  };
+  hoja(1); c.fillStyle = lejos ? col.lejos : col.pielOsc; c.fill(); c.strokeStyle = col.linea; c.lineWidth = 3; c.stroke();
+  // Interior mas claro
+  hoja(0.5); c.fillStyle = lejos ? col.piel : col.pielClara; c.globalAlpha = 0.7; c.fill(); c.globalAlpha = 1;
+  c.fillStyle = col.luz; c.globalAlpha = 0.8; c.beginPath(); c.arc(tx, ty, 3.6, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
 }
 
-function ojo(c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, abierto: number, mirada: [number, number], col: Colores, asustado: boolean): void {
+function ojo(c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, abierto: number, mirada: [number, number], col: Colores, dilata: number): void {
   const h = Math.max(0.06, abierto);
   if (h <= 0.1) {
     c.strokeStyle = col.linea; c.lineWidth = 4; c.beginPath(); c.arc(x, y + 2, rx * 0.8, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
@@ -253,7 +266,7 @@ function ojo(c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: 
   // Iris luminoso y pupila que sigue lo que mira
   const px_ = x + mirada[0] * rx * 0.35, py_ = y + mirada[1] * ry * 0.3;
   c.fillStyle = col.luz; c.globalAlpha = 0.55; c.beginPath(); c.ellipse(px_, py_, rx * 0.62, ry * h * 0.62, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
-  c.fillStyle = "#020608"; c.beginPath(); c.ellipse(px_, py_, rx * (asustado ? 0.2 : 0.36), ry * h * (asustado ? 0.34 : 0.56), 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "#020608"; c.beginPath(); c.ellipse(px_, py_, rx * (0.16 + 0.34 * dilata), ry * h * (0.26 + 0.38 * dilata), 0, 0, Math.PI * 2); c.fill();
   c.fillStyle = "rgba(255,255,255,0.92)"; c.beginPath(); c.ellipse(x - rx * 0.28, y - ry * h * 0.3, rx * 0.2, ry * h * 0.2, 0, 0, Math.PI * 2); c.fill();
   c.fillStyle = "rgba(255,255,255,0.55)"; c.beginPath(); c.arc(x + rx * 0.3, y + ry * h * 0.3, rx * 0.08, 0, Math.PI * 2); c.fill();
 }
@@ -262,13 +275,14 @@ function ojo(c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: 
 export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: number, v: Vista, g: Genoma, col: Colores, inclina: number, escalaOjo = 1): void {
   const p = v.pose;
   c.save();
+  const cu = cuerpoDe(g);
   c.translate(hx, hy);
   c.rotate(inclina);
-  // Orejas (la de atras mas oscura)
-  const aOreja = -Math.PI / 2 - 0.15 - (1 - p.orejas) * 0.85;
-  const lo = 80 + g.cuerpo.orejas * 60;
-  oreja(c, -26, -30, aOreja - 0.28, lo * 0.92, col, v.t, 1.3, true);
-  oreja(c, -8, -36, aOreja + 0.12, lo, col, v.t, 0, false);
+  c.scale(cu.tamanoCabeza, cu.tamanoCabeza);
+  // Orejas caidas: la de atras mas oscura (la cercana se dibuja despues, por delante del craneo)
+  const aten = p.orejas * (0.6 + 0.4 * cu.caidaOrejas) - (1 - cu.caidaOrejas) * 0.3;
+  const lo = 78 + g.cuerpo.orejas * 40;
+  oreja(c, -26, -30, aten - 0.1, lo * 0.92, col, v.t, 1.3, true);
   // Craneo y hocico
   const gr = c.createRadialGradient(-12, -14, 6, 0, 0, 62);
   gr.addColorStop(0, col.pielClara); gr.addColorStop(1, col.piel);
@@ -288,11 +302,12 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
   }
   // Ojos grandes: el de atras un poco mas pequeno
   const abierto = p.ojos * (v.parpadeo > 0 ? Math.abs(1 - v.parpadeo * 2) : 1);
-  const asust = p.ojos > 1.1;
-  ojo(c, -6, -8, 15 * escalaOjo, 18 * escalaOjo, abierto, v.mira, col, asust);
-  ojo(c, 22, -8, 18 * escalaOjo, 22 * escalaOjo, abierto, v.mira, col, asust);
+  const eo = escalaOjo * cu.tamanoOjos;
+  ojo(c, -6, -8, 15 * eo, 18 * eo, abierto, v.mira, col, p.pupila);
+  ojo(c, 22, -8, 18 * eo, 22 * eo, abierto, v.mira, col, p.pupila);
   // Mejillas luminosas
   c.fillStyle = col.luz2; c.globalAlpha = 0.18 + 0.2 * p.sonrisa; c.beginPath(); c.ellipse(34, 18, 12, 6, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+  oreja(c, -6, -34, aten + 0.1, lo, col, v.t, 0, false);
   c.restore();
 }
 
@@ -304,7 +319,7 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const durmiendo = p.dormido;
   const respira = Math.sin(t * (durmiendo > 0.5 ? 1.6 : 2.4)) * (durmiendo > 0.5 ? 4 : 2.5);
   const sacudida = p.tembl * Math.sin(t * 52) * 2.5 + v.golpe * Math.sin(t * 40) * 4;
-  const cuerpoY = -188 + p.agacha * 118 + respira * 0.5 - Math.abs(Math.sin(v.fase)) * (v.vel > 4 ? Math.min(6, v.vel * 0.04) : 0);
+  const cuerpoY = -188 - (cuerpoDe(g).longitudPata - 1) * 160 + p.agacha * 118 + respira * 0.5 - Math.abs(Math.sin(v.fase)) * (v.vel > 4 ? Math.min(6, v.vel * 0.04) : 0);
   const tam = g.cuerpo.tamano;
   c.save();
   c.scale(tam, tam);
@@ -315,7 +330,8 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const caderaX = -52, hombroX = 56;
   const caderaY = cyC + 28 - p.agacha * 10;
   const hombroY = cyC + 22 - p.agacha * 8;
-  const largoA = 86, largoB = 90;
+  const cu = cuerpoDe(g);
+  const largoA = 86 * cu.longitudPata, largoB = 90 * cu.longitudPata;
   const paso = pasoDe(v.vel);
   const corre = v.vel > 4;
   const lift = corre ? 18 + Math.min(26, v.vel * 0.1) : 0;
@@ -346,10 +362,10 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
 
   const dibujarPata = (q: (typeof patas)[number]): void => {
     const rel = q.cerca ? col.pielOsc : col.lejos;
-    miembro(c, q.pts, q.delantera ? [20, 14] : [24, 15], rel, col.linea);
+    miembro(c, q.pts, q.delantera ? [28 * cu.grosorPata, 19 * cu.grosorPata] : [34 * cu.grosorPata, 20 * cu.grosorPata], rel, col.linea);
     const [fx, fy] = q.pts[2];
-    if (q.delantera) mano(c, fx, fy, q.cerca && p.alcance > 0.2 ? 0.1 : 1.1, 30, col, Math.sin(t * 2 + (q.cerca ? 1 : 0)) * 0.4);
-    else mano(c, fx, fy, 0.15, 20, col, 0);
+    if (q.delantera) mano(c, fx, fy, q.cerca && p.alcance > 0.2 ? 0.1 : 1.2, 17, col, Math.sin(t * 2 + (q.cerca ? 1 : 0)) * 0.3);
+    else mano(c, fx, fy, 0.2, 15, col, 0);
   };
 
   // Cola: una cadena de segmentos que se mueve con las emociones
@@ -424,6 +440,8 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   // Collar: su marca personal
   c.strokeStyle = col.collar; c.lineWidth = 11;
   c.beginPath(); c.moveTo(cuelloX - 18, cuelloY + 6); c.quadraticCurveTo(cuelloX - 4, cuelloY + 26, cuelloX + 14, cuelloY + 16); c.stroke();
+  c.fillStyle = v.animo; c.globalAlpha = 0.3; c.beginPath(); c.arc(cuelloX + 2, cuelloY + 22, 15, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+  c.fillStyle = v.animo; c.beginPath(); c.arc(cuelloX + 2, cuelloY + 22, 6.5, 0, Math.PI * 2); c.fill(); c.strokeStyle = col.linea; c.lineWidth = 2; c.stroke();
   c.strokeStyle = "rgba(255,255,255,0.35)"; c.lineWidth = 3;
   c.beginPath(); c.moveTo(cuelloX - 16, cuelloY + 2); c.quadraticCurveTo(cuelloX - 4, cuelloY + 20, cuelloX + 10, cuelloY + 11); c.stroke();
 

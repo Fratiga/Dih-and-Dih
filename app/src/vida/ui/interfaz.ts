@@ -166,7 +166,15 @@ export class Interfaz {
     const ayuda = h("p", { clase: "va-bandeja-ayuda" }, "Arrastra un objeto a la sala. Para quitarlo, arrástralo de vuelta aquí abajo.");
     const pie = h("div", { clase: "va-pie" }, ayuda, this.bandeja);
 
-    this.raiz.append(barra, this.ficha, this.panelMem, pie, this.subtitulo);
+    // Lenguetas para plegar cada panel y dejar la sala despejada (en pantallas pequenas la memoria empieza plegada)
+    const lengueta = (clase: string, texto: string, panel: HTMLElement, plegada: boolean): HTMLButtonElement => {
+      panel.classList.toggle("plegada", plegada);
+      const b = boton(texto, () => { const p_ = panel.classList.toggle("plegada"); b.classList.toggle("activa", !p_); }, { clase: `va-lengueta ${clase}`, tip: "Mostrar u ocultar este panel" });
+      b.classList.toggle("activa", !plegada);
+      return b;
+    };
+    const pequena = window.innerWidth < 1500;
+    this.raiz.append(barra, this.ficha, this.panelMem, lengueta("izq", "Ficha", this.ficha, false), lengueta("der", "Memoria", this.panelMem, pequena), pie, this.subtitulo);
 
     // Teclas
     this.teclas = this.teclas.bind(this);
