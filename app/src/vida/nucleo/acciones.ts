@@ -50,22 +50,17 @@ function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
     const otro = env.criaturas.find((o) => 1000 + o.id === a.obj);
     let calidad = 0.7;
     if (otro) calidad = acota(0.45 + 0.5 * otro.rasgos[R.sociabilidad] - 0.5 * Math.max(0, otro.rasgos[R.agresividad] - 0.55) - (otro.dormido ? 0.3 : 0));
-    // La compania de alguien conocido pesa mas que la de un extrano, y mucho mas cuando se esta alterado: acercarse a un amigo calma (amortiguacion social)
     const afecto = c.mem.vinculos.find((q) => q.id === a.obj)?.afecto ?? 0;
     const res = resCero();
     if (!c.estadosAjenos) res[C.compania] = acota(a.comp * calidad);
     else {
-    calidad = acota(calidad * (0.6 + 0.8 * afecto));
-    const alterada = Math.max(0, c.emo[E.miedo] - 0.1);
-    // Consolar a alguien querido que lo esta pasando mal tambien se vive como mas compania (una recompensa innata, no una orden)
-    const angustiaOtra = otro ? featuresCriatura(otro, true)[6] : 0;
-    res[C.compania] = acota(a.comp * calidad * (1 + 2 * alterada + (afecto > 0.2 ? 2.5 * angustiaOtra : 0)));
-    if (otro && afecto > 0.2 && alterada > 0.05) {
-      // Y consuela a los dos: el miedo baja en quien se acerca y en quien estaba mal
-      c.emo[E.miedo] *= 0.55;
-      otro.emo[E.miedo] *= 0.7;
-      otro.nec[N.dolor] *= 0.85;
-    }
+      // La compania de alguien conocido pesa mas que la de un extrano. Y si al llegar la otra estaba mal y al irse esta mejor, se nota:
+      // el alivio que se ve (que baje su angustia) es parte de lo que se siente al haber estado con ella. Si no baja, no hay alivio que aprender.
+      calidad = acota(calidad * (0.6 + 0.8 * afecto));
+      const alivio = otro && a.angustiaIni !== undefined ? Math.max(0, a.angustiaIni - featuresCriatura(otro, true)[6]) : 0;
+      res[C.compania] = acota(a.comp * calidad + 1.4 * alivio * (afecto > 0.2 ? 1 : 0));
+      const alterada = Math.max(0, c.emo[E.miedo] - 0.1);
+      if (afecto > 0.2 && alterada > 0.05) c.emo[E.miedo] *= 0.55;
     }
     if (calidad < 0.25) { res[C.dano] = 0.1; res[C.susto] = 0.3; }
     c.experimentar(a, res, true, env);
@@ -83,6 +78,7 @@ function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
 }
 
 function mover(c: Criatura, destino: number, vel: number, dt: number, ancho: number): void {
+  if (c.atrapada) { c.vx = 0; return; }
   const d = destino - c.x;
   const paso = Math.min(Math.abs(d), vel * dt);
   if (Math.abs(d) > 0.5) c.dir = d > 0 ? 1 : -1;
@@ -169,6 +165,15 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
     if (Math.abs(otro.x - c.x) > 150) { a.fase = "ir"; return; }
     a.hecho = true;
     a.comp += dt * 0.07;
+    // Quedarse junto a alguien querido que lo pasa mal le calma poco a poco, salvo que nada pueda aliviarla (condicion de laboratorio)
+    if (c.estadosAjenos) {
+      if (a.angustiaIni === undefined) a.angustiaIni = featuresCriatura(otro, true)[6];
+      const af = c.mem.vinculos.find((q) => q.id === a.obj)?.afecto ?? 0;
+      if (af > 0.2 && !otro.inconsolable) {
+        otro.emo[E.miedo] = acota(otro.emo[E.miedo] - 0.14 * af * dt);
+        otro.nec[N.dolor] = acota(otro.nec[N.dolor] - 0.06 * af * dt);
+      }
+    }
     if (t >= dur) terminar(c, a, env);
     return;
   }

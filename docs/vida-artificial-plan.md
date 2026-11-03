@@ -76,9 +76,10 @@ Rueda del ratón sobre la sala (no sobre un panel): hacia arriba se acerca (sala
 | 06 Compañía | 9/10 | Dos criaturas que no se conocen: tardan más en juntarse (menos del 80 % del tiempo en las vinculadas) y pasan menos tiempo cerca. |
 | 07 Aprendiz | 8/10 | La misma criatura sola con la palanca: usa la palanca más del doble de veces en 5 minutos cuando convive con una experta, sin haber recibido entrenamiento propio. |
 | 08 Protector | 10/10 | Una criatura que no conoce a la otra: al verla recibir una descarga no aumenta las veces que decide acercarse (las vinculadas aumentan al menos una decisión en 12 s). |
-| 14 Herencia de los monstruos | 9/10 | Una línea criada al azar (con la misma población inicial): en 6 generaciones la línea de las que se recuperan antes de un susto nace con una sensibilidad ~0,2 más baja, y los hijos nunca heredan lo que sus padres desarrollaron. |
+| 14 Herencia de los monstruos | 9/10 | Tres líneas con la misma población inicial: criar a las que se recuperan antes de un susto (mansa), a las que más tardan (asustadiza) y al azar. En 6 generaciones nacen con una sensibilidad media de ~0,25, ~0,5 y ~0,75. Al criar a los descendientes otra vez en condiciones idénticas la diferencia persiste, la variación genética no se agota y lo que cambia viviendo es igual en las tres. |
 | 07b Aprendiz por partes (informativo) | 7/10 | A: con la palanca estropeada y junto a la experta la usa ~8 veces más que sola, así que **hay facilitación social pura**. B: cuando la experta se va, en 4 de 8 semillas sigue usándola mucho más que quien la exploró sola (133 a 146 frente a 7 a 16 pulsaciones) y en las otras no. |
-| 08b Protector aprendido (informativo) | **0/8** | Sin la regla de ayuda, la conducta **no emerge** (ver abajo). |
+| 08b Protector aprendido (informativo) | **5/10** | Cinco condiciones sin regla de ayuda (ver abajo): hay señal, pero no pasa el 80 %. |
+| 03b La palanca que se agota | 9/10 | Habituación: dos criaturas bien alimentadas pulsan la palanca entre 15 y 90 veces cada 5 minutos (antes 100 a 200), el cansancio se va tras 2 minutos de descanso y una sola criatura con hambre la sigue usando para comer. |
 
 Una semilla de 04b no aprueba porque esa criatura, con poco miedo de nacimiento, apenas distingue los focos: es una diferencia individual, no un fallo de la prueba. En 20 semillas, 18 aprueban.
 
@@ -88,20 +89,28 @@ Se apoyan en una sola capacidad nueva: **percibir lo que hace otra criatura**.
 
 - **05, partido.** Si una criatura que ve acaba de empujar o tocar algo, se fija en ello (sube la curiosidad y la excitación), le deja un recuerdo suave de que eso entretiene y la cosa gana atractivo unos 8 s (más cuanto más sociable es). No hay ninguna regla de "devolver la pelota". Con eso la proporción de turnos alternados sube a 0,6 a 0,8 y hay rachas de hasta 16 turnos seguidos. Es el resultado menos sólido: 9/10 con las semillas 1 a 10 y 16/20 con 1 a 20. Medido con una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar.
 - **06, compañía.** Nace de lo que ya había: el afecto crece con el tiempo cerca de alguien, la soledad crece más en quien se apega, y acercarse a quien la ha acompañado tiene un valor aprendido.
-- **07, aprendiz.** Es el recuerdo suave de ver a otra tocar la palanca (el mismo mecanismo del 05) más lo que se come de lo que ella saca. La aprendiz usa la palanca entre 4 y 19 veces más que sola. **No** empieza antes: el cuarto de la palanca ya se explora igual de rápido solo.
+- **07, aprendiz.** Es el recuerdo suave de ver a otra tocar la palanca (el mismo mecanismo del 05) más lo que se come de lo que ella saca. La aprendiz usa la palanca entre 1,5 y 19 veces más que sola (antes de la habituación, casi siempre unas 200 pulsaciones en 5 minutos; ahora la pareja a veces se queda en unas 20, y el criterio pasó de "más del doble" a "un 40 % más"). **No** empieza antes: el cuarto de la palanca ya se explora igual de rápido solo.
 - **08, protector (con regla).** Aquí hay una **regla puesta a mano**, no aprendida: cuando una criatura ve que otra se hace daño, se acerca más a ella cuanto más afecto le tenga (`ayuda` en `criatura.ts` y su bono en `conducta.ts`). Lo que se mide es que el vínculo previo cambia lo que decide. Es honesto decir que es una predisposición de la arquitectura y no una conducta emergente. Se puede apagar (`ayudaInnata = false`) y el intento de que se aprenda sola es el 08b.
 
-### Estados ajenos y el 08b: un resultado negativo
+### Estados ajenos y el 08b: una señal parcial
 
-Se probó a quitar la regla del 08 y a que la conducta se **aprenda**. Lo que se añadió, sin ninguna orden de "ayudar":
+Se quitó la regla del 08 y se probó a que la conducta se **aprenda**. Lo que existe, sin ninguna orden de "ayudar" (todo detrás de `estadosAjenos`, que solo activa el 08b):
 
-- La angustia de otra criatura se **percibe como señal** (ruido y postura: miedo, dolor, estar tendida o acabar de recibir un golpe entran en el rasgo de sonido), no como su estado interno.
+- La angustia de otra criatura se **percibe como señal** (ruido y postura: miedo, dolor, estar tendida o haber recibido un golpe hace poco), no como su estado interno.
 - Ver a otra hacerse daño contagia un poco de miedo y despierta la **necesidad de compañía** (más en quien se apega y quiere a la otra).
-- Acercarse a alguien querido que lo está pasando mal se vive como **más compañía** (una recompensa innata, no una acción) y calma a los dos.
+- Quedarse junto a alguien querido que lo pasa mal **le calma** (su miedo y su dolor bajan mientras está con ella). Eso es un efecto de la acción que se **ve**: la angustia que se percibía al llegar y la que se percibe al irse. Ese alivio visible suma a la compañía que siente quien se acerca. Si la angustia no baja, no hay alivio que aprender.
 
-El experimento: 1500 s de convivencia, 20 episodios en los que la otra recibe una descarga delante, y después una prueba en la que la criatura tiene hambre y comida al lado contrario (para ir con la otra tiene que dejar de comer). Controles: la pareja vinculada que nunca vio un susto, una criatura que no la conoce, y la misma criatura entrenada ante una desconocida.
+Un primer diseño, con una recompensa por consolar que no dependía de ningún efecto visible, dio 0/8 y la criatura entrenada acabó yendo con la otra *menos* que las que no habían visto nada. La versión actual separa lo que pedía la revisión del diseño. La criatura que mira tiene hambre y la comida está al otro lado, así que ir con la otra cuesta algo. Cada condición entrena 20 episodios en los que la otra recibe una descarga delante:
 
-Resultado: **0/8**. La criatura entrenada va con la otra *menos* que las que no vieron nada (0 a 0,38 frente a 0,25 a 0,75 de las veces). Mi lectura, sin demostrar: lo que aprende es a asociar la angustia ajena con lo desagradable (el miedo contagiado), y no tiene forma de comprobar que acercarse la alivia a ella. Además, en una sala sin nada más que hacer todas las criaturas, entrenadas o no, tienden a ir hacia la otra, así que sin una tarea que compita no hay diferencia que medir. Para que esto emerja de verdad hace falta que la criatura **estime el estado de la otra y el efecto de lo que hace sobre él** (planificación social), no solo que perciba señales. Es el primer paso de los casos 19 a 38.
+| Condición | Qué separa | Veces que va con ella (media de 10 semillas) |
+|---|---|---|
+| Puede acercarse y la angustia baja | consuelo aprendido | ~0,48 |
+| No puede acercarse (atrapada) | si ver angustia basta | ~0,33 |
+| Se acerca, pero la angustia no baja | si hace falta ver el efecto | ~0,20 |
+| La que sufre es una desconocida | si el vínculo importa | ~0,39 |
+| Nunca la vio sufrir | línea de base | ~0,39 |
+
+Lectura, con cautela: **sí hay una señal que va en la dirección esperada** (8 de 10 semillas: va más con ella cuando acercarse alivia que cuando no; 8 de 10: más que si no pudo acercarse; 7 de 10: más que con una desconocida). Aprende sobre todo que acercarse **no sirve** cuando no alivia (cae a ~0,20), y apenas sube por encima de la línea de base cuando sí alivia. Solo 5 de 10 semillas cumplen los cinco criterios a la vez, así que el caso queda como informativo. Falta una forma de que la criatura estime lo que siente la otra y planifique en consecuencia (los casos 19 a 38).
 
 ## Números ajustables
 
@@ -138,6 +147,7 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 - **Cámara**: arrastrar con el botón derecho o el central la mueve en los planos cercanos. Se pierde al cambiar de plano o de criatura.
 - **Música ambiental generada**: acordes lentos sobre una escala pentatónica menor que se vuelven más sordos de noche.
 - **Interruptor del comedero** y bayas como último recurso con mucha hambre.
+- **Habituación** (`habituacion*` en `ajustes.ts`): cada vez que se empuja o toca algo, haya salido algo o no, crece un cansancio de ese objeto (con 10 seguidas baja la diversión esperada al 40 %). Se recupera con el descanso (vida media de 20 s). Solo afecta a la diversión esperada y a la atención que despierta lo que hace otra criatura, no a la comida: una palanca que da de comer sigue usándose cuando hay hambre. Antes dos criaturas llegaban a pulsarla cada 2 segundos sin parar, porque cada una se fijaba en que la otra la pulsaba. Un primer intento contaba solo las repeticiones que daban diversión, pero la palanca tiene 6 s de pausa y la mayoría de los toques no daban nada, así que no cansaba.
 - **Caso 14 completo** (selección artificial con control, 6 generaciones, dos líneas de cada tipo) y la pestaña **Linaje** con el árbol genealógico y lo heredado.
 - **Controles del aprendiz** (07b) y del protector (08b), con resultados distintos a los esperados.
 
@@ -147,7 +157,6 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 - **Estados ajenos reales** (el 08b falla): que la criatura estime lo que siente la otra y el efecto de lo que hace sobre ello. Y el resto de los casos 19 a 38 (`docs/vida-artificial-casos-extremos.md`): piden planificación, memoria de trabajo, señales aprendidas y transmisión cultural.
 - **Más controles del caso 05** (variar la distancia, la pelota y la sociabilidad) y del 07: el 07b ya separa la facilitación del aprendizaje.
 - **Temperatura** como necesidad y entornos distintos.
-- **Pulsar la palanca sin fin**: en el resumen de una hora fuera de línea aparece "tocó la palanca" cientos de veces por criatura (y hasta 196 veces en 5 minutos en el caso 07). La diversión que da la palanca no se agota, y el cansancio por repetición (una habituación por objeto) se probó y debilitaba el caso 13, así que se quitó. Hace falta una habituación que no rompa los casos o que la palanca deje de entretener cuando ya no sorprende.
 - **Supabase**: tablas de criaturas, memoria, eventos y relaciones, y funciones del servidor que validen genética y recompensas. Se dejó fuera a propósito: hace falta decidir qué valida el servidor y no se quiso añadir infraestructura en este prototipo.
 - **Un segundo recinto** para criar a los gemelos por separado desde el juego (hoy conviven en una sala; para separarlos hay que elegir qué objetos hay y a quién se premia o asusta).
 - **Probar en un portátil sin tarjeta gráfica** y en pantalla completa real: no se ha podido probar desde aquí.

@@ -52,5 +52,36 @@ function tarjeta(inf: InformeCaso, hipotesis: string): HTMLElement {
     h("p", { style: "color:var(--apagado);font-size:14px" }, hipotesis),
     h("table", {}, h("tr", {}, h("th", {}, "Semillas"), h("th", {}, "Criterio")), ...filas),
     h("details", {}, h("summary", {}, "Medidas por semilla"), h("pre", {}, detalle)),
+    ...curvas(inf),
   );
+}
+
+/** Las curvas de aprendizaje o de generaciones de la primera semilla, como lineas sencillas. */
+function curvas(inf: InformeCaso): HTMLElement[] {
+  const c = inf.resultados[0]?.curvas ?? {};
+  const nombres = Object.keys(c).filter((k) => c[k].length > 1);
+  if (!nombres.length) return [];
+  const ns = "http://www.w3.org/2000/svg";
+  const colores = ["#46d9e8", "#ffb35c", "#ff6a5c", "#7cf08a"];
+  const w = 520, hh = 130, m = 8;
+  const todos = nombres.flatMap((k) => c[k].map((p) => p.v));
+  const min = Math.min(0, ...todos), max = Math.max(...todos, min + 0.0001);
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${hh}`);
+  svg.setAttribute("style", "width:100%;max-width:520px;background:#040c0f;border:1px solid var(--fil)");
+  nombres.forEach((k, j) => {
+    const pts = c[k];
+    const x = (i: number) => m + (i / (pts.length - 1)) * (w - 2 * m);
+    const y = (v: number) => hh - m - ((v - min) / (max - min)) * (hh - 2 * m);
+    const l = document.createElementNS(ns, "polyline");
+    l.setAttribute("points", pts.map((p, i) => `${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" "));
+    l.setAttribute("fill", "none");
+    l.setAttribute("stroke", colores[j % colores.length]);
+    l.setAttribute("stroke-width", "2");
+    svg.append(l);
+  });
+  return [
+    h("details", {}, h("summary", {}, "Curvas de la primera semilla"), svg,
+      h("p", { style: "margin:4px 0;font-size:12px" }, ...nombres.map((k, j) => h("span", { style: `color:${colores[j % colores.length]};margin-right:12px` }, k)))),
+  ];
 }

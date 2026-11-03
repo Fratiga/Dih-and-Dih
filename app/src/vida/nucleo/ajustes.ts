@@ -53,6 +53,14 @@ export const AJ = {
   pesoDano: 1.7,
   bonoCuriosidad: 0.9,
 
+  /* --- Habituacion: repetir lo mismo entretiene cada vez menos y se recupera con el descanso --- */
+  /** Segundos que tarda en olvidarse la repeticion reciente. */
+  habituacionTau: 20,
+  /** Cuanto cansa cada repeticion (con 10 seguidas, el maximo). */
+  habituacionPaso: 0.08,
+  /** Lo maximo que baja la diversion esperada de algo que se acaba de repetir mucho (0.6 = al 40 %). */
+  habituacionMax: 0.6,
+
   /* --- Personalidad --- */
   /** Cuanto puede alejarse un rasgo vivido de su predisposicion genetica. */
   desarrolloMax: 0.45,

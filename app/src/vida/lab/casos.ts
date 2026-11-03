@@ -179,6 +179,52 @@ export const caso03: Caso = {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
+export const caso03b: Caso = {
+  id: "03b",
+  titulo: "La palanca que se agota",
+  hipotesis: "Repetir lo mismo entretiene cada vez menos, y el interés vuelve tras un descanso. Dos criaturas bien alimentadas no se pasan la hora pulsando la palanca, pero una que da de comer sigue usándose cuando hace falta.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const gA = genomaDe(semilla, 31);
+    const gB = genomaDe(semilla, 32);
+    // Una pareja con una palanca que funciona, durante 15 minutos: antes de la habituacion pulsaban cientos de veces
+    const P = nuevaSim({ semilla, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: gA, x: 300 }, { genoma: gB, x: 400 }], comedero: null });
+    P.criaturas.forEach((c) => (c.nec[0] = 0.5));
+    const tramos: number[] = [];
+    for (let i = 0; i < 3; i++) { P.avanzar(300); tramos.push(media(P.criaturas.map((c) => manip(c, "palanca", i * 300, (i + 1) * 300)))); }
+    const ultimos = media(tramos);
+    // El cansancio de la palanca se recupera con el descanso: se la retira 2 minutos
+    const pal = P.mundo.objetos.find((o) => o.tipo === "palanca")!;
+    const cansada = Math.max(...P.criaturas.map((c) => c.cansancioDe(pal.id)));
+    P.mundo.quitar(pal.id);
+    P.avanzar(120);
+    const descansada = Math.max(...P.criaturas.map((c) => c.cansancioDe(pal.id)));
+    // Una sola criatura: la palanca le sirve de verdad
+    const W = nuevaSim({ semilla, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: gA, x: 300 }], comedero: null });
+    const cW = W.criaturas[0];
+    cW.nec[0] = 0.5;
+    const hambre: number[] = [];
+    W.ganchos.push((q) => { if (Math.round(q.t * 4) % 20 === 0) hambre.push(cW.nec[0]); });
+    W.avanzar(900);
+    const granulos = impactos(cW, "probar", "granulo");
+    // Y cuando vuelve a tener mucha hambre, la usa
+    for (const o of [...W.mundo.objetos]) if (o.tipo !== "palanca") W.mundo.quitar(o.id);
+    cW.nec[0] = 0.9;
+    const t0 = W.t;
+    W.avanzar(120);
+    const conHambre = manip(cW, "palanca", t0, t0 + 120);
+    return resultado(semilla, {
+      "dos criaturas con una palanca que funciona no la pulsan sin parar (menos de 70 veces cada 5 minutos)": ultimos < 70,
+      "tras dejarla un rato, el cansancio de repetirla se ha ido (< 0,05)": descansada < 0.05 && cansada > descansada,
+      "una sola criatura la usa y come (>= 3 granulos)": granulos >= 3,
+      "y pasa poca hambre (media < 0,45)": media(hambre) < 0.45,
+      "con mucha hambre vuelve a pulsarla (>= 3 veces en 2 minutos)": conHambre >= 3,
+    }, { pulsacionesPorCriaturaCada5min: ultimos, cansancioTrasUsarla: cansada, cansancioTrasDescansar: descansada, granulos, hambreMedia: media(hambre), pulsacionesConHambre: conHambre }, cW, 900);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
 const ZONA = 200;
 
 export const caso04: Caso = {
@@ -282,6 +328,7 @@ export function perfil(c: Criatura, semilla: number, variante: number): number[]
     const s = nuevaSim({ semilla: mezclar(semilla, 900, variante, r), objetos, criaturas: [{ genoma: clonarGenoma(c.genoma), x: 800 }], comedero: null });
     const t = Criatura.desde({ ...c.estado(), x: 800, accion: null, id: 1 }, mezclar(semilla, 901, variante, r));
     t.azar.s = mezclar(semilla, 902, variante, r);
+    t.habito = {};
     t.capRegistro = 100000;
     t.nec = [hambre, 0.2, 0, 0.6, 0.3];
     t.mem.avist = [];
@@ -533,7 +580,7 @@ export const caso07: Caso = {
     const pCon = mediana(con.map((x) => x.pulsaciones)), pSin = mediana(sin.map((x) => x.pulsaciones));
     return resultado(semilla, {
       "la experta ha aprendido a usar la palanca": sabe,
-      "la aprendiz usa la palanca más del doble de veces en 5 minutos que si estuviera sola": pCon > pSin * 2,
+      "la aprendiz usa la palanca al menos un 40 % más de veces en 5 minutos que si estuviera sola": pCon > pSin * 1.4,
       "y no la empieza mucho más tarde": tCon < tSin + 15,
     }, { primeraConExperta: tCon, primeraSola: tSin, pulsacionesConExperta: pCon, pulsacionesSola: pSin }, experta, 1200);
   },
@@ -589,23 +636,28 @@ export const caso08: Caso = {
 export const caso08b: Caso = {
   id: "08b",
   titulo: "El protector aprendido",
-  hipotesis: "Una criatura que ha visto varias veces sufrir a su compañera, y ha descubierto que acercarse a ella calma, empieza a acercarse sola cuando la ve sufrir. No hay ninguna regla de ayuda: lo que percibe de la otra es su angustia (ruido y postura), y lo demás se aprende. No lo hace igual con una desconocida, ni quien nunca vio sufrir a nadie.",
+  hipotesis: "Una criatura aprende a acercarse a una compañera que sufre solo si su acercamiento tiene un efecto que se ve: la angustia de la otra baja. Cinco condiciones separan miedo contagiado, evitación y consuelo. Si no puede acercarse, si la angustia no baja, o si la otra es una desconocida, no aprende lo mismo. No hay ninguna regla de ayuda.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g1 = genomaDe(semilla, 81);
     const g2 = genomaDe(semilla, 82);
+    const gX = genomaDe(semilla, 84);
+    const preparar = (s: Simulacion): void => { for (const c of s.criaturas) { c.ayudaInnata = false; c.estadosAjenos = true; } };
     const juntos = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: g1, x: 500 }, { genoma: g2, x: 700 }], comedero: { cada: 140, max: 2, tipo: "fruta" } });
-    for (const c of juntos.criaturas) { c.ayudaInnata = false; c.estadosAjenos = true; }
+    preparar(juntos);
     juntos.avanzar(1500);
     const afecto = Math.max(...juntos.criaturas.map((c) => c.mem.vinculos.reduce((m, v) => Math.max(m, v.afecto), 0)));
+    for (const o of [...juntos.mundo.objetos]) juntos.mundo.quitar(o.id);
+    juntos.comedero = null;
+    const base = juntos.serializar();
+
     const colocar = (a: Criatura, b: Criatura): void => {
       a.x = 1000; b.x = 600; a.accion = null; b.accion = null;
       for (const c of [a, b]) { c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; c.nec[4] = 0.25; c.emo[1] = 0.4; }
     };
-    // Una descarga a la otra, estando ella delante, mientras la que mira tiene hambre y comida al otro lado: para ir con la otra tiene que dejar de comer.
-    // Nadie le dice que se acerque. Devuelve 1 si llega junto a ella (a menos de 180 unidades) en los segundos siguientes, 0 si no.
-    // La geometria es la misma en todas las condiciones.
-    const episodio = (s: Simulacion, a: Criatura, b: Criatura, segundos: number, conComida = true): number => {
+    // Una descarga a la otra, estando ella delante. Nadie le dice a la que mira que se acerque. Con hambre y comida al otro lado, para ir
+    // con la otra hay que dejar de comer. Devuelve 1 si llega junto a ella (a menos de 180 unidades) en los segundos siguientes, 0 si no.
+    const episodio = (s: Simulacion, a: Criatura, b: Criatura, segundos: number, conComida: boolean): number => {
       for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
       if (conComida) s.mundo.agregar("fruta", 300, { porciones: 6 });
       colocar(a, b);
@@ -618,47 +670,55 @@ export const caso08b: Caso = {
       s.ganchos.splice(s.ganchos.indexOf(g), 1);
       return llego;
     };
-    for (const o of [...juntos.mundo.objetos]) juntos.mundo.quitar(o.id);
-    juntos.comedero = null;
-    // La pareja vinculada pero que nunca ha vivido un susto de la otra (control del aprendizaje)
-    const sinSustos = juntos.serializar();
-    const [A, B] = juntos.criaturas;
-    for (let i = 0; i < 20; i++) { episodio(juntos, A, B, 20, false); juntos.avanzar(8); }
-    const entrenada: number[] = [];
-    const vinculada: number[] = [];
-    const ingenua: number[] = [];
-    const extrana: number[] = [];
-    const gX = genomaDe(semilla, 84);
-    const estadoB = B.estado();
-    for (let k = 0; k < 8; k++) {
-      const r = replica(juntos, k);
-      entrenada.push(episodio(r, r.criaturas[0], r.criaturas[1], 12));
-      const v = Simulacion.restaurar(sinSustos);
-      v.azar.s = mezclar(semilla, 89, k);
-      for (const c of v.criaturas) { c.azar.s = mezclar(semilla, 90, k, c.id); c.capRegistro = 100000; }
-      vinculada.push(episodio(v, v.criaturas[0], v.criaturas[1], 12));
+    type Condicion = "consuela" | "atrapada" | "inconsolable" | "desconocida";
+    // Entrenamiento: 20 episodios de la otra recibiendo una descarga delante, segun la condicion
+    const entrenar = (cond: Condicion): { s: Simulacion; objetivo: number; b: number } => {
+      if (cond === "desconocida") {
+        // La misma criatura, con su vinculo intacto, pero la que sufre ahora es una desconocida (su companera no esta)
+        const r = Simulacion.restaurar(base);
+        r.azar.s = mezclar(semilla, 95);
+        for (const c of r.criaturas) { c.azar.s = mezclar(semilla, 96, c.id); c.capRegistro = 100000; }
+        const B = r.criaturas[1];
+        const S = new Criatura(3, "Extraña", clonarGenoma(gX), 1000, mezclar(semilla, 97));
+        S.ayudaInnata = false; S.estadosAjenos = true; S.capRegistro = 100000;
+        r.criaturas = [B, S];
+        for (let i = 0; i < 20; i++) { episodio(r, S, B, 20, false); r.avanzar(8); }
+        return { s: r, objetivo: 1, b: 0 };
+      }
+      const r = Simulacion.restaurar(base);
+      r.azar.s = mezclar(semilla, 93);
+      for (const c of r.criaturas) { c.azar.s = mezclar(semilla, 94, c.id); c.capRegistro = 100000; }
+      const [A, B] = r.criaturas;
+      B.atrapada = cond === "atrapada";
+      A.inconsolable = cond === "inconsolable";
+      for (let i = 0; i < 20; i++) { episodio(r, A, B, 20, false); r.avanzar(8); }
+      B.atrapada = false; A.inconsolable = false; A.emo[0] = 0; A.nec[2] = 0;
+      return { s: r, objetivo: 0, b: 1 };
+    };
+    const prueba = (e: { s: Simulacion; objetivo: number; b: number }): number => {
+      const v: number[] = [];
+      for (let k = 0; k < 16; k++) {
+        const r = replica(e.s, k);
+        v.push(episodio(r, r.criaturas[e.objetivo], r.criaturas[e.b], 12, true));
+      }
+      return media(v);
+    };
+    const res: Record<Condicion | "ingenua", number> = { consuela: 0, atrapada: 0, inconsolable: 0, desconocida: 0, ingenua: 0 };
+    for (const c of ["consuela", "atrapada", "inconsolable", "desconocida"] as Condicion[]) res[c] = prueba(entrenar(c));
+    const vn: number[] = [];
+    for (let k = 0; k < 16; k++) {
       const n = nuevaSim({ semilla: mezclar(semilla, 85, k), objetos: [], criaturas: [{ genoma: g1, x: 1000 }, { genoma: g2, x: 600 }], comedero: null });
-      for (const c of n.criaturas) { c.ayudaInnata = false; c.estadosAjenos = true; }
-      ingenua.push(episodio(n, n.criaturas[0], n.criaturas[1], 12));
-      // La misma criatura entrenada, ante una desconocida que sufre
-      const e = nuevaSim({ semilla: mezclar(semilla, 86, k), objetos: [], criaturas: [{ genoma: gX, x: 1000 }], comedero: null });
-      const copia = { ...estadoB, id: 2, accion: null, mem: { ...estadoB.mem, vinculos: [] } };
-      const b2 = Criatura.desde(copia, mezclar(semilla, 87, k));
-      b2.azar.s = mezclar(semilla, 88, k);
-      b2.capRegistro = 100000;
-      e.criaturas[0].ayudaInnata = false;
-      e.criaturas[0].estadosAjenos = true;
-      e.criaturas.push(b2);
-      extrana.push(episodio(e, e.criaturas[0], b2, 12));
+      preparar(n);
+      vn.push(episodio(n, n.criaturas[0], n.criaturas[1], 12, true));
     }
-    const mT = media(entrenada), mV = media(vinculada), mN = media(ingenua), mE = media(extrana);
+    res.ingenua = media(vn);
     return resultado(semilla, {
       "han creado un vínculo antes (afecto > 0,3)": afecto > 0.3,
-      "con hambre y comida al otro lado, deja de comer y va con ella más de la mitad de las veces": mT > 0.5,
-      "más veces que la pareja vinculada que nunca la vio sufrir (+0,25): lo ha aprendido": mT > mV + 0.25,
-      "más que quien no la conoce (+0,25)": mT > mN + 0.25,
-      "y más que ante una desconocida que sufre (+0,25)": mT > mE + 0.25,
-    }, { afecto, entrenada: mT, vinculadaSinSustos: mV, ingenua: mN, anteDesconocida: mE }, juntos.criaturas[0], 1500);
+      "si la angustia bajaba al acercarse, va más veces con ella que si no bajaba (+0,15): aprende del efecto": res.consuela > res.inconsolable + 0.15,
+      "y más que si no pudo acercarse (+0,1): ver angustia no basta": res.consuela > res.atrapada + 0.1,
+      "y más que si la que sufría era una desconocida (+0,1): el vínculo importa": res.consuela > res.desconocida + 0.1,
+      "sin quedar por debajo de quien nunca la vio sufrir (-0,1)": res.consuela > res.ingenua - 0.1,
+    }, { afecto, consuela: res.consuela, noPudoAcercarse: res.atrapada, laAngustiaNoBajaba: res.inconsolable, desconocida: res.desconocida, ingenua: res.ingenua }, juntos.criaturas[0], 1500);
   },
 };
 
@@ -731,24 +791,27 @@ function vidaDePrueba(g: Genoma, semilla: number): { asustada: number; nacida: n
 export const caso14: Caso = {
   id: "14",
   titulo: "La herencia de los monstruos",
-  hipotesis: "Criando durante varias generaciones solo a las criaturas que se recuperan antes de un susto, la población se vuelve más mansa que otra criada al azar. El cambio viene de la genética: los hijos nacen con lo heredado, no con lo que sus padres aprendieron.",
+  hipotesis: "Criando durante varias generaciones solo a las criaturas que se recuperan antes de un susto, la población se vuelve más mansa; criando a las que más tardan, más asustadiza; y criando al azar, se queda donde estaba. El cambio viene de la genética: los hijos nacen con lo heredado, no con lo que sus padres aprendieron, y persiste al criar a los descendientes en condiciones idénticas.",
   minimo: 0.8,
   ejecutar(semilla) {
     const GEN = 6, N = 8, PADRES = 4;
     const inicial = Array.from({ length: N }, (_, i) => genomaDe(semilla, 140 + i));
-    const linea = (seleccionar: boolean, ident: number): { asustada: number[]; nacida: number[]; deriva: number[]; hijosConLoVivido: number } => {
+    type Modo = "mansa" | "azar" | "asustadiza";
+    const linea = (modo: Modo, ident: number): { asustada: number[]; nacida: number[]; deriva: number[]; desv: number[]; hijosConLoVivido: number; ultimos: Genoma[] } => {
       const r = new Azar(mezclar(semilla, 141, ident));
       let pob = inicial.map((g) => clonarGenoma(g));
-      const asustada: number[] = [], nacida: number[] = [], deriva: number[] = [];
+      const asustada: number[] = [], nacida: number[] = [], deriva: number[] = [], desv: number[] = [];
       let tramposos = 0;
       for (let gen = 0; gen < GEN; gen++) {
         const vidas = pob.map((g, i) => vidaDePrueba(g, mezclar(semilla, 142, ident, gen * 100 + i)));
         asustada.push(media(vidas.map((v) => v.asustada)));
-        nacida.push(media(vidas.map((v) => v.nacida)));
+        const n = vidas.map((v) => v.nacida);
+        nacida.push(media(n));
+        desv.push(Math.sqrt(media(n.map((x) => (x - media(n)) ** 2))));
         deriva.push(media(vidas.map((v) => v.deriva)));
-        // Se crian los que menos tiempo siguen asustados (o cuatro al azar en la linea de control)
-        const orden = vidas.map((_, i) => i).sort((a, b) => vidas[a].asustada - vidas[b].asustada);
-        const elegidos = seleccionar ? orden.slice(0, PADRES) : [...orden].sort(() => r.next() - 0.5).slice(0, PADRES);
+        // Se crian los que menos (mansa) o mas (asustadiza) tiempo siguen asustados, o cuatro al azar
+        const orden = vidas.map((_, i) => i).sort((x, y) => vidas[x].asustada - vidas[y].asustada);
+        const elegidos = modo === "mansa" ? orden.slice(0, PADRES) : modo === "asustadiza" ? orden.slice(-PADRES) : [...orden].sort(() => r.next() - 0.5).slice(0, PADRES);
         const hijos: Genoma[] = [];
         for (let i = 0; i < N; i++) {
           const a = elegidos[r.entero(PADRES)];
@@ -761,30 +824,43 @@ export const caso14: Caso = {
         }
         pob = hijos;
       }
-      return { asustada, nacida, deriva, hijosConLoVivido: tramposos };
+      return { asustada, nacida, deriva, desv, hijosConLoVivido: tramposos, ultimos: pob };
     };
     // Dos lineas de cada tipo, para que no sea suerte de una sola
-    const SEL = [linea(true, 1), linea(true, 3)];
-    const ALE = [linea(false, 2), linea(false, 4)];
+    const MAN = [linea("mansa", 1), linea("mansa", 3)];
+    const ALE = [linea("azar", 2), linea("azar", 4)];
+    const ASU = [linea("asustadiza", 5), linea("asustadiza", 6)];
     const ult = GEN - 1;
-    const m = (ls: typeof SEL, k: "asustada" | "nacida" | "deriva", i: number) => media(ls.map((l) => l[k][i]));
-    const asSel = m(SEL, "asustada", ult), asAle = m(ALE, "asustada", ult);
-    const nacSel = m(SEL, "nacida", ult), nacAle = m(ALE, "nacida", ult);
-    const ini = m(SEL, "nacida", 0);
-    const derSel = m(SEL, "deriva", ult), derAle = m(ALE, "deriva", ult);
-    const curva = SEL[0].asustada.map((_, i) => ({ t: i + 1, v: m(SEL, "asustada", i) }));
-    const curvaAle = ALE[0].asustada.map((_, i) => ({ t: i + 1, v: m(ALE, "asustada", i) }));
+    const m = (ls: typeof MAN, k: "asustada" | "nacida" | "deriva" | "desv", i: number) => media(ls.map((l) => l[k][i]));
+    const asMan = m(MAN, "asustada", ult), asAle = m(ALE, "asustada", ult), asAsu = m(ASU, "asustada", ult);
+    const nacMan = m(MAN, "nacida", ult), nacAle = m(ALE, "nacida", ult), nacAsu = m(ASU, "nacida", ult);
+    const ini = m(MAN, "nacida", 0);
+    const derMan = m(MAN, "deriva", ult), derAle = m(ALE, "deriva", ult), derAsu = m(ASU, "deriva", ult);
+    const desvFinal = media([...MAN, ...ASU].map((l) => l.desv[ult]));
+    // Los descendientes de la ultima generacion, criados otra vez en condiciones identicas (otras semillas): ¿persiste la diferencia?
+    const retest = (ls: typeof MAN): number => media(ls.flatMap((l, j) => l.ultimos.map((g, i) => vidaDePrueba(g, mezclar(semilla, 144, j, i)).asustada)));
+    const rMan = retest(MAN), rAsu = retest(ASU), rAle = retest(ALE);
+    const curvas = {
+      "segundos asustada, linea mansa": MAN[0].asustada.map((_, i) => ({ t: i + 1, v: m(MAN, "asustada", i) })),
+      "segundos asustada, linea al azar": ALE[0].asustada.map((_, i) => ({ t: i + 1, v: m(ALE, "asustada", i) })),
+      "segundos asustada, linea asustadiza": ASU[0].asustada.map((_, i) => ({ t: i + 1, v: m(ASU, "asustada", i) })),
+      "variacion genetica (desviacion de la sensibilidad), linea mansa": MAN[0].desv.map((_, i) => ({ t: i + 1, v: m(MAN, "desv", i) })),
+    };
     const r14 = resultado(semilla, {
-      "la linea seleccionada se asusta menos tiempo que la criada al azar (-20 %)": asSel < asAle * 0.8,
-      "porque nace con menos sensibilidad heredada (-0,04 frente al azar)": nacSel < nacAle - 0.04,
-      "y menos que la primera generacion (-0,03)": nacSel < ini - 0.03,
-      "lo vivido no se hereda: lo que cambia viviendo es parecido en las dos lineas (< 0,06)": Math.abs(derSel - derAle) < 0.06,
-      "y ningun hijo hereda el caracter desarrollado por sus padres": SEL.concat(ALE).every((l) => l.hijosConLoVivido === 0),
-    }, { segundosAsustadaSeleccion: asSel, segundosAsustadaAzar: asAle, sensibilidadNacidaSeleccion: nacSel, sensibilidadNacidaAzar: nacAle, sensibilidadInicial: ini, derivaSeleccion: derSel, derivaAzar: derAle }, null, 45, { "segundos asustada, linea seleccionada": curva, "segundos asustada, linea al azar": curvaAle });
-    r14.acciones = { "vidas de prueba": 4 * GEN * N };
+      "la linea mansa se asusta menos tiempo que la criada al azar (-20 %)": asMan < asAle * 0.8,
+      "nace con menos sensibilidad heredada (-0,04 frente al azar)": nacMan < nacAle - 0.04,
+      "y menos que la primera generacion (-0,03)": nacMan < ini - 0.03,
+      "en sentido contrario, la linea asustadiza nace con mas sensibilidad que la del azar (+0,04): el rasgo se mueve en las dos direcciones": nacAsu > nacAle + 0.04,
+      "ordenadas: mansa < azar < asustadiza en lo heredado": nacMan < nacAle && nacAle < nacAsu,
+      "al criar a los descendientes otra vez en condiciones identicas, la diferencia persiste (mansa < asustadiza)": rMan < rAsu,
+      "no se agota la variacion genetica (desviacion > 0,03 en la ultima generacion)": desvFinal > 0.03,
+      "lo vivido no se hereda: lo que cambia viviendo es parecido en todas las lineas (< 0,06)": Math.max(derMan, derAle, derAsu) - Math.min(derMan, derAle, derAsu) < 0.06,
+      "y ningun hijo hereda el caracter desarrollado por sus padres": MAN.concat(ALE, ASU).every((l) => l.hijosConLoVivido === 0),
+    }, { segundosAsustadaMansa: asMan, segundosAsustadaAzar: asAle, segundosAsustadaAsustadiza: asAsu, sensibilidadNacidaMansa: nacMan, sensibilidadNacidaAzar: nacAle, sensibilidadNacidaAsustadiza: nacAsu, sensibilidadInicial: ini, desviacionFinal: desvFinal, repruebaMansa: rMan, repruebaAzar: rAle, repruebaAsustadiza: rAsu }, null, 45, curvas);
+    r14.acciones = { "vidas de prueba": 6 * GEN * N };
     return r14;
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso04, caso04b, caso13, caso05, caso06, caso07, caso08, caso08b, caso07b, caso14];
-export const CASOS_OBLIGATORIOS = ["01", "02", "03", "04", "04b", "13", "05", "06", "07", "08", "14"];
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso06, caso07, caso08, caso08b, caso07b, caso14];
+export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

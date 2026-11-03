@@ -32,6 +32,8 @@ export interface Accion {
   dur: number;
   hecho: boolean;
   comp: number;
+  /** La angustia que se veia en la otra al llegar a su lado (para notar luego si ha bajado). */
+  angustiaIni?: number;
   f: number[];
   /** Lo que esperaba conseguir al elegirla (para notar cuando no llega). */
   espera: Res;
@@ -98,6 +100,9 @@ export interface EstadoCriatura {
   ultimoContagio: number;
   ayudaInnata: boolean;
   estadosAjenos: boolean;
+  atrapada: boolean;
+  inconsolable: boolean;
+  habito: Record<number, { n: number; t: number }>;
   ayuda: { quien: number; t: number } | null;
 }
 
@@ -151,6 +156,11 @@ export class Criatura {
   ayudaInnata = true;
   /** Experimental (caso 08b): percibe la angustia de otras criaturas como senal, se alarma con ella, y consolar a alguien querido se vive como mas compania. */
   estadosAjenos = false;
+  /** Condiciones de laboratorio: no puede moverse (no puede ayudar a nadie) / su angustia no baja nunca (nada la alivia). */
+  atrapada = false;
+  inconsolable = false;
+  /** Cuanto se ha entretenido hace poco con cada cosa (por su identificador). Lo que se repite sin parar entretiene cada vez menos, y se recupera con el descanso. */
+  habito: Record<number, { n: number; t: number }> = {};
   ayuda: { quien: number; t: number } | null = null;
   registro: Registro[] = [];
   capRegistro = 600;
@@ -240,7 +250,7 @@ export class Criatura {
     n[N.hambre] = acota(n[N.hambre] + AJ.hambre * g.metabolismo * (dur ? 0.5 : 1) * dt);
     n[N.sueno] = acota(n[N.sueno] + (dur ? AJ.suenoDormido : AJ.sueno) * dt);
     n[N.aburrimiento] = acota(n[N.aburrimiento] + AJ.aburrimiento * (dur ? 0.1 : 1) * dt);
-    n[N.dolor] = acota(n[N.dolor] - AJ.dolorCae * dt);
+    if (!this.inconsolable) n[N.dolor] = acota(n[N.dolor] - AJ.dolorCae * dt);
     // Soledad: solo cuenta si hay otras criaturas, y sube mas en quien se apega
     const otros = env.criaturas.filter((o) => o !== this && o.vivo);
     if (otros.length) {
@@ -288,7 +298,7 @@ export class Criatura {
 
   private emociones(dt: number): void {
     const e = this.emo;
-    e[E.miedo] *= Math.exp(-dt / 12);
+    if (!this.inconsolable) e[E.miedo] *= Math.exp(-dt / 12);
     e[E.frustracion] *= Math.exp(-dt / 30);
     e[E.excitacion] *= Math.exp(-dt / 8);
     const alvo = acota(this.rasgos[R.curiosidad] * 0.6 + this.nec[N.aburrimiento] * 0.3 - e[E.miedo] * 0.5);
@@ -367,6 +377,13 @@ export class Criatura {
     return out;
   }
 
+  /** De 0 a 1: cuanto cansa ya repetir esto, segun lo reciente y seguido que haya sido. */
+  cansancioDe(id: number): number {
+    const h = this.habito[id];
+    if (!h) return 0;
+    return Math.min(1, h.n * AJ.habituacionPaso * Math.exp(-(this.t - h.t) / AJ.habituacionTau));
+  }
+
   get lr(): number {
     return AJ.lrRed * this.genoma.plasticidad;
   }
@@ -386,6 +403,11 @@ export class Criatura {
     this.red.avanzar(entrada);
     this.red.entrenar(entrada, res, this.lr, inmediatos);
     m.contar(`${acc.v}:${acc.tipo}`);
+    // Repetir lo mismo cansa, haya salido algo o no (una palanca en pausa no sorprende mas que una que funciona)
+    if ((acc.v === "empujar" || acc.v === "tocar") && acc.obj >= 0 && !acc.esCriatura) {
+      const h = this.habito[acc.obj];
+      this.habito[acc.obj] = { n: (h ? h.n * Math.exp(-(env.t - h.t) / AJ.habituacionTau) : 0) + 1, t: env.t };
+    }
     if (acc.obj >= 0 && !acc.esCriatura && (acc.v === "empujar" || acc.v === "tocar")) this.ultimoImpacto = { obj: acc.obj, v: acc.v, t: env.t, quien: this.id };
     this.registrar({ t: env.t, kind: "impacto", v: acc.v, tipo: acc.tipo, obj: acc.obj, res: res.slice() });
 
@@ -626,7 +648,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -664,6 +686,9 @@ export class Criatura {
     c.ultimoContagio = e.ultimoContagio ?? -99;
     c.ayudaInnata = e.ayudaInnata ?? true;
     c.estadosAjenos = e.estadosAjenos ?? false;
+    c.atrapada = e.atrapada ?? false;
+    c.inconsolable = e.inconsolable ?? false;
+    c.habito = JSON.parse(JSON.stringify(e.habito ?? {}));
     c.ayuda = e.ayuda ? { ...e.ayuda } : null;
     return c;
   }

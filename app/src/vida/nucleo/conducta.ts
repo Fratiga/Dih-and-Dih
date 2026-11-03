@@ -158,12 +158,13 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (!VERBOS_OBJETO.includes(v)) continue;
       const A = c.mem.predecir(v, p.f, p.m, p.x / ancho);
       const res = esperar(c, p, v, env);
+      if (!p.esCriatura) res[C.diversion] *= 1 - AJ.habituacionMax * c.cansancioDe(p.id);
       if (ultimoRecurso > 0 && v === "probar" && comestible(p)) res[C.dano] *= 1 - ultimoRecurso;
       res[C.dano] = Math.max(res[C.dano], peligroDelTrayecto(c, c.x, p.x, ancho) * 0.9);
       let u = utilidad(res, p.dist, A.conf, p.esCriatura);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
       const at = c.atencion;
-      if (at && at.obj === p.id && at.v === v && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz);
+      if (at && at.obj === p.id && at.v === v && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz) * (1 - AJ.habituacionMax * c.cansancioDe(p.id));
       if (p.recordado) u -= 0.03 + 0.01 * (env.t - (c.mem.avist.find((a) => a.id === p.id)?.t ?? env.t)) / 60;
       if (act && act.v === v && act.obj === p.id) u += persistir;
       // Regla escrita a mano (apagable): ver sufrir a alguien con quien hay un vinculo hace acercarse a el, mas cuanto mas afecto
