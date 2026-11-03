@@ -49,9 +49,33 @@ export function urlArte(clave: string, cv: HTMLCanvasElement): string {
   if (!u) { u = cv.toDataURL("image/png"); urls.set(clave, u); }
   return u;
 }
+/* El recuadro que ocupa el personaje dentro de su lienzo (el de la pose de reposo), para no dejar margen vacio en las tarjetas. */
+const cajas = new Map<string, { x: number; y: number; w: number; h: number }>();
+function cajaDe(id: string, cv: HTMLCanvasElement): { x: number; y: number; w: number; h: number } {
+  let c = cajas.get(id);
+  if (c) return c;
+  const d = cv.getContext("2d")?.getImageData(0, 0, cv.width, cv.height).data;
+  let x0 = cv.width, y0 = cv.height, x1 = 0, y1 = 0;
+  if (d) for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (d[(y * cv.width + x) * 4 + 3] > 12) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  c = x1 > x0 && y1 > y0 ? { x: Math.max(0, x0 - 2), y: Math.max(0, y0 - 2), w: Math.min(cv.width, x1 + 3) - Math.max(0, x0 - 2), h: Math.min(cv.height, y1 + 3) - Math.max(0, y0 - 2) } : { x: 0, y: 0, w: cv.width, h: cv.height };
+  cajas.set(id, c);
+  return c;
+}
+
+/* El chibi en una imagen para el HTML, recortado a lo que ocupa. Todas las expresiones de un personaje se recortan igual para que no salten al cambiar. */
 export function urlChibi(id: string, e: Expresion = "idle"): string {
-  const cv = arteGlobal.v?.chibi.get(id)?.[e];
-  return cv ? urlArte(`${id}:${e}`, cv) : "";
+  const pose = arteGlobal.v?.chibi.get(id);
+  const cv = pose?.[e];
+  if (!pose || !cv) return "";
+  const clave = `${id}:${e}:r`;
+  const hecha = urls.get(clave);
+  if (hecha) return hecha;
+  const c = cajaDe(id, pose.idle);
+  const [rv, rc] = [document.createElement("canvas"), null as CanvasRenderingContext2D | null];
+  rv.width = c.w; rv.height = c.h;
+  const ctx = rv.getContext("2d") ?? rc;
+  ctx?.drawImage(cv, c.x, c.y, c.w, c.h, 0, 0, c.w, c.h);
+  return urlArte(clave, rv);
 }
 export function urlRetrato(id: string): string {
   const cv = arteGlobal.v?.retrato.get(id);

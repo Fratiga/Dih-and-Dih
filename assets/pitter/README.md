@@ -24,6 +24,7 @@ En vez de un solo PNG, un personaje puede venir en **piezas sueltas**, como los 
 - Cada pieza es un PNG recortado. El `rig.json` dice dónde va (`x`, `y` en un lienzo de 1000×1000), de qué pieza cuelga (`padre`), sobre qué punto gira (`pivote`) y el orden (de atrás hacia delante).
 - Las **poses** (`idle`, `blink`, `feliz`, `dolor`, `poder`) son listas de transformaciones por pieza: `dx`, `dy`, `rot` (grados, sentido del reloj), `sx`, `sy`. Se ajustan en el JSON sin tocar código.
 - De ahí salen las cinco expresiones del juego, el retrato (solo `retrato`: las piezas de la cabeza) y la ficha del tablero.
+- `escala` (en el `rig.json`) agranda el personaje respecto a los demás, para que uno de cuerpo pequeño o sombrero ancho no se vea menor. Cassius usa 1,25.
 - `completo.png` es la referencia de cómo queda montado.
 
 Cassius Coldgrave es el primero. Sus piezas: `pelo`, `capa`, `piernas`, `brazo_izq`, `brazo_der`, `torso`, `cabeza`, `sombrero`.

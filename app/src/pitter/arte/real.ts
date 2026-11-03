@@ -67,13 +67,17 @@ function ponerRetratoYFicha(arte: ArteChibi, p: ReturnType<typeof todosLosPerson
 /* Un chibi hecho con piezas: una imagen por expresion, de la pose que diga el rig, y el retrato con solo la cabeza. */
 function ponerRig(arte: ArteChibi, rig: Rig, p: ReturnType<typeof todosLosPersonajes>[number]): void {
   const e = rig.datos.encuadre;
-  const k = Math.min(ANCHO_CHIBI / e.w, ALTO_CHIBI / e.h);
+  // Se ajusta a la altura, como los demas, y se agranda lo que diga el rig: asi un personaje de cuerpo pequeño se ve del tamaño de los otros.
+  const esc = rig.datos.escala ?? 1;
+  const alto = Math.round(ALTO_CHIBI * esc);
+  const k = (alto - 6 * esc) / e.h;
+  const ancho = Math.max(Math.round(ANCHO_CHIBI * esc), Math.ceil(e.w * k) + 6);
   const poses = {} as Record<Expresion, HTMLCanvasElement>;
   for (const x of EXPRESIONES) {
-    const [cv, c] = lienzo(ANCHO_CHIBI, ALTO_CHIBI);
+    const [cv, c] = lienzo(ancho, alto);
     c.imageSmoothingQuality = "high";
     // Centrado a lo ancho y apoyado abajo
-    c.translate((ANCHO_CHIBI - e.w * k) / 2 - e.x * k, ALTO_CHIBI - 2 - (e.y + e.h) * k);
+    c.translate((ancho - e.w * k) / 2 - e.x * k, alto - 2 - (e.y + e.h) * k);
     c.scale(k, k);
     dibujarRig(c, rig, rig.datos.poses[x] ?? rig.datos.poses.idle ?? {});
     poses[x] = cv;

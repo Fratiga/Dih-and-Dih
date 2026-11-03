@@ -8,8 +8,8 @@
 .pt-puz-izq { display: flex; flex-direction: column; gap: clamp(8px, 1.3vh, 16px); pointer-events: none; }
 .pt-equipo-fila { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 1vw, 16px); pointer-events: none; }
 .pt-eq-carta { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px; min-height: 0; padding: 6px 12px 8px 8px; border: 5px solid var(--tinta); border-radius: 24px; background: linear-gradient(120deg, color-mix(in srgb, var(--col) 38%, #fff) 0%, var(--crema) 60%); box-shadow: 0 7px 0 var(--tinta), 0 14px 22px rgba(0, 0, 0, 0.3); pointer-events: auto; overflow: hidden; }
-.pt-eq-retrato { position: relative; display: grid; place-items: end center; height: clamp(76px, 12.4vh, 130px); overflow: hidden; }
-.pt-eq-retrato img { height: 100%; width: auto; max-width: 150px; object-fit: contain; animation: pt-respira 2.6s ease-in-out infinite; transform-origin: 50% 100%; filter: drop-shadow(0 5px 0 rgba(42, 21, 69, 0.25)); }
+.pt-eq-retrato { position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: end center; height: clamp(76px, 12.4vh, 130px); overflow: hidden; }
+.pt-eq-retrato img { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: center bottom; animation: pt-respira 2.6s ease-in-out infinite; transform-origin: 50% 100%; filter: drop-shadow(0 5px 0 rgba(42, 21, 69, 0.25)); }
 .slot1 .pt-eq-retrato img { animation-delay: -1.2s; }
 .pt-eq-afin { display: none; }
 .pt-eq-col { display: grid; gap: 5px; min-width: 0; }
@@ -37,8 +37,8 @@
 
 /* Derecha */
 .pt-jefe-card { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 14px; row-gap: 2px; align-items: center; padding: 6px 16px 8px 10px; background: linear-gradient(100deg, #ffd9ec, var(--crema) 55%); }
-.pt-jefe-retrato { grid-row: 1 / 4; display: grid; place-items: center; height: clamp(80px, 13.5vh, 140px); }
-.pt-jefe-retrato img { height: 100%; width: auto; max-width: 180px; object-fit: contain; animation: pt-respira 2.4s ease-in-out infinite; transform-origin: 50% 100%; filter: drop-shadow(0 6px 0 rgba(42, 21, 69, 0.25)); }
+.pt-jefe-retrato { grid-row: 1 / 4; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; height: clamp(80px, 13.5vh, 140px); }
+.pt-jefe-retrato img { height: 100%; width: auto; max-width: 100%; object-fit: contain; animation: pt-respira 2.4s ease-in-out infinite; transform-origin: 50% 100%; filter: drop-shadow(0 6px 0 rgba(42, 21, 69, 0.25)); }
 .pt-jefe-nombre { font: 400 clamp(20px, 1.9vw, 32px) var(--titulo); color: var(--rosa-sombra); letter-spacing: 0.03em; }
 .pt-jefe-card .pt-vida { height: 26px; }
 .pt-jefe-card.golpe .pt-jefe-retrato img { animation: pt-golpe 0.28s ease-out; }
@@ -119,6 +119,16 @@
 
 @media (max-height: 820px) {
   .pt-objetivo { display: none; }
+  /* En pantallas bajas se compacta lo de arriba y lo de abajo para que el tablero crezca */
+  .pt-puz { padding-top: 70px; }
+  .pt-jefe-card { padding: 4px 14px 6px 8px; }
+  .pt-jefe-retrato { height: clamp(60px, 9.5vh, 80px); }
+  .pt-jefe-card .pt-vida { height: 22px; }
+  .pt-reloj { padding: 4px 14px 6px; }
+  .pt-reloj-barra { height: 18px; }
+  .pt-eq-carta { padding: 4px 10px 6px 6px; gap: 8px; }
+  .pt-eq-retrato { height: clamp(58px, 8.6vh, 72px); }
+  .pt-eq-carta .pt-btn { min-height: 32px; }
 }
 @media (max-width: 1100px) {
   .pt-puz { grid-template-columns: 190px minmax(0, 1fr) 190px; }

@@ -32,6 +32,8 @@ export interface DatosRig {
   piezas: PiezaRig[];
   /** Una pose por nombre de expresion (idle, blink, feliz, dolor, poder). */
   poses: Record<string, PoseRig>;
+  /** Cuanto se agranda el chibi respecto al tamaño de los demas (un sombrero ancho o un cuerpo pequeño hacen que se vea menor). 1 = igual. */
+  escala?: number;
   /** Parte del lienzo que se encuadra en el chibi. */
   encuadre: { x: number; y: number; w: number; h: number };
   /** Parte que se encuadra en el retrato (la cabeza). */

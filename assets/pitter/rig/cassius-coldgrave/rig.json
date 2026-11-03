@@ -187,10 +187,10 @@
   }
  },
  "encuadre": {
-  "x": 40,
+  "x": 55,
   "y": 100,
-  "w": 840,
-  "h": 800
+  "w": 805,
+  "h": 785
  },
  "encuadreRetrato": {
   "x": 50,
@@ -202,5 +202,6 @@
   "pelo",
   "cabeza",
   "sombrero"
- ]
+ ],
+ "escala": 1.25
 }
