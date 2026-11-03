@@ -528,7 +528,9 @@ export class Laboratorio extends Phaser.Scene {
     }
     const id = this.objetoEn(w.x, w.y);
     const cid = this.criaturaEn(w.x, w.y);
-    if (cid !== null && (id === null || p.event.shiftKey)) { this.juego.seleccionar(cid); return; }
+    // Una placa en el suelo se puede coger aunque haya una criatura encima: solo gana la criatura si se pulsa en su cuerpo, por encima de los pies
+    const placaDebajo = id !== null && this.objs.get(id)?.tipo === "placa" && w.y > PIES - 100;
+    if (cid !== null && (id === null || p.event.shiftKey || (this.objs.get(id)?.tipo === "placa" && !placaDebajo))) { this.juego.seleccionar(cid); return; }
     if (id !== null) { this.arrastre = { id, tipo: this.objs.get(id)!.tipo, ghost: null }; this.input.setDefaultCursor("grabbing"); }
   }
 

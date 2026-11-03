@@ -272,6 +272,27 @@ function ojo(c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: 
   c.fillStyle = "rgba(255,255,255,0.55)"; c.beginPath(); c.arc(x + rx * 0.3, y + ry * h * 0.3, rx * 0.08, 0, Math.PI * 2); c.fill();
 }
 
+/** El collar: una banda que rodea el cuello de lado a lado, perpendicular a su direccion, con la lucecita de animo en el centro. (px, py) es el centro
+    del cuello en ese punto y (tx, ty) su direccion. `ancho` es el grosor del cuello. */
+function collar(c: CanvasRenderingContext2D, px: number, py: number, tx: number, ty: number, ancho: number, col: Colores, animo: string): void {
+  const l = Math.hypot(tx, ty) || 1;
+  const dx = tx / l, dy = ty / l;
+  const nx = -dy, ny = dx;
+  const m = ancho / 2 + 2.5;
+  // Cada lado se curva un poco hacia la cabeza, como una banda que da la vuelta al cuello
+  const a: [number, number] = [px - nx * m, py - ny * m];
+  const b: [number, number] = [px + nx * m, py + ny * m];
+  const cx = px + dx * 5, cy = py + dy * 5;
+  c.lineCap = "butt";
+  c.strokeStyle = col.linea; c.lineWidth = 15; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(cx, cy, b[0], b[1]); c.stroke();
+  c.strokeStyle = col.collar; c.lineWidth = 10; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(cx, cy, b[0], b[1]); c.stroke();
+  c.strokeStyle = "rgba(255,255,255,0.35)"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(a[0] - dx * 2.5, a[1] - dy * 2.5); c.quadraticCurveTo(cx - dx * 2.5, cy - dy * 2.5, b[0] - dx * 2.5, b[1] - dy * 2.5); c.stroke();
+  c.lineCap = "round";
+  const bx = px + dx * 2.5, by = py + dy * 2.5;
+  c.fillStyle = animo; c.globalAlpha = 0.3; c.beginPath(); c.arc(bx, by, 14, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+  c.fillStyle = animo; c.beginPath(); c.arc(bx, by, 6.5, 0, Math.PI * 2); c.fill(); c.strokeStyle = col.linea; c.lineWidth = 2; c.stroke();
+}
+
 /** La cabeza con sus orejas y su collar. Se usa en el cuerpo entero y en el retrato. */
 export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: number, v: Vista, g: Genoma, col: Colores, inclina: number, escalaOjo = 1): void {
   const p = v.pose;
@@ -395,7 +416,7 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const cuelloX = 66, cuelloY = cyC - 26 + p.agacha * 14;
   const abajo = p.cabezaBaja;
   const durm = durmiendo;
-  const hx = durm > 0.5 ? cuelloX + 56 : cuelloX + 40 + 52 * abajo;
+  const hx = durm > 0.5 ? cuelloX + 56 : cuelloX + 64 + 46 * abajo;
   const hy = durm > 0.5 ? cyC + 26 : cuelloY - 52 + 118 * abajo + p.agacha * 10 + respira * 0.3 - (v.vel > 4 ? Math.abs(Math.sin(v.fase)) * 3 : 0);
   const mid: [number, number] = [cuelloX + 34, (cuelloY + hy) / 2 - 6];
   for (const pasada of [0, 1]) {
@@ -459,13 +480,16 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
     c.globalAlpha = Math.min(1, 0.8 * brillo); c.beginPath(); c.arc(mx, my, mr, 0, Math.PI * 2); c.fill();
   }
   c.globalAlpha = 1;
-  // Collar: su marca personal
-  c.strokeStyle = col.collar; c.lineWidth = 11;
-  c.beginPath(); c.moveTo(cuelloX - 18, cuelloY + 6); c.quadraticCurveTo(cuelloX - 4, cuelloY + 26, cuelloX + 14, cuelloY + 16); c.stroke();
-  c.fillStyle = v.animo; c.globalAlpha = 0.3; c.beginPath(); c.arc(cuelloX + 2, cuelloY + 22, 15, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
-  c.fillStyle = v.animo; c.beginPath(); c.arc(cuelloX + 2, cuelloY + 22, 6.5, 0, Math.PI * 2); c.fill(); c.strokeStyle = col.linea; c.lineWidth = 2; c.stroke();
-  c.strokeStyle = "rgba(255,255,255,0.35)"; c.lineWidth = 3;
-  c.beginPath(); c.moveTo(cuelloX - 16, cuelloY + 2); c.quadraticCurveTo(cuelloX - 4, cuelloY + 20, cuelloX + 10, cuelloY + 11); c.stroke();
+  // Collar: su marca personal, sobre la curva del cuello (a un 36 % de su recorrido, en el cuello que queda a la vista)
+  {
+    const t = 0.36, u = 1 - t;
+    const p0: [number, number] = [cuelloX - 10, cuelloY + 24], p2: [number, number] = [hx - 8, hy + 8];
+    const x = u * u * p0[0] + 2 * u * t * mid[0] + t * t * p2[0];
+    const y = u * u * p0[1] + 2 * u * t * mid[1] + t * t * p2[1];
+    const dx = 2 * u * (mid[0] - p0[0]) + 2 * t * (p2[0] - mid[0]);
+    const dy = 2 * u * (mid[1] - p0[1]) + 2 * t * (p2[1] - mid[1]);
+    collar(c, x, y, dx, dy, 31, col, v.animo);
+  }
 
   // Patas cercanas
   for (const q of patas) if (q.cerca) dibujarPata(q);
@@ -503,7 +527,7 @@ export function pintarRetrato(cv: HTMLCanvasElement, v: Vista, g: Genoma, huella
   // El cuello y el collar asoman por debajo
   c.strokeStyle = col.linea; c.lineWidth = 46; c.beginPath(); c.moveTo(-30, 120); c.lineTo(-6, 36); c.stroke();
   c.strokeStyle = col.piel; c.lineWidth = 38; c.beginPath(); c.moveTo(-30, 120); c.lineTo(-6, 36); c.stroke();
-  c.strokeStyle = col.collar; c.lineWidth = 13; c.beginPath(); c.moveTo(-34, 78); c.quadraticCurveTo(-16, 90, 8, 76); c.stroke();
+  collar(c, -30 + 24 * 0.55, 120 - 84 * 0.55, 24, -84, 38, col, v.animo);
   dibujarCabeza(c, 0, 0, v, g, col, v.pose.inclina * 0.5, 1.05);
   c.restore();
 }

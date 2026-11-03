@@ -192,9 +192,11 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     cand.push({ v: "descansar", p: null, dest: c.x, u, cambia: true, espera: resCero() });
     const durmiendo = act?.v === "dormir";
     if (s > 0.4 || (durmiendo && s > 0.12)) {
-      let ud = (s - 0.4) * 2.4 - miedoRaz * 0.8 - nec[N.dolor] * 0.5;
-      if (s > 0.92) ud += 3;
-      if (durmiendo) ud = Math.max(ud, 1.2);
+      // Si acaba de hacerse dano, no se vuelve a dormir en el mismo sitio por mucho sueno que tenga
+      const herida = env.t - c.ultimoDano < 10;
+      let ud = (s - 0.4) * 2.4 - miedoRaz * 0.8 - nec[N.dolor] * 0.5 - (herida ? 2.5 : 0);
+      if (s > 0.92 && !herida) ud += 3;
+      if (durmiendo && !herida) ud = Math.max(ud, 1.2);
       cand.push({ v: "dormir", p: null, dest: c.x, u: ud, cambia: !durmiendo, espera: resCero() });
     }
   }
