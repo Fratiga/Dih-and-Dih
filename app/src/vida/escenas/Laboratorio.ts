@@ -143,11 +143,19 @@ export class Laboratorio extends Phaser.Scene {
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => this.alPulsar(p));
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => this.alMover(p));
     this.input.on("pointerup", (p: Phaser.Input.Pointer) => this.alSoltar(p));
-    // Rueda hacia abajo con el raton sobre la sala (no sobre la interfaz): se quita el zoom y vuelve la vista de la sala
+    // Rueda sobre la sala (no sobre la interfaz): hacia arriba se acerca (sala, seguir, cerca) y hacia abajo vuelve a la vista de la sala
+    let ultimaRueda = 0;
     this.input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
-      if (this.enTitulo || dy <= 0 || this.juego.ajustes.camara === "panorama") return;
+      if (this.enTitulo || dy === 0) return;
       if (!(p.event?.target instanceof HTMLCanvasElement)) return;
-      this.juego.fijarCamara("panorama");
+      const modo = this.juego.ajustes.camara;
+      if (dy > 0) { if (modo !== "panorama") this.juego.fijarCamara("panorama"); return; }
+      // Un paso por cada gesto de la rueda, para que no se salte un nivel
+      const ahora = performance.now();
+      if (ahora - ultimaRueda < 320) return;
+      ultimaRueda = ahora;
+      if (modo === "panorama") this.juego.fijarCamara("seguir");
+      else if (modo === "seguir") this.juego.fijarCamara("cercano");
     });
     this.juego.on("simNueva", () => this.reiniciar());
     this.juego.on("premio", (id) => this.efectoPremio(id as number));
