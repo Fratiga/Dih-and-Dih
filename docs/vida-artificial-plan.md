@@ -74,11 +74,12 @@ Rueda del ratón sobre la sala (no sobre un panel): hacia arriba se acerca (sala
 | 13 Gemelos | 10/10 | Dos gemelos criados igual se parecen mucho más entre sí que dos criados en habitaciones distintas (distancia de conducta 0,01 a 0,13 frente a 0,75 a 1,2). |
 | 05 Partido | 9/10 (16/20 con las semillas 1 a 20) | Cada criatura en su sala con su pelota: sin posibilidad de responder, no hay turnos por encima del azar (en 2 de 20 semillas el control sale por encima de z = 2, lo esperable con ese umbral). |
 | 06 Compañía | 9/10 | Dos criaturas que no se conocen: tardan más en juntarse (menos del 80 % del tiempo en las vinculadas) y pasan menos tiempo cerca. |
-| 07 Aprendiz | 8/10 | La misma criatura sola con la palanca: usa la palanca más del doble de veces en 5 minutos cuando convive con una experta, sin haber recibido entrenamiento propio. |
+| 07 Aprendiz (facilitación social) | 9/10 (16/20 con las semillas 1 a 20) | La misma criatura sola con la palanca: la usa al menos un 40 % más de veces en 5 minutos cuando convive con una experta, sin haber recibido entrenamiento propio. Es facilitación mientras la otra está presente (ver 07b). |
 | 08 Protector | 10/10 | Una criatura que no conoce a la otra: al verla recibir una descarga no aumenta las veces que decide acercarse (las vinculadas aumentan al menos una decisión en 12 s). |
 | 14 Herencia de los monstruos | 9/10 | Tres líneas con la misma población inicial: criar a las que se recuperan antes de un susto (mansa), a las que más tardan (asustadiza) y al azar. En 6 generaciones nacen con una sensibilidad media de ~0,25, ~0,5 y ~0,75. Al criar a los descendientes otra vez en condiciones idénticas la diferencia persiste, la variación genética no se agota y lo que cambia viviendo es igual en las tres. |
-| 07b Aprendiz por partes (informativo) | 7/10 | A: con la palanca estropeada y junto a la experta la usa ~8 veces más que sola, así que **hay facilitación social pura**. B: cuando la experta se va, en 4 de 8 semillas sigue usándola mucho más que quien la exploró sola (133 a 146 frente a 7 a 16 pulsaciones) y en las otras no. |
-| 08b Protector aprendido (informativo) | **5/10** | Cinco condiciones sin regla de ayuda (ver abajo): hay señal, pero no pasa el 80 %. |
+| 07b Aprendiz por fases (informativo) | **2/10** | Tres tramos de 200 s y cinco condiciones. A: con la palanca estropeada, junto a la experta la usa 2 a 4 veces más que sola (10 de 10 semillas). A2: una novata que no sabe nada produce casi lo mismo (7 de 10). B: cuando la compañera se va, quien convivió con la experta pulsa lo mismo que quien exploró sola (3 de 10). **No hay aprendizaje que permanezca, solo facilitación.** |
+| 08b Protector aprendido (informativo) | **8/10** (16/20 con 1 a 20) | Canal propio de alivio. Acercarse alivia más que quedarse (+0,3 de media), mucho más que en el control apareado (+0,08), no aprende si no puede acercarse ni si la angustia no baja, y no generaliza a una desconocida nueva. Ver abajo. |
+| 05b Partido con variaciones (informativo) | 7 variantes, 20 semillas | El z > 2 se cumple en 15 a 20 de 20 según la variante. Ver abajo. |
 | 03b La palanca que se agota | 9/10 | Habituación: dos criaturas bien alimentadas pulsan la palanca entre 15 y 90 veces cada 5 minutos (antes 100 a 200), el cansancio se va tras 2 minutos de descanso y una sola criatura con hambre la sigue usando para comer. |
 
 Una semilla de 04b no aprueba porque esa criatura, con poco miedo de nacimiento, apenas distingue los focos: es una diferencia individual, no un fallo de la prueba. En 20 semillas, 18 aprueban.
@@ -87,30 +88,107 @@ Una semilla de 04b no aprueba porque esa criatura, con poco miedo de nacimiento,
 
 Se apoyan en una sola capacidad nueva: **percibir lo que hace otra criatura**.
 
-- **05, partido.** Si una criatura que ve acaba de empujar o tocar algo, se fija en ello (sube la curiosidad y la excitación), le deja un recuerdo suave de que eso entretiene y la cosa gana atractivo unos 8 s (más cuanto más sociable es). No hay ninguna regla de "devolver la pelota". Con eso la proporción de turnos alternados sube a 0,6 a 0,8 y hay rachas de hasta 16 turnos seguidos. Es el resultado menos sólido: 9/10 con las semillas 1 a 10 y 16/20 con 1 a 20. Medido con una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar.
+- **05, partido.** Si una criatura que ve acaba de empujar o tocar algo, se fija en ello (sube la curiosidad y la excitación), le deja un recuerdo suave de que eso entretiene y la cosa gana atractivo unos 8 s (más cuanto más sociable es). No hay ninguna regla de "devolver la pelota". Con eso la proporción de turnos alternados sube a 0,6 a 0,8 y hay rachas de hasta 16 turnos seguidos. Es el resultado menos sólido: 9/10 con las semillas 1 a 10 y 16/20 con 1 a 20 (el 05b lo repite con siete variantes, ver abajo). Medido con una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar.
 - **06, compañía.** Nace de lo que ya había: el afecto crece con el tiempo cerca de alguien, la soledad crece más en quien se apega, y acercarse a quien la ha acompañado tiene un valor aprendido.
-- **07, aprendiz.** Es el recuerdo suave de ver a otra tocar la palanca (el mismo mecanismo del 05) más lo que se come de lo que ella saca. La aprendiz usa la palanca entre 1,5 y 19 veces más que sola (antes de la habituación, casi siempre unas 200 pulsaciones en 5 minutos; ahora la pareja a veces se queda en unas 20, y el criterio pasó de "más del doble" a "un 40 % más"). **No** empieza antes: el cuarto de la palanca ya se explora igual de rápido solo.
+- **07, aprendiz (facilitación social).** Es el recuerdo suave de ver a otra tocar la palanca (el mismo mecanismo del 05) más lo que se come de lo que ella saca. La aprendiz usa la palanca entre 20 y 50 veces en 5 minutos con la experta y entre 7 y 13 sola. El 07b muestra que eso es facilitación mientras la otra está presente y no un aprendizaje que se quede. **No** empieza antes: el cuarto de la palanca ya se explora igual de rápido solo.
 - **08, protector (con regla).** Aquí hay una **regla puesta a mano**, no aprendida: cuando una criatura ve que otra se hace daño, se acerca más a ella cuanto más afecto le tenga (`ayuda` en `criatura.ts` y su bono en `conducta.ts`). Lo que se mide es que el vínculo previo cambia lo que decide. Es honesto decir que es una predisposición de la arquitectura y no una conducta emergente. Se puede apagar (`ayudaInnata = false`) y el intento de que se aprenda sola es el 08b.
 
-### Estados ajenos y el 08b: una señal parcial
+### Por qué unas semillas daban 20 pulsaciones y otras 200 (07)
 
-Se quitó la regla del 08 y se probó a que la conducta se **aprenda**. Lo que existe, sin ninguna orden de "ayudar" (todo detrás de `estadosAjenos`, que solo activa el 08b):
+Hasta ahora el 07 daba dos grupos de semillas: unas 20 pulsaciones en 5 minutos y otras unas 200, con la observadora sin comer nada y llegando a hambre 1,0. No era una diferencia de aprendizaje. La experta se restauraba en una sala nueva con los relojes que traía del entrenamiento (t cerca de 1200 s) y con una huella de su último empujón en el futuro de la sala. La observadora la leía como "acaba de pasar" y se quedaba con una atención fijada en la palanca, con un bono de atención multiplicado por más de 100 (la utilidad de pulsarla llegaba a 14, frente a 0,4 de comer un gránulo). Esa atención también tapaba cualquier empujón real posterior de la experta, porque la regla descarta lo anterior al último recuerdo. Cuando la experta empujaba algo pronto en la sala nueva, esa huella se sustituía por una real y el efecto desaparecía. Es una lectura coherente con las semillas diagnosticadas (3 con el efecto y 4 sin él) y con que el efecto desaparezca tras el arreglo, no una medición aparte.
+
+Arreglo (`criatura.ts` y `conducta.ts`):
+
+- `Criatura.reiniciarReloj()` borra lo que depende del reloj anterior (atención, huella del último empujón, trazas de causa, hábito, contagio, últimas decisiones) y se usa en el 07, el 07b y el `perfil` del caso 13, que meten criaturas vividas en salas nuevas.
+- La atención ya no se fija si su tiempo es posterior al de la sala, y el bono de atención solo vale con tiempo pasado.
+- Una prueba unitaria comprueba que una huella de 599 s en una sala de 0 s no deja atención fijada.
+
+Resultado tras el arreglo: la observadora con experta pulsa entre 21 y 48 veces y sola entre 7 y 13, sin semillas de 200. Antes de corregirlo se probó otra explicación (que la criatura mantuviera el mérito de una aparición cuyo gránulo se comía otra). Se descartó porque no cambiaba nada y empeoraba el 03b a 8/10, y se quitó.
+
+### El 07 por fases (07b)
+
+Tres tramos de 200 s con la palanca (los dos primeros con compañera, el tercero sin ella y con el hambre a 0,5 para todas), cuatro repeticiones por semilla y mediana:
+
+| Condición | Tramo 1 | Tramo 2 | Tramo 3 (sin compañera) |
+|---|---|---|---|
+| Palanca estropeada, con la experta | 21 a 43 | 36 a 91 | 9 a 19 |
+| Palanca estropeada, con una novata | 21 a 52 | 21 a 65 | |
+| Palanca estropeada, sola | 12 a 19 | 8 a 14 | |
+| Palanca que funciona, con la experta | 11 a 23 | 14 a 29 | 9 a 16 |
+| Palanca que funciona, sola | 6 a 11 | 4 a 9 | 10 a 17 |
+
+Lectura. La compañía duplica o triplica el uso de la palanca estropeada, pero también lo hace una compañera que no sabe nada, porque ella también toca la palanca y la observadora responde a lo que ve hacer. Cuando la compañera se va, la que convivió con la experta usa la palanca lo mismo que la que exploró sola (2 a 3 de 10 semillas muestran más). Los gránulos comidos tampoco cambian (5 a 8 con experta, 4 a 7 sola). Es facilitación social y no hay aprendizaje por observación que permanezca.
+
+### El partido con variaciones (05b)
+
+Siete variantes por semilla (20 semillas, 1500 s cada una). El z es el de la prueba de permutación circular.
+
+| Variante | Empujones | Alternancia | Latencia | Racha media | Racha máx. | z (mediana) | z > 2 |
+|---|---|---|---|---|---|---|---|
+| Base (1000 entre ellas, una pelota) | 98 | 0,60 | 4,2 s | 2,4 | 7,8 | 3,2 | 17/20 |
+| Cerca (300) | 95 | 0,65 | 4,0 s | 2,5 | 7,5 | 4,2 | 19/20 |
+| Lejos (1400) | 89 | 0,63 | 4,1 s | 2,5 | 8,0 | 2,9 | 17/20 |
+| Pelota pesada (masa 1,6) | 120 | 0,73 | 2,2 s | 4,1 | 14,8 | 5,7 | 20/20 |
+| Dos pelotas | 114 | 0,63 | 3,8 s | 2,4 | 8,1 | 3,2 | 16/20 |
+| Poco sociables (0,1) | 96 | 0,58 | 3,9 s | 2,1 | 7,1 | 2,5 | 15/20 |
+| Muy sociables (0,9) | 92 | 0,69 | 4,0 s | 2,9 | 9,5 | 4,2 | 19/20 |
+
+La alternancia no depende de una distancia ni de una pelota concretas. Aumenta con la sociabilidad (18 de 20 semillas: z mayor en las muy sociables) y con una pelota pesada, (una explicación probable, no medida: tarda más en moverse y hace la respuesta más visible). El 05 original, con 20 semillas, queda en 16/20, justo en el 80 % que se exige, así que sigue siendo el caso obligatorio más justo. Que las poco sociables sigan por encima del azar (z mediano 2,5) probablemente porque la atención hacia lo que hace la otra baja con la sociabilidad pero no se anula (tampoco medido).
+
+### El consuelo aprendido (08b)
+
+Se quitó la regla del 08 y se hizo que la conducta se **aprenda** (todo detrás de `estadosAjenos`, que solo activa el 08b). Lo que existe, sin ninguna orden de "ayudar":
 
 - La angustia de otra criatura se **percibe como señal** (ruido y postura: miedo, dolor, estar tendida o haber recibido un golpe hace poco), no como su estado interno.
-- Ver a otra hacerse daño contagia un poco de miedo y despierta la **necesidad de compañía** (más en quien se apega y quiere a la otra).
-- Quedarse junto a alguien querido que lo pasa mal **le calma** (su miedo y su dolor bajan mientras está con ella). Eso es un efecto de la acción que se **ve**: la angustia que se percibía al llegar y la que se percibe al irse. Ese alivio visible suma a la compañía que siente quien se acerca. Si la angustia no baja, no hay alivio que aprender.
+- Ver a otra hacerse daño contagia un poco de miedo y despierta la necesidad de compañía.
+- Un **canal propio de resultado**, `alivio` (`C.alivio`, el sexto), mide el cambio en la angustia ajena tras lo que se hizo. No se mezcla con la compañía. Lo aprende solo la memoria asociativa (la red neuronal sigue prediciendo los cinco canales de antes, `NC_RED`), y se guarda con el verbo de lo que se hizo (`ante:acercarse`, `ante:descansar`, `ante:evitar`) y los rasgos de la criatura que sufría. Las memorias guardadas con cinco canales se completan con un cero al cargarlas.
+- Se mide durante los 5 s siguientes al comienzo de la parte de "hacer" de cualquier acción (en acercarse, desde que llega) como **caída relativa** de la angustia percibida. La percibe también desde lejos, porque su angustia es ruido y se oye desde más allá de lo que se ve. Si se mide durante toda la acción, la que más dura (acercarse) parece la que más alivia, y por eso se fijó la ventana.
+- Cuánto vale ese alivio al decidir depende del vínculo: `pesoAlivio * (0,15 + afecto)`. La criatura puede **acercarse**, **quedarse** (descansar) o **alejarse** (evitar) de la que sufre; el miedo contagiado empuja un poco a alejarse y lo aprendido del efecto decide.
+- Quedarse junto a alguien querido que lo pasa mal le calma poco a poco (esto es el efecto real en el mundo, no la recompensa).
 
-Un primer diseño, con una recompensa por consolar que no dependía de ningún efecto visible, dio 0/8 y la criatura entrenada acabó yendo con la otra *menos* que las que no habían visto nada. La versión actual separa lo que pedía la revisión del diseño. La criatura que mira tiene hambre y la comida está al otro lado, así que ir con la otra cuesta algo. Cada condición entrena 20 episodios en los que la otra recibe una descarga delante:
+Diseño del experimento. Una pareja convive 1500 s. Después, la observadora entrena 24 episodios en los que la otra recibe una descarga delante. En los 18 primeros se le fuerza, por turnos, acercarse, quedarse o alejarse (6 de cada), para que haya muestras de las tres opciones; en los 6 siguientes decide. La prueba deja primero 120 s de calma para que no quede el miedo del último episodio. Luego la observadora tiene hambre (0,85), la comida está al otro lado, y la que sufre se queda donde está para que solo cuente lo que hace la otra. Se mide cuánto tarda en estar a menos de 180 de ella (latencia, tope 12 s). Condiciones:
 
-| Condición | Qué separa | Veces que va con ella (media de 10 semillas) |
+| Condición | Qué separa |
+|---|---|
+| Consuela (puede acercarse y la angustia baja) | consuelo aprendido |
+| Atrapada (ninguna de las dos se puede mover) | si ver angustia basta |
+| Inconsolable (acercarse no baja la angustia) | si hace falta ver el efecto |
+| **Apareada** | el mismo alivio, en los mismos momentos, pero sin que lo cause ella |
+| Desconocida entrenada | la que sufre es una extraña durante el entrenamiento |
+| Ingenua (pareja vinculada que nunca la vio sufrir) | línea de base |
+
+El control apareado (yoked) repite, episodio a episodio, la angustia segundo a segundo de otro episodio (el de 4 más adelante) de la condición "consuela". Recibe el mismo alivio, pero lo que ella haga no lo cambia. Así, si acercarse aparece como mejor que quedarse, es porque lo causa.
+
+Resultados (10 semillas, y con 1 a 20 entre paréntesis):
+
+- Acercarse le ha dado más alivio que quedarse: 8/10 (17/20). El margen medio es de unos +0,33 al consolar, con valores aprendidos de 0,44 a 0,86 al acercarse y de 0,32 a 0,42 al quedarse (la angustia baja sola).
+- En el control apareado el margen es de unos +0,08: 8/10 (17/20) están por debajo del margen de la que consuela en más de 0,15. Con el mismo alivio, no distingue entre acercarse y quedarse.
+- La latencia separa la condición inconsolable (nunca llega) de la que consuela (llega en unos 3 s): 10/10 (19/20). La ingenua tampoco llega. Atrapada, entre 0 y 0,5 (menos que la que consuela en 10/10).
+- No generaliza a una desconocida que nunca vio: 10/10 (19/20) la de la extraña da un 0 frente a 0,73.
+- Persiste: tras 10 minutos de pausa llega igual de rápido.
+- Entrenar con una extraña da el mismo resultado (0,7 en 9 de 10 semillas): el vínculo con ella crece por la compañía repetida durante el entrenamiento, así que dejó de ser una extraña. Por eso el criterio del vínculo es la generalización a una extraña nueva y no la desconocida entrenada.
+- **Lo que no separa la conducta**: la condición apareada llega tan rápido como la que consuela (0,35 a 0,75). Con todas las opciones valiendo lo mismo, la criatura se acerca por los pequeños desempates de la compañía. La evidencia de que depende de la acción que causa el alivio está en lo aprendido (el margen), no en la latencia. En 3 de 10 semillas el margen de la que consuela es pequeño (0,09 a 0,16).
+
+Se deja como informativo porque está justo en el 80 % con 20 semillas.
+
+## Protocolo para cambios globales
+
+Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
+
+| Caso | Antes | Después del canal de alivio, la corrección del reloj y el nuevo 08b |
 |---|---|---|
-| Puede acercarse y la angustia baja | consuelo aprendido | ~0,48 |
-| No puede acercarse (atrapada) | si ver angustia basta | ~0,33 |
-| Se acerca, pero la angustia no baja | si hace falta ver el efecto | ~0,20 |
-| La que sufre es una desconocida | si el vínculo importa | ~0,39 |
-| Nunca la vio sufrir | línea de base | ~0,39 |
+| 01, 02, 03, 04, 13 | 10/10 cada uno | igual |
+| 03b | 9/10 | 9/10 |
+| 04b | 9/10 | 9/10 |
+| 05 | 8/10 | 8/10 (16/20 con 20 semillas) |
+| 06 | 10/10 | 10/10 |
+| 07 | 9/10 | 9/10 (16/20 con 20), título y lectura cambiados |
+| 08 | 9/10 | 9/10 |
+| 14 | 9/10 | 9/10 |
+| 07b | 4/8 en el aprendizaje | 2/10, y 3/10 en el aprendizaje, porque el efecto estaba inflado por el reloj |
+| 08b | 5/10 | 8/10, con un diseño distinto y una medición nueva |
 
-Lectura, con cautela: **sí hay una señal que va en la dirección esperada** (8 de 10 semillas: va más con ella cuando acercarse alivia que cuando no; 8 de 10: más que si no pudo acercarse; 7 de 10: más que con una desconocida). Aprende sobre todo que acercarse **no sirve** cuando no alivia (cae a ~0,20), y apenas sube por encima de la línea de base cuando sí alivia. Solo 5 de 10 semillas cumplen los cinco criterios a la vez, así que el caso queda como informativo. Falta una forma de que la criatura estime lo que siente la otra y planifique en consecuencia (los casos 19 a 38).
+Únicas modificaciones de criterio: el título y la hipótesis del 07 (el criterio es el mismo) y el diseño completo del 08b y el 07b, que son informativos. El 03b bajó a 8/10 con un intento intermedio (recortar el mérito de una aparición que se llevaba otra criatura) y se retiró.
 
 ## Números ajustables
 
@@ -150,12 +228,16 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 - **Habituación** (`habituacion*` en `ajustes.ts`): cada vez que se empuja o toca algo, haya salido algo o no, crece un cansancio de ese objeto (con 10 seguidas baja la diversión esperada al 40 %). Se recupera con el descanso (vida media de 20 s). Solo afecta a la diversión esperada y a la atención que despierta lo que hace otra criatura, no a la comida: una palanca que da de comer sigue usándose cuando hay hambre. Antes dos criaturas llegaban a pulsarla cada 2 segundos sin parar, porque cada una se fijaba en que la otra la pulsaba. Un primer intento contaba solo las repeticiones que daban diversión, pero la palanca tiene 6 s de pausa y la mayoría de los toques no daban nada, así que no cansaba.
 - **Caso 14 completo** (selección artificial con control, 6 generaciones, dos líneas de cada tipo) y la pestaña **Linaje** con el árbol genealógico y lo heredado.
 - **Controles del aprendiz** (07b) y del protector (08b), con resultados distintos a los esperados.
+- **Corrección del reloj** en los casos que restauran criaturas vividas (`reiniciarReloj`), que explicaba las 200 pulsaciones del 07.
+- **El 05b** con siete variantes y 20 semillas (distancia, pelota, sociabilidad; latencia y rachas).
+- **Canal de alivio** (`C.alivio`) para la angustia ajena, con acercarse, quedarse y alejarse como opciones, y el control apareado del 08b.
 
 ## Pendiente
 
 - **Casos 09 a 12** (perro guardián, depredador, recolector, solución imprevista): necesitan herramientas de entrenamiento más finas (recompensar por estar en una zona y no solo por una acción, marcadores, barreras) y transporte de objetos.
-- **Estados ajenos reales** (el 08b falla): que la criatura estime lo que siente la otra y el efecto de lo que hace sobre ello. Y el resto de los casos 19 a 38 (`docs/vida-artificial-casos-extremos.md`): piden planificación, memoria de trabajo, señales aprendidas y transmisión cultural.
-- **Más controles del caso 05** (variar la distancia, la pelota y la sociabilidad) y del 07: el 07b ya separa la facilitación del aprendizaje.
+- **Estados ajenos más allá de la angustia**: el 08b ya aprende el efecto de lo que hace sobre la angustia de otra. Falta que estime lo que quiere o teme (un modelo pequeño de la otra) y el resto de los casos 19 a 38 (`docs/vida-artificial-casos-extremos.md`): piden planificación, memoria de trabajo, señales aprendidas y transmisión cultural.
+- **Aprendizaje por observación de verdad** (el 07b dice que hoy no lo hay): la compañera enseña la palanca y el efecto se mantiene al irse. Hace falta que lo que ve hacer a otra produzca un recuerdo asociado a lo que consigue, no solo a su atención.
+- **Generalización del consuelo** a una desconocida nueva y a otras causas de angustia: hoy no generaliza (el 08b da 0 con una extraña).
 - **Temperatura** como necesidad y entornos distintos.
 - **Supabase**: tablas de criaturas, memoria, eventos y relaciones, y funciones del servidor que validen genética y recompensas. Se dejó fuera a propósito: hace falta decidir qué valida el servidor y no se quiso añadir infraestructura en este prototipo.
 - **Un segundo recinto** para criar a los gemelos por separado desde el juego (hoy conviven en una sala; para separarlos hay que elegir qué objetos hay y a quién se premia o asusta).
@@ -164,8 +246,8 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 
 ## Recomendación para la siguiente fase
 
-1. **Estimación del estado ajeno.** El 08b dice que percibir señales no basta. La criatura necesita un modelo pequeño de la otra (qué teme, qué quiere) y poder comprobar el efecto de lo que hace sobre él. Es la base de casi todos los casos 19 a 38.
-2. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
-3. **Controles del 05** (distancia, pelota, sociabilidad), ahora que el 07b ya separa facilitación y aprendizaje.
-4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar.
-5. Solo después, el hábitat compartido y Supabase.
+1. **Aprendizaje por observación.** El 07b separa la facilitación del aprendizaje y dice que hoy solo hay facilitación. Es el siguiente resultado a conseguir antes de añadir criaturas.
+2. **Generalización del consuelo.** Que lo aprendido con una compañera sirva con otra criatura vinculada y con otras formas de angustia. El canal de alivio ya existe para eso.
+3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
+4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
+5. Solo después, más criaturas por sala, el hábitat compartido y Supabase.

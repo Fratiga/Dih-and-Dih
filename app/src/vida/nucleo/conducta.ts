@@ -7,7 +7,7 @@ import { acota } from "./azar.ts";
 import { CATALOGO } from "./catalogo.ts";
 import type { Criatura, Entorno } from "./criatura.ts";
 import { BINES } from "./memoria.ts";
-import { C, D, E, IDX, N, NC, R, resCero, VERBOS_OBJETO, type Percepto, type Res, type Verbo } from "./tipos.ts";
+import { ANGUSTIA_VISIBLE, C, D, E, IDX, N, NC, R, resCero, VERBOS_OBJETO, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
 export interface Cand {
   v: Verbo;
@@ -93,7 +93,7 @@ function esperar(c: Criatura, p: Percepto, v: Verbo, env: Entorno): Res {
   if (v === "acercarse" && p.esCriatura) prior[C.compania] = 0.12 + 0.15 * c.rasgos[R.sociabilidad];
   const res = resCero();
   for (let k = 0; k < NC; k++) {
-    const sin = 0.55 * red[k] * (k === C.sacia && v !== "probar" ? 0.4 : 1) + 0.45 * prior[k];
+    const sin = 0.55 * (red[k] ?? 0) * (k === C.sacia && v !== "probar" ? 0.4 : 1) + 0.45 * prior[k];
     res[k] = A.conf * A.res[k] + (1 - A.conf) * sin;
   }
   // El peligro que asocia a esa cosa, haga lo que haga con ella
@@ -151,6 +151,14 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     });
     if (!sana) ultimoRecurso = crit * 0.9;
   }
+  // Ver a alguien angustiado: lo que espera conseguir (que su angustia baje) segun lo que haya visto pasar antes al acercarse, quedarse o alejarse.
+  // Vale mas cuanto mas afecto le tiene. No hay ninguna orden de ayudar: solo lo aprendido de su efecto.
+  const angustiadas = c.estadosAjenos ? ps.filter((p) => p.esCriatura && !p.recordado && p.f[IDX.sonido] > ANGUSTIA_VISIBLE) : [];
+  const pesoAlivio = (id: number): number => AJ.pesoAlivio * (0.15 + (c.mem.vinculos.find((q) => q.id === id)?.afecto ?? 0));
+  const alivioEsperado = (verbo: string, p: Percepto): number => {
+    const Q = c.mem.predecir(`ante:${verbo}`, p.f, p.m, p.x / ancho);
+    return Q.res[C.alivio] * Q.conf;
+  };
   const comestible = (p: Percepto): boolean => !p.esCriatura && c.mem.predecir("probar", p.f, p.m, p.x / ancho).res[C.sacia] > 0.05;
   for (const p of ps) {
     const verbos: readonly Verbo[] = p.esCriatura ? ["acercarse"] : (["probar", "empujar", "tocar"] as const);
@@ -161,7 +169,9 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (!p.esCriatura) res[C.diversion] *= 1 - AJ.habituacionMax * c.cansancioDe(p.id);
       if (ultimoRecurso > 0 && v === "probar" && comestible(p)) res[C.dano] *= 1 - ultimoRecurso;
       res[C.dano] = Math.max(res[C.dano], peligroDelTrayecto(c, c.x, p.x, ancho) * 0.9);
+      if (p.esCriatura && v === "acercarse" && angustiadas.includes(p)) res[C.alivio] = alivioEsperado(v, p);
       let u = utilidad(res, p.dist, A.conf, p.esCriatura);
+      if (res[C.alivio] > 0) u += res[C.alivio] * pesoAlivio(p.id);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
       const at = c.atencion;
       if (at && at.obj === p.id && at.v === v && env.t >= at.t && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz) * (1 - AJ.habituacionMax * c.cansancioDe(p.id));
@@ -184,6 +194,14 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (act && act.v === "evitar" && act.obj === p.id) u += persistir;
       cand.push({ v: "evitar", p, dest: 0, u, cambia: true, espera: resCero() });
     }
+  }
+
+  // Alejarse de alguien que lo pasa mal: el miedo contagiado lo empuja un poco, y lo aprendido de su efecto decide
+  for (const q of angustiadas) {
+    const afecto = c.mem.vinculos.find((w) => w.id === q.id)?.afecto ?? 0;
+    let u = 0.04 + 0.6 * miedoRaz * (1 - 0.5 * afecto) + alivioEsperado("evitar", q) * pesoAlivio(q.id);
+    if (act && act.v === "evitar" && act.obj === q.id) u += persistir;
+    cand.push({ v: "evitar", p: q, dest: 0, u, cambia: true, espera: resCero() });
   }
 
   // Explorar: elige entre unos sitios y prefiere los poco visitados y sin peligro
@@ -212,6 +230,8 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     const s = nec[N.sueno];
     let u = 0.09 + 0.3 * s;
     if (act && act.v === "descansar") u += persistir * 0.5;
+    // Quedarse donde esta mientras otra lo pasa mal: tambien se aprende que efecto tiene
+    for (const q of angustiadas) u += alivioEsperado("descansar", q) * pesoAlivio(q.id);
     cand.push({ v: "descansar", p: null, dest: c.x, u, cambia: true, espera: resCero() });
     const durmiendo = act?.v === "dormir";
     if (s > 0.4 || (durmiendo && s > 0.12)) {

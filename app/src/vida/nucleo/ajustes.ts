@@ -52,6 +52,8 @@ export const AJ = {
   pesoSacia: 2.2,
   pesoDano: 1.7,
   bonoCuriosidad: 0.9,
+  /** Cuanto vale, con un vinculo fuerte, ver bajar la angustia de otra criatura (se multiplica por 0,15 mas el afecto). */
+  pesoAlivio: 2.4,
 
   /* --- Habituacion: repetir lo mismo entretiene cada vez menos y se recupera con el descanso --- */
   /** Segundos que tarda en olvidarse la repeticion reciente. */

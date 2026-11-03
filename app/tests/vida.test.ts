@@ -4,7 +4,7 @@ import { genomaNuevo, clonarGenoma, cruzar } from "../src/vida/nucleo/genoma.ts"
 import { AJ } from "../src/vida/nucleo/ajustes.ts";
 import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
-import { C, NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
+import { C, NC_RED as NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
 import { ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
 

@@ -2,7 +2,7 @@
    Implementados: 01 a 04 (un individuo aprende), 04b (generalización), 13 (gemelos) y 05 (partido improvisado, preparado).
    Cada uno usa varias semillas y un control. Los criterios estan escritos para que no se cumplan por casualidad. */
 
-import { C } from "../nucleo/tipos.ts";
+import { C, type Verbo } from "../nucleo/tipos.ts";
 import { clonarGenoma, cruzar, type Genoma } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
 import { Azar, mezclar } from "../nucleo/azar.ts";
@@ -701,12 +701,15 @@ export const caso08: Caso = {
 export const caso08b: Caso = {
   id: "08b",
   titulo: "El protector aprendido",
-  hipotesis: "Una criatura aprende a acercarse a una compañera que sufre solo si su acercamiento tiene un efecto que se ve: la angustia de la otra baja. Cinco condiciones separan miedo contagiado, evitación y consuelo. Si no puede acercarse, si la angustia no baja, o si la otra es una desconocida, no aprende lo mismo. No hay ninguna regla de ayuda.",
+  hipotesis: "Una criatura aprende a acercarse a una compañera que sufre solo si lo que hace tiene un efecto que se ve: su angustia baja porque ella se acerca. Seis condiciones separan miedo contagiado, evitación y consuelo. Si no puede acercarse, si la angustia no baja, si baja sola a la misma hora (control apareado: ve exactamente el mismo alivio, pero no lo causa ella) o si la que sufre es una desconocida, no aprende lo mismo. No hay ninguna regla de ayuda.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g1 = genomaDe(semilla, 81);
     const g2 = genomaDe(semilla, 82);
     const gX = genomaDe(semilla, 84);
+    const REP = 16;
+    const EP = 24;
+    const TOPE = 12;
     const preparar = (s: Simulacion): void => { for (const c of s.criaturas) { c.ayudaInnata = false; c.estadosAjenos = true; } };
     const juntos = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: g1, x: 500 }, { genoma: g2, x: 700 }], comedero: { cada: 140, max: 2, tipo: "fruta" } });
     preparar(juntos);
@@ -716,74 +719,136 @@ export const caso08b: Caso = {
     juntos.comedero = null;
     const base = juntos.serializar();
 
-    const colocar = (a: Criatura, b: Criatura): void => {
+    const colocar = (a: Criatura, b: Criatura, baja: boolean): void => {
       a.x = 1000; b.x = 600; a.accion = null; b.accion = null;
-      for (const c of [a, b]) { c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; c.nec[4] = 0.25; c.emo[1] = 0.4; }
+      for (const c of [a, b]) { c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; c.nec[4] = baja ? 0.02 : 0.25; c.emo[1] = baja ? 0.2 : 0.4; }
     };
-    // Una descarga a la otra, estando ella delante. Nadie le dice a la que mira que se acerque. Con hambre y comida al otro lado, para ir
-    // con la otra hay que dejar de comer. Devuelve 1 si llega junto a ella (a menos de 180 unidades) en los segundos siguientes, 0 si no.
-    const episodio = (s: Simulacion, a: Criatura, b: Criatura, segundos: number, conComida: boolean): number => {
+    type Guion = { miedo: number; dolor: number }[];
+    interface Episodio { latencia: number; guion: Guion }
+    /** Una descarga a `a` delante de `b`. Nadie le dice a `b` que se acerque. En la prueba, con hambre y comida al otro lado, para ir con la otra hay
+        que dejar de comer, y la que sufre se queda donde esta para que solo cuente lo que hace `b`. Devuelve el tiempo que tarda `b` en estar junto a
+        ella (a menos de 180), o TOPE si no llega, y lo que le pasa a ella segundo a segundo (para repetirlo en el control apareado). */
+    const episodio = (s: Simulacion, a: Criatura, b: Criatura, segundos: number, prueba: boolean, guion?: Guion, forzado: Verbo | null = null, fijaA = prueba): Episodio => {
       for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
-      if (conComida) s.mundo.agregar("fruta", 300, { porciones: 6 });
-      colocar(a, b);
-      b.nec[0] = conComida ? 0.6 : 0.1;
-      let llego = 0;
-      const g = () => { if (Math.abs(a.x - b.x) < 180) llego = 1; };
+      if (prueba) s.mundo.agregar("fruta", 300, { porciones: 6 });
+      colocar(a, b, prueba);
+      b.nec[0] = prueba ? 0.85 : 0.1;
+      a.atrapada = fijaA;
+      b.verboForzado = forzado;
+      let latencia = TOPE;
+      const t0 = s.t;
+      const grabado: Guion = [];
+      const g = () => {
+        const k = Math.round((s.t - t0) / 0.25) - 1;
+        if (guion) { const q = guion[Math.min(guion.length - 1, Math.max(0, k))]; a.emo[0] = q.miedo; a.nec[2] = q.dolor; }
+        else grabado.push({ miedo: a.emo[0], dolor: a.nec[2] });
+        if (latencia === TOPE && Math.abs(a.x - b.x) < 180) latencia = s.t - t0;
+      };
       s.ganchos.push(g);
       a.sufrir(0.7, -1, null, 0.5);
       s.avanzar(segundos);
       s.ganchos.splice(s.ganchos.indexOf(g), 1);
-      return llego;
+      a.atrapada = false;
+      b.verboForzado = null;
+      return { latencia, guion: grabado };
     };
-    type Condicion = "consuela" | "atrapada" | "inconsolable" | "desconocida";
-    // Entrenamiento: 20 episodios de la otra recibiendo una descarga delante, segun la condicion
-    const entrenar = (cond: Condicion): { s: Simulacion; objetivo: number; b: number } => {
+    const puntos = (e: Episodio) => 1 - e.latencia / TOPE;
+
+    type Condicion = "consuela" | "atrapada" | "inconsolable" | "desconocida" | "apareada";
+    interface Entrenada { s: Simulacion; sufre: number; mira: number; guiones: Guion[] }
+    const restaurar = (k: number): Simulacion => {
+      const r = Simulacion.restaurar(base);
+      r.azar.s = mezclar(semilla, 93, k);
+      for (const c of r.criaturas) { c.azar.s = mezclar(semilla, 94, c.id, k); c.capRegistro = 100000; }
+      return r;
+    };
+    const extrana = (k: number): Criatura => {
+      const S = new Criatura(3, "Extraña", clonarGenoma(gX), 1000, mezclar(semilla, 97, k));
+      S.ayudaInnata = false; S.estadosAjenos = true; S.capRegistro = 100000;
+      return S;
+    };
+    // Entrenamiento: 24 episodios de la otra recibiendo una descarga delante, segun la condicion. En los 18 primeros se fuerza, por turnos, acercarse,
+    // quedarse (descansar) y alejarse (evitar), para que haya muestras de las tres opciones; en los 6 siguientes decide ella.
+    const forzadoEn = (i: number): Verbo | null => (i < 18 ? (["acercarse", "descansar", "evitar"] as const)[i % 3] : null);
+    const entrenar = (cond: Condicion, guiones: Guion[] = []): Entrenada => {
       if (cond === "desconocida") {
         // La misma criatura, con su vinculo intacto, pero la que sufre ahora es una desconocida (su companera no esta)
-        const r = Simulacion.restaurar(base);
-        r.azar.s = mezclar(semilla, 95);
-        for (const c of r.criaturas) { c.azar.s = mezclar(semilla, 96, c.id); c.capRegistro = 100000; }
+        const r = restaurar(1);
         const B = r.criaturas[1];
-        const S = new Criatura(3, "Extraña", clonarGenoma(gX), 1000, mezclar(semilla, 97));
-        S.ayudaInnata = false; S.estadosAjenos = true; S.capRegistro = 100000;
+        const S = extrana(0);
         r.criaturas = [B, S];
-        for (let i = 0; i < 20; i++) { episodio(r, S, B, 20, false); r.avanzar(8); }
-        return { s: r, objetivo: 1, b: 0 };
+        for (let i = 0; i < EP; i++) { episodio(r, S, B, 20, false, undefined, forzadoEn(i)); r.avanzar(8); }
+        return { s: r, sufre: 1, mira: 0, guiones: [] };
       }
-      const r = Simulacion.restaurar(base);
-      r.azar.s = mezclar(semilla, 93);
-      for (const c of r.criaturas) { c.azar.s = mezclar(semilla, 94, c.id); c.capRegistro = 100000; }
+      const r = restaurar(cond === "apareada" ? 2 : 0);
       const [A, B] = r.criaturas;
       B.atrapada = cond === "atrapada";
-      A.inconsolable = cond === "inconsolable";
-      for (let i = 0; i < 20; i++) { episodio(r, A, B, 20, false); r.avanzar(8); }
+      A.inconsolable = cond === "inconsolable" || cond === "apareada";
+      const grabados: Guion[] = [];
+      // En el control apareado cada episodio repite lo que le paso a la otra en un episodio distinto (el de 4 mas adelante), asi que el alivio llega igual pero no depende de lo que hace
+      for (let i = 0; i < EP; i++) { grabados.push(episodio(r, A, B, 20, false, cond === "apareada" ? guiones[(i + 4) % EP] : undefined, forzadoEn(i), cond === "atrapada").guion); r.avanzar(8); }
       B.atrapada = false; A.inconsolable = false; A.emo[0] = 0; A.nec[2] = 0;
-      return { s: r, objetivo: 0, b: 1 };
+      return { s: r, sufre: 0, mira: 1, guiones: grabados };
     };
-    const prueba = (e: { s: Simulacion; objetivo: number; b: number }): number => {
+    /** El alivio medio que ha visto en `nombre` tras hacer `verbo` (0 si nunca lo hizo estando ella a la vista). */
+    const alivioDe = (B: Criatura, verbo: string, nombre: string): number => {
+      let n = 0, acc = 0;
+      for (const q of B.mem.protos) if (q.v === `ante:${verbo}` && q.nombre === nombre) { n += q.n; acc += q.n * q.res[C.alivio]; }
+      return n ? acc / n : 0;
+    };
+    const prueba = (e: Entrenada, pausa = 120): number => {
       const v: number[] = [];
-      for (let k = 0; k < 16; k++) {
+      for (let k = 0; k < REP; k++) {
         const r = replica(e.s, k);
-        v.push(episodio(r, r.criaturas[e.objetivo], r.criaturas[e.b], 12, true));
+        // Antes de la prueba pasa un rato sin nada, para que no quede miedo o excitacion del ultimo episodio
+        for (const o of [...r.mundo.objetos]) r.mundo.quitar(o.id);
+        r.avanzar(pausa);
+        v.push(puntos(episodio(r, r.criaturas[e.sufre], r.criaturas[e.mira], TOPE, true)));
       }
       return media(v);
     };
-    const res: Record<Condicion | "ingenua", number> = { consuela: 0, atrapada: 0, inconsolable: 0, desconocida: 0, ingenua: 0 };
-    for (const c of ["consuela", "atrapada", "inconsolable", "desconocida"] as Condicion[]) res[c] = prueba(entrenar(c));
+    /** Lo mismo, pero la que sufre es una desconocida que no vio nunca (generalizar a una criatura nueva). */
+    const pruebaExtrana = (e: Entrenada): number => {
+      const v: number[] = [];
+      for (let k = 0; k < REP; k++) {
+        const r = replica(e.s, k);
+        const S = extrana(10 + k);
+        const B = r.criaturas[e.mira];
+        r.criaturas = [B, S];
+        v.push(puntos(episodio(r, S, B, TOPE, true)));
+      }
+      return media(v);
+    };
+    const aprendido = (e: Entrenada) => {
+      const B = e.s.criaturas[e.mira];
+      const nombre = e.s.criaturas[e.sufre].nombre;
+      const acercarse = alivioDe(B, "acercarse", nombre), quedarse = alivioDe(B, "descansar", nombre), alejarse = alivioDe(B, "evitar", nombre);
+      return { acercarse, quedarse, alejarse, margen: acercarse - quedarse };
+    };
+    const consuela = entrenar("consuela");
+    const res: Record<Condicion | "ingenua", number> = { consuela: prueba(consuela), atrapada: 0, inconsolable: 0, desconocida: 0, apareada: 0, ingenua: 0 };
+    for (const c of ["atrapada", "inconsolable", "desconocida"] as Condicion[]) res[c] = prueba(entrenar(c));
+    const apareada = entrenar("apareada", consuela.guiones);
+    res.apareada = prueba(apareada);
+    const aC = aprendido(consuela), aA = aprendido(apareada);
     const vn: number[] = [];
-    for (let k = 0; k < 16; k++) {
+    for (let k = 0; k < REP; k++) {
       const n = nuevaSim({ semilla: mezclar(semilla, 85, k), objetos: [], criaturas: [{ genoma: g1, x: 1000 }, { genoma: g2, x: 600 }], comedero: null });
       preparar(n);
-      vn.push(episodio(n, n.criaturas[0], n.criaturas[1], 12, true));
+      vn.push(puntos(episodio(n, n.criaturas[0], n.criaturas[1], TOPE, true)));
     }
     res.ingenua = media(vn);
+    const trasPausa = prueba(consuela, 600);
+    const conExtrana = pruebaExtrana(consuela);
     return resultado(semilla, {
       "han creado un vínculo antes (afecto > 0,3)": afecto > 0.3,
-      "si la angustia bajaba al acercarse, va más veces con ella que si no bajaba (+0,15): aprende del efecto": res.consuela > res.inconsolable + 0.15,
-      "y más que si no pudo acercarse (+0,1): ver angustia no basta": res.consuela > res.atrapada + 0.1,
-      "y más que si la que sufría era una desconocida (+0,1): el vínculo importa": res.consuela > res.desconocida + 0.1,
-      "sin quedar por debajo de quien nunca la vio sufrir (-0,1)": res.consuela > res.ingenua - 0.1,
-    }, { afecto, consuela: res.consuela, noPudoAcercarse: res.atrapada, laAngustiaNoBajaba: res.inconsolable, desconocida: res.desconocida, ingenua: res.ingenua }, juntos.criaturas[0], 1500);
+      "si la angustia bajaba al acercarse, llega antes que si no bajaba (+0,15): aprende del efecto": res.consuela > res.inconsolable + 0.15,
+      "acercarse le ha dado más alivio que quedarse donde estaba (+0,15): lo aprendido separa lo que hace de lo que pasa solo": aC.margen > 0.15,
+      "y esa diferencia es mucho menor si el alivio llegaba igual pero sin que lo causara ella (control apareado, -0,15)": aA.margen < aC.margen - 0.15,
+      "y que si no pudo acercarse (+0,1): ver angustia no basta": res.consuela > res.atrapada + 0.1,
+      "y que ante una desconocida que no ha visto nunca (+0,2): el vínculo importa": res.consuela > conExtrana + 0.2,
+      "y que quien nunca la vio sufrir (+0,1): lo aprendido se nota": res.consuela > res.ingenua + 0.1,
+    }, { afecto, consuela: res.consuela, noPudoAcercarse: res.atrapada, laAngustiaNoBajaba: res.inconsolable, bajabaSolaApareada: res.apareada, alivioAcercarse: aC.acercarse, alivioQuedarse: aC.quedarse, alivioAlejarse: aC.alejarse, margenAcercarse: aC.margen, margenApareada: aA.margen, alivioAcercarseApareada: aA.acercarse, alivioQuedarseApareada: aA.quedarse, desconocida: res.desconocida, ingenua: res.ingenua, tras10min: trasPausa, conUnaExtrana: conExtrana }, juntos.criaturas[0], 1500);
   },
 };
 

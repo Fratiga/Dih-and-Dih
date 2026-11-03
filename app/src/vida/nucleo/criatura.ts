@@ -10,7 +10,7 @@ import type { Genoma } from "./genoma.ts";
 import { Memoria, articulo, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
-import { C, D, DIA, E, N, NC, R, TIEMPO_TENDIDA, VERBOS, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
+import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
 export interface Entorno {
   mundo: Mundo;
@@ -32,8 +32,8 @@ export interface Accion {
   dur: number;
   hecho: boolean;
   comp: number;
-  /** La angustia que se veia en la otra al llegar a su lado (para notar luego si ha bajado). */
-  angustiaIni?: number;
+  /** Si al empezar habia a la vista una criatura angustiada: quien, cuanta angustia se le percibia y como la veia. Al terminar se nota si ha bajado. */
+  ajeno?: { obj: number; ini: number; f: number[]; nombre: string; medido?: boolean };
   f: number[];
   /** Lo que esperaba conseguir al elegirla (para notar cuando no llega). */
   espera: Res;
@@ -62,7 +62,7 @@ export interface Registro {
 }
 
 export const NI = D + VERBOS.length + 5 + 5 + 1;
-const CANALES_SIN_SACIA = [false, true, true, true, true];
+const CANALES_SIN_SACIA = [false, true, true, true, true, true];
 
 export interface EstadoCriatura {
   id: number;
@@ -158,6 +158,8 @@ export class Criatura {
   estadosAjenos = false;
   /** Condiciones de laboratorio: no puede moverse (no puede ayudar a nadie) / su angustia no baja nunca (nada la alivia). */
   atrapada = false;
+  /** Solo laboratorio: fuerza el verbo elegido mientras haya una candidata con el. No se guarda. */
+  verboForzado: Verbo | null = null;
   inconsolable = false;
   /** Cuanto se ha entretenido hace poco con cada cosa (por su identificador). Lo que se repite sin parar entretiene cada vez menos, y se recupera con el descanso. */
   habito: Record<number, { n: number; t: number }> = {};
@@ -187,7 +189,7 @@ export class Criatura {
     this.base = genoma.rasgos.slice();
     this.rasgos = genoma.rasgos.slice();
     this.mem = new Memoria(genoma.memoria, genoma.plasticidad);
-    this.red = new Red(NI, AJ.ocultas, NC, genoma.semillaCerebro);
+    this.red = new Red(NI, AJ.ocultas, NC_RED, genoma.semillaCerebro);
     this.emo[E.curiosidad] = this.rasgos[R.curiosidad] * 0.6;
   }
 
@@ -244,7 +246,8 @@ export class Criatura {
 
   private decidir(env: Entorno): void {
     const cands = candidatas(this, this.percibidos, env);
-    const c = elegir(this, cands);
+    // Solo en el laboratorio: una fase de exploracion en la que se fuerza probar un verbo (para tener muestras de cada opcion)
+    const c = (this.verboForzado && cands.find((k) => k.v === this.verboForzado && (!k.p || k.p.esCriatura))) || elegir(this, cands);
     this.forzar = false;
     this.proxDecision = env.t + AJ.reconsiderar;
     this.ultimaDecision = cands.slice().sort((a, b) => b.u - a.u).slice(0, 4).map((k) => ({ v: k.v, tipo: k.p?.tipo ?? "", u: k.u }));
@@ -524,7 +527,7 @@ export class Criatura {
     const resto: Traza[] = [];
     for (const tr of this.trazas) {
       if (env.t - tr.t < AJ.ventanaCausal) { resto.push(tr); continue; }
-      const res = [tr.cred, 0, 0, 0, 0];
+      const res = [tr.cred, 0, 0, 0, 0, 0];
       this.mem.aprender(tr.v, tr.f, tr.lug, res, tr.tipo, tr.nombre, env.t, [true, false, false, false, false], 1.3);
       this.red.entrenar(tr.entrada, res, this.lr, [true, false, false, false, false]);
       if (tr.cred > 0.12 && tr.tipo) {

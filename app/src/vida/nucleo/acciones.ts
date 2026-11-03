@@ -6,7 +6,11 @@ import { acota } from "./azar.ts";
 import type { Accion, Criatura, Entorno } from "./criatura.ts";
 import { featuresCriatura, featuresObjeto, type Cand } from "./conducta.ts";
 import type { Objeto } from "./mundo.ts";
-import { C, E, N, R, resCero } from "./tipos.ts";
+import { ANGUSTIA_VISIBLE, C, E, IDX, N, R, resCero } from "./tipos.ts";
+
+const SOLO_ALIVIO = [false, false, false, false, false, true];
+/** Segundos desde que empieza una accion durante los que se mira si la angustia de la otra baja. */
+const VENTANA_ALIVIO = 5;
 
 const DURACION = { probar: 1.4, empujar: 0.8, tocar: 0.9 } as const;
 const IMPACTO = 0.4;
@@ -40,11 +44,35 @@ export function iniciar(c: Criatura, cand: Cand, env: Entorno): Accion {
   if (cand.v === "acercarse") a.dur = 4 + c.azar.next() * 3;
   if (cand.v === "descansar" || cand.v === "dormir") { a.fase = "hacer"; if (cand.v === "dormir") c.dormido = true; }
   if (c.dormido && cand.v !== "dormir") c.dormido = false;
+  if (c.estadosAjenos) {
+    const q = c.percibidos.filter((o) => o.esCriatura && !o.recordado && o.f[IDX.sonido] > ANGUSTIA_VISIBLE).sort((x, y) => y.f[IDX.sonido] - x.f[IDX.sonido])[0];
+    if (q) a.ajeno = { obj: q.id, ini: q.f[IDX.sonido], f: q.f.slice(), nombre: q.nombre };
+  }
   c.registrar({ t: env.t, kind: "inicio", v: cand.v, tipo: a.tipo, obj: a.obj });
   return a;
 }
 
+/** Lo que ha cambiado en la otra criatura mientras se hacia esto. Si ya no la ve, no ve ningun alivio. Se aprende con el verbo de lo que se hizo,
+    sea acercarse, quedarse o alejarse. */
+function notarAlivio(c: Criatura, a: Accion, env: Entorno): void {
+  const aj = a.ajeno;
+  if (!aj || aj.medido || a.v === "dormir") return;
+  aj.medido = true;
+  // Siempre sobre los primeros segundos, dure lo que dure la accion: si no, la que mas dura parecería la que mas alivia
+  const trans = env.t - a.tf;
+  if (trans < 1.5) return;
+  const otro = env.criaturas.find((o) => 1000 + o.id === aj.obj);
+  // Su angustia es ruido: se oye desde mas lejos de lo que se ve
+  const aVista = !!otro && otro.vivo && Math.abs(otro.x - c.x) <= Math.max(AJ.vista * c.genoma.vista * 1.3, AJ.oido * c.genoma.oido * 0.7);
+  // Caida relativa de su angustia (si bajaba sola desde mas alto, no cuenta mas por haber empezado antes)
+  const alivio = aVista && otro ? acota((((aj.ini - featuresCriatura(otro, true)[IDX.sonido]) / Math.max(aj.ini, 0.3)) * VENTANA_ALIVIO) / Math.min(trans, VENTANA_ALIVIO)) : 0;
+  const res = resCero();
+  res[C.alivio] = alivio;
+  c.mem.aprender(`ante:${a.v}`, aj.f, c.x / env.mundo.ancho, res, "criatura", aj.nombre, env.t, SOLO_ALIVIO);
+}
+
 function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
+  if (c.estadosAjenos && !fallo) notarAlivio(c, a, env);
   if (a.v === "acercarse" && a.hecho) {
     // La compania recibida depende de como reciba el otro que te acerques
     const otro = env.criaturas.find((o) => 1000 + o.id === a.obj);
@@ -54,11 +82,9 @@ function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
     const res = resCero();
     if (!c.estadosAjenos) res[C.compania] = acota(a.comp * calidad);
     else {
-      // La compania de alguien conocido pesa mas que la de un extrano. Y si al llegar la otra estaba mal y al irse esta mejor, se nota:
-      // el alivio que se ve (que baje su angustia) es parte de lo que se siente al haber estado con ella. Si no baja, no hay alivio que aprender.
+      // La compania de alguien conocido pesa mas que la de un extrano. El alivio que se ve en la otra no entra aqui: tiene su propio canal.
       calidad = acota(calidad * (0.6 + 0.8 * afecto));
-      const alivio = otro && a.angustiaIni !== undefined ? Math.max(0, a.angustiaIni - featuresCriatura(otro, true)[6]) : 0;
-      res[C.compania] = acota(a.comp * calidad + 1.4 * alivio * (afecto > 0.2 ? 1 : 0));
+      res[C.compania] = acota(a.comp * calidad);
       const alterada = Math.max(0, c.emo[E.miedo] - 0.1);
       if (afecto > 0.2 && alterada > 0.05) c.emo[E.miedo] *= 0.55;
     }
@@ -89,6 +115,7 @@ function mover(c: Criatura, destino: number, vel: number, dt: number, ancho: num
 export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   const a = c.accion;
   if (!a) return;
+  if (a.ajeno && !a.ajeno.medido && env.t - a.tf >= VENTANA_ALIVIO) notarAlivio(c, a, env);
   const ancho = env.mundo.ancho;
   const g = c.genoma;
   const caminar = AJ.velCaminar * g.velocidad;
@@ -117,6 +144,11 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
       }
       a.fase = "hacer";
       a.tf = env.t;
+      if (a.ajeno) {
+        // La ventana para ver si baja su angustia empieza ahora (al llegar, si se acercaba)
+        const o = env.criaturas.find((q) => 1000 + q.id === a.ajeno?.obj);
+        if (o) a.ajeno.ini = featuresCriatura(o, true)[IDX.sonido];
+      }
       if (a.v === "explorar") {
         const bin = Math.min(15, Math.floor((c.x / ancho) * 16));
         // Ver un sitio poco visto entretiene un poco
@@ -167,7 +199,6 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
     a.comp += dt * 0.07;
     // Quedarse junto a alguien querido que lo pasa mal le calma poco a poco, salvo que nada pueda aliviarla (condicion de laboratorio)
     if (c.estadosAjenos) {
-      if (a.angustiaIni === undefined) a.angustiaIni = featuresCriatura(otro, true)[6];
       const af = c.mem.vinculos.find((q) => q.id === a.obj)?.afecto ?? 0;
       if (af > 0.2 && !otro.inconsolable) {
         otro.emo[E.miedo] = acota(otro.emo[E.miedo] - 0.14 * af * dt);

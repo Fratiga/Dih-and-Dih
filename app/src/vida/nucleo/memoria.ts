@@ -120,7 +120,7 @@ export class Memoria {
       const w = s * Math.min(1, p.fuerza);
       sw += w;
       ev += w * Math.min(1, p.n / 2);
-      for (let k = 0; k < NC; k++) acc[k] += w * p.res[k];
+      for (let k = 0; k < NC; k++) acc[k] += w * (p.res[k] ?? 0);
     }
     if (sw <= 1e-9) return { res: new Array<number>(NC).fill(0), conf: 0 };
     return { res: acc.map((a) => a / sw), conf: 1 - Math.exp(-2 * ev) };
@@ -273,6 +273,7 @@ export class Memoria {
   restaurar(e: EstadoMemoria): void {
     const c = JSON.parse(JSON.stringify(e)) as EstadoMemoria;
     this.protos = c.protos;
+    for (const p of this.protos) while (p.res.length < NC) p.res.push(0);
     this.avist = c.avist;
     this.episodios = c.episodios;
     this.acciones = c.acciones;

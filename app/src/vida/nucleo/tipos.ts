@@ -7,9 +7,13 @@ export const IDX = { redondez: 0, tamano: 1, brillo: 2, calidez: 3, verdor: 4, o
 
 /** Lo que una experiencia puede dejar. Son cantidades de lo que ocurrio, no de lo que la criatura sintio:
     cuanto le importe a cada una depende de sus necesidades en ese momento. */
-export const CANALES = ["sacia", "dano", "diversion", "compania", "susto"] as const;
+export const CANALES = ["sacia", "dano", "diversion", "compania", "susto", "alivio"] as const;
 export const NC = CANALES.length;
-export const C = { sacia: 0, dano: 1, diversion: 2, compania: 3, susto: 4 } as const;
+/** El canal "alivio" es el cambio en la angustia de otra criatura tras lo que uno hizo. Solo lo aprende la memoria asociativa: la red predice los cinco primeros. */
+export const NC_RED = 5;
+export const C = { sacia: 0, dano: 1, diversion: 2, compania: 3, susto: 4, alivio: 5 } as const;
+/** Desde que angustia (de 0 a 1) se nota que otra criatura lo esta pasando mal. */
+export const ANGUSTIA_VISIBLE = 0.25;
 export type Res = number[];
 export const resCero = (): Res => new Array(NC).fill(0);
 
