@@ -16,7 +16,13 @@ interface Habitante {
   id: string;
   espiritu: Phaser.GameObjects.Image;
   libre: boolean;
+  /** Posicion en el diorama mientras la habitacion se proyecta en 3D (la de pantalla se escribe encima y se restaura tras dibujar). */
+  lx?: number;
+  ly?: number;
 }
+
+export interface Proyeccion { x: number; y: number; s: number; d: number; visible: boolean }
+export type Proyector = (x: number, y: number, suelo: boolean) => Proyeccion;
 
 const FRASES = {
   dormir: ["Zzz…", "Cinco minutos más…"],
@@ -45,16 +51,22 @@ export class SalaVista {
   private parado = false;
   /** Cuanto se agrandan los personajes (en la torre se ven mas grandes que su habitacion, como en el original). */
   grande = 1;
+  /** Si hay proyector, la habitacion no usa el diorama plano: sus muebles y personajes se colocan en una caja 3D (ver Cuarto3D). */
+  proy?: Proyector;
+  private sinFondo: boolean;
+  private silencio: boolean;
   private temporizadores: Phaser.Time.TimerEvent[] = [];
   private emitir?: (ev: string, datos: unknown) => void;
 
-  constructor(escena: Phaser.Scene, hab: Habitacion, opc: { vivo: boolean; dialogos: boolean; grande?: number; emitir?: (ev: string, datos: unknown) => void }) {
+  constructor(escena: Phaser.Scene, hab: Habitacion, opc: { vivo: boolean; dialogos: boolean; grande?: number; sinFondo?: boolean; silencio?: boolean; emitir?: (ev: string, datos: unknown) => void }) {
     this.grande = opc.grande ?? 1.55;
     this.scene = escena;
     this.hab = hab;
     this.vivo = opc.vivo;
     this.dialogos = opc.dialogos;
     this.emitir = opc.emitir;
+    this.sinFondo = !!opc.sinFondo;
+    this.silencio = !!opc.silencio;
     this.cont = escena.add.container(0, 0);
     this.reconstruir();
   }
@@ -85,8 +97,10 @@ export class SalaVista {
     this.piezas.forEach((p) => p.im.destroy());
     this.piezas = [];
     this.bg?.destroy();
-    this.bg = this.scene.add.image(0, 0, this.texFondo()).setOrigin(0).setScale(1 / KD).setDepth(0);
-    this.cont.add(this.bg);
+    if (!this.sinFondo) {
+      this.bg = this.scene.add.image(0, 0, this.texFondo()).setOrigin(0).setScale(1 / KD).setDepth(0);
+      this.cont.add(this.bg);
+    }
     this.hab.muebles.forEach((mu, idx) => this.crearPieza(mu.id, idx));
     this.colocarPiezas();
     for (const id of this.hab.residentes.slice(0, 2)) {
@@ -126,6 +140,7 @@ export class SalaVista {
 
   /* ---------- la vida de los personajes ---------- */
   update(): void {
+    if (this.proy) return;
     for (const g of this.gente) {
       const dx = g.c.x + (g.c.img.flipX ? -70 : 70) * g.c.scaleX;
       const dy = g.c.y - 250 * g.c.scaleX;
@@ -150,7 +165,42 @@ export class SalaVista {
     this.temporizadores.push(this.scene.time.delayedCall(ms, () => { if (!this.parado) fn(); }));
   }
 
+  /* Coloca muebles y personajes en la caja 3D segun la camara de este momento. Los personajes siguen moviendose por el diorama plano:
+     aqui solo se guarda su posicion y se escribe encima la de pantalla, que restaurar() devuelve tras dibujar. */
+  proyectar(): void {
+    const P = this.proy;
+    if (!P) return;
+    for (const p of this.piezas) {
+      const mu = this.hab.muebles[p.idx];
+      if (!mu) continue;
+      const q = P(mu.x, mu.y, p.def.suelo);
+      p.im.setPosition(q.x, q.y).setScale((0.82 * 0.43 * q.s) / K).setDepth(q.d).setVisible(q.visible);
+    }
+    for (const g of this.gente) {
+      if (g.lx === undefined) { g.lx = g.c.x; g.ly = g.c.y; }
+      const q = P(g.lx, g.ly as number, true);
+      const esc = 0.6 * this.grande * 0.42 * q.s;
+      g.c.setPosition(q.x, q.y).setScale(esc).setDepth(q.d + 1).setVisible(q.visible);
+      g.espiritu.setVisible(q.visible);
+      if (q.visible) {
+        const dx = q.x + (g.c.img.flipX ? -70 : 70) * esc, dy = q.y - 250 * esc + Math.sin(this.scene.time.now / 420 + q.x) * 6;
+        g.espiritu.setPosition(dx, dy).setDepth(q.d + 2).setScale(0.3 * esc / 0.6);
+      }
+    }
+    this.cont.sort("depth");
+  }
+
+  restaurar(): void {
+    for (const g of this.gente) {
+      if (g.lx === undefined) continue;
+      g.c.setPosition(g.lx, g.ly as number);
+      g.lx = undefined;
+      g.ly = undefined;
+    }
+  }
+
   private globo(g: Habitante, texto: string): void {
+    if (this.silencio) return;
     const t = this.scene.add.text(g.c.x, g.c.y - 300 * g.c.scaleX, texto, { fontFamily: '"Lilita One", sans-serif', fontSize: "34px", color: "#2a1545", backgroundColor: "#fff6e5", padding: { x: 14, y: 6 } }).setOrigin(0.5).setDepth(2000).setScale(0.3);
     this.cont.add(t);
     this.scene.tweens.add({ targets: t, scale: 1, duration: 200, ease: "Back.easeOut" });
@@ -189,9 +239,18 @@ export class SalaVista {
     });
   }
 
+  /* Donde esta un mueble en el diorama plano, sin depender de como se dibuje en pantalla. */
+  private posLogica(p: Pieza): { x: number; y: number; w: number } {
+    const mu = this.hab.muebles[p.idx];
+    const y = p.def.suelo ? Phaser.Math.Clamp(mu.y, SUELO_FONDO + 14, SUELO_FRENTE - 8) : Phaser.Math.Clamp(mu.y, 170, 440);
+    const esc = p.def.suelo ? 0.82 * escalaProfundidad(y) : 0.8;
+    return { x: Phaser.Math.Clamp(mu.x, 60, DIO_W - 60), y, w: (p.im.width * esc) / K };
+  }
+
   private irA(g: Habitante, p: Pieza, que: "dormir" | "sentar" | "jugar" | "ver"): void {
-    const x = p.im.x + (que === "jugar" ? p.im.displayWidth * 0.62 : 0);
-    const y = que === "dormir" ? p.im.y - 24 : que === "sentar" ? p.im.y - 14 : p.im.y + 8;
+    const l = this.posLogica(p);
+    const x = l.x + (que === "jugar" ? l.w * 0.62 : 0);
+    const y = que === "dormir" ? l.y - 24 : que === "sentar" ? l.y - 14 : l.y + 8;
     this.scene.tweens.add({ targets: g.c, y, duration: 700 });
     g.c.caminar(x, Math.max(900, Math.abs(x - g.c.x) * 2.4), () => {
       g.c.quieto();

@@ -1,31 +1,30 @@
 import Phaser from "phaser";
 import { K } from "../arte/escenarios.ts";
-import { ANCHO_MANSION, HUECO, PANEL_H, PANEL_W, PASO_PISO, PISOS, SECTORES, TECHO_H } from "../arte/mansion.ts";
-import { DIO_W } from "../arte/habitacion.ts";
+import { atlasCaras } from "../arte/caras.ts";
+import { ANCHO_HUECO, BASE_H, PASO_PISO, PISOS, SECTORES, TECHO_ALTO } from "../arte/mansion.ts";
 import { sonido } from "../audio/audio.ts";
-import { estrellasParaSala } from "../estado.ts";
+import { estrellasParaSala, type Habitacion } from "../estado.ts";
 import type { Shell } from "../shell.ts";
+import { Corona3D, Cuarto3D, bordePiso, centroFrontal, fijarCamara, semiancho } from "./cuarto3d.ts";
 import { medir, type Medida } from "./medidas.ts";
-import { SalaVista } from "./salaVista.ts";
+import { SalaVista, tema } from "./salaVista.ts";
 
-/* La mansion circular. Cada piso es un anillo de SECTORES habitaciones que se puede girar; cada habitacion se ve como un tramo de pared con
-   su hueco, aplastado por el coseno de su angulo (de frente a su ancho completo, de lado casi invisible) y mas oscuro cuanto mas lejos.
+/* La mansion circular, vista como un edificio de verdad. Cada piso es un anillo de SECTORES habitaciones; cada habitacion es una caja 3D (ver cuarto3d.ts)
+   que se ve por el hueco de su fachada, en perspectiva, segun el angulo en el que este. Las de los lados se ven de lado, con sus paredes y su suelo.
    Se gira arrastrando, con las flechas o con ← →, y se cambia de piso con ↑ ↓ o con la rueda. Un clic en la habitacion de enfrente la abre. */
 
 const PASO = (Math.PI * 2) / SECTORES;
-const R = 560;
+const R_ARRASTRE = 600;
 const VEL_MAX = 2.6;
 const norm = (a: number): number => { let x = a % (Math.PI * 2); if (x > Math.PI) x -= Math.PI * 2; if (x <= -Math.PI) x += Math.PI * 2; return x; };
-const centroPiso = (f: number): number => TECHO_H + (PISOS - 1 - f) * PASO_PISO + PANEL_H / 2;
+const acotar = (v: number, a: number, b: number): number => (v < a ? a : v > b ? b : v);
 
 interface Panel {
   k: number;
   f: number;
   i: number;
-  outer: Phaser.GameObjects.Container;
-  frame: Phaser.GameObjects.Image;
+  cuarto: Cuarto3D;
   sala?: SalaVista;
-  dim: Phaser.GameObjects.Rectangle;
   cos: number;
 }
 
@@ -34,15 +33,16 @@ export class Menu extends Phaser.Scene {
   private m!: Medida;
   private jardin!: Phaser.GameObjects.Image;
   private mundo!: Phaser.GameObjects.Container;
+  private techo!: Corona3D;
+  private base!: Corona3D;
   private paneles: Panel[] = [];
-  private sombras: Phaser.GameObjects.Image[] = [];
-  private velos: Phaser.GameObjects.Rectangle[] = [];
   private guia!: Phaser.GameObjects.Graphics;
   private th: number[] = [];
   private vel: number[] = [];
   private obj: number[] = [];
+  private luz: number[] = [];
   private piso = 0;
-  private mundoY = 0;
+  private pisoAnim = 0;
   private drag: { f: number; x0: number; y0: number; th0: number; t: number; ult: number; v: number; movido: boolean } | null = null;
   private hover = -1;
   private entrando = false;
@@ -56,8 +56,6 @@ export class Menu extends Phaser.Scene {
     this.shell = this.registry.get("shell") as Shell;
     this.desde = datos?.desde ?? -1;
     this.paneles = [];
-    this.sombras = [];
-    this.velos = [];
     this.drag = null;
     this.hover = -1;
     this.entrando = false;
@@ -68,31 +66,26 @@ export class Menu extends Phaser.Scene {
     const e = this.shell.estado;
     this.m = medir(this.scale.width, this.scale.height);
     this.piso = Phaser.Math.Clamp(e.mansion.piso, 0, PISOS - 1);
+    this.pisoAnim = this.piso;
     this.th = e.mansion.sector.map((s) => -s * PASO);
     this.obj = [...this.th];
     this.vel = new Array(PISOS).fill(0);
+    this.luz = Array.from({ length: PISOS }, (_v, f) => (f === this.piso ? 1 : 0.7));
     this.jardin = this.add.image(0, 0, "fondo-jardin").setOrigin(0.5).setScrollFactor(0).setDepth(0);
     this.mundo = this.add.container(0, 0).setDepth(10);
-    this.mundo.add(this.add.image(0, 0, "techo-mansion").setOrigin(0.5, 0).setScale(1 / K).setDepth(-1));
-    this.mundo.add(this.add.image(0, TECHO_H + PISOS * PASO_PISO - 14, "base-mansion").setOrigin(0.5, 0).setScale(1 / K).setDepth(-1));
+    // La base gira con el primer piso y el tejado con el ultimo
+    this.techo = new Corona3D(this, "mansion-techo", "techo");
+    this.base = new Corona3D(this, "mansion-base", "base");
+    this.techo.malla.setDepth(-10);
+    this.base.malla.setDepth(-10);
+    this.mundo.add([this.techo.malla, this.base.malla]);
     const hab = e.habitaciones;
-    for (let f = 0; f < PISOS; f++) {
-      for (let i = 0; i < SECTORES; i++) this.paneles.push(this.crearPanel(f, i, hab[f * SECTORES + i]));
-      const sh = this.add.image(0, centroPiso(f), "sombra-cilindro").setScale(1 / 0.6).setDepth(f * 10 + 9);
-      sh.setDisplaySize(ANCHO_MANSION, PANEL_H);
-      this.sombras.push(sh);
-      this.mundo.add(sh);
-      const v = this.add.rectangle(0, centroPiso(f), ANCHO_MANSION, PANEL_H, 0x2a1545, 0).setDepth(f * 10 + 9.5);
-      this.velos.push(v);
-      this.mundo.add(v);
-    }
+    for (let f = 0; f < PISOS; f++) for (let i = 0; i < SECTORES; i++) this.paneles.push(this.crearPanel(f, i, hab[f * SECTORES + i]));
     this.guia = this.add.graphics().setDepth(1000);
     this.mundo.add(this.guia);
     this.add.particles(0, 0, "fx:punto", { x: { min: 0, max: this.scale.width }, y: { min: this.scale.height * 0.5, max: this.scale.height }, scale: { start: 0.25, end: 0.7 }, alpha: { start: 0, end: 0.5 }, speedY: { min: -26, max: -6 }, speedX: { min: -14, max: 14 }, lifespan: 5000, frequency: 220, blendMode: "ADD", tint: 0xfff2a8 }).setScrollFactor(0).setDepth(3);
     this.colocar();
-    this.mundoY = this.yObjetivo();
-    this.mundo.y = this.mundoY;
-    this.colocarPaneles(0);
+    this.colocarPaneles();
     this.sala();
 
     const inp = this.input;
@@ -104,9 +97,12 @@ export class Menu extends Phaser.Scene {
     this.alEscuchar("pt:girar", (d) => this.girar(Number(d)));
     this.alEscuchar("pt:piso", (d) => this.cambiarPiso(Number(d)));
     this.alEscuchar("pt:entrar-frente", () => this.entrarFrente());
+    // Los personajes se dibujan en su sitio de pantalla y vuelven a su sitio del diorama en cuanto acaba el fotograma
+    this.game.events.on(Phaser.Core.Events.POST_RENDER, this.restaurar, this);
     this.scale.on("resize", this.colocar, this);
     this.events.once("shutdown", () => {
       this.escuchas.forEach(([ev, fn]) => this.game.events.off(ev, fn));
+      this.game.events.off(Phaser.Core.Events.POST_RENDER, this.restaurar, this);
       this.scale.off("resize", this.colocar, this);
       this.paneles.forEach((p) => p.sala?.parar());
       this.paneles = [];
@@ -115,61 +111,57 @@ export class Menu extends Phaser.Scene {
     if (this.desde >= 0) this.salirDeLaHabitacion();
   }
 
+  private restaurar(): void {
+    for (const p of this.paneles) p.sala?.restaurar();
+  }
+
   private alEscuchar(ev: string, fn: (...a: unknown[]) => void): void {
     this.game.events.on(ev, fn);
     this.escuchas.push([ev, fn]);
   }
 
-  private crearPanel(f: number, i: number, hab: import("../estado.ts").Habitacion | undefined): Panel {
-    const outer = this.add.container(0, centroPiso(f));
-    const inner = this.add.container(-PANEL_W / 2, -PANEL_H / 2);
+  private crearPanel(f: number, i: number, hab: Habitacion | undefined): Panel {
+    const t = tema(hab?.fondo ?? "rombos");
+    const clave = `cara:${t.id}`;
+    if (!this.textures.exists(clave)) this.textures.addCanvas(clave, atlasCaras(t));
+    const cuarto = new Cuarto3D(this, f, i, !!hab, clave);
     let sala: SalaVista | undefined;
     if (hab) {
-      sala = new SalaVista(this, hab, { vivo: true, dialogos: false, grande: 2.2 });
-      const esc = HUECO.w / DIO_W;
-      sala.colocar(HUECO.x, HUECO.y + HUECO.h - 760 * esc, esc);
-      inner.add(sala.cont);
-    } else {
-      inner.add(this.add.image(HUECO.x, HUECO.y, "hueco-cerrado").setOrigin(0).setScale(1 / 1.25));
+      sala = new SalaVista(this, hab, { vivo: true, dialogos: false, silencio: true, sinFondo: true, grande: 2.2 });
+      sala.proy = (x, y, suelo) => cuarto.proy(x, y, suelo);
+      sala.cont.setDepth(1000000);
+      cuarto.grupo.add(sala.cont);
+      cuarto.grupo.sort("depth");
     }
-    const frame = this.add.image(0, 0, "panel-sala").setOrigin(0).setScale(1 / K);
-    inner.add(frame);
-    const dim = this.add.rectangle(HUECO.x, HUECO.y, HUECO.w, HUECO.h, 0x2a1545, 0).setOrigin(0);
-    inner.add(dim);
-    outer.add(inner);
-    this.mundo.add(outer);
-    return { k: f * SECTORES + i, f, i, outer, frame, sala, dim, cos: 1 };
+    this.mundo.add(cuarto.grupo);
+    return { k: f * SECTORES + i, f, i, cuarto, sala, cos: 1 };
   }
 
   /* ---------- medidas ---------- */
-  private yObjetivo(): number {
-    return this.scale.height * 0.44 - centroPiso(this.piso) * this.m.s;
-  }
-
   private colocar(): void {
     const w = this.scale.width, h = this.scale.height;
     this.m = medir(w, h);
     this.jardin.setPosition(w / 2, h / 2).setScale(this.m.s / K);
-    this.mundo.setPosition(w / 2, this.mundoY).setScale(this.m.s);
+    this.mundo.setPosition(w / 2, h * 0.44).setScale(this.m.s);
+    fijarCamara(this.pisoAnim);
+    this.shell.ui.style.setProperty("--pt-semi", `${Math.round(semiancho() * this.m.s)}px`);
   }
 
-  /* ---------- posicion de cada habitacion segun el giro ---------- */
-  private colocarPaneles(dt: number): void {
+  /* ---------- posicion de cada habitacion segun el giro y la camara ---------- */
+  private colocarPaneles(): void {
+    fijarCamara(this.pisoAnim);
+    const s = this.m.s;
+    const yMin = -this.mundo.y / s - 160, yMax = (this.scale.height - this.mundo.y) / s + 160;
     for (const p of this.paneles) {
       const phi = norm(this.th[p.f] + p.i * PASO);
       const cos = Math.cos(phi);
       p.cos = cos;
-      const visible = cos > 0.04;
-      p.outer.setVisible(visible);
-      if (p.sala) p.sala.cont.setVisible(visible);
-      if (!visible) continue;
-      p.outer.x = R * Math.sin(phi);
-      p.outer.scaleX = Math.max(0.05, cos);
-      p.outer.scaleY = 0.82 + 0.18 * cos;
-      p.outer.setDepth(p.f * 10 + cos * 8);
-      p.dim.setAlpha((1 - cos) * 0.5);
-      if (p.sala && dt > 0) p.sala.update();
+      const luz = this.luz[p.f] * (0.5 + 0.5 * acotar((cos - 0.2) / 0.75, 0, 1));
+      p.cuarto.grupo.setDepth(p.f * 10 + cos * 8);
+      if (p.cuarto.actualizar(phi, luz, yMin, yMax)) p.sala?.proyectar();
     }
+    this.techo.actualizar(this.th[PISOS - 1], this.luz[PISOS - 1]);
+    this.base.actualizar(this.th[0], this.luz[0]);
     this.mundo.sort("depth");
   }
 
@@ -219,23 +211,29 @@ export class Menu extends Phaser.Scene {
   }
 
   /* ---------- raton ---------- */
+  private aMundo(px: number, py: number): { x: number; y: number } {
+    return { x: (px - this.mundo.x) / this.m.s, y: (py - this.mundo.y) / this.m.s };
+  }
+
   private pisoBajo(py: number): number {
-    const yd = (py - this.mundo.y) / this.m.s;
-    for (let f = 0; f < PISOS; f++) if (Math.abs(yd - centroPiso(f)) <= PANEL_H / 2) return f;
-    return -1;
+    const yd = this.aMundo(0, py).y;
+    // La base se mueve con el primer piso y el tejado con el ultimo
+    if (yd > bordePiso(0, false) && yd < bordePiso(0, false) + BASE_H) return 0;
+    if (yd < bordePiso(PISOS - 1, true) && yd > bordePiso(PISOS - 1, true) - TECHO_ALTO) return PISOS - 1;
+    let mejor = -1, dist = PASO_PISO / 2;
+    for (let f = 0; f < PISOS; f++) {
+      const d = Math.abs(yd - centroFrontal(f).y);
+      if (d <= dist) { dist = d; mejor = f; }
+    }
+    return mejor;
   }
 
   private panelBajo(px: number, py: number): Panel | null {
-    const xd = (px - this.mundo.x) / this.m.s;
-    const yd = (py - this.mundo.y) / this.m.s;
+    const q = this.aMundo(px, py);
     let mejor: Panel | null = null;
     for (const p of this.paneles) {
-      if (p.cos <= 0.12) continue;
-      const hw = (HUECO.w / 2) * p.outer.scaleX + 0.01;
-      const cx = p.outer.x + (HUECO.x + HUECO.w / 2 - PANEL_W / 2) * p.outer.scaleX;
-      const cy = p.outer.y + (HUECO.y + HUECO.h / 2 - PANEL_H / 2) * p.outer.scaleY;
-      const hh = (HUECO.h / 2) * p.outer.scaleY;
-      if (Math.abs(xd - cx) <= hw && Math.abs(yd - cy) <= hh && (!mejor || p.cos > mejor.cos)) mejor = p;
+      if (p.cos <= 0.2 || !p.cuarto.contiene(q.x, q.y)) continue;
+      if (!mejor || p.cos > mejor.cos) mejor = p;
     }
     return mejor;
   }
@@ -260,7 +258,7 @@ export class Menu extends Phaser.Scene {
     if (!d.movido) return;
     const ahora = this.time.now;
     const dtm = Math.max(1, ahora - d.t);
-    const nuevo = d.th0 + (p.x - d.x0) / (R * this.m.s);
+    const nuevo = d.th0 + (p.x - d.x0) / (R_ARRASTRE * this.m.s);
     const v = (nuevo - this.th[d.f]) / (dtm / 1000);
     d.v = d.v * 0.6 + Phaser.Math.Clamp(v, -VEL_MAX, VEL_MAX) * 0.4;
     d.t = ahora;
@@ -323,16 +321,15 @@ export class Menu extends Phaser.Scene {
     this.shell.ui.classList.add("saliendo");
     sonido.desbloqueo();
     const cam = this.cameras.main;
-    const cx = this.mundo.x + p.outer.x * this.m.s;
-    const cy = this.mundo.y + p.outer.y * this.m.s;
-    cam.pan(cx, cy, 650, "Cubic.easeInOut");
+    const c = p.cuarto.centro();
+    cam.pan(this.mundo.x + c.x * this.m.s, this.mundo.y + c.y * this.m.s, 650, "Cubic.easeInOut");
     cam.zoomTo(this.zoomHasta(), 650, "Cubic.easeInOut");
     this.time.delayedCall(560, () => { void this.shell.ir("habitaciones", { indice: p.k }, "rapida"); });
   }
 
   private zoomHasta(): number {
     // La habitacion pasa a llenar casi todo el ancho
-    return Math.min(3.2, (this.scale.width * 0.7) / (HUECO.w * this.m.s));
+    return Math.min(3.2, (this.scale.width * 0.7) / (ANCHO_HUECO * this.m.s));
   }
 
   private salirDeLaHabitacion(): void {
@@ -340,11 +337,10 @@ export class Menu extends Phaser.Scene {
     this.desde = -1;
     if (!p) return;
     const cam = this.cameras.main;
-    this.colocarPaneles(0);
-    const cx = this.mundo.x + p.outer.x * this.m.s;
-    const cy = this.mundo.y + p.outer.y * this.m.s;
+    this.colocarPaneles();
+    const c = p.cuarto.centro();
     cam.setZoom(this.zoomHasta());
-    cam.centerOn(cx, cy);
+    cam.centerOn(this.mundo.x + c.x * this.m.s, this.mundo.y + c.y * this.m.s);
     this.time.delayedCall(80, () => {
       cam.pan(this.scale.width / 2, this.scale.height / 2, 700, "Cubic.easeOut");
       cam.zoomTo(1, 700, "Cubic.easeOut");
@@ -362,16 +358,11 @@ export class Menu extends Phaser.Scene {
       this.vel[f] *= Math.pow(0.003, dt);
       if (Math.abs(dif) < 0.0005 && Math.abs(this.vel[f]) < 0.01) { this.th[f] = this.obj[f]; this.vel[f] = 0; }
     }
-    // Camara vertical: va suave hacia el piso elegido
-    const y = this.yObjetivo();
-    this.mundoY += (y - this.mundoY) * (1 - Math.exp(-8 * dt));
-    this.mundo.y = this.mundoY;
-    // Los pisos que no son el elegido se ven un poco apagados
-    for (let f = 0; f < PISOS; f++) {
-      const a = f === this.piso ? 0 : 0.3;
-      this.velos[f].setAlpha(this.velos[f].alpha + (a - this.velos[f].alpha) * (1 - Math.exp(-8 * dt)));
-    }
-    this.colocarPaneles(dt);
+    // La camara sube o baja con suavidad hasta el piso elegido y los otros pisos se apagan un poco
+    this.pisoAnim += (this.piso - this.pisoAnim) * (1 - Math.exp(-8 * dt));
+    if (Math.abs(this.piso - this.pisoAnim) < 0.0005) this.pisoAnim = this.piso;
+    for (let f = 0; f < PISOS; f++) this.luz[f] += ((f === this.piso ? 1 : 0.7) - this.luz[f]) * (1 - Math.exp(-8 * dt));
+    this.colocarPaneles();
     this.dibujarGuia();
   }
 
@@ -379,17 +370,19 @@ export class Menu extends Phaser.Scene {
     const g = this.guia;
     g.clear();
     if (this.entrando) return;
-    const pintar = (p: Panel, color: number, grosor: number, alfa: number): void => {
-      const w = HUECO.w * p.outer.scaleX, h = HUECO.h * p.outer.scaleY;
-      const cx = p.outer.x + (HUECO.x + HUECO.w / 2 - PANEL_W / 2) * p.outer.scaleX;
-      const cy = p.outer.y + (HUECO.y + HUECO.h / 2 - PANEL_H / 2) * p.outer.scaleY;
+    const contorno = (p: Panel, color: number, grosor: number, alfa: number): void => {
+      const q = p.cuarto.hueco;
       g.lineStyle(grosor, color, alfa);
-      g.strokeRoundedRect(cx - w / 2 - 4, cy - h / 2 - 4, w + 8, h + 8, 12);
+      g.beginPath();
+      g.moveTo(q[0], q[1]);
+      for (let k = 1; k < 4; k++) g.lineTo(q[k * 2], q[k * 2 + 1]);
+      g.closePath();
+      g.strokePath();
     };
     // La habitacion de enfrente del piso elegido
     const fr = this.paneles.find((q) => q.f === this.piso && q.i === this.sectorDe(this.piso));
-    if (fr && fr.cos > 0.9) pintar(fr, 0xffd23f, 6, 0.9);
+    if (fr && fr.cos > 0.9 && fr.cuarto.visible) contorno(fr, 0xffd23f, 6, 0.9);
     const ph = this.paneles.find((q) => q.k === this.hover);
-    if (ph && ph.cos > 0.12) { pintar(ph, 0xffffff, 5, 0.95); }
+    if (ph && ph.cos > 0.2 && ph.cuarto.visible) contorno(ph, 0xffffff, 5, 0.95);
   }
 }

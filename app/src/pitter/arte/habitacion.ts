@@ -52,7 +52,7 @@ function puntoPared(lado: "izq" | "der", fx: number, fy: number): [number, numbe
   return [x, arriba + (abajo - arriba) * fy];
 }
 
-function patronPlano(t: TemaHab, w: number, h: number, escala: number): HTMLCanvasElement {
+export function patronPlano(t: TemaHab, w: number, h: number, escala: number): HTMLCanvasElement {
   const [cv, c] = lienzo(w, h);
   c.fillStyle = t.pared[1]; c.fillRect(0, 0, w, h);
   const r = azar(5);

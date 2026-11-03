@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { arteGlobal, EXPRESIONES } from "../arte/chibis.ts";
 import { texturaCorazonBrillo, texturaEstrella, texturaPunto } from "../arte/escenarios.ts";
 import { fondoJardin, marcoHabitacion } from "../arte/torre.ts";
-import { baseMansion, huecoCerrado, panelSala, sombraCilindro, techoMansion } from "../arte/mansion.ts";
+import { fachada, fachadaBase, fachadaTecho } from "../arte/mansion.ts";
 
 /* Convierte todo el arte dibujado en codigo en texturas de Phaser, una sola vez. */
 export class Arranque extends Phaser.Scene {
@@ -19,11 +19,9 @@ export class Arranque extends Phaser.Scene {
       for (const [k, cv] of arte.jefes) t.addCanvas(`jefe:${k}`, cv);
     }
     t.addCanvas("fondo-jardin", fondoJardin());
-    t.addCanvas("techo-mansion", techoMansion());
-    t.addCanvas("base-mansion", baseMansion());
-    t.addCanvas("sombra-cilindro", sombraCilindro());
-    t.addCanvas("panel-sala", panelSala());
-    t.addCanvas("hueco-cerrado", huecoCerrado());
+    t.addCanvas("mansion-techo", fachadaTecho());
+    t.addCanvas("mansion-base", fachadaBase());
+    t.addCanvas("mansion-fachada", fachada());
     t.addCanvas("marco-hab", marcoHabitacion());
     t.addCanvas("fx:estrella", texturaEstrella());
     t.addCanvas("fx:punto", texturaPunto());

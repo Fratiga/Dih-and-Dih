@@ -131,9 +131,9 @@ export function desbloquearPorJefe(e: Estado, jefeId: string): string[] {
   return nuevos;
 }
 
-/* La mansion: 4 pisos de 6 sectores (24 habitaciones). La habitacion k es el piso k/6, sector k%6. La primera esta abierta y cada estrella abre otra. */
-export const SECTORES = 6;
-export const PISOS = 4;
+/* La mansion: 3 pisos de 8 sectores (24 habitaciones, como el original). La habitacion k es el piso k/8, sector k%8. La primera esta abierta y cada estrella abre otra. */
+export const SECTORES = 8;
+export const PISOS = 3;
 export const TOTAL_SALAS = SECTORES * PISOS;
 const TEMAS = ["rombos", "verde", "mandarina", "noche"];
 
@@ -154,7 +154,7 @@ export function asegurarHabitaciones(e: Estado): boolean {
     e.habitaciones.push({ fondo: TEMAS[k % TEMAS.length], muebles: [], residentes: e.desbloqueados.filter((id) => !e.habitaciones.some((h) => h.residentes.includes(id))).slice(0, 2) });
     cambio = true;
   }
-  if (!e.mansion || !Array.isArray(e.mansion.sector) || e.mansion.sector.length !== PISOS) { e.mansion = { piso: 0, sector: new Array(PISOS).fill(0) }; cambio = true; }
+  if (!e.mansion || !Array.isArray(e.mansion.sector) || e.mansion.sector.length !== PISOS || e.mansion.sector.some((n) => !(n >= 0 && n < SECTORES)) || !(e.mansion.piso >= 0 && e.mansion.piso < PISOS)) { e.mansion = { piso: 0, sector: new Array(PISOS).fill(0) }; cambio = true; }
   return cambio;
 }
 
