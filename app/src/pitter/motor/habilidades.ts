@@ -72,6 +72,16 @@ function col(i: number): number {
   return i % N;
 }
 
+/* Al acabarse el tiempo o caer el jefe, un medidor lleno borra todas las fichas de ese personaje. */
+export function borrarTodoDe(t: Tablero, tipo: number, nombre: string): Efectos {
+  const e = vacio(nombre);
+  const idxs = t.indicesDe((c) => c.tipo === tipo && c.bloque === 0 && !c.caja);
+  if (!idxs.length) return e;
+  e.pasos.push({ k: "efecto", nombre: "tipo", ids: idxs.map((i) => t.celdas[i].id) });
+  e.pasos.push(...borrarIndices(t, idxs));
+  return e;
+}
+
 export function usarHabilidad(t: Tablero, verbo: Verbo, n: number, miTipo: number, nombre: string): Efectos {
   const e = vacio(nombre);
   switch (verbo) {

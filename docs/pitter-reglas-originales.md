@@ -88,6 +88,10 @@ Cada punto lleva una etiqueta: **[nombre]** lo dicen los nombres del dump con cl
 
 El motor actual (por turnos, 6×6, arrastre libre) se queda corto en esto: tiempo real, bloqueo de eje, ventana de combo, modo follow-up con medidor que se pudre y sigue el esquema de arriba, bloque grande al agrupar, bombas y cuadrados, y habilidades con botón, pasiva y de líder por condición. Lo que ya está bien: cuadrícula 6×6, intercambio por el camino, caja de 6+, habilidades hechas a mano, jefes del bestiario.
 
+## Lo que dice la JoJo Wiki
+
+`https://jojowiki.com/JoJo's_Pitter-Patter_Pop!` (leída el 3-nov-2026). Las fichas se mueven como cualquiera, también las Cajas. Una Caja **crea** cinco fichas del personaje en cruz, y esas no pueden crear otra Caja. El combo sube el daño de 10 en 10 hasta 200 y no se pierde durante el Stand Up Time. En el Stand Up el reloj se para, las fichas se quedan y se voltean, los cuadrados multiplican hasta 6×6. Un medidor de habilidad lleno al acabarse el tiempo o caer el jefe borra todas las fichas de ese personaje. El Rush llega al derrotar al jefe en un tiempo fijado y quita obstáculos y piezas especiales. Las habilidades se usan en batalla y en Stand Up, no en Rush. Hay además muchos tipos de pieza (Cutter, Bubble, Book, Shot, Zipper, Lock, Hole, Jail, Ink, Dirty, Slash, Crystal...) que no están hechos.
+
 ## Qué se ha hecho ya
 
 Bloqueo de eje al arrastrar, ventana de tiempo del combo, tamaño de grupo, bloque grande al agrupar (también de pie en el Stand Up), medidor del Stand Up que se pierde y da tiempo por grupo, habilidades con botón y contador de fichas que faltan, y habilidad de líder por condición (`docs/pitter.md`). También hecho: habilidad pasiva (`datos/pasivas.ts`), Rush al caer el jefe (interpretación, el trigger real es desconocido) y mover durante la cascada con las animaciones en cola. Falta: piezas especiales cuyo comportamiento no se deduce de los nombres (Crystal, Shabon, Elemental, Power).

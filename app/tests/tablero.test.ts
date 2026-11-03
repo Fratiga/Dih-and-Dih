@@ -137,5 +137,47 @@ for (const [v, n] of verbos) {
     afirma(a === 1 && b === 0 && c === 1, "combo: salta al llegar y otra vez tras romperse");
   }
 }
+
+// 7. La Caja convierte cinco fichas en cruz, y esas no dejan otra Caja
+{
+  const t = new Tablero({ semilla: 21, tipos: 6, equipo: [0, 1], atqEquipo: [3, 4] });
+  const idx = 14; // fila 2, columna 2
+  t.celdas[idx].caja = true;
+  const tipo = t.celdas[idx].tipo;
+  const cruz = [idx, ...t.vecinos(idx)];
+  const pasos = t.tocarCaja(idx);
+  afirma(pasos[0].k === "convertir", "tocar una caja convierte fichas");
+  // tras resolver, la cruz entera se ha borrado como grupo (5 fichas del mismo personaje)
+  afirma(t.grupos().length === 0, "caja: sin grupos al final");
+  afirma(pasos.some((p) => p.k === "borrar"), "caja: la cruz forma un grupo y se borra");
+  void tipo; void cruz;
+  // un grupo con fichas de caja no deja otra caja
+  const u = new Tablero({ semilla: 22, tipos: 6, equipo: [0, 1], atqEquipo: [3, 4] });
+  for (const i of [0, 1, 2, 6, 7, 8]) { u.celdas[i].tipo = 5; u.celdas[i].deCaja = i === 0; }
+  const ps = u.resolver();
+  const b = ps.find((p) => p.k === "borrar") as Extract<Paso, { k: "borrar" }> | undefined;
+  afirma(!!b && b.cajas.length === 0, "un grupo con fichas de una caja no deja otra caja");
+  const v = new Tablero({ semilla: 22, tipos: 6, equipo: [0, 1], atqEquipo: [3, 4] });
+  for (const i of [0, 1, 2, 6, 7, 8]) v.celdas[i].tipo = 5;
+  const bv = v.resolver().find((p) => p.k === "borrar") as Extract<Paso, { k: "borrar" }> | undefined;
+  afirma(!!bv && bv.cajas.length === 1, "un grupo normal de 6 si deja caja");
+}
+
+// 8. Combo: el dano se detiene en 200
+{
+  const t = new Tablero({ semilla: 5, tipos: 6, equipo: [0, 1], atqEquipo: [3, 4] });
+  t.combo = 200; const m200 = t.multCombo(); t.combo = 900;
+  afirma(t.multCombo() === m200, "el combo deja de subir el dano en 200");
+  t.combo = 10; const m10 = t.multCombo(); t.combo = 20;
+  afirma(t.multCombo() > m10, "mas combo, mas dano");
+}
+
+// 9. Rush: se quitan obstaculos y piezas especiales
+{
+  const t = new Tablero({ semilla: 8, tipos: 6, equipo: [0, 1], atqEquipo: [3, 4] });
+  t.celdas[1].bloque = 2; t.celdas[2].caja = true; t.celdas[3].congelada = true; t.celdas[4].tinta = true;
+  const p = t.limpiarParaRush();
+  afirma(p.length === 1 && t.celdas.every((c) => c.bloque === 0 && !c.caja && !c.congelada && !c.tinta), "el Rush deja el tablero limpio");
+}
 console.log(`${ok} comprobaciones bien, ${fallos} fallos`);
 process.exit(fallos ? 1 : 0);

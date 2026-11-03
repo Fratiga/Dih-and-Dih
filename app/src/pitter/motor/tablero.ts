@@ -3,9 +3,9 @@
 
    Reglas (tomadas del original y fijadas aqui, todas en REGLAS para poder ajustarlas):
    - Tablero de 6x6 con fichas de personaje. Un grupo son fichas iguales que se tocan por un lado.
-   - Un grupo de 4 o mas se borra. Un grupo de 6 o mas deja una Caja (tocarla borra cinco fichas en cruz).
+   - Un grupo de 4 o mas se borra. Un grupo de 6 o mas deja una Caja (tocarla convierte cinco fichas en cruz en fichas de su personaje).
    - Las fichas de arriba caen y las que faltan entran desde arriba. Cada borrado seguido sube el combo.
-   - El jugador arrastra una ficha por su fila o su columna: las que pisa se desplazan un hueco (se intercambian con ella).
+   - El jugador arrastra una ficha hacia donde quiera: las que pisa se desplazan un hueco (se intercambian con ella).
    - El combo vive en una ventana de tiempo: cada grupo la reinicia y cuando se acaba el combo se rompe.
    - Un grupo hace mas dano cuanto mas grande es. Las fichas del grupo se juntan en un bloque grande (lo dibuja la escena). */
 
@@ -17,8 +17,10 @@ export const REGLAS = {
   minCaja: 6,
   danoBase: 12,
   danoEquipo: 2, // por punto de ataque, solo en fichas del equipo
-  multPorCombo: 0.07,
-  multMaxCombo: 3.2,
+  /* El dano sube con el combo y se detiene en 200, como en el original. */
+  multPorCombo: 0.02,
+  multMaxCombo: 5,
+  comboMax: 200,
   /** Segundos que dura la ventana del combo tras un grupo: baja un poco cuanto mas largo es el combo. */
   ventanaBase: 3,
   ventanaMin: 1.7,
@@ -43,6 +45,8 @@ export interface Celda {
   tinta: boolean;
   /** Mientras dura el Stand Up Time, un grupo no se borra: se queda "de pie" en el tablero. */
   stand: boolean;
+  /** La creo una Caja: un grupo que la incluya no puede dejar otra Caja. */
+  deCaja: boolean;
 }
 
 export interface Grupo {
@@ -118,6 +122,7 @@ export class Tablero {
       congelada: false,
       tinta: false,
       stand: false,
+      deCaja: false,
     };
   }
 
@@ -202,7 +207,7 @@ export class Tablero {
   }
 
   multCombo(): number {
-    return Math.min(REGLAS.multMaxCombo, 1 + this.combo * REGLAS.multPorCombo);
+    return Math.min(REGLAS.multMaxCombo, 1 + Math.min(this.combo, REGLAS.comboMax) * REGLAS.multPorCombo);
   }
 
   /** Cuanto dura la ventana del combo en este momento. */
@@ -271,7 +276,7 @@ export class Tablero {
         cargas[c.tipo] = (cargas[c.tipo] ?? 0) + (c.reforzada ? REGLAS.cargaReforzada : 1);
         aBorrar.add(i);
       }
-      if (g.celdas.length >= REGLAS.minCaja) {
+      if (g.celdas.length >= REGLAS.minCaja && !g.celdas.some((i) => this.celdas[i].deCaja)) {
         const donde = g.celdas[Math.floor(this.rng() * g.celdas.length)];
         cajas.push({ id: -1, idx: donde });
       }
@@ -340,28 +345,37 @@ export class Tablero {
     return pasos;
   }
 
-  /** Tocar una Caja borra cinco fichas en cruz. */
+  /** Tocar una Caja convierte la propia caja y las cuatro fichas que la rodean en fichas de su personaje. Esas fichas no pueden dejar otra Caja. */
   tocarCaja(idx: number): Paso[] {
     const c = this.celdas[idx];
     if (!c || !c.caja) return [];
-    const idxs = [idx, ...this.vecinos(idx)];
-    const ids: number[] = [];
-    let dano = 0;
-    this.combo += 1;
-    const mult = this.multCombo();
-    const cargas: Record<number, number> = {};
-    for (const i of idxs) {
+    const tipo = c.tipo;
+    const cambios: { id: number; tipo: number }[] = [];
+    for (const i of [idx, ...this.vecinos(idx)]) {
       const x = this.celdas[i];
-      if (x.bloque > 0) continue;
-      dano += this.danoDe(x) * mult;
-      cargas[x.tipo] = (cargas[x.tipo] ?? 0) + 1;
-      ids.push(x.id);
-      this.celdas[i] = null as unknown as Celda;
+      if (!x || x.bloque > 0) continue;
+      x.tipo = tipo;
+      x.caja = false;
+      x.reforzada = false;
+      x.deCaja = true;
+      cambios.push({ id: x.id, tipo });
     }
-    const pasos: Paso[] = [{ k: "borrar", ids, grupos: [], combo: this.combo, mult, dano, cargas, cajas: [], rotos: [], golpeados: [] }];
-    pasos.push(...this.gravedad());
+    const pasos: Paso[] = [{ k: "convertir", cambios }];
     pasos.push(...this.resolver());
     return pasos;
+  }
+
+  /** En el Rush desaparecen los obstaculos y las piezas especiales. */
+  limpiarParaRush(): Paso[] {
+    const ids: number[] = [];
+    for (const c of this.celdas) {
+      if (!c) continue;
+      if (c.bloque > 0 || c.caja || c.congelada || c.tinta) {
+        c.bloque = 0; c.caja = false; c.congelada = false; c.tinta = false;
+        ids.push(c.id);
+      }
+    }
+    return ids.length ? [{ k: "limpiarObstaculos", ids }] : [];
   }
 
   reiniciarCombo(): void {

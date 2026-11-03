@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { N, REGLAS, TOTAL, Tablero, type Celda, type Paso } from "../motor/tablero.ts";
-import { usarHabilidad } from "../motor/habilidades.ts";
+import { borrarTodoDe, usarHabilidad } from "../motor/habilidades.ts";
 import { MotorLider, type Efecto } from "../motor/lider.ts";
 import { liderDe } from "../datos/lideres.ts";
 import { juntarPasivas, type ModificadoresPasivos } from "../datos/pasivas.ts";
@@ -15,10 +15,10 @@ import type { Hud } from "../ui/puzzle.ts";
 import { sinergia, type Sinergia } from "../datos/sinergias.ts";
 
 const DEPTH_TABLERO = 10;
-/** Cuanto hay que arrastrar (en casillas) para que la direccion quede fijada a una fila o a una columna. */
-const LANE_LOCK = 0.28;
 /** Lo que pierde por segundo el medidor del Stand Up cuando no se esta borrando nada. */
 const STAND_ROT = 0.012;
+/** El Rush solo empieza si el jefe cae con al menos esta parte del tiempo por delante. */
+const RUSH_TIEMPO_MIN = 0.3;
 
 export interface DatosPuzzle {
   jefe: number;
@@ -76,7 +76,7 @@ export class Puzzle extends Phaser.Scene {
   private hudAcum = 0;
   private temporizadoresJefe: number[] = [];
   private pendientesJefe: Array<() => Paso[]> = [];
-  private drag: { id: number; idx: number; ox: number; oy: number; px0: number; py0: number; cx0: number; cy0: number; lock: "h" | "v" | null } | null = null;
+  private drag: { id: number; idx: number; ox: number; oy: number } | null = null;
   /** Ventana del combo: segundos que quedan para que el siguiente grupo lo siga sumando. */
   private comboT = 0;
   private comboVentana = 3;
@@ -87,6 +87,8 @@ export class Puzzle extends Phaser.Scene {
   private bloques = new Map<number, Phaser.GameObjects.Container>();
   private standMax = 14;
   private pas!: ModificadoresPasivos;
+  private cierreHecho = false;
+  private agotando = false;
   private ocupado = 0;
   private cola: Promise<void> = Promise.resolve();
   private habilidades = 0;
@@ -149,6 +151,8 @@ export class Puzzle extends Phaser.Scene {
     this.tiempoJugado = 0; this.habilidades = 0; this.standUsados = 0; this.fichasBorradas = 0;
     this.temporizadoresJefe = this.jefe.fases.map((f) => f.cada * 0.75);
     this.comboT = 0;
+    this.cierreHecho = false;
+    this.agotando = false;
     this.lider = new MotorLider(liderDe(this.pj[0].id));
     this.liderAtaque = 1;
     this.liderCarga = 1;
@@ -357,7 +361,7 @@ export class Puzzle extends Phaser.Scene {
       if (!s) return;
       if (c.caja) { void this.tocarCaja(idx); return; }
       if (!this.tablero.puedeMover(idx)) { sonido.invalido(); this.sacudir(c.id); return; }
-      this.drag = { id: c.id, idx, ox: s.cont.x - p.x, oy: s.cont.y - p.y, px0: p.x, py0: p.y, cx0: s.cont.x, cy0: s.cont.y, lock: null };
+      this.drag = { id: c.id, idx, ox: s.cont.x - p.x, oy: s.cont.y - p.y };
       s.cont.setDepth(DEPTH_TABLERO + 60);
       this.tweens.add({ targets: s.cont, scale: 1.14, duration: 90, ease: "Back.easeOut" });
       sonido.agarrar();
@@ -367,33 +371,19 @@ export class Puzzle extends Phaser.Scene {
       if (!d) return;
       const s = this.sprites.get(d.id);
       if (!s) return;
-      // Hasta que se recorre un poco, la ficha apenas se mueve. Despues queda atada a su fila o a su columna.
-      const dx = p.x - d.px0, dy = p.y - d.py0;
-      if (!d.lock && Math.max(Math.abs(dx), Math.abs(dy)) > this.celda * LANE_LOCK) d.lock = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
+      // La ficha sigue al dedo hacia donde sea. Las que pisa se apartan un hueco, una a una, camino de la casilla en la que esta el dedo.
       const lim = this.celda * 0.4;
-      const fila = Math.floor(d.idx / N), col = d.idx % N;
-      let objetivo: number;
-      if (d.lock === "h") {
-        s.cont.setPosition(Phaser.Math.Clamp(p.x + d.ox, this.ox - lim, this.ox + this.lado + lim), this.centro(d.idx).y);
-        objetivo = fila * N + Phaser.Math.Clamp(Math.floor((p.x - this.ox) / this.celda), 0, N - 1);
-      } else if (d.lock === "v") {
-        s.cont.setPosition(this.centro(d.idx).x, Phaser.Math.Clamp(p.y + d.oy, this.oy - lim, this.oy + this.lado + lim));
-        objetivo = Phaser.Math.Clamp(Math.floor((p.y - this.oy) / this.celda), 0, N - 1) * N + col;
-      } else {
-        const q = this.centro(d.idx);
-        s.cont.setPosition(q.x + Phaser.Math.Clamp(dx, -this.celda * 0.25, this.celda * 0.25), q.y + Phaser.Math.Clamp(dy, -this.celda * 0.25, this.celda * 0.25));
-        return;
-      }
+      s.cont.setPosition(Phaser.Math.Clamp(p.x + d.ox, this.ox - lim, this.ox + this.lado + lim), Phaser.Math.Clamp(p.y + d.oy, this.oy - lim, this.oy + this.lado + lim));
+      const objetivo = this.celdaEn(p.x, p.y, true);
       let guard = 0;
       while (objetivo !== d.idx && guard++ < 8) {
         const cx = d.idx % N, cy = Math.floor(d.idx / N), tx = objetivo % N, ty = Math.floor(objetivo / N);
         const paso = Math.abs(tx - cx) >= Math.abs(ty - cy) ? cy * N + cx + Math.sign(tx - cx) : (cy + Math.sign(ty - cy)) * N + cx;
-        const otro = this.tablero.celdas[paso];
         // Si la de al lado aun se esta moviendo (cae de una cascada) no se la puede apartar
         const so = this.fichaQuieta(paso);
         if (!so || !this.tablero.intercambiar(d.idx, paso)) break;
-        void otro;
-        { const q = this.centro(d.idx); this.tweens.add({ targets: so.cont, x: q.x, y: q.y, duration: 90, ease: "Quad.easeOut" }); }
+        const q = this.centro(d.idx);
+        this.tweens.add({ targets: so.cont, x: q.x, y: q.y, duration: 90, ease: "Quad.easeOut" });
         d.idx = paso;
         sonido.mover();
       }
@@ -478,8 +468,16 @@ export class Puzzle extends Phaser.Scene {
     return new Promise((res) => { this.timers.push(this.time.delayedCall(this.shell.estado.ajustes.movimientoReducido ? ms * 0.5 : ms, res)); });
   }
 
+  /* Termina cuando acaba la animacion o, por si la ficha se destruye por el camino y la animacion se pierde, un poco despues de lo previsto.
+     Asi una animacion perdida no deja la cola de pasos esperando para siempre. */
   private tween(cfg: Phaser.Types.Tweens.TweenBuilderConfig): Promise<void> {
-    return new Promise((res) => { this.tweens.add({ ...cfg, onComplete: () => res() }); });
+    return new Promise((res) => {
+      let hecho = false;
+      const fin = (): void => { if (!hecho) { hecho = true; res(); } };
+      this.tweens.add({ ...cfg, onComplete: fin });
+      const dur = Number(cfg.duration ?? 0) + Number(cfg.delay ?? 0) * 1 + 450;
+      this.time.delayedCall(dur * (cfg.yoyo ? 2 : 1), fin);
+    });
   }
 
   private idxDe(id: number): number {
@@ -779,7 +777,7 @@ export class Puzzle extends Phaser.Scene {
 
   /* ---------- habilidades ---------- */
   private async pedirHabilidad(slot: 0 | 1): Promise<void> {
-    if (!this.puedeJugar() || this.drag || this.fase === "rush" || this.fase === "stand") return;
+    if (!this.puedeJugar() || this.drag || this.fase === "rush") return;
     if (this.cargas[slot] < this.cargaMax[slot] - 0.001) { sonido.invalido(); this.hud.banner("Todavía no está cargada", "aviso"); return; }
     if (this.silencioT > 0) { sonido.invalido(); this.hud.banner("Silenciado", "aviso"); return; }
     const p = this.pj[slot];
@@ -865,21 +863,54 @@ export class Puzzle extends Phaser.Scene {
   }
 
   /* ---------- final ---------- */
-  /* Al caer el jefe empieza el Rush: unos segundos en los que se sigue juntando fichas y los puntos valen doble. */
+  /* Al acabarse el tiempo o caer el jefe, cada medidor de habilidad que este lleno borra todas las fichas de su personaje y suma puntos. */
+  private async cierreMedidores(): Promise<void> {
+    if (this.cierreHecho) return;
+    this.cierreHecho = true;
+    for (const slot of [0, 1] as const) {
+      if (this.cargas[slot] < this.cargaMax[slot] - 0.001) continue;
+      this.cargas[slot] = 0;
+      this.hud.carga(slot, 0, Math.ceil(this.cargaMax[slot]));
+      const p = this.pj[slot];
+      this.hud.habilidad(slot, p.nombre, "Medidor lleno");
+      sonido.habilidad();
+      this.destello(parseInt(p.color.slice(1), 16), 0.45, 400);
+      await this.espera(450);
+      await this.reproducir(borrarTodoDe(this.tablero, slot, p.nombre).pasos);
+    }
+  }
+
+  private enRush(): boolean {
+    return this.fase === "rush";
+  }
+
+  private async agotarTiempo(): Promise<void> {
+    this.agotando = true;
+    await this.cierreMedidores();
+    if (this.terminada) return;
+    if (this.vida <= 0) await this.ganar(true);
+    else await this.perder();
+  }
+
+  /* Al caer el jefe con tiempo de sobra empieza el Rush: unos segundos en los que se sigue juntando fichas, sin obstaculos ni piezas especiales, y los puntos valen doble. */
   private async ganar(final = false): Promise<void> {
     if (this.terminada) return;
     if (!final) {
       if (this.fase === "rush") return;
+      await this.cierreMedidores();
+      if (this.terminada || this.enRush()) return;
+      if (this.t < this.tMax * RUSH_TIEMPO_MIN) { await this.ganar(true); return; }
       this.fase = "rush";
       this.rushT = 5;
       this.pintarPanelStand(false);
       this.hud.stand(0, false, 0);
-      this.hud.banner("¡RUSH!", "rush", "El jefe cae. Sigue juntando fichas, valen doble.");
+      this.hud.banner("¡RUSH!", "rush", "El jefe cae con tiempo de sobra. Sigue juntando fichas, valen doble.");
       this.hud.jefeCae();
       this.hud.expresion(0, "poder"); this.hud.expresion(1, "poder");
       sonido.standUp();
       this.destello(0xff4f9a, 0.6, 500);
       this.cameras.main.shake(260, 0.008);
+      void this.reproducir(this.tablero.limpiarParaRush());
       return;
     }
     this.terminada = true;
@@ -983,11 +1014,11 @@ export class Puzzle extends Phaser.Scene {
     if (this.furiaT > 0) { this.furiaT -= dt; }
     if (this.silencioT > 0) { this.silencioT -= dt; if (this.silencioT <= 0) this.hud.silencio(false); }
     if (this.aturdirT > 0) { this.aturdirT -= dt; }
-    else this.jefe.fases.forEach((f, i) => {
+    else if (!this.agotando) this.jefe.fases.forEach((f, i) => {
       this.temporizadoresJefe[i] += dt;
       if (this.temporizadoresJefe[i] >= f.cada) { this.temporizadoresJefe[i] = 0; this.atacarJefe(i); }
     });
-    if (this.t <= 0 && this.ocupado === 0 && !this.drag) { this.t = 0; void this.perder(); }
+    if (this.t <= 0 && !this.agotando && this.ocupado === 0 && !this.drag) { this.t = 0; void this.agotarTiempo(); }
   }
 
   /* ---------- habilidad de lider ---------- */

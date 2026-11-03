@@ -125,7 +125,7 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
     h("div", { clase: "pt-card pt-marcador" }, h("small", {}, "Puntos"), puntosNum),
     h("div", { clase: "pt-card pt-combo" }, h("small", {}, "Combo"), comboNum, comboMult, comboBarra),
     h("div", { clase: "pt-card pt-lider" }, h("small", {}, "Habilidad de líder"), liderNombre, liderTexto),
-    h("div", { clase: "pt-card pt-objetivo" }, h("small", {}, "Cómo se juega"), h("p", {}, "Arrastra una ficha por su fila o su columna. Junta 4 o más iguales; con 6 o más sale una Caja.")),
+    h("div", { clase: "pt-card pt-objetivo" }, h("small", {}, "Cómo se juega"), h("p", {}, "Arrastra una ficha hacia donde quieras. Junta 4 o más iguales; con 6 o más sale una Caja.")),
   );
   const der = h("aside", { clase: "pt-puz-der" },
     h("div", { clase: "pt-card pt-stand" }, h("div", { clase: "pt-stand-cab" }, h("b", {}, "Stand Up Time"), standTexto), h("div", { clase: "pt-stand-barra" }, standRelleno)),
@@ -160,10 +160,10 @@ export function pantallaPuzzle(shell: Shell, d: unknown): Pantalla {
 
   function ayuda(): void {
     const m = modal(shell.raiz, "Cómo se juega", h("div", { clase: "pt-pausa" },
-      h("p", {}, "Arrastra una ficha: en cuanto te mueves un poco queda atada a su fila o a su columna, y las demás se apartan a su paso. Al soltarla, los grupos de 4 o más fichas iguales que se tocan se juntan en un bloque grande y le hacen daño al jefe. Cuanto más grande es el grupo, más daño."),
+      h("p", {}, "Arrastra una ficha hacia donde quieras y las demás se apartan a su paso. Al soltarla, los grupos de 4 o más fichas iguales que se tocan se juntan en un bloque grande y le hacen daño al jefe. Cuanto más grande es el grupo, más daño."),
       h("p", {}, "Cada grupo seguido sube el combo y reinicia su tiempo. Si la barra se acaba, el combo se rompe."),
-      h("p", {}, "Los grupos de 6 o más dejan una Caja. Tócala para borrar cinco fichas en cruz."),
-      h("p", {}, "Cada personaje del equipo tiene una habilidad que se carga con sus propias fichas. Cuando está lista, púlsala (Q y W). La habilidad de líder, la del primero del equipo, salta sola al cumplirse su condición."),
+      h("p", {}, "Los grupos de 6 o más dejan una Caja. Tócala y cinco fichas en cruz pasan a ser de su personaje. Con esas no se puede hacer otra Caja."),
+      h("p", {}, "Cada personaje del equipo tiene una habilidad que se carga con sus propias fichas. Cuando está lista, púlsala (Q y W), también durante el Stand Up Time. Si al acabarse el tiempo o caer el jefe un medidor está lleno, borra todas las fichas de ese personaje. La habilidad de líder, la del primero del equipo, salta sola al cumplirse su condición."),
       h("p", {}, "Cuando el medidor del Stand Up Time se llena, empieza solo. El tiempo se para y los grupos no desaparecen: se quedan de pie, y cada uno da unos segundos más. Al acabar atacan todos a la vez. Los cuadrados de 2×2 multiplican el daño."),
     ), { botones: [boton("Entendido", () => m.cerrar(), { color: "amarillo" })] });
   }
