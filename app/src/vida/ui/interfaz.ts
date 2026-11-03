@@ -63,6 +63,7 @@ export class Interfaz {
   private panelMem!: HTMLElement;
   private pestana = "historia";
   private bandeja!: HTMLElement;
+  private pie!: HTMLElement;
   private subtitulo!: HTMLElement;
   private velocidades = new Map<number, HTMLButtonElement>();
   private camaras = new Map<string, HTMLButtonElement>();
@@ -163,11 +164,12 @@ export class Interfaz {
     this.bandeja = h("footer", { clase: "va-bandeja" });
     this.subtitulo = h("p", { clase: "va-sub" });
     for (const it of BANDEJA) this.bandeja.append(this.celdaBandeja(it));
-    const ayuda = h("p", { clase: "va-bandeja-ayuda" }, "Arrastra un objeto a la sala. Para quitarlo, arrástralo de vuelta aquí abajo.");
+    const ayuda = h("p", { clase: "va-bandeja-ayuda" }, "Arrastra un objeto a la sala. Para quitarlo, ponle el ratón encima y pulsa X, o arrástralo de vuelta aquí abajo.");
     const pie = h("div", { clase: "va-pie" }, ayuda, this.bandeja);
     // La bandeja tambien se pliega: la lengueta va dentro y se queda a la vista cuando el resto baja
-    const lenguetaPie = boton("Objetos", () => { const p_ = pie.classList.toggle("plegada"); lenguetaPie.classList.toggle("activa", !p_); }, { clase: "va-lengueta-pie activa", tip: "Mostrar u ocultar la lista de objetos" });
+    const lenguetaPie = boton("Objetos", () => { const p_ = pie.classList.toggle("plegada"); lenguetaPie.classList.toggle("activa", !p_); this.ajustarMargen(); }, { clase: "va-lengueta-pie activa", tip: "Mostrar u ocultar la lista de objetos" });
     pie.prepend(lenguetaPie);
+    this.pie = pie;
 
     // Lenguetas para plegar cada panel y dejar la sala despejada (en pantallas pequenas la memoria empieza plegada)
     const lengueta = (clase: string, texto: string, panel: HTMLElement, plegada: boolean): HTMLButtonElement => {
@@ -278,6 +280,10 @@ export class Interfaz {
     else if (k === "g") j.alternarSilencio();
     else if (k === "f") void this.pantallaCompleta();
     else if (k === "c") j.fijarCamara(j.ajustes.camara === "panorama" ? "seguir" : j.ajustes.camara === "seguir" ? "cercano" : "panorama");
+    else if (k === "x" || k === "delete") {
+      if (this.escena.quitarBajoRaton()) aviso(this.raiz, "Objeto quitado.", 1000);
+      else aviso(this.raiz, "Pon el ratón sobre un objeto y pulsa X para quitarlo.", 1800);
+    }
     else if (k === "e") j.siguiente();
     else if (k === "q") j.anterior();
     else if (k === "tab") { e.preventDefault(); if (e.shiftKey) j.anterior(); else j.siguiente(); }
@@ -296,8 +302,16 @@ export class Interfaz {
     this.btnSonido.textContent = j.ajustes.silencio ? "Sin sonido" : "Sonido";
   }
 
+  /** Cuanto tapa la bandeja por abajo, para que la camara deje el suelo libre. */
+  private ajustarMargen(): void {
+    const j = this.juego;
+    const abierta = !this.pie.classList.contains("plegada") && !j.observar;
+    j.margenInferior = abierta ? this.pie.offsetHeight + 14 : j.observar ? 64 : 44;
+  }
+
   /* ---------- Lo que se ve ---------- */
   refrescar(): void {
+    this.ajustarMargen();
     const j = this.juego;
     const c = j.criatura;
     const rel = Juego.reloj(j.sim.t);

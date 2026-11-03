@@ -65,6 +65,8 @@ export class Laboratorio extends Phaser.Scene {
   private migas?: Phaser.GameObjects.Particles.ParticleEmitter;
   private premios?: Phaser.GameObjects.Particles.ParticleEmitter;
   private zoomActual = 0.5;
+  private margen = 40;
+  private raton = { x: 0, y: 0, enSala: false };
   private centro = { x: MUNDO_W / 2, y: MUNDO_H / 2 };
   private arrastre: { id: number | null; tipo: string; ghost: Phaser.GameObjects.Image | null } | null = null;
   private tiempoReal = 0;
@@ -161,6 +163,10 @@ export class Laboratorio extends Phaser.Scene {
     this.juego.on("premio", (id) => this.efectoPremio(id as number));
     this.juego.on("susto", (id) => this.efectoSusto(id as number));
     this.scale.on("resize", () => { this.zoomActual = this.zoomObjetivo(); });
+    // Donde esta el raton y si esta sobre la sala (y no sobre un panel), para el atajo de quitar objetos
+    const seguir = (e: PointerEvent): void => { this.raton = { x: e.clientX, y: e.clientY, enSala: e.target instanceof HTMLCanvasElement }; };
+    window.addEventListener("pointermove", seguir);
+    this.events.once("shutdown", () => window.removeEventListener("pointermove", seguir));
     this.lista = true;
   }
 
@@ -213,9 +219,12 @@ export class Laboratorio extends Phaser.Scene {
     const kc = this.juego.ajustes.camara === "seguir" || this.juego.ajustes.camara === "cercano" ? 1 - Math.exp(-dt * 2.2) : 1 - Math.exp(-dt * 3);
     c0.x += (tx - c0.x) * kc;
     c0.y += (ty - c0.y) * kc;
+    // La interfaz de abajo (la bandeja) tapa parte de la pantalla: la camara baja el centro para que el suelo y los objetos queden libres
+    this.margen += (this.juego.margenInferior - this.margen) * k;
+    const desp = this.margen / (2 * this.zoomActual);
     const mw = cam.width / this.zoomActual / 2, mh = cam.height / this.zoomActual / 2;
     const cx = Math.min(MUNDO_W - mw, Math.max(mw, c0.x));
-    const cy = Math.min(MUNDO_H - mh, Math.max(mh, c0.y));
+    const cy = Math.min(MUNDO_H - mh + desp, Math.max(mh, c0.y + desp));
     cam.centerOn(cx, cy);
     void base;
   }
@@ -559,6 +568,18 @@ export class Laboratorio extends Phaser.Scene {
       this.arrastre = null;
       this.input.setDefaultCursor("default");
     }
+  }
+
+  /** Atajo: quita el objeto que hay bajo el raton (o el que se esta arrastrando). Devuelve si habia alguno. */
+  quitarBajoRaton(): boolean {
+    if (this.enTitulo || !this.raton.enSala) return false;
+    const w = this.cameras.main.getWorldPoint(this.raton.x, this.raton.y);
+    const id = this.arrastre?.id ?? this.objetoEn(w.x, w.y);
+    if (id === null || id === undefined) return false;
+    this.juego.quitar(id);
+    this.arrastre = null;
+    this.input.setDefaultCursor("default");
+    return true;
   }
 
   /** Desde la bandeja: se arrastra un objeto nuevo hasta la habitacion. */

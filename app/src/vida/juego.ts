@@ -18,6 +18,8 @@ export class Juego {
   pausado = false;
   observar = false;
   creada = Date.now();
+  /** Pixeles de abajo de la pantalla que tapa la interfaz (la bandeja). La camara los deja libres para que el suelo se vea entero. */
+  margenInferior = 40;
   game: Phaser.Game | null = null;
   private oyentes = new Map<string, Oyente[]>();
   private ultimoGuardado = 0;
