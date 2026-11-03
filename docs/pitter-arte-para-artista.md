@@ -46,6 +46,27 @@ Cada uno necesita **un chibi de cuerpo entero**. De ese mismo dibujo salen la fi
 
 Cada color tiene que seguir siendo **distinguible de los demás** en el tablero (seis personajes a la vez). Ahora los muñecos provisionales llevan un gorro del color de su afinidad; el dibujo real manda.
 
+### Personajes por piezas (el formato que más se parece al original)
+
+Es mejor entregar cada personaje **en piezas sueltas**, con cada pieza en su sitio en un lienzo de **1000 × 1000 px** y fondo transparente. Así se puede animar de verdad (respirar, caminar, saludar, sentarse, dormir) en vez de mover una sola imagen. Las que ya tenemos de Cassius Coldgrave son: pelo de atrás, capa, piernas, brazo izquierdo, brazo derecho, torso, cabeza y sombrero.
+
+Para replicar las animaciones de los personajes originales **faltan**, por personaje:
+
+| Pieza o pose que falta | Para qué |
+|---|---|
+| **Su Stand como sprite aparte** (en el archivo original se llama «Hol Horse & Emperor» pero Emperor no viene) | Aparece junto al personaje al usar la habilidad y en el Stand Up Time. |
+| **Cara por emociones**: ojos y cejas (feliz, enfadado, dolor, sorpresa, dormido), y boca abierta o sonriendo | Hoy la cara es una sola y los ojos quedan tapados por la sombra del sombrero. |
+| **Piernas separadas** (izquierda y derecha, con bota) y un **pelvis/cinturón** aparte | Ciclo de caminar y correr, sentarse, saltar. |
+| **Pose sentado** y **pose tumbado** (dormido) | Las habitaciones: dormir en la cama, sentarse en el sillón. |
+| **Brazos en dos o tres piezas** (brazo, antebrazo, mano) | Saludar, señalar, llevarse la mano al sombrero. |
+| **Manos alternativas**: abierta, saludando, pulgar arriba, **pistola apuntando de frente**, tocando el ala del sombrero | Cada animación pide una mano distinta. Ahora solo hay un puño y una pistola hacia abajo. |
+| **Pluma del sombrero aparte** y **ala delantera aparte** | Balanceo al caminar y levantar el ala. |
+| **Faldones del poncho** izquierdo y derecho | Movimiento al correr y al saltar. |
+| **Cara dañada** (golpeado, aturdido) y **vista de victoria** (pose con los brazos arriba) | Resultados de la partida. |
+| **Retrato grande de corte** (busto de frente, unos 1200 × 1600 px) | Aparece al usar la habilidad, como en el original. |
+
+La **pose de Hol Horse** de Cassius (la mano derecha en forma de pistola) ya viene en las piezas. Lo que le falta para que se vea completa es la pistola de la mano y el Stand.
+
 ## 2. Jefes (8)
 
 | Pieza | Tamaño de diseño |

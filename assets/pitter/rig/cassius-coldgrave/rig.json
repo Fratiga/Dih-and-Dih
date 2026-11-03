@@ -1,0 +1,206 @@
+{
+ "id": "cassius-coldgrave",
+ "lienzo": 1000,
+ "nota": "Piezas de la pose original, todas en su sitio en un lienzo de 1000x1000. x e y son la esquina de cada pieza en ese lienzo. El pivote es el punto sobre el que gira.",
+ "piezas": [
+  {
+   "id": "pelo",
+   "archivo": "pelo.png",
+   "x": 164,
+   "y": 412,
+   "w": 443,
+   "h": 328,
+   "padre": "cabeza",
+   "pivote": [
+    480,
+    430
+   ],
+   "nota": "Melena de atras. Se mueve con la cabeza y un poco mas tarde."
+  },
+  {
+   "id": "capa",
+   "archivo": "capa.png",
+   "x": 337,
+   "y": 658,
+   "w": 223,
+   "h": 122,
+   "padre": "piernas",
+   "pivote": [
+    450,
+    700
+   ],
+   "nota": "Trozo de poncho que asoma por detras."
+  },
+  {
+   "id": "piernas",
+   "archivo": "piernas.png",
+   "x": 396,
+   "y": 624,
+   "w": 170,
+   "h": 255,
+   "padre": null,
+   "pivote": [
+    490,
+    800
+   ],
+   "nota": "Camisa, cinturon, pantalon y botas en una sola pieza."
+  },
+  {
+   "id": "brazo_izq",
+   "archivo": "brazo_izq.png",
+   "x": 335,
+   "y": 615,
+   "w": 105,
+   "h": 172,
+   "padre": "torso",
+   "pivote": [
+    392,
+    640
+   ],
+   "nota": "Manga y mano."
+  },
+  {
+   "id": "brazo_der",
+   "archivo": "brazo_der.png",
+   "x": 518,
+   "y": 625,
+   "w": 113,
+   "h": 193,
+   "padre": "torso",
+   "pivote": [
+    548,
+    642
+   ],
+   "nota": "Manga y mano con el dedo apuntando (pose de pistola)."
+  },
+  {
+   "id": "torso",
+   "archivo": "torso.png",
+   "x": 398,
+   "y": 614,
+   "w": 148,
+   "h": 129,
+   "padre": "piernas",
+   "pivote": [
+    470,
+    735
+   ],
+   "nota": "Poncho (la parte de arriba del cuerpo)."
+  },
+  {
+   "id": "cabeza",
+   "archivo": "cabeza.png",
+   "x": 245,
+   "y": 189,
+   "w": 414,
+   "h": 473,
+   "padre": "torso",
+   "pivote": [
+    500,
+    650
+   ],
+   "nota": "Pelo de arriba, cara con la sombra del sombrero, barba, bigote y cigarro."
+  },
+  {
+   "id": "sombrero",
+   "archivo": "sombrero.png",
+   "x": 62,
+   "y": 127,
+   "w": 791,
+   "h": 332,
+   "padre": "cabeza",
+   "pivote": [
+    450,
+    430
+   ],
+   "nota": "Sombrero con pluma y aro."
+  }
+ ],
+ "poses": {
+  "idle": {},
+  "blink": {
+   "cabeza": {
+    "dy": 7
+   },
+   "sombrero": {
+    "dy": 4
+   }
+  },
+  "feliz": {
+   "piernas": {
+    "dy": -20
+   },
+   "brazo_izq": {
+    "rot": 105
+   },
+   "brazo_der": {
+    "rot": -105
+   },
+   "sombrero": {
+    "rot": -8,
+    "dx": -10,
+    "dy": -6
+   },
+   "cabeza": {
+    "rot": -3
+   }
+  },
+  "dolor": {
+   "cabeza": {
+    "rot": -9,
+    "dy": 8
+   },
+   "sombrero": {
+    "dy": 18,
+    "rot": -6
+   },
+   "piernas": {
+    "dy": 6
+   },
+   "brazo_izq": {
+    "rot": -12
+   },
+   "brazo_der": {
+    "rot": 12
+   },
+   "torso": {
+    "sy": 0.97
+   }
+  },
+  "poder": {
+   "brazo_der": {
+    "rot": -115
+   },
+   "brazo_izq": {
+    "rot": 25
+   },
+   "sombrero": {
+    "rot": 5,
+    "dy": -4
+   },
+   "cabeza": {
+    "rot": 3
+   },
+   "piernas": {
+    "dy": -4
+   }
+  }
+ },
+ "encuadre": {
+  "x": 40,
+  "y": 100,
+  "w": 840,
+  "h": 800
+ },
+ "encuadreRetrato": {
+  "x": 50,
+  "y": 110,
+  "w": 820,
+  "h": 590
+ },
+ "retrato": [
+  "pelo",
+  "cabeza",
+  "sombrero"
+ ]
+}

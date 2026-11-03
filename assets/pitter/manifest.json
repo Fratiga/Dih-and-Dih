@@ -1,4 +1,7 @@
 {
   "chibis": {},
-  "jefes": {}
+  "jefes": {},
+  "rigs": {
+    "cassius-coldgrave": "rig/cassius-coldgrave/rig.json"
+  }
 }
