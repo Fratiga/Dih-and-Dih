@@ -244,10 +244,83 @@ Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se sim
 - **Probar en un portátil sin tarjeta gráfica** y en pantalla completa real: no se ha podido probar desde aquí.
 - **Más herramientas** (marcadores, barreras, sonidos como estímulo).
 
+## Dirección: un espacio de convivencia entre propietarios
+
+No se plantea un santuario ni recintos protegidos de distintos tipos. El objetivo es un espacio de convivencia experimental. Los jugadores llevan criaturas de procedencias distintas y observan qué ocurre cuando interactúan libremente. Nadie tiene que formar equipos, competir ni cooperar. Cada jugador lleva un organismo con una historia propia a un entorno donde encontrará otros con historias diferentes, y no se sabe de antemano si se harán amigos, se ignorarán, se temerán o aprenderán algo unos de otros.
+
+Todo esto sigue oculto a los jugadores hasta que el DM decida abrirlo. Hoy la página es solo de administración.
+
+### El espacio
+
+- Un hábitat compartido y persistente.
+- Criaturas de distintos propietarios.
+- Objetos y elementos ambientales comunes.
+- Espacio para explorar, descansar, esconderse y relacionarse.
+- Un registro de acontecimientos que permita ver qué pasó mientras nadie estaba conectado.
+
+### Autoridad sobre las criaturas
+
+Cada jugador solo interviene directamente sobre sus propias criaturas.
+
+| Acción | Sobre las propias | Sobre las ajenas |
+|---|---|---|
+| Premiar | Sí | No |
+| Asustar o dañar | Sí | No |
+| Alimentar directamente | Sí | No |
+| Observar | Sí | Sí |
+| Provocar encuentros | Sí, mediante el entorno | Indirectamente |
+| Retirar del recinto | Sí | No |
+| Reproducción | Según permisos futuros | Requiere autorización |
+
+No poder intervenir sobre una criatura ajena no impide influir en ella de forma indirecta. Se puede premiar a la propia por acercarse a otra, pero no premiar a la otra por responder. Si se desarrolla una relación, será consecuencia de las experiencias de cada una.
+
+### Relaciones entre criaturas de distintos propietarios
+
+Las relaciones no son simétricas ni tienen categorías fijas como amigo, enemigo o pareja. Son conjuntos de recuerdos, asociaciones y preferencias de cada individuo. Casos que se quieren poder observar:
+
+- Reconocimiento. Dos criaturas recuerdan haberse conocido en encuentros anteriores.
+- Preferencias. Una busca a ciertas criaturas y evita a otras.
+- Afinidad desigual. A considera a B una compañera y B apenas le presta atención.
+- Rivalidad. Dos criaturas compiten repetidamente por los mismos recursos.
+- Imitación. Una empieza a usar objetos después de observar a otra.
+- Dependencia. Una se inquieta cuando una compañera habitual abandona el recinto.
+- Rechazo aprendido. Una mala experiencia cambia su conducta hacia un individuo concreto.
+- Amistades inesperadas. Dos criaturas de personalidades aparentemente incompatibles pasan mucho tiempo juntas.
+
+Lo que ya existe y se aprovecha. Cada criatura guarda sus propios vínculos con un afecto por individuo (`vinculos` en `memoria.ts`), así que la asimetría ya es posible, y recuerda avistamientos concretos. El 06 mide la compañía, el 08b el consuelo ligado al vínculo y el 07b muestra que la imitación todavía no existe como aprendizaje.
+
+### Controles del propietario
+
+El comportamiento molesto de una criatura ajena no se elimina artificialmente, porque es parte de lo que se quiere observar. Lo que se garantiza es que el propietario conserva el control sobre la participación de las suyas.
+
+- Retirar su criatura en cualquier momento.
+- Decidir si entra o no en espacios públicos.
+- Consultar su historial de experiencias.
+- Bloquear encuentros con determinados individuos.
+- Los espacios tienen límites de población y condiciones ambientales.
+
+### Etapas
+
+Se empieza ampliando el laboratorio, no con Supabase ni con la interfaz pública.
+
+| Etapa | Objetivo |
+|---|---|
+| 1 | Dos criaturas con genomas, memorias y propietarios distintos en una misma habitación. |
+| 2 | Reconocimiento persistente entre individuos. |
+| 3 | Preferencias y rechazo basados en experiencias individuales. |
+| 4 | Interacciones sociales que produzcan aprendizaje en ambas criaturas. |
+| 5 | Salida y reencuentro. Comprobar si recuerdan su relación después de separarse. |
+| 6 | Trasladar el experimento a un recinto compartido persistente en Supabase. |
+
+Condición técnica. La identidad de una criatura es permanente, esté o no conectado su propietario, y sus recuerdos sobre otras criaturas sobreviven a su salida del recinto. Hoy los identificadores de criatura son números locales de cada sala (1000 + id), así que habrá que darles una identidad global antes de la etapa 6.
+
+Cada etapa llega con su caso en el laboratorio, con control y semillas múltiples, como el resto.
+
 ## Recomendación para la siguiente fase
 
 1. **Aprendizaje por observación.** El 07b separa la facilitación del aprendizaje y dice que hoy solo hay facilitación. Es el siguiente resultado a conseguir antes de añadir criaturas.
 2. **Generalización del consuelo.** Que lo aprendido con una compañera sirva con otra criatura vinculada y con otras formas de angustia. El canal de alivio ya existe para eso.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
-5. Solo después, más criaturas por sala, el hábitat compartido y Supabase.
+5. Después, las etapas 1 a 5 del espacio de convivencia entre propietarios (arriba), empezando por el reconocimiento persistente (etapa 2), que es lo que más reutiliza lo ya medido en los casos 06 y 08b.
+6. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
