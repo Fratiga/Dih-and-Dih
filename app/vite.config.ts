@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 /* El sitio se publica en https://fratiga.github.io/Dih-and-Dih/, no en la raiz del dominio,
    asi que todas las rutas del resultado son relativas (base "./"). El resultado compilado
    (app/dist) se sube al repositorio: GitHub Pages sigue sirviendo la rama main tal cual.
-   Hay una pagina por juego: index.html (Taberna, prueba 2D) y pitter.html (Pitter-Patter).
+   Hay una pagina por juego: index.html (Taberna, prueba 2D), pitter.html (Pitter-Patter) y vida.html (Vida Artificial).
    Ademas hay una pieza sin pagina: fractura-tablero, el mapa de La Fractura en Phaser. La carga
    fractura.html (en la raiz) con una etiqueta de script, asi que su archivo de salida tiene un
    nombre fijo: dist/fractura/tablero.js. */
@@ -18,6 +18,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, "index.html"),
         pitter: resolve(__dirname, "pitter.html"),
+        vida: resolve(__dirname, "vida.html"),
         "fractura-tablero": resolve(__dirname, "src/fractura/tablero.ts"),
       },
       output: {

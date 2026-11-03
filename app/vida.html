@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Pagina escondida: por ahora solo la abre el admin (ver src/vida/main.ts). Para abrirla a todos hay que quitar esa comprobacion. -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vida Artificial — Compendio del Mundo</title>
+  <meta name="description" content="Simulador de criaturas que aprenden de lo que viven: necesidades, memoria y personalidad propias.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="va-raiz" class="va-raiz">
+    <div id="va-juego" class="va-juego"></div>
+    <div id="va-ui" class="va-ui"></div>
+    <div id="va-carga" class="va-carga" role="status">
+      <div class="va-carga-marca">VIDA<b>·</b>ARTIFICIAL</div>
+      <div class="va-carga-barra"><i id="va-carga-relleno"></i></div>
+      <p id="va-carga-texto">Encendiendo las luces…</p>
+    </div>
+    <noscript><p style="color:#fff;padding:2rem">Este juego necesita JavaScript.</p></noscript>
+  </div>
+  <script type="module" src="/src/vida/main.ts"></script>
+</body>
+</html>

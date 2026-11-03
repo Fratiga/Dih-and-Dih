@@ -96,7 +96,7 @@ export class Simulacion {
       const x = this.azar.entre(120, this.mundo.ancho - 120);
       const sobrePeligro = this.mundo.objetos.some((o) => CATALOGO[o.tipo].peligro && o.activo && Math.abs(o.x - x) < CATALOGO[o.tipo].peligro!.ancho / 2 + 30);
       if (sobrePeligro) continue;
-      this.mundo.agregar(cm.tipo, x, { z: 160, vz: 0 });
+      this.mundo.agregar(cm.tipo, x, { z: 560, vz: 0 });
       this.mundo.sonar(x, 0.1);
       return;
     }
@@ -113,6 +113,11 @@ export class Simulacion {
     const seg = Math.max(0, Math.min(segundos, tope));
     const t0 = this.t;
     this.avanzar(seg, AJ.dtFueraDeLinea);
+    return this.resumenDesde(t0, seg, segundos > tope);
+  }
+
+  /** Lo mas importante que le paso a cada criatura desde el instante t0. */
+  resumenDesde(t0: number, segundos: number, recortado: boolean): ResumenFueraDeLinea {
     const criaturas = this.criaturas.map((c) => {
       const sucesos = c.mem.episodios
         .filter((e) => e.t >= t0)
@@ -121,7 +126,7 @@ export class Simulacion {
         .map((e) => ({ texto: e.texto, val: e.val, n: e.n }));
       return { nombre: c.nombre, sucesos, hambre: c.nec[0], salud: c.salud };
     });
-    return { segundos: seg, recortado: segundos > tope, criaturas };
+    return { segundos, recortado, criaturas };
   }
 
   serializar(): EstadoSim {

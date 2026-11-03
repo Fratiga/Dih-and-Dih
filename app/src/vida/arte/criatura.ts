@@ -1,0 +1,469 @@
+/* Dibujo y animacion de la criatura, todo en codigo. Es una criatura de laboratorio: piel palida y translucida, extremidades largas y finas,
+   manos de dedos largos y un cuerpo blando con ojos grandes. Lo tierno y lo inquietante a la vez.
+   La animacion no esta fijada a las acciones: la conducta decide que esta haciendo y aqui se traduce en una postura (agachada, cabeza baja,
+   orejas, ojos, cola...) que se mezcla con suavidad con la anterior, asi un paso, un olfateo y un susto pueden ocurrir a la vez. */
+
+import type { Criatura } from "../nucleo/criatura.ts";
+import type { Genoma } from "../nucleo/genoma.ts";
+import { E, N } from "../nucleo/tipos.ts";
+import { Azar } from "../nucleo/azar.ts";
+import { ESCALA } from "./medidas.ts";
+
+export interface Pose {
+  agacha: number;
+  cabezaBaja: number;
+  orejas: number;
+  ojos: number;
+  boca: number;
+  tembl: number;
+  alcance: number;
+  colaAmp: number;
+  colaVel: number;
+  inclina: number;
+  dormido: number;
+  sonrisa: number;
+}
+
+export interface Vista {
+  pose: Pose;
+  dir: number;
+  fase: number;
+  t: number;
+  parpadeo: number;
+  proxParpadeo: number;
+  golpe: number;
+  mira: [number, number];
+  azar: Azar;
+  vel: number;
+  ultimaVida: number;
+  ultDano: number;
+}
+
+export const lienzoCriatura = { w: 700, h: 600, ox: 320, oy: 530, res: 1.1 };
+
+export function nuevaVista(semilla: number): Vista {
+  return {
+    pose: { agacha: 0, cabezaBaja: 0.1, orejas: 0.6, ojos: 1, boca: 0, tembl: 0, alcance: 0, colaAmp: 0.3, colaVel: 2, inclina: 0, dormido: 0, sonrisa: 0 },
+    dir: 1,
+    fase: 0,
+    t: 0,
+    parpadeo: 0,
+    proxParpadeo: 2,
+    golpe: 0,
+    mira: [0, 0],
+    azar: new Azar(semilla),
+    vel: 0,
+    ultimaVida: 0,
+    ultDano: -99,
+  };
+}
+
+const acota = (x: number, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+
+/** Calcula la postura que la criatura "quiere" tener ahora y la acerca a la actual. */
+export function actualizarVista(v: Vista, c: Criatura, dt: number, mira: [number, number] | null): void {
+  v.t += dt;
+  const e = c.emo;
+  const miedo = e[E.miedo], exc = e[E.excitacion], frus = e[E.frustracion], cur = e[E.curiosidad], ape = e[E.apego];
+  const a = c.accion;
+  const tAcc = a ? c.t - a.tf : 0;
+  const hacer = !!a && a.fase === "hacer";
+  const vel = Math.abs(c.vx) * ESCALA;
+  v.vel += (vel - v.vel) * (1 - Math.exp(-dt * 8));
+
+  const obj: Pose = {
+    agacha: miedo * 0.45,
+    cabezaBaja: 0.1,
+    orejas: acota(0.55 + 0.35 * cur + 0.25 * exc - 1.0 * miedo - 0.35 * frus, -1, 1),
+    ojos: 1 - c.nec[N.sueno] * 0.35,
+    boca: 0,
+    tembl: miedo > 0.45 ? (miedo - 0.45) * 1.8 : 0,
+    alcance: 0,
+    colaAmp: acota(0.25 + 0.4 * exc + 0.2 * ape - 0.3 * miedo, 0.05, 0.8),
+    colaVel: 2 + 9 * exc,
+    inclina: 0,
+    dormido: 0,
+    sonrisa: acota(exc * 0.8 + (1 - c.nec[N.hambre]) * 0.1 - miedo),
+  };
+  if (v.vel > 90) obj.inclina = 0.12 + Math.min(0.1, (v.vel - 90) / 800);
+  if (c.nec[N.dolor] > 0.2) { obj.ojos = Math.min(obj.ojos, 0.7); obj.agacha += c.nec[N.dolor] * 0.25; }
+  if (miedo > 0.4) obj.ojos = 1.15;
+
+  if (c.dormido && a?.v === "dormir") {
+    obj.dormido = 1; obj.agacha = 1; obj.ojos = 0; obj.cabezaBaja = 0.2; obj.orejas = -0.4; obj.colaAmp = 0.05; obj.colaVel = 0.6;
+  } else if (a) {
+    switch (a.v) {
+      case "probar":
+        if (hacer) { obj.cabezaBaja = 1; obj.agacha += 0.15; if (tAcc > 0.4) obj.boca = 0.55 + 0.45 * Math.sin(v.t * 15); }
+        else obj.cabezaBaja = 0.3;
+        break;
+      case "empujar":
+        if (hacer) { const p = Math.max(0, Math.sin(Math.min(1, tAcc / 0.8) * Math.PI)); obj.alcance = p; obj.inclina += 0.12 * p; obj.cabezaBaja = 0.4; }
+        break;
+      case "tocar":
+        if (hacer) { obj.alcance = 0.7 * Math.max(0, Math.sin(Math.min(1, tAcc / 0.9) * Math.PI)); obj.cabezaBaja = 0.35; }
+        break;
+      case "explorar":
+        obj.cabezaBaja = hacer ? 0.85 + 0.1 * Math.sin(v.t * 9) : 0.4 + 0.1 * Math.sin(v.t * 3);
+        obj.orejas = Math.max(obj.orejas, 0.75);
+        break;
+      case "descansar":
+        obj.agacha += 0.55; obj.ojos = Math.min(obj.ojos, 0.55); obj.cabezaBaja = 0.35; obj.colaAmp *= 0.5;
+        break;
+      case "acercarse":
+        obj.orejas = Math.max(obj.orejas, 0.8); obj.cabezaBaja = 0.05;
+        break;
+      case "evitar":
+        obj.agacha += 0.25; obj.orejas = -0.8;
+        break;
+    }
+  }
+  obj.agacha = acota(obj.agacha);
+
+  const k = (rapido: number) => 1 - Math.exp(-dt * rapido);
+  const p = v.pose;
+  p.agacha += (obj.agacha - p.agacha) * k(5);
+  p.cabezaBaja += (obj.cabezaBaja - p.cabezaBaja) * k(7);
+  p.orejas += (obj.orejas - p.orejas) * k(6);
+  p.ojos += (obj.ojos - p.ojos) * k(10);
+  p.boca += (obj.boca - p.boca) * k(20);
+  p.tembl += (obj.tembl - p.tembl) * k(8);
+  p.alcance += (obj.alcance - p.alcance) * k(16);
+  p.colaAmp += (obj.colaAmp - p.colaAmp) * k(3);
+  p.colaVel += (obj.colaVel - p.colaVel) * k(3);
+  p.inclina += (obj.inclina - p.inclina) * k(5);
+  p.dormido += (obj.dormido - p.dormido) * k(3);
+  p.sonrisa += (obj.sonrisa - p.sonrisa) * k(4);
+
+  // Mirada y giro
+  v.dir += (c.dir - v.dir) * k(9);
+  if (mira) { v.mira[0] += (mira[0] - v.mira[0]) * k(8); v.mira[1] += (mira[1] - v.mira[1]) * k(8); } else { v.mira[0] *= 1 - k(4); v.mira[1] *= 1 - k(4); }
+  // Parpadeo
+  v.proxParpadeo -= dt;
+  if (v.proxParpadeo <= 0 && v.parpadeo <= 0) { v.parpadeo = 0.001; v.proxParpadeo = 2 + v.azar.next() * 4; }
+  if (v.parpadeo > 0) { v.parpadeo += dt * 7; if (v.parpadeo >= 1) v.parpadeo = 0; }
+  // Golpe (sobresalto): se detecta cuando acaba de hacerse dano
+  if (c.ultimoDano !== v.ultDano) { v.ultDano = c.ultimoDano; v.golpe = 1; }
+  v.golpe *= Math.exp(-dt * 5);
+  // Fase del paso: avanza segun lo que se recorre
+  const paso = pasoDe(v.vel);
+  if (v.vel > 4) v.fase += (Math.PI * v.vel * dt) / (2 * paso);
+}
+
+const pasoDe = (vel: number): number => acota(20 + vel * 0.14, 20, 58);
+
+/* ---------------- Dibujo ---------------- */
+
+function ik(ax: number, ay: number, bx: number, by: number, l1: number, l2: number, lado: number): [number, number] {
+  let dx = bx - ax, dy = by - ay;
+  let d = Math.hypot(dx, dy);
+  const max = l1 + l2 - 0.5;
+  if (d > max) { dx *= max / d; dy *= max / d; d = max; }
+  if (d < 0.001) d = 0.001;
+  const a = (l1 * l1 - l2 * l2 + d * d) / (2 * d);
+  const h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
+  const mx = ax + (a * dx) / d, my = ay + (a * dy) / d;
+  return [mx - (dy / d) * h * lado, my + (dx / d) * h * lado];
+}
+
+interface Colores {
+  piel: string;
+  pielClara: string;
+  pielOsc: string;
+  lejos: string;
+  linea: string;
+  luz: string;
+  luz2: string;
+  collar: string;
+}
+
+function colores(g: Genoma, huella: number): Colores {
+  const h = g.cuerpo.tono;
+  return {
+    piel: `hsl(${h}, 24%, 74%)`,
+    pielClara: `hsl(${h}, 20%, 86%)`,
+    pielOsc: `hsl(${h}, 26%, 58%)`,
+    lejos: `hsl(${h}, 24%, 44%)`,
+    linea: `hsl(${h}, 40%, 12%)`,
+    luz: `hsl(${(h + 150) % 360}, 90%, 72%)`,
+    luz2: `hsl(${h - 10}, 95%, 70%)`,
+    collar: `hsl(${Math.round(huella * 360)}, 68%, 58%)`,
+  };
+}
+
+function miembro(c: CanvasRenderingContext2D, pts: [number, number][], anchos: number[], relleno: string, linea: string): void {
+  for (const pasada of [0, 1]) {
+    for (let i = 0; i < pts.length - 1; i++) {
+      c.strokeStyle = pasada === 0 ? linea : relleno;
+      c.lineWidth = anchos[i] + (pasada === 0 ? 5 : 0);
+      c.beginPath(); c.moveTo(pts[i][0], pts[i][1]); c.lineTo(pts[i + 1][0], pts[i + 1][1]); c.stroke();
+    }
+  }
+  for (let i = 1; i < pts.length - 1; i++) {
+    c.fillStyle = relleno; c.beginPath(); c.arc(pts[i][0], pts[i][1], anchos[i] * 0.55, 0, Math.PI * 2); c.fill();
+  }
+}
+
+function mano(c: CanvasRenderingContext2D, x: number, y: number, dir: number, largo: number, col: Colores, rizo: number): void {
+  c.lineCap = "round";
+  for (let i = -1; i <= 1; i++) {
+    const a = dir + i * 0.32 + rizo * 0.25;
+    const ex = x + Math.cos(a) * largo * (i === 0 ? 1.1 : 0.92);
+    const ey = y + Math.sin(a) * largo * (i === 0 ? 1.1 : 0.92) + 3;
+    const mx = x + Math.cos(a - 0.2) * largo * 0.55, my = y + Math.sin(a - 0.2) * largo * 0.55;
+    c.strokeStyle = col.linea; c.lineWidth = 8; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(mx, my, ex, ey); c.stroke();
+    c.strokeStyle = col.pielOsc; c.lineWidth = 4.5; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(mx, my, ex, ey); c.stroke();
+  }
+}
+
+function oreja(c: CanvasRenderingContext2D, bx: number, by: number, ang: number, largo: number, col: Colores, t: number, fase: number, lejos: boolean): void {
+  const pts: [number, number][] = [[bx, by]];
+  let a = ang, x = bx, y = by;
+  const n = 6;
+  for (let i = 0; i < n; i++) {
+    a += 0.16 + 0.1 * Math.sin(t * 2 + fase + i * 0.7);
+    x += Math.cos(a) * (largo / n);
+    y += Math.sin(a) * (largo / n);
+    pts.push([x, y]);
+  }
+  c.strokeStyle = col.linea; c.lineWidth = 11; c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.stroke();
+  c.strokeStyle = lejos ? col.lejos : col.pielOsc; c.lineWidth = 6; c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]))); c.stroke();
+  // Barbas, como las de una pluma
+  for (let i = 1; i < pts.length; i++) {
+    const [px_, py_] = pts[i];
+    const ang2 = Math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0]);
+    for (const s of [-1, 1]) {
+      c.strokeStyle = lejos ? col.lejos : col.pielClara; c.lineWidth = 3;
+      const bl = (14 - i * 1.6) * (lejos ? 0.9 : 1);
+      c.beginPath(); c.moveTo(px_, py_); c.lineTo(px_ + Math.cos(ang2 + s * 1.1) * bl, py_ + Math.sin(ang2 + s * 1.1) * bl); c.stroke();
+    }
+  }
+  const [lx, ly] = pts[pts.length - 1];
+  c.fillStyle = col.luz; c.globalAlpha = 0.9; c.beginPath(); c.arc(lx, ly, 4.5, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+}
+
+function ojo(c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, abierto: number, mirada: [number, number], col: Colores, asustado: boolean): void {
+  const h = Math.max(0.06, abierto);
+  if (h <= 0.1) {
+    c.strokeStyle = col.linea; c.lineWidth = 4; c.beginPath(); c.arc(x, y + 2, rx * 0.8, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+    return;
+  }
+  c.fillStyle = "#06121a"; c.beginPath(); c.ellipse(x, y, rx, ry * h, 0, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = col.linea; c.lineWidth = 2.5; c.stroke();
+  // Iris luminoso y pupila que sigue lo que mira
+  const px_ = x + mirada[0] * rx * 0.35, py_ = y + mirada[1] * ry * 0.3;
+  c.fillStyle = col.luz; c.globalAlpha = 0.55; c.beginPath(); c.ellipse(px_, py_, rx * 0.62, ry * h * 0.62, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+  c.fillStyle = "#020608"; c.beginPath(); c.ellipse(px_, py_, rx * (asustado ? 0.2 : 0.36), ry * h * (asustado ? 0.34 : 0.56), 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "rgba(255,255,255,0.92)"; c.beginPath(); c.ellipse(x - rx * 0.28, y - ry * h * 0.3, rx * 0.2, ry * h * 0.2, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "rgba(255,255,255,0.55)"; c.beginPath(); c.arc(x + rx * 0.3, y + ry * h * 0.3, rx * 0.08, 0, Math.PI * 2); c.fill();
+}
+
+/** La cabeza con sus orejas y su collar. Se usa en el cuerpo entero y en el retrato. */
+export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: number, v: Vista, g: Genoma, col: Colores, inclina: number, escalaOjo = 1): void {
+  const p = v.pose;
+  c.save();
+  c.translate(hx, hy);
+  c.rotate(inclina);
+  // Orejas (la de atras mas oscura)
+  const aOreja = -Math.PI / 2 - 0.15 - (1 - p.orejas) * 0.85;
+  const lo = 80 + g.cuerpo.orejas * 60;
+  oreja(c, -26, -30, aOreja - 0.28, lo * 0.92, col, v.t, 1.3, true);
+  oreja(c, -8, -36, aOreja + 0.12, lo, col, v.t, 0, false);
+  // Craneo y hocico
+  const gr = c.createRadialGradient(-12, -14, 6, 0, 0, 62);
+  gr.addColorStop(0, col.pielClara); gr.addColorStop(1, col.piel);
+  c.fillStyle = gr;
+  c.beginPath(); c.moveTo(-44, 0); c.bezierCurveTo(-46, -46, 8, -58, 38, -30); c.bezierCurveTo(70, -20, 78, 12, 52, 28); c.bezierCurveTo(30, 44, -40, 44, -44, 0); c.fill();
+  c.strokeStyle = col.linea; c.lineWidth = 3; c.stroke();
+  // Nariz y boca
+  c.fillStyle = col.linea; c.beginPath(); c.ellipse(66, 2, 5, 4, 0, 0, Math.PI * 2); c.fill();
+  const abre = p.boca * 16;
+  if (abre > 1.5) {
+    c.fillStyle = "#1a0a12"; c.beginPath(); c.ellipse(52, 20 + abre * 0.3, 15, 3 + abre * 0.55, 0.06, 0, Math.PI * 2); c.fill();
+    c.fillStyle = "#e0707f"; c.beginPath(); c.ellipse(52, 21 + abre * 0.45, 8, 2 + abre * 0.2, 0, 0, Math.PI * 2); c.fill();
+  } else {
+    c.strokeStyle = col.linea; c.lineWidth = 3; c.beginPath();
+    const s = p.sonrisa * 6 - (v.pose.tembl > 0.3 ? 3 : 0);
+    c.moveTo(34, 20); c.quadraticCurveTo(48, 24 + s, 62, 17 - s * 0.4); c.stroke();
+  }
+  // Ojos grandes: el de atras un poco mas pequeno
+  const abierto = p.ojos * (v.parpadeo > 0 ? Math.abs(1 - v.parpadeo * 2) : 1);
+  const asust = p.ojos > 1.1;
+  ojo(c, -6, -8, 15 * escalaOjo, 18 * escalaOjo, abierto, v.mira, col, asust);
+  ojo(c, 22, -8, 18 * escalaOjo, 22 * escalaOjo, abierto, v.mira, col, asust);
+  // Mejillas luminosas
+  c.fillStyle = col.luz2; c.globalAlpha = 0.18 + 0.2 * p.sonrisa; c.beginPath(); c.ellipse(34, 18, 12, 6, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+  c.restore();
+}
+
+/** El cuerpo entero, con los pies en (0, 0). */
+export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, huella: number): void {
+  const col = colores(g, huella);
+  const p = v.pose;
+  const t = v.t;
+  const durmiendo = p.dormido;
+  const respira = Math.sin(t * (durmiendo > 0.5 ? 1.6 : 2.4)) * (durmiendo > 0.5 ? 4 : 2.5);
+  const sacudida = p.tembl * Math.sin(t * 52) * 2.5 + v.golpe * Math.sin(t * 40) * 4;
+  const cuerpoY = -188 + p.agacha * 118 + respira * 0.5 - Math.abs(Math.sin(v.fase)) * (v.vel > 4 ? Math.min(6, v.vel * 0.04) : 0);
+  const tam = g.cuerpo.tamano;
+  c.save();
+  c.scale(tam, tam);
+  c.translate(sacudida, 0);
+
+  // Puntos de apoyo del cuerpo
+  const cyC = cuerpoY;
+  const caderaX = -52, hombroX = 56;
+  const caderaY = cyC + 28 - p.agacha * 10;
+  const hombroY = cyC + 22 - p.agacha * 8;
+  const largoA = 86, largoB = 90;
+  const paso = pasoDe(v.vel);
+  const corre = v.vel > 4;
+  const lift = corre ? 18 + Math.min(26, v.vel * 0.1) : 0;
+  const fasePatas = [0, Math.PI, Math.PI, 0]; // trasera lejana, trasera cercana, delantera lejana, delantera cercana
+  const apoyo = (i: number, hx: number): [number, number] => {
+    if (durmiendo > 0.01) {
+      // Patas recogidas bajo el cuerpo
+      return [hx + (i < 2 ? 20 : -10) + (i % 2) * 14, -6 - (i % 2) * 2];
+    }
+    if (!corre) return [hx + (i < 2 ? 6 : -4) + (i % 2 ? 22 : -14), 0];
+    const f = v.fase + fasePatas[i] + (i >= 2 ? Math.PI * 0.5 : 0);
+    const x = hx + paso * Math.cos(f);
+    const y = Math.sin(f) < 0 ? -lift * -Math.sin(f) : 0;
+    return [x, y];
+  };
+  const patas: { pts: [number, number][]; cerca: boolean; delantera: boolean }[] = [];
+  const bases: [number, number, boolean, boolean][] = [[caderaX - 8, caderaY, false, false], [caderaX + 12, caderaY + 4, true, false], [hombroX - 14, hombroY, false, true], [hombroX + 6, hombroY + 3, true, true]];
+  bases.forEach(([bx, by, cerca, delantera], i) => {
+    const hx = bx, hy = by;
+    let [fx, fy] = apoyo(i, hx);
+    if (delantera && cerca && p.alcance > 0.02) {
+      // El brazo cercano se adelanta para empujar o tocar
+      fx = hx + 50 + 70 * p.alcance; fy = -46 - 70 * p.alcance + (1 - p.alcance) * 40;
+    }
+    const [kx, ky] = ik(hx, hy, fx, fy, largoA, largoB, delantera ? -1 : 1);
+    patas.push({ pts: [[hx, hy], [kx, ky], [fx, fy]], cerca, delantera });
+  });
+
+  const dibujarPata = (q: (typeof patas)[number]): void => {
+    const rel = q.cerca ? col.pielOsc : col.lejos;
+    miembro(c, q.pts, q.delantera ? [20, 14] : [24, 15], rel, col.linea);
+    const [fx, fy] = q.pts[2];
+    if (q.delantera) mano(c, fx, fy, q.cerca && p.alcance > 0.2 ? 0.1 : 1.1, 30, col, Math.sin(t * 2 + (q.cerca ? 1 : 0)) * 0.4);
+    else mano(c, fx, fy, 0.15, 20, col, 0);
+  };
+
+  // Cola: una cadena de segmentos que se mueve con las emociones
+  const colaPts: [number, number][] = [[-86, cyC + 8]];
+  let ca = Math.PI * 0.92 + (durmiendo > 0.4 ? -0.9 : 0.35) + (1 - p.colaAmp) * 0.5;
+  let cx_ = -86, cy_ = cyC + 8;
+  for (let i = 0; i < 9; i++) {
+    ca += Math.sin(t * p.colaVel - i * 0.55) * p.colaAmp * 0.18 + (durmiendo > 0.4 ? -0.32 : -0.05);
+    cx_ += Math.cos(ca) * 32; cy_ += Math.sin(ca) * 32;
+    colaPts.push([cx_, Math.min(cy_, -6)]);
+  }
+  for (const pasada of [0, 1]) {
+    for (let i = 0; i < colaPts.length - 1; i++) {
+      c.strokeStyle = pasada === 0 ? col.linea : col.pielOsc;
+      c.lineWidth = (pasada === 0 ? 5 : 0) + 20 - i * 1.7;
+      c.beginPath(); c.moveTo(colaPts[i][0], colaPts[i][1]); c.lineTo(colaPts[i + 1][0], colaPts[i + 1][1]); c.stroke();
+    }
+  }
+  const punta = colaPts[colaPts.length - 1];
+  c.fillStyle = col.luz; c.globalAlpha = 0.25; c.beginPath(); c.arc(punta[0], punta[1], 17, 0, Math.PI * 2); c.fill();
+  c.globalAlpha = 1; c.beginPath(); c.arc(punta[0], punta[1], 7, 0, Math.PI * 2); c.fill();
+
+  // Patas lejanas
+  for (const q of patas) if (!q.cerca) dibujarPata(q);
+
+  // Cuello hacia la cabeza
+  const cuelloX = 66, cuelloY = cyC - 26 + p.agacha * 14;
+  const abajo = p.cabezaBaja;
+  const durm = durmiendo;
+  const hx = durm > 0.5 ? cuelloX + 56 : cuelloX + 40 + 52 * abajo;
+  const hy = durm > 0.5 ? cyC + 26 : cuelloY - 52 + 118 * abajo + p.agacha * 10 + respira * 0.3 - (v.vel > 4 ? Math.abs(Math.sin(v.fase)) * 3 : 0);
+  const mid: [number, number] = [cuelloX + 34, (cuelloY + hy) / 2 - 6];
+  for (const pasada of [0, 1]) {
+    c.strokeStyle = pasada === 0 ? col.linea : col.piel;
+    c.lineWidth = pasada === 0 ? 38 : 31;
+    c.beginPath(); c.moveTo(cuelloX - 10, cuelloY + 24); c.quadraticCurveTo(mid[0], mid[1], hx - 8, hy + 8); c.stroke();
+  }
+
+  // Cuerpo: blando, mas hondo en el pecho que en la grupa
+  const gr = c.createLinearGradient(0, cyC - 60, 0, cyC + 60);
+  gr.addColorStop(0, col.piel); gr.addColorStop(0.6, col.pielClara); gr.addColorStop(1, col.pielClara);
+  c.fillStyle = gr;
+  c.beginPath();
+  c.moveTo(-82, cyC + 6);
+  c.bezierCurveTo(-80, cyC - 54, -20, cyC - 62, 36, cyC - 54);
+  c.bezierCurveTo(88, cyC - 46, 98, cyC + 18, 66, cyC + 46);
+  c.bezierCurveTo(30, cyC + 66, -66, cyC + 58, -82, cyC + 6);
+  c.fill();
+  c.strokeStyle = col.linea; c.lineWidth = 3.5; c.stroke();
+  // Costillas muy suaves
+  c.strokeStyle = "rgba(20,40,50,0.16)"; c.lineWidth = 3;
+  for (let i = 0; i < 5; i++) { c.beginPath(); c.moveTo(-34 + i * 17, cyC + 14); c.quadraticCurveTo(-30 + i * 17, cyC + 38, -22 + i * 17, cyC + 52); c.stroke(); }
+  // Cresta dorsal
+  c.fillStyle = col.pielOsc; c.strokeStyle = col.linea; c.lineWidth = 2;
+  for (let i = 0; i < 9; i++) {
+    const t_ = i / 8;
+    const bx = -70 + t_ * 130, by = cyC - 50 - Math.sin(t_ * Math.PI) * 7 + (t_ > 0.85 ? 8 : 0);
+    const alto = 10 + Math.sin(t_ * Math.PI) * 10;
+    c.beginPath(); c.moveTo(bx - 7, by + 2); c.lineTo(bx + 1, by - alto); c.lineTo(bx + 8, by + 2); c.closePath(); c.fill(); c.stroke();
+  }
+  // Motas luminosas (bioluminiscencia): su numero y sitio salen del genoma
+  const ra = new Azar(Math.floor(huella * 1e6) + 7);
+  const nM = 4 + Math.floor(g.cuerpo.motas * 6);
+  const brillo = 0.55 + 0.25 * Math.sin(t * 2.2) + (p.sonrisa * 0.3);
+  for (let i = 0; i < nM; i++) {
+    const mx = -60 + ra.next() * 120, my = cyC - 38 + ra.next() * 52, mr = 2.5 + ra.next() * 4;
+    c.fillStyle = i % 3 === 0 ? col.luz2 : col.luz;
+    c.globalAlpha = 0.18 * brillo; c.beginPath(); c.arc(mx, my, mr * 2.6, 0, Math.PI * 2); c.fill();
+    c.globalAlpha = Math.min(1, 0.8 * brillo); c.beginPath(); c.arc(mx, my, mr, 0, Math.PI * 2); c.fill();
+  }
+  c.globalAlpha = 1;
+  // Collar: su marca personal
+  c.strokeStyle = col.collar; c.lineWidth = 11;
+  c.beginPath(); c.moveTo(cuelloX - 18, cuelloY + 6); c.quadraticCurveTo(cuelloX - 4, cuelloY + 26, cuelloX + 14, cuelloY + 16); c.stroke();
+  c.strokeStyle = "rgba(255,255,255,0.35)"; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(cuelloX - 16, cuelloY + 2); c.quadraticCurveTo(cuelloX - 4, cuelloY + 20, cuelloX + 10, cuelloY + 11); c.stroke();
+
+  // Patas cercanas
+  for (const q of patas) if (q.cerca) dibujarPata(q);
+
+  // Cabeza (por delante del cuello)
+  dibujarCabeza(c, hx, hy, v, g, col, durm > 0.5 ? 0.35 : p.inclina - abajo * 0.35 + (p.tembl * Math.sin(t * 46) * 0.04), 1);
+  c.restore();
+}
+
+/** Dibuja la criatura entera en un lienzo (con sus pies en el punto de anclaje). */
+export function pintarCriatura(c: CanvasRenderingContext2D, v: Vista, g: Genoma, huella: number): void {
+  const L = lienzoCriatura;
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  c.clearRect(0, 0, L.w * L.res, L.h * L.res);
+  c.save();
+  c.scale(L.res, L.res);
+  c.translate(L.ox, L.oy);
+  c.scale(Math.abs(v.dir) < 0.05 ? 0.05 : v.dir, 1);
+  c.lineJoin = "round"; c.lineCap = "round";
+  dibujarCuerpo(c, v, g, huella);
+  c.restore();
+}
+
+/** El retrato para el panel de la criatura: la cabeza, grande. */
+export function pintarRetrato(cv: HTMLCanvasElement, v: Vista, g: Genoma, huella: number): void {
+  const c = cv.getContext("2d") as CanvasRenderingContext2D;
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  c.clearRect(0, 0, cv.width, cv.height);
+  c.save();
+  c.lineJoin = "round"; c.lineCap = "round";
+  const s = cv.width / 230;
+  c.scale(s, s);
+  c.translate(92, 130);
+  const col = colores(g, huella);
+  // El cuello y el collar asoman por debajo
+  c.strokeStyle = col.linea; c.lineWidth = 46; c.beginPath(); c.moveTo(-30, 120); c.lineTo(-6, 36); c.stroke();
+  c.strokeStyle = col.piel; c.lineWidth = 38; c.beginPath(); c.moveTo(-30, 120); c.lineTo(-6, 36); c.stroke();
+  c.strokeStyle = col.collar; c.lineWidth = 13; c.beginPath(); c.moveTo(-34, 78); c.quadraticCurveTo(-16, 90, 8, 76); c.stroke();
+  dibujarCabeza(c, 0, 0, v, g, col, v.pose.inclina * 0.5, 1.05);
+  c.restore();
+}

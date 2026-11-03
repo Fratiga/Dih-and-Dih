@@ -1,5 +1,5 @@
 /* Los casos de exito de inteligencia artificial del documento de diseno (docs/vida-artificial-diseno.md), como experimentos.
-   Implementados: 01 a 04 (un individuo aprende), 04b (generalizacion), 13 (gemelos) y 05 (partido improvisado, preparado).
+   Implementados: 01 a 04 (un individuo aprende), 04b (generalización), 13 (gemelos) y 05 (partido improvisado, preparado).
    Cada uno usa varias semillas y un control. Los criterios estan escritos para que no se cumplan por casualidad. */
 
 import { C } from "../nucleo/tipos.ts";
@@ -37,7 +37,7 @@ function tiempoHasta(s: Simulacion, c: Criatura, x: number, radio: number, tope:
 export const caso01: Caso = {
   id: "01",
   titulo: "El descubrimiento de la pelota",
-  hipotesis: "Una criatura que nunca vio una pelota descubre que puede empujarla, se divierte y acaba yendo a buscarla por iniciativa propia. Con una bola atornillada (igual de redonda, que no se mueve) el interes se apaga.",
+  hipotesis: "Una criatura que nunca vio una pelota descubre que puede empujarla, se divierte y acaba yendo a buscarla por iniciativa propia. Con una bola atornillada (igual de redonda, que no se mueve) el interés se apaga.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g = genomaDe(semilla);
@@ -54,7 +54,7 @@ export const caso01: Caso = {
     const fija = manip(cB, "bola_fija", 480, 960);
     const aprendido = esperado(cA, "empujar", "pelota", C.diversion);
 
-    // Iniciativa: la pelota esta lejos y fuera de la vista. Quien la vio hace un momento sabe donde esta; quien no, tiene que encontrarla explorando.
+    // Iniciativa: la pelota está lejos y fuera de la vista. Quien la vio hace un momento sabe donde esta; quien no, tiene que encontrarla explorando.
     // Se repite con 5 replicas de cada una (mismo pasado, distinto azar) y se comparan las medianas.
     const bola = A.mundo.objetos.find((o) => o.tipo === "pelota")!;
     A.comedero = null;
@@ -73,7 +73,7 @@ export const caso01: Caso = {
       "la descubre y la empuja (primeros 8 min)": primeros >= 1,
       "sigue jugando con ella (segundos 8 min)": sostenido >= 6,
       "aprende que empujarla divierte": aprendido > 0.3,
-      "con la bola atornillada el interes baja a la mitad o menos": fija <= sostenido * 0.5,
+      "con la bola atornillada el interés baja a la mitad o menos": fija <= sostenido * 0.5,
       "va a buscarla sin verla (<= 90 s) y antes que quien no la conoce": tL <= 90 && tL < tN,
     }, { empujones_1: primeros, empujones_2: sostenido, empujones_bola_fija: fija, esperaDiversion: aprendido, tBusca: tL, tBuscaSinExperiencia: tN }, cA, 960, { "diversion esperada de empujar": curva });
   },
@@ -83,8 +83,8 @@ export const caso01: Caso = {
 
 export const caso02: Caso = {
   id: "02",
-  titulo: "La asociacion del alimento",
-  hipotesis: "Una criatura hambrienta prueba un alimento nuevo, aprende que quita el hambre y despues lo busca aunque no lo vea ni lo huela. Quien nunca lo ha probado tarda mas en encontrarlo.",
+  titulo: "La asociación del alimento",
+  hipotesis: "Una criatura hambrienta prueba un alimento nuevo, aprende que quita el hambre y después lo busca aunque no lo vea ni lo huela. Quien nunca lo ha probado tarda más en encontrarlo.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g = genomaDe(semilla);
@@ -95,7 +95,7 @@ export const caso02: Caso = {
     const bocados = impactos(c, "probar", "fruta");
     const sacia = esperado(c, "probar", "fruta", C.sacia);
 
-    // Mas tarde: vuelve a tener hambre. La fruta esta al fondo, donde la vio hace un momento, lejos y sin que la huela
+    // Mas tarde: vuelve a tener hambre. La fruta esta al fondo, dónde la vio hace un momento, lejos y sin que la huela
     for (const o of [...S.mundo.objetos]) S.mundo.quitar(o.id);
     S.avanzar(30);
     S.mundo.agregar("fruta", 1420);
@@ -129,7 +129,7 @@ export const caso02: Caso = {
       "prueba el alimento nuevo (4 min)": bocados >= 1,
       "aprende que quita el hambre": sacia > 0.25,
       "lo busca sin verlo y lo encuentra en <= 90 s": tL <= 90,
-      "lo encuentra antes que quien nunca lo probo": tL < tN,
+      "lo encuentra antes que quien nunca lo probó": tL < tN,
       "si algo le sienta mal, lo aprende (o no lo prueba)": aprendeBaya,
     }, { bocados, sacia, tBusca: tL, tBuscaSinExperiencia: tN, malaBaya }, c, 240);
   },
@@ -139,8 +139,8 @@ export const caso02: Caso = {
 
 export const caso03: Caso = {
   id: "03",
-  titulo: "La maquina accidental",
-  hipotesis: "Una palanca suelta un granulo de comida poco despues de tocarla. La criatura descubre sin instrucciones que tocarla trae comida y repite la accion cuando la necesita. Con una palanca estropeada (se mueve y suena, pero no suelta nada) eso no ocurre.",
+  titulo: "La máquina accidental",
+  hipotesis: "Una palanca suelta un granulo de comida poco después de tocarla. La criatura descubre sin instrucciones que tocarla trae comida y repite la accion cuando la necesita. Con una palanca estropeada (se mueve y suena, pero no suelta nada) eso no ocurre.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g = genomaDe(semilla);
@@ -184,7 +184,7 @@ const ZONA = 200;
 export const caso04: Caso = {
   id: "04",
   titulo: "El recuerdo del peligro",
-  hipotesis: "Una criatura que sufre descargas en una placa evita despues esa zona aunque la placa ya no este, y tambien la placa si vuelve a aparecer apagada. Quien pisa una placa que no descarga no la evita.",
+  hipotesis: "Una criatura que sufre descargas en una placa evita después esa zona aunque la placa ya no esté, y también la placa si vuelve a aparecer apagada. Quien pisa una placa que no descarga no la evita.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g = genomaDe(semilla);
@@ -226,8 +226,8 @@ export const caso04: Caso = {
 
 export const caso04b: Caso = {
   id: "04b",
-  titulo: "Generalizacion del peligro",
-  hipotesis: "Una criatura que recibio una descarga de un foco rojo evita despues otro foco rojo que nunca toco, pero no uno azul. Quien no recibio la descarga no tiene esa preferencia.",
+  titulo: "Generalización del peligro",
+  hipotesis: "Una criatura que recibió una descarga de un foco rojo evita después otro foco rojo que nunca tocó, pero no uno azul. Quien no recibió la descarga no tiene esa preferencia.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g = genomaDe(semilla);
@@ -262,9 +262,9 @@ export const caso04b: Caso = {
     const sAzul = semejanza(rasgosDe("foco_rojo"), rasgosDe("foco_azul"), UNOS);
     return resultado(semilla, {
       "recibe la descarga del foco rojo": T.tocado,
-      "se parece mas al rojo que al azul (comprobacion de la prueba)": sRojo > sAzul * 20,
+      "se parece más al rojo que al azul (comprobación de la prueba)": sRojo > sAzul * 20,
       "pasa menos tiempo junto al foco rojo nuevo que junto al azul": T.parteRojo <= 0.45,
-      "mas que quien no recibio la descarga": T.parteRojo < K.parteRojo - 0.1,
+      "más que quien no recibió la descarga": T.parteRojo < K.parteRojo - 0.1,
     }, { parteRojoTratada: T.parteRojo, parteRojoControl: K.parteRojo }, T.c, 860);
   },
 };
@@ -274,7 +274,7 @@ export const caso04b: Caso = {
 /** Pruebas de conducta iguales para todos: se coloca a la criatura (con lo que ha vivido) ante una eleccion y se ve que hace.
     Cada prueba se repite 16 veces con distinto azar, asi el resultado es una probabilidad y no un golpe de suerte.
       1. Entre una pelota y una palanca, con que juega primero.
-      2. Entre un foco rojo y uno azul (ninguno descarga), junto a cual pasa mas tiempo.
+      2. Entre un foco rojo y uno azul (ninguno descarga), junto a cual pasa más tiempo.
       3. Con una placa apagada en el suelo, cuanto se mantiene lejos de ella. */
 export function perfil(c: Criatura, semilla: number, variante: number): number[] {
   const REPS = 16;
@@ -325,7 +325,7 @@ const dist = (a: number[], b: number[]) => Math.sqrt(a.reduce((s, x, i) => s + (
 export const caso13: Caso = {
   id: "13",
   titulo: "Los gemelos",
-  hipotesis: "Dos criaturas con el mismo genoma, criadas en habitaciones distintas, acaban comportandose distinto y esa diferencia se explica por lo que vivieron. Dos gemelos criados igual se parecen mucho mas entre si.",
+  hipotesis: "Dos criaturas con el mismo genoma, criadas en habitaciones distintas, acaban comportándose distinto y esa diferencia se explica por lo que vivieron. Dos gemelos criados igual se parecen mucho más entre sí.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g = genomaDe(semilla, 13);
@@ -354,7 +354,7 @@ export const caso13: Caso = {
     return resultado(semilla, {
       "mismo genoma y mismos pesos de nacimiento": mismoGenoma && JSON.stringify(A.red.estado().semilla) === JSON.stringify(B.red.estado().semilla),
       "sus conductas se separan claramente (distancia > 0.5)": dAB > 0.5,
-      "mas que dos gemelos criados igual (el doble o mas)": dAB > dAA * 2,
+      "más que dos gemelos criados igual (el doble o mas)": dAB > dAA * 2,
       "sus rasgos de caracter ya no son iguales": miedoDif > 0.02 || Math.abs(A.rasgos[0] - B.rasgos[0]) > 0.02,
       "la diferencia se explica por su historia (memoria)": explica,
     }, { distanciaGemelos: dAB, distanciaMismaCrianza: dAA, miedoDif }, A, 1500);
@@ -370,7 +370,7 @@ function empujones(cs: { id: number; registro: Registro[] }[], desde: number): {
   return out.sort((a, b) => a.t - b.t);
 }
 
-/** Cuantas veces el empujon lo da una criatura distinta a la anterior, poco despues (turnos), y la racha mas larga. */
+/** Cuantas veces el empujon lo da una criatura distinta a la anterior, poco después (turnos), y la racha mas larga. */
 export function turnos(seq: { t: number; id: number }[], ventana = 8): { alternan: number; pares: number; racha: number } {
   let alternan = 0;
   let pares = 0;
@@ -384,7 +384,7 @@ export function turnos(seq: { t: number; id: number }[], ventana = 8): { alterna
   return { alternan, pares, racha: mejor };
 }
 
-/** Cuanto se responden: cuantas veces un empujon de una cae poco despues de uno de la otra. */
+/** Cuanto se responden: cuantas veces un empujon de una cae poco después de uno de la otra. */
 function respuestas(a: number[], b: number[], ventana: number): number {
   let n = 0;
   for (const x of a) for (const y of b) if (Math.abs(x - y) <= ventana && x !== y) n++;
@@ -413,7 +413,7 @@ export function casualidad(seq: { t: number; id: number }[], t0: number, t1: num
 export const caso05: Caso = {
   id: "05",
   titulo: "El partido improvisado",
-  hipotesis: "Dos criaturas, una pelota y ninguna orden de jugar juntas. Se pasan la pelota con mas turnos alternados de los que daria el azar, y eso desaparece si cada una juega con su pelota, sin posibilidad de responder a la otra.",
+  hipotesis: "Dos criaturas, una pelota y ninguna orden de jugar juntas. Se pasan la pelota con más turnos alternados de los que daria el azar, y eso desaparece si cada una juega con su pelota, sin posibilidad de responder a la otra.",
   minimo: 0.8,
   ejecutar(semilla) {
     const g1 = genomaDe(semilla, 51);
@@ -433,7 +433,7 @@ export const caso05: Caso = {
     const zC = azC.z;
     return resultado(semilla, {
       "ambas juegan con la pelota (>= 8 empujones cada una)": [1, 2].every((id) => seq.filter((s) => s.id === id).length >= 8),
-      "mas turnos alternados que el azar (z > 2)": z > 2,
+      "más turnos alternados que el azar (z > 2)": z > 2,
       "hay rachas de al menos 3 turnos seguidos": T.racha >= 3,
       "sin posibilidad de responder, no pasa (z < 2)": zC < 2,
     }, { empujones: seq.length, alternan: T.alternan, pares: T.pares, racha: T.racha, z, zControl: zC }, juntas.criaturas[0], 1500);
