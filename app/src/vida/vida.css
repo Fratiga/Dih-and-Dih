@@ -248,3 +248,5 @@ button { font: inherit; color: inherit; }
 .va-interruptor::after { content: ""; position: absolute; top: 1px; left: 1px; width: 10px; height: 10px; border-radius: 50%; background: var(--apagado); transition: transform 0.15s, background 0.15s; }
 .va-toggle.activa .va-interruptor { background: #0b3a42; border-color: var(--cian); }
 .va-toggle.activa .va-interruptor::after { transform: translateX(12px); background: var(--cian); }
+
+.va-toggle.alerta { color: var(--coral); border-color: #7a3a36; }

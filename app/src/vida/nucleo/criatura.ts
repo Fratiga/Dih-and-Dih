@@ -10,7 +10,7 @@ import type { Genoma } from "./genoma.ts";
 import { Memoria, articulo, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
-import { C, D, DIA, E, N, NC, R, VERBOS, type Percepto, type Res, type Verbo } from "./tipos.ts";
+import { C, D, DIA, E, N, NC, R, TIEMPO_TENDIDA, VERBOS, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
 export interface Entorno {
   mundo: Mundo;
@@ -83,6 +83,10 @@ export interface EstadoCriatura {
   fallos: Record<string, number>;
   ultimoDano: number;
   vivo: boolean;
+  incap: number;
+  causa: string;
+  mortalidad: Mortalidad;
+  padres: number[];
   espera: number;
   proxDecision: number;
   forzar: boolean;
@@ -90,6 +94,7 @@ export interface EstadoCriatura {
   expuesto: Record<number, number>;
   atencion: Atencion | null;
   ultimoImpacto: Atencion | null;
+  ayuda: { quien: number; t: number } | null;
 }
 
 /** Lo que otra criatura acaba de hacer con algo, visto desde aqui. */
@@ -137,11 +142,18 @@ export class Criatura {
   atencion: Atencion | null = null;
   /** Lo ultimo que hizo yo con un objeto, para que lo vean los demas. */
   ultimoImpacto: Atencion | null = null;
+  /** La ultima criatura que vio hacerse dano (para acercarse a ella si le importa). */
+  ayuda: { quien: number; t: number } | null = null;
   registro: Registro[] = [];
   capRegistro = 600;
   t = 0;
-  /** Que mortalidad hay: "protegida" no deja que la salud baje de un minimo. */
-  protegida = true;
+  /** Que pasa cuando la salud llega a cero (ver Mortalidad). */
+  mortalidad: Mortalidad = "protegida";
+  /** Instante en que quedo tendida sin fuerzas (-1 si no lo esta). Solo en la mortalidad recuperable. */
+  incap = -1;
+  causa = "";
+  /** De quien nacio (vacio si nacio del laboratorio). */
+  padres: number[] = [];
   /** Ultimo vistazo a lo que penso al decidir, para mostrarlo. */
   ultimaDecision: { v: Verbo; tipo: string; u: number }[] = [];
 
@@ -167,6 +179,12 @@ export class Criatura {
     if (!this.vivo) return;
     this.necesidades(env, dt);
     this.emociones(dt);
+    if (!this.vivo) return;
+    // Tendida: no decide ni se mueve, solo espera a que la cuiden
+    if (this.incap >= 0) {
+      this.accion = null; this.vx = 0; this.percibidos = []; this.dormido = false;
+      return;
+    }
     this.acumOlvido += dt;
     if (this.acumOlvido >= 5) {
       this.mem.olvidar(this.acumOlvido);
@@ -222,8 +240,40 @@ export class Criatura {
     } else n[N.soledad] = 0;
     if (n[N.hambre] > 0.95) this.salud -= AJ.saludHambre * dt;
     else if (n[N.dolor] < 0.2) this.salud += AJ.saludCura * dt;
-    this.salud = acota(this.salud, this.protegida ? 0.08 : 0, 1);
-    if (this.salud <= 0) { this.vivo = false; this.accion = null; this.mem.anotar(env.t, "muerte", "Murió.", -1); }
+    const causa = n[N.hambre] > 0.9 ? "de hambre" : "por el daño que sufrió";
+    this.salud = acota(this.salud, this.mortalidad === "protegida" ? 0.08 : this.incap >= 0 ? 0.01 : 0, 1);
+    if (this.salud <= 0) {
+      if (this.mortalidad === "recuperable" && this.incap < 0) {
+        this.incap = env.t;
+        this.salud = 0.02;
+        this.accion = null;
+        this.dormido = false;
+        this.mem.anotar(env.t, "tendida", "Cayó al suelo sin fuerzas.", -0.9);
+      } else this.morir(env, causa);
+    }
+    // Tendida demasiado tiempo sin que nadie la cuide
+    if (this.incap >= 0 && env.t - this.incap > TIEMPO_TENDIDA) this.morir(env, `${causa}, sin que nadie la cuidara`);
+  }
+
+  private morir(env: Entorno, causa: string): void {
+    if (!this.vivo) return;
+    this.vivo = false;
+    this.accion = null;
+    this.incap = -1;
+    this.causa = causa;
+    this.mem.anotar(env.t, "muerte", `Murió ${causa}.`, -1);
+  }
+
+  /** Se la reanima con cuidados: vuelve a ponerse en pie con algo de fuerzas. Devuelve si estaba tendida. */
+  reanimar(env: Entorno): boolean {
+    if (!this.vivo || this.incap < 0) return false;
+    this.incap = -1;
+    this.salud = 0.35;
+    this.nec[N.dolor] = 0;
+    this.nec[N.hambre] = Math.min(this.nec[N.hambre], 0.75);
+    this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.5);
+    this.mem.anotar(env.t, "reanimada", "Se recuperó gracias a los cuidados.", 0.8);
+    return true;
   }
 
   private emociones(dt: number): void {
@@ -368,7 +418,14 @@ export class Criatura {
       y lo que le vio hacer (y el resultado que se ve) le deja un recuerdo suave de que eso entretiene. */
   private mirarAOtros(env: Entorno): void {
     for (const o of env.criaturas) {
-      if (o === this || !o.vivo || !o.ultimoImpacto) continue;
+      if (o === this || !o.vivo) continue;
+      // Si otra criatura acaba de hacerse dano y esta a la vista, lo nota (el contagio del susto depende de su sensibilidad)
+      if (env.t - o.ultimoDano < 1.5 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3 && (!this.ayuda || this.ayuda.quien !== o.id || env.t - this.ayuda.t > 3)) {
+        this.ayuda = { quien: o.id, t: env.t };
+        this.emo[E.miedo] = acota(this.emo[E.miedo] + 0.06 + 0.1 * this.rasgos[R.sensibilidad]);
+        this.forzar = true;
+      }
+      if (!o.ultimoImpacto) continue;
       const u = o.ultimoImpacto;
       if (u.t <= (this.atencion?.t ?? -1) || env.t - u.t > 1) continue;
       if (Math.abs(o.x - this.x) > AJ.vista * this.genoma.vista * 1.3) continue;
@@ -500,6 +557,7 @@ export class Criatura {
 
   /** Recompensa: lo ultimo que hizo se vuelve mas atractivo. */
   recompensar(env: Entorno, nivel = 0.6): void {
+    if (this.reanimar(env)) return;
     const ult = this.accionReciente(env);
     this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.6);
     this.nec[N.soledad] = acota(this.nec[N.soledad] - 0.2);
@@ -550,8 +608,8 @@ export class Criatura {
       JSON.stringify({
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
-        dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto,
+        dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -574,6 +632,10 @@ export class Criatura {
     c.fallos = { ...e.fallos };
     c.ultimoDano = e.ultimoDano;
     c.vivo = e.vivo;
+    c.incap = e.incap ?? -1;
+    c.causa = e.causa ?? "";
+    c.mortalidad = e.mortalidad ?? "protegida";
+    c.padres = e.padres ? e.padres.slice() : [];
     c.espera = e.espera;
     c.proxDecision = e.proxDecision;
     c.forzar = e.forzar;
@@ -581,6 +643,7 @@ export class Criatura {
     c.expuesto = { ...e.expuesto };
     c.atencion = e.atencion ? { ...e.atencion } : null;
     c.ultimoImpacto = e.ultimoImpacto ? { ...e.ultimoImpacto } : null;
+    c.ayuda = e.ayuda ? { ...e.ayuda } : null;
     return c;
   }
 }

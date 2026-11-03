@@ -91,12 +91,57 @@ class Sonido {
     ciclo(3, 9, () => this.gota());
     ciclo(9, 22, () => this.pitido());
     ciclo(5, 14, () => this.borboteo());
+    this.musicaAmbiental();
   }
+
+  /** Musica ambiental generada: acordes lentos y suaves sobre una escala pentatonica menor. Cada acorde nace y se apaga despacio. */
+  private musicaAmbiental(): void {
+    const c = this.ctx!;
+    const escala = [110, 130.81, 146.83, 164.81, 196, 220, 261.63, 293.66, 329.63];
+    let paso = 0;
+    const acorde = (): void => {
+      if (!this.activo || !this.ambiente) return;
+      const t0 = c.currentTime + 0.05;
+      const dur = 9 + Math.random() * 4;
+      // Tres notas de la escala, con una tonica que cambia poco a poco
+      const base = (paso++ * 2 + Math.floor(Math.random() * 3)) % (escala.length - 4);
+      const notas = [escala[base], escala[base + 2], escala[base + 4]];
+      const filtro = c.createBiquadFilter();
+      filtro.type = "lowpass";
+      filtro.frequency.value = 700 + this.brillo * 500;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.045, t0 + dur * 0.4);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      filtro.connect(g);
+      g.connect(this.ambiente);
+      if (this.eco) { const ge = c.createGain(); ge.gain.value = 0.35; g.connect(ge); ge.connect(this.eco); }
+      notas.forEach((f, i) => {
+        for (const desafina of [-3, 3]) {
+          const o = c.createOscillator();
+          o.type = i === 0 ? "triangle" : "sine";
+          o.frequency.value = f * (i === 2 ? 2 : 1);
+          o.detune.value = desafina + (Math.random() - 0.5) * 4;
+          const og = c.createGain();
+          og.gain.value = i === 0 ? 0.6 : 0.35;
+          o.connect(og); og.connect(filtro);
+          o.start(t0);
+          o.stop(t0 + dur + 0.1);
+        }
+      });
+      const t = window.setTimeout(acorde, (dur * 0.7 + Math.random() * 3) * 1000);
+      this.timers.push(t);
+    };
+    acorde();
+  }
+
+  private brillo = 1;
 
   /** De noche el ambiente se vuelve mas sordo. `noche` va de 0 a 1. */
   noche(n: number): void {
     if (!this.ctx || !this.filtroAmb) return;
     this.filtroAmb.frequency.setTargetAtTime(220 - 90 * n, this.ctx.currentTime, 2);
+    this.brillo = 1 - 0.7 * n;
   }
 
   /* --- Piezas basicas --- */

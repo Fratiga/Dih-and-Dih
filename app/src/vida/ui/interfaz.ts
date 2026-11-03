@@ -136,6 +136,7 @@ export class Interfaz {
     this.radar = h("canvas", { clase: "va-radar", width: 440, height: 380 });
     const acciones = h("div", { clase: "va-acciones" },
       boton("Premiar", () => this.premiar(), { clase: "va-btn-lleno", tip: "Premiar|Una caricia: lo último que hizo se le vuelve más agradable. Tecla A." }),
+      boton("Criar", () => { const e = this.juego.criar(); if (e) aviso(this.raiz, e, 2400); }, { clase: "va-btn-ico", tip: "Criar|Con la criatura elegida y la más cercana nace una cría. Hereda predisposiciones mezcladas de las dos, con alguna mutación pequeña, y empieza sin recuerdos." }),
       boton("Asustar", () => this.asustar(), { clase: "va-btn-alerta", tip: "Asustar|Un susto: lo último que hizo se le vuelve más desagradable. Tecla S." }),
     );
     this.ficha = h("aside", { clase: "va-panel va-ficha" },
@@ -153,7 +154,7 @@ export class Interfaz {
 
     /* --- Memoria --- */
     const pestanas = h("div", { clase: "va-pestanas" });
-    for (const [id, txt] of [["historia", "Historia"], ["sabe", "Lo que sabe"], ["conducta", "Conducta"]] as const) {
+    for (const [id, txt] of [["historia", "Historia"], ["sabe", "Lo que sabe"], ["conducta", "Conducta"], ["legado", "Legado"]] as const) {
       const b = boton(txt, () => { this.pestana = id; this.clavesMem = ""; pestanas.querySelectorAll("button").forEach((q) => q.classList.toggle("activa", q === b)); this.refrescarMemoria(true); }, { clase: id === "historia" ? "va-pest activa" : "va-pest" });
       pestanas.append(b);
     }
@@ -177,7 +178,15 @@ export class Interfaz {
     };
     pintarToggle();
     j.on("comedero", pintarToggle);
-    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero);
+    const toggleMort = boton("", () => { j.alternarMortalidad(); }, { clase: "va-toggle", tip: "Mortalidad|Protegida: nunca muere. Recuperable: si se agota cae al suelo y una caricia (A) la reanima antes de 4 minutos. Permanente: muere y queda su legado." });
+    const pintarMort = (): void => {
+      toggleMort.replaceChildren(`Mortalidad: ${j.sim.mortalidad}`);
+      toggleMort.classList.toggle("alerta", j.sim.mortalidad === "permanente");
+    };
+    pintarMort();
+    j.on("mortalidad", pintarMort);
+    j.on("nacimiento", (id) => { aviso(this.raiz, `Ha nacido ${this.juego.sim.criatura(id as number)?.nombre ?? "una cría"}.`, 2200); this.clavesMem = ""; });
+    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort);
     pie.prepend(cab);
     this.pie = pie;
 
@@ -372,7 +381,8 @@ export class Interfaz {
 
   /** Describe en una frase lo que la criatura esta haciendo, con lo que necesita. */
   private fraseEstado(c: Criatura): string {
-    if (!c.vivo) return "Ha muerto.";
+    if (!c.vivo) return `Murió ${c.causa || "de causas naturales"}.`;
+    if (c.incap >= 0) return "Está en el suelo, sin fuerzas. Una caricia puede reanimarla.";
     const a = c.accion;
     const partes: string[] = [];
     if (c.nec[N.dolor] > 0.5) partes.push("Le duele");
@@ -442,7 +452,7 @@ export class Interfaz {
     const m = c.mem;
     let clave: string;
     if (this.pestana === "historia") clave = `h${c.id}|${m.episodios.length}|${m.episodios[m.episodios.length - 1]?.t ?? 0}`;
-    else clave = `${this.pestana}${c.id}|${Math.floor(this.tick / 8)}`;
+    else clave = `${this.pestana}${c.id}|${Math.floor(this.tick / 8)}|${this.juego.sim.legado.length}`;
     if (clave === this.clavesMem && !forzar) return;
     this.clavesMem = clave;
     const lista = h("div", { clase: "va-lista" });
@@ -454,6 +464,15 @@ export class Interfaz {
         lista.append(h("div", { clase: `va-ep ${e.val > 0.15 ? "bueno" : e.val < -0.15 ? "malo" : ""}` },
           h("span", { clase: "va-ep-hora" }, `Día ${r.dia} · ${r.hora}`),
           h("p", {}, e.texto, e.n > 1 ? h("b", {}, ` ×${e.n}`) : null)));
+      }
+    } else if (this.pestana === "legado") {
+      const leg = this.juego.sim.legado;
+      if (!leg.length) lista.append(h("p", { clase: "va-vacio" }, "Todavía no ha muerto nadie. Con la mortalidad permanente, o si una criatura tendida no recibe cuidados, aquí queda lo que dejó."));
+      for (const l of leg.slice().reverse()) {
+        lista.append(h("div", { clase: "va-ep malo" },
+          h("span", { clase: "va-ep-hora" }, `Día ${l.dia} · vivió ${l.edadDias} ${l.edadDias === 1 ? "día" : "días"}`),
+          h("p", {}, `${l.nombre} murió ${l.causa}.`),
+          ...l.episodios.slice(0, 3).map((t) => h("p", { style: "color:var(--hueso-2);font-size:14px" }, t))));
       }
     } else if (this.pestana === "sabe") {
       const as = m.asociacionesLegibles().slice(0, 14);

@@ -39,6 +39,8 @@ export interface Vista {
   vel: number;
   ultimaVida: number;
   ultDano: number;
+  /** 0 recien nacida, 1 adulta: las crias son mas pequenas. */
+  crece: number;
   /** Color de la lucecita del collar: azul asustado, rojo frustrado, verde contento, ambar curioso. */
   animo: string;
 }
@@ -60,6 +62,7 @@ export function nuevaVista(semilla: number): Vista {
     ultimaVida: 0,
     ultDano: -99,
     animo: "#46d9e8",
+    crece: 1,
   };
 }
 
@@ -95,7 +98,11 @@ export function actualizarVista(v: Vista, c: Criatura, dt: number, mira: [number
   if (c.nec[N.dolor] > 0.2) { obj.ojos = Math.min(obj.ojos, 0.7); obj.agacha += c.nec[N.dolor] * 0.25; }
   if (miedo > 0.4) obj.ojos = 1.15;
 
-  if (c.dormido && a?.v === "dormir") {
+  v.crece = 0.62 + 0.38 * Math.min(1, c.edad / (1.5 * 1800));
+  if (!c.vivo || c.incap >= 0) {
+    // Tendida (con un resto de fuerzas) o muerta: en el suelo, sin moverse
+    obj.dormido = 1; obj.agacha = 1; obj.ojos = c.vivo ? 0.28 : 0; obj.cabezaBaja = 0.2; obj.orejas = -0.8; obj.colaAmp = 0.02; obj.colaVel = 0.3; obj.tembl = c.vivo ? 0.35 : 0; obj.sonrisa = 0;
+  } else if (c.dormido && a?.v === "dormir") {
     obj.dormido = 1; obj.agacha = 1; obj.ojos = 0; obj.cabezaBaja = 0.2; obj.orejas = -0.4; obj.colaAmp = 0.05; obj.colaVel = 0.6;
   } else if (a) {
     switch (a.v) {
@@ -341,7 +348,7 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const respira = Math.sin(t * (durmiendo > 0.5 ? 1.6 : 2.4)) * (durmiendo > 0.5 ? 4 : 2.5);
   const sacudida = p.tembl * Math.sin(t * 52) * 2.5 + v.golpe * Math.sin(t * 40) * 4;
   const cuerpoY = -188 - (cuerpoDe(g).longitudPata - 1) * 160 + p.agacha * 118 + respira * 0.5 - Math.abs(Math.sin(v.fase)) * (v.vel > 4 ? Math.min(6, v.vel * 0.04) : 0);
-  const tam = g.cuerpo.tamano;
+  const tam = g.cuerpo.tamano * v.crece;
   c.save();
   c.scale(tam, tam);
   c.translate(sacudida, 0);

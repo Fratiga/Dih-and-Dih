@@ -54,3 +54,9 @@ export interface Resultado {
   /** Si la cosa respondio de alguna manera (se movio, se activo, se comio). */
   efecto: boolean;
 }
+
+/** Que pasa cuando la salud llega a cero. Protegida: no baja de un minimo. Recuperable: queda tendida y puede reanimarse con cuidados. Permanente: muere. */
+export type Mortalidad = "protegida" | "recuperable" | "permanente";
+export const MORTALIDADES: readonly Mortalidad[] = ["protegida", "recuperable", "permanente"];
+/** Segundos que una criatura tendida aguanta sin que nadie la cuide. */
+export const TIEMPO_TENDIDA = 240;

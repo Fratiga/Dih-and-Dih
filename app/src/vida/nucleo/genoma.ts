@@ -74,3 +74,48 @@ export function genomaNuevo(semilla: number, linaje = "L"): Genoma {
 export function clonarGenoma(g: Genoma): Genoma {
   return JSON.parse(JSON.stringify(g)) as Genoma;
 }
+
+const limita = (x: number, a: number, b: number): number => Math.max(a, Math.min(b, x));
+
+/** Un gen numerico del hijo: sale de uno de los padres, o de una mezcla de los dos, y a veces cambia un poco. */
+function gen(r: Azar, a: number, b: number, lo: number, hi: number, mut = 0.04): number {
+  const u = r.next();
+  let v = u < 0.4 ? a : u < 0.8 ? b : (a + b) / 2;
+  if (r.next() < 0.2) v += r.gauss() * mut * (hi - lo);
+  return limita(v, lo, hi);
+}
+
+/** El hijo de dos genomas: hereda predisposiciones (no recuerdos: eso lo vive cada uno), con mutaciones pequenas.
+    Ningun gen sale de su rango, asi que las generaciones no se vuelven simplemente mas fuertes. */
+export function cruzar(a: Genoma, b: Genoma, semilla: number): Genoma {
+  const r = new Azar(semilla);
+  const ca = cuerpoDe(a), cb = cuerpoDe(b);
+  return {
+    linaje: `${a.linaje.split("+")[0]}+${b.linaje.split("+")[0]}`,
+    rasgos: a.rasgos.map((x, i) => gen(r, x, b.rasgos[i], 0.05, 0.95, 0.12)),
+    semillaCerebro: Math.floor(r.next() * 4294967296),
+    plasticidad: gen(r, a.plasticidad, b.plasticidad, 0.6, 1.5),
+    memoria: gen(r, a.memoria, b.memoria, 0.6, 1.6),
+    metabolismo: gen(r, a.metabolismo, b.metabolismo, 0.7, 1.4),
+    vista: gen(r, a.vista, b.vista, 0.7, 1.4),
+    olfato: gen(r, a.olfato, b.olfato, 0.7, 1.4),
+    oido: gen(r, a.oido, b.oido, 0.7, 1.4),
+    fuerza: gen(r, a.fuerza, b.fuerza, 0.7, 1.4),
+    velocidad: gen(r, a.velocidad, b.velocidad, 0.7, 1.4),
+    priorOlor: gen(r, a.priorOlor, b.priorOlor, 0.05, 0.35),
+    cuerpo: {
+      tono: gen(r, ca.tono, cb.tono, 100, 280, 0.1),
+      tamano: gen(r, ca.tamano, cb.tamano, 0.8, 1.2),
+      orejas: gen(r, ca.orejas, cb.orejas, 0, 1, 0.12),
+      cola: gen(r, ca.cola, cb.cola, 0, 1, 0.12),
+      patas: gen(r, ca.patas, cb.patas, 0.3, 1),
+      ojos: gen(r, ca.ojos, cb.ojos, 0.4, 1),
+      motas: gen(r, ca.motas, cb.motas, 0, 1, 0.12),
+      longitudPata: gen(r, ca.longitudPata, cb.longitudPata, 0.8, 1.3),
+      grosorPata: gen(r, ca.grosorPata, cb.grosorPata, 0.85, 1.3),
+      caidaOrejas: gen(r, ca.caidaOrejas, cb.caidaOrejas, 0.3, 1),
+      tamanoCabeza: gen(r, ca.tamanoCabeza, cb.tamanoCabeza, 0.9, 1.3),
+      tamanoOjos: gen(r, ca.tamanoOjos, cb.tamanoOjos, 0.9, 1.3),
+    },
+  };
+}

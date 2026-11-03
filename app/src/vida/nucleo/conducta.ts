@@ -163,6 +163,12 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (at && at.obj === p.id && at.v === v && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz);
       if (p.recordado) u -= 0.03 + 0.01 * (env.t - (c.mem.avist.find((a) => a.id === p.id)?.t ?? env.t)) / 60;
       if (act && act.v === v && act.obj === p.id) u += persistir;
+      // Ver sufrir a alguien con quien hay un vinculo hace acercarse a el (cuanto mas afecto, mas)
+      const ay = c.ayuda;
+      if (ay && p.esCriatura && p.id === 1000 + ay.quien && env.t - ay.t < 12) {
+        const af = c.mem.vinculos.find((q) => q.id === p.id)?.afecto ?? 0;
+        u += (0.1 + 1.2 * af) * (1 - (env.t - ay.t) / 12) * (1 - 0.5 * miedoRaz);
+      }
       cand.push({ v, p, dest: p.x, u, cambia: true, espera: res });
     }
     // Alejarse de lo que sabe que hace dano

@@ -6,7 +6,8 @@ import { AJ } from "./ajustes.ts";
 import { Azar, mezclar } from "./azar.ts";
 import { CATALOGO } from "./catalogo.ts";
 import { Criatura, type EstadoCriatura } from "./criatura.ts";
-import type { Genoma } from "./genoma.ts";
+import { cruzar, type Genoma } from "./genoma.ts";
+import type { Mortalidad } from "./tipos.ts";
 import { Mundo, type EstadoMundo } from "./mundo.ts";
 
 export interface ConfigCriatura {
@@ -22,6 +23,7 @@ export interface ConfigSim {
   /** Un dispensador que deja fruta de vez en cuando para que la criatura pueda vivir sola. */
   comedero?: { cada: number; max: number; tipo: string; activo?: boolean } | null;
   protegida?: boolean;
+  mortalidad?: Mortalidad;
   ancho?: number;
 }
 
@@ -35,6 +37,23 @@ export interface EstadoSim {
   comedero: { cada: number; max: number; tipo: string; activo?: boolean } | null;
   proxComedero: number;
   protegida: boolean;
+  mortalidad?: Mortalidad;
+  legado?: Legado[];
+  proxNombre?: number;
+}
+
+/** Lo que queda de una criatura que murio: su genoma, su historia y sus rasgos. Sirve para recordarla y para criar de ella. */
+export interface Legado {
+  id: number;
+  nombre: string;
+  dia: number;
+  edadDias: number;
+  causa: string;
+  genoma: Genoma;
+  rasgos: number[];
+  base: number[];
+  episodios: string[];
+  hijos: number;
 }
 
 export interface ResumenFueraDeLinea {
@@ -55,6 +74,8 @@ export class Simulacion {
   comedero: { cada: number; max: number; tipo: string; activo?: boolean } | null;
   proxComedero = 0;
   protegida: boolean;
+  mortalidad: Mortalidad;
+  legado: Legado[] = [];
   /** Se llama tras cada paso (el laboratorio lo usa para medir). */
   ganchos: ((s: Simulacion) => void)[] = [];
 
@@ -63,11 +84,12 @@ export class Simulacion {
     this.mundo = new Mundo(mezclar(cfg.semilla, 1), cfg.ancho ?? AJ.ancho);
     this.azar = new Azar(mezclar(cfg.semilla, 2));
     this.comedero = cfg.comedero ?? null;
-    this.protegida = cfg.protegida ?? true;
+    this.mortalidad = cfg.mortalidad ?? (cfg.protegida === false ? "permanente" : "protegida");
+    this.protegida = this.mortalidad === "protegida";
     for (const o of cfg.objetos) this.mundo.agregar(o.tipo, o.x, { ...(o.activo === false ? { activo: false } : {}), ...(o.porciones !== undefined ? { porciones: o.porciones } : {}) });
     cfg.criaturas.forEach((cc, i) => {
       const c = new Criatura(i + 1, cc.nombre ?? NOMBRES[i % NOMBRES.length], JSON.parse(JSON.stringify(cc.genoma)), cc.x, cfg.semilla);
-      c.protegida = this.protegida;
+      c.mortalidad = this.mortalidad;
       this.criaturas.push(c);
     });
     this.proxComedero = this.comedero ? this.comedero.cada * 0.3 : 0;
@@ -84,7 +106,36 @@ export class Simulacion {
     this.alimentar();
     const env = { mundo: this.mundo, criaturas: this.criaturas, t: this.t };
     for (const c of this.criaturas) c.paso(env, dt);
+    for (const c of this.criaturas) if (!c.vivo && !this.legado.some((l) => l.id === c.id)) this.registrarLegado(c);
     for (const g of this.ganchos) g(this);
+  }
+
+  private registrarLegado(c: Criatura): void {
+    this.legado.push({
+      id: c.id, nombre: c.nombre, dia: Math.floor(this.t / 1800) + 1, edadDias: Math.floor(c.edad / 1800) + 1, causa: c.causa || "de causas naturales",
+      genoma: JSON.parse(JSON.stringify(c.genoma)), rasgos: c.rasgos.slice(), base: c.base.slice(),
+      episodios: c.mem.episodios.slice().sort((a, b) => Math.abs(b.val) - Math.abs(a.val)).slice(0, 4).map((e) => e.texto), hijos: 0,
+    });
+  }
+
+  /** Cambia lo que pasa cuando la salud llega a cero, para toda la sala. */
+  fijarMortalidad(m: Mortalidad): void {
+    this.mortalidad = m;
+    this.protegida = m === "protegida";
+    for (const c of this.criaturas) c.mortalidad = m;
+  }
+
+  /** Nace una cria de dos criaturas vivas: hereda predisposiciones mezcladas (con alguna mutacion pequena) y empieza sin recuerdos. */
+  nacer(a: Criatura, b: Criatura): Criatura {
+    const id = Math.max(0, ...this.criaturas.map((c) => c.id)) + 1;
+    const g = cruzar(a.genoma, b.genoma, mezclar(this.semilla, id, Math.floor(this.t)));
+    const x = Math.max(40, Math.min(this.mundo.ancho - 40, (a.x + b.x) / 2));
+    const hijo = new Criatura(id, NOMBRES[(id - 1) % NOMBRES.length], g, x, this.semilla);
+    hijo.mortalidad = this.mortalidad;
+    hijo.capRegistro = a.capRegistro;
+    hijo.padres = [a.id, b.id];
+    this.criaturas.push(hijo);
+    return hijo;
   }
 
   private alimentar(): void {
@@ -134,18 +185,19 @@ export class Simulacion {
     return JSON.parse(
       JSON.stringify({
         v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
-        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida,
+        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, legado: this.legado,
       }),
     ) as EstadoSim;
   }
 
   static restaurar(e: EstadoSim): Simulacion {
-    const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida });
+    const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad });
+    s.legado = JSON.parse(JSON.stringify(e.legado ?? []));
     s.t = e.t;
     s.mundo.restaurar(e.mundo);
     s.criaturas = e.criaturas.map((c) => {
       const k = Criatura.desde(c, e.semilla);
-      k.protegida = e.protegida;
+      k.mortalidad = s.mortalidad;
       return k;
     });
     s.azar.s = e.azar;

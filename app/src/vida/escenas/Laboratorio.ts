@@ -69,6 +69,8 @@ export class Laboratorio extends Phaser.Scene {
   private polvo?: Phaser.GameObjects.Particles.ParticleEmitter;
   private zoomActual = 0.5;
   private margen = 40;
+  /** Desplazamiento de la camara al arrastrar con el boton derecho o el central (se pierde al cambiar de plano o de criatura). */
+  private desplazamiento = { x: 0, y: 0 };
   private raton = { x: 0, y: 0, enSala: false };
   private centro = { x: MUNDO_W / 2, y: MUNDO_H / 2 };
   private arrastre: { id: number | null; tipo: string; ghost: Phaser.GameObjects.Image | null } | null = null;
@@ -188,9 +190,29 @@ export class Laboratorio extends Phaser.Scene {
       this.input.setDefaultCursor("default");
       if (sobreBandeja(e)) { this.juego.quitar(a.id); this.juego.emit("quitadoConArrastre"); } else this.juego.guardar();
     };
+    // Arrastrar con el boton derecho o el central mueve la camara (en los planos cercanos)
+    let paneo: { x: number; y: number } | null = null;
+    const empezarPaneo = (e: PointerEvent): void => {
+      if ((e.button !== 2 && e.button !== 1) || this.enTitulo || !(e.target instanceof HTMLCanvasElement) || this.juego.ajustes.camara === "panorama") return;
+      paneo = { x: e.clientX, y: e.clientY };
+      this.input.setDefaultCursor("grabbing");
+    };
+    const moverPaneo = (e: PointerEvent): void => {
+      if (!paneo) return;
+      const z = this.cameras.main.zoom;
+      this.desplazamiento.x -= (e.clientX - paneo.x) / z;
+      this.desplazamiento.y -= (e.clientY - paneo.y) / z;
+      paneo = { x: e.clientX, y: e.clientY };
+    };
+    const acabarPaneo = (): void => { if (paneo) { paneo = null; this.input.setDefaultCursor("default"); } };
+    window.addEventListener("pointerdown", empezarPaneo);
+    window.addEventListener("pointermove", moverPaneo);
+    window.addEventListener("pointerup", acabarPaneo);
+    this.juego.on("camara", () => { this.desplazamiento.x = 0; this.desplazamiento.y = 0; });
+    this.juego.on("seleccion", () => { this.desplazamiento.x = 0; this.desplazamiento.y = 0; });
     window.addEventListener("pointermove", seguir);
     window.addEventListener("pointerup", soltar);
-    this.events.once("shutdown", () => { window.removeEventListener("pointermove", seguir); window.removeEventListener("pointerup", soltar); });
+    this.events.once("shutdown", () => { window.removeEventListener("pointerdown", empezarPaneo); window.removeEventListener("pointermove", moverPaneo); window.removeEventListener("pointerup", acabarPaneo); window.removeEventListener("pointermove", seguir); window.removeEventListener("pointerup", soltar); });
     this.lista = true;
   }
 
@@ -239,6 +261,8 @@ export class Laboratorio extends Phaser.Scene {
       tx = s ? s.x : px(c.x);
       ty = SUELO_Y - (this.juego.ajustes.camara === "cercano" ? 215 : 255);
     }
+    if (this.juego.ajustes.camara === "panorama") { this.desplazamiento.x = 0; this.desplazamiento.y = 0; }
+    tx += this.desplazamiento.x; ty += this.desplazamiento.y;
     const c0 = this.centro;
     const kc = this.juego.ajustes.camara === "seguir" || this.juego.ajustes.camara === "cercano" ? 1 - Math.exp(-dt * 2.2) : 1 - Math.exp(-dt * 3);
     c0.x += (tx - c0.x) * kc;
@@ -428,6 +452,7 @@ export class Laboratorio extends Phaser.Scene {
     if ((this.cuadro + c.id) % (v.pose.dormido > 0.9 ? 4 : 2) === 0) { pintarCriatura(s.ctx, v, c.genoma, c.huella); s.tex.refresh(); }
     const profundo = (c.id % 2) * 8;
     s.img.setPosition(x, PIES + profundo);
+    if (!c.vivo) s.img.setTint(0x8a9a9a).setAlpha(0.8); else s.img.clearTint().setAlpha(1);
     s.sombra.setPosition(x, PIES + 6 + profundo).setScale(4 - v.pose.agacha * 0.3, 2.3).setAlpha(0.7);
     const sel = this.juego.seleccion === c.id && !this.enTitulo;
     s.aro.setPosition(x, PIES + 4 + profundo).setAlpha(sel ? 0.5 + 0.2 * Math.sin(this.tiempoReal * 3) : 0);
@@ -458,7 +483,9 @@ export class Laboratorio extends Phaser.Scene {
     let icono_ = "";
     let texto = "";
     let color = "#d9e4de";
-    if (c.dormido) { clave = "z"; texto = "Zzz"; }
+    if (!c.vivo) { clave = ""; }
+    else if (c.incap >= 0) { clave = "+"; texto = "+"; color = "#ff7a6c"; }
+    else if (c.dormido) { clave = "z"; texto = "Zzz"; }
     else if (a) {
       if (a.obj >= 0 && !a.esCriatura && a.v !== "evitar" && this.textures.exists(`i:${a.tipo}`)) { clave = `i:${a.tipo}`; icono_ = clave; }
       else if (a.v === "evitar") { clave = "!"; texto = "!"; color = "#ff7a6c"; }

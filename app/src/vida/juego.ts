@@ -7,7 +7,7 @@ import { Simulacion } from "./nucleo/simulacion.ts";
 import { AJ } from "./nucleo/ajustes.ts";
 import { AJUSTES_INICIALES, guardarLocal, simulacionNueva, type AjustesVida, type Guardado } from "./guardado.ts";
 import { sonido } from "./audio/audio.ts";
-import { DIA } from "./nucleo/tipos.ts";
+import { DIA, MORTALIDADES } from "./nucleo/tipos.ts";
 
 type Oyente = (...a: unknown[]) => void;
 
@@ -125,6 +125,32 @@ export class Juego {
   fijarCamara(m: AjustesVida["camara"]): void {
     this.ajustes.camara = m;
     this.emit("camara", m);
+  }
+
+  /** Cambia entre mortalidad protegida, recuperable y permanente. */
+  alternarMortalidad(): string {
+    const i = MORTALIDADES.indexOf(this.sim.mortalidad);
+    const m = MORTALIDADES[(i + 1) % MORTALIDADES.length];
+    this.sim.fijarMortalidad(m);
+    this.emit("mortalidad", m);
+    this.guardar(true);
+    return m;
+  }
+
+  /** Cria con la criatura elegida y otra que viva. Devuelve un texto si no se puede. */
+  criar(): string | null {
+    const vivas = this.sim.criaturas.filter((c) => c.vivo && c.incap < 0);
+    const a = this.criatura;
+    if (!a.vivo || a.incap >= 0) return "La criatura elegida no está en condiciones.";
+    const b = vivas.filter((c) => c !== a).sort((p, q) => Math.abs(p.x - a.x) - Math.abs(q.x - a.x))[0];
+    if (!b) return "Hacen falta dos criaturas vivas para criar.";
+    if (this.sim.criaturas.filter((c) => c.vivo).length >= 4) return "La sala está llena: caben cuatro criaturas vivas.";
+    if (a.edad < DIA * 0.5 || b.edad < DIA * 0.5) return "Las crías todavía son demasiado jóvenes para criar.";
+    const hijo = this.sim.nacer(a, b);
+    this.emit("nacimiento", hijo.id);
+    this.seleccionar(hijo.id);
+    this.guardar(true);
+    return null;
   }
 
   /** Enciende o apaga el dispensador automatico de fruta. */

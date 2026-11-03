@@ -440,5 +440,151 @@ export const caso05: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso04, caso04b, caso13, caso05];
-export const CASOS_OBLIGATORIOS = ["01", "02", "03", "04", "04b", "13", "05"];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/** Parte del tiempo que dos criaturas pasan a menos de `radio` una de otra, y cuanto tardan en estar cerca por primera vez. */
+function medirCercania(s: Simulacion, a: Criatura, b: Criatura, radio: number, segundos: number): { fraccion: number; primera: number } {
+  let cerca = 0;
+  let pasos = 0;
+  let primera = segundos;
+  const t0 = s.t;
+  const g = (q: Simulacion) => { pasos++; if (Math.abs(a.x - b.x) < radio) { cerca++; if (primera === segundos) primera = q.t - t0; } };
+  s.ganchos.push(g);
+  s.avanzar(segundos);
+  s.ganchos.splice(s.ganchos.indexOf(g), 1);
+  return { fraccion: cerca / Math.max(1, pasos), primera };
+}
+
+export const caso06: Caso = {
+  id: "06",
+  titulo: "La compañía",
+  hipotesis: "Dos criaturas que conviven mucho tiempo se buscan cuando se las separa y pasan más tiempo juntas que dos que no se conocen.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const g1 = genomaDe(semilla, 61);
+    const g2 = genomaDe(semilla, 62);
+    const juntos = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: g1, x: 500 }, { genoma: g2, x: 700 }], comedero: { cada: 140, max: 2, tipo: "fruta" } });
+    juntos.avanzar(1500);
+    const afecto = Math.max(...juntos.criaturas.map((c) => c.mem.vinculos.reduce((m, v) => Math.max(m, v.afecto), 0)));
+    const separar = (s: Simulacion): { a: Criatura; b: Criatura } => {
+      const [a, b] = s.criaturas;
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      s.comedero = null;
+      a.x = 150; b.x = 1450; a.accion = null; b.accion = null;
+      for (const c of [a, b]) { c.nec[4] = 0.5; c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; }
+      return { a, b };
+    };
+    const vinc: { fraccion: number; primera: number }[] = [];
+    const ctrl: { fraccion: number; primera: number }[] = [];
+    for (let k = 0; k < 7; k++) {
+      const r = replica(juntos, k);
+      const { a, b } = separar(r);
+      vinc.push(medirCercania(r, a, b, 260, 200));
+      const n = nuevaSim({ semilla: mezclar(semilla, 63, k), objetos: [], criaturas: [{ genoma: g1, x: 150 }, { genoma: g2, x: 1450 }], comedero: null });
+      for (const c of n.criaturas) { c.nec[4] = 0.5; c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; }
+      ctrl.push(medirCercania(n, n.criaturas[0], n.criaturas[1], 260, 200));
+    }
+    const fV = mediana(vinc.map((x) => x.fraccion)), fC = mediana(ctrl.map((x) => x.fraccion));
+    const tV = mediana(vinc.map((x) => x.primera)), tC = mediana(ctrl.map((x) => x.primera));
+    return resultado(semilla, {
+      "han creado un vínculo (afecto > 0,3)": afecto > 0.3,
+      "se buscan al separarlas: se juntan en menos del 80 % del tiempo que dos desconocidas": tV < tC * 0.8,
+      "y pasan más tiempo juntas que ellas": fV > fC,
+    }, { afecto, tVinculadas: tV, tDesconocidas: tC, fraccionVinculadas: fV, fraccionDesconocidas: fC }, juntos.criaturas[0], 1500);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso07: Caso = {
+  id: "07",
+  titulo: "El aprendiz",
+  hipotesis: "Una criatura que nunca ha tocado una palanca empieza a usarla antes si convive con otra que ya sabe, sin haber recibido ningún entrenamiento propio.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const gE = genomaDe(semilla, 71);
+    const gO = genomaDe(semilla, 72);
+    // La experta aprende sola
+    const X = nuevaSim({ semilla, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: gE, x: 300 }], comedero: null });
+    X.criaturas[0].nec[0] = 0.5;
+    X.avanzar(1200);
+    const experta = X.criaturas[0];
+    const sabe = Math.max(esperado(experta, "tocar", "palanca", C.sacia), esperado(experta, "empujar", "palanca", C.sacia)) > 0.08;
+    const estadoExperta = experta.estado();
+    const prueba = (conExperta: boolean, k: number): { primera: number; pulsaciones: number } => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 72, k, conExperta ? 1 : 0), objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: gO, x: 300 }], comedero: null });
+      const obs = s.criaturas[0];
+      obs.nec[0] = 0.5;
+      if (conExperta) {
+        const e = Criatura.desde({ ...estadoExperta, id: 2, x: 520, accion: null }, mezclar(semilla, 73, k));
+        e.azar.s = mezclar(semilla, 74, k);
+        e.capRegistro = 100000;
+        e.nec[0] = 0.55;
+        s.criaturas.push(e);
+      }
+      let primera = 300;
+      s.ganchos.push((q) => { if (primera === 300 && manip(obs, "palanca") > 0) primera = q.t; });
+      s.avanzar(300);
+      return { primera, pulsaciones: manip(obs, "palanca") };
+    };
+    const con = [0, 1, 2, 3].map((k) => prueba(true, k));
+    const sin = [0, 1, 2, 3].map((k) => prueba(false, k));
+    const tCon = mediana(con.map((x) => x.primera)), tSin = mediana(sin.map((x) => x.primera));
+    const pCon = mediana(con.map((x) => x.pulsaciones)), pSin = mediana(sin.map((x) => x.pulsaciones));
+    return resultado(semilla, {
+      "la experta ha aprendido a usar la palanca": sabe,
+      "la aprendiz usa la palanca más del doble de veces en 5 minutos que si estuviera sola": pCon > pSin * 2,
+      "y no la empieza mucho más tarde": tCon < tSin + 15,
+    }, { primeraConExperta: tCon, primeraSola: tSin, pulsacionesConExperta: pCon, pulsacionesSola: pSin }, experta, 1200);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso08: Caso = {
+  id: "08",
+  titulo: "El protector inesperado",
+  hipotesis: "Una criatura cambia sola su conducta para acercarse a otra con la que tiene un vínculo cuando la ve hacerse daño. Una que no la conoce no lo hace.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const g1 = genomaDe(semilla, 81);
+    const g2 = genomaDe(semilla, 82);
+    const juntos = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: g1, x: 500 }, { genoma: g2, x: 700 }], comedero: { cada: 140, max: 2, tipo: "fruta" } });
+    juntos.avanzar(1500);
+    // Cuantas veces decide acercarse a la otra en los 12 s siguientes a verla recibir una descarga, frente a los 12 s anteriores (con la placa apagada)
+    const respuesta = (s: Simulacion, a: Criatura, b: Criatura): number => {
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      s.comedero = null;
+      const placa = s.mundo.agregar("placa", 1000, { activo: false });
+      const ventana = (): number => {
+        a.x = 1000; b.x = 600; a.accion = null; b.accion = null;
+        for (const c of [a, b]) { c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; c.nec[4] = 0.2; }
+        const t0 = s.t;
+        s.avanzar(12);
+        return b.registro.filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + a.id && r.t >= t0).length;
+      };
+      const antes = ventana();
+      placa.activo = true;
+      const despues = ventana();
+      return despues - antes;
+    };
+    const vinc: number[] = [];
+    const ctrl: number[] = [];
+    for (let k = 0; k < 8; k++) {
+      const r = replica(juntos, k);
+      vinc.push(respuesta(r, r.criaturas[0], r.criaturas[1]));
+      const n = nuevaSim({ semilla: mezclar(semilla, 83, k), objetos: [], criaturas: [{ genoma: g1, x: 1000 }, { genoma: g2, x: 600 }], comedero: null });
+      ctrl.push(respuesta(n, n.criaturas[0], n.criaturas[1]));
+    }
+    const cV = media(vinc), cC = media(ctrl);
+    const afecto = Math.max(...juntos.criaturas.map((c) => c.mem.vinculos.reduce((m, v) => Math.max(m, v.afecto), 0)));
+    return resultado(semilla, {
+      "tienen un vínculo previo": afecto > 0.3,
+      "al verla sufrir decide acercarse a ella más veces que en los 12 s anteriores": cV > 0.4,
+      "y mucho más que quien no la conoce (+0,5 decisiones)": cV > cC + 0.5,
+    }, { afecto, aumentoVinculadas: cV, aumentoDesconocidas: cC }, juntos.criaturas[0], 1500);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso04, caso04b, caso13, caso05, caso06, caso07, caso08];
+export const CASOS_OBLIGATORIOS = ["01", "02", "03", "04", "04b", "13", "05", "06", "07", "08"];

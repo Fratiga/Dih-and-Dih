@@ -60,7 +60,7 @@ npx vite build --config vite.vida.config.ts   # solo Vida Artificial, a app/dist
 
 Para verlo en local se sirve `app/dist` (o `app/dist-vida`) y se abre `vida.html` con `localStorage.compendioAdmin = "1"`. En el navegador, `window.vida` da acceso a `juego`, `escena` y `game` para saltar a cualquier situación (`window.vida.juego.sim.avanzar(600)`, `window.vida.juego.fijarVelocidad(16)`). El panel "Laboratorio de pruebas" del título ejecuta los mismos casos con los mismos resultados.
 
-Rueda del ratón sobre la sala (no sobre un panel): hacia arriba se acerca (sala, seguir, cerca) y hacia abajo vuelve a la vista de la sala. Teclas (agrupadas junto a la mano izquierda): Q y E cambian de criatura (también Tab y Mayús+Tab), A premia, S asusta, D observa, F pantalla completa, G sonido, C cámara, X quita el objeto bajo el ratón (también Supr), espacio pausa, 1 2 3 velocidades.
+Rueda del ratón sobre la sala (no sobre un panel): hacia arriba se acerca (sala, seguir, cerca) y hacia abajo vuelve a la vista de la sala. Arrastrar con el botón derecho o el central mueve la cámara en los planos cercanos. Teclas (agrupadas junto a la mano izquierda): Q y E cambian de criatura (también Tab y Mayús+Tab), A premia, S asusta, D observa, F pantalla completa, G sonido, C cámara, X quita el objeto bajo el ratón (también Supr), espacio pausa, 1 2 3 velocidades.
 
 ## Resultados de los casos (10 semillas, 1 a 10)
 
@@ -73,16 +73,20 @@ Rueda del ratón sobre la sala (no sobre un panel): hacia arriba se acerca (sala
 | 04b Generalización | 9/10 | Quien no recibió la descarga no tiene preferencia por el foco azul sobre el rojo nuevo. Los focos rojos se parecen (semejanza 0,70) y el azul no (0,0006). |
 | 13 Gemelos | 10/10 | Dos gemelos criados igual se parecen mucho más entre sí que dos criados en habitaciones distintas (distancia de conducta 0,01 a 0,13 frente a 0,75 a 1,2). |
 | 05 Partido | 9/10 (16/20 con las semillas 1 a 20) | Cada criatura en su sala con su pelota: sin posibilidad de responder, no hay turnos por encima del azar (en 2 de 20 semillas el control sale por encima de z = 2, lo esperable con ese umbral). |
+| 06 Compañía | 9/10 | Dos criaturas que no se conocen: tardan más en juntarse (menos del 80 % del tiempo en las vinculadas) y pasan menos tiempo cerca. |
+| 07 Aprendiz | 8/10 | La misma criatura sola con la palanca: usa la palanca más del doble de veces en 5 minutos cuando convive con una experta, sin haber recibido entrenamiento propio. |
+| 08 Protector | 10/10 | Una criatura que no conoce a la otra: al verla recibir una descarga no aumenta las veces que decide acercarse (las vinculadas aumentan al menos una decisión en 12 s). |
 
 Una semilla de 04b no aprueba porque esa criatura, con poco miedo de nacimiento, apenas distingue los focos: es una diferencia individual, no un fallo de la prueba. En 20 semillas, 18 aprueban.
 
-### Caso 05, partido improvisado
+### Casos sociales (05 a 08)
 
-Dos criaturas, una pelota, 25 minutos y dos medidas de reciprocidad: turnos alternados con rachas y una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar.
+Se apoyan en una sola capacidad nueva: **percibir lo que hace otra criatura**.
 
-Sin percepción del otro no había reciprocidad (0/10: ambas jugaban mucho, 80 a 120 empujones, pero la proporción de turnos alternados era de 0,5, lo que daría el azar). Se añadió que **cada criatura perciba lo que hace la otra**: si una criatura que ve acaba de empujar o tocar algo, se fija en ello (sube la curiosidad y la excitación), le deja un recuerdo suave de que eso entretiene y la cosa gana atractivo unos 8 s (más cuanto más sociable es). No hay ninguna regla de "devolver la pelota". Con eso la proporción de turnos alternados sube a 0,6 a 0,8 y hay rachas de hasta 16 turnos seguidos.
-
-Es el resultado menos sólido de los casos: 9/10 con las semillas 1 a 10 y 16/20 con 1 a 20. Antes se probó que compartir diversión cuente como compañía y una habituación por objeto; esto último debilitaba el caso 13 y se quitó.
+- **05, partido.** Si una criatura que ve acaba de empujar o tocar algo, se fija en ello (sube la curiosidad y la excitación), le deja un recuerdo suave de que eso entretiene y la cosa gana atractivo unos 8 s (más cuanto más sociable es). No hay ninguna regla de "devolver la pelota". Con eso la proporción de turnos alternados sube a 0,6 a 0,8 y hay rachas de hasta 16 turnos seguidos. Es el resultado menos sólido: 9/10 con las semillas 1 a 10 y 16/20 con 1 a 20. Medido con una prueba de permutación circular que desplaza en el tiempo los empujones de una para ver cuántas respuestas mutuas habría por azar.
+- **06, compañía.** Nace de lo que ya había: el afecto crece con el tiempo cerca de alguien, la soledad crece más en quien se apega, y acercarse a quien la ha acompañado tiene un valor aprendido.
+- **07, aprendiz.** Es el recuerdo suave de ver a otra tocar la palanca (el mismo mecanismo del 05) más lo que se come de lo que ella saca. La aprendiz usa la palanca entre 4 y 19 veces más que sola. **No** empieza antes: el cuarto de la palanca ya se explora igual de rápido solo.
+- **08, protector.** Aquí hay una **regla puesta a mano**, no aprendida: cuando una criatura ve que otra se hace daño, se acerca más a ella cuanto más afecto le tenga (`ayuda` en `criatura.ts` y su bono en `conducta.ts`). Lo que se mide es que el vínculo previo cambia lo que decide. Es honesto decir que es una predisposición de la arquitectura y no una conducta emergente. Si se quiere que emerja, hay que dar a la criatura estados ajenos (ver 19 a 38).
 
 ## Números ajustables
 
@@ -111,22 +115,30 @@ Los objetos (qué alimentan, qué hacen daño) están en `nucleo/catalogo.ts`.
 
 Una criatura cuesta unos 40 µs por paso en Node. A 16x con dos criaturas se simulan unos 64 pasos por segundo (uno por fotograma). Las criaturas se redibujan a 30 fotogramas por segundo (lienzo de 770 x 660) y a 1920 x 1080 el bucle de la escena cuesta unos 6 ms. Ocho horas fuera de línea con dos criaturas se simulan en unos 2,4 s (medido en Node), en trozos para que la página siga respondiendo. El estado guardado ocupa unos 40 KB.
 
+## Hecho después de la primera entrega
+
+- **Casos 05 a 08** (arriba).
+- **Mortalidad configurable** (`Mortalidad` en `tipos.ts`): protegida (nunca muere), recuperable (si la salud llega a cero cae tendida, no decide ni se mueve y una caricia la reanima en menos de 4 minutos o muere) y permanente (muere). Al morir queda un **legado** (nombre, causa, genoma, rasgos y lo más importante de su historia) en la pestaña Legado. El selector está en la cabecera de la bandeja.
+- **Herencia** (`cruzar` en `genoma.ts`, `Simulacion.nacer`): cada gen sale de uno de los padres, de la media o de una mutación pequeña (20 % de las veces) y nunca sale de su rango. El hijo nace sin recuerdos y con el carácter de su genoma, no con el que los padres desarrollaron. El botón Criar de la ficha funciona con la criatura elegida y la más cercana (hasta 4 vivas, y no antes de medio día de vida). Las crías se dibujan más pequeñas y crecen en día y medio.
+- **Cámara**: arrastrar con el botón derecho o el central la mueve en los planos cercanos. Se pierde al cambiar de plano o de criatura.
+- **Música ambiental generada**: acordes lentos sobre una escala pentatónica menor que se vuelven más sordos de noche.
+- **Interruptor del comedero** y bayas como último recurso con mucha hambre.
+
 ## Pendiente
 
-- **Casos sociales y de entrenamiento**: 06 (compañía), 07 (aprendiz), 08 (protector), 09 (perro guardián), 10 a 12. El 05 ya tiene la base (percepción de lo que hace el otro); el 07 puede apoyarse en el recuerdo suave que deja verlo.
-- **Reproducción y herencia** (Fase 4): hoy solo hay genoma, sin cruce ni mutación. Los hijos deben heredar predisposiciones y no recuerdos (ya está preparado: el cerebro y la memoria nacen de nuevo). El genoma visual ya es heredable: falta el cruce y la mutación.
-- **Mortalidad** recuperable y permanente, y legado.
-- **Estados ajenos y comunicación** (casos 19 a 38): ver `docs/vida-artificial-casos-extremos.md`.
+- **Casos 09 a 12** (perro guardián, depredador, recolector, solución imprevista): necesitan herramientas de entrenamiento más finas (recompensar por estar en una zona y no solo por una acción, marcadores, barreras) y transporte de objetos.
+- **Caso 14 (herencia de los monstruos) entero**: la herencia existe y está probada con pruebas unitarias, pero falta el caso de laboratorio de varias generaciones con selección artificial y el árbol genealógico a la vista.
+- **Estados ajenos y comunicación** (casos 19 a 38): ver `docs/vida-artificial-casos-extremos.md`. Son investigación, no un ajuste: piden planificación, memoria de trabajo, señales aprendidas y transmisión cultural.
 - **Temperatura** como necesidad y entornos distintos.
-- **Supabase**: tablas de criaturas, memoria, eventos y relaciones; funciones del servidor que validen genética y recompensas.
-- **Mover la cámara** con el ratón y más herramientas (marcadores, barreras, sonidos como estímulo).
-- **Probar en un portátil sin tarjeta gráfica** y en pantalla completa real.
-- **Un segundo recinto** para criar a los gemelos por separado desde el juego (hoy conviven en una sala; para separarlos basta con elegir qué objetos hay y a quién se premia o asusta).
-- **Sonido**: la música ambiental es solo un zumbido y gotas. Falta una pista propia si se quiere.
+- **Supabase**: tablas de criaturas, memoria, eventos y relaciones, y funciones del servidor que validen genética y recompensas. Se dejó fuera a propósito: hace falta decidir qué valida el servidor y no se quiso añadir infraestructura en este prototipo.
+- **Un segundo recinto** para criar a los gemelos por separado desde el juego (hoy conviven en una sala; para separarlos hay que elegir qué objetos hay y a quién se premia o asusta).
+- **Probar en un portátil sin tarjeta gráfica** y en pantalla completa real: no se ha podido probar desde aquí.
+- **Más herramientas** (marcadores, barreras, sonidos como estímulo).
 
 ## Recomendación para la siguiente fase
 
-1. **Ampliar la percepción del otro.** Hoy solo se percibe que otra criatura empujó o tocó algo. Falta que entren comer, asustarse y su estado (casos 06, 07, 08 y los de estados ajenos).
-2. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, como se hizo aquí.
-3. **Aprendizaje por observación (caso 07)** antes de la reproducción: es lo que separa "heredan predisposiciones" de "heredan costumbres".
-4. **Después, genética** (Fase 4), con los casos 14 y 15, y solo entonces el hábitat compartido.
+1. **Estados ajenos.** Que una criatura pueda aprender qué siente y qué espera otra (hambre, miedo, intención) en vez de tener un bono escrito, como pasa hoy en el 08. Es la base de casi todos los casos 19 a 38.
+2. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
+3. **Caso 14 con varias generaciones** y el árbol genealógico a la vista, ahora que cruzar y criar existen.
+4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, como se hizo aquí.
+5. Solo después, el hábitat compartido y Supabase.
