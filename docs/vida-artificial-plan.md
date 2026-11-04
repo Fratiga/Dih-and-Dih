@@ -483,6 +483,106 @@ Criaturas de propietarios distintos que desarrollan relaciones desiguales (A bus
 
 Antes de nada, y sin ser requisito para seguir, queda la prueba de la placa dañina en el camino para el 08c, con varios niveles de daño y sin cambiar los pesos de decisión. Mide si la asociación aprendida puede imponerse a un coste real, no si hay comprensión causal.
 
+## Ritmo de juego: cuidar una criatura (propuesta)
+
+Referencia: el juego *Creatures*. El jugador no dirige cada acción. Las criaturas comen, duermen, exploran, juegan y se relacionan por iniciativa propia, y el jugador hace de cuidador que enseña, recompensa, corrige y protege. No se copian los kits bioquímicos ni las órdenes por texto, solo las decisiones de diseño que hacían interesante el juego.
+
+### Lo que ya hay
+
+- Premiar y asustar (`recompensar` y `asustar` en `criatura.ts`, botones y atajos en la interfaz). Actúan sobre lo último que hizo la criatura con algo, hasta 6 s antes, y no tienen enfriamiento. Son instantáneas, y el caso 18 mostró que esa inmediatez es lo que permite ligar el premio a la acción (una fruta que se come 9 s después ya no se liga).
+- Autonomía: necesidades, emociones, memoria y utilidad deciden qué hace sin que nadie intervenga.
+- Ficha con necesidades, rasgos y memorias, y simulación fuera de línea de hasta 8 h.
+
+### Decisiones
+
+- **Sin enfriamiento artificial en premiar.** Lo que importa es que cada intervención tenga un efecto de aprendizaje y que el jugador pueda ver sus consecuencias, y que premiar o castigar justo después de la conducta sea lo que funciona. En un espacio compartido con muchos propietarios puede hacer falta un límite blando por criatura. Se decide cuando exista.
+- **Castigar con mucha frecuencia tiene que tener coste.** Hoy `asustar` solo suma miedo y asocia un susto a lo último que hizo. Falta que una criatura asustada a menudo termine temiendo a quien la asusta (un vínculo con el jugador que pueda ser negativo) y asocie el castigo equivocado, como evitar comer. Sin eso castigar sale gratis.
+- **La imprevisibilidad es parte del juego.** Las criaturas pueden distraerse, insistir en algo inútil o no hacer caso. No se corrige.
+- **El ritmo no depende de hacer clic.** El jugador observa unos minutos, detecta algo que le interesa, interviene y ve cómo cambia la conducta. Para un grupo de D&D que entra de tarde en tarde, lo que más pesa es volver y enterarse de qué pasó.
+
+### Ciclo de juego
+
+1. Observar. Descubrir qué hace por iniciativa propia.
+2. Interpretar. Consultar necesidades, emociones, recuerdos y relaciones.
+3. Intervenir. Premiar, corregir, acercar objetos o cambiar el entorno.
+4. Esperar. Dejar que procese la experiencia.
+5. Descubrir. Ver cómo cambia la conducta y cómo esa experiencia afecta a su vida posterior.
+
+### Pendiente de interfaz, por valor y coste
+
+- [ ] **Diario de acontecimientos.** Momentos significativos (descubrir comida, aprender una asociación, un susto, conocer a otra criatura, un reencuentro), construido con las memorias episódicas y el registro que ya existen. Es lo más barato y lo que más cambia el juego tras una ausencia, junto con un resumen al volver.
+- [ ] **Modo observación.** Ocultar paneles y dejar que el jugador contemple. Barato.
+- [ ] **Retroalimentación visible de premiar y asustar,** sin abrir un panel de administración: que se vea que la criatura lo ha relacionado con lo que hacía.
+- [ ] **Vínculo con el jugador** (negativo posible), para que el castigo excesivo tenga consecuencia.
+- [ ] **Mano interactiva** (acariciar, llamar la atención, señalar, entregar objetos). Medio.
+- [ ] **Órdenes aprendidas.** Instrucciones que la criatura pueda comprender, aceptar o ignorar. Caro: exige aprender palabras y asociarlas a conductas, y todavía no hay aprendizaje por observación del resultado (07c). No se aborda pronto.
+
+Todo esto sigue oculto a los jugadores hasta que el DM decida abrirlo.
+
+## Conflicto, agresión, depredación y evolución del organismo (propuesta)
+
+El caso 18 cría una hostil con un premio inmediato del cuidador, y funciona, pero no hay una agresión que surja de un conflicto real. Esto plantea que surja de conflictos por recursos, se aprenda y, a lo largo de generaciones, transforme conducta y organismo. Tres procesos separados.
+
+- **Conflicto.** Una criatura intenta obtener un recurso que otra está usando.
+- **Agresión aprendida.** Descubre que ciertas acciones dañinas o intimidatorias le dan resultados.
+- **Evolución biológica.** La descendencia hereda predisposiciones y rasgos físicos que favorecen esas estrategias. No hereda las experiencias concretas de los padres: así lo prueba hoy el caso 14, y el caso 18 no debe cambiarlo.
+
+El jugador no tiene botón de atacar. Provoca situaciones con hambre, escasez, competencia y criaturas de distinto carácter, y observa.
+
+### 1. Conflicto por comida
+
+Comer tiene una duración y la comida se desgasta. Hoy una fruta ya se gasta por porciones, un mordisco cada 1,4 s, pero nada impide que otra criatura coma a la vez, ni hay forma de defender la comida o de que la ocupada se note. El ciclo:
+
+1. Una criatura empieza a comer y la comida pierde cantidad mientras permanece ocupada.
+2. Otra hambrienta detecta que se agota. Puede esperar, buscar otra, desplazar a la primera o retirarse.
+3. Si intenta desplazarla, la que come puede ceder, proteger el alimento o responder.
+4. Si ambas persisten, el conflicto escala.
+
+Personalidad, hambre, tamaño, experiencias y vínculo influyen en el resultado. Una hambrienta no empuja automáticamente: primero tiene predisposición o ha aprendido que empujar a otra le da acceso al recurso. Esto resuelve lo que dejó abierto el caso 18. Con la comida ocupada, el desplazamiento y el acceso a comer ocurren en segundos, dentro de la ventana de crédito de 9 s, y la frustración de quedarse sin ella tiene un origen real.
+
+### 2. Rutas de agresión (no una única estadística)
+
+- **Defensa de recursos.** Empujones, cabezazos, coces, embestidas y amenazas. Sin consumir carne.
+- **Depredación.** Acechar, perseguir, sujetar, morder y desgarrar. Otras criaturas como comida.
+- **Carroñeo.** Comer cadáveres o restos sin haber matado. Puede preceder a la depredación, pero no conduce a ella por sí solo.
+- **Agresión territorial.** Ahuyentar intrusos, también sin hambre.
+
+Una criatura puede combinar varias.
+
+### 3. Canibalismo y aprendizaje depredatorio
+
+Por etapas: descubrir restos y probarlos, asociar que reduce el hambre, relacionar movimiento, tamaño o heridas con oportunidades, descubrir que puede herir, aprender que una criatura muerta se convierte en alimento y anticipar situaciones en que pueda obtener carne. Comer un cadáver no debe enseñar a matar. Eso tiene que salir de experiencias en que atacar o perseguir resultaron favorables. Tras matar tiene opciones: comer, abandonar, defender el cadáver, seguir atacando o retirarse saciada.
+
+### 4. Que la conducta transforme el organismo
+
+La transformación es lenta y por herencia y selección, nunca una garra tras una pelea. Los rasgos tienen costes (pesado y fuerte frente a ágil, garras largas frente a manipular, mandíbula especializada frente a otras comidas).
+
+| Conducta favorecida | Rasgos heredables |
+|---|---|
+| Empujar y embestir | Cráneo robusto, cuello fuerte, cuerpo pesado |
+| Cazar con mordidas | Mandíbula potente, dientes puntiagudos |
+| Sujetar y desgarrar | Garras curvas, extremidades anteriores fuertes |
+| Perseguir | Piernas largas, cuerpo ligero, resistencia |
+| Acechar | Postura baja, movimientos silenciosos, camuflaje |
+
+Puntos que hay que cuidar:
+
+- **Imitación de la descendencia.** Si la descendencia debe parecerse a la madre en conducta, hay dos vías distintas. Una es genética (predisposiciones heredadas). La otra es aprender de verla, que hoy no existe como aprendizaje del resultado (07c). Mientras no exista, el parecido vendría solo por genes o por realce del estímulo.
+- **Selección.** La evolución necesita reproducción diferencial. Con la cría manual del jugador (`Criar`), la selección es artificial, como en el caso 14. Una selección natural exige que mueran y se reproduzcan por su cuenta, y eso no está.
+- **Cuerpo y arte.** El genoma ya tiene campos de cuerpo (orejas, cola, patas, cabeza), pero no colmillos, garras ni postura. Hay que ampliar `Cuerpo` y los dibujos.
+- **Consentimiento de los propietarios.** En un espacio compartido, que una criatura de un jugador mate o se coma a la de otro choca con que cada jugador conserve el control sobre la participación de las suyas. Haría falta un permiso por criatura (puede ser presa, puede ser agresora) y que la muerte en estas condiciones se acepte de antemano. Solo en el laboratorio, con réplicas, no hay problema.
+
+### 5. Orden de implementación
+
+1. Conflicto por comida: comida consumible, duración de la ingesta, empujones y respuestas defensivas.
+2. Combate básico: daño, heridas, huida, derrota y recuperación.
+3. Carroñeo: cadáveres comestibles y aprendizaje de sus propiedades.
+4. Depredación: ataque a criaturas vulnerables, muerte y consumo.
+5. Especialización conductual: comparar criaturas que aprenden a empujar, embestir o morder.
+6. Herencia y selección: cambios físicos y conductuales en varias generaciones.
+
+Antes del paso 1, corregir que el afecto no debería crecer con quien te hace daño (el caso 18 se detiene sola por esto, según la hipótesis sin comprobar).
+
 ## Caso propuesto 15: el monstruo y el sacrificio
 
 Todavía no está construido. Se registra aquí con las condiciones y lo que falta en el código para poder hacerlo. Pone a prueba a la vez reconocer una amenaza, interpretar el peligro de otras, decidir intervenir asumiendo un riesgo y conservar un recuerdo social de lo ocurrido.
@@ -556,6 +656,8 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
-5. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
+5. Diario de acontecimientos y modo observación (ritmo de juego, arriba), por ser baratos y lo que más cambia volver tras una ausencia.
+5b. Conflicto por comida (primer paso de la sección de agresión), que también abre el caso 15 y los casos 09 a 12.
+5c. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), ya construidos, que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
 6. El caso 15 después, porque necesita esos recuerdos de individuos, la agresión entre criaturas y la atribución de efectos a otras. La agresión puede prepararse en paralelo.
 7. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
