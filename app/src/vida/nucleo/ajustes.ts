@@ -64,6 +64,12 @@ export const AJ = {
   /** Probabilidad de una camada de dos y de tres crias (el resto, una). Cada cria tiene su propio genoma: mellizos, no gemelos identicos. */
   camadaDos: 0.17,
   camadaTres: 0.03,
+  /** Cuanto cuenta, al acercarse a alguien, el gusto aprendido por su aspecto y su conducta. */
+  pesoGusto: 1.0,
+  /** Cuanto cambia un gusto con cada experiencia buena o mala con alguien que tiene ese rasgo. */
+  pasoGusto: 0.12,
+  /** Cuanto empuja a atacar a una criatura debil el hambre, saber que la carne alimenta y que atacar ya ha dado comida. */
+  pesoPresa: 24,
   pesoAgresion: 0.8,
   /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
   penaOcupada: 0.5,

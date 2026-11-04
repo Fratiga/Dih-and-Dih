@@ -4,7 +4,7 @@
 import { AJ } from "./ajustes.ts";
 import { Azar, acota, mezclar } from "./azar.ts";
 import { CATALOGO } from "./catalogo.ts";
-import { candidatas, elegir, featuresObjeto, firmaDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
+import { candidatas, contrasteAspecto, elegir, featuresObjeto, firmaDe, gustoDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
 import { ejecutar, iniciar } from "./acciones.ts";
 import type { Genoma } from "./genoma.ts";
 import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
@@ -112,6 +112,10 @@ export interface EstadoCriatura {
   reconocePorRasgos: boolean;
   aprendeObservando: boolean;
   agresion: boolean;
+  gustos: boolean;
+  valencias: number[];
+  reputacion: Record<number, { agresion: number; t?: number }>;
+  ultimoGolpe: { t: number; contra: number } | null;
   conflictoComida: boolean;
   represalia: { contra: number; t: number } | null;
   agravios: Record<number, { n: number; t: number }>;
@@ -179,6 +183,14 @@ export class Criatura {
   aprendeObservando = false;
   /** Experimental: puede empujar a otras criaturas (y hacerles dano). Si compensa o no lo aprende viviendo. */
   agresion = false;
+  /** Experimental: toma gustos y manias por el aspecto (tamano, color, cuernos) y por la conducta de los demas, a partir de lo que vive con ellos. */
+  gustos = false;
+  /** Lo que ha aprendido a gustarle (+) o disgustarle (-) de cada rasgo de aspecto, que se aplica a cualquiera que lo tenga. */
+  valencias: number[] = [0, 0, 0, 0];
+  /** Lo que ha visto hacer a cada criatura (por ahora, pegar a otras). */
+  reputacion: Record<number, { agresion: number; t?: number }> = {};
+  /** Ultimo golpe que dio y a quien (para que lo vean las demas). */
+  ultimoGolpe: { t: number; contra: number } | null = null;
   /** Experimental: la comida que otra esta comiendo esta ocupada (no se come a la vez) y se puede disputar. */
   conflictoComida = false;
   /** Quien la golpeo hace poco, para responder. */
@@ -410,7 +422,7 @@ export class Criatura {
   private convivir(p: Percepto, dt: number): void {
     const v = this.mem.vinculo(p.id, this.nombreDe(p.id));
     v.tiempo += dt;
-    const factor = this.agravioDe(p.id);
+    const factor = this.agravioDe(p.id) * (this.gustos ? Math.max(0, 1 + 0.8 * gustoDe(this, p)) : 1);
     if (this.reconocePorRasgos) {
       const s = firmaDe(p.f);
       if (!v.firma) v.firma = s;
@@ -427,7 +439,17 @@ export class Criatura {
   }
 
   /** Anota que ha habido dano entre las dos (lo hizo o lo recibio), y enfria el afecto que hubiera. */
+  /** Una experiencia buena (+) o mala (-) con esa criatura le cambia los gustos por los rasgos de aspecto que tiene, y asi por cualquiera que los tenga. */
+  valorarAspecto(id: number, v: number): void {
+    if (!this.gustos) return;
+    const p = this.percibidos.find((q) => q.id === id);
+    if (!p) return;
+    const k = contrasteAspecto(p.f);
+    for (let i = 0; i < k.length; i++) this.valencias[i] = acota(this.valencias[i] + AJ.pasoGusto * v * k[i], -1, 1);
+  }
+
   anotarAgravio(id: number, nivel: number): void {
+    this.valorarAspecto(id, -2 * nivel);
     const a = this.agravios[id];
     const previo = a ? a.n * Math.exp(-(this.t - a.t) / AJ.olvidoAgravio) : 0;
     this.agravios[id] = { n: Math.min(1, previo + nivel), t: this.t };
@@ -546,6 +568,12 @@ export class Criatura {
         const q = o.ultimoComer;
         this.vistoComer = q.t;
         this.mem.aprender("probar", q.f, q.x / env.mundo.ancho, [0.8 * AJ.pesoVicario, 0, 0, 0, 0, 0], q.tipo, q.nombre, env.t, [true, false, false, false, false, false], 1, false);
+      }
+      // Lo que ve hacer a otra: si pega a alguien que no es ella, queda con fama de pegar
+      if (this.gustos && o.ultimoGolpe && o.ultimoGolpe.contra !== this.id && o.ultimoGolpe.t > (this.reputacion[1000 + o.id]?.t ?? -1) && env.t - o.ultimoGolpe.t < 2 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3) {
+        const r = (this.reputacion[1000 + o.id] ??= { agresion: 0 });
+        r.agresion = Math.min(1, r.agresion + 0.4);
+        r.t = o.ultimoGolpe.t;
       }
       if (!o.ultimoImpacto) continue;
       const u = o.ultimoImpacto;
@@ -718,6 +746,7 @@ export class Criatura {
     const p = this.percibidos.find((q) => q.id === id);
     const v = this.mem.vinculo(id, p ? p.nombre : this.nombreDe(id));
     v.afecto = acota(v.afecto + 0.3 * nivel);
+    this.valorarAspecto(id, 1.5 * nivel);
     this.agravios[id].n *= 0.4;
     if (p) {
       this.mem.aprender("acercarse", p.f, this.x / env.mundo.ancho, [0, 0, 0, nivel * 0.8, 0], "criatura", p.nombre, env.t, [false, false, false, true, false], 1.6);
@@ -767,7 +796,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -808,6 +837,10 @@ export class Criatura {
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.aprendeObservando = e.aprendeObservando ?? false;
     c.agresion = e.agresion ?? false;
+    c.gustos = e.gustos ?? false;
+    c.valencias = (e.valencias ?? [0, 0, 0, 0]).slice();
+    c.reputacion = JSON.parse(JSON.stringify(e.reputacion ?? {}));
+    c.ultimoGolpe = e.ultimoGolpe ? { ...e.ultimoGolpe } : null;
     c.conflictoComida = e.conflictoComida ?? false;
     c.represalia = e.represalia ? { ...e.represalia } : null;
     c.agravios = JSON.parse(JSON.stringify(e.agravios ?? {}));

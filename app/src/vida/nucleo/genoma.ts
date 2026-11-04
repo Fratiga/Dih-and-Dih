@@ -20,6 +20,8 @@ export interface Cuerpo {
   caidaOrejas?: number;
   tamanoCabeza?: number;
   tamanoOjos?: number;
+  /** 0 sin cuernos, 1 cornamenta grande. Se hereda. Por defecto no hay (y asi no cambia lo ya medido). */
+  cuernos?: number;
 }
 
 export type CuerpoCompleto = Required<Cuerpo>;
@@ -27,7 +29,7 @@ export type CuerpoCompleto = Required<Cuerpo>;
 /** El cuerpo con todos sus campos (los genomas guardados antes de ampliarlo no traen los nuevos). */
 export function cuerpoDe(g: Genoma): CuerpoCompleto {
   const c = g.cuerpo;
-  return { ...c, longitudPata: c.longitudPata ?? 1, grosorPata: c.grosorPata ?? 1, caidaOrejas: c.caidaOrejas ?? 0.7, tamanoCabeza: c.tamanoCabeza ?? 1.05, tamanoOjos: c.tamanoOjos ?? 1.05 };
+  return { ...c, longitudPata: c.longitudPata ?? 1, grosorPata: c.grosorPata ?? 1, caidaOrejas: c.caidaOrejas ?? 0.7, tamanoCabeza: c.tamanoCabeza ?? 1.05, tamanoOjos: c.tamanoOjos ?? 1.05, cuernos: c.cuernos ?? 0 };
 }
 
 /** El sexo sale del genoma sin gastar azar nuevo (asi no cambia nada de lo ya medido): sobre la mitad de las criaturas son de cada uno. */
@@ -119,6 +121,8 @@ export function cruzar(a: Genoma, b: Genoma, semilla: number): Genoma {
       caidaOrejas: gen(r, ca.caidaOrejas, cb.caidaOrejas, 0.3, 1),
       tamanoCabeza: gen(r, ca.tamanoCabeza, cb.tamanoCabeza, 0.9, 1.3),
       tamanoOjos: gen(r, ca.tamanoOjos, cb.tamanoOjos, 0.9, 1.3),
+      // Con su propio azar, para no mover el de los demas genes. Si ninguno de los dos tiene, no sale (no hay mutacion desde cero)
+      cuernos: ca.cuernos === 0 && cb.cuernos === 0 ? 0 : gen(new Azar(mezclar(semilla, 41)), ca.cuernos, cb.cuernos, 0, 1, 0.15),
     },
   };
 }

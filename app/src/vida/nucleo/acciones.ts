@@ -93,6 +93,7 @@ function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
     c.experimentar(a, res, true, env);
     const v = c.mem.vinculo(a.obj, a.nombre);
     v.afecto = acota(v.afecto + 0.08 * res[C.compania]);
+    c.valorarAspecto(a.obj, res[C.compania]);
   }
   if (fallo && a.v !== "evitar" && a.v !== "explorar") {
     c.emo[E.frustracion] = acota(c.emo[E.frustracion] + 0.12);
@@ -141,6 +142,7 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
     otro.espera = Math.max(otro.espera, 1.2 + 3 * golpe);
     for (const o of env.mundo.objetos) if (o.ocupante === otro.id) { o.ocupante = undefined; o.tOcupante = undefined; }
     c.anotarAgravio(a.obj, golpe * 0.6);
+    c.ultimoGolpe = { t: env.t, contra: otro.id };
     otro.salud -= golpe * 0.15;
     c.experimentar(a, resCero(), true, env);
   }

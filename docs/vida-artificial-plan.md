@@ -352,25 +352,44 @@ Qué se aprende: con la comida pobre y duradera hay competencia real, y la frust
 
 ### Carroñeo y depredación (caso 21)
 
-Con `agresion`, al morir una criatura su cuerpo queda donde cae como un objeto comestible (`cadaver`: 6 porciones de 0,3, algo de toxicidad y caduca a los 500 s). No hay ninguna recompensa por matar. Matar y comer quedan a pocos segundos porque el cuerpo aparece en el sitio, así que el crédito retrasado de siempre podría ligar el ataque con la comida.
+Con `agresion`, al morir una criatura su cuerpo queda donde cae como un objeto comestible (`cadaver`: 6 porciones de 0,3, algo de toxicidad y caduca a los 500 s). **No hay ninguna recompensa por matar.** Matar y comer quedan a pocos segundos porque el cuerpo aparece en el sitio, así que el crédito retrasado de siempre liga el ataque con la comida.
 
-El caso 21 prueba tres brazos con una agresiva (0,9) hambrienta, diez rondas de 90 s con una presa vulnerable (salud 0,3) inmovilizada en cada una, mortalidad permanente, y una ronda de prueba común al final con una presa viva sin cuerpo:
+Faltaba un motivo para atacar a algo débil. Se añadió un **interés depredador** (`pesoPresa`) que reúne hambre, haber comido carne antes (lo que la memoria espera de probar un cadáver, o sea, **se aprende carroñeando**) y una criatura que se ve débil (angustiada, quieta o más pequeña). Su peso crece con lo que atacar le haya dado de comer (el mismo crédito retrasado), con una base pequeña (0,1) para que no sea una orden. Sin haber probado carne nunca, no hay interés. El valor de `pesoPresa` (24) se eligió tras probar 2, 6, 14 y 24: con 2 la depredación casi no aparece, con 6 aparece en la mitad de las semillas.
 
-- **Depreda:** el cuidador premia los empujones de las tres primeras rondas, y el cuerpo queda al morir la presa.
-- **Sin cuerpo:** lo mismo, pero sin cadáver.
-- **Carroña:** sin presas vivas, un cadáver ya hecho en cada ronda.
-
-Resultados con 8 semillas:
+El caso 21 hace tres rondas de 90 s con solo un cadáver ya hecho (carroñeo) y ocho rondas con una presa vulnerable (salud 0,3) inmovilizada, mortalidad permanente, en tres brazos: carroñeó antes y las presas dejan cuerpo, carroñeó antes y no dejan cuerpo, y nunca probó carne. Resultados con 10 semillas:
 
 | Qué se mira | Resultado |
 |---|---|
-| **Carroñeo** | Come el cadáver: 21,5 bocados de mediana. Aprende que se come sin que nadie se lo enseñe. |
-| **Comer un cadáver no enseña a matar** | Quien solo carroñeó ataca a la presa viva 1,5 veces en la prueba, frente a 0 en el brazo sin cuerpo (5 de 8 semillas dentro de 1 empujón de diferencia). Poco, pero no se descarta que sea el mismo tanteo inicial que hacen todas. |
-| **Depredación** | **No arranca**: 0 presas muertas en todas las semillas, y sin eso no hay cuerpo que comer ni crédito que ligar. |
+| **Carroñeo** | Come el cadáver que ya estaba: 6 bocados de mediana, 10 de 10 semillas. Nadie se lo enseña. |
+| **Depredación** | Mata una mediana de 4 presas en 8 rondas (hasta 8) y se las come (8 bocados de mediana). Pasa 7 de 10 semillas. |
+| **Sin haber probado carne** | Mata menos que quien carroñeó antes (7 de 10 semillas). Mediana 0. |
+| **El cuerpo refuerza** | Con cuerpo mata más presas que sin él (4 frente a 3 de mediana). Lo cumplen 5 de 10 semillas. |
 
-Por qué no arranca (con el registro de una ronda): la agresora hace un solo empujón a la presa y vuelve enseguida a jugar con la pelota y explorar. La utilidad de empujar a la criatura (0,47) queda justo por debajo de la de la pelota (0,50), y el premio de una sola caricia por ronda no basta. En el caso 18, donde sí hay 500 empujones, la rival se queda al alcance de la agresora y eso mantiene el bucle. Con una presa nueva en cada ronda no se sostiene.
+- Es lo previsto en el plan: carroñeo, luego interés por criaturas vulnerables, luego ataque y consumo. Comer un cadáver no enseña a matar por sí solo (hace falta además el hambre y ver a alguien débil).
+- **La depredación sin cuerpo no desaparece del todo** (3 presas de mediana): el interés tiene una base y no se extingue enseguida si atacar no da comida.
+- El primer montaje no mataba a nadie. Se debía a que la presa se creaba como "protegida" y no podía morir, no a la conducta: lo anoto porque costó varias pruebas verlo.
+- Queda informativo (5/10). Siguen sin hacer el canibalismo con criaturas adultas de la misma sala, la selección de rasgos físicos (colmillos, garras) y que la presa pueda huir.
 
-Esto es la etapa de "interés por criaturas vulnerables" del plan: la criatura necesita algún motivo para atacar a algo débil que no sea la caricia ni la disputa por comida. Una vía sería que la fragilidad visible de la presa (salud baja, quietud, angustia) entre en lo que se espera de empujarla cuando se tiene hambre y se sabe que los cuerpos se comen. No se ha hecho. Queda informativo, sin pasar (0/8), y el canibalismo y la selección de rasgos físicos (colmillos, garras) quedan sin empezar.
+### Manías por el aspecto y por la conducta (caso 22)
+
+Una criatura puede coger manía a un rasgo físico (los cuernos, por ejemplo) o a una conducta, a partir de lo que ha vivido, y la aplica a criaturas que no conoce. Detrás de `gustos` (apagado por defecto).
+
+- **Cuernos** (`Cuerpo.cuernos`, de 0 a 1, heredable y a 0 por defecto): se perciben como angulosidad, menos redondez. Se probó antes como brillo y se descartó, porque el brillo alto ya se asocia con peligro (los focos que dan descarga). No hay dibujo de cuernos todavía, solo el rasgo y su efecto. Si ninguno de los padres tiene, el hijo no tiene (no hay mutación desde cero).
+- **Gustos por aspecto.** Cuatro rasgos (tamaño, color cálido, color verde y cuernos). Cada experiencia mala con una criatura (daño, y luego rechazo) baja el gusto por sus rasgos, y cada buena (compañía, un premio tras el maltrato) lo sube. Se aplica a cualquiera que los tenga: cuenta al acercarse (`pesoGusto`) y en cuánto afecto se crea al convivir.
+- **Fama por conducta.** Si ve pegar a otra criatura que no es ella (`ultimoGolpe`), queda con fama de pegar (`reputacion`) y la prefiere menos, aunque a ella nunca le haya hecho nada.
+
+Resultados con 10 semillas:
+
+| Condición | Llega antes a la nueva sin cuernos |
+|---|---|
+| Maltratada por una con cuernos | **0,93** |
+| Maltratada por una sin cuernos | **0,17** |
+| Sin maltrato (compañera de cuernos intermedios) | 0,56 |
+
+- La manía se generaliza en las dos direcciones. Pasan 8 y 9 de 10 semillas, y el control sin preferencia 9 de 10.
+- Tras ver pegar a una tercera, la fama es de 1,0 y prefiere a la pacífica el 81 % de las veces (7 de 10 semillas).
+- Un hallazgo que cambió el control: con una compañera sin cuernos, la criatura cogía gusto por los sin cuernos solo por convivir (0,78), porque la convivencia agradable también enseña a querer los rasgos de quien convive. Es el comportamiento diseñado. El control justo es una compañera de cuernos intermedios.
+- Pasan los cuatro criterios a la vez 5 de 10 semillas. Queda informativo.
 
 ## Protocolo para cambios globales
 
@@ -672,10 +691,11 @@ Sale de una conversación sobre cómo debería comportarse la reproducción. Se 
 1. **Impulso reproductivo** como necesidad nueva. Sube cuando es adulta y baja al reproducirse o con el tiempo, igual que el hambre. Mueve a buscar pareja, pero no elige a quién.
 2. **A quién busca.** Quien conoce y quiere (afecto, reconocimiento por rasgos) y el sexo distinto. Depende de la historia con cada individuo, no de una regla fija.
 3. **Cortejo y aceptación mutua.** Quien busca se acerca con esa intención y la otra acepta o rechaza. Rechaza si el afecto por quien se acerca es bajo, si no tiene impulso, si está en mal estado (hambre, miedo) o por lo aprendido: si **ya fue castigada tras un intento de reproducirse**, o si la otra recibió un castigo por intentarlo, la sola aproximación provoca mala reacción y se niega.
-4. **La reproducción solo ocurre con aceptación de las dos.** El rechazo se respeta. La agresividad de quien es rechazada no fuerza nada.
+4. **La reproducción solo ocurre con aceptación de las dos. El rechazo se respeta y no se puede forzar,** aunque quien lo recibe se ponga agresivo. Lo que sí puede hacer es **ponerse violenta**. Según cuánta **aversión a la reproducción** tenga la criatura que rechazó, el rechazo puede acabar en una pelea si las dos son agresivas. La agresividad no cambia el resultado de la petición, solo lo que pasa después.
 5. **Consecuencias del rechazo para quien lo recibe.** Frustración (ya existe) y, según el carácter, **agresividad** hacia ese individuo (con `agresion`) o **resentimiento** (enfría el afecto y se anota un agravio, con `anotarAgravio`, y se aparta). Si se repite, queda como aversión hacia ese individuo.
 6. **Aversión aprendida por castigo.** Si el cuidador asusta a una criatura cada vez que tiene una interacción reproductiva, aprende a asociar esa conducta y los rasgos de ese sexo con un susto, y con el tiempo se aparta de todas las del sexo opuesto, no solo de una. Es reversible con premios. Para que se generalice hay que poder percibir el sexo como rasgo. Hoy no se percibe.
-7. Todo se expresa con conducta aprendida y no con etiquetas de personalidad.
+7. **Aversión por rasgos físicos y por conducta.** La criatura puede desarrollar rechazo por ciertas características físicas (que no le gusten los cuernos, por ejemplo) o por criaturas con sesgos hacia ciertas conductas. Son los gustos y la fama del caso 22, y entran en la decisión de aceptar a una pareja.
+8. Todo se expresa con conducta aprendida y no con etiquetas de personalidad.
 
 ### Qué hay que construir
 

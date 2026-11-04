@@ -27,12 +27,33 @@ const M_TODO = new Array<number>(D).fill(1);
 export function featuresCriatura(o: Criatura, conAngustia = false): number[] {
   const t = o.genoma.cuerpo.tono;
   const angustia = !conAngustia ? 0 : acota(Math.max(o.emo[E.miedo], o.nec[N.dolor], o.incap >= 0 ? 1 : 0, o.t - o.ultimoDano < 3 ? 0.8 : 0));
-  return [0.6, o.genoma.cuerpo.tamano * 0.5, 0.5, acota(1 - (t - 100) / 160, 0.05, 0.95), acota((t - 100) / 160, 0.05, 0.95), 0.3, angustia, acota(Math.abs(o.vx) / 140), 1, o.huella];
+  // Los cuernos se ven como angulosidad (menos redondez), un rasgo que en una criatura era siempre 0,6: sin cuernos no cambia nada. Se probo en el brillo y
+  // se descarto, porque el brillo alto ya se asocia con peligro (los focos que dan descarga).
+  return [0.6 - 0.4 * (o.genoma.cuerpo.cuernos ?? 0), o.genoma.cuerpo.tamano * 0.5, 0.5, acota(1 - (t - 100) / 160, 0.05, 0.95), acota((t - 100) / 160, 0.05, 0.95), 0.3, angustia, acota(Math.abs(o.vx) / 140), 1, o.huella];
 }
 
 /** Lo que se percibe de alguien y no cambia de un momento a otro: tamano, color y huella. */
 const DIMS_FIRMA = [IDX.tamano, IDX.calidez, IDX.verdor, IDX.huella];
 export const firmaDe = (f: number[]): number[] => DIMS_FIRMA.map((i) => f[i]);
+
+/** Cuanto se aparta de lo normal cada rasgo de aspecto que se puede coger manía o gusto (de -1 a 1): tamaño, color calido, color verde y cuernos. */
+export const contrasteAspecto = (f: number[]): number[] => [
+  acota((f[IDX.tamano] - 0.5) / 0.1, -1, 1),
+  acota((f[IDX.calidez] - 0.5) * 2, -1, 1),
+  acota((f[IDX.verdor] - 0.5) * 2, -1, 1),
+  acota(((0.6 - f[IDX.redondez]) / 0.2) - 1, -1, 1),
+];
+
+/** Lo que le gusta o le disgusta a `c` la criatura que percibe en `p`, de -1 a 1: lo aprendido de su aspecto (se generaliza a cualquiera con ese rasgo)
+    y lo que sabe de su conducta (si la ha visto pegar a otras). */
+export function gustoDe(c: Criatura, p: Percepto): number {
+  if (!c.gustos) return 0;
+  const k = contrasteAspecto(p.f);
+  let g = 0;
+  for (let i = 0; i < k.length; i++) g += c.valencias[i] * k[i];
+  g /= k.length;
+  return acota(g - 0.6 * (c.reputacion[p.id]?.agresion ?? 0), -1, 1);
+}
 
 /** Cuanto afecto tiene la criatura `c` por la que percibe en `p`. Con el reconocimiento por rasgos se busca a quien mas se parece a lo recordado
     (una impostora con otra huella no cuenta como ella); si no, se usa la etiqueta de identificador. */
@@ -206,6 +227,19 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       // y el afecto lo frena. Que compense lo aprende
       // despues, si conseguir comida va detras de empujar a una rival (el credito retrasado de siempre)
       if (c.agresion && p.esCriatura && v === "empujar") u += AJ.pesoAgresion * Math.max(0, ras[R.agresividad] - 0.4) * (1 - A.confPropia) + AJ.pesoFrustracionAgresion * emo[E.frustracion] * ras[R.agresividad] - AJ.frenoAfectoAgresion * afectoDe(c, p);
+      // Interes depredador: hambre, saber (por haberlo comido) que la carne alimenta, y una criatura que se ve debil (angustiada, quieta o mas pequena).
+      // Pesa mas cuanto mas le ha dado de comer atacar antes. Sin haber probado nunca carne, no hay interes.
+      if (c.agresion && p.esCriatura && v === "empujar") {
+        const carne = c.mem.predecir("probar", featuresObjeto({ tipo: "cadaver", vx: 0, vz: 0 }), new Array(D).fill(1), 0.5);
+        const sabeCarne = carne.res[C.sacia] * carne.conf;
+        if (sabeCarne > 0.05) {
+          const debil = acota(p.f[IDX.sonido] + (p.f[IDX.movimiento] < 0.05 ? 0.4 : 0) + (c.genoma.cuerpo.tamano * 0.5 - p.f[IDX.tamano]) / 0.2);
+          const paga = A.res[C.sacia] * A.conf;
+          u += AJ.pesoPresa * hambre * sabeCarne * debil * (0.1 + 0.9 * Math.min(1, paga * 3));
+        }
+      }
+      // Lo que le gusta o disgusta de su aspecto y de su conducta
+      if (c.gustos && p.esCriatura && v === "acercarse") u += AJ.pesoGusto * gustoDe(c, p);
       // Acercarse a alguien conocido atrae mas, sobre todo estando sola
       if (c.reconocePorRasgos && p.esCriatura && v === "acercarse") u += AJ.pesoFamiliar * afectoDe(c, p) * (0.3 + sol);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle

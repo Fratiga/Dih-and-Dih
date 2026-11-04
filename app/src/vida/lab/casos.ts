@@ -1529,21 +1529,22 @@ export const caso20: Caso = {
 export const caso21: Caso = {
   id: "21",
   titulo: "Carroñeo y depredación",
-  hipotesis: "Matar no recibe ninguna recompensa. El cuidador premia a la agresiva los empujones de las tres primeras rondas (sin eso no llega a atacar a una presa) y deja de hacerlo. Si el cuerpo queda donde cae y se puede comer, la que mata a una presa vulnerable come enseguida, y el crédito retrasado de siempre sostiene el ataque sin premio: sigue atacando. Si no queda cuerpo, se apaga. Y comer un cadáver que ya estaba ahí no enseña a matar: quien solo ha carroñeado no ataca más a una presa viva que quien no ha comido nunca carne.",
+  hipotesis: "Comer un cadáver que ya estaba ahí enseña que la carne alimenta, pero no enseña a matar. Con ese saber, el hambre y una presa que se ve débil, una agresiva ataca y, si el cuerpo queda donde cae, come enseguida: el crédito retrasado de siempre liga el ataque con la comida y ataca más a las siguientes. Matar no recibe ninguna recompensa. Sin haber probado carne, mata menos. Y si no queda cuerpo, el ataque no se refuerza.",
   minimo: 0.8,
   ejecutar(semilla) {
-    const RONDAS = 10;
     const POR_RONDA = 90;
-    const RONDAS_PREMIO = 3;
-    type Brazo = "depreda" | "sin cadaver" | "carroña";
+    const RONDAS_CARRONA = 3;
+    const RONDAS_PRESA = 8;
+    type Brazo = "carroña y presas con cuerpo" | "carroña y presas sin cuerpo" | "sin carroña";
     const gH = clonarGenoma(genomaDe(semilla, 211));
     gH.rasgos[R.agresividad] = 0.9;
     const gP = genomaDe(semilla, 212);
     const empujones = (c: Criatura, t0 = 0, t1 = Infinity): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura" && r.t >= t0 && r.t < t1).length;
-    const bocadosCadaver = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "cadaver" && (r.res?.[0] ?? 0) > 0.05).length;
-    const crear = (id: number, corpse: boolean): Criatura => {
+    const bocadosCadaver = (c: Criatura, t0 = 0, t1 = Infinity): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "cadaver" && (r.res?.[0] ?? 0) > 0.05 && r.t >= t0 && r.t < t1).length;
+    const crear = (id: number, cuerpo: boolean): Criatura => {
       const p = new Criatura(id, `Presa ${id}`, clonarGenoma(gP), 1000, mezclar(semilla, 213, id));
-      p.agresion = corpse;
+      p.agresion = cuerpo;
+      p.mortalidad = "permanente";
       p.salud = 0.3;
       p.atrapada = true;
       p.capRegistro = 500;
@@ -1553,56 +1554,171 @@ export const caso21: Caso = {
       const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(gH), x: 500 }], comedero: null, mortalidad: "permanente" });
       const H = s.criaturas[0];
       H.agresion = true; H.conflictoComida = true; H.reconocePorRasgos = true; H.capRegistro = 200000;
+      const total = RONDAS_CARRONA + RONDAS_PRESA;
       let ronda = -1;
       let nPresa = 10;
-      let matadas = 0;
       const presas: Criatura[] = [];
-      const preparar = (r: number, conPresa: boolean, corpse: boolean): void => {
+      const limpiar = (): void => {
         for (const o of [...s.mundo.objetos]) if (o.tipo === "cadaver") s.mundo.quitar(o.id);
         s.criaturas = s.criaturas.filter((c) => c === H);
         H.x = 500; H.accion = null; H.nec[0] = 0.7; H.nec[1] = 0.1; H.emo.fill(0); H.dormido = false;
-        if (conPresa) { const p = crear(nPresa++, corpse); presas.push(p); s.criaturas.push(p); }
-        else if (brazo === "carroña") s.mundo.agregar("cadaver", 1000, { porciones: 6 });
-        void r;
       };
-      let vistos = 0;
       s.ganchos.push(() => {
-        // El cuidador premia cada empujon de las primeras rondas, y despues deja de hacerlo
-        const n = empujones(H);
-        if (n > vistos) { vistos = n; if (ronda >= 0 && ronda < RONDAS_PREMIO && brazo !== "carroña") H.recompensar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t }); }
         const r = Math.floor(s.t / POR_RONDA);
-        if (r === ronda || r >= RONDAS) return;
+        if (r === ronda || r >= total) return;
         ronda = r;
-        preparar(r, brazo !== "carroña", brazo === "depreda");
+        limpiar();
+        if (r < RONDAS_CARRONA) {
+          // Primero solo un cadaver que ya estaba ahi (salvo en el brazo que nunca prueba carne)
+          if (brazo !== "sin carroña") s.mundo.agregar("cadaver", 1000, { porciones: 6 });
+        } else {
+          const p = crear(nPresa++, brazo === "carroña y presas con cuerpo");
+          presas.push(p);
+          s.criaturas.push(p);
+        }
       });
-      s.avanzar(RONDAS * POR_RONDA);
-      matadas = presas.filter((p) => !p.vivo).length;
-      const porRonda = (a: number, b: number): number => empujones(H, a * POR_RONDA, b * POR_RONDA) / (b - a);
-      const primeras = porRonda(0, RONDAS_PREMIO), ultimas = porRonda(RONDAS - 3, RONDAS);
-      const comidos = bocadosCadaver(H);
-      // Prueba comun: una presa viva y vulnerable, sin cadaver al morir, y el depredador con hambre
-      for (const o of [...s.mundo.objetos]) if (o.tipo === "cadaver") s.mundo.quitar(o.id);
-      s.criaturas = s.criaturas.filter((c) => c === H);
-      H.x = 500; H.accion = null; H.nec[0] = 0.7; H.nec[1] = 0.1; H.emo.fill(0); H.dormido = false;
+      s.avanzar(total * POR_RONDA);
+      const t0 = RONDAS_CARRONA * POR_RONDA;
+      const porRonda = (a: number, b: number): number => empujones(H, t0 + a * POR_RONDA, t0 + b * POR_RONDA) / (b - a);
+      const primeras = porRonda(0, 3), ultimas = porRonda(RONDAS_PRESA - 3, RONDAS_PRESA);
+      const matadas = presas.filter((p) => !p.vivo).length;
+      const carrona = bocadosCadaver(H, 0, t0);
+      const cazada = bocadosCadaver(H, t0);
+      // Prueba comun: una presa viva y debil, sin cuerpo al morir
+      limpiar();
       const test = crear(99, false);
       s.criaturas.push(test);
-      const t0 = s.t;
+      const tt = s.t;
       s.avanzar(POR_RONDA);
-      return { primeras, ultimas, matadas, comidos, test: empujones(H, t0) };
+      return { primeras, ultimas, matadas, carrona, cazada, test: empujones(H, tt) };
     };
-    const d = probar("depreda"), n = probar("sin cadaver"), c = probar("carroña");
+    const d = probar("carroña y presas con cuerpo"), n = probar("carroña y presas sin cuerpo"), c = probar("sin carroña");
     return resultado(semilla, {
-      "matar deja un cuerpo que se come: mata al menos 3 presas en 10 rondas y come al menos 3 bocados de cadáver": d.matadas >= 3 && d.comidos >= 3,
-      "se sostiene sin premio: en las últimas 3 rondas (sin premio) sigue atacando al menos la mitad que con premio, y sin cuerpo se apaga (menos de la tercera parte)": d.ultimas >= d.primeras * 0.5 && n.ultimas < n.primeras / 3,
-      "ante una presa nueva sin cuerpo ataca más que quien no encontró cadáveres (3 o más empujones) y que quien solo carroñeó": d.test >= n.test + 3 && d.test >= c.test + 3,
-      "comer un cadáver no enseña a matar: quien solo carroñeó (come 3 o más bocados) no ataca más que quien no ha comido carne (1 empujón más como mucho)": c.comidos >= 3 && c.test <= n.test + 1,
+      "carroñeo: come el cadáver que ya estaba (3 o más bocados) sin que nadie se lo enseñe": d.carrona >= 3,
+      "sabiendo que la carne alimenta, una presa débil le da motivo para atacar: mata al menos 2 presas en 8 rondas y se las come (3 o más bocados)": d.matadas >= 2 && d.cazada >= 3,
+      "sin haber probado carne mata menos presas que quien carroñeó antes": c.matadas < d.matadas,
+      "el cuerpo refuerza: con cuerpo mata más presas que sin él (al menos una más)": d.matadas >= n.matadas + 1,
     }, {
-      depredaMatadas: d.matadas, depredaBocados: d.comidos, depredaPrimeras: d.primeras, depredaUltimas: d.ultimas, depredaPrueba: d.test,
-      sinCadaverMatadas: n.matadas, sinCadaverPrimeras: n.primeras, sinCadaverUltimas: n.ultimas, sinCadaverPrueba: n.test,
-      carronaBocados: c.comidos, carronaPrueba: c.test,
-    }, null, RONDAS * POR_RONDA);
+      conCuerpoMatadas: d.matadas, conCuerpoCarrona: d.carrona, conCuerpoCazada: d.cazada, conCuerpoPrimeras: d.primeras, conCuerpoUltimas: d.ultimas, conCuerpoPrueba: d.test,
+      sinCuerpoMatadas: n.matadas, sinCuerpoPrimeras: n.primeras, sinCuerpoUltimas: n.ultimas, sinCuerpoPrueba: n.test,
+      sinCarronaMatadas: c.matadas, sinCarronaPrimeras: c.primeras, sinCarronaUltimas: c.ultimas, sinCarronaPrueba: c.test,
+    }, null, (RONDAS_CARRONA + RONDAS_PRESA) * POR_RONDA);
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso22: Caso = {
+  id: "22",
+  titulo: "Manías por el aspecto y por la conducta",
+  hipotesis: "Una criatura puede coger manía a un rasgo físico (los cuernos, por ejemplo) o a una conducta (pegar a otras) por lo que ha vivido, y esa manía se aplica a criaturas que no conoce, sin que nadie se lo diga. Si la maltrata una con cuernos, rehúye a las nuevas con cuernos y prefiere a las que no los tienen. Si la maltrata una sin cuernos, al revés. Si ha visto pegar a una criatura que no es ella, la prefiere menos que a una pacífica aunque a ella nunca le haya hecho nada.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 16;
+    type Brazo = "maltrata con cuernos" | "maltrata sin cuernos" | "sin maltrato";
+    const gV = genomaDe(semilla, 221);
+    const gH = genomaDe(semilla, 222);
+    const gN = genomaDe(semilla, 223);
+    const conCuernos = (g: Genoma, c: number): Genoma => { const q = clonarGenoma(g); q.cuerpo.cuernos = c; return q; };
+    const vivir = (brazo: Brazo) => {
+      // En el control la compañera tiene cuernos intermedios: la convivencia agradable enseña a querer los rasgos de quien convive, y asi no inclina hacia ninguno
+      const horn = brazo === "maltrata con cuernos" ? 1 : brazo === "maltrata sin cuernos" ? 0 : 0.5;
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(gV), x: 500 }, { genoma: conCuernos(gH, horn), x: 1100 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [V, H] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.gustos = true; c.capRegistro = 50000; }
+      let prox = 20;
+      s.ganchos.push(() => {
+        if (brazo === "sin maltrato" || s.t < prox) return;
+        prox += 10;
+        H.x = V.x + 70; H.accion = null;
+        V.sufrir(0.4, 1000 + H.id, null, 0.3);
+        V.anotarAgravio(1000 + H.id, 0.4);
+      });
+      s.avanzar(400);
+      return { s, V };
+    };
+    /** A cual de dos criaturas nuevas, iguales salvo en los cuernos, llega antes (cambian de lado cada vez). Devuelve la proporcion de veces que llega antes a la sin cuernos. */
+    const eleccion = (s0: Simulacion): number => {
+      let sin = 0, total = 0;
+      for (let k = 0; k < REP; k++) {
+        const r = replica(s0, k);
+        const V = r.criaturas[0];
+        const A = new Criatura(5, "Con cuernos", conCuernos(gN, 1), 1080, mezclar(semilla, 224, k));
+        const B = new Criatura(6, "Sin cuernos", conCuernos(gN, 0), 520, mezclar(semilla, 225, k));
+        // Solo se distinguen por los cuernos: misma huella
+        B.huella = A.huella;
+        for (const c of [A, B]) { c.reconocePorRasgos = true; c.gustos = true; c.capRegistro = 500; c.atrapada = true; }
+        for (const o of [...r.mundo.objetos]) r.mundo.quitar(o.id);
+        r.comedero = null;
+        r.criaturas = [V, A, B];
+        const izq = k % 2 === 0;
+        V.x = 800; V.accion = null; A.x = izq ? 1080 : 520; B.x = izq ? 520 : 1080;
+        V.nec[0] = 0.1; V.nec[1] = 0.1; V.nec[3] = 0.2; V.nec[4] = 0.4; V.emo.fill(0);
+        let primera = "";
+        r.ganchos.push(() => {
+          if (primera) return;
+          if (Math.abs(V.x - A.x) < 200) primera = "A";
+          else if (Math.abs(V.x - B.x) < 200) primera = "B";
+        });
+        r.avanzar(15);
+        if (primera) { total++; if (primera === "B") sin++; }
+      }
+      return total ? sin / total : 0.5;
+    };
+    // Conducta: ve a una pegar a una tercera y no le hace nada a ella
+    const reputacion = (): { prefierePacifica: number; fama: number } => {
+      const gP = clonarGenoma(gN);
+      const s = nuevaSim({ semilla, objetos: [], criaturas: [{ genoma: clonarGenoma(gV), x: 800 }, { genoma: clonarGenoma(gH), x: 600 }, { genoma: gP, x: 1000 }, { genoma: genomaDe(semilla, 226), x: 700 }], comedero: null });
+      const [V, Ag, , Victima] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.gustos = true; c.agresion = true; c.capRegistro = 20000; }
+      Ag.rasgos[R.agresividad] = 0.95;
+      Victima.atrapada = true;
+      s.avanzar(5);
+      // Ag pega a la victima delante de V, varias veces
+      for (let i = 0; i < 6; i++) {
+        Ag.x = Victima.x + 60; Ag.accion = null;
+        Victima.sufrir(0.3, 1000 + Ag.id, null, 0.2);
+        Ag.ultimoGolpe = { t: s.t, contra: Victima.id };
+        V.x = 800; Victima.x = 700;
+        s.avanzar(3);
+      }
+      const fama = V.reputacion[1000 + Ag.id]?.agresion ?? 0;
+      // Elige entre Ag y Pa, quietas
+      let paz = 0, total = 0;
+      for (let k = 0; k < REP; k++) {
+        const r = replica(s, k);
+        const [v, a, p] = r.criaturas;
+        for (const o of [...r.mundo.objetos]) r.mundo.quitar(o.id);
+        r.criaturas = [v, a, p];
+        const izq = k % 2 === 0;
+        v.x = 800; v.accion = null; a.x = izq ? 520 : 1080; p.x = izq ? 1080 : 520; a.atrapada = true; p.atrapada = true;
+        v.nec[0] = 0.1; v.nec[1] = 0.1; v.nec[3] = 0.2; v.nec[4] = 0.4; v.emo.fill(0);
+        let primera = "";
+        r.ganchos.push(() => {
+          if (primera) return;
+          if (Math.abs(v.x - a.x) < 200) primera = "a";
+          else if (Math.abs(v.x - p.x) < 200) primera = "p";
+        });
+        r.avanzar(15);
+        if (primera) { total++; if (primera === "p") paz++; }
+      }
+      return { prefierePacifica: total ? paz / total : 0.5, fama };
+    };
+    const brazos: Brazo[] = ["maltrata con cuernos", "maltrata sin cuernos", "sin maltrato"];
+    const e: Record<string, number> = {};
+    for (const b of brazos) e[b] = eleccion(vivir(b).s);
+    const rep = reputacion();
+    return resultado(semilla, {
+      "maltratada por una con cuernos, prefiere a las nuevas sin cuernos (más del 65 % de las veces)": e["maltrata con cuernos"] > 0.65,
+      "maltratada por una sin cuernos, prefiere a las nuevas con cuernos (sin cuernos menos del 35 %)": e["maltrata sin cuernos"] < 0.35,
+      "sin maltrato no tiene preferencia por los cuernos (entre el 30 y el 70 %)": e["sin maltrato"] >= 0.3 && e["sin maltrato"] <= 0.7,
+      "conducta: tras ver pegar a una tercera, la criatura que pega queda con fama (0,3 o más) y prefiere a la pacífica (más del 60 %)": rep.fama >= 0.3 && rep.prefierePacifica > 0.6,
+    }, {
+      sinCuernosTrasMaltratoConCuernos: e["maltrata con cuernos"], sinCuernosTrasMaltratoSinCuernos: e["maltrata sin cuernos"], sinCuernosSinMaltrato: e["sin maltrato"],
+      famaDeLaQuePega: rep.fama, prefierePacificaTrasVerPegar: rep.prefierePacifica,
+    }, null, 400);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
