@@ -60,6 +60,12 @@ export const AJ = {
   pesoFamiliar: 0.9,
   /** Cuanto cuenta de lo que consigue otra con una accion, frente a si lo hubiera hecho uno (aprendizaje por observacion). */
   pesoVicario: 0.55,
+  /** Cuanto empuja a probar a empujar a otra criatura el caracter agresivo (por encima de 0,4), mientras no sepa si compensa. */
+  pesoAgresion: 0.8,
+  /** Cuanto empuja a empujar a otra la frustracion (por quedarse sin lo que esperaba) en un caracter agresivo. */
+  pesoFrustracionAgresion: 1.5,
+  /** Cuanto frena empujar a otra el afecto que se le tiene. */
+  frenoAfectoAgresion: 1.4,
 
   /* --- Habituacion: repetir lo mismo entretiene cada vez menos y se recupera con el descanso --- */
   /** Segundos que tarda en olvidarse la repeticion reciente. */

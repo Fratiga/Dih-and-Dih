@@ -112,9 +112,37 @@ function mover(c: Criatura, destino: number, vel: number, dt: number, ancho: num
   c.vx = (Math.sign(d) * paso) / dt;
 }
 
+/** Empujar a otra criatura: se va hasta ella, y en el golpe la desplaza, le hace dano y le deja miedo. Al que golpea no le da nada en el momento: si despues
+    consigue comida, el credito retrasado de siempre se lo acredita a esto. */
+function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): void {
+  const otro = env.criaturas.find((o) => 1000 + o.id === a.obj);
+  if (!otro || !otro.vivo) { terminar(c, a, env, true); return; }
+  const ancho = env.mundo.ancho;
+  if (a.fase === "ir") {
+    const pos = otro.x + (c.x < otro.x ? -50 : 50);
+    if (Math.abs(pos - c.x) <= AJ.alcance) { a.fase = "hacer"; a.tf = env.t; }
+    else {
+      mover(c, pos, AJ.velCorrer * c.genoma.velocidad, dt, ancho);
+      if (env.t - a.t0 > 10) terminar(c, a, env, true);
+    }
+    return;
+  }
+  c.dir = otro.x >= c.x ? 1 : -1;
+  if (!a.hecho && env.t - a.tf >= IMPACTO) {
+    a.hecho = true;
+    const golpe = acota(0.1 + 0.5 * c.genoma.fuerza * (0.4 + 0.6 * c.rasgos[R.agresividad]));
+    otro.x = acota(otro.x + c.dir * 120 * golpe, 10, ancho - 10);
+    otro.sufrir(golpe, 1000 + c.id, null, 0.4);
+    otro.salud -= golpe * 0.15;
+    c.experimentar(a, resCero(), true, env);
+  }
+  if (env.t - a.tf >= 0.8) terminar(c, a, env);
+}
+
 export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   const a = c.accion;
   if (!a) return;
+  if (a.v === "empujar" && a.esCriatura) { c.vx = 0; empujarACriatura(c, a, env, dt); return; }
   if (a.ajeno && !a.ajeno.medido && env.t - a.tf >= VENTANA_ALIVIO) notarAlivio(c, a, env);
   const ancho = env.mundo.ancho;
   const g = c.genoma;

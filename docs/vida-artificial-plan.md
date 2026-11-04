@@ -268,6 +268,22 @@ Una criatura muy sociable y apegada (0,9 en los dos rasgos) convive con una poco
 
 Queda informativo (7/10) y no sirve todavía como base para los relatos de relaciones entre criaturas de distintos propietarios sin esa pieza.
 
+### Criar una hostil (caso 18): la agresión todavía no se aprende
+
+Primera pieza del caso 15 y de los casos 09 a 12. Se añadió la posibilidad de **empujar a otra criatura** (`agresion`, desactivado por defecto): se va hasta ella, y en el golpe la desplaza, le hace daño y le deja miedo. La víctima aprende, con lo que ya había, a asociar el aspecto de quien la golpea con daño y a apartarse de ella. Al que golpea no le da nada en el momento: si después consigue comida, el crédito retrasado de siempre se lo acredita al empujón. Lo que empuja a probarlo es una predisposición del carácter (`agresividad` por encima de 0,4 mientras no sabe si compensa), la frustración multiplicada por ese carácter, y lo frena el afecto por la otra (`pesoAgresion`, `pesoFrustracionAgresion` y `frenoAfectoAgresion` en `ajustes.ts`).
+
+El caso 18 cría a una criatura agresiva (0,9) con una rival, durante 1800 s, en tres condiciones: agresiva con premio (una fruta junto a ella justo después de cada empujón, como haría un cuidador), agresiva sin premio y pacífica (0,08) con premio. Después se la pone con una criatura nueva y comida de sobra, sin premio.
+
+Resultado (6 y 10 semillas): **no se cría una hostil.** Hay entre 1 y 4 empujones por crianza y ninguno en los últimos 600 s, con premio o sin él. Lo que se ve con una criatura nueva (0 a 4 empujones en 300 s) es igual con y sin premio, así que es exploración por carácter y no algo aprendido. La rival sí aprende a asociarla con daño (0,4 a 0,5 frente a 0 a 0,3 si la agresora es pacífica).
+
+Se probó, por orden, y no cambió el resultado:
+
+1. **Escasez como motor.** Con comida escasa (una fruta cada 500 s, la agresora come 5 y la rival 2) la competencia es real, pero no sube la frustración, porque disputarse una fruta con varias porciones no produce un "me quedé sin ella". Montar una competencia emergente exige modelar eso.
+2. **Premio de un cuidador** (la fruta junto a ella tras cada golpe), con comedero escaso para que tenga hambre.
+3. **Rival inmovilizada**, para que haya ocasión de repetir. Con eso hay un solo empujón por crianza y con premio incluso menos que sin él.
+
+No se ha aislado la causa. Hipótesis sin comprobar: la fruta de premio llega con la agresora saciada y vale poco, el crédito retrasado no llega a asignarse al empujón (cae fuera de la ventana de 9 s o no se come a tiempo), o el freno del afecto pesa más que la expectativa aprendida. Cualquiera de ellas puede revisarse con el registro de trazas. Queda como informativo y sin pasar, y el caso 15 sigue sin poder construirse.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):

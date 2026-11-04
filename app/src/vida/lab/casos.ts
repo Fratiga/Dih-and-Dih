@@ -7,6 +7,7 @@ import { clonarGenoma, cruzar, type Genoma } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
 import { Azar, mezclar } from "../nucleo/azar.ts";
 import { semejanza } from "../nucleo/memoria.ts";
+import { featuresCriatura } from "../nucleo/conducta.ts";
 import { Criatura, type Registro } from "../nucleo/criatura.ts";
 import { Simulacion } from "../nucleo/simulacion.ts";
 import { avanzarMuestreando, conteoAcciones, genomaDe, impactos, media, mediana, nuevaSim, replica, type Caso, type ResSemilla } from "./laboratorio.ts";
@@ -1314,5 +1315,73 @@ export const caso17: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso18: Caso = {
+  id: "18",
+  titulo: "Criar una hostil",
+  hipotesis: "La hostilidad no se escribe, se cría. Una criatura de carácter agresivo a la que su cuidador da algo bueno justo después de cada empujón a su compañera aprende a empujar. La misma criatura sin esa recompensa, o una de carácter pacífico con ella, no. Lo criado se ve fuera de donde se crió, con una criatura nueva, sin recompensa y con comida de sobra, y la rival aprende a asociarla con daño.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REPOSO = 1800;
+    type Brazo = "premiada agresiva" | "sin premio agresiva" | "premiada pacifica";
+    const gH = genomaDe(semilla, 181);
+    const gV = genomaDe(semilla, 182);
+    const gN = genomaDe(semilla, 183);
+    const empujones = (c: Criatura, desde = 0, hasta = Infinity): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura" && r.t >= desde && r.t < hasta).length;
+    const criar = (brazo: Brazo): { H: Criatura; V: Criatura; total: number; ultimos: number; saludV: number; evitaV: number } => {
+      const h = clonarGenoma(gH);
+      h.rasgos[R.agresividad] = brazo === "premiada pacifica" ? 0.08 : 0.9;
+      const v = clonarGenoma(gV);
+      v.rasgos[R.agresividad] = 0.25;
+      const premio = brazo !== "sin premio agresiva";
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: h, x: 500 }, { genoma: v, x: 1100 }], comedero: { cada: 500, max: 1, tipo: "fruta" } });
+      for (const c of s.criaturas) { c.agresion = true; c.reconocePorRasgos = true; c.capRegistro = 200000; }
+      const [H, V] = s.criaturas;
+      // La rival no se puede apartar (compañera de entrenamiento): asi hay ocasion de volver a intentarlo y se ve si lo aprendido se repite
+      V.atrapada = true;
+      // El cuidador: una fruta junto a la criada justo despues de cada empujon a su companera
+      let vistos = 0;
+      if (premio) s.ganchos.push(() => {
+        const n = empujones(H);
+        if (n > vistos) { vistos = n; s.mundo.agregar("fruta", H.x + (H.dir >= 0 ? 60 : -60), { porciones: 2 }); }
+      });
+      s.avanzar(REPOSO);
+      // Lo que la rival ha aprendido de ella: cuanto dano asocia a su aspecto
+      const pH = V.mem.predecir("presencia", featuresCriatura(H), new Array(10).fill(1), 0);
+      return { H, V, total: empujones(H), ultimos: empujones(H, REPOSO - 600), saludV: V.salud, evitaV: pH.res[C.dano] * pH.conf };
+    };
+    const brazos: Brazo[] = ["premiada agresiva", "sin premio agresiva", "premiada pacifica"];
+    const crias = Object.fromEntries(brazos.map((b) => [b, criar(b)])) as Record<Brazo, ReturnType<typeof criar>>;
+    // Fuera de donde se crio: una criatura nueva y comida de sobra
+    const normal = (b: Brazo): number => {
+      const r = crias[b];
+      const s = nuevaSim({ semilla: mezclar(semilla, 184, brazos.indexOf(b)), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(r.H.genoma), x: 500 }, { genoma: clonarGenoma(gN), x: 1100 }], comedero: { cada: 20, max: 8, tipo: "fruta" } });
+      // La criada, con todo lo vivido, entra en la sala nueva (en el sitio de la primera criatura)
+      const H = Criatura.desde({ ...r.H.estado(), id: 1, x: 500, accion: null }, mezclar(semilla, 185, brazos.indexOf(b)));
+      H.reiniciarReloj();
+      H.capRegistro = 100000;
+      s.criaturas[0] = H;
+      for (const c of s.criaturas) { c.agresion = true; c.reconocePorRasgos = true; c.capRegistro = 100000; }
+      s.avanzar(300);
+      return empujones(H);
+    };
+    const n: Record<Brazo, number> = { "premiada agresiva": normal("premiada agresiva"), "sin premio agresiva": normal("sin premio agresiva"), "premiada pacifica": normal("premiada pacifica") };
+    const e = crias["premiada agresiva"], a = crias["sin premio agresiva"], p = crias["premiada pacifica"];
+    return resultado(semilla, {
+      "comprobación: con premio, la agresiva empuja a la rival al menos 5 veces y la rival lo asocia con daño (0,2 o más)": e.total >= 5 && e.evitaV > 0.2,
+      "aprende que compensa: en los últimos 600 s empuja más que sin premio (1,5 veces más y al menos 3) y que la pacífica": e.ultimos >= 3 && e.ultimos > a.ultimos * 1.5 && e.ultimos > p.ultimos * 1.5,
+      "lo criado se ve fuera: con una criatura nueva, comida de sobra y sin premio, empuja más (3 o más) que las criadas de otra manera": n["premiada agresiva"] >= 3 && n["premiada agresiva"] > n["sin premio agresiva"] + 2 && n["premiada agresiva"] > n["premiada pacifica"] + 2,
+      "la rival aprende a asociarla con daño (más que la de la crianza pacífica)": e.evitaV > p.evitaV + 0.1,
+    }, {
+      empujonesCriaEscasezAgresiva: e.total, empujonesCriaAbundancia: a.total, empujonesCriaPacifica: p.total,
+      ultimos600EscasezAgresiva: e.ultimos, ultimos600Abundancia: a.ultimos, ultimos600Pacifica: p.ultimos,
+      fueraEscasezAgresiva: n["premiada agresiva"], fueraAbundancia: n["sin premio agresiva"], fueraPacifica: n["premiada pacifica"],
+      saludRivalEscasezAgresiva: e.saludV, saludRivalAbundancia: a.saludV, saludRivalPacifica: p.saludV,
+      danoAsociadoEscasezAgresiva: e.evitaV, danoAsociadoPacifica: p.evitaV,
+    }, e.H, REPOSO);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

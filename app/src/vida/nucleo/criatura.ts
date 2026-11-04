@@ -111,6 +111,7 @@ export interface EstadoCriatura {
   estadosAjenos: boolean;
   reconocePorRasgos: boolean;
   aprendeObservando: boolean;
+  agresion: boolean;
   ultimoComer: Comida | null;
   vistoComer: number;
   atrapada: boolean;
@@ -173,6 +174,8 @@ export class Criatura {
   reconocePorRasgos = false;
   /** Experimental: si ve que otra criatura actua sobre una maquina y poco despues sale algo que le interesa, aprende que esa accion lo trae. */
   aprendeObservando = false;
+  /** Experimental: puede empujar a otras criaturas (y hacerles dano). Si compensa o no lo aprende viviendo. */
+  agresion = false;
   ultimoComer: Comida | null = null;
   /** El instante de la ultima comida ajena que ya vio. */
   vistoComer = -1;
@@ -713,7 +716,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -753,6 +756,7 @@ export class Criatura {
     c.estadosAjenos = e.estadosAjenos ?? false;
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.aprendeObservando = e.aprendeObservando ?? false;
+    c.agresion = e.agresion ?? false;
     c.ultimoComer = e.ultimoComer ? { ...e.ultimoComer, f: e.ultimoComer.f.slice() } : null;
     c.vistoComer = e.vistoComer ?? -1;
     c.atrapada = e.atrapada ?? false;

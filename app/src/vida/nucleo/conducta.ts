@@ -182,7 +182,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
   };
   const comestible = (p: Percepto): boolean => !p.esCriatura && c.mem.predecir("probar", p.f, p.m, p.x / ancho).res[C.sacia] > 0.05;
   for (const p of ps) {
-    const verbos: readonly Verbo[] = p.esCriatura ? ["acercarse"] : (["probar", "empujar", "tocar"] as const);
+    const verbos: readonly Verbo[] = p.esCriatura ? (c.agresion ? ["acercarse", "empujar"] : ["acercarse"]) : (["probar", "empujar", "tocar"] as const);
     for (const v of verbos) {
       if (!VERBOS_OBJETO.includes(v)) continue;
       const A = c.mem.predecir(v, p.f, p.m, p.x / ancho);
@@ -194,6 +194,10 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       // En el modo de aprendizaje por observacion, ver a otra usar algo no hace que deje de ser nuevo para quien mira
       let u = utilidad(res, p.dist, c.aprendeObservando ? A.confPropia : A.conf, p.esCriatura);
       if (res[C.alivio] > 0) u += res[C.alivio] * pesoAlivio(p.id);
+      // Empujar a otra criatura: el caracter agresivo empuja a probarlo mientras no sabe si compensa, la frustracion de quedarse sin lo esperado lo atiza
+      // y el afecto lo frena. Que compense lo aprende
+      // despues, si conseguir comida va detras de empujar a una rival (el credito retrasado de siempre)
+      if (c.agresion && p.esCriatura && v === "empujar") u += AJ.pesoAgresion * Math.max(0, ras[R.agresividad] - 0.4) * (1 - A.confPropia) + AJ.pesoFrustracionAgresion * emo[E.frustracion] * ras[R.agresividad] - AJ.frenoAfectoAgresion * afectoDe(c, p);
       // Acercarse a alguien conocido atrae mas, sobre todo estando sola
       if (c.reconocePorRasgos && p.esCriatura && v === "acercarse") u += AJ.pesoFamiliar * afectoDe(c, p) * (0.3 + sol);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
