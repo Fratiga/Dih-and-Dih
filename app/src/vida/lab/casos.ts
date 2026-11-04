@@ -2,7 +2,7 @@
    Implementados: 01 a 04 (un individuo aprende), 04b (generalización), 13 (gemelos) y 05 (partido improvisado, preparado).
    Cada uno usa varias semillas y un control. Los criterios estan escritos para que no se cumplan por casualidad. */
 
-import { C, type Verbo } from "../nucleo/tipos.ts";
+import { C, R, type Verbo } from "../nucleo/tipos.ts";
 import { clonarGenoma, cruzar, type Genoma } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
 import { Azar, mezclar } from "../nucleo/azar.ts";
@@ -1274,5 +1274,45 @@ export const caso07c: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso17: Caso = {
+  id: "17",
+  titulo: "Afinidad desigual",
+  hipotesis: "Dos criaturas que conviven no tienen por qué quererse por igual. Si una es muy sociable y apegada y la otra poco, la primera termina con más afecto por la segunda que al revés y es quien más la busca. Si las dos son sociables, la relación es pareja. Se mide a los 900 s: con la convivencia larga el afecto de las dos se satura y la diferencia desaparece. La asimetría sale del carácter y de lo vivido, no de una categoría de relación.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 6;
+    /** Convive 900 s y devuelve el afecto de cada una por la otra y cuántas veces decidió acercarse a ella. */
+    const convivir = (sociableA: number, sociableB: number, k: number) => {
+      const gA = clonarGenoma(genomaDe(semilla, 171));
+      const gB = clonarGenoma(genomaDe(semilla, 172));
+      gA.rasgos[R.sociabilidad] = sociableA; gA.rasgos[R.apego] = sociableA;
+      gB.rasgos[R.sociabilidad] = sociableB; gB.rasgos[R.apego] = sociableB;
+      const s = nuevaSim({ semilla: mezclar(semilla, 173, k), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: gA, x: 500 }, { genoma: gB, x: 1100 }], comedero: { cada: 110, max: 3, tipo: "fruta" } });
+      for (const c of s.criaturas) c.reconocePorRasgos = true;
+      s.avanzar(900);
+      const [A, B] = s.criaturas;
+      const afecto = (c: Criatura, otra: Criatura): number => c.mem.vinculos.find((q) => q.id === 1000 + otra.id)?.afecto ?? 0;
+      const busca = (c: Criatura, otra: Criatura): number => c.registro.filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + otra.id).length;
+      return { aAB: afecto(A, B), aBA: afecto(B, A), buscaAB: busca(A, B), buscaBA: busca(B, A) };
+    };
+    const med = (xs: number[]) => mediana(xs);
+    const asim = Array.from({ length: REP }, (_, k) => convivir(0.9, 0.12, k));
+    const sim = Array.from({ length: REP }, (_, k) => convivir(0.9, 0.9, k));
+    const dAsim = med(asim.map((x) => x.aAB - x.aBA));
+    const dSim = med(sim.map((x) => Math.abs(x.aAB - x.aBA)));
+    const buscaA = med(asim.map((x) => x.buscaAB)), buscaB = med(asim.map((x) => x.buscaBA));
+    // En cuantas de las seis convivencias la sociable supera a la otra (no depende de un umbral de tamano)
+    const masAfecto = asim.filter((x) => x.aAB > x.aBA).length;
+    const masBusca = asim.filter((x) => x.buscaAB > x.buscaBA).length;
+    return resultado(semilla, {
+      "la sociable y apegada termina con más afecto por la otra que al revés en al menos 5 de 6 convivencias": masAfecto >= 5,
+      "y es quien más la busca (más decisiones de acercarse) en al menos 4 de 6": masBusca >= 4,
+      "si las dos son sociables, el afecto es parecido (diferencia mediana menor que 0,2)": dSim < 0.2,
+    }, { diferenciaAfectoAsimetrica: dAsim, buscaLaSociable: buscaA, buscaLaPocoSociable: buscaB, diferenciaAfectoSimetrica: dSim, afectoSociable: med(asim.map((x) => x.aAB)), afectoPocoSociable: med(asim.map((x) => x.aBA)) }, null, 1500);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

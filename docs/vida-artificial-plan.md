@@ -258,6 +258,16 @@ Resultados con 10 semillas, 12 réplicas por condición:
 - **El aprendizaje del resultado no está demostrado.** Comerse el primer gránulo cuesta lo mismo en todas las condiciones con acceso a la palanca, y con la estropeada incluso menos. No se puede decir que haya aprendido que de la palanca sale comida. Puede ser porque los gránulos huelen a comida y los prueba enseguida de todos modos, o porque lo visto no tiene efecto. No se ha separado. Hace falta una prueba en la que la comida no se pueda descubrir por sí sola.
 - **El cambio de confianza no se puede hacer global.** Con 20 semillas, pasar a confianza solo propia para todas dejó el 06 en 14/20 (con la confianza de siempre, 17/20) y el 08b en 14/20 (frente a 16/20), porque la curiosidad por objetos compite con acercarse a la otra criatura. Por eso solo vale en el modo de observación. El arreglo general sería una confianza por canal (saber de qué se sabe, no solo cuánto) y queda pendiente.
 
+### Afinidad desigual (caso 17)
+
+Una criatura muy sociable y apegada (0,9 en los dos rasgos) convive con una poco sociable (0,12) y se mide a los 900 s. En la pareja de control las dos son sociables (0,9). Seis convivencias por semilla con el reconocimiento por rasgos activo.
+
+- **La asimetría existe y va en la dirección esperada, pero es moderada.** A los 900 s, el afecto de la sociable por la otra es de 0,54 de media frente a 0,34 al revés, y la busca unas 14 veces frente a 10. La sociable tiene más afecto en al menos 5 de 6 convivencias en 9 de 10 semillas, y busca más en al menos 4 de 6 en 7 de 10. En la pareja de sociables la diferencia mediana es menor de 0,2 en 10 de 10.
+- **Se satura con el tiempo.** El afecto sube con el tiempo que pasan cerca, que es mutuo, y el carácter solo cambia la rapidez. A 200 s la diferencia media es de 0,06, a 500 s de 0,13, a 900 s de 0,16, y a 1500 s casi desaparece (las dos llegan a 0,6 o más y en algunas semillas a 1,0). Con la convivencia larga las dos terminan queriéndose casi igual, y por eso se mide a 900 s. La duración se escogió después de ver este barrido, no antes.
+- **Qué falta para una asimetría más fuerte.** El afecto crece por estar cerca y por la compañía recibida al acercarse (`terminar` en `acciones.ts`), y ninguno de los dos depende de si la otra correspondió. Para que A quiera a B y B apenas le haga caso, habría que hacer que el afecto crezca más cuando la otra responde bien y menos cuando ignora o se aparta.
+
+Queda informativo (7/10) y no sirve todavía como base para los relatos de relaciones entre criaturas de distintos propietarios sin esa pieza.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
@@ -406,7 +416,7 @@ Cada etapa llega con su caso en el laboratorio, con control y semillas múltiple
 
 ## Casos propuestos 16 y 17: reconocimiento persistente y relaciones asimétricas
 
-El 16 está construido (ver "Reconocimiento persistente" arriba) y el 17 no. Van antes del caso 15, que necesita que las criaturas recuerden a individuos concretos y no solo asocien algo grande con miedo.
+El 16 y el 17 están construidos (ver "Reconocimiento persistente" y "Afinidad desigual" arriba). Van antes del caso 15, que necesita que las criaturas recuerden a individuos concretos y no solo asocien algo grande con miedo.
 
 ### Identidad y reconocimiento son cosas distintas
 
