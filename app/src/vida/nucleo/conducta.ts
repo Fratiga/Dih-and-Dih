@@ -75,7 +75,8 @@ export function percibir(c: Criatura, env: Entorno): Percepto[] {
       for (let i = 0; i < D; i++) if (!M_LEJOS[i]) f[i] = 0.5;
     }
     if (!m) continue;
-    out.push({ id: o.id, nombre: def.nombre, tipo: o.tipo, esCriatura: false, x: o.x, dist, f, m, cerca: dist < 90, recordado: false });
+    const ocupada = c.conflictoComida && o.ocupante !== undefined && o.ocupante !== c.id && env.t - (o.tOcupante ?? -99) < 3;
+    out.push({ id: o.id, nombre: def.nombre, tipo: o.tipo, esCriatura: false, x: o.x, dist, f, m, cerca: dist < 90, recordado: false, ...(ocupada ? { ocupada: true, ocupante: o.ocupante } : {}) });
   }
   for (const o of env.criaturas) {
     if (o === c || !o.vivo) continue;
@@ -194,6 +195,13 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       // En el modo de aprendizaje por observacion, ver a otra usar algo no hace que deje de ser nuevo para quien mira
       let u = utilidad(res, p.dist, c.aprendeObservando ? A.confPropia : A.conf, p.esCriatura);
       if (res[C.alivio] > 0) u += res[C.alivio] * pesoAlivio(p.id);
+      // Comida que otra esta comiendo: esperar o buscar otra, no comerla a la vez
+      if (p.ocupada && v === "probar") u -= AJ.penaOcupada;
+      // Disputa: la que tiene hambre y ve a otra comiendo empuja mas, segun su caracter. Y quien acaba de ser golpeada responde (o huye por el miedo).
+      if (c.agresion && p.esCriatura && v === "empujar") {
+        if (ps.some((q) => !q.esCriatura && q.ocupante === p.id - 1000 && q.dist < 400)) u += AJ.pesoDisputa * hambre * Math.max(0, ras[R.agresividad] - 0.3);
+        if (c.represalia && p.id === 1000 + c.represalia.contra && env.t - c.represalia.t < 10) u += AJ.pesoRepresalia * ras[R.agresividad];
+      }
       // Empujar a otra criatura: el caracter agresivo empuja a probarlo mientras no sabe si compensa, la frustracion de quedarse sin lo esperado lo atiza
       // y el afecto lo frena. Que compense lo aprende
       // despues, si conseguir comida va detras de empujar a una rival (el credito retrasado de siempre)

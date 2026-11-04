@@ -327,6 +327,29 @@ No hay una única regla de convivencia. Habrá espacios de tipos distintos, cada
 
 Con esto, la preocupación por el control del propietario sobre la participación de sus criaturas solo se aplica donde el espacio lo establezca: en los libres no hace falta un permiso por criatura. Las instalaciones y las tareas forman parte de cada espacio. Queda por diseñar cuando se abra el recinto compartido.
 
+### Conflicto por la comida (caso 20)
+
+Primer paso de la ruta de agresión. Detrás de `conflictoComida` (desactivado por defecto):
+
+- La comida que alguien está comiendo queda **ocupada** (`ocupante` en el objeto, 3 s tras el último bocado). Intentar comerla a la vez falla (se cuenta como bloqueo) y frustra. Las que la ven ocupada la evitan (`penaOcupada`).
+- Con `agresion` también, la hambrienta que ve a otra comiendo empuja más según su carácter (`pesoDisputa`, solo por encima de 0,3 de agresividad, sin base) y quien es golpeada responde (`pesoRepresalia`, `represalia`).
+- Un golpe saca a la que come de lo que hacía un momento (aturdimiento de 1 a 3 s) y le hace soltar la comida, de modo que empujar a quien come deja la comida libre en segundos, dentro de la ventana de crédito.
+- Para que comer **dure**, el laboratorio tiene una `raiz` (8 porciones de 0,12). La fruta de siempre (porciones de 0,55) sacia de un solo bocado, y con ella no había nada que defender: la criatura pasaba de hambre 0,70 a 0,16 en 1,4 s.
+
+El caso 20 hace veinte rondas de 60 s con una sola raíz en medio y las dos hambrientas (0,7) a la misma distancia, con tres parejas: dos pacíficas, una agresiva (0,9) y una pacífica, y dos agresivas. Resultados con 10 semillas, medianas:
+
+| Pareja | Bloqueos | Empujones | Parte de la comida de la agresiva |
+|---|---|---|---|
+| Dos pacíficas | 0 (esperan en vez de intentar) | 1 | |
+| Agresiva y pacífica | 0 | 2,5 (la pacífica 0) | **0,95** |
+| Dos agresivas | 0 | 1 y 1 | |
+
+- **El conflicto no se resuelve a golpes.** La agresiva se lleva el 95 % de la raíz (10 de 10 semillas), pero casi sin empujar: va directa a comer mientras la otra hace otras cosas (en una prueba previa con fruta, jugaba con la pelota o exploraba; con la raíz no se miró), así que gana por motivación y llegada, no por violencia. Entre pacíficas, la que llega segunda espera.
+- **Dos agresivas no se pelean** en estas condiciones (1 empujón cada una). Hace falta una forma de que ambas lleguen a la vez y quieran comer a la vez, o que el hambre pese más que el juego.
+- El mecanismo existe y es medible, pero **la agresión por disputa no emerge sola** con los pesos actuales. Queda informativo (0/10).
+
+Qué se aprende: con la comida pobre y duradera hay competencia real, y la frustración por quedarse sin ella tiene origen. Falta que la disputa sea inevitable. Puede hacerse con menos comida, con más hambre, o con una pacífica menos distraída. Lo dejé sin ajustar para no pesar los parámetros hasta que salga la conducta.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
@@ -520,6 +543,7 @@ Referencia: el juego *Creatures*. El jugador no dirige cada acción. Las criatur
 - Premiar y asustar (`recompensar` y `asustar` en `criatura.ts`, botones y atajos en la interfaz). Actúan sobre lo último que hizo la criatura con algo, hasta 6 s antes, y no tienen enfriamiento. Son instantáneas, y el caso 18 mostró que esa inmediatez es lo que permite ligar el premio a la acción (una fruta que se come 9 s después ya no se liga).
 - Autonomía: necesidades, emociones, memoria y utilidad deciden qué hace sin que nadie intervenga.
 - Ficha con necesidades, rasgos y memorias, y simulación fuera de línea de hasta 8 h.
+- **Modo observación** (botón Observar, oculta los paneles), **pestaña Historia** (un diario por criatura con sus episodios recordados, con día y hora) y **resumen al volver** de una ausencia larga. Ya existían cuando se propuso esto como pendiente.
 
 ### Decisiones
 
@@ -538,8 +562,7 @@ Referencia: el juego *Creatures*. El jugador no dirige cada acción. Las criatur
 
 ### Pendiente de interfaz, por valor y coste
 
-- [ ] **Diario de acontecimientos.** Momentos significativos (descubrir comida, aprender una asociación, un susto, conocer a otra criatura, un reencuentro), construido con las memorias episódicas y el registro que ya existen. Es lo más barato y lo que más cambia el juego tras una ausencia, junto con un resumen al volver.
-- [ ] **Modo observación.** Ocultar paneles y dejar que el jugador contemple. Barato.
+- [ ] **Diario compartido entre criaturas.** Lo que hay es un diario por criatura (Historia). Falta una línea de tiempo común con los acontecimientos de todas, ordenados, para ver de un vistazo quién hizo qué a quién mientras no se estaba (un encuentro, un golpe, un premio, una pelea). Se puede construir con las memorias episódicas y el registro. El modo observación ya existe.
 - [ ] **Retroalimentación visible de premiar y asustar,** sin abrir un panel de administración: que se vea que la criatura lo ha relacionado con lo que hacía.
 - [ ] **Vínculo con el jugador** (negativo posible), para que el castigo excesivo tenga consecuencia.
 - [ ] **Mano interactiva** (acariciar, llamar la atención, señalar, entregar objetos). Medio.
@@ -684,7 +707,7 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
-5. Diario de acontecimientos y modo observación (ritmo de juego, arriba), por ser baratos y lo que más cambia volver tras una ausencia.
+5. Diario compartido entre criaturas (ritmo de juego, arriba). El modo observación y el diario por criatura ya existen.
 5b. Conflicto por comida (primer paso de la sección de agresión), que también abre el caso 15 y los casos 09 a 12.
 5c. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), ya construidos, que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
 6. El caso 15 después, porque necesita esos recuerdos de individuos, la agresión entre criaturas y la atribución de efectos a otras. La agresión puede prepararse en paralelo.

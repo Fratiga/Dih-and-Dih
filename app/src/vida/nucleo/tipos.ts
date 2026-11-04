@@ -51,6 +51,10 @@ export interface Percepto {
   cerca: boolean;
   /** Recordado, no visto ahora. */
   recordado: boolean;
+  /** Comida que otra criatura esta comiendo ahora (solo con el conflicto por comida). */
+  ocupada?: boolean;
+  /** Quien la esta comiendo (el identificador de la criatura, sin sumar 1000). */
+  ocupante?: number;
 }
 
 export interface Resultado {

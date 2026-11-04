@@ -154,6 +154,7 @@ function foco(color: "rojo" | "azul"): Sprite {
 export function crearObjetos(): Record<string, Sprite> {
   return {
     fruta: fruta(),
+    raiz: fruta(),
     baya: baya(),
     pelota: pelota(),
     pelota_pesada: pelota(),

@@ -136,6 +136,10 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
     otro.sufrir(golpe, 1000 + c.id, null, 0.4);
     otro.anotarAgravio(1000 + c.id, golpe);
     if (otro.agresion) otro.represalia = { contra: c.id, t: env.t };
+    // El golpe la saca de lo que estaba haciendo un momento y suelta la comida que ocupaba: asi empujar a quien come deja la comida libre en segundos
+    otro.accion = null;
+    otro.espera = Math.max(otro.espera, 1.2 + 3 * golpe);
+    for (const o of env.mundo.objetos) if (o.ocupante === otro.id) { o.ocupante = undefined; o.tOcupante = undefined; }
     c.anotarAgravio(a.obj, golpe * 0.6);
     otro.salud -= golpe * 0.15;
     c.experimentar(a, resCero(), true, env);

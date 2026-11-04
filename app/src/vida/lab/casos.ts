@@ -1470,5 +1470,59 @@ export const caso19: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso20: Caso = {
+  id: "20",
+  titulo: "Conflicto por la comida",
+  hipotesis: "Si la comida que otra está comiendo está ocupada, dos criaturas hambrientas ante una sola raíz de ocho bocados pequeños (veinte rondas de 60 s, con las dos a la misma distancia) entran en conflicto sin que nadie les ordene pelear. Dos pacíficas esperan o buscan otra cosa. Una agresiva y una pacífica: la agresiva empuja a la otra para quedarse con la comida y se lleva la mayor parte. Dos agresivas se empujan mutuamente, y quien es golpeada responde.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const RONDAS = 20;
+    const POR_RONDA = 60;
+    const DUR = RONDAS * POR_RONDA;
+    type Brazo = "dos pacificas" | "agresiva y pacifica" | "dos agresivas";
+    const empujones = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    const bocados = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "raiz" && (r.res?.[0] ?? 0) > 0.05).length;
+    const probar = (brazo: Brazo) => {
+      const gA = clonarGenoma(genomaDe(semilla, 201));
+      const gB = clonarGenoma(genomaDe(semilla, 202));
+      gA.rasgos[R.agresividad] = brazo === "dos pacificas" ? 0.1 : 0.9;
+      gB.rasgos[R.agresividad] = brazo === "dos agresivas" ? 0.9 : 0.1;
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: gA, x: 500 }, { genoma: gB, x: 1100 }], comedero: null });
+      for (const c of s.criaturas) { c.agresion = true; c.conflictoComida = true; c.reconocePorRasgos = true; c.capRegistro = 200000; c.nec[0] = 0.6; }
+      const [A, B] = s.criaturas;
+      // Cada ronda: una sola fruta en medio y las dos hambrientas a la misma distancia
+      let ronda = -1;
+      s.ganchos.push(() => {
+        const r = Math.floor(s.t / POR_RONDA);
+        if (r === ronda || r >= RONDAS) return;
+        ronda = r;
+        for (const o of [...s.mundo.objetos]) if (o.tipo === "raiz") s.mundo.quitar(o.id);
+        s.mundo.agregar("raiz", 800, { porciones: 8 });
+        A.x = 500; B.x = 1100; A.accion = null; B.accion = null;
+        A.nec[0] = 0.7; B.nec[0] = 0.7; A.nec[1] = 0.1; B.nec[1] = 0.1;
+      });
+      s.avanzar(DUR);
+      const bA = bocados(A), bB = bocados(B);
+      return {
+        empA: empujones(A), empB: empujones(B), bloqA: A.mem.acciones["bloqueada:comida"] ?? 0, bloqB: B.mem.acciones["bloqueada:comida"] ?? 0,
+        parteA: bA + bB > 0 ? bA / (bA + bB) : 0.5, comidas: bA + bB, empTerc: empujones(A) > 0 ? empujones(A) : 0,
+      };
+    };
+    const p = probar("dos pacificas"), m = probar("agresiva y pacifica"), d = probar("dos agresivas");
+    return resultado(semilla, {
+      "la comida ocupada bloquea: entre dos pacíficas hay bloqueos (3 o más) y casi no hay empujones (2 o menos)": p.bloqA + p.bloqB >= 3 && p.empA + p.empB <= 2,
+      "una agresiva y una pacífica: la agresiva empuja a la otra (5 o más) y el triple que ella": m.empA >= 5 && m.empA > m.empB * 3,
+      "y se queda con la mayor parte de la comida (más del 55 %)": m.parteA > 0.55,
+      "dos agresivas: se empujan mutuamente (cada una 3 o más), es decir, la golpeada responde": d.empA >= 3 && d.empB >= 3,
+    }, {
+      pacificasBloqueos: p.bloqA + p.bloqB, pacificasEmpujones: p.empA + p.empB, pacificasComidas: p.comidas,
+      mixtaEmpujaAgresiva: m.empA, mixtaEmpujaPacifica: m.empB, mixtaParteAgresiva: m.parteA, mixtaBloqueosPacifica: m.bloqB,
+      agresivasEmpujan1: d.empA, agresivasEmpujan2: d.empB, agresivasBloqueos: d.bloqA + d.bloqB,
+    }, null, DUR);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

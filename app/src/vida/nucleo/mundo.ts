@@ -22,6 +22,9 @@ export interface Objeto {
   /** Instante del ultimo destello o sonido (se ve y se oye). */
   luz: number;
   nace: number;
+  /** Quien la esta comiendo y desde cuando (solo con el conflicto por comida). */
+  ocupante?: number;
+  tOcupante?: number;
 }
 
 export interface Sonido {
