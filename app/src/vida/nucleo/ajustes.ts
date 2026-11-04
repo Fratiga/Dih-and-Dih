@@ -54,6 +54,10 @@ export const AJ = {
   bonoCuriosidad: 0.9,
   /** Cuanto vale, con un vinculo fuerte, ver bajar la angustia de otra criatura (se multiplica por 0,15 mas el afecto). */
   pesoAlivio: 2.4,
+  /** Reconocimiento por rasgos: cuanto se parece lo que ve a lo que recuerda de alguien para tomarla por ella (menor es mas exigente). */
+  sigmaReconocer: 0.07,
+  /** Cuanto atrae acercarse a alguien conocido (se multiplica por el afecto y por 0,3 mas la soledad). */
+  pesoFamiliar: 0.9,
 
   /* --- Habituacion: repetir lo mismo entretiene cada vez menos y se recupera con el descanso --- */
   /** Segundos que tarda en olvidarse la repeticion reciente. */

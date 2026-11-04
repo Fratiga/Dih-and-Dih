@@ -30,6 +30,27 @@ export function featuresCriatura(o: Criatura, conAngustia = false): number[] {
   return [0.6, o.genoma.cuerpo.tamano * 0.5, 0.5, acota(1 - (t - 100) / 160, 0.05, 0.95), acota((t - 100) / 160, 0.05, 0.95), 0.3, angustia, acota(Math.abs(o.vx) / 140), 1, o.huella];
 }
 
+/** Lo que se percibe de alguien y no cambia de un momento a otro: tamano, color y huella. */
+const DIMS_FIRMA = [IDX.tamano, IDX.calidez, IDX.verdor, IDX.huella];
+export const firmaDe = (f: number[]): number[] => DIMS_FIRMA.map((i) => f[i]);
+
+/** Cuanto afecto tiene la criatura `c` por la que percibe en `p`. Con el reconocimiento por rasgos se busca a quien mas se parece a lo recordado
+    (una impostora con otra huella no cuenta como ella); si no, se usa la etiqueta de identificador. */
+export function afectoDe(c: Criatura, p: Percepto): number {
+  if (!c.reconocePorRasgos) return c.mem.vinculos.find((q) => q.id === p.id)?.afecto ?? 0;
+  const s = firmaDe(p.f);
+  let mejor = 0;
+  for (const v of c.mem.vinculos) {
+    if (!v.firma) continue;
+    let d = 0;
+    for (let i = 0; i < s.length; i++) d += (v.firma[i] - s[i]) ** 2;
+    d = Math.sqrt(d / s.length);
+    const parecido = Math.exp(-((d / AJ.sigmaReconocer) ** 2));
+    if (parecido > 0.5) mejor = Math.max(mejor, v.afecto * parecido);
+  }
+  return mejor;
+}
+
 export function featuresObjeto(o: { tipo: string; vx: number; vz: number }): number[] {
   const def = CATALOGO[o.tipo];
   const mov = acota((Math.abs(o.vx) + Math.abs(o.vz) * 0.3) / 150);
@@ -172,6 +193,8 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (p.esCriatura && v === "acercarse" && angustiadas.includes(p)) res[C.alivio] = alivioEsperado(v, p);
       let u = utilidad(res, p.dist, A.conf, p.esCriatura);
       if (res[C.alivio] > 0) u += res[C.alivio] * pesoAlivio(p.id);
+      // Acercarse a alguien conocido atrae mas, sobre todo estando sola
+      if (c.reconocePorRasgos && p.esCriatura && v === "acercarse") u += AJ.pesoFamiliar * afectoDe(c, p) * (0.3 + sol);
       // Lo que acaba de hacer otra criatura con eso llama la atencion: ir a responderle
       const at = c.atencion;
       if (at && at.obj === p.id && at.v === v && env.t >= at.t && env.t - at.t < 8) u += (0.15 + 0.35 * ras[R.sociabilidad]) * (1 - (env.t - at.t) / 8) * (1 - miedoRaz) * (1 - AJ.habituacionMax * c.cansancioDe(p.id));

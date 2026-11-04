@@ -49,6 +49,8 @@ export interface Vinculo {
   nombre: string;
   afecto: number;
   tiempo: number;
+  /** Lo que se percibia de ella (tamano, color, huella): con el reconocimiento por rasgos, es lo que sirve para saber si es la misma. */
+  firma?: number[];
 }
 
 export interface Prediccion {

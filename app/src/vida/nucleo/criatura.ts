@@ -4,7 +4,7 @@
 import { AJ } from "./ajustes.ts";
 import { Azar, acota, mezclar } from "./azar.ts";
 import { CATALOGO } from "./catalogo.ts";
-import { candidatas, elegir, featuresObjeto, percibir, valorDeProbar, type Cand } from "./conducta.ts";
+import { candidatas, elegir, featuresObjeto, firmaDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
 import { ejecutar, iniciar } from "./acciones.ts";
 import type { Genoma } from "./genoma.ts";
 import { Memoria, articulo, type EstadoMemoria } from "./memoria.ts";
@@ -100,6 +100,7 @@ export interface EstadoCriatura {
   ultimoContagio: number;
   ayudaInnata: boolean;
   estadosAjenos: boolean;
+  reconocePorRasgos: boolean;
   atrapada: boolean;
   inconsolable: boolean;
   habito: Record<number, { n: number; t: number }>;
@@ -156,6 +157,8 @@ export class Criatura {
   ayudaInnata = true;
   /** Experimental (caso 08b): percibe la angustia de otras criaturas como senal, se alarma con ella, y consolar a alguien querido se vive como mas compania. */
   estadosAjenos = false;
+  /** Experimental: reconoce a los demas por lo que percibe de ellos y no por su etiqueta, y quien conoce le atrae mas. */
+  reconocePorRasgos = false;
   /** Condiciones de laboratorio: no puede moverse (no puede ayudar a nadie) / su angustia no baja nunca (nada la alivia). */
   atrapada = false;
   /** Solo laboratorio: fuerza el verbo elegido mientras haya una candidata con el. No se guarda. */
@@ -374,6 +377,11 @@ export class Criatura {
   private convivir(p: Percepto, dt: number): void {
     const v = this.mem.vinculo(p.id, this.nombreDe(p.id));
     v.tiempo += dt;
+    if (this.reconocePorRasgos) {
+      const s = firmaDe(p.f);
+      if (!v.firma) v.firma = s;
+      else for (let i = 0; i < s.length; i++) v.firma[i] += (s[i] - v.firma[i]) * Math.min(1, 0.05 * dt);
+    }
     v.afecto = acota(v.afecto + 0.0007 * dt * (0.4 + this.rasgos[R.sociabilidad] + this.rasgos[R.apego]) * (1 - v.afecto));
   }
 
@@ -666,7 +674,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -704,6 +712,7 @@ export class Criatura {
     c.ultimoContagio = e.ultimoContagio ?? -99;
     c.ayudaInnata = e.ayudaInnata ?? true;
     c.estadosAjenos = e.estadosAjenos ?? false;
+    c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.atrapada = e.atrapada ?? false;
     c.inconsolable = e.inconsolable ?? false;
     c.habito = JSON.parse(JSON.stringify(e.habito ?? {}));

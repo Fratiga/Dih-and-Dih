@@ -1119,5 +1119,86 @@ export const caso14: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso16: Caso = {
+  id: "16",
+  titulo: "Rostros que regresan",
+  hipotesis: "Una criatura que convivió con otra la prefiere a una impostora de su mismo aspecto (que no se distingue más que por su huella) cuando se reencuentran, incluso tras mucho tiempo separadas y en otra sala. Si nunca se conocieron, no hay preferencia. Si el reconocimiento solo va por la etiqueta de identificador, tampoco: el diagnóstico previo daba azar.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const g1 = genomaDe(semilla, 161);
+    const g2 = genomaDe(semilla, 162);
+    const g3 = genomaDe(semilla, 163);
+    const SEPARACIONES = [0, 600, 3600];
+    const vivir = (reconoce: boolean, extra: boolean): Simulacion => {
+      const cs = [{ genoma: g1, x: 500 }, { genoma: g3, x: 600 }];
+      if (extra) cs.splice(1, 0, { genoma: g2, x: 700 });
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: cs, comedero: { cada: 110, max: 3, tipo: "fruta" } });
+      for (const c of s.criaturas) c.reconocePorRasgos = reconoce;
+      s.avanzar(1500);
+      return s;
+    };
+    /** Cuantas veces llega primero junto a la conocida (B) frente a la impostora (L), con ambas quietas a 280 de ella en una sala sin nada mas. */
+    const eleccion = (base: Simulacion, B0: Criatura | null, separacion: number, reconoce: boolean, tag: number, REP = 8): { pB: number; pL: number } => {
+      let b = 0, l = 0;
+      for (let k = 0; k < REP; k++) {
+        const r = replica(base, k);
+        const A = r.criaturas[0];
+        // La conocida es la del medio de la convivencia; en el control de quienes no se conocen, una recien nacida con el mismo genoma
+        let B: Criatura;
+        if (B0) {
+          B = r.criaturas[1];
+          if (separacion > 0) { r.criaturas = [A, r.criaturas[2]]; r.avanzar(separacion); }
+        } else {
+          B = new Criatura(5, "Otra", clonarGenoma(g2), 520, mezclar(semilla, 165, k, tag));
+          B.reconocePorRasgos = reconoce;
+          B.capRegistro = 1000;
+        }
+        const L = new Criatura(6, "Impostora", clonarGenoma(g2), 1080, mezclar(semilla, 164, k, tag));
+        L.reconocePorRasgos = reconoce;
+        L.capRegistro = 1000;
+        for (const o of [...r.mundo.objetos]) r.mundo.quitar(o.id);
+        r.comedero = null;
+        r.criaturas = [A, B, L];
+        // Un lado distinto cada vez, para que una preferencia por izquierda o derecha no cuente como reconocer
+        const izq = k % 2 === 0;
+        A.x = 800; B.x = izq ? 520 : 1080; L.x = izq ? 1080 : 520; A.accion = null; B.accion = null; L.accion = null;
+        B.atrapada = true; L.atrapada = true;
+        A.nec[0] = 0.1; A.nec[1] = 0.1; A.nec[3] = 0.2; A.nec[4] = 0.4;
+        let primera = "";
+        const g = () => {
+          if (primera) return;
+          if (Math.abs(A.x - B.x) < 200) primera = "B";
+          else if (Math.abs(A.x - L.x) < 200) primera = "L";
+        };
+        r.ganchos.push(g);
+        r.avanzar(15);
+        if (primera === "B") b++;
+        else if (primera === "L") l++;
+      }
+      return { pB: b / REP, pL: l / REP };
+    };
+    const con = vivir(true, true);
+    const sin = vivir(false, true);
+    const noSeConocen = vivir(true, false);
+    const r0 = eleccion(con, con.criaturas[1], 0, true, 0);
+    const r600 = eleccion(con, con.criaturas[1], 600, true, 1);
+    const r3600 = eleccion(con, con.criaturas[1], SEPARACIONES[2], true, 2);
+    const ctrl = eleccion(noSeConocen, null, 0, true, 3, 24);
+    const soloEtiqueta = eleccion(sin, sin.criaturas[1], 600, false, 4, 24);
+    const dif = (x: { pB: number; pL: number }) => x.pB - x.pL;
+    const afectoB = con.criaturas[0].mem.vinculos.find((q) => q.id === 1000 + con.criaturas[1].id)?.afecto ?? 0;
+    return resultado(semilla, {
+      "han creado un vínculo antes (afecto > 0,3)": afectoB > 0.3,
+      "nada más reencontrarse prefiere a la conocida sobre la impostora (+0,3)": dif(r0) > 0.3,
+      "y tras 600 s separadas (+0,3)": dif(r600) > 0.3,
+      "y tras 3600 s separadas (+0,3): el recuerdo persiste": dif(r3600) > 0.3,
+      "si nunca se conocieron no hay preferencia entre las dos (diferencia menor que 0,35)": Math.abs(dif(ctrl)) < 0.35,
+      "si el reconocimiento solo va por la etiqueta, tampoco hay preferencia clara (diferencia menor que 0,35)": Math.abs(dif(soloEtiqueta)) < 0.35,
+    }, { afectoB, conocida0: r0.pB, impostora0: r0.pL, conocida600: r600.pB, impostora600: r600.pL, conocida3600: r3600.pB, impostora3600: r3600.pL, noSeConocenConocida: ctrl.pB, noSeConocenImpostora: ctrl.pL, soloEtiquetaConocida: soloEtiqueta.pB, soloEtiquetaImpostora: soloEtiqueta.pL }, con.criaturas[0], 1500);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso16, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

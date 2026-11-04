@@ -207,6 +207,34 @@ Lectura. Entre 6 y 48 neuronas, un factor 8, no hay ninguna tendencia. Las difer
 
 Dato incómodo. El 08b pasa 16 de 20 con las semillas 1 a 20 y solo 11 de 20 con las 21 a 40. En ese segundo conjunto el criterio que falla es el del margen de alivio (acercarse frente a quedarse), igual que en el primero. Lo que se puede afirmar del 08b es que hay una señal, no que sea estable al 80 %. Sigue informativo y cualquier cifra suya hay que leerla con semillas distintas.
 
+### Reconocimiento persistente (caso 16)
+
+**Diagnóstico previo.** Se midió qué recuerda una criatura de otra tras separarse. Tres criaturas conviven 1500 s, una se va 0, 600 o 3600 s y luego la que se quedó elige entre ella y una impostora (mismo genoma, otro identificador, nunca la conoció), ambas quietas a unos 280 de distancia.
+
+- Los vínculos (afecto y tiempo juntas) se guardan por identificador, no decaen y solo suben con la convivencia. La conocida mantenía 0,49 de afecto tras 3600 s, la impostora 0,01. No existe afecto negativo: no puede haber un rechazo aprendido por individuo.
+- Aun así, la criatura **no distinguía** en lo que decide. Llegaba primero a la conocida 0,35 a 0,56 de las veces y a la impostora 0,44 a 0,65, es decir, al azar. El afecto por etiqueta no cambiaba la elección.
+- Lo aprendido de acercarse a alguien se guarda por rasgos (aspecto), así que dos criaturas del mismo aspecto son casi intercambiables para ella. Un identificador perfecto en el vínculo, sin efecto en la conducta, no es reconocimiento.
+
+**Lo que se añadió** (detrás de `reconocePorRasgos`, desactivado por defecto, como `estadosAjenos`):
+
+- El vínculo guarda una **firma** de lo que se percibía de esa criatura (tamaño, color y huella, que es un rasgo individual). Se actualiza poco a poco al convivir.
+- Para saber cuánto afecto se tiene por la criatura que se ve, se busca la firma recordada que más se parece (`afectoDe` en `conducta.ts`). Una impostora con otra huella no cuenta como la conocida (`sigmaReconocer`, 0,07).
+- Acercarse a alguien conocido atrae más, sobre todo estando sola: `pesoFamiliar * afecto * (0,3 + soledad)`. Es una predisposición escrita, del mismo tipo que el apego, y está declarada como tal. Lo que se aprende es a quién se conoce, no que haya que acercarse.
+
+**El caso 16.** Los datos con 10 semillas, ocho réplicas por condición, alternando el lado de la conocida y la impostora en cada réplica (sin eso, una preferencia fija por izquierda o derecha se leía como reconocimiento) y 24 réplicas en los controles:
+
+| Condición | Llega primero a la conocida | A la impostora |
+|---|---|---|
+| Reencuentro inmediato | 0,86 (0,75 a 1,0) | 0,14 |
+| Tras 600 s separadas | 0,89 (0,75 a 1,0) | 0,12 |
+| Tras 3600 s separadas | 0,89 (0,75 a 1,0) | 0,12 |
+| Nunca se conocieron (control) | 0,49 (0,38 a 0,67) | 0,51 |
+| Solo etiqueta, sin reconocimiento por rasgos (control) | 0,47 (0,25 a 0,67) | 0,53 |
+
+Pasa en 9 de 10 semillas. Los tres criterios de reconocimiento y el control de quienes no se conocen pasan 10 de 10. La semilla que falla lo hace por el control de solo etiqueta (0,25 frente a 0,75 con 24 réplicas), que está en el borde del ruido. La prueba se hace en una sala vaciada y distinta de donde convivieron, así que también cubre el reencuentro en otro espacio.
+
+Lo que **no** cubre. El caso inverso (reconocer a quien tuvo una relación mala) no se puede probar todavía: sin agresión entre criaturas no hay experiencia mala con un individuo que atribuirle. Y la impostora tiene el mismo cuerpo y se distingue solo por la huella, que es un rasgo individual del código. Una criatura que cambie de aspecto con la edad habría que reconocerla por otros rasgos.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
@@ -355,7 +383,7 @@ Cada etapa llega con su caso en el laboratorio, con control y semillas múltiple
 
 ## Casos propuestos 16 y 17: reconocimiento persistente y relaciones asimétricas
 
-Todavía no están construidos. Van antes del caso 15, que necesita que las criaturas recuerden a individuos concretos y no solo asocien algo grande con miedo.
+El 16 está construido (ver "Reconocimiento persistente" arriba) y el 17 no. Van antes del caso 15, que necesita que las criaturas recuerden a individuos concretos y no solo asocien algo grande con miedo.
 
 ### Identidad y reconocimiento son cosas distintas
 
