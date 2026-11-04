@@ -61,6 +61,9 @@ export const AJ = {
   /** Cuanto cuenta de lo que consigue otra con una accion, frente a si lo hubiera hecho uno (aprendizaje por observacion). */
   pesoVicario: 0.55,
   /** Cuanto empuja a probar a empujar a otra criatura el caracter agresivo (por encima de 0,4), mientras no sepa si compensa. */
+  /** Probabilidad de una camada de dos y de tres crias (el resto, una). Cada cria tiene su propio genoma: mellizos, no gemelos identicos. */
+  camadaDos: 0.17,
+  camadaTres: 0.03,
   pesoAgresion: 0.8,
   /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
   penaOcupada: 0.5,

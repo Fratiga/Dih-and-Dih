@@ -128,9 +128,23 @@ export class Simulacion {
   }
 
   /** Nace una cria de dos criaturas vivas: hereda predisposiciones mezcladas (con alguna mutacion pequena) y empieza sin recuerdos. */
-  nacer(a: Criatura, b: Criatura): Criatura {
+  /** Cuantas crias tiene una camada: casi siempre una, algunas veces dos y pocas tres. */
+  tamanoCamada(a: Criatura, b: Criatura): number {
+    const r = new Azar(mezclar(this.semilla, a.id, b.id, Math.floor(this.t), 31)).next();
+    return r < AJ.camadaTres ? 3 : r < AJ.camadaTres + AJ.camadaDos ? 2 : 1;
+  }
+
+  /** Una camada de una pareja, sin pasar de `hueco` crias. Cada una cruza los genomas por separado: son mellizos, no gemelos identicos. */
+  parir(a: Criatura, b: Criatura, hueco = 3): Criatura[] {
+    const n = Math.min(hueco, this.tamanoCamada(a, b));
+    const hijos: Criatura[] = [];
+    for (let i = 0; i < n; i++) hijos.push(this.nacer(a, b, i));
+    return hijos;
+  }
+
+  nacer(a: Criatura, b: Criatura, k = 0): Criatura {
     const id = Math.max(0, ...this.criaturas.map((c) => c.id)) + 1;
-    const g = cruzar(a.genoma, b.genoma, mezclar(this.semilla, id, Math.floor(this.t)));
+    const g = cruzar(a.genoma, b.genoma, k === 0 ? mezclar(this.semilla, id, Math.floor(this.t)) : mezclar(this.semilla, id, Math.floor(this.t), k));
     const x = Math.max(40, Math.min(this.mundo.ancho - 40, (a.x + b.x) / 2));
     const hijo = new Criatura(id, NOMBRES[(id - 1) % NOMBRES.length], g, x, this.semilla);
     hijo.mortalidad = this.mortalidad;

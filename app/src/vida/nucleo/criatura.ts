@@ -334,6 +334,8 @@ export class Criatura {
     this.incap = -1;
     this.causa = causa;
     this.mem.anotar(env.t, "muerte", `Murió ${causa}.`, -1);
+    // Con la agresion activada, el cuerpo queda donde cae y se puede comer
+    if (this.agresion) env.mundo.agregar("cadaver", this.x, { porciones: 6 });
   }
 
   /** Se la reanima con cuidados: vuelve a ponerse en pie con algo de fuerzas. Devuelve si estaba tendida. */

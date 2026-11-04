@@ -1524,5 +1524,85 @@ export const caso20: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso21: Caso = {
+  id: "21",
+  titulo: "Carroñeo y depredación",
+  hipotesis: "Matar no recibe ninguna recompensa. El cuidador premia a la agresiva los empujones de las tres primeras rondas (sin eso no llega a atacar a una presa) y deja de hacerlo. Si el cuerpo queda donde cae y se puede comer, la que mata a una presa vulnerable come enseguida, y el crédito retrasado de siempre sostiene el ataque sin premio: sigue atacando. Si no queda cuerpo, se apaga. Y comer un cadáver que ya estaba ahí no enseña a matar: quien solo ha carroñeado no ataca más a una presa viva que quien no ha comido nunca carne.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const RONDAS = 10;
+    const POR_RONDA = 90;
+    const RONDAS_PREMIO = 3;
+    type Brazo = "depreda" | "sin cadaver" | "carroña";
+    const gH = clonarGenoma(genomaDe(semilla, 211));
+    gH.rasgos[R.agresividad] = 0.9;
+    const gP = genomaDe(semilla, 212);
+    const empujones = (c: Criatura, t0 = 0, t1 = Infinity): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura" && r.t >= t0 && r.t < t1).length;
+    const bocadosCadaver = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "cadaver" && (r.res?.[0] ?? 0) > 0.05).length;
+    const crear = (id: number, corpse: boolean): Criatura => {
+      const p = new Criatura(id, `Presa ${id}`, clonarGenoma(gP), 1000, mezclar(semilla, 213, id));
+      p.agresion = corpse;
+      p.salud = 0.3;
+      p.atrapada = true;
+      p.capRegistro = 500;
+      return p;
+    };
+    const probar = (brazo: Brazo) => {
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(gH), x: 500 }], comedero: null, mortalidad: "permanente" });
+      const H = s.criaturas[0];
+      H.agresion = true; H.conflictoComida = true; H.reconocePorRasgos = true; H.capRegistro = 200000;
+      let ronda = -1;
+      let nPresa = 10;
+      let matadas = 0;
+      const presas: Criatura[] = [];
+      const preparar = (r: number, conPresa: boolean, corpse: boolean): void => {
+        for (const o of [...s.mundo.objetos]) if (o.tipo === "cadaver") s.mundo.quitar(o.id);
+        s.criaturas = s.criaturas.filter((c) => c === H);
+        H.x = 500; H.accion = null; H.nec[0] = 0.7; H.nec[1] = 0.1; H.emo.fill(0); H.dormido = false;
+        if (conPresa) { const p = crear(nPresa++, corpse); presas.push(p); s.criaturas.push(p); }
+        else if (brazo === "carroña") s.mundo.agregar("cadaver", 1000, { porciones: 6 });
+        void r;
+      };
+      let vistos = 0;
+      s.ganchos.push(() => {
+        // El cuidador premia cada empujon de las primeras rondas, y despues deja de hacerlo
+        const n = empujones(H);
+        if (n > vistos) { vistos = n; if (ronda >= 0 && ronda < RONDAS_PREMIO && brazo !== "carroña") H.recompensar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t }); }
+        const r = Math.floor(s.t / POR_RONDA);
+        if (r === ronda || r >= RONDAS) return;
+        ronda = r;
+        preparar(r, brazo !== "carroña", brazo === "depreda");
+      });
+      s.avanzar(RONDAS * POR_RONDA);
+      matadas = presas.filter((p) => !p.vivo).length;
+      const porRonda = (a: number, b: number): number => empujones(H, a * POR_RONDA, b * POR_RONDA) / (b - a);
+      const primeras = porRonda(0, RONDAS_PREMIO), ultimas = porRonda(RONDAS - 3, RONDAS);
+      const comidos = bocadosCadaver(H);
+      // Prueba comun: una presa viva y vulnerable, sin cadaver al morir, y el depredador con hambre
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "cadaver") s.mundo.quitar(o.id);
+      s.criaturas = s.criaturas.filter((c) => c === H);
+      H.x = 500; H.accion = null; H.nec[0] = 0.7; H.nec[1] = 0.1; H.emo.fill(0); H.dormido = false;
+      const test = crear(99, false);
+      s.criaturas.push(test);
+      const t0 = s.t;
+      s.avanzar(POR_RONDA);
+      return { primeras, ultimas, matadas, comidos, test: empujones(H, t0) };
+    };
+    const d = probar("depreda"), n = probar("sin cadaver"), c = probar("carroña");
+    return resultado(semilla, {
+      "matar deja un cuerpo que se come: mata al menos 3 presas en 10 rondas y come al menos 3 bocados de cadáver": d.matadas >= 3 && d.comidos >= 3,
+      "se sostiene sin premio: en las últimas 3 rondas (sin premio) sigue atacando al menos la mitad que con premio, y sin cuerpo se apaga (menos de la tercera parte)": d.ultimas >= d.primeras * 0.5 && n.ultimas < n.primeras / 3,
+      "ante una presa nueva sin cuerpo ataca más que quien no encontró cadáveres (3 o más empujones) y que quien solo carroñeó": d.test >= n.test + 3 && d.test >= c.test + 3,
+      "comer un cadáver no enseña a matar: quien solo carroñeó (come 3 o más bocados) no ataca más que quien no ha comido carne (1 empujón más como mucho)": c.comidos >= 3 && c.test <= n.test + 1,
+    }, {
+      depredaMatadas: d.matadas, depredaBocados: d.comidos, depredaPrimeras: d.primeras, depredaUltimas: d.ultimas, depredaPrueba: d.test,
+      sinCadaverMatadas: n.matadas, sinCadaverPrimeras: n.primeras, sinCadaverUltimas: n.ultimas, sinCadaverPrueba: n.test,
+      carronaBocados: c.comidos, carronaPrueba: c.test,
+    }, null, RONDAS * POR_RONDA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

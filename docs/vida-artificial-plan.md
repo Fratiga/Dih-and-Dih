@@ -350,6 +350,28 @@ El caso 20 hace veinte rondas de 60 s con una sola raíz en medio y las dos hamb
 
 Qué se aprende: con la comida pobre y duradera hay competencia real, y la frustración por quedarse sin ella tiene origen. Falta que la disputa sea inevitable. Puede hacerse con menos comida, con más hambre, o con una pacífica menos distraída. Lo dejé sin ajustar para no pesar los parámetros hasta que salga la conducta.
 
+### Carroñeo y depredación (caso 21)
+
+Con `agresion`, al morir una criatura su cuerpo queda donde cae como un objeto comestible (`cadaver`: 6 porciones de 0,3, algo de toxicidad y caduca a los 500 s). No hay ninguna recompensa por matar. Matar y comer quedan a pocos segundos porque el cuerpo aparece en el sitio, así que el crédito retrasado de siempre podría ligar el ataque con la comida.
+
+El caso 21 prueba tres brazos con una agresiva (0,9) hambrienta, diez rondas de 90 s con una presa vulnerable (salud 0,3) inmovilizada en cada una, mortalidad permanente, y una ronda de prueba común al final con una presa viva sin cuerpo:
+
+- **Depreda:** el cuidador premia los empujones de las tres primeras rondas, y el cuerpo queda al morir la presa.
+- **Sin cuerpo:** lo mismo, pero sin cadáver.
+- **Carroña:** sin presas vivas, un cadáver ya hecho en cada ronda.
+
+Resultados con 8 semillas:
+
+| Qué se mira | Resultado |
+|---|---|
+| **Carroñeo** | Come el cadáver: 21,5 bocados de mediana. Aprende que se come sin que nadie se lo enseñe. |
+| **Comer un cadáver no enseña a matar** | Quien solo carroñeó ataca a la presa viva 1,5 veces en la prueba, frente a 0 en el brazo sin cuerpo (5 de 8 semillas dentro de 1 empujón de diferencia). Poco, pero no se descarta que sea el mismo tanteo inicial que hacen todas. |
+| **Depredación** | **No arranca**: 0 presas muertas en todas las semillas, y sin eso no hay cuerpo que comer ni crédito que ligar. |
+
+Por qué no arranca (con el registro de una ronda): la agresora hace un solo empujón a la presa y vuelve enseguida a jugar con la pelota y explorar. La utilidad de empujar a la criatura (0,47) queda justo por debajo de la de la pelota (0,50), y el premio de una sola caricia por ronda no basta. En el caso 18, donde sí hay 500 empujones, la rival se queda al alcance de la agresora y eso mantiene el bucle. Con una presa nueva en cada ronda no se sostiene.
+
+Esto es la etapa de "interés por criaturas vulnerables" del plan: la criatura necesita algún motivo para atacar a algo débil que no sea la caricia ni la disputa por comida. Una vía sería que la fragilidad visible de la presa (salud baja, quietud, angustia) entre en lo que se espera de empujarla cuando se tiene hambre y se sabe que los cuerpos se comen. No se ha hecho. Queda informativo, sin pasar (0/8), y el canibalismo y la selección de rasgos físicos (colmillos, garras) quedan sin empezar.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
@@ -625,14 +647,43 @@ Puntos que hay que cuidar:
 
 ### 5. Orden de implementación
 
-1. Conflicto por comida: comida consumible, duración de la ingesta, empujones y respuestas defensivas.
-2. Combate básico: daño, heridas, huida, derrota y recuperación.
-3. Carroñeo: cadáveres comestibles y aprendizaje de sus propiedades.
-4. Depredación: ataque a criaturas vulnerables, muerte y consumo.
+1. Conflicto por comida: comida consumible, duración de la ingesta, empujones y respuestas defensivas. **Hecho a medias** (caso 20): la comida ocupada y la comida duradera funcionan, la disputa violenta no emerge sola.
+2. Combate básico: daño, heridas, huida, derrota y recuperación. **Hecho a medias**: el golpe daña, aturde y suelta la comida, la víctima aprende a asociar el aspecto con daño y puede responder; falta una pelea real entre dos.
+3. Carroñeo: cadáveres comestibles y aprendizaje de sus propiedades. **Hecho** (caso 21).
+4. Depredación: ataque a criaturas vulnerables, muerte y consumo. **Sin arrancar**: falta un motivo para atacar a algo débil.
 5. Especialización conductual: comparar criaturas que aprenden a empujar, embestir o morder.
 6. Herencia y selección: cambios físicos y conductuales en varias generaciones.
 
 Antes del paso 1, corregir que el afecto no debería crecer con quien te hace daño (el caso 18 se detiene sola por esto, según la hipótesis sin comprobar).
+
+## Reproducción: camadas, cortejo y rechazo (parcialmente hecho)
+
+Sale de una conversación sobre cómo debería comportarse la reproducción. Se recoge la lógica, en términos de conducta.
+
+### Hecho
+
+- **Crías.** El botón Criar ya existía. Ahora crea una **camada**: casi siempre una cría (80 %), a veces dos (17 %) y pocas veces tres (3 %), sin pasar del hueco que quede en la sala (`tamanoCamada` y `parir` en `simulacion.ts`, `camadaDos` y `camadaTres` en `ajustes.ts`).
+- **Mellizos, no gemelos idénticos.** Cada cría cruza los genomas por separado, así que son hermanas distintas. Los gemelos idénticos (el mismo genoma) quedan fuera, coherente con que los gemelos son solo del estado de pruebas. Si en algún momento se quisieran como nacimiento raro, es una decisión aparte.
+- **Sexo.** Sale del genoma sin gastar azar nuevo (`sexoDe` en `genoma.ts`): sobre la mitad de cada uno. De momento no cambia nada: Criar no lo exige y nadie lo percibe.
+- Pruebas unitarias del reparto de camadas, de que los mellizos no son clones y respetan el hueco, y del reparto del sexo.
+
+### Diseño pendiente
+
+1. **Impulso reproductivo** como necesidad nueva. Sube cuando es adulta y baja al reproducirse o con el tiempo, igual que el hambre. Mueve a buscar pareja, pero no elige a quién.
+2. **A quién busca.** Quien conoce y quiere (afecto, reconocimiento por rasgos) y el sexo distinto. Depende de la historia con cada individuo, no de una regla fija.
+3. **Cortejo y aceptación mutua.** Quien busca se acerca con esa intención y la otra acepta o rechaza. Rechaza si el afecto por quien se acerca es bajo, si no tiene impulso, si está en mal estado (hambre, miedo) o por lo aprendido: si **ya fue castigada tras un intento de reproducirse**, o si la otra recibió un castigo por intentarlo, la sola aproximación provoca mala reacción y se niega.
+4. **La reproducción solo ocurre con aceptación de las dos.** El rechazo se respeta. La agresividad de quien es rechazada no fuerza nada.
+5. **Consecuencias del rechazo para quien lo recibe.** Frustración (ya existe) y, según el carácter, **agresividad** hacia ese individuo (con `agresion`) o **resentimiento** (enfría el afecto y se anota un agravio, con `anotarAgravio`, y se aparta). Si se repite, queda como aversión hacia ese individuo.
+6. **Aversión aprendida por castigo.** Si el cuidador asusta a una criatura cada vez que tiene una interacción reproductiva, aprende a asociar esa conducta y los rasgos de ese sexo con un susto, y con el tiempo se aparta de todas las del sexo opuesto, no solo de una. Es reversible con premios. Para que se generalice hay que poder percibir el sexo como rasgo. Hoy no se percibe.
+7. Todo se expresa con conducta aprendida y no con etiquetas de personalidad.
+
+### Qué hay que construir
+
+- Sexo percibible como rasgo de lo que se ve de otra criatura.
+- Necesidad de impulso reproductivo.
+- Una acción de cortejo. Si es un verbo nuevo cambia el tamaño de la entrada de la red y mueve todos los casos medidos, así que primero se prueba reutilizando `acercarse` con intención, y solo si no basta se añade el verbo y se repite toda la regresión.
+- Aceptación y rechazo, gestación y parto sin intervención del jugador (con camadas), y límites de población por espacio.
+- Casos de laboratorio: cortejo y rechazo con distintos afectos, aversión aprendida por castigo y su reversión con premios, y herencia a lo largo de generaciones.
 
 ## Caso propuesto 15: el monstruo y el sacrificio
 

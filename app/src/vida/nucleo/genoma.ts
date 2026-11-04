@@ -1,7 +1,7 @@
 /* Genoma: lo que una criatura trae de nacimiento. Dos criaturas con el mismo genoma empiezan igual, con los mismos pesos en la red
    y las mismas predisposiciones. Lo que despues las separa es lo que vivan. (La reproduccion y la mutacion llegan en una fase posterior.) */
 
-import { Azar } from "./azar.ts";
+import { Azar, mezclar } from "./azar.ts";
 import { RASGOS } from "./tipos.ts";
 
 export interface Cuerpo {
@@ -29,6 +29,9 @@ export function cuerpoDe(g: Genoma): CuerpoCompleto {
   const c = g.cuerpo;
   return { ...c, longitudPata: c.longitudPata ?? 1, grosorPata: c.grosorPata ?? 1, caidaOrejas: c.caidaOrejas ?? 0.7, tamanoCabeza: c.tamanoCabeza ?? 1.05, tamanoOjos: c.tamanoOjos ?? 1.05 };
 }
+
+/** El sexo sale del genoma sin gastar azar nuevo (asi no cambia nada de lo ya medido): sobre la mitad de las criaturas son de cada uno. */
+export const sexoDe = (g: Genoma): 0 | 1 => (mezclar(g.semillaCerebro, 7) & 1) as 0 | 1;
 
 export interface Genoma {
   linaje: string;

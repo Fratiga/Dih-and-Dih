@@ -1,6 +1,6 @@
 import { Red } from "../src/vida/nucleo/red.ts";
 import { Simulacion } from "../src/vida/nucleo/simulacion.ts";
-import { genomaNuevo, clonarGenoma, cruzar } from "../src/vida/nucleo/genoma.ts";
+import { genomaNuevo, clonarGenoma, cruzar, sexoDe } from "../src/vida/nucleo/genoma.ts";
 import { AJ } from "../src/vida/nucleo/ajustes.ts";
 import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
@@ -270,6 +270,32 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   };
   afirma(mirada(false) < 130, "una atencion con tiempo futuro no se queda fijada en la criatura que mira (queda como mucho al reloj de la sala)");
   afirma(mirada(true) < 130, "tras reiniciarReloj no queda nada del reloj anterior");
+}
+
+// 7c. Camadas: casi siempre una cria, a veces dos o tres, cada una con su propio genoma (mellizos, no gemelos identicos)
+{
+  const s = nuevaSim({ semilla: 77, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }, { genoma: genomaNuevo(2), x: 500 }], comedero: null });
+  const [a, b] = s.criaturas;
+  const cuenta = [0, 0, 0, 0];
+  for (let i = 0; i < 3000; i++) {
+    s.t = i;
+    cuenta[s.tamanoCamada(a, b)]++;
+  }
+  afirma(cuenta[1] / 3000 > 0.74 && cuenta[1] / 3000 < 0.86, `una cria en el 80 % de las camadas (sale ${(cuenta[1] / 30).toFixed(0)} %)`);
+  afirma(cuenta[2] / 3000 > 0.12 && cuenta[2] / 3000 < 0.22, `dos crias en el 17 % (sale ${(cuenta[2] / 30).toFixed(0)} %)`);
+  afirma(cuenta[3] > 0 && cuenta[3] / 3000 < 0.06, `tres crias pocas veces (sale ${(cuenta[3] / 30).toFixed(1)} %)`);
+  // Una camada de tres: no son clones entre si y respeta el hueco
+  s.t = 0;
+  let camada: Criatura[] = [];
+  for (let t = 0; t < 400 && camada.length < 3; t++) { s.t = t; camada = s.parir(a, b, 3); if (camada.length < 3) for (const h of camada) s.criaturas.splice(s.criaturas.indexOf(h), 1); }
+  afirma(camada.length === 3, "se encuentra una camada de tres");
+  afirma(new Set(camada.map((h) => h.genoma.semillaCerebro)).size === 3, "los mellizos tienen genomas distintos (no son gemelos identicos)");
+  afirma(camada.every((h) => h.padres[0] === a.id && h.padres[1] === b.id && h.generacion === 1), "todos descienden de la misma pareja");
+  afirma(s.parir(a, b, 0).length === 0 && s.parir(a, b, 1).length <= 1, "no se pasa del hueco de la sala");
+  // El sexo: sobre la mitad de cada uno
+  let unos = 0;
+  for (let i = 0; i < 400; i++) unos += sexoDe(genomaNuevo(i + 100));
+  afirma(unos > 160 && unos < 240, `el sexo reparte sobre la mitad (sale ${unos} de 400)`);
 }
 
 // 8. Los casos de exito del documento de diseno, con varias semillas y control

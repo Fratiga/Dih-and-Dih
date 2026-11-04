@@ -35,6 +35,7 @@ export interface TipoObjeto {
 }
 
 export const CATALOGO: Record<string, TipoObjeto> = {
+  cadaver: { id: "cadaver", nombre: "cadáver", gen: "m", f: [0.5, 0.5, 0.4, 0.2, 0.2, 0.65, 0], masa: 0, nutri: 0.3, toxico: 0.03, porciones: 6, efecto: 0.02, caduca: 500 },
   raiz: { id: "raiz", nombre: "raíz", gen: "f", f: [0.75, 0.35, 0.45, 0.15, 0.35, 0.75, 0], masa: 0.6, nutri: 0.12, toxico: 0, porciones: 8, efecto: 0.05 },
   fruta: { id: "fruta", nombre: "fruta azul", gen: "f", f: [0.75, 0.35, 0.45, 0.15, 0.35, 0.75, 0], masa: 0.6, nutri: 0.55, toxico: 0, porciones: 2, efecto: 0.1 },
   baya: { id: "baya", nombre: "baya roja", gen: "f", f: [0.6, 0.25, 0.5, 0.85, 0.1, 0.55, 0], masa: 0.5, nutri: 0.2, toxico: 0.3, porciones: 1, efecto: 0.1 },

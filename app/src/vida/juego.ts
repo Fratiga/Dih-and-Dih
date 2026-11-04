@@ -146,9 +146,10 @@ export class Juego {
     if (!b) return "Hacen falta dos criaturas vivas para criar.";
     if (this.sim.criaturas.filter((c) => c.vivo).length >= 4) return "La sala está llena: caben cuatro criaturas vivas.";
     if (a.edad < DIA * 0.5 || b.edad < DIA * 0.5) return "Las crías todavía son demasiado jóvenes para criar.";
-    const hijo = this.sim.nacer(a, b);
-    this.emit("nacimiento", hijo.id);
-    this.seleccionar(hijo.id);
+    const hueco = 4 - this.sim.criaturas.filter((c) => c.vivo).length;
+    const camada = this.sim.parir(a, b, hueco);
+    for (const h of camada) this.emit("nacimiento", h.id);
+    this.seleccionar(camada[0].id);
     this.guardar(true);
     return null;
   }
