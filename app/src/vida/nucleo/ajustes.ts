@@ -62,6 +62,14 @@ export const AJ = {
   pesoVicario: 0.55,
   /** Cuanto empuja a probar a empujar a otra criatura el caracter agresivo (por encima de 0,4), mientras no sepa si compensa. */
   pesoAgresion: 0.8,
+  /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
+  penaOcupada: 0.5,
+  /** Cuanto empuja a empujar ver a otra comiendo estando hambrienta, segun el caracter. */
+  pesoDisputa: 1.6,
+  /** Cuanto empuja a responder haber sido golpeada hace poco. */
+  pesoRepresalia: 1.4,
+  /** Segundos que tarda en olvidarse a medias el dano intercambiado con otra criatura. */
+  olvidoAgravio: 300,
   /** Cuanto empuja a empujar a otra la frustracion (por quedarse sin lo que esperaba) en un caracter agresivo. */
   pesoFrustracionAgresion: 1.5,
   /** Cuanto frena empujar a otra el afecto que se le tiene. */

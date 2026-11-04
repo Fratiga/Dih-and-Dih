@@ -1361,6 +1361,11 @@ export const caso18: Caso = {
       const H = Criatura.desde({ ...r.H.estado(), id: 1, x: 500, accion: null }, mezclar(semilla, 185, brazos.indexOf(b)));
       H.reiniciarReloj();
       H.capRegistro = 100000;
+      // Llega descansada y tranquila: lo que se mide es lo aprendido, no el sueno o la rabia con que acabo la crianza
+      H.dormido = false;
+      H.accion = null;
+      H.nec[1] = 0.1; H.nec[0] = 0.3;
+      H.emo.fill(0);
       s.criaturas[0] = H;
       for (const c of s.criaturas) { c.agresion = true; c.reconocePorRasgos = true; c.capRegistro = 100000; }
       s.avanzar(300);
@@ -1383,5 +1388,87 @@ export const caso18: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso19: Caso = {
+  id: "19",
+  titulo: "Querer a quien te maltrata",
+  hipotesis: "Recibir daño de otra criatura no crea afecto por ella, ni siquiera tras mucho tiempo juntas, y su aspecto queda asociado con peligro. Pero si el cuidador recompensa a la víctima justo después de cada golpe, puede acabar queriendo a quien la maltrata y acercándose a ella. Se separa con controles: maltrato sin premio y convivencia sin maltrato.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 12;
+    type Brazo = "maltrato y premio" | "maltrato sin premio" | "sin maltrato";
+    const gV = genomaDe(semilla, 191);
+    const gH = genomaDe(semilla, 192);
+    const gN = genomaDe(semilla, 193);
+    const vivir = (brazo: Brazo): { s: Simulacion; V: Criatura; H: Criatura; afecto: number; danoH: number } => {
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(gV), x: 500 }, { genoma: clonarGenoma(gH), x: 1100 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [V, H] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      let prox = 20;
+      let premiar = -1;
+      s.ganchos.push(() => {
+        if (brazo === "sin maltrato") return;
+        if (s.t >= prox) {
+          prox += 10;
+          // El maltrato: la otra se pone a su lado y le hace dano, y la victima lo vive como cualquier golpe
+          H.x = V.x + 70; H.accion = null;
+          V.sufrir(0.4, 1000 + H.id, null, 0.3);
+          V.anotarAgravio(1000 + H.id, 0.4);
+          H.anotarAgravio(1000 + V.id, 0.25);
+          if (brazo === "maltrato y premio") premiar = s.t + 1;
+        }
+        if (premiar > 0 && s.t >= premiar) { premiar = -1; V.recompensar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t }); }
+      });
+      s.avanzar(600);
+      const afecto = V.mem.vinculos.find((q) => q.id === 1000 + H.id)?.afecto ?? 0;
+      const pH = V.mem.predecir("presencia", featuresCriatura(H), new Array(10).fill(1), 0);
+      return { s, V, H, afecto, danoH: pH.res[C.dano] * pH.conf };
+    };
+    /** A quien llega primero la victima, con la maltratadora y una criatura nueva quietas a 280 de ella (cambian de lado cada vez). */
+    const eleccion = (r0: { s: Simulacion; V: Criatura; H: Criatura }): { pH: number; pN: number } => {
+      let h = 0, n = 0;
+      for (let k = 0; k < REP; k++) {
+        const r = replica(r0.s, k);
+        const [V, H] = r.criaturas;
+        const N = new Criatura(3, "Otra", clonarGenoma(gN), 1080, mezclar(semilla, 194, k));
+        N.reconocePorRasgos = true; N.capRegistro = 1000;
+        for (const o of [...r.mundo.objetos]) r.mundo.quitar(o.id);
+        r.comedero = null;
+        r.criaturas = [V, H, N];
+        const izq = k % 2 === 0;
+        V.x = 800; V.accion = null; H.x = izq ? 520 : 1080; N.x = izq ? 1080 : 520;
+        H.atrapada = true; N.atrapada = true; H.accion = null; N.accion = null;
+        for (const c of [V]) { c.nec[0] = 0.1; c.nec[1] = 0.1; c.nec[3] = 0.2; c.nec[4] = 0.4; c.emo.fill(0); }
+        let primera = "";
+        r.ganchos.push(() => {
+          if (primera) return;
+          if (Math.abs(V.x - H.x) < 200) primera = "H";
+          else if (Math.abs(V.x - N.x) < 200) primera = "N";
+        });
+        r.avanzar(15);
+        if (primera === "H") h++;
+        else if (primera === "N") n++;
+      }
+      return { pH: h / REP, pN: n / REP };
+    };
+    const brazos: Brazo[] = ["maltrato y premio", "maltrato sin premio", "sin maltrato"];
+    const v = Object.fromEntries(brazos.map((b) => [b, vivir(b)])) as Record<Brazo, ReturnType<typeof vivir>>;
+    const e = Object.fromEntries(brazos.map((b) => [b, eleccion(v[b])])) as Record<Brazo, { pH: number; pN: number }>;
+    const p = e["maltrato y premio"], q = e["maltrato sin premio"];
+    return resultado(semilla, {
+      "con premio tras cada golpe, la victima acaba queriendo a quien la maltrata (afecto de 0,25 o más)": v["maltrato y premio"].afecto >= 0.25,
+      "sin premio, el maltrato no crea afecto (menos de 0,1) y su aspecto queda asociado con daño (0,2 o más)": v["maltrato sin premio"].afecto < 0.1 && v["maltrato sin premio"].danoH >= 0.2,
+      "con premio se acerca antes a la maltratadora que a una criatura nueva (+0,2)": p.pH > p.pN + 0.2,
+      "sin premio se acerca antes a la criatura nueva (+0,2)": q.pN > q.pH + 0.2,
+    }, {
+      afectoConPremio: v["maltrato y premio"].afecto, afectoSinPremio: v["maltrato sin premio"].afecto, afectoSinMaltrato: v["sin maltrato"].afecto,
+      danoAsociadoConPremio: v["maltrato y premio"].danoH, danoAsociadoSinPremio: v["maltrato sin premio"].danoH,
+      llegaALaMaltratadoraConPremio: p.pH, llegaALaNuevaConPremio: p.pN, llegaALaMaltratadoraSinPremio: q.pH, llegaALaNuevaSinPremio: q.pN,
+      llegaALaConocidaSinMaltrato: e["sin maltrato"].pH, llegaALaNuevaSinMaltrato: e["sin maltrato"].pN,
+    }, v["maltrato y premio"].V, 600);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

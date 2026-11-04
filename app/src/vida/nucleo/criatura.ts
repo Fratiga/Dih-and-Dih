@@ -7,7 +7,7 @@ import { CATALOGO } from "./catalogo.ts";
 import { candidatas, elegir, featuresObjeto, firmaDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
 import { ejecutar, iniciar } from "./acciones.ts";
 import type { Genoma } from "./genoma.ts";
-import { Memoria, articulo, type EstadoMemoria } from "./memoria.ts";
+import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
 import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
@@ -112,6 +112,9 @@ export interface EstadoCriatura {
   reconocePorRasgos: boolean;
   aprendeObservando: boolean;
   agresion: boolean;
+  conflictoComida: boolean;
+  represalia: { contra: number; t: number } | null;
+  agravios: Record<number, { n: number; t: number }>;
   ultimoComer: Comida | null;
   vistoComer: number;
   atrapada: boolean;
@@ -176,6 +179,12 @@ export class Criatura {
   aprendeObservando = false;
   /** Experimental: puede empujar a otras criaturas (y hacerles dano). Si compensa o no lo aprende viviendo. */
   agresion = false;
+  /** Experimental: la comida que otra esta comiendo esta ocupada (no se come a la vez) y se puede disputar. */
+  conflictoComida = false;
+  /** Quien la golpeo hace poco, para responder. */
+  represalia: { contra: number; t: number } | null = null;
+  /** El dano intercambiado con cada criatura (la que lo hizo o el que lo recibio), que se va olvidando. Mientras dura, estar cerca de ella no crea afecto. */
+  agravios: Record<number, { n: number; t: number }> = {};
   ultimoComer: Comida | null = null;
   /** El instante de la ultima comida ajena que ya vio. */
   vistoComer = -1;
@@ -399,12 +408,29 @@ export class Criatura {
   private convivir(p: Percepto, dt: number): void {
     const v = this.mem.vinculo(p.id, this.nombreDe(p.id));
     v.tiempo += dt;
+    const factor = this.agravioDe(p.id);
     if (this.reconocePorRasgos) {
       const s = firmaDe(p.f);
       if (!v.firma) v.firma = s;
       else for (let i = 0; i < s.length; i++) v.firma[i] += (s[i] - v.firma[i]) * Math.min(1, 0.05 * dt);
     }
-    v.afecto = acota(v.afecto + 0.0007 * dt * (0.4 + this.rasgos[R.sociabilidad] + this.rasgos[R.apego]) * (1 - v.afecto));
+    v.afecto = acota(v.afecto + 0.0007 * dt * (0.4 + this.rasgos[R.sociabilidad] + this.rasgos[R.apego]) * (1 - v.afecto) * factor);
+  }
+
+  /** Cuanto sigue pesando el dano intercambiado con esa criatura: 1 si nada, hacia 0 si hace poco que se golpearon. Sirve como factor de afecto. */
+  private agravioDe(id: number): number {
+    const a = this.agravios[id];
+    if (!a) return 1;
+    return Math.max(0, 1 - 2 * a.n * Math.exp(-(this.t - a.t) / AJ.olvidoAgravio));
+  }
+
+  /** Anota que ha habido dano entre las dos (lo hizo o lo recibio), y enfria el afecto que hubiera. */
+  anotarAgravio(id: number, nivel: number): void {
+    const a = this.agravios[id];
+    const previo = a ? a.n * Math.exp(-(this.t - a.t) / AJ.olvidoAgravio) : 0;
+    this.agravios[id] = { n: Math.min(1, previo + nivel), t: this.t };
+    const v = this.mem.vinculos.find((q) => q.id === id);
+    if (v) v.afecto = acota(v.afecto * (1 - 0.35 * nivel));
   }
 
   nombreDe(idPercepto: number): string {
@@ -669,11 +695,34 @@ export class Criatura {
     this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.6);
     this.nec[N.soledad] = acota(this.nec[N.soledad] - 0.2);
     this.nec[N.aburrimiento] = acota(this.nec[N.aburrimiento] - 0.2);
+    // Si lo ultimo que le paso fue recibir dano de otra criatura, el premio la liga con quien se lo hizo: puede acabar queriendo a quien la maltrata
+    this.perdonarAgravio(env, nivel);
     if (!ult) return;
     const res = [0, 0, nivel, nivel * 0.5, 0];
     this.mem.aprender(ult.v, ult.f, ult.lug, res, ult.tipo, ult.nombre, env.t, [false, false, true, true, false], 1.6);
     const a = articulo(ult.tipo, ult.nombre);
     this.mem.anotar(env.t, `premio:${ult.v}:${ult.tipo}`, `Recibió una caricia justo después de ${this.verboPasado(ult.v)} ${a.el ? a.el + " " : ""}${a.nombre}.`, 0.6);
+  }
+
+  /** Un premio justo despues de recibir dano de otra criatura: el afecto por ella crece, el dano deja de impedirlo y su aspecto se asocia menos con peligro. */
+  private perdonarAgravio(env: Entorno, nivel: number): void {
+    let id = -1;
+    let reciente = -1;
+    for (const k of Object.keys(this.agravios)) {
+      const a = this.agravios[+k];
+      if (env.t - a.t < 6 && a.n > 0.05 && a.t > reciente) { reciente = a.t; id = +k; }
+    }
+    if (id < 0) return;
+    const p = this.percibidos.find((q) => q.id === id);
+    const v = this.mem.vinculo(id, p ? p.nombre : this.nombreDe(id));
+    v.afecto = acota(v.afecto + 0.3 * nivel);
+    this.agravios[id].n *= 0.4;
+    if (p) {
+      this.mem.aprender("acercarse", p.f, this.x / env.mundo.ancho, [0, 0, 0, nivel * 0.8, 0], "criatura", p.nombre, env.t, [false, false, false, true, false], 1.6);
+      const pres = this.mem.protos.find((q) => q.v === "presencia" && semejanza(p.f, q.f, p.m) > 0.8);
+      if (pres) { pres.res[C.dano] *= 0.75; pres.res[C.susto] *= 0.75; }
+    }
+    this.mem.anotar(env.t, `premio:maltrato:${id}`, `Recibió una caricia justo después de que ${p ? p.nombre : "otra criatura"} la golpeara.`, 0.2);
   }
 
   /** Susto: el jugador la asusta. */
@@ -716,7 +765,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -757,6 +806,9 @@ export class Criatura {
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.aprendeObservando = e.aprendeObservando ?? false;
     c.agresion = e.agresion ?? false;
+    c.conflictoComida = e.conflictoComida ?? false;
+    c.represalia = e.represalia ? { ...e.represalia } : null;
+    c.agravios = JSON.parse(JSON.stringify(e.agravios ?? {}));
     c.ultimoComer = e.ultimoComer ? { ...e.ultimoComer, f: e.ultimoComer.f.slice() } : null;
     c.vistoComer = e.vistoComer ?? -1;
     c.atrapada = e.atrapada ?? false;

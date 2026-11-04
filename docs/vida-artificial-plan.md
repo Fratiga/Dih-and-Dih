@@ -289,8 +289,8 @@ Resultados con 10 semillas:
 | Pacífica con premio | 2,5 (0 a 12) | 0,5 (0 a 3) |
 
 - **La hostilidad se cría, y no se ha escrito para el experimento.** Con premio inmediato empuja unas 100 veces cada 150 s sin parar. Sin premio, con el mismo carácter, casi no empuja. La rival aprende a asociarla con daño (0,5 frente a 0 a 0,3), y su salud baja al mínimo del modo protegida (0,08). Pasan 10 de 10 semillas los criterios de que empuja, de que lo aprende y de que la rival lo asocia con daño.
-- **Se detiene sola hacia los 800 s.** Los 540 empujones ocurren antes de t = 819 s y luego no hay ninguno, con premio y rival en el mismo sitio. Mi lectura, sin comprobar, es que el afecto crece por el tiempo que pasan cerca aunque el contacto sea un maltrato, y acaba frenándola. Si es así, el afecto debería crecer menos con quien te hace daño o te lo hace, que es una pieza que falta para el caso 15.
-- **No se traslada.** Con una criatura nueva y sin premio no empuja más que las criadas de otra manera (0 de 10 semillas). Lo criado es hacia esa rival, o hacia criaturas de su aspecto, y no una hostilidad general. Para el caso 15 hará falta saber si se generaliza con más historia o con más criaturas.
+- **Se detiene hacia los 800 s, y no por el afecto.** Los 540 empujones ocurren antes de t = 819 s. Con la rival inmovilizada y el premio instantáneo, la agresora entra en un frenesí (su frustración sube a 0,97 porque el empujón no le da nada en el momento) y no duerme. A los ~820 s el sueño acumulado hace que `dormir` gane. Se había supuesto que el afecto por la rival la frenaba, y se descartó al hacer que el afecto no crezca con quien te hace daño (ver abajo): con el afecto a 0 se detiene igual. Es un tope del montaje de 1800 s, no de la conducta.
+- **El traslado a una criatura nueva es débil.** Si la criada llega descansada (al principio llegaba dormida, y eso lo falseaba), con una criatura nueva y sin premio empuja una mediana de 0,5 veces en 300 s (hasta 6), frente a 1 en la criada sin premio y 0,5 en la pacífica. Pasa el criterio en 1 de 10 semillas. Lo criado es sobre todo hacia esa rival. Para el caso 15 hará falta saber si se generaliza con más historia o con más criaturas.
 
 Qué falló antes de llegar a esto, porque es la parte que enseña:
 
@@ -298,6 +298,34 @@ Qué falló antes de llegar a esto, porque es la parte que enseña:
 2. Con una fruta junto a ella como premio tampoco funciona, y se midió por qué. Tras el empujón la criatura toca la fruta y juega con la pelota, y se come la fruta hacia los 9,5 s. El crédito retrasado de las acciones solo mira 9 s, así que cuando llega la comida el empujón ya se ha resuelto sin mérito. Un premio que tarda más que la ventana no se liga a la acción. La caricia, que es instantánea, sí.
 
 La agresión sigue desactivada en el resto de casos. Queda informativo (no pasa por el criterio del traslado) y deja abiertos el afecto con quien te hace daño y el traslado a criaturas nuevas.
+
+### El afecto con quien te hace daño y el premio tras el maltrato (caso 19)
+
+Cambio de diseño: el afecto ya no crece por el mero hecho de estar cerca de alguien con quien se ha intercambiado daño. Cada criatura anota el daño intercambiado con cada otra (`agravios`, que se olvida a medias en 300 s, `olvidoAgravio`), enfría el afecto que hubiera (`anotarAgravio`) y, mientras pesa, estar cerca no crea afecto. Solo cuenta cuando hay daño entre criaturas, que solo ocurre con `agresion`, así que el resto de casos no cambia.
+
+Petición del diseño: aunque las maltraten, que puedan desarrollar afecto por quien las maltrata **si el cuidador las recompensa por recibir el maltrato**. `recompensar`, si lo último que le pasó fue recibir daño de otra criatura (hasta 6 s antes), la liga con ella: sube el afecto, el daño deja de impedirlo, se asocia con compañía y se suaviza la asociación de su aspecto con peligro.
+
+El caso 19 mantiene a una víctima con una maltratadora 600 s, con un golpe cada 10 s, en tres condiciones, y luego mira a quién se acerca antes, la maltratadora o una criatura nueva, a la misma distancia:
+
+| Condición | Afecto por la maltratadora | Daño asociado a su aspecto | Llega antes a la maltratadora | A la nueva |
+|---|---|---|---|---|
+| Maltrato y premio tras cada golpe | **0,86** | 0,11 | 0,57 | 0,35 |
+| Maltrato sin premio | 0 | 0,36 | 0,23 | 0,72 |
+| Sin maltrato (control) | 0,34 | | 0,85 | 0,15 |
+
+- **El afecto sigue la regla.** Con premio, 10 de 10 semillas; sin premio, el maltrato no crea afecto en ninguna, y su aspecto queda asociado a daño. Es fuerte: más afecto que la convivencia normal (0,34). Es un vínculo por refuerzo del cuidador, no por buen trato, y conviene saberlo si se abre al juego.
+- **La conducta es más débil que el afecto.** Con premio, 4 de 10 semillas se acercan antes a la maltratadora que a la nueva por más de 0,2 (mediana 0,57 frente a 0,35). Sin premio, 7 de 10 se acercan antes a la nueva. El resto del miedo no se deshace con el premio (queda 0,11 de daño asociado).
+- Queda informativo (3/10 con los cuatro criterios).
+
+## Espacios (decisión)
+
+No hay una única regla de convivencia. Habrá espacios de tipos distintos, cada uno con sus propias instalaciones y objetos para hacer experimentos y tareas para las criaturas:
+
+- **Completamente libres.** Solo estar ahí supone aceptar lo que pueda pasarle a la criatura. Aquí caben el conflicto, la agresión y la depredación entre criaturas de propietarios distintos.
+- **Admitidos entre dos o más jugadores.** Una lista de quien participa.
+- **Privados.**
+
+Con esto, la preocupación por el control del propietario sobre la participación de sus criaturas solo se aplica donde el espacio lo establezca: en los libres no hace falta un permiso por criatura. Las instalaciones y las tareas forman parte de cada espacio. Queda por diseñar cuando se abra el recinto compartido.
 
 ## Protocolo para cambios globales
 
@@ -570,7 +598,7 @@ Puntos que hay que cuidar:
 - **Imitación de la descendencia.** Si la descendencia debe parecerse a la madre en conducta, hay dos vías distintas. Una es genética (predisposiciones heredadas). La otra es aprender de verla, que hoy no existe como aprendizaje del resultado (07c). Mientras no exista, el parecido vendría solo por genes o por realce del estímulo.
 - **Selección.** La evolución necesita reproducción diferencial. Con la cría manual del jugador (`Criar`), la selección es artificial, como en el caso 14. Una selección natural exige que mueran y se reproduzcan por su cuenta, y eso no está.
 - **Cuerpo y arte.** El genoma ya tiene campos de cuerpo (orejas, cola, patas, cabeza), pero no colmillos, garras ni postura. Hay que ampliar `Cuerpo` y los dibujos.
-- **Consentimiento de los propietarios.** En un espacio compartido, que una criatura de un jugador mate o se coma a la de otro choca con que cada jugador conserve el control sobre la participación de las suyas. Haría falta un permiso por criatura (puede ser presa, puede ser agresora) y que la muerte en estas condiciones se acepte de antemano. Solo en el laboratorio, con réplicas, no hay problema.
+- **Espacios.** Decidido: habrá espacios libres, donde estar ya es aceptar lo que pase, admitidos entre varios jugadores y privados (ver "Espacios"). La agresión y la depredación entre criaturas de distintos propietarios se limitan a los libres. No hace falta un permiso por criatura.
 
 ### 5. Orden de implementación
 

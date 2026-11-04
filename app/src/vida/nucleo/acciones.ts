@@ -5,6 +5,7 @@ import { AJ } from "./ajustes.ts";
 import { acota } from "./azar.ts";
 import type { Accion, Criatura, Entorno } from "./criatura.ts";
 import { featuresCriatura, featuresObjeto, type Cand } from "./conducta.ts";
+import { CATALOGO } from "./catalogo.ts";
 import type { Objeto } from "./mundo.ts";
 import { ANGUSTIA_VISIBLE, C, E, IDX, N, R, resCero } from "./tipos.ts";
 
@@ -133,6 +134,9 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
     const golpe = acota(0.1 + 0.5 * c.genoma.fuerza * (0.4 + 0.6 * c.rasgos[R.agresividad]));
     otro.x = acota(otro.x + c.dir * 120 * golpe, 10, ancho - 10);
     otro.sufrir(golpe, 1000 + c.id, null, 0.4);
+    otro.anotarAgravio(1000 + c.id, golpe);
+    if (otro.agresion) otro.represalia = { contra: c.id, t: env.t };
+    c.anotarAgravio(a.obj, golpe * 0.6);
     otro.salud -= golpe * 0.15;
     c.experimentar(a, resCero(), true, env);
   }
@@ -210,6 +214,17 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
       if (!ob || Math.abs(ob.x - c.x) > AJ.alcance * 2) { a.fase = "ir"; if (!ob) terminar(c, a, env, true); return; }
       c.dir = ob.x >= c.x ? 1 : -1;
       if (t >= IMPACTO) {
+        // Comida ocupada por otra: no se puede comer a la vez. Quedarse sin ella frustra. Y mientras se come, se ocupa.
+        if (c.conflictoComida && a.v === "probar" && CATALOGO[ob.tipo]?.porciones > 0) {
+          if (ob.ocupante !== undefined && ob.ocupante !== c.id && env.t - (ob.tOcupante ?? -99) < 3) {
+            c.emo[E.frustracion] = acota(c.emo[E.frustracion] + 0.25);
+            c.mem.contar("bloqueada:comida");
+            terminar(c, a, env, true);
+            return;
+          }
+          ob.ocupante = c.id;
+          ob.tOcupante = env.t;
+        }
         const r = env.mundo.interactuar(a.v, a.obj, c.x, g.fuerza);
         a.hecho = true;
         c.experimentar(a, r.res, r.efecto, env);
