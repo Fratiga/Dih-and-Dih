@@ -698,7 +698,8 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
       const ocultos = await fanartsCargarOcultos().catch(() => new Set());
       // Los subidos desde aquí van primero (los más nuevos arriba), luego los del repositorio
       const subidos = await fanartsCargarSubidos().catch(() => []);
-      pintarFanartsAdmin([...subidos, ...(window.FANARTS || [])], reparto, ocultos);
+      await fanartsCargarNombres().catch(() => {});
+      pintarFanartsAdmin([...subidos, ...(window.FANARTS || [])], reparto, ocultos, new Set(subidos));
     } catch (e) {
       console.error("[admin] Reparto de fanarts falló:", e);
       fanartsEl.innerHTML = `<p class="admin-vacio">No se pudo cargar. ¿Corriste scratchpad/fanarts_side.sql en Supabase?</p>`;
@@ -749,7 +750,7 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
     zona.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files.length) subir(e.dataTransfer.files); });
   })();
 
-  function pintarFanartsAdmin(fanarts, reparto, ocultos) {
+  function pintarFanartsAdmin(fanarts, reparto, ocultos, subidos) {
     const cont = document.getElementById("adminFanartsLista");
     const count = document.getElementById("adminFanartsCount");
     count.textContent = `${fanarts.length} imagen${fanarts.length === 1 ? "" : "es"}`;
@@ -765,7 +766,10 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
       return `
         <div class="admin-fanart-card ${oculto ? "is-oculto" : ""}" data-src="${escaparHtml(src)}">
           <img src="${src}" alt="${escaparHtml(prettyName(src))}" loading="lazy">
-          <div class="admin-fanart-nombre">${escaparHtml(prettyName(src))}</div>
+          <div class="admin-fanart-nombre">
+            <span class="admin-fanart-nombre-texto" title="${escaparHtml(prettyName(src))}">${escaparHtml(prettyName(src))}</span>
+            <button type="button" class="admin-fanart-renombrar" data-renombrar title="Cambiar el nombre de la imagen">Renombrar</button>
+          </div>
           <div class="admin-fanart-side">
             <button type="button" class="admin-side-btn ${!side ? "is-active" : ""}" data-side="">Ambos</button>
             <button type="button" class="admin-side-btn ${side === "A" ? "is-active" : ""}" data-side="A">${LADO_NOMBRES.A}</button>
@@ -787,6 +791,38 @@ Podrá ver el álbum de cartas y crear o editar cartas (foto, reglas, stats, nom
         } catch (err) {
           card.querySelectorAll("[data-side]").forEach(b => b.classList.toggle("is-active", b === anterior));
           dialogo.avisar("No se pudo guardar. Prueba de nuevo.");
+        }
+      });
+    });
+
+    cont.querySelectorAll("[data-renombrar]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const card = btn.closest("[data-src]");
+        const src = card.dataset.src;
+        const propia = subidos && subidos.has(src);
+        const actual = prettyName(src);
+        const escrito = await dialogo.pedir(
+          propia ? "Nombre de la imagen:" : "Nombre de la imagen (déjalo vacío para volver al nombre del archivo):",
+          actual,
+          { titulo: "Cambiar nombre", aceptar: "Guardar", validar: v => ((v || "").trim().length > 140 ? "Máximo 140 caracteres." : (propia && !(v || "").trim() ? "El nombre no puede quedar vacío." : "")) }
+        );
+        if (escrito === null || escrito === undefined) return;
+        const nuevo = escrito.trim();
+        if (nuevo === actual) return;
+        btn.disabled = true;
+        try {
+          await fanartsAdminSetNombre(src, nuevo);
+          window.FANARTS_NOMBRES = window.FANARTS_NOMBRES || {};
+          if (nuevo) window.FANARTS_NOMBRES[src] = nuevo; else delete window.FANARTS_NOMBRES[src];
+          const mostrado = prettyName(src);
+          const texto = card.querySelector(".admin-fanart-nombre-texto");
+          texto.textContent = mostrado;
+          texto.title = mostrado;
+          card.querySelector("img").alt = mostrado;
+        } catch (err) {
+          dialogo.avisar("No se pudo guardar el nombre. ¿Corriste docs/admin/fanarts_nombres.sql en Supabase?");
+        } finally {
+          btn.disabled = false;
         }
       });
     });

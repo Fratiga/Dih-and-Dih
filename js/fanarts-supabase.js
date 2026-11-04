@@ -53,6 +53,24 @@ async function fanartsCargarSubidos() {
   return (data || []).map(f => f.src);
 }
 
+/* Nombres puestos a mano desde Admin a las imágenes del repositorio (las subidas guardan el suyo en fanarts_subidos).
+   Se suman a window.FANARTS_NOMBRES para que prettyName() los use. Requiere docs/admin/fanarts_nombres.sql. */
+async function fanartsCargarNombres() {
+  const supabase = await fichasCliente();
+  const { data, error } = await supabase.from("fanarts_nombres").select("src, nombre");
+  if (error) throw error;
+  window.FANARTS_NOMBRES = window.FANARTS_NOMBRES || {};
+  (data || []).forEach(f => { window.FANARTS_NOMBRES[f.src] = f.nombre; });
+}
+
+/* Cambia el nombre de una imagen (sirve para las del repositorio y para las subidas). En las del repositorio, un
+   nombre vacío vuelve al del archivo. Falla si quien llama no es Admin (la función revisa fichas_es_admin()). */
+async function fanartsAdminSetNombre(src, nombre) {
+  const supabase = await fichasCliente();
+  const { error } = await supabase.rpc("fanarts_admin_set_nombre", { p_src: src, p_nombre: nombre });
+  if (error) throw error;
+}
+
 /* Sube una imagen (solo Admin: lo revisan las políticas del bucket y de la tabla).
    side: "A", "B" o null (compartido). Devuelve la URL pública. */
 async function fanartsAdminSubir(archivo, side) {

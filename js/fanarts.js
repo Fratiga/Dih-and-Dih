@@ -81,13 +81,13 @@ async function cargarRepartoFanarts() {
     fanartsCargarSides().catch(() => ({})),
     fanartsCargarOcultos().catch(() => new Set()),
     fanartsCargarSubidos().catch(() => []),
+    fanartsCargarNombres().catch(() => {}),
   ]);
   // Los subidos desde el Admin se suman a los del repositorio
   const nuevos = subidos.filter(src => !fanartTodos.includes(src));
-  if (nuevos.length) {
-    fanartTodos.push(...nuevos);
-    fanartTodos.sort((a, b) => prettyName(a).localeCompare(prettyName(b), "es", { sensitivity: "base" }));
-  }
+  if (nuevos.length) fanartTodos.push(...nuevos);
+  // Se reordena siempre: los nombres puestos desde Admin cambian el orden alfabético
+  fanartTodos.sort((a, b) => prettyName(a).localeCompare(prettyName(b), "es", { sensitivity: "base" }));
   fanartReparto = reparto;
   fanartOcultos = ocultos;
   const visibles = fanartTodos.filter(src => !fanartOcultos.has(src));

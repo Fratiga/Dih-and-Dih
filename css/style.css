@@ -3178,10 +3178,29 @@ dialog.stat-compare-modal { width: min(1500px, 96vw); padding: 38px 24px 24px; }
   font-size: .72rem;
   color: var(--muted);
   padding: 6px 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-fanart-nombre-texto {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.admin-fanart-renombrar {
+  flex: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: .66rem;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+.admin-fanart-renombrar:hover { color: var(--text); border-color: var(--muted); }
+.admin-fanart-renombrar:disabled { opacity: .5; cursor: default; }
 .admin-fanart-side {
   display: flex;
   gap: 4px;
