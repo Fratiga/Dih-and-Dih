@@ -268,21 +268,36 @@ Una criatura muy sociable y apegada (0,9 en los dos rasgos) convive con una poco
 
 Queda informativo (7/10) y no sirve todavía como base para los relatos de relaciones entre criaturas de distintos propietarios sin esa pieza.
 
-### Criar una hostil (caso 18): la agresión todavía no se aprende
+### Criar una hostil (caso 18)
 
-Primera pieza del caso 15 y de los casos 09 a 12. Se añadió la posibilidad de **empujar a otra criatura** (`agresion`, desactivado por defecto): se va hasta ella, y en el golpe la desplaza, le hace daño y le deja miedo. La víctima aprende, con lo que ya había, a asociar el aspecto de quien la golpea con daño y a apartarse de ella. Al que golpea no le da nada en el momento: si después consigue comida, el crédito retrasado de siempre se lo acredita al empujón. Lo que empuja a probarlo es una predisposición del carácter (`agresividad` por encima de 0,4 mientras no sabe si compensa), la frustración multiplicada por ese carácter, y lo frena el afecto por la otra (`pesoAgresion`, `pesoFrustracionAgresion` y `frenoAfectoAgresion` en `ajustes.ts`).
+Primera pieza del caso 15 y de los casos 09 a 12. Se añadió la posibilidad de **empujar a otra criatura** (`agresion`, desactivado por defecto): se va hasta ella, y en el golpe la desplaza, le hace daño y le deja miedo. La víctima aprende, con lo que ya había, a asociar el aspecto de quien la golpea con daño. Al que golpea no le da nada en el momento. Lo que le empuja a probarlo es una predisposición del carácter (`agresividad` por encima de 0,4 mientras no sabe si compensa) y la frustración multiplicada por ese carácter. Lo frena el afecto por la otra (`pesoAgresion`, `pesoFrustracionAgresion` y `frenoAfectoAgresion` en `ajustes.ts`). Si compensa lo aprende viviendo.
 
-El caso 18 cría a una criatura agresiva (0,9) con una rival, durante 1800 s, en tres condiciones: agresiva con premio (una fruta junto a ella justo después de cada empujón, como haría un cuidador), agresiva sin premio y pacífica (0,08) con premio. Después se la pone con una criatura nueva y comida de sobra, sin premio.
+El caso 18 cría a una criatura agresiva (0,9) con una rival inmovilizada, un compañero de entrenamiento, durante 1800 s, en tres condiciones:
 
-Resultado (6 y 10 semillas): **no se cría una hostil.** Hay entre 1 y 4 empujones por crianza y ninguno en los últimos 600 s, con premio o sin él. Lo que se ve con una criatura nueva (0 a 4 empujones en 300 s) es igual con y sin premio, así que es exploración por carácter y no algo aprendido. La rival sí aprende a asociarla con daño (0,4 a 0,5 frente a 0 a 0,3 si la agresora es pacífica).
+- agresiva con premio: una caricia (la herramienta de premiar del juego, `recompensar`, que refuerza al instante lo último que hizo) justo después de cada empujón, como haría un cuidador;
+- agresiva sin premio;
+- pacífica (0,08) con premio.
 
-Se probó, por orden, y no cambió el resultado:
+Después se la pone con una criatura nueva, sin premio y con comida de sobra.
 
-1. **Escasez como motor.** Con comida escasa (una fruta cada 500 s, la agresora come 5 y la rival 2) la competencia es real, pero no sube la frustración, porque disputarse una fruta con varias porciones no produce un "me quedé sin ella". Montar una competencia emergente exige modelar eso.
-2. **Premio de un cuidador** (la fruta junto a ella tras cada golpe), con comedero escaso para que tenga hambre.
-3. **Rival inmovilizada**, para que haya ocasión de repetir. Con eso hay un solo empujón por crianza y con premio incluso menos que sin él.
+Resultados con 10 semillas:
 
-No se ha aislado la causa. Hipótesis sin comprobar: la fruta de premio llega con la agresora saciada y vale poco, el crédito retrasado no llega a asignarse al empujón (cae fuera de la ventana de 9 s o no se come a tiempo), o el freno del afecto pesa más que la expectativa aprendida. Cualquiera de ellas puede revisarse con el registro de trazas. Queda como informativo y sin pasar, y el caso 15 sigue sin poder construirse.
+| Condición | Empujones durante la crianza (mediana, rango) | Con una criatura nueva en 300 s |
+|---|---|---|
+| Agresiva con premio | **538** (507 a 540) | 0 |
+| Agresiva sin premio | 1 (1 a 3) | 1 (0 a 4) |
+| Pacífica con premio | 2,5 (0 a 12) | 0,5 (0 a 3) |
+
+- **La hostilidad se cría, y no se ha escrito para el experimento.** Con premio inmediato empuja unas 100 veces cada 150 s sin parar. Sin premio, con el mismo carácter, casi no empuja. La rival aprende a asociarla con daño (0,5 frente a 0 a 0,3), y su salud baja al mínimo del modo protegida (0,08). Pasan 10 de 10 semillas los criterios de que empuja, de que lo aprende y de que la rival lo asocia con daño.
+- **Se detiene sola hacia los 800 s.** Los 540 empujones ocurren antes de t = 819 s y luego no hay ninguno, con premio y rival en el mismo sitio. Mi lectura, sin comprobar, es que el afecto crece por el tiempo que pasan cerca aunque el contacto sea un maltrato, y acaba frenándola. Si es así, el afecto debería crecer menos con quien te hace daño o te lo hace, que es una pieza que falta para el caso 15.
+- **No se traslada.** Con una criatura nueva y sin premio no empuja más que las criadas de otra manera (0 de 10 semillas). Lo criado es hacia esa rival, o hacia criaturas de su aspecto, y no una hostilidad general. Para el caso 15 hará falta saber si se generaliza con más historia o con más criaturas.
+
+Qué falló antes de llegar a esto, porque es la parte que enseña:
+
+1. Sin premio, y con la comida como único motor, no se cría nada: entre 1 y 4 empujones. Con comida escasa (una fruta cada 500 s, la agresora come 5 y la rival 2) la competencia es real, pero no sube la frustración, porque disputarse una fruta con varias porciones no produce un "me quedé sin ella".
+2. Con una fruta junto a ella como premio tampoco funciona, y se midió por qué. Tras el empujón la criatura toca la fruta y juega con la pelota, y se come la fruta hacia los 9,5 s. El crédito retrasado de las acciones solo mira 9 s, así que cuando llega la comida el empujón ya se ha resuelto sin mérito. Un premio que tarda más que la ventana no se liga a la acción. La caricia, que es instantánea, sí.
+
+La agresión sigue desactivada en el resto de casos. Queda informativo (no pasa por el criterio del traslado) y deja abiertos el afecto con quien te hace daño y el traslado a criaturas nuevas.
 
 ## Protocolo para cambios globales
 
@@ -522,7 +537,7 @@ No se exige que la defensora gane ni que todas la quieran después. Se considera
 
 Nada de esto existe hoy.
 
-- **Agresión real entre criaturas.** El rasgo `agresividad` solo cambia lo bien recibida que es una aproximación (`acciones.ts`). No hay acción de atacar o perseguir, ni daño de una criatura a otra, ni una competencia por recursos que haga que atacar compense. Sin eso no se puede criar una hostil por el sistema normal. Es la misma pieza que piden los casos 09 a 12 (depredador).
+- **Agresión real entre criaturas.** El rasgo `agresividad` solo cambia lo bien recibida que es una aproximación (`acciones.ts`). No hay acción de atacar o perseguir, ni daño de una criatura a otra, ni una competencia por recursos que haga que atacar compense. Sin eso no se puede criar una hostil por el sistema normal. Es la misma pieza que piden los casos 09 a 12 (depredador). Hecho a medias: el caso 18 ya cría una hostil con un cuidador que premia al instante cada golpe, pero no hay competencia por recursos que la haga surgir sola, el afecto crece aunque el contacto sea un maltrato y lo criado no se traslada a criaturas nuevas.
 - **Intervenir contra un tercero.** La cadena es más larga que la del 08b. Hay que aprender que acercarse al agresor hace que cese lo que sufre otra, no que la angustia de esa otra baje porque uno se quede a su lado. Con un solo encuentro y sin historia previa es probable que no aparezca. Habrá que decidir qué historia previa lo hace posible sin que equivalga a escribir la regla.
 - **Atribuir lo que pasa a lo que hace otra.** Para recordar quién intervino, la observadora tiene que vincular el fin del peligro con la acción de la defensora. Es el mismo mecanismo que falta para que el 07 sea aprendizaje por observación (el estado propio o ajeno cambia después de la acción de otro) y que el canal de alivio ya mide para las acciones propias.
 - **Memoria episódica** de quién estaba, qué hizo y con qué consecuencia. Hoy hay vínculos con afecto por individuo, avistamientos y notas.

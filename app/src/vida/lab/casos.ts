@@ -1320,7 +1320,7 @@ export const caso17: Caso = {
 export const caso18: Caso = {
   id: "18",
   titulo: "Criar una hostil",
-  hipotesis: "La hostilidad no se escribe, se cría. Una criatura de carácter agresivo a la que su cuidador da algo bueno justo después de cada empujón a su compañera aprende a empujar. La misma criatura sin esa recompensa, o una de carácter pacífico con ella, no. Lo criado se ve fuera de donde se crió, con una criatura nueva, sin recompensa y con comida de sobra, y la rival aprende a asociarla con daño.",
+  hipotesis: "La hostilidad no se escribe, se cría. Una criatura de carácter agresivo a la que su cuidador acaricia justo después de cada empujón a su compañera aprende a empujar. La misma criatura sin esa recompensa, o una de carácter pacífico con ella, no. Se mira además si lo criado se traslada a una criatura nueva, sin recompensa y con comida de sobra, y si la rival aprende a asociarla con daño.",
   minimo: 0.8,
   ejecutar(semilla) {
     const REPOSO = 1800;
@@ -1335,16 +1335,16 @@ export const caso18: Caso = {
       const v = clonarGenoma(gV);
       v.rasgos[R.agresividad] = 0.25;
       const premio = brazo !== "sin premio agresiva";
-      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: h, x: 500 }, { genoma: v, x: 1100 }], comedero: { cada: 500, max: 1, tipo: "fruta" } });
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: h, x: 500 }, { genoma: v, x: 1100 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
       for (const c of s.criaturas) { c.agresion = true; c.reconocePorRasgos = true; c.capRegistro = 200000; }
       const [H, V] = s.criaturas;
       // La rival no se puede apartar (compañera de entrenamiento): asi hay ocasion de volver a intentarlo y se ve si lo aprendido se repite
       V.atrapada = true;
-      // El cuidador: una fruta junto a la criada justo despues de cada empujon a su companera
+      // El cuidador: una caricia (la herramienta de premiar del juego, que refuerza al instante lo ultimo que hizo) justo despues de cada empujon a su companera
       let vistos = 0;
       if (premio) s.ganchos.push(() => {
         const n = empujones(H);
-        if (n > vistos) { vistos = n; s.mundo.agregar("fruta", H.x + (H.dir >= 0 ? 60 : -60), { porciones: 2 }); }
+        if (n > vistos) { vistos = n; H.recompensar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t }); }
       });
       s.avanzar(REPOSO);
       // Lo que la rival ha aprendido de ella: cuanto dano asocia a su aspecto
@@ -1370,7 +1370,7 @@ export const caso18: Caso = {
     const e = crias["premiada agresiva"], a = crias["sin premio agresiva"], p = crias["premiada pacifica"];
     return resultado(semilla, {
       "comprobación: con premio, la agresiva empuja a la rival al menos 5 veces y la rival lo asocia con daño (0,2 o más)": e.total >= 5 && e.evitaV > 0.2,
-      "aprende que compensa: en los últimos 600 s empuja más que sin premio (1,5 veces más y al menos 3) y que la pacífica": e.ultimos >= 3 && e.ultimos > a.ultimos * 1.5 && e.ultimos > p.ultimos * 1.5,
+      "aprende que compensa: con premio empuja a la rival mucho más que sin premio y que la pacífica (al menos 20 veces y el triple que cada una)": e.total >= 20 && e.total > a.total * 3 && e.total > p.total * 3,
       "lo criado se ve fuera: con una criatura nueva, comida de sobra y sin premio, empuja más (3 o más) que las criadas de otra manera": n["premiada agresiva"] >= 3 && n["premiada agresiva"] > n["sin premio agresiva"] + 2 && n["premiada agresiva"] > n["premiada pacifica"] + 2,
       "la rival aprende a asociarla con daño (más que la de la crianza pacífica)": e.evitaV > p.evitaV + 0.1,
     }, {
