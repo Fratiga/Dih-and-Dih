@@ -58,6 +58,8 @@ export const AJ = {
   sigmaReconocer: 0.07,
   /** Cuanto atrae acercarse a alguien conocido (se multiplica por el afecto y por 0,3 mas la soledad). */
   pesoFamiliar: 0.9,
+  /** Cuanto cuenta de lo que consigue otra con una accion, frente a si lo hubiera hecho uno (aprendizaje por observacion). */
+  pesoVicario: 0.55,
 
   /* --- Habituacion: repetir lo mismo entretiene cada vez menos y se recupera con el descanso --- */
   /** Segundos que tarda en olvidarse la repeticion reciente. */

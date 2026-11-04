@@ -191,7 +191,8 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (ultimoRecurso > 0 && v === "probar" && comestible(p)) res[C.dano] *= 1 - ultimoRecurso;
       res[C.dano] = Math.max(res[C.dano], peligroDelTrayecto(c, c.x, p.x, ancho) * 0.9);
       if (p.esCriatura && v === "acercarse" && angustiadas.includes(p)) res[C.alivio] = alivioEsperado(v, p);
-      let u = utilidad(res, p.dist, A.conf, p.esCriatura);
+      // En el modo de aprendizaje por observacion, ver a otra usar algo no hace que deje de ser nuevo para quien mira
+      let u = utilidad(res, p.dist, c.aprendeObservando ? A.confPropia : A.conf, p.esCriatura);
       if (res[C.alivio] > 0) u += res[C.alivio] * pesoAlivio(p.id);
       // Acercarse a alguien conocido atrae mas, sobre todo estando sola
       if (c.reconocePorRasgos && p.esCriatura && v === "acercarse") u += AJ.pesoFamiliar * afectoDe(c, p) * (0.3 + sol);

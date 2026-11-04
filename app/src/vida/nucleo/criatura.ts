@@ -8,7 +8,7 @@ import { candidatas, elegir, featuresObjeto, firmaDe, percibir, valorDeProbar, t
 import { ejecutar, iniciar } from "./acciones.ts";
 import type { Genoma } from "./genoma.ts";
 import { Memoria, articulo, type EstadoMemoria } from "./memoria.ts";
-import type { Mundo } from "./mundo.ts";
+import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
 import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
@@ -37,6 +37,15 @@ export interface Accion {
   f: number[];
   /** Lo que esperaba conseguir al elegirla (para notar cuando no llega). */
   espera: Res;
+}
+
+/** Lo ultimo que comio, para que las que la miran sepan que eso se come. */
+export interface Comida {
+  t: number;
+  f: number[];
+  tipo: string;
+  nombre: string;
+  x: number;
 }
 
 export interface Traza {
@@ -101,6 +110,9 @@ export interface EstadoCriatura {
   ayudaInnata: boolean;
   estadosAjenos: boolean;
   reconocePorRasgos: boolean;
+  aprendeObservando: boolean;
+  ultimoComer: Comida | null;
+  vistoComer: number;
   atrapada: boolean;
   inconsolable: boolean;
   habito: Record<number, { n: number; t: number }>;
@@ -159,6 +171,11 @@ export class Criatura {
   estadosAjenos = false;
   /** Experimental: reconoce a los demas por lo que percibe de ellos y no por su etiqueta, y quien conoce le atrae mas. */
   reconocePorRasgos = false;
+  /** Experimental: si ve que otra criatura actua sobre una maquina y poco despues sale algo que le interesa, aprende que esa accion lo trae. */
+  aprendeObservando = false;
+  ultimoComer: Comida | null = null;
+  /** El instante de la ultima comida ajena que ya vio. */
+  vistoComer = -1;
   /** Condiciones de laboratorio: no puede moverse (no puede ayudar a nadie) / su angustia no baja nunca (nada la alivia). */
   atrapada = false;
   /** Solo laboratorio: fuerza el verbo elegido mientras haya una candidata con el. No se guarda. */
@@ -242,6 +259,8 @@ export class Criatura {
     this.ayuda = null;
     this.ultimoDano = -99;
     this.ultimoContagio = -99;
+    this.ultimoComer = null;
+    this.vistoComer = -1;
     this.proxDecision = 0;
     this.espera = 0;
     this.acumOlvido = 0;
@@ -429,6 +448,7 @@ export class Criatura {
     this.red.avanzar(entrada);
     this.red.entrenar(entrada, res, this.lr, inmediatos);
     m.contar(`${acc.v}:${acc.tipo}`);
+    if (acc.v === "probar" && !acc.esCriatura && res[C.sacia] > 0.1) this.ultimoComer = { t: env.t, f: acc.f.slice(), tipo: acc.tipo, nombre: acc.nombre, x: this.x };
     // Repetir lo mismo cansa, haya salido algo o no (una palanca en pausa no sorprende mas que una que funciona)
     if ((acc.v === "empujar" || acc.v === "tocar") && acc.obj >= 0 && !acc.esCriatura) {
       const h = this.habito[acc.obj];
@@ -490,6 +510,12 @@ export class Criatura {
         }
         this.forzar = true;
       }
+      // Ver comer a otra enseña que eso se come (algo menos que comerlo uno mismo)
+      if (this.aprendeObservando && o.ultimoComer && o.ultimoComer.t > this.vistoComer && env.t - o.ultimoComer.t < 3 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3) {
+        const q = o.ultimoComer;
+        this.vistoComer = q.t;
+        this.mem.aprender("probar", q.f, q.x / env.mundo.ancho, [0.8 * AJ.pesoVicario, 0, 0, 0, 0, 0], q.tipo, q.nombre, env.t, [true, false, false, false, false, false], 1, false);
+      }
       if (!o.ultimoImpacto) continue;
       const u = o.ultimoImpacto;
       if (u.t <= (this.atencion?.t ?? -1) || env.t - u.t > 1 || env.t < u.t) continue;
@@ -500,7 +526,7 @@ export class Criatura {
       this.emo[E.curiosidad] = acota(this.emo[E.curiosidad] + 0.12);
       this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.1);
       const def = CATALOGO[ob.tipo];
-      this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5, 0.1, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5);
+      this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5, 0.1, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5, false);
       this.forzar = true;
     }
   }
@@ -516,6 +542,19 @@ export class Criatura {
         if (tr.obj !== ap.origen || env.t - tr.t > 6) continue;
         tr.cred = Math.max(tr.cred, 0.85 * valor);
       }
+      if (this.aprendeObservando) this.aprenderDeOtra(ap.origen, origen, valor, env);
+    }
+  }
+
+  /** Si lo que acaba de salir de una maquina viene justo despues de que otra criatura que esta a la vista actuara sobre ella, se aprende (con menos fuerza que
+      si lo hubiera hecho uno mismo) que esa accion sobre esa cosa trae algo bueno. */
+  private aprenderDeOtra(idOrigen: number, origen: Objeto, valor: number, env: Entorno): void {
+    for (const o of env.criaturas) {
+      if (o === this || !o.vivo || !o.ultimoImpacto || o.ultimoImpacto.obj !== idOrigen) continue;
+      const u = o.ultimoImpacto;
+      if (env.t < u.t || env.t - u.t > 6 || Math.abs(o.x - this.x) > AJ.vista * this.genoma.vista * 1.3) continue;
+      const def = CATALOGO[origen.tipo];
+      this.mem.aprender(u.v, featuresObjeto(origen), origen.x / env.mundo.ancho, [0.85 * valor * AJ.pesoVicario, 0, 0, 0, 0, 0], origen.tipo, def.nombre, env.t, [true, false, false, false, false, false], 1, false);
     }
   }
 
@@ -674,7 +713,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -713,6 +752,9 @@ export class Criatura {
     c.ayudaInnata = e.ayudaInnata ?? true;
     c.estadosAjenos = e.estadosAjenos ?? false;
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
+    c.aprendeObservando = e.aprendeObservando ?? false;
+    c.ultimoComer = e.ultimoComer ? { ...e.ultimoComer, f: e.ultimoComer.f.slice() } : null;
+    c.vistoComer = e.vistoComer ?? -1;
     c.atrapada = e.atrapada ?? false;
     c.inconsolable = e.inconsolable ?? false;
     c.habito = JSON.parse(JSON.stringify(e.habito ?? {}));

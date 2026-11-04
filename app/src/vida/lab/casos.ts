@@ -1200,5 +1200,79 @@ export const caso16: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso16, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso07c: Caso = {
+  id: "07c",
+  titulo: "Lo que se queda al ver",
+  hipotesis: "Si una criatura ve a otra actuar sobre una máquina y poco después sale algo que le interesa, aprende que esa acción lo trae, aunque no haya podido tocar nada. Para aislar lo visto de lo vivido, la observadora está inmovilizada con la palanca a la vista durante 400 s y luego se la suelta sola con una palanca que funciona. Se la suelta entre la palanca y un objeto nuevo que no hace nada. Se mide a cuál va primero (realce del estímulo: la palanca se vuelve interesante porque la usa otra) y cuánto tarda en comerse el primer gránulo (aprendizaje del resultado: que de la palanca sale comida y que eso se come). Controles: sin el aprendizaje por observación, con la palanca estropeada mientras la veía y sin experta (solo ve la palanca quieta).",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const gE = genomaDe(semilla, 71);
+    const gO = genomaDe(semilla, 72);
+    const X = nuevaSim({ semilla, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: gE, x: 300 }], comedero: null });
+    X.criaturas[0].nec[0] = 0.5;
+    X.avanzar(1200);
+    const estadoExperta = X.criaturas[0].estado();
+    type Brazo = "observa" | "rota" | "apagado" | "sola";
+    /** 400 s inmovilizada viendo a la experta (o sin ella) y luego 120 s de prueba suelta, con la experta fuera, la comida retirada, hambre 0,5 y una palanca que funciona junto a un objeto nuevo que no hace nada (cambia de lado en cada réplica). Devuelve si fue primero a la palanca y cuándo come el primer gránulo (120 si nunca). */
+    const prueba = (brazo: Brazo, k: number): { palanca: number; comida: number } => {
+      const tipoConvivencia = brazo === "rota" ? "palanca_rota" : "palanca";
+      const s = nuevaSim({ semilla: mezclar(semilla, 75, k, brazo === "sola" ? 0 : 1), objetos: [{ tipo: tipoConvivencia, x: 800 }], criaturas: [{ genoma: gO, x: 560 }], comedero: null });
+      const obs = s.criaturas[0];
+      obs.nec[0] = 0.5;
+      obs.aprendeObservando = brazo !== "apagado";
+      obs.atrapada = true;
+      if (brazo !== "sola") {
+        const e = Criatura.desde({ ...estadoExperta, id: 2, x: 700, accion: null }, mezclar(semilla, 76, k));
+        e.azar.s = mezclar(semilla, 77, k);
+        e.reiniciarReloj();
+        e.capRegistro = 100000;
+        e.nec[0] = 0.55;
+        s.criaturas.push(e);
+      }
+      s.avanzar(400);
+      if (brazo !== "sola") s.criaturas.splice(1, 1);
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      const izq = k % 2 === 0;
+      s.mundo.agregar("palanca", izq ? 250 : 750);
+      s.mundo.agregar("bola_fija", izq ? 750 : 250);
+      obs.nec[0] = 0.5;
+      obs.accion = null;
+      obs.atrapada = false;
+      obs.x = 500;
+      const t0 = s.t;
+      let primero = "";
+      let comida = 120;
+      s.ganchos.push((q) => {
+        if (!primero) {
+          if (manip(obs, "palanca", t0) > 0) primero = "palanca";
+          else if (manip(obs, "bola_fija", t0) > 0) primero = "bola";
+        }
+        if (comida === 120 && impactos(obs, "probar", "granulo", t0, Infinity, (r) => r[0] > 0.1) > 0) comida = q.t - t0;
+      });
+      s.avanzar(120);
+      return { palanca: primero === "palanca" ? 1 : primero === "bola" ? 0 : 0.5, comida };
+    };
+    const brazos: Brazo[] = ["observa", "rota", "apagado", "sola"];
+    const REP = 12;
+    const p: Record<string, number> = {}, c: Record<string, number> = {};
+    for (const b of brazos) {
+      const r = Array.from({ length: REP }, (_, k) => prueba(b, k));
+      p[b] = media(r.map((x) => x.palanca));
+      c[b] = mediana(r.map((x) => x.comida));
+    }
+    return resultado(semilla, {
+      "realce: con el modo de observación, quien vio a la experta usar la palanca va antes a ella que a un objeto nuevo, más que quien solo la veía quieta (+0,2)": p.observa > p.sola + 0.2,
+      "sin el modo, ver a la experta no la hace más atractiva sino menos (va a ella menos que quien solo la veía quieta): la trampa de confianza": p.apagado < p.sola - 0.2,
+      "resultado: tarda menos en comerse el primer gránulo que quien solo veía la palanca quieta (15 s menos)": c.observa < c.sola - 15,
+      "y menos que si la palanca estaba estropeada mientras la veía (la otra actuaba y no salía nada) (15 s menos)": c.observa < c.rota - 15,
+    }, {
+      palancaPrimeroObserva: p.observa, palancaPrimeroEstropeada: p.rota, palancaPrimeroSinAprender: p.apagado, palancaPrimeroSola: p.sola,
+      comeObserva: c.observa, comeEstropeada: c.rota, comeSinAprender: c.apagado, comeSola: c.sola,
+    }, null, 600);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

@@ -235,6 +235,29 @@ Pasa en 9 de 10 semillas. Los tres criterios de reconocimiento y el control de q
 
 Lo que **no** cubre. El caso inverso (reconocer a quien tuvo una relación mala) no se puede probar todavía: sin agresión entre criaturas no hay experiencia mala con un individuo que atribuirle. Y la impostora tiene el mismo cuerpo y se distingue solo por la huella, que es un rasgo individual del código. Una criatura que cambie de aspecto con la edad habría que reconocerla por otros rasgos.
 
+### Qué se queda al ver (07c)
+
+Se intentó darle a la criatura un aprendizaje por observación y se midió qué persiste cuando la otra se va. Para aislar lo visto de lo vivido, la observadora está inmovilizada con la palanca a la vista durante 400 s mientras la experta la usa, y luego se la suelta sola, con hambre 0,5, entre la palanca y un objeto nuevo que no hace nada (cambia de lado en cada réplica). Se mide a cuál va primero y cuánto tarda en comerse el primer gránulo. Cuatro condiciones: con el modo de observación, con la palanca estropeada durante la convivencia, sin el modo, y sola con la palanca quieta.
+
+Lo que se añadió (todo detrás de `aprendeObservando`, desactivado por defecto):
+
+- Si ve que otra actúa sobre una máquina y poco después sale algo que le interesa, aprende que esa acción lo trae, con menos fuerza que si la hubiera hecho ella (`pesoVicario`). Si ve comer a otra, aprende que eso se come.
+- La confianza de un recuerdo cuenta ahora por separado la experiencia propia (`nProp`, `confPropia` en `memoria.ts`). En este modo, el bono de curiosidad por lo desconocido usa solo la propia.
+
+Resultados con 10 semillas, 12 réplicas por condición:
+
+| Condición | Va primero a la palanca | Tarda en comer el primer gránulo |
+|---|---|---|
+| Con el modo, vio a la experta con la palanca que funciona | 1,00 | 15 a 22 s |
+| Con el modo, palanca estropeada mientras la veía | 0,83 a 1,00 | 9 a 17 s |
+| Sin el modo | **0,00** | 102 a 120 s (nunca) |
+| Sola, con la palanca quieta | 0,25 a 0,75 | 15 a 24 s |
+
+- **Había una trampa de confianza.** La confianza de un recuerdo cuenta cualquier observación, aunque no informe del resultado. Tras ver a la experta usar la palanca, la que mira acumula decenas de observaciones de atención con la diversión y la compañía, pero ninguna del resultado comida. Su memoria dice entonces que la palanca es conocida y no da nada, con mucha confianza, y desaparece el bono de curiosidad. Sin el modo, la observadora **no va nunca a la palanca primero** (0 de 12 por semilla, 10 de 10 semillas) y no se come ningún gránulo. Esto explica por qué el criterio B del 07b no veía aprendizaje que permaneciera. Ver no solo no ayudaba: apartaba.
+- **Con el modo, hay un realce del estímulo duradero.** Va primero a la palanca el 100 % de las veces cuando la experta se ha ido, 10 de 10 semillas, frente al 50 % de quien solo la veía quieta. Persiste, pero no es aprendizaje del resultado: ocurre igual si la palanca estaba estropeada.
+- **El aprendizaje del resultado no está demostrado.** Comerse el primer gránulo cuesta lo mismo en todas las condiciones con acceso a la palanca, y con la estropeada incluso menos. No se puede decir que haya aprendido que de la palanca sale comida. Puede ser porque los gránulos huelen a comida y los prueba enseguida de todos modos, o porque lo visto no tiene efecto. No se ha separado. Hace falta una prueba en la que la comida no se pueda descubrir por sí sola.
+- **El cambio de confianza no se puede hacer global.** Con 20 semillas, pasar a confianza solo propia para todas dejó el 06 en 14/20 (con la confianza de siempre, 17/20) y el 08b en 14/20 (frente a 16/20), porque la curiosidad por objetos compite con acercarse a la otra criatura. Por eso solo vale en el modo de observación. El arreglo general sería una confianza por canal (saber de qué se sabe, no solo cuánto) y queda pendiente.
+
 ## Protocolo para cambios globales
 
 Los casos 05, 06, 07 y 08b se corren antes y después de cualquier cambio en percepción, aprendizaje o decisión, con las mismas semillas, y no se cambia un criterio sin dejar escrito por qué y con qué resultados previos. Resultados de esta tanda (10 semillas):
@@ -488,7 +511,7 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 
 ## Recomendación para la siguiente fase
 
-1. **Aprendizaje por observación.** El 07b separa la facilitación del aprendizaje y dice que hoy solo hay facilitación. Es el siguiente resultado a conseguir antes de añadir criaturas.
+1. **Aprendizaje por observación del resultado.** El 07c muestra que con el modo hay un realce duradero del estímulo, pero no que aprenda qué consigue la otra. Hace falta una prueba en la que la comida no se pueda descubrir sola. Y, en general, una confianza de recuerdo por canal que no perjudique a los casos sociales.
 2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.

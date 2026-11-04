@@ -20,6 +20,8 @@ export interface Proto {
   lug: number;
   res: Res;
   n: number;
+  /** Cuantas de esas veces fueron experiencia propia (no ver a otra). Es lo que cuenta para saber si algo ya se ha probado. */
+  nProp?: number;
   fuerza: number;
   t: number;
   tipo: string;
@@ -57,6 +59,8 @@ export interface Prediccion {
   res: Res;
   /** Cuanta experiencia respalda la prediccion, de 0 a 1. */
   conf: number;
+  /** Lo mismo, contando solo lo vivido por uno mismo: ver a otra no hace que algo deje de ser nuevo. */
+  confPropia: number;
 }
 
 export interface EstadoMemoria {
@@ -114,6 +118,7 @@ export class Memoria {
   predecir(v: string, f: number[], m: number[], lug: number): Prediccion {
     let sw = 0;
     let ev = 0;
+    let evP = 0;
     const acc = new Array<number>(NC).fill(0);
     for (const p of this.protos) {
       if (p.v !== v) continue;
@@ -122,14 +127,15 @@ export class Memoria {
       const w = s * Math.min(1, p.fuerza);
       sw += w;
       ev += w * Math.min(1, p.n / 2);
+      evP += w * Math.min(1, (p.nProp ?? p.n) / 2);
       for (let k = 0; k < NC; k++) acc[k] += w * (p.res[k] ?? 0);
     }
-    if (sw <= 1e-9) return { res: new Array<number>(NC).fill(0), conf: 0 };
-    return { res: acc.map((a) => a / sw), conf: 1 - Math.exp(-2 * ev) };
+    if (sw <= 1e-9) return { res: new Array<number>(NC).fill(0), conf: 0, confPropia: 0 };
+    return { res: acc.map((a) => a / sw), conf: 1 - Math.exp(-2 * ev), confPropia: 1 - Math.exp(-2 * evP) };
   }
 
   /** Aprende de una experiencia. `canales` limita que resultados se actualizan (para el credito tardio). */
-  aprender(v: string, f: number[], lug: number, res: Res, tipo: string, nombre: string, t: number, canales?: boolean[], alfaExtra = 1): Proto {
+  aprender(v: string, f: number[], lug: number, res: Res, tipo: string, nombre: string, t: number, canales?: boolean[], alfaExtra = 1, propia = true): Proto {
     let mejor: Proto | null = null;
     let ms = 0;
     for (const p of this.protos) {
@@ -143,11 +149,12 @@ export class Memoria {
       for (let i = 0; i < D; i++) mejor.f[i] += alfa * 0.4 * (f[i] - mejor.f[i]);
       if (v === "lugar") mejor.lug += 0.3 * (lug - mejor.lug);
       mejor.n++;
+      if (propia) mejor.nProp = (mejor.nProp ?? mejor.n - 1) + 1;
       mejor.fuerza = Math.min(1.5, Math.max(mejor.fuerza, 0.6) + 0.35);
       mejor.t = t;
       return mejor;
     }
-    const nuevo: Proto = { v, f: f.slice(), lug, res: res.map((x, k) => (!canales || canales[k] ? x : 0)), n: 1, fuerza: 1, t, tipo, nombre };
+    const nuevo: Proto = { v, f: f.slice(), lug, res: res.map((x, k) => (!canales || canales[k] ? x : 0)), n: 1, nProp: propia ? 1 : 0, fuerza: 1, t, tipo, nombre };
     this.protos.push(nuevo);
     if (this.protos.length > AJ.capacidad * this.dur) {
       let peor = 0;
