@@ -6,6 +6,7 @@ import { acota } from "./azar.ts";
 import type { Accion, Criatura, Entorno } from "./criatura.ts";
 import { featuresCriatura, featuresObjeto, type Cand } from "./conducta.ts";
 import { CATALOGO } from "./catalogo.ts";
+import { sexoDe } from "./genoma.ts";
 import type { Objeto } from "./mundo.ts";
 import { ANGUSTIA_VISIBLE, C, E, IDX, N, R, resCero } from "./tipos.ts";
 
@@ -45,6 +46,10 @@ export function iniciar(c: Criatura, cand: Cand, env: Entorno): Accion {
   if (cand.v === "acercarse") a.dur = 4 + c.azar.next() * 3;
   if (cand.v === "descansar" || cand.v === "dormir") { a.fase = "hacer"; if (cand.v === "dormir") c.dormido = true; }
   if (c.dormido && cand.v !== "dormir") c.dormido = false;
+  if (c.reproduccion && cand.v === "acercarse" && p && c.impulso > 0.4 && !c.gestando) {
+    const otro = env.criaturas.find((o) => 1000 + o.id === p.id);
+    if (otro && sexoDe(otro.genoma) !== sexoDe(c.genoma)) a.cortejo = true;
+  }
   if (c.estadosAjenos) {
     const q = c.percibidos.filter((o) => o.esCriatura && !o.recordado && o.f[IDX.sonido] > ANGUSTIA_VISIBLE).sort((x, y) => y.f[IDX.sonido] - x.f[IDX.sonido])[0];
     if (q) a.ajeno = { obj: q.id, ini: q.f[IDX.sonido], f: q.f.slice(), nombre: q.nombre };
@@ -72,7 +77,61 @@ function notarAlivio(c: Criatura, a: Accion, env: Entorno): void {
   c.mem.aprender(`ante:${a.v}`, aj.f, c.x / env.mundo.ancho, res, "criatura", aj.nombre, env.t, SOLO_ALIVIO);
 }
 
+/** Lo que le pasa a una criatura tras un rechazo segun como reacciona: 0 enfado, 1 miedo, 2 indiferencia, 3 alegria. */
+function reaccionar(c: Criatura, otro: Criatura, reaccion: number, env: Entorno, intensidad: number): void {
+  c.mem.contar(["reaccion:enfado", "reaccion:miedo", "reaccion:indiferencia", "reaccion:alegria"][reaccion]);
+  if (reaccion === 0) {
+    c.emo[E.frustracion] = acota(c.emo[E.frustracion] + 0.5);
+    c.anotarAgravio(1000 + otro.id, 0.08 + 0.15 * intensidad);
+    if (c.agresion && c.rasgos[R.agresividad] > 0.5) c.represalia = { contra: otro.id, t: env.t };
+  } else if (reaccion === 1) {
+    c.emo[E.miedo] = acota(c.emo[E.miedo] + 0.4);
+    c.anotarAgravio(1000 + otro.id, 0.15);
+  } else if (reaccion === 2) {
+    c.emo[E.frustracion] = acota(c.emo[E.frustracion] + 0.05);
+  } else {
+    c.emo[E.excitacion] = acota(c.emo[E.excitacion] + 0.4);
+    c.emo[E.frustracion] = acota(c.emo[E.frustracion] * 0.5);
+  }
+}
+
+/** Una criatura llega junto a otra con intencion de reproducirse. Si la otra acepta, hay embarazo (gesta quien tiene el sexo 1). Si rechaza, el rechazo se respeta: nada
+    se fuerza. Quien lo recibe se frustra, y segun su caracter guarda resentimiento o se pone violenta. Si quien rechaza lo hace con mucha aversion y es agresiva, tambien
+    puede empezar la pelea. */
+function cortejar(c: Criatura, otro: Criatura, env: Entorno): void {
+  c.ultimoCortejo = { t: env.t, con: otro.id };
+  otro.ultimoCortejo = { t: env.t, con: c.id };
+  const r = otro.evaluarCortejo(c);
+  if (r.acepta && c.reproduccion && !c.gestando) {
+    const madre = sexoDe(c.genoma) === 1 ? c : otro;
+    const padre = madre === c ? otro : c;
+    env.embarazar?.(madre, padre);
+    c.impulso = 0;
+    otro.impulso = 0;
+    c.mem.anotar(env.t, `cortejo:acepta:${otro.id}`, `${otro.nombre} aceptó su acercamiento.`, 0.7);
+    otro.mem.anotar(env.t, `cortejo:acepta:${c.id}`, `Aceptó a ${c.nombre}.`, 0.5);
+    c.mem.vinculo(1000 + otro.id, otro.nombre).afecto = acota((c.mem.vinculos.find((q) => q.id === 1000 + otro.id)?.afecto ?? 0) + 0.1);
+    return;
+  }
+  // Rechazo: se respeta y no se fuerza nada. Lo que sigue depende de como reacciona cada una, al azar segun su caracter y su entrenamiento:
+  // enfado, miedo, indiferencia o alegria (incluida la que rechaza). La violencia es posible solo si esta enfadada y es agresiva; si lo estan las dos, pelean.
+  c.mem.anotar(env.t, `cortejo:rechazo:${otro.id}`, `${otro.nombre} rechazó su acercamiento.`, -0.6);
+  otro.mem.anotar(env.t, `cortejo:rechazo:${c.id}`, `Rechazó el acercamiento de ${c.nombre}.`, -0.1);
+  c.mem.contar("rechazada");
+  otro.mem.contar("rechaza");
+  const rc = c.reaccionAlRechazo(0, r.intensidad);
+  const ro = otro.reaccionAlRechazo(1, r.intensidad);
+  c.ultimoRechazo = { t: env.t, rol: 0, reaccion: rc };
+  otro.ultimoRechazo = { t: env.t, rol: 1, reaccion: ro };
+  reaccionar(c, otro, rc, env, r.intensidad);
+  reaccionar(otro, c, ro, env, r.intensidad);
+}
+
 function terminar(c: Criatura, a: Accion, env: Entorno, fallo = false): void {
+  if (a.v === "acercarse" && a.hecho && a.cortejo) {
+    const otro = env.criaturas.find((o) => 1000 + o.id === a.obj);
+    if (otro && otro.vivo) cortejar(c, otro, env);
+  }
   if (c.estadosAjenos && !fallo) notarAlivio(c, a, env);
   if (a.v === "acercarse" && a.hecho) {
     // La compania recibida depende de como reciba el otro que te acerques
@@ -136,10 +195,14 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
     otro.x = acota(otro.x + c.dir * 120 * golpe, 10, ancho - 10);
     otro.sufrir(golpe, 1000 + c.id, null, 0.4);
     otro.anotarAgravio(1000 + c.id, golpe);
-    if (otro.agresion) otro.represalia = { contra: c.id, t: env.t };
+    if (otro.agresion) {
+      otro.represalia = { contra: c.id, t: env.t };
+      // Recibir un golpe enfada a quien es agresiva (y solo a ella)
+      otro.emo[E.frustracion] = acota(otro.emo[E.frustracion] + 0.4 * otro.rasgos[R.agresividad]);
+    }
     // El golpe la saca de lo que estaba haciendo un momento y suelta la comida que ocupaba: asi empujar a quien come deja la comida libre en segundos
     otro.accion = null;
-    otro.espera = Math.max(otro.espera, 1.2 + 3 * golpe);
+    otro.espera = Math.max(otro.espera, 0.4 + 1.2 * golpe);
     for (const o of env.mundo.objetos) if (o.ocupante === otro.id) { o.ocupante = undefined; o.tOcupante = undefined; }
     c.anotarAgravio(a.obj, golpe * 0.6);
     c.ultimoGolpe = { t: env.t, contra: otro.id };

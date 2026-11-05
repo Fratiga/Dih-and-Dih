@@ -368,7 +368,7 @@ El caso 21 hace tres rondas de 90 s con solo un cadáver ya hecho (carroñeo) y 
 - Es lo previsto en el plan: carroñeo, luego interés por criaturas vulnerables, luego ataque y consumo. Comer un cadáver no enseña a matar por sí solo (hace falta además el hambre y ver a alguien débil).
 - **La depredación sin cuerpo no desaparece del todo** (3 presas de mediana): el interés tiene una base y no se extingue enseguida si atacar no da comida.
 - El primer montaje no mataba a nadie. Se debía a que la presa se creaba como "protegida" y no podía morir, no a la conducta: lo anoto porque costó varias pruebas verlo.
-- Queda informativo (5/10). Siguen sin hacer el canibalismo con criaturas adultas de la misma sala, la selección de rasgos físicos (colmillos, garras) y que la presa pueda huir.
+- Queda informativo (6/10 en la última pasada completa). Siguen sin hacer el canibalismo con criaturas adultas de la misma sala, la selección de rasgos físicos (colmillos, garras) y que la presa pueda huir.
 
 ### Manías por el aspecto y por la conducta (caso 22)
 
@@ -382,14 +382,14 @@ Resultados con 10 semillas:
 
 | Condición | Llega antes a la nueva sin cuernos |
 |---|---|
-| Maltratada por una con cuernos | **0,93** |
-| Maltratada por una sin cuernos | **0,17** |
-| Sin maltrato (compañera de cuernos intermedios) | 0,56 |
+| Maltratada por una con cuernos | **1,00** |
+| Maltratada por una sin cuernos | **0,00** |
+| Sin maltrato (compañera de cuernos intermedios) | 0,52 |
 
-- La manía se generaliza en las dos direcciones. Pasan 8 y 9 de 10 semillas, y el control sin preferencia 9 de 10.
-- Tras ver pegar a una tercera, la fama es de 1,0 y prefiere a la pacífica el 81 % de las veces (7 de 10 semillas).
+- La manía se generaliza en las dos direcciones: los tres criterios por aspecto pasan 10 de 10 semillas. Al principio el gusto por un rasgo se promediaba entre los cuatro y quedaba diluido (8 y 9 de 10), y se pasó a sumar para que una manía fuerte pese (hace falta, además, para decidir una pareja).
+- Tras ver pegar a una tercera, la fama es de 1,0 y prefiere a la pacífica el 85 % de las veces de mediana, pero solo 5 de 10 semillas cumplen el criterio (en algunas no hay preferencia).
 - Un hallazgo que cambió el control: con una compañera sin cuernos, la criatura cogía gusto por los sin cuernos solo por convivir (0,78), porque la convivencia agradable también enseña a querer los rasgos de quien convive. Es el comportamiento diseñado. El control justo es una compañera de cuernos intermedios.
-- Pasan los cuatro criterios a la vez 5 de 10 semillas. Queda informativo.
+- Pasan los cuatro criterios a la vez 6 de 10 semillas en la última pasada completa. Queda informativo.
 
 ## Protocolo para cambios globales
 
@@ -675,35 +675,58 @@ Puntos que hay que cuidar:
 
 Antes del paso 1, corregir que el afecto no debería crecer con quien te hace daño (el caso 18 se detiene sola por esto, según la hipótesis sin comprobar).
 
-## Reproducción: camadas, cortejo y rechazo (parcialmente hecho)
+## Reproducción: camadas, cortejo y rechazo (hecho, informativo)
 
-Sale de una conversación sobre cómo debería comportarse la reproducción. Se recoge la lógica, en términos de conducta.
+Sale de una conversación sobre cómo debería comportarse la reproducción. Se recoge la lógica, en términos de conducta, y está construida detrás de `reproduccion` (desactivado por defecto).
 
-### Hecho
+### Reglas acordadas
 
-- **Crías.** El botón Criar ya existía. Ahora crea una **camada**: casi siempre una cría (80 %), a veces dos (17 %) y pocas veces tres (3 %), sin pasar del hueco que quede en la sala (`tamanoCamada` y `parir` en `simulacion.ts`, `camadaDos` y `camadaTres` en `ajustes.ts`).
-- **Mellizos, no gemelos idénticos.** Cada cría cruza los genomas por separado, así que son hermanas distintas. Los gemelos idénticos (el mismo genoma) quedan fuera, coherente con que los gemelos son solo del estado de pruebas. Si en algún momento se quisieran como nacimiento raro, es una decisión aparte.
-- **Sexo.** Sale del genoma sin gastar azar nuevo (`sexoDe` en `genoma.ts`): sobre la mitad de cada uno. De momento no cambia nada: Criar no lo exige y nadie lo percibe.
-- Pruebas unitarias del reparto de camadas, de que los mellizos no son clones y respetan el hueco, y del reparto del sexo.
+- **El rechazo se respeta y no se puede forzar la reproducción,** aunque quien lo recibe se ponga agresivo. Lo que sí puede pasar son consecuencias de ese rechazo, que dependen del carácter y del entrenamiento.
+- **La reacción a un rechazo es una probabilidad, en las dos partes.** Tanto la criatura que rechaza como la rechazada pueden quedar enfadadas, asustadas, indiferentes o incluso contentas. Qué reacción tiene sale al azar de su carácter y de cómo se la haya entrenado.
+- **La violencia solo es posible si está enfadada y es agresiva,** y no es obligatoria. Si las dos están enfadadas y son agresivas, se pelean. La pelea es una probabilidad, no una consecuencia automática.
+- **Entrenamiento.** Un premio justo después de una reacción la hace más probable, y un susto la hace menos probable (y asusta).
+- **Rechazo por aspecto o por conducta.** La criatura puede desarrollar rechazo por rasgos físicos (los cuernos, por ejemplo) o por quien tiene sesgos hacia ciertas conductas. Son los gustos y la fama del caso 22, y entran en el deseo de aceptar a una pareja.
+- **Aversión por castigo, reversible con premio.** Si el cuidador asusta a una criatura justo después de un acercamiento reproductivo, aprende aversión a ese sexo y a ese individuo, y se aparta de todas las del sexo opuesto, no solo de una. Un premio la baja.
+- Los gemelos idénticos no se hacen (los gemelos son solo del estado de pruebas). Las camadas son de mellizos.
 
-### Diseño pendiente
+### Qué hay
 
-1. **Impulso reproductivo** como necesidad nueva. Sube cuando es adulta y baja al reproducirse o con el tiempo, igual que el hambre. Mueve a buscar pareja, pero no elige a quién.
-2. **A quién busca.** Quien conoce y quiere (afecto, reconocimiento por rasgos) y el sexo distinto. Depende de la historia con cada individuo, no de una regla fija.
-3. **Cortejo y aceptación mutua.** Quien busca se acerca con esa intención y la otra acepta o rechaza. Rechaza si el afecto por quien se acerca es bajo, si no tiene impulso, si está en mal estado (hambre, miedo) o por lo aprendido: si **ya fue castigada tras un intento de reproducirse**, o si la otra recibió un castigo por intentarlo, la sola aproximación provoca mala reacción y se niega.
-4. **La reproducción solo ocurre con aceptación de las dos. El rechazo se respeta y no se puede forzar,** aunque quien lo recibe se ponga agresivo. Lo que sí puede hacer es **ponerse violenta**. Según cuánta **aversión a la reproducción** tenga la criatura que rechazó, el rechazo puede acabar en una pelea si las dos son agresivas. La agresividad no cambia el resultado de la petición, solo lo que pasa después.
-5. **Consecuencias del rechazo para quien lo recibe.** Frustración (ya existe) y, según el carácter, **agresividad** hacia ese individuo (con `agresion`) o **resentimiento** (enfría el afecto y se anota un agravio, con `anotarAgravio`, y se aparta). Si se repite, queda como aversión hacia ese individuo.
-6. **Aversión aprendida por castigo.** Si el cuidador asusta a una criatura cada vez que tiene una interacción reproductiva, aprende a asociar esa conducta y los rasgos de ese sexo con un susto, y con el tiempo se aparta de todas las del sexo opuesto, no solo de una. Es reversible con premios. Para que se generalice hay que poder percibir el sexo como rasgo. Hoy no se percibe.
-7. **Aversión por rasgos físicos y por conducta.** La criatura puede desarrollar rechazo por ciertas características físicas (que no le gusten los cuernos, por ejemplo) o por criaturas con sesgos hacia ciertas conductas. Son los gustos y la fama del caso 22, y entran en la decisión de aceptar a una pareja.
-8. Todo se expresa con conducta aprendida y no con etiquetas de personalidad.
+- **Camadas.** Una cría casi siempre (80 %), a veces dos (17 %) y pocas tres (3 %), sin pasar del hueco que quede en la sala (`tamanoCamada`, `parir`; `camadaDos` y `camadaTres`). Cada cría cruza los genomas por separado. Criar a mano y el parto autónomo usan lo mismo.
+- **Sexo.** Sale del genoma sin gastar azar nuevo (`sexoDe`): sobre la mitad de cada uno. Gesta quien tiene el sexo 1. Todavía no se percibe como rasgo de aspecto: se lee directamente al evaluar un cortejo.
+- **Impulso reproductivo.** Sube en una adulta (edad de medio día) que no gesta, y se vacía al reproducirse. La aversión se va olvidando muy despacio.
+- **Cortejo.** Reutiliza `acercarse` con intención (no hay verbo nuevo, así que no cambia la entrada de la red ni ningún caso medido). El impulso empuja a acercarse a alguien de otro sexo, más cuanto más lo quiere y le gusta, y menos con aversión.
+- **Aceptación mutua.** Acepta si es adulta, no gesta, tiene impulso, la otra es de otro sexo y le apetece lo bastante. Lo que le apetece sale del afecto, del gusto por el aspecto y la conducta, de su propio impulso y se multiplica por la aversión aprendida. Una aversión aprendida por castigo puede pesar más que el cariño.
+- **Gestación y parto** (`embarazos` en la simulación, 400 s): nace la camada junto a la madre, aunque el padre ya no esté.
+- **Rechazo.** Las dos tienen una reacción al azar entre enfado, miedo, indiferencia y alegría (`reaccionAlRechazo`). El enfado de una agresiva puede traducirse en represalia; el miedo y el enfado enfrían el afecto por ese individuo; la alegría y la indiferencia no dejan resentimiento. Recibir un golpe enfada a una agresiva, y responder depende de estar enfadada (la represalia es proporcional a la frustración).
 
-### Qué hay que construir
+### El caso 23
 
-- Sexo percibible como rasgo de lo que se ve de otra criatura.
-- Necesidad de impulso reproductivo.
-- Una acción de cortejo. Si es un verbo nuevo cambia el tamaño de la entrada de la red y mueve todos los casos medidos, así que primero se prueba reutilizando `acercarse` con intención, y solo si no basta se añade el verbo y se repite toda la regresión.
-- Aceptación y rechazo, gestación y parto sin intervención del jugador (con camadas), y límites de población por espacio.
-- Casos de laboratorio: cortejo y rechazo con distintos afectos, aversión aprendida por castigo y su reversión con premios, y herencia a lo largo de generaciones.
+Parejas adultas de sexos distintos que ya conviven (1500 s previos para que haya afecto), con 5 réplicas por brazo, 8 semillas. Resultados de mediana:
+
+| Qué se mira | Resultado |
+|---|---|
+| Se quieren, impulso, cortejo y aceptación | Se reproducen el 90 % de las réplicas (6 de 8 semillas pasan). |
+| Desconocidos | Hay rechazos (mediana 26) y se reproducen el 20 % (5 de 8 semillas pasan el criterio). Con insistencia el afecto crece y a veces acaban aceptando. |
+| Castigo tras 3 acercamientos reproductivos | 0 % se reproduce (8 de 8 semillas), con aversión de 0,61. |
+| Reacción al rechazo según carácter (muestreada) | Enfado 0,46 en agresivas frente a 0,11 en pacíficas. |
+| Entrenamiento de la reacción | Enfado base 0,43, tras premiar el enfado 0,84, tras asustarlo 0,06 (8 de 8). |
+| Violencia | Solo en agresivas: 0,90 de las réplicas frente a 0 (8 de 8). |
+| Pelea mutua | 0,90 de las réplicas de agresivas frente a 0 en pacíficas (7 de 8). |
+| El rechazo se respeta | Ningún embarazo por haber peleado (8 de 8). |
+| Manía por los cuernos | Con una manía fuerte por los cuernos, rechaza al pretendiente con cuernos (10 %) y acepta más al que no los tiene (60 %). Pasa 4 de 8. |
+
+- Pasan los nueve criterios a la vez 3 de 8 semillas. Queda informativo.
+- **Las agresivas muy agresivas se pelean sin necesidad de un rechazo.** Con agresividad 0,9 las dos, el empujón de tanteo inicial basta para que se enzarcen. Por eso la parte de rechazos de las agresivas es poca y la violencia media es alta. No se ha aislado cuánto de la pelea es por el rechazo y cuánto por el carácter.
+- **Pelea de verdad.** Con las dos enfadadas y agresivas se golpean de 4 a 19 veces cada una, y acaba cuando el miedo hace huir a una. Para que respondiera se necesitó un peso de represalia de 5 (con 1,4 solo pegaba una). Con ese peso, si la represalia se aplica a cualquier agresiva, convivir acaba en peleas sin fin. Por eso es proporcional al enfado.
+- **El afecto debe construirse antes.** Con 600 s de convivencia la pareja que se quiere se quedaba justo en el umbral de aceptación y se rechazaba a sí misma por azar. Con 1500 s se reproduce.
+- **La manía por los cuernos es débil para decidir una pareja.** Una criatura con la manía dada por hecho (no aprendida en esta prueba, lo aprendido está en el caso 22) rechaza al pretendiente con cuernos pero no acepta del todo al otro (60 %).
+
+### Pendiente
+
+- Percibir el sexo como rasgo de aspecto (hoy solo se lee el sexo del genoma al evaluar), y que el aprendizaje de aversión por sexo se generalice por parecido.
+- La selección de rasgos físicos (cuernos, colmillos, garras) a lo largo de generaciones, y su dibujo.
+- Límites de población por espacio, más allá de las cuatro criaturas de la sala actual.
+- Un caso que aísle el efecto del rechazo en la pelea del efecto del carácter.
 
 ## Caso propuesto 15: el monstruo y el sacrificio
 

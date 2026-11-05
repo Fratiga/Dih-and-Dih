@@ -7,6 +7,7 @@ import { acota } from "./azar.ts";
 import { CATALOGO } from "./catalogo.ts";
 import type { Criatura, Entorno } from "./criatura.ts";
 import { BINES } from "./memoria.ts";
+import { sexoDe } from "./genoma.ts";
 import { ANGUSTIA_VISIBLE, C, D, E, IDX, N, NC, R, resCero, VERBOS_OBJETO, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
 export interface Cand {
@@ -51,7 +52,7 @@ export function gustoDe(c: Criatura, p: Percepto): number {
   const k = contrasteAspecto(p.f);
   let g = 0;
   for (let i = 0; i < k.length; i++) g += c.valencias[i] * k[i];
-  g /= k.length;
+  // Se suma, no se promedia: una manía fuerte a un solo rasgo tiene que poder pesar
   return acota(g - 0.6 * (c.reputacion[p.id]?.agresion ?? 0), -1, 1);
 }
 
@@ -221,7 +222,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       // Disputa: la que tiene hambre y ve a otra comiendo empuja mas, segun su caracter. Y quien acaba de ser golpeada responde (o huye por el miedo).
       if (c.agresion && p.esCriatura && v === "empujar") {
         if (ps.some((q) => !q.esCriatura && q.ocupante === p.id - 1000 && q.dist < 400)) u += AJ.pesoDisputa * hambre * Math.max(0, ras[R.agresividad] - 0.3);
-        if (c.represalia && p.id === 1000 + c.represalia.contra && env.t - c.represalia.t < 10) u += AJ.pesoRepresalia * ras[R.agresividad];
+        if (c.represalia && p.id === 1000 + c.represalia.contra && env.t - c.represalia.t < 10) u += AJ.pesoRepresalia * ras[R.agresividad] * emo[E.frustracion];
       }
       // Empujar a otra criatura: el caracter agresivo empuja a probarlo mientras no sabe si compensa, la frustracion de quedarse sin lo esperado lo atiza
       // y el afecto lo frena. Que compense lo aprende
@@ -236,6 +237,14 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
           const debil = acota(p.f[IDX.sonido] + (p.f[IDX.movimiento] < 0.05 ? 0.4 : 0) + (c.genoma.cuerpo.tamano * 0.5 - p.f[IDX.tamano]) / 0.2);
           const paga = A.res[C.sacia] * A.conf;
           u += AJ.pesoPresa * hambre * sabeCarne * debil * (0.1 + 0.9 * Math.min(1, paga * 3));
+        }
+      }
+      // Buscar pareja: el impulso empuja a acercarse a alguien de otro sexo, mas si lo quiere y le gusta, y menos si ha aprendido aversion a ese sexo o a esa criatura
+      if (c.reproduccion && p.esCriatura && v === "acercarse" && c.impulso > 0.4 && !c.gestando) {
+        const otro = env.criaturas.find((o) => 1000 + o.id === p.id);
+        if (otro && sexoDe(otro.genoma) !== sexoDe(c.genoma)) {
+          const aversion = Math.max(c.aversionSexo[sexoDe(otro.genoma)], c.aversionInd[p.id] ?? 0);
+          u += AJ.pesoCortejo * c.impulso * (0.3 + afectoDe(c, p) + 0.5 * Math.max(0, gustoDe(c, p))) * (1 - aversion);
         }
       }
       // Lo que le gusta o disgusta de su aspecto y de su conducta

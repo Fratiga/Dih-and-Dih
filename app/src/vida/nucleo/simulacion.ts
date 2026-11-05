@@ -39,6 +39,7 @@ export interface EstadoSim {
   protegida: boolean;
   mortalidad?: Mortalidad;
   legado?: Legado[];
+  embarazos?: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[];
   proxNombre?: number;
 }
 
@@ -78,6 +79,8 @@ export class Simulacion {
   protegida: boolean;
   mortalidad: Mortalidad;
   legado: Legado[] = [];
+  /** Embarazos en curso: quien gesta, el otro progenitor y cuando nacen. */
+  embarazos: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[] = [];
   /** Se llama tras cada paso (el laboratorio lo usa para medir). */
   ganchos: ((s: Simulacion) => void)[] = [];
 
@@ -106,10 +109,38 @@ export class Simulacion {
     const danos = this.mundo.paso(dt, this.criaturas.filter((c) => c.vivo));
     for (const d of danos) this.criatura(d.criatura)?.sufrirContinuo(d.cant / dt, dt, d.causa);
     this.alimentar();
-    const env = { mundo: this.mundo, criaturas: this.criaturas, t: this.t };
+    const env = {
+      mundo: this.mundo, criaturas: this.criaturas, t: this.t,
+      embarazar: (madre: Criatura, padre: Criatura) => { madre.gestando = true; this.embarazos.push({ madre: madre.id, padre: padre.id, nace: this.t + AJ.gestacion, genomaPadre: JSON.parse(JSON.stringify(padre.genoma)) }); },
+    };
     for (const c of this.criaturas) c.paso(env, dt);
+    this.partos();
     for (const c of this.criaturas) if (!c.vivo && !this.legado.some((l) => l.id === c.id)) this.registrarLegado(c);
     for (const g of this.ganchos) g(this);
+  }
+
+  /** Nacen las crias de los embarazos cuyo plazo ha llegado, hasta donde quepan en la sala. */
+  private partos(): void {
+    if (!this.embarazos.length) return;
+    const quedan: typeof this.embarazos = [];
+    for (const e of this.embarazos) {
+      if (e.nace > this.t) { quedan.push(e); continue; }
+      const madre = this.criatura(e.madre);
+      if (!madre || !madre.vivo) continue;
+      madre.gestando = false;
+      madre.impulso = 0;
+      const padre = this.criatura(e.padre);
+      const hueco = AJ.maxCriaturasSala - this.criaturas.filter((c) => c.vivo).length;
+      // Si el padre ya no esta, nace con su genoma guardado
+      const nacidos = padre ? this.parir(madre, padre, hueco) : this.parirCon(madre, e.genomaPadre, e.padre, hueco);
+      madre.mem.anotar(this.t, `parto:${Math.floor(this.t)}`, nacidos.length === 1 ? "Tuvo una cría." : nacidos.length ? `Tuvo ${nacidos.length} crías.` : "No había sitio para sus crías.", 0.6);
+    }
+    this.embarazos = quedan;
+  }
+
+  private parirCon(madre: Criatura, genomaPadre: Genoma, idPadre: number, hueco: number): Criatura[] {
+    const falso = new Criatura(idPadre, "", genomaPadre, madre.x, this.semilla);
+    return this.parir(madre, falso, hueco);
   }
 
   private registrarLegado(c: Criatura): void {
@@ -202,7 +233,7 @@ export class Simulacion {
     return JSON.parse(
       JSON.stringify({
         v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
-        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, legado: this.legado,
+        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, legado: this.legado, embarazos: this.embarazos,
       }),
     ) as EstadoSim;
   }
@@ -210,6 +241,7 @@ export class Simulacion {
   static restaurar(e: EstadoSim): Simulacion {
     const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad });
     s.legado = JSON.parse(JSON.stringify(e.legado ?? []));
+    s.embarazos = JSON.parse(JSON.stringify(e.embarazos ?? []));
     s.t = e.t;
     s.mundo.restaurar(e.mundo);
     s.criaturas = e.criaturas.map((c) => {

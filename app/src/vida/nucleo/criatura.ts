@@ -4,9 +4,9 @@
 import { AJ } from "./ajustes.ts";
 import { Azar, acota, mezclar } from "./azar.ts";
 import { CATALOGO } from "./catalogo.ts";
-import { candidatas, contrasteAspecto, elegir, featuresObjeto, firmaDe, gustoDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
+import { afectoDe, candidatas, contrasteAspecto, elegir, featuresObjeto, firmaDe, gustoDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
 import { ejecutar, iniciar } from "./acciones.ts";
-import type { Genoma } from "./genoma.ts";
+import { sexoDe, type Genoma } from "./genoma.ts";
 import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
@@ -16,6 +16,8 @@ export interface Entorno {
   mundo: Mundo;
   criaturas: Criatura[];
   t: number;
+  /** Lo pone la simulacion: registra que una pareja ha aceptado reproducirse. */
+  embarazar?: (madre: Criatura, padre: Criatura) => void;
 }
 
 export interface Accion {
@@ -31,6 +33,8 @@ export interface Accion {
   tf: number;
   dur: number;
   hecho: boolean;
+  /** Se acerca con intencion de cortejar. */
+  cortejo?: boolean;
   comp: number;
   /** Si al empezar habia a la vista una criatura angustiada: quien, cuanta angustia se le percibia y como la veia. Al terminar se nota si ha bajado. */
   ajeno?: { obj: number; ini: number; f: number[]; nombre: string; medido?: boolean };
@@ -112,6 +116,14 @@ export interface EstadoCriatura {
   reconocePorRasgos: boolean;
   aprendeObservando: boolean;
   agresion: boolean;
+  reproduccion: boolean;
+  impulso: number;
+  gestando: boolean;
+  aversionSexo: number[];
+  aversionInd: Record<number, number>;
+  ultimoCortejo: { t: number; con: number } | null;
+  ajusteReaccion: number[][];
+  ultimoRechazo: { t: number; rol: 0 | 1; reaccion: number } | null;
   gustos: boolean;
   valencias: number[];
   reputacion: Record<number, { agresion: number; t?: number }>;
@@ -183,6 +195,22 @@ export class Criatura {
   aprendeObservando = false;
   /** Experimental: puede empujar a otras criaturas (y hacerles dano). Si compensa o no lo aprende viviendo. */
   agresion = false;
+  /** Experimental: reproduccion autonoma. Tiene un impulso que sube de adulta, busca pareja de otro sexo, y se acepta o se rechaza segun afecto, gusto y aversion. */
+  reproduccion = false;
+  /** De 0 a 1. Sube con el tiempo en una adulta y se vacia al reproducirse. */
+  impulso = 0;
+  /** Gesta (solo quien tiene el sexo 1): no cortejada ni cortejando hasta el parto. */
+  gestando = false;
+  /** Aversion aprendida a cortejar o ser cortejada con cada sexo (por un castigo justo despues de un cortejo), y con cada individuo. */
+  aversionSexo: number[] = [0, 0];
+  aversionInd: Record<number, number> = {};
+  /** El ultimo cortejo en que participo (lo inicio ella o la cortejaron), para ligarle un premio o un castigo. */
+  ultimoCortejo: { t: number; con: number } | null = null;
+  /** Lo que ha aprendido sobre como reaccionar al rechazo (indice 0 si la rechazaron, 1 si rechazo ella) a cada reaccion: enfado, miedo, indiferencia o alegria. Se suma
+      al exponente de su peso, asi un premio tras una reaccion la hace mas probable y un susto la hace menos. */
+  ajusteReaccion: number[][] = [[0, 0, 0, 0], [0, 0, 0, 0]];
+  /** La ultima vez que hubo un rechazo en que participo y que reaccion tuvo (para ligarle un premio o un susto). */
+  ultimoRechazo: { t: number; rol: 0 | 1; reaccion: number } | null = null;
   /** Experimental: toma gustos y manias por el aspecto (tamano, color, cuernos) y por la conducta de los demas, a partir de lo que vive con ellos. */
   gustos = false;
   /** Lo que ha aprendido a gustarle (+) o disgustarle (-) de cada rasgo de aspecto, que se aplica a cualquiera que lo tenga. */
@@ -311,6 +339,13 @@ export class Criatura {
     const g = this.genoma;
     const n = this.nec;
     const dur = this.dormido;
+    // El impulso reproductivo sube en una adulta que no gesta, y la aversion aprendida se va olvidando muy despacio
+    if (this.reproduccion) {
+      if (this.edad >= DIA * 0.5 && !this.gestando) this.impulso = acota(this.impulso + AJ.impulsoTasa * dt);
+      const olv = Math.exp(-dt / (DIA * 3));
+      this.aversionSexo[0] *= olv; this.aversionSexo[1] *= olv;
+      for (const k of Object.keys(this.aversionInd)) this.aversionInd[+k] *= olv;
+    }
     n[N.hambre] = acota(n[N.hambre] + AJ.hambre * g.metabolismo * (dur ? 0.5 : 1) * dt);
     n[N.sueno] = acota(n[N.sueno] + (dur ? AJ.suenoDormido : AJ.sueno) * dt);
     n[N.aburrimiento] = acota(n[N.aburrimiento] + AJ.aburrimiento * (dur ? 0.1 : 1) * dt);
@@ -721,6 +756,8 @@ export class Criatura {
   /** Recompensa: lo ultimo que hizo se vuelve mas atractivo. */
   recompensar(env: Entorno, nivel = 0.6): void {
     if (this.reanimar(env)) return;
+    this.ligarACortejo(env, -1);
+    this.ligarARechazo(env, -1);
     const ult = this.accionReciente(env);
     this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.6);
     this.nec[N.soledad] = acota(this.nec[N.soledad] - 0.2);
@@ -756,8 +793,63 @@ export class Criatura {
     this.mem.anotar(env.t, `premio:maltrato:${id}`, `Recibió una caricia justo después de que ${p ? p.nombre : "otra criatura"} la golpeara.`, 0.2);
   }
 
+  /** Evalua un cortejo: acepta si es adulta, no gesta, tiene impulso, es de otro sexo y le apetece lo bastante. Lo que le apetece sale del afecto, de su gusto por el
+      aspecto y la conducta, de su propio impulso y de la aversion que tenga (por castigos anteriores) a ese sexo o a ese individuo. `intensidad` es cuanto rechaza. */
+  evaluarCortejo(pretendiente: Criatura): { acepta: boolean; intensidad: number } {
+    const p = this.percibidos.find((q) => q.id === 1000 + pretendiente.id);
+    const afecto = p ? afectoDe(this, p) : (this.mem.vinculos.find((q) => q.id === 1000 + pretendiente.id)?.afecto ?? 0);
+    const gusto = p ? gustoDe(this, p) : 0;
+    const sx = sexoDe(pretendiente.genoma);
+    const aversion = Math.max(this.aversionSexo[sx], this.aversionInd[1000 + pretendiente.id] ?? 0);
+    // La aversion aprendida multiplica el deseo en vez de restarle: un castigo repetido puede pesar mas que el cariño
+    const deseo = Math.max(0, 0.1 + AJ.pesoAfectoDeseo * afecto + AJ.pesoGustoDeseo * gusto + 0.3 * this.impulso) * (1 - AJ.pesoAversionDeseo * aversion);
+    const posible = this.reproduccion && this.vivo && this.incap < 0 && !this.gestando && this.edad >= DIA * 0.5 && sexoDe(this.genoma) !== sx && this.impulso > 0.25;
+    const acepta = posible && deseo > AJ.umbralAceptacion;
+    return { acepta, intensidad: acepta ? 0 : acota(aversion + Math.max(0, AJ.umbralAceptacion - deseo) + (posible ? 0 : 0.1)) };
+  }
+
+  /** Como reacciona a un rechazo, al azar pero segun su caracter y lo aprendido: 0 enfado, 1 miedo, 2 indiferencia, 3 alegria. `rol` 0 si la rechazan y 1 si rechaza.
+      Rechazada: el enfado crece con su agresividad, el miedo con su miedo y con la aversion que ha aprendido, la indiferencia con el poco apego y la alegria es rara.
+      La que rechaza puede sentir alivio o alegria si le tiene aversion. */
+  reaccionAlRechazo(rol: 0 | 1, intensidad: number): number {
+    const r = this.rasgos;
+    const aversion = Math.max(this.aversionSexo[0], this.aversionSexo[1]);
+    const base = [
+      0.15 + 1.4 * Math.max(0, r[R.agresividad] - 0.3) + 0.6 * this.emo[E.frustracion],
+      0.15 + 1.0 * r[R.miedo] * (rol === 0 ? 1 : 0.5) + 0.5 * aversion,
+      0.25 + 0.8 * (1 - r[R.apego]),
+      rol === 1 ? 0.1 + 0.9 * aversion + 0.4 * intensidad : 0.08,
+    ];
+    const w = base.map((b, i) => b * Math.exp(this.ajusteReaccion[rol][i]));
+    let u = this.azar.next() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < 4; i++) { u -= w[i]; if (u <= 0) return i; }
+    return 2;
+  }
+
+  /** Un premio o un susto justo despues de reaccionar a un rechazo cambia lo probable que es esa reaccion. El susto, ademas, asusta. */
+  private ligarARechazo(env: Entorno, signo: 1 | -1): void {
+    const u = this.ultimoRechazo;
+    if (!this.reproduccion || !u || env.t - u.t > 8) return;
+    const a = this.ajusteReaccion[u.rol];
+    a[u.reaccion] = Math.max(-2, Math.min(2, a[u.reaccion] - signo * AJ.pasoReaccion));
+    if (signo > 0 && u.reaccion !== 1) a[1] = Math.min(2, a[1] + 0.5 * AJ.pasoReaccion);
+  }
+
+  /** Si lo ultimo en que participo fue un cortejo, un castigo o un premio se liga a ese sexo y a ese individuo. */
+  private ligarACortejo(env: Entorno, signo: 1 | -1): void {
+    if (!this.reproduccion || !this.ultimoCortejo || env.t - this.ultimoCortejo.t > 8) return;
+    const o = env.criaturas.find((q) => q.id === this.ultimoCortejo?.con);
+    if (!o) return;
+    const sx = sexoDe(o.genoma);
+    this.aversionSexo[sx] = acota(this.aversionSexo[sx] + signo * AJ.pasoAversionSexo);
+    this.aversionInd[1000 + o.id] = acota((this.aversionInd[1000 + o.id] ?? 0) + signo * AJ.pasoAversionInd);
+    this.mem.anotar(env.t, `cortejo:${signo}:${o.id}`, signo > 0 ? `Se asustó justo después de un acercamiento reproductivo con ${o.nombre}.` : `Recibió una caricia justo después de un acercamiento reproductivo con ${o.nombre}.`, signo > 0 ? -0.5 : 0.4);
+  }
+
   /** Susto: el jugador la asusta. */
   asustar(env: Entorno): void {
+    this.ligarACortejo(env, 1);
+    this.ligarARechazo(env, 1);
     const ult = this.accionReciente(env);
     this.emo[E.miedo] = acota(this.emo[E.miedo] + 0.8);
     this.forzar = true;
@@ -796,7 +888,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -837,6 +929,14 @@ export class Criatura {
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.aprendeObservando = e.aprendeObservando ?? false;
     c.agresion = e.agresion ?? false;
+    c.reproduccion = e.reproduccion ?? false;
+    c.impulso = e.impulso ?? 0;
+    c.gestando = e.gestando ?? false;
+    c.aversionSexo = (e.aversionSexo ?? [0, 0]).slice();
+    c.aversionInd = JSON.parse(JSON.stringify(e.aversionInd ?? {}));
+    c.ultimoCortejo = e.ultimoCortejo ? { ...e.ultimoCortejo } : null;
+    c.ajusteReaccion = JSON.parse(JSON.stringify(e.ajusteReaccion ?? [[0, 0, 0, 0], [0, 0, 0, 0]]));
+    c.ultimoRechazo = e.ultimoRechazo ? { ...e.ultimoRechazo } : null;
     c.gustos = e.gustos ?? false;
     c.valencias = (e.valencias ?? [0, 0, 0, 0]).slice();
     c.reputacion = JSON.parse(JSON.stringify(e.reputacion ?? {}));

@@ -70,13 +70,29 @@ export const AJ = {
   pasoGusto: 0.12,
   /** Cuanto empuja a atacar a una criatura debil el hambre, saber que la carne alimenta y que atacar ya ha dado comida. */
   pesoPresa: 24,
+  /** Reproduccion autonoma. El impulso sube por segundo en una adulta; la gestacion dura estos segundos; en una sala caben tantas criaturas vivas. */
+  impulsoTasa: 0.0008,
+  gestacion: 400,
+  maxCriaturasSala: 4,
+  /** Cuanto empuja a buscar pareja el impulso. */
+  pesoCortejo: 1.6,
+  /** Lo que hace falta de deseo para aceptar, y cuanto pesan afecto, gusto, impulso propio y aversion en ese deseo. */
+  umbralAceptacion: 0.45,
+  pesoAfectoDeseo: 0.8,
+  pesoGustoDeseo: 0.4,
+  pesoAversionDeseo: 0.9,
+  /** Cuanto sube la aversion por sexo y por individuo con un castigo justo despues de un cortejo, y cuanto baja con un premio. */
+  pasoAversionSexo: 0.25,
+  pasoAversionInd: 0.3,
+  /** Cuanto cambia el peso de una reaccion al rechazo con un premio (sube) o un susto (baja) justo despues de tenerla. */
+  pasoReaccion: 0.6,
   pesoAgresion: 0.8,
   /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
   penaOcupada: 0.5,
   /** Cuanto empuja a empujar ver a otra comiendo estando hambrienta, segun el caracter. */
   pesoDisputa: 1.6,
   /** Cuanto empuja a responder haber sido golpeada hace poco. */
-  pesoRepresalia: 1.4,
+  pesoRepresalia: 5,
   /** Segundos que tarda en olvidarse a medias el dano intercambiado con otra criatura. */
   olvidoAgravio: 300,
   /** Cuanto empuja a empujar a otra la frustracion (por quedarse sin lo que esperaba) en un caracter agresivo. */
