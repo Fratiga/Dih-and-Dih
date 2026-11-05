@@ -2,7 +2,7 @@
    Implementados: 01 a 04 (un individuo aprende), 04b (generalización), 13 (gemelos) y 05 (partido improvisado, preparado).
    Cada uno usa varias semillas y un control. Los criterios estan escritos para que no se cumplan por casualidad. */
 
-import { C, DIA, R, type Verbo } from "../nucleo/tipos.ts";
+import { C, DIA, E, R, type Verbo } from "../nucleo/tipos.ts";
 import { clonarGenoma, cruzar, sexoDe, type Genoma } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
 import { Azar, mezclar } from "../nucleo/azar.ts";
@@ -1831,5 +1831,85 @@ export const caso23: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso24: Caso = {
+  id: "24",
+  titulo: "Calma tras la pelea",
+  hipotesis: "Una pelea entre dos agresivas no dura para siempre: la fatiga de los golpes limita los golpes, la frustración y la agresión bajan después, y vuelven a sus actividades normales. Calmarse no es olvidar: la aversión y la asociación de peligro se quedan. Una criatura herida o asustada tarda más en recuperarse. Al reencontrarse no se pelean automáticamente.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const FIN = 900;
+    type Brazo = "sanas" | "heridas" | "asustadas";
+    const gA = clonarGenoma(genomaDe(semilla, 241));
+    const gB = clonarGenoma(genomaDe(semilla, 242));
+    gA.rasgos[R.agresividad] = 0.9;
+    gB.rasgos[R.agresividad] = 0.9;
+    const golpes = (c: Criatura, t0 = 0, t1 = Infinity): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura" && r.t >= t0 && r.t < t1).length;
+    const actividad = (c: Criatura, t0: number, t1: number): number => c.registro.filter((r) => r.kind === "impacto" && r.tipo !== "criatura" && r.t >= t0 && r.t < t1).length;
+    const pelea = (brazo: Brazo, k: number) => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 243, k), objetos: [{ tipo: "pelota", x: 800 }, { tipo: "fruta", x: 1200, porciones: 6 }], criaturas: [{ genoma: clonarGenoma(gA), x: 500 }, { genoma: clonarGenoma(gB), x: 560 }], comedero: { cada: 120, max: 2, tipo: "fruta" } });
+      const [A, B] = s.criaturas;
+      for (const c of s.criaturas) { c.edad = DIA; c.agresion = true; c.reconocePorRasgos = true; c.capRegistro = 100000; c.nec[0] = 0.15; c.nec[1] = 0.1; }
+      // Empieza la pelea: las dos enfadadas
+      for (const c of s.criaturas) c.emo[E.frustracion] = 0.8;
+      A.represalia = { contra: B.id, t: 0 }; B.represalia = { contra: A.id, t: 0 };
+      if (brazo === "heridas") { A.salud = 0.45; B.salud = 0.45; A.nec[2] = 0.5; B.nec[2] = 0.5; }
+      // Asustadas: de temperamento asustadizo y con miedo en el momento. El miedo del momento solo dura unos segundos; lo que dura es el temperamento.
+      if (brazo === "asustadas") { A.emo[E.miedo] = 0.9; B.emo[E.miedo] = 0.9; A.rasgos[R.miedo] = 0.9; B.rasgos[R.miedo] = 0.9; }
+      let pico = 0;
+      let tCalma = FIN;
+      let calmaAnotada = false;
+      s.ganchos.push(() => {
+        const fr = Math.max(A.emo[E.frustracion], B.emo[E.frustracion]);
+        if (s.t < 30) pico = Math.max(pico, fr);
+        // Calma de combate: la fatiga de los golpes ya se ha ido en las dos (la frustracion de fondo, que sube por cualquier cosa sin recompensa, se mide aparte)
+        if (!calmaAnotada && s.t > 20 && Math.max(A.fatiga, B.fatiga) < 0.1) { tCalma = s.t; calmaAnotada = true; }
+      });
+      s.avanzar(FIN);
+      const golpesTotales = golpes(A) + golpes(B);
+      const golpesFinales = golpes(A, FIN - 120) + golpes(B, FIN - 120);
+      const frFinal = Math.max(A.emo[E.frustracion], B.emo[E.frustracion]);
+      const normales = actividad(A, FIN - 150, FIN) + actividad(B, FIN - 150, FIN);
+      const aversion = Math.max(
+        A.mem.predecir("presencia", featuresCriatura(B), new Array(10).fill(1), 0).res[C.dano] * A.mem.predecir("presencia", featuresCriatura(B), new Array(10).fill(1), 0).conf,
+        B.mem.predecir("presencia", featuresCriatura(A), new Array(10).fill(1), 0).res[C.dano] * B.mem.predecir("presencia", featuresCriatura(A), new Array(10).fill(1), 0).conf,
+      );
+      const agravio = Math.max(A.agravios[1000 + B.id]?.n ?? 0, B.agravios[1000 + A.id]?.n ?? 0);
+      // Reencuentro: se separan y se ponen a 300, sin objetos, y se mira un minuto
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      s.comedero = null;
+      A.x = 650; B.x = 950; A.accion = null; B.accion = null;
+      const t0 = s.t;
+      let distMin = 999;
+      s.ganchos.push(() => { distMin = Math.min(distMin, Math.abs(A.x - B.x)); });
+      s.avanzar(60);
+      const nueva = Math.min(golpes(A, t0), golpes(B, t0)) >= 2;
+      return { golpesTotales, golpesFinales, pico, frFinal, normales, aversion, agravio, tCalma, nueva, acercaron: distMin < 200 };
+    };
+    const brazos: Brazo[] = ["sanas", "heridas", "asustadas"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => pelea(b, k))])) as Record<Brazo, ReturnType<typeof pelea>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof pelea>) => number): number => mediana(r[b].map(f));
+    const sanas = r.sanas;
+    const pNueva = sanas.filter((x) => x.nueva).length / REP;
+    return resultado(semilla, {
+      "el combate termina: en los últimos 2 minutos ya no se golpean (3 golpes o menos de mediana) y el total no es ilimitado (menos de 250)": med("sanas", (x) => x.golpesFinales) <= 3 && med("sanas", (x) => x.golpesTotales) < 250,
+      "la frustración baja tras el desenlace (al final menos de la cuarta parte de su pico)": med("sanas", (x) => x.frFinal) < 0.25 * Math.max(0.1, med("sanas", (x) => x.pico)),
+      "recuperan sus actividades normales (5 o más acciones con objetos en los últimos 150 s)": med("sanas", (x) => x.normales) >= 5,
+      "calmarse no es olvidar: tras calmarse siguen asociando a la otra con daño (0,1 o más) o guardan agravio (0,05 o más)": med("sanas", (x) => Math.max(x.aversion, x.agravio)) >= 0.05,
+      "el reencuentro no provoca automáticamente otra pelea (menos de la mitad de las réplicas)": pNueva < 0.5,
+      "la herida alarga la recuperación (tarda un 10 % más o más que las sanas en calmarse)": med("heridas", (x) => x.tCalma) >= 1.1 * med("sanas", (x) => x.tCalma),
+      "y el miedo (de temperamento y del momento) también (un 10 % más o más)": med("asustadas", (x) => x.tCalma) >= 1.1 * med("sanas", (x) => x.tCalma),
+    }, {
+      golpesTotalesSanas: med("sanas", (x) => x.golpesTotales), golpesFinalesSanas: med("sanas", (x) => x.golpesFinales), picoFrustracion: med("sanas", (x) => x.pico), frustracionFinal: med("sanas", (x) => x.frFinal),
+      accionesNormales: med("sanas", (x) => x.normales), aversionResidual: med("sanas", (x) => x.aversion), agravioResidual: med("sanas", (x) => x.agravio),
+      segundosHastaCalmaSanas: med("sanas", (x) => x.tCalma), segundosHastaCalmaHeridas: med("heridas", (x) => x.tCalma), segundosHastaCalmaAsustadas: med("asustadas", (x) => x.tCalma),
+      probNuevaPeleaTrasReencuentro: pNueva, seAcercanAlReencontrarse: sanas.filter((x) => x.acercaron).length / REP,
+      golpesTotalesHeridas: med("heridas", (x) => x.golpesTotales), golpesTotalesAsustadas: med("asustadas", (x) => x.golpesTotales),
+    }, null, FIN + 60);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso24, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

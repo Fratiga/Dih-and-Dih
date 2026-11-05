@@ -86,6 +86,13 @@ export const AJ = {
   pasoAversionInd: 0.3,
   /** Cuanto cambia el peso de una reaccion al rechazo con un premio (sube) o un susto (baja) justo despues de tenerla. */
   pasoReaccion: 0.6,
+  /** Fatiga de combate: cuanto sube con cada golpe dado o recibido, lo que tarda en bajar (segundos, mas si esta herida o asustada y si es agresiva) y cuanto frena empujar
+      a otra y empuja a descansar. Con fatiga alta la frustracion tambien se calma mas deprisa. */
+  fatigaPorGolpeDado: 0.05,
+  fatigaPorGolpeRecibido: 0.08,
+  tauFatiga: 60,
+  pesoFatiga: 4,
+  pesoDescansoFatiga: 1.2,
   pesoAgresion: 0.8,
   /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
   penaOcupada: 0.5,

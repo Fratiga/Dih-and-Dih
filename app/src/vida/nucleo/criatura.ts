@@ -116,6 +116,7 @@ export interface EstadoCriatura {
   reconocePorRasgos: boolean;
   aprendeObservando: boolean;
   agresion: boolean;
+  fatiga: number;
   reproduccion: boolean;
   impulso: number;
   gestando: boolean;
@@ -195,6 +196,8 @@ export class Criatura {
   aprendeObservando = false;
   /** Experimental: puede empujar a otras criaturas (y hacerles dano). Si compensa o no lo aprende viviendo. */
   agresion = false;
+  /** De 0 a 1. Sube con los golpes dados y recibidos y baja con el tiempo: limita las peleas y empuja a descansar. No borra la memoria de quien ataco. */
+  fatiga = 0;
   /** Experimental: reproduccion autonoma. Tiene un impulso que sube de adulta, busca pareja de otro sexo, y se acepta o se rechaza segun afecto, gusto y aversion. */
   reproduccion = false;
   /** De 0 a 1. Sube con el tiempo en una adulta y se vacia al reproducirse. */
@@ -400,7 +403,13 @@ export class Criatura {
   private emociones(dt: number): void {
     const e = this.emo;
     if (!this.inconsolable) e[E.miedo] *= Math.exp(-dt / 12);
-    e[E.frustracion] *= Math.exp(-dt / 30);
+    // Tras una pelea la frustracion baja mas deprisa cuanto mas cansada esta; la fatiga tarda mas en irse si esta herida o asustada y si es agresiva
+    e[E.frustracion] *= Math.exp(-dt / (this.fatiga > 0.4 ? 12 : 30));
+    if (this.fatiga > 0) {
+      const tau = AJ.tauFatiga * (1 + 1.5 * (1 - this.salud) + 0.5 * e[E.miedo]) * (1 + 0.5 * this.rasgos[R.agresividad]) * (1 + 0.8 * this.rasgos[R.miedo]);
+      this.fatiga *= Math.exp(-dt / tau);
+      if (this.fatiga < 0.003) this.fatiga = 0;
+    }
     e[E.excitacion] *= Math.exp(-dt / 8);
     const alvo = acota(this.rasgos[R.curiosidad] * 0.6 + this.nec[N.aburrimiento] * 0.3 - e[E.miedo] * 0.5);
     e[E.curiosidad] += (alvo - e[E.curiosidad]) * (1 - Math.exp(-dt / 20));
@@ -551,7 +560,8 @@ export class Criatura {
     const clave = `${acc.v}:${acc.tipo}`;
     if (gus < 0.08 && res[C.dano] < 0.05) {
       this.fallos[clave] = (this.fallos[clave] ?? 0) + 1;
-      if (esperado > 0.25) this.emo[E.frustracion] = acota(this.emo[E.frustracion] + 0.18);
+      // Pegar a otra criatura sin recibir nada en el momento no cuenta como un fracaso que frustre: si no, cada golpe alimentaria el siguiente sin limite
+      if (esperado > 0.25 && !(acc.esCriatura && acc.v === "empujar")) this.emo[E.frustracion] = acota(this.emo[E.frustracion] + 0.18);
     } else {
       if ((this.fallos[clave] ?? 0) >= 2) this.desarrollar(R.persistencia, 0.03);
       this.fallos[clave] = 0;
@@ -888,7 +898,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -929,6 +939,7 @@ export class Criatura {
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.aprendeObservando = e.aprendeObservando ?? false;
     c.agresion = e.agresion ?? false;
+    c.fatiga = e.fatiga ?? 0;
     c.reproduccion = e.reproduccion ?? false;
     c.impulso = e.impulso ?? 0;
     c.gestando = e.gestando ?? false;

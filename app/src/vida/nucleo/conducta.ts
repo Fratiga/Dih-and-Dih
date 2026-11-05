@@ -224,6 +224,9 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         if (ps.some((q) => !q.esCriatura && q.ocupante === p.id - 1000 && q.dist < 400)) u += AJ.pesoDisputa * hambre * Math.max(0, ras[R.agresividad] - 0.3);
         if (c.represalia && p.id === 1000 + c.represalia.contra && env.t - c.represalia.t < 10) u += AJ.pesoRepresalia * ras[R.agresividad] * emo[E.frustracion];
       }
+      // Cansada de pelear, empujar a otra apetece menos (la fatiga se va con el tiempo, no es olvido). Con interes depredador activo frena mucho menos:
+      // quien caza persiste hasta someter a la presa; el limite es para peleas entre iguales
+      let frenoFatiga = 1;
       // Empujar a otra criatura: el caracter agresivo empuja a probarlo mientras no sabe si compensa, la frustracion de quedarse sin lo esperado lo atiza
       // y el afecto lo frena. Que compense lo aprende
       // despues, si conseguir comida va detras de empujar a una rival (el credito retrasado de siempre)
@@ -236,7 +239,9 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         if (sabeCarne > 0.05) {
           const debil = acota(p.f[IDX.sonido] + (p.f[IDX.movimiento] < 0.05 ? 0.4 : 0) + (c.genoma.cuerpo.tamano * 0.5 - p.f[IDX.tamano]) / 0.2);
           const paga = A.res[C.sacia] * A.conf;
-          u += AJ.pesoPresa * hambre * sabeCarne * debil * (0.1 + 0.9 * Math.min(1, paga * 3));
+          const interes = AJ.pesoPresa * hambre * sabeCarne * debil * (0.1 + 0.9 * Math.min(1, paga * 3));
+          u += interes;
+          if (interes > 0.05) frenoFatiga = 0.2;
         }
       }
       // Buscar pareja: el impulso empuja a acercarse a alguien de otro sexo, mas si lo quiere y le gusta, y menos si ha aprendido aversion a ese sexo o a esa criatura
@@ -247,6 +252,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
           u += AJ.pesoCortejo * c.impulso * (0.3 + afectoDe(c, p) + 0.5 * Math.max(0, gustoDe(c, p))) * (1 - aversion);
         }
       }
+      if (c.agresion && p.esCriatura && v === "empujar") u -= AJ.pesoFatiga * c.fatiga * frenoFatiga;
       // Lo que le gusta o disgusta de su aspecto y de su conducta
       if (c.gustos && p.esCriatura && v === "acercarse") u += AJ.pesoGusto * gustoDe(c, p);
       // Acercarse a alguien conocido atrae mas, sobre todo estando sola
@@ -309,6 +315,8 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     const s = nec[N.sueno];
     let u = 0.09 + 0.3 * s;
     if (act && act.v === "descansar") u += persistir * 0.5;
+    // Tras una pelea, herida o cansada, descansa mas
+    if (c.agresion) u += AJ.pesoDescansoFatiga * c.fatiga + 0.6 * (1 - c.salud);
     // Quedarse donde esta mientras otra lo pasa mal: tambien se aprende que efecto tiene
     for (const q of angustiadas) u += alivioEsperado("descansar", q) * pesoAlivio(q.id);
     cand.push({ v: "descansar", p: null, dest: c.x, u, cambia: true, espera: resCero() });

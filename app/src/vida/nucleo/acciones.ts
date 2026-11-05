@@ -206,6 +206,9 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
     for (const o of env.mundo.objetos) if (o.ocupante === otro.id) { o.ocupante = undefined; o.tOcupante = undefined; }
     c.anotarAgravio(a.obj, golpe * 0.6);
     c.ultimoGolpe = { t: env.t, contra: otro.id };
+    // Pelear con miedo o estando herida cansa mas
+    c.fatiga = acota(c.fatiga + AJ.fatigaPorGolpeDado * (1 + c.emo[E.miedo] + (1 - c.salud)));
+    otro.fatiga = acota(otro.fatiga + AJ.fatigaPorGolpeRecibido * (1 + otro.emo[E.miedo] + (1 - otro.salud)));
     otro.salud -= golpe * 0.15;
     c.experimentar(a, resCero(), true, env);
   }

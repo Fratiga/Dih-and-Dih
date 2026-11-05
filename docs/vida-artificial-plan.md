@@ -368,7 +368,7 @@ El caso 21 hace tres rondas de 90 s con solo un cadáver ya hecho (carroñeo) y 
 - Es lo previsto en el plan: carroñeo, luego interés por criaturas vulnerables, luego ataque y consumo. Comer un cadáver no enseña a matar por sí solo (hace falta además el hambre y ver a alguien débil).
 - **La depredación sin cuerpo no desaparece del todo** (3 presas de mediana): el interés tiene una base y no se extingue enseguida si atacar no da comida.
 - El primer montaje no mataba a nadie. Se debía a que la presa se creaba como "protegida" y no podía morir, no a la conducta: lo anoto porque costó varias pruebas verlo.
-- Queda informativo (6/10 en la última pasada completa). Siguen sin hacer el canibalismo con criaturas adultas de la misma sala, la selección de rasgos físicos (colmillos, garras) y que la presa pueda huir.
+- Queda informativo (6/10 antes de la fatiga de combate del caso 24 y 4/10 después). Siguen sin hacer el canibalismo con criaturas adultas de la misma sala, la selección de rasgos físicos (colmillos, garras) y que la presa pueda huir.
 
 ### Manías por el aspecto y por la conducta (caso 22)
 
@@ -728,6 +728,38 @@ Parejas adultas de sexos distintos que ya conviven (1500 s previos para que haya
 - Límites de población por espacio, más allá de las cuatro criaturas de la sala actual.
 - Un caso que aísle el efecto del rechazo en la pelea del efecto del carácter.
 
+## Calma y recuperación tras una pelea (caso 24)
+
+Hasta ahora una pelea entre agresivas no se apagaba nunca: cientos de golpes (en el caso 23) o hasta que el sueño acumulado paraba a la agresora (caso 18). Lo sostenían tres cosas. Cada golpe sin recompensa en el momento sumaba 0,18 de frustración al que golpea (la regla de «esperaba algo y no llegó»), cada golpe recibido enfadaba a la agresiva golpeada, y la frustración renovada mantenía arriba el término de represalia.
+
+Se añadió un único estado, la **fatiga de combate** (`fatiga`, de 0 a 1), reutilizando lo demás (frustración, miedo, salud y su regeneración, la huida por amenaza aprendida y `descansar`). No hay estados nuevos de personalidad ni un sistema de heridas, ni intimidación.
+
+- **Sube** con cada golpe dado o recibido, más si pelea con miedo o herida (`fatigaPorGolpeDado`, `fatigaPorGolpeRecibido`).
+- **Frena** empujar a otra (`pesoFatiga`) y **empuja a descansar** (`pesoDescansoFatiga`, y una pequeña ayuda por estar herida, solo con la agresión activada).
+- **Calma la frustración más deprisa** cuando es alta (con fatiga por encima de 0,4, 12 s en vez de 30).
+- **Baja con el tiempo** (`tauFatiga`, 60 s), más despacio si está herida, tiene miedo, es agresiva o es de temperamento asustadizo.
+- Los golpes a otra criatura ya no cuentan como un fracaso que frustre al que golpea.
+- **No toca la memoria.** Quién atacó (agravios), la asociación de peligro con su aspecto y la aversión aprendida se quedan. Calmarse no es olvidar. Los pesos globales de decisión no se han tocado: los términos nuevos solo valen con la agresión activada y con fatiga.
+
+El caso 24 prueba cinco réplicas por brazo de dos agresivas (0,9) enfadadas y con represalia mutua, en tres condiciones (sanas, heridas con salud 0,45, asustadas con miedo 0,9 y temperamento asustadizo), 900 s, y luego un reencuentro a 300 sin objetos durante un minuto. Resultados con 10 semillas:
+
+| Qué se mide | Resultado |
+|---|---|
+| El combate termina | 5 golpes en total de mediana, 0 en los últimos 2 minutos (10 de 10) |
+| La frustración baja | Del pico 0,99 a 0 (10 de 10) |
+| Recuperan actividades normales | 10 acciones con objetos en los últimos 150 s de mediana (8 de 10) |
+| Calmarse no es olvidar | Siguen asociando a la otra con daño (0,49) y guardan agravio (1,0) (10 de 10) |
+| El reencuentro no provoca pelea | Probabilidad de otra pelea 0, y el 90 % se acerca (10 de 10) |
+| La herida alarga la recuperación | 594 s hasta calmarse frente a 495 s en las sanas, un 20 % más (8 de 10) |
+| El miedo alarga la recuperación | **No se observa** (487 s frente a 495 s; 0 de 10) |
+
+- Que se acerquen en el reencuentro sin pelear a pesar de la aversión es un resultado emergente: nada obliga a la reconciliación ni a la huida. No he comprobado qué hacen después de acercarse.
+- **El miedo.** El miedo del momento se pasa en unos 12 s y no deja efecto en la recuperación. Lo que dura es el temperamento: en aislamiento, desde fatiga 1,0, con miedo de rasgo 0,2 queda en 0,09 a los 240 s y con 0,9 queda en 0,20. Dentro de una pelea completa lo tapan otras diferencias (cuántos golpes y cuánta salud pierde cada una), por eso el criterio no lo ve. No se forzó.
+- **La calma que se mide es la de combate** (fatiga por debajo de 0,1). La frustración de fondo sube con cualquier cosa sin recompensa y se mantiene aparte.
+- El combate es corto: unos cinco golpes y uno de los dos se cansa o huye. Es lo que sale con estos pesos, no una decisión de diseño.
+- Queda informativo (0/10 con los siete criterios a la vez, por el del miedo).
+- **Efecto en la depredación (caso 21).** La fatiga y quitar la frustración de los golpes cortaron el frenesí que sostenía parte de la caza: con la fatiga puesta del todo, 0 presas muertas. Un cazador con interés depredador activo frena mucho menos con la fatiga (la quinta parte): persiste hasta someter a la presa. Con eso la depredación vuelve en parte, **4/10 semillas y 1,5 presas muertas de mediana frente a 6/10 y 4 antes**. Es el coste de que la pelea acabe sola, y se acepta.
+
 ## Caso propuesto 15: el monstruo y el sacrificio
 
 Todavía no está construido. Se registra aquí con las condiciones y lo que falta en el código para poder hacerlo. Pone a prueba a la vez reconocer una amenaza, interpretar el peligro de otras, decidir intervenir asumiendo un riesgo y conservar un recuerdo social de lo ocurrido.
@@ -806,7 +838,7 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 5c. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), ya construidos, que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
 6. El caso 15 después, porque necesita esos recuerdos de individuos, la agresión entre criaturas y la atribución de efectos a otras. La agresión puede prepararse en paralelo.
 7. **Prueba de integración pequeña** antes de más sistemas: una agresiva que ya carroñeó convive con una criatura que defiende su comida. La primera intenta obtenerla. La segunda puede ceder, intimidar o luchar (hoy solo hay ceder, huir o luchar: no hay amenaza sin golpe). Si hay heridas, huir, continuar o recuperarse. Tras un tiempo se vuelven a encontrar y se mira qué hacen. Conecta comida, agresión, memoria, miedo y relaciones sin canibalismo ni evolución genética.
-8. **Calma tras una pelea.** Hoy las peleas entre agresivas no se apagan (cientos de golpes en el caso 23 y en el 18 hasta que el sueño las para). Falta medir cuánto tardan en calmarse y si pueden volver a convivir sin reiniciar el conflicto.
+8. **Calma tras una pelea.** Hecho (caso 24, arriba). Queda por mirar qué hacen después de acercarse en el reencuentro y probar la calma en parejas con afecto previo.
 9. **Partir el caso 23** en pruebas independientes (cortejo y aceptación, reacción al rechazo, pelea, persistencia de la aversión, reproducción tras convivencia larga), para que un fallo de un mecanismo no tape a los demás. Los criterios ya se informan por separado, pero comparten montajes y se ven como un solo resultado.
 10. Especialización física (mandíbula, garras, fuerza, agilidad), solo después de comprobar que cada rasgo mejora una estrategia concreta y sin subir pesos antes.
 11. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
