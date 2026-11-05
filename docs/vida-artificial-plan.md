@@ -806,6 +806,146 @@ Resultados (medianas):
 - **El reencuentro no demuestra recuperación de la relación.** Que todas se acerquen y no peleen es compatible con aversión, miedo o desconfianza residual: sí recuerdan (0,96), pero no se midió cómo se comportan al acercarse (distancia a la que se quedan, tiempo cerca, huida posterior).
 - Pasan los ocho criterios a la vez 4 de 8 semillas. Queda informativo.
 
+## Persistencia depredadora (caso 26)
+
+Pregunta del caso 25: ¿sostiene la fatiga una conducta depredadora con pausas y consecuencias, sin reintroducir el frenesí infinito? Para impedir la huida en el laboratorio no hace falta ninguna regla nueva: se usa `atrapada`, la condición de laboratorio que ya usan los casos 08b, 18, 19 y 21 y que anula el movimiento de esa criatura. El comportamiento normal no cambia.
+
+Cuatro condiciones, cinco réplicas por semilla, diez semillas: una agresiva (0,9) con carroñeo previo (tres rondas a solas con un cadáver) o sin él, frente a una presa pacífica (0,1) de salud 0,3 que puede huir o está inmovilizada. Hambre (0,7), salud, distancia (500 a 1000) y temperamentos constantes. Ocho rondas de 90 s con una presa nueva en cada una, luego una pausa de 300 s sin presa ni comida, y tres rondas más.
+
+Por criterio (10 semillas):
+
+| Criterio | Semillas |
+|---|---|
+| Inicia y mantiene intentos: con carroñeo y presa inmóvil ataca en al menos 3 de 8 rondas | 10 de 10 |
+| Sin frenesí: ninguna ronda pasa de 40 golpes y hay fatiga apreciable en las ráfagas | 6 de 10 |
+| El aprendizaje importa: con carroñeo previo mata más que sin él | 8 de 10 |
+| La huida importa: con la presa que puede huir mata menos | **2 de 10** |
+| Persiste con pausas: ataca tras una ronda sin muerte y tras la pausa de 5 minutos | 10 de 10 |
+| Tiene coste: fatiga y tiempo sin alimentarse | 8 de 10 |
+
+Por semilla (carroñeo y presa inmóvil, salvo donde se indica):
+
+| Semilla | Rondas con ataque (con carroñeo, huye / inmóvil / sin carroñeo, inmóvil / huye) | Presas muertas (mismo orden) | Bocados de carne | Golpes máx. por ronda | Pico de fatiga | Golpes tras la pausa (con carroñeo / sin) |
+|---|---|---|---|---|---|---|
+| 1 | 5 / 5 / 4 / 3 | 2 / 1 / 0 / 0 | 1 | 4 | 0,33 | 2 / 0 |
+| 2 | 5 / 5 / 3 / 3 | 0 / 1 / 0 / 0 | 1 | 3 | 0,19 | 2 / 0 |
+| 3 | 6 / 4 / 2 / 3 | 1 / 1 / 0 / 0 | 1 | 4 | 0,16 | 0 / 0 |
+| 4 | 4 / 4 / 3 / 3 | 2 / 0 / 0 / 0 | 0 | 4 | 0,14 | 0 / 1 |
+| 5 | 7 / 6 / 3 / 3 | 2 / 3 / 0 / 0 | 3 | 4 | 0,24 | 3 / 0 |
+| 6 | 4 / 5 / 2 / 3 | 2 / 1 / 0 / 0 | 2 | 4 | 0,15 | 2 / 0 |
+| 7 | 7 / 7 / 3 / 2 | 2 / 2 / 0 / 0 | 3 | 4 | 0,28 | 5 / 1 |
+| 8 | 8 / 8 / 3 / 3 | 4 / 4 / 0 / 0 | 5 | 4 | 0,24 | 5 / 0 |
+| 9 | 4 / 5 / 3 / 4 | 1 / 1 / 0 / 0 | 0 | 4 | 0,18 | 0 / 0 |
+| 10 | 3 / 3 / 2 / 3 | 0 / 0 / 0 / 0 | 0 | 2 | 0,08 | 0 / 0 |
+
+- **No hay frenesí.** Ninguna ronda pasa de 4 golpes (el máximo es 4, con rangos de 2 a 4). La fatiga se aplica (pico mediano de 0,19, de 0,08 a 0,33). Con cuatro golpes no queda sitio para un ataque interminable, y a la vez no se lograron ráfagas largas: es lo que sale con la fatiga actual y no una decisión de diseño.
+- **El interés depredador mantiene intentos con pausas.** Con carroñeo previo ataca en unas 5 de las 8 rondas (sin él, en 3, el tanteo de fondo de la agresividad); tras una ronda sin muerte vuelve a atacar en alrededor del 57 % de los casos (ocho semillas); y tras la pausa de 5 minutos ataca en 1 de las 3 rondas siguientes de mediana (con carroñeo; sin él, en ninguna).
+- **Mata poco, y solo con aprendizaje.** Con carroñeo, 1 presa de 8 de mediana con la presa inmóvil y 2 con la que puede huir; sin carroñeo, 0 (en ninguna semilla de ninguna de las dos condiciones). Y come la carne que mata: 1,5 bocados de mediana (0 a 5). Tras la pausa casi no mata (mediana 0).
+- **Poder huir no importa en esta prueba (2 de 10).** Contra lo esperado, la presa que puede huir no muere menos (mediana 2 frente a 1). La explicación probable, sin comprobar, es que cada presa es nueva y no sabe nada del cazador: no reconoce el peligro hasta el primer golpe y, para entonces, con cuatro golpes por ronda la caza ya se ha decidido. Esta prueba no distingue el efecto de la huida; haría falta presas con memoria del cazador.
+- **Coste.** El cazador acaba la ronda sin comer en casi todas (el primer bocado casi nunca llega en 90 s; el hambre media es de 0,80), paga fatiga (hasta 0,33) y su salud mínima es de 0,71 también con la presa inmóvil, que no puede devolver golpes, así que probablemente viene del hambre prolongada y no de las peleas (no se comprobó).
+- **Con la presa a medio morir (salud 0,5)** en una versión previa del caso, el cazador daba también unos 5 golpes por ronda pero casi nunca llegaba a matar (0 o 1 presa en 8 rondas): la fatiga lo detenía justo cuando necesitaba un golpe más. La caza solo cierra contra presas ya debilitadas.
+- Queda informativo (1 de 10 con los seis criterios a la vez).
+
+Lo que dice esto de la fatiga: permite una conducta depredadora sostenida con pausas y consecuencias, pero la limita a presas vulnerables y deja la caza lejos de ser eficaz. Si se quisiera una depredación más eficaz sin frenesí, habría que ajustar la fatiga del cazador con interés depredador (hoy frena a la quinta parte), y eso no se ha tocado.
+
+## Celos y envidia (diseño, sin implementar)
+
+Se propone representar los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Y se describe qué hay hoy, los riesgos de integración y dos casos informativos. No se implementa nada hasta que se apruebe el diseño.
+
+### Qué hay hoy
+
+- Las emociones (`emo`, cinco: miedo, curiosidad, frustración, apego y excitación) **entran en la red** junto con las necesidades (`NI`). Añadir una emoción cambia el tamaño de la entrada y mueve todos los casos medidos. Por eso celos y envidia no deben ser entradas de la red.
+- El **apego** es una emoción tónica sin destinatario: sube con el afecto más alto que tenga y su rasgo de apego. No sabe de quién es. El afecto por individuo (`vinculos`), el reconocimiento por firma, los gustos y la fama por conducta sí tienen destinatario.
+- La **frustración** nace de esperar algo y no conseguirlo (y, hoy, de golpes recibidos o reacciones al rechazo) y se calma con el tiempo o con la fatiga.
+- Lo que una criatura percibe de lo que **otras hacen entre sí** son señales concretas y puntuales: el último impacto sobre un objeto, el último golpe, el último daño, el último bocado, el último cortejo y su acción actual. **No hay una señal de «mi compañero presta atención a otra»**: solo posiciones, acción actual y el verbo `acercarse` con su destino.
+- La selección de acciones es por utilidad. Los términos nuevos se suman a candidatas ya existentes (acercarse, empujar, evitar, descansar), como se hizo con la fatiga, el cortejo o el interés depredador.
+
+### Celos
+
+**Qué es.** Reacción ante una amenaza percibida a un vínculo significativo. Tiene tres sujetos: la celosa, su vínculo (a quien quiere) y el tercero que recibe la atención.
+
+**Representación.** Un registro por (vínculo, tercero): `{ vinculo, tercero, nivel, t }` y la **memoria social** de ese episodio (en `anotar`, como el resto de episodios). No es una emoción general.
+
+**Qué percibe.** Hace falta una señal nueva y barata, la **atención social** que una criatura dirige a otra: su `acercarse` en curso, su permanencia cerca y su orientación. Es coherente con las señales actuales (se lee el estado visible de otra, como `ultimoGolpe`). Se percibe solo dentro del alcance de vista.
+
+**Qué lo sube.**
+- Ver a su vínculo atender al tercero (acercarse, quedarse cerca, jugar), más cuanto **mayor es el afecto** por el vínculo, más cuanto **más atendía antes a la celosa** (la pérdida de atención) y más cuanto **menos afecto** le tiene al tercero (si lo quiere, la amenaza es menor).
+- Hay soledad, y su rasgo de apego (+) y su sensibilidad (+).
+
+**Qué lo baja.** El tiempo (media vida de unos 60 a 90 s, más si el apego es alto), que su vínculo vuelva a atenderla, o que el tercero se aleje.
+
+**Interacción con el resto.**
+- **Frustración:** los celos la alimentan un poco, pero no se confunden: sin vínculo no hay celos.
+- **Miedo:** un tercero muy superior o con fama de pegar los convierte en evitación y no en acercamiento.
+- **Agresión:** solo se traducen en agresión si es agresiva **y** está enfadada (frustración alta); si no, en acercarse al vínculo, quedarse entre ambos o evitar. Esto reutiliza la regla ya acordada para el rechazo.
+- **Temperamento:** apego y sensibilidad los amplifican, la agresividad los orienta hacia el tercero, el miedo hacia la retirada.
+
+**Acciones que favorece o inhibe.** Favorece **acercarse al vínculo** (y quedarse entre ambos), **descansar apartada** si hay miedo, y con frustración y agresión alta, **empujar al tercero** por la vía ya existente. Inhibe jugar con objetos y explorar mientras dura. **No** añade acciones nuevas.
+
+**Cómo evitar rigidez.** Los celos son un término aditivo y proporcional en la utilidad de acciones existentes, no una orden. Nunca fijan un objetivo. Nivel máximo acotado (no pueden dominar la decisión por sí solos frente al hambre o el miedo). La respuesta depende de su carácter, su estado y su historia con esa pareja. Y hay una vía de salida: el vínculo vuelve y se disipan.
+
+### Envidia
+
+**Qué es.** Reacción ante algo deseado que otra criatura posee o consigue. Puede ser alimento, un objeto, atención o un vínculo (los dos últimos solapan con celos y se tratan después). **No** depende de un vínculo previo.
+
+**Representación.** Un registro `{ recurso, poseedor, nivel, t }`, también como campo propio. Va ligado a un **recurso concreto** y a **quien lo tiene**.
+
+**Qué percibe.** Que otra criatura consigue un recurso que ella desea y no tiene: usa señales que ya existen (`ultimoComer`, `ultimoImpacto` sobre una máquina y su aparición) más el **deseo** de la envidiosa, que ya está en su memoria: lo que espera de ese tipo de cosa y su hambre o necesidad.
+
+**Qué lo sube.** Ver conseguir o disfrutar un recurso que ella valora y no tiene (cuanto más lo valora y cuanto más necesita, más), no tener acceso inmediato, y la desigualdad (que el otro tenga mucho y ella nada).
+
+**Qué lo baja.** Conseguir ella el recurso o uno equivalente, que el otro lo pierda o se vaya, y el tiempo (media vida de 30 a 60 s). Una vez consumido el recurso, se desvanece deprisa.
+
+**Interacción.**
+- **Frustración:** la envidia es frustración **dirigida** a un poseedor. La frustración sola (un recurso inalcanzable sin poseedor) no es envidia, y esa es la diferencia que debe separar el control del caso.
+- **Apego y vínculos:** un poseedor querido genera menos envidia y más tolerancia.
+- **Agresión:** solo con carácter agresivo y enfado, y por la vía ya existente de competencia por la comida. Si no, intenta obtener el recurso por sí misma, espera o se acerca a ver.
+- **Miedo:** ante un poseedor temido, se inhibe.
+
+**Acciones.** Favorece **acercarse al recurso o al poseedor** (mirar, esperar) y **intentar conseguir un recurso equivalente**. Inhibe jugar o descansar mientras dura. En conflicto abierto usa lo ya existente (empujar, huir, ceder).
+
+**Cómo evitar rigidez y agresión automática.** Igual que los celos: término aditivo, acotado, proporcional al deseo, sin acciones nuevas, dependiente del carácter y con vía de salida (conseguir el recurso, esperar).
+
+### Riesgos de integración
+
+1. **La entrada de la red.** No añadir emociones al arreglo `emo` ni nada a `NI`: cambia todos los resultados medidos. Por eso, campos propios.
+2. **Que la señal de atención social sea un oráculo.** Leer directamente la acción de otra es coherente con lo que hay, pero hay que limitarlo al alcance de vista y registrarlo como un recuerdo de la propia criatura (no recalcularlo cada paso).
+3. **Confundir celos, envidia, frustración y apego.** Hace falta un control de cada uno. Sin él, un aumento de frustración se leería como celos.
+4. **Doble conteo.** La frustración ya sube por muchas causas (golpes recibidos, rechazo, bloqueos de comida). Los celos y la envidia no deben sumarla en cada paso o se alimentarían solos.
+5. **Peleas automáticas.** Es el riesgo principal. La agresión debe pasar siempre por la condición «agresiva y enfadada» ya existente y por la fatiga de combate. Un tercero con fama de pegar o más fuerte debe inhibir y no atraer.
+6. **Efecto en casos medidos.** Pueden alterar el 06 (compañía), el 16 (reconocimiento), el 17 (afinidad desigual), el 23 y el 25. Se activan solo con un interruptor propio, apagado por defecto, y se repite la regresión completa.
+7. **Rivalidades permanentes.** Los celos y la envidia deben desvanecerse. Si no hay una vía de salida (que vuelva la atención o que se consiga el recurso), se convierten en una rivalidad fija que se pidió no hacer todavía.
+8. **Coste.** Percibir la atención social entre todas las parejas es cuadrático en criaturas por sala. Con las cuatro actuales no importa, pero hay que acotarlo antes de espacios con más.
+
+### Casos propuestos (informativos y breves)
+
+**Caso 27, celos.** Una criatura con vínculo fuerte observa que su compañero presta atención a otra. Condiciones (varias réplicas por semilla):
+1. Vínculo fuerte y tercero presente.
+2. Vínculo débil y tercero presente.
+3. Vínculo fuerte, sin tercero.
+4. Vínculo fuerte, tercero presente pero que el compañero **no atiende** (control de la mera presencia del rival).
+
+Se mide:
+- **Estado interno** (nivel y su evolución) solo como apoyo.
+- **Conducta:** tiempo cerca del compañero frente a cerca del tercero, interposición, retirada, golpes al tercero (probabilidad, no automática), y qué acciones se inhiben.
+- **Duración** hasta volver a lo normal.
+- **Memoria:** recuerdo del episodio, y qué pasa en un encuentro posterior (¿evita o se acerca más al tercero?).
+- **Diferencias entre condiciones.** Un aumento del nivel interno no se da por demostrado si no cambia la conducta.
+
+**Caso 28, envidia.** Dos criaturas ven un recurso deseado (una raíz) que una obtiene y la otra no. Condiciones:
+1. Una obtiene el recurso y la otra no, con ambas a la vista.
+2. Control con acceso equivalente (ambas comen).
+3. Control con recurso **inalcanzable** y sin poseedor (frustración sin envidia).
+4. Control con el recurso pero **la otra no lo desea** (sin hambre).
+
+Se mide conducta (atención y acercamiento al poseedor, intentos de obtener un recurso equivalente, golpes con probabilidad), duración, memoria (asociación del poseedor con el recurso, y cambio al volver a aparecer otro recurso) y diferencias entre las cuatro condiciones.
+
+### Decisiones que necesito antes de implementar
+
+- Si se acepta la señal de **atención social** (acercarse en curso, permanencia y orientación) como única entrada nueva.
+- Si los celos y la envidia se activan con **interruptores propios**, apagados por defecto, como el resto.
+- Si se acota por ahora a **alimento y atención** (dejando objetos y vínculos como segunda fase).
+
 ## Caso propuesto 15: el monstruo y el sacrificio
 
 Todavía no está construido. Se registra aquí con las condiciones y lo que falta en el código para poder hacerlo. Pone a prueba a la vez reconocer una amenaza, interpretar el peligro de otras, decidir intervenir asumiendo un riesgo y conservar un recuerdo social de lo ocurrido.

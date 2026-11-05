@@ -2053,5 +2053,112 @@ export const caso25: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso26: Caso = {
+  id: "26",
+  titulo: "Persistencia depredadora",
+  hipotesis: "Con la fatiga de combate activa, una agresiva hambrienta que ya sabe que la carne alimenta puede mantener una conducta depredadora con pausas y consecuencias, sin volver al frenesí infinito. Se compara una presa que puede huir con una que no puede durante la ventana del experimento (la condición de laboratorio `atrapada`, que no añade ninguna regla al comportamiento normal) y un control sin carroñeo previo. No se busca que ataque indefinidamente ni que siempre mate.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const PREVIA = 3;
+    const RONDAS = 8;
+    const POR_RONDA = 90;
+    const PAUSA = 300;
+    const RONDAS_TRAS_PAUSA = 3;
+    type Brazo = "carroñeo y presa que huye" | "carroñeo y presa inmovil" | "sin carroñeo y presa inmovil" | "sin carroñeo y presa que huye";
+    const gH = clonarGenoma(genomaDe(semilla, 261));
+    gH.rasgos[R.agresividad] = 0.9;
+    const gP = genomaDe(semilla, 262);
+    const golpesDe = (c: Criatura, t0 = 0, t1 = Infinity): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura" && r.t >= t0 && r.t < t1).length;
+    const tiemposGolpe = (c: Criatura, t0: number, t1: number): number[] => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura" && r.t >= t0 && r.t < t1).map((r) => r.t);
+    const bocadosCarne = (c: Criatura, t0: number, t1: number): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "cadaver" && (r.res?.[0] ?? 0) > 0.05 && r.t >= t0 && r.t < t1).length;
+    const probar = (brazo: Brazo, k: number) => {
+      const carroña = brazo.startsWith("carroñeo");
+      const inmovil = brazo.endsWith("inmovil");
+      const s = nuevaSim({ semilla: mezclar(semilla, 263, k), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(gH), x: 500 }], comedero: null, mortalidad: "permanente" });
+      const H = s.criaturas[0];
+      H.agresion = true; H.conflictoComida = true; H.reconocePorRasgos = true; H.capRegistro = 200000; H.edad = DIA;
+      let nPresa = 10;
+      const limpiar = (): void => {
+        for (const o of [...s.mundo.objetos]) if (o.tipo === "cadaver") s.mundo.quitar(o.id);
+        s.criaturas = s.criaturas.filter((c) => c === H);
+        H.x = 500; H.accion = null; H.nec[0] = 0.7; H.nec[1] = 0.1; H.emo[E.miedo] = 0; H.dormido = false;
+      };
+      const nuevaPresa = (): Criatura => {
+        const p = new Criatura(nPresa++, `Presa ${nPresa}`, (() => { const g = clonarGenoma(gP); g.rasgos[R.agresividad] = 0.1; return g; })(), 1000, mezclar(semilla, 264, nPresa));
+        p.agresion = true; p.mortalidad = "permanente"; p.salud = 0.3; p.atrapada = inmovil; p.capRegistro = 500;
+        return p;
+      };
+      // Aprendizaje previo: tres rondas a solas con un cadaver ya hecho, o el mismo tiempo sin el
+      for (let i = 0; i < PREVIA; i++) {
+        limpiar();
+        if (carroña) s.mundo.agregar("cadaver", 1000, { porciones: 6 });
+        s.avanzar(POR_RONDA);
+      }
+      const rondas: { golpes: number; duracion: number; mato: boolean; comio: number; primerBocado: number; golpesDeLaPresa: number }[] = [];
+      let picoFatiga = 0, saludMin = 1, hambreSuma = 0, hambreN = 0;
+      s.ganchos.push(() => { picoFatiga = Math.max(picoFatiga, H.fatiga); saludMin = Math.min(saludMin, H.salud); hambreSuma += H.nec[0]; hambreN++; });
+      const jugarRonda = (conPausaPrevia: boolean): void => {
+        limpiar();
+        const p = nuevaPresa();
+        s.criaturas.push(p);
+        const ini = s.t;
+        s.avanzar(POR_RONDA);
+        const ts = tiemposGolpe(H, ini, ini + POR_RONDA);
+        rondas.push({
+          golpes: ts.length, duracion: ts.length ? ts[ts.length - 1] - ts[0] : 0, mato: !p.vivo, comio: bocadosCarne(H, ini, ini + POR_RONDA),
+          primerBocado: (() => { const b = H.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && (r.res?.[0] ?? 0) > 0.05 && r.t >= ini && r.t < ini + POR_RONDA)[0]; return b ? b.t - ini : POR_RONDA; })(),
+          golpesDeLaPresa: golpesDe(p),
+        });
+        void conPausaPrevia;
+      };
+      for (let r = 0; r < RONDAS; r++) jugarRonda(false);
+      // Pausa: sin presa ni comida, el cazador se recupera; luego una presa nueva
+      limpiar();
+      s.avanzar(PAUSA);
+      const fatigaTrasPausa = H.fatiga;
+      for (let i = 0; i < RONDAS_TRAS_PAUSA; i++) jugarRonda(true);
+      const trasPausa = rondas.slice(RONDAS);
+      const previas = rondas.slice(0, RONDAS);
+      const intentos = previas.filter((x) => x.golpes > 0).length;
+      const matadas = rondas.filter((x) => x.mato).length;
+      // Persistencia tras un intento fallido: rondas con golpes cuya anterior no acabo con la muerte de la presa
+      let trasFallo = 0, trasFalloAtaca = 0;
+      for (let i = 1; i < previas.length; i++) if (!previas[i - 1].mato) { trasFallo++; if (previas[i].golpes > 0) trasFalloAtaca++; }
+      return {
+        intentos, golpesPorRonda: previas.map((x) => x.golpes), maxGolpesRonda: Math.max(...rondas.map((x) => x.golpes)),
+        duracionMediana: mediana(previas.filter((x) => x.golpes > 0).map((x) => x.duracion)), matadas, comidos: rondas.reduce((n, x) => n + x.comio, 0),
+        picoFatiga, saludMin, hambreMedia: hambreN ? hambreSuma / hambreN : 0, golpesTrasPausa: trasPausa.reduce((n, x) => n + x.golpes, 0), rondasConGolpesTrasPausa: trasPausa.filter((x) => x.golpes > 0).length, matadasTrasPausa: trasPausa.filter((x) => x.mato).length, fatigaTrasPausa,
+        trasFallo, trasFalloAtaca, golpesRecibidos: previas.reduce((n, x) => n + x.golpesDeLaPresa, 0),
+        sinComer: mediana(previas.map((x) => x.primerBocado)),
+      };
+    };
+    const brazos: Brazo[] = ["carroñeo y presa que huye", "carroñeo y presa inmovil", "sin carroñeo y presa inmovil", "sin carroñeo y presa que huye"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [ch, ci, si, sh] = brazos;
+    const todas = brazos.flatMap((b) => r[b]);
+    return resultado(semilla, {
+      "inicia y mantiene intentos: con carroñeo y la presa inmóvil ataca en al menos 3 de 8 rondas (mediana)": med(ci, (x) => x.intentos) >= 3,
+      "sin frenesí: ninguna ronda de ninguna réplica pasa de 40 golpes y la fatiga de combate se aplica (0,15 o más) cuando hay una ráfaga de 3 golpes o más": todas.every((x) => x.maxGolpesRonda < 40) && todas.filter((x) => x.golpesPorRonda.some((g) => g >= 3)).every((x) => x.picoFatiga >= 0.15),
+      "el aprendizaje importa: con carroñeo previo mata más presas que sin él (presa inmóvil, mediana)": med(ci, (x) => x.matadas) > med(si, (x) => x.matadas),
+      "la huida importa: con la presa que puede huir mata menos que con la inmóvil (con carroñeo, mediana)": med(ch, (x) => x.matadas) < med(ci, (x) => x.matadas),
+      "persiste con pausas: ataca en la ronda siguiente a un intento sin muerte, y también tras una pausa de 5 minutos (en alguna de las 3 rondas siguientes), en alguna réplica de la condición con carroñeo y presa inmóvil": r[ci].some((x) => x.trasFalloAtaca > 0) && r[ci].some((x) => x.rondasConGolpesTrasPausa > 0),
+      "tiene coste: el cazador paga fatiga (pico de 0,15 o más en mediana) y no se alimenta durante parte de la ronda (el primer bocado tarda más de 5 s de mediana)": med(ci, (x) => x.picoFatiga) >= 0.15 && med(ci, (x) => x.sinComer) > 5,
+    }, {
+      intentosCarroneoHuye: med(ch, (x) => x.intentos), intentosCarroneoInmovil: med(ci, (x) => x.intentos), intentosSinCarroneoInmovil: med(si, (x) => x.intentos), intentosSinCarroneoHuye: med(sh, (x) => x.intentos),
+      matadasCarroneoHuye: med(ch, (x) => x.matadas), matadasCarroneoInmovil: med(ci, (x) => x.matadas), matadasSinCarroneoInmovil: med(si, (x) => x.matadas), matadasSinCarroneoHuye: med(sh, (x) => x.matadas),
+      comidosCarroneoInmovil: med(ci, (x) => x.comidos), comidosCarroneoHuye: med(ch, (x) => x.comidos),
+      maxGolpesRonda: Math.max(...todas.map((x) => x.maxGolpesRonda)), duracionAtaqueCarroneoInmovil: med(ci, (x) => x.duracionMediana),
+      picoFatigaCarroneoInmovil: med(ci, (x) => x.picoFatiga), picoFatigaCarroneoHuye: med(ch, (x) => x.picoFatiga), saludMinimaCazador: med(ci, (x) => x.saludMin), golpesRecibidosCazadorHuye: med(ch, (x) => x.golpesRecibidos),
+      hambreMediaCarroneoInmovil: med(ci, (x) => x.hambreMedia), hambreMediaSinCarroneoInmovil: med(si, (x) => x.hambreMedia), segundosHastaPrimerBocado: med(ci, (x) => x.sinComer),
+      golpesTrasPausaCarroneoInmovil: med(ci, (x) => x.golpesTrasPausa), golpesTrasPausaSinCarroneoInmovil: med(si, (x) => x.golpesTrasPausa), rondasConGolpesTrasPausaCarroneoInmovil: med(ci, (x) => x.rondasConGolpesTrasPausa), matadasTrasPausaCarroneoInmovil: med(ci, (x) => x.matadasTrasPausa), fatigaTrasPausa: med(ci, (x) => x.fatigaTrasPausa),
+      tras_fallo_ataca: med(ci, (x) => (x.trasFallo ? x.trasFalloAtaca / x.trasFallo : 0)),
+    }, null, (PREVIA + RONDAS + RONDAS_TRAS_PAUSA) * POR_RONDA + PAUSA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
