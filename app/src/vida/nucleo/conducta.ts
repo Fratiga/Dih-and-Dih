@@ -253,6 +253,12 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         }
       }
       if (c.agresion && p.esCriatura && v === "empujar") u -= AJ.pesoFatiga * c.fatiga * frenoFatiga;
+      // Celos: busca a su vinculo, juega y explora menos mientras dura, y solo si ademas es agresiva y esta enfadada puede empujar a la tercera
+      if (c.celos && c.celosEstado.length) {
+        if (p.esCriatura && v === "acercarse") u += AJ.pesoCelosAcercar * c.celoPorVinculo(p.id - 1000) * afectoDe(c, p);
+        if (!p.esCriatura) u -= AJ.pesoCelosInhibe * c.celoMaximo();
+        if (p.esCriatura && v === "empujar" && c.agresion) u += AJ.pesoCelosAgresion * c.celoPorTercero(p.id - 1000) * Math.max(0, emo[E.frustracion] - 0.3) * Math.max(0, ras[R.agresividad] - 0.5);
+      }
       // Lo que le gusta o disgusta de su aspecto y de su conducta
       if (c.gustos && p.esCriatura && v === "acercarse") u += AJ.pesoGusto * gustoDe(c, p);
       // Acercarse a alguien conocido atrae mas, sobre todo estando sola
@@ -307,6 +313,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (q > mu) { mu = q; mejor = x; }
     }
     let u = 0.05 + 0.12 * curio + 0.12 * aburr + mu * 0.7;
+    if (c.celos) u -= AJ.pesoCelosInhibe * c.celoMaximo();
     if (act && act.v === "explorar") u += persistir * 0.6;
     cand.push({ v: "explorar", p: null, dest: mejor, u, cambia: true, espera: resCero() });
   }

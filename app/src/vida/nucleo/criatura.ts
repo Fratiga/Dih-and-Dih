@@ -7,6 +7,7 @@ import { CATALOGO } from "./catalogo.ts";
 import { afectoDe, candidatas, contrasteAspecto, elegir, featuresObjeto, firmaDe, gustoDe, percibir, valorDeProbar, type Cand } from "./conducta.ts";
 import { ejecutar, iniciar } from "./acciones.ts";
 import { sexoDe, type Genoma } from "./genoma.ts";
+import { SeguimientoAtencion } from "./social.ts";
 import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
@@ -50,6 +51,15 @@ export interface Comida {
   tipo: string;
   nombre: string;
   x: number;
+}
+
+/** Celos: `nivel` (de 0 a 1) por ver que `vinculo`, a quien quiere, atiende a `tercero`. `pico` es lo mas alto que llego en este episodio. */
+export interface Celo {
+  vinculo: number;
+  tercero: number;
+  nivel: number;
+  pico: number;
+  anotado: boolean;
 }
 
 export interface Traza {
@@ -116,6 +126,9 @@ export interface EstadoCriatura {
   reconocePorRasgos: boolean;
   aprendeObservando: boolean;
   agresion: boolean;
+  celos: boolean;
+  celosEstado: Celo[];
+  atendidaPor: Record<number, number>;
   fatiga: number;
   reproduccion: boolean;
   impulso: number;
@@ -196,6 +209,13 @@ export class Criatura {
   aprendeObservando = false;
   /** Experimental: puede empujar a otras criaturas (y hacerles dano). Si compensa o no lo aprende viviendo. */
   agresion = false;
+  /** Experimental: celos. Si alguien a quien quiere atiende a una tercera, siente celos mientras lo ve; no son frustracion, no dan acciones nuevas y se van con el tiempo. */
+  celos = false;
+  celosEstado: Celo[] = [];
+  /** Lo que ve de la atencion entre las criaturas que tiene a la vista (se rehace con lo que ve, no se guarda). */
+  social = new SeguimientoAtencion();
+  /** Cuando fue la ultima vez que alguien a quien quiere la atendio a ella (para notar que ya no lo hace). */
+  atendidaPor: Record<number, number> = {};
   /** De 0 a 1. Sube con los golpes dados y recibidos y baja con el tiempo: limita las peleas y empuja a descansar. No borra la memoria de quien ataco. */
   fatiga = 0;
   /** Experimental: reproduccion autonoma. Tiene un impulso que sube de adulta, busca pareja de otro sexo, y se acepta o se rechaza segun afecto, gusto y aversion. */
@@ -292,6 +312,7 @@ export class Criatura {
     this.percibidos = percibir(this, env);
     this.notarApariciones(env);
     this.mirarAOtros(env);
+    if (this.celos) this.sentirCelos(env, dt);
     this.observar(env, dt);
     this.resolverTrazas(env);
     if (this.espera > 0) this.espera -= dt;
@@ -803,6 +824,76 @@ export class Criatura {
     this.mem.anotar(env.t, `premio:maltrato:${id}`, `Recibió una caricia justo después de que ${p ? p.nombre : "otra criatura"} la golpeara.`, 0.2);
   }
 
+  /** Cuanto celo siente ahora por ver que `idVinculo` atiende a alguien (el mayor, si son varias). */
+  celoPorVinculo(idVinculo: number): number {
+    let m = 0;
+    for (const c of this.celosEstado) if (c.vinculo === idVinculo) m = Math.max(m, c.nivel);
+    return m;
+  }
+
+  /** Cuanto celo siente ahora hacia `idTercero`, la que recibe la atencion. */
+  celoPorTercero(idTercero: number): number {
+    let m = 0;
+    for (const c of this.celosEstado) if (c.tercero === idTercero) m = Math.max(m, c.nivel);
+    return m;
+  }
+
+  /** El celo mas alto que siente ahora. */
+  celoMaximo(): number {
+    let m = 0;
+    for (const c of this.celosEstado) m = Math.max(m, c.nivel);
+    return m;
+  }
+
+  /** Celos: ve a alguien a quien quiere atender a otra (por la senal de atencion social, que solo cuenta lo que ella misma ve). Sube con cuanto quiere a su vinculo y
+      con su apego y su soledad, sube mas si ese vinculo la atendia a ella hace poco y menos si tambien quiere a la tercera. Baja con el tiempo, mas deprisa
+      si su vinculo vuelve a atenderla. No toca la frustracion ni el miedo. */
+  private sentirCelos(env: Entorno, dt: number): void {
+    const alcance = AJ.vista * this.genoma.vista * 1.3;
+    const vistas: Criatura[] = [this];
+    for (const o of env.criaturas) if (o !== this && o.vivo && Math.abs(o.x - this.x) <= alcance) vistas.push(o);
+    this.social.actualizar(vistas, env.t);
+    const afectoCon = (id: number): number => this.mem.vinculos.find((q) => q.id === 1000 + id)?.afecto ?? 0;
+    const alimentadas = new Set<string>();
+    for (const v of vistas) {
+      if (v === this) continue;
+      // Si su vinculo la atiende a ella, lo anota (y no hay motivo de celos mientras lo hace)
+      const aMi = this.social.duracion(v.id, this.id, env.t) > 0;
+      if (aMi) this.atendidaPor[v.id] = env.t;
+      const afecto = afectoCon(v.id);
+      if (afecto < AJ.umbralVinculoCelos || aMi) continue;
+      for (const t of vistas) {
+        if (t === this || t === v) continue;
+        if (this.social.duracion(v.id, t.id, env.t) <= 0) continue;
+        const clave = `${v.id}>${t.id}`;
+        alimentadas.add(clave);
+        let c = this.celosEstado.find((q) => q.vinculo === v.id && q.tercero === t.id);
+        if (!c) { c = { vinculo: v.id, tercero: t.id, nivel: 0, pico: 0, anotado: false }; this.celosEstado.push(c); }
+        const perdida = env.t - (this.atendidaPor[v.id] ?? -999) < 180 ? 1.4 : 1;
+        const tasa = AJ.tasaCelos * afecto * (0.5 + this.rasgos[R.apego]) * (1 - 0.6 * afectoCon(t.id)) * (1 + 0.6 * this.nec[N.soledad]) * perdida;
+        c.nivel = acota(c.nivel + tasa * dt * (1 - c.nivel));
+        c.pico = Math.max(c.pico, c.nivel);
+        if (c.nivel > 0.5 && !c.anotado) {
+          c.anotado = true;
+          this.mem.anotar(env.t, `celos:${v.id}:${t.id}`, `Sintió celos al ver que ${this.nombreDeId(v.id)} atendía a ${this.nombreDeId(t.id)}.`, -0.5);
+          this.anotarAgravio(1000 + t.id, 0.08);
+        }
+      }
+    }
+    // Se van con el tiempo, antes si su vinculo vuelve a atenderla; y desaparecen del todo cuando ya no queda
+    for (const c of this.celosEstado) {
+      if (alimentadas.has(`${c.vinculo}>${c.tercero}`)) continue;
+      const vuelve = env.t - (this.atendidaPor[c.vinculo] ?? -999) < 3;
+      c.nivel *= Math.exp(-dt / ((AJ.tauCelos * (1 + 0.5 * this.rasgos[R.apego])) / (vuelve ? 3 : 1)));
+      if (c.nivel < 0.01) c.nivel = 0;
+    }
+    this.celosEstado = this.celosEstado.filter((c) => c.nivel > 0);
+  }
+
+  private nombreDeId(id: number): string {
+    return this.percibidos.find((q) => q.id === 1000 + id)?.nombre ?? `la criatura ${id}`;
+  }
+
   /** Evalua un cortejo: acepta si es adulta, no gesta, tiene impulso, es de otro sexo y le apetece lo bastante. Lo que le apetece sale del afecto, de su gusto por el
       aspecto y la conducta, de su propio impulso y de la aversion que tenga (por castigos anteriores) a ese sexo o a ese individuo. `intensidad` es cuanto rechaza. */
   evaluarCortejo(pretendiente: Criatura): { acepta: boolean; intensidad: number } {
@@ -898,7 +989,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -939,6 +1030,9 @@ export class Criatura {
     c.reconocePorRasgos = e.reconocePorRasgos ?? false;
     c.aprendeObservando = e.aprendeObservando ?? false;
     c.agresion = e.agresion ?? false;
+    c.celos = e.celos ?? false;
+    c.celosEstado = JSON.parse(JSON.stringify(e.celosEstado ?? []));
+    c.atendidaPor = JSON.parse(JSON.stringify(e.atendidaPor ?? {}));
     c.fatiga = e.fatiga ?? 0;
     c.reproduccion = e.reproduccion ?? false;
     c.impulso = e.impulso ?? 0;

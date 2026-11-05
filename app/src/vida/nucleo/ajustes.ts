@@ -93,6 +93,19 @@ export const AJ = {
   tauFatiga: 60,
   pesoFatiga: 4,
   pesoDescansoFatiga: 1.2,
+  /** Atencion social (social.ts): hasta donde, a que velocidad maxima, cuanto tiene que durar y cuanto puede cortarse sin que deje de contar. */
+  atencionAlcance: 170,
+  atencionVelocidad: 60,
+  atencionPermanencia: 3,
+  atencionContinuidad: 1.5,
+  /** Celos: afecto minimo por quien atiende a otra para que cuente como vinculo significativo, rapidez con que suben, lo que tardan en irse (s), y cuanto pesan al
+      decidir: acercarse a su vinculo, no jugar ni explorar, y (solo agresiva y enfadada) empujar a la tercera. */
+  umbralVinculoCelos: 0.3,
+  tasaCelos: 0.05,
+  tauCelos: 70,
+  pesoCelosAcercar: 1.5,
+  pesoCelosInhibe: 0.6,
+  pesoCelosAgresion: 2.0,
   pesoAgresion: 0.8,
   /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
   penaOcupada: 0.5,

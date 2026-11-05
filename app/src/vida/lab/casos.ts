@@ -2160,5 +2160,105 @@ export const caso26: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso27: Caso = {
+  id: "27",
+  titulo: "Celos",
+  hipotesis: "Una criatura con un vínculo significativo que ve a su compañero prestar atención sostenida a otra siente celos y lo muestra en lo que hace: busca a su compañero, juega y explora menos, y lo recuerda. No los siente con un vínculo débil, sin tercera, ni cuando la tercera está pero no recibe atención. Con el interruptor apagado no pasa nada. No es frustración, no es miedo y no produce agresión automática.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const ESTIMULO = 60;
+    const OBSERVA = 300;
+    type Brazo = "vinculo fuerte y tercera atendida" | "vinculo fuerte sin tercera" | "vinculo fuerte, tercera sin atencion" | "vinculo debil y tercera atendida" | "vinculo fuerte y tercera atendida, celos apagados";
+    const gO = genomaDe(semilla, 271);
+    const gV = genomaDe(semilla, 272);
+    const gT = genomaDe(semilla, 273);
+    const golpes = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    const probar = (brazo: Brazo, k: number) => {
+      const fuerte = !brazo.startsWith("vinculo debil");
+      const sinTercera = brazo === "vinculo fuerte sin tercera";
+      const sinAtencion = brazo === "vinculo fuerte, tercera sin atencion";
+      const apagado = brazo.endsWith("apagados");
+      // Convivencia previa de O y V: larga (vinculo fuerte) o muy corta (debil)
+      const s = nuevaSim({ semilla: mezclar(semilla, 274, k), objetos: [{ tipo: "pelota", x: 700 }], criaturas: [{ genoma: clonarGenoma(gO), x: 600 }, { genoma: clonarGenoma(gV), x: 800 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [O, V] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      O.celos = !apagado;
+      s.avanzar(fuerte ? 1200 : 80);
+      const afectoOV = O.mem.vinculos.find((q) => q.id === 1000 + V.id)?.afecto ?? 0;
+      // La tercera llega (salvo en el control sin tercera)
+      let T: Criatura | null = null;
+      if (!sinTercera) {
+        T = new Criatura(3, "Tercera", clonarGenoma(gT), 1000, mezclar(semilla, 275, k));
+        T.reconocePorRasgos = true; T.capRegistro = 5000;
+        s.criaturas.push(T);
+      }
+      // Escena montada: V y T quietos, a distancia visible de O. V mira a T (atencion) o mira al lado contrario (control sin atencion).
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+      s.comedero = null;
+      O.x = 500; O.accion = null; O.emo.fill(0); O.nec[0] = 0.15; O.nec[1] = 0.1; O.nec[3] = 0.3; O.nec[4] = 0.3;
+      V.x = 800; V.atrapada = true; V.accion = null; V.dir = sinAtencion ? -1 : 1; V.vx = 0;
+      if (T) { T.x = 920; T.atrapada = true; T.accion = null; T.dir = -1; T.vx = 0; }
+      // O no se queda quieta: tiene una pelota cerca para ver si deja de jugar
+      const pelota = s.mundo.objetos.find((o) => o.tipo === "pelota");
+      if (pelota) pelota.x = 480;
+      const t0 = s.t;
+      let atencionMax = 0, celoMax = 0, frustracionMax = 0, cercaDeV = 0, cercaDeT = 0, entreMedio = 0, tCalma = -1, aVista = 0, picoFin = 0, tMitad = -1;
+      const juego0 = O.registro.length;
+      s.ganchos.push(() => {
+        const dt = s.t - t0;
+        // Postura fija de la escena (aunque esten inmovilizadas, podrian girarse solas): V mira a T mientras dura el estimulo, o al lado contrario
+        V.dir = !sinAtencion && dt <= ESTIMULO ? 1 : -1;
+        if (T) T.dir = -1;
+        if (T) atencionMax = Math.max(atencionMax, O.social.duracion(V.id, T.id, s.t));
+        celoMax = Math.max(celoMax, O.celoMaximo());
+        frustracionMax = Math.max(frustracionMax, O.emo[E.frustracion]);
+        if (dt <= ESTIMULO) {
+          if (Math.abs(O.x - V.x) < 150) cercaDeV += 0.25;
+          if (T && Math.abs(O.x - T.x) < 150) cercaDeT += 0.25;
+          if (T && O.x > Math.min(V.x, T.x) && O.x < Math.max(V.x, T.x)) entreMedio += 0.25;
+        }
+        if (dt <= ESTIMULO) picoFin = Math.max(picoFin, O.celoMaximo());
+        if (dt > ESTIMULO && tMitad < 0 && picoFin > 0.05 && O.celoMaximo() < picoFin / 2) tMitad = dt - ESTIMULO;
+        if (dt > ESTIMULO && tCalma < 0 && O.celoMaximo() < 0.1) tCalma = dt - ESTIMULO;
+        if (T && dt <= ESTIMULO && O.social.duracion(V.id, T.id, s.t) > 0) aVista += 0.25;
+      });
+      s.avanzar(OBSERVA);
+      // Conducta: acciones con objetos (jugar) durante el estimulo y acercamientos a V durante todo
+      const objetos = O.registro.slice(juego0).filter((r) => r.kind === "impacto" && r.tipo !== "criatura" && r.t >= t0 && r.t < t0 + ESTIMULO).length;
+      const acercaV = O.registro.slice(juego0).filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + V.id && r.t >= t0 && r.t < t0 + ESTIMULO).length;
+      const recuerdo = O.mem.episodios.some((e) => e.clave.startsWith("celos:"));
+      const agravioT = T ? O.agravios[1000 + T.id]?.n ?? 0 : 0;
+      return { afectoOV, atencionMax, aVista, celoMax, frustracionMax, cercaDeV, cercaDeT, entreMedio, objetos, acercaV, tCalma: tCalma < 0 ? OBSERVA - ESTIMULO : tCalma, tMitad: tMitad < 0 ? OBSERVA - ESTIMULO : tMitad, recuerdo, agravioT, golpesATercera: T ? golpes(O) : 0 };
+    };
+    const brazos: Brazo[] = ["vinculo fuerte y tercera atendida", "vinculo fuerte sin tercera", "vinculo fuerte, tercera sin atencion", "vinculo debil y tercera atendida", "vinculo fuerte y tercera atendida, celos apagados"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [A, B, C0, Dd, E0] = brazos;
+    return resultado(semilla, {
+      "percepción: ve la atención sostenida de su vínculo a la tercera solo cuando existe (3 s o más), y no cuando la tercera no la recibe ni cuando no hay tercera": med(A, (x) => x.atencionMax) >= 3 && med(Dd, (x) => x.atencionMax) >= 3 && med(B, (x) => x.atencionMax) === 0 && med(C0, (x) => x.atencionMax) < 3,
+      "activación: celos claros con vínculo fuerte y tercera atendida (0,2 o más), y casi nada en los controles (menos de 0,1) y con el interruptor apagado": med(A, (x) => x.celoMax) >= 0.2 && [B, C0, E0].every((b) => med(b, (x) => x.celoMax) < 0.1),
+      "vínculo débil: celos mucho menores que con vínculo fuerte (menos de la mitad)": med(Dd, (x) => x.celoMax) < 0.5 * med(A, (x) => x.celoMax),
+      "conducta: busca más a su compañero que en los controles (más tiempo cerca de él durante el estímulo que sin tercera, con tercera sin atención y con el interruptor apagado)": [B, C0, E0].every((b) => med(A, (x) => x.cercaDeV) > med(b, (x) => x.cercaDeV)),
+      "conducta: juega menos con la pelota durante el estímulo que con el interruptor apagado": med(A, (x) => x.objetos) < med(E0, (x) => x.objetos),
+      "duración: se van con el tiempo (a la mitad de su pico en menos de 120 s tras terminar el estímulo, y por debajo de 0,1 en menos de 240 s, de mediana)": med(A, (x) => x.tMitad) < 120 && med(A, (x) => x.tCalma) < 240,
+      "memoria: lo recuerda como episodio y guarda un pequeño agravio hacia la tercera (más que en los controles)": r[A].filter((x) => x.recuerdo).length >= REP / 2 && med(A, (x) => x.agravioT) > med(C0, (x) => x.agravioT),
+      "no es frustración: la frustración no sube más que en los controles (a lo sumo 0,1 por encima)": med(A, (x) => x.frustracionMax) <= med(C0, (x) => x.frustracionMax) + 0.1,
+      "no es agresión automática: no golpea a la tercera (0 golpes de mediana)": med(A, (x) => x.golpesATercera) === 0,
+    }, {
+      afectoConElVinculoFuerte: med(A, (x) => x.afectoOV), afectoConElVinculoDebil: med(Dd, (x) => x.afectoOV),
+      atencionVistaSegundosA: med(A, (x) => x.atencionMax), atencionVistaSegundosC: med(C0, (x) => x.atencionMax), atencionVistaSegundosDebil: med(Dd, (x) => x.atencionMax),
+      celosA: med(A, (x) => x.celoMax), celosSinTercera: med(B, (x) => x.celoMax), celosTerceraSinAtencion: med(C0, (x) => x.celoMax), celosVinculoDebil: med(Dd, (x) => x.celoMax), celosApagados: med(E0, (x) => x.celoMax),
+      cercaDeVA: med(A, (x) => x.cercaDeV), cercaDeVSinTercera: med(B, (x) => x.cercaDeV), cercaDeVSinAtencion: med(C0, (x) => x.cercaDeV), cercaDeVDebil: med(Dd, (x) => x.cercaDeV), cercaDeVApagado: med(E0, (x) => x.cercaDeV),
+      cercaDeTA: med(A, (x) => x.cercaDeT), entreMedioA: med(A, (x) => x.entreMedio), objetosA: med(A, (x) => x.objetos), objetosApagado: med(E0, (x) => x.objetos),
+      acercamientosAVA: med(A, (x) => x.acercaV), acercamientosAVApagado: med(E0, (x) => x.acercaV),
+      segundosHastaCalmaA: med(A, (x) => x.tCalma), segundosHastaLaMitadA: med(A, (x) => x.tMitad), frustracionMaxA: med(A, (x) => x.frustracionMax), frustracionMaxSinAtencion: med(C0, (x) => x.frustracionMax),
+      agravioTerceraA: med(A, (x) => x.agravioT), golpesATerceraA: med(A, (x) => x.golpesATercera),
+    }, null, 1200 + OBSERVA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

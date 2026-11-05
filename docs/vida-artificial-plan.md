@@ -848,7 +848,73 @@ Por semilla (carroñeo y presa inmóvil, salvo donde se indica):
 
 Lo que dice esto de la fatiga: permite una conducta depredadora sostenida con pausas y consecuencias, pero la limita a presas vulnerables y deja la caza lejos de ser eficaz. Si se quisiera una depredación más eficaz sin frenesí, habría que ajustar la fatiga del cazador con interés depredador (hoy frena a la quinta parte), y eso no se ha tocado.
 
-## Celos y envidia (diseño aprobado, sin implementar)
+## Atención social y celos (caso 27)
+
+Primer paso del diseño aprobado de celos y envidia: la señal de atención social y los celos. La envidia (caso 28) queda pendiente hasta que esta señal esté validada por separado.
+
+### La señal de atención social
+
+Archivo `nucleo/social.ts`. Cada observadora calcula por su cuenta lo que ve de las demás. Nadie guarda «a quién atiendo», así que quien mira no recibe información de vínculos ni de intenciones ajenas.
+
+- Una criatura A atiende a B en un instante si está viva, despierta y no incapacitada, B está a menos de `atencionAlcance` (170), A mira hacia B y A no va de paso (velocidad menor que `atencionVelocidad`, 60).
+- Hace falta que eso dure `atencionPermanencia` (3 s) sin cortes de más de `atencionContinuidad` (1,5 s). Estar cerca no basta. La señal desaparece 1,5 s después de que se corte la postura.
+- Solo se calcula para las criaturas dentro del campo de visión de la observadora (el de su genoma, ampliado un 30 %), y solo cuando el interruptor `celos` está encendido. Con él apagado no se ejecuta nada.
+- Es reutilizable: el seguimiento (`SeguimientoAtencion`) responde a «cuántos segundos lleva A atendiendo a B». El aprendizaje por observación y el reconocimiento de relaciones pueden leerlo sin cambios.
+
+### Los celos
+
+Interruptor propio `celos`, apagado por defecto. Campos propios de la criatura (`celosEstado`, `social`), igual que la fatiga. No se tocó la red, sus entradas ni el arreglo de emociones.
+
+- **Cuándo se activan:** hace falta un vínculo significativo (afecto de al menos `umbralVinculoCelos`, 0,3), que ese vínculo no la esté atendiendo a ella y que atienda a una tercera durante 3 s o más.
+- **Cuánto suben:** proporcional al afecto por el vínculo y al apego, menos si quiere a la tercera, más con soledad y más si el vínculo la atendía antes. El nivel sube hacia 1 sin pasarse.
+- **Cuánto duran:** decaen con una constante de 70 s (más lenta con apego alto) y tres veces más deprisa si el vínculo vuelve a atenderla.
+- **Qué cambia en la conducta:** suma a la utilidad de acercarse al vínculo (`pesoCelosAcercar`) y resta a la de actuar sobre objetos y explorar (`pesoCelosInhibe`). Si es agresiva y está frustrada, suma también a empujar a la tercera (`pesoCelosAgresion`), por la vía ya existente. No hay acciones nuevas.
+- **Memoria:** al pasar de 0,5 queda un episodio de celos y un agravio pequeño (0,08) hacia la tercera.
+- **No son otra cosa:** no suben la frustración ni el miedo, y sin vínculo o sin tercera atendida no se activan.
+
+### Resultados del caso 27
+
+Cuatro condiciones más el interruptor apagado, cinco réplicas por semilla, 10 semillas. La escena deja quietas a la vínculo (V) y a la tercera (T), a distancia visible de la criatura con celos (O), y V mira a T durante 60 s o mira al lado contrario. Las posturas se fijan en el montaje porque tanto V como T están inmovilizadas con la condición de laboratorio `atrapada` y podrían girarse solas (en una versión previa esto dejaba entrar de 4 a 8 s de atención espuria en el control sin atención).
+
+| Condición | Atención vista a T (s, mediana) | Celos (máx., mediana) | Tiempo cerca de V en el estímulo (s) |
+|---|---|---|---|
+| Vínculo fuerte y tercera atendida | 59,9 | **0,95** (0,61 a 0,99) | **57,8** |
+| Vínculo fuerte sin tercera | 0 | 0 | 31,4 |
+| Vínculo fuerte y tercera sin atención | 0 | 0 | 33,4 |
+| Vínculo débil y tercera atendida | 25,6 | 0 | 17,6 |
+| Vínculo fuerte, tercera atendida, celos apagados | 0 | 0 | 33,4 |
+
+Por criterio (10 semillas): los nueve criterios pasan en 10 de 10 (percepción, activación, vínculo débil, busca al compañero, juega menos, duración, memoria, no es frustración, no es agresión).
+
+- **Conducta, no solo estado interno.** Con celos pasa más tiempo cerca de su vínculo (57,8 frente a 33,4 s con el interruptor apagado), lo busca más (más acercamientos) y juega menos con la pelota (0 frente a 3,5 impactos de mediana). Ese cambio de conducta es el que se exige además del valor interno.
+- **El vínculo débil es un efecto de umbral.** Su afecto mediano es 0,07 (el fuerte, 0,67), muy por debajo del umbral de 0,3, y sus celos son 0 en las 10 semillas. La prueba no mide una gradación intermedia (por ejemplo afecto 0,3 a 0,5). Ve la atención de V a T (25,6 s de mediana frente a 59,9 en el fuerte; no se comprobó por qué es menor), pero sin vínculo no hay celos.
+- **No se acerca a la tercera ni se interpone.** El tiempo cerca de T y entre ambas es 0 en todas las semillas: la conducta es buscar a V, no ir hacia T.
+- **Dura lo que debe.** A la mitad del pico en 23,6 s tras acabar el estímulo y por debajo de 0,1 en 74 s de mediana.
+- **No es frustración ni agresión.** La frustración no sube respecto al control y no hay golpes a la tercera (0 de mediana). La agresión por celos queda limitada a agresivas y frustradas, y en esta escena no aparece.
+- **Memoria.** El episodio y un agravio de 0,08 hacia la tercera, mayor que en el control.
+
+### Lo que no se probó y límites
+
+- **Qué pasa en un reencuentro posterior** con la tercera (si la evita o se acerca más). Queda pendiente.
+- **La escena fija la postura de V y de T.** La percepción de atención en movimiento libre no se ha medido. Con criaturas libres V cambia de postura por sus propias acciones y la señal se corta; eso es lo esperado, pero no hay un caso que lo mida.
+- **Agresión por celos** se probó solo como ausencia en esta escena. No hay una condición con una agresiva frustrada que la active.
+- Casos con `atrapada`: el caso 27 usa la condición de laboratorio que ya usan 08b, 18, 19, 21 y 26. No añade reglas al comportamiento normal.
+
+### Coste de rendimiento
+
+Medido con `tests/vida-coste.ts` (mejor de 5 tandas de 200 s, Node, el interruptor `celos` encendido en todas las criaturas frente a apagado):
+
+| Criaturas en la sala | Apagado (µs/paso) | Encendido (µs/paso) | Diferencia |
+|---|---|---|---|
+| 2 | 25 | 27 | dentro del ruido |
+| 4 | 43 | 42 | dentro del ruido |
+| 6 | 73 | 77 | unos 5 % |
+| 8 | 110 | 137 | 24 % |
+| 12 | 210 | 269 | 28 % |
+
+Hasta 4 criaturas (el máximo actual por sala, `maxCriaturasSala`) el coste no se distingue del ruido de la medición. La atención se compara por pares entre las criaturas que cada observadora ve, así que crece de forma cuadrática, y en salas de 8 o más se nota. Con el interruptor apagado el coste es cero. Antes de espacios con más criaturas habría que acotar la comparación (solo vecinas, o cada pocos pasos).
+
+## Celos y envidia (diseño aprobado; celos implementados, envidia pendiente)
 
 Se representan los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Se describe qué hay hoy, los riesgos de integración y dos casos informativos. **El diseño está aprobado con tres condiciones** (ver abajo) y todavía no se ha implementado.
 
@@ -919,7 +985,7 @@ Se representan los dos estados como campos propios de la criatura, con el mismo 
 
 ### Casos propuestos (informativos y breves)
 
-**Caso 27, celos.** Una criatura con vínculo fuerte observa que su compañero presta atención a otra. Condiciones (varias réplicas por semilla):
+**Caso 27, celos (hecho, ver arriba).** Una criatura con vínculo fuerte observa que su compañero presta atención a otra. Condiciones (varias réplicas por semilla):
 1. Vínculo fuerte y tercero presente.
 2. Vínculo débil y tercero presente.
 3. Vínculo fuerte, sin tercero.
