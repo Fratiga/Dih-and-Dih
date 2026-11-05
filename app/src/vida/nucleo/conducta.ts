@@ -253,10 +253,11 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         }
       }
       if (c.agresion && p.esCriatura && v === "empujar") u -= AJ.pesoFatiga * c.fatiga * frenoFatiga;
-      // Celos: busca a su vinculo, juega y explora menos mientras dura, y solo si ademas es agresiva y esta enfadada puede empujar a la tercera
+      // Celos: busca a su vinculo, juega (con lo que no es comida) y explora menos mientras dura, y solo si ademas es agresiva y esta enfadada puede empujar a la tercera
       if (c.celos && c.celosEstado.length) {
-        if (p.esCriatura && v === "acercarse") u += AJ.pesoCelosAcercar * c.celoPorVinculo(p.id - 1000) * afectoDe(c, p);
-        if (!p.esCriatura) u -= AJ.pesoCelosInhibe * c.celoMaximo();
+        // El hambre manda: cuanto mas hambre, menos pesa el deseo de estar con su vinculo (los celos no pueden dominar a una necesidad basica)
+        if (p.esCriatura && v === "acercarse") u += AJ.pesoCelosAcercar * c.celoPorVinculo(p.id - 1000) * afectoDe(c, p) * (1 - nec[N.hambre]);
+        if (!p.esCriatura && (CATALOGO[p.tipo]?.porciones ?? 0) === 0) u -= AJ.pesoCelosInhibe * c.celoMaximo();
         if (p.esCriatura && v === "empujar" && c.agresion) u += AJ.pesoCelosAgresion * c.celoPorTercero(p.id - 1000) * Math.max(0, emo[E.frustracion] - 0.3) * Math.max(0, ras[R.agresividad] - 0.5);
       }
       // Envidia: se acerca a quien come lo que ella desea (a mirar, a esperar), busca otro alimento y no juega ni explora; solo si ademas es agresiva y esta enfadada puede empujarle

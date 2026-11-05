@@ -2,6 +2,7 @@
    Implementados: 01 a 04 (un individuo aprende), 04b (generalización), 13 (gemelos) y 05 (partido improvisado, preparado).
    Cada uno usa varias semillas y un control. Los criterios estan escritos para que no se cumplan por casualidad. */
 
+import { AJ } from "../nucleo/ajustes.ts";
 import { C, DIA, E, R, type Verbo } from "../nucleo/tipos.ts";
 import { clonarGenoma, cruzar, sexoDe, type Genoma } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
@@ -2397,5 +2398,161 @@ export const caso28: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso29: Caso = {
+  id: "29",
+  titulo: "Celos y envidia a la vez",
+  hipotesis: "Una criatura puede sentir celos de su compañero y envidia de la comida que este obtiene al mismo tiempo, sin que una anule a la otra. La envidia va a quien posee el alimento y los celos a la atención que su compañero presta a una tercera. Cada interruptor funciona por separado: con solo uno encendido no queda rastro del otro. Juntas no producen agresión ni acciones nuevas, y repetidas varias veces no dejan un agravio permanente ni dañan el vínculo.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 10;
+    const ESTIMULO = 90;
+    const CADA = 12;
+    const CALMA = 300;
+    const RONDAS = 4;
+    type Brazo = "come y atiende" | "solo come" | "solo atiende" | "ni come ni atiende" | "la tercera come y atiende" | "libre con celos y envidia" | "libre solo celos" | "libre solo envidia" | "libre sin ninguno" | "libre con comida propia y las dos" | "libre con comida propia sin ninguna";
+    const gO = genomaDe(semilla, 291);
+    const gP = genomaDe(semilla, 292);
+    const gT = genomaDe(semilla, 293);
+    const golpes = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    const afectoA = (O: Criatura, id: number): number => O.mem.vinculos.find((q) => q.id === 1000 + id)?.afecto ?? 0;
+    const agravioA = (O: Criatura, id: number, t: number): number => { const a = O.agravios[1000 + id]; return a ? a.n * Math.exp(-(t - a.t) / AJ.olvidoAgravio) : 0; };
+    // Escena comun: O (con vinculo fuerte con P tras 1200 s de convivencia con alimento), P (su compañero) y una tercera T que llega despues
+    const montar = (k: number, celos: boolean, envidia: boolean, libre: boolean) => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 294, k), objetos: [{ tipo: "pelota", x: 450 }], criaturas: [{ genoma: clonarGenoma(gO), x: 600 }, { genoma: clonarGenoma(gP), x: 800 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [O, P] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      s.avanzar(1200);
+      const T = new Criatura(3, "Tercera", clonarGenoma(gT), 1000, mezclar(semilla, 295, k));
+      T.reconocePorRasgos = true; T.capRegistro = 5000;
+      s.criaturas.push(T);
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+      s.comedero = null;
+      O.celos = celos; O.envidia = envidia;
+      O.x = 400; O.accion = null; O.emo.fill(0); O.nec[1] = 0.1; O.nec[3] = 0.3; O.nec[4] = 0.3; O.atrapada = !libre;
+      P.x = 700; P.accion = null; P.emo.fill(0); P.nec[1] = 0.1; P.atrapada = true; P.vx = 0;
+      T.x = 820; T.accion = null; T.nec[1] = 0.1; T.atrapada = true; T.vx = 0; T.dir = -1;
+      const pelota = s.mundo.objetos.find((o) => o.tipo === "pelota");
+      if (pelota) pelota.x = 450;
+      return { s, O, P, T };
+    };
+    const tieneFruta = (s: Simulacion, x: number): number => s.mundo.objetos.filter((o) => o.tipo === "fruta" && Math.abs(o.x - x) < 60).length;
+    const probar = (brazo: Brazo, k: number) => {
+      const libre = brazo.startsWith("libre");
+      const propia = brazo.includes("comida propia");
+      const celos = !(brazo === "libre solo envidia" || brazo === "libre sin ninguno" || brazo.endsWith("sin ninguna"));
+      const envidia = !(brazo === "libre solo celos" || brazo === "libre sin ninguno" || brazo.endsWith("sin ninguna"));
+      const { s, O, P, T } = montar(k, celos, envidia, libre);
+      const pCome = brazo === "come y atiende" || brazo === "solo come" || libre;
+      const tCome = brazo === "la tercera come y atiende";
+      const pAtiende = brazo === "come y atiende" || brazo === "solo atiende" || brazo === "la tercera come y atiende" || libre;
+      O.nec[0] = 0.8;
+      P.nec[0] = pCome ? 0.8 : 0;
+      T.nec[0] = tCome ? 0.8 : 0;
+      const t0 = s.t;
+      let prox = 0, cercaDeP = 0, celoMax = 0, envMax = 0, coexiste = 0, envP = 0, envT = 0, celoPorP = 0, celoOtros = 0, frustracionMax = 0, hambreSuma = 0, hambreN = 0;
+      s.ganchos.push(() => {
+        const dt = s.t - t0;
+        // Posturas de la escena: P mira a T mientras dura el estimulo si la atiende, y si no, al lado contrario
+        P.dir = pAtiende && dt <= ESTIMULO ? 1 : -1;
+        T.dir = -1;
+        if (dt <= ESTIMULO) {
+          if (!libre) O.nec[0] = Math.max(O.nec[0], 0.8);
+          if (pCome) P.nec[0] = Math.max(P.nec[0], 0.8);
+          if (tCome) T.nec[0] = Math.max(T.nec[0], 0.8);
+          if (dt >= prox) {
+            prox = dt + CADA;
+            if (pCome && tieneFruta(s, 700) < 2) s.mundo.agregar("fruta", 700);
+            if (tCome && tieneFruta(s, 820) < 2) s.mundo.agregar("fruta", 820);
+            if (propia && tieneFruta(s, 400) < 2) s.mundo.agregar("fruta", 400);
+          }
+          if (Math.abs(O.x - P.x) < 150) cercaDeP += 0.25;
+          hambreSuma += O.nec[0]; hambreN++;
+        }
+        const c = O.celoMaximo(), e = O.envidiaMaxima();
+        celoMax = Math.max(celoMax, c); envMax = Math.max(envMax, e); coexiste = Math.max(coexiste, Math.min(c, e));
+        envP = Math.max(envP, O.envidiaPor(P.id)); envT = Math.max(envT, O.envidiaPor(T.id));
+        celoPorP = Math.max(celoPorP, O.celoPorVinculo(P.id));
+        for (const x of O.celosEstado) if (x.vinculo !== P.id) celoOtros = Math.max(celoOtros, x.nivel);
+        frustracionMax = Math.max(frustracionMax, O.emo[E.frustracion]);
+      });
+      s.avanzar(ESTIMULO + 60);
+      const registro = O.registro;
+      const dentro = (r: { t: number }): boolean => r.t >= t0 && r.t < t0 + ESTIMULO;
+      const acercaP = registro.filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + P.id && dentro(r)).length;
+      const propios = registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo !== "criatura" && (r.res?.[0] ?? 0) > 0.05 && r.t >= t0);
+      const episodios = (pref: string): boolean => O.mem.episodios.some((e) => e.clave.startsWith(pref));
+      return {
+        celoMax, envMax, coexiste, envP, envT, celoPorP, celoOtros, frustracionMax, hambreMedia: hambreN ? hambreSuma / hambreN : 0, cercaDeP, acercaP, golpes: golpes(O),
+        primerBocado: propios.length ? propios[0].t - t0 : ESTIMULO + 60, bocadosPropios: propios.filter(dentro).length,
+        recuerdaCelos: episodios("celos:"), recuerdaEnvidia: episodios("envidia:"),
+        restosCelos: O.celosEstado.length + Object.keys(O.atendidaPor).length + (episodios("celos:") ? 1 : 0),
+        restosEnvidia: O.envidiaEstado.length + Object.keys(O.vistoBocado).length + (episodios("envidia:") ? 1 : 0),
+      };
+    };
+    // Repetida: cuatro veces la escena completa con calma entre medias, para ver que los agravios no se acumulan y el vinculo no se rompe
+    const repetida = (k: number) => {
+      const { s, O, P, T } = montar(k, true, true, false);
+      const afectoAntes = afectoA(O, P.id);
+      const t0 = s.t;
+      let prox = 0, agravioPico = 0, afectoMin = afectoAntes;
+      const ciclo = ESTIMULO + CALMA;
+      s.ganchos.push(() => {
+        const dt = (s.t - t0) % ciclo;
+        const enEstimulo = dt <= ESTIMULO && s.t - t0 < RONDAS * ciclo;
+        P.dir = enEstimulo ? 1 : -1;
+        T.dir = -1;
+        if (enEstimulo) {
+          O.nec[0] = Math.max(O.nec[0], 0.8); P.nec[0] = Math.max(P.nec[0], 0.8); T.nec[0] = 0;
+          if (dt >= prox) { prox = dt + CADA; if (tieneFruta(s, 700) < 2) s.mundo.agregar("fruta", 700); }
+        } else {
+          prox = 0;
+          P.nec[0] = Math.min(P.nec[0], 0.3);
+        }
+        agravioPico = Math.max(agravioPico, agravioA(O, P.id, s.t), agravioA(O, T.id, s.t));
+        afectoMin = Math.min(afectoMin, afectoA(O, P.id));
+      });
+      s.avanzar(RONDAS * ciclo + 600);
+      return { agravioPico, agravioFinalP: agravioA(O, P.id, s.t), agravioFinalT: agravioA(O, T.id, s.t), afectoAntes, afectoFinal: afectoA(O, P.id), afectoMin, golpes: golpes(O), celosFinal: O.celoMaximo(), envidiaFinal: O.envidiaMaxima() };
+    };
+    const brazos: Brazo[] = ["come y atiende", "solo come", "solo atiende", "ni come ni atiende", "la tercera come y atiende", "libre con celos y envidia", "libre solo celos", "libre solo envidia", "libre sin ninguno", "libre con comida propia y las dos", "libre con comida propia sin ninguna"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const rep = Array.from({ length: REP }, (_, k) => repetida(k));
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const medR = (f: (x: ReturnType<typeof repetida>) => number): number => mediana(rep.map(f));
+    const [CA, SC, SA, NN, TC, LB, LC, LE, L0, PB, P0] = brazos;
+    const todas = (b: Brazo, f: (x: ReturnType<typeof probar>) => boolean): boolean => r[b].every(f);
+    return resultado(semilla, {
+      "coexisten: con vínculo fuerte, su compañero comiendo y atendiendo a la tercera siente a la vez celos y envidia (0,2 o más las dos al mismo tiempo), y ninguna se reduce a menos de tres cuartos de la que sentiría sola": med(CA, (x) => x.coexiste) >= 0.2 && med(CA, (x) => x.celoMax) >= 0.75 * med(SA, (x) => x.celoMax) && med(CA, (x) => x.envMax) >= 0.75 * med(SC, (x) => x.envMax),
+      "la envidia va a quien come: comiendo el compañero, a él (0,2 o más) y no a la tercera (menos de 0,05); comiendo la tercera, a la tercera y no al compañero": med(CA, (x) => x.envP) >= 0.2 && med(CA, (x) => x.envT) < 0.05 && med(TC, (x) => x.envT) >= 0.2 && med(TC, (x) => x.envP) < 0.05,
+      "los celos van a la atención: por el compañero que atiende a la tercera (0,2 o más) y por nadie más (menos de 0,05), comiendo él o comiendo ella": med(CA, (x) => x.celoPorP) >= 0.2 && med(CA, (x) => x.celoOtros) < 0.05 && med(TC, (x) => x.celoPorP) >= 0.2 && med(TC, (x) => x.celoOtros) < 0.05,
+      "controles: si solo come hay envidia y no celos, si solo atiende hay celos y no envidia, y si no hace ninguna de las dos cosas no hay ninguna (menos de 0,1 las que no tocan)": med(SC, (x) => x.envMax) >= 0.2 && med(SC, (x) => x.celoMax) < 0.1 && med(SA, (x) => x.celoMax) >= 0.2 && med(SA, (x) => x.envMax) < 0.1 && med(NN, (x) => x.celoMax) < 0.1 && med(NN, (x) => x.envMax) < 0.1,
+      "interruptores independientes: con solo celos no queda rastro de envidia, con solo envidia no queda rastro de celos, sin ninguno no queda rastro de ninguna, y con los dos aparecen las dos (0,1 o más)": todas(LC, (x) => x.restosEnvidia === 0) && todas(LE, (x) => x.restosCelos === 0) && todas(L0, (x) => x.restosCelos === 0 && x.restosEnvidia === 0) && med(LC, (x) => x.celoMax) >= 0.1 && med(LE, (x) => x.envMax) >= 0.1 && med(LB, (x) => x.celoMax) >= 0.1 && med(LB, (x) => x.envMax) >= 0.1,
+      "conducta: libre, con las dos busca más a su compañero que sin ninguna (más tiempo cerca de él o más acercamientos)": med(LB, (x) => x.cercaDeP) > med(L0, (x) => x.cercaDeP) || med(LB, (x) => x.acercaP) > med(L0, (x) => x.acercaP),
+      "no le impiden comer: libre, hambrienta y con alimento propio a sus pies, come también con celos y envidia activos (al menos un bocado propio en el estímulo y el primero en menos de 60 s, de mediana)": [PB, P0].every((b) => med(b, (x) => x.bocadosPropios) >= 1 && med(b, (x) => x.primerBocado) < 60),
+      "no es hambre ni frustración: la frustración no sube más de 0,1 por encima del control en el que no hay ni comida ni atención": med(CA, (x) => x.frustracionMax) <= med(NN, (x) => x.frustracionMax) + 0.1,
+      "sin agresión: no golpea a nadie (0 golpes de mediana) con las dos activas, libre": med(LB, (x) => x.golpes) === 0,
+      "memoria: recuerda los dos episodios, el de celos y el de envidia (la mitad de las réplicas o más)": r[CA].filter((x) => x.recuerdaCelos).length >= REP / 2 && r[CA].filter((x) => x.recuerdaEnvidia).length >= REP / 2,
+      "sin enemistad permanente: tras cuatro rondas y 10 minutos de calma, el agravio efectivo hacia el compañero y hacia la tercera es menor que 0,1, el pico no pasa de 0,5, el afecto por el compañero conserva al menos el 80 % del inicial y no hay golpes ni celos ni envidia vivos": medR((x) => x.agravioFinalP) < 0.1 && medR((x) => x.agravioFinalT) < 0.1 && medR((x) => x.agravioPico) <= 0.5 && medR((x) => x.afectoFinal / Math.max(0.01, x.afectoAntes)) >= 0.8 && medR((x) => x.golpes) === 0 && medR((x) => x.celosFinal) < 0.05 && medR((x) => x.envidiaFinal) < 0.05,
+    }, {
+      celosComeYAtiende: med(CA, (x) => x.celoMax), envidiaComeYAtiende: med(CA, (x) => x.envMax), coexistenciaComeYAtiende: med(CA, (x) => x.coexiste),
+      celosSoloAtiende: med(SA, (x) => x.celoMax), envidiaSoloCome: med(SC, (x) => x.envMax), celosSoloCome: med(SC, (x) => x.celoMax), envidiaSoloAtiende: med(SA, (x) => x.envMax),
+      celosNiNi: med(NN, (x) => x.celoMax), envidiaNiNi: med(NN, (x) => x.envMax),
+      envidiaALaPoseedora: med(CA, (x) => x.envP), envidiaALaTercera: med(CA, (x) => x.envT), envidiaTerceraCome_aTercera: med(TC, (x) => x.envT), envidiaTerceraCome_aCompanero: med(TC, (x) => x.envP),
+      celosPorCompanero: med(CA, (x) => x.celoPorP), celosPorOtros: med(CA, (x) => x.celoOtros), celosTerceraCome: med(TC, (x) => x.celoPorP),
+      frustracionComeYAtiende: med(CA, (x) => x.frustracionMax), frustracionNiNi: med(NN, (x) => x.frustracionMax),
+      libreCelosAmbos: med(LB, (x) => x.celoMax), libreEnvidiaAmbos: med(LB, (x) => x.envMax), libreCelosSolo: med(LC, (x) => x.celoMax), libreEnvidiaSolo: med(LE, (x) => x.envMax),
+      cercaDePAmbos: med(LB, (x) => x.cercaDeP), cercaDePSoloCelos: med(LC, (x) => x.cercaDeP), cercaDePSoloEnvidia: med(LE, (x) => x.cercaDeP), cercaDePNinguno: med(L0, (x) => x.cercaDeP),
+      acercamientosAmbos: med(LB, (x) => x.acercaP), acercamientosSoloCelos: med(LC, (x) => x.acercaP), acercamientosSoloEnvidia: med(LE, (x) => x.acercaP), acercamientosNinguno: med(L0, (x) => x.acercaP),
+      primerBocadoAmbos: med(LB, (x) => x.primerBocado), primerBocadoSoloCelos: med(LC, (x) => x.primerBocado), primerBocadoSoloEnvidia: med(LE, (x) => x.primerBocado), primerBocadoNinguno: med(L0, (x) => x.primerBocado),
+      primerBocadoComidaPropiaAmbos: med(PB, (x) => x.primerBocado), primerBocadoComidaPropiaNinguno: med(P0, (x) => x.primerBocado), bocadosComidaPropiaAmbos: med(PB, (x) => x.bocadosPropios), bocadosComidaPropiaNinguno: med(P0, (x) => x.bocadosPropios), cercaDePComidaPropiaAmbos: med(PB, (x) => x.cercaDeP), cercaDePComidaPropiaNinguno: med(P0, (x) => x.cercaDeP),
+      golpesLibreAmbos: med(LB, (x) => x.golpes),
+      agravioPicoRondas: medR((x) => x.agravioPico), agravioFinalCompanero: medR((x) => x.agravioFinalP), agravioFinalTercera: medR((x) => x.agravioFinalT),
+      afectoAntesRondas: medR((x) => x.afectoAntes), afectoFinalRondas: medR((x) => x.afectoFinal), afectoMinimoRondas: medR((x) => x.afectoMin),
+    }, null, 1200 + ESTIMULO + 60 + RONDAS * (ESTIMULO + CALMA) + 600);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

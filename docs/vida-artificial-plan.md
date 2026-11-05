@@ -984,6 +984,50 @@ La envidia cuesta en torno al 2 % del paso con cualquier número de criaturas: s
 - **El deseo no está calibrado contra criaturas reales.** La tasa de 0,35 por bocado se fijó una vez, antes de medir, y no se ajustó con los resultados.
 - **Qué pasa al reencontrarse** con quien comía, o con un nuevo alimento, no se probó.
 
+## Celos y envidia a la vez (caso 29, prueba de integración)
+
+Antes de ampliar ninguna de las dos emociones, se probaron juntas. Escena con tres criaturas: O (la que mira, con vínculo fuerte con P tras 1200 s de convivencia con alimento), P (su compañero, inmovilizado junto a su alimento) y T (una tercera que llega después). Nueve condiciones, diez réplicas por semilla, 10 semillas.
+
+- **Con los dos interruptores encendidos, O inmovilizada:** P come y atiende a T / solo come (mira al lado contrario) / solo atiende (sin comida) / ni come ni atiende / T come y P la atiende.
+- **Con O libre:** celos y envidia / solo celos / solo envidia / ninguno. Y dos más con alimento propio a los pies de O (con las dos emociones y sin ninguna), para medir si come.
+- **Cuatro rondas** de la escena completa con 300 s de calma entre ellas y 600 s más al final, para ver si se acumulan agravios.
+
+### Resultados (10 semillas, los 11 criterios en 10 de 10)
+
+| Pregunta | Resultado |
+|---|---|
+| Coexistencia | Celos 0,99 y envidia 0,64 a la vez (cada una igual que sola: solo atiende 0,99, solo come 0,64) |
+| La envidia va a quien come | Come P: a P 0,64, a T 0. Come T: a T 0,78, a P 0 |
+| Los celos van a la atención | Por P en ambos casos (0,99), y por nadie más |
+| Controles | Solo come: envidia 0,64 y celos 0. Solo atiende: celos 0,99 y envidia 0. Ni lo uno ni lo otro: ninguna |
+| Interruptores | Con solo celos, solo envidia o ninguno no queda rastro de la otra (estado, bocados contados, episodios) |
+| Frustración | 0,26 con y sin las emociones |
+| Golpes | 0 con las dos activas, libre |
+| Agravios | Pico 0,08 (el de la tercera); a los 10 minutos de calma, 0 hacia P y hacia T |
+| Afecto por P tras cuatro rondas | 0,72 frente a 0,77 antes de empezar (medianas; el criterio exige al menos el 80 %) |
+
+- **Consecuencias en la conducta (libre):** con las dos pasa casi todo el estímulo cerca de P (87,8 s de 90, frente a 59,1 s sin ninguna) y se acerca a él 14 veces (6,5 sin ninguna). Con solo celos son 84,9 s y 13 veces; con solo envidia, 64,4 s y 8 veces. Casi todo el efecto viene de los celos.
+- **Los celos y la envidia no se suman en agravio permanente.** Cada episodio deja 0,05 u 0,08 y el agravio se olvida con la constante de 300 s. Tras cuatro rondas no queda nada a los 10 minutos.
+
+### Dos defectos que encontró esta prueba (y se corrigieron)
+
+La primera ejecución pasó todos los criterios, pero una métrica informativa no cuadraba: con celos activos la criatura hambrienta no daba ningún bocado en 150 s. Dos causas distintas, las dos del mecanismo de celos:
+
+1. **Los celos frenaban también la comida.** El término que resta a actuar sobre objetos incluía la fruta. El caso 27 no lo veía porque no tenía alimento. Ahora solo resta a los objetos que no son comida, como ya hacía la envidia.
+2. **Los celos dominaban al hambre.** Con celos, envidia y alimento propio a sus pies, en 4 de 10 semillas la hambrienta (0,88) tardaba unos 120 s en dar el primer bocado (sin ninguna, 9 s). El diseño aprobado dice que los celos no pueden dominar la decisión frente al hambre. Se atenuó el término de acercarse al vínculo por `(1 - hambre)`. No se tocó ningún peso global ni ningún umbral, ni la envidia. Tras eso: primer bocado a los 11,5 s con las dos emociones (8,6 s sin ninguna).
+
+Se añadió un criterio nuevo («no le impiden comer») en el caso 29 para que no pueda volver a pasar, y la corrección se probó con el 27 (sigue 10 de 10) y con el resto de la regresión.
+
+También, y esto sí se midió pero no se corrigió: en la prueba de comida propia, con las dos emociones activas da un solo bocado de mediana en 90 s frente a dos sin ninguna. Come, pero menos, porque se queda junto a P (84 s de 90 frente a 52 s). Es el efecto esperado de buscar al compañero, y es la parte de la conducta que más se aleja de la criatura sin emociones.
+
+### Límites
+
+- **La escena fija las posturas de P y T** (como en el caso 27), y P es la única poseedora. No se probó con varios poseedores, ni con una tercera que también quiere al compañero.
+- **El hambre de O está fijada** a 0,8 en las condiciones inmovilizadas, y el alimento llega a un ritmo fijo.
+- **Las dos emociones no se miden aún cuando compiten** por el mismo vínculo (envidia de la comida que el compañero da a otra, por ejemplo).
+- **El miedo no se atenúa como el hambre.** Un tercero muy superior o que pega debería frenar los celos (el diseño lo prevé). Esa parte no está probada.
+- **Coste.** La envidia cuesta alrededor del 2 % del paso con cualquier número de criaturas. Los celos crecen más con el número de criaturas por el seguimiento de atención entre pares (de 3 a 6 % hasta 4, 11 a 13 % con 6 a 8 y un 20 % con 12). El límite actual de 4 por sala es razonable, y no se debería ampliar sin optimizar antes la percepción social (por ejemplo, calcular la atención solo entre vecinas o cada pocos pasos).
+
 ## Celos y envidia (diseño aprobado; implementados los dos)
 
 Se representan los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Se describe qué hay hoy, los riesgos de integración y dos casos informativos. **El diseño está aprobado con tres condiciones** (ver abajo) y todavía no se ha implementado.
