@@ -805,4 +805,8 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 5b. Conflicto por comida (primer paso de la sección de agresión), que también abre el caso 15 y los casos 09 a 12.
 5c. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), ya construidos, que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
 6. El caso 15 después, porque necesita esos recuerdos de individuos, la agresión entre criaturas y la atribución de efectos a otras. La agresión puede prepararse en paralelo.
-7. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
+7. **Prueba de integración pequeña** antes de más sistemas: una agresiva que ya carroñeó convive con una criatura que defiende su comida. La primera intenta obtenerla. La segunda puede ceder, intimidar o luchar (hoy solo hay ceder, huir o luchar: no hay amenaza sin golpe). Si hay heridas, huir, continuar o recuperarse. Tras un tiempo se vuelven a encontrar y se mira qué hacen. Conecta comida, agresión, memoria, miedo y relaciones sin canibalismo ni evolución genética.
+8. **Calma tras una pelea.** Hoy las peleas entre agresivas no se apagan (cientos de golpes en el caso 23 y en el 18 hasta que el sueño las para). Falta medir cuánto tardan en calmarse y si pueden volver a convivir sin reiniciar el conflicto.
+9. **Partir el caso 23** en pruebas independientes (cortejo y aceptación, reacción al rechazo, pelea, persistencia de la aversión, reproducción tras convivencia larga), para que un fallo de un mecanismo no tape a los demás. Los criterios ya se informan por separado, pero comparten montajes y se ven como un solo resultado.
+10. Especialización física (mandíbula, garras, fuerza, agilidad), solo después de comprobar que cada rasgo mejora una estrategia concreta y sin subir pesos antes.
+11. Solo al final, el recinto compartido persistente y Supabase (etapa 6).
