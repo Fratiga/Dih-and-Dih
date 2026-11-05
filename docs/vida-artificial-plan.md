@@ -848,9 +848,9 @@ Por semilla (carroñeo y presa inmóvil, salvo donde se indica):
 
 Lo que dice esto de la fatiga: permite una conducta depredadora sostenida con pausas y consecuencias, pero la limita a presas vulnerables y deja la caza lejos de ser eficaz. Si se quisiera una depredación más eficaz sin frenesí, habría que ajustar la fatiga del cazador con interés depredador (hoy frena a la quinta parte), y eso no se ha tocado.
 
-## Celos y envidia (diseño, sin implementar)
+## Celos y envidia (diseño aprobado, sin implementar)
 
-Se propone representar los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Y se describe qué hay hoy, los riesgos de integración y dos casos informativos. No se implementa nada hasta que se apruebe el diseño.
+Se representan los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Se describe qué hay hoy, los riesgos de integración y dos casos informativos. **El diseño está aprobado con tres condiciones** (ver abajo) y todavía no se ha implementado.
 
 ### Qué hay hoy
 
@@ -940,11 +940,35 @@ Se mide:
 
 Se mide conducta (atención y acercamiento al poseedor, intentos de obtener un recurso equivalente, golpes con probabilidad), duración, memoria (asociación del poseedor con el recurso, y cambio al volver a aparecer otro recurso) y diferencias entre las cuatro condiciones.
 
-### Decisiones que necesito antes de implementar
+### Decisiones aprobadas (antes de implementar los casos 27 y 28)
 
-- Si se acepta la señal de **atención social** (acercarse en curso, permanencia y orientación) como única entrada nueva.
-- Si los celos y la envidia se activan con **interruptores propios**, apagados por defecto, como el resto.
-- Si se acota por ahora a **alimento y atención** (dejando objetos y vínculos como segunda fase).
+**1. Señal de atención social: sí, como única entrada nueva.** Con la condición de que sea algo que la criatura pueda percibir con sus sentidos y no información interna del simulador.
+
+- Cuenta como atención: acercarse a otra, permanecer cerca, orientar el cuerpo hacia ella y mantener esa interacción un tiempo.
+- **Acercarse no equivale a prestar atención.** Hay que distinguir proximidad física de interacción social: pasar cerca de alguien no es atenderle. La señal exige orientación y permanencia, no solo distancia.
+- La observadora la interpreta con sus sentidos (dentro de su alcance de vista) y con su contexto. **No sabe automáticamente que otras dos criaturas tienen un vínculo ni recibe información privilegiada sobre sus intenciones.** Lo que sí tiene en su propia memoria es su vínculo con su compañero.
+
+**2. Interruptores propios: `celos` y `envidia`, independientes y apagados por defecto.**
+
+- Permiten comparar criaturas con ambos sistemas activados y desactivados, ejecutar los casos 27 y 28 sin contaminar la regresión obligatoria, comprobar si cada mecanismo aporta algo conductual y desactivar uno sin afectar al otro.
+- Cada interruptor desactiva **el mecanismo completo** (percepción, registro, efectos en la utilidad y memoria asociada), no solo oculta su valor en la interfaz.
+
+**3. Alcance inicial: alimento y atención.**
+
+| Sistema | Primera fase |
+|---|---|
+| Celos | Atención de una criatura hacia otra, cuando existe un vínculo significativo |
+| Envidia | Alimento deseado que otra criatura posee o consigue |
+| Objetos | Segunda fase |
+| Vínculos como objeto de competencia | Segunda fase, cuando haya más memoria social |
+
+Los vínculos **no** quedan fuera de los celos: son lo que les da sentido. Lo que se pospone es que una criatura sienta envidia de una relación ajena como si fuera un recurso que quiere conseguir.
+
+**Precaución adicional.** Los celos no son frustración con otro nombre ni la envidia hambre con otro nombre. Una criatura puede tener hambre y no envidiar a nadie. Puede sentir celos aunque su compañero no tenga nada material que ofrecerle. Y puede envidiar la comida de otra sin ningún vínculo con ella. Los casos 27 y 28 deben demostrar esas diferencias con controles y no solo con valores emocionales: por ejemplo, en la envidia un control de hambre sin poseedor y otro de poseedor sin deseo, y en los celos un control de vínculo sin tercero y otro de tercero que no recibe atención.
+
+### Nota sobre el caso 26
+
+No se redujo más la fatiga para mejorar las cifras de caza, y es una decisión que se mantiene. El resultado revela una limitación real del cazador. Más adelante hay que **distinguir persistencia, eficacia y capacidad física** y no resolver las tres subiendo el número de golpes: la persistencia (seguir intentándolo con pausas) ya existe, la eficacia (matar) depende de la presa y del daño, y la capacidad física (fuerza, mandíbula, garras) está sin hacer y es lo que debe mejorar la eficacia.
 
 ## Caso propuesto 15: el monstruo y el sacrificio
 
