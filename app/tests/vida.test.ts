@@ -272,6 +272,21 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(mirada(true) < 130, "tras reiniciarReloj no queda nada del reloj anterior");
 }
 
+// 7b2. Envidia: con el interruptor apagado no queda rastro (ni estado ni bocados contados) y encendida sobrevive a guardar y restaurar
+{
+  const montar = (envidia: boolean) => {
+    const s = nuevaSim({ semilla: 91, objetos: [], criaturas: [{ genoma: genomaNuevo(11), x: 400 }, { genoma: genomaNuevo(12), x: 600 }], comedero: { cada: 40, max: 2, tipo: "fruta" } });
+    s.criaturas[0].envidia = envidia;
+    s.avanzar(900);
+    return s;
+  };
+  const apagada = montar(false);
+  afirma(apagada.criaturas[0].envidiaEstado.length === 0 && Object.keys(apagada.criaturas[0].vistoBocado).length === 0, "con la envidia apagada no hay estado ni bocados contados");
+  const encendida = montar(true);
+  const r = Simulacion.restaurar(encendida.serializar());
+  afirma(r.criaturas[0].envidia === true && JSON.stringify(r.criaturas[0].envidiaEstado) === JSON.stringify(encendida.criaturas[0].envidiaEstado) && JSON.stringify(r.criaturas[0].vistoBocado) === JSON.stringify(encendida.criaturas[0].vistoBocado), "la envidia se guarda y se restaura igual");
+}
+
 // 7c. Camadas: casi siempre una cria, a veces dos o tres, cada una con su propio genoma (mellizos, no gemelos identicos)
 {
   const s = nuevaSim({ semilla: 77, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }, { genoma: genomaNuevo(2), x: 500 }], comedero: null });

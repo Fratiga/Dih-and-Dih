@@ -259,6 +259,13 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         if (!p.esCriatura) u -= AJ.pesoCelosInhibe * c.celoMaximo();
         if (p.esCriatura && v === "empujar" && c.agresion) u += AJ.pesoCelosAgresion * c.celoPorTercero(p.id - 1000) * Math.max(0, emo[E.frustracion] - 0.3) * Math.max(0, ras[R.agresividad] - 0.5);
       }
+      // Envidia: se acerca a quien come lo que ella desea (a mirar, a esperar), busca otro alimento y no juega ni explora; solo si ademas es agresiva y esta enfadada puede empujarle
+      if (c.envidia && c.envidiaEstado.length) {
+        if (p.esCriatura && v === "acercarse") u += AJ.pesoEnvidiaAcercar * c.envidiaPor(p.id - 1000) * (1 - emo[E.miedo]);
+        if (!p.esCriatura && v === "probar" && (CATALOGO[p.tipo]?.porciones ?? 0) > 0 && !c.esAlimentoEnvidiado(p.x)) u += AJ.pesoEnvidiaBuscar * c.envidiaMaxima();
+        if (!p.esCriatura && (CATALOGO[p.tipo]?.porciones ?? 0) === 0) u -= AJ.pesoEnvidiaInhibe * c.envidiaMaxima();
+        if (p.esCriatura && v === "empujar" && c.agresion) u += AJ.pesoEnvidiaAgresion * c.envidiaPor(p.id - 1000) * Math.max(0, emo[E.frustracion] - 0.3) * Math.max(0, ras[R.agresividad] - 0.5);
+      }
       // Lo que le gusta o disgusta de su aspecto y de su conducta
       if (c.gustos && p.esCriatura && v === "acercarse") u += AJ.pesoGusto * gustoDe(c, p);
       // Acercarse a alguien conocido atrae mas, sobre todo estando sola
@@ -314,6 +321,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     }
     let u = 0.05 + 0.12 * curio + 0.12 * aburr + mu * 0.7;
     if (c.celos) u -= AJ.pesoCelosInhibe * c.celoMaximo();
+    if (c.envidia) u -= AJ.pesoEnvidiaInhibe * c.envidiaMaxima();
     if (act && act.v === "explorar") u += persistir * 0.6;
     cand.push({ v: "explorar", p: null, dest: mejor, u, cambia: true, espera: resCero() });
   }
@@ -322,6 +330,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     const s = nec[N.sueno];
     let u = 0.09 + 0.3 * s;
     if (act && act.v === "descansar") u += persistir * 0.5;
+    if (c.envidia) u -= AJ.pesoEnvidiaInhibe * c.envidiaMaxima();
     // Tras una pelea, herida o cansada, descansa mas
     if (c.agresion) u += AJ.pesoDescansoFatiga * c.fatiga + 0.6 * (1 - c.salud);
     // Quedarse donde esta mientras otra lo pasa mal: tambien se aprende que efecto tiene

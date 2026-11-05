@@ -2260,5 +2260,142 @@ export const caso27: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso28: Caso = {
+  id: "28",
+  titulo: "Envidia",
+  hipotesis: "Una criatura con hambre que ve comer a otra algo que desea y no tiene siente envidia y lo muestra en lo que hace. No la siente con hambre y con el alimento a la vista pero sin nadie que lo posea, con poco hambre, cuando tiene acceso a lo suyo, ni cuando no puede ver a quien come. Se va con el tiempo y antes si consigue su alimento. No es hambre ni frustración, no produce agresión automática y con el interruptor apagado no pasa nada. Lo que hace con ella (acercarse, buscar otro alimento, dejar de jugar) no está ordenado: se mide qué sale.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 10;
+    const ESTIMULO = 90;
+    const OBSERVA = 300;
+    const CADA = 12;
+    const ALIMENTA_A_LOS = 40;
+    const MIDE_A_LOS = 70;
+    type Brazo = "ve comer y no puede llegar" | "hambrienta sin poseedor" | "poco hambre y ve comer" | "tiene el suyo" | "el poseedor fuera de su vista" | "recibe el suyo a los 40 s"
+      | "libre con envidia" | "libre sin envidia" | "agresiva con envidia" | "agresiva sin envidia";
+    const gO = genomaDe(semilla, 281);
+    const gV = genomaDe(semilla, 282);
+    const golpes = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    const probar = (brazo: Brazo, k: number) => {
+      const libre = brazo.startsWith("libre") || brazo.startsWith("agresiva");
+      const agresiva = brazo.startsWith("agresiva");
+      const apagado = brazo.endsWith("sin envidia");
+      const sinPoseedor = brazo === "hambrienta sin poseedor";
+      const pocoHambre = brazo === "poco hambre y ve comer";
+      const tieneElSuyo = brazo === "tiene el suyo";
+      const fueraDeVista = brazo === "el poseedor fuera de su vista";
+      const recibeElSuyo = brazo === "recibe el suyo a los 40 s";
+      const genO = clonarGenoma(gO);
+      if (agresiva) genO.rasgos[R.agresividad] = 0.9;
+      // Convivencia previa de 600 s con alimento a la vista: las dos saben que la fruta se come
+      const s = nuevaSim({ semilla: mezclar(semilla, 283, k), objetos: [{ tipo: "pelota", x: 450 }], criaturas: [{ genoma: genO, x: 300 }, { genoma: clonarGenoma(gV), x: 700 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [O, V] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      s.avanzar(600);
+      // Escena montada: se quita la comida y el comedero, y cada una queda en su sitio. La poseedora (V) esta inmovilizada junto a su alimento.
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+      s.comedero = null;
+      O.envidia = !apagado;
+      if (agresiva) { O.agresion = true; O.conflictoComida = true; V.agresion = true; V.conflictoComida = true; }
+      const xO = fueraDeVista ? 100 : 400;
+      const xV = fueraDeVista ? 620 : 700;
+      O.x = xO; O.accion = null; O.emo.fill(0); O.nec[0] = pocoHambre ? 0.12 : 0.8; O.nec[1] = 0.1; O.nec[3] = 0.3; O.nec[4] = 0.3; O.atrapada = !libre;
+      V.x = xV; V.accion = null; V.emo.fill(0); V.nec[1] = 0.1; V.atrapada = true;
+      // Sin poseedor: nadie come. El alimento esta a la vista y sin dueño (V ya no esta en la sala: una V saciada seguia dando algun bocado)
+      if (sinPoseedor) s.criaturas = s.criaturas.filter((c) => c !== V);
+      const pelota = s.mundo.objetos.find((o) => o.tipo === "pelota");
+      if (pelota) pelota.x = xO + 50;
+      const t0 = s.t;
+      let proxFruta = 0, cercaDeV = 0, hambreSuma = 0, hambreN = 0, frustracionMax = 0, envMax = 0, nivel70 = -1, ultimaMordidaV = -1, bocadosV = 0;
+      const serie: { dt: number; nivel: number }[] = [];
+      const tienePeso = (x: number): number => s.mundo.objetos.filter((o) => o.tipo === "fruta" && Math.abs(o.x - x) < 60).length;
+      s.ganchos.push(() => {
+        const dt = s.t - t0;
+        if (dt <= ESTIMULO) {
+          // La comida llega junto a V (salvo en el control sin poseedor, donde V esta saciada) y junto a O en los brazos en que consigue la suya
+          if (!sinPoseedor) V.nec[0] = Math.max(V.nec[0], 0.8);
+          if (!libre && !tieneElSuyo && !recibeElSuyo && !pocoHambre) O.nec[0] = Math.max(O.nec[0], 0.8);
+          if (pocoHambre) O.nec[0] = Math.min(O.nec[0], 0.12);
+          if (dt >= proxFruta) {
+            proxFruta = dt + CADA;
+            if (tienePeso(xV) < 2) s.mundo.agregar("fruta", xV);
+            if ((tieneElSuyo || (recibeElSuyo && dt >= ALIMENTA_A_LOS)) && tienePeso(xO) < 2) s.mundo.agregar("fruta", xO);
+          }
+          hambreSuma += O.nec[0]; hambreN++;
+          if (Math.abs(O.x - V.x) < 150) cercaDeV += 0.25;
+        }
+        const nivel = O.envidiaMaxima();
+        envMax = Math.max(envMax, nivel);
+        frustracionMax = Math.max(frustracionMax, O.emo[E.frustracion]);
+        if (dt >= MIDE_A_LOS && nivel70 < 0) nivel70 = nivel;
+        serie.push({ dt, nivel });
+      });
+      s.avanzar(OBSERVA);
+      const registro = O.registro;
+      for (const r of V.registro) if (r.t >= t0 && r.kind === "impacto" && r.v === "probar" && r.tipo !== "criatura" && (r.res?.[0] ?? 0) > 0.05) { bocadosV++; ultimaMordidaV = Math.max(ultimaMordidaV, r.t - t0); }
+      const propios = registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo !== "criatura" && (r.res?.[0] ?? 0) > 0.05 && r.t >= t0);
+      const dentro = (r: { t: number }): boolean => r.t >= t0 && r.t < t0 + ESTIMULO;
+      const juego = registro.filter((r) => r.kind === "impacto" && r.tipo !== "criatura" && r.tipo !== "fruta" && (r.v === "empujar" || r.v === "tocar") && dentro(r)).length;
+      const descansos = registro.filter((r) => r.kind === "inicio" && r.v === "descansar" && dentro(r)).length;
+      const acercaV = registro.filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + V.id && dentro(r)).length;
+      // Mientras no ha comido ella (hasta su primer bocado, o todo el estimulo si no come): es cuando la envidia puede pesar en lo que hace
+      const primero = propios.length ? Math.min(ESTIMULO, propios[0].t - t0) : ESTIMULO;
+      const antes = (r: { t: number }): boolean => r.t >= t0 && r.t < t0 + primero;
+      const ocioAntes = registro.filter((r) => (r.kind === "impacto" && r.tipo !== "criatura" && r.tipo !== "fruta" && (r.v === "empujar" || r.v === "tocar") && antes(r)) || (r.kind === "inicio" && (r.v === "descansar" || r.v === "explorar") && antes(r))).length;
+      const acercaAntes = registro.filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + V.id && antes(r)).length;
+      const pico = Math.max(0, ...serie.map((x) => x.nivel));
+      const tras = serie.filter((x) => x.dt >= ultimaMordidaV);
+      const mitad = tras.find((x) => x.nivel < pico / 2);
+      const calma = tras.find((x) => x.nivel < 0.05);
+      const recuerdo = O.mem.episodios.some((e) => e.clave.startsWith("envidia:"));
+      const agravioV = O.agravios[1000 + V.id]?.n ?? 0;
+      return {
+        envMax, nivel70, hambreMedia: hambreN ? hambreSuma / hambreN : 0, frustracionMax, cercaDeV, juego, descansos, acercaV, bocadosV, bocadosPropios: propios.filter(dentro).length,
+        primerBocado: propios.length ? propios[0].t - t0 : OBSERVA,
+        tMitad: mitad ? mitad.dt - Math.max(0, ultimaMordidaV) : OBSERVA, tCalma: calma ? calma.dt - Math.max(0, ultimaMordidaV) : OBSERVA,
+        ocioAntes, acercaAntes, primero, recuerdo, agravioV, golpesAV: golpes(O),
+        restos: O.envidiaEstado.length + (Object.keys(O.vistoBocado).length ? 1 : 0) + (recuerdo ? 1 : 0),
+      };
+    };
+    const brazos: Brazo[] = ["ve comer y no puede llegar", "hambrienta sin poseedor", "poco hambre y ve comer", "tiene el suyo", "el poseedor fuera de su vista", "recibe el suyo a los 40 s", "libre con envidia", "libre sin envidia", "agresiva con envidia", "agresiva sin envidia"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [J, B, C0, D0, E0, F0, A, G, H, I] = brazos;
+    return resultado(semilla, {
+      "activación: envidia clara al ver comer lo que desea sin poder llegar (0,2 o más), y casi nada en los controles (menos de 0,1): con el alimento a la vista y sin poseedor, con poco hambre, con alimento propio y sin ver a quien come": med(J, (x) => x.envMax) >= 0.2 && [B, C0, D0, E0].every((b) => med(b, (x) => x.envMax) < 0.1),
+      "no es hambre: con el mismo hambre (diferencia menor que 0,15) hay envidia con poseedor y no la hay con el alimento a la vista y sin poseedor, y el poseedor come de verdad (5 bocados o más)": Math.abs(med(J, (x) => x.hambreMedia) - med(B, (x) => x.hambreMedia)) < 0.15 && med(J, (x) => x.envMax) >= 0.2 && med(B, (x) => x.envMax) < 0.1 && med(J, (x) => x.bocadosV) >= 5,
+      "no es frustración: la frustración no sube más que sin poseedor (a lo sumo 0,1 por encima)": med(J, (x) => x.frustracionMax) <= med(B, (x) => x.frustracionMax) + 0.1,
+      "no ve, no hay envidia: el poseedor come fuera de su vista (5 bocados o más) y no siente nada": med(E0, (x) => x.bocadosV) >= 5 && med(E0, (x) => x.envMax) < 0.1,
+      "se va con el tiempo: a la mitad del pico en menos de 90 s tras el último bocado visto y por debajo de 0,05 en menos de 240 s (mediana)": med(J, (x) => x.tMitad) < 90 && med(J, (x) => x.tCalma) < 240,
+      "conseguir lo suyo la apaga antes: 30 s después de recibir su alimento (a los 70 s) la envidia es menos de la mitad que sin recibirlo": med(F0, (x) => x.nivel70) < 0.5 * med(J, (x) => x.nivel70),
+      "memoria: lo recuerda como episodio (la mitad de las réplicas o más) y guarda un pequeño agravio hacia quien comía, más que sin poseedor": r[J].filter((x) => x.recuerdo).length >= REP / 2 && med(J, (x) => x.agravioV) > med(B, (x) => x.agravioV),
+      "conducta: libre, con envidia pasa más tiempo cerca de quien come o lo busca más que con el interruptor apagado": med(A, (x) => x.cercaDeV) > med(G, (x) => x.cercaDeV) || med(A, (x) => x.acercaV) > med(G, (x) => x.acercaV),
+      "conducta: libre, mientras no ha comido ella, se acerca más veces a quien come que con el interruptor apagado": med(A, (x) => x.acercaAntes) > med(G, (x) => x.acercaAntes),
+      "no es agresión automática: no golpea a quien come (0 golpes de mediana, libre y con envidia)": med(A, (x) => x.golpesAV) === 0,
+      "apagado: con el interruptor apagado no queda rastro (ni estado, ni bocados contados, ni episodio)": [G, I].every((b) => r[b].every((x) => x.restos === 0)),
+    }, {
+      envidiaVeComer: med(J, (x) => x.envMax), envidiaSinPoseedor: med(B, (x) => x.envMax), envidiaPocoHambre: med(C0, (x) => x.envMax), envidiaTieneElSuyo: med(D0, (x) => x.envMax), envidiaFueraDeVista: med(E0, (x) => x.envMax),
+      envidiaRecibeElSuyo: med(F0, (x) => x.envMax), envidiaLibre: med(A, (x) => x.envMax), envidiaAgresiva: med(H, (x) => x.envMax),
+      nivelA70sVeComer: med(J, (x) => x.nivel70), nivelA70sRecibeElSuyo: med(F0, (x) => x.nivel70),
+      hambreVeComer: med(J, (x) => x.hambreMedia), hambreSinPoseedor: med(B, (x) => x.hambreMedia), hambrePocoHambre: med(C0, (x) => x.hambreMedia), hambreTieneElSuyo: med(D0, (x) => x.hambreMedia),
+      frustracionVeComer: med(J, (x) => x.frustracionMax), frustracionSinPoseedor: med(B, (x) => x.frustracionMax),
+      bocadosDelPoseedor: med(J, (x) => x.bocadosV), bocadosDelPoseedorFuera: med(E0, (x) => x.bocadosV),
+      segundosHastaLaMitad: med(J, (x) => x.tMitad), segundosHastaCalma: med(J, (x) => x.tCalma),
+      cercaDeVLibre: med(A, (x) => x.cercaDeV), cercaDeVLibreApagado: med(G, (x) => x.cercaDeV), cercaDeVVeComer: med(J, (x) => x.cercaDeV),
+      acercamientosLibre: med(A, (x) => x.acercaV), acercamientosLibreApagado: med(G, (x) => x.acercaV), acercamientosVeComer: med(J, (x) => x.acercaV), acercamientosSinPoseedor: med(B, (x) => x.acercaV),
+      juegoLibre: med(A, (x) => x.juego), juegoLibreApagado: med(G, (x) => x.juego), descansosLibre: med(A, (x) => x.descansos), descansosLibreApagado: med(G, (x) => x.descansos),
+      primerBocadoLibre: med(A, (x) => x.primerBocado), primerBocadoLibreApagado: med(G, (x) => x.primerBocado), bocadosPropiosLibre: med(A, (x) => x.bocadosPropios), bocadosPropiosLibreApagado: med(G, (x) => x.bocadosPropios),
+      bocadosDelPoseedorSinPoseedor: med(B, (x) => x.bocadosV), primerBocadoTieneElSuyo: med(D0, (x) => x.primerBocado), bocadosPropiosTieneElSuyo: med(D0, (x) => x.bocadosPropios),
+      ocioAntesDelBocadoLibre: med(A, (x) => x.ocioAntes), ocioAntesDelBocadoLibreApagado: med(G, (x) => x.ocioAntes), acercaAntesDelBocadoLibre: med(A, (x) => x.acercaAntes), acercaAntesDelBocadoLibreApagado: med(G, (x) => x.acercaAntes),
+      ventanaAntesDelBocadoLibre: med(A, (x) => x.primero), ventanaAntesDelBocadoLibreApagado: med(G, (x) => x.primero),
+      agravioAlPoseedor: med(J, (x) => x.agravioV), golpesLibre: med(A, (x) => x.golpesAV),
+      golpesAgresivaConEnvidia: med(H, (x) => x.golpesAV), golpesAgresivaSinEnvidia: med(I, (x) => x.golpesAV),
+    }, null, 600 + OBSERVA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

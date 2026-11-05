@@ -106,6 +106,16 @@ export const AJ = {
   pesoCelosAcercar: 1.5,
   pesoCelosInhibe: 0.6,
   pesoCelosAgresion: 2.0,
+  /** Envidia (solo alimento): hambre minima para desear lo que otra come, cuanto sube con cada bocado visto, lo que tarda en irse (s), y cuanto pesa al decidir:
+      acercarse a quien come, buscar otro alimento, no jugar ni explorar ni descansar, y (solo agresiva y enfadada) empujar al poseedor. */
+  umbralHambreEnvidia: 0.3,
+  tasaEnvidia: 0.35,
+  tauEnvidia: 45,
+  ventanaAccesoPropio: 10,
+  pesoEnvidiaAcercar: 1.2,
+  pesoEnvidiaBuscar: 0.8,
+  pesoEnvidiaInhibe: 0.5,
+  pesoEnvidiaAgresion: 2.0,
   pesoAgresion: 0.8,
   /** Cuanto cuesta intentar comer lo que otra esta comiendo (con el conflicto por comida). */
   penaOcupada: 0.5,

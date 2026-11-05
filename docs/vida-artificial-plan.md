@@ -912,9 +912,79 @@ Medido con `tests/vida-coste.ts` (mejor de 5 tandas de 200 s, Node, el interrupt
 | 8 | 110 | 137 | 24 % |
 | 12 | 210 | 269 | 28 % |
 
-Hasta 4 criaturas (el máximo actual por sala, `maxCriaturasSala`) el coste no se distingue del ruido de la medición. La atención se compara por pares entre las criaturas que cada observadora ve, así que crece de forma cuadrática, y en salas de 8 o más se nota. Con el interruptor apagado el coste es cero. Antes de espacios con más criaturas habría que acotar la comparación (solo vecinas, o cada pocos pasos).
+Hasta 4 criaturas (el máximo actual por sala, `maxCriaturasSala`) el coste no se distinguía del ruido de esta medición. Una medida posterior, que suma el tiempo propio de cada método (ver el coste de la envidia, más abajo), da de 3 a 6 % del paso hasta 4 criaturas, 11 a 13 % con 6 a 8 y un 20 % con 12. La atención se compara por pares entre las criaturas que cada observadora ve, así que crece de forma cuadrática, y en salas de 8 o más se nota. Con el interruptor apagado el coste es cero. Antes de espacios con más criaturas habría que acotar la comparación (solo vecinas, o cada pocos pasos).
 
-## Celos y envidia (diseño aprobado; celos implementados, envidia pendiente)
+## Envidia de alimento (caso 28)
+
+Segundo paso del diseño aprobado. Interruptor propio `envidia`, apagado por defecto y independiente de `celos`. Campos propios de la criatura (`envidiaEstado`, `vistoBocado`), igual que la fatiga y los celos. No se tocó la red, sus entradas, el arreglo de emociones ni ningún peso global de decisión.
+
+### Qué es y qué percibe
+
+- **Qué percibe:** un bocado de otra criatura (el `ultimoComer` de la otra, que ya existe y es un hecho visible) dentro de su campo de visión (el de su genoma, ampliado un 30 %) y de los últimos 3 s. Cada bocado se cuenta una sola vez (`vistoBocado`). Si la otra está fuera de su vista, no percibe nada, aunque coma.
+- **Deseo:** hambre por encima de 0,3 (escalada hasta 1) por lo que espera que le quite el hambre ese alimento (`valorDeProbar`, que mezcla lo que sabe, lo que predice la red y el prior innato de que lo que huele bien invita a probarlo). Con poco hambre no hay deseo, y por tanto tampoco envidia.
+- **Acceso propio:** si ella misma ha comido en los últimos 10 s, el acceso es total. Si ve otro alimento (distinto del que come el otro, a más de 80 unidades de él), el acceso crece cuanto más cerca lo tiene (1 menos distancia/250). Con la comida al lado no hay nada que envidiar.
+- **Cuánto sube:** cada bocado visto suma `tasaEnvidia` (0,35) × deseo × (1 menos 0,6 × afecto por quien come) × (1 menos acceso) × (1 menos 0,8 × fama de pegar de quien come), hacia 1 sin pasarse. No depende de ningún vínculo previo.
+- **Cuánto dura:** decae con una constante de 45 s. Más deprisa (la mitad) si hace más de 8 s que no ve un bocado o ya no ve a quien comía, cuatro veces más deprisa si come ella, y tres veces más deprisa si deja de tener hambre.
+- **Memoria:** al pasar de 0,5 queda un episodio (`envidia:<id>`) y un agravio pequeño (0,05) hacia quien comía.
+- **Qué cambia en la conducta** (términos aditivos sobre acciones que ya existen, sin acciones nuevas): suma a acercarse a quien come (`pesoEnvidiaAcercar`, menos con miedo), suma a probar otro alimento que no sea el que come el otro (`pesoEnvidiaBuscar`), resta a actuar sobre objetos que no son comida, a explorar y a descansar (`pesoEnvidiaInhibe`), y solo si es agresiva y está frustrada suma a empujar a quien come (`pesoEnvidiaAgresion`), por la vía de agresión que ya existe. No roba, no ataca y no compite por orden.
+- **No son otra cosa:** no suben la frustración ni el miedo. Con el interruptor apagado no se ejecuta la percepción ni se guarda estado, bocados contados ni episodios.
+
+### Resultados del caso 28
+
+Diez condiciones, diez réplicas por semilla, 10 semillas. La escena deja a la poseedora (V) inmovilizada junto a su alimento, con una fruta nueva cada 12 s durante 90 s (16 bocados en todas las réplicas), y a la criatura que mira (O) hambrienta (0,8) tras 600 s de convivencia con alimento en los que las dos aprenden que la fruta se come. Después se observan 300 s más sin comida nueva. En las condiciones «fijas» O está inmovilizada (`atrapada`, la condición de laboratorio de otros casos) para que la medida sea la señal pura. En las «libres» se mueve y decide por sí misma.
+
+| Condición | Envidia máxima (mediana) | Notas |
+|---|---|---|
+| Hambrienta, ve comer, no puede llegar | **0,73** (0,70 a 0,76) | 4 decisiones de acercarse a quien come |
+| Hambrienta, alimento a la vista, sin poseedor (V ya no está) | 0 | 0 decisiones de acercarse; hambre 0,88 y frustración 0,26 iguales a la anterior |
+| Poco hambre (0,12), ve comer | 0 | |
+| Tiene su alimento al lado (equivalente) | 0 | primer bocado propio a los 1,75 s |
+| Hambrienta, la que come está fuera de su vista | 0 | V da los mismos 16 bocados |
+| Ve comer y recibe lo suyo a los 40 s | 0,68 (pico) | a los 70 s: 0,12, frente a 0,61 sin recibirlo |
+| Libre, con envidia | 0,40 (0,35 a 0,58) | |
+| Libre, interruptor apagado | 0 (sin estado ni rastro) | |
+| Agresiva y libre, con y sin envidia | 0,21 con envidia | golpes a quien come: 1 de mediana en ambas |
+
+Por criterio (10 semillas): los 11 criterios pasan en 10 de 10 (activación, no es hambre, no es frustración, no ve y no hay envidia, se va con el tiempo, conseguir lo suyo la apaga antes, memoria, busca al poseedor, se acerca más antes de comer, no es agresión automática, apagado sin rastro).
+
+- **No es hambre.** Con el mismo hambre (0,88 en ambas), hay envidia con poseedor (0,73) y ninguna con el alimento a la vista y sin poseedor (0). Y con poco hambre tampoco hay, aunque vea comer.
+- **No es frustración.** La frustración es la misma (0,26) con y sin poseedor. La envidia no la sube.
+- **Conducta dirigida.** Fija y hambrienta, decide acercarse a quien come 4 veces de mediana y ninguna sin poseedor. Libre, pasa más tiempo cerca de V (55,8 s frente a 41,5 s con el interruptor apagado), se acerca a V más veces (6,5 frente a 3) y, mientras aún no ha comido ella, 2 veces frente a 1. El primer bocado propio tarda lo mismo (16,9 s frente a 16,1 s): el cambio no es que coma antes ni más.
+- **Duración.** A la mitad del pico en 20 s tras el último bocado visto y por debajo de 0,05 en unos 65 s.
+- **Efecto de conseguir lo suyo.** Con alimento propio 30 s antes (a los 70 s), la envidia es 0,12 frente a 0,61 de quien no lo recibe.
+- **Agresión.** Libre y con carácter normal, 0 golpes a quien come. Con una agresiva (0,9) y el conflicto por comida activo, los golpes a quien come son los mismos con y sin envidia (1 de mediana): la agresión que hay viene de la vía que ya existía y la envidia no la aumenta, porque requiere frustración y la envidia no la produce.
+- **Apagado.** En todas las réplicas con el interruptor apagado (20 por semilla) no queda ni estado, ni bocados contados, ni episodio. Hay además una prueba unitaria (`vida.test.ts`) de que apagada no deja estado y de que encendida se guarda y se restaura igual.
+
+### Coste de rendimiento
+
+La medida global entre tandas (con el interruptor encendido y apagado) resultó demasiado ruidosa en una máquina cargada: salían diferencias negativas. Se cambió `tests/vida-coste.ts` para envolver cada método de percepción y sumar su tiempo propio, y compararlo con el paso completo. Con celos y envidia encendidos en todas las criaturas (dos ejecuciones, cifras estables):
+
+| Criaturas en la sala | Celos (µs por paso, % del paso) | Envidia (µs por paso, % del paso) |
+|---|---|---|
+| 2 | 1,6 (3 %) | 0,8 (1,6 %) |
+| 4 | 6,4 (6 %) | 1,7 (1,7 %) |
+| 6 | 16,9 (11 %) | 3,1 (1,9 %) |
+| 8 | 42 a 50 (13 %) | 8 a 10 (2,5 %) |
+| 12 | 182 a 220 (20 a 21 %) | 22 a 28 (2,7 %) |
+
+La envidia cuesta en torno al 2 % del paso con cualquier número de criaturas: solo mira los bocados recientes de las que ve. Los celos crecen de forma cuadrática por el seguimiento de atención entre pares. La medida del caso 27 (que daba el coste «dentro del ruido» hasta 4 criaturas y unos 24 % a 8) era menos fina; esta es la que vale. Con el límite actual de 4 criaturas por sala el coste conjunto es de un 8 % del paso. Con los interruptores apagados el coste es cero.
+
+### Lo que se decidió a mitad de camino
+
+- **Un control mal montado.** La primera versión del control «sin poseedor» dejaba a V saciada junto a la fruta, pero V seguía dando entre 4 y 8 bocados (por curiosidad, por olor). Eso era un poseedor, y la envidia salía bien. Se corrigió quitando a V de la sala en ese control, sin tocar la envidia.
+- **Un fallo de medida.** Los bocados de V incluían los de la convivencia previa. Se corrigió para contar solo la escena. Los 11 criterios seguían igual.
+- **Un cambio del mecanismo, el único.** En el control «tiene su alimento al lado», en 2 semillas la envidia llegó a 0,16 y 0,11 porque, antes de dar su primer bocado (hasta 4,5 s), el acceso valía una cifra fija de 0,6. Se cambió el acceso a una medida graduada por la distancia a ese otro alimento. No se tocó ningún peso ni umbral. Al mismo tiempo se pasó de cinco a diez réplicas por semilla (los recuentos son enteros pequeños y con cinco los empates eran frecuentes). Con ambos cambios juntos, activación y «se acerca más antes de comer» pasaron de 8 y 7 a 10 de 10 semillas. No se separó cuánto aportó cada uno.
+
+### Límites
+
+- **No se demuestra que juegue o descanse menos.** Libre y con envidia juega 5 veces de mediana (6 sin envidia) y descansa 1 vez (1,5 sin ella). Una criatura hambrienta apenas juega ni descansa en esta escena, así que no hay margen para medirlo. El término existe, pero sin efecto comprobado. Se quitó ese criterio de la prueba.
+- **La escena es muy regular.** V siempre da 16 bocados y el resultado varía poco entre semillas y réplicas (la envidia máxima va de 0,70 a 0,76). Prueba que el mecanismo funciona, no que sea robusto ante comida irregular o varios poseedores.
+- **Un solo poseedor y un solo alimento (fruta).** No se probó con varios poseedores a la vez, con alimentos que no conoce ni con objetos u otros recursos (segunda fase).
+- **Agresión por envidia.** Solo se comprobó que no añade golpes en la escena con una agresiva. No hay una condición que la active a propósito (agresiva, frustrada y sin vínculo).
+- **El deseo no está calibrado contra criaturas reales.** La tasa de 0,35 por bocado se fijó una vez, antes de medir, y no se ajustó con los resultados.
+- **Qué pasa al reencontrarse** con quien comía, o con un nuevo alimento, no se probó.
+
+## Celos y envidia (diseño aprobado; implementados los dos)
 
 Se representan los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Se describe qué hay hoy, los riesgos de integración y dos casos informativos. **El diseño está aprobado con tres condiciones** (ver abajo) y todavía no se ha implementado.
 
@@ -998,7 +1068,7 @@ Se mide:
 - **Memoria:** recuerdo del episodio, y qué pasa en un encuentro posterior (¿evita o se acerca más al tercero?).
 - **Diferencias entre condiciones.** Un aumento del nivel interno no se da por demostrado si no cambia la conducta.
 
-**Caso 28, envidia.** Dos criaturas ven un recurso deseado (una raíz) que una obtiene y la otra no. Condiciones:
+**Caso 28, envidia (hecho, ver arriba).** Dos criaturas ven un recurso deseado (una raíz) que una obtiene y la otra no. Condiciones:
 1. Una obtiene el recurso y la otra no, con ambas a la vista.
 2. Control con acceso equivalente (ambas comen).
 3. Control con recurso **inalcanzable** y sin poseedor (frustración sin envidia).

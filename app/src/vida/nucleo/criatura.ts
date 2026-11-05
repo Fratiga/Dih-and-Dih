@@ -53,6 +53,18 @@ export interface Comida {
   x: number;
 }
 
+/** Envidia (solo alimento): `nivel` (de 0 a 1) por ver comer a `poseedor` algo que ella desea y no tiene. `donde` es el sitio del ultimo bocado visto (para no tomar
+    por «otro alimento» el que esta comiendo el poseedor) y `visto` cuando lo vio por ultima vez. */
+export interface Envidia {
+  poseedor: number;
+  recurso: string;
+  nivel: number;
+  pico: number;
+  anotado: boolean;
+  donde: number;
+  visto: number;
+}
+
 /** Celos: `nivel` (de 0 a 1) por ver que `vinculo`, a quien quiere, atiende a `tercero`. `pico` es lo mas alto que llego en este episodio. */
 export interface Celo {
   vinculo: number;
@@ -128,6 +140,9 @@ export interface EstadoCriatura {
   agresion: boolean;
   celos: boolean;
   celosEstado: Celo[];
+  envidia: boolean;
+  envidiaEstado: Envidia[];
+  vistoBocado: Record<number, number>;
   atendidaPor: Record<number, number>;
   fatiga: number;
   reproduccion: boolean;
@@ -212,6 +227,11 @@ export class Criatura {
   /** Experimental: celos. Si alguien a quien quiere atiende a una tercera, siente celos mientras lo ve; no son frustracion, no dan acciones nuevas y se van con el tiempo. */
   celos = false;
   celosEstado: Celo[] = [];
+  /** Experimental: envidia. Si ve comer a otra algo que desea (tiene hambre) y no tiene, la siente mientras dura; no es hambre ni frustracion, no da acciones nuevas y no la lleva a robar ni a pegar. */
+  envidia = false;
+  envidiaEstado: Envidia[] = [];
+  /** Cuando vio el ultimo bocado de cada criatura (para contar cada bocado una sola vez). */
+  vistoBocado: Record<number, number> = {};
   /** Lo que ve de la atencion entre las criaturas que tiene a la vista (se rehace con lo que ve, no se guarda). */
   social = new SeguimientoAtencion();
   /** Cuando fue la ultima vez que alguien a quien quiere la atendio a ella (para notar que ya no lo hace). */
@@ -313,6 +333,7 @@ export class Criatura {
     this.notarApariciones(env);
     this.mirarAOtros(env);
     if (this.celos) this.sentirCelos(env, dt);
+    if (this.envidia) this.sentirEnvidia(env, dt);
     this.observar(env, dt);
     this.resolverTrazas(env);
     if (this.espera > 0) this.espera -= dt;
@@ -890,6 +911,72 @@ export class Criatura {
     this.celosEstado = this.celosEstado.filter((c) => c.nivel > 0);
   }
 
+  /** Cuanta envidia siente ahora por lo que come `idPoseedor`. */
+  envidiaPor(idPoseedor: number): number {
+    let m = 0;
+    for (const e of this.envidiaEstado) if (e.poseedor === idPoseedor) m = Math.max(m, e.nivel);
+    return m;
+  }
+
+  /** La envidia mas alta que siente ahora. */
+  envidiaMaxima(): number {
+    let m = 0;
+    for (const e of this.envidiaEstado) m = Math.max(m, e.nivel);
+    return m;
+  }
+
+  /** ¿Es este el sitio donde come alguien a quien envidia? Ese alimento es del otro y no cuenta como «otro alimento» para ella. */
+  esAlimentoEnvidiado(x: number): boolean {
+    return this.envidiaEstado.some((e) => e.nivel > 0.02 && Math.abs(e.donde - x) < 60);
+  }
+
+  /** Envidia de alimento: ve a otra criatura dar un bocado a algo que ella desea y no tiene. Desea en proporcion a su hambre y a lo que espera que le quite el hambre
+      (lo que sabe de ese alimento). Sube con cada bocado visto, menos si quiere a quien come o le teme, y nada si ya tiene acceso (acaba de comer o ve otro alimento).
+      Baja con el tiempo, antes si ya no ve comer, si come ella o si deja de tener hambre. No toca la frustracion ni el miedo, y solo percibe lo que ve. */
+  private sentirEnvidia(env: Entorno, dt: number): void {
+    const alcance = AJ.vista * this.genoma.vista * 1.3;
+    const hambre = this.nec[N.hambre];
+    const deseoHambre = Math.max(0, (hambre - AJ.umbralHambreEnvidia) / (1 - AJ.umbralHambreEnvidia));
+    const comioYo = env.t - (this.ultimoComer?.t ?? -999) < AJ.ventanaAccesoPropio;
+    const afectoCon = (id: number): number => this.mem.vinculos.find((q) => q.id === 1000 + id)?.afecto ?? 0;
+    const visibles = new Set<number>();
+    for (const o of env.criaturas) {
+      if (o === this || !o.vivo || Math.abs(o.x - this.x) > alcance) continue;
+      visibles.add(o.id);
+      const q = o.ultimoComer;
+      if (!q || env.t - q.t > 3 || q.t <= (this.vistoBocado[o.id] ?? -1)) continue;
+      this.vistoBocado[o.id] = q.t;
+      let e = this.envidiaEstado.find((k) => k.poseedor === o.id);
+      if (e) { e.visto = env.t; e.donde = q.x; }
+      // Acceso propio: acaba de comer, o ve otro alimento que no es el que come el otro (cuanto mas cerca, mas acceso: con la comida al lado no hay nada que envidiar)
+      let acceso = comioYo ? 1 : 0;
+      if (!comioYo) for (const p of this.percibidos) if (!p.esCriatura && !p.recordado && (CATALOGO[p.tipo]?.porciones ?? 0) > 0 && p.dist < 250 && Math.abs(p.x - q.x) > 80) acceso = Math.max(acceso, 1 - p.dist / 250);
+      if (deseoHambre <= 0 || acceso >= 1) continue;
+      const deseo = deseoHambre * Math.min(1, Math.max(0, valorDeProbar(this, q.f, env)) * 2);
+      const temor = this.reputacion[1000 + o.id]?.agresion ?? 0;
+      const base = AJ.tasaEnvidia * deseo * (1 - 0.6 * afectoCon(o.id)) * (1 - acceso) * (1 - 0.8 * temor);
+      if (base <= 0) continue;
+      if (!e) { e = { poseedor: o.id, recurso: q.tipo, nivel: 0, pico: 0, anotado: false, donde: q.x, visto: env.t }; this.envidiaEstado.push(e); }
+      e.nivel = acota(e.nivel + base * (1 - e.nivel));
+      e.pico = Math.max(e.pico, e.nivel);
+      if (e.nivel > 0.5 && !e.anotado) {
+        e.anotado = true;
+        this.mem.anotar(env.t, `envidia:${o.id}`, `Sintió envidia al ver comer a ${this.nombreDeId(o.id)}.`, -0.4);
+        this.anotarAgravio(1000 + o.id, 0.05);
+      }
+    }
+    // Se va con el tiempo, antes si ya no ve comer (se acabo o se fue), si come ella o si ya no tiene hambre
+    for (const e of this.envidiaEstado) {
+      let tau = AJ.tauEnvidia;
+      if (env.t - e.visto > 8 || !visibles.has(e.poseedor)) tau /= 2;
+      if (comioYo) tau /= 4;
+      if (deseoHambre <= 0) tau /= 3;
+      e.nivel *= Math.exp(-dt / tau);
+      if (e.nivel < 0.01) e.nivel = 0;
+    }
+    this.envidiaEstado = this.envidiaEstado.filter((e) => e.nivel > 0);
+  }
+
   private nombreDeId(id: number): string {
     return this.percibidos.find((q) => q.id === 1000 + id)?.nombre ?? `la criatura ${id}`;
   }
@@ -989,7 +1076,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1032,6 +1119,9 @@ export class Criatura {
     c.agresion = e.agresion ?? false;
     c.celos = e.celos ?? false;
     c.celosEstado = JSON.parse(JSON.stringify(e.celosEstado ?? []));
+    c.envidia = e.envidia ?? false;
+    c.envidiaEstado = JSON.parse(JSON.stringify(e.envidiaEstado ?? []));
+    c.vistoBocado = { ...(e.vistoBocado ?? {}) };
     c.atendidaPor = JSON.parse(JSON.stringify(e.atendidaPor ?? {}));
     c.fatiga = e.fatiga ?? 0;
     c.reproduccion = e.reproduccion ?? false;
