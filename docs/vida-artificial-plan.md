@@ -699,7 +699,25 @@ Sale de una conversación sobre cómo debería comportarse la reproducción. Se 
 - **Gestación y parto** (`embarazos` en la simulación, 400 s): nace la camada junto a la madre, aunque el padre ya no esté.
 - **Rechazo.** Las dos tienen una reacción al azar entre enfado, miedo, indiferencia y alegría (`reaccionAlRechazo`). El enfado de una agresiva puede traducirse en represalia; el miedo y el enfado enfrían el afecto por ese individuo; la alegría y la indiferencia no dejan resentimiento. Recibir un golpe enfada a una agresiva, y responder depende de estar enfadada (la represalia es proporcional a la frustración).
 
-### El caso 23
+### El caso 23, partido en 23 y 23b
+
+El 23 original juntaba nueve criterios en una sola prueba (3 de 8 semillas con todos) y era frágil y lento (unos 3,5 minutos). Se partió en dos con una función común para la pareja: el **23** (cortejo y aceptación) y el **23b** (rechazo, reacción y pelea). Con 10 semillas:
+
+| Caso y criterio | Semillas que lo cumplen |
+|---|---|
+| 23, se quieren y se reproducen (mediana 0,70) | 7 de 10 |
+| 23, desconocidos: hay rechazos y no hay embarazo | 7 de 10 |
+| 23, el castigo deja aversión y deja de reproducirse | 10 de 10 |
+| 23, la manía por los cuernos rechaza al que los tiene y acepta al que no | 5 de 10 |
+| 23b, las agresivas se enfadan más que las pacíficas | 10 de 10 |
+| 23b, la violencia es de las agresivas | 10 de 10 |
+| 23b, la pelea mutua depende del carácter | **4 de 10** |
+| 23b, el entrenamiento cambia la reacción (enfado 0,46, 0,85 con premio, 0,07 con susto) | 10 de 10 |
+| 23b, el rechazo se respeta | 10 de 10 |
+
+La pelea mutua bajó de una probabilidad de 0,90 a 0,20 en las agresivas tras añadir la fatiga del caso 24: las peleas acaban pronto y ya no llegan a que las dos golpeen dos veces. Es una consecuencia esperada de la calma, no un fallo del rechazo.
+
+### El caso 23 original (antes de partirlo)
 
 Parejas adultas de sexos distintos que ya conviven (1500 s previos para que haya afecto), con 5 réplicas por brazo, 8 semillas. Resultados de mediana:
 
@@ -759,6 +777,34 @@ El caso 24 prueba cinco réplicas por brazo de dos agresivas (0,9) enfadadas y c
 - El combate es corto: unos cinco golpes y uno de los dos se cansa o huye. Es lo que sale con estos pesos, no una decisión de diseño.
 - Queda informativo (0/10 con los siete criterios a la vez, por el del miedo).
 - **Efecto en la depredación (caso 21).** La fatiga y quitar la frustración de los golpes cortaron el frenesí que sostenía parte de la caza: con la fatiga puesta del todo, 0 presas muertas. Un cazador con interés depredador activo frena mucho menos con la fatiga (la quinta parte): persiste hasta someter a la presa. Con eso la depredación vuelve en parte, **4/10 semillas y 1,5 presas muertas de mediana frente a 6/10 y 4 antes**. Es el coste de que la pelea acabe sola, y se acepta.
+
+## Quien quiere la comida de otra (caso 25, prueba de integración)
+
+Conecta carroñeo, competencia por comida, agresión, fatiga, memoria y relaciones, sin mecánicas nuevas (sin intimidación y sin heridas complejas). Una criatura agresiva (0,9) hambrienta y otra que ya está comiendo una raíz de ocho bocados, en seis rondas de 90 s. La primera tiene o no un aprendizaje previo de carroñeo (tres rondas a solas con un cadáver, o el mismo tiempo sin él) y el defensor es agresivo (0,9) o poco agresivo (0,1). Nada fuerza un desenlace: cada una puede ceder, huir, desistir o luchar. Cuatro réplicas por brazo, ocho semillas. Después de las rondas se separan, se les quita la comida y se las pone a 300 durante un minuto.
+
+Cada golpe se clasifica según lo que ocurría justo antes (la comida se suelta al golpear, así que hay que mirar el paso anterior): **competencia** (golpea a quien tiene la comida), **defensa** (golpea quien la tiene), **represalia**, **depredadora** (golpea a alguien que se ve débil o asustado estando hambrienta) u otra.
+
+Resultados (medianas):
+
+| Qué se mide | Resultado |
+|---|---|
+| Golpes de la carroñera | 2 contra un defensor agresivo y 4,5 contra uno poco agresivo (1 y 2 sin carroñeo) |
+| Golpes del defensor | 1 si es agresivo, 0 si es poco agresivo |
+| Parte de la comida de quien la quita | 0,71 y 0,91 con carroñeo previo, 0,67 y 0,88 sin él |
+| Motivos de los golpes | competencia 1, depredadora 1, defensa 0, represalia 0 |
+| Golpes máximos en una ronda | 3,5 (ninguna réplica pasa de 7 de máximo) |
+| Pico de fatiga de combate | 0,21 |
+| Rondas con golpes | 1 de 6 |
+| Huidas del defensor | 65 inicios de huida (la carroñera, 14) |
+| Recuerdan quién les atacó | asociación de daño o agravio de 0,96 |
+| Reencuentro | pelea mutua en ninguna réplica, violencia unilateral casi nunca, y el 100 % se acerca |
+
+- **Lo que emerge es una jerarquía en pocas rondas, no una guerra.** El primer enfrentamiento define la disputa: el defensor aprende a huir y desde entonces la carroñera come sin que haya que pelear. El combate no se convierte en una máquina de golpear (nunca más de 7 golpes por ronda) y la fatiga se aplica.
+- **El carácter del defensor se nota:** el poco agresivo recibe más golpes y pierde casi toda la comida (le queda el 9 %), el agresivo golpea y conserva cerca de un tercio. Se cumple en las ocho semillas.
+- **El aprendizaje del carroñeo se nota poco:** más golpes con carroñeo previo (4,5 frente a 2 contra el defensor poco agresivo), pero con pocos golpes en total. De los golpes, una parte son de competencia por la comida ocupada y otra de depredación sobre un defensor que huye asustado.
+- **No se puede decir que la conducta depredadora persista:** como el defensor huye en la primera ronda, de las seis solo una tiene golpes. Falta una prueba con un defensor que no pueda huir para ver si el interés por la carne se sostiene sin combates interminables.
+- **El reencuentro no demuestra recuperación de la relación.** Que todas se acerquen y no peleen es compatible con aversión, miedo o desconfianza residual: sí recuerdan (0,96), pero no se midió cómo se comportan al acercarse (distancia a la que se quedan, tiempo cerca, huida posterior).
+- Pasan los ocho criterios a la vez 4 de 8 semillas. Queda informativo.
 
 ## Caso propuesto 15: el monstruo y el sacrificio
 
@@ -837,7 +883,7 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 5b. Conflicto por comida (primer paso de la sección de agresión), que también abre el caso 15 y los casos 09 a 12.
 5c. Casos 16 y 17 (reconocimiento persistente y relaciones asimétricas), ya construidos, que son las etapas 2 a 5 del espacio de convivencia entre propietarios.
 6. El caso 15 después, porque necesita esos recuerdos de individuos, la agresión entre criaturas y la atribución de efectos a otras. La agresión puede prepararse en paralelo.
-7. **Prueba de integración pequeña** antes de más sistemas: una agresiva que ya carroñeó convive con una criatura que defiende su comida. La primera intenta obtenerla. La segunda puede ceder, intimidar o luchar (hoy solo hay ceder, huir o luchar: no hay amenaza sin golpe). Si hay heridas, huir, continuar o recuperarse. Tras un tiempo se vuelven a encontrar y se mira qué hacen. Conecta comida, agresión, memoria, miedo y relaciones sin canibalismo ni evolución genética.
+7. **Prueba de integración pequeña** (hecha, caso 25; quedan pendientes un defensor que no pueda huir y medir qué hacen al reencontrarse): una agresiva que ya carroñeó convive con una criatura que defiende su comida. La primera intenta obtenerla. La segunda puede ceder, intimidar o luchar (hoy solo hay ceder, huir o luchar: no hay amenaza sin golpe). Si hay heridas, huir, continuar o recuperarse. Tras un tiempo se vuelven a encontrar y se mira qué hacen. Conecta comida, agresión, memoria, miedo y relaciones sin canibalismo ni evolución genética.
 8. **Calma tras una pelea.** Hecho (caso 24, arriba). Queda por mirar qué hacen después de acercarse en el reencuentro y probar la calma en parejas con afecto previo.
 9. **Partir el caso 23** en pruebas independientes (cortejo y aceptación, reacción al rechazo, pelea, persistencia de la aversión, reproducción tras convivencia larga), para que un fallo de un mecanismo no tape a los demás. Los criterios ya se informan por separado, pero comparten montajes y se ven como un solo resultado.
 10. Especialización física (mandíbula, garras, fuerza, agilidad), solo después de comprobar que cada rasgo mejora una estrategia concreta y sin subir pesos antes.

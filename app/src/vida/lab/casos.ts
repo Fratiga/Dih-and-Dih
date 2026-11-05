@@ -1722,73 +1722,106 @@ export const caso22: Caso = {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
+type BrazoPareja = "cariño" | "desconocidos" | "castigo previo" | "castigo y agresivas" | "castigo y pacificas" | "manía por cuernos, con cuernos" | "manía por cuernos, sin cuernos";
+
+const empujonesAOtra = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+
+/** Una pareja adulta de sexos distintos que convive, se prepara segun el brazo (afecto previo, castigo del cuidador, manía) y se deja 1100 s con la reproduccion activada.
+    La usan los casos 23 (cortejo y aceptacion) y 23b (rechazo, reaccion y pelea). */
+function parejaReproduccion(semilla: number, brazo: BrazoPareja, k: number) {
+  const DUR = 1100;
+  const genomaConSexo = (variante: number, sexo: 0 | 1): Genoma => {
+    for (let v = variante; v < variante + 200; v++) { const g = genomaDe(semilla, v); if (sexoDe(g) === sexo) return g; }
+    return genomaDe(semilla, variante);
+  };
+  const gA = clonarGenoma(genomaConSexo(231, 0));
+  const gB = clonarGenoma(genomaConSexo(331, 1));
+  if (brazo === "castigo y agresivas") { gA.rasgos[R.agresividad] = 0.9; gB.rasgos[R.agresividad] = 0.9; }
+  if (brazo === "castigo y pacificas") { gA.rasgos[R.agresividad] = 0.1; gB.rasgos[R.agresividad] = 0.1; }
+  // La hembra (sexo 1) es quien tiene la manía; el pretendiente lleva cuernos o no segun el brazo
+  if (brazo === "manía por cuernos, con cuernos") gA.cuerpo.cuernos = 1;
+  const s = nuevaSim({ semilla: mezclar(semilla, 232, k), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: gA, x: 500 }, { genoma: gB, x: 700 }], comedero: { cada: 90, max: 3, tipo: "fruta" } });
+  const [A, B] = s.criaturas;
+  for (const c of s.criaturas) { c.edad = DIA; c.agresion = true; c.gustos = true; c.reconocePorRasgos = true; c.capRegistro = 50000; }
+  // Convivencia previa para que haya afecto (nada con los desconocidos; poca con la manía de los cuernos, para que dependa del gusto)
+  const previa = brazo === "desconocidos" ? 0 : brazo.startsWith("manía") ? 600 : 1500;
+  s.avanzar(previa);
+  for (const c of s.criaturas) { c.reproduccion = true; c.impulso = 0.7; c.emo.fill(0); c.nec[0] = 0.1; c.nec[1] = 0.1; }
+  if (brazo.startsWith("manía")) B.valencias[3] = -0.9;
+  // El cuidador asusta a las dos justo despues de cada uno de tres acercamientos reproductivos (entrenamiento antes de la prueba)
+  if (brazo.startsWith("castigo")) {
+    for (let i = 0; i < 3; i++) {
+      A.ultimoCortejo = { t: s.t, con: B.id }; B.ultimoCortejo = { t: s.t, con: A.id };
+      A.asustar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t });
+      B.asustar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t });
+      for (const c of s.criaturas) { c.emo.fill(0); c.accion = null; }
+    }
+  }
+  s.avanzar(DUR);
+  const crias = s.criaturas.filter((c) => c.padres.length).length;
+  return {
+    reprodujo: crias > 0 || s.embarazos.length > 0 || A.gestando || B.gestando,
+    camada: crias, rechazos: (A.mem.acciones.rechazada ?? 0) + (B.mem.acciones.rechazada ?? 0),
+    empA: empujonesAOtra(A), empB: empujonesAOtra(B), aversion: Math.max(...A.aversionSexo, ...B.aversionSexo),
+  };
+}
+
 export const caso23: Caso = {
   id: "23",
-  titulo: "Cortejo, rechazo y camadas",
-  hipotesis: "Una pareja adulta de sexos distintos se reproduce sola si se quieren (impulso, cortejo, aceptación, gestación y parto con camada). Si no se conocen, la otra rechaza, y el rechazo se respeta: no hay embarazo. Un castigo del cuidador justo después de tres acercamientos reproductivos deja una aversión aprendida y la pareja que se quería deja de reproducirse. Tras un rechazo, cada una reacciona al azar según su carácter y su entrenamiento: enfado, miedo, indiferencia o alegría (también quien rechaza). La violencia solo la ejerce quien se enfada siendo agresiva, y si lo están las dos pelean: la pelea es una probabilidad. Un premio tras una reacción la hace más probable y un susto menos. Una manía por los cuernos hace rechazar a un pretendiente con cuernos y aceptar a uno sin ellos.",
+  titulo: "Cortejo y aceptación",
+  hipotesis: "Una pareja adulta de sexos distintos se reproduce sola si se quieren (impulso, cortejo, aceptación, gestación y parto con camada). Si no se conocen, la otra rechaza, y el rechazo se respeta: no hay embarazo. Un castigo del cuidador justo después de tres acercamientos reproductivos deja una aversión aprendida y la pareja que se quería deja de reproducirse. Una manía por los cuernos hace rechazar a un pretendiente con cuernos y aceptar a uno sin ellos. La reacción al rechazo y la pelea están en el 23b.",
   minimo: 0.8,
   ejecutar(semilla) {
     const REP = 5;
-    const DUR = 1100;
-    const genomaConSexo = (variante: number, sexo: 0 | 1): Genoma => {
-      for (let v = variante; v < variante + 200; v++) { const g = genomaDe(semilla, v); if (sexoDe(g) === sexo) return g; }
-      return genomaDe(semilla, variante);
-    };
-    type Brazo = "cariño" | "desconocidos" | "castigo previo" | "castigo y agresivas" | "castigo y pacificas" | "manía por cuernos, con cuernos" | "manía por cuernos, sin cuernos";
-    const empujones = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
-    const probar = (brazo: Brazo, k: number) => {
-      const agresivas = brazo === "castigo y agresivas";
-      const gA = clonarGenoma(genomaConSexo(231, 0));
-      const gB = clonarGenoma(genomaConSexo(331, 1));
-      if (agresivas) { gA.rasgos[R.agresividad] = 0.9; gB.rasgos[R.agresividad] = 0.9; }
-      if (brazo === "castigo y pacificas") { gA.rasgos[R.agresividad] = 0.1; gB.rasgos[R.agresividad] = 0.1; }
-      // La hembra (sexo 1) es quien tiene la manía; el pretendiente lleva cuernos o no segun el brazo
-      if (brazo === "manía por cuernos, con cuernos") gA.cuerpo.cuernos = 1;
-      const s = nuevaSim({ semilla: mezclar(semilla, 232, k), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: gA, x: 500 }, { genoma: gB, x: 700 }], comedero: { cada: 90, max: 3, tipo: "fruta" } });
-      const [A, B] = s.criaturas;
-      for (const c of s.criaturas) { c.edad = DIA; c.agresion = true; c.gustos = true; c.reconocePorRasgos = true; c.capRegistro = 50000; }
-      // Convivencia previa para que haya afecto (nada con los desconocidos; poca con la manía de los cuernos, para que dependa del gusto)
-      const previa = brazo === "desconocidos" ? 0 : brazo.startsWith("manía") ? 600 : 1500;
-      s.avanzar(previa);
-      for (const c of s.criaturas) { c.reproduccion = true; c.impulso = 0.7; c.emo.fill(0); c.nec[0] = 0.1; c.nec[1] = 0.1; }
-      if (brazo.startsWith("manía")) B.valencias[3] = -0.9;
-      // El cuidador asusta a las dos justo despues de cada uno de tres acercamientos reproductivos (entrenamiento antes de la prueba)
-      if (brazo.startsWith("castigo")) {
-        for (let i = 0; i < 3; i++) {
-          A.ultimoCortejo = { t: s.t, con: B.id }; B.ultimoCortejo = { t: s.t, con: A.id };
-          A.asustar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t });
-          B.asustar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t });
-          for (const c of s.criaturas) { c.emo.fill(0); c.accion = null; }
-        }
-      }
-      s.avanzar(DUR);
-      const crias = s.criaturas.filter((c) => c.padres.length).length;
-      return {
-        reprodujo: crias > 0 || s.embarazos.length > 0 || A.gestando || B.gestando,
-        camada: crias, rechazos: (A.mem.acciones.rechazada ?? 0) + (B.mem.acciones.rechazada ?? 0),
-        rechazosHechos: (A.mem.acciones.rechaza ?? 0) + (B.mem.acciones.rechaza ?? 0),
-        empA: empujones(A), empB: empujones(B), aversion: Math.max(...A.aversionSexo, ...B.aversionSexo),
-        enfados: (A.mem.acciones["reaccion:enfado"] ?? 0) + (B.mem.acciones["reaccion:enfado"] ?? 0),
-        reacciones: ["enfado", "miedo", "indiferencia", "alegria"].reduce((n, k) => n + (A.mem.acciones[`reaccion:${k}`] ?? 0) + (B.mem.acciones[`reaccion:${k}`] ?? 0), 0),
-      };
-    };
-    const frac = (b: Brazo): { p: number; v: ReturnType<typeof probar>[] } => {
-      const v = Array.from({ length: REP }, (_, k) => probar(b, k));
+    const frac = (b: BrazoPareja): { p: number; v: ReturnType<typeof parejaReproduccion>[] } => {
+      const v = Array.from({ length: REP }, (_, k) => parejaReproduccion(semilla, b, k));
       return { p: v.filter((x) => x.reprodujo).length / REP, v };
     };
     const car = frac("cariño"), des = frac("desconocidos"), cas = frac("castigo previo");
-    const agr = frac("castigo y agresivas"), pac = frac("castigo y pacificas");
     const hCon = frac("manía por cuernos, con cuernos"), hSin = frac("manía por cuernos, sin cuernos");
+    return resultado(semilla, {
+      "si se quieren, la pareja se reproduce sola (en al menos 3 de 5 intentos)": car.p >= 3 / 5,
+      "si no se conocen, hay rechazos y no hay embarazo (como mucho 1 de 5)": mediana(des.v.map((x) => x.rechazos)) >= 1 && des.p <= 1 / 5,
+      "un castigo tras tres acercamientos deja aversión y deja de reproducirse (menos de la mitad que sin castigo)": cas.p < car.p / 2,
+      "manía por los cuernos: rechaza al pretendiente con cuernos y acepta al que no los tiene": hCon.p <= 1 / 5 && hSin.p >= 3 / 5,
+    }, {
+      reproduceCarino: car.p, reproduceDesconocidos: des.p, reproduceCastigo: cas.p, reproduceConCuernos: hCon.p, reproduceSinCuernos: hSin.p,
+      rechazosDesconocidos: mediana(des.v.map((x) => x.rechazos)), rechazosCastigo: mediana(cas.v.map((x) => x.rechazos)),
+      aversionTrasCastigo: mediana(cas.v.map((x) => x.aversion)), criasCarino: mediana(car.v.map((x) => x.camada)),
+    }, null, 1100);
+  },
+};
+
+export const caso23b: Caso = {
+  id: "23b",
+  titulo: "Rechazo, reacción y pelea",
+  hipotesis: "Tras un rechazo, cada una reacciona al azar según su carácter y su entrenamiento: enfado, miedo, indiferencia o alegría (también quien rechaza). La violencia solo la ejerce quien se enfada siendo agresiva, y si lo están las dos pelean: la pelea es una probabilidad que depende del carácter. El rechazo se respeta: nunca hay embarazo por haber peleado. Un premio tras una reacción la hace más probable y un susto menos.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const agr = Array.from({ length: REP }, (_, k) => parejaReproduccion(semilla, "castigo y agresivas", k));
+    const pac = Array.from({ length: REP }, (_, k) => parejaReproduccion(semilla, "castigo y pacificas", k));
     const med = (xs: number[]) => mediana(xs);
-    // Violencia: la que mas empuja de las dos (la rechazada). La pelea mutua no se exige: la otra puede huir en vez de responder.
-    const hayViolencia = (r: ReturnType<typeof probar>[]): number => r.filter((x) => Math.max(x.empA, x.empB) >= 3).length / r.length;
-    // Pelea: las dos se golpean (dos golpes cada una como mínimo: las pacíficas dan uno de tanteo por curiosidad. Una pelea acaba cuando el miedo hace huir a una, no tiene que durar)
-    const mutua = (r: ReturnType<typeof probar>[]): number => r.filter((x) => Math.min(x.empA, x.empB) >= 2).length / r.length;
-    // Entrenamiento de la reaccion al rechazo, sin simulacion: 20 rechazos en que se premia (o se asusta) cada enfado, y luego 300 muestras sin entrenar mas
-    const muestraEnfados = (signo: 0 | 1 | -1): number => {
-      const ss = nuevaSim({ semilla: mezclar(semilla, 241), objetos: [], criaturas: [{ genoma: (() => { const g = clonarGenoma(genomaDe(semilla, 241)); g.rasgos[R.agresividad] = 0.9; return g; })(), x: 500 }], comedero: null });
+    const hayViolencia = (r: typeof agr): number => r.filter((x) => Math.max(x.empA, x.empB) >= 3).length / r.length;
+    // Pelea: las dos se golpean (dos golpes cada una como minimo: las pacificas dan uno de tanteo por curiosidad). Acaba cuando el miedo hace huir a una, no tiene que durar.
+    const mutua = (r: typeof agr): number => r.filter((x) => Math.min(x.empA, x.empB) >= 2).length / r.length;
+    const violencia = (r: typeof agr): number => med(r.map((x) => Math.max(x.empA, x.empB)));
+    const criatura = (agresividad: number) => {
+      const ss = nuevaSim({ semilla: mezclar(semilla, 242), objetos: [], criaturas: [{ genoma: (() => { const g = clonarGenoma(genomaDe(semilla, 241)); g.rasgos[R.agresividad] = agresividad; return g; })(), x: 500 }], comedero: null });
       const c = ss.criaturas[0];
       c.reproduccion = true; c.agresion = true;
+      return { ss, c };
+    };
+    // La reaccion al rechazo segun el caracter, muestreada directamente (sin simulacion)
+    const enfadoSegunCaracter = (agresividad: number): number => {
+      const { c } = criatura(agresividad);
+      let n = 0;
+      for (let i = 0; i < 300; i++) if (c.reaccionAlRechazo(0, 0.4) === 0) n++;
+      return n / 300;
+    };
+    // Entrenamiento: 20 rechazos en que se premia (o se asusta) cada enfado, y luego 300 muestras sin entrenar mas
+    const muestraEnfados = (signo: 0 | 1 | -1): number => {
+      const { ss, c } = criatura(0.9);
       const env = () => ({ mundo: ss.mundo, criaturas: ss.criaturas, t: ss.t });
       for (let i = 0; i < 20 && signo !== 0; i++) {
         ss.t += 10;
@@ -1800,34 +1833,20 @@ export const caso23: Caso = {
       for (let i = 0; i < 300; i++) if (c.reaccionAlRechazo(0, 0.4) === 0) n++;
       return n / 300;
     };
-    // La reaccion al rechazo segun el caracter, muestreada directamente (sin simulacion)
-    const enfadoSegunCaracter = (agresividad: number): number => {
-      const ss = nuevaSim({ semilla: mezclar(semilla, 242), objetos: [], criaturas: [{ genoma: (() => { const g = clonarGenoma(genomaDe(semilla, 241)); g.rasgos[R.agresividad] = agresividad; return g; })(), x: 500 }], comedero: null });
-      const c = ss.criaturas[0];
-      c.reproduccion = true;
-      let n = 0;
-      for (let i = 0; i < 300; i++) if (c.reaccionAlRechazo(0, 0.4) === 0) n++;
-      return n / 300;
-    };
     const entr = { base: muestraEnfados(0), premio: muestraEnfados(-1), susto: muestraEnfados(1) };
-    const violencia = (r: ReturnType<typeof probar>[]) => med(r.map((x) => Math.max(x.empA, x.empB)));
+    const enfAgr = enfadoSegunCaracter(0.9), enfPac = enfadoSegunCaracter(0.1);
     return resultado(semilla, {
-      "si se quieren, la pareja se reproduce sola (en al menos 3 de 5 intentos)": car.p >= 3 / 5,
-      "si no se conocen, hay rechazos y no hay embarazo (como mucho 1 de 5)": med(des.v.map((x) => x.rechazos)) >= 1 && des.p <= 1 / 5,
-      "un castigo tras tres acercamientos deja aversión y deja de reproducirse (menos de la mitad que sin castigo)": cas.p < car.p / 2,
-      "las agresivas se enfadan más tras un rechazo que las pacíficas (reacción muestreada: probabilidad de enfado)": enfadoSegunCaracter(0.9) > enfadoSegunCaracter(0.1) + 0.2,
-      "la violencia es de quien se enfada siendo agresiva: las agresivas la ejercen (3 o más empujones) en alguna réplica y las pacíficas casi nunca (menos de 2 de mediana)": hayViolencia(agr.v) >= 1 / REP && violencia(pac.v) < 2,
-      "la pelea mutua es una probabilidad que depende del carácter: ocurre en más del 20 % de las réplicas de agresivas y en menos del 20 % de las de pacíficas": mutua(agr.v) > 0.2 && mutua(pac.v) < 0.2,
+      "las agresivas se enfadan más tras un rechazo que las pacíficas (reacción muestreada: probabilidad de enfado)": enfAgr > enfPac + 0.2,
+      "la violencia es de quien se enfada siendo agresiva: las agresivas la ejercen (3 o más empujones) en alguna réplica y las pacíficas casi nunca (menos de 2 de mediana)": hayViolencia(agr) >= 1 / REP && violencia(pac) < 2,
+      "la pelea mutua es una probabilidad que depende del carácter: ocurre en más del 20 % de las réplicas de agresivas y en menos del 20 % de las de pacíficas": mutua(agr) > 0.2 && mutua(pac) < 0.2,
       "entrenamiento: tras premiar un enfado, enfadarse es más probable; tras asustarlo, menos": entr.premio > entr.base * 1.25 && entr.susto < entr.base * 0.75,
-      "el rechazo se respeta: en ningún intento de las agresivas hay embarazo por haber peleado (como mucho 1 de 5)": agr.p <= 1 / 5,
-      "manía por los cuernos: rechaza al pretendiente con cuernos y acepta al que no los tiene": hCon.p <= 1 / 5 && hSin.p >= 3 / 5,
+      "el rechazo se respeta: en ningún intento de las agresivas hay embarazo por haber peleado (como mucho 1 de 5)": agr.filter((x) => x.reprodujo).length <= 1,
     }, {
-      reproduceCarino: car.p, reproduceDesconocidos: des.p, reproduceCastigo: cas.p, reproduceCastigoAgresivas: agr.p, reproduceCastigoPacificas: pac.p,
-      reproduceConCuernos: hCon.p, reproduceSinCuernos: hSin.p,
-      rechazosDesconocidos: med(des.v.map((x) => x.rechazos)), rechazosCastigo: med(cas.v.map((x) => x.rechazos)),
-      violenciaAgresivas: violencia(agr.v), violenciaPacificas: violencia(pac.v), probViolenciaAgresivas: hayViolencia(agr.v), probPeleaMutuaAgresivas: mutua(agr.v), probPeleaMutuaPacificas: mutua(pac.v), enfadoSegunCaracterAgresiva: enfadoSegunCaracter(0.9), enfadoSegunCaracterPacifica: enfadoSegunCaracter(0.1), enfadoBase: entr.base, enfadoTrasPremio: entr.premio, enfadoTrasSusto: entr.susto, aversionTrasCastigo: med(cas.v.map((x) => x.aversion)),
-      criasCarino: med(car.v.map((x) => x.camada)),
-    }, null, DUR);
+      violenciaAgresivas: violencia(agr), violenciaPacificas: violencia(pac), probViolenciaAgresivas: hayViolencia(agr),
+      probPeleaMutuaAgresivas: mutua(agr), probPeleaMutuaPacificas: mutua(pac),
+      enfadoSegunCaracterAgresiva: enfAgr, enfadoSegunCaracterPacifica: enfPac,
+      enfadoBase: entr.base, enfadoTrasPremio: entr.premio, enfadoTrasSusto: entr.susto,
+    }, null, 1100);
   },
 };
 
@@ -1911,5 +1930,128 @@ export const caso24: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso24, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso25: Caso = {
+  id: "25",
+  titulo: "Quien quiere la comida de otra",
+  hipotesis: "Una criatura hambrienta que ya sabe que la carne alimenta (por haber carroñeado) intenta quedarse con la comida que otra está comiendo. La otra puede ceder, huir o luchar según su temperamento. No se impone ningún desenlace. Lo que se espera es que el aprendizaje y el carácter produzcan decisiones distintas, que el combate no se convierta en una máquina de golpear hasta que alguien se agote y que se distingan tres motivaciones: competir por la comida de otra, defender la propia y cazar. Después de varias rondas, recuerdan quién les atacó.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 4;
+    const RONDAS = 6;
+    const POR_RONDA = 90;
+    const PREVIA = 3;
+    type Brazo = "carroñera y defensor agresivo" | "carroñera y defensor poco agresivo" | "sin carroñeo y defensor agresivo" | "sin carroñeo y defensor poco agresivo";
+    const gH = clonarGenoma(genomaDe(semilla, 251));
+    gH.rasgos[R.agresividad] = 0.9;
+    const gD = genomaDe(semilla, 252);
+    type Motivo = "competencia" | "defensa" | "represalia" | "depredadora" | "otra";
+    const probar = (brazo: Brazo, k: number) => {
+      const carroña = brazo.startsWith("carroñera");
+      const agresivoD = brazo.endsWith("defensor agresivo");
+      const gd = clonarGenoma(gD);
+      gd.rasgos[R.agresividad] = agresivoD ? 0.9 : 0.1;
+      const s = nuevaSim({ semilla: mezclar(semilla, 253, k), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [{ genoma: clonarGenoma(gH), x: 400 }], comedero: null });
+      const H = s.criaturas[0];
+      H.agresion = true; H.conflictoComida = true; H.reconocePorRasgos = true; H.capRegistro = 200000; H.edad = DIA;
+      // Aprendizaje previo: tres rondas a solas con un cadaver ya hecho (o sin cadaver, el mismo tiempo)
+      for (let i = 0; i < PREVIA; i++) {
+        if (carroña) s.mundo.agregar("cadaver", 1000, { porciones: 6 });
+        H.x = 400; H.accion = null; H.nec[0] = 0.7; H.nec[1] = 0.1; H.emo.fill(0); H.dormido = false;
+        s.avanzar(POR_RONDA);
+        for (const o of [...s.mundo.objetos]) if (o.tipo === "cadaver") s.mundo.quitar(o.id);
+      }
+      // Llega el defensor
+      const D = new Criatura(2, "Defensor", gd, 780, mezclar(semilla, 254, k));
+      D.agresion = true; D.conflictoComida = true; D.reconocePorRasgos = true; D.capRegistro = 200000; D.edad = DIA; D.mortalidad = H.mortalidad;
+      s.criaturas.push(D);
+      const t0 = s.t;
+      // Cada ronda: una raiz con ocho bocados en medio; el defensor ya la esta comiendo; la otra llega hambrienta desde lejos
+      let ronda = -1;
+      const motivos: Record<Motivo, number> = { competencia: 0, defensa: 0, represalia: 0, depredadora: 0, otra: 0 };
+      const golpesRonda: number[] = Array(RONDAS).fill(0);
+      let visto = { H: 0, D: 0 };
+      let picoFatiga = 0;
+      // Quien ocupaba la comida en el paso anterior: al golpear se suelta la comida de la victima antes de registrar el golpe, asi que hay que mirar antes
+      let ocupabaAntes: number | undefined;
+      const cuenta = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+      s.ganchos.push(() => {
+        const r = Math.floor((s.t - t0) / POR_RONDA);
+        if (r !== ronda && r < RONDAS) {
+          ronda = r;
+          for (const o of [...s.mundo.objetos]) if (o.tipo === "raiz") s.mundo.quitar(o.id);
+          s.mundo.agregar("raiz", 800, { porciones: 8 });
+          H.x = 400; D.x = 790; H.accion = null; D.accion = null; H.nec[0] = 0.7; D.nec[0] = 0.55; H.nec[1] = 0.1; D.nec[1] = 0.1;
+        }
+        picoFatiga = Math.max(picoFatiga, H.fatiga, D.fatiga);
+        for (const [atacante, otro, clave] of [[H, D, "H"], [D, H, "D"]] as const) {
+          const n = cuenta(atacante);
+          if (n > visto[clave]) {
+            visto[clave] = n;
+            if (ronda >= 0 && ronda < RONDAS) golpesRonda[ronda]++;
+            const ocupa = (c: Criatura): boolean => ocupabaAntes === c.id;
+            let m: Motivo = "otra";
+            if (ocupa(atacante)) m = "defensa";
+            else if (ocupa(otro)) m = "competencia";
+            else if (atacante.represalia && atacante.represalia.contra === otro.id && s.t - atacante.represalia.t < 10) m = "represalia";
+            else if (atacante.nec[0] > 0.3 && otro.emo[E.miedo] + otro.nec[2] > 0.25) m = "depredadora";
+            motivos[m]++;
+          }
+        }
+        const comidaAhora = s.mundo.objetos.find((o) => o.tipo === "raiz");
+        ocupabaAntes = comidaAhora && comidaAhora.ocupante !== undefined && s.t - (comidaAhora.tOcupante ?? -99) < 3.5 ? comidaAhora.ocupante : ocupabaAntes && s.t - 0 < 0 ? ocupabaAntes : undefined;
+      });
+      s.avanzar(RONDAS * POR_RONDA);
+      const bocadosRaiz = (c: Criatura): number => c.registro.filter((q) => q.kind === "impacto" && q.v === "probar" && q.tipo === "raiz" && (q.res?.[0] ?? 0) > 0.05 && q.t >= t0).length;
+      const golpesH = cuenta(H), golpesD = cuenta(D);
+      const parteH = bocadosRaiz(H) + bocadosRaiz(D) > 0 ? bocadosRaiz(H) / (bocadosRaiz(H) + bocadosRaiz(D)) : 0.5;
+      const rondasConGolpes = golpesRonda.filter((g) => g > 0).length;
+      const maxGolpesRonda = Math.max(...golpesRonda);
+      // Recuperacion: acciones con objetos en los ultimos 150 s... y memoria social
+      const normales = H.registro.filter((r) => r.kind === "impacto" && r.tipo !== "criatura" && r.t >= s.t - 40).length + D.registro.filter((r) => r.kind === "impacto" && r.tipo !== "criatura" && r.t >= s.t - 40).length;
+      const asoc = (a: Criatura, b: Criatura): number => { const p = a.mem.predecir("presencia", featuresCriatura(b), new Array(10).fill(1), 0); return p.res[C.dano] * p.conf; };
+      const recuerdo = Math.max(asoc(H, D), asoc(D, H), H.agravios[1000 + D.id]?.n ?? 0, D.agravios[1000 + H.id]?.n ?? 0);
+      const huyoD = D.registro.filter((q) => q.kind === "inicio" && q.v === "evitar" && q.tipo === "criatura").length;
+      const huyoH = H.registro.filter((q) => q.kind === "inicio" && q.v === "evitar" && q.tipo === "criatura").length;
+      // Reencuentro: separadas, sin comida, a 300, durante un minuto
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      H.x = 650; D.x = 950; H.accion = null; D.accion = null;
+      const g0H = golpesH, g0D = golpesD;
+      let distMin = 999, distFin = 0;
+      s.ganchos.push(() => { distMin = Math.min(distMin, Math.abs(H.x - D.x)); distFin = Math.abs(H.x - D.x); });
+      s.avanzar(60);
+      const peleaNueva = cuenta(H) - g0H >= 2 && cuenta(D) - g0D >= 2;
+      const unilateral = !peleaNueva && (cuenta(H) - g0H >= 2 || cuenta(D) - g0D >= 2);
+      return { golpesH, golpesD, parteH, motivos, rondasConGolpes, maxGolpesRonda, picoFatiga, normales, recuerdo, huyoD, huyoH, peleaNueva, unilateral, acercaron: distMin < 200, distFin };
+    };
+    const brazos: Brazo[] = ["carroñera y defensor agresivo", "carroñera y defensor poco agresivo", "sin carroñeo y defensor agresivo", "sin carroñeo y defensor poco agresivo"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [cA, cP, nA, nP] = brazos;
+    const todas = brazos.flatMap((b) => r[b]);
+    const prob = (b: Brazo, f: (x: ReturnType<typeof probar>) => boolean): number => r[b].filter(f).length / REP;
+    return resultado(semilla, {
+      "hay conflicto y no se impone: la carroñera intenta quedarse con la comida de otra, con golpes de competencia en alguna réplica de cada brazo del defensor, pero no en todas": brazos.every((b) => prob(b, (x) => x.motivos.competencia > 0) > 0) && todas.some((x) => x.motivos.competencia === 0),
+      "el carácter del defensor se nota: el defensor agresivo golpea más que el poco agresivo": med(cA, (x) => x.golpesD) + med(nA, (x) => x.golpesD) > med(cP, (x) => x.golpesD) + med(nP, (x) => x.golpesD),
+      "el combate no es una máquina de golpear: ninguna ronda pasa de 60 golpes en ninguna réplica": todas.every((x) => x.maxGolpesRonda < 60),
+      "la fatiga se aplica: hay fatiga de combate apreciable (0,2 o más) en las réplicas con golpes": todas.filter((x) => x.golpesH + x.golpesD >= 4).every((x) => x.picoFatiga >= 0.2),
+      "persistencia sin interminables: la carroñera sigue intentándolo en varias rondas (tres o más de seis) en alguna réplica": todas.some((x) => x.rondasConGolpes >= 3),
+      "las motivaciones se distinguen: hay golpes de competencia, de defensa y de represalia, no solo de un tipo": ["competencia", "defensa", "represalia"].every((m) => todas.some((x) => x.motivos[m as Motivo] > 0)),
+      "recuerdan quién les atacó (asociación con daño o agravio de 0,1 o más) cuando hubo golpes": todas.filter((x) => x.golpesH + x.golpesD >= 4).every((x) => x.recuerdo >= 0.1),
+      "el reencuentro no es automáticamente una pelea mutua (menos de la mitad de las réplicas de cada brazo)": brazos.every((b) => prob(b, (x) => x.peleaNueva) < 0.5),
+    }, {
+      golpesCarroñeraConDefAgresivo: med(cA, (x) => x.golpesH), golpesDefAgresivo: med(cA, (x) => x.golpesD), golpesCarroñeraConDefPoco: med(cP, (x) => x.golpesH), golpesDefPoco: med(cP, (x) => x.golpesD),
+      golpesSinCarroñeoDefAgresivo: med(nA, (x) => x.golpesH), golpesSinCarroñeoDefPoco: med(nP, (x) => x.golpesH),
+      parteDeLaComidaCarroñeraDefAgresivo: med(cA, (x) => x.parteH), parteCarroñeraDefPoco: med(cP, (x) => x.parteH), parteSinCarroñeoDefAgresivo: med(nA, (x) => x.parteH), parteSinCarroñeoDefPoco: med(nP, (x) => x.parteH),
+      competencia: mediana(todas.map((x) => x.motivos.competencia)), defensa: mediana(todas.map((x) => x.motivos.defensa)), represalia: mediana(todas.map((x) => x.motivos.represalia)), depredadora: mediana(todas.map((x) => x.motivos.depredadora)),
+      maxGolpesPorRonda: Math.max(...todas.map((x) => x.maxGolpesRonda)), picoFatiga: mediana(todas.map((x) => x.picoFatiga)),
+      rondasConGolpes: mediana(todas.map((x) => x.rondasConGolpes)), recuerdo: mediana(todas.map((x) => x.recuerdo)),
+      huyeDefensor: mediana(todas.map((x) => x.huyoD)), huyeCarroñera: mediana(todas.map((x) => x.huyoH)),
+      probPeleaMutuaReencuentro: todas.filter((x) => x.peleaNueva).length / todas.length, probViolenciaUnilateralReencuentro: todas.filter((x) => x.unilateral).length / todas.length, seAcercanReencontrarse: todas.filter((x) => x.acercaron).length / todas.length,
+    }, null, (PREVIA + RONDAS) * POR_RONDA + 60);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
