@@ -2663,5 +2663,101 @@ export const caso30: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso31: Caso = {
+  id: "31",
+  titulo: "Celos según el afecto",
+  hipotesis: "Con la escena del caso 27 y solo el afecto por el vínculo cambiado (0,10; 0,20; 0,29; 0,35; 0,50; 0,70; 0,90), se caracteriza la forma del umbral. Por debajo del umbral de 0,3 no hay celos ni ningún cambio de conducta (con los celos encendidos o apagados la criatura hace lo mismo). Por encima los hay y crecen con el afecto. El caso no puede descubrir si el umbral 'existe' en las criaturas (es un parámetro de diseño), sino cuánto salta el estado interno y la conducta al cruzarlo: si lo que se ve es un escalón, o una subida gradual.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const ESTIMULO = 60;
+    const OBSERVA = 200;
+    const AFECTOS = [0.10, 0.20, 0.29, 0.35, 0.50, 0.70, 0.90];
+    const gO = genomaDe(semilla, 311);
+    const gV = genomaDe(semilla, 312);
+    const gT = genomaDe(semilla, 313);
+    const probar = (afecto: number, apagado: boolean, k: number) => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 314, k), objetos: [{ tipo: "pelota", x: 700 }], criaturas: [{ genoma: clonarGenoma(gO), x: 600 }, { genoma: clonarGenoma(gV), x: 800 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [O, V] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      O.celos = !apagado;
+      s.avanzar(1200);
+      const T = new Criatura(3, "Tercera", clonarGenoma(gT), 1000, mezclar(semilla, 315, k));
+      T.reconocePorRasgos = true; T.capRegistro = 5000;
+      s.criaturas.push(T);
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+      s.comedero = null;
+      // Escena del caso 27: V y T quietas a distancia visible de O, y V mira a T durante el estimulo
+      O.x = 500; O.accion = null; O.emo.fill(0); O.nec[0] = 0.15; O.nec[1] = 0.1; O.nec[3] = 0.3; O.nec[4] = 0.3;
+      V.x = 800; V.atrapada = true; V.accion = null; V.vx = 0;
+      T.x = 920; T.atrapada = true; T.accion = null; T.vx = 0; T.dir = -1;
+      const pelota = s.mundo.objetos.find((o) => o.tipo === "pelota");
+      if (pelota) pelota.x = 480;
+      // Lo unico que cambia: el afecto por su vinculo, fijado (dato de laboratorio) y devuelto a su valor al acabar cada paso. Dentro de un paso puede subir hasta 0,08 al terminar un acercamiento con compañia, despues de que ella haya decidido, asi que nunca decide con un valor distinto del fijado
+      const vinculo = O.mem.vinculos.find((q) => q.id === 1000 + V.id);
+      if (vinculo) vinculo.afecto = afecto;
+      const t0 = s.t;
+      let celoMax = 0, cercaDeV = 0, aVista = 0, frustracionMax = 0, afectoAlto = 0, afectoBajo = 9, celo15 = -1;
+      const juego0 = O.registro.length;
+      s.ganchos.push(() => {
+        const dt = s.t - t0;
+        if (dt < 0) return;
+        V.dir = dt <= ESTIMULO ? 1 : -1;
+        T.dir = -1;
+        // Se anota lo mas alto y lo mas bajo que llego a valer en un paso antes de devolverlo a su valor (el olvido periodico lo mueve un poco)
+        if (vinculo) { afectoAlto = Math.max(afectoAlto, vinculo.afecto); afectoBajo = Math.min(afectoBajo, vinculo.afecto); vinculo.afecto = afecto; }
+        if (dt >= 15 && celo15 < 0) celo15 = O.celoMaximo();
+        celoMax = Math.max(celoMax, O.celoMaximo());
+        frustracionMax = Math.max(frustracionMax, O.emo[E.frustracion]);
+        if (dt <= ESTIMULO) {
+          if (Math.abs(O.x - V.x) < 150) cercaDeV += 0.25;
+          if (O.social.duracion(V.id, T.id, s.t) > 0) aVista += 0.25;
+        }
+      });
+      s.avanzar(ESTIMULO + OBSERVA);
+      const dentro = (r: { t: number }): boolean => r.t >= t0 && r.t < t0 + ESTIMULO;
+      const reg = O.registro.slice(juego0);
+      const acercaV = reg.filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + V.id && dentro(r)).length;
+      const juego = reg.filter((r) => r.kind === "impacto" && r.tipo !== "criatura" && (r.v === "empujar" || r.v === "tocar") && dentro(r)).length;
+      return { celoMax, celo15, cercaDeV, aVista, acercaV, juego, frustracionMax, cruzaElUmbral: afecto < AJ.umbralVinculoCelos ? afectoAlto >= AJ.umbralVinculoCelos : afectoBajo < AJ.umbralVinculoCelos, deriva: Math.max(afectoAlto - afecto, afecto - afectoBajo) };
+    };
+    const rc = AFECTOS.map((a) => Array.from({ length: REP }, (_, k) => probar(a, false, k)));
+    const ra = AFECTOS.map((a) => Array.from({ length: REP }, (_, k) => probar(a, true, k)));
+    type R = ReturnType<typeof probar>;
+    const medC = (i: number, f: (x: R) => number): number => mediana(rc[i].map(f));
+    const medA = (i: number, f: (x: R) => number): number => mediana(ra[i].map(f));
+    const debajo = [0, 1, 2];
+    const encima = [3, 4, 5, 6];
+    const celos = AFECTOS.map((_, i) => medC(i, (x) => x.celoMax));
+    const diferenciaConducta = (i: number): number => Math.abs(medC(i, (x) => x.cercaDeV) - medA(i, (x) => x.cercaDeV)) + Math.abs(medC(i, (x) => x.acercaV) - medA(i, (x) => x.acercaV)) + Math.abs(medC(i, (x) => x.juego) - medA(i, (x) => x.juego));
+    const metricas: Record<string, number> = {};
+    AFECTOS.forEach((a, i) => {
+      const e = String(Math.round(a * 100));
+      metricas[`celos_${e}`] = celos[i];
+      metricas[`celosA15s_${e}`] = medC(i, (x) => x.celo15);
+      metricas[`derivaDelAfecto_${e}`] = medC(i, (x) => x.deriva);
+      metricas[`aVista_${e}`] = medC(i, (x) => x.aVista);
+      metricas[`cercaDeV_${e}`] = medC(i, (x) => x.cercaDeV);
+      metricas[`cercaDeV_${e}_apagado`] = medA(i, (x) => x.cercaDeV);
+      metricas[`acercamientos_${e}`] = medC(i, (x) => x.acercaV);
+      metricas[`acercamientos_${e}_apagado`] = medA(i, (x) => x.acercaV);
+      metricas[`juego_${e}`] = medC(i, (x) => x.juego);
+      metricas[`juego_${e}_apagado`] = medA(i, (x) => x.juego);
+    });
+    metricas.saltoDeCelosAlCruzarElUmbral = celos[3] - celos[2];
+    metricas.saltoDeCercaDeVAlCruzarElUmbral = (medC(3, (x) => x.cercaDeV) - medA(3, (x) => x.cercaDeV)) - (medC(2, (x) => x.cercaDeV) - medA(2, (x) => x.cercaDeV));
+    return resultado(semilla, {
+      "por debajo del umbral no hay celos: con afecto 0,10; 0,20 y 0,29 el pico es menor que 0,05": debajo.every((i) => celos[i] < 0.05),
+      "por encima del umbral los hay: con afecto 0,35 el pico es de 0,2 o más": celos[3] >= 0.2,
+      "crecen con el afecto: con 0,35; 0,50; 0,70 y 0,90 el pico no baja de un nivel al siguiente (a lo sumo 0,05 de retroceso)": encima.slice(1).every((i) => celos[i] >= celos[i - 1] - 0.05),
+      "el interruptor no hace nada por debajo del umbral: con 0,10; 0,20 y 0,29 la conducta es la misma con los celos encendidos y apagados (tiempo cerca, acercamientos y juego)": debajo.every((i) => diferenciaConducta(i) === 0),
+      "por encima del umbral cambia la conducta: con 0,50 busca más a su vínculo con los celos que sin ellos (más tiempo cerca o más acercamientos)": medC(4, (x) => x.cercaDeV) > medA(4, (x) => x.cercaDeV) || medC(4, (x) => x.acercaV) > medA(4, (x) => x.acercaV),
+      "y juega menos con la pelota con los celos que sin ellos (con 0,50)": medC(4, (x) => x.juego) < medA(4, (x) => x.juego),
+    }, metricas, null, 1200 + ESTIMULO + OBSERVA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

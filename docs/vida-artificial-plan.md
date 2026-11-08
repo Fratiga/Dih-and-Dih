@@ -1069,7 +1069,45 @@ Por criterio: los siete pasan en 9 o 10 de 10 semillas (aprueba 9 de 10, el mín
 - **El miedo moderado casi no frena los celos** (arriba). Si se quisiera un freno gradual con miedos medios habría que cambiar la fórmula, y eso no se ha hecho.
 - **Un tercero «muy superior»** (más grande o fuerte) como causa de miedo sin historia no se prueba: solo daño aprendido y fama.
 - **El miedo emocional del momento** (el que sube al recibir un golpe) se incluye en el término de acercarse, pero no se prueba por separado: en la escena el golpe ocurre 100 s antes y ya se ha ido.
-- **La semilla 10** muestra que hay criaturas que, sin ningún miedo, se quedan lejos y casi no ven la atención. Eso no se investigó.
+- **La escena no garantiza que la criatura vea la atención de su vínculo en todas las semillas.** En la semilla 10, con la tercera neutra y la criatura libre, el pico de celos no llega a 0,2 (la criatura se queda lejos de su vínculo ya sin miedo). Ahí el caso no está midiendo el freno por miedo, y su fallo no debe leerse como un fallo del miedo. No se investigó por qué se queda lejos, y tampoco se cambió la escena.
+
+## Celos según el afecto (caso 31)
+
+Segundo pendiente de la tanda. El caso 27 comparaba un vínculo de 0,67 con uno de 0,07, que solo muestra que hay un umbral. Aquí se usa **la misma escena del caso 27** y cambia únicamente el afecto por el vínculo.
+
+### Qué se puede y qué no se puede probar
+
+El umbral de 0,3 (`umbralVinculoCelos`) es un parámetro del diseño («vínculo significativo»), no algo que las criaturas puedan desmentir. Este caso no descubre si «existe» un umbral en la criatura. Mide **la forma de lo que sale al cruzarlo**: cuánto salta el estado interno y la conducta, y si por encima sube gradualmente.
+
+Siete niveles de afecto (0,10; 0,20; 0,29; 0,35; 0,50; 0,70; 0,90), tres por debajo del umbral y cuatro por encima, cada uno con los celos encendidos y apagados, cinco réplicas por semilla. El afecto se fija en el laboratorio y se devuelve a su valor al acabar cada paso. Dentro de un paso puede subir hasta 0,08 al terminar un acercamiento con compañía (`acciones.ts`), pero eso ocurre después de que la criatura haya decidido, así que nunca decide con un valor distinto del fijado. Eso quita la realimentación real (acercarse sube el afecto, lo que sube los celos), que queda fuera de esta prueba.
+
+### Resultados (10 semillas, mediana)
+
+| Afecto | Celos (pico) | Celos a los 15 s | Cerca del vínculo con / sin celos (s) | Acercamientos con / sin | Juego con la pelota con / sin |
+|---|---|---|---|---|---|
+| 0,10 | 0 | 0 | 18,5 / 18,5 | 1,0 / 1,0 | 5,0 / 5,0 |
+| 0,20 | 0 | 0 | 20,6 / 20,6 | 1,5 / 1,5 | 5,0 / 5,0 |
+| 0,29 | 0 | 0 | 22,4 / 22,4 | 1,5 / 1,5 | 4,5 / 4,5 |
+| 0,35 | 0,64 | 0,26 | 46,8 / 23,9 | 6,5 / 2,0 | 1,0 / 4,5 |
+| 0,50 | 0,86 | 0,39 | 56,5 / 29,0 | 8,5 / 3,0 | 1,0 / 5,0 |
+| 0,70 | 0,96 | 0,50 | 58,0 / 33,2 | 10,0 / 4,0 | 0 / 4,0 |
+| 0,90 | 0,98 | 0,58 | 58,0 / 39,8 | 10,0 / 6,0 | 0 / 1,0 |
+
+Por criterio (10 semillas): por debajo del umbral no hay celos (10 de 10), por encima sí (10), crecen con el afecto (10), por debajo del umbral el interruptor no cambia nada de la conducta (10, idéntica con y sin celos), por encima busca más a su vínculo (10), y juega menos con la pelota (8). Aprueba 8 de 10 semillas (las semillas 9 y 10 fallan solo en el juego con la pelota).
+
+### Lo que dice la forma
+
+- **El estado interno es un escalón en el umbral.** Pasa de 0 con afecto 0,29 a 0,64 con 0,35 (un salto de 0,64 de mediana, de 0,22 a 0,77 según semilla). No hay ninguna subida intermedia por debajo.
+- **Por encima del umbral el estado es gradual, pero se satura enseguida.** Al final de los 60 s el pico va de 0,64 a 0,98, y a los 15 s la subida se ve mejor: 0,26; 0,39; 0,50; 0,58. La velocidad crece con el afecto (la tasa es proporcional al afecto), pero con el estímulo largo todos acaban cerca del techo.
+- **La conducta es casi todo o nada.** Al cruzar el umbral la criatura pasa unos 18 s más cerca de su vínculo, hace unos 4 acercamientos más y juega unas 3 veces menos. Por encima, el cambio crece poco con el afecto. Los acercamientos sí suben (6,5; 8,5; 10; 10), pero se acercan al techo.
+- **Lo que no se ve es un cambio continuo de la conducta con el afecto bajo el umbral.** Por debajo no pasa nada, por construcción: los celos no se activan.
+- **Una pregunta de diseño que queda abierta** (no se ha cambiado): ¿un escalón de 0 a 0,64 en 0,06 de afecto es lo que se quiere? La alternativa sería una rampa suave (la tasa multiplicada por una función creciente entre, por ejemplo, 0,15 y 0,35) que quitara el escalón. Se deja como decisión.
+
+### Límites
+
+- **El afecto está fijado** y se devuelve a su valor cada paso. No se mide qué pasa si el afecto sube o baja durante la escena.
+- **Una sola escena** (la del caso 27: vínculo y tercera inmovilizados, atención fijada 60 s).
+- **Juego con la pelota:** a 0,50 baja de 5,0 a 1,0 en la mediana y en dos semillas no baja. Es un recuento pequeño y con suelo.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 
