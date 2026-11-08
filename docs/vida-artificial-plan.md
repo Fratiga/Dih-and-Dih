@@ -1101,13 +1101,55 @@ Por criterio (10 semillas): por debajo del umbral no hay celos (10 de 10), por e
 - **Por encima del umbral el estado es gradual, pero se satura enseguida.** Al final de los 60 s el pico va de 0,64 a 0,98, y a los 15 s la subida se ve mejor: 0,26; 0,39; 0,50; 0,58. La velocidad crece con el afecto (la tasa es proporcional al afecto), pero con el estímulo largo todos acaban cerca del techo.
 - **La conducta es casi todo o nada.** Al cruzar el umbral la criatura pasa unos 18 s más cerca de su vínculo, hace unos 4 acercamientos más y juega unas 3 veces menos. Por encima, el cambio crece poco con el afecto. Los acercamientos sí suben (6,5; 8,5; 10; 10), pero se acercan al techo.
 - **Lo que no se ve es un cambio continuo de la conducta con el afecto bajo el umbral.** Por debajo no pasa nada, por construcción: los celos no se activan.
-- **Una pregunta de diseño que queda abierta** (no se ha cambiado): ¿un escalón de 0 a 0,64 en 0,06 de afecto es lo que se quiere? La alternativa sería una rampa suave (la tasa multiplicada por una función creciente entre, por ejemplo, 0,15 y 0,35) que quitara el escalón. Se deja como decisión.
+- **Decisión: se mantiene el escalón.** El umbral de 0,3 produce un salto de 0 a 0,64 con 0,06 de afecto de diferencia. Es una decisión de diseño («vínculo significativo»), no un artefacto. La alternativa (una rampa suave, con la tasa multiplicada por una función creciente entre, por ejemplo, 0,15 y 0,35) queda descartada por ahora porque obligaría a repetir los casos 27, 28, 29, 30 y 31 y no aporta nada medido. Se revisará si el juego abierto muestra que el escalón se percibe como arbitrario. Hipótesis sin comprobar a favor del escalón: un estado casi binario sería más fácil de predecir para un modelo de las otras criaturas que una rampa.
 
 ### Límites
 
 - **El afecto está fijado** y se devuelve a su valor cada paso. No se mide qué pasa si el afecto sube o baja durante la escena.
 - **Una sola escena** (la del caso 27: vínculo y tercera inmovilizados, atención fijada 60 s).
 - **Juego con la pelota:** a 0,50 baja de 5,0 a 1,0 en la mediana y en dos semillas no baja. Es un recuento pequeño y con suelo.
+
+## El reencuentro con la tercera (caso 32)
+
+Tercer pendiente de la tanda. Tras sentir celos al ver a su vínculo atender a una tercera, ¿qué hace la criatura al volver a encontrarse con ella? Es una pregunta abierta: los criterios solo comprueban que la prueba es válida y que no hay agresión, y el resultado se informa con una regla de clasificación escrita antes de verlo.
+
+### La escena
+
+- **Fase 1 (caso 27):** 60 s con su vínculo (V) mirando a la tercera (T), las dos quietas a distancia visible.
+- **Fase 2:** V y T salen de la sala y la criatura (O) se queda sola, 60 s o 5 minutos.
+- **Fase 3:** vuelve T sola, quieta y de espaldas, a 300 de O. Se observan 120 s.
+- **Condiciones** (ocho réplicas por semilla): celos y reencuentro / el mismo estímulo con los celos apagados / el vínculo no atiende a T (T presente, no hay celos) / tercera desconocida (nunca la vio) / y las dos con celos y sin atención, con el reencuentro a los 5 minutos.
+- **Regla de clasificación (escrita antes):** hay efecto si el tiempo cerca de T con celos difiere del control sin atención en al menos 10 s (de 120) y al menos el 25 %. Entonces es «busca» (más) o «evita» (menos). Si no, «igual».
+
+### Resultados (10 semillas, mediana)
+
+| | Celos al reencontrarse | Hasta acercarse a T (s) | Acercamientos | Evitaciones | Cerca de T (s) | Afecto por T después | Agravio hacia T |
+|---|---|---|---|---|---|---|---|
+| Celos, tras 1 min | **0,50** | **9,0** | 3 | 0 | 40,4 | 0,09 | 0,04 |
+| Celos apagados | 0 | 26,9 | 2 | 0 | 35,3 | 0,08 | 0 |
+| El vínculo no atiende | 0 | 26,9 | 2 | 0 | 35,3 | 0,08 | 0 |
+| Tercera desconocida | 0 | 22,1 | 2 | 0 | 33,3 | 0,07 | 0 |
+| Celos, tras 5 min | 0,04 | 41,8 | 2 | 0 | 25,9 | 0,07 | 0,02 |
+| El vínculo no atiende, tras 5 min | 0 | 50,0 | 1,5 | 0 | 24,0 | 0,08 | 0 |
+
+El criterio de validez (que la criatura vea a T la mitad del reencuentro o más) pasa en 9 de 10 semillas (falla la 6). El resto de criterios pasan en 10 de 10: el estímulo produce celos (0,98), deja un episodio y un agravio hacia T, tras 5 minutos los celos se han ido (0,04) y no hay golpes. El caso aprueba 9 de 10 semillas.
+
+### Lo que dice
+
+- **No hay evitación.** Cero evitaciones en todas las condiciones, y el afecto por T es el mismo (0,07 a 0,09). Sentir celos no hace que la criatura rehúya a la tercera al volver a verla.
+- **Con el criterio escrito, el resultado es «igual»** en las dos comparaciones: la diferencia de tiempo cerca de T es de 3 s tras 1 minuto y de menos 6 s tras 5 minutos, por debajo de los 10 s.
+- **Pero con un minuto de separación se acerca antes a T** (9 s frente a 27 s), con un acercamiento más. La explicación más sencilla es que los celos siguen vivos (0,50) y frenan explorar y jugar, lo que deja más probable acercarse a lo único que ve. A los 5 minutos, con los celos ya apagados (0,04), esa diferencia desaparece (42 s frente a 50 s). Es coherente con que sea un efecto de la emoción viva y no de un recuerdo de T, pero no hay una condición que lo demuestre aparte. No se midió.
+- **La huella queda en lo mínimo.** Un agravio de 0,08 que se olvida (0,04 al final del reencuentro tras 1 minuto y 0,02 tras 5 minutos) y un episodio en la memoria que no cambia lo que hace.
+
+### Límites
+
+- **Una sola escena:** T está quieta y de espaldas y V no vuelve. No se probó el reencuentro con V y T juntas (la variante más realista), con T libre o con T que se acerca a ella.
+- **El recuerdo no se prueba más que por la conducta.** Si el episodio de celos influyera de otras formas (por ejemplo, en cómo reaccionaría si V volviera a atender a T), esta prueba no lo ve.
+- **La semilla 6:** en alguna condición no ve a T la mitad del tiempo, y ahí el reencuentro no mide lo que debería.
+
+### Para el diseño de un modelo de las otras criaturas
+
+Lo que habría que predecir a partir de esto: que una criatura que acaba de sentir celos **no evita** a la tercera y la busca algo antes mientras los celos duran. Pasado ese rato, se comporta como si no hubiera pasado nada. Esto es lo único que el caso aporta como verdad de campo para ese modelo.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 

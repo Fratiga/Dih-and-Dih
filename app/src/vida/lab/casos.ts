@@ -2759,5 +2759,136 @@ export const caso31: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso32: Caso = {
+  id: "32",
+  titulo: "El reencuentro con la tercera",
+  hipotesis: "Tras sentir celos al ver a su vínculo atender a una tercera, y después de un minuto separadas, ¿qué hace la criatura al volver a encontrarse con la tercera sola? Puede evitarla, buscarla más o comportarse igual. Se compara con tres controles: los mismos hechos con los celos apagados, la tercera presente pero sin que el vínculo la atienda (no hay celos) y una tercera desconocida. Es una pregunta abierta: no se fija de antemano qué debería pasar. Los criterios solo comprueban que la prueba es válida (el estímulo produce celos, deja la huella prevista, la criatura ve a la tercera) y que no hay agresión; el resultado conductual se informa y se clasifica con una regla escrita antes de verlo.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 8;
+    const ESTIMULO = 60;
+    const SEPARADAS = 60;
+    const SEPARADAS_LARGO = 300;
+    const REENCUENTRO = 120;
+    type Brazo = "celos y reencuentro" | "mismo estimulo, celos apagados" | "el vinculo no atiende a la tercera" | "tercera desconocida" | "celos, reencuentro tras 5 min" | "el vinculo no atiende, reencuentro tras 5 min";
+    const gO = genomaDe(semilla, 321);
+    const gV = genomaDe(semilla, 322);
+    const gT = genomaDe(semilla, 323);
+    const afectoA = (O: Criatura, id: number): number => O.mem.vinculos.find((q) => q.id === 1000 + id)?.afecto ?? 0;
+    const probar = (brazo: Brazo, k: number) => {
+      const apagado = brazo === "mismo estimulo, celos apagados";
+      const sinAtencion = brazo === "el vinculo no atiende a la tercera" || brazo === "el vinculo no atiende, reencuentro tras 5 min";
+      const separadas = brazo.includes("5 min") ? SEPARADAS_LARGO : SEPARADAS;
+      const desconocida = brazo === "tercera desconocida";
+      const s = nuevaSim({ semilla: mezclar(semilla, 324, k), objetos: [{ tipo: "pelota", x: 700 }], criaturas: [{ genoma: clonarGenoma(gO), x: 600 }, { genoma: clonarGenoma(gV), x: 800 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [O, V] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      O.celos = !apagado;
+      s.avanzar(1200);
+      const T = new Criatura(3, "Tercera", clonarGenoma(gT), 1000, mezclar(semilla, 325, k));
+      T.reconocePorRasgos = true; T.capRegistro = 5000;
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+      s.comedero = null;
+      // Fase 1 (caso 27): V y T quietas a distancia visible de O, y V mira a T durante el estimulo (salvo en los controles)
+      O.x = 500; O.accion = null; O.emo.fill(0); O.nec[0] = 0.15; O.nec[1] = 0.1; O.nec[3] = 0.3; O.nec[4] = 0.3;
+      V.x = 800; V.atrapada = true; V.accion = null; V.vx = 0;
+      T.x = 920; T.atrapada = true; T.accion = null; T.vx = 0; T.dir = -1; T.nec[0] = 0;
+      if (!desconocida) s.criaturas.push(T);
+      const pelota = s.mundo.objetos.find((o) => o.tipo === "pelota");
+      if (pelota) pelota.x = 480;
+      const afectoVAntes = afectoA(O, V.id);
+      const t0 = s.t;
+      let celoMaxEstimulo = 0;
+      let fase: "estimulo" | "separadas" | "reencuentro" = "estimulo";
+      let vistaT = 0, pasosReencuentro = 0, cercaDeT = 0, celoAlReencuentro = -1;
+      let tReencuentro = -1;
+      s.ganchos.push(() => {
+        const dt = s.t - t0;
+        if (fase === "estimulo") {
+          V.dir = !sinAtencion && dt <= ESTIMULO ? 1 : -1;
+          T.dir = -1;
+          celoMaxEstimulo = Math.max(celoMaxEstimulo, O.celoMaximo());
+        } else if (fase === "reencuentro") {
+          T.dir = O.x > T.x ? -1 : 1; // de espaldas a ella: no la atiende
+          pasosReencuentro++;
+          if (O.percibidos.some((p) => p.id === 1000 + T.id)) vistaT++;
+          if (Math.abs(O.x - T.x) < 150) cercaDeT += 0.25;
+        }
+      });
+      s.avanzar(ESTIMULO);
+      const afectoTTrasEstimulo = afectoA(O, T.id);
+      const afectoVTrasEstimulo = afectoA(O, V.id);
+      const episodioTrasEstimulo = O.mem.episodios.some((e) => e.clave.startsWith("celos:"));
+      // Fase 2: separadas. V y T se van de la sala y O se queda sola
+      fase = "separadas";
+      s.criaturas = [O];
+      O.accion = null;
+      s.avanzar(separadas);
+      celoAlReencuentro = O.celoMaximo();
+      const afectoVTrasSepararse = afectoA(O, V.id);
+      // Fase 3: vuelve la tercera sola, quieta y de espaldas, a 300 de O
+      T.atrapada = true; T.accion = null; T.vx = 0; T.nec[0] = 0; T.emo.fill(0);
+      T.x = O.x + 300 < 1500 ? O.x + 300 : O.x - 300;
+      s.criaturas.push(T);
+      fase = "reencuentro";
+      tReencuentro = s.t;
+      const reg0 = O.registro.length;
+      s.avanzar(REENCUENTRO);
+      const reg = O.registro.slice(reg0);
+      const primero = (v: string): number => { const r = reg.find((x) => x.kind === "inicio" && x.v === v && x.obj === 1000 + T.id); return r ? r.t - tReencuentro : REENCUENTRO; };
+      const cuenta = (v: string): number => reg.filter((x) => x.kind === "inicio" && x.v === v && x.obj === 1000 + T.id).length;
+      const golpesAT = reg.filter((x) => x.kind === "impacto" && x.v === "empujar" && x.tipo === "criatura").length;
+      const agravioT = (() => { const a = O.agravios[1000 + T.id]; return a ? a.n * Math.exp(-(s.t - a.t) / AJ.olvidoAgravio) : 0; })();
+      return {
+        celoMaxEstimulo, celoAlReencuentro, episodio: episodioTrasEstimulo, agravioT, afectoVAntes, afectoVTrasEstimulo, afectoVTrasSepararse,
+        afectoTTrasEstimulo, afectoTDespues: afectoA(O, T.id), vistaT: pasosReencuentro ? vistaT / pasosReencuentro : 0,
+        tAcerca: primero("acercarse"), tEvita: primero("evitar"), acercamientos: cuenta("acercarse"), evitaciones: cuenta("evitar"), cercaDeT, golpesAT,
+      };
+    };
+    const brazos: Brazo[] = ["celos y reencuentro", "mismo estimulo, celos apagados", "el vinculo no atiende a la tercera", "tercera desconocida", "celos, reencuentro tras 5 min", "el vinculo no atiende, reencuentro tras 5 min"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [CR, AP, SA, DE, CL, SL] = brazos;
+    // Regla de clasificacion, escrita antes de ver los resultados: se compara el tiempo cerca de la tercera con los celos frente al control de «el vinculo no atiende» (mediana).
+    // Hay efecto si la diferencia es de al menos 10 s (de 120) y de al menos el 25 % del control; se mira a la vez que los acercamientos no vayan en sentido contrario.
+    const dif = med(CR, (x) => x.cercaDeT) - med(SA, (x) => x.cercaDeT);
+    const base = Math.max(1, med(SA, (x) => x.cercaDeT));
+    const clase = Math.abs(dif) >= 10 && Math.abs(dif) >= 0.25 * base ? (dif > 0 ? 1 : -1) : 0;
+    const difL = med(CL, (x) => x.cercaDeT) - med(SL, (x) => x.cercaDeT);
+    const baseL = Math.max(1, med(SL, (x) => x.cercaDeT));
+    const claseL = Math.abs(difL) >= 10 && Math.abs(difL) >= 0.25 * baseL ? (difL > 0 ? 1 : -1) : 0;
+    return resultado(semilla, {
+      "el estímulo produce celos: con celos el pico es de 0,2 o más, y menor que 0,1 con los celos apagados, sin atención del vínculo y sin tercera": med(CR, (x) => x.celoMaxEstimulo) >= 0.2 && [AP, SA, DE].every((b) => med(b, (x) => x.celoMaxEstimulo) < 0.1),
+      "deja la huella prevista: con celos queda un episodio (la mitad de las réplicas o más) y un agravio hacia la tercera mayor que en los controles": r[CR].filter((x) => x.episodio).length >= REP / 2 && med(CR, (x) => x.agravioT) > Math.max(med(AP, (x) => x.agravioT), med(SA, (x) => x.agravioT), med(DE, (x) => x.agravioT)),
+      "la prueba es válida: en el reencuentro la criatura ve a la tercera la mitad del tiempo o más en todas las condiciones": brazos.every((b) => med(b, (x) => x.vistaT) >= 0.5),
+      "tras 5 minutos los celos se han ido: al reencontrarse son menores que 0,1 en mediana, y la criatura sigue recordando el episodio (la mitad de las réplicas o más)": med(CL, (x) => x.celoAlReencuentro) < 0.1 && r[CL].filter((x) => x.episodio).length >= REP / 2,
+      "sin agresión: no golpea a la tercera en el reencuentro (0 golpes de mediana en ninguna condición)": brazos.every((b) => med(b, (x) => x.golpesAT) === 0),
+    }, {
+      celosEnElEstimulo: med(CR, (x) => x.celoMaxEstimulo), celosAlReencontrarse: med(CR, (x) => x.celoAlReencuentro),
+      agravioHaciaLaTerceraCelos: med(CR, (x) => x.agravioT), agravioHaciaLaTerceraApagado: med(AP, (x) => x.agravioT), agravioHaciaLaTerceraSinAtencion: med(SA, (x) => x.agravioT), agravioHaciaLaTerceraDesconocida: med(DE, (x) => x.agravioT),
+      afectoVinculoAntes: med(CR, (x) => x.afectoVAntes), afectoVinculoTrasEstimulo: med(CR, (x) => x.afectoVTrasEstimulo), afectoVinculoTrasSepararse: med(CR, (x) => x.afectoVTrasSepararse),
+      afectoVinculoTrasEstimuloApagado: med(AP, (x) => x.afectoVTrasEstimulo), afectoVinculoTrasSepararseApagado: med(AP, (x) => x.afectoVTrasSepararse), afectoVinculoTrasSepararseSinAtencion: med(SA, (x) => x.afectoVTrasSepararse),
+      afectoTerceraTrasEstimulo: med(CR, (x) => x.afectoTTrasEstimulo), afectoTerceraDespues: med(CR, (x) => x.afectoTDespues), afectoTerceraDespuesApagado: med(AP, (x) => x.afectoTDespues), afectoTerceraDespuesSinAtencion: med(SA, (x) => x.afectoTDespues), afectoTerceraDespuesDesconocida: med(DE, (x) => x.afectoTDespues),
+      vistaTerceraCelos: med(CR, (x) => x.vistaT), vistaTerceraApagado: med(AP, (x) => x.vistaT), vistaTerceraSinAtencion: med(SA, (x) => x.vistaT), vistaTerceraDesconocida: med(DE, (x) => x.vistaT),
+      segundosHastaAcercarseCelos: med(CR, (x) => x.tAcerca), segundosHastaAcercarseApagado: med(AP, (x) => x.tAcerca), segundosHastaAcercarseSinAtencion: med(SA, (x) => x.tAcerca), segundosHastaAcercarseDesconocida: med(DE, (x) => x.tAcerca),
+      segundosHastaEvitarCelos: med(CR, (x) => x.tEvita), segundosHastaEvitarSinAtencion: med(SA, (x) => x.tEvita), segundosHastaEvitarDesconocida: med(DE, (x) => x.tEvita),
+      acercamientosCelos: med(CR, (x) => x.acercamientos), acercamientosApagado: med(AP, (x) => x.acercamientos), acercamientosSinAtencion: med(SA, (x) => x.acercamientos), acercamientosDesconocida: med(DE, (x) => x.acercamientos),
+      evitacionesCelos: med(CR, (x) => x.evitaciones), evitacionesApagado: med(AP, (x) => x.evitaciones), evitacionesSinAtencion: med(SA, (x) => x.evitaciones), evitacionesDesconocida: med(DE, (x) => x.evitaciones),
+      segundosCercaDeLaTerceraCelos: med(CR, (x) => x.cercaDeT), segundosCercaDeLaTerceraApagado: med(AP, (x) => x.cercaDeT), segundosCercaDeLaTerceraSinAtencion: med(SA, (x) => x.cercaDeT), segundosCercaDeLaTerceraDesconocida: med(DE, (x) => x.cercaDeT),
+      diferenciaDeTiempoCercaCelosMenosSinAtencion: dif,
+      clasificacion_1_busca_0_igual_menos1_evita: clase,
+      celosAlReencontrarseTras5min: med(CL, (x) => x.celoAlReencuentro), agravioTras5min: med(CL, (x) => x.agravioT), agravioTras5minSinAtencion: med(SL, (x) => x.agravioT),
+      segundosHastaAcercarseTras5min: med(CL, (x) => x.tAcerca), segundosHastaAcercarseTras5minSinAtencion: med(SL, (x) => x.tAcerca),
+      acercamientosTras5min: med(CL, (x) => x.acercamientos), acercamientosTras5minSinAtencion: med(SL, (x) => x.acercamientos),
+      evitacionesTras5min: med(CL, (x) => x.evitaciones), evitacionesTras5minSinAtencion: med(SL, (x) => x.evitaciones),
+      segundosCercaDeLaTerceraTras5min: med(CL, (x) => x.cercaDeT), segundosCercaDeLaTerceraTras5minSinAtencion: med(SL, (x) => x.cercaDeT),
+      afectoTerceraDespuesTras5min: med(CL, (x) => x.afectoTDespues), afectoTerceraDespuesTras5minSinAtencion: med(SL, (x) => x.afectoTDespues),
+      diferenciaDeTiempoCercaTras5min: difL, clasificacionTras5min_1_busca_0_igual_menos1_evita: claseL,
+    }, null, 1200 + ESTIMULO + SEPARADAS_LARGO + REENCUENTRO);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
