@@ -11,7 +11,7 @@ import { SeguimientoAtencion } from "./social.ts";
 import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
-import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
+import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, resCero, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
 export interface Entorno {
   mundo: Mundo;
@@ -19,6 +19,26 @@ export interface Entorno {
   t: number;
   /** Lo pone la simulacion: registra que una pareja ha aceptado reproducirse. */
   embarazar?: (madre: Criatura, padre: Criatura) => void;
+}
+
+/** Raza simple: una criatura que decide con una regla fija en lugar de con su cerebro. No aprende, sus rasgos no cambian y su conducta es la misma en cualquier situacion.
+    Sirve de actor en las pruebas (la agresora, la cuidadora) y como monstruo o mascota sencillos. `hostil` golpea sin parar a la mas cercana; `amistosa` se acerca y se queda a su lado. */
+export type Rutina = "hostil" | "amistosa";
+
+/** Una secuela fisica: lo que dejan los golpes graves o repetidos y no se cura. Tiene un efecto funcional (la criatura hace menos) y una marca que se ve en su cuerpo. */
+export type TipoSecuela = "cojera" | "debilidad" | "vista" | "oido";
+export interface Secuela {
+  tipo: TipoSecuela;
+  /** Donde se ve la marca: pata trasera, pata delantera, flanco, ojo u oreja. */
+  zona: string;
+  /** De 0 a 1: cuanto limita. */
+  gravedad: number;
+  t: number;
+  /** Quien la causo (el id de percepcion, 1000 mas el de la criatura). */
+  causa: number;
+  /** Lo que se lee en la ficha y en la historia. */
+  texto: string;
+  efecto: string;
 }
 
 export interface Accion {
@@ -142,6 +162,10 @@ export interface EstadoCriatura {
   agresion: boolean;
   celos: boolean;
   celosEstado: Celo[];
+  rutina?: Rutina | null;
+  permiteSecuelas?: boolean;
+  secuelas?: Secuela[];
+  danoAcumulado?: number;
   envidia: boolean;
   envidiaEstado: Envidia[];
   vistoBocado: Record<number, number>;
@@ -229,6 +253,13 @@ export class Criatura {
   /** Experimental: celos. Si alguien a quien quiere atiende a una tercera, siente celos mientras lo ve; no son frustracion, no dan acciones nuevas y se van con el tiempo. */
   celos = false;
   celosEstado: Celo[] = [];
+  /** Raza simple (ver `Rutina`). Con null decide con su cerebro, como todas. */
+  rutina: Rutina | null = null;
+  /** Opcional: si los golpes graves o repetidos dejan secuelas fisicas. Apagado, no se acumula nada y la criatura es la de siempre. */
+  permiteSecuelas = false;
+  secuelas: Secuela[] = [];
+  /** Dano recibido que aun cuenta para la proxima secuela. */
+  danoAcumulado = 0;
   /** Experimental: envidia. Si ve comer a otra algo que desea (tiene hambre) y no tiene, la siente mientras dura; no es hambre ni frustracion, no da acciones nuevas y no la lleva a robar ni a pegar. */
   envidia = false;
   envidiaEstado: Envidia[] = [];
@@ -365,7 +396,23 @@ export class Criatura {
     this.acumOlvido = 0;
   }
 
+  /** Raza simple: la regla fija. Pega a la criatura mas cercana que ve (hostil) o se acerca a ella y se queda a su lado (amistosa). No mira necesidades, emociones ni recuerdos. */
+  private decidirPorRutina(env: Entorno): void {
+    this.forzar = false;
+    this.proxDecision = env.t + AJ.reconsiderar;
+    const cercana = this.percibidos.filter((p) => p.esCriatura && !p.recordado).sort((a, b) => a.dist - b.dist)[0];
+    let cand: Cand;
+    if (!cercana) cand = { v: "descansar", p: null, dest: this.x, u: 1, cambia: true, espera: resCero() };
+    else if (this.rutina === "hostil") cand = { v: "empujar", p: cercana, dest: cercana.x, u: 1, cambia: true, espera: resCero() };
+    else if (cercana.dist > 140) cand = { v: "acercarse", p: cercana, dest: cercana.x, u: 1, cambia: true, espera: resCero() };
+    else cand = { v: "descansar", p: null, dest: this.x, u: 1, cambia: true, espera: resCero() };
+    const act = this.accion;
+    if (act && act.v === cand.v && (cand.p ? act.obj === cand.p.id : act.obj === -1)) return;
+    this.accion = iniciar(this, cand, env);
+  }
+
   private decidir(env: Entorno): void {
+    if (this.rutina) { this.decidirPorRutina(env); return; }
     const cands = candidatas(this, this.percibidos, env);
     // Solo en el laboratorio: una fase de exploracion en la que se fuerza probar un verbo (para tener muestras de cada opcion)
     const c = (this.verboForzado && cands.find((k) => k.v === this.verboForzado && (!k.p || k.p.esCriatura))) || elegir(this, cands);
@@ -468,6 +515,7 @@ export class Criatura {
   }
 
   desarrollar(i: number, delta: number): void {
+    if (this.rutina) return;
     const lim = AJ.desarrolloMax;
     this.rasgos[i] = acota(this.rasgos[i] + delta, Math.max(0, this.base[i] - lim), Math.min(1, this.base[i] + lim));
   }
@@ -579,6 +627,8 @@ export class Criatura {
 
   /** Se llama cuando una accion sobre algo ya tuvo su efecto (el mordisco, el empujon, el toque). */
   experimentar(acc: Accion, res: Res, efecto: boolean, env: Entorno): void {
+    // Una raza simple no aprende de lo que le pasa: solo queda el registro de lo que hizo
+    if (this.rutina) { this.registrar({ t: env.t, kind: "impacto", v: acc.v, tipo: acc.tipo, obj: acc.obj, res: res.slice() }); return; }
     const m = this.mem;
     // Pasarlo bien con alguien cerca cuenta tambien como compania
     if (res[C.diversion] > 0.1 && env.criaturas.some((o) => o !== this && o.vivo && Math.abs(o.x - this.x) < 300)) res[C.compania] = Math.max(res[C.compania], 0.25);
@@ -736,7 +786,51 @@ export class Criatura {
   }
 
   /** Un golpe, una descarga o un mal sabor. `nivel` es la gravedad de 0 a 1. */
+  /** Cuanto limita cada secuela: un factor de 0 a 1 que multiplica lo que la criatura puede hacer. Sin secuelas valen exactamente 1. */
+  private factorSecuela(tipo: TipoSecuela, limite: number): number {
+    let g = 0;
+    for (const s of this.secuelas) if (s.tipo === tipo) g = Math.max(g, s.gravedad);
+    return 1 - limite * g;
+  }
+  factorMovilidad(): number { return this.factorSecuela("cojera", AJ.limiteCojera); }
+  factorFuerza(): number { return this.factorSecuela("debilidad", AJ.limiteDebilidad); }
+  factorVista(): number { return this.factorSecuela("vista", AJ.limiteSentido); }
+  factorOido(): number { return this.factorSecuela("oido", AJ.limiteSentido); }
+
+  /** Cuenta el dano recibido y, cuando pasa el umbral, deja una secuela (una por tipo, hasta el maximo). Solo si se permiten. */
+  private acumularSecuela(nivel: number, causa: number): void {
+    this.danoAcumulado += nivel;
+    if (this.secuelas.length >= AJ.maxSecuelas || this.danoAcumulado < AJ.umbralSecuela * (1 + this.secuelas.length)) return;
+    const libres = (["cojera", "debilidad", "vista", "oido"] as TipoSecuela[]).filter((t) => !this.secuelas.some((s) => s.tipo === t));
+    const tipo = libres[Math.floor(this.azar.next() * libres.length)];
+    const quien = causa >= 1000 ? this.nombreDeId(causa - 1000) : "algo";
+    const dia = Math.floor(this.edad / DIA) + 1;
+    const gravedad = acota(0.35 + 0.5 * nivel + 0.1 * this.secuelas.length, 0.35, 1);
+    const pct = (limite: number): number => Math.round(limite * gravedad * 100);
+    let zona: string, texto: string, efecto: string;
+    if (tipo === "cojera") {
+      zona = this.azar.next() < 0.5 ? "pata trasera" : "pata delantera";
+      texto = `Cojea de la ${zona} desde el día ${dia}, tras los golpes de ${quien}.`;
+      efecto = `Se mueve un ${pct(AJ.limiteCojera)} % más despacio.`;
+    } else if (tipo === "debilidad") {
+      zona = "flanco";
+      texto = `Le quedó el flanco marcado desde el día ${dia}, tras los golpes de ${quien}.`;
+      efecto = `Pega con un ${pct(AJ.limiteDebilidad)} % menos de fuerza.`;
+    } else if (tipo === "vista") {
+      zona = "ojo";
+      texto = `Una cicatriz le cruza el ojo desde el día ${dia}, tras los golpes de ${quien}.`;
+      efecto = `Ve un ${pct(AJ.limiteSentido)} % menos lejos.`;
+    } else {
+      zona = "oreja";
+      texto = `Tiene una oreja rota desde el día ${dia}, tras los golpes de ${quien}.`;
+      efecto = `Oye un ${pct(AJ.limiteSentido)} % menos lejos.`;
+    }
+    this.secuelas.push({ tipo, zona, gravedad, t: this.t, causa, texto, efecto });
+    this.mem.anotar(this.t, `secuela:${tipo}`, texto, -0.8);
+  }
+
   sufrir(nivel: number, causa: number, acc: Accion | null, susto = 0): void {
+    if (this.permiteSecuelas) this.acumularSecuela(nivel, causa);
     const sens = this.rasgos[R.sensibilidad];
     this.nec[N.dolor] = acota(this.nec[N.dolor] + nivel * 0.9);
     this.salud -= nivel * 0.08;
@@ -1090,7 +1184,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1132,6 +1226,10 @@ export class Criatura {
     c.aprendeObservando = e.aprendeObservando ?? false;
     c.agresion = e.agresion ?? false;
     c.celos = e.celos ?? false;
+    c.rutina = e.rutina ?? null;
+    c.permiteSecuelas = e.permiteSecuelas ?? false;
+    c.secuelas = JSON.parse(JSON.stringify(e.secuelas ?? []));
+    c.danoAcumulado = e.danoAcumulado ?? 0;
     c.celosEstado = JSON.parse(JSON.stringify(e.celosEstado ?? []));
     c.envidia = e.envidia ?? false;
     c.envidiaEstado = JSON.parse(JSON.stringify(e.envidiaEstado ?? []));

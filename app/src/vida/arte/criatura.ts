@@ -43,6 +43,8 @@ export interface Vista {
   crece: number;
   /** Color de la lucecita del collar: azul asustado, rojo frustrado, verde contento, ambar curioso. */
   animo: string;
+  /** Las secuelas fisicas de la criatura (marcas que se ven en su cuerpo y una cojera al andar). */
+  marcas: { tipo: string; zona: string; gravedad: number }[];
 }
 
 export const lienzoCriatura = { w: 700, h: 600, ox: 320, oy: 530, res: 1.1 };
@@ -63,6 +65,7 @@ export function nuevaVista(semilla: number): Vista {
     ultDano: -99,
     animo: "#46d9e8",
     crece: 1,
+    marcas: [],
   };
 }
 
@@ -71,6 +74,7 @@ const acota = (x: number, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
 /** Calcula la postura que la criatura "quiere" tener ahora y la acerca a la actual. */
 export function actualizarVista(v: Vista, c: Criatura, dt: number, mira: [number, number] | null): void {
   v.t += dt;
+  v.marcas = c.secuelas;
   const e = c.emo;
   const miedo = e[E.miedo], exc = e[E.excitacion], frus = e[E.frustracion], cur = e[E.curiosidad], ape = e[E.apego];
   const a = c.accion;
@@ -333,9 +337,23 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
   const abierto = p.ojos * (v.parpadeo > 0 ? Math.abs(1 - v.parpadeo * 2) : 1);
   const eo = escalaOjo * cu.tamanoOjos;
   ojo(c, 16, -8, 19 * eo, 23 * eo, abierto, v.mira, col, p.pupila);
+  // Cicatriz que cruza el ojo
+  if (v.marcas.some((m) => m.tipo === "vista")) {
+    c.save(); c.lineCap = "round";
+    c.strokeStyle = "#7a2f3a"; c.lineWidth = 6; c.beginPath(); c.moveTo(2, -36); c.lineTo(32, 12); c.stroke();
+    c.strokeStyle = "#f0d9c8"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(2, -36); c.lineTo(32, 12); c.stroke();
+    c.restore();
+  }
   // Mejillas luminosas
   c.fillStyle = col.luz2; c.globalAlpha = 0.18 + 0.2 * p.sonrisa; c.beginPath(); c.ellipse(34, 18, 12, 6, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
   oreja(c, -22, -32, aten + 0.1, lo, col, v.t, 0, false);
+  // Oreja rota: una muesca palida en el borde
+  if (v.marcas.some((m) => m.tipo === "oido")) {
+    c.save(); c.lineCap = "round";
+    c.strokeStyle = "#f0d9c8"; c.lineWidth = 5; c.beginPath(); c.moveTo(-30, -40); c.lineTo(-12, -56); c.stroke();
+    c.strokeStyle = "#7a2f3a"; c.lineWidth = 2; c.beginPath(); c.moveTo(-32, -37); c.lineTo(-15, -55); c.stroke();
+    c.restore();
+  }
   c.restore();
 }
 
@@ -364,6 +382,9 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const corre = v.vel > 4;
   const lift = corre ? 18 + Math.min(26, v.vel * 0.1) : 0;
   const fasePatas = [0, Math.PI, Math.PI, 0]; // trasera lejana, trasera cercana, delantera lejana, delantera cercana
+  // La pata que cojea (una trasera cercana o una delantera cercana) da pasos mas cortos y se levanta menos
+  const coja = v.marcas.find((m) => m.tipo === "cojera");
+  const iCoja = coja ? (coja.zona === "pata delantera" ? 3 : 1) : -1;
   const apoyo = (i: number, hx: number): [number, number] => {
     if (durmiendo > 0.01) {
       // Patas recogidas bajo el cuerpo
@@ -371,8 +392,9 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
     }
     if (!corre) return [hx + (i < 2 ? 6 : -4) + (i % 2 ? 22 : -14), 0];
     const f = v.fase + fasePatas[i] + (i >= 2 ? Math.PI * 0.5 : 0);
-    const x = hx + paso * Math.cos(f);
-    const y = Math.sin(f) < 0 ? -lift * -Math.sin(f) : 0;
+    const k = i === iCoja && coja ? 1 - 0.6 * coja.gravedad : 1;
+    const x = hx + paso * k * Math.cos(f);
+    const y = Math.sin(f) < 0 ? -lift * k * -Math.sin(f) : 0;
     return [x, y];
   };
   const patas: { pts: [number, number][]; cerca: boolean; delantera: boolean }[] = [];
@@ -391,6 +413,14 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const dibujarPata = (q: (typeof patas)[number]): void => {
     const rel = q.cerca ? col.pielOsc : col.lejos;
     miembro(c, q.pts, q.delantera ? [28 * cu.grosorPata, 19 * cu.grosorPata] : [34 * cu.grosorPata, 20 * cu.grosorPata], rel, col.linea);
+    // Cicatriz y vendaje en la pata herida
+    if (coja && q.cerca && q.delantera === (coja.zona === "pata delantera")) {
+      const [kx, ky] = q.pts[1];
+      c.save();
+      c.strokeStyle = "#f0d9c8"; c.lineWidth = 9; c.beginPath(); c.moveTo(kx - 13, ky - 4); c.lineTo(kx + 13, ky + 7); c.stroke();
+      c.strokeStyle = "#b5524f"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(kx - 9, ky - 12); c.lineTo(kx + 11, ky + 14); c.stroke();
+      c.restore();
+    }
     const [fx, fy] = q.pts[2];
     if (q.delantera) mano(c, fx, fy, q.cerca && p.alcance > 0.2 ? 0.1 : 1.2, 17, col, Math.sin(t * 2 + (q.cerca ? 1 : 0)) * 0.3);
     else mano(c, fx, fy, 0.2, 15, col, 0);
@@ -500,6 +530,19 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
 
   // Patas cercanas
   for (const q of patas) if (q.cerca) dibujarPata(q);
+
+  // Cicatrices del flanco (tres rayas oblicuas, palidas con el borde rojo)
+  const flanco = v.marcas.find((m) => m.tipo === "debilidad");
+  if (flanco) {
+    c.save();
+    c.lineCap = "round";
+    for (let k = 0; k < 3; k++) {
+      const ox = -6 + k * 13, oy = cyC + 4 + k * 3;
+      c.strokeStyle = "#7a2f3a"; c.globalAlpha = 0.55 + 0.4 * flanco.gravedad; c.lineWidth = 6; c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + 18, oy + 30); c.stroke();
+      c.strokeStyle = "#f0d9c8"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + 18, oy + 30); c.stroke();
+    }
+    c.restore();
+  }
 
   // Cabeza (por delante del cuello)
   dibujarCabeza(c, hx, hy, v, g, col, durm > 0.5 ? 0.35 : p.inclina - abajo * 0.35 + (p.tembl * Math.sin(t * 46) * 0.04), 1);

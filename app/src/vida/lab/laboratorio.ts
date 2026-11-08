@@ -3,7 +3,7 @@
    o sin la posibilidad social). Un caso no se aprueba porque salga bien una vez, sino porque sale bien en casi todas las semillas
    y la conducta es claramente menos probable en el control. */
 
-import { Criatura } from "../nucleo/criatura.ts";
+import { Criatura, type Rutina } from "../nucleo/criatura.ts";
 import { genomaNuevo, type Genoma } from "../nucleo/genoma.ts";
 import { mezclar } from "../nucleo/azar.ts";
 import { Simulacion, type ConfigSim } from "../nucleo/simulacion.ts";
@@ -53,6 +53,16 @@ export function calentada(clave: string, construir: () => Simulacion, k: number)
   let base = calentadas.get(clave);
   if (!base) { base = construir(); calentadas.set(clave, base); }
   return replica(base, k);
+}
+
+/** Una raza simple (actor de prueba) lista para meter en una simulacion: decide con una regla fija, no aprende y sus rasgos no cambian. `hostil` pega sin parar a la mas cercana;
+    `amistosa` se acerca y se queda a su lado. Se usan como la agresora o la cuidadora de las pruebas, sin que su conducta dependa de lo que haya vivido. */
+export function actor(rutina: Rutina, id: number, x: number, semilla: number): Criatura {
+  const c = new Criatura(id, rutina === "hostil" ? "Hostil" : "Amistosa", genomaDe(semilla, 900 + id), 1000, mezclar(semilla, 901, id));
+  c.rutina = rutina;
+  c.x = x;
+  c.capRegistro = 50000;
+  return c;
 }
 
 export function ejecutarCaso(caso: Caso, semillas: number[]): InformeCaso {

@@ -191,7 +191,7 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
   c.dir = otro.x >= c.x ? 1 : -1;
   if (!a.hecho && env.t - a.tf >= IMPACTO) {
     a.hecho = true;
-    const golpe = acota(0.1 + 0.5 * c.genoma.fuerza * (0.4 + 0.6 * c.rasgos[R.agresividad]));
+    const golpe = acota(0.1 + 0.5 * c.genoma.fuerza * c.factorFuerza() * (0.4 + 0.6 * c.rasgos[R.agresividad]));
     otro.x = acota(otro.x + c.dir * 120 * golpe, 10, ancho - 10);
     otro.sufrir(golpe, 1000 + c.id, null, 0.4);
     otro.anotarAgravio(1000 + c.id, golpe);
@@ -222,8 +222,8 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   if (a.ajeno && !a.ajeno.medido && env.t - a.tf >= VENTANA_ALIVIO) notarAlivio(c, a, env);
   const ancho = env.mundo.ancho;
   const g = c.genoma;
-  const caminar = AJ.velCaminar * g.velocidad;
-  const correr = AJ.velCorrer * g.velocidad;
+  const caminar = AJ.velCaminar * g.velocidad * c.factorMovilidad();
+  const correr = AJ.velCorrer * g.velocidad * c.factorMovilidad();
   c.vx = 0;
 
   if (a.fase === "ir") {

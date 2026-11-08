@@ -82,9 +82,9 @@ export function featuresObjeto(o: { tipo: string; vx: number; vz: number }): num
 /** Lo que la criatura percibe ahora: lo que ve, lo que huele y oye desde mas lejos, y lo que recuerda de donde estaba. */
 export function percibir(c: Criatura, env: Entorno): Percepto[] {
   const g = c.genoma;
-  const vista = AJ.vista * g.vista;
+  const vista = AJ.vista * g.vista * c.factorVista();
   const olfato = AJ.olfato * g.olfato;
-  const oido = AJ.oido * g.oido;
+  const oido = AJ.oido * g.oido * c.factorOido();
   const out: Percepto[] = [];
   for (const o of env.mundo.objetos) {
     const def = CATALOGO[o.tipo];

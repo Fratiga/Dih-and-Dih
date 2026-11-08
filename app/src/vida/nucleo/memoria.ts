@@ -234,7 +234,6 @@ export class Memoria {
       }
       const a = articulo(p.tipo, p.nombre);
       const sujeto = `${a.el ? a.el + " " : ""}${a.nombre}`.trim();
-      const cap = sujeto.charAt(0).toUpperCase() + sujeto.slice(1);
       if (p.v === "presencia") {
         if (p.res[C.dano] > 0.15) out.push({ texto: `Estar cerca de ${sujeto} le hace daño.`, valor: -p.res[C.dano], veces: p.n, fuerza: p.fuerza });
         continue;
@@ -246,7 +245,7 @@ export class Memoria {
       if (r[C.dano] > 0.15) out.push({ texto: `${verbo} ${sujeto} le hace daño.`, valor: -r[C.dano], veces: p.n, fuerza: p.fuerza });
       if (r[C.diversion] > 0.2) out.push({ texto: `${verbo} ${sujeto} le divierte.`, valor: r[C.diversion], veces: p.n, fuerza: p.fuerza });
       if (r[C.compania] > 0.2) out.push({ texto: `Estar con ${sujeto} le da compañía.`, valor: r[C.compania], veces: p.n, fuerza: p.fuerza });
-      if (r[C.susto] > 0.25) out.push({ texto: `${cap} le asusta.`, valor: -r[C.susto], veces: p.n, fuerza: p.fuerza });
+      if (r[C.susto] > 0.25) out.push({ texto: `${verbo} ${sujeto} le asusta.`, valor: -r[C.susto], veces: p.n, fuerza: p.fuerza });
       if (Math.max(r[C.sacia], r[C.dano], r[C.diversion], r[C.compania], r[C.susto]) < 0.1 && p.n >= 3) out.push({ texto: `${verbo} ${sujeto} no le sirve de nada.`, valor: 0, veces: p.n, fuerza: p.fuerza });
     }
     return out.sort((a, b) => Math.abs(b.valor) * b.fuerza - Math.abs(a.valor) * a.fuerza);

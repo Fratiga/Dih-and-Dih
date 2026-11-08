@@ -111,6 +111,12 @@ export const AJ = {
   pesoCelosAgresion: 2.0,
   /** Envidia (solo alimento): hambre minima para desear lo que otra come, cuanto sube con cada bocado visto, lo que tarda en irse (s), y cuanto pesa al decidir:
       acercarse a quien come, buscar otro alimento, no jugar ni explorar ni descansar, y (solo agresiva y enfadada) empujar al poseedor. */
+  /** Secuelas (opcionales): el dano acumulado que deja una secuela (la siguiente pide un poco mas), el maximo de secuelas, y cuanto limita cada una a la gravedad 1. */
+  umbralSecuela: 2.0,
+  maxSecuelas: 4,
+  limiteCojera: 0.35,
+  limiteDebilidad: 0.4,
+  limiteSentido: 0.5,
   umbralHambreEnvidia: 0.3,
   tasaEnvidia: 0.35,
   tauEnvidia: 45,

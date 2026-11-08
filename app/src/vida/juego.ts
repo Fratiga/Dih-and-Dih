@@ -127,6 +127,14 @@ export class Juego {
     this.emit("camara", m);
   }
 
+  /** Activa o apaga las secuelas fisicas (cojera, menos fuerza, peor vista u oido tras golpes graves o repetidos). */
+  alternarSecuelas(): boolean {
+    this.sim.fijarSecuelas(!this.sim.secuelas);
+    this.emit("secuelas", this.sim.secuelas);
+    this.guardar(true);
+    return this.sim.secuelas;
+  }
+
   /** Cambia entre mortalidad protegida, recuperable y permanente. */
   alternarMortalidad(): string {
     const i = MORTALIDADES.indexOf(this.sim.mortalidad);

@@ -7,7 +7,7 @@ import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
 import { C, NC_RED as NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
-import { calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
+import { actor, calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
 
 let fallos = 0, ok = 0;
 const afirma = (c: boolean, m: string) => { if (c) ok++; else { fallos++; console.log("FALLA:", m); } };
@@ -116,6 +116,50 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   const seguirAmp = correr(4, restaurada, 300);
   afirma(seguirAmp.criaturas.every((c) => c.red.nIn === NI + 4) && huella(seguirBase) === huella(seguirAmp), "restaurar una partida guardada antes de las entradas ampliables y seguir 300 s da lo mismo que seguir sin ellas");
   AJ.entradasExtra = previo;
+}
+
+// 1d. Razas simples: actores con regla fija, que no aprenden ni cambian
+{
+  const golpesDe = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+  const sH = nuevaSim({ semilla: 5, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null });
+  const h = actor("hostil", 9, 700, 5);
+  sH.criaturas.push(h);
+  sH.avanzar(300);
+  const nueva = new Red(NI, AJ.ocultas, NC, h.genoma.semillaCerebro, undefined, AJ.entradasExtra);
+  afirma(golpesDe(h) >= 8 && sH.criaturas[0].ultimoDano > 0, "una raza simple hostil pega sin parar a la criatura que ve y la hace sufrir");
+  afirma(h.rasgos.every((v, i) => v === h.base[i]) && h.red.w1.every((v, i) => v === nueva.w1[i]) && h.red.w2.every((v, i) => v === nueva.w2[i]), "y no cambia: sus rasgos y su red siguen como al nacer");
+  const sA = nuevaSim({ semilla: 5, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null });
+  const am = actor("amistosa", 8, 900, 5);
+  sA.criaturas.push(am);
+  let cerca = 0, pasos = 0;
+  sA.ganchos.push(() => { if (sA.t > 60) { pasos++; if (Math.abs(am.x - sA.criaturas[0].x) < 200) cerca++; } });
+  sA.avanzar(300);
+  afirma(golpesDe(am) === 0 && cerca / pasos > 0.6, "una raza simple amistosa no pega nunca y se queda cerca de la otra");
+  afirma(Simulacion.restaurar(sH.serializar()).criaturas.some((c) => c.rutina === "hostil"), "la raza simple se guarda y se restaura");
+}
+
+// 1e. Secuelas fisicas: dejan evidencia en la criatura, limitan lo que hace y no pasan nada si estan apagadas
+{
+  const montar = (secuelas: boolean) => {
+    const s = nuevaSim({ semilla: 8, objetos: [], criaturas: [{ genoma: genomaNuevo(3), x: 300 }], comedero: null, secuelas });
+    s.criaturas.push(actor("hostil", 9, 600, 8));
+    s.criaturas[1].permiteSecuelas = false;
+    s.avanzar(900);
+    return s;
+  };
+  const con = montar(true), sin = montar(false);
+  const v = con.criaturas[0];
+  afirma(sin.criaturas[0].secuelas.length === 0 && sin.criaturas[0].factorMovilidad() === 1 && sin.criaturas[0].factorFuerza() === 1 && sin.criaturas[0].factorVista() === 1 && sin.criaturas[0].factorOido() === 1, "con las secuelas apagadas no queda ninguna y todos los factores valen exactamente 1");
+  afirma(v.secuelas.length >= 1 && v.secuelas.every((q) => q.texto.length > 10 && q.efecto.length > 5 && q.gravedad > 0 && q.gravedad <= 1 && q.causa === 1009), "los golpes repetidos dejan secuelas, con su texto, su efecto y quien las causó");
+  afirma(v.mem.episodios.some((e) => e.clave.startsWith("secuela:")), "y quedan en su historia como un episodio");
+  const limites = [v.factorMovilidad(), v.factorFuerza(), v.factorVista(), v.factorOido()];
+  afirma(limites.every((f) => f <= 1 && f >= 0.4) && limites.some((f) => f < 1), "cada secuela limita lo que puede hacer, y de forma acotada");
+  afirma(new Set(v.secuelas.map((q) => q.tipo)).size === v.secuelas.length, "no repite el mismo tipo de secuela");
+  afirma(Simulacion.restaurar(con.serializar()).criaturas[0].secuelas.length === v.secuelas.length && Simulacion.restaurar(con.serializar()).secuelas, "las secuelas se guardan y se restauran");
+  // El efecto funcional se nota: una cojera la hace ir mas despacio
+  const coja = new Criatura(1, "Coja", genomaNuevo(4), 1000, 5);
+  coja.secuelas.push({ tipo: "cojera", zona: "pata trasera", gravedad: 1, t: 0, causa: 1002, texto: "", efecto: "" });
+  afirma(Math.abs(coja.factorMovilidad() - (1 - AJ.limiteCojera)) < 1e-12, "una cojera de gravedad 1 limita el movimiento exactamente al límite fijado");
 }
 
 // 2. Determinismo y semilla

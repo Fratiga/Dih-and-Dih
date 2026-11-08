@@ -60,6 +60,8 @@ export class Interfaz {
   private reloj!: HTMLElement;
   private relojLuna!: HTMLElement;
   private memoria!: HTMLElement;
+  private cabSecuelas!: HTMLElement;
+  private secuelasEl!: HTMLElement;
   private panelMem!: HTMLElement;
   private pestana = "historia";
   private bandeja!: HTMLElement;
@@ -125,6 +127,10 @@ export class Interfaz {
     this.nombre = h("h2", { clase: "va-nombre" });
     this.edad = h("p", { clase: "va-edad" });
     this.estado = h("p", { clase: "va-estado" });
+    this.cabSecuelas = h("h3", { clase: "va-sec", "data-tip": "Secuelas|Lo que dejaron los golpes graves o repetidos. No se cura: limita lo que puede hacer y se ve en su cuerpo." }, "Secuelas");
+    this.secuelasEl = h("div", { clase: "va-secuelas" });
+    this.cabSecuelas.hidden = true;
+    this.secuelasEl.hidden = true;
     const nec = h("div", { clase: "va-nec" });
     for (const n of NECESIDADES) {
       const barra_ = h("i");
@@ -143,6 +149,8 @@ export class Interfaz {
       this.selector,
       h("div", { clase: "va-cab" }, this.retrato, h("div", {}, this.nombre, this.edad)),
       this.estado,
+      this.cabSecuelas,
+      this.secuelasEl,
       h("h3", { clase: "va-sec" }, "Necesidades"),
       nec,
       h("h3", { clase: "va-sec" }, "Cómo se siente"),
@@ -185,8 +193,16 @@ export class Interfaz {
     };
     pintarMort();
     j.on("mortalidad", pintarMort);
+    const toggleSec = boton("", () => { j.alternarSecuelas(); }, { clase: "va-toggle", tip: "Secuelas|Si está activa, los golpes graves o repetidos dejan marcas que no se curan: cojera, menos fuerza, peor vista u oído. Se ven en el dibujo y en la ficha." });
+    const pintarSec = (): void => {
+      toggleSec.replaceChildren(`Secuelas: ${j.sim.secuelas ? "sí" : "no"}`);
+      toggleSec.classList.toggle("alerta", j.sim.secuelas);
+    };
+    pintarSec();
+    j.on("secuelas", pintarSec);
+    j.on("simNueva", pintarSec);
     j.on("nacimiento", (id) => { aviso(this.raiz, `Ha nacido ${this.juego.sim.criatura(id as number)?.nombre ?? "una cría"}.`, 2200); this.clavesMem = ""; });
-    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort);
+    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec);
     pie.prepend(cab);
     this.pie = pie;
 
@@ -353,6 +369,9 @@ export class Interfaz {
     this.nombre.textContent = c.nombre;
     this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida`;
     this.estado.textContent = this.fraseEstado(c);
+    const sec = c.secuelas ?? [];
+    this.cabSecuelas.hidden = this.secuelasEl.hidden = sec.length === 0;
+    this.secuelasEl.replaceChildren(...sec.map((s) => h("p", { clase: "va-estado" }, `${s.texto} ${s.efecto}`)));
     this.subtitulo.textContent = `${c.nombre}. ${this.fraseEstado(c)}`;
 
     for (const n of NECESIDADES) {
