@@ -112,6 +112,10 @@ export const AJ = {
   /** Envidia (solo alimento): hambre minima para desear lo que otra come, cuanto sube con cada bocado visto, lo que tarda en irse (s), y cuanto pesa al decidir:
       acercarse a quien come, buscar otro alimento, no jugar ni explorar ni descansar, y (solo agresiva y enfadada) empujar al poseedor. */
   /** Secuelas (opcionales): el dano acumulado que deja una secuela (la siguiente pide un poco mas), el maximo de secuelas, y cuanto limita cada una a la gravedad 1. */
+  /** Extincion del miedo aprendido (opcional): lo que baja por segundo el peligro esperado de alguien cuando se le tiene delante sin que pase nada malo, el tiempo sin dano que
+      hace falta antes, y cuanto mas rapido baja con buena compania (se multiplica por 1 mas el doble del afecto por quien tiene cerca). */
+  tasaExtincion: 0.0015,
+  pausaExtincion: 20,
   umbralSecuela: 2.0,
   maxSecuelas: 4,
   limiteCojera: 0.35,

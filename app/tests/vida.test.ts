@@ -6,6 +6,7 @@ import { AJ } from "../src/vida/nucleo/ajustes.ts";
 import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
 import { C, NC_RED as NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
+import { featuresCriatura } from "../src/vida/nucleo/conducta.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
 import { actor, calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
 
@@ -160,6 +161,31 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   const coja = new Criatura(1, "Coja", genomaNuevo(4), 1000, 5);
   coja.secuelas.push({ tipo: "cojera", zona: "pata trasera", gravedad: 1, t: 0, causa: 1002, texto: "", efecto: "" });
   afirma(Math.abs(coja.factorMovilidad() - (1 - AJ.limiteCojera)) < 1e-12, "una cojera de gravedad 1 limita el movimiento exactamente al límite fijado");
+}
+
+// 1f. Extincion del miedo aprendido: baja con contacto seguro con quien se teme, y solo si esta encendida
+{
+  const probar = (extincion: boolean) => {
+    const s = nuevaSim({ semilla: 12, objetos: [], criaturas: [{ genoma: genomaNuevo(5), x: 400 }], comedero: null });
+    const V = s.criaturas[0];
+    const H = actor("hostil", 9, 700, 12);
+    s.criaturas.push(H);
+    s.avanzar(250);
+    const f = featuresCriatura(H);
+    const peligro = (): number => { const p = V.mem.predecir("presencia", f, new Array(10).fill(1), 0); return p.res[C.dano] * p.conf; };
+    const antes = peligro();
+    s.criaturas = [V];
+    V.extincion = extincion;
+    const ya = actor("amistosa", 8, 650, 12);
+    ya.genoma = JSON.parse(JSON.stringify(H.genoma)); ya.huella = H.huella;
+    s.criaturas.push(ya);
+    s.avanzar(700);
+    return { antes, despues: peligro() };
+  };
+  const con = probar(true), sin = probar(false);
+  afirma(con.antes > 0.2 && sin.antes > 0.2, "tras ser golpeada espera peligro de quien la golpeó");
+  afirma(con.despues < 0.5 * con.antes, "con la extinción, 700 s junto a quien se parece a ella y es inofensivo bajan el peligro esperado a menos de la mitad");
+  afirma(sin.despues > 0.9 * sin.antes, "sin la extinción casi no baja (solo el olvido de horas)");
 }
 
 // 2. Determinismo y semilla

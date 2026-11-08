@@ -1404,9 +1404,90 @@ Se pide que el terreno sea como el del corral del Hipódromo, un mapa con profun
 5. Altura con consecuencias reales (suelo, estante, alto).
 6. Especialización física.
 7. Optimizar la percepción social y subir el límite de criaturas por sala.
-8. Rehabilitación (arriba), que usa lo anterior.
+8. **Rehabilitación: hecha** (caso 33). El miedo a la agresora se cura con contacto seguro con ella; el cambio de carácter no se recupera en 15 minutos. También hechas las razas simples, las secuelas con evidencia en la criatura y la extinción del miedo.
 9. Comunicación y planificación, y después la transmisión cultural.
 10. Biología larga.
+
+## Razas simples, secuelas y rehabilitación (caso 33)
+
+Parte del requisito de que sean posibles las dinámicas de maltrato, secuelas, rehabilitación e intercambio que describen los jugadores de *Creatures* (se toma como inspiración, no como modelo de tiempos). Se construyen tres piezas y un caso que las usa. Todo va tras interruptores propios y apagado por defecto, y la regresión rápida sigue dando lo mismo en todos los casos (133 comprobaciones con las nuevas, 0 fallos).
+
+### Razas simples (actores de regla fija)
+
+- **Qué son.** Criaturas que deciden con una regla fija en vez de con su cerebro. `hostil` pega sin parar a la criatura más cercana que ve. `amistosa` se acerca a la más cercana y se queda a su lado. No aprenden (`experimentar` solo deja registro), sus rasgos no cambian (`desarrollar` no hace nada) y no miran necesidades, emociones ni recuerdos. Todo lo demás es igual que en las normales: se las percibe con sus rasgos, tienen huella y su efecto sobre las demás pasa por la misma maquinaria.
+- **Para qué.** Son los actores de las pruebas (la agresora, la cuidadora, un doble inofensivo) sin que su conducta dependa de lo que hayan vivido, y sirven de monstruo o mascota sencillos. `actor(rutina, id, x, semilla)` en `lab/laboratorio.ts` las crea.
+- **Límites.** Solo hay dos reglas. No hay una raza intermedia (por ejemplo, una que pega solo si la provocan), ni una forma de colocarlas desde la bandeja del juego. No se dibujan distintas de las demás.
+- **Comprobado** (`tests/vida.test.ts`, bloque 1d): la hostil pega 8 veces o más en 300 s, no cambia sus rasgos ni su red, la amistosa no pega nunca y se queda cerca más del 60 % del tiempo, y la regla se guarda y se restaura.
+
+### Secuelas físicas con evidencia en la criatura
+
+- **Interruptor.** `Simulacion.secuelas` (y `permiteSecuelas` por criatura), apagado por defecto. En la interfaz hay un botón «Secuelas: sí/no» junto al de mortalidad.
+- **Cómo se producen.** El daño recibido se acumula (`danoAcumulado`). Al pasar un umbral (`umbralSecuela`, 2,0 de daño acumulado, multiplicado por 1 más las secuelas que ya tiene) queda una secuela de un tipo que no tuviera, hasta 4. Se eligen con el azar de la propia criatura, y solo si está encendido, así que apagado no se consume ningún azar.
+- **Cuatro tipos**, cada uno con una limitación funcional acotada y una marca en el cuerpo:
+
+| Tipo | Zona | Efecto (a gravedad 1) | Lo que se ve |
+|---|---|---|---|
+| Cojera | pata trasera o delantera | se mueve hasta un 35 % más despacio | vendaje y raya roja en la pata, y pasos más cortos al andar |
+| Debilidad | flanco | pega con hasta un 40 % menos de fuerza | tres cicatrices oblicuas en el flanco |
+| Vista | ojo | ve hasta un 50 % menos lejos | cicatriz que cruza el ojo |
+| Oído | oreja | oye hasta un 50 % menos lejos | muesca en la oreja |
+
+- **Evidencia en la propia criatura**, además de la limitación: la lista `secuelas` (tipo, zona, gravedad, cuándo y quién la causó, con su texto y su efecto), un episodio en su historia («Cojea de la pata delantera desde el día 1, tras los golpes de Nube»), la marca dibujada en el cuerpo y en el retrato, y una sección «Secuelas» en la ficha con el texto y el efecto de cada una. Se guardan con la partida.
+- **Comprobado** (bloque 1e de los tests y en el navegador): apagadas no queda ninguna y todos los factores valen exactamente 1; encendidas, 900 s de golpes dejan secuelas con texto, efecto y autor; no repite tipos; las limitaciones son acotadas; se guardan y restauran. En el navegador se ven la cicatriz del ojo y la marca de la oreja en primer plano, la lista en la ficha y el interruptor con su ayuda.
+- **Límites.** No se curan (no hay recuperación). No se probó cuánto cambia la vida de la criatura a lo largo de días. Las cicatrices del flanco y de la pata no se revisaron en el navegador con la cámara más cercana (solo ojo y oreja).
+
+### Extinción del miedo aprendido (opcional)
+
+- **El hueco.** Hasta ahora una criatura no tenía forma de perder un miedo aprendido a alguien. El peligro esperado de una presencia solo se escribe cuando hay daño, y los premios solo lo reducen si llegan en los 6 s siguientes al golpe. Sin esto, la rehabilitación no puede ocurrir.
+- **Qué hace.** Con `extincion` encendida, si tiene delante (a menos de 400) a alguien de quien espera peligro, hace más de 20 s que no recibe daño y no está en pánico (miedo emocional bajo 0,6), el peligro y el susto esperados de esa presencia bajan un poco (`tasaExtincion`), más deprisa con buena compañía (se multiplica por 1 más el doble del afecto por quien tiene cerca). Solo actúa sobre recuerdos de presencia que se parecen (semejanza mayor que 0,8) a lo que ve. No inventa nada: deja de reforzar un miedo que el contacto seguro no confirma.
+- **La semejanza incluye la huella individual.** Una amistosa con el mismo genoma que la agresora pero otra huella no cuenta, y una distinta tampoco. El recuerdo de peligro es de un individuo. Por eso el caso fija las huellas en vez de dejarlas al azar (con huellas al azar, la recuperación variaba de 0 a 90 % según la semilla).
+- **Comprobado** (bloque 1f): tras ser golpeada espera peligro; con la extinción, 700 s junto a un doble inofensivo lo bajan a menos de la mitad, y sin ella casi no baja.
+- **Límites.** Solo se extingue el recuerdo de presencia y el de acercarse a criaturas, no el miedo a objetos ni a lugares. No hay un modo de que el cuidador acelere o frene la extinción (por ejemplo con premios).
+
+### Caso 33, rehabilitación
+
+Una criatura es maltratada 300 s por la hostil (197 golpes de mediana), pasa a otra sala con otro cuidado conservando lo aprendido, se rehabilita 900 s y se prueba 150 s ante un doble inofensivo de la agresora (quieto y de espaldas). Seis condiciones, cinco réplicas por semilla, diez semillas.
+
+| Condición | Peligro esperado tras el abuso | Tras la rehabilitación | Baja | Evita al doble (veces) | Cerca del doble (s) |
+|---|---|---|---|---|---|
+| Con la agresora ya inofensiva | 0,41 | **0,05** | **87 %** | 0 | 28,8 |
+| Con una amistosa de su raza, otra huella | 0,41 | 0,41 | 0 | no medido aparte | no medido aparte |
+| Con una amistosa distinta | 0,41 | 0,41 | 0 | 6 | no medido aparte |
+| Sola | 0,41 | 0,41 | 0 | 5 | 0,4 |
+| Sin maltrato (control) | 0 | 0 | | 0 | 23,1 |
+| Como la primera, sin extinción | 0,41 | 0,41 | 0 | no medido aparte | no medido aparte |
+
+- **Lo que sale.** El miedo a la agresora se cura con contacto seguro con ella (87 %, de 80 a 90 % en las diez semillas). Con otra huella, con una distinta, sola o sin la extinción no baja nada en 15 minutos. Tras la rehabilitación no evita al doble y se queda cerca casi lo que la que nunca fue maltratada. El maltrato deja huella, el traspaso la conserva (el peligro al llegar es el mismo que al salir), y sin agresión por parte de la criatura.
+- **Lo que no sale: volver a jugar.** Las criaturas maltratadas casi no juegan con la pelota en los últimos 5 minutos de la rehabilitación, rehabilitadas o no (0 de mediana, frente a 22,5 en el control). La rehabilitación cura el miedo a la agresora, pero el cambio de carácter (más miedosa, menos curiosa, +0,43 de miedo sobre su predisposición) dura mucho más, porque los rasgos vuelven a su valor de nacimiento con una constante de unas 2 horas. Es la limitación que queda: no hay nada que acelere la recuperación del carácter. Por eso el caso aprueba 1 de 10 semillas con el criterio de volver a jugar, que se deja como está.
+- **Un criterio que se cambió.** El primero medía «se acerca al doble antes y más veces», y no sirve: ni la criatura que nunca fue maltratada se acerca a una criatura quieta y de espaldas (0 acercamientos, 150 s de espera). Se sustituyó por evitar menos y pasar más tiempo cerca, comparado con el control.
+
+### Un hallazgo de la interfaz: «le asusta la pelota» y aun así juega con ella
+
+Sale de una captura del juego, con «La pelota le asusta» (2 y 34 veces) junto a «Empujar la pelota le divierte» (56 y 45 veces).
+
+- **Qué pasa.** El susto del botón *Asustar* se aprende sobre **lo último que hizo** (el último impacto en los 6 s anteriores) y sobre ese verbo. Si lo último fue tocar la pelota, queda «tocar la pelota le asusta» y «empujar la pelota» sigue siendo divertida. Se comprobó en el laboratorio: con un susto justo después de empujar, deja de empujar la pelota por completo (0 empujes en 6 de 6 semillas, frente a 8 a 20 sin susto). Con el susto después de tocar, sigue empujando igual que el control (8 a 19 empujes).
+- **Y por qué parecía una contradicción.** La frase de la lista era «La pelota le asusta» para cualquier verbo, sin decir cuál. Ahora dice el verbo («Tocar la pelota le asusta»).
+- **Lo que queda abierto.** Que el miedo aprendido sobre un objeto se aplique a todo lo que hace con él, y no solo al verbo con el que se aprendió, es un cambio de la decisión que movería los casos ya medidos. No se ha hecho. La alternativa limitada es que *Asustar* también asuste el resto de los verbos con ese objeto; afectaría a los casos 22 y 23b, que usan el botón para entrenar aversiones. Queda como decisión.
+
+### Sustancias que cambian la fisiología (diseño, sin implementar)
+
+Se piden objetos para ayudar a la eugenesia (suaves, sin llegar a la esterilización) y se menciona la pipa de *Creatures* por cómo funciona. Los dos son el mismo mecanismo, una **sustancia con efectos fisiológicos inmediatos y diferidos y con duración**, que además cubre la automedicación (E34).
+
+- **Mecanismo.** Un objeto comestible o activable que, al usarlo, aplica efectos con duración a la criatura: uno inmediato, otro diferido (a los pocos segundos o minutos) y un retorno gradual. Los efectos son sobre variables que ya existen (necesidades, emociones, dolor, impulso reproductivo) o sobre una nueva (`fertilidad`, de 0 a 1).
+- **Comida de menor fertilidad y deseo** (por ejemplo, una raíz amarga). Baja `fertilidad` (la probabilidad de concebir y el tamaño de la camada) y el impulso reproductivo mientras dura, y vuelve a la normalidad en horas. No esteriliza. La criatura no sabe qué hace: lo nota, si acaso, por lo que le pasa. Demostración: con la comida, menos cortejos aceptados y menos camadas que sin ella, y se recupera.
+- **Pipa de recompensa y coste diferido.** Efecto inmediato de bienestar (premio) y, unos segundos después, dolor, miedo, rabia y más necesidad de lo mismo. Como el crédito de la criatura mira 9 s hacia atrás, **el coste diferido a 15 o 60 s no se le atribuye a la pipa**: la adicción sale de lo que ya hay, sin una regla de adicción. Demostración: la repite aunque le cueste, y deja de hacerlo si el coste llega dentro de la ventana de crédito. Pide un caso aparte y cuidado con el ritmo.
+- **Requisito.** Entran por la red ampliable como objetos nuevos (no verbos), sin mover los casos anteriores.
+
+### La profundidad del terreno, en claro
+
+Me pediste un terreno como el del corral del Hipódromo, con profundidad. Mi pregunta estaba mal planteada. La sala actual es una línea con un suelo, vista de lado. La profundidad que pides es la de una escena con planos (unos más cerca de la cámara, otros más al fondo), como la del corral. Eso es, antes que nada, **una mejora visual y de cámara**, y se puede hacer sin tocar la simulación: las criaturas siguen moviéndose por una línea y se dibujan en distintos planos.
+
+Lo único que habría que decidir, más adelante y no ahora, es si esos planos también cuentan en la simulación (por ejemplo, que una criatura pueda pasar por detrás de otra o que un refugio esté en un plano de fondo). Mientras no se decida, la profundidad es solo de dibujo. La altura (suelo, estante, alto) sí tendrá efectos reales, como se aprobó.
+
+### Interfaz (mi parte)
+
+- **Hecho:** sección «Secuelas» en la ficha, interruptor en el pie, cicatrices en el dibujo y el retrato, el texto de los sustos con su verbo.
+- **Pendiente de interfaz:** una etiqueta de «raza simple» en la ficha y la posibilidad de colocar hostil y amistosa desde la bandeja de objetos; un interruptor de la extinción (hoy solo se enciende en el laboratorio); la escena con profundidad y la cámara más lejana; y mostrar la historia de una criatura como narración, sin cifras.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 

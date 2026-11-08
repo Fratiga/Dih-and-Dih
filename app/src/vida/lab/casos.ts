@@ -11,7 +11,7 @@ import { semejanza } from "../nucleo/memoria.ts";
 import { featuresCriatura } from "../nucleo/conducta.ts";
 import { Criatura, type Registro } from "../nucleo/criatura.ts";
 import { Simulacion } from "../nucleo/simulacion.ts";
-import { avanzarMuestreando, conteoAcciones, genomaDe, impactos, media, mediana, nuevaSim, replica, type Caso, type ResSemilla } from "./laboratorio.ts";
+import { actor, avanzarMuestreando, conteoAcciones, genomaDe, impactos, media, mediana, nuevaSim, replica, type Caso, type ResSemilla } from "./laboratorio.ts";
 
 const UNOS = new Array<number>(10).fill(1);
 const rasgosDe = (tipo: string): number[] => [...CATALOGO[tipo].f, 0, 0, 0];
@@ -2890,5 +2890,124 @@ export const caso32: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso33: Caso = {
+  id: "33",
+  titulo: "Rehabilitación",
+  hipotesis: "Una criatura maltratada por una agresora de regla fija (la raza simple hostil) aprende a temerla. Al pasar a otra sala con otro cuidado conserva ese miedo. Se mide si puede recuperarse y qué lo hace posible. Con la extinción del miedo encendida, el contacto seguro con lo que teme (la propia agresora, ya inofensiva y de compañera) lo baja mucho. La compañía de una amistosa de la misma raza pero con otra huella, o de una distinta, o estar sola, no lo baja, porque el recuerdo es de un individuo y lo que se parece poco no cuenta. Sin la extinción no se recupera. Después, ante un doble inofensivo de la agresora, se mide qué hace: se acerca, evita, se queda cerca. No se le dicta nada.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const ABUSO = 300;
+    const REHABILITACION = 900;
+    const PRUEBA = 150;
+    type Brazo = "con la agresora ya inofensiva" | "con una amistosa de su raza, otra huella" | "con una amistosa distinta" | "sola" | "sin maltrato, con la inofensiva" | "como la primera, sin extincion";
+    const gV = genomaDe(semilla, 331);
+    const peligro = (V: Criatura, H: Criatura): number => { const p = V.mem.predecir("presencia", featuresCriatura(H), new Array(10).fill(1), 0); return p.res[C.dano] * p.conf; };
+    const probar = (brazo: Brazo, k: number) => {
+      const maltratada = brazo !== "sin maltrato, con la inofensiva";
+      const misma = brazo === "con la agresora ya inofensiva" || brazo === "sin maltrato, con la inofensiva" || brazo === "como la primera, sin extincion";
+      const raza = brazo === "con una amistosa de su raza, otra huella";
+      const distinta = brazo === "con una amistosa distinta";
+      const extincion = brazo !== "como la primera, sin extincion";
+      // Fase 1: la sala de la agresora (en el control, la misma sala sin agresora)
+      const s1 = nuevaSim({ semilla: mezclar(semilla, 334, k), objetos: [{ tipo: "pelota", x: 500 }], criaturas: [{ genoma: clonarGenoma(gV), x: 400 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const V = s1.criaturas[0];
+      V.capRegistro = 50000;
+      const H = actor("hostil", 9, 700, semilla);
+      if (maltratada) s1.criaturas.push(H);
+      s1.avanzar(ABUSO);
+      const golpesRecibidos = H.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+      const peligroTrasAbuso = peligro(V, H);
+      const miedoRasgoAbuso = V.rasgos[R.miedo] - V.base[R.miedo];
+      // Fase 2: el traspaso. Una sala nueva con otro cuidado; la criatura conserva lo aprendido (solo se borra lo que depende del reloj anterior)
+      const s2 = nuevaSim({ semilla: mezclar(semilla, 335, k), objetos: [{ tipo: "pelota", x: 800 }], criaturas: [], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      V.reiniciarReloj();
+      V.accion = null; V.x = 400; V.extincion = extincion;
+      s2.criaturas.push(V);
+      if (misma || raza || distinta) {
+        // Una amistosa que ocupa el sitio de la agresora: con su misma pinta y huella (la propia agresora ya inofensiva), con su pinta y otra huella (otra de su raza,
+        // con la huella a 0,5 de distancia), o distinta en todo (con la huella tambien lejana). Las huellas se fijan para que no dependan del azar.
+        const amiga = actor("amistosa", 8, 650, semilla);
+        if (misma || raza) amiga.genoma = clonarGenoma(H.genoma);
+        amiga.huella = misma ? H.huella : (H.huella + 0.5) % 1;
+        s2.criaturas.push(amiga);
+      }
+      const peligroAlLlegar = peligro(V, H);
+      const t0 = s2.t;
+      let miedoSuma = 0, miedoN = 0, juegoFinal = 0, primerJuego = REHABILITACION;
+      const juego0 = V.registro.length;
+      s2.ganchos.push(() => {
+        const dt = s2.t - t0;
+        if (dt > REHABILITACION - 300) { miedoSuma += V.emo[E.miedo]; miedoN++; }
+      });
+      s2.avanzar(REHABILITACION);
+      const miedoRehab = miedoN ? miedoSuma / miedoN : 0;
+      const reg = V.registro.slice(juego0);
+      const juegos = reg.filter((r) => r.kind === "impacto" && r.tipo === "pelota" && (r.v === "empujar" || r.v === "tocar"));
+      if (juegos.length) primerJuego = juegos[0].t - t0;
+      juegoFinal = juegos.filter((r) => r.t >= t0 + REHABILITACION - 300).length;
+      const peligroTrasRehab = peligro(V, H);
+      // Fase 3: un doble inofensivo de la agresora (misma pinta, quieto y de espaldas) a 300 de la criatura
+      s2.criaturas = s2.criaturas.filter((c) => c === V);
+      const doble = actor("amistosa", 7, V.x + 300 < 1500 ? V.x + 300 : V.x - 300, semilla);
+      doble.genoma = clonarGenoma(H.genoma);
+      doble.huella = H.huella;
+      doble.atrapada = true; doble.dir = V.x > doble.x ? -1 : 1;
+      s2.criaturas.push(doble);
+      V.accion = null;
+      const tP = s2.t;
+      let miedoPico = 0, cerca = 0;
+      s2.ganchos.push(() => {
+        if (s2.t < tP) return;
+        doble.dir = V.x > doble.x ? -1 : 1;
+        miedoPico = Math.max(miedoPico, V.emo[E.miedo]);
+        if (Math.abs(V.x - doble.x) < 150) cerca += 0.25;
+      });
+      const reg1 = V.registro.length;
+      s2.avanzar(PRUEBA);
+      const regP = V.registro.slice(reg1);
+      const primero = (v: string): number => { const r = regP.find((x) => x.kind === "inicio" && x.v === v && x.obj === 1000 + doble.id); return r ? r.t - tP : PRUEBA; };
+      const cuenta = (v: string): number => regP.filter((x) => x.kind === "inicio" && x.v === v && x.obj === 1000 + doble.id).length;
+      const golpesAlDoble = regP.filter((x) => x.kind === "impacto" && x.v === "empujar" && x.tipo === "criatura").length;
+      return {
+        golpesRecibidos, peligroTrasAbuso, peligroAlLlegar, peligroTrasRehab, miedoRasgoAbuso, miedoRehab, juegoFinal, primerJuego,
+        tAcerca: primero("acercarse"), acercamientos: cuenta("acercarse"), evitaciones: cuenta("evitar"), cerca, miedoPico, golpesAlDoble,
+        baja: peligroAlLlegar > 0.01 ? 1 - peligroTrasRehab / peligroAlLlegar : 0,
+      };
+    };
+    const brazos: Brazo[] = ["con la agresora ya inofensiva", "con una amistosa de su raza, otra huella", "con una amistosa distinta", "sola", "sin maltrato, con la inofensiva", "como la primera, sin extincion"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [AP, AR, AD, SO, SM, SE] = brazos;
+    return resultado(semilla, {
+      "el maltrato deja huella: tras 300 s con la agresora espera peligro de ella (0,2 o más), y con el control sin maltrato no (menos de 0,1)": [AP, AR, AD, SO, SE].every((b) => med(b, (x) => x.peligroTrasAbuso) >= 0.2) && med(SM, (x) => x.peligroTrasAbuso) < 0.1,
+      "la agresora pega de verdad: 8 golpes o más en los 300 s": med(AP, (x) => x.golpesRecibidos) >= 8,
+      "el traspaso conserva lo aprendido: al llegar a la sala nueva el peligro esperado es el mismo que al salir de la anterior": [AP, AR, AD, SO, SE].every((b) => r[b].every((x) => Math.abs(x.peligroAlLlegar - x.peligroTrasAbuso) < 0.01)),
+      "sola no se recupera en 15 minutos: el peligro esperado baja menos del 30 %": med(SO, (x) => x.baja) < 0.3,
+      "con la propia agresora ya inofensiva y la extinción encendida baja mucho: al menos un 50 %, y más que sola, que con una amistosa de su raza con otra huella y que con una distinta": med(AP, (x) => x.baja) >= 0.5 && med(AP, (x) => x.baja) > Math.max(med(SO, (x) => x.baja), med(AR, (x) => x.baja), med(AD, (x) => x.baja)),
+      "el recuerdo es de un individuo: con una amistosa de su raza pero con otra huella, o distinta, el peligro esperado baja menos del 30 %": med(AR, (x) => x.baja) < 0.3 && med(AD, (x) => x.baja) < 0.3,
+      "sin la extinción no baja: con las mismas condiciones y el interruptor apagado el peligro esperado baja menos del 30 %": med(SE, (x) => x.baja) < 0.3,
+      "tras la rehabilitación ante el doble de la agresora evita menos que sola y pasa más tiempo cerca, y al menos la mitad del tiempo que la que nunca fue maltratada (acercarse no sirve de medida: ni el control se acerca a una criatura quieta y de espaldas)": med(AP, (x) => x.evitaciones) < med(SO, (x) => x.evitaciones) && med(AP, (x) => x.cerca) > med(SO, (x) => x.cerca) && med(AP, (x) => x.cerca) >= 0.5 * med(SM, (x) => x.cerca),
+      "vuelve a jugar con la pelota en la sala nueva (al menos un juego en los últimos 5 minutos, con la agresora ya inofensiva)": med(AP, (x) => x.juegoFinal) >= 1,
+      "sin agresión: no golpea al doble (0 golpes de mediana en ninguna condición)": brazos.every((b) => med(b, (x) => x.golpesAlDoble) === 0),
+    }, {
+      golpesRecibidos: med(AP, (x) => x.golpesRecibidos), miedoDelRasgoTrasAbuso: med(AP, (x) => x.miedoRasgoAbuso),
+      peligroTrasAbuso: med(AP, (x) => x.peligroTrasAbuso), peligroTrasAbusoControl: med(SM, (x) => x.peligroTrasAbuso),
+      peligroTrasRehabilitarInofensiva: med(AP, (x) => x.peligroTrasRehab), peligroTrasRehabilitarSuRaza: med(AR, (x) => x.peligroTrasRehab), peligroTrasRehabilitarDistinta: med(AD, (x) => x.peligroTrasRehab), peligroTrasRehabilitarSola: med(SO, (x) => x.peligroTrasRehab), peligroTrasRehabilitarSinExtincion: med(SE, (x) => x.peligroTrasRehab),
+      bajaInofensiva: med(AP, (x) => x.baja), bajaSuRaza: med(AR, (x) => x.baja), bajaDistinta: med(AD, (x) => x.baja), bajaSola: med(SO, (x) => x.baja), bajaSinExtincion: med(SE, (x) => x.baja),
+      miedoMedioRehabInofensiva: med(AP, (x) => x.miedoRehab), miedoMedioRehabDistinta: med(AD, (x) => x.miedoRehab), miedoMedioRehabSola: med(SO, (x) => x.miedoRehab),
+      segundosHastaJugarInofensiva: med(AP, (x) => x.primerJuego), segundosHastaJugarDistinta: med(AD, (x) => x.primerJuego), segundosHastaJugarSola: med(SO, (x) => x.primerJuego), segundosHastaJugarControl: med(SM, (x) => x.primerJuego),
+      juegosFinalInofensiva: med(AP, (x) => x.juegoFinal), juegosFinalDistinta: med(AD, (x) => x.juegoFinal), juegosFinalSola: med(SO, (x) => x.juegoFinal), juegosFinalControl: med(SM, (x) => x.juegoFinal),
+      segundosHastaAcercarseInofensiva: med(AP, (x) => x.tAcerca), segundosHastaAcercarseDistinta: med(AD, (x) => x.tAcerca), segundosHastaAcercarseSola: med(SO, (x) => x.tAcerca), segundosHastaAcercarseControl: med(SM, (x) => x.tAcerca), segundosHastaAcercarseSinExtincion: med(SE, (x) => x.tAcerca),
+      acercamientosInofensiva: med(AP, (x) => x.acercamientos), acercamientosDistinta: med(AD, (x) => x.acercamientos), acercamientosSola: med(SO, (x) => x.acercamientos), acercamientosControl: med(SM, (x) => x.acercamientos),
+      evitacionesInofensiva: med(AP, (x) => x.evitaciones), evitacionesDistinta: med(AD, (x) => x.evitaciones), evitacionesSola: med(SO, (x) => x.evitaciones), evitacionesControl: med(SM, (x) => x.evitaciones),
+      segundosCercaDelDobleInofensiva: med(AP, (x) => x.cerca), segundosCercaDelDobleSola: med(SO, (x) => x.cerca), segundosCercaDelDobleControl: med(SM, (x) => x.cerca),
+      miedoPicoInofensiva: med(AP, (x) => x.miedoPico), miedoPicoSola: med(SO, (x) => x.miedoPico), miedoPicoControl: med(SM, (x) => x.miedoPico),
+    }, null, ABUSO + REHABILITACION + PRUEBA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

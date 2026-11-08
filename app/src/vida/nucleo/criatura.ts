@@ -163,6 +163,7 @@ export interface EstadoCriatura {
   celos: boolean;
   celosEstado: Celo[];
   rutina?: Rutina | null;
+  extincion?: boolean;
   permiteSecuelas?: boolean;
   secuelas?: Secuela[];
   danoAcumulado?: number;
@@ -257,6 +258,8 @@ export class Criatura {
   rutina: Rutina | null = null;
   /** Opcional: si los golpes graves o repetidos dejan secuelas fisicas. Apagado, no se acumula nada y la criatura es la de siempre. */
   permiteSecuelas = false;
+  /** Opcional: el miedo aprendido a alguien baja cuando se le tiene delante sin que pase nada malo, mas deprisa con buena compania. Apagado, el miedo solo se olvida con el tiempo. */
+  extincion = false;
   secuelas: Secuela[] = [];
   /** Dano recibido que aun cuenta para la proxima secuela. */
   danoAcumulado = 0;
@@ -367,6 +370,7 @@ export class Criatura {
     this.mirarAOtros(env);
     if (this.celos) this.sentirCelos(env, dt);
     if (this.envidia) this.sentirEnvidia(env, dt);
+    if (this.extincion) this.extinguirMiedos(env, dt);
     this.observar(env, dt);
     this.resolverTrazas(env);
     if (this.espera > 0) this.espera -= dt;
@@ -1019,6 +1023,28 @@ export class Criatura {
     this.celosEstado = this.celosEstado.filter((c) => c.nivel > 0);
   }
 
+  /** Extincion: si tiene delante a alguien a quien teme (por daño aprendido) y hace un rato que no le hacen daño ni esta en panico, el peligro que espera de esa presencia baja
+      un poco, mas deprisa si tiene cerca a quien quiere. No inventa nada: solo deja de reforzar un miedo que el contacto seguro no confirma. */
+  private extinguirMiedos(env: Entorno, dt: number): void {
+    if (env.t - this.ultimoDano < AJ.pausaExtincion || this.emo[E.miedo] > 0.6) return;
+    let compania = 0;
+    for (const p of this.percibidos) {
+      if (!p.esCriatura || p.recordado || p.dist > 220) continue;
+      compania = Math.max(compania, this.mem.vinculos.find((q) => q.id === p.id)?.afecto ?? 0);
+    }
+    const f = Math.exp(-AJ.tasaExtincion * dt * (1 + 2 * compania));
+    for (const p of this.percibidos) {
+      if (!p.esCriatura || p.recordado || p.dist > 400) continue;
+      for (const q of this.mem.protos) {
+        if ((q.v !== "presencia" && q.v !== "acercarse") || q.tipo !== p.tipo) continue;
+        if (q.res[C.dano] < 0.02 && q.res[C.susto] < 0.02) continue;
+        if (semejanza(p.f, q.f, p.m) <= 0.8) continue;
+        q.res[C.dano] *= f;
+        q.res[C.susto] *= f;
+      }
+    }
+  }
+
   /** Cuanta envidia siente ahora por lo que come `idPoseedor`. */
   envidiaPor(idPoseedor: number): number {
     let m = 0;
@@ -1184,7 +1210,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1227,6 +1253,7 @@ export class Criatura {
     c.agresion = e.agresion ?? false;
     c.celos = e.celos ?? false;
     c.rutina = e.rutina ?? null;
+    c.extincion = e.extincion ?? false;
     c.permiteSecuelas = e.permiteSecuelas ?? false;
     c.secuelas = JSON.parse(JSON.stringify(e.secuelas ?? []));
     c.danoAcumulado = e.danoAcumulado ?? 0;
