@@ -42,8 +42,22 @@ export interface InformeCaso {
   porCriterio: Record<string, number>;
 }
 
+/* Simulaciones ya calentadas, una por clave. Calentar (convivir 1200 s, por ejemplo) cuesta unas cuatro veces mas que la escena que viene despues, y se repetia en cada
+   condicion, cada replica y cada semilla. Con esto se calienta una vez por clave y cada condicion parte de una copia. Las replicas de una misma clave comparten historia y
+   solo se separan por el azar desde la copia, que es lo que interesa para comparar condiciones dentro de una semilla. Las lleva el caso en curso y se vacian al acabarlo. */
+const calentadas = new Map<string, Simulacion>();
+
+/** Una copia (con su propio azar, el de la replica `k`) de la simulacion que `construir` deja calentada. `construir` solo se llama la primera vez que se pide esa clave.
+    Los interruptores experimentales y las condiciones de laboratorio se ponen despues de copiar, no al construir. */
+export function calentada(clave: string, construir: () => Simulacion, k: number): Simulacion {
+  let base = calentadas.get(clave);
+  if (!base) { base = construir(); calentadas.set(clave, base); }
+  return replica(base, k);
+}
+
 export function ejecutarCaso(caso: Caso, semillas: number[]): InformeCaso {
   const resultados = semillas.map((s) => caso.ejecutar(s));
+  calentadas.clear();
   const aprobadas = resultados.filter((r) => r.ok).length;
   const porCriterio: Record<string, number> = {};
   for (const r of resultados) for (const [k, v] of Object.entries(r.criterios)) porCriterio[k] = (porCriterio[k] ?? 0) + (v ? 1 : 0);

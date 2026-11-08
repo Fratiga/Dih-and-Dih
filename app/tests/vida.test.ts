@@ -6,7 +6,7 @@ import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
 import { C, NC_RED as NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
-import { ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
+import { calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
 
 let fallos = 0, ok = 0;
 const afirma = (c: boolean, m: string) => { if (c) ok++; else { fallos++; console.log("FALLA:", m); } };
@@ -313,10 +313,23 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(unos > 160 && unos < 240, `el sexo reparte sobre la mitad (sale ${unos} de 400)`);
 }
 
+// 7d. Simulaciones calentadas: una copia por replica, cada una con su azar y sin tocar a las demas, y construir solo una vez por clave
+{
+  let veces = 0;
+  const construir = () => { veces++; const s = nuevaSim({ semilla: 33, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }, { genoma: genomaNuevo(2), x: 500 }], comedero: { cada: 60, max: 2, tipo: "fruta" } }); s.avanzar(200); return s; };
+  const a = calentada("prueba", construir, 1);
+  const b = calentada("prueba", construir, 2);
+  a.criaturas[0].x = 900;
+  afirma(veces === 1, "una simulacion calentada se construye una sola vez por clave");
+  afirma(a.t === b.t && b.criaturas[0].x !== 900, "cada copia es independiente de las demas y parte del mismo instante");
+}
+
 // 8. Los casos de exito del documento de diseno, con varias semillas y control
 const SEMILLAS = Array.from({ length: Number(process.env.N ?? 10) }, (_, i) => i + 1);
 for (const caso of CASOS) {
   const obligatorio = CASOS_OBLIGATORIOS.includes(caso.id);
+  // RAPIDA=1: solo los casos obligatorios (son los unicos que cuentan comprobaciones). Los informativos se miran aparte con tests/vida-lab.ts, o sin esta variable cuando se toca algo que los afecta a todos
+  if (process.env.RAPIDA && !obligatorio) continue;
   const t0 = Date.now();
   const inf = ejecutarCaso(caso, SEMILLAS);
   console.log(tablaInforme(inf), `(${((Date.now() - t0) / 1000).toFixed(1)} s)${obligatorio ? "" : "  [informativo: no es obligatorio en esta fase]"}`);

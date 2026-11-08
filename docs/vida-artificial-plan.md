@@ -52,7 +52,8 @@ El alcance de este prototipo es solo la inteligencia: una habitación, dos criat
 
 ```bash
 cd app
-node tests/vida.test.ts                       # pruebas del núcleo y los casos (10 semillas cada uno), unos 30 s
+RAPIDA=1 node tests/vida.test.ts             # pruebas del núcleo y solo los casos obligatorios (las mismas comprobaciones que la completa), alrededor de 1 minuto
+node tests/vida.test.ts                       # la completa, con todos los casos informativos (unos 25 a 30 minutos; solo cuando se toca algo que los afecta a todos)
 N=14 V=1 node tests/vida-lab.ts 01 04b        # un caso concreto con detalle por semilla
 npm run build                                 # compila a app/dist (hay que subirlo a main)
 npx vite build --config vite.vida.config.ts   # solo Vida Artificial, a app/dist-vida (para probar sin tocar app/dist)
@@ -1230,6 +1231,102 @@ Tres brazos, como pide la regla del proyecto: **sin modelo** (hoy), **con el mod
 - Si se acepta empezar por la etapa 0 y no por el módulo.
 - Si se acepta empezar con conteos de contingencia y dejar la red pequeña como variante.
 - Si hace falta un objeto de laboratorio sin olor para el premio del 07d, o se prefiere buscar otra forma de que no se descubra solo.
+
+## Mapa de capacidades para los casos pendientes
+
+Los casos que faltan (los 9 a 18 del documento de diseño y los 19 a 38 del de casos extremos) piden cosas que hoy las criaturas no pueden hacer. La idea es no esperar a llegar a cada caso para construir lo que sí o sí hará falta: se analiza qué necesita cada uno para ocurrir sin guion, se agrupa en capacidades y se construyen por orden, cada una con su interruptor propio y su caso mínimo. Este apartado es análisis, nada de esto está implementado salvo lo marcado.
+
+**Una aclaración de números.** El laboratorio reutilizó los números 16 a 32 para otras pruebas (hoy llega al 32), así que «caso 19» en el laboratorio no es el 19 de los casos extremos. En este apartado los extremos se escriben E19 a E38 y los de diseño por su número (9 a 18).
+
+### Lo que hay hoy (comprobado en el código)
+
+- **El mundo es una línea.** Una habitación vista de lado que para la simulación es la posición `x` con un suelo. La altura `z` de los objetos solo se dibuja (los botes) y no tiene efecto.
+- **Ocho verbos:** probar, empujar, tocar, acercarse, evitar, explorar, descansar y dormir. No hay cargar, soltar, lanzar, llamar ni ninguna acción que cambie el mundo más allá de empujar o tocar un objeto y comer.
+- **Ocho objetos:** cadáver, raíz, fruta, baya, pelota, palanca, gránulo y placa. Sin barreras, puertas, cajas, objetos pesados ni plantas con efecto.
+- **La decisión es de un paso** (utilidad) con crédito retrasado de 9 s. No hay objetivo, subobjetivo ni memoria de trabajo.
+- **Las otras criaturas se ven como rasgos y vínculos.** No hay un modelo de lo que van a hacer ni de lo que consiguen (está diseñado, arriba).
+- **No hay comunicación emitida.** El sonido de una criatura es un rasgo que se percibe (el que delata angustia), no una señal que decida emitir.
+- **Sí hay:** reproducción y camadas, herencia, agresión, depredación, fatiga, gustos, vínculos, reconocimiento por rasgos, celos y envidia, y memoria espacial básica. La sala admite 4 criaturas.
+
+### Qué necesita cada caso para ocurrir sin guion
+
+Capacidades: **W** son cosas del mundo, **K** son de la criatura, **T** son herramientas del jugador.
+
+| Caso | Necesita | Qué falta |
+|---|---|---|
+| 9 Perro guardián | Refuerzo por zona y discriminación de presencias | **T1** recompensa por zona y marcadores (la discriminación ya está) |
+| 10 Depredador condicionado | Persecución premiada, conservar otras conductas | Casi hecho (casos 18, 21, 26 del laboratorio). **K7** para que cace con eficacia |
+| 11 Recolector | Llevar objetos a una zona | **W1** transporte, **T1**, **K2** encadenar |
+| 12 Solución imprevista | Obstáculo manipulable y varios pasos | **W1**, **W3**, **K2** |
+| 15 El extraño | Reconocer novedad, reacciones distintas | Nada nuevo: se puede probar ya con 3 o 4 criaturas |
+| 16 Brecha de contención | Recinto con solidez, fuerza, varios pasos | **W3**, **K7**, **K2** |
+| 17 Colapso del hábitat | Varias especies, depredador, población | **W8**, **K7**, y más de 4 criaturas por sala |
+| 18 Tradición | Observar el resultado, que pase a otras y persista | **K1**, **K4** |
+| E19 Ingeniero accidental | Mover objetos para alcanzar otros, combinar | **W1**, **W2**, **K2** |
+| E20 Fuga calculada | Cuidador con horarios, recinto que se abre | **W3**, **W4**, **K2** |
+| E21 Acechador | Aprender cómo reaccionan las presas | **K1**, y presas con memoria del cazador |
+| E22 Herramienta improvisada | Objeto que sirve para alcanzar o activar otro | **W1**, **W2**, **K2** |
+| E23 Cooperación espontánea | Objeto que una sola no mueve | **W5**, **K1** |
+| E24 Jerarquía emergente | Dominancia estable con efecto en el acceso | Casi: el caso 25 del laboratorio la da en pocas rondas con un par. Falta **K8** memoria social larga y probarlo con 3 o 4 |
+| E25 Maestro | Enseñanza activa | **K1**, **K4** |
+| E26 Rescate | Criatura realmente atrapada | Casi hecho (08, 08b). **W3** para que quedar atrapada pase de verdad y no por una condición de laboratorio |
+| E27 Falso dormido | Contingencias sociales con el cuidador | **K1**, **W4** |
+| E28 Ladrón oportunista | Distraer a quien protege un recurso | **K1**, recurso protegido (ya hay conflicto por comida) |
+| E29 Llamada falsa | Señal que atrae a otras | **K3**, **K1** |
+| E30 Ritual sin propósito | Secuencia que persiste sin recompensa | **K4**, crédito retrasado (ya hay) |
+| E31 Dialecto | Señales distintas por población | **K3**, **K4**, poblaciones separadas |
+| E32 Tradición heredada | Conducta que pasa a descendientes | **K4**, reproducción (ya hay) |
+| E33 Metamorfosis | Cambio físico en vida según el entorno | **K6** |
+| E34 Automedicación | Sustancias con efecto biológico, síntomas | **W6**, **K5** |
+| E35 Migración | Hábitat que se deteriora, otro mejor | **W7**, memoria espacial (hay base) |
+| E36 Fuga en cadena | Brecha y varios organismos | **W3**, **W8**, **K1** |
+| E37 Ecosistema que se reconstruye | Transportar, dispersar, refugios | **W1**, **W8**, **K2** |
+| E38 Presión evolutiva | Depredador estable durante generaciones | **W8**, **K7**, y población mayor que 4 |
+
+### Las capacidades, con lo que desbloquean
+
+| Capacidad | Casos que desbloquea | Depende de |
+|---|---|---|
+| **K1** Modelo de las otras (diseñado) | 18, E21, E23, E25, E27, E28, E29, E36 y E24 en parte | nada |
+| **K2** Planificación ligera (subobjetivos, memoria de trabajo) | 11, 12, 16, E19, E20, E21, E22, E37 | **W1** a **W3** (algo que planificar) |
+| **W1** Transporte (cargar, soltar, objetos con peso) | 11, 12, E19, E22, E37 | verbos nuevos (ver abajo) |
+| **W3** Barreras, puertas y recintos con solidez | 12, 16, E20, E26, E36 | nada |
+| **K4** Transmisión cultural y enseñanza | 18, E25, E30, E31, E32 | **K1**, **K3** |
+| **W8** Ecología: especies, población, más de 4 por sala | 17, E36, E37, E38 | optimizar la percepción social |
+| **K7** Especialización física (mandíbula, garras, fuerza, agilidad) | 10, 16, 17, E38 | nada |
+| **K3** Comunicación aprendida (emitir y percibir señales) | E29, E31 y ayuda a E23, E25, E28 | nada |
+| **W2** Altura con efecto (alcance, estantes, subir) | E19, E22 y 12 | decisión de geometría (abajo) |
+| **T1** Recompensa por zona y marcadores | 9, 11 | nada |
+| **W4** Cuidador y horarios | E20, E27 | nada |
+| **W5** Objetos de varias manos | E23 | **W1** |
+| **W6**, **K5** Sustancias con efecto y aprendizaje con retardo largo | E34 | nada |
+| **W7** Varias zonas y recursos que se agotan | E35 | nada |
+| **K6** Desarrollo fenotípico | E33 | nada |
+| **K8** Memoria social larga | E24 | nada |
+
+### Un requisito previo que afecta a casi todo (P0)
+
+La entrada de la red es: rasgos del objeto, un vector con un uno por verbo, cinco necesidades, cinco emociones y la posición. Añadir un verbo (cargar, soltar, llamar) cambia el tamaño de la entrada, mueve la posición de todo lo demás y, además, cambia los pesos con los que nace cada criatura (se generan con una secuencia que depende de ese tamaño). Todos los casos medidos cambiarían de resultado.
+
+La solución es una **red con entradas ampliables**: las entradas nuevas van al final del vector, sus pesos nacen en cero y la parte antigua se genera exactamente igual que ahora. Una criatura que no usa las capacidades nuevas se comporta igual que hoy. Habría que hacer que los estados guardados con la red antigua se restauren rellenados con ceros. Es la pieza que permite añadir verbos sin repetir toda la medición, y por eso va primero.
+
+### Orden propuesto
+
+0. **Laboratorio rápido (hecho).** `RAPIDA=1` ejecuta las mismas comprobaciones de la regresión en alrededor de 1 minuto en lugar de 25 a 30, y los casos nuevos pueden calentar una vez por semilla y copiar (`calentada`).
+1. **P0: red con entradas ampliables.** Es lo único que no se ve y lo que hace barato todo lo demás.
+2. **Probar lo que no necesita nada nuevo:** el extraño (15), la jerarquía con tres o cuatro (E24) y el acechador con presas que recuerdan (E21). Sirve para ver qué sale de verdad antes de construir.
+3. **K1, etapa 0** (el caso 07d del modelo de las otras): decide si el módulo hace falta.
+4. **W1 transporte y W3 barreras**, con un caso mínimo cada una (por ejemplo «lleva una fruta a su sitio» y «queda atrapada tras una puerta que se cierra»). Son mecánicas del mundo y se pueden hacer sin cognición nueva.
+5. **K7 especialización física**, que ya estaba prevista y desbloquea 4 casos.
+6. **Optimizar la percepción social** (comparar solo vecinas) y subir el límite de criaturas por sala, necesario para ecología y jerarquía.
+7. **W2 altura, K3 comunicación, K2 planificación** (los tres necesitan lo anterior), y después K4 transmisión.
+8. **Biología larga** (W6, K5, K6, W7): al final, porque exigen escalas de tiempo y de espacio mayores.
+
+### Decisiones que necesito
+
+- **La geometría.** Hoy el mundo es una línea. Para alcanzar objetos en alto, apilar o subir a una caja hace falta altura con efecto. La propuesta es niveles discretos (suelo, estante, alto) y no física continua, para no complicar la simulación. Si no se quiere altura, los casos E19, E22 y parte del 12 se quedan fuera o se hacen solo con barreras y distancia.
+- **El orden**, en particular si P0 va antes que cualquier otra cosa.
+- **Si se acepta renombrar los casos extremos** a E19 a E38 en su documento para que no se confundan con los del laboratorio.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 
